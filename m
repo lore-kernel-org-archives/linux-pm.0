@@ -1,70 +1,94 @@
-From: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+From: Caesar Wang <wxt@rock-chips.com>
 Subject: Re: [PATCH] thermal: rockhip: fix setting thermal shutdown polarity
-Date: Mon, 10 Aug 2015 14:34:57 +0800
-Message-ID: <55C84611.10904@rock-chips.com>
-References: <20150807210052.GA34032@dtor-ws>
+Date: Mon, 10 Aug 2015 14:37:42 +0800
+Message-ID: <55C846B6.2050303@rock-chips.com>
+References: <20150807210052.GA34032@dtor-ws> <55C84611.10904@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <20150807210052.GA34032@dtor-ws>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
-List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: Dmitry Torokhov <dtor-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <55C84611.10904@rock-chips.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dmitry Torokhov <dtor@chromium.org>, Heiko Stuebner <heiko@sntech.de>
+Cc: Eduardo Valentin <edubezval@gmail.com>, dianders@chromium.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-RGVhciBEbWl0cnksCgpUaGFua3MgdG8gd29yayBmb3IgaXQuCgrlnKggMjAxNeW5tDA45pyIMDjm
-l6UgMDU6MDAsIERtaXRyeSBUb3Jva2hvdiDlhpnpgZM6Cj4gV2hlbiByZXF1ZXN0ZWQgdGhlcm1h
-bCBzaHV0ZG93biBzaWduYWwgcG9sYXJpdHkgaXMgbG93IHdlIG5lZWQgdG8gbWFrZQo+IHN1cmUg
-dGhhdCB0aGUgYml0IHJlcHJlc2VudGluZyBoaWdoIGxldmVsIG9mIHNpZ25hbCBpcyByZXNldCwg
-YW5kIG5vdAo+IHNldCBhbGwgb3RoZXIgYml0cyBpbiB0aGF0IHJlZ2lzdGVyLgo+Cj4gQWxzbyBy
-ZW5hbWUgVFNBRENWMl9JTlRfUERfQ0xFQVIgdG8gVFNBRENWMl9JTlRfUERfQ0xFQVJfTUFTSyB0
-byBiZXR0ZXIKPiByZWZsZWN0IGl0cyBuYXR1cmUuCj4KPiBTaWduZWQtb2ZmLWJ5OiBEbWl0cnkg
-VG9yb2tob3YgPGR0b3JAY2hyb21pdW0ub3JnPgoKICBBY2tlZC1ieTogQ2Flc2FyIFdhbmcgPHd4
-dEByb2NrLWNoaXBzLmNvbT4KCi0tClRoYW5rcywKQ2Flc2FyCgo+IC0tLQo+ICAgZHJpdmVycy90
-aGVybWFsL3JvY2tjaGlwX3RoZXJtYWwuYyB8IDEwICsrKystLS0tLS0KPiAgIDEgZmlsZSBjaGFu
-Z2VkLCA0IGluc2VydGlvbnMoKyksIDYgZGVsZXRpb25zKC0pCj4KPiBkaWZmIC0tZ2l0IGEvZHJp
-dmVycy90aGVybWFsL3JvY2tjaGlwX3RoZXJtYWwuYyBiL2RyaXZlcnMvdGhlcm1hbC9yb2NrY2hp
-cF90aGVybWFsLmMKPiBpbmRleCA5M2VlMzA3Li40ZDViN2Q0IDEwMDY0NAo+IC0tLSBhL2RyaXZl
-cnMvdGhlcm1hbC9yb2NrY2hpcF90aGVybWFsLmMKPiArKysgYi9kcml2ZXJzL3RoZXJtYWwvcm9j
-a2NoaXBfdGhlcm1hbC5jCj4gQEAgLTEwNiwxNiArMTA2LDE0IEBAIHN0cnVjdCByb2NrY2hpcF90
-aGVybWFsX2RhdGEgewo+ICAgI2RlZmluZSBUU0FEQ1YyX0FVVE9fUEVSSU9EX0hUCQkJMHg2Ywo+
-ICAgCj4gICAjZGVmaW5lIFRTQURDVjJfQVVUT19FTgkJCQlCSVQoMCkKPiAtI2RlZmluZSBUU0FE
-Q1YyX0FVVE9fRElTQUJMRQkJCX5CSVQoMCkKPiAgICNkZWZpbmUgVFNBRENWMl9BVVRPX1NSQ19F
-TihjaG4pCQlCSVQoNCArIChjaG4pKQo+ICAgI2RlZmluZSBUU0FEQ1YyX0FVVE9fVFNIVVRfUE9M
-QVJJVFlfSElHSAlCSVQoOCkKPiAtI2RlZmluZSBUU0FEQ1YyX0FVVE9fVFNIVVRfUE9MQVJJVFlf
-TE9XCQl+QklUKDgpCj4gICAKPiAgICNkZWZpbmUgVFNBRENWMl9JTlRfU1JDX0VOKGNobikJCQlC
-SVQoY2huKQo+ICAgI2RlZmluZSBUU0FEQ1YyX1NIVVRfMkdQSU9fU1JDX0VOKGNobikJCUJJVCg0
-ICsgKGNobikpCj4gICAjZGVmaW5lIFRTQURDVjJfU0hVVF8yQ1JVX1NSQ19FTihjaG4pCQlCSVQo
-OCArIChjaG4pKQo+ICAgCj4gLSNkZWZpbmUgVFNBRENWMl9JTlRfUERfQ0xFQVIJCQl+QklUKDgp
-Cj4gKyNkZWZpbmUgVFNBRENWMl9JTlRfUERfQ0xFQVJfTUFTSwkJfkJJVCg4KQo+ICAgCj4gICAj
-ZGVmaW5lIFRTQURDVjJfREFUQV9NQVNLCQkJMHhmZmYKPiAgICNkZWZpbmUgVFNBRENWMl9ISUdI
-VF9JTlRfREVCT1VOQ0VfQ09VTlQJNAo+IEBAIC0yNDQsMTAgKzI0MiwxMCBAQCBzdGF0aWMgdm9p
-ZCBya190c2FkY3YyX2luaXRpYWxpemUodm9pZCBfX2lvbWVtICpyZWdzLAo+ICAgCQkJCSAgZW51
-bSB0c2h1dF9wb2xhcml0eSB0c2h1dF9wb2xhcml0eSkKPiAgIHsKPiAgIAlpZiAodHNodXRfcG9s
-YXJpdHkgPT0gVFNIVVRfSElHSF9BQ1RJVkUpCj4gLQkJd3JpdGVsX3JlbGF4ZWQoMCB8IChUU0FE
-Q1YyX0FVVE9fVFNIVVRfUE9MQVJJVFlfSElHSCksCj4gKwkJd3JpdGVsX3JlbGF4ZWQoMFUgfCBU
-U0FEQ1YyX0FVVE9fVFNIVVRfUE9MQVJJVFlfSElHSCwKPiAgIAkJCSAgICAgICByZWdzICsgVFNB
-RENWMl9BVVRPX0NPTik7Cj4gICAJZWxzZQo+IC0JCXdyaXRlbF9yZWxheGVkKDAgfCAoVFNBRENW
-Ml9BVVRPX1RTSFVUX1BPTEFSSVRZX0xPVyksCj4gKwkJd3JpdGVsX3JlbGF4ZWQoMFUgJiB+VFNB
-RENWMl9BVVRPX1RTSFVUX1BPTEFSSVRZX0hJR0gsCj4gICAJCQkgICAgICAgcmVncyArIFRTQURD
-VjJfQVVUT19DT04pOwo+ICAgCj4gICAJd3JpdGVsX3JlbGF4ZWQoVFNBRENWMl9BVVRPX1BFUklP
-RF9USU1FLCByZWdzICsgVFNBRENWMl9BVVRPX1BFUklPRCk7Cj4gQEAgLTI2NCw3ICsyNjIsNyBA
-QCBzdGF0aWMgdm9pZCBya190c2FkY3YyX2lycV9hY2sodm9pZCBfX2lvbWVtICpyZWdzKQo+ICAg
-CXUzMiB2YWw7Cj4gICAKPiAgIAl2YWwgPSByZWFkbF9yZWxheGVkKHJlZ3MgKyBUU0FEQ1YyX0lO
-VF9QRCk7Cj4gLQl3cml0ZWxfcmVsYXhlZCh2YWwgJiBUU0FEQ1YyX0lOVF9QRF9DTEVBUiwgcmVn
-cyArIFRTQURDVjJfSU5UX1BEKTsKPiArCXdyaXRlbF9yZWxheGVkKHZhbCAmIFRTQURDVjJfSU5U
-X1BEX0NMRUFSX01BU0ssIHJlZ3MgKyBUU0FEQ1YyX0lOVF9QRCk7Cj4gICB9Cj4gICAKPiAgIHN0
-YXRpYyB2b2lkIHJrX3RzYWRjdjJfY29udHJvbCh2b2lkIF9faW9tZW0gKnJlZ3MsIGJvb2wgZW5h
-YmxlKQoKCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpM
-aW51eC1yb2NrY2hpcCBtYWlsaW5nIGxpc3QKTGludXgtcm9ja2NoaXBAbGlzdHMuaW5mcmFkZWFk
-Lm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXJv
-Y2tjaGlwCg==
+Sorry, forgot it!
+\s 'rockhip' to 'rockchip' :-)
+
+=E5=9C=A8 2015=E5=B9=B408=E6=9C=8810=E6=97=A5 14:34, Caesar Wang =E5=86=
+=99=E9=81=93:
+> Dear Dmitry,
+>
+> Thanks to work for it.
+>
+> =E5=9C=A8 2015=E5=B9=B408=E6=9C=8808=E6=97=A5 05:00, Dmitry Torokhov =
+=E5=86=99=E9=81=93:
+>> When requested thermal shutdown signal polarity is low we need to ma=
+ke
+>> sure that the bit representing high level of signal is reset, and no=
+t
+>> set all other bits in that register.
+>>
+>> Also rename TSADCV2_INT_PD_CLEAR to TSADCV2_INT_PD_CLEAR_MASK to bet=
+ter
+>> reflect its nature.
+>>
+>> Signed-off-by: Dmitry Torokhov <dtor@chromium.org>
+>
+>  Acked-by: Caesar Wang <wxt@rock-chips.com>
+>
+> --=20
+> Thanks,
+> Caesar
+>
+>> ---
+>>   drivers/thermal/rockchip_thermal.c | 10 ++++------
+>>   1 file changed, 4 insertions(+), 6 deletions(-)
+>>
+>> diff --git a/drivers/thermal/rockchip_thermal.c=20
+>> b/drivers/thermal/rockchip_thermal.c
+>> index 93ee307..4d5b7d4 100644
+>> --- a/drivers/thermal/rockchip_thermal.c
+>> +++ b/drivers/thermal/rockchip_thermal.c
+>> @@ -106,16 +106,14 @@ struct rockchip_thermal_data {
+>>   #define TSADCV2_AUTO_PERIOD_HT            0x6c
+>>     #define TSADCV2_AUTO_EN                BIT(0)
+>> -#define TSADCV2_AUTO_DISABLE            ~BIT(0)
+>>   #define TSADCV2_AUTO_SRC_EN(chn)        BIT(4 + (chn))
+>>   #define TSADCV2_AUTO_TSHUT_POLARITY_HIGH    BIT(8)
+>> -#define TSADCV2_AUTO_TSHUT_POLARITY_LOW        ~BIT(8)
+>>     #define TSADCV2_INT_SRC_EN(chn)            BIT(chn)
+>>   #define TSADCV2_SHUT_2GPIO_SRC_EN(chn)        BIT(4 + (chn))
+>>   #define TSADCV2_SHUT_2CRU_SRC_EN(chn)        BIT(8 + (chn))
+>>   -#define TSADCV2_INT_PD_CLEAR            ~BIT(8)
+>> +#define TSADCV2_INT_PD_CLEAR_MASK        ~BIT(8)
+>>     #define TSADCV2_DATA_MASK            0xfff
+>>   #define TSADCV2_HIGHT_INT_DEBOUNCE_COUNT    4
+>> @@ -244,10 +242,10 @@ static void rk_tsadcv2_initialize(void __iomem=
+=20
+>> *regs,
+>>                     enum tshut_polarity tshut_polarity)
+>>   {
+>>       if (tshut_polarity =3D=3D TSHUT_HIGH_ACTIVE)
+>> -        writel_relaxed(0 | (TSADCV2_AUTO_TSHUT_POLARITY_HIGH),
+>> +        writel_relaxed(0U | TSADCV2_AUTO_TSHUT_POLARITY_HIGH,
+>>                      regs + TSADCV2_AUTO_CON);
+>>       else
+>> -        writel_relaxed(0 | (TSADCV2_AUTO_TSHUT_POLARITY_LOW),
+>> +        writel_relaxed(0U & ~TSADCV2_AUTO_TSHUT_POLARITY_HIGH,
+>>                      regs + TSADCV2_AUTO_CON);
+>>         writel_relaxed(TSADCV2_AUTO_PERIOD_TIME, regs +=20
+>> TSADCV2_AUTO_PERIOD);
+>> @@ -264,7 +262,7 @@ static void rk_tsadcv2_irq_ack(void __iomem *reg=
+s)
+>>       u32 val;
+>>         val =3D readl_relaxed(regs + TSADCV2_INT_PD);
+>> -    writel_relaxed(val & TSADCV2_INT_PD_CLEAR, regs + TSADCV2_INT_P=
+D);
+>> +    writel_relaxed(val & TSADCV2_INT_PD_CLEAR_MASK, regs +=20
+>> TSADCV2_INT_PD);
+>>   }
+>>     static void rk_tsadcv2_control(void __iomem *regs, bool enable)
+>
