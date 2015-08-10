@@ -1,163 +1,370 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [RFCv5 PATCH 41/46] sched/fair: add triggers for OPP change requests
-Date: Mon, 10 Aug 2015 14:43:46 +0100
-Message-ID: <55C8AA92.8000201@arm.com>
-References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com> <1436293469-25707-42-git-send-email-morten.rasmussen@arm.com> <CAKfTPtBfNV=K+gwb7dfQXqBEbByMWRoFDb0FtfeeY1hh33j4XA@mail.gmail.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v4 1/6] mfd: da9150: Add support for Fuel-Gauge
+Date: Mon, 10 Aug 2015 14:54:22 +0100
+Message-ID: <20150810135422.GJ3249@x1>
+References: <cover.1438692348.git.Adam.Thomson.Opensource@diasemi.com>
+ <27d84f4a77aa8bead37cec71bcd19ca8ad548c30.1438692348.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from eu-smtp-delivery-143.mimecast.com ([146.101.78.143]:53884 "EHLO
-	eu-smtp-delivery-143.mimecast.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753852AbbHJNnO convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 10 Aug 2015 09:43:14 -0400
-In-Reply-To: <CAKfTPtBfNV=K+gwb7dfQXqBEbByMWRoFDb0FtfeeY1hh33j4XA@mail.gmail.com>
+Received: from mail-wi0-f175.google.com ([209.85.212.175]:32859 "EHLO
+	mail-wi0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752493AbbHJNy2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Aug 2015 09:54:28 -0400
+Received: by wijp15 with SMTP id p15so136642085wij.0
+        for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2015 06:54:26 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <27d84f4a77aa8bead37cec71bcd19ca8ad548c30.1438692348.git.Adam.Thomson.Opensource@diasemi.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, "mingo@redhat.com" <mingo@redhat.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, Yuyang Du <yuyang.du@intel.com>, Michael Turquette <mturquette@baylibre.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Sai Charan Gurrappadi <sgurrappadi@nvidia.com>, "pang.xunlei@zte.com.cn" <pang.xunlei@zte.com.cn>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Support Opensource <support.opensource@diasemi.com>
 
-Hi Vincent,
+On Tue, 04 Aug 2015, Adam Thomson wrote:
 
-On 04/08/15 14:41, Vincent Guittot wrote:
-> Hi Juri,
-> 
-> On 7 July 2015 at 20:24, Morten Rasmussen <morten.rasmussen@arm.com> wrote:
->> From: Juri Lelli <juri.lelli@arm.com>
->>
->> Each time a task is {en,de}queued we might need to adapt the current
->> frequency to the new usage. Add triggers on {en,de}queue_task_fair() for
->> this purpose.  Only trigger a freq request if we are effectively waking up
->> or going to sleep.  Filter out load balancing related calls to reduce the
->> number of triggers.
->>
->> cc: Ingo Molnar <mingo@redhat.com>
->> cc: Peter Zijlstra <peterz@infradead.org>
->>
->> Signed-off-by: Juri Lelli <juri.lelli@arm.com>
->> ---
->>  kernel/sched/fair.c | 42 ++++++++++++++++++++++++++++++++++++++++--
->>  1 file changed, 40 insertions(+), 2 deletions(-)
->>
->> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
->> index f74e9d2..b8627c6 100644
->> --- a/kernel/sched/fair.c
->> +++ b/kernel/sched/fair.c
->> @@ -4281,7 +4281,10 @@ static inline void hrtick_update(struct rq *rq)
->>  }
->>  #endif
->>
->> +static unsigned int capacity_margin = 1280; /* ~20% margin */
->> +
->>  static bool cpu_overutilized(int cpu);
->> +static unsigned long get_cpu_usage(int cpu);
->>  struct static_key __sched_energy_freq __read_mostly = STATIC_KEY_INIT_FALSE;
->>
->>  /*
->> @@ -4332,6 +4335,26 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
->>                 if (!task_new && !rq->rd->overutilized &&
->>                     cpu_overutilized(rq->cpu))
->>                         rq->rd->overutilized = true;
->> +               /*
->> +                * We want to trigger a freq switch request only for tasks that
->> +                * are waking up; this is because we get here also during
->> +                * load balancing, but in these cases it seems wise to trigger
->> +                * as single request after load balancing is done.
->> +                *
->> +                * XXX: how about fork()? Do we need a special flag/something
->> +                *      to tell if we are here after a fork() (wakeup_task_new)?
->> +                *
->> +                * Also, we add a margin (same ~20% used for the tipping point)
->> +                * to our request to provide some head room if p's utilization
->> +                * further increases.
->> +                */
->> +               if (sched_energy_freq() && !task_new) {
->> +                       unsigned long req_cap = get_cpu_usage(cpu_of(rq));
->> +
->> +                       req_cap = req_cap * capacity_margin
->> +                                       >> SCHED_CAPACITY_SHIFT;
->> +                       cpufreq_sched_set_cap(cpu_of(rq), req_cap);
->> +               }
->>         }
->>         hrtick_update(rq);
->>  }
->> @@ -4393,6 +4416,23 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
->>         if (!se) {
->>                 sub_nr_running(rq, 1);
->>                 update_rq_runnable_avg(rq, 1);
->> +               /*
->> +                * We want to trigger a freq switch request only for tasks that
->> +                * are going to sleep; this is because we get here also during
->> +                * load balancing, but in these cases it seems wise to trigger
->> +                * as single request after load balancing is done.
->> +                *
->> +                * Also, we add a margin (same ~20% used for the tipping point)
->> +                * to our request to provide some head room if p's utilization
->> +                * further increases.
->> +                */
->> +               if (sched_energy_freq() && task_sleep) {
->> +                       unsigned long req_cap = get_cpu_usage(cpu_of(rq));
->> +
->> +                       req_cap = req_cap * capacity_margin
->> +                                       >> SCHED_CAPACITY_SHIFT;
->> +                       cpufreq_sched_set_cap(cpu_of(rq), req_cap);
-> 
-> Could you clarify why you want to trig a freq switch for tasks that
-> are going to sleep ?
-> The cpu_usage should not changed that much as the se_utilization of
-> the entity moves from utilization_load_avg to utilization_blocked_avg
-> of the rq and the usage and the freq are updated periodically.
+> Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+> ---
+>=20
+> Changes in v4:
+>  - Update compatible string of fuel-gauge to "dlg, da9150-fuel-gauge"=
+=2E Also
+>    made similar change to driver name to keep things consistent.
+>=20
+> Changes in v3:
+>  - Use DEFINE_RES_IRQ_NAMED() helper for defining FG IRQ resource.
+>  - Unwanted new line & comments removed.
+>  - Remove gotos which can be replaced with straight forward return ca=
+lls.
+>  - Add enum for indexing MFD cells list, which is used to assign pdat=
+a for FG
+>    sub-device.
+>  - Remove use of function pointers for QIF related read/write functio=
+ns as
+>    currently only I2C supported, so call I2C functions directly.
+>  - Fold fg.h contents into core.h.
 
-I think we still need to cover multiple back-to-back dequeues. Suppose
-that you have, let's say, 3 tasks that get enqueued at the same time.
-After some time the first one goes to sleep and its utilization, as you
-say, gets moved to utilization_blocked_avg. So, nothing changes, and
-the trigger is superfluous (even if no freq change I guess will be
-issued as we are already servicing enough capacity). However, after a
-while, the second task goes to sleep. Now we still use get_cpu_usage()
-and the first task contribution in utilization_blocked_avg should have
-been decayed by this time. Same thing may than happen for the third task
-as well. So, if we don't check if we need to scale down in
-dequeue_task_fair, it seems to me that we might miss some opportunities,
-as blocked contribution of other tasks could have been successively
-decayed.
+Assuming these have all been taken care of:
 
-What you think?
+Acked-by: Lee Jones <lee.jones@linaro.org>
 
-Thanks,
+> Changes in v2:
+>  - Moved temp callback function prototype to be part of power fuel-ga=
+uge patch,
+>    as requested by Lee Jones.
+>=20
+>  drivers/mfd/da9150-core.c       | 156 ++++++++++++++++++++++++++++++=
+++++++++--
+>  include/linux/mfd/da9150/core.h |  19 ++++-
+>  2 files changed, 167 insertions(+), 8 deletions(-)
+>=20
+> diff --git a/drivers/mfd/da9150-core.c b/drivers/mfd/da9150-core.c
+> index 94b9bbd..85ca4b5 100644
+> --- a/drivers/mfd/da9150-core.c
+> +++ b/drivers/mfd/da9150-core.c
+> @@ -23,6 +23,77 @@
+>  #include <linux/mfd/da9150/core.h>
+>  #include <linux/mfd/da9150/registers.h>
+>=20
+> +/* Raw device access, used for QIF */
+> +static int da9150_i2c_read_device(struct i2c_client *client, u8 addr=
+, int count,
+> +				  u8 *buf)
+> +{
+> +	struct i2c_msg xfer;
+> +	int ret;
+> +
+> +	/*
+> +	 * Read is split into two transfers as device expects STOP/START ra=
+ther
+> +	 * than repeated start to carry out this kind of access.
+> +	 */
+> +
+> +	/* Write address */
+> +	xfer.addr =3D client->addr;
+> +	xfer.flags =3D 0;
+> +	xfer.len =3D 1;
+> +	xfer.buf =3D &addr;
+> +
+> +	ret =3D i2c_transfer(client->adapter, &xfer, 1);
+> +	if (ret !=3D 1) {
+> +		if (ret < 0)
+> +			return ret;
+> +		else
+> +			return -EIO;
+> +	}
+> +
+> +	/* Read data */
+> +	xfer.addr =3D client->addr;
+> +	xfer.flags =3D I2C_M_RD;
+> +	xfer.len =3D count;
+> +	xfer.buf =3D buf;
+> +
+> +	ret =3D i2c_transfer(client->adapter, &xfer, 1);
+> +	if (ret =3D=3D 1)
+> +		return 0;
+> +	else if (ret < 0)
+> +		return ret;
+> +	else
+> +		return -EIO;
+> +}
+> +
+> +static int da9150_i2c_write_device(struct i2c_client *client, u8 add=
+r,
+> +				   int count, const u8 *buf)
+> +{
+> +	struct i2c_msg xfer;
+> +	u8 *reg_data;
+> +	int ret;
+> +
+> +	reg_data =3D kzalloc(1 + count, GFP_KERNEL);
+> +	if (!reg_data)
+> +		return -ENOMEM;
+> +
+> +	reg_data[0] =3D addr;
+> +	memcpy(&reg_data[1], buf, count);
+> +
+> +	/* Write address & data */
+> +	xfer.addr =3D client->addr;
+> +	xfer.flags =3D 0;
+> +	xfer.len =3D 1 + count;
+> +	xfer.buf =3D reg_data;
+> +
+> +	ret =3D i2c_transfer(client->adapter, &xfer, 1);
+> +	kfree(reg_data);
+> +	if (ret =3D=3D 1)
+> +		return 0;
+> +	else if (ret < 0)
+> +		return ret;
+> +	else
+> +		return -EIO;
+> +}
+> +
+>  static bool da9150_volatile_reg(struct device *dev, unsigned int reg=
+)
+>  {
+>  	switch (reg) {
+> @@ -107,6 +178,28 @@ static const struct regmap_config da9150_regmap_=
+config =3D {
+>  	.volatile_reg =3D da9150_volatile_reg,
+>  };
+>=20
+> +void da9150_read_qif(struct da9150 *da9150, u8 addr, int count, u8 *=
+buf)
+> +{
+> +	int ret;
+> +
+> +	ret =3D da9150_i2c_read_device(da9150->core_qif, addr, count, buf);
+> +	if (ret < 0)
+> +		dev_err(da9150->dev, "Failed to read from QIF 0x%x: %d\n",
+> +			addr, ret);
+> +}
+> +EXPORT_SYMBOL_GPL(da9150_read_qif);
+> +
+> +void da9150_write_qif(struct da9150 *da9150, u8 addr, int count, con=
+st u8 *buf)
+> +{
+> +	int ret;
+> +
+> +	ret =3D da9150_i2c_write_device(da9150->core_qif, addr, count, buf)=
+;
+> +	if (ret < 0)
+> +		dev_err(da9150->dev, "Failed to write to QIF 0x%x: %d\n",
+> +			addr, ret);
+> +}
+> +EXPORT_SYMBOL_GPL(da9150_write_qif);
+> +
+>  u8 da9150_reg_read(struct da9150 *da9150, u16 reg)
+>  {
+>  	int val, ret;
+> @@ -297,19 +390,35 @@ static struct resource da9150_charger_resources=
+[] =3D {
+>  	},
+>  };
+>=20
+> +static struct resource da9150_fg_resources[] =3D {
+> +	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_FG, "FG"),
+> +};
+> +
+> +enum da9150_dev_idx {
+> +	DA9150_GPADC_IDX =3D 0,
+> +	DA9150_CHARGER_IDX,
+> +	DA9150_FG_IDX,
+> +};
+> +
+>  static struct mfd_cell da9150_devs[] =3D {
+> -	{
+> +	[DA9150_GPADC_IDX] =3D {
+>  		.name =3D "da9150-gpadc",
+>  		.of_compatible =3D "dlg,da9150-gpadc",
+>  		.resources =3D da9150_gpadc_resources,
+>  		.num_resources =3D ARRAY_SIZE(da9150_gpadc_resources),
+>  	},
+> -	{
+> +	[DA9150_CHARGER_IDX] =3D {
+>  		.name =3D "da9150-charger",
+>  		.of_compatible =3D "dlg,da9150-charger",
+>  		.resources =3D da9150_charger_resources,
+>  		.num_resources =3D ARRAY_SIZE(da9150_charger_resources),
+>  	},
+> +	[DA9150_FG_IDX] =3D {
+> +		.name =3D "da9150-fuel-gauge",
+> +		.of_compatible =3D "dlg,da9150-fuel-gauge",
+> +		.resources =3D da9150_fg_resources,
+> +		.num_resources =3D ARRAY_SIZE(da9150_fg_resources),
+> +	},
+>  };
+>=20
+>  static int da9150_probe(struct i2c_client *client,
+> @@ -317,6 +426,7 @@ static int da9150_probe(struct i2c_client *client=
+,
+>  {
+>  	struct da9150 *da9150;
+>  	struct da9150_pdata *pdata =3D dev_get_platdata(&client->dev);
+> +	int qif_addr;
+>  	int ret;
+>=20
+>  	da9150 =3D devm_kzalloc(&client->dev, sizeof(*da9150), GFP_KERNEL);
+> @@ -335,16 +445,41 @@ static int da9150_probe(struct i2c_client *clie=
+nt,
+>  		return ret;
+>  	}
+>=20
+> -	da9150->irq_base =3D pdata ? pdata->irq_base : -1;
+> +	/* Setup secondary I2C interface for QIF access */
+> +	qif_addr =3D da9150_reg_read(da9150, DA9150_CORE2WIRE_CTRL_A);
+> +	qif_addr =3D (qif_addr & DA9150_CORE_BASE_ADDR_MASK) >> 1;
+> +	qif_addr |=3D DA9150_QIF_I2C_ADDR_LSB;
+> +	da9150->core_qif =3D i2c_new_dummy(client->adapter, qif_addr);
+> +	if (!da9150->core_qif) {
+> +		dev_err(da9150->dev, "Failed to attach QIF client\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	i2c_set_clientdata(da9150->core_qif, da9150);
+> +
+> +	if (pdata) {
+> +		da9150->irq_base =3D pdata->irq_base;
+> +
+> +		da9150_devs[DA9150_FG_IDX].platform_data =3D pdata->fg_pdata;
+> +		da9150_devs[DA9150_FG_IDX].pdata_size =3D
+> +			sizeof(struct da9150_fg_pdata);
+> +	} else {
+> +		da9150->irq_base =3D -1;
+> +	}
+>=20
+>  	ret =3D regmap_add_irq_chip(da9150->regmap, da9150->irq,
+>  				  IRQF_TRIGGER_LOW | IRQF_ONESHOT,
+>  				  da9150->irq_base, &da9150_regmap_irq_chip,
+>  				  &da9150->regmap_irq_data);
+> -	if (ret)
+> -		return ret;
+> +	if (ret) {
+> +		dev_err(da9150->dev, "Failed to add regmap irq chip: %d\n",
+> +			ret);
+> +		goto regmap_irq_fail;
+> +	}
+> +
+>=20
+>  	da9150->irq_base =3D regmap_irq_chip_get_base(da9150->regmap_irq_da=
+ta);
+> +
+>  	enable_irq_wake(da9150->irq);
+>=20
+>  	ret =3D mfd_add_devices(da9150->dev, -1, da9150_devs,
+> @@ -352,11 +487,17 @@ static int da9150_probe(struct i2c_client *clie=
+nt,
+>  			      da9150->irq_base, NULL);
+>  	if (ret) {
+>  		dev_err(da9150->dev, "Failed to add child devices: %d\n", ret);
+> -		regmap_del_irq_chip(da9150->irq, da9150->regmap_irq_data);
+> -		return ret;
+> +		goto mfd_fail;
+>  	}
+>=20
+>  	return 0;
+> +
+> +mfd_fail:
+> +	regmap_del_irq_chip(da9150->irq, da9150->regmap_irq_data);
+> +regmap_irq_fail:
+> +	i2c_unregister_device(da9150->core_qif);
+> +
+> +	return ret;
+>  }
+>=20
+>  static int da9150_remove(struct i2c_client *client)
+> @@ -365,6 +506,7 @@ static int da9150_remove(struct i2c_client *clien=
+t)
+>=20
+>  	regmap_del_irq_chip(da9150->irq, da9150->regmap_irq_data);
+>  	mfd_remove_devices(da9150->dev);
+> +	i2c_unregister_device(da9150->core_qif);
+>=20
+>  	return 0;
+>  }
+> diff --git a/include/linux/mfd/da9150/core.h b/include/linux/mfd/da91=
+50/core.h
+> index 76e6689..1bf50ca 100644
+> --- a/include/linux/mfd/da9150/core.h
+> +++ b/include/linux/mfd/da9150/core.h
+> @@ -15,6 +15,7 @@
+>  #define __DA9150_CORE_H
+>=20
+>  #include <linux/device.h>
+> +#include <linux/i2c.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/regmap.h>
+>=20
+> @@ -46,23 +47,39 @@
+>  #define DA9150_IRQ_GPADC	19
+>  #define DA9150_IRQ_WKUP		20
+>=20
+> +/* I2C sub-device address */
+> +#define DA9150_QIF_I2C_ADDR_LSB		0x5
+> +
+> +struct da9150_fg_pdata {
+> +	u32 update_interval;	/* msecs */
+> +	u8 warn_soc_lvl;	/* % value */
+> +	u8 crit_soc_lvl;	/* % value */
+> +};
+> +
+>  struct da9150_pdata {
+>  	int irq_base;
+> +	struct da9150_fg_pdata *fg_pdata;
+>  };
+>=20
+>  struct da9150 {
+>  	struct device *dev;
+>  	struct regmap *regmap;
+> +	struct i2c_client *core_qif;
+> +
+>  	struct regmap_irq_chip_data *regmap_irq_data;
+>  	int irq;
+>  	int irq_base;
+>  };
+>=20
+> -/* Device I/O */
+> +/* Device I/O - Query Interface for FG and standard register access =
+*/
+> +void da9150_read_qif(struct da9150 *da9150, u8 addr, int count, u8 *=
+buf);
+> +void da9150_write_qif(struct da9150 *da9150, u8 addr, int count, con=
+st u8 *buf);
+> +
+>  u8 da9150_reg_read(struct da9150 *da9150, u16 reg);
+>  void da9150_reg_write(struct da9150 *da9150, u16 reg, u8 val);
+>  void da9150_set_bits(struct da9150 *da9150, u16 reg, u8 mask, u8 val=
+);
+>=20
+>  void da9150_bulk_read(struct da9150 *da9150, u16 reg, int count, u8 =
+*buf);
+>  void da9150_bulk_write(struct da9150 *da9150, u16 reg, int count, co=
+nst u8 *buf);
+> +
+>  #endif /* __DA9150_CORE_H */
 
-- Juri
-
-> It should be the same for the wake up of a task in enqueue_task_fair
-> above, even if it's less obvious for this latter use case because the
-> cpu might wake up from a long idle phase during which its
-> utilization_blocked_avg has not been updated. Nevertheless, a trig of
-> the freq switch at wake up of the cpu once its usage has been updated
-> should do the job.
-> 
-> So tick, migration of tasks, new tasks, entering/leaving idle state of
-> cpu should be enough to trig freq switch
-> 
-> Regards,
-> Vincent
-> 
-> 
->> +               }
->>         }
->>         hrtick_update(rq);
->>  }
->> @@ -4959,8 +4999,6 @@ static int find_new_capacity(struct energy_env *eenv,
->>         return idx;
->>  }
->>
->> -static unsigned int capacity_margin = 1280; /* ~20% margin */
->> -
->>  static bool cpu_overutilized(int cpu)
->>  {
->>         return (capacity_of(cpu) * 1024) <
->> --
->> 1.9.1
->>
-> 
-
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
