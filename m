@@ -1,82 +1,140 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 18/23] power/reset: at91-reset: get and use slow clock
-Date: Mon, 10 Aug 2015 19:11:49 +0200
-Message-ID: <20150810171148.GA21858@earth>
-References: <1438335599-3301-1-git-send-email-alexandre.belloni@free-electrons.com>
- <1438335599-3301-19-git-send-email-alexandre.belloni@free-electrons.com>
- <20150805182220.GC11315@earth>
- <20150810155005.GH3411@piout.net>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: [PATCH] thermal: of: Introduce governor selection in dts
+Date: Mon, 10 Aug 2015 18:47:23 +0100
+Message-ID: <20150810174723.GC2747@e104805>
+References: <CAM2ehZYXsqCoS9ygXNfPHxt9-b5cFxH_ovrgjvM-BfDO6REcUg@mail.gmail.com>
+ <20150807103121.GC7646@leverpostej>
+ <CAM2ehZYy3SNKhXvF0XyQsoPFab2JqrVq3wLKadPVxBsVG3E7jw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="LQksG6bCIzRHxTLp"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:34330 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753178AbbHJRLz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 10 Aug 2015 13:11:55 -0400
+Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:40539 "EHLO
+	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753472AbbHJRrl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Aug 2015 13:47:41 -0400
 Content-Disposition: inline
-In-Reply-To: <20150810155005.GH3411@piout.net>
+In-Reply-To: <CAM2ehZYy3SNKhXvF0XyQsoPFab2JqrVq3wLKadPVxBsVG3E7jw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Boris Brezillon <boris.brezillon@free-electrons.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-pm@vger.kernel.org
+To: Chung-Yih Wang =?utf-8?B?KOeOi+W0h+aHvyk=?= <cywang@google.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Mark Rutland <Mark.Rutland@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <Pawel.Moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
+On Mon, Aug 10, 2015 at 09:00:49AM +0100, Chung-Yih Wang (=E7=8E=8B=E5=B4=
+=87=E6=87=BF) wrote:
+> This patch was originally introduced when we made power_allocator the
+> default governor where we had issues in binding a thermal zone w/o
+> parameters to. Then we came out this facility for binding a specific
+> governor to a thermal zone in dts instead of the default governor.
+> Javi seems like this idea much.
 
---LQksG6bCIzRHxTLp
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+While I can understand why this is not suitable for devicetree, we
+should have a way in the kernel to configure different governors for
+different thermal zones defined in device tree.  Thermal zones defined
+from platform code can choose the thermal governor when they are
+registered.
 
-Hi,
+If this information can't go in device tree, where can we put it? As
+an additional parameter to thermal_zone_of_sensor_register()?
 
-On Mon, Aug 10, 2015 at 05:50:05PM +0200, Alexandre Belloni wrote:
-> On 05/08/2015 at 20:22:20 +0200, Sebastian Reichel wrote :
-> > On Fri, Jul 31, 2015 at 11:39:54AM +0200, Alexandre Belloni wrote:
-> > > Commit dca1a4b5ff6e ("clk: at91: keep slow clk enabled to prevent sys=
-tem
-> > > hang") added a workaround for the slow clock as it is not properly ha=
-ndled
-> > > by its users.
-> > >=20
-> > > Get and use the slow clock as it is necessary for the at91 reset
-> > > controller.
-> >=20
-> > You call clk_prepare_enable during probe without a matching
-> > clk_disable_unprepare on module removal.
+Cheers,
+Javi
+
+> On Fri, Aug 7, 2015 at 6:31 PM, Mark Rutland <mark.rutland@arm.com> w=
+rote:
+> > On Fri, Aug 07, 2015 at 08:09:39AM +0100, Chung-Yih Wang (=E7=8E=8B=
+=E5=B4=87=E6=87=BF) wrote:
+> >> As there could be more thermal zones on a system and
+> >> more variety in thermal governors provided in kernel,
+> >> this patch provides flexibility of governor selection
+> >> for a thermal zone declared in device tree.
+> >>
+> >> Change-Id: Ie4a75d762709cbbe9f1806dae325d13f71982e78
+> >> Signed-off-by: Chung-yih Wang <cywang@chromium.org>
+> >> ---
+> >>  Documentation/devicetree/bindings/thermal/thermal.txt |  9 ++++++=
++++
+> >>  drivers/thermal/of-thermal.c                          | 10 ++++++=
+++++
+> >>  2 files changed, 19 insertions(+)
+> >>
+> >> diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt
+> >> b/Documentation/devicetree/bindings/thermal/thermal.txt
+> >> index 8a49362..30a5d41 100644
+> >> --- a/Documentation/devicetree/bindings/thermal/thermal.txt
+> >> +++ b/Documentation/devicetree/bindings/thermal/thermal.txt
+> >> @@ -174,6 +174,13 @@ Optional property:
+> >>                         2000mW, while on a 10'' tablet is around
+> >>                         4500mW.
+> >>
+> >> +- thermal-governor-name:       The name of governor used to contr=
+ol the
+> >> +                               thermal zone instead of the defaul=
+t one
+> >> +                               specified in kernel config. For re=
+ference, if
+> >> +                               default governor is step_wise, one=
+ could
+> >> +                               select power_allocator for cpu_the=
+rmal zone
+> >> +                               in dts.
+> >
+> >
+> > This is not a hardware or system property, but rather a Linux
+> > implementation detail.
+> >
+> > This really shouldn't go in the DT.
+> >
+> > Mark.
+> >
+> >> +
+> >>  Note: The delay properties are bound to the maximum dT/dt (temper=
+ature
+> >>  derivative over time) in two situations for a thermal zone:
+> >>  (i)  - when passive cooling is activated (polling-delay-passive);=
+ and
+> >> @@ -555,6 +562,8 @@ thermal-zones {
+> >>
+> >>                 sustainable-power =3D <2500>;
+> >>
+> >> +               thermal-governor-name =3D "power_allocator";
+> >> +
+> >>                 trips {
+> >>                         /* Trips are based on resulting linear equ=
+ation */
+> >>                         cpu_trip: cpu-trip {
+> >> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-the=
+rmal.c
+> >> index b295b2b..45570ac 100644
+> >> --- a/drivers/thermal/of-thermal.c
+> >> +++ b/drivers/thermal/of-thermal.c
+> >> @@ -882,6 +882,7 @@ int __init of_parse_thermal_zones(void)
+> >>         }
+> >>
+> >>         for_each_child_of_node(np, child) {
+> >> +               const char *governor_name;
+> >>                 struct thermal_zone_device *zone;
+> >>                 struct thermal_zone_params *tzp;
+> >>                 int i, mask =3D 0;
+> >> @@ -909,6 +910,15 @@ int __init of_parse_thermal_zones(void)
+> >>                         goto exit_free;
+> >>                 }
+> >>
+> >> +               /* Select a preferred governor if declared */
+> >> +               if (!of_property_read_string(child,
+> >> +                                            "thermal-governor-nam=
+e",
+> >> +                                            &governor_name)) {
+> >> +                       strncpy(tzp->governor_name,
+> >> +                               governor_name,
+> >> +                               sizeof(tzp->governor_name) - 1);
+> >> +               }
+> >> +
+> >>                 /* No hwmon because there might be hwmon drivers r=
+egistering */
+> >>                 tzp->no_hwmon =3D true;
+> >>
+> >> --
+> >> 2.1.2
+> >>
 >=20
-> They will never be compiled as modules as the Kconfig option is a
-> bool so we don't have a .remove and the module will never be removed.
-
-In that case the module_platform_driver() statement at the bottom
-should be replaced with builtin_platform_driver().
-
-> Do you want me to change at91-reset and at91-poweroff to work as
-> modules?
-
-That would also be fine.
-
--- Sebastian
-
---LQksG6bCIzRHxTLp
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJVyNtNAAoJENju1/PIO/qa3YcP/0i2FxRQ68UuPKdk1ixH7G/R
-s+aXmhNFr3YhujvoIyXfYaPE1J2mMZ5rli5N42lZL2yohj0o0xKg0kb41OA6bvL4
-NkIIHySVVlw8FSJKzOaBPUoewsu3HdKZVIF2sHbsv+vlCoPczVaa05hrvKjSLGl5
-nvwmcms6UkaksHkuPuYS033L7mN80cOM3RBfbWTGiVJLK6SdNfxQCtCjRbEcEpBj
-cTIM5mSC0TbKA0bMxlLS4aaD7JpqHFxbgwuOeKk4uXAo4Y25AbxXxCQiA6y45e3F
-rROzeLFsKjCJ4qxNGQFV1t1RXBmNzX2e9y06ZkF1VzSrA1Q8v3uxlphjNqsUMzFt
-HeP0yIf5x9TzV5kJNpyKahR1TdowUg3NE4KQa75mhkXJBDOge9KhpCqjQ50bEm3p
-s7ULE9AAm+S+MXtbt2Z3OTpD70nm9259LLp6QQadXLrJHBdNJ2NgCmN8mC5SDtol
-DRy998FrE2GaVIKqV9OPG0ByIVB2t+4IOTkVWClSYLmb6CCzSFhPs8AHVKhv/0XP
-Y39DQdLad1k5C5IJglaegu0whPetFNNZCwTocl+DeaG4jWOdvdB4OI0jEmxAHKS1
-WSTYv0tbtISKxuNPEtvrFCWo9gypTypuxb/isPQ4EgWEG8JBoM00NHcjKhM5Vlnu
-OTwFUSLfviwiCnzeVRL0
-=v6XF
------END PGP SIGNATURE-----
-
---LQksG6bCIzRHxTLp--
