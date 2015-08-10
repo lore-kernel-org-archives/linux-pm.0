@@ -1,197 +1,107 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 3/6] PM / OPP: Prefix exported opp routines with dev_pm_opp_
-Date: Mon, 10 Aug 2015 12:01:59 +0530
-Message-ID: <d1519381968d3cda4440c3240954b890aaac7601.1439187821.git.viresh.kumar@linaro.org>
+Subject: [PATCH 4/6] PM / OPP: Move opp core to its own directory
+Date: Mon, 10 Aug 2015 12:02:00 +0530
+Message-ID: <6dcf599b49886fd5a2157f2e61f7424cc754b6f0.1439187821.git.viresh.kumar@linaro.org>
 References: <cover.1439187821.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:35181 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753672AbbHJGdP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Aug 2015 02:33:15 -0400
+Received: by pacgr6 with SMTP id gr6so19956132pac.2
+        for <linux-pm@vger.kernel.org>; Sun, 09 Aug 2015 23:33:15 -0700 (PDT)
 In-Reply-To: <cover.1439187821.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1439187821.git.viresh.kumar@linaro.org>
 References: <cover.1439187821.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, khilman@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, khilman@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, Anand Moon <moon.linux@yahoo.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 
-That's the naming convention followed in most of opp core, but few
-recent additions didn't follow this, fix them.
+OPP code is expanding and is already present in multiple directories
+(cpufreq and power). Lets move it to its own directory, to manage it
+better.
+
+This also moves/renames the cpufreq_opp file to cpu.c, as it will
+contain helpers for cpu device. Its not just about cpufreq, other
+frameworks can use OPPs as well.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/base/power/opp.c     | 18 +++++++++---------
- drivers/cpufreq/cpufreq-dt.c | 10 +++++-----
- include/linux/pm_opp.h       | 16 ++++++++--------
- 3 files changed, 22 insertions(+), 22 deletions(-)
+ drivers/base/power/Makefile                             | 2 +-
+ drivers/base/power/opp/Makefile                         | 2 ++
+ drivers/base/power/{opp.c => opp/core.c}                | 0
+ drivers/{cpufreq/cpufreq_opp.c => base/power/opp/cpu.c} | 4 +++-
+ drivers/cpufreq/Makefile                                | 1 -
+ 5 files changed, 6 insertions(+), 3 deletions(-)
+ create mode 100644 drivers/base/power/opp/Makefile
+ rename drivers/base/power/{opp.c => opp/core.c} (100%)
+ rename drivers/{cpufreq/cpufreq_opp.c => base/power/opp/cpu.c} (97%)
 
-diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index c9747fb192b1..677457409245 100644
---- a/drivers/base/power/opp.c
-+++ b/drivers/base/power/opp.c
-@@ -1230,7 +1230,7 @@ void of_free_opp_table(struct device *dev)
- }
- EXPORT_SYMBOL_GPL(of_free_opp_table);
+diff --git a/drivers/base/power/Makefile b/drivers/base/power/Makefile
+index f94a6ccfe787..7ff2726dab6c 100644
+--- a/drivers/base/power/Makefile
++++ b/drivers/base/power/Makefile
+@@ -1,8 +1,8 @@
+ obj-$(CONFIG_PM)	+= sysfs.o generic_ops.o common.o qos.o runtime.o wakeirq.o
+ obj-$(CONFIG_PM_SLEEP)	+= main.o wakeup.o
+ obj-$(CONFIG_PM_TRACE_RTC)	+= trace.o
+-obj-$(CONFIG_PM_OPP)	+= opp.o
+ obj-$(CONFIG_PM_GENERIC_DOMAINS)	+=  domain.o domain_governor.o
+ obj-$(CONFIG_HAVE_CLK)	+= clock_ops.o
++obj-$(CONFIG_PM_OPP)	+= opp/
  
--void of_cpumask_free_opp_table(cpumask_var_t cpumask)
-+void dev_pm_opp_cpumask_free_table(cpumask_var_t cpumask)
- {
- 	struct device *cpu_dev;
- 	int cpu;
-@@ -1248,7 +1248,7 @@ void of_cpumask_free_opp_table(cpumask_var_t cpumask)
- 		of_free_opp_table(cpu_dev);
- 	}
- }
--EXPORT_SYMBOL_GPL(of_cpumask_free_opp_table);
-+EXPORT_SYMBOL_GPL(dev_pm_opp_cpumask_free_table);
- 
- /* Returns opp descriptor node for a device, caller must do of_node_put() */
- static struct device_node *_of_get_opp_desc_node(struct device *dev)
-@@ -1397,7 +1397,7 @@ int of_init_opp_table(struct device *dev)
- }
- EXPORT_SYMBOL_GPL(of_init_opp_table);
- 
--int of_cpumask_init_opp_table(cpumask_var_t cpumask)
-+int dev_pm_opp_cpumask_init_opp(cpumask_var_t cpumask)
- {
- 	struct device *cpu_dev;
- 	int cpu, ret = 0;
-@@ -1418,17 +1418,17 @@ int of_cpumask_init_opp_table(cpumask_var_t cpumask)
- 			       __func__, cpu, ret);
- 
- 			/* Free all other OPPs */
--			of_cpumask_free_opp_table(cpumask);
-+			dev_pm_opp_cpumask_free_table(cpumask);
- 			break;
- 		}
- 	}
- 
- 	return ret;
- }
--EXPORT_SYMBOL_GPL(of_cpumask_init_opp_table);
-+EXPORT_SYMBOL_GPL(dev_pm_opp_cpumask_init_opp);
- 
- /* Required only for V1 bindings, as v2 can manage it from DT itself */
--int set_cpus_sharing_opps(struct device *cpu_dev, cpumask_var_t cpumask)
-+int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask)
- {
- 	struct device_list_opp *list_dev;
- 	struct device_opp *dev_opp;
-@@ -1466,7 +1466,7 @@ int set_cpus_sharing_opps(struct device *cpu_dev, cpumask_var_t cpumask)
- 
- 	return 0;
- }
--EXPORT_SYMBOL_GPL(set_cpus_sharing_opps);
-+EXPORT_SYMBOL_GPL(dev_pm_opp_set_sharing_cpus);
- 
+ ccflags-$(CONFIG_DEBUG_DRIVER) := -DDEBUG
+diff --git a/drivers/base/power/opp/Makefile b/drivers/base/power/opp/Makefile
+new file mode 100644
+index 000000000000..33c1e18c41a4
+--- /dev/null
++++ b/drivers/base/power/opp/Makefile
+@@ -0,0 +1,2 @@
++ccflags-$(CONFIG_DEBUG_DRIVER)	:= -DDEBUG
++obj-y				+= core.o cpu.o
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp/core.c
+similarity index 100%
+rename from drivers/base/power/opp.c
+rename to drivers/base/power/opp/core.c
+diff --git a/drivers/cpufreq/cpufreq_opp.c b/drivers/base/power/opp/cpu.c
+similarity index 97%
+rename from drivers/cpufreq/cpufreq_opp.c
+rename to drivers/base/power/opp/cpu.c
+index 0f5e6d5f6da0..0dd033016e9d 100644
+--- a/drivers/cpufreq/cpufreq_opp.c
++++ b/drivers/base/power/opp/cpu.c
+@@ -1,5 +1,5 @@
  /*
-  * Works only for OPP v2 bindings.
-@@ -1474,7 +1474,7 @@ EXPORT_SYMBOL_GPL(set_cpus_sharing_opps);
-  * cpumask should be already set to mask of cpu_dev->id.
-  * Returns -ENOENT if operating-points-v2 bindings aren't supported.
-  */
--int of_get_cpus_sharing_opps(struct device *cpu_dev, cpumask_var_t cpumask)
-+int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask)
- {
- 	struct device_node *np, *tmp_np;
- 	struct device *tcpu_dev;
-@@ -1524,5 +1524,5 @@ int of_get_cpus_sharing_opps(struct device *cpu_dev, cpumask_var_t cpumask)
- 	of_node_put(np);
- 	return ret;
+- * Generic OPP helper interface for CPUFreq drivers
++ * Generic OPP helper interface for CPU device
+  *
+  * Copyright (C) 2009-2014 Texas Instruments Incorporated.
+  *	Nishanth Menon
+@@ -20,6 +20,7 @@
+ #include <linux/rcupdate.h>
+ #include <linux/slab.h>
+ 
++#ifdef CONFIG_CPU_FREQ
+ /**
+  * dev_pm_opp_init_cpufreq_table() - create a cpufreq table for a device
+  * @dev:	device for which we do this operation
+@@ -112,3 +113,4 @@ void dev_pm_opp_free_cpufreq_table(struct device *dev,
+ 	*table = NULL;
  }
--EXPORT_SYMBOL_GPL(of_get_cpus_sharing_opps);
-+EXPORT_SYMBOL_GPL(dev_pm_opp_get_sharing_cpus);
- #endif
-diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-index c3583cdfadbd..025e76efdec3 100644
---- a/drivers/cpufreq/cpufreq-dt.c
-+++ b/drivers/cpufreq/cpufreq-dt.c
-@@ -215,7 +215,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 	}
+ EXPORT_SYMBOL_GPL(dev_pm_opp_free_cpufreq_table);
++#endif	/* CONFIG_CPU_FREQ */
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 2169bf792db7..2ba5b7c0bed1 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -1,6 +1,5 @@
+ # CPUfreq core
+ obj-$(CONFIG_CPU_FREQ)			+= cpufreq.o freq_table.o
+-obj-$(CONFIG_PM_OPP)			+= cpufreq_opp.o
  
- 	/* Get OPP-sharing information from "operating-points-v2" bindings */
--	ret = of_get_cpus_sharing_opps(cpu_dev, policy->cpus);
-+	ret = dev_pm_opp_get_sharing_cpus(cpu_dev, policy->cpus);
- 	if (ret) {
- 		/*
- 		 * operating-points-v2 not supported, fallback to old method of
-@@ -237,7 +237,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 	 *
- 	 * OPPs might be populated at runtime, don't check for error here
- 	 */
--	of_cpumask_init_opp_table(policy->cpus);
-+	dev_pm_opp_cpumask_init_opp(policy->cpus);
- 
- 	if (need_update) {
- 		struct cpufreq_dt_platform_data *pd = cpufreq_get_driver_data();
-@@ -249,7 +249,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 		 * OPP tables are initialized only for policy->cpu, do it for
- 		 * others as well.
- 		 */
--		set_cpus_sharing_opps(cpu_dev, policy->cpus);
-+		dev_pm_opp_set_sharing_cpus(cpu_dev, policy->cpus);
- 
- 		of_property_read_u32(np, "clock-latency", &transition_latency);
- 	} else {
-@@ -356,7 +356,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- out_free_priv:
- 	kfree(priv);
- out_free_opp:
--	of_cpumask_free_opp_table(policy->cpus);
-+	dev_pm_opp_cpumask_free_table(policy->cpus);
- out_node_put:
- 	of_node_put(np);
- out_put_reg_clk:
-@@ -373,7 +373,7 @@ static int cpufreq_exit(struct cpufreq_policy *policy)
- 
- 	cpufreq_cooling_unregister(priv->cdev);
- 	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
--	of_cpumask_free_opp_table(policy->related_cpus);
-+	dev_pm_opp_cpumask_free_table(policy->related_cpus);
- 	clk_put(policy->clk);
- 	if (!IS_ERR(priv->cpu_reg))
- 		regulator_put(priv->cpu_reg);
-diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index cab7ba55bedb..076e0309f206 100644
---- a/include/linux/pm_opp.h
-+++ b/include/linux/pm_opp.h
-@@ -128,10 +128,10 @@ static inline struct srcu_notifier_head *dev_pm_opp_get_notifier(
- #if defined(CONFIG_PM_OPP) && defined(CONFIG_OF)
- int of_init_opp_table(struct device *dev);
- void of_free_opp_table(struct device *dev);
--int of_cpumask_init_opp_table(cpumask_var_t cpumask);
--void of_cpumask_free_opp_table(cpumask_var_t cpumask);
--int of_get_cpus_sharing_opps(struct device *cpu_dev, cpumask_var_t cpumask);
--int set_cpus_sharing_opps(struct device *cpu_dev, cpumask_var_t cpumask);
-+int dev_pm_opp_cpumask_init_opp(cpumask_var_t cpumask);
-+void dev_pm_opp_cpumask_free_table(cpumask_var_t cpumask);
-+int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask);
-+int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask);
- #else
- static inline int of_init_opp_table(struct device *dev)
- {
-@@ -142,21 +142,21 @@ static inline void of_free_opp_table(struct device *dev)
- {
- }
- 
--static inline int of_cpumask_init_opp_table(cpumask_var_t cpumask)
-+static inline int dev_pm_opp_cpumask_init_opp(cpumask_var_t cpumask)
- {
- 	return -ENOSYS;
- }
- 
--static inline void of_cpumask_free_opp_table(cpumask_var_t cpumask)
-+static inline void dev_pm_opp_cpumask_free_table(cpumask_var_t cpumask)
- {
- }
- 
--static inline int of_get_cpus_sharing_opps(struct device *cpu_dev, cpumask_var_t cpumask)
-+static inline int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask)
- {
- 	return -ENOSYS;
- }
- 
--static inline int set_cpus_sharing_opps(struct device *cpu_dev, cpumask_var_t cpumask)
-+static inline int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask)
- {
- 	return -ENOSYS;
- }
+ # CPUfreq stats
+ obj-$(CONFIG_CPU_FREQ_STAT)             += cpufreq_stats.o
 -- 
 2.4.0
+
