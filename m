@@ -1,76 +1,32 @@
-From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-Subject: Re: [PATCH 2/3] ARM: berlin: register cpufreq-dt for the BG2Q
-Date: Mon, 10 Aug 2015 22:22:44 +0200
-Message-ID: <55C90814.3050505@gmail.com>
-References: <1438259752-16320-1-git-send-email-antoine.tenart@free-electrons.com> <1438259752-16320-3-git-send-email-antoine.tenart@free-electrons.com> <20150731141602.28b28f21@xhacker>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150731141602.28b28f21@xhacker>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jisheng Zhang <jszhang@marvell.com>, Antoine Tenart <antoine.tenart@free-electrons.com>
-Cc: zmxu@marvell.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH V1 Resend 02/11] PM / OPP: Drop unlikely before
+ IS_ERR(_OR_NULL)
+Date: Mon, 10 Aug 2015 23:15:10 +0200
+Message-ID: <20150810211510.GA5553@amd>
+References: <cover.1439187003.git.viresh.kumar@linaro.org>
+ <c3394808aef37f65b0fa2db650cf0cf1bfcaa970.1439187003.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38939 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932741AbbHJVPN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Aug 2015 17:15:13 -0400
+Content-Disposition: inline
+In-Reply-To: <c3394808aef37f65b0fa2db650cf0cf1bfcaa970.1439187003.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: akpm@linux-foundation.org, linaro-kernel@lists.linaro.org, linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, "open list:SUSPEND TO RAM" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-On 31.07.2015 08:16, Jisheng Zhang wrote:
-> On Thu, 30 Jul 2015 14:35:51 +0200
-> Antoine Tenart <antoine.tenart@free-electrons.com> wrote:
->
->> The BG2Q SoC uses cpufreq-dt for cpufreq. Register a platform device for
->> this.
->>
->> Signed-off-by: Antoine Tenart <antoine.tenart@free-electrons.com>
->> ---
-[...]
->> diff --git a/arch/arm/mach-berlin/berlin.c b/arch/arm/mach-berlin/berlin.c
->> index ac181c6797ee..0de906374994 100644
->> --- a/arch/arm/mach-berlin/berlin.c
->> +++ b/arch/arm/mach-berlin/berlin.c
->> @@ -15,9 +15,21 @@
-[...]
->> +static void __init berlin_init_late(void)
->> +{
->> +	if (of_find_matching_node(NULL, berlin2q_match))
->> +		platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
->
-> I'm not sure is it acceptable to always register cpufreq-dt platform device.
-> In cpufreq-dt driver, the probe will exit if there's no cpuclk node.
+On Mon 2015-08-10 11:42:24, Viresh Kumar wrote:
+> IS_ERR(_OR_NULL) already contain an 'unlikely' compiler flag and there
+> is no need to do that again from its callers. Drop it.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Jisheng,
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
-registering the _device_ without checking for any requirements of
-the _driver_ is usual practice. It it the driver's job to check
-all of them and report an error or warning. So, I am fine with
-adding the device unconditionally.
-
-Using the .init_late() callback seems reasonable - but can you
-evaluate if we can have cpufreq-dt also for BG2/BG2CD? I'd also
-accept a single, default operating-point.
-
-BTW, there is one true point about Jisheng's comment: try to order
-your patches logically correct to avoid unnecessary warnings, i.e.
-
-1/3 add cpuclk
-2/3 add cpufreq-dt properties
-3/3 register cpufreq-dt device
-
-If you consider a git-bisect run, you can land in between any of the
-three patches but they are always in the above order - so ordering is
-important.
-
-Sebastian
-
->> +}
->> +
->>   static const char * const berlin_dt_compat[] = {
->>   	"marvell,berlin",
->>   	NULL,
->> @@ -25,6 +37,7 @@ static const char * const berlin_dt_compat[] = {
->>
->>   DT_MACHINE_START(BERLIN_DT, "Marvell Berlin")
->>   	.dt_compat	= berlin_dt_compat,
->> +	.init_late	= berlin_init_late,
->>   	/*
->>   	 * with DT probing for L2CCs, berlin_init_machine can be removed.
->>   	 * Note: 88DE3005 (Armada 1500-mini) uses pl310 l2cc
->
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
