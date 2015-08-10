@@ -1,41 +1,210 @@
 From: Javi Merino <javi.merino@arm.com>
-Subject: [PATCH 3/3] thermal: power_allocator: exit early if there are no cooling devices
-Date: Mon, 10 Aug 2015 17:04:52 +0100
-Message-ID: <1439222692-3535-4-git-send-email-javi.merino@arm.com>
+Subject: [PATCH 1/3] thermal: power_allocator: relax the requirement of a sustainable_power in tzp
+Date: Mon, 10 Aug 2015 17:04:50 +0100
+Message-ID: <1439222692-3535-2-git-send-email-javi.merino@arm.com>
 References: <20150806083045.GB2640@e104805>
  <1439222692-3535-1-git-send-email-javi.merino@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1439222692-3535-1-git-send-email-javi.merino@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: dmitry.torokhov@gmail.com, linux-kernel@vger.kernel.org, punit.agrawal@arm.com, Javi Merino <javi.merino@arm.com>
+Cc: dmitry.torokhov@gmail.com, linux-kernel@vger.kernel.org, punit.agrawal@arm.com, Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Don't waste cycles in the power allocator governor's throttle function
-if there are no cooling devices and exit early.
+The power allocator governor currently requires that a sustainable power
+is passed as part of the thermal zone's thermal zone parameters.  If
+that parameter is not provided, it doesn't register with the thermal
+zone.
 
-This commit doesn't change any functionality, but should provide better
-performance for the odd case of a thermal zone with trip points but
-without cooling devices.
+While this parameter is strongly recommended for optimal performance, it
+doesn't need to be mandatory.  Relax the requirement and allow the
+governor to bind to thermal zones that don't provide it by estimating it
+from the cooling devices' power model.
+
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Signed-off-by: Javi Merino <javi.merino@arm.com>
 ---
- drivers/thermal/power_allocator.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/thermal/power_allocator.c | 62 +++++++++++++++++++++++++++++++++------
+ drivers/thermal/thermal_core.c    | 28 ++++++++++++++++++
+ include/linux/thermal.h           |  6 ++++
+ 3 files changed, 87 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
-index cb3183ec364f..58128ce11ec9 100644
+index 4672250b329f..cdcf5c6acc3c 100644
 --- a/drivers/thermal/power_allocator.c
 +++ b/drivers/thermal/power_allocator.c
-@@ -287,6 +287,11 @@ static int allocate_power(struct thermal_zone_device *tz,
- 		}
- 	}
+@@ -73,6 +73,39 @@ struct power_allocator_params {
+ };
  
-+	if (!num_actors) {
-+		ret = -ENODEV;
-+		goto unlock;
+ /**
++ * estimate_sustainable_power() - Estimate the sustainable power of a thermal zone
++ * @tz: thermal zone we are operating in
++ *
++ * For thermal zones that don't provide a sustainable_power in their
++ * thermal_zone_params, estimate one.  Calculate it using the minimum
++ * power of all the cooling devices as that gives a valid value that
++ * can give some degree of functionality.  For optimal performance of
++ * this governor, provide a sustainable_power in the thermal zone's
++ * thermal_zone_params.
++ */
++static u32 estimate_sustainable_power(struct thermal_zone_device *tz)
++{
++	u32 sustainable_power = 0;
++	struct thermal_instance *instance;
++	struct power_allocator_params *params = tz->governor_data;
++
++	list_for_each_entry(instance, &tz->thermal_instances, tz_node) {
++		struct thermal_cooling_device *cdev = instance->cdev;
++		u32 min_power;
++
++		if (instance->trip != params->trip_max_desired_temperature)
++			continue;
++
++		if (power_actor_get_min_power(cdev, tz, &min_power))
++			continue;
++
++		sustainable_power += min_power;
 +	}
 +
++	return sustainable_power;
++}
++
++/**
+  * pid_controller() - PID controller
+  * @tz:	thermal zone we are operating in
+  * @current_temp:	the current temperature in millicelsius
+@@ -98,6 +131,7 @@ static u32 pid_controller(struct thermal_zone_device *tz,
+ {
+ 	s64 p, i, d, power_range;
+ 	s32 err, max_power_frac;
++	u32 sustainable_power;
+ 	struct power_allocator_params *params = tz->governor_data;
+ 
+ 	max_power_frac = int_to_frac(max_allocatable_power);
+@@ -138,8 +172,11 @@ static u32 pid_controller(struct thermal_zone_device *tz,
+ 
+ 	power_range = p + i + d;
+ 
++	sustainable_power = tz->tzp->sustainable_power ?:
++		estimate_sustainable_power(tz);
++
+ 	/* feed-forward the known sustainable dissipatable power */
+-	power_range = tz->tzp->sustainable_power + frac_to_int(power_range);
++	power_range = sustainable_power + frac_to_int(power_range);
+ 
+ 	power_range = clamp(power_range, (s64)0, (s64)max_allocatable_power);
+ 
+@@ -412,18 +449,18 @@ static int power_allocator_bind(struct thermal_zone_device *tz)
+ 	int ret;
+ 	struct power_allocator_params *params;
+ 	unsigned long switch_on_temp, control_temp;
+-	u32 temperature_threshold;
++	u32 sustainable_power, temperature_threshold;
+ 
+-	if (!tz->tzp || !tz->tzp->sustainable_power) {
+-		dev_err(&tz->device,
+-			"power_allocator: missing sustainable_power\n");
++	if (!tz->tzp)
+ 		return -EINVAL;
+-	}
+ 
+ 	params = devm_kzalloc(&tz->device, sizeof(*params), GFP_KERNEL);
+ 	if (!params)
+ 		return -ENOMEM;
+ 
++	if (!tz->tzp->sustainable_power)
++		dev_warn(&tz->device, "power_allocator: sustainable_power will be estimated\n");
++
+ 	ret = get_governor_trips(tz, params);
+ 	if (ret) {
+ 		dev_err(&tz->device,
+@@ -442,13 +479,20 @@ static int power_allocator_bind(struct thermal_zone_device *tz)
+ 	if (ret)
+ 		goto free;
+ 
++	/*
++	 * Provide an arbitrary sustainable_power to set the default
++	 * values of k_po and k_pu.  We can estimate sustainable_power
++	 * at this point because no cooling devices have been
++	 * registered yet.  By providing an arbitrary value we get
++	 * better defaults that setting k_po and k_pu to 0.
++	 */
++	sustainable_power = tz->tzp->sustainable_power ?: 2500;
+ 	temperature_threshold = control_temp - switch_on_temp;
+ 
+ 	tz->tzp->k_po = tz->tzp->k_po ?:
+-		int_to_frac(tz->tzp->sustainable_power) / temperature_threshold;
++		int_to_frac(sustainable_power) / temperature_threshold;
+ 	tz->tzp->k_pu = tz->tzp->k_pu ?:
+-		int_to_frac(2 * tz->tzp->sustainable_power) /
+-		temperature_threshold;
++		int_to_frac(2 * sustainable_power) / temperature_threshold;
+ 	tz->tzp->k_i = tz->tzp->k_i ?: int_to_frac(10) / 1000;
  	/*
- 	 * We need to allocate three arrays of the same size:
- 	 * req_power, max_power and granted_power.  They are going to
+ 	 * The default for k_d and integral_cutoff is 0, so we can
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 04659bfb888b..4040dd95bb19 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -997,6 +997,34 @@ int power_actor_get_max_power(struct thermal_cooling_device *cdev,
+ }
+ 
+ /**
++ * power_actor_get_min_power() - get the mainimum power that a cdev can consume
++ * @cdev:	pointer to &thermal_cooling_device
++ * @tz:		a valid thermal zone device pointer
++ * @min_power:	pointer in which to store the minimum power
++ *
++ * Calculate the minimum power consumption in milliwats that the
++ * cooling device can currently consume and store it in @min_power.
++ *
++ * Return: 0 on success, -EINVAL if @cdev doesn't support the
++ * power_actor API or -E* on other error.
++ */
++int power_actor_get_min_power(struct thermal_cooling_device *cdev,
++			      struct thermal_zone_device *tz, u32 *min_power)
++{
++	unsigned long max_state;
++	int ret;
++
++	if (!cdev_is_power_actor(cdev))
++		return -EINVAL;
++
++	ret = cdev->ops->get_max_state(cdev, &max_state);
++	if (ret)
++		return ret;
++
++	return cdev->ops->state2power(cdev, tz, max_state, min_power);
++}
++
++/**
+  * power_actor_set_power() - limit the maximum power that a cooling device can consume
+  * @cdev:	pointer to &thermal_cooling_device
+  * @instance:	thermal instance to update
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 037e9df2f610..f99d934d373a 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -384,6 +384,8 @@ static inline bool cdev_is_power_actor(struct thermal_cooling_device *cdev)
+ 
+ int power_actor_get_max_power(struct thermal_cooling_device *,
+ 			      struct thermal_zone_device *tz, u32 *max_power);
++int power_actor_get_min_power(struct thermal_cooling_device *,
++			      struct thermal_zone_device *tz, u32 *min_power);
+ int power_actor_set_power(struct thermal_cooling_device *,
+ 			  struct thermal_instance *, u32);
+ struct thermal_zone_device *thermal_zone_device_register(const char *, int, int,
+@@ -419,6 +421,10 @@ static inline bool cdev_is_power_actor(struct thermal_cooling_device *cdev)
+ static inline int power_actor_get_max_power(struct thermal_cooling_device *cdev,
+ 			      struct thermal_zone_device *tz, u32 *max_power)
+ { return 0; }
++static inline int power_actor_get_min_power(struct thermal_cooling_device *cdev,
++					    struct thermal_zone_device *tz,
++					    u32 *min_power)
++{ return -ENODEV; }
+ static inline int power_actor_set_power(struct thermal_cooling_device *cdev,
+ 			  struct thermal_instance *tz, u32 power)
+ { return 0; }
 -- 
 1.9.1
