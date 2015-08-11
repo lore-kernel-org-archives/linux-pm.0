@@ -1,47 +1,38 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv3 3/8] serial: imx: allow waking up on RTSD
-Date: Tue, 11 Aug 2015 10:21:22 -0700
-Message-ID: <1439313687-28502-4-git-send-email-edubezval@gmail.com>
-References: <1439313687-28502-1-git-send-email-edubezval@gmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1439313687-28502-1-git-send-email-edubezval@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, Fabio Estevam <festevam@gmail.com>
-Cc: Sascha Hauer <s.hauer@pengutronix.de>, Linux PM <linux-pm@vger.kernel.org>, linux-serial@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFCv5 PATCH 11/46] sched: Remove blocked load and utilization
+ contributions of dying tasks
+Date: Tue, 11 Aug 2015 19:23:44 +0200
+Message-ID: <20150811172344.GO16853@twins.programming.kicks-ass.net>
+References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
+ <1436293469-25707-12-git-send-email-morten.rasmussen@arm.com>
+ <20150811113927.GT19282@twins.programming.kicks-ass.net>
+ <20150811145847.GA20892@e105550-lin.cambridge.arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from casper.infradead.org ([85.118.1.10]:45729 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752616AbbHKRXz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Aug 2015 13:23:55 -0400
+Content-Disposition: inline
+In-Reply-To: <20150811145847.GA20892@e105550-lin.cambridge.arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Morten Rasmussen <morten.rasmussen@arm.com>
+Cc: mingo@redhat.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-This patch sets RTSDEN bit when going into idle (Stop mode).
-We add the RTSDEN for the case RTS is sent from
-the remote connection. This way we allow the system
-to wakeup when RTS is received.
+On Tue, Aug 11, 2015 at 03:58:48PM +0100, Morten Rasmussen wrote:
+> On Tue, Aug 11, 2015 at 01:39:27PM +0200, Peter Zijlstra wrote:
 
-Cc: Fabio Stevam <festevam@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Jiri Slaby <jslaby@suse.com>
-Cc: linux-serial@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
----
- drivers/tty/serial/imx.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+> > You add extra code the hot dequeue path for something that 'never'
+> > happens. We have the sched_class::task_dead call for that.
+> 
+> I don't mind using sched_class::task_dead() instead. The reason why I
+> didn't go that way is that we have to retake the rq->lock or mess with
+> cfs_rq::removed_load instead of just not adding the utilization in
+> the first place when we have the rq->lock.
+> 
+> Anyway, it is probably redundant by now. I will check Yuyang's code to
+> see if he already fixed this problem.
 
-diff --git a/drivers/tty/serial/imx.c b/drivers/tty/serial/imx.c
-index 3c2b0ac..167dea1 100644
---- a/drivers/tty/serial/imx.c
-+++ b/drivers/tty/serial/imx.c
-@@ -1982,6 +1982,13 @@ static void serial_imx_enable_wakeup(struct imx_port *sport, bool on)
- 	else
- 		val &= ~UCR3_AWAKEN;
- 	writel(val, sport->port.membase + UCR3);
-+
-+	val = readl(sport->port.membase + UCR1);
-+	if (on)
-+		val |= UCR1_RTSDEN;
-+	else
-+		val &= ~UCR1_RTSDEN;
-+	writel(val, sport->port.membase + UCR1);
- }
- 
- static int imx_serial_port_suspend_noirq(struct device *dev)
--- 
-2.5.0
+He did, he used the removed_load stuff, same as migration does.
