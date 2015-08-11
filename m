@@ -1,108 +1,90 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/6] PM / OPP: restructure _of_init_opp_table_v2()
-Date: Tue, 11 Aug 2015 08:03:49 +0530
-Message-ID: <20150811023349.GM5766@linux>
-References: <cover.1439187821.git.viresh.kumar@linaro.org>
- <804c420eb23e70448c3c2c93f867a0eab3536bfd.1439187821.git.viresh.kumar@linaro.org>
- <20150810192336.GC9678@codeaurora.org>
- <20150811002342.GD5766@linux>
- <55C9425B.4060207@codeaurora.org>
+From: Jisheng Zhang <jszhang@marvell.com>
+Subject: Re: [PATCH 2/3] ARM: berlin: register cpufreq-dt for the BG2Q
+Date: Tue, 11 Aug 2015 10:44:06 +0800
+Message-ID: <20150811104406.77e0a264@xhacker>
+References: <1438259752-16320-1-git-send-email-antoine.tenart@free-electrons.com>
+	<1438259752-16320-3-git-send-email-antoine.tenart@free-electrons.com>
+	<20150731141602.28b28f21@xhacker>	<55C90814.3050505@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f42.google.com ([209.85.220.42]:32809 "EHLO
-	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933326AbbHKCdx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 10 Aug 2015 22:33:53 -0400
-Received: by pabyb7 with SMTP id yb7so119015326pab.0
-        for <linux-pm@vger.kernel.org>; Mon, 10 Aug 2015 19:33:53 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <55C9425B.4060207@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <55C90814.3050505@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Cc: Antoine Tenart <antoine.tenart@free-electrons.com>, zmxu@marvell.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, khilman@linaro.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 
-On 10-08-15, 17:31, Stephen Boyd wrote:
-> I am not insisting anything. But another patch to get rid of the
-> goto sounds fine.
+Dear Sebastian,
 
-The separate patch to kill goto.
+On Mon, 10 Aug 2015 22:22:44 +0200
+Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com> wrote:
 
----------------------8<-------------------------
+> On 31.07.2015 08:16, Jisheng Zhang wrote:
+> > On Thu, 30 Jul 2015 14:35:51 +0200
+> > Antoine Tenart <antoine.tenart@free-electrons.com> wrote:
+> >
+> >> The BG2Q SoC uses cpufreq-dt for cpufreq. Register a platform device for
+> >> this.
+> >>
+> >> Signed-off-by: Antoine Tenart <antoine.tenart@free-electrons.com>
+> >> ---
+> [...]
+> >> diff --git a/arch/arm/mach-berlin/berlin.c b/arch/arm/mach-berlin/berlin.c
+> >> index ac181c6797ee..0de906374994 100644
+> >> --- a/arch/arm/mach-berlin/berlin.c
+> >> +++ b/arch/arm/mach-berlin/berlin.c
+> >> @@ -15,9 +15,21 @@
+> [...]
+> >> +static void __init berlin_init_late(void)
+> >> +{
+> >> +	if (of_find_matching_node(NULL, berlin2q_match))
+> >> +		platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
+> >
+> > I'm not sure is it acceptable to always register cpufreq-dt platform device.
+> > In cpufreq-dt driver, the probe will exit if there's no cpuclk node.
+> 
+> Jisheng,
+> 
+> registering the _device_ without checking for any requirements of
+> the _driver_ is usual practice. It it the driver's job to check
+> all of them and report an error or warning. So, I am fine with
+> adding the device unconditionally.
+> 
+> Using the .init_late() callback seems reasonable - but can you
+> evaluate if we can have cpufreq-dt also for BG2/BG2CD? I'd also
+> accept a single, default operating-point.
 
-Message-Id: <9f9b9ea6ea3685d5f71c132e7efb18917253961f.1439260355.git.viresh.kumar@linaro.org>
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Date: Tue, 11 Aug 2015 08:01:01 +0530
-Subject: [PATCH] PM / OPP: Remove unnecessary goto statements
+hmm, if so, we can enable cpufreq-dt for BG2/BG2CD. In fact, there's no any
+problem if we don't touch the voltage, only changing the cpufreq should not
+introduce stable issues.
 
-The code simply returns after jumping to the out label and doesn't free
-any resources, etc.
-
-Kill the unnecessary goto statements.
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/base/power/opp.c | 25 +++++++++----------------
- 1 file changed, 9 insertions(+), 16 deletions(-)
-
-diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index f42e098b71fe..220e8d77e2c4 100644
---- a/drivers/base/power/opp.c
-+++ b/drivers/base/power/opp.c
-@@ -1269,14 +1269,14 @@ static int _of_init_opp_table_v2(struct device *dev,
- {
- 	struct device_node *np;
- 	struct device_opp *dev_opp;
--	int ret = 0, count = 0;
-+	int ret, count = 0;
- 
- 	dev_opp = _managed_opp(opp_np);
- 	if (dev_opp) {
- 		/* OPPs are already managed */
- 		if (!_add_list_dev(dev, dev_opp))
--			ret = -ENOMEM;
--		goto out;
-+			return -ENOMEM;
-+		return 0;
- 	}
- 
- 	/* We have opp-list node now, iterate over it and add OPPs */
-@@ -1287,31 +1287,24 @@ static int _of_init_opp_table_v2(struct device *dev,
- 		if (ret) {
- 			dev_err(dev, "%s: Failed to add OPP, %d\n", __func__,
- 				ret);
--			break;
-+			of_free_opp_table(dev);
-+			return ret;
- 		}
- 	}
- 
- 	/* There should be one of more OPP defined */
- 	if (WARN_ON(!count))
--		goto out;
--
--	if (ret) {
--		of_free_opp_table(dev);
--		goto out;
--	}
-+		return -ENOENT;
- 
- 	dev_opp = _find_device_opp(dev);
--	if (WARN_ON(!dev_opp)) {
--		ret = -EINVAL;
--		goto out;
--	}
-+	if (WARN_ON(!dev_opp))
-+		return -EINVAL;
- 
- 	dev_opp->np = opp_np;
- 	dev_opp->shared_opp = of_property_read_bool(opp_np,
- 			"opp-shared");
- 
--out:
--	return ret;
-+	return 0;
- }
- 
- /* Initializes OPP tables based on old-deprecated bindings */
+> 
+> BTW, there is one true point about Jisheng's comment: try to order
+> your patches logically correct to avoid unnecessary warnings, i.e.
+> 
+> 1/3 add cpuclk
+> 2/3 add cpufreq-dt properties
+> 3/3 register cpufreq-dt device
+> 
+> If you consider a git-bisect run, you can land in between any of the
+> three patches but they are always in the above order - so ordering is
+> important.
+> 
+> Sebastian
+> 
+> >> +}
+> >> +
+> >>   static const char * const berlin_dt_compat[] = {
+> >>   	"marvell,berlin",
+> >>   	NULL,
+> >> @@ -25,6 +37,7 @@ static const char * const berlin_dt_compat[] = {
+> >>
+> >>   DT_MACHINE_START(BERLIN_DT, "Marvell Berlin")
+> >>   	.dt_compat	= berlin_dt_compat,
+> >> +	.init_late	= berlin_init_late,
+> >>   	/*
+> >>   	 * with DT probing for L2CCs, berlin_init_machine can be removed.
+> >>   	 * Note: 88DE3005 (Armada 1500-mini) uses pl310 l2cc
+> >
+> 
