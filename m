@@ -1,102 +1,94 @@
-From: Ran Shalit <ranshalit@gmail.com>
-Subject: Re: Q: cpuidle results in degredation in ethernet performance ?
-Date: Tue, 11 Aug 2015 19:41:47 +0300
-Message-ID: <CAJ2oMhLtUVZwGH9U+j0KJsFNL2uoLk8kF5P6=KkF8FGwcqjOGw@mail.gmail.com>
-References: <CAJ2oMhKw0gpFMKOd-iYe_hYh56Q62XgpW+MJmyiGhdkGn1RTMg@mail.gmail.com>
-	<55C0CC17.604@linaro.org>
-	<CAJ2oMhJgj02yzGQEqBZW1Fbdc1GEv0-4-NBOt97Mfdiz=tDXSg@mail.gmail.com>
-	<55C1D76B.9000006@linaro.org>
-	<7hio8msri4.fsf@deeprootsystems.com>
-	<CAJ2oMhJGkdmDe6TSM3H=98L_dx9Uq+52o3Y_jYuLEGtNr-cY5w@mail.gmail.com>
-	<7h8u9hsvhg.fsf@deeprootsystems.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCHv2 6/8] serial: imx: add runtime pm support
+Date: Tue, 11 Aug 2015 09:51:28 -0700
+Message-ID: <20150811165126.GA4686@localhost.localdomain>
+References: <1439256949-626-1-git-send-email-edubezval@gmail.com>
+ <1439256949-626-7-git-send-email-edubezval@gmail.com>
+ <CAOMZO5CCAd3_nYw2M1qPEevzJaymMi0oAn6FqGih3HbhvrYc9A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f177.google.com ([209.85.213.177]:33232 "EHLO
-	mail-ig0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965245AbbHKQlr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Aug 2015 12:41:47 -0400
-Received: by igbpg9 with SMTP id pg9so94776563igb.0
-        for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2015 09:41:47 -0700 (PDT)
-In-Reply-To: <7h8u9hsvhg.fsf@deeprootsystems.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="J/dobhs11T7y2rNN"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAOMZO5CCAd3_nYw2M1qPEevzJaymMi0oAn6FqGih3HbhvrYc9A@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Fabio Estevam <festevam@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, Sascha Hauer <s.hauer@pengutronix.de>, Linux PM <linux-pm@vger.kernel.org>, "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
 
-On Tue, Aug 11, 2015 at 6:19 PM, Kevin Hilman <khilman@kernel.org> wrote:
-> Ran Shalit <ranshalit@gmail.com> writes:
->
->> On Tue, Aug 11, 2015 at 1:33 AM, Kevin Hilman <khilman@kernel.org> wrote:
->>> Daniel Lezcano <daniel.lezcano@linaro.org> writes:
->>>
->>>> On 08/04/2015 05:24 PM, Ran Shalit wrote:
->>>>> On Tue, Aug 4, 2015 at 5:28 PM, Daniel Lezcano
->>>>> <daniel.lezcano@linaro.org> wrote:
->>>>>> On 08/01/2015 09:34 PM, Ran Shalit wrote:
->>>>>>>
->>>>>>> Hello,
->>>>>>>
->>>>>>> Maybe if someone here understands cpuidel he can help me...
->>>>>>>
->>>>>>> I am using omap, with cpuidel and I have some strange behaviour only
->>>>>>> when cpuidle is used:
->>>>>>> 1.  I test ethernet bandwidth with iperf
->>>>>>> 2. With large packet test (16k), I get same bandwidth in version with
->>>>>>> cpuidle support as in version without cpuidel supported.
->>>>>>> 3. With small packet test (<2000 bytes), I get high degredation in
->>>>>>> performance in version with cpuidle. On viewing statistics I see that
->>>>>>> the cpu gets into cpu inactive state (C3 state -  not retention yet,
->>>>>>> only cpu not active). I guess this is the cuase of the degredation.
->>>>>>> With large packets I get no increment in C3 state usage.
->>>>>>> 4. I think that menu governer behaviour might explain this, but I
->>>>>>> don't understand it deeply enough.
->>>>>>>
->>>>>>> Can anyone shed a light on this ? Is there anything I can do to overcome
->>>>>>> this ?
->>>>>>
->>>>>>
->>>>>> Is an omap3 or omap4 ?
->>>>>>
->>>>>>
->>>>> Hi,
->>>>>
->>>>> It is omap3530.
->>>>
->>>> Ok, thanks.
->>>>
->>>> I was asking for the omap version because the cpuidle driver is
->>>> different and behaves differently. The core are coupled and the IPI
->>>> enters in the next prediction equation.
->>>
->>> What board are you using, what is network chip you're using, and how is
->>> it wired to the OMAP3530, in particular the IRQ line.
->>>
->>> Lots depends on whether the eth NIC is capable of waking the OMAP from
->>> deep sleep. Typically, this is done by wiring the NIC IRQ to a
->>> wakeup-capable GPIO.
->>>
->>> If the NIC is not waking the OMAP from deep sleep, then the performance
->>> degradation could also happen because the packets are not processed
->>> until some other timer fires and wakes up the OMAP idle.
->>>
->>> Kevin
->>
->> I am using omap3530 with smsc911 ethernet controller.
->> I need to check if there is some IRQ as you mentioned, but I guess
->> there must be some, otherwise it wouldn't wakeup when doing ping from
->> host after it gets into sleep, Right ?
->
-> Well, there are other wakeup sources, specifically timers, that may be
-> causing the wakeup from deep sleep, after which the NIC IRQ would fire
-> and the ping would be replied to.    So it's entirely possible that the
-> NIC is not wired up as wakeup capable but you'd still be able to ping.
->
 
-Hi Kevin,
+--J/dobhs11T7y2rNN
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Which timer do you mean  ?
-I don't start any application yet, (while testing with ping).
+On Tue, Aug 11, 2015 at 12:02:58AM -0300, Fabio Estevam wrote:
+> On Mon, Aug 10, 2015 at 10:35 PM, Eduardo Valentin <edubezval@gmail.com> =
+wrote:
+>=20
+> >  static int imx_poll_get_char(struct uart_port *port)
+> >  {
+> > -       if (!(readl_relaxed(port->membase + USR2) & USR2_RDR))
+> > -               return NO_POLL_CHAR;
+> > +       int ret;
+> > +
+> > +       pm_runtime_get_sync(sport->dev);
+> > +       if (!(readl_relaxed(port->membase + USR2) & USR2_RDR)) {
+> > +               ret =3D NO_POLL_CHAR;
+> > +               goto mark_last;
+> > +       }
+> >
+> > -       return readl_relaxed(port->membase + URXD0) & URXD_RX_DATA;
+> > +       ret =3D readl_relaxed(port->membase + URXD0) & URXD_RX_DATA;
+> > +
+> > +mark_last:
+> > +       pm_runtime_mark_last_busy(sport->dev);
+> > +       pm_runtime_put_autosuspend(sport->dev);
+>=20
+> You should return ret here.
+>=20
+> > +static int serial_imx_runtime_resume(struct device *dev)
+> > +{
+> > +       struct imx_port *sport =3D dev_get_drvdata(dev);
+> > +
+> > +       clk_enable(sport->clk_per);
+>=20
+> clk_enable() may fail.
+>=20
+> > +       clk_enable(sport->clk_ipg);
+>=20
+> Same here.
+>=20
+> > @@ -2096,6 +2212,8 @@ static int imx_serial_port_resume(struct device *=
+dev)
+> >         struct platform_device *pdev =3D to_platform_device(dev);
+> >         struct imx_port *sport =3D platform_get_drvdata(pdev);
+> >
+> > +       clk_prepare_enable(sport->clk_per);
+>=20
+> clk_prepare_enable() may fail.
+>=20
+> > +       clk_prepare_enable(sport->clk_ipg);
+>=20
+> Ditto.
 
-Thanks,
-Ran
+
+agreed on all. resending this one with the above suggestions/fixes applied.
+
+--J/dobhs11T7y2rNN
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQEcBAEBAgAGBQJVyigJAAoJEMLUO4d9pOJWPmoIAI3qqKHGwuYrECGiQ0DRGYG2
++YEqlAA4X2FpClmXGqD/jvlPWmZudoaG8eP35RTTyBOIdR9A68McdlJWZh2puNBC
+7Z8Ut8ePsHJn/y1lq/9yZZBJwPd6/vm/wkGjs0QorggCGyALVXatw3MyI6MOe4cR
+BKpeErie1N/7fgfNheuT6UYpbe9rQvuuLxKATRDRJC6PW/uMeoACfTwLaYN6wQ2v
+7KIwYb8EFe/s1VMjlv7JS2Qw1s95iCgiC3s65I54jwbr0wdNZptF9SK5HZPqiXmw
+t5KWFEfu+cqR9pu2RjfKkonkN8KfEp62yq9Fow2jQ7Kb2aWEiWLmvWXz7xAR+wU=
+=UcnL
+-----END PGP SIGNATURE-----
+
+--J/dobhs11T7y2rNN--
