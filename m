@@ -1,121 +1,101 @@
-From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v4 2/2] mfd: axp20x: Add a cell for the usb
- power_supply part of the axp20x PMICs
-Date: Tue, 11 Aug 2015 15:18:11 +0100
-Message-ID: <20150811141811.GM18282@x1>
-References: <1439049521-30766-1-git-send-email-hdegoede@redhat.com>
- <1439049521-30766-2-git-send-email-hdegoede@redhat.com>
-Reply-To: lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v4 2/2] dt: power: st: Provide bindings for ST's OPPs
+Date: Tue, 11 Aug 2015 19:58:12 +0530
+Message-ID: <20150811142812.GJ5509@linux>
+References: <CAL_JsqKQLQ15qSt95zBZykzzPhcUrtZzhk29a76n+r_3719AiA@mail.gmail.com>
+ <20150731163715.GV3159@codeaurora.org>
+ <20150803034642.GV899@linux>
+ <20150810132247.GH3249@x1>
+ <20150811080023.GB5509@linux>
+ <20150811093039.GA18282@x1>
+ <20150811100941.GG5509@linux>
+ <20150811115425.GE18282@x1>
+ <20150811120124.GH5509@linux>
+ <20150811132756.GG18282@x1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-sunxi+bncBDA7X7F2WUEBBKMIVCXAKGQEDTJHSLA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1439049521-30766-2-git-send-email-hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <http://groups.google.com/group/linux-sunxi
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-List-Subscribe: <http://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <http://groups.google.com/group/linux-sunxi/subscribe>
-To: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Bruno =?iso-8859-1?Q?Pr=E9mont?= <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+In-Reply-To: <20150811132756.GG18282@x1>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Stephen Boyd <sboyd@codeaurora.org>, Rob Herring <robherring2@gmail.com>, Nishanth Menon <nm@ti.com>, kernel@stlinux.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Ajit Pal Singh <ajitpal.singh@st.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 08 Aug 2015, Hans de Goede wrote:
+On 11-08-15, 14:27, Lee Jones wrote:
+> Okay, so what you're saying is that you've already made the decision
+> to create a separate node for every OPP permutation,
 
-> Add a cell for the usb power_supply part of the axp20x PMICs.
->=20
-> Note that this cell is only for the usb power_supply part and not the
-> ac-power / battery-charger / rtc-backup-bat-charger bits.
->=20
-> Depending on the board each of those must be enabled / disabled separatel=
-y
-> in devicetree as most boards do not use all 4. So in dt each one needs it=
-s
-> own child-node of the axp20x node. Another reason for using separate chil=
-d
-> nodes for each is so that other devicetree nodes can have a power-supply
-> property with a phandle referencing a node representing a single
-> power-supply.
->=20
-> The decision to use a separate devicetree node for each is reflected on
-> the kernel side by each getting its own mfd-cell / platform_device and
-> platform-driver.
->=20
-> Note this commit also makes some whitespace changes to the intialization
-> of existing cells in axp20x_cells, these are pure whitespace changes,
-> functionally nothing changes.
->=20
-> Cc: Bruno Pr=C3=A9mont <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
-> Signed-off-by: Bruno Pr=C3=A9mont <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
-> Signed-off-by: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-> Acked-by: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-> Acked-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> ---
-> Changes in v2:
-> -Use DEFINE_RES_IRQ_NAMED
-> -Change indentation of axp20x_cells initializers to avoid line wrapping
-> Changes in v3:
-> -Improve commit message
-> -Add Bruno's S-o-b
-> ---
->  drivers/mfd/axp20x.c | 20 ++++++++++++++++----
->  1 file changed, 16 insertions(+), 4 deletions(-)
+Absolutely not.
 
-Applied, thanks.
+> despite the fact
+> that I've told you this could lead to more nodes than anyone would
+> care to successfully write or maintain?
 
-> diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-> index d9f2f96..3f576b7 100644
-> --- a/drivers/mfd/axp20x.c
-> +++ b/drivers/mfd/axp20x.c
-> @@ -140,6 +140,13 @@ static struct resource axp20x_pek_resources[] =3D {
->  	},
->  };
-> =20
-> +static struct resource axp20x_usb_power_supply_resources[] =3D {
-> +	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_PLUGIN, "VBUS_PLUGIN"),
-> +	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_REMOVAL, "VBUS_REMOVAL"),
-> +	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_VALID, "VBUS_VALID"),
-> +	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_NOT_VALID, "VBUS_NOT_VALID"),
-> +};
-> +
->  static struct resource axp22x_pek_resources[] =3D {
->  	{
->  		.name   =3D "PEK_DBR",
-> @@ -432,11 +439,16 @@ static const struct regmap_irq_chip axp288_regmap_i=
-rq_chip =3D {
-> =20
->  static struct mfd_cell axp20x_cells[] =3D {
->  	{
-> -		.name			=3D "axp20x-pek",
-> -		.num_resources		=3D ARRAY_SIZE(axp20x_pek_resources),
-> -		.resources		=3D axp20x_pek_resources,
-> +		.name		=3D "axp20x-pek",
-> +		.num_resources	=3D ARRAY_SIZE(axp20x_pek_resources),
-> +		.resources	=3D axp20x_pek_resources,
->  	}, {
-> -		.name			=3D "axp20x-regulator",
-> +		.name		=3D "axp20x-regulator",
-> +	}, {
-> +		.name		=3D "axp20x-usb-power-supply",
-> +		.of_compatible	=3D "x-powers,axp202-usb-power-supply",
-> +		.num_resources	=3D ARRAY_SIZE(axp20x_usb_power_supply_resources),
-> +		.resources	=3D axp20x_usb_power_supply_resources,
->  	},
->  };
-> =20
+I have enough fear of yours and then I have to see you in another
+month as well. I wouldn't dare to disobey your command SIR :)
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+> Perhaps an example might help explain the issue.
+> 
+> Using the current driver, we need to place the following in DT and the
+> driver does the rest:
+> 
+> opp-list {
+> 	opp1 {
+> 		opp-hz = <1500000000>;
+> 		st,avs = <1200 1200 1200 1200 1170 1140 1100 1070>;
+> 		st,substrate = <0xff>;
+> 		st,cuts = <0xff>;
+> 	};
+> 	opp0 {
+> 		opp-hz = <1200000000>;
+> 		st,avs = <1110 1150 1100 1080 1040 1020 980 930>;
+> 		st,substrate = <0xff>;
+> 		st,cuts = <0x2>;
+> 	};
+> };
 
---=20
-You received this message because you are subscribed to the Google Groups "=
-linux-sunxi" group.
-To unsubscribe from this group and stop receiving emails from it, send an e=
-mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
+Nothing is fixed as of now but this is what I am thinking of:
+
+	cpu0_opp_table: opp_table0 {
+		compatible = "operating-points-v2";
+                opp-cuts = "10", "3c", "f0";
+		supply-names = "vcc0", "vcc1", "vcc2";
+		opp-shared;
+
+		opp00 {
+			opp-hz = /bits/ 64 <1000000000>;
+			clock-latency-ns = <300000>;
+			opp-microvolt-10 = <970000>;
+			opp-microvolt-3c = <950000>;
+			opp-microvolt-f0 = <930000>;
+		};
+
+		/* OR */
+
+		opp00 {
+			opp-hz = /bits/ 64 <1000000000>;
+			clock-latency-ns = <300000>;
+                        opp-microvolt = <970000>, <950000>, <930000>;
+		};
+        };
+
+And then the platform code needs to tell OPP layer:
+"Use OPPs for cut f0 for device X", and OPP layer will store that
+somewhere.
+
+And then it will only initialize OPPs after matching this string with
+the values.
+
+Out of the earlier two options, I may prefer the first one. As we will
+be soon adding support for multiple regulators, and a single regulator
+can have min/max/target values.. So, a single list will become too
+long.
+
+But, something like this should be generic enough to capture most of
+the cases.
+
+@Stephen/Rob ??
+
+-- 
+viresh
