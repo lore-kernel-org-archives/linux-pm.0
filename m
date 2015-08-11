@@ -1,204 +1,237 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v4 2/2] dt: power: st: Provide bindings for ST's OPPs
-Date: Tue, 11 Aug 2015 14:27:57 +0100
-Message-ID: <20150811132756.GG18282@x1>
-References: <20150730084634.GD9319@x1>
- <CAL_JsqKQLQ15qSt95zBZykzzPhcUrtZzhk29a76n+r_3719AiA@mail.gmail.com>
- <20150731163715.GV3159@codeaurora.org>
- <20150803034642.GV899@linux>
- <20150810132247.GH3249@x1>
- <20150811080023.GB5509@linux>
- <20150811093039.GA18282@x1>
- <20150811100941.GG5509@linux>
- <20150811115425.GE18282@x1>
- <20150811120124.GH5509@linux>
+From: Punit Agrawal <punit.agrawal@arm.com>
+Subject: Re: [PATCH v2 1/4] thermal: power_allocator: relax the requirement of a sustainable_power in tzp
+Date: Tue, 11 Aug 2015 14:42:20 +0100
+Message-ID: <9hhegjakklf.fsf@e105922-lin.cambridge.arm.com>
+References: <1439222692-3535-1-git-send-email-javi.merino@arm.com>
+	<1439288493-19740-1-git-send-email-javi.merino@arm.com>
+	<1439288493-19740-2-git-send-email-javi.merino@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20150811120124.GH5509@linux>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, Rob Herring <robherring2@gmail.com>, Nishanth Menon <nm@ti.com>, kernel@stlinux.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Ajit Pal Singh <ajitpal.singh@st.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:45490 "EHLO
+	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S964835AbbHKNlH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Aug 2015 09:41:07 -0400
+In-Reply-To: <1439288493-19740-2-git-send-email-javi.merino@arm.com> (Javi
+	Merino's message of "Tue, 11 Aug 2015 11:21:30 +0100")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Javi Merino <javi.merino@arm.com>
+Cc: linux-pm@vger.kernel.org, dmitry.torokhov@gmail.com, cywang@chromium.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 
-On Tue, 11 Aug 2015, Viresh Kumar wrote:
-> On 11-08-15, 12:54, Lee Jones wrote:
-> > The framework does not need to parse this information.  It is used
-> > solely by the platform driver, whose job it is to decide which OPPs
-> > are appropriate for the running platform.
->=20
-> The OPP layer needs to parse OPP nodes in DT. But for doing that it
-> needs to know which OPPs to pick from the table as, in cases like
-> yours or qcom, not all OPPs might be available.
->=20
-> One of the ways to do that is:
-> - the platform reads its efuses (or whatever) and encodes the
->   information into a string.
-> - This string should match with the strings present (somewhere) in th=
-e
->   OPP table. That location can be like what I proposed few mails back=
-=2E
-> - Then the *generic* OPP code can parse only those OPP nodes which
->   match with that string.
->=20
-> This way, we can avoid pushing the platform code to parse OPP tables.
+Hi Javi,
 
-Okay, so what you're saying is that you've already made the decision
-to create a separate node for every OPP permutation, despite the fact
-that I've told you this could lead to more nodes than anyone would
-care to successfully write or maintain?
+A few nitpicks and a comment below.
 
-Perhaps an example might help explain the issue.
+Javi Merino <javi.merino@arm.com> writes:
 
-Using the current driver, we need to place the following in DT and the
-driver does the rest:
+> The power allocator governor currently requires that a sustainable power
+> is passed as part of the thermal zone's thermal zone parameters.  If
+> that parameter is not provided, it doesn't register with the thermal
+> zone.
+>
+> While this parameter is strongly recommended for optimal performance, it
+> doesn't need to be mandatory.  Relax the requirement and allow the
+> governor to bind to thermal zones that don't provide it by estimating it
+> from the cooling devices' power model.
+>
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: Eduardo Valentin <edubezval@gmail.com>
+> Signed-off-by: Javi Merino <javi.merino@arm.com>
+> ---
+>  drivers/thermal/power_allocator.c | 62 +++++++++++++++++++++++++++++++++------
+>  drivers/thermal/thermal_core.c    | 28 ++++++++++++++++++
+>  include/linux/thermal.h           |  6 ++++
+>  3 files changed, 87 insertions(+), 9 deletions(-)
+>
+> diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
+> index 63a448f9d93b..f78836c2da26 100644
+> --- a/drivers/thermal/power_allocator.c
+> +++ b/drivers/thermal/power_allocator.c
+> @@ -73,6 +73,39 @@ struct power_allocator_params {
+>  };
+>  
+>  /**
+> + * estimate_sustainable_power() - Estimate the sustainable power of a thermal zone
+> + * @tz: thermal zone we are operating in
+> + *
+> + * For thermal zones that don't provide a sustainable_power in their
+> + * thermal_zone_params, estimate one.  Calculate it using the minimum
+> + * power of all the cooling devices as that gives a valid value that
+> + * can give some degree of functionality.  For optimal performance of
+> + * this governor, provide a sustainable_power in the thermal zone's
+> + * thermal_zone_params.
+> + */
+> +static u32 estimate_sustainable_power(struct thermal_zone_device *tz)
+> +{
+> +	u32 sustainable_power = 0;
+> +	struct thermal_instance *instance;
+> +	struct power_allocator_params *params = tz->governor_data;
+> +
+> +	list_for_each_entry(instance, &tz->thermal_instances, tz_node) {
+> +		struct thermal_cooling_device *cdev = instance->cdev;
+> +		u32 min_power;
+> +
+> +		if (instance->trip != params->trip_max_desired_temperature)
+> +			continue;
+> +
+> +		if (power_actor_get_min_power(cdev, tz, &min_power))
+> +			continue;
+> +
+> +		sustainable_power += min_power;
+> +	}
+> +
+> +	return sustainable_power;
+> +}
+> +
+> +/**
+>   * pid_controller() - PID controller
+>   * @tz:	thermal zone we are operating in
+>   * @current_temp:	the current temperature in millicelsius
+> @@ -98,6 +131,7 @@ static u32 pid_controller(struct thermal_zone_device *tz,
+>  {
+>  	s64 p, i, d, power_range;
+>  	s32 err, max_power_frac;
+> +	u32 sustainable_power;
+>  	struct power_allocator_params *params = tz->governor_data;
+>  
+>  	max_power_frac = int_to_frac(max_allocatable_power);
+> @@ -138,8 +172,11 @@ static u32 pid_controller(struct thermal_zone_device *tz,
+>  
+>  	power_range = p + i + d;
+>  
+> +	sustainable_power = tz->tzp->sustainable_power ?:
+> +		estimate_sustainable_power(tz);
+> +
+>  	/* feed-forward the known sustainable dissipatable power */
+> -	power_range = tz->tzp->sustainable_power + frac_to_int(power_range);
+> +	power_range = sustainable_power + frac_to_int(power_range);
+>  
+>  	power_range = clamp(power_range, (s64)0, (s64)max_allocatable_power);
+>  
+> @@ -418,18 +455,18 @@ static int power_allocator_bind(struct thermal_zone_device *tz)
+>  	int ret;
+>  	struct power_allocator_params *params;
+>  	unsigned long switch_on_temp, control_temp;
+> -	u32 temperature_threshold;
+> +	u32 sustainable_power, temperature_threshold;
+>  
+> -	if (!tz->tzp || !tz->tzp->sustainable_power) {
+> -		dev_err(&tz->device,
+> -			"power_allocator: missing sustainable_power\n");
+> +	if (!tz->tzp)
+>  		return -EINVAL;
+> -	}
+>  
+>  	params = devm_kzalloc(&tz->device, sizeof(*params), GFP_KERNEL);
+>  	if (!params)
+>  		return -ENOMEM;
+>  
+> +	if (!tz->tzp->sustainable_power)
+> +		dev_warn(&tz->device, "power_allocator: sustainable_power will be estimated\n");
+> +
+>  	ret = get_governor_trips(tz, params);
+>  	if (ret) {
+>  		dev_err(&tz->device,
+> @@ -448,13 +485,20 @@ static int power_allocator_bind(struct thermal_zone_device *tz)
+>  	if (ret)
+>  		goto free;
+>  
+> +	/*
+> +	 * Provide an arbitrary sustainable_power to set the default
+> +	 * values of k_po and k_pu.  We can estimate sustainable_power
+                                        ^
+                                        can not
+> +	 * at this point because no cooling devices have been
+> +	 * registered yet.  By providing an arbitrary value we get
+> +	 * better defaults that setting k_po and k_pu to 0.
+                           ^
+                           than
 
-opp-list {
-	opp1 {
-		opp-hz =3D <1500000000>;
-		st,avs =3D <1200 1200 1200 1200 1170 1140 1100 1070>;
-		st,substrate =3D <0xff>;
-		st,cuts =3D <0xff>;
-	};
-	opp0 {
-		opp-hz =3D <1200000000>;
-		st,avs =3D <1110 1150 1100 1080 1040 1020 980 930>;
-		st,substrate =3D <0xff>;
-		st,cuts =3D <0x2>;
-	};
-};
+> +	 */
+> +	sustainable_power = tz->tzp->sustainable_power ?: 2500;
+>  	temperature_threshold = control_temp - switch_on_temp;
+>  
+>  	tz->tzp->k_po = tz->tzp->k_po ?:
+> -		int_to_frac(tz->tzp->sustainable_power) / temperature_threshold;
+> +		int_to_frac(sustainable_power) / temperature_threshold;
+>  	tz->tzp->k_pu = tz->tzp->k_pu ?:
+> -		int_to_frac(2 * tz->tzp->sustainable_power) /
+> -		temperature_threshold;
+> +		int_to_frac(2 * sustainable_power) / temperature_threshold;
 
-However, what you're suggesting, even for this very simple example
-(imagine what this would look like with 5 or more frequencies where
-two or more of them were only appropriate to run on particular
-variants) requires this to be broken out to:
+As we are being conservative with our estimation of sustainable power
+(sum of mins) when it is not explicitly specified, should we be
+conservative here and let the proportional terms, k_po and k_pu be zero
+as well?
 
-opp-list {
-	pcode0-cut2-allsubstrates {
-		opp0 {
-			opp-hz =3D <1200000000>;
-			opp-microvolt =3D <1110000>;
-		};
-	};
+>  	tz->tzp->k_i = tz->tzp->k_i ?: int_to_frac(10) / 1000;
+>  	/*
+>  	 * The default for k_d and integral_cutoff is 0, so we can
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> index 4ca211be4c0f..d26bc9e6f936 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -997,6 +997,34 @@ int power_actor_get_max_power(struct thermal_cooling_device *cdev,
+>  }
+>  
+>  /**
+> + * power_actor_get_min_power() - get the mainimum power that a cdev can consume
+> + * @cdev:	pointer to &thermal_cooling_device
+> + * @tz:		a valid thermal zone device pointer
+> + * @min_power:	pointer in which to store the minimum power
+> + *
+> + * Calculate the minimum power consumption in milliwats that the
+> + * cooling device can currently consume and store it in @min_power.
+> + *
+> + * Return: 0 on success, -EINVAL if @cdev doesn't support the
+> + * power_actor API or -E* on other error.
+> + */
+> +int power_actor_get_min_power(struct thermal_cooling_device *cdev,
+> +			      struct thermal_zone_device *tz, u32 *min_power)
+> +{
+> +	unsigned long max_state;
+> +	int ret;
+> +
+> +	if (!cdev_is_power_actor(cdev))
+> +		return -EINVAL;
+> +
+> +	ret = cdev->ops->get_max_state(cdev, &max_state);
+> +	if (ret)
+> +		return ret;
+> +
+> +	return cdev->ops->state2power(cdev, tz, max_state, min_power);
+> +}
+> +
+> +/**
+>   * power_actor_set_power() - limit the maximum power that a cooling device can consume
+>   * @cdev:	pointer to &thermal_cooling_device
+>   * @instance:	thermal instance to update
+> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> index 037e9df2f610..f99d934d373a 100644
+> --- a/include/linux/thermal.h
+> +++ b/include/linux/thermal.h
+> @@ -384,6 +384,8 @@ static inline bool cdev_is_power_actor(struct thermal_cooling_device *cdev)
+>  
+>  int power_actor_get_max_power(struct thermal_cooling_device *,
+>  			      struct thermal_zone_device *tz, u32 *max_power);
+> +int power_actor_get_min_power(struct thermal_cooling_device *,
+> +			      struct thermal_zone_device *tz, u32 *min_power);
+>  int power_actor_set_power(struct thermal_cooling_device *,
+>  			  struct thermal_instance *, u32);
+>  struct thermal_zone_device *thermal_zone_device_register(const char *, int, int,
+> @@ -419,6 +421,10 @@ static inline bool cdev_is_power_actor(struct thermal_cooling_device *cdev)
+>  static inline int power_actor_get_max_power(struct thermal_cooling_device *cdev,
+>  			      struct thermal_zone_device *tz, u32 *max_power)
+>  { return 0; }
+> +static inline int power_actor_get_min_power(struct thermal_cooling_device *cdev,
+> +					    struct thermal_zone_device *tz,
+> +					    u32 *min_power)
+> +{ return -ENODEV; }
 
-	pcode0-allcuts-allsubstrates {
-		opp0 {
-			opp-hz =3D <1500000000>;
-			opp-microvolt =3D <1200000>;
-		};
-	};
+Perhaps return 0 like power_actor_get_max_power just above for
+consistency.
 
-	pcode1-cut2-allsubstrates {
-		opp0 {
-			opp-hz =3D <1200000000>;
-			opp-microvolt =3D <1150000>;
-		};
-	};
-
-	pcode1-allcuts-allsubstrates {
-		opp0 {
-			opp-hz =3D <1500000000>;
-			opp-microvolt =3D <1200000>;
-		};
-	};
-
-	pcode2-cut2-allsubstrates {
-		opp0 {
-			opp-hz =3D <1200000000>;
-			opp-microvolt =3D <1100000>;
-		};
-	};
-
-	pcode2-allcuts-allsubstrates {
-		opp0 {
-			opp-hz =3D <1500000000>;
-			opp-microvolt =3D <1200000>;
-		};
-	};
-
-	pcode3-cut2-allsubstrates {
-		opp0 {
-			opp-hz =3D <1200000000>;
-			opp-microvolt =3D <1080000>;
-		};
-	};
-
-	pcode3-allcuts-allsubstrates {
-		opp0 {
-			opp-hz =3D <1500000000>;
-			opp-microvolt =3D <1200000>;
-		};
-	};
-
-	pcode4-cut2-allsubstrates {
-		opp0 {
-			opp-hz =3D <1200000000>;
-			opp-microvolt =3D <1040000>;
-		};
-
-	pcode4-allcuts-allsubstrates {
-		opp0 {
-			opp-hz =3D <1500000000>;
-			opp-microvolt =3D <1170000>;
-		};
-	};
-
-	pcode5-cut2-allsubstrates {
-		opp0 {
-			opp-hz =3D <1200000000>;
-			opp-microvolt =3D <1020000>;
-		};
-	};
-
-	pcode5-allcuts-allsubstrates {
-		opp0 {
-			opp-hz =3D <1500000000>;
-			opp-microvolt =3D <1140000>;
-		};
-	};
-
-	pcode6-cut2-allsubstrates {
-		opp0 {
-			opp-hz =3D <1200000000>;
-			opp-microvolt =3D <980000>;
-		};
-	};
-
-	pcode6-allcuts-allsubstrates {
-		opp0 {
-			opp-hz =3D <1500000000>;
-			opp-microvolt =3D <1100000>;
-		};
-	};
-
-	pcode7-cut2-allsubstrates {
-		opp0 {
-			opp-hz =3D <1200000000>;
-			opp-microvolt =3D <930000>;
-		};
-	};
-
-	pcode7-allcuts-allsubstrates {
-		opp0 {
-			opp-hz =3D <1500000000>;
-			opp-microvolt =3D <1070000>;
-		};
-	};
-};
-
-
-These will soon multiply once you start providing more complex
-examples.  And how do you plan on handling this in the framework?  Can
-the driver submit more than one variations of the string?  In the
-current example the driver would need to submit four strings to
-provide all acceptable variations; "pcodeX-cutY-substrateZ",
-"pcodeX-allcuts-substrateZ", "pcodeX-cutY-allsubstrates" and
-"pcodeX-allcuts-allsubstrates"
-
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+>  static inline int power_actor_set_power(struct thermal_cooling_device *cdev,
+>  			  struct thermal_instance *tz, u32 power)
+>  { return 0; }
