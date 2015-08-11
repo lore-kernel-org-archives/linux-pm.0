@@ -1,38 +1,88 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFCv5 PATCH 11/46] sched: Remove blocked load and utilization
- contributions of dying tasks
-Date: Tue, 11 Aug 2015 19:23:44 +0200
-Message-ID: <20150811172344.GO16853@twins.programming.kicks-ass.net>
-References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
- <1436293469-25707-12-git-send-email-morten.rasmussen@arm.com>
- <20150811113927.GT19282@twins.programming.kicks-ass.net>
- <20150811145847.GA20892@e105550-lin.cambridge.arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from casper.infradead.org ([85.118.1.10]:45729 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752616AbbHKRXz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Aug 2015 13:23:55 -0400
-Content-Disposition: inline
-In-Reply-To: <20150811145847.GA20892@e105550-lin.cambridge.arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [PATCHv3 1/8] serial: imx: remove unbalanced clk_prepare
+Date: Tue, 11 Aug 2015 10:21:20 -0700
+Message-ID: <1439313687-28502-2-git-send-email-edubezval@gmail.com>
+References: <1439313687-28502-1-git-send-email-edubezval@gmail.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1439313687-28502-1-git-send-email-edubezval@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, Fabio Estevam <festevam@gmail.com>
+Cc: Sascha Hauer <s.hauer@pengutronix.de>, Linux PM <linux-pm@vger.kernel.org>, linux-serial@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: mingo@redhat.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Tue, Aug 11, 2015 at 03:58:48PM +0100, Morten Rasmussen wrote:
-> On Tue, Aug 11, 2015 at 01:39:27PM +0200, Peter Zijlstra wrote:
+The current code attempts to prepare clk_per and clk_ipg
+before using the device. However, the result is an extra
+prepare call on each clock. Here is the output of uart
+clocks (only uart enabled and used as console):
 
-> > You add extra code the hot dequeue path for something that 'never'
-> > happens. We have the sched_class::task_dead call for that.
-> 
-> I don't mind using sched_class::task_dead() instead. The reason why I
-> didn't go that way is that we have to retake the rq->lock or mess with
-> cfs_rq::removed_load instead of just not adding the utilization in
-> the first place when we have the rq->lock.
-> 
-> Anyway, it is probably redundant by now. I will check Yuyang's code to
-> see if he already fixed this problem.
+$  grep uart /sys/kernel/debug/clk/clk_summary
+ uart_serial           1            2    80000000          0 0
+       uart           1            2    66000000          0 0
 
-He did, he used the removed_load stuff, same as migration does.
+This patch balances the calls of prepares. The result is:
+
+$  grep uart /sys/kernel/debug/clk/clk_summary
+ uart_serial           1            1    80000000          0 0
+       uart           1            1    66000000          0 0
+
+Cc: Fabio Estevam <festevam@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Jiri Slaby <jslaby@suse.com>
+Cc: linux-serial@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+---
+ drivers/tty/serial/imx.c | 20 ++++++--------------
+ 1 file changed, 6 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/tty/serial/imx.c b/drivers/tty/serial/imx.c
+index 9a248eb..b27c232 100644
+--- a/drivers/tty/serial/imx.c
++++ b/drivers/tty/serial/imx.c
+@@ -1630,12 +1630,12 @@ imx_console_write(struct console *co, const char *s, unsigned int count)
+ 	int locked = 1;
+ 	int retval;
+ 
+-	retval = clk_enable(sport->clk_per);
++	retval = clk_prepare_enable(sport->clk_per);
+ 	if (retval)
+ 		return;
+-	retval = clk_enable(sport->clk_ipg);
++	retval = clk_prepare_enable(sport->clk_ipg);
+ 	if (retval) {
+-		clk_disable(sport->clk_per);
++		clk_disable_unprepare(sport->clk_per);
+ 		return;
+ 	}
+ 
+@@ -1674,8 +1674,8 @@ imx_console_write(struct console *co, const char *s, unsigned int count)
+ 	if (locked)
+ 		spin_unlock_irqrestore(&sport->port.lock, flags);
+ 
+-	clk_disable(sport->clk_ipg);
+-	clk_disable(sport->clk_per);
++	clk_disable_unprepare(sport->clk_ipg);
++	clk_disable_unprepare(sport->clk_per);
+ }
+ 
+ /*
+@@ -1776,15 +1776,7 @@ imx_console_setup(struct console *co, char *options)
+ 
+ 	retval = uart_set_options(&sport->port, co, baud, parity, bits, flow);
+ 
+-	clk_disable(sport->clk_ipg);
+-	if (retval) {
+-		clk_unprepare(sport->clk_ipg);
+-		goto error_console;
+-	}
+-
+-	retval = clk_prepare(sport->clk_per);
+-	if (retval)
+-		clk_disable_unprepare(sport->clk_ipg);
++	clk_disable_unprepare(sport->clk_ipg);
+ 
+ error_console:
+ 	return retval;
+-- 
+2.5.0
