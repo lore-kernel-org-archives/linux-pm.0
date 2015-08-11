@@ -1,137 +1,102 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: PM / OPP: Add OPP sharing information to OPP library
-Date: Tue, 11 Aug 2015 13:52:09 +0530
-Message-ID: <20150811082209.GD5509@linux>
-References: <20150810164009.GB10496@mwanda>
+From: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+Subject: Re: [PATCH 0/9] qcom: Add support for TSENS driver
+Date: Tue, 11 Aug 2015 09:26:02 +0100
+Message-ID: <55C9B19A.9040901@linaro.org>
+References: <1436348838-22671-1-git-send-email-rnayak@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f47.google.com ([209.85.220.47]:35858 "EHLO
-	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933623AbbHKIWO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Aug 2015 04:22:14 -0400
-Received: by pacrr5 with SMTP id rr5so122750152pac.3
-        for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2015 01:22:14 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20150810164009.GB10496@mwanda>
+Received: from mail-wi0-f179.google.com ([209.85.212.179]:33078 "EHLO
+	mail-wi0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932079AbbHKI0G (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Aug 2015 04:26:06 -0400
+Received: by wijp15 with SMTP id p15so166028207wij.0
+        for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2015 01:26:04 -0700 (PDT)
+In-Reply-To: <1436348838-22671-1-git-send-email-rnayak@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: linux-pm@vger.kernel.org
+To: Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Cc: sboyd@codeaurora.org, nrajan@codeaurora.org, lina.iyer@linaro.org
 
-Hi Dan,
+Hi Rajendra,
 
-Are the static checker scripts available (and easy to use) for others
-as well? Maybe I can use them on code, before sending patches.
+On 08/07/15 10:47, Rajendra Nayak wrote:
+> Changes since RFC:
+> * Added support for 8916 and 8084
+> * Based off the latest nvmem framework patches [1]
+> * Minor review fixes for comments mostly from Lina
+>
+> ** I have also added irq support using the hardware
+> trip point support series [2]. Will post that
+> out seperately.
+>
+> This is an attempt to have a single TSENS driver for
+> the different versions of the TSENS IP that exist, on
+> different qcom msm/apq SoCs'
+> Support is added for msm8916, msm8960 and msm8974 families.
+> Based on top of the latest nvmem framework patches [2]
+>
+> A lot of the work is based of original code from Stephen Boyd
+> and Siddartha Mohanadoss. I have also picked some of what
+> Narendran Rajan did in his attempt to upstream the support
+> for 8960 family. I could not keep the original authorship on
+> any of the patches because I ended up moving the code around
+> quite a bit in an effort to have a single driver for the
+> various devices. I would be glad to change the authorship
+> for any of the patches if needed.
+>
+> [1] https://lkml.org/lkml/2015/6/22/609
+> [2] https://lkml.org/lkml/2015/5/20/472
+>
+> Rajendra Nayak (8):
+>    thermal: qcom: tsens: Add a skeletal TSENS drivers
+>    thermal: qcom: tsens-8916: Add support for 8916 family of SoCs
+>    thermal: qcom: tsens-8974: Add support for 8974 family of SoCs
+>    thermal: qcom: tsens-8960: Add support for 8960 family of SoCs
+>    arm: dts: msm8974: Add thermal zones, tsens and eeprom nodes
+>    arm: dts: apq8064: Add thermal zones, tsens and eeprom nodes
+>    arm: dts: apq8084: Add thermal zones, tsens and eeprom nodes
+>    arm64: dts: msm8916: Add thermal zones, tsens and eeprom nodes
+>
+> Srinivas Kandagatla (1):
+>    clk: qcom: gcc-msm8960: add child devices support.
+>
+>   .../devicetree/bindings/thermal/qcom-tsens.txt     |  37 +++
+>   arch/arm/boot/dts/qcom-apq8064.dtsi                | 108 ++++++++
+>   arch/arm/boot/dts/qcom-apq8084.dtsi                | 105 ++++++++
+>   arch/arm/boot/dts/qcom-msm8974.dtsi                | 105 ++++++++
+>   arch/arm64/boot/dts/qcom/msm8916.dtsi              |  66 +++++
+>   drivers/clk/qcom/gcc-msm8960.c                     |   4 +-
+>   drivers/thermal/Kconfig                            |   5 +
+>   drivers/thermal/Makefile                           |   1 +
+>   drivers/thermal/qcom/Kconfig                       |  10 +
+>   drivers/thermal/qcom/Makefile                      |   2 +
+>   drivers/thermal/qcom/tsens-8916.c                  | 107 ++++++++
+>   drivers/thermal/qcom/tsens-8960.c                  | 291 +++++++++++++++++++++
+>   drivers/thermal/qcom/tsens-8974.c                  | 239 +++++++++++++++++
+>   drivers/thermal/qcom/tsens-common.c                | 128 +++++++++
+>   drivers/thermal/qcom/tsens.c                       | 209 +++++++++++++++
+>   drivers/thermal/qcom/tsens.h                       |  69 +++++
+>   16 files changed, 1485 insertions(+), 1 deletion(-)
+>   create mode 100644 Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+>   create mode 100644 drivers/thermal/qcom/Kconfig
+>   create mode 100644 drivers/thermal/qcom/Makefile
+>   create mode 100644 drivers/thermal/qcom/tsens-8916.c
+>   create mode 100644 drivers/thermal/qcom/tsens-8960.c
+>   create mode 100644 drivers/thermal/qcom/tsens-8974.c
+>   create mode 100644 drivers/thermal/qcom/tsens-common.c
+>   create mode 100644 drivers/thermal/qcom/tsens.c
+>   create mode 100644 drivers/thermal/qcom/tsens.h
+>
 
-On 10-08-15, 19:40, Dan Carpenter wrote:
-> Hello Viresh Kumar,
-> 
-> The patch 064416586190: "PM / OPP: Add OPP sharing information to OPP
-> library" from Jul 29, 2015, leads to the following static checker
-> warning:
-> 
-> 	drivers/base/power/opp.c:1341 _of_init_opp_table_v2()
-> 	error: 'dev_opp' dereferencing possible ERR_PTR()
-> 
-> drivers/base/power/opp.c
->   1328          }
->   1329  
->   1330          /* There should be one of more OPP defined */
->   1331          if (WARN_ON(!count))
->   1332                  goto put_opp_np;
-> 
-> Should we set "ret" here?
 
-Yes, one of my new patches is doing this.
+Tested-by: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
 
->   1333  
->   1334          if (!ret) {
->   1335                  if (!dev_opp) {
->                              ^^^^^^^
-> No need to test this, we tested at the start of the function.
+NVMEM framework in now available in linux-next.
 
-Yes, I have killed this extra indentation level as well.
+Do you think we can get this in v4.3?
 
->   1336                          dev_opp = _find_device_opp(dev);
->   1337                          if (WARN_ON(!dev_opp))
-> 
-> This should be checking for IS_ERR().  We probably want to set "ret =
-> PTR_ERR(dev_opp) as well.
+--srini
 
-Okay, that's new. Will fix.
 
->   1338                                  goto put_opp_np;
->   1339                  }
->   1340  
->   1341                  dev_opp->np = opp_np;
->   1342                  dev_opp->shared_opp = of_property_read_bool(opp_np,
->   1343                                                              "opp-shared");
->   1344          } else {
->   1345                  of_free_opp_table(dev);
->   1346          }
->   1347  
->   1348  put_opp_np:
->   1349          of_node_put(opp_np);
->   1350  
->   1351          return ret;
->   1352  }
-> 
-> Checking for "!ret" on line 1334 is "success handling" style code.
-> Success handling leads to multiple indent levels and is more twisted and
-> confusing.  I generally prefer to keep my error handling paths separate
-> from the success path although in this case we call of_node_put() on
-> both paths, so maybe a shared exit path makes sense.
-> 
-> To me boils down to a question of, "How much is shared and how much is
-> different.  Also should we call of_free_opp_table() if _find_device_opp()
-> fails?"  If not then I would use a common exit path, otherwise I would
-> split them apart.
-> 
-> Shared:
-> 
-> 	if (ret) {
-> 		of_free_opp_table(dev);
-> 		goto put_opp_npl;
-> 	}
-> 
-> 	dev_opp = _find_device_opp(dev);
-> 	if (WARN_ON(IS_ERR(dev_opp))) {
-> 		ret = PTR_ERR(dev_opp);
-> 		goto put_opp_np;
-> 	}
-> 
-> 	dev_opp->np = opp_np;
-> 	dev_opp->shared_opp = of_property_read_bool(opp_np, "opp-shared");
-> 
-> put_opp_np:
-> 	of_node_put(opp_np);
-> 	return ret;
-> 
-> Split apart:
-> 
-> 	if (ret)
-> 		goto free_opp_table;
-> 
-> 	dev_opp = _find_device_opp(dev);
-> 	if (WARN_ON(IS_ERR(dev_opp))) {
-> 		ret = PTR_ERR(dev_opp);
-> 		goto free_opp_table;
-> 	}
-> 
-> 	dev_opp->np = opp_np;
-> 	dev_opp->shared_opp = of_property_read_bool(opp_np, "opp-shared");
-> 
-> 	of_node_put(opp_np);
-> 	return 0;
-> 
-> free_opp_table:
-> 	of_free_opp_table(dev);
-> put_opp_np:
-> 	of_node_put(opp_np);
-> 	return ret;
-
-Will check that as well.
-
--- 
-viresh
