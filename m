@@ -1,54 +1,70 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH RESEND v6 2/3] ARM: dts: Add pwm-fan node to the Odroid-U3 board
-Date: Tue, 11 Aug 2015 15:14:59 +0200
-Message-ID: <1439298899-17645-1-git-send-email-l.majewski@samsung.com>
+Subject: [PATCH RESEND v6 3/3] ARM: dts: Add properties to use pwm-fan device
+ as a cooling device in Odroid U3
+Date: Tue, 11 Aug 2015 15:15:22 +0200
+Message-ID: <1439298922-17898-1-git-send-email-l.majewski@samsung.com>
 References: <1425470624-25793-1-git-send-email-l.majewski@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:43141 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934136AbbHKNPL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Aug 2015 09:15:11 -0400
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 In-reply-to: <1425470624-25793-1-git-send-email-l.majewski@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-samsung-soc-owner@vger.kernel.org
 To: Eduardo Valentin <edubezval@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Lukasz Majewski <l.majewski@samsung.com>
+List-Id: linux-pm@vger.kernel.org
 
-From: Kamil Debski <k.debski@samsung.com>
+With those bindings it is possible to use pwm-fan device available in
+Odroid U3 as a cooling device.
 
-Add pwm-fan node to the Odroid-U3 board file to enable PWM control of the
-cooling fan. In addition, add the "pwm" label to the pwm@139D0000 node
-in the exynos4412.dtsi.
-
-Signed-off-by: Kamil Debski <k.debski@samsung.com>
 Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+Acked-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- arch/arm/boot/dts/exynos4412-odroidu3.dts | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ arch/arm/boot/dts/exynos4412-odroidu3.dts | 33 ++++++++++++++++++++++++++++++-
+ 1 file changed, 32 insertions(+), 1 deletion(-)
 
 diff --git a/arch/arm/boot/dts/exynos4412-odroidu3.dts b/arch/arm/boot/dts/exynos4412-odroidu3.dts
-index 44684e5..4c04837 100644
+index 4c04837..abcfa3c 100644
 --- a/arch/arm/boot/dts/exynos4412-odroidu3.dts
 +++ b/arch/arm/boot/dts/exynos4412-odroidu3.dts
-@@ -31,6 +31,18 @@
- 			linux,default-trigger = "heartbeat";
+@@ -32,9 +32,40 @@
  		};
  	};
-+
-+	pwm-fan {
-+		compatible = "pwm-fan";
-+		pwms = <&pwm 0 10000 0>;
+ 
+-	pwm-fan {
++	fan0: pwm-fan {
+ 		compatible = "pwm-fan";
+ 		pwms = <&pwm 0 10000 0>;
++		cooling-min-state = <0>;
++		cooling-max-state = <3>;
++		#cooling-cells = <2>;
++		cooling-levels = <0 102 170 230>;
 +	};
-+};
 +
-+&pwm {
-+	pinctrl-0 = <&pwm0_out>;
-+	pinctrl-names = "default";
-+	samsung,pwm-outputs = <0>;
-+	status = "okay";
++	thermal-zones {
++		cpu_thermal: cpu-thermal {
++			cooling-maps {
++				map0 {
++				     trip = <&cpu_alert1>;
++				     cooling-device = <&cpu0 7 7>;
++				};
++				map1 {
++				     trip = <&cpu_alert2>;
++				     cooling-device = <&cpu0 13 13>;
++				};
++				map2 {
++				     trip = <&cpu_alert0>;
++				     cooling-device = <&fan0 0 1>;
++				};
++				map3 {
++				     trip = <&cpu_alert1>;
++				     cooling-device = <&fan0 1 2>;
++				};
++				map4 {
++				     trip = <&cpu_alert2>;
++				     cooling-device = <&fan0 2 3>;
++				};
++			};
++		};
+ 	};
  };
  
- &usb3503 {
 -- 
 2.0.0.rc2
-
