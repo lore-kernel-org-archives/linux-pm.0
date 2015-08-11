@@ -1,49 +1,65 @@
-From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: Re: [RFCv5 PATCH 11/46] sched: Remove blocked load and utilization
- contributions of dying tasks
-Date: Tue, 11 Aug 2015 15:58:48 +0100
-Message-ID: <20150811145847.GA20892@e105550-lin.cambridge.arm.com>
-References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
- <1436293469-25707-12-git-send-email-morten.rasmussen@arm.com>
- <20150811113927.GT19282@twins.programming.kicks-ass.net>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 1/6] PM / OPP: Free resources and properly return
+ error on failure
+Date: Tue, 11 Aug 2015 20:29:38 +0530
+Message-ID: <20150811145938.GA32049@linux>
+References: <cover.1439288881.git.viresh.kumar@linaro.org>
+ <334a9052264630b9157fa9bfc3d4efe945054c34.1439288881.git.viresh.kumar@linaro.org>
+ <20150811144345.GN5180@mwanda>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f49.google.com ([209.85.220.49]:36208 "EHLO
+	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965098AbbHKO7n (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Aug 2015 10:59:43 -0400
+Received: by pacrr5 with SMTP id rr5so129465410pac.3
+        for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2015 07:59:42 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <20150811113927.GT19282@twins.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: mingo@redhat.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+In-Reply-To: <20150811144345.GN5180@mwanda>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, khilman@linaro.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 
-On Tue, Aug 11, 2015 at 01:39:27PM +0200, Peter Zijlstra wrote:
-> On Tue, Jul 07, 2015 at 07:23:54PM +0100, Morten Rasmussen wrote:
-> > diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> > index 775b0c7..fa12ce5 100644
-> > --- a/kernel/sched/fair.c
-> > +++ b/kernel/sched/fair.c
-> > @@ -3217,6 +3217,8 @@ dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
-> >  	 * Update run-time statistics of the 'current'.
-> >  	 */
-> >  	update_curr(cfs_rq);
-> > +	if (entity_is_task(se) && task_of(se)->state == TASK_DEAD)
-> > +		flags &= !DEQUEUE_SLEEP;
-> >  	dequeue_entity_load_avg(cfs_rq, se, flags & DEQUEUE_SLEEP);
+On 11-08-15, 17:43, Dan Carpenter wrote:
+> > @@ -1323,28 +1323,29 @@ static int _of_init_opp_table_v2(struct device *dev,
+> >  		if (ret) {
+> >  			dev_err(dev, "%s: Failed to add OPP, %d\n", __func__,
+> >  				ret);
+> > -			break;
+> > +			goto free_table;
+> >  		}
+> >  	}
 > >  
-> >  	update_stats_dequeue(cfs_rq, se);
-> 
-> I know this is entirely redundant at this point (we took Yuyang's
-> patches), but this is the wrong way to go about doing this.
+> >  	/* There should be one of more OPP defined */
+> > -	if (WARN_ON(!count))
+> > +	if (WARN_ON(!count)) {
+> > +		ret = -ENOENT;
+> >  		goto put_opp_np;
+> > +	}
 
-Yes, I'm still working my way through Yuyang's changes.
+The purpose of 'count' here is to see if the dtb contained any OPP
+nodes or not. i.e. if we ever entered the body of
+for_each_available_child_of_node() or not..
 
-> You add extra code the hot dequeue path for something that 'never'
-> happens. We have the sched_class::task_dead call for that.
+Its different than, "if we were able to add any OPPs";
 
-I don't mind using sched_class::task_dead() instead. The reason why I
-didn't go that way is that we have to retake the rq->lock or mess with
-cfs_rq::removed_load instead of just not adding the utilization in
-the first place when we have the rq->lock.
+> This is weird to me, because we are going backwards.  What happens if
+> we goto free_table without adding anything?
 
-Anyway, it is probably redundant by now. I will check Yuyang's code to
-see if he already fixed this problem.
+It will WARN() today.
+
+> I suspect it's fine, but if
+> it's a bug then this code still has problems.
+
+I don't think we have a bug here, we never added anything and so don't
+need to free it.
+
+> What about if we only increment count when _opp_add_static_v2()
+> succeeds
+
+That's not what we want.
+
+-- 
+viresh
