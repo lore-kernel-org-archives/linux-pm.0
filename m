@@ -1,71 +1,87 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 0/6] PM / OPP: Add debugfs support
-Date: Tue, 11 Aug 2015 16:04:33 +0530
-Message-ID: <cover.1439288881.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 1/6] PM / OPP: Free resources and properly return error on failure
+Date: Tue, 11 Aug 2015 16:04:34 +0530
+Message-ID: <334a9052264630b9157fa9bfc3d4efe945054c34.1439288881.git.viresh.kumar@linaro.org>
+References: <cover.1439288881.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f181.google.com ([209.85.192.181]:35216 "EHLO
-	mail-pd0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934095AbbHKKeq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Aug 2015 06:34:46 -0400
-Received: by pdrg1 with SMTP id g1so82357230pdr.2
-        for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2015 03:34:45 -0700 (PDT)
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:35665 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934095AbbHKKeu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Aug 2015 06:34:50 -0400
+Received: by pacgr6 with SMTP id gr6so48250228pac.2
+        for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2015 03:34:49 -0700 (PDT)
+In-Reply-To: <cover.1439288881.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1439288881.git.viresh.kumar@linaro.org>
+References: <cover.1439288881.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, khilman@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, khilman@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, Dan Carpenter <dan.carpenter@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 
-Hi Guys,
+_of_init_opp_table_v2() isn't freeing up resources on some errors and
+the error values returned are also not correct always.
 
-This isn't necessarily 4.3 material, but its fine if it can hit 4.3 :).
+This fixes following problems:
+- Return -ENOENT, if no entries are found in the table.
+- Use IS_ERR() to properly check return value of _find_device_opp().
+- Return error value with PTR_ERR() in above case.
+- Free table if _find_device_opp() fails.
 
-This series is targeted towards exposing opp information at user space.
-I wasn't really sure about adding them to sysfs, as its mostly static
-(fixed) data and so debugfs looked to be better place.
+Fixes: 274659029c9d ("PM / OPP: Add support to parse operating-points-v2" bindings")
+Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/base/power/opp.c | 29 +++++++++++++++--------------
+ 1 file changed, 15 insertions(+), 14 deletions(-)
 
-This series starts with 3 cleanup patches, and then moves all opp stuff
-to a new directory as its expanding enough now.
-
-The last patch adds debugfs support for OPPs and works for both old and
-new v2 bindings.
-
-Rebased over: pm/bleeding-edge branch.
-
-V1->V2:
-- Moved the second patch to the top as its a fix (Dan Carpenter &
-  Stephen).
-- Also updated it to fix things properly.
-- rearranged opp entry in drivers/base/power/Makefile (Stephen)
-- Device-directory name also includes its parent name now, to make it
-  more unique (Stephen).
-- Migrate debugfs directory properly if unregistered for the owner
-  device (Stephen).
-
-Viresh Kumar (6):
-  PM / OPP: Free resources and properly return error on failure
-  PM / OPP: reuse of_parse_phandle()
-  PM / OPP: Prefix exported opp routines with dev_pm_opp_
-  PM / OPP: Move opp core to its own directory
-  PM / OPP: Move cpu specific code to opp/cpu.c
-  PM / OPP: Add debugfs support
-
- drivers/base/power/Makefile              |   2 +-
- drivers/base/power/opp/Makefile          |   3 +
- drivers/base/power/{opp.c => opp/core.c} | 376 ++++---------------------------
- drivers/base/power/opp/cpu.c             | 268 ++++++++++++++++++++++
- drivers/base/power/opp/debugfs.c         | 217 ++++++++++++++++++
- drivers/base/power/opp/opp.h             | 186 +++++++++++++++
- drivers/cpufreq/Makefile                 |   1 -
- drivers/cpufreq/cpufreq-dt.c             |  10 +-
- drivers/cpufreq/cpufreq_opp.c            | 114 ----------
- include/linux/pm_opp.h                   |  16 +-
- 10 files changed, 733 insertions(+), 460 deletions(-)
- create mode 100644 drivers/base/power/opp/Makefile
- rename drivers/base/power/{opp.c => opp/core.c} (80%)
- create mode 100644 drivers/base/power/opp/cpu.c
- create mode 100644 drivers/base/power/opp/debugfs.c
- create mode 100644 drivers/base/power/opp/opp.h
- delete mode 100644 drivers/cpufreq/cpufreq_opp.c
-
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index 204c6c945168..bcbd92c3b717 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -1323,28 +1323,29 @@ static int _of_init_opp_table_v2(struct device *dev,
+ 		if (ret) {
+ 			dev_err(dev, "%s: Failed to add OPP, %d\n", __func__,
+ 				ret);
+-			break;
++			goto free_table;
+ 		}
+ 	}
+ 
+ 	/* There should be one of more OPP defined */
+-	if (WARN_ON(!count))
++	if (WARN_ON(!count)) {
++		ret = -ENOENT;
+ 		goto put_opp_np;
++	}
+ 
+-	if (!ret) {
+-		if (!dev_opp) {
+-			dev_opp = _find_device_opp(dev);
+-			if (WARN_ON(!dev_opp))
+-				goto put_opp_np;
+-		}
+-
+-		dev_opp->np = opp_np;
+-		dev_opp->shared_opp = of_property_read_bool(opp_np,
+-							    "opp-shared");
+-	} else {
+-		of_free_opp_table(dev);
++	dev_opp = _find_device_opp(dev);
++	if (WARN_ON(IS_ERR(dev_opp))) {
++		ret = PTR_ERR(dev_opp);
++		goto free_table;
+ 	}
+ 
++	dev_opp->np = opp_np;
++	dev_opp->shared_opp = of_property_read_bool(opp_np, "opp-shared");
++
++	goto put_opp_np;
++
++free_table:
++	of_free_opp_table(dev);
+ put_opp_np:
+ 	of_node_put(opp_np);
+ 
 -- 
 2.4.0
 
