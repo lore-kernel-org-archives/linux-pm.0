@@ -1,47 +1,79 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v4 0/6] cpufreq: use generic cpufreq drivers for Exynos4x12
- platform
-Date: Tue, 11 Aug 2015 11:20:06 +0900
-Message-ID: <55C95BD6.7010200@samsung.com>
-References: <1438868514-8814-1-git-send-email-b.zolnierkie@samsung.com>
- <2359635.Hxe4cb8zKm@amdc1976> <20150807115627.GH6939@linux>
- <1525406.7aXvVQzEDd@vostro.rjw.lan> <20150808020740.GM6939@linux>
- <55C5AF4E.3010500@samsung.com> <03ee01d0d30b$b279c490$176d4db0$@kernel.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/6] PM / OPP: restructure _of_init_opp_table_v2()
+Date: Tue, 11 Aug 2015 07:55:46 +0530
+Message-ID: <20150811022546.GL5766@linux>
+References: <cover.1439187821.git.viresh.kumar@linaro.org>
+ <804c420eb23e70448c3c2c93f867a0eab3536bfd.1439187821.git.viresh.kumar@linaro.org>
+ <20150810192336.GC9678@codeaurora.org>
+ <20150811002342.GD5766@linux>
+ <55C9425B.4060207@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <03ee01d0d30b$b279c490$176d4db0$@kernel.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Kukjin Kim <kgene@kernel.org>
-Cc: 'Viresh Kumar' <viresh.kumar@linaro.org>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, 'Anand Moon' <linux.amoon@gmail.com>, 'Kevin Hilman' <khilman@linaro.org>, linux-kernel@vger.kernel.org, 'Heiko Stuebner' <heiko@sntech.de>, 'Bartlomiej Zolnierkiewicz' <b.zolnierkie@samsung.com>, 'Tobias Jakobi' <tjakobi@math.uni-bielefeld.de>, 'Lukasz Majewski' <l.majewski@samsung.com>, 'Michael Turquette' <mturquette@baylibre.com>, linux-pm@vger.kernel.org, 'Tomasz Figa' <tomasz.figa@gmail.com>, linux-clk@vger.kernel.org, 'Chanwoo Choi' <cw00.choi@samsung.com>, 'Thomas Abraham' <thomas.ab@samsung.com>, 'Sylwester Nawrocki' <s.nawrocki@samsung.com>, 'Olof Johansson' <olof@lixom.net>, 'Arnd Bergmann' <arnd.bergmann@linaro.org>, 'Javier Martinez Canillas' <javier@dowhile0.org>, linux-samsung-soc@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <55C9425B.4060207@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, khilman@linaro.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-On 10.08.2015 10:27, Kukjin Kim wrote:
-> Krzysztof Kozlowski wrote:
->>
->> W dniu 08.08.2015 o 11:07, Viresh Kumar pisze:
->>> On 08-08-15, 00:24, Rafael J. Wysocki wrote:
->>>> OK, so please let me know which patches you want me to pick up.
->>>>
->>>> Ideally, I'd prefer them to be resent in a separate series with ACKs and all
->>>> with a cover letter clearly stating whose tree they are being targeted at.
->>>
->>> He already sent it separately, let me send a confirmatory mail in
->>> reply to that.
->>
->> Dear Kukjin,
->>
->> Can you apply the 2-5 of this series to v4.3? It's getting late but
->> maybe they still could go?
->>
-> Once my previous pull-request landed into arm-soc, I'll try to send out this
-> series 2-5 for v4.3.
+On 10-08-15, 17:31, Stephen Boyd wrote:
+> So ret is 0. I thought it was an error path, but I guess this is a
+> warning path and we return 0 still?
 
-Additionally (better late than never):
-Patches 2-5 tested on Trats2 board (Exynos4412)
+Urg ..
 
-Tested-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+-------------------------8<-------------------------
 
-Best regards,
-Krzysztof
+Message-Id: <d0e8a9cd6b0fb38fa946cb6274f258d7aa66c00e.1439259818.git.viresh.kumar@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Date: Tue, 4 Aug 2015 11:57:36 +0530
+Subject: [PATCH] PM / OPP: restructure _of_init_opp_table_v2()
+
+'dev_opp' will always be NULL in _of_init_opp_table_v2() after creating
+OPPs for a device. There is no point comparing it against NULL there.
+
+Restructure code a bit to make it more efficient.
+
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/base/power/opp.c | 23 ++++++++++++-----------
+ 1 file changed, 12 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index 1daaa1a418a2..f42e098b71fe 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -1295,20 +1295,21 @@ static int _of_init_opp_table_v2(struct device *dev,
+ 	if (WARN_ON(!count))
+ 		goto out;
+ 
+-	if (!ret) {
+-		if (!dev_opp) {
+-			dev_opp = _find_device_opp(dev);
+-			if (WARN_ON(!dev_opp))
+-				goto out;
+-		}
+-
+-		dev_opp->np = opp_np;
+-		dev_opp->shared_opp = of_property_read_bool(opp_np,
+-							    "opp-shared");
+-	} else {
++	if (ret) {
+ 		of_free_opp_table(dev);
++		goto out;
+ 	}
+ 
++	dev_opp = _find_device_opp(dev);
++	if (WARN_ON(!dev_opp)) {
++		ret = -EINVAL;
++		goto out;
++	}
++
++	dev_opp->np = opp_np;
++	dev_opp->shared_opp = of_property_read_bool(opp_np,
++			"opp-shared");
++
+ out:
+ 	return ret;
+ }
