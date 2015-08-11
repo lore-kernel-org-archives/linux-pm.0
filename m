@@ -1,102 +1,57 @@
-From: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
-Subject: Re: [PATCH 0/9] qcom: Add support for TSENS driver
-Date: Tue, 11 Aug 2015 09:26:02 +0100
-Message-ID: <55C9B19A.9040901@linaro.org>
-References: <1436348838-22671-1-git-send-email-rnayak@codeaurora.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/6] PM / OPP: restructure _of_init_opp_table_v2()
+Date: Tue, 11 Aug 2015 14:07:44 +0530
+Message-ID: <20150811083744.GF5509@linux>
+References: <cover.1439187821.git.viresh.kumar@linaro.org>
+ <804c420eb23e70448c3c2c93f867a0eab3536bfd.1439187821.git.viresh.kumar@linaro.org>
+ <20150810192336.GC9678@codeaurora.org>
+ <20150811002342.GD5766@linux>
+ <55C9425B.4060207@codeaurora.org>
+ <20150811022546.GL5766@linux>
+ <20150811060855.GH9678@codeaurora.org>
+ <20150811065738.GE5147@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f179.google.com ([209.85.212.179]:33078 "EHLO
-	mail-wi0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932079AbbHKI0G (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Aug 2015 04:26:06 -0400
-Received: by wijp15 with SMTP id p15so166028207wij.0
-        for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2015 01:26:04 -0700 (PDT)
-In-Reply-To: <1436348838-22671-1-git-send-email-rnayak@codeaurora.org>
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:34052 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755149AbbHKIhu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Aug 2015 04:37:50 -0400
+Received: by pawu10 with SMTP id u10so159599973paw.1
+        for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2015 01:37:49 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20150811065738.GE5147@linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rajendra Nayak <rnayak@codeaurora.org>, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: sboyd@codeaurora.org, nrajan@codeaurora.org, lina.iyer@linaro.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, khilman@linaro.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 
-Hi Rajendra,
+On 11-08-15, 12:27, Viresh Kumar wrote:
+> diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+> index 1daaa1a418a2..be3356a3a452 100644
+> --- a/drivers/base/power/opp.c
+> +++ b/drivers/base/power/opp.c
+> @@ -1292,14 +1292,18 @@ static int _of_init_opp_table_v2(struct device *dev,
+>  	}
+>  
+>  	/* There should be one of more OPP defined */
+> -	if (WARN_ON(!count))
+> +	if (WARN_ON(!count)) {
+> +		ret = -ENOENT;
+>  		goto out;
+> +	}
+>  
+>  	if (!ret) {
+>  		if (!dev_opp) {
+>  			dev_opp = _find_device_opp(dev);
+> -			if (WARN_ON(!dev_opp))
+> +			if (WARN_ON(!dev_opp)) {
 
-On 08/07/15 10:47, Rajendra Nayak wrote:
-> Changes since RFC:
-> * Added support for 8916 and 8084
-> * Based off the latest nvmem framework patches [1]
-> * Minor review fixes for comments mostly from Lina
->
-> ** I have also added irq support using the hardware
-> trip point support series [2]. Will post that
-> out seperately.
->
-> This is an attempt to have a single TSENS driver for
-> the different versions of the TSENS IP that exist, on
-> different qcom msm/apq SoCs'
-> Support is added for msm8916, msm8960 and msm8974 families.
-> Based on top of the latest nvmem framework patches [2]
->
-> A lot of the work is based of original code from Stephen Boyd
-> and Siddartha Mohanadoss. I have also picked some of what
-> Narendran Rajan did in his attempt to upstream the support
-> for 8960 family. I could not keep the original authorship on
-> any of the patches because I ended up moving the code around
-> quite a bit in an effort to have a single driver for the
-> various devices. I would be glad to change the authorship
-> for any of the patches if needed.
->
-> [1] https://lkml.org/lkml/2015/6/22/609
-> [2] https://lkml.org/lkml/2015/5/20/472
->
-> Rajendra Nayak (8):
->    thermal: qcom: tsens: Add a skeletal TSENS drivers
->    thermal: qcom: tsens-8916: Add support for 8916 family of SoCs
->    thermal: qcom: tsens-8974: Add support for 8974 family of SoCs
->    thermal: qcom: tsens-8960: Add support for 8960 family of SoCs
->    arm: dts: msm8974: Add thermal zones, tsens and eeprom nodes
->    arm: dts: apq8064: Add thermal zones, tsens and eeprom nodes
->    arm: dts: apq8084: Add thermal zones, tsens and eeprom nodes
->    arm64: dts: msm8916: Add thermal zones, tsens and eeprom nodes
->
-> Srinivas Kandagatla (1):
->    clk: qcom: gcc-msm8960: add child devices support.
->
->   .../devicetree/bindings/thermal/qcom-tsens.txt     |  37 +++
->   arch/arm/boot/dts/qcom-apq8064.dtsi                | 108 ++++++++
->   arch/arm/boot/dts/qcom-apq8084.dtsi                | 105 ++++++++
->   arch/arm/boot/dts/qcom-msm8974.dtsi                | 105 ++++++++
->   arch/arm64/boot/dts/qcom/msm8916.dtsi              |  66 +++++
->   drivers/clk/qcom/gcc-msm8960.c                     |   4 +-
->   drivers/thermal/Kconfig                            |   5 +
->   drivers/thermal/Makefile                           |   1 +
->   drivers/thermal/qcom/Kconfig                       |  10 +
->   drivers/thermal/qcom/Makefile                      |   2 +
->   drivers/thermal/qcom/tsens-8916.c                  | 107 ++++++++
->   drivers/thermal/qcom/tsens-8960.c                  | 291 +++++++++++++++++++++
->   drivers/thermal/qcom/tsens-8974.c                  | 239 +++++++++++++++++
->   drivers/thermal/qcom/tsens-common.c                | 128 +++++++++
->   drivers/thermal/qcom/tsens.c                       | 209 +++++++++++++++
->   drivers/thermal/qcom/tsens.h                       |  69 +++++
->   16 files changed, 1485 insertions(+), 1 deletion(-)
->   create mode 100644 Documentation/devicetree/bindings/thermal/qcom-tsens.txt
->   create mode 100644 drivers/thermal/qcom/Kconfig
->   create mode 100644 drivers/thermal/qcom/Makefile
->   create mode 100644 drivers/thermal/qcom/tsens-8916.c
->   create mode 100644 drivers/thermal/qcom/tsens-8960.c
->   create mode 100644 drivers/thermal/qcom/tsens-8974.c
->   create mode 100644 drivers/thermal/qcom/tsens-common.c
->   create mode 100644 drivers/thermal/qcom/tsens.c
->   create mode 100644 drivers/thermal/qcom/tsens.h
->
+Dan also reported that !dev_opp isn't enough as we need to use IS_ERR
+here.
 
+We have got enough updates here, let me resend the series again to get
+more reviews on proper patches.
 
-Tested-by: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
-
-NVMEM framework in now available in linux-next.
-
-Do you think we can get this in v4.3?
-
---srini
-
-
+-- 
+viresh
