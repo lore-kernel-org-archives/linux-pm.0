@@ -1,49 +1,60 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Subject: Re: [PATCH V2 1/6] PM / OPP: Free resources and properly return
- error on failure
-Date: Tue, 11 Aug 2015 20:11:32 +0300
-Message-ID: <20150811171132.GA25166@mwanda>
-References: <cover.1439288881.git.viresh.kumar@linaro.org>
- <334a9052264630b9157fa9bfc3d4efe945054c34.1439288881.git.viresh.kumar@linaro.org>
- <20150811144345.GN5180@mwanda>
- <20150811145938.GA32049@linux>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [PATCHv3 0/8] serial: imx: rework pm support and add runtime pm
+Date: Tue, 11 Aug 2015 10:21:19 -0700
+Message-ID: <1439313687-28502-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from userp1040.oracle.com ([156.151.31.81]:49394 "EHLO
-	userp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965269AbbHKROQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Aug 2015 13:14:16 -0400
-Content-Disposition: inline
-In-Reply-To: <20150811145938.GA32049@linux>
+Received: from mail-pa0-f54.google.com ([209.85.220.54]:33574 "EHLO
+	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755409AbbHKRVc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Aug 2015 13:21:32 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, khilman@linaro.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, Fabio Estevam <festevam@gmail.com>
+Cc: Sascha Hauer <s.hauer@pengutronix.de>, Linux PM <linux-pm@vger.kernel.org>, linux-serial@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 
-On Tue, Aug 11, 2015 at 08:29:38PM +0530, Viresh Kumar wrote:
-> > This is weird to me, because we are going backwards.  What happens if
-> > we goto free_table without adding anything?
-> 
-> It will WARN() today.
+Hello all,
 
-Then the current code is buggy.
 
-> 
-> > I suspect it's fine, but if
-> > it's a bug then this code still has problems.
-> 
-> I don't think we have a bug here, we never added anything and so don't
-> need to free it.
-> 
-> > What about if we only increment count when _opp_add_static_v2()
-> > succeeds
-> 
-> That's not what we want.
+This is version 3 of a patch series to introduce runtime pm in the imx serial
+driver. The idea is to get runtime pm to handle ipg and per clocks, idling
+the device when possible, configuring wakeups, and saving and restoring
+context when needed.
 
-If the first call to _opp_add_static_v2() fails we call
-of_free_opp_table() and you say that triggers a WARN().
+A minor refactoring was needed to get things done. On top of it I am also
+adding pm_qos support in the driver too.
 
-regards,
-dan carpenter
+Changelog:
+
+V2->V3:
+- error checking handling on clk_*enable functions
+- added a missing return
+- moved some of the code from the runtime pm patch to the pm qos patch, which
+were causing compilation issues.
+V2: http://marc.info/?l=linux-pm&m=143925695931624&w=2
+
+V1->V2:
+- The difference now is that it is rebased on top of linux-next, given
+that some of the work done in v1 was already sent.
+V1: http://marc.info/?l=linux-pm&m=143914435605790&w=2
+
+As always, comments are welcome.
+
+BR
+
+Eduardo Valentin (8):
+  serial: imx: remove unbalanced clk_prepare
+  serial: imx: introduce serial_imx_enable_wakeup()
+  serial: imx: allow waking up on RTSD
+  serial: imx: save and restore context in the suspend path
+  serial: imx: add a flag to indicate we are in the suspend path
+  serial: imx: add runtime pm support
+  serial: imx: add pm_qos request
+  serial: imx: use SET_*SYSTEM_PM_OPS helper functions
+
+ arch/arm/boot/dts/Makefile |   1 +
+ drivers/tty/serial/imx.c   | 368 +++++++++++++++++++++++++++++++++++----------
+ 2 files changed, 286 insertions(+), 83 deletions(-)
+
+-- 
+2.5.0
 
