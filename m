@@ -1,51 +1,84 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [PATCH RESEND v6 0/3] dts: thermal: Odroid U3: Provide support for
- Odroid U3 fan
-Date: Tue, 11 Aug 2015 15:07:17 +0200
-Message-ID: <1439298440-15882-1-git-send-email-l.majewski@samsung.com>
-References: <1425470624-25793-1-git-send-email-l.majewski@samsung.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 5/9] ARM: common: Introduce PM domains for CPUs/clusters
+Date: Tue, 11 Aug 2015 15:07:52 +0200
+Message-ID: <CAMuHMdWRoUOBvz7MEGgF1oHz95D-GhaYG1yHr_kGe5NUQ0EnrQ@mail.gmail.com>
+References: <1438731339-58317-1-git-send-email-lina.iyer@linaro.org>
+	<1438731339-58317-6-git-send-email-lina.iyer@linaro.org>
+	<CAL_JsqK67=DTtjZwwnonObLDjLbahkREfm0RvyXVV95bhR-d4Q@mail.gmail.com>
+	<7hd1yyvf1b.fsf@deeprootsystems.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:35754 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964968AbbHKNHd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Aug 2015 09:07:33 -0400
-In-reply-to: <1425470624-25793-1-git-send-email-l.majewski@samsung.com>
+Received: from mail-oi0-f65.google.com ([209.85.218.65]:35871 "EHLO
+	mail-oi0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934090AbbHKNHx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Aug 2015 09:07:53 -0400
+Received: by oikt4 with SMTP id t4so8123674oik.3
+        for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2015 06:07:53 -0700 (PDT)
+In-Reply-To: <7hd1yyvf1b.fsf@deeprootsystems.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>, Lukasz Majewski <l.majewski@samsung.com>
+To: Kevin Hilman <khilman@kernel.org>
+Cc: Rob Herring <robherring2@gmail.com>, Lina Iyer <lina.iyer@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Mark Rutland <mark.rutland@arm.com>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-Presented patches add support for Odroid's U3 optional CPU FAN, which uses PWM
-subsystem for low level control.
+On Sat, Aug 8, 2015 at 1:45 AM, Kevin Hilman <khilman@kernel.org> wrote:
+> Rob Herring <robherring2@gmail.com> writes:
+>> On Tue, Aug 4, 2015 at 6:35 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
+>>> +ARM CPU Power domains
+>>> +
+>>> +The device tree allows describing of CPU power domains in a SoC. In ARM SoC,
+>>> +CPUs may be grouped as clusters. A cluster may have CPUs, GIC, Coresight,
+>>> +caches, VFP and power controller and other peripheral hardware. Generally,
+>>> +when the CPUs in the cluster are idle/suspended, the shared resources may also
+>>> +be suspended and resumed before any of the CPUs resume execution.
+>>> +
+>>> +CPUs are the defined as the PM domain consumers and there is a PM domain
+>>> +provider for the CPUs. Bindings for generic PM domains (genpd) is described in
+>>> +[1].
+>>> +
+>>> +The ARM CPU PM domain follows the same binding convention as any generic PM
+>>> +domain. Additional binding properties are -
+>>> +
+>>> +- compatible:
+>>> +       Usage: required
+>>> +       Value type: <string>
+>>> +       Definition: Must also have
+>>> +                       "arm,pd"
+>>> +               inorder to initialize the genpd provider as ARM CPU PM domain.
+>>
+>> A compatible string should represent a particular h/w block. If it is
+>> generic, it should represent some sort of standard programming
+>> interface (e.g, AHCI, EHCI, etc.). This doesn't seem to be either and
+>> is rather just a mapping of what "driver" you want to use.
+>>
+>> I would expect that identifying a cpu's or cluster's power domain
+>> would be done by a phandle between the cpu/cluster node and power
+>> domain node.
+>
+> That's correct, the CPU nodes (and other nodes in the cluster like GIC,
+> Coresight, etc.) would have phandles to the cluster power domain node.
 
-This patch is a resend of previously send series:
-https://lkml.org/lkml/2015/3/4/726
+Indeed.
 
-The "hwmon" part of this series has been already added to upstream.
-Unfortunately, the DTS files for Odroid U3 device have NOT been added to 
-mainline repository.
+> But this series is meant to create the driver & binding for those cluster
+> power domain(s), so the question is how exactly describe it.
 
-Those patches were tested at Exynos4412 - Odroid U3 board.
+I don't think I can add an "arm,pd" compatible property to e.g. a2sl
+(for CA15-CPUx) and a3sm (for CA15-SCU) in arch/arm/boot/dts/r8a73a4.dtsi,
+as these are just subdomains in a power domain hierarchy, all driven by a
+single hardware block.
 
-Patches were applied on:
-kernel_samsung -> git://git.kernel.org/pub/scm/linux/kernel/git/kgene/linux-samsung.git
+I can call e.g. a special registration method, or set up some ops pointer,
+for the a2sl and a3sm subdomains from within the "renesas,sysc-rmobile"
+driver.
 
-kernel_samsung/for-next (Linux v4.2-rc1)
-SHA1: 366c21fdd7b1e71a47a6fa969f2e9a014c981aff
+Gr{oetje,eeting}s,
 
-Kamil Debski (1):
-  ARM: dts: Add pwm-fan node to the Odroid-U3 board
+                        Geert
 
-Lukasz Majewski (2):
-  Documentation: dts: Documentation entry to explain how to use PWM FAN
-    as a cooling device
-  ARM: dts: Add properties to use pwm-fan device as a cooling device in
-    Odroid U3
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
- .../devicetree/bindings/hwmon/pwm-fan.txt          | 29 ++++++++++++++-
- arch/arm/boot/dts/exynos4412-odroidu3.dts          | 43 ++++++++++++++++++++++
- 2 files changed, 70 insertions(+), 2 deletions(-)
-
--- 
-2.0.0.rc2
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
