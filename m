@@ -1,82 +1,93 @@
 From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Subject: [PATCH v3 3/5] power/reset: at91-reset: get and use slow clock
-Date: Tue, 11 Aug 2015 11:12:48 +0200
-Message-ID: <1439284370-13803-4-git-send-email-alexandre.belloni@free-electrons.com>
+Subject: [PATCH v3 4/5] power/reset: at91-poweroff: allow compiling as a module
+Date: Tue, 11 Aug 2015 11:12:49 +0200
+Message-ID: <1439284370-13803-5-git-send-email-alexandre.belloni@free-electrons.com>
 References: <1439284370-13803-1-git-send-email-alexandre.belloni@free-electrons.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from down.free-electrons.com ([37.187.137.238]:54492 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933808AbbHKJM7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Aug 2015 05:12:59 -0400
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1439284370-13803-1-git-send-email-alexandre.belloni@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Sebastian Reichel <sre@kernel.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Cc: linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-kernel@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, linux-arm-kernel@lists.infradead.org
+List-Id: linux-pm@vger.kernel.org
 
-Commit dca1a4b5ff6e ("clk: at91: keep slow clk enabled to prevent system
-hang") added a workaround for the slow clock as it is not properly handled
-by its users.
-
-Get and use the slow clock as it is necessary for the at91 reset
-controller.
+It was not possible to compile at91-poweroff as a module. Implement
+.remove() to allow it. Also switch to module_platform_driver_probe() as it
+is not hotpluggable.
 
 Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
 ---
- drivers/power/reset/at91-reset.c | 17 ++++++++++++++++-
- 1 file changed, 16 insertions(+), 1 deletion(-)
+ drivers/power/reset/Kconfig         |  2 +-
+ drivers/power/reset/at91-poweroff.c | 18 +++++++++++++++---
+ 2 files changed, 16 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/power/reset/at91-reset.c b/drivers/power/reset/at91-reset.c
-index 120f3dec9574..8f0bcb232149 100644
---- a/drivers/power/reset/at91-reset.c
-+++ b/drivers/power/reset/at91-reset.c
-@@ -11,6 +11,7 @@
-  * warranty of any kind, whether express or implied.
-  */
+diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+index e41da4a80a05..b3c6191d1847 100644
+--- a/drivers/power/reset/Kconfig
++++ b/drivers/power/reset/Kconfig
+@@ -15,7 +15,7 @@ config POWER_RESET_AS3722
+ 	  This driver supports turning off board via a ams AS3722 power-off.
  
-+#include <linux/clk.h>
- #include <linux/io.h>
- #include <linux/module.h>
- #include <linux/of_address.h>
-@@ -46,6 +47,7 @@ enum reset_type {
- };
+ config POWER_RESET_AT91_POWEROFF
+-	bool "Atmel AT91 poweroff driver"
++	tristate "Atmel AT91 poweroff driver"
+ 	depends on ARCH_AT91
+ 	default SOC_AT91SAM9 || SOC_SAMA5
+ 	help
+diff --git a/drivers/power/reset/at91-poweroff.c b/drivers/power/reset/at91-poweroff.c
+index 9847cfb7e23d..3e698d916c4f 100644
+--- a/drivers/power/reset/at91-poweroff.c
++++ b/drivers/power/reset/at91-poweroff.c
+@@ -119,7 +119,7 @@ static void at91_poweroff_dt_set_wakeup_mode(struct platform_device *pdev)
+ 	writel(wakeup_mode | mode, at91_shdwc_base + AT91_SHDW_MR);
+ }
  
- static void __iomem *at91_ramc_base[2], *at91_rstc_base;
-+static struct clk *sclk;
- 
- /*
- * unless the SDRAM is cleanly shutdown before we hit the
-@@ -193,9 +195,21 @@ static int __init at91_reset_probe(struct platform_device *pdev)
- 	match = of_match_node(at91_reset_of_match, pdev->dev.of_node);
- 	at91_restart_nb.notifier_call = match->data;
- 
-+	sclk = devm_clk_get(&pdev->dev, NULL);
-+	if (IS_ERR(sclk))
-+		return PTR_ERR(sclk);
-+
-+	ret = clk_prepare_enable(sclk);
-+	if (ret) {
-+		dev_err(&pdev->dev, "Could not enable slow clock\n");
-+		return ret;
-+	}
-+
- 	ret = register_restart_handler(&at91_restart_nb);
--	if (ret)
-+	if (ret) {
-+		clk_disable_unprepare(sclk);
- 		return ret;
-+	}
- 
- 	at91_reset_status(pdev);
- 
-@@ -205,6 +219,7 @@ static int __init at91_reset_probe(struct platform_device *pdev)
- static int __exit at91_reset_remove(struct platform_device *pdev)
+-static int at91_poweroff_probe(struct platform_device *pdev)
++static int __init at91_poweroff_probe(struct platform_device *pdev)
  {
- 	unregister_restart_handler(&at91_restart_nb);
-+	clk_disable_unprepare(sclk);
+ 	struct resource *res;
  
+@@ -140,6 +140,14 @@ static int at91_poweroff_probe(struct platform_device *pdev)
  	return 0;
  }
+ 
++static int __exit at91_poweroff_remove(struct platform_device *pdev)
++{
++	if (pm_power_off == at91_poweroff)
++		pm_power_off = NULL;
++
++	return 0;
++}
++
+ static const struct of_device_id at91_poweroff_of_match[] = {
+ 	{ .compatible = "atmel,at91sam9260-shdwc", },
+ 	{ .compatible = "atmel,at91sam9rl-shdwc", },
+@@ -148,10 +156,14 @@ static const struct of_device_id at91_poweroff_of_match[] = {
+ };
+ 
+ static struct platform_driver at91_poweroff_driver = {
+-	.probe = at91_poweroff_probe,
++	.remove = __exit_p(at91_poweroff_remove),
+ 	.driver = {
+ 		.name = "at91-poweroff",
+ 		.of_match_table = at91_poweroff_of_match,
+ 	},
+ };
+-module_platform_driver(at91_poweroff_driver);
++module_platform_driver_probe(at91_poweroff_driver, at91_poweroff_probe);
++
++MODULE_AUTHOR("Atmel Corporation");
++MODULE_DESCRIPTION("Shutdown driver for Atmel SoCs");
++MODULE_LICENSE("GPL v2");
 -- 
 2.1.4
-
