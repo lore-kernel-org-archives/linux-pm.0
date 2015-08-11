@@ -1,71 +1,113 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Subject: Re: PM / OPP: Add clock-latency-ns support
-Date: Tue, 11 Aug 2015 16:53:11 +0300
-Message-ID: <20150811135122.GL5096@mwanda>
-References: <20150810163804.GA10496@mwanda>
- <20150811081228.GC5509@linux>
+From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v4 1/2] mfd: axp20x: Add missing registers,
+ and mark more registers volatile
+Date: Tue, 11 Aug 2015 15:17:55 +0100
+Message-ID: <20150811141754.GL18282@x1>
+References: <1439049521-30766-1-git-send-email-hdegoede@redhat.com>
+Reply-To: lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from userp1040.oracle.com ([156.151.31.81]:41645 "EHLO
-	userp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964890AbbHKNxW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Aug 2015 09:53:22 -0400
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-sunxi+bncBDA7X7F2WUEBBLEIVCXAKGQES3WSHQQ-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20150811081228.GC5509@linux>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1439049521-30766-1-git-send-email-hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <http://groups.google.com/group/linux-sunxi
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+List-Subscribe: <http://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <http://groups.google.com/group/linux-sunxi/subscribe>
+To: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Bruno =?iso-8859-1?Q?Pr=E9mont?= <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, linux-pm@vger.kernel.org
 
-On Tue, Aug 11, 2015 at 01:42:28PM +0530, Viresh Kumar wrote:
-> On 10-08-15, 19:38, Dan Carpenter wrote:
-> > Hello Viresh Kumar,
-> > 
-> > The patch 3ca9bb33c627: "PM / OPP: Add clock-latency-ns support" from
-> > Jul 29, 2015, leads to the following static checker warning:
-> > 
-> > 	drivers/base/power/opp.c:949 _opp_add_static_v2()
-> > 	warn: passing casted pointer '&new_opp->clock_latency_ns' to 'of_property_read_u32()' 64 vs 32.
-> > 
-> > drivers/base/power/opp.c
-> >    946          new_opp->np = np;
-> >    947          new_opp->dynamic = false;
-> >    948          new_opp->available = true;
-> >    949          of_property_read_u32(np, "clock-latency-ns",
-> >    950                               (u32 *)&new_opp->clock_latency_ns);
-> >                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^
-> > 
-> > This code will break on 64 bit, big endian machines.  I doin't know if
-> > that is an issue for this driver.  I saw this was in the power/
-> > directory and I spent a minute googling to see if PowerPC machines are
-> > big endian...  :P
-> > 
-> >    951  
-> >    952          ret = opp_get_microvolt(new_opp, dev);
-> >    953          if (ret)
-> >    954                  goto free_opp;
-> >    955  
-> > 
-> > Also:
-> > 
-> > 	drivers/base/power/opp.c:956 _opp_add_static_v2()
-> > 	warn: passing casted pointer '&new_opp->u_amp' to 'of_property_read_u32()' 64 vs 32.
-> 
-> Hi Dan,
-> 
-> The problem is that the value here is of type 'unsigned long' which is
-> 32/64 bit on 32/64 bit machines.
+On Sat, 08 Aug 2015, Hans de Goede wrote:
 
-Yep.  It won't work on 64 bit big endian machines as described earlier.
+> From: Bruno Pr=C3=A9mont <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
+>=20
+> Add an extra set of registers which is necessary tu support the PMICs
+> battery charger function, and mark registers which contain status bits,
+> gpio status, and adc readings as volatile.
+>=20
+> Cc: Bruno Pr=C3=A9mont <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
+> Signed-off-by: Bruno Pr=C3=A9mont <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
+> Signed-off-by: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+> Acked-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> Acked-by: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+> ---
+> Changes in v2:
+> -Add a AXP20X_OCV_MAX define
+> Changes in v3:
+> -Add Bruno's S-o-b
+> Changes in v4:
+> -Consistently use AXP20X_OCV_MAX everywhere
+> ---
+>  drivers/mfd/axp20x.c       | 8 +++++++-
+>  include/linux/mfd/axp20x.h | 6 ++++++
+>  2 files changed, 13 insertions(+), 1 deletion(-)
 
-> 
-> So, I looked at how other places in code has done it, and that's what
-> I found.
+Applied, thanks.
 
-It's not portable.  Sometimes we don't care about that because we know
-we don't care about 64 bit big endian systems.  Hence, my email.
+> diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+> index b369cfc..d9f2f96 100644
+> --- a/drivers/mfd/axp20x.c
+> +++ b/drivers/mfd/axp20x.c
+> @@ -61,10 +61,16 @@ static const struct regmap_access_table axp152_volati=
+le_table =3D {
+>  static const struct regmap_range axp20x_writeable_ranges[] =3D {
+>  	regmap_reg_range(AXP20X_DATACACHE(0), AXP20X_IRQ5_STATE),
+>  	regmap_reg_range(AXP20X_DCDC_MODE, AXP20X_FG_RES),
+> +	regmap_reg_range(AXP20X_RDC_H, AXP20X_OCV(AXP20X_OCV_MAX)),
+>  };
+> =20
+>  static const struct regmap_range axp20x_volatile_ranges[] =3D {
+> +	regmap_reg_range(AXP20X_PWR_INPUT_STATUS, AXP20X_USB_OTG_STATUS),
+> +	regmap_reg_range(AXP20X_CHRG_CTRL1, AXP20X_CHRG_CTRL2),
+>  	regmap_reg_range(AXP20X_IRQ1_EN, AXP20X_IRQ5_STATE),
+> +	regmap_reg_range(AXP20X_ACIN_V_ADC_H, AXP20X_IPSOUT_V_HIGH_L),
+> +	regmap_reg_range(AXP20X_GPIO20_SS, AXP20X_GPIO3_CTRL),
+> +	regmap_reg_range(AXP20X_FG_RES, AXP20X_RDC_L),
+>  };
+> =20
+>  static const struct regmap_access_table axp20x_writeable_table =3D {
+> @@ -195,7 +201,7 @@ static const struct regmap_config axp20x_regmap_confi=
+g =3D {
+>  	.val_bits	=3D 8,
+>  	.wr_table	=3D &axp20x_writeable_table,
+>  	.volatile_table	=3D &axp20x_volatile_table,
+> -	.max_register	=3D AXP20X_FG_RES,
+> +	.max_register	=3D AXP20X_OCV(AXP20X_OCV_MAX),
+>  	.cache_type	=3D REGCACHE_RBTREE,
+>  };
+> =20
+> diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
+> index 52203d5..cc8ad1e 100644
+> --- a/include/linux/mfd/axp20x.h
+> +++ b/include/linux/mfd/axp20x.h
+> @@ -190,6 +190,12 @@ enum {
+>  #define AXP20X_CC_CTRL			0xb8
+>  #define AXP20X_FG_RES			0xb9
+> =20
+> +/* OCV */
+> +#define AXP20X_RDC_H			0xba
+> +#define AXP20X_RDC_L			0xbb
+> +#define AXP20X_OCV(m)			(0xc0 + (m))
+> +#define AXP20X_OCV_MAX			0xf
+> +
+>  /* AXP22X specific registers */
+>  #define AXP22X_BATLOW_THRES1		0xe6
+> =20
 
-regards,
-dan carpenter
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
 
+--=20
+You received this message because you are subscribed to the Google Groups "=
+linux-sunxi" group.
+To unsubscribe from this group and stop receiving emails from it, send an e=
+mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
+For more options, visit https://groups.google.com/d/optout.
