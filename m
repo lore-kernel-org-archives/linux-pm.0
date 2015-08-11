@@ -1,46 +1,41 @@
-From: Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>
-Subject: Re: [PATCH] bq2415x_charger: Allow to load and use driver even if
- notify device is not registered yet
-Date: Tue, 11 Aug 2015 13:23:43 +0200
-Message-ID: <20150811112343.GA1461@pali>
-References: <1437860816-14141-1-git-send-email-pali.rohar@gmail.com>
- <20150805132652.GB26280@pali>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFCv5 PATCH 11/46] sched: Remove blocked load and utilization
+ contributions of dying tasks
+Date: Tue, 11 Aug 2015 13:39:27 +0200
+Message-ID: <20150811113927.GT19282@twins.programming.kicks-ass.net>
+References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
+ <1436293469-25707-12-git-send-email-morten.rasmussen@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f179.google.com ([209.85.212.179]:34144 "EHLO
-	mail-wi0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933945AbbHKLXt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Aug 2015 07:23:49 -0400
+Received: from bombadil.infradead.org ([198.137.202.9]:58105 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934028AbbHKLjj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Aug 2015 07:39:39 -0400
 Content-Disposition: inline
-In-Reply-To: <20150805132652.GB26280@pali>
+In-Reply-To: <1436293469-25707-12-git-send-email-morten.rasmussen@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Morten Rasmussen <morten.rasmussen@arm.com>
+Cc: mingo@redhat.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Wednesday 05 August 2015 15:26:52 Pali Roh=C3=A1r wrote:
-> On Saturday 25 July 2015 23:46:56 Pali Roh=C3=A1r wrote:
-> > -	if (psy !=3D bq->notify_psy)
-> > -		return NOTIFY_OK;
-> > +	/* Ignore event if it was not send by notify_node/notify_device *=
-/
-> > +	if (bq->notify_node) {
-> > +		if (psy->dev.parent &&
-> > +		    psy->dev.parent->of_node !=3D bq->notify_node)
-> > +			return NOTIFY_OK;
->=20
-> There is missing branch for case when psy->dev.parent is NULL. Logica=
-l
-> error... I will send new version of patch.
->=20
-> Correct logic should be: ignore psy dev which sent event if it is not
-> notify dev specified in board/DT config of bq2415x psy dev.
->=20
+On Tue, Jul 07, 2015 at 07:23:54PM +0100, Morten Rasmussen wrote:
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> index 775b0c7..fa12ce5 100644
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
+> @@ -3217,6 +3217,8 @@ dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int flags)
+>  	 * Update run-time statistics of the 'current'.
+>  	 */
+>  	update_curr(cfs_rq);
+> +	if (entity_is_task(se) && task_of(se)->state == TASK_DEAD)
+> +		flags &= !DEQUEUE_SLEEP;
+>  	dequeue_entity_load_avg(cfs_rq, se, flags & DEQUEUE_SLEEP);
+>  
+>  	update_stats_dequeue(cfs_rq, se);
 
-=46ixed in v2.
+I know this is entirely redundant at this point (we took Yuyang's
+patches), but this is the wrong way to go about doing this.
 
---=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
+You add extra code the hot dequeue path for something that 'never'
+happens. We have the sched_class::task_dead call for that.
