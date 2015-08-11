@@ -1,255 +1,111 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH v2 1/4] thermal: power_allocator: relax the requirement
- of a sustainable_power in tzp
-Date: Tue, 11 Aug 2015 18:37:11 +0100
-Message-ID: <20150811173711.GA9024@e104805>
-References: <1439222692-3535-1-git-send-email-javi.merino@arm.com>
- <1439288493-19740-1-git-send-email-javi.merino@arm.com>
- <1439288493-19740-2-git-send-email-javi.merino@arm.com>
- <9hhegjakklf.fsf@e105922-lin.cambridge.arm.com>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: Q: cpuidle results in degredation in ethernet performance ?
+Date: Tue, 11 Aug 2015 11:12:26 -0700
+Message-ID: <7htws5r8xh.fsf@deeprootsystems.com>
+References: <CAJ2oMhKw0gpFMKOd-iYe_hYh56Q62XgpW+MJmyiGhdkGn1RTMg@mail.gmail.com>
+	<55C0CC17.604@linaro.org>
+	<CAJ2oMhJgj02yzGQEqBZW1Fbdc1GEv0-4-NBOt97Mfdiz=tDXSg@mail.gmail.com>
+	<55C1D76B.9000006@linaro.org> <7hio8msri4.fsf@deeprootsystems.com>
+	<CAJ2oMhJGkdmDe6TSM3H=98L_dx9Uq+52o3Y_jYuLEGtNr-cY5w@mail.gmail.com>
+	<7h8u9hsvhg.fsf@deeprootsystems.com>
+	<CAJ2oMhLtUVZwGH9U+j0KJsFNL2uoLk8kF5P6=KkF8FGwcqjOGw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:38548 "EHLO
-	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751672AbbHKRhS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Aug 2015 13:37:18 -0400
-Content-Disposition: inline
-In-Reply-To: <9hhegjakklf.fsf@e105922-lin.cambridge.arm.com>
+Received: from mail-pd0-f176.google.com ([209.85.192.176]:33443 "EHLO
+	mail-pd0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751191AbbHKSM2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Aug 2015 14:12:28 -0400
+Received: by pdrh1 with SMTP id h1so68138381pdr.0
+        for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2015 11:12:28 -0700 (PDT)
+In-Reply-To: <CAJ2oMhLtUVZwGH9U+j0KJsFNL2uoLk8kF5P6=KkF8FGwcqjOGw@mail.gmail.com>
+	(Ran Shalit's message of "Tue, 11 Aug 2015 19:41:47 +0300")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Punit Agrawal <punit.agrawal@arm.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "dmitry.torokhov@gmail.com" <dmitry.torokhov@gmail.com>, "cywang@chromium.org" <cywang@chromium.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+To: Ran Shalit <ranshalit@gmail.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
 
-On Tue, Aug 11, 2015 at 02:42:20PM +0100, Punit Agrawal wrote:
-> Hi Javi,
-> 
-> A few nitpicks and a comment below.
-> 
-> Javi Merino <javi.merino@arm.com> writes:
-> 
-> > The power allocator governor currently requires that a sustainable power
-> > is passed as part of the thermal zone's thermal zone parameters.  If
-> > that parameter is not provided, it doesn't register with the thermal
-> > zone.
-> >
-> > While this parameter is strongly recommended for optimal performance, it
-> > doesn't need to be mandatory.  Relax the requirement and allow the
-> > governor to bind to thermal zones that don't provide it by estimating it
-> > from the cooling devices' power model.
-> >
-> > Cc: Zhang Rui <rui.zhang@intel.com>
-> > Cc: Eduardo Valentin <edubezval@gmail.com>
-> > Signed-off-by: Javi Merino <javi.merino@arm.com>
-> > ---
-> >  drivers/thermal/power_allocator.c | 62 +++++++++++++++++++++++++++++++++------
-> >  drivers/thermal/thermal_core.c    | 28 ++++++++++++++++++
-> >  include/linux/thermal.h           |  6 ++++
-> >  3 files changed, 87 insertions(+), 9 deletions(-)
-> >
-> > diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
-> > index 63a448f9d93b..f78836c2da26 100644
-> > --- a/drivers/thermal/power_allocator.c
-> > +++ b/drivers/thermal/power_allocator.c
-> > @@ -73,6 +73,39 @@ struct power_allocator_params {
-> >  };
-> >  
-> >  /**
-> > + * estimate_sustainable_power() - Estimate the sustainable power of a thermal zone
-> > + * @tz: thermal zone we are operating in
-> > + *
-> > + * For thermal zones that don't provide a sustainable_power in their
-> > + * thermal_zone_params, estimate one.  Calculate it using the minimum
-> > + * power of all the cooling devices as that gives a valid value that
-> > + * can give some degree of functionality.  For optimal performance of
-> > + * this governor, provide a sustainable_power in the thermal zone's
-> > + * thermal_zone_params.
-> > + */
-> > +static u32 estimate_sustainable_power(struct thermal_zone_device *tz)
-> > +{
-> > +	u32 sustainable_power = 0;
-> > +	struct thermal_instance *instance;
-> > +	struct power_allocator_params *params = tz->governor_data;
-> > +
-> > +	list_for_each_entry(instance, &tz->thermal_instances, tz_node) {
-> > +		struct thermal_cooling_device *cdev = instance->cdev;
-> > +		u32 min_power;
-> > +
-> > +		if (instance->trip != params->trip_max_desired_temperature)
-> > +			continue;
-> > +
-> > +		if (power_actor_get_min_power(cdev, tz, &min_power))
-> > +			continue;
-> > +
-> > +		sustainable_power += min_power;
-> > +	}
-> > +
-> > +	return sustainable_power;
-> > +}
-> > +
-> > +/**
-> >   * pid_controller() - PID controller
-> >   * @tz:	thermal zone we are operating in
-> >   * @current_temp:	the current temperature in millicelsius
-> > @@ -98,6 +131,7 @@ static u32 pid_controller(struct thermal_zone_device *tz,
-> >  {
-> >  	s64 p, i, d, power_range;
-> >  	s32 err, max_power_frac;
-> > +	u32 sustainable_power;
-> >  	struct power_allocator_params *params = tz->governor_data;
-> >  
-> >  	max_power_frac = int_to_frac(max_allocatable_power);
-> > @@ -138,8 +172,11 @@ static u32 pid_controller(struct thermal_zone_device *tz,
-> >  
-> >  	power_range = p + i + d;
-> >  
-> > +	sustainable_power = tz->tzp->sustainable_power ?:
-> > +		estimate_sustainable_power(tz);
-> > +
-> >  	/* feed-forward the known sustainable dissipatable power */
-> > -	power_range = tz->tzp->sustainable_power + frac_to_int(power_range);
-> > +	power_range = sustainable_power + frac_to_int(power_range);
-> >  
-> >  	power_range = clamp(power_range, (s64)0, (s64)max_allocatable_power);
-> >  
-> > @@ -418,18 +455,18 @@ static int power_allocator_bind(struct thermal_zone_device *tz)
-> >  	int ret;
-> >  	struct power_allocator_params *params;
-> >  	unsigned long switch_on_temp, control_temp;
-> > -	u32 temperature_threshold;
-> > +	u32 sustainable_power, temperature_threshold;
-> >  
-> > -	if (!tz->tzp || !tz->tzp->sustainable_power) {
-> > -		dev_err(&tz->device,
-> > -			"power_allocator: missing sustainable_power\n");
-> > +	if (!tz->tzp)
-> >  		return -EINVAL;
-> > -	}
-> >  
-> >  	params = devm_kzalloc(&tz->device, sizeof(*params), GFP_KERNEL);
-> >  	if (!params)
-> >  		return -ENOMEM;
-> >  
-> > +	if (!tz->tzp->sustainable_power)
-> > +		dev_warn(&tz->device, "power_allocator: sustainable_power will be estimated\n");
-> > +
-> >  	ret = get_governor_trips(tz, params);
-> >  	if (ret) {
-> >  		dev_err(&tz->device,
-> > @@ -448,13 +485,20 @@ static int power_allocator_bind(struct thermal_zone_device *tz)
-> >  	if (ret)
-> >  		goto free;
-> >  
-> > +	/*
-> > +	 * Provide an arbitrary sustainable_power to set the default
-> > +	 * values of k_po and k_pu.  We can estimate sustainable_power
->                                         ^
->                                         can not
-> > +	 * at this point because no cooling devices have been
-> > +	 * registered yet.  By providing an arbitrary value we get
-> > +	 * better defaults that setting k_po and k_pu to 0.
->                            ^
->                            than
+Ran Shalit <ranshalit@gmail.com> writes:
 
-Fixed both.
-
-> > +	 */
-> > +	sustainable_power = tz->tzp->sustainable_power ?: 2500;
-> >  	temperature_threshold = control_temp - switch_on_temp;
-> >  
-> >  	tz->tzp->k_po = tz->tzp->k_po ?:
-> > -		int_to_frac(tz->tzp->sustainable_power) / temperature_threshold;
-> > +		int_to_frac(sustainable_power) / temperature_threshold;
-> >  	tz->tzp->k_pu = tz->tzp->k_pu ?:
-> > -		int_to_frac(2 * tz->tzp->sustainable_power) /
-> > -		temperature_threshold;
-> > +		int_to_frac(2 * sustainable_power) / temperature_threshold;
-> 
-> As we are being conservative with our estimation of sustainable power
-> (sum of mins) when it is not explicitly specified, should we be
-> conservative here and let the proportional terms, k_po and k_pu be zero
-> as well?
-
-Yes, we could do.  If we set it to zero, all cooling devices will be
-set to the maximum cooling state when the governor is active.  If we
-set it to a valid(ish) value, it will do a bit of thermal control.
-It's not perfect but I think it's better to have a bad estimate than
-no estimate.
+> On Tue, Aug 11, 2015 at 6:19 PM, Kevin Hilman <khilman@kernel.org> wrote:
+>> Ran Shalit <ranshalit@gmail.com> writes:
+>>
+>>> On Tue, Aug 11, 2015 at 1:33 AM, Kevin Hilman <khilman@kernel.org> wrote:
+>>>> Daniel Lezcano <daniel.lezcano@linaro.org> writes:
+>>>>
+>>>>> On 08/04/2015 05:24 PM, Ran Shalit wrote:
+>>>>>> On Tue, Aug 4, 2015 at 5:28 PM, Daniel Lezcano
+>>>>>> <daniel.lezcano@linaro.org> wrote:
+>>>>>>> On 08/01/2015 09:34 PM, Ran Shalit wrote:
+>>>>>>>>
+>>>>>>>> Hello,
+>>>>>>>>
+>>>>>>>> Maybe if someone here understands cpuidel he can help me...
+>>>>>>>>
+>>>>>>>> I am using omap, with cpuidel and I have some strange behaviour only
+>>>>>>>> when cpuidle is used:
+>>>>>>>> 1.  I test ethernet bandwidth with iperf
+>>>>>>>> 2. With large packet test (16k), I get same bandwidth in version with
+>>>>>>>> cpuidle support as in version without cpuidel supported.
+>>>>>>>> 3. With small packet test (<2000 bytes), I get high degredation in
+>>>>>>>> performance in version with cpuidle. On viewing statistics I see that
+>>>>>>>> the cpu gets into cpu inactive state (C3 state -  not retention yet,
+>>>>>>>> only cpu not active). I guess this is the cuase of the degredation.
+>>>>>>>> With large packets I get no increment in C3 state usage.
+>>>>>>>> 4. I think that menu governer behaviour might explain this, but I
+>>>>>>>> don't understand it deeply enough.
+>>>>>>>>
+>>>>>>>> Can anyone shed a light on this ? Is there anything I can do to overcome
+>>>>>>>> this ?
+>>>>>>>
+>>>>>>>
+>>>>>>> Is an omap3 or omap4 ?
+>>>>>>>
+>>>>>>>
+>>>>>> Hi,
+>>>>>>
+>>>>>> It is omap3530.
+>>>>>
+>>>>> Ok, thanks.
+>>>>>
+>>>>> I was asking for the omap version because the cpuidle driver is
+>>>>> different and behaves differently. The core are coupled and the IPI
+>>>>> enters in the next prediction equation.
+>>>>
+>>>> What board are you using, what is network chip you're using, and how is
+>>>> it wired to the OMAP3530, in particular the IRQ line.
+>>>>
+>>>> Lots depends on whether the eth NIC is capable of waking the OMAP from
+>>>> deep sleep. Typically, this is done by wiring the NIC IRQ to a
+>>>> wakeup-capable GPIO.
+>>>>
+>>>> If the NIC is not waking the OMAP from deep sleep, then the performance
+>>>> degradation could also happen because the packets are not processed
+>>>> until some other timer fires and wakes up the OMAP idle.
+>>>>
+>>>> Kevin
+>>>
+>>> I am using omap3530 with smsc911 ethernet controller.
+>>> I need to check if there is some IRQ as you mentioned, but I guess
+>>> there must be some, otherwise it wouldn't wakeup when doing ping from
+>>> host after it gets into sleep, Right ?
+>>
+>> Well, there are other wakeup sources, specifically timers, that may be
+>> causing the wakeup from deep sleep, after which the NIC IRQ would fire
+>> and the ping would be replied to.    So it's entirely possible that the
+>> NIC is not wired up as wakeup capable but you'd still be able to ping.
+>>
+>
+> Hi Kevin,
+>
+> Which timer do you mean  ?
+> I don't start any application yet, (while testing with ping).
 
 
-> >  	tz->tzp->k_i = tz->tzp->k_i ?: int_to_frac(10) / 1000;
-> >  	/*
-> >  	 * The default for k_d and integral_cutoff is 0, so we can
-> > diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> > index 4ca211be4c0f..d26bc9e6f936 100644
-> > --- a/drivers/thermal/thermal_core.c
-> > +++ b/drivers/thermal/thermal_core.c
-> > @@ -997,6 +997,34 @@ int power_actor_get_max_power(struct thermal_cooling_device *cdev,
-> >  }
-> >  
-> >  /**
-> > + * power_actor_get_min_power() - get the mainimum power that a cdev can consume
-> > + * @cdev:	pointer to &thermal_cooling_device
-> > + * @tz:		a valid thermal zone device pointer
-> > + * @min_power:	pointer in which to store the minimum power
-> > + *
-> > + * Calculate the minimum power consumption in milliwats that the
-> > + * cooling device can currently consume and store it in @min_power.
-> > + *
-> > + * Return: 0 on success, -EINVAL if @cdev doesn't support the
-> > + * power_actor API or -E* on other error.
-> > + */
-> > +int power_actor_get_min_power(struct thermal_cooling_device *cdev,
-> > +			      struct thermal_zone_device *tz, u32 *min_power)
-> > +{
-> > +	unsigned long max_state;
-> > +	int ret;
-> > +
-> > +	if (!cdev_is_power_actor(cdev))
-> > +		return -EINVAL;
-> > +
-> > +	ret = cdev->ops->get_max_state(cdev, &max_state);
-> > +	if (ret)
-> > +		return ret;
-> > +
-> > +	return cdev->ops->state2power(cdev, tz, max_state, min_power);
-> > +}
-> > +
-> > +/**
-> >   * power_actor_set_power() - limit the maximum power that a cooling device can consume
-> >   * @cdev:	pointer to &thermal_cooling_device
-> >   * @instance:	thermal instance to update
-> > diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> > index 037e9df2f610..f99d934d373a 100644
-> > --- a/include/linux/thermal.h
-> > +++ b/include/linux/thermal.h
-> > @@ -384,6 +384,8 @@ static inline bool cdev_is_power_actor(struct thermal_cooling_device *cdev)
-> >  
-> >  int power_actor_get_max_power(struct thermal_cooling_device *,
-> >  			      struct thermal_zone_device *tz, u32 *max_power);
-> > +int power_actor_get_min_power(struct thermal_cooling_device *,
-> > +			      struct thermal_zone_device *tz, u32 *min_power);
-> >  int power_actor_set_power(struct thermal_cooling_device *,
-> >  			  struct thermal_instance *, u32);
-> >  struct thermal_zone_device *thermal_zone_device_register(const char *, int, int,
-> > @@ -419,6 +421,10 @@ static inline bool cdev_is_power_actor(struct thermal_cooling_device *cdev)
-> >  static inline int power_actor_get_max_power(struct thermal_cooling_device *cdev,
-> >  			      struct thermal_zone_device *tz, u32 *max_power)
-> >  { return 0; }
-> > +static inline int power_actor_get_min_power(struct thermal_cooling_device *cdev,
-> > +					    struct thermal_zone_device *tz,
-> > +					    u32 *min_power)
-> > +{ return -ENODEV; }
-> 
-> Perhaps return 0 like power_actor_get_max_power just above for
-> consistency.
+The hardware timers managed by the kernel, which fire for the kernel
+tick or any other kernel timers that might be running.  
 
-No, return 0 is not a good idea.  If you return 0, you're telling the
-calling function that everything went all right and you've put the
-minimum power in @min_power.
+Kevin
 
-What we should do is fix power_actor_get_max_power() and
-power_actor_set_power() to return an error value if !CONFIG_THERMAL.
 
-Cheers,
-Javi
+
