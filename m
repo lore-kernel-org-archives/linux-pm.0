@@ -1,56 +1,60 @@
-From: Kukjin Kim <kgene@kernel.org>
-Subject: RE: [PATCH v4 0/6] cpufreq: use generic cpufreq drivers for Exynos4x12
- platform
-Date: Tue, 11 Aug 2015 16:51:10 +0900
-Message-ID: <057401d0d40a$7cd241a0$7676c4e0$@kernel.org>
-References: <1438868514-8814-1-git-send-email-b.zolnierkie@samsung.com>
- <2359635.Hxe4cb8zKm@amdc1976> <20150807115627.GH6939@linux>
- <1525406.7aXvVQzEDd@vostro.rjw.lan> <20150808020740.GM6939@linux>
- <55C5AF4E.3010500@samsung.com> <03ee01d0d30b$b279c490$176d4db0$@kernel.org>
- <55C95BD6.7010200@samsung.com>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v4 2/2] dt: power: st: Provide bindings for ST's OPPs
+Date: Tue, 11 Aug 2015 13:30:23 +0530
+Message-ID: <20150811080023.GB5509@linux>
+References: <1438010430-5802-2-git-send-email-lee.jones@linaro.org>
+ <20150728022936.GB1229@linux>
+ <20150728225510.GB3159@codeaurora.org>
+ <20150729081403.GH2284@x1>
+ <20150729221526.GE3159@codeaurora.org>
+ <20150730084634.GD9319@x1>
+ <CAL_JsqKQLQ15qSt95zBZykzzPhcUrtZzhk29a76n+r_3719AiA@mail.gmail.com>
+ <20150731163715.GV3159@codeaurora.org>
+ <20150803034642.GV899@linux>
+ <20150810132247.GH3249@x1>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <55C95BD6.7010200@samsung.com>
-Content-language: ko
-Sender: linux-kernel-owner@vger.kernel.org
-To: 'Krzysztof Kozlowski' <k.kozlowski@samsung.com>, 'Kukjin Kim' <kgene@kernel.org>
-Cc: 'Viresh Kumar' <viresh.kumar@linaro.org>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, 'Anand Moon' <linux.amoon@gmail.com>, 'Kevin Hilman' <khilman@linaro.org>, linux-kernel@vger.kernel.org, 'Heiko Stuebner' <heiko@sntech.de>, 'Bartlomiej Zolnierkiewicz' <b.zolnierkie@samsung.com>, 'Tobias Jakobi' <tjakobi@math.uni-bielefeld.de>, 'Lukasz Majewski' <l.majewski@samsung.com>, 'Michael Turquette' <mturquette@baylibre.com>, linux-pm@vger.kernel.org, 'Tomasz Figa' <tomasz.figa@gmail.com>, linux-clk@vger.kernel.org, 'Chanwoo Choi' <cw00.choi@samsung.com>, 'Thomas Abraham' <thomas.ab@samsung.com>, 'Sylwester Nawrocki' <s.nawrocki@samsung.com>, 'Olof Johansson' <olof@lixom.net>, 'Arnd Bergmann' <arnd.bergmann@linaro.org>, 'Javier Martinez Canillas' <javier@dowhile0.org>, linux-samsung-soc@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20150810132247.GH3249@x1>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Rob Herring <robherring2-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, kernel-F5mvAk5X5gdBDgjK7y7TUQ@public.gmane.org, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Arnd Bergmann <arnd.bergmann-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Ajit Pal Singh <ajitpal.singh-qxv4g6HH51o@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Krzysztof Kozlowski wrote:
+On 10-08-15, 14:22, Lee Jones wrote:
+> >  Optional properties:
+> > +- opp-cuts: One or more strings, describing the versions of hardware the OPPs
+> > +  can support.
 > 
-> On 10.08.2015 10:27, Kukjin Kim wrote:
-> > Krzysztof Kozlowski wrote:
-> >>
-> >> W dniu 08.08.2015 o 11:07, Viresh Kumar pisze:
-> >>> On 08-08-15, 00:24, Rafael J. Wysocki wrote:
-> >>>> OK, so please let me know which patches you want me to pick up.
-> >>>>
-> >>>> Ideally, I'd prefer them to be resent in a separate series with ACKs and all
-> >>>> with a cover letter clearly stating whose tree they are being targeted at.
-> >>>
-> >>> He already sent it separately, let me send a confirmatory mail in
-> >>> reply to that.
-> >>
-> >> Dear Kukjin,
-> >>
-> >> Can you apply the 2-5 of this series to v4.3? It's getting late but
-> >> maybe they still could go?
-> >>
-> > Once my previous pull-request landed into arm-soc, I'll try to send out this
-> > series 2-5 for v4.3.
+> This isn't very generic.
 > 
-> Additionally (better late than never):
+> I'm guessing some vendors my have quite a few ways to differentiate
+> between board versions/revisions/cuts etc.
+> 
+> How about another array where a vendor can choose to identify a piece
+> of hardware however they see fit.
+> 
+> Example 1 (simple version):
+> 
+> /* Version 1 */
+> opp-version = <1>;
+> 
+> Example 2 (using the kernel's versioning):
+> 
+> /* 2.6.32-rc1 */
+> opp-version = <2 6 32 1>;
+> 
+> Example 3 (using ST's versioning):
+> 
+> /* Major 2, Minor 0, Cut 2, All substrates */
+> opp-version = <2 0 2 0xff>;
 
-Sure ;-)
+But how will we parse this with generic code ?
 
-> Patches 2-5 tested on Trats2 board (Exynos4412)
-> 
-> Tested-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> 
-Applied with Krzysztof's 'Tested-by'.
-
-Thanks,
-Kukjin
+-- 
+viresh
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
