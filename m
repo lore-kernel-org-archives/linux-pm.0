@@ -1,237 +1,71 @@
-From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: Re: [PATCH v2 1/4] thermal: power_allocator: relax the requirement of a sustainable_power in tzp
-Date: Tue, 11 Aug 2015 14:42:20 +0100
-Message-ID: <9hhegjakklf.fsf@e105922-lin.cambridge.arm.com>
-References: <1439222692-3535-1-git-send-email-javi.merino@arm.com>
-	<1439288493-19740-1-git-send-email-javi.merino@arm.com>
-	<1439288493-19740-2-git-send-email-javi.merino@arm.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Subject: Re: PM / OPP: Add clock-latency-ns support
+Date: Tue, 11 Aug 2015 16:53:11 +0300
+Message-ID: <20150811135122.GL5096@mwanda>
+References: <20150810163804.GA10496@mwanda>
+ <20150811081228.GC5509@linux>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:45490 "EHLO
-	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S964835AbbHKNlH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Aug 2015 09:41:07 -0400
-In-Reply-To: <1439288493-19740-2-git-send-email-javi.merino@arm.com> (Javi
-	Merino's message of "Tue, 11 Aug 2015 11:21:30 +0100")
+Received: from userp1040.oracle.com ([156.151.31.81]:41645 "EHLO
+	userp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964890AbbHKNxW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 11 Aug 2015 09:53:22 -0400
+Content-Disposition: inline
+In-Reply-To: <20150811081228.GC5509@linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: linux-pm@vger.kernel.org, dmitry.torokhov@gmail.com, cywang@chromium.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Stephen Boyd <sboyd@codeaurora.org>, linux-pm@vger.kernel.org
 
-Hi Javi,
+On Tue, Aug 11, 2015 at 01:42:28PM +0530, Viresh Kumar wrote:
+> On 10-08-15, 19:38, Dan Carpenter wrote:
+> > Hello Viresh Kumar,
+> > 
+> > The patch 3ca9bb33c627: "PM / OPP: Add clock-latency-ns support" from
+> > Jul 29, 2015, leads to the following static checker warning:
+> > 
+> > 	drivers/base/power/opp.c:949 _opp_add_static_v2()
+> > 	warn: passing casted pointer '&new_opp->clock_latency_ns' to 'of_property_read_u32()' 64 vs 32.
+> > 
+> > drivers/base/power/opp.c
+> >    946          new_opp->np = np;
+> >    947          new_opp->dynamic = false;
+> >    948          new_opp->available = true;
+> >    949          of_property_read_u32(np, "clock-latency-ns",
+> >    950                               (u32 *)&new_opp->clock_latency_ns);
+> >                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+> > 
+> > This code will break on 64 bit, big endian machines.  I doin't know if
+> > that is an issue for this driver.  I saw this was in the power/
+> > directory and I spent a minute googling to see if PowerPC machines are
+> > big endian...  :P
+> > 
+> >    951  
+> >    952          ret = opp_get_microvolt(new_opp, dev);
+> >    953          if (ret)
+> >    954                  goto free_opp;
+> >    955  
+> > 
+> > Also:
+> > 
+> > 	drivers/base/power/opp.c:956 _opp_add_static_v2()
+> > 	warn: passing casted pointer '&new_opp->u_amp' to 'of_property_read_u32()' 64 vs 32.
+> 
+> Hi Dan,
+> 
+> The problem is that the value here is of type 'unsigned long' which is
+> 32/64 bit on 32/64 bit machines.
 
-A few nitpicks and a comment below.
+Yep.  It won't work on 64 bit big endian machines as described earlier.
 
-Javi Merino <javi.merino@arm.com> writes:
+> 
+> So, I looked at how other places in code has done it, and that's what
+> I found.
 
-> The power allocator governor currently requires that a sustainable power
-> is passed as part of the thermal zone's thermal zone parameters.  If
-> that parameter is not provided, it doesn't register with the thermal
-> zone.
->
-> While this parameter is strongly recommended for optimal performance, it
-> doesn't need to be mandatory.  Relax the requirement and allow the
-> governor to bind to thermal zones that don't provide it by estimating it
-> from the cooling devices' power model.
->
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Eduardo Valentin <edubezval@gmail.com>
-> Signed-off-by: Javi Merino <javi.merino@arm.com>
-> ---
->  drivers/thermal/power_allocator.c | 62 +++++++++++++++++++++++++++++++++------
->  drivers/thermal/thermal_core.c    | 28 ++++++++++++++++++
->  include/linux/thermal.h           |  6 ++++
->  3 files changed, 87 insertions(+), 9 deletions(-)
->
-> diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
-> index 63a448f9d93b..f78836c2da26 100644
-> --- a/drivers/thermal/power_allocator.c
-> +++ b/drivers/thermal/power_allocator.c
-> @@ -73,6 +73,39 @@ struct power_allocator_params {
->  };
->  
->  /**
-> + * estimate_sustainable_power() - Estimate the sustainable power of a thermal zone
-> + * @tz: thermal zone we are operating in
-> + *
-> + * For thermal zones that don't provide a sustainable_power in their
-> + * thermal_zone_params, estimate one.  Calculate it using the minimum
-> + * power of all the cooling devices as that gives a valid value that
-> + * can give some degree of functionality.  For optimal performance of
-> + * this governor, provide a sustainable_power in the thermal zone's
-> + * thermal_zone_params.
-> + */
-> +static u32 estimate_sustainable_power(struct thermal_zone_device *tz)
-> +{
-> +	u32 sustainable_power = 0;
-> +	struct thermal_instance *instance;
-> +	struct power_allocator_params *params = tz->governor_data;
-> +
-> +	list_for_each_entry(instance, &tz->thermal_instances, tz_node) {
-> +		struct thermal_cooling_device *cdev = instance->cdev;
-> +		u32 min_power;
-> +
-> +		if (instance->trip != params->trip_max_desired_temperature)
-> +			continue;
-> +
-> +		if (power_actor_get_min_power(cdev, tz, &min_power))
-> +			continue;
-> +
-> +		sustainable_power += min_power;
-> +	}
-> +
-> +	return sustainable_power;
-> +}
-> +
-> +/**
->   * pid_controller() - PID controller
->   * @tz:	thermal zone we are operating in
->   * @current_temp:	the current temperature in millicelsius
-> @@ -98,6 +131,7 @@ static u32 pid_controller(struct thermal_zone_device *tz,
->  {
->  	s64 p, i, d, power_range;
->  	s32 err, max_power_frac;
-> +	u32 sustainable_power;
->  	struct power_allocator_params *params = tz->governor_data;
->  
->  	max_power_frac = int_to_frac(max_allocatable_power);
-> @@ -138,8 +172,11 @@ static u32 pid_controller(struct thermal_zone_device *tz,
->  
->  	power_range = p + i + d;
->  
-> +	sustainable_power = tz->tzp->sustainable_power ?:
-> +		estimate_sustainable_power(tz);
-> +
->  	/* feed-forward the known sustainable dissipatable power */
-> -	power_range = tz->tzp->sustainable_power + frac_to_int(power_range);
-> +	power_range = sustainable_power + frac_to_int(power_range);
->  
->  	power_range = clamp(power_range, (s64)0, (s64)max_allocatable_power);
->  
-> @@ -418,18 +455,18 @@ static int power_allocator_bind(struct thermal_zone_device *tz)
->  	int ret;
->  	struct power_allocator_params *params;
->  	unsigned long switch_on_temp, control_temp;
-> -	u32 temperature_threshold;
-> +	u32 sustainable_power, temperature_threshold;
->  
-> -	if (!tz->tzp || !tz->tzp->sustainable_power) {
-> -		dev_err(&tz->device,
-> -			"power_allocator: missing sustainable_power\n");
-> +	if (!tz->tzp)
->  		return -EINVAL;
-> -	}
->  
->  	params = devm_kzalloc(&tz->device, sizeof(*params), GFP_KERNEL);
->  	if (!params)
->  		return -ENOMEM;
->  
-> +	if (!tz->tzp->sustainable_power)
-> +		dev_warn(&tz->device, "power_allocator: sustainable_power will be estimated\n");
-> +
->  	ret = get_governor_trips(tz, params);
->  	if (ret) {
->  		dev_err(&tz->device,
-> @@ -448,13 +485,20 @@ static int power_allocator_bind(struct thermal_zone_device *tz)
->  	if (ret)
->  		goto free;
->  
-> +	/*
-> +	 * Provide an arbitrary sustainable_power to set the default
-> +	 * values of k_po and k_pu.  We can estimate sustainable_power
-                                        ^
-                                        can not
-> +	 * at this point because no cooling devices have been
-> +	 * registered yet.  By providing an arbitrary value we get
-> +	 * better defaults that setting k_po and k_pu to 0.
-                           ^
-                           than
+It's not portable.  Sometimes we don't care about that because we know
+we don't care about 64 bit big endian systems.  Hence, my email.
 
-> +	 */
-> +	sustainable_power = tz->tzp->sustainable_power ?: 2500;
->  	temperature_threshold = control_temp - switch_on_temp;
->  
->  	tz->tzp->k_po = tz->tzp->k_po ?:
-> -		int_to_frac(tz->tzp->sustainable_power) / temperature_threshold;
-> +		int_to_frac(sustainable_power) / temperature_threshold;
->  	tz->tzp->k_pu = tz->tzp->k_pu ?:
-> -		int_to_frac(2 * tz->tzp->sustainable_power) /
-> -		temperature_threshold;
-> +		int_to_frac(2 * sustainable_power) / temperature_threshold;
+regards,
+dan carpenter
 
-As we are being conservative with our estimation of sustainable power
-(sum of mins) when it is not explicitly specified, should we be
-conservative here and let the proportional terms, k_po and k_pu be zero
-as well?
-
->  	tz->tzp->k_i = tz->tzp->k_i ?: int_to_frac(10) / 1000;
->  	/*
->  	 * The default for k_d and integral_cutoff is 0, so we can
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index 4ca211be4c0f..d26bc9e6f936 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -997,6 +997,34 @@ int power_actor_get_max_power(struct thermal_cooling_device *cdev,
->  }
->  
->  /**
-> + * power_actor_get_min_power() - get the mainimum power that a cdev can consume
-> + * @cdev:	pointer to &thermal_cooling_device
-> + * @tz:		a valid thermal zone device pointer
-> + * @min_power:	pointer in which to store the minimum power
-> + *
-> + * Calculate the minimum power consumption in milliwats that the
-> + * cooling device can currently consume and store it in @min_power.
-> + *
-> + * Return: 0 on success, -EINVAL if @cdev doesn't support the
-> + * power_actor API or -E* on other error.
-> + */
-> +int power_actor_get_min_power(struct thermal_cooling_device *cdev,
-> +			      struct thermal_zone_device *tz, u32 *min_power)
-> +{
-> +	unsigned long max_state;
-> +	int ret;
-> +
-> +	if (!cdev_is_power_actor(cdev))
-> +		return -EINVAL;
-> +
-> +	ret = cdev->ops->get_max_state(cdev, &max_state);
-> +	if (ret)
-> +		return ret;
-> +
-> +	return cdev->ops->state2power(cdev, tz, max_state, min_power);
-> +}
-> +
-> +/**
->   * power_actor_set_power() - limit the maximum power that a cooling device can consume
->   * @cdev:	pointer to &thermal_cooling_device
->   * @instance:	thermal instance to update
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index 037e9df2f610..f99d934d373a 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -384,6 +384,8 @@ static inline bool cdev_is_power_actor(struct thermal_cooling_device *cdev)
->  
->  int power_actor_get_max_power(struct thermal_cooling_device *,
->  			      struct thermal_zone_device *tz, u32 *max_power);
-> +int power_actor_get_min_power(struct thermal_cooling_device *,
-> +			      struct thermal_zone_device *tz, u32 *min_power);
->  int power_actor_set_power(struct thermal_cooling_device *,
->  			  struct thermal_instance *, u32);
->  struct thermal_zone_device *thermal_zone_device_register(const char *, int, int,
-> @@ -419,6 +421,10 @@ static inline bool cdev_is_power_actor(struct thermal_cooling_device *cdev)
->  static inline int power_actor_get_max_power(struct thermal_cooling_device *cdev,
->  			      struct thermal_zone_device *tz, u32 *max_power)
->  { return 0; }
-> +static inline int power_actor_get_min_power(struct thermal_cooling_device *cdev,
-> +					    struct thermal_zone_device *tz,
-> +					    u32 *min_power)
-> +{ return -ENODEV; }
-
-Perhaps return 0 like power_actor_get_max_power just above for
-consistency.
-
->  static inline int power_actor_set_power(struct thermal_cooling_device *cdev,
->  			  struct thermal_instance *tz, u32 power)
->  { return 0; }
