@@ -1,123 +1,53 @@
-From: Daniel Kurtz <djkurtz@chromium.org>
-Subject: Re: [PATCH v2 2/4] thermal: power_allocator: relax the requirement of
- two passive trip points
-Date: Wed, 12 Aug 2015 19:13:09 +0800
-Message-ID: <CAGS+omAKfHQJDZC0gqvyGN8W3RpgF7tX+ZZ-rCcXnHnpLkehMw@mail.gmail.com>
-References: <1439222692-3535-1-git-send-email-javi.merino@arm.com>
- <1439288493-19740-1-git-send-email-javi.merino@arm.com> <1439288493-19740-3-git-send-email-javi.merino@arm.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH v3 4/4] power: Add an axp20x-usb-power driver
+Date: Wed, 12 Aug 2015 14:22:00 +0200
+Message-ID: <55CB3A68.5080001@redhat.com>
+References: <1435316357-26606-1-git-send-email-hdegoede@redhat.com>
+ <1435316357-26606-4-git-send-email-hdegoede@redhat.com>
+ <20150724151020.GH27569@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=windows-1252;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f178.google.com ([209.85.160.178]:34903 "EHLO
-	mail-yk0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751222AbbHLLNa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Aug 2015 07:13:30 -0400
-Received: by ykdz80 with SMTP id z80so10677537ykd.2
-        for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2015 04:13:29 -0700 (PDT)
-In-Reply-To: <1439288493-19740-3-git-send-email-javi.merino@arm.com>
+Received: from mx1.redhat.com ([209.132.183.28]:36756 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751992AbbHLMWF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 12 Aug 2015 08:22:05 -0400
+In-Reply-To: <20150724151020.GH27569@earth>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: linux-pm@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Chung-yih Wang <cywang@chromium.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Punit Agrawal <punit.agrawal@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Lee Jones <lee.jones@linaro.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, =?UTF-8?Q?Bruno_Pr=c3=a9mont?= <bonbons@linux-vserver.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree <devicetree@vger.kernel.org>, linux-sunxi@googlegroups.com, Chen-Yu Tsai <wens@csie.org>
 
-Hi Javi,
+Hi Sebastian,
 
-tiny nits again...
+On 24-07-15 17:10, Sebastian Reichel wrote:
+> Hi,
+>
+> On Fri, Jun 26, 2015 at 12:59:17PM +0200, Hans de Goede wrote:
+>> This adds a driver for the usb power_supply bits of the axp20x PMICs=
+=2E
+>>
+>> I initially started writing my own driver, before coming aware of
+>> Bruno Pr=E9mont's excellent earlier RFC with a driver for this.
+>>
+>> My driver was lacking CURRENT_MAX and VOLTAGE_MIN support Bruno's
+>> drvier has, so I've copied the code for those from his driver.
+>>
+>> Note that the AC-power-supply and battery charger bits will need sep=
+arate
+>> drivers. Each one needs its own devictree child-node so that other
+>> devicetree nodes can reference the right power-supply, and thus each=
+ one
+>> will get its own mfd-cell / platform_device and platform-driver.
+>
+> Once the other comments have been taken care of, the driver looks ok
+> to me.
 
-On Tue, Aug 11, 2015 at 6:21 PM, Javi Merino <javi.merino@arm.com> wrote:
-> The power allocator governor currently requires that the thermal zone
-> has at least two passive trip points.  If there aren't, the governor
-> refuses to bind to the thermal zone.
->
-> This commit relaxes that requirement.  Now the governor will bind to all
-> thermal zones regardless of how many trip points they have.
->
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Eduardo Valentin <edubezval@gmail.com>
-> Signed-off-by: Javi Merino <javi.merino@arm.com>
-> ---
->  Documentation/thermal/power_allocator.txt |  2 +-
->  drivers/thermal/power_allocator.c         | 91 +++++++++++++++++--------------
->  2 files changed, 52 insertions(+), 41 deletions(-)
->
-> diff --git a/Documentation/thermal/power_allocator.txt b/Documentation/thermal/power_allocator.txt
-> index c3797b529991..a1ce2235f121 100644
-> --- a/Documentation/thermal/power_allocator.txt
-> +++ b/Documentation/thermal/power_allocator.txt
-> @@ -4,7 +4,7 @@ Power allocator governor tunables
->  Trip points
->  -----------
->
-> -The governor requires the following two passive trip points:
-> +The governor works optimally with the following two passive trip points:
->
->  1.  "switch on" trip point: temperature above which the governor
->      control loop starts operating.  This is the first passive trip
-> diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
-> index f78836c2da26..257c9af20f22 100644
-> --- a/drivers/thermal/power_allocator.c
-> +++ b/drivers/thermal/power_allocator.c
-> @@ -24,6 +24,8 @@
->
->  #include "thermal_core.h"
->
-> +#define INVALID_TRIP -1
-> +
->  #define FRAC_BITS 10
->  #define int_to_frac(x) ((x) << FRAC_BITS)
->  #define frac_to_int(x) ((x) >> FRAC_BITS)
-> @@ -61,6 +63,8 @@ static inline s64 div_frac(s64 x, s64 y)
->   *             Used to calculate the derivative term.
->   * @trip_switch_on:    first passive trip point of the thermal zone.  The
->   *                     governor switches on when this trip point is crossed.
-> + *                     If the thermal zone only has one passive trip point,
-> + *                     @trip_switch_on should be INVALID_TRIP.
->   * @trip_max_desired_temperature:      last passive trip point of the thermal
->   *                                     zone.  The temperature we are
->   *                                     controlling for.
-> @@ -378,43 +382,66 @@ unlock:
->         return ret;
->  }
->
-> -static int get_governor_trips(struct thermal_zone_device *tz,
-> -                             struct power_allocator_params *params)
-> +/**
-> + * get_governor_trips() - get the number of the two trip points that are key for this governor
-> + * @tz:        thermal zone to operate on
-> + * @params:    pointer the private data for this governor
-                  ^
-                  pointer to private data
+I send out a v4 taking care of the other comments a while back, any
+news on this? Anything I need todo from my side to get things moving?
 
-> + *
-> + * The power allocator governor works optimally with two trips points:
-> + * a "switch on" trip point and a "maximum desired temperature".  These
-> + * are defined as the first and last passive trip points.
-> + *
-> + * If there is only one trip point, then that's considered to be the
-> + * "maximum desired temperature" trip point and the governor is always
-> + * on.  If there are no passive or active trip points, then the
-> + * governor won't do anything.  In fact, its throttle function
-> + * shouldn't be called at all.
-      ^
-      "shouldn't" or "won't" ?
+Thanks & Regards,
 
-[snip]
-
->  static void power_allocator_unbind(struct thermal_zone_device *tz)
-> @@ -544,13 +561,7 @@ static int power_allocator_throttle(struct thermal_zone_device *tz, int trip)
->
->         ret = tz->ops->get_trip_temp(tz, params->trip_switch_on,
->                                      &switch_on_temp);
-> -       if (ret) {
-> -               dev_warn(&tz->device,
-> -                        "Failed to get switch on temperature: %d\n", ret);
-> -               return ret;
-> -       }
-> -
-> -       if (current_temp < switch_on_temp) {
-> +       if ((!ret) && (current_temp < switch_on_temp)) {
-
-nit: I think the inner pair of () are not necessary.
-
-Thanks,
--Dan
+Hans
