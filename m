@@ -1,132 +1,59 @@
-From: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH v4 2/2] mfd: axp20x: Add a cell for the usb
- power_supply part of the axp20x PMICs
-Date: Wed, 12 Aug 2015 10:37:01 +0200
-Message-ID: <55CB05AD.1030707@redhat.com>
-References: <1439049521-30766-1-git-send-email-hdegoede@redhat.com>
- <1439049521-30766-2-git-send-email-hdegoede@redhat.com>
- <20150811141811.GM18282@x1>
-Reply-To: hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org
+From: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+Subject: Re: [PATCH 5/9] clk: qcom: gcc-msm8960: add child devices support.
+Date: Wed, 12 Aug 2015 10:00:22 +0100
+Message-ID: <55CB0B26.2020105@linaro.org>
+References: <1436348838-22671-1-git-send-email-rnayak@codeaurora.org> <1436348838-22671-6-git-send-email-rnayak@codeaurora.org> <20150811224902.GO2839@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-sunxi+bncBDRZXY4CYYORBM4LVSXAKGQETIYYQXY-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-In-Reply-To: <20150811141811.GM18282@x1>
-List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <http://groups.google.com/group/linux-sunxi
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-List-Subscribe: <http://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <http://groups.google.com/group/linux-sunxi/subscribe>
-To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, =?UTF-8?Q?Bruno_Pr=c3=a9mont?= <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f178.google.com ([209.85.212.178]:33731 "EHLO
+	mail-wi0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752703AbbHLJAZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Aug 2015 05:00:25 -0400
+Received: by wijp15 with SMTP id p15so208656291wij.0
+        for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2015 02:00:24 -0700 (PDT)
+In-Reply-To: <20150811224902.GO2839@codeaurora.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>, Rajendra Nayak <rnayak@codeaurora.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, nrajan@codeaurora.org, lina.iyer@linaro.org
 
-Hi,
 
-On 11-08-15 16:18, Lee Jones wrote:
-> On Sat, 08 Aug 2015, Hans de Goede wrote:
+
+On 11/08/15 23:49, Stephen Boyd wrote:
+> On 07/08, Rajendra Nayak wrote:
+>> diff --git a/drivers/clk/qcom/gcc-msm8960.c b/drivers/clk/qcom/gcc-msm8960.c
+>> index eb6a4f9..2c80d03 100644
+>> --- a/drivers/clk/qcom/gcc-msm8960.c
+>> +++ b/drivers/clk/qcom/gcc-msm8960.c
+>> @@ -15,6 +15,7 @@
+>>   #include <linux/bitops.h>
+>>   #include <linux/err.h>
+>>   #include <linux/platform_device.h>
+>> +#include <linux/of_platform.h>
+>>   #include <linux/module.h>
+>>   #include <linux/of.h>
+>>   #include <linux/of_device.h>
+>> @@ -3520,7 +3521,8 @@ static int gcc_msm8960_probe(struct platform_device *pdev)
+>>   	if (IS_ERR(clk))
+>>   		return PTR_ERR(clk);
+>>
+>> -	return qcom_cc_probe(pdev, match->data);
+>> +	qcom_cc_probe(pdev, match->data);
+>> +	return of_platform_populate(pdev->dev.of_node, NULL, NULL, &pdev->dev);
 >
->> Add a cell for the usb power_supply part of the axp20x PMICs.
->>
->> Note that this cell is only for the usb power_supply part and not the
->> ac-power / battery-charger / rtc-backup-bat-charger bits.
->>
->> Depending on the board each of those must be enabled / disabled separate=
-ly
->> in devicetree as most boards do not use all 4. So in dt each one needs i=
-ts
->> own child-node of the axp20x node. Another reason for using separate chi=
-ld
->> nodes for each is so that other devicetree nodes can have a power-supply
->> property with a phandle referencing a node representing a single
->> power-supply.
->>
->> The decision to use a separate devicetree node for each is reflected on
->> the kernel side by each getting its own mfd-cell / platform_device and
->> platform-driver.
->>
->> Note this commit also makes some whitespace changes to the intialization
->> of existing cells in axp20x_cells, these are pure whitespace changes,
->> functionally nothing changes.
->>
->> Cc: Bruno Pr=C3=A9mont <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
->> Signed-off-by: Bruno Pr=C3=A9mont <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
->> Signed-off-by: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
->> Acked-by: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
->> Acked-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
->> ---
->> Changes in v2:
->> -Use DEFINE_RES_IRQ_NAMED
->> -Change indentation of axp20x_cells initializers to avoid line wrapping
->> Changes in v3:
->> -Improve commit message
->> -Add Bruno's S-o-b
->> ---
->>   drivers/mfd/axp20x.c | 20 ++++++++++++++++----
->>   1 file changed, 16 insertions(+), 4 deletions(-)
+> We just lost the error code from qcom_cc_probe()...
 >
-> Applied, thanks.
+I think Rajendra picked up the wrong patch for this series, I did submit 
+a v2 (https://patches.linaro.org/44033/) with the above fixed.
 
-Great, but I'm not seeing this in:
+> Also, I don't like having a subnode in DT. Why can't we use the
+> same node as the GCC node and create a virtual child device here
+> for tsens? We can assign the same of_node that this platform
+> device has so that DT keeps working correctly.
 
-https://git.kernel.org/cgit/linux/kernel/git/lee/mfd.git/log/?h=3Dfor-mfd-n=
-ext
+I don't mind either way, if that makes things moving :-)
 
-?
-
-Regards,
-
-Hans
-
-
+--srini
 >
->> diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
->> index d9f2f96..3f576b7 100644
->> --- a/drivers/mfd/axp20x.c
->> +++ b/drivers/mfd/axp20x.c
->> @@ -140,6 +140,13 @@ static struct resource axp20x_pek_resources[] =3D {
->>   	},
->>   };
->>
->> +static struct resource axp20x_usb_power_supply_resources[] =3D {
->> +	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_PLUGIN, "VBUS_PLUGIN"),
->> +	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_REMOVAL, "VBUS_REMOVAL"),
->> +	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_VALID, "VBUS_VALID"),
->> +	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_NOT_VALID, "VBUS_NOT_VALID"),
->> +};
->> +
->>   static struct resource axp22x_pek_resources[] =3D {
->>   	{
->>   		.name   =3D "PEK_DBR",
->> @@ -432,11 +439,16 @@ static const struct regmap_irq_chip axp288_regmap_=
-irq_chip =3D {
->>
->>   static struct mfd_cell axp20x_cells[] =3D {
->>   	{
->> -		.name			=3D "axp20x-pek",
->> -		.num_resources		=3D ARRAY_SIZE(axp20x_pek_resources),
->> -		.resources		=3D axp20x_pek_resources,
->> +		.name		=3D "axp20x-pek",
->> +		.num_resources	=3D ARRAY_SIZE(axp20x_pek_resources),
->> +		.resources	=3D axp20x_pek_resources,
->>   	}, {
->> -		.name			=3D "axp20x-regulator",
->> +		.name		=3D "axp20x-regulator",
->> +	}, {
->> +		.name		=3D "axp20x-usb-power-supply",
->> +		.of_compatible	=3D "x-powers,axp202-usb-power-supply",
->> +		.num_resources	=3D ARRAY_SIZE(axp20x_usb_power_supply_resources),
->> +		.resources	=3D axp20x_usb_power_supply_resources,
->>   	},
->>   };
->>
->
-
---=20
-You received this message because you are subscribed to the Google Groups "=
-linux-sunxi" group.
-To unsubscribe from this group and stop receiving emails from it, send an e=
-mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
