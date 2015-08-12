@@ -1,38 +1,36 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFCv5 PATCH 20/46] sched: Relocated get_cpu_usage() and change
- return type
-Date: Wed, 12 Aug 2015 12:59:23 +0200
-Message-ID: <20150812105923.GX19282@twins.programming.kicks-ass.net>
-References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
- <1436293469-25707-21-git-send-email-morten.rasmussen@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V3 0/2] PM / OPP: Fixes for 4.3
+Date: Wed, 12 Aug 2015 16:30:17 +0530
+Message-ID: <cover.1439376998.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from casper.infradead.org ([85.118.1.10]:49957 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752107AbbHLK72 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Aug 2015 06:59:28 -0400
-Content-Disposition: inline
-In-Reply-To: <1436293469-25707-21-git-send-email-morten.rasmussen@arm.com>
+Received: from mail-pa0-f41.google.com ([209.85.220.41]:35364 "EHLO
+	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933290AbbHLLAj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Aug 2015 07:00:39 -0400
+Received: by pacgr6 with SMTP id gr6so12380794pac.2
+        for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2015 04:00:39 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: mingo@redhat.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, dan.carpenter@oracle.com, nm@ti.com, sboyd@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Tue, Jul 07, 2015 at 07:24:03PM +0100, Morten Rasmussen wrote:
-> +static unsigned long get_cpu_usage(int cpu)
-> +{
-> +	int sum;
-> +	unsigned long usage = cpu_rq(cpu)->cfs.utilization_load_avg;
-> +	unsigned long blocked = cpu_rq(cpu)->cfs.utilization_blocked_avg;
-> +	unsigned long capacity_orig = capacity_orig_of(cpu);
-> +
-> +	sum = usage + blocked;
-> +
-> +	if (sum >= capacity_orig)
-> +		return capacity_orig;
-> +
-> +	return sum;
-> +}
+Hi Rafael,
 
-Should sum then not also be unsigned long?
+Dan's static checker reported few issues on the latest opp merges. And
+this fixes them.
+
+The first patch here was part of the bigger 'debugfs support for opp'
+series earlier, but now separated as 4.3 material.
+
+Rebased over: pm/bleeding-edge
+
+Viresh Kumar (2):
+  PM / OPP: Free resources and properly return error on failure
+  PM / OPP: Fix static checker warning (broken 64bit big endian systems)
+
+ drivers/base/power/opp.c | 38 +++++++++++++++++++++-----------------
+ 1 file changed, 21 insertions(+), 17 deletions(-)
+
+-- 
+2.4.0
+
