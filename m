@@ -1,38 +1,42 @@
-From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: Re: [RFCv5 PATCH 11/46] sched: Remove blocked load and utilization
- contributions of dying tasks
-Date: Wed, 12 Aug 2015 10:08:08 +0100
-Message-ID: <20150812090807.GA29326@e105550-lin.cambridge.arm.com>
-References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
- <1436293469-25707-12-git-send-email-morten.rasmussen@arm.com>
- <20150811113927.GT19282@twins.programming.kicks-ass.net>
- <20150811145847.GA20892@e105550-lin.cambridge.arm.com>
- <20150811172344.GO16853@twins.programming.kicks-ass.net>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: 3.18: lockdep problems in cpufreq
+Date: Wed, 12 Aug 2015 10:08:57 +0100
+Message-ID: <20150812090857.GJ7557@n2100.arm.linux.org.uk>
+References: <20141214213655.GA11285@n2100.arm.linux.org.uk>
+ <CAKohponhkk9BK6-7ScHeZa4R43iooWQFV8YoPLv6LjO40GNq=A@mail.gmail.com>
+ <20150518185645.GA28053@n2100.arm.linux.org.uk>
+ <2574268.XBqpdL2VLI@vostro.rjw.lan>
+ <20150811170357.GA24529@n2100.arm.linux.org.uk>
+ <20150812051659.GI32049@linux>
+ <20150812072129.GD7557@n2100.arm.linux.org.uk>
+ <20150812073530.GA16445@linux>
+ <20150812074925.GG7557@n2100.arm.linux.org.uk>
+ <20150812081257.GC16445@linux>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from pandora.arm.linux.org.uk ([78.32.30.218]:53809 "EHLO
+	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753784AbbHLJJK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Aug 2015 05:09:10 -0400
 Content-Disposition: inline
-In-Reply-To: <20150811172344.GO16853@twins.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: mingo@redhat.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+In-Reply-To: <20150812081257.GC16445@linux>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Eduardo Valentin <edubezval@gmail.com>, Yadwinder Singh Brar <yadi.brar@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Tue, Aug 11, 2015 at 07:23:44PM +0200, Peter Zijlstra wrote:
-> On Tue, Aug 11, 2015 at 03:58:48PM +0100, Morten Rasmussen wrote:
-> > On Tue, Aug 11, 2015 at 01:39:27PM +0200, Peter Zijlstra wrote:
+On Wed, Aug 12, 2015 at 01:42:57PM +0530, Viresh Kumar wrote:
+> On 12-08-15, 08:49, Russell King - ARM Linux wrote:
+> > The problem will be back-porting it to stable kernels, because I think
+> > it's had to be updated at least a couple of times.  I don't have the old
+> > versions anymore, so I'm just going to say "not my problem" - sorry.
 > 
-> > > You add extra code the hot dequeue path for something that 'never'
-> > > happens. We have the sched_class::task_dead call for that.
-> > 
-> > I don't mind using sched_class::task_dead() instead. The reason why I
-> > didn't go that way is that we have to retake the rq->lock or mess with
-> > cfs_rq::removed_load instead of just not adding the utilization in
-> > the first place when we have the rq->lock.
-> > 
-> > Anyway, it is probably redundant by now. I will check Yuyang's code to
-> > see if he already fixed this problem.
-> 
-> He did, he used the removed_load stuff, same as migration does.
+> Your old 3.18 version :)
 
-Nice. One less patch to worry about :)
+And now generate versions for all the stable kernels inbetween.  Now
+your problem.  I'm sick of this.
+
+-- 
+FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
+according to speedtest.net.
