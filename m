@@ -1,37 +1,34 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFCv5 PATCH 18/46] arm: topology: Define TC2 energy and provide
- it to the scheduler
-Date: Wed, 12 Aug 2015 12:33:20 +0200
-Message-ID: <20150812103320.GW19282@twins.programming.kicks-ass.net>
-References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
- <1436293469-25707-19-git-send-email-morten.rasmussen@arm.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Subject: Re: [PATCH V2 1/6] PM / OPP: Free resources and properly return
+ error on failure
+Date: Wed, 12 Aug 2015 13:52:09 +0300
+Message-ID: <20150812105209.GF32040@mwanda>
+References: <cover.1439288881.git.viresh.kumar@linaro.org>
+ <334a9052264630b9157fa9bfc3d4efe945054c34.1439288881.git.viresh.kumar@linaro.org>
+ <20150811144345.GN5180@mwanda>
+ <20150811145938.GA32049@linux>
+ <20150811171132.GA25166@mwanda>
+ <20150812064309.GL32049@linux>
+ <20150812081113.GC32040@mwanda>
+ <20150812082302.GD16445@linux>
+ <20150812090351.GE32040@mwanda>
+ <20150812101010.GA32432@linux>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from aserp1040.oracle.com ([141.146.126.69]:39717 "EHLO
+	aserp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932857AbbHLKwa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Aug 2015 06:52:30 -0400
 Content-Disposition: inline
-In-Reply-To: <1436293469-25707-19-git-send-email-morten.rasmussen@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: mingo@redhat.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Russell King <linux@arm.linux.org.uk>
+In-Reply-To: <20150812101010.GA32432@linux>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, khilman@linaro.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 
-On Tue, Jul 07, 2015 at 07:24:01PM +0100, Morten Rasmussen wrote:
-> +static struct capacity_state cap_states_cluster_a7[] = {
-> +	/* Cluster only power */
-> +	 { .cap =  150, .power = 2967, }, /*  350 MHz */
-> +	 { .cap =  172, .power = 2792, }, /*  400 MHz */
-> +	 { .cap =  215, .power = 2810, }, /*  500 MHz */
-> +	 { .cap =  258, .power = 2815, }, /*  600 MHz */
-> +	 { .cap =  301, .power = 2919, }, /*  700 MHz */
-> +	 { .cap =  344, .power = 2847, }, /*  800 MHz */
-> +	 { .cap =  387, .power = 3917, }, /*  900 MHz */
-> +	 { .cap =  430, .power = 4905, }, /* 1000 MHz */
-> +	};
+Fine, fine.  Much improved etc.  :)  Thanks.
 
-So can I suggest a SCHED_DEBUG validation of the data provided?
+regards,
+dan carpenter
 
-Given the above table, it _never_ makes sense to run at .cap=150, it
-equally also doesn't make sense to run at .cap = 301.
-
-So please add a SCHED_DEBUG test on domain creation that validates that
-not only is the .cap monotonically increasing, but the .power is too.
