@@ -1,47 +1,40 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: 3.18: lockdep problems in cpufreq
-Date: Wed, 12 Aug 2015 13:05:30 +0530
-Message-ID: <20150812073530.GA16445@linux>
-References: <20141214213655.GA11285@n2100.arm.linux.org.uk>
- <CAKohponhkk9BK6-7ScHeZa4R43iooWQFV8YoPLv6LjO40GNq=A@mail.gmail.com>
- <20150518185645.GA28053@n2100.arm.linux.org.uk>
- <2574268.XBqpdL2VLI@vostro.rjw.lan>
- <20150811170357.GA24529@n2100.arm.linux.org.uk>
- <20150812051659.GI32049@linux>
- <20150812072129.GD7557@n2100.arm.linux.org.uk>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: linux-next: build failure after merge of the clk tree
+Date: Wed, 12 Aug 2015 09:45:25 +0200
+Message-ID: <CAMuHMdUQEVbyhnOBBgjKqBoFNc9FSCU68uoLg0XNWMFFxWAOdQ@mail.gmail.com>
+References: <20150812171912.03110efc@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f41.google.com ([209.85.220.41]:33580 "EHLO
-	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933463AbbHLHff (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Aug 2015 03:35:35 -0400
-Received: by pabyb7 with SMTP id yb7so8908759pab.0
-        for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2015 00:35:34 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20150812072129.GD7557@n2100.arm.linux.org.uk>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-next-owner@vger.kernel.org>
+In-Reply-To: <20150812171912.03110efc@canb.auug.org.au>
+Sender: linux-next-owner@vger.kernel.org
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Mike Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Linux-Next <linux-next@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Eduardo Valentin <edubezval@gmail.com>, Yadwinder Singh Brar <yadi.brar@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 12-08-15, 08:21, Russell King - ARM Linux wrote:
-> Maybe not - I often lose track of which patches are in what state -
-> tracking the state of 250+ patches over many months and in some cases
-> _years_ is not easy.
+On Wed, Aug 12, 2015 at 9:19 AM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> After merging the clk tree, today's linux-next build (x86_64 allmodconfig)
+> failed like this:
+>
+> ERROR: "pm_genpd_init" [drivers/clk/qcom/clk-qcom.ko] undefined!
+>
+> Caused by commit
+>
+>   0c4172846b0b ("clk: qcom: Add support for GDSCs")
+>
+> I have used the clk tree from next-20150810 for today.
 
-I agree..
+Missing EXPORT_SYMBOL_GPL(pm_genpd_init)?
 
-> That's still no reason for Eduardo to _completely_ ignore this thread,
-> especially when Rafael explicitly tried to get comment from Eduardo.
+However, having modular PM Domain drivers may cause unpleasant surprises...
 
-Oh, no. I am not trying to be anybody's advocate here. I was just
-highlighting the point here, that I remembered.
+Gr{oetje,eeting}s,
 
-Even I was quite busy then and couldn't get back to it.
+                        Geert
 
-Lets fix this now. I believe you have a patch for this based on latest
-kernel? Mind pasting that here for quick review?
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
--- 
-viresh
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
