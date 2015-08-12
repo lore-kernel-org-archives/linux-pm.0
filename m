@@ -1,79 +1,51 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Subject: [PATCH][rfc] intel_pstate: Fix user input of min/max to legal policy region
-Date: Wed, 12 Aug 2015 11:49:19 +0800
-Message-ID: <1439351359-29532-1-git-send-email-yu.c.chen@intel.com>
+From: <check.kernel@gmail.com>
+Subject: [PATCH] power: align wakeup_sources format
+Date: Wed, 12 Aug 2015 12:31:14 +0800
+Message-ID: <1439353874-11465-1-git-send-email-check.kernel@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:10625 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933329AbbHLDpv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 11 Aug 2015 23:45:51 -0400
+Received: from mail-pa0-f65.google.com ([209.85.220.65]:34603 "EHLO
+	mail-pa0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752458AbbHLEbr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Aug 2015 00:31:47 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: kristen@linux.intel.com, rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rui.zhang@intel.com, lenb@kernel.org, Chen Yu <yu.c.chen@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ethan du <duhui@xiaomi.com>, Linghua Gu <gulinghua@xiaomi.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, yangdongdong <yangdongdong@xiaomi.com>
 
-In current code, if system is using performance policy, user can
-modify the max_perf_pct to any values lower than 100:
+From: yangdongdong <yangdongdong@xiaomi.com>
 
-$ grep . /sys/devices/system/cpu/intel_pstate/m*_perf_pct
-/sys/devices/system/cpu/intel_pstate/max_perf_pct:100
-/sys/devices/system/cpu/intel_pstate/min_perf_pct:100
+This aligns every column of elements in wakeup_sources to
+conveniently check any specific column for suspicious power
+consumption wakeup source or for other easily readable purpose.
 
-$ echo 80 > /sys/devices/system/cpu/intel_pstate/max_perf_pct
-
-$ grep . /sys/devices/system/cpu/intel_pstate/m*_perf_pct
-/sys/devices/system/cpu/intel_pstate/max_perf_pct:80
-/sys/devices/system/cpu/intel_pstate/min_perf_pct:100
-
-the max_perf_pct above is lower than min_perf_pct, which
-is not reasonable.
-
-This patch solves this problem by clamping min_perf_pct and max_perf_pct
-to be strictly inside [min_policy_pct,max_policy_pct].
-
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+Signed-off-by: Andy Yang <yangdongdong@xiaomi.com>
+Signed-off-by: Linghua Gu <gulinghua@xiaomi.com>
 ---
- drivers/cpufreq/intel_pstate.c | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+ drivers/base/power/wakeup.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index fcb929e..3702c5a 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -423,6 +423,7 @@ static ssize_t store_max_perf_pct(struct kobject *a, struct attribute *b,
+diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+index 51f15bc..b6fe9e6 100644
+--- a/drivers/base/power/wakeup.c
++++ b/drivers/base/power/wakeup.c
+@@ -998,7 +998,7 @@ static int print_wakeup_source_stats(struct seq_file *m,
+ 		active_time = ktime_set(0, 0);
+ 	}
  
- 	limits.max_sysfs_pct = clamp_t(int, input, 0 , 100);
- 	limits.max_perf_pct = min(limits.max_policy_pct, limits.max_sysfs_pct);
-+	limits.max_perf_pct = max(limits.min_policy_pct, limits.max_perf_pct);
- 	limits.max_perf = div_fp(int_tofp(limits.max_perf_pct), int_tofp(100));
+-	seq_printf(m, "%-12s\t%lu\t\t%lu\t\t%lu\t\t%lu\t\t%lld\t\t%lld\t\t%lld\t\t%lld\t\t%lld\n",
++	seq_printf(m, "%-32s\t%lu\t\t%lu\t\t%lu\t\t%lu\t\t%lld\t\t%lld\t\t%lld\t\t%lld\t\t%lld\n",
+ 		   ws->name, active_count, ws->event_count,
+ 		   ws->wakeup_count, ws->expire_count,
+ 		   ktime_to_ms(active_time), ktime_to_ms(total_time),
+@@ -1018,7 +1018,7 @@ static int wakeup_sources_stats_show(struct seq_file *m, void *unused)
+ {
+ 	struct wakeup_source *ws;
  
- 	if (hwp_active)
-@@ -442,6 +443,7 @@ static ssize_t store_min_perf_pct(struct kobject *a, struct attribute *b,
+-	seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
++	seq_puts(m, "name\t\t\t\t\tactive_count\tevent_count\twakeup_count\t"
+ 		"expire_count\tactive_since\ttotal_time\tmax_time\t"
+ 		"last_change\tprevent_suspend_time\n");
  
- 	limits.min_sysfs_pct = clamp_t(int, input, 0 , 100);
- 	limits.min_perf_pct = max(limits.min_policy_pct, limits.min_sysfs_pct);
-+	limits.min_perf_pct = min(limits.max_policy_pct, limits.min_perf_pct);
- 	limits.min_perf = div_fp(int_tofp(limits.min_perf_pct), int_tofp(100));
- 
- 	if (hwp_active)
-@@ -985,12 +987,14 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
- 
- 	limits.min_policy_pct = (policy->min * 100) / policy->cpuinfo.max_freq;
- 	limits.min_policy_pct = clamp_t(int, limits.min_policy_pct, 0 , 100);
--	limits.min_perf_pct = max(limits.min_policy_pct, limits.min_sysfs_pct);
--	limits.min_perf = div_fp(int_tofp(limits.min_perf_pct), int_tofp(100));
--
- 	limits.max_policy_pct = (policy->max * 100) / policy->cpuinfo.max_freq;
- 	limits.max_policy_pct = clamp_t(int, limits.max_policy_pct, 0 , 100);
-+
-+	limits.min_perf_pct = max(limits.min_policy_pct, limits.min_sysfs_pct);
-+	limits.min_perf_pct = min(limits.max_policy_pct, limits.min_perf_pct);
-+	limits.min_perf = div_fp(int_tofp(limits.min_perf_pct), int_tofp(100));
- 	limits.max_perf_pct = min(limits.max_policy_pct, limits.max_sysfs_pct);
-+	limits.max_perf_pct = max(limits.min_policy_pct, limits.max_perf_pct);
- 	limits.max_perf = div_fp(int_tofp(limits.max_perf_pct), int_tofp(100));
- 
- 	if (hwp_active)
 -- 
-1.8.3.1
+2.5.0
 
