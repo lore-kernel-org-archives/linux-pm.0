@@ -1,50 +1,57 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH 4/9] kernel/cpu_pm: fix cpu_cluster_pm_exit comment
-Date: Wed, 12 Aug 2015 13:13:15 -0700
-Message-ID: <7htws4mfj8.fsf@deeprootsystems.com>
-References: <1438731339-58317-1-git-send-email-lina.iyer@linaro.org>
-	<1438731339-58317-5-git-send-email-lina.iyer@linaro.org>
+From: Bjorn Andersson <bjorn.andersson@sonymobile.com>
+Subject: Re: [PATCH 5/9] clk: qcom: gcc-msm8960: add child devices support.
+Date: Wed, 12 Aug 2015 13:18:55 -0700
+Message-ID: <20150812201855.GF13472@usrtlx11787.corpusers.net>
+References: <1436348838-22671-1-git-send-email-rnayak@codeaurora.org>
+ <1436348838-22671-6-git-send-email-rnayak@codeaurora.org>
+ <20150811224902.GO2839@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f53.google.com ([209.85.220.53]:34591 "EHLO
-	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751191AbbHLUNR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Aug 2015 16:13:17 -0400
-Received: by pawu10 with SMTP id u10so21339646paw.1
-        for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2015 13:13:17 -0700 (PDT)
-In-Reply-To: <1438731339-58317-5-git-send-email-lina.iyer@linaro.org> (Lina
-	Iyer's message of "Tue, 4 Aug 2015 17:35:34 -0600")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20150811224902.GO2839@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Rajendra Nayak <rnayak@codeaurora.org>, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, srinivas.kandagatla@linaro.org, linux-arm-kernel@lists.infradead.org, nrajan@codeaurora.org, lina.iyer@linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: rjw@rjwysocki.net, ulf.hansson@linaro.org, geert@linux-m68k.org, k.kozlowski@samsung.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, Nicolas Pitre <nicolas.pitre@linaro.org>
 
-Lina Iyer <lina.iyer@linaro.org> writes:
+On Tue 11 Aug 15:49 PDT 2015, Stephen Boyd wrote:
 
-> cpu_cluster_pm_exit() must be sent after cpu_cluster_pm_enter() has been
-> sent for the cluster and before any cpu_pm_exit() notifications are sent
-> for any CPU.
->
-> Cc: Nicolas Pitre <nicolas.pitre@linaro.org>
-> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+> On 07/08, Rajendra Nayak wrote:
+> > diff --git a/drivers/clk/qcom/gcc-msm8960.c b/drivers/clk/qcom/gcc-msm8960.c
+> > index eb6a4f9..2c80d03 100644
+> > --- a/drivers/clk/qcom/gcc-msm8960.c
+> > +++ b/drivers/clk/qcom/gcc-msm8960.c
+> > @@ -15,6 +15,7 @@
+> >  #include <linux/bitops.h>
+> >  #include <linux/err.h>
+> >  #include <linux/platform_device.h>
+> > +#include <linux/of_platform.h>
+> >  #include <linux/module.h>
+> >  #include <linux/of.h>
+> >  #include <linux/of_device.h>
+> > @@ -3520,7 +3521,8 @@ static int gcc_msm8960_probe(struct platform_device *pdev)
+> >  	if (IS_ERR(clk))
+> >  		return PTR_ERR(clk);
+> >  
+> > -	return qcom_cc_probe(pdev, match->data);
+> > +	qcom_cc_probe(pdev, match->data);
+> > +	return of_platform_populate(pdev->dev.of_node, NULL, NULL, &pdev->dev);
+> 
+> We just lost the error code from qcom_cc_probe()...
+> 
+> Also, I don't like having a subnode in DT. Why can't we use the
+> same node as the GCC node and create a virtual child device here
+> for tsens? We can assign the same of_node that this platform
+> device has so that DT keeps working correctly.
+> 
 
-Acked-by: Kevin Hilman <khilman@linaro.org>
+Can't we make the gcc driver support being a child of a simple-mfd by
+having it attempting to acquire the regmap of the parent and falling
+back to creating its own mmio regmap?
 
-> ---
->  kernel/cpu_pm.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/kernel/cpu_pm.c b/kernel/cpu_pm.c
-> index 9656a3c..009cc9a 100644
-> --- a/kernel/cpu_pm.c
-> +++ b/kernel/cpu_pm.c
-> @@ -180,7 +180,7 @@ EXPORT_SYMBOL_GPL(cpu_cluster_pm_enter);
->   * low power state that may have caused some blocks in the same power domain
->   * to reset.
->   *
-> - * Must be called after cpu_pm_exit has been called on all cpus in the power
-> + * Must be called after cpu_cluster_pm_enter has been called for the power
->   * domain, and before cpu_pm_exit has been called on any cpu in the power
->   * domain. Notified drivers can include VFP co-processor, interrupt controller
->   * and its PM extensions, local CPU timers context save/restore which
+That way we don't need to make tsense a child of the clock device and
+we're still backwards compatible.
+
+Regards,
+Bjorn
