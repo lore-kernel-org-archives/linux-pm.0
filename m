@@ -1,40 +1,56 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: linux-next: build failure after merge of the clk tree
-Date: Wed, 12 Aug 2015 09:45:25 +0200
-Message-ID: <CAMuHMdUQEVbyhnOBBgjKqBoFNc9FSCU68uoLg0XNWMFFxWAOdQ@mail.gmail.com>
-References: <20150812171912.03110efc@canb.auug.org.au>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: 3.18: lockdep problems in cpufreq
+Date: Wed, 12 Aug 2015 08:49:25 +0100
+Message-ID: <20150812074925.GG7557@n2100.arm.linux.org.uk>
+References: <20141214213655.GA11285@n2100.arm.linux.org.uk>
+ <CAKohponhkk9BK6-7ScHeZa4R43iooWQFV8YoPLv6LjO40GNq=A@mail.gmail.com>
+ <20150518185645.GA28053@n2100.arm.linux.org.uk>
+ <2574268.XBqpdL2VLI@vostro.rjw.lan>
+ <20150811170357.GA24529@n2100.arm.linux.org.uk>
+ <20150812051659.GI32049@linux>
+ <20150812072129.GD7557@n2100.arm.linux.org.uk>
+ <20150812073530.GA16445@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-next-owner@vger.kernel.org>
-In-Reply-To: <20150812171912.03110efc@canb.auug.org.au>
-Sender: linux-next-owner@vger.kernel.org
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Mike Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Linux-Next <linux-next@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from pandora.arm.linux.org.uk ([78.32.30.218]:53619 "EHLO
+	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753797AbbHLHtg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Aug 2015 03:49:36 -0400
+Content-Disposition: inline
+In-Reply-To: <20150812073530.GA16445@linux>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Eduardo Valentin <edubezval@gmail.com>, Yadwinder Singh Brar <yadi.brar@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Wed, Aug 12, 2015 at 9:19 AM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> After merging the clk tree, today's linux-next build (x86_64 allmodconfig)
-> failed like this:
->
-> ERROR: "pm_genpd_init" [drivers/clk/qcom/clk-qcom.ko] undefined!
->
-> Caused by commit
->
->   0c4172846b0b ("clk: qcom: Add support for GDSCs")
->
-> I have used the clk tree from next-20150810 for today.
+On Wed, Aug 12, 2015 at 01:05:30PM +0530, Viresh Kumar wrote:
+> On 12-08-15, 08:21, Russell King - ARM Linux wrote:
+> > Maybe not - I often lose track of which patches are in what state -
+> > tracking the state of 250+ patches over many months and in some cases
+> > _years_ is not easy.
+> 
+> I agree..
+> 
+> > That's still no reason for Eduardo to _completely_ ignore this thread,
+> > especially when Rafael explicitly tried to get comment from Eduardo.
+> 
+> Oh, no. I am not trying to be anybody's advocate here. I was just
+> highlighting the point here, that I remembered.
+> 
+> Even I was quite busy then and couldn't get back to it.
+> 
+> Lets fix this now. I believe you have a patch for this based on latest
+> kernel? Mind pasting that here for quick review?
 
-Missing EXPORT_SYMBOL_GPL(pm_genpd_init)?
+I don't think it's changed much since the original, but I've posted
+what's in linux-next as of today, and it doesn't conflict with anything.
+So there's no excuse about getting it merged.
 
-However, having modular PM Domain drivers may cause unpleasant surprises...
+The problem will be back-porting it to stable kernels, because I think
+it's had to be updated at least a couple of times.  I don't have the old
+versions anymore, so I'm just going to say "not my problem" - sorry.
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+-- 
+FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
+according to speedtest.net.
