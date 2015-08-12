@@ -1,57 +1,44 @@
-From: Bjorn Andersson <bjorn.andersson@sonymobile.com>
-Subject: Re: [PATCH 5/9] clk: qcom: gcc-msm8960: add child devices support.
-Date: Wed, 12 Aug 2015 13:18:55 -0700
-Message-ID: <20150812201855.GF13472@usrtlx11787.corpusers.net>
-References: <1436348838-22671-1-git-send-email-rnayak@codeaurora.org>
- <1436348838-22671-6-git-send-email-rnayak@codeaurora.org>
- <20150811224902.GO2839@codeaurora.org>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH 9/9] ARM: smp: Add runtime PM support for CPU hotplug
+Date: Wed, 12 Aug 2015 13:28:06 -0700
+Message-ID: <7hoaicmeuh.fsf@deeprootsystems.com>
+References: <1438731339-58317-1-git-send-email-lina.iyer@linaro.org>
+	<1438731339-58317-10-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20150811224902.GO2839@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Rajendra Nayak <rnayak@codeaurora.org>, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, srinivas.kandagatla@linaro.org, linux-arm-kernel@lists.infradead.org, nrajan@codeaurora.org, lina.iyer@linaro.org
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f171.google.com ([209.85.192.171]:36330 "EHLO
+	mail-pd0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750767AbbHLU2I (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Aug 2015 16:28:08 -0400
+Received: by pdco4 with SMTP id o4so11010206pdc.3
+        for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2015 13:28:08 -0700 (PDT)
+In-Reply-To: <1438731339-58317-10-git-send-email-lina.iyer@linaro.org> (Lina
+	Iyer's message of "Tue, 4 Aug 2015 17:35:39 -0600")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: rjw@rjwysocki.net, ulf.hansson@linaro.org, geert@linux-m68k.org, k.kozlowski@samsung.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 
-On Tue 11 Aug 15:49 PDT 2015, Stephen Boyd wrote:
+Lina Iyer <lina.iyer@linaro.org> writes:
 
-> On 07/08, Rajendra Nayak wrote:
-> > diff --git a/drivers/clk/qcom/gcc-msm8960.c b/drivers/clk/qcom/gcc-msm8960.c
-> > index eb6a4f9..2c80d03 100644
-> > --- a/drivers/clk/qcom/gcc-msm8960.c
-> > +++ b/drivers/clk/qcom/gcc-msm8960.c
-> > @@ -15,6 +15,7 @@
-> >  #include <linux/bitops.h>
-> >  #include <linux/err.h>
-> >  #include <linux/platform_device.h>
-> > +#include <linux/of_platform.h>
-> >  #include <linux/module.h>
-> >  #include <linux/of.h>
-> >  #include <linux/of_device.h>
-> > @@ -3520,7 +3521,8 @@ static int gcc_msm8960_probe(struct platform_device *pdev)
-> >  	if (IS_ERR(clk))
-> >  		return PTR_ERR(clk);
-> >  
-> > -	return qcom_cc_probe(pdev, match->data);
-> > +	qcom_cc_probe(pdev, match->data);
-> > +	return of_platform_populate(pdev->dev.of_node, NULL, NULL, &pdev->dev);
-> 
-> We just lost the error code from qcom_cc_probe()...
-> 
-> Also, I don't like having a subnode in DT. Why can't we use the
-> same node as the GCC node and create a virtual child device here
-> for tsens? We can assign the same of_node that this platform
-> device has so that DT keeps working correctly.
-> 
+> Enable runtime PM for CPU devices. Do a runtime get of the CPU device
+> when the CPU is hotplugged in and a runtime put of the CPU device when
+> the CPU is hotplugged off. When all the CPUs in a domain are hotplugged
+> off, the domain may also be powered off and cluster_pm_enter/exit()
+> notifications are be sent out.
+>
+> Cc: Catalin Marinas <catalin.marinas@arm.com>
+> Cc: Mark Rutland <mark.rutland@arm.com>
+> Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 
-Can't we make the gcc driver support being a child of a simple-mfd by
-having it attempting to acquire the regmap of the parent and falling
-back to creating its own mmio regmap?
+How does the runtiem PM usage with hotplug work with the runtime PM
+usage in idle?
 
-That way we don't need to make tsense a child of the clock device and
-we're still backwards compatible.
+IIUC, when a CPU is hotplugged in, it will always have a usecount of at
+least 1, right?  and if it's not idle, it will have done a _get() so it
+will have a usecount of at least 2.   So I'm not quite seeing how the
+usecount will ever go to zero in idle and allow the domain to power_off.
 
-Regards,
-Bjorn
+Kevin
