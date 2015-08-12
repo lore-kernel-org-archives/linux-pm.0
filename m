@@ -1,99 +1,128 @@
 From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCHv2 6/8] serial: imx: add runtime pm support
-Date: Wed, 12 Aug 2015 12:32:09 -0700
-Message-ID: <7h1tf8pakm.fsf@deeprootsystems.com>
-References: <1439256949-626-1-git-send-email-edubezval@gmail.com>
-	<1439256949-626-7-git-send-email-edubezval@gmail.com>
+Subject: Re: [PATCH 1/9] PM / Domains: Allocate memory outside domain locks
+Date: Wed, 12 Aug 2015 12:47:37 -0700
+Message-ID: <7hoaicnvae.fsf@deeprootsystems.com>
+References: <1438731339-58317-1-git-send-email-lina.iyer@linaro.org>
+	<1438731339-58317-2-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1439256949-626-7-git-send-email-edubezval@gmail.com> (Eduardo
-	Valentin's message of "Mon, 10 Aug 2015 18:35:47 -0700")
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, Fabio Estevam <festevam@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>, Linux PM <linux-pm@vger.kernel.org>, linux-serial@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:34614 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751161AbbHLTrk convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Aug 2015 15:47:40 -0400
+Received: by pawu10 with SMTP id u10so20955198paw.1
+        for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2015 12:47:40 -0700 (PDT)
+In-Reply-To: <1438731339-58317-2-git-send-email-lina.iyer@linaro.org> (Lina
+	Iyer's message of "Tue, 4 Aug 2015 17:35:31 -0600")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: rjw@rjwysocki.net, ulf.hansson@linaro.org, geert@linux-m68k.org, k.kozlowski@samsung.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org
 
-Eduardo Valentin <edubezval@gmail.com> writes:
+Lina Iyer <lina.iyer@linaro.org> writes:
 
-> This change introduces the runtime pm support on imx serial
-> driver. The objective is to be able to idle the uart
-> port whenever it is not in use while still being able
-> to wake it up when needed. The key changes in this patch are:
-> 1. Move the clock handling to runtime pm. Both, ipg and per,
-> are now handled in the suspend and resume callbacks. Only
-> enabling and disabling the clocks are handled in runtime
-> suspend and resume, so we are able to use runtime pm
-> in IRQ context.
-> 2. Clocks are prepared in probe and unprepared in remove,
-> so we do not need to prepare (may sleep) in runtime pm.
-> 3. We mark the device activity based on uart and console
-> callbacks. Whenever the device is needed and we want to
-> access registers, we runtime_pm_get and then mark its
-> last usage when we are done. This is done also across
-> IRQs and DMA callbacks.
-> 4. We reuse the infrastructure in place for suspend and
-> resume, so we do not need to redo wakeup configuration,
-> or context save and restore.
+> In preparation for supporting IRQ-safe domains, allocate domain data
+> outside the domain locks. These functions are not called in an atomic
+> context, so we can always allocate memory using GFP_KERNEL. By
+> allocating memory before the locks, we can safely lock the domain usi=
+ng
+> spinlocks instead of mutexes.
 >
-> After this change, the clocks are still sane, in the sense
-> of having balanced clock prepare and enable.
+> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: Kevin Hilman <khilman@linaro.org>
+> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+> Cc: Krzysztof Koz=C5=82owski <k.kozlowski@samsung.com>
+> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+
+Reviewed-by: Kevin Hilman <khilman@linaro.org>
+
+> ---
+>  drivers/base/power/domain.c | 30 +++++++++++++++---------------
+>  1 file changed, 15 insertions(+), 15 deletions(-)
 >
-> Cc: Fabio Estevam <festevam@gmail.com>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: Jiri Slaby <jslaby@suse.com>
-> Cc: linux-serial@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
-
-[...]
-
-> +static int serial_imx_runtime_suspend(struct device *dev)
-> +{
-> +	struct imx_port *sport = dev_get_drvdata(dev);
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.=
+c
+> index 7666a1c..5fd1306 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -1382,13 +1382,17 @@ int pm_genpd_remove_device(struct generic_pm_=
+domain *genpd,
+>  int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
+>  			   struct generic_pm_domain *subdomain)
+>  {
+> -	struct gpd_link *link;
+> +	struct gpd_link *link, *itr;
+>  	int ret =3D 0;
+> =20
+>  	if (IS_ERR_OR_NULL(genpd) || IS_ERR_OR_NULL(subdomain)
+>  	    || genpd =3D=3D subdomain)
+>  		return -EINVAL;
+> =20
+> +	link =3D kzalloc(sizeof(*link), GFP_KERNEL);
+> +	if (!link)
+> +		return -ENOMEM;
 > +
-> +	if (!sport)
-> +		return -EINVAL;
+>  	mutex_lock(&genpd->lock);
+>  	mutex_lock_nested(&subdomain->lock, SINGLE_DEPTH_NESTING);
+> =20
+> @@ -1398,18 +1402,13 @@ int pm_genpd_add_subdomain(struct generic_pm_=
+domain *genpd,
+>  		goto out;
+>  	}
+> =20
+> -	list_for_each_entry(link, &genpd->master_links, master_node) {
+> -		if (link->slave =3D=3D subdomain && link->master =3D=3D genpd) {
+> +	list_for_each_entry(itr, &genpd->master_links, master_node) {
+> +		if (itr->slave =3D=3D subdomain && itr->master =3D=3D genpd) {
+>  			ret =3D -EINVAL;
+>  			goto out;
+>  		}
+>  	}
+> =20
+> -	link =3D kzalloc(sizeof(*link), GFP_KERNEL);
+> -	if (!link) {
+> -		ret =3D -ENOMEM;
+> -		goto out;
+> -	}
+>  	link->master =3D genpd;
+>  	list_add_tail(&link->master_node, &genpd->master_links);
+>  	link->slave =3D subdomain;
+> @@ -1420,7 +1419,8 @@ int pm_genpd_add_subdomain(struct generic_pm_do=
+main *genpd,
+>   out:
+>  	mutex_unlock(&subdomain->lock);
+>  	mutex_unlock(&genpd->lock);
+> -
+> +	if (ret)
+> +		kfree(link);
+>  	return ret;
+>  }
+> =20
+> @@ -1511,17 +1511,17 @@ int pm_genpd_attach_cpuidle(struct generic_pm=
+_domain *genpd, int state)
+>  	if (IS_ERR_OR_NULL(genpd) || state < 0)
+>  		return -EINVAL;
+> =20
+> +	cpuidle_data =3D kzalloc(sizeof(*cpuidle_data), GFP_KERNEL);
+> +	if (!cpuidle_data)
+> +		return -ENOMEM;
 > +
-> +	/*
-> +	* When using 'no_console_suspend', the console UART must not be
-> +	* suspended. Since driver suspend is managed by runtime suspend,
-> +	* preventing runtime suspend (by returning error) will keep device
-> +	* active during suspend.
-> +	*/
-> +	if (sport->is_suspending && !console_suspend_enabled &&
-> +	    uart_console(&sport->port))
-> +		return -EBUSY;
+>  	mutex_lock(&genpd->lock);
+> =20
+>  	if (genpd->cpuidle_data) {
+>  		ret =3D -EEXIST;
+> -		goto out;
+> -	}
+> -	cpuidle_data =3D kzalloc(sizeof(*cpuidle_data), GFP_KERNEL);
+> -	if (!cpuidle_data) {
+> -		ret =3D -ENOMEM;
+> -		goto out;
+> +		goto err_drv;
+>  	}
 > +
-> +	serial_imx_save_context(sport);
-> +	serial_imx_enable_wakeup(sport, true);
-> +
-> +	sport->latency = PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE;
-> +	schedule_work(&sport->qos_work);
-> +	clk_disable(sport->clk_per);
-> +	clk_disable(sport->clk_ipg);
-> +
-> +	return 0;
-> +}
-> +
-> +static int serial_imx_runtime_resume(struct device *dev)
-> +{
-> +	struct imx_port *sport = dev_get_drvdata(dev);
-> +
-> +	clk_enable(sport->clk_per);
-> +	clk_enable(sport->clk_ipg);
-> +	serial_imx_enable_wakeup(sport, false);
-> +
-> +	sport->latency = sport->calc_latency;
-> +	schedule_work(&sport->qos_work);
-> +	serial_imx_restore_context(sport);
-> +
-> +	return 0;
-> +}
-
-Looking at the clk usage in the_runtime_[suspend|resume] callbacks, did
-you consider using the runtime PM generic clock layer (pm_clk_*).  You
-can have a look at mach-shmobile for an example modern user of this, or
-mach-davinci for a legacy (pre-DT) way of using it.
-
-Kevin
+>  	cpuidle_drv =3D cpuidle_driver_ref();
+>  	if (!cpuidle_drv) {
+>  		ret =3D -ENODEV;
