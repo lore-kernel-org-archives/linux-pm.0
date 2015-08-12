@@ -1,87 +1,111 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH 9/9] ARM: smp: Add runtime PM support for CPU hotplug
-Date: Wed, 12 Aug 2015 16:47:56 -0700
-Message-ID: <20150812234756.GO26614@codeaurora.org>
-References: <1438731339-58317-1-git-send-email-lina.iyer@linaro.org>
- <1438731339-58317-10-git-send-email-lina.iyer@linaro.org>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH] power_supply: max8998: Use devm_power_supply_register
+Date: Thu, 13 Aug 2015 08:49:23 +0900
+Message-ID: <CAJKOXPddqv+rBngO0NGrVap1ibGjrMp3a9ihcQ2G7yEgEYt71g@mail.gmail.com>
+References: <20150812150655.GA32615@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:55542 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751866AbbHLXr5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Aug 2015 19:47:57 -0400
-Content-Disposition: inline
-In-Reply-To: <1438731339-58317-10-git-send-email-lina.iyer@linaro.org>
+Received: from mail-qg0-f43.google.com ([209.85.192.43]:36057 "EHLO
+	mail-qg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751753AbbHLXtY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Aug 2015 19:49:24 -0400
+In-Reply-To: <20150812150655.GA32615@localhost>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: rjw@rjwysocki.net, ulf.hansson@linaro.org, khilman@linaro.org, geert@linux-m68k.org, k.kozlowski@samsung.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, msivasub@codeaurora.org, agross@codeaurora.org, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+To: Vaishali Thakkar <vthakkar1994@gmail.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 08/04, Lina Iyer wrote:
-> @@ -137,7 +138,6 @@ int __cpu_up(unsigned int cpu, struct task_struct *idle)
->  		pr_err("CPU%u: failed to boot: %d\n", cpu, ret);
->  	}
->  
+2015-08-13 0:06 GMT+09:00 Vaishali Thakkar <vthakkar1994@gmail.com>:
+>
+> Use managed resource function devm_power_supply_register
+> instead of power_supply_register.
+
+Please describe: Why? What is the reason for such change?
+I can't find any significant simplifications, just one remove() disappears.
+
+Best regards,
+Krzysztof
+
+> To be compatible with the
+> change, replace various gotos by direct returns and remove
+> unneeded label err.
+>
+> Also, remove max8998_battery_remove as it is now redundant.
+>
+> Signed-off-by: Vaishali Thakkar <vthakkar1994@gmail.com>
+> ---
+>  drivers/power/max8998_charger.c | 28 +++++++---------------------
+>  1 file changed, 7 insertions(+), 21 deletions(-)
+>
+> diff --git a/drivers/power/max8998_charger.c b/drivers/power/max8998_charger.c
+> index 47448d4..6014df5 100644
+> --- a/drivers/power/max8998_charger.c
+> +++ b/drivers/power/max8998_charger.c
+> @@ -117,8 +117,7 @@ static int max8998_battery_probe(struct platform_device *pdev)
+>                         "EOC value not set: leave it unchanged.\n");
+>         } else {
+>                 dev_err(max8998->dev, "Invalid EOC value\n");
+> -               ret = -EINVAL;
+> -               goto err;
+> +               return -EINVAL;
+>         }
+>
+>         /* Setup Charge Restart Level */
+> @@ -141,8 +140,7 @@ static int max8998_battery_probe(struct platform_device *pdev)
+>                 break;
+>         default:
+>                 dev_err(max8998->dev, "Invalid Restart Level\n");
+> -               ret = -EINVAL;
+> -               goto err;
+> +               return -EINVAL;
+>         }
+>
+>         /* Setup Charge Full Timeout */
+> @@ -165,34 +163,22 @@ static int max8998_battery_probe(struct platform_device *pdev)
+>                 break;
+>         default:
+>                 dev_err(max8998->dev, "Invalid Full Timeout value\n");
+> -               ret = -EINVAL;
+> -               goto err;
+> +               return -EINVAL;
+>         }
+>
+>         psy_cfg.drv_data = max8998;
+>
+> -       max8998->battery = power_supply_register(max8998->dev,
+> -                                                &max8998_battery_desc,
+> -                                                &psy_cfg);
+> +       max8998->battery = devm_power_supply_register(max8998->dev,
+> +                                                     &max8998_battery_desc,
+> +                                                     &psy_cfg);
+>         if (IS_ERR(max8998->battery)) {
+>                 ret = PTR_ERR(max8998->battery);
+>                 dev_err(max8998->dev, "failed: power supply register: %d\n",
+>                         ret);
+> -               goto err;
+> +               return ret;
+>         }
+>
+>         return 0;
+> -err:
+> -       return ret;
+> -}
 > -
-
-Remove noise please.
-
->  	memset(&secondary_data, 0, sizeof(secondary_data));
->  	return ret;
+> -static int max8998_battery_remove(struct platform_device *pdev)
+> -{
+> -       struct max8998_battery_data *max8998 = platform_get_drvdata(pdev);
+> -
+> -       power_supply_unregister(max8998->battery);
+> -
+> -       return 0;
 >  }
-> @@ -205,6 +205,9 @@ int __cpu_disable(void)
->  	unsigned int cpu = smp_processor_id();
->  	int ret;
->  
-> +	/* We dont need the CPU device anymore. */
-> +	pm_runtime_put_sync(get_cpu_device(cpu));
-
-This is all very generic. Any reason it can't be done at a higher
-level for all architectures? It certainly seems like
-cpu_startup_entry() could be modifed to do the
-pm_runtime_get_sync().
-
-> +
->  	ret = platform_cpu_disable(cpu);
->  	if (ret)
->  		return ret;
-> @@ -272,6 +275,13 @@ void __ref cpu_die(void)
->  {
->  	unsigned int cpu = smp_processor_id();
->  
-> +	/*
-> +	 * We dont need the CPU device anymore.
-> +	 * Lets do this before IRQs are disabled to allow
-> +	 * runtime PM to suspend the domain as well.
-> +	 */
-> +	pm_runtime_put_sync(get_cpu_device(cpu));
-
-The two put calls is confusing. __cpu_disable() is called on the
-CPU that's dying, and cpu_die() is called on the CPU that's doing
-the takedown. That would be two decrements but only one increment
-in secondary_start_kernel()? How is this properly balanced?
-
-> +
->  	idle_task_exit();
->  
->  	local_irq_disable();
-> @@ -401,6 +412,11 @@ asmlinkage void secondary_start_kernel(void)
->  	local_irq_enable();
->  	local_fiq_enable();
->  
-> +	/* We are running, enable runtime PM for the CPU. */
-> +	cpu_dev = get_cpu_device(cpu);
-> +	if (cpu_dev)
-> +		pm_runtime_get_sync(cpu_dev);
-
-Also, where would the dev->power.irq_safe flag be set if we
-aren't using the genpd DT stuff? It looks like we're going to
-start causing warnings on devices that don't have the DT magic.
-Please add a hotplug test with some device that isn't using this
-genpd code to catch problems. Also please turn on lockdep and RCU
-lockdep, touching the idle code like this
-
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+>
+>  static const struct platform_device_id max8998_battery_id[] = {
+> --
+> 1.9.1
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
