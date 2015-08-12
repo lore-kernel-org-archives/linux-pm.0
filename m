@@ -1,66 +1,63 @@
-From: <check.kernel@gmail.com>
-Subject: [PATCH] power: align wakeup_sources format
-Date: Wed, 12 Aug 2015 14:12:38 +0800
-Message-ID: <1439359958-12199-1-git-send-email-check.kernel@gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 1/6] PM / OPP: Free resources and properly return
+ error on failure
+Date: Wed, 12 Aug 2015 12:13:09 +0530
+Message-ID: <20150812064309.GL32049@linux>
+References: <cover.1439288881.git.viresh.kumar@linaro.org>
+ <334a9052264630b9157fa9bfc3d4efe945054c34.1439288881.git.viresh.kumar@linaro.org>
+ <20150811144345.GN5180@mwanda>
+ <20150811145938.GA32049@linux>
+ <20150811171132.GA25166@mwanda>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f65.google.com ([209.85.220.65]:32915 "EHLO
-	mail-pa0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933267AbbHLGNW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Aug 2015 02:13:22 -0400
+Received: from mail-pd0-f180.google.com ([209.85.192.180]:33828 "EHLO
+	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751009AbbHLGns (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Aug 2015 02:43:48 -0400
+Received: by pdbfa8 with SMTP id fa8so4032041pdb.1
+        for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2015 23:43:47 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20150811171132.GA25166@mwanda>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Ethan du <duhui@xiaomi.com>, Linghua Gu <gulinghua@xiaomi.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, yangdongdong <yangdongdong@xiaomi.com>
+To: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, khilman@linaro.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 
-From: yangdongdong <yangdongdong@xiaomi.com>
+On 11-08-15, 20:11, Dan Carpenter wrote:
+> On Tue, Aug 11, 2015 at 08:29:38PM +0530, Viresh Kumar wrote:
+> > > This is weird to me, because we are going backwards.  What happens if
+> > > we goto free_table without adding anything?
+> > 
+> > It will WARN() today.
+> 
+> Then the current code is buggy.
 
-This aligns every column of elements in wakeup_sources to
-conveniently check any specific column for suspicious power
-consumption wakeup source or for other easily readable purpose.
+Urg, it wouldn't WARN in this case. Sorry, didn't read it correctly
+earlier.
 
-Signed-off-by: yangdongdong <yangdongdong@xiaomi.com>
-Signed-off-by: Linghua Gu <gulinghua@xiaomi.com>
----
- drivers/base/power/wakeup.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+> > > I suspect it's fine, but if
+> > > it's a bug then this code still has problems.
+> > 
+> > I don't think we have a bug here, we never added anything and so don't
+> > need to free it.
+> > 
+> > > What about if we only increment count when _opp_add_static_v2()
+> > > succeeds
+> > 
+> > That's not what we want.
+> 
+> If the first call to _opp_add_static_v2() fails we call
+> of_free_opp_table() and you say that triggers a WARN().
 
-diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-index 51f15bc..b6fe9e6 100644
---- a/drivers/base/power/wakeup.c
-+++ b/drivers/base/power/wakeup.c
-@@ -998,7 +998,7 @@ static int print_wakeup_source_stats(struct seq_file *m,
- 		active_time = ktime_set(0, 0);
- 	}
- 
--	seq_printf(m, "%-12s\t%lu\t\t%lu\t\t%lu\t\t%lu\t\t%lld\t\t%lld\t\t%lld\t\t%lld\t\t%lld\n",
-+	seq_printf(m, "%-32s\t%lu\t\t%lu\t\t%lu\t\t%lu\t\t%lld\t\t%lld\t\t%lld\t\t%lld\t\t%lld\n",
- 		   ws->name, active_count, ws->event_count,
- 		   ws->wakeup_count, ws->expire_count,
- 		   ktime_to_ms(active_time), ktime_to_ms(total_time),
-@@ -1018,7 +1018,7 @@ static int wakeup_sources_stats_show(struct seq_file *m, void *unused)
- {
- 	struct wakeup_source *ws;
- 
--	seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
-+	seq_puts(m, "name\t\t\t\t\tactive_count\tevent_count\twakeup_count\t"
- 		"expire_count\tactive_since\ttotal_time\tmax_time\t"
- 		"last_change\tprevent_suspend_time\n");
- 
+No it doesn't.
+
+So, coming back to the point you made about freeing table on !count,
+because there were no nodes present in the DT opp table, we have never
+tried to add any OPPs. And so there is no need to call
+of_free_opp_table() in that case.
+
+Do you still think the current code is wrong ?
+
 -- 
-2.5.0
-
-The signed name is updated from "Andy Yang" to yangdongdong.
-
-Best Regards,
-Andy
-
-On Wed, Aug 12, 2015 at 12:31:14PM +0800, check.kernel@gmail.com wrote:
-> From: yangdongdong <yangdongdong@xiaomi.com>
-
-Use the same name here as you used for the signed-off-by: line please.
-
-Please fix and resend.
-
-thanks,
-
-greg k-h
+viresh
