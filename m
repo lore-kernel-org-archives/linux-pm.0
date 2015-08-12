@@ -1,144 +1,265 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v4 2/2] mfd: axp20x: Add a cell for the usb power_supply
- part of the axp20x PMICs
-Date: Wed, 12 Aug 2015 10:29:00 +0100
-Message-ID: <20150812092900.GC18282@x1>
-References: <1439049521-30766-1-git-send-email-hdegoede@redhat.com>
- <1439049521-30766-2-git-send-email-hdegoede@redhat.com>
- <20150811141811.GM18282@x1>
- <55CB05AD.1030707@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V2] thermal: cpu_cooling: fix lockdep problems in cpu_cooling
+Date: Wed, 12 Aug 2015 15:22:16 +0530
+Message-ID: <16e7d7d811fa2b0f8dcf6cade345a5f2f3e3c36a.1439372926.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f171.google.com ([209.85.212.171]:38409 "EHLO
-	mail-wi0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932752AbbHLJ3G (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Aug 2015 05:29:06 -0400
-Received: by wicja10 with SMTP id ja10so19458981wic.1
-        for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2015 02:29:04 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <55CB05AD.1030707@redhat.com>
+Received: from mail-pd0-f169.google.com ([209.85.192.169]:34090 "EHLO
+	mail-pd0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754118AbbHLJwY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Aug 2015 05:52:24 -0400
+Received: by pdbfa8 with SMTP id fa8so5712837pdb.1
+        for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2015 02:52:23 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Bruno =?iso-8859-1?Q?Pr=E9mont?= <bonbons@linux-vserver.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree <devicetree@vger.kernel.org>, linux-sunxi@googlegroups.com
+To: edubezval@gmail.com
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Rafael Wysocki <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, Russell King <rmk+kernel@arm.linux.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, open list <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>
 
-On Wed, 12 Aug 2015, Hans de Goede wrote:
+From: Russell King <rmk+kernel@arm.linux.org.uk>
 
-> Hi,
->=20
-> On 11-08-15 16:18, Lee Jones wrote:
-> >On Sat, 08 Aug 2015, Hans de Goede wrote:
-> >
-> >>Add a cell for the usb power_supply part of the axp20x PMICs.
-> >>
-> >>Note that this cell is only for the usb power_supply part and not t=
-he
-> >>ac-power / battery-charger / rtc-backup-bat-charger bits.
-> >>
-> >>Depending on the board each of those must be enabled / disabled sep=
-arately
-> >>in devicetree as most boards do not use all 4. So in dt each one ne=
-eds its
-> >>own child-node of the axp20x node. Another reason for using separat=
-e child
-> >>nodes for each is so that other devicetree nodes can have a power-s=
-upply
-> >>property with a phandle referencing a node representing a single
-> >>power-supply.
-> >>
-> >>The decision to use a separate devicetree node for each is reflecte=
-d on
-> >>the kernel side by each getting its own mfd-cell / platform_device =
-and
-> >>platform-driver.
-> >>
-> >>Note this commit also makes some whitespace changes to the intializ=
-ation
-> >>of existing cells in axp20x_cells, these are pure whitespace change=
-s,
-> >>functionally nothing changes.
-> >>
-> >>Cc: Bruno Pr=C3=A9mont <bonbons@linux-vserver.org>
-> >>Signed-off-by: Bruno Pr=C3=A9mont <bonbons@linux-vserver.org>
-> >>Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-> >>Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
-> >>Acked-by: Lee Jones <lee.jones@linaro.org>
-> >>---
-> >>Changes in v2:
-> >>-Use DEFINE_RES_IRQ_NAMED
-> >>-Change indentation of axp20x_cells initializers to avoid line wrap=
-ping
-> >>Changes in v3:
-> >>-Improve commit message
-> >>-Add Bruno's S-o-b
-> >>---
-> >>  drivers/mfd/axp20x.c | 20 ++++++++++++++++----
-> >>  1 file changed, 16 insertions(+), 4 deletions(-)
-> >
-> >Applied, thanks.
->=20
-> Great, but I'm not seeing this in:
->=20
-> https://git.kernel.org/cgit/linux/kernel/git/lee/mfd.git/log/?h=3Dfor=
--mfd-next
+A recent change to the cpu_cooling code introduced a AB-BA deadlock
+scenario between the cpufreq_policy_notifier_list rwsem and the
+cooling_cpufreq_lock.  This is caused by cooling_cpufreq_lock being held
+before the registration/removal of the notifier block (an operation
+which takes the rwsem), and the notifier code itself which takes the
+locks in the reverse order:
 
-Well it does usually take me a day or two push my local branch out,
-however in this case I had actually dropped a ball somewhere.  I've
-been through my backlog of 'applied' patches and these two are the
-only ones I failed to pick.  I have now, re-picked, re-applied and
-pushed the branch out.  Let me know if something is still not right.
+======================================================
+[ INFO: possible circular locking dependency detected ]
+3.18.0+ #1453 Not tainted
+-------------------------------------------------------
+rc.local/770 is trying to acquire lock:
+ (cooling_cpufreq_lock){+.+.+.}, at: [<c04abfc4>] cpufreq_thermal_notifier+0x34/0xfc
 
-Sorry for the inconvenience.
+but task is already holding lock:
+ ((cpufreq_policy_notifier_list).rwsem){++++.+}, at: [<c0042f04>]  __blocking_notifier_call_chain+0x34/0x68
 
-> >>diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-> >>index d9f2f96..3f576b7 100644
-> >>--- a/drivers/mfd/axp20x.c
-> >>+++ b/drivers/mfd/axp20x.c
-> >>@@ -140,6 +140,13 @@ static struct resource axp20x_pek_resources[] =
-=3D {
-> >>  	},
-> >>  };
-> >>
-> >>+static struct resource axp20x_usb_power_supply_resources[] =3D {
-> >>+	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_PLUGIN, "VBUS_PLUGIN"),
-> >>+	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_REMOVAL, "VBUS_REMOVAL"),
-> >>+	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_VALID, "VBUS_VALID"),
-> >>+	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_NOT_VALID, "VBUS_NOT_VALID")=
-,
-> >>+};
-> >>+
-> >>  static struct resource axp22x_pek_resources[] =3D {
-> >>  	{
-> >>  		.name   =3D "PEK_DBR",
-> >>@@ -432,11 +439,16 @@ static const struct regmap_irq_chip axp288_re=
-gmap_irq_chip =3D {
-> >>
-> >>  static struct mfd_cell axp20x_cells[] =3D {
-> >>  	{
-> >>-		.name			=3D "axp20x-pek",
-> >>-		.num_resources		=3D ARRAY_SIZE(axp20x_pek_resources),
-> >>-		.resources		=3D axp20x_pek_resources,
-> >>+		.name		=3D "axp20x-pek",
-> >>+		.num_resources	=3D ARRAY_SIZE(axp20x_pek_resources),
-> >>+		.resources	=3D axp20x_pek_resources,
-> >>  	}, {
-> >>-		.name			=3D "axp20x-regulator",
-> >>+		.name		=3D "axp20x-regulator",
-> >>+	}, {
-> >>+		.name		=3D "axp20x-usb-power-supply",
-> >>+		.of_compatible	=3D "x-powers,axp202-usb-power-supply",
-> >>+		.num_resources	=3D ARRAY_SIZE(axp20x_usb_power_supply_resources)=
-,
-> >>+		.resources	=3D axp20x_usb_power_supply_resources,
-> >>  	},
-> >>  };
-> >>
-> >
+which lock already depends on the new lock.
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+the existing dependency chain (in reverse order) is:
+
+-> #1 ((cpufreq_policy_notifier_list).rwsem){++++.+}:
+       [<c06bc3b0>] down_write+0x44/0x9c
+       [<c0043444>] blocking_notifier_chain_register+0x28/0xd8
+       [<c04ad610>] cpufreq_register_notifier+0x68/0x90
+       [<c04abe4c>] __cpufreq_cooling_register.part.1+0x120/0x180
+       [<c04abf44>] __cpufreq_cooling_register+0x98/0xa4
+       [<c04abf8c>] cpufreq_cooling_register+0x18/0x1c
+       [<bf0046f8>] imx_thermal_probe+0x1c0/0x470 [imx_thermal]
+       [<c037cef8>] platform_drv_probe+0x50/0xac
+       [<c037b710>] driver_probe_device+0x114/0x234
+       [<c037b8cc>] __driver_attach+0x9c/0xa0
+       [<c0379d68>] bus_for_each_dev+0x5c/0x90
+       [<c037b204>] driver_attach+0x24/0x28
+       [<c037ae7c>] bus_add_driver+0xe0/0x1d8
+       [<c037c0cc>] driver_register+0x80/0xfc
+       [<c037cd80>] __platform_driver_register+0x50/0x64
+       [<bf007018>] 0xbf007018
+       [<c0008a5c>] do_one_initcall+0x88/0x1d8
+       [<c0095da4>] load_module+0x1768/0x1ef8
+       [<c0096614>] SyS_init_module+0xe0/0xf4
+       [<c000ec00>] ret_fast_syscall+0x0/0x48
+
+-> #0 (cooling_cpufreq_lock){+.+.+.}:
+       [<c00619f8>] lock_acquire+0xb0/0x124
+       [<c06ba3b4>] mutex_lock_nested+0x5c/0x3d8
+       [<c04abfc4>] cpufreq_thermal_notifier+0x34/0xfc
+       [<c0042bf4>] notifier_call_chain+0x4c/0x8c
+       [<c0042f20>] __blocking_notifier_call_chain+0x50/0x68
+       [<c0042f58>] blocking_notifier_call_chain+0x20/0x28
+       [<c04ae62c>] cpufreq_set_policy+0x7c/0x1d0
+       [<c04af3cc>] store_scaling_governor+0x74/0x9c
+       [<c04ad418>] store+0x90/0xc0
+       [<c0175384>] sysfs_kf_write+0x54/0x58
+       [<c01746b4>] kernfs_fop_write+0xdc/0x190
+       [<c010dcc0>] vfs_write+0xac/0x1b4
+       [<c010dfec>] SyS_write+0x44/0x90
+       [<c000ec00>] ret_fast_syscall+0x0/0x48
+
+other info that might help us debug this:
+
+ Possible unsafe locking scenario:
+
+       CPU0                    CPU1
+       ----                    ----
+  lock((cpufreq_policy_notifier_list).rwsem);
+                               lock(cooling_cpufreq_lock);
+                               lock((cpufreq_policy_notifier_list).rwsem);
+  lock(cooling_cpufreq_lock);
+
+ *** DEADLOCK ***
+
+7 locks held by rc.local/770:
+ #0:  (sb_writers#6){.+.+.+}, at: [<c010dda0>] vfs_write+0x18c/0x1b4
+ #1:  (&of->mutex){+.+.+.}, at: [<c0174678>] kernfs_fop_write+0xa0/0x190
+ #2:  (s_active#52){.+.+.+}, at: [<c0174680>] kernfs_fop_write+0xa8/0x190
+ #3:  (cpu_hotplug.lock){++++++}, at: [<c0026a60>] get_online_cpus+0x34/0x90
+ #4:  (cpufreq_rwsem){.+.+.+}, at: [<c04ad3e0>] store+0x58/0xc0
+ #5:  (&policy->rwsem){+.+.+.}, at: [<c04ad3f8>] store+0x70/0xc0
+ #6:  ((cpufreq_policy_notifier_list).rwsem){++++.+}, at: [<c0042f04>] __blocking_notifier_call_chain+0x34/0x68
+
+stack backtrace:
+CPU: 0 PID: 770 Comm: rc.local Not tainted 3.18.0+ #1453
+Hardware name: Freescale i.MX6 Quad/DualLite (Device Tree)
+Backtrace:
+[<c00121c8>] (dump_backtrace) from [<c0012360>] (show_stack+0x18/0x1c)
+ r6:c0b85a80 r5:c0b75630 r4:00000000 r3:00000000
+[<c0012348>] (show_stack) from [<c06b6c48>] (dump_stack+0x7c/0x98)
+[<c06b6bcc>] (dump_stack) from [<c06b42a4>] (print_circular_bug+0x28c/0x2d8)
+ r4:c0b85a80 r3:d0071d40
+[<c06b4018>] (print_circular_bug) from [<c00613b0>] (__lock_acquire+0x1acc/0x1bb0)
+ r10:c0b50660 r8:c09e6d80 r7:d0071d40 r6:c11d0f0c r5:00000007 r4:d0072240
+[<c005f8e4>] (__lock_acquire) from [<c00619f8>] (lock_acquire+0xb0/0x124)
+ r10:00000000 r9:c04abfc4 r8:00000000 r7:00000000 r6:00000000 r5:c0a06f0c
+ r4:00000000
+[<c0061948>] (lock_acquire) from [<c06ba3b4>] (mutex_lock_nested+0x5c/0x3d8)
+ r10:ec853800 r9:c0a06ed4 r8:d0071d40 r7:c0a06ed4 r6:c11d0f0c r5:00000000
+ r4:c04abfc4
+[<c06ba358>] (mutex_lock_nested) from [<c04abfc4>] (cpufreq_thermal_notifier+0x34/0xfc)
+ r10:ec853800 r9:ec85380c r8:d00d7d3c r7:c0a06ed4 r6:d00d7d3c r5:00000000
+ r4:fffffffe
+[<c04abf90>] (cpufreq_thermal_notifier) from [<c0042bf4>] (notifier_call_chain+0x4c/0x8c)
+ r7:00000000 r6:00000000 r5:00000000 r4:fffffffe
+[<c0042ba8>] (notifier_call_chain) from [<c0042f20>] (__blocking_notifier_call_chain+0x50/0x68)
+ r8:c0a072a4 r7:00000000 r6:d00d7d3c r5:ffffffff r4:c0a06fc8 r3:ffffffff
+[<c0042ed0>] (__blocking_notifier_call_chain) from [<c0042f58>] (blocking_notifier_call_chain+0x20/0x28)
+ r7:ec98b540 r6:c13ebc80 r5:ed76e600 r4:d00d7d3c
+[<c0042f38>] (blocking_notifier_call_chain) from [<c04ae62c>] (cpufreq_set_policy+0x7c/0x1d0)
+[<c04ae5b0>] (cpufreq_set_policy) from [<c04af3cc>] (store_scaling_governor+0x74/0x9c)
+ r7:ec98b540 r6:0000000c r5:ec98b540 r4:ed76e600
+[<c04af358>] (store_scaling_governor) from [<c04ad418>] (store+0x90/0xc0)
+ r6:0000000c r5:ed76e6d4 r4:ed76e600
+[<c04ad388>] (store) from [<c0175384>] (sysfs_kf_write+0x54/0x58)
+ r8:0000000c r7:d00d7f78 r6:ec98b540 r5:0000000c r4:ec853800 r3:0000000c
+[<c0175330>] (sysfs_kf_write) from [<c01746b4>] (kernfs_fop_write+0xdc/0x190)
+ r6:ec98b540 r5:00000000 r4:00000000 r3:c0175330
+[<c01745d8>] (kernfs_fop_write) from [<c010dcc0>] (vfs_write+0xac/0x1b4)
+ r10:0162aa70 r9:d00d6000 r8:0000000c r7:d00d7f78 r6:0162aa70 r5:0000000c
+ r4:eccde500
+[<c010dc14>] (vfs_write) from [<c010dfec>] (SyS_write+0x44/0x90)
+ r10:0162aa70 r8:0000000c r7:eccde500 r6:eccde500 r5:00000000 r4:00000000
+[<c010dfa8>] (SyS_write) from [<c000ec00>] (ret_fast_syscall+0x0/0x48)
+ r10:00000000 r8:c000edc4 r7:00000004 r6:000216cc r5:0000000c r4:0162aa70
+
+Solve this by moving to finer grained locking - use one mutex to protect
+the cpufreq_dev_list as a whole, and a separate lock to ensure correct
+ordering of cpufreq notifier registration and removal.
+
+cooling_list_lock is taken within cooling_cpufreq_lock on
+(un)registration to preserve the behavior of the code, i.e. to
+atomically add/remove to the list and (un)register the notifier.
+
+Fixes: 2dcd851fe4b4 ("thermal: cpu_cooling: Update always cpufreq policy with
+Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+
+Hi Eduardo/Zhang,
+
+This is 4.2-rc material, please apply soon.
+
+V1->V2:
+- V1 was posted by Russell this morning and I made few minor changes to
+  it.
+- Some sections (specially the Rant) of the commit log are dropped and
+  the last one is updated, as we do take cooling_list_lock within
+  cooling_cpufreq_lock.
+- Above is updated in code during unregister sequence
+- cooling_list_lock taken at few more places
+- Minor reorganization of the code
+
+ drivers/thermal/cpu_cooling.c | 31 ++++++++++++++++++++-----------
+ 1 file changed, 20 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index 6509c61b9648..5ae0524bed19 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -107,6 +107,9 @@ struct cpufreq_cooling_device {
+ static DEFINE_IDR(cpufreq_idr);
+ static DEFINE_MUTEX(cooling_cpufreq_lock);
+ 
++static unsigned int cpufreq_dev_count;
++
++static DEFINE_MUTEX(cooling_list_lock);
+ static LIST_HEAD(cpufreq_dev_list);
+ 
+ /**
+@@ -185,14 +188,14 @@ unsigned long cpufreq_cooling_get_level(unsigned int cpu, unsigned int freq)
+ {
+ 	struct cpufreq_cooling_device *cpufreq_dev;
+ 
+-	mutex_lock(&cooling_cpufreq_lock);
++	mutex_lock(&cooling_list_lock);
+ 	list_for_each_entry(cpufreq_dev, &cpufreq_dev_list, node) {
+ 		if (cpumask_test_cpu(cpu, &cpufreq_dev->allowed_cpus)) {
+-			mutex_unlock(&cooling_cpufreq_lock);
++			mutex_unlock(&cooling_list_lock);
+ 			return get_level(cpufreq_dev, freq);
+ 		}
+ 	}
+-	mutex_unlock(&cooling_cpufreq_lock);
++	mutex_unlock(&cooling_list_lock);
+ 
+ 	pr_err("%s: cpu:%d not part of any cooling device\n", __func__, cpu);
+ 	return THERMAL_CSTATE_INVALID;
+@@ -221,7 +224,7 @@ static int cpufreq_thermal_notifier(struct notifier_block *nb,
+ 	switch (event) {
+ 
+ 	case CPUFREQ_ADJUST:
+-		mutex_lock(&cooling_cpufreq_lock);
++		mutex_lock(&cooling_list_lock);
+ 		list_for_each_entry(cpufreq_dev, &cpufreq_dev_list, node) {
+ 			if (!cpumask_test_cpu(policy->cpu,
+ 					      &cpufreq_dev->allowed_cpus))
+@@ -233,7 +236,7 @@ static int cpufreq_thermal_notifier(struct notifier_block *nb,
+ 				cpufreq_verify_within_limits(policy, 0,
+ 							     max_freq);
+ 		}
+-		mutex_unlock(&cooling_cpufreq_lock);
++		mutex_unlock(&cooling_list_lock);
+ 		break;
+ 	default:
+ 		return NOTIFY_DONE;
+@@ -866,12 +869,14 @@ __cpufreq_cooling_register(struct device_node *np,
+ 
+ 	mutex_lock(&cooling_cpufreq_lock);
+ 
++	mutex_lock(&cooling_list_lock);
++	list_add(&cpufreq_dev->node, &cpufreq_dev_list);
++	mutex_unlock(&cooling_list_lock);
++
+ 	/* Register the notifier for first cpufreq cooling device */
+-	if (list_empty(&cpufreq_dev_list))
++	if (!cpufreq_dev_count++)
+ 		cpufreq_register_notifier(&thermal_cpufreq_notifier_block,
+ 					  CPUFREQ_POLICY_NOTIFIER);
+-	list_add(&cpufreq_dev->node, &cpufreq_dev_list);
+-
+ 	mutex_unlock(&cooling_cpufreq_lock);
+ 
+ 	return cool_dev;
+@@ -1013,13 +1018,17 @@ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
+ 		return;
+ 
+ 	cpufreq_dev = cdev->devdata;
+-	mutex_lock(&cooling_cpufreq_lock);
+-	list_del(&cpufreq_dev->node);
+ 
+ 	/* Unregister the notifier for the last cpufreq cooling device */
+-	if (list_empty(&cpufreq_dev_list))
++	mutex_lock(&cooling_cpufreq_lock);
++	if (!--cpufreq_dev_count)
+ 		cpufreq_unregister_notifier(&thermal_cpufreq_notifier_block,
+ 					    CPUFREQ_POLICY_NOTIFIER);
++
++	mutex_lock(&cooling_list_lock);
++	list_del(&cpufreq_dev->node);
++	mutex_unlock(&cooling_list_lock);
++
+ 	mutex_unlock(&cooling_cpufreq_lock);
+ 
+ 	thermal_cooling_device_unregister(cpufreq_dev->cool_dev);
+-- 
+2.4.0
+
