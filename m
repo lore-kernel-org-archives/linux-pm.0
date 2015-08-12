@@ -1,63 +1,87 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 1/6] PM / OPP: Free resources and properly return
- error on failure
-Date: Wed, 12 Aug 2015 12:13:09 +0530
-Message-ID: <20150812064309.GL32049@linux>
-References: <cover.1439288881.git.viresh.kumar@linaro.org>
- <334a9052264630b9157fa9bfc3d4efe945054c34.1439288881.git.viresh.kumar@linaro.org>
- <20150811144345.GN5180@mwanda>
- <20150811145938.GA32049@linux>
- <20150811171132.GA25166@mwanda>
+Subject: Re: PM / OPP: Add clock-latency-ns support
+Date: Wed, 12 Aug 2015 12:27:09 +0530
+Message-ID: <20150812065709.GM32049@linux>
+References: <20150810163804.GA10496@mwanda>
+ <20150811081228.GC5509@linux>
+ <20150811135122.GL5096@mwanda>
+ <20150811185421.GM2839@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f180.google.com ([209.85.192.180]:33828 "EHLO
-	mail-pd0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751009AbbHLGns (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Aug 2015 02:43:48 -0400
-Received: by pdbfa8 with SMTP id fa8so4032041pdb.1
-        for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2015 23:43:47 -0700 (PDT)
+Received: from mail-pd0-f182.google.com ([209.85.192.182]:34306 "EHLO
+	mail-pd0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751009AbbHLG5Z (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Aug 2015 02:57:25 -0400
+Received: by pdbfa8 with SMTP id fa8so4155564pdb.1
+        for <linux-pm@vger.kernel.org>; Tue, 11 Aug 2015 23:57:24 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <20150811171132.GA25166@mwanda>
+In-Reply-To: <20150811185421.GM2839@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, khilman@linaro.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Dan Carpenter <dan.carpenter@oracle.com>, linux-pm@vger.kernel.org
 
-On 11-08-15, 20:11, Dan Carpenter wrote:
-> On Tue, Aug 11, 2015 at 08:29:38PM +0530, Viresh Kumar wrote:
-> > > This is weird to me, because we are going backwards.  What happens if
-> > > we goto free_table without adding anything?
-> > 
-> > It will WARN() today.
-> 
-> Then the current code is buggy.
+On 11-08-15, 11:54, Stephen Boyd wrote:
+> Making it portable should be simple enough by having a temporary
+> variable of type u32 though.
 
-Urg, it wouldn't WARN in this case. Sorry, didn't read it correctly
-earlier.
+Right.
 
-> > > I suspect it's fine, but if
-> > > it's a bug then this code still has problems.
-> > 
-> > I don't think we have a bug here, we never added anything and so don't
-> > need to free it.
-> > 
-> > > What about if we only increment count when _opp_add_static_v2()
-> > > succeeds
-> > 
-> > That's not what we want.
-> 
-> If the first call to _opp_add_static_v2() fails we call
-> of_free_opp_table() and you say that triggers a WARN().
+@Dan: Does this look fine to you?
 
-No it doesn't.
+Message-Id: <40b3ad3c99c5fe1c50d997ba5418dd602c673f13.1439362565.git.viresh.kumar@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Date: Wed, 12 Aug 2015 12:20:49 +0530
+Subject: [PATCH] PM / OPP: Fix static checker warning (broken 64bit big endian
+ systems)
 
-So, coming back to the point you made about freeing table on !count,
-because there were no nodes present in the DT opp table, we have never
-tried to add any OPPs. And so there is no need to call
-of_free_opp_table() in that case.
+Dan Carpenter reported (generated with static checker):
 
-Do you still think the current code is wrong ?
+drivers/base/power/opp.c:949 _opp_add_static_v2()
+warn: passing casted pointer '&new_opp->clock_latency_ns' to
+'of_property_read_u32()' 64 vs 32.
 
--- 
-viresh
+This code will break on 64 bit, big endian machines.
+
+Fix this by reading the value in a u32 type variable first and then
+assigning it to the unsigned long variable.
+
+Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+Suggested-by: Stephen Boyd <sboyd@codeaurora.org>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/base/power/opp.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index 204c6c945168..a9e0af0dd9e5 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -918,6 +918,7 @@ static int _opp_add_static_v2(struct device *dev, struct device_node *np)
+ 	struct device_opp *dev_opp;
+ 	struct dev_pm_opp *new_opp;
+ 	u64 rate;
++	u32 val;
+ 	int ret;
+ 
+ 	/* Hold our list modification lock here */
+@@ -946,14 +947,15 @@ static int _opp_add_static_v2(struct device *dev, struct device_node *np)
+ 	new_opp->np = np;
+ 	new_opp->dynamic = false;
+ 	new_opp->available = true;
+-	of_property_read_u32(np, "clock-latency-ns",
+-			     (u32 *)&new_opp->clock_latency_ns);
++	of_property_read_u32(np, "clock-latency-ns", &val);
++	new_opp->clock_latency_ns = val;
+ 
+ 	ret = opp_get_microvolt(new_opp, dev);
+ 	if (ret)
+ 		goto free_opp;
+ 
+-	of_property_read_u32(np, "opp-microamp", (u32 *)&new_opp->u_amp);
++	of_property_read_u32(np, "opp-microamp", &val);
++	new_opp->u_amp = val;
+ 
+ 	ret = _opp_add(dev, new_opp, dev_opp);
+ 	if (ret)
