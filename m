@@ -1,51 +1,136 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Subject: Re: [PATCH V2 1/6] PM / OPP: Free resources and properly return
- error on failure
-Date: Wed, 12 Aug 2015 11:11:39 +0300
-Message-ID: <20150812081113.GC32040@mwanda>
-References: <cover.1439288881.git.viresh.kumar@linaro.org>
- <334a9052264630b9157fa9bfc3d4efe945054c34.1439288881.git.viresh.kumar@linaro.org>
- <20150811144345.GN5180@mwanda>
- <20150811145938.GA32049@linux>
- <20150811171132.GA25166@mwanda>
- <20150812064309.GL32049@linux>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: 3.18: lockdep problems in cpufreq
+Date: Wed, 12 Aug 2015 13:42:57 +0530
+Message-ID: <20150812081257.GC16445@linux>
+References: <20141214213655.GA11285@n2100.arm.linux.org.uk>
+ <CAKohponhkk9BK6-7ScHeZa4R43iooWQFV8YoPLv6LjO40GNq=A@mail.gmail.com>
+ <20150518185645.GA28053@n2100.arm.linux.org.uk>
+ <2574268.XBqpdL2VLI@vostro.rjw.lan>
+ <20150811170357.GA24529@n2100.arm.linux.org.uk>
+ <20150812051659.GI32049@linux>
+ <20150812072129.GD7557@n2100.arm.linux.org.uk>
+ <20150812073530.GA16445@linux>
+ <20150812074925.GG7557@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from userp1040.oracle.com ([156.151.31.81]:30407 "EHLO
-	userp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754171AbbHLIMM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Aug 2015 04:12:12 -0400
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:35795 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754252AbbHLINC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Aug 2015 04:13:02 -0400
+Received: by pacgr6 with SMTP id gr6so9534356pac.2
+        for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2015 01:13:01 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <20150812064309.GL32049@linux>
+In-Reply-To: <20150812074925.GG7557@n2100.arm.linux.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, khilman@linaro.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Eduardo Valentin <edubezval@gmail.com>, Yadwinder Singh Brar <yadi.brar@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Wed, Aug 12, 2015 at 12:13:09PM +0530, Viresh Kumar wrote:
-> > If the first call to _opp_add_static_v2() fails we call
-> > of_free_opp_table() and you say that triggers a WARN().
-> 
-> No it doesn't.
-> 
-> So, coming back to the point you made about freeing table on !count,
-> because there were no nodes present in the DT opp table, we have never
-> tried to add any OPPs. And so there is no need to call
-> of_free_opp_table() in that case.
-> 
-> Do you still think the current code is wrong ?
+On 12-08-15, 08:49, Russell King - ARM Linux wrote:
+> The problem will be back-porting it to stable kernels, because I think
+> it's had to be updated at least a couple of times.  I don't have the old
+> versions anymore, so I'm just going to say "not my problem" - sorry.
 
-If it doesn't WARN() then it's not buggy, but it's still ugly.  We
-should not call of_free_opp_table() because we *tried* to add an OPP, we
-should only call it if we *succeeded*.
+Your old 3.18 version :)
 
-The way the code is written and from your emails I was afraid that if
-you tried to call _opp_add_static_v2() and it fails then it leaves
-artifacts lying around that need to be cleaned up by the caller.  This
-would be the ugliest scenario.  But I looked at _opp_add_static_v2()
-and looks fine.  It cleans up properly on failure.  We only need to
-clean up if it succeeds.
+8<===
+From: Russell King <rmk+kernel@arm.linux.org.uk>
+thermal: cpu_cooling: fix lockdep problems in cpu_cooling
 
-regards,
-dan carpenter
+A recent change to the cpu_cooling code introduced a AB-BA deadlock
+scenario between the cpufreq_policy_notifier_list rwsem and the
+cooling_cpufreq_lock.  This is caused by cooling_cpufreq_lock being held
+before the registration/removal of the notifier block (an operation
+which takes the rwsem), and the notifier code itself which takes the
+locks in the reverse order.
+
+Solve this by moving to finer grained locking - use one mutex to protect
+the cpufreq_dev_list as a whole, and a separate lock to ensure correct
+ordering of cpufreq notifier registration and removal.
+
+I considered taking the cooling_list_lock within cooling_cpufreq_lock to
+protect the registration sequence as a whole, but that adds a dependency
+between these two locks which is best avoided (lest someone tries to
+take those two new locks in the reverse order.)  In any case, it's safer
+to have an empty cpufreq_dev_list than to have unnecessary dependencies
+between locks.
+
+Fixes: 2dcd851fe4b4 ("thermal: cpu_cooling: Update always cpufreq policy with thermal constraints")
+Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+---
+
+ drivers/thermal/cpu_cooling.c | 16 ++++++++++++----
+ 1 file changed, 12 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index ad09e51ffae4..9e42c6f30785 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -57,6 +57,7 @@ static DEFINE_MUTEX(cooling_cpufreq_lock);
+ 
+ static unsigned int cpufreq_dev_count;
+ 
++static DEFINE_MUTEX(cooling_list_lock);
+ static LIST_HEAD(cpufreq_dev_list);
+ 
+ /**
+@@ -317,7 +318,7 @@ static int cpufreq_thermal_notifier(struct notifier_block *nb,
+ 	if (event != CPUFREQ_ADJUST)
+ 		return 0;
+ 
+-	mutex_lock(&cooling_cpufreq_lock);
++	mutex_lock(&cooling_list_lock);
+ 	list_for_each_entry(cpufreq_dev, &cpufreq_dev_list, node) {
+ 		if (!cpumask_test_cpu(policy->cpu,
+ 					&cpufreq_dev->allowed_cpus))
+@@ -333,7 +334,7 @@ static int cpufreq_thermal_notifier(struct notifier_block *nb,
+ 		if (policy->max != max_freq)
+ 			cpufreq_verify_within_limits(policy, 0, max_freq);
+ 	}
+-	mutex_unlock(&cooling_cpufreq_lock);
++	mutex_unlock(&cooling_list_lock);
+ 
+ 	return 0;
+ }
+@@ -482,6 +483,11 @@ __cpufreq_cooling_register(struct device_node *np,
+ 	}
+ 	cpufreq_dev->cool_dev = cool_dev;
+ 	cpufreq_dev->cpufreq_state = 0;
++
++	mutex_lock(&cooling_list_lock);
++	list_add(&cpufreq_dev->node, &cpufreq_dev_list);
++	mutex_unlock(&cooling_list_lock);
++
+ 	mutex_lock(&cooling_cpufreq_lock);
+ 
+ 	/* Register the notifier for first cpufreq cooling device */
+@@ -489,7 +495,6 @@ __cpufreq_cooling_register(struct device_node *np,
+ 		cpufreq_register_notifier(&thermal_cpufreq_notifier_block,
+ 					  CPUFREQ_POLICY_NOTIFIER);
+ 	cpufreq_dev_count++;
+-	list_add(&cpufreq_dev->node, &cpufreq_dev_list);
+ 
+ 	mutex_unlock(&cooling_cpufreq_lock);
+ 
+@@ -553,7 +558,6 @@ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
+ 
+ 	cpufreq_dev = cdev->devdata;
+ 	mutex_lock(&cooling_cpufreq_lock);
+-	list_del(&cpufreq_dev->node);
+ 	cpufreq_dev_count--;
+ 
+ 	/* Unregister the notifier for the last cpufreq cooling device */
+@@ -562,6 +566,10 @@ void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
+ 					    CPUFREQ_POLICY_NOTIFIER);
+ 	mutex_unlock(&cooling_cpufreq_lock);
+ 
++	mutex_lock(&cooling_list_lock);
++	list_del(&cpufreq_dev->node);
++	mutex_unlock(&cooling_list_lock);
++
+ 	thermal_cooling_device_unregister(cpufreq_dev->cool_dev);
+ 	release_idr(&cpufreq_idr, cpufreq_dev->id);
+ 	kfree(cpufreq_dev);
+
