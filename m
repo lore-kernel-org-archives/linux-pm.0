@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 2/2] PM / OPP: Fix static checker warning (broken 64bit big endian systems)
-Date: Wed, 12 Aug 2015 16:30:19 +0530
-Message-ID: <fac7aa53b304bbff1ff22f65670e05e5e6dc6396.1439376998.git.viresh.kumar@linaro.org>
+Subject: [PATCH V3 1/2] PM / OPP: Free resources and properly return error on failure
+Date: Wed, 12 Aug 2015 16:30:18 +0530
+Message-ID: <e2412c33aa6923767b394adffee9d3f7be1ee27f.1439376998.git.viresh.kumar@linaro.org>
 References: <cover.1439376998.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1439376998.git.viresh.kumar@linaro.org>
@@ -12,54 +12,69 @@ To: Rafael Wysocki <rjw@rjwysocki.net>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, dan.carpenter@oracle.com, nm@ti.com, sboyd@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-Dan Carpenter reported (generated with static checker):
+_of_init_opp_table_v2() isn't freeing up resources on some errors and
+the error values returned are also not correct always.
 
-drivers/base/power/opp.c:949 _opp_add_static_v2()
-warn: passing casted pointer '&new_opp->clock_latency_ns' to
-'of_property_read_u32()' 64 vs 32.
-
-This code will break on 64 bit, big endian machines.
-
-Fix this by reading the value in a u32 type variable first and then
-assigning it to the unsigned long variable.
+This fixes following problems:
+- Return -ENOENT, if no entries are found in the table.
+- Use IS_ERR() to properly check return value of _find_device_opp().
+- Return error value with PTR_ERR() in above case.
+- Free table if _find_device_opp() fails.
 
 Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-Suggested-by: Stephen Boyd <sboyd@codeaurora.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/base/power/opp.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ drivers/base/power/opp.c | 30 ++++++++++++++++--------------
+ 1 file changed, 16 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index 4d6c4576f7ae..72dc59248876 100644
+index 204c6c945168..4d6c4576f7ae 100644
 --- a/drivers/base/power/opp.c
 +++ b/drivers/base/power/opp.c
-@@ -918,6 +918,7 @@ static int _opp_add_static_v2(struct device *dev, struct device_node *np)
- 	struct device_opp *dev_opp;
- 	struct dev_pm_opp *new_opp;
- 	u64 rate;
-+	u32 val;
- 	int ret;
+@@ -1323,28 +1323,30 @@ static int _of_init_opp_table_v2(struct device *dev,
+ 		if (ret) {
+ 			dev_err(dev, "%s: Failed to add OPP, %d\n", __func__,
+ 				ret);
+-			break;
++			goto free_table;
+ 		}
+ 	}
  
- 	/* Hold our list modification lock here */
-@@ -946,14 +947,15 @@ static int _opp_add_static_v2(struct device *dev, struct device_node *np)
- 	new_opp->np = np;
- 	new_opp->dynamic = false;
- 	new_opp->available = true;
--	of_property_read_u32(np, "clock-latency-ns",
--			     (u32 *)&new_opp->clock_latency_ns);
-+	of_property_read_u32(np, "clock-latency-ns", &val);
-+	new_opp->clock_latency_ns = val;
+ 	/* There should be one of more OPP defined */
+-	if (WARN_ON(!count))
++	if (WARN_ON(!count)) {
++		ret = -ENOENT;
+ 		goto put_opp_np;
++	}
  
- 	ret = opp_get_microvolt(new_opp, dev);
- 	if (ret)
- 		goto free_opp;
+-	if (!ret) {
+-		if (!dev_opp) {
+-			dev_opp = _find_device_opp(dev);
+-			if (WARN_ON(!dev_opp))
+-				goto put_opp_np;
+-		}
+-
+-		dev_opp->np = opp_np;
+-		dev_opp->shared_opp = of_property_read_bool(opp_np,
+-							    "opp-shared");
+-	} else {
+-		of_free_opp_table(dev);
++	dev_opp = _find_device_opp(dev);
++	if (WARN_ON(IS_ERR(dev_opp))) {
++		ret = PTR_ERR(dev_opp);
++		goto free_table;
+ 	}
  
--	of_property_read_u32(np, "opp-microamp", (u32 *)&new_opp->u_amp);
-+	of_property_read_u32(np, "opp-microamp", &val);
-+	new_opp->u_amp = val;
++	dev_opp->np = opp_np;
++	dev_opp->shared_opp = of_property_read_bool(opp_np, "opp-shared");
++
++	of_node_put(opp_np);
++	return 0;
++
++free_table:
++	of_free_opp_table(dev);
+ put_opp_np:
+ 	of_node_put(opp_np);
  
- 	ret = _opp_add(dev, new_opp, dev_opp);
- 	if (ret)
 -- 
 2.4.0
