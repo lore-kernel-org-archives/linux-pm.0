@@ -1,34 +1,38 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Subject: Re: [PATCH V2 1/6] PM / OPP: Free resources and properly return
- error on failure
-Date: Wed, 12 Aug 2015 13:52:09 +0300
-Message-ID: <20150812105209.GF32040@mwanda>
-References: <cover.1439288881.git.viresh.kumar@linaro.org>
- <334a9052264630b9157fa9bfc3d4efe945054c34.1439288881.git.viresh.kumar@linaro.org>
- <20150811144345.GN5180@mwanda>
- <20150811145938.GA32049@linux>
- <20150811171132.GA25166@mwanda>
- <20150812064309.GL32049@linux>
- <20150812081113.GC32040@mwanda>
- <20150812082302.GD16445@linux>
- <20150812090351.GE32040@mwanda>
- <20150812101010.GA32432@linux>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFCv5 PATCH 20/46] sched: Relocated get_cpu_usage() and change
+ return type
+Date: Wed, 12 Aug 2015 12:59:23 +0200
+Message-ID: <20150812105923.GX19282@twins.programming.kicks-ass.net>
+References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
+ <1436293469-25707-21-git-send-email-morten.rasmussen@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from aserp1040.oracle.com ([141.146.126.69]:39717 "EHLO
-	aserp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932857AbbHLKwa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Aug 2015 06:52:30 -0400
+Received: from casper.infradead.org ([85.118.1.10]:49957 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752107AbbHLK72 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Aug 2015 06:59:28 -0400
 Content-Disposition: inline
-In-Reply-To: <20150812101010.GA32432@linux>
+In-Reply-To: <1436293469-25707-21-git-send-email-morten.rasmussen@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, khilman@linaro.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+To: Morten Rasmussen <morten.rasmussen@arm.com>
+Cc: mingo@redhat.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Fine, fine.  Much improved etc.  :)  Thanks.
+On Tue, Jul 07, 2015 at 07:24:03PM +0100, Morten Rasmussen wrote:
+> +static unsigned long get_cpu_usage(int cpu)
+> +{
+> +	int sum;
+> +	unsigned long usage = cpu_rq(cpu)->cfs.utilization_load_avg;
+> +	unsigned long blocked = cpu_rq(cpu)->cfs.utilization_blocked_avg;
+> +	unsigned long capacity_orig = capacity_orig_of(cpu);
+> +
+> +	sum = usage + blocked;
+> +
+> +	if (sum >= capacity_orig)
+> +		return capacity_orig;
+> +
+> +	return sum;
+> +}
 
-regards,
-dan carpenter
-
+Should sum then not also be unsigned long?
