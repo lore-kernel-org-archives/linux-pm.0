@@ -1,47 +1,79 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH 5/9] clk: qcom: gcc-msm8960: add child devices support.
-Date: Tue, 11 Aug 2015 15:49:02 -0700
-Message-ID: <20150811224902.GO2839@codeaurora.org>
-References: <1436348838-22671-1-git-send-email-rnayak@codeaurora.org>
- <1436348838-22671-6-git-send-email-rnayak@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1436348838-22671-6-git-send-email-rnayak@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Rajendra Nayak <rnayak@codeaurora.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, srinivas.kandagatla@linaro.org, nrajan@codeaurora.org, lina.iyer@linaro.org
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: [PATCH][rfc] intel_pstate: Fix user input of min/max to legal policy region
+Date: Wed, 12 Aug 2015 11:49:19 +0800
+Message-ID: <1439351359-29532-1-git-send-email-yu.c.chen@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:10625 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933329AbbHLDpv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 11 Aug 2015 23:45:51 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: kristen@linux.intel.com, rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rui.zhang@intel.com, lenb@kernel.org, Chen Yu <yu.c.chen@intel.com>
 
-On 07/08, Rajendra Nayak wrote:
-> diff --git a/drivers/clk/qcom/gcc-msm8960.c b/drivers/clk/qcom/gcc-msm8960.c
-> index eb6a4f9..2c80d03 100644
-> --- a/drivers/clk/qcom/gcc-msm8960.c
-> +++ b/drivers/clk/qcom/gcc-msm8960.c
-> @@ -15,6 +15,7 @@
->  #include <linux/bitops.h>
->  #include <linux/err.h>
->  #include <linux/platform_device.h>
-> +#include <linux/of_platform.h>
->  #include <linux/module.h>
->  #include <linux/of.h>
->  #include <linux/of_device.h>
-> @@ -3520,7 +3521,8 @@ static int gcc_msm8960_probe(struct platform_device *pdev)
->  	if (IS_ERR(clk))
->  		return PTR_ERR(clk);
->  
-> -	return qcom_cc_probe(pdev, match->data);
-> +	qcom_cc_probe(pdev, match->data);
-> +	return of_platform_populate(pdev->dev.of_node, NULL, NULL, &pdev->dev);
+In current code, if system is using performance policy, user can
+modify the max_perf_pct to any values lower than 100:
 
-We just lost the error code from qcom_cc_probe()...
+$ grep . /sys/devices/system/cpu/intel_pstate/m*_perf_pct
+/sys/devices/system/cpu/intel_pstate/max_perf_pct:100
+/sys/devices/system/cpu/intel_pstate/min_perf_pct:100
 
-Also, I don't like having a subnode in DT. Why can't we use the
-same node as the GCC node and create a virtual child device here
-for tsens? We can assign the same of_node that this platform
-device has so that DT keeps working correctly.
+$ echo 80 > /sys/devices/system/cpu/intel_pstate/max_perf_pct
 
+$ grep . /sys/devices/system/cpu/intel_pstate/m*_perf_pct
+/sys/devices/system/cpu/intel_pstate/max_perf_pct:80
+/sys/devices/system/cpu/intel_pstate/min_perf_pct:100
+
+the max_perf_pct above is lower than min_perf_pct, which
+is not reasonable.
+
+This patch solves this problem by clamping min_perf_pct and max_perf_pct
+to be strictly inside [min_policy_pct,max_policy_pct].
+
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index fcb929e..3702c5a 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -423,6 +423,7 @@ static ssize_t store_max_perf_pct(struct kobject *a, struct attribute *b,
+ 
+ 	limits.max_sysfs_pct = clamp_t(int, input, 0 , 100);
+ 	limits.max_perf_pct = min(limits.max_policy_pct, limits.max_sysfs_pct);
++	limits.max_perf_pct = max(limits.min_policy_pct, limits.max_perf_pct);
+ 	limits.max_perf = div_fp(int_tofp(limits.max_perf_pct), int_tofp(100));
+ 
+ 	if (hwp_active)
+@@ -442,6 +443,7 @@ static ssize_t store_min_perf_pct(struct kobject *a, struct attribute *b,
+ 
+ 	limits.min_sysfs_pct = clamp_t(int, input, 0 , 100);
+ 	limits.min_perf_pct = max(limits.min_policy_pct, limits.min_sysfs_pct);
++	limits.min_perf_pct = min(limits.max_policy_pct, limits.min_perf_pct);
+ 	limits.min_perf = div_fp(int_tofp(limits.min_perf_pct), int_tofp(100));
+ 
+ 	if (hwp_active)
+@@ -985,12 +987,14 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+ 
+ 	limits.min_policy_pct = (policy->min * 100) / policy->cpuinfo.max_freq;
+ 	limits.min_policy_pct = clamp_t(int, limits.min_policy_pct, 0 , 100);
+-	limits.min_perf_pct = max(limits.min_policy_pct, limits.min_sysfs_pct);
+-	limits.min_perf = div_fp(int_tofp(limits.min_perf_pct), int_tofp(100));
+-
+ 	limits.max_policy_pct = (policy->max * 100) / policy->cpuinfo.max_freq;
+ 	limits.max_policy_pct = clamp_t(int, limits.max_policy_pct, 0 , 100);
++
++	limits.min_perf_pct = max(limits.min_policy_pct, limits.min_sysfs_pct);
++	limits.min_perf_pct = min(limits.max_policy_pct, limits.min_perf_pct);
++	limits.min_perf = div_fp(int_tofp(limits.min_perf_pct), int_tofp(100));
+ 	limits.max_perf_pct = min(limits.max_policy_pct, limits.max_sysfs_pct);
++	limits.max_perf_pct = max(limits.min_policy_pct, limits.max_perf_pct);
+ 	limits.max_perf = div_fp(int_tofp(limits.max_perf_pct), int_tofp(100));
+ 
+ 	if (hwp_active)
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+1.8.3.1
+
