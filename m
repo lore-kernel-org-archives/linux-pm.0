@@ -1,155 +1,35 @@
-From: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH v4 2/2] mfd: axp20x: Add a cell for the usb
- power_supply part of the axp20x PMICs
-Date: Wed, 12 Aug 2015 12:20:15 +0200
-Message-ID: <55CB1DDF.7000201@redhat.com>
-References: <1439049521-30766-1-git-send-email-hdegoede@redhat.com>
- <1439049521-30766-2-git-send-email-hdegoede@redhat.com>
- <20150811141811.GM18282@x1> <55CB05AD.1030707@redhat.com>
- <20150812092900.GC18282@x1>
-Reply-To: hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org
+From: srinath mannam <srinath.mannam@gmail.com>
+Subject: auto suspend aborts with SD card remove call from pm notifier
+Date: Wed, 12 Aug 2015 10:19:31 +0000 (UTC)
+Message-ID: <loom.20150812T121727-137@post.gmane.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-sunxi+bncBDRZXY4CYYORBZF3VSXAKGQECWBIBAA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-In-Reply-To: <20150812092900.GC18282@x1>
-List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <http://groups.google.com/group/linux-sunxi
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-List-Subscribe: <http://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <http://groups.google.com/group/linux-sunxi/subscribe>
-To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, =?UTF-8?Q?Bruno_Pr=c3=a9mont?= <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from plane.gmane.org ([80.91.229.3]:58486 "EHLO plane.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754478AbbHLKZo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 12 Aug 2015 06:25:44 -0400
+Received: from list by plane.gmane.org with local (Exim 4.69)
+	(envelope-from <gll-linux-pm2@m.gmane.org>)
+	id 1ZPTDV-00053t-Is
+	for linux-pm@vger.kernel.org; Wed, 12 Aug 2015 12:25:40 +0200
+Received: from wind33.e-karnet.net ([wind33.e-karnet.net])
+        by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+        id 1AlnuQ-0007hv-00
+        for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2015 12:25:05 +0200
+Received: from srinath.mannam by wind33.e-karnet.net with local (Gmexim 0.1 (Debian))
+        id 1AlnuQ-0007hv-00
+        for <linux-pm@vger.kernel.org>; Wed, 12 Aug 2015 12:25:05 +0200
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-Hi,
+SGkKIApXZSBoYXZlIHNlZW4gYW4gaXNzdWUgaW4gYXV0b3NsZWVwIHN1c3BlbmQgc2VxdWVuY2UuIFdoaWxlIHZhbGlkYXRpbmcgCnRoZSBhdXRvc2xlZXAgaW4gdGhlIGFuZHJvaWQgc2V0dXAgdXNpbmcgUE9XRVIgaW5wdXQgZXZlbnQuCkFuZHJvaWQgdmVyc2lvbjogS2l0S2F0CkxpbnV4IGtlcm5lbCBWZXJzaW9uOiAzLjEwCgoKSXNzdWUgZGVzY3JpcHRpb246CjEuICAgICAgIEFuZHJvaWQgYXR0ZW1wdHMgYXV0b3NsZWVwIHdpdGggUE9XRVIgaW5wdXQgZXZlbnQuCgoyLiAgICAgICBJbiBhdXRvc2xlZXAgc2VxdWVuY2UgYXQgdGhlIHRpbWUgb2Ygc3VzcGVuZCwgc3VzcGVuZF9wcmVwYXJlIAp3aWxsIGNhbGwgcG0gbm90aWZpZXIgZnVuY3Rpb24g4oCcbW1jX3BtX25vdGlmeeKAnSBpbiBQTV9TVVNQRU5EX1BSRVBBUkUgCm1vZGUuCgozLiAgICAgICBXaXRoIG1tYyBwbSBub3RpZmllciBjYWxsIG1tYyBjYXJkIGlzIHJlbW92ZWQuIENvbm5lY3RlZCBTRCAKY2FyZCBpcyByZW1vdmFsIGRpc2suSW4gdGhlIHJlbW92YWJsZSBzZCBjYXJkIHNjZW5hcmlvIHBtIG5vdGlmaWVyIApmdW5jdGlvbiB3aWxsIGNhbGwgdGhlIGNhcmQgcmVtb3ZlLiBjYXJk
+ IHJlbW92ZSBmdW5jdGlvbiBzZW5kIGV2ZW50cyB0byAKdXNlciBzcGFjZSwgdGhlbiB1c2VyIHNwYWNlIHdpbGwgYWNxdWlyZSB0aGUgd2FrZXVwIHNvdXJjZXMuCgo0LiAgICAgICBBbmRyb2lkIHVzZXIgc3BhY2UgZGVtb24gaGFzIHJlY2VpdmVkIHRoZSBjYXJkIHJlbW92ZWQgZXZlbnRzIAphbmQgYWNxdWlyZXMgdGhlIE5FVExJTksgd2FrZXVwIHNvdXJjZSBmb3IgY2xlYW51cC4KCjUuICAgICAgIEluIHRoZSBzYW1lIHN1c3BlbmRfcHJlcGFyZSBzZXF1ZW5jZSDigJx0cnlfdG9fZnJlZXplX3Rhc2tz4oCdIApmdW5jdGlvbiBpcyBjYWxsZWQgZnJvbSBmcmVlemVfcHJvY2Vzc2VzIGZ1bmN0aW9uLgoKNi4gICAgICAgdHJ5X3RvX2ZyZWV6ZV90YXNrcyBmdW5jdGlvbiBoYXMgYWJvcnRlZCBiZWNhdXNlIG9mIHBlbmRpbmcgCndha2V1cCBzb3VyY2UgTkVUTElOSyBhbmQgcmV0dXJucyBlcnJvciB0byBzdXNwZW5kX3ByZXBhcmUgY2FsbC4KCjcuICAgICAgIFdpdGggYWJvdmUgZXJyb3Igc3VzcGVuZF9wcmVwYXJlIGNhbGxzIG1tYyBwbSBub3RpZmllciBmdW5jdGlvbiAKaW4gUE1fUE9TVF9TVVNQRU5EIG1vZGUuCgo4LiAgICAgICBXaXRoIG1tYy
+ BwbSBub3RpZmllciBjYWxsIG1tYyBjYXJkIGlzIGRldGVjdGVkIGJhY2suCgo5LiAgICAgICBBbmRyb2lkIHVzZXIgc3BhY2UgZGVtb24gaGFzIHJlY2VpdmVkIHRoZSBjYXJkIGRldGVjdGVkIGV2ZW50cyAKYW5kIHJlbGVhc2VzIHRoZSBORVRMSU5LIHdha2V1cCBzb3VyY2UuCgoxMC4gICBBbmRyb2lkIHJlLWF0dGVtcHRzIHRoZSBhdXRvc2xlZXAgYW5kIHJlcGVhdHMgc2FtZSBzZXF1ZW5jZSBvZiAyIAp0byA5LiBUaGlzIGdvZXMgaW5maW5pdGUuCgogCiAKdHJ5X3RvX2ZyZWV6ZV90YXNrczoKSW4gdGhpcyBmdW5jdGlvbiBhbGwgdGhlIHRhc2tzIGFyZSBnb2luZyB0byBmcmVlemUgaW4gd2hpbGUgbG9vcCBiZWZvcmUgCmVuZF90aW1lIGFuZCBhbHNvIGNoZWNrcyB0aGUgcG1fd2FrZXVwX3BlbmRpbmcgY29uZGl0aW9uLgpUaGUgaGlnaGxpZ2h0ZWQgcGFydCBpbiB0aGUgYmVsb3cgY29kZSBpcyBjaGVja3MgZm9yIHRoZSBwZW5kaW5nIHdha2V1cCAKc291cmNlcy4gSW4gbXkgaXNzdWUgTkVUTElOSyBpcyB0aGUgcGVuZGluZyB3YWtldXAgc291cmNlLgpJZiBJIG1vdmUgdGhlIGhpZ2hsaWdodGVkIGNvZGUgYmxvY2sgdG8gb3V0c2lkZSBvZiB0
+ aGUgbG9vcCB0aGVuIEkgZGlkIApub3Qgc2VlbiBhbnkgcGVuZGluZyB3YWtldXAgc291cmNlcywgYmVjYXVzZSBORVRMSU5LIHdha2V1cCBzb3VyY2UgaXMgCnJlbGVhc2VkIGJ5IHRoZSB0aW1lIGFsbCB0aGUgdGFza3MgYXJlIGZyZWV6ZS4KQXQgdGhlIHRpbWUgb2Ygc2Vjb25kIGl0ZXJhdGlvbiBvZiB0aGUgbG9vcCB0aGUgTkVUTElOSyB3YWtldXAgc291cmNlIApoYXMgcmVsZWFzZWQsIElmIEkgZGlkIG5vdCBicmVhayB0aGUgbG9vcCB3aXRoIHBtX3dha2V1cF9wZW5kaW5nIApjb25kaXRpb24gY2hlY2sgaW4gdGhlIGZpcnN0IGl0ZXJhdGlvbi4gVGhpcyBpcyB2ZXJpZmllZCBpbiBteSBpc3N1ZSAKc2NlbmFyaW8uCiAKQnV0IG1vdmluZyB0aGUgcG1fd2FrZXVwX3BlbmRpbmcgY29uZGl0aW9uIGNoZWNrIG91dHNpZGUgb2YgdGhlIGxvb3AgbWF5IApub3QgdGhlIHJpZ2h0IHNvbHV0aW9uOwpCZWNhdXNlIHRoZXJlIG1heSBiZSBzY2VuYXJpb3MgbGlrZSB3YWtldXAgc291cmNlcyBhcmUgYmFzZWQgb24gZGV2aWNlcyAKd2hpY2ggbmVlZCBwbSBub3RpZmllciBjYWxsIHdpdGggUE1fUE9TVF9TVVNQRU5ELgogCkNvdWxkIHlvdSBwbGVhc2Ugc3
+ VnZ2VzdCBtZSB0aGUgcmlnaHQgc29sdXRpb24/CiAKd2hpbGUgKHRydWUpIHsKICAgICAgICAgICAgICAgIHRvZG8gPSAwOwogICAgICAgICAgICAgICAgcmVhZF9sb2NrKCZ0YXNrbGlzdF9sb2NrKTsKICAgICAgICAgICAgICAgIGRvX2VhY2hfdGhyZWFkKGcsIHApIHsKICAgICAgICAgICAgICAgICAgICAgICAgaWYgKHAgPT0gY3VycmVudCB8fCAhZnJlZXplX3Rhc2socCkpCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgY29udGludWU7CiAgICAgICAgICAgICAgICAgICAgICAgIGlmICghZnJlZXplcl9zaG91bGRfc2tpcChwKSkKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB0b2RvKys7CiAgICAgICAgICAgICAgICB9IHdoaWxlX2VhY2hfdGhyZWFkKGcsIHApOwogICAgICAgICAgICAgICAgcmVhZF91bmxvY2soJnRhc2tsaXN0X2xvY2spOwogCiAgICAgICAgICAgICAgICBpZiAoIXVzZXJfb25seSkgewogICAgICAgICAgICAgICAgICAgICAgICB3cV9idXN5ID0gZnJlZXplX3dvcmtxdWV1ZXNfYnVzeSgpOwogICAgICAgICAgICAgICAgICAgICAgICB0b2RvICs9IHdxX2J1c3k7CiAgICAgICAgICAgICAgICB9CiAgICAg
+ ICAgICAgICAgICBpZiAoIXRvZG8gfHwgdGltZV9hZnRlcihqaWZmaWVzLCBlbmRfdGltZSkpCiAgICAgICAgICAgICAgICAgICAgICAgIGJyZWFrOwogLy0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KLS0tLS0tLS0tLS0vCiAgICAgICAgICAgICAgICBpZiAocG1fd2FrZXVwX3BlbmRpbmcoKSkgeyAgIOKAnFRoaXMgY2hlY2sgaXMgdHJ1ZSBpbiBteSAKY2FzZSBiZWNhdXNlIG9mIE5FVExJTksgd2FrZXVwIHNvdXJjZSBpcyBhY3RpdmXigJ0KI2lmZGVmIENPTkZJR19QTV9TTEVFUAogICAgICAgICAgICAgICAgcG1fZ2V0X2FjdGl2ZV93YWtldXBfc291cmNlcyhzdXNwZW5kX2Fib3J0LAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIE1BWF9TVVNQRU5EX0FCT1JUX0xFTik7CiAgICAgICAgICAgICAgICBsb2dfc3VzcGVuZF9hYm9ydF9yZWFzb24oc3VzcGVuZF9hYm9ydCk7CiNlbmRpZgogICAgICAgICAgICAgICAgd2FrZXVwID0gdHJ1ZTsKICAgICAgICAgICAgICAgIGJyZWFrOwogICAgICAgICAgICAgICAgfQovLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS
+ 0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KLS0tLS0tLS0tLS8KICAgICAgICAgICAgICAgIC8qCiAgICAgICAgICAgICAgICAgKiBXZSBuZWVkIHRvIHJldHJ5LCBidXQgZmlyc3QgZ2l2ZSB0aGUgZnJlZXppbmcgdGFza3MgCnNvbWUKICAgICAgICAgICAgICAgICAqIHRpbWUgdG8gZW50ZXIgdGhlIHJlZnJpZ2VyYXRvci4gIFN0YXJ0IHdpdGggYW4gCmluaXRpYWwKICAgICAgICAgICAgICAgICAqIDEgbXMgc2xlZXAgZm9sbG93ZWQgYnkgZXhwb25lbnRpYWwgYmFja29mZiB1bnRpbCA4IAptcy4KICAgICAgICAgICAgICAgICAqLwogICAgICAgICAgICAgICAgdXNsZWVwX3JhbmdlKHNsZWVwX3VzZWNzIC8gMiwgc2xlZXBfdXNlY3MpOwogICAgICAgICAgICAgICAgaWYgKHNsZWVwX3VzZWNzIDwgOCAqIFVTRUNfUEVSX01TRUMpCiAgICAgICAgICAgICAgICAgICAgICAgIHNsZWVwX3VzZWNzICo9IDI7CiAgICAgICAgfQogClRoYW5rcyAmIFJlZ2FyZHMsClNyaW5hdGggQmFidSBNYW5uYW0=
 
-On 12-08-15 11:29, Lee Jones wrote:
-> On Wed, 12 Aug 2015, Hans de Goede wrote:
->
->> Hi,
->>
->> On 11-08-15 16:18, Lee Jones wrote:
->>> On Sat, 08 Aug 2015, Hans de Goede wrote:
->>>
->>>> Add a cell for the usb power_supply part of the axp20x PMICs.
->>>>
->>>> Note that this cell is only for the usb power_supply part and not the
->>>> ac-power / battery-charger / rtc-backup-bat-charger bits.
->>>>
->>>> Depending on the board each of those must be enabled / disabled separa=
-tely
->>>> in devicetree as most boards do not use all 4. So in dt each one needs=
- its
->>>> own child-node of the axp20x node. Another reason for using separate c=
-hild
->>>> nodes for each is so that other devicetree nodes can have a power-supp=
-ly
->>>> property with a phandle referencing a node representing a single
->>>> power-supply.
->>>>
->>>> The decision to use a separate devicetree node for each is reflected o=
-n
->>>> the kernel side by each getting its own mfd-cell / platform_device and
->>>> platform-driver.
->>>>
->>>> Note this commit also makes some whitespace changes to the intializati=
-on
->>>> of existing cells in axp20x_cells, these are pure whitespace changes,
->>>> functionally nothing changes.
->>>>
->>>> Cc: Bruno Pr=C3=A9mont <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
->>>> Signed-off-by: Bruno Pr=C3=A9mont <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>
->>>> Signed-off-by: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
->>>> Acked-by: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
->>>> Acked-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
->>>> ---
->>>> Changes in v2:
->>>> -Use DEFINE_RES_IRQ_NAMED
->>>> -Change indentation of axp20x_cells initializers to avoid line wrappin=
-g
->>>> Changes in v3:
->>>> -Improve commit message
->>>> -Add Bruno's S-o-b
->>>> ---
->>>>   drivers/mfd/axp20x.c | 20 ++++++++++++++++----
->>>>   1 file changed, 16 insertions(+), 4 deletions(-)
->>>
->>> Applied, thanks.
->>
->> Great, but I'm not seeing this in:
->>
->> https://git.kernel.org/cgit/linux/kernel/git/lee/mfd.git/log/?h=3Dfor-mf=
-d-next
->
-> Well it does usually take me a day or two push my local branch out,
-> however in this case I had actually dropped a ball somewhere.  I've
-> been through my backlog of 'applied' patches and these two are the
-> only ones I failed to pick.  I have now, re-picked, re-applied and
-> pushed the branch out.  Let me know if something is still not right.
-
-Looks good now, thanks.
-
-> Sorry for the inconvenience.
-
-No problem, thanks for all the great work you are doing on maintaining
-the mfd subsys.
-
-Regards,
-
-Hans
-
-
->
->>>> diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
->>>> index d9f2f96..3f576b7 100644
->>>> --- a/drivers/mfd/axp20x.c
->>>> +++ b/drivers/mfd/axp20x.c
->>>> @@ -140,6 +140,13 @@ static struct resource axp20x_pek_resources[] =3D=
- {
->>>>   	},
->>>>   };
->>>>
->>>> +static struct resource axp20x_usb_power_supply_resources[] =3D {
->>>> +	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_PLUGIN, "VBUS_PLUGIN"),
->>>> +	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_REMOVAL, "VBUS_REMOVAL"),
->>>> +	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_VALID, "VBUS_VALID"),
->>>> +	DEFINE_RES_IRQ_NAMED(AXP20X_IRQ_VBUS_NOT_VALID, "VBUS_NOT_VALID"),
->>>> +};
->>>> +
->>>>   static struct resource axp22x_pek_resources[] =3D {
->>>>   	{
->>>>   		.name   =3D "PEK_DBR",
->>>> @@ -432,11 +439,16 @@ static const struct regmap_irq_chip axp288_regma=
-p_irq_chip =3D {
->>>>
->>>>   static struct mfd_cell axp20x_cells[] =3D {
->>>>   	{
->>>> -		.name			=3D "axp20x-pek",
->>>> -		.num_resources		=3D ARRAY_SIZE(axp20x_pek_resources),
->>>> -		.resources		=3D axp20x_pek_resources,
->>>> +		.name		=3D "axp20x-pek",
->>>> +		.num_resources	=3D ARRAY_SIZE(axp20x_pek_resources),
->>>> +		.resources	=3D axp20x_pek_resources,
->>>>   	}, {
->>>> -		.name			=3D "axp20x-regulator",
->>>> +		.name		=3D "axp20x-regulator",
->>>> +	}, {
->>>> +		.name		=3D "axp20x-usb-power-supply",
->>>> +		.of_compatible	=3D "x-powers,axp202-usb-power-supply",
->>>> +		.num_resources	=3D ARRAY_SIZE(axp20x_usb_power_supply_resources),
->>>> +		.resources	=3D axp20x_usb_power_supply_resources,
->>>>   	},
->>>>   };
->>>>
->>>
->
-
---=20
-You received this message because you are subscribed to the Google Groups "=
-linux-sunxi" group.
-To unsubscribe from this group and stop receiving emails from it, send an e=
-mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
