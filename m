@@ -1,116 +1,40 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH 9/9] ARM: smp: Add runtime PM support for CPU hotplug
-Date: Thu, 13 Aug 2015 10:00:38 -0600
-Message-ID: <20150813160038.GP52339@linaro.org>
-References: <1438731339-58317-1-git-send-email-lina.iyer@linaro.org>
- <1438731339-58317-10-git-send-email-lina.iyer@linaro.org>
- <20150812234756.GO26614@codeaurora.org>
+From: "Pallala, Ramakrishna" <ramakrishna.pallala@intel.com>
+Subject: RE: [RFC] TI BQ242xx Battery Charger Development/Consolidation Plans
+Date: Thu, 13 Aug 2015 16:19:44 +0000
+Message-ID: <D854C92F57B1B347B57E531E78D05EAD578CD8BA@BGSMSX104.gar.corp.intel.com>
+References: <1438706177-8115-1-git-send-email-dannenberg@ti.com>
+	<55C23441.2030305@ti.com>
+ <CAD03FC+DqSdg_LZ-SNaCNLsh9eZS9hSeJL5Q+8aWU+bGVcVPDQ@mail.gmail.com>
+ <D854C92F57B1B347B57E531E78D05EAD578BCD90@BGSMSX104.gar.corp.intel.com>
+ <55CB7259.3010608@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f51.google.com ([209.85.220.51]:36538 "EHLO
-	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752083AbbHMQAM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Aug 2015 12:00:12 -0400
-Received: by pacrr5 with SMTP id rr5so40049906pac.3
-        for <linux-pm@vger.kernel.org>; Thu, 13 Aug 2015 09:00:11 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20150812234756.GO26614@codeaurora.org>
+Received: from mga14.intel.com ([192.55.52.115]:52866 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751931AbbHMQUO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 13 Aug 2015 12:20:14 -0400
+In-Reply-To: <55CB7259.3010608@ti.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: rjw@rjwysocki.net, ulf.hansson@linaro.org, khilman@linaro.org, geert@linux-m68k.org, k.kozlowski@samsung.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, msivasub@codeaurora.org, agross@codeaurora.org, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+To: Andreas Dannenberg <dannenberg@ti.com>, Laurentiu Palcu <lpalcu@gmail.com>
+Cc: David Woodhouse <dwmw2@infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, "Palcu, Laurentiu" <laurentiu.palcu@intel.com>, =?utf-8?B?UGFsaSBSb2jDoXI=?= <pali.rohar@gmail.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
 
-On Wed, Aug 12 2015 at 17:47 -0600, Stephen Boyd wrote:
->On 08/04, Lina Iyer wrote:
->> @@ -137,7 +138,6 @@ int __cpu_up(unsigned int cpu, struct task_struct *idle)
->>  		pr_err("CPU%u: failed to boot: %d\n", cpu, ret);
->>  	}
->>
->> -
->
->Remove noise please.
->
-OK
-
->>  	memset(&secondary_data, 0, sizeof(secondary_data));
->>  	return ret;
->>  }
->> @@ -205,6 +205,9 @@ int __cpu_disable(void)
->>  	unsigned int cpu = smp_processor_id();
->>  	int ret;
->>
->> +	/* We dont need the CPU device anymore. */
->> +	pm_runtime_put_sync(get_cpu_device(cpu));
->
->This is all very generic. Any reason it can't be done at a higher
->level for all architectures? It certainly seems like
->cpu_startup_entry() could be modifed to do the
->pm_runtime_get_sync().
->
-I am suspecting, when the concept of CPU PM domains are finalized, they
-would probably move out of the ARM domain and into generic.  Will keep
-that in mind.
-
->> +
->>  	ret = platform_cpu_disable(cpu);
->>  	if (ret)
->>  		return ret;
->> @@ -272,6 +275,13 @@ void __ref cpu_die(void)
->>  {
->>  	unsigned int cpu = smp_processor_id();
->>
->> +	/*
->> +	 * We dont need the CPU device anymore.
->> +	 * Lets do this before IRQs are disabled to allow
->> +	 * runtime PM to suspend the domain as well.
->> +	 */
->> +	pm_runtime_put_sync(get_cpu_device(cpu));
->
->The two put calls is confusing. __cpu_disable() is called on the
->CPU that's dying, and cpu_die() is called on the CPU that's doing
->the takedown.
->
-Is that right? Looking at the code and the comments, I can only imagine
-that they must be called on the CPU going down. If thats not the case,
-then I need to fix this.
-
->That would be two decrements but only one increment
->in secondary_start_kernel()? How is this properly balanced?
->
-I dont see __cpu_disable() ending up at cpu_die(). These seem two
-different exit points. I will check again.
-
->> +
->>  	idle_task_exit();
->>
->>  	local_irq_disable();
->> @@ -401,6 +412,11 @@ asmlinkage void secondary_start_kernel(void)
->>  	local_irq_enable();
->>  	local_fiq_enable();
->>
->> +	/* We are running, enable runtime PM for the CPU. */
->> +	cpu_dev = get_cpu_device(cpu);
->> +	if (cpu_dev)
->> +		pm_runtime_get_sync(cpu_dev);
->
->Also, where would the dev->power.irq_safe flag be set if we
->aren't using the genpd DT stuff? It looks like we're going to
->start causing warnings on devices that don't have the DT magic.
->
-Not necessarily. I have added _get and _put at points, when the
-interrupts are still enabled. So there should not be a need for the CPU
-devices to be IRQ safe. They will operate as regular devices. If they
-are attached to a non-IRQ safe domain, they would effect power savings
-on the domain.
-
->Please add a hotplug test with some device that isn't using this
->genpd code to catch problems. Also please turn on lockdep and RCU
->lockdep, touching the idle code like this
->
-Good idea. Will add and test.
-
-Thanks Stephen for the review.
-
-Thanks,
-Lina
+SGkgQW5kcmVhcywNCg0KPiBPbiAwOC8xMS8yMDE1IDA2OjEyIEFNLCBQYWxsYWxhLCBSYW1ha3Jp
+c2huYSB3cm90ZToNCj4gPiBJIGhhdmUgYSBzZXBhcmF0ZSBkcml2ZXIgZm9yIGJxMjQyNjEgY2hh
+cmdlciBhbmQgaXQgaXMgcmVhZHkgZm9yIHVwc3RyZWFtLiBDYW4gSQ0KPiBwdXNoIHRoZSBwYXRj
+aD8NCj4gPg0KPiA+IFRoYW5rcywNCj4gPiBSYW0NCj4gPg0KPiANCj4gV293IEknbSBpbXByZXNz
+ZWQhIFlvdSBhcmUgZG9pbmcgYWxsIHRoZSBUSSBkcml2ZXJzIHNvIHRoZXJlIGlzIG5vdGhpbmcg
+bGVmdCBmb3INCj4gbWUgdG8gZG8gOikgT24gYSBtb3JlIHNlcmlvdXMgbm90ZSB0aGFua3MgZm9y
+IGNoaW1pbmcgaW4gaGVyZS4NCj4gDQo+IENvdWxkIHlvdSBwbGVhc2Ugc2hhcmUvcG9zdCB0aGUg
+ZHJpdmVyIHRoYXQgeW91IGhhdmU/DQo+IA0KPiBUaGUgYnEyNDI2MSBpcyBiYXNpY2FsbHkgdGhl
+IHNhbWUgYXMgdGhlIGJxMjQyNjFNIGFuZCBicTI0MjYyIHRoYXQgSSdtDQo+IHdvcmtpbmcgb24g
+c28gSSB3b3VsZCBsaWtlIHRvIGNoZWNrIGZlYXR1cmUgY29tcGxldGVuZXNzIGFuZCBob3cgSSBj
+b3VsZA0KPiBwb3RlbnRpYWxseSBpbnRlZ3JhdGUgcGllY2VzIG9mIG15IHdvcmsgaW50byB5b3Vy
+cy4NCj4gDQo+IEFsc28gd2hpbGUgd2UgYXJlIGF0IGl0LCBwbGVhc2Ugbm90ZSB0aGUgYnEyNDI2
+MSBpcyAibm90IHJlY29tbWVuZGVkIGZvciBuZXcNCj4gZGVzaWducyIgYnkgVEkuIFdoYXQgc2hv
+dWxkIGJlIHVzZWQgaW5zdGVhZCBtb3ZpbmcgZm9yd2FyZCBpcyB0aGUgYnEyNDI2MU0uDQoNCkkg
+d2lsbCBwdXNoIHRoZSBSRkMgcGF0Y2ggaW4gYSBkYXkgb3IgdHdvLg0KDQpUaGFua3MsDQpSYW0N
+Cg==
