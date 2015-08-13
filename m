@@ -1,111 +1,35 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH] power_supply: max8998: Use devm_power_supply_register
-Date: Thu, 13 Aug 2015 08:49:23 +0900
-Message-ID: <CAJKOXPddqv+rBngO0NGrVap1ibGjrMp3a9ihcQ2G7yEgEYt71g@mail.gmail.com>
-References: <20150812150655.GA32615@localhost>
+Subject: Re: [PATCH RESEND v6 1/3] Documentation: dts: Documentation entry to
+ explain how to use PWM FAN as a cooling device
+Date: Thu, 13 Aug 2015 09:17:36 +0900
+Message-ID: <55CBE220.1010301@samsung.com>
+References: <1425470624-25793-1-git-send-email-l.majewski@samsung.com>
+ <1439298440-15882-1-git-send-email-l.majewski@samsung.com>
+ <1439298440-15882-2-git-send-email-l.majewski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f43.google.com ([209.85.192.43]:36057 "EHLO
-	mail-qg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751753AbbHLXtY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Aug 2015 19:49:24 -0400
-In-Reply-To: <20150812150655.GA32615@localhost>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1439298440-15882-2-git-send-email-l.majewski@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Lukasz Majewski <l.majewski@samsung.com>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, devicetree@vger.kernel.org, Lukasz Majewski <l.majewski@majess.pl>
 List-Id: linux-pm@vger.kernel.org
-To: Vaishali Thakkar <vthakkar1994@gmail.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-2015-08-13 0:06 GMT+09:00 Vaishali Thakkar <vthakkar1994@gmail.com>:
->
-> Use managed resource function devm_power_supply_register
-> instead of power_supply_register.
+On 11.08.2015 22:07, Lukasz Majewski wrote:
+> Explanation of several properties, which allow PWM fan working as a cooling
+> device, have been embraced in this commit.
+> 
+> Signed-off-by: Lukasz Majewski <l.majewski@samsung.com>
+> Acked-by: Eduardo Valentin <edubezval@gmail.com>
+> ---
+>  .../devicetree/bindings/hwmon/pwm-fan.txt          | 29 ++++++++++++++++++++--
+>  1 file changed, 27 insertions(+), 2 deletions(-)
+> 
 
-Please describe: Why? What is the reason for such change?
-I can't find any significant simplifications, just one remove() disappears.
+Acked-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+
+I'll take care of it and send it to Kukjin for v4.4.
 
 Best regards,
 Krzysztof
-
-> To be compatible with the
-> change, replace various gotos by direct returns and remove
-> unneeded label err.
->
-> Also, remove max8998_battery_remove as it is now redundant.
->
-> Signed-off-by: Vaishali Thakkar <vthakkar1994@gmail.com>
-> ---
->  drivers/power/max8998_charger.c | 28 +++++++---------------------
->  1 file changed, 7 insertions(+), 21 deletions(-)
->
-> diff --git a/drivers/power/max8998_charger.c b/drivers/power/max8998_charger.c
-> index 47448d4..6014df5 100644
-> --- a/drivers/power/max8998_charger.c
-> +++ b/drivers/power/max8998_charger.c
-> @@ -117,8 +117,7 @@ static int max8998_battery_probe(struct platform_device *pdev)
->                         "EOC value not set: leave it unchanged.\n");
->         } else {
->                 dev_err(max8998->dev, "Invalid EOC value\n");
-> -               ret = -EINVAL;
-> -               goto err;
-> +               return -EINVAL;
->         }
->
->         /* Setup Charge Restart Level */
-> @@ -141,8 +140,7 @@ static int max8998_battery_probe(struct platform_device *pdev)
->                 break;
->         default:
->                 dev_err(max8998->dev, "Invalid Restart Level\n");
-> -               ret = -EINVAL;
-> -               goto err;
-> +               return -EINVAL;
->         }
->
->         /* Setup Charge Full Timeout */
-> @@ -165,34 +163,22 @@ static int max8998_battery_probe(struct platform_device *pdev)
->                 break;
->         default:
->                 dev_err(max8998->dev, "Invalid Full Timeout value\n");
-> -               ret = -EINVAL;
-> -               goto err;
-> +               return -EINVAL;
->         }
->
->         psy_cfg.drv_data = max8998;
->
-> -       max8998->battery = power_supply_register(max8998->dev,
-> -                                                &max8998_battery_desc,
-> -                                                &psy_cfg);
-> +       max8998->battery = devm_power_supply_register(max8998->dev,
-> +                                                     &max8998_battery_desc,
-> +                                                     &psy_cfg);
->         if (IS_ERR(max8998->battery)) {
->                 ret = PTR_ERR(max8998->battery);
->                 dev_err(max8998->dev, "failed: power supply register: %d\n",
->                         ret);
-> -               goto err;
-> +               return ret;
->         }
->
->         return 0;
-> -err:
-> -       return ret;
-> -}
-> -
-> -static int max8998_battery_remove(struct platform_device *pdev)
-> -{
-> -       struct max8998_battery_data *max8998 = platform_get_drvdata(pdev);
-> -
-> -       power_supply_unregister(max8998->battery);
-> -
-> -       return 0;
->  }
->
->  static const struct platform_device_id max8998_battery_id[] = {
-> --
-> 1.9.1
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
