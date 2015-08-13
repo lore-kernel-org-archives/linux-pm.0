@@ -1,180 +1,70 @@
-From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: Re: [PATCH v2 10/10] arm64: dts: Create SoC thermal zone for Juno
-Date: Thu, 13 Aug 2015 15:28:45 +0100
-Message-ID: <9hh1tf7i7oi.fsf@e105922-lin.cambridge.arm.com>
-References: <1438615378-14241-1-git-send-email-punit.agrawal@arm.com>
-	<1438615378-14241-11-git-send-email-punit.agrawal@arm.com>
-	<20150812155500.GW20890@e106497-lin.cambridge.arm.com>
+From: joeyli <jlee@suse.com>
+Subject: Re: [PATCH v2 09/16] PM / hibernate: Reserve hibernation key and
+ erase footprints
+Date: Thu, 13 Aug 2015 22:33:37 +0800
+Message-ID: <20150813143337.GA31748@linux-rxt1.site>
+References: <1439273796-25359-1-git-send-email-jlee@suse.com>
+ <1439273796-25359-10-git-send-email-jlee@suse.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:42345 "EHLO
-	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752012AbbHMO2z (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Aug 2015 10:28:55 -0400
-In-Reply-To: <20150812155500.GW20890@e106497-lin.cambridge.arm.com> (Liviu
-	Dudau's message of "Wed, 12 Aug 2015 16:55:00 +0100")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1439273796-25359-10-git-send-email-jlee@suse.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Matthew Garrett <matthew.garrett@nebula.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, Matt Fleming <matt.fleming@intel.com>, Jiri Kosina <jkosina@suse.cz>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>
 List-Id: linux-pm@vger.kernel.org
-To: Liviu Dudau <Liviu.Dudau@arm.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep Holla <Sudeep.Holla@arm.com>
 
-Hi Liviu,
-
-Thanks for having a look.
-
-Liviu Dudau <Liviu.Dudau@arm.com> writes:
-
-> On Mon, Aug 03, 2015 at 04:22:58PM +0100, Punit Agrawal wrote:
->> Setup a thermal zone driven by the SoC temperature sensor on Juno
->> r0. Create passive trip points and bind them to cpufreq cooling
->> devices that support the power extensions.
+On Tue, Aug 11, 2015 at 02:16:29PM +0800, Lee, Chun-Yi wrote:
+> Add handler to parse the setup data that carrying hibernation key, it
+> reserves hibernation key by memblock then copies key to a allocated page
+> in later initcall stage.
 >
-> Hi Punit,
->
->> 
->> Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
->> Cc: Rob Herring <robh+dt@kernel.org>
->> Cc: Mark Rutland <mark.rutland@arm.com>
->> Cc: Liviu Dudau <liviu.dudau@arm.com>
->> Cc: Sudeep Holla <sudeep.holla@arm.com>
->> ---
->>  arch/arm64/boot/dts/arm/juno.dts | 50 ++++++++++++++++++++++++++++++++++++++++
->>  1 file changed, 50 insertions(+)
->> 
->> diff --git a/arch/arm64/boot/dts/arm/juno.dts b/arch/arm64/boot/dts/arm/juno.dts
->> index d2e67f3..664961c 100644
->> --- a/arch/arm64/boot/dts/arm/juno.dts
->> +++ b/arch/arm64/boot/dts/arm/juno.dts
->> @@ -9,6 +9,7 @@
->>  /dts-v1/;
->>  
->>  #include <dt-bindings/interrupt-controller/arm-gic.h>
->> +#include <dt-bindings/thermal/thermal.h>
->>  
->>  / {
->>  	model = "ARM Juno development board (r0)";
->> @@ -90,6 +91,8 @@
->>  			next-level-cache = <&A57_L2>;
->>  			clocks = <&scpi_dvfs 0>;
->>  			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
->> +			#cooling-cells = <2>;
->> +			dynamic-power-coefficient = <530>;
->
-> The Documentation/devicetree/bindings/thermal/thermal.txt document describes two additional
-> required properties, cooling-min-state and cooling-max-state which are missing here.
->
+[...snip] 
+> diff --git a/arch/x86/power/hibernate_keys.c b/arch/x86/power/hibernate_keys.c
+> new file mode 100644
+> index 0000000..357dc0e
+> --- /dev/null
+> +++ b/arch/x86/power/hibernate_keys.c
+> @@ -0,0 +1,78 @@
+> +/* Hibernation keys handler
+> + *
+[...snip]
+> +static int __init init_hibernation_keys(void)
+> +{
+> +	struct hibernation_keys *keys;
+> +	int ret = 0;
+> +
+> +	if (!keys_phys_addr)
+> +		return -ENODEV;
+> +
+> +	keys = early_memremap(keys_phys_addr, sizeof(struct hibernation_keys));
+> +
+> +	/* Copy hibernation keys to a allocated page */
+> +	hibernation_keys = (struct hibernation_keys *)get_zeroed_page(GFP_KERNEL);
+> +	if (hibernation_keys) {
+> +		*hibernation_keys = *keys;
+> +	} else {
+> +		pr_err("PM: Allocate hibernation keys page failed\n");
+> +		ret = -ENOMEM;
+> +	}
+> +
+> +	/* Erase keys data no matter copy success or failed */
+> +	memset(keys, 0, sizeof(struct hibernation_keys));
+> +	early_memunmap(keys, sizeof(struct hibernation_keys));
+> +	memblock_free(keys_phys_addr, sizeof(struct hibernation_keys));
+> +	keys_phys_addr = 0;
+> +
+> +	return ret;
+> +}
+> +
+> +late_initcall(init_hibernation_keys);
 
-The bindings do suggest that the cooling-*-state are required but I
-couldn't find any code making use of this property.
+Yu's reviewing triggered me rethinking...
 
-I'll send a patch with the next version making those properties
-optional.
+I afraid that's too late in late_initcall stage for copying key data that
+reserved by memblock. I will try to move this copy action to setup_arch().
 
->>  		};
->>  
->>  		A57_1: cpu@1 {
->> @@ -100,6 +103,8 @@
->>  			next-level-cache = <&A57_L2>;
->>  			clocks = <&scpi_dvfs 0>;
->>  			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
->> +			#cooling-cells = <2>;
->> +			dynamic-power-coefficient = <530>;
->>  		};
->>  
->>  		A53_0: cpu@100 {
->> @@ -110,6 +115,8 @@
->>  			next-level-cache = <&A53_L2>;
->>  			clocks = <&scpi_dvfs 1>;
->>  			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
->> +			#cooling-cells = <2>;
->> +			dynamic-power-coefficient = <140>;
->>  		};
->>  
->>  		A53_1: cpu@101 {
->> @@ -120,6 +127,8 @@
->>  			next-level-cache = <&A53_L2>;
->>  			clocks = <&scpi_dvfs 1>;
->>  			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
->> +			#cooling-cells = <2>;
->> +			dynamic-power-coefficient = <140>;
->>  		};
->>  
->>  		A53_2: cpu@102 {
->> @@ -130,6 +139,8 @@
->>  			next-level-cache = <&A53_L2>;
->>  			clocks = <&scpi_dvfs 1>;
->>  			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
->> +			#cooling-cells = <2>;
->> +			dynamic-power-coefficient = <140>;
->>  		};
->>  
->>  		A53_3: cpu@103 {
->> @@ -140,6 +151,8 @@
->>  			next-level-cache = <&A53_L2>;
->>  			clocks = <&scpi_dvfs 1>;
->>  			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
->> +			#cooling-cells = <2>;
->> +			dynamic-power-coefficient = <140>;
->>  		};
->>  
->>  		A57_L2: l2-cache0 {
->> @@ -167,5 +180,42 @@
->>  				     <&A53_3>;
->>  	};
->>  
->> +	thermal-zones {
->> +		soc_thermal {
->> +			polling-delay = <1000>;
->> +			polling-delay-passive = <100>;
->> +			sustainable-power = <2500>;
->> +
->> +			thermal-sensors = <&scpi_sensors0 3>;
->> +
->> +			trips {
->> +				threshold: trip-point@0 {
->
-> You also need a reg= property if you have the @index thing.
->
 
-Having looked at the examples, I don't need to have the @index for the
-trip points. I'll update in the next version.
-
-Thanks,
-Punit
-
-> Best regards,
-> Liviu
->
->> +					temperature = <55000>;
->> +					hysteresis = <1000>;
->> +					type = "passive";
->> +				};
->> +				target: trip-point@1 {
->> +					temperature = <65000>;
->> +					hysteresis = <1000>;
->> +					type = "passive";
->> +				};
->> +			};
->> +
->> +			cooling-maps {
->> +				map0 {
->> +					trip = <&target>;
->> +					cooling-device = <&A53_0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
->> +					contribution = <2048>;
->> +				};
->> +				map1 {
->> +					trip = <&target>;
->> +					cooling-device = <&A57_0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
->> +					contribution = <1024>;
->> +				};
->> +
->> +			};
->> +		};
->> +	};
->> +
->>  	#include "juno-base.dtsi"
->>  };
->> -- 
->> 2.1.4
->> 
+Regards
+Joey Lee
