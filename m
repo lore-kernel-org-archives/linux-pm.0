@@ -1,57 +1,91 @@
-From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: Re: [PATCH 5/9] clk: qcom: gcc-msm8960: add child devices support.
-Date: Thu, 13 Aug 2015 09:58:46 +0530
-Message-ID: <55CC1CFE.7000005@codeaurora.org>
-References: <1436348838-22671-1-git-send-email-rnayak@codeaurora.org> <1436348838-22671-6-git-send-email-rnayak@codeaurora.org> <20150811224902.GO2839@codeaurora.org> <55CB0B26.2020105@linaro.org>
+From: Bjorn Andersson <bjorn.andersson-/MT0OVThwyLZJqsBc5GL+g@public.gmane.org>
+Subject: Re: [PATCH RFC 08/10] hwspinlock: qcom: Lock #7 is special lock,
+ uses dynamic proc_id
+Date: Wed, 12 Aug 2015 21:30:36 -0700
+Message-ID: <20150813043036.GJ13472@usrtlx11787.corpusers.net>
+References: <438731339-58317-1-git-send-email-lina.iyer@linaro.org>
+ <1438792366-2737-1-git-send-email-lina.iyer@linaro.org>
+ <1438792366-2737-9-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <55CB0B26.2020105@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>
-Cc: linux-arm-msm@vger.kernel.org, lina.iyer@linaro.org, nrajan@codeaurora.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1438792366-2737-9-git-send-email-lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "agross-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org" <agross-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "msivasub-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org" <msivasub-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org" <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jeffrey Hugo <jhugo-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-> On 11/08/15 23:49, Stephen Boyd wrote:
->> On 07/08, Rajendra Nayak wrote:
->>> diff --git a/drivers/clk/qcom/gcc-msm8960.c
->>> b/drivers/clk/qcom/gcc-msm8960.c
->>> index eb6a4f9..2c80d03 100644
->>> --- a/drivers/clk/qcom/gcc-msm8960.c
->>> +++ b/drivers/clk/qcom/gcc-msm8960.c
->>> @@ -15,6 +15,7 @@
->>>   #include <linux/bitops.h>
->>>   #include <linux/err.h>
->>>   #include <linux/platform_device.h>
->>> +#include <linux/of_platform.h>
->>>   #include <linux/module.h>
->>>   #include <linux/of.h>
->>>   #include <linux/of_device.h>
->>> @@ -3520,7 +3521,8 @@ static int gcc_msm8960_probe(struct
->>> platform_device *pdev)
->>>       if (IS_ERR(clk))
->>>           return PTR_ERR(clk);
->>>
->>> -    return qcom_cc_probe(pdev, match->data);
->>> +    qcom_cc_probe(pdev, match->data);
->>> +    return of_platform_populate(pdev->dev.of_node, NULL, NULL,
->>> &pdev->dev);
->>
->> We just lost the error code from qcom_cc_probe()...
->>
-> I think Rajendra picked up the wrong patch for this series, I did submit
-> a v2 (https://patches.linaro.org/44033/) with the above fixed.
+On Wed 05 Aug 09:32 PDT 2015, Lina Iyer wrote:
 
-ah, sorry about that.
+> Hwspinlocks are widely used between processors in an SoC, and also
+> between elevation levels within in the same processor.  QCOM SoC's use
+> hwspinlock to serialize entry into a low power mode when the context
+> switches from Linux to secure monitor.
+> 
+> Lock #7 has been assigned for this purpose. In order to differentiate
+> between one cpu core holding a lock while another cpu is contending for
+> the same lock, the proc id written into the lock is (128 + cpu id). This
+> makes it unique value among the cpu cores and therefore when a core
+> locks the hwspinlock, other cores would wait for the lock to be released
+> since they would have a different proc id.  This value is specific for
+> the lock #7 only.
+> 
 
->> Also, I don't like having a subnode in DT. Why can't we use the
->> same node as the GCC node and create a virtual child device here
->> for tsens? We can assign the same of_node that this platform
->> device has so that DT keeps working correctly.
+As I was thinking about this, I came to the conclusion that my argument
+that it's system configuration and not a property of the block that lock
+#7 is special is actually biting myself.
 
-So the current driver looks up data based on compatible strings.
-So you suggesting to create a virtual child device for gcc and
-associate the gcc DT node to it? (And have the tsens compatible
-mentioned as part of the gcc DT node?)
-How is this any different from creating a subnode in DT anyway?
+Just as #7 is system configuration, so is the fact that 1 is the lock
+value for all other locks.
+
+I've been meaning to answer you, but I haven't come to a good conclusion
+in this matter. I think that both of these properties should be possible
+to express in DT, but I don't know how.
+
+
+Perhaps we should just list each lock that we expose as a subnode in DT
+with a property to indicate the lock value - with the possibility of
+indicating cpu_id.
+
+Something like:
+
+tcsr-mutex {
+	compatible = "qcom,tcsr-mutex";
+	syscon = <&tcsr_mutex_block 0 0x80>;
+
+	#hwlock-cells = <1>;
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	smem-lock@3 {
+		reg = <3>;
+		qcom,lock-value = <1>;
+	};
+
+	scm-lock@7 {
+		reg = <7>;
+		qcom,lock-value-from-cpu-id;
+		qcom,lock-raw;
+	};
+};
+
+As we don't reference most of these locks anyways I don't think this
+would still be reasonable. And if reg is an array it's quite compact.
+
+> Declare lock #7 as raw capable, so the hwspinlock framework would not
+> enfore acquiring a s/w spinlock before acquiring the hwspinlock.
+> 
+
+I'm fine with this part!
+
+
+Sorry for the extremely slow response, but this took some time to
+process...
+
+Regards,
+Bjorn
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
