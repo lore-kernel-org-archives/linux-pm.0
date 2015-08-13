@@ -1,149 +1,128 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH 5/9] ARM: common: Introduce PM domains for CPUs/clusters
-Date: Thu, 13 Aug 2015 13:27:13 -0600
-Message-ID: <20150813192713.GA84868@linaro.org>
-References: <1438731339-58317-1-git-send-email-lina.iyer@linaro.org>
- <1438731339-58317-6-git-send-email-lina.iyer@linaro.org>
- <CAL_JsqK67=DTtjZwwnonObLDjLbahkREfm0RvyXVV95bhR-d4Q@mail.gmail.com>
- <20150813150154.GB13356@red-moon>
- <20150813154503.GO52339@linaro.org>
- <55CCD35C.4000901@arm.com>
+Subject: Re: [PATCH v2 1/2] ARM: common: Introduce PM domains for
+ CPUs/clusters
+Date: Thu, 13 Aug 2015 14:12:48 -0600
+Message-ID: <20150813201248.GB84868@linaro.org>
+References: <CAL_JsqLhHy5gO=usm1HLf8h6iz_5FguCDo-Qz2Km+XEwaCODUA@mail.gmail.com>
+ <1439406024-41893-1-git-send-email-lina.iyer@linaro.org>
+ <CAL_JsqLcSs79bnj4ELN0uiwJ6gxt46PghxvuGQ7prkq-4gLKhg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f51.google.com ([209.85.220.51]:34363 "EHLO
-	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751862AbbHMT0s (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Aug 2015 15:26:48 -0400
-Received: by pawu10 with SMTP id u10so43523636paw.1
-        for <linux-pm@vger.kernel.org>; Thu, 13 Aug 2015 12:26:48 -0700 (PDT)
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:35763 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752183AbbHMUMV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Aug 2015 16:12:21 -0400
+Received: by pacgr6 with SMTP id gr6so43984294pac.2
+        for <linux-pm@vger.kernel.org>; Thu, 13 Aug 2015 13:12:20 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <55CCD35C.4000901@arm.com>
+In-Reply-To: <CAL_JsqLcSs79bnj4ELN0uiwJ6gxt46PghxvuGQ7prkq-4gLKhg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Krzysztof Koz??owski <k.kozlowski@samsung.com>, "msivasub@codeaurora.org" <msivasub@codeaurora.org>, Andy Gross <agross@codeaurora.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Rob Herring <robherring2@gmail.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Krzysztof =?utf-8?Q?Koz=C5=82owski?= <k.kozlowski@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 
-On Thu, Aug 13 2015 at 11:26 -0600, Sudeep Holla wrote:
->
->
->On 13/08/15 16:45, Lina Iyer wrote:
->>On Thu, Aug 13 2015 at 09:01 -0600, Lorenzo Pieralisi wrote:
->>>On Thu, Aug 06, 2015 at 04:14:51AM +0100, Rob Herring wrote:
->>>>On Tue, Aug 4, 2015 at 6:35 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
->
->[..]
->
->>>>
->>>>>+ARM CPU Power domains
->>>>>+
->>>>>+The device tree allows describing of CPU power domains in a SoC. In ARM SoC,
->>>>>+CPUs may be grouped as clusters. A cluster may have CPUs, GIC, Coresight,
->>>>>+caches, VFP and power controller and other peripheral hardware. Generally,
->>>>>+when the CPUs in the cluster are idle/suspended, the shared resources may also
->>>>>+be suspended and resumed before any of the CPUs resume execution.
->>>>>+
->>>>>+CPUs are the defined as the PM domain consumers and there is a PM domain
->>>>>+provider for the CPUs. Bindings for generic PM domains (genpd) is described in
->>>>>+[1].
->>>>>+
->>>>>+The ARM CPU PM domain follows the same binding convention as any generic PM
->>>>>+domain. Additional binding properties are -
->>>>>+
->>>>>+- compatible:
->>>>>+       Usage: required
->>>>>+       Value type: <string>
->>>>>+       Definition: Must also have
->>>>>+                       "arm,pd"
->>>>>+               inorder to initialize the genpd provider as ARM CPU PM domain.
->>>>
->>>>A compatible string should represent a particular h/w block. If it is
->>>>generic, it should represent some sort of standard programming
->>>>interface (e.g, AHCI, EHCI, etc.). This doesn't seem to be either and
->>>>is rather just a mapping of what "driver" you want to use.
->>>>
->>>>I would expect that identifying a cpu's or cluster's power domain
->>>>would be done by a phandle between the cpu/cluster node and power
->>>>domain node. But I've not really looked at the power domain bindings
->>>>so who knows.
->>>
->>>I would expect the same, meaning that a cpu node, like any other device
->>>node would have a phandle pointing at the respective HW power domain.
->>>
->>CPUs have phandles to their domains. That is how the relationship
->>between the domain provider (power-controller) and the consumer (CPU) is
->>established.
+On Thu, Aug 13 2015 at 11:29 -0600, Rob Herring wrote:
+>On Wed, Aug 12, 2015 at 2:00 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
+>> Define and add Generic PM domains (genpd) for CPU clusters. Many new
+>> SoCs group CPUs as clusters. Clusters share common resources like GIC,
+>> power rail, caches, VFP, Coresight etc. When all CPUs in the cluster are
+>> idle, these shared resources may also be put in their idle state.
 >>
->>>I do not really understand why we want a "generic" CPU power domain, what
->>>purpose does it serve ? Creating a collection of cpu devices that we
->>>can call "cluster" ?
->>>
->>Nope, not for calling a cluster, a cluster :)
+>> The idle time between the last CPU entering idle and a CPU resuming
+>> execution is an opportunity for these shared resources to be powered
+>> down. Generic PM domain provides a framework for defining such power
+>> domains and attach devices to the domain. When the devices in the domain
+>> are idle at runtime, the domain would also be suspended and resumed
+>> before the first of the devices resume execution.
 >>
->>This compatible is used to define a generic behavior of the CPU domain
->>controller (in addition to the platform specific behavior of the domain
->>power controller). The kernel activities for such power controller are
->>generally the same which otherwise would be repeated across platforms.
->
->Having gone through this series and the one using it[1], the only common
->activity is just cluster pm notifiers. Other than that it's just
->creating indirection for now. The scenario might change in future, but
->for now it seems unnecessary.
->
-Not sure, what seems unnecessary to you. Platforms do have to send
-cluster PM notifications, and they have to duplicate reference counting.
-Also PM domain framework allows hierarchy which is quite desirable to
-power down parts of the SoC that are powered on or have to clocked high,
-until the CPU is running.
-
-Cluster PM notifications are just one aspect of this that we currently
-handle in the first submission. The patchset as a whole provides a way
-to determine in Linux the last man down and the first man up and carry
-out activities. There are a bunch of things that are done to power save
-when the last man goes down - Turn off debuggers, switch off PLLs,
-reduce bus clocks, flush caches amongst a few that I know of. Some of it
-are platform specific and some of it arent. This patches provide the way
-for both of them to be done easily. The CPU runtime PM and PM domains as
-a framework, closely track what the hardware does.
-
-Mentioned in an other mail in this thread, is also an option to
-determine the cluster flush state and use it in conjunction with PSCI to
-do OS-Initiated cluster power down.
-
->Also if you look at the shmobile power controller driver, it covers all
->the devices including CPUs unlike QCOM power controller which handles
->only CPU. Yes we can skip CPU genpd creation there only for CPU, IMO
->creating the power domains should be part of power controller driver.
->
->You can add helper functions for all the ARM specific code that can be
->reused by multiple power controller drivers handling CPU/Cluster power
->domain.
->
-Sure, some architectures may desire that. I have them addressed in [2].
-
->>An analogy to this would be the "arm,idle-state" that defines the DT
->>node as something that also depicts a generic cpuidle C state.
+>> We define a generic PM domain for each cluster and attach CPU devices in
+>> the cluster to that PM domain. The DT definitions for the SoC describe
+>> this relationship. Genpd callbacks for power_on and power_off can then
+>> be used to power up/down the shared resources for the domain.
 >>
+>> Cc: Stephen Boyd <sboyd@codeaurora.org>
+>> Cc: Kevin Hilman <khilman@linaro.org>
+>> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+>> Cc: Catalin Marinas <catalin.marinas@arm.com>
+>> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> Cc: Mark Rutland <mark.rutland@arm.com>
+>> Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+>> Signed-off-by: Kevin Hilman <khilman@linaro.org>
+>> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+>> ---
+>> Changes since v1:
+>>
+>> - Function name changes and split out common code
+>> - Use cpu,pd for now. Removed references to ARM. Open to recommendations.
+>> - Still located in arch/arm/common/. May move to a more appropriate location.
+>> - Platform drivers can directly call of_init_cpu_domain() without using
+>>   compatibles.
+>> - Now maintains a list of CPU PM domains.
 >
->I tend to disagree. In idle-states, the nodes define that generic
->properties and they can be parsed in a generic way. That's not the case
->here. Each power controller binding differs.
+>[...]
 >
-Yes, may be we will have common elements like latency, residency of
-powering on/off a domain that a genpd governor can utilize in
-determining if its worth powering off the domain or not.
+>> +static int __init of_pm_domain_attach_cpus(void)
+>> +{
+>> +       int cpuid, ret;
+>> +
+>> +       /* Find any CPU nodes with a phandle to this power domain */
+>> +       for_each_possible_cpu(cpuid) {
+>> +               struct device *cpu_dev;
+>> +               struct of_phandle_args pd_args;
+>> +
+>> +               cpu_dev = get_cpu_device(cpuid);
+>> +               if (!cpu_dev) {
+>> +                       pr_warn("%s: Unable to get device for CPU%d\n",
+>> +                                       __func__, cpuid);
+>> +                       return -ENODEV;
+>> +               }
+>> +
+>> +               /*
+>> +                * We are only interested in CPUs that can be attached to
+>> +                * PM domains that are cpu,pd compatible.
+>> +                */
+>
+>Under what conditions would the power domain for a cpu not be cpu,pd compatible?
+>
+Mostly never. But I dont want to assume and attach a CPU to its domain
+that I am not concerned with.
 
->Yes the generic compatible might be useful to identify that this power
->domain handles CPU/Cluster, but there will be more power controller
->specific things compared to generic code.
+>Why can't the driver handling the power domain register with gen_pd
+>and the cpu_pd as the driver is going to be aware of which domains are
+>for cpus.
+They could and like Renesas they would. They could have an intricate
+hierarchy of domains that they may want to deal with in their platform
+drivers. Platforms could define the CPU devices as IRQ-safe and attach
+it to their domains. Ensure the reference count of the online and
+running CPUs are correct and they are good to go. They also would attach
+the CPU devices to the domain and everything would work as they would
+here. Its just repeated code across platforms that we are trying to
+avoid.
+
+>While there could be h/w such that all power domains within
+>a chip have a nice uniform programming model, I'd guess that is the
+>exception, not the rule. First, chips I have worked on were not that
+>way. CPU related and peripheral related domains are handled quite
+>differently. 
 >
-Agreed, not debating that. Power controller is very SoC specific, but
-not debuggers, GIC, caches, buses etc. Many SoCs have almost similiar
-needs for many of these supplemental hardware to the CPUs and trend
-seems to be generalizing on many of these components.
+Agreed. These are very SoC specific components and would require
+platform specific programming. But most SoCs, would need to do many
+other things like suspending debuggers, reducing clocks, GIC save and
+restore, cluster state determination etc that are only getting more
+generalized. We have generalized ARM CPU idle, I see this as the
+platform for the next set of power saving in an SoC.
+
+>Second, often the actions on the CPU power domains don't
+>take effect until a WFI, so you end up with a different programming
+>sequence.
+>
+How so? The last core going down (in this case, when the domain is
+suspended the last core is the last device that does a _put() on the
+domain) would determine and perform the power domain's programming
+sequence, in the context of the last CPU. A sequence that would only be
+effected in hardware when the the CPU executes WFI. I dont see why it
+would be any different than how it is today.
 
 Thanks,
 Lina
-
->[1] http://www.spinics.net/lists/arm-kernel/msg437304.html
-[2] http://www.spinics.net/lists/arm-kernel/msg438971.html
