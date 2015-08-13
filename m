@@ -1,33 +1,35 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH] PM / Domains: Make pm_genpd_init() available to modules
-Date: Thu, 13 Aug 2015 11:11:28 -0700
-Message-ID: <20150813181128.GP26614@codeaurora.org>
-References: <1439446917-32304-1-git-send-email-rnayak@codeaurora.org>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFCv5 PATCH 30/46] sched: Add cpu capacity awareness to wakeup
+ balancing
+Date: Thu, 13 Aug 2015 20:24:09 +0200
+Message-ID: <20150813182409.GB19282@twins.programming.kicks-ass.net>
+References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
+ <1436293469-25707-31-git-send-email-morten.rasmussen@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:49488 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751993AbbHMSLa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Aug 2015 14:11:30 -0400
+Received: from casper.infradead.org ([85.118.1.10]:59460 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752637AbbHMSYN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Aug 2015 14:24:13 -0400
 Content-Disposition: inline
-In-Reply-To: <1439446917-32304-1-git-send-email-rnayak@codeaurora.org>
+In-Reply-To: <1436293469-25707-31-git-send-email-morten.rasmussen@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rajendra Nayak <rnayak@codeaurora.org>
-Cc: ulf.hansson@linaro.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, geert@linux-m68k.org
+To: Morten Rasmussen <morten.rasmussen@arm.com>
+Cc: mingo@redhat.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 08/13, Rajendra Nayak wrote:
-> Export symbol pm_genpd_init so it can be used in loadable
-> kernel modules
+On Tue, Jul 07, 2015 at 07:24:13PM +0100, Morten Rasmussen wrote:
 > 
-> Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
-> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
+> This patch adds capacity awareness to find_idlest_{group,queue} (used by
+> SD_BALANCE_{FORK,EXEC}) such that groups/cpus that can accommodate the
+> waking task based on task utilization are preferred. In addition, wakeup
+> of existing tasks (SD_BALANCE_WAKE) is sent through
+> find_idlest_{group,queue} if the task doesn't fit the capacity of the
+> previous cpu to allow it to escape (override wake_affine) when
+> necessary instead of relying on periodic/idle/nohz_idle balance to
+> eventually sort it out.
+> 
 
-I'd like to take this through the clk tree somehow so that we can
-merge the rest of the GDSC series this coming cycle.
-
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+That's policy not guided by the energy model.. Also we need something
+clever for the wakeup balancing, the current stuff all stinks :/
