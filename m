@@ -1,75 +1,37 @@
-From: <check.kernel@gmail.com>
-Subject: [PATCH] power: align wakeup_sources format
-Date: Thu, 13 Aug 2015 10:24:49 +0800
-Message-ID: <1439432689-28541-1-git-send-email-check.kernel@gmail.com>
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: Re: [PATCH v2 09/16] PM / hibernate: Reserve hibernation key and
+ erase footprints
+Date: Thu, 13 Aug 2015 02:45:32 +0000
+Message-ID: <1439434143.15722.12.camel@localhost>
+References: <1439273796-25359-1-git-send-email-jlee@suse.com>
+	 <1439273796-25359-10-git-send-email-jlee@suse.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f65.google.com ([209.85.220.65]:36854 "EHLO
-	mail-pa0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751843AbbHMCZ1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Aug 2015 22:25:27 -0400
+Received: from mga14.intel.com ([192.55.52.115]:6277 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751255AbbHMCpl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 12 Aug 2015 22:45:41 -0400
+In-Reply-To: <1439273796-25359-10-git-send-email-jlee@suse.com>
+Content-Language: en-US
+Content-ID: <9E38EE9FA473F54EBDB6EF850601DF2F@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Ethan du <duhui@xiaomi.com>, Linghua Gu <gulinghua@xiaomi.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, yangdongdong <yangdongdong@xiaomi.com>
+To: "joeyli.kernel@gmail.com" <joeyli.kernel@gmail.com>
+Cc: "matthew.garrett@nebula.com" <matthew.garrett@nebula.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "jlee@suse.com" <jlee@suse.com>, "vojtech@suse.cz" <vojtech@suse.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "pavel@ucw.cz" <pavel@ucw.cz>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "jkosina@suse.cz" <jkosina@suse.cz>, "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>, "linux-efi@vger.kernel.org" <linux-efi@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, "jwboyer@redhat.com" <jwboyer@redhat.com>, "Fleming, Matt" <matt.fleming@intel.com>
 
-From: yangdongdong <yangdongdong@xiaomi.com>
-
-This aligns every column of elements in wakeup_sources to
-conveniently check any specific column for suspicious power
-consumption wakeup source or for other easily readable purpose.
-
-Signed-off-by: yangdongdong <yangdongdong@xiaomi.com>
----
- drivers/base/power/wakeup.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-index 51f15bc..b6fe9e6 100644
---- a/drivers/base/power/wakeup.c
-+++ b/drivers/base/power/wakeup.c
-@@ -998,7 +998,7 @@ static int print_wakeup_source_stats(struct seq_file *m,
- 		active_time = ktime_set(0, 0);
- 	}
- 
--	seq_printf(m, "%-12s\t%lu\t\t%lu\t\t%lu\t\t%lu\t\t%lld\t\t%lld\t\t%lld\t\t%lld\t\t%lld\n",
-+	seq_printf(m, "%-32s\t%lu\t\t%lu\t\t%lu\t\t%lu\t\t%lld\t\t%lld\t\t%lld\t\t%lld\t\t%lld\n",
- 		   ws->name, active_count, ws->event_count,
- 		   ws->wakeup_count, ws->expire_count,
- 		   ktime_to_ms(active_time), ktime_to_ms(total_time),
-@@ -1018,7 +1018,7 @@ static int wakeup_sources_stats_show(struct seq_file *m, void *unused)
- {
- 	struct wakeup_source *ws;
- 
--	seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
-+	seq_puts(m, "name\t\t\t\t\tactive_count\tevent_count\twakeup_count\t"
- 		"expire_count\tactive_since\ttotal_time\tmax_time\t"
- 		"last_change\tprevent_suspend_time\n");
- 
--- 
-2.5.0
-
-The signed name has been updated.
-
-Thanks,
-yangdongdong
-
-On Wed, Aug 12, 2015 at 02:12:38PM +0800, check.kernel@gmail.com wrote:
-> From: yangdongdong <yangdongdong@xiaomi.com>
-
-As mentioned before, please fix this.
-
-The signed name is updated from "Andy Yang" to yangdongdong.
-
-Best Regards,
-Andy
-
-On Wed, Aug 12, 2015 at 12:31:14PM +0800, check.kernel@gmail.com wrote:
-> From: yangdongdong <yangdongdong@xiaomi.com>
-
-Use the same name here as you used for the signed-off-by: line please.
-
-Please fix and resend.
-
-thanks,
-
-greg k-h
+SGkgQ2h1bi15aSwNCk9uIFR1ZSwgMjAxNS0wOC0xMSBhdCAxNDoxNiArMDgwMCwgTGVlLCBDaHVu
+LVlpIHdyb3RlOg0KDQo+ICsvKiBBIHBhZ2UgdXNlZCB0byBrZWVwIGhpYmVybmF0aW9uIGtleXMg
+Ki8NCj4gK3N0YXRpYyBzdHJ1Y3QgaGliZXJuYXRpb25fa2V5cyAqaGliZXJuYXRpb25fa2V5czsN
+Cj4gKw0KPiArdm9pZCBfX2luaXQgcGFyc2VfaGliZXJuYXRpb25fa2V5cyh1NjQgcGh5c19hZGRy
+LCB1MzIgZGF0YV9sZW4pDQo+ICt7DQo+ICsJc3RydWN0IHNldHVwX2RhdGEgKmhpYmVybmF0aW9u
+X3NldHVwX2RhdGE7DQo+ICsNCj4gKwkvKiBSZXNlcnZlIGtleXMgbWVtb3J5LCB3aWxsIGNvcHkg
+YW5kIGVyYXNlIGluIGluaXRfaGliZXJuYXRpb25fa2V5cygpICovDQo+ICsJa2V5c19waHlzX2Fk
+ZHIgPSBwaHlzX2FkZHIgKyBzaXplb2Yoc3RydWN0IHNldHVwX2RhdGEpOw0KPiArCW1lbWJsb2Nr
+X3Jlc2VydmUoa2V5c19waHlzX2FkZHIsIHNpemVvZihzdHJ1Y3QgaGliZXJuYXRpb25fa2V5cykp
+Ow0KPiArDQo+ICsJLyogY2xlYXIgaGliZXJuYXRpb25fZGF0YSAqLw0KPiArCWhpYmVybmF0aW9u
+X3NldHVwX2RhdGEgPSBlYXJseV9tZW1yZW1hcChwaHlzX2FkZHIsIGRhdGFfbGVuKTsNCj4gKwlp
+ZiAoIWhpYmVybmF0aW9uX3NldHVwX2RhdGEpDQo+ICsJCXJldHVybjsNCj4gKw0Kc2hvdWxkIHdl
+IGludm9rZSBtZW1ibG9ja19mcmVlIGlmIGVhcmx5X21lbXJlbWFwIGZhaWxlZD8NCg0KQmVzdCBS
+ZWdhcmRzLA0KWXUNCg0KDQo=
