@@ -1,69 +1,75 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: 3.18: lockdep problems in cpufreq
-Date: Thu, 13 Aug 2015 03:20:35 +0200
-Message-ID: <5160300.5D2Dvly8u9@vostro.rjw.lan>
-References: <20141214213655.GA11285@n2100.arm.linux.org.uk> <2574268.XBqpdL2VLI@vostro.rjw.lan> <20150811170357.GA24529@n2100.arm.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: <check.kernel@gmail.com>
+Subject: [PATCH] power: align wakeup_sources format
+Date: Thu, 13 Aug 2015 10:24:49 +0800
+Message-ID: <1439432689-28541-1-git-send-email-check.kernel@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:41320 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751182AbbHMAxT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Aug 2015 20:53:19 -0400
-In-Reply-To: <20150811170357.GA24529@n2100.arm.linux.org.uk>
+Received: from mail-pa0-f65.google.com ([209.85.220.65]:36854 "EHLO
+	mail-pa0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751843AbbHMCZ1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 12 Aug 2015 22:25:27 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Yadwinder Singh Brar <yadi.brar@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Ethan du <duhui@xiaomi.com>, Linghua Gu <gulinghua@xiaomi.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, yangdongdong <yangdongdong@xiaomi.com>
 
-On Tuesday, August 11, 2015 06:03:57 PM Russell King - ARM Linux wrote:
-> On Tue, May 19, 2015 at 12:05:55AM +0200, Rafael J. Wysocki wrote:
-> > On Monday, May 18, 2015 07:56:45 PM Russell King - ARM Linux wrote:
-> > > On Tue, Dec 16, 2014 at 09:11:53AM +0530, Viresh Kumar wrote:
-> > > > On 16 December 2014 at 04:39, Russell King - ARM Linux
-> > > > <linux@arm.linux.org.uk> wrote:
-> > > > > Well, here's a patch which I'm running on top of 3.18 at the moment,
-> > > > > which is basically what I described in my email, and I'm running with it
-> > > > > and it is without any lockdep complaint.
-> > > > 
-> > > > We need two separate patches now, one for 3.18 and other one for 3.19-rc.
-> > > > 3.19 has see lots of changes in this particular file and so we need to
-> > > > change few things here.
-> > > 
-> > > What happened with this?  I'm still carrying the patch.
-> > 
-> > This should go in through the thermal tree.  Eduardo?
-> 
-> Having waited a long time for any kind of response from Eduardo, I've
-> given up.  My conclusion is that Eduardo isn't interested in this.
-> 
-> I've re-checked, and the AB-BA deadlock is still there in the latest
-> code.  So, I've taken it upon myself to throw this into my for-next
-> branch to force the issue - not something I _want_ to do, but I'm doing
-> this out of frustration.  It's clear to me that "playing nice" by email
-> does _not_ work with some people.
-> 
-> I'm rather hoping that Stephen reports a merge conflict with linux-next
-> this evening to highlight this situation.  I've added additional commentry
-> to the commit message on the patch giving the reason why I've done this,
-> and the relevant message IDs showing the past history.
-> 
-> I've not decided whether I'm going to ask Linus to take this patch
-> directly or not, that rather depends whether there's any co-operation
-> from Eduardo on this.  I'd rather Eduardo took the patch.
-> 
-> The patch I have has had to be updated again for changes to the driver,
-> but I really don't see the point of re-posting it just for it to be
-> ignored yet again.
-> 
-> I'm really disappointed by this dysfunctional state of affairs, and
-> that what should be an urgent fix for an observable problem is still
-> not merged some nine months after it was first identified.
+From: yangdongdong <yangdongdong@xiaomi.com>
 
-I guess it might help if you sent the updated patch in a new thread.
+This aligns every column of elements in wakeup_sources to
+conveniently check any specific column for suspicious power
+consumption wakeup source or for other easily readable purpose.
 
+Signed-off-by: yangdongdong <yangdongdong@xiaomi.com>
+---
+ drivers/base/power/wakeup.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+index 51f15bc..b6fe9e6 100644
+--- a/drivers/base/power/wakeup.c
++++ b/drivers/base/power/wakeup.c
+@@ -998,7 +998,7 @@ static int print_wakeup_source_stats(struct seq_file *m,
+ 		active_time = ktime_set(0, 0);
+ 	}
+ 
+-	seq_printf(m, "%-12s\t%lu\t\t%lu\t\t%lu\t\t%lu\t\t%lld\t\t%lld\t\t%lld\t\t%lld\t\t%lld\n",
++	seq_printf(m, "%-32s\t%lu\t\t%lu\t\t%lu\t\t%lu\t\t%lld\t\t%lld\t\t%lld\t\t%lld\t\t%lld\n",
+ 		   ws->name, active_count, ws->event_count,
+ 		   ws->wakeup_count, ws->expire_count,
+ 		   ktime_to_ms(active_time), ktime_to_ms(total_time),
+@@ -1018,7 +1018,7 @@ static int wakeup_sources_stats_show(struct seq_file *m, void *unused)
+ {
+ 	struct wakeup_source *ws;
+ 
+-	seq_puts(m, "name\t\tactive_count\tevent_count\twakeup_count\t"
++	seq_puts(m, "name\t\t\t\t\tactive_count\tevent_count\twakeup_count\t"
+ 		"expire_count\tactive_since\ttotal_time\tmax_time\t"
+ 		"last_change\tprevent_suspend_time\n");
+ 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+2.5.0
+
+The signed name has been updated.
+
+Thanks,
+yangdongdong
+
+On Wed, Aug 12, 2015 at 02:12:38PM +0800, check.kernel@gmail.com wrote:
+> From: yangdongdong <yangdongdong@xiaomi.com>
+
+As mentioned before, please fix this.
+
+The signed name is updated from "Andy Yang" to yangdongdong.
+
+Best Regards,
+Andy
+
+On Wed, Aug 12, 2015 at 12:31:14PM +0800, check.kernel@gmail.com wrote:
+> From: yangdongdong <yangdongdong@xiaomi.com>
+
+Use the same name here as you used for the signed-off-by: line please.
+
+Please fix and resend.
+
+thanks,
+
+greg k-h
