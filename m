@@ -1,83 +1,93 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH 5/9] ARM: common: Introduce PM domains for CPUs/clusters
-Date: Thu, 13 Aug 2015 16:01:54 +0100
-Message-ID: <20150813150154.GB13356@red-moon>
-References: <1438731339-58317-1-git-send-email-lina.iyer@linaro.org>
- <1438731339-58317-6-git-send-email-lina.iyer@linaro.org>
- <CAL_JsqK67=DTtjZwwnonObLDjLbahkREfm0RvyXVV95bhR-d4Q@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFCv5 PATCH 22/46] sched: Calculate energy consumption of
+ sched_group
+Date: Thu, 13 Aug 2015 17:34:17 +0200
+Message-ID: <20150813153417.GY19282@twins.programming.kicks-ass.net>
+References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
+ <1436293469-25707-23-git-send-email-morten.rasmussen@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:35260 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752615AbbHMPBv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 13 Aug 2015 11:01:51 -0400
+Received: from bombadil.infradead.org ([198.137.202.9]:43353 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752267AbbHMPe1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Aug 2015 11:34:27 -0400
 Content-Disposition: inline
-In-Reply-To: <CAL_JsqK67=DTtjZwwnonObLDjLbahkREfm0RvyXVV95bhR-d4Q@mail.gmail.com>
+In-Reply-To: <1436293469-25707-23-git-send-email-morten.rasmussen@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robherring2@gmail.com>
-Cc: Lina Iyer <lina.iyer@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Mark Rutland <Mark.Rutland@arm.com>, Krzysztof Koz??owski <k.kozlowski@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Catalin Marinas <Catalin.Marinas@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "msivasub@codeaurora.org" <msivasub@codeaurora.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Andy Gross <agross@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Morten Rasmussen <morten.rasmussen@arm.com>
+Cc: mingo@redhat.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Thu, Aug 06, 2015 at 04:14:51AM +0100, Rob Herring wrote:
-> On Tue, Aug 4, 2015 at 6:35 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
-> > Define and add Generic PM domains (genpd) for ARM CPU clusters. Many new
-> > SoCs group CPUs as clusters. Clusters share common resources like GIC,
-> > power rail, caches, VFP, Coresight etc. When all CPUs in the cluster are
-> > idle, these shared resources may also be put in their idle state.
-> >
-> > The idle time between the last CPU entering idle and a CPU resuming
-> > execution is an opportunity for these shared resources to be powered
-> > down. Generic PM domain provides a framework for defining such power
-> > domains and attach devices to the domain. When the devices in the domain
-> > are idle at runtime, the domain would also be suspended and resumed
-> > before the first of the devices resume execution.
-> >
-> > We define a generic PM domain for each cluster and attach CPU devices in
-> > the cluster to that PM domain. The DT definitions for the SoC describe
-> > this relationship. Genpd callbacks for power_on and power_off can then
-> > be used to power up/down the shared resources for the domain.
-> 
-> [...]
-> 
-> > +ARM CPU Power domains
-> > +
-> > +The device tree allows describing of CPU power domains in a SoC. In ARM SoC,
-> > +CPUs may be grouped as clusters. A cluster may have CPUs, GIC, Coresight,
-> > +caches, VFP and power controller and other peripheral hardware. Generally,
-> > +when the CPUs in the cluster are idle/suspended, the shared resources may also
-> > +be suspended and resumed before any of the CPUs resume execution.
-> > +
-> > +CPUs are the defined as the PM domain consumers and there is a PM domain
-> > +provider for the CPUs. Bindings for generic PM domains (genpd) is described in
-> > +[1].
-> > +
-> > +The ARM CPU PM domain follows the same binding convention as any generic PM
-> > +domain. Additional binding properties are -
-> > +
-> > +- compatible:
-> > +       Usage: required
-> > +       Value type: <string>
-> > +       Definition: Must also have
-> > +                       "arm,pd"
-> > +               inorder to initialize the genpd provider as ARM CPU PM domain.
-> 
-> A compatible string should represent a particular h/w block. If it is
-> generic, it should represent some sort of standard programming
-> interface (e.g, AHCI, EHCI, etc.). This doesn't seem to be either and
-> is rather just a mapping of what "driver" you want to use.
-> 
-> I would expect that identifying a cpu's or cluster's power domain
-> would be done by a phandle between the cpu/cluster node and power
-> domain node. But I've not really looked at the power domain bindings
-> so who knows.
+On Tue, Jul 07, 2015 at 07:24:05PM +0100, Morten Rasmussen wrote:
+> +static unsigned int sched_group_energy(struct sched_group *sg_top)
+> +{
+> +	struct sched_domain *sd;
+> +	int cpu, total_energy = 0;
+> +	struct cpumask visit_cpus;
+> +	struct sched_group *sg;
+> +
+> +	WARN_ON(!sg_top->sge);
+> +
+> +	cpumask_copy(&visit_cpus, sched_group_cpus(sg_top));
+> +
+> +	while (!cpumask_empty(&visit_cpus)) {
+> +		struct sched_group *sg_shared_cap = NULL;
+> +
+> +		cpu = cpumask_first(&visit_cpus);
+> +
+> +		/*
+> +		 * Is the group utilization affected by cpus outside this
+> +		 * sched_group?
+> +		 */
+> +		sd = highest_flag_domain(cpu, SD_SHARE_CAP_STATES);
+> +		if (sd && sd->parent)
+> +			sg_shared_cap = sd->parent->groups;
+> +
+> +		for_each_domain(cpu, sd) {
+> +			sg = sd->groups;
+> +
+> +			/* Has this sched_domain already been visited? */
+> +			if (sd->child && group_first_cpu(sg) != cpu)
+> +				break;
+> +
+> +			do {
+> +				struct sched_group *sg_cap_util;
+> +				unsigned long group_util;
+> +				int sg_busy_energy, sg_idle_energy, cap_idx;
+> +
+> +				if (sg_shared_cap && sg_shared_cap->group_weight >= sg->group_weight)
+> +					sg_cap_util = sg_shared_cap;
+> +				else
+> +					sg_cap_util = sg;
+> +
+> +				cap_idx = find_new_capacity(sg_cap_util, sg->sge);
 
-I would expect the same, meaning that a cpu node, like any other device
-node would have a phandle pointing at the respective HW power domain.
+So here its not really 'new' capacity is it, most like the current
+capacity?
 
-I do not really understand why we want a "generic" CPU power domain, what
-purpose does it serve ? Creating a collection of cpu devices that we
-can call "cluster" ?
+So in the case of coupled P states, you look for the CPU with highest
+utilization, as that is the on that determines the required P state.
 
-Thanks,
-Lorenzo
+> +				group_util = group_norm_usage(sg, cap_idx);
+> +				sg_busy_energy = (group_util * sg->sge->cap_states[cap_idx].power)
+> +										>> SCHED_CAPACITY_SHIFT;
+> +				sg_idle_energy = ((SCHED_LOAD_SCALE-group_util) * sg->sge->idle_states[0].power)
+> +										>> SCHED_CAPACITY_SHIFT;
+> +
+> +				total_energy += sg_busy_energy + sg_idle_energy;
+> +
+> +				if (!sd->child)
+> +					cpumask_xor(&visit_cpus, &visit_cpus, sched_group_cpus(sg));
+> +
+> +				if (cpumask_equal(sched_group_cpus(sg), sched_group_cpus(sg_top)))
+> +					goto next_cpu;
+> +
+> +			} while (sg = sg->next, sg != sd->groups);
+> +		}
+> +next_cpu:
+> +		continue;
+> +	}
+> +
+> +	return total_energy;
+> +}
