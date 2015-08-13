@@ -1,64 +1,180 @@
-From: Kukjin Kim <kgene@kernel.org>
-Subject: RE: [PATCH v2] Remove unselectable rule for arm-exynos-cpufreq.o
-Date: Thu, 13 Aug 2015 22:01:23 +0900
-Message-ID: <00c701d0d5c8$28186fd0$78494f70$@kernel.org>
-References: <1439461941-13953-1-git-send-email-jonas.rabenstein@studium.uni-erlangen.de>
- <1439465318-18108-1-git-send-email-jonas.rabenstein@studium.uni-erlangen.de>
- <20150813113300.GU20238@linux>
- <CAJKOXPcxk3J0vmczJ7eOtUhzKxQW0Za0ZmgUAdX=jiT+eRxyKw@mail.gmail.com>
+From: Punit Agrawal <punit.agrawal@arm.com>
+Subject: Re: [PATCH v2 10/10] arm64: dts: Create SoC thermal zone for Juno
+Date: Thu, 13 Aug 2015 15:28:45 +0100
+Message-ID: <9hh1tf7i7oi.fsf@e105922-lin.cambridge.arm.com>
+References: <1438615378-14241-1-git-send-email-punit.agrawal@arm.com>
+	<1438615378-14241-11-git-send-email-punit.agrawal@arm.com>
+	<20150812155500.GW20890@e106497-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <CAJKOXPcxk3J0vmczJ7eOtUhzKxQW0Za0ZmgUAdX=jiT+eRxyKw@mail.gmail.com>
-Content-language: ko
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: 'Krzysztof Kozlowski' <k.kozlowski@samsung.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Kukjin Kim' <kgene@kernel.org>
-Cc: 'Jonas Rabenstein' <jonas.rabenstein@studium.uni-erlangen.de>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:42345 "EHLO
+	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752012AbbHMO2z (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Aug 2015 10:28:55 -0400
+In-Reply-To: <20150812155500.GW20890@e106497-lin.cambridge.arm.com> (Liviu
+	Dudau's message of "Wed, 12 Aug 2015 16:55:00 +0100")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Liviu Dudau <Liviu.Dudau@arm.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <Mark.Rutland@arm.com>, Sudeep Holla <Sudeep.Holla@arm.com>
 
-Krzysztof Kozlowski wrote:
-> 
-> 2015-08-13 20:33 GMT+09:00 Viresh Kumar <viresh.kumar@linaro.org>:
-> > On 13-08-15, 13:28, Jonas Rabenstein wrote:
-> >> Commit "cpufreq: exynos: remove Exynos4x12 specific cpufreq driver
-> >> support" deleted option ARM_EXYNOS_CPUFREQ but missed to delete a rule
-> >> in drivers/cpufreq/Makefile which depends on that option.
-> >>
-> >> Remove unselectable rule for arm-exynos-cpufreq.o from
-> >> drivers/cpufreq/Makefile.
-> >>
-> >> Signed-off-by: Jonas Rabenstein <jonas.rabenstein@studium.uni-erlangen.de>
-> >> ---
-> >> I found this inconsistency using the undertaker and
-> >> undertaker-checkpatch tools (https://undertaker.cs.fau.de/).
-> >>
-> >>  drivers/cpufreq/Makefile | 1 -
-> >>  1 file changed, 1 deletion(-)
-> >>
-> >> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-> >> index bbc4a9f..958be2b 100644
-> >> --- a/drivers/cpufreq/Makefile
-> >> +++ b/drivers/cpufreq/Makefile
-> >> @@ -52,7 +52,6 @@ obj-$(CONFIG_ARM_DT_BL_CPUFREQ)             += arm_big_little_dt.o
-> >>
-> >>  obj-$(CONFIG_ARCH_DAVINCI)           += davinci-cpufreq.o
-> >>  obj-$(CONFIG_UX500_SOC_DB8500)               += dbx500-cpufreq.o
-> >> -obj-$(CONFIG_ARM_EXYNOS_CPUFREQ)     += arm-exynos-cpufreq.o
-> >>  obj-$(CONFIG_ARM_EXYNOS5440_CPUFREQ) += exynos5440-cpufreq.o
-> >>  obj-$(CONFIG_ARM_HIGHBANK_CPUFREQ)   += highbank-cpufreq.o
-> >>  obj-$(CONFIG_ARM_HISI_ACPU_CPUFREQ)  += hisi-acpu-cpufreq.o
-> >
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
-> And again from me:
-> Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> 
-> Dear Kukjin,
-> Can you take it and send in (updated) pull request with Exynos4x12
-> cpufreq patches?
-> 
-OK, sure. I'll take this.
+Hi Liviu,
+
+Thanks for having a look.
+
+Liviu Dudau <Liviu.Dudau@arm.com> writes:
+
+> On Mon, Aug 03, 2015 at 04:22:58PM +0100, Punit Agrawal wrote:
+>> Setup a thermal zone driven by the SoC temperature sensor on Juno
+>> r0. Create passive trip points and bind them to cpufreq cooling
+>> devices that support the power extensions.
+>
+> Hi Punit,
+>
+>> 
+>> Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
+>> Cc: Rob Herring <robh+dt@kernel.org>
+>> Cc: Mark Rutland <mark.rutland@arm.com>
+>> Cc: Liviu Dudau <liviu.dudau@arm.com>
+>> Cc: Sudeep Holla <sudeep.holla@arm.com>
+>> ---
+>>  arch/arm64/boot/dts/arm/juno.dts | 50 ++++++++++++++++++++++++++++++++++++++++
+>>  1 file changed, 50 insertions(+)
+>> 
+>> diff --git a/arch/arm64/boot/dts/arm/juno.dts b/arch/arm64/boot/dts/arm/juno.dts
+>> index d2e67f3..664961c 100644
+>> --- a/arch/arm64/boot/dts/arm/juno.dts
+>> +++ b/arch/arm64/boot/dts/arm/juno.dts
+>> @@ -9,6 +9,7 @@
+>>  /dts-v1/;
+>>  
+>>  #include <dt-bindings/interrupt-controller/arm-gic.h>
+>> +#include <dt-bindings/thermal/thermal.h>
+>>  
+>>  / {
+>>  	model = "ARM Juno development board (r0)";
+>> @@ -90,6 +91,8 @@
+>>  			next-level-cache = <&A57_L2>;
+>>  			clocks = <&scpi_dvfs 0>;
+>>  			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
+>> +			#cooling-cells = <2>;
+>> +			dynamic-power-coefficient = <530>;
+>
+> The Documentation/devicetree/bindings/thermal/thermal.txt document describes two additional
+> required properties, cooling-min-state and cooling-max-state which are missing here.
+>
+
+The bindings do suggest that the cooling-*-state are required but I
+couldn't find any code making use of this property.
+
+I'll send a patch with the next version making those properties
+optional.
+
+>>  		};
+>>  
+>>  		A57_1: cpu@1 {
+>> @@ -100,6 +103,8 @@
+>>  			next-level-cache = <&A57_L2>;
+>>  			clocks = <&scpi_dvfs 0>;
+>>  			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
+>> +			#cooling-cells = <2>;
+>> +			dynamic-power-coefficient = <530>;
+>>  		};
+>>  
+>>  		A53_0: cpu@100 {
+>> @@ -110,6 +115,8 @@
+>>  			next-level-cache = <&A53_L2>;
+>>  			clocks = <&scpi_dvfs 1>;
+>>  			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
+>> +			#cooling-cells = <2>;
+>> +			dynamic-power-coefficient = <140>;
+>>  		};
+>>  
+>>  		A53_1: cpu@101 {
+>> @@ -120,6 +127,8 @@
+>>  			next-level-cache = <&A53_L2>;
+>>  			clocks = <&scpi_dvfs 1>;
+>>  			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
+>> +			#cooling-cells = <2>;
+>> +			dynamic-power-coefficient = <140>;
+>>  		};
+>>  
+>>  		A53_2: cpu@102 {
+>> @@ -130,6 +139,8 @@
+>>  			next-level-cache = <&A53_L2>;
+>>  			clocks = <&scpi_dvfs 1>;
+>>  			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
+>> +			#cooling-cells = <2>;
+>> +			dynamic-power-coefficient = <140>;
+>>  		};
+>>  
+>>  		A53_3: cpu@103 {
+>> @@ -140,6 +151,8 @@
+>>  			next-level-cache = <&A53_L2>;
+>>  			clocks = <&scpi_dvfs 1>;
+>>  			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
+>> +			#cooling-cells = <2>;
+>> +			dynamic-power-coefficient = <140>;
+>>  		};
+>>  
+>>  		A57_L2: l2-cache0 {
+>> @@ -167,5 +180,42 @@
+>>  				     <&A53_3>;
+>>  	};
+>>  
+>> +	thermal-zones {
+>> +		soc_thermal {
+>> +			polling-delay = <1000>;
+>> +			polling-delay-passive = <100>;
+>> +			sustainable-power = <2500>;
+>> +
+>> +			thermal-sensors = <&scpi_sensors0 3>;
+>> +
+>> +			trips {
+>> +				threshold: trip-point@0 {
+>
+> You also need a reg= property if you have the @index thing.
+>
+
+Having looked at the examples, I don't need to have the @index for the
+trip points. I'll update in the next version.
 
 Thanks,
-Kukjin
+Punit
+
+> Best regards,
+> Liviu
+>
+>> +					temperature = <55000>;
+>> +					hysteresis = <1000>;
+>> +					type = "passive";
+>> +				};
+>> +				target: trip-point@1 {
+>> +					temperature = <65000>;
+>> +					hysteresis = <1000>;
+>> +					type = "passive";
+>> +				};
+>> +			};
+>> +
+>> +			cooling-maps {
+>> +				map0 {
+>> +					trip = <&target>;
+>> +					cooling-device = <&A53_0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+>> +					contribution = <2048>;
+>> +				};
+>> +				map1 {
+>> +					trip = <&target>;
+>> +					cooling-device = <&A57_0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+>> +					contribution = <1024>;
+>> +				};
+>> +
+>> +			};
+>> +		};
+>> +	};
+>> +
+>>  	#include "juno-base.dtsi"
+>>  };
+>> -- 
+>> 2.1.4
+>> 
