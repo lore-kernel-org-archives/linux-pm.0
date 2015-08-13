@@ -1,91 +1,100 @@
-From: Bjorn Andersson <bjorn.andersson-/MT0OVThwyLZJqsBc5GL+g@public.gmane.org>
-Subject: Re: [PATCH RFC 08/10] hwspinlock: qcom: Lock #7 is special lock,
- uses dynamic proc_id
-Date: Wed, 12 Aug 2015 21:30:36 -0700
-Message-ID: <20150813043036.GJ13472@usrtlx11787.corpusers.net>
-References: <438731339-58317-1-git-send-email-lina.iyer@linaro.org>
- <1438792366-2737-1-git-send-email-lina.iyer@linaro.org>
- <1438792366-2737-9-git-send-email-lina.iyer@linaro.org>
+From: Vaishali Thakkar <vthakkar1994@gmail.com>
+Subject: [PATCH v2] power_supply: max8998: Use devm_power_supply_register
+Date: Thu, 13 Aug 2015 10:24:41 +0530
+Message-ID: <20150813045440.GA21920@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f54.google.com ([209.85.220.54]:32999 "EHLO
+	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750713AbbHMEyr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Aug 2015 00:54:47 -0400
 Content-Disposition: inline
-In-Reply-To: <1438792366-2737-9-git-send-email-lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "agross-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org" <agross-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "msivasub-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org" <msivasub-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org" <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jeffrey Hugo <jhugo-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-On Wed 05 Aug 09:32 PDT 2015, Lina Iyer wrote:
+Use managed resource function devm_power_supply_register instead
+of power_supply_register to simplify the error path by allowing
+unregister to happen automatically on error. To be compatible with
+the change, replace various gotos by direct returns and remove
+unneeded label err.
 
-> Hwspinlocks are widely used between processors in an SoC, and also
-> between elevation levels within in the same processor.  QCOM SoC's use
-> hwspinlock to serialize entry into a low power mode when the context
-> switches from Linux to secure monitor.
-> 
-> Lock #7 has been assigned for this purpose. In order to differentiate
-> between one cpu core holding a lock while another cpu is contending for
-> the same lock, the proc id written into the lock is (128 + cpu id). This
-> makes it unique value among the cpu cores and therefore when a core
-> locks the hwspinlock, other cores would wait for the lock to be released
-> since they would have a different proc id.  This value is specific for
-> the lock #7 only.
-> 
+Also, remove max8998_battery_remove as it is now redundant.
 
-As I was thinking about this, I came to the conclusion that my argument
-that it's system configuration and not a property of the block that lock
-#7 is special is actually biting myself.
+Signed-off-by: Vaishali Thakkar <vthakkar1994@gmail.com>
+---
+Changes since v1:
+	- Make commit log more reasonable
+---
+ drivers/power/max8998_charger.c | 28 +++++++---------------------
+ 1 file changed, 7 insertions(+), 21 deletions(-)
 
-Just as #7 is system configuration, so is the fact that 1 is the lock
-value for all other locks.
+diff --git a/drivers/power/max8998_charger.c b/drivers/power/max8998_charger.c
+index 47448d4..6014df5 100644
+--- a/drivers/power/max8998_charger.c
++++ b/drivers/power/max8998_charger.c
+@@ -117,8 +117,7 @@ static int max8998_battery_probe(struct platform_device *pdev)
+ 			"EOC value not set: leave it unchanged.\n");
+ 	} else {
+ 		dev_err(max8998->dev, "Invalid EOC value\n");
+-		ret = -EINVAL;
+-		goto err;
++		return -EINVAL;
+ 	}
+ 
+ 	/* Setup Charge Restart Level */
+@@ -141,8 +140,7 @@ static int max8998_battery_probe(struct platform_device *pdev)
+ 		break;
+ 	default:
+ 		dev_err(max8998->dev, "Invalid Restart Level\n");
+-		ret = -EINVAL;
+-		goto err;
++		return -EINVAL;
+ 	}
+ 
+ 	/* Setup Charge Full Timeout */
+@@ -165,34 +163,22 @@ static int max8998_battery_probe(struct platform_device *pdev)
+ 		break;
+ 	default:
+ 		dev_err(max8998->dev, "Invalid Full Timeout value\n");
+-		ret = -EINVAL;
+-		goto err;
++		return -EINVAL;
+ 	}
+ 
+ 	psy_cfg.drv_data = max8998;
+ 
+-	max8998->battery = power_supply_register(max8998->dev,
+-						 &max8998_battery_desc,
+-						 &psy_cfg);
++	max8998->battery = devm_power_supply_register(max8998->dev,
++						      &max8998_battery_desc,
++						      &psy_cfg);
+ 	if (IS_ERR(max8998->battery)) {
+ 		ret = PTR_ERR(max8998->battery);
+ 		dev_err(max8998->dev, "failed: power supply register: %d\n",
+ 			ret);
+-		goto err;
++		return ret;
+ 	}
+ 
+ 	return 0;
+-err:
+-	return ret;
+-}
+-
+-static int max8998_battery_remove(struct platform_device *pdev)
+-{
+-	struct max8998_battery_data *max8998 = platform_get_drvdata(pdev);
+-
+-	power_supply_unregister(max8998->battery);
+-
+-	return 0;
+ }
+ 
+ static const struct platform_device_id max8998_battery_id[] = {
+-- 
+1.9.1
 
-I've been meaning to answer you, but I haven't come to a good conclusion
-in this matter. I think that both of these properties should be possible
-to express in DT, but I don't know how.
-
-
-Perhaps we should just list each lock that we expose as a subnode in DT
-with a property to indicate the lock value - with the possibility of
-indicating cpu_id.
-
-Something like:
-
-tcsr-mutex {
-	compatible = "qcom,tcsr-mutex";
-	syscon = <&tcsr_mutex_block 0 0x80>;
-
-	#hwlock-cells = <1>;
-	#address-cells = <1>;
-	#size-cells = <0>;
-
-	smem-lock@3 {
-		reg = <3>;
-		qcom,lock-value = <1>;
-	};
-
-	scm-lock@7 {
-		reg = <7>;
-		qcom,lock-value-from-cpu-id;
-		qcom,lock-raw;
-	};
-};
-
-As we don't reference most of these locks anyways I don't think this
-would still be reasonable. And if reg is an array it's quite compact.
-
-> Declare lock #7 as raw capable, so the hwspinlock framework would not
-> enfore acquiring a s/w spinlock before acquiring the hwspinlock.
-> 
-
-I'm fine with this part!
-
-
-Sorry for the extremely slow response, but this took some time to
-process...
-
-Regards,
-Bjorn
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
