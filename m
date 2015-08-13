@@ -1,38 +1,66 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFCv5 PATCH 25/46] sched: Add over-utilization/tipping point
- indicator
-Date: Thu, 13 Aug 2015 19:35:33 +0200
-Message-ID: <20150813173533.GZ19282@twins.programming.kicks-ass.net>
-References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
- <1436293469-25707-26-git-send-email-morten.rasmussen@arm.com>
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+Subject: Re: [PATCH v1 RFC] This patch repairs HTC Magician machine (PXA27x) support
+Date: Thu, 13 Aug 2015 20:01:08 +0200
+Message-ID: <87y4hfhxuj.fsf@belgarion.home>
+References: <55CBCDED.8010409@tul.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1436293469-25707-26-git-send-email-morten.rasmussen@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: mingo@redhat.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-leds-owner@vger.kernel.org>
+In-Reply-To: <55CBCDED.8010409@tul.cz> (Petr Cvek's message of "Thu, 13 Aug
+	2015 00:51:25 +0200")
+Sender: linux-leds-owner@vger.kernel.org
+To: Petr Cvek <petr.cvek@tul.cz>, Philipp Zabel <philipp.zabel@gmail.com>
+Cc: Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Samuel Ortiz <sameo@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <j.anaszewski@samsung.com>, Russell King <linux@arm.linux.org.uk>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 07, 2015 at 07:24:08PM +0100, Morten Rasmussen wrote:
-> Energy-aware scheduling is only meant to be active while the system is
-> _not_ over-utilized. That is, there are spare cycles available to shift
-> tasks around based on their actual utilization to get a more
-> energy-efficient task distribution without depriving any tasks. When
-> above the tipping point task placement is done the traditional way,
-> spreading the tasks across as many cpus as possible based on priority
-> scaled load to preserve smp_nice.
-> 
-> The over-utilization condition is conservatively chosen to indicate
-> over-utilization as soon as one cpu is fully utilized at it's highest
-> frequency. We don't consider groups as lumping usage and capacity
-> together for a group of cpus may hide the fact that one or more cpus in
-> the group are over-utilized while group-siblings are partially idle. The
-> tasks could be served better if moved to another group with completely
-> idle cpus. This is particularly problematic if some cpus have a
-> significantly reduced capacity due to RT/IRQ pressure or if the system
-> has cpus of different capacity (e.g. ARM big.LITTLE).
+Petr Cvek <petr.cvek@tul.cz> writes:
 
-I might be tired, but I'm having a very hard time deciphering this
-second paragraph.
+> Fixing original code: Problems to successful boot due to the bad LCD
+> power sequence (wrongly configured GPIO).
+>
+> Add/fix platform data and helper function for various hardware
+> (touchscreen, audio, USB device, ...).
+>
+> Add new discovered GPIOs and fix names by GPIO context.
+>
+> Add new LEDs driver.
+>
+> Signed-off-by: Petr Cvek <petr.cvek@tul.cz>
+Hi Petr,
+
+Just as Lee, I want the serie to be split per-subsystem.
+
+For the mach-pxa part, I need you to split the patch into several chunks to
+review.
+At least please split :
+ - a first patch for cleanup (identation and whitespaces)
+ - a second patch for cleanup (comments changes, debug messages)
+ - a serie of fix patches
+   - one for the power sequence
+   - one for GPIO fixes
+ - a serie of evolution patches
+   - new gpio_keys
+   - new backlight stuff
+   - one per new device declared
+   - new flash stuff
+   - etc ...
+
+Please keep in mind that in order to pick the patches, I need to split them in 3
+groups :
+ - cleanups
+ - fixes
+ - evolutions / new stuff
+Moreover I want to be able to revert one functionality (for example new power
+sequence) without reverting the whole serie.
+
+You probably know that the pxa patches need the subject prefix to be "ARM: pxa:
+magician: " in your case. Other subsystem maintainers have similar requirements
+I believe.
+
+When that's done, I'll begin the review, and Philipp will probably too as he is
+the maintainer.
+
+Cheers.
+
+--
+Robert
