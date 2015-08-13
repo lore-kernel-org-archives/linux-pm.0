@@ -1,52 +1,57 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: 3.18: lockdep problems in cpufreq
-Date: Thu, 13 Aug 2015 13:52:59 +0530
-Message-ID: <20150813082259.GR20238@linux>
-References: <20141214213655.GA11285@n2100.arm.linux.org.uk>
- <2574268.XBqpdL2VLI@vostro.rjw.lan>
- <20150811170357.GA24529@n2100.arm.linux.org.uk>
- <5160300.5D2Dvly8u9@vostro.rjw.lan>
- <20150813081744.GN7557@n2100.arm.linux.org.uk>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 2/9] PM / Domains: Remove dev->driver check for runtime PM
+Date: Thu, 13 Aug 2015 10:57:38 +0200
+Message-ID: <CAMuHMdVeffa-jgXuSjDQBKTrhgW-d87OKzs1iXX+4y-9U_AJbg@mail.gmail.com>
+References: <1438731339-58317-1-git-send-email-lina.iyer@linaro.org>
+	<1438731339-58317-3-git-send-email-lina.iyer@linaro.org>
+	<7hfv3onv5c.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f181.google.com ([209.85.192.181]:34384 "EHLO
-	mail-pd0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752243AbbHMIXE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Aug 2015 04:23:04 -0400
-Received: by pdbfa8 with SMTP id fa8so16684440pdb.1
-        for <linux-pm@vger.kernel.org>; Thu, 13 Aug 2015 01:23:03 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20150813081744.GN7557@n2100.arm.linux.org.uk>
+Received: from mail-ob0-f176.google.com ([209.85.214.176]:35171 "EHLO
+	mail-ob0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752157AbbHMI5j (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Aug 2015 04:57:39 -0400
+Received: by obbop1 with SMTP id op1so32421570obb.2
+        for <linux-pm@vger.kernel.org>; Thu, 13 Aug 2015 01:57:38 -0700 (PDT)
+In-Reply-To: <7hfv3onv5c.fsf@deeprootsystems.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Eduardo Valentin <edubezval@gmail.com>, Yadwinder Singh Brar <yadi.brar@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Kevin Hilman <khilman@kernel.org>
+Cc: Lina Iyer <lina.iyer@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>
 
-On 13-08-15, 09:17, Russell King - ARM Linux wrote:
-> That I doubt.  Eduardo has not bothered to reply at _any_ time.  I
-> have to question whether there is anyone even reading that email
-> address, or whether it's a redirect to /dev/null.  All the evidence I
-> have right now is that this Eduardo is a ficticous character.
-> 
-> I would have at least expected some complaints when I said "I've put
-> it in linux-next" but... absolutely nothing.
-> 
-> So... my only conclusion is that you're all pulling my leg that there
-> _is_ this "Eduardo" maintainer who's supposed to be taking patches for
-> this stuff.
+Hi Kevin,
 
-Haha, If that's the case then we are all in the same boat.
-Who is Eduardo ? A bot ? :)
+On Wed, Aug 12, 2015 at 9:50 PM, Kevin Hilman <khilman@kernel.org> wrote:
+> Lina Iyer <lina.iyer@linaro.org> writes:
+>
+>> Remove check for driver of a device, for runtime PM. Device may be
+>> suspended without an explicit driver. This check seems to be vestigial
+>> and incorrect in the current context.
+>
+> This one should probably have been RFC.
+>
+> For a little more context here, this was uncovered when experimenting
+> with using runtime PM for CPU devices which don't have a dev->driver.
+>
+> This check might have made sense before PM domains, but with PM domains,
+> it's entirely possible to have a simple device without a driver and the
+> PM domain handles all the necesary PM, so I think this check
+> could/should be removed.
+>
+> Thoughts?
 
-Anyway, AFAIK, he wasn't around for sometime and came back last week
-only. Even I have expected him to reply to yesterday's discussions.
+Simple devices without a driver aren't handled automatically.
+At minimum, the driver should call pm_runtime_enable(), cfr.
+drivers/bus/simple-pm-bus.c.
 
-> As I've said, I'm not bothering with this anymore, it's just far too
-> much effort to play these stupid games.  The deadlock can stay for all
-> I care.
+Gr{oetje,eeting}s,
 
-And finally I took the charge to carry it now. :)
+                        Geert
 
--- 
-viresh
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
