@@ -1,43 +1,52 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2] thermal: cpu_cooling: fix lockdep problems in
- cpu_cooling
-Date: Fri, 14 Aug 2015 11:25:56 +0530
-Message-ID: <20150814055556.GZ20238@linux>
-References: <16e7d7d811fa2b0f8dcf6cade345a5f2f3e3c36a.1439372926.git.viresh.kumar@linaro.org>
+From: Yao Yuan <yao.yuan@freescale.com>
+Subject: RE: [PATCH v2] dmaengine: fsl-edma: add PM suspend/resume support
+Date: Fri, 14 Aug 2015 06:24:48 +0000
+Message-ID: <CY1PR0301MB15628DD5CFCE2B65BF4FECB2837C0@CY1PR0301MB1562.namprd03.prod.outlook.com>
+References: <1437469005-3162-1-git-send-email-yao.yuan@freescale.com>
+ <CADRPPNQJi_x+mdQV=DEVuhCL_p6VOWcPiV3jzioeRdWgSW2w3g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f174.google.com ([209.85.192.174]:32974 "EHLO
-	mail-pd0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751255AbbHNF4G (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Aug 2015 01:56:06 -0400
-Received: by pdrh1 with SMTP id h1so27850299pdr.0
-        for <linux-pm@vger.kernel.org>; Thu, 13 Aug 2015 22:56:04 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <16e7d7d811fa2b0f8dcf6cade345a5f2f3e3c36a.1439372926.git.viresh.kumar@linaro.org>
+Received: from mail-bn1bon0130.outbound.protection.outlook.com ([157.56.111.130]:16608
+	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751255AbbHNGYv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 14 Aug 2015 02:24:51 -0400
+In-Reply-To: <CADRPPNQJi_x+mdQV=DEVuhCL_p6VOWcPiV3jzioeRdWgSW2w3g@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: edubezval@gmail.com
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Rafael Wysocki <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, Russell King <rmk+kernel@arm.linux.org.uk>, open list <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>
+To: Li Leo <LeoLi@freescale.com>
+Cc: Vinod Koul <vinod.koul@intel.com>, "stefan@agner.ch" <stefan@agner.ch>, Arnd Bergmann <arnd@arndb.de>, Dan Williams <dan.j.williams@intel.com>, "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 12-08-15, 15:22, Viresh Kumar wrote:
-> From: Russell King <rmk+kernel@arm.linux.org.uk>
-> Fixes: 2dcd851fe4b4 ("thermal: cpu_cooling: Update always cpufreq policy with
-> Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
-> 
-> Hi Eduardo/Zhang,
-> 
-> This is 4.2-rc material, please apply soon.
-
-Hey,
-
-Please apply this one and drop
-
-8ad61f934e9e ("thermal: cpu_cooling: fix lockdep problems in
-cpu_cooling")
-
--- 
-viresh
+SGkgTGVvLA0KDQpUaGFua3MgZm9yIHlvdXIgcmV2aWV3Lg0KQWJvdXQgdGhvc2UgdHdvIG1ldGhv
+ZHMgZm9yIERNQSBzdXNwZW5kIHRoYXQgeW91IGhhdmUgbWVudGlvbmVkLiBXZSBoYXZlIGEgbG90
+IG9mIHRoZSBkaXNjdXNzaW9ucyBpbiBvdGhlciBETUEgZHJpdmVyIGxpa2UgRE1BIGZvciBGcmVl
+c2NhbGUgUG93ZXJQQy4NCg0KRmluYWxseSwgd2UgdGhpbmsgdGhlIGRldmljZSB3aGljaCB1c2Vk
+IHRoZSBETUEgdHJhbnNtaXNzaW9uIHNlcnZpY2Ugc2hvdWxkIGNhbmNlbCB0aGUgdHJhbnNtaXNz
+aW9uIHNlcnZpY2UgaW4gaXRzIHN1c3BlbmQuIA0KU28gRE1BIGluIHN1c3BlbmQgc2hvdWxkIGJl
+IGlkbGUuDQoNCk9uY2UgdGhlIERNQSBpbiBsYXRlX3N1c3BlbmQgaXMgbm90IGJlIGlkbGUsIHdl
+IHRoaW5rIHNvbWUgZHJpdmVyIGhhdmVuJ3QgY2FuY2VsZWQgdGhlIERNQSB0cmFuc21pc3Npb24u
+IFNvIG1heWJlIHNvbWV0aGluZyBpcyBlcnJvciB3aGVuIG90aGVyIGRyaXZlciBpbiBzdXNwZW5k
+Lg0KDQpJbiB0aGUgY2FzZSwgd2Ugc2hvdWxkIHJldHVybiBmYWlsZWQgdG8gc3RvcCBQTS4gRE1B
+IHNob3VsZCBub3QgbWFrZSBhIGNob2ljZSBmb3Igb3RoZXIgZHJpdmVycyh3aGljaCB1c2VkIERN
+QSkgdG8gZm9yY2Ugc3RvcCBETUEgdHJhbnNtaXNzaW9uLg0KDQpUaGFua3MuDQoNCkJlc3QgUmVn
+YXJkcywNCll1YW4gWWFvDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTog
+cGt1Lmxlb0BnbWFpbC5jb20gW21haWx0bzpwa3UubGVvQGdtYWlsLmNvbV0gT24gQmVoYWxmIE9m
+IExpIFlhbmcNCj4gU2VudDogRnJpZGF5LCBBdWd1c3QgMTQsIDIwMTUgNDo1OCBBTQ0KPiBUbzog
+WXVhbiBZYW8tQjQ2NjgzDQo+IENjOiBWaW5vZCBLb3VsOyBzdGVmYW5AYWduZXIuY2g7IEFybmQg
+QmVyZ21hbm47IERhbiBXaWxsaWFtczsNCj4gZG1hZW5naW5lQHZnZXIua2VybmVsLm9yZzsgbGtt
+bDsgbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnOyBsaW51eC0NCj4gcG1Admdl
+ci5rZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjJdIGRtYWVuZ2luZTogZnNsLWVk
+bWE6IGFkZCBQTSBzdXNwZW5kL3Jlc3VtZQ0KPiBzdXBwb3J0DQo+IA0KPiBPbiBUdWUsIEp1bCAy
+MSwgMjAxNSBhdCAzOjU2IEFNLCBZdWFuIFlhbyA8eWFvLnl1YW5AZnJlZXNjYWxlLmNvbT4gd3Jv
+dGU6DQo+ID4gVGhpcyBhZGQgcG93ZXIgbWFuYWdlbWVudCBzdXNwZW5kL3Jlc3VtZSBzdXBwb3J0
+IGZvciB0aGUgZnNsLWVkbWENCj4gPiBkcml2ZXIuDQo+ID4NCj4gPiBlRE1BIGFjdGVkIGFzIGEg
+YmFzaWMgZnVuY3Rpb24gdXNlZCBieSBvdGhlcnMuIFdoYXQgaXQgbmVlZHMgdG8gZG8gaXMNCj4g
+PiB0aGUgdHdvIHN0ZXBzIGJlbG93IHRvIHN1cHBvcnQgcG93ZXIgbWFuYWdlbWVudC4NCj4gPg0K
+PiA+IEluIGZzbF9lZG1hX3N1c3BlbmRfbGF0ZToNCj4gPiBDaGVjayB3aGV0aGVyIHRoZSBETUEg
+Y2hhbiBpcyBpZGxlIGFuZCBpZiBpdCBpcyBub3QgaWRsZSwgc3RvcCBQTQ0KPiA+IG9wZXJhdGlv
+bi4NCj4gDQo+IFlvdSBzaG91bGQgdHJ5IHRvIHF1aWVzY2UgdGhlIGRldmljZSBvbiBzdXNwZW5k
+IGluc3RlYWQgb2YgZGVwZW5kaW5nIG9uIGl0c2VsZg0KPiB0byBiZSBoYXBwZW4gaW4gaWRsZSBh
+bmQgZmFpbGluZyBpZiBpdCBpcyBub3QuDQo+IA0KPiBSZWdhcmRzLA0KPiBMZW8NCg==
