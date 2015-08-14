@@ -1,37 +1,57 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH v8 10/13] arm: dts: qcom: Add #power-domain-cells property
-Date: Thu, 13 Aug 2015 18:44:47 -0700
-Message-ID: <55CD480F.8060502@codeaurora.org>
-References: <1438857474-20262-1-git-send-email-rnayak@codeaurora.org> <1438857474-20262-11-git-send-email-rnayak@codeaurora.org> <20150811065335.GB2839@codeaurora.org> <55CC1BF7.1040406@codeaurora.org>
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: Re: [PATCH 5/9] clk: qcom: gcc-msm8960: add child devices support.
+Date: Fri, 14 Aug 2015 08:39:06 +0530
+Message-ID: <55CD5BD2.3070907@codeaurora.org>
+References: <1436348838-22671-1-git-send-email-rnayak@codeaurora.org> <1436348838-22671-6-git-send-email-rnayak@codeaurora.org> <20150811224902.GO2839@codeaurora.org> <55CB0B26.2020105@linaro.org> <55CC1CFE.7000005@codeaurora.org> <20150814004206.GU26614@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <55CC1BF7.1040406@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Rajendra Nayak <rnayak@codeaurora.org>
-Cc: mturquette@baylibre.com, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, georgi.djakov@linaro.org, svarbanov@mm-sol.com, srinivas.kandagatla@linaro.org, sviau@codeaurora.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:50971 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751993AbbHNDJM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Aug 2015 23:09:12 -0400
+In-Reply-To: <20150814004206.GU26614@codeaurora.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, linux-arm-msm@vger.kernel.org, lina.iyer@linaro.org, nrajan@codeaurora.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
-On 08/12/2015 09:24 PM, Rajendra Nayak wrote:
-> On 08/11/2015 12:23 PM, Stephen Boyd wrote:
->> On 08/06, Rajendra Nayak wrote:
->>> msm8974 has gcc and mmcc nodes, and apq8084 has a gcc node which
->>> implement gdsc powerdomains. Add the #power-domain-cells property
->>> to them.
->>>
->>> Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
->>> ---
+[]..
+>>>> Also, I don't like having a subnode in DT. Why can't we use the
+>>>> same node as the GCC node and create a virtual child device here
+>>>> for tsens? We can assign the same of_node that this platform
+>>>> device has so that DT keeps working correctly.
 >>
->> This needs to go through  Andy's tree and arm-soc. Also, I don't
->> see an update for the binding anywhere. Please update the binding
->> too.
+>> So the current driver looks up data based on compatible strings.
 >
-> Will do, I hope you mean update the bindings in qcom,mmcc.txt and
-> qcom,gcc.txt?
+> The tsens device is always the same piece of hardware. The only
 
-Yes.
+Well, not always. The one in 8960 does need additional initializations,
+requires you to save/restore context as it can be powered off
+not being in an always powered on domain etc.
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+> thing that's changing is the qfprom data and the number of
+> sensors. So we should be looking at the qfprom compatible string
+
+How? Tsens uses nvmem framework apis to read the qfprom atleast
+in this series.
+
+> to figure out how to interpret the qfprom data which would
+> include the number of sensors and how the data is encoded.
+>
+>> So you suggesting to create a virtual child device for gcc and
+>> associate the gcc DT node to it? (And have the tsens compatible
+>> mentioned as part of the gcc DT node?)
+>
+> No. The driver should work just fine without having to
+> interrogate the device's compatible string. If we still need the
+> compatible check for some reason, then we can always match based
+> on qcom,gcc-msm8960, qcom,gcc-apq8064, etc. But I don't see why
+
+Thats not quite possible I guess. 2 drivers (gcc and tsens) matching
+the same compatibles? Will it not just depend on which ends up being
+the first match?
+
+> we need to do that when we should be looking at what type of
+> qfprom is connected so we can correctly parse the data.
