@@ -1,106 +1,169 @@
-From: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH RFC 08/10] hwspinlock: qcom: Lock #7 is special lock,
- uses dynamic proc_id
-Date: Fri, 14 Aug 2015 08:12:22 -0600
-Message-ID: <20150814141222.GC86880@linaro.org>
-References: <438731339-58317-1-git-send-email-lina.iyer@linaro.org>
- <1438792366-2737-1-git-send-email-lina.iyer@linaro.org>
- <1438792366-2737-9-git-send-email-lina.iyer@linaro.org>
- <20150813043036.GJ13472@usrtlx11787.corpusers.net>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v2 1/2] ARM: common: Introduce PM domains for
+ CPUs/clusters
+Date: Fri, 14 Aug 2015 08:38:56 -0600
+Message-ID: <20150814143856.GD86880@linaro.org>
+References: <CAL_JsqLhHy5gO=usm1HLf8h6iz_5FguCDo-Qz2Km+XEwaCODUA@mail.gmail.com>
+ <1439406024-41893-1-git-send-email-lina.iyer@linaro.org>
+ <CAL_JsqLcSs79bnj4ELN0uiwJ6gxt46PghxvuGQ7prkq-4gLKhg@mail.gmail.com>
+ <20150813201248.GB84868@linaro.org>
+ <CAL_Jsq+-9vS4_KRQKAsQnHXBMfubkRtnWwuBHSrD166trmTVSw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:32769 "EHLO
+	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751429AbbHNOi3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Aug 2015 10:38:29 -0400
+Received: by pabyb7 with SMTP id yb7so61090071pab.0
+        for <linux-pm@vger.kernel.org>; Fri, 14 Aug 2015 07:38:28 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <20150813043036.GJ13472-P9SbAA3LsXe39TS3lRcy0mP6iJigPa5YXqFh9Ls21Oc@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Bjorn Andersson <bjorn.andersson-/MT0OVThwyLZJqsBc5GL+g@public.gmane.org>
-Cc: "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "agross-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org" <agross-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "msivasub-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org" <msivasub-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org" <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jeffrey Hugo <jhugo-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+In-Reply-To: <CAL_Jsq+-9vS4_KRQKAsQnHXBMfubkRtnWwuBHSrD166trmTVSw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rob Herring <robherring2@gmail.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Krzysztof =?utf-8?Q?Koz=C5=82owski?= <k.kozlowski@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 
-On Wed, Aug 12 2015 at 22:30 -0600, Bjorn Andersson wrote:
->On Wed 05 Aug 09:32 PDT 2015, Lina Iyer wrote:
+On Thu, Aug 13 2015 at 16:02 -0600, Rob Herring wrote:
+>On Thu, Aug 13, 2015 at 3:12 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
+>> On Thu, Aug 13 2015 at 11:29 -0600, Rob Herring wrote:
+>>>
+>>> On Wed, Aug 12, 2015 at 2:00 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
+>>>>
+>>>> Define and add Generic PM domains (genpd) for CPU clusters. Many new
+>>>> SoCs group CPUs as clusters. Clusters share common resources like GIC,
+>>>> power rail, caches, VFP, Coresight etc. When all CPUs in the cluster are
+>>>> idle, these shared resources may also be put in their idle state.
+>>>>
+>>>> The idle time between the last CPU entering idle and a CPU resuming
+>>>> execution is an opportunity for these shared resources to be powered
+>>>> down. Generic PM domain provides a framework for defining such power
+>>>> domains and attach devices to the domain. When the devices in the domain
+>>>> are idle at runtime, the domain would also be suspended and resumed
+>>>> before the first of the devices resume execution.
+>>>>
+>>>> We define a generic PM domain for each cluster and attach CPU devices in
+>>>> the cluster to that PM domain. The DT definitions for the SoC describe
+>>>> this relationship. Genpd callbacks for power_on and power_off can then
+>>>> be used to power up/down the shared resources for the domain.
+>>>>
+>>>> Cc: Stephen Boyd <sboyd@codeaurora.org>
+>>>> Cc: Kevin Hilman <khilman@linaro.org>
+>>>> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+>>>> Cc: Catalin Marinas <catalin.marinas@arm.com>
+>>>> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+>>>> Cc: Mark Rutland <mark.rutland@arm.com>
+>>>> Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+>>>> Signed-off-by: Kevin Hilman <khilman@linaro.org>
+>>>> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+>>>> ---
+>>>> Changes since v1:
+>>>>
+>>>> - Function name changes and split out common code
+>>>> - Use cpu,pd for now. Removed references to ARM. Open to recommendations.
+>>>> - Still located in arch/arm/common/. May move to a more appropriate
+>>>> location.
+>>>> - Platform drivers can directly call of_init_cpu_domain() without using
+>>>>   compatibles.
+>>>> - Now maintains a list of CPU PM domains.
+>>>
+>>>
+>>> [...]
+>>>
+>>>> +static int __init of_pm_domain_attach_cpus(void)
+>>>> +{
+>>>> +       int cpuid, ret;
+>>>> +
+>>>> +       /* Find any CPU nodes with a phandle to this power domain */
+>>>> +       for_each_possible_cpu(cpuid) {
+>>>> +               struct device *cpu_dev;
+>>>> +               struct of_phandle_args pd_args;
+>>>> +
+>>>> +               cpu_dev = get_cpu_device(cpuid);
+>>>> +               if (!cpu_dev) {
+>>>> +                       pr_warn("%s: Unable to get device for CPU%d\n",
+>>>> +                                       __func__, cpuid);
+>>>> +                       return -ENODEV;
+>>>> +               }
+>>>> +
+>>>> +               /*
+>>>> +                * We are only interested in CPUs that can be attached to
+>>>> +                * PM domains that are cpu,pd compatible.
+>>>> +                */
+>>>
+>>>
+>>> Under what conditions would the power domain for a cpu not be cpu,pd
+>>> compatible?
+>>>
+>> Mostly never. But I dont want to assume and attach a CPU to its domain
+>> that I am not concerned with.
 >
->> Hwspinlocks are widely used between processors in an SoC, and also
->> between elevation levels within in the same processor.  QCOM SoC's use
->> hwspinlock to serialize entry into a low power mode when the context
->> switches from Linux to secure monitor.
+>Which is why the power controller driver should tell you.
+>
+>>> Why can't the driver handling the power domain register with gen_pd
+>>> and the cpu_pd as the driver is going to be aware of which domains are
+>>> for cpus.
+>
+I probably dont need that detail, the CPUs have phandle the domain, so
+we know which CPUs are in the domain. I just need to know which domains
+we should concern ourself with.
+
+That would mean -
+Platform drivers would explictly need to register the domains their CPU
+domains. I was hoping to reduce that effort to register domains and
+attach CPUs to their respective domains. The platform drivers need not
+do anything unless they have SoC specific configuration to power down
+the domain, in which case they would use the CPU_PD_METHOD_OF_DECLARE()
+macro to register their platform callbacks. I thought it would be nice,
+the platform specify the hardware relation in DT and drivers dont have
+to explictly call out the domains.
+
 >>
->> Lock #7 has been assigned for this purpose. In order to differentiate
->> between one cpu core holding a lock while another cpu is contending for
->> the same lock, the proc id written into the lock is (128 + cpu id). This
->> makes it unique value among the cpu cores and therefore when a core
->> locks the hwspinlock, other cores would wait for the lock to be released
->> since they would have a different proc id.  This value is specific for
->> the lock #7 only.
+>> They could and like Renesas they would. They could have an intricate
+>> hierarchy of domains that they may want to deal with in their platform
+>> drivers. Platforms could define the CPU devices as IRQ-safe and attach
+>> it to their domains. Ensure the reference count of the online and
+>> running CPUs are correct and they are good to go. They also would attach
+>> the CPU devices to the domain and everything would work as they would
+>> here. Its just repeated code across platforms that we are trying to
+>> avoid.
+>
+>I agree that we want to have core code doing all that setup, But that
+>has nothing to do with needing to have a DT property. The driver just
+>needs to tell you the list of cpu power domains and the associated
+>cpus they want the core to manage. Then it is up to you to do the rest
+>of the setup.
+>
+>So I really don't think we need a DT binding here.
+>
+Okay. I agree, that it is a far fetched idea. I will remove it for now.
+May be when there are more common functionality, we can think about it.
+
+>>> While there could be h/w such that all power domains within
+>>> a chip have a nice uniform programming model, I'd guess that is the
+>>> exception, not the rule. First, chips I have worked on were not that
+>>> way. CPU related and peripheral related domains are handled quite
+>>> differently.
 >>
->
->As I was thinking about this, I came to the conclusion that my argument
->that it's system configuration and not a property of the block that lock
->#7 is special is actually biting myself.
->
->Just as #7 is system configuration, so is the fact that 1 is the lock
->value for all other locks.
->
->I've been meaning to answer you, but I haven't come to a good conclusion
->in this matter. I think that both of these properties should be possible
->to express in DT, but I don't know how.
->
-I thought about that. These are s/w imposed behavior. As a far as the
-h/w is concerned, you could just write a non-zero value and the lock is
-considered acquired. So placing that in DT may not be appropriate.
 
+>>> Second, often the actions on the CPU power domains don't
+>>> take effect until a WFI, so you end up with a different programming
+>>> sequence.
+>>>
+>> How so? The last core going down (in this case, when the domain is
+>> suspended the last core is the last device that does a _put() on the
+>> domain) would determine and perform the power domain's programming
+>> sequence, in the context of the last CPU. A sequence that would only be
+>> effected in hardware when the the CPU executes WFI. I dont see why it
+>> would be any different than how it is today.
 >
->Perhaps we should just list each lock that we expose as a subnode in DT
->with a property to indicate the lock value - with the possibility of
->indicating cpu_id.
+>I just mean that for a peripheral (e.g a SATA controller), you simply
+>quiesce the device and driver and shut off power. With a cpu or cpu
+>related component, you can't really shut it off until you stop
+>running. So cpu domains are special.
 >
->Something like:
->
->tcsr-mutex {
->	compatible = "qcom,tcsr-mutex";
->	syscon = <&tcsr_mutex_block 0 0x80>;
->
->	#hwlock-cells = <1>;
->	#address-cells = <1>;
->	#size-cells = <0>;
->
->	smem-lock@3 {
->		reg = <3>;
->		qcom,lock-value = <1>;
->	};
->
->	scm-lock@7 {
->		reg = <7>;
->		qcom,lock-value-from-cpu-id;
->		qcom,lock-raw;
->	};
->};
->
->As we don't reference most of these locks anyways I don't think this
->would still be reasonable. And if reg is an array it's quite compact.
->
-But, looking at the DT, its not evident what lock-value-from-cpu-id,
-would mean.  It is an implementation detail of Linux (as a result of
-firmware). May be better to just hide it in the hwspinlock driver.
+Makes sense.
 
-I am not sure about lock-raw, but I would think its not QCOM specific.
-Imagine the case, when hwspinlock framework does not s/w spinlock around
-the hwspinlock, we wouldnt have this property. The reason why we
-spinlock around the hwspinlock is because we dont have a good way to
-generate a unique value for the hwspinlock, so multiple threads
-acquiring the same locks could safely be assured that they have acquired
-the lock. While convenient and probably more effecient to just have s/w
-spinlocks around the hwspinlock, the problem here is it is mandated
-across all locks.
+Thanks Rob.
 
-To me it seems OK to explicity call out lock #7 as unique entity in the
-bank that is compatible with a raw hwspinlock in the DT. But the value
-that lock #7 uses is an implementation detail and should rest wth the
-drivers.
-
-Thanks,
-Lina
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- Lina
