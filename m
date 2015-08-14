@@ -1,107 +1,95 @@
-From: Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH v2 10/10] arm64: dts: Create SoC thermal zone for Juno
-Date: Fri, 14 Aug 2015 13:44:31 +0100
-Message-ID: <9hhlhdeghu8.fsf@e105922-lin.cambridge.arm.com>
-References: <1438615378-14241-1-git-send-email-punit.agrawal@arm.com>
-	<1438615378-14241-11-git-send-email-punit.agrawal@arm.com>
-	<20150812155500.GW20890@e106497-lin.cambridge.arm.com>
-	<9hh1tf7i7oi.fsf@e105922-lin.cambridge.arm.com>
-	<9hhsi7mgi44.fsf@e105922-lin.cambridge.arm.com>
+From: Morten Rasmussen <morten.rasmussen@arm.com>
+Subject: Re: [RFCv5 PATCH 25/46] sched: Add over-utilization/tipping point
+ indicator
+Date: Fri, 14 Aug 2015 14:02:48 +0100
+Message-ID: <20150814130247.GD29326@e105550-lin.cambridge.arm.com>
+References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
+ <1436293469-25707-26-git-send-email-morten.rasmussen@arm.com>
+ <20150813173533.GZ19282@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <9hhsi7mgi44.fsf-Z9gB6HwUD+TZROr8t4l/smS4ubULX0JqMm0uRHvK7Nw@public.gmane.org> (Punit Agrawal's
-	message of "Fri, 14 Aug 2015 13:38:35 +0100")
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Liviu Dudau <Liviu.Dudau-5wv7dgnIgG8@public.gmane.org>, "linux-pm@vger.kernel.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "lm-sensors@lm-sensors.org" <lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org>, "linux-kernel@vger.kernel.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree@vger.kernel.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <Mark.Rutland-5wv7dgnIgG8@public.gmane.org>, Sudeep Holla <Sudeep.Holla-5wv7dgnIgG8@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:38220 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751856AbbHNM71 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 14 Aug 2015 08:59:27 -0400
+Content-Disposition: inline
+In-Reply-To: <20150813173533.GZ19282@twins.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: mingo@redhat.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Apologies for the duplicate, I accidentally Hit send before I finished
-the reply.
+On Thu, Aug 13, 2015 at 07:35:33PM +0200, Peter Zijlstra wrote:
+> On Tue, Jul 07, 2015 at 07:24:08PM +0100, Morten Rasmussen wrote:
+> > Energy-aware scheduling is only meant to be active while the system is
+> > _not_ over-utilized. That is, there are spare cycles available to shift
+> > tasks around based on their actual utilization to get a more
+> > energy-efficient task distribution without depriving any tasks. When
+> > above the tipping point task placement is done the traditional way,
+> > spreading the tasks across as many cpus as possible based on priority
+> > scaled load to preserve smp_nice.
+> > 
+> > The over-utilization condition is conservatively chosen to indicate
+> > over-utilization as soon as one cpu is fully utilized at it's highest
+> > frequency. We don't consider groups as lumping usage and capacity
+> > together for a group of cpus may hide the fact that one or more cpus in
+> > the group are over-utilized while group-siblings are partially idle. The
+> > tasks could be served better if moved to another group with completely
+> > idle cpus. This is particularly problematic if some cpus have a
+> > significantly reduced capacity due to RT/IRQ pressure or if the system
+> > has cpus of different capacity (e.g. ARM big.LITTLE).
+> 
+> I might be tired, but I'm having a very hard time deciphering this
+> second paragraph.
 
-Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org> writes:
+I can see why, let me try again :-)
 
-> [ adding Eduardo, Rui for their take on OF-thermal bindings ]
->
-> Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org> writes:
->
->> Hi Liviu,
->>
->> Thanks for having a look.
->>
->> Liviu Dudau <Liviu.Dudau-5wv7dgnIgG8@public.gmane.org> writes:
->>
->>> On Mon, Aug 03, 2015 at 04:22:58PM +0100, Punit Agrawal wrote:
->>>> Setup a thermal zone driven by the SoC temperature sensor on Juno
->>>> r0. Create passive trip points and bind them to cpufreq cooling
->>>> devices that support the power extensions.
->>>
->>> Hi Punit,
->>>
->>>> 
->>>> Signed-off-by: Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
->>>> Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
->>>> Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
->>>> Cc: Liviu Dudau <liviu.dudau-5wv7dgnIgG8@public.gmane.org>
->>>> Cc: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>
->>>> ---
->>>>  arch/arm64/boot/dts/arm/juno.dts | 50 ++++++++++++++++++++++++++++++++++++++++
->>>>  1 file changed, 50 insertions(+)
->>>> 
->>>> diff --git a/arch/arm64/boot/dts/arm/juno.dts b/arch/arm64/boot/dts/arm/juno.dts
->>>> index d2e67f3..664961c 100644
->>>> --- a/arch/arm64/boot/dts/arm/juno.dts
->>>> +++ b/arch/arm64/boot/dts/arm/juno.dts
->>>> @@ -9,6 +9,7 @@
->>>>  /dts-v1/;
->>>>  
->>>>  #include <dt-bindings/interrupt-controller/arm-gic.h>
->>>> +#include <dt-bindings/thermal/thermal.h>
->>>>  
->>>>  / {
->>>>  	model = "ARM Juno development board (r0)";
->>>> @@ -90,6 +91,8 @@
->>>>  			next-level-cache = <&A57_L2>;
->>>>  			clocks = <&scpi_dvfs 0>;
->>>>  			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
->>>> +			#cooling-cells = <2>;
->>>> +			dynamic-power-coefficient = <530>;
->>>
->>> The Documentation/devicetree/bindings/thermal/thermal.txt document describes two additional
->>> required properties, cooling-min-state and cooling-max-state which are missing here.
->>>
->>
->> The bindings do suggest that the cooling-*-state are required but I
->> couldn't find any code making use of this property.
->>
->> I'll send a patch with the next version making those properties
->> optional.
->>
->
-> On second thoughts...
->
-> The question about cooling-*-state has come up in another thread as
-> well [0]. I'll re-iterate the question for the thermal maintainers to
-> clarify.
->
-> The cooling-{max,min}-state properties are marked mandatory in the
-> bindings but aren't used in the code anywhere. Can we drop those
-> properties from the binding documentation? Or at the least, make them optional?
->
+It is essentially about when do we make balancing decisions based on
+load_avg and util_avg (using the new names in Yuyang's rewrite). As you
+mentioned in another thread recently, we want to use util_avg until the
+system is over-utilized and then switch to load_avg. We need to define
+the conditions that determine the switch.
 
-Let me know your preferred approach. I can include a fix in the next version.
+The util_avg for each cpu converges towards 100% (1024) regardless of
+how many task additional task we may put on it. If we define
+over-utilized as being something like:
 
-[0] http://thread.gmane.org/gmane.linux.ports.ppc.embedded/84512/focus=63339
+sum_{cpus}(rq::cfs::avg::util_avg) + margin > sum_{cpus}(rq::capacity)
 
-> [...]
->
->
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
->> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+some individual cpus may be over-utilized running multiple tasks even
+when the above condition is false. That should be okay as long as we try
+to spread the tasks out to avoid per-cpu over-utilization as much as
+possible and if all tasks have the _same_ priority. If the latter isn't
+true, we have to consider priority to preserve smp_nice.
+
+For example, we could have n_cpus nice=-10 util_avg=55% tasks and
+n_cpus/2 nice=0 util_avg=60%. Balancing based on util_avg we are likely
+to end up with nice=-10 sharing cpus and nice=0 getting their own as we
+1.5*n_cpus tasks in total and 55%+55% is less over-utilized than 55%+60%
+for those cpus that have to be shared. The system utilization is only
+85% of the system capacity, but we are breaking smp_nice.
+
+To be sure not to break smp_nice, we have defined over-utilization as
+when:
+
+cpu_rq(any)::cfs::avg::util_avg + margin > cpu_rq(any)::capacity
+
+is true for any cpu in the system. IOW, as soon as one cpu is (nearly)
+100% utilized, we switch to load_avg to factor in priority.
+
+Now with this definition, we can skip periodic load-balance as no cpu
+has an always-running task when the system is not over-utilized. All
+tasks will be periodic and we can balance them at wake-up. This
+conservative condition does however mean that some scenarios that could
+benefit from energy-aware decisions even if one cpu is fully utilized
+would not get those benefits.
+
+For system where some cpus might have reduced capacity on some cpus
+(RT-pressure and/or big.LITTLE), we want periodic load-balance checks as
+soon a just a single cpu is fully utilized as it might one of those with
+reduced capacity and in that case we want to migrate it.
+
+I haven't found any reasonably easy-to-track conditions that would work
+better. Suggestions are very welcome.
+
