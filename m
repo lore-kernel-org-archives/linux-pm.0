@@ -1,148 +1,93 @@
-From: Rob Herring <robherring2@gmail.com>
-Subject: Re: [PATCH v2 1/2] ARM: common: Introduce PM domains for CPUs/clusters
-Date: Thu, 13 Aug 2015 17:01:47 -0500
-Message-ID: <CAL_Jsq+-9vS4_KRQKAsQnHXBMfubkRtnWwuBHSrD166trmTVSw@mail.gmail.com>
-References: <CAL_JsqLhHy5gO=usm1HLf8h6iz_5FguCDo-Qz2Km+XEwaCODUA@mail.gmail.com>
- <1439406024-41893-1-git-send-email-lina.iyer@linaro.org> <CAL_JsqLcSs79bnj4ELN0uiwJ6gxt46PghxvuGQ7prkq-4gLKhg@mail.gmail.com>
- <20150813201248.GB84868@linaro.org>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH 5/9] clk: qcom: gcc-msm8960: add child devices support.
+Date: Thu, 13 Aug 2015 17:42:06 -0700
+Message-ID: <20150814004206.GU26614@codeaurora.org>
+References: <1436348838-22671-1-git-send-email-rnayak@codeaurora.org>
+ <1436348838-22671-6-git-send-email-rnayak@codeaurora.org>
+ <20150811224902.GO2839@codeaurora.org>
+ <55CB0B26.2020105@linaro.org>
+ <55CC1CFE.7000005@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f176.google.com ([209.85.160.176]:34523 "EHLO
-	mail-yk0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753216AbbHMWCI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Aug 2015 18:02:08 -0400
-Received: by ykdt205 with SMTP id t205so54002217ykd.1
-        for <linux-pm@vger.kernel.org>; Thu, 13 Aug 2015 15:02:07 -0700 (PDT)
-In-Reply-To: <20150813201248.GB84868@linaro.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:38337 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753255AbbHNAmI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 13 Aug 2015 20:42:08 -0400
+Content-Disposition: inline
+In-Reply-To: <55CC1CFE.7000005@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+To: Rajendra Nayak <rnayak@codeaurora.org>
+Cc: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, linux-arm-msm@vger.kernel.org, lina.iyer@linaro.org, nrajan@codeaurora.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
-On Thu, Aug 13, 2015 at 3:12 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
-> On Thu, Aug 13 2015 at 11:29 -0600, Rob Herring wrote:
->>
->> On Wed, Aug 12, 2015 at 2:00 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
->>>
->>> Define and add Generic PM domains (genpd) for CPU clusters. Many new
->>> SoCs group CPUs as clusters. Clusters share common resources like GIC,
->>> power rail, caches, VFP, Coresight etc. When all CPUs in the cluster are
->>> idle, these shared resources may also be put in their idle state.
->>>
->>> The idle time between the last CPU entering idle and a CPU resuming
->>> execution is an opportunity for these shared resources to be powered
->>> down. Generic PM domain provides a framework for defining such power
->>> domains and attach devices to the domain. When the devices in the domain
->>> are idle at runtime, the domain would also be suspended and resumed
->>> before the first of the devices resume execution.
->>>
->>> We define a generic PM domain for each cluster and attach CPU devices in
->>> the cluster to that PM domain. The DT definitions for the SoC describe
->>> this relationship. Genpd callbacks for power_on and power_off can then
->>> be used to power up/down the shared resources for the domain.
->>>
->>> Cc: Stephen Boyd <sboyd@codeaurora.org>
->>> Cc: Kevin Hilman <khilman@linaro.org>
->>> Cc: Ulf Hansson <ulf.hansson@linaro.org>
->>> Cc: Catalin Marinas <catalin.marinas@arm.com>
->>> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
->>> Cc: Mark Rutland <mark.rutland@arm.com>
->>> Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
->>> Signed-off-by: Kevin Hilman <khilman@linaro.org>
->>> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
->>> ---
->>> Changes since v1:
->>>
->>> - Function name changes and split out common code
->>> - Use cpu,pd for now. Removed references to ARM. Open to recommendations.
->>> - Still located in arch/arm/common/. May move to a more appropriate
->>> location.
->>> - Platform drivers can directly call of_init_cpu_domain() without using
->>>   compatibles.
->>> - Now maintains a list of CPU PM domains.
->>
->>
->> [...]
->>
->>> +static int __init of_pm_domain_attach_cpus(void)
->>> +{
->>> +       int cpuid, ret;
->>> +
->>> +       /* Find any CPU nodes with a phandle to this power domain */
->>> +       for_each_possible_cpu(cpuid) {
->>> +               struct device *cpu_dev;
->>> +               struct of_phandle_args pd_args;
->>> +
->>> +               cpu_dev = get_cpu_device(cpuid);
->>> +               if (!cpu_dev) {
->>> +                       pr_warn("%s: Unable to get device for CPU%d\n",
->>> +                                       __func__, cpuid);
->>> +                       return -ENODEV;
->>> +               }
->>> +
->>> +               /*
->>> +                * We are only interested in CPUs that can be attached to
->>> +                * PM domains that are cpu,pd compatible.
->>> +                */
->>
->>
->> Under what conditions would the power domain for a cpu not be cpu,pd
->> compatible?
->>
-> Mostly never. But I dont want to assume and attach a CPU to its domain
-> that I am not concerned with.
+On 08/13, Rajendra Nayak wrote:
+> >On 11/08/15 23:49, Stephen Boyd wrote:
+> >>On 07/08, Rajendra Nayak wrote:
+> >>>diff --git a/drivers/clk/qcom/gcc-msm8960.c
+> >>>b/drivers/clk/qcom/gcc-msm8960.c
+> >>>index eb6a4f9..2c80d03 100644
+> >>>--- a/drivers/clk/qcom/gcc-msm8960.c
+> >>>+++ b/drivers/clk/qcom/gcc-msm8960.c
+> >>>@@ -15,6 +15,7 @@
+> >>>  #include <linux/bitops.h>
+> >>>  #include <linux/err.h>
+> >>>  #include <linux/platform_device.h>
+> >>>+#include <linux/of_platform.h>
+> >>>  #include <linux/module.h>
+> >>>  #include <linux/of.h>
+> >>>  #include <linux/of_device.h>
+> >>>@@ -3520,7 +3521,8 @@ static int gcc_msm8960_probe(struct
+> >>>platform_device *pdev)
+> >>>      if (IS_ERR(clk))
+> >>>          return PTR_ERR(clk);
+> >>>
+> >>>-    return qcom_cc_probe(pdev, match->data);
+> >>>+    qcom_cc_probe(pdev, match->data);
+> >>>+    return of_platform_populate(pdev->dev.of_node, NULL, NULL,
+> >>>&pdev->dev);
+> >>
+> >>We just lost the error code from qcom_cc_probe()...
+> >>
+> >I think Rajendra picked up the wrong patch for this series, I did submit
+> >a v2 (https://patches.linaro.org/44033/) with the above fixed.
+> 
+> ah, sorry about that.
+> 
+> >>Also, I don't like having a subnode in DT. Why can't we use the
+> >>same node as the GCC node and create a virtual child device here
+> >>for tsens? We can assign the same of_node that this platform
+> >>device has so that DT keeps working correctly.
+> 
+> So the current driver looks up data based on compatible strings.
 
-Which is why the power controller driver should tell you.
+The tsens device is always the same piece of hardware. The only
+thing that's changing is the qfprom data and the number of
+sensors. So we should be looking at the qfprom compatible string
+to figure out how to interpret the qfprom data which would
+include the number of sensors and how the data is encoded.
 
->> Why can't the driver handling the power domain register with gen_pd
->> and the cpu_pd as the driver is going to be aware of which domains are
->> for cpus.
->
-> They could and like Renesas they would. They could have an intricate
-> hierarchy of domains that they may want to deal with in their platform
-> drivers. Platforms could define the CPU devices as IRQ-safe and attach
-> it to their domains. Ensure the reference count of the online and
-> running CPUs are correct and they are good to go. They also would attach
-> the CPU devices to the domain and everything would work as they would
-> here. Its just repeated code across platforms that we are trying to
-> avoid.
+> So you suggesting to create a virtual child device for gcc and
+> associate the gcc DT node to it? (And have the tsens compatible
+> mentioned as part of the gcc DT node?)
 
-I agree that we want to have core code doing all that setup, But that
-has nothing to do with needing to have a DT property. The driver just
-needs to tell you the list of cpu power domains and the associated
-cpus they want the core to manage. Then it is up to you to do the rest
-of the setup.
+No. The driver should work just fine without having to
+interrogate the device's compatible string. If we still need the
+compatible check for some reason, then we can always match based
+on qcom,gcc-msm8960, qcom,gcc-apq8064, etc. But I don't see why
+we need to do that when we should be looking at what type of
+qfprom is connected so we can correctly parse the data.
 
-So I really don't think we need a DT binding here.
+> How is this any different from creating a subnode in DT anyway?
 
->> While there could be h/w such that all power domains within
->> a chip have a nice uniform programming model, I'd guess that is the
->> exception, not the rule. First, chips I have worked on were not that
->> way. CPU related and peripheral related domains are handled quite
->> differently.
->
-> Agreed. These are very SoC specific components and would require
-> platform specific programming. But most SoCs, would need to do many
-> other things like suspending debuggers, reducing clocks, GIC save and
-> restore, cluster state determination etc that are only getting more
-> generalized. We have generalized ARM CPU idle, I see this as the
-> platform for the next set of power saving in an SoC.
->
->> Second, often the actions on the CPU power domains don't
->> take effect until a WFI, so you end up with a different programming
->> sequence.
->>
-> How so? The last core going down (in this case, when the domain is
-> suspended the last core is the last device that does a _put() on the
-> domain) would determine and perform the power domain's programming
-> sequence, in the context of the last CPU. A sequence that would only be
-> effected in hardware when the the CPU executes WFI. I dont see why it
-> would be any different than how it is today.
+The difference is we don't make up nodes to satisfy linux device
+driver design. I suspect the hardware engineers put tsens inside
+gcc because both blocks were written by the same person/team and
+they just needed some place to jam some registers and call it a
+day. That doesn't constitute an MFD or bus, which is what we
+would be expressing in DT if we made a child node, it constitutes
+a horrible software interface design that we have to live with.
 
-I just mean that for a peripheral (e.g a SATA controller), you simply
-quiesce the device and driver and shut off power. With a cpu or cpu
-related component, you can't really shut it off until you stop
-running. So cpu domains are special.
-
-Rob
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
