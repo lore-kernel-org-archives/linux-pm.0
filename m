@@ -1,83 +1,184 @@
-From: Morten Rasmussen <morten.rasmussen@arm.com>
-Subject: Re: [RFCv5 PATCH 22/46] sched: Calculate energy consumption of
- sched_group
-Date: Fri, 14 Aug 2015 11:28:28 +0100
-Message-ID: <20150814102828.GC29326@e105550-lin.cambridge.arm.com>
-References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
- <1436293469-25707-23-git-send-email-morten.rasmussen@arm.com>
- <20150813153417.GY19282@twins.programming.kicks-ass.net>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v2 3/3] power: wm831x_power: Support USB charger current
+ limit management
+Date: Fri, 14 Aug 2015 11:42:19 +0100
+Message-ID: <20150814104219.GM8782@x1>
+References: <cover.1439519412.git.baolin.wang@linaro.org>
+ <f3bfd04bc157e97e2d0632b7ed2452f366f66488.1439519413.git.baolin.wang@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:37834 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752133AbbHNKZI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 14 Aug 2015 06:25:08 -0400
+Received: from mail-wi0-f177.google.com ([209.85.212.177]:37277 "EHLO
+	mail-wi0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752133AbbHNKmX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Aug 2015 06:42:23 -0400
+Received: by wibhh20 with SMTP id hh20so16235196wib.0
+        for <linux-pm@vger.kernel.org>; Fri, 14 Aug 2015 03:42:22 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <20150813153417.GY19282@twins.programming.kicks-ass.net>
+In-Reply-To: <f3bfd04bc157e97e2d0632b7ed2452f366f66488.1439519413.git.baolin.wang@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: mingo@redhat.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Baolin Wang <baolin.wang@linaro.org>
+Cc: balbi@ti.com, broonie@kernel.org, linus.walleij@linaro.org, linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, peter.chen@freescale.com, sojka@merica.cz, stern@rowland.harvard.edu, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, sameo@linux.intel.com, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org
 
-On Thu, Aug 13, 2015 at 05:34:17PM +0200, Peter Zijlstra wrote:
-> On Tue, Jul 07, 2015 at 07:24:05PM +0100, Morten Rasmussen wrote:
-> > +static unsigned int sched_group_energy(struct sched_group *sg_top)
-> > +{
-> > +	struct sched_domain *sd;
-> > +	int cpu, total_energy = 0;
-> > +	struct cpumask visit_cpus;
-> > +	struct sched_group *sg;
-> > +
-> > +	WARN_ON(!sg_top->sge);
-> > +
-> > +	cpumask_copy(&visit_cpus, sched_group_cpus(sg_top));
-> > +
-> > +	while (!cpumask_empty(&visit_cpus)) {
-> > +		struct sched_group *sg_shared_cap = NULL;
-> > +
-> > +		cpu = cpumask_first(&visit_cpus);
-> > +
-> > +		/*
-> > +		 * Is the group utilization affected by cpus outside this
-> > +		 * sched_group?
-> > +		 */
-> > +		sd = highest_flag_domain(cpu, SD_SHARE_CAP_STATES);
-> > +		if (sd && sd->parent)
-> > +			sg_shared_cap = sd->parent->groups;
-> > +
-> > +		for_each_domain(cpu, sd) {
-> > +			sg = sd->groups;
-> > +
-> > +			/* Has this sched_domain already been visited? */
-> > +			if (sd->child && group_first_cpu(sg) != cpu)
-> > +				break;
-> > +
-> > +			do {
-> > +				struct sched_group *sg_cap_util;
-> > +				unsigned long group_util;
-> > +				int sg_busy_energy, sg_idle_energy, cap_idx;
-> > +
-> > +				if (sg_shared_cap && sg_shared_cap->group_weight >= sg->group_weight)
-> > +					sg_cap_util = sg_shared_cap;
-> > +				else
-> > +					sg_cap_util = sg;
-> > +
-> > +				cap_idx = find_new_capacity(sg_cap_util, sg->sge);
-> 
-> So here its not really 'new' capacity is it, most like the current
-> capacity?
+On Fri, 14 Aug 2015, Baolin Wang wrote:
 
-Yes, sort of. It is what the current capacity (P-state) should be to
-accommodate the current utilization. Using a sane cpufreq governor it is
-most likely not far off.
+> Integrate with the newly added USB charger interface to limit the cur=
+rent
+> we draw from the USB input based on the input device configuration
+> identified by the USB stack, allowing us to charge more quickly from =
+high
+> current inputs without drawing more current than specified from other=
+s.
+>=20
+> Signed-off-by: Mark Brown <broonie@kernel.org>
+> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+> ---
+>  drivers/power/wm831x_power.c     |   69 ++++++++++++++++++++++++++++=
+++++++++++
+>  include/linux/mfd/wm831x/pdata.h |    3 ++
 
-I could rename it to find_capacity() instead. It is extended in a
-subsequent patch to figure out the 'new' capacity in cases were we
-consider putting more utilization into the group.
+Acked-by: Lee Jones <lee.jones@linaro.org>
 
-> So in the case of coupled P states, you look for the CPU with highest
-> utilization, as that is the on that determines the required P state.
+>  2 files changed, 72 insertions(+)
+>=20
+> diff --git a/drivers/power/wm831x_power.c b/drivers/power/wm831x_powe=
+r.c
+> index db11ae6..72c661f 100644
+> --- a/drivers/power/wm831x_power.c
+> +++ b/drivers/power/wm831x_power.c
+> @@ -13,6 +13,7 @@
+>  #include <linux/platform_device.h>
+>  #include <linux/power_supply.h>
+>  #include <linux/slab.h>
+> +#include <linux/usb/usb_charger.h>
+> =20
+>  #include <linux/mfd/wm831x/core.h>
+>  #include <linux/mfd/wm831x/auxadc.h>
+> @@ -31,6 +32,8 @@ struct wm831x_power {
+>  	char usb_name[20];
+>  	char battery_name[20];
+>  	bool have_battery;
+> +	struct usb_charger *usb_charger;
+> +	struct notifier_block usb_notify;
+>  };
+> =20
+>  static int wm831x_power_check_online(struct wm831x *wm831x, int supp=
+ly,
+> @@ -125,6 +128,43 @@ static enum power_supply_property wm831x_usb_pro=
+ps[] =3D {
+>  	POWER_SUPPLY_PROP_VOLTAGE_NOW,
+>  };
+> =20
+> +/* In miliamps */
+> +static unsigned int wm831x_usb_limits[] =3D {
+> +	0,
+> +	2,
+> +	100,
+> +	500,
+> +	900,
+> +	1500,
+> +	1800,
+> +	550,
+> +};
+> +
+> +static int wm831x_usb_limit_change(struct notifier_block *nb,
+> +				   unsigned long limit, void *data)
+> +{
+> +	struct wm831x_power *wm831x_power =3D container_of(nb,
+> +							 struct wm831x_power,
+> +							 usb_notify);
+> +	int i, best;
+> +
+> +	/* Find the highest supported limit */
+> +	best =3D 0;
+> +	for (i =3D 0; i < ARRAY_SIZE(wm831x_usb_limits); i++) {
+> +		if (limit < wm831x_usb_limits[i] &&
+> +		    wm831x_usb_limits[best] < wm831x_usb_limits[i])
+> +			best =3D i;
+> +	}
+> +
+> +	dev_dbg(wm831x_power->wm831x->dev,
+> +		"Limiting USB current to %dmA", wm831x_usb_limits[best]);
+> +
+> +	wm831x_set_bits(wm831x_power->wm831x, WM831X_POWER_STATE,
+> +		        WM831X_USB_ILIM_MASK, best);
+> +
+> +	return 0;
+> +}
+> +
+>  /*******************************************************************=
+**
+>   *		Battery properties
+>   *******************************************************************=
+**/
+> @@ -606,8 +646,31 @@ static int wm831x_power_probe(struct platform_de=
+vice *pdev)
+>  		}
+>  	}
+> =20
+> +	if (wm831x_pdata && wm831x_pdata->usb_gadget) {
+> +		power->usb_charger =3D
+> +			usb_charger_find_by_name(wm831x_pdata->usb_gadget);
+> +		if (IS_ERR(power->usb_charger)) {
+> +			ret =3D PTR_ERR(power->usb_charger);
+> +			dev_err(&pdev->dev,
+> +				"Failed to find USB gadget: %d\n", ret);
+> +			goto err_bat_irq;
+> +		}
+> +
+> +		power->usb_notify.notifier_call =3D wm831x_usb_limit_change;
+> +
+> +		ret =3D usb_charger_register_notify(power->usb_charger,
+> +						  &power->usb_notify);
+> +		if (ret !=3D 0) {
+> +			dev_err(&pdev->dev,
+> +				"Failed to register notifier: %d\n", ret);
+> +			goto err_usb_charger;
+> +		}
+> +	}
+> +
+>  	return ret;
+> =20
+> +err_usb_charger:
+> +	usb_charger_put(power->usb_charger);
+>  err_bat_irq:
+>  	--i;
+>  	for (; i >=3D 0; i--) {
+> @@ -637,6 +700,12 @@ static int wm831x_power_remove(struct platform_d=
+evice *pdev)
+>  	struct wm831x *wm831x =3D wm831x_power->wm831x;
+>  	int irq, i;
+> =20
+> +	if (wm831x_power->usb_charger) {
+> +		usb_charger_unregister_notify(wm831x_power->usb_charger,
+> +					      &wm831x_power->usb_notify);
+> +		usb_charger_put(wm831x_power->usb_charger);
+> +	}
+> +
+>  	for (i =3D 0; i < ARRAY_SIZE(wm831x_bat_irqs); i++) {
+>  		irq =3D wm831x_irq(wm831x,=20
+>  				 platform_get_irq_byname(pdev,
+> diff --git a/include/linux/mfd/wm831x/pdata.h b/include/linux/mfd/wm8=
+31x/pdata.h
+> index dcc9631..5af8399 100644
+> --- a/include/linux/mfd/wm831x/pdata.h
+> +++ b/include/linux/mfd/wm831x/pdata.h
+> @@ -126,6 +126,9 @@ struct wm831x_pdata {
+>  	/** The driver should initiate a power off sequence during shutdown=
+ */
+>  	bool soft_shutdown;
+> =20
+> +	/** dev_name of USB charger gadget to integrate with */
+> +	const char *usb_gadget;
+> +
+>  	int irq_base;
+>  	int gpio_base;
+>  	int gpio_defaults[WM831X_GPIO_NUM];
 
-Yes. That is why we need the SD_SHARE_CAP_STATES flag and we use
-group_max_usage() in find_new_capacity().
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
