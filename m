@@ -1,36 +1,103 @@
-From: Li Jun <b47624-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
-Subject: Re: [PATCH v2 0/3] Introduce usb charger framework to deal with the
- usb gadget power negotation
-Date: Fri, 14 Aug 2015 16:55:29 +0800
-Message-ID: <20150814085527.GA17920@shlinux2>
-References: <cover.1439519412.git.baolin.wang@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <cover.1439519412.git.baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: balbi-l0cyMroinI0@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org, sojka-Knnw/vAvyUalVyrhU4qvOw@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: Zhaoyang Huang <zhaoyang.huang@linaro.org>
+Subject: [PATCH] modify pl011 driver to work as wakeup source
+Date: Fri, 14 Aug 2015 18:24:46 +0800
+Message-ID: <1439547886-5093-1-git-send-email-zhaoyang.huang@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f175.google.com ([209.85.192.175]:35455 "EHLO
+	mail-pd0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752133AbbHNKYz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Aug 2015 06:24:55 -0400
+Received: by pdrg1 with SMTP id g1so29998837pdr.2
+        for <linux-pm@vger.kernel.org>; Fri, 14 Aug 2015 03:24:54 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: amit.kucheria@linaro.org
 
-Hi Baolin,
+add IRQF_NO_SUSPEND flag when requiring irq line and call
+the pm_system_wakeup when RX interrupt happens
 
-On Fri, Aug 14, 2015 at 05:47:43PM +0800, Baolin Wang wrote:
-> Currently the Linux kernel does not provide any standard integration of this
-> feature that integrates the USB subsystem with the system power regulation
-> provided by PMICs meaning that either vendors must add this in their kernels
-> or USB gadget devices based on Linux (such as mobile phones) may not behave
-> as they should.
-> 
-> Providing a standard framework for doing this in the kernel.
-> 
+Signed-off-by: Zhaoyang Huang <zhaoyang.huang@linaro.org>
+---
+ drivers/tty/serial/amba-pl011.c |   24 +++++++++++++++++++++---
+ 1 file changed, 21 insertions(+), 3 deletions(-)
 
-Why not add power supply class support into this?  
+diff --git a/drivers/tty/serial/amba-pl011.c b/drivers/tty/serial/amba-pl011.c
+index 50cf5b1..6285819 100644
+--- a/drivers/tty/serial/amba-pl011.c
++++ b/drivers/tty/serial/amba-pl011.c
+@@ -59,6 +59,7 @@
+ #include <linux/sizes.h>
+ #include <linux/io.h>
+ #include <linux/acpi.h>
++#include <linux/suspend.h>
+ 
+ #define UART_NR			14
+ 
+@@ -127,6 +128,7 @@ static struct vendor_data vendor_st = {
+ 	.get_fifosize		= get_fifosize_st,
+ };
+ 
++static int is_suspended = 0;
+ /* Deals with DMA transactions */
+ 
+ struct pl011_sgbuf {
+@@ -1376,6 +1378,10 @@ static irqreturn_t pl011_int(int irq, void *dev_id)
+ 					pl011_dma_rx_irq(uap);
+ 				else
+ 					pl011_rx_chars(uap);
++
++				if(is_suspended)
++					pm_system_wakeup();
++
+ 			}
+ 			if (status & (UART011_DSRMIS|UART011_DCDMIS|
+ 				      UART011_CTSMIS|UART011_RIMIS))
+@@ -1585,7 +1591,7 @@ static int pl011_allocate_irq(struct uart_amba_port *uap)
+ {
+ 	writew(uap->im, uap->port.membase + UART011_IMSC);
+ 
+-	return request_irq(uap->port.irq, pl011_int, 0, "uart-pl011", uap);
++	return request_irq(uap->port.irq, pl011_int, IRQF_NO_SUSPEND, "uart-pl011", uap);
+ }
+ 
+ /*
+@@ -2403,21 +2409,33 @@ static int pl011_remove(struct amba_device *dev)
+ static int pl011_suspend(struct device *dev)
+ {
+ 	struct uart_amba_port *uap = dev_get_drvdata(dev);
++	int ret = 0;
+ 
+ 	if (!uap)
+ 		return -EINVAL;
+ 
+-	return uart_suspend_port(&amba_reg, &uap->port);
++	ret =uart_suspend_port(&amba_reg, &uap->port);
++
++	if(!ret)
++		is_suspended = 1;
++
++	return ret;
+ }
+ 
+ static int pl011_resume(struct device *dev)
+ {
+ 	struct uart_amba_port *uap = dev_get_drvdata(dev);
++	int ret = 0;
+ 
+ 	if (!uap)
+ 		return -EINVAL;
+ 
+-	return uart_resume_port(&amba_reg, &uap->port);
++	ret = uart_resume_port(&amba_reg, &uap->port);
++
++	if(!ret)
++		is_suspended = 0;
++
++	return ret;
+ }
+ #endif
+ 
+-- 
+1.7.9.5
 
-Li Jun
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
