@@ -1,103 +1,83 @@
-From: Zhaoyang Huang <zhaoyang.huang@linaro.org>
-Subject: [PATCH] modify pl011 driver to work as wakeup source
-Date: Fri, 14 Aug 2015 18:24:46 +0800
-Message-ID: <1439547886-5093-1-git-send-email-zhaoyang.huang@linaro.org>
+From: Morten Rasmussen <morten.rasmussen@arm.com>
+Subject: Re: [RFCv5 PATCH 22/46] sched: Calculate energy consumption of
+ sched_group
+Date: Fri, 14 Aug 2015 11:28:28 +0100
+Message-ID: <20150814102828.GC29326@e105550-lin.cambridge.arm.com>
+References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
+ <1436293469-25707-23-git-send-email-morten.rasmussen@arm.com>
+ <20150813153417.GY19282@twins.programming.kicks-ass.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f175.google.com ([209.85.192.175]:35455 "EHLO
-	mail-pd0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752133AbbHNKYz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Aug 2015 06:24:55 -0400
-Received: by pdrg1 with SMTP id g1so29998837pdr.2
-        for <linux-pm@vger.kernel.org>; Fri, 14 Aug 2015 03:24:54 -0700 (PDT)
+Received: from foss.arm.com ([217.140.101.70]:37834 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752133AbbHNKZI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 14 Aug 2015 06:25:08 -0400
+Content-Disposition: inline
+In-Reply-To: <20150813153417.GY19282@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: amit.kucheria@linaro.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: mingo@redhat.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-add IRQF_NO_SUSPEND flag when requiring irq line and call
-the pm_system_wakeup when RX interrupt happens
+On Thu, Aug 13, 2015 at 05:34:17PM +0200, Peter Zijlstra wrote:
+> On Tue, Jul 07, 2015 at 07:24:05PM +0100, Morten Rasmussen wrote:
+> > +static unsigned int sched_group_energy(struct sched_group *sg_top)
+> > +{
+> > +	struct sched_domain *sd;
+> > +	int cpu, total_energy = 0;
+> > +	struct cpumask visit_cpus;
+> > +	struct sched_group *sg;
+> > +
+> > +	WARN_ON(!sg_top->sge);
+> > +
+> > +	cpumask_copy(&visit_cpus, sched_group_cpus(sg_top));
+> > +
+> > +	while (!cpumask_empty(&visit_cpus)) {
+> > +		struct sched_group *sg_shared_cap = NULL;
+> > +
+> > +		cpu = cpumask_first(&visit_cpus);
+> > +
+> > +		/*
+> > +		 * Is the group utilization affected by cpus outside this
+> > +		 * sched_group?
+> > +		 */
+> > +		sd = highest_flag_domain(cpu, SD_SHARE_CAP_STATES);
+> > +		if (sd && sd->parent)
+> > +			sg_shared_cap = sd->parent->groups;
+> > +
+> > +		for_each_domain(cpu, sd) {
+> > +			sg = sd->groups;
+> > +
+> > +			/* Has this sched_domain already been visited? */
+> > +			if (sd->child && group_first_cpu(sg) != cpu)
+> > +				break;
+> > +
+> > +			do {
+> > +				struct sched_group *sg_cap_util;
+> > +				unsigned long group_util;
+> > +				int sg_busy_energy, sg_idle_energy, cap_idx;
+> > +
+> > +				if (sg_shared_cap && sg_shared_cap->group_weight >= sg->group_weight)
+> > +					sg_cap_util = sg_shared_cap;
+> > +				else
+> > +					sg_cap_util = sg;
+> > +
+> > +				cap_idx = find_new_capacity(sg_cap_util, sg->sge);
+> 
+> So here its not really 'new' capacity is it, most like the current
+> capacity?
 
-Signed-off-by: Zhaoyang Huang <zhaoyang.huang@linaro.org>
----
- drivers/tty/serial/amba-pl011.c |   24 +++++++++++++++++++++---
- 1 file changed, 21 insertions(+), 3 deletions(-)
+Yes, sort of. It is what the current capacity (P-state) should be to
+accommodate the current utilization. Using a sane cpufreq governor it is
+most likely not far off.
 
-diff --git a/drivers/tty/serial/amba-pl011.c b/drivers/tty/serial/amba-pl011.c
-index 50cf5b1..6285819 100644
---- a/drivers/tty/serial/amba-pl011.c
-+++ b/drivers/tty/serial/amba-pl011.c
-@@ -59,6 +59,7 @@
- #include <linux/sizes.h>
- #include <linux/io.h>
- #include <linux/acpi.h>
-+#include <linux/suspend.h>
- 
- #define UART_NR			14
- 
-@@ -127,6 +128,7 @@ static struct vendor_data vendor_st = {
- 	.get_fifosize		= get_fifosize_st,
- };
- 
-+static int is_suspended = 0;
- /* Deals with DMA transactions */
- 
- struct pl011_sgbuf {
-@@ -1376,6 +1378,10 @@ static irqreturn_t pl011_int(int irq, void *dev_id)
- 					pl011_dma_rx_irq(uap);
- 				else
- 					pl011_rx_chars(uap);
-+
-+				if(is_suspended)
-+					pm_system_wakeup();
-+
- 			}
- 			if (status & (UART011_DSRMIS|UART011_DCDMIS|
- 				      UART011_CTSMIS|UART011_RIMIS))
-@@ -1585,7 +1591,7 @@ static int pl011_allocate_irq(struct uart_amba_port *uap)
- {
- 	writew(uap->im, uap->port.membase + UART011_IMSC);
- 
--	return request_irq(uap->port.irq, pl011_int, 0, "uart-pl011", uap);
-+	return request_irq(uap->port.irq, pl011_int, IRQF_NO_SUSPEND, "uart-pl011", uap);
- }
- 
- /*
-@@ -2403,21 +2409,33 @@ static int pl011_remove(struct amba_device *dev)
- static int pl011_suspend(struct device *dev)
- {
- 	struct uart_amba_port *uap = dev_get_drvdata(dev);
-+	int ret = 0;
- 
- 	if (!uap)
- 		return -EINVAL;
- 
--	return uart_suspend_port(&amba_reg, &uap->port);
-+	ret =uart_suspend_port(&amba_reg, &uap->port);
-+
-+	if(!ret)
-+		is_suspended = 1;
-+
-+	return ret;
- }
- 
- static int pl011_resume(struct device *dev)
- {
- 	struct uart_amba_port *uap = dev_get_drvdata(dev);
-+	int ret = 0;
- 
- 	if (!uap)
- 		return -EINVAL;
- 
--	return uart_resume_port(&amba_reg, &uap->port);
-+	ret = uart_resume_port(&amba_reg, &uap->port);
-+
-+	if(!ret)
-+		is_suspended = 0;
-+
-+	return ret;
- }
- #endif
- 
--- 
-1.7.9.5
+I could rename it to find_capacity() instead. It is extended in a
+subsequent patch to figure out the 'new' capacity in cases were we
+consider putting more utilization into the group.
 
+> So in the case of coupled P states, you look for the CPU with highest
+> utilization, as that is the on that determines the required P state.
+
+Yes. That is why we need the SD_SHARE_CAP_STATES flag and we use
+group_max_usage() in find_new_capacity().
