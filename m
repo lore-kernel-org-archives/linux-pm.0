@@ -1,75 +1,172 @@
 From: Scott Wood <scottwood@freescale.com>
-Subject: [PATCH v2 0/5] clk: qoriq: Move chip-specific knowledge into driver
-Date: Sat, 15 Aug 2015 01:41:17 -0500
-Message-ID: <1439620882-20449-1-git-send-email-scottwood@freescale.com>
+Subject: [PATCH v2 4/5] cpufreq: qoriq: Remove frequency masking and minimum
+Date: Sat, 15 Aug 2015 01:41:21 -0500
+Message-ID: <1439620882-20449-5-git-send-email-scottwood@freescale.com>
+References: <1439620882-20449-1-git-send-email-scottwood@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bn1on0139.outbound.protection.outlook.com ([157.56.110.139]:32378
+Received: from mail-bn1on0113.outbound.protection.outlook.com ([157.56.110.113]:22688
 	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750852AbbHOGl7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 15 Aug 2015 02:41:59 -0400
+	id S1751138AbbHOGmI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 15 Aug 2015 02:42:08 -0400
+In-Reply-To: <1439620882-20449-1-git-send-email-scottwood@freescale.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Mike Turquette <mturquette@linaro.org>, Tang Yuantian <Yuantian.Tang@freescale.com>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Liberman Igal-B31950 <Igal.Liberman@freescale.com>, Bucur Madalin-Cristian-B32716 <madalin.bucur@freescale.com>, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, Scott Wood <scottwood@freescale.com>
 
-The existing device tree bindings are error-prone and inflexible. 
-Correct the mistake by moving the knowledge into the driver, which
-has more flexibility in describing the quirks of each chip.  This leaves
-the device tree to its proper role of identifying a programming interface
-rather than describing its individual registers.
+The clock driver now takes care of ensuring that the mux only
+exposes options that are valid.  The driver was currently being overly
+conservative in some cases -- for example, the "min_cpufreq =
+get_bus_freq()" restriction only applies to chips with erratum
+A-004510, and whether the freq_mask used on p5020 is needed depends on
+the actual frequencies of the PLLs (FWIW, p5040 has a similar
+limitation but its .freq_mask was zero).
 
-For more detail, see the commit message of patch 3.
+Further, the freq_mask mechanism makes assumptions about the number and
+order of the clock parents.  The new driver does not adhere to those
+assumptions (in particular, it removes invalid options).
 
-Scott Wood (5):
-  cpufreq: qoriq: Don't look at clock implementation details
-  powerpc/fsl: Move fsl_guts.h out of arch/powerpc
-  clk: qoriq: Move chip-specific knowledge into driver
-  cpufreq: qoriq: Remove frequency masking and minimum
-  powerpc/fsl: Use new clockgen binding
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+v2: non-RFC
 
- .../devicetree/bindings/clock/qoriq-clock.txt      |   61 +-
- arch/powerpc/boot/dts/fsl/b4420si-pre.dtsi         |    4 +-
- arch/powerpc/boot/dts/fsl/b4860si-pre.dtsi         |    8 +-
- arch/powerpc/boot/dts/fsl/b4si-post.dtsi           |   15 -
- arch/powerpc/boot/dts/fsl/p2041si-post.dtsi        |   18 -
- arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi         |    8 +-
- arch/powerpc/boot/dts/fsl/p3041si-post.dtsi        |   18 -
- arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi         |    8 +-
- arch/powerpc/boot/dts/fsl/p4080si-post.dtsi        |   70 --
- arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi         |   16 +-
- arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi         |    4 +-
- arch/powerpc/boot/dts/fsl/p5040si-post.dtsi        |   18 -
- arch/powerpc/boot/dts/fsl/p5040si-pre.dtsi         |    8 +-
- arch/powerpc/boot/dts/fsl/qoriq-clockgen1.dtsi     |   50 +-
- arch/powerpc/boot/dts/fsl/qoriq-clockgen2.dtsi     |   33 +-
- arch/powerpc/boot/dts/fsl/t1023si-post.dtsi        |   16 -
- arch/powerpc/boot/dts/fsl/t102xsi-pre.dtsi         |    4 +-
- arch/powerpc/boot/dts/fsl/t1040si-post.dtsi        |   44 -
- arch/powerpc/boot/dts/fsl/t104xsi-pre.dtsi         |    8 +-
- arch/powerpc/boot/dts/fsl/t2081si-post.dtsi        |   22 -
- arch/powerpc/boot/dts/fsl/t208xsi-pre.dtsi         |    8 +-
- arch/powerpc/boot/dts/fsl/t4240si-post.dtsi        |   61 -
- arch/powerpc/boot/dts/fsl/t4240si-pre.dtsi         |   24 +-
- arch/powerpc/platforms/85xx/mpc85xx_mds.c          |    2 +-
- arch/powerpc/platforms/85xx/mpc85xx_rdb.c          |    2 +-
- arch/powerpc/platforms/85xx/p1022_ds.c             |    2 +-
- arch/powerpc/platforms/85xx/p1022_rdk.c            |    2 +-
- arch/powerpc/platforms/85xx/smp.c                  |    2 +-
- arch/powerpc/platforms/85xx/twr_p102x.c            |    2 +-
- arch/powerpc/platforms/86xx/mpc8610_hpcd.c         |    2 +-
- drivers/clk/clk-qoriq.c                            | 1260 ++++++++++++++++----
- drivers/cpufreq/qoriq-cpufreq.c                    |  139 +--
- drivers/iommu/fsl_pamu.c                           |    2 +-
- .../asm/fsl_guts.h => include/linux/fsl/guts.h     |    6 +-
- sound/soc/fsl/mpc8610_hpcd.c                       |    2 +-
- sound/soc/fsl/p1022_ds.c                           |    2 +-
- sound/soc/fsl/p1022_rdk.c                          |    2 +-
- 37 files changed, 1176 insertions(+), 777 deletions(-)
- rename arch/powerpc/include/asm/fsl_guts.h => include/linux/fsl/guts.h (98%)
+ drivers/cpufreq/qoriq-cpufreq.c | 92 +----------------------------------------
+ 1 file changed, 2 insertions(+), 90 deletions(-)
 
+diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
+index 32ab99e..514395f 100644
+--- a/drivers/cpufreq/qoriq-cpufreq.c
++++ b/drivers/cpufreq/qoriq-cpufreq.c
+@@ -36,53 +36,6 @@ struct cpu_data {
+ 	struct cpufreq_frequency_table *table;
+ };
+ 
+-/**
+- * struct soc_data - SoC specific data
+- * @freq_mask: mask the disallowed frequencies
+- * @flag: unique flags
+- */
+-struct soc_data {
+-	u32 freq_mask[4];
+-	u32 flag;
+-};
+-
+-#define FREQ_MASK	1
+-/* see hardware specification for the allowed frqeuencies */
+-static const struct soc_data sdata[] = {
+-	{ /* used by p2041 and p3041 */
+-		.freq_mask = {0x8, 0x8, 0x2, 0x2},
+-		.flag = FREQ_MASK,
+-	},
+-	{ /* used by p5020 */
+-		.freq_mask = {0x8, 0x2},
+-		.flag = FREQ_MASK,
+-	},
+-	{ /* used by p4080, p5040 */
+-		.freq_mask = {0},
+-		.flag = 0,
+-	},
+-};
+-
+-/*
+- * the minimum allowed core frequency, in Hz
+- * for chassis v1.0, >= platform frequency
+- * for chassis v2.0, >= platform frequency / 2
+- */
+-static u32 min_cpufreq;
+-static const u32 *fmask;
+-
+-#if defined(CONFIG_ARM)
+-static int get_cpu_physical_id(int cpu)
+-{
+-	return topology_core_id(cpu);
+-}
+-#else
+-static int get_cpu_physical_id(int cpu)
+-{
+-	return get_hard_smp_processor_id(cpu);
+-}
+-#endif
+-
+ static u32 get_bus_freq(void)
+ {
+ 	struct device_node *soc;
+@@ -195,7 +148,7 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+ 	struct device_node *np, *pnode;
+ 	int i, count, ret;
+-	u32 freq, mask;
++	u32 freq;
+ 	struct clk *clk;
+ 	struct cpufreq_frequency_table *table;
+ 	struct cpu_data *data;
+@@ -230,23 +183,11 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 		goto err_pclk;
+ 	}
+ 
+-	if (fmask)
+-		mask = fmask[get_cpu_physical_id(cpu)];
+-	else
+-		mask = 0x0;
+-
+ 	for (i = 0; i < count; i++) {
+ 		clk = clk_get_parent_by_index(policy->clk, i);
+ 		data->pclk[i] = clk;
+ 		freq = clk_get_rate(clk);
+-		/*
+-		 * the clock is valid if its frequency is not masked
+-		 * and large than minimum allowed frequency.
+-		 */
+-		if (freq < min_cpufreq || (mask & (1 << i)))
+-			table[i].frequency = CPUFREQ_ENTRY_INVALID;
+-		else
+-			table[i].frequency = freq / 1000;
++		table[i].frequency = freq / 1000;
+ 		table[i].driver_data = i;
+ 	}
+ 	freq_table_redup(table, count);
+@@ -321,38 +262,9 @@ static struct cpufreq_driver qoriq_cpufreq_driver = {
+ 	.attr		= cpufreq_generic_attr,
+ };
+ 
+-static const struct of_device_id node_matches[] __initconst = {
+-	{ .compatible = "fsl,p2041-clockgen", .data = &sdata[0], },
+-	{ .compatible = "fsl,p3041-clockgen", .data = &sdata[0], },
+-	{ .compatible = "fsl,p5020-clockgen", .data = &sdata[1], },
+-	{ .compatible = "fsl,p4080-clockgen", .data = &sdata[2], },
+-	{ .compatible = "fsl,p5040-clockgen", .data = &sdata[2], },
+-	{ .compatible = "fsl,qoriq-clockgen-2.0", },
+-	{}
+-};
+-
+ static int __init qoriq_cpufreq_init(void)
+ {
+ 	int ret;
+-	struct device_node  *np;
+-	const struct of_device_id *match;
+-	const struct soc_data *data;
+-
+-	np = of_find_matching_node(NULL, node_matches);
+-	if (!np)
+-		return -ENODEV;
+-
+-	match = of_match_node(node_matches, np);
+-	data = match->data;
+-	if (data) {
+-		if (data->flag)
+-			fmask = data->freq_mask;
+-		min_cpufreq = get_bus_freq();
+-	} else {
+-		min_cpufreq = get_bus_freq() / 2;
+-	}
+-
+-	of_node_put(np);
+ 
+ 	ret = cpufreq_register_driver(&qoriq_cpufreq_driver);
+ 	if (!ret)
 -- 
 2.1.4
 
