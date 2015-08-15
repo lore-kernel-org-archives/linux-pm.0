@@ -1,70 +1,60 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [GIT PULL] Thermal-SoC management updates for v4.2-rc7
-Date: Sat, 15 Aug 2015 10:17:05 -0700
-Message-ID: <20150815171702.GB4151@localhost.localdomain>
-References: <20150815171445.GA4151@localhost.localdomain>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFCv5 PATCH 38/46] sched: scheduler-driven cpu frequency
+ selection
+Date: Sat, 15 Aug 2015 15:05:45 +0200
+Message-ID: <20150815130545.GI10304@worktop.programming.kicks-ass.net>
+References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
+ <1436293469-25707-39-git-send-email-morten.rasmussen@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f45.google.com ([209.85.220.45]:36573 "EHLO
-	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752269AbbHORRI convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 15 Aug 2015 13:17:08 -0400
+Received: from bombadil.infradead.org ([198.137.202.9]:48985 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752442AbbHOTv0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 15 Aug 2015 15:51:26 -0400
 Content-Disposition: inline
-In-Reply-To: <20150815171445.GA4151@localhost.localdomain>
+In-Reply-To: <1436293469-25707-39-git-send-email-morten.rasmussen@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rui Zhang <rui.zhang@intel.com>
-Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Morten Rasmussen <morten.rasmussen@arm.com>
+Cc: mingo@redhat.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Rui,
+On Tue, Jul 07, 2015 at 07:24:21PM +0100, Morten Rasmussen wrote:
+> +void cpufreq_sched_set_cap(int cpu, unsigned long capacity)
+> +{
+> +	unsigned int freq_new, cpu_tmp;
+> +	struct cpufreq_policy *policy;
+> +	struct gov_data *gd;
+> +	unsigned long capacity_max = 0;
+> +
+> +	/* update per-cpu capacity request */
+> +	__this_cpu_write(pcpu_capacity, capacity);
+> +
+> +	policy = cpufreq_cpu_get(cpu);
+> +	if (IS_ERR_OR_NULL(policy)) {
+> +		return;
+> +	}
+> +
+> +	if (!policy->governor_data)
+> +		goto out;
+> +
+> +	gd = policy->governor_data;
+> +
+> +	/* bail early if we are throttled */
+> +	if (ktime_before(ktime_get(), gd->throttle))
+> +		goto out;
 
-On Sat, Aug 15, 2015 at 10:14:45AM -0700, Eduardo Valentin wrote:
-> Hello Rui,
-> 
-> Please pull from
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal fixes
-> 
-> to receive Thermal-SoC Management updates for v4.2-rc7 with top-most
-> 
-> 1afb9c539daebc2c8a7b33d0e0b8fc9f74671b02:
-> 
->   thermal/cpu_cooling: update policy limits if clipped_freq < policy->max (2015-08-14 18:26:23 -0700)
-> 
-> on top of commit 7ddab73346a1277b90fd6a4d044bc948f9cc9ad8:
-> 
->   Merge branch 'fixes' of git://ftp.arm.linux.org.uk/~rmk/linux-arm (2015-08-13 16:34:56 -0700)
-> 
-> 
-> Specifics:
-> - Locked fix in the cpu cooling code.
+Isn't this the wrong place to throttle? Suppose you're getting multiple
+new tasks placed on this CPU, the first one would trigger this callback
+and start increasing freq..
 
-Sorry for the late notice, but this fix should make it as soon as
-possible. I messed up by forgetting this one for very long time. 
+While we're still changing freq. (and therefore throttled), another task
+comes in which would again raise the freq.
 
-> - Refactoring in the cpu cooling code.
-> - Remove devm* functions from power allocator.
-> 
-> BR,
-> 
-> Eduardo Valentin
-> ----------------------------------------------------------------
-> Dmitry Torokhov (1):
->       thermal: power_allocator: do not use devm* interfaces
-> 
-> Russell King (1):
->       thermal: cpu_cooling: fix lockdep problems in cpu_cooling
-> 
-> Viresh Kumar (6):
->       thermal/cpu_cooling: No need to initialize max_freq to 0
->       thermal/cpu_cooling: quit early after updating policy
->       thermal/cpu_cooling: convert 'switch' block to 'if' block in notifier
->       thermal/cpu_cooling: rename cpufreq_val as clipped_freq
->       thermal/cpu_cooling: rename max_freq as clipped_freq in notifier
->       thermal/cpu_cooling: update policy limits if clipped_freq < policy->max
-> 
->  drivers/thermal/cpu_cooling.c     | 73 +++++++++++++++++++++++----------------
->  drivers/thermal/power_allocator.c |  8 ++---
->  2 files changed, 48 insertions(+), 33 deletions(-)
+With this scheme you loose the latter freq. change and will not
+re-evaluate.
+
+Any scheme that limits the callbacks to the actual hardware will have to
+buffer requests and once the hardware returns (be it through an
+interrupt or timeout) issue the latest request.
+
