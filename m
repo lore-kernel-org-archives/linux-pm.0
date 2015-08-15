@@ -1,76 +1,80 @@
-From: Li Yang <leoli@freescale.com>
-Subject: Re: [PATCH v2] dmaengine: fsl-edma: add PM suspend/resume support
-Date: Fri, 14 Aug 2015 18:48:18 -0500
-Message-ID: <CADRPPNS_wzX+mwT0L-H=ZP9w8gH9W4O9KUqnGYiAc39S5v4qLA@mail.gmail.com>
-References: <1437469005-3162-1-git-send-email-yao.yuan@freescale.com>
-	<CADRPPNQJi_x+mdQV=DEVuhCL_p6VOWcPiV3jzioeRdWgSW2w3g@mail.gmail.com>
-	<CY1PR0301MB15628DD5CFCE2B65BF4FECB2837C0@CY1PR0301MB1562.namprd03.prod.outlook.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCHv3 6/8] serial: imx: add runtime pm support
+Date: Fri, 14 Aug 2015 17:23:12 -0700
+Message-ID: <20150815002312.GA26089@kroah.com>
+References: <1439313687-28502-1-git-send-email-edubezval@gmail.com>
+ <1439313687-28502-7-git-send-email-edubezval@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CY1PR0301MB15628DD5CFCE2B65BF4FECB2837C0@CY1PR0301MB1562.namprd03.prod.outlook.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Yao Yuan <yao.yuan@freescale.com>
-Cc: Vinod Koul <vinod.koul@intel.com>, "stefan@agner.ch" <stefan@agner.ch>, Arnd Bergmann <arnd@arndb.de>, Dan Williams <dan.j.williams@intel.com>, "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.linuxfoundation.org ([140.211.169.12]:33624 "EHLO
+	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750735AbbHOAXM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 14 Aug 2015 20:23:12 -0400
+Content-Disposition: inline
+In-Reply-To: <1439313687-28502-7-git-send-email-edubezval@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Jiri Slaby <jslaby@suse.com>, Fabio Estevam <festevam@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>, Linux PM <linux-pm@vger.kernel.org>, linux-serial@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
-On Fri, Aug 14, 2015 at 1:24 AM, Yao Yuan <yao.yuan@freescale.com> wrote:
-> Hi Leo,
->
-> Thanks for your review.
-> About those two methods for DMA suspend that you have mentioned. We have a lot of the discussions in other DMA driver like DMA for Freescale PowerPC.
->
-> Finally, we think the device which used the DMA transmission service should cancel the transmission service in its suspend.
-> So DMA in suspend should be idle.
+On Tue, Aug 11, 2015 at 10:21:25AM -0700, Eduardo Valentin wrote:
+> This change introduces the runtime pm support on imx serial
+> driver. The objective is to be able to idle the uart
+> port whenever it is not in use while still being able
+> to wake it up when needed. The key changes in this patch are:
+> 1. Move the clock handling to runtime pm. Both, ipg and per,
+> are now handled in the suspend and resume callbacks. Only
+> enabling and disabling the clocks are handled in runtime
+> suspend and resume, so we are able to use runtime pm
+> in IRQ context.
+> 2. Clocks are prepared in probe and unprepared in remove,
+> so we do not need to prepare (may sleep) in runtime pm.
+> 3. We mark the device activity based on uart and console
+> callbacks. Whenever the device is needed and we want to
+> access registers, we runtime_pm_get and then mark its
+> last usage when we are done. This is done also across
+> IRQs and DMA callbacks.
+> 4. We reuse the infrastructure in place for suspend and
+> resume, so we do not need to redo wakeup configuration,
+> or context save and restore.
+> 
+> After this change, the clocks are still sane, in the sense
+> of having balanced clock prepare and enable.
+> 
+> Cc: Fabio Estevam <festevam@gmail.com>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Jiri Slaby <jslaby@suse.com>
+> Cc: linux-serial@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+> ---
+>  drivers/tty/serial/imx.c | 224 +++++++++++++++++++++++++++++++++++++----------
+>  1 file changed, 178 insertions(+), 46 deletions(-)
+> 
+> diff --git a/drivers/tty/serial/imx.c b/drivers/tty/serial/imx.c
+> index 50abb60..9447a55 100644
+> --- a/drivers/tty/serial/imx.c
+> +++ b/drivers/tty/serial/imx.c
+> @@ -39,6 +39,9 @@
+>  #include <linux/of_device.h>
+>  #include <linux/io.h>
+>  #include <linux/dma-mapping.h>
+> +#include <linux/pm.h>
+> +#include <linux/pm_runtime.h>
+> +#include <linux/pm_wakeup.h>
+>  
+>  #include <asm/irq.h>
+>  #include <linux/platform_data/serial-imx.h>
+> @@ -219,6 +222,7 @@ struct imx_port {
+>  	unsigned int            saved_reg[10];
+>  	bool			context_saved;
+>  
+> +	struct device		*dev;
 
-If that's the case you should clearly state this in the commit message
-and in code, although I don't know if it is safe to make such
-assumption.  There could be user of the DMA that doesn't track the
-completion of transfers.
+Do you really need this pointer?  Can't you get it from the platform
+device that you have access to that sport is the data?
 
->
-> Once the DMA in late_suspend is not be idle, we think some driver haven't canceled the DMA transmission. So maybe something is error when other driver in suspend.
->
-> In the case, we should return failed to stop PM. DMA should not make a choice for other drivers(which used DMA) to force stop DMA transmission.
+thanks,
 
-The suspend entrance should be terminated by wakeup events and only
-critical issues.  I don't think we should just terminate the suspend
-entrance just because having on-going I/O without even try to stop it.
-
->
-> Thanks.
->
-> Best Regards,
-> Yuan Yao
->
->> -----Original Message-----
->> From: pku.leo@gmail.com [mailto:pku.leo@gmail.com] On Behalf Of Li Yang
->> Sent: Friday, August 14, 2015 4:58 AM
->> To: Yuan Yao-B46683
->> Cc: Vinod Koul; stefan@agner.ch; Arnd Bergmann; Dan Williams;
->> dmaengine@vger.kernel.org; lkml; linux-arm-kernel@lists.infradead.org; linux-
->> pm@vger.kernel.org
->> Subject: Re: [PATCH v2] dmaengine: fsl-edma: add PM suspend/resume
->> support
->>
->> On Tue, Jul 21, 2015 at 3:56 AM, Yuan Yao <yao.yuan@freescale.com> wrote:
->> > This add power management suspend/resume support for the fsl-edma
->> > driver.
->> >
->> > eDMA acted as a basic function used by others. What it needs to do is
->> > the two steps below to support power management.
->> >
->> > In fsl_edma_suspend_late:
->> > Check whether the DMA chan is idle and if it is not idle, stop PM
->> > operation.
->>
->> You should try to quiesce the device on suspend instead of depending on itself
->> to be happen in idle and failing if it is not.
->>
->> Regards,
->> Leo
-
-
-
--- 
-- Leo
+greg k-h
