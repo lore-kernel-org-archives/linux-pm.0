@@ -1,71 +1,56 @@
-From: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
-Subject: Re: [PATCH v2 08/16] x86/efi: Carrying hibernation key by setup
- data
-Date: Sat, 15 Aug 2015 19:07:38 +0200
-Message-ID: <20150815170737.GA25353@Nokia-N900>
-References: <1439273796-25359-1-git-send-email-jlee@suse.com>
- <1439273796-25359-9-git-send-email-jlee@suse.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [GIT PULL] Thermal-SoC management updates for v4.2-rc7
+Date: Sat, 15 Aug 2015 10:14:47 -0700
+Message-ID: <20150815171445.GA4151@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1439273796-25359-9-git-send-email-jlee-IBi9RG/b67k@public.gmane.org>
-Sender: linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "Lee, Chun-Yi" <joeyli.kernel-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Matthew Garrett <matthew.garrett-05XSO3Yj/JvQT0dZR+AlfA@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Josh Boyer <jwboyer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Vojtech Pavlik <vojtech-AlSwsSmVLrQ@public.gmane.org>, Matt Fleming <matt.fleming-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Jiri Kosina <jkosina-AlSwsSmVLrQ@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "Lee, Chun-Yi" <jlee-IBi9RG/b67k@public.gmane.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Rui Zhang <rui.zhang@intel.com>
+Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue 2015-08-11 14:16:28, Lee, Chun-Yi wrote:
-> For forwarding hibernation key from EFI stub to boot kernel, this patch
-> allocates setup data for carrying hibernation key, size and the status
-> of efi operating.
-> 
-> Reviewed-by: Jiri Kosina <jkosina-IBi9RG/b67k@public.gmane.org>
+Hello Rui,
 
-Jiri, are you sure you reviewed these? This is not really
-english, afaict, and efi/EFI should be spelled consistently.
+Please pull from
 
-Could you try reviewing it again? Pointing out 10s of small
-bugs is quite boring...
+  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal fixes
 
->  	unsigned long key_size;
->  	unsigned long attributes;
-> +	struct setup_data *setup_data, *hibernation_setup_data;
->  	struct hibernation_keys *keys;
-> +	unsigned long size = 0;
->  	efi_status_t status;
->  
->  	/* Allocate setup_data to carry keys */
-> +	size = sizeof(struct setup_data) + sizeof(struct hibernation_keys);
->  	status = efi_call_early(allocate_pool, EFI_LOADER_DATA,
-> -				sizeof(struct hibernation_keys), &keys);
-> +				size, &hibernation_setup_data);
->  	if (status != EFI_SUCCESS) {
->  		efi_printk(sys_table, "Failed to alloc mem for hibernation keys\n");
->  		return;
->  	}
->  
-> -	memset(keys, 0, sizeof(struct hibernation_keys));
-> +	memset(hibernation_setup_data, 0, size);
-> +	keys = (struct hibernation_keys *) hibernation_setup_data->data;
->  
+to receive Thermal-SoC Management updates for v4.2-rc7 with top-most
 
-any chance to type stuff correctly so that casts are not
-neccessary?
+1afb9c539daebc2c8a7b33d0e0b8fc9f74671b02:
 
-> +clean_fail:
-> +	hibernation_setup_data->type = SETUP_HIBERNATION_KEYS;
-> +	hibernation_setup_data->len = sizeof(struct hibernation_keys);
-> +	hibernation_setup_data->next = 0;
-> +	keys->hkey_status = efi_status_to_err(status);
-> +
-> +	setup_data = (struct setup_data *)params->hdr.setup_data;
-> +	while (setup_data && setup_data->next)
-> +		setup_data = (struct setup_data *)setup_data->next;
+  thermal/cpu_cooling: update policy limits if clipped_freq < policy->max (2015-08-14 18:26:23 -0700)
 
-way too many casts here.
+on top of commit 7ddab73346a1277b90fd6a4d044bc948f9cc9ad8:
 
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+  Merge branch 'fixes' of git://ftp.arm.linux.org.uk/~rmk/linux-arm (2015-08-13 16:34:56 -0700)
+
+
+Specifics:
+- Locked fix in the cpu cooling code.
+- Refactoring in the cpu cooling code.
+- Remove devm* functions from power allocator.
+
+BR,
+
+Eduardo Valentin
+----------------------------------------------------------------
+Dmitry Torokhov (1):
+      thermal: power_allocator: do not use devm* interfaces
+
+Russell King (1):
+      thermal: cpu_cooling: fix lockdep problems in cpu_cooling
+
+Viresh Kumar (6):
+      thermal/cpu_cooling: No need to initialize max_freq to 0
+      thermal/cpu_cooling: quit early after updating policy
+      thermal/cpu_cooling: convert 'switch' block to 'if' block in notifier
+      thermal/cpu_cooling: rename cpufreq_val as clipped_freq
+      thermal/cpu_cooling: rename max_freq as clipped_freq in notifier
+      thermal/cpu_cooling: update policy limits if clipped_freq < policy->max
+
+ drivers/thermal/cpu_cooling.c     | 73 +++++++++++++++++++++++----------------
+ drivers/thermal/power_allocator.c |  8 ++---
+ 2 files changed, 48 insertions(+), 33 deletions(-)
