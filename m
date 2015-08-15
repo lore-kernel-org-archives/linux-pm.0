@@ -1,160 +1,71 @@
-From: Scott Wood <scottwood@freescale.com>
-Subject: [PATCH v2 2/5] powerpc/fsl: Move fsl_guts.h out of arch/powerpc
-Date: Sat, 15 Aug 2015 01:41:19 -0500
-Message-ID: <1439620882-20449-3-git-send-email-scottwood@freescale.com>
-References: <1439620882-20449-1-git-send-email-scottwood@freescale.com>
+From: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
+Subject: Re: [PATCH v2 08/16] x86/efi: Carrying hibernation key by setup
+ data
+Date: Sat, 15 Aug 2015 19:07:38 +0200
+Message-ID: <20150815170737.GA25353@Nokia-N900>
+References: <1439273796-25359-1-git-send-email-jlee@suse.com>
+ <1439273796-25359-9-git-send-email-jlee@suse.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <1439620882-20449-1-git-send-email-scottwood@freescale.com>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: Mike Turquette <mturquette@linaro.org>, Tang Yuantian <Yuantian.Tang@freescale.com>
-Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Liberman Igal-B31950 <Igal.Liberman@freescale.com>, Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org, linux-clk@vger.kernel.org, Bucur Madalin-Cristian-B32716 <madalin.bucur@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1439273796-25359-9-git-send-email-jlee-IBi9RG/b67k@public.gmane.org>
+Sender: linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Lee, Chun-Yi" <joeyli.kernel-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Matthew Garrett <matthew.garrett-05XSO3Yj/JvQT0dZR+AlfA@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Josh Boyer <jwboyer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Vojtech Pavlik <vojtech-AlSwsSmVLrQ@public.gmane.org>, Matt Fleming <matt.fleming-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Jiri Kosina <jkosina-AlSwsSmVLrQ@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "Lee, Chun-Yi" <jlee-IBi9RG/b67k@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-RnJlZXNjYWxlJ3MgTGF5ZXJzY2FwZSBBUk0gY2hpcHMgdXNlIHRoZSBzYW1lIHN0cnVjdHVyZS4K
-ClNpZ25lZC1vZmYtYnk6IFNjb3R0IFdvb2QgPHNjb3R0d29vZEBmcmVlc2NhbGUuY29tPgotLS0K
-djI6IG5vbi1SRkMKCiBhcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzg1eHgvbXBjODV4eF9tZHMuYyAg
-ICAgICAgICAgICAgICAgICAgICAgfCAyICstCiBhcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzg1eHgv
-bXBjODV4eF9yZGIuYyAgICAgICAgICAgICAgICAgICAgICAgfCAyICstCiBhcmNoL3Bvd2VycGMv
-cGxhdGZvcm1zLzg1eHgvcDEwMjJfZHMuYyAgICAgICAgICAgICAgICAgICAgICAgICAgfCAyICst
-CiBhcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzg1eHgvcDEwMjJfcmRrLmMgICAgICAgICAgICAgICAg
-ICAgICAgICAgfCAyICstCiBhcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzg1eHgvc21wLmMgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgfCAyICstCiBhcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzg1
-eHgvdHdyX3AxMDJ4LmMgICAgICAgICAgICAgICAgICAgICAgICAgfCAyICstCiBhcmNoL3Bvd2Vy
-cGMvcGxhdGZvcm1zLzg2eHgvbXBjODYxMF9ocGNkLmMgICAgICAgICAgICAgICAgICAgICAgfCAy
-ICstCiBkcml2ZXJzL2lvbW11L2ZzbF9wYW11LmMgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgfCAyICstCiBhcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vZnNsX2d1dHMuaCA9
-PiBpbmNsdWRlL2xpbnV4L2ZzbC9ndXRzLmggfCA2ICsrLS0tLQogc291bmQvc29jL2ZzbC9tcGM4
-NjEwX2hwY2QuYyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgMiArLQogc291
-bmQvc29jL2ZzbC9wMTAyMl9kcy5jICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgIHwgMiArLQogc291bmQvc29jL2ZzbC9wMTAyMl9yZGsuYyAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgIHwgMiArLQogMTIgZmlsZXMgY2hhbmdlZCwgMTMgaW5zZXJ0aW9u
-cygrKSwgMTUgZGVsZXRpb25zKC0pCiByZW5hbWUgYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL2Zz
-bF9ndXRzLmggPT4gaW5jbHVkZS9saW51eC9mc2wvZ3V0cy5oICg5OCUpCgpkaWZmIC0tZ2l0IGEv
-YXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy84NXh4L21wYzg1eHhfbWRzLmMgYi9hcmNoL3Bvd2VycGMv
-cGxhdGZvcm1zLzg1eHgvbXBjODV4eF9tZHMuYwppbmRleCBhMzkyZTk0Li5mMGJlNDM5IDEwMDY0
-NAotLS0gYS9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzg1eHgvbXBjODV4eF9tZHMuYworKysgYi9h
-cmNoL3Bvd2VycGMvcGxhdGZvcm1zLzg1eHgvbXBjODV4eF9tZHMuYwpAQCAtMzQsNiArMzQsNyBA
-QAogI2luY2x1ZGUgPGxpbnV4L29mX2RldmljZS5oPgogI2luY2x1ZGUgPGxpbnV4L3BoeS5oPgog
-I2luY2x1ZGUgPGxpbnV4L21lbWJsb2NrLmg+CisjaW5jbHVkZSA8bGludXgvZnNsL2d1dHMuaD4K
-IAogI2luY2x1ZGUgPGxpbnV4L2F0b21pYy5oPgogI2luY2x1ZGUgPGFzbS90aW1lLmg+CkBAIC01
-MSw3ICs1Miw2IEBACiAjaW5jbHVkZSA8YXNtL3FlX2ljLmg+CiAjaW5jbHVkZSA8YXNtL21waWMu
-aD4KICNpbmNsdWRlIDxhc20vc3dpb3RsYi5oPgotI2luY2x1ZGUgPGFzbS9mc2xfZ3V0cy5oPgog
-I2luY2x1ZGUgInNtcC5oIgogCiAjaW5jbHVkZSAibXBjODV4eC5oIgpkaWZmIC0tZ2l0IGEvYXJj
-aC9wb3dlcnBjL3BsYXRmb3Jtcy84NXh4L21wYzg1eHhfcmRiLmMgYi9hcmNoL3Bvd2VycGMvcGxh
-dGZvcm1zLzg1eHgvbXBjODV4eF9yZGIuYwppbmRleCBlMzU4YmVkLi41MGRjYzAwIDEwMDY0NAot
-LS0gYS9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzg1eHgvbXBjODV4eF9yZGIuYworKysgYi9hcmNo
-L3Bvd2VycGMvcGxhdGZvcm1zLzg1eHgvbXBjODV4eF9yZGIuYwpAQCAtMTcsNiArMTcsNyBAQAog
-I2luY2x1ZGUgPGxpbnV4L3NlcV9maWxlLmg+CiAjaW5jbHVkZSA8bGludXgvaW50ZXJydXB0Lmg+
-CiAjaW5jbHVkZSA8bGludXgvb2ZfcGxhdGZvcm0uaD4KKyNpbmNsdWRlIDxsaW51eC9mc2wvZ3V0
-cy5oPgogCiAjaW5jbHVkZSA8YXNtL3RpbWUuaD4KICNpbmNsdWRlIDxhc20vbWFjaGRlcC5oPgpA
-QCAtMjcsNyArMjgsNiBAQAogI2luY2x1ZGUgPGFzbS9tcGljLmg+CiAjaW5jbHVkZSA8YXNtL3Fl
-Lmg+CiAjaW5jbHVkZSA8YXNtL3FlX2ljLmg+Ci0jaW5jbHVkZSA8YXNtL2ZzbF9ndXRzLmg+CiAK
-ICNpbmNsdWRlIDxzeXNkZXYvZnNsX3NvYy5oPgogI2luY2x1ZGUgPHN5c2Rldi9mc2xfcGNpLmg+
-CmRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzg1eHgvcDEwMjJfZHMuYyBiL2Fy
-Y2gvcG93ZXJwYy9wbGF0Zm9ybXMvODV4eC9wMTAyMl9kcy5jCmluZGV4IDZhYzk4NmQzLi4zNzFk
-ZjgyIDEwMDY0NAotLS0gYS9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzg1eHgvcDEwMjJfZHMuYwor
-KysgYi9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzg1eHgvcDEwMjJfZHMuYwpAQCAtMTYsNiArMTYs
-NyBAQAogICoga2luZCwgd2hldGhlciBleHByZXNzIG9yIGltcGxpZWQuCiAgKi8KIAorI2luY2x1
-ZGUgPGxpbnV4L2ZzbC9ndXRzLmg+CiAjaW5jbHVkZSA8bGludXgvcGNpLmg+CiAjaW5jbHVkZSA8
-bGludXgvb2ZfcGxhdGZvcm0uaD4KICNpbmNsdWRlIDxhc20vZGl2NjQuaD4KQEAgLTI1LDcgKzI2
-LDYgQEAKICNpbmNsdWRlIDxzeXNkZXYvZnNsX3NvYy5oPgogI2luY2x1ZGUgPHN5c2Rldi9mc2xf
-cGNpLmg+CiAjaW5jbHVkZSA8YXNtL3VkYmcuaD4KLSNpbmNsdWRlIDxhc20vZnNsX2d1dHMuaD4K
-ICNpbmNsdWRlIDxhc20vZnNsX2xiYy5oPgogI2luY2x1ZGUgInNtcC5oIgogCmRpZmYgLS1naXQg
-YS9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzg1eHgvcDEwMjJfcmRrLmMgYi9hcmNoL3Bvd2VycGMv
-cGxhdGZvcm1zLzg1eHgvcDEwMjJfcmRrLmMKaW5kZXggNjgwMjMyZC4uNTA4N2JlYyAxMDA2NDQK
-LS0tIGEvYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy84NXh4L3AxMDIyX3Jkay5jCisrKyBiL2FyY2gv
-cG93ZXJwYy9wbGF0Zm9ybXMvODV4eC9wMTAyMl9yZGsuYwpAQCAtMTIsNiArMTIsNyBAQAogICog
-a2luZCwgd2hldGhlciBleHByZXNzIG9yIGltcGxpZWQuCiAgKi8KIAorI2luY2x1ZGUgPGxpbnV4
-L2ZzbC9ndXRzLmg+CiAjaW5jbHVkZSA8bGludXgvcGNpLmg+CiAjaW5jbHVkZSA8bGludXgvb2Zf
-cGxhdGZvcm0uaD4KICNpbmNsdWRlIDxhc20vZGl2NjQuaD4KQEAgLTIxLDcgKzIyLDYgQEAKICNp
-bmNsdWRlIDxzeXNkZXYvZnNsX3NvYy5oPgogI2luY2x1ZGUgPHN5c2Rldi9mc2xfcGNpLmg+CiAj
-aW5jbHVkZSA8YXNtL3VkYmcuaD4KLSNpbmNsdWRlIDxhc20vZnNsX2d1dHMuaD4KICNpbmNsdWRl
-ICJzbXAuaCIKIAogI2luY2x1ZGUgIm1wYzg1eHguaCIKZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJw
-Yy9wbGF0Zm9ybXMvODV4eC9zbXAuYyBiL2FyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvODV4eC9zbXAu
-YwppbmRleCBiOGI4MjE2Li42YWM3Nzg2IDEwMDY0NAotLS0gYS9hcmNoL3Bvd2VycGMvcGxhdGZv
-cm1zLzg1eHgvc21wLmMKKysrIGIvYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy84NXh4L3NtcC5jCkBA
-IC0xOSw2ICsxOSw3IEBACiAjaW5jbHVkZSA8bGludXgva2V4ZWMuaD4KICNpbmNsdWRlIDxsaW51
-eC9oaWdobWVtLmg+CiAjaW5jbHVkZSA8bGludXgvY3B1Lmg+CisjaW5jbHVkZSA8bGludXgvZnNs
-L2d1dHMuaD4KIAogI2luY2x1ZGUgPGFzbS9tYWNoZGVwLmg+CiAjaW5jbHVkZSA8YXNtL3BndGFi
-bGUuaD4KQEAgLTI2LDcgKzI3LDYgQEAKICNpbmNsdWRlIDxhc20vbXBpYy5oPgogI2luY2x1ZGUg
-PGFzbS9jYWNoZWZsdXNoLmg+CiAjaW5jbHVkZSA8YXNtL2RiZWxsLmg+Ci0jaW5jbHVkZSA8YXNt
-L2ZzbF9ndXRzLmg+CiAjaW5jbHVkZSA8YXNtL2NvZGUtcGF0Y2hpbmcuaD4KICNpbmNsdWRlIDxh
-c20vY3B1dGhyZWFkcy5oPgogCmRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzg1
-eHgvdHdyX3AxMDJ4LmMgYi9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzg1eHgvdHdyX3AxMDJ4LmMK
-aW5kZXggMzBlMDAyZi4uODkyZTYxMyAxMDA2NDQKLS0tIGEvYXJjaC9wb3dlcnBjL3BsYXRmb3Jt
-cy84NXh4L3R3cl9wMTAyeC5jCisrKyBiL2FyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvODV4eC90d3Jf
-cDEwMnguYwpAQCAtMTUsNiArMTUsNyBAQAogI2luY2x1ZGUgPGxpbnV4L2tlcm5lbC5oPgogI2lu
-Y2x1ZGUgPGxpbnV4L2luaXQuaD4KICNpbmNsdWRlIDxsaW51eC9lcnJuby5oPgorI2luY2x1ZGUg
-PGxpbnV4L2ZzbC9ndXRzLmg+CiAjaW5jbHVkZSA8bGludXgvcGNpLmg+CiAjaW5jbHVkZSA8bGlu
-dXgvb2ZfcGxhdGZvcm0uaD4KIApAQCAtMjMsNyArMjQsNiBAQAogI2luY2x1ZGUgPGFzbS9tcGlj
-Lmg+CiAjaW5jbHVkZSA8YXNtL3FlLmg+CiAjaW5jbHVkZSA8YXNtL3FlX2ljLmg+Ci0jaW5jbHVk
-ZSA8YXNtL2ZzbF9ndXRzLmg+CiAKICNpbmNsdWRlIDxzeXNkZXYvZnNsX3NvYy5oPgogI2luY2x1
-ZGUgPHN5c2Rldi9mc2xfcGNpLmg+CmRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvcGxhdGZvcm1z
-Lzg2eHgvbXBjODYxMF9ocGNkLmMgYi9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzg2eHgvbXBjODYx
-MF9ocGNkLmMKaW5kZXggNTU0MTNhNS4uNDM3YTljMyAxMDA2NDQKLS0tIGEvYXJjaC9wb3dlcnBj
-L3BsYXRmb3Jtcy84Nnh4L21wYzg2MTBfaHBjZC5jCisrKyBiL2FyY2gvcG93ZXJwYy9wbGF0Zm9y
-bXMvODZ4eC9tcGM4NjEwX2hwY2QuYwpAQCAtMjQsNiArMjQsNyBAQAogI2luY2x1ZGUgPGxpbnV4
-L2RlbGF5Lmg+CiAjaW5jbHVkZSA8bGludXgvc2VxX2ZpbGUuaD4KICNpbmNsdWRlIDxsaW51eC9v
-Zi5oPgorI2luY2x1ZGUgPGxpbnV4L2ZzbC9ndXRzLmg+CiAKICNpbmNsdWRlIDxhc20vdGltZS5o
-PgogI2luY2x1ZGUgPGFzbS9tYWNoZGVwLmg+CkBAIC0zOCw3ICszOSw2IEBACiAjaW5jbHVkZSA8
-c3lzZGV2L2ZzbF9wY2kuaD4KICNpbmNsdWRlIDxzeXNkZXYvZnNsX3NvYy5oPgogI2luY2x1ZGUg
-PHN5c2Rldi9zaW1wbGVfZ3Bpby5oPgotI2luY2x1ZGUgPGFzbS9mc2xfZ3V0cy5oPgogCiAjaW5j
-bHVkZSAibXBjODZ4eC5oIgogCmRpZmYgLS1naXQgYS9kcml2ZXJzL2lvbW11L2ZzbF9wYW11LmMg
-Yi9kcml2ZXJzL2lvbW11L2ZzbF9wYW11LmMKaW5kZXggYWJlZWRjOS4uMjQ3MDVjMiAxMDA2NDQK
-LS0tIGEvZHJpdmVycy9pb21tdS9mc2xfcGFtdS5jCisrKyBiL2RyaXZlcnMvaW9tbXUvZnNsX3Bh
-bXUuYwpAQCAtMjAsMTEgKzIwLDExIEBACiAKICNpbmNsdWRlICJmc2xfcGFtdS5oIgogCisjaW5j
-bHVkZSA8bGludXgvZnNsL2d1dHMuaD4KICNpbmNsdWRlIDxsaW51eC9pbnRlcnJ1cHQuaD4KICNp
-bmNsdWRlIDxsaW51eC9nZW5hbGxvYy5oPgogCiAjaW5jbHVkZSA8YXNtL21wYzg1eHguaD4KLSNp
-bmNsdWRlIDxhc20vZnNsX2d1dHMuaD4KIAogLyogZGVmaW5lIGluZGV4ZXMgZm9yIGVhY2ggb3Bl
-cmF0aW9uIG1hcHBpbmcgc2NlbmFyaW8gKi8KICNkZWZpbmUgT01JX1FNQU4gICAgICAgIDB4MDAK
-ZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9mc2xfZ3V0cy5oIGIvaW5jbHVk
-ZS9saW51eC9mc2wvZ3V0cy5oCnNpbWlsYXJpdHkgaW5kZXggOTglCnJlbmFtZSBmcm9tIGFyY2gv
-cG93ZXJwYy9pbmNsdWRlL2FzbS9mc2xfZ3V0cy5oCnJlbmFtZSB0byBpbmNsdWRlL2xpbnV4L2Zz
-bC9ndXRzLmgKaW5kZXggNDNiNmJiMS4uM2FjZjYxMyAxMDA2NDQKLS0tIGEvYXJjaC9wb3dlcnBj
-L2luY2x1ZGUvYXNtL2ZzbF9ndXRzLmgKKysrIGIvaW5jbHVkZS9saW51eC9mc2wvZ3V0cy5oCkBA
-IC0xMiw5ICsxMiw4IEBACiAgKiBvcHRpb24pIGFueSBsYXRlciB2ZXJzaW9uLgogICovCiAKLSNp
-Zm5kZWYgX19BU01fUE9XRVJQQ19GU0xfR1VUU19IX18KLSNkZWZpbmUgX19BU01fUE9XRVJQQ19G
-U0xfR1VUU19IX18KLSNpZmRlZiBfX0tFUk5FTF9fCisjaWZuZGVmIF9fRlNMX0dVVFNfSF9fCisj
-ZGVmaW5lIF9fRlNMX0dVVFNfSF9fCiAKIC8qKgogICogR2xvYmFsIFV0aWxpdHkgUmVnaXN0ZXJz
-LgpAQCAtMTg5LDQgKzE4OCwzIEBAIHN0YXRpYyBpbmxpbmUgdm9pZCBndXRzX3NldF9wbXV4Y3Jf
-ZG1hKHN0cnVjdCBjY3NyX2d1dHMgX19pb21lbSAqZ3V0cywKICNlbmRpZgogCiAjZW5kaWYKLSNl
-bmRpZgpkaWZmIC0tZ2l0IGEvc291bmQvc29jL2ZzbC9tcGM4NjEwX2hwY2QuYyBiL3NvdW5kL3Nv
-Yy9mc2wvbXBjODYxMF9ocGNkLmMKaW5kZXggOTYyMWI5MS4uNmYyMzZmMSAxMDA2NDQKLS0tIGEv
-c291bmQvc29jL2ZzbC9tcGM4NjEwX2hwY2QuYworKysgYi9zb3VuZC9zb2MvZnNsL21wYzg2MTBf
-aHBjZC5jCkBAIC0xMiwxMSArMTIsMTEgQEAKIAogI2luY2x1ZGUgPGxpbnV4L21vZHVsZS5oPgog
-I2luY2x1ZGUgPGxpbnV4L2ludGVycnVwdC5oPgorI2luY2x1ZGUgPGxpbnV4L2ZzbC9ndXRzLmg+
-CiAjaW5jbHVkZSA8bGludXgvb2ZfYWRkcmVzcy5oPgogI2luY2x1ZGUgPGxpbnV4L29mX2Rldmlj
-ZS5oPgogI2luY2x1ZGUgPGxpbnV4L3NsYWIuaD4KICNpbmNsdWRlIDxzb3VuZC9zb2MuaD4KLSNp
-bmNsdWRlIDxhc20vZnNsX2d1dHMuaD4KIAogI2luY2x1ZGUgImZzbF9kbWEuaCIKICNpbmNsdWRl
-ICJmc2xfc3NpLmgiCmRpZmYgLS1naXQgYS9zb3VuZC9zb2MvZnNsL3AxMDIyX2RzLmMgYi9zb3Vu
-ZC9zb2MvZnNsL3AxMDIyX2RzLmMKaW5kZXggNzFjMWE3ZC4uNzQ3YWFiMCAxMDA2NDQKLS0tIGEv
-c291bmQvc29jL2ZzbC9wMTAyMl9kcy5jCisrKyBiL3NvdW5kL3NvYy9mc2wvcDEwMjJfZHMuYwpA
-QCAtMTEsMTIgKzExLDEyIEBACiAgKi8KIAogI2luY2x1ZGUgPGxpbnV4L21vZHVsZS5oPgorI2lu
-Y2x1ZGUgPGxpbnV4L2ZzbC9ndXRzLmg+CiAjaW5jbHVkZSA8bGludXgvaW50ZXJydXB0Lmg+CiAj
-aW5jbHVkZSA8bGludXgvb2ZfYWRkcmVzcy5oPgogI2luY2x1ZGUgPGxpbnV4L29mX2RldmljZS5o
-PgogI2luY2x1ZGUgPGxpbnV4L3NsYWIuaD4KICNpbmNsdWRlIDxzb3VuZC9zb2MuaD4KLSNpbmNs
-dWRlIDxhc20vZnNsX2d1dHMuaD4KIAogI2luY2x1ZGUgImZzbF9kbWEuaCIKICNpbmNsdWRlICJm
-c2xfc3NpLmgiCmRpZmYgLS1naXQgYS9zb3VuZC9zb2MvZnNsL3AxMDIyX3Jkay5jIGIvc291bmQv
-c29jL2ZzbC9wMTAyMl9yZGsuYwppbmRleCBlZTI5MDQ4Li4xZGQ0OWU1IDEwMDY0NAotLS0gYS9z
-b3VuZC9zb2MvZnNsL3AxMDIyX3Jkay5jCisrKyBiL3NvdW5kL3NvYy9mc2wvcDEwMjJfcmRrLmMK
-QEAgLTE4LDEyICsxOCwxMiBAQAogICovCiAKICNpbmNsdWRlIDxsaW51eC9tb2R1bGUuaD4KKyNp
-bmNsdWRlIDxsaW51eC9mc2wvZ3V0cy5oPgogI2luY2x1ZGUgPGxpbnV4L2ludGVycnVwdC5oPgog
-I2luY2x1ZGUgPGxpbnV4L29mX2FkZHJlc3MuaD4KICNpbmNsdWRlIDxsaW51eC9vZl9kZXZpY2Uu
-aD4KICNpbmNsdWRlIDxsaW51eC9zbGFiLmg+CiAjaW5jbHVkZSA8c291bmQvc29jLmg+Ci0jaW5j
-bHVkZSA8YXNtL2ZzbF9ndXRzLmg+CiAKICNpbmNsdWRlICJmc2xfZG1hLmgiCiAjaW5jbHVkZSAi
-ZnNsX3NzaS5oIgotLSAKMi4xLjQKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fCkxpbnV4cHBjLWRldiBtYWlsaW5nIGxpc3QKTGludXhwcGMtZGV2QGxpc3Rz
-Lm96bGFicy5vcmcKaHR0cHM6Ly9saXN0cy5vemxhYnMub3JnL2xpc3RpbmZvL2xpbnV4cHBjLWRl
-dg==
+On Tue 2015-08-11 14:16:28, Lee, Chun-Yi wrote:
+> For forwarding hibernation key from EFI stub to boot kernel, this patch
+> allocates setup data for carrying hibernation key, size and the status
+> of efi operating.
+> 
+> Reviewed-by: Jiri Kosina <jkosina-IBi9RG/b67k@public.gmane.org>
+
+Jiri, are you sure you reviewed these? This is not really
+english, afaict, and efi/EFI should be spelled consistently.
+
+Could you try reviewing it again? Pointing out 10s of small
+bugs is quite boring...
+
+>  	unsigned long key_size;
+>  	unsigned long attributes;
+> +	struct setup_data *setup_data, *hibernation_setup_data;
+>  	struct hibernation_keys *keys;
+> +	unsigned long size = 0;
+>  	efi_status_t status;
+>  
+>  	/* Allocate setup_data to carry keys */
+> +	size = sizeof(struct setup_data) + sizeof(struct hibernation_keys);
+>  	status = efi_call_early(allocate_pool, EFI_LOADER_DATA,
+> -				sizeof(struct hibernation_keys), &keys);
+> +				size, &hibernation_setup_data);
+>  	if (status != EFI_SUCCESS) {
+>  		efi_printk(sys_table, "Failed to alloc mem for hibernation keys\n");
+>  		return;
+>  	}
+>  
+> -	memset(keys, 0, sizeof(struct hibernation_keys));
+> +	memset(hibernation_setup_data, 0, size);
+> +	keys = (struct hibernation_keys *) hibernation_setup_data->data;
+>  
+
+any chance to type stuff correctly so that casts are not
+neccessary?
+
+> +clean_fail:
+> +	hibernation_setup_data->type = SETUP_HIBERNATION_KEYS;
+> +	hibernation_setup_data->len = sizeof(struct hibernation_keys);
+> +	hibernation_setup_data->next = 0;
+> +	keys->hkey_status = efi_status_to_err(status);
+> +
+> +	setup_data = (struct setup_data *)params->hdr.setup_data;
+> +	while (setup_data && setup_data->next)
+> +		setup_data = (struct setup_data *)setup_data->next;
+
+way too many casts here.
+
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
