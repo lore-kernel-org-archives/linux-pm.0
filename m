@@ -1,7 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 3/7] tools/power turbostat: dump CONFIG_TDP
-Date: Sat, 15 Aug 2015 23:25:44 -0400
-Message-ID: <6fb3143b561c4a7865e5513eeb02d42ef38e8173.1439695194.git.len.brown@intel.com>
+Subject: [PATCH 6/7] intel_idle: allow idle states to be freeze-mode specific
+Date: Sat, 15 Aug 2015 23:25:47 -0400
+Message-ID: <7dd0e0af64afe4aa08ccdd167f64bd007f09b515.1439695194.git.len.brown@intel.com>
 References: <1439695548-21174-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -15,147 +15,34 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-Config TDP is a feature that allows parts to be configured
-for different thermal limits after they have left the factory.
+intel_idle uses a NULL "enter" field in a cpuidle state
+to recognize the invalid entry terminating a variable-length array.
 
-This can have an effect on the operation of the part,
-particularly in determiniing...
+Linux-4.0 added support for the system-wide "freeze" state
+in cpuidle drivers via the new "enter_freeze" field.
 
-Max Non-turbo Ratio
-Turbo Activation Ratio
+The natural way to expose a deep idle state for freeze,
+but not for run-time idle is to supply "enter_freeze" without "enter";
+so we update the driver to accept such states.
 
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- arch/x86/include/uapi/asm/msr-index.h |  6 +++
- tools/power/x86/turbostat/turbostat.c | 78 ++++++++++++++++++++++++++++++++++-
- 2 files changed, 83 insertions(+), 1 deletion(-)
+ drivers/idle/intel_idle.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86/include/uapi/asm/msr-index.h b/arch/x86/include/uapi/asm/msr-index.h
-index 3c6bb34..872b592 100644
---- a/arch/x86/include/uapi/asm/msr-index.h
-+++ b/arch/x86/include/uapi/asm/msr-index.h
-@@ -169,6 +169,12 @@
- #define MSR_PP1_ENERGY_STATUS		0x00000641
- #define MSR_PP1_POLICY			0x00000642
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index 2a36a95..008e943 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -965,7 +965,8 @@ static int __init intel_idle_cpuidle_driver_init(void)
+ 	for (cstate = 0; cstate < CPUIDLE_STATE_MAX; ++cstate) {
+ 		int num_substates, mwait_hint, mwait_cstate;
  
-+#define MSR_CONFIG_TDP_NOMINAL		0x00000648
-+#define MSR_CONFIG_TDP_LEVEL_1		0x00000649
-+#define MSR_CONFIG_TDP_LEVEL_2		0x0000064A
-+#define MSR_CONFIG_TDP_CONTROL		0x0000064B
-+#define MSR_TURBO_ACTIVATION_RATIO	0x0000064C
-+
- #define MSR_PKG_WEIGHTED_CORE_C0_RES	0x00000658
- #define MSR_PKG_ANY_CORE_C0_RES		0x00000659
- #define MSR_PKG_ANY_GFXE_C0_RES		0x0000065A
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 67162ec..5a793be 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -1384,6 +1384,49 @@ dump_nhm_cst_cfg(void)
- 	return;
- }
+-		if (cpuidle_state_table[cstate].enter == NULL)
++		if ((cpuidle_state_table[cstate].enter == NULL) &&
++		    (cpuidle_state_table[cstate].enter_freeze == NULL))
+ 			break;
  
-+static void
-+dump_config_tdp(void)
-+{
-+	unsigned long long msr;
-+
-+	get_msr(base_cpu, MSR_CONFIG_TDP_NOMINAL, &msr);
-+	fprintf(stderr, "cpu%d: MSR_CONFIG_TDP_NOMINAL: 0x%08llx", base_cpu, msr);
-+	fprintf(stderr, " (base_ratio=%d)\n", (unsigned int)msr & 0xEF);
-+
-+	get_msr(base_cpu, MSR_CONFIG_TDP_LEVEL_1, &msr);
-+	fprintf(stderr, "cpu%d: MSR_CONFIG_TDP_LEVEL_1: 0x%08llx (", base_cpu, msr);
-+	if (msr) {
-+		fprintf(stderr, "PKG_MIN_PWR_LVL1=%d ", (unsigned int)(msr >> 48) & 0xEFFF);
-+		fprintf(stderr, "PKG_MAX_PWR_LVL1=%d ", (unsigned int)(msr >> 32) & 0xEFFF);
-+		fprintf(stderr, "LVL1_RATIO=%d ", (unsigned int)(msr >> 16) & 0xEF);
-+		fprintf(stderr, "PKG_TDP_LVL1=%d", (unsigned int)(msr) & 0xEFFF);
-+	}
-+	fprintf(stderr, ")\n");
-+
-+	get_msr(base_cpu, MSR_CONFIG_TDP_LEVEL_2, &msr);
-+	fprintf(stderr, "cpu%d: MSR_CONFIG_TDP_LEVEL_2: 0x%08llx (", base_cpu, msr);
-+	if (msr) {
-+		fprintf(stderr, "PKG_MIN_PWR_LVL2=%d ", (unsigned int)(msr >> 48) & 0xEFFF);
-+		fprintf(stderr, "PKG_MAX_PWR_LVL2=%d ", (unsigned int)(msr >> 32) & 0xEFFF);
-+		fprintf(stderr, "LVL2_RATIO=%d ", (unsigned int)(msr >> 16) & 0xEF);
-+		fprintf(stderr, "PKG_TDP_LVL2=%d", (unsigned int)(msr) & 0xEFFF);
-+	}
-+	fprintf(stderr, ")\n");
-+
-+	get_msr(base_cpu, MSR_CONFIG_TDP_CONTROL, &msr);
-+	fprintf(stderr, "cpu%d: MSR_CONFIG_TDP_CONTROL: 0x%08llx (", base_cpu, msr);
-+	if ((msr) & 0x3)
-+		fprintf(stderr, "TDP_LEVEL=%d ", (unsigned int)(msr) & 0x3);
-+	fprintf(stderr, " lock=%d", (unsigned int)(msr >> 31) & 1);
-+	fprintf(stderr, ")\n");
-+	
-+	get_msr(base_cpu, MSR_TURBO_ACTIVATION_RATIO, &msr);
-+	fprintf(stderr, "cpu%d: MSR_TURBO_ACTIVATION_RATIO: 0x%08llx (", base_cpu, msr);
-+	fprintf(stderr, "MAX_NON_TURBO_RATIO=%d", (unsigned int)(msr) & 0xEF);
-+	fprintf(stderr, " lock=%d", (unsigned int)(msr >> 31) & 1);
-+	fprintf(stderr, ")\n");
-+}
-+
- void free_all_buffers(void)
- {
- 	CPU_FREE(cpu_present_set);
-@@ -1873,6 +1916,36 @@ int has_knl_turbo_ratio_limit(unsigned int family, unsigned int model)
- 		return 0;
- 	}
- }
-+int has_config_tdp(unsigned int family, unsigned int model)
-+{
-+	if (!genuine_intel)
-+		return 0;
-+
-+	if (family != 6)
-+		return 0;
-+
-+	switch (model) {
-+	case 0x3A:	/* IVB */
-+	case 0x3E:	/* IVB Xeon */
-+
-+	case 0x3C:	/* HSW */
-+	case 0x3F:	/* HSX */
-+	case 0x45:	/* HSW */
-+	case 0x46:	/* HSW */
-+	case 0x3D:	/* BDW */
-+	case 0x47:	/* BDW */
-+	case 0x4F:	/* BDX */
-+	case 0x56:	/* BDX-DE */
-+	case 0x4E:	/* SKL */
-+	case 0x5E:	/* SKL */
-+
-+	case 0x57:	/* Knights Landing */
-+		return 1;
-+	default:
-+		return 0;
-+	}
-+}
-+
- static void
- dump_cstate_pstate_config_info(family, model)
- {
-@@ -1893,6 +1966,9 @@ dump_cstate_pstate_config_info(family, model)
- 	if (has_knl_turbo_ratio_limit(family, model))
- 		dump_knl_turbo_ratio_limits();
- 
-+	if (has_config_tdp(family, model))
-+		dump_config_tdp();
-+
- 	dump_nhm_cst_cfg();
- }
- 
-@@ -3014,7 +3090,7 @@ int get_and_dump_counters(void)
- }
- 
- void print_version() {
--	fprintf(stderr, "turbostat version 4.7 27-May, 2015"
-+	fprintf(stderr, "turbostat version 4.7 17-June, 2015"
- 		" - Len Brown <lenb@kernel.org>\n");
- }
- 
+ 		if (cstate + 1 > max_cstate) {
 -- 
 2.5.0.330.g130be8e
