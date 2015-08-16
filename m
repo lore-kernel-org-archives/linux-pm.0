@@ -1,36 +1,47 @@
-From: Jiri Kosina <jikos-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2 08/16] x86/efi: Carrying hibernation key by setup
- data
-Date: Sun, 16 Aug 2015 23:23:01 +0200 (CEST)
-Message-ID: <alpine.LNX.2.00.1508162321100.27871@pobox.suse.cz>
-References: <1439273796-25359-1-git-send-email-jlee@suse.com> <1439273796-25359-9-git-send-email-jlee@suse.com> <20150815170737.GA25353@Nokia-N900>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFCv5 PATCH 40/46] sched/cpufreq_sched: compute freq_new based
+ on capacity_orig_of()
+Date: Sun, 16 Aug 2015 22:24:01 +0200
+Message-ID: <20150816202401.GJ10304@worktop.programming.kicks-ass.net>
+References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
+ <1436293469-25707-41-git-send-email-morten.rasmussen@arm.com>
+ <20150815124638.GG10304@worktop.programming.kicks-ass.net>
+ <20150816040333.31346.22542@quantum>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20150815170737.GA25353@Nokia-N900>
-Sender: linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
-Cc: "Lee, Chun-Yi" <joeyli.kernel-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Matthew Garrett <matthew.garrett-05XSO3Yj/JvQT0dZR+AlfA@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Josh Boyer <jwboyer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Vojtech Pavlik <vojtech-AlSwsSmVLrQ@public.gmane.org>, Matt Fleming <matt.fleming-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "Lee, Chun-Yi" <jlee-IBi9RG/b67k@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from casper.infradead.org ([85.118.1.10]:55471 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751429AbbHPWBq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 16 Aug 2015 18:01:46 -0400
+Content-Disposition: inline
+In-Reply-To: <20150816040333.31346.22542@quantum>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Michael Turquette <mturquette@baylibre.com>
+Cc: Morten Rasmussen <morten.rasmussen@arm.com>, mingo@redhat.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Sat, 15 Aug 2015, Pavel Machek wrote:
-
-> > For forwarding hibernation key from EFI stub to boot kernel, this patch
-> > allocates setup data for carrying hibernation key, size and the status
-> > of efi operating.
+On Sat, Aug 15, 2015 at 09:03:33PM -0700, Michael Turquette wrote:
+> Quoting Peter Zijlstra (2015-08-15 05:46:38)
+> > On Tue, Jul 07, 2015 at 07:24:23PM +0100, Morten Rasmussen wrote:
+> > > diff --git a/kernel/sched/cpufreq_sched.c b/kernel/sched/cpufreq_sched.c
+> > > index 2968f3a..7071528 100644
+> > > --- a/kernel/sched/cpufreq_sched.c
+> > > +++ b/kernel/sched/cpufreq_sched.c
+> > > @@ -184,7 +184,7 @@ void cpufreq_sched_set_cap(int cpu, unsigned long capacity)
+> > >               goto out;
+> > >  
+> > >       /* Convert the new maximum capacity request into a cpu frequency */
+> > > -     freq_new = capacity * policy->max >> SCHED_CAPACITY_SHIFT;
+> > > +     freq_new = (capacity * policy->max) / capacity_orig_of(cpu);
+> > >  
+> > >       /* No change in frequency? Bail and return current capacity. */
+> > >       if (freq_new == policy->cur)
 > > 
-> > Reviewed-by: Jiri Kosina <jkosina-IBi9RG/b67k@public.gmane.org>
+> > Can't we avoid exporting that lot by simply passing in the right values
+> > to begin with?
 > 
-> Jiri, are you sure you reviewed these? This is not really
-> english, afaict, and efi/EFI should be spelled consistently.
+> By "right value" do you mean, "pass the frequency from cfs"?
 
-Yes, I did review the code and the fact that it is still in compliance 
-with my original idea. I think you can blame me on not reviewing 
-changelogs super-rigorously though, so all suggestions for improvements 
-are absolutely welcome.
-
-Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs
+Nah, just maybe: (capacity << SCHED_CAPACITY_SHIFT) / capacity_orig_of()
+such that you don't have to export that knowledge to this thing.
