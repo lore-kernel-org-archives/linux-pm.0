@@ -1,46 +1,42 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 5/7] tools/power turbostat: fix typo on DRAM column in Joules-mode
-Date: Sat, 15 Aug 2015 23:25:46 -0400
-Message-ID: <bd6906ed3d7a00d55c9bd368a640ef83bb487d1d.1439695194.git.len.brown@intel.com>
-References: <1439695548-21174-1-git-send-email-lenb@kernel.org>
-Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vk0-f51.google.com ([209.85.213.51]:34494 "EHLO
-	mail-vk0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752090AbbHPDec (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 15 Aug 2015 23:34:32 -0400
-In-Reply-To: <1439695548-21174-1-git-send-email-lenb@kernel.org>
-In-Reply-To: <75fd7ffa7fab91c2c3234bd3e465ba4f366733f4.1439695194.git.len.brown@intel.com>
-References: <75fd7ffa7fab91c2c3234bd3e465ba4f366733f4.1439695194.git.len.brown@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Michael Turquette <mturquette@baylibre.com>
+Subject: Re: [RFCv5 PATCH 41/46] sched/fair: add triggers for OPP change requests
+Date: Sat, 15 Aug 2015 20:50:56 -0700
+Message-ID: <20150816035056.31346.59624@quantum>
+References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
+ <1436293469-25707-42-git-send-email-morten.rasmussen@arm.com>
+ <20150815124817.GH10304@worktop.programming.kicks-ass.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150815124817.GH10304@worktop.programming.kicks-ass.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>
+Cc: mingo@redhat.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 
-From: Len Brown <len.brown@intel.com>
+Quoting Peter Zijlstra (2015-08-15 05:48:17)
+> 
+> 
+> So this OPP thing, I think that got mentioned once earlier in this patch
+> set, wth is that?
 
-< RAM_W
-> RAM_J
+OPP == OPerating Point == P-state
 
-Reported-by: Hubert Chrzaniuk <hubert.chrzaniuk@intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- tools/power/x86/turbostat/turbostat.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+In System-on-chip Land OPP is a very common term, roughly defined as a
+frequency & voltage pair that makes up a performance state.
 
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 915eb28..9655cb4 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -372,7 +372,7 @@ void print_header(void)
- 		if (do_rapl & RAPL_GFX)
- 			outp += sprintf(outp, "   GFX_J");
- 		if (do_rapl & RAPL_DRAM)
--			outp += sprintf(outp, "   RAM_W");
-+			outp += sprintf(outp, "   RAM_J");
- 		if (do_rapl & RAPL_PKG_PERF_STATUS)
- 			outp += sprintf(outp, "   PKG_%%");
- 		if (do_rapl & RAPL_DRAM_PERF_STATUS)
--- 
-2.5.0.330.g130be8e
+In other words, OPP is the P-state of the non-ACPI world.
 
+Similarly DVFS is sometimes confused as a brand new file system, but it
+is also a very standardized acronym amongst SoC vendors meaning
+frequency and voltage scaling.
+
+Regards,
+Mike
+
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
