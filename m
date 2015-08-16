@@ -1,91 +1,77 @@
-From: joeyli <jlee-IBi9RG/b67k@public.gmane.org>
-Subject: Re: [PATCH v2 08/16] x86/efi: Carrying hibernation key by setup data
-Date: Sun, 16 Aug 2015 13:28:58 +0800
-Message-ID: <20150816052858.GE13488@linux-rxt1.site>
-References: <1439273796-25359-1-git-send-email-jlee@suse.com>
- <1439273796-25359-9-git-send-email-jlee@suse.com>
- <20150815170737.GA25353@Nokia-N900>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 2/9] PM / Domains: Remove dev->driver check for runtime PM
+Date: Sun, 16 Aug 2015 11:24:51 +0200
+Message-ID: <CAMuHMdV2gDBaPRb3yE=tVPO_pr7PFA6bwhyQE5raumCh_qPXww@mail.gmail.com>
+References: <1438731339-58317-1-git-send-email-lina.iyer@linaro.org>
+ <1438731339-58317-3-git-send-email-lina.iyer@linaro.org>
+ <7hfv3onv5c.fsf@deeprootsystems.com>
+ <CAMuHMdVeffa-jgXuSjDQBKTrhgW-d87OKzs1iXX+4y-9U_AJbg@mail.gmail.com>
+ <7hwpwylepx.fsf@deeprootsystems.com>
+ <CAMuHMdW-T9rUWXsQeffwtXspHbjfGqo_0G4QMB1o0TwTLJAQAg@mail.gmail.com>
+ <CAMAWPa-0R42thqBo0omn0KK7y0wyxoyaP+wsfoRvXBmWhBytKg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20150815170737.GA25353@Nokia-N900>
-Sender: linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
-Cc: "Lee, Chun-Yi" <joeyli.kernel-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Matthew Garrett <matthew.garrett-05XSO3Yj/JvQT0dZR+AlfA@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Josh Boyer <jwboyer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Vojtech Pavlik <vojtech-AlSwsSmVLrQ@public.gmane.org>, Matt Fleming <matt.fleming-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Jiri Kosina <jkosina-AlSwsSmVLrQ@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CAMAWPa-0R42thqBo0omn0KK7y0wyxoyaP+wsfoRvXBmWhBytKg@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Kevin Hilman <khilman@kernel.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, "msivasub@codeaurora.org" <msivasub@codeaurora.org>, Lina Iyer <lina.iyer@linaro.org>, Andy Gross <agross@codeaurora.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Aug 15, 2015 at 07:07:38PM +0200, Pavel Machek wrote:
-> On Tue 2015-08-11 14:16:28, Lee, Chun-Yi wrote:
-> > For forwarding hibernation key from EFI stub to boot kernel, this patch
-> > allocates setup data for carrying hibernation key, size and the status
-> > of efi operating.
-> > 
-> > Reviewed-by: Jiri Kosina <jkosina-IBi9RG/b67k@public.gmane.org>
-> 
-> Jiri, are you sure you reviewed these? This is not really
-> english, afaict, and efi/EFI should be spelled consistently.
-> 
-> Could you try reviewing it again? Pointing out 10s of small
-> bugs is quite boring...
+Hi Kevin,
+
+On Fri, Aug 14, 2015 at 7:19 PM, Kevin Hilman <khilman@kernel.org> wrote:
+> On Fri, Aug 14, 2015 at 12:24 AM, Geert Uytterhoeven
+> <geert@linux-m68k.org> wrote:
+>> On Fri, Aug 14, 2015 at 5:40 AM, Kevin Hilman <khilman@kernel.org> wrote:
+>>> Geert Uytterhoeven <geert@linux-m68k.org> writes:
+>>>> On Wed, Aug 12, 2015 at 9:50 PM, Kevin Hilman <khilman@kernel.org> wrote:
+>>>>> This check might have made sense before PM domains, but with PM domains,
+>>>>> it's entirely possible to have a simple device without a driver and the
+>>>>> PM domain handles all the necesary PM, so I think this check
+>>>>> could/should be removed.
+>>>>>
+>>>>> Thoughts?
+>>>>
+>>>> Simple devices without a driver aren't handled automatically.
+>>>> At minimum, the driver should call pm_runtime_enable(), cfr.
+>>>> drivers/bus/simple-pm-bus.c.
+>>>
+>>> That's correct, and in the proof-of-concept stuff I hacked up and in
+>>> Lina's series, the CPU "devices" do indeed to this.  Without that, they
+>>> wouldn't end up ever taking this codepath through genpd's
+>>> runtime_suspend and power_off hooks.
+>>>
+>>> Also, I'm not sure if your comment was meant to be an objection to the
+>>> patch?  or if you're OK with it.
+>>
+>> My comment was purely meant as a response to "it's entirely possible to have a
+>> simple device without a driver and the PM domain handles all the necesary PM".
 >
+> Right, so if the PM domain does the pm_runtime_enable() for these
+> "simple" devices without drivers, they can still exist without a
+> driver, and the PM domain doing all the magic.
 
-It's my fault, I will find someone help to review my English in all
-patch description for next edition.
- 
-> >  	unsigned long key_size;
-> >  	unsigned long attributes;
-> > +	struct setup_data *setup_data, *hibernation_setup_data;
-> >  	struct hibernation_keys *keys;
-> > +	unsigned long size = 0;
-> >  	efi_status_t status;
-> >  
-> >  	/* Allocate setup_data to carry keys */
-> > +	size = sizeof(struct setup_data) + sizeof(struct hibernation_keys);
-> >  	status = efi_call_early(allocate_pool, EFI_LOADER_DATA,
-> > -				sizeof(struct hibernation_keys), &keys);
-> > +				size, &hibernation_setup_data);
-> >  	if (status != EFI_SUCCESS) {
-> >  		efi_printk(sys_table, "Failed to alloc mem for hibernation keys\n");
-> >  		return;
-> >  	}
-> >  
-> > -	memset(keys, 0, sizeof(struct hibernation_keys));
-> > +	memset(hibernation_setup_data, 0, size);
-> > +	keys = (struct hibernation_keys *) hibernation_setup_data->data;
-> >  
-> 
-> any chance to type stuff correctly so that casts are not
-> neccessary?
-> 
+Is it possible to let the PM Domain do the pm_runtime_enable() itself in
+the absence of a driver? If yes, I wouldn't have needed simple-pm-bus.c.
+What if a driver is bound later?
 
-The data element defined in setup_data struct as u8:
-        __u8 data[0];
+Gr{oetje,eeting}s,
 
-So I use cast here.
+                        Geert
 
-> > +clean_fail:
-> > +	hibernation_setup_data->type = SETUP_HIBERNATION_KEYS;
-> > +	hibernation_setup_data->len = sizeof(struct hibernation_keys);
-> > +	hibernation_setup_data->next = 0;
-> > +	keys->hkey_status = efi_status_to_err(status);
-> > +
-> > +	setup_data = (struct setup_data *)params->hdr.setup_data;
-> > +	while (setup_data && setup_data->next)
-> > +		setup_data = (struct setup_data *)setup_data->next;
-> 
-> way too many casts here.
-> 
-> 							Pavel
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-I follow setup_efi_pci32() and setup_efi_pci64():
-
-        while (data && data->next)
-                data = (struct setup_data *)(unsigned long)data->next;
-
-That's better I also add (unsigned long) cast as setup_efi_pci. Do
-you have good suggestion let the above code more graceful?
-
-
-Thanks a lot!
-Joey Lee
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
