@@ -1,108 +1,69 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: max17042_battery: Support regmap to access device's registers
-Date: Mon, 17 Aug 2015 14:26:31 +0900
-Message-ID: <CAJKOXPcjs+=gdzUUhkoYaOfnyWOFCfgg=XqKenK7GC46KBV-fw@mail.gmail.com>
-References: <20150814095513.GA14436@mwanda>
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: Re: [PATCH v2 0/3] Introduce usb charger framework to deal with the
+ usb gadget power negotation
+Date: Mon, 17 Aug 2015 14:02:08 +0800
+Message-ID: <CAMz4kuJGR1ZQPbBNpp7EABJn=Rag8jSrb-2ztcefUf4R7pk4AQ@mail.gmail.com>
+References: <cover.1439519412.git.baolin.wang@linaro.org>
+	<20150814085527.GA17920@shlinux2>
+	<CAMz4kuK7f=rGOO-YdB0AB8PzpTbnWZtasuQK8gOXLuM9zyn3gw@mail.gmail.com>
+	<20150817011541.GA7122@shlinux2>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f41.google.com ([209.85.192.41]:33167 "EHLO
-	mail-qg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750710AbbHQF0b (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Aug 2015 01:26:31 -0400
-Received: by qged69 with SMTP id d69so86893128qge.0
-        for <linux-pm@vger.kernel.org>; Sun, 16 Aug 2015 22:26:31 -0700 (PDT)
-In-Reply-To: <20150814095513.GA14436@mwanda>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150817011541.GA7122@shlinux2>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Li Jun <b47624@freescale.com>
+Cc: Felipe Balbi <balbi@ti.com>, Mark Brown <broonie@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, LKML <linux-kernel@vger.kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Peter Chen <peter.chen@freescale.com>, sojka@merica.cz, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, sre@kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, sameo@linux.intel.com, Lee Jones <lee.jones@linaro.org>, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: jonghwa3.lee@samsung.com, linux-pm@vger.kernel.org
 
-2015-08-14 18:55 GMT+09:00 Dan Carpenter <dan.carpenter@oracle.com>:
-> Hello Jonghwa Lee,
+On 17 August 2015 at 09:15, Li Jun <b47624@freescale.com> wrote:
+> On Fri, Aug 14, 2015 at 07:04:56PM +0800, Baolin Wang wrote:
+>> On 14 August 2015 at 16:55, Li Jun <b47624@freescale.com> wrote:
+>> > Hi Baolin,
+>> >
+>> > On Fri, Aug 14, 2015 at 05:47:43PM +0800, Baolin Wang wrote:
+>> >> Currently the Linux kernel does not provide any standard integration of this
+>> >> feature that integrates the USB subsystem with the system power regulation
+>> >> provided by PMICs meaning that either vendors must add this in their kernels
+>> >> or USB gadget devices based on Linux (such as mobile phones) may not behave
+>> >> as they should.
+>> >>
+>> >> Providing a standard framework for doing this in the kernel.
+>> >>
+>> >
+>> > Why not add power supply class support into this?
+>> >
+>>
+>> Hi Jun,
+>>
+>> We don't need the power supply class support into the usb charger,
+> I suppose usb charger is also a power supply for the system, we can use power
+> supply class framework for notify mechanism and get/set many attributes(maybe
+> also the current limit), I see those usb charger drivers under ./driver/power/
+> are designed with power supply supported.
 >
-> The patch 39e7213edc4f: "max17042_battery: Support regmap to access
-> device's registers" from Oct 25, 2013, leads to the following static
-> checker warning:
->
->         drivers/power/max17042_battery.c:501 max17042_init_model()
->         warn: passing casted pointer 'temp_data' to 'max17042_model_data_compare()' 32 vs 16.
->
-> drivers/power/max17042_battery.c
->    469  static inline int max17042_model_data_compare(struct max17042_chip *chip,
->    470                                          u16 *data1, u16 *data2, int size)
->    471  {
->    472          int i;
->    473
->    474          if (memcmp(data1, data2, size)) {
->                                          ^^^^
-> data2 is size * sizeof(u32) bytes long so we are only checking the first
-> quarter of the buffer.  data1 is in size of u16s so I wonder how this
-> memcmp() works at all?
->
->    475                  dev_err(&chip->client->dev, "%s compare failed\n", __func__);
->    476                  for (i = 0; i < size; i++)
->                                         ^^^^
-> Here size is in terms of u16 elements.  The original code mixed u16
-> units with byte units so it was buggy, but now we are using u32 units so
-> it's even worse.
->
->    477                          dev_info(&chip->client->dev, "0x%x, 0x%x",
->    478                                  data1[i], data2[i]);
->    479                  dev_info(&chip->client->dev, "\n");
->    480                  return -EINVAL;
->    481          }
->    482          return 0;
->    483  }
->    484
->    485  static int max17042_init_model(struct max17042_chip *chip)
->    486  {
->    487          int ret;
->    488          int table_size = ARRAY_SIZE(chip->pdata->config_data->cell_char_tbl);
->
-> data1 is any array of u16s.
->
->    489          u32 *temp_data;
->    490
->    491          temp_data = kcalloc(table_size, sizeof(*temp_data), GFP_KERNEL);
->
-> Here "size" (table_size) is in units of u32 elements.
->
->    492          if (!temp_data)
->    493                  return -ENOMEM;
->    494
->    495          max10742_unlock_model(chip);
->    496          max17042_write_model_data(chip, MAX17042_MODELChrTbl,
->    497                                  table_size);
->    498          max17042_read_model_data(chip, MAX17042_MODELChrTbl, temp_data,
->    499                                  table_size);
->                                         ^^^^^^^^^^
->
-> Here "size" (table_size) is in units of u32 elements.
->
->    500
->    501          ret = max17042_model_data_compare(
->    502                  chip,
->    503                  chip->pdata->config_data->cell_char_tbl,
->    504                  (u16 *)temp_data,
->                         ^^^^^^^^^^^^^^^^
-> This cast is ugly and causes a static checker warning.
->
->    505                  table_size);
->    506
->    507          max10742_lock_model(chip);
->    508          kfree(temp_data);
->    509
->    510          return ret;
->    511  }
 
-The cast is indeed ugly but I think that in each loop the u16 pointers
-are used so this should work. regmap also uses 16-bit configuration.
-memcpy operates on bytes, not on words. The 'temp_data' (which is size
-of u32*table_size) is just unnecessarily big, actually two times
-bigger than needed.
+I don't think so. The usb charger is rely on the usb gadget, which is
+not a complete power supply device and it combines the usb and the
+power supply. Thus we make it into usb gadget system. Thanks.
 
-Where exactly do you see an error (except wasted space)?
+> Li Jun
+>> just introduce the notify mechanism for power to set the current limit
+>> when notifying some events from usb charger. Maybe I misunderstand
+>> your meanings, please describe it detailedly. Thanks for your
+>> comments.
+>>
+>> > Li Jun
+>> >
+>>
+>>
+>>
+>> --
+>> Baolin.wang
+>> Best Regards
 
-Best regards,
-Krzysztof
+
+
+-- 
+Baolin.wang
+Best Regards
