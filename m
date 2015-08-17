@@ -1,51 +1,61 @@
-From: Tim Bird <tim.bird@sonymobile.com>
-Subject: Re: [Device-mainlining] [PATCH v2 2/3] gadget: Introduce the usb
- charger framework
-Date: Mon, 17 Aug 2015 08:25:19 -0700
-Message-ID: <55D1FCDF.6060709@sonymobile.com>
-References: <cover.1439519412.git.baolin.wang@linaro.org>	<0c41e21239f69c4e1aa89aba020c91edfc17c4e8.1439519413.git.baolin.wang@linaro.org>	<20150814152723.GA17892@kroah.com> <CAMz4kuL=6mGjNHcKHA9RYbabYqn3Lgu=rK6s8WkH5YGeV1T2+w@mail.gmail.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCHv4 2/4] serial: imx: add runtime pm support
+Date: Mon, 17 Aug 2015 17:40:59 +0200
+Message-ID: <2095117.mcCCLIRizo@amdc1976>
+References: <1439613468-22366-1-git-send-email-edubezval@gmail.com>
+ <1439613468-22366-3-git-send-email-edubezval@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from seldrel01.sonyericsson.com ([37.139.156.2]:4169 "EHLO
-	seldrel01.sonyericsson.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752081AbbHQPZ1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Aug 2015 11:25:27 -0400
-In-Reply-To: <CAMz4kuL=6mGjNHcKHA9RYbabYqn3Lgu=rK6s8WkH5YGeV1T2+w@mail.gmail.com>
+Received: from mailout4.samsung.com ([203.254.224.34]:46149 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755375AbbHQPma (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Aug 2015 11:42:30 -0400
+In-reply-to: <1439613468-22366-3-git-send-email-edubezval@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Baolin Wang <baolin.wang@linaro.org>, Greg KH <gregkh@linuxfoundation.org>
-Cc: "patches@opensource.wolfsonmicro.com" <patches@opensource.wolfsonmicro.com>, "sameo@linux.intel.com" <sameo@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "r.baldyga@samsung.com" <r.baldyga@samsung.com>, "sojka@merica.cz" <sojka@merica.cz>, Felipe Balbi <balbi@ti.com>, LKML <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Peter Chen <peter.chen@freescale.com>, "sre@kernel.org" <sre@kernel.org>, Lee Jones <lee.jones@linaro.org>, "device-mainlining@lists.linuxfoundation.org" <device-mainlining@lists.linuxfoundation.org>, "yoshihiro.shimoda.uh@renesas.com" <yoshihiro.shimoda.uh@renesas.com>
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, Fabio Estevam <festevam@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>, Linux PM <linux-pm@vger.kernel.org>, linux-serial@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
 
+Hi,
 
-On 08/16/2015 08:03 PM, Baolin Wang via device-mainlining wrote:
-> On 14 August 2015 at 23:27, Greg KH <gregkh@linuxfoundation.org> wrote:
->> On Fri, Aug 14, 2015 at 05:47:45PM +0800, Baolin Wang wrote:
->>> + *
->>> + * This program is free software; you can redistribute it and/or modify
->>> + * it under the terms of the GNU General Public License as published by
->>> + * the Free Software Foundation; either version 2 of the License, or
->>> + * (at your option) any later version.
->>
->> I have to ask, do you really mean "any later version"?
->>
+On Friday, August 14, 2015 09:37:46 PM Eduardo Valentin wrote:
+> This change introduces the runtime pm support on imx serial
+> driver. The objective is to be able to idle the uart
+> port whenever it is not in use while still being able
+> to wake it up when needed. The key changes in this patch are:
+> 1. Move the clock handling to runtime pm. Both, ipg and per,
+> are now handled in the suspend and resume callbacks. Only
+> enabling and disabling the clocks are handled in runtime
+> suspend and resume, so we are able to use runtime pm
+> in IRQ context.
+> 2. Clocks are prepared in probe and unprepared in remove,
+> so we do not need to prepare (may sleep) in runtime pm.
+> 3. We mark the device activity based on uart and console
+> callbacks. Whenever the device is needed and we want to
+> access registers, we runtime_pm_get and then mark its
+> last usage when we are done. This is done also across
+> IRQs and DMA callbacks.
+> 4. We reuse the infrastructure in place for suspend and
+> resume, so we do not need to redo wakeup configuration,
+> or context save and restore.
 > 
-> I think I did not get your point, could you explain it detailedly?
+> After this change, the clocks are still sane, in the sense
+> of having balanced clock prepare and enable.
 
-The full kernel is licensed under v2 of the GPL only, not "any later version".
-See the second paragraph at the top of the COPYING file in the root directory
-of the kernel source tree. There are differences on individual files, but
-having this file allow "any later version" makes it different from much of
-rest of the kernel.
+The clock changes in this patch seem to make this driver
+non-functional with CONFIG_PM=n.  Have you tested your
+changes with CONFIG_PM=n?
 
-Unless you have a specific reason to allow greater-than-V2 GPL licensing on this
-file, you should change the licensing clause.  The following wording appears
-to be pretty popular:
+Generally the driver should not depend on PM support to
+enable its clocks.  We had this issue in few Exynos-specific
+drivers not that long time ago..
 
-* This program is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License version 2 as
-* published by the Free Software Foundation.
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-  -- Tim
