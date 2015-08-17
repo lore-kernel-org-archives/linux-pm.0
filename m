@@ -1,168 +1,61 @@
-From: Peter Chen <peter.chen@freescale.com>
-Subject: Re: [PATCH v2 3/3] power: wm831x_power: Support USB charger current
- limit management
-Date: Mon, 17 Aug 2015 09:07:08 +0800
-Message-ID: <20150817010707.GC1864@shlinux2>
+From: Li Jun <b47624-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
+Subject: Re: [PATCH v2 0/3] Introduce usb charger framework to deal with the
+ usb gadget power negotation
+Date: Mon, 17 Aug 2015 09:15:44 +0800
+Message-ID: <20150817011541.GA7122@shlinux2>
 References: <cover.1439519412.git.baolin.wang@linaro.org>
- <f3bfd04bc157e97e2d0632b7ed2452f366f66488.1439519413.git.baolin.wang@linaro.org>
+ <20150814085527.GA17920@shlinux2>
+ <CAMz4kuK7f=rGOO-YdB0AB8PzpTbnWZtasuQK8gOXLuM9zyn3gw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <f3bfd04bc157e97e2d0632b7ed2452f366f66488.1439519413.git.baolin.wang@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Baolin Wang <baolin.wang@linaro.org>
-Cc: balbi@ti.com, broonie@kernel.org, linus.walleij@linaro.org, linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, sojka@merica.cz, stern@rowland.harvard.edu, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, sameo@linux.intel.com, lee.jones@linaro.org, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org
+In-Reply-To: <CAMz4kuK7f=rGOO-YdB0AB8PzpTbnWZtasuQK8gOXLuM9zyn3gw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Felipe Balbi <balbi-l0cyMroinI0@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, sojka-Knnw/vAvyUalVyrhU4qvOw@public.gmane.org, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Aug 14, 2015 at 05:47:46PM +0800, Baolin Wang wrote:
-> Integrate with the newly added USB charger interface to limit the current
-> we draw from the USB input based on the input device configuration
-> identified by the USB stack, allowing us to charge more quickly from high
-> current inputs without drawing more current than specified from others.
+On Fri, Aug 14, 2015 at 07:04:56PM +0800, Baolin Wang wrote:
+> On 14 August 2015 at 16:55, Li Jun <b47624-KZfg59tc24xl57MIdRCFDg@public.gmane.org> wrote:
+> > Hi Baolin,
+> >
+> > On Fri, Aug 14, 2015 at 05:47:43PM +0800, Baolin Wang wrote:
+> >> Currently the Linux kernel does not provide any standard integration of this
+> >> feature that integrates the USB subsystem with the system power regulation
+> >> provided by PMICs meaning that either vendors must add this in their kernels
+> >> or USB gadget devices based on Linux (such as mobile phones) may not behave
+> >> as they should.
+> >>
+> >> Providing a standard framework for doing this in the kernel.
+> >>
+> >
+> > Why not add power supply class support into this?
+> >
 > 
-> Signed-off-by: Mark Brown <broonie@kernel.org>
-> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
-> ---
->  drivers/power/wm831x_power.c     |   69 ++++++++++++++++++++++++++++++++++++++
->  include/linux/mfd/wm831x/pdata.h |    3 ++
->  2 files changed, 72 insertions(+)
+> Hi Jun,
 > 
-> diff --git a/drivers/power/wm831x_power.c b/drivers/power/wm831x_power.c
-> index db11ae6..72c661f 100644
-> --- a/drivers/power/wm831x_power.c
-> +++ b/drivers/power/wm831x_power.c
-> @@ -13,6 +13,7 @@
->  #include <linux/platform_device.h>
->  #include <linux/power_supply.h>
->  #include <linux/slab.h>
-> +#include <linux/usb/usb_charger.h>
->  
->  #include <linux/mfd/wm831x/core.h>
->  #include <linux/mfd/wm831x/auxadc.h>
-> @@ -31,6 +32,8 @@ struct wm831x_power {
->  	char usb_name[20];
->  	char battery_name[20];
->  	bool have_battery;
-> +	struct usb_charger *usb_charger;
-> +	struct notifier_block usb_notify;
->  };
->  
->  static int wm831x_power_check_online(struct wm831x *wm831x, int supply,
-> @@ -125,6 +128,43 @@ static enum power_supply_property wm831x_usb_props[] = {
->  	POWER_SUPPLY_PROP_VOLTAGE_NOW,
->  };
->  
-> +/* In miliamps */
-> +static unsigned int wm831x_usb_limits[] = {
-> +	0,
-> +	2,
-> +	100,
-> +	500,
-> +	900,
-> +	1500,
-> +	1800,
-> +	550,
-> +};
+> We don't need the power supply class support into the usb charger,
+I suppose usb charger is also a power supply for the system, we can use power
+supply class framework for notify mechanism and get/set many attributes(maybe
+also the current limit), I see those usb charger drivers under ./driver/power/
+are designed with power supply supported.
 
-Why 550 is the last, but not 1800?
-
-> +
-> +static int wm831x_usb_limit_change(struct notifier_block *nb,
-> +				   unsigned long limit, void *data)
-> +{
-> +	struct wm831x_power *wm831x_power = container_of(nb,
-> +							 struct wm831x_power,
-> +							 usb_notify);
-> +	int i, best;
-> +
-> +	/* Find the highest supported limit */
-> +	best = 0;
-> +	for (i = 0; i < ARRAY_SIZE(wm831x_usb_limits); i++) {
-> +		if (limit < wm831x_usb_limits[i] &&
-> +		    wm831x_usb_limits[best] < wm831x_usb_limits[i])
-> +			best = i;
-> +	}
-> +
-> +	dev_dbg(wm831x_power->wm831x->dev,
-> +		"Limiting USB current to %dmA", wm831x_usb_limits[best]);
-> +
-> +	wm831x_set_bits(wm831x_power->wm831x, WM831X_POWER_STATE,
-> +		        WM831X_USB_ILIM_MASK, best);
-> +
-> +	return 0;
-> +}
-> +
->  /*********************************************************************
->   *		Battery properties
->   *********************************************************************/
-> @@ -606,8 +646,31 @@ static int wm831x_power_probe(struct platform_device *pdev)
->  		}
->  	}
->  
-> +	if (wm831x_pdata && wm831x_pdata->usb_gadget) {
-
-Where the wm831x_pdata->usb_gadget is initialized?
-
-> +		power->usb_charger =
-> +			usb_charger_find_by_name(wm831x_pdata->usb_gadget);
-> +		if (IS_ERR(power->usb_charger)) {
-> +			ret = PTR_ERR(power->usb_charger);
-> +			dev_err(&pdev->dev,
-> +				"Failed to find USB gadget: %d\n", ret);
-> +			goto err_bat_irq;
-> +		}
-> +
-> +		power->usb_notify.notifier_call = wm831x_usb_limit_change;
-> +
-> +		ret = usb_charger_register_notify(power->usb_charger,
-> +						  &power->usb_notify);
-> +		if (ret != 0) {
-> +			dev_err(&pdev->dev,
-> +				"Failed to register notifier: %d\n", ret);
-> +			goto err_usb_charger;
-> +		}
-> +	}
-> +
->  	return ret;
->  
-> +err_usb_charger:
-> +	usb_charger_put(power->usb_charger);
->  err_bat_irq:
->  	--i;
->  	for (; i >= 0; i--) {
-> @@ -637,6 +700,12 @@ static int wm831x_power_remove(struct platform_device *pdev)
->  	struct wm831x *wm831x = wm831x_power->wm831x;
->  	int irq, i;
->  
-> +	if (wm831x_power->usb_charger) {
-> +		usb_charger_unregister_notify(wm831x_power->usb_charger,
-> +					      &wm831x_power->usb_notify);
-> +		usb_charger_put(wm831x_power->usb_charger);
-> +	}
-> +
->  	for (i = 0; i < ARRAY_SIZE(wm831x_bat_irqs); i++) {
->  		irq = wm831x_irq(wm831x, 
->  				 platform_get_irq_byname(pdev,
-> diff --git a/include/linux/mfd/wm831x/pdata.h b/include/linux/mfd/wm831x/pdata.h
-> index dcc9631..5af8399 100644
-> --- a/include/linux/mfd/wm831x/pdata.h
-> +++ b/include/linux/mfd/wm831x/pdata.h
-> @@ -126,6 +126,9 @@ struct wm831x_pdata {
->  	/** The driver should initiate a power off sequence during shutdown */
->  	bool soft_shutdown;
->  
-> +	/** dev_name of USB charger gadget to integrate with */
-> +	const char *usb_gadget;
-> +
->  	int irq_base;
->  	int gpio_base;
->  	int gpio_defaults[WM831X_GPIO_NUM];
+Li Jun
+> just introduce the notify mechanism for power to set the current limit
+> when notifying some events from usb charger. Maybe I misunderstand
+> your meanings, please describe it detailedly. Thanks for your
+> comments.
+> 
+> > Li Jun
+> >
+> 
+> 
+> 
 > -- 
-> 1.7.9.5
-> 
-
--- 
-
-Best Regards,
-Peter Chen
+> Baolin.wang
+> Best Regards
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
