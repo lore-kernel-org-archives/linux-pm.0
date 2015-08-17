@@ -1,85 +1,38 @@
-From: Yao Yuan <yao.yuan@freescale.com>
-Subject: RE: [PATCH v2] dmaengine: fsl-edma: add PM suspend/resume support
-Date: Mon, 17 Aug 2015 03:59:41 +0000
-Message-ID: <CY1PR0301MB1562103588FB0C6BEFDDBF3C83790@CY1PR0301MB1562.namprd03.prod.outlook.com>
-References: <1437469005-3162-1-git-send-email-yao.yuan@freescale.com>
-	<CADRPPNQJi_x+mdQV=DEVuhCL_p6VOWcPiV3jzioeRdWgSW2w3g@mail.gmail.com>
-	<CY1PR0301MB15628DD5CFCE2B65BF4FECB2837C0@CY1PR0301MB1562.namprd03.prod.outlook.com>
- <CADRPPNS_wzX+mwT0L-H=ZP9w8gH9W4O9KUqnGYiAc39S5v4qLA@mail.gmail.com>
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: Re: [PATCH] PM / Domains: Make pm_genpd_init() available to modules
+Date: Mon, 17 Aug 2015 09:47:47 +0530
+Message-ID: <55D1606B.3020201@codeaurora.org>
+References: <1439446917-32304-1-git-send-email-rnayak@codeaurora.org> <20150813181128.GP26614@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bn1bn0101.outbound.protection.outlook.com ([157.56.110.101]:45812
-	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751440AbbHQD7p (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 16 Aug 2015 23:59:45 -0400
-In-Reply-To: <CADRPPNS_wzX+mwT0L-H=ZP9w8gH9W4O9KUqnGYiAc39S5v4qLA@mail.gmail.com>
-Content-Language: en-US
+Received: from smtp.codeaurora.org ([198.145.29.96]:58005 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750747AbbHQERx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Aug 2015 00:17:53 -0400
+In-Reply-To: <20150813181128.GP26614@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Li Leo <LeoLi@freescale.com>
-Cc: Vinod Koul <vinod.koul@intel.com>, "stefan@agner.ch" <stefan@agner.ch>, Arnd Bergmann <arnd@arndb.de>, Dan Williams <dan.j.williams@intel.com>, "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: ulf.hansson@linaro.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, geert@linux-m68k.org
 
-T24gU2F0LCBBdWcgMTUsIDIwMTUgYXQgNzo0OCBBTSwgcGt1LmxlbyA8IHBrdS5sZW9AZ21haWwu
-Y29tID4gd3JvdGU6DQo+IE9uIEZyaSwgQXVnIDE0LCAyMDE1IGF0IDE6MjQgQU0sIFlhbyBZdWFu
-IDx5YW8ueXVhbkBmcmVlc2NhbGUuY29tPiB3cm90ZToNCj4gPiBIaSBMZW8sDQo+ID4NCj4gPiBU
-aGFua3MgZm9yIHlvdXIgcmV2aWV3Lg0KPiA+IEFib3V0IHRob3NlIHR3byBtZXRob2RzIGZvciBE
-TUEgc3VzcGVuZCB0aGF0IHlvdSBoYXZlIG1lbnRpb25lZC4gV2UNCj4gaGF2ZSBhIGxvdCBvZiB0
-aGUgZGlzY3Vzc2lvbnMgaW4gb3RoZXIgRE1BIGRyaXZlciBsaWtlIERNQSBmb3IgRnJlZXNjYWxl
-DQo+IFBvd2VyUEMuDQo+ID4NCj4gPiBGaW5hbGx5LCB3ZSB0aGluayB0aGUgZGV2aWNlIHdoaWNo
-IHVzZWQgdGhlIERNQSB0cmFuc21pc3Npb24gc2VydmljZSBzaG91bGQNCj4gY2FuY2VsIHRoZSB0
-cmFuc21pc3Npb24gc2VydmljZSBpbiBpdHMgc3VzcGVuZC4NCj4gPiBTbyBETUEgaW4gc3VzcGVu
-ZCBzaG91bGQgYmUgaWRsZS4NCj4gDQo+IElmIHRoYXQncyB0aGUgY2FzZSB5b3Ugc2hvdWxkIGNs
-ZWFybHkgc3RhdGUgdGhpcyBpbiB0aGUgY29tbWl0IG1lc3NhZ2UgYW5kIGluDQo+IGNvZGUsIGFs
-dGhvdWdoIEkgZG9uJ3Qga25vdyBpZiBpdCBpcyBzYWZlIHRvIG1ha2Ugc3VjaCBhc3N1bXB0aW9u
-LiAgVGhlcmUgY291bGQNCj4gYmUgdXNlciBvZiB0aGUgRE1BIHRoYXQgZG9lc24ndCB0cmFjayB0
-aGUgY29tcGxldGlvbiBvZiB0cmFuc2ZlcnMuDQoNCkkgdGhpbmsgaXQgc2hvdWxkIGJlIHNhZmUu
-IEluIG15IG9waW5pb24sIGV2ZW4gc29tZSBjbGllbnQodGhlIHVzZXIgb2YgdGhlIERNQSkgZm9y
-Z2V0IHRvIGNhbmNlbCBpdHMgRE1BIHRyYW5zbWlzc2lvbiwNCkl0IHdpbGwganVzdCBsZWFkIHRv
-IFBNIGZhaWxlZCBidXQgbm8gb3RoZXIgc3lzdGVtIGFuZCBkYXRhIHJpc2suDQpBbHRob3VnaCB3
-ZSBzaG91bGQgZmlyc3QgZml4IHRoZSBiZWhhdmlvciBvZiB0aGUgY2xpZW50Lg0KT25jZSB5b3Ug
-YXJlIG5vIG5lZWQgdGhlIERNQSB0cmFuc21pc3Npb24sIHdoeSBub3Qgc3RvcCBpdD8NCg0KSXMg
-aXQgcmlnaHQ/DQoNCj4gPg0KPiA+IE9uY2UgdGhlIERNQSBpbiBsYXRlX3N1c3BlbmQgaXMgbm90
-IGJlIGlkbGUsIHdlIHRoaW5rIHNvbWUgZHJpdmVyIGhhdmVuJ3QNCj4gY2FuY2VsZWQgdGhlIERN
-QSB0cmFuc21pc3Npb24uIFNvIG1heWJlIHNvbWV0aGluZyBpcyBlcnJvciB3aGVuIG90aGVyDQo+
-IGRyaXZlciBpbiBzdXNwZW5kLg0KPiA+DQo+ID4gSW4gdGhlIGNhc2UsIHdlIHNob3VsZCByZXR1
-cm4gZmFpbGVkIHRvIHN0b3AgUE0uIERNQSBzaG91bGQgbm90IG1ha2UgYQ0KPiBjaG9pY2UgZm9y
-IG90aGVyIGRyaXZlcnMod2hpY2ggdXNlZCBETUEpIHRvIGZvcmNlIHN0b3AgRE1BIHRyYW5zbWlz
-c2lvbi4NCj4gDQo+IFRoZSBzdXNwZW5kIGVudHJhbmNlIHNob3VsZCBiZSB0ZXJtaW5hdGVkIGJ5
-IHdha2V1cCBldmVudHMgYW5kIG9ubHkgY3JpdGljYWwNCj4gaXNzdWVzLiAgSSBkb24ndCB0aGlu
-ayB3ZSBzaG91bGQganVzdCB0ZXJtaW5hdGUgdGhlIHN1c3BlbmQgZW50cmFuY2UganVzdA0KPiBi
-ZWNhdXNlIGhhdmluZyBvbi1nb2luZyBJL08gd2l0aG91dCBldmVuIHRyeSB0byBzdG9wIGl0Lg0K
-DQpUaGUgZ3JhY2VmdWwgYmVoYXZpb3Igd291bGQgYmUgdG8gZm9yIGNsaWVudCB0byBQQVVTRSBv
-ciB0ZXJtaW5hdGUgYW5kIHRoZW4gc3VzcGVuZA0KZm9sbG93ZWQgYnkgRE1BIHN1c3BlbmQuDQpX
-ZSBuZWVkIHRvIHJlbHkgb24gY2xpZW50IGRvaW5nIHRoZSByaWdodCB0aGluZyBoZXJlLiANClRo
-ZSBETUEgc2hvdWxkIG5vdCBtYWtlIGEgZGVjaXNpb24gaW5zdGVhZCBvZiBjbGllbnQuDQpJZiB0
-aGUgRE1BIGlzIG5vdCBpZGxlIGluIERNQSBzdXNwZW5kLCBpdCBzaG91bGQgYmUgdGhlIGNsaWVu
-dCdzIGlzc3VlLg0KV2UgZG9uJ3Qga25vdyB3aGF0IHRoZSBjbGllbnQgcmVhbGx5IHdhbnQgdG8g
-ZG8sIHNvIGp1c3QgcmV0dXJuIHRoZSBub24tc3VjY2VzcyB2YWx1ZS4NCg0KSSdtIG5vdCBzdXJl
-IG15IGRlc2NyaXB0aW9uIGlzIGNsZWFyLiAgU28gd2UgbWF5IHJlZmVyIHRoZSBkaXNjdXNzaW9u
-IGFib3V0IHRoZSBETUEgUE0gc3VwcG9ydCBiZWZvcmUuDQpTdWNoIGFzICJETUE6IEZyZWVzY2Fs
-ZTogYWRkIHN1c3BlbmQgcmVzdW1lIGZ1bmN0aW9ucyBmb3IgRE1BIGRyaXZlciINCg0KTGlrZTpo
-dHRwczovL2xrbWwub3JnL2xrbWwvMjAxNC81LzIxLzENCg0KPiA+DQo+ID4gVGhhbmtzLg0KPiA+
-DQo+ID4gQmVzdCBSZWdhcmRzLA0KPiA+IFl1YW4gWWFvDQo+ID4NCj4gPj4gLS0tLS1PcmlnaW5h
-bCBNZXNzYWdlLS0tLS0NCj4gPj4gRnJvbTogcGt1Lmxlb0BnbWFpbC5jb20gW21haWx0bzpwa3Uu
-bGVvQGdtYWlsLmNvbV0gT24gQmVoYWxmIE9mIExpDQo+ID4+IFlhbmcNCj4gPj4gU2VudDogRnJp
-ZGF5LCBBdWd1c3QgMTQsIDIwMTUgNDo1OCBBTQ0KPiA+PiBUbzogWXVhbiBZYW8tQjQ2NjgzDQo+
-ID4+IENjOiBWaW5vZCBLb3VsOyBzdGVmYW5AYWduZXIuY2g7IEFybmQgQmVyZ21hbm47IERhbiBX
-aWxsaWFtczsNCj4gPj4gZG1hZW5naW5lQHZnZXIua2VybmVsLm9yZzsgbGttbDsNCj4gPj4gbGlu
-dXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnOyBsaW51eC0gcG1Admdlci5rZXJuZWwu
-b3JnDQo+ID4+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjJdIGRtYWVuZ2luZTogZnNsLWVkbWE6IGFk
-ZCBQTSBzdXNwZW5kL3Jlc3VtZQ0KPiA+PiBzdXBwb3J0DQo+ID4+DQo+ID4+IE9uIFR1ZSwgSnVs
-IDIxLCAyMDE1IGF0IDM6NTYgQU0sIFl1YW4gWWFvIDx5YW8ueXVhbkBmcmVlc2NhbGUuY29tPiB3
-cm90ZToNCj4gPj4gPiBUaGlzIGFkZCBwb3dlciBtYW5hZ2VtZW50IHN1c3BlbmQvcmVzdW1lIHN1
-cHBvcnQgZm9yIHRoZSBmc2wtZWRtYQ0KPiA+PiA+IGRyaXZlci4NCj4gPj4gPg0KPiA+PiA+IGVE
-TUEgYWN0ZWQgYXMgYSBiYXNpYyBmdW5jdGlvbiB1c2VkIGJ5IG90aGVycy4gV2hhdCBpdCBuZWVk
-cyB0byBkbw0KPiA+PiA+IGlzIHRoZSB0d28gc3RlcHMgYmVsb3cgdG8gc3VwcG9ydCBwb3dlciBt
-YW5hZ2VtZW50Lg0KPiA+PiA+DQo+ID4+ID4gSW4gZnNsX2VkbWFfc3VzcGVuZF9sYXRlOg0KPiA+
-PiA+IENoZWNrIHdoZXRoZXIgdGhlIERNQSBjaGFuIGlzIGlkbGUgYW5kIGlmIGl0IGlzIG5vdCBp
-ZGxlLCBzdG9wIFBNDQo+ID4+ID4gb3BlcmF0aW9uLg0KPiA+Pg0KPiA+PiBZb3Ugc2hvdWxkIHRy
-eSB0byBxdWllc2NlIHRoZSBkZXZpY2Ugb24gc3VzcGVuZCBpbnN0ZWFkIG9mIGRlcGVuZGluZw0K
-PiA+PiBvbiBpdHNlbGYgdG8gYmUgaGFwcGVuIGluIGlkbGUgYW5kIGZhaWxpbmcgaWYgaXQgaXMg
-bm90Lg0KPiA+Pg0KPiA+PiBSZWdhcmRzLA0KPiA+PiBMZW8NCj4gDQo+IA0KPiANCj4gLS0NCj4g
-LSBMZW8NCg==
+
+On 08/13/2015 11:41 PM, Stephen Boyd wrote:
+> On 08/13, Rajendra Nayak wrote:
+>> Export symbol pm_genpd_init so it can be used in loadable
+>> kernel modules
+>>
+>> Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
+>> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+>> ---
+>
+> I'd like to take this through the clk tree somehow so that we can
+> merge the rest of the GDSC series this coming cycle.
+
+Ulf/Rafael, if you don't have any issues with the patch, and are fine
+with Stephen taking this through the clk tree, would you be able to ack
+this please? thanks.
+
+regards,
+Rajendra
