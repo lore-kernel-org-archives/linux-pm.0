@@ -1,68 +1,74 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] x86, suspend: Save/restore THERM_CONTROL register for
- suspend
-Date: Mon, 17 Aug 2015 15:27:26 +0200
-Message-ID: <20150817132726.GA11047@amd>
-References: <1439800192-3034-1-git-send-email-yu.c.chen@intel.com>
- <20150817101115.GA27204@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V4 2/2] PM / OPP: Fix static checker warning (broken 64bit big endian systems)
+Date: Mon, 17 Aug 2015 19:20:20 +0530
+Message-ID: <0a41aca3107cea2d9fac3f4536e5c7f4acd90f7d.1439818955.git.viresh.kumar@linaro.org>
+References: <fac7aa53b304bbff1ff22f65670e05e5e6dc6396.1439376998.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35916 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750732AbbHQN12 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Aug 2015 09:27:28 -0400
-Content-Disposition: inline
-In-Reply-To: <20150817101115.GA27204@gmail.com>
+Received: from mail-pd0-f175.google.com ([209.85.192.175]:34650 "EHLO
+	mail-pd0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750911AbbHQNu0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Aug 2015 09:50:26 -0400
+Received: by pdbfa8 with SMTP id fa8so56130258pdb.1
+        for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2015 06:50:25 -0700 (PDT)
+In-Reply-To: <fac7aa53b304bbff1ff22f65670e05e5e6dc6396.1439376998.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>
-Cc: Chen Yu <yu.c.chen@intel.com>, rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, rui.zhang@intel.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, dan.carpenter@oracle.com, nm@ti.com, sboyd@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 
-On Mon 2015-08-17 12:11:15, Ingo Molnar wrote:
-> 
-> * Chen Yu <yu.c.chen@intel.com> wrote:
-> 
-> > A bug is reported(https://bugzilla.redhat.com/show_bug.cgi?id=1227208)
+Dan Carpenter reported (generated with static checker):
 
-Access denied :-(
+drivers/base/power/opp.c:949 _opp_add_static_v2()
+warn: passing casted pointer '&new_opp->clock_latency_ns' to
+'of_property_read_u32()' 64 vs 32.
 
-> > that, after resuming from S3, CPU is working at a low speed.
-> > After investigation, it is found that, BIOS has modified the value
-> > of THERM_CONTROL register during S3, changes it from 0 to 0x10,
-> > while the latter means CPU can only get 25% of the Duty Cycle,
-> > and this caused the problem.
+This code will break on 64 bit, big endian machines.
 
-What HW is this on?
+Fix this by reading the value in a u32 type variable first and then
+assigning it to the unsigned long variable.
 
-> > --- a/arch/x86/power/cpu.c
-> > +++ b/arch/x86/power/cpu.c
-> > @@ -97,6 +97,7 @@ static void __save_processor_state(struct saved_context *ctxt)
-> >  	mtrr_save_fixed_ranges(NULL);
-> >  
-> >  	rdmsrl(MSR_EFER, ctxt->efer);
-> > +	rdmsrl(MSR_IA32_THERM_CONTROL, ctxt->clock_modulation);
-> 
-> So what your changelog fails to mention:
-> 
->  - You only add this code to the 64-bit kernel. Are 32-bit kernels not affected?
-> 
->  - the MSR read is done unconditionally. Is MSR_IA32_THERM_CONTROL available
->    architecturally and readable (and has sensible values) on all 64-bit capable
->    x86 CPUs that run this code path?
+Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+Suggested-by: Stephen Boyd <sboyd@codeaurora.org>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+V3->V4:
+- Assign values only if of_property_read_u32() is successful.
 
-- So BIOS expects to control MSR_IA32_THERM_CONTROL . Now you suspend
-  in hot enironment but resume in cool one. BIOS sets up
-  MSR_IA32_THERM_CONTROL the right way, but you override it.
+ drivers/base/power/opp.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-  As BIOS expects to control MSR_IA32_THERM_CONTROL and machine is
-  kept cool, BIOS will not write new value to it, and machine will
-  keep running slowly.
-
-Doing this unconditionally is asking for trouble. Blacklist entry with
-affected BIOS info might be acceptable, but...
-									Pavel  
-
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index 4d6c4576f7ae..803d8b7ced89 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -918,6 +918,7 @@ static int _opp_add_static_v2(struct device *dev, struct device_node *np)
+ 	struct device_opp *dev_opp;
+ 	struct dev_pm_opp *new_opp;
+ 	u64 rate;
++	u32 val;
+ 	int ret;
+ 
+ 	/* Hold our list modification lock here */
+@@ -946,14 +947,16 @@ static int _opp_add_static_v2(struct device *dev, struct device_node *np)
+ 	new_opp->np = np;
+ 	new_opp->dynamic = false;
+ 	new_opp->available = true;
+-	of_property_read_u32(np, "clock-latency-ns",
+-			     (u32 *)&new_opp->clock_latency_ns);
++
++	if (!of_property_read_u32(np, "clock-latency-ns", &val))
++		new_opp->clock_latency_ns = val;
+ 
+ 	ret = opp_get_microvolt(new_opp, dev);
+ 	if (ret)
+ 		goto free_opp;
+ 
+-	of_property_read_u32(np, "opp-microamp", (u32 *)&new_opp->u_amp);
++	if (!of_property_read_u32(new_opp->np, "opp-microamp", &val))
++		new_opp->u_amp = val;
+ 
+ 	ret = _opp_add(dev, new_opp, dev_opp);
+ 	if (ret)
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+2.4.0
+
