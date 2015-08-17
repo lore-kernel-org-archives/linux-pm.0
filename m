@@ -1,101 +1,62 @@
-From: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2 0/3] Introduce usb charger framework to deal with the
- usb gadget power negotation
-Date: Mon, 17 Aug 2015 19:51:00 +0800
-Message-ID: <CAMz4ku+OiQDpvsFuSbJWp4jXm1OnAfSNrYkYeXY3ZwsCcGd_pA@mail.gmail.com>
-References: <cover.1439519412.git.baolin.wang@linaro.org>
-	<20150814085527.GA17920@shlinux2>
-	<CAMz4kuK7f=rGOO-YdB0AB8PzpTbnWZtasuQK8gOXLuM9zyn3gw@mail.gmail.com>
-	<20150817011541.GA7122@shlinux2>
-	<CAMz4kuJGR1ZQPbBNpp7EABJn=Rag8jSrb-2ztcefUf4R7pk4AQ@mail.gmail.com>
-	<20150817082023.GB7122@shlinux2>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [RFCv5 PATCH 40/46] sched/cpufreq_sched: compute freq_new based
+ on capacity_orig_of()
+Date: Mon, 17 Aug 2015 13:19:59 +0100
+Message-ID: <55D1D16F.1070106@arm.com>
+References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com> <1436293469-25707-41-git-send-email-morten.rasmussen@arm.com> <20150815124638.GG10304@worktop.programming.kicks-ass.net> <20150816040333.31346.22542@quantum> <20150816202401.GJ10304@worktop.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20150817082023.GB7122@shlinux2>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Li Jun <b47624-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
-Cc: Felipe Balbi <balbi-l0cyMroinI0@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, sojka-Knnw/vAvyUalVyrhU4qvOw@public.gmane.org, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from eu-smtp-delivery-143.mimecast.com ([207.82.80.143]:28659 "EHLO
+	eu-smtp-delivery-143.mimecast.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751073AbbHQMTQ convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 17 Aug 2015 08:19:16 -0400
+In-Reply-To: <20150816202401.GJ10304@worktop.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>
+Cc: Morten Rasmussen <Morten.Rasmussen@arm.com>, "mingo@redhat.com" <mingo@redhat.com>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, "yuyang.du@intel.com" <yuyang.du@intel.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "sgurrappadi@nvidia.com" <sgurrappadi@nvidia.com>, "pang.xunlei@zte.com.cn" <pang.xunlei@zte.com.cn>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 17 August 2015 at 16:20, Li Jun <b47624-KZfg59tc24xl57MIdRCFDg@public.gmane.org> wrote:
-> On Mon, Aug 17, 2015 at 02:02:08PM +0800, Baolin Wang wrote:
->> On 17 August 2015 at 09:15, Li Jun <b47624-KZfg59tc24xl57MIdRCFDg@public.gmane.org> wrote:
->> > On Fri, Aug 14, 2015 at 07:04:56PM +0800, Baolin Wang wrote:
->> >> On 14 August 2015 at 16:55, Li Jun <b47624-KZfg59tc24xl57MIdRCFDg@public.gmane.org> wrote:
->> >> > Hi Baolin,
->> >> >
->> >> > On Fri, Aug 14, 2015 at 05:47:43PM +0800, Baolin Wang wrote:
->> >> >> Currently the Linux kernel does not provide any standard integration of this
->> >> >> feature that integrates the USB subsystem with the system power regulation
->> >> >> provided by PMICs meaning that either vendors must add this in their kernels
->> >> >> or USB gadget devices based on Linux (such as mobile phones) may not behave
->> >> >> as they should.
->> >> >>
->> >> >> Providing a standard framework for doing this in the kernel.
->> >> >>
->> >> >
->> >> > Why not add power supply class support into this?
->> >> >
->> >>
->> >> Hi Jun,
->> >>
->> >> We don't need the power supply class support into the usb charger,
->> > I suppose usb charger is also a power supply for the system, we can use power
->> > supply class framework for notify mechanism and get/set many attributes(maybe
->> > also the current limit), I see those usb charger drivers under ./driver/power/
->> > are designed with power supply supported.
->> >
+On 16/08/15 21:24, Peter Zijlstra wrote:
+> On Sat, Aug 15, 2015 at 09:03:33PM -0700, Michael Turquette wrote:
+>> Quoting Peter Zijlstra (2015-08-15 05:46:38)
+>>> On Tue, Jul 07, 2015 at 07:24:23PM +0100, Morten Rasmussen wrote:
+>>>> diff --git a/kernel/sched/cpufreq_sched.c b/kernel/sched/cpufreq_sched.c
+>>>> index 2968f3a..7071528 100644
+>>>> --- a/kernel/sched/cpufreq_sched.c
+>>>> +++ b/kernel/sched/cpufreq_sched.c
+>>>> @@ -184,7 +184,7 @@ void cpufreq_sched_set_cap(int cpu, unsigned long capacity)
+>>>>               goto out;
+>>>>  
+>>>>       /* Convert the new maximum capacity request into a cpu frequency */
+>>>> -     freq_new = capacity * policy->max >> SCHED_CAPACITY_SHIFT;
+>>>> +     freq_new = (capacity * policy->max) / capacity_orig_of(cpu);
+>>>>  
+>>>>       /* No change in frequency? Bail and return current capacity. */
+>>>>       if (freq_new == policy->cur)
+>>>
+>>> Can't we avoid exporting that lot by simply passing in the right values
+>>> to begin with?
 >>
->> I don't think so. The usb charger is rely on the usb gadget, which is
->> not a complete power supply device and it combines the usb and the
->> power supply. Thus we make it into usb gadget system. Thanks.
->>
-> Why it cannot be a complete power supply device? I was thinking this
-> framework can cover it, I have no doubt on putting this framework
-> into gadget system, but still can't understand why we don't need
-> power supply class at all for a usb charger, or you think introduce
-> power supply into usb gadget is not a right direction from code structure
-> point view?
->
+>> By "right value" do you mean, "pass the frequency from cfs"?
+> 
+> Nah, just maybe: (capacity << SCHED_CAPACITY_SHIFT) / capacity_orig_of()
+> such that you don't have to export that knowledge to this thing.
+> 
 
-We just do not think the usb charger as a real device, which is only
-used to set the current limitation when the usb charger state is
-changed detecting by extcon device or usb gadget. So we just need one
-message to notify the power user to set the current limitation when
-uab charge is added or removed. I also agree with the power supply
-framework can cover it, but we don't need to implement it to be
-another power supply, cause there is a real device as the power supply
-to deal with the power issue in the system. Thanks.
+Oh, right. I guess we can just go with something like:
 
-> Li Jun
->> > Li Jun
->> >> just introduce the notify mechanism for power to set the current limit
->> >> when notifying some events from usb charger. Maybe I misunderstand
->> >> your meanings, please describe it detailedly. Thanks for your
->> >> comments.
->> >>
->> >> > Li Jun
->> >> >
->> >>
->> >>
->> >>
->> >> --
->> >> Baolin.wang
->> >> Best Regards
->>
->>
->>
->> --
->> Baolin.wang
->> Best Regards
+ req_cap = get_cpu_usage(cpu) * capacity_margin / capacity_orig_of(cpu);
 
+on fair.c side and switch back to
 
+ freq_new = capacity * policy->max >> SCHED_CAPACITY_SHIFT;
 
--- 
-Baolin.wang
-Best Regards
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+on cpufreq_sched.c side. That saves us exporting capacity_orig_of().
+
+Thanks,
+
+- Juri
+
