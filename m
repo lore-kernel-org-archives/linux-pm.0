@@ -1,115 +1,142 @@
 From: Petr Cvek <petr.cvek@tul.cz>
-Subject: [PATCH v2 12/21] ARM: pxa: magician: Add PXA27x UDC support
-Date: Tue, 18 Aug 2015 00:02:46 +0200
-Message-ID: <55D25A06.9030507@tul.cz>
+Subject: [PATCH v2 13/21] ARM: pxa: magician: Fix charging source and add NiCd
+ backup charging
+Date: Tue, 18 Aug 2015 00:03:07 +0200
+Message-ID: <55D25A1B.50106@tul.cz>
 References: <cover.1439843482.git.petr.cvek@tul.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-2
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bubo.tul.cz ([147.230.16.1]:50279 "EHLO bubo.tul.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751387AbbHQV7y (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 17 Aug 2015 17:59:54 -0400
+Return-path: <linux-leds-owner@vger.kernel.org>
 In-Reply-To: <cover.1439843482.git.petr.cvek@tul.cz>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-leds-owner@vger.kernel.org
 To: robert.jarzmik@free.fr, philipp.zabel@gmail.com, daniel@zonque.org, haojian.zhuang@gmail.com, sameo@linux.intel.com, lee.jones@linaro.org, cooloney@gmail.com, rpurdie@rpsys.net, j.anaszewski@samsung.com, linux@arm.linux.org.uk, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
 Cc: linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+List-Id: linux-pm@vger.kernel.org
 
-Add support for PXA27x UDC to HTC Magician.
+Fix charging (cable insert functionality shared with UDC). Add charging
+control for RTC NiCd accu.
 
 Signed-off-by: Petr Cvek <petr.cvek@tul.cz>
 ---
- arch/arm/mach-pxa/magician.c | 40 +++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 39 insertions(+), 1 deletion(-)
+ arch/arm/mach-pxa/magician.c | 83 ++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 73 insertions(+), 10 deletions(-)
 
 diff --git a/arch/arm/mach-pxa/magician.c b/arch/arm/mach-pxa/magician.c
-index 8ca0b67..23b59a0 100644
+index 23b59a0..50c5325 100644
 --- a/arch/arm/mach-pxa/magician.c
 +++ b/arch/arm/mach-pxa/magician.c
-@@ -98,6 +98,10 @@
- 
- #include <linux/regulator/max1586.h>
- 
-+#include <linux/platform_data/pxa2xx_udc.h>
-+#include <mach/udc.h>
-+#include <mach/pxa27x-udc.h>
-+
- #include "devices.h"
- #include "generic.h"
- 
-@@ -698,6 +702,34 @@ static struct platform_device magician_camera = {
-  * USB "Transceiver"
+@@ -756,18 +756,79 @@ static struct platform_device gpio_vbus = {
+  * Charging functions
   */
  
-+#if IS_ENABLED(CONFIG_USB_PXA27X)
-+static void magician_udc_command(int cmd)
-+{
-+	if (cmd == PXA2XX_UDC_CMD_CONNECT)
-+		UP2OCR |= UP2OCR_DPPUE | UP2OCR_DPPUBE;
-+	else if (cmd == PXA2XX_UDC_CMD_DISCONNECT)
-+		UP2OCR &= ~(UP2OCR_DPPUE | UP2OCR_DPPUBE);
+-static int power_supply_init(struct device *dev)
++static int magician_supply_init(struct device *dev)
+ {
+-	return gpio_request(EGPIO_MAGICIAN_CABLE_TYPE, "CABLE_STATE_AC");
++	int ret = -1;
++
++	ret = gpio_request(EGPIO_MAGICIAN_CABLE_TYPE, "AC charger in USB");
++	if (ret) {
++		pr_err("Cannot request AC/USB charger GPIO (%i)\n", ret);
++		goto err_ac;
++	}
++
++	ret = gpio_request(EGPIO_MAGICIAN_CABLE_INSERT1, "Cable inserted");
++	if (ret) {
++		pr_err("Cannot request cable detection GPIO (%i)\n", ret);
++		goto err_usb;
++	}
++
++	return 0;
++
++err_usb:
++	gpio_free(EGPIO_MAGICIAN_CABLE_TYPE);
++err_ac:
++	return ret;
 +}
 +
-+/* HACK, shared USB connected state with pda-power */
-+int my_usb_online = 1;
-+
-+static int magician_udc_is_connected(void)
++static void magician_set_charge(int flags)
 +{
-+	/* Shared with pda_power or gpio-vbus */
++	/* EGPIO_MAGICIAN_BQ24022_ISET2: =1 500mA, =0 100mA
++	 *
++	 * RTC NiCd voltage can be read from ADS7846
++	 * in0_input=1930, when =0 (after =1 its going up)
++	 * in0_input=1367, when =1
++	 * in0_input=2499, always (without NiCd)
++	 *
++	 * FIXME Will disabled NiCd slow accu discharge?
++	 *
++	 * Charging from USB can be 500mA too
++	 * NOTICE: IrDA=on, Vcore=1V, Fcore=104MHz, everything other=off
++	 *   -> power consumption still over 100mA
++	 */
++
++	if (flags & PDA_POWER_CHARGE_AC) {
++		pr_debug("Charging from AC\n");
++		gpio_set_value(EGPIO_MAGICIAN_NICD_CHARGE, 1);
++	} else if (flags & PDA_POWER_CHARGE_USB) {
++		pr_debug("Charging from USB\n");
++		gpio_set_value(EGPIO_MAGICIAN_NICD_CHARGE, 1);
++	} else {
++		pr_debug("Charging disabled\n");
++		gpio_set_value(EGPIO_MAGICIAN_NICD_CHARGE, 0);
++	}
++
++	gpio_set_value(EGPIO_MAGICIAN_NICD_CHARGE, 1);
+ }
+ 
+ static int magician_is_ac_online(void)
+ {
+-	return gpio_get_value(EGPIO_MAGICIAN_CABLE_INSERT1);
++	return gpio_get_value(EGPIO_MAGICIAN_CABLE_INSERT1) &&
++		gpio_get_value(EGPIO_MAGICIAN_CABLE_TYPE); /* AC=1 */
++}
++
++static int magician_is_usb_online(void)
++{
++	my_usb_online = gpio_get_value(EGPIO_MAGICIAN_CABLE_INSERT1) &&
++		(!gpio_get_value(EGPIO_MAGICIAN_CABLE_TYPE)); /* USB=0 */
 +	return my_usb_online;
-+}
-+
-+static struct pxa2xx_udc_mach_info magician_udc_info __initdata = {
-+	.udc_command		= magician_udc_command,
-+	.udc_is_connected	= magician_udc_is_connected,
-+	.gpio_pullup		= GPIO27_MAGICIAN_USBC_PUEN,
-+};
-+
-+#else
-+
-+/* GPIO USB client vbus sensing, when no PXA UDC installed */
-+
- static struct resource gpio_vbus_resource = {
- 	.flags	= IORESOURCE_IRQ,
- 	.start	= IRQ_MAGICIAN_VBUS,
-@@ -718,6 +750,7 @@ static struct platform_device gpio_vbus = {
- 		.platform_data = &gpio_vbus_info,
- 	},
- };
-+#endif	/* IS_ENABLED(CONFIG_USB_PXA27X) */
+ }
  
- /*
-  * Charging functions
-@@ -1167,7 +1200,6 @@ static struct platform_device *devices[] __initdata = {
- 	&pasic3,
- 	&vads7846_device,
- 	&bq24022,
--	&gpio_vbus,
- 	&power_supply,
- 	&leds_gpio,
- 	&magician_camera,
-@@ -1175,6 +1207,11 @@ static struct platform_device *devices[] __initdata = {
- 
- 	/* NOTICE mutually exclusive with PXA I2C */
- 	&i2c_gpio_bus_alt,
+-static void power_supply_exit(struct device *dev)
++static void magician_supply_exit(struct device *dev)
+ {
++	/* HACK FIXME EGPIO pin is used with two drivers */
++	my_usb_online = 1;
 +
-+	/* NOTICE mutually exclusive with UDC*/
-+#if !(IS_ENABLED(CONFIG_USB_PXA27X))
-+	&gpio_vbus,
-+#endif
++	gpio_free(EGPIO_MAGICIAN_CABLE_INSERT1);
+ 	gpio_free(EGPIO_MAGICIAN_CABLE_TYPE);
+ }
+ 
+@@ -780,11 +841,13 @@ static char *magician_supplicants[] = {
+  */
+ 
+ static struct pda_power_pdata power_supply_info = {
+-	.init		= power_supply_init,
+-	.is_ac_online	= magician_is_ac_online,
+-	.exit		= power_supply_exit,
+-	.supplied_to	= magician_supplicants,
+-	.num_supplicants = ARRAY_SIZE(magician_supplicants),
++	.init			= magician_supply_init,
++	.exit			= magician_supply_exit,
++	.is_ac_online		= magician_is_ac_online,
++	.is_usb_online		= magician_is_usb_online,
++	.set_charge		= magician_set_charge,
++	.supplied_to		= magician_supplicants,
++	.num_supplicants	= ARRAY_SIZE(magician_supplicants),
  };
  
- /*
-@@ -1226,6 +1263,7 @@ static void __init magician_init(void)
+ static struct resource power_supply_resources[] = {
+@@ -847,7 +910,7 @@ static struct gpio_regulator_config bq24022_info = {
  
- 	pxa_set_mci_info(&magician_mci_info);
- 	pxa_set_ohci_info(&magician_ohci_info);
-+	pxa_set_udc_info(&magician_udc_info);
+ 	.enable_gpio = GPIO30_MAGICIAN_BQ24022_nCHARGE_EN,
+ 	.enable_high = 0,
+-	.enabled_at_boot = 0,
++	.enabled_at_boot = 1,
  
- 	/* Check LCD type we have */
- 	cpld = ioremap_nocache(PXA_CS3_PHYS, 0x1000);
+ 	.gpios = bq24022_gpios,
+ 	.nr_gpios = ARRAY_SIZE(bq24022_gpios),
 -- 
 1.7.12.1
-
