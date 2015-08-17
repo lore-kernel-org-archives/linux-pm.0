@@ -1,11 +1,12 @@
 From: Petr Cvek <petr.cvek@tul.cz>
-Subject: [PATCH v2 18/21] mfd: htc-pasic3: Prepare driver for leds-pasic3
-Date: Tue, 18 Aug 2015 00:05:48 +0200
-Message-ID: <55D25ABC.1000405@tul.cz>
+Subject: [PATCH v2 19/21] leds: leds-pasic3: Add support for PASIC3 LED
+ controller
+Date: Tue, 18 Aug 2015 00:06:20 +0200
+Message-ID: <55D25ADC.10703@tul.cz>
 References: <cover.1439843482.git.petr.cvek@tul.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-leds-owner@vger.kernel.org>
 In-Reply-To: <cover.1439843482.git.petr.cvek@tul.cz>
 Sender: linux-leds-owner@vger.kernel.org
@@ -13,240 +14,292 @@ To: robert.jarzmik@free.fr, philipp.zabel@gmail.com, daniel@zonque.org, haojian.
 Cc: linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Fix register definitions and prepare structures for new leds-pasic3
-driver.
+Add support for LEDs inside the PASIC3 chip.
 
 Signed-off-by: Petr Cvek <petr.cvek@tul.cz>
 ---
- drivers/mfd/htc-pasic3.c       | 54 ++++++++++++++++-----------
- include/linux/mfd/htc-pasic3.h | 85 +++++++++++++++++++++++++++++++-----------
- 2 files changed, 97 insertions(+), 42 deletions(-)
+ drivers/leds/Kconfig       |   9 ++
+ drivers/leds/Makefile      |   1 +
+ drivers/leds/leds-pasic3.c | 232 +++++++++++++++++++++++++++++++++++++=
+++++++++
+ 3 files changed, 242 insertions(+)
+ create mode 100644 drivers/leds/leds-pasic3.c
 
-diff --git a/drivers/mfd/htc-pasic3.c b/drivers/mfd/htc-pasic3.c
-index e88d4f6..16e156d 100644
---- a/drivers/mfd/htc-pasic3.c
-+++ b/drivers/mfd/htc-pasic3.c
-@@ -3,6 +3,9 @@
-  *
-  * Copyright (C) 2006 Philipp Zabel <philipp.zabel@gmail.com>
-  *
-+ * 2015:	Added registers for LED and RESET, see htc-pasic3.h
-+ *		-- Petr Cvek
+diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
+index 9ad35f7..516ba65 100644
+--- a/drivers/leds/Kconfig
++++ b/drivers/leds/Kconfig
+@@ -586,6 +586,15 @@ config LEDS_PM8941_WLED
+ 	  This option enables support for the 'White' LED block
+ 	  on Qualcomm PM8941 PMICs.
+=20
++config LEDS_PASIC3
++	tristate "LED support for the HTC Magician/Alpine PASIC3"
++	depends on LEDS_CLASS
++	depends on HTC_PASIC3
++	select REGMAP
++	help
++	  This option enables support for the PASIC3 chip (different chip
++	  than Compaq ASIC3).
++
+ comment "LED Triggers"
+ source "drivers/leds/trigger/Kconfig"
+=20
+diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
+index 8d6a24a..b1c659c 100644
+--- a/drivers/leds/Makefile
++++ b/drivers/leds/Makefile
+@@ -65,6 +65,7 @@ obj-$(CONFIG_LEDS_VERSATILE)		+=3D leds-versatile.o
+ obj-$(CONFIG_LEDS_MENF21BMC)		+=3D leds-menf21bmc.o
+ obj-$(CONFIG_LEDS_PM8941_WLED)		+=3D leds-pm8941-wled.o
+ obj-$(CONFIG_LEDS_KTD2692)		+=3D leds-ktd2692.o
++obj-$(CONFIG_LEDS_PASIC3)		+=3D leds-pasic3.o
+=20
+ # LED SPI Drivers
+ obj-$(CONFIG_LEDS_DAC124S085)		+=3D leds-dac124s085.o
+diff --git a/drivers/leds/leds-pasic3.c b/drivers/leds/leds-pasic3.c
+new file mode 100644
+index 0000000..0f95230
+--- /dev/null
++++ b/drivers/leds/leds-pasic3.c
+@@ -0,0 +1,232 @@
++/*
++ * AIC3 (or PASIC3) LED driver for HTC Magician/Alpine/.. (not Compaq =
+ASIC3)
 + *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License as published by
-  * the Free Software Foundation; version 2 of the License.
-@@ -21,15 +24,10 @@
- #include <linux/mfd/htc-pasic3.h>
- #include <linux/slab.h>
- 
--struct pasic3_data {
--	void __iomem *mapping;
--	unsigned int bus_shift;
--};
--
- #define REG_ADDR  5
- #define REG_DATA  6
- 
--#define READ_MODE 0x80
-+#define READ_MODE BIT(7)
- 
- /*
-  * write to a secondary register on the PASIC3
-@@ -76,24 +74,36 @@ static struct mfd_cell led_cell __initdata = {
- static int ds1wm_enable(struct platform_device *pdev)
- {
- 	struct device *dev = pdev->dev.parent;
--	int c;
-+	struct pasic3_data *asic = platform_get_drvdata(pdev);
-+	unsigned long flags;
-+	u8 c;
-+
-+	spin_lock_irqsave(&asic->lock, flags);
-+
-+	c = pasic3_read_register(dev, PASIC3_GPIO);
-+	pasic3_write_register(dev, PASIC3_GPIO, c & ~DS1WM_NEN);
- 
--	c = pasic3_read_register(dev, 0x28);
--	pasic3_write_register(dev, 0x28, c & 0x7f);
-+	spin_unlock_irqrestore(&asic->lock, flags);
- 
--	dev_dbg(dev, "DS1WM OWM_EN low (active) %02x\n", c & 0x7f);
-+	dev_dbg(dev, "DS1WM OWM_EN low (active) %02lx\n", c & ~DS1WM_NEN);
- 	return 0;
- }
- 
- static int ds1wm_disable(struct platform_device *pdev)
- {
- 	struct device *dev = pdev->dev.parent;
--	int c;
-+	struct pasic3_data *asic = platform_get_drvdata(pdev);
-+	unsigned long flags;
-+	u8 c;
-+
-+	spin_lock_irqsave(&asic->lock, flags);
-+
-+	c = pasic3_read_register(dev, PASIC3_GPIO);
-+	pasic3_write_register(dev, PASIC3_GPIO, c | DS1WM_NEN);
- 
--	c = pasic3_read_register(dev, 0x28);
--	pasic3_write_register(dev, 0x28, c | 0x80);
-+	spin_unlock_irqrestore(&asic->lock, flags);
- 
--	dev_dbg(dev, "DS1WM OWM_EN high (inactive) %02x\n", c | 0x80);
-+	dev_dbg(dev, "DS1WM OWM_EN high (inactive) %02lx\n", c | DS1WM_NEN);
- 	return 0;
- }
- 
-@@ -130,6 +140,7 @@ static int __init pasic3_probe(struct platform_device *pdev)
- 	struct device *dev = &pdev->dev;
- 	struct pasic3_data *asic;
- 	struct resource *r;
-+	struct pasic3_leds_pdata *leds_pdata;
- 	int ret;
- 	int irq = 0;
- 
-@@ -162,6 +173,8 @@ static int __init pasic3_probe(struct platform_device *pdev)
- 	/* calculate bus shift from mem resource */
- 	asic->bus_shift = (resource_size(r) - 5) >> 3;
- 
-+	spin_lock_init(&asic->lock);
-+
- 	if (pdata && pdata->clock_rate) {
- 		ds1wm_pdata.clock_rate = pdata->clock_rate;
- 		/* the first 5 PASIC3 registers control the DS1WM */
-@@ -172,13 +185,12 @@ static int __init pasic3_probe(struct platform_device *pdev)
- 			dev_warn(dev, "failed to register DS1WM\n");
- 	}
- 
--	if (pdata && pdata->led_pdata) {
--		led_cell.platform_data = pdata->led_pdata;
--		led_cell.pdata_size = sizeof(struct pasic3_leds_machinfo);
--		ret = mfd_add_devices(&pdev->dev, pdev->id, &led_cell, 1, r,
--				      0, NULL);
--		if (ret < 0)
--			dev_warn(dev, "failed to register LED device\n");
-+	if (pdata && pdata->pasic3_leds) {
-+		leds_pdata = dev_get_platdata(&pdata->pasic3_leds->dev);
-+		if (leds_pdata) {
-+			leds_pdata->mfd_dev = dev;
-+			platform_device_register(pdata->pasic3_leds);
-+		}
- 	}
- 
- 	return 0;
-diff --git a/include/linux/mfd/htc-pasic3.h b/include/linux/mfd/htc-pasic3.h
-index 3d3ed67..91a27b6 100644
---- a/include/linux/mfd/htc-pasic3.h
-+++ b/include/linux/mfd/htc-pasic3.h
-@@ -2,6 +2,7 @@
-  * HTC PASIC3 driver - LEDs and DS1WM
-  *
-  * Copyright (c) 2007 Philipp Zabel <philipp.zabel@gmail.com>
 + * Copyright (c) 2015 Petr Cvek <petr.cvek@tul.cz>
-  *
-  * This file is subject to the terms and conditions of the GNU General Public
-  * License.  See the file COPYING in the main directory of this archive for
-@@ -18,37 +19,79 @@
- extern void pasic3_write_register(struct device *dev, u32 reg, u8 val);
- extern u8 pasic3_read_register(struct device *dev, u32 reg);
- 
--/*
-- * mask for registers 0x20,0x21,0x22
-- */
--#define PASIC3_MASK_LED0 0x04
--#define PASIC3_MASK_LED1 0x08
--#define PASIC3_MASK_LED2 0x40
-+#define PASIC3_CH0_DELAY_ON	0x00
-+#define PASIC3_CH0_DELAY_OFF	0x01
-+#define PASIC3_CH1_DELAY_ON	0x02
-+#define PASIC3_CH1_DELAY_OFF	0x03
-+#define PASIC3_CH2_DELAY_ON	0x04
-+#define PASIC3_CH2_DELAY_OFF	0x05
-+#define PASIC3_DELAY_MASK	0x7f
++ *
++ * CLK to MS calculation based on leds-asic3.c
++ *
++ * This program is free software; you can redistribute it and/or modif=
+y it
++ * under  the terms of the GNU General  Public License as published by=
+ the
++ * Free Software Foundation;  either version 2 of the License, or (at =
+your
++ * option) any later version.
++ *
++ */
 +
-+#define PASIC3_CH_CONTROL	0x06
-+#define		R06_CH0_EN		BIT(0)
-+#define		R06_CH1_EN		BIT(1)
-+#define		R06_CH2_EN		BIT(2)
-+#define		R06_CH0_FORCE_ON	BIT(3)
-+#define		R06_CH1_FORCE_ON	BIT(4)
-+#define		R06_CH2_FORCE_ON	BIT(5)
- 
- /*
-- * bits in register 0x06
-+ * pwm_ch0_out | force_on | (bit0 & bit1 & bit2)
-+ * pwm_ch1_out | force_on | (bit0 & bit1 & bit2)
-+ * pwm_ch2_out | force_on | (bit2?bit0:(bit0 & ! bit1))
-  */
--#define PASIC3_BIT2_LED0 0x08
--#define PASIC3_BIT2_LED1 0x10
--#define PASIC3_BIT2_LED2 0x20
++#include <linux/gpio.h>
++#include <linux/kernel.h>
++#include <linux/leds.h>
++#include <linux/mfd/htc-pasic3.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/slab.h>
 +
-+#define PASIC3_MASK_A	0x20
-+#define PASIC3_MASK_B	0x21
-+#define PASIC3_MASK_C	0x22
-+#define		MASK_CH0	BIT(2)
-+#define		MASK_CH1	BIT(3)
-+#define		MASK_CH2	BIT(6)
-+#define PASIC3_GPIO	0x28
-+#define		DS1WM_NEN	BIT(7)
-+#define PASIC3_SYS	0x2a
++/*
++ * 1 tick is around 62-63 ms, blinking settings (on+off):
++ *	Min: 1+1 ticks ~125ms
++ *	Max: 127+127 ticks ~15=E2=80=AF875ms
++ * HW sometimes takes time to change (counter overflow after write?)
++ */
 +
-+/* NORMAL_RST, CAM_PWR_RST and UNKNOWN will autoclear, set STATUS */
-+#define		NORMAL_RST	BIT(0)
-+#define		CAM_PWR_RST	BIT(1)
-+#define		UNKNOWN	BIT(2)
-+#define		STATUS_NORMAL_RST	BIT(4)
-+#define		STATUS_CAM_PWR_RST	BIT(5)
-+#define		STATUS_UNKNOWN		BIT(6)
++#define MS_TO_CLK(ms)	DIV_ROUND_CLOSEST(((ms)*1024), 64000)
++#define CLK_TO_MS(clk)	(((clk)*64000)/1024)
++#define MAX_CLK		254		/* 127 + 127 (2x 7 bit reg) */
++#define MAX_MS		CLK_TO_MS(MAX_CLK)
 +
-+/* FIXME/TODO reset sources */
-+#define PASIC3_RST_EN	0x2c
-+#define		EN_NORMAL_RST	0x40
-+#define		EN_DOOR_RST	0x42
- 
- struct pasic3_led {
--	struct led_classdev         led;
--	unsigned int                hw_num;
--	unsigned int                bit2;
--	unsigned int                mask;
--	struct pasic3_leds_machinfo *pdata;
-+	char	name[24];
-+	char	default_trigger[80];
-+	int	hw_num;
-+	u8	bit_blink_en;
-+	u8	bit_force_on;
-+	u8	bit_mask;
-+	u8	reg_delay_on;
-+	u8	reg_delay_off;
- };
- 
--struct pasic3_leds_machinfo {
--	unsigned int      num_leds;
--	unsigned int      power_gpio;
-+struct pasic3_leds_pdata {
- 	struct pasic3_led *leds;
-+	int num_leds;
-+	int power_gpio;
-+	int power_gpio_users;
-+	struct device *mfd_dev;
- };
- 
--struct pasic3_platform_data {
--	struct pasic3_leds_machinfo *led_pdata;
--	unsigned int                 clock_rate;
-+struct pasic3_data {
-+	void __iomem *mapping;
-+	unsigned int bus_shift;
-+	spinlock_t lock;
- };
- 
-+struct pasic3_platform_data {
-+	unsigned int clock_rate;
-+	struct pasic3_led *leds;
-+	struct platform_device *pasic3_leds;
++spinlock_t lock;
++
++static void brightness_set(struct led_classdev *cdev,
++	enum led_brightness value)
++{
++	struct platform_device *pdev =3D to_platform_device(cdev->dev->parent=
+);
++	struct pasic3_led *led =3D dev_get_platdata(cdev->dev);
++	struct pasic3_leds_pdata *pdata =3D dev_get_platdata(&pdev->dev);
++	unsigned long flags;
++	u8 val;
++
++	spin_lock_irqsave(&lock, flags);
++
++	if (value =3D=3D LED_OFF) {
++		val =3D pasic3_read_register(pdata->mfd_dev, PASIC3_CH_CONTROL);
++		pasic3_write_register(pdata->mfd_dev, PASIC3_CH_CONTROL,
++			val & ~(led->bit_blink_en | led->bit_force_on));
++
++		val =3D pasic3_read_register(pdata->mfd_dev, PASIC3_MASK_A);
++		pasic3_write_register(pdata->mfd_dev, PASIC3_MASK_A,
++			val & ~led->bit_mask);
++
++		if (pdata->power_gpio) {
++			pdata->power_gpio_users--;
++
++			if (pdata->power_gpio_users =3D=3D 0)
++				gpio_set_value(pdata->power_gpio, 0);
++		}
++	} else {
++		if (pdata->power_gpio) {
++			pdata->power_gpio_users++;
++
++			if (pdata->power_gpio_users !=3D 0)
++				gpio_set_value(pdata->power_gpio, 1);
++		}
++
++		val =3D pasic3_read_register(pdata->mfd_dev, PASIC3_CH_CONTROL);
++		pasic3_write_register(pdata->mfd_dev, PASIC3_CH_CONTROL,
++			val | led->bit_force_on);
++	}
++
++	spin_unlock_irqrestore(&lock, flags);
++}
++
++static int blink_set(struct led_classdev *cdev,
++	unsigned long *delay_on, unsigned long *delay_off)
++{
++	struct platform_device *pdev =3D to_platform_device(cdev->dev->parent=
+);
++	struct pasic3_led *led =3D dev_get_platdata(cdev->dev);
++	struct pasic3_leds_pdata *pdata =3D dev_get_platdata(&pdev->dev);
++	unsigned long flags;
++	u32 on, off;
++	u8 val;
++
++	if (*delay_on > MAX_MS || *delay_off > MAX_MS)
++		return -EINVAL;
++
++	if (*delay_on =3D=3D 0 && *delay_off =3D=3D 0) {
++		/* Choose sensible default delays */
++		on =3D MS_TO_CLK(500);
++		off =3D MS_TO_CLK(500);
++	} else {
++		on =3D MS_TO_CLK(*delay_on);
++		off =3D MS_TO_CLK(*delay_off);
++		if ((on + off) > MAX_CLK)
++			return -EINVAL;
++		/* Minimal on/off value must be 1 */
++		on =3D on ? on : 1;
++		off =3D off ? off : 1;
++	}
++
++	spin_lock_irqsave(&lock, flags);
++
++	pasic3_write_register(pdata->mfd_dev, led->reg_delay_on, on);
++	pasic3_write_register(pdata->mfd_dev, led->reg_delay_off, off);
++
++	val =3D pasic3_read_register(pdata->mfd_dev, PASIC3_CH_CONTROL);
++	pasic3_write_register(pdata->mfd_dev, PASIC3_CH_CONTROL,
++		val | led->bit_blink_en);
++
++	spin_unlock_irqrestore(&lock, flags);
++
++	*delay_on =3D CLK_TO_MS(on);
++	*delay_off =3D CLK_TO_MS(off);
++
++	return 0;
++}
++
++static int pasic3_led_probe(struct platform_device *pdev)
++{
++	struct pasic3_leds_pdata *pdata =3D dev_get_platdata(&pdev->dev);
++	struct led_classdev *cdev;
++	int ret;
++	int i;
++
++	if (!pdata) {
++		dev_err(&pdev->dev, "no platform data\n");
++		return -EINVAL;
++	}
++
++	if (!pdata->leds) {
++		dev_err(&pdev->dev, "no leds data\n");
++		return -EINVAL;
++	}
++
++	if (pdata->power_gpio) {
++		pdata->power_gpio_users =3D 0;
++
++		ret =3D gpio_request(pdata->power_gpio,
++			"Red-Blue LED Power");
++		if (ret < 0) {
++			dev_warn(&pdev->dev, "failed to request power GPIO\n");
++			goto err;
++		}
++	}
++
++	spin_lock_init(&lock);
++
++	cdev =3D devm_kzalloc(&pdev->dev,
++		sizeof(struct led_classdev) * pdata->num_leds, GFP_KERNEL);
++	if (!cdev) {
++		ret =3D -ENOMEM;
++		goto err;
++	}
++
++	for (i =3D 0; i < pdata->num_leds; i++) {
++		cdev[i].name =3D pdata->leds[i].name;
++		cdev[i].default_trigger =3D pdata->leds[i].default_trigger;
++		cdev[i].flags =3D LED_CORE_SUSPENDRESUME;
++		cdev[i].brightness_set =3D brightness_set;
++		cdev[i].blink_set =3D blink_set;
++
++		ret =3D devm_led_classdev_register(&pdev->dev, &cdev[i]);
++		if (ret < 0)
++			goto err;
++
++		cdev[i].dev->platform_data =3D &pdata->leds[i];
++	}
++
++	return 0;
++
++err:
++	if (pdata->power_gpio)
++		gpio_free(pdata->power_gpio);
++
++	return ret;
++}
++
++static int pasic3_led_remove(struct platform_device *pdev)
++{
++	struct pasic3_leds_pdata *pdata =3D dev_get_platdata(&pdev->dev);
++
++	if (pdata->power_gpio)
++		gpio_free(pdata->power_gpio);
++
++	return 0;
++}
++
++#ifdef CONFIG_PM_SLEEP
++static int pasic3_led_suspend(struct device *dev)
++{
++	struct pasic3_leds_pdata *pdata =3D dev_get_platdata(dev);
++
++	if (pdata->power_gpio)
++		gpio_set_value(pdata->power_gpio, 0);
++
++	return 0;
++}
++
++static int pasic3_led_resume(struct device *dev)
++{
++	struct pasic3_leds_pdata *pdata =3D dev_get_platdata(dev);
++
++	if (pdata->power_gpio)
++		gpio_set_value(pdata->power_gpio, 1);
++
++	return 0;
++}
++#endif
++
++static SIMPLE_DEV_PM_OPS(pasic3_led_pm_ops, pasic3_led_suspend,
++	pasic3_led_resume);
++
++static struct platform_driver pasic3_led_driver =3D {
++	.probe		=3D pasic3_led_probe,
++	.remove		=3D pasic3_led_remove,
++	.driver		=3D {
++		.name	=3D "leds-pasic3",
++		.pm	=3D &pasic3_led_pm_ops,
++	},
 +};
- #endif
--- 
++
++module_platform_driver(pasic3_led_driver);
++
++MODULE_AUTHOR("Petr Cvek <petr.cvek@tul.cz>");
++MODULE_DESCRIPTION("HTC Magician PASIC3 LED driver");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:leds-pasic3");
+--=20
 1.7.12.1
