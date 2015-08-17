@@ -1,73 +1,98 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Subject: [PATCH] x86, suspend: Save/restore THERM_CONTROL register for suspend
-Date: Mon, 17 Aug 2015 16:29:52 +0800
-Message-ID: <1439800192-3034-1-git-send-email-yu.c.chen@intel.com>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: [PATCH v4 2/5] PM / OPP: add a function to get the voltage for
+ disabled OPPs
+Date: Mon, 17 Aug 2015 10:05:48 +0100
+Message-ID: <20150817090548.GA2762@e104805>
+References: <1439575020-3447-1-git-send-email-javi.merino@arm.com>
+ <1439575020-3447-3-git-send-email-javi.merino@arm.com>
+ <20150815055925.GJ1162@linux>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:3077 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750881AbbHQI02 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 17 Aug 2015 04:26:28 -0400
+Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:55849 "EHLO
+	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753631AbbHQJGY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Aug 2015 05:06:24 -0400
+Content-Disposition: inline
+In-Reply-To: <20150815055925.GJ1162@linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, pavel@ucw.cz, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
-Cc: rui.zhang@intel.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cw00.choi@samsung.com" <cw00.choi@samsung.com>, "rufus.hamade@imgtec.com" <rufus.hamade@imgtec.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-A bug is reported(https://bugzilla.redhat.com/show_bug.cgi?id=1227208)
-that, after resuming from S3, CPU is working at a low speed.
-After investigation, it is found that, BIOS has modified the value
-of THERM_CONTROL register during S3, changes it from 0 to 0x10,
-while the latter means CPU can only get 25% of the Duty Cycle,
-and this caused the problem.
+On Sat, Aug 15, 2015 at 06:59:25AM +0100, Viresh Kumar wrote:
+> On 14-08-15, 18:56, Javi Merino wrote:
+> > The OPP library is now used for power models to calculate the power
+> > that a device would consume at a specific OPP.  To do that, we use a
+> > simple power model which takes frequency and voltage as inputs.  We get
+> > the voltage and frequency from the OPP library.
+> > 
+> > The devfreq cooling device for the thermal framework controls temperature
+> > by disabling OPPs.  The power model needs to calculate the power that
+> > would be consumed if we reenabled the OPP.  dev_pm_opp_get_voltage()
+> > doesn't work for disabled OPPs.
+> > 
+> > Add a dev_pm_opp_get_voltage_always() that works both for enabled and
+> > disabled OPPs to be used by the power model.  The documentation for this
+> > function clearly states that you should use dev_pm_opp_get_voltage()
+> > instead unless you know what you're doing.
+> > 
+> > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> > Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> > Signed-off-by: Javi Merino <javi.merino@arm.com>
+> > ---
+> >  drivers/base/power/opp.c | 37 +++++++++++++++++++++++++++++++++++++
+> >  include/linux/pm_opp.h   |  7 +++++++
+> >  2 files changed, 44 insertions(+)
+> > 
+> > diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+> > index 677fb2843553..b1a4216c7ec3 100644
+> > --- a/drivers/base/power/opp.c
+> > +++ b/drivers/base/power/opp.c
+> > @@ -182,6 +182,43 @@ unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
+> >  EXPORT_SYMBOL_GPL(dev_pm_opp_get_voltage);
+> >  
+> >  /**
+> > + * dev_pm_opp_get_voltage_always() - Gets the voltage corresponding to an opp
+> > + * @opp:	opp for which voltage has to be returned for
+> > + *
+> > + * This function is similar to dev_pm_opp_get_voltage() except that it
+> > + * works for disabled opps as well.  In most cases, you want to
+> > + * operate only on available opps so you should use
+> > + * dev_pm_opp_get_voltage() instead.
+> > + *
+> > + * Return: voltage in micro volt corresponding to the opp, else
+> > + * return 0
+> > + *
+> > + * Locking: This function must be called under rcu_read_lock(). opp is a rcu
+> > + * protected pointer. This means that opp which could have been fetched by
+> > + * opp_find_freq_{exact,ceil,floor} functions is valid as long as we are
+> > + * under RCU lock. The pointer returned by the opp_find_freq family must be
+> > + * used in the same section as the usage of this function with the pointer
+> > + * prior to unlocking with rcu_read_unlock() to maintain the integrity of the
+> > + * pointer.
+> > + */
+> > +unsigned long dev_pm_opp_get_voltage_always(struct dev_pm_opp *opp)
+> > +{
+> > +	struct dev_pm_opp *tmp_opp;
+> > +	unsigned long v = 0;
+> > +
+> > +	opp_rcu_lockdep_assert();
+> > +
+> > +	tmp_opp = rcu_dereference(opp);
+> > +	if (unlikely(IS_ERR_OR_NULL(tmp_opp)))
+> > +		pr_err("%s: Invalid parameters\n", __func__);
+> > +	else
+> > +		v = tmp_opp->u_volt;
+> > +
+> > +	return v;
+> > +}
+> > +EXPORT_SYMBOL_GPL(dev_pm_opp_get_voltage_always);
+> 
+> I will rather update dev_pm_opp_get_voltage() and remove the
+> 'available' check. There is no need for that.
 
-Simple scenario to reproduce:
-1.Boot up system
-2.Get MSR with address 0x19a, it should output 0
-3.Put system into sleep, then wake up
-4.Get MSR with address 0x19a, it should output 0(actual it outputs 0x10)
+Even better, I'll do that for the next version.
 
-Although this is a BIOS issue, it would be more robust for linux to deal
-with this situation. This patch fixes this issue by saving/restoring
-THERM_CONTROL(now called CLOCK_MODULATION) register on suspend/resume.
-
-Tested-by: Marcin Kaszewski <marcin.kaszewski@intel.com>
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
----
- arch/x86/include/asm/suspend_64.h | 1 +
- arch/x86/power/cpu.c              | 2 ++
- 2 files changed, 3 insertions(+)
-
-diff --git a/arch/x86/include/asm/suspend_64.h b/arch/x86/include/asm/suspend_64.h
-index 7ebf0eb..b9f5591 100644
---- a/arch/x86/include/asm/suspend_64.h
-+++ b/arch/x86/include/asm/suspend_64.h
-@@ -25,6 +25,7 @@ struct saved_context {
- 	u64 misc_enable;
- 	bool misc_enable_saved;
- 	unsigned long efer;
-+	unsigned long clock_modulation;
- 	u16 gdt_pad; /* Unused */
- 	struct desc_ptr gdt_desc;
- 	u16 idt_pad;
-diff --git a/arch/x86/power/cpu.c b/arch/x86/power/cpu.c
-index 9ab5279..f82577b 100644
---- a/arch/x86/power/cpu.c
-+++ b/arch/x86/power/cpu.c
-@@ -97,6 +97,7 @@ static void __save_processor_state(struct saved_context *ctxt)
- 	mtrr_save_fixed_ranges(NULL);
- 
- 	rdmsrl(MSR_EFER, ctxt->efer);
-+	rdmsrl(MSR_IA32_THERM_CONTROL, ctxt->clock_modulation);
- #endif
- 
- 	/*
-@@ -178,6 +179,7 @@ static void notrace __restore_processor_state(struct saved_context *ctxt)
- #else
- /* CONFIG X86_64 */
- 	wrmsrl(MSR_EFER, ctxt->efer);
-+	wrmsrl(MSR_IA32_THERM_CONTROL, ctxt->clock_modulation);
- 	write_cr8(ctxt->cr8);
- 	__write_cr4(ctxt->cr4);
- #endif
--- 
-1.8.4.2
-
+Cheers,
+Javi
