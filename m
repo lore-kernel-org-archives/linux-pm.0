@@ -1,439 +1,80 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [RFCv5 PATCH 41/46] sched/fair: add triggers for OPP change requests
-Date: Mon, 17 Aug 2015 11:43:14 +0200
-Message-ID: <CAKfTPtCM0941H-JQtyPpSs-XH_DwBVyQXup8cLs3umU_XV0rcQ@mail.gmail.com>
-References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
- <1436293469-25707-42-git-send-email-morten.rasmussen@arm.com>
- <CAKfTPtBfNV=K+gwb7dfQXqBEbByMWRoFDb0FtfeeY1hh33j4XA@mail.gmail.com>
- <55C8AA92.8000201@arm.com> <CAKfTPtAJY5zH4YeFibLSg7BbCwV76++fJ_f+uNz8=0t8V8TJWA@mail.gmail.com>
- <55C9BB78.1090508@arm.com> <CAKfTPtDWTon2m=tYU+taZYxgJV2OhPQXX_+Ku+ty=EjEpAzDsA@mail.gmail.com>
- <55CA0FC4.4050908@arm.com> <CAKfTPtBic7ZeJE4Fdk7-xs7j_wRE798umrDQ7CLXuMKpj_jsPQ@mail.gmail.com>
- <55CB6311.4040300@arm.com> <CAKfTPtCewGQ_JRvtJPo9yQVcr5vdSr7WY+Z0ahX3DJOX8tpw7w@mail.gmail.com>
- <55CDD35F.5000208@arm.com>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH] x86, suspend: Save/restore THERM_CONTROL register for
+ suspend
+Date: Mon, 17 Aug 2015 12:11:15 +0200
+Message-ID: <20150817101115.GA27204@gmail.com>
+References: <1439800192-3034-1-git-send-email-yu.c.chen@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f169.google.com ([209.85.217.169]:32844 "EHLO
-	mail-lb0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752775AbbHQJng (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Aug 2015 05:43:36 -0400
-Received: by lbbsx3 with SMTP id sx3so78386809lbb.0
-        for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2015 02:43:34 -0700 (PDT)
-In-Reply-To: <55CDD35F.5000208@arm.com>
+Received: from mail-wi0-f171.google.com ([209.85.212.171]:36554 "EHLO
+	mail-wi0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752306AbbHQKLU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Aug 2015 06:11:20 -0400
+Content-Disposition: inline
+In-Reply-To: <1439800192-3034-1-git-send-email-yu.c.chen@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: Morten Rasmussen <Morten.Rasmussen@arm.com>, Peter Zijlstra <peterz@infradead.org>, "mingo@redhat.com" <mingo@redhat.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, Yuyang Du <yuyang.du@intel.com>, Michael Turquette <mturquette@baylibre.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Sai Charan Gurrappadi <sgurrappadi@nvidia.com>, "pang.xunlei@zte.com.cn" <pang.xunlei@zte.com.cn>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: rjw@rjwysocki.net, pavel@ucw.cz, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, rui.zhang@intel.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 14 August 2015 at 13:39, Juri Lelli <juri.lelli@arm.com> wrote:
-> Hi vincent,
->
-> On 13/08/15 13:08, Vincent Guittot wrote:
->> On 12 August 2015 at 17:15, Juri Lelli <juri.lelli@arm.com> wrote:
->>> On 11/08/15 17:37, Vincent Guittot wrote:
->>>> On 11 August 2015 at 17:07, Juri Lelli <juri.lelli@arm.com> wrote:
->>>>> Hi Vincent,
->>>>>
->>>>> On 11/08/15 12:41, Vincent Guittot wrote:
->>>>>> On 11 August 2015 at 11:08, Juri Lelli <juri.lelli@arm.com> wrote:
->>>>>>> On 10/08/15 16:07, Vincent Guittot wrote:
->>>>>>>> On 10 August 2015 at 15:43, Juri Lelli <juri.lelli@arm.com> wrote:
->>>>>>>>>
->>>>>>>>> Hi Vincent,
->>>>>>>>>
->>>>>>>>> On 04/08/15 14:41, Vincent Guittot wrote:
->>>>>>>>>> Hi Juri,
->>>>>>>>>>
->>>>>>>>>> On 7 July 2015 at 20:24, Morten Rasmussen <morten.rasmussen@arm.com> wrote:
->>>>>>>>>>> From: Juri Lelli <juri.lelli@arm.com>
->>
->>  [snip]
->>
->>>>>>>>>>>  }
->>>>>>>>>>> @@ -4393,6 +4416,23 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
->>>>>>>>>>>         if (!se) {
->>>>>>>>>>>                 sub_nr_running(rq, 1);
->>>>>>>>>>>                 update_rq_runnable_avg(rq, 1);
->>>>>>>>>>> +               /*
->>>>>>>>>>> +                * We want to trigger a freq switch request only for tasks that
->>>>>>>>>>> +                * are going to sleep; this is because we get here also during
->>>>>>>>>>> +                * load balancing, but in these cases it seems wise to trigger
->>>>>>>>>>> +                * as single request after load balancing is done.
->>>>>>>>>>> +                *
->>>>>>>>>>> +                * Also, we add a margin (same ~20% used for the tipping point)
->>>>>>>>>>> +                * to our request to provide some head room if p's utilization
->>>>>>>>>>> +                * further increases.
->>>>>>>>>>> +                */
->>>>>>>>>>> +               if (sched_energy_freq() && task_sleep) {
->>>>>>>>>>> +                       unsigned long req_cap = get_cpu_usage(cpu_of(rq));
->>>>>>>>>>> +
->>>>>>>>>>> +                       req_cap = req_cap * capacity_margin
->>>>>>>>>>> +                                       >> SCHED_CAPACITY_SHIFT;
->>>>>>>>>>> +                       cpufreq_sched_set_cap(cpu_of(rq), req_cap);
->>>>>>>>>>
->>>>>>>>>> Could you clarify why you want to trig a freq switch for tasks that
->>>>>>>>>> are going to sleep ?
->>>>>>>>>> The cpu_usage should not changed that much as the se_utilization of
->>>>>>>>>> the entity moves from utilization_load_avg to utilization_blocked_avg
->>>>>>>>>> of the rq and the usage and the freq are updated periodically.
->>>>>>>>>
->>>>>>>>> I think we still need to cover multiple back-to-back dequeues. Suppose
->>>>>>>>> that you have, let's say, 3 tasks that get enqueued at the same time.
->>>>>>>>> After some time the first one goes to sleep and its utilization, as you
->>>>>>>>> say, gets moved to utilization_blocked_avg. So, nothing changes, and
->>>>>>>>> the trigger is superfluous (even if no freq change I guess will be
->>>>>>>>> issued as we are already servicing enough capacity). However, after a
->>>>>>>>> while, the second task goes to sleep. Now we still use get_cpu_usage()
->>>>>>>>> and the first task contribution in utilization_blocked_avg should have
->>>>>>>>> been decayed by this time. Same thing may than happen for the third task
->>>>>>>>> as well. So, if we don't check if we need to scale down in
->>>>>>>>> dequeue_task_fair, it seems to me that we might miss some opportunities,
->>>>>>>>> as blocked contribution of other tasks could have been successively
->>>>>>>>> decayed.
->>>>>>>>>
->>>>>>>>> What you think?
->>>>>>>>
->>>>>>>> The tick is used to monitor such variation of the usage (in both way,
->>>>>>>> decay of the usage of sleeping tasks and increase of the usage of
->>>>>>>> running tasks). So in your example, if the duration between the sleep
->>>>>>>> of the 2 tasks is significant enough, the tick will handle this
->>>>>>>> variation
->>>>>>>>
->>>>>>>
->>>>>>> The tick is used to decide if we need to scale up (to max OPP for the
->>>>>>> time being), but we don't scale down. It makes more logical sense to
->>>>>>
->>>>>> why don't you want to check if you need to scale down ?
->>>>>>
->>>>>
->>>>> Well, because if I'm still executing something the cpu usage is only
->>>>> subject to raise.
->>>>
->>>> This is only true for  system with NO HZ idle
->>>>
->>>
->>> Well, even with !NO_HZ_IDLE usage only decreases when cpu is idle. But,
->>
->> Well, thanks for this obvious statement that usage only decreases when
->> cpu is idle but my question has never been about usage variation of
->> idle/running cpu but about the tick.
->>
->
-> I'm sorry if I sounded haughty to you, of course I didn't want too and
-> I apologize for that. I just wanted to state the obvious to confirm
-> myself that I understood your point, as I say below. :)
->
->>> I think I got your point; for !NO_HZ_IDLE configurations we might end
->>> up not scaling down frequency even if we have the tick running and
->>> the cpu is idle. I might need some more time to think this through, but
->>> it seems to me that we are still fine without an explicit trigger in
->>> task_tick_fair(); if we are running a !NO_HZ_IDLE system we are probably
->>> not so much concerned about power savings and still we react
->>> to tasks waking up, sleeping, leaving or moving around (which seems the
->>> real important events to me); OTOH, we might add that trigger, but this
->>> will generate unconditional checks at tick time for NO_HZ_IDLE
->>
->> That will be far less critical than unconditionally check during all
->> task wake up or sleep. A task that wakes up every 200us will generate
->> much more check in the wake up hot path of the cpu that is already
->> busy with another task
->>
->
-> We have a throttling threshold for this kind of problem, which is the
-> same as the transition latency exported by cpufreq drivers. Now, we
-> still do some operations before checking that threshold, and the check
-> itself might be too expensive. I guess I'll go back and profile it.
 
-So, you take the cpufreq driver transition latency into account but
-you should take the scheduler and its statistic responsiveness as the
-transition latency can be small (less than fews hundreds of us) . As
-an example, the variation of the usage of a cpu  is always less 20%
-over a period of 10ms and the variation is less than 10% if the usage
-is already above 50% ( This is also weighted by the current
-frequency). This variation is in the same range or lower that the
-margin you take when setting the current usage of a cpu. As most of
-system have a tick period less or equal to 10ms, i'm not sure that
-it's worth to ensure a periodic check of the usage that is shorter
-than a tick (or the transition latency is the latter is greater than
-the tick)
+* Chen Yu <yu.c.chen@intel.com> wrote:
 
->
->>> configurations, for a benefit that it seems to be still not completely
->>> clear.
->>>
->>>>>
->>>>>>> scale down at task deactivation, or wakeup after a long time, IMHO.
->>>>>>
->>>>>> But waking up or going to sleep don't have any impact on the usage of
->>>>>> a cpu. The only events that impact the cpu usage are:
->>>>>> -task migration,
->>>>>
->>>>> We explicitly cover this on load balancing paths.
->>
->> But task can migrate out of the load balancing; At wake up for example
->> and AFAICT, you don't use this event to notify the decrease of the
->> usage of the cpu and check if a new OPP will fit better with the new
->> usage.
->>
->
-> If the task gets wakeup migrated its request will be issued as part
-> of the enqueue on the new cpu. If the cpu it was previously running
-> on is idle, it has already cleared its request, so it shouldn't
-> need any notification.
+> A bug is reported(https://bugzilla.redhat.com/show_bug.cgi?id=1227208)
+> that, after resuming from S3, CPU is working at a low speed.
+> After investigation, it is found that, BIOS has modified the value
+> of THERM_CONTROL register during S3, changes it from 0 to 0x10,
+> while the latter means CPU can only get 25% of the Duty Cycle,
+> and this caused the problem.
+> 
+> Simple scenario to reproduce:
+> 1.Boot up system
+> 2.Get MSR with address 0x19a, it should output 0
+> 3.Put system into sleep, then wake up
+> 4.Get MSR with address 0x19a, it should output 0(actual it outputs 0x10)
+> 
+> Although this is a BIOS issue, it would be more robust for linux to deal
+> with this situation. This patch fixes this issue by saving/restoring
+> THERM_CONTROL(now called CLOCK_MODULATION) register on suspend/resume.
+> 
+> Tested-by: Marcin Kaszewski <marcin.kaszewski@intel.com>
+> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> ---
+>  arch/x86/include/asm/suspend_64.h | 1 +
+>  arch/x86/power/cpu.c              | 2 ++
+>  2 files changed, 3 insertions(+)
+> 
+> diff --git a/arch/x86/include/asm/suspend_64.h b/arch/x86/include/asm/suspend_64.h
+> index 7ebf0eb..b9f5591 100644
+> --- a/arch/x86/include/asm/suspend_64.h
+> +++ b/arch/x86/include/asm/suspend_64.h
+> @@ -25,6 +25,7 @@ struct saved_context {
+>  	u64 misc_enable;
+>  	bool misc_enable_saved;
+>  	unsigned long efer;
+> +	unsigned long clock_modulation;
+>  	u16 gdt_pad; /* Unused */
+>  	struct desc_ptr gdt_desc;
+>  	u16 idt_pad;
+> diff --git a/arch/x86/power/cpu.c b/arch/x86/power/cpu.c
+> index 9ab5279..f82577b 100644
+> --- a/arch/x86/power/cpu.c
+> +++ b/arch/x86/power/cpu.c
+> @@ -97,6 +97,7 @@ static void __save_processor_state(struct saved_context *ctxt)
+>  	mtrr_save_fixed_ranges(NULL);
+>  
+>  	rdmsrl(MSR_EFER, ctxt->efer);
+> +	rdmsrl(MSR_IA32_THERM_CONTROL, ctxt->clock_modulation);
 
-Such migration occurs most of the time when the source CPU is already
-used by another task so scheduler looks for an idle sibling cpu. In
-this case, you can't use the idle event of the source cpu but you have
-to use the migration event. I agree that you will catch the increase
-of usage of the dest cpu in the enqueue but you don't catch the remove
-of usage of the source cpu whereas this event is a good one IMHO to
-check if we can change the OPP as the usage will have a abrupt change
+So what your changelog fails to mention:
 
->
->>>>>
->>>>>> -new task
->>>>>
->>>>> We cover this in enqueue_task_fair(), introducing a new flag.
->>>>>
->>>>>> -time that elapse which can be monitored by periodically checking the usage.
->>>>>
->>>>> Do you mean when a task utilization crosses some threshold
->>>>> related to the current OPP? If that is the case, we have a
->>>>> check in task_tick_fair().
->>>>>
->>>>>> -and for nohz system when cpu enter or leave idle state
->>>>>>
->>>>>
->>>>> We address this in dequeue_task_fair(). In particular, if
->>>>> the cpu is going to be idle we don't trigger any change as
->>>>> it seems not always wise to wake up a thread to just change
->>>>> the OPP and the go idle; some platforms might require this
->>>>> behaviour anyway, but it probably more cpuidle/fw related?
->>>>
->>>> I would say that it's interesting to notifiy sched-dvfs that a cpu
->>>> becomes idle because we could decrease the opp of a cluster of cpus
->>>> that share the same clock if this cpu is the one that requires the max
->>>> capacity of the cluster (and other cpus are still running).
->>>>
->>>
->>> Well, we reset the capacity request of the cpu that is going idle.
->>
->> And i'm fine with the fact that you use the cpu idle event
->>
->
-> Ok :).
->
->>> The idea is that the next event on one of the other related cpus
->>> will update the cluster freq correctly. If any other cpu in the
->>> cluster is running something we keep the same frequency until
->>> the task running on that cpu goes to sleep; this seems fine to
->>> me because that task might end up being heavy and we saved a
->>> back to back lower to higher OPP switch; if the task is instead
->>> light it will probably be dequeued pretty soon, and at that time
->>> we switch to a lower OPP (since we cleared the idle cpu request
->>> before). Also, if the other cpus in the cluster are all idle
->>> we'll most probably enter an idle state, so no freq switch is
->>> most likely required.
->>>
->>>>>
->>>>> I would also add:
->>>>>
->>>>> - task is going to die
->>>>>
->>>>> We address this in dequeue as well, as its contribution is
->>>>> removed from usage (mod Yuyang's patches).
->>>>>
->>>>>> waking up and going to sleep events doesn't give any useful
->>>>>> information and using them to trig the monitoring of the usage
->>>>>> variation doesn't give you a predictable/periodic update of it whereas
->>>>>> the tick will
->>>>>>
->>>>>
->>>>> So, one key point of this solution is to get away as much
->>>>> as we can from periodic updates/sampling and move towards a
->>>>> (fully) event driven approach. The event logically associated
->>>>> to task_tick_fair() is when we realize that a task is going
->>>>> to saturate the current capacity; in this case we trigger a
->>>>> freq switch to an higher capacity. Also, if we never react
->>>>> to normal wakeups (as I understand you are proposing) we might
->>>>> miss some chances to adapt quickly enough. As an example, if
->>>>> you have a big task that suddenly goes to sleep, and sleeps
->>>>> until its decayed utilization goes almost to zero; when it
->>>>> wakes up, if we don't have a trigger in enqueue_task_fair(),
->>
->> I'm not against having a trigger in enqueue, i'm against bindly
->> checking all task wake up in order to be sure to catch the useful
->> event like the cpu leave idle event of your example
->>
->
-> Right, agreed.
->
->>>>> we'll have to wait until the next tick to select an appropriate
->>>>> (low) OPP.
->>>>
->>>> I assume that the cpu is idle in this case. This situation only
->>>> happens on Nohz idle system because tick is disable and you have to
->>>> update statistics when leaving idle as it is done for the jiffies or
->>>> the cpu_load array. So you should track cpu enter/leave idle (for nohz
->>>> system only) instead of tracking all tasks wake up/sleep events.
->>>>
->>>
->>> I think I already replied to this in what above. Did I? :)
->>
->> In fact, It was not a question, i just state that using all wake up /
->> sleep events to be sure to trig the check of cpu capacity when the cpu
->> leave an idle phase (and especially a long one like in your example
->> above), is wrong. You have to use the leave idle event instead of
->> checking all wake up events to be sure to catch the right one.
->
-> It seems to me that we need to catch enqueue events even for cpus
-> that are already busy. Don't we have to see if we have to scale
-> up in case a task is enqueued after a wakeup or fork on a cpu that is
-> already running some other task?
+ - You only add this code to the 64-bit kernel. Are 32-bit kernels not affected?
 
-The enqueue of a waking up task doesn't change the usage of a cpu so
-there is no reason to use this event instead of a periodic one. At the
-opposite, fork, migrated and new tasks will change the usage so it's
-worth to use them
-
->
-> Then, I agree that some other conditions might be added to check
-> that we are not over triggering the thing. I need to think about
-> those more.
-
-ok
-
->
->> You say
->> that you want to get away as much as possible the periodic
->> updates/sampling but it's exactly what you do with these 2 events.
->> Using them only enables you to periodically check if the capacity has
->> changed since the last time like the tick already does. But instead of
->> using a periodic and controlled event, you use these random (with
->> regards to capacity evolution) and uncontrolled events in order to
->> catch useful change. As an example, If a cpu run a task and there is a
->> short running task that wakes up every 100us for running 100us, you
->> will call cpufreq_sched_set_cap, 5000 times per second for no good
->> reason as you already have the tick to periodically check the
->> evolution of the usage.
->>
->
-> In this case it's the workload that is inherently periodic, so we
-> have periodic checks. Anyway, this is most probably one bailout
-> condition we need to add, since if both task are already running on
-> the same cpu, I guess, its utilization shouldn't change that much.
-
-IMHO, the tick should be enough to periodically check if the change of
-the usage value require an OPP update with regards of the rate of
-change of the usage.
-
->
->>>
->>>> So you can either use update_cpu_load_nohz like it is already done for
->>>> cpu_load array
->>>> or you should use some conditions like below if you want to stay in
->>>> enqueue/dequeue_task_fair but task wake up or sleep event are not the
->>>> right condition
->>>> if (!(flags & ENQUEUE_WAKEUP) || rq->nr_running == 1 ) in enqueue_task_fair
->>>> and
->>>> if (!task_sleep || rq->nr_running == 0) in dequeue_task_fair
->>>>
->>>> We can probably optimized by using  rq->cfs.h_nr_running instead of
->>>> rq->nr_running as only cfs tasks really modifies the usage
->>>>
->>>
->>> I already filter out enqueues/dequeues that comes from load balancing;
->>> and I use cfs.nr_running because, as you say, we currently work with CFS
->>> tasks only.
->>
->> But not for the enqueue where you should use it instead of all wake up events.
->>
->> Just to be clear: Using all enqueue/dequeue events (including task
->> wake up and sleep) to check a change of the usage of a cpu was doing a
->> lot of sense when mike has sent his v3 of the scheduler driven cpu
->> frequency selection because the usage was not accounting the blocked
->> tasks at that time so it was changing for all enqueue/dequeue events.
->> But this doesn't make sense in this patchset that account the blocked
->> tasks in the usage of the cpu and more generally now that yuyang's
->> patch set has been accepted.
->>
->
-> As above, I agree that we are most probably missing some optimizations;
-> that's what I'm going to look at again.
+ - the MSR read is done unconditionally. Is MSR_IA32_THERM_CONTROL available
+   architecturally and readable (and has sensible values) on all 64-bit capable
+   x86 CPUs that run this code path?
 
 Thanks,
-Vincent
 
->
-> Thanks,
->
-> - Juri
->
->> Regards,
->> Vincent
->>
->>>
->>> Thanks,
->>>
->>> - Juri
->>>
->>>> Regards,
->>>> Vincent
->>>>
->>>>>
->>>>> Best,
->>>>>
->>>>> - Juri
->>>>>
->>>>>>>
->>>>>>> Best,
->>>>>>>
->>>>>>> - Juri
->>>>>>>
->>>>>>>> Regards,
->>>>>>>> Vincent
->>>>>>>>>
->>>>>>>>> Thanks,
->>>>>>>>>
->>>>>>>>> - Juri
->>>>>>>>>
->>>>>>>>>> It should be the same for the wake up of a task in enqueue_task_fair
->>>>>>>>>> above, even if it's less obvious for this latter use case because the
->>>>>>>>>> cpu might wake up from a long idle phase during which its
->>>>>>>>>> utilization_blocked_avg has not been updated. Nevertheless, a trig of
->>>>>>>>>> the freq switch at wake up of the cpu once its usage has been updated
->>>>>>>>>> should do the job.
->>>>>>>>>>
->>>>>>>>>> So tick, migration of tasks, new tasks, entering/leaving idle state of
->>>>>>>>>> cpu should be enough to trig freq switch
->>>>>>>>>>
->>>>>>>>>> Regards,
->>>>>>>>>> Vincent
->>>>>>>>>>
->>>>>>>>>>
->>>>>>>>>>> +               }
->>>>>>>>>>>         }
->>>>>>>>>>>         hrtick_update(rq);
->>>>>>>>>>>  }
->>>>>>>>>>> @@ -4959,8 +4999,6 @@ static int find_new_capacity(struct energy_env *eenv,
->>>>>>>>>>>         return idx;
->>>>>>>>>>>  }
->>>>>>>>>>>
->>>>>>>>>>> -static unsigned int capacity_margin = 1280; /* ~20% margin */
->>>>>>>>>>> -
->>>>>>>>>>>  static bool cpu_overutilized(int cpu)
->>>>>>>>>>>  {
->>>>>>>>>>>         return (capacity_of(cpu) * 1024) <
->>>>>>>>>>> --
->>>>>>>>>>> 1.9.1
->>>>>>>>>>>
->>>>>>>>>>
->>>>>>>>>
->>>>>>>>
->>>>>>>
->>>>>>
->>>>>
->>>>
->>>
->>
->
+	Ingo
