@@ -1,42 +1,73 @@
-From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpupower tools: Fix error when running cpupower monitor
-Date: Mon, 17 Aug 2015 13:22:15 +0530
-Message-ID: <55D192AF.5000602@linux.vnet.ibm.com>
-References: <1438582560-13352-1-git-send-email-shreyas@linux.vnet.ibm.com> <9534146.fFc3TD2C5D@skinner>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <9534146.fFc3TD2C5D@skinner>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Renninger <trenn@suse.de>
-Cc: rjw@rjwysocki.net, pavsubra@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: [PATCH] x86, suspend: Save/restore THERM_CONTROL register for suspend
+Date: Mon, 17 Aug 2015 16:29:52 +0800
+Message-ID: <1439800192-3034-1-git-send-email-yu.c.chen@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:3077 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750881AbbHQI02 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 17 Aug 2015 04:26:28 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, pavel@ucw.cz, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
+Cc: rui.zhang@intel.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>
 
+A bug is reported(https://bugzilla.redhat.com/show_bug.cgi?id=1227208)
+that, after resuming from S3, CPU is working at a low speed.
+After investigation, it is found that, BIOS has modified the value
+of THERM_CONTROL register during S3, changes it from 0 to 0x10,
+while the latter means CPU can only get 25% of the Duty Cycle,
+and this caused the problem.
 
+Simple scenario to reproduce:
+1.Boot up system
+2.Get MSR with address 0x19a, it should output 0
+3.Put system into sleep, then wake up
+4.Get MSR with address 0x19a, it should output 0(actual it outputs 0x10)
 
-On 08/10/2015 05:58 PM, Thomas Renninger wrote:
-> On Monday, August 03, 2015 11:46:00 AM Shreyas B. Prabhu wrote:
->> get_cpu_topology() tries to get topology info from all cpus by reading
->> files in the topology sysfs dir. If a cpu is offlined, since it doesn't
->> have topology dir, this function fails and returns -1. This causes
->> functions relying on get_cpu_topology() to fail. For example-
->>
->> $ cpupower monitor
->> Cannot read number of available processors
->>
->> Fix this by skipping fetching topology info for offline cpus.
-> 
-> Looks fine.
-> 
-> Thanks!
-> 
-> Acked-by: Thomas Renninger <trenn@suse.de>
-> 
+Although this is a BIOS issue, it would be more robust for linux to deal
+with this situation. This patch fixes this issue by saving/restoring
+THERM_CONTROL(now called CLOCK_MODULATION) register on suspend/resume.
 
-Thanks Thomas!
-Rafael, can you please pick this patch?
+Tested-by: Marcin Kaszewski <marcin.kaszewski@intel.com>
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+---
+ arch/x86/include/asm/suspend_64.h | 1 +
+ arch/x86/power/cpu.c              | 2 ++
+ 2 files changed, 3 insertions(+)
 
+diff --git a/arch/x86/include/asm/suspend_64.h b/arch/x86/include/asm/suspend_64.h
+index 7ebf0eb..b9f5591 100644
+--- a/arch/x86/include/asm/suspend_64.h
++++ b/arch/x86/include/asm/suspend_64.h
+@@ -25,6 +25,7 @@ struct saved_context {
+ 	u64 misc_enable;
+ 	bool misc_enable_saved;
+ 	unsigned long efer;
++	unsigned long clock_modulation;
+ 	u16 gdt_pad; /* Unused */
+ 	struct desc_ptr gdt_desc;
+ 	u16 idt_pad;
+diff --git a/arch/x86/power/cpu.c b/arch/x86/power/cpu.c
+index 9ab5279..f82577b 100644
+--- a/arch/x86/power/cpu.c
++++ b/arch/x86/power/cpu.c
+@@ -97,6 +97,7 @@ static void __save_processor_state(struct saved_context *ctxt)
+ 	mtrr_save_fixed_ranges(NULL);
+ 
+ 	rdmsrl(MSR_EFER, ctxt->efer);
++	rdmsrl(MSR_IA32_THERM_CONTROL, ctxt->clock_modulation);
+ #endif
+ 
+ 	/*
+@@ -178,6 +179,7 @@ static void notrace __restore_processor_state(struct saved_context *ctxt)
+ #else
+ /* CONFIG X86_64 */
+ 	wrmsrl(MSR_EFER, ctxt->efer);
++	wrmsrl(MSR_IA32_THERM_CONTROL, ctxt->clock_modulation);
+ 	write_cr8(ctxt->cr8);
+ 	__write_cr4(ctxt->cr4);
+ #endif
+-- 
+1.8.4.2
 
-Thanks,
-Shreyas
