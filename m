@@ -1,643 +1,377 @@
 From: Petr Cvek <petr.cvek@tul.cz>
-Subject: [PATCH v2 02/21] ARM: pxa: magician: Fix indentation and whitespaces
-Date: Mon, 17 Aug 2015 23:56:54 +0200
-Message-ID: <55D258A6.2040105@tul.cz>
+Subject: [PATCH v2 03/21] ARM: pxa: magician: Fix comments, debug functions
+ and print strings
+Date: Mon, 17 Aug 2015 23:57:33 +0200
+Message-ID: <55D258CD.40101@tul.cz>
 References: <cover.1439843482.git.petr.cvek@tul.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bubo.tul.cz ([147.230.16.1]:49592 "EHLO bubo.tul.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750759AbbHQVyD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 17 Aug 2015 17:54:03 -0400
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-leds-owner@vger.kernel.org>
 In-Reply-To: <cover.1439843482.git.petr.cvek@tul.cz>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-leds-owner@vger.kernel.org
 To: robert.jarzmik@free.fr, philipp.zabel@gmail.com, daniel@zonque.org, haojian.zhuang@gmail.com, sameo@linux.intel.com, lee.jones@linaro.org, cooloney@gmail.com, rpurdie@rpsys.net, j.anaszewski@samsung.com, linux@arm.linux.org.uk, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
 Cc: linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+List-Id: linux-pm@vger.kernel.org
 
-Fix magician.c: indentation and whitespaces.
+=46ix comments, debug functions and print strings. Rename backlight
+structures to be more specific.
 
 Signed-off-by: Petr Cvek <petr.cvek@tul.cz>
 ---
- arch/arm/mach-pxa/magician.c | 356 +++++++++++++++++++++----------------------
- 1 file changed, 178 insertions(+), 178 deletions(-)
+ arch/arm/mach-pxa/magician.c | 121 +++++++++++++++++++++++++++++++----=
+--------
+ 1 file changed, 89 insertions(+), 32 deletions(-)
 
-diff --git a/arch/arm/mach-pxa/magician.c b/arch/arm/mach-pxa/magician.c
-index a9761c2..9e8698a 100644
+diff --git a/arch/arm/mach-pxa/magician.c b/arch/arm/mach-pxa/magician.=
+c
+index 9e8698a..57da133 100644
 --- a/arch/arm/mach-pxa/magician.c
 +++ b/arch/arm/mach-pxa/magician.c
-@@ -52,8 +52,8 @@ static unsigned long magician_pin_config[] __initdata = {
- 	GPIO20_nSDCS_2,
- 	GPIO21_nSDCS_3,
- 	GPIO15_nCS_1,
--	GPIO78_nCS_2,   /* PASIC3 */
--	GPIO79_nCS_3,   /* EGPIO CPLD */
-+	GPIO78_nCS_2,	/* PASIC3 */
-+	GPIO79_nCS_3,	/* EGPIO CPLD */
+@@ -11,6 +11,46 @@
+  * it under the terms of the GNU General Public License version 2 as
+  * published by the Free Software Foundation.
+  *
++ *
++ * NOTICE MDA Compact (T-mobile XDA) facts:
++ *   On "LCD type =3D 1, system_rev =3D 2" (0x3a in CPLD)
++ * Samsung LTP280QV - valid LCD init sequence sequence:
++ *   powerup: Vdigital->Vanalog->gate Voff->gate Von->data enable
++ *   powerdown: data disable->gate Von->gate Voff->Vanalog->Vdigital
++ * Measured on PCB:
++ *   GPIO106
++ *     Affects VOFF, VON and other voltages
++ *     Probably main reset pin for DC-DC converter
++ *   GPIO75
++ *     Must be AF0+OUT (WM leaves it to AF2+OUT), not LCD signal
++ *     GPIO106 works only when GPIO75 is high (DC-DC power enable?)
++ *     After LCD powerup, value is irrelevant
++ *   GPIO104
++ *     LCD VOFF (gate off voltage)
++ *   GPIO105
++ *     LCD VON (gate on voltage)
++ * FFUART (/dev/ttyS0) WM: 38400,8,n,1,crtscts (GSM data?)
++ * BTUART (/dev/ttyS1) WM: 115200,8,n,1,crtscts (GSM AT commands)
++ *   Use a HTC line discipline: 0x02 channel(=3D=3D0x16) data 0x02
++ * EGPIO(CPLD) should be always present (controls "all" supply power)
++ *   For rootfs on MMC/SD: EGPIO module controls card power (in kernel=
+)
++ * cpu-freq often freeze platform (errata?, use userspace gov)
++ * Do not use YUV420, (erratum E24) causes LCD hang (forever)
++ * Many GSM related pins are unknown
++ * gpio-rc-recv probably require lowpass filter (sw is OK)
++ * TODO EGPIO_MAGICIAN_IR_RECEIVE_SHUTDOWN
++ * FIXME AC charging blocks IrDA
++ * Unimplemented blocking of camera+power+reset, reset and door open r=
+eset
++ *   Registers: htc-pasic3.h (but blocks charging too)
++ * Other PXA machines have wait_for_sync for ADS7846 (during LCD refre=
+sh)
++ * pda-power has not optimal charging (accu can be bloated)
++ * TODO Current switching works? Is gpio-regulator/bq24022 required?
++ * pdata supports alternative drivers (mutually exclusive modules)
++ *   i2c-pxa vs i2c-gpio (SCCB)
++ *   pwm_bl vs gpio_backlight
++ *   pxa27x_udc vs phy-gpio-vbus-usb
++ *   physmap-flash vs pxa2xx-flash
++ *
+  */
+=20
+ #include <linux/kernel.h>
+@@ -57,31 +97,31 @@ static unsigned long magician_pin_config[] __initda=
+ta =3D {
  	GPIO80_nCS_4,
  	GPIO33_nCS_5,
- 
-@@ -107,7 +107,7 @@ static unsigned long magician_pin_config[] __initdata = {
- 	GPIO85_CIF_LV,
- 
- 	/* Magician specific input GPIOs */
--	GPIO9_GPIO,	/* unknown */
-+	GPIO9_GPIO,		/* unknown */
- 	GPIO10_GPIO,	/* GSM_IRQ */
- 	GPIO13_GPIO,	/* CPLD_IRQ */
- 	GPIO107_GPIO,	/* DS1WM_IRQ */
-@@ -133,46 +133,45 @@ static struct pxaficp_platform_data magician_ficp_info = {
+=20
+-	/* I2C */
++	/* I2C UDA1380 + OV9640 */
+ 	GPIO117_I2C_SCL,
+ 	GPIO118_I2C_SDA,
+=20
+-	/* PWM 0 */
++	/* PWM 0 - LCD backlight */
+ 	GPIO16_PWM0_OUT,
+=20
+-	/* I2S */
++	/* I2S UDA1380 capture */
+ 	GPIO28_I2S_BITCLK_OUT,
+ 	GPIO29_I2S_SDATA_IN,
+ 	GPIO31_I2S_SYNC,
+ 	GPIO113_I2S_SYSCLK,
+=20
+-	/* SSP 1 */
++	/* SSP 1 UDA1380 playback */
+ 	GPIO23_SSP1_SCLK,
+ 	GPIO24_SSP1_SFRM,
+ 	GPIO25_SSP1_TXD,
+=20
+-	/* SSP 2 */
++	/* SSP 2 TSC2046 touchscreen */
+ 	GPIO19_SSP2_SCLK,
+ 	GPIO14_SSP2_SFRM,
+ 	GPIO89_SSP2_TXD,
+ 	GPIO88_SSP2_RXD,
+=20
+-	/* MMC */
++	/* MMC/SD/SDHC slot */
+ 	GPIO32_MMC_CLK,
+ 	GPIO92_MMC_DAT_0,
+ 	GPIO109_MMC_DAT_1,
+@@ -92,7 +132,7 @@ static unsigned long magician_pin_config[] __initdat=
+a =3D {
+ 	/* LCD */
+ 	GPIOxx_LCD_TFT_16BPP,
+=20
+-	/* QCI */
++	/* QCI camera interface */
+ 	GPIO12_CIF_DD_7,
+ 	GPIO17_CIF_DD_6,
+ 	GPIO50_CIF_DD_3,
+@@ -120,11 +160,12 @@ static unsigned long magician_pin_config[] __init=
+data =3D {
+ };
+=20
+ /*
+- * IRDA
++ * IrDA
   */
- 
- #define INIT_KEY(_code, _gpio, _desc)	\
--	{				\
--		.code   = KEY_##_code,	\
--		.gpio   = _gpio,	\
--		.desc   = _desc,	\
--		.type   = EV_KEY,	\
--		.wakeup = 1,		\
-+	{						\
-+		.code	= KEY_##_code,	\
-+		.gpio	= _gpio,	\
-+		.desc	= _desc,	\
-+		.type	= EV_KEY,	\
-+		.wakeup	= 1,		\
- 	}
- 
- static struct gpio_keys_button magician_button_table[] = {
--	INIT_KEY(POWER,      GPIO0_MAGICIAN_KEY_POWER,      "Power button"),
--	INIT_KEY(ESC,        GPIO37_MAGICIAN_KEY_HANGUP,    "Hangup button"),
--	INIT_KEY(F10,        GPIO38_MAGICIAN_KEY_CONTACTS,  "Contacts button"),
--	INIT_KEY(CALENDAR,   GPIO90_MAGICIAN_KEY_CALENDAR,  "Calendar button"),
--	INIT_KEY(CAMERA,     GPIO91_MAGICIAN_KEY_CAMERA,    "Camera button"),
--	INIT_KEY(UP,         GPIO93_MAGICIAN_KEY_UP,        "Up button"),
--	INIT_KEY(DOWN,       GPIO94_MAGICIAN_KEY_DOWN,      "Down button"),
--	INIT_KEY(LEFT,       GPIO95_MAGICIAN_KEY_LEFT,      "Left button"),
--	INIT_KEY(RIGHT,      GPIO96_MAGICIAN_KEY_RIGHT,     "Right button"),
--	INIT_KEY(KPENTER,    GPIO97_MAGICIAN_KEY_ENTER,     "Action button"),
--	INIT_KEY(RECORD,     GPIO98_MAGICIAN_KEY_RECORD,    "Record button"),
--	INIT_KEY(VOLUMEUP,   GPIO100_MAGICIAN_KEY_VOL_UP,   "Volume up"),
--	INIT_KEY(VOLUMEDOWN, GPIO101_MAGICIAN_KEY_VOL_DOWN, "Volume down"),
--	INIT_KEY(PHONE,      GPIO102_MAGICIAN_KEY_PHONE,    "Phone button"),
--	INIT_KEY(PLAY,       GPIO99_MAGICIAN_HEADPHONE_IN,  "Headset button"),
-+	INIT_KEY(POWER,		GPIO0_MAGICIAN_KEY_POWER,	"Power button"),
-+	INIT_KEY(ESC,		GPIO37_MAGICIAN_KEY_HANGUP,	"Hangup button"),
-+	INIT_KEY(F10,		GPIO38_MAGICIAN_KEY_CONTACTS,	"Contacts button"),
-+	INIT_KEY(CALENDAR,	GPIO90_MAGICIAN_KEY_CALENDAR,	"Calendar button"),
-+	INIT_KEY(CAMERA,	GPIO91_MAGICIAN_KEY_CAMERA,	"Camera button"),
-+	INIT_KEY(UP,		GPIO93_MAGICIAN_KEY_UP,		"Up button"),
-+	INIT_KEY(DOWN,		GPIO94_MAGICIAN_KEY_DOWN,	"Down button"),
-+	INIT_KEY(LEFT,		GPIO95_MAGICIAN_KEY_LEFT,	"Left button"),
-+	INIT_KEY(RIGHT,		GPIO96_MAGICIAN_KEY_RIGHT,	"Right button"),
-+	INIT_KEY(KPENTER,	GPIO97_MAGICIAN_KEY_ENTER,	"Action button"),
-+	INIT_KEY(RECORD,	GPIO98_MAGICIAN_KEY_RECORD,	"Record button"),
-+	INIT_KEY(VOLUMEUP,	GPIO100_MAGICIAN_KEY_VOL_UP,	"Volume up"),
-+	INIT_KEY(VOLUMEDOWN,	GPIO101_MAGICIAN_KEY_VOL_DOWN,	"Volume down"),
-+	INIT_KEY(PHONE,		GPIO102_MAGICIAN_KEY_PHONE,	"Phone button"),
-+	INIT_KEY(PLAY,		GPIO99_MAGICIAN_HEADPHONE_IN,	"Headset button"),
+=20
+ static struct pxaficp_platform_data magician_ficp_info =3D {
+ 	.gpio_pwdown		=3D GPIO83_MAGICIAN_nIR_EN,
++	/* TODO test with FIR dongle */
+ 	.transceiver_cap	=3D IR_SIRMODE | IR_OFF,
  };
- 
- static struct gpio_keys_platform_data gpio_keys_data = {
--	.buttons  = magician_button_table,
-+	.buttons = magician_button_table,
- 	.nbuttons = ARRAY_SIZE(magician_button_table),
- };
- 
- static struct platform_device gpio_keys = {
- 	.name = "gpio-keys",
--	.dev  = {
-+	.dev = {
- 		.platform_data = &gpio_keys_data,
- 	},
--	.id   = -1,
-+	.id = -1,
- };
- 
--
+=20
+@@ -174,8 +215,8 @@ static struct platform_device gpio_keys =3D {
+=20
  /*
   * EGPIO (Xilinx CPLD)
-  *
-@@ -181,14 +180,14 @@ static struct platform_device gpio_keys = {
- 
- static struct resource egpio_resources[] = {
- 	[0] = {
--		.start = PXA_CS3_PHYS,
--		.end   = PXA_CS3_PHYS + 0x20 - 1,
--		.flags = IORESOURCE_MEM,
-+		.start	= PXA_CS3_PHYS,
-+		.end	= PXA_CS3_PHYS + 0x20 - 1,
-+		.flags	= IORESOURCE_MEM,
- 	},
- 	[1] = {
--		.start = PXA_GPIO_TO_IRQ(GPIO13_MAGICIAN_CPLD_IRQ),
--		.end   = PXA_GPIO_TO_IRQ(GPIO13_MAGICIAN_CPLD_IRQ),
--		.flags = IORESOURCE_IRQ,
-+		.start	= PXA_GPIO_TO_IRQ(GPIO13_MAGICIAN_CPLD_IRQ),
-+		.end	= PXA_GPIO_TO_IRQ(GPIO13_MAGICIAN_CPLD_IRQ),
-+		.flags	= IORESOURCE_IRQ,
- 	},
- };
- 
-@@ -209,20 +208,20 @@ static struct htc_egpio_chip egpio_chips[] = {
- };
- 
- static struct htc_egpio_platform_data egpio_info = {
--	.reg_width    = 8,
--	.bus_width    = 32,
--	.irq_base     = IRQ_BOARD_START,
--	.num_irqs     = 4,
--	.ack_register = 3,
--	.chip         = egpio_chips,
--	.num_chips    = ARRAY_SIZE(egpio_chips),
-+	.reg_width	= 8,
-+	.bus_width	= 32,
-+	.irq_base	= IRQ_BOARD_START,
-+	.num_irqs	= 4,
-+	.ack_register	= 3,
-+	.chip		= egpio_chips,
-+	.num_chips	= ARRAY_SIZE(egpio_chips),
- };
- 
- static struct platform_device egpio = {
--	.name          = "htc-egpio",
--	.id            = -1,
--	.resource      = egpio_resources,
--	.num_resources = ARRAY_SIZE(egpio_resources),
-+	.name		= "htc-egpio",
-+	.id		= -1,
-+	.resource	= egpio_resources,
-+	.num_resources	= ARRAY_SIZE(egpio_resources),
- 	.dev = {
- 		.platform_data = &egpio_info,
- 	},
-@@ -234,33 +233,33 @@ static struct platform_device egpio = {
- 
- static struct pxafb_mode_info toppoly_modes[] = {
- 	{
--		.pixclock     = 96153,
--		.bpp          = 16,
--		.xres         = 240,
--		.yres         = 320,
--		.hsync_len    = 11,
--		.vsync_len    = 3,
--		.left_margin  = 19,
--		.upper_margin = 2,
--		.right_margin = 10,
--		.lower_margin = 2,
--		.sync         = 0,
-+		.pixclock	= 96153,
-+		.bpp		= 16,
-+		.xres		= 240,
-+		.yres		= 320,
-+		.hsync_len	= 11,
-+		.vsync_len	= 3,
-+		.left_margin	= 19,
-+		.upper_margin	= 2,
-+		.right_margin	= 10,
-+		.lower_margin	= 2,
-+		.sync		= 0,
- 	},
- };
- 
- static struct pxafb_mode_info samsung_modes[] = {
- 	{
--		.pixclock     = 96153,
--		.bpp          = 16,
--		.xres         = 240,
--		.yres         = 320,
--		.hsync_len    = 8,
--		.vsync_len    = 4,
--		.left_margin  = 9,
--		.upper_margin = 4,
--		.right_margin = 9,
--		.lower_margin = 4,
--		.sync         = FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
-+		.pixclock	= 96153,
-+		.bpp		= 16,
-+		.xres		= 240,
-+		.yres		= 320,
-+		.hsync_len	= 8,
-+		.vsync_len	= 4,
-+		.left_margin	= 9,
-+		.upper_margin	= 4,
-+		.right_margin	= 9,
-+		.lower_margin	= 4,
-+		.sync	= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
- 	},
- };
- 
-@@ -326,19 +325,19 @@ static void samsung_lcd_power(int on, struct fb_var_screeninfo *si)
- }
- 
- static struct pxafb_mach_info toppoly_info = {
--	.modes           = toppoly_modes,
--	.num_modes       = 1,
--	.fixed_modes     = 1,
-+	.modes		= toppoly_modes,
-+	.num_modes	= 1,
-+	.fixed_modes	= 1,
- 	.lcd_conn	= LCD_COLOR_TFT_16BPP,
- 	.pxafb_lcd_power = toppoly_lcd_power,
- };
- 
- static struct pxafb_mach_info samsung_info = {
--	.modes           = samsung_modes,
--	.num_modes       = 1,
--	.fixed_modes     = 1,
--	.lcd_conn	 = LCD_COLOR_TFT_16BPP | LCD_PCLK_EDGE_FALL |\
--			   LCD_ALTERNATE_MAPPING,
-+	.modes		= samsung_modes,
-+	.num_modes	= 1,
-+	.fixed_modes	= 1,
-+	.lcd_conn	= LCD_COLOR_TFT_16BPP | LCD_PCLK_EDGE_FALL |
-+		LCD_ALTERNATE_MAPPING,
- 	.pxafb_lcd_power = samsung_lcd_power,
- };
- 
-@@ -374,22 +373,22 @@ static void magician_backlight_exit(struct device *dev)
- }
- 
- static struct platform_pwm_backlight_data backlight_data = {
--	.pwm_id         = 0,
--	.max_brightness = 272,
--	.dft_brightness = 100,
--	.pwm_period_ns  = 30923,
--	.enable_gpio    = -1,
--	.init           = magician_backlight_init,
--	.notify         = magician_backlight_notify,
--	.exit           = magician_backlight_exit,
-+	.pwm_id		= 0,
-+	.max_brightness	= 272,
-+	.dft_brightness	= 100,
-+	.pwm_period_ns	= 30923,
-+	.enable_gpio	= -1,
-+	.init		= magician_backlight_init,
-+	.notify		= magician_backlight_notify,
-+	.exit		= magician_backlight_exit,
- };
- 
- static struct platform_device backlight = {
--	.name = "pwm-backlight",
--	.id   = -1,
--	.dev  = {
--		.parent        = &pxa27x_device_pwm0.dev,
--		.platform_data = &backlight_data,
-+	.name	= "pwm-backlight",
-+	.id	= -1,
-+	.dev	= {
-+		.parent		= &pxa27x_device_pwm0.dev,
-+		.platform_data	= &backlight_data,
- 	},
- };
- 
-@@ -416,9 +415,9 @@ static struct gpio_led_platform_data gpio_led_info = {
- };
- 
- static struct platform_device leds_gpio = {
--	.name = "leds-gpio",
--	.id   = -1,
--	.dev  = {
-+	.name	= "leds-gpio",
-+	.id	= -1,
-+	.dev	= {
- 		.platform_data = &gpio_led_info,
- 	},
- };
-@@ -426,37 +425,37 @@ static struct platform_device leds_gpio = {
- static struct pasic3_led pasic3_leds[] = {
- 	{
- 		.led = {
--			.name            = "magician:red",
-+			.name = "magician:red",
- 			.default_trigger = "ds2760-battery.0-charging",
- 		},
--		.hw_num = 0,
--		.bit2   = PASIC3_BIT2_LED0,
--		.mask   = PASIC3_MASK_LED0,
-+		.hw_num	= 0,
-+		.bit2	= PASIC3_BIT2_LED0,
-+		.mask	= PASIC3_MASK_LED0,
- 	},
- 	{
- 		.led = {
--			.name            = "magician:green",
-+			.name = "magician:green",
- 			.default_trigger = "ds2760-battery.0-charging-or-full",
- 		},
--		.hw_num = 1,
--		.bit2   = PASIC3_BIT2_LED1,
--		.mask   = PASIC3_MASK_LED1,
-+		.hw_num	= 1,
-+		.bit2	= PASIC3_BIT2_LED1,
-+		.mask	= PASIC3_MASK_LED1,
- 	},
- 	{
- 		.led = {
--			.name            = "magician:blue",
-+			.name = "magician:blue",
- 			.default_trigger = "bluetooth",
- 		},
--		.hw_num = 2,
--		.bit2   = PASIC3_BIT2_LED2,
--		.mask   = PASIC3_MASK_LED2,
-+		.hw_num	= 2,
-+		.bit2	= PASIC3_BIT2_LED2,
-+		.mask	= PASIC3_MASK_LED2,
- 	},
- };
- 
- static struct pasic3_leds_machinfo pasic3_leds_info = {
--	.num_leds   = ARRAY_SIZE(pasic3_leds),
--	.power_gpio = EGPIO_MAGICIAN_LED_POWER,
--	.leds       = pasic3_leds,
-+	.num_leds	= ARRAY_SIZE(pasic3_leds),
-+	.power_gpio	= EGPIO_MAGICIAN_LED_POWER,
-+	.leds		= pasic3_leds,
- };
- 
- /*
-@@ -465,28 +464,28 @@ static struct pasic3_leds_machinfo pasic3_leds_info = {
- 
- static struct resource pasic3_resources[] = {
- 	[0] = {
--		.start  = PXA_CS2_PHYS,
-+		.start	= PXA_CS2_PHYS,
- 		.end	= PXA_CS2_PHYS + 0x1b,
--		.flags  = IORESOURCE_MEM,
-+		.flags	= IORESOURCE_MEM,
- 	},
- 	/* No IRQ handler in the PASIC3, DS1WM needs an external IRQ */
- 	[1] = {
--		.start  = PXA_GPIO_TO_IRQ(GPIO107_MAGICIAN_DS1WM_IRQ),
--		.end    = PXA_GPIO_TO_IRQ(GPIO107_MAGICIAN_DS1WM_IRQ),
--		.flags  = IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHEDGE,
-+		.start	= PXA_GPIO_TO_IRQ(GPIO107_MAGICIAN_DS1WM_IRQ),
-+		.end	= PXA_GPIO_TO_IRQ(GPIO107_MAGICIAN_DS1WM_IRQ),
-+		.flags	= IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHEDGE,
- 	}
- };
- 
- static struct pasic3_platform_data pasic3_platform_data = {
--	.led_pdata  = &pasic3_leds_info,
--	.clock_rate = 4000000,
-+	.led_pdata	= &pasic3_leds_info,
-+	.clock_rate	= 4000000,
- };
- 
- static struct platform_device pasic3 = {
--	.name		= "pasic3",
--	.id		= -1,
--	.num_resources	= ARRAY_SIZE(pasic3_resources),
--	.resource	= pasic3_resources,
-+	.name = "pasic3",
-+	.id = -1,
-+	.num_resources = ARRAY_SIZE(pasic3_resources),
-+	.resource = pasic3_resources,
- 	.dev = {
- 		.platform_data = &pasic3_platform_data,
- 	},
-@@ -497,21 +496,21 @@ static struct platform_device pasic3 = {
+- *
+- * 7 32-bit aligned 8-bit registers: 3x output, 1x irq, 3x input
++ * 32-bit aligned
++ * 7x 8-bit registers: 3x output, 1x irq, 3x input
   */
- 
- static struct resource gpio_vbus_resource = {
--	.flags = IORESOURCE_IRQ,
--	.start = IRQ_MAGICIAN_VBUS,
--	.end   = IRQ_MAGICIAN_VBUS,
-+	.flags	= IORESOURCE_IRQ,
-+	.start	= IRQ_MAGICIAN_VBUS,
-+	.end	= IRQ_MAGICIAN_VBUS,
- };
- 
- static struct gpio_vbus_mach_info gpio_vbus_info = {
- 	.gpio_pullup = GPIO27_MAGICIAN_USBC_PUEN,
--	.gpio_vbus   = EGPIO_MAGICIAN_CABLE_STATE_USB,
-+	.gpio_vbus = EGPIO_MAGICIAN_CABLE_STATE_USB,
- };
- 
- static struct platform_device gpio_vbus = {
--	.name          = "gpio-vbus",
--	.id            = -1,
--	.num_resources = 1,
--	.resource      = &gpio_vbus_resource,
-+	.name		= "gpio-vbus",
-+	.id		= -1,
-+	.num_resources	= 1,
-+	.resource	= &gpio_vbus_resource,
- 	.dev = {
- 		.platform_data = &gpio_vbus_info,
- 	},
-@@ -541,38 +540,38 @@ static char *magician_supplicants[] = {
- };
- 
- static struct pda_power_pdata power_supply_info = {
--	.init            = power_supply_init,
--	.is_ac_online    = magician_is_ac_online,
--	.exit            = power_supply_exit,
--	.supplied_to     = magician_supplicants,
-+	.init		= power_supply_init,
-+	.is_ac_online	= magician_is_ac_online,
-+	.exit		= power_supply_exit,
-+	.supplied_to	= magician_supplicants,
- 	.num_supplicants = ARRAY_SIZE(magician_supplicants),
- };
- 
- static struct resource power_supply_resources[] = {
- 	[0] = {
--		.name  = "ac",
--		.flags = IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHEDGE |
--		         IORESOURCE_IRQ_LOWEDGE,
--		.start = IRQ_MAGICIAN_VBUS,
--		.end   = IRQ_MAGICIAN_VBUS,
-+		.name	= "ac",
-+		.flags	= IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHEDGE |
-+			IORESOURCE_IRQ_LOWEDGE,
-+		.start	= IRQ_MAGICIAN_VBUS,
-+		.end	= IRQ_MAGICIAN_VBUS,
- 	},
- 	[1] = {
--		.name  = "usb",
--		.flags = IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHEDGE |
--		         IORESOURCE_IRQ_LOWEDGE,
--		.start = IRQ_MAGICIAN_VBUS,
--		.end   = IRQ_MAGICIAN_VBUS,
-+		.name	= "usb",
-+		.flags	= IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHEDGE |
-+			IORESOURCE_IRQ_LOWEDGE,
-+		.start	= IRQ_MAGICIAN_VBUS,
-+		.end	= IRQ_MAGICIAN_VBUS,
- 	},
- };
- 
- static struct platform_device power_supply = {
--	.name = "pda-power",
--	.id   = -1,
--	.dev  = {
-+	.name	= "pda-power",
-+	.id	= -1,
-+	.dev = {
- 		.platform_data = &power_supply_info,
- 	},
--	.resource      = power_supply_resources,
--	.num_resources = ARRAY_SIZE(power_supply_resources),
-+	.resource	= power_supply_resources,
-+	.num_resources	= ARRAY_SIZE(power_supply_resources),
- };
- 
- /*
-@@ -586,11 +585,12 @@ static struct regulator_consumer_supply bq24022_consumers[] = {
- 
- static struct regulator_init_data bq24022_init_data = {
- 	.constraints = {
--		.max_uA         = 500000,
--		.valid_ops_mask = REGULATOR_CHANGE_CURRENT | REGULATOR_CHANGE_STATUS,
-+		.max_uA = 500000,
-+		.valid_ops_mask = REGULATOR_CHANGE_CURRENT |
-+			REGULATOR_CHANGE_STATUS,
- 	},
--	.num_consumer_supplies  = ARRAY_SIZE(bq24022_consumers),
--	.consumer_supplies      = bq24022_consumers,
-+	.num_consumer_supplies = ARRAY_SIZE(bq24022_consumers),
-+	.consumer_supplies = bq24022_consumers,
- };
- 
- static struct gpio bq24022_gpios[] = {
-@@ -620,9 +620,9 @@ static struct gpio_regulator_config bq24022_info = {
- };
- 
- static struct platform_device bq24022 = {
--	.name = "gpio-regulator",
--	.id   = -1,
--	.dev  = {
-+	.name	= "gpio-regulator",
-+	.id	= -1,
-+	.dev	= {
- 		.platform_data = &bq24022_info,
- 	},
- };
-@@ -632,10 +632,10 @@ static struct platform_device bq24022 = {
-  */
- 
- static int magician_mci_init(struct device *dev,
--				irq_handler_t detect_irq, void *data)
-+	irq_handler_t detect_irq, void *data)
- {
- 	return request_irq(IRQ_MAGICIAN_SD, detect_irq, 0,
--			   "mmc card detect", data);
-+		"mmc card detect", data);
- }
- 
- static void magician_mci_exit(struct device *dev, void *data)
-@@ -644,13 +644,13 @@ static void magician_mci_exit(struct device *dev, void *data)
- }
- 
- static struct pxamci_platform_data magician_mci_info = {
--	.ocr_mask 		= MMC_VDD_32_33|MMC_VDD_33_34,
--	.init     		= magician_mci_init,
--	.exit     		= magician_mci_exit,
-+	.ocr_mask	= MMC_VDD_32_33|MMC_VDD_33_34,
-+	.init		= magician_mci_init,
-+	.exit		= magician_mci_exit,
- 	.gpio_card_detect	= -1,
- 	.gpio_card_ro		= EGPIO_MAGICIAN_nSD_READONLY,
- 	.gpio_card_ro_invert	= 1,
--	.gpio_power		= EGPIO_MAGICIAN_SD_POWER,
-+	.gpio_power	= EGPIO_MAGICIAN_SD_POWER,
- };
- 
- 
-@@ -664,7 +664,6 @@ static struct pxaohci_platform_data magician_ohci_info = {
- 	.power_budget	= 0,
- };
- 
--
- /*
-  * StrataFlash
-  */
-@@ -675,9 +674,9 @@ static void magician_set_vpp(struct platform_device *pdev, int vpp)
- }
- 
- static struct resource strataflash_resource = {
--	.start = PXA_CS0_PHYS,
--	.end   = PXA_CS0_PHYS + SZ_64M - 1,
--	.flags = IORESOURCE_MEM,
-+	.start	= PXA_CS0_PHYS,
-+	.end	= PXA_CS0_PHYS + SZ_64M - 1,
-+	.flags	= IORESOURCE_MEM,
- };
- 
- static struct physmap_flash_data strataflash_data = {
-@@ -686,10 +685,10 @@ static struct physmap_flash_data strataflash_data = {
- };
- 
- static struct platform_device strataflash = {
--	.name          = "physmap-flash",
--	.id            = -1,
--	.resource      = &strataflash_resource,
--	.num_resources = 1,
-+	.name		= "physmap-flash",
-+	.id		= -1,
-+	.resource	= &strataflash_resource,
-+	.num_resources	= 1,
- 	.dev = {
- 		.platform_data = &strataflash_data,
- 	},
-@@ -720,12 +719,12 @@ static struct platform_device *devices[] __initdata = {
- };
- 
- static struct gpio magician_global_gpios[] = {
--	{ GPIO13_MAGICIAN_CPLD_IRQ,   GPIOF_IN, "CPLD_IRQ" },
--	{ GPIO107_MAGICIAN_DS1WM_IRQ, GPIOF_IN, "DS1WM_IRQ" },
-+	{ GPIO13_MAGICIAN_CPLD_IRQ, GPIOF_IN,		"CPLD_IRQ" },
-+	{ GPIO107_MAGICIAN_DS1WM_IRQ, GPIOF_IN,	"DS1WM_IRQ" },
- 	{ GPIO104_MAGICIAN_LCD_POWER_1, GPIOF_OUT_INIT_LOW, "LCD power 1" },
- 	{ GPIO105_MAGICIAN_LCD_POWER_2, GPIOF_OUT_INIT_LOW, "LCD power 2" },
- 	{ GPIO106_MAGICIAN_LCD_POWER_3, GPIOF_OUT_INIT_LOW, "LCD power 3" },
--	{ GPIO83_MAGICIAN_nIR_EN, GPIOF_OUT_INIT_HIGH, "nIR_EN" },
-+	{ GPIO83_MAGICIAN_nIR_EN, GPIOF_OUT_INIT_HIGH,	"nIR_EN" },
- };
- 
- static void __init magician_init(void)
-@@ -754,27 +753,28 @@ static void __init magician_init(void)
- 	/* Check LCD type we have */
- 	cpld = ioremap_nocache(PXA_CS3_PHYS, 0x1000);
- 	if (cpld) {
--		u8 board_id = __raw_readb(cpld+0x14);
-+		u8 board_id = __raw_readb(cpld + 0x14);
+=20
+ static struct resource egpio_resources[] =3D {
+@@ -197,7 +238,11 @@ static struct htc_egpio_chip egpio_chips[] =3D {
+ 		.gpio_base =3D MAGICIAN_EGPIO(0, 0),
+ 		.num_gpios =3D 24,
+ 		.direction =3D HTC_EGPIO_OUTPUT,
+-		.initial_values =3D 0x40, /* EGPIO_MAGICIAN_GSM_RESET */
 +
- 		iounmap(cpld);
- 		system_rev = board_id & 0x7;
- 		lcd_select = board_id & 0x8;
++		/*
++		 * Depends on modules configuration
++		 */
++		.initial_values =3D 0x40,
+ 	},
+ 	[1] =3D {
+ 		.reg_start =3D 4,
+@@ -228,7 +273,7 @@ static struct platform_device egpio =3D {
+ };
+=20
+ /*
+- * LCD - Toppoly TD028STEB1 or Samsung LTP280QV
++ * PXAFB LCD - Toppoly TD028STEB1 or Samsung LTP280QV
+  */
+=20
+ static struct pxafb_mode_info toppoly_modes[] =3D {
+@@ -265,10 +310,9 @@ static struct pxafb_mode_info samsung_modes[] =3D =
+{
+=20
+ static void toppoly_lcd_power(int on, struct fb_var_screeninfo *si)
+ {
+-	pr_debug("Toppoly LCD power\n");
++	pr_debug("Toppoly LCD power: %s\n", on ? "on" : "off");
+=20
+ 	if (on) {
+-		pr_debug("on\n");
+ 		gpio_set_value(EGPIO_MAGICIAN_TOPPOLY_POWER, 1);
+ 		gpio_set_value(GPIO106_MAGICIAN_LCD_POWER_3, 1);
+ 		udelay(2000);
+@@ -280,8 +324,7 @@ static void toppoly_lcd_power(int on, struct fb_var=
+_screeninfo *si)
+ 		udelay(2000);
+ 		gpio_set_value(GPIO105_MAGICIAN_LCD_POWER_2, 1);
+ 	} else {
+-		pr_debug("off\n");
+-		msleep(15);
++		mdelay(15);
+ 		gpio_set_value(GPIO105_MAGICIAN_LCD_POWER_2, 0);
+ 		udelay(500);
+ 		gpio_set_value(GPIO104_MAGICIAN_LCD_POWER_1, 0);
+@@ -293,10 +336,9 @@ static void toppoly_lcd_power(int on, struct fb_va=
+r_screeninfo *si)
+=20
+ static void samsung_lcd_power(int on, struct fb_var_screeninfo *si)
+ {
+-	pr_debug("Samsung LCD power\n");
++	pr_debug("Samsung LCD power: %s\n", on ? "on" : "off");
+=20
+ 	if (on) {
+-		pr_debug("on\n");
+ 		if (system_rev < 3)
+ 			gpio_set_value(GPIO75_MAGICIAN_SAMSUNG_POWER, 1);
+ 		else
+@@ -309,7 +351,6 @@ static void samsung_lcd_power(int on, struct fb_var=
+_screeninfo *si)
+ 		gpio_set_value(GPIO105_MAGICIAN_LCD_POWER_2, 1);
+ 		mdelay(10);
+ 	} else {
+-		pr_debug("off\n");
+ 		mdelay(10);
+ 		gpio_set_value(GPIO105_MAGICIAN_LCD_POWER_2, 0);
+ 		mdelay(30);
+@@ -346,8 +387,8 @@ static struct pxafb_mach_info samsung_info =3D {
+  */
+=20
+ static struct gpio magician_bl_gpios[] =3D {
+-	{ EGPIO_MAGICIAN_BL_POWER,  GPIOF_DIR_OUT, "Backlight power" },
+-	{ EGPIO_MAGICIAN_BL_POWER2, GPIOF_DIR_OUT, "Backlight power 2" },
++	{ EGPIO_MAGICIAN_BL_POWER, GPIOF_DIR_OUT, "Backlight power" },
++	{ EGPIO_MAGICIAN_BL_POWER2, GPIOF_DIR_OUT, "Extra backlight power" },
+ };
+=20
+ static int magician_backlight_init(struct device *dev)
+@@ -357,6 +398,7 @@ static int magician_backlight_init(struct device *d=
+ev)
+=20
+ static int magician_backlight_notify(struct device *dev, int brightnes=
+s)
+ {
++	pr_debug("Brightness =3D %i\n", brightness);
+ 	gpio_set_value(EGPIO_MAGICIAN_BL_POWER, brightness);
+ 	if (brightness >=3D 200) {
+ 		gpio_set_value(EGPIO_MAGICIAN_BL_POWER2, 1);
+@@ -372,7 +414,13 @@ static void magician_backlight_exit(struct device =
+*dev)
+ 	gpio_free_array(ARRAY_AND_SIZE(magician_bl_gpios));
+ }
+=20
+-static struct platform_pwm_backlight_data backlight_data =3D {
++/*
++ * LCD backlight by PWM (main)
++ * PWM frequency for MP1521 should be:
++ *   100-400 Hz =3D 2=E2=80=AF.5*10^6 - 10=E2=80=AF*10^6 ns
++ */
++
++static struct platform_pwm_backlight_data pwm_backlight_data =3D {
+ 	.pwm_id		=3D 0,
+ 	.max_brightness	=3D 272,
+ 	.dft_brightness	=3D 100,
+@@ -383,12 +431,12 @@ static struct platform_pwm_backlight_data backlig=
+ht_data =3D {
+ 	.exit		=3D magician_backlight_exit,
+ };
+=20
+-static struct platform_device backlight =3D {
++static struct platform_device pwm_backlight =3D {
+ 	.name	=3D "pwm-backlight",
+ 	.id	=3D -1,
+ 	.dev	=3D {
+ 		.parent		=3D &pxa27x_device_pwm0.dev,
+-		.platform_data	=3D &backlight_data,
++		.platform_data	=3D &pwm_backlight_data,
+ 	},
+ };
+=20
+@@ -422,6 +470,10 @@ static struct platform_device leds_gpio =3D {
+ 	},
+ };
+=20
++/*
++ * PASIC3 LEDs
++ */
++
+ static struct pasic3_led pasic3_leds[] =3D {
+ 	{
+ 		.led =3D {
+@@ -459,7 +511,7 @@ static struct pasic3_leds_machinfo pasic3_leds_info=
+ =3D {
+ };
+=20
+ /*
+- * PASIC3 with DS1WM
++ * PASIC3 DS1WM
+  */
+=20
+ static struct resource pasic3_resources[] =3D {
+@@ -477,8 +529,8 @@ static struct resource pasic3_resources[] =3D {
+ };
+=20
+ static struct pasic3_platform_data pasic3_platform_data =3D {
+-	.led_pdata	=3D &pasic3_leds_info,
+ 	.clock_rate	=3D 4000000,
++	.led_pdata	=3D &pasic3_leds_info,
+ };
+=20
+ static struct platform_device pasic3 =3D {
+@@ -517,7 +569,7 @@ static struct platform_device gpio_vbus =3D {
+ };
+=20
+ /*
+- * External power
++ * Charging functions
+  */
+=20
+ static int power_supply_init(struct device *dev)
+@@ -539,6 +591,10 @@ static char *magician_supplicants[] =3D {
+ 	"ds2760-battery.0", "backup-battery"
+ };
+=20
++/*
++ * pda_power Li-ion charger
++ */
++
+ static struct pda_power_pdata power_supply_info =3D {
+ 	.init		=3D power_supply_init,
+ 	.is_ac_online	=3D magician_is_ac_online,
+@@ -575,7 +631,7 @@ static struct platform_device power_supply =3D {
+ };
+=20
+ /*
+- * Battery charger
++ * Charging current switch
+  */
+=20
+ static struct regulator_consumer_supply bq24022_consumers[] =3D {
+@@ -695,7 +751,7 @@ static struct platform_device strataflash =3D {
+ };
+=20
+ /*
+- * I2C
++ * PXA I2C normal controller (main)
+  */
+=20
+ static struct i2c_pxa_platform_data i2c_info =3D {
+@@ -709,7 +765,7 @@ static struct i2c_pxa_platform_data i2c_info =3D {
+ static struct platform_device *devices[] __initdata =3D {
+ 	&gpio_keys,
+ 	&egpio,
+-	&backlight,
++	&pwm_backlight,
+ 	&pasic3,
+ 	&bq24022,
+ 	&gpio_vbus,
+@@ -734,9 +790,10 @@ static void __init magician_init(void)
+ 	int err;
+=20
+ 	pxa2xx_mfp_config(ARRAY_AND_SIZE(magician_pin_config));
++
+ 	err =3D gpio_request_array(ARRAY_AND_SIZE(magician_global_gpios));
+ 	if (err)
+-		pr_err("magician: Failed to request GPIOs: %d\n", err);
++		pr_err("magician: Failed to request global GPIOs: %d\n", err);
+=20
+ 	pxa_set_ffuart_info(NULL);
+ 	pxa_set_btuart_info(NULL);
+@@ -761,7 +818,7 @@ static void __init magician_init(void)
  		pr_info("LCD type: %s\n", lcd_select ? "Samsung" : "Toppoly");
  		if (lcd_select && (system_rev < 3))
  			gpio_request_one(GPIO75_MAGICIAN_SAMSUNG_POWER,
--			                 GPIOF_OUT_INIT_LOW, "SAMSUNG_POWER");
--		pxa_set_fb_info(NULL, lcd_select ? &samsung_info : &toppoly_info);
-+				GPIOF_OUT_INIT_LOW, "SAMSUNG_POWER");
-+		pxa_set_fb_info(NULL,
-+			lcd_select ? &samsung_info : &toppoly_info);
+-				GPIOF_OUT_INIT_LOW, "SAMSUNG_POWER");
++				GPIOF_OUT_INIT_LOW, "Samsung LCD Power");
+ 		pxa_set_fb_info(NULL,
+ 			lcd_select ? &samsung_info : &toppoly_info);
  	} else
- 		pr_err("LCD detection: CPLD mapping failed\n");
- }
- 
--
- MACHINE_START(MAGICIAN, "HTC Magician")
--	.atag_offset = 0x100,
--	.map_io = pxa27x_map_io,
--	.nr_irqs = MAGICIAN_NR_IRQS,
--	.init_irq = pxa27x_init_irq,
--	.handle_irq = pxa27x_handle_irq,
--	.init_machine = magician_init,
-+	.atag_offset	= 0x100,
-+	.map_io		= pxa27x_map_io,
-+	.nr_irqs	= MAGICIAN_NR_IRQS,
-+	.init_irq	= pxa27x_init_irq,
-+	.handle_irq	= pxa27x_handle_irq,
-+	.init_machine	= magician_init,
- 	.init_time	= pxa_timer_init,
- 	.restart	= pxa_restart,
- MACHINE_END
--- 
+--=20
 1.7.12.1
-
