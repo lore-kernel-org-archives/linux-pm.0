@@ -1,205 +1,71 @@
-From: Leo Yan <leo.yan@linaro.org>
-Subject: Re: [RFCv5, 18/46] arm: topology: Define TC2 energy and provide it
- to the scheduler
-Date: Mon, 17 Aug 2015 17:19:42 +0800
-Message-ID: <20150817091942.GA754@leoy-linaro>
-References: <1436293469-25707-19-git-send-email-morten.rasmussen@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f54.google.com ([209.85.220.54]:33688 "EHLO
-	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751693AbbHQJTv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Aug 2015 05:19:51 -0400
-Received: by pabyb7 with SMTP id yb7so104805332pab.0
-        for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2015 02:19:51 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1436293469-25707-19-git-send-email-morten.rasmussen@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Pi-Cheng Chen <pi-cheng.chen-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [RESEND PATCH 0/3 v6] Add Mediatek MT8173 cpufreq driver
+Date: Mon, 17 Aug 2015 17:24:22 +0800
+Message-ID: <1439803465-19683-1-git-send-email-pi-cheng.chen@linaro.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+Cc: Michael Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: morten.rasmussen@arm.com
-Cc: peterz@infradead.org, mingo@redhat.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Russell King <linux@arm.linux.org.uk>
 
-Hi Morten,
+MT8173 is a ARMv8 based SoC with 2 clusters. All CPUs in a single cluster
+share the same power and clock domain. This series tries to add cpufreq support
+for MT8173 SoC. The v6 of this series is resent with Acks added.
 
-On Tue, Jul 07, 2015 at 07:24:01PM +0100, Morten Rasmussen wrote:
-> From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> 
-> This patch is only here to be able to test provisioning of energy related
-> data from an arch topology shim layer to the scheduler. Since there is no
-> code today which deals with extracting energy related data from the dtb or
-> acpi, and process it in the topology shim layer, the content of the
-> sched_group_energy structures as well as the idle_state and capacity_state
-> arrays are hard-coded here.
-> 
-> This patch defines the sched_group_energy structure as well as the
-> idle_state and capacity_state array for the cluster (relates to sched
-> groups (sgs) in DIE sched domain level) and for the core (relates to sgs
-> in MC sd level) for a Cortex A7 as well as for a Cortex A15.
-> It further provides related implementations of the sched_domain_energy_f
-> functions (cpu_cluster_energy() and cpu_core_energy()).
-> 
-> To be able to propagate this information from the topology shim layer to
-> the scheduler, the elements of the arm_topology[] table have been
-> provisioned with the appropriate sched_domain_energy_f functions.
-> 
-> cc: Russell King <linux@arm.linux.org.uk>
-> 
-> Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> 
-> ---
-> arch/arm/kernel/topology.c | 118 +++++++++++++++++++++++++++++++++++++++++++--
->  1 file changed, 115 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
-> index b35d3e5..bbe20c7 100644
-> --- a/arch/arm/kernel/topology.c
-> +++ b/arch/arm/kernel/topology.c
-> @@ -274,6 +274,119 @@ void store_cpu_topology(unsigned int cpuid)
->  		cpu_topology[cpuid].socket_id, mpidr);
->  }
->  
-> +/*
-> + * ARM TC2 specific energy cost model data. There are no unit requirements for
-> + * the data. Data can be normalized to any reference point, but the
-> + * normalization must be consistent. That is, one bogo-joule/watt must be the
-> + * same quantity for all data, but we don't care what it is.
-> + */
-> +static struct idle_state idle_states_cluster_a7[] = {
-> +	 { .power = 25 }, /* WFI */
+changes in v6:
+- Move clock and regulator consumer properties document to the device tree
+  bindings documents of MT8173 CPU DVFS clock driver
+- Add change log to describe what is implemented in the MT8173 cpufreq driver
+- Add missed rcu_read_unlock() in the error path
+- Move of_init_opp_table() call to make sure all required hardware resources
+  are already there before it is called
+- Add comments to describe why both platform driver and deivce registration
+  codes are put in the initcall function
+- Use the term "voltage tracking" instead of "voltage trace" according to an
+  internal SoC document
 
-This state is confused. Is this state corresponding to all CPUs have been
-powered off but L2 cache RAM array and SCU are still power on?
+changes in v5:
+- Move resource allocation code from init() into probe() and remove some unused
+  functions due to this change
+- Fix descriptions for device tree binding document
+- Address review comments for last version
+- Register CPU cooling device
 
-> +	 { .power = 10 }, /* cluster-sleep-l */
+Changes in v4:
+- Add bindings for MT8173 cpufreq driver
+- Move OPP table back into device tree
+- Address comments for last version
 
-Is this status means all CPU and cluster have been powered off, if so
-then it will have no power consumption anymore...
+Changes in v3:
+- Implement MT8173 specific standalone cpufreq driver instead of using
+  cpufreq-dt driver
+- Define OPP table in the driver source code until new OPP binding is ready
 
-> +	};
-> +
-> +static struct idle_state idle_states_cluster_a15[] = {
-> +	 { .power = 70 }, /* WFI */
-> +	 { .power = 25 }, /* cluster-sleep-b */
-> +	};
-> +
-> +static struct capacity_state cap_states_cluster_a7[] = {
-> +	/* Cluster only power */
-> +	 { .cap =  150, .power = 2967, }, /*  350 MHz */
+Changes in v2:
+- Add intermediate frequency support in cpufreq-dt driver
+- Use voltage scaling code of cpufreq-dt for little cluster instead of
+  implementaion in notifier of mtk-cpufreq driver
+- Code refinement for mtk-cpufreq driver
 
-For cluster level's capacity, does it mean need run benchmark on all
-CPUs within cluster?
+Pi-Cheng Chen (3):
+  dt-bindings: mediatek: Add MT8173 CPU DVFS clock bindings
+  cpufreq: mediatek: Add MT8173 cpufreq driver
+  arm64: dts: mt8173: Add mt8173 cpufreq driver support
 
-> +	 { .cap =  172, .power = 2792, }, /*  400 MHz */
-> +	 { .cap =  215, .power = 2810, }, /*  500 MHz */
-> +	 { .cap =  258, .power = 2815, }, /*  600 MHz */
-> +	 { .cap =  301, .power = 2919, }, /*  700 MHz */
-> +	 { .cap =  344, .power = 2847, }, /*  800 MHz */
-> +	 { .cap =  387, .power = 3917, }, /*  900 MHz */
-> +	 { .cap =  430, .power = 4905, }, /* 1000 MHz */
-> +	};
-> +
-> +static struct capacity_state cap_states_cluster_a15[] = {
-> +	/* Cluster only power */
-> +	 { .cap =  426, .power =  7920, }, /*  500 MHz */
-> +	 { .cap =  512, .power =  8165, }, /*  600 MHz */
-> +	 { .cap =  597, .power =  8172, }, /*  700 MHz */
-> +	 { .cap =  682, .power =  8195, }, /*  800 MHz */
-> +	 { .cap =  768, .power =  8265, }, /*  900 MHz */
-> +	 { .cap =  853, .power =  8446, }, /* 1000 MHz */
-> +	 { .cap =  938, .power = 11426, }, /* 1100 MHz */
-> +	 { .cap = 1024, .power = 15200, }, /* 1200 MHz */
-> +	};
-> +
-> +static struct sched_group_energy energy_cluster_a7 = {
-> +	  .nr_idle_states = ARRAY_SIZE(idle_states_cluster_a7),
-> +	  .idle_states    = idle_states_cluster_a7,
-> +	  .nr_cap_states  = ARRAY_SIZE(cap_states_cluster_a7),
-> +	  .cap_states     = cap_states_cluster_a7,
-> +};
-> +
-> +static struct sched_group_energy energy_cluster_a15 = {
-> +	  .nr_idle_states = ARRAY_SIZE(idle_states_cluster_a15),
-> +	  .idle_states    = idle_states_cluster_a15,
-> +	  .nr_cap_states  = ARRAY_SIZE(cap_states_cluster_a15),
-> +	  .cap_states     = cap_states_cluster_a15,
-> +};
-> +
-> +static struct idle_state idle_states_core_a7[] = {
-> +	 { .power = 0 }, /* WFI */
+ .../devicetree/bindings/clock/mt8173-cpu-dvfs.txt  |  83 ++++
+ arch/arm64/boot/dts/mediatek/mt8173-evb.dts        |  18 +
+ arch/arm64/boot/dts/mediatek/mt8173.dtsi           |  64 +++
+ drivers/cpufreq/Kconfig.arm                        |   7 +
+ drivers/cpufreq/Makefile                           |   1 +
+ drivers/cpufreq/mt8173-cpufreq.c                   | 524 +++++++++++++++++++++
+ 6 files changed, 697 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/clock/mt8173-cpu-dvfs.txt
+ create mode 100644 drivers/cpufreq/mt8173-cpufreq.c
 
-Should have two idle states for CPU level (WFI and CPU's power off)?
+-- 
+1.9.1
 
-> +	};
-> +
-> +static struct idle_state idle_states_core_a15[] = {
-> +	 { .power = 0 }, /* WFI */
-> +	};
-> +
-> +static struct capacity_state cap_states_core_a7[] = {
-> +	/* Power per cpu */
-> +	 { .cap =  150, .power =  187, }, /*  350 MHz */
-> +	 { .cap =  172, .power =  275, }, /*  400 MHz */
-> +	 { .cap =  215, .power =  334, }, /*  500 MHz */
-> +	 { .cap =  258, .power =  407, }, /*  600 MHz */
-> +	 { .cap =  301, .power =  447, }, /*  700 MHz */
-> +	 { .cap =  344, .power =  549, }, /*  800 MHz */
-> +	 { .cap =  387, .power =  761, }, /*  900 MHz */
-> +	 { .cap =  430, .power = 1024, }, /* 1000 MHz */
-> +	};
-> +
-> +static struct capacity_state cap_states_core_a15[] = {
-> +	/* Power per cpu */
-> +	 { .cap =  426, .power = 2021, }, /*  500 MHz */
-> +	 { .cap =  512, .power = 2312, }, /*  600 MHz */
-> +	 { .cap =  597, .power = 2756, }, /*  700 MHz */
-> +	 { .cap =  682, .power = 3125, }, /*  800 MHz */
-> +	 { .cap =  768, .power = 3524, }, /*  900 MHz */
-> +	 { .cap =  853, .power = 3846, }, /* 1000 MHz */
-> +	 { .cap =  938, .power = 5177, }, /* 1100 MHz */
-> +	 { .cap = 1024, .power = 6997, }, /* 1200 MHz */
-> +	};
-> +
-> +static struct sched_group_energy energy_core_a7 = {
-> +	  .nr_idle_states = ARRAY_SIZE(idle_states_core_a7),
-> +	  .idle_states    = idle_states_core_a7,
-> +	  .nr_cap_states  = ARRAY_SIZE(cap_states_core_a7),
-> +	  .cap_states     = cap_states_core_a7,
-> +};
-> +
-> +static struct sched_group_energy energy_core_a15 = {
-> +	  .nr_idle_states = ARRAY_SIZE(idle_states_core_a15),
-> +	  .idle_states    = idle_states_core_a15,
-> +	  .nr_cap_states  = ARRAY_SIZE(cap_states_core_a15),
-> +	  .cap_states     = cap_states_core_a15,
-> +};
-> +
-> +/* sd energy functions */
-> +static inline const struct sched_group_energy *cpu_cluster_energy(int cpu)
-> +{
-> +	return cpu_topology[cpu].socket_id ? &energy_cluster_a7 :
-> +			&energy_cluster_a15;
-> +}
-> +
-> +static inline const struct sched_group_energy *cpu_core_energy(int cpu)
-> +{
-> +	return cpu_topology[cpu].socket_id ? &energy_core_a7 :
-> +			&energy_core_a15;
-> +}
-> +
->  static inline int cpu_corepower_flags(void)
->  {
->  	return SD_SHARE_PKG_RESOURCES  | SD_SHARE_POWERDOMAIN | \
-> @@ -282,10 +395,9 @@ static inline int cpu_corepower_flags(void)
->  
->  static struct sched_domain_topology_level arm_topology[] = {
->  #ifdef CONFIG_SCHED_MC
-> -	{ cpu_corepower_mask, cpu_corepower_flags, SD_INIT_NAME(GMC) },
-> -	{ cpu_coregroup_mask, cpu_core_flags, SD_INIT_NAME(MC) },
-> +	{ cpu_coregroup_mask, cpu_corepower_flags, cpu_core_energy, SD_INIT_NAME(MC) },
->  #endif
-> -	{ cpu_cpu_mask, SD_INIT_NAME(DIE) },
-> +	{ cpu_cpu_mask, 0, cpu_cluster_energy, SD_INIT_NAME(DIE) },
->  	{ NULL, },
->  };
->  
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
