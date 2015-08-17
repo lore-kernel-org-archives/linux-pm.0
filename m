@@ -1,160 +1,59 @@
-From: Leo Yan <leo.yan@linaro.org>
-Subject: Re: [RFCv5 PATCH 32/46] sched: Energy-aware wake-up task placement
-Date: Tue, 18 Aug 2015 00:23:51 +0800
-Message-ID: <20150817162351.GC31366@leoy-linaro>
-References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
- <1436293469-25707-33-git-send-email-morten.rasmussen@arm.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v2 2/3] gadget: Introduce the usb charger framework
+Date: Mon, 17 Aug 2015 10:24:16 -0700
+Message-ID: <20150817172416.GN10748@sirena.org.uk>
+References: <cover.1439519412.git.baolin.wang@linaro.org>
+ <0c41e21239f69c4e1aa89aba020c91edfc17c4e8.1439519413.git.baolin.wang@linaro.org>
+ <20150814152723.GA17892@kroah.com>
+ <CAMz4kuL=6mGjNHcKHA9RYbabYqn3Lgu=rK6s8WkH5YGeV1T2+w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f47.google.com ([209.85.220.47]:35174 "EHLO
-	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753628AbbHQQYB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Aug 2015 12:24:01 -0400
-Received: by pacgr6 with SMTP id gr6so111667851pac.2
-        for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2015 09:24:00 -0700 (PDT)
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="Gtf2ElYKiUa3nI7m"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1436293469-25707-33-git-send-email-morten.rasmussen@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <CAMz4kuL=6mGjNHcKHA9RYbabYqn3Lgu=rK6s8WkH5YGeV1T2+w@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Baolin Wang <baolin.wang@linaro.org>
+Cc: Greg KH <gregkh@linuxfoundation.org>, Felipe Balbi <balbi@ti.com>, Linus Walleij <linus.walleij@linaro.org>, LKML <linux-kernel@vger.kernel.org>, Peter Chen <peter.chen@freescale.com>, sojka@merica.cz, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, sre@kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, sameo@linux.intel.com, Lee Jones <lee.jones@linaro.org>, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: peterz@infradead.org, mingo@redhat.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hi Morten,
 
-On Tue, Jul 07, 2015 at 07:24:15PM +0100, Morten Rasmussen wrote:
-> Let available compute capacity and estimated energy impact select
-> wake-up target cpu when energy-aware scheduling is enabled and the
-> system in not over-utilized (above the tipping point).
-> 
-> energy_aware_wake_cpu() attempts to find group of cpus with sufficient
-> compute capacity to accommodate the task and find a cpu with enough spare
-> capacity to handle the task within that group. Preference is given to
-> cpus with enough spare capacity at the current OPP. Finally, the energy
-> impact of the new target and the previous task cpu is compared to select
-> the wake-up target cpu.
-> 
-> cc: Ingo Molnar <mingo@redhat.com>
-> cc: Peter Zijlstra <peterz@infradead.org>
-> 
-> Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
-> ---
->  kernel/sched/fair.c | 85 ++++++++++++++++++++++++++++++++++++++++++++++++++++-
->  1 file changed, 84 insertions(+), 1 deletion(-)
-> 
-> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> index 0f7dbda4..01f7337 100644
-> --- a/kernel/sched/fair.c
-> +++ b/kernel/sched/fair.c
-> @@ -5427,6 +5427,86 @@ static int select_idle_sibling(struct task_struct *p, int target)
->  	return target;
->  }
->  
-> +static int energy_aware_wake_cpu(struct task_struct *p, int target)
-> +{
-> +	struct sched_domain *sd;
-> +	struct sched_group *sg, *sg_target;
-> +	int target_max_cap = INT_MAX;
-> +	int target_cpu = task_cpu(p);
-> +	int i;
-> +
-> +	sd = rcu_dereference(per_cpu(sd_ea, task_cpu(p)));
-> +
-> +	if (!sd)
-> +		return target;
-> +
-> +	sg = sd->groups;
-> +	sg_target = sg;
-> +
-> +	/*
-> +	 * Find group with sufficient capacity. We only get here if no cpu is
-> +	 * overutilized. We may end up overutilizing a cpu by adding the task,
-> +	 * but that should not be any worse than select_idle_sibling().
-> +	 * load_balance() should sort it out later as we get above the tipping
-> +	 * point.
-> +	 */
-> +	do {
-> +		/* Assuming all cpus are the same in group */
-> +		int max_cap_cpu = group_first_cpu(sg);
-> +
-> +		/*
-> +		 * Assume smaller max capacity means more energy-efficient.
-> +		 * Ideally we should query the energy model for the right
-> +		 * answer but it easily ends up in an exhaustive search.
-> +		 */
-> +		if (capacity_of(max_cap_cpu) < target_max_cap &&
-> +		    task_fits_capacity(p, max_cap_cpu)) {
-> +			sg_target = sg;
-> +			target_max_cap = capacity_of(max_cap_cpu);
-> +		}
-> +	} while (sg = sg->next, sg != sd->groups);
-> +
-> +	/* Find cpu with sufficient capacity */
-> +	for_each_cpu_and(i, tsk_cpus_allowed(p), sched_group_cpus(sg_target)) {
-> +		/*
-> +		 * p's blocked utilization is still accounted for on prev_cpu
-> +		 * so prev_cpu will receive a negative bias due the double
-> +		 * accouting. However, the blocked utilization may be zero.
-> +		 */
-> +		int new_usage = get_cpu_usage(i) + task_utilization(p);
-> +
-> +		if (new_usage >	capacity_orig_of(i))
-> +			continue;
-> +
-> +		if (new_usage <	capacity_curr_of(i)) {
-> +			target_cpu = i;
-> +			if (cpu_rq(i)->nr_running)
-> +				break;
-> +		}
-> +
-> +		/* cpu has capacity at higher OPP, keep it as fallback */
-> +		if (target_cpu == task_cpu(p))
-> +			target_cpu = i;
+--Gtf2ElYKiUa3nI7m
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-If CPU's current capacity cannot meet requirement, why not stay
-task on prev CPU so have chance to use hot cache? Or the purpose
-is to place tasks on the first CPU in schedule group as possible?
+On Mon, Aug 17, 2015 at 11:03:26AM +0800, Baolin Wang wrote:
+> On 14 August 2015 at 23:27, Greg KH <gregkh@linuxfoundation.org> wrote:
+> > On Fri, Aug 14, 2015 at 05:47:45PM +0800, Baolin Wang wrote:
 
-> +	}
-> +
-> +	if (target_cpu != task_cpu(p)) {
-> +		struct energy_env eenv = {
-> +			.usage_delta	= task_utilization(p),
-> +			.src_cpu	= task_cpu(p),
-> +			.dst_cpu	= target_cpu,
-> +		};
-> +
-> +		/* Not enough spare capacity on previous cpu */
-> +		if (cpu_overutilized(task_cpu(p)))
-> +			return target_cpu;
-> +
-> +		if (energy_diff(&eenv) >= 0)
-> +			return task_cpu(p);
-> +	}
-> +
-> +	return target_cpu;
-> +}
-> +
->  /*
->   * select_task_rq_fair: Select target runqueue for the waking task in domains
->   * that have the 'sd_flag' flag set. In practice, this is SD_BALANCE_WAKE,
-> @@ -5479,7 +5559,10 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
->  		prev_cpu = cpu;
->  
->  	if (sd_flag & SD_BALANCE_WAKE && want_sibling) {
-> -		new_cpu = select_idle_sibling(p, prev_cpu);
-> +		if (energy_aware() && !cpu_rq(cpu)->rd->overutilized)
-> +			new_cpu = energy_aware_wake_cpu(p, prev_cpu);
-> +		else
-> +			new_cpu = select_idle_sibling(p, prev_cpu);
->  		goto unlock;
->  	}
->  
-> -- 
-> 1.9.1
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> >> + * This program is free software; you can redistribute it and/or modify
+> >> + * it under the terms of the GNU General Public License as published by
+> >> + * the Free Software Foundation; either version 2 of the License, or
+> >> + * (at your option) any later version.
+
+> > I have to ask, do you really mean "any later version"?
+
+> I think I did not get your point, could you explain it detailedly?
+
+Unlike a lot of userspace projects the kernel is normally just licensed
+under GPLv2 without the option to relicense with a later version so the
+"...or any later version" is a bit unusual.  There is some controversy
+about some of the changes in GPLv3.
+
+--Gtf2ElYKiUa3nI7m
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJV0hi8AAoJECTWi3JdVIfQuxAH/j5dwlDhPL0T8Xl752bQ0uph
+MveUIVTv9mrFzX6B2Ld5PInhWVogcC+cGXyMCwmsBQqyP2sFe/qizvjyX5p16ZCY
+KV215jP5Q7pn/1Htt5Q1eFs4Dw0EWEdiq9xi2tltq/FfRdHQxPYFzeNB8M5B7Dmg
+1jTqtIUTtDvEKt4CihIc65X51AT1T+FgSTDb2jMgo8M/r2V5eFcFJaB6bdoSvONG
+wiGiNvrVPQXIdABPYdNggT3blqXzU2uscV5NY2uiS/PF0l7JuQoVsY3mbVRJ2/pM
+xvAZX4dHpsS+zKRw53mCJF/NCf7CpHtX/No20Ac7aqT2vGmJqc1yIU8LHsbrV7o=
+=KGRN
+-----END PGP SIGNATURE-----
+
+--Gtf2ElYKiUa3nI7m--
