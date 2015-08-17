@@ -1,45 +1,63 @@
-From: Nigel Cunningham <nigel@nigelcunningham.com.au>
-Subject: Re: [PATCH v2 08/16] x86/efi: Carrying hibernation key by setup data
-Date: Mon, 17 Aug 2015 16:54:01 +1000
-Message-ID: <55D18509.9080709@nigelcunningham.com.au>
-References: <1439273796-25359-1-git-send-email-jlee@suse.com> <1439273796-25359-9-git-send-email-jlee@suse.com> <20150815170737.GA25353@Nokia-N900> <alpine.LNX.2.00.1508162321100.27871@pobox.suse.cz>
+From: Yao Yuan <yao.yuan@freescale.com>
+Subject: RE: [PATCH v2] dmaengine: fsl-edma: add PM suspend/resume support
+Date: Mon, 17 Aug 2015 07:22:45 +0000
+Message-ID: <CY1PR0301MB1562FBE9818C1973651D2B7183790@CY1PR0301MB1562.namprd03.prod.outlook.com>
+References: <1437469005-3162-1-git-send-email-yao.yuan@freescale.com>
+	<CADRPPNQJi_x+mdQV=DEVuhCL_p6VOWcPiV3jzioeRdWgSW2w3g@mail.gmail.com>
+	<CY1PR0301MB15628DD5CFCE2B65BF4FECB2837C0@CY1PR0301MB1562.namprd03.prod.outlook.com>
+ <CADRPPNS_wzX+mwT0L-H=ZP9w8gH9W4O9KUqnGYiAc39S5v4qLA@mail.gmail.com>
+ <CY1PR0301MB1562103588FB0C6BEFDDBF3C83790@CY1PR0301MB1562.namprd03.prod.outlook.com>
+ <55D183D1.9020401@nigelcunningham.com.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from nigelcunningham.com.au ([139.162.22.9]:43194 "EHLO
-	nigelcunningham.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750774AbbHQGyq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Aug 2015 02:54:46 -0400
-In-Reply-To: <alpine.LNX.2.00.1508162321100.27871@pobox.suse.cz>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <55D183D1.9020401@nigelcunningham.com.au>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Nigel Cunningham <nigel@nigelcunningham.com.au>, Li Leo <LeoLi@freescale.com>
+Cc: Vinod Koul <vinod.koul@intel.com>, "stefan@agner.ch" <stefan@agner.ch>, Arnd Bergmann <arnd@arndb.de>, Dan Williams <dan.j.williams@intel.com>, "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Jiri Kosina <jikos@kernel.org>, Pavel Machek <pavel@ucw.cz>
-Cc: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, linux-kernel@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Matthew Garrett <matthew.garrett@nebula.com>, Len Brown <len.brown@intel.com>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, Matt Fleming <matt.fleming@intel.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>, "Lee, Chun-Yi" <jlee@suse.com>
 
-Hi all.
-
-I've rejoined LKML, so I'll try to help with reviewing PM patches. I'd forgotten how much it is a case of sipping at a fire hydrant!
-
-Regards,
-
-Nigel
-
-On 17/08/15 07:23, Jiri Kosina wrote:
-> On Sat, 15 Aug 2015, Pavel Machek wrote:
->
->>> For forwarding hibernation key from EFI stub to boot kernel, this patch
->>> allocates setup data for carrying hibernation key, size and the status
->>> of efi operating.
->>>
->>> Reviewed-by: Jiri Kosina <jkosina@suse.com>
->> Jiri, are you sure you reviewed these? This is not really
->> english, afaict, and efi/EFI should be spelled consistently.
-> Yes, I did review the code and the fact that it is still in compliance 
-> with my original idea. I think you can blame me on not reviewing 
-> changelogs super-rigorously though, so all suggestions for improvements 
-> are absolutely welcome.
->
-> Thanks,
->
-
+SGkgTmlnZWwsDQoNCk9uIE1vbiwgQXVnIDE3LCAyMDE1IGF0IDI6NDkgUE0sIE5pZ2VsIEN1bm5p
+bmdoYW0gPCBuaWdlbEBuaWdlbGN1bm5pbmdoYW0uY29tLmF1ID4gd3JvdGU6DQo+IE9uIDE3LzA4
+LzE1IDEzOjU5LCBZYW8gWXVhbiB3cm90ZToNCj4gPiBPbiBTYXQsIEF1ZyAxNSwgMjAxNSBhdCA3
+OjQ4IEFNLCBwa3UubGVvIDwgcGt1Lmxlb0BnbWFpbC5jb20gPiB3cm90ZToNCj4gPj4gT24gRnJp
+LCBBdWcgMTQsIDIwMTUgYXQgMToyNCBBTSwgWWFvIFl1YW4gPHlhby55dWFuQGZyZWVzY2FsZS5j
+b20+IHdyb3RlOg0KPiA+Pj4gSGkgTGVvLA0KPiA+Pj4NCj4gPj4+IFRoYW5rcyBmb3IgeW91ciBy
+ZXZpZXcuDQo+ID4+PiBBYm91dCB0aG9zZSB0d28gbWV0aG9kcyBmb3IgRE1BIHN1c3BlbmQgdGhh
+dCB5b3UgaGF2ZSBtZW50aW9uZWQuDQo+IFdlDQo+ID4+IGhhdmUgYSBsb3Qgb2YgdGhlIGRpc2N1
+c3Npb25zIGluIG90aGVyIERNQSBkcml2ZXIgbGlrZSBETUEgZm9yDQo+ID4+IEZyZWVzY2FsZSBQ
+b3dlclBDLg0KPiA+Pj4gRmluYWxseSwgd2UgdGhpbmsgdGhlIGRldmljZSB3aGljaCB1c2VkIHRo
+ZSBETUEgdHJhbnNtaXNzaW9uIHNlcnZpY2UNCj4gPj4+IHNob3VsZA0KPiA+PiBjYW5jZWwgdGhl
+IHRyYW5zbWlzc2lvbiBzZXJ2aWNlIGluIGl0cyBzdXNwZW5kLg0KPiA+Pj4gU28gRE1BIGluIHN1
+c3BlbmQgc2hvdWxkIGJlIGlkbGUuDQo+ID4+IElmIHRoYXQncyB0aGUgY2FzZSB5b3Ugc2hvdWxk
+IGNsZWFybHkgc3RhdGUgdGhpcyBpbiB0aGUgY29tbWl0DQo+ID4+IG1lc3NhZ2UgYW5kIGluIGNv
+ZGUsIGFsdGhvdWdoIEkgZG9uJ3Qga25vdyBpZiBpdCBpcyBzYWZlIHRvIG1ha2Ugc3VjaA0KPiA+
+PiBhc3N1bXB0aW9uLiAgVGhlcmUgY291bGQgYmUgdXNlciBvZiB0aGUgRE1BIHRoYXQgZG9lc24n
+dCB0cmFjayB0aGUNCj4gY29tcGxldGlvbiBvZiB0cmFuc2ZlcnMuDQo+ID4gSSB0aGluayBpdCBz
+aG91bGQgYmUgc2FmZS4gSW4gbXkgb3BpbmlvbiwgZXZlbiBzb21lIGNsaWVudCh0aGUgdXNlciBv
+Zg0KPiA+IHRoZSBETUEpIGZvcmdldCB0byBjYW5jZWwgaXRzIERNQSB0cmFuc21pc3Npb24sIEl0
+IHdpbGwganVzdCBsZWFkIHRvIFBNIGZhaWxlZA0KPiBidXQgbm8gb3RoZXIgc3lzdGVtIGFuZCBk
+YXRhIHJpc2suDQo+ID4gQWx0aG91Z2ggd2Ugc2hvdWxkIGZpcnN0IGZpeCB0aGUgYmVoYXZpb3Ig
+b2YgdGhlIGNsaWVudC4NCj4gPiBPbmNlIHlvdSBhcmUgbm8gbmVlZCB0aGUgRE1BIHRyYW5zbWlz
+c2lvbiwgd2h5IG5vdCBzdG9wIGl0Pw0KPiA+DQo+ID4gSXMgaXQgcmlnaHQ/DQo+IFRoaW5rIG9m
+IGl0IGZyb20gdGhlIGVuZCB1c2VyIHBlcnNwZWN0aXZlLiBXb3VsZCB5b3UgbGlrZSB5b3VyIGxh
+cHRvcCAob3INCj4gd2hhdGV2ZXIpIHRvIHJlZnVzZSB0byBzdXNwZW5kIGJlY2F1c2Ugb2YgdGhp
+cyBjb25kaXRpb24/IFRoZSB1c2VyIG1heSB3ZWxsDQo+IGV4cGVjdCB0aGF0IGNsb3NpbmcgdGhl
+IGxpZCBvbiB0aGVpciBsYXB0b3Agd2lsbCByZWxpYWJseSBsZWFkIHRvIGl0IHN1c3BlbmRpbmcg
+dG8NCj4gcmFtLiBSZXR1cm5pbmcgYSBmYWlsdXJlIGhlcmUgY291bGQgcmVzdWx0IGluIGEgbG9z
+cyBvZiBkYXRhIGlmIHRoZSBjb25kaXRpb24gaXMgbm90DQo+IGRldGVjdGVkIGFuZCB0aGUgbWFj
+aGluZSBzdWJzZXF1ZW50bHkgcnVucyBvdXQgb2YgcG93ZXIuDQo+IA0KDQpZZXMsIHRoZSB1c2Vy
+IG1heSB3ZWxsIGV4cGVjdCB0aGF0IGNsb3NpbmcgdGhlIGxpZCBvbiB0aGVpciBsYXB0b3Agd2ls
+bCByZWxpYWJseSBsZWFkIHRvIGl0IHN1c3BlbmRpbmcgdG8gcmFtLg0KU28gdGhlIGNsaWVudCh0
+aGUgdXNlciBvZiB0aGUgRE1BKSBtdXN0ICB0byBQQVVTRSBvciB0ZXJtaW5hdGUgdGhlIERNQSB0
+cmFuc21pc3Npb24uDQoNCldlIG5lZWQgdG8gcmVseSBvbiBjbGllbnQgZG9pbmcgdGhlIHJpZ2h0
+IHRoaW5nIGhlcmUuIA0KVGhlIERNQSBzaG91bGQgbm90IG1ha2UgYSBkZWNpc2lvbiBpbnN0ZWFk
+IG9mIGNsaWVudC4NCklmIHRoZSBETUEgaXMgbm90IGlkbGUgaW4gRE1BIHN1c3BlbmQsIGl0IHNo
+b3VsZCBiZSB0aGUgY2xpZW50J3MgaXNzdWUuDQpXZSBkb24ndCBrbm93IHdoYXQgdGhlIGNsaWVu
+dCByZWFsbHkgd2FudCB0byBkbywgc28ganVzdCByZXR1cm4gdGhlIG5vbi1zdWNjZXNzIHZhbHVl
+Lg0KDQo+IEkgZG8gYWdyZWUgdGhhdCB3aGF0ZXZlciBpcyBzdWJtaXR0aW5nIERNQSBzaG91bGQg
+YmUgc3RvcHBlZCBmaXJzdDsgaWRlYWxseSB0aGlzDQo+IGRyaXZlciB3b3VsZCBhbHdheXMgYmUg
+aWRsZSBiZWNhdXNlIHdoYXRldmVyIHByb2R1Y2VycyBvZiB3b3JrIGV4aXN0IHdvdWxkDQo+IGFs
+cmVhZHkgaGF2ZSBiZWVuIHF1aWVzY2VkIGFuZCBvdXRwdXQgZmx1c2hlZC4NCj4gDQo=
