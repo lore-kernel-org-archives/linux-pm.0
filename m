@@ -1,262 +1,85 @@
-From: Jiang Liu <jiang.liu@linux.intel.com>
-Subject: [Patch V3 9/9] mm, x86: Enable memoryless node support to better support CPU/memory hotplug
-Date: Mon, 17 Aug 2015 11:19:06 +0800
-Message-ID: <1439781546-7217-10-git-send-email-jiang.liu@linux.intel.com>
-References: <1439781546-7217-1-git-send-email-jiang.liu@linux.intel.com>
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <1439781546-7217-1-git-send-email-jiang.liu@linux.intel.com>
-Sender: owner-linux-mm@kvack.org
-To: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@suse.de>, David Rientjes <rientjes@google.com>, Mike Galbraith <umgwanakikbuti@gmail.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Tang Chen <tangchen@cn.fujitsu.com>, Tejun Heo <tj@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@amacapital.net>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Dave Hansen <dave.hansen@linux.intel.com>, =?UTF-8?q?Jan=20H=2E=20Sch=C3=B6nherr?= <jschoenh@amazon.de>, Igor Mammedov <imammedo@redhat.com>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Xishi Qiu <qiuxishi@huawei.com>J
-Cc: Tony Luck <tony.luck@intel.com>, linux-mm@kvack.org, linux-hotplug@vger.kernel.org, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org
+From: Yao Yuan <yao.yuan@freescale.com>
+Subject: RE: [PATCH v2] dmaengine: fsl-edma: add PM suspend/resume support
+Date: Mon, 17 Aug 2015 03:59:41 +0000
+Message-ID: <CY1PR0301MB1562103588FB0C6BEFDDBF3C83790@CY1PR0301MB1562.namprd03.prod.outlook.com>
+References: <1437469005-3162-1-git-send-email-yao.yuan@freescale.com>
+	<CADRPPNQJi_x+mdQV=DEVuhCL_p6VOWcPiV3jzioeRdWgSW2w3g@mail.gmail.com>
+	<CY1PR0301MB15628DD5CFCE2B65BF4FECB2837C0@CY1PR0301MB1562.namprd03.prod.outlook.com>
+ <CADRPPNS_wzX+mwT0L-H=ZP9w8gH9W4O9KUqnGYiAc39S5v4qLA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bn1bn0101.outbound.protection.outlook.com ([157.56.110.101]:45812
+	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751440AbbHQD7p (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 16 Aug 2015 23:59:45 -0400
+In-Reply-To: <CADRPPNS_wzX+mwT0L-H=ZP9w8gH9W4O9KUqnGYiAc39S5v4qLA@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Li Leo <LeoLi@freescale.com>
+Cc: Vinod Koul <vinod.koul@intel.com>, "stefan@agner.ch" <stefan@agner.ch>, Arnd Bergmann <arnd@arndb.de>, Dan Williams <dan.j.williams@intel.com>, "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-With current implementation, all CPUs within a NUMA node will be
-assocaited with another NUMA node if the node has no memory installed.
-
-For example, on a four-node system, CPUs on node 2 and 3 are associated
-with node 0 when are no memory install on node 2 and 3, which may
-confuse users.
-root@bkd01sdp:~# numactl --hardware
-available: 2 nodes (0-1)
-node 0 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119
-node 0 size: 15602 MB
-node 0 free: 15014 MB
-node 1 cpus: 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89
-node 1 size: 15985 MB
-node 1 free: 15686 MB
-node distances:
-node   0   1
-  0:  10  21
-  1:  21  10
-
-To be worse, the CPU affinity relationship won't get fixed even after
-memory has been added to those nodes. After memory hot-addition to
-node 2, CPUs on node 2 are still associated with node 0. This may cause
-sub-optimal performance.
-root@bkd01sdp:/sys/devices/system/node/node2# numactl --hardware
-available: 3 nodes (0-2)
-node 0 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119
-node 0 size: 15602 MB
-node 0 free: 14743 MB
-node 1 cpus: 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89
-node 1 size: 15985 MB
-node 1 free: 15715 MB
-node 2 cpus:
-node 2 size: 128 MB
-node 2 free: 128 MB
-node distances:
-node   0   1   2
-  0:  10  21  21
-  1:  21  10  21
-  2:  21  21  10
-
-With support of memoryless node enabled, it will correctly report system
-hardware topology for nodes without memory installed.
-root@bkd01sdp:~# numactl --hardware
-available: 4 nodes (0-3)
-node 0 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74
-node 0 size: 15725 MB
-node 0 free: 15129 MB
-node 1 cpus: 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89
-node 1 size: 15862 MB
-node 1 free: 15627 MB
-node 2 cpus: 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104
-node 2 size: 0 MB
-node 2 free: 0 MB
-node 3 cpus: 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119
-node 3 size: 0 MB
-node 3 free: 0 MB
-node distances:
-node   0   1   2   3
-  0:  10  21  21  21
-  1:  21  10  21  21
-  2:  21  21  10  21
-  3:  21  21  21  10
-
-With memoryless node enabled, CPUs are correctly associated with node 2
-after memory hot-addition to node 2.
-root@bkd01sdp:/sys/devices/system/node/node2# numactl --hardware
-available: 4 nodes (0-3)
-node 0 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74
-node 0 size: 15725 MB
-node 0 free: 14872 MB
-node 1 cpus: 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89
-node 1 size: 15862 MB
-node 1 free: 15641 MB
-node 2 cpus: 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104
-node 2 size: 128 MB
-node 2 free: 127 MB
-node 3 cpus: 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119
-node 3 size: 0 MB
-node 3 free: 0 MB
-node distances:
-node   0   1   2   3
-  0:  10  21  21  21
-  1:  21  10  21  21
-  2:  21  21  10  21
-  3:  21  21  21  10
-
-Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
----
- arch/x86/Kconfig            |    3 +++
- arch/x86/kernel/acpi/boot.c |    4 +++-
- arch/x86/kernel/smpboot.c   |    2 ++
- arch/x86/mm/numa.c          |   49 +++++++++++++++++++++++++++++++------------
- 4 files changed, 44 insertions(+), 14 deletions(-)
-
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index b3a1a5d77d92..5d7ad70ace0d 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -2069,6 +2069,9 @@ config USE_PERCPU_NUMA_NODE_ID
- 	def_bool y
- 	depends on NUMA
- 
-+config HAVE_MEMORYLESS_NODES
-+	def_bool NUMA
-+
- config ARCH_ENABLE_SPLIT_PMD_PTLOCK
- 	def_bool y
- 	depends on X86_64 || X86_PAE
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 07930e1d2fe9..3403f1f0f28d 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -711,6 +711,7 @@ static void acpi_map_cpu2node(acpi_handle handle, int cpu, int physid)
- 		}
- 		set_apicid_to_node(physid, nid);
- 		numa_set_node(cpu, nid);
-+		set_cpu_numa_mem(cpu, local_memory_node(nid));
- 	}
- #endif
- }
-@@ -743,9 +744,10 @@ int acpi_unmap_cpu(int cpu)
- {
- #ifdef CONFIG_ACPI_NUMA
- 	set_apicid_to_node(per_cpu(x86_cpu_to_apicid, cpu), NUMA_NO_NODE);
-+	set_cpu_numa_mem(cpu, NUMA_NO_NODE);
- #endif
- 
--	per_cpu(x86_cpu_to_apicid, cpu) = -1;
-+	per_cpu(x86_cpu_to_apicid, cpu) = BAD_APICID;
- 	set_cpu_present(cpu, false);
- 	num_processors--;
- 
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index b1f3ed9c7a9e..aeec91ac6fd4 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -162,6 +162,8 @@ static void smp_callin(void)
- 	 */
- 	phys_id = read_apic_id();
- 
-+	set_numa_mem(local_memory_node(cpu_to_node(cpuid)));
-+
- 	/*
- 	 * the boot CPU has finished the init stage and is spinning
- 	 * on callin_map until we finish. We are free to set up this
-diff --git a/arch/x86/mm/numa.c b/arch/x86/mm/numa.c
-index 08860bdf5744..f2a4e23bd14d 100644
---- a/arch/x86/mm/numa.c
-+++ b/arch/x86/mm/numa.c
-@@ -22,6 +22,7 @@
- 
- int __initdata numa_off;
- nodemask_t numa_nodes_parsed __initdata;
-+static nodemask_t numa_nodes_empty __initdata;
- 
- struct pglist_data *node_data[MAX_NUMNODES] __read_mostly;
- EXPORT_SYMBOL(node_data);
-@@ -560,17 +561,16 @@ static int __init numa_register_memblks(struct numa_meminfo *mi)
- 			end = max(mi->blk[i].end, end);
- 		}
- 
--		if (start >= end)
--			continue;
--
- 		/*
- 		 * Don't confuse VM with a node that doesn't have the
- 		 * minimum amount of memory:
- 		 */
--		if (end && (end - start) < NODE_MIN_SIZE)
--			continue;
--
--		alloc_node_data(nid);
-+		if (start < end && (end - start) >= NODE_MIN_SIZE) {
-+			alloc_node_data(nid);
-+		} else if (IS_ENABLED(CONFIG_HAVE_MEMORYLESS_NODES)) {
-+			alloc_node_data(nid);
-+			node_set(nid, numa_nodes_empty);
-+		}
- 	}
- 
- 	/* Dump memblock with node info and return. */
-@@ -587,14 +587,18 @@ static int __init numa_register_memblks(struct numa_meminfo *mi)
-  */
- static void __init numa_init_array(void)
- {
--	int rr, i;
-+	int i, rr = MAX_NUMNODES;
- 
--	rr = first_node(node_online_map);
- 	for (i = 0; i < nr_cpu_ids; i++) {
-+		/* Search for an onlined node with memory */
-+		do {
-+			if (rr != MAX_NUMNODES)
-+				rr = next_node(rr, node_online_map);
-+			if (rr == MAX_NUMNODES)
-+				rr = first_node(node_online_map);
-+		} while (node_isset(rr, numa_nodes_empty));
-+
- 		numa_set_node(i, rr);
--		rr = next_node(rr, node_online_map);
--		if (rr == MAX_NUMNODES)
--			rr = first_node(node_online_map);
- 	}
- }
- 
-@@ -696,9 +700,12 @@ static __init int find_near_online_node(int node)
- {
- 	int n, val;
- 	int min_val = INT_MAX;
--	int best_node = -1;
-+	int best_node = NUMA_NO_NODE;
- 
- 	for_each_online_node(n) {
-+		if (node_isset(n, numa_nodes_empty))
-+			continue;
-+
- 		val = node_distance(node, n);
- 
- 		if (val < min_val) {
-@@ -739,6 +746,22 @@ void __init init_cpu_to_node(void)
- 		if (!node_online(node))
- 			node = find_near_online_node(node);
- 		numa_set_node(cpu, node);
-+		if (node_spanned_pages(node))
-+			set_cpu_numa_mem(cpu, node);
-+		if (IS_ENABLED(CONFIG_HAVE_MEMORYLESS_NODES))
-+			node_clear(node, numa_nodes_empty);
-+	}
-+
-+	/* Destroy empty nodes */
-+	if (IS_ENABLED(CONFIG_HAVE_MEMORYLESS_NODES)) {
-+		int nid;
-+		const size_t nd_size = roundup(sizeof(pg_data_t), PAGE_SIZE);
-+
-+		for_each_node_mask(nid, numa_nodes_empty) {
-+			node_set_offline(nid);
-+			memblock_free(__pa(node_data[nid]), nd_size);
-+			node_data[nid] = NULL;
-+		}
- 	}
- }
- 
--- 
-1.7.10.4
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+T24gU2F0LCBBdWcgMTUsIDIwMTUgYXQgNzo0OCBBTSwgcGt1LmxlbyA8IHBrdS5sZW9AZ21haWwu
+Y29tID4gd3JvdGU6DQo+IE9uIEZyaSwgQXVnIDE0LCAyMDE1IGF0IDE6MjQgQU0sIFlhbyBZdWFu
+IDx5YW8ueXVhbkBmcmVlc2NhbGUuY29tPiB3cm90ZToNCj4gPiBIaSBMZW8sDQo+ID4NCj4gPiBU
+aGFua3MgZm9yIHlvdXIgcmV2aWV3Lg0KPiA+IEFib3V0IHRob3NlIHR3byBtZXRob2RzIGZvciBE
+TUEgc3VzcGVuZCB0aGF0IHlvdSBoYXZlIG1lbnRpb25lZC4gV2UNCj4gaGF2ZSBhIGxvdCBvZiB0
+aGUgZGlzY3Vzc2lvbnMgaW4gb3RoZXIgRE1BIGRyaXZlciBsaWtlIERNQSBmb3IgRnJlZXNjYWxl
+DQo+IFBvd2VyUEMuDQo+ID4NCj4gPiBGaW5hbGx5LCB3ZSB0aGluayB0aGUgZGV2aWNlIHdoaWNo
+IHVzZWQgdGhlIERNQSB0cmFuc21pc3Npb24gc2VydmljZSBzaG91bGQNCj4gY2FuY2VsIHRoZSB0
+cmFuc21pc3Npb24gc2VydmljZSBpbiBpdHMgc3VzcGVuZC4NCj4gPiBTbyBETUEgaW4gc3VzcGVu
+ZCBzaG91bGQgYmUgaWRsZS4NCj4gDQo+IElmIHRoYXQncyB0aGUgY2FzZSB5b3Ugc2hvdWxkIGNs
+ZWFybHkgc3RhdGUgdGhpcyBpbiB0aGUgY29tbWl0IG1lc3NhZ2UgYW5kIGluDQo+IGNvZGUsIGFs
+dGhvdWdoIEkgZG9uJ3Qga25vdyBpZiBpdCBpcyBzYWZlIHRvIG1ha2Ugc3VjaCBhc3N1bXB0aW9u
+LiAgVGhlcmUgY291bGQNCj4gYmUgdXNlciBvZiB0aGUgRE1BIHRoYXQgZG9lc24ndCB0cmFjayB0
+aGUgY29tcGxldGlvbiBvZiB0cmFuc2ZlcnMuDQoNCkkgdGhpbmsgaXQgc2hvdWxkIGJlIHNhZmUu
+IEluIG15IG9waW5pb24sIGV2ZW4gc29tZSBjbGllbnQodGhlIHVzZXIgb2YgdGhlIERNQSkgZm9y
+Z2V0IHRvIGNhbmNlbCBpdHMgRE1BIHRyYW5zbWlzc2lvbiwNCkl0IHdpbGwganVzdCBsZWFkIHRv
+IFBNIGZhaWxlZCBidXQgbm8gb3RoZXIgc3lzdGVtIGFuZCBkYXRhIHJpc2suDQpBbHRob3VnaCB3
+ZSBzaG91bGQgZmlyc3QgZml4IHRoZSBiZWhhdmlvciBvZiB0aGUgY2xpZW50Lg0KT25jZSB5b3Ug
+YXJlIG5vIG5lZWQgdGhlIERNQSB0cmFuc21pc3Npb24sIHdoeSBub3Qgc3RvcCBpdD8NCg0KSXMg
+aXQgcmlnaHQ/DQoNCj4gPg0KPiA+IE9uY2UgdGhlIERNQSBpbiBsYXRlX3N1c3BlbmQgaXMgbm90
+IGJlIGlkbGUsIHdlIHRoaW5rIHNvbWUgZHJpdmVyIGhhdmVuJ3QNCj4gY2FuY2VsZWQgdGhlIERN
+QSB0cmFuc21pc3Npb24uIFNvIG1heWJlIHNvbWV0aGluZyBpcyBlcnJvciB3aGVuIG90aGVyDQo+
+IGRyaXZlciBpbiBzdXNwZW5kLg0KPiA+DQo+ID4gSW4gdGhlIGNhc2UsIHdlIHNob3VsZCByZXR1
+cm4gZmFpbGVkIHRvIHN0b3AgUE0uIERNQSBzaG91bGQgbm90IG1ha2UgYQ0KPiBjaG9pY2UgZm9y
+IG90aGVyIGRyaXZlcnMod2hpY2ggdXNlZCBETUEpIHRvIGZvcmNlIHN0b3AgRE1BIHRyYW5zbWlz
+c2lvbi4NCj4gDQo+IFRoZSBzdXNwZW5kIGVudHJhbmNlIHNob3VsZCBiZSB0ZXJtaW5hdGVkIGJ5
+IHdha2V1cCBldmVudHMgYW5kIG9ubHkgY3JpdGljYWwNCj4gaXNzdWVzLiAgSSBkb24ndCB0aGlu
+ayB3ZSBzaG91bGQganVzdCB0ZXJtaW5hdGUgdGhlIHN1c3BlbmQgZW50cmFuY2UganVzdA0KPiBi
+ZWNhdXNlIGhhdmluZyBvbi1nb2luZyBJL08gd2l0aG91dCBldmVuIHRyeSB0byBzdG9wIGl0Lg0K
+DQpUaGUgZ3JhY2VmdWwgYmVoYXZpb3Igd291bGQgYmUgdG8gZm9yIGNsaWVudCB0byBQQVVTRSBv
+ciB0ZXJtaW5hdGUgYW5kIHRoZW4gc3VzcGVuZA0KZm9sbG93ZWQgYnkgRE1BIHN1c3BlbmQuDQpX
+ZSBuZWVkIHRvIHJlbHkgb24gY2xpZW50IGRvaW5nIHRoZSByaWdodCB0aGluZyBoZXJlLiANClRo
+ZSBETUEgc2hvdWxkIG5vdCBtYWtlIGEgZGVjaXNpb24gaW5zdGVhZCBvZiBjbGllbnQuDQpJZiB0
+aGUgRE1BIGlzIG5vdCBpZGxlIGluIERNQSBzdXNwZW5kLCBpdCBzaG91bGQgYmUgdGhlIGNsaWVu
+dCdzIGlzc3VlLg0KV2UgZG9uJ3Qga25vdyB3aGF0IHRoZSBjbGllbnQgcmVhbGx5IHdhbnQgdG8g
+ZG8sIHNvIGp1c3QgcmV0dXJuIHRoZSBub24tc3VjY2VzcyB2YWx1ZS4NCg0KSSdtIG5vdCBzdXJl
+IG15IGRlc2NyaXB0aW9uIGlzIGNsZWFyLiAgU28gd2UgbWF5IHJlZmVyIHRoZSBkaXNjdXNzaW9u
+IGFib3V0IHRoZSBETUEgUE0gc3VwcG9ydCBiZWZvcmUuDQpTdWNoIGFzICJETUE6IEZyZWVzY2Fs
+ZTogYWRkIHN1c3BlbmQgcmVzdW1lIGZ1bmN0aW9ucyBmb3IgRE1BIGRyaXZlciINCg0KTGlrZTpo
+dHRwczovL2xrbWwub3JnL2xrbWwvMjAxNC81LzIxLzENCg0KPiA+DQo+ID4gVGhhbmtzLg0KPiA+
+DQo+ID4gQmVzdCBSZWdhcmRzLA0KPiA+IFl1YW4gWWFvDQo+ID4NCj4gPj4gLS0tLS1PcmlnaW5h
+bCBNZXNzYWdlLS0tLS0NCj4gPj4gRnJvbTogcGt1Lmxlb0BnbWFpbC5jb20gW21haWx0bzpwa3Uu
+bGVvQGdtYWlsLmNvbV0gT24gQmVoYWxmIE9mIExpDQo+ID4+IFlhbmcNCj4gPj4gU2VudDogRnJp
+ZGF5LCBBdWd1c3QgMTQsIDIwMTUgNDo1OCBBTQ0KPiA+PiBUbzogWXVhbiBZYW8tQjQ2NjgzDQo+
+ID4+IENjOiBWaW5vZCBLb3VsOyBzdGVmYW5AYWduZXIuY2g7IEFybmQgQmVyZ21hbm47IERhbiBX
+aWxsaWFtczsNCj4gPj4gZG1hZW5naW5lQHZnZXIua2VybmVsLm9yZzsgbGttbDsNCj4gPj4gbGlu
+dXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnOyBsaW51eC0gcG1Admdlci5rZXJuZWwu
+b3JnDQo+ID4+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjJdIGRtYWVuZ2luZTogZnNsLWVkbWE6IGFk
+ZCBQTSBzdXNwZW5kL3Jlc3VtZQ0KPiA+PiBzdXBwb3J0DQo+ID4+DQo+ID4+IE9uIFR1ZSwgSnVs
+IDIxLCAyMDE1IGF0IDM6NTYgQU0sIFl1YW4gWWFvIDx5YW8ueXVhbkBmcmVlc2NhbGUuY29tPiB3
+cm90ZToNCj4gPj4gPiBUaGlzIGFkZCBwb3dlciBtYW5hZ2VtZW50IHN1c3BlbmQvcmVzdW1lIHN1
+cHBvcnQgZm9yIHRoZSBmc2wtZWRtYQ0KPiA+PiA+IGRyaXZlci4NCj4gPj4gPg0KPiA+PiA+IGVE
+TUEgYWN0ZWQgYXMgYSBiYXNpYyBmdW5jdGlvbiB1c2VkIGJ5IG90aGVycy4gV2hhdCBpdCBuZWVk
+cyB0byBkbw0KPiA+PiA+IGlzIHRoZSB0d28gc3RlcHMgYmVsb3cgdG8gc3VwcG9ydCBwb3dlciBt
+YW5hZ2VtZW50Lg0KPiA+PiA+DQo+ID4+ID4gSW4gZnNsX2VkbWFfc3VzcGVuZF9sYXRlOg0KPiA+
+PiA+IENoZWNrIHdoZXRoZXIgdGhlIERNQSBjaGFuIGlzIGlkbGUgYW5kIGlmIGl0IGlzIG5vdCBp
+ZGxlLCBzdG9wIFBNDQo+ID4+ID4gb3BlcmF0aW9uLg0KPiA+Pg0KPiA+PiBZb3Ugc2hvdWxkIHRy
+eSB0byBxdWllc2NlIHRoZSBkZXZpY2Ugb24gc3VzcGVuZCBpbnN0ZWFkIG9mIGRlcGVuZGluZw0K
+PiA+PiBvbiBpdHNlbGYgdG8gYmUgaGFwcGVuIGluIGlkbGUgYW5kIGZhaWxpbmcgaWYgaXQgaXMg
+bm90Lg0KPiA+Pg0KPiA+PiBSZWdhcmRzLA0KPiA+PiBMZW8NCj4gDQo+IA0KPiANCj4gLS0NCj4g
+LSBMZW8NCg==
