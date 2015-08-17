@@ -1,61 +1,132 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCHv4 2/4] serial: imx: add runtime pm support
-Date: Mon, 17 Aug 2015 17:40:59 +0200
-Message-ID: <2095117.mcCCLIRizo@amdc1976>
-References: <1439613468-22366-1-git-send-email-edubezval@gmail.com>
- <1439613468-22366-3-git-send-email-edubezval@gmail.com>
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Subject: Re: [RFCv5 PATCH 01/46] arm: Frequency invariant scheduler load-tracking
+ support
+Date: Mon, 17 Aug 2015 16:59:29 +0100
+Message-ID: <55D204E1.3000008@arm.com>
+References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com> <1436293469-25707-2-git-send-email-morten.rasmussen@arm.com> <CAKfTPtBsx++wuWjT8XwpUS68ip=_d9BzqXb3SB7Un92WzJo-Gg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:46149 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755375AbbHQPma (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Aug 2015 11:42:30 -0400
-In-reply-to: <1439613468-22366-3-git-send-email-edubezval@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAKfTPtBsx++wuWjT8XwpUS68ip=_d9BzqXb3SB7Un92WzJo-Gg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, "mingo@redhat.com" <mingo@redhat.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Yuyang Du <yuyang.du@intel.com>, Michael Turquette <mturquette@baylibre.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Juri Lelli <Juri.Lelli@arm.com>, "sgurrappadi@nvidia.com" <sgurrappadi@nvidia.com>, "pang.xunlei@zte.com.cn" <pang.xunlei@zte.com.cn>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, Fabio Estevam <festevam@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>, Linux PM <linux-pm@vger.kernel.org>, linux-serial@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
+Hi Vincent,
 
-Hi,
-
-On Friday, August 14, 2015 09:37:46 PM Eduardo Valentin wrote:
-> This change introduces the runtime pm support on imx serial
-> driver. The objective is to be able to idle the uart
-> port whenever it is not in use while still being able
-> to wake it up when needed. The key changes in this patch are:
-> 1. Move the clock handling to runtime pm. Both, ipg and per,
-> are now handled in the suspend and resume callbacks. Only
-> enabling and disabling the clocks are handled in runtime
-> suspend and resume, so we are able to use runtime pm
-> in IRQ context.
-> 2. Clocks are prepared in probe and unprepared in remove,
-> so we do not need to prepare (may sleep) in runtime pm.
-> 3. We mark the device activity based on uart and console
-> callbacks. Whenever the device is needed and we want to
-> access registers, we runtime_pm_get and then mark its
-> last usage when we are done. This is done also across
-> IRQs and DMA callbacks.
-> 4. We reuse the infrastructure in place for suspend and
-> resume, so we do not need to redo wakeup configuration,
-> or context save and restore.
+On 03/08/15 10:22, Vincent Guittot wrote:
+> Hi Morten,
 > 
-> After this change, the clocks are still sane, in the sense
-> of having balanced clock prepare and enable.
+> 
+> On 7 July 2015 at 20:23, Morten Rasmussen <morten.rasmussen@arm.com> wrote:
+>> From: Morten Rasmussen <Morten.Rasmussen@arm.com>
+>>
+> 
+> [snip]
+> 
+>> -
+>>  #endif
+>> diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
+>> index 08b7847..9c09e6e 100644
+>> --- a/arch/arm/kernel/topology.c
+>> +++ b/arch/arm/kernel/topology.c
+>> @@ -169,6 +169,23 @@ static void update_cpu_capacity(unsigned int cpu)
+>>                 cpu, arch_scale_cpu_capacity(NULL, cpu));
+>>  }
+>>
+>> +/*
+>> + * Scheduler load-tracking scale-invariance
+>> + *
+>> + * Provides the scheduler with a scale-invariance correction factor that
+>> + * compensates for frequency scaling (arch_scale_freq_capacity()). The scaling
+>> + * factor is updated in smp.c
+>> + */
+>> +unsigned long arm_arch_scale_freq_capacity(struct sched_domain *sd, int cpu)
+>> +{
+>> +       unsigned long curr = atomic_long_read(&per_cpu(cpu_freq_capacity, cpu));
+> 
+> access to cpu_freq_capacity to should be put under #ifdef CONFIG_CPU_FREQ.
 
-The clock changes in this patch seem to make this driver
-non-functional with CONFIG_PM=n.  Have you tested your
-changes with CONFIG_PM=n?
+True, in case we keep everything related to frequency scaling under
+CONFIG_CPU_FREQ, then we should also put the
+  #define arch_scale_freq_capacity arm_arch_scale_freq_capacity
+in topology.h under CONFIG_CPU_FREQ.
 
-Generally the driver should not depend on PM support to
-enable its clocks.  We had this issue in few Exynos-specific
-drivers not that long time ago..
+> Why haven't you moved arm_arch_scale_freq_capacity in smp.c as
+> everything else for frequency in-variance is already in this file ?
+> This should also enable you to remove
+> DECLARE_PER_CPU(atomic_long_t, cpu_freq_capacity); from topology.h
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+True, arm_arch_scale_freq_capacity() should be in smp.c so we don't have
+to export cpu_freq_capacity which btw. does not have to be a atomic.
 
+OTHA, we could also put the whole 'Frequency Invariance Engine' into
+cpufreq.c as cpufreq_scale_freq_capacity() and let the interested ARCH
+do a
+  #include <linux/cpufreq.h>
+  #define arch_scale_freq_capacity cpufreq_scale_freq_capacity
+This would allow us to implement this 'Frequency Invariance Engine'
+only once and not couple of times for different ARCHs.
+
+Something like this: (only compile tested on ARM64 w/ and w/o
+CONFIG_CPU_FREQ)
+
+diff --git a/arch/arm64/include/asm/topology.h b/arch/arm64/include/asm/topology.h
+index a8a69a1f3c4c..f25341170749 100644
+--- a/arch/arm64/include/asm/topology.h
++++ b/arch/arm64/include/asm/topology.h
+@@ -4,6 +4,7 @@
+ #ifdef CONFIG_SMP
+ 
+ #include <linux/cpumask.h>
++#include <linux/cpufreq.h>
+ 
+ struct cpu_topology {
+        int thread_id;
+@@ -26,9 +27,7 @@ const struct cpumask *cpu_coregroup_mask(int cpu);
+ 
+ struct sched_domain;
+ #ifdef CONFIG_CPU_FREQ
+-#define arch_scale_freq_capacity arm_arch_scale_freq_capacity
+-extern
+-unsigned long arm_arch_scale_freq_capacity(struct sched_domain *sd, int cpu);
++#define arch_scale_freq_capacity cpufreq_scale_freq_capacity
+ #endif
+ 
+ #define arch_scale_cpu_capacity arm_arch_scale_cpu_capacity
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index b612411655f9..97f4391d0f55 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -2400,6 +2400,12 @@ static int cpufreq_cpu_callback(struct notifier_block *nfb,
+        return NOTIFY_OK;
+ }
+ 
++unsigned long cpufreq_scale_freq_capacity(struct sched_domain *sd, int cpu)
++{
++       return 1024; /* Implementation missing !!! */
++}
++EXPORT_SYMBOL(cpufreq_scale_freq_capacity);
++
+ static struct notifier_block __refdata cpufreq_cpu_notifier = {
+        .notifier_call = cpufreq_cpu_callback,
+ };
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 29ad97c34fd5..a4516d53a3cc 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -604,4 +604,11 @@ unsigned int cpufreq_generic_get(unsigned int cpu);
+ int cpufreq_generic_init(struct cpufreq_policy *policy,
+                struct cpufreq_frequency_table *table,
+                unsigned int transition_latency);
++/*
++ * In case we delete unused sd pointer in arch_scale_freq_capacity()
++ * [kernel/sched/sched.h] this can become:
++ * unsigned long cpufreq_scale_freq_capacity(int cpu);
++ */
++struct sched_domain;
++unsigned long cpufreq_scale_freq_capacity(struct sched_domain *sd, int cpu);
+
+[...]
