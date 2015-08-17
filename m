@@ -1,80 +1,66 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [PATCH] x86, suspend: Save/restore THERM_CONTROL register for
- suspend
-Date: Mon, 17 Aug 2015 12:11:15 +0200
-Message-ID: <20150817101115.GA27204@gmail.com>
-References: <1439800192-3034-1-git-send-email-yu.c.chen@intel.com>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [RFCv5 PATCH 45/46] sched/cpufreq_sched: modify pcpu_capacity
+ handling
+Date: Mon, 17 Aug 2015 12:16:12 +0100
+Message-ID: <55D1C27C.2030600@arm.com>
+References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com> <1436293469-25707-46-git-send-email-morten.rasmussen@arm.com> <20150816203512.GK10304@worktop.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f171.google.com ([209.85.212.171]:36554 "EHLO
-	mail-wi0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752306AbbHQKLU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Aug 2015 06:11:20 -0400
-Content-Disposition: inline
-In-Reply-To: <1439800192-3034-1-git-send-email-yu.c.chen@intel.com>
+Received: from eu-smtp-delivery-143.mimecast.com ([146.101.78.143]:6313 "EHLO
+	eu-smtp-delivery-143.mimecast.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751073AbbHQLPa convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 17 Aug 2015 07:15:30 -0400
+In-Reply-To: <20150816203512.GK10304@worktop.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: rjw@rjwysocki.net, pavel@ucw.cz, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, rui.zhang@intel.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>
+Cc: "mingo@redhat.com" <mingo@redhat.com>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, "yuyang.du@intel.com" <yuyang.du@intel.com>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "sgurrappadi@nvidia.com" <sgurrappadi@nvidia.com>, "pang.xunlei@zte.com.cn" <pang.xunlei@zte.com.cn>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
+Hi Peter,
 
-* Chen Yu <yu.c.chen@intel.com> wrote:
-
-> A bug is reported(https://bugzilla.redhat.com/show_bug.cgi?id=1227208)
-> that, after resuming from S3, CPU is working at a low speed.
-> After investigation, it is found that, BIOS has modified the value
-> of THERM_CONTROL register during S3, changes it from 0 to 0x10,
-> while the latter means CPU can only get 25% of the Duty Cycle,
-> and this caused the problem.
+On 16/08/15 21:35, Peter Zijlstra wrote:
+> On Tue, Jul 07, 2015 at 07:24:28PM +0100, Morten Rasmussen wrote:
+>> From: Juri Lelli <juri.lelli@arm.com>
+>>
+>> Use the cpu argument of cpufreq_sched_set_cap() to handle per_cpu writes,
+>> as the thing can be called remotely (e.g., from load balacing code).
+>>
+>> cc: Ingo Molnar <mingo@redhat.com>
+>> cc: Peter Zijlstra <peterz@infradead.org>
+>>
+>> Signed-off-by: Juri Lelli <juri.lelli@arm.com>
+>> ---
+>>  kernel/sched/cpufreq_sched.c | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/kernel/sched/cpufreq_sched.c b/kernel/sched/cpufreq_sched.c
+>> index 06ff183..b81ac779 100644
+>> --- a/kernel/sched/cpufreq_sched.c
+>> +++ b/kernel/sched/cpufreq_sched.c
+>> @@ -151,7 +151,7 @@ void cpufreq_sched_set_cap(int cpu, unsigned long capacity)
+>>  	unsigned long capacity_max = 0;
+>>  
+>>  	/* update per-cpu capacity request */
+>> -	__this_cpu_write(pcpu_capacity, capacity);
+>> +	per_cpu(pcpu_capacity, cpu) = capacity;
+>>  
+>>  	policy = cpufreq_cpu_get(cpu);
+>>  	if (IS_ERR_OR_NULL(policy)) {
 > 
-> Simple scenario to reproduce:
-> 1.Boot up system
-> 2.Get MSR with address 0x19a, it should output 0
-> 3.Put system into sleep, then wake up
-> 4.Get MSR with address 0x19a, it should output 0(actual it outputs 0x10)
+> Uhm,.. this function seems to hard assume its called for the local CPU.
+> It will only use the irq_queue_work_on() if the cpufreq thing requires
+> the thread, otherwise it will call the method directly on the calling
+> cpu.
 > 
-> Although this is a BIOS issue, it would be more robust for linux to deal
-> with this situation. This patch fixes this issue by saving/restoring
-> THERM_CONTROL(now called CLOCK_MODULATION) register on suspend/resume.
-> 
-> Tested-by: Marcin Kaszewski <marcin.kaszewski@intel.com>
-> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
-> ---
->  arch/x86/include/asm/suspend_64.h | 1 +
->  arch/x86/power/cpu.c              | 2 ++
->  2 files changed, 3 insertions(+)
-> 
-> diff --git a/arch/x86/include/asm/suspend_64.h b/arch/x86/include/asm/suspend_64.h
-> index 7ebf0eb..b9f5591 100644
-> --- a/arch/x86/include/asm/suspend_64.h
-> +++ b/arch/x86/include/asm/suspend_64.h
-> @@ -25,6 +25,7 @@ struct saved_context {
->  	u64 misc_enable;
->  	bool misc_enable_saved;
->  	unsigned long efer;
-> +	unsigned long clock_modulation;
->  	u16 gdt_pad; /* Unused */
->  	struct desc_ptr gdt_desc;
->  	u16 idt_pad;
-> diff --git a/arch/x86/power/cpu.c b/arch/x86/power/cpu.c
-> index 9ab5279..f82577b 100644
-> --- a/arch/x86/power/cpu.c
-> +++ b/arch/x86/power/cpu.c
-> @@ -97,6 +97,7 @@ static void __save_processor_state(struct saved_context *ctxt)
->  	mtrr_save_fixed_ranges(NULL);
->  
->  	rdmsrl(MSR_EFER, ctxt->efer);
-> +	rdmsrl(MSR_IA32_THERM_CONTROL, ctxt->clock_modulation);
 
-So what your changelog fails to mention:
-
- - You only add this code to the 64-bit kernel. Are 32-bit kernels not affected?
-
- - the MSR read is done unconditionally. Is MSR_IA32_THERM_CONTROL available
-   architecturally and readable (and has sensible values) on all 64-bit capable
-   x86 CPUs that run this code path?
+True, but we still retrieve policy from cpu passed as argument; and
+then we use policy to request a freq transition, that should end up
+updating the right cpu.
 
 Thanks,
 
-	Ingo
+- Juri
+
