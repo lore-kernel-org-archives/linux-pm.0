@@ -1,794 +1,123 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v2 2/3] gadget: Introduce the usb charger framework
-Date: Mon, 17 Aug 2015 11:03:26 +0800
-Message-ID: <CAMz4kuL=6mGjNHcKHA9RYbabYqn3Lgu=rK6s8WkH5YGeV1T2+w@mail.gmail.com>
-References: <cover.1439519412.git.baolin.wang@linaro.org>
-	<0c41e21239f69c4e1aa89aba020c91edfc17c4e8.1439519413.git.baolin.wang@linaro.org>
-	<20150814152723.GA17892@kroah.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150814152723.GA17892@kroah.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: Felipe Balbi <balbi@ti.com>, Mark Brown <broonie@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, LKML <linux-kernel@vger.kernel.org>, Peter Chen <peter.chen@freescale.com>, sojka@merica.cz, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, sre@kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, sameo@linux.intel.com, Lee Jones <lee.jones@linaro.org>, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org
+From: Jiang Liu <jiang.liu@linux.intel.com>
+Subject: [Patch V3 1/9] x86, NUMA, ACPI: Online node earlier when doing CPU hot-addition
+Date: Mon, 17 Aug 2015 11:18:58 +0800
+Message-ID: <1439781546-7217-2-git-send-email-jiang.liu@linux.intel.com>
+References: <1439781546-7217-1-git-send-email-jiang.liu@linux.intel.com>
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <1439781546-7217-1-git-send-email-jiang.liu@linux.intel.com>
+Sender: owner-linux-mm@kvack.org
+To: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@suse.de>, David Rientjes <rientjes@google.com>, Mike Galbraith <umgwanakikbuti@gmail.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Tang Chen <tangchen@cn.fujitsu.com>, Tejun Heo <tj@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
+Cc: Jiang Liu <jiang.liu@linux.intel.com>, Tony Luck <tony.luck@intel.com>, linux-mm@kvack.org, linux-hotplug@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 14 August 2015 at 23:27, Greg KH <gregkh@linuxfoundation.org> wrote:
-> On Fri, Aug 14, 2015 at 05:47:45PM +0800, Baolin Wang wrote:
->> This patch introduces the usb charger driver based on usb gadget that
->> makes an enhancement to a power driver. It works well in practice but
->> that requires a system with suitable hardware.
->>
->> The basic conception of the usb charger is that, when one usb charger
->> is added or removed by reporting from the usb gadget state change or
->> the extcon device state change, the usb charger will report to power
->> user to set the current limitation.
->>
->> The usb charger will register notifiees on the usb gadget or the extcon
->> device to get notified the usb charger state.
->>
->> Power user will register a notifiee on the usb charger to get notified
->> by status changes from the usb charger. It will report to power user
->> to set the current limitation when detecting the usb charger is added
->> or removed from extcon device state or usb gadget state.
->>
->> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
->> ---
->>  drivers/usb/gadget/Kconfig      |    7 +
->>  drivers/usb/gadget/Makefile     |    1 +
->>  drivers/usb/gadget/charger.c    |  561 +++++++++++++++++++++++++++++++++++++++
->>  include/linux/usb/usb_charger.h |  145 ++++++++++
->>  4 files changed, 714 insertions(+)
->>  create mode 100644 drivers/usb/gadget/charger.c
->>  create mode 100644 include/linux/usb/usb_charger.h
->>
->> diff --git a/drivers/usb/gadget/Kconfig b/drivers/usb/gadget/Kconfig
->> index bcf83c0..3d2b959 100644
->> --- a/drivers/usb/gadget/Kconfig
->> +++ b/drivers/usb/gadget/Kconfig
->> @@ -127,6 +127,13 @@ config USB_GADGET_STORAGE_NUM_BUFFERS
->>          a module parameter as well.
->>          If unsure, say 2.
->>
->> +config USB_CHARGER
->> +     bool "USB charger support"
->> +     help
->> +       The usb charger driver based on the usb gadget that makes an
->> +       enhancement to a power driver which can set the current limitation
->> +       when the usb charger is added or removed.
->> +
->>  source "drivers/usb/gadget/udc/Kconfig"
->>
->>  #
->> diff --git a/drivers/usb/gadget/Makefile b/drivers/usb/gadget/Makefile
->> index 598a67d..1e421c1 100644
->> --- a/drivers/usb/gadget/Makefile
->> +++ b/drivers/usb/gadget/Makefile
->> @@ -10,3 +10,4 @@ libcomposite-y                      := usbstring.o config.o epautoconf.o
->>  libcomposite-y                       += composite.o functions.o configfs.o u_f.o
->>
->>  obj-$(CONFIG_USB_GADGET)     += udc/ function/ legacy/
->> +obj-$(CONFIG_USB_CHARGER)    += charger.o
->> diff --git a/drivers/usb/gadget/charger.c b/drivers/usb/gadget/charger.c
->> new file mode 100644
->> index 0000000..f24f7b7
->> --- /dev/null
->> +++ b/drivers/usb/gadget/charger.c
->> @@ -0,0 +1,561 @@
->> +/*
->> + * usb charger.c -- USB charger driver
->
-> I think your company also wants a copyright line here.  Not that it
-> means anything at all, but some lawyers love cargo-cult text blobs.
->
+With typical CPU hot-addition flow on x86, PCI host bridges embedded
+in physical processor are always associated with NOMA_NO_NODE, which
+may cause sub-optimal performance.
+1) Handle CPU hot-addition notification
+	acpi_processor_add()
+		acpi_processor_get_info()
+			acpi_processor_hotadd_init()
+				acpi_map_lsapic()
+1.a)					acpi_map_cpu2node()
 
-Hi Greg,
+2) Handle PCI host bridge hot-addition notification
+	acpi_pci_root_add()
+		pci_acpi_scan_root()
+2.a)			if (node != NUMA_NO_NODE && !node_online(node)) node = NUMA_NO_NODE;
 
-Thanks for your reviewing and comments. I'll add it in next patch.
+3) Handle memory hot-addition notification
+	acpi_memory_device_add()
+		acpi_memory_enable_device()
+			add_memory()
+3.a)				node_set_online();
 
->
->> + *
->> + * This program is free software; you can redistribute it and/or modify
->> + * it under the terms of the GNU General Public License as published by
->> + * the Free Software Foundation; either version 2 of the License, or
->> + * (at your option) any later version.
->
-> I have to ask, do you really mean "any later version"?
->
+4) Online CPUs through sysfs interfaces
+	cpu_subsys_online()
+		cpu_up()
+			try_online_node()
+4.a)				node_set_online();
 
-I think I did not get your point, could you explain it detailedly?
+So associated node is always in offline state because it is onlined
+until step 3.a or 4.a.
 
->> + */
->> +
->> +#include <linux/device.h>
->> +#include <linux/err.h>
->> +#include <linux/extcon.h>
->> +#include <linux/export.h>
->> +#include <linux/kernel.h>
->> +#include <linux/module.h>
->> +#include <linux/of.h>
->> +#include <linux/of_device.h>
->> +#include <linux/of_address.h>
->> +#include <linux/platform_device.h>
->> +#include <linux/slab.h>
->> +#include <linux/usb.h>
->> +#include <linux/usb/ch9.h>
->> +#include <linux/usb/gadget.h>
->> +#include <linux/usb/usb_charger.h>
->> +
->> +#define DEFAULT_CUR_PROTECT  (50)
->> +#define DEFAULT_SDP_CUR_LIMIT        (500 - DEFAULT_CUR_PROTECT)
->> +#define DEFAULT_DCP_CUR_LIMIT        (1500 - DEFAULT_CUR_PROTECT)
->> +#define DEFAULT_CDP_CUR_LIMIT        (1500 - DEFAULT_CUR_PROTECT)
->> +#define DEFAULT_ACA_CUR_LIMIT        (1500 - DEFAULT_CUR_PROTECT)
->> +
->> +static DEFINE_IDA(usb_charger_ida);
->> +static struct bus_type usb_charger_subsys = {
->> +     .name           = "usb-charger",
->> +     .dev_name       = "usb-charger",
->> +};
->> +
->> +static struct usb_charger *dev_to_uchger(struct device *udev)
->> +{
->> +     return container_of(udev, struct usb_charger, dev);
->> +}
->> +
->> +static ssize_t usb_charger_cur_show(struct device *dev,
->> +                                 struct device_attribute *attr,
->> +                                 char *buf)
->> +{
->> +     struct usb_charger *uchger = dev_to_uchger(dev);
->> +
->> +     return scnprintf(buf, PAGE_SIZE, "%d %d %d %d\n",
->> +                      uchger->cur_limit.sdp_cur_limit,
->> +                      uchger->cur_limit.dcp_cur_limit,
->> +                      uchger->cur_limit.cdp_cur_limit,
->> +                      uchger->cur_limit.aca_cur_limit);
->> +}
->> +
->> +static ssize_t usb_charger_cur_store(struct device *dev,
->> +                                  struct device_attribute *attr,
->> +                                  const char *buf, size_t count)
->> +{
->> +     struct usb_charger *uchger = dev_to_uchger(dev);
->> +     struct usb_charger_cur_limit cur;
->> +     int ret;
->> +
->> +     ret = sscanf(buf, "%d %d %d %d",
->> +                  &cur.sdp_cur_limit, &cur.dcp_cur_limit,
->> +                  &cur.cdp_cur_limit, &cur.aca_cur_limit);
->> +     if (ret == 0)
->> +             return -EINVAL;
->> +
->> +     ret = usb_charger_set_cur_limit(uchger, &cur);
->> +     if (ret < 0)
->> +             return ret;
->> +
->> +     return count;
->> +}
->> +static DEVICE_ATTR(cur_limit, 0644, usb_charger_cur_show, usb_charger_cur_store);
->
-> DEVICE_ATTR_RW()?
->
+We could improve performance by online node at step 1.a. This change
+also makes the code symmetric. Nodes are always created when handling
+CPU/memory hot-addition events instead of handling user requests from
+sysfs interfaces, and are destroyed when handling CPU/memory hot-removal
+events.
 
-OK, I'll replace it with DEVICE_ATTR_RW().
+It also close a race window caused by kmalloc_node(cpu_to_node(cpu)),
+which may cause system panic as below.
+[ 3663.324476] BUG: unable to handle kernel paging request at 0000000000001f08
+[ 3663.332348] IP: [<ffffffff81172219>] __alloc_pages_nodemask+0xb9/0x2d0
+[ 3663.339719] PGD 82fe10067 PUD 82ebef067 PMD 0
+[ 3663.344773] Oops: 0000 [#1] SMP
+[ 3663.348455] Modules linked in: shpchp gpio_ich x86_pkg_temp_thermal intel_powerclamp coretemp kvm_intel kvm crct10dif_pclmul crc32_pclmul ghash_clmulni_intel aesni_intel aes_x86_64 lrw gf128mul glue_helper ablk_helper cryptd microcode joydev sb_edac edac_core lpc_ich ipmi_si tpm_tis ipmi_msghandler ioatdma wmi acpi_pad mac_hid lp parport ixgbe isci mpt2sas dca ahci ptp libsas libahci raid_class pps_core scsi_transport_sas mdio hid_generic usbhid hid
+[ 3663.394393] CPU: 61 PID: 2416 Comm: cron Tainted: G        W    3.14.0-rc5+ #21
+[ 3663.402643] Hardware name: Intel Corporation BRICKLAND/BRICKLAND, BIOS BRIVTIN1.86B.0047.F03.1403031049 03/03/2014
+[ 3663.414299] task: ffff88082fe54b00 ti: ffff880845fba000 task.ti: ffff880845fba000
+[ 3663.422741] RIP: 0010:[<ffffffff81172219>]  [<ffffffff81172219>] __alloc_pages_nodemask+0xb9/0x2d0
+[ 3663.432857] RSP: 0018:ffff880845fbbcd0  EFLAGS: 00010246
+[ 3663.439265] RAX: 0000000000001f00 RBX: 0000000000000000 RCX: 0000000000000000
+[ 3663.447291] RDX: 0000000000000000 RSI: 0000000000000a8d RDI: ffffffff81a8d950
+[ 3663.455318] RBP: ffff880845fbbd58 R08: ffff880823293400 R09: 0000000000000001
+[ 3663.463345] R10: 0000000000000001 R11: 0000000000000000 R12: 00000000002052d0
+[ 3663.471363] R13: ffff880854c07600 R14: 0000000000000002 R15: 0000000000000000
+[ 3663.479389] FS:  00007f2e8b99e800(0000) GS:ffff88105a400000(0000) knlGS:0000000000000000
+[ 3663.488514] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[ 3663.495018] CR2: 0000000000001f08 CR3: 00000008237b1000 CR4: 00000000001407e0
+[ 3663.503476] Stack:
+[ 3663.505757]  ffffffff811bd74d ffff880854c01d98 ffff880854c01df0 ffff880854c01dd0
+[ 3663.514167]  00000003208ca420 000000075a5d84d0 ffff88082fe54b00 ffffffff811bb35f
+[ 3663.522567]  ffff880854c07600 0000000000000003 0000000000001f00 ffff880845fbbd48
+[ 3663.530976] Call Trace:
+[ 3663.533753]  [<ffffffff811bd74d>] ? deactivate_slab+0x41d/0x4f0
+[ 3663.540421]  [<ffffffff811bb35f>] ? new_slab+0x3f/0x2d0
+[ 3663.546307]  [<ffffffff811bb3c5>] new_slab+0xa5/0x2d0
+[ 3663.552001]  [<ffffffff81768c97>] __slab_alloc+0x35d/0x54a
+[ 3663.558185]  [<ffffffff810a4845>] ? local_clock+0x25/0x30
+[ 3663.564686]  [<ffffffff8177a34c>] ? __do_page_fault+0x4ec/0x5e0
+[ 3663.571356]  [<ffffffff810b0054>] ? alloc_fair_sched_group+0xc4/0x190
+[ 3663.578609]  [<ffffffff810c77f1>] ? __raw_spin_lock_init+0x21/0x60
+[ 3663.585570]  [<ffffffff811be476>] kmem_cache_alloc_node_trace+0xa6/0x1d0
+[ 3663.593112]  [<ffffffff810b0054>] ? alloc_fair_sched_group+0xc4/0x190
+[ 3663.600363]  [<ffffffff810b0054>] alloc_fair_sched_group+0xc4/0x190
+[ 3663.607423]  [<ffffffff810a359f>] sched_create_group+0x3f/0x80
+[ 3663.613994]  [<ffffffff810b611f>] sched_autogroup_create_attach+0x3f/0x1b0
+[ 3663.621732]  [<ffffffff8108258a>] sys_setsid+0xea/0x110
+[ 3663.628020]  [<ffffffff8177f42d>] system_call_fastpath+0x1a/0x1f
+[ 3663.634780] Code: 00 44 89 e7 e8 b9 f8 f4 ff 41 f6 c4 10 74 18 31 d2 be 8d 0a 00 00 48 c7 c7 50 d9 a8 81 e8 70 6a f2 ff e8 db dd 5f 00 48 8b 45 c8 <48> 83 78 08 00 0f 84 b5 01 00 00 48 83 c0 08 44 89 75 c0 4d 89
+[ 3663.657032] RIP  [<ffffffff81172219>] __alloc_pages_nodemask+0xb9/0x2d0
+[ 3663.664491]  RSP <ffff880845fbbcd0>
+[ 3663.668429] CR2: 0000000000001f08
+[ 3663.672659] ---[ end trace df13f08ed9de18ad ]---
 
->> +
->> +static struct attribute *uchger_attributes[] = {
->> +     &dev_attr_cur_limit.attr,
->> +     NULL
->> +};
->> +
->> +static const struct attribute_group uchger_attr_group = {
->> +     .attrs = uchger_attributes,
->> +};
->
-> ATTRIBUTE_GROUPS()?
->
+Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
+---
+ arch/x86/kernel/acpi/boot.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
-OK, I'll replace it with ATTRIBUTE_GROUPS().
-
->> +
->> +/*
->> + * usb_charger_find_by_name - Get the usb charger device by name.
->> + * @name - usb charger device name.
->> + *
->> + * return the instance of usb charger device, the device must be
->> + * released with usb_charger_put().
->> + */
->> +struct usb_charger *usb_charger_find_by_name(const char *name)
->> +{
->> +     struct device *udev;
->> +
->> +     if (!name)
->> +             return ERR_PTR(-EINVAL);
->> +
->> +     udev = bus_find_device_by_name(&usb_charger_subsys, NULL, name);
->> +     if (!udev)
->> +             return ERR_PTR(-ENODEV);
->> +
->> +     return dev_to_uchger(udev);
->> +}
->> +
->> +/*
->> + * usb_charger_get() - Reference a usb charger.
->> + * @uchger - usb charger
->> + */
->> +struct usb_charger *usb_charger_get(struct usb_charger *uchger)
->> +{
->> +     return (uchger && get_device(&uchger->dev)) ? uchger : NULL;
->> +}
->> +
->> +/*
->> + * usb_charger_put() - Dereference a usb charger.
->> + * @uchger - charger to release
->> + */
->> +void usb_charger_put(struct usb_charger *uchger)
->> +{
->> +     if (uchger)
->> +             put_device(&uchger->dev);
->> +}
->> +
->> +/*
->> + * usb_charger_register_notify() - Register a notifiee to get notified by
->> + * any attach status changes from the usb charger detection.
->> + * @uchger - the usb charger device which is monitored.
->> + * @nb - a notifier block to be registered.
->> + */
->> +int usb_charger_register_notify(struct usb_charger *uchger,
->> +                             struct notifier_block *nb)
->> +{
->> +     int ret;
->> +
->> +     if (!uchger || !nb)
->> +             return -EINVAL;
->> +
->> +     mutex_lock(&uchger->lock);
->> +     ret = raw_notifier_chain_register(&uchger->uchger_nh, nb);
->> +
->> +     /* Generate an initial notify so users start in the right state */
->> +     if (!ret) {
->> +             usb_charger_detect_type(uchger);
->> +             raw_notifier_call_chain(&uchger->uchger_nh,
->> +                                     usb_charger_get_cur_limit(uchger),
->> +                                     uchger);
->> +     }
->> +     mutex_unlock(&uchger->lock);
->> +
->> +     return ret;
->> +}
->> +
->> +/*
->> + * usb_charger_unregister_notify() - Unregister a notifiee from the usb charger.
->> + * @uchger - the usb charger device which is monitored.
->> + * @nb - a notifier block to be unregistered.
->> + */
->> +int usb_charger_unregister_notify(struct usb_charger *uchger,
->> +                               struct notifier_block *nb)
->> +{
->> +     int ret;
->> +
->> +     if (!uchger || !nb)
->> +             return -EINVAL;
->> +
->> +     mutex_lock(&uchger->lock);
->> +     ret = raw_notifier_chain_unregister(&uchger->uchger_nh, nb);
->> +     mutex_unlock(&uchger->lock);
->> +
->> +     return ret;
->> +}
->> +
->> +/*
->> + * usb_charger_detect_type() - Get the usb charger type by the callback
->> + * which is implemented by gadget operations.
->> + * @uchger - the usb charger device.
->> + *
->> + * return the usb charger type.
->> + */
->> +enum usb_charger_type
->> +usb_charger_detect_type(struct usb_charger *uchger)
->> +{
->> +     if (uchger->gadget && uchger->gadget->ops
->> +         && uchger->gadget->ops->get_charger_type)
->> +             uchger->type =
->> +                     uchger->gadget->ops->get_charger_type(uchger->gadget);
->> +     else
->> +             uchger->type = UNKNOWN_TYPE;
->> +
->> +     return uchger->type;
->> +}
->> +
->> +/*
->> + * usb_charger_set_cur_limit() - Set the current limitation.
->> + * @uchger - the usb charger device.
->> + * @cur_limit_set - the current limitation.
->> + */
->> +int usb_charger_set_cur_limit(struct usb_charger *uchger,
->> +                           struct usb_charger_cur_limit *cur_limit_set)
->> +{
->> +     if (!uchger || !cur_limit_set)
->> +             return -EINVAL;
->> +
->> +     uchger->cur_limit.sdp_cur_limit = cur_limit_set->sdp_cur_limit;
->> +     uchger->cur_limit.dcp_cur_limit = cur_limit_set->dcp_cur_limit;
->> +     uchger->cur_limit.cdp_cur_limit = cur_limit_set->cdp_cur_limit;
->> +     uchger->cur_limit.aca_cur_limit = cur_limit_set->aca_cur_limit;
->> +     return 0;
->> +}
->> +
->> +/*
->> + * usb_charger_get_cur_limit() - Get the current limitation by
->> + * different usb charger type.
->> + * @uchger - the usb charger device.
->> + *
->> + * return the current limitation to set.
->> + */
->> +unsigned int
->> +usb_charger_get_cur_limit(struct usb_charger *uchger)
->> +{
->> +     enum usb_charger_type uchger_type = uchger->type;
->> +     unsigned int cur_limit;
->> +
->> +     switch (uchger_type) {
->> +     case SDP_TYPE:
->> +             cur_limit = uchger->cur_limit.sdp_cur_limit;
->> +             break;
->> +     case DCP_TYPE:
->> +             cur_limit = uchger->cur_limit.dcp_cur_limit;
->> +             break;
->> +     case CDP_TYPE:
->> +             cur_limit = uchger->cur_limit.cdp_cur_limit;
->> +             break;
->> +     case ACA_TYPE:
->> +             cur_limit = uchger->cur_limit.aca_cur_limit;
->> +             break;
->> +     default:
->> +             return 0;
->> +     }
->> +
->> +     return cur_limit;
->> +}
->> +
->> +/*
->> + * usb_charger_notifier_others() - It will notify other device registered
->> + * on usb charger when the usb charger state is changed.
->> + * @uchger - the usb charger device.
->> + * @state - the state of the usb charger.
->> + */
->> +static void
->> +usb_charger_notify_others(struct usb_charger *uchger,
->> +                       enum usb_charger_state state)
->> +{
->> +     mutex_lock(&uchger->lock);
->> +     uchger->state = state;
->> +
->> +     switch (state) {
->> +     case USB_CHARGER_PRESENT:
->> +             usb_charger_detect_type(uchger);
->> +             raw_notifier_call_chain(&uchger->uchger_nh,
->> +                     usb_charger_get_cur_limit(uchger),
->> +                     uchger);
->> +             break;
->> +     case USB_CHARGER_REMOVE:
->> +             uchger->type = UNKNOWN_TYPE;
->> +             raw_notifier_call_chain(&uchger->uchger_nh, 0, uchger);
->> +             break;
->> +     default:
->> +             dev_warn(&uchger->dev, "Unknown USB charger state: %d\n",
->> +                      state);
->> +             break;
->> +     }
->> +     mutex_unlock(&uchger->lock);
->> +}
->> +
->> +/*
->> + * usb_charger_plug_by_extcon() - The notifier call function which is registered
->> + * on the extcon device.
->> + * @nb - the notifier block that notified by extcon device.
->> + * @state - the extcon device state.
->> + * @data - here specify a extcon device.
->> + *
->> + * return the notify flag.
->> + */
->> +static int
->> +usb_charger_plug_by_extcon(struct notifier_block *nb,
->> +                        unsigned long state, void *data)
->> +{
->> +     struct usb_charger_nb *extcon_nb =
->> +             container_of(nb, struct usb_charger_nb, nb);
->> +     struct usb_charger *uchger = extcon_nb->uchger;
->> +     enum usb_charger_state uchger_state;
->> +
->> +     if (!uchger)
->> +             return NOTIFY_BAD;
->> +
->> +     /* Report event to power to setting the current limitation
->> +      * for this usb charger when one usb charger is added or removed
->> +      * with detecting by extcon device.
->> +      */
->> +     if (state)
->> +             uchger_state = USB_CHARGER_PRESENT;
->> +     else
->> +             uchger_state = USB_CHARGER_REMOVE;
->> +
->> +     usb_charger_notify_others(uchger, uchger_state);
->> +
->> +     return NOTIFY_OK;
->> +}
->> +
->> +/*
->> + * usb_charger_plug_by_gadget() - Set the usb charger current limitation
->> + * according to the usb gadget device state.
->> + * @nb - the notifier block that notified by usb gadget device.
->> + * @state - the usb gadget state.
->> + * @data - here specify a usb gadget device.
->> + */
->> +static int
->> +usb_charger_plug_by_gadget(struct notifier_block *nb,
->> +                        unsigned long state, void *data)
->> +{
->> +     struct usb_gadget *gadget = (struct usb_gadget *)data;
->> +     struct usb_charger *uchger = gadget->uchger;
->> +     enum usb_charger_state uchger_state;
->> +
->> +     if (!uchger)
->> +             return NOTIFY_BAD;
->> +
->> +     /* Report event to power to setting the current limitation
->> +      * for this usb charger when one usb charger state is changed
->> +      * with detecting by usb gadget state.
->> +      */
->> +     if (uchger->old_gadget_state != state) {
->> +             uchger->old_gadget_state = state;
->> +
->> +             if (state >= USB_STATE_ATTACHED)
->> +                     uchger_state = USB_CHARGER_PRESENT;
->> +             else if (state == USB_STATE_NOTATTACHED)
->> +                     uchger_state = USB_CHARGER_REMOVE;
->> +             else
->> +                     uchger_state = USB_CHARGER_DEFAULT;
->> +
->> +             usb_charger_notify_others(uchger, uchger_state);
->> +     }
->> +
->> +     return NOTIFY_OK;
->> +}
->> +
->> +static int devm_uchger_dev_match(struct device *dev, void *res, void *data)
->> +{
->> +     struct usb_charger **r = res;
->> +
->> +     if (WARN_ON(!r || !*r))
->> +             return 0;
->> +
->> +     return *r == data;
->> +}
->> +
->> +static void usb_charger_release(struct device *dev)
->> +{
->> +     struct usb_charger *uchger = dev_get_drvdata(dev);
->> +
->> +     kfree(uchger->name);
->> +     kfree(uchger);
->> +}
->> +
->> +/*
->> + * usb_charger_unregister() - Unregister a usb charger device.
->> + * @uchger - the usb charger to be unregistered.
->> + */
->> +static int usb_charger_unregister(struct usb_charger *uchger)
->> +{
->> +     if (!uchger)
->> +             return -EINVAL;
->> +
->> +     sysfs_remove_group(&uchger->dev.kobj, &uchger_attr_group);
->> +     device_unregister(&uchger->dev);
->> +
->> +     return 0;
->> +}
->> +
->> +static void devm_uchger_dev_unreg(struct device *dev, void *res)
->> +{
->> +     usb_charger_unregister(*(struct usb_charger **)res);
->> +}
->> +
->> +void devm_usb_charger_unregister(struct device *dev,
->> +                              struct usb_charger *uchger)
->> +{
->> +     devres_release(dev, devm_uchger_dev_unreg,
->> +                    devm_uchger_dev_match, uchger);
->> +}
->> +
->> +/*
->> + * usb_charger_register() - Register a new usb charger device
->> + * which is created by the usb charger framework.
->> + * @uchger - the new usb charger device.
->> + */
->> +static int usb_charger_register(struct device *dev, struct usb_charger *uchger)
->> +{
->> +     int ret;
->> +
->> +     if (!uchger) {
->> +             dev_err(dev, "no device provided for charger\n");
->> +             return -EINVAL;
->> +     }
->> +
->> +     uchger->dev.parent = dev;
->> +     uchger->dev.release = usb_charger_release;
->> +     uchger->dev.bus = &usb_charger_subsys;
->> +
->> +     ret = ida_simple_get(&usb_charger_ida, 0, 0, GFP_KERNEL);
->> +     if (ret < 0) {
->> +             dev_err(dev, "get usb charger id failed\n");
->> +             return ret;
->> +     }
->> +
->> +     uchger->id = ret;
->> +     dev_set_name(&uchger->dev, "usb-charger.%d", uchger->id);
->> +     dev_set_drvdata(&uchger->dev, uchger);
->> +
->> +     ret = device_register(&uchger->dev);
->> +     if (ret)
->> +             goto fail_register;
->> +
->> +     ret = sysfs_create_group(&uchger->dev.kobj, &uchger_attr_group);
->
-> And you just raced with userspace, and lost :(
->
-> Assign the group to the device _before_ you tell userspace about it.
->
-> The big hint here that is wrong is that you have to call a sysfs_*
-> function for a struct device.  There is no device_create_group() call
-> for a reason.
->
-
-I think your suggestion is device_add_groups() and not
-device_create_group() which is not found in mainline. Is it right?
-
->
->
->> +     if (ret)
->> +             goto fail_create_files;
->> +
->> +     return 0;
->> +
->> +fail_create_files:
->> +     device_unregister(&uchger->dev);
->> +fail_register:
->> +     put_device(&uchger->dev);
->> +     ida_simple_remove(&usb_charger_ida, uchger->id);
->> +     uchger->id = -1;
->> +     dev_err(dev, "Failed to register usb charger (%s)\n",
->> +             uchger->name);
->> +     return ret;
->> +}
->> +
->> +int devm_usb_charger_register(struct device *dev,
->> +                           struct usb_charger *uchger)
->> +{
->> +     struct usb_charger **ptr;
->> +     int ret;
->> +
->> +     ptr = devres_alloc(devm_uchger_dev_unreg, sizeof(*ptr), GFP_KERNEL);
->> +     if (!ptr)
->> +             return -ENOMEM;
->> +
->> +     ret = usb_charger_register(dev, uchger);
->> +     if (ret) {
->> +             devres_free(ptr);
->> +             return ret;
->> +     }
->> +
->> +     *ptr = uchger;
->> +     devres_add(dev, ptr);
->> +
->> +     return 0;
->> +}
->> +
->> +int usb_charger_init(struct usb_gadget *ugadget)
->> +{
->> +     struct usb_charger *uchger;
->> +     struct extcon_dev *edev;
->> +     char buf[100];
->
-> That's a lot of stack, why?
->
-
-Consider storing a new usb charger name firstly with buf[], but now
-will remove the 'name' memeber in struct usb_charger.
-
->> +     char *str;
->> +     int ret;
->> +
->> +     if (!ugadget)
->> +             return -EINVAL;
->> +
->> +     uchger = devm_kzalloc(&ugadget->dev, sizeof(struct usb_charger),
->> +                           GFP_KERNEL);
->
-> No, you are creating a new struct device, you can't assign its resources
-> to another struct device, that breaks all of the lifetime rules.
-> kzalloc() only please.
->
-
-Make sense of it.
-
->> +     if (!uchger)
->> +             return -ENOMEM;
->> +
->> +     sprintf(buf, "usb-charger.%s", ugadget->name);
->> +     str = devm_kzalloc(&ugadget->dev, sizeof(char) * (strlen(buf) + 1),
->> +                        GFP_KERNEL);
->
-> Why have a string when you already have a name for the device, in the
-> device itself?  What is this all for?
->
-
-Consider expanding to other uses with member 'name' in future, but I
-think it is reasonable to remove these with your suggestion.
-
->
->> +     if (!str)
->> +             return -ENOMEM;
->> +
->> +     strcpy(str, buf);
->> +     uchger->name = str;
->> +     uchger->type = UNKNOWN_TYPE;
->> +     uchger->state = USB_CHARGER_DEFAULT;
->> +     uchger->id = -1;
->> +     uchger->cur_limit.sdp_cur_limit = DEFAULT_SDP_CUR_LIMIT;
->> +     uchger->cur_limit.dcp_cur_limit = DEFAULT_DCP_CUR_LIMIT;
->> +     uchger->cur_limit.cdp_cur_limit = DEFAULT_CDP_CUR_LIMIT;
->> +     uchger->cur_limit.aca_cur_limit = DEFAULT_ACA_CUR_LIMIT;
->> +
->> +     mutex_init(&uchger->lock);
->> +     INIT_LIST_HEAD(&uchger->entry);
->> +     RAW_INIT_NOTIFIER_HEAD(&uchger->uchger_nh);
->> +
->> +     /* register a notifier on a extcon device if it is exsited */
->> +     edev = extcon_get_edev_by_phandle(ugadget->dev.parent, 0);
->> +     if (!IS_ERR_OR_NULL(edev)) {
->> +             uchger->extcon_dev = edev;
->> +             uchger->extcon_nb.nb.notifier_call = usb_charger_plug_by_extcon;
->> +             uchger->extcon_nb.uchger = uchger;
->> +             extcon_register_notifier(edev, EXTCON_USB, &uchger->extcon_nb.nb);
->> +     }
->> +
->> +     /* register a notifier on a usb gadget device */
->> +     uchger->gadget = ugadget;
->> +     ugadget->uchger = uchger;
->> +     uchger->old_gadget_state = ugadget->state;
->> +     uchger->gadget_nb.notifier_call = usb_charger_plug_by_gadget;
->> +     usb_gadget_register_notify(ugadget, &uchger->gadget_nb);
->> +
->> +     /* register a new usb charger */
->> +     ret = usb_charger_register(&ugadget->dev, uchger);
->> +     if (ret)
->> +             goto fail;
->> +
->> +     return 0;
->> +
->> +fail:
->> +     if (uchger->extcon_dev)
->> +             extcon_unregister_notifier(uchger->extcon_dev,
->> +                                        EXTCON_USB, &uchger->extcon_nb.nb);
->> +
->> +     usb_gadget_unregister_notify(uchger->gadget, &uchger->gadget_nb);
->> +     return ret;
->> +}
->> +
->> +int usb_charger_exit(struct usb_gadget *ugadget)
->> +{
->> +     struct usb_charger *uchger = ugadget->uchger;
->> +
->> +     if (!uchger)
->> +             return -EINVAL;
->> +
->> +     if (uchger->extcon_dev)
->> +             extcon_unregister_notifier(uchger->extcon_dev,
->> +                                        EXTCON_USB, &uchger->extcon_nb.nb);
->> +
->> +     usb_gadget_unregister_notify(uchger->gadget, &uchger->gadget_nb);
->> +     ida_simple_remove(&usb_charger_ida, uchger->id);
->> +
->> +     return usb_charger_unregister(uchger);
->> +}
->> +
->> +static int __init usb_charger_sysfs_init(void)
->> +{
->> +     return subsys_system_register(&usb_charger_subsys, NULL);
->> +}
->> +core_initcall(usb_charger_sysfs_init);
->> +
->> +MODULE_AUTHOR("Baolin Wang <baolin.wang@linaro.org>");
->> +MODULE_DESCRIPTION("USB charger driver");
->> +MODULE_LICENSE("GPL");
->> diff --git a/include/linux/usb/usb_charger.h b/include/linux/usb/usb_charger.h
->> new file mode 100644
->> index 0000000..8cbfaae
->> --- /dev/null
->> +++ b/include/linux/usb/usb_charger.h
->> @@ -0,0 +1,145 @@
->> +#ifndef __LINUX_USB_CHARGER_H__
->> +#define __LINUX_USB_CHARGER_H__
->> +
->> +#include <linux/device.h>
->> +#include <linux/notifier.h>
->> +#include <linux/sysfs.h>
->> +#include <linux/usb/ch9.h>
->> +
->> +/* USB charger type:
->> + * SDP (Standard Downstream Port)
->> + * DCP (Dedicated Charging Port)
->> + * CDP (Charging Downstream Port)
->> + * ACA (Accessory Charger Adapters)
->> + */
->> +enum usb_charger_type {
->> +     UNKNOWN_TYPE,
->> +     SDP_TYPE,
->> +     DCP_TYPE,
->> +     CDP_TYPE,
->> +     ACA_TYPE,
->> +};
->> +
->> +/* USB charger state */
->> +enum usb_charger_state {
->> +     USB_CHARGER_DEFAULT,
->> +     USB_CHARGER_PRESENT,
->> +     USB_CHARGER_REMOVE,
->> +};
->> +
->> +/* Current limitation by charger type */
->> +struct usb_charger_cur_limit {
->> +     unsigned int sdp_cur_limit;
->> +     unsigned int dcp_cur_limit;
->> +     unsigned int cdp_cur_limit;
->> +     unsigned int aca_cur_limit;
->> +};
->> +
->> +struct usb_charger_nb {
->> +     struct notifier_block   nb;
->> +     struct usb_charger      *uchger;
->> +};
->> +
->> +struct usb_charger {
->> +     /* Internal data. Please do not set. */
->
-> Heh, as if people read comments :(
->
-
-OK, remove it.
-
->> +     const char              *name;
->
-> This isn't needed, use the one in your struct device.
->
-
-OK, remove it.
-
->> +     struct device           dev;
->> +     struct raw_notifier_head        uchger_nh;
->> +     struct list_head        entry;
->
-> Why do you need another list?  The device already is on a list.
->
-
-Sorry, I did not remember to remove the 'entry' member in the structure
-
->> +     struct mutex            lock;
->
-> What is this protecting, document it.
->
-
-OK, I'll  add some comments for the lock.
-
-> thanks,
->
-> greg k-h
-
-
-
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index e49ee24da85e..07930e1d2fe9 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -704,6 +704,11 @@ static void acpi_map_cpu2node(acpi_handle handle, int cpu, int physid)
+ 
+ 	nid = acpi_get_node(handle);
+ 	if (nid != -1) {
++		if (try_online_node(nid)) {
++			pr_warn("failed to online node%d for CPU%d, use node%d instead.\n",
++				nid, cpu, first_node(node_online_map));
++			nid = first_node(node_online_map);
++		}
+ 		set_apicid_to_node(physid, nid);
+ 		numa_set_node(cpu, nid);
+ 	}
 -- 
-Baolin.wang
-Best Regards
+1.7.10.4
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
