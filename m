@@ -1,174 +1,55 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH v2 1/1] cap11xx: add runtime PM support
-Date: Sun, 16 Aug 2015 23:24:14 -0700
-Message-ID: <20150817062414.GB31482@dtor-ws>
-References: <1435292423-20895-1-git-send-email-mranostay@gmail.com>
- <1435292423-20895-2-git-send-email-mranostay@gmail.com>
+From: Nigel Cunningham <nigel@nigelcunningham.com.au>
+Subject: Re: [PATCH v2] dmaengine: fsl-edma: add PM suspend/resume support
+Date: Mon, 17 Aug 2015 16:48:49 +1000
+Message-ID: <55D183D1.9020401@nigelcunningham.com.au>
+References: <1437469005-3162-1-git-send-email-yao.yuan@freescale.com>	<CADRPPNQJi_x+mdQV=DEVuhCL_p6VOWcPiV3jzioeRdWgSW2w3g@mail.gmail.com>	<CY1PR0301MB15628DD5CFCE2B65BF4FECB2837C0@CY1PR0301MB1562.namprd03.prod.outlook.com>
+ <CADRPPNS_wzX+mwT0L-H=ZP9w8gH9W4O9KUqnGYiAc39S5v4qLA@mail.gmail.com>
+ <CY1PR0301MB1562103588FB0C6BEFDDBF3C83790@CY1PR0301MB1562.namprd03.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f175.google.com ([209.85.192.175]:35163 "EHLO
-	mail-pd0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754207AbbHQGYS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Aug 2015 02:24:18 -0400
-Content-Disposition: inline
-In-Reply-To: <1435292423-20895-2-git-send-email-mranostay@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CY1PR0301MB1562103588FB0C6BEFDDBF3C83790@CY1PR0301MB1562.namprd03.prod.outlook.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Yao Yuan <yao.yuan@freescale.com>, Li Leo <LeoLi@freescale.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vinod Koul <vinod.koul@intel.com>, lkml <linux-kernel@vger.kernel.org>, "stefan@agner.ch" <stefan@agner.ch>, "dmaengine@vger.kernel.org" <dmaengine@vger.kernel.org>, Dan Williams <dan.j.williams@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Matt Ranostay <mranostay@gmail.com>
-Cc: linux-input@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hi Matt,
+Hi Yao.
 
-On Thu, Jun 25, 2015 at 09:20:23PM -0700, Matt Ranostay wrote:
-> Puts device into DEEP SLEEP when no LEDs are in in the on-state, and no
-> input_handlers are in use. Also uses *_autosuspend to prevent a LED
-> trigger from constantly suspending and resuming device.
-> 
-> Signed-off-by: Matt Ranostay <mranostay@gmail.com>
-> ---
->  drivers/input/keyboard/cap11xx.c | 84 +++++++++++++++++++++++++++++++---------
->  1 file changed, 66 insertions(+), 18 deletions(-)
-> 
-> diff --git a/drivers/input/keyboard/cap11xx.c b/drivers/input/keyboard/cap11xx.c
-> index b983b5a..51aad6d 100644
-> --- a/drivers/input/keyboard/cap11xx.c
-> +++ b/drivers/input/keyboard/cap11xx.c
-> @@ -14,6 +14,7 @@
->  #include <linux/input.h>
->  #include <linux/leds.h>
->  #include <linux/of_irq.h>
-> +#include <linux/pm_runtime.h>
->  #include <linux/regmap.h>
->  #include <linux/i2c.h>
->  #include <linux/gpio/consumer.h>
-> @@ -84,9 +85,9 @@ struct cap11xx_led {
->  struct cap11xx_priv {
->  	struct regmap *regmap;
->  	struct input_dev *idev;
-> +	struct i2c_client *i2c_client;
->  
->  	struct cap11xx_led *leds;
-> -	int num_leds;
->  
->  	/* config */
->  	u32 keycodes[];
-> @@ -205,32 +206,34 @@ out:
->  	return IRQ_HANDLED;
->  }
->  
-> +#ifdef CONFIG_PM
->  static int cap11xx_set_sleep(struct cap11xx_priv *priv, bool sleep)
->  {
-> -#ifdef CONFIG_LEDS_CLASS
-> -	/*
-> -	 * DLSEEP mode will turn off all LEDS, prevent this
-> -	 */
-> -	if (priv->num_leds)
-> -		return 0;
-> -#endif
->  	return regmap_update_bits(priv->regmap, CAP11XX_REG_MAIN_CONTROL,
->  				  CAP11XX_REG_MAIN_CONTROL_DLSEEP,
->  				  sleep ? CAP11XX_REG_MAIN_CONTROL_DLSEEP : 0);
->  }
-> +#else
-> +static int cap11xx_set_sleep(struct cap11xx_priv *priv, bool sleep)
-> +{
-> +	return 0;
-> +}
-> +#endif
->  
->  static int cap11xx_input_open(struct input_dev *idev)
->  {
->  	struct cap11xx_priv *priv = input_get_drvdata(idev);
->  
-> -	return cap11xx_set_sleep(priv, false);
-> +	pm_runtime_get(&priv->i2c_client->dev);
-> +
-> +	return 0;
->  }
->  
->  static void cap11xx_input_close(struct input_dev *idev)
->  {
->  	struct cap11xx_priv *priv = input_get_drvdata(idev);
->  
-> -	cap11xx_set_sleep(priv, true);
-> +	pm_runtime_put_autosuspend(&priv->i2c_client->dev);
->  }
->  
->  #ifdef CONFIG_LEDS_CLASS
-> @@ -252,10 +255,16 @@ static void cap11xx_led_set(struct led_classdev *cdev,
->  			   enum led_brightness value)
->  {
->  	struct cap11xx_led *led = container_of(cdev, struct cap11xx_led, cdev);
-> +	struct cap11xx_priv *priv = led->priv;
->  
->  	if (led->new_brightness == value)
->  		return;
->  
-> +	if (value)
-> +		pm_runtime_get(&priv->i2c_client->dev);
-> +	else
-> +		pm_runtime_put_autosuspend(&priv->i2c_client->dev);
-> +
->  	led->new_brightness = value;
->  	schedule_work(&led->work);
->  }
-> @@ -312,7 +321,6 @@ static int cap11xx_init_leds(struct device *dev,
->  		error = devm_led_classdev_register(dev, &led->cdev);
->  		if (error < 0)
->  			return -EINVAL;
-> -		priv->num_leds++;
->  		led++;
->  	};
->  
-> @@ -446,17 +454,23 @@ static int cap11xx_i2c_probe(struct i2c_client *i2c_client,
->  	priv->idev->open = cap11xx_input_open;
->  	priv->idev->close = cap11xx_input_close;
->  
-> -	error = cap11xx_init_leds(dev, priv, cap->num_leds);
-> +	error = cap11xx_set_sleep(priv, true);
->  	if (error)
->  		return error;
->  
-> -	input_set_drvdata(priv->idev, priv);
-> +	error = pm_runtime_set_active(dev);
-> +	if (error)
-> +		return error;
->  
-> -	/*
-> -	 * Put the device in deep sleep mode for now.
-> -	 * ->open() will bring it back once the it is actually needed.
-> -	 */
-> -	cap11xx_set_sleep(priv, true);
-> +	pm_runtime_enable(dev);
-> +	pm_runtime_set_autosuspend_delay(dev, 1000);
-> +	pm_runtime_use_autosuspend(dev);
-> +
-> +	error = cap11xx_init_leds(dev, priv, cap->num_leds);
-> +	if (error)
-> +		return error;
-> +	priv->i2c_client = i2c_client;
-> +	input_set_drvdata(priv->idev, priv);
->  
->  	error = input_register_device(priv->idev);
->  	if (error)
-> @@ -476,6 +490,17 @@ static int cap11xx_i2c_probe(struct i2c_client *i2c_client,
->  	return 0;
->  }
->  
-> +static int cap11xx_i2c_remove(struct i2c_client *i2c_client)
-> +{
-> +	struct cap11xx_priv *priv = i2c_get_clientdata(i2c_client);
-> +
-> +	pm_runtime_disable(&i2c_client->dev);
-> +	pm_runtime_set_suspended(&i2c_client->dev);
-> +	cap11xx_set_sleep(priv, true);
+On 17/08/15 13:59, Yao Yuan wrote:
+> On Sat, Aug 15, 2015 at 7:48 AM, pku.leo < pku.leo@gmail.com > wrote:
+>> On Fri, Aug 14, 2015 at 1:24 AM, Yao Yuan <yao.yuan@freescale.com> wrote:
+>>> Hi Leo,
+>>>
+>>> Thanks for your review.
+>>> About those two methods for DMA suspend that you have mentioned. We
+>> have a lot of the discussions in other DMA driver like DMA for Freescale
+>> PowerPC.
+>>> Finally, we think the device which used the DMA transmission service should
+>> cancel the transmission service in its suspend.
+>>> So DMA in suspend should be idle.
+>> If that's the case you should clearly state this in the commit message and in
+>> code, although I don't know if it is safe to make such assumption.  There could
+>> be user of the DMA that doesn't track the completion of transfers.
+> I think it should be safe. In my opinion, even some client(the user of the DMA) forget to cancel its DMA transmission,
+> It will just lead to PM failed but no other system and data risk.
+> Although we should first fix the behavior of the client.
+> Once you are no need the DMA transmission, why not stop it?
+>
+> Is it right?
+Think of it from the end user perspective. Would you like your laptop (or whatever) to refuse to suspend because of this condition? The user may well expect that closing the lid on their laptop will reliably lead to it suspending to ram. Returning a failure here could result in a loss of data if the condition is not detected and the machine subsequently runs out of power.
 
-This violates ordering: the leds and input device are still open and may
-get requests while you are putting the device to sleep.
+I do agree that whatever is submitting DMA should be stopped first; ideally this driver would always be idle because whatever producers of work exist would already have been quiesced and output flushed.
 
-Thanks.
+Regards,
 
--- 
-Dmitry
+Nigel
