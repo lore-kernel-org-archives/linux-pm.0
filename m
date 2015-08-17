@@ -1,69 +1,174 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v2 0/3] Introduce usb charger framework to deal with the
- usb gadget power negotation
-Date: Mon, 17 Aug 2015 14:02:08 +0800
-Message-ID: <CAMz4kuJGR1ZQPbBNpp7EABJn=Rag8jSrb-2ztcefUf4R7pk4AQ@mail.gmail.com>
-References: <cover.1439519412.git.baolin.wang@linaro.org>
-	<20150814085527.GA17920@shlinux2>
-	<CAMz4kuK7f=rGOO-YdB0AB8PzpTbnWZtasuQK8gOXLuM9zyn3gw@mail.gmail.com>
-	<20150817011541.GA7122@shlinux2>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH v2 1/1] cap11xx: add runtime PM support
+Date: Sun, 16 Aug 2015 23:24:14 -0700
+Message-ID: <20150817062414.GB31482@dtor-ws>
+References: <1435292423-20895-1-git-send-email-mranostay@gmail.com>
+ <1435292423-20895-2-git-send-email-mranostay@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150817011541.GA7122@shlinux2>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Li Jun <b47624@freescale.com>
-Cc: Felipe Balbi <balbi@ti.com>, Mark Brown <broonie@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, LKML <linux-kernel@vger.kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Peter Chen <peter.chen@freescale.com>, sojka@merica.cz, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, sre@kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, sameo@linux.intel.com, Lee Jones <lee.jones@linaro.org>, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f175.google.com ([209.85.192.175]:35163 "EHLO
+	mail-pd0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754207AbbHQGYS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Aug 2015 02:24:18 -0400
+Content-Disposition: inline
+In-Reply-To: <1435292423-20895-2-git-send-email-mranostay@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Matt Ranostay <mranostay@gmail.com>
+Cc: linux-input@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 17 August 2015 at 09:15, Li Jun <b47624@freescale.com> wrote:
-> On Fri, Aug 14, 2015 at 07:04:56PM +0800, Baolin Wang wrote:
->> On 14 August 2015 at 16:55, Li Jun <b47624@freescale.com> wrote:
->> > Hi Baolin,
->> >
->> > On Fri, Aug 14, 2015 at 05:47:43PM +0800, Baolin Wang wrote:
->> >> Currently the Linux kernel does not provide any standard integration of this
->> >> feature that integrates the USB subsystem with the system power regulation
->> >> provided by PMICs meaning that either vendors must add this in their kernels
->> >> or USB gadget devices based on Linux (such as mobile phones) may not behave
->> >> as they should.
->> >>
->> >> Providing a standard framework for doing this in the kernel.
->> >>
->> >
->> > Why not add power supply class support into this?
->> >
->>
->> Hi Jun,
->>
->> We don't need the power supply class support into the usb charger,
-> I suppose usb charger is also a power supply for the system, we can use power
-> supply class framework for notify mechanism and get/set many attributes(maybe
-> also the current limit), I see those usb charger drivers under ./driver/power/
-> are designed with power supply supported.
->
+Hi Matt,
 
-I don't think so. The usb charger is rely on the usb gadget, which is
-not a complete power supply device and it combines the usb and the
-power supply. Thus we make it into usb gadget system. Thanks.
+On Thu, Jun 25, 2015 at 09:20:23PM -0700, Matt Ranostay wrote:
+> Puts device into DEEP SLEEP when no LEDs are in in the on-state, and no
+> input_handlers are in use. Also uses *_autosuspend to prevent a LED
+> trigger from constantly suspending and resuming device.
+> 
+> Signed-off-by: Matt Ranostay <mranostay@gmail.com>
+> ---
+>  drivers/input/keyboard/cap11xx.c | 84 +++++++++++++++++++++++++++++++---------
+>  1 file changed, 66 insertions(+), 18 deletions(-)
+> 
+> diff --git a/drivers/input/keyboard/cap11xx.c b/drivers/input/keyboard/cap11xx.c
+> index b983b5a..51aad6d 100644
+> --- a/drivers/input/keyboard/cap11xx.c
+> +++ b/drivers/input/keyboard/cap11xx.c
+> @@ -14,6 +14,7 @@
+>  #include <linux/input.h>
+>  #include <linux/leds.h>
+>  #include <linux/of_irq.h>
+> +#include <linux/pm_runtime.h>
+>  #include <linux/regmap.h>
+>  #include <linux/i2c.h>
+>  #include <linux/gpio/consumer.h>
+> @@ -84,9 +85,9 @@ struct cap11xx_led {
+>  struct cap11xx_priv {
+>  	struct regmap *regmap;
+>  	struct input_dev *idev;
+> +	struct i2c_client *i2c_client;
+>  
+>  	struct cap11xx_led *leds;
+> -	int num_leds;
+>  
+>  	/* config */
+>  	u32 keycodes[];
+> @@ -205,32 +206,34 @@ out:
+>  	return IRQ_HANDLED;
+>  }
+>  
+> +#ifdef CONFIG_PM
+>  static int cap11xx_set_sleep(struct cap11xx_priv *priv, bool sleep)
+>  {
+> -#ifdef CONFIG_LEDS_CLASS
+> -	/*
+> -	 * DLSEEP mode will turn off all LEDS, prevent this
+> -	 */
+> -	if (priv->num_leds)
+> -		return 0;
+> -#endif
+>  	return regmap_update_bits(priv->regmap, CAP11XX_REG_MAIN_CONTROL,
+>  				  CAP11XX_REG_MAIN_CONTROL_DLSEEP,
+>  				  sleep ? CAP11XX_REG_MAIN_CONTROL_DLSEEP : 0);
+>  }
+> +#else
+> +static int cap11xx_set_sleep(struct cap11xx_priv *priv, bool sleep)
+> +{
+> +	return 0;
+> +}
+> +#endif
+>  
+>  static int cap11xx_input_open(struct input_dev *idev)
+>  {
+>  	struct cap11xx_priv *priv = input_get_drvdata(idev);
+>  
+> -	return cap11xx_set_sleep(priv, false);
+> +	pm_runtime_get(&priv->i2c_client->dev);
+> +
+> +	return 0;
+>  }
+>  
+>  static void cap11xx_input_close(struct input_dev *idev)
+>  {
+>  	struct cap11xx_priv *priv = input_get_drvdata(idev);
+>  
+> -	cap11xx_set_sleep(priv, true);
+> +	pm_runtime_put_autosuspend(&priv->i2c_client->dev);
+>  }
+>  
+>  #ifdef CONFIG_LEDS_CLASS
+> @@ -252,10 +255,16 @@ static void cap11xx_led_set(struct led_classdev *cdev,
+>  			   enum led_brightness value)
+>  {
+>  	struct cap11xx_led *led = container_of(cdev, struct cap11xx_led, cdev);
+> +	struct cap11xx_priv *priv = led->priv;
+>  
+>  	if (led->new_brightness == value)
+>  		return;
+>  
+> +	if (value)
+> +		pm_runtime_get(&priv->i2c_client->dev);
+> +	else
+> +		pm_runtime_put_autosuspend(&priv->i2c_client->dev);
+> +
+>  	led->new_brightness = value;
+>  	schedule_work(&led->work);
+>  }
+> @@ -312,7 +321,6 @@ static int cap11xx_init_leds(struct device *dev,
+>  		error = devm_led_classdev_register(dev, &led->cdev);
+>  		if (error < 0)
+>  			return -EINVAL;
+> -		priv->num_leds++;
+>  		led++;
+>  	};
+>  
+> @@ -446,17 +454,23 @@ static int cap11xx_i2c_probe(struct i2c_client *i2c_client,
+>  	priv->idev->open = cap11xx_input_open;
+>  	priv->idev->close = cap11xx_input_close;
+>  
+> -	error = cap11xx_init_leds(dev, priv, cap->num_leds);
+> +	error = cap11xx_set_sleep(priv, true);
+>  	if (error)
+>  		return error;
+>  
+> -	input_set_drvdata(priv->idev, priv);
+> +	error = pm_runtime_set_active(dev);
+> +	if (error)
+> +		return error;
+>  
+> -	/*
+> -	 * Put the device in deep sleep mode for now.
+> -	 * ->open() will bring it back once the it is actually needed.
+> -	 */
+> -	cap11xx_set_sleep(priv, true);
+> +	pm_runtime_enable(dev);
+> +	pm_runtime_set_autosuspend_delay(dev, 1000);
+> +	pm_runtime_use_autosuspend(dev);
+> +
+> +	error = cap11xx_init_leds(dev, priv, cap->num_leds);
+> +	if (error)
+> +		return error;
+> +	priv->i2c_client = i2c_client;
+> +	input_set_drvdata(priv->idev, priv);
+>  
+>  	error = input_register_device(priv->idev);
+>  	if (error)
+> @@ -476,6 +490,17 @@ static int cap11xx_i2c_probe(struct i2c_client *i2c_client,
+>  	return 0;
+>  }
+>  
+> +static int cap11xx_i2c_remove(struct i2c_client *i2c_client)
+> +{
+> +	struct cap11xx_priv *priv = i2c_get_clientdata(i2c_client);
+> +
+> +	pm_runtime_disable(&i2c_client->dev);
+> +	pm_runtime_set_suspended(&i2c_client->dev);
+> +	cap11xx_set_sleep(priv, true);
 
-> Li Jun
->> just introduce the notify mechanism for power to set the current limit
->> when notifying some events from usb charger. Maybe I misunderstand
->> your meanings, please describe it detailedly. Thanks for your
->> comments.
->>
->> > Li Jun
->> >
->>
->>
->>
->> --
->> Baolin.wang
->> Best Regards
+This violates ordering: the leds and input device are still open and may
+get requests while you are putting the device to sleep.
 
-
+Thanks.
 
 -- 
-Baolin.wang
-Best Regards
+Dmitry
