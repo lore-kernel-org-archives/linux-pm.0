@@ -1,119 +1,61 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH v5] Report interrupt(s) that caused system wakeup
-Date: Mon, 17 Aug 2015 22:59:15 +0200 (CEST)
-Message-ID: <alpine.DEB.2.11.1508172234040.3873@nanos>
-References: <1438919224-7003-2-git-send-email-alexandra.yates@linux.intel.com> <1996878.sZiHYD4sbd@vostro.rjw.lan>
+From: Petr Cvek <petr.cvek@tul.cz>
+Subject: [PATCH v2 00/21] ARM: pxa: magician: Rework HTC Magician support
+Date: Mon, 17 Aug 2015 23:55:07 +0200
+Message-ID: <55D2583B.8040602@tul.cz>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-2
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:54292 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750975AbbHQU7o (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Aug 2015 16:59:44 -0400
-In-Reply-To: <1996878.sZiHYD4sbd@vostro.rjw.lan>
+Received: from bubo.tul.cz ([147.230.16.1]:49387 "EHLO bubo.tul.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750759AbbHQVwR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 17 Aug 2015 17:52:17 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Alexandra Yates <alexandra.yates@linux.intel.com>, kristen.c.accardi@intel.com, linux-pm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: robert.jarzmik@free.fr, philipp.zabel@gmail.com, daniel@zonque.org, haojian.zhuang@gmail.com, sameo@linux.intel.com, lee.jones@linaro.org, cooloney@gmail.com, rpurdie@rpsys.net, j.anaszewski@samsung.com, linux@arm.linux.org.uk, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
+Cc: linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Sat, 8 Aug 2015, Rafael J. Wysocki wrote:
-> On Thursday, August 06, 2015 08:47:04 PM Alexandra Yates wrote:
-> > Add a new IRQ flag named IRQD_WAKEUP_TRIGGERED.  This flag is set
-> > when a given IRQ fires after it has been armed for system wakeup.
-> > The flag is cleared before arming the IRQ for system wakeup
-> > during the next system suspend. This feature makes possible to
-> > check which IRQs might have woken the system up from sleep last
-> > time it was suspended.
-> > 
-> > Add a new sysfs attribute under /sys/power/ named:pm_last_wakeup_irqs
-> > when read, will return a list of IRQs with the new flag set.  That
-> > will be useful for system wakeup diagnostics.
-> > 
-> > Signed-off-by: Alexandra Yates <alexandra.yates@linux.intel.com>
-> 
-> Thanks for the patch, but you've forgotten to CC the IRQ subsystem maintainer.
-> 
-> Hi Thomas, can you please have a look at the patch below and tell me if you
-> have any concerns about it?
+This patchset will clean, fix and finally add multiple PXA devices
+to HTC Magician machine. Also it adds leds-pasic3 driver to LED subsystem.
+This driver require changes into htc-pasic3 structures, which are used
+exclusively by magician.c code.
 
-Sure.
+Petr Cvek (21):
+  ARM: pxa: magician: Fix Kconfig for magician to always include
+    htc-egpio
+  ARM: pxa: magician: Fix indentation and whitespaces
+  ARM: pxa: magician: Fix comments, debug functions and print strings
+  ARM: pxa: magician: Add, fix and init (new) GPIOs
+  ARM: pxa: magician: Add support for ADS7846 touchscreen
+  ARM: pxa: magician: Add normal and power I2C definition
+  ARM: pxa: magician: Fix IrDA pdata and redundant GPIO request
+  ARM: pxa: magician: Add StrataFlash Vpp GPIO and alternative driver
+  ARM: pxa: magician: Add OV9640 camera support
+  ARM: pxa: magician: Add UDA1380 sound support
+  ARM: pxa: magician: Add MAX1586 Vcore regulator support
+  ARM: pxa: magician: Add PXA27x UDC support
+  ARM: pxa: magician: Fix charging source and add NiCd backup charging
+  ARM: pxa: magician: Fix PXA USB OHCI port enable flags
+  ARM: pxa: magician: Fix PWM backlight regulator
+  ARM: pxa: magician: Add support for alternative LCD backlight
+  ARM: pxa: magician: Remove (temporarily) pasic3 LED support
+  mfd: htc-pasic3: Prepare driver for leds-pasic3
+  leds: leds-pasic3: Add support for PASIC3 LED controller
+  ARM: pxa: magician: Re-add pdata for new leds-pasic3 driver
+  ARM: pxa: magician: Move platform_add_devices() to the end of
+    magician_init()
 
-> > diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-> > index 51f15bc..1a2d13b 100644
-> > --- a/drivers/base/power/wakeup.c
-> > +++ b/drivers/base/power/wakeup.c
-> > @@ -870,6 +870,37 @@ void pm_wakeup_clear(void)
-> >  	pm_abort_suspend = false;
-> >  }
-> >  
-> > +#ifdef CONFIG_PM_SLEEP_DEBUG
-> > +/*
-> > + * pm_get_last_wakeup_irqs - Parses interrupts to identify which one
-> > + * caused the system to wake up from suspend-to-idle.
-> > + * @buf: keeps track of the irqs that casued the system to wakeup
-> > + */
-> > +ssize_t pm_get_last_wakeup_irqs(char *buf, size_t size)
-> > +{
-> > +	struct irq_desc *desc;
-> > +	int irq;
-> > +	char *str = buf;
-> > +	char *end = buf + size;
-> > +
-> > +	if (!pm_abort_suspend)
-> > +		return 0;
-> > +
-> > +	/* If pm_abort_suspend is not set, the previous suspend was aborted
-> > +	 * before arming the wakeup IRQs, so avoid printing stale information
-> > +	 * in that case.
-> > +	 */
-> > +	for_each_irq_desc(irq, desc)
-> > +		if (irqd_triggered_wakeup(&desc->irq_data))
-> > +			str += scnprintf(str, end - str, "%d ", irq);
+ arch/arm/mach-pxa/Kconfig                 |    1 +
+ arch/arm/mach-pxa/include/mach/magician.h |   39 +-
+ arch/arm/mach-pxa/magician.c              | 1153 ++++++++++++++++++++++-------
+ drivers/leds/Kconfig                      |    9 +
+ drivers/leds/Makefile                     |    1 +
+ drivers/leds/leds-pasic3.c                |  232 ++++++
+ drivers/mfd/htc-pasic3.c                  |   54 +-
+ include/linux/mfd/htc-pasic3.h            |   85 ++-
+ 8 files changed, 1255 insertions(+), 319 deletions(-)
+ create mode 100644 drivers/leds/leds-pasic3.c
 
-This iteration needs to be protected by irq_lock_sparse().
-
-> > --- a/kernel/irq/pm.c
-> > +++ b/kernel/irq/pm.c
-> > @@ -22,6 +22,7 @@ bool irq_pm_check_wakeup(struct irq_desc *desc)
-> >  		desc->depth++;
-> >  		irq_disable(desc);
-> >  		pm_system_wakeup();
-> > +		irqd_set(&desc->irq_data, IRQD_WAKEUP_TRIGGERED);
-> >  		return true;
-> >  	}
-> >  	return false;
-> > @@ -73,6 +74,7 @@ static bool suspend_device_irq(struct irq_desc *desc, int irq)
-> >  	if (!desc->action || desc->no_suspend_depth)
-> >  		return false;
-> >  
-> > +	irqd_clear(&desc->irq_data, IRQD_WAKEUP_TRIGGERED);
-
-So that leaves a stale IRQD_WAKEUP_TRIGGERED bit in the following
-situation:
-
-	suspend()
-	wakeup_triggered_by_irq(X)
-	resume()
-	...
-	close_device()
-	  free_irq(X)
-	
-	suspend()
-	wakeup_triggered_by_irq(Y)
-	resume()
-
-So the next readout will show irqs X and Y being responsible for
-waking up the system.
-
-I really have to ask why this bit fiddling is necessary at all. Isn't
-the really interesting information the first interrupt which triggered
-the resume? If we can reduce it to that information then this whole
-thing can be simplified into a few lines of code.
-
-Thanks,
-
-	tglx
-
-
-
+-- 
+1.7.12.1
 
