@@ -1,98 +1,205 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH v4 2/5] PM / OPP: add a function to get the voltage for
- disabled OPPs
-Date: Mon, 17 Aug 2015 10:05:48 +0100
-Message-ID: <20150817090548.GA2762@e104805>
-References: <1439575020-3447-1-git-send-email-javi.merino@arm.com>
- <1439575020-3447-3-git-send-email-javi.merino@arm.com>
- <20150815055925.GJ1162@linux>
+From: Leo Yan <leo.yan@linaro.org>
+Subject: Re: [RFCv5, 18/46] arm: topology: Define TC2 energy and provide it
+ to the scheduler
+Date: Mon, 17 Aug 2015 17:19:42 +0800
+Message-ID: <20150817091942.GA754@leoy-linaro>
+References: <1436293469-25707-19-git-send-email-morten.rasmussen@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:55849 "EHLO
-	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753631AbbHQJGY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Aug 2015 05:06:24 -0400
+Received: from mail-pa0-f54.google.com ([209.85.220.54]:33688 "EHLO
+	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751693AbbHQJTv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Aug 2015 05:19:51 -0400
+Received: by pabyb7 with SMTP id yb7so104805332pab.0
+        for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2015 02:19:51 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <20150815055925.GJ1162@linux>
+In-Reply-To: <1436293469-25707-19-git-send-email-morten.rasmussen@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cw00.choi@samsung.com" <cw00.choi@samsung.com>, "rufus.hamade@imgtec.com" <rufus.hamade@imgtec.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: morten.rasmussen@arm.com
+Cc: peterz@infradead.org, mingo@redhat.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Russell King <linux@arm.linux.org.uk>
 
-On Sat, Aug 15, 2015 at 06:59:25AM +0100, Viresh Kumar wrote:
-> On 14-08-15, 18:56, Javi Merino wrote:
-> > The OPP library is now used for power models to calculate the power
-> > that a device would consume at a specific OPP.  To do that, we use a
-> > simple power model which takes frequency and voltage as inputs.  We get
-> > the voltage and frequency from the OPP library.
-> > 
-> > The devfreq cooling device for the thermal framework controls temperature
-> > by disabling OPPs.  The power model needs to calculate the power that
-> > would be consumed if we reenabled the OPP.  dev_pm_opp_get_voltage()
-> > doesn't work for disabled OPPs.
-> > 
-> > Add a dev_pm_opp_get_voltage_always() that works both for enabled and
-> > disabled OPPs to be used by the power model.  The documentation for this
-> > function clearly states that you should use dev_pm_opp_get_voltage()
-> > instead unless you know what you're doing.
-> > 
-> > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> > Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> > Signed-off-by: Javi Merino <javi.merino@arm.com>
-> > ---
-> >  drivers/base/power/opp.c | 37 +++++++++++++++++++++++++++++++++++++
-> >  include/linux/pm_opp.h   |  7 +++++++
-> >  2 files changed, 44 insertions(+)
-> > 
-> > diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-> > index 677fb2843553..b1a4216c7ec3 100644
-> > --- a/drivers/base/power/opp.c
-> > +++ b/drivers/base/power/opp.c
-> > @@ -182,6 +182,43 @@ unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
-> >  EXPORT_SYMBOL_GPL(dev_pm_opp_get_voltage);
-> >  
-> >  /**
-> > + * dev_pm_opp_get_voltage_always() - Gets the voltage corresponding to an opp
-> > + * @opp:	opp for which voltage has to be returned for
-> > + *
-> > + * This function is similar to dev_pm_opp_get_voltage() except that it
-> > + * works for disabled opps as well.  In most cases, you want to
-> > + * operate only on available opps so you should use
-> > + * dev_pm_opp_get_voltage() instead.
-> > + *
-> > + * Return: voltage in micro volt corresponding to the opp, else
-> > + * return 0
-> > + *
-> > + * Locking: This function must be called under rcu_read_lock(). opp is a rcu
-> > + * protected pointer. This means that opp which could have been fetched by
-> > + * opp_find_freq_{exact,ceil,floor} functions is valid as long as we are
-> > + * under RCU lock. The pointer returned by the opp_find_freq family must be
-> > + * used in the same section as the usage of this function with the pointer
-> > + * prior to unlocking with rcu_read_unlock() to maintain the integrity of the
-> > + * pointer.
-> > + */
-> > +unsigned long dev_pm_opp_get_voltage_always(struct dev_pm_opp *opp)
-> > +{
-> > +	struct dev_pm_opp *tmp_opp;
-> > +	unsigned long v = 0;
-> > +
-> > +	opp_rcu_lockdep_assert();
-> > +
-> > +	tmp_opp = rcu_dereference(opp);
-> > +	if (unlikely(IS_ERR_OR_NULL(tmp_opp)))
-> > +		pr_err("%s: Invalid parameters\n", __func__);
-> > +	else
-> > +		v = tmp_opp->u_volt;
-> > +
-> > +	return v;
-> > +}
-> > +EXPORT_SYMBOL_GPL(dev_pm_opp_get_voltage_always);
+Hi Morten,
+
+On Tue, Jul 07, 2015 at 07:24:01PM +0100, Morten Rasmussen wrote:
+> From: Dietmar Eggemann <dietmar.eggemann@arm.com>
 > 
-> I will rather update dev_pm_opp_get_voltage() and remove the
-> 'available' check. There is no need for that.
+> This patch is only here to be able to test provisioning of energy related
+> data from an arch topology shim layer to the scheduler. Since there is no
+> code today which deals with extracting energy related data from the dtb or
+> acpi, and process it in the topology shim layer, the content of the
+> sched_group_energy structures as well as the idle_state and capacity_state
+> arrays are hard-coded here.
+> 
+> This patch defines the sched_group_energy structure as well as the
+> idle_state and capacity_state array for the cluster (relates to sched
+> groups (sgs) in DIE sched domain level) and for the core (relates to sgs
+> in MC sd level) for a Cortex A7 as well as for a Cortex A15.
+> It further provides related implementations of the sched_domain_energy_f
+> functions (cpu_cluster_energy() and cpu_core_energy()).
+> 
+> To be able to propagate this information from the topology shim layer to
+> the scheduler, the elements of the arm_topology[] table have been
+> provisioned with the appropriate sched_domain_energy_f functions.
+> 
+> cc: Russell King <linux@arm.linux.org.uk>
+> 
+> Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+> 
+> ---
+> arch/arm/kernel/topology.c | 118 +++++++++++++++++++++++++++++++++++++++++++--
+>  1 file changed, 115 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
+> index b35d3e5..bbe20c7 100644
+> --- a/arch/arm/kernel/topology.c
+> +++ b/arch/arm/kernel/topology.c
+> @@ -274,6 +274,119 @@ void store_cpu_topology(unsigned int cpuid)
+>  		cpu_topology[cpuid].socket_id, mpidr);
+>  }
+>  
+> +/*
+> + * ARM TC2 specific energy cost model data. There are no unit requirements for
+> + * the data. Data can be normalized to any reference point, but the
+> + * normalization must be consistent. That is, one bogo-joule/watt must be the
+> + * same quantity for all data, but we don't care what it is.
+> + */
+> +static struct idle_state idle_states_cluster_a7[] = {
+> +	 { .power = 25 }, /* WFI */
 
-Even better, I'll do that for the next version.
+This state is confused. Is this state corresponding to all CPUs have been
+powered off but L2 cache RAM array and SCU are still power on?
 
-Cheers,
-Javi
+> +	 { .power = 10 }, /* cluster-sleep-l */
+
+Is this status means all CPU and cluster have been powered off, if so
+then it will have no power consumption anymore...
+
+> +	};
+> +
+> +static struct idle_state idle_states_cluster_a15[] = {
+> +	 { .power = 70 }, /* WFI */
+> +	 { .power = 25 }, /* cluster-sleep-b */
+> +	};
+> +
+> +static struct capacity_state cap_states_cluster_a7[] = {
+> +	/* Cluster only power */
+> +	 { .cap =  150, .power = 2967, }, /*  350 MHz */
+
+For cluster level's capacity, does it mean need run benchmark on all
+CPUs within cluster?
+
+> +	 { .cap =  172, .power = 2792, }, /*  400 MHz */
+> +	 { .cap =  215, .power = 2810, }, /*  500 MHz */
+> +	 { .cap =  258, .power = 2815, }, /*  600 MHz */
+> +	 { .cap =  301, .power = 2919, }, /*  700 MHz */
+> +	 { .cap =  344, .power = 2847, }, /*  800 MHz */
+> +	 { .cap =  387, .power = 3917, }, /*  900 MHz */
+> +	 { .cap =  430, .power = 4905, }, /* 1000 MHz */
+> +	};
+> +
+> +static struct capacity_state cap_states_cluster_a15[] = {
+> +	/* Cluster only power */
+> +	 { .cap =  426, .power =  7920, }, /*  500 MHz */
+> +	 { .cap =  512, .power =  8165, }, /*  600 MHz */
+> +	 { .cap =  597, .power =  8172, }, /*  700 MHz */
+> +	 { .cap =  682, .power =  8195, }, /*  800 MHz */
+> +	 { .cap =  768, .power =  8265, }, /*  900 MHz */
+> +	 { .cap =  853, .power =  8446, }, /* 1000 MHz */
+> +	 { .cap =  938, .power = 11426, }, /* 1100 MHz */
+> +	 { .cap = 1024, .power = 15200, }, /* 1200 MHz */
+> +	};
+> +
+> +static struct sched_group_energy energy_cluster_a7 = {
+> +	  .nr_idle_states = ARRAY_SIZE(idle_states_cluster_a7),
+> +	  .idle_states    = idle_states_cluster_a7,
+> +	  .nr_cap_states  = ARRAY_SIZE(cap_states_cluster_a7),
+> +	  .cap_states     = cap_states_cluster_a7,
+> +};
+> +
+> +static struct sched_group_energy energy_cluster_a15 = {
+> +	  .nr_idle_states = ARRAY_SIZE(idle_states_cluster_a15),
+> +	  .idle_states    = idle_states_cluster_a15,
+> +	  .nr_cap_states  = ARRAY_SIZE(cap_states_cluster_a15),
+> +	  .cap_states     = cap_states_cluster_a15,
+> +};
+> +
+> +static struct idle_state idle_states_core_a7[] = {
+> +	 { .power = 0 }, /* WFI */
+
+Should have two idle states for CPU level (WFI and CPU's power off)?
+
+> +	};
+> +
+> +static struct idle_state idle_states_core_a15[] = {
+> +	 { .power = 0 }, /* WFI */
+> +	};
+> +
+> +static struct capacity_state cap_states_core_a7[] = {
+> +	/* Power per cpu */
+> +	 { .cap =  150, .power =  187, }, /*  350 MHz */
+> +	 { .cap =  172, .power =  275, }, /*  400 MHz */
+> +	 { .cap =  215, .power =  334, }, /*  500 MHz */
+> +	 { .cap =  258, .power =  407, }, /*  600 MHz */
+> +	 { .cap =  301, .power =  447, }, /*  700 MHz */
+> +	 { .cap =  344, .power =  549, }, /*  800 MHz */
+> +	 { .cap =  387, .power =  761, }, /*  900 MHz */
+> +	 { .cap =  430, .power = 1024, }, /* 1000 MHz */
+> +	};
+> +
+> +static struct capacity_state cap_states_core_a15[] = {
+> +	/* Power per cpu */
+> +	 { .cap =  426, .power = 2021, }, /*  500 MHz */
+> +	 { .cap =  512, .power = 2312, }, /*  600 MHz */
+> +	 { .cap =  597, .power = 2756, }, /*  700 MHz */
+> +	 { .cap =  682, .power = 3125, }, /*  800 MHz */
+> +	 { .cap =  768, .power = 3524, }, /*  900 MHz */
+> +	 { .cap =  853, .power = 3846, }, /* 1000 MHz */
+> +	 { .cap =  938, .power = 5177, }, /* 1100 MHz */
+> +	 { .cap = 1024, .power = 6997, }, /* 1200 MHz */
+> +	};
+> +
+> +static struct sched_group_energy energy_core_a7 = {
+> +	  .nr_idle_states = ARRAY_SIZE(idle_states_core_a7),
+> +	  .idle_states    = idle_states_core_a7,
+> +	  .nr_cap_states  = ARRAY_SIZE(cap_states_core_a7),
+> +	  .cap_states     = cap_states_core_a7,
+> +};
+> +
+> +static struct sched_group_energy energy_core_a15 = {
+> +	  .nr_idle_states = ARRAY_SIZE(idle_states_core_a15),
+> +	  .idle_states    = idle_states_core_a15,
+> +	  .nr_cap_states  = ARRAY_SIZE(cap_states_core_a15),
+> +	  .cap_states     = cap_states_core_a15,
+> +};
+> +
+> +/* sd energy functions */
+> +static inline const struct sched_group_energy *cpu_cluster_energy(int cpu)
+> +{
+> +	return cpu_topology[cpu].socket_id ? &energy_cluster_a7 :
+> +			&energy_cluster_a15;
+> +}
+> +
+> +static inline const struct sched_group_energy *cpu_core_energy(int cpu)
+> +{
+> +	return cpu_topology[cpu].socket_id ? &energy_core_a7 :
+> +			&energy_core_a15;
+> +}
+> +
+>  static inline int cpu_corepower_flags(void)
+>  {
+>  	return SD_SHARE_PKG_RESOURCES  | SD_SHARE_POWERDOMAIN | \
+> @@ -282,10 +395,9 @@ static inline int cpu_corepower_flags(void)
+>  
+>  static struct sched_domain_topology_level arm_topology[] = {
+>  #ifdef CONFIG_SCHED_MC
+> -	{ cpu_corepower_mask, cpu_corepower_flags, SD_INIT_NAME(GMC) },
+> -	{ cpu_coregroup_mask, cpu_core_flags, SD_INIT_NAME(MC) },
+> +	{ cpu_coregroup_mask, cpu_corepower_flags, cpu_core_energy, SD_INIT_NAME(MC) },
+>  #endif
+> -	{ cpu_cpu_mask, SD_INIT_NAME(DIE) },
+> +	{ cpu_cpu_mask, 0, cpu_cluster_energy, SD_INIT_NAME(DIE) },
+>  	{ NULL, },
+>  };
+>  
