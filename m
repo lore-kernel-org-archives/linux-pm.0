@@ -1,59 +1,67 @@
 From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH v2 2/3] gadget: Introduce the usb charger framework
-Date: Mon, 17 Aug 2015 10:24:16 -0700
-Message-ID: <20150817172416.GN10748@sirena.org.uk>
+Subject: Re: [PATCH v2 3/3] power: wm831x_power: Support USB charger current
+ limit management
+Date: Mon, 17 Aug 2015 10:26:23 -0700
+Message-ID: <20150817172623.GO10748@sirena.org.uk>
 References: <cover.1439519412.git.baolin.wang@linaro.org>
- <0c41e21239f69c4e1aa89aba020c91edfc17c4e8.1439519413.git.baolin.wang@linaro.org>
- <20150814152723.GA17892@kroah.com>
- <CAMz4kuL=6mGjNHcKHA9RYbabYqn3Lgu=rK6s8WkH5YGeV1T2+w@mail.gmail.com>
+ <f3bfd04bc157e97e2d0632b7ed2452f366f66488.1439519413.git.baolin.wang@linaro.org>
+ <20150817010707.GC1864@shlinux2>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="Gtf2ElYKiUa3nI7m"
+	protocol="application/pgp-signature"; boundary="NbUNL4d9A9kY58qh"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAMz4kuL=6mGjNHcKHA9RYbabYqn3Lgu=rK6s8WkH5YGeV1T2+w@mail.gmail.com>
+In-Reply-To: <20150817010707.GC1864@shlinux2>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Baolin Wang <baolin.wang@linaro.org>
-Cc: Greg KH <gregkh@linuxfoundation.org>, Felipe Balbi <balbi@ti.com>, Linus Walleij <linus.walleij@linaro.org>, LKML <linux-kernel@vger.kernel.org>, Peter Chen <peter.chen@freescale.com>, sojka@merica.cz, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, sre@kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, sameo@linux.intel.com, Lee Jones <lee.jones@linaro.org>, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org
+To: Peter Chen <peter.chen@freescale.com>
+Cc: Baolin Wang <baolin.wang@linaro.org>, balbi@ti.com, linus.walleij@linaro.org, linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, sojka@merica.cz, stern@rowland.harvard.edu, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, sameo@linux.intel.com, lee.jones@linaro.org, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
---Gtf2ElYKiUa3nI7m
+--NbUNL4d9A9kY58qh
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Mon, Aug 17, 2015 at 11:03:26AM +0800, Baolin Wang wrote:
-> On 14 August 2015 at 23:27, Greg KH <gregkh@linuxfoundation.org> wrote:
-> > On Fri, Aug 14, 2015 at 05:47:45PM +0800, Baolin Wang wrote:
+On Mon, Aug 17, 2015 at 09:07:08AM +0800, Peter Chen wrote:
+> On Fri, Aug 14, 2015 at 05:47:46PM +0800, Baolin Wang wrote:
 
-> >> + * This program is free software; you can redistribute it and/or modify
-> >> + * it under the terms of the GNU General Public License as published by
-> >> + * the Free Software Foundation; either version 2 of the License, or
-> >> + * (at your option) any later version.
+> > +	1500,
+> > +	1800,
+> > +	550,
+> > +};
 
-> > I have to ask, do you really mean "any later version"?
+> Why 550 is the last, but not 1800?
 
-> I think I did not get your point, could you explain it detailedly?
+You'd have to ask the hardware engineers who designed the chip.  I
+suspect it's because 550 was added at a late stage in the design process
+but I'm basically just guessing there.
 
-Unlike a lot of userspace projects the kernel is normally just licensed
-under GPLv2 without the option to relicense with a later version so the
-"...or any later version" is a bit unusual.  There is some controversy
-about some of the changes in GPLv3.
+> >   *********************************************************************/
+> > @@ -606,8 +646,31 @@ static int wm831x_power_probe(struct platform_device *pdev)
+> >  		}
+> >  	}
 
---Gtf2ElYKiUa3nI7m
+> > +	if (wm831x_pdata && wm831x_pdata->usb_gadget) {
+
+> Where the wm831x_pdata->usb_gadget is initialized?
+
+It's platform data, it will be initialised by whatever registers the
+platform data.
+
+--NbUNL4d9A9kY58qh
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBCAAGBQJV0hi8AAoJECTWi3JdVIfQuxAH/j5dwlDhPL0T8Xl752bQ0uph
-MveUIVTv9mrFzX6B2Ld5PInhWVogcC+cGXyMCwmsBQqyP2sFe/qizvjyX5p16ZCY
-KV215jP5Q7pn/1Htt5Q1eFs4Dw0EWEdiq9xi2tltq/FfRdHQxPYFzeNB8M5B7Dmg
-1jTqtIUTtDvEKt4CihIc65X51AT1T+FgSTDb2jMgo8M/r2V5eFcFJaB6bdoSvONG
-wiGiNvrVPQXIdABPYdNggT3blqXzU2uscV5NY2uiS/PF0l7JuQoVsY3mbVRJ2/pM
-xvAZX4dHpsS+zKRw53mCJF/NCf7CpHtX/No20Ac7aqT2vGmJqc1yIU8LHsbrV7o=
-=KGRN
+iQEcBAEBCAAGBQJV0hk+AAoJECTWi3JdVIfQ+UsH+wbg5YAcmiwGvgK5ha7iBYv3
+X/tf8J+VEfeEz/MPEzgtFWpTAjOYL6ZrIfODxbh9LJvrzdazSUXBokSuywc/SWk3
+1JZbKtJwDiv0OS5OziKFnJVf+iMmLVh3rsaUFaga3gU+3yjtSRjw5fCKM5aq1vmd
+vLQqiaXQS7kYUb2gJbgYb7IwpbklzCjuogVgxmSfkxnySuTICNusAZmR6SZwpLdr
+y7q9X2MNu3gaTKjO3Lj0ZFvvGOqxv026CAa16cqHWfOjlf4kmQ0oBuaH/HAEfy3U
+CWJr+uQVEC3nYbu5t1k6aAveFm1p4JqkaDWMjjvOUsGkkopFlQ4rd9dSSywA1fI=
+=ZWNJ
 -----END PGP SIGNATURE-----
 
---Gtf2ElYKiUa3nI7m--
+--NbUNL4d9A9kY58qh--
