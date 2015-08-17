@@ -1,132 +1,160 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: Re: [RFCv5 PATCH 01/46] arm: Frequency invariant scheduler load-tracking
- support
-Date: Mon, 17 Aug 2015 16:59:29 +0100
-Message-ID: <55D204E1.3000008@arm.com>
-References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com> <1436293469-25707-2-git-send-email-morten.rasmussen@arm.com> <CAKfTPtBsx++wuWjT8XwpUS68ip=_d9BzqXb3SB7Un92WzJo-Gg@mail.gmail.com>
+From: Leo Yan <leo.yan@linaro.org>
+Subject: Re: [RFCv5 PATCH 32/46] sched: Energy-aware wake-up task placement
+Date: Tue, 18 Aug 2015 00:23:51 +0800
+Message-ID: <20150817162351.GC31366@leoy-linaro>
+References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
+ <1436293469-25707-33-git-send-email-morten.rasmussen@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKfTPtBsx++wuWjT8XwpUS68ip=_d9BzqXb3SB7Un92WzJo-Gg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, "mingo@redhat.com" <mingo@redhat.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Yuyang Du <yuyang.du@intel.com>, Michael Turquette <mturquette@baylibre.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Juri Lelli <Juri.Lelli@arm.com>, "sgurrappadi@nvidia.com" <sgurrappadi@nvidia.com>, "pang.xunlei@zte.com.cn" <pang.xunlei@zte.com.cn>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:35174 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753628AbbHQQYB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 17 Aug 2015 12:24:01 -0400
+Received: by pacgr6 with SMTP id gr6so111667851pac.2
+        for <linux-pm@vger.kernel.org>; Mon, 17 Aug 2015 09:24:00 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1436293469-25707-33-git-send-email-morten.rasmussen@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Morten Rasmussen <morten.rasmussen@arm.com>
+Cc: peterz@infradead.org, mingo@redhat.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hi Vincent,
+Hi Morten,
 
-On 03/08/15 10:22, Vincent Guittot wrote:
-> Hi Morten,
+On Tue, Jul 07, 2015 at 07:24:15PM +0100, Morten Rasmussen wrote:
+> Let available compute capacity and estimated energy impact select
+> wake-up target cpu when energy-aware scheduling is enabled and the
+> system in not over-utilized (above the tipping point).
 > 
+> energy_aware_wake_cpu() attempts to find group of cpus with sufficient
+> compute capacity to accommodate the task and find a cpu with enough spare
+> capacity to handle the task within that group. Preference is given to
+> cpus with enough spare capacity at the current OPP. Finally, the energy
+> impact of the new target and the previous task cpu is compared to select
+> the wake-up target cpu.
 > 
-> On 7 July 2015 at 20:23, Morten Rasmussen <morten.rasmussen@arm.com> wrote:
->> From: Morten Rasmussen <Morten.Rasmussen@arm.com>
->>
+> cc: Ingo Molnar <mingo@redhat.com>
+> cc: Peter Zijlstra <peterz@infradead.org>
 > 
-> [snip]
+> Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
+> ---
+>  kernel/sched/fair.c | 85 ++++++++++++++++++++++++++++++++++++++++++++++++++++-
+>  1 file changed, 84 insertions(+), 1 deletion(-)
 > 
->> -
->>  #endif
->> diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
->> index 08b7847..9c09e6e 100644
->> --- a/arch/arm/kernel/topology.c
->> +++ b/arch/arm/kernel/topology.c
->> @@ -169,6 +169,23 @@ static void update_cpu_capacity(unsigned int cpu)
->>                 cpu, arch_scale_cpu_capacity(NULL, cpu));
->>  }
->>
->> +/*
->> + * Scheduler load-tracking scale-invariance
->> + *
->> + * Provides the scheduler with a scale-invariance correction factor that
->> + * compensates for frequency scaling (arch_scale_freq_capacity()). The scaling
->> + * factor is updated in smp.c
->> + */
->> +unsigned long arm_arch_scale_freq_capacity(struct sched_domain *sd, int cpu)
->> +{
->> +       unsigned long curr = atomic_long_read(&per_cpu(cpu_freq_capacity, cpu));
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> index 0f7dbda4..01f7337 100644
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
+> @@ -5427,6 +5427,86 @@ static int select_idle_sibling(struct task_struct *p, int target)
+>  	return target;
+>  }
+>  
+> +static int energy_aware_wake_cpu(struct task_struct *p, int target)
+> +{
+> +	struct sched_domain *sd;
+> +	struct sched_group *sg, *sg_target;
+> +	int target_max_cap = INT_MAX;
+> +	int target_cpu = task_cpu(p);
+> +	int i;
+> +
+> +	sd = rcu_dereference(per_cpu(sd_ea, task_cpu(p)));
+> +
+> +	if (!sd)
+> +		return target;
+> +
+> +	sg = sd->groups;
+> +	sg_target = sg;
+> +
+> +	/*
+> +	 * Find group with sufficient capacity. We only get here if no cpu is
+> +	 * overutilized. We may end up overutilizing a cpu by adding the task,
+> +	 * but that should not be any worse than select_idle_sibling().
+> +	 * load_balance() should sort it out later as we get above the tipping
+> +	 * point.
+> +	 */
+> +	do {
+> +		/* Assuming all cpus are the same in group */
+> +		int max_cap_cpu = group_first_cpu(sg);
+> +
+> +		/*
+> +		 * Assume smaller max capacity means more energy-efficient.
+> +		 * Ideally we should query the energy model for the right
+> +		 * answer but it easily ends up in an exhaustive search.
+> +		 */
+> +		if (capacity_of(max_cap_cpu) < target_max_cap &&
+> +		    task_fits_capacity(p, max_cap_cpu)) {
+> +			sg_target = sg;
+> +			target_max_cap = capacity_of(max_cap_cpu);
+> +		}
+> +	} while (sg = sg->next, sg != sd->groups);
+> +
+> +	/* Find cpu with sufficient capacity */
+> +	for_each_cpu_and(i, tsk_cpus_allowed(p), sched_group_cpus(sg_target)) {
+> +		/*
+> +		 * p's blocked utilization is still accounted for on prev_cpu
+> +		 * so prev_cpu will receive a negative bias due the double
+> +		 * accouting. However, the blocked utilization may be zero.
+> +		 */
+> +		int new_usage = get_cpu_usage(i) + task_utilization(p);
+> +
+> +		if (new_usage >	capacity_orig_of(i))
+> +			continue;
+> +
+> +		if (new_usage <	capacity_curr_of(i)) {
+> +			target_cpu = i;
+> +			if (cpu_rq(i)->nr_running)
+> +				break;
+> +		}
+> +
+> +		/* cpu has capacity at higher OPP, keep it as fallback */
+> +		if (target_cpu == task_cpu(p))
+> +			target_cpu = i;
+
+If CPU's current capacity cannot meet requirement, why not stay
+task on prev CPU so have chance to use hot cache? Or the purpose
+is to place tasks on the first CPU in schedule group as possible?
+
+> +	}
+> +
+> +	if (target_cpu != task_cpu(p)) {
+> +		struct energy_env eenv = {
+> +			.usage_delta	= task_utilization(p),
+> +			.src_cpu	= task_cpu(p),
+> +			.dst_cpu	= target_cpu,
+> +		};
+> +
+> +		/* Not enough spare capacity on previous cpu */
+> +		if (cpu_overutilized(task_cpu(p)))
+> +			return target_cpu;
+> +
+> +		if (energy_diff(&eenv) >= 0)
+> +			return task_cpu(p);
+> +	}
+> +
+> +	return target_cpu;
+> +}
+> +
+>  /*
+>   * select_task_rq_fair: Select target runqueue for the waking task in domains
+>   * that have the 'sd_flag' flag set. In practice, this is SD_BALANCE_WAKE,
+> @@ -5479,7 +5559,10 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int sd_flag, int wake_f
+>  		prev_cpu = cpu;
+>  
+>  	if (sd_flag & SD_BALANCE_WAKE && want_sibling) {
+> -		new_cpu = select_idle_sibling(p, prev_cpu);
+> +		if (energy_aware() && !cpu_rq(cpu)->rd->overutilized)
+> +			new_cpu = energy_aware_wake_cpu(p, prev_cpu);
+> +		else
+> +			new_cpu = select_idle_sibling(p, prev_cpu);
+>  		goto unlock;
+>  	}
+>  
+> -- 
+> 1.9.1
 > 
-> access to cpu_freq_capacity to should be put under #ifdef CONFIG_CPU_FREQ.
-
-True, in case we keep everything related to frequency scaling under
-CONFIG_CPU_FREQ, then we should also put the
-  #define arch_scale_freq_capacity arm_arch_scale_freq_capacity
-in topology.h under CONFIG_CPU_FREQ.
-
-> Why haven't you moved arm_arch_scale_freq_capacity in smp.c as
-> everything else for frequency in-variance is already in this file ?
-> This should also enable you to remove
-> DECLARE_PER_CPU(atomic_long_t, cpu_freq_capacity); from topology.h
-
-True, arm_arch_scale_freq_capacity() should be in smp.c so we don't have
-to export cpu_freq_capacity which btw. does not have to be a atomic.
-
-OTHA, we could also put the whole 'Frequency Invariance Engine' into
-cpufreq.c as cpufreq_scale_freq_capacity() and let the interested ARCH
-do a
-  #include <linux/cpufreq.h>
-  #define arch_scale_freq_capacity cpufreq_scale_freq_capacity
-This would allow us to implement this 'Frequency Invariance Engine'
-only once and not couple of times for different ARCHs.
-
-Something like this: (only compile tested on ARM64 w/ and w/o
-CONFIG_CPU_FREQ)
-
-diff --git a/arch/arm64/include/asm/topology.h b/arch/arm64/include/asm/topology.h
-index a8a69a1f3c4c..f25341170749 100644
---- a/arch/arm64/include/asm/topology.h
-+++ b/arch/arm64/include/asm/topology.h
-@@ -4,6 +4,7 @@
- #ifdef CONFIG_SMP
- 
- #include <linux/cpumask.h>
-+#include <linux/cpufreq.h>
- 
- struct cpu_topology {
-        int thread_id;
-@@ -26,9 +27,7 @@ const struct cpumask *cpu_coregroup_mask(int cpu);
- 
- struct sched_domain;
- #ifdef CONFIG_CPU_FREQ
--#define arch_scale_freq_capacity arm_arch_scale_freq_capacity
--extern
--unsigned long arm_arch_scale_freq_capacity(struct sched_domain *sd, int cpu);
-+#define arch_scale_freq_capacity cpufreq_scale_freq_capacity
- #endif
- 
- #define arch_scale_cpu_capacity arm_arch_scale_cpu_capacity
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index b612411655f9..97f4391d0f55 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2400,6 +2400,12 @@ static int cpufreq_cpu_callback(struct notifier_block *nfb,
-        return NOTIFY_OK;
- }
- 
-+unsigned long cpufreq_scale_freq_capacity(struct sched_domain *sd, int cpu)
-+{
-+       return 1024; /* Implementation missing !!! */
-+}
-+EXPORT_SYMBOL(cpufreq_scale_freq_capacity);
-+
- static struct notifier_block __refdata cpufreq_cpu_notifier = {
-        .notifier_call = cpufreq_cpu_callback,
- };
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 29ad97c34fd5..a4516d53a3cc 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -604,4 +604,11 @@ unsigned int cpufreq_generic_get(unsigned int cpu);
- int cpufreq_generic_init(struct cpufreq_policy *policy,
-                struct cpufreq_frequency_table *table,
-                unsigned int transition_latency);
-+/*
-+ * In case we delete unused sd pointer in arch_scale_freq_capacity()
-+ * [kernel/sched/sched.h] this can become:
-+ * unsigned long cpufreq_scale_freq_capacity(int cpu);
-+ */
-+struct sched_domain;
-+unsigned long cpufreq_scale_freq_capacity(struct sched_domain *sd, int cpu);
-
-[...]
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
