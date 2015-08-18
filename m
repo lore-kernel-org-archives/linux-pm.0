@@ -1,43 +1,63 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v2 2/3] gadget: Introduce the usb charger framework
-Date: Tue, 18 Aug 2015 09:44:58 +0800
-Message-ID: <CAMz4kuJCDXLtPs5_9C9Zp-oq54-Yt2CGte58vU_ZEGK-naW3Fg@mail.gmail.com>
-References: <cover.1439519412.git.baolin.wang@linaro.org>
-	<0c41e21239f69c4e1aa89aba020c91edfc17c4e8.1439519413.git.baolin.wang@linaro.org>
-	<20150814152723.GA17892@kroah.com>
-	<CAMz4kuL=6mGjNHcKHA9RYbabYqn3Lgu=rK6s8WkH5YGeV1T2+w@mail.gmail.com>
-	<20150817172416.GN10748@sirena.org.uk>
+From: Yu Chen <yu.c.chen@intel.com>
+Subject: Re: [PATCH] x86, suspend: Save/restore THERM_CONTROL register for
+ suspend
+Date: Tue, 18 Aug 2015 10:02:38 +0800
+Message-ID: <55D2923E.7030202@intel.com>
+References: <1439800192-3034-1-git-send-email-yu.c.chen@intel.com> <20150817101115.GA27204@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150817172416.GN10748@sirena.org.uk>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: Greg KH <gregkh@linuxfoundation.org>, Felipe Balbi <balbi@ti.com>, Linus Walleij <linus.walleij@linaro.org>, LKML <linux-kernel@vger.kernel.org>, Peter Chen <peter.chen@freescale.com>, sojka@merica.cz, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, sre@kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, sameo@linux.intel.com, Lee Jones <lee.jones@linaro.org>, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:40641 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750985AbbHRB7N (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 17 Aug 2015 21:59:13 -0400
+In-Reply-To: <20150817101115.GA27204@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ingo Molnar <mingo@kernel.org>
+Cc: rjw@rjwysocki.net, pavel@ucw.cz, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, rui.zhang@intel.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 18 August 2015 at 01:24, Mark Brown <broonie@kernel.org> wrote:
-> On Mon, Aug 17, 2015 at 11:03:26AM +0800, Baolin Wang wrote:
->> On 14 August 2015 at 23:27, Greg KH <gregkh@linuxfoundation.org> wrote:
->> > On Fri, Aug 14, 2015 at 05:47:45PM +0800, Baolin Wang wrote:
+=EF=BC=88not sure if previous reply has been sent out)
+Hi, Ingo, thanks for your review,
+On 08/17/2015 06:11 PM, Ingo Molnar wrote:
 >
->> >> + * This program is free software; you can redistribute it and/or modify
->> >> + * it under the terms of the GNU General Public License as published by
->> >> + * the Free Software Foundation; either version 2 of the License, or
->> >> + * (at your option) any later version.
+> * Chen Yu <yu.c.chen@intel.com> wrote:
 >
->> > I have to ask, do you really mean "any later version"?
 >
->> I think I did not get your point, could you explain it detailedly?
+> So what your changelog fails to mention:
 >
-> Unlike a lot of userspace projects the kernel is normally just licensed
-> under GPLv2 without the option to relicense with a later version so the
-> "...or any later version" is a bit unusual.  There is some controversy
-> about some of the changes in GPLv3.
+>   - You only add this code to the 64-bit kernel. Are 32-bit kernels n=
+ot affected?
+>
+I missed the 32-bit case, I'll adjust them to 32/64-bit common path.
+>   - the MSR read is done unconditionally. Is MSR_IA32_THERM_CONTROL a=
+vailable
+>     architecturally and readable (and has sensible values) on all 64-=
+bit capable
+>     x86 CPUs that run this code path?
+>
+MSR_IA32_THERM_CONTROL is avaliable on Intel Pentium 4, Xeon, Pentium M
+and later processors, so I think not all of the 32/64-bit x86 CPUs have
+this regiser. Maybe codes like this would be more reasonable?
+save:
+ctx->clock_modulation_saved =3D !rdmsrl_safe(MSR_IA32_THERM_CONTROL,
+	&ctxt->clock_modulation);
+retore:
+if (ctxt->clock_modulation_saved)
+	wrmsrl(MSR_IA32_THERM_CONTROL, ctxt->clock_modulation);
 
-Make sense. Thanks a lot.
 
+Best Regards,
+Yu
+> Thanks,
+>
+> 	Ingo
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" i=
+n
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
 
--- 
-Baolin.wang
-Best Regards
