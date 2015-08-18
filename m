@@ -1,54 +1,55 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: 3.18: lockdep problems in cpufreq
-Date: Tue, 18 Aug 2015 02:30:49 -0700
-Message-ID: <20150818093049.GA26346@localhost.localdomain>
-References: <20141214213655.GA11285@n2100.arm.linux.org.uk>
- <5160300.5D2Dvly8u9@vostro.rjw.lan>
- <20150813081744.GN7557@n2100.arm.linux.org.uk>
- <4248436.YMvuzoKMLH@vostro.rjw.lan>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: [PATCH] PM / devfreq: comments for get_dev_status usage updated
+Date: Tue, 18 Aug 2015 04:52:45 +0000 (GMT)
+Message-ID: <134989511.192481439873565434.JavaMail.weblogic@ep2mlwas01a>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <4248436.YMvuzoKMLH@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, Yadwinder Singh Brar <yadi.brar@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:48386 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750936AbbHREw4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Aug 2015 00:52:56 -0400
+Received: from epcpsbgr1.samsung.com
+ (u141.gpu120.samsung.co.kr [203.254.230.141])
+ by mailout3.samsung.com (Oracle Communications Messaging Server 7.0.5.31.0
+ 64bit (built May  5 2014))
+ with ESMTP id <0NT901TFAHJXJK90@mailout3.samsung.com> for
+ linux-pm@vger.kernel.org; Tue, 18 Aug 2015 13:52:45 +0900 (KST)
+MIME-version: 1.0
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: javi.merino@arm.com
 
-Hi there,
+DQpXaXRoIHRoZSBpbnRyb2R1Y3Rpb24gb2YgZGV2ZnJlcV91cGRhdGVfc3RhdHMoKSwgZ292ZXJu
+b3JzDQphcmUgbm90IHJlY29tbWVuZGVkIHRvIHVzZSBnZXRfZGV2X3N0YXR1cygpIGRpcmVjdGx5
+Lg0KDQpTaWduZWQtb2ZmLWJ5OiBNeXVuZ0pvbyBIYW0gPG15dW5nam9vLmhhbUBzYW1zdW5nLmNv
+bT4NCi0tLQ0KIGluY2x1ZGUvbGludXgvZGV2ZnJlcS5oIHwgOSArKysrKysrKy0NCiAxIGZpbGUg
+Y2hhbmdlZCwgOCBpbnNlcnRpb25zKCspLCAxIGRlbGV0aW9uKC0pDQoNCmRpZmYgLS1naXQgYS9p
+bmNsdWRlL2xpbnV4L2RldmZyZXEuaCBiL2luY2x1ZGUvbGludXgvZGV2ZnJlcS5oDQppbmRleCA3
+MGExYzYwLi42ODAzMGUyIDEwMDY0NA0KLS0tIGEvaW5jbHVkZS9saW51eC9kZXZmcmVxLmgNCisr
+KyBiL2luY2x1ZGUvbGludXgvZGV2ZnJlcS5oDQpAQCAtNjUsNyArNjUsMTAgQEAgc3RydWN0IGRl
+dmZyZXFfZGV2X3N0YXR1cyB7DQogICoJCQlUaGUgImZsYWdzIiBwYXJhbWV0ZXIncyBwb3NzaWJs
+ZSB2YWx1ZXMgYXJlDQogICoJCQlleHBsYWluZWQgYWJvdmUgd2l0aCAiREVWRlJFUV9GTEFHXyoi
+IG1hY3Jvcy4NCiAgKiBAZ2V0X2Rldl9zdGF0dXM6CVRoZSBkZXZpY2Ugc2hvdWxkIHByb3ZpZGUg
+dGhlIGN1cnJlbnQgcGVyZm9ybWFuY2UNCi0gKgkJCXN0YXR1cyB0byBkZXZmcmVxLCB3aGljaCBp
+cyB1c2VkIGJ5IGdvdmVybm9ycy4NCisgKgkJCXN0YXR1cyB0byBkZXZmcmVxLiBHb3Zlcm5vcnMg
+YXJlIHJlY29tbWVuZGVkIG5vdCB0bw0KKyAqCQkJdXNlIHRoaXMgZGlyZWN0bHkuIEluc3RlYWQs
+IGdvdmVybm9ycyBhcmUgcmVjb21tZW5kZWQNCisgKgkJCXRvIHVzZSBkZXZmcmVxX3VwZGF0ZV9z
+dGF0cygpIGFsb25nIHdpdGgNCisgKgkJCWRldmZyZXEubGFzdF9zdGF0dXMuDQogICogQGdldF9j
+dXJfZnJlcToJVGhlIGRldmljZSBzaG91bGQgcHJvdmlkZSB0aGUgY3VycmVudCBmcmVxdWVuY3kN
+CiAgKgkJCWF0IHdoaWNoIGl0IGlzIG9wZXJhdGluZy4NCiAgKiBAZXhpdDoJCUFuIG9wdGlvbmFs
+IGNhbGxiYWNrIHRoYXQgaXMgY2FsbGVkIHdoZW4gZGV2ZnJlcQ0KQEAgLTIwOCw2ICsyMTEsMTAg
+QEAgZXh0ZXJuIHZvaWQgZGV2bV9kZXZmcmVxX3VucmVnaXN0ZXJfb3BwX25vdGlmaWVyKHN0cnVj
+dCBkZXZpY2UgKmRldiwNCiAvKioNCiAgKiBkZXZmcmVxX3VwZGF0ZV9zdGF0cygpIC0gdXBkYXRl
+IHRoZSBsYXN0X3N0YXR1cyBwb2ludGVyIGluIHN0cnVjdCBkZXZmcmVxDQogICogQGRmOgkJdGhl
+IGRldmZyZXEgaW5zdGFuY2Ugd2hvc2Ugc3RhdHVzIG5lZWRzIHVwZGF0aW5nDQorICoNCisgKiAg
+R292ZXJub3JzIGFyZSByZWNvbW1lbmRlZCB0byB1c2UgdGhpcyBmdW5jdGlvbiBhbG9uZyB3aXRo
+IGxhc3Rfc3RhdHVzLA0KKyAqIHdoaWNoIGFsbG93cyBvdGhlciBlbnRpdGllcyB0byByZXVzZSB0
+aGUgbGFzdF9zdGF0dXMgd2l0aG91dCBhZmZlY3RpbmcNCisgKiB0aGUgdmFsdWVzIGZldGNoZWQg
+bGF0ZXIgYnkgZ292ZXJub3JzLg0KICAqLw0KIHN0YXRpYyBpbmxpbmUgaW50IGRldmZyZXFfdXBk
+YXRlX3N0YXRzKHN0cnVjdCBkZXZmcmVxICpkZikNCiB7DQotLSANCjEuOS4xDQoNCg==
 
-On Mon, Aug 17, 2015 at 6:32 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
 
-<cut>
-
->
-> Well, that's the situation as per MAINTAINERS today.  You seem to be concerned
-> that it may not reflect the reality, but in that case I can only recommend
-> sending a patch against MAINTAINERS to remove Eduardo from there.
->
->> As I've said, I'm not bothering with this anymore, it's just far too
->> much effort to play these stupid games.
->
-> I'm not sure what you mean by "these stupid games" here.
->
->> The deadlock can stay for all I care.
->
-> Fair enough.
-
-I applied the patch. And it has generated the conflict in linux-next, as was mentioned in this thread. I already sent the pull request.
-
-Yes, I missed the thread. Apologize for this and for the inconvenience I have caused. The deadlock will be taken care using Russel's patch.
-
-Thanks Viresh for notifying me.
-
-
->
-> Thanks,
-> Rafael
->
-
-BR,
-
--- 
-Eduardo Bezerra Valentin
