@@ -1,152 +1,41 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: [PATCH v3 3/3] power: wm831x_power: Support USB charger current limit management
-Date: Tue, 18 Aug 2015 19:14:21 +0800
-Message-ID: <4e3447ef209fbbdc3ee1c82428be2bc19c30bd30.1439866451.git.baolin.wang@linaro.org>
-References: <cover.1439866451.git.baolin.wang@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1439866451.git.baolin.wang@linaro.org>
-In-Reply-To: <cover.1439866451.git.baolin.wang@linaro.org>
-References: <cover.1439866451.git.baolin.wang@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: balbi@ti.com
-Cc: broonie@kernel.org, linus.walleij@linaro.org, linux-kernel@vger.kernel.org, baolin.wang@linaro.org, gregkh@linuxfoundation.org, peter.chen@freescale.com, sojka@merica.cz, stern@rowland.harvard.edu, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, sameo@linux.intel.com, lee.jones@linaro.org, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org
+From: Tang Chen <tangchen@cn.fujitsu.com>
+Subject: Re: [Patch V3 9/9] mm, x86: Enable memoryless node support to better
+ support CPU/memory hotplug
+Date: Tue, 18 Aug 2015 19:28:11 +0800
+Message-ID: <55D316CB.3010509@cn.fujitsu.com>
+References: <1439781546-7217-1-git-send-email-jiang.liu@linux.intel.com> <1439781546-7217-10-git-send-email-jiang.liu@linux.intel.com> <55D2CC76.4020100@cn.fujitsu.com> <55D2D7C2.3090109@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <owner-linux-mm@kvack.org>
+In-Reply-To: <55D2D7C2.3090109@linux.intel.com>
+Sender: owner-linux-mm@kvack.org
+To: Jiang Liu <jiang.liu@linux.intel.com>, Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@suse.de>, David Rientjes <rientjes@google.com>, Mike Galbraith <umgwanakikbuti@gmail.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Tejun Heo <tj@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Borislav Petkov <bp@alien8.de>, Andy Lutomirski <luto@amacapital.net>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Dave Hansen <dave.hansen@linux.intel.com>, =?windows-1252?Q?=22Jan_H=2E?= =?windows-1252?Q?_Sch=F6nherr=22?= <jschoenh@amazon.de>
+Cc: Tony Luck <tony.luck@intel.com>, linux-mm@kvack.org, linux-hotplug@vger.kernel.org, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org, tangchen@cn.fujitsu.com
 List-Id: linux-pm@vger.kernel.org
 
-Integrate with the newly added USB charger interface to limit the current
-we draw from the USB input based on the input device configuration
-identified by the USB stack, allowing us to charge more quickly from high
-current inputs without drawing more current than specified from others.
 
-Signed-off-by: Mark Brown <broonie@kernel.org>
-Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
----
- drivers/power/wm831x_power.c     |   69 ++++++++++++++++++++++++++++++++++++++
- include/linux/mfd/wm831x/pdata.h |    3 ++
- 2 files changed, 72 insertions(+)
+On 08/18/2015 02:59 PM, Jiang Liu wrote:
+>
+> ...
+>>>        }
+>>> @@ -739,6 +746,22 @@ void __init init_cpu_to_node(void)
+>>>            if (!node_online(node))
+>>>                node = find_near_online_node(node);
 
-diff --git a/drivers/power/wm831x_power.c b/drivers/power/wm831x_power.c
-index db11ae6..72c661f 100644
---- a/drivers/power/wm831x_power.c
-+++ b/drivers/power/wm831x_power.c
-@@ -13,6 +13,7 @@
- #include <linux/platform_device.h>
- #include <linux/power_supply.h>
- #include <linux/slab.h>
-+#include <linux/usb/usb_charger.h>
- 
- #include <linux/mfd/wm831x/core.h>
- #include <linux/mfd/wm831x/auxadc.h>
-@@ -31,6 +32,8 @@ struct wm831x_power {
- 	char usb_name[20];
- 	char battery_name[20];
- 	bool have_battery;
-+	struct usb_charger *usb_charger;
-+	struct notifier_block usb_notify;
- };
- 
- static int wm831x_power_check_online(struct wm831x *wm831x, int supply,
-@@ -125,6 +128,43 @@ static enum power_supply_property wm831x_usb_props[] = {
- 	POWER_SUPPLY_PROP_VOLTAGE_NOW,
- };
- 
-+/* In miliamps */
-+static unsigned int wm831x_usb_limits[] = {
-+	0,
-+	2,
-+	100,
-+	500,
-+	900,
-+	1500,
-+	1800,
-+	550,
-+};
-+
-+static int wm831x_usb_limit_change(struct notifier_block *nb,
-+				   unsigned long limit, void *data)
-+{
-+	struct wm831x_power *wm831x_power = container_of(nb,
-+							 struct wm831x_power,
-+							 usb_notify);
-+	int i, best;
-+
-+	/* Find the highest supported limit */
-+	best = 0;
-+	for (i = 0; i < ARRAY_SIZE(wm831x_usb_limits); i++) {
-+		if (limit < wm831x_usb_limits[i] &&
-+		    wm831x_usb_limits[best] < wm831x_usb_limits[i])
-+			best = i;
-+	}
-+
-+	dev_dbg(wm831x_power->wm831x->dev,
-+		"Limiting USB current to %dmA", wm831x_usb_limits[best]);
-+
-+	wm831x_set_bits(wm831x_power->wm831x, WM831X_POWER_STATE,
-+		        WM831X_USB_ILIM_MASK, best);
-+
-+	return 0;
-+}
-+
- /*********************************************************************
-  *		Battery properties
-  *********************************************************************/
-@@ -606,8 +646,31 @@ static int wm831x_power_probe(struct platform_device *pdev)
- 		}
- 	}
- 
-+	if (wm831x_pdata && wm831x_pdata->usb_gadget) {
-+		power->usb_charger =
-+			usb_charger_find_by_name(wm831x_pdata->usb_gadget);
-+		if (IS_ERR(power->usb_charger)) {
-+			ret = PTR_ERR(power->usb_charger);
-+			dev_err(&pdev->dev,
-+				"Failed to find USB gadget: %d\n", ret);
-+			goto err_bat_irq;
-+		}
-+
-+		power->usb_notify.notifier_call = wm831x_usb_limit_change;
-+
-+		ret = usb_charger_register_notify(power->usb_charger,
-+						  &power->usb_notify);
-+		if (ret != 0) {
-+			dev_err(&pdev->dev,
-+				"Failed to register notifier: %d\n", ret);
-+			goto err_usb_charger;
-+		}
-+	}
-+
- 	return ret;
- 
-+err_usb_charger:
-+	usb_charger_put(power->usb_charger);
- err_bat_irq:
- 	--i;
- 	for (; i >= 0; i--) {
-@@ -637,6 +700,12 @@ static int wm831x_power_remove(struct platform_device *pdev)
- 	struct wm831x *wm831x = wm831x_power->wm831x;
- 	int irq, i;
- 
-+	if (wm831x_power->usb_charger) {
-+		usb_charger_unregister_notify(wm831x_power->usb_charger,
-+					      &wm831x_power->usb_notify);
-+		usb_charger_put(wm831x_power->usb_charger);
-+	}
-+
- 	for (i = 0; i < ARRAY_SIZE(wm831x_bat_irqs); i++) {
- 		irq = wm831x_irq(wm831x, 
- 				 platform_get_irq_byname(pdev,
-diff --git a/include/linux/mfd/wm831x/pdata.h b/include/linux/mfd/wm831x/pdata.h
-index dcc9631..5af8399 100644
---- a/include/linux/mfd/wm831x/pdata.h
-+++ b/include/linux/mfd/wm831x/pdata.h
-@@ -126,6 +126,9 @@ struct wm831x_pdata {
- 	/** The driver should initiate a power off sequence during shutdown */
- 	bool soft_shutdown;
- 
-+	/** dev_name of USB charger gadget to integrate with */
-+	const char *usb_gadget;
-+
- 	int irq_base;
- 	int gpio_base;
- 	int gpio_defaults[WM831X_GPIO_NUM];
--- 
-1.7.9.5
+Hi Liu,
+
+If cpu-less, memory-less and normal node will all be online anyway,
+I think we don't need to find_near_online_node() any more for
+CPUs on offline nodes.
+
+Or is there any other case ?
+
+Thanks.
+
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
