@@ -1,63 +1,62 @@
 From: Yu Chen <yu.c.chen@intel.com>
 Subject: Re: [PATCH] x86, suspend: Save/restore THERM_CONTROL register for
  suspend
-Date: Tue, 18 Aug 2015 10:02:38 +0800
-Message-ID: <55D2923E.7030202@intel.com>
-References: <1439800192-3034-1-git-send-email-yu.c.chen@intel.com> <20150817101115.GA27204@gmail.com>
+Date: Tue, 18 Aug 2015 10:23:40 +0800
+Message-ID: <55D2972C.3030709@intel.com>
+References: <1439800192-3034-1-git-send-email-yu.c.chen@intel.com> <20150817101115.GA27204@gmail.com> <20150817132726.GA11047@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:40641 "EHLO mga02.intel.com"
+Received: from mga01.intel.com ([192.55.52.88]:2229 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750985AbbHRB7N (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 17 Aug 2015 21:59:13 -0400
-In-Reply-To: <20150817101115.GA27204@gmail.com>
+	id S1751118AbbHRCUR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 17 Aug 2015 22:20:17 -0400
+In-Reply-To: <20150817132726.GA11047@amd>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>
-Cc: rjw@rjwysocki.net, pavel@ucw.cz, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, rui.zhang@intel.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@kernel.org>
+Cc: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, rui.zhang@intel.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-=EF=BC=88not sure if previous reply has been sent out)
-Hi, Ingo, thanks for your review,
-On 08/17/2015 06:11 PM, Ingo Molnar wrote:
+Hi Pavel, thanks for your review,
+On 08/17/2015 09:27 PM, Pavel Machek wrote:
+> On Mon 2015-08-17 12:11:15, Ingo Molnar wrote:
+>>
+>> * Chen Yu <yu.c.chen@intel.com> wrote:
+>>
+>>> A bug is reported(https://bugzilla.redhat.com/show_bug.cgi?id=1227208)
 >
-> * Chen Yu <yu.c.chen@intel.com> wrote:
+> Access denied :-(
 >
+Might need to register for accessing.
 >
-> So what your changelog fails to mention:
+> What HW is this on?
 >
->   - You only add this code to the 64-bit kernel. Are 32-bit kernels n=
-ot affected?
+Intel Braswell and Broadwell, detail for Broadwell:
+Platform: MayanCity
+Processor: 2x BROADWELL BDX_EP A0 QHPR
+Chipset: Wellsburg B1 QR7E
+
 >
-I missed the 32-bit case, I'll adjust them to 32/64-bit common path.
->   - the MSR read is done unconditionally. Is MSR_IA32_THERM_CONTROL a=
-vailable
->     architecturally and readable (and has sensible values) on all 64-=
-bit capable
->     x86 CPUs that run this code path?
+> - So BIOS expects to control MSR_IA32_THERM_CONTROL . Now you suspend
+>    in hot enironment but resume in cool one. BIOS sets up
+>    MSR_IA32_THERM_CONTROL the right way, but you override it.
 >
-MSR_IA32_THERM_CONTROL is avaliable on Intel Pentium 4, Xeon, Pentium M
-and later processors, so I think not all of the 32/64-bit x86 CPUs have
-this regiser. Maybe codes like this would be more reasonable?
-save:
-ctx->clock_modulation_saved =3D !rdmsrl_safe(MSR_IA32_THERM_CONTROL,
-	&ctxt->clock_modulation);
-retore:
-if (ctxt->clock_modulation_saved)
-	wrmsrl(MSR_IA32_THERM_CONTROL, ctxt->clock_modulation);
+>    As BIOS expects to control MSR_IA32_THERM_CONTROL and machine is
+>    kept cool, BIOS will not write new value to it, and machine will
+>    keep running slowly.
+>
+Sorry, I can not quite catch up, do you mean we should let
+  BIOS modifying MSR_IA32_THERM_CONTROL and  leverage linux
+to adjust this value at runtime(after S3)?
+
+> Doing this unconditionally is asking for trouble. Blacklist entry with
+> affected BIOS info might be acceptable, but...
+> 									Pavel
+>
+you mean a quirk here(accroding to dmi info ,etc)?
 
 
 Best Regards,
 Yu
-> Thanks,
->
-> 	Ingo
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" i=
-n
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
 
