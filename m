@@ -1,97 +1,97 @@
 From: Petr Cvek <petr.cvek@tul.cz>
-Subject: Re: [PATCH v2 18/21] mfd: htc-pasic3: Prepare driver for leds-pasic3
-Date: Tue, 18 Aug 2015 23:01:25 +0200
-Message-ID: <55D39D25.7010909@tul.cz>
-References: <cover.1439843482.git.petr.cvek@tul.cz> <55D25ABC.1000405@tul.cz>
- <20150818065207.GC6180@x1>
+Subject: Re: [PATCH v2 19/21] leds: leds-pasic3: Add support for PASIC3 LED
+ controller
+Date: Tue, 18 Aug 2015 23:48:34 +0200
+Message-ID: <55D3A832.90705@tul.cz>
+References: <cover.1439843482.git.petr.cvek@tul.cz> <55D25ADC.10703@tul.cz>
+ <55D30875.3090103@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bubo.tul.cz ([147.230.16.1]:36757 "EHLO bubo.tul.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753232AbbHRU63 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 18 Aug 2015 16:58:29 -0400
-In-Reply-To: <20150818065207.GC6180@x1>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-leds-owner@vger.kernel.org>
+In-Reply-To: <55D30875.3090103@samsung.com>
+Sender: linux-leds-owner@vger.kernel.org
+To: Jacek Anaszewski <j.anaszewski@samsung.com>
+Cc: robert.jarzmik@free.fr, philipp.zabel@gmail.com, daniel@zonque.org, haojian.zhuang@gmail.com, sameo@linux.intel.com, lee.jones@linaro.org, cooloney@gmail.com, rpurdie@rpsys.net, linux@arm.linux.org.uk, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: robert.jarzmik@free.fr, philipp.zabel@gmail.com, daniel@zonque.org, haojian.zhuang@gmail.com, sameo@linux.intel.com, cooloney@gmail.com, rpurdie@rpsys.net, j.anaszewski@samsung.com, linux@arm.linux.org.uk, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-Dne 18.8.2015 v 08:52 Lee Jones napsal(a):
-> On Tue, 18 Aug 2015, Petr Cvek wrote:
+Dne 18.8.2015 v 12:27 Jacek Anaszewski napsal(a):
+> Hi Petr,
 > 
->> Fix register definitions and prepare structures for new leds-pasic3
->> driver.
->>
->> Signed-off-by: Petr Cvek <petr.cvek@tul.cz>
->> ---
->>  drivers/mfd/htc-pasic3.c       | 54 ++++++++++++++++-----------
->>  include/linux/mfd/htc-pasic3.h | 85 +++++++++++++++++++++++++++++++-----------
->>  2 files changed, 97 insertions(+), 42 deletions(-)
->>
->> diff --git a/drivers/mfd/htc-pasic3.c b/drivers/mfd/htc-pasic3.c
->> index e88d4f6..16e156d 100644
->> --- a/drivers/mfd/htc-pasic3.c
->> +++ b/drivers/mfd/htc-pasic3.c
->> @@ -3,6 +3,9 @@
->>   *
->>   * Copyright (C) 2006 Philipp Zabel <philipp.zabel@gmail.com>
->>   *
->> + * 2015:	Added registers for LED and RESET, see htc-pasic3.h
->> + *		-- Petr Cvek
->> + *
+> On 08/18/2015 12:06 AM, Petr Cvek wrote:
+>> +/*
+>> + * AIC3 (or PASIC3) LED driver for HTC Magician/Alpine/.. (not Compaq ASIC3)
 > 
-> This is pretty unconventional.
+> s/AIC3/ASIC3/
 > 
-> Please look to see what others have done.
+> I am a bit confused. What's the relation between ASIC3 and PASIC3?
 
-LED support: Petr Cvek <petr.cvek@tul.cz>
+Actually both drivers should be renamed to AIC3 (or AIC only, as there is version 2). "HTC_AIC3" is written on the chip and "pasic3" is confusing with compaq asic3 driver, which claims in Kconfig help to be compatible with HTC machines. Compaq ASIC3 has much more functionality and from brief look it seems it has 16 bit registers (HTC_AIC3 has only LEDs, RESET and DS1WM and has 8 bit registers).
 
-OK?
+>> +spinlock_t lock;
+> 
+> Please move it to the struct pasic3_leds_data.
 
->> @@ -130,6 +140,7 @@ static int __init pasic3_probe(struct platform_device *pdev)
->>  	struct device *dev = &pdev->dev;
->>  	struct pasic3_data *asic;
->>  	struct resource *r;
->> +	struct pasic3_leds_pdata *leds_pdata;
->>  	int ret;
->>  	int irq = 0;
->>  
->> @@ -162,6 +173,8 @@ static int __init pasic3_probe(struct platform_device *pdev)
->>  	/* calculate bus shift from mem resource */
->>  	asic->bus_shift = (resource_size(r) - 5) >> 3;
->>  
->> +	spin_lock_init(&asic->lock);
+OK
+
+> 
 >> +
->>  	if (pdata && pdata->clock_rate) {
->>  		ds1wm_pdata.clock_rate = pdata->clock_rate;
->>  		/* the first 5 PASIC3 registers control the DS1WM */
->> @@ -172,13 +185,12 @@ static int __init pasic3_probe(struct platform_device *pdev)
->>  			dev_warn(dev, "failed to register DS1WM\n");
->>  	}
->>  
->> -	if (pdata && pdata->led_pdata) {
->> -		led_cell.platform_data = pdata->led_pdata;
->> -		led_cell.pdata_size = sizeof(struct pasic3_leds_machinfo);
->> -		ret = mfd_add_devices(&pdev->dev, pdev->id, &led_cell, 1, r,
->> -				      0, NULL);
->> -		if (ret < 0)
->> -			dev_warn(dev, "failed to register LED device\n");
->> +	if (pdata && pdata->pasic3_leds) {
->> +		leds_pdata = dev_get_platdata(&pdata->pasic3_leds->dev);
+>> +static void brightness_set(struct led_classdev *cdev,
+>> +    enum led_brightness value)
+>> +{
+>> +    struct platform_device *pdev = to_platform_device(cdev->dev->parent);
+>> +    struct pasic3_led *led = dev_get_platdata(cdev->dev);
+>> +    struct pasic3_leds_pdata *pdata = dev_get_platdata(&pdev->dev);
+>> +    unsigned long flags;
+>> +    u8 val;
+>> +
+>> +    spin_lock_irqsave(&lock, flags);
+>> +
+>> +    if (value == LED_OFF) {
+>> +        val = pasic3_read_register(pdata->mfd_dev, PASIC3_CH_CONTROL);
+>> +        pasic3_write_register(pdata->mfd_dev, PASIC3_CH_CONTROL,
+>> +            val & ~(led->bit_blink_en | led->bit_force_on));
+>> +
+>> +        val = pasic3_read_register(pdata->mfd_dev, PASIC3_MASK_A);
+>> +        pasic3_write_register(pdata->mfd_dev, PASIC3_MASK_A,
+>> +            val & ~led->bit_mask);
+>> +
+>> +        if (pdata->power_gpio) {
+>> +            pdata->power_gpio_users--;
 > 
-> Whoa!  You're passing a pointer to a device through pdata?
+> Now it is possible that power_gpio_users will have negative value.
+> You should check the value before decrementing it.
+
+> Now you are setting power_gpio_users to 1 each time brightness is set,
+> whereas it should be set to 1 only if it was 0.
 > 
-> I don't like that at all.  Please explain.
+> This could be changed to:
+> 
+> if (pdata->power_gpio_users == 0)
+>     gpio_set_value(pdata->power_gpio, 1);
+> 
+> pdata->power_gpio_users++;
 
 > 
->> +		if (leds_pdata) {
->> +			leds_pdata->mfd_dev = dev;
->> +			platform_device_register(pdata->pasic3_leds);
+> Shouldn't you check if also power_gpio state doesn't need to be altered
+> here?
 > 
-> What's the idea here?
 
-Actually, I don't know how to do this in a clean way as pasic3_read_register() and pasic3_write_register() require device struct to pass address for accessing the registers. Only way would be to rewrite all functions which call pasic3_*_register() (removing struct device *dev and change it to struct pasic3_data *asic).
 
-Petr
+Can the same brightness_set() function be called multiple times with same value (like LED_ON)?
+
+I think I will change it to a different code altogether, power_gpio is shared variable and power can be shut off when two of three leds are disabled (green LED does not use power_gpio). Something like:
+
+enabled_leds |= BIT(hw_num);
+
+or
+
+enabled_leds &= ~BIT(hw_num);
+
+>> +        ret = gpio_request(pdata->power_gpio,
+>> +            "Red-Blue LED Power");
+> 
+> Please use devm_gpio_request. Then you will not need pasic3_led_remove.
+> 
+
+OK
