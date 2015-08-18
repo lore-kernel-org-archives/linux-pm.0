@@ -1,36 +1,45 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 0/6] ARM: berlin: add cpufreq support
-Date: Tue, 18 Aug 2015 18:26:42 +0530
-Message-ID: <CAOh2x=ke9NWa-GjL=c+RgEWWfsNeKvE2O9CRHmW2dG5mj8ATCg@mail.gmail.com>
-References: <1439898368-11543-1-git-send-email-antoine.tenart@free-electrons.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH v5] Report interrupt(s) that caused system wakeup
+Date: Tue, 18 Aug 2015 14:56:57 +0200 (CEST)
+Message-ID: <alpine.DEB.2.11.1508181454230.3873@nanos>
+References: <1438919224-7003-2-git-send-email-alexandra.yates@linux.intel.com> <1996878.sZiHYD4sbd@vostro.rjw.lan> <alpine.DEB.2.11.1508172234040.3873@nanos> <2470788.QaFQb9rj3y@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f177.google.com ([209.85.223.177]:33692 "EHLO
-	mail-io0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751387AbbHRM4n (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Aug 2015 08:56:43 -0400
-In-Reply-To: <1439898368-11543-1-git-send-email-antoine.tenart@free-electrons.com>
+Received: from www.linutronix.de ([62.245.132.108]:56858 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752668AbbHRM5Z (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Aug 2015 08:57:25 -0400
+In-Reply-To: <2470788.QaFQb9rj3y@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Antoine Tenart <antoine.tenart@free-electrons.com>
-Cc: sebastian.hesselbarth@gmail.com, zmxu@marvell.com, jszhang@marvell.com, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Alexandra Yates <alexandra.yates@linux.intel.com>, kristen.c.accardi@intel.com, linux-pm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Tue, Aug 18, 2015 at 5:16 PM, Antoine Tenart
-<antoine.tenart@free-electrons.com> wrote:
-> Hi,
->
-> This series adds the cpufreq support to the Berlin SoCs, using
-> cpufreq-dt.
->
-> First, the cpuclk clock is added to the BG2Q clock driver. This clock
-> has a divider fixed to 1, so we use a fixed factor clock here.
->
-> Then register a platform device for cpufreq-dt.
->
-> I also added the OPP table definition in the BG2Q, BG2 and BG2CD device
-> trees. When using a BG2Q, some bootloaders may update this table when
-> booting (mine doesn't).
+On Tue, 18 Aug 2015, Rafael J. Wysocki wrote:
+> The original point was that if two wakeup interrupts happened at the same time,
+> it would be kind of moot which one was the "real" wakeup, but now that I think
+> about it, reporting the first one should be enough to catch suprious wakeups
+> anyway.
 
-You can switch to OPP-v2 bindings if you want. Just have a look, they are
-much more powerful.. Should be in linux-next/master.
+So we can simply do the following:
+
+diff --git a/kernel/irq/pm.c b/kernel/irq/pm.c
+index d22786a6dbde..46068a1e0e07 100644
+--- a/kernel/irq/pm.c
++++ b/kernel/irq/pm.c
+@@ -21,7 +21,7 @@ bool irq_pm_check_wakeup(struct irq_desc *desc)
+ 		desc->istate |= IRQS_SUSPENDED | IRQS_PENDING;
+ 		desc->depth++;
+ 		irq_disable(desc);
+-		pm_system_wakeup();
++		pm_system_irq_wakeup(irq_desc_get_irq(desc));
+ 		return true;
+ 	}
+ 	return false;
+
+and manage the storage in the PM code.
+
+Thanks,
+
+	tglx
