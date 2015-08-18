@@ -1,53 +1,50 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v5] Report interrupt(s) that caused system wakeup
-Date: Tue, 18 Aug 2015 17:53:54 +0200
-Message-ID: <CAJZ5v0hAddOCHGR74kvj7XmcALwn275FQnAYMPt_0jgtvko+MQ@mail.gmail.com>
-References: <1438919224-7003-2-git-send-email-alexandra.yates@linux.intel.com>
-	<1996878.sZiHYD4sbd@vostro.rjw.lan>
-	<alpine.DEB.2.11.1508172234040.3873@nanos>
-	<2470788.QaFQb9rj3y@vostro.rjw.lan>
-	<alpine.DEB.2.11.1508181454230.3873@nanos>
+From: Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
+Subject: Re: [PATCH v3 1/3] gadget: Support for the usb charger framework
+Date: Tue, 18 Aug 2015 09:04:14 -0700
+Message-ID: <20150818160414.GB3551@kroah.com>
+References: <cover.1439866451.git.baolin.wang@linaro.org>
+ <6a4d68543dcffe76993dc70d94a0a04617ef2257.1439866451.git.baolin.wang@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f176.google.com ([209.85.213.176]:35998 "EHLO
-	mail-ig0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751634AbbHRPxz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Aug 2015 11:53:55 -0400
-In-Reply-To: <alpine.DEB.2.11.1508181454230.3873@nanos>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <6a4d68543dcffe76993dc70d94a0a04617ef2257.1439866451.git.baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: balbi-l0cyMroinI0@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org, sojka-Knnw/vAvyUalVyrhU4qvOw@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alexandra Yates <alexandra.yates@linux.intel.com>, Kristen C Accardi <kristen.c.accardi@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Tue, Aug 18, 2015 at 2:56 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Tue, 18 Aug 2015, Rafael J. Wysocki wrote:
->> The original point was that if two wakeup interrupts happened at the same time,
->> it would be kind of moot which one was the "real" wakeup, but now that I think
->> about it, reporting the first one should be enough to catch suprious wakeups
->> anyway.
->
-> So we can simply do the following:
->
-> diff --git a/kernel/irq/pm.c b/kernel/irq/pm.c
-> index d22786a6dbde..46068a1e0e07 100644
-> --- a/kernel/irq/pm.c
-> +++ b/kernel/irq/pm.c
-> @@ -21,7 +21,7 @@ bool irq_pm_check_wakeup(struct irq_desc *desc)
->                 desc->istate |= IRQS_SUSPENDED | IRQS_PENDING;
->                 desc->depth++;
->                 irq_disable(desc);
-> -               pm_system_wakeup();
-> +               pm_system_irq_wakeup(irq_desc_get_irq(desc));
->                 return true;
->         }
->         return false;
->
-> and manage the storage in the PM code.
+On Tue, Aug 18, 2015 at 07:14:19PM +0800, Baolin Wang wrote:
+> The usb charger framework is based on usb gadget, and each usb gadget
+> can be one usb charger to set the current limitation.
+> 
+> This patch adds a notifier mechanism for usb charger to report to usb
+> charger when the usb gadget state is changed.
+> 
+> Also we introduce a callback 'get_charger_type' which will implemented
+> by user for usb gadget operations to get the usb charger type.
+> 
+> Signed-off-by: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> ---
+>  drivers/usb/gadget/udc/udc-core.c |   41 ++++++++++++++++++++++++++++++++++++-
+>  include/linux/usb/gadget.h        |   20 ++++++++++++++++++
+>  2 files changed, 60 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/usb/gadget/udc/udc-core.c b/drivers/usb/gadget/udc/udc-core.c
+> index f660afb..1971218 100644
+> --- a/drivers/usb/gadget/udc/udc-core.c
+> +++ b/drivers/usb/gadget/udc/udc-core.c
+> @@ -28,6 +28,7 @@
+>  #include <linux/usb/ch9.h>
+>  #include <linux/usb/gadget.h>
+>  #include <linux/usb.h>
+> +#include <linux/usb/usb_charger.h>
 
-Right.
+You just broke the build, which proves you did not properly test this
+patch series, so why should we even consider it?
 
-That's exactly the approach we're going to follow. :-)
-
-Thanks,
-Rafael
+greg k-h
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
