@@ -1,45 +1,48 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH v5] Report interrupt(s) that caused system wakeup
-Date: Tue, 18 Aug 2015 14:56:57 +0200 (CEST)
-Message-ID: <alpine.DEB.2.11.1508181454230.3873@nanos>
-References: <1438919224-7003-2-git-send-email-alexandra.yates@linux.intel.com> <1996878.sZiHYD4sbd@vostro.rjw.lan> <alpine.DEB.2.11.1508172234040.3873@nanos> <2470788.QaFQb9rj3y@vostro.rjw.lan>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v3 3/3] power: wm831x_power: Support USB charger current
+ limit management
+Date: Tue, 18 Aug 2015 14:51:10 +0100
+Message-ID: <20150818135110.GF6180@x1>
+References: <cover.1439866451.git.baolin.wang@linaro.org>
+ <4e3447ef209fbbdc3ee1c82428be2bc19c30bd30.1439866451.git.baolin.wang@linaro.org>
+ <20150818132447.GD9493@ck-lbox>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:56858 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752668AbbHRM5Z (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Aug 2015 08:57:25 -0400
-In-Reply-To: <2470788.QaFQb9rj3y@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20150818132447.GD9493@ck-lbox>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Charles Keepax <ckeepax@opensource.wolfsonmicro.com>
+Cc: Baolin Wang <baolin.wang@linaro.org>, balbi@ti.com, broonie@kernel.org, linus.walleij@linaro.org, linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, peter.chen@freescale.com, sojka@merica.cz, stern@rowland.harvard.edu, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, sameo@linux.intel.com, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Alexandra Yates <alexandra.yates@linux.intel.com>, kristen.c.accardi@intel.com, linux-pm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Tue, 18 Aug 2015, Rafael J. Wysocki wrote:
-> The original point was that if two wakeup interrupts happened at the same time,
-> it would be kind of moot which one was the "real" wakeup, but now that I think
-> about it, reporting the first one should be enough to catch suprious wakeups
-> anyway.
+On Tue, 18 Aug 2015, Charles Keepax wrote:
 
-So we can simply do the following:
+> On Tue, Aug 18, 2015 at 07:14:21PM +0800, Baolin Wang wrote:
+> > Integrate with the newly added USB charger interface to limit the c=
+urrent
+> > we draw from the USB input based on the input device configuration
+> > identified by the USB stack, allowing us to charge more quickly fro=
+m high
+> > current inputs without drawing more current than specified from oth=
+ers.
+> >=20
+> > Signed-off-by: Mark Brown <broonie@kernel.org>
+> > Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+> > ---
+>=20
+> Acked-by: Charles Keepax <ckeepax@opensource.wolfsonmicro.com>
+>=20
+> Sorry if you guys got a bunch of bounces, we had a bit of an
+> email fiasco at this end. Hopefully all fixed now.
 
-diff --git a/kernel/irq/pm.c b/kernel/irq/pm.c
-index d22786a6dbde..46068a1e0e07 100644
---- a/kernel/irq/pm.c
-+++ b/kernel/irq/pm.c
-@@ -21,7 +21,7 @@ bool irq_pm_check_wakeup(struct irq_desc *desc)
- 		desc->istate |= IRQS_SUSPENDED | IRQS_PENDING;
- 		desc->depth++;
- 		irq_disable(desc);
--		pm_system_wakeup();
-+		pm_system_irq_wakeup(irq_desc_get_irq(desc));
- 		return true;
- 	}
- 	return false;
+Yes, I sent you guys a mail about that.
 
-and manage the storage in the PM code.
+Glad it's all sorted now.
 
-Thanks,
-
-	tglx
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
