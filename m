@@ -1,53 +1,38 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH v2 3/3] power: wm831x_power: Support USB charger current
- limit management
-Date: Tue, 18 Aug 2015 09:12:00 -0700
-Message-ID: <20150818161200.GK10748@sirena.org.uk>
-References: <20150818052011.GF1864@shlinux2>
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+Subject: Re: [PATCH v2 01/21] ARM: pxa: magician: Fix Kconfig for magician to always include htc-egpio
+Date: Tue, 18 Aug 2015 20:31:31 +0200
+Message-ID: <87zj1o8n3w.fsf@belgarion.home>
+References: <cover.1439843482.git.petr.cvek@tul.cz> <55D25880.3030507@tul.cz>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="7dLEKQsGm0Z6zEmU"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20150818052011.GF1864@shlinux2>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Chen <peter.chen@freescale.com>
-Cc: Baolin Wang <baolin.wang@linaro.org>, balbi@ti.com, linus.walleij@linaro.org, linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, sojka@merica.cz, stern@rowland.harvard.edu, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, sameo@linux.intel.com, lee.jones@linaro.org, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp05.smtpout.orange.fr ([80.12.242.127]:29520 "EHLO
+	smtp.smtpout.orange.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752500AbbHRSfm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 18 Aug 2015 14:35:42 -0400
+In-Reply-To: <55D25880.3030507@tul.cz> (Petr Cvek's message of "Mon, 17 Aug
+	2015 23:56:16 +0200")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Petr Cvek <petr.cvek@tul.cz>
+Cc: philipp.zabel@gmail.com, daniel@zonque.org, haojian.zhuang@gmail.com, sameo@linux.intel.com, lee.jones@linaro.org, cooloney@gmail.com, rpurdie@rpsys.net, j.anaszewski@samsung.com, linux@arm.linux.org.uk, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
+Petr Cvek <petr.cvek@tul.cz> writes:
 
---7dLEKQsGm0Z6zEmU
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> The htc-egpio driver should be always included in the kernel as it
+> controls MMC/charging/IrDA power, which is the only way to get
+> an useful rootfs.
+>
+> Signed-off-by: Petr Cvek <petr.cvek@tul.cz>
+It's already defined in magician_defconfig, why enforce it in Kconfig ?
 
-On Tue, Aug 18, 2015 at 01:20:12PM +0800, Peter Chen wrote:
+And if it's enforced and I want to build a kernel for magician without
+MMC/charging/IrDA, why should I be forced to build in HTC_EGPIO ?
 
-> ok, I just had suspected below function's correctness, after looking
-> it again, it always set 1800 as charging limit, does it be expected?
+Or said differently, does a kernel without HTC_EGPIO is proven to fail 100%
+without this option ?
 
-> +       /* Find the highest supported limit */
-> +       best = 0;
-> +       for (i = 0; i < ARRAY_SIZE(wm831x_usb_limits); i++) {
-> +               if (limit < wm831x_usb_limits[i] &&
+Cheers.
 
-The above check is intended to ensure that we don't go over the limit
-that was passed in in the callback.  The goal is to select the highest
-option that is less than the limit passed in.
-
---7dLEKQsGm0Z6zEmU
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJV01lPAAoJECTWi3JdVIfQtbMIAIGEWQG5nDej5J09OaD+/IbQ
-Ru1WGoyeYrg9uBi9teTfai45aVlogdd/KgHz9c9xxg+cQxLVemhecDDvPDTG+enV
-BSWCwkth5KYB2NtCjkvx3oPDQYJ9c8YeY75VF7/itMeCsn68KYKpxPCObUpVblYA
-vB8ed9Otq37h1a0Jq8RpbkPKmGBNySWur5x+SW7F275VJxufucWSIRgTH2UrAKk9
-QoCyIWBXJvEhWFmO0SbLyHCe8np5xqFMrHWk5VGyHjznySf9PfhfNUEH0gC0Ay6Q
-ONS9bqCbvbpZ6aazdxnUxqOpRofBf8i66V3RtPJJOm8CcZx1WQ18j9a4vlbHOHA=
-=oK1X
------END PGP SIGNATURE-----
-
---7dLEKQsGm0Z6zEmU--
+-- 
+Robert
