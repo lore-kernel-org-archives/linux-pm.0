@@ -1,16 +1,16 @@
 From: Ramakrishna Pallala <ramakrishna.pallala@intel.com>
 Subject: [RFC PATCH] power: bq24261_charger: Add support for TI BQ24261 charger
-Date: Tue, 18 Aug 2015 23:17:19 +0530
-Message-ID: <1439920039-11983-1-git-send-email-ramakrishna.pallala@intel.com>
+Date: Tue, 18 Aug 2015 23:19:35 +0530
+Message-ID: <1439920175-12049-1-git-send-email-ramakrishna.pallala@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:12541 "EHLO mga14.intel.com"
+Received: from mga09.intel.com ([134.134.136.24]:51958 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750950AbbHRJg2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 18 Aug 2015 05:36:28 -0400
+	id S1751296AbbHRJii (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 18 Aug 2015 05:38:38 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>
-Cc: Andreas Dannenberg <dannenberg@ti.com>, Pallala Ramakrishna <ramakrishna.pallala@intel.com>
+Cc: Andreas Dannenberg <dannenberg@ti.com>, Pallala Ramakrishna <ramakrishna.pallala@intel.com>, Jenny Tc <jenny.tc@intel.com>
 
 Add new charger driver support for BQ24261 charger IC.
 
