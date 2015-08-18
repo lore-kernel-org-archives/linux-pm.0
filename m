@@ -1,63 +1,49 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH 03/13] twl4030_charger: correctly handle -EPROBE_DEFER
- from devm_usb_get_phy_by_node
-Date: Tue, 18 Aug 2015 01:07:58 -0700
-Message-ID: <20150818080758.GG4215@atomide.com>
-References: <20150730001113.4012.18086.stgit@noble>
- <20150730001124.4012.31980.stgit@noble>
+From: Yu Chen <yu.c.chen@intel.com>
+Subject: Re: [PATCH] x86, suspend: Save/restore THERM_CONTROL register for
+ suspend
+Date: Tue, 18 Aug 2015 16:54:05 +0800
+Message-ID: <55D2F2AD.20208@intel.com>
+References: <1439800192-3034-1-git-send-email-yu.c.chen@intel.com> <20150817101115.GA27204@gmail.com> <20150817132726.GA11047@amd> <55D2972C.3030709@intel.com> <20150818080218.GA17017@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:44976 "EHLO muru.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750780AbbHRIIF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 18 Aug 2015 04:08:05 -0400
-Content-Disposition: inline
-In-Reply-To: <20150730001124.4012.31980.stgit@noble>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150818080218.GA17017@amd>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Ingo Molnar <mingo@kernel.org>, rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, rui.zhang@intel.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: NeilBrown <neil@brown.name>
-Cc: Sebastian Reichel <sre@kernel.org>, Samuel Ortiz <sameo@linux.intel.com>, linux-pm@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, real GTA04 owners <gta04-owner@goldelico.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Pavel Machek <pavel@ucw.cz>, linux-omap@vger.kernel.org, Lee Jones <lee.jones@linaro.org>
 
-* NeilBrown <neil@brown.name> [150729 17:29]:
-> Now that twl4030_bci_probe can safely return -EPROBE_DEFER,
-> do so when devm_usb_get_phy_by_node returns that error.
-> 
-> Signed-off-by: NeilBrown <neil@brown.name>
-> ---
->  drivers/power/twl4030_charger.c |    6 +++++-
->  1 file changed, 5 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/power/twl4030_charger.c b/drivers/power/twl4030_charger.c
-> index 045238370d3f..ffc123fb7158 100644
-> --- a/drivers/power/twl4030_charger.c
-> +++ b/drivers/power/twl4030_charger.c
-> @@ -636,9 +636,13 @@ static int twl4030_bci_probe(struct platform_device *pdev)
->  
->  		phynode = of_find_compatible_node(bci->dev->of_node->parent,
->  						  NULL, "ti,twl4030-usb");
-> -		if (phynode)
-> +		if (phynode) {
->  			bci->transceiver = devm_usb_get_phy_by_node(
->  				bci->dev, phynode, &bci->usb_nb);
-> +			if (IS_ERR(bci->transceiver) &&
-> +			    PTR_ERR(bci->transceiver) == -EPROBE_DEFER)
-> +				return -EPROBE_DEFER;
-> +		}
->  	}
+Hi!
+On 08/18/2015 04:02 PM, Pavel Machek wrote:
+> Hi!
+>
+>>>>> A bug is reported(https://bugzilla.redhat.com/show_bug.cgi?id=1227208)
+>>>
+>>> Access denied :-(
+>>>
+>> Might need to register for accessing.
+>>>
+>>> What HW is this on?
+>>>
+>> Intel Braswell and Broadwell, detail for Broadwell:
+>> Platform: MayanCity
+>> Processor: 2x BROADWELL BDX_EP A0 QHPR
+>> Chipset: Wellsburg B1 QR7E
+>
+> So it is desktop board?
+>
+It is a server of Xeon family.
 
-Neil, the return with -EPROBE_DEFER here causes flakeyness booting
-for me somehow at least on my logicpd-torpedo-37xx-devkit using
-omap2plus_defconfig.
+>>> Doing this unconditionally is asking for trouble. Blacklist entry with
+>>> affected BIOS info might be acceptable, but...
+>>>
+>> you mean a quirk here(accroding to dmi info ,etc)?
+>
+> Yes, please.
+Will do. thanks
+> 									Pavel
+>
 
-It seems that the twl4030_bci_probe keeps looping or something about
-1/3 of the boots and that probably prevents the other twl modules
-from loading? Reverting this patch alone seems to fix the issue.
-
-I don't think I have a battery wired on this board the USB is wired
-the same way as on beagle-xm. So I'd assume also flakeyness on beagle
-xm with this patch.
-
-Regards,
-
-Tony
+Best Regards,
+Yu
