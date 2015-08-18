@@ -1,103 +1,87 @@
-From: Petr Cvek <petr.cvek@tul.cz>
-Subject: Re: [PATCH v2 03/21] ARM: pxa: magician: Fix comments, debug
- functions and print strings
-Date: Wed, 19 Aug 2015 01:09:44 +0200
-Message-ID: <55D3BB38.8030701@tul.cz>
-References: <cover.1439843482.git.petr.cvek@tul.cz> <55D258CD.40101@tul.cz>
- <87r3n08mqo.fsf@belgarion.home>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [GIT PULL] Last minute fixes on Thermal-SoC for v4.2-rc8
+Date: Tue, 18 Aug 2015 16:44:37 -0700
+Message-ID: <20150818234436.GB4494@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-leds-owner@vger.kernel.org>
-In-Reply-To: <87r3n08mqo.fsf@belgarion.home>
-Sender: linux-leds-owner@vger.kernel.org
-To: Robert Jarzmik <robert.jarzmik@free.fr>, philipp.zabel@gmail.com
-Cc: daniel@zonque.org, haojian.zhuang@gmail.com, sameo@linux.intel.com, lee.jones@linaro.org, cooloney@gmail.com, rpurdie@rpsys.net, j.anaszewski@samsung.com, linux@arm.linux.org.uk, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="3lcZGd9BuhuYXNfi"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>, Rui Zhang <rui.zhang@intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Russell King <rmk+kernel@arm.linux.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-Dne 18.8.2015 v 20:39 Robert Jarzmik napsal(a):
-> Petr Cvek <petr.cvek@tul.cz> writes:
-> 
->> Fix comments, debug functions and print strings. Rename backlight
->> structures to be more specific.
->>
->> Signed-off-by: Petr Cvek <petr.cvek@tul.cz>
->> ---
->>  arch/arm/mach-pxa/magician.c | 121 +++++++++++++++++++++++++++++++------------
->>  1 file changed, 89 insertions(+), 32 deletions(-)
->>
->> diff --git a/arch/arm/mach-pxa/magician.c b/arch/arm/mach-pxa/magician.c
->> index 9e8698a..57da133 100644
->> --- a/arch/arm/mach-pxa/magician.c
->> +++ b/arch/arm/mach-pxa/magician.c
->> @@ -11,6 +11,46 @@
->>   * it under the terms of the GNU General Public License version 2 as
->>   * published by the Free Software Foundation.
->>   *
->> + *
->> + * NOTICE MDA Compact (T-mobile XDA) facts:
->> + *   On "LCD type = 1, system_rev = 2" (0x3a in CPLD)
->> + * Samsung LTP280QV - valid LCD init sequence sequence:
->> + *   powerup: Vdigital->Vanalog->gate Voff->gate Von->data enable
->> + *   powerdown: data disable->gate Von->gate Voff->Vanalog->Vdigital
->> + * Measured on PCB:
->> + *   GPIO106
->> + *     Affects VOFF, VON and other voltages
->> + *     Probably main reset pin for DC-DC converter
->> + *   GPIO75
->> + *     Must be AF0+OUT (WM leaves it to AF2+OUT), not LCD signal
->> + *     GPIO106 works only when GPIO75 is high (DC-DC power enable?)
->> + *     After LCD powerup, value is irrelevant
->> + *   GPIO104
->> + *     LCD VOFF (gate off voltage)
->> + *   GPIO105
->> + *     LCD VON (gate on voltage)
->> + * FFUART (/dev/ttyS0) WM: 38400,8,n,1,crtscts (GSM data?)
->> + * BTUART (/dev/ttyS1) WM: 115200,8,n,1,crtscts (GSM AT commands)
->> + *   Use a HTC line discipline: 0x02 channel(==0x16) data 0x02
->> + * EGPIO(CPLD) should be always present (controls "all" supply power)
->> + *   For rootfs on MMC/SD: EGPIO module controls card power (in kernel)
->> + * cpu-freq often freeze platform (errata?, use userspace gov)
->> + * Do not use YUV420, (erratum E24) causes LCD hang (forever)
->> + * Many GSM related pins are unknown
->> + * gpio-rc-recv probably require lowpass filter (sw is OK)
->> + * TODO EGPIO_MAGICIAN_IR_RECEIVE_SHUTDOWN
->> + * FIXME AC charging blocks IrDA
->> + * Unimplemented blocking of camera+power+reset, reset and door open reset
->> + *   Registers: htc-pasic3.h (but blocks charging too)
->> + * Other PXA machines have wait_for_sync for ADS7846 (during LCD refresh)
->> + * pda-power has not optimal charging (accu can be bloated)
->> + * TODO Current switching works? Is gpio-regulator/bq24022 required?
-> I think you can ask Philip, he's the maintainer after all ...
 
-Ok. Philipp? 
+--3lcZGd9BuhuYXNfi
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Current switching can be done in pda-power function .set_charge(). But setting the charging current based on AC vs USB cable only is irrelevant as both can deliver 500mA (and Magician is not one of the most power efficient machine, 100mA is barely enough to power). Better thing would be to base the switching on accu level of charge (trickle charging).
+Hello Linus,
 
-> 
->> + * pdata supports alternative drivers (mutually exclusive modules)
->> + *   i2c-pxa vs i2c-gpio (SCCB)
->> + *   pwm_bl vs gpio_backlight
->> + *   pxa27x_udc vs phy-gpio-vbus-usb
->> + *   physmap-flash vs pxa2xx-flash
-> 
-> Okay, this chunk is nice documentation, but not code ...
-> I'd rather have it in : Documentation/arm/pxa/magician.txt or something like
-> that.
-OK I can move these comments there.
 
-> 
->> @@ -120,11 +160,12 @@ static unsigned long magician_pin_config[] __initdata = {
->>  };
->>  
->>  /*
->> - * IRDA
->> + * IrDA
->>   */
->>  
->>  static struct pxaficp_platform_data magician_ficp_info = {
->>  	.gpio_pwdown		= GPIO83_MAGICIAN_nIR_EN,
->> +	/* TODO test with FIR dongle */
-> I don't like this comment. I was not there before, so let it be. You know there
-> remains a TODO, I know ... but you can cunningly slip it in the commit message.
-Actually I have bought a dongle during last week, but it turned out, it can do only SIR (and poorly :-D). I can try to enable a second magician PCB, but it will takes some time (as I have only one accupack - second burned down). So do I have to remove only comment or FIR flag altogether? (I can find with second magician that it can work like a charm or it is not working - for example due to incompatible IrDA transceiver).
+I have these last minute fixes on the thermal-soc tree. It has gone through
+linux-next. There is a fix of a long lasting bug in cpu cooling device,
+thanks for RMK for being pushing this.
+
+So, if there is still time, please pull from:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal fixes
+
+to receive Thermal-SoC Management updates for v4.2-rc8 with top-most
+
+1afb9c539daebc2c8a7b33d0e0b8fc9f74671b02:
+
+  thermal/cpu_cooling: update policy limits if clipped_freq < policy->max (2015-08-14 18:26:23 -0700)
+
+on top of commit 7ddab73346a1277b90fd6a4d044bc948f9cc9ad8:
+
+  Merge branch 'fixes' of git://ftp.arm.linux.org.uk/~rmk/linux-arm (2015-08-13 16:34:56 -0700)
+
+
+Specifics:
+- I am sending in behalf of Rui this time, as he does not have any
+  further patches.
+- Urgent fix: Lockdep fix in the cpu cooling code.
+- Refactoring in the cpu cooling code.
+- Remove devm* functions from power allocator.
+
+BR,
+
+Eduardo Valentin
+----------------------------------------------------------------
+Dmitry Torokhov (1):
+      thermal: power_allocator: do not use devm* interfaces
+
+Russell King (1):
+      thermal: cpu_cooling: fix lockdep problems in cpu_cooling
+
+Viresh Kumar (6):
+      thermal/cpu_cooling: No need to initialize max_freq to 0
+      thermal/cpu_cooling: quit early after updating policy
+      thermal/cpu_cooling: convert 'switch' block to 'if' block in notifier
+      thermal/cpu_cooling: rename cpufreq_val as clipped_freq
+      thermal/cpu_cooling: rename max_freq as clipped_freq in notifier
+      thermal/cpu_cooling: update policy limits if clipped_freq < policy->max
+
+ drivers/thermal/cpu_cooling.c     | 73 +++++++++++++++++++++++----------------
+ drivers/thermal/power_allocator.c |  8 ++---
+ 2 files changed, 48 insertions(+), 33 deletions(-)
+
+--3lcZGd9BuhuYXNfi
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQEcBAEBAgAGBQJV08NWAAoJEMLUO4d9pOJWOGEH/RH60zORt81Ihkzc1BsJbEZB
+9iqTs4WGkMr3g6LJHG5cmOkl+CUjQ2t6EbBzDZ1cPrJn0b8DMmeqH6Nn2E9m1SGe
+ikXjMvi4nO66cMo3+O4AEv34sLZ5BjcsfsLSO69NZ3Z0FB1uk5tkDVLWTWBYs22W
+Tnol96q/N1VMTh53c4L1KHHV1x4CzNWBfe5Zaktbcc5cXU+NzcnDWB5EzQUss8/r
+0llWwUFN/VIGGdTy3ialIEg0+UDjG1KHXGOVG2spYo6oixm94rxF4B4KY4eQlrYg
+qZlPQdzD7V3eBP6TK3PcTwh+9mNH+xCLFoBq8AK9Ioj0yJgv+1MWmkt95jYlu4k=
+=QII+
+-----END PGP SIGNATURE-----
+
+--3lcZGd9BuhuYXNfi--
