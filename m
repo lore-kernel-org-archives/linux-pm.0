@@ -1,69 +1,119 @@
-From: Vaishali Thakkar <vthakkar1994@gmail.com>
-Subject: [PATCH] thermal: cpu_cooling: Remove usage of devm functions
-Date: Wed, 19 Aug 2015 11:52:19 +0530
-Message-ID: <20150819062219.GA10032@localhost>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH 03/13] twl4030_charger: correctly handle -EPROBE_DEFER
+ from devm_usb_get_phy_by_node
+Date: Tue, 18 Aug 2015 23:25:39 -0700
+Message-ID: <20150819062539.GH4215@atomide.com>
+References: <20150730001113.4012.18086.stgit@noble>
+ <20150730001124.4012.31980.stgit@noble>
+ <20150818080758.GG4215@atomide.com>
+ <20150819102832.29a5059f@home.neil.brown.name>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f178.google.com ([209.85.192.178]:35266 "EHLO
-	mail-pd0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751207AbbHSGWY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Aug 2015 02:22:24 -0400
+Received: from muru.com ([72.249.23.125]:45224 "EHLO muru.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752611AbbHSGZq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 19 Aug 2015 02:25:46 -0400
 Content-Disposition: inline
+In-Reply-To: <20150819102832.29a5059f@home.neil.brown.name>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: NeilBrown <neil@brown.name>
+Cc: Sebastian Reichel <sre@kernel.org>, Samuel Ortiz <sameo@linux.intel.com>, linux-pm@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, real GTA04 owners <gta04-owner@goldelico.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Pavel Machek <pavel@ucw.cz>, linux-omap@vger.kernel.org, Lee Jones <lee.jones@linaro.org>
 
-In the function cpufreq_get_requested_power, the memory allocated
-for load_cpu is live within the function only. And after the
-allocation it is immediately freed with devm_kfree. There is no
-need to allocate memory for load_cpu with devm function so replace
-devm_kcalloc with kcalloc and devm_kfree with kfree.
+* NeilBrown <neil@brown.name> [150818 17:32]:
+> On Tue, 18 Aug 2015 01:07:58 -0700 Tony Lindgren <tony@atomide.com>
+> wrote:
+> 
+> > * NeilBrown <neil@brown.name> [150729 17:29]:
+> > > Now that twl4030_bci_probe can safely return -EPROBE_DEFER,
+> > > do so when devm_usb_get_phy_by_node returns that error.
+> > > 
+> > > Signed-off-by: NeilBrown <neil@brown.name>
+> > > ---
+> > >  drivers/power/twl4030_charger.c |    6 +++++-
+> > >  1 file changed, 5 insertions(+), 1 deletion(-)
+> > > 
+> > > diff --git a/drivers/power/twl4030_charger.c b/drivers/power/twl4030_charger.c
+> > > index 045238370d3f..ffc123fb7158 100644
+> > > --- a/drivers/power/twl4030_charger.c
+> > > +++ b/drivers/power/twl4030_charger.c
+> > > @@ -636,9 +636,13 @@ static int twl4030_bci_probe(struct platform_device *pdev)
+> > >  
+> > >  		phynode = of_find_compatible_node(bci->dev->of_node->parent,
+> > >  						  NULL, "ti,twl4030-usb");
+> > > -		if (phynode)
+> > > +		if (phynode) {
+> > >  			bci->transceiver = devm_usb_get_phy_by_node(
+> > >  				bci->dev, phynode, &bci->usb_nb);
+> > > +			if (IS_ERR(bci->transceiver) &&
+> > > +			    PTR_ERR(bci->transceiver) == -EPROBE_DEFER)
+> > > +				return -EPROBE_DEFER;
+> > > +		}
+> > >  	}
+> > 
+> > Neil, the return with -EPROBE_DEFER here causes flakeyness booting
+> > for me somehow at least on my logicpd-torpedo-37xx-devkit using
+> > omap2plus_defconfig.
+> > 
+> > It seems that the twl4030_bci_probe keeps looping or something about
+> > 1/3 of the boots and that probably prevents the other twl modules
+> > from loading? Reverting this patch alone seems to fix the issue.
+> > 
+> > I don't think I have a battery wired on this board the USB is wired
+> > the same way as on beagle-xm. So I'd assume also flakeyness on beagle
+> > xm with this patch.
+> 
+> What dts file are you using?
+> I'm guessing that it doesn't have something like:
+> 
+> &usb_otg_hs {
+>         interface-type = <0>;
+>         usb-phy = <&usb2_phy>;
+>         phys = <&usb2_phy>;
+>         phy-names = "usb2-phy";
+>         mode = <3>;
+>         power = <50>;
+> };
 
-Signed-off-by: Vaishali Thakkar <vthakkar1994@gmail.com>
----
-This patch is having one checkpatch.pl warning which suggests that
-kfree(NULL) is safe. But I think leaving code with if is nice
-because it reflects the fact that kcalloc was under an if. So, I
-have ignored checkpatch. If maintainer wants me to go for changing
-things, I am fine with it too.
----
- drivers/thermal/cpu_cooling.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+It's the logicpd-torpedo-37xx-devkit.dts like I mentioned above,
+and yes it has the same entry above like beagle xm.
+ 
+> ? i.e. with a usb-phy=<&usb2_phy> ?
+> 
+> What if you add
+> 
+> &usb2_phy {
+>  status = "disabled";
+> }
+> 
+> to your dts file?
 
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 620dcd4..babf8b3 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -584,8 +584,7 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
- 	if (trace_thermal_power_cpu_get_power_enabled()) {
- 		u32 ncpus = cpumask_weight(&cpufreq_device->allowed_cpus);
+Yes then the PHY driver won't get probed and modprobe of the
+charger won't hang with -EPROBE_DEFER.. The USB is working on this
+one like on beagle xm so that's not a solution.
  
--		load_cpu = devm_kcalloc(&cdev->device, ncpus, sizeof(*load_cpu),
--					GFP_KERNEL);
-+		load_cpu = kcalloc(ncpus, sizeof(*load_cpu), GFP_KERNEL);
- 	}
- 
- 	for_each_cpu(cpu, &cpufreq_device->allowed_cpus) {
-@@ -609,7 +608,7 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
- 	ret = get_static_power(cpufreq_device, tz, freq, &static_power);
- 	if (ret) {
- 		if (load_cpu)
--			devm_kfree(&cdev->device, load_cpu);
-+			kfree(load_cpu);
- 		return ret;
- 	}
- 
-@@ -618,7 +617,7 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
- 			&cpufreq_device->allowed_cpus,
- 			freq, load_cpu, i, dynamic_power, static_power);
- 
--		devm_kfree(&cdev->device, load_cpu);
-+		kfree(load_cpu);
- 	}
- 
- 	*power = static_power + dynamic_power;
--- 
-1.9.1
+> Should the 'status' be disabled in twl4030.dtsi, and then marked OK in
+> any dts that uses it?  I'm not at all clear on how 'status' is meant to
+> be used.
 
+Well status = "disabled" makes kernel completely ignore the
+hardware, so the struct device is never created. I'd stay away from
+using that in general for proper runtime idling of devices.. The
+hardware is there for sure :)
+
+Can you check if something like the the following allows you to
+reproduce the hang of modprobe twl4030_charger:
+
+# rmmod phy-twl4030-usb
+# modprobe twl4030_charger
+
+So just don't probe phy-twl4030-usb before twl4030_charger and
+then modprobe of twl4030_charger hangs?
+
+That is with proper usb2_phy configured in .dts file and not
+set to status = "disabled".
+
+Regards,
+
+Tony
