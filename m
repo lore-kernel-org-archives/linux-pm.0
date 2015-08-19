@@ -1,43 +1,57 @@
-From: Philipp Zabel <philipp.zabel@gmail.com>
-Subject: Re: [PATCH v2 19/21] leds: leds-pasic3: Add support for PASIC3 LED
- controller
-Date: Wed, 19 Aug 2015 10:09:31 +0200
-Message-ID: <1439971771.11928.31.camel@gmail.com>
-References: <cover.1439843482.git.petr.cvek@tul.cz> <55D25ADC.10703@tul.cz>
-	 <55D30875.3090103@samsung.com> <55D3A832.90705@tul.cz>
+From: Antoine Tenart <antoine.tenart@free-electrons.com>
+Subject: Re: [PATCH v2 0/6] ARM: berlin: add cpufreq support
+Date: Wed, 19 Aug 2015 10:17:57 +0200
+Message-ID: <20150819081757.GA1089@kwain>
+References: <1439898368-11543-1-git-send-email-antoine.tenart@free-electrons.com>
+ <CAOh2x=ke9NWa-GjL=c+RgEWWfsNeKvE2O9CRHmW2dG5mj8ATCg@mail.gmail.com>
+ <20150818143911.GB12017@kwain>
+ <20150818145925.GF31148@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-leds-owner@vger.kernel.org>
-In-Reply-To: <55D3A832.90705@tul.cz>
-Sender: linux-leds-owner@vger.kernel.org
-To: Petr Cvek <petr.cvek@tul.cz>, Jacek Anaszewski <j.anaszewski@samsung.com>
-Cc: robert.jarzmik@free.fr, daniel@zonque.org, haojian.zhuang@gmail.com, sameo@linux.intel.com, lee.jones@linaro.org, cooloney@gmail.com, rpurdie@rpsys.net, linux@arm.linux.org.uk, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from down.free-electrons.com ([37.187.137.238]:47758 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752405AbbHSISB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Aug 2015 04:18:01 -0400
+Content-Disposition: inline
+In-Reply-To: <20150818145925.GF31148@linux>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Antoine Tenart <antoine.tenart@free-electrons.com>, sebastian.hesselbarth@gmail.com, zmxu@marvell.com, jszhang@marvell.com, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Am Dienstag, den 18.08.2015, 23:48 +0200 schrieb Petr Cvek:
-> Dne 18.8.2015 v 12:27 Jacek Anaszewski napsal(a):
-> > Hi Petr,
-> > 
-> > On 08/18/2015 12:06 AM, Petr Cvek wrote:
-> > > +/*
-> > > + * AIC3 (or PASIC3) LED driver for HTC Magician/Alpine/.. (not 
-> > > Compaq ASIC3)
-> > 
-> > s/AIC3/ASIC3/
-> > 
-> > I am a bit confused. What's the relation between ASIC3 and PASIC3?
-> 
-> Actually both drivers should be renamed to AIC3 (or AIC only, as 
-> there is version 2). "HTC_AIC3" is written on the chip and "pasic3" 
-> is confusing with compaq asic3 driver, which claims in Kconfig help 
-> to be compatible with HTC machines. Compaq ASIC3 has much more 
-> functionality and from brief look it seems it has 16 bit registers 
-> (HTC_AIC3 has only LEDs, RESET and DS1WM and has 8 bit registers).
+On Tue, Aug 18, 2015 at 08:29:25PM +0530, Viresh Kumar wrote:
+> On 18-08-15, 16:39, Antoine Tenart wrote:
+> > However, it seems the OPP-v2 table takes precedence over the old on=
+e.
+> > When a default OPP-v2 table is supplied in the device tree, if the
+> > bootloader supplies an OPP table the old way it won't be taken into
+> > account.
+> >=20
+> > So if I understood correctly, this won't work here for the BG2Q.
+>=20
+> Didn't understood it completely. Are you saying that your dtb will
+> have two operating-points tables ?
 
-I think I've got the PASIC3 name from debug strings present in the HTC
-bootloader or WinCE binary. This chip (and its predecessor PASIC2 in
-HTC Blueangel) are different from the ASIC3 found in hx4700 iPAQs.
+Yes. If the device tree has an OPP-v2 table and the bootloader modify i=
+t
+to add an old OPP table at boot, the one added by the bootloader won't
+be taken into account by the kernel.
 
-regards
-Philipp
+> The deal is that for any device, parsing of opp-v2 will be attempted
+> first. If its not available, then opp-v1 will be tried. But this is
+> per-device. So, one device can have opp-v2 tables and other one can d=
+o
+> v1 type.
+
+Sure. OPP-v2 tables can be used for devices having an up-to-date
+bootloader or if the bootloader do not modify the device tree at boot
+time to add an (old) OPP table.
+
+Antoine
+
+--=20
+Antoine T=E9nart, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
