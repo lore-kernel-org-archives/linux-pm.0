@@ -1,39 +1,48 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] thermal: cpu_cooling: Add MAINTAINERS entry
-Date: Wed, 19 Aug 2015 23:33:50 +0530
-Message-ID: <20150819180350.GH14544@linux>
-References: <298acc438cba5f64121d883db7ff2b860c0a9610.1439967508.git.viresh.kumar@linaro.org>
- <20150819174444.GA6643@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pd0-f179.google.com ([209.85.192.179]:34903 "EHLO
-	mail-pd0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750921AbbHSSD6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Aug 2015 14:03:58 -0400
-Received: by pdob1 with SMTP id b1so4094729pdo.2
-        for <linux-pm@vger.kernel.org>; Wed, 19 Aug 2015 11:03:57 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20150819174444.GA6643@localhost.localdomain>
-Sender: linux-pm-owner@vger.kernel.org
+Subject: [PATCH V2] thermal: cpu_cooling: Add MAINTAINERS entry
+Date: Wed, 19 Aug 2015 23:36:30 +0530
+Message-ID: <feea0ded7e436bb9408d7f3d89c95d3e0ba7049d.1440007527.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: edubezval@gmail.com
+Cc: linaro-kernel@lists.linaro.org, amit.daniel@samsung.com, linux-pm@vger.kernel.org, rui.zhang@intel.com, Viresh Kumar <viresh.kumar@linaro.org>, Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>, "David S. Miller" <davem@davemloft.net>, Greg KH <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, Joe Perches <joe@perches.com>, open list <linux-kernel@vger.kernel.org>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: linaro-kernel@lists.linaro.org, amit.daniel@samsung.com, linux-pm@vger.kernel.org, rui.zhang@intel.com
 
-On 19-08-15, 10:44, Eduardo Valentin wrote:
-> Interesting. I would expect that by this point, you would be already
-> listed.. anyways..
+None of the patches are reaching Viresh or Daniel directly as
+get_maintainers doesn't report us as maintainers. Looks like file header
+or history of commits isn't able to do that properly.
 
-No, its just you and Zhang.
+Add a separate entry for cpu_cooling driver in MAINTAINERS.
 
-> > +THERMAL/CPU_COOLING
-> > +M:	Amit Daniel Kachhap <amit.daniel@samsung.com>
-> 
-> Is this still a valid email? I remember one of his email was bouncing
-> back. 
+Acked-by: Eduardo Valentin <edubezval@gmail.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+V1->V2:
+- Add cpu-cooling-api.txt as well
+- Add Ack received from Eduardo
 
-I see his last mail to LKML on 27th March, and I didn't receive a
-bounced email auto-reply, so it should be just fine :)
+ MAINTAINERS | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 5d8ab5c06c4f..9dc3f73e5341 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -10298,6 +10298,15 @@ F:	include/uapi/linux/thermal.h
+ F:	include/linux/cpu_cooling.h
+ F:	Documentation/devicetree/bindings/thermal/
+ 
++THERMAL/CPU_COOLING
++M:	Amit Daniel Kachhap <amit.daniel@samsung.com>
++M:	Viresh Kumar <viresh.kumar@linaro.org>
++L:	linux-pm@vger.kernel.org
++S:	Supported
++F:	Documentation/thermal/cpu-cooling-api.txt
++F:	drivers/thermal/cpu_cooling.c
++F:	include/linux/cpu_cooling.h
++
+ THINGM BLINK(1) USB RGB LED DRIVER
+ M:	Vivien Didelot <vivien.didelot@savoirfairelinux.com>
+ S:	Maintained
 -- 
-viresh
+2.4.0
