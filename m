@@ -1,97 +1,51 @@
-From: Jiang Liu <jiang.liu@linux.intel.com>
-Subject: Re: [Patch v2] x86, ACPI, irq: Add a quirk to override SCI polarity
- for HyperV
-Date: Wed, 19 Aug 2015 14:26:13 +0800
-Message-ID: <55D42185.1000709@linux.intel.com>
-References: <alpine.DEB.2.11.1508182133010.3873@nanos>
- <1439963634-12006-1-git-send-email-jiang.liu@linux.intel.com>
- <CAJZ5v0g7F+BRMzc9-uuxHAK896B-hoOJ5AW7M4jGpowVG+hujw@mail.gmail.com>
+From: Yu Chen <yu.c.chen@intel.com>
+Subject: Re: [PATCH] x86: Kill E820_RESERVED_KERN
+Date: Wed, 19 Aug 2015 14:37:03 +0800
+Message-ID: <55D4240F.80407@intel.com>
+References: <1438111315-2230-1-git-send-email-yinghai@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0g7F+BRMzc9-uuxHAK896B-hoOJ5AW7M4jGpowVG+hujw@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Nick Meier <nmeier@microsoft.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <1438111315-2230-1-git-send-email-yinghai@kernel.org>
+Sender: stable-owner@vger.kernel.org
+To: Yinghai Lu <yinghai@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>
+Cc: linux-kernel@vger.kernel.org, "Lee, Chun-Yi" <jlee@suse.com>, Richard L Maliszewski <richard.l.maliszewski@intel.com>, Gang Wei <gang.wei@intel.com>, Shane Wang <shane.wang@intel.com>, tboot-devel@lists.sourceforge.net, stable@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, lenb@kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 2015/8/19 14:04, Rafael J. Wysocki wrote:
-> Hi,
-> 
-> On Wed, Aug 19, 2015 at 7:53 AM, Jiang Liu <jiang.liu@linux.intel.com> wrote:
->> Nick Meier reported a regression with HyperV that "
->>   After rebooting the VM, the following messages are logged in syslog
->>   when trying to load the tulip driver:
->>     tulip: Linux Tulip drivers version 1.1.15 (Feb 27, 2007)
->>     tulip: 0000:00:0a.0: PCI INT A: failed to register GSI
->>     tulip: Cannot enable tulip board #0, aborting
->>     tulip: probe of 0000:00:0a.0 failed with error -16
->>   Errors occur in 3.19.0 kernel
->>   Works in 3.17 kernel.
->> "
->>
->> According to the ACPI dump file posted by Nick at
->> https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1440072
->>
->> The ACPI MADT table includes an interrupt source overridden entry for
->> ACPI SCI:
->> [236h 0566  1]                Subtable Type : 02 <Interrupt Source Override>
->> [237h 0567  1]                       Length : 0A
->> [238h 0568  1]                          Bus : 00
->> [239h 0569  1]                       Source : 09
->> [23Ah 0570  4]                    Interrupt : 00000009
->> [23Eh 0574  2]        Flags (decoded below) : 000D
->>                                    Polarity : 1
->>                                Trigger Mode : 3
->>
->> And in DSDT table, we have _PRT method to define PCI interrupts, which
->> eventually goes to:
->>         Name (PRSA, ResourceTemplate ()
->>         {
->>             IRQ (Level, ActiveLow, Shared, )
->>                 {3,4,5,7,9,10,11,12,14,15}
->>         })
->>         Name (PRSB, ResourceTemplate ()
->>         {
->>             IRQ (Level, ActiveLow, Shared, )
->>                 {3,4,5,7,9,10,11,12,14,15}
->>         })
->>         Name (PRSC, ResourceTemplate ()
->>         {
->>             IRQ (Level, ActiveLow, Shared, )
->>                 {3,4,5,7,9,10,11,12,14,15}
->>         })
->>         Name (PRSD, ResourceTemplate ()
->>         {
->>             IRQ (Level, ActiveLow, Shared, )
->>                 {3,4,5,7,9,10,11,12,14,15}
->>         })
->>
->> According to the MADT and DSDT tables above, IRQ 9 may be used for:
->> 1) ACPI SCI in level, high mode
->> 2) PCI legacy IRQ in level, low mode
->> So there's a possible conflict in polarity setting for IRQ 9.
->>
->> Prior to commit cd68f6bd53cf ("x86, irq, acpi: Get rid of special
->> handling of GSI for ACPI SCI"), ACPI SCI is handled specially and
->> there's no check for conflicts between ACPI SCI and PCI legagy IRQ.
->> And it seems that the HyperV hypervisor doesn't make use of the
->> polarity configuration in IOAPIC entry, so it just works.
-> 
-> That likely means the previous behavior was the same as (or at least
-> analogous to) what happens on Windows which is what the firmware has
-> been tested against and that's why the bug in it has not been caught.
-> That in turn indicates that there may be more systems having this kind
-> of problems, possibly from other vendors too, so I'm wondering if we
-> can do something more generic than using a quirk here?
-Hi Rafael,
-	Good question. I was thought only virtual machines may generate
-such fake ACPI tables with conflicting pin attribute settings. For bare
-metal systems, I guess BIOS writers should report the correct hardware
-configurations, otherwise wrong pin attributes may cause hardware
-malfunction.
-	If that's not the case, we may try to revert cd68f6bd53cf
-instead.
-Thanks!
-Gerry
+Hi,
+On 07/29/2015 03:21 AM, Yinghai Lu wrote:
+> E820_RESERVED_KERN was introduced to do early allocation for
+> setup_data when we were using original early_res with e820 map.
+>
+> Now we are using memblock to do early resource reserve/allocation, and
+> setup_data is reserved in memblock early already.
+>
+> For kexec path, kexec generate setup_data (Now kexec-tools create SETUP_EFI
+> and SETUP_E820_EXT), and pass pointer to second kernel, and
+> second kernel reserve setup_data by their own without using e820 map.
+>
+> So we do not need to touch e820 map at all, and we can kill
+> E820_RESERVED_KERN.
+>
+> That make the code simpler, and at same time that will fix bug with
+> hibernation:
+>    mark_nonsave_region that can not handle that case:
+>      E820_RAM and E820_RESERVED_KERN ranges are continuous and
+>      boundary is not page aligned.
+>
+> Link: https://bugzilla.opensuse.org/show_bug.cgi?id=913885
+> Link: https://bugzilla.kernel.org/show_bug.cgi?id=96111
+
+I've tested Hibernation on latest 4.2.-rc7 and encountered panic when
+resuming, so I guess this patch has not been merged upstream:
+
+BUG: unable to handle kernel paging request at ffff880085894000
+IP: [<ffffffff810c5dc2>] load_image_lzo+0x8c2/0xe70
+
+With current patch and Lee, Chun-Yi's patch applied, the panic
+disappeared, would someone please have a look at this patch,
+thanks a lot.
+
+Best Regards,
+Yu
