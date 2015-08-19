@@ -1,15 +1,13 @@
 From: Robert Jarzmik <robert.jarzmik@free.fr>
-Subject: Re: [PATCH v2 05/21] ARM: pxa: magician: Add support for ADS7846
- touchscreen
-Date: Wed, 19 Aug 2015 20:41:29 +0200
-Message-ID: <87twrv6rza.fsf@belgarion.home>
-References: <cover.1439843482.git.petr.cvek@tul.cz> <55D2591F.10509@tul.cz>
+Subject: Re: [PATCH v2 07/21] ARM: pxa: magician: Fix IrDA pdata and redundant
+ GPIO request
+Date: Wed, 19 Aug 2015 20:41:51 +0200
+Message-ID: <87fv3f6ryo.fsf@belgarion.home>
+References: <cover.1439843482.git.petr.cvek@tul.cz> <55D25950.6010601@tul.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <55D2591F.10509@tul.cz> (Petr Cvek's message of "Mon, 17 Aug 2015
- 23:58:55 +0200")
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -25,14 +23,9 @@ List-Id: linux-pm@vger.kernel.org
 
 Petr Cvek <petr.cvek@tul.cz> writes:
 
-> Add support for ADS7846 touchscreen.
-> +
-> +static struct pxa2xx_spi_master magician_spi_info = {
-> +	.num_chipselect = 1,
-> +/*	.enable_dma = 1, */ /* FIXME probably unnecessary */
-That's up to you. If almost nothing transits on SPI then a DMA is not necessary.
-
-I'll leave that one for a week for others to further comment.
+> Fix PXA FICP (IrDA) pdata and redundant GPIO request.
+Fix what ? What is broken, what is not working before the patch and what will be
+working after ? Could I have a better explanation in the commit message please ?
 
 Cheers.
 
