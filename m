@@ -1,97 +1,93 @@
-From: NeilBrown <neil@brown.name>
-Subject: Re: [PATCH 03/13] twl4030_charger: correctly handle -EPROBE_DEFER
- from devm_usb_get_phy_by_node
-Date: Wed, 19 Aug 2015 10:28:32 +1000
-Message-ID: <20150819102832.29a5059f@home.neil.brown.name>
-References: <20150730001113.4012.18086.stgit@noble>
-	<20150730001124.4012.31980.stgit@noble>
-	<20150818080758.GG4215@atomide.com>
+From: Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
+Subject: Re: [PATCH v2 3/3] power: wm831x_power: Support USB charger current
+ limit management
+Date: Wed, 19 Aug 2015 08:02:37 +0800
+Message-ID: <20150819000236.GA23719@shlinux2>
+References: <20150818052011.GF1864@shlinux2>
+ <20150818161200.GK10748@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from neil.brown.name ([103.29.64.221]:45503 "EHLO neil.brown.name"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751258AbbHSA3Z (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 18 Aug 2015 20:29:25 -0400
-In-Reply-To: <20150818080758.GG4215@atomide.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20150818161200.GK10748-GFdadSzt00ze9xe1eoZjHA@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, balbi-l0cyMroinI0@public.gmane.org, linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, sojka-Knnw/vAvyUalVyrhU4qvOw@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Samuel Ortiz <sameo@linux.intel.com>, linux-pm@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, real GTA04 owners <gta04-owner@goldelico.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Pavel Machek <pavel@ucw.cz>, linux-omap@vger.kernel.org, Lee Jones <lee.jones@linaro.org>
 
-On Tue, 18 Aug 2015 01:07:58 -0700 Tony Lindgren <tony@atomide.com>
-wrote:
-
-> * NeilBrown <neil@brown.name> [150729 17:29]:
-> > Now that twl4030_bci_probe can safely return -EPROBE_DEFER,
-> > do so when devm_usb_get_phy_by_node returns that error.
-> > 
-> > Signed-off-by: NeilBrown <neil@brown.name>
-> > ---
-> >  drivers/power/twl4030_charger.c |    6 +++++-
-> >  1 file changed, 5 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/power/twl4030_charger.c b/drivers/power/twl4030_charger.c
-> > index 045238370d3f..ffc123fb7158 100644
-> > --- a/drivers/power/twl4030_charger.c
-> > +++ b/drivers/power/twl4030_charger.c
-> > @@ -636,9 +636,13 @@ static int twl4030_bci_probe(struct platform_device *pdev)
-> >  
-> >  		phynode = of_find_compatible_node(bci->dev->of_node->parent,
-> >  						  NULL, "ti,twl4030-usb");
-> > -		if (phynode)
-> > +		if (phynode) {
-> >  			bci->transceiver = devm_usb_get_phy_by_node(
-> >  				bci->dev, phynode, &bci->usb_nb);
-> > +			if (IS_ERR(bci->transceiver) &&
-> > +			    PTR_ERR(bci->transceiver) == -EPROBE_DEFER)
-> > +				return -EPROBE_DEFER;
-> > +		}
-> >  	}
+On Tue, Aug 18, 2015 at 09:12:00AM -0700, Mark Brown wrote:
+> On Tue, Aug 18, 2015 at 01:20:12PM +0800, Peter Chen wrote:
 > 
-> Neil, the return with -EPROBE_DEFER here causes flakeyness booting
-> for me somehow at least on my logicpd-torpedo-37xx-devkit using
-> omap2plus_defconfig.
+> > ok, I just had suspected below function's correctness, after looking
+> > it again, it always set 1800 as charging limit, does it be expected?
 > 
-> It seems that the twl4030_bci_probe keeps looping or something about
-> 1/3 of the boots and that probably prevents the other twl modules
-> from loading? Reverting this patch alone seems to fix the issue.
+> > +       /* Find the highest supported limit */
+> > +       best = 0;
+> > +       for (i = 0; i < ARRAY_SIZE(wm831x_usb_limits); i++) {
+> > +               if (limit < wm831x_usb_limits[i] &&
 > 
-> I don't think I have a battery wired on this board the USB is wired
-> the same way as on beagle-xm. So I'd assume also flakeyness on beagle
-> xm with this patch.
-> 
-> Regards,
-> 
-> Tony
 
-What dts file are you using?
-I'm guessing that it doesn't have something like:
++/* In miliamps */
++static unsigned int wm831x_usb_limits[] = {
++       0,
++       2,
++       100,
++       500,
++       900,
++       1500,
++       1800,
++       550,
++};
++
++static int wm831x_usb_limit_change(struct notifier_block *nb,
++                                  unsigned long limit, void *data)
++{
++       struct wm831x_power *wm831x_power = container_of(nb,
++                                                        struct wm831x_power,
++                                                        usb_notify);
++       int i, best;
++
++       /* Find the highest supported limit */
++       best = 0;
++       for (i = 0; i < ARRAY_SIZE(wm831x_usb_limits); i++) {
++               if (limit < wm831x_usb_limits[i] &&
++                   wm831x_usb_limits[best] < wm831x_usb_limits[i])
++                       best = i;
++       }
++
++       dev_dbg(wm831x_power->wm831x->dev,
++               "Limiting USB current to %dmA", wm831x_usb_limits[best]);
++
++       wm831x_set_bits(wm831x_power->wm831x, WM831X_POWER_STATE,
++                       WM831X_USB_ILIM_MASK, best);
++
++       return 0;
++}
++
 
-&usb_otg_hs {
-        interface-type = <0>;
-        usb-phy = <&usb2_phy>;
-        phys = <&usb2_phy>;
-        phy-names = "usb2-phy";
-        mode = <3>;
-        power = <50>;
-};
+> The above check is intended to ensure that we don't go over the limit
+> that was passed in in the callback.  The goal is to select the highest
+> option that is less than the limit passed in.
 
-? i.e. with a usb-phy=<&usb2_phy> ?
+Please correct me if I was wrong, If there is SDP (PC), the current
+limit is 500mA, then when the i = 4, (500 < 900) && (0 < 900) is true,
+the best is 4. When the i goes to 5, (500 < 1500) && (900 < 1500) is
+true, the best is 5. At last, the best will be 1800, which is not our
+expectation.
 
-What if you add
+Below code may be correct for the goal you expressed.
 
-&usb2_phy {
- status = "disabled";
-}
+       for (i = 0; i < ARRAY_SIZE(wm831x_usb_limits); i++) {
+               if (limit >= wm831x_usb_limits[i] &&
+                   wm831x_usb_limits[best] < wm831x_usb_limits[i])
+                       best = i;
+       }
 
-to your dts file?
+-- 
 
-Should the 'status' be disabled in twl4030.dtsi, and then marked OK in
-any dts that uses it?  I'm not at all clear on how 'status' is meant to
-be used.
-
-Thanks,
-NeilBrown
-
+Best Regards,
+Peter Chen
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
