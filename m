@@ -1,49 +1,49 @@
-From: Seiichi Ikarashi <s.ikarashi@jp.fujitsu.com>
-Subject: [PATCH] powercap / RAPL: disable the 2nd power limit properly
-Date: Wed, 19 Aug 2015 14:26:03 +0900
-Message-ID: <55D4136B.80402@jp.fujitsu.com>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v7 2/3] cpufreq: mediatek: Add MT8173 cpufreq driver
+Date: Wed, 19 Aug 2015 11:11:20 +0530
+Message-ID: <20150819054120.GA3258@linux>
+References: <20150818102428.GD31148@linux>
+ <1439949906-22177-1-git-send-email-pi-cheng.chen@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-2022-jp"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mgwym01.jp.fujitsu.com ([211.128.242.40]:26557 "EHLO
-	mgwym01.jp.fujitsu.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751016AbbHSFkd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Aug 2015 01:40:33 -0400
-Received: from g01jpfmpwkw02.exch.g01.fujitsu.local (g01jpfmpwkw02.exch.g01.fujitsu.local [10.0.193.56])
-	by yt-mxq.gw.nic.fujitsu.com (Postfix) with ESMTP id DF680AC03A5
-	for <linux-pm@vger.kernel.org>; Wed, 19 Aug 2015 14:30:16 +0900 (JST)
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1439949906-22177-1-git-send-email-pi-cheng.chen-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Pi-Cheng Chen <pi-cheng.chen-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Michael Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: linux-pm@vger.kernel.org
 
-Let rapl_unregister_powercap() disable the second power limit
-only if it exists.
-Intel64 SDM Vol.3 14.9 says that the package domain has it
-but neither the power plane domain nor the DRAM domain has it.
+On 19-08-15, 10:05, Pi-Cheng Chen wrote:
+> Mediatek MT8173 is an ARMv8 based quad-core (2*Cortex-A53 and
+> 2*Cortex-A72) SoC with duall clusters. For each cluster, two voltage
+> inputs, Vproc and Vsram are supplied by two regulators. For the big
+> cluster, two regulators come from different PMICs. In this case, when
+> scaling voltage inputs of the cluster, the voltages of two regulator
+> inputs need to be controlled by software explicitly under the SoC
+> specific limitation:
+> 
+> 	100mV < Vsram - Vproc < 200mV
+> 
+> which is called 'voltage tracking' mechanism. And when scaling the
+> frequency of cluster clock input, the input MUX need to be parented to
+> another "intermediate" stable PLL first and reparented to the original
+> PLL once the original PLL is stable at the target frequency. This patch
+> implements those mechanisms to enable CPU DVFS support for Mediatek
+> MT8173 SoC.
+> 
+> Signed-off-by: Pi-Cheng Chen <pi-cheng.chen-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> ---
+> 
+> Changes in v7:
+> - add of_machine_is_compatible() check to be multiplatform friendly
 
-Signed-off-by: Seiichi Ikarashi <s.ikarashi@jp.fujitsu.com>
+Looks fine, thanks.
 
----
- drivers/powercap/intel_rapl.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-index 482b22d..314fb5c 100644
---- a/drivers/powercap/intel_rapl.c
-+++ b/drivers/powercap/intel_rapl.c
-@@ -1145,9 +1145,11 @@ static int rapl_unregister_powercap(void)
- 			pr_debug("remove package, undo power limit on %d: %s\n",
- 				rp->id, rd->name);
- 			rapl_write_data_raw(rd, PL1_ENABLE, 0);
--			rapl_write_data_raw(rd, PL2_ENABLE, 0);
- 			rapl_write_data_raw(rd, PL1_CLAMP, 0);
--			rapl_write_data_raw(rd, PL2_CLAMP, 0);
-+			if (find_nr_power_limit(rd) > 1) {
-+				rapl_write_data_raw(rd, PL2_ENABLE, 0);
-+				rapl_write_data_raw(rd, PL2_CLAMP, 0);
-+			}
- 			if (rd->id == RAPL_DOMAIN_PACKAGE) {
- 				rd_package = rd;
- 				continue;
+-- 
+viresh
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
