@@ -1,83 +1,159 @@
 From: Baolin Wang <baolin.wang@linaro.org>
-Subject: [PATCH v4 3/5] gadget: Support for the usb charger framework
-Date: Wed, 19 Aug 2015 17:13:46 +0800
-Message-ID: <59a5ba963dc2aaf9b1f59b0e79387b4d9ce3f30a.1439974219.git.baolin.wang@linaro.org>
+Subject: [PATCH v4 5/5] power: wm831x_power: Support USB charger current limit management
+Date: Wed, 19 Aug 2015 17:13:48 +0800
+Message-ID: <a29a038d7ebee931855cbaa065b055db5c5cfef3.1439974219.git.baolin.wang@linaro.org>
 References: <cover.1439974219.git.baolin.wang@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f175.google.com ([209.85.192.175]:34734 "EHLO
+	mail-pd0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753593AbbHSJOl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Aug 2015 05:14:41 -0400
+Received: by pdbfa8 with SMTP id fa8so78667380pdb.1
+        for <linux-pm@vger.kernel.org>; Wed, 19 Aug 2015 02:14:40 -0700 (PDT)
 In-Reply-To: <cover.1439974219.git.baolin.wang@linaro.org>
 In-Reply-To: <cover.1439974219.git.baolin.wang@linaro.org>
 References: <cover.1439974219.git.baolin.wang@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: balbi@ti.com
 Cc: broonie@kernel.org, linus.walleij@linaro.org, linux-kernel@vger.kernel.org, baolin.wang@linaro.org, gregkh@linuxfoundation.org, peter.chen@freescale.com, sojka@merica.cz, stern@rowland.harvard.edu, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, sameo@linux.intel.com, lee.jones@linaro.org, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
-For supporting the usb charger, it adds the usb_charger_init() and
-usb_charger_exit() functions for usb charger initialization and exit.
+Integrate with the newly added USB charger interface to limit the current
+we draw from the USB input based on the input device configuration
+identified by the USB stack, allowing us to charge more quickly from high
+current inputs without drawing more current than specified from others.
 
-Introduce a callback 'get_charger_type' which will implemented by
-user for usb gadget operations to get the usb charger type.
-
+Signed-off-by: Mark Brown <broonie@kernel.org>
 Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
 ---
- drivers/usb/gadget/udc/udc-core.c |    8 ++++++++
- include/linux/usb/gadget.h        |    2 ++
- 2 files changed, 10 insertions(+)
+ drivers/power/wm831x_power.c     |   69 ++++++++++++++++++++++++++++++++++++++
+ include/linux/mfd/wm831x/pdata.h |    3 ++
+ 2 files changed, 72 insertions(+)
 
-diff --git a/drivers/usb/gadget/udc/udc-core.c b/drivers/usb/gadget/udc/udc-core.c
-index 4238fc3..370376e 100644
---- a/drivers/usb/gadget/udc/udc-core.c
-+++ b/drivers/usb/gadget/udc/udc-core.c
-@@ -28,6 +28,7 @@
- #include <linux/usb/ch9.h>
- #include <linux/usb/gadget.h>
- #include <linux/usb.h>
+diff --git a/drivers/power/wm831x_power.c b/drivers/power/wm831x_power.c
+index db11ae6..72c661f 100644
+--- a/drivers/power/wm831x_power.c
++++ b/drivers/power/wm831x_power.c
+@@ -13,6 +13,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/power_supply.h>
+ #include <linux/slab.h>
 +#include <linux/usb/usb_charger.h>
  
- /**
-  * struct usb_udc - describes one usb device controller
-@@ -437,8 +438,14 @@ int usb_add_gadget_udc_release(struct device *parent, struct usb_gadget *gadget,
- 
- 	mutex_unlock(&udc_lock);
- 
-+	ret = usb_charger_init(gadget);
-+	if (ret)
-+		goto err5;
-+
- 	return 0;
- 
-+err5:
-+	device_del(&udc->dev);
- err4:
- 	list_del(&udc->list);
- 	mutex_unlock(&udc_lock);
-@@ -513,6 +520,7 @@ void usb_del_gadget_udc(struct usb_gadget *gadget)
- 	kobject_uevent(&udc->dev.kobj, KOBJ_REMOVE);
- 	flush_work(&gadget->work);
- 	device_unregister(&udc->dev);
-+	usb_charger_exit(gadget);
- 	device_unregister(&gadget->dev);
- }
- EXPORT_SYMBOL_GPL(usb_del_gadget_udc);
-diff --git a/include/linux/usb/gadget.h b/include/linux/usb/gadget.h
-index 755e8bc..44d82f5 100644
---- a/include/linux/usb/gadget.h
-+++ b/include/linux/usb/gadget.h
-@@ -537,6 +537,7 @@ struct usb_gadget_ops {
- 	struct usb_ep *(*match_ep)(struct usb_gadget *,
- 			struct usb_endpoint_descriptor *,
- 			struct usb_ss_ep_comp_descriptor *);
-+	enum usb_charger_type	(*get_charger_type)(struct usb_gadget *);
+ #include <linux/mfd/wm831x/core.h>
+ #include <linux/mfd/wm831x/auxadc.h>
+@@ -31,6 +32,8 @@ struct wm831x_power {
+ 	char usb_name[20];
+ 	char battery_name[20];
+ 	bool have_battery;
++	struct usb_charger *usb_charger;
++	struct notifier_block usb_notify;
  };
  
- /**
-@@ -611,6 +612,7 @@ struct usb_gadget {
- 	struct usb_otg_caps		*otg_caps;
- 	struct raw_notifier_head	nh;
- 	struct mutex			lock;
-+	struct usb_charger		*uchger;
+ static int wm831x_power_check_online(struct wm831x *wm831x, int supply,
+@@ -125,6 +128,43 @@ static enum power_supply_property wm831x_usb_props[] = {
+ 	POWER_SUPPLY_PROP_VOLTAGE_NOW,
+ };
  
- 	unsigned			sg_supported:1;
- 	unsigned			is_otg:1;
++/* In miliamps */
++static unsigned int wm831x_usb_limits[] = {
++	0,
++	2,
++	100,
++	500,
++	900,
++	1500,
++	1800,
++	550,
++};
++
++static int wm831x_usb_limit_change(struct notifier_block *nb,
++				   unsigned long limit, void *data)
++{
++	struct wm831x_power *wm831x_power = container_of(nb,
++							 struct wm831x_power,
++							 usb_notify);
++	int i, best;
++
++	/* Find the highest supported limit */
++	best = 0;
++	for (i = 0; i < ARRAY_SIZE(wm831x_usb_limits); i++) {
++		if (limit < wm831x_usb_limits[i] &&
++		    wm831x_usb_limits[best] < wm831x_usb_limits[i])
++			best = i;
++	}
++
++	dev_dbg(wm831x_power->wm831x->dev,
++		"Limiting USB current to %dmA", wm831x_usb_limits[best]);
++
++	wm831x_set_bits(wm831x_power->wm831x, WM831X_POWER_STATE,
++		        WM831X_USB_ILIM_MASK, best);
++
++	return 0;
++}
++
+ /*********************************************************************
+  *		Battery properties
+  *********************************************************************/
+@@ -606,8 +646,31 @@ static int wm831x_power_probe(struct platform_device *pdev)
+ 		}
+ 	}
+ 
++	if (wm831x_pdata && wm831x_pdata->usb_gadget) {
++		power->usb_charger =
++			usb_charger_find_by_name(wm831x_pdata->usb_gadget);
++		if (IS_ERR(power->usb_charger)) {
++			ret = PTR_ERR(power->usb_charger);
++			dev_err(&pdev->dev,
++				"Failed to find USB gadget: %d\n", ret);
++			goto err_bat_irq;
++		}
++
++		power->usb_notify.notifier_call = wm831x_usb_limit_change;
++
++		ret = usb_charger_register_notify(power->usb_charger,
++						  &power->usb_notify);
++		if (ret != 0) {
++			dev_err(&pdev->dev,
++				"Failed to register notifier: %d\n", ret);
++			goto err_usb_charger;
++		}
++	}
++
+ 	return ret;
+ 
++err_usb_charger:
++	usb_charger_put(power->usb_charger);
+ err_bat_irq:
+ 	--i;
+ 	for (; i >= 0; i--) {
+@@ -637,6 +700,12 @@ static int wm831x_power_remove(struct platform_device *pdev)
+ 	struct wm831x *wm831x = wm831x_power->wm831x;
+ 	int irq, i;
+ 
++	if (wm831x_power->usb_charger) {
++		usb_charger_unregister_notify(wm831x_power->usb_charger,
++					      &wm831x_power->usb_notify);
++		usb_charger_put(wm831x_power->usb_charger);
++	}
++
+ 	for (i = 0; i < ARRAY_SIZE(wm831x_bat_irqs); i++) {
+ 		irq = wm831x_irq(wm831x, 
+ 				 platform_get_irq_byname(pdev,
+diff --git a/include/linux/mfd/wm831x/pdata.h b/include/linux/mfd/wm831x/pdata.h
+index dcc9631..5af8399 100644
+--- a/include/linux/mfd/wm831x/pdata.h
++++ b/include/linux/mfd/wm831x/pdata.h
+@@ -126,6 +126,9 @@ struct wm831x_pdata {
+ 	/** The driver should initiate a power off sequence during shutdown */
+ 	bool soft_shutdown;
+ 
++	/** dev_name of USB charger gadget to integrate with */
++	const char *usb_gadget;
++
+ 	int irq_base;
+ 	int gpio_base;
+ 	int gpio_defaults[WM831X_GPIO_NUM];
 -- 
 1.7.9.5
+
