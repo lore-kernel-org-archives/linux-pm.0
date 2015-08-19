@@ -1,16 +1,16 @@
 From: Vaishali Thakkar <vthakkar1994@gmail.com>
 Subject: Re: [PATCH] thermal: cpu_cooling: Remove usage of devm functions
-Date: Wed, 19 Aug 2015 17:08:17 +0530
-Message-ID: <CAK-LDb+sx7hN3XTNNOdA+kz+fYp+ObgK5ph=95fK2MP2BzhWuQ@mail.gmail.com>
+Date: Wed, 19 Aug 2015 17:27:56 +0530
+Message-ID: <CAK-LDbKdORz5-3oBd7p4BcU+t3w9=u=aQv6LKQthiZPL-qi9bQ@mail.gmail.com>
 References: <20150819062219.GA10032@localhost>
 	<CAOh2x==kSnXWZMhrEcRyiVc-5iixecQki5-7ZC-ajes-D48-sA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f172.google.com ([209.85.160.172]:36124 "EHLO
-	mail-yk0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752228AbbHSLiR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Aug 2015 07:38:17 -0400
+Received: from mail-yk0-f176.google.com ([209.85.160.176]:33896 "EHLO
+	mail-yk0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752654AbbHSL55 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Aug 2015 07:57:57 -0400
 In-Reply-To: <CAOh2x==kSnXWZMhrEcRyiVc-5iixecQki5-7ZC-ajes-D48-sA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -35,11 +35,7 @@ On Wed, Aug 19, 2015 at 1:54 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
 >> things, I am fine with it too.
 >
 > I will rather ask you to do this:
-
-Ok. I was not sure about introducing new label. Thanks.
-
-I will send v2 with the changes you pointed.
-
+>
 > diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
 > index 620dcd405ff6..a04055ea5d94 100644
 > --- a/drivers/thermal/cpu_cooling.c
@@ -54,7 +50,15 @@ I will send v2 with the changes you pointed.
 > +               load_cpu = kcalloc(&cdev->device, ncpus, sizeof(*load_cpu),
 > +                                  GFP_KERNEL);
 >         }
->
+
+Sorry. I forgot to ask you one more thing. devm_kcalloc takes one more
+argument then
+kcalloc. So, the change I did is correct I guess. And I'm not sure why
+you suggested this
+change? I assume you just want me to correct in my patch for last
+argument. But that line
+also comes under 80 characters.
+
 >         for_each_cpu(cpu, &cpufreq_device->allowed_cpus) {
 > @@ -607,22 +607,20 @@ static int cpufreq_get_requested_power(struct
 > thermal_cooling_device *cdev,
