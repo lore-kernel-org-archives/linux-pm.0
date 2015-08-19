@@ -1,49 +1,59 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] thermal: cpu_cooling: Remove usage of devm functions
-Date: Wed, 19 Aug 2015 17:32:09 +0530
-Message-ID: <20150819120209.GC14544@linux>
-References: <20150819062219.GA10032@localhost>
- <CAOh2x==kSnXWZMhrEcRyiVc-5iixecQki5-7ZC-ajes-D48-sA@mail.gmail.com>
- <CAK-LDbKdORz5-3oBd7p4BcU+t3w9=u=aQv6LKQthiZPL-qi9bQ@mail.gmail.com>
+From: Sergei Shtylyov <sergei.shtylyov-M4DtvfQ/ZS1MRgGoP+s0PdBPR1lH4CV8@public.gmane.org>
+Subject: Re: [PATCH v4 3/5] gadget: Support for the usb charger framework
+Date: Wed, 19 Aug 2015 15:56:36 +0300
+Message-ID: <55D47D04.7060104@cogentembedded.com>
+References: <cover.1439974219.git.baolin.wang@linaro.org>
+ <59a5ba963dc2aaf9b1f59b0e79387b4d9ce3f30a.1439974219.git.baolin.wang@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f51.google.com ([209.85.220.51]:34708 "EHLO
-	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753337AbbHSMCO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Aug 2015 08:02:14 -0400
-Received: by paccq16 with SMTP id cq16so1913341pac.1
-        for <linux-pm@vger.kernel.org>; Wed, 19 Aug 2015 05:02:13 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <CAK-LDbKdORz5-3oBd7p4BcU+t3w9=u=aQv6LKQthiZPL-qi9bQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <59a5ba963dc2aaf9b1f59b0e79387b4d9ce3f30a.1439974219.git.baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, balbi-l0cyMroinI0@public.gmane.org
+Cc: broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org, sojka-Knnw/vAvyUalVyrhU4qvOw@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Vaishali Thakkar <vthakkar1994@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On 19-08-15, 17:27, Vaishali Thakkar wrote:
-> > I will rather ask you to do this:
-> >
-> > diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-> > index 620dcd405ff6..a04055ea5d94 100644
-> > --- a/drivers/thermal/cpu_cooling.c
-> > +++ b/drivers/thermal/cpu_cooling.c
-> > @@ -584,8 +584,8 @@ static int cpufreq_get_requested_power(struct
-> > thermal_cooling_device *cdev,
-> >         if (trace_thermal_power_cpu_get_power_enabled()) {
-> >                 u32 ncpus = cpumask_weight(&cpufreq_device->allowed_cpus);
-> >
-> > -               load_cpu = devm_kcalloc(&cdev->device, ncpus, sizeof(*load_cpu),
-> > -                                       GFP_KERNEL);
-> > +               load_cpu = kcalloc(&cdev->device, ncpus, sizeof(*load_cpu),
-> > +                                  GFP_KERNEL);
-> >         }
-> 
-> Sorry. I forgot to ask you one more thing. devm_kcalloc takes one more
-> argument then
-> kcalloc. So, the change I did is correct I guess.
+Hello.
 
-Right, there is an extra argument in my code.
+On 8/19/2015 12:13 PM, Baolin Wang wrote:
 
--- 
-viresh
+> For supporting the usb charger, it adds the usb_charger_init() and
+> usb_charger_exit() functions for usb charger initialization and exit.
+>
+> Introduce a callback 'get_charger_type' which will implemented by
+> user for usb gadget operations to get the usb charger type.
+>
+> Signed-off-by: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+[...]
+
+> diff --git a/include/linux/usb/gadget.h b/include/linux/usb/gadget.h
+> index 755e8bc..44d82f5 100644
+> --- a/include/linux/usb/gadget.h
+> +++ b/include/linux/usb/gadget.h
+> @@ -537,6 +537,7 @@ struct usb_gadget_ops {
+>   	struct usb_ep *(*match_ep)(struct usb_gadget *,
+>   			struct usb_endpoint_descriptor *,
+>   			struct usb_ss_ep_comp_descriptor *);
+> +	enum usb_charger_type	(*get_charger_type)(struct usb_gadget *);
+                              ^^^ please use space, not tab here
+
+>   };
+>
+>   /**
+> @@ -611,6 +612,7 @@ struct usb_gadget {
+>   	struct usb_otg_caps		*otg_caps;
+>   	struct raw_notifier_head	nh;
+>   	struct mutex			lock;
+> +	struct usb_charger		*uchger;
+
+    Why not simply call the field 'charger'? :-)
+
+[...]
+
+WBR, Sergei
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
