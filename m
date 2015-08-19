@@ -1,51 +1,70 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] thermal: cpu_cooling: Add MAINTAINERS entry
-Date: Wed, 19 Aug 2015 12:30:40 +0530
-Message-ID: <298acc438cba5f64121d883db7ff2b860c0a9610.1439967508.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f45.google.com ([209.85.220.45]:35992 "EHLO
-	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752356AbbHSHA6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Aug 2015 03:00:58 -0400
-Received: by pawq9 with SMTP id q9so54117774paw.3
-        for <linux-pm@vger.kernel.org>; Wed, 19 Aug 2015 00:00:58 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+From: Philipp Zabel <philipp.zabel@gmail.com>
+Subject: Re: [PATCH v2 01/21] ARM: pxa: magician: Fix Kconfig for magician
+ to always include htc-egpio
+Date: Wed, 19 Aug 2015 09:29:42 +0200
+Message-ID: <1439969382.11928.6.camel@gmail.com>
+References: <cover.1439843482.git.petr.cvek@tul.cz>
+	 <55D25880.3030507@tul.cz> <87zj1o8n3w.fsf@belgarion.home>
+	 <55D38F60.7010405@tul.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-leds-owner@vger.kernel.org>
+In-Reply-To: <55D38F60.7010405@tul.cz>
+Sender: linux-leds-owner@vger.kernel.org
+To: Petr Cvek <petr.cvek@tul.cz>, Robert Jarzmik <robert.jarzmik@free.fr>
+Cc: daniel@zonque.org, haojian.zhuang@gmail.com, sameo@linux.intel.com, lee.jones@linaro.org, cooloney@gmail.com, rpurdie@rpsys.net, j.anaszewski@samsung.com, linux@arm.linux.org.uk, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: edubezval@gmail.com
-Cc: linaro-kernel@lists.linaro.org, amit.daniel@samsung.com, linux-pm@vger.kernel.org, rui.zhang@intel.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-None of the patches are reaching Viresh or Daniel directly as
-get_maintainers doesn't report us as maintainers. Looks like file header
-or history of commits isn't able to do that properly.
+Am Dienstag, den 18.08.2015, 22:02 +0200 schrieb Petr Cvek:
+> Dne 18.8.2015 v 20:31 Robert Jarzmik napsal(a):
+> > Petr Cvek <petr.cvek@tul.cz> writes:
+> > 
+> > > The htc-egpio driver should be always included in the kernel as 
+> > > it
+> > > controls MMC/charging/IrDA power, which is the only way to get
+> > > an useful rootfs.
+> > > 
+> > > Signed-off-by: Petr Cvek <petr.cvek@tul.cz>
+> > It's already defined in magician_defconfig, why enforce it in 
+> > Kconfig ?
+> 
+> Good remark, I did not use defconfig at all (as I had to fix from 
+> zero configuration + I did not know if defconfig works and will be 
+> supported in the future).
+> 
+> I will check if magician_defconfig needs to be updated (probably for 
+> leds).
+> 
+> > 
+> > And if it's enforced and I want to build a kernel for magician 
+> > without
+> > MMC/charging/IrDA, why should I be forced to build in HTC_EGPIO ?
+> > 
+> > Or said differently, does a kernel without HTC_EGPIO is proven to 
+> > fail 100%
+> > without this option ?
+> 
+> Kernel will probably run OK, but the phone will be unusable (for any 
+> practical purposes). The EGPIO chip (CPLD) will stay in the state 
+> programmed from the previous environment (bootloader or WinCE/Mobile) 
+> and drivers fail to init because of the missing EGPIO (and if they 
+> init, they will be without any idea about state of the peripherals 
+> (no charger detection/charging current stuck on the previous 
+> settings, no LCD backlight control, no IrDA, no rootfs, no GSM, no 
+> sound, no LEDs).
+> 
+> Different PCB revisions probably use EGPIO pin for LCD power (and at 
+> least on my phone, LCD power must have very specific order).
+> 
+> For future (when ROM XIP will work) I would like to be able boot 
+> kernel from flash, which itself uses EGPIO for Vpp control (another 
+> initial EGPIO configuration). Last possible boot is from JTAG and 
+> there will be no previous EGPIO initialization.
+> 
+> Petr
 
-Add a separate entry for cpu_cooling driver in MAINTAINERS.
+I agree with Robert, let's drop this patch.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-Please let me know if someone has objections to this.
-
- MAINTAINERS | 8 ++++++++
- 1 file changed, 8 insertions(+)
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 5d8ab5c06c4f..c85081f08516 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -10298,6 +10298,14 @@ F:	include/uapi/linux/thermal.h
- F:	include/linux/cpu_cooling.h
- F:	Documentation/devicetree/bindings/thermal/
- 
-+THERMAL/CPU_COOLING
-+M:	Amit Daniel Kachhap <amit.daniel@samsung.com>
-+M:	Viresh Kumar <viresh.kumar@linaro.org>
-+L:	linux-pm@vger.kernel.org
-+S:	Supported
-+F:	drivers/thermal/cpu_cooling.c
-+F:	include/linux/cpu_cooling.h
-+
- THINGM BLINK(1) USB RGB LED DRIVER
- M:	Vivien Didelot <vivien.didelot@savoirfairelinux.com>
- S:	Maintained
--- 
-2.4.0
-
+regards
+Philipp
