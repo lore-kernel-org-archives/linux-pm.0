@@ -1,75 +1,28 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] thermal: cpu_cooling: Add MAINTAINERS entry
-Date: Wed, 19 Aug 2015 10:44:46 -0700
-Message-ID: <20150819174444.GA6643@localhost.localdomain>
-References: <298acc438cba5f64121d883db7ff2b860c0a9610.1439967508.git.viresh.kumar@linaro.org>
+From: Javi Merino <javi.merino-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH] PM / devfreq: tegra: Update governor to use
+ devfreq_update_stats()
+Date: Wed, 19 Aug 2015 18:48:23 +0100
+Message-ID: <20150819174823.GB22033@e104805>
+References: <874354786.192611439873691246.JavaMail.weblogic@ep2mlwas01a>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f44.google.com ([209.85.220.44]:33968 "EHLO
-	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751704AbbHSRot (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Aug 2015 13:44:49 -0400
-Received: by paccq16 with SMTP id cq16so7762580pac.1
-        for <linux-pm@vger.kernel.org>; Wed, 19 Aug 2015 10:44:48 -0700 (PDT)
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <298acc438cba5f64121d883db7ff2b860c0a9610.1439967508.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <874354786.192611439873691246.JavaMail.weblogic@ep2mlwas01a>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Cc: "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org" <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, amit.daniel@samsung.com, linux-pm@vger.kernel.org, rui.zhang@intel.com
 
-On Wed, Aug 19, 2015 at 12:30:40PM +0530, Viresh Kumar wrote:
-> None of the patches are reaching Viresh or Daniel directly as
-> get_maintainers doesn't report us as maintainers. Looks like file header
-> or history of commits isn't able to do that properly.
-
-Interesting. I would expect that by this point, you would be already
-listed.. anyways..
-
+On Tue, Aug 18, 2015 at 05:54:51AM +0100, MyungJoo Ham wrote:
 > 
-> Add a separate entry for cpu_cooling driver in MAINTAINERS.
+> Direct invocation of get_dev_status() is no more recommended.
 > 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 
-Apart from the minors below, you can add my:
+Looks good to me as well.  You can add my
 
-Acked-by: Eduardo Valentin <edubezval@gmail.com>
+Reviewed-by: Javi Merino <javi.merino-5wv7dgnIgG8@public.gmane.org>
 
-> ---
-> Please let me know if someone has objections to this.
-> 
->  MAINTAINERS | 8 ++++++++
->  1 file changed, 8 insertions(+)
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 5d8ab5c06c4f..c85081f08516 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -10298,6 +10298,14 @@ F:	include/uapi/linux/thermal.h
->  F:	include/linux/cpu_cooling.h
->  F:	Documentation/devicetree/bindings/thermal/
->  
-> +THERMAL/CPU_COOLING
-> +M:	Amit Daniel Kachhap <amit.daniel@samsung.com>
-
-Is this still a valid email? I remember one of his email was bouncing
-back. 
-
-> +M:	Viresh Kumar <viresh.kumar@linaro.org>
-> +L:	linux-pm@vger.kernel.org
-> +S:	Supported
-> +F:	drivers/thermal/cpu_cooling.c
-> +F:	include/linux/cpu_cooling.h
-> +
-
-Please add:
-+F: Documentation/thermal/cpu-cooling-api.txt 
-
-
->  THINGM BLINK(1) USB RGB LED DRIVER
->  M:	Vivien Didelot <vivien.didelot@savoirfairelinux.com>
->  S:	Maintained
-> -- 
-> 2.4.0
-> 
+Cheers,
+Javi
