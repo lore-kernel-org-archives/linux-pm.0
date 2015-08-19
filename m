@@ -1,86 +1,69 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [Patch v2] x86, ACPI, irq: Add a quirk to override SCI polarity
- for HyperV
-Date: Wed, 19 Aug 2015 08:04:39 +0200
-Message-ID: <CAJZ5v0g7F+BRMzc9-uuxHAK896B-hoOJ5AW7M4jGpowVG+hujw@mail.gmail.com>
-References: <alpine.DEB.2.11.1508182133010.3873@nanos>
-	<1439963634-12006-1-git-send-email-jiang.liu@linux.intel.com>
+From: Vaishali Thakkar <vthakkar1994@gmail.com>
+Subject: [PATCH] thermal: cpu_cooling: Remove usage of devm functions
+Date: Wed, 19 Aug 2015 11:52:19 +0530
+Message-ID: <20150819062219.GA10032@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1439963634-12006-1-git-send-email-jiang.liu@linux.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Jiang Liu <jiang.liu@linux.intel.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Nick Meier <nmeier@microsoft.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pd0-f178.google.com ([209.85.192.178]:35266 "EHLO
+	mail-pd0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751207AbbHSGWY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Aug 2015 02:22:24 -0400
+Content-Disposition: inline
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi,
+In the function cpufreq_get_requested_power, the memory allocated
+for load_cpu is live within the function only. And after the
+allocation it is immediately freed with devm_kfree. There is no
+need to allocate memory for load_cpu with devm function so replace
+devm_kcalloc with kcalloc and devm_kfree with kfree.
 
-On Wed, Aug 19, 2015 at 7:53 AM, Jiang Liu <jiang.liu@linux.intel.com> wrote:
-> Nick Meier reported a regression with HyperV that "
->   After rebooting the VM, the following messages are logged in syslog
->   when trying to load the tulip driver:
->     tulip: Linux Tulip drivers version 1.1.15 (Feb 27, 2007)
->     tulip: 0000:00:0a.0: PCI INT A: failed to register GSI
->     tulip: Cannot enable tulip board #0, aborting
->     tulip: probe of 0000:00:0a.0 failed with error -16
->   Errors occur in 3.19.0 kernel
->   Works in 3.17 kernel.
-> "
->
-> According to the ACPI dump file posted by Nick at
-> https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1440072
->
-> The ACPI MADT table includes an interrupt source overridden entry for
-> ACPI SCI:
-> [236h 0566  1]                Subtable Type : 02 <Interrupt Source Override>
-> [237h 0567  1]                       Length : 0A
-> [238h 0568  1]                          Bus : 00
-> [239h 0569  1]                       Source : 09
-> [23Ah 0570  4]                    Interrupt : 00000009
-> [23Eh 0574  2]        Flags (decoded below) : 000D
->                                    Polarity : 1
->                                Trigger Mode : 3
->
-> And in DSDT table, we have _PRT method to define PCI interrupts, which
-> eventually goes to:
->         Name (PRSA, ResourceTemplate ()
->         {
->             IRQ (Level, ActiveLow, Shared, )
->                 {3,4,5,7,9,10,11,12,14,15}
->         })
->         Name (PRSB, ResourceTemplate ()
->         {
->             IRQ (Level, ActiveLow, Shared, )
->                 {3,4,5,7,9,10,11,12,14,15}
->         })
->         Name (PRSC, ResourceTemplate ()
->         {
->             IRQ (Level, ActiveLow, Shared, )
->                 {3,4,5,7,9,10,11,12,14,15}
->         })
->         Name (PRSD, ResourceTemplate ()
->         {
->             IRQ (Level, ActiveLow, Shared, )
->                 {3,4,5,7,9,10,11,12,14,15}
->         })
->
-> According to the MADT and DSDT tables above, IRQ 9 may be used for:
-> 1) ACPI SCI in level, high mode
-> 2) PCI legacy IRQ in level, low mode
-> So there's a possible conflict in polarity setting for IRQ 9.
->
-> Prior to commit cd68f6bd53cf ("x86, irq, acpi: Get rid of special
-> handling of GSI for ACPI SCI"), ACPI SCI is handled specially and
-> there's no check for conflicts between ACPI SCI and PCI legagy IRQ.
-> And it seems that the HyperV hypervisor doesn't make use of the
-> polarity configuration in IOAPIC entry, so it just works.
+Signed-off-by: Vaishali Thakkar <vthakkar1994@gmail.com>
+---
+This patch is having one checkpatch.pl warning which suggests that
+kfree(NULL) is safe. But I think leaving code with if is nice
+because it reflects the fact that kcalloc was under an if. So, I
+have ignored checkpatch. If maintainer wants me to go for changing
+things, I am fine with it too.
+---
+ drivers/thermal/cpu_cooling.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-That likely means the previous behavior was the same as (or at least
-analogous to) what happens on Windows which is what the firmware has
-been tested against and that's why the bug in it has not been caught.
-That in turn indicates that there may be more systems having this kind
-of problems, possibly from other vendors too, so I'm wondering if we
-can do something more generic than using a quirk here?
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index 620dcd4..babf8b3 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -584,8 +584,7 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
+ 	if (trace_thermal_power_cpu_get_power_enabled()) {
+ 		u32 ncpus = cpumask_weight(&cpufreq_device->allowed_cpus);
+ 
+-		load_cpu = devm_kcalloc(&cdev->device, ncpus, sizeof(*load_cpu),
+-					GFP_KERNEL);
++		load_cpu = kcalloc(ncpus, sizeof(*load_cpu), GFP_KERNEL);
+ 	}
+ 
+ 	for_each_cpu(cpu, &cpufreq_device->allowed_cpus) {
+@@ -609,7 +608,7 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
+ 	ret = get_static_power(cpufreq_device, tz, freq, &static_power);
+ 	if (ret) {
+ 		if (load_cpu)
+-			devm_kfree(&cdev->device, load_cpu);
++			kfree(load_cpu);
+ 		return ret;
+ 	}
+ 
+@@ -618,7 +617,7 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
+ 			&cpufreq_device->allowed_cpus,
+ 			freq, load_cpu, i, dynamic_power, static_power);
+ 
+-		devm_kfree(&cdev->device, load_cpu);
++		kfree(load_cpu);
+ 	}
+ 
+ 	*power = static_power + dynamic_power;
+-- 
+1.9.1
 
-Rafael
