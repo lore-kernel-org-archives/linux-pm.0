@@ -1,57 +1,82 @@
-From: Antoine Tenart <antoine.tenart@free-electrons.com>
-Subject: Re: [PATCH v2 0/6] ARM: berlin: add cpufreq support
-Date: Wed, 19 Aug 2015 10:17:57 +0200
-Message-ID: <20150819081757.GA1089@kwain>
-References: <1439898368-11543-1-git-send-email-antoine.tenart@free-electrons.com>
- <CAOh2x=ke9NWa-GjL=c+RgEWWfsNeKvE2O9CRHmW2dG5mj8ATCg@mail.gmail.com>
- <20150818143911.GB12017@kwain>
- <20150818145925.GF31148@linux>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] thermal: cpu_cooling: Remove usage of devm functions
+Date: Wed, 19 Aug 2015 13:54:17 +0530
+Message-ID: <CAOh2x==kSnXWZMhrEcRyiVc-5iixecQki5-7ZC-ajes-D48-sA@mail.gmail.com>
+References: <20150819062219.GA10032@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from down.free-electrons.com ([37.187.137.238]:47758 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752405AbbHSISB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Aug 2015 04:18:01 -0400
-Content-Disposition: inline
-In-Reply-To: <20150818145925.GF31148@linux>
+Received: from mail-ig0-f179.google.com ([209.85.213.179]:33914 "EHLO
+	mail-ig0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752764AbbHSIYS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Aug 2015 04:24:18 -0400
+In-Reply-To: <20150819062219.GA10032@localhost>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Antoine Tenart <antoine.tenart@free-electrons.com>, sebastian.hesselbarth@gmail.com, zmxu@marvell.com, jszhang@marvell.com, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Vaishali Thakkar <vthakkar1994@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Tue, Aug 18, 2015 at 08:29:25PM +0530, Viresh Kumar wrote:
-> On 18-08-15, 16:39, Antoine Tenart wrote:
-> > However, it seems the OPP-v2 table takes precedence over the old on=
-e.
-> > When a default OPP-v2 table is supplied in the device tree, if the
-> > bootloader supplies an OPP table the old way it won't be taken into
-> > account.
-> >=20
-> > So if I understood correctly, this won't work here for the BG2Q.
->=20
-> Didn't understood it completely. Are you saying that your dtb will
-> have two operating-points tables ?
+On Wed, Aug 19, 2015 at 11:52 AM, Vaishali Thakkar
+<vthakkar1994@gmail.com> wrote:
+> In the function cpufreq_get_requested_power, the memory allocated
+> for load_cpu is live within the function only. And after the
+> allocation it is immediately freed with devm_kfree. There is no
+> need to allocate memory for load_cpu with devm function so replace
+> devm_kcalloc with kcalloc and devm_kfree with kfree.
+>
+> Signed-off-by: Vaishali Thakkar <vthakkar1994@gmail.com>
+> ---
+> This patch is having one checkpatch.pl warning which suggests that
+> kfree(NULL) is safe. But I think leaving code with if is nice
+> because it reflects the fact that kcalloc was under an if. So, I
+> have ignored checkpatch. If maintainer wants me to go for changing
+> things, I am fine with it too.
 
-Yes. If the device tree has an OPP-v2 table and the bootloader modify i=
-t
-to add an old OPP table at boot, the one added by the bootloader won't
-be taken into account by the kernel.
+I will rather ask you to do this:
 
-> The deal is that for any device, parsing of opp-v2 will be attempted
-> first. If its not available, then opp-v1 will be tried. But this is
-> per-device. So, one device can have opp-v2 tables and other one can d=
-o
-> v1 type.
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index 620dcd405ff6..a04055ea5d94 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -584,8 +584,8 @@ static int cpufreq_get_requested_power(struct
+thermal_cooling_device *cdev,
+        if (trace_thermal_power_cpu_get_power_enabled()) {
+                u32 ncpus = cpumask_weight(&cpufreq_device->allowed_cpus);
 
-Sure. OPP-v2 tables can be used for devices having an up-to-date
-bootloader or if the bootloader do not modify the device tree at boot
-time to add an (old) OPP table.
+-               load_cpu = devm_kcalloc(&cdev->device, ncpus, sizeof(*load_cpu),
+-                                       GFP_KERNEL);
++               load_cpu = kcalloc(&cdev->device, ncpus, sizeof(*load_cpu),
++                                  GFP_KERNEL);
+        }
 
-Antoine
+        for_each_cpu(cpu, &cpufreq_device->allowed_cpus) {
+@@ -607,22 +607,20 @@ static int cpufreq_get_requested_power(struct
+thermal_cooling_device *cdev,
 
---=20
-Antoine T=E9nart, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
+        dynamic_power = get_dynamic_power(cpufreq_device, freq);
+        ret = get_static_power(cpufreq_device, tz, freq, &static_power);
+-       if (ret) {
+-               if (load_cpu)
+-                       devm_kfree(&cdev->device, load_cpu);
+-               return ret;
+-       }
++       if (ret)
++               goto free;
+
+-       if (load_cpu) {
++       if (load_cpu)
+                trace_thermal_power_cpu_get_power(
+                        &cpufreq_device->allowed_cpus,
+                        freq, load_cpu, i, dynamic_power, static_power);
+
+-               devm_kfree(&cdev->device, load_cpu);
+-       }
+-
+        *power = static_power + dynamic_power;
+-       return 0;
++
++free:
++       kfree(&cdev->device, load_cpu);
++
++       return ret;
+ }
