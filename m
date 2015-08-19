@@ -1,119 +1,97 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH 03/13] twl4030_charger: correctly handle -EPROBE_DEFER
- from devm_usb_get_phy_by_node
-Date: Tue, 18 Aug 2015 23:25:39 -0700
-Message-ID: <20150819062539.GH4215@atomide.com>
-References: <20150730001113.4012.18086.stgit@noble>
- <20150730001124.4012.31980.stgit@noble>
- <20150818080758.GG4215@atomide.com>
- <20150819102832.29a5059f@home.neil.brown.name>
+From: Jiang Liu <jiang.liu@linux.intel.com>
+Subject: Re: [Patch v2] x86, ACPI, irq: Add a quirk to override SCI polarity
+ for HyperV
+Date: Wed, 19 Aug 2015 14:26:13 +0800
+Message-ID: <55D42185.1000709@linux.intel.com>
+References: <alpine.DEB.2.11.1508182133010.3873@nanos>
+ <1439963634-12006-1-git-send-email-jiang.liu@linux.intel.com>
+ <CAJZ5v0g7F+BRMzc9-uuxHAK896B-hoOJ5AW7M4jGpowVG+hujw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:45224 "EHLO muru.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752611AbbHSGZq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 19 Aug 2015 02:25:46 -0400
-Content-Disposition: inline
-In-Reply-To: <20150819102832.29a5059f@home.neil.brown.name>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0g7F+BRMzc9-uuxHAK896B-hoOJ5AW7M4jGpowVG+hujw@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Nick Meier <nmeier@microsoft.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: NeilBrown <neil@brown.name>
-Cc: Sebastian Reichel <sre@kernel.org>, Samuel Ortiz <sameo@linux.intel.com>, linux-pm@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, real GTA04 owners <gta04-owner@goldelico.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Pavel Machek <pavel@ucw.cz>, linux-omap@vger.kernel.org, Lee Jones <lee.jones@linaro.org>
 
-* NeilBrown <neil@brown.name> [150818 17:32]:
-> On Tue, 18 Aug 2015 01:07:58 -0700 Tony Lindgren <tony@atomide.com>
-> wrote:
+On 2015/8/19 14:04, Rafael J. Wysocki wrote:
+> Hi,
 > 
-> > * NeilBrown <neil@brown.name> [150729 17:29]:
-> > > Now that twl4030_bci_probe can safely return -EPROBE_DEFER,
-> > > do so when devm_usb_get_phy_by_node returns that error.
-> > > 
-> > > Signed-off-by: NeilBrown <neil@brown.name>
-> > > ---
-> > >  drivers/power/twl4030_charger.c |    6 +++++-
-> > >  1 file changed, 5 insertions(+), 1 deletion(-)
-> > > 
-> > > diff --git a/drivers/power/twl4030_charger.c b/drivers/power/twl4030_charger.c
-> > > index 045238370d3f..ffc123fb7158 100644
-> > > --- a/drivers/power/twl4030_charger.c
-> > > +++ b/drivers/power/twl4030_charger.c
-> > > @@ -636,9 +636,13 @@ static int twl4030_bci_probe(struct platform_device *pdev)
-> > >  
-> > >  		phynode = of_find_compatible_node(bci->dev->of_node->parent,
-> > >  						  NULL, "ti,twl4030-usb");
-> > > -		if (phynode)
-> > > +		if (phynode) {
-> > >  			bci->transceiver = devm_usb_get_phy_by_node(
-> > >  				bci->dev, phynode, &bci->usb_nb);
-> > > +			if (IS_ERR(bci->transceiver) &&
-> > > +			    PTR_ERR(bci->transceiver) == -EPROBE_DEFER)
-> > > +				return -EPROBE_DEFER;
-> > > +		}
-> > >  	}
-> > 
-> > Neil, the return with -EPROBE_DEFER here causes flakeyness booting
-> > for me somehow at least on my logicpd-torpedo-37xx-devkit using
-> > omap2plus_defconfig.
-> > 
-> > It seems that the twl4030_bci_probe keeps looping or something about
-> > 1/3 of the boots and that probably prevents the other twl modules
-> > from loading? Reverting this patch alone seems to fix the issue.
-> > 
-> > I don't think I have a battery wired on this board the USB is wired
-> > the same way as on beagle-xm. So I'd assume also flakeyness on beagle
-> > xm with this patch.
+> On Wed, Aug 19, 2015 at 7:53 AM, Jiang Liu <jiang.liu@linux.intel.com> wrote:
+>> Nick Meier reported a regression with HyperV that "
+>>   After rebooting the VM, the following messages are logged in syslog
+>>   when trying to load the tulip driver:
+>>     tulip: Linux Tulip drivers version 1.1.15 (Feb 27, 2007)
+>>     tulip: 0000:00:0a.0: PCI INT A: failed to register GSI
+>>     tulip: Cannot enable tulip board #0, aborting
+>>     tulip: probe of 0000:00:0a.0 failed with error -16
+>>   Errors occur in 3.19.0 kernel
+>>   Works in 3.17 kernel.
+>> "
+>>
+>> According to the ACPI dump file posted by Nick at
+>> https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1440072
+>>
+>> The ACPI MADT table includes an interrupt source overridden entry for
+>> ACPI SCI:
+>> [236h 0566  1]                Subtable Type : 02 <Interrupt Source Override>
+>> [237h 0567  1]                       Length : 0A
+>> [238h 0568  1]                          Bus : 00
+>> [239h 0569  1]                       Source : 09
+>> [23Ah 0570  4]                    Interrupt : 00000009
+>> [23Eh 0574  2]        Flags (decoded below) : 000D
+>>                                    Polarity : 1
+>>                                Trigger Mode : 3
+>>
+>> And in DSDT table, we have _PRT method to define PCI interrupts, which
+>> eventually goes to:
+>>         Name (PRSA, ResourceTemplate ()
+>>         {
+>>             IRQ (Level, ActiveLow, Shared, )
+>>                 {3,4,5,7,9,10,11,12,14,15}
+>>         })
+>>         Name (PRSB, ResourceTemplate ()
+>>         {
+>>             IRQ (Level, ActiveLow, Shared, )
+>>                 {3,4,5,7,9,10,11,12,14,15}
+>>         })
+>>         Name (PRSC, ResourceTemplate ()
+>>         {
+>>             IRQ (Level, ActiveLow, Shared, )
+>>                 {3,4,5,7,9,10,11,12,14,15}
+>>         })
+>>         Name (PRSD, ResourceTemplate ()
+>>         {
+>>             IRQ (Level, ActiveLow, Shared, )
+>>                 {3,4,5,7,9,10,11,12,14,15}
+>>         })
+>>
+>> According to the MADT and DSDT tables above, IRQ 9 may be used for:
+>> 1) ACPI SCI in level, high mode
+>> 2) PCI legacy IRQ in level, low mode
+>> So there's a possible conflict in polarity setting for IRQ 9.
+>>
+>> Prior to commit cd68f6bd53cf ("x86, irq, acpi: Get rid of special
+>> handling of GSI for ACPI SCI"), ACPI SCI is handled specially and
+>> there's no check for conflicts between ACPI SCI and PCI legagy IRQ.
+>> And it seems that the HyperV hypervisor doesn't make use of the
+>> polarity configuration in IOAPIC entry, so it just works.
 > 
-> What dts file are you using?
-> I'm guessing that it doesn't have something like:
-> 
-> &usb_otg_hs {
->         interface-type = <0>;
->         usb-phy = <&usb2_phy>;
->         phys = <&usb2_phy>;
->         phy-names = "usb2-phy";
->         mode = <3>;
->         power = <50>;
-> };
-
-It's the logicpd-torpedo-37xx-devkit.dts like I mentioned above,
-and yes it has the same entry above like beagle xm.
- 
-> ? i.e. with a usb-phy=<&usb2_phy> ?
-> 
-> What if you add
-> 
-> &usb2_phy {
->  status = "disabled";
-> }
-> 
-> to your dts file?
-
-Yes then the PHY driver won't get probed and modprobe of the
-charger won't hang with -EPROBE_DEFER.. The USB is working on this
-one like on beagle xm so that's not a solution.
- 
-> Should the 'status' be disabled in twl4030.dtsi, and then marked OK in
-> any dts that uses it?  I'm not at all clear on how 'status' is meant to
-> be used.
-
-Well status = "disabled" makes kernel completely ignore the
-hardware, so the struct device is never created. I'd stay away from
-using that in general for proper runtime idling of devices.. The
-hardware is there for sure :)
-
-Can you check if something like the the following allows you to
-reproduce the hang of modprobe twl4030_charger:
-
-# rmmod phy-twl4030-usb
-# modprobe twl4030_charger
-
-So just don't probe phy-twl4030-usb before twl4030_charger and
-then modprobe of twl4030_charger hangs?
-
-That is with proper usb2_phy configured in .dts file and not
-set to status = "disabled".
-
-Regards,
-
-Tony
+> That likely means the previous behavior was the same as (or at least
+> analogous to) what happens on Windows which is what the firmware has
+> been tested against and that's why the bug in it has not been caught.
+> That in turn indicates that there may be more systems having this kind
+> of problems, possibly from other vendors too, so I'm wondering if we
+> can do something more generic than using a quirk here?
+Hi Rafael,
+	Good question. I was thought only virtual machines may generate
+such fake ACPI tables with conflicting pin attribute settings. For bare
+metal systems, I guess BIOS writers should report the correct hardware
+configurations, otherwise wrong pin attributes may cause hardware
+malfunction.
+	If that's not the case, we may try to revert cd68f6bd53cf
+instead.
+Thanks!
+Gerry
