@@ -1,333 +1,265 @@
 From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: [RFC PATCH 12/14] sched/tune: add initial support for CGroups based boosting
-Date: Wed, 19 Aug 2015 19:47:22 +0100
-Message-ID: <1440010044-3402-13-git-send-email-patrick.bellasi@arm.com>
+Subject: [RFC PATCH 14/14] sched/{fair,tune}: track RUNNABLE tasks impact on per CPU boost value
+Date: Wed, 19 Aug 2015 19:47:24 +0100
+Message-ID: <1440010044-3402-15-git-send-email-patrick.bellasi@arm.com>
 References: <1440010044-3402-1-git-send-email-patrick.bellasi@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1440010044-3402-1-git-send-email-patrick.bellasi@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Tejun Heo <tj@kernel.org>, Li Zefan <lizefan@huawei.com>, Johannes Weiner <hannes@cmpxchg.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-To support task performance boosting, the usage of a single knob has the
-advantage to be a simple solution, both from the implementation and the
-usability standpoint.  However, on a real system it can be difficult to
-identify a single value for the knob which fits the needs of multiple
-different tasks. For example, some kernel threads and/or user-space
-background services should be better managed the "standard" way while we
-still want to be able to boost the performance of specific workloads.
+When per-task boosting is enabled, every time a task enters/exits a CPU
+its boost value could impact the currently selected OPP for that CPU.
+Thus, the "aggregated" boost value for that CPU potentially needs to
+be updated to match the current maximum boost value among all the tasks
+currently RUNNABLE on that CPU.
 
-In order to improve the flexibility of the task boosting mechanism this
-patch is the first of a small series which extends the previous
-implementation to introduce a "per task group" support.
-This first patch introduces just the basic CGroups support, a new
-"schedtune" CGroups controller is added which allows to configure
-different boost value for different groups of tasks.
-To keep the implementation simple but still effective for a boosting
-strategy, the new controller:
-  1. allows only a two layer hierarchy
-  2. supports only a limited number of boost groups
+This patch introduces the required support to keep track of which boost
+groups are impacting a CPU. Each time a task is enqueued/dequeued to/from
+a CPU its boost group is used to increment a per-cpu counter of RUNNABLE
+tasks on that CPU.
+Only when the number of runnable tasks for a specific boost group
+becomes 1 or 0 the corresponding boost group changes its effects on
+that CPU, specifically:
+  a) boost_group::tasks == 1: this boost group starts to impact the CPU
+  b) boost_group::tasks == 0: this boost group stops to impact the CPU
+In each of these two conditions the aggregation function:
+  sched_cpu_update(cpu)
+could be required to run in order to identify the new maximum boost
+value required for the CPU.
 
-A two layer hierarchy allows to place each task either:
-  a) in the root control group
-     thus being subject to a system-wide boosting value
-  b) in a child of the root group
-     thus being subject to the specific boost value defined by that
-     "boost group"
+The proposed patch minimizes the number of times the aggregation
+function is executed while still providing the required support to
+always boost a CPU to the maximum boost value required by all its
+currently RUNNABLE tasks.
 
-The limited number of "boost groups" supported is mainly motivated by
-the observation that in a real system it could be useful to have only
-few classes of tasks which deserve different treatment.
-For example, background vs foreground or interactive vs low-priority.
-As an additional benefit, a limited number of boost groups allows also
-to have a simpler implementation especially for the code required to
-compute the boost value for CPUs which have runnable tasks belonging to
-different boost groups.
-
-cc: Tejun Heo <tj@kernel.org>
-cc: Li Zefan <lizefan@huawei.com>
-cc: Johannes Weiner <hannes@cmpxchg.org>
 cc: Ingo Molnar <mingo@redhat.com>
 cc: Peter Zijlstra <peterz@infradead.org>
 Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
 ---
- include/linux/cgroup_subsys.h |   4 +
- init/Kconfig                  |  17 ++++
- kernel/sched/tune.c           | 200 ++++++++++++++++++++++++++++++++++++++++++
- kernel/sysctl.c               |   4 +
- 4 files changed, 225 insertions(+)
+ kernel/sched/fair.c | 17 +++++++---
+ kernel/sched/tune.c | 94 +++++++++++++++++++++++++++++++++++++++++++++++++++++
+ kernel/sched/tune.h | 23 +++++++++++++
+ 3 files changed, 130 insertions(+), 4 deletions(-)
+ create mode 100644 kernel/sched/tune.h
 
-diff --git a/include/linux/cgroup_subsys.h b/include/linux/cgroup_subsys.h
-index e4a96fb..23befa0 100644
---- a/include/linux/cgroup_subsys.h
-+++ b/include/linux/cgroup_subsys.h
-@@ -15,6 +15,10 @@ SUBSYS(cpu)
- SUBSYS(cpuacct)
- #endif
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 633fcab4..98470c4 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -34,6 +34,7 @@
+ #include <trace/events/sched.h>
  
-+#if IS_ENABLED(CONFIG_CGROUP_SCHEDTUNE)
-+SUBSYS(schedtune)
-+#endif
-+
- #if IS_ENABLED(CONFIG_BLK_CGROUP)
- SUBSYS(blkio)
- #endif
-diff --git a/init/Kconfig b/init/Kconfig
-index 7fa3419..4555e97 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -982,6 +982,23 @@ config CGROUP_CPUACCT
- 	  Provides a simple Resource Controller for monitoring the
- 	  total CPU consumed by the tasks in a cgroup.
- 
-+config CGROUP_SCHEDTUNE
-+	bool "CFS tasks boosting cgroup subsystem (EXPERIMENTAL)"
-+	depends on SCHED_TUNE
-+	help
-+	  This option provides the "schedtune" controller which improves the
-+	  flexibility of the task boosting mechanism by introducing the support
-+	  to define "per task" boost values.
-+
-+	  This new controller:
-+	  1. allows only a two layers hierarchy, where the root defines the
-+	     system-wide boost value and its direct childrens define each one a
-+	     different "class of tasks" to be boosted with a different value
-+	  2. supports up to 16 different task classes, each one which could be
-+	     configured with a different boost value
-+
-+	  Say N if unsure.
-+
- config PAGE_COUNTER
-        bool
- 
-diff --git a/kernel/sched/tune.c b/kernel/sched/tune.c
-index 4c44b1a..a26295c 100644
---- a/kernel/sched/tune.c
-+++ b/kernel/sched/tune.c
-@@ -1,7 +1,207 @@
-+#include <linux/cgroup.h>
-+#include <linux/err.h>
-+#include <linux/printk.h>
-+#include <linux/slab.h>
-+
  #include "sched.h"
++#include "tune.h"
  
- unsigned int sysctl_sched_cfs_boost __read_mostly;
+ /*
+  * Targeted preemption latency for CPU-bound tasks:
+@@ -4145,6 +4146,8 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+ 	if (!se) {
+ 		add_nr_running(rq, 1);
+ 
++		schedtune_enqueue_task(p, cpu_of(rq));
++
+ 		/*
+ 		 * We want to potentially trigger a freq switch request only for
+                  * tasks that are waking up; this is because we get here also during
+@@ -4213,6 +4216,7 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+ 
+ 	if (!se) {
+ 		sub_nr_running(rq, 1);
++		schedtune_dequeue_task(p, cpu_of(rq));
+ 
+ 		/*
+ 		 * We want to potentially trigger a freq switch request only for
+@@ -4769,10 +4773,15 @@ schedtune_margin(unsigned long signal, unsigned long boost)
+ }
+ 
+ static inline unsigned int
+-schedtune_cpu_margin(unsigned long util)
++schedtune_cpu_margin(unsigned long util, int cpu)
+ {
+-	unsigned int boost = get_sysctl_sched_cfs_boost();
++	unsigned int boost;
  
 +#ifdef CONFIG_CGROUP_SCHEDTUNE
-+
-+/*
-+ * EAS scheduler tunables for task groups.
-+ */
-+
-+/* SchdTune tunables for a group of tasks */
-+struct schedtune {
-+	/* SchedTune CGroup subsystem */
-+	struct cgroup_subsys_state css;
-+
-+	/* Boost group allocated ID */
-+	int idx;
-+
-+	/* Boost value for tasks on that SchedTune CGroup */
-+	int boost;
-+
-+};
-+
-+static inline struct schedtune *css_st(struct cgroup_subsys_state *css)
-+{
-+	return css ? container_of(css, struct schedtune, css) : NULL;
-+}
-+
-+static inline struct schedtune *task_schedtune(struct task_struct *tsk)
-+{
-+	return css_st(task_css(tsk, schedtune_cgrp_id));
-+}
-+
-+static inline struct schedtune *parent_st(struct schedtune *st)
-+{
-+	return css_st(st->css.parent);
-+}
-+
-+/*
-+ * SchedTune root control group
-+ * The root control group is used to defined a system-wide boosting tuning,
-+ * which is applied to all tasks in the system.
-+ * Task specific boost tuning could be specified by creating and
-+ * configuring a child control group under the root one.
-+ * By default, system-wide boosting is disabled, i.e. no boosting is applied
-+ * to tasks which are not into a child control group.
-+ */
-+static struct schedtune
-+root_schedtune = {
-+	.boost	= 0,
-+};
-+
-+/*
-+ * Maximum number of boost groups to support
-+ * When per-task boosting is used we still allow only limited number of
-+ * boost groups for two main reasons:
-+ * 1. on a real system we usually have only few classes of workloads which
-+ *    make sense to boost with different values (e.g. background vs foreground
-+ *    tasks, interactive vs low-priority tasks)
-+ * 2. a limited number allows for a simpler and more memory/time efficient
-+ *    implementation especially for the computation of the per-CPU boost
-+ *    value
-+ */
-+#define BOOSTGROUPS_COUNT 16
-+
-+/* Array of configured boostgroups */
-+static struct schedtune *allocated_group[BOOSTGROUPS_COUNT] = {
-+	&root_schedtune,
-+	NULL,
-+};
-+
-+static u64
-+boost_read(struct cgroup_subsys_state *css, struct cftype *cft)
-+{
-+	struct schedtune *st = css_st(css);
-+
-+	return st->boost;
-+}
-+
-+static int
-+boost_write(struct cgroup_subsys_state *css, struct cftype *cft,
-+	    u64 boost)
-+{
-+	struct schedtune *st = css_st(css);
-+
-+	if (boost < 0 || boost > 100)
-+		return -EINVAL;
-+
-+	st->boost = boost;
-+	if (css == &root_schedtune.css)
-+		sysctl_sched_cfs_boost = boost;
-+
-+	return 0;
-+}
-+
-+static struct cftype files[] = {
-+	{
-+		.name = "boost",
-+		.read_u64 = boost_read,
-+		.write_u64 = boost_write,
-+	},
-+	{ }	/* terminate */
-+};
-+
-+static int
-+schedtune_boostgroup_init(struct schedtune *st)
-+{
-+	/* Keep track of allocated boost groups */
-+	allocated_group[st->idx] = st;
-+
-+	return 0;
-+}
-+
-+static int
-+schedtune_init(void)
++	boost = schedtune_cpu_boost(cpu);
++#else
++	boost = get_sysctl_sched_cfs_boost();
++#endif
+ 	if (boost == 0)
+ 		return 0;
+ 
+@@ -4782,7 +4791,7 @@ schedtune_cpu_margin(unsigned long util)
+ #else /* CONFIG_SCHED_TUNE */
+ 
+ static inline unsigned int
+-schedtune_cpu_margin(unsigned long util)
++schedtune_cpu_margin(unsigned long util, int cpu)
+ {
+ 	return 0;
+ }
+@@ -4793,7 +4802,7 @@ static inline unsigned long
+ boosted_cpu_util(int cpu)
+ {
+ 	unsigned long util = cpu_util(cpu);
+-	unsigned long margin = schedtune_cpu_margin(util);
++	unsigned long margin = schedtune_cpu_margin(util, cpu);
+ 
+ 	return util + margin;
+ }
+diff --git a/kernel/sched/tune.c b/kernel/sched/tune.c
+index 3223ef3..3838106 100644
+--- a/kernel/sched/tune.c
++++ b/kernel/sched/tune.c
+@@ -2,6 +2,7 @@
+ #include <linux/err.h>
+ #include <linux/percpu.h>
+ #include <linux/printk.h>
++#include <linux/rcupdate.h>
+ #include <linux/slab.h>
+ 
+ #include "sched.h"
+@@ -158,6 +159,87 @@ schedtune_boostgroup_update(int idx, int boost)
+ 	return 0;
+ }
+ 
++static inline void
++schedtune_tasks_update(struct task_struct *p, int cpu, int idx, int task_count)
 +{
 +	struct boost_groups *bg;
-+	int cpu;
++	int tasks;
 +
-+	/* Initialize the per CPU boost groups */
-+	for_each_possible_cpu(cpu) {
-+		bg = &per_cpu(cpu_boost_groups, cpu);
-+		memset(bg, 0, sizeof(struct boost_groups));
-+	}
++	bg = &per_cpu(cpu_boost_groups, cpu);
 +
-+	pr_info("  schedtune configured to support %d boost groups\n",
-+		BOOSTGROUPS_COUNT);
-+	return 0;
++	/* Update boosted tasks count while avoiding to make it negative */
++	if (task_count < 0 && bg->group[idx].tasks <= -task_count)
++		bg->group[idx].tasks = 0;
++	else
++		bg->group[idx].tasks += task_count;
++
++	/* Boost group activation or deactivation on that RQ */
++	tasks = bg->group[idx].tasks;
++	if (tasks == 1 || tasks == 0)
++		schedtune_cpu_update(cpu);
 +}
 +
-+static struct cgroup_subsys_state *
-+schedtune_css_alloc(struct cgroup_subsys_state *parent_css)
++/*
++ * NOTE: This function must be called while holding the lock on the CPU RQ
++ */
++void schedtune_enqueue_task(struct task_struct *p, int cpu)
 +{
 +	struct schedtune *st;
 +	int idx;
 +
-+	if (!parent_css) {
-+		schedtune_init();
-+		return &root_schedtune.css;
-+	}
++	/*
++	 * When a task is marked PF_EXITING by do_exit() it's going to be
++	 * dequeued and enqueued multiple times in the exit path.
++	 * Thus we avoid any further update, since we do not want to change
++	 * CPU boosting while the task is exiting.
++	 */
++	if (p->flags & PF_EXITING)
++		return;
 +
-+	/* Allow only single level hierachies */
-+	if (parent_css != &root_schedtune.css) {
-+		pr_err("Nested SchedTune boosting groups not allowed\n");
-+		return ERR_PTR(-ENOMEM);
-+	}
++	/* Get task boost group */
++	rcu_read_lock();
++	st = task_schedtune(p);
++	idx = st->idx;
++	rcu_read_unlock();
 +
-+	/* Allow only a limited number of boosting groups */
-+	for (idx = 1; idx < BOOSTGROUPS_COUNT; ++idx)
-+		if (!allocated_group[idx])
-+			break;
-+	if (idx == BOOSTGROUPS_COUNT) {
-+		pr_err("Trying to create more than %d SchedTune boosting groups\n",
-+		       BOOSTGROUPS_COUNT);
-+		return ERR_PTR(-ENOSPC);
-+	}
-+
-+	st = kzalloc(sizeof(*st), GFP_KERNEL);
-+	if (!st)
-+		goto out;
-+
-+	/* Initialize per CPUs boost group support */
-+	st->idx = idx;
-+	if (schedtune_boostgroup_init(st))
-+		goto release;
-+
-+	return &st->css;
-+
-+release:
-+	kfree(st);
-+out:
-+	return ERR_PTR(-ENOMEM);
++	schedtune_tasks_update(p, cpu, idx, 1);
 +}
 +
-+static void
-+schedtune_boostgroup_release(struct schedtune *st)
++/*
++ * NOTE: This function must be called while holding the lock on the CPU RQ
++ */
++void schedtune_dequeue_task(struct task_struct *p, int cpu)
 +{
-+	/* Keep track of allocated boost groups */
-+	allocated_group[st->idx] = NULL;
++	struct schedtune *st;
++	int idx;
++
++	/*
++	 * When a task is marked PF_EXITING by do_exit() it's going to be
++	 * dequeued and enqueued multiple times in the exit path.
++	 * Thus we avoid any further update, since we do not want to change
++	 * CPU boosting while the task is exiting.
++	 * The last dequeue will be done by cgroup exit() callback.
++	 */
++	if (p->flags & PF_EXITING)
++		return;
++
++	/* Get task boost group */
++	rcu_read_lock();
++	st = task_schedtune(p);
++	idx = st->idx;
++	rcu_read_unlock();
++
++	schedtune_tasks_update(p, cpu, idx, -1);
 +}
 +
-+static void
-+schedtune_css_free(struct cgroup_subsys_state *css)
++int schedtune_cpu_boost(int cpu)
 +{
-+	struct schedtune *st = css_st(css);
++	struct boost_groups *bg;
 +
-+	schedtune_boostgroup_release(st);
-+	kfree(st);
++	bg = &per_cpu(cpu_boost_groups, cpu);
++	return bg->boost_max;
 +}
 +
-+struct cgroup_subsys schedtune_cgrp_subsys = {
-+	.css_alloc	= schedtune_css_alloc,
-+	.css_free	= schedtune_css_free,
-+	.legacy_cftypes	= files,
-+	.early_init	= 1,
-+};
+ static u64
+ boost_read(struct cgroup_subsys_state *css, struct cftype *cft)
+ {
+@@ -293,9 +375,21 @@ schedtune_css_free(struct cgroup_subsys_state *css)
+ 	kfree(st);
+ }
+ 
++static void
++schedtune_exit(struct cgroup_subsys_state *css,
++	       struct cgroup_subsys_state *old_css,
++	       struct task_struct *tsk)
++{
++	struct schedtune *old_st = css_st(old_css);
++	int cpu = task_cpu(tsk);
++
++	schedtune_tasks_update(tsk, cpu, old_st->idx, -1);
++}
++
+ struct cgroup_subsys schedtune_cgrp_subsys = {
+ 	.css_alloc	= schedtune_css_alloc,
+ 	.css_free	= schedtune_css_free,
++	.exit		= schedtune_exit,
+ 	.legacy_cftypes	= files,
+ 	.early_init	= 1,
+ };
+diff --git a/kernel/sched/tune.h b/kernel/sched/tune.h
+new file mode 100644
+index 0000000..4519028
+--- /dev/null
++++ b/kernel/sched/tune.h
+@@ -0,0 +1,23 @@
++
++#ifdef CONFIG_SCHED_TUNE
++
++#ifdef CONFIG_CGROUP_SCHEDTUNE
++
++extern int schedtune_cpu_boost(int cpu);
++
++extern void schedtune_enqueue_task(struct task_struct *p, int cpu);
++extern void schedtune_dequeue_task(struct task_struct *p, int cpu);
++
++#else /* CONFIG_CGROUP_SCHEDTUNE */
++
++#define schedtune_enqueue_task(task, cpu) do { } while (0)
++#define schedtune_dequeue_task(task, cpu) do { } while (0)
 +
 +#endif /* CONFIG_CGROUP_SCHEDTUNE */
 +
- int
- sysctl_sched_cfs_boost_handler(struct ctl_table *table, int write,
- 			       void __user *buffer, size_t *lenp,
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 2b4673e..d42162c 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -438,7 +438,11 @@ static struct ctl_table kern_table[] = {
- 		.procname	= "sched_cfs_boost",
- 		.data		= &sysctl_sched_cfs_boost,
- 		.maxlen		= sizeof(sysctl_sched_cfs_boost),
-+#ifdef CONFIG_CGROUP_SCHEDTUNE
-+		.mode		= 0444,
-+#else
- 		.mode		= 0644,
-+#endif
- 		.proc_handler	= &sysctl_sched_cfs_boost_handler,
- 		.extra1		= &zero,
- 		.extra2		= &one_hundred,
++#else /* CONFIG_SCHED_TUNE */
++
++#define schedtune_enqueue_task(task, cpu) do { } while (0)
++#define schedtune_dequeue_task(task, cpu) do { } while (0)
++
++#endif /* CONFIG_SCHED_TUNE */
 -- 
 2.5.0
