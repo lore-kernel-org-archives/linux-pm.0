@@ -1,87 +1,97 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [GIT PULL] Last minute fixes on Thermal-SoC for v4.2-rc8
-Date: Tue, 18 Aug 2015 16:44:37 -0700
-Message-ID: <20150818234436.GB4494@localhost.localdomain>
+From: NeilBrown <neil@brown.name>
+Subject: Re: [PATCH 03/13] twl4030_charger: correctly handle -EPROBE_DEFER
+ from devm_usb_get_phy_by_node
+Date: Wed, 19 Aug 2015 10:28:32 +1000
+Message-ID: <20150819102832.29a5059f@home.neil.brown.name>
+References: <20150730001113.4012.18086.stgit@noble>
+	<20150730001124.4012.31980.stgit@noble>
+	<20150818080758.GG4215@atomide.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="3lcZGd9BuhuYXNfi"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>, Rui Zhang <rui.zhang@intel.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Russell King <rmk+kernel@arm.linux.org.uk>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from neil.brown.name ([103.29.64.221]:45503 "EHLO neil.brown.name"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751258AbbHSA3Z (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 18 Aug 2015 20:29:25 -0400
+In-Reply-To: <20150818080758.GG4215@atomide.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Samuel Ortiz <sameo@linux.intel.com>, linux-pm@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, real GTA04 owners <gta04-owner@goldelico.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Pavel Machek <pavel@ucw.cz>, linux-omap@vger.kernel.org, Lee Jones <lee.jones@linaro.org>
 
+On Tue, 18 Aug 2015 01:07:58 -0700 Tony Lindgren <tony@atomide.com>
+wrote:
 
---3lcZGd9BuhuYXNfi
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> * NeilBrown <neil@brown.name> [150729 17:29]:
+> > Now that twl4030_bci_probe can safely return -EPROBE_DEFER,
+> > do so when devm_usb_get_phy_by_node returns that error.
+> > 
+> > Signed-off-by: NeilBrown <neil@brown.name>
+> > ---
+> >  drivers/power/twl4030_charger.c |    6 +++++-
+> >  1 file changed, 5 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/power/twl4030_charger.c b/drivers/power/twl4030_charger.c
+> > index 045238370d3f..ffc123fb7158 100644
+> > --- a/drivers/power/twl4030_charger.c
+> > +++ b/drivers/power/twl4030_charger.c
+> > @@ -636,9 +636,13 @@ static int twl4030_bci_probe(struct platform_device *pdev)
+> >  
+> >  		phynode = of_find_compatible_node(bci->dev->of_node->parent,
+> >  						  NULL, "ti,twl4030-usb");
+> > -		if (phynode)
+> > +		if (phynode) {
+> >  			bci->transceiver = devm_usb_get_phy_by_node(
+> >  				bci->dev, phynode, &bci->usb_nb);
+> > +			if (IS_ERR(bci->transceiver) &&
+> > +			    PTR_ERR(bci->transceiver) == -EPROBE_DEFER)
+> > +				return -EPROBE_DEFER;
+> > +		}
+> >  	}
+> 
+> Neil, the return with -EPROBE_DEFER here causes flakeyness booting
+> for me somehow at least on my logicpd-torpedo-37xx-devkit using
+> omap2plus_defconfig.
+> 
+> It seems that the twl4030_bci_probe keeps looping or something about
+> 1/3 of the boots and that probably prevents the other twl modules
+> from loading? Reverting this patch alone seems to fix the issue.
+> 
+> I don't think I have a battery wired on this board the USB is wired
+> the same way as on beagle-xm. So I'd assume also flakeyness on beagle
+> xm with this patch.
+> 
+> Regards,
+> 
+> Tony
 
-Hello Linus,
+What dts file are you using?
+I'm guessing that it doesn't have something like:
 
+&usb_otg_hs {
+        interface-type = <0>;
+        usb-phy = <&usb2_phy>;
+        phys = <&usb2_phy>;
+        phy-names = "usb2-phy";
+        mode = <3>;
+        power = <50>;
+};
 
-I have these last minute fixes on the thermal-soc tree. It has gone through
-linux-next. There is a fix of a long lasting bug in cpu cooling device,
-thanks for RMK for being pushing this.
+? i.e. with a usb-phy=<&usb2_phy> ?
 
-So, if there is still time, please pull from:
+What if you add
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal fixes
+&usb2_phy {
+ status = "disabled";
+}
 
-to receive Thermal-SoC Management updates for v4.2-rc8 with top-most
+to your dts file?
 
-1afb9c539daebc2c8a7b33d0e0b8fc9f74671b02:
+Should the 'status' be disabled in twl4030.dtsi, and then marked OK in
+any dts that uses it?  I'm not at all clear on how 'status' is meant to
+be used.
 
-  thermal/cpu_cooling: update policy limits if clipped_freq < policy->max (2015-08-14 18:26:23 -0700)
+Thanks,
+NeilBrown
 
-on top of commit 7ddab73346a1277b90fd6a4d044bc948f9cc9ad8:
-
-  Merge branch 'fixes' of git://ftp.arm.linux.org.uk/~rmk/linux-arm (2015-08-13 16:34:56 -0700)
-
-
-Specifics:
-- I am sending in behalf of Rui this time, as he does not have any
-  further patches.
-- Urgent fix: Lockdep fix in the cpu cooling code.
-- Refactoring in the cpu cooling code.
-- Remove devm* functions from power allocator.
-
-BR,
-
-Eduardo Valentin
-----------------------------------------------------------------
-Dmitry Torokhov (1):
-      thermal: power_allocator: do not use devm* interfaces
-
-Russell King (1):
-      thermal: cpu_cooling: fix lockdep problems in cpu_cooling
-
-Viresh Kumar (6):
-      thermal/cpu_cooling: No need to initialize max_freq to 0
-      thermal/cpu_cooling: quit early after updating policy
-      thermal/cpu_cooling: convert 'switch' block to 'if' block in notifier
-      thermal/cpu_cooling: rename cpufreq_val as clipped_freq
-      thermal/cpu_cooling: rename max_freq as clipped_freq in notifier
-      thermal/cpu_cooling: update policy limits if clipped_freq < policy->max
-
- drivers/thermal/cpu_cooling.c     | 73 +++++++++++++++++++++++----------------
- drivers/thermal/power_allocator.c |  8 ++---
- 2 files changed, 48 insertions(+), 33 deletions(-)
-
---3lcZGd9BuhuYXNfi
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQEcBAEBAgAGBQJV08NWAAoJEMLUO4d9pOJWOGEH/RH60zORt81Ihkzc1BsJbEZB
-9iqTs4WGkMr3g6LJHG5cmOkl+CUjQ2t6EbBzDZ1cPrJn0b8DMmeqH6Nn2E9m1SGe
-ikXjMvi4nO66cMo3+O4AEv34sLZ5BjcsfsLSO69NZ3Z0FB1uk5tkDVLWTWBYs22W
-Tnol96q/N1VMTh53c4L1KHHV1x4CzNWBfe5Zaktbcc5cXU+NzcnDWB5EzQUss8/r
-0llWwUFN/VIGGdTy3ialIEg0+UDjG1KHXGOVG2spYo6oixm94rxF4B4KY4eQlrYg
-qZlPQdzD7V3eBP6TK3PcTwh+9mNH+xCLFoBq8AK9Ioj0yJgv+1MWmkt95jYlu4k=
-=QII+
------END PGP SIGNATURE-----
-
---3lcZGd9BuhuYXNfi--
