@@ -1,7 +1,7 @@
 From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: [RFC PATCH 07/14] sched/fair: cpufreq_sched triggers for load balancing
-Date: Wed, 19 Aug 2015 19:47:17 +0100
-Message-ID: <1440010044-3402-8-git-send-email-patrick.bellasi@arm.com>
+Subject: [RFC PATCH 05/14] sched/fair: jump to max OPP when crossing UP threshold
+Date: Wed, 19 Aug 2015 19:47:15 +0100
+Message-ID: <1440010044-3402-6-git-send-email-patrick.bellasi@arm.com>
 References: <1440010044-3402-1-git-send-email-patrick.bellasi@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1440010044-3402-1-git-send-email-patrick.bellasi@arm.com>
@@ -12,72 +12,47 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Juri Lelli <juri.lelli@arm.com>
 
-As we don't trigger freq changes from {en,de}queue_task_fair() during load
-balancing, we need to do explicitly so on load balancing paths.
+Since the true utilization of a long running task is not detectable while
+it is running and might be bigger than the current cpu capacity, create the
+maximum cpu capacity head room by requesting the maximum cpu capacity once
+the cpu usage plus the capacity margin exceeds the current capacity. This
+is also done to try to harm the performance of a task the least.
 
 cc: Ingo Molnar <mingo@redhat.com>
 cc: Peter Zijlstra <peterz@infradead.org>
 Signed-off-by: Juri Lelli <juri.lelli@arm.com>
 ---
- kernel/sched/fair.c | 23 +++++++++++++++++++++--
- 1 file changed, 21 insertions(+), 2 deletions(-)
+ kernel/sched/fair.c | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 6197b3b..955dfe1 100644
+index 2961e29..6197b3b 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
-@@ -7030,6 +7030,11 @@ more_balance:
- 		 * ld_moved     - cumulative load moved across iterations
- 		 */
- 		cur_ld_moved = detach_tasks(&env);
-+		/*
-+		 * We want to potentially lower env.src_cpu's OPP.
-+		 */
-+		if (cur_ld_moved)
-+			update_capacity_of(env.src_cpu);
+@@ -7864,6 +7864,24 @@ static void task_tick_fair(struct rq *rq, struct task_struct *curr, int queued)
  
- 		/*
- 		 * We've detached some tasks from busiest_rq. Every
-@@ -7044,6 +7049,10 @@ more_balance:
- 		if (cur_ld_moved) {
- 			attach_tasks(&env);
- 			ld_moved += cur_ld_moved;
-+			/*
-+			 * We want to potentially raise env.dst_cpu's OPP.
-+			 */
-+			update_capacity_of(env.dst_cpu);
- 		}
- 
- 		local_irq_restore(flags);
-@@ -7398,8 +7407,13 @@ static int active_load_balance_cpu_stop(void *data)
- 		schedstat_inc(sd, alb_count);
- 
- 		p = detach_one_task(&env);
--		if (p)
-+		if (p) {
- 			schedstat_inc(sd, alb_pushed);
-+			/*
-+			 * We want to potentially lower env.src_cpu's OPP.
-+			 */
-+			update_capacity_of(env.src_cpu);
-+		}
- 		else
- 			schedstat_inc(sd, alb_failed);
- 	}
-@@ -7408,8 +7422,13 @@ out_unlock:
- 	busiest_rq->active_balance = 0;
- 	raw_spin_unlock(&busiest_rq->lock);
- 
--	if (p)
-+	if (p) {
- 		attach_one_task(target_rq, p);
-+		/*
-+		 * We want to potentially raise target_cpu's OPP.
-+		 */
-+		update_capacity_of(target_cpu);
+ 	if (numabalancing_enabled)
+ 		task_tick_numa(rq, curr);
++
++	/*
++	 * To make free room for a task that is building up its "real"
++	 * utilization and to harm its performance the least, request a
++	 * jump to max OPP as soon as get_cpu_usage() crosses the UP
++	 * threshold. The UP threshold is built relative to the current
++	 * capacity (OPP), by using capacity_margin.
++	 */
++	if (sched_energy_freq()) {
++		int cpu = cpu_of(rq);
++		unsigned long capacity_orig = capacity_orig_of(cpu);
++		unsigned long capacity_curr = capacity_curr_of(cpu);
++
++		if (capacity_curr < capacity_orig &&
++		    (capacity_curr * SCHED_LOAD_SCALE) <
++		    (cpu_util(cpu) * capacity_margin))
++			cpufreq_sched_set_cap(cpu, capacity_orig);
 +	}
+ }
  
- 	local_irq_enable();
- 
+ /*
 -- 
 2.5.0
