@@ -1,41 +1,65 @@
-From: David Laight <David.Laight-ZS65k/vG3HxXrIkS9f7CXA@public.gmane.org>
-Subject: RE: [PATCH v2 3/3] power: wm831x_power: Support USB charger current
- limit management
-Date: Thu, 20 Aug 2015 09:02:35 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1CB803F4@AcuExch.aculab.com>
-References: <cover.1439519412.git.baolin.wang@linaro.org>
- <f3bfd04bc157e97e2d0632b7ed2452f366f66488.1439519413.git.baolin.wang@linaro.org>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Patch v2] x86, ACPI, irq: Add a quirk to override SCI polarity
+ for HyperV
+Date: Thu, 20 Aug 2015 11:15:18 +0200 (CEST)
+Message-ID: <alpine.DEB.2.11.1508201111480.3873@nanos>
+References: <alpine.DEB.2.11.1508182133010.3873@nanos> <1439963634-12006-1-git-send-email-jiang.liu@linux.intel.com> <CAJZ5v0g7F+BRMzc9-uuxHAK896B-hoOJ5AW7M4jGpowVG+hujw@mail.gmail.com> <55D42185.1000709@linux.intel.com> <CAJZ5v0gqAX+OEqKPK4b6nz4wpO=HScocTdBqzQsE=ikhA-rcwQ@mail.gmail.com>
+ <55D427D3.7040103@linux.intel.com> <alpine.DEB.2.11.1508191025000.3873@nanos> <alpine.DEB.2.11.1508191039470.3873@nanos> <55D57160.40108@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="Windows-1252"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <f3bfd04bc157e97e2d0632b7ed2452f366f66488.1439519413.git.baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Content-Language: en-US
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: 'Baolin Wang' <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "balbi-l0cyMroinI0@public.gmane.org" <balbi-l0cyMroinI0@public.gmane.org>
-Cc: "broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org" <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org" <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, "peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org" <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, "sojka-Knnw/vAvyUalVyrhU4qvOw@public.gmane.org" <sojka-Knnw/vAvyUalVyrhU4qvOw@public.gmane.org>, "stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org" <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, "r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org" <r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org" <yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, "linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org" <device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org>, "sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org" <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org" <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, "sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org" <sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, "lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org" <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, patches@opensou
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <55D57160.40108@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jiang Liu <jiang.liu@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Nick Meier <nmeier@microsoft.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Baolin Wang
-> Sent: 14 August 2015 10:48
-> +/* In miliamps */
+On Thu, 20 Aug 2015, Jiang Liu wrote:
+> On 2015/8/19 16:40, Thomas Gleixner wrote:
+> > On Wed, 19 Aug 2015, Thomas Gleixner wrote:
+> >> On Wed, 19 Aug 2015, Jiang Liu wrote:
+> >>> On 2015/8/19 14:45, Rafael J. Wysocki wrote:
+> >>>> Well, the regression at hand has just shown that the assertion in the
+> >>>> changelog of that commit ("no need for for special treatment for GSI
+> >>>> used by ACPI SCI") does not really hold.  So, if the only motivation
+> >>>> for it was to get rid of one extra check in mp_unregister_gsi()
+> >>>> (mp_register_gsi() still needs to check if it is dealing with the SCI
+> >>>> anyway), I'd vote for reverting it.
+> >>> Hi Rafael,
+> >>> 	The motivation is to treat SCI as normal IOAPIC interrupt so
+> >>> we could enforce stricter pin attribute checking. Now it does reveal
+> >>> flaws in ACPI BIOS implementations, but we ran into trouble about how to
+> >>> handle those flaws:(
+> >>
+> >> The intent of this change is entirely correct, though it seems that
+> >> reality of ACPI is just different.
+> >>
+> >> To be on the safe side of things, I agree with Rafael that we should
+> >> revert that patch instead of introducing a single platform quirk.
+> > 
+> > Jiang,
+> > 
+> > can you please prepare a revert patch for this?
+> Hi Rafael and Thomas,
+> 	I have tried to revert commit cd68f6bd53cf, but found
+> it's not an easy task now.
 
-Spelling police: "milliamps"
+That's what I feared
 
-> +static unsigned int wm831x_usb_limits[] = {
-> +	0,
-> +	2,
-> +	100,
-> +	500,
-> +	900,
-> +	1500,
-> +	1800,
-> +	550,
-> +};
+> 	When converting to hierarchical irqdomain, the IOAPIC
+> internal and interfaces have changed much, and seems no easy
+> way to revert cd68f6bd53cf. There may be three possible solutions
+> here:
+> 1) use quirk to correct SCI polarity, as the patch does.
+> 2) change IOAPIC interfaces to provide a special way to
+>    handle SCI interrupt.
+> 3) change drivers/acpi/pci_link.c to penalize SCI IRQ so it
+>    won't be used for PCI IRQ if SCI polarity conflicts with
+>    PCI IRQ polarity.
 
-	David
+Stupid question. Is the SCI polarity ever the opposite of PCI
+polarity? I.e. is such a ACPI override valid at all? 
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks,
+
+	tglx
