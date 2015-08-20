@@ -1,99 +1,52 @@
-From: Al Stone <al.stone@linaro.org>
-Subject: [PATCH v2 3/5] ACPI / IA64: remove usage of BAD_MADT_ENTRY
-Date: Wed, 19 Aug 2015 16:07:26 -0600
-Message-ID: <1440022048-6285-4-git-send-email-al.stone@linaro.org>
-References: <1440022048-6285-1-git-send-email-al.stone@linaro.org>
-Return-path: <linux-ia64-owner@vger.kernel.org>
-In-Reply-To: <1440022048-6285-1-git-send-email-al.stone@linaro.org>
-Sender: linux-ia64-owner@vger.kernel.org
-To: linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org, linux-pm@vger.kernel.org, linaro-acpi@lists.linaro.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Al Stone <al.stone@linaro.org>, Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH] thermal: cpu_cooling: Add MAINTAINERS entry
+Date: Thu, 20 Aug 2015 10:28:34 +0900
+Message-ID: <CAJKOXPcyAxLXscpcN+t-P=MOPKcvKAW-BnuEg1Lah2iXjYhW9g@mail.gmail.com>
+References: <298acc438cba5f64121d883db7ff2b860c0a9610.1439967508.git.viresh.kumar@linaro.org>
+	<20150819174444.GA6643@localhost.localdomain>
+	<20150819180350.GH14544@linux>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qk0-f174.google.com ([209.85.220.174]:35976 "EHLO
+	mail-qk0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751558AbbHTB2f (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Aug 2015 21:28:35 -0400
+Received: by qkep139 with SMTP id p139so9328750qke.3
+        for <linux-pm@vger.kernel.org>; Wed, 19 Aug 2015 18:28:34 -0700 (PDT)
+In-Reply-To: <20150819180350.GH14544@linux>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, amit.daniel@samsung.com
+Cc: Eduardo Valentin <edubezval@gmail.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, rui.zhang@intel.com
 
-Now that we have introduced the bad_madt_entry() function, and that
-function is being invoked in acpi_table_parse_madt() for us, there
-is no longer any need to use the BAD_MADT_ENTRY macro.
+2015-08-20 3:03 GMT+09:00 Viresh Kumar <viresh.kumar@linaro.org>:
+> On 19-08-15, 10:44, Eduardo Valentin wrote:
+>> Interesting. I would expect that by this point, you would be already
+>> listed.. anyways..
+>
+> No, its just you and Zhang.
+>
+>> > +THERMAL/CPU_COOLING
+>> > +M: Amit Daniel Kachhap <amit.daniel@samsung.com>
+>>
+>> Is this still a valid email? I remember one of his email was bouncing
+>> back.
+>
+> I see his last mail to LKML on 27th March, and I didn't receive a
+> bounced email auto-reply, so it should be just fine :)
 
-Signed-off-by: Al Stone <al.stone@linaro.org>
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Fenghua Yu <fenghua.yu@intel.com>
----
- arch/ia64/kernel/acpi.c | 20 --------------------
- 1 file changed, 20 deletions(-)
+Yes, the email is correct. However before adding a new maintainer
+could we get a confirmation/agreement form Amit?
 
-diff --git a/arch/ia64/kernel/acpi.c b/arch/ia64/kernel/acpi.c
-index b1698bc..efa3f0a 100644
---- a/arch/ia64/kernel/acpi.c
-+++ b/arch/ia64/kernel/acpi.c
-@@ -184,9 +184,6 @@ acpi_parse_lapic_addr_ovr(struct acpi_subtable_header * header,
- 
- 	lapic = (struct acpi_madt_local_apic_override *)header;
- 
--	if (BAD_MADT_ENTRY(lapic, end))
--		return -EINVAL;
--
- 	if (lapic->address) {
- 		iounmap(ipi_base_addr);
- 		ipi_base_addr = ioremap(lapic->address, 0);
-@@ -201,8 +198,6 @@ acpi_parse_lsapic(struct acpi_subtable_header * header, const unsigned long end)
- 
- 	lsapic = (struct acpi_madt_local_sapic *)header;
- 
--	/*Skip BAD_MADT_ENTRY check, as lsapic size could vary */
--
- 	if (lsapic->lapic_flags & ACPI_MADT_ENABLED) {
- #ifdef CONFIG_SMP
- 		smp_boot_data.cpu_phys_id[available_cpus] =
-@@ -222,9 +217,6 @@ acpi_parse_lapic_nmi(struct acpi_subtable_header * header, const unsigned long e
- 
- 	lacpi_nmi = (struct acpi_madt_local_apic_nmi *)header;
- 
--	if (BAD_MADT_ENTRY(lacpi_nmi, end))
--		return -EINVAL;
--
- 	/* TBD: Support lapic_nmi entries */
- 	return 0;
- }
-@@ -236,9 +228,6 @@ acpi_parse_iosapic(struct acpi_subtable_header * header, const unsigned long end
- 
- 	iosapic = (struct acpi_madt_io_sapic *)header;
- 
--	if (BAD_MADT_ENTRY(iosapic, end))
--		return -EINVAL;
--
- 	return iosapic_init(iosapic->address, iosapic->global_irq_base);
- }
- 
-@@ -253,9 +242,6 @@ acpi_parse_plat_int_src(struct acpi_subtable_header * header,
- 
- 	plintsrc = (struct acpi_madt_interrupt_source *)header;
- 
--	if (BAD_MADT_ENTRY(plintsrc, end))
--		return -EINVAL;
--
- 	/*
- 	 * Get vector assignment for this interrupt, set attributes,
- 	 * and program the IOSAPIC routing table.
-@@ -336,9 +322,6 @@ acpi_parse_int_src_ovr(struct acpi_subtable_header * header,
- 
- 	p = (struct acpi_madt_interrupt_override *)header;
- 
--	if (BAD_MADT_ENTRY(p, end))
--		return -EINVAL;
--
- 	iosapic_override_isa_irq(p->source_irq, p->global_irq,
- 				 ((p->inti_flags & ACPI_MADT_POLARITY_MASK) ==
- 				  ACPI_MADT_POLARITY_ACTIVE_LOW) ?
-@@ -356,9 +339,6 @@ acpi_parse_nmi_src(struct acpi_subtable_header * header, const unsigned long end
- 
- 	nmi_src = (struct acpi_madt_nmi_source *)header;
- 
--	if (BAD_MADT_ENTRY(nmi_src, end))
--		return -EINVAL;
--
- 	/* TBD: Support nimsrc entries */
- 	return 0;
- }
--- 
-2.4.3
+Unfortunately it seems that a lot of guys previously working on Exynos
+BSP with (or in) Linaro are not responding on LKML any more. No
+reviews, no comments. That does not apply to everyone but I think its
+better not to add a "dead" entry.
 
+
+Amit,
+Could you ack this patch?
+
+Best regards,
+Krzysztof
