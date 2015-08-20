@@ -1,42 +1,79 @@
-From: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v4 5/5] power: wm831x_power: Support USB charger current
- limit management
-Date: Thu, 20 Aug 2015 09:32:01 +0800
-Message-ID: <CAMz4kuJBKe4dWmL8Zg68Y9MEt_gkT7kOnZqjx0Qq56CNf-9CRg@mail.gmail.com>
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: Re: [PATCH v4 3/5] gadget: Support for the usb charger framework
+Date: Thu, 20 Aug 2015 09:42:05 +0800
+Message-ID: <CAMz4kuJVrav0-aU0CSg8KMEiwFwneZuB6vx53cYu9HDroGJiQg@mail.gmail.com>
 References: <cover.1439974219.git.baolin.wang@linaro.org>
-	<a29a038d7ebee931855cbaa065b055db5c5cfef3.1439974219.git.baolin.wang@linaro.org>
-	<20150819162418.GP10748@sirena.org.uk>
+	<59a5ba963dc2aaf9b1f59b0e79387b4d9ce3f30a.1439974219.git.baolin.wang@linaro.org>
+	<55D47D04.7060104@cogentembedded.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20150819162418.GP10748-GFdadSzt00ze9xe1eoZjHA@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Felipe Balbi <balbi-l0cyMroinI0@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, sojka-Knnw/vAvyUalVyrhU4qvOw@public.gmane.org, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yk0-f180.google.com ([209.85.160.180]:33162 "EHLO
+	mail-yk0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750874AbbHTBmH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Aug 2015 21:42:07 -0400
+Received: by ykll84 with SMTP id l84so23960139ykl.0
+        for <linux-pm@vger.kernel.org>; Wed, 19 Aug 2015 18:42:06 -0700 (PDT)
+In-Reply-To: <55D47D04.7060104@cogentembedded.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+Cc: Felipe Balbi <balbi@ti.com>, Mark Brown <broonie@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, LKML <linux-kernel@vger.kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Peter Chen <peter.chen@freescale.com>, sojka@merica.cz, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, sre@kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, sameo@linux.intel.com, Lee Jones <lee.jones@linaro.org>, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org
 
-On 20 August 2015 at 00:24, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
-> On Wed, Aug 19, 2015 at 05:13:48PM +0800, Baolin Wang wrote:
->> Integrate with the newly added USB charger interface to limit the current
->> we draw from the USB input based on the input device configuration
->> identified by the USB stack, allowing us to charge more quickly from high
->> current inputs without drawing more current than specified from others.
->>
->> Signed-off-by: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
->> Signed-off-by: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+On 19 August 2015 at 20:56, Sergei Shtylyov
+<sergei.shtylyov@cogentembedded.com> wrote:
+> Hello.
 >
-> When people (like Charles and Lee have) have reviewed a change you
-> should add any tags they gave when you resend the change so they don't
-> have to duplicate their work and other people know that the review has
-> happened.
+> On 8/19/2015 12:13 PM, Baolin Wang wrote:
+>
+>> For supporting the usb charger, it adds the usb_charger_init() and
+>> usb_charger_exit() functions for usb charger initialization and exit.
+>>
+>> Introduce a callback 'get_charger_type' which will implemented by
+>> user for usb gadget operations to get the usb charger type.
+>>
+>> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+>
+> [...]
+>
+>> diff --git a/include/linux/usb/gadget.h b/include/linux/usb/gadget.h
+>> index 755e8bc..44d82f5 100644
+>> --- a/include/linux/usb/gadget.h
+>> +++ b/include/linux/usb/gadget.h
+>> @@ -537,6 +537,7 @@ struct usb_gadget_ops {
+>>         struct usb_ep *(*match_ep)(struct usb_gadget *,
+>>                         struct usb_endpoint_descriptor *,
+>>                         struct usb_ss_ep_comp_descriptor *);
+>> +       enum usb_charger_type   (*get_charger_type)(struct usb_gadget *);
+>
+>                              ^^^ please use space, not tab here
 
-Make sense. Thanks.
+OK.
+
+>
+>>   };
+>>
+>>   /**
+>> @@ -611,6 +612,7 @@ struct usb_gadget {
+>>         struct usb_otg_caps             *otg_caps;
+>>         struct raw_notifier_head        nh;
+>>         struct mutex                    lock;
+>> +       struct usb_charger              *uchger;
+>
+>
+>    Why not simply call the field 'charger'? :-)
+
+I think 'uchger' is the abbreviation of 'usb charger' which is maybe a
+little verbous, I'll change it. Thanks for your comments.
+
+>
+> [...]
+>
+> WBR, Sergei
+>
+
 
 
 -- 
 Baolin.wang
 Best Regards
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
