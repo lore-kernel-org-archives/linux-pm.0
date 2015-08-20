@@ -1,69 +1,43 @@
-From: Jiang Liu <jiang.liu@linux.intel.com>
-Subject: Re: [Patch v2] x86, ACPI, irq: Add a quirk to override SCI polarity
- for HyperV
-Date: Thu, 20 Aug 2015 14:19:12 +0800
-Message-ID: <55D57160.40108@linux.intel.com>
-References: <alpine.DEB.2.11.1508182133010.3873@nanos>
- <1439963634-12006-1-git-send-email-jiang.liu@linux.intel.com>
- <CAJZ5v0g7F+BRMzc9-uuxHAK896B-hoOJ5AW7M4jGpowVG+hujw@mail.gmail.com>
- <55D42185.1000709@linux.intel.com>
- <CAJZ5v0gqAX+OEqKPK4b6nz4wpO=HScocTdBqzQsE=ikhA-rcwQ@mail.gmail.com>
- <55D427D3.7040103@linux.intel.com> <alpine.DEB.2.11.1508191025000.3873@nanos>
- <alpine.DEB.2.11.1508191039470.3873@nanos>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: [PATCH V3] thermal: cpu_cooling: Add MAINTAINERS entry
+Date: Thu, 20 Aug 2015 07:28:07 +0100
+Message-ID: <20150820062807.GC22033@e104805>
+References: <898726e0b847fa46a5efec40578324b1b5051ac5.1440038267.git.viresh.kumar@linaro.org>
+ <55D542F1.3070004@linaro.org>
+ <20150820031039.GJ14544@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:8973 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751284AbbHTGTQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 20 Aug 2015 02:19:16 -0400
-In-Reply-To: <alpine.DEB.2.11.1508191039470.3873@nanos>
+Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:52113 "EHLO
+	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751529AbbHTG2n (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Aug 2015 02:28:43 -0400
+Content-Disposition: inline
+In-Reply-To: <20150820031039.GJ14544@linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Nick Meier <nmeier@microsoft.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "amit.daniel@samsung.com" <amit.daniel@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>, "David S. Miller" <davem@davemloft.net>, Greg KH <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, Joe Perches <joe@perches.com>, open list <linux-kernel@vger.kernel.org>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>
 
-On 2015/8/19 16:40, Thomas Gleixner wrote:
-> On Wed, 19 Aug 2015, Thomas Gleixner wrote:
->> On Wed, 19 Aug 2015, Jiang Liu wrote:
->>> On 2015/8/19 14:45, Rafael J. Wysocki wrote:
->>>> Well, the regression at hand has just shown that the assertion in the
->>>> changelog of that commit ("no need for for special treatment for GSI
->>>> used by ACPI SCI") does not really hold.  So, if the only motivation
->>>> for it was to get rid of one extra check in mp_unregister_gsi()
->>>> (mp_register_gsi() still needs to check if it is dealing with the SCI
->>>> anyway), I'd vote for reverting it.
->>> Hi Rafael,
->>> 	The motivation is to treat SCI as normal IOAPIC interrupt so
->>> we could enforce stricter pin attribute checking. Now it does reveal
->>> flaws in ACPI BIOS implementations, but we ran into trouble about how to
->>> handle those flaws:(
->>
->> The intent of this change is entirely correct, though it seems that
->> reality of ACPI is just different.
->>
->> To be on the safe side of things, I agree with Rafael that we should
->> revert that patch instead of introducing a single platform quirk.
+On Thu, Aug 20, 2015 at 04:10:39AM +0100, Viresh Kumar wrote:
+> On 20-08-15, 05:01, Daniel Lezcano wrote:
+> > On 08/20/2015 04:40 AM, Viresh Kumar wrote:
+> > >None of the patches are reaching Viresh or Daniel directly as
+> > >get_maintainers doesn't report us as maintainers. Looks like file header
+> > >or history of commits isn't able to do that properly.
+> > >
+> > >Add a separate entry for cpu_cooling driver in MAINTAINERS.
+> > >
+> > >Acked-by: Eduardo Valentin <edubezval@gmail.com>
+> > >Acked-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+> > >Acked-by: Amit Daniel Kachhap <amit.kachhap@gmail.com>
+> > >Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > 
+> > Shouldn't be Javi Merino in Cc ?
 > 
-> Jiang,
-> 
-> can you please prepare a revert patch for this?
-Hi Rafael and Thomas,
-	I have tried to revert commit cd68f6bd53cf, but found
-it's not an easy task now.
-	When converting to hierarchical irqdomain, the IOAPIC
-internal and interfaces have changed much, and seems no easy
-way to revert cd68f6bd53cf. There may be three possible solutions
-here:
-1) use quirk to correct SCI polarity, as the patch does.
-2) change IOAPIC interfaces to provide a special way to
-   handle SCI interrupt.
-3) change drivers/acpi/pci_link.c to penalize SCI IRQ so it
-   won't be used for PCI IRQ if SCI polarity conflicts with
-   PCI IRQ polarity.
+> Added him now, he wasn't there as get_maintainers missed his work :)
 
-What's your thoughts here?
+Can you add me to the MAINTAINERS as well?
 
-Thanks!
-Gerry
+Thanks,
+Javi
