@@ -1,50 +1,30 @@
-From: Matt Fleming <matt-mF/unelCI9GS6iBeEJttW/XRex20P6io@public.gmane.org>
-Subject: Re: [PATCH v2 05/16] x86/efi: Get entropy through EFI random number
- generator protocol
-Date: Thu, 20 Aug 2015 21:26:20 +0100
-Message-ID: <20150820202620.GF2567@codeblueprint.co.uk>
-References: <1439273796-25359-1-git-send-email-jlee@suse.com>
- <1439273796-25359-6-git-send-email-jlee@suse.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH v2 09/21] ARM: pxa: magician: Add OV9640 camera support
+Date: Thu, 20 Aug 2015 22:26:39 +0200
+Message-ID: <2889798.x6xcIzdYMU@wuerfel>
+References: <cover.1439843482.git.petr.cvek@tul.cz> <55D259A1.6090102@tul.cz> <87lhd568sb.fsf@belgarion.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1439273796-25359-6-git-send-email-jlee-IBi9RG/b67k@public.gmane.org>
-Sender: linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "Lee, Chun-Yi" <joeyli.kernel-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Matthew Garrett <matthew.garrett-05XSO3Yj/JvQT0dZR+AlfA@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Josh Boyer <jwboyer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Vojtech Pavlik <vojtech-AlSwsSmVLrQ@public.gmane.org>, Matt Fleming <matt.fleming-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Jiri Kosina <jkosina-AlSwsSmVLrQ@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, "Lee, Chun-Yi" <jlee-IBi9RG/b67k@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-leds-owner@vger.kernel.org>
+In-Reply-To: <87lhd568sb.fsf@belgarion.home>
+Sender: linux-leds-owner@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
+Cc: Robert Jarzmik <robert.jarzmik@free.fr>, Petr Cvek <petr.cvek@tul.cz>, linux@arm.linux.org.uk, sameo@linux.intel.com, linux-pm@vger.kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, cooloney@gmail.com, sre@kernel.org, haojian.zhuang@gmail.com, rpurdie@rpsys.net, linux-leds@vger.kernel.org, philipp.zabel@gmail.com, lee.jones@linaro.org, j.anaszewski@samsung.com, daniel@zonque.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 11 Aug, at 02:16:25PM, Lee, Chun-Yi wrote:
-> +
-> +static unsigned long efi_get_rng64(efi_system_table_t *sys_table,
-> +				   void **rng_handle)
-> +{
-> +	const struct efi_config *efi_early = __efi_early();
-> +	efi_rng_protocol_64 *rng = NULL;
-> +	efi_guid_t rng_proto = EFI_RNG_PROTOCOL_GUID;
-> +	u64 *handles = (u64 *)(unsigned long)rng_handle;
-> +	efi_status_t status;
-> +	unsigned long rng_number;
-> +
-> +	status = efi_call_early(handle_protocol, handles[0],
-> +				&rng_proto, (void **)&rng);
-> +	if (status != EFI_SUCCESS)
-> +		efi_printk(sys_table, "Failed to get EFI_RNG_PROTOCOL handles\n");
-> +
-> +	if (status == EFI_SUCCESS && rng) {
-> +		status = efi_early->call((unsigned long)rng->get_rng, rng, NULL,
-> +					sizeof(rng_number), &rng_number);
+On Thursday 20 August 2015 21:48:20 Robert Jarzmik wrote:
+> Petr Cvek <petr.cvek@tul.cz> writes:
+> 
+> > +     mdelay(3);
+> Okay, there are several mdelay(3) in this file.
+> 
+> Could you please test if removing these mdelays prevents the camera from working
+> ? If not, I'd like to have them removed.
+> 
+> 
 
-Actually, one thing just occurred to me - you're not passing an
-RNGAlgorithm value and are relying upon the firmware's default
-implementation.
+FWIW, it might be possible to replace some of them with msleep() calls,
+potentially after replacing spinlocks with mutexes where necessary.
 
-I don't think that's a safe bet, the default could be anything and
-might vary across implementations.
-
-Can we do a little better here and pick a "preferred" algorithm
-instead of the default?
-
--- 
-Matt Fleming, Intel Open Source Technology Center
+	Arnd
