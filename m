@@ -1,43 +1,107 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH V3] thermal: cpu_cooling: Add MAINTAINERS entry
-Date: Thu, 20 Aug 2015 07:28:07 +0100
-Message-ID: <20150820062807.GC22033@e104805>
-References: <898726e0b847fa46a5efec40578324b1b5051ac5.1440038267.git.viresh.kumar@linaro.org>
- <55D542F1.3070004@linaro.org>
- <20150820031039.GJ14544@linux>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: [PATCH 2/3] thermal: Add Mediatek thermal controller support
+Date: Thu, 20 Aug 2015 09:57:48 +0200
+Message-ID: <20150820075748.GP18700@pengutronix.de>
+References: <1438955751-20778-1-git-send-email-s.hauer@pengutronix.de>
+ <1438955751-20778-3-git-send-email-s.hauer@pengutronix.de>
+ <CAGS+omD9fhmyHEm6jWaWXi3y90Y5VDr6QeFD7tqMLbZpSN3+yw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:52113 "EHLO
-	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751529AbbHTG2n (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Aug 2015 02:28:43 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:48755 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751265AbbHTH5y (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Aug 2015 03:57:54 -0400
 Content-Disposition: inline
-In-Reply-To: <20150820031039.GJ14544@linux>
+In-Reply-To: <CAGS+omD9fhmyHEm6jWaWXi3y90Y5VDr6QeFD7tqMLbZpSN3+yw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "amit.daniel@samsung.com" <amit.daniel@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>, "David S. Miller" <davem@davemloft.net>, Greg KH <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, Joe Perches <joe@perches.com>, open list <linux-kernel@vger.kernel.org>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>
+To: Daniel Kurtz <djkurtz@chromium.org>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-mediatek@lists.infradead.org, Sasha Hauer <kernel@pengutronix.de>, Matthias Brugger <matthias.bgg@gmail.com>
 
-On Thu, Aug 20, 2015 at 04:10:39AM +0100, Viresh Kumar wrote:
-> On 20-08-15, 05:01, Daniel Lezcano wrote:
-> > On 08/20/2015 04:40 AM, Viresh Kumar wrote:
-> > >None of the patches are reaching Viresh or Daniel directly as
-> > >get_maintainers doesn't report us as maintainers. Looks like file header
-> > >or history of commits isn't able to do that properly.
-> > >
-> > >Add a separate entry for cpu_cooling driver in MAINTAINERS.
-> > >
-> > >Acked-by: Eduardo Valentin <edubezval@gmail.com>
-> > >Acked-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
-> > >Acked-by: Amit Daniel Kachhap <amit.kachhap@gmail.com>
-> > >Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > 
-> > Shouldn't be Javi Merino in Cc ?
+On Tue, Aug 11, 2015 at 03:03:53PM +0800, Daniel Kurtz wrote:
+> Hi Sascha,
 > 
-> Added him now, he wasn't there as get_maintainers missed his work :)
+> I think this patch looks very good now, just some very tiny things inline...
+> 
+> > +
+> > +struct mtk_thermal {
+> > +       struct device *dev;
+> > +       void __iomem *thermal_base;
+> > +
+> > +       struct clk *clk_peri_therm;
+> > +       struct clk *clk_auxadc;
+> > +
+> > +       struct mtk_thermal_bank banks[MT8173_NUM_ZONES];
+> > +
+> > +       struct mutex lock;
+> > +
+> > +       /* Calibration values */
+> > +       int calib_a;
+> > +       int calib_b;
+> 
+> Rather than "a" and "b", these should probably names something like
+> "offset" and "slope".
 
-Can you add me to the MAINTAINERS as well?
+Ok.
 
-Thanks,
-Javi
+> 
+> Since these are properties of the hardware (board? SoC?), perhaps it
+> makes sense to allow setting them in devicetree?
+
+It seems there are some fuses in the SoC which shall store the
+calibration values ultimately. The current bootloader cannot convert
+these values into device tree properties and I'm not sure the format in
+which they are stored is clear now (I hope not, since then we would have
+five calibration values to describe a line). Also the new nvmem
+framework seems to make it possible to describe the place for the
+constants in the device tree rather than having to put the values
+themselves into the device tree.
+To cut a long story short I left this for a future exercise.
+
+> > +       /*
+> > +        * The MT8173 thermal controller does not have its own ADC. Instead it
+> > +        * uses AHB bus accesses to control the AUXADC. To do this the thermal
+> > +        * controller has to be programmed with the physical addresses of the
+> > +        * AUXADC registers and with the various bit positions in the AUXADC.
+> > +        * Also the thermal controller controls a mux in the APMIXEDSYS register
+> > +        * space.
+> > +        */
+> > +
+> > +       /*
+> > +        * this value will be stored to TEMP_PNPMUXADDR (TEMP_SPARE0)
+> > +        * automatically by hw
+> > +        */
+> > +       writel(BIT(MT8173_TEMP_AUXADC_CHANNEL), mt->thermal_base + TEMP_ADCMUX);
+> > +
+> > +       /* AHB address for auxadc mux selection */
+> > +       writel(auxadc_phys_base + 0x00c, mt->thermal_base + TEMP_ADCMUXADDR);
+> 
+> Can you define a AUXADC_ constant for this "0x00c"?
+
+Ok. Sorry, missed that in the last review.
+
+> > +
+> > +       ret = clk_prepare_enable(mt->clk_peri_therm);
+> > +       if (ret) {
+> > +               dev_err(&pdev->dev, "Can't enable peri clk: %d\n", ret);
+> > +               goto err_disable_clk_auxadc;
+> > +       }
+> 
+> Seems like the temp sensor and ADC will always be on and clocked, even
+> if not used.
+> Does it make sense to give this driver runtime_pm support to disable
+> the sensor and its clocks between temperature readings?  (Doesn't need
+> to be added in this patch, of course.
+
+In the longer run I would rather implement interrupt support so that we
+get interrupted on critical conditions. Then we probably have to keep the
+clock enabled anyway.
+
+Sascha
+
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
