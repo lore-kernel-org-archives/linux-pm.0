@@ -1,107 +1,90 @@
 From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH 2/3] thermal: Add Mediatek thermal controller support
-Date: Thu, 20 Aug 2015 09:57:48 +0200
-Message-ID: <20150820075748.GP18700@pengutronix.de>
-References: <1438955751-20778-1-git-send-email-s.hauer@pengutronix.de>
- <1438955751-20778-3-git-send-email-s.hauer@pengutronix.de>
- <CAGS+omD9fhmyHEm6jWaWXi3y90Y5VDr6QeFD7tqMLbZpSN3+yw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: [PATCH 1/3] dt-bindings: thermal: Add binding document for Mediatek thermal controller
+Date: Thu, 20 Aug 2015 10:06:00 +0200
+Message-ID: <1440057962-13373-2-git-send-email-s.hauer@pengutronix.de>
+References: <1440057962-13373-1-git-send-email-s.hauer@pengutronix.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:48755 "EHLO
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:39690 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751265AbbHTH5y (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Aug 2015 03:57:54 -0400
-Content-Disposition: inline
-In-Reply-To: <CAGS+omD9fhmyHEm6jWaWXi3y90Y5VDr6QeFD7tqMLbZpSN3+yw@mail.gmail.com>
+	with ESMTP id S1752161AbbHTIGH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Aug 2015 04:06:07 -0400
+In-Reply-To: <1440057962-13373-1-git-send-email-s.hauer@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Kurtz <djkurtz@chromium.org>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-mediatek@lists.infradead.org, Sasha Hauer <kernel@pengutronix.de>, Matthias Brugger <matthias.bgg@gmail.com>
+To: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-mediatek@lists.infradead.org, Daniel Kurtz <djkurtz@chromium.org>, kernel@pengutronix.de, Matthias Brugger <matthias.bgg@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>
 
-On Tue, Aug 11, 2015 at 03:03:53PM +0800, Daniel Kurtz wrote:
-> Hi Sascha,
-> 
-> I think this patch looks very good now, just some very tiny things inline...
-> 
-> > +
-> > +struct mtk_thermal {
-> > +       struct device *dev;
-> > +       void __iomem *thermal_base;
-> > +
-> > +       struct clk *clk_peri_therm;
-> > +       struct clk *clk_auxadc;
-> > +
-> > +       struct mtk_thermal_bank banks[MT8173_NUM_ZONES];
-> > +
-> > +       struct mutex lock;
-> > +
-> > +       /* Calibration values */
-> > +       int calib_a;
-> > +       int calib_b;
-> 
-> Rather than "a" and "b", these should probably names something like
-> "offset" and "slope".
+Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+---
+ .../bindings/thermal/mediatek-thermal.txt          | 38 ++++++++++++++++++++++
+ include/dt-bindings/thermal/mt8173.h               | 13 ++++++++
+ 2 files changed, 51 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
+ create mode 100644 include/dt-bindings/thermal/mt8173.h
 
-Ok.
-
-> 
-> Since these are properties of the hardware (board? SoC?), perhaps it
-> makes sense to allow setting them in devicetree?
-
-It seems there are some fuses in the SoC which shall store the
-calibration values ultimately. The current bootloader cannot convert
-these values into device tree properties and I'm not sure the format in
-which they are stored is clear now (I hope not, since then we would have
-five calibration values to describe a line). Also the new nvmem
-framework seems to make it possible to describe the place for the
-constants in the device tree rather than having to put the values
-themselves into the device tree.
-To cut a long story short I left this for a future exercise.
-
-> > +       /*
-> > +        * The MT8173 thermal controller does not have its own ADC. Instead it
-> > +        * uses AHB bus accesses to control the AUXADC. To do this the thermal
-> > +        * controller has to be programmed with the physical addresses of the
-> > +        * AUXADC registers and with the various bit positions in the AUXADC.
-> > +        * Also the thermal controller controls a mux in the APMIXEDSYS register
-> > +        * space.
-> > +        */
-> > +
-> > +       /*
-> > +        * this value will be stored to TEMP_PNPMUXADDR (TEMP_SPARE0)
-> > +        * automatically by hw
-> > +        */
-> > +       writel(BIT(MT8173_TEMP_AUXADC_CHANNEL), mt->thermal_base + TEMP_ADCMUX);
-> > +
-> > +       /* AHB address for auxadc mux selection */
-> > +       writel(auxadc_phys_base + 0x00c, mt->thermal_base + TEMP_ADCMUXADDR);
-> 
-> Can you define a AUXADC_ constant for this "0x00c"?
-
-Ok. Sorry, missed that in the last review.
-
-> > +
-> > +       ret = clk_prepare_enable(mt->clk_peri_therm);
-> > +       if (ret) {
-> > +               dev_err(&pdev->dev, "Can't enable peri clk: %d\n", ret);
-> > +               goto err_disable_clk_auxadc;
-> > +       }
-> 
-> Seems like the temp sensor and ADC will always be on and clocked, even
-> if not used.
-> Does it make sense to give this driver runtime_pm support to disable
-> the sensor and its clocks between temperature readings?  (Doesn't need
-> to be added in this patch, of course.
-
-In the longer run I would rather implement interrupt support so that we
-get interrupted on critical conditions. Then we probably have to keep the
-clock enabled anyway.
-
-Sascha
-
+diff --git a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
+new file mode 100644
+index 0000000..1697375
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
+@@ -0,0 +1,38 @@
++* Mediatek Thermal
++
++This describes the device tree binding for the Mediatek thermal controller
++which measures the on-SoC temperatures. This device does not have its own ADC,
++instead it directly controls the AUXADC via AHB bus accesses. For this reason
++this device needs phandles to the AUXADC. Also it controls a mux in the
++apmixedsys register space via AHB bus accesses, so a phandle to the APMIXEDSYS
++is also needed.
++
++Required properties:
++- compatible: "mediatek,mt8173-thermal"
++- reg: Address range of the thermal controller
++- interrupts: IRQ for the thermal controller
++- clocks, clock-names: Clocks needed for the thermal controller. required
++                       clocks are:
++		       "therm":	 Main clock needed for register access
++		       "auxadc": The AUXADC clock
++- resets: Reference to the reset controller controlling the thermal controller.
++- mediatek,auxadc: A phandle to the AUXADC which the thermal controller uses
++- mediatek,apmixedsys: A phandle to the APMIXEDSYS controller.
++- #thermal-sensor-cells : Should be 1. See ./thermal.txt for a description. See
++			  include/dt-bindings/thermal/mt8173.h for valid sensor
++			  numbers.
++
++Example:
++
++	thermal: thermal@1100b000 {
++		#thermal-sensor-cells = <1>;
++		compatible = "mediatek,mt8173-thermal";
++		reg = <0 0x1100b000 0 0x1000>;
++		interrupts = <0 70 IRQ_TYPE_LEVEL_LOW>;
++		clocks = <&pericfg CLK_PERI_THERM>, <&pericfg CLK_PERI_AUXADC>;
++		clock-names = "therm", "auxadc";
++		resets = <&pericfg MT8173_PERI_THERM_SW_RST>;
++		reset-names = "therm";
++		mediatek,auxadc = <&auxadc>;
++		mediatek,apmixedsys = <&apmixedsys>;
++	};
+diff --git a/include/dt-bindings/thermal/mt8173.h b/include/dt-bindings/thermal/mt8173.h
+new file mode 100644
+index 0000000..692e74c
+--- /dev/null
++++ b/include/dt-bindings/thermal/mt8173.h
+@@ -0,0 +1,13 @@
++/*
++ * This header provides constants for mediatek,mt8173-thermal
++ */
++
++#ifndef _DT_BINDINGS_THERMAL_MEDIATEK_MT8173_H
++#define _DT_BINDINGS_THERMAL_MEDIATEK_MT8173_H
++
++#define MT8173_THERMAL_ZONE_CA53	0
++#define MT8173_THERMAL_ZONE_CA57	1
++#define MT8173_THERMAL_ZONE_GPU		2
++#define MT8173_THERMAL_ZONE_CORE	3
++
++#endif /* _DT_BINDINGS_THERMAL_MEDIATEK_MT8173_H */
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+2.4.6
+
