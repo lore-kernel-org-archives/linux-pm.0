@@ -1,41 +1,52 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3] thermal: cpu_cooling: Add MAINTAINERS entry
-Date: Thu, 20 Aug 2015 08:40:39 +0530
-Message-ID: <20150820031039.GJ14544@linux>
-References: <898726e0b847fa46a5efec40578324b1b5051ac5.1440038267.git.viresh.kumar@linaro.org>
- <55D542F1.3070004@linaro.org>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH] thermal: cpu_cooling: Add MAINTAINERS entry
+Date: Thu, 20 Aug 2015 12:21:28 +0900
+Message-ID: <55D547B8.8000701@samsung.com>
+References: <531889430.314651440037818015.JavaMail.weblogic@ep2mlwas01b>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f52.google.com ([209.85.220.52]:35178 "EHLO
-	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751187AbbHTDKn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Aug 2015 23:10:43 -0400
-Received: by pacdd16 with SMTP id dd16so8711450pac.2
-        for <linux-pm@vger.kernel.org>; Wed, 19 Aug 2015 20:10:43 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <55D542F1.3070004@linaro.org>
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:57866 "EHLO
+	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751189AbbHTDVa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 19 Aug 2015 23:21:30 -0400
+Received: from eucpsbgm1.samsung.com (unknown [203.254.199.244])
+ by mailout1.w1.samsung.com
+ (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
+ with ESMTP id <0NTD00B982NS0C50@mailout1.w1.samsung.com> for
+ linux-pm@vger.kernel.org; Thu, 20 Aug 2015 04:21:28 +0100 (BST)
+In-reply-to: <531889430.314651440037818015.JavaMail.weblogic@ep2mlwas01b>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, Javi Merino <javi.merino@arm.com>
-Cc: edubezval@gmail.com, linaro-kernel@lists.linaro.org, amit.daniel@samsung.com, linux-pm@vger.kernel.org, rui.zhang@intel.com, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>, "David S. Miller" <davem@davemloft.net>, Greg KH <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, Joe Perches <joe@perches.com>, open list <linux-kernel@vger.kernel.org>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>
+To: amit.daniel@samsung.com
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rui.zhang@intel.com" <rui.zhang@intel.com>
 
-On 20-08-15, 05:01, Daniel Lezcano wrote:
-> On 08/20/2015 04:40 AM, Viresh Kumar wrote:
-> >None of the patches are reaching Viresh or Daniel directly as
-> >get_maintainers doesn't report us as maintainers. Looks like file header
-> >or history of commits isn't able to do that properly.
-> >
-> >Add a separate entry for cpu_cooling driver in MAINTAINERS.
-> >
-> >Acked-by: Eduardo Valentin <edubezval@gmail.com>
-> >Acked-by: Amit Daniel Kachhap <amit.daniel@samsung.com>
-> >Acked-by: Amit Daniel Kachhap <amit.kachhap@gmail.com>
-> >Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+On 20.08.2015 11:30, AMIT DANIEL KACHHAP wrote:
+> Hi Viresh,
 > 
-> Shouldn't be Javi Merino in Cc ?
+> ------- Original Message -------
+> Sender : Krzysztof Kozlowski<k.kozlowski@samsung.com>  S5/Senior Engineer/Platform Solution Lab./Samsung Electronics
+> Date   : Aug 20, 2015 10:28 (GMT+09:00)
+> Title  : Re: [PATCH] thermal: cpu_cooling: Add MAINTAINERS entry
+> 
+> 2015-08-20 3:03 GMT+09:00 Viresh Kumar <viresh.kumar@linaro.org>:
+>> On 19-08-15, 10:44, Eduardo Valentin wrote:
+>>> Interesting. I would expect that by this point, you would be already
+>>> listed.. anyways..
+>>
+>> No, its just you and Zhang.
+>>
+>>>> +THERMAL/CPU_COOLING
+>>>> +M: Amit Daniel Kachhap <amit.daniel@samsung.com>
+> Samsung mail client has some issues in accessibility. Please update this entry as, 
+> +M: Amit Daniel Kachhap <amit.kachhap@gmail.com>
+> Acked by: Amit Daniel Kachhap <amit.daniel@samsung.com>
+> Acked by: Amit Daniel Kachhap <amit.kachhap@gmail.com>
 
-Added him now, he wasn't there as get_maintainers missed his work :)
+Thanks Amit Daniel for confirmation!
 
--- 
-viresh
+Best regards,
+Krzysztof
+
+
