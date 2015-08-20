@@ -1,43 +1,40 @@
 From: Petr Cvek <petr.cvek@tul.cz>
-Subject: Re: [PATCH v2 09/21] ARM: pxa: magician: Add OV9640 camera support
-Date: Fri, 21 Aug 2015 00:39:30 +0200
-Message-ID: <55D65722.9030508@tul.cz>
-References: <cover.1439843482.git.petr.cvek@tul.cz> <55D259A1.6090102@tul.cz>
- <87lhd568sb.fsf@belgarion.home> <2889798.x6xcIzdYMU@wuerfel>
+Subject: Re: [PATCH v2 10/21] ARM: pxa: magician: Add UDA1380 sound support
+Date: Fri, 21 Aug 2015 01:01:06 +0200
+Message-ID: <55D65C32.6080503@tul.cz>
+References: <cover.1439843482.git.petr.cvek@tul.cz> <55D259B7.90703@tul.cz>
+ <87h9nt68mm.fsf@belgarion.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=iso-8859-2
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-leds-owner@vger.kernel.org>
-In-Reply-To: <2889798.x6xcIzdYMU@wuerfel>
+In-Reply-To: <87h9nt68mm.fsf@belgarion.home>
 Sender: linux-leds-owner@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>, linux-arm-kernel@lists.infradead.org
-Cc: Robert Jarzmik <robert.jarzmik@free.fr>, linux@arm.linux.org.uk, sameo@linux.intel.com, linux-pm@vger.kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, cooloney@gmail.com, sre@kernel.org, haojian.zhuang@gmail.com, rpurdie@rpsys.net, linux-leds@vger.kernel.org, philipp.zabel@gmail.com, lee.jones@linaro.org, j.anaszewski@samsung.com, daniel@zonque.org
+To: Robert Jarzmik <robert.jarzmik@free.fr>
+Cc: philipp.zabel@gmail.com, daniel@zonque.org, haojian.zhuang@gmail.com, sameo@linux.intel.com, lee.jones@linaro.org, cooloney@gmail.com, rpurdie@rpsys.net, j.anaszewski@samsung.com, linux@arm.linux.org.uk, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Dne 20.8.2015 v 22:26 Arnd Bergmann napsal(a):
-> On Thursday 20 August 2015 21:48:20 Robert Jarzmik wrote:
->> Petr Cvek <petr.cvek@tul.cz> writes:
->>
->>> +     mdelay(3);
->> Okay, there are several mdelay(3) in this file.
->>
->> Could you please test if removing these mdelays prevents the camera from working
->> ? If not, I'd like to have them removed.
->>
->>
+Dne 20.8.2015 v 21:51 Robert Jarzmik napsal(a):
+> Petr Cvek <petr.cvek@tul.cz> writes:
 > 
-> FWIW, it might be possible to replace some of them with msleep() calls,
-> potentially after replacing spinlocks with mutexes where necessary.
+>> +/*
+>> + * Magician Audio controller
+>> + */
+>> +
+>> +static struct platform_device magician_audio_device = {
+>> +	.name = "magician-audio",
+> Is this already upstream or is it a submission in progress ? Other than that
+> detail, I'll queue it in a week probably.
+
+This one is problematic. Vanilla version did not work from at least 3.4 (where I started, but probably even more in past). Somewhere between 3.13 and ~4.1 there is a change which causes it to fail after driver reload (bad pointers I think). UDA codec routes are not constructed completely and in ~4.1 they are refused, there are some swapped control registers and bad DMA definitions. Oh and recording stopped to work too (maybe it is caused by that routes).
+
+I tried to send initial separate patches (for DMA and registers), but it got stuck somewhere (at least it is not in 4.2rcX and I sent them around start of this year).
+
+I can add some of these patches to this patchset (but I didn't started yet on failing reload, record and fixing the routes).
+
 > 
-> 	Arnd
+> Cheers.
 > 
-
-Datasheet says:
-
-	tS:RESET	Setting time after software/hardware reset	1 ms
-
-So at least one ~1 ms should be left there. Are msleep less than 20ms valid? 
-
-(checkpatch: msleep < 20ms  can sleep for up to 20ms)
-
-Petr
+> --
+> Robert
+> 
