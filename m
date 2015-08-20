@@ -1,21 +1,21 @@
 From: Srinivas Pandruvada <srinivas.pandruvada-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
 Subject: Re: [RFC PATCH 1/2] thermal: iio device for thermal sensor
-Date: Thu, 20 Aug 2015 08:11:39 -0700
-Message-ID: <1440083499.3841.11.camel@linux.intel.com>
+Date: Thu, 20 Aug 2015 08:13:13 -0700
+Message-ID: <1440083593.3841.13.camel@linux.intel.com>
 References: <1439855577-17114-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-	 <20150819175712.GB6643@localhost.localdomain>
+	 <1440045576.7679.5.camel@rzhang1-mobl4>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20150819175712.GB6643-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
+In-Reply-To: <1440045576.7679.5.camel@rzhang1-mobl4>
 Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Cc: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2015-08-19 at 10:57 -0700, Eduardo Valentin wrote:
-> On Mon, Aug 17, 2015 at 04:52:56PM -0700, Srinivas Pandruvada wrote:
+On Thu, 2015-08-20 at 12:39 +0800, Zhang Rui wrote:
+> On Mon, 2015-08-17 at 16:52 -0700, Srinivas Pandruvada wrote:
 > > The only method to read temperature of a thermal zone is by reading=
 =20
 > > sysfs
@@ -47,17 +47,9 @@ On Wed, 2015-08-19 at 10:57 -0700, Eduardo Valentin wrote:
 > > - Let user space registers for some thresholds without using some
 > > passive trips
 > > - Avoid string based kobject uevent notifications
->=20
->=20
 > > - Able to use different external trigger (data ready indications)=20
 > > and push
 > > temperature samples
->=20
-> For documentation purposes, can you please elaborate a little more on
-> why the above items cause problems in userspace?
->=20
-Sure, in the next rev.
->=20
 > >=20
 > > There are some ways to achieve this using thermal sysfs 2.0, but=20
 > > still
@@ -92,10 +84,6 @@ Sure, in the next rev.
 > > +++++++++++++++++++++++++++++++++++++++++
 > >  drivers/thermal/user_space.c   |   1 +
 > >  include/linux/thermal.h        |  46 ++++++
->=20
-> Can you please add documentation too?
-OK.
->=20
 > >  6 files changed, 399 insertions(+), 2 deletions(-)
 > >  create mode 100644 drivers/thermal/thermal_iio.c
 > >=20
@@ -573,17 +561,6 @@ OK.
 > > trip)
 > >  {
 > > +	thermal_iio_sensor_notify(tz, THERMAL_TEMP_THRESHOLD);
->=20
-> Do we really need this?
-This the user space governor callback. If we don't add then we need to
-register another user space governor for IIO.
-May be you mean something else.
-
-> Can't the existing thermal to userspa
-> ce event be used?
-> Also, I would prefer you could separate your changes into smaller
-> patches, when possible.
->=20
 > >  	mutex_lock(&tz->lock);
 > >  	kobject_uevent(&tz->device.kobj, KOBJ_CHANGE);
 > >  	mutex_unlock(&tz->lock);
@@ -596,15 +573,6 @@ May be you mean something else.
 > >  #include <uapi/linux/thermal.h>
 > > =20
 > > +#if IS_ENABLED(CONFIG_THERMAL_IIO)
-> This is awkward.
->=20
-> Are you sure this is not solved in the iio headers? If not I would
-> suggest fixing the iio headers, allowing their users being compiled
-> when CONFIG_IIO=3Dn
-Currently for IIO drivers are dependent on CONFIG_IIO, so this is not a
-problem. So the iio.h doesn't have dummy interface functions.
-If we go this path, then we can add dummy headers in iio.h.
-
 > > +#include <linux/iio/iio.h>
 > > +#include <linux/iio/sysfs.h>
 > > +#include <linux/iio/buffer.h>
@@ -614,6 +582,22 @@ If we go this path, then we can add dummy headers in iio.h.
 > > +#include <linux/iio/triggered_buffer.h>
 > > +#endif
 > > +
+>=20
+> IMO, we only need to reference linux/iio/iio.h in this header, all=20
+> the
+> others should be moved to drivers/thermal/thermal_iio.c.
+>=20
+> Plus, I'm curious why iio subsystem has so many different external
+> headers for driver to reference.
+>=20
+I will check on this.
+
+Thanks,
+Srinivas
+
+> thanks,
+> rui
+>=20
 > >  #define THERMAL_TRIPS_NONE	-1
 > >  #define THERMAL_MAX_TRIPS	12
 > > =20
@@ -628,12 +612,6 @@ If we go this path, then we can add dummy headers in iio.h.
 > > +	int (*set_threshold_temp)(struct thermal_zone_device *,=20
 > > int,
 > > +				  unsigned long);
->=20
->=20
-> Can this change be split?
-You mean different patchset? I will split this part into another
-patchset.
->=20
 > >  	int (*notify) (struct thermal_zone_device *, int,
 > >  		       enum thermal_trip_type);
 > >  };
@@ -659,12 +637,6 @@ patchset.
 > > +};
 > > +
 > > +#if IS_ENABLED(CONFIG_THERMAL) && IS_ENABLED(CONFIG_THERMAL_IIO)
->=20
-> Maybe CONFIG_THERMAL_IIO is enough, then set THERMAL_IIO depend on
-> THERMAL?
-I will check, why CONFIG_THERMAL dependency is used in thermal.h in
-other cases. I used the same model.
->=20
 > > +int thermal_iio_sensor_register(struct thermal_zone_device *tz);
 > > +int thermal_iio_sensor_unregister(struct thermal_zone_device *tz);
 > > +int thermal_iio_sensor_notify(struct thermal_zone_device *tz,
@@ -692,7 +664,10 @@ other cases. I used the same model.
 > > +#endif
 > > +
 > >  #endif /* __THERMAL_H__ */
-
-Thanks for the review.
-
--Srinivas
+>=20
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm"=20
+> in
+> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
