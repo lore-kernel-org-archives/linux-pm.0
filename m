@@ -1,59 +1,75 @@
-From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: RE: [PATCH] [v2] x86, suspend: Save/restore extra MSR registers for
- suspend
-Date: Fri, 21 Aug 2015 16:24:44 +0000
-Message-ID: <36DF59CE26D8EE47B0655C516E9CE6401CB0067B@SHSMSX101.ccr.corp.intel.com>
-References: <1440158014-29610-1-git-send-email-yu.c.chen@intel.com>
- <55D71ADD.2000601@nigelcunningham.com.au>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH 2/9] PM / Domains: Remove dev->driver check for runtime PM
+Date: Fri, 21 Aug 2015 14:04:20 -0700
+Message-ID: <7hio88gxpn.fsf@deeprootsystems.com>
+References: <1438731339-58317-1-git-send-email-lina.iyer@linaro.org>
+	<1438731339-58317-3-git-send-email-lina.iyer@linaro.org>
+	<7hfv3onv5c.fsf@deeprootsystems.com>
+	<CAMuHMdVeffa-jgXuSjDQBKTrhgW-d87OKzs1iXX+4y-9U_AJbg@mail.gmail.com>
+	<7hwpwylepx.fsf@deeprootsystems.com>
+	<CAMuHMdW-T9rUWXsQeffwtXspHbjfGqo_0G4QMB1o0TwTLJAQAg@mail.gmail.com>
+	<CAMAWPa-0R42thqBo0omn0KK7y0wyxoyaP+wsfoRvXBmWhBytKg@mail.gmail.com>
+	<CAMuHMdV2gDBaPRb3yE=tVPO_pr7PFA6bwhyQE5raumCh_qPXww@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:27332 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751650AbbHUQY4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Aug 2015 12:24:56 -0400
-In-Reply-To: <55D71ADD.2000601@nigelcunningham.com.au>
-Content-Language: en-US
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:35704 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752221AbbHUVEY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 21 Aug 2015 17:04:24 -0400
+Received: by pacdd16 with SMTP id dd16so51635441pac.2
+        for <linux-pm@vger.kernel.org>; Fri, 21 Aug 2015 14:04:23 -0700 (PDT)
+In-Reply-To: <CAMuHMdV2gDBaPRb3yE=tVPO_pr7PFA6bwhyQE5raumCh_qPXww@mail.gmail.com>
+	(Geert Uytterhoeven's message of "Sun, 16 Aug 2015 11:24:51 +0200")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nigel Cunningham <nigel@nigelcunningham.com.au>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "pavel@ucw.cz" <pavel@ucw.cz>, "tglx@linutronix.de" <tglx@linutronix.de>, "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>
-Cc: "Zhang, Rui" <rui.zhang@intel.com>, "lenb@kernel.org" <lenb@kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Lina Iyer <lina.iyer@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Krzysztof =?utf-8?Q?Koz=C5=82owski?= <k.kozlowski@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "msivasub@codeaurora.org" <msivasub@codeaurora.org>, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>
 
-Hi, Nigel
+Geert Uytterhoeven <geert@linux-m68k.org> writes:
 
-> -----Original Message-----
-> From: Nigel Cunningham [mailto:nigel@nigelcunningham.com.au]
-> Sent: Friday, August 21, 2015 8:35 PM
-> To: Chen, Yu C; rjw@rjwysocki.net; pavel@ucw.cz; tglx@linutronix.de;
-> mingo@redhat.com; hpa@zytor.com
-> Cc: Zhang, Rui; lenb@kernel.org; x86@kernel.org; linux-pm@vger.kernel.org;
-> linux-kernel@vger.kernel.org
-> Subject: Re: [PATCH] [v2] x86, suspend: Save/restore extra MSR registers for
-> suspend
-> 
-> Hi Chen.
-> 
-> Is there any issue with saving and restoring MSRs unconditionally? That
-> would simplify the patch and make things 'just work'.
-Saving/restoring unconditionally might take BIOS legal action into account,
-for example, BIOS itself is willing to modify the MSR.  And Pavel suggests
-using quirk to workaround in V1 patch:
-https://patchwork.kernel.org/patch/7023891/
+> Hi Kevin,
+>
+> On Fri, Aug 14, 2015 at 7:19 PM, Kevin Hilman <khilman@kernel.org> wrote:
+>> On Fri, Aug 14, 2015 at 12:24 AM, Geert Uytterhoeven
+>> <geert@linux-m68k.org> wrote:
+>>> On Fri, Aug 14, 2015 at 5:40 AM, Kevin Hilman <khilman@kernel.org> wrote:
+>>>> Geert Uytterhoeven <geert@linux-m68k.org> writes:
+>>>>> On Wed, Aug 12, 2015 at 9:50 PM, Kevin Hilman <khilman@kernel.org> wrote:
+>>>>>> This check might have made sense before PM domains, but with PM domains,
+>>>>>> it's entirely possible to have a simple device without a driver and the
+>>>>>> PM domain handles all the necesary PM, so I think this check
+>>>>>> could/should be removed.
+>>>>>>
+>>>>>> Thoughts?
+>>>>>
+>>>>> Simple devices without a driver aren't handled automatically.
+>>>>> At minimum, the driver should call pm_runtime_enable(), cfr.
+>>>>> drivers/bus/simple-pm-bus.c.
+>>>>
+>>>> That's correct, and in the proof-of-concept stuff I hacked up and in
+>>>> Lina's series, the CPU "devices" do indeed to this.  Without that, they
+>>>> wouldn't end up ever taking this codepath through genpd's
+>>>> runtime_suspend and power_off hooks.
+>>>>
+>>>> Also, I'm not sure if your comment was meant to be an objection to the
+>>>> patch?  or if you're OK with it.
+>>>
+>>> My comment was purely meant as a response to "it's entirely possible to have a
+>>> simple device without a driver and the PM domain handles all the necesary PM".
+>>
+>> Right, so if the PM domain does the pm_runtime_enable() for these
+>> "simple" devices without drivers, they can still exist without a
+>> driver, and the PM domain doing all the magic.
+>
+> Is it possible to let the PM Domain do the pm_runtime_enable() itself in
+> the absence of a driver? 
 
-So I'm considering a common framework to save/restore these MSRs,
-because user might need to protect more than one MSR during 
-suspend, so..
+Well, I suppose it's possible, not sure it's recommended. :)
 
-I can modify this patch to a simpler version, for example,
-Introducing two variables in struct saved_context , like
-MSR_IA32_MISC_ENABLE does.
+> If yes, I wouldn't have needed simple-pm-bus.c.  
+> What if a driver is bound later?
 
-Thanks for your review
+Yeah, you're approach is better.
 
-Best Regards,
-Yu
-> 
-> Regards,
-> 
-> Nigel
+Kevin
