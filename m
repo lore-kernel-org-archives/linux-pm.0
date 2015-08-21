@@ -1,47 +1,89 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH v2 09/21] ARM: pxa: magician: Add OV9640 camera support
-Date: Fri, 21 Aug 2015 15:45:53 +0200
-Message-ID: <1634812.ZDaECJ9ClW@wuerfel>
-References: <cover.1439843482.git.petr.cvek@tul.cz> <2889798.x6xcIzdYMU@wuerfel> <55D65722.9030508@tul.cz>
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: RE: [RFC PATCH V2] PM / hibernate: Fix hibernation panic caused by
+ inconsistent e820 memory map
+Date: Fri, 21 Aug 2015 16:11:37 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE6401CB00656@SHSMSX101.ccr.corp.intel.com>
+References: <1437553748-7344-1-git-send-email-yu.c.chen@intel.com>
+ <CAE9FiQVM6p0+yLj5JJ9H_tUeX6S1r-E3hMSZg+JSyguUhLDouA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-leds-owner@vger.kernel.org>
-In-Reply-To: <55D65722.9030508@tul.cz>
-Sender: linux-leds-owner@vger.kernel.org
-To: Petr Cvek <petr.cvek@tul.cz>
-Cc: linux-arm-kernel@lists.infradead.org, Robert Jarzmik <robert.jarzmik@free.fr>, linux@arm.linux.org.uk, sameo@linux.intel.com, linux-pm@vger.kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, cooloney@gmail.com, sre@kernel.org, haojian.zhuang@gmail.com, rpurdie@rpsys.net, linux-leds@vger.kernel.org, philipp.zabel@gmail.com, lee.jones@linaro.org, j.anaszewski@samsung.com, daniel@zonque.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:59262 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752482AbbHUQLv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 21 Aug 2015 12:11:51 -0400
+In-Reply-To: <CAE9FiQVM6p0+yLj5JJ9H_tUeX6S1r-E3hMSZg+JSyguUhLDouA@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Yinghai Lu <yinghai@kernel.org>, "Lee, Chun-Yi" <jlee@suse.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>
 
-On Friday 21 August 2015 00:39:30 Petr Cvek wrote:
-> Dne 20.8.2015 v 22:26 Arnd Bergmann napsal(a):
-> > On Thursday 20 August 2015 21:48:20 Robert Jarzmik wrote:
-> >> Petr Cvek <petr.cvek@tul.cz> writes:
-> >>
-> >>> +     mdelay(3);
-> >> Okay, there are several mdelay(3) in this file.
-> >>
-> >> Could you please test if removing these mdelays prevents the camera from working
-> >> ? If not, I'd like to have them removed.
-> >>
-> >>
-> > 
-> > FWIW, it might be possible to replace some of them with msleep() calls,
-> > potentially after replacing spinlocks with mutexes where necessary.
-> > 
-> >       Arnd
-> > 
-> 
-> Datasheet says:
-> 
->         tS:RESET        Setting time after software/hardware reset      1 ms
-> 
-> So at least one ~1 ms should be left there. Are msleep less than 20ms valid? 
-> 
-> (checkpatch: msleep < 20ms  can sleep for up to 20ms)
-
-On most kernels, an msleep(1) will sleep somewhere between 1 and 3 milliseconds
-(but could be much longer), while an mdelay(1) tries to sleep around one
-millisecond, more or less.
-
-	Arnd
+U2VlbXMgdGhlcmUncyBubyByZXBseSBmcm9tIA0KaHR0cHM6Ly9wYXRjaHdvcmsua2VybmVsLm9y
+Zy9wYXRjaC82ODg3OTkxLywNCmFuZCBtb3N0IG9mIG91ciBzdHJlc3MgdGVzdCBvbiBoaWJlcm5h
+dGlvbiBhcmUgYmxvY2tlZCwNCkknbSBjb25zaWRlcmluZyBhbHNvIGRvaW5nIHN0cmVzcyB0ZXN0
+aW5nIHdpdGggdGhpcyBwYXRjaCBhcHBsaWVkLA0Kd2UgbmVlZCBhIHNvbHV0aW9uIHRvIGZpeCBp
+dCBhZnRlciBhbGwuLg0KDQpCZXN0IFJlZ2FyZHMsDQpZdQ0KDQoNCj4gLS0tLS1PcmlnaW5hbCBN
+ZXNzYWdlLS0tLS0NCj4gRnJvbTogeWhsdS5rZXJuZWxAZ21haWwuY29tIFttYWlsdG86eWhsdS5r
+ZXJuZWxAZ21haWwuY29tXSBPbiBCZWhhbGYgT2YNCj4gWWluZ2hhaSBMdQ0KPiBTZW50OiBUaHVy
+c2RheSwgSnVseSAyMywgMjAxNSA3OjU3IEFNDQo+IFRvOiBDaGVuLCBZdSBDDQo+IENjOiBMaW51
+eCBQTSBsaXN0OyBMZWUsIENodW4tWWk7IFd5c29ja2ksIFJhZmFlbCBKOyBaaGFuZywgUnVpOyBU
+aWFuLCBZZVgNCj4gU3ViamVjdDogUmU6IFtSRkMgUEFUQ0ggVjJdIFBNIC8gaGliZXJuYXRlOiBG
+aXggaGliZXJuYXRpb24gcGFuaWMgY2F1c2VkIGJ5DQo+IGluY29uc2lzdGVudCBlODIwIG1lbW9y
+eSBtYXANCj4gDQo+IE9uIFdlZCwgSnVsIDIyLCAyMDE1IGF0IDE6MjkgQU0sIENoZW4gWXUgPHl1
+LmMuY2hlbkBpbnRlbC5jb20+IHdyb3RlOg0KPiA+IENvbW1pdCA4NGM5MWI3YWUwN2MgKCJQTSAv
+IGhpYmVybmF0ZTogYXZvaWQgdW5zYWZlIHBhZ2VzIGluIGU4MjANCj4gPiByZXNlcnZlZA0KPiA+
+IHJlZ2lvbnMiKSB3YXMgcmV2ZXJ0ZWQsIGJlY2F1c2UgdGhpcyBwYXRjaCBtYWtlcyByZXN1bWUg
+ZnJvbQ0KPiA+IGhpYmVybmF0aW9uIG9uIExlbm92byB4MjMwIHVucmVsaWFibGUuIEJ1dCByZXZl
+cnRpbmcgbWF5IGJyaW5nIGJhY2sNCj4gPiB0aGUga2VybmVsIGV4Y2VwdGlvbiBmaXJzdGx5IHJl
+cG9ydGVkIGluIGZvcm1lciBwYXRjaC4gSW4gZ2VuZXJhbCwNCj4gPiB0aGVyZSBhcmUgdGhyZWUg
+cHJvYmxlbXMgaW4gY3VycmVudCBjb2RlIHdoZW4gcmVzdW1pbmcgZnJvbSBoaWJlcm5hdGlvbjoN
+Cj4gPg0KPiA+IDEuUmVzdW1pbmcgcGFnZSBtYXkgYWxzbyBiZSBpbiBzZWNvbmQga2VybmVsJ3Mg
+ZTgyMCByZXNlcnZlZCByZWdpb24uDQo+ID4gQklPUy1lODIwOiBbbWVtIDB4MDAwMDAwMDA2OWQ0
+ZjAwMC0weDAwMDAwMDAwNjllMTJmZmZdIHJlc2VydmVkIHRoaXMNCj4gPiBjYXVzZXMga2VybmVs
+IGV4Y2VwdGlvbiBkZXNjcmliZWQgaW4gQ29tbWl0IDg0YzkxYjdhZTA3YyAoIlBNIC8NCj4gPiBo
+aWJlcm5hdGU6IGF2b2lkIHVuc2FmZSBwYWdlcyBpbiBlODIwIHJlc2VydmVkIHJlZ2lvbnMiKQ0K
+PiA+DQo+ID4gMi5JZiBDb21taXQgODRjOTFiN2FlMDdjICgiUE0gLyBoaWJlcm5hdGU6IGF2b2lk
+IHVuc2FmZSBwYWdlcyBpbiBlODIwDQo+ID4gcmVzZXJ2ZWQgcmVnaW9ucyIpIGlzIGFwcGxpZWQg
+dG8gZml4IHByb2JsZW0gMSwgYW5kIGlmDQo+ID4gRTgyMF9SRVNFUlZFRF9LRVJOIHJlZ2lvbnMg
+Y2F1c2VzIHNvbWUgcmVnaW9ucyBhdCBlODIwIHRhYmxlIG5vdCBwYWdlDQo+ID4gYWxpZ25lZCwg
+ZTgyMF9tYXJrX25vc2F2ZV9yZWdpb25zIHdpbGwgbWlzanVkZ21lbnQgdGhlIG5vbi1wYWdlDQo+
+ID4gYWxpZ25lZCBzcGFjZSB0byBiZSAiaG9sZSIgc3BhY2UgYW5kIGFkZCB0byBub3NhdmUgcmVn
+aW9ucywgdGhpcyBjYXVzZXMNCj4gcmVzdW1pbmcgZmFpbGVkLg0KPiA+IFJlZmVyIHRvIGh0dHBz
+Oi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9OTYxMTEgZm9yIGRldGFpbC4N
+Cj4gPg0KPiA+IDMuZTgyMCBtZW1vcnkgbWFwIGluY29uc2lzdGVuY2UuIFNvbWV0aW1lcyByZXN1
+bWluZyBzeXN0ZW0gbWF5IGhhdmUNCj4gPiBsYXJnZXIgbWVtb3J5IGNhcGFjaXR5IHRoYW4gdGhl
+IG9uZSBiZWZvcmUgaGliZXJuYXRpb24uIElmIGEgc3RyaWN0DQo+ID4gc3VwZXJzZXQgcmVsYXRp
+b25zaGlwIGlzIHNhdGlzZmllZCwgaXQgc2hvdWxkIGJlIGFsbG93ZWQgdG8gcmVzdW1lLg0KPiA+
+IEZvciBleGFtcGxlLCAgdXNlIGNhc2Ugb2YgbWVtb3J5IGhvdHBsdWcgYWZ0ZXIgaGliZXJuYXRp
+b24uDQo+ID4NCj4gPiBlODIwIG1lbW9yeSBtYXAgYmVmb3JlIGhpYmVybmF0aW9uOg0KPiA+IEJJ
+T1MtZTgyMDogW21lbSAweDAwMDAwMDAwMjAyMDAwMDAtMHgwMDAwMDAwMDc3NTE3ZmZmXSB1c2Fi
+bGUNCj4gPiBCSU9TLWU4MjA6IFttZW0gMHgwMDAwMDAwMDc3NTE4MDAwLTB4MDAwMDAwMDA3NzU2
+N2ZmZl0gcmVzZXJ2ZWQNCj4gPg0KPiA+IGU4MjAgbWVtb3J5IG1hcCBkdXJpbmcgcmVzdW1pbmc6
+DQo+ID4gQklPUy1lODIwOiBbbWVtIDB4MDAwMDAwMDAyMDIwMDAwMC0weDAwMDAwMDAwNzc1M2Zm
+ZmZdIHVzYWJsZQ0KPiA+IEJJT1MtZTgyMDogW21lbSAweDAwMDAwMDAwNzc1NDAwMDAtMHgwMDAw
+MDAwMDc3NTY3ZmZmXSByZXNlcnZlZA0KPiA+DQo+ID4gVGhpcyBwYXRjaCBpcyBiYXNlZCBvbiBM
+ZWUsIENodW4tWWkncyBvcmlnaW5hbCBwYXRjaCBDb21taXQNCj4gPiA4NGM5MWI3YWUwN2MgKCJQ
+TSAvIGhpYmVybmF0ZTogYXZvaWQgdW5zYWZlIHBhZ2VzIGluIGU4MjAgcmVzZXJ2ZWQNCj4gPiBy
+ZWdpb25zIiksIHRoZW4gdHJlYXRzIGFueSBhamFjZW50IEU4MjBfUkFNL0U4MjBfUkVTRVJWRURf
+S0VSTg0KPiByZWdpb25zDQo+ID4gYXMgb25lIHJlZ2lvbiwgdGhpcyBjYW4gcHJldmVudCBhbnkg
+bm9uLXBhZ2UgYWxpZ25lZCBhZGRyZXNzIGluDQo+ID4gYWphY2VudCBFODIwX1JBTS9FODIwX1JF
+U0VSVkVEIHJlZ2lvbnMsIGZyb20gYmVpbmcgYWRkZWQgdG8gbm9zYXZlDQo+ID4gcmVnaW9ucywg
+dGh1cyBhbGxvdyBzeXN0ZW0gdG8gcmVzdG9yZSB0aGUgaGliZXJuYXRpb24gaW1hZ2UsIGZvciBl
+eGFtcGxlOg0KPiA+IHRocmVlIEU4MjBfUkFNL0U4MjBfUkVTRVJWRURfS0VSTiByZWdpb25zLCBb
+YSxiXSBbYisxLGNdIFtjKzEsZF0sDQo+ID4gc2hvdWxkIGJlIHRyZWF0ZWQgYXMgYSB3aG9sZToN
+Cj4gPiBbYSxkXS4NCj4gPiBGb3IgdGhlIGJ1ZyByZXBvcnRlZCBhdA0KPiA+IGh0dHBzOi8vYnVn
+emlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5jZ2k/aWQ9OTYxMTENCj4gPiByZXNlcnZlIHNldHVw
+X2RhdGE6IFttZW0gMHgwMDAwMDAwMDViYWZmMDAwLTB4MDAwMDAwMDA5ZDNlMDAxN10NCj4gdXNh
+YmxlDQo+ID4gcmVzZXJ2ZSBzZXR1cF9kYXRhOiBbbWVtIDB4MDAwMDAwMDA5ZDNlMDAxOC0weDAw
+MDAwMDAwOWQzZjAwNTddDQo+IHVzYWJsZQ0KPiA+IHJlc2VydmUgc2V0dXBfZGF0YTogW21lbSAw
+eDAwMDAwMDAwOWQzZjAwNTgtMHgwMDAwMDAwMGQ2ODRmZmZmXQ0KPiB1c2FibGUNCj4gPiB0aGVz
+ZSByZWdpb25zIHdpbGwgYmUgdHJlYXRlZCBhcyBvbmU6DQo+ID4gW21lbSAweDAwMDAwMDAwNWJh
+ZmYwMDAtMHgwMDAwMDAwMGQ2ODRmZmZmXSB1c2FibGUuDQo+ID4NCj4gPiBUZXN0ZWQtYnk6IFRp
+YW4gWWUgPHlleC50aWFuQGludGVsLmNvbT4NCj4gPiBUZXN0ZWQtYnk6IFdlbmR5LCBXYW5nIDx3
+ZW5keS53YW5nQGludGVsLmNvbT4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBDaGVuIFl1IDx5dS5jLmNo
+ZW5AaW50ZWwuY29tPg0KPiANCj4gSXMgdGhpcyBzYW1lIGFzOg0KPiANCj4gaHR0cHM6Ly9idWd6
+aWxsYS5vcGVuc3VzZS5vcmcvc2hvd19idWcuY2dpP2lkPTkxMzg4NQ0KPiANCj4gdGhhdCBjb3Vs
+ZCBiZSBmaXhlZCBieToNCj4gDQo+IGh0dHBzOi8vbGttbC5vcmcvbGttbC8yMDE1LzcvNy85ODIN
+Cg==
