@@ -1,121 +1,78 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 2/3] thermal: Add Mediatek thermal controller support
-Date: Fri, 21 Aug 2015 01:12:23 +0200
-Message-ID: <55D65ED7.7010102@linaro.org>
-References: <1440057962-13373-1-git-send-email-s.hauer@pengutronix.de> <1440057962-13373-3-git-send-email-s.hauer@pengutronix.de>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: API for querying the resume cause
+Date: Fri, 21 Aug 2015 11:07:09 +0900
+Message-ID: <CAJKOXPe+ud=uCRKbQiggg7tLeShgYJbD16W_26qYo4E4-4mXrw@mail.gmail.com>
+References: <55D5BE6B.5070805@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f43.google.com ([209.85.220.43]:36165 "EHLO
-	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752855AbbHTXMZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Aug 2015 19:12:25 -0400
-Received: by pawq9 with SMTP id q9so37913439paw.3
-        for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2015 16:12:25 -0700 (PDT)
-In-Reply-To: <1440057962-13373-3-git-send-email-s.hauer@pengutronix.de>
+Received: from mail-qg0-f51.google.com ([209.85.192.51]:35342 "EHLO
+	mail-qg0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752111AbbHUCHK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 20 Aug 2015 22:07:10 -0400
+Received: by qgj62 with SMTP id 62so39506071qgj.2
+        for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2015 19:07:09 -0700 (PDT)
+In-Reply-To: <55D5BE6B.5070805@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sascha Hauer <s.hauer@pengutronix.de>, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-mediatek@lists.infradead.org, Daniel Kurtz <djkurtz@chromium.org>, kernel@pengutronix.de, Matthias Brugger <matthias.bgg@gmail.com>
+To: Yan Pashkovsky <yanpaso@gmail.com>
+Cc: linux-pm@vger.kernel.org, Alexandra Yates <alexandra.yates@linux.intel.com>, Bastien Nocera <hadess@hadess.net>
 
-On 08/20/2015 10:06 AM, Sascha Hauer wrote:
-> This adds support for the Mediatek thermal controller found on MT8173
-> and likely other SoCs.
-> The controller is a bit special. It does not have its own ADC, instea=
-d
-> it controls the on-SoC AUXADC via AHB bus accesses. For this reason
-> we need the physical address of the AUXADC. Also it controls a mux
-> using AHB bus accesses, so we need the APMIXEDSYS physical address as=
-well.
+2015-08-20 20:47 GMT+09:00 Yan Pashkovsky <yanpaso@gmail.com>:
+> Dear developers,
 >
-> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-> ---
+> My name is Yan and I was redirected here from kernel bugzilla
+> (bugzilla.kernel.org/show_bug.cgi?id=102991). I would like to discuss
+> API for supporting delayed hibernation.
+>
+> Original post:
+>
+>     Please add API for querying the resume cause
+>     The purpose of this API - is support of delayed hibernation (feature
+>     that works for a long time in Windows). A laptop first Suspend to
+>     RAM, then after a time save state to disk and power off completely.
+>     But system must know the reason of waking up (was it user or turning
+>     into hibernation). RTC wakeup event isn't reliable.
+>     SystemD needs such API, see more at
+>     github.com/systemd/systemd/issues/926
+>
+>
+> I was discussing it earlier with Lennart Poettering, he said he can't
+> rely on rtc timer, he needs some API.
+> Lennart(github.com/systemd/systemd/issues/926):
+>
+>     On Linux we have no API for querying the resume cause. Patching
+>     around this sounds like a gigantic hack... Especially as RTC-based
+>     wakeups are not really reliable on many systems... On such systems
+>     where the RTC wakeup is missed and the user resumes the machine
+>     manually later on the system will immediately go to hiberantion,
+>     which is clearly not a good idea.
+>
+>     Sorry, but I am really not convinced this could be any more than a
+>     gigantic hack.
+>
+>     Please before looking into something like this, let's at least get a
+>     proper API into the kernel that reports the precise wakeup reason to
+>     userspace. If we have that, then we can consider hooking this up
+>     from userspace. Will close this for now, as I don't think we should
+>     hack something up like this without proper kernel support for such a
+>     logic.
 
-[ ... ]
+A little bit similar work from Alexandra Yates (CC-ed):
+Report interrupt(s) that caused system wakeup
+http://comments.gmane.org/gmane.linux.power-management.general/63805
 
-> diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_ther=
-mal.c
-> new file mode 100644
-> index 0000000..06d52ef
-> --- /dev/null
-> +++ b/drivers/thermal/mtk_thermal.c
-> @@ -0,0 +1,582 @@
-> +/*
-> + * Copyright (c) 2014 MediaTek Inc.
+The need of such API was also mentioned some time ago by Bastien Nocera (CC-ed):
+https://wiki.gnome.org/BastienNocera/KernelWishlist
 
-2015 ?
+It seems like a good topic for Kernel Summit... but it's too late I think.
 
-> + * Author: Hanyi.Wu <hanyi.wu@mediatek.com>
+>
+> PS I use mailing list system for the first time. Am I to subscribe to it
+> somewhere? Will feedback be delivered to my email address after sending
+> this email, without any actions?
 
-Hanyi Wu ?
+You sent it correctly. Mail reached the list.
 
-[ ... ]
-
--->
-
-> +#define TEMP_MONINTSTS		0x010
-> +#define TEMP_MONIDET0		0x014
-> +#define TEMP_MONIDET1		0x018
-> +#define TEMP_MONIDET2		0x01c
-> +#define TEMP_H2NTHRE		0x024
-> +#define TEMP_HTHRE		0x028
-> +#define TEMP_CTHRE		0x02c
-> +#define TEMP_OFFSETH		0x030
-> +#define TEMP_OFFSETL		0x034
-> +#define TEMP_MSRCTL1		0x03c
-> +#define TEMP_ADCEXT		0x058
-> +#define TEMP_ADCEXT1		0x05c
-> +#define TEMP_ADCEXTADDR		0x06c
-> +#define TEMP_ADCEXT1ADDR	0x070
-> +#define TEMP_IMMD0		0x0a0
-> +#define TEMP_IMMD1		0x0a4
-> +#define TEMP_IMMD2		0x0a8
-> +#define TEMP_PROTCTL		0x0c0
-> +#define TEMP_PROTTA		0x0c4
-> +#define TEMP_PROTTB		0x0c8
-> +#define TEMP_PROTTC		0x0cc
-> +#define TEMP_SPARE1		0x0f4
-> +#define TEMP_SPARE2		0x0f8
-> +#define TEMP_SPARE3		0x0fc
-> +#define THERMINTST		0x404
-> +#define PTPODINTST		0x408
-> +#define THSTAGE0ST		0x40c
-> +#define THSTAGE1ST		0x410
-> +#define THSTAGE2ST		0x414
-> +#define THAHBST0		0x418
-> +#define THAHBST1		0x41c	/* Only for DE debug */
-> +#define PTPSPARE0		0x420
-> +#define PTPSPARE1		0x424
-> +#define PTPSPARE2		0x428
-> +#define PTPSPARE3		0x42c
-> +#define THSLPEVEB		0x430
-> +#define TEMP_MONINT_COLD(sp)			(BIT(0) << ((sp) * 5))
-> +#define TEMP_MONINT_HOT(sp)			(BIT(1) << ((sp) * 5))
-> +#define TEMP_MONINT_LOW_OFS(sp)			(BIT(2) << ((sp) * 5))
-> +#define TEMP_MONINT_HIGH_OFS(sp)		(BIT(3) << ((sp) * 5))
-> +#define TEMP_MONINT_HOT_TO_NORM(sp)		(BIT(4) << ((sp) * 5))
-> +#define TEMP_MONINT_TIMEOUT			BIT(15)
-> +#define TEMP_MONINT_IMMEDIATE_SENSE(sp)		BIT(16 + (sp))
-> +#define TEMP_MONINT_FILTER_SENSE(sp)		BIT(19 + (sp))
-> +#define TEMP_ADCWRITECTRL_ADC_EXTRA_WRITE	BIT(2)
-> +#define TEMP_ADCWRITECTRL_ADC_EXTRA1_WRITE	BIT(3)
-> +#define TEMP_PROTCTL_AVERAGE			(0 << 16)
-> +#define TEMP_PROTCTL_MAXIMUM			(1 << 16)
-> +#define TEMP_PROTCTL_SELECTED			(2 << 16)
-
-<-- Not used.
-
-
-   -- Daniel
-
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+Best regards,
+Krzysztof
