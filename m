@@ -1,155 +1,78 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: [PATCH v4 5/5] power: wm831x_power: Support USB charger current limit management
-Date: Fri, 21 Aug 2015 13:34:52 +0800
-Message-ID: <6e7ee1181bf16ee3680cb25225089cfb4a2a72f7.1440135007.git.baolin.wang@linaro.org>
-References: <bfe20506d43f2307ee79f65f2d7bcadc56201abc.1440135007.git.baolin.wang@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <bfe20506d43f2307ee79f65f2d7bcadc56201abc.1440135007.git.baolin.wang@linaro.org>
-In-Reply-To: <cover.1440135007.git.baolin.wang@linaro.org>
-References: <cover.1440135007.git.baolin.wang@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: balbi@ti.com
-Cc: broonie@kernel.org, linus.walleij@linaro.org, linux-kernel@vger.kernel.org, baolin.wang@linaro.org, gregkh@linuxfoundation.org, peter.chen@freescale.com, sojka@merica.cz, stern@rowland.harvard.edu, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, sameo@linux.intel.com, lee.jones@linaro.org, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org
+From: Jiang Liu <jiang.liu@linux.intel.com>
+Subject: [Patch v2]
+Date: Fri, 21 Aug 2015 15:26:32 +0800
+Message-ID: <1440141992-21945-1-git-send-email-jiang.liu@linux.intel.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Nick Meier <nmeier@microsoft.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
+Cc: Jiang Liu <jiang.liu@linux.intel.com>, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Integrate with the newly added USB charger interface to limit the current
-we draw from the USB input based on the input device configuration
-identified by the USB stack, allowing us to charge more quickly from high
-current inputs without drawing more current than specified from others.
+Hi Nick,
+	Rafael and Thomas have concerns about the way to solve the
+regression by quirk, so could you please help to test this patch?
+Thanks!
+Gerry
 
-Signed-off-by: Mark Brown <broonie@kernel.org>
-Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
-Acked-by: Lee Jones <lee.jones@linaro.org>
-Acked-by: Charles Keepax <ckeepax@opensource.wolfsonmicro.com>
-Acked-by: Peter Chen <peter.chen@freescale.com>
+Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
 ---
- drivers/power/wm831x_power.c     |   69 ++++++++++++++++++++++++++++++++++++++
- include/linux/mfd/wm831x/pdata.h |    3 ++
- 2 files changed, 72 insertions(+)
+ arch/x86/kernel/acpi/boot.c |    1 +
+ drivers/acpi/pci_link.c     |   16 ++++++++++++++++
+ include/linux/acpi.h        |    2 +-
+ 3 files changed, 18 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/power/wm831x_power.c b/drivers/power/wm831x_power.c
-index db11ae6..33ae27a 100644
---- a/drivers/power/wm831x_power.c
-+++ b/drivers/power/wm831x_power.c
-@@ -13,6 +13,7 @@
- #include <linux/platform_device.h>
- #include <linux/power_supply.h>
- #include <linux/slab.h>
-+#include <linux/usb/usb_charger.h>
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index e49ee24da85e..9393896717d0 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -445,6 +445,7 @@ static void __init acpi_sci_ioapic_setup(u8 bus_irq, u16 polarity, u16 trigger,
+ 		polarity = acpi_sci_flags & ACPI_MADT_POLARITY_MASK;
  
- #include <linux/mfd/wm831x/core.h>
- #include <linux/mfd/wm831x/auxadc.h>
-@@ -31,6 +32,8 @@ struct wm831x_power {
- 	char usb_name[20];
- 	char battery_name[20];
- 	bool have_battery;
-+	struct usb_charger *usb_charger;
-+	struct notifier_block usb_notify;
- };
+ 	mp_override_legacy_irq(bus_irq, polarity, trigger, gsi);
++	acpi_penalize_sci_irq(bus_irq, trigger, polarity);
  
- static int wm831x_power_check_online(struct wm831x *wm831x, int supply,
-@@ -125,6 +128,43 @@ static enum power_supply_property wm831x_usb_props[] = {
- 	POWER_SUPPLY_PROP_VOLTAGE_NOW,
- };
+ 	/*
+ 	 * stash over-ride to indicate we've been here
+diff --git a/drivers/acpi/pci_link.c b/drivers/acpi/pci_link.c
+index cfd7581cc19f..b09ad554430a 100644
+--- a/drivers/acpi/pci_link.c
++++ b/drivers/acpi/pci_link.c
+@@ -826,6 +826,22 @@ void acpi_penalize_isa_irq(int irq, int active)
+ }
  
-+/* In milliamps */
-+static unsigned int wm831x_usb_limits[] = {
-+	0,
-+	2,
-+	100,
-+	500,
-+	900,
-+	1500,
-+	1800,
-+	550,
-+};
-+
-+static int wm831x_usb_limit_change(struct notifier_block *nb,
-+				   unsigned long limit, void *data)
+ /*
++ * Penalize IRQ used by ACPI SCI. If ACPI SCI pin attributes conflict with
++ * PCI IRQ attributes, mark ACPI SCI as ISA_ALWAYS so it won't be use for
++ * PCI IRQs.
++ */
++void acpi_penalize_sci_irq(int irq, int trigger, int polarity)
 +{
-+	struct wm831x_power *wm831x_power = container_of(nb,
-+							 struct wm831x_power,
-+							 usb_notify);
-+	int i, best;
-+
-+	/* Find the highest supported limit */
-+	best = 0;
-+	for (i = 0; i < ARRAY_SIZE(wm831x_usb_limits); i++) {
-+		if (limit >= wm831x_usb_limits[i] &&
-+		    wm831x_usb_limits[best] < wm831x_usb_limits[i])
-+			best = i;
++	if (irq >= 0 && irq < ARRAY_SIZE(acpi_irq_penalty)) {
++		if (trigger != ACPI_MADT_TRIGGER_LEVEL ||
++		    polarity != ACPI_MADT_POLARITY_ACTIVE_LOW)
++			acpi_irq_penalty[irq] += PIRQ_PENALTY_ISA_ALWAYS;
++		else
++			acpi_irq_penalty[irq] += PIRQ_PENALTY_PCI_USING;
 +	}
-+
-+	dev_dbg(wm831x_power->wm831x->dev,
-+		"Limiting USB current to %dmA", wm831x_usb_limits[best]);
-+
-+	wm831x_set_bits(wm831x_power->wm831x, WM831X_POWER_STATE,
-+		        WM831X_USB_ILIM_MASK, best);
-+
-+	return 0;
 +}
 +
- /*********************************************************************
-  *		Battery properties
-  *********************************************************************/
-@@ -606,8 +646,31 @@ static int wm831x_power_probe(struct platform_device *pdev)
- 		}
- 	}
++/*
+  * Over-ride default table to reserve additional IRQs for use by ISA
+  * e.g. acpi_irq_isa=5
+  * Useful for telling ACPI how not to interfere with your ISA sound card.
+diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+index d2445fa9999f..0b2394f61af4 100644
+--- a/include/linux/acpi.h
++++ b/include/linux/acpi.h
+@@ -221,7 +221,7 @@ struct pci_dev;
  
-+	if (wm831x_pdata && wm831x_pdata->usb_gadget) {
-+		power->usb_charger =
-+			usb_charger_find_by_name(wm831x_pdata->usb_gadget);
-+		if (IS_ERR(power->usb_charger)) {
-+			ret = PTR_ERR(power->usb_charger);
-+			dev_err(&pdev->dev,
-+				"Failed to find USB gadget: %d\n", ret);
-+			goto err_bat_irq;
-+		}
-+
-+		power->usb_notify.notifier_call = wm831x_usb_limit_change;
-+
-+		ret = usb_charger_register_notify(power->usb_charger,
-+						  &power->usb_notify);
-+		if (ret != 0) {
-+			dev_err(&pdev->dev,
-+				"Failed to register notifier: %d\n", ret);
-+			goto err_usb_charger;
-+		}
-+	}
-+
- 	return ret;
+ int acpi_pci_irq_enable (struct pci_dev *dev);
+ void acpi_penalize_isa_irq(int irq, int active);
+-
++void acpi_penalize_sci_irq(int irq, int trigger, int polarity);
+ void acpi_pci_irq_disable (struct pci_dev *dev);
  
-+err_usb_charger:
-+	/* put_device on charger */
- err_bat_irq:
- 	--i;
- 	for (; i >= 0; i--) {
-@@ -637,6 +700,12 @@ static int wm831x_power_remove(struct platform_device *pdev)
- 	struct wm831x *wm831x = wm831x_power->wm831x;
- 	int irq, i;
- 
-+	if (wm831x_power->usb_charger) {
-+		usb_charger_unregister_notify(wm831x_power->usb_charger,
-+					      &wm831x_power->usb_notify);
-+		/* Free charger */
-+	}
-+
- 	for (i = 0; i < ARRAY_SIZE(wm831x_bat_irqs); i++) {
- 		irq = wm831x_irq(wm831x, 
- 				 platform_get_irq_byname(pdev,
-diff --git a/include/linux/mfd/wm831x/pdata.h b/include/linux/mfd/wm831x/pdata.h
-index dcc9631..5af8399 100644
---- a/include/linux/mfd/wm831x/pdata.h
-+++ b/include/linux/mfd/wm831x/pdata.h
-@@ -126,6 +126,9 @@ struct wm831x_pdata {
- 	/** The driver should initiate a power off sequence during shutdown */
- 	bool soft_shutdown;
- 
-+	/** dev_name of USB charger gadget to integrate with */
-+	const char *usb_gadget;
-+
- 	int irq_base;
- 	int gpio_base;
- 	int gpio_defaults[WM831X_GPIO_NUM];
+ extern int ec_read(u8 addr, u8 *val);
 -- 
-1.7.9.5
+1.7.10.4
+
