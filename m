@@ -1,32 +1,35 @@
 From: Robert Jarzmik <robert.jarzmik@free.fr>
-Subject: Re: [PATCH v2 17/21] ARM: pxa: magician: Remove (temporarily) pasic3 LED support
-Date: Sat, 22 Aug 2015 18:25:32 +0200
-Message-ID: <87vbc747er.fsf@belgarion.home>
-References: <cover.1439843482.git.petr.cvek@tul.cz> <55D25A74.3030902@tul.cz>
+Subject: Re: [PATCH v2 21/21] ARM: pxa: magician: Move platform_add_devices()
+ to the end of magician_init()
+Date: Sat, 22 Aug 2015 18:27:30 +0200
+Message-ID: <87r3mv47bh.fsf@belgarion.home>
+References: <cover.1439843482.git.petr.cvek@tul.cz> <55D25B07.1080703@tul.cz>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp02.smtpout.orange.fr ([80.12.242.124]:52985 "EHLO
-	smtp.smtpout.orange.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752795AbbHVQaA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 22 Aug 2015 12:30:00 -0400
-In-Reply-To: <55D25A74.3030902@tul.cz> (Petr Cvek's message of "Tue, 18 Aug
-	2015 00:04:36 +0200")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <55D25B07.1080703@tul.cz> (Petr Cvek's message of "Tue, 18 Aug
+ 2015 00:07:03 +0200")
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Petr Cvek <petr.cvek@tul.cz>, philipp.zabel@gmail.com
+Cc: linux-arm-kernel@lists.infradead.org, linux@arm.linux.org.uk, sameo@linux.intel.com, linux-pm@vger.kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, cooloney@gmail.com, sre@kernel.org, haojian.zhuang@gmail.com, rpurdie@rpsys.net, linux-leds@vger.kernel.org, lee.jones@linaro.org, j.anaszewski@samsung.com, daniel@zonque.org
 List-Id: linux-pm@vger.kernel.org
-To: Petr Cvek <petr.cvek@tul.cz>
-Cc: philipp.zabel@gmail.com, daniel@zonque.org, haojian.zhuang@gmail.com, sameo@linux.intel.com, lee.jones@linaro.org, cooloney@gmail.com, rpurdie@rpsys.net, j.anaszewski@samsung.com, linux@arm.linux.org.uk, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
 Petr Cvek <petr.cvek@tul.cz> writes:
 
-> Temporarily remove pasic3 LEDs definition as it is not used (yet).
-I don't understand the split between this patch and patch 19/21. Is it for
-bisectability, are they symetric (this one removes what the next adds) ?
+> Move platform_add_devices() to the end of magician_init() for better
+> clarity of code.
+>
+> Signed-off-by: Petr Cvek <petr.cvek@tul.cz>
+With Philipp's ack.
 
-As the patch 18/21 will probably go through Lee's tree, is there any value in
-keeping them apart ?
-
-Cheers.
-
---
+-- 
 Robert
