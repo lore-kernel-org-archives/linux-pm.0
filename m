@@ -1,74 +1,58 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 103351] New: Machine check exception on Broadwell quad-core
- with SpeedStep enabled
-Date: Sun, 23 Aug 2015 13:45:11 +0000
-Message-ID: <bug-103351-137361@https.bugzilla.kernel.org/>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+From: Muhammad Falak R Wani <falakreyaz@gmail.com>
+Subject: [PATCH 1/1] fix cpufreq/cpufreq.c some coding style issues
+Date: Sun, 23 Aug 2015 21:09:19 +0530
+Message-ID: <1440344359-7051-1-git-send-email-falakreyaz@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:45189 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752260AbbHWNpO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 23 Aug 2015 09:45:14 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id E956420654
-	for <linux-pm@vger.kernel.org>; Sun, 23 Aug 2015 13:45:12 +0000 (UTC)
-Received: from bugzilla2.web.kernel.org (bugzilla2.web.kernel.org [172.20.200.52])
-	by mail.kernel.org (Postfix) with ESMTP id ECA2220651
-	for <linux-pm@vger.kernel.org>; Sun, 23 Aug 2015 13:45:11 +0000 (UTC)
+Received: from mail-pa0-f44.google.com ([209.85.220.44]:32968 "EHLO
+	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751444AbbHWPei (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 23 Aug 2015 11:34:38 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Muhammad Falak R Wani <falakreyaz@gmail.com>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=103351
+Hi,
 
-            Bug ID: 103351
-           Summary: Machine check exception on Broadwell quad-core with
-                    SpeedStep enabled
-           Product: Power Management
-           Version: 2.5
-    Kernel Version: 4.2rc7
-          Hardware: x86-64
-                OS: Linux
-              Tree: Mainline
-            Status: NEW
-          Severity: normal
-          Priority: P1
-         Component: cpufreq
-          Assignee: linux-pm@vger.kernel.org
-          Reporter: kris7topher@gmail.com
-        Regression: No
+	This patch fixes issues in coding style, of a missing blank line after
+declarations.
 
-On my MSI GE62 2QE Apache Pro laptop with an Intel Core i7 5700HQ processor, I
-am having machine check exceptions appearing randomly when SpeedStep is enabled
-in the BIOS. I can trigger them quite reliable by running M-x package-install
-in emacs, but they also occur without any specific reason.
+Best,
+mfrw
 
-The bug can be triggered with the 4.2rc7-mainline kernel, as well as the Arch
-Linux 4.1.6-1 and 3.14.51-1-lts kernels. Booting with intel_pstate=disable does
-not solve the problem, only disable SpeedStep in the BIOS altogether does (but
-that also prevents CPU scaling to be done). After booting with mce=3 to ignore
-the machine check exception, I managed to capture the following error message:
+Signed-off-by: Muhammad Falak R Wani <falakreyaz@gmail.com>
+---
+ drivers/cpufreq/cpufreq.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-CPU 2: Machine Check Exception: 5 Bank: 4 be00000000800400
-RIP !INEXACT! 10:<ffffffff81045de2> {acpi_processor_ffh_cstate_enter+0x92/0xc0}
-TSC 41979f424e MISC 7fc7ff2e82b9
-PROCESSOR 0:40671 TIME 1439935114 SOCKET 0 APIC 4 microcode d
-
-After this error, the affected CPU core reports numerous stalls, and the system
-remains unusable. Unfortunately, the output of mcelog ("Hardware event. This is
-not a software error.") did not enlighten me.
-
-The issue seems to be connected to the stability issue of the Core i7 5775C
-processor, which was reported by Phoronix along a workaround
-athttp://www.phoronix.com/scan.php?page=news_item&px=core-i7-5775c-oc-fixed-mode
-
-I also tested the system with memtest86, which did not report any errors in 8
-passes. Running Windows 10 x64 Education on the machine (and some CPU and
-memory intensive scientific computing on it) also remains stable without any
-anomalies.
-
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 8ae655c..5aea659 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -718,6 +718,7 @@ static ssize_t show_bios_limit(struct cpufreq_policy *policy, char *buf)
+ {
+ 	unsigned int limit;
+ 	int ret;
++
+ 	if (cpufreq_driver->bios_limit) {
+ 		ret = cpufreq_driver->bios_limit(policy->cpu, &limit);
+ 		if (!ret)
+@@ -815,6 +816,7 @@ unlock:
+ static void cpufreq_sysfs_release(struct kobject *kobj)
+ {
+ 	struct cpufreq_policy *policy = to_policy(kobj);
++
+ 	pr_debug("last reference is dropped\n");
+ 	complete(&policy->kobj_unregister);
+ }
+@@ -2129,6 +2131,7 @@ EXPORT_SYMBOL_GPL(cpufreq_unregister_governor);
+ int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu)
+ {
+ 	struct cpufreq_policy *cpu_policy;
++
+ 	if (!policy)
+ 		return -EINVAL;
+ 
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+1.9.1
+
