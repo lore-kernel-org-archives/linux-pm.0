@@ -1,24 +1,15 @@
 From: Muhammad Falak R Wani <falakreyaz@gmail.com>
-Subject: [PATCH 1/1] fix cpufreq/cpufreq.c some coding style issues
-Date: Sun, 23 Aug 2015 21:09:19 +0530
-Message-ID: <1440344359-7051-1-git-send-email-falakreyaz@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f44.google.com ([209.85.220.44]:32968 "EHLO
-	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751444AbbHWPei (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 23 Aug 2015 11:34:38 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [RESEND PATCH] cpufreq: cpufreq: Fix coding style issues
+Date: Sun, 23 Aug 2015 22:13:55 +0530
+Message-ID: <1440348235-7789-1-git-send-email-falakreyaz@gmail.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Muhammad Falak R Wani <falakreyaz@gmail.com>
+List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-	This patch fixes issues in coding style, of a missing blank line after
-declarations.
-
-Best,
-mfrw
+This patch introduces a blank line after declarations, which
+fix the checkpatch.pl warnings at 3 places.
 
 Signed-off-by: Muhammad Falak R Wani <falakreyaz@gmail.com>
 ---
@@ -55,4 +46,3 @@ index 8ae655c..5aea659 100644
  
 -- 
 1.9.1
-
