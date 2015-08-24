@@ -1,41 +1,33 @@
-From: doa379 <doa379@gmail.com>
-Subject: Kernel uevents of laptop battery percentages
-Date: Mon, 24 Aug 2015 00:14:48 +0100
-Message-ID: <55DA53E8.5070709@gmail.com>
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: RE: [PATCH] [v2] x86, suspend: Save/restore extra MSR registers for
+ suspend
+Date: Mon, 24 Aug 2015 03:24:47 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE6401CB01A15@SHSMSX101.ccr.corp.intel.com>
+References: <1440158014-29610-1-git-send-email-yu.c.chen@intel.com>
+ <20150822203028.GA28112@amd> <20150823062033.GB18134@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f175.google.com ([209.85.212.175]:35217 "EHLO
-	mail-wi0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753536AbbHWXO6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 23 Aug 2015 19:14:58 -0400
-Received: by wicne3 with SMTP id ne3so56998594wic.0
-        for <linux-pm@vger.kernel.org>; Sun, 23 Aug 2015 16:14:57 -0700 (PDT)
-Received: from [192.168.1.4] (88-105-203-173.dynamic.dsl.as9105.com. [88.105.203.173])
-        by smtp.googlemail.com with ESMTPSA id ft5sm13455976wib.4.2015.08.23.16.14.56
-        for <linux-pm@vger.kernel.org>
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Sun, 23 Aug 2015 16:14:56 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150823062033.GB18134@gmail.com>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Ingo Molnar <mingo@kernel.org>, Pavel Machek <pavel@ucw.cz>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "tglx@linutronix.de" <tglx@linutronix.de>, "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>, "Zhang, Rui" <rui.zhang@intel.com>, "lenb@kernel.org" <lenb@kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
 
-I have a situation where the Kernel is not sending out uevents of 
-battery level percentages.
+Hi Ingo, thanks for your reply,
+ 
+> So I like the general structure of the patch and I like the MSR saving
+> mechanism it introduces, but it is full of typos and small stylistic
+> uncleanlinesses which need to be fixed before this patch can be applied.
+> Please don't ack incomplete patches.
+> 
+Sorry for my poor English, I'll check these typos.
 
-Only a significant change in the Kernel state sends out a status event 
-of the power_supply subsystem for example as follows:
+Best Regards,
+Yu
 
-KERNEL[27717.611535] change 
-/devices/LNXSYSTM:00/LNXSYBUS:00/PNP0A08:00/PNP0C0A:00/power_supply/BAT0 
-(power_supply)
-
-I am looking for a way to get status event updates even when the battery 
-level (capacity or percentage) changes.
-
-I was wondering if anyone might suggest any insight into this?
-
-Thanks very much.
-
-
+> Thanks,
+> 
+> 	Ingo
