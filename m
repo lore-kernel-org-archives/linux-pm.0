@@ -1,75 +1,80 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v2 09/21] ARM: pxa: magician: Add OV9640 camera support
-Date: Mon, 24 Aug 2015 07:53:56 +0100
-Message-ID: <20150824065356.GA3247@x1>
-References: <cover.1439843482.git.petr.cvek@tul.cz>
- <2889798.x6xcIzdYMU@wuerfel>
- <55D65722.9030508@tul.cz>
- <1634812.ZDaECJ9ClW@wuerfel>
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+Subject: Re: [PATCH v2 16/21] ARM: pxa: magician: Add support for alternative LCD backlight
+Date: Mon, 24 Aug 2015 10:25:34 +0200
+Message-ID: <87mvxh2iv5.fsf@belgarion.home>
+References: <cover.1439843482.git.petr.cvek@tul.cz> <55D25A60.7000900@tul.cz>
+	<878u95685t.fsf@belgarion.home> <55DA3357.6050304@tul.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f171.google.com ([209.85.212.171]:36556 "EHLO
-	mail-wi0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752077AbbHXGyC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Aug 2015 02:54:02 -0400
-Received: by wicja10 with SMTP id ja10so62187247wic.1
-        for <linux-pm@vger.kernel.org>; Sun, 23 Aug 2015 23:54:00 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1634812.ZDaECJ9ClW@wuerfel>
+Received: from smtp09.smtpout.orange.fr ([80.12.242.131]:30060 "EHLO
+	smtp.smtpout.orange.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932206AbbHXIaC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Aug 2015 04:30:02 -0400
+In-Reply-To: <55DA3357.6050304@tul.cz> (Petr Cvek's message of "Sun, 23 Aug
+	2015 22:55:51 +0200")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Petr Cvek <petr.cvek@tul.cz>, linux-arm-kernel@lists.infradead.org, Robert Jarzmik <robert.jarzmik@free.fr>, linux@arm.linux.org.uk, sameo@linux.intel.com, linux-pm@vger.kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, cooloney@gmail.com, sre@kernel.org, haojian.zhuang@gmail.com, rpurdie@rpsys.net, linux-leds@vger.kernel.org, philipp.zabel@gmail.com, j.anaszewski@samsung.com, daniel@zonque.org
+To: Petr Cvek <petr.cvek@tul.cz>
+Cc: philipp.zabel@gmail.com, daniel@zonque.org, haojian.zhuang@gmail.com, sameo@linux.intel.com, lee.jones@linaro.org, cooloney@gmail.com, rpurdie@rpsys.net, j.anaszewski@samsung.com, linux@arm.linux.org.uk, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Fri, 21 Aug 2015, Arnd Bergmann wrote:
+Petr Cvek <petr.cvek@tul.cz> writes:
 
-> On Friday 21 August 2015 00:39:30 Petr Cvek wrote:
-> > Dne 20.8.2015 v 22:26 Arnd Bergmann napsal(a):
-> > > On Thursday 20 August 2015 21:48:20 Robert Jarzmik wrote:
-> > >> Petr Cvek <petr.cvek@tul.cz> writes:
-> > >>
-> > >>> +     mdelay(3);
-> > >> Okay, there are several mdelay(3) in this file.
-> > >>
-> > >> Could you please test if removing these mdelays prevents the cam=
-era from working
-> > >> ? If not, I'd like to have them removed.
-> > >>
-> > >>
-> > >=20
-> > > FWIW, it might be possible to replace some of them with msleep() =
-calls,
-> > > potentially after replacing spinlocks with mutexes where necessar=
-y.
-> > >=20
-> > >       Arnd
-> > >=20
-> >=20
-> > Datasheet says:
-> >=20
-> >         tS:RESET        Setting time after software/hardware reset =
-     1 ms
-> >=20
-> > So at least one ~1 ms should be left there. Are msleep less than 20=
-ms valid?=20
-> >=20
-> > (checkpatch: msleep < 20ms  can sleep for up to 20ms)
->=20
-> On most kernels, an msleep(1) will sleep somewhere between 1 and 3 mi=
-lliseconds
-> (but could be much longer), while an mdelay(1) tries to sleep around =
-one
-> millisecond, more or less.
+> Dne 20.8.2015 v 22:01 Robert Jarzmik napsal(a):
+>> Petr Cvek <petr.cvek@tul.cz> writes:
+>> 
+>>> Add support for alternative LCD backlight with GPIO (no brightness).
+>> Here, I don't understand, the commit message is too short.
+>> 
+>> Are there 2 brightness controls on magician, or are these 2 different magicians
+>> (hardware wise), each having a different backlight control ? Or is it there is a
+>> GPIO to light up the screen and a PWM backlight ?
+>> 
+>> I have to understand first.
+>> 
+> I have aimed for a configuration, where user can use PWM xor GPIO backlight.
+You probably know that in a backlight case GPIO is just a subcase of PWM, with
+frequency equal to either 0 or max_backlight_freq.
 
-If high-res timers are available I'd suggest using usleep_range()
-instead.  By providing suitably divergent values usleep_range
-de-restricts the kernel, allowing the scheduler to bundle your
-wake-up along with others.
+> As pin mux can set GPIO or PWM (or UART :-D) on PWM pin, you can choose if you
+> spare few kB (as magician has only 64MB RAM and 64MB flash) on GPIO or will
+> have smooth backlight with PWM.
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+I'm in front of the same dilemna for 5 years ago with the mioa701 (64MB RAM, 2 *
+32MB flash). I chose PWM, judging the PWM stack was worth it.
+
+Moreover, pwm can be a module, loaded or not : what memory do you spare in that
+case if you don't load the module ?
+
+> I have tested both (I think I have added the gpio backlight for debugging a regression in pwm_bl).
+> Only ugly thing is the GPIO definition:
+>
+> #if IS_ENABLED(CONFIG_PWM_PXA)
+> 	/* PWM 0 - LCD backlight */
+> 	GPIO16_PWM0_OUT,
+> #else
+> 	/* Ensure static backlight without any driver */
+> 	MFP_CFG_OUT(GPIO16, AF0, DRIVE_LOW),    /* Backlight enabled */
+> #endif
+>
+> Hmmm.. I think I can do this better in pwm-backlight init/exit (same way as
+> pxa_ficp). During init the pin mux will switch to Alternate Function (PWM) and
+> during exit it will switch to GPIO (which can be used by gpio-backlight). This
+> will remove ugly ifdef.
+
+I don't like changing the muxing after initialization that much : the pin muxing
+should represent what there is in hardware, and that is a backlight frequency
+switched input pin. The one exception is for hardware workarounds such as the
+AC97 reset pin.
+
+I won't take an init/exit with a manipulation of an mfp. I'll let you choose one
+way instead :
+ - either the GPIO
+ - or the PWM (module or not)
+Don't forget that this init/exit thing won't be available for a devicetree
+magician (if that happens).
+
+Cheers.
+
+-- 
+Robert
