@@ -1,50 +1,25 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
- SpeedStep enabled
-Date: Mon, 24 Aug 2015 12:22:01 +0000
-Message-ID: <bug-103351-137361-LXxsDjBxGE@https.bugzilla.kernel.org/>
-References: <bug-103351-137361@https.bugzilla.kernel.org/>
+From: "Opensource [Adam Thomson]" <Adam.Thomson.Opensource@diasemi.com>
+Subject: RE: [PATCH v4 3/6] power: Add support for DA9150 Fuel-Gauge
+Date: Mon, 24 Aug 2015 13:22:19 +0000
+Message-ID: <2E89032DDAA8B9408CB92943514A0337AB56CCA9@SW-EX-MBX01.diasemi.com>
+References: <cover.1438692348.git.Adam.Thomson.Opensource@diasemi.com>
+ <9fe02913f66458077e425760a8452305845fbb45.1438692348.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:60182 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754137AbbHXMWF convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Aug 2015 08:22:05 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id 203582070C
-	for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2015 12:22:03 +0000 (UTC)
-Received: from bugzilla2.web.kernel.org (bugzilla2.web.kernel.org [172.20.200.52])
-	by mail.kernel.org (Postfix) with ESMTP id 2BA5B20701
-	for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2015 12:22:02 +0000 (UTC)
-In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <9fe02913f66458077e425760a8452305845fbb45.1438692348.git.Adam.Thomson.Opensource@diasemi.com>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Opensource [Adam Thomson]" <Adam.Thomson.Opensource@diasemi.com>, Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D103351
-
-Krist=C3=B3f Marussy <kris7topher@gmail.com> changed:
-
-           What    |Removed                     |Added
------------------------------------------------------------------------=
------
-          Component|cpufreq                     |intel_idle
-
---- Comment #1 from Krist=C3=B3f Marussy <kris7topher@gmail.com> ---
-I managed to get a stable system by booting with the processor.max_csta=
-te=3D0
-intel_idle.max_cstate=3D0 idle=3Dpoll and SpeedStep enabled. However, i=
-f I set
-idle=3Dhalt or idle=3Dnomwait instead, the MCEs remain.
-
-In Windows, the Performance monitor displays that the system utilizes C=
--states
-that are claimed to be C1, C2 and C3; so it is quite odd that C1 halt i=
-n Linux
-triggers an MCE...
-
---=20
-You are receiving this mail because:
-You are the assignee for the bug.
+T24gQXVndXN0IDA0LCAyMDE1IDE3OjE3LCBBZGFtIFRob21zb24gd3JvdGU6DQoNCj4gVGhpcyBh
+ZGRzIHBvd2VyIHN1cHBseSBkcml2ZXIgc3VwcG9ydCBmb3IgdGhlIEZ1ZWwtR2F1Z2UgcGFydCBv
+Zg0KPiB0aGUgREE5MTUwIGNvbWJpbmVkIENoYXJnZXIgYW5kIEZ1ZWwtR2F1Z2UgZGV2aWNlLg0K
+PiANCj4gU2lnbmVkLW9mZi1ieTogQWRhbSBUaG9tc29uIDxBZGFtLlRob21zb24uT3BlbnNvdXJj
+ZUBkaWFzZW1pLmNvbT4NCj4gLS0tDQoNCkhpIFNlYmFzdGlhbiwNCg0KSnVzdCB3b25kZXJlZCB3
+aGVuIHlvdSBtaWdodCBiZSBhYmxlIHRvIHJldmlldyB0aGUgcG93ZXItc3VwcGx5IHBhcnRzIG9m
+IHRoaXMNCnBhdGNoPyBMZWUgaGFzIEFja2VkIHRoZSBNRkQgcGF0Y2hlcywgc28gaXQncyBqdXN0
+IHRoZXNlIGxlZnQuDQoNClRoYW5rcw0KQWRhbQ0K
