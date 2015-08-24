@@ -1,37 +1,28 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/1] fix cpufreq/cpufreq.c some coding style issues
-Date: Mon, 24 Aug 2015 09:54:58 +0530
-Message-ID: <20150824042458.GB5375@linux>
-References: <1440344359-7051-1-git-send-email-falakreyaz@gmail.com>
+Subject: Re: [RESEND PATCH] cpufreq: cpufreq: Fix coding style issues
+Date: Mon, 24 Aug 2015 09:55:51 +0530
+Message-ID: <20150824042551.GC5375@linux>
+References: <1440348235-7789-1-git-send-email-falakreyaz@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f46.google.com ([209.85.220.46]:36267 "EHLO
-	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750904AbbHXEZD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Aug 2015 00:25:03 -0400
-Received: by padfo6 with SMTP id fo6so7450448pad.3
-        for <linux-pm@vger.kernel.org>; Sun, 23 Aug 2015 21:25:02 -0700 (PDT)
+Received: from mail-pd0-f169.google.com ([209.85.192.169]:35146 "EHLO
+	mail-pd0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751980AbbHXEZz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 24 Aug 2015 00:25:55 -0400
+Received: by pdob1 with SMTP id b1so48449426pdo.2
+        for <linux-pm@vger.kernel.org>; Sun, 23 Aug 2015 21:25:55 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <1440344359-7051-1-git-send-email-falakreyaz@gmail.com>
+In-Reply-To: <1440348235-7789-1-git-send-email-falakreyaz@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Muhammad Falak R Wani <falakreyaz@gmail.com>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 23-08-15, 21:09, Muhammad Falak R Wani wrote:
-> Hi,
+On 23-08-15, 22:13, Muhammad Falak R Wani wrote:
+> This patch introduces a blank line after declarations, which
+> fix the checkpatch.pl warnings at 3 places.
 > 
-> 	This patch fixes issues in coding style, of a missing blank line after
-> declarations.
-> 
-> Best,
-> mfrw
-
-This is as ugly as it could be. Please go through
-Documentation/SubmittingPatches and other related stuff to see you to
-send patches.
-
 > Signed-off-by: Muhammad Falak R Wani <falakreyaz@gmail.com>
 > ---
 >  drivers/cpufreq/cpufreq.c | 3 +++
@@ -65,8 +56,8 @@ send patches.
 >  	if (!policy)
 >  		return -EINVAL;
 
-And then these changes are all trivial and not at all important. We
-don't want a patch for that even if checkpatch complains.
+We don't really need a patch for this, unless Rafael wants to apply
+this one :)
 
 -- 
 viresh
