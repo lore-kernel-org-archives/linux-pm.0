@@ -1,83 +1,107 @@
-From: pang.xunlei@zte.com.cn
-Subject: Re: [PATCH v2 1/3] cpuidle/coupled: Remove cpuidle_device::safe_state_index
-Date: Tue, 25 Aug 2015 22:29:20 +0800
-Message-ID: <OFBF1C88E5.E5176BB3-ON48257EAC.004F7105-48257EAC.004FA3A8@zte.com.cn>
-References: <1438667337-16903-1-git-send-email-xlpang@126.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: CPUIdle for Exynos5422 Odroid-XU3/XU4 boards.
+Date: Tue, 25 Aug 2015 16:35:29 +0200
+Message-ID: <4468206.R1amSm9GHX@amdc1976>
+References: <CANAwSgTWZ1a+j8RTiamsKaALKf+ekLVqtO6RFTLXkG=bJN4BPQ@mail.gmail.com>
+ <CAJKOXPeFVwmRzP3YPSaJ_PtNf3L3pzXSXVqHwyYfWDYwhTmsBQ@mail.gmail.com>
+ <55DC38CA.9090202@osg.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1438667337-16903-1-git-send-email-xlpang@126.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Xunlei Pang <pang.xunlei@linaro.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:54587 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751467AbbHYOhV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Aug 2015 10:37:21 -0400
+In-reply-to: <55DC38CA.9090202@osg.samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Javier Martinez Canillas <javier@osg.samsung.com>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Anand Moon <linux.amoon@gmail.com>, Daniel Lezcano <daniel.lezcano@free.fr>, Kukjin Kim <kgene@kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Przemyslaw Marczak <p.marczak@samsung.com>, Kevin Hilman <khilman@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-pm@vger.kernel.org
 
-Ping
 
-Xunlei Pang <xlpang@126.com>  wrote 2015-08-04 PM 01:48:55:
-> [PATCH v2 1/3] cpuidle/coupled: Remove cpuidle_device::safe_state_index
-> 
-> From: Xunlei Pang <pang.xunlei@linaro.org>
-> 
-> cpuidle_device::safe_state_index need to be initialized before
-> use, it should be the same as cpuidle_driver::safe_state_index.
-> 
-> We tackled this issue by removing the safe_state_index from the
-> cpuidle_device structure and use the one in the cpuidle_driver
-> structure instead.
-> 
-> Suggested-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Signed-off-by: Xunlei Pang <pang.xunlei@linaro.org>
-> ---
->  drivers/cpuidle/coupled.c | 4 ++--
->  include/linux/cpuidle.h   | 1 -
->  2 files changed, 2 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
-> index 7936dce..6493e40 100644
-> --- a/drivers/cpuidle/coupled.c
-> +++ b/drivers/cpuidle/coupled.c
-> @@ -473,7 +473,7 @@ int cpuidle_enter_state_coupled(struct 
-> cpuidle_device *dev,
->           return entered_state;
->        }
->        entered_state = cpuidle_enter_state(dev, drv,
-> -         dev->safe_state_index);
-> +         drv->safe_state_index);
->        local_irq_disable();
->     }
-> 
-> @@ -521,7 +521,7 @@ retry:
->        }
-> 
->        entered_state = cpuidle_enter_state(dev, drv,
-> -         dev->safe_state_index);
-> +         drv->safe_state_index);
->        local_irq_disable();
->     }
-> 
-> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-> index d075d34..786ad32 100644
-> --- a/include/linux/cpuidle.h
-> +++ b/include/linux/cpuidle.h
-> @@ -84,7 +84,6 @@ struct cpuidle_device {
->     struct list_head    device_list;
-> 
->  #ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
-> -   int         safe_state_index;
->     cpumask_t      coupled_cpus;
->     struct cpuidle_coupled   *coupled;
->  #endif
-> -- 
-> 1.9.1
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" 
-in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+[ added Lorenzo and linux-pm to Cc: ]
 
---------------------------------------------------------
-ZTE Information Security Notice: The information contained in this mail (and any attachment transmitted herewith) is privileged and confidential and is intended for the exclusive use of the addressee(s).  If you are not an intended recipient, any disclosure, reproduction, distribution or other dissemination or use of the information contained is strictly prohibited.  If you have received this mail in error, please delete it and notify us immediately.
+Hi,
+
+On Tuesday, August 25, 2015 11:43:38 AM Javier Martinez Canillas wrote:
+> [adding Kevin Hilman as cc who was also interested in CPUidle for Exynos]
+> 
+> Hello Krzysztof,
+> 
+> On 08/23/2015 03:26 AM, Krzysztof Kozlowski wrote:
+> 
+> [snip]
+> 
+> > 2015-08-21 16:21 GMT+09:00 Javier Martinez Canillas <javier@osg.samsung.com>:
+> > 
+> > The big.LITTLE cpuidle driver is not a typical Exynos cpuidle driver.
+> > It only executes CPU suspend on a cluster which essentially is a power
+> > down operation.
+> >
+> 
+> You are correct, looking at the the big.LITTLE CPUidle driver I see that
+> it only has two C-states: C0 (normal WFI) and C1 (single CPU power-down)
+> which as you said, places the CPU into power-down mode by using the MCPM
+> infrastructure so it's basically a CPU suspend AFAIU.
+> 
+> So what you are saying is that there are deeper C-states supported by the
+> Exynos 542x SoC family but these are not handled by the b.L CPUidle driver.
+>  
+> > When we talk about cpuidle on Exynos, we have in mind one of sleep
+> > modes: AFTR or LPA (sometimes instead of LPA there is LPD or W-AFTR).
+> > Actually this is more like a system idle mode, not CPU idle. The power
+> > savings are much bigger than disabling only one cluster.
+> >
+> 
+> Interesting, I was not aware of AFTR and LPA but I looked in the manual now.
+> Thanks a lot for the information.
+> 
+> I see that the Exynos CPUidle driver (drivers/cpuidle/cpuidle-exynos.c) also
+> has only two C-states (WFI and C1) but C1 makes the system to enter in AFTR
+> (system-level power gating).
+> 
+> This is similar to what the downstream ChromiumOS 3.8 kernel CPUidle driver
+> does IIUC [0].
+
+Yes but upstream does it in a clean way, has support for platforms
+requiring secure firmware operations and also implements coupled
+AFTR mode on a few platforms.
+
+> > So the question is still valid - whether someone wants or plans to
+> > implement cpuidle for Exynos 542x family. Odroid XU3 is not a priority
+> > here because energy consumption is not an issue there. This is not a
+> > mobile device.
+> >
+> 
+> That's true but it will be interesting for the 5420 and 5800 based
+> Chromebooks since optimizing power consumption would be useful there.
+
+I would be happy to help with reviewing patches etc. but personally
+I don't have any plans for doing this work.  I may look into adding
+support for newer ARM64 SoCs (Exynos5433) if I find some extra time
+(quite unlikely currently).
+
+> I thought that big.LITTLE platforms were encouraged to use the generic b.L
+> CPUidle driver just like DT platforms should use the generic CPUFreq DT
+> driver but I guess I misunderstood.
+> 
+> So the b.L CPUidle driver is only to have minimum CPUidle support but a SoC
+> specific driver is needed to fine tune and get most out of the platform?
+> 
+> Or should the b.L CPUidle driver be extended to add per platform C-states?
+
+This is a good question. Daniel/Lorenzo?
+
+> > Best regards,
+> > Krzysztof
+> >
+> 
+> [0]: https://chromium.googlesource.com/chromiumos/third_party/kernel/+/chromeos-3.8/arch/arm/mach-exynos/cpuidle.c
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
