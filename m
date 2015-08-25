@@ -1,57 +1,51 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [RFC PATCH v1 2/3] thermal: use iio binding calls
-Date: Tue, 25 Aug 2015 12:58:31 -0700
-Message-ID: <1440532712-5025-3-git-send-email-srinivas.pandruvada@linux.intel.com>
-References: <1440532712-5025-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: turbostat: change to default output
+Date: Tue, 25 Aug 2015 18:32:34 -0400
+Message-ID: <CAJvTdK=g55Tp7tvG8oyzguYjjq5Q+0jiZvEtux=2WBRUVLYpDg@mail.gmail.com>
+References: <CABxNGQaAA_sbqp_DfbjFxMFUDwnRVPXqKFOUcxUa18bGSpuicQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:48119 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756249AbbHYT7g (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 25 Aug 2015 15:59:36 -0400
-In-Reply-To: <1440532712-5025-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Received: from mail-la0-f44.google.com ([209.85.215.44]:33886 "EHLO
+	mail-la0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751865AbbHYWcg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Aug 2015 18:32:36 -0400
+Received: by laba3 with SMTP id a3so108190306lab.1
+        for <linux-pm@vger.kernel.org>; Tue, 25 Aug 2015 15:32:34 -0700 (PDT)
+In-Reply-To: <CABxNGQaAA_sbqp_DfbjFxMFUDwnRVPXqKFOUcxUa18bGSpuicQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: jic23@kernel.org, edubezval@gmail.com, rui.zhang@intel.com
-Cc: linux-iio@vger.kernel.org, linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Jeremy Eder <jeder@redhat.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, lenb@intel.com
 
-Register zone temperature sensor as IIO device during zone registration.
-Also IIO device is removed during zone removal.
+Hello Jeremy,
+I prefer your suggestion over the current default.
+I always want everything.
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- drivers/thermal/thermal_core.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+The problem is that the 'everything' option will not come even close
+to fitting within the columns available on most screens.
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 4ca211b..c48f62e 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -1834,10 +1834,15 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
- 
- 	mutex_unlock(&thermal_governor_lock);
- 
-+	if (thermal_iio_sensor_register(tz))
-+		goto unregister;
-+
- 	if (!tz->tzp || !tz->tzp->no_hwmon) {
- 		result = thermal_add_hwmon_sysfs(tz);
--		if (result)
-+		if (result) {
-+			thermal_iio_sensor_unregister(tz);
- 			goto unregister;
-+		}
- 	}
- 
- 	mutex_lock(&thermal_list_lock);
-@@ -1920,7 +1925,7 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
- 	device_remove_file(&tz->device, &dev_attr_policy);
- 	remove_trip_attrs(tz);
- 	thermal_set_governor(tz, NULL);
--
-+	thermal_iio_sensor_unregister(tz);
- 	thermal_remove_hwmon_sysfs(tz);
- 	release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
- 	idr_destroy(&tz->idr);
+
+On Thu, Jul 30, 2015 at 2:04 PM, Jeremy Eder <jeder@redhat.com> wrote:
+> Len, commit 1cc21f7b6b747220c29b42cfd1c84b5648d12407
+> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/tools/power/x86/turbostat/turbostat.c?id=1cc21f7b6b747220c29b42cfd1c84b5648d12407
+>
+> The commit message mentions "Casual turbostat users generally just
+> want to know MHz."
+>
+> Disagree; we don't think there are any casual users of turbostat that
+> _don't_ care about c-states.
+>
+> Any chance you can revert this ?  If someone needs a more concise
+> output, you might offer a --compact flag or so.
+>
+> Thoughts ?
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+
+
 -- 
-2.4.3
-
+Len Brown, Intel Open Source Technology Center
