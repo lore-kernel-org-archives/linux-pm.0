@@ -1,87 +1,121 @@
-From: Pi-Cheng Chen <pi-cheng.chen-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [RESEND PATCH 0/3 v6] Add Mediatek MT8173 cpufreq driver
-Date: Tue, 25 Aug 2015 10:10:44 +0800
-Message-ID: <CALx668VWg2xVxzy8P7f5QFWRzm+TDJXUghL-_rbvRLsLYjtnng@mail.gmail.com>
-References: <1439803465-19683-1-git-send-email-pi-cheng.chen@linaro.org>
+From: Milo Kim <milo.kim@ti.com>
+Subject: [PATCH 1/2] power:lp8727_charger: use the private data instead of updating I2C device platform data
+Date: Tue, 25 Aug 2015 15:07:07 +0900
+Message-ID: <1440482828-7004-1-git-send-email-milo.kim@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1439803465-19683-1-git-send-email-pi-cheng.chen-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
-Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Michael Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linaro Kernel Mailman List <linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from devils.ext.ti.com ([198.47.26.153]:47007 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752385AbbHYGHg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 25 Aug 2015 02:07:36 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Milo Kim <milo.kim@ti.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, Aug 17, 2015 at 5:24 PM, Pi-Cheng Chen <pi-cheng.chen-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
-> MT8173 is a ARMv8 based SoC with 2 clusters. All CPUs in a single cluster
-> share the same power and clock domain. This series tries to add cpufreq support
-> for MT8173 SoC. The v6 of this series is resent with Acks added.
+Currently, lp8727 charger driver parses the DT and copies values into the
+'cl->dev.platform_data' if 'of_node' exists.
+This may have architectural issue. Platform data is configurable through
+the DT or I2C board info inside the platform area.
+However, lp8727 driver changes this configuration when it is loaded.
 
-Hi Rafael,
+The driver should get data from the platform side and use the private
+data, 'lp8727_chg->pdata' instead of changing the original platform data.
 
-Not sure if I has missed the merge window.
-Do I have chance to have this series merged for 4.3?
-Would you please take [1,2] of this series?
-Thanks.
+_probe() procedure is changed as follows.
+  1. lp8727_parse_dt() returns the pointer of lp8727_platform_data.
+     The driver uses this allocated platform data. So it should keep
+     original platform data, 'dev->platform_data'.
+  2. In _probe(), check the return value of lp8727_parse_dt().
+     If an error is found, then exit as PTR_ERR(pdata).
+  3. If 'of_node' is not found, then the driver just gets the platform data
+     from the I2C device structure.
+  4. Map the platform data to private data structure.
 
-Best Regards,
-Pi-Cheng
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Milo Kim <milo.kim@ti.com>
+---
+ drivers/power/lp8727_charger.c | 25 +++++++++++++------------
+ 1 file changed, 13 insertions(+), 12 deletions(-)
 
->
-> changes in v6:
-> - Move clock and regulator consumer properties document to the device tree
->   bindings documents of MT8173 CPU DVFS clock driver
-> - Add change log to describe what is implemented in the MT8173 cpufreq driver
-> - Add missed rcu_read_unlock() in the error path
-> - Move of_init_opp_table() call to make sure all required hardware resources
->   are already there before it is called
-> - Add comments to describe why both platform driver and deivce registration
->   codes are put in the initcall function
-> - Use the term "voltage tracking" instead of "voltage trace" according to an
->   internal SoC document
->
-> changes in v5:
-> - Move resource allocation code from init() into probe() and remove some unused
->   functions due to this change
-> - Fix descriptions for device tree binding document
-> - Address review comments for last version
-> - Register CPU cooling device
->
-> Changes in v4:
-> - Add bindings for MT8173 cpufreq driver
-> - Move OPP table back into device tree
-> - Address comments for last version
->
-> Changes in v3:
-> - Implement MT8173 specific standalone cpufreq driver instead of using
->   cpufreq-dt driver
-> - Define OPP table in the driver source code until new OPP binding is ready
->
-> Changes in v2:
-> - Add intermediate frequency support in cpufreq-dt driver
-> - Use voltage scaling code of cpufreq-dt for little cluster instead of
->   implementaion in notifier of mtk-cpufreq driver
-> - Code refinement for mtk-cpufreq driver
->
-> Pi-Cheng Chen (3):
->   dt-bindings: mediatek: Add MT8173 CPU DVFS clock bindings
->   cpufreq: mediatek: Add MT8173 cpufreq driver
->   arm64: dts: mt8173: Add mt8173 cpufreq driver support
->
->  .../devicetree/bindings/clock/mt8173-cpu-dvfs.txt  |  83 ++++
->  arch/arm64/boot/dts/mediatek/mt8173-evb.dts        |  18 +
->  arch/arm64/boot/dts/mediatek/mt8173.dtsi           |  64 +++
->  drivers/cpufreq/Kconfig.arm                        |   7 +
->  drivers/cpufreq/Makefile                           |   1 +
->  drivers/cpufreq/mt8173-cpufreq.c                   | 524 +++++++++++++++++++++
->  6 files changed, 697 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/clock/mt8173-cpu-dvfs.txt
->  create mode 100644 drivers/cpufreq/mt8173-cpufreq.c
->
-> --
-> 1.9.1
->
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/drivers/power/lp8727_charger.c b/drivers/power/lp8727_charger.c
+index 7e741f1..30dc265 100644
+--- a/drivers/power/lp8727_charger.c
++++ b/drivers/power/lp8727_charger.c
+@@ -508,7 +508,7 @@ out:
+ 	return param;
+ }
+ 
+-static int lp8727_parse_dt(struct device *dev)
++static struct lp8727_platform_data *lp8727_parse_dt(struct device *dev)
+ {
+ 	struct device_node *np = dev->of_node;
+ 	struct device_node *child;
+@@ -517,11 +517,11 @@ static int lp8727_parse_dt(struct device *dev)
+ 
+ 	/* If charging parameter is not defined, just skip parsing the dt */
+ 	if (of_get_child_count(np) == 0)
+-		goto out;
++		return NULL;
+ 
+ 	pdata = devm_kzalloc(dev, sizeof(*pdata), GFP_KERNEL);
+ 	if (!pdata)
+-		return -ENOMEM;
++		return ERR_PTR(-ENOMEM);
+ 
+ 	of_property_read_u32(np, "debounce-ms", &pdata->debounce_msec);
+ 
+@@ -535,29 +535,30 @@ static int lp8727_parse_dt(struct device *dev)
+ 			pdata->usb = lp8727_parse_charge_pdata(dev, child);
+ 	}
+ 
+-	dev->platform_data = pdata;
+-out:
+-	return 0;
++	return pdata;
+ }
+ #else
+-static int lp8727_parse_dt(struct device *dev)
++static struct lp8727_platform_data *lp8727_parse_dt(struct device *dev)
+ {
+-	return 0;
++	return NULL;
+ }
+ #endif
+ 
+ static int lp8727_probe(struct i2c_client *cl, const struct i2c_device_id *id)
+ {
+ 	struct lp8727_chg *pchg;
++	struct lp8727_platform_data *pdata;
+ 	int ret;
+ 
+ 	if (!i2c_check_functionality(cl->adapter, I2C_FUNC_SMBUS_I2C_BLOCK))
+ 		return -EIO;
+ 
+ 	if (cl->dev.of_node) {
+-		ret = lp8727_parse_dt(&cl->dev);
+-		if (ret)
+-			return ret;
++		pdata = lp8727_parse_dt(&cl->dev);
++		if (IS_ERR(pdata))
++			return PTR_ERR(pdata);
++	} else {
++		pdata = dev_get_platdata(&cl->dev);
+ 	}
+ 
+ 	pchg = devm_kzalloc(&cl->dev, sizeof(*pchg), GFP_KERNEL);
+@@ -566,7 +567,7 @@ static int lp8727_probe(struct i2c_client *cl, const struct i2c_device_id *id)
+ 
+ 	pchg->client = cl;
+ 	pchg->dev = &cl->dev;
+-	pchg->pdata = cl->dev.platform_data;
++	pchg->pdata = pdata;
+ 	i2c_set_clientdata(cl, pchg);
+ 
+ 	mutex_init(&pchg->xfer_lock);
+-- 
+1.9.1
+
