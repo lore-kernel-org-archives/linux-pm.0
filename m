@@ -1,113 +1,43 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: [PATCH v4 4/5] thermal: power_allocator: don't require tzp to be present for the thermal zone
-Date: Wed, 26 Aug 2015 14:26:43 +0100
-Message-ID: <1440595604-27197-5-git-send-email-javi.merino@arm.com>
-References: <1439833008-26440-1-git-send-email-javi.merino@arm.com>
- <1440595604-27197-1-git-send-email-javi.merino@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1440595604-27197-1-git-send-email-javi.merino@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: dmitry.torokhov@gmail.com, cywang@chromium.org, linux-kernel@vger.kernel.org, punit.agrawal@arm.com, djkurtz@chromium.org, edubezval@gmail.com, Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>
+From: Amit Kucheria <amit.kucheria@linaro.org>
+Subject: Re: [PATCH] modify pl011 driver to work as wakeup source
+Date: Wed, 26 Aug 2015 19:16:35 +0530
+Message-ID: <CAP245DWVg2y4dNuvTJkpfWnbTRN45zDhaQQ2eYjpT8uL+9T4UQ@mail.gmail.com>
+References: <1439547886-5093-1-git-send-email-zhaoyang.huang@linaro.org>
+	<55CDC9D4.3020709@linaro.org>
+	<CAN2waFv+8KM_TCw=iy1BOn-KmYuZRVmr5jKAniJwCaxBjqXvNQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f179.google.com ([209.85.223.179]:33116 "EHLO
+	mail-io0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751887AbbHZNqg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Aug 2015 09:46:36 -0400
+Received: by iods203 with SMTP id s203so18945140iod.0
+        for <linux-pm@vger.kernel.org>; Wed, 26 Aug 2015 06:46:35 -0700 (PDT)
+In-Reply-To: <CAN2waFv+8KM_TCw=iy1BOn-KmYuZRVmr5jKAniJwCaxBjqXvNQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhaoyang Huang <zhaoyang.huang@linaro.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-Thermal zones created using thermal_zone_device_create() may not have
-tzp.  As the governor gets its parameters from there, allocate it while
-the governor is bound to the thermal zone so that it can operate in it.
-In this case, tzp is freed when the thermal zone switches to another
-governor.
+On Wed, Aug 26, 2015 at 6:32 PM, Zhaoyang Huang
+<zhaoyang.huang@linaro.org> wrote:
+> The following functions don't work on pl011 for setting it as wakeup irq.
+> device_init_wakeup(dev, true); dev_pm_set_wake_irq(dev, irq);
 
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Signed-off-by: Javi Merino <javi.merino@arm.com>
----
+Can you elaborate how it doesn't work?
 
-While this would be easier to do by just ignoring the thermal zone if
-there was no tzp, I think the approach in this patch provides a better
-behavior.
-
- drivers/thermal/power_allocator.c | 32 +++++++++++++++++++++++++++-----
- 1 file changed, 27 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
-index 2dfb8ade4d1b..85ce0aac9a41 100644
---- a/drivers/thermal/power_allocator.c
-+++ b/drivers/thermal/power_allocator.c
-@@ -58,6 +58,8 @@ static inline s64 div_frac(s64 x, s64 y)
- 
- /**
-  * struct power_allocator_params - parameters for the power allocator governor
-+ * @allocated_tzp:	whether we have allocated tzp for this thermal zone and
-+ *			it needs to be freed on unbind
-  * @err_integral:	accumulated error in the PID controller.
-  * @prev_err:	error in the previous iteration of the PID controller.
-  *		Used to calculate the derivative term.
-@@ -70,6 +72,7 @@ static inline s64 div_frac(s64 x, s64 y)
-  *					controlling for.
-  */
- struct power_allocator_params {
-+	bool allocated_tzp;
- 	s64 err_integral;
- 	s32 prev_err;
- 	int trip_switch_on;
-@@ -530,8 +533,7 @@ static void allow_maximum_power(struct thermal_zone_device *tz)
-  * Initialize the PID controller parameters and bind it to the thermal
-  * zone.
-  *
-- * Return: 0 on success, -EINVAL if the thermal zone doesn't have tzp or -ENOMEM
-- * if we ran out of memory.
-+ * Return: 0 on success, or -ENOMEM if we ran out of memory.
-  */
- static int power_allocator_bind(struct thermal_zone_device *tz)
- {
-@@ -539,13 +541,20 @@ static int power_allocator_bind(struct thermal_zone_device *tz)
- 	struct power_allocator_params *params;
- 	unsigned long control_temp;
- 
--	if (!tz->tzp)
--		return -EINVAL;
--
- 	params = kzalloc(sizeof(*params), GFP_KERNEL);
- 	if (!params)
- 		return -ENOMEM;
- 
-+	if (!tz->tzp) {
-+		tz->tzp = kzalloc(sizeof(*tz->tzp), GFP_KERNEL);
-+		if (!tz->tzp) {
-+			ret = -ENOMEM;
-+			goto free_params;
-+		}
-+
-+		params->allocated_tzp = true;
-+	}
-+
- 	if (!tz->tzp->sustainable_power)
- 		dev_warn(&tz->device, "power_allocator: sustainable_power will be estimated\n");
- 
-@@ -562,11 +571,24 @@ static int power_allocator_bind(struct thermal_zone_device *tz)
- 	tz->governor_data = params;
- 
- 	return 0;
-+
-+free_params:
-+	kfree(params);
-+
-+	return ret;
- }
- 
- static void power_allocator_unbind(struct thermal_zone_device *tz)
- {
-+	struct power_allocator_params *params = tz->governor_data;
-+
- 	dev_dbg(&tz->device, "Unbinding from thermal zone %d\n", tz->id);
-+
-+	if (params->allocated_tzp) {
-+		kfree(tz->tzp);
-+		tz->tzp = NULL;
-+	}
-+
- 	kfree(tz->governor_data);
- 	tz->governor_data = NULL;
- }
--- 
-1.9.1
+>
+> On 14 August 2015 at 18:58, Daniel Lezcano <daniel.lezcano@linaro.org>
+> wrote:
+>>
+>> On 08/14/2015 12:24 PM, Zhaoyang Huang wrote:
+>>>
+>>> add IRQF_NO_SUSPEND flag when requiring irq line and call
+>>> the pm_system_wakeup when RX interrupt happens
+>>>
+>>> Signed-off-by: Zhaoyang Huang <zhaoyang.huang@linaro.org>
+>>
+>>
+>> Did you look at the 'dev_pm_set_wake_irq' function ?
+>>
