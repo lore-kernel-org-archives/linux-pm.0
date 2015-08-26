@@ -1,87 +1,83 @@
-From: Marc Zyngier <marc.zyngier@arm.com>
-Subject: Re: [PATCH] x86, acpi: Handle lapic/x2apic entries in MADT
-Date: Wed, 26 Aug 2015 13:43:09 +0100
-Message-ID: <55DDB45D.2030901@arm.com>
-References: <20150802134014.380415cd@arm.com> <1438626365-23709-1-git-send-email-lukasz.anaczkowski@intel.com> <1438626365-23709-2-git-send-email-lukasz.anaczkowski@intel.com> <C1C2579D7BE026428F81F41198ADB17237863E88@irsmsx110.ger.corp.intel.com> <55DD9838.20505@arm.com> <20150826114250.GA11863@red-moon>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: [PATCH v2] thermal: cpu_cooling: Remove usage of devm functions
+Date: Wed, 26 Aug 2015 13:47:36 +0100
+Message-ID: <20150826124736.GA10956@e104805>
+References: <20150820161402.GA4951@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20150826114250.GA11863@red-moon>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "Anaczkowski, Lukasz" <lukasz.anaczkowski@intel.com>
-Cc: "tglx@linutronix.de" <tglx@linutronix.de>, "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>, "x86@kernel.org" <x86@kernel.org>, "jason@lakedaemon.net" <jason@lakedaemon.net>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20150820161402.GA4951@localhost>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Vaishali Thakkar <vthakkar1994@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 26/08/15 12:42, Lorenzo Pieralisi wrote:
-> Hi Lukasz,
+I missed this because I wasn't CCed :(  Thankfully, I'll be in
+MAINTAINERS for this soon.
+
+On Thu, Aug 20, 2015 at 05:14:02PM +0100, Vaishali Thakkar wrote:
+> In the function cpufreq_get_requested_power, the memory allocated
+> for load_cpu is live within the function only. And after the
+> allocation it is immediately freed with devm_kfree. There is no
+> need to allocate memory for load_cpu with devm function so replace
+> devm_kcalloc with kcalloc and devm_kfree with kfree.
 > 
-> On Wed, Aug 26, 2015 at 11:43:04AM +0100, Marc Zyngier wrote:
->> Hi Lukasz,
->>
->> On 26/08/15 08:04, Anaczkowski, Lukasz wrote:
->>> On Monday, August 3, 2015 8:26 PM
->>> Lukasz Anaczkowski <lukasz.anaczkowski@intel.com> wrote:
->>>
->>>> v2: Fixed ARM64 syntax error
->>>
->>> Hi Marc,
->>>
->>> Does this patch look ok now?
+> Signed-off-by: Vaishali Thakkar <vthakkar1994@gmail.com>
+> ---
+> Changes since v1:
+> 	- Introduce new label based on Viresh Kumar's suggestion
+> ---
+>  drivers/thermal/cpu_cooling.c | 20 +++++++++-----------
+>  1 file changed, 9 insertions(+), 11 deletions(-)
 > 
-> No it does not, it seems to break arm64, I put together a fix
-> below. I do not think the way you handle the count increment
-> in acpi_parse_entries() is correct anyway, since you increment
-> it only if max_entries != 0, which changes mainline behaviour.
+> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> index 620dcd4..7027923 100644
+> --- a/drivers/thermal/cpu_cooling.c
+> +++ b/drivers/thermal/cpu_cooling.c
+> @@ -584,8 +584,7 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
+>  	if (trace_thermal_power_cpu_get_power_enabled()) {
+>  		u32 ncpus = cpumask_weight(&cpufreq_device->allowed_cpus);
+>  
+> -		load_cpu = devm_kcalloc(&cdev->device, ncpus, sizeof(*load_cpu),
+> -					GFP_KERNEL);
+> +		load_cpu = kcalloc(ncpus, sizeof(*load_cpu), GFP_KERNEL);
+>  	}
+>  
+>  	for_each_cpu(cpu, &cpufreq_device->allowed_cpus) {
+> @@ -607,22 +606,21 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
+>  
+>  	dynamic_power = get_dynamic_power(cpufreq_device, freq);
+>  	ret = get_static_power(cpufreq_device, tz, freq, &static_power);
+> -	if (ret) {
+> -		if (load_cpu)
+> -			devm_kfree(&cdev->device, load_cpu);
+> -		return ret;
+> -	}
+> +	if (ret)
+> +		goto free;
+>  
+> -	if (load_cpu) {
+> +	if (load_cpu)
+>  		trace_thermal_power_cpu_get_power(
+>  			&cpufreq_device->allowed_cpus,
+>  			freq, load_cpu, i, dynamic_power, static_power);
+>  
+> -		devm_kfree(&cdev->device, load_cpu);
 
-Yeah, this is fundamentally flawed:
+This introduces a memory leak.  Keep the kfree() here, you can't drop
+it.  Cheers,
+Javi
 
-- count is only incremented when max_entries != 0, as you noticed
-- With max_entries != 0, count now represent the sum of all matches
-  Is that expected?
-- The proc iteration stops after the first match. Why?
-- The test for max_entries is done inside the proc loop. Why?
-
-I came up with the following patch that restores arm64 to a booting state.
-
-If the intention was to change the meaning of the acpi_parse_entries
-return value, then this should be documented and agreed upon.
-
-diff --git a/drivers/acpi/tables.c b/drivers/acpi/tables.c
-index 1217e41..f06327f 100644
---- a/drivers/acpi/tables.c
-+++ b/drivers/acpi/tables.c
-@@ -249,19 +249,24 @@ acpi_parse_entries(char *id, unsigned long table_size,
-
- 	while (((unsigned long)entry) + sizeof(struct acpi_subtable_header) <
- 	       table_end) {
-+		bool match = false;
-+
-+		if (max_entries && count >= max_entries)
-+			break;
- 		for (i = 0; i < proc_num; i++) {
- 			if (entry->type != proc[i].id)
- 				continue;
--			if (max_entries && count++ >= max_entries)
--				continue;
- 			if (proc[i].handler(entry, table_end)) {
- 				proc[i].count = -EINVAL;
- 				return -EINVAL;
- 			}
- 			proc[i].count++;
--			break;
-+			match = true;
- 		}
-
-+		if (match)
-+			count++;
-+
- 		/*
- 		 * If entry->length is 0, break from this loop to avoid
- 		 * infinite loop.
-
-Thanks,
-
-	M.
--- 
-Jazz is not dead. It just smells funny...
+> -	}
+> -
+>  	*power = static_power + dynamic_power;
+>  	return 0;
+> +
+> +free:
+> +	kfree(load_cpu);
+> +
+> +	return ret;
+>  }
+>  
+>  /**
