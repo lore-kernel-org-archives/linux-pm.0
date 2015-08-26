@@ -1,55 +1,53 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] thermal: cpu_cooling: Remove usage of devm functions
-Date: Wed, 26 Aug 2015 18:44:02 +0530
-Message-ID: <20150826131402.GN8784@linux>
-References: <20150820161402.GA4951@localhost>
- <20150826124736.GA10956@e104805>
- <20150826125158.GM8784@linux>
- <20150826130921.GB10956@e104805>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20150826130921.GB10956@e104805>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: Vaishali Thakkar <vthakkar1994@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+From: Javi Merino <javi.merino@arm.com>
+Subject: [PATCH v4 0/5] Let the power allocator thermal governor run on any thermal zone
+Date: Wed, 26 Aug 2015 14:26:39 +0100
+Message-ID: <1440595604-27197-1-git-send-email-javi.merino@arm.com>
+References: <1439833008-26440-1-git-send-email-javi.merino@arm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:45117 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751791AbbHZN1P (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 26 Aug 2015 09:27:15 -0400
+In-Reply-To: <1439833008-26440-1-git-send-email-javi.merino@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: dmitry.torokhov@gmail.com, cywang@chromium.org, linux-kernel@vger.kernel.org, punit.agrawal@arm.com, djkurtz@chromium.org, edubezval@gmail.com, Javi Merino <javi.merino@arm.com>
 
-On 26-08-15, 14:09, Javi Merino wrote:
-> On Wed, Aug 26, 2015 at 01:51:58PM +0100, Viresh Kumar wrote:
-> > On 26-08-15, 13:47, Javi Merino wrote:
-> > > I missed this because I wasn't CCed :(  Thankfully, I'll be in
-> > > MAINTAINERS for this soon.
-> > 
-> > Yeah, I need to resend that patch soon :)
-> > 
-> > > > -		devm_kfree(&cdev->device, load_cpu);
-> > > 
-> > > This introduces a memory leak.  Keep the kfree() here, you can't drop
-> > > it.  Cheers,
-> > > Javi
-> > > 
-> > > > -	}
-> > > > -
-> > > >  	*power = static_power + dynamic_power;
-> > > >  	return 0;
+Relax the thermal governor requirements of sustainable_power and at
+least two trip points so that it can be bound to any thermal zone.
+Its behavior won't be optimal, it would be the best it can with the
+data provided.
 
-So, the change I suggested on V1 removed this as well :) and Vaishali
-missed it completely.
+Changes since v3:
+   - Don't hardcode a value for sustainable power and re-estimate
+     the PID controllers every time if no sustainable power is given
+     as suggested by Eduardo Valentin.
+   - power_actor_get_min_power() moved to a patch of its own.
 
-> > > > +
-> > > > +free:
-> > > > +	kfree(load_cpu);
-> > 
-> > Wouldn't this make that work ?
-> 
-> Nope, you're not reaching that code path from there.  Removing the
-> "return 0" would work, but I don't like it, since we would be calling
-> kfree() all the time, even when the trace is not enabled.  I'd rather
-> leave the kfree() where it is.
+Changes since v2:
+  - Typos suggested by Daniel Kurtz
 
-Hmm..
+Changes since v1:
+  - Let the power allocator governor operate if the thermal zone
+    doesn't have tzp as suggested by Chung-yih Wang
+
+Javi Merino (5):
+  thermal: Add a function to get the minimum power
+  thermal: power_allocator: relax the requirement of a sustainable_power
+    in tzp
+  thermal: power_allocator: relax the requirement of two passive trip   
+     points
+  thermal: power_allocator: don't require tzp to be present for the
+    thermal zone
+  thermal: power_allocator: exit early if there are no cooling devices
+
+ Documentation/thermal/power_allocator.txt |   2 +-
+ drivers/thermal/power_allocator.c         | 241 ++++++++++++++++++++++--------
+ drivers/thermal/thermal_core.c            |  28 ++++
+ include/linux/thermal.h                   |   6 +
+ 4 files changed, 212 insertions(+), 65 deletions(-)
 
 -- 
-viresh
+1.9.1
+
