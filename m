@@ -1,38 +1,131 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Patch v3] ACPI, PCI: Penalize legacy IRQ used by ACPI SCI
-Date: Thu, 27 Aug 2015 00:07:45 +0200 (CEST)
-Message-ID: <alpine.DEB.2.11.1508270007220.15006@nanos>
-References: <alpine.DEB.2.11.1508201247370.3873@nanos> <1440142584-22404-1-git-send-email-jiang.liu@linux.intel.com> <alpine.DEB.2.11.1508241957590.15006@nanos> <55DD2791.3020905@intel.com> <alpine.DEB.2.11.1508261127060.15006@nanos>
- <CAJZ5v0ig2dbGtm6Td+kEw6H=ufwZTd4TWPdtUGFXgPbRJKTtPw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 3/5] cpufreq: intel-pstate: Use separate max pstate for scaling
+Date: Thu, 27 Aug 2015 01:14:48 +0200
+Message-ID: <2064519.Kpvm97aGW8@vostro.rjw.lan>
+References: <1440621161-2732-1-git-send-email-srinivas.pandruvada@linux.intel.com> <1440621161-2732-4-git-send-email-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0ig2dbGtm6Td+kEw6H=ufwZTd4TWPdtUGFXgPbRJKTtPw@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Aaron Lu <aaron.lu@intel.com>, Jiang Liu <jiang.liu@linux.intel.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Nick Meier <nmeier@microsoft.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:48988 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752831AbbHZWrP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Aug 2015 18:47:15 -0400
+In-Reply-To: <1440621161-2732-4-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: kristen.c.accardi@intel.com, rafael.j.wysocki@intel.com, len.brown@intel.com, linux-pm@vger.kernel.org
 
-On Wed, 26 Aug 2015, Rafael J. Wysocki wrote:
-> On Wed, Aug 26, 2015 at 11:27 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> > On Wed, 26 Aug 2015, Aaron Lu wrote:
-> >> On 08/25/2015 04:01 PM, Thomas Gleixner wrote:
-> >> > On Fri, 21 Aug 2015, Jiang Liu wrote:
-> >> >> ---
-> >> >> Hi Nick,
-> >> >>    Rafael and Thomas have concerns about the way to solve the
-> >> >> regression by quirk, so could you please help to test this patch?
-> >> >
-> >> > Nick, can you please confirm that this works?
-> >>
-> >> I saw Nick said this in bugzilla:
-> >> "
-> >> Tested the v3 patch - it works in a Hyper-V environment.  The Tulip driver loads and the NIC was successfully assigned an IP address via DHCP.
-> >
-> > Rafael, can you take it via the ACPI tree?
+On Wednesday, August 26, 2015 01:32:39 PM Srinivas Pandruvada wrote:
+> Systems with configurable TDP have multiple max non turbo p state. Intel
+> P state uses max non turbo P state for scaling. But using the real max
+> non turbo p state causes underestimation of next P state. So using
+> the physical max non turbo P state as before for scaling.
+
+What does "physical" mean here?
+
+> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> ---
+>  drivers/cpufreq/intel_pstate.c | 20 ++++++++++++++++++--
+>  1 file changed, 18 insertions(+), 2 deletions(-)
 > 
-> I'll do that.
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 2641102..a349462 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -77,6 +77,7 @@ struct pstate_data {
+>  	int	current_pstate;
+>  	int	min_pstate;
+>  	int	max_pstate;
+> +	int	max_pstate_physical;
+>  	int	scaling;
+>  	int	turbo_pstate;
+>  	u64	turbo_ratio_limit;
+> @@ -127,6 +128,7 @@ struct pstate_adjust_policy {
+>  
+>  struct pstate_funcs {
+>  	int (*get_max)(void);
+> +	int (*get_max_physical)(void);
+>  	int (*get_min)(void);
+>  	int (*get_turbo)(void);
+>  	int (*get_scaling)(void);
+> @@ -599,6 +601,14 @@ static int core_get_min_pstate(void)
+>  	return (value >> 40) & 0xFF;
+>  }
+>  
+> +static int core_get_max_pstate_physical(void)
+> +{
+> +	u64 value;
+> +
+> +	rdmsrl(MSR_PLATFORM_INFO, value);
+> +	return (value >> 8) & 0xFF;
+> +}
+> +
+>  static int core_get_max_pstate(void)
+>  {
+>  	u64 tar;
+> @@ -741,6 +751,7 @@ static struct cpu_defaults core_params = {
+>  	},
+>  	.funcs = {
+>  		.get_max = core_get_max_pstate,
+> +		.get_max_physical = core_get_max_pstate_physical,
+>  		.get_min = core_get_min_pstate,
+>  		.get_turbo = core_get_turbo_pstate,
+>  		.get_scaling = core_get_scaling,
+> @@ -761,6 +772,7 @@ static struct cpu_defaults byt_params = {
+>  	},
+>  	.funcs = {
+>  		.get_max = byt_get_max_pstate,
+> +		.get_max_physical = byt_get_max_pstate,
+>  		.get_min = byt_get_min_pstate,
+>  		.get_turbo = byt_get_turbo_pstate,
+>  		.set = byt_set_pstate,
+> @@ -780,6 +792,7 @@ static struct cpu_defaults knl_params = {
+>  	},
+>  	.funcs = {
+>  		.get_max = core_get_max_pstate,
+> +		.get_max_physical = core_get_max_pstate_physical,
+>  		.get_min = core_get_min_pstate,
+>  		.get_turbo = knl_get_turbo_pstate,
+>  		.set = core_set_pstate,
+> @@ -833,6 +846,7 @@ static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
+>  {
+>  	cpu->pstate.min_pstate = pstate_funcs.get_min();
+>  	cpu->pstate.max_pstate = pstate_funcs.get_max();
+> +	cpu->pstate.max_pstate_physical = pstate_funcs.get_max_physical();
+>  	cpu->pstate.turbo_pstate = pstate_funcs.get_turbo();
+>  	cpu->pstate.scaling = pstate_funcs.get_scaling();
+>  	if (pstate_funcs.get_turbo_ratio_limit &&
+> @@ -854,7 +868,8 @@ static inline void intel_pstate_calc_busy(struct cpudata *cpu)
+>  
+>  	sample->freq = fp_toint(
+>  		mul_fp(int_tofp(
+> -			cpu->pstate.max_pstate * cpu->pstate.scaling / 100),
+> +			cpu->pstate.max_pstate_physical *
+> +			cpu->pstate.scaling / 100),
+>  			core_pct));
+>  
+>  	sample->core_pct_busy = (int32_t)core_pct;
+> @@ -922,7 +937,7 @@ static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
+>  	 * specified pstate.
+>  	 */
+>  	core_busy = cpu->sample.core_pct_busy;
+> -	max_pstate = int_tofp(cpu->pstate.max_pstate);
+> +	max_pstate = int_tofp(cpu->pstate.max_pstate_physical);
+>  	current_pstate = int_tofp(cpu->pstate.current_pstate);
+>  	core_busy = mul_fp(core_busy, div_fp(max_pstate, current_pstate));
+>  
+> @@ -1215,6 +1230,7 @@ static void copy_pid_params(struct pstate_adjust_policy *policy)
+>  static void copy_cpu_funcs(struct pstate_funcs *funcs)
+>  {
+>  	pstate_funcs.get_max   = funcs->get_max;
+> +	pstate_funcs.get_max_physical = funcs->get_max_physical;
+>  	pstate_funcs.get_min   = funcs->get_min;
+>  	pstate_funcs.get_turbo = funcs->get_turbo;
+>  	pstate_funcs.get_scaling = funcs->get_scaling;
+> 
 
-Forgot to say:
-
-Acked-by: Thomas Gleixner <tglx@linutronix.de>
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
