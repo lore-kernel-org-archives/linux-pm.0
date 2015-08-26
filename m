@@ -1,43 +1,81 @@
-From: Amit Kucheria <amit.kucheria@linaro.org>
-Subject: Re: [PATCH] modify pl011 driver to work as wakeup source
-Date: Wed, 26 Aug 2015 19:16:35 +0530
-Message-ID: <CAP245DWVg2y4dNuvTJkpfWnbTRN45zDhaQQ2eYjpT8uL+9T4UQ@mail.gmail.com>
-References: <1439547886-5093-1-git-send-email-zhaoyang.huang@linaro.org>
-	<55CDC9D4.3020709@linaro.org>
-	<CAN2waFv+8KM_TCw=iy1BOn-KmYuZRVmr5jKAniJwCaxBjqXvNQ@mail.gmail.com>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: [PATCH 2/3] thermal: Add Mediatek thermal controller support
+Date: Wed, 26 Aug 2015 15:54:21 +0200
+Message-ID: <20150826135421.GV18700@pengutronix.de>
+References: <1440057962-13373-1-git-send-email-s.hauer@pengutronix.de>
+ <1440057962-13373-3-git-send-email-s.hauer@pengutronix.de>
+ <55D65ED7.7010102@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f179.google.com ([209.85.223.179]:33116 "EHLO
-	mail-io0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751887AbbHZNqg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Aug 2015 09:46:36 -0400
-Received: by iods203 with SMTP id s203so18945140iod.0
-        for <linux-pm@vger.kernel.org>; Wed, 26 Aug 2015 06:46:35 -0700 (PDT)
-In-Reply-To: <CAN2waFv+8KM_TCw=iy1BOn-KmYuZRVmr5jKAniJwCaxBjqXvNQ@mail.gmail.com>
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:42417 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751791AbbHZNy1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Aug 2015 09:54:27 -0400
+Content-Disposition: inline
+In-Reply-To: <55D65ED7.7010102@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhaoyang Huang <zhaoyang.huang@linaro.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, linux-mediatek@lists.infradead.org, Daniel Kurtz <djkurtz@chromium.org>, kernel@pengutronix.de, Matthias Brugger <matthias.bgg@gmail.com>
 
-On Wed, Aug 26, 2015 at 6:32 PM, Zhaoyang Huang
-<zhaoyang.huang@linaro.org> wrote:
-> The following functions don't work on pl011 for setting it as wakeup irq.
-> device_init_wakeup(dev, true); dev_pm_set_wake_irq(dev, irq);
+On Fri, Aug 21, 2015 at 01:12:23AM +0200, Daniel Lezcano wrote:
+> On 08/20/2015 10:06 AM, Sascha Hauer wrote:
+> >This adds support for the Mediatek thermal controller found on MT8173
+> >and likely other SoCs.
+> >The controller is a bit special. It does not have its own ADC, instead
+> >it controls the on-SoC AUXADC via AHB bus accesses. For this reason
+> >we need the physical address of the AUXADC. Also it controls a mux
+> >using AHB bus accesses, so we need the APMIXEDSYS physical address aswell.
+> >
+> >Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> >---
+> 
+> [ ... ]
+> 
+> >diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
+> >new file mode 100644
+> >index 0000000..06d52ef
+> >--- /dev/null
+> >+++ b/drivers/thermal/mtk_thermal.c
+> >@@ -0,0 +1,582 @@
+> >+/*
+> >+ * Copyright (c) 2014 MediaTek Inc.
+> 
+> 2015 ?
 
-Can you elaborate how it doesn't work?
+Can change to 2015
 
->
-> On 14 August 2015 at 18:58, Daniel Lezcano <daniel.lezcano@linaro.org>
-> wrote:
->>
->> On 08/14/2015 12:24 PM, Zhaoyang Huang wrote:
->>>
->>> add IRQF_NO_SUSPEND flag when requiring irq line and call
->>> the pm_system_wakeup when RX interrupt happens
->>>
->>> Signed-off-by: Zhaoyang Huang <zhaoyang.huang@linaro.org>
->>
->>
->> Did you look at the 'dev_pm_set_wake_irq' function ?
->>
+> 
+> >+ * Author: Hanyi.Wu <hanyi.wu@mediatek.com>
+> 
+> Hanyi Wu ?
+
+It's the original author of this code.
+
+> >+#define TEMP_MONINT_COLD(sp)			(BIT(0) << ((sp) * 5))
+> >+#define TEMP_MONINT_HOT(sp)			(BIT(1) << ((sp) * 5))
+> >+#define TEMP_MONINT_LOW_OFS(sp)			(BIT(2) << ((sp) * 5))
+> >+#define TEMP_MONINT_HIGH_OFS(sp)		(BIT(3) << ((sp) * 5))
+> >+#define TEMP_MONINT_HOT_TO_NORM(sp)		(BIT(4) << ((sp) * 5))
+> >+#define TEMP_MONINT_TIMEOUT			BIT(15)
+> >+#define TEMP_MONINT_IMMEDIATE_SENSE(sp)		BIT(16 + (sp))
+> >+#define TEMP_MONINT_FILTER_SENSE(sp)		BIT(19 + (sp))
+> >+#define TEMP_ADCWRITECTRL_ADC_EXTRA_WRITE	BIT(2)
+> >+#define TEMP_ADCWRITECTRL_ADC_EXTRA1_WRITE	BIT(3)
+> >+#define TEMP_PROTCTL_AVERAGE			(0 << 16)
+> >+#define TEMP_PROTCTL_MAXIMUM			(1 << 16)
+> >+#define TEMP_PROTCTL_SELECTED			(2 << 16)
+> 
+> <-- Not used.
+
+Will remove.
+
+Sascha
+
+
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
