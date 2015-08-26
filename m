@@ -1,37 +1,38 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Patch v3] ACPI, PCI: Penalize legacy IRQ used by ACPI SCI
-Date: Wed, 26 Aug 2015 11:27:35 +0200 (CEST)
-Message-ID: <alpine.DEB.2.11.1508261127060.15006@nanos>
-References: <alpine.DEB.2.11.1508201247370.3873@nanos> <1440142584-22404-1-git-send-email-jiang.liu@linux.intel.com> <alpine.DEB.2.11.1508241957590.15006@nanos> <55DD2791.3020905@intel.com>
+From: Marc Zyngier <marc.zyngier@arm.com>
+Subject: Re: [PATCH] x86, acpi: Handle lapic/x2apic entries in MADT
+Date: Wed, 26 Aug 2015 11:43:04 +0100
+Message-ID: <55DD9838.20505@arm.com>
+References: <20150802134014.380415cd@arm.com> <1438626365-23709-1-git-send-email-lukasz.anaczkowski@intel.com> <1438626365-23709-2-git-send-email-lukasz.anaczkowski@intel.com> <C1C2579D7BE026428F81F41198ADB17237863E88@irsmsx110.ger.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:54579 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751887AbbHZJ2R (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Aug 2015 05:28:17 -0400
-In-Reply-To: <55DD2791.3020905@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <C1C2579D7BE026428F81F41198ADB17237863E88@irsmsx110.ger.corp.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Anaczkowski, Lukasz" <lukasz.anaczkowski@intel.com>, "tglx@linutronix.de" <tglx@linutronix.de>, "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>, "x86@kernel.org" <x86@kernel.org>, "jason@lakedaemon.net" <jason@lakedaemon.net>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Aaron Lu <aaron.lu@intel.com>
-Cc: Jiang Liu <jiang.liu@linux.intel.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Nick Meier <nmeier@microsoft.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Wed, 26 Aug 2015, Aaron Lu wrote:
-> On 08/25/2015 04:01 PM, Thomas Gleixner wrote:
-> > On Fri, 21 Aug 2015, Jiang Liu wrote:
-> >> ---
-> >> Hi Nick,
-> >> 	Rafael and Thomas have concerns about the way to solve the
-> >> regression by quirk, so could you please help to test this patch?
-> > 
-> > Nick, can you please confirm that this works?
+Hi Lukasz,
+
+On 26/08/15 08:04, Anaczkowski, Lukasz wrote:
+> On Monday, August 3, 2015 8:26 PM
+> Lukasz Anaczkowski <lukasz.anaczkowski@intel.com> wrote:
 > 
-> I saw Nick said this in bugzilla:
-> "
-> Tested the v3 patch - it works in a Hyper-V environment.  The Tulip driver loads and the NIC was successfully assigned an IP address via DHCP.
+>> v2: Fixed ARM64 syntax error
+> 
+> Hi Marc,
+> 
+> Does this patch look ok now?
 
-Rafael, can you take it via the ACPI tree?
+Contrarily to popular belief, I do not read every email on LKML. Crazy,
+I know. How about cc-ing me next time? Even your reply to my original
+rant wasn't addressed to me (how did you manage that?)...
+
+I'll have a look now.
 
 Thanks,
 
-	tglx
+	M.
+-- 
+Jazz is not dead. It just smells funny...
