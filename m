@@ -1,72 +1,80 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] modify pl011 driver to work as wakeup source
-Date: Wed, 26 Aug 2015 16:00:55 +0200
-Message-ID: <55DDC697.4080107@linaro.org>
-References: <1439547886-5093-1-git-send-email-zhaoyang.huang@linaro.org>	<55CDC9D4.3020709@linaro.org> <CAN2waFv+8KM_TCw=iy1BOn-KmYuZRVmr5jKAniJwCaxBjqXvNQ@mail.gmail.com>
+Subject: Re: [PATCH 2/3] thermal: Add Mediatek thermal controller support
+Date: Wed, 26 Aug 2015 16:02:25 +0200
+Message-ID: <55DDC6F1.8090105@linaro.org>
+References: <1440057962-13373-1-git-send-email-s.hauer@pengutronix.de> <1440057962-13373-3-git-send-email-s.hauer@pengutronix.de> <55D65ED7.7010102@linaro.org> <20150826135421.GV18700@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
+Content-Type: text/plain; charset=UTF-8;
 	format=flowed
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f171.google.com ([209.85.212.171]:34914 "EHLO
-	mail-wi0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751737AbbHZOA7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 26 Aug 2015 10:00:59 -0400
-Received: by wicne3 with SMTP id ne3so45929728wic.0
-        for <linux-pm@vger.kernel.org>; Wed, 26 Aug 2015 07:00:58 -0700 (PDT)
-In-Reply-To: <CAN2waFv+8KM_TCw=iy1BOn-KmYuZRVmr5jKAniJwCaxBjqXvNQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150826135421.GV18700@pengutronix.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, linux-mediatek@lists.infradead.org, Daniel Kurtz <djkurtz@chromium.org>, kernel@pengutronix.de, Matthias Brugger <matthias.bgg@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Zhaoyang Huang <zhaoyang.huang@linaro.org>
-Cc: linux-pm@vger.kernel.org, Amit Kucheria <amit.kucheria@linaro.org>, Sudeep Holla <Sudeep.Holla@arm.com>
 
-On 08/26/2015 03:02 PM, Zhaoyang Huang wrote:
-> The following functions don't work on pl011 for setting it as wakeup =
-irq.
-> device_init_wakeup(dev, true);	dev_pm_set_wake_irq(dev, irq);
+On 08/26/2015 03:54 PM, Sascha Hauer wrote:
+> On Fri, Aug 21, 2015 at 01:12:23AM +0200, Daniel Lezcano wrote:
+>> On 08/20/2015 10:06 AM, Sascha Hauer wrote:
+>>> This adds support for the Mediatek thermal controller found on MT81=
+73
+>>> and likely other SoCs.
+>>> The controller is a bit special. It does not have its own ADC, inst=
+ead
+>>> it controls the on-SoC AUXADC via AHB bus accesses. For this reason
+>>> we need the physical address of the AUXADC. Also it controls a mux
+>>> using AHB bus accesses, so we need the APMIXEDSYS physical address =
+aswell.
+>>>
+>>> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+>>> ---
+>>
+>> [ ... ]
+>>
+>>> diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_th=
+ermal.c
+>>> new file mode 100644
+>>> index 0000000..06d52ef
+>>> --- /dev/null
+>>> +++ b/drivers/thermal/mtk_thermal.c
+>>> @@ -0,0 +1,582 @@
+>>> +/*
+>>> + * Copyright (c) 2014 MediaTek Inc.
+>>
+>> 2015 ?
+>
+> Can change to 2015
+>
+>>
+>>> + * Author: Hanyi.Wu <hanyi.wu@mediatek.com>
+>>
+>> Hanyi Wu ?
+>
+> It's the original author of this code.
 
-Hi Zhaoyang,
+Sorry I wasn't clear. I was suggesting to remove the dot between Hanyi=20
+and Wu.
 
-if I understood correctly, dev_pm_set_wake_irq is the new API to set a=20
-wake up device up. You are the first one using it, so perhaps there is=20
-something missing.
-
-I recommend you have a look at the slides [1] showed at the LPC2015.
-
-I added Sudeep so he can give more informations about that.
-
-   -- Daniel
-
-[1]=20
-https://linuxplumbersconf.org/2015/ocw//system/presentations/3051/origi=
-nal/wakeup_config.pdf
-
+>>> +#define TEMP_MONINT_COLD(sp)			(BIT(0) << ((sp) * 5))
+>>> +#define TEMP_MONINT_HOT(sp)			(BIT(1) << ((sp) * 5))
+>>> +#define TEMP_MONINT_LOW_OFS(sp)			(BIT(2) << ((sp) * 5))
+>>> +#define TEMP_MONINT_HIGH_OFS(sp)		(BIT(3) << ((sp) * 5))
+>>> +#define TEMP_MONINT_HOT_TO_NORM(sp)		(BIT(4) << ((sp) * 5))
+>>> +#define TEMP_MONINT_TIMEOUT			BIT(15)
+>>> +#define TEMP_MONINT_IMMEDIATE_SENSE(sp)		BIT(16 + (sp))
+>>> +#define TEMP_MONINT_FILTER_SENSE(sp)		BIT(19 + (sp))
+>>> +#define TEMP_ADCWRITECTRL_ADC_EXTRA_WRITE	BIT(2)
+>>> +#define TEMP_ADCWRITECTRL_ADC_EXTRA1_WRITE	BIT(3)
+>>> +#define TEMP_PROTCTL_AVERAGE			(0 << 16)
+>>> +#define TEMP_PROTCTL_MAXIMUM			(1 << 16)
+>>> +#define TEMP_PROTCTL_SELECTED			(2 << 16)
+>>
+>> <-- Not used.
 >
-> On 14 August 2015 at 18:58, Daniel Lezcano <daniel.lezcano@linaro.org
-> <mailto:daniel.lezcano@linaro.org>> wrote:
+> Will remove.
 >
->     On 08/14/2015 12:24 PM, Zhaoyang Huang wrote:
->
->         add IRQF_NO_SUSPEND flag when requiring irq line and call
->         the pm_system_wakeup when RX interrupt happens
->
->         Signed-off-by: Zhaoyang Huang <zhaoyang.huang@linaro.org
->         <mailto:zhaoyang.huang@linaro.org>>
->
->
->     Did you look at the 'dev_pm_set_wake_irq' function ?
->
->
->
->     --
->       <http://www.linaro.org/> Linaro.org =E2=94=82 Open source softw=
-are for ARM
->     SoCs
->
->     Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
->     <http://twitter.com/#!/linaroorg
->     <http://twitter.com/#%21/linaroorg>> Twitter |
->     <http://www.linaro.org/linaro-blog/> Blog
+> Sascha
 >
 >
 
@@ -78,4 +86,3 @@ r ARM SoCs
 =46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
 <http://twitter.com/#!/linaroorg> Twitter |
 <http://www.linaro.org/linaro-blog/> Blog
-
