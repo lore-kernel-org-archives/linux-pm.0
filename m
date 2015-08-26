@@ -1,123 +1,123 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH 5/5] cpufreq: intel_pstate: Avoid calculation for max/min
-Date: Wed, 26 Aug 2015 13:32:41 -0700
-Message-ID: <1440621161-2732-6-git-send-email-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 3/5] cpufreq: intel-pstate: Use separate max pstate for scaling
+Date: Wed, 26 Aug 2015 13:32:39 -0700
+Message-ID: <1440621161-2732-4-git-send-email-srinivas.pandruvada@linux.intel.com>
 References: <1440621161-2732-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
 Received: from mga02.intel.com ([134.134.136.20]:64578 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755964AbbHZUc5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 26 Aug 2015 16:32:57 -0400
+	id S1752692AbbHZUc4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 26 Aug 2015 16:32:56 -0400
 In-Reply-To: <1440621161-2732-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: kristen.c.accardi@intel.com, rafael.j.wysocki@intel.com, len.brown@intel.com
 Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-When requested from cpufreq to set policy, look into _pss and get
-control values, instead of using max/min perf calculations. These
-calculation misses next control state in boundary conditions.
+Systems with configurable TDP have multiple max non turbo p state. Intel
+P state uses max non turbo P state for scaling. But using the real max
+non turbo p state causes underestimation of next P state. So using
+the physical max non turbo P state as before for scaling.
 
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- drivers/cpufreq/intel_pstate.c | 48 +++++++++++++++++++++++++++++++++++++-----
- 1 file changed, 43 insertions(+), 5 deletions(-)
+ drivers/cpufreq/intel_pstate.c | 20 ++++++++++++++++++--
+ 1 file changed, 18 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 6eafb55..ead751e 100644
+index 2641102..a349462 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -164,6 +164,8 @@ struct perf_limits {
- 	int max_sysfs_pct;
- 	int min_policy_pct;
- 	int min_sysfs_pct;
-+	int max_perf_ctl;
-+	int min_perf_ctl;
- };
+@@ -77,6 +77,7 @@ struct pstate_data {
+ 	int	current_pstate;
+ 	int	min_pstate;
+ 	int	max_pstate;
++	int	max_pstate_physical;
+ 	int	scaling;
+ 	int	turbo_pstate;
+ 	u64	turbo_ratio_limit;
+@@ -127,6 +128,7 @@ struct pstate_adjust_policy {
  
- static struct perf_limits limits = {
-@@ -177,6 +179,8 @@ static struct perf_limits limits = {
- 	.max_sysfs_pct = 100,
- 	.min_policy_pct = 0,
- 	.min_sysfs_pct = 0,
-+	.max_perf_ctl = 0,
-+	.min_perf_ctl = 0,
- };
- 
- #if IS_ENABLED(CONFIG_ACPI)
-@@ -929,12 +933,23 @@ static void intel_pstate_get_min_max(struct cpudata *cpu, int *min, int *max)
- 	 * policy, or by cpu specific default values determined through
- 	 * experimentation.
- 	 */
--	max_perf_adj = fp_toint(mul_fp(int_tofp(max_perf), limits.max_perf));
--	*max = clamp_t(int, max_perf_adj,
--			cpu->pstate.min_pstate, cpu->pstate.turbo_pstate);
-+	if (limits.max_perf_ctl && limits.max_sysfs_pct >=
-+						limits.max_policy_pct) {
-+		*max = limits.max_perf_ctl;
-+	} else {
-+		max_perf_adj = fp_toint(mul_fp(int_tofp(max_perf),
-+					limits.max_perf));
-+		*max = clamp_t(int, max_perf_adj, cpu->pstate.min_pstate,
-+			       cpu->pstate.turbo_pstate);
-+	}
- 
--	min_perf = fp_toint(mul_fp(int_tofp(max_perf), limits.min_perf));
--	*min = clamp_t(int, min_perf, cpu->pstate.min_pstate, max_perf);
-+	if (limits.min_perf_ctl) {
-+		*min = limits.min_perf_ctl;
-+	} else {
-+		min_perf = fp_toint(mul_fp(int_tofp(max_perf),
-+				    limits.min_perf));
-+		*min = clamp_t(int, min_perf, cpu->pstate.min_pstate, max_perf);
-+	}
+ struct pstate_funcs {
+ 	int (*get_max)(void);
++	int (*get_max_physical)(void);
+ 	int (*get_min)(void);
+ 	int (*get_turbo)(void);
+ 	int (*get_scaling)(void);
+@@ -599,6 +601,14 @@ static int core_get_min_pstate(void)
+ 	return (value >> 40) & 0xFF;
  }
  
- static void intel_pstate_set_pstate(struct cpudata *cpu, int pstate, bool force)
-@@ -1223,6 +1238,11 @@ static unsigned int intel_pstate_get(unsigned int cpu_num)
- 
- static int intel_pstate_set_policy(struct cpufreq_policy *policy)
++static int core_get_max_pstate_physical(void)
++{
++	u64 value;
++
++	rdmsrl(MSR_PLATFORM_INFO, value);
++	return (value >> 8) & 0xFF;
++}
++
+ static int core_get_max_pstate(void)
  {
-+	struct cpudata *cpu;
-+	int i;
-+
-+	pr_debug("%s max %u policy->max %u\n", __func__,
-+		 policy->cpuinfo.max_freq, policy->max);
- 	if (!policy->cpuinfo.max_freq)
- 		return -ENODEV;
+ 	u64 tar;
+@@ -741,6 +751,7 @@ static struct cpu_defaults core_params = {
+ 	},
+ 	.funcs = {
+ 		.get_max = core_get_max_pstate,
++		.get_max_physical = core_get_max_pstate_physical,
+ 		.get_min = core_get_min_pstate,
+ 		.get_turbo = core_get_turbo_pstate,
+ 		.get_scaling = core_get_scaling,
+@@ -761,6 +772,7 @@ static struct cpu_defaults byt_params = {
+ 	},
+ 	.funcs = {
+ 		.get_max = byt_get_max_pstate,
++		.get_max_physical = byt_get_max_pstate,
+ 		.get_min = byt_get_min_pstate,
+ 		.get_turbo = byt_get_turbo_pstate,
+ 		.set = byt_set_pstate,
+@@ -780,6 +792,7 @@ static struct cpu_defaults knl_params = {
+ 	},
+ 	.funcs = {
+ 		.get_max = core_get_max_pstate,
++		.get_max_physical = core_get_max_pstate_physical,
+ 		.get_min = core_get_min_pstate,
+ 		.get_turbo = knl_get_turbo_pstate,
+ 		.set = core_set_pstate,
+@@ -833,6 +846,7 @@ static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
+ {
+ 	cpu->pstate.min_pstate = pstate_funcs.get_min();
+ 	cpu->pstate.max_pstate = pstate_funcs.get_max();
++	cpu->pstate.max_pstate_physical = pstate_funcs.get_max_physical();
+ 	cpu->pstate.turbo_pstate = pstate_funcs.get_turbo();
+ 	cpu->pstate.scaling = pstate_funcs.get_scaling();
+ 	if (pstate_funcs.get_turbo_ratio_limit &&
+@@ -854,7 +868,8 @@ static inline void intel_pstate_calc_busy(struct cpudata *cpu)
  
-@@ -1235,6 +1255,8 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
- 		limits.max_perf_pct = 100;
- 		limits.max_perf = int_tofp(1);
- 		limits.no_turbo = 0;
-+		limits.max_perf_ctl = 0;
-+		limits.min_perf_ctl = 0;
- 		return 0;
- 	}
+ 	sample->freq = fp_toint(
+ 		mul_fp(int_tofp(
+-			cpu->pstate.max_pstate * cpu->pstate.scaling / 100),
++			cpu->pstate.max_pstate_physical *
++			cpu->pstate.scaling / 100),
+ 			core_pct));
  
-@@ -1248,6 +1270,22 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
- 	limits.max_perf_pct = min(limits.max_policy_pct, limits.max_sysfs_pct);
- 	limits.max_perf = div_fp(int_tofp(limits.max_perf_pct), int_tofp(100));
+ 	sample->core_pct_busy = (int32_t)core_pct;
+@@ -922,7 +937,7 @@ static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
+ 	 * specified pstate.
+ 	 */
+ 	core_busy = cpu->sample.core_pct_busy;
+-	max_pstate = int_tofp(cpu->pstate.max_pstate);
++	max_pstate = int_tofp(cpu->pstate.max_pstate_physical);
+ 	current_pstate = int_tofp(cpu->pstate.current_pstate);
+ 	core_busy = mul_fp(core_busy, div_fp(max_pstate, current_pstate));
  
-+	cpu = all_cpu_data[policy->cpu];
-+	for (i = 0; i < cpu->acpi_perf_data.state_count; i++) {
-+		if ((cpu->acpi_perf_data.states[i].control >> 8) *
-+		    cpu->pstate.scaling == policy->max)
-+			limits.max_perf_ctl =
-+				cpu->acpi_perf_data.states[i].control >> 8;
-+		if ((cpu->acpi_perf_data.states[i].control >> 8) *
-+		    cpu->pstate.scaling == policy->min)
-+			limits.min_perf_ctl =
-+				cpu->acpi_perf_data.states[i].control >> 8;
-+	}
-+
-+	pr_debug("max %u policy->max %u max_perf_ctl 0x%x min_perf_ctl 0x%x\n",
-+		 policy->cpuinfo.max_freq, policy->max, limits.max_perf_ctl,
-+		 limits.min_perf_ctl);
-+
- 	if (hwp_active)
- 		intel_pstate_hwp_set();
- 
+@@ -1215,6 +1230,7 @@ static void copy_pid_params(struct pstate_adjust_policy *policy)
+ static void copy_cpu_funcs(struct pstate_funcs *funcs)
+ {
+ 	pstate_funcs.get_max   = funcs->get_max;
++	pstate_funcs.get_max_physical = funcs->get_max_physical;
+ 	pstate_funcs.get_min   = funcs->get_min;
+ 	pstate_funcs.get_turbo = funcs->get_turbo;
+ 	pstate_funcs.get_scaling = funcs->get_scaling;
 -- 
 1.9.3
 
