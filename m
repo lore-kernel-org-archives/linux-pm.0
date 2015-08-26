@@ -1,7 +1,7 @@
 From: Javi Merino <javi.merino@arm.com>
-Subject: [PATCH v4 2/5] thermal: power_allocator: relax the requirement of a sustainable_power in tzp
-Date: Wed, 26 Aug 2015 14:26:41 +0100
-Message-ID: <1440595604-27197-3-git-send-email-javi.merino@arm.com>
+Subject: [PATCH v4 1/5] thermal: Add a function to get the minimum power
+Date: Wed, 26 Aug 2015 14:26:40 +0100
+Message-ID: <1440595604-27197-2-git-send-email-javi.merino@arm.com>
 References: <1439833008-26440-1-git-send-email-javi.merino@arm.com>
  <1440595604-27197-1-git-send-email-javi.merino@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -11,205 +11,80 @@ To: linux-pm@vger.kernel.org
 Cc: dmitry.torokhov@gmail.com, cywang@chromium.org, linux-kernel@vger.kernel.org, punit.agrawal@arm.com, djkurtz@chromium.org, edubezval@gmail.com, Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-The power allocator governor currently requires that a sustainable power
-is passed as part of the thermal zone's thermal zone parameters.  If
-that parameter is not provided, it doesn't register with the thermal
-zone.
-
-While this parameter is strongly recommended for optimal performance, it
-doesn't need to be mandatory.  Relax the requirement and allow the
-governor to bind to thermal zones that don't provide it by estimating it
-from the cooling devices' power model.
+The thermal core already has a function to get the maximum power of a
+cooling device: power_actor_get_max_power().  Add a function to get the
+minimum power of a cooling device.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: Eduardo Valentin <edubezval@gmail.com>
 Signed-off-by: Javi Merino <javi.merino@arm.com>
 ---
- drivers/thermal/power_allocator.c | 128 ++++++++++++++++++++++++++++++--------
- 1 file changed, 103 insertions(+), 25 deletions(-)
+ drivers/thermal/thermal_core.c | 28 ++++++++++++++++++++++++++++
+ include/linux/thermal.h        |  6 ++++++
+ 2 files changed, 34 insertions(+)
 
-diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
-index 7006860f2f36..eae8a5ae794a 100644
---- a/drivers/thermal/power_allocator.c
-+++ b/drivers/thermal/power_allocator.c
-@@ -73,6 +73,90 @@ struct power_allocator_params {
- };
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 4ca211be4c0f..760204f0b63c 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -997,6 +997,34 @@ int power_actor_get_max_power(struct thermal_cooling_device *cdev,
+ }
  
  /**
-+ * estimate_sustainable_power() - Estimate the sustainable power of a thermal zone
-+ * @tz: thermal zone we are operating in
++ * power_actor_get_min_power() - get the mainimum power that a cdev can consume
++ * @cdev:	pointer to &thermal_cooling_device
++ * @tz:		a valid thermal zone device pointer
++ * @min_power:	pointer in which to store the minimum power
 + *
-+ * For thermal zones that don't provide a sustainable_power in their
-+ * thermal_zone_params, estimate one.  Calculate it using the minimum
-+ * power of all the cooling devices as that gives a valid value that
-+ * can give some degree of functionality.  For optimal performance of
-+ * this governor, provide a sustainable_power in the thermal zone's
-+ * thermal_zone_params.
++ * Calculate the minimum power consumption in milliwatts that the
++ * cooling device can currently consume and store it in @min_power.
++ *
++ * Return: 0 on success, -EINVAL if @cdev doesn't support the
++ * power_actor API or -E* on other error.
 + */
-+static u32 estimate_sustainable_power(struct thermal_zone_device *tz)
++int power_actor_get_min_power(struct thermal_cooling_device *cdev,
++			      struct thermal_zone_device *tz, u32 *min_power)
 +{
-+	u32 sustainable_power = 0;
-+	struct thermal_instance *instance;
-+	struct power_allocator_params *params = tz->governor_data;
-+
-+	list_for_each_entry(instance, &tz->thermal_instances, tz_node) {
-+		struct thermal_cooling_device *cdev = instance->cdev;
-+		u32 min_power;
-+
-+		if (instance->trip != params->trip_max_desired_temperature)
-+			continue;
-+
-+		if (power_actor_get_min_power(cdev, tz, &min_power))
-+			continue;
-+
-+		sustainable_power += min_power;
-+	}
-+
-+	return sustainable_power;
-+}
-+
-+/**
-+ * estimate_controller_constants() - Estimate the constants for the PID controller
-+ * @tz:		thermal zone for which to estimate the constants
-+ * @sustainable_power:	sustainable power for the thermal zone
-+ * @trip_switch_on:	trip point number for the switch on temperature
-+ * @control_temp:	target temperature for the power allocator governor
-+ * @force:	whether to force the update of the constants
-+ *
-+ * This function is used to update the estimation of the PID
-+ * controller constants in struct thermal_zone_parameters.
-+ * Sustainable power is provided in case it was estimated.  The
-+ * estimated sustainable_power should not be stored in the
-+ * thermal_zone_parameters so it has to be passed explicitly to this
-+ * function.
-+ *
-+ * If @force is not set, the values in the thermal zone's parameters
-+ * are preserved if they are not zero.  If @force is set, the values
-+ * in thermal zone's parameters are overwritten.
-+ */
-+static void estimate_controller_constants(struct thermal_zone_device *tz,
-+					  u32 sustainable_power,
-+					  int trip_switch_on,
-+					  unsigned long control_temp,
-+					  bool force)
-+{
++	unsigned long max_state;
 +	int ret;
-+	unsigned long switch_on_temp;
-+	u32 temperature_threshold;
 +
-+	ret = tz->ops->get_trip_temp(tz, trip_switch_on, &switch_on_temp);
++	if (!cdev_is_power_actor(cdev))
++		return -EINVAL;
++
++	ret = cdev->ops->get_max_state(cdev, &max_state);
 +	if (ret)
-+		switch_on_temp = 0;
++		return ret;
 +
-+	temperature_threshold = control_temp - switch_on_temp;
-+
-+	if (!tz->tzp->k_po || force)
-+		tz->tzp->k_po = int_to_frac(sustainable_power) /
-+			temperature_threshold;
-+
-+	if (!tz->tzp->k_pu || force)
-+		tz->tzp->k_pu = int_to_frac(2 * sustainable_power) /
-+			temperature_threshold;
-+
-+	if (!tz->tzp->k_i || force)
-+		tz->tzp->k_i = int_to_frac(10) / 1000;
-+	/*
-+	 * The default for k_d and integral_cutoff is 0, so we can
-+	 * leave them as they are.
-+	 */
++	return cdev->ops->state2power(cdev, tz, max_state, min_power);
 +}
 +
 +/**
-  * pid_controller() - PID controller
-  * @tz:	thermal zone we are operating in
-  * @current_temp:	the current temperature in millicelsius
-@@ -98,10 +182,20 @@ static u32 pid_controller(struct thermal_zone_device *tz,
- {
- 	s64 p, i, d, power_range;
- 	s32 err, max_power_frac;
-+	u32 sustainable_power;
- 	struct power_allocator_params *params = tz->governor_data;
+  * power_actor_set_power() - limit the maximum power that a cooling device can consume
+  * @cdev:	pointer to &thermal_cooling_device
+  * @instance:	thermal instance to update
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 037e9df2f610..f99d934d373a 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -384,6 +384,8 @@ static inline bool cdev_is_power_actor(struct thermal_cooling_device *cdev)
  
- 	max_power_frac = int_to_frac(max_allocatable_power);
- 
-+	if (tz->tzp->sustainable_power) {
-+		sustainable_power = tz->tzp->sustainable_power;
-+	} else {
-+		sustainable_power = estimate_sustainable_power(tz);
-+		estimate_controller_constants(tz, sustainable_power,
-+					      params->trip_switch_on,
-+					      control_temp, true);
-+	}
-+
- 	err = ((s32)control_temp - (s32)current_temp);
- 	err = int_to_frac(err);
- 
-@@ -139,7 +233,7 @@ static u32 pid_controller(struct thermal_zone_device *tz,
- 	power_range = p + i + d;
- 
- 	/* feed-forward the known sustainable dissipatable power */
--	power_range = tz->tzp->sustainable_power + frac_to_int(power_range);
-+	power_range = sustainable_power + frac_to_int(power_range);
- 
- 	power_range = clamp(power_range, (s64)0, (s64)max_allocatable_power);
- 
-@@ -417,19 +511,18 @@ static int power_allocator_bind(struct thermal_zone_device *tz)
- {
- 	int ret;
- 	struct power_allocator_params *params;
--	unsigned long switch_on_temp, control_temp;
--	u32 temperature_threshold;
-+	unsigned long control_temp;
- 
--	if (!tz->tzp || !tz->tzp->sustainable_power) {
--		dev_err(&tz->device,
--			"power_allocator: missing sustainable_power\n");
-+	if (!tz->tzp)
- 		return -EINVAL;
--	}
- 
- 	params = kzalloc(sizeof(*params), GFP_KERNEL);
- 	if (!params)
- 		return -ENOMEM;
- 
-+	if (!tz->tzp->sustainable_power)
-+		dev_warn(&tz->device, "power_allocator: sustainable_power will be estimated\n");
-+
- 	ret = get_governor_trips(tz, params);
- 	if (ret) {
- 		dev_err(&tz->device,
-@@ -438,29 +531,14 @@ static int power_allocator_bind(struct thermal_zone_device *tz)
- 		goto free;
- 	}
- 
--	ret = tz->ops->get_trip_temp(tz, params->trip_switch_on,
--				     &switch_on_temp);
--	if (ret)
--		goto free;
--
- 	ret = tz->ops->get_trip_temp(tz, params->trip_max_desired_temperature,
- 				     &control_temp);
- 	if (ret)
- 		goto free;
- 
--	temperature_threshold = control_temp - switch_on_temp;
--
--	tz->tzp->k_po = tz->tzp->k_po ?:
--		int_to_frac(tz->tzp->sustainable_power) / temperature_threshold;
--	tz->tzp->k_pu = tz->tzp->k_pu ?:
--		int_to_frac(2 * tz->tzp->sustainable_power) /
--		temperature_threshold;
--	tz->tzp->k_i = tz->tzp->k_i ?: int_to_frac(10) / 1000;
--	/*
--	 * The default for k_d and integral_cutoff is 0, so we can
--	 * leave them as they are.
--	 */
--
-+	estimate_controller_constants(tz, tz->tzp->sustainable_power,
-+				      params->trip_switch_on, control_temp,
-+				      false);
- 	reset_pid_controller(params);
- 
- 	tz->governor_data = params;
+ int power_actor_get_max_power(struct thermal_cooling_device *,
+ 			      struct thermal_zone_device *tz, u32 *max_power);
++int power_actor_get_min_power(struct thermal_cooling_device *,
++			      struct thermal_zone_device *tz, u32 *min_power);
+ int power_actor_set_power(struct thermal_cooling_device *,
+ 			  struct thermal_instance *, u32);
+ struct thermal_zone_device *thermal_zone_device_register(const char *, int, int,
+@@ -419,6 +421,10 @@ static inline bool cdev_is_power_actor(struct thermal_cooling_device *cdev)
+ static inline int power_actor_get_max_power(struct thermal_cooling_device *cdev,
+ 			      struct thermal_zone_device *tz, u32 *max_power)
+ { return 0; }
++static inline int power_actor_get_min_power(struct thermal_cooling_device *cdev,
++					    struct thermal_zone_device *tz,
++					    u32 *min_power)
++{ return -ENODEV; }
+ static inline int power_actor_set_power(struct thermal_cooling_device *cdev,
+ 			  struct thermal_instance *tz, u32 power)
+ { return 0; }
 -- 
 1.9.1
