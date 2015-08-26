@@ -1,32 +1,38 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RESEND PATCH 0/3 v6] Add Mediatek MT8173 cpufreq driver
-Date: Wed, 26 Aug 2015 07:46:59 +0530
-Message-ID: <20150826021659.GD8784@linux>
-References: <1439803465-19683-1-git-send-email-pi-cheng.chen@linaro.org>
- <CALx668VWg2xVxzy8P7f5QFWRzm+TDJXUghL-_rbvRLsLYjtnng@mail.gmail.com>
- <1617873.VRHfat3V76@vostro.rjw.lan>
- <CALx668UvkYhLoU8rxLG70RqTzsnaiV5-ybDYTKqb4MEJS8pmRw@mail.gmail.com>
+From: Aaron Lu <aaron.lu@intel.com>
+Subject: Re: [Patch v3] ACPI, PCI: Penalize legacy IRQ used by ACPI SCI
+Date: Wed, 26 Aug 2015 10:42:25 +0800
+Message-ID: <55DD2791.3020905@intel.com>
+References: <alpine.DEB.2.11.1508201247370.3873@nanos>
+ <1440142584-22404-1-git-send-email-jiang.liu@linux.intel.com>
+ <alpine.DEB.2.11.1508241957590.15006@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CALx668UvkYhLoU8rxLG70RqTzsnaiV5-ybDYTKqb4MEJS8pmRw@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Matthias Brugger <matthias.bgg@gmail.com>, Mark Rutland <mark.rutland@arm.com>, Michael Turquette <mturquette@baylibre.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, linux-mediatek@lists.infradead.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([134.134.136.65]:56514 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750920AbbHZCky (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 25 Aug 2015 22:40:54 -0400
+In-Reply-To: <alpine.DEB.2.11.1508241957590.15006@nanos>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>, Jiang Liu <jiang.liu@linux.intel.com>
+Cc: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Nick Meier <nmeier@microsoft.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 26-08-15, 09:25, Pi-Cheng Chen wrote:
-> The [3/3] is based on Mediatek SoC maintainer tree[1] and the patch which
-> introduce a new clock type[2] consumed by MT8173 cpufreq driver. So it will
-> cause some conflicts if it goes through your tree. I am not sure how this
-> should be handled, but should it be merged through Mediatek SoC maintainer
-> tree?
+On 08/25/2015 04:01 PM, Thomas Gleixner wrote:
+> On Fri, 21 Aug 2015, Jiang Liu wrote:
+>> ---
+>> Hi Nick,
+>> 	Rafael and Thomas have concerns about the way to solve the
+>> regression by quirk, so could you please help to test this patch?
+> 
+> Nick, can you please confirm that this works?
 
-Just get that applied to MTK tree, it doesn't have any dependency on
-rest of the patches for build/boot. The only thing is that cpufreq
-wouldn't work and it will work as soon as Rafael's and MTK's trees are
-merged by Linus.
+I saw Nick said this in bugzilla:
+"
+Tested the v3 patch - it works in a Hyper-V environment.  The Tulip driver loads and the NIC was successfully assigned an IP address via DHCP.
+"
+https://bugzilla.kernel.org/show_bug.cgi?id=101301#c17
 
--- 
-viresh
+Regards,
+Aaron
