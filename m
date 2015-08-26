@@ -1,43 +1,63 @@
-From: Timur Tabi <timur@codeaurora.org>
-Subject: Re: [PATCH v2 1/5] ACPI: add in a bad_madt_entry() function to
- eventually replace the macro
-Date: Wed, 26 Aug 2015 10:38:42 -0500
-Message-ID: <CAOZdJXXCnb7ChYqh-QYptTQBmfESDPaauThHyu8Dav6Qs_+4Bw@mail.gmail.com>
-References: <1440022048-6285-1-git-send-email-al.stone@linaro.org>
-	<1440022048-6285-2-git-send-email-al.stone@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-ia64-owner@vger.kernel.org>
-In-Reply-To: <1440022048-6285-2-git-send-email-al.stone@linaro.org>
-Sender: linux-ia64-owner@vger.kernel.org
-To: Al Stone <al.stone@linaro.org>
-Cc: linux-acpi@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linaro-kernel@lists.linaro.org, linux-ia64@vger.kernel.org, patches@linaro.org, linux-pm@vger.kernel.org, linaro-acpi@lists.linaro.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, lkml <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>
+From: Lukasz Anaczkowski <lukasz.anaczkowski@intel.com>
+Subject: Re: [PATCH] x86, acpi: Handle lapic/x2apic entries in MADT
+Date: Wed, 26 Aug 2015 19:49:28 +0200
+Message-ID: <1440611369-26314-1-git-send-email-lukasz.anaczkowski@intel.com>
+References: <55DDB45D.2030901@arm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:55815 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751988AbbHZRtf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 26 Aug 2015 13:49:35 -0400
+In-Reply-To: <55DDB45D.2030901@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: marc.zyngier@arm.com, lorenzo.pieralisi@arm.com, tomasz.nowicki@linaro.org, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, jason@lakedaemon.net
+Cc: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
 
-On Wed, Aug 19, 2015 at 5:07 PM, Al Stone <al.stone@linaro.org> wrote:
-> +                               pr_err("Variable length MADT subtable %d is wrong size: %d\n",
-> +                                      entry->type, entry->length);
-> +                               return 1;
-> +                       }
-> +               }
-> +       } else {
-> +               if (entry->length != len) {
-> +                       pr_err("MADT subtable %d is wrong size: %d\n",
-> +                              len, entry->type);
+Marc nad Lorenzo,
 
-Can we make these a little more descriptive?
+First of all appologies for breaking arm64 (again) and thank you for
+debugging effort. I own you.
 
-pr_err("Variable length MADT subtable type %d is wrong size: %d,
-should be %d\n",
-      entry->type, entry->length, len);
+> - count is only incremented when max_entries != 0, as you noticed
 
-pr_err("MADT subtable type %d is wrong size: %d, should be %d\n",
-      entry->type, entry->length, len);
+You are right, sorry for that, it's fixed in v3.
 
+> - With max_entries != 0, count now represent the sum of all matches
+>  Is that expected?
 
+I have no strong opinion on that one. All of the x86 ACPI entries
+handling only checks for count < 0, or uses count from the
+acpi_subtable_proc structure (and that's why I didn't noticed the
+mainline breakage).
+If you think it's not correct or less usable than other approach,
+let me know.
 
+> - The proc iteration stops after the first match. Why?
 
--- 
-Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project.
+So, the initial implementation of the acpi_parse_entries accepted
+single handler for the ACPI table. Now, with this change, assumption
+is that different handlers for different tables/subtables are passed,
+meaning only one can meet entry->type == proc[i].id condition.
+mainline breakage). This approach saves one local varaible, but
+I don't think this is ultimate argument :)
+
+> - The test for max_entries is done inside the proc loop. Why?
+
+That's obviously wrong in context of the overall wrong counting.
+
+> [...] this should be documented and agreed upon.
+
+I've added description with assumptions. Again, if you think it's
+not correct, let me know.
+
+Tomasz Nowicki wrote:
+> should acpi_table_parse_entries suppose to be removed above?
+
+Thanks for pointing this out. I've missed implementation of
+acpi_table_parse_entries when was backporting initial patch.
+I've added it back.
+
+Cheers,
+Lukasz
+
