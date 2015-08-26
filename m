@@ -1,12 +1,12 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH 3/5] cpufreq: intel-pstate: Use separate max pstate for scaling
-Date: Wed, 26 Aug 2015 13:32:39 -0700
-Message-ID: <1440621161-2732-4-git-send-email-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 4/5] cpufreq: intel_pstate: Use ACPI perf configuration
+Date: Wed, 26 Aug 2015 13:32:40 -0700
+Message-ID: <1440621161-2732-5-git-send-email-srinivas.pandruvada@linux.intel.com>
 References: <1440621161-2732-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:64578 "EHLO mga02.intel.com"
+Received: from mga02.intel.com ([134.134.136.20]:55788 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752692AbbHZUc4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	id S1755963AbbHZUc4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
 	Wed, 26 Aug 2015 16:32:56 -0400
 In-Reply-To: <1440621161-2732-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
@@ -14,110 +14,224 @@ List-Id: linux-pm@vger.kernel.org
 To: kristen.c.accardi@intel.com, rafael.j.wysocki@intel.com, len.brown@intel.com
 Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Systems with configurable TDP have multiple max non turbo p state. Intel
-P state uses max non turbo P state for scaling. But using the real max
-non turbo p state causes underestimation of next P state. So using
-the physical max non turbo P state as before for scaling.
+Use ACPI _PSS to limit the Intel P State turbo, max and min ratios.
+This driver uses acpi processor perf lib calls to register performance.
+The following logic is used to adjust Intel P state driver limits:
+- If there is no turbo entry in _PSS, then disable Intel P state turbo
+and limit to non turbo max
+- If the non turbo max ratio is more than _PSS max non turbo value, then
+set the max non turbo ratio to _PSS non turbo max
+- If the min ratio is less than _PSS min then change the min ratio
+matching _PSS min
+- Scale the _PSS turbo frequency to max turbo frequency based on control
+value.
 
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- drivers/cpufreq/intel_pstate.c | 20 ++++++++++++++++++--
- 1 file changed, 18 insertions(+), 2 deletions(-)
+ drivers/cpufreq/Kconfig.x86    |   1 +
+ drivers/cpufreq/intel_pstate.c | 130 +++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 131 insertions(+)
 
+diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
+index c59bdcb..1c6affd 100644
+--- a/drivers/cpufreq/Kconfig.x86
++++ b/drivers/cpufreq/Kconfig.x86
+@@ -5,6 +5,7 @@
+ config X86_INTEL_PSTATE
+        bool "Intel P state control"
+        depends on X86
++       select ACPI_PROCESSOR
+        help
+           This driver provides a P state for Intel core processors.
+ 	  The driver implements an internal governor and will become
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 2641102..a349462 100644
+index a349462..6eafb55 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -77,6 +77,7 @@ struct pstate_data {
- 	int	current_pstate;
- 	int	min_pstate;
- 	int	max_pstate;
-+	int	max_pstate_physical;
- 	int	scaling;
- 	int	turbo_pstate;
- 	u64	turbo_ratio_limit;
-@@ -127,6 +128,7 @@ struct pstate_adjust_policy {
+@@ -34,6 +34,8 @@
+ #include <asm/cpu_device_id.h>
+ #include <asm/cpufeature.h>
  
- struct pstate_funcs {
- 	int (*get_max)(void);
-+	int (*get_max_physical)(void);
- 	int (*get_min)(void);
- 	int (*get_turbo)(void);
- 	int (*get_scaling)(void);
-@@ -599,6 +601,14 @@ static int core_get_min_pstate(void)
- 	return (value >> 40) & 0xFF;
- }
- 
-+static int core_get_max_pstate_physical(void)
-+{
-+	u64 value;
++#include <acpi/processor.h>
 +
-+	rdmsrl(MSR_PLATFORM_INFO, value);
-+	return (value >> 8) & 0xFF;
+ #define BYT_RATIOS		0x66a
+ #define BYT_VIDS		0x66b
+ #define BYT_TURBO_RATIOS	0x66c
+@@ -114,6 +116,9 @@ struct cpudata {
+ 	u64	prev_mperf;
+ 	u64	prev_tsc;
+ 	struct sample sample;
++#if IS_ENABLED(CONFIG_ACPI)
++	struct acpi_processor_performance acpi_perf_data;
++#endif
+ };
+ 
+ static struct cpudata **all_cpu_data;
+@@ -146,6 +151,7 @@ struct cpu_defaults {
+ static struct pstate_adjust_policy pid_params;
+ static struct pstate_funcs pstate_funcs;
+ static int hwp_active;
++static int no_acpi_perf;
+ 
+ struct perf_limits {
+ 	int no_turbo;
+@@ -173,6 +179,116 @@ static struct perf_limits limits = {
+ 	.min_sysfs_pct = 0,
+ };
+ 
++#if IS_ENABLED(CONFIG_ACPI)
++static int intel_pstate_init_perf_limits(struct cpufreq_policy *policy)
++{
++	struct cpudata *cpu;
++	int ret;
++	int min_perf;
++	bool turbo_absent = false;
++	int i;
++
++	cpu = all_cpu_data[policy->cpu];
++
++	if (!cpu->acpi_perf_data.shared_cpu_map &&
++	    zalloc_cpumask_var_node(&cpu->acpi_perf_data.shared_cpu_map,
++				    GFP_KERNEL, cpu_to_node(policy->cpu))) {
++		return -ENOMEM;
++	}
++
++	ret = acpi_processor_register_performance(&cpu->acpi_perf_data,
++						  policy->cpu);
++	if (ret)
++		return ret;
++
++	if (cpu->acpi_perf_data.control_register.space_id !=
++						ACPI_ADR_SPACE_FIXED_HARDWARE)
++		return -EIO;
++
++	pr_debug("CPU%u - ACPI _PSS perf data\n", policy->cpu);
++	for (i = 0; i < cpu->acpi_perf_data.state_count; i++)
++		pr_debug("     %cP%d: %u MHz, %u mW, 0x%x\n",
++			 (i == cpu->acpi_perf_data.state ? '*' : ' '), i,
++			 (u32) cpu->acpi_perf_data.states[i].core_frequency,
++			 (u32) cpu->acpi_perf_data.states[i].power,
++			 (u32) cpu->acpi_perf_data.states[i].control);
++
++	if (cpu->acpi_perf_data.state_count < 2)
++		return 0;
++
++	/* Check if there is a turbo freq in _PSS */
++	if ((cpu->acpi_perf_data.states[0].core_frequency % 2) == 0) {
++		pr_debug("no turbo range exists in _PSS\n");
++		limits.no_turbo = limits.turbo_disabled = 1;
++		cpu->pstate.turbo_pstate = cpu->pstate.max_pstate;
++		turbo_absent = true;
++	}
++
++	/* Check if the max non turbo p state < Intel P state max */
++	for (i = 0; i < cpu->acpi_perf_data.state_count; i++) {
++		if ((cpu->acpi_perf_data.states[i].core_frequency % 2) == 0) {
++			int perf_max_ctl =
++				cpu->acpi_perf_data.states[i].control >> 8;
++			if (cpu->pstate.max_pstate > perf_max_ctl)
++				cpu->pstate.max_pstate = perf_max_ctl;
++			break;
++		}
++	}
++
++	/* check If min perf > Intel P State min */
++	min_perf = cpu->acpi_perf_data.states[
++			cpu->acpi_perf_data.state_count - 1].control >> 8;
++	if (min_perf > cpu->pstate.min_pstate) {
++		cpu->pstate.min_pstate = min_perf;
++		policy->cpuinfo.min_freq = cpu->pstate.min_pstate *
++						cpu->pstate.scaling;
++	}
++
++	if (turbo_absent)
++		policy->cpuinfo.max_freq =
++			cpu->pstate.max_pstate * cpu->pstate.scaling;
++	else {
++		policy->cpuinfo.max_freq =
++			cpu->pstate.turbo_pstate * cpu->pstate.scaling;
++		/* scale freq to intel pstate turbo scale */
++		cpu->acpi_perf_data.states[0].core_frequency =
++				cpu->pstate.scaling *
++				(cpu->acpi_perf_data.states[0].control >> 8);
++	}
++
++	pr_debug("Updated limits 0x%x 0x%x 0x %x\n", cpu->pstate.min_pstate,
++		 cpu->pstate.max_pstate, cpu->pstate.turbo_pstate);
++	pr_debug("policy max_freq=%d Khz min_freq = %d KHz\n",
++		 policy->cpuinfo.max_freq, policy->cpuinfo.min_freq);
++
++	return 0;
 +}
 +
- static int core_get_max_pstate(void)
- {
- 	u64 tar;
-@@ -741,6 +751,7 @@ static struct cpu_defaults core_params = {
- 	},
- 	.funcs = {
- 		.get_max = core_get_max_pstate,
-+		.get_max_physical = core_get_max_pstate_physical,
- 		.get_min = core_get_min_pstate,
- 		.get_turbo = core_get_turbo_pstate,
- 		.get_scaling = core_get_scaling,
-@@ -761,6 +772,7 @@ static struct cpu_defaults byt_params = {
- 	},
- 	.funcs = {
- 		.get_max = byt_get_max_pstate,
-+		.get_max_physical = byt_get_max_pstate,
- 		.get_min = byt_get_min_pstate,
- 		.get_turbo = byt_get_turbo_pstate,
- 		.set = byt_set_pstate,
-@@ -780,6 +792,7 @@ static struct cpu_defaults knl_params = {
- 	},
- 	.funcs = {
- 		.get_max = core_get_max_pstate,
-+		.get_max_physical = core_get_max_pstate_physical,
- 		.get_min = core_get_min_pstate,
- 		.get_turbo = knl_get_turbo_pstate,
- 		.set = core_set_pstate,
-@@ -833,6 +846,7 @@ static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
- {
- 	cpu->pstate.min_pstate = pstate_funcs.get_min();
- 	cpu->pstate.max_pstate = pstate_funcs.get_max();
-+	cpu->pstate.max_pstate_physical = pstate_funcs.get_max_physical();
- 	cpu->pstate.turbo_pstate = pstate_funcs.get_turbo();
- 	cpu->pstate.scaling = pstate_funcs.get_scaling();
- 	if (pstate_funcs.get_turbo_ratio_limit &&
-@@ -854,7 +868,8 @@ static inline void intel_pstate_calc_busy(struct cpudata *cpu)
++static int intel_pstate_exit_perf_limits(struct cpufreq_policy *policy)
++{
++	struct cpudata *cpu;
++
++	if (!no_acpi_perf)
++		return 0;
++
++	cpu = all_cpu_data[policy->cpu];
++	acpi_processor_unregister_performance(&cpu->acpi_perf_data,
++					      policy->cpu);
++	return 0;
++}
++
++#else
++static int intel_pstate_init_perf_limits(struct cpufreq_policy *policy)
++{
++	return 0;
++}
++
++static int intel_pstate_exit_perf_limits(struct cpufreq_policy *policy)
++{
++	return 0;
++}
++#endif
++
+ static inline void pid_reset(struct _pid *pid, int setpoint, int busy,
+ 			     int deadband, int integral) {
+ 	pid->setpoint = setpoint;
+@@ -1186,18 +1302,29 @@ static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
+ 	policy->cpuinfo.min_freq = cpu->pstate.min_pstate * cpu->pstate.scaling;
+ 	policy->cpuinfo.max_freq =
+ 		cpu->pstate.turbo_pstate * cpu->pstate.scaling;
++	if (!no_acpi_perf)
++		intel_pstate_init_perf_limits(policy);
++	/* If there is no acpi perf data or error, we ignore and use Intel P
++	 * state calculated limits
++	 */
+ 	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+ 	cpumask_set_cpu(policy->cpu, policy->cpus);
  
- 	sample->freq = fp_toint(
- 		mul_fp(int_tofp(
--			cpu->pstate.max_pstate * cpu->pstate.scaling / 100),
-+			cpu->pstate.max_pstate_physical *
-+			cpu->pstate.scaling / 100),
- 			core_pct));
+ 	return 0;
+ }
  
- 	sample->core_pct_busy = (int32_t)core_pct;
-@@ -922,7 +937,7 @@ static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
- 	 * specified pstate.
- 	 */
- 	core_busy = cpu->sample.core_pct_busy;
--	max_pstate = int_tofp(cpu->pstate.max_pstate);
-+	max_pstate = int_tofp(cpu->pstate.max_pstate_physical);
- 	current_pstate = int_tofp(cpu->pstate.current_pstate);
- 	core_busy = mul_fp(core_busy, div_fp(max_pstate, current_pstate));
- 
-@@ -1215,6 +1230,7 @@ static void copy_pid_params(struct pstate_adjust_policy *policy)
- static void copy_cpu_funcs(struct pstate_funcs *funcs)
- {
- 	pstate_funcs.get_max   = funcs->get_max;
-+	pstate_funcs.get_max_physical = funcs->get_max_physical;
- 	pstate_funcs.get_min   = funcs->get_min;
- 	pstate_funcs.get_turbo = funcs->get_turbo;
- 	pstate_funcs.get_scaling = funcs->get_scaling;
++static int intel_pstate_cpu_exit(struct cpufreq_policy *policy)
++{
++	return intel_pstate_exit_perf_limits(policy);
++}
++
+ static struct cpufreq_driver intel_pstate_driver = {
+ 	.flags		= CPUFREQ_CONST_LOOPS,
+ 	.verify		= intel_pstate_verify_policy,
+ 	.setpolicy	= intel_pstate_set_policy,
+ 	.get		= intel_pstate_get,
+ 	.init		= intel_pstate_cpu_init,
++	.exit		= intel_pstate_cpu_exit,
+ 	.stop_cpu	= intel_pstate_stop_cpu,
+ 	.name		= "intel_pstate",
+ };
+@@ -1429,6 +1556,9 @@ static int __init intel_pstate_setup(char *str)
+ 		force_load = 1;
+ 	if (!strcmp(str, "hwp_only"))
+ 		hwp_only = 1;
++	if (!strcmp(str, "no_acpi_perf"))
++		no_acpi_perf = 1;
++
+ 	return 0;
+ }
+ early_param("intel_pstate", intel_pstate_setup);
 -- 
 1.9.3
 
