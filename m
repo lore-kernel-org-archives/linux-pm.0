@@ -1,51 +1,115 @@
-From: Al Stone <ahs3@redhat.com>
-Subject: Re: [PATCH v2 1/5] ACPI: add in a bad_madt_entry() function to
- eventually replace the macro
-Date: Wed, 26 Aug 2015 14:30:25 -0600
-Message-ID: <55DE21E1.6070700@redhat.com>
-References: <1440022048-6285-1-git-send-email-al.stone@linaro.org>
- <1440022048-6285-2-git-send-email-al.stone@linaro.org>
- <CAOZdJXXCnb7ChYqh-QYptTQBmfESDPaauThHyu8Dav6Qs_+4Bw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-ia64-owner@vger.kernel.org>
-In-Reply-To: <CAOZdJXXCnb7ChYqh-QYptTQBmfESDPaauThHyu8Dav6Qs_+4Bw@mail.gmail.com>
-Sender: linux-ia64-owner@vger.kernel.org
-To: Timur Tabi <timur@codeaurora.org>, Al Stone <al.stone@linaro.org>
-Cc: linux-acpi@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linaro-kernel@lists.linaro.org, linux-ia64@vger.kernel.org, patches@linaro.org, linux-pm@vger.kernel.org, linaro-acpi@lists.linaro.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, lkml <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 2/5] cpufreq: intel_pstate: get P1 from TAR when available
+Date: Wed, 26 Aug 2015 13:32:38 -0700
+Message-ID: <1440621161-2732-3-git-send-email-srinivas.pandruvada@linux.intel.com>
+References: <1440621161-2732-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:55788 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752289AbbHZUc4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 26 Aug 2015 16:32:56 -0400
+In-Reply-To: <1440621161-2732-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: kristen.c.accardi@intel.com, rafael.j.wysocki@intel.com, len.brown@intel.com
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On 08/26/2015 09:38 AM, Timur Tabi wrote:
-> On Wed, Aug 19, 2015 at 5:07 PM, Al Stone <al.stone@linaro.org> wrote:
->> +                               pr_err("Variable length MADT subtable %d is wrong size: %d\n",
->> +                                      entry->type, entry->length);
->> +                               return 1;
->> +                       }
->> +               }
->> +       } else {
->> +               if (entry->length != len) {
->> +                       pr_err("MADT subtable %d is wrong size: %d\n",
->> +                              len, entry->type);
-> 
-> Can we make these a little more descriptive?
-> 
-> pr_err("Variable length MADT subtable type %d is wrong size: %d,
-> should be %d\n",
->       entry->type, entry->length, len);
-> 
-> pr_err("MADT subtable type %d is wrong size: %d, should be %d\n",
->       entry->type, entry->length, len);
-> 
+After Ivybridge, the max non turbo ratio obtained from platform info msr
+is not always guaranteed P1 on client platforms. The max non turbo
+activation ratio (TAR), determines the max for the current level of TDP.
+The ratio in platform info is physical max. The TAR MSR can be locked,
+so updating this value is not possible on all platforms.
+This change gets this ratio from MSR TURBO_ACTIVATION_RATIO if
+available,
+but also do some sanity checking to make sure that this value is
+correct.
+The sanity check involves reading the TDP ratio for the current tdp
+control value when platform has configurable TDP present and matching
+TAC
+with this.
 
-Sure.  It's always a fine line between verbose and not enough info.
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ arch/x86/include/asm/msr-index.h |  7 +++++++
+ drivers/cpufreq/intel_pstate.c   | 39 +++++++++++++++++++++++++++++++++++----
+ 2 files changed, 42 insertions(+), 4 deletions(-)
 
+diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
+index f2f2cd6..e8e6fac 100644
+--- a/arch/x86/include/asm/msr-index.h
++++ b/arch/x86/include/asm/msr-index.h
+@@ -184,6 +184,13 @@
+ #define MSR_GFX_PERF_LIMIT_REASONS	0x000006B0
+ #define MSR_RING_PERF_LIMIT_REASONS	0x000006B1
+ 
++/* Config TDP MSRs */
++#define MSR_CONFIG_TDP_NOMINAL		0x00000648
++#define MSR_CONFIG_TDP_LEVEL1		0x00000649
++#define MSR_CONFIG_TDP_LEVEL2		0x0000064A
++#define MSR_CONFIG_TDP_CONTROL		0x0000064B
++#define MSR_TURBO_ACTIVATION_RATIO	0x0000064C
++
+ /* Hardware P state interface */
+ #define MSR_PPERF			0x0000064e
+ #define MSR_PERF_LIMIT_REASONS		0x0000064f
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index ff623a6..2641102 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -43,7 +43,6 @@
+ #define int_tofp(X) ((int64_t)(X) << FRAC_BITS)
+ #define fp_toint(X) ((X) >> FRAC_BITS)
+ 
+-
+ static inline int32_t mul_fp(int32_t x, int32_t y)
+ {
+ 	return ((int64_t)x * (int64_t)y) >> FRAC_BITS;
+@@ -602,10 +601,42 @@ static int core_get_min_pstate(void)
+ 
+ static int core_get_max_pstate(void)
+ {
+-	u64 value;
++	u64 tar;
++	u64 plat_info;
++	int max_pstate;
++	int err;
++
++	rdmsrl(MSR_PLATFORM_INFO, plat_info);
++	max_pstate = (plat_info >> 8) & 0xFF;
++
++	err = rdmsrl_safe(MSR_TURBO_ACTIVATION_RATIO, &tar);
++	if (!err) {
++		/* Do some sanity checking for safety */
++		if (plat_info & 0x600000000) {
++			u64 tdp_ctrl;
++			u64 tdp_ratio;
++			int tdp_msr;
++
++			err = rdmsrl_safe(MSR_CONFIG_TDP_CONTROL, &tdp_ctrl);
++			if (err)
++				goto skip_tar;
++
++			tdp_msr = MSR_CONFIG_TDP_NOMINAL + tdp_ctrl;
++			err = rdmsrl_safe(tdp_msr, &tdp_ratio);
++			if (err)
++				goto skip_tar;
++
++			if (tdp_ratio - 1 == tar) {
++				max_pstate = tar;
++				pr_debug("max_pstate=TAC %x\n", max_pstate);
++			} else {
++				goto skip_tar;
++			}
++		}
++	}
+ 
+-	rdmsrl(MSR_PLATFORM_INFO, value);
+-	return (value >> 8) & 0xFF;
++skip_tar:
++	return max_pstate;
+ }
+ 
+ static int core_get_turbo_pstate(void)
 -- 
-ciao,
-al
------------------------------------
-Al Stone
-Software Engineer
-Red Hat, Inc.
-ahs3@redhat.com
------------------------------------
+1.9.3
+
