@@ -1,88 +1,79 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 2/3] thermal: Add Mediatek thermal controller support
-Date: Wed, 26 Aug 2015 16:02:25 +0200
-Message-ID: <55DDC6F1.8090105@linaro.org>
-References: <1440057962-13373-1-git-send-email-s.hauer@pengutronix.de> <1440057962-13373-3-git-send-email-s.hauer@pengutronix.de> <55D65ED7.7010102@linaro.org> <20150826135421.GV18700@pengutronix.de>
+From: Abylay Ospan <aospan@netup.ru>
+Subject: Re: [PATCH v2] x86 kernel crash fix when thermal interrupt called
+Date: Wed, 26 Aug 2015 18:18:02 +0300
+Message-ID: <CAK3bHNWvyPBgi=_dNuejdTx6Z2njXSbuq36T62gU6dWhVFpp_A@mail.gmail.com>
+References: <1440491511-2751-1-git-send-email-aospan@netup.ru>
+	<36DF59CE26D8EE47B0655C516E9CE6401CB01F7B@SHSMSX101.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150826135421.GV18700@pengutronix.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, linux-mediatek@lists.infradead.org, Daniel Kurtz <djkurtz@chromium.org>, kernel@pengutronix.de, Matthias Brugger <matthias.bgg@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from www.netup.ru ([77.72.80.15]:49905 "EHLO imap.netup.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752336AbbHZPSG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 26 Aug 2015 11:18:06 -0400
+Received: from mail-la0-f45.google.com (mail-la0-f45.google.com [209.85.215.45])
+	by imap.netup.ru (Postfix) with ESMTPA id 9125C71948B
+	for <linux-pm@vger.kernel.org>; Wed, 26 Aug 2015 18:18:03 +0300 (MSK)
+Received: by labgv11 with SMTP id gv11so53927238lab.2
+        for <linux-pm@vger.kernel.org>; Wed, 26 Aug 2015 08:18:03 -0700 (PDT)
+In-Reply-To: <36DF59CE26D8EE47B0655C516E9CE6401CB01F7B@SHSMSX101.ccr.corp.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Chen, Yu C" <yu.c.chen@intel.com>
+Cc: "Zhang, Rui" <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 08/26/2015 03:54 PM, Sascha Hauer wrote:
-> On Fri, Aug 21, 2015 at 01:12:23AM +0200, Daniel Lezcano wrote:
->> On 08/20/2015 10:06 AM, Sascha Hauer wrote:
->>> This adds support for the Mediatek thermal controller found on MT81=
-73
->>> and likely other SoCs.
->>> The controller is a bit special. It does not have its own ADC, inst=
-ead
->>> it controls the on-SoC AUXADC via AHB bus accesses. For this reason
->>> we need the physical address of the AUXADC. Also it controls a mux
->>> using AHB bus accesses, so we need the APMIXEDSYS physical address =
-aswell.
->>>
->>> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
->>> ---
->>
->> [ ... ]
->>
->>> diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_th=
-ermal.c
->>> new file mode 100644
->>> index 0000000..06d52ef
->>> --- /dev/null
->>> +++ b/drivers/thermal/mtk_thermal.c
->>> @@ -0,0 +1,582 @@
->>> +/*
->>> + * Copyright (c) 2014 MediaTek Inc.
->>
->> 2015 ?
->
-> Can change to 2015
->
->>
->>> + * Author: Hanyi.Wu <hanyi.wu@mediatek.com>
->>
->> Hanyi Wu ?
->
-> It's the original author of this code.
+Hi Yu,
 
-Sorry I wasn't clear. I was suggesting to remove the dot between Hanyi=20
-and Wu.
+Thanks for review. comments below inline.
 
->>> +#define TEMP_MONINT_COLD(sp)			(BIT(0) << ((sp) * 5))
->>> +#define TEMP_MONINT_HOT(sp)			(BIT(1) << ((sp) * 5))
->>> +#define TEMP_MONINT_LOW_OFS(sp)			(BIT(2) << ((sp) * 5))
->>> +#define TEMP_MONINT_HIGH_OFS(sp)		(BIT(3) << ((sp) * 5))
->>> +#define TEMP_MONINT_HOT_TO_NORM(sp)		(BIT(4) << ((sp) * 5))
->>> +#define TEMP_MONINT_TIMEOUT			BIT(15)
->>> +#define TEMP_MONINT_IMMEDIATE_SENSE(sp)		BIT(16 + (sp))
->>> +#define TEMP_MONINT_FILTER_SENSE(sp)		BIT(19 + (sp))
->>> +#define TEMP_ADCWRITECTRL_ADC_EXTRA_WRITE	BIT(2)
->>> +#define TEMP_ADCWRITECTRL_ADC_EXTRA1_WRITE	BIT(3)
->>> +#define TEMP_PROTCTL_AVERAGE			(0 << 16)
->>> +#define TEMP_PROTCTL_MAXIMUM			(1 << 16)
->>> +#define TEMP_PROTCTL_SELECTED			(2 << 16)
->>
->> <-- Not used.
->
-> Will remove.
->
-> Sascha
->
->
+>>       if (platform_thermal_package_rate_control &&
+>>               platform_thermal_package_rate_control()) {
+>>               /* Rate control is implemented in callback */
+>>               platform_thermal_package_notify(msr_val);
+> Hum, I have one question, is there a risk here ?
+
+yes, this is main 'goal' of this patch. We need to protect
+'platform_thermal_package_notify' because it can be NULL when
+'x86_pkg_temp_thermal' module unloading. To achieve this protection
+'platform_thermal_lock' introduced.
 
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
+> After graping platform_thermal_lock, we try to get another lock of
+> worker_pool->lock by :
+> pkg_temp_thermal_platform_thermal_notify->
+> schedule_delayed_work_on(cpu,
+>                                 &per_cpu(pkg_temp_thermal_threshold_work, cpu),
+>                                 msecs_to_jiffies(notify_delay_ms));
+> since schedule_work can be called in many context, and it only use a
+> spinlock rather than spinlock_irq,  a AB-BA deadlock may happen.
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Do you mean spin_lock's in __queue_work ( schedule_delayed_work_on
+finally calling this) ?
+For my understanding: we should try to re-acquire
+platform_thermal_lock to get ABBA deadlock. But according to code we
+do not try to do this. Is this correct ?
+
+> I think CONFIG_LOCK_DEP might help.
+
+I have built kernel with CONFIG_LOCKDEP enabled. Will stress-test on
+my system. FYI, here is grep for platform_thermal_lock:
+
+# egrep platform_thermal_lock /proc/lock_stat
+        &(&platform_thermal_lock)->rlock:          9285           9287
+          0.16         470.44       35221.94           3.79
+21956          23026           0.11         426.52       35563.35
+     1.54
+        &(&platform_thermal_lock)->rlock           9287
+[<ffffffff810439c8>] intel_thermal_interrupt+0xb8/0x230
+        &(&platform_thermal_lock)->rlock           9285
+[<ffffffff810439c8>] intel_thermal_interrupt+0xb8/0x230
+        &(&platform_thermal_lock)->rlock              1
+[<ffffffffa0308c77>] enable_thermal_callback+0x19/0x5e
+[x86_pkg_temp_thermal]
+        &(&platform_thermal_lock)->rlock              1
+[<ffffffffa026bc77>] 0xffffffffa026bc77
+
+-- 
+Abylay Ospan,
+NetUP Inc.
+http://www.netup.tv
