@@ -1,56 +1,196 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH v2] thermal: cpu_cooling: Remove usage of devm functions
-Date: Thu, 27 Aug 2015 10:00:17 +0100
-Message-ID: <20150827090017.GB5653@e104805>
-References: <20150820161402.GA4951@localhost>
- <20150826124736.GA10956@e104805>
- <20150826125158.GM8784@linux>
- <20150826130921.GB10956@e104805>
- <20150826131402.GN8784@linux>
- <CAK-LDbJh9Dz1mQCcyGEJixg4bQkAoHPsHr9Mu2upaWjsTOfLVA@mail.gmail.com>
+From: joeyli <jlee@suse.com>
+Subject: Re: [PATCH v2 06/16] x86/efi: Generating random HMAC key for siging
+ hibernate image
+Date: Thu, 27 Aug 2015 17:04:52 +0800
+Message-ID: <20150827090452.GB27415@linux-rxt1.site>
+References: <1439273796-25359-1-git-send-email-jlee@suse.com>
+ <1439273796-25359-7-git-send-email-jlee@suse.com>
+ <20150820204044.GG2567@codeblueprint.co.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:15908 "EHLO
-	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751285AbbH0JAX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Aug 2015 05:00:23 -0400
+Received: from smtp.nue.novell.com ([195.135.221.5]:50860 "EHLO
+	smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750801AbbH0JFN (ORCPT
+	<rfc822;groupwise-linux-pm@vger.kernel.org:0:0>);
+	Thu, 27 Aug 2015 05:05:13 -0400
 Content-Disposition: inline
-In-Reply-To: <CAK-LDbJh9Dz1mQCcyGEJixg4bQkAoHPsHr9Mu2upaWjsTOfLVA@mail.gmail.com>
+In-Reply-To: <20150820204044.GG2567@codeblueprint.co.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Vaishali Thakkar <vthakkar1994@gmail.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Matt Fleming <matt@codeblueprint.co.uk>
+Cc: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, linux-kernel@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Matthew Garrett <matthew.garrett@nebula.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, Matt Fleming <matt.fleming@intel.com>, Jiri Kosina <jkosina@suse.cz>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>
 
-On Thu, Aug 27, 2015 at 02:31:26AM +0100, Vaishali Thakkar wrote:
-> On Wed, Aug 26, 2015 at 6:44 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > On 26-08-15, 14:09, Javi Merino wrote:
-> >> On Wed, Aug 26, 2015 at 01:51:58PM +0100, Viresh Kumar wrote:
-> >> > On 26-08-15, 13:47, Javi Merino wrote:
-> >> > > I missed this because I wasn't CCed :(  Thankfully, I'll be in
-> >> > > MAINTAINERS for this soon.
-> >> >
-> >> > Yeah, I need to resend that patch soon :)
-> >> >
-> >> > > > -               devm_kfree(&cdev->device, load_cpu);
-> >> > >
-> >> > > This introduces a memory leak.  Keep the kfree() here, you can't drop
-> >> > > it.  Cheers,
-> >> > > Javi
-> >> > >
-> >> > > > -       }
-> >> > > > -
-> >> > > >         *power = static_power + dynamic_power;
-> >> > > >         return 0;
-> >
-> > So, the change I suggested on V1 removed this as well :) and Vaishali
-> > missed it completely.
+On Thu, Aug 20, 2015 at 09:40:44PM +0100, Matt Fleming wrote:
+> On Tue, 11 Aug, at 02:16:26PM, Lee, Chun-Yi wrote:
+> > This patch adds codes in EFI stub for generating and storing the
+> > HMAC key in EFI boot service variable for signing hibernate image.
+> > 
+> > Per rcf2104, the length of HMAC-SHA1 hash result is 20 bytes, and
+> > it recommended the length of key the same with hash rsult, means
+> > also 20 bytes. Using longer key would not significantly increase
+> > the function strength. Due to the nvram space is limited in some
+> > UEFI machines, so using the minimal recommended length 20 bytes
+> > key that will stored in boot service variable.
 > 
-> Yes. I missed the point that kfree was called at 2 places previously.
-> Would you like me to send v3 with changes having just new label with
-> 'goto' at both of these places or you would like to apply v1 of the patch?
+> I'm having a hard time understanding the middle part of this
+> paragraph, specifically the part of the key and the hash result.
+> There's a typo in the subject too s/siging/signing/and "Generating"
+> should be "Generate".
+>
 
-I vote for v1.  I've acked it.
+In description, I want to explain why the length of key is 20 bytes.
+I will try to explain more clear, if it still confuses reviewer then
+I will remove the description.
+ 
+> > The HMAC key stored in EFI boot service variable, GUID is
+> > HIBERNATIONKey-fe141863-c070-478e-b8a3-878a5dc9ef21.
+>  
+> I'd really like to see some of the explanation from your cover letter
+> included in the commit message for this patch, and in particular why
+> signing hibernate images is a good thing.
+> 
+> Recording that for posterity in the commit message is going to be
+> helpful when someone looks at this patch in 2 years time and wonders
+> why RNG support was added to the EFI stub and why they might want to
+> sign hibernate images.
+> 
 
-Cheers,
-Javi
+Thanks for suggestion, I will move some description from cover letter
+to here and add comment for history and RNG support.
+
+> > Reviewed-by: Jiri Kosina <jkosina@suse.com>
+> > Tested-by: Jiri Kosina <jkosina@suse.com>
+> > Signed-off-by: Lee, Chun-Yi <jlee@suse.com>
+> > ---
+> >  arch/x86/boot/compressed/eboot.c | 60 ++++++++++++++++++++++++++++++++++++++++
+> >  arch/x86/include/asm/suspend.h   |  9 ++++++
+> >  include/linux/suspend.h          |  3 ++
+> >  3 files changed, 72 insertions(+)
+> > 
+> > diff --git a/arch/x86/boot/compressed/eboot.c b/arch/x86/boot/compressed/eboot.c
+> > index 0ffb6db..463aa9b 100644
+> > --- a/arch/x86/boot/compressed/eboot.c
+> > +++ b/arch/x86/boot/compressed/eboot.c
+> > @@ -12,6 +12,7 @@
+> >  #include <asm/efi.h>
+> >  #include <asm/setup.h>
+> >  #include <asm/desc.h>
+> > +#include <asm/suspend.h>
+> >  
+> >  #include "../string.h"
+> >  #include "eboot.h"
+> > @@ -1383,6 +1384,63 @@ free_mem_map:
+> >  	return status;
+> >  }
+> >  
+> > +#ifdef CONFIG_HIBERNATE_VERIFICATION
+> > +#define HIBERNATION_KEY \
+> > +	((efi_char16_t [15]) { 'H', 'I', 'B', 'E', 'R', 'N', 'A', 'T', 'I', 'O', 'N', 'K', 'e', 'y', 0 })
+> > +#define HIBERNATION_KEY_ATTRIBUTE	(EFI_VARIABLE_NON_VOLATILE | \
+> > +					EFI_VARIABLE_BOOTSERVICE_ACCESS)
+> > +
+> > +static void setup_hibernation_keys(struct boot_params *params)
+> > +{
+> > +	unsigned long key_size;
+> > +	unsigned long attributes;
+> > +	struct hibernation_keys *keys;
+> > +	efi_status_t status;
+> > +
+> > +	/* Allocate setup_data to carry keys */
+> > +	status = efi_call_early(allocate_pool, EFI_LOADER_DATA,
+> > +				sizeof(struct hibernation_keys), &keys);
+> > +	if (status != EFI_SUCCESS) {
+> > +		efi_printk(sys_table, "Failed to alloc mem for hibernation keys\n");
+> > +		return;
+> > +	}
+> > +
+> > +	memset(keys, 0, sizeof(struct hibernation_keys));
+> > +
+> > +	status = efi_call_early(get_variable, HIBERNATION_KEY,
+> > +				&EFI_HIBERNATION_GUID, &attributes,
+> > +				&key_size, keys->hibernation_key);
+> 
+> Tiny nit, but could you put a new line here please? This is a large
+> chunk of code.
+>
+
+OK, I will add new line here.
+ 
+> > +	if (status == EFI_SUCCESS && attributes != HIBERNATION_KEY_ATTRIBUTE) {
+> > +		efi_printk(sys_table, "A hibernation key is not boot service variable\n");
+> > +		memset(keys->hibernation_key, 0, HIBERNATION_DIGEST_SIZE);
+> > +		status = efi_call_early(set_variable, HIBERNATION_KEY,
+> > +					&EFI_HIBERNATION_GUID, attributes, 0,
+> > +					NULL);
+> > +		if (status == EFI_SUCCESS) {
+> > +			efi_printk(sys_table, "Cleaned existing hibernation key\n");
+> > +			status = EFI_NOT_FOUND;
+> > +		}
+> > +	}
+> 
+> Hmm.. it's not clear to me that we should be deleting this EFI
+> variable if the attributes are bogus. It would be safer to just bail.
+> 
+
+The purpose of checking attribute of hibernation key variable is 
+in case someone created a key variable on runtime environment _before_
+this kernel create boot service variable. That causes EFI stub may load
+a key that from non-secure environment.
+
+That's why delete non-boot service variable and create new one here.
+
+> > +
+> > +	if (status != EFI_SUCCESS) {
+> > +		efi_printk(sys_table, "Failed to get existing hibernation key\n");
+> > +
+> > +		efi_get_random_key(sys_table, params, keys->hibernation_key,
+> > +				   HIBERNATION_DIGEST_SIZE);
+> > +
+> > +		status = efi_call_early(set_variable, HIBERNATION_KEY,
+> > +					&EFI_HIBERNATION_GUID,
+> > +					HIBERNATION_KEY_ATTRIBUTE,
+> > +					HIBERNATION_DIGEST_SIZE,
+> > +					keys->hibernation_key);
+> > +		if (status != EFI_SUCCESS)
+> > +			efi_printk(sys_table, "Failed to set hibernation key\n");
+> 
+> You're leaking 'keys' here.
+>
+
+Oh, you are right, I will free keys here.
+ 
+> > diff --git a/arch/x86/include/asm/suspend.h b/arch/x86/include/asm/suspend.h
+> > index 2fab6c2..ab463c4 100644
+> > --- a/arch/x86/include/asm/suspend.h
+> > +++ b/arch/x86/include/asm/suspend.h
+> > @@ -3,3 +3,12 @@
+> >  #else
+> >  # include <asm/suspend_64.h>
+> >  #endif
+> > +
+> > +#ifdef CONFIG_HIBERNATE_VERIFICATION
+> > +#include <linux/suspend.h>
+> > +
+> > +struct hibernation_keys {
+> > +	unsigned long hkey_status;
+> > +	u8 hibernation_key[HIBERNATION_DIGEST_SIZE];
+> > +};
+> > +#endif
+> 
+> Have you given any thought to how things are going to work if we
+> change the hash function in the future, or provide a choice? That
+> information doesn't appear anywhere in the above struct.
+> 
+
+Do you mean the hash function of signing hibernation image changed, so the
+hibernation key also need to re-generate for new length?
+
+I will add a field in struct to forward the length of hibernation key variable.
+In the future kernel can check the length to handle the change.
+
+> -- 
+> Matt Fleming, Intel Open Source Technology Center
+
+Thanks a lot!
+Joey Lee
