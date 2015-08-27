@@ -1,38 +1,39 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH v5 5/5] PM / devfreq: drop comment about thermal setting
- max_freq
-Date: Thu, 27 Aug 2015 10:58:40 +0000 (GMT)
-Message-ID: <1457392753.243291440673119677.JavaMail.weblogic@ep2mlwas06c>
-Reply-To: myungjoo.ham@samsung.com
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] PM / Domains: Fix typo in description of genpd_dev_pm_detach()
+Date: Thu, 27 Aug 2015 13:35:40 +0200
+Message-ID: <CAMuHMdUCj7NFooWS8dtj4LB55hQLdMjOOEPoAxS+upR7PvwyXQ@mail.gmail.com>
+References: <1440667020-8833-1-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:60086 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752750AbbH0K6v (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Aug 2015 06:58:51 -0400
-Received: from epcpsbgr2.samsung.com
- (u142.gpu120.samsung.co.kr [203.254.230.142])
- by mailout2.samsung.com (Oracle Communications Messaging Server 7.0.5.31.0
- 64bit (built May  5 2014))
- with ESMTP id <0NTQ01770MHSOG80@mailout2.samsung.com> for
- linux-pm@vger.kernel.org; Thu, 27 Aug 2015 19:58:40 +0900 (KST)
-MIME-version: 1.0
+Received: from mail-ob0-f181.google.com ([209.85.214.181]:33288 "EHLO
+	mail-ob0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751919AbbH0Lfl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Aug 2015 07:35:41 -0400
+Received: by obbhe7 with SMTP id he7so17805300obb.0
+        for <linux-pm@vger.kernel.org>; Thu, 27 Aug 2015 04:35:40 -0700 (PDT)
+In-Reply-To: <1440667020-8833-1-git-send-email-jonathanh@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, "rufus.hamade@imgtec.com" <rufus.hamade@imgtec.com>, "edubezval@gmail.com" <edubezval@gmail.com>
+To: Jon Hunter <jonathanh@nvidia.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-PiBUaGUgdGhlcm1hbCBpbmZyYXN0cnVjdHVyZSBzaG91bGQgdXNlIHRoZSBkZXZmcmVxIGNvb2xp
-bmcgZGV2aWNlLCB3aGljaA0KPiB1c2VzIHRoZSBPUFAgbGlicmFyeSB0byBkaXNhYmxlIE9QUHMg
-YXMgbmVjZXNzYXJ5Lg0KPiANCj4gRml4IGEgY291cGxlIG9mIHR5cG9zIGluIHRoZSBzYW1lIGNv
-bW1lbnQgd2hpbGUgd2UgYXJlIGF0IGl0Lg0KPiANCj4gQ2M6IE15dW5nSm9vIEhhbSA8bXl1bmdq
-b28uaGFtQHNhbXN1bmcuY29tPg0KPiBTaWduZWQtb2ZmLWJ5OiBKYXZpIE1lcmlubyA8amF2aS5t
-ZXJpbm9AYXJtLmNvbT4NCg0KWW91ciBwYXRjaGVzICgxLzUsIDUvNSkgYXJlIGFscmVhZHkgbWVy
-Z2VkIGluIGh0dHBzOi8vZ2l0Lmtlcm5lbC5vcmcvY2dpdC9saW51eC9rZXJuZWwvZ2l0L216eC9k
-ZXZmcmVxLmdpdA0KYW5kIHdpbGwgYmUgInB1bGwtcmVxdWVzdCJlZCB3aXRoIG90aGVyIHBhdGNo
-ZXMgbGF0ZXIuDQoNCkRvIHlvdXIgIlY1IiBwYXRjaGVzIGhhdmUgdXBkYXRlcyBmcm9tIGxhc3Qg
-cGF0Y2hlcz8NCg0KDQpDaGVlcnMsDQpNeXVuZ0pvbw0K
+On Thu, Aug 27, 2015 at 11:17 AM, Jon Hunter <jonathanh@nvidia.com> wrote:
+> The function genpd_dev_pm_detach() detaches a device from a PM domain,
+> however, in the description, the "dev" argument for the function is
+> described as the device to "attach" instead of "detach". Correct this.
+>
+> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
 
+Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
