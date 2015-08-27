@@ -1,73 +1,103 @@
 From: Chen Yu <yu.c.chen@intel.com>
-Subject: [PATCH 3/3] PM / hibernate: Remove the restriction when checking memory size before/after hibernation
-Date: Thu, 27 Aug 2015 15:06:26 +0800
-Message-ID: <1392db911417124cd85cd8c169c5bc2de4ea5de1.1440640658.git.yu.c.chen@intel.com>
+Subject: [PATCH 2/3] PM / hibernate: avoid unsafe pages in e820 reserved regions
+Date: Thu, 27 Aug 2015 15:06:11 +0800
+Message-ID: <ec93ef809f34368ab979585e1f4f92c0bd464ac8.1440640658.git.yu.c.chen@intel.com>
 References: <cover.1440640658.git.yu.c.chen@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:52874 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752527AbbH0HDJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 27 Aug 2015 03:03:09 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1440640658.git.yu.c.chen@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: tglx@linutronix.de, mingo@redhat.com, rjw@rjwysocki.net, pavel@ucw.cz, hpa@zytor.com
 Cc: len.brown@intel.com, yinghai@kernel.org, joeyli.kernel@gmail.com, rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-Sometimes the resuming of hibernation might fail, because the
-system before/after hibernation have different number of page
-frames, and in current implementation, this situation will be
-regarded as invalud resuming process. However, consider the following
-scenario: The resuming system has a larger memory capacity than
-the one before hibernation, and the former memory region is a
-superset of the latter, it should be allowed to resume. For example,
-someone plugs more DRAMs before resuming from hibernation.
-Here's a case for this situation:
+From: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>
 
-e820 memory map before hibernation:
-BIOS-e820: [mem 0x0000000020200000-0x0000000077517fff] usable
-BIOS-e820: [mem 0x0000000077518000-0x0000000077567fff] reserved
+When the machine doesn't well handle the e820 persistent when hibernate
+resuming, then it may cause page fault when writing image to snapshot
+buffer:
 
-e820 memory map during resuming:
-BIOS-e820: [mem 0x0000000020200000-0x000000007753ffff] usable
-BIOS-e820: [mem 0x0000000077540000-0x0000000077567fff] reserved
+[   17.929495] BUG: unable to handle kernel paging request at ffff880069d4f000
+[   17.933469] IP: [<ffffffff810a1cf0>] load_image_lzo+0x810/0xe40
+[   17.933469] PGD 2194067 PUD 77ffff067 PMD 2197067 PTE 0
+[   17.933469] Oops: 0002 [#1] SMP
+...
 
-In current code, the resuming process will be terminated, because
-they have different memory size(usable region), but actually we should
-let it continue to resume because [0x0000000020200000-0x000000007753ffff]
-is a superset of [0x0000000020200000-0x0000000077517fff].
+The ffff880069d4f000 page is in e820 reserved region of resume boot
+kernel:
 
-This patch removes the constraint that number of page frames should
-be strictly the same before/after hibernation.
+[    0.000000] BIOS-e820: [mem 0x0000000069d4f000-0x0000000069e12fff] reserved
+...
+[    0.000000] PM: Registered nosave memory: [mem 0x69d4f000-0x69e12fff]
 
-Note: This patch can only work after:
-Commit ec93ef809f34 ("PM / hibernate: avoid unsafe pages in e820
- reserved regions") applied.
+So snapshot.c mark the pfn to forbidden pages map. But, this
+page is also in the memory bitmap in snapshot image because it's an
+original page used by image kernel, so it will also mark as an
+unsafe(free) page in prepare_image().
 
+That means the page in e820 when resuming mark as "forbidden" and
+"free", it causes get_buffer() treat it as an allocated unsafe page.
+Then snapshot_write_next() return this page to load_image, load_image
+writing content to this address, but this page didn't really allocated
+. So, we got page fault.
+
+Although the root cause is from BIOS, I think aggressive check and
+significant message in kernel will better then a page fault for
+issue tracking, especially when serial console unavailable.
+
+This patch adds code in mark_unsafe_pages() for check does free pages in
+nosave region. If so, then it print message and return fault to stop whole
+S4 resume process:
+
+[    8.166004] PM: Image loading progress:   0%
+[    8.658717] PM: 0x6796c000 in e820 nosave region: [mem 0x6796c000-0x6796cfff]
+[    8.918737] PM: Read 2511940 kbytes in 1.04 seconds (2415.32 MB/s)
+[    8.926633] PM: Error -14 resuming
+[    8.933534] PM: Failed to load hibernation image, recovering.
+
+Signed-off-by: Lee, Chun-Yi <jlee@suse.com>
 Signed-off-by: Chen Yu <yu.c.chen@intel.com>
 ---
- kernel/power/snapshot.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ kernel/power/snapshot.c | 21 ++++++++++++++++++++-
+ 1 file changed, 20 insertions(+), 1 deletion(-)
 
 diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index c24d5a2..5b1a071 100644
+index 5235dd4..c24d5a2 100644
 --- a/kernel/power/snapshot.c
 +++ b/kernel/power/snapshot.c
-@@ -2072,8 +2072,12 @@ static int check_header(struct swsusp_info *info)
- 	char *reason;
+@@ -955,6 +955,25 @@ static void mark_nosave_pages(struct memory_bitmap *bm)
+ 	}
+ }
  
- 	reason = check_image_kernel(info);
--	if (!reason && info->num_physpages != get_num_physpages())
--		reason = "memory size";
-+	/*
-+	 * No need to check num_physpages with get_num_physpages
-+	 * as we did before(please refer to git log), because
-+	 * is_nosave_page will ensure that each page is safe
-+	 * to be restored.
-+	 */
- 	if (reason) {
- 		printk(KERN_ERR "PM: Image mismatch: %s\n", reason);
- 		return -EPERM;
++static bool is_nosave_page(unsigned long pfn)
++{
++	struct nosave_region *region;
++
++	list_for_each_entry(region, &nosave_regions, list) {
++		if (pfn >= region->start_pfn && pfn < region->end_pfn) {
++			pr_err("PM: %#010llx in e820 nosave region: "
++			       "[mem %#010llx-%#010llx]\n",
++			       (unsigned long long) pfn << PAGE_SHIFT,
++			       (unsigned long long) region->start_pfn << PAGE_SHIFT,
++			       ((unsigned long long) region->end_pfn << PAGE_SHIFT)
++					- 1);
++			return true;
++		}
++	}
++
++	return false;
++}
++
+ /**
+  *	create_basic_memory_bitmaps - create bitmaps needed for marking page
+  *	frames that should not be saved and free page frames.  The pointers
+@@ -2023,7 +2042,7 @@ static int mark_unsafe_pages(struct memory_bitmap *bm)
+ 	do {
+ 		pfn = memory_bm_next_pfn(bm);
+ 		if (likely(pfn != BM_END_OF_MAP)) {
+-			if (likely(pfn_valid(pfn)))
++			if (likely(pfn_valid(pfn)) && !is_nosave_page(pfn))
+ 				swsusp_set_page_free(pfn_to_page(pfn));
+ 			else
+ 				return -EFAULT;
 -- 
 1.8.4.2
-
