@@ -1,77 +1,100 @@
-From: joeyli <jlee-IBi9RG/b67k@public.gmane.org>
-Subject: Re: [PATCH v2 05/16] x86/efi: Get entropy through EFI random number
- generator protocol
-Date: Thu, 27 Aug 2015 14:17:50 +0800
-Message-ID: <20150827061750.GE24088@linux-rxt1.site>
-References: <1439273796-25359-1-git-send-email-jlee@suse.com>
- <1439273796-25359-6-git-send-email-jlee@suse.com>
- <20150820202620.GF2567@codeblueprint.co.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20150820202620.GF2567-mF/unelCI9GS6iBeEJttW/XRex20P6io@public.gmane.org>
-Sender: linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Matt Fleming <matt-mF/unelCI9GS6iBeEJttW/XRex20P6io@public.gmane.org>
-Cc: "Lee, Chun-Yi" <joeyli.kernel-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Matthew Garrett <matthew.garrett-05XSO3Yj/JvQT0dZR+AlfA@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Josh Boyer <jwboyer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Vojtech Pavlik <vojtech-AlSwsSmVLrQ@public.gmane.org>, Matt Fleming <matt.fleming-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Jiri Kosina <jkosina-AlSwsSmVLrQ@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: [PATCH v7] Add Mediatek thermal support
+Date: Thu, 27 Aug 2015 08:41:14 +0200
+Message-ID: <1440657677-2890-1-git-send-email-s.hauer@pengutronix.de>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:60770 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751896AbbH0GlZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Aug 2015 02:41:25 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-
-On Thu, Aug 20, 2015 at 09:26:20PM +0100, Matt Fleming wrote:
-> On Tue, 11 Aug, at 02:16:25PM, Lee, Chun-Yi wrote:
-> > +
-> > +static unsigned long efi_get_rng64(efi_system_table_t *sys_table,
-> > +				   void **rng_handle)
-> > +{
-> > +	const struct efi_config *efi_early = __efi_early();
-> > +	efi_rng_protocol_64 *rng = NULL;
-> > +	efi_guid_t rng_proto = EFI_RNG_PROTOCOL_GUID;
-> > +	u64 *handles = (u64 *)(unsigned long)rng_handle;
-> > +	efi_status_t status;
-> > +	unsigned long rng_number;
-> > +
-> > +	status = efi_call_early(handle_protocol, handles[0],
-> > +				&rng_proto, (void **)&rng);
-> > +	if (status != EFI_SUCCESS)
-> > +		efi_printk(sys_table, "Failed to get EFI_RNG_PROTOCOL handles\n");
-> > +
-> > +	if (status == EFI_SUCCESS && rng) {
-> > +		status = efi_early->call((unsigned long)rng->get_rng, rng, NULL,
-> > +					sizeof(rng_number), &rng_number);
-> 
-> Actually, one thing just occurred to me - you're not passing an
-> RNGAlgorithm value and are relying upon the firmware's default
-> implementation.
-> 
-> I don't think that's a safe bet, the default could be anything and
-> might vary across implementations.
-> 
-
-I didn't set specific RNGAlgorithm because different BIOS may
-set different algorithm as default, it's also a kind of random situation
-to provide uncertainty.
-
-On the other hand, if the specific RNGAlgorithm doesn't support by BIOS
-then EFI stub still need use BIOS's _default_ algorithm to get random
-value.
-
-> Can we do a little better here and pick a "preferred" algorithm
-> instead of the default?
-> 
-> -- 
-> Matt Fleming, Intel Open Source Technology Center
-
-Per EDK2 implementation, EFI_RNG_ALGORITHM_SP800_90_CTR_256 is the default
-algorithm that provided by driver, and EFI_RNG_ALGORITHM_RAW is the second
-algorithm supported by EDK2. BIOS vendor need to write driver to support
-others.
-
-Maybe using EFI_RNG_ALGORITHM_SP800_90_CTR_256 as the default RNGAlgorithm
-in efi_random can cover the most widely UEFI implementation, but when BIOS
-do not support EFI_RNG_ALGORITHM_SP800_90_CTR_256 then kernel still need
-use BIOS's _default_ setting.
-
-I hope your suggestion.
+To: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-mediatek@lists.infradead.org, Daniel Kurtz <djkurtz@chromium.org>, kernel@pengutronix.de, Matthias Brugger <matthias.bgg@gmail.com>
 
 
-Thanks a lot!
-Joey Lee
+This series adds support for the thermal sensors included in the
+MT8173 SoC. Currently only basic temperature reading is supported
+without any interrupt support.
+
+The cpufreq driver for MT8173 is currently under review, so there's no
+real cooling device available in mainline. Until this is available the
+thermal driver can be tested with the following dts snippet. It creates
+a fake gpio fan and a fake trip point which is so low that it can easily
+be reached with a "cat /dev/zero > /dev/null" on the command line.
+
+Please review and let me know what's missing to be included in mainline.
+
+changes since v6:
+- remove dot in Hanyi Wus name
+
+changes since v5:
+- update copyright
+- remove unused defines
+
+Changes since v4:
+- give calibration constants more meaningful names (offset, slope)
+- Use define instead of 0x00c for register access.
+
+Changes since v3:
+- add include/dt-bindings/thermal/mt8173.h for to be able to use sensor names
+  in dts files
+- fix disabling wrong clock in error path
+- remove now unused reset-names property from binding document
+- rename MT8173_NUM_BANKS -> MT8173_NUM_ZONES
+- rename MT8173_NUM_SENSING_POINTS -> MT8173_NUM_SENSORS_PER_ZONE
+- rename struct thermal_zone_device *tz -> struct thermal_zone_device *tzd
+
+Changes since v2:
+- sort #includes alphabetically
+- Add prefix to register defines
+- drop some members from struct mtk_thermal
+- simplify raw_to_mcelsius()
+- add and use more register bit defines
+- use device_reset() instead of devm_reset_control_get()/reset_control_reset()
+- misc other stuff
+
+Changes since v1:
+- Use "mediatek," prefix for custom properties
+- Drop "thermal: consistently use int for temperatures" dependency
+
+Sascha
+
+        fan: gpio_fan {
+                compatible = "gpio-fan";
+                gpios = <&pio 24 0>;
+                gpio-fan,speed-map = <0    0
+                                      4500 1>;
+                #cooling-cells = <2>;
+        };
+
+        thermal-zones {
+                cpu_thermal: cpu_thermal {
+                        polling-delay-passive = <1000>; /* milliseconds */
+                        polling-delay = <1000>; /* milliseconds */
+
+                        thermal-sensors = <&thermal 0>;
+
+                        trips {
+                                cpu_passive: cpu_passive {
+                                        temperature = <47000>; /* millicelsius */
+                                        hysteresis = <2000>; /* millicelsius */
+                                        type = "passive";
+                                };
+
+                                cpu_crit {
+                                        temperature = <90000>; /* millicelsius */
+                                        hysteresis = <2000>; /* millicelsius */
+                                        type = "critical";
+                                };
+                        };
+
+                        cooling-maps {
+                                map0 {
+                                        trip = <&cpu_passive>;
+                                        cooling-device = <&fan THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+                                };
+                        };
+                };
+        };
+
