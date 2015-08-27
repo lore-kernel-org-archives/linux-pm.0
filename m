@@ -1,56 +1,111 @@
-From: Jon Hunter <jonathanh@nvidia.com>
-Subject: Re: [RFC PATCH] PM / Domains: Ensure subdomain is not in use before
- removing
-Date: Thu, 27 Aug 2015 12:47:11 +0100
-Message-ID: <55DEF8BF.6000503@nvidia.com>
-References: <1440667276-8986-1-git-send-email-jonathanh@nvidia.com>
- <CAMuHMdUtnb1_e9v3U_iUT2qxTdacaVHY7tzbR_1kgykC+1MUyw@mail.gmail.com>
+From: Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH 1/3] dt-bindings: thermal: Add binding document for Mediatek thermal controller
+Date: Thu, 27 Aug 2015 12:49:39 +0100
+Message-ID: <9hh1tepj6i4.fsf@e105922-lin.cambridge.arm.com>
+References: <1440657677-2890-1-git-send-email-s.hauer@pengutronix.de>
+	<1440657677-2890-2-git-send-email-s.hauer@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:11155 "EHLO
-	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751888AbbH0LrT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Aug 2015 07:47:19 -0400
-In-Reply-To: <CAMuHMdUtnb1_e9v3U_iUT2qxTdacaVHY7tzbR_1kgykC+1MUyw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1440657677-2890-2-git-send-email-s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org> (Sascha
+	Hauer's message of "Thu, 27 Aug 2015 08:41:15 +0200")
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Daniel Kurtz <djkurtz-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-Hi Geert,
+[ + device tree folks ]
 
-On 27/08/15 12:37, Geert Uytterhoeven wrote:
-> Hi Jon,
-> 
-> On Thu, Aug 27, 2015 at 11:21 AM, Jon Hunter <jonathanh@nvidia.com> wrote:
->> The function pm_genpd_remove_subdomain() removes a subdomain from a
->> generic PM domain, however, it does not check if the subdomain has any
->> slave domains or device attached before doing so. Therefore, add a test
->> to verify that the subdomain does not have any slave domains associated
->> or any device attached before removing.
-> 
-> So far no-one ran into this, as there are no callers of
-> pm_genpd_remove_subdomain() in mainline or -next.
-> 
-> Do you plan to add a caller?
+Hi Sascha,
 
-Yes exactly. However, given that the API was present I thought why not
-fix it now or at least get some feedback on this.
+When introducing a new binding, it is a good idea to get reviews from
+the device tree maintainers. I've added a few folks here. Please keep
+them in the loop for future postings.
 
-I have also noticed that there is no function to remove a pm-domain (ie.
-reverse of pm_genpd_init()). I assume that currently people add
-pm-domains and never remove them, which makes sense, however the
-scenario I am trying to solve is allowing the registering of pm-domains
-to be deferred if something is not yet present (ie. a regulator).
+Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org> writes:
 
-Cheers
-Jon
+> Signed-off-by: Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+> Reviewed-by: Daniel Kurtz <djkurtz-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
 
------------------------------------------------------------------------------------
-This email message is for the sole use of the intended recipient(s) and may contain
-confidential information.  Any unauthorized review, use, disclosure or distribution
-is prohibited.  If you are not the intended recipient, please contact the sender by
-reply email and destroy all copies of the original message.
------------------------------------------------------------------------------------
+Please add a commit log.
+
+> ---
+>  .../bindings/thermal/mediatek-thermal.txt          | 38 ++++++++++++++++++++++
+>  include/dt-bindings/thermal/mt8173.h               | 13 ++++++++
+>  2 files changed, 51 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
+>  create mode 100644 include/dt-bindings/thermal/mt8173.h
+>
+> diff --git a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
+> new file mode 100644
+> index 0000000..1697375
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
+> @@ -0,0 +1,38 @@
+> +* Mediatek Thermal
+> +
+> +This describes the device tree binding for the Mediatek thermal controller
+> +which measures the on-SoC temperatures. This device does not have its own ADC,
+> +instead it directly controls the AUXADC via AHB bus accesses. For this reason
+> +this device needs phandles to the AUXADC. Also it controls a mux in the
+> +apmixedsys register space via AHB bus accesses, so a phandle to the APMIXEDSYS
+> +is also needed.
+> +
+> +Required properties:
+> +- compatible: "mediatek,mt8173-thermal"
+> +- reg: Address range of the thermal controller
+> +- interrupts: IRQ for the thermal controller
+> +- clocks, clock-names: Clocks needed for the thermal controller. required
+> +                       clocks are:
+> +		       "therm":	 Main clock needed for register access
+> +		       "auxadc": The AUXADC clock
+> +- resets: Reference to the reset controller controlling the thermal controller.
+> +- mediatek,auxadc: A phandle to the AUXADC which the thermal controller uses
+> +- mediatek,apmixedsys: A phandle to the APMIXEDSYS controller.
+> +- #thermal-sensor-cells : Should be 1. See ./thermal.txt for a description. See
+> +			  include/dt-bindings/thermal/mt8173.h for valid sensor
+> +			  numbers.
+> +
+> +Example:
+> +
+> +	thermal: thermal@1100b000 {
+> +		#thermal-sensor-cells = <1>;
+> +		compatible = "mediatek,mt8173-thermal";
+> +		reg = <0 0x1100b000 0 0x1000>;
+> +		interrupts = <0 70 IRQ_TYPE_LEVEL_LOW>;
+> +		clocks = <&pericfg CLK_PERI_THERM>, <&pericfg CLK_PERI_AUXADC>;
+> +		clock-names = "therm", "auxadc";
+> +		resets = <&pericfg MT8173_PERI_THERM_SW_RST>;
+> +		reset-names = "therm";
+> +		mediatek,auxadc = <&auxadc>;
+> +		mediatek,apmixedsys = <&apmixedsys>;
+> +	};
+> diff --git a/include/dt-bindings/thermal/mt8173.h b/include/dt-bindings/thermal/mt8173.h
+> new file mode 100644
+> index 0000000..692e74c
+> --- /dev/null
+> +++ b/include/dt-bindings/thermal/mt8173.h
+> @@ -0,0 +1,13 @@
+> +/*
+> + * This header provides constants for mediatek,mt8173-thermal
+> + */
+> +
+> +#ifndef _DT_BINDINGS_THERMAL_MEDIATEK_MT8173_H
+> +#define _DT_BINDINGS_THERMAL_MEDIATEK_MT8173_H
+> +
+> +#define MT8173_THERMAL_ZONE_CA53	0
+> +#define MT8173_THERMAL_ZONE_CA57	1
+> +#define MT8173_THERMAL_ZONE_GPU		2
+> +#define MT8173_THERMAL_ZONE_CORE	3
+> +
+> +#endif /* _DT_BINDINGS_THERMAL_MEDIATEK_MT8173_H */
+
+The constants in this include are not used in the patchset. Please drop
+this hunk and introduce it when you use it.
+
+Thanks,
+Punit
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
