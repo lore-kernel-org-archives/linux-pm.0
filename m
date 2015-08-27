@@ -1,39 +1,34 @@
 From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH v5 5/5] PM / devfreq: drop comment about thermal setting
- max_freq
-Date: Thu, 27 Aug 2015 13:52:43 +0100
-Message-ID: <20150827125243.GF5653@e104805>
-References: <1457392753.243291440673119677.JavaMail.weblogic@ep2mlwas06c>
+Subject: Re: [PATCH] thermal: power_allocator: allocate with kcalloc what you
+ free with kfree
+Date: Thu, 27 Aug 2015 16:49:37 +0100
+Message-ID: <20150827154936.GH5653@e104805>
+References: <1440526955-9860-1-git-send-email-javi.merino@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:57684 "EHLO
-	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753627AbbH0Mw4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Aug 2015 08:52:56 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1457392753.243291440673119677.JavaMail.weblogic@ep2mlwas06c>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1440526955-9860-1-git-send-email-javi.merino@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "edubezval@gmail.com" <edubezval@gmail.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Zhang Rui <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, =?utf-8?B?7LWc7LCs7Jqw?= <cw00.choi@samsung.com>, "rufus.hamade@imgtec.com" <rufus.hamade@imgtec.com>, "edubezval@gmail.com" <edubezval@gmail.com>
 
-On Thu, Aug 27, 2015 at 11:58:39AM +0100, MyungJoo Ham wrote:
-> > The thermal infrastructure should use the devfreq cooling device, which
-> > uses the OPP library to disable OPPs as necessary.
-> > 
-> > Fix a couple of typos in the same comment while we are at it.
-> > 
-> > Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
-> > Signed-off-by: Javi Merino <javi.merino@arm.com>
+On Tue, Aug 25, 2015 at 07:22:35PM +0100, Javi Merino wrote:
+> Commit cf736ea6f902 ("thermal: power_allocator: do not use devm*
+> interfaces") forgot to change a devm_kcalloc() to just kcalloc(), but
+> it's corresponding devm_kfree() was changed to kfree().  Allocate with
+> kcalloc() to match the kfree().
 > 
-> Your patches (1/5, 5/5) are already merged in https://git.kernel.org/cgit/linux/kernel/git/mzx/devfreq.git
-> and will be "pull-request"ed with other patches later.
+> Fixes: cf736ea6f902 ("thermal: power_allocator: do not use devm* interfaces")
+> Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> Cc: Eduardo Valentin <edubezval@gmail.com>
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Signed-off-by: Javi Merino <javi.merino@arm.com>
+> ---
 > 
-> Do your "V5" patches have updates from last patches?
+> Can this be merged for 4.2, please?  I'm having memory problems with
+> 4.2-rc8 because of this.
 
-No they haven't.  I should have based this series on top of your
-branch.  I'll do that in the future.
-
-Sorry for that,
-Javi
+Please merge this for 4.2 or revert cf736ea6f902 ("thermal:
+power_allocator: do not use devm* interfaces")
