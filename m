@@ -1,52 +1,69 @@
-From: joeyli <jlee-IBi9RG/b67k@public.gmane.org>
-Subject: Re: [PATCH v2 07/16] efi: Make efi_status_to_err() public
-Date: Thu, 27 Aug 2015 17:06:26 +0800
-Message-ID: <20150827090626.GC27415@linux-rxt1.site>
-References: <1439273796-25359-1-git-send-email-jlee@suse.com>
- <1439273796-25359-8-git-send-email-jlee@suse.com>
- <20150820150706.GE2567@codeblueprint.co.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20150820150706.GE2567-mF/unelCI9GS6iBeEJttW/XRex20P6io@public.gmane.org>
-Sender: linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Matt Fleming <matt-mF/unelCI9GS6iBeEJttW/XRex20P6io@public.gmane.org>
-Cc: "Lee, Chun-Yi" <joeyli.kernel-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Matthew Garrett <matthew.garrett-05XSO3Yj/JvQT0dZR+AlfA@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Josh Boyer <jwboyer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Vojtech Pavlik <vojtech-AlSwsSmVLrQ@public.gmane.org>, Matt Fleming <matt.fleming-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Jiri Kosina <jkosina-AlSwsSmVLrQ@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH] cpufreq: powernv: Increase the verbosity of OCC console messages
+Date: Thu, 27 Aug 2015 14:41:44 +0530
+Message-ID: <1440666704-10666-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e28smtp06.in.ibm.com ([122.248.162.6]:49330 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750801AbbH0JMH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Aug 2015 05:12:07 -0400
+Received: from /spool/local
+	by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+	Thu, 27 Aug 2015 14:42:04 +0530
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: stewart@linux.vnet.ibm.com, viresh.kumar@linaro.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 
-On Thu, Aug 20, 2015 at 04:07:06PM +0100, Matt Fleming wrote:
-> On Tue, 11 Aug, at 02:16:27PM, Lee, Chun-Yi wrote:
-> > Moved the function of transferring EFI status to kernel error for
-> > later used by EFI stub.
->  
-> Might I suggest:
-> 
->  "Move the function for converting EFI status to kernel error values
->   from drivers/firmware/efi/ to include/linux/efi.h for use by the x86
->   EFI stub in an upcoming patch."
-> 
-> ?
-> 
+Modify the OCC reset/load/active event message to make it clearer for
+the user to understand the event and effect of the event.
 
-Thanks for your suggestion, I will follow it.
+Suggested-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+---
+This patch is based on top of linux-next/master
 
-> > Reviewed-by: Jiri Kosina <jkosina-IBi9RG/b67k@public.gmane.org>
-> > Tested-by: Jiri Kosina <jkosina-IBi9RG/b67k@public.gmane.org>
-> > Signed-off-by: Lee, Chun-Yi <jlee-IBi9RG/b67k@public.gmane.org>
-> > ---
-> >  drivers/firmware/efi/vars.c | 33 ---------------------------------
-> >  include/linux/efi.h         | 33 +++++++++++++++++++++++++++++++++
-> >  2 files changed, 33 insertions(+), 33 deletions(-)
-> 
-> The patch content is fine,
-> 
-> Reviewed-by: Matt Fleming <matt.fleming-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-> 
+ drivers/cpufreq/powernv-cpufreq.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-Thanks
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index 546e056..64994e1 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -465,6 +465,7 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
+ 	switch (omsg.type) {
+ 	case OCC_RESET:
+ 		occ_reset = true;
++		pr_info("OCC (On Chip Controller - enforces hard thermal/power limits) Resetting\n");
+ 		/*
+ 		 * powernv_cpufreq_throttle_check() is called in
+ 		 * target() callback which can detect the throttle state
+@@ -474,12 +475,12 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
+ 		 */
+ 		if (!throttled) {
+ 			throttled = true;
+-			pr_crit("CPU Frequency is throttled\n");
++			pr_crit("CPU frequency is throttled for duration\n");
+ 		}
+-		pr_info("OCC: Reset\n");
++
+ 		break;
+ 	case OCC_LOAD:
+-		pr_info("OCC: Loaded\n");
++		pr_info("OCC Loading, CPU frequency is throttled until OCC is started\n");
+ 		break;
+ 	case OCC_THROTTLE:
+ 		omsg.chip = be64_to_cpu(msg->params[1]);
+@@ -488,7 +489,7 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
+ 		if (occ_reset) {
+ 			occ_reset = false;
+ 			throttled = false;
+-			pr_info("OCC: Active\n");
++			pr_info("OCC Active, CPU frequency is no longer throttled\n");
+ 
+ 			for (i = 0; i < nr_chips; i++) {
+ 				chips[i].restore = true;
+-- 
+1.9.3
 
-> -- 
-> Matt Fleming, Intel Open Source Technology Center
-
-Joey Lee
