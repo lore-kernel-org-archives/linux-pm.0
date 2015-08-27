@@ -1,70 +1,39 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: powernv: Increase the verbosity of OCC console
- messages
-Date: Thu, 27 Aug 2015 17:59:40 +0530
-Message-ID: <20150827122940.GW8784@linux>
-References: <1440666704-10666-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: [PATCH v5 5/5] PM / devfreq: drop comment about thermal setting
+ max_freq
+Date: Thu, 27 Aug 2015 13:52:43 +0100
+Message-ID: <20150827125243.GF5653@e104805>
+References: <1457392753.243291440673119677.JavaMail.weblogic@ep2mlwas06c>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:57684 "EHLO
+	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753627AbbH0Mw4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Aug 2015 08:52:56 -0400
 Content-Disposition: inline
-In-Reply-To: <1440666704-10666-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: rjw@rjwysocki.net, stewart@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+In-Reply-To: <1457392753.243291440673119677.JavaMail.weblogic@ep2mlwas06c>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, =?utf-8?B?7LWc7LCs7Jqw?= <cw00.choi@samsung.com>, "rufus.hamade@imgtec.com" <rufus.hamade@imgtec.com>, "edubezval@gmail.com" <edubezval@gmail.com>
 
-On 27-08-15, 14:41, Shilpasri G Bhat wrote:
-> Modify the OCC reset/load/active event message to make it clearer for
-> the user to understand the event and effect of the event.
+On Thu, Aug 27, 2015 at 11:58:39AM +0100, MyungJoo Ham wrote:
+> > The thermal infrastructure should use the devfreq cooling device, which
+> > uses the OPP library to disable OPPs as necessary.
+> > 
+> > Fix a couple of typos in the same comment while we are at it.
+> > 
+> > Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
+> > Signed-off-by: Javi Merino <javi.merino@arm.com>
 > 
-> Suggested-by: Stewart Smith <stewart@linux.vnet.ibm.com>
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> ---
-> This patch is based on top of linux-next/master
+> Your patches (1/5, 5/5) are already merged in https://git.kernel.org/cgit/linux/kernel/git/mzx/devfreq.git
+> and will be "pull-request"ed with other patches later.
 > 
->  drivers/cpufreq/powernv-cpufreq.c | 9 +++++----
->  1 file changed, 5 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index 546e056..64994e1 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -465,6 +465,7 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
->  	switch (omsg.type) {
->  	case OCC_RESET:
->  		occ_reset = true;
-> +		pr_info("OCC (On Chip Controller - enforces hard thermal/power limits) Resetting\n");
->  		/*
->  		 * powernv_cpufreq_throttle_check() is called in
->  		 * target() callback which can detect the throttle state
-> @@ -474,12 +475,12 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
->  		 */
->  		if (!throttled) {
->  			throttled = true;
-> -			pr_crit("CPU Frequency is throttled\n");
-> +			pr_crit("CPU frequency is throttled for duration\n");
->  		}
-> -		pr_info("OCC: Reset\n");
-> +
->  		break;
->  	case OCC_LOAD:
-> -		pr_info("OCC: Loaded\n");
-> +		pr_info("OCC Loading, CPU frequency is throttled until OCC is started\n");
->  		break;
->  	case OCC_THROTTLE:
->  		omsg.chip = be64_to_cpu(msg->params[1]);
-> @@ -488,7 +489,7 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
->  		if (occ_reset) {
->  			occ_reset = false;
->  			throttled = false;
-> -			pr_info("OCC: Active\n");
-> +			pr_info("OCC Active, CPU frequency is no longer throttled\n");
->  
->  			for (i = 0; i < nr_chips; i++) {
->  				chips[i].restore = true;
+> Do your "V5" patches have updates from last patches?
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+No they haven't.  I should have based this series on top of your
+branch.  I'll do that in the future.
 
--- 
-viresh
+Sorry for that,
+Javi
