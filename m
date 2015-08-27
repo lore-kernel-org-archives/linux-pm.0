@@ -1,608 +1,346 @@
-From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: Re: [PATCH 2/3] thermal: Add Mediatek thermal controller support
-Date: Thu, 27 Aug 2015 12:50:07 +0100
-Message-ID: <9hhzj1dhrww.fsf@e105922-lin.cambridge.arm.com>
-References: <1440657677-2890-1-git-send-email-s.hauer@pengutronix.de>
-	<1440657677-2890-3-git-send-email-s.hauer@pengutronix.de>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH 4/5] cpufreq: intel_pstate: Use ACPI perf configuration
+Date: Thu, 27 Aug 2015 05:08:27 -0700
+Message-ID: <1440677307.3108.25.camel@linux.intel.com>
+References: <1440621161-2732-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	 <1440621161-2732-5-git-send-email-srinivas.pandruvada@linux.intel.com>
+	 <2384688.3xSebA7DaU@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1440657677-2890-3-git-send-email-s.hauer@pengutronix.de> (Sascha
-	Hauer's message of "Thu, 27 Aug 2015 08:41:16 +0200")
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, linux-mediatek@lists.infradead.org, Daniel Kurtz <djkurtz@chromium.org>, kernel@pengutronix.de, Matthias Brugger <matthias.bgg@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga09.intel.com ([134.134.136.24]:39231 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753597AbbH0MLo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 27 Aug 2015 08:11:44 -0400
+In-Reply-To: <2384688.3xSebA7DaU@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: kristen.c.accardi@intel.com, rafael.j.wysocki@intel.com, len.brown@intel.com, linux-pm@vger.kernel.org
 
-Hi Sascha,
+On Thu, 2015-08-27 at 03:11 +0200, Rafael J. Wysocki wrote:
+> On Wednesday, August 26, 2015 01:32:40 PM Srinivas Pandruvada wrote:
+> > Use ACPI _PSS to limit the Intel P State turbo, max and min ratios.
+> > This driver uses acpi processor perf lib calls to register 
+> > performance.
+> > The following logic is used to adjust Intel P state driver limits:
+> > - If there is no turbo entry in _PSS, then disable Intel P state 
+> > turbo
+> > and limit to non turbo max
+> > - If the non turbo max ratio is more than _PSS max non turbo value, 
+> > then
+> > set the max non turbo ratio to _PSS non turbo max
+> > - If the min ratio is less than _PSS min then change the min ratio
+> > matching _PSS min
+> > - Scale the _PSS turbo frequency to max turbo frequency based on 
+> > control
+> > value.
+> 
+> The new command line switch should be mentioned in the changelog too.
+Missed it. Also need to update the kernel command line document.
+> 
+> > Signed-off-by: Srinivas Pandruvada <
+> > srinivas.pandruvada@linux.intel.com>
+> > ---
+> >  drivers/cpufreq/Kconfig.x86    |   1 +
+> >  drivers/cpufreq/intel_pstate.c | 130 
+> > +++++++++++++++++++++++++++++++++++++++++
+> >  2 files changed, 131 insertions(+)
+> > 
+> > diff --git a/drivers/cpufreq/Kconfig.x86 
+> > b/drivers/cpufreq/Kconfig.x86
+> > index c59bdcb..1c6affd 100644
+> > --- a/drivers/cpufreq/Kconfig.x86
+> > +++ b/drivers/cpufreq/Kconfig.x86
+> > @@ -5,6 +5,7 @@
+> >  config X86_INTEL_PSTATE
+> >         bool "Intel P state control"
+> >         depends on X86
+> > +       select ACPI_PROCESSOR
+> 
+> 	select ACPI_PROCESSOR if ACPI
+> 
+> or there will be a broken dependency if ACPI is not selected.
+I will fix this in next patchset.
+> 
+> >         help
+> >            This driver provides a P state for Intel core 
+> > processors.
+> >  	  The driver implements an internal governor and will 
+> > become
+> > diff --git a/drivers/cpufreq/intel_pstate.c 
+> > b/drivers/cpufreq/intel_pstate.c
+> > index a349462..6eafb55 100644
+> > --- a/drivers/cpufreq/intel_pstate.c
+> > +++ b/drivers/cpufreq/intel_pstate.c
+> > @@ -34,6 +34,8 @@
+> >  #include <asm/cpu_device_id.h>
+> >  #include <asm/cpufeature.h>
+> >  
+> > +#include <acpi/processor.h>
+> > +
+> >  #define BYT_RATIOS		0x66a
+> >  #define BYT_VIDS		0x66b
+> >  #define BYT_TURBO_RATIOS	0x66c
+> > @@ -114,6 +116,9 @@ struct cpudata {
+> >  	u64	prev_mperf;
+> >  	u64	prev_tsc;
+> >  	struct sample sample;
+> > +#if IS_ENABLED(CONFIG_ACPI)
+> > +	struct acpi_processor_performance acpi_perf_data;
+> > +#endif
+> >  };
+> >  
+> >  static struct cpudata **all_cpu_data;
+> > @@ -146,6 +151,7 @@ struct cpu_defaults {
+> >  static struct pstate_adjust_policy pid_params;
+> >  static struct pstate_funcs pstate_funcs;
+> >  static int hwp_active;
+> > +static int no_acpi_perf;
+> 
+> Why don't you call it "no_acpi"?  The "perf" part seems to be 
+> redundant.
+> 
+OK. I will change this.
+> >  
+> >  struct perf_limits {
+> >  	int no_turbo;
+> > @@ -173,6 +179,116 @@ static struct perf_limits limits = {
+> >  	.min_sysfs_pct = 0,
+> >  };
+> >  
+> > +#if IS_ENABLED(CONFIG_ACPI)
+> > +static int intel_pstate_init_perf_limits(struct cpufreq_policy 
+> > *policy)
+> > +{
+> > +	struct cpudata *cpu;
+> > +	int ret;
+> > +	int min_perf;
+> > +	bool turbo_absent = false;
+> > +	int i;
+> > +
+> > +	cpu = all_cpu_data[policy->cpu];
+> > +
+> > +	if (!cpu->acpi_perf_data.shared_cpu_map &&
+> > +	    zalloc_cpumask_var_node(&cpu
+> > ->acpi_perf_data.shared_cpu_map,
+> > +				    GFP_KERNEL, cpu_to_node(policy
+> > ->cpu))) {
+> > +		return -ENOMEM;
+> > +	}
+> > +
+> > +	ret = acpi_processor_register_performance(&cpu
+> > ->acpi_perf_data,
+> > +						  policy->cpu);
+> > +	if (ret)
+> > +		return ret;
+> > +
+> > +	if (cpu->acpi_perf_data.control_register.space_id !=
+> > +						ACPI_ADR_SPACE_FIX
+> > ED_HARDWARE)
+> > +		return -EIO;
+> > +
+> > +	pr_debug("CPU%u - ACPI _PSS perf data\n", policy->cpu);
+> > +	for (i = 0; i < cpu->acpi_perf_data.state_count; i++)
+> > +		pr_debug("     %cP%d: %u MHz, %u mW, 0x%x\n",
+> > +			 (i == cpu->acpi_perf_data.state ? '*' : ' 
+> > '), i,
+> > +			 (u32) cpu
+> > ->acpi_perf_data.states[i].core_frequency,
+> > +			 (u32) cpu
+> > ->acpi_perf_data.states[i].power,
+> > +			 (u32) cpu
+> > ->acpi_perf_data.states[i].control);
+> > +
+> > +	if (cpu->acpi_perf_data.state_count < 2)
+> > +		return 0;
+> 
+> So what happens if we do that?  We'll not use ACPI limits, right?
+> 
+Yes, we will continue as before with Intel P state calculated limits
+based on MSRs.
+> > +
+> > +	/* Check if there is a turbo freq in _PSS */
+> > +	if ((cpu->acpi_perf_data.states[0].core_frequency % 2) == 
+> > 0) {
+> 
+> Where does this check come from?
+Isn't general convention to specify turbo frequency (max non turbo freq
++ 1 MHz)? Usually these are specified by BIOS writer guides.
+> 
+> > +		pr_debug("no turbo range exists in _PSS\n");
+> > +		limits.no_turbo = limits.turbo_disabled = 1;
+> > +		cpu->pstate.turbo_pstate = cpu->pstate.max_pstate;
+> > +		turbo_absent = true;
+> > +	}
+> > +
+> > +	/* Check if the max non turbo p state < Intel P state max 
+> > */
+> > +	for (i = 0; i < cpu->acpi_perf_data.state_count; i++) {
+> > +		if ((cpu->acpi_perf_data.states[i].core_frequency 
+> > % 2) == 0) {
+> 
+> And this?
+> 
+> Generally, this reads "if core_frequency of state i is even", but 
+> this is
+> a number from the firmware, so I'm not sure why it being even or odd 
+> has
+> to be meaningful in any way?
+> 
+The first even frequency will be max non turbo. There can't be a
+frequncy 2301 Mhz in Intel Processors (which is indicating a turbo
+frequency). For example:
+[    1.233597]      *P0: 2301 MHz, 15000 mW, 0x1d00
+[    1.233598]       P1: 2300 MHz, 15000 mW, 0x1700
+[    1.233599]       P2: 2200 MHz, 14088 mW, 0x1600
+[    1.233600]       P3: 2000 MHz, 12462 mW, 0x1400
+[    1.233601]       P4: 1900 MHz, 11745 mW, 0x1300
+[    1.233602]       P5: 1800 MHz, 11042 mW, 0x1200
+[    1.233603]       P6: 1700 MHz, 10215 mW, 0x1100
+[    1.233604]       P7: 1500 MHz, 8882 mW, 0xf00
+[    1.233605]       P8: 1400 MHz, 8101 mW, 0xe00
+[    1.233606]       P9: 1300 MHz, 7471 mW, 0xd00
+[    1.233607]       P10: 1100 MHz, 6121 mW, 0xb00
+[    1.233608]       P11: 1000 MHz, 5531 mW, 0xa00
+[    1.233610]       P12: 900 MHz, 4955 mW, 0x900
+[    1.233611]       P13: 800 MHz, 4267 mW, 0x800
+[    1.233612]       P14: 600 MHz, 3182 mW, 0x600
+[    1.233613]       P15: 500 MHz, 2538 mW, 0x500
 
-One comment below -
+Let me think if I can use control values (the last column in the above
+log) instead of using odd/even.
 
-Sascha Hauer <s.hauer@pengutronix.de> writes:
-
-> This adds support for the Mediatek thermal controller found on MT8173
-> and likely other SoCs.
-> The controller is a bit special. It does not have its own ADC, instead
-> it controls the on-SoC AUXADC via AHB bus accesses. For this reason
-> we need the physical address of the AUXADC. Also it controls a mux
-> using AHB bus accesses, so we need the APMIXEDSYS physical address aswell.
->
-> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-> Reviewed-by: Daniel Kurtz <djkurtz@chromium.org>
-> ---
->  drivers/thermal/Kconfig       |   8 +
->  drivers/thermal/Makefile      |   1 +
->  drivers/thermal/mtk_thermal.c | 528 ++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 537 insertions(+)
->  create mode 100644 drivers/thermal/mtk_thermal.c
->
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index 118938e..07ad114 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -340,6 +340,14 @@ config ACPI_THERMAL_REL
->  	tristate
->  	depends on ACPI
->  
-> +config MTK_THERMAL
-> +	tristate "Temperature sensor driver for mediatek SoCs"
-> +	depends on ARCH_MEDIATEK || COMPILE_TEST
-> +	default y
-> +	help
-> +	  Enable this option if you want to have support for thermal management
-> +	  controller present in Mediatek SoCs
-> +
->  menu "Texas Instruments thermal drivers"
->  source "drivers/thermal/ti-soc-thermal/Kconfig"
->  endmenu
-> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-> index 535dfee..cc1cab3 100644
-> --- a/drivers/thermal/Makefile
-> +++ b/drivers/thermal/Makefile
-> @@ -44,3 +44,4 @@ obj-$(CONFIG_INT340X_THERMAL)  += int340x_thermal/
->  obj-$(CONFIG_ST_THERMAL)	+= st/
->  obj-$(CONFIG_TEGRA_SOCTHERM)	+= tegra_soctherm.o
->  obj-$(CONFIG_HISI_THERMAL)     += hisi_thermal.o
-> +obj-$(CONFIG_MTK_THERMAL)	+= mtk_thermal.o
-> diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
-> new file mode 100644
-> index 0000000..4f8cd34
-> --- /dev/null
-> +++ b/drivers/thermal/mtk_thermal.c
-> @@ -0,0 +1,528 @@
-> +/*
-> + * Copyright (c) 2015 MediaTek Inc.
-> + * Author: Hanyi Wu <hanyi.wu@mediatek.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + */
-> +
-> +#include <linux/clk.h>
-> +#include <linux/delay.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/of_address.h>
-> +#include <linux/of_irq.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/slab.h>
-> +#include <linux/thermal.h>
-> +#include <linux/reset.h>
-> +#include <linux/time.h>
-> +#include <linux/types.h>
-> +
-> +/* AUXADC Registers */
-> +#define AUXADC_CON0_V		0x000
-> +#define AUXADC_CON1_V		0x004
-> +#define AUXADC_CON1_SET_V	0x008
-> +#define AUXADC_CON1_CLR_V	0x00c
-> +#define AUXADC_CON2_V		0x010
-> +#define AUXADC_DATA(channel)	(0x14 + (channel) * 4)
-> +#define AUXADC_MISC_V		0x094
-> +
-> +#define AUXADC_CON1_CHANNEL(x)	BIT(x)
-> +
-> +#define APMIXED_SYS_TS_CON1	0x604
-> +
-> +/* Thermal Controller Registers */
-> +#define TEMP_MONCTL0		0x000
-> +#define TEMP_MONCTL1		0x004
-> +#define TEMP_MONCTL2		0x008
-> +#define TEMP_MSRCTL0		0x038
-> +#define TEMP_AHBPOLL		0x040
-> +#define TEMP_AHBTO		0x044
-> +#define TEMP_ADCPNP0		0x048
-> +#define TEMP_ADCPNP1		0x04c
-> +#define TEMP_ADCPNP2		0x050
-> +#define TEMP_ADCPNP3		0x0b4
-> +
-> +#define TEMP_ADCMUX		0x054
-> +#define TEMP_ADCEN		0x060
-> +#define TEMP_PNPMUXADDR		0x064
-> +#define TEMP_ADCMUXADDR		0x068
-> +#define TEMP_ADCENADDR		0x074
-> +#define TEMP_ADCVALIDADDR	0x078
-> +#define TEMP_ADCVOLTADDR	0x07c
-> +#define TEMP_RDCTRL		0x080
-> +#define TEMP_ADCVALIDMASK	0x084
-> +#define TEMP_ADCVOLTAGESHIFT	0x088
-> +#define TEMP_ADCWRITECTRL	0x08c
-> +#define TEMP_MSR0		0x090
-> +#define TEMP_MSR1		0x094
-> +#define TEMP_MSR2		0x098
-> +#define TEMP_MSR3		0x0B8
-> +
-> +#define TEMP_SPARE0		0x0f0
-> +
-> +#define PTPCORESEL		0x400
-> +
-> +#define TEMP_MONCTL1_PERIOD_UNIT(x)	((x) & 0x3ff)
-> +
-> +#define TEMP_MONCTL2_FILTER_INTERVAL(x)	(((x) & 0x3ff)) << 16
-> +#define TEMP_MONCTL2_SENSOR_INTERVAL(x)	((x) & 0x3ff)
-> +
-> +#define TEMP_AHBPOLL_ADC_POLL_INTERVAL(x)	(x)
-> +
-> +#define TEMP_ADCWRITECTRL_ADC_PNP_WRITE		BIT(0)
-> +#define TEMP_ADCWRITECTRL_ADC_MUX_WRITE		BIT(1)
-> +
-> +#define TEMP_ADCVALIDMASK_VALID_HIGH		BIT(5)
-> +#define TEMP_ADCVALIDMASK_VALID_POS(bit)	(bit)
-> +
-> +#define MT8173_TS1	0
-> +#define MT8173_TS2	1
-> +#define MT8173_TS3	2
-> +#define MT8173_TS4	3
-> +#define MT8173_TSABB	4
-> +
-> +/* AUXADC channel 11 is used for the temperature sensors */
-> +#define MT8173_TEMP_AUXADC_CHANNEL	11
-> +
-> +/* The total number of temperature sensors in the MT8173 */
-> +#define MT8173_NUM_SENSORS		5
-> +
-> +/* The number of banks in the MT8173 */
-> +#define MT8173_NUM_ZONES		4
-> +
-> +/* The number of sensing points per bank */
-> +#define MT8173_NUM_SENSORS_PER_ZONE	4
-> +
-> +#define THERMAL_NAME    "mtk-thermal"
-> +
-> +struct mtk_thermal;
-> +
-> +struct mtk_thermal_bank {
-> +	struct mtk_thermal *mt;
-> +	struct thermal_zone_device *tzd;
-> +	int id;
-> +};
-> +
-> +struct mtk_thermal {
-> +	struct device *dev;
-> +	void __iomem *thermal_base;
-> +
-> +	struct clk *clk_peri_therm;
-> +	struct clk *clk_auxadc;
-> +
-> +	struct mtk_thermal_bank banks[MT8173_NUM_ZONES];
-> +
-> +	struct mutex lock;
-> +
-> +	/* Calibration values */
-> +	int calib_slope;
-> +	int calib_offset;
-> +};
-> +
-> +struct mtk_thermal_bank_cfg {
-> +	unsigned int num_sensors;
-> +	unsigned int sensors[MT8173_NUM_SENSORS_PER_ZONE];
-> +};
-> +
-> +static const int sensor_mux_values[MT8173_NUM_SENSORS] = { 0, 1, 2, 3, 16 };
-> +
-> +/*
-> + * The MT8173 thermal controller has four banks. Each bank can read up to
-> + * four temperature sensors simultaneously. The MT8173 has a total of 5
-> + * temperature sensors. We use each bank to measure a certain area of the
-> + * SoC. Since TS2 is located centrally in the SoC it is influenced by multiple
-> + * areas, hence is used in different banks.
-> + */
-> +static const struct mtk_thermal_bank_cfg bank_data[] = {
-> +	{
-> +		.num_sensors = 2,
-> +		.sensors = { MT8173_TS2, MT8173_TS3 },
-> +	}, {
-> +		.num_sensors = 2,
-> +		.sensors = { MT8173_TS2, MT8173_TS4 },
-> +	}, {
-> +		.num_sensors = 3,
-> +		.sensors = { MT8173_TS1, MT8173_TS2, MT8173_TSABB },
-> +	}, {
-> +		.num_sensors = 1,
-> +		.sensors = { MT8173_TS2 },
-> +	},
-> +};
-> +
-> +struct mtk_thermal_sense_point {
-> +	int msr;
-> +	int adcpnp;
-> +};
-> +
-> +static const struct mtk_thermal_sense_point
-> +		sensing_points[MT8173_NUM_SENSORS_PER_ZONE] = {
-> +	{
-> +		.msr = TEMP_MSR0,
-> +		.adcpnp = TEMP_ADCPNP0,
-> +	}, {
-> +		.msr = TEMP_MSR1,
-> +		.adcpnp = TEMP_ADCPNP1,
-> +	}, {
-> +		.msr = TEMP_MSR2,
-> +		.adcpnp = TEMP_ADCPNP2,
-> +	}, {
-> +		.msr = TEMP_MSR3,
-> +		.adcpnp = TEMP_ADCPNP3,
-> +	},
-> +};
-> +
-> +/**
-> + * raw_to_mcelsius - convert a raw ADC value to mcelsius
-> + * @mt:		The thermal controller
-> + * @raw:	raw ADC value
-> + *
-> + * This converts the raw ADC value to mcelsius using the SoC specific
-> + * calibration constants
-> + */
-> +static int raw_to_mcelsius(struct mtk_thermal *mt, u32 raw)
-> +{
-> +	return mt->calib_offset + mt->calib_slope * (raw & 0xfff);
-> +}
-> +
-> +/**
-> + * mtk_thermal_get_bank - get bank
-> + * @bank:	The bank
-> + *
-> + * The bank registers are banked, we have to select a bank in the
-> + * PTPCORESEL register to access it.
-> + */
-> +static void mtk_thermal_get_bank(struct mtk_thermal_bank *bank)
-> +{
-> +	struct mtk_thermal *mt = bank->mt;
-> +	u32 val;
-> +
-> +	mutex_lock(&mt->lock);
-> +
-> +	val = readl(mt->thermal_base + PTPCORESEL);
-> +	val &= ~0xf;
-> +	val |= bank->id;
-> +	writel(val, mt->thermal_base + PTPCORESEL);
-> +}
-> +
-> +/**
-> + * mtk_thermal_put_bank - release bank
-> + * @bank:	The bank
-> + *
-> + * release a bank previously taken with mtk_thermal_get_bank,
-> + */
-> +static void mtk_thermal_put_bank(struct mtk_thermal_bank *bank)
-> +{
-> +	struct mtk_thermal *mt = bank->mt;
-> +
-> +	mutex_unlock(&mt->lock);
-> +}
-> +
-> +/**
-> + * mtk_thermal_bank_temperature - get the temperature of a bank
-> + * @bank:	The bank
-> + *
-> + * The temperature of a bank is considered the maximum temperature of
-> + * the sensors associated to the bank.
-> + */
-> +static int mtk_thermal_bank_temperature(struct mtk_thermal_bank *bank)
-> +{
-> +	struct mtk_thermal *mt = bank->mt;
-> +	int temp, i, max;
-> +	u32 raw;
-> +
-> +	temp = max = INT_MIN;
-> +
-> +	for (i = 0; i < bank_data[bank->id].num_sensors; i++) {
-> +		raw = readl(mt->thermal_base + sensing_points[i].msr);
-> +
-> +		temp = raw_to_mcelsius(mt, raw);
-> +
-> +		/*
-> +		 * The first read of a sensor often contains very high bogus
-> +		 * temperature value. Filter these out so that the system does
-> +		 * not immediately shut down.
-> +		 */
-> +		if (temp > 200000)
-> +			temp = 0;
-> +
-
-If the bogus value is one time, Instead of filtering here, you could
-sanitise the sensor values at probe time when you are initialising the
-banks.
-
-Thanks,
-Punit
-
-> +		if (temp > max)
-> +			max = temp;
-> +	}
-> +
-> +	return max;
-> +}
-> +
-> +static int mtk_read_temp(void *data, long *temp)
-> +{
-> +	struct mtk_thermal_bank *bank = data;
-> +
-> +	mtk_thermal_get_bank(bank);
-> +
-> +	*temp = mtk_thermal_bank_temperature(bank);
-> +
-> +	mtk_thermal_put_bank(bank);
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct thermal_zone_of_device_ops mtk_thermal_ops = {
-> +	.get_temp = mtk_read_temp,
-> +};
-> +
-> +static void mtk_thermal_init_bank(struct mtk_thermal *mt, int num,
-> +		u32 apmixed_phys_base, u32 auxadc_phys_base)
-> +{
-> +	struct mtk_thermal_bank *bank = &mt->banks[num];
-> +	const struct mtk_thermal_bank_cfg *cfg = &bank_data[num];
-> +	int i;
-> +
-> +	bank->id = num;
-> +	bank->mt = mt;
-> +
-> +	mtk_thermal_get_bank(bank);
-> +
-> +	/* bus clock 66M counting unit is 12 * 15.15ns * 256 = 46.540us */
-> +	writel(TEMP_MONCTL1_PERIOD_UNIT(12), mt->thermal_base + TEMP_MONCTL1);
-> +
-> +	/*
-> +	 * filt interval is 1 * 46.540us = 46.54us,
-> +	 * sen interval is 429 * 46.540us = 19.96ms
-> +	 */
-> +	writel(TEMP_MONCTL2_FILTER_INTERVAL(1) |
-> +			TEMP_MONCTL2_SENSOR_INTERVAL(429),
-> +			mt->thermal_base + TEMP_MONCTL2);
-> +
-> +	/* poll is set to 10u */
-> +	writel(TEMP_AHBPOLL_ADC_POLL_INTERVAL(768),
-> +			mt->thermal_base + TEMP_AHBPOLL);
-> +
-> +	/* temperature sampling control, 1 sample */
-> +	writel(0x00000000, mt->thermal_base + TEMP_MSRCTL0);
-> +
-> +	/* exceed this polling time, IRQ would be inserted */
-> +	writel(0xffffffff, mt->thermal_base + TEMP_AHBTO);
-> +
-> +	/* number of interrupts per event, 1 is enough */
-> +	writel(0x0, mt->thermal_base + TEMP_MONIDET0);
-> +	writel(0x0, mt->thermal_base + TEMP_MONIDET1);
-> +
-> +	/*
-> +	 * The MT8173 thermal controller does not have its own ADC. Instead it
-> +	 * uses AHB bus accesses to control the AUXADC. To do this the thermal
-> +	 * controller has to be programmed with the physical addresses of the
-> +	 * AUXADC registers and with the various bit positions in the AUXADC.
-> +	 * Also the thermal controller controls a mux in the APMIXEDSYS register
-> +	 * space.
-> +	 */
-> +
-> +	/*
-> +	 * this value will be stored to TEMP_PNPMUXADDR (TEMP_SPARE0)
-> +	 * automatically by hw
-> +	 */
-> +	writel(BIT(MT8173_TEMP_AUXADC_CHANNEL), mt->thermal_base + TEMP_ADCMUX);
-> +
-> +	/* AHB address for auxadc mux selection */
-> +	writel(auxadc_phys_base + AUXADC_CON1_CLR_V,
-> +			mt->thermal_base + TEMP_ADCMUXADDR);
-> +
-> +	/* AHB address for pnp sensor mux selection */
-> +	writel(apmixed_phys_base + APMIXED_SYS_TS_CON1,
-> +			mt->thermal_base + TEMP_PNPMUXADDR);
-> +
-> +	/* AHB value for auxadc enable */
-> +	writel(BIT(MT8173_TEMP_AUXADC_CHANNEL), mt->thermal_base + TEMP_ADCEN);
-> +
-> +	/* AHB address for auxadc enable (channel 0 immediate mode selected) */
-> +	writel(auxadc_phys_base + AUXADC_CON1_SET_V,
-> +			mt->thermal_base + TEMP_ADCENADDR);
-> +
-> +	/* AHB address for auxadc valid bit */
-> +	writel(auxadc_phys_base + AUXADC_DATA(MT8173_TEMP_AUXADC_CHANNEL),
-> +			mt->thermal_base + TEMP_ADCVALIDADDR);
-> +
-> +	/* AHB address for auxadc voltage output */
-> +	writel(auxadc_phys_base + AUXADC_DATA(MT8173_TEMP_AUXADC_CHANNEL),
-> +			mt->thermal_base + TEMP_ADCVOLTADDR);
-> +
-> +	/* read valid & voltage are at the same register */
-> +	writel(0x0, mt->thermal_base + TEMP_RDCTRL);
-> +
-> +	/* indicate where the valid bit is */
-> +	writel(TEMP_ADCVALIDMASK_VALID_HIGH | TEMP_ADCVALIDMASK_VALID_POS(12),
-> +			mt->thermal_base + TEMP_ADCVALIDMASK);
-> +
-> +	/* no shift */
-> +	writel(0x0, mt->thermal_base + TEMP_ADCVOLTAGESHIFT);
-> +
-> +	/* enable auxadc mux write transaction */
-> +	writel(TEMP_ADCWRITECTRL_ADC_MUX_WRITE,
-> +			mt->thermal_base + TEMP_ADCWRITECTRL);
-> +
-> +	for (i = 0; i < cfg->num_sensors; i++)
-> +		writel(sensor_mux_values[cfg->sensors[i]],
-> +				mt->thermal_base + sensing_points[i].adcpnp);
-> +
-> +	writel((1 << cfg->num_sensors) - 1, mt->thermal_base + TEMP_MONCTL0);
-> +
-> +	writel(TEMP_ADCWRITECTRL_ADC_PNP_WRITE | TEMP_ADCWRITECTRL_ADC_MUX_WRITE,
-> +			mt->thermal_base + TEMP_ADCWRITECTRL);
-> +
-> +	mtk_thermal_put_bank(bank);
-> +}
-> +
-> +static u64 of_get_phys_base(struct device_node *np)
-> +{
-> +	u64 size64;
-> +	const __be32 *regaddr_p;
-> +
-> +	regaddr_p = of_get_address(np, 0, &size64, NULL);
-> +	if (!regaddr_p)
-> +		return OF_BAD_ADDR;
-> +
-> +	return of_translate_address(np, regaddr_p);
-> +}
-> +
-> +static int mtk_thermal_probe(struct platform_device *pdev)
-> +{
-> +	int ret, i;
-> +	struct device_node *auxadc, *apmixedsys, *np = pdev->dev.of_node;
-> +	struct mtk_thermal *mt;
-> +	struct resource *res;
-> +	u64 auxadc_phys_base, apmixed_phys_base;
-> +
-> +	mt = devm_kzalloc(&pdev->dev, sizeof(*mt), GFP_KERNEL);
-> +	if (!mt)
-> +		return -ENOMEM;
-> +
-> +	mt->clk_peri_therm = devm_clk_get(&pdev->dev, "therm");
-> +	if (IS_ERR(mt->clk_peri_therm))
-> +		return PTR_ERR(mt->clk_peri_therm);
-> +
-> +	mt->clk_auxadc = devm_clk_get(&pdev->dev, "auxadc");
-> +	if (IS_ERR(mt->clk_auxadc))
-> +		return PTR_ERR(mt->clk_auxadc);
-> +
-> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +	mt->thermal_base = devm_ioremap_resource(&pdev->dev, res);
-> +	if (IS_ERR(mt->thermal_base))
-> +		return PTR_ERR(mt->thermal_base);
-> +
-> +	mutex_init(&mt->lock);
-> +
-> +	mt->dev = &pdev->dev;
-> +
-> +	auxadc = of_parse_phandle(np, "mediatek,auxadc", 0);
-> +	if (!auxadc) {
-> +		dev_err(&pdev->dev, "missing auxadc node\n");
-> +		return -ENODEV;
-> +	}
-> +
-> +	auxadc_phys_base = of_get_phys_base(auxadc);
-> +	if (auxadc_phys_base == OF_BAD_ADDR) {
-> +		dev_err(&pdev->dev, "Can't get auxadc phys address\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	apmixedsys = of_parse_phandle(np, "mediatek,apmixedsys", 0);
-> +	if (!apmixedsys) {
-> +		dev_err(&pdev->dev, "missing apmixedsys node\n");
-> +		return -ENODEV;
-> +	}
-> +
-> +	apmixed_phys_base = of_get_phys_base(apmixedsys);
-> +	if (apmixed_phys_base == OF_BAD_ADDR) {
-> +		dev_err(&pdev->dev, "Can't get auxadc phys address\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	ret = clk_prepare_enable(mt->clk_auxadc);
-> +	if (ret) {
-> +		dev_err(&pdev->dev, "Can't enable auxadc clk: %d\n", ret);
-> +		return ret;
-> +	}
-> +
-> +	ret = device_reset(&pdev->dev);
-> +	if (ret)
-> +		goto err_disable_clk_auxadc;
-> +
-> +	ret = clk_prepare_enable(mt->clk_peri_therm);
-> +	if (ret) {
-> +		dev_err(&pdev->dev, "Can't enable peri clk: %d\n", ret);
-> +		goto err_disable_clk_auxadc;
-> +	}
-> +
-> +	/*
-> +	 * These calibration values should finally be provided by the
-> +	 * firmware or fuses. For now use default values.
-> +	 */
-> +	mt->calib_slope = -123;
-> +	mt->calib_offset = 465124;
-> +
-> +	for (i = 0; i < MT8173_NUM_ZONES; i++)
-> +		mtk_thermal_init_bank(mt, i, apmixed_phys_base, auxadc_phys_base);
-> +
-> +	platform_set_drvdata(pdev, mt);
-> +
-> +	for (i = 0; i < MT8173_NUM_ZONES; i++) {
-> +		struct mtk_thermal_bank *bank = &mt->banks[i];
-> +
-> +		bank->tzd = thermal_zone_of_sensor_register(&pdev->dev, i, bank,
-> +				&mtk_thermal_ops);
-> +	}
-> +
-> +	return 0;
-> +
-> +err_disable_clk_auxadc:
-> +	clk_disable_unprepare(mt->clk_auxadc);
-> +
-> +	return ret;
-> +}
-> +
-> +static int mtk_thermal_remove(struct platform_device *pdev)
-> +{
-> +	struct mtk_thermal *mt = platform_get_drvdata(pdev);
-> +	int i;
-> +
-> +	for (i = 0; i < MT8173_NUM_ZONES; i++) {
-> +		struct mtk_thermal_bank *bank = &mt->banks[i];
-> +
-> +		thermal_zone_of_sensor_unregister(&pdev->dev, bank->tzd);
-> +	}
-> +
-> +	clk_disable_unprepare(mt->clk_peri_therm);
-> +	clk_disable_unprepare(mt->clk_auxadc);
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct of_device_id mtk_thermal_of_match[] = {
-> +	{
-> +		.compatible = "mediatek,mt8173-thermal",
-> +	}, {
-> +	},
-> +};
-> +
-> +static struct platform_driver mtk_thermal_driver = {
-> +	.probe = mtk_thermal_probe,
-> +	.remove = mtk_thermal_remove,
-> +	.driver = {
-> +		.name = THERMAL_NAME,
-> +		.of_match_table = mtk_thermal_of_match,
-> +	},
-> +};
-> +
-> +module_platform_driver(mtk_thermal_driver);
-> +
-> +MODULE_AUTHOR("Sascha Hauer <s.hauer@pengutronix.de");
-> +MODULE_DESCRIPTION("Mediatek thermal driver");
-> +MODULE_LICENSE("GPL v2");
+> > +			int perf_max_ctl =
+> > +				cpu
+> > ->acpi_perf_data.states[i].control >> 8;
+> > +			if (cpu->pstate.max_pstate > perf_max_ctl)
+> > +				cpu->pstate.max_pstate = 
+> > perf_max_ctl;
+> > +			break;
+> > +		}
+> > +	}
+> > +
+> > +	/* check If min perf > Intel P State min */
+> > +	min_perf = cpu->acpi_perf_data.states[
+> > +			cpu->acpi_perf_data.state_count - 
+> > 1].control >> 8;
+> > +	if (min_perf > cpu->pstate.min_pstate) {
+> > +		cpu->pstate.min_pstate = min_perf;
+> 
+> What's the guarantee that min_perf can be used as min_pstate?
+Intel P state min is the lowest possible P state from the processor
+platform info MSR. So if the ACPI specified min_perf is more, then it
+should work. It is possible that ACPI is setting floor for P states.
+> > +		policy->cpuinfo.min_freq = cpu->pstate.min_pstate 
+> > *
+> > +						cpu
+> > ->pstate.scaling;
+> > +	}
+> > +
+> > +	if (turbo_absent)
+> > +		policy->cpuinfo.max_freq =
+> > +			cpu->pstate.max_pstate * cpu
+> > ->pstate.scaling;
+> > +	else {
+> > +		policy->cpuinfo.max_freq =
+> > +			cpu->pstate.turbo_pstate * cpu
+> > ->pstate.scaling;
+> > +		/* scale freq to intel pstate turbo scale */
+> > +		cpu->acpi_perf_data.states[0].core_frequency =
+> > +				cpu->pstate.scaling *
+> > +				(cpu
+> > ->acpi_perf_data.states[0].control >> 8);
+> > +	}
+> > +
+> > +	pr_debug("Updated limits 0x%x 0x%x 0x %x\n", cpu
+> > ->pstate.min_pstate,
+> > +		 cpu->pstate.max_pstate, cpu
+> > ->pstate.turbo_pstate);
+> > +	pr_debug("policy max_freq=%d Khz min_freq = %d KHz\n",
+> > +		 policy->cpuinfo.max_freq, policy
+> > ->cpuinfo.min_freq);
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static int intel_pstate_exit_perf_limits(struct cpufreq_policy 
+> > *policy)
+> > +{
+> > +	struct cpudata *cpu;
+> > +
+> > +	if (!no_acpi_perf)
+> > +		return 0;
+> > +
+> > +	cpu = all_cpu_data[policy->cpu];
+> > +	acpi_processor_unregister_performance(&cpu
+> > ->acpi_perf_data,
+> > +					      policy->cpu);
+> > +	return 0;
+> > +}
+> > +
+> > +#else
+> > +static int intel_pstate_init_perf_limits(struct cpufreq_policy 
+> > *policy)
+> > +{
+> > +	return 0;
+> > +}
+> > +
+> > +static int intel_pstate_exit_perf_limits(struct cpufreq_policy 
+> > *policy)
+> > +{
+> > +	return 0;
+> > +}
+> > +#endif
+> > +
+> >  static inline void pid_reset(struct _pid *pid, int setpoint, int 
+> > busy,
+> >  			     int deadband, int integral) {
+> >  	pid->setpoint = setpoint;
+> > @@ -1186,18 +1302,29 @@ static int intel_pstate_cpu_init(struct 
+> > cpufreq_policy *policy)
+> >  	policy->cpuinfo.min_freq = cpu->pstate.min_pstate * cpu
+> > ->pstate.scaling;
+> >  	policy->cpuinfo.max_freq =
+> >  		cpu->pstate.turbo_pstate * cpu->pstate.scaling;
+> > +	if (!no_acpi_perf)
+> > +		intel_pstate_init_perf_limits(policy);
+> > +	/* If there is no acpi perf data or error, we ignore and 
+> > use Intel P
+> > +	 * state calculated limits
+> > +	 */
+> >  	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+> >  	cpumask_set_cpu(policy->cpu, policy->cpus);
+> >  
+> >  	return 0;
+> >  }
+> >  
+> > +static int intel_pstate_cpu_exit(struct cpufreq_policy *policy)
+> > +{
+> > +	return intel_pstate_exit_perf_limits(policy);
+> > +}
+> > +
+> >  static struct cpufreq_driver intel_pstate_driver = {
+> >  	.flags		= CPUFREQ_CONST_LOOPS,
+> >  	.verify		= intel_pstate_verify_policy,
+> >  	.setpolicy	= intel_pstate_set_policy,
+> >  	.get		= intel_pstate_get,
+> >  	.init		= intel_pstate_cpu_init,
+> > +	.exit		= intel_pstate_cpu_exit,
+> >  	.stop_cpu	= intel_pstate_stop_cpu,
+> >  	.name		= "intel_pstate",
+> >  };
+> > @@ -1429,6 +1556,9 @@ static int __init intel_pstate_setup(char 
+> > *str)
+> >  		force_load = 1;
+> >  	if (!strcmp(str, "hwp_only"))
+> >  		hwp_only = 1;
+> > +	if (!strcmp(str, "no_acpi_perf"))
+> > +		no_acpi_perf = 1;
+> > +
+> >  	return 0;
+> >  }
+> >  early_param("intel_pstate", intel_pstate_setup);
+> > 
+> 
