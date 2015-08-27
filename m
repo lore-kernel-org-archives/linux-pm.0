@@ -1,84 +1,56 @@
 From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH] thermal: cpu_cooling: Remove usage of devm functions
-Date: Thu, 27 Aug 2015 09:59:17 +0100
-Message-ID: <20150827085916.GA5653@e104805>
-References: <20150819062219.GA10032@localhost>
+Subject: Re: [PATCH v2] thermal: cpu_cooling: Remove usage of devm functions
+Date: Thu, 27 Aug 2015 10:00:17 +0100
+Message-ID: <20150827090017.GB5653@e104805>
+References: <20150820161402.GA4951@localhost>
+ <20150826124736.GA10956@e104805>
+ <20150826125158.GM8784@linux>
+ <20150826130921.GB10956@e104805>
+ <20150826131402.GN8784@linux>
+ <CAK-LDbJh9Dz1mQCcyGEJixg4bQkAoHPsHr9Mu2upaWjsTOfLVA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:52683 "EHLO
+Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:15908 "EHLO
 	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750952AbbH0I7W (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Aug 2015 04:59:22 -0400
+	by vger.kernel.org with ESMTP id S1751285AbbH0JAX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Aug 2015 05:00:23 -0400
 Content-Disposition: inline
-In-Reply-To: <20150819062219.GA10032@localhost>
+In-Reply-To: <CAK-LDbJh9Dz1mQCcyGEJixg4bQkAoHPsHr9Mu2upaWjsTOfLVA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Vaishali Thakkar <vthakkar1994@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Wed, Aug 19, 2015 at 07:22:19AM +0100, Vaishali Thakkar wrote:
-> In the function cpufreq_get_requested_power, the memory allocated
-> for load_cpu is live within the function only. And after the
-> allocation it is immediately freed with devm_kfree. There is no
-> need to allocate memory for load_cpu with devm function so replace
-> devm_kcalloc with kcalloc and devm_kfree with kfree.
+On Thu, Aug 27, 2015 at 02:31:26AM +0100, Vaishali Thakkar wrote:
+> On Wed, Aug 26, 2015 at 6:44 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > On 26-08-15, 14:09, Javi Merino wrote:
+> >> On Wed, Aug 26, 2015 at 01:51:58PM +0100, Viresh Kumar wrote:
+> >> > On 26-08-15, 13:47, Javi Merino wrote:
+> >> > > I missed this because I wasn't CCed :(  Thankfully, I'll be in
+> >> > > MAINTAINERS for this soon.
+> >> >
+> >> > Yeah, I need to resend that patch soon :)
+> >> >
+> >> > > > -               devm_kfree(&cdev->device, load_cpu);
+> >> > >
+> >> > > This introduces a memory leak.  Keep the kfree() here, you can't drop
+> >> > > it.  Cheers,
+> >> > > Javi
+> >> > >
+> >> > > > -       }
+> >> > > > -
+> >> > > >         *power = static_power + dynamic_power;
+> >> > > >         return 0;
+> >
+> > So, the change I suggested on V1 removed this as well :) and Vaishali
+> > missed it completely.
 > 
-> Signed-off-by: Vaishali Thakkar <vthakkar1994@gmail.com>
+> Yes. I missed the point that kfree was called at 2 places previously.
+> Would you like me to send v3 with changes having just new label with
+> 'goto' at both of these places or you would like to apply v1 of the patch?
 
-Acked-by: Javi Merino <javi.merino@arm.com>
-
-> ---
-> This patch is having one checkpatch.pl warning which suggests that
-> kfree(NULL) is safe. But I think leaving code with if is nice
-> because it reflects the fact that kcalloc was under an if. So, I
-> have ignored checkpatch. If maintainer wants me to go for changing
-> things, I am fine with it too.
-
-I wouldn't have minded changing the
-
-if (load_cpu)
-	kfree(load_cpu)
-
-to just "kfree(load_cpu)" but I don't have a strong preference.  I'm
-also happy with the patch as it is.
+I vote for v1.  I've acked it.
 
 Cheers,
 Javi
-
-> ---
->  drivers/thermal/cpu_cooling.c | 7 +++----
->  1 file changed, 3 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-> index 620dcd4..babf8b3 100644
-> --- a/drivers/thermal/cpu_cooling.c
-> +++ b/drivers/thermal/cpu_cooling.c
-> @@ -584,8 +584,7 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
->  	if (trace_thermal_power_cpu_get_power_enabled()) {
->  		u32 ncpus = cpumask_weight(&cpufreq_device->allowed_cpus);
->  
-> -		load_cpu = devm_kcalloc(&cdev->device, ncpus, sizeof(*load_cpu),
-> -					GFP_KERNEL);
-> +		load_cpu = kcalloc(ncpus, sizeof(*load_cpu), GFP_KERNEL);
->  	}
->  
->  	for_each_cpu(cpu, &cpufreq_device->allowed_cpus) {
-> @@ -609,7 +608,7 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
->  	ret = get_static_power(cpufreq_device, tz, freq, &static_power);
->  	if (ret) {
->  		if (load_cpu)
-> -			devm_kfree(&cdev->device, load_cpu);
-> +			kfree(load_cpu);
->  		return ret;
->  	}
->  
-> @@ -618,7 +617,7 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
->  			&cpufreq_device->allowed_cpus,
->  			freq, load_cpu, i, dynamic_power, static_power);
->  
-> -		devm_kfree(&cdev->device, load_cpu);
-> +		kfree(load_cpu);
->  	}
->  
->  	*power = static_power + dynamic_power;
