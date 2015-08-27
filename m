@@ -1,49 +1,67 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH] modify pl011 driver to work as wakeup source
-Date: Thu, 27 Aug 2015 11:51:02 +0100
-Message-ID: <55DEEB96.5090908@arm.com>
-References: <1439547886-5093-1-git-send-email-zhaoyang.huang@linaro.org>	<55CDC9D4.3020709@linaro.org>	<CAN2waFv+8KM_TCw=iy1BOn-KmYuZRVmr5jKAniJwCaxBjqXvNQ@mail.gmail.com>	<55DDC697.4080107@linaro.org>	<55DDDCFC.8070107@arm.com> <CAN2waFtcVHoSX6QGZQFzJJ2fkYVk1mUsgMn1HYGGd-+TT-XMjw@mail.gmail.com>
+From: Javi Merino <javi.merino@arm.com>
+Subject: [PATCH v5 0/5] Devfreq cooling device
+Date: Thu, 27 Aug 2015 11:55:46 +0100
+Message-ID: <1440672951-7002-1-git-send-email-javi.merino@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:48154 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:48163 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751507AbbH0KvF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 27 Aug 2015 06:51:05 -0400
-In-Reply-To: <CAN2waFtcVHoSX6QGZQFzJJ2fkYVk1mUsgMn1HYGGd-+TT-XMjw@mail.gmail.com>
+	id S1751444AbbH0K4Y (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 27 Aug 2015 06:56:24 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhaoyang Huang <zhaoyang.huang@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Amit Kucheria <amit.kucheria@linaro.org>
+To: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, cw00.choi@samsung.com, rufus.hamade@imgtec.com, edubezval@gmail.com, Javi Merino <javi.merino@arm.com>
 
+This series introduces a devfreq cooling device in the thermal
+framework.  Devfreq is used for DVFS for devices other than the CPUs.
+With a devfreq cooling device, the thermal framework can throttle them
+to control temperature.  The cooling device has the power extensions,
+so it can be used by all governors in the thermal framework, including
+the power allocator governor.
 
+Changes since v4:
+  - Don't introduce a new function in the OPP library and instead fix
+    dev_pm_opp_get_voltage() as suggested by Viresh Kumar
+  - Don't allocate memory under RCU
+  - Don't call dev_pm_opp_enable/disable under RCU
+  - Generate the frequency table even if the power extensions were
+    not provided
 
-On 27/08/15 09:25, Zhaoyang Huang wrote:
-> Sudeep,
-> Have you check if the pl011 can wakeup the system. I notice that the
-> calling of dev_pm_set_wake_irq can set the node of <device>/power/wakeup
-> to be enabled but can not wakeup the system.
->
+Changes since v3:
+  - Made devfreq_update_stats() a static inline function
+  - Add dev_pm_get_voltage_always() to get the voltage even for
+    disabled OPPs
+  - Don't rely on freq_table from the devfreq->profile being present
+    and create our own
+  - Don't use devm_k* to allocate memory
+  - Move struct devfreq_cooling_register to devfreq_cooling.c
 
-Yes I did, and it does wakeup the system.
+Javi Merino (4):
+  PM / devfreq: cache the last call to get_dev_status()
+  PM / OPP: get the voltage for all OPPs
+  devfreq_cooling: add trace information
+  PM / devfreq: drop comment about thermal setting max_freq
 
-> By basic debugging, I find that when calling of dev_pm_set_wake_irq
-> within pl011_probe, the real device which we operate is the
-> /sys/devices/platform/7ff80000.uart instead of the ttyAMA0.
->
+=C3=98rjan Eide (1):
+  thermal: Add devfreq cooling
 
-No, if you are expecting the wakeup by sending some character on the
-console, then it's ttyAMA0 which uses the pl011 UART. May be you can
-also generate wakeup by toggling RTS/CTS hardware flow signals.
+ drivers/base/power/opp.c                  |   4 +-
+ drivers/devfreq/devfreq.c                 |   6 +-
+ drivers/devfreq/governor_simpleondemand.c |  33 +-
+ drivers/thermal/Kconfig                   |  11 +
+ drivers/thermal/Makefile                  |   3 +
+ drivers/thermal/devfreq_cooling.c         | 552 ++++++++++++++++++++++=
+++++++++
+ include/linux/devfreq.h                   |  15 +
+ include/linux/devfreq_cooling.h           |  72 ++++
+ include/trace/events/thermal.h            |  53 +++
+ 9 files changed, 729 insertions(+), 20 deletions(-)
+ create mode 100644 drivers/thermal/devfreq_cooling.c
+ create mode 100644 include/linux/devfreq_cooling.h
 
-> By checking the sysfs, I find that the value of
-> "sys/devices/platform/7ff80000.uart/power/wakeup" is "enabled", which
-> can also prove above information. However, the value of
-> "dev.power.wakeup->wakeirq->irq" for uart is 24 which is the same with
-> ttyAMA0.
+--=20
+1.9.1
 
-Ah, you need to use /sys/class/tty/ttyAMA0/power/wakeup
-
-Regards,
-Sudeep
