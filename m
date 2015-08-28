@@ -1,39 +1,39 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RESEND PATCH 0/3 v6] Add Mediatek MT8173 cpufreq driver
-Date: Fri, 28 Aug 2015 16:06:16 +0200
-Message-ID: <22538895.vrRgZUmQTV@vostro.rjw.lan>
-References: <1439803465-19683-1-git-send-email-pi-cheng.chen@linaro.org> <20150826021659.GD8784@linux> <CALx668V2herrp6XOtCDR7nNvFhd7DLLMjXmr86cjfCOQ_cgmrw@mail.gmail.com>
+Subject: Re: [PATCH V4 2/2] PM / OPP: Fix static checker warning (broken 64bit big endian systems)
+Date: Fri, 28 Aug 2015 16:14:33 +0200
+Message-ID: <20319405.E46lXZHqyF@vostro.rjw.lan>
+References: <fac7aa53b304bbff1ff22f65670e05e5e6dc6396.1439376998.git.viresh.kumar@linaro.org> <0a41aca3107cea2d9fac3f4536e5c7f4acd90f7d.1439818955.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CALx668V2herrp6XOtCDR7nNvFhd7DLLMjXmr86cjfCOQ_cgmrw@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Matthias Brugger <matthias.bgg@gmail.com>, Mark Rutland <mark.rutland@arm.com>, Michael Turquette <mturquette@baylibre.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, linux-mediatek@lists.infradead.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:52827 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751841AbbH1Nq6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Aug 2015 09:46:58 -0400
+In-Reply-To: <0a41aca3107cea2d9fac3f4536e5c7f4acd90f7d.1439818955.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, dan.carpenter@oracle.com, nm@ti.com, sboyd@codeaurora.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 
-On Wednesday, August 26, 2015 02:53:39 PM Pi-Cheng Chen wrote:
-> On Wed, Aug 26, 2015 at 10:16 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > On 26-08-15, 09:25, Pi-Cheng Chen wrote:
-> >> The [3/3] is based on Mediatek SoC maintainer tree[1] and the patch which
-> >> introduce a new clock type[2] consumed by MT8173 cpufreq driver. So it will
-> >> cause some conflicts if it goes through your tree. I am not sure how this
-> >> should be handled, but should it be merged through Mediatek SoC maintainer
-> >> tree?
-> >
-> > Just get that applied to MTK tree, it doesn't have any dependency on
-> > rest of the patches for build/boot. The only thing is that cpufreq
-> > wouldn't work and it will work as soon as Rafael's and MTK's trees are
-> > merged by Linus.
+On Monday, August 17, 2015 07:20:20 PM Viresh Kumar wrote:
+> Dan Carpenter reported (generated with static checker):
 > 
-> Thanks for your explanation.
+> drivers/base/power/opp.c:949 _opp_add_static_v2()
+> warn: passing casted pointer '&new_opp->clock_latency_ns' to
+> 'of_property_read_u32()' 64 vs 32.
 > 
-> @Rafael, Would you please apply [1,2] to your tree?
+> This code will break on 64 bit, big endian machines.
+> 
+> Fix this by reading the value in a u32 type variable first and then
+> assigning it to the unsigned long variable.
+> 
+> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+> Suggested-by: Stephen Boyd <sboyd@codeaurora.org>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Applied, thanks!
+I've applied this and the [1/2], thanks!
 
+Rafael
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
