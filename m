@@ -1,47 +1,44 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH 03/13] twl4030_charger: correctly handle -EPROBE_DEFER
- from devm_usb_get_phy_by_node
-Date: Thu, 27 Aug 2015 13:51:04 -0700
-Message-ID: <CAMAWPa__hFOuz24YBcFiR+m5mOUArSuNpuqh3Ju1H+yj6qadfA@mail.gmail.com>
-References: <20150730001113.4012.18086.stgit@noble>
-	<20150730001124.4012.31980.stgit@noble>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: Re: [PATCH v5 5/5] PM / devfreq: drop comment about thermal
+ setting max_freq
+Date: Fri, 28 Aug 2015 00:46:49 +0000 (GMT)
+Message-ID: <400613888.265811440722808544.JavaMail.weblogic@ep2mlwas08a>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:58793 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751728AbbH0UvJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 27 Aug 2015 16:51:09 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id 7F552209F9
-	for <linux-pm@vger.kernel.org>; Thu, 27 Aug 2015 20:51:08 +0000 (UTC)
-Received: from mail-wi0-f176.google.com (mail-wi0-f176.google.com [209.85.212.176])
-	(using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPSA id D570D20A06
-	for <linux-pm@vger.kernel.org>; Thu, 27 Aug 2015 20:51:05 +0000 (UTC)
-Received: by widdq5 with SMTP id dq5so3523873wid.0
-        for <linux-pm@vger.kernel.org>; Thu, 27 Aug 2015 13:51:04 -0700 (PDT)
-In-Reply-To: <20150730001124.4012.31980.stgit@noble>
+Received: from mailout2.samsung.com ([203.254.224.25]:52322 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752293AbbH1Arx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Aug 2015 20:47:53 -0400
+Received: from epcpsbgr3.samsung.com
+ (u143.gpu120.samsung.co.kr [203.254.230.143])
+ by mailout2.samsung.com (Oracle Communications Messaging Server 7.0.5.31.0
+ 64bit (built May  5 2014))
+ with ESMTP id <0NTR02YJXOVIW160@mailout2.samsung.com> for
+ linux-pm@vger.kernel.org; Fri, 28 Aug 2015 09:47:42 +0900 (KST)
+MIME-version: 1.0
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: NeilBrown <neil@brown.name>
-Cc: Sebastian Reichel <sre@kernel.org>, Samuel Ortiz <sameo@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Tony Lindgren <tony@atomide.com>, David Woodhouse <dwmw2@infradead.org>, lkml <linux-kernel@vger.kernel.org>, real GTA04 owners <gta04-owner@goldelico.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Pavel Machek <pavel@ucw.cz>, linux-omap <linux-omap@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Tyler Baker <tyler.baker@linaro.org>
+To: Javi Merino <javi.merino@arm.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, "rufus.hamade@imgtec.com" <rufus.hamade@imgtec.com>, "edubezval@gmail.com" <edubezval@gmail.com>
 
-On Wed, Jul 29, 2015 at 5:11 PM, NeilBrown <neil@brown.name> wrote:
-> Now that twl4030_bci_probe can safely return -EPROBE_DEFER,
-> do so when devm_usb_get_phy_by_node returns that error.
->
-> Signed-off-by: NeilBrown <neil@brown.name>
+PiBPbiBUaHUsIEF1ZyAyNywgMjAxNSBhdCAxMTo1ODozOUFNICswMTAwLCBNeXVuZ0pvbyBIYW0g
+d3JvdGU6DQo+ID4gPiBUaGUgdGhlcm1hbCBpbmZyYXN0cnVjdHVyZSBzaG91bGQgdXNlIHRoZSBk
+ZXZmcmVxIGNvb2xpbmcgZGV2aWNlLCB3aGljaA0KPiA+ID4gdXNlcyB0aGUgT1BQIGxpYnJhcnkg
+dG8gZGlzYWJsZSBPUFBzIGFzIG5lY2Vzc2FyeS4NCj4gPiA+IA0KPiA+ID4gRml4IGEgY291cGxl
+IG9mIHR5cG9zIGluIHRoZSBzYW1lIGNvbW1lbnQgd2hpbGUgd2UgYXJlIGF0IGl0Lg0KPiA+ID4g
+DQo+ID4gPiBDYzogTXl1bmdKb28gSGFtIDxteXVuZ2pvby5oYW1Ac2Ftc3VuZy5jb20+DQo+ID4g
+PiBTaWduZWQtb2ZmLWJ5OiBKYXZpIE1lcmlubyA8amF2aS5tZXJpbm9AYXJtLmNvbT4NCj4gPiAN
+Cj4gPiBZb3VyIHBhdGNoZXMgKDEvNSwgNS81KSBhcmUgYWxyZWFkeSBtZXJnZWQgaW4gaHR0cHM6
+Ly9naXQua2VybmVsLm9yZy9jZ2l0L2xpbnV4L2tlcm5lbC9naXQvbXp4L2RldmZyZXEuZ2l0DQo+
+ID4gYW5kIHdpbGwgYmUgInB1bGwtcmVxdWVzdCJlZCB3aXRoIG90aGVyIHBhdGNoZXMgbGF0ZXIu
+DQo+ID4gDQo+ID4gRG8geW91ciAiVjUiIHBhdGNoZXMgaGF2ZSB1cGRhdGVzIGZyb20gbGFzdCBw
+YXRjaGVzPw0KPiANCj4gTm8gdGhleSBoYXZlbid0LiAgSSBzaG91bGQgaGF2ZSBiYXNlZCB0aGlz
+IHNlcmllcyBvbiB0b3Agb2YgeW91cg0KPiBicmFuY2guICBJJ2xsIGRvIHRoYXQgaW4gdGhlIGZ1
+dHVyZS4NCj4gDQo+IFNvcnJ5IGZvciB0aGF0LA0KPiBKYXZpDQo+IA0KDQpPaC4uIG5vIHlvdSBk
+b24ndCBuZWVkIHRvIGRvIHNvLg0KQmVpbmcgYmFzZWQgb24gdGhlIHJlY2VudCBSQy14IGlzIGFs
+cmVhZHkgZW5vdWdoLg0KDQoNCkNoZWVycywNCk15dW5nSm9vDQoNCg==
 
-This patch has hit linux-next in the form of coommit 3fc3895e4fe1
-(twl4030_charger: correctly handle -EPROBE_DEFER from
-devm_usb_get_phy_by_node) and kernelci.org found a regression on
-omap3-beagle-xm[1].  Bisecting[2] this boot failure pointed at this
-commit, and I verified that reverting it on top of next-20150827 gets
-the board booting again.  I haven't debugged any further.
 
-Kevin
-
-[1] http://storage.kernelci.org/next/next-20150827/arm-omap2plus_defconfig/lab-khilman/boot-omap3-beagle-xm.html
-[2] https://ci.linaro.org/view/people/job/tbaker-boot-bisect-bot/88/console
