@@ -1,44 +1,62 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: Re: [PATCH v5 5/5] PM / devfreq: drop comment about thermal
- setting max_freq
-Date: Fri, 28 Aug 2015 00:46:49 +0000 (GMT)
-Message-ID: <400613888.265811440722808544.JavaMail.weblogic@ep2mlwas08a>
-Reply-To: myungjoo.ham@samsung.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v1 0/6] Intel P states enhancements
+Date: Thu, 27 Aug 2015 18:34:20 -0700
+Message-ID: <1440725666-3550-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:52322 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752293AbbH1Arx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 27 Aug 2015 20:47:53 -0400
-Received: from epcpsbgr3.samsung.com
- (u143.gpu120.samsung.co.kr [203.254.230.143])
- by mailout2.samsung.com (Oracle Communications Messaging Server 7.0.5.31.0
- 64bit (built May  5 2014))
- with ESMTP id <0NTR02YJXOVIW160@mailout2.samsung.com> for
- linux-pm@vger.kernel.org; Fri, 28 Aug 2015 09:47:42 +0900 (KST)
-MIME-version: 1.0
+Received: from mga14.intel.com ([192.55.52.115]:17215 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751711AbbH1Bfi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 27 Aug 2015 21:35:38 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, "rufus.hamade@imgtec.com" <rufus.hamade@imgtec.com>, "edubezval@gmail.com" <edubezval@gmail.com>
+To: kristen.c.accardi@intel.com, rafael.j.wysocki@intel.com, len.brown@intel.com
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-PiBPbiBUaHUsIEF1ZyAyNywgMjAxNSBhdCAxMTo1ODozOUFNICswMTAwLCBNeXVuZ0pvbyBIYW0g
-d3JvdGU6DQo+ID4gPiBUaGUgdGhlcm1hbCBpbmZyYXN0cnVjdHVyZSBzaG91bGQgdXNlIHRoZSBk
-ZXZmcmVxIGNvb2xpbmcgZGV2aWNlLCB3aGljaA0KPiA+ID4gdXNlcyB0aGUgT1BQIGxpYnJhcnkg
-dG8gZGlzYWJsZSBPUFBzIGFzIG5lY2Vzc2FyeS4NCj4gPiA+IA0KPiA+ID4gRml4IGEgY291cGxl
-IG9mIHR5cG9zIGluIHRoZSBzYW1lIGNvbW1lbnQgd2hpbGUgd2UgYXJlIGF0IGl0Lg0KPiA+ID4g
-DQo+ID4gPiBDYzogTXl1bmdKb28gSGFtIDxteXVuZ2pvby5oYW1Ac2Ftc3VuZy5jb20+DQo+ID4g
-PiBTaWduZWQtb2ZmLWJ5OiBKYXZpIE1lcmlubyA8amF2aS5tZXJpbm9AYXJtLmNvbT4NCj4gPiAN
-Cj4gPiBZb3VyIHBhdGNoZXMgKDEvNSwgNS81KSBhcmUgYWxyZWFkeSBtZXJnZWQgaW4gaHR0cHM6
-Ly9naXQua2VybmVsLm9yZy9jZ2l0L2xpbnV4L2tlcm5lbC9naXQvbXp4L2RldmZyZXEuZ2l0DQo+
-ID4gYW5kIHdpbGwgYmUgInB1bGwtcmVxdWVzdCJlZCB3aXRoIG90aGVyIHBhdGNoZXMgbGF0ZXIu
-DQo+ID4gDQo+ID4gRG8geW91ciAiVjUiIHBhdGNoZXMgaGF2ZSB1cGRhdGVzIGZyb20gbGFzdCBw
-YXRjaGVzPw0KPiANCj4gTm8gdGhleSBoYXZlbid0LiAgSSBzaG91bGQgaGF2ZSBiYXNlZCB0aGlz
-IHNlcmllcyBvbiB0b3Agb2YgeW91cg0KPiBicmFuY2guICBJJ2xsIGRvIHRoYXQgaW4gdGhlIGZ1
-dHVyZS4NCj4gDQo+IFNvcnJ5IGZvciB0aGF0LA0KPiBKYXZpDQo+IA0KDQpPaC4uIG5vIHlvdSBk
-b24ndCBuZWVkIHRvIGRvIHNvLg0KQmVpbmcgYmFzZWQgb24gdGhlIHJlY2VudCBSQy14IGlzIGFs
-cmVhZHkgZW5vdWdoLg0KDQoNCkNoZWVycywNCk15dW5nSm9vDQoNCg==
+This series enhances Intel P state drivers with the following features:
+- When max_perf_pct is reduced in turbo range, we can change the turbo ratios
+when platform allows. This is particularly useful in limiting performance with
+HWP where whole range is turbo.
+- Use Turbo Activation Ratio, when calculating max non turbo P state. This will
+show now correct percentage in turbo range
+- To calculate busy percent, the estimate is not correct when the max non turbo
+is limited by tar, hence using physical max non turbo as before.
+- Use ACPI _PSS and _PPC in intel_ptate driver.
+- Avoid calculation for P state control value when cpufreq policy requests
+frequency limits when matched in _PSS. Sometime calculations causes reduced
+control value in boundary conditions.
+Although they are independent patches, sending as series to help applying and
+testing.
+I appreciate review and testing on multiple platforms.
 
+v1:
+- Change the command line option to "no_acpi"
+- changed kernel parameter documentation file and added "no_acpi" parameter
+- pr_debug prefixed with "intel_pstate" as suggested by Doug
+- Changed the logic to determine turbo freq in _PSS using odd/even convention,
+although this is the way it is defined in _PSS. But atleast two reviewers has
+questioned the source of this. This is defined usually in non public documents
+like BIOS writer guides. Now using the control field value to determine the
+turbo and non turbo max.
+- Fix the Kconfig dependency on ACPI for ACPI_PROCESSOR
+- multi line comment styles
+
+v0:
+Base version
+
+Srinivas Pandruvada (6):
+  cpufreq: intel_p_state: Fix limiting turbo sub states
+  cpufreq: intel_pstate: get P1 from TAR when available
+  cpufreq: intel-pstate: Use separate max pstate for scaling
+  cpufreq: intel_pstate: Use ACPI perf configuration
+  Documentation: kernel_parameters for Intel P state driver
+  cpufreq: intel_pstate: Avoid calculation for max/min
+
+ Documentation/kernel-parameters.txt |   3 +
+ arch/x86/include/asm/msr-index.h    |   7 +
+ drivers/cpufreq/Kconfig.x86         |   1 +
+ drivers/cpufreq/intel_pstate.c      | 335 ++++++++++++++++++++++++++++++++++--
+ 4 files changed, 336 insertions(+), 10 deletions(-)
+
+-- 
+2.4.3
 
