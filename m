@@ -1,72 +1,39 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 3/3] cpuidle/coupled: Add sanity check for safe_state_index
-Date: Fri, 28 Aug 2015 16:04:56 +0200
-Message-ID: <1492539.aTp0xzx2ya@vostro.rjw.lan>
-References: <1438667337-16903-1-git-send-email-xlpang@126.com> <1438667337-16903-3-git-send-email-xlpang@126.com>
+Subject: Re: [RESEND PATCH 0/3 v6] Add Mediatek MT8173 cpufreq driver
+Date: Fri, 28 Aug 2015 16:06:16 +0200
+Message-ID: <22538895.vrRgZUmQTV@vostro.rjw.lan>
+References: <1439803465-19683-1-git-send-email-pi-cheng.chen@linaro.org> <20150826021659.GD8784@linux> <CALx668V2herrp6XOtCDR7nNvFhd7DLLMjXmr86cjfCOQ_cgmrw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:49132 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751841AbbH1NhW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 28 Aug 2015 09:37:22 -0400
-In-Reply-To: <1438667337-16903-3-git-send-email-xlpang@126.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CALx668V2herrp6XOtCDR7nNvFhd7DLLMjXmr86cjfCOQ_cgmrw@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Matthias Brugger <matthias.bgg@gmail.com>, Mark Rutland <mark.rutland@arm.com>, Michael Turquette <mturquette@baylibre.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, linux-mediatek@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Xunlei Pang <xlpang@126.com>
-Cc: linux-kernel@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, Xunlei Pang <pang.xunlei@linaro.org>
 
-On Tuesday, August 04, 2015 01:48:57 PM Xunlei Pang wrote:
-> From: Xunlei Pang <pang.xunlei@linaro.org>
+On Wednesday, August 26, 2015 02:53:39 PM Pi-Cheng Chen wrote:
+> On Wed, Aug 26, 2015 at 10:16 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > On 26-08-15, 09:25, Pi-Cheng Chen wrote:
+> >> The [3/3] is based on Mediatek SoC maintainer tree[1] and the patch which
+> >> introduce a new clock type[2] consumed by MT8173 cpufreq driver. So it will
+> >> cause some conflicts if it goes through your tree. I am not sure how this
+> >> should be handled, but should it be merged through Mediatek SoC maintainer
+> >> tree?
+> >
+> > Just get that applied to MTK tree, it doesn't have any dependency on
+> > rest of the patches for build/boot. The only thing is that cpufreq
+> > wouldn't work and it will work as soon as Rafael's and MTK's trees are
+> > merged by Linus.
 > 
-> Since we're using cpuidle_driver::safe_state_index directly as the
-> target state index, it's better to add the sanity check at the point
-> of registering the driver.
+> Thanks for your explanation.
 > 
-> Signed-off-by: Xunlei Pang <pang.xunlei@linaro.org>
-> ---
->  drivers/cpuidle/driver.c | 13 +++++++++++++
->  1 file changed, 13 insertions(+)
-> 
-> diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
-> index 5db1478..def299e 100644
-> --- a/drivers/cpuidle/driver.c
-> +++ b/drivers/cpuidle/driver.c
-> @@ -223,10 +223,23 @@ static void poll_idle_init(struct cpuidle_driver *drv) {}
->  static int __cpuidle_register_driver(struct cpuidle_driver *drv)
->  {
->  	int ret;
-> +#ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
-> +	int i;
-> +#endif
->  
->  	if (!drv || !drv->state_count)
->  		return -EINVAL;
->  
-> +#ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
-> +	for (i = drv->state_count - 1; i >= 0; i--) {
-> +		if (cpuidle_state_is_coupled(drv, i) &&
-> +		    (drv->safe_state_index == i ||
-> +		     drv->safe_state_index < 0 ||
-> +		     drv->safe_state_index >= drv->state_count))
-> +			return -EINVAL;
-> +	}
-> +#endif
+> @Rafael, Would you please apply [1,2] to your tree?
 
-Please move this code to a separate function depending on
-CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED, define a "return 0" stub of it for
-CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED unset and call it from here.
+Applied, thanks!
 
-Generally, please try to avoid using #ifdef and similar in function bodies
-if possible.
 
-> +
->  	if (cpuidle_disabled())
->  		return -ENODEV;
->  
-> 
-
-Thanks,
-Rafael
-
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
