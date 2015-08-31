@@ -1,142 +1,156 @@
-From: Lucas Stach <l.stach@pengutronix.de>
-Subject: Re: [PATCH] cpufreq: imx: use the managed interfaces for resources
- allocation
-Date: Mon, 31 Aug 2015 13:06:03 +0200
-Message-ID: <1441019163.3652.2.camel@pengutronix.de>
-References: <1441040730-16391-1-git-send-email-b51503@freescale.com>
+From: Daniel Kurtz <djkurtz@chromium.org>
+Subject: Re: [PATCH v4 4/5] thermal: power_allocator: don't require tzp to be
+ present for the thermal zone
+Date: Mon, 31 Aug 2015 21:14:47 +0800
+Message-ID: <CAGS+omDj0NR3pD-E+L6zQ9_mbCuXPQEBsMWEZXwKx-dor0fjFA@mail.gmail.com>
+References: <1439833008-26440-1-git-send-email-javi.merino@arm.com>
+ <1440595604-27197-1-git-send-email-javi.merino@arm.com> <1440595604-27197-5-git-send-email-javi.merino@arm.com>
+ <CAGS+omBzLQnbT13k2pGa_g+TQg1v0+k=nb+1QUNY5KaNvq2pfQ@mail.gmail.com> <20150828162807.GD2759@e104805>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:59698 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752456AbbHaLGH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 31 Aug 2015 07:06:07 -0400
-In-Reply-To: <1441040730-16391-1-git-send-email-b51503@freescale.com>
+Received: from mail-yk0-f176.google.com ([209.85.160.176]:36466 "EHLO
+	mail-yk0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752668AbbHaNPI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 31 Aug 2015 09:15:08 -0400
+Received: by ykap84 with SMTP id p84so1192961yka.3
+        for <linux-pm@vger.kernel.org>; Mon, 31 Aug 2015 06:15:07 -0700 (PDT)
+In-Reply-To: <20150828162807.GD2759@e104805>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bai Ping <b51503@freescale.com>
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Javi Merino <javi.merino@arm.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Chung-yih Wang <cywang@chromium.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Punit Agrawal <Punit.Agrawal@arm.com>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
 
-Am Dienstag, den 01.09.2015, 01:05 +0800 schrieb Bai Ping:
-> Replace the clk_get() and regulator_get() with the managed interfaces
-> then the error path can be simplified.
-> 
-> Signed-off-by: Bai Ping <b51503@freescale.com>
+Hi Javi,
 
-NACK.
-Please go back in the git history of this file and look at the commits.
-Those clocks and regulators are explicitly _not_ using the managed
-functions, as this would lead to resource leaks.
+On Sat, Aug 29, 2015 at 12:28 AM, Javi Merino <javi.merino@arm.com> wrote:
+> On Fri, Aug 28, 2015 at 03:18:20AM +0100, Daniel Kurtz wrote:
+>> On Wed, Aug 26, 2015 at 9:26 PM, Javi Merino <javi.merino@arm.com> wrote:
+>> > Thermal zones created using thermal_zone_device_create() may not have
+>> > tzp.  As the governor gets its parameters from there, allocate it while
+>> > the governor is bound to the thermal zone so that it can operate in it.
+>> > In this case, tzp is freed when the thermal zone switches to another
+>> > governor.
+>> >
+>> > Cc: Zhang Rui <rui.zhang@intel.com>
+>> > Cc: Eduardo Valentin <edubezval@gmail.com>
+>> > Signed-off-by: Javi Merino <javi.merino@arm.com>
+>> > ---
+>> >
+>> > While this would be easier to do by just ignoring the thermal zone if
+>> > there was no tzp, I think the approach in this patch provides a better
+>> > behavior.
+>>
+>> Why?
+>> Just ignoring the thermal zone seems reasonable and simpler.
+>
+> From the developer point of view, I agree that it's simpler.  What I
+> want to avoid is the system integrator getting different behaviors
+> based on the presence of tzp when the thermal zone was created.  If
+> the integrator was to configure this from userspace, they would only
+> be able to do so if the thermal zone was created with tzp.  I don't
+> like this distinction, I prefer the consistency from the user point of
+> view that this patch gives.
 
-Regards,
-Lucas
-> ---
->  drivers/cpufreq/imx6q-cpufreq.c | 52 +++++++++++------------------------------
->  1 file changed, 13 insertions(+), 39 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-> index 380a90d..1439f93 100644
-> --- a/drivers/cpufreq/imx6q-cpufreq.c
-> +++ b/drivers/cpufreq/imx6q-cpufreq.c
-> @@ -174,25 +174,25 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
->  		return -ENOENT;
->  	}
->  
-> -	arm_clk = clk_get(cpu_dev, "arm");
-> -	pll1_sys_clk = clk_get(cpu_dev, "pll1_sys");
-> -	pll1_sw_clk = clk_get(cpu_dev, "pll1_sw");
-> -	step_clk = clk_get(cpu_dev, "step");
-> -	pll2_pfd2_396m_clk = clk_get(cpu_dev, "pll2_pfd2_396m");
-> +	arm_clk = devm_clk_get(cpu_dev, "arm");
-> +	pll1_sys_clk = devm_clk_get(cpu_dev, "pll1_sys");
-> +	pll1_sw_clk = devm_clk_get(cpu_dev, "pll1_sw");
-> +	step_clk = devm_clk_get(cpu_dev, "step");
-> +	pll2_pfd2_396m_clk = devm_clk_get(cpu_dev, "pll2_pfd2_396m");
->  	if (IS_ERR(arm_clk) || IS_ERR(pll1_sys_clk) || IS_ERR(pll1_sw_clk) ||
->  	    IS_ERR(step_clk) || IS_ERR(pll2_pfd2_396m_clk)) {
->  		dev_err(cpu_dev, "failed to get clocks\n");
->  		ret = -ENOENT;
-> -		goto put_clk;
-> +		goto put_node;
->  	}
->  
-> -	arm_reg = regulator_get(cpu_dev, "arm");
-> -	pu_reg = regulator_get_optional(cpu_dev, "pu");
-> -	soc_reg = regulator_get(cpu_dev, "soc");
-> +	arm_reg = devm_regulator_get(cpu_dev, "arm");
-> +	pu_reg = devm_regulator_get_optional(cpu_dev, "pu");
-> +	soc_reg = devm_regulator_get(cpu_dev, "soc");
->  	if (IS_ERR(arm_reg) || IS_ERR(soc_reg)) {
->  		dev_err(cpu_dev, "failed to get regulators\n");
->  		ret = -ENOENT;
-> -		goto put_reg;
-> +		goto put_node;
->  	}
->  
->  	/*
-> @@ -205,7 +205,7 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
->  		ret = of_init_opp_table(cpu_dev);
->  		if (ret < 0) {
->  			dev_err(cpu_dev, "failed to init OPP table: %d\n", ret);
-> -			goto put_reg;
-> +			goto put_node;
->  		}
->  
->  		/* Because we have added the OPPs here, we must free them */
-> @@ -222,7 +222,7 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
->  	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
->  	if (ret) {
->  		dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
-> -		goto put_reg;
-> +		goto out_free_opp;
->  	}
->  
->  	/* Make imx6_soc_volt array's size same as arm opp number */
-> @@ -313,24 +313,7 @@ free_freq_table:
->  out_free_opp:
->  	if (free_opp)
->  		of_free_opp_table(cpu_dev);
-> -put_reg:
-> -	if (!IS_ERR(arm_reg))
-> -		regulator_put(arm_reg);
-> -	if (!IS_ERR(pu_reg))
-> -		regulator_put(pu_reg);
-> -	if (!IS_ERR(soc_reg))
-> -		regulator_put(soc_reg);
-> -put_clk:
-> -	if (!IS_ERR(arm_clk))
-> -		clk_put(arm_clk);
-> -	if (!IS_ERR(pll1_sys_clk))
-> -		clk_put(pll1_sys_clk);
-> -	if (!IS_ERR(pll1_sw_clk))
-> -		clk_put(pll1_sw_clk);
-> -	if (!IS_ERR(step_clk))
-> -		clk_put(step_clk);
-> -	if (!IS_ERR(pll2_pfd2_396m_clk))
-> -		clk_put(pll2_pfd2_396m_clk);
-> +put_node:
->  	of_node_put(np);
->  	return ret;
->  }
-> @@ -341,15 +324,6 @@ static int imx6q_cpufreq_remove(struct platform_device *pdev)
->  	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
->  	if (free_opp)
->  		of_free_opp_table(cpu_dev);
-> -	regulator_put(arm_reg);
-> -	if (!IS_ERR(pu_reg))
-> -		regulator_put(pu_reg);
-> -	regulator_put(soc_reg);
-> -	clk_put(arm_clk);
-> -	clk_put(pll1_sys_clk);
-> -	clk_put(pll1_sw_clk);
-> -	clk_put(step_clk);
-> -	clk_put(pll2_pfd2_396m_clk);
->  
->  	return 0;
->  }
+Ok, thanks for the answer.
 
--- 
-Pengutronix e.K.             | Lucas Stach                 |
-Industrial Linux Solutions   | http://www.pengutronix.de/  |
+Reviewed-by: Daniel Kurtz <djkurtz@chromium.org>
 
+Thanks!
+-Dan
+
+>
+> Cheers,
+> Javi
+>
+>> >  drivers/thermal/power_allocator.c | 32 +++++++++++++++++++++++++++-----
+>> >  1 file changed, 27 insertions(+), 5 deletions(-)
+>> >
+>> > diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
+>> > index 2dfb8ade4d1b..85ce0aac9a41 100644
+>> > --- a/drivers/thermal/power_allocator.c
+>> > +++ b/drivers/thermal/power_allocator.c
+>> > @@ -58,6 +58,8 @@ static inline s64 div_frac(s64 x, s64 y)
+>> >
+>> >  /**
+>> >   * struct power_allocator_params - parameters for the power allocator governor
+>> > + * @allocated_tzp:     whether we have allocated tzp for this thermal zone and
+>> > + *                     it needs to be freed on unbind
+>> >   * @err_integral:      accumulated error in the PID controller.
+>> >   * @prev_err:  error in the previous iteration of the PID controller.
+>> >   *             Used to calculate the derivative term.
+>> > @@ -70,6 +72,7 @@ static inline s64 div_frac(s64 x, s64 y)
+>> >   *                                     controlling for.
+>> >   */
+>> >  struct power_allocator_params {
+>> > +       bool allocated_tzp;
+>> >         s64 err_integral;
+>> >         s32 prev_err;
+>> >         int trip_switch_on;
+>> > @@ -530,8 +533,7 @@ static void allow_maximum_power(struct thermal_zone_device *tz)
+>> >   * Initialize the PID controller parameters and bind it to the thermal
+>> >   * zone.
+>> >   *
+>> > - * Return: 0 on success, -EINVAL if the thermal zone doesn't have tzp or -ENOMEM
+>> > - * if we ran out of memory.
+>> > + * Return: 0 on success, or -ENOMEM if we ran out of memory.
+>> >   */
+>> >  static int power_allocator_bind(struct thermal_zone_device *tz)
+>> >  {
+>> > @@ -539,13 +541,20 @@ static int power_allocator_bind(struct thermal_zone_device *tz)
+>> >         struct power_allocator_params *params;
+>> >         unsigned long control_temp;
+>> >
+>> > -       if (!tz->tzp)
+>> > -               return -EINVAL;
+>> > -
+>> >         params = kzalloc(sizeof(*params), GFP_KERNEL);
+>> >         if (!params)
+>> >                 return -ENOMEM;
+>> >
+>> > +       if (!tz->tzp) {
+>> > +               tz->tzp = kzalloc(sizeof(*tz->tzp), GFP_KERNEL);
+>>
+>> Why bother to allocate this dummy struct?
+>> Can't we just leave tz->tzp as NULL, and do a NULL check where needed?
+>>
+>> > +               if (!tz->tzp) {
+>> > +                       ret = -ENOMEM;
+>> > +                       goto free_params;
+>> > +               }
+>> > +
+>> > +               params->allocated_tzp = true;
+>> > +       }
+>> > +
+>> >         if (!tz->tzp->sustainable_power)
+>> >                 dev_warn(&tz->device, "power_allocator: sustainable_power will be estimated\n");
+>> >
+>> > @@ -562,11 +571,24 @@ static int power_allocator_bind(struct thermal_zone_device *tz)
+>> >         tz->governor_data = params;
+>> >
+>> >         return 0;
+>> > +
+>> > +free_params:
+>> > +       kfree(params);
+>> > +
+>> > +       return ret;
+>> >  }
+>> >
+>> >  static void power_allocator_unbind(struct thermal_zone_device *tz)
+>> >  {
+>> > +       struct power_allocator_params *params = tz->governor_data;
+>> > +
+>> >         dev_dbg(&tz->device, "Unbinding from thermal zone %d\n", tz->id);
+>> > +
+>> > +       if (params->allocated_tzp) {
+>> > +               kfree(tz->tzp);
+>> > +               tz->tzp = NULL;
+>> > +       }
+>> > +
+>> >         kfree(tz->governor_data);
+>> >         tz->governor_data = NULL;
+>> >  }
+>> > --
+>> > 1.9.1
+>> >
+>>
