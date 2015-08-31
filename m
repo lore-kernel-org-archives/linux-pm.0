@@ -1,55 +1,46 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH 3/3] ARM64: dts: mt8173: Add thermal/auxadc device nodes
-Date: Mon, 31 Aug 2015 09:34:06 +0200
-Message-ID: <1441006446-4558-4-git-send-email-s.hauer@pengutronix.de>
-References: <1441006446-4558-1-git-send-email-s.hauer@pengutronix.de>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1441006446-4558-1-git-send-email-s.hauer@pengutronix.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-kernel@vger.kernel.org, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Matthias Brugger <matthias.bgg@gmail.com>, devicetree@vger.kernel.org, mark.rutland@arm.com, robh+dt@kernel.org, Sascha Hauer <s.hauer@pengutronix.de>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
+ SpeedStep enabled
+Date: Mon, 31 Aug 2015 08:15:14 +0000
+Message-ID: <bug-103351-137361-xazoTr2Iyb@https.bugzilla.kernel.org/>
+References: <bug-103351-137361@https.bugzilla.kernel.org/>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:41163 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751372AbbHaIPT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 31 Aug 2015 04:15:19 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+	by mail.kernel.org (Postfix) with ESMTP id 427B620664
+	for <linux-pm@vger.kernel.org>; Mon, 31 Aug 2015 08:15:15 +0000 (UTC)
+Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
+	by mail.kernel.org (Postfix) with ESMTP id 4AE5420660
+	for <linux-pm@vger.kernel.org>; Mon, 31 Aug 2015 08:15:14 +0000 (UTC)
+In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-Reviewed-by: Daniel Kurtz <djkurtz@chromium.org>
----
- arch/arm64/boot/dts/mediatek/mt8173.dtsi | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+https://bugzilla.kernel.org/show_bug.cgi?id=103351
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt8173.dtsi b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-index 27237a1..ddacb86 100644
---- a/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-@@ -151,6 +151,11 @@
- 				(GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>;
- 		};
- 
-+		auxadc: auxadc@11001000 {
-+			compatible = "mediatek,mt8173-auxadc";
-+			reg = <0 0x11001000 0 0x1000>;
-+		};
-+
- 		uart0: serial@11002000 {
- 			compatible = "mediatek,mt8173-uart",
- 				     "mediatek,mt6577-uart";
-@@ -186,6 +191,18 @@
- 			clocks = <&uart_clk>;
- 			status = "disabled";
- 		};
-+
-+		thermal: thermal@1100b000 {
-+			#thermal-sensor-cells = <1>;
-+			compatible = "mediatek,mt8173-thermal";
-+			reg = <0 0x1100b000 0 0x1000>;
-+			interrupts = <0 70 IRQ_TYPE_LEVEL_LOW>;
-+			clocks = <&pericfg CLK_PERI_THERM>, <&pericfg CLK_PERI_AUXADC>;
-+			clock-names = "therm", "auxadc";
-+			resets = <&pericfg MT8173_PERI_THERM_SW_RST>;
-+			mediatek,auxadc = <&auxadc>;
-+			mediatek,apmixedsys = <&apmixedsys>;
-+		};
- 	};
- };
- 
+Richard Liu <richliu@techarea.org> changed:
+
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |richliu@techarea.org
+
+--- Comment #4 from Richard Liu <richliu@techarea.org> ---
+I get the same problem on my ASUS Z97-A/USB 3.1.
+CPU is Intel Broadwell i7-5775C . 
+
+OS Kubuntu 15.04, Linux kernel 4.2unstable version
+
+If enable and compile a software, it will cause hardware crash. 
+
+But, if disable SpeedStep and Turbo Mode in BIOS, this issue will not happen.
+
 -- 
-2.5.0
+You are receiving this mail because:
+You are the assignee for the bug.
