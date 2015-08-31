@@ -1,86 +1,108 @@
-From: Javier Martinez Canillas <javier@osg.samsung.com>
-Subject: [PATCH] power: Remove unnecessary MODULE_ALIAS() for I2C drivers
-Date: Mon, 31 Aug 2015 01:18:35 +0200
-Message-ID: <1440976715-23588-1-git-send-email-javier@osg.samsung.com>
+From: Xunlei Pang <xlpang@126.com>
+Subject: [PATCH v3] cpuidle/coupled: Add sanity check for safe_state_index
+Date: Mon, 31 Aug 2015 11:34:05 +0800
+Message-ID: <1440992045-17464-1-git-send-email-xlpang@126.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lists.s-osg.org ([54.187.51.154]:32987 "EHLO lists.s-osg.org"
+Received: from m50-111.126.com ([123.125.50.111]:47046 "EHLO m50-111.126.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751879AbbH3XSp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 30 Aug 2015 19:18:45 -0400
+	id S1751919AbbHaDfm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 30 Aug 2015 23:35:42 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Javier Martinez Canillas <javier@osg.samsung.com>, linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, Xunlei Pang <pang.xunlei@linaro.org>
 
-These drivers already have an I2C device id table that is used to create
-module aliases and the used MODULE_ALIAS() was either already in the I2C
-table so it was redundant or wasn't a valid I2C id so it was never used.
+From: Xunlei Pang <pang.xunlei@linaro.org>
 
-Signed-off-by: Javier Martinez Canillas <javier@osg.samsung.com>
+Since we are using cpuidle_driver::safe_state_index directly as the
+target state index, it is better to add the sanity check at the point
+of registering the driver.
 
+Signed-off-by: Xunlei Pang <pang.xunlei@linaro.org>
 ---
+v2->v3:
+Move the code to a new cpuidle_coupled_state_verify() depending on 
+CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED, to avoid using #ifdef in function 
+bodies. Thanks Rafael's comments on this.
 
- drivers/power/bq24190_charger.c | 1 -
- drivers/power/bq27x00_battery.c | 4 ----
- drivers/power/pm2301_charger.c  | 1 -
- drivers/power/rt9455_charger.c  | 1 -
- drivers/power/smb347-charger.c  | 1 -
- 5 files changed, 8 deletions(-)
+ drivers/cpuidle/coupled.c | 22 ++++++++++++++++++++++
+ drivers/cpuidle/cpuidle.h |  6 ++++++
+ drivers/cpuidle/driver.c  |  4 ++++
+ 3 files changed, 32 insertions(+)
 
-diff --git a/drivers/power/bq24190_charger.c b/drivers/power/bq24190_charger.c
-index 469a452cbe10..f5746b9f4e83 100644
---- a/drivers/power/bq24190_charger.c
-+++ b/drivers/power/bq24190_charger.c
-@@ -1543,5 +1543,4 @@ module_i2c_driver(bq24190_driver);
+diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
+index 1523e2d..344058f 100644
+--- a/drivers/cpuidle/coupled.c
++++ b/drivers/cpuidle/coupled.c
+@@ -187,6 +187,28 @@ bool cpuidle_state_is_coupled(struct cpuidle_driver *drv, int state)
+ }
  
- MODULE_LICENSE("GPL");
- MODULE_AUTHOR("Mark A. Greer <mgreer@animalcreek.com>");
--MODULE_ALIAS("i2c:bq24190-charger");
- MODULE_DESCRIPTION("TI BQ24190 Charger Driver");
-diff --git a/drivers/power/bq27x00_battery.c b/drivers/power/bq27x00_battery.c
-index 8287261fd978..d0b2f3b47b8f 100644
---- a/drivers/power/bq27x00_battery.c
-+++ b/drivers/power/bq27x00_battery.c
-@@ -1120,10 +1120,6 @@ module_exit(bq27x00_battery_exit);
- MODULE_ALIAS("platform:bq27000-battery");
- #endif
+ /**
++ * cpuidle_coupled_state_verify - check if the coupled states are correctly set.
++ * @drv: struct cpuidle_driver for the platform
++ *
++ * Returns 0 for valid state values, a negative error code otherwise:
++ *  * -EINVAL if any coupled state(safe_state_index) is wrongly set.
++ */
++int cpuidle_coupled_state_verify(struct cpuidle_driver *drv)
++{
++	int i;
++
++	for (i = drv->state_count - 1; i >= 0; i--) {
++		if (cpuidle_state_is_coupled(drv, i) &&
++		    (drv->safe_state_index == i ||
++		     drv->safe_state_index < 0 ||
++		     drv->safe_state_index >= drv->state_count))
++			return -EINVAL;
++	}
++
++	return 0;
++}
++
++/**
+  * cpuidle_coupled_set_ready - mark a cpu as ready
+  * @coupled: the struct coupled that contains the current cpu
+  */
+diff --git a/drivers/cpuidle/cpuidle.h b/drivers/cpuidle/cpuidle.h
+index 178c5ad..f87f399 100644
+--- a/drivers/cpuidle/cpuidle.h
++++ b/drivers/cpuidle/cpuidle.h
+@@ -35,6 +35,7 @@ extern void cpuidle_remove_sysfs(struct cpuidle_device *dev);
  
--#ifdef CONFIG_BATTERY_BQ27X00_I2C
--MODULE_ALIAS("i2c:bq27000-battery");
--#endif
--
- MODULE_AUTHOR("Rodolfo Giometti <giometti@linux.it>");
- MODULE_DESCRIPTION("BQ27x00 battery monitor driver");
- MODULE_LICENSE("GPL");
-diff --git a/drivers/power/pm2301_charger.c b/drivers/power/pm2301_charger.c
-index 3a45cc0c4dce..8f9bd1d0eeb6 100644
---- a/drivers/power/pm2301_charger.c
-+++ b/drivers/power/pm2301_charger.c
-@@ -1264,5 +1264,4 @@ module_exit(pm2xxx_charger_exit);
+ #ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
+ bool cpuidle_state_is_coupled(struct cpuidle_driver *drv, int state);
++int cpuidle_coupled_state_verify(struct cpuidle_driver *drv);
+ int cpuidle_enter_state_coupled(struct cpuidle_device *dev,
+ 		struct cpuidle_driver *drv, int next_state);
+ int cpuidle_coupled_register_device(struct cpuidle_device *dev);
+@@ -46,6 +47,11 @@ bool cpuidle_state_is_coupled(struct cpuidle_driver *drv, int state)
+ 	return false;
+ }
  
- MODULE_LICENSE("GPL v2");
- MODULE_AUTHOR("Rajkumar kasirajan, Olivier Launay");
--MODULE_ALIAS("i2c:pm2xxx-charger");
- MODULE_DESCRIPTION("PM2xxx charger management driver");
-diff --git a/drivers/power/rt9455_charger.c b/drivers/power/rt9455_charger.c
-index a49a9d44bdda..cfdbde9daf94 100644
---- a/drivers/power/rt9455_charger.c
-+++ b/drivers/power/rt9455_charger.c
-@@ -1760,5 +1760,4 @@ module_i2c_driver(rt9455_driver);
++static inline int cpuidle_coupled_state_verify(struct cpuidle_driver *drv)
++{
++	return 0;
++}
++
+ static inline int cpuidle_enter_state_coupled(struct cpuidle_device *dev,
+ 		struct cpuidle_driver *drv, int next_state)
+ {
+diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
+index 5db1478..389ade4 100644
+--- a/drivers/cpuidle/driver.c
++++ b/drivers/cpuidle/driver.c
+@@ -227,6 +227,10 @@ static int __cpuidle_register_driver(struct cpuidle_driver *drv)
+ 	if (!drv || !drv->state_count)
+ 		return -EINVAL;
  
- MODULE_LICENSE("GPL");
- MODULE_AUTHOR("Anda-Maria Nicolae <anda-maria.nicolae@intel.com>");
--MODULE_ALIAS("i2c:rt9455-charger");
- MODULE_DESCRIPTION("Richtek RT9455 Charger Driver");
-diff --git a/drivers/power/smb347-charger.c b/drivers/power/smb347-charger.c
-index 0b60a0b5878b..072c5189bd6d 100644
---- a/drivers/power/smb347-charger.c
-+++ b/drivers/power/smb347-charger.c
-@@ -1332,4 +1332,3 @@ MODULE_AUTHOR("Bruce E. Robertson <bruce.e.robertson@intel.com>");
- MODULE_AUTHOR("Mika Westerberg <mika.westerberg@linux.intel.com>");
- MODULE_DESCRIPTION("SMB347 battery charger driver");
- MODULE_LICENSE("GPL");
--MODULE_ALIAS("i2c:smb347");
++	ret = cpuidle_coupled_state_verify(drv);
++	if (ret)
++		return ret;
++
+ 	if (cpuidle_disabled())
+ 		return -ENODEV;
+ 
 -- 
-2.4.3
+1.9.1
+
 
