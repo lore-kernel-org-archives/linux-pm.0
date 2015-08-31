@@ -1,108 +1,65 @@
-From: Xunlei Pang <xlpang@126.com>
-Subject: [PATCH v3] cpuidle/coupled: Add sanity check for safe_state_index
-Date: Mon, 31 Aug 2015 11:34:05 +0800
-Message-ID: <1440992045-17464-1-git-send-email-xlpang@126.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
+ SpeedStep enabled
+Date: Mon, 31 Aug 2015 05:55:00 +0000
+Message-ID: <bug-103351-137361-VpyBrK2ve9@https.bugzilla.kernel.org/>
+References: <bug-103351-137361@https.bugzilla.kernel.org/>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from m50-111.126.com ([123.125.50.111]:47046 "EHLO m50-111.126.com"
+Received: from mail.kernel.org ([198.145.29.136]:35320 "EHLO mail.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751919AbbHaDfm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 30 Aug 2015 23:35:42 -0400
+	id S1750812AbbHaFzE convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 31 Aug 2015 01:55:04 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+	by mail.kernel.org (Postfix) with ESMTP id 8E02920693
+	for <linux-pm@vger.kernel.org>; Mon, 31 Aug 2015 05:55:01 +0000 (UTC)
+Received: from bugzilla2.web.kernel.org (bugzilla2.web.kernel.org [172.20.200.52])
+	by mail.kernel.org (Postfix) with ESMTP id C411120691
+	for <linux-pm@vger.kernel.org>; Mon, 31 Aug 2015 05:55:00 +0000 (UTC)
+In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, Xunlei Pang <pang.xunlei@linaro.org>
+To: linux-pm@vger.kernel.org
 
-From: Xunlei Pang <pang.xunlei@linaro.org>
+https://bugzilla.kernel.org/show_bug.cgi?id=3D103351
 
-Since we are using cpuidle_driver::safe_state_index directly as the
-target state index, it is better to add the sanity check at the point
-of registering the driver.
+Ziyue Yang <yzylivezh@hotmail.com> changed:
 
-Signed-off-by: Xunlei Pang <pang.xunlei@linaro.org>
----
-v2->v3:
-Move the code to a new cpuidle_coupled_state_verify() depending on 
-CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED, to avoid using #ifdef in function 
-bodies. Thanks Rafael's comments on this.
+           What    |Removed                     |Added
+-----------------------------------------------------------------------=
+-----
+                 CC|                            |yzylivezh@hotmail.com
 
- drivers/cpuidle/coupled.c | 22 ++++++++++++++++++++++
- drivers/cpuidle/cpuidle.h |  6 ++++++
- drivers/cpuidle/driver.c  |  4 ++++
- 3 files changed, 32 insertions(+)
+--- Comment #3 from Ziyue Yang <yzylivezh@hotmail.com> ---
+(In reply to Krist=C3=B3f Marussy from comment #1)
+> I managed to get a stable system by booting with the processor.max_cs=
+tate=3D0
+> intel_idle.max_cstate=3D0 idle=3Dpoll and SpeedStep enabled. However,=
+ if I set
+> idle=3Dhalt or idle=3Dnomwait instead, the MCEs remain.
+>=20
+> In Windows, the Performance monitor displays that the system utilizes
+> C-states that are claimed to be C1, C2 and C3; so it is quite odd tha=
+t C1
+> halt in Linux triggers an MCE...
 
-diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
-index 1523e2d..344058f 100644
---- a/drivers/cpuidle/coupled.c
-+++ b/drivers/cpuidle/coupled.c
-@@ -187,6 +187,28 @@ bool cpuidle_state_is_coupled(struct cpuidle_driver *drv, int state)
- }
- 
- /**
-+ * cpuidle_coupled_state_verify - check if the coupled states are correctly set.
-+ * @drv: struct cpuidle_driver for the platform
-+ *
-+ * Returns 0 for valid state values, a negative error code otherwise:
-+ *  * -EINVAL if any coupled state(safe_state_index) is wrongly set.
-+ */
-+int cpuidle_coupled_state_verify(struct cpuidle_driver *drv)
-+{
-+	int i;
-+
-+	for (i = drv->state_count - 1; i >= 0; i--) {
-+		if (cpuidle_state_is_coupled(drv, i) &&
-+		    (drv->safe_state_index == i ||
-+		     drv->safe_state_index < 0 ||
-+		     drv->safe_state_index >= drv->state_count))
-+			return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-  * cpuidle_coupled_set_ready - mark a cpu as ready
-  * @coupled: the struct coupled that contains the current cpu
-  */
-diff --git a/drivers/cpuidle/cpuidle.h b/drivers/cpuidle/cpuidle.h
-index 178c5ad..f87f399 100644
---- a/drivers/cpuidle/cpuidle.h
-+++ b/drivers/cpuidle/cpuidle.h
-@@ -35,6 +35,7 @@ extern void cpuidle_remove_sysfs(struct cpuidle_device *dev);
- 
- #ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
- bool cpuidle_state_is_coupled(struct cpuidle_driver *drv, int state);
-+int cpuidle_coupled_state_verify(struct cpuidle_driver *drv);
- int cpuidle_enter_state_coupled(struct cpuidle_device *dev,
- 		struct cpuidle_driver *drv, int next_state);
- int cpuidle_coupled_register_device(struct cpuidle_device *dev);
-@@ -46,6 +47,11 @@ bool cpuidle_state_is_coupled(struct cpuidle_driver *drv, int state)
- 	return false;
- }
- 
-+static inline int cpuidle_coupled_state_verify(struct cpuidle_driver *drv)
-+{
-+	return 0;
-+}
-+
- static inline int cpuidle_enter_state_coupled(struct cpuidle_device *dev,
- 		struct cpuidle_driver *drv, int next_state)
- {
-diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
-index 5db1478..389ade4 100644
---- a/drivers/cpuidle/driver.c
-+++ b/drivers/cpuidle/driver.c
-@@ -227,6 +227,10 @@ static int __cpuidle_register_driver(struct cpuidle_driver *drv)
- 	if (!drv || !drv->state_count)
- 		return -EINVAL;
- 
-+	ret = cpuidle_coupled_state_verify(drv);
-+	if (ret)
-+		return ret;
-+
- 	if (cpuidle_disabled())
- 		return -ENODEV;
- 
--- 
-1.9.1
+Same problem here with MSI GE62 2QE Apache Pro.
+I tried both debian8.1 and Ubuntu15.04 on the real machine and received=
+ same
+kernel panics. Updating kernels to 4.2 doesn't help.
+I also tried those two systems in VMware workstation under Windows 10 a=
+nd ended
+up in BSODs saying "MACHINE_CHECK_EXCEPTIONS".=20
+I then tried to use debian in VMware at runlevel=3D3. It seems to be st=
+able. I
+don't know why.=20
 
+I'm going to try your way to get a stable system. Will reply if anythin=
+g new
+discovered.
 
+--=20
+You are receiving this mail because:
+You are the assignee for the bug.
