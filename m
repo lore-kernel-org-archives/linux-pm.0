@@ -1,55 +1,50 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
- SpeedStep enabled
-Date: Tue, 01 Sep 2015 02:08:03 +0000
-Message-ID: <bug-103351-137361-Ociam3lKwP@https.bugzilla.kernel.org/>
-References: <bug-103351-137361@https.bugzilla.kernel.org/>
+From: Andreas Dannenberg <dannenberg@ti.com>
+Subject: [PATCH 01/13] power: bq24257: Add bit definition for temp sense enable
+Date: Mon, 31 Aug 2015 21:10:23 -0500
+Message-ID: <1441073435-12349-2-git-send-email-dannenberg@ti.com>
+References: <1441073435-12349-1-git-send-email-dannenberg@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:40695 "EHLO mail.kernel.org"
+Received: from comal.ext.ti.com ([198.47.26.152]:37565 "EHLO comal.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753606AbbIACIH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 31 Aug 2015 22:08:07 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id B0ADC20695
-	for <linux-pm@vger.kernel.org>; Tue,  1 Sep 2015 02:08:05 +0000 (UTC)
-Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
-	by mail.kernel.org (Postfix) with ESMTP id 1C1522068E
-	for <linux-pm@vger.kernel.org>; Tue,  1 Sep 2015 02:08:04 +0000 (UTC)
-In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
+	id S1754317AbbIACLU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 31 Aug 2015 22:11:20 -0400
+In-Reply-To: <1441073435-12349-1-git-send-email-dannenberg@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Andreas Dannenberg <dannenberg@ti.com>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=103351
+Adding a missing bit definition for the sake of consistency device model
+vs. bit field representation. No change in functionality.
 
---- Comment #5 from Ziyue Yang <yzylivezh@hotmail.com> ---
-(In reply to Ziyue Yang from comment #3)
+Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
+---
+ drivers/power/bq24257_charger.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-> 
-> Same problem here with MSI GE62 2QE Apache Pro.
-> I tried both debian8.1 and Ubuntu15.04 on the real machine and received same
-> kernel panics. Updating kernels to 4.2 doesn't help.
-> I also tried those two systems in VMware workstation under Windows 10 and
-> ended up in BSODs saying "MACHINE_CHECK_EXCEPTIONS". 
-> I then tried to use debian in VMware at runlevel=3. It seems to be stable. I
-> don't know why. 
-> 
-> I'm going to try your way to get a stable system. Will reply if anything new
-> discovered.
-
-"processor.max_cstate=0 intel_idle.max_cstate=0 idle=poll" option did work for
-me. MCEs
-are caught in the kern.log but system didn't crash.
-
-Since idle=poll actually produces much more heat, I tried to disable speedstep
-and remove
-the idle=poll option. Seems stable as well. Notice that this time there are no
-more MCE records
-in kern.log at all.
-
+diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
+index 5859bc7..db81356 100644
+--- a/drivers/power/bq24257_charger.c
++++ b/drivers/power/bq24257_charger.c
+@@ -47,7 +47,7 @@ enum bq24257_fields {
+ 	F_VBAT, F_USB_DET,					    /* REG 3 */
+ 	F_ICHG, F_ITERM,					    /* REG 4 */
+ 	F_LOOP_STATUS, F_LOW_CHG, F_DPDM_EN, F_CE_STATUS, F_VINDPM, /* REG 5 */
+-	F_X2_TMR_EN, F_TMR, F_SYSOFF, F_TS_STAT,		    /* REG 6 */
++	F_X2_TMR_EN, F_TMR, F_SYSOFF, F_TS_EN, F_TS_STAT,	    /* REG 6 */
+ 	F_VOVP, F_CLR_VDP, F_FORCE_BATDET, F_FORCE_PTM,		    /* REG 7 */
+ 
+ 	F_MAX_FIELDS
+@@ -135,6 +135,7 @@ static const struct reg_field bq24257_reg_fields[] = {
+ 	[F_X2_TMR_EN]		= REG_FIELD(BQ24257_REG_6, 7, 7),
+ 	[F_TMR]			= REG_FIELD(BQ24257_REG_6, 5, 6),
+ 	[F_SYSOFF]		= REG_FIELD(BQ24257_REG_6, 4, 4),
++	[F_TS_EN]		= REG_FIELD(BQ24257_REG_6, 3, 3),
+ 	[F_TS_STAT]		= REG_FIELD(BQ24257_REG_6, 0, 2),
+ 	/* REG 7 */
+ 	[F_VOVP]		= REG_FIELD(BQ24257_REG_7, 5, 7),
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+1.9.1
+
