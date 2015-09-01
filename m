@@ -1,269 +1,209 @@
-From: Andreas Dannenberg <dannenberg@ti.com>
-Subject: Re: [PATCH 08/13] power: bq24257: Extend scope of mutex protection
-Date: Tue, 1 Sep 2015 17:15:30 -0500
-Message-ID: <20150901221530.GD17234@beast>
-References: <1441073435-12349-1-git-send-email-dannenberg@ti.com>
- <1441073435-12349-9-git-send-email-dannenberg@ti.com>
- <55E60BE5.5030308@ti.com>
+From: Rhyland Klein <rklein@nvidia.com>
+Subject: Re: driver core: correct device's shutdown order
+Date: Tue, 1 Sep 2015 18:33:49 -0400
+Message-ID: <55E627CD.8050906@nvidia.com>
+References: <1438018981-13893-1-git-send-email-grygorii.strashko@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:47027 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751256AbbIAWQD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 1 Sep 2015 18:16:03 -0400
-Content-Disposition: inline
-In-Reply-To: <55E60BE5.5030308@ti.com>
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:1721 "EHLO
+	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751151AbbIAWeG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Sep 2015 18:34:06 -0400
+In-Reply-To: <1438018981-13893-1-git-send-email-grygorii.strashko@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Andrew F. Davis" <afd@ti.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: "Strashko, Grygorii" <grygorii.strashko@ti.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: stern@rowland.harvard.edu, rafael.j.wysocki@intel.com, linus.walleij@linaro.org, khilman@kernel.org, kishon@ti.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Sekhar Nori <nsekhar@ti.com>
 
-On Tue, Sep 01, 2015 at 03:34:45PM -0500, Andrew F. Davis wrote:
-> On 08/31/2015 09:10 PM, Andreas Dannenberg wrote:
-> >This commit extends the use of the existing mutex to pave the way for
-> >using direct device access inside sysfs getter/setter routines in a
-> >way that the access during interrupts and timer routines does not
-> >interfere with device access by the CPU or between multiple cores.
-> >
-> >This also addresses a potential race condition that could be caused
-> >by bq24257_irq_handler_thread() and bq24257_iilimit_autoset() accessing
-> >the device simultaneously.
-> >
-> >Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
-> >---
-> >  drivers/power/bq24257_charger.c | 60 ++++++++++++++++++++++++-----------------
-> >  1 file changed, 35 insertions(+), 25 deletions(-)
-> >
-> >diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
-> >index 2271a88..ad3fd2d 100644
-> >--- a/drivers/power/bq24257_charger.c
-> >+++ b/drivers/power/bq24257_charger.c
-> >@@ -99,7 +99,7 @@ struct bq24257_device {
-> >  	struct bq24257_init_data init_data;
-> >  	struct bq24257_state state;
-> >
-> >-	struct mutex lock; /* protect state data */
-> >+	struct mutex lock; /* protect device access and state data */
-> >
+On 7/27/2015 1:43 PM, Strashko, Grygorii wrote:
+> Now device's shutdown sequence is performed in reverse order of their
+> registration in devices_kset list and this sequence corresponds to the
+> reverse device's creation order. So, devices_kset data tracks
+> "parent<-child" device's dependencies only.
 > 
-> I think it would make more sense to make a different lock for the device access. Protecting
-> unrelated things with the same lock can lead to unnecessary blocks.
-
-Andrew- thanks for spending time analyzing the patch series.
-
-Actually the extension of the scope of the mutex seemed to fit almost
-naturally into the existing code as the device status (register
-contents) I'm opening more access to is just as important "state" as the
-driver-maintained "struct bq24257_state state" data that I need to
-maintain together. I can either do that by extending the existing mutex
-scope, or by creating a new mutex like you suggested which I think would
-essentially need to be a superset of the existing mutex for the purposes
-of the patched driver.
-
-Also it was rather easy to extend because almost all of the use of the
-mutex were in functions directly called from the IRQ routine (and only
-from there) such as bq24257_state_changed() and
-bq24257_handle_state_change() so I just had to wrap them at that level,
-also protecting the device access functions contained there, effectively
-killing two birds with one stone.
-
-The bq24257_hw_init() on the other hand only needed mutex protection
-when called from bq24257_resume() and I moved that up to the caller.
-
+> Unfortunately, that's not enough and causes problems in case of
+> implementing board's specific shutdown procedures. For example [1]:
+> "DRA7XX_evm uses PCF8575 and one of the PCF output lines feeds to
+> MMC/SD and this line should be driven high in order for the MMC/SD to
+> be detected. This line is modelled as regulator and the hsmmc driver
+> takes care of enabling and disabling it. In the case of 'reboot',
+> during shutdown path as part of it's cleanup process the hsmmc driver
+> disables this regulator. This makes MMC boot not functional."
 > 
-> >  	bool in_ilimit_autoset_disable;
-> >  	bool pg_gpio_disable;
-> >@@ -268,10 +268,10 @@ static int bq24257_power_supply_get_property(struct power_supply *psy,
-> >  {
-> >  	struct bq24257_device *bq = power_supply_get_drvdata(psy);
-> >  	struct bq24257_state state;
-> >+	int ret = 0;
-> >
-> >  	mutex_lock(&bq->lock);
-> >  	state = bq->state;
-> >-	mutex_unlock(&bq->lock);
-> >
+> To handle this issue the .shutdown() callback could be implemented
+> for PCF8575 device where corresponding GPIO pins will be configured to
+> states, required for correct warm/cold reset. This can be achieved
+> only when all .shutdown() callbacks have been called already for all
+> PCF8575's consumers. But devices_kset is not filled correctly now:
 > 
-> Like here, this makes it very obvious what data the lock is protecting, wrapping this whole
-> block doesn't make much sense to me as all the subsequent reads are from the thread-local data.
-> I see in another patch in this series you do add a device read, but that read could be locked
-> by itself (with the device access lock) so we don't block this whole function when execution
-> may not even go down the path with the read.
-
-Yes you are right it's not needed here but rather was added in
-preparation for the later inclusion of functions such as for supporting
-POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT do direct device access so that's
-just how I split up my overall edits into patches. Also I figured
-having the entire statement wrapped doesn't really hurt and enables
-easier additional extensions involving device access. In fact, it was
-also done out of consistency with all the other sysfs getter/setter
-routines in the final combined patched driver..
-
-Thanks,
-
---
-Andreas Dannenberg
-Texas Instruments Inc
-
+> devices_kset: Device61 4e000000.dmm
+> devices_kset: Device62 48070000.i2c
+> devices_kset: Device63 48072000.i2c
+> devices_kset: Device64 48060000.i2c
+> devices_kset: Device65 4809c000.mmc
+> ...
+> devices_kset: Device102 fixedregulator-sd
+> ...
+> devices_kset: Device181 0-0020 // PCF8575
+> devices_kset: Device182 gpiochip496
+> devices_kset: Device183 0-0021 // PCF8575
+> devices_kset: Device184 gpiochip480
 > 
-> Regards,
-> Andrew
+> As can be seen from above .shutdown() callback for PCF8575 will be called
+> before its consumers, which, in turn means, that any changes of PCF8575
+> GPIO's pins will be or unsafe or overwritten later by GPIO's consumers.
+> The problem can be solved if devices_kset list will be filled not only
+> according device creation order, but also according device's probing
+> order to track "supplier<-consumer" dependencies also.
 > 
-> >  	switch (psp) {
-> >  	case POWER_SUPPLY_PROP_STATUS:
-> >@@ -351,10 +351,12 @@ static int bq24257_power_supply_get_property(struct power_supply *psy,
-> >  		break;
-> >
-> >  	default:
-> >-		return -EINVAL;
-> >+		ret = -EINVAL;
-> >  	}
-> >
-> >-	return 0;
-> >+	mutex_unlock(&bq->lock);
-> >+
-> >+	return ret;
-> >  }
-> >
-> >  static int bq24257_get_chip_state(struct bq24257_device *bq,
-> >@@ -401,15 +403,9 @@ static int bq24257_get_chip_state(struct bq24257_device *bq,
-> >  static bool bq24257_state_changed(struct bq24257_device *bq,
-> >  				  struct bq24257_state *new_state)
-> >  {
-> >-	int ret;
-> >-
-> >-	mutex_lock(&bq->lock);
-> >-	ret = (bq->state.status != new_state->status ||
-> >-	       bq->state.fault != new_state->fault ||
-> >-	       bq->state.power_good != new_state->power_good);
-> >-	mutex_unlock(&bq->lock);
-> >-
-> >-	return ret;
-> >+	return bq->state.status != new_state->status ||
-> >+			bq->state.fault != new_state->fault ||
-> >+			bq->state.power_good != new_state->power_good;
-> >  }
-> >
-> >  enum bq24257_loop_status {
-> >@@ -532,7 +528,9 @@ static void bq24257_iilimit_setup_work(struct work_struct *work)
-> >  	struct bq24257_device *bq = container_of(work, struct bq24257_device,
-> >  						 iilimit_setup_work.work);
-> >
-> >+	mutex_lock(&bq->lock);
-> >  	bq24257_iilimit_autoset(bq);
-> >+	mutex_unlock(&bq->lock);
-> >  }
-> >
-> >  static void bq24257_handle_state_change(struct bq24257_device *bq,
-> >@@ -543,9 +541,7 @@ static void bq24257_handle_state_change(struct bq24257_device *bq,
-> >  	bool reset_iilimit = false;
-> >  	bool config_iilimit = false;
-> >
-> >-	mutex_lock(&bq->lock);
-> >  	old_state = bq->state;
-> >-	mutex_unlock(&bq->lock);
-> >
-> >  	/*
-> >  	 * Handle BQ2425x state changes observing whether the D+/D- based input
-> >@@ -600,25 +596,30 @@ static irqreturn_t bq24257_irq_handler_thread(int irq, void *private)
-> >  	struct bq24257_device *bq = private;
-> >  	struct bq24257_state state;
-> >
-> >+	mutex_lock(&bq->lock);
-> >+
-> >  	ret = bq24257_get_chip_state(bq, &state);
-> >  	if (ret < 0)
-> >-		return IRQ_HANDLED;
-> >+		goto out;
-> >
-> >  	if (!bq24257_state_changed(bq, &state))
-> >-		return IRQ_HANDLED;
-> >+		goto out;
-> >
-> >  	dev_dbg(bq->dev, "irq(state changed): status/fault/pg = %d/%d/%d\n",
-> >  		state.status, state.fault, state.power_good);
-> >
-> >  	bq24257_handle_state_change(bq, &state);
-> >-
-> >-	mutex_lock(&bq->lock);
-> >  	bq->state = state;
-> >+
-> >  	mutex_unlock(&bq->lock);
-> >
-> >  	power_supply_changed(bq->charger);
-> >
-> >  	return IRQ_HANDLED;
-> >+
-> >+out:
-> >+	mutex_unlock(&bq->lock);
-> >+	return IRQ_HANDLED;
-> >  }
-> >
-> >  static int bq24257_hw_init(struct bq24257_device *bq)
-> >@@ -658,9 +659,7 @@ static int bq24257_hw_init(struct bq24257_device *bq)
-> >  	if (ret < 0)
-> >  		return ret;
-> >
-> >-	mutex_lock(&bq->lock);
-> >  	bq->state = state;
-> >-	mutex_unlock(&bq->lock);
-> >
-> >  	if (bq->in_ilimit_autoset_disable) {
-> >  		dev_dbg(bq->dev, "manually setting iilimit = %d\n",
-> >@@ -1002,11 +1001,15 @@ static int bq24257_suspend(struct device *dev)
-> >  	if (!bq->in_ilimit_autoset_disable)
-> >  		cancel_delayed_work_sync(&bq->iilimit_setup_work);
-> >
-> >+	mutex_lock(&bq->lock);
-> >+
-> >  	/* reset all registers to default (and activate standalone mode) */
-> >  	ret = bq24257_field_write(bq, F_RESET, 1);
-> >  	if (ret < 0)
-> >  		dev_err(bq->dev, "Cannot reset chip to standalone mode.\n");
-> >
-> >+	mutex_unlock(&bq->lock);
-> >+
-> >  	return ret;
-> >  }
-> >
-> >@@ -1015,24 +1018,31 @@ static int bq24257_resume(struct device *dev)
-> >  	int ret;
-> >  	struct bq24257_device *bq = dev_get_drvdata(dev);
-> >
-> >+	mutex_lock(&bq->lock);
-> >+
-> >  	ret = regcache_drop_region(bq->rmap, BQ24257_REG_1, BQ24257_REG_7);
-> >  	if (ret < 0)
-> >-		return ret;
-> >+		goto err;
-> >
-> >  	ret = bq24257_field_write(bq, F_RESET, 0);
-> >  	if (ret < 0)
-> >-		return ret;
-> >+		goto err;
-> >
-> >  	ret = bq24257_hw_init(bq);
-> >  	if (ret < 0) {
-> >  		dev_err(bq->dev, "Cannot init chip after resume.\n");
-> >-		return ret;
-> >+		goto err;
-> >  	}
-> >
-> >+	mutex_unlock(&bq->lock);
-> >+
-> >  	/* signal userspace, maybe state changed while suspended */
-> >  	power_supply_changed(bq->charger);
-> >-
-> >  	return 0;
-> >+
-> >+err:
-> >+	mutex_unlock(&bq->lock);
-> >+	return ret;
-> >  }
-> >  #endif
-> >
-> >
+> Hence, as a fix, lets add devices_kset_move_last(),
+> devices_kset_move_before(), devices_kset_move_after() and call them
+> from device_move() and also add call of devices_kset_move_last() in
+> really_probe(). After this change all entries in devices_kset will
+> be sorted according to device's creation ("parent<-child") and
+> probing ("supplier<-consumer") order.
 > 
-> -- 
-> Andrew F. Davis
+> devices_kset after:
+> devices_kset: Device121 48070000.i2c
+> devices_kset: Device122 i2c-0
+> ...
+> devices_kset: Device147 regulator.24
+> devices_kset: Device148 0-0020
+> devices_kset: Device149 gpiochip496
+> devices_kset: Device150 0-0021
+> devices_kset: Device151 gpiochip480
+> devices_kset: Device152 0-0019
+> ...
+> devices_kset: Device372 fixedregulator-sd
+> devices_kset: Device373 regulator.29
+> devices_kset: Device374 4809c000.mmc
+> devices_kset: Device375 mmc0
+> 
+> [1] http://www.spinics.net/lists/linux-mmc/msg29825.html
+> 
+> Cc: Sekhar Nori <nsekhar@ti.com>
+> Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
+> 
+> ---
+> drivers/base/base.h |  1 +
+>  drivers/base/core.c | 49 +++++++++++++++++++++++++++++++++++++++++++++++++
+>  drivers/base/dd.c   |  8 ++++++++
+>  3 files changed, 58 insertions(+)
+> 
+> diff --git a/drivers/base/base.h b/drivers/base/base.h
+> index fd3347d..8c5eb73 100644
+> --- a/drivers/base/base.h
+> +++ b/drivers/base/base.h
+> @@ -134,6 +134,7 @@ extern int devres_release_all(struct device *dev);
+>  
+>  /* /sys/devices directory */
+>  extern struct kset *devices_kset;
+> +extern void devices_kset_move_last(struct device *dev);
+>  
+>  #if defined(CONFIG_MODULES) && defined(CONFIG_SYSFS)
+>  extern void module_add_driver(struct module *mod, struct device_driver *drv);
+> diff --git a/drivers/base/core.c b/drivers/base/core.c
+> index dafae6d..fc5a558 100644
+> --- a/drivers/base/core.c
+> +++ b/drivers/base/core.c
+> @@ -534,6 +534,52 @@ static DEVICE_ATTR_RO(dev);
+>  struct kset *devices_kset;
+>  
+>  /**
+> + * devices_kset_move_before - Move device in the devices_kset's list.
+> + * @deva: Device to move.
+> + * @devb: Device @deva should come before.
+> + */
+> +static void devices_kset_move_before(struct device *deva, struct device *devb)
+> +{
+> +	if (!devices_kset)
+> +		return;
+> +	pr_debug("devices_kset: Moving %s before %s\n",
+> +		 dev_name(deva), dev_name(devb));
+> +	spin_lock(&devices_kset->list_lock);
+> +	list_move_tail(&deva->kobj.entry, &devb->kobj.entry);
+> +	spin_unlock(&devices_kset->list_lock);
+> +}
+> +
+> +/**
+> + * devices_kset_move_after - Move device in the devices_kset's list.
+> + * @deva: Device to move
+> + * @devb: Device @deva should come after.
+> + */
+> +static void devices_kset_move_after(struct device *deva, struct device *devb)
+> +{
+> +	if (!devices_kset)
+> +		return;
+> +	pr_debug("devices_kset: Moving %s after %s\n",
+> +		 dev_name(deva), dev_name(devb));
+> +	spin_lock(&devices_kset->list_lock);
+> +	list_move(&deva->kobj.entry, &devb->kobj.entry);
+> +	spin_unlock(&devices_kset->list_lock);
+> +}
+> +
+> +/**
+> + * devices_kset_move_last - move the device to the end of devices_kset's list.
+> + * @dev: device to move
+> + */
+> +void devices_kset_move_last(struct device *dev)
+> +{
+> +	if (!devices_kset)
+> +		return;
+> +	pr_debug("devices_kset: Moving %s to end of list\n", dev_name(dev));
+> +	spin_lock(&devices_kset->list_lock);
+> +	list_move_tail(&dev->kobj.entry, &devices_kset->list);
+> +	spin_unlock(&devices_kset->list_lock);
+> +}
+> +
+> +/**
+>   * device_create_file - create sysfs attribute file for device.
+>   * @dev: device.
+>   * @attr: device attribute descriptor.
+> @@ -1923,12 +1969,15 @@ int device_move(struct device *dev, struct device *new_parent,
+>  		break;
+>  	case DPM_ORDER_DEV_AFTER_PARENT:
+>  		device_pm_move_after(dev, new_parent);
+> +		devices_kset_move_after(dev, new_parent);
+>  		break;
+>  	case DPM_ORDER_PARENT_BEFORE_DEV:
+>  		device_pm_move_before(new_parent, dev);
+> +		devices_kset_move_before(new_parent, dev);
+>  		break;
+>  	case DPM_ORDER_DEV_LAST:
+>  		device_pm_move_last(dev);
+> +		devices_kset_move_last(dev);
+>  		break;
+>  	}
+>  
+> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+> index a638bbb..cc2b1d4 100644
+> --- a/drivers/base/dd.c
+> +++ b/drivers/base/dd.c
+> @@ -304,6 +304,14 @@ static int really_probe(struct device *dev, struct device_driver *drv)
+>  			goto probe_failed;
+>  	}
+>  
+> +	/*
+> +	 * Ensure devices are listed in devices_kset in correct order
+> +	 * It's important to move Dev to the end of devices_kset before
+> +	 * calling .probe, because it could be recursive and parent Dev
+> +	 * should always go first
+> +	 */
+> +	devices_kset_move_last(dev);
+> +
+>  	if (dev->bus->probe) {
+>  		ret = dev->bus->probe(dev);
+>  		if (ret)
+> 
+
+I loaded this change up with an Arm64 booting kernel and verified that
+some previously device drivers which were previously incorrectly ordered
+are now properly ordered.
+
+Reviewed-by: Rhyland Klein <rklein@nvidia.com>
+Tested-by: Rhyland Klein <rklein@nvidia.com>
+
+-- 
+nvpublic
