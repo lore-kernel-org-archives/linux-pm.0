@@ -1,68 +1,44 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 2/9] PM / Domains: Remove dev->driver check for runtime PM
-Date: Tue, 1 Sep 2015 15:28:27 +0200
-Message-ID: <CAPDyKFoJvdw8t15FFxWuh07E9aM=xB6rexwGvtR=KYf7jfOVsw@mail.gmail.com>
-References: <1438731339-58317-1-git-send-email-lina.iyer@linaro.org>
-	<1438731339-58317-3-git-send-email-lina.iyer@linaro.org>
+From: Tomasz Nowicki <tomasz.nowicki@linaro.org>
+Subject: Re: [PATCH] x86, arm64, acpi: Handle lapic/x2apic entries in MADT
+Date: Tue, 01 Sep 2015 15:36:46 +0200
+Message-ID: <55E5A9EE.3030704@linaro.org>
+References: <55DDB45D.2030901@arm.com> <1440611369-26314-1-git-send-email-lukasz.anaczkowski@intel.com> <1440611369-26314-2-git-send-email-lukasz.anaczkowski@intel.com> <55E55BA8.5090102@linaro.org> <C1C2579D7BE026428F81F41198ADB1723786A47E@irsmsx110.ger.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f175.google.com ([209.85.212.175]:36116 "EHLO
-	mail-wi0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753413AbbIAN23 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Sep 2015 09:28:29 -0400
-Received: by wibz8 with SMTP id z8so32428570wib.1
-        for <linux-pm@vger.kernel.org>; Tue, 01 Sep 2015 06:28:27 -0700 (PDT)
-In-Reply-To: <1438731339-58317-3-git-send-email-lina.iyer@linaro.org>
+Received: from mail-la0-f46.google.com ([209.85.215.46]:35575 "EHLO
+	mail-la0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752633AbbIANgx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Sep 2015 09:36:53 -0400
+Received: by lanb10 with SMTP id b10so57618621lan.2
+        for <linux-pm@vger.kernel.org>; Tue, 01 Sep 2015 06:36:51 -0700 (PDT)
+In-Reply-To: <C1C2579D7BE026428F81F41198ADB1723786A47E@irsmsx110.ger.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>
+To: "Anaczkowski, Lukasz" <lukasz.anaczkowski@intel.com>, "marc.zyngier@arm.com" <marc.zyngier@arm.com>, "lorenzo.pieralisi@arm.com" <lorenzo.pieralisi@arm.com>, "tglx@linutronix.de" <tglx@linutronix.de>, "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>, "x86@kernel.org" <x86@kernel.org>, "jason@lakedaemon.net" <jason@lakedaemon.net>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>
 
-On 5 August 2015 at 01:35, Lina Iyer <lina.iyer@linaro.org> wrote:
-> Remove check for driver of a device, for runtime PM. Device may be
-> suspended without an explicit driver. This check seems to be vestigial
-> and incorrect in the current context.
+
+
+On 01.09.2015 14:07, Anaczkowski, Lukasz wrote:
+> From: Tomasz Nowicki [mailto:tomasz.nowicki@linaro.org]
+> Sent: Tuesday, September 1, 2015 10:03 AM
 >
-> Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> Signed-off-by: Kevin Hilman <khilman@linaro.org>
-> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-
-I think this makes perfect sense!
-
-Moreover in *theory*, I have considered both cases for how a device
-currently gets attached/detached to its genpd and I can't find any
-issues with $subject patch. With *both* cases I mean attaching the
-device using *pm_genpd_[name]add_device() API or via the ->probe()
-sequence using the dev_pm_domain_attach() API.
-
-Now, of course that statement also relies on that drivers behaves
-properly from a runtime PM point of view, for example make sure to do
-pm_runtime_disable() at ->remove().
-
-Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
-
-Kind regards
-Uffe
-
-> ---
->  drivers/base/power/domain.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
+>>> To fix this, each LAPIC/X2APIC entry from MADT table needs to be
+>>> handled at the same time when processing it, thus adding
+>>> acpi_subtable_proc structure which stores
+>>> () ACPI table id
+>>> () handler that processes table
+>>> () counter how many items has been processed and passing it to
+>>> acpi_table_parse_entries().
 >
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 5fd1306..ef8d19f 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -394,8 +394,7 @@ static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
->                 if (stat > PM_QOS_FLAGS_NONE)
->                         return -EBUSY;
+>> Why can't you leave the parsing code as is and create ApicId sorted list while parsing LAPIC/X2APIC? You could call acpi_register_lapic() after all... Do I miss something ?
 >
-> -               if (pdd->dev->driver && (!pm_runtime_suspended(pdd->dev)
-> -                   || pdd->dev->power.irq_safe))
-> +               if (!pm_runtime_suspended(pdd->dev) || pdd->dev->power.irq_safe)
->                         not_suspended++;
->         }
+> Just to make sure I understand correctly - you suggest to replace calls to acpi_register_lapic() with a code that builds an APIC ID list while parsing LAPIC/X2APIC, and after parsing is done,
+> go thru the list and call acpi_register_lapic() on each APIC ID, correct?
 >
-> --
-> 2.1.4
->
+
+Yes, does it work for you?
+
+Tomasz
