@@ -1,209 +1,37 @@
-From: Rhyland Klein <rklein@nvidia.com>
-Subject: Re: driver core: correct device's shutdown order
-Date: Tue, 1 Sep 2015 18:33:49 -0400
-Message-ID: <55E627CD.8050906@nvidia.com>
-References: <1438018981-13893-1-git-send-email-grygorii.strashko@ti.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH V2 Resend 1/5] PM / OPP: reuse of_parse_phandle()
+Date: Tue, 1 Sep 2015 15:48:07 -0700
+Message-ID: <20150901224807.GA21112@codeaurora.org>
+References: <cover.1441083292.git.viresh.kumar@linaro.org>
+ <be1d2761b6c83004b35c8f9e410baa1d019d4b96.1441083292.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate15.nvidia.com ([216.228.121.64]:1721 "EHLO
-	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751151AbbIAWeG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Sep 2015 18:34:06 -0400
-In-Reply-To: <1438018981-13893-1-git-send-email-grygorii.strashko@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <be1d2761b6c83004b35c8f9e410baa1d019d4b96.1441083292.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, khilman@linaro.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
-To: "Strashko, Grygorii" <grygorii.strashko@ti.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: stern@rowland.harvard.edu, rafael.j.wysocki@intel.com, linus.walleij@linaro.org, khilman@kernel.org, kishon@ti.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Sekhar Nori <nsekhar@ti.com>
 
-On 7/27/2015 1:43 PM, Strashko, Grygorii wrote:
-> Now device's shutdown sequence is performed in reverse order of their
-> registration in devices_kset list and this sequence corresponds to the
-> reverse device's creation order. So, devices_kset data tracks
-> "parent<-child" device's dependencies only.
+On 09/01, Viresh Kumar wrote:
+> We already have a better API to get the opp descriptor block's node from
+> cpu-node. Lets reuse that instead of creating our own routines for the
+> same stuff. That cleans the code a lot.
 > 
-> Unfortunately, that's not enough and causes problems in case of
-> implementing board's specific shutdown procedures. For example [1]:
-> "DRA7XX_evm uses PCF8575 and one of the PCF output lines feeds to
-> MMC/SD and this line should be driven high in order for the MMC/SD to
-> be detected. This line is modelled as regulator and the hsmmc driver
-> takes care of enabling and disabling it. In the case of 'reboot',
-> during shutdown path as part of it's cleanup process the hsmmc driver
-> disables this regulator. This makes MMC boot not functional."
+> This also kills a check we had earlier (as we are using the generic API
+> now). Earlier we used to check if the operating-points-v2 property
+> contained multiple phandles instead of a single phandle.
 > 
-> To handle this issue the .shutdown() callback could be implemented
-> for PCF8575 device where corresponding GPIO pins will be configured to
-> states, required for correct warm/cold reset. This can be achieved
-> only when all .shutdown() callbacks have been called already for all
-> PCF8575's consumers. But devices_kset is not filled correctly now:
+> Killing this check isn't an issue because, we only parse the first entry
+> with of_parse_phandle(). So, if a user passes multiple phandles, its
+> really his problem :)
 > 
-> devices_kset: Device61 4e000000.dmm
-> devices_kset: Device62 48070000.i2c
-> devices_kset: Device63 48072000.i2c
-> devices_kset: Device64 48060000.i2c
-> devices_kset: Device65 4809c000.mmc
-> ...
-> devices_kset: Device102 fixedregulator-sd
-> ...
-> devices_kset: Device181 0-0020 // PCF8575
-> devices_kset: Device182 gpiochip496
-> devices_kset: Device183 0-0021 // PCF8575
-> devices_kset: Device184 gpiochip480
-> 
-> As can be seen from above .shutdown() callback for PCF8575 will be called
-> before its consumers, which, in turn means, that any changes of PCF8575
-> GPIO's pins will be or unsafe or overwritten later by GPIO's consumers.
-> The problem can be solved if devices_kset list will be filled not only
-> according device creation order, but also according device's probing
-> order to track "supplier<-consumer" dependencies also.
-> 
-> Hence, as a fix, lets add devices_kset_move_last(),
-> devices_kset_move_before(), devices_kset_move_after() and call them
-> from device_move() and also add call of devices_kset_move_last() in
-> really_probe(). After this change all entries in devices_kset will
-> be sorted according to device's creation ("parent<-child") and
-> probing ("supplier<-consumer") order.
-> 
-> devices_kset after:
-> devices_kset: Device121 48070000.i2c
-> devices_kset: Device122 i2c-0
-> ...
-> devices_kset: Device147 regulator.24
-> devices_kset: Device148 0-0020
-> devices_kset: Device149 gpiochip496
-> devices_kset: Device150 0-0021
-> devices_kset: Device151 gpiochip480
-> devices_kset: Device152 0-0019
-> ...
-> devices_kset: Device372 fixedregulator-sd
-> devices_kset: Device373 regulator.29
-> devices_kset: Device374 4809c000.mmc
-> devices_kset: Device375 mmc0
-> 
-> [1] http://www.spinics.net/lists/linux-mmc/msg29825.html
-> 
-> Cc: Sekhar Nori <nsekhar@ti.com>
-> Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
-> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
-> drivers/base/base.h |  1 +
->  drivers/base/core.c | 49 +++++++++++++++++++++++++++++++++++++++++++++++++
->  drivers/base/dd.c   |  8 ++++++++
->  3 files changed, 58 insertions(+)
-> 
-> diff --git a/drivers/base/base.h b/drivers/base/base.h
-> index fd3347d..8c5eb73 100644
-> --- a/drivers/base/base.h
-> +++ b/drivers/base/base.h
-> @@ -134,6 +134,7 @@ extern int devres_release_all(struct device *dev);
->  
->  /* /sys/devices directory */
->  extern struct kset *devices_kset;
-> +extern void devices_kset_move_last(struct device *dev);
->  
->  #if defined(CONFIG_MODULES) && defined(CONFIG_SYSFS)
->  extern void module_add_driver(struct module *mod, struct device_driver *drv);
-> diff --git a/drivers/base/core.c b/drivers/base/core.c
-> index dafae6d..fc5a558 100644
-> --- a/drivers/base/core.c
-> +++ b/drivers/base/core.c
-> @@ -534,6 +534,52 @@ static DEVICE_ATTR_RO(dev);
->  struct kset *devices_kset;
->  
->  /**
-> + * devices_kset_move_before - Move device in the devices_kset's list.
-> + * @deva: Device to move.
-> + * @devb: Device @deva should come before.
-> + */
-> +static void devices_kset_move_before(struct device *deva, struct device *devb)
-> +{
-> +	if (!devices_kset)
-> +		return;
-> +	pr_debug("devices_kset: Moving %s before %s\n",
-> +		 dev_name(deva), dev_name(devb));
-> +	spin_lock(&devices_kset->list_lock);
-> +	list_move_tail(&deva->kobj.entry, &devb->kobj.entry);
-> +	spin_unlock(&devices_kset->list_lock);
-> +}
-> +
-> +/**
-> + * devices_kset_move_after - Move device in the devices_kset's list.
-> + * @deva: Device to move
-> + * @devb: Device @deva should come after.
-> + */
-> +static void devices_kset_move_after(struct device *deva, struct device *devb)
-> +{
-> +	if (!devices_kset)
-> +		return;
-> +	pr_debug("devices_kset: Moving %s after %s\n",
-> +		 dev_name(deva), dev_name(devb));
-> +	spin_lock(&devices_kset->list_lock);
-> +	list_move(&deva->kobj.entry, &devb->kobj.entry);
-> +	spin_unlock(&devices_kset->list_lock);
-> +}
-> +
-> +/**
-> + * devices_kset_move_last - move the device to the end of devices_kset's list.
-> + * @dev: device to move
-> + */
-> +void devices_kset_move_last(struct device *dev)
-> +{
-> +	if (!devices_kset)
-> +		return;
-> +	pr_debug("devices_kset: Moving %s to end of list\n", dev_name(dev));
-> +	spin_lock(&devices_kset->list_lock);
-> +	list_move_tail(&dev->kobj.entry, &devices_kset->list);
-> +	spin_unlock(&devices_kset->list_lock);
-> +}
-> +
-> +/**
->   * device_create_file - create sysfs attribute file for device.
->   * @dev: device.
->   * @attr: device attribute descriptor.
-> @@ -1923,12 +1969,15 @@ int device_move(struct device *dev, struct device *new_parent,
->  		break;
->  	case DPM_ORDER_DEV_AFTER_PARENT:
->  		device_pm_move_after(dev, new_parent);
-> +		devices_kset_move_after(dev, new_parent);
->  		break;
->  	case DPM_ORDER_PARENT_BEFORE_DEV:
->  		device_pm_move_before(new_parent, dev);
-> +		devices_kset_move_before(new_parent, dev);
->  		break;
->  	case DPM_ORDER_DEV_LAST:
->  		device_pm_move_last(dev);
-> +		devices_kset_move_last(dev);
->  		break;
->  	}
->  
-> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-> index a638bbb..cc2b1d4 100644
-> --- a/drivers/base/dd.c
-> +++ b/drivers/base/dd.c
-> @@ -304,6 +304,14 @@ static int really_probe(struct device *dev, struct device_driver *drv)
->  			goto probe_failed;
->  	}
->  
-> +	/*
-> +	 * Ensure devices are listed in devices_kset in correct order
-> +	 * It's important to move Dev to the end of devices_kset before
-> +	 * calling .probe, because it could be recursive and parent Dev
-> +	 * should always go first
-> +	 */
-> +	devices_kset_move_last(dev);
-> +
->  	if (dev->bus->probe) {
->  		ret = dev->bus->probe(dev);
->  		if (ret)
-> 
 
-I loaded this change up with an Arm64 booting kernel and verified that
-some previously device drivers which were previously incorrectly ordered
-are now properly ordered.
-
-Reviewed-by: Rhyland Klein <rklein@nvidia.com>
-Tested-by: Rhyland Klein <rklein@nvidia.com>
+Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 
 -- 
-nvpublic
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
