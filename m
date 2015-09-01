@@ -1,49 +1,71 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: about system time incorrect after changing cpu frequency
-Date: Tue, 1 Sep 2015 09:27:13 +0530
-Message-ID: <CAOh2x=ky8_uwqvdH-krKxgMSby5jgovJp7odK6x=MpqNL+YoGg@mail.gmail.com>
-References: <CAOVJa8GTDj3UJpgUd4nH1wknUKa6fgac=1SsqC8g=UCG0MGuDw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Subject: [PATCH V2 Resend 0/5] PM / OPP: Add debugfs support
+Date: Tue,  1 Sep 2015 10:28:31 +0530
+Message-ID: <cover.1441083292.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f178.google.com ([209.85.220.178]:34028 "EHLO
-	mail-qk0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751541AbbIAD5O (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 31 Aug 2015 23:57:14 -0400
-In-Reply-To: <CAOVJa8GTDj3UJpgUd4nH1wknUKa6fgac=1SsqC8g=UCG0MGuDw@mail.gmail.com>
+Received: from mail-pa0-f51.google.com ([209.85.220.51]:34023 "EHLO
+	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750728AbbIAE6q (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Sep 2015 00:58:46 -0400
+Received: by pabzx8 with SMTP id zx8so163077019pab.1
+        for <linux-pm@vger.kernel.org>; Mon, 31 Aug 2015 21:58:46 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: vichy <vichy.kuo@gmail.com>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Rafael Wysocki <rjw@rjwysocki.net>, sboyd@codeaurora.org
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, khilman@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Mon, Aug 31, 2015 at 7:33 PM, vichy <vichy.kuo@gmail.com> wrote:
-> hi all:
-> My platform is like below:
-> 1. single core Cortex A9
-> 2. use global timer for system timer
->
-> after I porting cpu frequency driver based on snow ball, the cpu
-> frequency did change as I expected.
-> But the system time is incorrect( since pherial clk is got from cpu frequency)
->
-> for example:
-> a) cpu 1G (pherial clk = 250M) --> sleep 1 sec (OK)
-> b) cpu 500M  (pherial clk = 125M) --> sleep 1 sec (will be measured as 2 sec)
->
-> I try to call below 2 functions to change the frequency of clocksource
-> and clockevent, but the above b) sleep time is still incorrect when
-> cpu runs in 500Mhz.
->     clockevents_update_freq(this_cpu_ptr(gt_evt), gt_clk_rate);
->     __clocksource_updatefreq_hz(&gt_clocksource, gt_clk_rate);
->
-> in Arm cortex A9 single core system with Global timer as system timer,
-> is there any kernel api to change system timer period when cpu/pherial
-> frequency change?
->
-> appreciate your kind help in advance,
+Hi Guys,
 
-The list cpufreq@vger.kernel.org is the wrong list for posting cpufreq queries
-as we have moved to Linux PM list <linux-pm@vger.kernel.org> list now.
+This series is targeted towards exposing opp information at user space.
+I wasn't really sure about adding them to sysfs, as its mostly static
+(fixed) data and so debugfs looked to be better place.
 
-Try unsetting CPUFREQ_CONST_LOOPS flag in your driver, if you have it
-set.
+This series starts with 2 cleanup patches, and then moves all opp stuff
+to a new directory, as its expanding enough now.
+
+The last patch adds debugfs support for OPPs and works for both old and
+new v2 bindings.
+
+Rebased over: pm/bleeding-edge branch.
+
+V2->V2-Resend:
+- V2 1/6 is dropped as its already merged, rest unchanged.
+
+V1->V2:
+- Moved the second patch to the top as its a fix (Dan Carpenter &
+  Stephen).
+- Also updated it to fix things properly.
+- rearranged opp entry in drivers/base/power/Makefile (Stephen)
+- Device-directory name also includes its parent name now, to make it
+  more unique (Stephen).
+- Migrate debugfs directory properly if unregistered for the owner
+  device (Stephen).
+
+Viresh Kumar (5):
+  PM / OPP: reuse of_parse_phandle()
+  PM / OPP: Prefix exported opp routines with dev_pm_opp_
+  PM / OPP: Move opp core to its own directory
+  PM / OPP: Move cpu specific code to opp/cpu.c
+  PM / OPP: Add debugfs support
+
+ drivers/base/power/Makefile              |   2 +-
+ drivers/base/power/opp/Makefile          |   3 +
+ drivers/base/power/{opp.c => opp/core.c} | 356 +++----------------------------
+ drivers/base/power/opp/cpu.c             | 268 +++++++++++++++++++++++
+ drivers/base/power/opp/debugfs.c         | 217 +++++++++++++++++++
+ drivers/base/power/opp/opp.h             | 186 ++++++++++++++++
+ drivers/cpufreq/Makefile                 |   1 -
+ drivers/cpufreq/cpufreq-dt.c             |  10 +-
+ drivers/cpufreq/cpufreq_opp.c            | 114 ----------
+ include/linux/pm_opp.h                   |  16 +-
+ 10 files changed, 722 insertions(+), 451 deletions(-)
+ create mode 100644 drivers/base/power/opp/Makefile
+ rename drivers/base/power/{opp.c => opp/core.c} (80%)
+ create mode 100644 drivers/base/power/opp/cpu.c
+ create mode 100644 drivers/base/power/opp/debugfs.c
+ create mode 100644 drivers/base/power/opp/opp.h
+ delete mode 100644 drivers/cpufreq/cpufreq_opp.c
+
+-- 
+2.4.0
+
