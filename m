@@ -1,211 +1,164 @@
 From: Andreas Dannenberg <dannenberg@ti.com>
-Subject: [PATCH 08/13] power: bq24257: Extend scope of mutex protection
-Date: Mon, 31 Aug 2015 21:10:30 -0500
-Message-ID: <1441073435-12349-9-git-send-email-dannenberg@ti.com>
+Subject: [PATCH 09/13] power: bq24257: Add charge type setting support
+Date: Mon, 31 Aug 2015 21:10:31 -0500
+Message-ID: <1441073435-12349-10-git-send-email-dannenberg@ti.com>
 References: <1441073435-12349-1-git-send-email-dannenberg@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:55508 "EHLO bear.ext.ti.com"
+Received: from comal.ext.ti.com ([198.47.26.152]:37595 "EHLO comal.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754317AbbIACLp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 31 Aug 2015 22:11:45 -0400
+	id S1754790AbbIACLu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 31 Aug 2015 22:11:50 -0400
 In-Reply-To: <1441073435-12349-1-git-send-email-dannenberg@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
 Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Andreas Dannenberg <dannenberg@ti.com>
 
-This commit extends the use of the existing mutex to pave the way for
-using direct device access inside sysfs getter/setter routines in a
-way that the access during interrupts and timer routines does not
-interfere with device access by the CPU or between multiple cores.
-
-This also addresses a potential race condition that could be caused
-by bq24257_irq_handler_thread() and bq24257_iilimit_autoset() accessing
-the device simultaneously.
+The bq2425x devices support charging with a configurable charge current
+i_chg or a specific fixed low-current in what's called Low Charge mode.
+This patch exposes access to the Low Charge mode through a POWER_
+SUPPLY_PROP_CHARGE_TYPE sysfs property value of POWER_SUPPLY_CHARGE_
+TYPE_TRICKLE. It also allows to completely disable charging if desired
+by setting the property to POWER_SUPPLY_CHARGE_TYPE_NONE. Normal
+charging with the configured i_chg current is activated through
+POWER_SUPPLY_CHARGE_TYPE_FAST (default).
 
 Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
 ---
- drivers/power/bq24257_charger.c | 60 ++++++++++++++++++++++++-----------------
- 1 file changed, 35 insertions(+), 25 deletions(-)
+ drivers/power/bq24257_charger.c | 90 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 90 insertions(+)
 
 diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
-index 2271a88..ad3fd2d 100644
+index ad3fd2d..7b66030 100644
 --- a/drivers/power/bq24257_charger.c
 +++ b/drivers/power/bq24257_charger.c
-@@ -99,7 +99,7 @@ struct bq24257_device {
- 	struct bq24257_init_data init_data;
- 	struct bq24257_state state;
+@@ -262,6 +262,56 @@ enum bq24257_fault {
+ 	FAULT_INPUT_LDO_LOW,
+ };
  
--	struct mutex lock; /* protect state data */
-+	struct mutex lock; /* protect device access and state data */
- 
- 	bool in_ilimit_autoset_disable;
- 	bool pg_gpio_disable;
-@@ -268,10 +268,10 @@ static int bq24257_power_supply_get_property(struct power_supply *psy,
- {
- 	struct bq24257_device *bq = power_supply_get_drvdata(psy);
- 	struct bq24257_state state;
-+	int ret = 0;
- 
- 	mutex_lock(&bq->lock);
- 	state = bq->state;
--	mutex_unlock(&bq->lock);
- 
- 	switch (psp) {
- 	case POWER_SUPPLY_PROP_STATUS:
-@@ -351,10 +351,12 @@ static int bq24257_power_supply_get_property(struct power_supply *psy,
++static int bq24257_get_charge_type(struct bq24257_device *bq,
++		union power_supply_propval *val)
++{
++	int ret;
++
++	ret = bq24257_field_read(bq, F_CE);
++	if (ret < 0)
++		return ret;
++
++	/* Charge Enable is active-low */
++	if (ret) {
++		val->intval = POWER_SUPPLY_CHARGE_TYPE_NONE;
++		return 0;
++	}
++
++	/* Low Charge means a fixed low-current is used instead of i_chg */
++	ret = bq24257_field_read(bq, F_LOW_CHG);
++	if (ret < 0)
++		return ret;
++
++	val->intval = ret ? POWER_SUPPLY_CHARGE_TYPE_TRICKLE :
++			POWER_SUPPLY_CHARGE_TYPE_FAST;
++
++	return 0;
++}
++
++static int bq24257_set_charge_type(struct bq24257_device *bq,
++		const union power_supply_propval *val)
++{
++	int ret;
++
++	switch (val->intval) {
++	case POWER_SUPPLY_CHARGE_TYPE_NONE:
++		return bq24257_field_write(bq, F_CE, 1);
++	case POWER_SUPPLY_CHARGE_TYPE_TRICKLE:
++		ret = bq24257_field_write(bq, F_LOW_CHG, 1);
++		break;
++	case POWER_SUPPLY_CHARGE_TYPE_FAST:
++		ret = bq24257_field_write(bq, F_LOW_CHG, 0);
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	if (ret < 0)
++		return ret;
++
++	return bq24257_field_write(bq, F_CE, 0);
++}
++
+ static int bq24257_power_supply_get_property(struct power_supply *psy,
+ 					     enum power_supply_property psp,
+ 					     union power_supply_propval *val)
+@@ -287,6 +337,10 @@ static int bq24257_power_supply_get_property(struct power_supply *psy,
+ 			val->intval = POWER_SUPPLY_STATUS_UNKNOWN;
  		break;
  
- 	default:
--		return -EINVAL;
-+		ret = -EINVAL;
- 	}
- 
--	return 0;
-+	mutex_unlock(&bq->lock);
++	case POWER_SUPPLY_PROP_CHARGE_TYPE:
++		ret = bq24257_get_charge_type(bq, val);
++		break;
 +
-+	return ret;
- }
- 
- static int bq24257_get_chip_state(struct bq24257_device *bq,
-@@ -401,15 +403,9 @@ static int bq24257_get_chip_state(struct bq24257_device *bq,
- static bool bq24257_state_changed(struct bq24257_device *bq,
- 				  struct bq24257_state *new_state)
- {
--	int ret;
--
--	mutex_lock(&bq->lock);
--	ret = (bq->state.status != new_state->status ||
--	       bq->state.fault != new_state->fault ||
--	       bq->state.power_good != new_state->power_good);
--	mutex_unlock(&bq->lock);
--
--	return ret;
-+	return bq->state.status != new_state->status ||
-+			bq->state.fault != new_state->fault ||
-+			bq->state.power_good != new_state->power_good;
- }
- 
- enum bq24257_loop_status {
-@@ -532,7 +528,9 @@ static void bq24257_iilimit_setup_work(struct work_struct *work)
- 	struct bq24257_device *bq = container_of(work, struct bq24257_device,
- 						 iilimit_setup_work.work);
- 
-+	mutex_lock(&bq->lock);
- 	bq24257_iilimit_autoset(bq);
-+	mutex_unlock(&bq->lock);
- }
- 
- static void bq24257_handle_state_change(struct bq24257_device *bq,
-@@ -543,9 +541,7 @@ static void bq24257_handle_state_change(struct bq24257_device *bq,
- 	bool reset_iilimit = false;
- 	bool config_iilimit = false;
- 
--	mutex_lock(&bq->lock);
- 	old_state = bq->state;
--	mutex_unlock(&bq->lock);
- 
- 	/*
- 	 * Handle BQ2425x state changes observing whether the D+/D- based input
-@@ -600,25 +596,30 @@ static irqreturn_t bq24257_irq_handler_thread(int irq, void *private)
- 	struct bq24257_device *bq = private;
- 	struct bq24257_state state;
- 
-+	mutex_lock(&bq->lock);
-+
- 	ret = bq24257_get_chip_state(bq, &state);
- 	if (ret < 0)
--		return IRQ_HANDLED;
-+		goto out;
- 
- 	if (!bq24257_state_changed(bq, &state))
--		return IRQ_HANDLED;
-+		goto out;
- 
- 	dev_dbg(bq->dev, "irq(state changed): status/fault/pg = %d/%d/%d\n",
- 		state.status, state.fault, state.power_good);
- 
- 	bq24257_handle_state_change(bq, &state);
--
--	mutex_lock(&bq->lock);
- 	bq->state = state;
-+
- 	mutex_unlock(&bq->lock);
- 
- 	power_supply_changed(bq->charger);
- 
- 	return IRQ_HANDLED;
-+
-+out:
-+	mutex_unlock(&bq->lock);
-+	return IRQ_HANDLED;
- }
- 
- static int bq24257_hw_init(struct bq24257_device *bq)
-@@ -658,9 +659,7 @@ static int bq24257_hw_init(struct bq24257_device *bq)
- 	if (ret < 0)
- 		return ret;
- 
--	mutex_lock(&bq->lock);
- 	bq->state = state;
--	mutex_unlock(&bq->lock);
- 
- 	if (bq->in_ilimit_autoset_disable) {
- 		dev_dbg(bq->dev, "manually setting iilimit = %d\n",
-@@ -1002,11 +1001,15 @@ static int bq24257_suspend(struct device *dev)
- 	if (!bq->in_ilimit_autoset_disable)
- 		cancel_delayed_work_sync(&bq->iilimit_setup_work);
- 
-+	mutex_lock(&bq->lock);
-+
- 	/* reset all registers to default (and activate standalone mode) */
- 	ret = bq24257_field_write(bq, F_RESET, 1);
- 	if (ret < 0)
- 		dev_err(bq->dev, "Cannot reset chip to standalone mode.\n");
- 
-+	mutex_unlock(&bq->lock);
-+
+ 	case POWER_SUPPLY_PROP_MANUFACTURER:
+ 		val->strval = BQ24257_MANUFACTURER;
+ 		break;
+@@ -359,6 +413,39 @@ static int bq24257_power_supply_get_property(struct power_supply *psy,
  	return ret;
  }
  
-@@ -1015,24 +1018,31 @@ static int bq24257_resume(struct device *dev)
- 	int ret;
- 	struct bq24257_device *bq = dev_get_drvdata(dev);
- 
++static int bq24257_power_supply_set_property(struct power_supply *psy,
++		enum power_supply_property prop,
++		const union power_supply_propval *val)
++{
++	struct bq24257_device *bq = power_supply_get_drvdata(psy);
++	int ret;
++
 +	mutex_lock(&bq->lock);
 +
- 	ret = regcache_drop_region(bq->rmap, BQ24257_REG_1, BQ24257_REG_7);
- 	if (ret < 0)
--		return ret;
-+		goto err;
- 
- 	ret = bq24257_field_write(bq, F_RESET, 0);
- 	if (ret < 0)
--		return ret;
-+		goto err;
- 
- 	ret = bq24257_hw_init(bq);
- 	if (ret < 0) {
- 		dev_err(bq->dev, "Cannot init chip after resume.\n");
--		return ret;
-+		goto err;
- 	}
- 
++	switch (prop) {
++	case POWER_SUPPLY_PROP_CHARGE_TYPE:
++		ret = bq24257_set_charge_type(bq, val);
++		break;
++	default:
++		ret = -EINVAL;
++	}
++
 +	mutex_unlock(&bq->lock);
 +
- 	/* signal userspace, maybe state changed while suspended */
- 	power_supply_changed(bq->charger);
--
- 	return 0;
-+
-+err:
-+	mutex_unlock(&bq->lock);
 +	return ret;
- }
- #endif
++}
++
++static int bq24257_power_supply_property_is_writeable(struct power_supply *psy,
++		enum power_supply_property psp)
++{
++	switch (psp) {
++	case POWER_SUPPLY_PROP_CHARGE_TYPE:
++		return true;
++	default:
++		return false;
++	}
++}
++
+ static int bq24257_get_chip_state(struct bq24257_device *bq,
+ 				  struct bq24257_state *state)
+ {
+@@ -684,6 +771,7 @@ static enum power_supply_property bq24257_power_supply_props[] = {
+ 	POWER_SUPPLY_PROP_MANUFACTURER,
+ 	POWER_SUPPLY_PROP_MODEL_NAME,
+ 	POWER_SUPPLY_PROP_STATUS,
++	POWER_SUPPLY_PROP_CHARGE_TYPE,
+ 	POWER_SUPPLY_PROP_ONLINE,
+ 	POWER_SUPPLY_PROP_HEALTH,
+ 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT,
+@@ -703,6 +791,8 @@ static const struct power_supply_desc bq24257_power_supply_desc = {
+ 	.properties = bq24257_power_supply_props,
+ 	.num_properties = ARRAY_SIZE(bq24257_power_supply_props),
+ 	.get_property = bq24257_power_supply_get_property,
++	.set_property = bq24257_power_supply_set_property,
++	.property_is_writeable	= bq24257_power_supply_property_is_writeable
+ };
  
+ static ssize_t bq24257_show_ovp_voltage(struct device *dev,
 -- 
 1.9.1
 
