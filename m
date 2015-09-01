@@ -1,46 +1,37 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH V2 Resend 3/5] PM / OPP: Move opp core to its own
- directory
-Date: Tue, 1 Sep 2015 15:51:15 -0700
-Message-ID: <20150901225115.GB21112@codeaurora.org>
-References: <cover.1441083292.git.viresh.kumar@linaro.org>
- <54ff6f4e8fe495d9a859a7a7aa61ac2e79f08551.1441083292.git.viresh.kumar@linaro.org>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH V2] PM / Domains: Remove cpuidle attach
+Date: Tue, 01 Sep 2015 15:51:43 -0700
+Message-ID: <7h7fo97ny8.fsf@deeprootsystems.com>
+References: <1441132670-10111-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <54ff6f4e8fe495d9a859a7a7aa61ac2e79f08551.1441083292.git.viresh.kumar@linaro.org>
+In-Reply-To: <1441132670-10111-1-git-send-email-daniel.lezcano@linaro.org>
+	(Daniel Lezcano's message of "Tue, 1 Sep 2015 20:37:49 +0200")
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, khilman@linaro.org, Anand Moon <moon.linux@yahoo.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rjw@rjwysocki.net, zhaoyang.huang@linaro.org, Ulf Hansson <ulf.hansson@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "open list:GENERIC PM DOMAINS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 09/01, Viresh Kumar wrote:
-> OPP code is expanding and is already present in multiple directories
-> (cpufreq and power). Lets move it to its own directory, to manage it
-> better.
-> 
-> This also moves/renames the cpufreq_opp file to cpu.c, as it will
-> contain helpers for cpu device. Its not just about cpufreq, other
-> frameworks can use OPPs as well.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Daniel Lezcano <daniel.lezcano@linaro.org> writes:
 
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+> The power domains code allows to tie a cpuidle state with a power domain.
+>
+> Preventing the cpuidle framework to enter a specific idle state by disabling
+> from the power domain framework is a good idea. Unfortunately, the current
+> implementation has some gaps with a SMP system and a complex cpuidle
+> implementation. Enabling a power domain wakes up all the cpus even if a cpu
+> does not belong to the power domain.
+>
+> There is some work to do a logical representation with the power domains of
+> the hardware dependencies (eg. a cpu belongs to a power domains, these power
+> domains belong to a higher power domain for a cluster, etc ...). A new code
+> relying on the genpd hierarchy to disable the idle states would make more
+> sense.
+>
+> As the unique user of this code has been removed, let's wipe out this code
+> to prevent new user and to have a clean place to put a new implementation.
+>
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-> diff --git a/drivers/base/power/opp/Makefile b/drivers/base/power/opp/Makefile
-> new file mode 100644
-> index 000000000000..33c1e18c41a4
-> --- /dev/null
-> +++ b/drivers/base/power/opp/Makefile
-> @@ -0,0 +1,2 @@
-> +ccflags-$(CONFIG_DEBUG_DRIVER)	:= -DDEBUG
-
-It's odd that we use CONFIG_DEBUG_DRIVER here when that's talking
-about debugging the driver core. I wonder why this wouldn't be
-some OPP specific debug config option instead. But that was
-already there before so this topic is for another patch.
-
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+Acked-by: Kevin Hilman <khilman@linaro.org>
