@@ -1,112 +1,134 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH 1/3] dt-bindings: thermal: Add binding document for
- Mediatek thermal controller
-Date: Tue, 1 Sep 2015 07:26:04 +0200
-Message-ID: <20150901052604.GU5161@pengutronix.de>
-References: <1441006446-4558-1-git-send-email-s.hauer@pengutronix.de>
- <1441006446-4558-2-git-send-email-s.hauer@pengutronix.de>
+From: vichy <vichy.kuo@gmail.com>
+Subject: Re: about system time incorrect after changing cpu frequency
+Date: Tue, 1 Sep 2015 13:36:54 +0800
+Message-ID: <CAOVJa8HNQ-s=yDfADCcoL+r22ALpHFtTjWZ=oxTkBUriYbCk+Q@mail.gmail.com>
+References: <CAOVJa8GTDj3UJpgUd4nH1wknUKa6fgac=1SsqC8g=UCG0MGuDw@mail.gmail.com>
+	<CAOh2x=ky8_uwqvdH-krKxgMSby5jgovJp7odK6x=MpqNL+YoGg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:57934 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750773AbbIAF0e (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Sep 2015 01:26:34 -0400
-Content-Disposition: inline
-In-Reply-To: <1441006446-4558-2-git-send-email-s.hauer@pengutronix.de>
+Received: from mail-ob0-f179.google.com ([209.85.214.179]:34447 "EHLO
+	mail-ob0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751122AbbIAFgz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Sep 2015 01:36:55 -0400
+In-Reply-To: <CAOh2x=ky8_uwqvdH-krKxgMSby5jgovJp7odK6x=MpqNL+YoGg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-kernel@vger.kernel.org, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Matthias Brugger <matthias.bgg@gmail.com>, devicetree@vger.kernel.org, mark.rutland@arm.com, robh+dt@kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Mon, Aug 31, 2015 at 09:34:04AM +0200, Sascha Hauer wrote:
-> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-> Reviewed-by: Daniel Kurtz <djkurtz@chromium.org>
+hi Viresh:
 
-Uh, still forgot the commit log. Will add something like:
 
-This adds the device tree binding documentation for the mediatek thermal
-controller found on Mediatek MT8173 and other SoCs.
+2015-09-01 11:57 GMT+08:00 Viresh Kumar <viresh.kumar@linaro.org>:
+> On Mon, Aug 31, 2015 at 7:33 PM, vichy <vichy.kuo@gmail.com> wrote:
+>> hi all:
+>> My platform is like below:
+>> 1. single core Cortex A9
+>> 2. use global timer for system timer
+>>
+>> after I porting cpu frequency driver based on snow ball, the cpu
+>> frequency did change as I expected.
+>> But the system time is incorrect( since pherial clk is got from cpu frequency)
+>>
+>> for example:
+>> a) cpu 1G (pherial clk = 250M) --> sleep 1 sec (OK)
+>> b) cpu 500M  (pherial clk = 125M) --> sleep 1 sec (will be measured as 2 sec)
+>>
+>> I try to call below 2 functions to change the frequency of clocksource
+>> and clockevent, but the above b) sleep time is still incorrect when
+>> cpu runs in 500Mhz.
+>>     clockevents_update_freq(this_cpu_ptr(gt_evt), gt_clk_rate);
+>>     __clocksource_updatefreq_hz(&gt_clocksource, gt_clk_rate);
+>>
+>> in Arm cortex A9 single core system with Global timer as system timer,
+>> is there any kernel api to change system timer period when cpu/pherial
+>> frequency change?
+>>
+>> appreciate your kind help in advance,
+>
+> The list cpufreq@vger.kernel.org is the wrong list for posting cpufreq queries
+> as we have moved to Linux PM list <linux-pm@vger.kernel.org> list now.
+>
+> Try unsetting CPUFREQ_CONST_LOOPS flag in your driver, if you have it
+> set.
 
-Sascha
+I DIDN'T set the CPUFREQ_CONST_LOOPS when I register my cpufreq driver
+I pasted my cpufreq driver declariation as below:
 
-> ---
->  .../bindings/thermal/mediatek-thermal.txt          | 38 ++++++++++++++++++++++
->  include/dt-bindings/thermal/mt8173.h               | 13 ++++++++
->  2 files changed, 51 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
->  create mode 100644 include/dt-bindings/thermal/mt8173.h
-> 
-> diff --git a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-> new file mode 100644
-> index 0000000..1697375
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-> @@ -0,0 +1,38 @@
-> +* Mediatek Thermal
-> +
-> +This describes the device tree binding for the Mediatek thermal controller
-> +which measures the on-SoC temperatures. This device does not have its own ADC,
-> +instead it directly controls the AUXADC via AHB bus accesses. For this reason
-> +this device needs phandles to the AUXADC. Also it controls a mux in the
-> +apmixedsys register space via AHB bus accesses, so a phandle to the APMIXEDSYS
-> +is also needed.
-> +
-> +Required properties:
-> +- compatible: "mediatek,mt8173-thermal"
-> +- reg: Address range of the thermal controller
-> +- interrupts: IRQ for the thermal controller
-> +- clocks, clock-names: Clocks needed for the thermal controller. required
-> +                       clocks are:
-> +		       "therm":	 Main clock needed for register access
-> +		       "auxadc": The AUXADC clock
-> +- resets: Reference to the reset controller controlling the thermal controller.
-> +- mediatek,auxadc: A phandle to the AUXADC which the thermal controller uses
-> +- mediatek,apmixedsys: A phandle to the APMIXEDSYS controller.
-> +- #thermal-sensor-cells : Should be 1. See ./thermal.txt for a description. See
-> +			  include/dt-bindings/thermal/mt8173.h for valid sensor
-> +			  numbers.
-> +
-> +Example:
-> +
-> +	thermal: thermal@1100b000 {
-> +		#thermal-sensor-cells = <1>;
-> +		compatible = "mediatek,mt8173-thermal";
-> +		reg = <0 0x1100b000 0 0x1000>;
-> +		interrupts = <0 70 IRQ_TYPE_LEVEL_LOW>;
-> +		clocks = <&pericfg CLK_PERI_THERM>, <&pericfg CLK_PERI_AUXADC>;
-> +		clock-names = "therm", "auxadc";
-> +		resets = <&pericfg MT8173_PERI_THERM_SW_RST>;
-> +		reset-names = "therm";
-> +		mediatek,auxadc = <&auxadc>;
-> +		mediatek,apmixedsys = <&apmixedsys>;
-> +	};
-> diff --git a/include/dt-bindings/thermal/mt8173.h b/include/dt-bindings/thermal/mt8173.h
-> new file mode 100644
-> index 0000000..692e74c
-> --- /dev/null
-> +++ b/include/dt-bindings/thermal/mt8173.h
-> @@ -0,0 +1,13 @@
-> +/*
-> + * This header provides constants for mediatek,mt8173-thermal
-> + */
-> +
-> +#ifndef _DT_BINDINGS_THERMAL_MEDIATEK_MT8173_H
-> +#define _DT_BINDINGS_THERMAL_MEDIATEK_MT8173_H
-> +
-> +#define MT8173_THERMAL_ZONE_CA53	0
-> +#define MT8173_THERMAL_ZONE_CA57	1
-> +#define MT8173_THERMAL_ZONE_GPU		2
-> +#define MT8173_THERMAL_ZONE_CORE	3
-> +
-> +#endif /* _DT_BINDINGS_THERMAL_MEDIATEK_MT8173_H */
-> -- 
-> 2.5.0
-> 
-> 
+static struct cpufreq_driver plat_cpufreq_driver = {
+    .flags  = CPUFREQ_STICKY,
+    .verify = plat_cpufreq_verify_speed,
+    .target = plat_cpufreq_target,
+    .get    = plat_cpufreq_getspeed,
+    .init   = plat_cpufreq_init,
+    .name   = "plat-cpufreq",
+    .attr   = plat_cpufreq_attr,
+};
 
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+
+I have traced the kernel code
+if I guess correctly, the sleep accurate is based on jiffies and
+tick_handle_periodic will periodically update the next event interval
+
+void tick_handle_periodic
+-->
+  for (;;) {
+          if (!clockevents_program_event(dev, next, false))
+              return;
+          /*
+           * Have to be careful here. If we're in oneshot mode,
+           * before we call tick_periodic() in a loop, we need
+           * to be sure we're using a real hardware clocksource.
+           * Otherwise we could get trapped in an infinite
+           * loop, as the tick_periodic() increments jiffies,
+           * when then will increment time, posibly causing
+           * the loop to trigger again and again.
+           */
+          if (timekeeping_valid_for_hres())
+              tick_periodic(cpu);
+          next = ktime_add(next, tick_period);
+      }
+
+and in clockevents_program_event, we will use mult, shift to calculate
+the cycles need for global timer triggering next interrupt event.
+
+    clc = ((unsigned long long) delta * dev->mult) >> dev->shift;
+    rc = dev->set_next_event((unsigned long) clc, dev);
+
+belwo is my tick device information in /proc/timer_list
+and multi did change to 1/2 when I change cpu freq from 1G to 500Mhz.
+when cpu run 1GHz
+
+except multi and shift, is there any place I need to take care for
+system timer accurate?
+appreciate your kind help,
+
+Tick Device: mode:     1
+Per CPU device: 0
+Clock Event Device: arm_global_timer
+ max_delta_ns:   17043521021
+ min_delta_ns:   1000
+ mult:           541165879
+ shift:          31
+ mode:           3
+ next_event:     2176344000000 nsecs
+ set_next_event: gt_clockevent_set_next_event
+ set_mode:       gt_clockevent_set_mode
+ event_handler:  hrtimer_interrupt
+ retries:        0
+
+when cpu run in 500Mhz
+Tick Device: mode:     1
+Per CPU device: 0
+Clock Event Device: arm_global_timer
+ max_delta_ns:   34087041979
+ min_delta_ns:   1000
+ mult:           270582940
+ shift:          31
+ mode:           3
+ next_event:     2230100000000 nsecs
+ set_next_event: gt_clockevent_set_next_event
+ set_mode:       gt_clockevent_set_mode
+ event_handler:  hrtimer_interrupt
+ retries:        0
