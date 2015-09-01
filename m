@@ -1,59 +1,31 @@
 From: "Andrew F. Davis" <afd@ti.com>
-Subject: Re: [PATCH 02/13] power: bq24257: Add dead battery reporting
-Date: Tue, 1 Sep 2015 14:33:11 -0500
-Message-ID: <55E5FD77.10100@ti.com>
+Subject: Re: [PATCH 01/13] power: bq24257: Add bit definition for temp sense
+ enable
+Date: Tue, 1 Sep 2015 14:42:55 -0500
+Message-ID: <55E5FFBF.6020908@ti.com>
 References: <1441073435-12349-1-git-send-email-dannenberg@ti.com>
- <1441073435-12349-3-git-send-email-dannenberg@ti.com>
+ <1441073435-12349-2-git-send-email-dannenberg@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="windows-1252"; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:51934 "EHLO comal.ext.ti.com"
+Received: from arroyo.ext.ti.com ([192.94.94.40]:42071 "EHLO arroyo.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750778AbbIATeL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 1 Sep 2015 15:34:11 -0400
-In-Reply-To: <1441073435-12349-3-git-send-email-dannenberg@ti.com>
+	id S1750811AbbIATnW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 1 Sep 2015 15:43:22 -0400
+In-Reply-To: <1441073435-12349-2-git-send-email-dannenberg@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Andreas Dannenberg <dannenberg@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
 Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
 On 08/31/2015 09:10 PM, Andreas Dannenberg wrote:
-> A missing/disconnected battery is now reported as dead rather than an
-> unspecified failure via the charger's sysfs health property.
->
-> $ cat health
-> Dead
-
-Poor cat :(
-
+> Adding a missing bit definition for the sake of consistency device model
+> vs. bit field representation. No change in functionality.
 >
 > Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
-> ---
->   drivers/power/bq24257_charger.c | 4 ++++
->   1 file changed, 4 insertions(+)
->
-> diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
-> index db81356..0b34528 100644
-> --- a/drivers/power/bq24257_charger.c
-> +++ b/drivers/power/bq24257_charger.c
-> @@ -274,6 +274,10 @@ static int bq24257_power_supply_get_property(struct power_supply *psy,
->   			val->intval = POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE;
->   			break;
->
-> +		case FAULT_NO_BAT:
-> +			val->intval = POWER_SUPPLY_HEALTH_DEAD;
-> +			break;
-> +
 
-I think the best thing to do would be to return -ENODEV as suggested by
-power_supply_sysfs.c:305. Also you should probably add the POWER_SUPPLY_PROP_PRESENT
-property check and set intval to 0 when there is no battery.
+Acked-by: Andrew F. Davis <afd@ti.com>
 
-Regards,
-Andrew
-
->   		default:
->   			val->intval = POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
->   			break;
->
+-- 
+Andrew F. Davis
