@@ -1,41 +1,132 @@
-From: "Anaczkowski, Lukasz" <lukasz.anaczkowski@intel.com>
-Subject: RE: [PATCH] x86, arm64, acpi: Handle lapic/x2apic entries in MADT
-Date: Tue, 1 Sep 2015 12:07:15 +0000
-Message-ID: <C1C2579D7BE026428F81F41198ADB1723786A47E@irsmsx110.ger.corp.intel.com>
-References: <55DDB45D.2030901@arm.com>
- <1440611369-26314-1-git-send-email-lukasz.anaczkowski@intel.com>
- <1440611369-26314-2-git-send-email-lukasz.anaczkowski@intel.com>
- <55E55BA8.5090102@linaro.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 1/9] PM / Domains: Allocate memory outside domain locks
+Date: Tue, 1 Sep 2015 14:40:02 +0200
+Message-ID: <CAPDyKFp_YvJCXkujk7AzJtq-Pdj8-SaAXie5KqS_KkVQArx9Jw@mail.gmail.com>
+References: <1438731339-58317-1-git-send-email-lina.iyer@linaro.org>
+	<1438731339-58317-2-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:15250 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751919AbbIAMHU convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Sep 2015 08:07:20 -0400
-In-Reply-To: <55E55BA8.5090102@linaro.org>
-Content-Language: en-US
+Received: from mail-wi0-f174.google.com ([209.85.212.174]:35438 "EHLO
+	mail-wi0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752630AbbIAMkE convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Sep 2015 08:40:04 -0400
+Received: by wicge5 with SMTP id ge5so5726441wic.0
+        for <linux-pm@vger.kernel.org>; Tue, 01 Sep 2015 05:40:03 -0700 (PDT)
+In-Reply-To: <1438731339-58317-2-git-send-email-lina.iyer@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tomasz Nowicki <tomasz.nowicki@linaro.org>, "marc.zyngier@arm.com" <marc.zyngier@arm.com>, "lorenzo.pieralisi@arm.com" <lorenzo.pieralisi@arm.com>, "tglx@linutronix.de" <tglx@linutronix.de>, "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>, "x86@kernel.org" <x86@kernel.org>, "jason@lakedaemon.net" <jason@lakedaemon.net>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, Yinghai Lu <yinghai@kernel.org>
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>
 
-From: Tomasz Nowicki [mailto:tomasz.nowicki@linaro.org] 
-Sent: Tuesday, September 1, 2015 10:03 AM
+On 5 August 2015 at 01:35, Lina Iyer <lina.iyer@linaro.org> wrote:
+> In preparation for supporting IRQ-safe domains, allocate domain data
+> outside the domain locks. These functions are not called in an atomic
+> context, so we can always allocate memory using GFP_KERNEL. By
+> allocating memory before the locks, we can safely lock the domain usi=
+ng
+> spinlocks instead of mutexes.
+>
+> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: Kevin Hilman <khilman@linaro.org>
+> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+> Cc: Krzysztof Koz=C5=82owski <k.kozlowski@samsung.com>
+> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 
->> To fix this, each LAPIC/X2APIC entry from MADT table needs to be 
->> handled at the same time when processing it, thus adding 
->> acpi_subtable_proc structure which stores
->> () ACPI table id
->> () handler that processes table
->> () counter how many items has been processed and passing it to 
->> acpi_table_parse_entries().
+Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-> Why can't you leave the parsing code as is and create ApicId sorted list while parsing LAPIC/X2APIC? You could call acpi_register_lapic() after all... Do I miss something ?
-
-Just to make sure I understand correctly - you suggest to replace calls to acpi_register_lapic() with a code that builds an APIC ID list while parsing LAPIC/X2APIC, and after parsing is done,
-go thru the list and call acpi_register_lapic() on each APIC ID, correct?
-
-Thanks,
-Lukasz
+> ---
+>  drivers/base/power/domain.c | 30 +++++++++++++++---------------
+>  1 file changed, 15 insertions(+), 15 deletions(-)
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.=
+c
+> index 7666a1c..5fd1306 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -1382,13 +1382,17 @@ int pm_genpd_remove_device(struct generic_pm_=
+domain *genpd,
+>  int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
+>                            struct generic_pm_domain *subdomain)
+>  {
+> -       struct gpd_link *link;
+> +       struct gpd_link *link, *itr;
+>         int ret =3D 0;
+>
+>         if (IS_ERR_OR_NULL(genpd) || IS_ERR_OR_NULL(subdomain)
+>             || genpd =3D=3D subdomain)
+>                 return -EINVAL;
+>
+> +       link =3D kzalloc(sizeof(*link), GFP_KERNEL);
+> +       if (!link)
+> +               return -ENOMEM;
+> +
+>         mutex_lock(&genpd->lock);
+>         mutex_lock_nested(&subdomain->lock, SINGLE_DEPTH_NESTING);
+>
+> @@ -1398,18 +1402,13 @@ int pm_genpd_add_subdomain(struct generic_pm_=
+domain *genpd,
+>                 goto out;
+>         }
+>
+> -       list_for_each_entry(link, &genpd->master_links, master_node) =
+{
+> -               if (link->slave =3D=3D subdomain && link->master =3D=3D=
+ genpd) {
+> +       list_for_each_entry(itr, &genpd->master_links, master_node) {
+> +               if (itr->slave =3D=3D subdomain && itr->master =3D=3D=
+ genpd) {
+>                         ret =3D -EINVAL;
+>                         goto out;
+>                 }
+>         }
+>
+> -       link =3D kzalloc(sizeof(*link), GFP_KERNEL);
+> -       if (!link) {
+> -               ret =3D -ENOMEM;
+> -               goto out;
+> -       }
+>         link->master =3D genpd;
+>         list_add_tail(&link->master_node, &genpd->master_links);
+>         link->slave =3D subdomain;
+> @@ -1420,7 +1419,8 @@ int pm_genpd_add_subdomain(struct generic_pm_do=
+main *genpd,
+>   out:
+>         mutex_unlock(&subdomain->lock);
+>         mutex_unlock(&genpd->lock);
+> -
+> +       if (ret)
+> +               kfree(link);
+>         return ret;
+>  }
+>
+> @@ -1511,17 +1511,17 @@ int pm_genpd_attach_cpuidle(struct generic_pm=
+_domain *genpd, int state)
+>         if (IS_ERR_OR_NULL(genpd) || state < 0)
+>                 return -EINVAL;
+>
+> +       cpuidle_data =3D kzalloc(sizeof(*cpuidle_data), GFP_KERNEL);
+> +       if (!cpuidle_data)
+> +               return -ENOMEM;
+> +
+>         mutex_lock(&genpd->lock);
+>
+>         if (genpd->cpuidle_data) {
+>                 ret =3D -EEXIST;
+> -               goto out;
+> -       }
+> -       cpuidle_data =3D kzalloc(sizeof(*cpuidle_data), GFP_KERNEL);
+> -       if (!cpuidle_data) {
+> -               ret =3D -ENOMEM;
+> -               goto out;
+> +               goto err_drv;
+>         }
+> +
+>         cpuidle_drv =3D cpuidle_driver_ref();
+>         if (!cpuidle_drv) {
+>                 ret =3D -ENODEV;
+> --
+> 2.1.4
+>
