@@ -1,154 +1,216 @@
-From: Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
-Subject: [PATCH 03/13] power: bq24257: Add basic support for bq24250/bq24251
-Date: Mon, 31 Aug 2015 21:10:25 -0500
-Message-ID: <1441073435-12349-4-git-send-email-dannenberg@ti.com>
+From: Andreas Dannenberg <dannenberg@ti.com>
+Subject: [PATCH 04/13] power: bq24257: Allow manual setting of input current limit
+Date: Mon, 31 Aug 2015 21:10:26 -0500
+Message-ID: <1441073435-12349-5-git-send-email-dannenberg@ti.com>
 References: <1441073435-12349-1-git-send-email-dannenberg@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1441073435-12349-1-git-send-email-dannenberg-l0cyMroinI0@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Laurentiu Palcu <laurentiu.palcu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski.k-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from comal.ext.ti.com ([198.47.26.152]:37573 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753606AbbIACL0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 31 Aug 2015 22:11:26 -0400
+In-Reply-To: <1441073435-12349-1-git-send-email-dannenberg@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Andreas Dannenberg <dannenberg@ti.com>
 
-This patch adds basic support for bq24250 and bq24251 which are very
-similar to the bq24257 the driver was originally written for. Basic
-support means the ability to select a device through Kconfig, DT and
-ACPI, an instance variable allowing to check which chip is active, and
-the reporting back of the selected device through the
-POWER_SUPPLY_PROP_MODEL_NAME power supply sysfs property.
+A new device property called "ti,in-ilimit-autoset-disable" is
+introduced to allow disabling the D+/D- based auto-detection algorithm
+used to determine the input current limit. This feature is also
+explicitly disabled on bq25250 devices which don't support D+/D-
+charger type detection.
 
-This patch by itself is not sufficient to actually use those two added
-devices in a real-world setting due to some feature differences which
-are addressed by other patches in this series.
+If "ti,in-ilimit-autoset-disable" is set the actual input current limit
+can be configured through the "ti,in-limit-current" property.
 
-Signed-off-by: Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
+Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
 ---
- drivers/power/Kconfig           |  5 +++--
- drivers/power/bq24257_charger.c | 34 +++++++++++++++++++++++++++++++---
- 2 files changed, 34 insertions(+), 5 deletions(-)
+ drivers/power/bq24257_charger.c | 98 ++++++++++++++++++++++++++++++++---------
+ 1 file changed, 77 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-index 08beeed..0a2b033 100644
---- a/drivers/power/Kconfig
-+++ b/drivers/power/Kconfig
-@@ -396,11 +396,12 @@ config CHARGER_BQ24190
- 	  Say Y to enable support for the TI BQ24190 battery charger.
- 
- config CHARGER_BQ24257
--	tristate "TI BQ24257 battery charger driver"
-+	tristate "TI BQ24250/251/257 battery charger driver"
- 	depends on I2C && GPIOLIB
- 	depends on REGMAP_I2C
- 	help
--	  Say Y to enable support for the TI BQ24257 battery charger.
-+	  Say Y to enable support for the TI BQ24250, BQ24251, and BQ24257 battery
-+	  chargers.
- 
- config CHARGER_BQ24735
- 	tristate "TI BQ24735 battery charger support"
 diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
-index 0b34528..45232bd 100644
+index 45232bd..229fbce 100644
 --- a/drivers/power/bq24257_charger.c
 +++ b/drivers/power/bq24257_charger.c
-@@ -13,6 +13,10 @@
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  * GNU General Public License for more details.
-  *
-+ * Datasheets:
-+ * http://www.ti.com/product/bq24250
-+ * http://www.ti.com/product/bq24251
-+ * http://www.ti.com/product/bq24257
-  */
+@@ -68,6 +68,8 @@ struct bq24257_init_data {
+ 	u8 ichg;	/* charge current      */
+ 	u8 vbat;	/* regulation voltage  */
+ 	u8 iterm;	/* termination current */
++	u8 in_ilimit;	/* input current limit */
++	bool in_ilimit_autoset_disable;	/* auto-detect of input current limit */
+ };
  
- #include <linux/module.h>
-@@ -41,6 +45,12 @@
+ struct bq24257_state {
+@@ -95,6 +97,8 @@ struct bq24257_device {
+ 	struct bq24257_state state;
  
- #define BQ24257_ILIM_SET_DELAY		1000	/* msec */
+ 	struct mutex lock; /* protect state data */
++
++	bool in_ilimit_autoset_disable;
+ };
  
-+enum bq2425x_chip {
-+	BQ24250,
-+	BQ24251,
-+	BQ24257,
+ static bool bq24257_is_volatile_reg(struct device *dev, unsigned int reg)
+@@ -183,6 +187,12 @@ static const u32 bq24257_iterm_map[] = {
+ 
+ #define BQ24257_ITERM_MAP_SIZE		ARRAY_SIZE(bq24257_iterm_map)
+ 
++static const u32 bq24257_iilimit_map[] = {
++	100000, 150000, 500000, 900000, 1500000, 2000000
 +};
 +
- enum bq24257_fields {
- 	F_WD_FAULT, F_WD_EN, F_STAT, F_FAULT,			    /* REG 1 */
- 	F_RESET, F_IILIMIT, F_EN_STAT, F_EN_TERM, F_CE, F_HZ_MODE,  /* REG 2 */
-@@ -71,6 +81,9 @@ struct bq24257_device {
- 	struct device *dev;
- 	struct power_supply *charger;
- 
-+	enum bq2425x_chip chip;
-+	char chip_name[I2C_NAME_SIZE];
++#define BQ24257_IILIMIT_MAP_SIZE	ARRAY_SIZE(bq24257_iilimit_map)
 +
- 	struct regmap *rmap;
- 	struct regmap_field *rmap_fields[F_MAX_FIELDS];
+ static int bq24257_field_read(struct bq24257_device *bq,
+ 			      enum bq24257_fields field_id)
+ {
+@@ -478,24 +488,35 @@ static void bq24257_handle_state_change(struct bq24257_device *bq,
+ 	old_state = bq->state;
+ 	mutex_unlock(&bq->lock);
  
-@@ -250,6 +263,10 @@ static int bq24257_power_supply_get_property(struct power_supply *psy,
- 		val->strval = BQ24257_MANUFACTURER;
- 		break;
+-	if (!new_state->power_good) {			     /* power removed */
+-		cancel_delayed_work_sync(&bq->iilimit_setup_work);
+-
+-		/* activate D+/D- port detection algorithm */
+-		ret = bq24257_field_write(bq, F_DPDM_EN, 1);
+-		if (ret < 0)
+-			goto error;
++	/*
++	 * Handle BQ2425x state changes observing whether the D+/D- based input
++	 * current limit autoset functionality is enabled.
++	 */
++	if (!new_state->power_good) {
++		dev_dbg(bq->dev, "Power removed\n");
++		if (!bq->in_ilimit_autoset_disable) {
++			cancel_delayed_work_sync(&bq->iilimit_setup_work);
  
-+	case POWER_SUPPLY_PROP_MODEL_NAME:
-+		val->strval = bq->chip_name;
-+		break;
+-		reset_iilimit = true;
+-	} else if (!old_state.power_good) {		    /* power inserted */
+-		config_iilimit = true;
+-	} else if (new_state->fault == FAULT_NO_BAT) {	   /* battery removed */
+-		cancel_delayed_work_sync(&bq->iilimit_setup_work);
++			/* activate D+/D- port detection algorithm */
++			ret = bq24257_field_write(bq, F_DPDM_EN, 1);
++			if (ret < 0)
++				goto error;
+ 
+-		reset_iilimit = true;
+-	} else if (old_state.fault == FAULT_NO_BAT) {    /* battery connected */
+-		config_iilimit = true;
+-	} else if (new_state->fault == FAULT_TIMER) { /* safety timer expired */
++			reset_iilimit = true;
++		}
++	} else if (!old_state.power_good) {
++		dev_dbg(bq->dev, "Power inserted\n");
++		config_iilimit = !bq->in_ilimit_autoset_disable;
++	} else if (new_state->fault == FAULT_NO_BAT) {
++		dev_warn(bq->dev, "Battery removed\n");
++		if (!bq->in_ilimit_autoset_disable) {
++			cancel_delayed_work_sync(&bq->iilimit_setup_work);
++			reset_iilimit = true;
++		}
++	} else if (old_state.fault == FAULT_NO_BAT) {
++		dev_warn(bq->dev, "Battery connected\n");
++		config_iilimit = !bq->in_ilimit_autoset_disable;
++	} else if (new_state->fault == FAULT_TIMER) {
+ 		dev_err(bq->dev, "Safety timer expired! Battery dead?\n");
+ 	}
+ 
+@@ -580,7 +601,16 @@ static int bq24257_hw_init(struct bq24257_device *bq)
+ 	bq->state = state;
+ 	mutex_unlock(&bq->lock);
+ 
+-	if (!state.power_good)
++	if (bq->in_ilimit_autoset_disable) {
++		dev_dbg(bq->dev, "manually setting iilimit = %d\n",
++				bq->init_data.in_ilimit);
 +
- 	case POWER_SUPPLY_PROP_ONLINE:
- 		val->intval = state.power_good;
- 		break;
-@@ -574,6 +591,7 @@ static int bq24257_hw_init(struct bq24257_device *bq)
++		/* program fixed input current limit */
++		ret = bq24257_field_write(bq, F_IILIMIT,
++					  bq->init_data.in_ilimit);
++		if (ret < 0)
++			return ret;
++	} else if (!state.power_good)
+ 		/* activate D+/D- detection algorithm */
+ 		ret = bq24257_field_write(bq, F_DPDM_EN, 1);
+ 	else if (state.fault != FAULT_NO_BAT)
+@@ -658,6 +688,7 @@ static int bq24257_fw_probe(struct bq24257_device *bq)
+ 	int ret;
+ 	u32 property;
  
- static enum power_supply_property bq24257_power_supply_props[] = {
- 	POWER_SUPPLY_PROP_MANUFACTURER,
-+	POWER_SUPPLY_PROP_MODEL_NAME,
- 	POWER_SUPPLY_PROP_STATUS,
- 	POWER_SUPPLY_PROP_ONLINE,
- 	POWER_SUPPLY_PROP_HEALTH,
-@@ -686,6 +704,8 @@ static int bq24257_probe(struct i2c_client *client,
++	/* Required properties */
+ 	ret = device_property_read_u32(bq->dev, "ti,charge-current", &property);
+ 	if (ret < 0)
+ 		return ret;
+@@ -681,6 +712,19 @@ static int bq24257_fw_probe(struct bq24257_device *bq)
+ 	bq->init_data.iterm = bq24257_find_idx(property, bq24257_iterm_map,
+ 					       BQ24257_ITERM_MAP_SIZE);
  
- 	bq->client = client;
- 	bq->dev = dev;
-+	bq->chip = (enum bq2425x_chip)id->driver_data;
-+	strncpy(bq->chip_name, id->name, I2C_NAME_SIZE);
++	/* Optional properties */
++	ret = device_property_read_u32(bq->dev, "ti,in-limit-current",
++				       &property);
++
++	if (ret < 0)
++		bq->init_data.in_ilimit = IILIMIT_500;
++	else
++		bq->init_data.in_ilimit = bq24257_find_idx(property,
++				bq24257_iilimit_map, BQ24257_IILIMIT_MAP_SIZE);
++
++	bq->init_data.in_ilimit_autoset_disable = device_property_read_bool(
++			bq->dev, "ti,in-ilimit-autoset-disable");
++
+ 	return 0;
+ }
  
- 	mutex_init(&bq->lock);
+@@ -728,8 +772,6 @@ static int bq24257_probe(struct i2c_client *client,
  
-@@ -828,19 +848,27 @@ static const struct dev_pm_ops bq24257_pm = {
- };
+ 	i2c_set_clientdata(client, bq);
  
- static const struct i2c_device_id bq24257_i2c_ids[] = {
--	{ "bq24257", 0 },
-+	{ "bq24250", BQ24250 },
-+	{ "bq24251", BQ24251 },
-+	{ "bq24257", BQ24257 },
- 	{},
- };
- MODULE_DEVICE_TABLE(i2c, bq24257_i2c_ids);
+-	INIT_DELAYED_WORK(&bq->iilimit_setup_work, bq24257_iilimit_setup_work);
+-
+ 	if (!dev->platform_data) {
+ 		ret = bq24257_fw_probe(bq);
+ 		if (ret < 0) {
+@@ -740,6 +782,18 @@ static int bq24257_probe(struct i2c_client *client,
+ 		return -ENODEV;
+ 	}
  
- static const struct of_device_id bq24257_of_match[] = {
--	{ .compatible = "ti,bq24257", },
-+	{
-+		.compatible = "ti,bq24250",
-+		.compatible = "ti,bq24251",
-+		.compatible = "ti,bq24257",
-+	},
- 	{ },
- };
- MODULE_DEVICE_TABLE(of, bq24257_of_match);
++	/*
++	 * The BQ24250 doesn't support the D+/D- based detection for the
++	 * input current limit setting so explicitly disable that feature
++	 * otherwise respect the user configuration.
++	 */
++	bq->in_ilimit_autoset_disable = bq->chip == BQ24250 ?
++			true : bq->init_data.in_ilimit_autoset_disable;
++
++	if (!bq->in_ilimit_autoset_disable)
++		INIT_DELAYED_WORK(&bq->iilimit_setup_work,
++				bq24257_iilimit_setup_work);
++
+ 	/* we can only check Power Good status by probing the PG pin */
+ 	ret = bq24257_pg_gpio_probe(bq);
+ 	if (ret < 0)
+@@ -792,7 +846,8 @@ static int bq24257_remove(struct i2c_client *client)
+ {
+ 	struct bq24257_device *bq = i2c_get_clientdata(client);
  
- static const struct acpi_device_id bq24257_acpi_match[] = {
--	{"BQ242570", 0},
-+	{ "BQ242500", BQ24250 },
-+	{ "BQ242510", BQ24251 },
-+	{ "BQ242570", BQ24257 },
- 	{},
- };
- MODULE_DEVICE_TABLE(acpi, bq24257_acpi_match);
+-	cancel_delayed_work_sync(&bq->iilimit_setup_work);
++	if (!bq->in_ilimit_autoset_disable)
++		cancel_delayed_work_sync(&bq->iilimit_setup_work);
+ 
+ 	power_supply_unregister(bq->charger);
+ 
+@@ -807,7 +862,8 @@ static int bq24257_suspend(struct device *dev)
+ 	struct bq24257_device *bq = dev_get_drvdata(dev);
+ 	int ret = 0;
+ 
+-	cancel_delayed_work_sync(&bq->iilimit_setup_work);
++	if (!bq->in_ilimit_autoset_disable)
++		cancel_delayed_work_sync(&bq->iilimit_setup_work);
+ 
+ 	/* reset all registers to default (and activate standalone mode) */
+ 	ret = bq24257_field_write(bq, F_RESET, 1);
 -- 
 1.9.1
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
