@@ -1,39 +1,74 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH V2 Resend 5/5] PM / OPP: Add debugfs support
-Date: Tue, 1 Sep 2015 16:00:44 -0700
-Message-ID: <20150901230044.GC21112@codeaurora.org>
-References: <cover.1441083292.git.viresh.kumar@linaro.org>
- <bcca9819c4b8f5fe26bc25d14968463661899f7e.1441083292.git.viresh.kumar@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] drivers/power/wakeirq: Call device_init_wakeup from dev_pm_set_wake_irq
+Date: Wed, 02 Sep 2015 01:58:34 +0200
+Message-ID: <2671167.vEAaCPQzyJ@vostro.rjw.lan>
+References: <1441119218-31490-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <bcca9819c4b8f5fe26bc25d14968463661899f7e.1441083292.git.viresh.kumar@linaro.org>
+In-Reply-To: <1441119218-31490-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, khilman@linaro.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dmitry Torokhov <dtor@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: zhaoyang.huang@linaro.org, sudeep.holla@arm.com, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "open list:SUSPEND TO RAM" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 09/01, Viresh Kumar wrote:
-> This patch adds debugfs support to OPP layer to export OPPs and their
-> properties for all the devices.
+On Tuesday, September 01, 2015 04:53:37 PM Daniel Lezcano wrote:
+> The function dev_pm_set_wake_irq is typically called after device_init_wakeup.
 > 
-> This creates a top level directory: /sys/kernel/debug/opp and then
-> device specific directories (based on device names) inside it. For
-> example: 'cpu0', 'cpu1', etc..
+> Instead of summing a couple of call, let's call device_init_wakeup directly
+> from dev_pm_set_wake_irq / dev_pm_clear_wake_irq.
 > 
-> If multiple devices share the OPP table, then the real directory is
-> created only for the first device. For all others, links are created to
-> the real directory.
-> 
-> Inside the device specific directory, a separate directory is created
-> for each OPP. And within that files per opp property.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+If there are any existing callers of dev_pm_attach_wake_irq(), you need to
+update them too I think.  Also, what if someone wants to use
+device_set_wakeup_capable() rather than device_init_wakeup()?
+
+
+> ---
+>  drivers/base/power/wakeirq.c | 10 +++++++---
+>  1 file changed, 7 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/base/power/wakeirq.c b/drivers/base/power/wakeirq.c
+> index eb6e674..287a021 100644
+> --- a/drivers/base/power/wakeirq.c
+> +++ b/drivers/base/power/wakeirq.c
+> @@ -60,8 +60,7 @@ static int dev_pm_attach_wake_irq(struct device *dev, int irq,
+>   *
+>   * Attach a device IO interrupt as a wake IRQ. The wake IRQ gets
+>   * automatically configured for wake-up from suspend  based
+> - * on the device specific sysfs wakeup entry. Typically called
+> - * during driver probe after calling device_init_wakeup().
+> + * on the device specific sysfs wakeup entry.
+>   */
+>  int dev_pm_set_wake_irq(struct device *dev, int irq)
+>  {
+> @@ -75,9 +74,13 @@ int dev_pm_set_wake_irq(struct device *dev, int irq)
+>  	wirq->dev = dev;
+>  	wirq->irq = irq;
+>  
+> +	device_init_wakeup(dev, true);
+> +
+>  	err = dev_pm_attach_wake_irq(dev, irq, wirq);
+> -	if (err)
+> +	if (!err) {
+>  		kfree(wirq);
+> +		device_init_wakeup(dev, false);
+> +	}
+>  
+>  	return err;
+>  }
+> @@ -102,6 +105,7 @@ void dev_pm_clear_wake_irq(struct device *dev)
+>  	if (!wirq)
+>  		return;
+>  
+> +	device_init_wakeup(dev, false);
+>  	spin_lock_irqsave(&dev->power.lock, flags);
+>  	device_wakeup_detach_irq(dev);
+>  	dev->power.wakeirq = NULL;
+> 
 
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
