@@ -1,115 +1,183 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v2 2/6] cpufreq: intel_pstate: get P1 from TAR when available
-Date: Tue,  1 Sep 2015 04:53:57 -0700
-Message-ID: <1441108441-3388-3-git-send-email-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v2 1/6] cpufreq: intel_p_state: Fix limiting turbo sub states
+Date: Tue,  1 Sep 2015 04:53:56 -0700
+Message-ID: <1441108441-3388-2-git-send-email-srinivas.pandruvada@linux.intel.com>
 References: <1441108441-3388-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
 Received: from mga14.intel.com ([192.55.52.115]:20686 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755939AbbIALzQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 1 Sep 2015 07:55:16 -0400
+	id S1755938AbbIALzP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 1 Sep 2015 07:55:15 -0400
 In-Reply-To: <1441108441-3388-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: kristen.c.accardi@intel.com, rafael.j.wysocki@intel.com
 Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-After Ivybridge, the max non turbo ratio obtained from platform info msr
-is not always guaranteed P1 on client platforms. The max non turbo
-activation ratio (TAR), determines the max for the current level of TDP.
-The ratio in platform info is physical max. The TAR MSR can be locked,
-so updating this value is not possible on all platforms.
-This change gets this ratio from MSR TURBO_ACTIVATION_RATIO if
-available,
-but also do some sanity checking to make sure that this value is
-correct.
-The sanity check involves reading the TDP ratio for the current tdp
-control value when platform has configurable TDP present and matching
-TAC
-with this.
+Although the max_perf_pct reflects sub states in turbo range, we can't
+really restrict to those states. This gives wrong impression that the
+performance is reduced.
+This can be achieved by restricting turbo ratio limits (MSR 0x1AD),
+when bit 28 of platform info MSR allows (MSR 0xCE) is 1.
 
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- arch/x86/include/asm/msr-index.h |  7 +++++++
- drivers/cpufreq/intel_pstate.c   | 39 +++++++++++++++++++++++++++++++++++----
- 2 files changed, 42 insertions(+), 4 deletions(-)
+ drivers/cpufreq/intel_pstate.c | 93 +++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 92 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
-index 9ebc3d0..ae868de 100644
---- a/arch/x86/include/asm/msr-index.h
-+++ b/arch/x86/include/asm/msr-index.h
-@@ -184,6 +184,13 @@
- #define MSR_GFX_PERF_LIMIT_REASONS	0x000006B0
- #define MSR_RING_PERF_LIMIT_REASONS	0x000006B1
- 
-+/* Config TDP MSRs */
-+#define MSR_CONFIG_TDP_NOMINAL		0x00000648
-+#define MSR_CONFIG_TDP_LEVEL1		0x00000649
-+#define MSR_CONFIG_TDP_LEVEL2		0x0000064A
-+#define MSR_CONFIG_TDP_CONTROL		0x0000064B
-+#define MSR_TURBO_ACTIVATION_RATIO	0x0000064C
-+
- /* Hardware P state interface */
- #define MSR_PPERF			0x0000064e
- #define MSR_PERF_LIMIT_REASONS		0x0000064f
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index bf5b9d9..6260cc7 100644
+index fcb929e..bf5b9d9 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -43,7 +43,6 @@
- #define int_tofp(X) ((int64_t)(X) << FRAC_BITS)
- #define fp_toint(X) ((X) >> FRAC_BITS)
+@@ -80,6 +80,7 @@ struct pstate_data {
+ 	int	max_pstate;
+ 	int	scaling;
+ 	int	turbo_pstate;
++	u64	turbo_ratio_limit;
+ };
  
--
- static inline int32_t mul_fp(int32_t x, int32_t y)
- {
- 	return ((int64_t)x * (int64_t)y) >> FRAC_BITS;
-@@ -603,10 +602,42 @@ static int core_get_min_pstate(void)
+ struct vid_data {
+@@ -132,6 +133,8 @@ struct pstate_funcs {
+ 	int (*get_scaling)(void);
+ 	void (*set)(struct cpudata*, int pstate);
+ 	void (*get_vid)(struct cpudata *);
++	u64 (*get_turbo_ratio_limit)(struct cpudata *);
++	int (*set_turbo_ratio_limit)(struct cpudata *, u64, u64);
+ };
  
- static int core_get_max_pstate(void)
- {
--	u64 value;
-+	u64 tar;
-+	u64 plat_info;
-+	int max_pstate;
-+	int err;
+ struct cpu_defaults {
+@@ -425,6 +428,23 @@ static ssize_t store_max_perf_pct(struct kobject *a, struct attribute *b,
+ 	limits.max_perf_pct = min(limits.max_policy_pct, limits.max_sysfs_pct);
+ 	limits.max_perf = div_fp(int_tofp(limits.max_perf_pct), int_tofp(100));
+ 
++	if (pstate_funcs.set_turbo_ratio_limit) {
++		int max_perf_adj;
++		struct cpudata *cpu = all_cpu_data[0];
 +
-+	rdmsrl(MSR_PLATFORM_INFO, plat_info);
-+	max_pstate = (plat_info >> 8) & 0xFF;
++		if (limits.max_sysfs_pct == 100)
++			max_perf_adj = cpu->pstate.turbo_ratio_limit;
++		else
++			max_perf_adj = fp_toint(mul_fp(int_tofp(
++					cpu->pstate.turbo_ratio_limit & 0xff),
++					limits.max_perf));
 +
-+	err = rdmsrl_safe(MSR_TURBO_ACTIVATION_RATIO, &tar);
-+	if (!err) {
-+		/* Do some sanity checking for safety */
-+		if (plat_info & 0x600000000) {
-+			u64 tdp_ctrl;
-+			u64 tdp_ratio;
-+			int tdp_msr;
-+
-+			err = rdmsrl_safe(MSR_CONFIG_TDP_CONTROL, &tdp_ctrl);
-+			if (err)
-+				goto skip_tar;
-+
-+			tdp_msr = MSR_CONFIG_TDP_NOMINAL + tdp_ctrl;
-+			err = rdmsrl_safe(tdp_msr, &tdp_ratio);
-+			if (err)
-+				goto skip_tar;
-+
-+			if (tdp_ratio - 1 == tar) {
-+				max_pstate = tar;
-+				pr_debug("max_pstate=TAC %x\n", max_pstate);
-+			} else {
-+				goto skip_tar;
-+			}
-+		}
++		if (max_perf_adj > cpu->pstate.max_pstate)
++			pstate_funcs.set_turbo_ratio_limit(cpu,
++						cpu->pstate.turbo_ratio_limit,
++						max_perf_adj);
 +	}
- 
--	rdmsrl(MSR_PLATFORM_INFO, value);
--	return (value >> 8) & 0xFF;
-+skip_tar:
-+	return max_pstate;
++
+ 	if (hwp_active)
+ 		intel_pstate_hwp_set();
+ 	return count;
+@@ -618,6 +638,55 @@ static void core_set_pstate(struct cpudata *cpudata, int pstate)
+ 	wrmsrl_on_cpu(cpudata->cpu, MSR_IA32_PERF_CTL, val);
  }
  
- static int core_get_turbo_pstate(void)
++static u64 core_get_turbo_ratio_limit(struct cpudata *cpudata)
++{
++	u64 value;
++
++	rdmsrl(MSR_NHM_TURBO_RATIO_LIMIT, value);
++
++	return value;
++}
++
++static int core_set_turbo_ratio_limit(struct cpudata *cpudata, u64 def_ratio,
++			       u64 new_ratio)
++{
++	u64 value;
++
++	rdmsrl(MSR_PLATFORM_INFO, value);
++	if (value & BIT(28)) {
++		u64 ratio = 0;
++		u64 out_ratio = 0;
++		u8 max_ratio = new_ratio & 0xff;
++		int i;
++		/*
++		 * If caller provided reduced max ratio (one core active)
++		 * then use this for all other ratios, which are more
++		 * than the default ratio for those many cores active
++		 * for example if default ratio is 0x1a1b1c1d and new ratio
++		 * is 0x1b, then resultant ratio will be 0x1a1b1b1b
++		 */
++		for (i = 0; i < sizeof(def_ratio); ++i) {
++			if (def_ratio & 0xff) {
++				if (new_ratio & 0xff)
++					ratio = new_ratio & 0xff;
++				else {
++					if ((def_ratio & 0xff) > max_ratio)
++						ratio = max_ratio;
++					else
++						ratio = def_ratio & 0xff;
++				}
++				out_ratio |= (ratio << (i * 8));
++			}
++			def_ratio >>= 8;
++			new_ratio >>= 8;
++		}
++		wrmsrl(MSR_NHM_TURBO_RATIO_LIMIT, out_ratio);
++		return 0;
++	}
++
++	return -EPERM;
++}
++
+ static int knl_get_turbo_pstate(void)
+ {
+ 	u64 value;
+@@ -646,6 +715,8 @@ static struct cpu_defaults core_params = {
+ 		.get_turbo = core_get_turbo_pstate,
+ 		.get_scaling = core_get_scaling,
+ 		.set = core_set_pstate,
++		.get_turbo_ratio_limit = core_get_turbo_ratio_limit,
++		.set_turbo_ratio_limit = core_set_turbo_ratio_limit,
+ 	},
+ };
+ 
+@@ -735,7 +806,10 @@ static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
+ 	cpu->pstate.max_pstate = pstate_funcs.get_max();
+ 	cpu->pstate.turbo_pstate = pstate_funcs.get_turbo();
+ 	cpu->pstate.scaling = pstate_funcs.get_scaling();
+-
++	if (pstate_funcs.get_turbo_ratio_limit &&
++	    !cpu->pstate.turbo_ratio_limit)
++		cpu->pstate.turbo_ratio_limit =
++			pstate_funcs.get_turbo_ratio_limit(cpu);
+ 	if (pstate_funcs.get_vid)
+ 		pstate_funcs.get_vid(cpu);
+ 	intel_pstate_set_pstate(cpu, cpu->pstate.min_pstate, false);
+@@ -935,6 +1009,21 @@ static int intel_pstate_init_cpu(unsigned int cpunum)
+ 	cpu->cpu = cpunum;
+ 	intel_pstate_get_cpu_pstates(cpu);
+ 
++	/* readjust turbo limit ratio after resume or hotplug */
++	if (limits.max_sysfs_pct != 100 &&
++	    pstate_funcs.set_turbo_ratio_limit) {
++		int max_perf_adj;
++
++		max_perf_adj = fp_toint(mul_fp(int_tofp(
++					cpu->pstate.turbo_ratio_limit & 0xff),
++					limits.max_perf));
++
++		if (max_perf_adj > cpu->pstate.max_pstate)
++			pstate_funcs.set_turbo_ratio_limit(cpu,
++						cpu->pstate.turbo_ratio_limit,
++						max_perf_adj);
++	}
++
+ 	init_timer_deferrable(&cpu->timer);
+ 	cpu->timer.data = (unsigned long)cpu;
+ 	cpu->timer.expires = jiffies + HZ/100;
+@@ -1096,6 +1185,8 @@ static void copy_cpu_funcs(struct pstate_funcs *funcs)
+ 	pstate_funcs.get_scaling = funcs->get_scaling;
+ 	pstate_funcs.set       = funcs->set;
+ 	pstate_funcs.get_vid   = funcs->get_vid;
++	pstate_funcs.set_turbo_ratio_limit = funcs->set_turbo_ratio_limit;
++	pstate_funcs.get_turbo_ratio_limit = funcs->get_turbo_ratio_limit;
+ }
+ 
+ #if IS_ENABLED(CONFIG_ACPI)
 -- 
 2.4.3
 
