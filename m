@@ -1,56 +1,59 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH V2 Resend 2/5] PM / OPP: Prefix exported opp routines
- with dev_pm_opp_
-Date: Tue, 1 Sep 2015 21:03:21 +0200
-Message-ID: <20150901190321.GA6123@amd>
-References: <cover.1441083292.git.viresh.kumar@linaro.org>
- <7c5fd48b6e94fb84f44eb1e79d4518cbf3de6909.1441083292.git.viresh.kumar@linaro.org>
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: Re: [PATCH 02/13] power: bq24257: Add dead battery reporting
+Date: Tue, 1 Sep 2015 14:33:11 -0500
+Message-ID: <55E5FD77.10100@ti.com>
+References: <1441073435-12349-1-git-send-email-dannenberg@ti.com>
+ <1441073435-12349-3-git-send-email-dannenberg@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:40865 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753466AbbIATDY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Sep 2015 15:03:24 -0400
-Content-Disposition: inline
-In-Reply-To: <7c5fd48b6e94fb84f44eb1e79d4518cbf3de6909.1441083292.git.viresh.kumar@linaro.org>
+Received: from comal.ext.ti.com ([198.47.26.152]:51934 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750778AbbIATeL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 1 Sep 2015 15:34:11 -0400
+In-Reply-To: <1441073435-12349-3-git-send-email-dannenberg@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, sboyd@codeaurora.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, khilman@linaro.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>
+To: Andreas Dannenberg <dannenberg@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-Hi!
+On 08/31/2015 09:10 PM, Andreas Dannenberg wrote:
+> A missing/disconnected battery is now reported as dead rather than an
+> unspecified failure via the charger's sysfs health property.
+>
+> $ cat health
+> Dead
 
-> -EXPORT_SYMBOL_GPL(of_cpumask_init_opp_table);
-> +EXPORT_SYMBOL_GPL(dev_pm_opp_cpumask_init_opp);
+Poor cat :(
 
-Well... it starts to be rather long and repetitive.
+>
+> Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
+> ---
+>   drivers/power/bq24257_charger.c | 4 ++++
+>   1 file changed, 4 insertions(+)
+>
+> diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
+> index db81356..0b34528 100644
+> --- a/drivers/power/bq24257_charger.c
+> +++ b/drivers/power/bq24257_charger.c
+> @@ -274,6 +274,10 @@ static int bq24257_power_supply_get_property(struct power_supply *psy,
+>   			val->intval = POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE;
+>   			break;
+>
+> +		case FAULT_NO_BAT:
+> +			val->intval = POWER_SUPPLY_HEALTH_DEAD;
+> +			break;
+> +
 
-> @@ -237,7 +237,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
->  	 *
->  	 * OPPs might be populated at runtime, don't check for error here
->  	 */
-> -	of_cpumask_init_opp_table(policy->cpus);
-> +	dev_pm_opp_cpumask_init_opp(policy->cpus);
->  
->  	if (need_update) {
->  		struct cpufreq_dt_platform_data *pd = cpufreq_get_driver_data();
-...
-> @@ -356,7 +356,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
->  out_free_priv:
->  	kfree(priv);
->  out_free_opp:
-> -	of_cpumask_free_opp_table(policy->cpus);
-> +	dev_pm_opp_cpumask_free_table(policy->cpus);
->  out_node_put:
->  	of_node_put(np);
->  out_put_reg_clk:
+I think the best thing to do would be to return -ENODEV as suggested by
+power_supply_sysfs.c:305. Also you should probably add the POWER_SUPPLY_PROP_PRESENT
+property check and set intval to 0 when there is no battery.
 
-Is ..._free_table opposite of ..._init_opp? If so, you might want to
-name them such that it is clear...
+Regards,
+Andrew
 
-Thanks,
-										Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+>   		default:
+>   			val->intval = POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
+>   			break;
+>
