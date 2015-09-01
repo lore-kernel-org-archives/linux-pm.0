@@ -1,143 +1,82 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: Re: [PATCH 07/13] power: bq24257: Add VINDPM voltage threshold
- setting support
-Date: Tue, 1 Sep 2015 15:48:57 -0500
-Message-ID: <55E60F39.5080508@ti.com>
+From: Andreas Dannenberg <dannenberg@ti.com>
+Subject: Re: [PATCH 02/13] power: bq24257: Add dead battery reporting
+Date: Tue, 1 Sep 2015 16:04:47 -0500
+Message-ID: <20150901210446.GB17234@beast>
 References: <1441073435-12349-1-git-send-email-dannenberg@ti.com>
- <1441073435-12349-8-git-send-email-dannenberg@ti.com>
+ <1441073435-12349-3-git-send-email-dannenberg@ti.com>
+ <55E5FD77.10100@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:44322 "EHLO arroyo.ext.ti.com"
+Received: from bear.ext.ti.com ([192.94.94.41]:46944 "EHLO bear.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751180AbbIAUtX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 1 Sep 2015 16:49:23 -0400
-In-Reply-To: <1441073435-12349-8-git-send-email-dannenberg@ti.com>
+	id S1751365AbbIAVFR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 1 Sep 2015 17:05:17 -0400
+Content-Disposition: inline
+In-Reply-To: <55E5FD77.10100@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andreas Dannenberg <dannenberg@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: "Andrew F. Davis" <afd@ti.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-On 08/31/2015 09:10 PM, Andreas Dannenberg wrote:
-> A new optional device property called "ti,vindpm-voltage" is introduced
-> to allow configuring the input voltage threshold for the devices'
-> dynamic power path management feature. In short, it can be used to
-> prevent the input voltage from dropping below a certain value as current
-> is drawn to charge the battery or supply the system.
->
-> Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
-> ---
->   drivers/power/bq24257_charger.c | 44 ++++++++++++++++++++++++++++++++++++++++-
->   1 file changed, 43 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
-> index c6bb2b5..2271a88 100644
-> --- a/drivers/power/bq24257_charger.c
-> +++ b/drivers/power/bq24257_charger.c
-> @@ -70,6 +70,7 @@ struct bq24257_init_data {
->   	u8 iterm;	/* termination current */
->   	u8 in_ilimit;	/* input current limit */
->   	u8 vovp;	/* over voltage protection voltage */
-> +	u8 vindpm;	/* VDMP input threshold voltage */
->   	bool in_ilimit_autoset_disable;	/* auto-detect of input current limit */
->   	bool pg_gpio_disable; /* use of a dedicated pin for Power Good */
->   };
-> @@ -203,6 +204,13 @@ static const u32 bq24257_vovp_map[] = {
->
->   #define BQ24257_VOVP_MAP_SIZE		ARRAY_SIZE(bq24257_vovp_map)
->
-> +static const u32 bq24257_vindpm_map[] = {
-> +	4200000, 4280000, 4360000, 4440000, 4520000, 4600000, 4680000,
-> +	4760000
-> +};
-> +
-> +#define BQ24257_VINDPM_MAP_SIZE		ARRAY_SIZE(bq24257_vindpm_map)
-> +
->   static int bq24257_field_read(struct bq24257_device *bq,
->   			      enum bq24257_fields field_id)
->   {
-> @@ -433,6 +441,17 @@ enum bq24257_vovp {
->   	VOVP_10500
->   };
->
-> +enum bq24257_vindpm {
-> +	VINDPM_4200,
-> +	VINDPM_4280,
-> +	VINDPM_4360,
-> +	VINDPM_4440,
-> +	VINDPM_4520,
-> +	VINDPM_4600,
-> +	VINDPM_4680,
-> +	VINDPM_4760
-> +};
-> +
->   enum bq24257_port_type {
->   	PORT_TYPE_DCP,		/* Dedicated Charging Port */
->   	PORT_TYPE_CDP,		/* Charging Downstream Port */
-> @@ -615,7 +634,8 @@ static int bq24257_hw_init(struct bq24257_device *bq)
->   		{F_ICHG, bq->init_data.ichg},
->   		{F_VBAT, bq->init_data.vbat},
->   		{F_ITERM, bq->init_data.iterm},
-> -		{F_VOVP, bq->init_data.vovp}
-> +		{F_VOVP, bq->init_data.vovp},
-> +		{F_VINDPM, bq->init_data.vindpm}
+Andrew- thanks for your feeback. Answers below...
 
-Small comment, even though the last comma is not needed it helps so you
-don't have a patch that removes and re-adds a line to add the comma
-every time you rearrange or add to a list like above.
+On Tue, Sep 01, 2015 at 02:33:11PM -0500, Andrew F. Davis wrote:
+> On 08/31/2015 09:10 PM, Andreas Dannenberg wrote:
+> >A missing/disconnected battery is now reported as dead rather than an
+> >unspecified failure via the charger's sysfs health property.
+> >
+> >$ cat health
+> >Dead
+> 
+> Poor cat :(
+> 
 
-Regards,
-Andrew
+I had to laugh pretty hard when I saw that getting printed onto the
+console for the first time so I had to include it here.
 
->   	};
->
->   	/*
-> @@ -649,6 +669,7 @@ static int bq24257_hw_init(struct bq24257_device *bq)
->   		/* program fixed input current limit */
->   		ret = bq24257_field_write(bq, F_IILIMIT,
->   					  bq->init_data.in_ilimit);
-> +
->   		if (ret < 0)
->   			return ret;
->   	} else if (!state.power_good)
-> @@ -696,10 +717,23 @@ static ssize_t bq24257_show_ovp_voltage(struct device *dev,
->   			bq24257_vovp_map[bq->init_data.vovp]);
->   }
->
-> +static ssize_t bq24257_show_vindpm_voltage(struct device *dev,
-> +					   struct device_attribute *attr,
-> +					   char *buf)
-> +{
-> +	struct power_supply *psy = dev_get_drvdata(dev);
-> +	struct bq24257_device *bq = power_supply_get_drvdata(psy);
-> +
-> +	return scnprintf(buf, PAGE_SIZE, "%d\n",
-> +			bq24257_vindpm_map[bq->init_data.vindpm]);
-> +}
-> +
->   static DEVICE_ATTR(ovp_voltage, S_IRUGO, bq24257_show_ovp_voltage, NULL);
-> +static DEVICE_ATTR(vindpm_voltage, S_IRUGO, bq24257_show_vindpm_voltage, NULL);
->
->   static struct attribute *bq24257_charger_attr[] = {
->   	&dev_attr_ovp_voltage.attr,
-> +	&dev_attr_vindpm_voltage.attr,
->   	NULL,
->   };
->
-> @@ -792,6 +826,14 @@ static int bq24257_fw_probe(struct bq24257_device *bq)
->   		bq->init_data.vovp = bq24257_find_idx(property,
->   				bq24257_vovp_map, BQ24257_VOVP_MAP_SIZE);
->
-> +	ret = device_property_read_u32(bq->dev, "ti,vindpm-voltage",
-> +				       &property);
-> +	if (ret < 0)
-> +		bq->init_data.vindpm = VINDPM_4360;
-> +	else
-> +		bq->init_data.vindpm = bq24257_find_idx(property,
-> +				bq24257_vindpm_map, BQ24257_VINDPM_MAP_SIZE);
-> +
->   	bq->init_data.in_ilimit_autoset_disable = device_property_read_bool(
->   			bq->dev, "ti,in-ilimit-autoset-disable");
->
->
+> >
+> >Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
+> >---
+> >  drivers/power/bq24257_charger.c | 4 ++++
+> >  1 file changed, 4 insertions(+)
+> >
+> >diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
+> >index db81356..0b34528 100644
+> >--- a/drivers/power/bq24257_charger.c
+> >+++ b/drivers/power/bq24257_charger.c
+> >@@ -274,6 +274,10 @@ static int bq24257_power_supply_get_property(struct power_supply *psy,
+> >  			val->intval = POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE;
+> >  			break;
+> >
+> >+		case FAULT_NO_BAT:
+> >+			val->intval = POWER_SUPPLY_HEALTH_DEAD;
+> >+			break;
+> >+
+> 
+> I think the best thing to do would be to return -ENODEV as suggested by
+> power_supply_sysfs.c:305. Also you should probably add the POWER_SUPPLY_PROP_PRESENT
+> property check and set intval to 0 when there is no battery.
+
+Good find with -ENODEV. However in this case here the power supply is
+really a combination of a charger and a battery (which could be split
+out accordingly but that's a different story). If I were to report
+-ENODEV I would basically say the entire power supply is gone which is
+not correct IMHO. Even with a missing battery a system is typically
+functional as it gets powered through USB and the charger IC is still
+there and functioning. So I think I would either leave the reporting
+as *_DEAD or skip the patch. I'm curious if there are additional
+opinions.
+
+--
+Andreas Dannenberg
+Texas Instruments Inc
+
+> 
+> Regards,
+> Andrew
+> 
+> >  		default:
+> >  			val->intval = POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
+> >  			break;
+> >
