@@ -1,74 +1,104 @@
 From: Andreas Dannenberg <dannenberg@ti.com>
-Subject: Re: [PATCH 03/13] power: bq24257: Add basic support for
- bq24250/bq24251
-Date: Tue, 1 Sep 2015 16:24:49 -0500
-Message-ID: <20150901212445.GC17234@beast>
+Subject: Re: [PATCH 08/13] power: bq24257: Extend scope of mutex protection
+Date: Tue, 1 Sep 2015 17:15:30 -0500
+Message-ID: <20150901221530.GD17234@beast>
 References: <1441073435-12349-1-git-send-email-dannenberg@ti.com>
- <1441073435-12349-4-git-send-email-dannenberg@ti.com>
- <55E60129.1000706@ti.com>
+ <1441073435-12349-9-git-send-email-dannenberg@ti.com>
+ <55E60BE5.5030308@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:55824 "EHLO comal.ext.ti.com"
+Received: from arroyo.ext.ti.com ([192.94.94.40]:47027 "EHLO arroyo.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752226AbbIAVZT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 1 Sep 2015 17:25:19 -0400
+	id S1751256AbbIAWQD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 1 Sep 2015 18:16:03 -0400
 Content-Disposition: inline
-In-Reply-To: <55E60129.1000706@ti.com>
+In-Reply-To: <55E60BE5.5030308@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Andrew F. Davis" <afd@ti.com>
 Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-On Tue, Sep 01, 2015 at 02:48:57PM -0500, Andrew F. Davis wrote:
+On Tue, Sep 01, 2015 at 03:34:45PM -0500, Andrew F. Davis wrote:
 > On 08/31/2015 09:10 PM, Andreas Dannenberg wrote:
-> >This patch adds basic support for bq24250 and bq24251 which are very
-> >similar to the bq24257 the driver was originally written for. Basic
-> >support means the ability to select a device through Kconfig, DT and
-> >ACPI, an instance variable allowing to check which chip is active, and
-> >the reporting back of the selected device through the
-> >POWER_SUPPLY_PROP_MODEL_NAME power supply sysfs property.
+> >This commit extends the use of the existing mutex to pave the way for
+> >using direct device access inside sysfs getter/setter routines in a
+> >way that the access during interrupts and timer routines does not
+> >interfere with device access by the CPU or between multiple cores.
 > >
-> >This patch by itself is not sufficient to actually use those two added
-> >devices in a real-world setting due to some feature differences which
-> >are addressed by other patches in this series.
+> >This also addresses a potential race condition that could be caused
+> >by bq24257_irq_handler_thread() and bq24257_iilimit_autoset() accessing
+> >the device simultaneously.
 > >
 > >Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
 > >---
-> >  drivers/power/Kconfig           |  5 +++--
-> >  drivers/power/bq24257_charger.c | 34 +++++++++++++++++++++++++++++++---
-> >  2 files changed, 34 insertions(+), 5 deletions(-)
+> >  drivers/power/bq24257_charger.c | 60 ++++++++++++++++++++++++-----------------
+> >  1 file changed, 35 insertions(+), 25 deletions(-)
 > >
-> >diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-> >index 08beeed..0a2b033 100644
-> >--- a/drivers/power/Kconfig
-> >+++ b/drivers/power/Kconfig
-> >@@ -396,11 +396,12 @@ config CHARGER_BQ24190
-> >  	  Say Y to enable support for the TI BQ24190 battery charger.
+> >diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
+> >index 2271a88..ad3fd2d 100644
+> >--- a/drivers/power/bq24257_charger.c
+> >+++ b/drivers/power/bq24257_charger.c
+> >@@ -99,7 +99,7 @@ struct bq24257_device {
+> >  	struct bq24257_init_data init_data;
+> >  	struct bq24257_state state;
 > >
-> >  config CHARGER_BQ24257
-> >-	tristate "TI BQ24257 battery charger driver"
-> >+	tristate "TI BQ24250/251/257 battery charger driver"
-> >  	depends on I2C && GPIOLIB
-> >  	depends on REGMAP_I2C
-> >  	help
-> >-	  Say Y to enable support for the TI BQ24257 battery charger.
-> >+	  Say Y to enable support for the TI BQ24250, BQ24251, and BQ24257 battery
-> >+	  chargers.
+> >-	struct mutex lock; /* protect state data */
+> >+	struct mutex lock; /* protect device access and state data */
+> >
 > 
-> I don't see this done very often, perhaps the additional devices make this
-> driver a good candidate for a rename? BQ2425X?
+> I think it would make more sense to make a different lock for the device access. Protecting
+> unrelated things with the same lock can lead to unnecessary blocks.
 
-The patch series is made in a way to ensure 100% compatibility of the
-patched driver vs. the original driver so I chose to not touch
-definitions and filenames (in case you implied this) which seems to
-follow the general trend. I've seen earlier discussion and somebody
-explained that no matter how hard you try you will never be able to have
-a naming convention that's completely future-proof.
+Andrew- thanks for spending time analyzing the patch series.
 
-Personally in my own code I tend to refactor filenames and such as I
-refactor the actual code to keep things neat... but then, I know the
-scope of where that code is used very well so I can avoid breakage.
+Actually the extension of the scope of the mutex seemed to fit almost
+naturally into the existing code as the device status (register
+contents) I'm opening more access to is just as important "state" as the
+driver-maintained "struct bq24257_state state" data that I need to
+maintain together. I can either do that by extending the existing mutex
+scope, or by creating a new mutex like you suggested which I think would
+essentially need to be a superset of the existing mutex for the purposes
+of the patched driver.
+
+Also it was rather easy to extend because almost all of the use of the
+mutex were in functions directly called from the IRQ routine (and only
+from there) such as bq24257_state_changed() and
+bq24257_handle_state_change() so I just had to wrap them at that level,
+also protecting the device access functions contained there, effectively
+killing two birds with one stone.
+
+The bq24257_hw_init() on the other hand only needed mutex protection
+when called from bq24257_resume() and I moved that up to the caller.
+
+> 
+> >  	bool in_ilimit_autoset_disable;
+> >  	bool pg_gpio_disable;
+> >@@ -268,10 +268,10 @@ static int bq24257_power_supply_get_property(struct power_supply *psy,
+> >  {
+> >  	struct bq24257_device *bq = power_supply_get_drvdata(psy);
+> >  	struct bq24257_state state;
+> >+	int ret = 0;
+> >
+> >  	mutex_lock(&bq->lock);
+> >  	state = bq->state;
+> >-	mutex_unlock(&bq->lock);
+> >
+> 
+> Like here, this makes it very obvious what data the lock is protecting, wrapping this whole
+> block doesn't make much sense to me as all the subsequent reads are from the thread-local data.
+> I see in another patch in this series you do add a device read, but that read could be locked
+> by itself (with the device access lock) so we don't block this whole function when execution
+> may not even go down the path with the read.
+
+Yes you are right it's not needed here but rather was added in
+preparation for the later inclusion of functions such as for supporting
+POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT do direct device access so that's
+just how I split up my overall edits into patches. Also I figured
+having the entire statement wrapped doesn't really hurt and enables
+easier additional extensions involving device access. In fact, it was
+also done out of consistency with all the other sysfs getter/setter
+routines in the final combined patched driver..
 
 Thanks,
 
@@ -80,104 +110,160 @@ Texas Instruments Inc
 > Regards,
 > Andrew
 > 
-> >
-> >  config CHARGER_BQ24735
-> >  	tristate "TI BQ24735 battery charger support"
-> >diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
-> >index 0b34528..45232bd 100644
-> >--- a/drivers/power/bq24257_charger.c
-> >+++ b/drivers/power/bq24257_charger.c
-> >@@ -13,6 +13,10 @@
-> >   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> >   * GNU General Public License for more details.
-> >   *
-> >+ * Datasheets:
-> >+ * http://www.ti.com/product/bq24250
-> >+ * http://www.ti.com/product/bq24251
-> >+ * http://www.ti.com/product/bq24257
-> >   */
-> >
-> >  #include <linux/module.h>
-> >@@ -41,6 +45,12 @@
-> >
-> >  #define BQ24257_ILIM_SET_DELAY		1000	/* msec */
-> >
-> >+enum bq2425x_chip {
-> >+	BQ24250,
-> >+	BQ24251,
-> >+	BQ24257,
-> >+};
-> >+
-> >  enum bq24257_fields {
-> >  	F_WD_FAULT, F_WD_EN, F_STAT, F_FAULT,			    /* REG 1 */
-> >  	F_RESET, F_IILIMIT, F_EN_STAT, F_EN_TERM, F_CE, F_HZ_MODE,  /* REG 2 */
-> >@@ -71,6 +81,9 @@ struct bq24257_device {
-> >  	struct device *dev;
-> >  	struct power_supply *charger;
-> >
-> >+	enum bq2425x_chip chip;
-> >+	char chip_name[I2C_NAME_SIZE];
-> >+
-> >  	struct regmap *rmap;
-> >  	struct regmap_field *rmap_fields[F_MAX_FIELDS];
-> >
-> >@@ -250,6 +263,10 @@ static int bq24257_power_supply_get_property(struct power_supply *psy,
-> >  		val->strval = BQ24257_MANUFACTURER;
+> >  	switch (psp) {
+> >  	case POWER_SUPPLY_PROP_STATUS:
+> >@@ -351,10 +351,12 @@ static int bq24257_power_supply_get_property(struct power_supply *psy,
 > >  		break;
 > >
-> >+	case POWER_SUPPLY_PROP_MODEL_NAME:
-> >+		val->strval = bq->chip_name;
-> >+		break;
+> >  	default:
+> >-		return -EINVAL;
+> >+		ret = -EINVAL;
+> >  	}
+> >
+> >-	return 0;
+> >+	mutex_unlock(&bq->lock);
 > >+
-> >  	case POWER_SUPPLY_PROP_ONLINE:
-> >  		val->intval = state.power_good;
-> >  		break;
-> >@@ -574,6 +591,7 @@ static int bq24257_hw_init(struct bq24257_device *bq)
+> >+	return ret;
+> >  }
 > >
-> >  static enum power_supply_property bq24257_power_supply_props[] = {
-> >  	POWER_SUPPLY_PROP_MANUFACTURER,
-> >+	POWER_SUPPLY_PROP_MODEL_NAME,
-> >  	POWER_SUPPLY_PROP_STATUS,
-> >  	POWER_SUPPLY_PROP_ONLINE,
-> >  	POWER_SUPPLY_PROP_HEALTH,
-> >@@ -686,6 +704,8 @@ static int bq24257_probe(struct i2c_client *client,
+> >  static int bq24257_get_chip_state(struct bq24257_device *bq,
+> >@@ -401,15 +403,9 @@ static int bq24257_get_chip_state(struct bq24257_device *bq,
+> >  static bool bq24257_state_changed(struct bq24257_device *bq,
+> >  				  struct bq24257_state *new_state)
+> >  {
+> >-	int ret;
+> >-
+> >-	mutex_lock(&bq->lock);
+> >-	ret = (bq->state.status != new_state->status ||
+> >-	       bq->state.fault != new_state->fault ||
+> >-	       bq->state.power_good != new_state->power_good);
+> >-	mutex_unlock(&bq->lock);
+> >-
+> >-	return ret;
+> >+	return bq->state.status != new_state->status ||
+> >+			bq->state.fault != new_state->fault ||
+> >+			bq->state.power_good != new_state->power_good;
+> >  }
 > >
-> >  	bq->client = client;
-> >  	bq->dev = dev;
-> >+	bq->chip = (enum bq2425x_chip)id->driver_data;
-> >+	strncpy(bq->chip_name, id->name, I2C_NAME_SIZE);
+> >  enum bq24257_loop_status {
+> >@@ -532,7 +528,9 @@ static void bq24257_iilimit_setup_work(struct work_struct *work)
+> >  	struct bq24257_device *bq = container_of(work, struct bq24257_device,
+> >  						 iilimit_setup_work.work);
 > >
-> >  	mutex_init(&bq->lock);
+> >+	mutex_lock(&bq->lock);
+> >  	bq24257_iilimit_autoset(bq);
+> >+	mutex_unlock(&bq->lock);
+> >  }
 > >
-> >@@ -828,19 +848,27 @@ static const struct dev_pm_ops bq24257_pm = {
-> >  };
+> >  static void bq24257_handle_state_change(struct bq24257_device *bq,
+> >@@ -543,9 +541,7 @@ static void bq24257_handle_state_change(struct bq24257_device *bq,
+> >  	bool reset_iilimit = false;
+> >  	bool config_iilimit = false;
 > >
-> >  static const struct i2c_device_id bq24257_i2c_ids[] = {
-> >-	{ "bq24257", 0 },
-> >+	{ "bq24250", BQ24250 },
-> >+	{ "bq24251", BQ24251 },
-> >+	{ "bq24257", BQ24257 },
-> >  	{},
-> >  };
-> >  MODULE_DEVICE_TABLE(i2c, bq24257_i2c_ids);
+> >-	mutex_lock(&bq->lock);
+> >  	old_state = bq->state;
+> >-	mutex_unlock(&bq->lock);
 > >
-> >  static const struct of_device_id bq24257_of_match[] = {
-> >-	{ .compatible = "ti,bq24257", },
-> >+	{
-> >+		.compatible = "ti,bq24250",
-> >+		.compatible = "ti,bq24251",
-> >+		.compatible = "ti,bq24257",
-> >+	},
-> >  	{ },
-> >  };
-> >  MODULE_DEVICE_TABLE(of, bq24257_of_match);
+> >  	/*
+> >  	 * Handle BQ2425x state changes observing whether the D+/D- based input
+> >@@ -600,25 +596,30 @@ static irqreturn_t bq24257_irq_handler_thread(int irq, void *private)
+> >  	struct bq24257_device *bq = private;
+> >  	struct bq24257_state state;
 > >
-> >  static const struct acpi_device_id bq24257_acpi_match[] = {
-> >-	{"BQ242570", 0},
-> >+	{ "BQ242500", BQ24250 },
-> >+	{ "BQ242510", BQ24251 },
-> >+	{ "BQ242570", BQ24257 },
-> >  	{},
-> >  };
-> >  MODULE_DEVICE_TABLE(acpi, bq24257_acpi_match);
+> >+	mutex_lock(&bq->lock);
+> >+
+> >  	ret = bq24257_get_chip_state(bq, &state);
+> >  	if (ret < 0)
+> >-		return IRQ_HANDLED;
+> >+		goto out;
 > >
+> >  	if (!bq24257_state_changed(bq, &state))
+> >-		return IRQ_HANDLED;
+> >+		goto out;
+> >
+> >  	dev_dbg(bq->dev, "irq(state changed): status/fault/pg = %d/%d/%d\n",
+> >  		state.status, state.fault, state.power_good);
+> >
+> >  	bq24257_handle_state_change(bq, &state);
+> >-
+> >-	mutex_lock(&bq->lock);
+> >  	bq->state = state;
+> >+
+> >  	mutex_unlock(&bq->lock);
+> >
+> >  	power_supply_changed(bq->charger);
+> >
+> >  	return IRQ_HANDLED;
+> >+
+> >+out:
+> >+	mutex_unlock(&bq->lock);
+> >+	return IRQ_HANDLED;
+> >  }
+> >
+> >  static int bq24257_hw_init(struct bq24257_device *bq)
+> >@@ -658,9 +659,7 @@ static int bq24257_hw_init(struct bq24257_device *bq)
+> >  	if (ret < 0)
+> >  		return ret;
+> >
+> >-	mutex_lock(&bq->lock);
+> >  	bq->state = state;
+> >-	mutex_unlock(&bq->lock);
+> >
+> >  	if (bq->in_ilimit_autoset_disable) {
+> >  		dev_dbg(bq->dev, "manually setting iilimit = %d\n",
+> >@@ -1002,11 +1001,15 @@ static int bq24257_suspend(struct device *dev)
+> >  	if (!bq->in_ilimit_autoset_disable)
+> >  		cancel_delayed_work_sync(&bq->iilimit_setup_work);
+> >
+> >+	mutex_lock(&bq->lock);
+> >+
+> >  	/* reset all registers to default (and activate standalone mode) */
+> >  	ret = bq24257_field_write(bq, F_RESET, 1);
+> >  	if (ret < 0)
+> >  		dev_err(bq->dev, "Cannot reset chip to standalone mode.\n");
+> >
+> >+	mutex_unlock(&bq->lock);
+> >+
+> >  	return ret;
+> >  }
+> >
+> >@@ -1015,24 +1018,31 @@ static int bq24257_resume(struct device *dev)
+> >  	int ret;
+> >  	struct bq24257_device *bq = dev_get_drvdata(dev);
+> >
+> >+	mutex_lock(&bq->lock);
+> >+
+> >  	ret = regcache_drop_region(bq->rmap, BQ24257_REG_1, BQ24257_REG_7);
+> >  	if (ret < 0)
+> >-		return ret;
+> >+		goto err;
+> >
+> >  	ret = bq24257_field_write(bq, F_RESET, 0);
+> >  	if (ret < 0)
+> >-		return ret;
+> >+		goto err;
+> >
+> >  	ret = bq24257_hw_init(bq);
+> >  	if (ret < 0) {
+> >  		dev_err(bq->dev, "Cannot init chip after resume.\n");
+> >-		return ret;
+> >+		goto err;
+> >  	}
+> >
+> >+	mutex_unlock(&bq->lock);
+> >+
+> >  	/* signal userspace, maybe state changed while suspended */
+> >  	power_supply_changed(bq->charger);
+> >-
+> >  	return 0;
+> >+
+> >+err:
+> >+	mutex_unlock(&bq->lock);
+> >+	return ret;
+> >  }
+> >  #endif
+> >
+> >
+> 
+> -- 
+> Andrew F. Davis
