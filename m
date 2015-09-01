@@ -1,313 +1,115 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Subject: [PATCH] [v2] PM / hibernate: Fix hibernation panic caused by inconsistent e820 map
-Date: Tue,  1 Sep 2015 18:03:36 +0800
-Message-ID: <1441101816-24567-1-git-send-email-yu.c.chen@intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz
-Cc: mingo@redhat.com, yinghai@kernel.org, joeyli.kernel@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v2 2/6] cpufreq: intel_pstate: get P1 from TAR when available
+Date: Tue,  1 Sep 2015 04:53:57 -0700
+Message-ID: <1441108441-3388-3-git-send-email-srinivas.pandruvada@linux.intel.com>
+References: <1441108441-3388-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([192.55.52.115]:20686 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755939AbbIALzQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 1 Sep 2015 07:55:16 -0400
+In-Reply-To: <1441108441-3388-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: kristen.c.accardi@intel.com, rafael.j.wysocki@intel.com
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On some platforms, there is occasional panic triggered when trying to
-resume from hibernation, a typical panic looks like:
+After Ivybridge, the max non turbo ratio obtained from platform info msr
+is not always guaranteed P1 on client platforms. The max non turbo
+activation ratio (TAR), determines the max for the current level of TDP.
+The ratio in platform info is physical max. The TAR MSR can be locked,
+so updating this value is not possible on all platforms.
+This change gets this ratio from MSR TURBO_ACTIVATION_RATIO if
+available,
+but also do some sanity checking to make sure that this value is
+correct.
+The sanity check involves reading the TDP ratio for the current tdp
+control value when platform has configurable TDP present and matching
+TAC
+with this.
 
-BUG: unable to handle kernel paging request at ffff880085894000
-IP: [<ffffffff810c5dc2>] load_image_lzo+0x8c2/0xe70
-
-This is because e820 map has been changed by BIOS before/after
-hibernation, and one of the page frames from first kernel
-is right located in second kernel's unmapped region, so panic
-comes out when accessing unmapped kernel address.
-
-Commit 84c91b7ae07c ("PM / hibernate: avoid unsafe pages in e820 reserved
-regions") was once introduced to fix this problem.
-However, this patch makes resuming from hibernation on Lenovo x230
-failed, and the reason for it is that, this patch can not deal with
-unaligned E820_RESERVED_KERN regions and fails to resume from hibernation:
-https://bugzilla.kernel.org/show_bug.cgi?id=96111
-As a result, this patch is reverted.
-
-To solve this hibernation panic issue gracefully, we need to get rid of
-the impact of E820_RESERVED_KERN, so Yinghai,Lu proposes a patch to kill
-E820_RESERVED_KERN and based on his patch we can re-apply
-Commit 84c91b7ae07c ("PM / hibernate: avoid unsafe pages in e820 reserved
-regions"), and stress testing has been performed on problematic platform
-with above two patches applied, it works as expected, no panic anymore.
-
-However, there is still one thing left, hibernation might fail even after
-above two patches applied, with the following warnning in log:
-
-PM: Image mismatch: memory size
-
-This is also because BIOS provides different e820 memory map before/after
-hibernation, and linux regards it as invalid process and refuses to
-resume, in order to protect against data corruption. However,
-this check might be too strict, consider the following scenario:
-The hibernating system has a smaller memory capacity than
-the resuming system, and the former memory region is a subset of the
-latter, it should be allowed to resume. Here is a case for this
-situation:
-
-before hibernation:
-
-BIOS-e820: [mem 0x0000000020200000-0x0000000077517fff] usable
-BIOS-e820: [mem 0x0000000077518000-0x0000000077567fff] reserved
-Memory: 3871356K/4058428K available (7595K kernel code, 1202K rwdata,
-3492K rodata, 1400K init, 1308K bss, 187072K reserved, 0K cma-reserved)
-
-after hibernation:
-BIOS-e820: [mem 0x0000000020200000-0x000000007753ffff] usable
-BIOS-e820: [mem 0x0000000077540000-0x0000000077567fff] reserved
-Memory: 3871516K/4058588K available (7595K kernel code, 1202K rwdata,
-3492K rodata, 1400K init, 1308K bss, 187072K reserved, 0K cma-reserved)
-
-According to above data, the number of present_pages has increased by
-40(thus 160K), linux will terminate the resuming process. But since
-[0x0000000020200000-0x0000000077517fff] is a subset of
-[0x0000000020200000-0x000000007753ffff], we should let system resume.
-
-Since above two patches can not deal with the hibernation failor, another
-solution to fix both hibernation panic and hibernation failor is proposed
-as follows:
-We simply check that, if each non-highmem page frame to be restored is a
-valid mapped kernel page(by checking if this page is in pfn_mapped
-array in arch/x86/mm/init.c), if it is, resuming process will continue.
-In this way we do not have to touch E820_RESERVED_KERN, and we can:
-1.prevent the hibernation panic caused by unmapped-page address
-accessing
-2.remove the code that requires the same memory size before/after
-hibernation.
-
-Note: for point 2, this patch only works on x86_64 platforms
-(with no highmem), because the highmem page frames on x86_32
-are not directly-mapped by kernel, which is out of the scope
-of pfn_mapped, this patch will not guarantee that whether the
-higmem region is legal for restore. A further work might include
-a logic to check if each page frame to be restored is in E820_RAM
-region, but it might require quite neat checkings in the code.
-For now, just solve the problem reported on x86_64.
-
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
-v2:
- - According to Ingo's suggestion, rewrite this patch.
-   New version just checks each page frame according to pfn_mapped array.
-   So that we do not need to touch existing code related to
-   E820_RESERVED_KERN. And this method can naturely guarantee
-   that the system before/after hibernation do not need to be of
-   the same memory size on x86_64.
----
- kernel/power/snapshot.c | 123 ++++++++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 115 insertions(+), 8 deletions(-)
+ arch/x86/include/asm/msr-index.h |  7 +++++++
+ drivers/cpufreq/intel_pstate.c   | 39 +++++++++++++++++++++++++++++++++++----
+ 2 files changed, 42 insertions(+), 4 deletions(-)
 
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index 5235dd4..0fce402 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -881,6 +881,9 @@ static struct memory_bitmap *forbidden_pages_map;
- /* Set bits in this map correspond to free page frames. */
- static struct memory_bitmap *free_pages_map;
+diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
+index 9ebc3d0..ae868de 100644
+--- a/arch/x86/include/asm/msr-index.h
++++ b/arch/x86/include/asm/msr-index.h
+@@ -184,6 +184,13 @@
+ #define MSR_GFX_PERF_LIMIT_REASONS	0x000006B0
+ #define MSR_RING_PERF_LIMIT_REASONS	0x000006B1
  
-+/* Set bits in this map correspond to kernel mapped page frames. */
-+static struct memory_bitmap *valid_pages_map;
++/* Config TDP MSRs */
++#define MSR_CONFIG_TDP_NOMINAL		0x00000648
++#define MSR_CONFIG_TDP_LEVEL1		0x00000649
++#define MSR_CONFIG_TDP_LEVEL2		0x0000064A
++#define MSR_CONFIG_TDP_CONTROL		0x0000064B
++#define MSR_TURBO_ACTIVATION_RATIO	0x0000064C
 +
- /*
-  * Each page frame allocated for creating the image is marked by setting the
-  * corresponding bits in forbidden_pages_map and free_pages_map simultaneously
-@@ -922,6 +925,12 @@ static void swsusp_unset_page_forbidden(struct page *page)
- 		memory_bm_clear_bit(forbidden_pages_map, page_to_pfn(page));
- }
+ /* Hardware P state interface */
+ #define MSR_PPERF			0x0000064e
+ #define MSR_PERF_LIMIT_REASONS		0x0000064f
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index bf5b9d9..6260cc7 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -43,7 +43,6 @@
+ #define int_tofp(X) ((int64_t)(X) << FRAC_BITS)
+ #define fp_toint(X) ((X) >> FRAC_BITS)
  
-+static int swsusp_page_is_valid(struct page *page)
-+{
-+	return valid_pages_map ?
-+		memory_bm_test_bit(valid_pages_map, page_to_pfn(page)) : 0;
-+}
-+
- /**
-  *	mark_nosave_pages - set bits corresponding to the page frames the
-  *	contents of which should not be saved in a given bitmap.
-@@ -956,6 +965,75 @@ static void mark_nosave_pages(struct memory_bitmap *bm)
- }
- 
- /**
-+ *	mark_valid_pages - set bits corresponding to the page frames
-+ *	which are directly mapped by kernel at PAGE_OFFSET.
-+ */
-+#ifdef CONFIG_X86
-+static void mark_valid_pages(struct memory_bitmap *bm)
-+{
-+	unsigned long start_pfn, end_pfn;
-+	int i, j;
-+
-+	for (i = 0; i < nr_pfn_mapped; i++) {
-+		start_pfn = pfn_mapped[i].start;
-+		end_pfn = pfn_mapped[i].end;
-+		for (j = start_pfn; j <= end_pfn; j++)
-+			mem_bm_set_bit_check(bm, j);
-+	}
-+}
-+
-+static bool is_valid_orig_page(unsigned long pfn)
-+{
-+	if (!swsusp_page_is_valid(pfn_to_page(pfn))) {
-+		pr_err(
-+			"PM:  %#010llx to restored not in valid memory region\n",
-+			(unsigned long long) pfn << PAGE_SHIFT);
-+		return false;
-+	} else
-+		return true;
-+}
-+
-+static bool memory_size_not_consistent(struct swsusp_info *info)
-+{
-+#ifdef CONFIG_X86_64
-+	/*
-+	 * For 64bit x86_64 systems, there is no need to check
-+	 * num_physpages against get_num_physpages, because:
-+	 * for x86_64, is_valid_orig_page ensures that each page to be
-+	 * restored is strictly the subset of current system's
-+	 * direct-mapping page frames, otherwise warn and deny the
-+	 * hibernation in any other case.
-+	 * Please refer to git changelog for why this code is
-+	 * adjusted for x86_64.
-+	 */
-+	return false;
-+#else
-+	if (info->num_physpages != get_num_physpages())
-+		return true;
-+	else
-+		return false;
-+#endif
-+}
-+#else
-+static void mark_valid_pages(struct memory_bitmap *bm)
-+{
-+}
-+
-+static bool is_valid_orig_page(unsigned long pfn)
-+{
-+	return true;
-+}
-+
-+static bool memory_size_not_consistent(struct swsusp_info *info)
-+{
-+	if (info->num_physpages != get_num_physpages())
-+		return true;
-+	else
-+		return false;
-+}
-+#endif
-+
-+/**
-  *	create_basic_memory_bitmaps - create bitmaps needed for marking page
-  *	frames that should not be saved and free page frames.  The pointers
-  *	forbidden_pages_map and free_pages_map are only modified if everything
-@@ -965,13 +1043,15 @@ static void mark_nosave_pages(struct memory_bitmap *bm)
- 
- int create_basic_memory_bitmaps(void)
+-
+ static inline int32_t mul_fp(int32_t x, int32_t y)
  {
--	struct memory_bitmap *bm1, *bm2;
-+	struct memory_bitmap *bm1, *bm2, *bm3;
- 	int error = 0;
+ 	return ((int64_t)x * (int64_t)y) >> FRAC_BITS;
+@@ -603,10 +602,42 @@ static int core_get_min_pstate(void)
  
--	if (forbidden_pages_map && free_pages_map)
-+	if (forbidden_pages_map && free_pages_map &&
-+		valid_pages_map)
- 		return 0;
- 	else
--		BUG_ON(forbidden_pages_map || free_pages_map);
-+		BUG_ON(forbidden_pages_map || free_pages_map ||
-+			valid_pages_map);
- 
- 	bm1 = kzalloc(sizeof(struct memory_bitmap), GFP_KERNEL);
- 	if (!bm1)
-@@ -989,14 +1069,28 @@ int create_basic_memory_bitmaps(void)
- 	if (error)
- 		goto Free_second_object;
- 
-+	bm3 = kzalloc(sizeof(struct memory_bitmap), GFP_KERNEL);
-+	if (!bm3)
-+		goto Free_second_bitmap;
-+
-+	error = memory_bm_create(bm3, GFP_KERNEL, PG_ANY);
-+	if (error)
-+		goto Free_third_object;
-+
- 	forbidden_pages_map = bm1;
- 	free_pages_map = bm2;
-+	valid_pages_map = bm3;
- 	mark_nosave_pages(forbidden_pages_map);
-+	mark_valid_pages(valid_pages_map);
- 
- 	pr_debug("PM: Basic memory bitmaps created\n");
- 
- 	return 0;
- 
-+ Free_third_object:
-+	kfree(bm3);
-+ Free_second_bitmap:
-+	memory_bm_free(bm2, PG_UNSAFE_CLEAR);
-  Free_second_object:
- 	kfree(bm2);
-  Free_first_bitmap:
-@@ -1015,19 +1109,24 @@ int create_basic_memory_bitmaps(void)
- 
- void free_basic_memory_bitmaps(void)
+ static int core_get_max_pstate(void)
  {
--	struct memory_bitmap *bm1, *bm2;
-+	struct memory_bitmap *bm1, *bm2, *bm3;
- 
--	if (WARN_ON(!(forbidden_pages_map && free_pages_map)))
-+	if (WARN_ON(!(forbidden_pages_map && free_pages_map &&
-+			valid_pages_map)))
- 		return;
- 
- 	bm1 = forbidden_pages_map;
- 	bm2 = free_pages_map;
-+	bm3 = valid_pages_map;
- 	forbidden_pages_map = NULL;
- 	free_pages_map = NULL;
-+	valid_pages_map = NULL;
- 	memory_bm_free(bm1, PG_UNSAFE_CLEAR);
- 	kfree(bm1);
- 	memory_bm_free(bm2, PG_UNSAFE_CLEAR);
- 	kfree(bm2);
-+	memory_bm_free(bm3, PG_UNSAFE_CLEAR);
-+	kfree(bm3);
- 
- 	pr_debug("PM: Basic memory bitmaps freed\n");
- }
-@@ -2053,7 +2152,7 @@ static int check_header(struct swsusp_info *info)
- 	char *reason;
- 
- 	reason = check_image_kernel(info);
--	if (!reason && info->num_physpages != get_num_physpages())
-+	if (!reason && memory_size_not_consistent(info))
- 		reason = "memory size";
- 	if (reason) {
- 		printk(KERN_ERR "PM: Image mismatch: %s\n", reason);
-@@ -2427,11 +2526,19 @@ static void *get_buffer(struct memory_bitmap *bm, struct chain_allocator *ca)
- 	if (PageHighMem(page))
- 		return get_highmem_page_buffer(page, ca);
- 
--	if (swsusp_page_is_forbidden(page) && swsusp_page_is_free(page))
-+	if (swsusp_page_is_forbidden(page) && swsusp_page_is_free(page)) {
- 		/* We have allocated the "original" page frame and we can
- 		 * use it directly to store the loaded page.
-+		 * Besides, the page must be already mapped, otherwise
-+		 * kernel exception will be triggered when accessing unmapped
-+		 * page. This check is added because a bug was reported at
-+		 * https://bugzilla.kernel.org/show_bug.cgi?id=96111
- 		 */
--		return page_address(page);
-+		if (is_valid_orig_page(pfn))
-+			return page_address(page);
-+		else
-+			return ERR_PTR(-EFAULT);
+-	u64 value;
++	u64 tar;
++	u64 plat_info;
++	int max_pstate;
++	int err;
++
++	rdmsrl(MSR_PLATFORM_INFO, plat_info);
++	max_pstate = (plat_info >> 8) & 0xFF;
++
++	err = rdmsrl_safe(MSR_TURBO_ACTIVATION_RATIO, &tar);
++	if (!err) {
++		/* Do some sanity checking for safety */
++		if (plat_info & 0x600000000) {
++			u64 tdp_ctrl;
++			u64 tdp_ratio;
++			int tdp_msr;
++
++			err = rdmsrl_safe(MSR_CONFIG_TDP_CONTROL, &tdp_ctrl);
++			if (err)
++				goto skip_tar;
++
++			tdp_msr = MSR_CONFIG_TDP_NOMINAL + tdp_ctrl;
++			err = rdmsrl_safe(tdp_msr, &tdp_ratio);
++			if (err)
++				goto skip_tar;
++
++			if (tdp_ratio - 1 == tar) {
++				max_pstate = tar;
++				pr_debug("max_pstate=TAC %x\n", max_pstate);
++			} else {
++				goto skip_tar;
++			}
++		}
 +	}
  
- 	/* The "original" page frame has not been allocated and we have to
- 	 * use a "safe" page frame to store the loaded page.
+-	rdmsrl(MSR_PLATFORM_INFO, value);
+-	return (value >> 8) & 0xFF;
++skip_tar:
++	return max_pstate;
+ }
+ 
+ static int core_get_turbo_pstate(void)
 -- 
-1.8.4.2
+2.4.3
+
