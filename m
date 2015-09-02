@@ -1,76 +1,51 @@
-From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: Re: [PATCH 5/9] clk: qcom: gcc-msm8960: add child devices support.
-Date: Wed, 02 Sep 2015 08:07:42 +0530
-Message-ID: <55E660F6.3020007@codeaurora.org>
-References: <1436348838-22671-1-git-send-email-rnayak@codeaurora.org> <1436348838-22671-6-git-send-email-rnayak@codeaurora.org> <20150811224902.GO2839@codeaurora.org> <55CB0B26.2020105@linaro.org> <55CC1CFE.7000005@codeaurora.org> <20150814004206.GU26614@codeaurora.org> <55CD5BD2.3070907@codeaurora.org>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH 03/13] twl4030_charger: correctly handle -EPROBE_DEFER
+ from devm_usb_get_phy_by_node
+Date: Tue, 1 Sep 2015 20:25:35 -0700
+Message-ID: <CAMAWPa_s2ELgRBRtWzFucmREMuLXS_V5Akmad5yFU13-GrzBDA@mail.gmail.com>
+References: <20150730001113.4012.18086.stgit@noble>
+	<20150730001124.4012.31980.stgit@noble>
+	<CAMAWPa__hFOuz24YBcFiR+m5mOUArSuNpuqh3Ju1H+yj6qadfA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:57222 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750717AbbIBChw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Sep 2015 22:37:52 -0400
-In-Reply-To: <55CD5BD2.3070907@codeaurora.org>
+Received: from mail.kernel.org ([198.145.29.136]:60272 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751023AbbIBDZk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 1 Sep 2015 23:25:40 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+	by mail.kernel.org (Postfix) with ESMTP id D557A20642
+	for <linux-pm@vger.kernel.org>; Wed,  2 Sep 2015 03:25:38 +0000 (UTC)
+Received: from mail-wi0-f174.google.com (mail-wi0-f174.google.com [209.85.212.174])
+	(using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
+	(No client certificate requested)
+	by mail.kernel.org (Postfix) with ESMTPSA id 872AD205DD
+	for <linux-pm@vger.kernel.org>; Wed,  2 Sep 2015 03:25:37 +0000 (UTC)
+Received: by wicfx3 with SMTP id fx3so4318342wic.0
+        for <linux-pm@vger.kernel.org>; Tue, 01 Sep 2015 20:25:36 -0700 (PDT)
+In-Reply-To: <CAMAWPa__hFOuz24YBcFiR+m5mOUArSuNpuqh3Ju1H+yj6qadfA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, linux-arm-msm@vger.kernel.org, lina.iyer@linaro.org, nrajan@codeaurora.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+To: Kevin Hilman <khilman@kernel.org>
+Cc: NeilBrown <neil@brown.name>, Sebastian Reichel <sre@kernel.org>, Samuel Ortiz <sameo@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Tony Lindgren <tony@atomide.com>, David Woodhouse <dwmw2@infradead.org>, lkml <linux-kernel@vger.kernel.org>, real GTA04 owners <gta04-owner@goldelico.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Pavel Machek <pavel@ucw.cz>, linux-omap <linux-omap@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Tyler Baker <tyler.baker@linaro.org>
 
-Stephen,
+ping... this boot failure has now landed in mainline
 
->>>>> Also, I don't like having a subnode in DT. Why can't we use the
->>>>> same node as the GCC node and create a virtual child device here
->>>>> for tsens? We can assign the same of_node that this platform
->>>>> device has so that DT keeps working correctly.
->>>
->>> So the current driver looks up data based on compatible strings.
+On Thu, Aug 27, 2015 at 1:51 PM, Kevin Hilman <khilman@kernel.org> wrote:
+> On Wed, Jul 29, 2015 at 5:11 PM, NeilBrown <neil@brown.name> wrote:
+>> Now that twl4030_bci_probe can safely return -EPROBE_DEFER,
+>> do so when devm_usb_get_phy_by_node returns that error.
 >>
->> The tsens device is always the same piece of hardware. The only
+>> Signed-off-by: NeilBrown <neil@brown.name>
 >
-> Well, not always. The one in 8960 does need additional initializations,
-> requires you to save/restore context as it can be powered off
-> not being in an always powered on domain etc.
+> This patch has hit linux-next in the form of coommit 3fc3895e4fe1
+> (twl4030_charger: correctly handle -EPROBE_DEFER from
+> devm_usb_get_phy_by_node) and kernelci.org found a regression on
+> omap3-beagle-xm[1].  Bisecting[2] this boot failure pointed at this
+> commit, and I verified that reverting it on top of next-20150827 gets
+> the board booting again.  I haven't debugged any further.
 >
->> thing that's changing is the qfprom data and the number of
->> sensors. So we should be looking at the qfprom compatible string
+> Kevin
 >
-> How? Tsens uses nvmem framework apis to read the qfprom atleast
-> in this series.
->
->> to figure out how to interpret the qfprom data which would
->> include the number of sensors and how the data is encoded.
->>
->>> So you suggesting to create a virtual child device for gcc and
->>> associate the gcc DT node to it? (And have the tsens compatible
->>> mentioned as part of the gcc DT node?)
->>
->> No. The driver should work just fine without having to
->> interrogate the device's compatible string. If we still need the
->> compatible check for some reason, then we can always match based
->> on qcom,gcc-msm8960, qcom,gcc-apq8064, etc. But I don't see why
->
-> Thats not quite possible I guess. 2 drivers (gcc and tsens) matching
-> the same compatibles? Will it not just depend on which ends up being
-> the first match?
-
-Any thoughts on how to move forward with this?
-
-I tried what you were suggesting, and here's what I had to do to get
-things working
-
-* Created a gcc node in DT with gcc and tsens compatibles, with gcc and
-tsens properties
-* gcc driver probes the device/node first given gcc is registered with
-a core_initcall()
-* creates a virtual child device attaching the same of_node (having
-both gcc and tsens compatibles)
-* gcc ends up probing the virtual device/node _again_ (due to the gcc
-compatible match), fails
-* At a later point, tsens driver gets registered (using module_initcall)
-ends up probing the virtual child node and succeeds
-
-Is this what you had in mind, or am I at the wrong end of the stick?
-
-regards,
-Rajendra
+> [1] http://storage.kernelci.org/next/next-20150827/arm-omap2plus_defconfig/lab-khilman/boot-omap3-beagle-xm.html
+> [2] https://ci.linaro.org/view/people/job/tbaker-boot-bisect-bot/88/console
