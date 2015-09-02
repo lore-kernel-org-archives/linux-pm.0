@@ -1,51 +1,145 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH 03/13] twl4030_charger: correctly handle -EPROBE_DEFER
- from devm_usb_get_phy_by_node
-Date: Tue, 1 Sep 2015 20:25:35 -0700
-Message-ID: <CAMAWPa_s2ELgRBRtWzFucmREMuLXS_V5Akmad5yFU13-GrzBDA@mail.gmail.com>
-References: <20150730001113.4012.18086.stgit@noble>
-	<20150730001124.4012.31980.stgit@noble>
-	<CAMAWPa__hFOuz24YBcFiR+m5mOUArSuNpuqh3Ju1H+yj6qadfA@mail.gmail.com>
+From: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [PATCH 13/13] dt: power: bq24257-charger: Cover additional devices
+Date: Wed, 2 Sep 2015 14:24:05 +0900
+Message-ID: <CAJKOXPeyMeUUon0E9Fhm18SHJEaQPEbGAWwU+MKwgt-30AXHiA@mail.gmail.com>
+References: <1441073435-12349-1-git-send-email-dannenberg@ti.com>
+	<1441073435-12349-14-git-send-email-dannenberg@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:60272 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751023AbbIBDZk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 1 Sep 2015 23:25:40 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id D557A20642
-	for <linux-pm@vger.kernel.org>; Wed,  2 Sep 2015 03:25:38 +0000 (UTC)
-Received: from mail-wi0-f174.google.com (mail-wi0-f174.google.com [209.85.212.174])
-	(using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
-	(No client certificate requested)
-	by mail.kernel.org (Postfix) with ESMTPSA id 872AD205DD
-	for <linux-pm@vger.kernel.org>; Wed,  2 Sep 2015 03:25:37 +0000 (UTC)
-Received: by wicfx3 with SMTP id fx3so4318342wic.0
-        for <linux-pm@vger.kernel.org>; Tue, 01 Sep 2015 20:25:36 -0700 (PDT)
-In-Reply-To: <CAMAWPa__hFOuz24YBcFiR+m5mOUArSuNpuqh3Ju1H+yj6qadfA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1441073435-12349-14-git-send-email-dannenberg-l0cyMroinI0@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
+Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Laurentiu Palcu <laurentiu.palcu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: NeilBrown <neil@brown.name>, Sebastian Reichel <sre@kernel.org>, Samuel Ortiz <sameo@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Tony Lindgren <tony@atomide.com>, David Woodhouse <dwmw2@infradead.org>, lkml <linux-kernel@vger.kernel.org>, real GTA04 owners <gta04-owner@goldelico.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Pavel Machek <pavel@ucw.cz>, linux-omap <linux-omap@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Tyler Baker <tyler.baker@linaro.org>
 
-ping... this boot failure has now landed in mainline
+2015-09-01 11:10 GMT+09:00 Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>:
+> Extend the bq24257 charger's device tree documentation to cover the
+> bq24250 and bq24257 devices as well as recent feature additions.
+>
+> Signed-off-by: Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
+> ---
+>  .../devicetree/bindings/power/bq24257.txt          | 59 ++++++++++++++++++++--
+>  1 file changed, 55 insertions(+), 4 deletions(-)
+>
+> diff --git a/Documentation/devicetree/bindings/power/bq24257.txt b/Documentation/devicetree/bindings/power/bq24257.txt
+> index 5c9d394..36b115c 100644
+> --- a/Documentation/devicetree/bindings/power/bq24257.txt
+> +++ b/Documentation/devicetree/bindings/power/bq24257.txt
+> @@ -2,20 +2,71 @@ Binding for TI bq24257 Li-Ion Charger
+>
+>  Required properties:
+>  - compatible: Should contain one of the following:
+> + * "ti,bq24250"
+> + * "ti,bq24251"
+>   * "ti,bq24257"
+> -- reg:                    integer, i2c address of the device.
+> +- reg: integer, i2c address of the device.
+> +- stat-gpio: GPIO used for the devices STAT_IN pin. Alternatively the pin can
+> +    also be defined through the standard interrupt definition properties (see
+> +    optional properties section below). Only use one method.
 
-On Thu, Aug 27, 2015 at 1:51 PM, Kevin Hilman <khilman@kernel.org> wrote:
-> On Wed, Jul 29, 2015 at 5:11 PM, NeilBrown <neil@brown.name> wrote:
->> Now that twl4030_bci_probe can safely return -EPROBE_DEFER,
->> do so when devm_usb_get_phy_by_node returns that error.
->>
->> Signed-off-by: NeilBrown <neil@brown.name>
+Preferred suffix should be "gpios":
+Documentation/devicetree/bindings/gpio/gpio.txt
+
+> +- pg-gpio: GPIO used for the device PG (Power Good) pin. This pin is not
+> +    available on all devices and therefore only required on applicable devices.
+> +    However it is also possible to explicitly disable the use of this pin
+> +    through the optional property "ti,pg-gpio-disable" (see below) if desired.
+> +    In this case the "pg-gpio" property is no longer required.
+>  - ti,battery-regulation-voltage: integer, maximum charging voltage in uV.
+> -- ti,charge-current:      integer, maximum charging current in uA.
+> -- ti,termination-current:  integer, charge will be terminated when current in
+> -                          constant-voltage phase drops below this value (in uA).
+> +- ti,charge-current: integer, maximum charging current in uA.
+> +- ti,termination-current: integer, charge will be terminated when current in
+> +    constant-voltage phase drops below this value (in uA).
+> +
+> +Optional properties:
+> +- ti,in-ilimit-autoset-disable: If this boolean property is present it disables
+
+I thought "ilimit" is a typo but apparently not :) . The names of this
+property and "ti,in-limit-current" below are quite obfuscated. I am
+thinking about different names but first I would like to understand
+the feature: what do you mean by "automatic setting of the input
+current limit"? Like adjusting the limit of possible current to given
+charger type?
+
+> +    the automatic setting of the input current limit. This property is also set
+> +    implicitly on devices without charger type detection. If this property is
+> +    provided the input current limit should be set manually through
+> +    "ti,in-limit-current".
+> +- ti,in-limit-current: The maximum current to be drawn from the charger's input
+> +    (in uA). Use this for devices that don't have charger type detection or if
+> +    you have have set "ti,in-ilimit-autoset-disable".
+> +- ti,vovp-voltage: Configures the over voltage protection voltage (in uV).
+> +- ti,vindpm-voltage:  Configures the threshold input voltage for the dynamic
+> +    power path management (in uV).
+
+I think the leading 'v' could be removed, so "ti,ovp-voltage" and
+"ti,in-dpm-voltage"?
+
+> +- ti,pg-gpio-disable: If this boolean property is provided a software-based
+> +    approach for power good determination is used. Note that the PG-pin based
+> +    approach is generally preferable.
+
+That's confusing. If someone does not want to use pg-gpio then he
+could just skip the "pg-gpio" property?
+
+> +- ti,timer-2x-enable: If this boolean property is provided the device's safety
+> +    timer is extended by a factor of two.
+
+Boolean properties like this have disadvantage - they cannot be
+overridden. Also extending them is difficult (e.g. for some next
+device the timer could have value of 4). Usually it is better to have
+a value-based property with "0" meaning default or disabled.
+
+Also please look at existing bindings:
+$ git grep "ti," Documentation/devicetree/bindings/power
+Maybe you could reuse some? Each of these existing and new bindings
+are made generic (not device specific) so they should be reused.
+
+Best regards,
+Krzysztof
+
+> +- interrupt-parent: Should be the phandle for the interrupt controller. Use in
+> +    conjunction with "interrupts" and only in case "stat-gpio" is not used.
+> +- interrupts: Interrupt mapping for GPIO IRQ (configure for both edges). Use in
+> +    conjunction with "interrupt-parent" and only in case "stat-gpio" is not
+> +    used.
 >
-> This patch has hit linux-next in the form of coommit 3fc3895e4fe1
-> (twl4030_charger: correctly handle -EPROBE_DEFER from
-> devm_usb_get_phy_by_node) and kernelci.org found a regression on
-> omap3-beagle-xm[1].  Bisecting[2] this boot failure pointed at this
-> commit, and I verified that reverting it on top of next-20150827 gets
-> the board booting again.  I haven't debugged any further.
+>  Example:
 >
-> Kevin
+>  bq24257 {
+>         compatible = "ti,bq24257";
+>         reg = <0x6a>;
+> +       stat-gpio = <&gpio1 16 GPIO_ACTIVE_HIGH>;
+> +       pg-gpio = <&gpio1 28 GPIO_ACTIVE_HIGH>;
 >
-> [1] http://storage.kernelci.org/next/next-20150827/arm-omap2plus_defconfig/lab-khilman/boot-omap3-beagle-xm.html
-> [2] https://ci.linaro.org/view/people/job/tbaker-boot-bisect-bot/88/console
+>         ti,battery-regulation-voltage = <4200000>;
+>         ti,charge-current = <1000000>;
+>         ti,termination-current = <50000>;
+>  };
+> +
+> +Example:
+> +
+> +bq24250 {
+> +       compatible = "ti,bq24250";
+> +       reg = <0x6a>;
+> +       interrupt-parent = <&gpio1>;
+> +       interrupts = <16 IRQ_TYPE_EDGE_BOTH>;
+> +
+> +       ti,battery-regulation-voltage = <4200000>;
+> +       ti,charge-current = <500000>;
+> +       ti,termination-current = <50000>;
+> +       ti,in-limit-current = <900000>;
+> +       ti,vovp-voltage = <9500000>;
+> +       ti,vindpm-voltage = <4440000>;
+> +};
+> --
+> 1.9.1
+>
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
