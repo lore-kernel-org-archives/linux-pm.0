@@ -1,57 +1,59 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH v4 0/5] Let the power allocator thermal governor run on
- any thermal zone
-Date: Wed, 2 Sep 2015 16:11:13 +0100
-Message-ID: <20150902151113.GD2694@e104805>
-References: <1439833008-26440-1-git-send-email-javi.merino@arm.com>
- <1440595604-27197-1-git-send-email-javi.merino@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:59529 "EHLO
-	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750743AbbIBPLS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Sep 2015 11:11:18 -0400
-Content-Disposition: inline
-In-Reply-To: <1440595604-27197-1-git-send-email-javi.merino@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH] cpufreq-dt: add suspend frequency support
+Date: Wed, 02 Sep 2015 18:42:01 +0200
+Message-ID: <1441212121-21021-1-git-send-email-b.zolnierkie@samsung.com>
+Return-path: <linux-clk-owner@vger.kernel.org>
+Sender: linux-clk-owner@vger.kernel.org
+To: Thomas Abraham <thomas.ab@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
-To: "edubezval@gmail.com" <edubezval@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "dmitry.torokhov@gmail.com" <dmitry.torokhov@gmail.com>, "cywang@chromium.org" <cywang@chromium.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Punit Agrawal <Punit.Agrawal@arm.com>, "djkurtz@chromium.org" <djkurtz@chromium.org>
 
-On Wed, Aug 26, 2015 at 02:26:39PM +0100, Javi Merino wrote:
-> Relax the thermal governor requirements of sustainable_power and at
-> least two trip points so that it can be bound to any thermal zone.
-> Its behavior won't be optimal, it would be the best it can with the
-> data provided.
-> 
-> Changes since v3:
->    - Don't hardcode a value for sustainable power and re-estimate
->      the PID controllers every time if no sustainable power is given
->      as suggested by Eduardo Valentin.
->    - power_actor_get_min_power() moved to a patch of its own.
-> 
-> Changes since v2:
->   - Typos suggested by Daniel Kurtz
-> 
-> Changes since v1:
->   - Let the power allocator governor operate if the thermal zone
->     doesn't have tzp as suggested by Chung-yih Wang
-> 
-> Javi Merino (5):
->   thermal: Add a function to get the minimum power
->   thermal: power_allocator: relax the requirement of a sustainable_power
->     in tzp
->   thermal: power_allocator: relax the requirement of two passive trip   
->      points
->   thermal: power_allocator: don't require tzp to be present for the
->     thermal zone
->   thermal: power_allocator: exit early if there are no cooling devices
-> 
->  Documentation/thermal/power_allocator.txt |   2 +-
->  drivers/thermal/power_allocator.c         | 241 ++++++++++++++++++++++--------
->  drivers/thermal/thermal_core.c            |  28 ++++
->  include/linux/thermal.h                   |   6 +
->  4 files changed, 212 insertions(+), 65 deletions(-)
+Add suspend frequency support and set it to the boot frequency,
+this matches what the old exynos-cpufreq driver has been doing.
 
-Gentle ping.
+This patch fixes suspend/resume support on Exynos4412 based
+Trats2 board and reboot hang on Exynos4412 based Odroid U3
+board.
+
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Thomas Abraham <thomas.ab@samsung.com>
+Cc: Javier Martinez Canillas <javier@osg.samsung.com>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+This patch supersedes "[PATCH] ARM: dts: exynos4412-odroid-*: add
+workaround for CPUfreq/reboot issue" one from yesterday.
+
+ drivers/cpufreq/cpufreq-dt.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+index c3583cd..c9138c7 100644
+--- a/drivers/cpufreq/cpufreq-dt.c
++++ b/drivers/cpufreq/cpufreq-dt.c
+@@ -329,6 +329,10 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 	policy->driver_data = priv;
+ 
+ 	policy->clk = cpu_clk;
++
++	/* capture boot frequency */
++	policy->suspend_freq = clk_get_rate(cpu_clk) / 1000;;
++
+ 	ret = cpufreq_table_validate_and_show(policy, freq_table);
+ 	if (ret) {
+ 		dev_err(cpu_dev, "%s: invalid frequency table: %d\n", __func__,
+@@ -419,6 +423,9 @@ static struct cpufreq_driver dt_cpufreq_driver = {
+ 	.ready = cpufreq_ready,
+ 	.name = "cpufreq-dt",
+ 	.attr = cpufreq_dt_attr,
++#ifdef CONFIG_PM
++	.suspend = cpufreq_generic_suspend,
++#endif
+ };
+ 
+ static int dt_cpufreq_probe(struct platform_device *pdev)
+-- 
+1.9.1
+
