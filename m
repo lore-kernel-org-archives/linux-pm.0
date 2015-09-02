@@ -1,55 +1,38 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [GIT PULL] Power management and ACPI updates for v4.3-rc1
-Date: Wed, 2 Sep 2015 14:40:54 +0200
-Message-ID: <CAJZ5v0hGhjwvYHqNcgSZd0ou4gScfA0XqKiSfafXUDTvrz3dRQ@mail.gmail.com>
-References: <CAJZ5v0j71Zwe8H7Lais82+N97-eF==Yjf4SPnb40kdyBLu2THw@mail.gmail.com>
-	<20150902163914.34988848@canb.auug.org.au>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH 03/13] twl4030_charger: correctly handle -EPROBE_DEFER
+ from devm_usb_get_phy_by_node
+Date: Wed, 2 Sep 2015 06:07:24 -0700
+Message-ID: <20150902130724.GQ4215@atomide.com>
+References: <20150730001113.4012.18086.stgit@noble>
+ <20150730001124.4012.31980.stgit@noble>
+ <CAMAWPa__hFOuz24YBcFiR+m5mOUArSuNpuqh3Ju1H+yj6qadfA@mail.gmail.com>
+ <CAMAWPa_s2ELgRBRtWzFucmREMuLXS_V5Akmad5yFU13-GrzBDA@mail.gmail.com>
+ <87si6x4a2f.fsf@notabene.neil.brown.name>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f45.google.com ([209.85.220.45]:36560 "EHLO
-	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753983AbbIBMkz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Sep 2015 08:40:55 -0400
-In-Reply-To: <20150902163914.34988848@canb.auug.org.au>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <87si6x4a2f.fsf@notabene.neil.brown.name>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Neil Brown <neil@brown.name>
+Cc: Kevin Hilman <khilman@kernel.org>, Sebastian Reichel <sre@kernel.org>, Samuel Ortiz <sameo@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, David Woodhouse <dwmw2@infradead.org>, lkml <linux-kernel@vger.kernel.org>, real GTA04 owners <gta04-owner@goldelico.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Pavel Machek <pavel@ucw.cz>, linux-omap <linux-omap@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Tyler Baker <tyler.baker@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>
 
-Hi,
+* Neil Brown <neil@brown.name> [150901 23:23]:
+> Kevin Hilman <khilman@kernel.org> writes:
+> 
+> > ping... this boot failure has now landed in mainline
+> 
+> sorry, I'm on leave at the moment and travelling so I'm unlikely to be
+> able to look at this properly.  I should be able to examine this issue
+> before the end of the month but cannot promise sooner than that (though
+> it is not impossible).
+> 
+> Maybe it would be best to just revert it until a proper analysis can be
+> done.
 
-On Wed, Sep 2, 2015 at 8:39 AM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> Hi Linus,
->
-> On Wed, 2 Sep 2015 01:41:11 +0200 "Rafael J. Wysocki" <rafael@kernel.org> wrote:
->>
->> Hi Linus,
->>
->> Please pull from
->>
->>  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
->>  pm+acpi-4.3-rc1
->>
->> to receive power management and ACPI material for v4.3-rc1 with
->> top-most commit e625ccec1fa6c24620f38fd72d5b2fd62230ad2b
->>
->>  Merge branches 'pm-tools' and 'powercap'
->>
->> on top of commit 64291f7db5bd8150a74ad2036f1037e6a0428df2
->>
->>  Linux 4.2
->
-> So there are about 20 commits in here that have not been in linux-next
-> (unless they have bee rebased) and about 10 of those will be in today's
-> linux-next.  Not judging, just notiing.
+OK yeah let's revert this one for now until we know what goes wrong.
 
-I needed to apply some of them (in the cpufreq branch) afresh because
-I originally took them from Patchwork and I didn't notice that it
-mangled the From: tags in them.
+Regards,
 
-All of them were ready last week and went through the 0-day build
-testing, though.
-
-Thanks,
-Rafael
+Tony
