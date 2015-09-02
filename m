@@ -1,106 +1,76 @@
-From: Zhaoyang Huang <zhaoyang.huang@linaro.org>
-Subject: [PATCH v3] modify pl011 driver to work as wakeup source
-Date: Wed,  2 Sep 2015 09:58:08 +0800
-Message-ID: <1441159088-7446-1-git-send-email-zhaoyang.huang@linaro.org>
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: Re: [PATCH 5/9] clk: qcom: gcc-msm8960: add child devices support.
+Date: Wed, 02 Sep 2015 08:07:42 +0530
+Message-ID: <55E660F6.3020007@codeaurora.org>
+References: <1436348838-22671-1-git-send-email-rnayak@codeaurora.org> <1436348838-22671-6-git-send-email-rnayak@codeaurora.org> <20150811224902.GO2839@codeaurora.org> <55CB0B26.2020105@linaro.org> <55CC1CFE.7000005@codeaurora.org> <20150814004206.GU26614@codeaurora.org> <55CD5BD2.3070907@codeaurora.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f49.google.com ([209.85.220.49]:35224 "EHLO
-	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751169AbbIBB6T (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Sep 2015 21:58:19 -0400
-Received: by pacfv12 with SMTP id fv12so14693334pac.2
-        for <linux-pm@vger.kernel.org>; Tue, 01 Sep 2015 18:58:19 -0700 (PDT)
+Received: from smtp.codeaurora.org ([198.145.29.96]:57222 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750717AbbIBChw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Sep 2015 22:37:52 -0400
+In-Reply-To: <55CD5BD2.3070907@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: amit.kucheria@linaro.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, linux-arm-msm@vger.kernel.org, lina.iyer@linaro.org, nrajan@codeaurora.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
-the commit use the latest dev_pm_set_wake_irq API instead
-of the enable_irq_wake and IRQF_NO_SUSPEND to configure the
-ttyAMA device to work as the wakeup source
+Stephen,
 
-Signed-off-by: Zhaoyang Huang <zhaoyang.huang@linaro.org>
----
- drivers/tty/serial/amba-pl011.c |   42 ++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 41 insertions(+), 1 deletion(-)
+>>>>> Also, I don't like having a subnode in DT. Why can't we use the
+>>>>> same node as the GCC node and create a virtual child device here
+>>>>> for tsens? We can assign the same of_node that this platform
+>>>>> device has so that DT keeps working correctly.
+>>>
+>>> So the current driver looks up data based on compatible strings.
+>>
+>> The tsens device is always the same piece of hardware. The only
+>
+> Well, not always. The one in 8960 does need additional initializations,
+> requires you to save/restore context as it can be powered off
+> not being in an always powered on domain etc.
+>
+>> thing that's changing is the qfprom data and the number of
+>> sensors. So we should be looking at the qfprom compatible string
+>
+> How? Tsens uses nvmem framework apis to read the qfprom atleast
+> in this series.
+>
+>> to figure out how to interpret the qfprom data which would
+>> include the number of sensors and how the data is encoded.
+>>
+>>> So you suggesting to create a virtual child device for gcc and
+>>> associate the gcc DT node to it? (And have the tsens compatible
+>>> mentioned as part of the gcc DT node?)
+>>
+>> No. The driver should work just fine without having to
+>> interrogate the device's compatible string. If we still need the
+>> compatible check for some reason, then we can always match based
+>> on qcom,gcc-msm8960, qcom,gcc-apq8064, etc. But I don't see why
+>
+> Thats not quite possible I guess. 2 drivers (gcc and tsens) matching
+> the same compatibles? Will it not just depend on which ends up being
+> the first match?
 
-diff --git a/drivers/tty/serial/amba-pl011.c b/drivers/tty/serial/amba-pl011.c
-index 50cf5b1..98d2015 100644
---- a/drivers/tty/serial/amba-pl011.c
-+++ b/drivers/tty/serial/amba-pl011.c
-@@ -59,6 +59,11 @@
- #include <linux/sizes.h>
- #include <linux/io.h>
- #include <linux/acpi.h>
-+#include <linux/suspend.h>
-+#include <linux/pm_wakeirq.h>
-+#include <linux/irq.h>
-+
-+static struct device *uart_dev;
- 
- #define UART_NR			14
- 
-@@ -2353,11 +2358,29 @@ static int pl011_register_port(struct uart_amba_port *uap)
- 	return ret;
- }
- 
-+struct uart_match {
-+	struct uart_port *port;
-+	struct uart_driver *driver;
-+};
-+
-+static int match_uart_port(struct device *dev, void *data)
-+{
-+	struct uart_match *match = data;
-+
-+	dev_t devt = MKDEV(match->driver->major, match->driver->minor) +
-+		match->port->line;
-+
-+	pr_info("the match data of ttyAMA0 is %d %d\n",
-+			(int)devt, (int)dev->devt);
-+
-+	return dev->devt == devt; /* Actually, only one tty per port */
-+}
- static int pl011_probe(struct amba_device *dev, const struct amba_id *id)
- {
- 	struct uart_amba_port *uap;
- 	struct vendor_data *vendor = id->data;
- 	int portnr, ret;
-+	struct uart_match match;
- 
- 	portnr = pl011_find_free_port();
- 	if (portnr < 0)
-@@ -2387,13 +2410,30 @@ static int pl011_probe(struct amba_device *dev, const struct amba_id *id)
- 
- 	amba_set_drvdata(dev, uap);
- 
--	return pl011_register_port(uap);
-+	ret = pl011_register_port(uap);
-+
-+	match.port = &uap->port;
-+	match.driver = &amba_reg;
-+
-+	uart_dev = device_find_child(&dev->dev, &match, match_uart_port);
-+
-+	if (uart_dev) {
-+		device_init_wakeup(uart_dev, true);
-+		dev_pm_set_wake_irq(uart_dev, uap->port.irq);
-+	}
-+
-+	return ret;
- }
- 
- static int pl011_remove(struct amba_device *dev)
- {
- 	struct uart_amba_port *uap = amba_get_drvdata(dev);
- 
-+	if (uart_dev) {
-+		dev_pm_clear_wake_irq(uart_dev);
-+		device_init_wakeup(uart_dev, false);
-+	}
-+
- 	uart_remove_one_port(&amba_reg, &uap->port);
- 	pl011_unregister_port(uap);
- 	return 0;
--- 
-1.7.9.5
+Any thoughts on how to move forward with this?
 
+I tried what you were suggesting, and here's what I had to do to get
+things working
+
+* Created a gcc node in DT with gcc and tsens compatibles, with gcc and
+tsens properties
+* gcc driver probes the device/node first given gcc is registered with
+a core_initcall()
+* creates a virtual child device attaching the same of_node (having
+both gcc and tsens compatibles)
+* gcc ends up probing the virtual device/node _again_ (due to the gcc
+compatible match), fails
+* At a later point, tsens driver gets registered (using module_initcall)
+ends up probing the virtual child node and succeeds
+
+Is this what you had in mind, or am I at the wrong end of the stick?
+
+regards,
+Rajendra
