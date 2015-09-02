@@ -1,49 +1,436 @@
-From: Daniel Kurtz <djkurtz@chromium.org>
-Subject: Re: [RESEND PATCH 0/3 v6] Add Mediatek MT8173 cpufreq driver
-Date: Wed, 2 Sep 2015 14:45:56 +0800
-Message-ID: <CAGS+omAtiALWTjVJS4wNatXVLqZRSOk3m29QQvW=fQWs7Hs5ng@mail.gmail.com>
-References: <1439803465-19683-1-git-send-email-pi-cheng.chen@linaro.org>
- <20150826021659.GD8784@linux> <CALx668V2herrp6XOtCDR7nNvFhd7DLLMjXmr86cjfCOQ_cgmrw@mail.gmail.com>
- <22538895.vrRgZUmQTV@vostro.rjw.lan>
+From: Ricky Liang <jcliang@chromium.org>
+Subject: Re: [RFC,08/14] sched/tune: add detailed documentation
+Date: Wed, 2 Sep 2015 14:49:58 +0800
+Message-ID: <20150902064958.GA18664@google.com>
+References: <1440010044-3402-9-git-send-email-patrick.bellasi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <22538895.vrRgZUmQTV@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Matthias Brugger <matthias.bgg@gmail.com>
-Cc: Pi-Cheng Chen <pi-cheng.chen@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Mark Rutland <mark.rutland@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Michael Turquette <mturquette@baylibre.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, linux-mediatek@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-doc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1440010044-3402-9-git-send-email-patrick.bellasi@arm.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Matthias,
+Hi Patrick,
 
-On Fri, Aug 28, 2015 at 10:06 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Wednesday, August 26, 2015 02:53:39 PM Pi-Cheng Chen wrote:
->> On Wed, Aug 26, 2015 at 10:16 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> > On 26-08-15, 09:25, Pi-Cheng Chen wrote:
->> >> The [3/3] is based on Mediatek SoC maintainer tree[1] and the patch which
->> >> introduce a new clock type[2] consumed by MT8173 cpufreq driver. So it will
->> >> cause some conflicts if it goes through your tree. I am not sure how this
->> >> should be handled, but should it be merged through Mediatek SoC maintainer
->> >> tree?
->> >
->> > Just get that applied to MTK tree, it doesn't have any dependency on
->> > rest of the patches for build/boot. The only thing is that cpufreq
->> > wouldn't work and it will work as soon as Rafael's and MTK's trees are
->> > merged by Linus.
->>
->> Thanks for your explanation.
->>
->> @Rafael, Would you please apply [1,2] to your tree?
->
-> Applied, thanks!
+I wonder if this can replace the boost function in the interactive governor [0],
+which is widely used in both Android and ChromeOS kernels.
 
-Can you please apply [3] from this set to your dts tree?
+My understanding is that the boost in interactive governor is to simply raise
+the OPP on selected cores. The SchedTune boost works by adding a margin to the
+original load of a task which makes the kernel think that the task is more
+demanding than it actually is. My intuition was that they work differently and
+could cause different reaction in the kernel.
 
-> --
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+I feel that the per-task cgroup ScheTune boost should work as expected as it
+only boosts a set of tasks and make them appear relatively high demanding
+comparing to other tasks. But if the ScheTune boost is applied globally to boost
+all the tasks in the system, will it cause unnecessary task migrations as all
+the tasks appear to be high demanding to the kernel?
+
+Specifically, my questions is: When the global SchedTune boost is enabled in a
+on-demand manner, is it possible that a light task gets migrated to the big
+core, and in turn kicks out a heavy task originally on that core? I'm wondering
+whether global SchedTune boost could result in a "priority inversion" causing
+the heavy task to run on the little core and the light task to run on the big
+core.
+
+[0]: https://android.googlesource.com/kernel/common.git/+/android-3.18/drivers/cpufreq/cpufreq_interactive.c
+
+Thanks,
+Ricky
+
+On Wed, Aug 19, 2015 at 07:47:18PM +0100, Patrick Bellasi wrote:
+> The topic of a single simple power-performance tunable, that is wholly
+> scheduler centric, and has well defined and predictable properties has
+> come up on several occasions in the past. With techniques such as a
+> scheduler driven DVFS, we now have a good framework for implementing
+> such a tunable.
+> 
+> This patch provides a detailed description of the motivations and design
+> decisions behind the implementation of the SchedTune.
+> 
+> cc: Jonathan Corbet <corbet@lwn.net>
+> cc: linux-doc@vger.kernel.org
+> Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
+> 
+> ---
+> Documentation/scheduler/sched-tune.txt | 367 +++++++++++++++++++++++++++++++++
+>  1 file changed, 367 insertions(+)
+>  create mode 100644 Documentation/scheduler/sched-tune.txt
+> 
+> diff --git a/Documentation/scheduler/sched-tune.txt b/Documentation/scheduler/sched-tune.txt
+> new file mode 100644
+> index 0000000..cb795e6
+> --- /dev/null
+> +++ b/Documentation/scheduler/sched-tune.txt
+> @@ -0,0 +1,367 @@
+> +             Central, scheduler-driven, power-performance control
+> +                               (EXPERIMENTAL)
+> +
+> +Abstract
+> +========
+> +
+> +The topic of a single simple power-performance tunable, that is wholly
+> +scheduler centric, and has well defined and predictable properties has come up
+> +on several occasions in the past [1,2]. With techniques such as a scheduler
+> +driven DVFS [3], we now have a good framework for implementing such a tunable.
+> +This document describes the overall ideas behind its design and implementation.
+> +
+> +
+> +Table of Contents
+> +=================
+> +
+> +1. Motivation
+> +2. Introduction
+> +3. Signal Boosting Strategy
+> +4. OPP selection using boosted CPU utilization
+> +5. Per task group boosting
+> +6. Question and Answers
+> +   - What about "auto" mode?
+> +   - What about boosting on a congested system?
+> +   - How CPUs are boosted when we have tasks with multiple boost values?
+> +7. References
+> +
+> +
+> +1. Motivation
+> +=============
+> +
+> +Sched-DVFS [3] is a new event-driven cpufreq governor which allows the
+> +scheduler to select the optimal DVFS operating point (OPP) for running a task
+> +allocated to a CPU. The introduction of sched-DVFS enables running workloads at
+> +the most energy efficient OPPs.
+> +
+> +However, sometimes it may be desired to intentionally boost the performance of
+> +a workload even if that could imply a reasonable increase in energy
+> +consumption. For example, in order to reduce the response time of a task, we
+> +may want to run the task at a higher OPP than the one that is actually required
+> +by it's CPU bandwidth demand.
+> +
+> +This last requirement is especially important if we consider that one of the
+> +main goals of the sched-DVFS component is to replace all currently available
+> +CPUFreq policies. Since sched-DVFS is event based, as opposed to the sampling
+> +driven governors we currently have, it is already more responsive at selecting
+> +the optimal OPP to run tasks allocated to a CPU. However, just tracking the
+> +actual task load demand may not be enough from a performance standpoint.  For
+> +example, it is not possible to get behaviors similar to those provided by the
+> +"performance" and "interactive" CPUFreq governors.
+> +
+> +This document describes an implementation of a tunable, stacked on top of the
+> +sched-DVFS which extends its functionality to support task performance
+> +boosting.
+> +
+> +By "performance boosting" we mean the reduction of the time required to
+> +complete a task activation, i.e. the time elapsed from a task wakeup to its
+> +next deactivation (e.g. because it goes back to sleep or it terminates).  For
+> +example, if we consider a simple periodic task which executes the same workload
+> +for 5[s] every 20[s] while running at a certain OPP, a boosted execution of
+> +that task must complete each of its activations in less than 5[s].
+> +
+> +A previous attempt [5] to introduce such a boosting feature has not been
+> +successful mainly because of the complexity of the proposed solution.  The
+> +approach described in this document exposes a single simple interface to
+> +user-space.  This single tunable knob allows the tuning of system wide
+> +scheduler behaviours ranging from energy efficiency at one end through to
+> +incremental performance boosting at the other end.  This first tunable affects
+> +all tasks. However, a more advanced extension of the concept is also provided
+> +which uses CGroups to boost the performance of only selected tasks while using
+> +the energy efficient default for all others.
+> +
+> +The rest of this document introduces in more details the proposed solution
+> +which has been named SchedTune.
+> +
+> +
+> +2. Introduction
+> +===============
+> +
+> +SchedTune exposes a simple user-space interface with a single power-performance
+> +tunable:
+> +
+> +  /proc/sys/kernel/sched_cfs_boost
+> +
+> +This permits expressing a boost value as an integer in the range [0..100].
+> +
+> +A value of 0 (default) configures the CFS scheduler for maximum energy
+> +efficiency. This means that sched-DVFS runs the tasks at the minimum OPP
+> +required to satisfy their workload demand.
+> +A value of 100 configures scheduler for maximum performance, which translates
+> +to the selection of the maximum OPP on that CPU.
+> +
+> +The range between 0 and 100 can be set to satisfy other scenarios suitably. For
+> +example to satisfy interactive response or depending on other system events
+> +(battery level etc).
+> +
+> +A CGroup based extension is also provided, which permits further user-space
+> +defined task classification to tune the scheduler for different goals depending
+> +on the specific nature of the task, e.g. background vs interactive vs
+> +low-priority.
+> +
+> +The overall design of the SchedTune module is built on top of "Per-Entity Load
+> +Tracking" (PELT) signals and sched-DVFS by introducing a bias on the Operating
+> +Performance Point (OPP) selection.
+> +Each time a task is allocated on a CPU, sched-DVFS has the opportunity to tune
+> +the operating frequency of that CPU to better match the workload demand. The
+> +selection of the actual OPP being activated is influenced by the global boost
+> +value, or the boost value for the task CGroup when in use.
+> +
+> +This simple biasing approach leverages existing frameworks, which means minimal
+> +modifications to the scheduler, and yet it allows to achieve a range of
+> +different behaviours all from a single simple tunable knob.
+> +The only new concept introduced is that of signal boosting.
+> +
+> +
+> +3. Signal Boosting Strategy
+> +===========================
+> +
+> +The whole PELT machinery works based on the value of a few load tracking signals
+> +which basically track the CPU bandwidth requirements for tasks and the capacity
+> +of CPUs. The basic idea behind the SchedTune knob is to artificially inflate
+> +some of these load tracking signals to make a task or RQ appears more demanding
+> +that it actually is.
+> +
+> +Which signals have to be inflated depends on the specific "consumer".  However,
+> +independently from the specific (signal, consumer) pair, it is important to
+> +define a simple and possibly consistent strategy for the concept of boosting a
+> +signal.
+> +
+> +A boosting strategy defines how the "abstract" user-space defined
+> +sched_cfs_boost value is translated into an internal "margin" value to be added
+> +to a signal to get its inflated value:
+> +
+> +  margin         := boosting_strategy(sched_cfs_boost, signal)
+> +  boosted_signal := signal + margin
+> +
+> +Different boosting strategies were identified and analyzed before selecting the
+> +one found to be most effective.
+> +
+> +Signal Proportional Compensation (SPC)
+> +--------------------------------------
+> +
+> +In this boosting strategy the sched_cfs_boost value is used to compute a
+> +margin which is proportional to the complement of the original signal.
+> +When a signal has a maximum possible value, its complement is defined as
+> +the delta from the actual value and its possible maximum.
+> +
+> +Since the tunable implementation uses signals which have SCHED_LOAD_SCALE as
+> +the maximum possible value, the margin becomes:
+> +
+> +	margin := sched_cfs_boost * (SCHED_LOAD_SCALE - signal)
+> +
+> +Using this boosting strategy:
+> +- a 100% sched_cfs_boost means that the signal is scaled to the maximum value
+> +- each value in the range of sched_cfs_boost effectively inflates the signal in
+> +  question by a quantity which is proportional to the maximum value.
+> +
+> +For example, by applying the SPC boosting strategy to the selection of the OPP
+> +to run a task it is possible to achieve these behaviors:
+> +
+> +-   0% boosting: run the task at the minimum OPP required by its workload
+> +- 100% boosting: run the task at the maximum OPP available for the CPU
+> +-  50% boosting: run at the half-way OPP between minimum and maximum
+> +
+> +Which means that, at 50% boosting, a task will be scheduled to run at half of
+> +the maximum theoretically achievable performance on the specific target
+> +platform.
+> +
+> +A graphical representation of an SPC boosted signal is represented in the
+> +following figure where:
+> + a) "-" represents the original signal
+> + b) "b" represents a  50% boosted signal
+> + c) "p" represents a 100% boosted signal
+> +
+> +
+> +   ^
+> +   |  SCHED_LOAD_SCALE
+> +   +-----------------------------------------------------------------+
+> +   |pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp
+> +   |
+> +   |                                             boosted_signal
+> +   |                                          bbbbbbbbbbbbbbbbbbbbbbbb
+> +   |
+> +   |                                            original signal
+> +   |                  bbbbbbbbbbbbbbbbbbbbbbbb+----------------------+
+> +   |                                          |
+> +   |bbbbbbbbbbbbbbbbbb                        |
+> +   |                                          |
+> +   |                                          |
+> +   |                                          |
+> +   |                  +-----------------------+
+> +   |                  |
+> +   |                  |
+> +   |                  |
+> +   |------------------+
+> +   |
+> +   |
+> +   +----------------------------------------------------------------------->
+> +
+> +The plot above shows a ramped load signal (titled 'original_signal') and it's
+> +boosted equivalent. For each step of the original signal the boosted signal
+> +corresponding to a 50% boost is midway from the original signal and the upper
+> +bound. Boosting by 100% generates a boosted signal which is always saturated to
+> +the upper bound.
+> +
+> +
+> +4. OPP selection using boosted CPU utilization
+> +==============================================
+> +
+> +It is worth calling out that the implementation does not introduce any new load
+> +signals. Instead, it provides an API to tune existing signals. This tuning is
+> +done on demand and only in scheduler code paths where it is sensible to do so.
+> +The new API calls are defined to return either the default signal or a boosted
+> +one, depending on the value of sched_cfs_boost. This is a clean an non invasive
+> +modification of the existing existing code paths.
+> +
+> +The signal representing a CPU's utilization is boosted according to the
+> +previously described SPC boosting strategy. To sched-DVFS, this allows a CPU
+> +(ie CFS run-queue) to appear more used then it actually is.
+> +
+> +Thus, with the sched_cfs_boost enabled we have the following main functions to
+> +get the current utilization of a CPU:
+> +
+> +  cpu_util()
+> +  boosted_cpu_util()
+> +
+> +The new boosted_cpu_util() is similar to the first but returns a boosted
+> +utilization signal which is a function of the sched_cfs_boost value.
+> +
+> +This function is used in the CFS scheduler code paths where sched-DVFS needs to
+> +decide the OPP to run a CPU at.
+> +For example, this allows selecting the highest OPP for a CPU which has
+> +the boost value set to 100%.
+> +
+> +
+> +5. Per task group boosting
+> +==========================
+> +
+> +The availability of a single knob which is used to boost all tasks in the
+> +system is certainly a simple solution but it quite likely doesn't fit many
+> +utilization scenarios, especially in the mobile device space.
+> +
+> +For example, on battery powered devices there usually are many background
+> +services which are long running and need energy efficient scheduling. On the
+> +other hand, some applications are more performance sensitive and require an
+> +interactive response and/or maximum performance, regardless of the energy cost.
+> +To better service such scenarios, the SchedTune implementation has an extension
+> +that provides a more fine grained boosting interface.
+> +
+> +A new CGroup controller, namely "schedtune", could be enabled which allows to
+> +defined and configure task groups with different boosting values.
+> +Tasks that require special performance can be put into separate CGroups.
+> +The value of the boost associated with the tasks in this group can be specified
+> +using a single knob exposed by the CGroup controller:
+> +
+> +   schedtune.boost
+> +
+> +This knob allows the definition of a boost value that is to be used for
+> +SPC boosting of all tasks attached to this group.
+> +
+> +The current schedtune controller implementation is really simple and has these
+> +main characteristics:
+> +
+> +  1) It is only possible to create 1 level depth hierarchies
+> +
+> +     The root control groups define the system-wide boost value to be applied
+> +     by default to all tasks. Its direct subgroups are named "boost groups" and
+> +     they define the boost value for specific set of tasks.
+> +     Further nested subgroups are not allowed since they do not have a sensible
+> +     meaning from a user-space standpoint.
+> +
+> +  2) It is possible to define only a limited number of "boost groups"
+> +
+> +     This number is defined at compile time and by default configured to 16.
+> +     This is a design decision motivated by two main reasons:
+> +     a) In a real system we do not expect utilization scenarios with more then few
+> +	boost groups. For example, a reasonable collection of groups could be
+> +        just "background", "interactive" and "performance".
+> +     b) It simplifies the implementation considerably, especially for the code
+> +	which has to compute the per CPU boosting once there are multiple
+> +        RUNNABLE tasks with different boost values.
+> +
+> +Such a simple design should allow servicing the main utilization scenarios identified
+> +so far. It provides a simple interface which can be used to manage the
+> +power-performance of all tasks or only selected tasks.
+> +Moreover, this interface can be easily integrated by user-space run-times (e.g.
+> +Android, ChromeOS) to implement a QoS solution for task boosting based on tasks
+> +classification, which has been a long standing requirement.
+> +
+> +Setup and usage
+> +---------------
+> +
+> +0. Use a kernel with CGROUP_SCHEDTUNE support enabled
+> +
+> +1. Check that the "schedtune" CGroup controller is available:
+> +
+> +   root@linaro-nano:~# cat /proc/cgroups
+> +   #subsys_name	hierarchy	num_cgroups	enabled
+> +   cpuset  	0		1		1
+> +   cpu     	0		1		1
+> +   schedtune	0		1		1
+> +
+> +2. Mount a tmpfs to create the CGroups mount point (Optional)
+> +
+> +   root@linaro-nano:~# sudo mount -t tmpfs cgroups /sys/fs/cgroup
+> +
+> +3. Mount the "schedtune" controller
+> +
+> +   root@linaro-nano:~# mkdir /sys/fs/cgroup/stune
+> +   root@linaro-nano:~# sudo mount -t cgroup -o schedtune stune /sys/fs/cgroup/stune
+> +
+> +4. Setup the system-wide boost value (Optional)
+> +
+> +   If not configured the root control group has a 0% boost value, which
+> +   basically disables boosting for all tasks in the system thus running in
+> +   an energy-efficient mode.
+> +
+> +   root@linaro-nano:~# echo $SYSBOOST > /sys/fs/cgroup/stune/schedtune.boost
+> +
+> +5. Create task groups and configure their specific boost value (Optional)
+> +
+> +   For example here we create a "performance" boost group configure to boost
+> +   all its tasks to 100%
+> +
+> +   root@linaro-nano:~# mkdir /sys/fs/cgroup/stune/performance
+> +   root@linaro-nano:~# echo 100 > /sys/fs/cgroup/stune/performance/schedtune.boost
+> +
+> +6. Move tasks into the boost group
+> +
+> +   For example, the following moves the tasks with PID $TASKPID (and all its
+> +   threads) into the "performance" boost group.
+> +
+> +   root@linaro-nano:~# echo "TASKPID > /sys/fs/cgroup/stune/performance/cgroup.procs
+> +
+> +This simple configuration allows only the threads of the $TASKPID task to run,
+> +when needed, at the highest OPP in the most capable CPU of the system.
+> +
+> +
+> +6. Question and Answers
+> +=======================
+> +
+> +What about "auto" mode?
+> +-----------------------
+> +
+> +The 'auto' mode as described in [5] can be implemented by interfacing SchedTune
+> +with some suitable user-space element. This element could use the exposed
+> +system-wide or cgroup based interface.
+> +
+> +How are multiple groups of tasks with different boost values managed?
+> +---------------------------------------------------------------------
+> +
+> +The current SchedTune implementation keeps track of the boosted RUNNABLE tasks
+> +on a CPU. Once sched-DVFS selects the OPP to run a CPU at, the CPU utilization
+> +is boosted with a value which is the maximum of the boost values of the
+> +currently RUNNABLE tasks in its RQ.
+> +
+> +This allows sched-DVFS to boost a CPU only while there are boosted tasks ready
+> +to run and switch back to the energy efficient mode as soon as the last boosted
+> +task is dequeued.
+> +
+> +
+> +7. References
+> +=============
+> +[1] http://lwn.net/Articles/552889
+> +[2] http://lkml.org/lkml/2012/5/18/91
+> +[3] http://lkml.org/lkml/2015/6/26/620
+> +
