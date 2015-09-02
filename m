@@ -1,215 +1,53 @@
-From: Leo Yan <leo.yan@linaro.org>
-Subject: Re: [RFCv5 PATCH 22/46] sched: Calculate energy consumption of
- sched_group
-Date: Thu, 3 Sep 2015 01:19:23 +0800
-Message-ID: <20150902171923.GB12510@leoy-linaro>
-References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
- <1436293469-25707-23-git-send-email-morten.rasmussen@arm.com>
+From: Matthias Brugger <matthias.bgg@gmail.com>
+Subject: Re: [RESEND PATCH 0/3 v6] Add Mediatek MT8173 cpufreq driver
+Date: Wed, 2 Sep 2015 19:23:03 +0200
+Message-ID: <55E73077.8060106@gmail.com>
+References: <1439803465-19683-1-git-send-email-pi-cheng.chen@linaro.org>
+ <20150826021659.GD8784@linux>
+ <CALx668V2herrp6XOtCDR7nNvFhd7DLLMjXmr86cjfCOQ_cgmrw@mail.gmail.com>
+ <22538895.vrRgZUmQTV@vostro.rjw.lan>
+ <CAGS+omAtiALWTjVJS4wNatXVLqZRSOk3m29QQvW=fQWs7Hs5ng@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f52.google.com ([209.85.220.52]:32895 "EHLO
-	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754892AbbIBRTb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Sep 2015 13:19:31 -0400
-Received: by pacex6 with SMTP id ex6so12684922pac.0
-        for <linux-pm@vger.kernel.org>; Wed, 02 Sep 2015 10:19:31 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1436293469-25707-23-git-send-email-morten.rasmussen@arm.com>
+Received: from mail-wi0-f181.google.com ([209.85.212.181]:38299 "EHLO
+	mail-wi0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932141AbbIBRXK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Sep 2015 13:23:10 -0400
+In-Reply-To: <CAGS+omAtiALWTjVJS4wNatXVLqZRSOk3m29QQvW=fQWs7Hs5ng@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: peterz@infradead.org, mingo@redhat.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Daniel Kurtz <djkurtz@chromium.org>
+Cc: Pi-Cheng Chen <pi-cheng.chen@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Mark Rutland <mark.rutland@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Michael Turquette <mturquette@baylibre.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, linux-mediatek@lists.infradead.org
 
-On Tue, Jul 07, 2015 at 07:24:05PM +0100, Morten Rasmussen wrote:
-> For energy-aware load-balancing decisions it is necessary to know the
-> energy consumption estimates of groups of cpus. This patch introduces a
-> basic function, sched_group_energy(), which estimates the energy
-> consumption of the cpus in the group and any resources shared by the
-> members of the group.
-> 
-> NOTE: The function has five levels of identation and breaks the 80
-> character limit. Refactoring is necessary.
-> 
-> cc: Ingo Molnar <mingo@redhat.com>
-> cc: Peter Zijlstra <peterz@infradead.org>
-> 
-> Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
-> ---
->  kernel/sched/fair.c | 146 ++++++++++++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 146 insertions(+)
-> 
-> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> index 78d3081..bd0be9d 100644
-> --- a/kernel/sched/fair.c
-> +++ b/kernel/sched/fair.c
-> @@ -4846,6 +4846,152 @@ static inline bool energy_aware(void)
->  	return sched_feat(ENERGY_AWARE);
->  }
->  
-> +/*
-> + * cpu_norm_usage() returns the cpu usage relative to a specific capacity,
-> + * i.e. it's busy ratio, in the range [0..SCHED_LOAD_SCALE] which is useful for
-> + * energy calculations. Using the scale-invariant usage returned by
-> + * get_cpu_usage() and approximating scale-invariant usage by:
-> + *
-> + *   usage ~ (curr_freq/max_freq)*1024 * capacity_orig/1024 * running_time/time
-> + *
-> + * the normalized usage can be found using the specific capacity.
-> + *
-> + *   capacity = capacity_orig * curr_freq/max_freq
-> + *
-> + *   norm_usage = running_time/time ~ usage/capacity
-> + */
-> +static unsigned long cpu_norm_usage(int cpu, unsigned long capacity)
-> +{
-> +	int usage = __get_cpu_usage(cpu);
-> +
-> +	if (usage >= capacity)
-> +		return SCHED_CAPACITY_SCALE;
-> +
-> +	return (usage << SCHED_CAPACITY_SHIFT)/capacity;
-> +}
-> +
-> +static unsigned long group_max_usage(struct sched_group *sg)
-> +{
-> +	int i;
-> +	unsigned long max_usage = 0;
-> +
-> +	for_each_cpu(i, sched_group_cpus(sg))
-> +		max_usage = max(max_usage, get_cpu_usage(i));
-> +
-> +	return max_usage;
-> +}
-> +
-> +/*
-> + * group_norm_usage() returns the approximated group usage relative to it's
-> + * current capacity (busy ratio) in the range [0..SCHED_LOAD_SCALE] for use in
-> + * energy calculations. Since task executions may or may not overlap in time in
-> + * the group the true normalized usage is between max(cpu_norm_usage(i)) and
-> + * sum(cpu_norm_usage(i)) when iterating over all cpus in the group, i. The
-> + * latter is used as the estimate as it leads to a more pessimistic energy
-> + * estimate (more busy).
-> + */
-> +static unsigned long group_norm_usage(struct sched_group *sg, int cap_idx)
-> +{
-> +	int i;
-> +	unsigned long usage_sum = 0;
-> +	unsigned long capacity = sg->sge->cap_states[cap_idx].cap;
-> +
-> +	for_each_cpu(i, sched_group_cpus(sg))
-> +		usage_sum += cpu_norm_usage(i, capacity);
-> +
-> +	if (usage_sum > SCHED_CAPACITY_SCALE)
-> +		return SCHED_CAPACITY_SCALE;
-> +	return usage_sum;
-> +}
-> +
-> +static int find_new_capacity(struct sched_group *sg,
-> +		struct sched_group_energy *sge)
-> +{
-> +	int idx;
-> +	unsigned long util = group_max_usage(sg);
-> +
-> +	for (idx = 0; idx < sge->nr_cap_states; idx++) {
-> +		if (sge->cap_states[idx].cap >= util)
-> +			return idx;
-> +	}
-> +
-> +	return idx;
-> +}
-> +
-> +/*
-> + * sched_group_energy(): Returns absolute energy consumption of cpus belonging
-> + * to the sched_group including shared resources shared only by members of the
-> + * group. Iterates over all cpus in the hierarchy below the sched_group starting
-> + * from the bottom working it's way up before going to the next cpu until all
-> + * cpus are covered at all levels. The current implementation is likely to
-> + * gather the same usage statistics multiple times. This can probably be done in
-> + * a faster but more complex way.
-> + */
-> +static unsigned int sched_group_energy(struct sched_group *sg_top)
-> +{
-> +	struct sched_domain *sd;
-> +	int cpu, total_energy = 0;
-> +	struct cpumask visit_cpus;
-> +	struct sched_group *sg;
-> +
-> +	WARN_ON(!sg_top->sge);
-> +
-> +	cpumask_copy(&visit_cpus, sched_group_cpus(sg_top));
-> +
-> +	while (!cpumask_empty(&visit_cpus)) {
-> +		struct sched_group *sg_shared_cap = NULL;
-> +
-> +		cpu = cpumask_first(&visit_cpus);
-> +
-> +		/*
-> +		 * Is the group utilization affected by cpus outside this
-> +		 * sched_group?
-> +		 */
-> +		sd = highest_flag_domain(cpu, SD_SHARE_CAP_STATES);
-> +		if (sd && sd->parent)
-> +			sg_shared_cap = sd->parent->groups;
 
-If the sched domain is already the highest level, should directly use
-its group to calculate shared capacity? so the code like below:
 
-                if (sd && sd->parent)
-                        sg_shared_cap = sd->parent->groups;
-                else if (sd && !sd->parent)
-                        sg_shared_cap = sd->groups;
+On 02/09/15 08:45, Daniel Kurtz wrote:
+> Matthias,
+>
+> On Fri, Aug 28, 2015 at 10:06 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> On Wednesday, August 26, 2015 02:53:39 PM Pi-Cheng Chen wrote:
+>>> On Wed, Aug 26, 2015 at 10:16 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>>> On 26-08-15, 09:25, Pi-Cheng Chen wrote:
+>>>>> The [3/3] is based on Mediatek SoC maintainer tree[1] and the patch which
+>>>>> introduce a new clock type[2] consumed by MT8173 cpufreq driver. So it will
+>>>>> cause some conflicts if it goes through your tree. I am not sure how this
+>>>>> should be handled, but should it be merged through Mediatek SoC maintainer
+>>>>> tree?
+>>>>
+>>>> Just get that applied to MTK tree, it doesn't have any dependency on
+>>>> rest of the patches for build/boot. The only thing is that cpufreq
+>>>> wouldn't work and it will work as soon as Rafael's and MTK's trees are
+>>>> merged by Linus.
+>>>
+>>> Thanks for your explanation.
+>>>
+>>> @Rafael, Would you please apply [1,2] to your tree?
+>>
+>> Applied, thanks!
+>
+> Can you please apply [3] from this set to your dts tree?
+>
 
-> +
-> +		for_each_domain(cpu, sd) {
-> +			sg = sd->groups;
-> +
-> +			/* Has this sched_domain already been visited? */
-> +			if (sd->child && group_first_cpu(sg) != cpu)
-> +				break;
-> +
-> +			do {
-> +				struct sched_group *sg_cap_util;
-> +				unsigned long group_util;
-> +				int sg_busy_energy, sg_idle_energy, cap_idx;
-> +
-> +				if (sg_shared_cap && sg_shared_cap->group_weight >= sg->group_weight)
-> +					sg_cap_util = sg_shared_cap;
-> +				else
-> +					sg_cap_util = sg;
-> +
-> +				cap_idx = find_new_capacity(sg_cap_util, sg->sge);
-> +				group_util = group_norm_usage(sg, cap_idx);
-> +				sg_busy_energy = (group_util * sg->sge->cap_states[cap_idx].power)
-> +										>> SCHED_CAPACITY_SHIFT;
-> +				sg_idle_energy = ((SCHED_LOAD_SCALE-group_util) * sg->sge->idle_states[0].power)
-> +										>> SCHED_CAPACITY_SHIFT;
-> +
-> +				total_energy += sg_busy_energy + sg_idle_energy;
-> +
-> +				if (!sd->child)
-> +					cpumask_xor(&visit_cpus, &visit_cpus, sched_group_cpus(sg));
-> +
-> +				if (cpumask_equal(sched_group_cpus(sg), sched_group_cpus(sg_top)))
-> +					goto next_cpu;
-> +
-> +			} while (sg = sg->next, sg != sd->groups);
-> +		}
-> +next_cpu:
-> +		continue;
-> +	}
-> +
-> +	return total_energy;
-> +}
-> +
->  static int wake_wide(struct task_struct *p)
->  {
->  	int factor = this_cpu_read(sd_llc_size);
-> -- 
-> 1.9.1
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+I will as soon as v4.3-rc1 shows up.
