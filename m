@@ -1,34 +1,68 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 0/3] cpufreq: dt: Minor fixes for 4.3
-Date: Wed,  2 Sep 2015 14:36:47 +0530
-Message-ID: <cover.1441184706.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f43.google.com ([209.85.220.43]:35028 "EHLO
-	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750805AbbIBJG7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Sep 2015 05:06:59 -0400
-Received: by pacfv12 with SMTP id fv12so5170066pac.2
-        for <linux-pm@vger.kernel.org>; Wed, 02 Sep 2015 02:06:59 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH 1/3] cpufreq: dt: Check OPP count before marking them shared
+Date: Wed,  2 Sep 2015 14:36:48 +0530
+Message-ID: <e0d14cbedb773c0f18fa9b1380e3e3ccd78bbb4c.1441184706.git.viresh.kumar@linaro.org>
+References: <cover.1441184706.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1441184706.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1441184706.git.viresh.kumar@linaro.org>
+References: <cover.1441184706.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, open list <linux-kernel@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael,
+We need to explicitly mark OPPs as shared, when they are not defined
+with OPP-v2 bindings. But this isn't required to be done if we failed to
+initialize OPP table.
 
-These are minor fixes for cpufreq-dt driver.
+Reorder code to verify OPP count before marking them shared.
 
---
-viresh
+Fixes: 2e02d8723edf ("cpufreq: dt: Add support for operating-points-v2 bindings")
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq-dt.c | 22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
 
-Viresh Kumar (3):
-  cpufreq: dt: Check OPP count before marking them shared
-  cpufreq: dt: Print error on failing to mark OPPs as shared
-  cpufreq: dt: Tolerance applies on both sides of target voltage
-
- drivers/cpufreq/cpufreq-dt.c | 30 +++++++++++++++++-------------
- 1 file changed, 17 insertions(+), 13 deletions(-)
-
+diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+index c3583cdfadbd..8c38b5192baa 100644
+--- a/drivers/cpufreq/cpufreq-dt.c
++++ b/drivers/cpufreq/cpufreq-dt.c
+@@ -239,6 +239,17 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 	 */
+ 	of_cpumask_init_opp_table(policy->cpus);
+ 
++	/*
++	 * But we need OPP table to function so if it is not there let's
++	 * give platform code chance to provide it for us.
++	 */
++	ret = dev_pm_opp_get_opp_count(cpu_dev);
++	if (ret <= 0) {
++		pr_debug("OPP table is not ready, deferring probe\n");
++		ret = -EPROBE_DEFER;
++		goto out_free_opp;
++	}
++
+ 	if (need_update) {
+ 		struct cpufreq_dt_platform_data *pd = cpufreq_get_driver_data();
+ 
+@@ -256,17 +267,6 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 		transition_latency = dev_pm_opp_get_max_clock_latency(cpu_dev);
+ 	}
+ 
+-	/*
+-	 * But we need OPP table to function so if it is not there let's
+-	 * give platform code chance to provide it for us.
+-	 */
+-	ret = dev_pm_opp_get_opp_count(cpu_dev);
+-	if (ret <= 0) {
+-		pr_debug("OPP table is not ready, deferring probe\n");
+-		ret = -EPROBE_DEFER;
+-		goto out_free_opp;
+-	}
+-
+ 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
+ 	if (!priv) {
+ 		ret = -ENOMEM;
 -- 
 2.4.0
-
