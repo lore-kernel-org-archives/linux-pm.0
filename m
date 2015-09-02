@@ -1,53 +1,41 @@
-From: Matthias Brugger <matthias.bgg@gmail.com>
-Subject: Re: [RESEND PATCH 0/3 v6] Add Mediatek MT8173 cpufreq driver
-Date: Wed, 2 Sep 2015 19:23:03 +0200
-Message-ID: <55E73077.8060106@gmail.com>
-References: <1439803465-19683-1-git-send-email-pi-cheng.chen@linaro.org>
- <20150826021659.GD8784@linux>
- <CALx668V2herrp6XOtCDR7nNvFhd7DLLMjXmr86cjfCOQ_cgmrw@mail.gmail.com>
- <22538895.vrRgZUmQTV@vostro.rjw.lan>
- <CAGS+omAtiALWTjVJS4wNatXVLqZRSOk3m29QQvW=fQWs7Hs5ng@mail.gmail.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH v2] cpufreq-dt: add suspend frequency support
+Date: Wed, 2 Sep 2015 11:03:33 -0700
+Message-ID: <55E739F5.8060000@codeaurora.org>
+References: <1441212476-21316-1-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f181.google.com ([209.85.212.181]:38299 "EHLO
-	mail-wi0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932141AbbIBRXK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Sep 2015 13:23:10 -0400
-In-Reply-To: <CAGS+omAtiALWTjVJS4wNatXVLqZRSOk3m29QQvW=fQWs7Hs5ng@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-Reply-To: <1441212476-21316-1-git-send-email-b.zolnierkie@samsung.com>
+Sender: linux-clk-owner@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Kurtz <djkurtz@chromium.org>
-Cc: Pi-Cheng Chen <pi-cheng.chen@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Mark Rutland <mark.rutland@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Michael Turquette <mturquette@baylibre.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, linux-mediatek@lists.infradead.org
 
-
-
-On 02/09/15 08:45, Daniel Kurtz wrote:
-> Matthias,
+On 09/02/2015 09:47 AM, Bartlomiej Zolnierkiewicz wrote:
+> Add suspend frequency support and set it to the boot frequency,
+> this matches what the old exynos-cpufreq driver has been doing.
 >
-> On Fri, Aug 28, 2015 at 10:06 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> On Wednesday, August 26, 2015 02:53:39 PM Pi-Cheng Chen wrote:
->>> On Wed, Aug 26, 2015 at 10:16 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->>>> On 26-08-15, 09:25, Pi-Cheng Chen wrote:
->>>>> The [3/3] is based on Mediatek SoC maintainer tree[1] and the patch which
->>>>> introduce a new clock type[2] consumed by MT8173 cpufreq driver. So it will
->>>>> cause some conflicts if it goes through your tree. I am not sure how this
->>>>> should be handled, but should it be merged through Mediatek SoC maintainer
->>>>> tree?
->>>>
->>>> Just get that applied to MTK tree, it doesn't have any dependency on
->>>> rest of the patches for build/boot. The only thing is that cpufreq
->>>> wouldn't work and it will work as soon as Rafael's and MTK's trees are
->>>> merged by Linus.
->>>
->>> Thanks for your explanation.
->>>
->>> @Rafael, Would you please apply [1,2] to your tree?
->>
->> Applied, thanks!
+> This patch fixes suspend/resume support on Exynos4412 based
+> Trats2 board and reboot hang on Exynos4412 based Odroid U3
+> board.
 >
-> Can you please apply [3] from this set to your dts tree?
->
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: Thomas Abraham <thomas.ab@samsung.com>
+> Cc: Javier Martinez Canillas <javier@osg.samsung.com>
+> Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Cc: Marek Szyprowski <m.szyprowski@samsung.com>
+> Cc: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> ---
+> This patch supersedes "[PATCH] ARM: dts: exynos4412-odroid-*: add
+> workaround for CPUfreq/reboot issue" one from yesterday.
 
-I will as soon as v4.3-rc1 shows up.
+What do we do about cpufreq-dt users that don't want to change frequency
+during suspend?
+
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
+
