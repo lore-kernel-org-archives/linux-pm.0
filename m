@@ -1,99 +1,113 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2] PM / Domains: Try power off masters in error path of __pm_genpd_poweron()
-Date: Thu, 03 Sep 2015 03:25:21 +0200
-Message-ID: <2746179.D23d5TJhto@vostro.rjw.lan>
-References: <1441181773-21733-1-git-send-email-ulf.hansson@linaro.org>
+Subject: Re: [PATCH v3] cpuidle/coupled: Add sanity check for safe_state_index
+Date: Thu, 03 Sep 2015 03:35:15 +0200
+Message-ID: <2730874.lxGIcz4Q5K@vostro.rjw.lan>
+References: <1440992045-17464-1-git-send-email-xlpang@126.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:57259 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751541AbbICA5i (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Sep 2015 20:57:38 -0400
-In-Reply-To: <1441181773-21733-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1440992045-17464-1-git-send-email-xlpang@126.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Xunlei Pang <xlpang@126.com>
+Cc: linux-kernel@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, Xunlei Pang <pang.xunlei@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Kevin Hilman <khilman@kernel.org>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
 
-On Wednesday, September 02, 2015 10:16:13 AM Ulf Hansson wrote:
-> While powering up a genpd, its domain masters are first being powered up.
-> In the error path of __pm_genpd_poweron(), we didn't care to try power off
-> these domain masters. Let's deal with that to avoid leaving unused PM
-> domains powered.
+On Monday, August 31, 2015 11:34:05 AM Xunlei Pang wrote:
+> From: Xunlei Pang <pang.xunlei@linaro.org>
 > 
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Since we are using cpuidle_driver::safe_state_index directly as the
+> target state index, it is better to add the sanity check at the point
+> of registering the driver.
+> 
+> Signed-off-by: Xunlei Pang <pang.xunlei@linaro.org>
 
-I'm queuing this up for the next PM pull request, thanks!
+I'm queuing this one up for the next PM pull request, thanks!
 
 
 > ---
+> v2->v3:
+> Move the code to a new cpuidle_coupled_state_verify() depending on 
+> CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED, to avoid using #ifdef in function 
+> bodies. Thanks Rafael's comments on this.
 > 
-> Changes in v2:
-> 	Added Krzysztof's reviewed by tag.
+>  drivers/cpuidle/coupled.c | 22 ++++++++++++++++++++++
+>  drivers/cpuidle/cpuidle.h |  6 ++++++
+>  drivers/cpuidle/driver.c  |  4 ++++
+>  3 files changed, 32 insertions(+)
 > 
-> ---
->  drivers/base/power/domain.c | 30 +++++++++++++++++-------------
->  1 file changed, 17 insertions(+), 13 deletions(-)
-> 
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 4167201..62f7572 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -213,6 +213,18 @@ static int genpd_power_off(struct generic_pm_domain *genpd, bool timed)
+> diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
+> index 1523e2d..344058f 100644
+> --- a/drivers/cpuidle/coupled.c
+> +++ b/drivers/cpuidle/coupled.c
+> @@ -187,6 +187,28 @@ bool cpuidle_state_is_coupled(struct cpuidle_driver *drv, int state)
 >  }
 >  
 >  /**
-> + * genpd_queue_power_off_work - Queue up the execution of pm_genpd_poweroff().
-> + * @genpd: PM domait to power off.
+> + * cpuidle_coupled_state_verify - check if the coupled states are correctly set.
+> + * @drv: struct cpuidle_driver for the platform
 > + *
-> + * Queue up the execution of pm_genpd_poweroff() unless it's already been done
-> + * before.
+> + * Returns 0 for valid state values, a negative error code otherwise:
+> + *  * -EINVAL if any coupled state(safe_state_index) is wrongly set.
 > + */
-> +static void genpd_queue_power_off_work(struct generic_pm_domain *genpd)
+> +int cpuidle_coupled_state_verify(struct cpuidle_driver *drv)
 > +{
-> +	queue_work(pm_wq, &genpd->power_off_work);
+> +	int i;
+> +
+> +	for (i = drv->state_count - 1; i >= 0; i--) {
+> +		if (cpuidle_state_is_coupled(drv, i) &&
+> +		    (drv->safe_state_index == i ||
+> +		     drv->safe_state_index < 0 ||
+> +		     drv->safe_state_index >= drv->state_count))
+> +			return -EINVAL;
+> +	}
+> +
+> +	return 0;
 > +}
 > +
 > +/**
->   * __pm_genpd_poweron - Restore power to a given PM domain and its masters.
->   * @genpd: PM domain to power up.
->   *
-> @@ -259,8 +271,12 @@ static int __pm_genpd_poweron(struct generic_pm_domain *genpd)
->  	return 0;
+>   * cpuidle_coupled_set_ready - mark a cpu as ready
+>   * @coupled: the struct coupled that contains the current cpu
+>   */
+> diff --git a/drivers/cpuidle/cpuidle.h b/drivers/cpuidle/cpuidle.h
+> index 178c5ad..f87f399 100644
+> --- a/drivers/cpuidle/cpuidle.h
+> +++ b/drivers/cpuidle/cpuidle.h
+> @@ -35,6 +35,7 @@ extern void cpuidle_remove_sysfs(struct cpuidle_device *dev);
 >  
->   err:
-> -	list_for_each_entry_continue_reverse(link, &genpd->slave_links, slave_node)
-> +	list_for_each_entry_continue_reverse(link,
-> +					&genpd->slave_links,
-> +					slave_node) {
->  		genpd_sd_counter_dec(link->master);
-> +		genpd_queue_power_off_work(link->master);
-> +	}
->  
->  	return ret;
+>  #ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
+>  bool cpuidle_state_is_coupled(struct cpuidle_driver *drv, int state);
+> +int cpuidle_coupled_state_verify(struct cpuidle_driver *drv);
+>  int cpuidle_enter_state_coupled(struct cpuidle_device *dev,
+>  		struct cpuidle_driver *drv, int next_state);
+>  int cpuidle_coupled_register_device(struct cpuidle_device *dev);
+> @@ -46,6 +47,11 @@ bool cpuidle_state_is_coupled(struct cpuidle_driver *drv, int state)
+>  	return false;
 >  }
-> @@ -349,18 +365,6 @@ static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
->  }
 >  
->  /**
-> - * genpd_queue_power_off_work - Queue up the execution of pm_genpd_poweroff().
-> - * @genpd: PM domait to power off.
-> - *
-> - * Queue up the execution of pm_genpd_poweroff() unless it's already been done
-> - * before.
-> - */
-> -static void genpd_queue_power_off_work(struct generic_pm_domain *genpd)
-> -{
-> -	queue_work(pm_wq, &genpd->power_off_work);
-> -}
-> -
-> -/**
->   * pm_genpd_poweroff - Remove power from a given PM domain.
->   * @genpd: PM domain to power down.
->   *
+> +static inline int cpuidle_coupled_state_verify(struct cpuidle_driver *drv)
+> +{
+> +	return 0;
+> +}
+> +
+>  static inline int cpuidle_enter_state_coupled(struct cpuidle_device *dev,
+>  		struct cpuidle_driver *drv, int next_state)
+>  {
+> diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
+> index 5db1478..389ade4 100644
+> --- a/drivers/cpuidle/driver.c
+> +++ b/drivers/cpuidle/driver.c
+> @@ -227,6 +227,10 @@ static int __cpuidle_register_driver(struct cpuidle_driver *drv)
+>  	if (!drv || !drv->state_count)
+>  		return -EINVAL;
+>  
+> +	ret = cpuidle_coupled_state_verify(drv);
+> +	if (ret)
+> +		return ret;
+> +
+>  	if (cpuidle_disabled())
+>  		return -ENODEV;
+>  
 > 
 
 -- 
