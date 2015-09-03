@@ -1,102 +1,96 @@
-From: Andreas Dannenberg <dannenberg@ti.com>
-Subject: Re: [PATCH 13/13] dt: power: bq24257-charger: Cover additional
- devices
-Date: Thu, 3 Sep 2015 11:09:26 -0500
-Message-ID: <20150903160926.GA26659@borg>
-References: <1441073435-12349-1-git-send-email-dannenberg@ti.com>
- <1441073435-12349-14-git-send-email-dannenberg@ti.com>
- <CAJKOXPeyMeUUon0E9Fhm18SHJEaQPEbGAWwU+MKwgt-30AXHiA@mail.gmail.com>
- <20150902140332.GA24076@borg>
- <55E7A2E8.2060306@samsung.com>
- <20150903014741.GA25605@borg>
- <55E7A8F8.7050300@samsung.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH 5/9] clk: qcom: gcc-msm8960: add child devices support.
+Date: Thu, 3 Sep 2015 10:27:43 -0700
+Message-ID: <20150903172743.GE15099@codeaurora.org>
+References: <1436348838-22671-1-git-send-email-rnayak@codeaurora.org>
+ <1436348838-22671-6-git-send-email-rnayak@codeaurora.org>
+ <20150811224902.GO2839@codeaurora.org>
+ <55CB0B26.2020105@linaro.org>
+ <55CC1CFE.7000005@codeaurora.org>
+ <20150814004206.GU26614@codeaurora.org>
+ <55CD5BD2.3070907@codeaurora.org>
+ <55E660F6.3020007@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:33919 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755846AbbICQJ7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 3 Sep 2015 12:09:59 -0400
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <55E7A8F8.7050300@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <55E660F6.3020007@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Rajendra Nayak <rnayak@codeaurora.org>
+Cc: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, linux-arm-msm@vger.kernel.org, lina.iyer@linaro.org, nrajan@codeaurora.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-On Thu, Sep 03, 2015 at 10:57:12AM +0900, Krzysztof Kozlowski wrote:
-> On 03.09.2015 10:47, Andreas Dannenberg wrote:
-> > On Thu, Sep 03, 2015 at 10:31:20AM +0900, Krzysztof Kozlowski wrote:
-> >> I still don't get why you need extra "ti,pg-gpio-disable" property. It
-> >> could work like this:
-> >> 1. Get rid of "ti,pg-gpio-disable" and make "pg-gpio" optional.
-> >> 2. If it is present, use it.
-> >> 3. If it is not present, use software based approach (the same as
-> >> setting "ti,pg-gpio-disable" previously).
+On 09/02, Rajendra Nayak wrote:
+> Stephen,
+> 
+> >>>>>Also, I don't like having a subnode in DT. Why can't we use the
+> >>>>>same node as the GCC node and create a virtual child device here
+> >>>>>for tsens? We can assign the same of_node that this platform
+> >>>>>device has so that DT keeps working correctly.
+> >>>
+> >>>So the current driver looks up data based on compatible strings.
 > >>
-> >> Would that work?
-> > 
-> > Similar to the earlier comment - the idea was to have it more explicit.
-> > Plus, the original driver would hard-fail when the "pg-gpio" pin is not
-> > provided (since it was essential for that driver's ability to function).
-> > If I change to automatically fallback to the SW solution such an error
-> > case would in theory not be 100% backward compatible. I could however
-> > more clearly indicate/log which method is being used (dev_info) so
-> > somebody rummaging through the logs would still see it. Will simplify.
+> >>The tsens device is always the same piece of hardware. The only
+> >
+> >Well, not always. The one in 8960 does need additional initializations,
+> >requires you to save/restore context as it can be powered off
+> >not being in an always powered on domain etc.
+> >
+> >>thing that's changing is the qfprom data and the number of
+> >>sensors. So we should be looking at the qfprom compatible string
+> >
+> >How? Tsens uses nvmem framework apis to read the qfprom atleast
+> >in this series.
+> >
+> >>to figure out how to interpret the qfprom data which would
+> >>include the number of sensors and how the data is encoded.
+> >>
+> >>>So you suggesting to create a virtual child device for gcc and
+> >>>associate the gcc DT node to it? (And have the tsens compatible
+> >>>mentioned as part of the gcc DT node?)
+> >>
+> >>No. The driver should work just fine without having to
+> >>interrogate the device's compatible string. If we still need the
+> >>compatible check for some reason, then we can always match based
+> >>on qcom,gcc-msm8960, qcom,gcc-apq8064, etc. But I don't see why
+> >
+> >Thats not quite possible I guess. 2 drivers (gcc and tsens) matching
+> >the same compatibles? Will it not just depend on which ends up being
+> >the first match?
 > 
-> Right, the kernel's backward compatibility has to be preserved. However
-> for bindings I am not sure.
-
-Hi Krzysztof. Please see pages 3-5 in the below PDF, that's what I had
-in mind. Maybe I mis-interpreted it or there is newer information.
-http://events.linuxfoundation.org/sites/events/files/slides/petazzoni-dt-as-stable-abi-fairy-tale.pdf
-
-With the proposed changes, while the existing bindings (strings) would
-stay the same, the failure behavior in one specific use case would be
-slightly different. The question is, where should we draw the line for
-compatibility? I would argue in this case the general usage is not
-affected so it should be OK making the change/simplification you propose
-(getting rid of "ti,pg-gpio-disable"). 
- 
-> Let's assume booting on device with bq24257.
-> 1. Old kernel booted with a DTB which doesn't have "pg-gpio" would print
-> error (probe would fail).
-> 2. New kernel booted in the same situation (1) would assume GPIOs have
-> to be disabled.
+> Any thoughts on how to move forward with this?
 > 
-> 3. Old kernel booted with your previous solution (DTB containing both
-> "pg-gpio" and "ti,pg-gpio-disable") would work fine ignoring the
-> "disable" property.
-> 4. New kernel in the same situation (3) would disable GPIOs.
+> I tried what you were suggesting, and here's what I had to do to get
+> things working
 > 
-> There is a difference between (1) and (3). New DTB is not backward
-> compatible with old kernels for existing bq24257 devices.
-> 
-> Am I understanding this correctly?
+> * Created a gcc node in DT with gcc and tsens compatibles, with gcc and
+> tsens properties
 
-Well almost. I think the difference between case 1 and 3 isn't really an
-issue from a use case point of view. The case I was trying to describe
-is as follows (let's call it case 5):
+This is not what I had in mind. This is what's should be in DT
 
-5. An old DTB not containing "pg-gpio" (or with that property being
-misconfigured) is booted with the new Kernel. The boot will succeed as
-the SW approach for PG detection gets invoked automatically.
+ clock-controller@f000 {
+ 	compatible = "qcom,gcc-msm8916";
+	reg = <0xf000 ...>;
+	....
+ };
 
-The difference now is between (1) and (5). If in (5) somebody specifies
-"pg-gpio" they would want to explicitly use this pin and be notified if
-the respective setup fails. My proposal earlier for this was to output
-through dev_info() during driver probe whether an actual GPIO pin is
-being used for power-good detection or whether the fall-back SW
-algorithm has been invoked. This way, at least there is a notification.
+> * gcc driver probes the device/node first given gcc is registered with
+> a core_initcall()
+> * creates a virtual child device attaching the same of_node (having
+> both gcc and tsens compatibles)
+> * gcc ends up probing the virtual device/node _again_ (due to the gcc
+> compatible match), fails
+> * At a later point, tsens driver gets registered (using module_initcall)
+> ends up probing the virtual child node and succeeds
 
+Yeah this might happen though because we've assigned the of_node
+pointer to the tsens device before we register it on the platform
+bus. The other way to pass that data down from gcc to tsens would
+be to not have an of_node assigned to the tsens device, and check
+for that case in the tsens driver. If there isn't an of_node,
+then we look at the parent device's of_node to figure out which
+gcc it is (if this even matters) and parse DT properties.
 
-
-Thanks and Regards,
-
---
-Andreas Dannenberg
-Texas Instruments Inc
-
-> 
-> Best regards,
-> Krzysztof
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
