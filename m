@@ -1,191 +1,59 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH 13/13] dt: power: bq24257-charger: Cover additional devices
-Date: Thu, 03 Sep 2015 10:57:12 +0900
-Message-ID: <55E7A8F8.7050300@samsung.com>
-References: <1441073435-12349-1-git-send-email-dannenberg@ti.com>
- <1441073435-12349-14-git-send-email-dannenberg@ti.com>
- <CAJKOXPeyMeUUon0E9Fhm18SHJEaQPEbGAWwU+MKwgt-30AXHiA@mail.gmail.com>
- <20150902140332.GA24076@borg> <55E7A2E8.2060306@samsung.com>
- <20150903014741.GA25605@borg>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq-dt: add suspend frequency support
+Date: Thu, 3 Sep 2015 08:20:19 +0530
+Message-ID: <20150903025019.GA13140@linux>
+References: <1441212121-21021-1-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:39526 "EHLO
-	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932432AbbICB5P (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Sep 2015 21:57:15 -0400
-In-reply-to: <20150903014741.GA25605@borg>
+Received: from mail-pa0-f49.google.com ([209.85.220.49]:35762 "EHLO
+	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756335AbbICCu3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Sep 2015 22:50:29 -0400
+Received: by pacfv12 with SMTP id fv12so31348152pac.2
+        for <linux-pm@vger.kernel.org>; Wed, 02 Sep 2015 19:50:28 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1441212121-21021-1-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andreas Dannenberg <dannenberg@ti.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Thomas Abraham <thomas.ab@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-On 03.09.2015 10:47, Andreas Dannenberg wrote:
-> On Thu, Sep 03, 2015 at 10:31:20AM +0900, Krzysztof Kozlowski wrote:
->>> Yes that's right. Some of the chargers can check the USB D+/D- lines to
->>> determine what kind of charger is attached (DCP, CDP, SDP, other) - see
->>> bq24257 device datasheet for more info:
->>> http://www.ti.com/product/bq24257
->>>
->>> And this feature is being used in the original driver Laurentiu
->>> developed. However this detection mechanism (or any detection mechanism
->>> in general) may not always be appropriate hence the new property to
->>> disable it and manually provide an input current limit of how much can
->>> be drawn from the charger. Plus it's needed for devices that don't have
->>> the D+/D- detection feature.
->>
->> Thanks for explanation. How about leaving only "ti,in-limit-current"
->> (get rid of "ti,in-ilimit-autoset-disable"). If it is present then the
->> autodetection/autoset would be disabled.
+On 02-09-15, 18:42, Bartlomiej Zolnierkiewicz wrote:
+> Add suspend frequency support and set it to the boot frequency,
+> this matches what the old exynos-cpufreq driver has been doing.
 > 
-> I had it separated out to make the DT declarations more explicit (so one
-> would immediately "see" that autoset is disabled) but other than that
-> there is no reason why this couldn't get folded together. Will change.
+> This patch fixes suspend/resume support on Exynos4412 based
+> Trats2 board and reboot hang on Exynos4412 based Odroid U3
+> board.
 > 
->>> Yes I was thinking about this but then went with something that closely
->>> reflects the device datasheets to maximize correlation. Removing the 'v'
->>> would make it look cleaner and more universal and I suppose it's not to
->>> far of a stretch for someone to associate "ti,ovp-voltag" with the VOVP
->>> bit field in the devices register map. So let's change it.
->>
->> Thanks. Bindings don't have to follow naming convention of company's
->> datasheet.
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: Thomas Abraham <thomas.ab@samsung.com>
+> Cc: Javier Martinez Canillas <javier@osg.samsung.com>
+> Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Cc: Marek Szyprowski <m.szyprowski@samsung.com>
+> Cc: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> ---
+> This patch supersedes "[PATCH] ARM: dts: exynos4412-odroid-*: add
+> workaround for CPUfreq/reboot issue" one from yesterday.
 > 
-> Ok.
+>  drivers/cpufreq/cpufreq-dt.c | 7 +++++++
+>  1 file changed, 7 insertions(+)
 > 
->>> Yes that's right. Somebody might chose to do so because they don't want
->>> to sacrifice the extra pin. And I need to accommodate for devices that
->>> don't have a PG pin so the logic behind this had to be implemented
->>> anyways. I just made it accessible. What about I work on improving that
->>> explanation hopefully to make it less confusing.
->>
->> I still don't get why you need extra "ti,pg-gpio-disable" property. It
->> could work like this:
->> 1. Get rid of "ti,pg-gpio-disable" and make "pg-gpio" optional.
->> 2. If it is present, use it.
->> 3. If it is not present, use software based approach (the same as
->> setting "ti,pg-gpio-disable" previously).
->>
->> Would that work?
-> 
-> Similar to the earlier comment - the idea was to have it more explicit.
-> Plus, the original driver would hard-fail when the "pg-gpio" pin is not
-> provided (since it was essential for that driver's ability to function).
-> If I change to automatically fallback to the SW solution such an error
-> case would in theory not be 100% backward compatible. I could however
-> more clearly indicate/log which method is being used (dev_info) so
-> somebody rummaging through the logs would still see it. Will simplify.
+> diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+> index c3583cd..c9138c7 100644
+> --- a/drivers/cpufreq/cpufreq-dt.c
+> +++ b/drivers/cpufreq/cpufreq-dt.c
+> @@ -329,6 +329,10 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+>  	policy->driver_data = priv;
+>  
+>  	policy->clk = cpu_clk;
+> +
+> +	/* capture boot frequency */
+> +	policy->suspend_freq = clk_get_rate(cpu_clk) / 1000;;
 
-Right, the kernel's backward compatibility has to be preserved. However
-for bindings I am not sure.
+We should be using opp-v2's suspend-opp thing for this now..
 
-Let's assume booting on device with bq24257.
-1. Old kernel booted with a DTB which doesn't have "pg-gpio" would print
-error (probe would fail).
-2. New kernel booted in the same situation (1) would assume GPIOs have
-to be disabled.
-
-3. Old kernel booted with your previous solution (DTB containing both
-"pg-gpio" and "ti,pg-gpio-disable") would work fine ignoring the
-"disable" property.
-4. New kernel in the same situation (3) would disable GPIOs.
-
-There is a difference between (1) and (3). New DTB is not backward
-compatible with old kernels for existing bq24257 devices.
-
-Am I understanding this correctly?
-
-Best regards,
-Krzysztof
-
-
-
-> 
->>> When I looked through the Kernel headers I found the boolean property
->>> parse function and figured that's probably what I should be using. But
->>> as I was implementing it I had similar concerns to what you mentioned.
->>> If it's general practice to prefer the value based properties I'll be
->>> happy to change that.
->>
->> Usually the boolean is a good choice but here you used it for a
->> numerical property. You are preparing a generic TI bindings so it is
->> wise to think about other future drivers. Would they have other values
->> for timer factor? Would you want to set it in common board DTSI and
->> override it in some one specific child DTS?
-> 
-> Thanks again for the additional comments and the pointers.
-> 
-> Regards,
-> 
-> --
-> Andreas Dannenberg
-> Texas Instruments Inc
-> 
-> 
->>
->> Best regards,
->> Krzysztof
->>
->>>
->>>>
->>>> Also please look at existing bindings:
->>>> $ git grep "ti," Documentation/devicetree/bindings/power
->>>> Maybe you could reuse some? Each of these existing and new bindings
->>>> are made generic (not device specific) so they should be reused.
->>>
->>> Already spent time with existing bqXXXXX drivers to see if I can recycle
->>> properties. Will give it another run-through to make sure there is
->>> maximum re-use.
->>>
->>> Thanks,
->>>
->>> --
->>> Andreas Dannenberg
->>> Texas Instruments Inc
->>>
->>>>
->>>> Best regards,
->>>> Krzysztof
->>>>
->>>>> +- interrupt-parent: Should be the phandle for the interrupt controller. Use in
->>>>> +    conjunction with "interrupts" and only in case "stat-gpio" is not used.
->>>>> +- interrupts: Interrupt mapping for GPIO IRQ (configure for both edges). Use in
->>>>> +    conjunction with "interrupt-parent" and only in case "stat-gpio" is not
->>>>> +    used.
->>>>>
->>>>>  Example:
->>>>>
->>>>>  bq24257 {
->>>>>         compatible = "ti,bq24257";
->>>>>         reg = <0x6a>;
->>>>> +       stat-gpio = <&gpio1 16 GPIO_ACTIVE_HIGH>;
->>>>> +       pg-gpio = <&gpio1 28 GPIO_ACTIVE_HIGH>;
->>>>>
->>>>>         ti,battery-regulation-voltage = <4200000>;
->>>>>         ti,charge-current = <1000000>;
->>>>>         ti,termination-current = <50000>;
->>>>>  };
->>>>> +
->>>>> +Example:
->>>>> +
->>>>> +bq24250 {
->>>>> +       compatible = "ti,bq24250";
->>>>> +       reg = <0x6a>;
->>>>> +       interrupt-parent = <&gpio1>;
->>>>> +       interrupts = <16 IRQ_TYPE_EDGE_BOTH>;
->>>>> +
->>>>> +       ti,battery-regulation-voltage = <4200000>;
->>>>> +       ti,charge-current = <500000>;
->>>>> +       ti,termination-current = <50000>;
->>>>> +       ti,in-limit-current = <900000>;
->>>>> +       ti,vovp-voltage = <9500000>;
->>>>> +       ti,vindpm-voltage = <4440000>;
->>>>> +};
->>>>> --
->>>>> 1.9.1
->>>>>
->>>
->>
-> 
-
+-- 
+viresh
