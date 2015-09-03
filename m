@@ -1,54 +1,118 @@
-From: Luis de Bethencourt <luis@debethencourt.com>
-Subject: [PATCH] thermal: db8500_cpufreq_cooling: Fix module autoload for OF
- platform driver
-Date: Thu, 3 Sep 2015 13:10:14 +0200
-Message-ID: <20150903111014.GA17660@goodgumbo.baconseed.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2 5/7] staging: board: Add support for devices with
+ complex dependencies
+Date: Thu, 3 Sep 2015 14:53:56 +0200
+Message-ID: <CAPDyKFqouMeTKuXyyohH-VDmWXH+TiLNDT-7MKFa_-TqeF2WSw@mail.gmail.com>
+References: <1434530336-15073-1-git-send-email-geert+renesas@glider.be>
+	<1434530336-15073-6-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f179.google.com ([209.85.212.179]:36766 "EHLO
-	mail-wi0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752911AbbICLKR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Sep 2015 07:10:17 -0400
-Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1434530336-15073-6-git-send-email-geert+renesas@glider.be>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Simon Horman <horms+renesas@verge.net.au>, Magnus Damm <damm+renesas@opensource.se>, Arnd Bergmann <arnd@arndb.de>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Marc Zyngier <marc.zyngier@arm.com>, devel@driverdev.osuosl.org, Linux-sh list <linux-sh@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, Javier Martinez Canillas <javier@osg.samsung.com>
 
-This platform driver has a OF device ID table but the OF module
-alias information is not created so module autoloading won't work.
+On 17 June 2015 at 10:38, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
+> Add support for easy registering of one ore more platform devices that
+> may:
+>   - need clocks that are described in DT,
+>   - be part of a PM Domain.
+>
+> All these dependencies are optional.
+>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
+> v2:
+>   - Drop support for pinctrl, use standard pinctrl in DT instead,
+>   - Drop support for configured GPIOs, use "gpio-hog" in DT instead,
+>   - Use clk_add_alias() instead of open coding,
+>   - Update for changed function names,
+>   - Drop RFC status.
+> ---
+>  drivers/staging/board/board.c | 56 +++++++++++++++++++++++++++++++++++++++++++
+>  drivers/staging/board/board.h | 20 ++++++++++++++++
+>  2 files changed, 76 insertions(+)
+>
+> diff --git a/drivers/staging/board/board.c b/drivers/staging/board/board.c
+> index 8712f566b31196e0..29d456e29f38feac 100644
+> --- a/drivers/staging/board/board.c
+> +++ b/drivers/staging/board/board.c
+> @@ -9,6 +9,7 @@
+>
+>  #define pr_fmt(fmt)    "board_staging: "  fmt
+>
+> +#include <linux/clkdev.h>
+>  #include <linux/init.h>
+>  #include <linux/irq.h>
+>  #include <linux/device.h>
+> @@ -16,6 +17,8 @@
+>  #include <linux/of.h>
+>  #include <linux/of_address.h>
+>  #include <linux/of_irq.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/pm_domain.h>
+>
+>  #include "board.h"
+>
+> @@ -118,3 +121,56 @@ void __init board_staging_gic_fixup_resources(struct resource *res,
+>         for (i = 0; i < nres; i++)
+>                 gic_fixup_resource(&res[i]);
+>  }
+> +
+> +int __init board_staging_register_clock(const struct board_staging_clk *bsc)
+> +{
+> +       int error;
+> +
+> +       pr_debug("Aliasing clock %s for con_id %s dev_id %s\n", bsc->clk,
+> +                bsc->con_id, bsc->dev_id);
+> +       error = clk_add_alias(bsc->con_id, bsc->dev_id, bsc->clk, NULL);
+> +       if (error)
+> +               pr_err("Failed to alias clock %s (%d)\n", bsc->clk, error);
+> +
+> +       return error;
+> +}
+> +
+> +int __init board_staging_register_device(const struct board_staging_dev *dev)
+> +{
+> +       struct platform_device *pdev = dev->pdev;
+> +       unsigned int i;
+> +       int error;
+> +
+> +       pr_debug("Trying to register device %s\n", pdev->name);
+> +       if (board_staging_dt_node_available(pdev->resource,
+> +                                           pdev->num_resources)) {
+> +               pr_warn("Skipping %s, already in DT\n", pdev->name);
+> +               return -EEXIST;
+> +       }
+> +
+> +       board_staging_gic_fixup_resources(pdev->resource, pdev->num_resources);
+> +
+> +       for (i = 0; i < dev->nclocks; i++)
+> +               board_staging_register_clock(&dev->clocks[i]);
+> +
+> +       error = platform_device_register(pdev);
+> +       if (error) {
+> +               pr_err("Failed to register device %s (%d)\n", pdev->name,
+> +                      error);
+> +               return error;
+> +       }
+> +
+> +       if (dev->domain)
+> +               __pm_genpd_name_add_device(dev->domain, &pdev->dev, NULL);
 
-Signed-off-by: Luis de Bethencourt <luis@debethencourt.com>
----
+Urgh, this managed to slip through my filters.
 
-Hello,
+It seems like we almost managed to remove all users of the
+"..._name_add..." APIs for genpd. If hasn't been for $subject patch.
+:-)
 
-This patch adds the missing MODULE_DEVICE_TABLE() for OF to eport
-that information so modules have the correct aliases built-in and
-autoloading works correctly.
+Now, I realize this is already too late here, but let's try to fix
+this before it turns into a bigger issue.
 
-A longer explanation by Javier Canillas can be found here:
-https://lkml.org/lkml/2015/7/30/519
+Geert, do you think it's possible to convert into using the non-named
+bases APIs?
 
-Thanks,
-Luis
-
- drivers/thermal/db8500_cpufreq_cooling.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/thermal/db8500_cpufreq_cooling.c b/drivers/thermal/db8500_cpufreq_cooling.c
-index 607b62c..e58bd0b 100644
---- a/drivers/thermal/db8500_cpufreq_cooling.c
-+++ b/drivers/thermal/db8500_cpufreq_cooling.c
-@@ -72,6 +72,7 @@ static const struct of_device_id db8500_cpufreq_cooling_match[] = {
- 	{ .compatible = "stericsson,db8500-cpufreq-cooling" },
- 	{},
- };
-+MODULE_DEVICE_TABLE(of, db8500_cpufreq_cooling_match);
- #endif
- 
- static struct platform_driver db8500_cpufreq_cooling_driver = {
--- 
-2.4.6
-
+Kind regards
+Uffe
