@@ -1,43 +1,39 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] cpufreq-dt: add suspend frequency support
-Date: Thu, 3 Sep 2015 08:23:54 +0530
-Message-ID: <20150903025354.GC13140@linux>
-References: <1441212476-21316-1-git-send-email-b.zolnierkie@samsung.com>
- <55E739F5.8060000@codeaurora.org>
+Subject: Re: [PATCH V2 Resend 0/5] PM / OPP: Add debugfs support
+Date: Thu, 3 Sep 2015 10:02:12 +0530
+Message-ID: <20150903043212.GF13140@linux>
+References: <cover.1441083292.git.viresh.kumar@linaro.org>
+ <1528146.dlEkeu6D3U@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f54.google.com ([209.85.220.54]:33079 "EHLO
+	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752397AbbICEcS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Sep 2015 00:32:18 -0400
+Received: by pacex6 with SMTP id ex6so28418564pac.0
+        for <linux-pm@vger.kernel.org>; Wed, 02 Sep 2015 21:32:18 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <55E739F5.8060000@codeaurora.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1528146.dlEkeu6D3U@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: sboyd@codeaurora.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, khilman@linaro.org
 
-On 02-09-15, 11:03, Stephen Boyd wrote:
-> On 09/02/2015 09:47 AM, Bartlomiej Zolnierkiewicz wrote:
-> > Add suspend frequency support and set it to the boot frequency,
-> > this matches what the old exynos-cpufreq driver has been doing.
-> >
-> > This patch fixes suspend/resume support on Exynos4412 based
-> > Trats2 board and reboot hang on Exynos4412 based Odroid U3
-> > board.
-> >
-> > Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> > Cc: Thomas Abraham <thomas.ab@samsung.com>
-> > Cc: Javier Martinez Canillas <javier@osg.samsung.com>
-> > Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> > Cc: Marek Szyprowski <m.szyprowski@samsung.com>
-> > Cc: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
-> > Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> > ---
-> > This patch supersedes "[PATCH] ARM: dts: exynos4412-odroid-*: add
-> > workaround for CPUfreq/reboot issue" one from yesterday.
-> 
-> What do we do about cpufreq-dt users that don't want to change frequency
-> during suspend?
+On 03-09-15, 03:05, Rafael J. Wysocki wrote:
+> This series is generally fine by me, but it causes too much code churn
+> to happen for pushing it into 4.3 at this point.  I can queue it up
+> for the next merge widnow.
 
-Again, this should be done via opp-v2 suspend-opp feature instead.
+Thanks for letting me know :)
+
+I wasn't initially trying for 4.3, but 4.4. But sent this again to get
+it Acked, so that the path for next series gets clear :)
+
+I am currently working on multiple-regulator support and that will
+have lot of updates too.
+
+Thanks.
 
 -- 
 viresh
