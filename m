@@ -1,74 +1,50 @@
-From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: Re: [PATCH v2 05/10] Documentation: add DT bindings for ARM SCPI sensors
-Date: Thu, 03 Sep 2015 16:08:06 +0100
-Message-ID: <9hhsi6vilrd.fsf@e105922-lin.cambridge.arm.com>
-References: <1438615378-14241-1-git-send-email-punit.agrawal@arm.com>
-	<1438615378-14241-6-git-send-email-punit.agrawal@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: [PATCH] cpufreq: Add ARM_MT8173_CPUFREQ dependencyon THERMAL
+Date: Thu,  3 Sep 2015 08:20:58 -0700
+Message-ID: <1441293658-18199-1-git-send-email-linux@roeck-us.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:55646 "EHLO
-	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755688AbbICPIH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Sep 2015 11:08:07 -0400
-In-Reply-To: <1438615378-14241-6-git-send-email-punit.agrawal@arm.com> (Punit
-	Agrawal's message of "Mon, 3 Aug 2015 16:22:53 +0100")
+Received: from bh-25.webhostbox.net ([208.91.199.152]:41318 "EHLO
+	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756992AbbICPVG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Sep 2015 11:21:06 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, liviu.dudau@arm.com, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Matthias Brugger <matthias.bgg@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, Guenter Roeck <linux@roeck-us.net>
 
-Punit Agrawal <punit.agrawal@arm.com> writes:
+If ARM_MT8173_CPUFREQ is configured, and THERMAL is configured as module,
+the following build error is seen for arm:allmodconfig and
+arm64:allmodconfig.
 
-> The System Control Processor (SCP) provides access to SoC sensors via
-> the System Control and Power Interface (SCPI) Message Protocol. Add
-> bindings to allow probing of these sensors. Also support referencing
-> of the sensors for setting up thermal zones via the thermal DT
-> bindings.
->
-> Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: Mark Rutland <mark.rutland@arm.com>
-> Cc: Sudeep Holla <sudeep.holla@arm.com>
+drivers/built-in.o: In function `mtk_cpufreq_ready':
+:(.text+0x32a20c): undefined reference to `of_cpufreq_cooling_register'
+drivers/built-in.o: In function `mtk_cpufreq_exit':
+:(.text+0x32a420): undefined reference to `cpufreq_cooling_unregister'
 
-Gentle ping for the bindings review.
+The fix is similar to CPUFREQ_DT, but more restrictive since
+ARM_MT8173_CPUFREQ can not be built as module.
 
-> ---
->  Documentation/devicetree/bindings/arm/arm,scpi.txt | 15 +++++++++++++++
->  1 file changed, 15 insertions(+)
->
-> diff --git a/Documentation/devicetree/bindings/arm/arm,scpi.txt b/Documentation/devicetree/bindings/arm/arm,scpi.txt
-> index e309249..8ead68a 100644
-> --- a/Documentation/devicetree/bindings/arm/arm,scpi.txt
-> +++ b/Documentation/devicetree/bindings/arm/arm,scpi.txt
-> @@ -72,8 +72,18 @@ Required sub-node properties:
->  - compatible : should be "arm,juno-scp-shmem" for Non-secure SRAM based
->  	       shared memory on Juno platforms
->  
-> +Sensor bindings for the sensors based on SCPI Message Protocol
-> +--------------------------------------------------------------
-> +SCPI provides an API to access the various sensors on the SoC.
-> +
-> +Required properties:
-> +- compatible : should be "arm,scpi-sensors".
-> +- #thermal-sensor-cells: should be set to 1. This property follows the
-> +			 thermal device tree bindings[2].
-> +
->  [0] http://community.arm.com/servlet/JiveServlet/download/8401-45-18326/DUI0922B_scp_message_interface.pdf
->  [1] Documentation/devicetree/bindings/clock/clock-bindings.txt
-> +[2] Documentation/devicetree/bindings/thermal/thermal.txt
->  
->  Example:
->  
-> @@ -122,6 +132,11 @@ scpi_protocol: scpi@2e000000 {
->  			clock-output-names = "pxlclk0", "pxlclk1";
->  		};
->  	};
-> +
-> +	scpi_sensors0: sensors {
-> +		compatible = "arm,scpi-sensors";
-> +		#thermal-sensor-cells = <1>;
-> +	};
->  };
->  
->  cpu@0 {
+Fixes: 1453863fb02a ("cpufreq: mediatek: Add MT8173 cpufreq driver")
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+---
+It might also make sense to declare ARM_MT8173_CPUFREQ as tristate
+and relax the conditions, but I don't know if that is feasible.
+
+ drivers/cpufreq/Kconfig.arm | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 77aa34eae92c..c4c6200be435 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -133,6 +133,7 @@ config ARM_KIRKWOOD_CPUFREQ
+ config ARM_MT8173_CPUFREQ
+ 	bool "Mediatek MT8173 CPUFreq support"
+ 	depends on ARCH_MEDIATEK && REGULATOR
++	depends on !CPU_THERMAL || THERMAL=y
+ 	select PM_OPP
+ 	help
+ 	  This adds the CPUFreq driver support for Mediatek MT8173 SoC.
+-- 
+2.1.4
+
