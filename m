@@ -1,93 +1,108 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH v2 7/7] ARM: smp: Add runtime PM support for CPU hotplug
-Date: Fri, 4 Sep 2015 11:02:11 -0600
-Message-ID: <20150904170211.GF876@linaro.org>
-References: <1441310314-8857-1-git-send-email-lina.iyer@linaro.org>
- <1441310314-8857-8-git-send-email-lina.iyer@linaro.org>
- <20150904091735.GC21084@n2100.arm.linux.org.uk>
- <20150904092716.GD21084@n2100.arm.linux.org.uk>
- <20150904151202.GA876@linaro.org>
- <20150904162325.GG21084@n2100.arm.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [RFC PATCH 1/3] cpufreq: Add new attribute "base_frequency"
+Date: Fri,  4 Sep 2015 10:19:17 -0700
+Message-ID: <1441387159-19860-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f42.google.com ([209.85.220.42]:36080 "EHLO
-	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760274AbbIDRCP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 4 Sep 2015 13:02:15 -0400
-Received: by pacwi10 with SMTP id wi10so29519596pac.3
-        for <linux-pm@vger.kernel.org>; Fri, 04 Sep 2015 10:02:15 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20150904162325.GG21084@n2100.arm.linux.org.uk>
+Received: from mga11.intel.com ([192.55.52.93]:51149 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932864AbbIDRTh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 4 Sep 2015 13:19:37 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Mark Rutland <mark.rutland@arm.com>, rjw@rjwysocki.net, ulf.hansson@linaro.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-pm@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, sboyd@codeaurora.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, khilman@linaro.org, geert@linux-m68k.org, agross@codeaurora.org, linux-arm-kernel@lists.infradead.org
+To: rafael.j.wysocki@intel.com, viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Fri, Sep 04 2015 at 10:23 -0600, Russell King - ARM Linux wrote:
->On Fri, Sep 04, 2015 at 09:12:02AM -0600, Lina Iyer wrote:
->> On Fri, Sep 04 2015 at 03:27 -0600, Russell King - ARM Linux wrote:
->> >On Fri, Sep 04, 2015 at 10:17:35AM +0100, Russell King - ARM Linux wrote:
->> >>On Thu, Sep 03, 2015 at 01:58:34PM -0600, Lina Iyer wrote:
->> >>> @@ -401,6 +412,11 @@ asmlinkage void secondary_start_kernel(void)
->> >>>  	local_irq_enable();
->> >>>  	local_fiq_enable();
->> >>>
->> >>> +	/* We are running, enable runtime PM for the CPU. */
->> >>> +	cpu_dev = get_cpu_device(cpu);
->> >>> +	if (cpu_dev)
->> >>> +		pm_runtime_get_sync(cpu_dev);
->> >>> +
->> >>
->> >>Please no.  This is fragile.
->> >>
->> >>pm_runtime_get_sync() can sleep, and this path is used when the system
->> >>is fully up and running.  Locks may be held, which cause this to sleep.
->> >>However, we're calling it from a context where we can't sleep - which
->> >>is the general rule for any part of system initialisation where we
->> >>have not entered the idle thread yet (the idle thread is what we run
->> >>when sleeping.)
->> >>
->> More explanation below.
->>
->> Another patch (3/7) in this series defines CPU devices as IRQ safe and
->> therefore the dev->power.lock would be spinlock'd before calling the
->> rest of the PM runtime code and the domain. The CPU PM domain would also
->> be an IRQ safe domain (patch 2/7 makes the genpd framework usable in IRQ
->> safe context).
->>
->> >>NAK on this.
->> >
->> >There's another issue here.  This is obviously wrong.  If the CPU is
->> >inside the PM domain, then don't you need the PM domain powered up for
->> >the CPU to start executing instructions?
->> >
->> This would not be the case for CPU PM domains. The CPU PM domains AFAIK,
->> are triggered by the same wake up interrupt that brings the CPU out of
->> its power downs state. The domain hardware has to be awake before the
->> CPU executes its first instruction. Thefore the hw power up is a logical
->> OR of the wakeup signals to any of the cores.
->
->You're taking the behaviour of the hardware you have in front of you
->and claiming that it's true everywhere, and shoving that into generic
->code.
->
->I know, for example on OMAP, you have to power up the CPU first before
->you can "wake" it.
->
->I wouldn't be surprised if other SoCs are like that: where they require
->the CPU core to be powered and held in reset, before releasing the reset
->to then allow them to start executing the secondary core bringup.
->
-It would still require that the CPU's domain be powered on in the hw,
-before the CPU can run Linux.
+Currently scaling_available_frequencies displays list of available
+frequencies which can be used to set max/min or current scaling
+frequency. But because of configurable thermal design power implementation
+in several Intel CPUs, this is not a guaranteed frequency or a P state,
+which user can request. After a limit all frequencies (P states) may be
+purely in opportunistic performance range. For example
 
->Relying on hardware to do this sounds really fragile and bad design to
->me.
->
->If you want to persue your current design, don't make it generic code,
->because it's got no right to be generic with assumptions like that.
->
-Hmm, okay. I can look at alternatives like  hotplug notifiers.
+>cat scaling_available_frequencies
+2301000 2300000 2200000 2000000 1900000 1800000 1700000 1500000 1400000
+1300000 1100000 1000000 900000 800000 600000 500000
 
--- Lina
+Here traditionally it is assumed that only 2301000 is a turbo frequency,
+anything else user can request. But that is not true. Based on the
+config TDP level, this turbo (boost) start can be much below. For
+example it can be 2300000 or any other value.
+
+This change adds an optional new attribute called "base_frequency",
+which displays the max non-turbo frequency (base frequency). For example:
+>cat base_frequency
+2200000
+
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/cpufreq/cpufreq.c | 26 ++++++++++++++++++++++++++
+ include/linux/cpufreq.h   |  2 ++
+ 2 files changed, 28 insertions(+)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 7a3c30c..f4ff667 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -812,6 +812,25 @@ static ssize_t show_bios_limit(struct cpufreq_policy *policy, char *buf)
+ 	return sprintf(buf, "%u\n", policy->cpuinfo.max_freq);
+ }
+ 
++/*
++ * show_base_frequency - show the current cpufreq boost start freq
++ */
++static ssize_t show_base_frequency(struct cpufreq_policy *policy, char *buf)
++{
++	unsigned int freq;
++	int ret;
++
++	if (cpufreq_driver->base_frequency) {
++		ret = cpufreq_driver->base_frequency(policy->cpu, &freq);
++		if (!ret)
++			return sprintf(buf, "%u\n", freq);
++		else
++			return ret;
++	}
++
++	return -EIO;
++}
++
+ cpufreq_freq_attr_ro_perm(cpuinfo_cur_freq, 0400);
+ cpufreq_freq_attr_ro(cpuinfo_min_freq);
+ cpufreq_freq_attr_ro(cpuinfo_max_freq);
+@@ -820,6 +839,7 @@ cpufreq_freq_attr_ro(scaling_available_governors);
+ cpufreq_freq_attr_ro(scaling_driver);
+ cpufreq_freq_attr_ro(scaling_cur_freq);
+ cpufreq_freq_attr_ro(bios_limit);
++cpufreq_freq_attr_ro(base_frequency);
+ cpufreq_freq_attr_ro(related_cpus);
+ cpufreq_freq_attr_ro(affected_cpus);
+ cpufreq_freq_attr_rw(scaling_min_freq);
+@@ -1057,6 +1077,12 @@ static int cpufreq_add_dev_interface(struct cpufreq_policy *policy,
+ 			return ret;
+ 	}
+ 
++	if (cpufreq_driver->base_frequency) {
++		ret = sysfs_create_file(&policy->kobj, &base_frequency.attr);
++		if (ret)
++			return ret;
++	}
++
+ 	return cpufreq_add_dev_symlink(policy);
+ }
+ 
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index bde1e56..f95a61e 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -267,6 +267,8 @@ struct cpufreq_driver {
+ 
+ 	/* optional */
+ 	int		(*bios_limit)(int cpu, unsigned int *limit);
++	/* optional base_frequency */
++	int		(*base_frequency)(int cpu, unsigned int *freq);
+ 
+ 	int		(*exit)(struct cpufreq_policy *policy);
+ 	void		(*stop_cpu)(struct cpufreq_policy *policy);
+-- 
+2.4.3
+
