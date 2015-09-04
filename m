@@ -1,88 +1,189 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 0/6] PM / OPP: Add debugfs support
-Date: Fri,  4 Sep 2015 13:47:21 +0530
-Message-ID: <cover.1441354424.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f49.google.com ([209.85.220.49]:34173 "EHLO
-	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753215AbbIDIRh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 4 Sep 2015 04:17:37 -0400
-Received: by padhy16 with SMTP id hy16so15231765pad.1
-        for <linux-pm@vger.kernel.org>; Fri, 04 Sep 2015 01:17:36 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH V3 1/6] PM / OPP: reuse of_parse_phandle()
+Date: Fri,  4 Sep 2015 13:47:22 +0530
+Message-ID: <6e9bebac1fd64de67d2f420eaa86e45716acfe8f.1441354424.git.viresh.kumar@linaro.org>
+References: <cover.1441354424.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1441354424.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1441354424.git.viresh.kumar@linaro.org>
+References: <cover.1441354424.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>, sboyd@codeaurora.org
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, Viresh Kumar <viresh.kumar@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael,
+We already have a better API to get the opp descriptor block's node from
+cpu-node. Lets reuse that instead of creating our own routines for the
+same stuff. That cleans the code a lot.
 
-This is (hopefully) the last version of this patchset, all the patches
-are reviewed by Stephen (Many thanks for this) now and sending
-everything again so that you know exactly what all to apply.
+This also kills a check we had earlier (as we are using the generic API
+now). Earlier we used to check if the operating-points-v2 property
+contained multiple phandles instead of a single phandle.
 
-This series is targeted towards exposing opp information at user space.
-I wasn't really sure about adding them to sysfs, as its mostly static
-(fixed) data and so debugfs looked to be better place.
+Killing this check isn't an issue because, we only parse the first entry
+with of_parse_phandle(). So, if a user passes multiple phandles, its
+really his problem :)
 
-This series starts with 3 cleanup patches, and then moves all opp stuff
-to a new directory, as its expanding enough now.
+Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/base/power/opp.c | 71 ++++++++++++------------------------------------
+ 1 file changed, 17 insertions(+), 54 deletions(-)
 
-The last patch adds debugfs support for OPPs and works for both old and
-new v2 bindings.
-
-Rebased over: pm/bleeding-edge branch.
-
-V2-Resend->V3:
-- 2/6 is a new patch
-- 3/6 also modifies of_add_opp_table() now..
-- Reviewed by tags from Stephen
-
-V2->V2-Resend:
-- V2 1/6 is dropped as its already merged, rest unchanged.
-
-V1->V2:
-- Moved the second patch to the top as its a fix (Dan Carpenter &
-  Stephen).
-- Also updated it to fix things properly.
-- rearranged opp entry in drivers/base/power/Makefile (Stephen)
-- Device-directory name also includes its parent name now, to make it
-  more unique (Stephen).
-- Migrate debugfs directory properly if unregistered for the owner
-  device (Stephen).
-
-
-Viresh Kumar (6):
-  PM / OPP: reuse of_parse_phandle()
-  PM / OPP: Rename opp init/free table routines
-  PM / OPP: Prefix exported opp routines with dev_pm_opp_
-  PM / OPP: Move opp core to its own directory
-  PM / OPP: Move cpu specific code to opp/cpu.c
-  PM / OPP: Add debugfs support
-
- arch/arm/mach-imx/mach-imx6q.c           |   2 +-
- drivers/base/power/Makefile              |   2 +-
- drivers/base/power/opp/Makefile          |   3 +
- drivers/base/power/{opp.c => opp/core.c} | 378 ++++---------------------------
- drivers/base/power/opp/cpu.c             | 268 ++++++++++++++++++++++
- drivers/base/power/opp/debugfs.c         | 217 ++++++++++++++++++
- drivers/base/power/opp/opp.h             | 186 +++++++++++++++
- drivers/cpufreq/Makefile                 |   1 -
- drivers/cpufreq/arm_big_little.h         |   2 +-
- drivers/cpufreq/arm_big_little_dt.c      |   4 +-
- drivers/cpufreq/cpufreq-dt.c             |  10 +-
- drivers/cpufreq/cpufreq_opp.c            | 114 ----------
- drivers/cpufreq/exynos5440-cpufreq.c     |   6 +-
- drivers/cpufreq/imx6q-cpufreq.c          |   6 +-
- drivers/cpufreq/mt8173-cpufreq.c         |   6 +-
- include/linux/pm_opp.h                   |  24 +-
- 16 files changed, 750 insertions(+), 479 deletions(-)
- create mode 100644 drivers/base/power/opp/Makefile
- rename drivers/base/power/{opp.c => opp/core.c} (79%)
- create mode 100644 drivers/base/power/opp/cpu.c
- create mode 100644 drivers/base/power/opp/debugfs.c
- create mode 100644 drivers/base/power/opp/opp.h
- delete mode 100644 drivers/cpufreq/cpufreq_opp.c
-
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index eb254497a494..4741fdc13e83 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -1253,69 +1253,33 @@ void of_cpumask_free_opp_table(cpumask_var_t cpumask)
+ }
+ EXPORT_SYMBOL_GPL(of_cpumask_free_opp_table);
+ 
+-/* Returns opp descriptor node from its phandle. Caller must do of_node_put() */
+-static struct device_node *
+-_of_get_opp_desc_node_from_prop(struct device *dev, const struct property *prop)
+-{
+-	struct device_node *opp_np;
+-
+-	opp_np = of_find_node_by_phandle(be32_to_cpup(prop->value));
+-	if (!opp_np) {
+-		dev_err(dev, "%s: Prop: %s contains invalid opp desc phandle\n",
+-			__func__, prop->name);
+-		return ERR_PTR(-EINVAL);
+-	}
+-
+-	return opp_np;
+-}
+-
+-/* Returns opp descriptor node for a device. Caller must do of_node_put() */
++/* Returns opp descriptor node for a device, caller must do of_node_put() */
+ static struct device_node *_of_get_opp_desc_node(struct device *dev)
+ {
+-	const struct property *prop;
+-
+-	prop = of_find_property(dev->of_node, "operating-points-v2", NULL);
+-	if (!prop)
+-		return ERR_PTR(-ENODEV);
+-	if (!prop->value)
+-		return ERR_PTR(-ENODATA);
+-
+ 	/*
+ 	 * TODO: Support for multiple OPP tables.
+ 	 *
+ 	 * There should be only ONE phandle present in "operating-points-v2"
+ 	 * property.
+ 	 */
+-	if (prop->length != sizeof(__be32)) {
+-		dev_err(dev, "%s: Invalid opp desc phandle\n", __func__);
+-		return ERR_PTR(-EINVAL);
+-	}
+ 
+-	return _of_get_opp_desc_node_from_prop(dev, prop);
++	return of_parse_phandle(dev->of_node, "operating-points-v2", 0);
+ }
+ 
+ /* Initializes OPP tables based on new bindings */
+ static int _of_init_opp_table_v2(struct device *dev,
+-				 const struct property *prop)
++				 struct device_node *opp_np)
+ {
+-	struct device_node *opp_np, *np;
++	struct device_node *np;
+ 	struct device_opp *dev_opp;
+ 	int ret = 0, count = 0;
+ 
+-	if (!prop->value)
+-		return -ENODATA;
+-
+-	/* Get opp node */
+-	opp_np = _of_get_opp_desc_node_from_prop(dev, prop);
+-	if (IS_ERR(opp_np))
+-		return PTR_ERR(opp_np);
+-
+ 	dev_opp = _managed_opp(opp_np);
+ 	if (dev_opp) {
+ 		/* OPPs are already managed */
+ 		if (!_add_list_dev(dev, dev_opp))
+ 			ret = -ENOMEM;
+-		goto put_opp_np;
++		return ret;
+ 	}
+ 
+ 	/* We have opp-list node now, iterate over it and add OPPs */
+@@ -1331,10 +1295,8 @@ static int _of_init_opp_table_v2(struct device *dev,
+ 	}
+ 
+ 	/* There should be one of more OPP defined */
+-	if (WARN_ON(!count)) {
+-		ret = -ENOENT;
+-		goto put_opp_np;
+-	}
++	if (WARN_ON(!count))
++		return -ENOENT;
+ 
+ 	dev_opp = _find_device_opp(dev);
+ 	if (WARN_ON(IS_ERR(dev_opp))) {
+@@ -1345,13 +1307,10 @@ static int _of_init_opp_table_v2(struct device *dev,
+ 	dev_opp->np = opp_np;
+ 	dev_opp->shared_opp = of_property_read_bool(opp_np, "opp-shared");
+ 
+-	of_node_put(opp_np);
+ 	return 0;
+ 
+ free_table:
+ 	of_free_opp_table(dev);
+-put_opp_np:
+-	of_node_put(opp_np);
+ 
+ 	return ret;
+ }
+@@ -1418,14 +1377,15 @@ static int _of_init_opp_table_v1(struct device *dev)
+  */
+ int of_init_opp_table(struct device *dev)
+ {
+-	const struct property *prop;
++	struct device_node *opp_np;
++	int ret;
+ 
+ 	/*
+ 	 * OPPs have two version of bindings now. The older one is deprecated,
+ 	 * try for the new binding first.
+ 	 */
+-	prop = of_find_property(dev->of_node, "operating-points-v2", NULL);
+-	if (!prop) {
++	opp_np = _of_get_opp_desc_node(dev);
++	if (!opp_np) {
+ 		/*
+ 		 * Try old-deprecated bindings for backward compatibility with
+ 		 * older dtbs.
+@@ -1433,7 +1393,10 @@ int of_init_opp_table(struct device *dev)
+ 		return _of_init_opp_table_v1(dev);
+ 	}
+ 
+-	return _of_init_opp_table_v2(dev, prop);
++	ret = _of_init_opp_table_v2(dev, opp_np);
++	of_node_put(opp_np);
++
++	return ret;
+ }
+ EXPORT_SYMBOL_GPL(of_init_opp_table);
+ 
+@@ -1522,7 +1485,7 @@ int of_get_cpus_sharing_opps(struct device *cpu_dev, cpumask_var_t cpumask)
+ 
+ 	/* Get OPP descriptor node */
+ 	np = _of_get_opp_desc_node(cpu_dev);
+-	if (IS_ERR(np)) {
++	if (!np) {
+ 		dev_dbg(cpu_dev, "%s: Couldn't find opp node: %ld\n", __func__,
+ 			PTR_ERR(np));
+ 		return -ENOENT;
+@@ -1546,7 +1509,7 @@ int of_get_cpus_sharing_opps(struct device *cpu_dev, cpumask_var_t cpumask)
+ 
+ 		/* Get OPP descriptor node */
+ 		tmp_np = _of_get_opp_desc_node(tcpu_dev);
+-		if (IS_ERR(tmp_np)) {
++		if (!tmp_np) {
+ 			dev_err(tcpu_dev, "%s: Couldn't find opp node: %ld\n",
+ 				__func__, PTR_ERR(tmp_np));
+ 			ret = PTR_ERR(tmp_np);
 -- 
 2.4.0
-
