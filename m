@@ -1,199 +1,96 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v2 5/7] staging: board: Add support for devices with
- complex dependencies
-Date: Fri, 4 Sep 2015 17:03:02 +0200 (CEST)
-Message-ID: <alpine.DEB.2.10.1509041616140.8359@ayla.of.borg>
-References: <1434530336-15073-1-git-send-email-geert+renesas@glider.be> <1434530336-15073-6-git-send-email-geert+renesas@glider.be> <CAPDyKFqouMeTKuXyyohH-VDmWXH+TiLNDT-7MKFa_-TqeF2WSw@mail.gmail.com> <CAMuHMdUiH+WZnPtnM-HNs-SpZ8ZxULiKeAiTC1ONTJoP3YMXKg@mail.gmail.com>
- <CAPDyKFriANthZbDcAQT8WXM2Z857p9+-UZB+woss04ZwM-97ZA@mail.gmail.com>
+From: Andreas Dannenberg <dannenberg@ti.com>
+Subject: Re: [PATCH 02/13] power: bq24257: Add dead battery reporting
+Date: Fri, 4 Sep 2015 10:08:38 -0500
+Message-ID: <20150904150838.GA28221@borg>
+References: <1441073435-12349-1-git-send-email-dannenberg@ti.com>
+ <1441073435-12349-3-git-send-email-dannenberg@ti.com>
+ <55E5FD77.10100@ti.com>
+ <20150901210446.GB17234@beast>
+ <55E615AA.8080807@ti.com>
+ <20150904132805.GA22335@lpalcu-desk>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFriANthZbDcAQT8WXM2Z857p9+-UZB+woss04ZwM-97ZA@mail.gmail.com>
-Sender: linux-sh-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Simon Horman <horms+renesas@verge.net.au>, Magnus Damm <damm+renesas@opensource.se>, Arnd Bergmann <arnd@arndb.de>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Marc Zyngier <marc.zyngier@arm.com>, driverdevel <devel@driverdev.osuosl.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from devils.ext.ti.com ([198.47.26.153]:48159 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759065AbbIDPJF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 4 Sep 2015 11:09:05 -0400
+Content-Disposition: inline
+In-Reply-To: <20150904132805.GA22335@lpalcu-desk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Laurentiu Palcu <laurentiu.palcu@intel.com>
+Cc: "Andrew F. Davis" <afd@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-	Hi Ulf,
+On Fri, Sep 04, 2015 at 04:28:05PM +0300, Laurentiu Palcu wrote:
+> On Tue, Sep 01, 2015 at 04:16:26PM -0500, Andrew F. Davis wrote:
+> > On 09/01/2015 04:04 PM, Andreas Dannenberg wrote:
+> > >>>  drivers/power/bq24257_charger.c | 4 ++++
+> > >>>  1 file changed, 4 insertions(+)
+> > >>>
+> > >>>diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
+> > >>>index db81356..0b34528 100644
+> > >>>--- a/drivers/power/bq24257_charger.c
+> > >>>+++ b/drivers/power/bq24257_charger.c
+> > >>>@@ -274,6 +274,10 @@ static int bq24257_power_supply_get_property(struct power_supply *psy,
+> > >>>  			val->intval = POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE;
+> > >>>  			break;
+> > >>>
+> > >>>+		case FAULT_NO_BAT:
+> > >>>+			val->intval = POWER_SUPPLY_HEALTH_DEAD;
+> > >>>+			break;
+> > >>>+
+> > >>
+> > >>I think the best thing to do would be to return -ENODEV as suggested by
+> > >>power_supply_sysfs.c:305. Also you should probably add the POWER_SUPPLY_PROP_PRESENT
+> > >>property check and set intval to 0 when there is no battery.
+> > >
+> > >Good find with -ENODEV. However in this case here the power supply is
+> > >really a combination of a charger and a battery (which could be split
+> > >out accordingly but that's a different story). If I were to report
+> > >-ENODEV I would basically say the entire power supply is gone which is
+> > >not correct IMHO. Even with a missing battery a system is typically
+> > >functional as it gets powered through USB and the charger IC is still
+> > >there and functioning. So I think I would either leave the reporting
+> > >as *_DEAD or skip the patch. I'm curious if there are additional
+> > >opinions.
+> > >
+> > 
+> > It looks like returning -ENODEV for one property would not mark the whole
+> > device gone, just POWER_SUPPLY_PROP_HEALTH, but I guess that depends on
+> > what user-space does with the info. I would think that this is what
+> > POWER_SUPPLY_PROP_PRESENT is for but different drivers seem to use it for
+> > different things. Anyway, reporting DEAD for a missing battery is probably
+> > not the most correct option, maybe drop the patch ( for the cat's sake :) ).
+> I'm also in favor of dropping this patch for the same reasons. Also,
+> since the latest phones/tablets do not allow battery removal, it's
+> highly unlikely we'll even hit this case nowadays. Perhaps, we could use
 
-On Fri, 4 Sep 2015, Ulf Hansson wrote:
-> On 3 September 2015 at 15:35, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > On Thu, Sep 3, 2015 at 2:53 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> >> On 17 June 2015 at 10:38, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
-> >>> Add support for easy registering of one ore more platform devices that
-> >>> may:
-> >>>   - need clocks that are described in DT,
-> >>>   - be part of a PM Domain.
-> >
-> >>> diff --git a/drivers/staging/board/board.c b/drivers/staging/board/board.c
-> >>> index 8712f566b31196e0..29d456e29f38feac 100644
-> >>> --- a/drivers/staging/board/board.c
-> >>> +++ b/drivers/staging/board/board.c
-> >
-> >>> +int __init board_staging_register_device(const struct board_staging_dev *dev)
-> >>> +{
-> >>> +       struct platform_device *pdev = dev->pdev;
-> >>> +       unsigned int i;
-> >>> +       int error;
-> >>> +
-> >>> +       pr_debug("Trying to register device %s\n", pdev->name);
-> >>> +       if (board_staging_dt_node_available(pdev->resource,
-> >>> +                                           pdev->num_resources)) {
-> >>> +               pr_warn("Skipping %s, already in DT\n", pdev->name);
-> >>> +               return -EEXIST;
-> >>> +       }
-> >>> +
-> >>> +       board_staging_gic_fixup_resources(pdev->resource, pdev->num_resources);
-> >>> +
-> >>> +       for (i = 0; i < dev->nclocks; i++)
-> >>> +               board_staging_register_clock(&dev->clocks[i]);
-> >>> +
-> >>> +       error = platform_device_register(pdev);
-> >>> +       if (error) {
-> >>> +               pr_err("Failed to register device %s (%d)\n", pdev->name,
-> >>> +                      error);
-> >>> +               return error;
-> >>> +       }
-> >>> +
-> >>> +       if (dev->domain)
-> >>> +               __pm_genpd_name_add_device(dev->domain, &pdev->dev, NULL);
-> >>
-> >> Urgh, this managed to slip through my filters.
-> >>
-> >> It seems like we almost managed to remove all users of the
-> >> "..._name_add..." APIs for genpd. If hasn't been for $subject patch.
-> >> :-)
-> >>
-> >> Now, I realize this is already too late here, but let's try to fix
-> >> this before it turns into a bigger issue.
-> >>
-> >> Geert, do you think it's possible to convert into using the non-named
-> >> bases APIs?
-> >
-> > That will be difficult. This code is meant to use drivers that are not yet
-> > DT-aware on DT-based systems. Hence it uses platform devices with named PM
-> > domains, while the PM domains are described in DT.
-> > I don't think there's another way to look up a PM domain by name, is there?
-> 
-> As a matter of fact there are, especially for those genpds that has
-> been created through DT as in this case. The API to use is
-> of_genpd_get_from_provider() to find the struct generic_pm_domain.
+Hi Laurentiu, ok I'll drop it. Understood about the unlikeliness of a
+battery removal for most devices using LiIon during runtime but a more
+granular reporting would help in case there is an issue with the HW
+itself (loose contact, manufacturing defect in the battery, etc.)
 
-Thanks!
+> DEAD if the battery did not charge and the safety timer expired?
+> But, if one alters iilimit and sets a limit that's too low for the
+> battery to charge in time, that doesn't mean the battery is dead... :/
 
-> Yes, I do realize that you need to manage the parsing of the domain
-> name to make sure it's the one you want, but I would rather keep that
-> "hack" in this driver than in the generic API.
+Yeah unless there is a specific register bit or some very specific
+guidance in a device datasheet as how to detect a truly dead battery I
+would be a bit hesitant trying to interpret device register values to
+derive to such a conclusion. Sometimes algorithms which seem simple are
+only simple because one doesn't consider all the corner cases initially
+:)
 
-OK. It turned out not to be that complex, cfr. the patch below.
-For now this supports PM domains with "#power-domain-cells = <0>" only,
-but of course it can be extended if the need arises.
+> That's the main reason I'm so reluctant on having properties like charge
+> current, charge voltage, or even input current limit, writable in
+> sysfs.
 
-I've also tried:
-
-    np = of_find_compatible_node(NULL, NULL, "renesas,sysc-rmobile");
-    np = of_find_node_by_name(np, "a4lc");
-
-(the second step is needed because of the domain hierarchy in DT), but that
-would require adding the compatible string to struct board_staging_dev,
-and doesn't work if you have multiple identical power providers.
-
-I hope you like it?
-
->From 5fb11904845eb929a5b3382a9d5153c151cde1cf Mon Sep 17 00:00:00 2001
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Date: Fri, 4 Sep 2015 16:52:33 +0200
-Subject: [PATCH/RFC] staging: board: Migrate away from
- __pm_genpd_name_add_device()
-
-The named genpd APIs are deprecated. Hence convert the board staging
-code from using genpd names to DT node paths.
-
-For now this supports PM domains with "#power-domain-cells = <0>" only.
-
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
- drivers/staging/board/armadillo800eva.c |  2 +-
- drivers/staging/board/board.c           | 36 ++++++++++++++++++++++++++++++++-
- 2 files changed, 36 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/staging/board/armadillo800eva.c b/drivers/staging/board/armadillo800eva.c
-index 0165591a52443c46..912c96b0536def7c 100644
---- a/drivers/staging/board/armadillo800eva.c
-+++ b/drivers/staging/board/armadillo800eva.c
-@@ -91,7 +91,7 @@ static const struct board_staging_dev armadillo800eva_devices[] __initconst = {
- 		.pdev		= &lcdc0_device,
- 		.clocks		= lcdc0_clocks,
- 		.nclocks	= ARRAY_SIZE(lcdc0_clocks),
--		.domain		= "a4lc",
-+		.domain		= "/system-controller@e6180000/pm-domains/c5/a4lc@1"
- 	},
- };
- 
-diff --git a/drivers/staging/board/board.c b/drivers/staging/board/board.c
-index 29d456e29f38feac..3eb5eb8f069c236d 100644
---- a/drivers/staging/board/board.c
-+++ b/drivers/staging/board/board.c
-@@ -135,6 +135,40 @@ int __init board_staging_register_clock(const struct board_staging_clk *bsc)
- 	return error;
- }
- 
-+#ifdef CONFIG_PM_GENERIC_DOMAINS_OF
-+static int board_staging_add_dev_domain(struct platform_device *pdev,
-+					const char *domain)
-+{
-+	struct of_phandle_args pd_args;
-+	struct generic_pm_domain *pd;
-+	struct device_node *np;
-+
-+	np = of_find_node_by_path(domain);
-+	if (!np) {
-+		pr_err("Cannot find domain node %s\n", domain);
-+		return -ENOENT;
-+	}
-+
-+	pd_args.np = np;
-+	pd_args.args_count = 0;
-+	pd = of_genpd_get_from_provider(&pd_args);
-+	if (IS_ERR(pd)) {
-+		pr_err("Cannot find genpd %s (%ld)\n", domain, PTR_ERR(pd));
-+		return PTR_ERR(pd);
-+
-+	}
-+	pr_debug("Found genpd %s for device %s\n", pd->name, pdev->name);
-+
-+	return pm_genpd_add_device(pd, &pdev->dev);
-+}
-+#else
-+static inline int board_staging_add_dev_domain(struct platform_device *pdev,
-+					       const char *domain)
-+{
-+	return 0;
-+}
-+#endif
-+
- int __init board_staging_register_device(const struct board_staging_dev *dev)
- {
- 	struct platform_device *pdev = dev->pdev;
-@@ -161,7 +195,7 @@ int __init board_staging_register_device(const struct board_staging_dev *dev)
- 	}
- 
- 	if (dev->domain)
--		__pm_genpd_name_add_device(dev->domain, &pdev->dev, NULL);
-+		board_staging_add_dev_domain(pdev, dev->domain);
- 
- 	return error;
- }
--- 
-1.9.1
-
-Gr{oetje,eeting}s,
-
-						Geert
+Agreed from a safety perspective. And if someone really wants to play
+with fire (pun intended) they can always change the driver in their own
+copy of the Kernel.
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Andreas Dannenberg
+Texas Instruments Inc
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
