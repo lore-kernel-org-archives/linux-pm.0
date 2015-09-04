@@ -1,109 +1,124 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH 13/13] dt: power: bq24257-charger: Cover additional devices
-Date: Fri, 04 Sep 2015 08:50:57 +0900
-Message-ID: <55E8DCE1.5080000@samsung.com>
-References: <1441073435-12349-1-git-send-email-dannenberg@ti.com>
- <1441073435-12349-14-git-send-email-dannenberg@ti.com>
- <CAJKOXPeyMeUUon0E9Fhm18SHJEaQPEbGAWwU+MKwgt-30AXHiA@mail.gmail.com>
- <20150902140332.GA24076@borg> <55E7A2E8.2060306@samsung.com>
- <20150903014741.GA25605@borg> <55E7A8F8.7050300@samsung.com>
- <20150903160926.GA26659@borg>
+From: Xunlei Pang <pang.xunlei@linaro.org>
+Subject: Re: [PATCH v3] cpuidle/coupled: Add sanity check for safe_state_index
+Date: Fri, 4 Sep 2015 10:15:41 +0800
+Message-ID: <CADcy93VYaL9VxkLj8P7ScgJqrPNf+bq7WTaH1qWS7pLXr=z7JQ@mail.gmail.com>
+References: <1440992045-17464-1-git-send-email-xlpang@126.com>
+	<2730874.lxGIcz4Q5K@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.w1.samsung.com ([210.118.77.14]:37049 "EHLO
-	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750820AbbICXu6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Sep 2015 19:50:58 -0400
-In-reply-to: <20150903160926.GA26659@borg>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <2730874.lxGIcz4Q5K@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: lkml <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andreas Dannenberg <dannenberg@ti.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-On 04.09.2015 01:09, Andreas Dannenberg wrote:
-> On Thu, Sep 03, 2015 at 10:57:12AM +0900, Krzysztof Kozlowski wrote:
->> On 03.09.2015 10:47, Andreas Dannenberg wrote:
->>> On Thu, Sep 03, 2015 at 10:31:20AM +0900, Krzysztof Kozlowski wrote:
->>>> I still don't get why you need extra "ti,pg-gpio-disable" property. It
->>>> could work like this:
->>>> 1. Get rid of "ti,pg-gpio-disable" and make "pg-gpio" optional.
->>>> 2. If it is present, use it.
->>>> 3. If it is not present, use software based approach (the same as
->>>> setting "ti,pg-gpio-disable" previously).
->>>>
->>>> Would that work?
->>>
->>> Similar to the earlier comment - the idea was to have it more explicit.
->>> Plus, the original driver would hard-fail when the "pg-gpio" pin is not
->>> provided (since it was essential for that driver's ability to function).
->>> If I change to automatically fallback to the SW solution such an error
->>> case would in theory not be 100% backward compatible. I could however
->>> more clearly indicate/log which method is being used (dev_info) so
->>> somebody rummaging through the logs would still see it. Will simplify.
+Hi Rafael,
+
+On 3 September 2015 at 09:35, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Monday, August 31, 2015 11:34:05 AM Xunlei Pang wrote:
+>> From: Xunlei Pang <pang.xunlei@linaro.org>
 >>
->> Right, the kernel's backward compatibility has to be preserved. However
->> for bindings I am not sure.
-> 
-> Hi Krzysztof. Please see pages 3-5 in the below PDF, that's what I had
-> in mind. Maybe I mis-interpreted it or there is newer information.
-> http://events.linuxfoundation.org/sites/events/files/slides/petazzoni-dt-as-stable-abi-fairy-tale.pdf
-
-I think our case is not covered there. I am talking about backward
-compatibility of DTB with older kernels, not about backward
-compatibility of kernel.
-
-AFAIR this is not a requirement so you can change the behaviour of DTB
-(backward compatibility of kernel is fully preserved).
-
-> 
-> With the proposed changes, while the existing bindings (strings) would
-> stay the same, the failure behavior in one specific use case would be
-> slightly different. The question is, where should we draw the line for
-> compatibility? I would argue in this case the general usage is not
-> affected so it should be OK making the change/simplification you propose
-> (getting rid of "ti,pg-gpio-disable"). 
-
-If we don't care about using newer DTB with older kernel then there is
-no compatibility line to draw. You can safely change the behaviour.
-
->  
->> Let's assume booting on device with bq24257.
->> 1. Old kernel booted with a DTB which doesn't have "pg-gpio" would print
->> error (probe would fail).
->> 2. New kernel booted in the same situation (1) would assume GPIOs have
->> to be disabled.
+>> Since we are using cpuidle_driver::safe_state_index directly as the
+>> target state index, it is better to add the sanity check at the point
+>> of registering the driver.
 >>
->> 3. Old kernel booted with your previous solution (DTB containing both
->> "pg-gpio" and "ti,pg-gpio-disable") would work fine ignoring the
->> "disable" property.
->> 4. New kernel in the same situation (3) would disable GPIOs.
->>
->> There is a difference between (1) and (3). New DTB is not backward
->> compatible with old kernels for existing bq24257 devices.
->>
->> Am I understanding this correctly?
-> 
-> Well almost. I think the difference between case 1 and 3 isn't really an
-> issue from a use case point of view. The case I was trying to describe
-> is as follows (let's call it case 5):
-> 
-> 5. An old DTB not containing "pg-gpio" (or with that property being
-> misconfigured) is booted with the new Kernel. The boot will succeed as
-> the SW approach for PG detection gets invoked automatically.
-> 
-> The difference now is between (1) and (5). If in (5) somebody specifies
-> "pg-gpio" they would want to explicitly use this pin and be notified if
-> the respective setup fails. My proposal earlier for this was to output
-> through dev_info() during driver probe whether an actual GPIO pin is
-> being used for power-good detection or whether the fall-back SW
-> algorithm has been invoked. This way, at least there is a notification.
+>> Signed-off-by: Xunlei Pang <pang.xunlei@linaro.org>
+>
+> I'm queuing this one up for the next PM pull request, thanks!
 
-I think I understand. IMHO if pg-gpio is specified and it fails (like
-GPIO is invalid) the kernel should not switch to SW mode. This should be
-all-or-nothing and described in a specific way: iff pg-gpio is missing
-then SW mode would be used because that was the intention of developer.
+Thanks!
 
-Best regards,
-Krzysztof
+Regards,
+Xunlei
+
+>
+>
+>> ---
+>> v2->v3:
+>> Move the code to a new cpuidle_coupled_state_verify() depending on
+>> CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED, to avoid using #ifdef in function
+>> bodies. Thanks Rafael's comments on this.
+>>
+>>  drivers/cpuidle/coupled.c | 22 ++++++++++++++++++++++
+>>  drivers/cpuidle/cpuidle.h |  6 ++++++
+>>  drivers/cpuidle/driver.c  |  4 ++++
+>>  3 files changed, 32 insertions(+)
+>>
+>> diff --git a/drivers/cpuidle/coupled.c b/drivers/cpuidle/coupled.c
+>> index 1523e2d..344058f 100644
+>> --- a/drivers/cpuidle/coupled.c
+>> +++ b/drivers/cpuidle/coupled.c
+>> @@ -187,6 +187,28 @@ bool cpuidle_state_is_coupled(struct cpuidle_driver *drv, int state)
+>>  }
+>>
+>>  /**
+>> + * cpuidle_coupled_state_verify - check if the coupled states are correctly set.
+>> + * @drv: struct cpuidle_driver for the platform
+>> + *
+>> + * Returns 0 for valid state values, a negative error code otherwise:
+>> + *  * -EINVAL if any coupled state(safe_state_index) is wrongly set.
+>> + */
+>> +int cpuidle_coupled_state_verify(struct cpuidle_driver *drv)
+>> +{
+>> +     int i;
+>> +
+>> +     for (i = drv->state_count - 1; i >= 0; i--) {
+>> +             if (cpuidle_state_is_coupled(drv, i) &&
+>> +                 (drv->safe_state_index == i ||
+>> +                  drv->safe_state_index < 0 ||
+>> +                  drv->safe_state_index >= drv->state_count))
+>> +                     return -EINVAL;
+>> +     }
+>> +
+>> +     return 0;
+>> +}
+>> +
+>> +/**
+>>   * cpuidle_coupled_set_ready - mark a cpu as ready
+>>   * @coupled: the struct coupled that contains the current cpu
+>>   */
+>> diff --git a/drivers/cpuidle/cpuidle.h b/drivers/cpuidle/cpuidle.h
+>> index 178c5ad..f87f399 100644
+>> --- a/drivers/cpuidle/cpuidle.h
+>> +++ b/drivers/cpuidle/cpuidle.h
+>> @@ -35,6 +35,7 @@ extern void cpuidle_remove_sysfs(struct cpuidle_device *dev);
+>>
+>>  #ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
+>>  bool cpuidle_state_is_coupled(struct cpuidle_driver *drv, int state);
+>> +int cpuidle_coupled_state_verify(struct cpuidle_driver *drv);
+>>  int cpuidle_enter_state_coupled(struct cpuidle_device *dev,
+>>               struct cpuidle_driver *drv, int next_state);
+>>  int cpuidle_coupled_register_device(struct cpuidle_device *dev);
+>> @@ -46,6 +47,11 @@ bool cpuidle_state_is_coupled(struct cpuidle_driver *drv, int state)
+>>       return false;
+>>  }
+>>
+>> +static inline int cpuidle_coupled_state_verify(struct cpuidle_driver *drv)
+>> +{
+>> +     return 0;
+>> +}
+>> +
+>>  static inline int cpuidle_enter_state_coupled(struct cpuidle_device *dev,
+>>               struct cpuidle_driver *drv, int next_state)
+>>  {
+>> diff --git a/drivers/cpuidle/driver.c b/drivers/cpuidle/driver.c
+>> index 5db1478..389ade4 100644
+>> --- a/drivers/cpuidle/driver.c
+>> +++ b/drivers/cpuidle/driver.c
+>> @@ -227,6 +227,10 @@ static int __cpuidle_register_driver(struct cpuidle_driver *drv)
+>>       if (!drv || !drv->state_count)
+>>               return -EINVAL;
+>>
+>> +     ret = cpuidle_coupled_state_verify(drv);
+>> +     if (ret)
+>> +             return ret;
+>> +
+>>       if (cpuidle_disabled())
+>>               return -ENODEV;
+>>
+>>
+>
+> --
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
