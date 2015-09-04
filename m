@@ -1,60 +1,46 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: System will not suspend with highest numbered CPU offline [REGRESSION][BISECTED]
-Date: Fri, 4 Sep 2015 16:05:23 -0700
-Message-ID: <000e01d0e766$2f07dfb0$8d179f10$@net>
-References: <001401d0e691$302127b0$90637710$@net>	<3237049.urJsZkC6Rf@vostro.rjw.lan>	<20150904144241.GJ29194@linux>	<000701d0e741$5933c580$0b9b5080$@net> <CAJZ5v0iqX+Sh6rDNKW+Nm2hNnEnC7uvzhZ6ta9Qxc3Rs2CZPJg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+From: Grazvydas Ignotas <notasas@gmail.com>
+Subject: [PATCH] twl4030_charger: fix another compile error
+Date: Sat,  5 Sep 2015 02:32:34 +0300
+Message-ID: <1441409554-518-1-git-send-email-notasas@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cmta18.telus.net ([209.171.16.91]:49317 "EHLO cmta18.telus.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934105AbbIDXF2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 4 Sep 2015 19:05:28 -0400
-In-Reply-To: <CAJZ5v0iqX+Sh6rDNKW+Nm2hNnEnC7uvzhZ6ta9Qxc3Rs2CZPJg@mail.gmail.com>
-Content-Language: en-ca
+Received: from mail-wi0-f180.google.com ([209.85.212.180]:33983 "EHLO
+	mail-wi0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934078AbbIDXdK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 4 Sep 2015 19:33:10 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rafael@kernel.org>
-Cc: 'Viresh Kumar' <viresh.kumar@linaro.org>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Saravana Kannan' <skannan@codeaurora.org>, linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: David Woodhouse <dwmw2@infradead.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Sebastian Reichel <sre@kernel.org>, linux-omap@vger.kernel.org, Grazvydas Ignotas <notasas@gmail.com>, NeilBrown <neil@brown.name>
 
-On 2015.09.04 15:26 Rafael J. Wysocki wrote:
-> On Fri, Sep 4, 2015 at 8:41 PM, Doug Smythies <dsmythies@telus.net> wrote:
->> On 2015.09.04 07:43 Viresh Kumar wrote:
->>> On 04-09-15, 16:59, Rafael J. Wysocki wrote:
->>>> On Thursday, September 03, 2015 02:40:43 PM Doug Smythies wrote:
->>>>> As of, or about, Kernel 4.2RC1 if I take my highest numbered
->>>>> CPU offline (7 in my case), the system will not suspend.
->
->>> @Doug: Can you please enable DEBUG for cpufreq with this:
->>>
->>> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
->>> index 9fde14544ead..c09945aa7f17 100644
->>> --- a/drivers/cpufreq/Makefile
->>> +++ b/drivers/cpufreq/Makefile
->>> @@ -1,3 +1,4 @@
->>> +subdir-ccflags-y  := -DDEBUG
->>> # CPUfreq core
->>> obj-$(CONFIG_CPU_FREQ)                 += cpufreq.o freq_table.o
->>>
->>>
->>> And give us the outputs of both successful and unsuccessful logs?
->>
->> Edited /var/log/kern.log attached (might get stripped for
->> on-list e-mail deliveries)
+When CONFIG_CHARGER_TWL4030=y and CONFIG_TWL4030_MADC=m we get a
+compile error:
 
-> Hmm.
-> I suspect that your user space does something that fails during the pm-suspend.
+drivers/built-in.o: In function `twl4030_charger_update_current':
+twl4030_charger.c:(.text+0x504681): undefined reference to
+`twl4030_get_madc_conversion'
 
-Are you saying that the patch might be O.K., but reveals
-and issue with pm-suspend that was always there?
+Use IS_REACHABLE to fix it.
 
-> Instead of invoking the pm-suspend command, can you simply do (as root)
-> # echo mem > /sys/power/state
-> and see if that behaves in the same way?
+Cc: NeilBrown <neil@brown.name>
+Reported-by: Randy Dunlap <rdunlap@infradead.org>
+Signed-off-by: Grazvydas Ignotas <notasas@gmail.com>
+---
+ drivers/power/twl4030_charger.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-With CPU 7 offline, that method seems to suspend just fine.
-I did not check any other scenarios.
-
+diff --git a/drivers/power/twl4030_charger.c b/drivers/power/twl4030_charger.c
+index f4f2c1f..5bcc76f 100644
+--- a/drivers/power/twl4030_charger.c
++++ b/drivers/power/twl4030_charger.c
+@@ -91,7 +91,7 @@
+ #define TWL4030_MSTATEC_COMPLETE1	0x0b
+ #define TWL4030_MSTATEC_COMPLETE4	0x0e
+ 
+-#if IS_ENABLED(CONFIG_TWL4030_MADC)
++#if IS_REACHABLE(CONFIG_TWL4030_MADC)
+ /*
+  * If AC (Accessory Charger) voltage exceeds 4.5V (MADC 11)
+  * then AC is available.
+-- 
+1.9.1
 
