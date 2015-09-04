@@ -1,49 +1,62 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: Re: [PATCH v2 7/7] ARM: smp: Add runtime PM support for CPU hotplug
-Date: Sat, 5 Sep 2015 00:46:37 +0300
-Message-ID: <55EA113D.9000806@ti.com>
-References: <Pine.LNX.4.44L0.1509041443360.29995-100000@iolanthe.rowland.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: System will not suspend with highest numbered CPU offline [REGRESSION][BISECTED]
+Date: Sat, 5 Sep 2015 00:26:08 +0200
+Message-ID: <CAJZ5v0iqX+Sh6rDNKW+Nm2hNnEnC7uvzhZ6ta9Qxc3Rs2CZPJg@mail.gmail.com>
+References: <001401d0e691$302127b0$90637710$@net>
+	<3237049.urJsZkC6Rf@vostro.rjw.lan>
+	<20150904144241.GJ29194@linux>
+	<000701d0e741$5933c580$0b9b5080$@net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:38519 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933638AbbIDVrm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 4 Sep 2015 17:47:42 -0400
-In-Reply-To: <Pine.LNX.4.44L0.1509041443360.29995-100000@iolanthe.rowland.org>
+Received: from mail-wi0-f173.google.com ([209.85.212.173]:36778 "EHLO
+	mail-wi0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760655AbbIDW0J (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 4 Sep 2015 18:26:09 -0400
+Received: by wibz8 with SMTP id z8so30417344wib.1
+        for <linux-pm@vger.kernel.org>; Fri, 04 Sep 2015 15:26:08 -0700 (PDT)
+In-Reply-To: <000701d0e741$5933c580$0b9b5080$@net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Lina Iyer <lina.iyer@linaro.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Mark Rutland <mark.rutland@arm.com>, ulf.hansson@linaro.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-pm@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, rjw@rjwysocki.net, k.kozlowski@samsung.com, msivasub@codeaurora.org, khilman@linaro.org, geert@linux-m68k.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-kernel@lists.infradead.org
+To: Doug Smythies <dsmythies@telus.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Saravana Kannan <skannan@codeaurora.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 09/04/2015 09:45 PM, Alan Stern wrote:
-> On Fri, 4 Sep 2015, Grygorii Strashko wrote:
-> 
->> There is one "small" problem with such approach :(
+On Fri, Sep 4, 2015 at 8:41 PM, Doug Smythies <dsmythies@telus.net> wrote:
+> On 2015.09.04 07:43 Viresh Kumar wrote:
+>> On 04-09-15, 16:59, Rafael J. Wysocki wrote:
+>>> On Thursday, September 03, 2015 02:40:43 PM Doug Smythies wrote:
+>>>> As of, or about, Kernel 4.2RC1 if I take my highest numbered
+>>>> CPU offline (7 in my case), the system will not suspend.
+>
+>> I wanted to give him some patch to debug it a bit more, but couldn't
+>> do that whole day.
+>
+>> @Doug: Can you please enable DEBUG for cpufreq with this:
 >>
->> - It's incompatible with -RT kernel, because PM runtime can't be used
->> in atomic context on -RT.
-> 
-> Can you explain this more fully?  Why can't runtime PM be used in
-> atomic context in the -rt kernels?
->  
+>> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+>> index 9fde14544ead..c09945aa7f17 100644
+>> --- a/drivers/cpufreq/Makefile
+>> +++ b/drivers/cpufreq/Makefile
+>> @@ -1,3 +1,4 @@
+>> +subdir-ccflags-y  := -DDEBUG
+>> # CPUfreq core
+>> obj-$(CONFIG_CPU_FREQ)                 += cpufreq.o freq_table.o
+>>
+>>
+>> And give us the outputs of both successful and unsuccessful logs?
+>
+> Edited /var/log/kern.log attached (might get stripped for
+> on-list e-mail deliveries)
 
-See:
- http://lwn.net/Articles/146861/
- https://rt.wiki.kernel.org/index.php/Frequently_Asked_Questions#How_does_the_CONFIG_PREEMPT_RT_patch_work.3F
+Hmm.
 
-spinlock_t
-    Critical sections are preemptible. The _irq operations (e.g., spin_lock_irqsave())
- do -not- disable hardware interrupts. Priority inheritance is used to prevent priority
- inversion. An underlying rt_mutex is used to implement spinlock_t in PREEMPT_RT. 
+I suspect that your user space does something that fails during the pm-suspend.
 
-As result, have to do things like:
-https://lkml.org/lkml/2015/8/18/161
-https://lkml.org/lkml/2015/8/18/162
+Instead of invoking the pm-suspend command, can you simply do (as root)
 
-Sorry for brief reply - Friday/Sat night :)
+# echo mem > /sys/power/state
 
--- 
-regards,
--grygorii
+and see if that behaves in the same way?
+
+Thanks,
+Rafael
