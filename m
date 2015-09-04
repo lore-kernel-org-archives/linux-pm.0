@@ -1,222 +1,55 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [RFCv5 PATCH 38/46] sched: scheduler-driven cpu frequency
- selection
-Date: Fri, 4 Sep 2015 14:27:44 +0100
-Message-ID: <55E99C50.8030306@arm.com>
-References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
- <1436293469-25707-39-git-send-email-morten.rasmussen@arm.com>
- <20150815123531.GE10304@worktop.programming.kicks-ass.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
+From: Daniel Wagner <daniel.wagner@bmw-carit.de>
+Subject: [RFC v0 2/9] suspend: Add getter function to report if freezing is active
+Date: Fri,  4 Sep 2015 15:34:55 +0200
+Message-ID: <1441373702-31796-3-git-send-email-daniel.wagner@bmw-carit.de>
+References: <1441373702-31796-1-git-send-email-daniel.wagner@bmw-carit.de>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150815123531.GE10304@worktop.programming.kicks-ass.net>
+In-Reply-To: <1441373702-31796-1-git-send-email-daniel.wagner@bmw-carit.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>
-Cc: "mingo@redhat.com" <mingo@redhat.com>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, "yuyang.du@intel.com" <yuyang.du@intel.com>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "sgurrappadi@nvidia.com" <sgurrappadi@nvidia.com>, "pang.xunlei@zte.com.cn" <pang.xunlei@zte.com.cn>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: Daniel Wagner <daniel.wagner@bmw-carit.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 15/08/15 13:35, Peter Zijlstra wrote:
-> On Tue, Jul 07, 2015 at 07:24:21PM +0100, Morten Rasmussen wrote:
->> diff --git a/kernel/sched/cpufreq_sched.c b/kernel/sched/cpufreq_sched.c
->> new file mode 100644
->> index 0000000..5020f24
->> --- /dev/null
->> +++ b/kernel/sched/cpufreq_sched.c
->> @@ -0,0 +1,308 @@
->> +/*
->> + *  Copyright (C)  2015 Michael Turquette <mturquette@linaro.org>
->> + *
->> + * This program is free software; you can redistribute it and/or modify
->> + * it under the terms of the GNU General Public License version 2 as
->> + * published by the Free Software Foundation.
->> + */
->> +
->> +#include <linux/cpufreq.h>
->> +#include <linux/module.h>
->> +#include <linux/kthread.h>
->> +#include <linux/percpu.h>
->> +#include <linux/irq_work.h>
->> +
->> +#include "sched.h"
->> +
->> +#define THROTTLE_NSEC		50000000 /* 50ms default */
->> +
->> +static DEFINE_PER_CPU(unsigned long, pcpu_capacity);
->> +static DEFINE_PER_CPU(struct cpufreq_policy *, pcpu_policy);
->> +
->> +/**
->> + * gov_data - per-policy data internal to the governor
->> + * @throttle: next throttling period expiry. Derived from throttle_nsec
->> + * @throttle_nsec: throttle period length in nanoseconds
->> + * @task: worker thread for dvfs transition that may block/sleep
->> + * @irq_work: callback used to wake up worker thread
->> + * @freq: new frequency stored in *_sched_update_cpu and used in *_sched_thread
->> + *
->> + * struct gov_data is the per-policy cpufreq_sched-specific data structure. A
->> + * per-policy instance of it is created when the cpufreq_sched governor receives
->> + * the CPUFREQ_GOV_START condition and a pointer to it exists in the gov_data
->> + * member of struct cpufreq_policy.
->> + *
->> + * Readers of this data must call down_read(policy->rwsem). Writers must
->> + * call down_write(policy->rwsem).
->> + */
->> +struct gov_data {
->> +	ktime_t throttle;
->> +	unsigned int throttle_nsec;
->> +	struct task_struct *task;
->> +	struct irq_work irq_work;
->> +	struct cpufreq_policy *policy;
->> +	unsigned int freq;
->> +};
->> +
->> +static void cpufreq_sched_try_driver_target(struct cpufreq_policy *policy, unsigned int freq)
->> +{
->> +	struct gov_data *gd = policy->governor_data;
->> +
->> +	/* avoid race with cpufreq_sched_stop */
->> +	if (!down_write_trylock(&policy->rwsem))
->> +		return;
->> +
->> +	__cpufreq_driver_target(policy, freq, CPUFREQ_RELATION_L);
->> +
->> +	gd->throttle = ktime_add_ns(ktime_get(), gd->throttle_nsec);
->> +	up_write(&policy->rwsem);
->> +}
-> 
-> That locking truly is disgusting.. why can't we change that?
-> 
->> +static int cpufreq_sched_thread(void *data)
->> +{
-> 
->> +
->> +	ret = set_cpus_allowed_ptr(gd->task, policy->related_cpus);
-> 
-> That's not sufficient, you really want to have called kthread_bind() on
-> these threads, otherwise userspace can change affinity on you.
-> 
->> +
->> +	do_exit(0);
-> 
-> I thought kthreads only needed to return...
-> 
->> +}
-> 
->> +void cpufreq_sched_set_cap(int cpu, unsigned long capacity)
->> +{
->> +	unsigned int freq_new, cpu_tmp;
->> +	struct cpufreq_policy *policy;
->> +	struct gov_data *gd;
->> +	unsigned long capacity_max = 0;
->> +
->> +	/* update per-cpu capacity request */
->> +	__this_cpu_write(pcpu_capacity, capacity);
->> +
->> +	policy = cpufreq_cpu_get(cpu);
-> 
-> So this does a down_read_trylock(&cpufreq_rwsem) and a
-> read_lock_irqsave(&cpufreq_driver_lock), all while holding scheduler
-> locks.
-> 
->> +	if (cpufreq_driver_might_sleep())
->> +		irq_work_queue_on(&gd->irq_work, cpu);
->> +	else
->> +		cpufreq_sched_try_driver_target(policy, freq_new);
-> 
-> This will then do a down_write_trylock(&policy->rwsem)
-> 
->> +
->> +out:
->> +	cpufreq_cpu_put(policy);
-> 
->> +	return;
->> +}
-> 
-> That is just insane... surely we can replace all that with a wee bit of
-> RCU logic.
-> 
-> So something like:
-> 
-> DEFINE_MUTEX(cpufreq_mutex);
-> struct cpufreq_driver *cpufreq_driver;
-> 
-> struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu)
-> {
-> 	struct cpufreq_driver *driver;
-> 	struct cpufreq_policy *policy;
-> 
-> 	rcu_read_lock();
-> 	driver = rcu_dereference(cpufreq_driver);
-> 	if (!driver)
-> 		goto err;
-> 
-> 	policy = per_cpu_ptr(driver->policy, cpu);
-> 	if (!policy)
-> 		goto err;
-> 
-> 	return policy;
-> 
-> err:
-> 	rcu_read_unlock();
-> 	return NULL;
-> }
-> 
-> 
-> void cpufreq_cpu_put(struct cpufreq_policy *policy)
-> {
-> 	rcu_read_unlock();
-> }
-> 
-> 
-> 
-> void cpufreq_set_driver(struct cpufreq_driver *driver)
-> {
-> 	mutex_lock(&cpufreq_mutex);
-> 
-> 	rcu_assign_pointer(cpufreq_driver, NULL);
-> 
-> 	/*
-> 	 * Wait for everyone to observe the lack of driver; iow. until
-> 	 * its unused.
-> 	 */
-> 	synchronize_rcu();
-> 
-> 	/*
-> 	 * Now that ye olde driver be gone, install a new one.
-> 	 */
-> 	if (driver)
-> 		rcu_assign_pointer(cpufreq_driver, driver);
-> 
-> 	mutex_unlock(&cpufreq_mutex);
-> }
-> 
-> 
-> No need for cpufreq_rwsem or cpufreq_driver_lock..
-> 
-> 
-> Hmm?
-> 
+Instead encode the FREEZE state via the CPU state we allow the
+interesting subsystems (MCE, microcode) to query the power
+subsystem directly. Most notifiers are not interested at all
+in this information so rather have explicit calls to freeze_active()
+instead adding complexity to the rest of the users of the CPU
+notifiers.
 
-So, just to recall what we discussed at LPC (I have Mike's slides
-at hand :-)). It seems that key points are:
+Signed-off-by: Daniel Wagner <daniel.wagner@bmw-carit.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+---
+ include/linux/suspend.h | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-1- we agreed that locking in cpufreq core has to change as we
-   have to access it from scheduler hot-paths; what Peter is
-   proposing above looks viable to me, what others (way more
-   confident then me with cpufreq inners) say?
-
-2- the interface has to be extended as we have to let other
-   scheduling classes drive freq selection too; I guess that how
-   we do aggregation depends on the nature of sched classes,
-   but we didn't really reach any sort of agreement here; is
-   this anyway something we can focus on after fixing locking?
-
-3- the interface should also support peripheral devices; this
-   seems a interesting feature to have, but how about we postpone
-   it after we've got previous points right?
-
-What did I miss of crucial? :-)
-
-Best,
-
-- Juri
+diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+index 5efe743..5e15ade 100644
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -216,6 +216,11 @@ static inline bool idle_should_freeze(void)
+ 	return unlikely(suspend_freeze_state == FREEZE_STATE_ENTER);
+ }
+ 
++static inline bool freeze_active(void)
++{
++	return unlikely(suspend_freeze_state != FREEZE_STATE_NONE);
++}
++
+ extern void freeze_set_ops(const struct platform_freeze_ops *ops);
+ extern void freeze_wake(void);
+ 
+@@ -244,6 +249,7 @@ extern int pm_suspend(suspend_state_t state);
+ static inline void suspend_set_ops(const struct platform_suspend_ops *ops) {}
+ static inline int pm_suspend(suspend_state_t state) { return -ENOSYS; }
+ static inline bool idle_should_freeze(void) { return false; }
++static inline bool freeze_active(void) { return false; }
+ static inline void freeze_set_ops(const struct platform_freeze_ops *ops) {}
+ static inline void freeze_wake(void) {}
+ #endif /* !CONFIG_SUSPEND */
+-- 
+2.4.3
