@@ -1,96 +1,104 @@
-From: Andreas Dannenberg <dannenberg@ti.com>
-Subject: Re: [PATCH 02/13] power: bq24257: Add dead battery reporting
-Date: Fri, 4 Sep 2015 10:08:38 -0500
-Message-ID: <20150904150838.GA28221@borg>
-References: <1441073435-12349-1-git-send-email-dannenberg@ti.com>
- <1441073435-12349-3-git-send-email-dannenberg@ti.com>
- <55E5FD77.10100@ti.com>
- <20150901210446.GB17234@beast>
- <55E615AA.8080807@ti.com>
- <20150904132805.GA22335@lpalcu-desk>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v2 7/7] ARM: smp: Add runtime PM support for CPU hotplug
+Date: Fri, 4 Sep 2015 09:12:02 -0600
+Message-ID: <20150904151202.GA876@linaro.org>
+References: <1441310314-8857-1-git-send-email-lina.iyer@linaro.org>
+ <1441310314-8857-8-git-send-email-lina.iyer@linaro.org>
+ <20150904091735.GC21084@n2100.arm.linux.org.uk>
+ <20150904092716.GD21084@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:48159 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759065AbbIDPJF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 4 Sep 2015 11:09:05 -0400
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <20150904132805.GA22335@lpalcu-desk>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20150904092716.GD21084@n2100.arm.linux.org.uk>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Mark Rutland <mark.rutland@arm.com>, ulf.hansson@linaro.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-pm@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, rjw@rjwysocki.net, k.kozlowski@samsung.com, msivasub@codeaurora.org, khilman@linaro.org, geert@linux-m68k.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Laurentiu Palcu <laurentiu.palcu@intel.com>
-Cc: "Andrew F. Davis" <afd@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-On Fri, Sep 04, 2015 at 04:28:05PM +0300, Laurentiu Palcu wrote:
-> On Tue, Sep 01, 2015 at 04:16:26PM -0500, Andrew F. Davis wrote:
-> > On 09/01/2015 04:04 PM, Andreas Dannenberg wrote:
-> > >>>  drivers/power/bq24257_charger.c | 4 ++++
-> > >>>  1 file changed, 4 insertions(+)
-> > >>>
-> > >>>diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
-> > >>>index db81356..0b34528 100644
-> > >>>--- a/drivers/power/bq24257_charger.c
-> > >>>+++ b/drivers/power/bq24257_charger.c
-> > >>>@@ -274,6 +274,10 @@ static int bq24257_power_supply_get_property(struct power_supply *psy,
-> > >>>  			val->intval = POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE;
-> > >>>  			break;
-> > >>>
-> > >>>+		case FAULT_NO_BAT:
-> > >>>+			val->intval = POWER_SUPPLY_HEALTH_DEAD;
-> > >>>+			break;
-> > >>>+
-> > >>
-> > >>I think the best thing to do would be to return -ENODEV as suggested by
-> > >>power_supply_sysfs.c:305. Also you should probably add the POWER_SUPPLY_PROP_PRESENT
-> > >>property check and set intval to 0 when there is no battery.
-> > >
-> > >Good find with -ENODEV. However in this case here the power supply is
-> > >really a combination of a charger and a battery (which could be split
-> > >out accordingly but that's a different story). If I were to report
-> > >-ENODEV I would basically say the entire power supply is gone which is
-> > >not correct IMHO. Even with a missing battery a system is typically
-> > >functional as it gets powered through USB and the charger IC is still
-> > >there and functioning. So I think I would either leave the reporting
-> > >as *_DEAD or skip the patch. I'm curious if there are additional
-> > >opinions.
-> > >
-> > 
-> > It looks like returning -ENODEV for one property would not mark the whole
-> > device gone, just POWER_SUPPLY_PROP_HEALTH, but I guess that depends on
-> > what user-space does with the info. I would think that this is what
-> > POWER_SUPPLY_PROP_PRESENT is for but different drivers seem to use it for
-> > different things. Anyway, reporting DEAD for a missing battery is probably
-> > not the most correct option, maybe drop the patch ( for the cat's sake :) ).
-> I'm also in favor of dropping this patch for the same reasons. Also,
-> since the latest phones/tablets do not allow battery removal, it's
-> highly unlikely we'll even hit this case nowadays. Perhaps, we could use
+On Fri, Sep 04 2015 at 03:27 -0600, Russell King - ARM Linux wrote:
+>On Fri, Sep 04, 2015 at 10:17:35AM +0100, Russell King - ARM Linux wrote:
+>> On Thu, Sep 03, 2015 at 01:58:34PM -0600, Lina Iyer wrote:
+>> > @@ -401,6 +412,11 @@ asmlinkage void secondary_start_kernel(void)
+>> >  	local_irq_enable();
+>> >  	local_fiq_enable();
+>> >
+>> > +	/* We are running, enable runtime PM for the CPU. */
+>> > +	cpu_dev = get_cpu_device(cpu);
+>> > +	if (cpu_dev)
+>> > +		pm_runtime_get_sync(cpu_dev);
+>> > +
+>>
+>> Please no.  This is fragile.
+>>
+>> pm_runtime_get_sync() can sleep, and this path is used when the system
+>> is fully up and running.  Locks may be held, which cause this to sleep.
+>> However, we're calling it from a context where we can't sleep - which
+>> is the general rule for any part of system initialisation where we
+>> have not entered the idle thread yet (the idle thread is what we run
+>> when sleeping.)
+>>
+More explanation below.
 
-Hi Laurentiu, ok I'll drop it. Understood about the unlikeliness of a
-battery removal for most devices using LiIon during runtime but a more
-granular reporting would help in case there is an issue with the HW
-itself (loose contact, manufacturing defect in the battery, etc.)
+Another patch (3/7) in this series defines CPU devices as IRQ safe and
+therefore the dev->power.lock would be spinlock'd before calling the
+rest of the PM runtime code and the domain. The CPU PM domain would also
+be an IRQ safe domain (patch 2/7 makes the genpd framework usable in IRQ
+safe context).
 
-> DEAD if the battery did not charge and the safety timer expired?
-> But, if one alters iilimit and sets a limit that's too low for the
-> battery to charge in time, that doesn't mean the battery is dead... :/
+>> NAK on this.
+>
+>There's another issue here.  This is obviously wrong.  If the CPU is
+>inside the PM domain, then don't you need the PM domain powered up for
+>the CPU to start executing instructions?
+>
+This would not be the case for CPU PM domains. The CPU PM domains AFAIK,
+are triggered by the same wake up interrupt that brings the CPU out of
+its power downs state. The domain hardware has to be awake before the
+CPU executes its first instruction. Thefore the hw power up is a logical
+OR of the wakeup signals to any of the cores.
 
-Yeah unless there is a specific register bit or some very specific
-guidance in a device datasheet as how to detect a truly dead battery I
-would be a bit hesitant trying to interpret device register values to
-derive to such a conclusion. Sometimes algorithms which seem simple are
-only simple because one doesn't consider all the corner cases initially
-:)
+Similarly, the domain hardware would be the last to power down after all
+the CPUs.  Generally tied to the execution of WFI command by the ARM CPU
+core. The domain power down signal is a logical AND of all the WFI
+signals of all the cores in the domain.
 
-> That's the main reason I'm so reluctant on having properties like charge
-> current, charge voltage, or even input current limit, writable in
-> sysfs.
+>If the CPU can run instructions with the PM domain that it's allegedly
+>inside powered down, then the CPU is _not_ part of the PM domain, and
+>this whole thing is total crap.
+>
+CPU PM domains have to be synchronized in hardware and all these can
+only happen when the SoC provides a domain that can power on before any
+of the CPU powers up and power down only after the all CPUs have powered
+down.
 
-Agreed from a safety perspective. And if someone really wants to play
-with fire (pun intended) they can always change the driver in their own
-copy of the Kernel.
+What s/w generally can do in the CPU domain power on/off callbacks from
+genpd is to configure which state the domain should be in, when all the
+CPUs have powered down. Many SoCs, have PM domains that could be in
+retention in anticipation of an early wakeup or could be completely
+cache flushed and powered down, when suspending or sleeping for a longer
+duration. The power off callbacks for the PM domain does the
+configuration and it doesnt take effect until all the CPUs power down.
 
---
-Andreas Dannenberg
-Texas Instruments Inc
+While powering on the domain in the genpd power on callback, all we do
+is to ensure that the domain is reconfigured to remain active (ignore
+all WFI instruction from the CPU, which are not tied to CPU power down.
+Dont want the domain powering off when all CPUs in the domain are just
+clock gated.) until the domain is configured to its idle state by the
+last CPU in Linux.
 
+>Sorry, I'm really not impressed by the "design" here, it seems to be
+>totally screwed.
+>
+
+Thanks,
+Lina
