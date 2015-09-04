@@ -1,58 +1,39 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH v2 7/7] ARM: smp: Add runtime PM support for CPU hotplug
-Date: Fri, 4 Sep 2015 10:27:16 +0100
-Message-ID: <20150904092716.GD21084@n2100.arm.linux.org.uk>
-References: <1441310314-8857-1-git-send-email-lina.iyer@linaro.org>
- <1441310314-8857-8-git-send-email-lina.iyer@linaro.org>
- <20150904091735.GC21084@n2100.arm.linux.org.uk>
+From: dawei chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Subject: Re: thermal: mediatek: Add cpu power cooling model
+Date: Fri, 4 Sep 2015 18:00:37 +0800
+Message-ID: <1441360837.18285.6.camel@mtksdaap41>
+References: <1441357309-61669-1-git-send-email-dawei.chien@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from pandora.arm.linux.org.uk ([78.32.30.218]:49671 "EHLO
-	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755228AbbIDJ11 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 4 Sep 2015 05:27:27 -0400
-Content-Disposition: inline
-In-Reply-To: <20150904091735.GC21084@n2100.arm.linux.org.uk>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1441357309-61669-1-git-send-email-dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Daniel Kurtz <djkurtz-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Eddie Huang <eddie.huang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Howard Chen <howard.chen-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Yingjoe Chen <yingjoe.chen-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, srv_heupstream-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, rjw@rjwysocki.net, ulf.hansson@linaro.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-pm@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, sboyd@codeaurora.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, khilman@linaro.org, geert@linux-m68k.org, agross@codeaurora.org, linux-arm-kernel@lists.infradead.org
 
-On Fri, Sep 04, 2015 at 10:17:35AM +0100, Russell King - ARM Linux wrote:
-> On Thu, Sep 03, 2015 at 01:58:34PM -0600, Lina Iyer wrote:
-> > @@ -401,6 +412,11 @@ asmlinkage void secondary_start_kernel(void)
-> >  	local_irq_enable();
-> >  	local_fiq_enable();
-> >  
-> > +	/* We are running, enable runtime PM for the CPU. */
-> > +	cpu_dev = get_cpu_device(cpu);
-> > +	if (cpu_dev)
-> > +		pm_runtime_get_sync(cpu_dev);
-> > +
+Sorry, forgot to add Rafael and Viresh as reviewer.
+
+On Fri, 2015-09-04 at 17:01 +0800, Dawei Chien wrote:
+> Use Intelligent Power Allocation (IPA) technical to add
+> static/dynamic power model for binding CPU thermal zone.
+> The power allocator governor allocates power budget to control
+> CPU temperature.
 > 
-> Please no.  This is fragile.
+> Dawei.Chien (2):
+>   thermal: mediatek: Add cpu power cooling model.
+>   arm64: dts: mt8173: Add thermal zone node for mt8173.
 > 
-> pm_runtime_get_sync() can sleep, and this path is used when the system
-> is fully up and running.  Locks may be held, which cause this to sleep.
-> However, we're calling it from a context where we can't sleep - which
-> is the general rule for any part of system initialisation where we
-> have not entered the idle thread yet (the idle thread is what we run
-> when sleeping.)
+>  arch/arm64/boot/dts/mediatek/mt8173.dtsi |   44 ++++++++++++++
+>  drivers/cpufreq/mt8173-cpufreq.c         |   97 ++++++++++++++++++++++++++----
+>  2 files changed, 130 insertions(+), 11 deletions(-)
 > 
-> NAK on this.
+> --
+> 1.7.9.5
+> 
 
-There's another issue here.  This is obviously wrong.  If the CPU is
-inside the PM domain, then don't you need the PM domain powered up for
-the CPU to start executing instructions?
 
-If the CPU can run instructions with the PM domain that it's allegedly
-inside powered down, then the CPU is _not_ part of the PM domain, and
-this whole thing is total crap.
-
-Sorry, I'm really not impressed by the "design" here, it seems to be
-totally screwed.
-
--- 
-FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
-according to speedtest.net.
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
