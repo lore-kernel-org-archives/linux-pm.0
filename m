@@ -1,62 +1,57 @@
-From: Robert Jarzmik <robert.jarzmik@free.fr>
-Subject: Re: [PATCH v2 00/21] ARM: pxa: magician: Rework HTC Magician support
-Date: Sat, 05 Sep 2015 12:10:21 +0200
-Message-ID: <87fv2txjle.fsf@belgarion.home>
-References: <55D2583B.8040602@tul.cz>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH v2 7/7] ARM: smp: Add runtime PM support for CPU hotplug
+Date: Sat, 5 Sep 2015 11:39:20 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1509051133100.30865-100000@netrider.rowland.org>
+References: <55EA113D.9000806@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp11.smtpout.orange.fr ([80.12.242.133]:51947 "EHLO
-	smtp.smtpout.orange.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750756AbbIEKPP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 5 Sep 2015 06:15:15 -0400
-In-Reply-To: <55D2583B.8040602@tul.cz> (Petr Cvek's message of "Mon, 17 Aug
-	2015 23:55:07 +0200")
+Received: from netrider.rowland.org ([192.131.102.5]:47665 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751353AbbIEPjV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 5 Sep 2015 11:39:21 -0400
+In-Reply-To: <55EA113D.9000806@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Petr Cvek <petr.cvek@tul.cz>, philipp.zabel@gmail.com
-Cc: daniel@zonque.org, haojian.zhuang@gmail.com, sameo@linux.intel.com, lee.jones@linaro.org, cooloney@gmail.com, rpurdie@rpsys.net, j.anaszewski@samsung.com, linux@arm.linux.org.uk, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Grygorii Strashko <grygorii.strashko@ti.com>
+Cc: Lina Iyer <lina.iyer@linaro.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Mark Rutland <mark.rutland@arm.com>, ulf.hansson@linaro.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-pm@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, rjw@rjwysocki.net, k.kozlowski@samsung.com, msivasub@codeaurora.org, khilman@linaro.org, geert@linux-m68k.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-kernel@lists.infradead.org
 
-Petr Cvek <petr.cvek@tul.cz> writes:
+On Sat, 5 Sep 2015, Grygorii Strashko wrote:
 
-> This patchset will clean, fix and finally add multiple PXA devices
-> to HTC Magician machine. Also it adds leds-pasic3 driver to LED subsystem.
-> This driver require changes into htc-pasic3 structures, which are used
-> exclusively by magician.c code.
->
-> Petr Cvek (21):
->   ARM: pxa: magician: Fix Kconfig for magician to always include
->     htc-egpio
->   ARM: pxa: magician: Fix indentation and whitespaces
->   ARM: pxa: magician: Fix comments, debug functions and print strings
->   ARM: pxa: magician: Add, fix and init (new) GPIOs
->   ARM: pxa: magician: Add support for ADS7846 touchscreen
->   ARM: pxa: magician: Add normal and power I2C definition
->   ARM: pxa: magician: Fix IrDA pdata and redundant GPIO request
->   ARM: pxa: magician: Add StrataFlash Vpp GPIO and alternative driver
->   ARM: pxa: magician: Add OV9640 camera support
->   ARM: pxa: magician: Add UDA1380 sound support
->   ARM: pxa: magician: Add MAX1586 Vcore regulator support
->   ARM: pxa: magician: Add PXA27x UDC support
->   ARM: pxa: magician: Fix charging source and add NiCd backup charging
->   ARM: pxa: magician: Fix PXA USB OHCI port enable flags
->   ARM: pxa: magician: Fix PWM backlight regulator
->   ARM: pxa: magician: Add support for alternative LCD backlight
->   ARM: pxa: magician: Remove (temporarily) pasic3 LED support
->   mfd: htc-pasic3: Prepare driver for leds-pasic3
->   leds: leds-pasic3: Add support for PASIC3 LED controller
->   ARM: pxa: magician: Re-add pdata for new leds-pasic3 driver
->   ARM: pxa: magician: Move platform_add_devices() to the end of
->     magician_init()
+> On 09/04/2015 09:45 PM, Alan Stern wrote:
+> > On Fri, 4 Sep 2015, Grygorii Strashko wrote:
+> > 
+> >> There is one "small" problem with such approach :(
+> >>
+> >> - It's incompatible with -RT kernel, because PM runtime can't be used
+> >> in atomic context on -RT.
+> > 
+> > Can you explain this more fully?  Why can't runtime PM be used in
+> > atomic context in the -rt kernels?
+> >  
+> 
+> See:
+>  http://lwn.net/Articles/146861/
+>  https://rt.wiki.kernel.org/index.php/Frequently_Asked_Questions#How_does_the_CONFIG_PREEMPT_RT_patch_work.3F
+> 
+> spinlock_t
+>     Critical sections are preemptible. The _irq operations (e.g., spin_lock_irqsave())
+>  do -not- disable hardware interrupts. Priority inheritance is used to prevent priority
+>  inversion. An underlying rt_mutex is used to implement spinlock_t in PREEMPT_RT. 
+> 
+> As result, have to do things like:
+> https://lkml.org/lkml/2015/8/18/161
+> https://lkml.org/lkml/2015/8/18/162
+> 
+> Sorry for brief reply - Friday/Sat night :)
 
-Hi Petr,
+I see.  Although we normally think of interrupt contexts as being
+atomic, in an -rt kernel this isn't true any more because things like
+spin_lock_irq don't actually disable interrupts.
 
-If you want several of these patches targeted at v4.3, I need to know which ones
-(in arch/arm/mach-pxa) are pure fixes without which magician is broken.
+Therefore it would be correct to say that in -rt kernels, runtime PM
+can be used in interrupt context (if the device is marked as irq-safe),
+but not in atomic context.  Right?
 
-And a confirmation from Philip on this list would make my life easier.
+Alan Stern
 
-Cheers.
-
--- 
-Robert
