@@ -1,76 +1,62 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: System will not suspend with highest numbered CPU offline
- [REGRESSION][BISECTED]
-Date: Sat, 5 Sep 2015 13:44:07 +0530
-Message-ID: <20150905081407.GK5285@linux>
-References: <001401d0e691$302127b0$90637710$@net>
- <3237049.urJsZkC6Rf@vostro.rjw.lan>
- <20150904144241.GJ29194@linux>
- <000701d0e741$5933c580$0b9b5080$@net>
- <CAJZ5v0iqX+Sh6rDNKW+Nm2hNnEnC7uvzhZ6ta9Qxc3Rs2CZPJg@mail.gmail.com>
- <000e01d0e766$2f07dfb0$8d179f10$@net>
- <CAJZ5v0gvq5KF9jZobHFkXiAe=WfN=B=oSVt7o2ui-Wdx7_8Umg@mail.gmail.com>
- <000f01d0e783$6fe75cf0$4fb616d0$@net>
- <001601d0e7af$01a22140$04e663c0$@net>
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+Subject: Re: [PATCH v2 00/21] ARM: pxa: magician: Rework HTC Magician support
+Date: Sat, 05 Sep 2015 12:10:21 +0200
+Message-ID: <87fv2txjle.fsf@belgarion.home>
+References: <55D2583B.8040602@tul.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f44.google.com ([209.85.220.44]:34197 "EHLO
-	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750830AbbIEIOM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 5 Sep 2015 04:14:12 -0400
-Received: by padhy16 with SMTP id hy16so43802843pad.1
-        for <linux-pm@vger.kernel.org>; Sat, 05 Sep 2015 01:14:11 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <001601d0e7af$01a22140$04e663c0$@net>
+Received: from smtp11.smtpout.orange.fr ([80.12.242.133]:51947 "EHLO
+	smtp.smtpout.orange.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750756AbbIEKPP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 5 Sep 2015 06:15:15 -0400
+In-Reply-To: <55D2583B.8040602@tul.cz> (Petr Cvek's message of "Mon, 17 Aug
+	2015 23:55:07 +0200")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: "'Rafael J. Wysocki'" <rafael@kernel.org>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Saravana Kannan' <skannan@codeaurora.org>, linux-pm@vger.kernel.org
+To: Petr Cvek <petr.cvek@tul.cz>, philipp.zabel@gmail.com
+Cc: daniel@zonque.org, haojian.zhuang@gmail.com, sameo@linux.intel.com, lee.jones@linaro.org, cooloney@gmail.com, rpurdie@rpsys.net, j.anaszewski@samsung.com, linux@arm.linux.org.uk, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On 05-09-15, 00:46, Doug Smythies wrote:
-> > It is not clear to me why that echo line (there is only one)
-> > would fail.
+Petr Cvek <petr.cvek@tul.cz> writes:
 
-To me it is clear now :)
+> This patchset will clean, fix and finally add multiple PXA devices
+> to HTC Magician machine. Also it adds leds-pasic3 driver to LED subsystem.
+> This driver require changes into htc-pasic3 structures, which are used
+> exclusively by magician.c code.
+>
+> Petr Cvek (21):
+>   ARM: pxa: magician: Fix Kconfig for magician to always include
+>     htc-egpio
+>   ARM: pxa: magician: Fix indentation and whitespaces
+>   ARM: pxa: magician: Fix comments, debug functions and print strings
+>   ARM: pxa: magician: Add, fix and init (new) GPIOs
+>   ARM: pxa: magician: Add support for ADS7846 touchscreen
+>   ARM: pxa: magician: Add normal and power I2C definition
+>   ARM: pxa: magician: Fix IrDA pdata and redundant GPIO request
+>   ARM: pxa: magician: Add StrataFlash Vpp GPIO and alternative driver
+>   ARM: pxa: magician: Add OV9640 camera support
+>   ARM: pxa: magician: Add UDA1380 sound support
+>   ARM: pxa: magician: Add MAX1586 Vcore regulator support
+>   ARM: pxa: magician: Add PXA27x UDC support
+>   ARM: pxa: magician: Fix charging source and add NiCd backup charging
+>   ARM: pxa: magician: Fix PXA USB OHCI port enable flags
+>   ARM: pxa: magician: Fix PWM backlight regulator
+>   ARM: pxa: magician: Add support for alternative LCD backlight
+>   ARM: pxa: magician: Remove (temporarily) pasic3 LED support
+>   mfd: htc-pasic3: Prepare driver for leds-pasic3
+>   leds: leds-pasic3: Add support for PASIC3 LED controller
+>   ARM: pxa: magician: Re-add pdata for new leds-pasic3 driver
+>   ARM: pxa: magician: Move platform_add_devices() to the end of
+>     magician_init()
 
-> The echo line fails because the related CPU is offline.
-> If the failed echo is the last pass through the loop,
-> then the script interprets the overall execution of
-> 94cpufreq as a failure and aborts the suspend. If the
-> failed echo is not the last pass through the loop, then
-> the bad exit code gets overwritten with a good one before
-> the loop exits.
-> 
-> Since the loop is merely setting a temporary governor,
-> to test I just used performance mode anyway, and commented
-> out the echo. pm-suspend with CPU 7 offline then worked fine.
-> 
-> I have not yet gone back to any before the patch kernel
-> to determine why it used to work (it is late in my time zone).
-> However, I would have to assume that before the commit in
-> question, the echo worked even if the CPU was offline.
+Hi Petr,
 
-So here is the story behind it.
-- In your system all CPUs are independent, that is there are no links
-  to cpufreq directory, so that check in the script is useless for
-  you.
-- The $COMMIT in question did a significant change. Earlier, while
-  offlining the CPU, we used to remove the cpufreq directory from
-  sysfs, which is not the case any more.
+If you want several of these patches targeted at v4.3, I need to know which ones
+(in arch/arm/mach-pxa) are pure fixes without which magician is broken.
 
-- So to be precise, following lines came to your rescue earlier:
+And a confirmation from Philip on this list would make my life easier.
 
-# if we do not have a scaling_governor file, skip.
-# [ -f "$gov" ] || continue
-
-- But they don't after the patch, as the file and directory are
-  present even if the CPU is offline.
-- But because the CPU is offline, writing to those files isn't allowed
-  and so the echo failed.
-
-Solution to that is that we check for CPU offline as well in the
-beginning of the script, and skip if the CPU is offline.
+Cheers.
 
 -- 
-viresh
+Robert
