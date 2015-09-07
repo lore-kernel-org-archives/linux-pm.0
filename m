@@ -1,54 +1,49 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 3/3] ARM: dts: add suspend opp to exynos4412
-Date: Mon, 7 Sep 2015 11:29:03 +0530
-Message-ID: <20150907055903.GD26760@linux>
-References: <1441303892-32004-1-git-send-email-b.zolnierkie@samsung.com>
- <1441303892-32004-4-git-send-email-b.zolnierkie@samsung.com>
+Subject: Re: [RFC PATCH 1/3] cpufreq: Add new attribute "base_frequency"
+Date: Mon, 7 Sep 2015 11:36:48 +0530
+Message-ID: <20150907060648.GE26760@linux>
+References: <1441387159-19860-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f44.google.com ([209.85.220.44]:36088 "EHLO
+	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750764AbbIGGG6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Sep 2015 02:06:58 -0400
+Received: by padhk3 with SMTP id hk3so1867798pad.3
+        for <linux-pm@vger.kernel.org>; Sun, 06 Sep 2015 23:06:58 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <1441303892-32004-4-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Thomas Abraham <thomas.ab@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1441387159-19860-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org
 
-On 03-09-15, 20:11, Bartlomiej Zolnierkiewicz wrote:
-> Mark 800MHz OPP as a suspend opp for Exynos4412 based
-> boards so effectively cpufreq-dt driver behavior w.r.t.
-> suspend frequency matches what the old exynos-cpufreq
-> driver has been doing.
+On 04-09-15, 10:19, Srinivas Pandruvada wrote:
+> Currently scaling_available_frequencies displays list of available
+> frequencies which can be used to set max/min or current scaling
+> frequency. But because of configurable thermal design power implementation
+> in several Intel CPUs, this is not a guaranteed frequency or a P state,
+> which user can request. After a limit all frequencies (P states) may be
+> purely in opportunistic performance range. For example
 > 
-> This patch fixes suspend/resume support on Exynos4412 based
-> Trats2 board and reboot hang on Exynos4412 based Odroid U3
-> board.
+> >cat scaling_available_frequencies
+> 2301000 2300000 2200000 2000000 1900000 1800000 1700000 1500000 1400000
+> 1300000 1100000 1000000 900000 800000 600000 500000
 > 
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Thomas Abraham <thomas.ab@samsung.com>
-> Cc: Javier Martinez Canillas <javier@osg.samsung.com>
-> Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> Cc: Marek Szyprowski <m.szyprowski@samsung.com>
-> Cc: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> ---
->  arch/arm/boot/dts/exynos4412.dtsi | 1 +
->  1 file changed, 1 insertion(+)
+> Here traditionally it is assumed that only 2301000 is a turbo frequency,
+> anything else user can request. But that is not true. Based on the
+> config TDP level, this turbo (boost) start can be much below. For
+> example it can be 2300000 or any other value.
 > 
-> diff --git a/arch/arm/boot/dts/exynos4412.dtsi b/arch/arm/boot/dts/exynos4412.dtsi
-> index ca0e3c1..294cfe4 100644
-> --- a/arch/arm/boot/dts/exynos4412.dtsi
-> +++ b/arch/arm/boot/dts/exynos4412.dtsi
-> @@ -98,6 +98,7 @@
->  			opp-hz = /bits/ 64 <800000000>;
->  			opp-microvolt = <1000000>;
->  			clock-latency-ns = <200000>;
-> +			opp-suspend;
->  		};
->  		opp07 {
->  			opp-hz = /bits/ 64 <900000000>;
+> This change adds an optional new attribute called "base_frequency",
+> which displays the max non-turbo frequency (base frequency). For example:
+> >cat base_frequency
+> 2200000
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+This is something very much acpi-cpufreq driver's specific and I don't
+really see other platform needing it. So, I would rather add this only
+for acpi-cpufreq driver, if at all it is required.
 
 -- 
 viresh
