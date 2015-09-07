@@ -1,120 +1,219 @@
 From: Javi Merino <javi.merino@arm.com>
-Subject: [PATCH v5 4/5] thermal: power_allocator: don't require tzp to be present for the thermal zone
-Date: Mon,  7 Sep 2015 14:19:28 +0100
-Message-ID: <1441631969-3272-5-git-send-email-javi.merino@arm.com>
+Subject: [PATCH v5 3/5] thermal: power_allocator: relax the requirement of two passive trip points
+Date: Mon,  7 Sep 2015 14:19:27 +0100
+Message-ID: <1441631969-3272-4-git-send-email-javi.merino@arm.com>
 References: <1440595604-27197-1-git-send-email-javi.merino@arm.com>
  <1441631969-3272-1-git-send-email-javi.merino@arm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:50949 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751827AbbIGNUC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 7 Sep 2015 09:20:02 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1441631969-3272-1-git-send-email-javi.merino@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: dmitry.torokhov@gmail.com, cywang@chromium.org, linux-kernel@vger.kernel.org, punit.agrawal@arm.com, djkurtz@chromium.org, edubezval@gmail.com, Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>
+List-Id: linux-pm@vger.kernel.org
 
-Thermal zones created using thermal_zone_device_create() may not have
-tzp.  As the governor gets its parameters from there, allocate it while
-the governor is bound to the thermal zone so that it can operate in it.
-In this case, tzp is freed when the thermal zone switches to another
-governor.
+The power allocator governor currently requires that the thermal zone
+has at least two passive trip points.  If there aren't, the governor
+refuses to bind to the thermal zone.
+
+This commit relaxes that requirement.  Now the governor will bind to all
+thermal zones regardless of how many trip points they have.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: Eduardo Valentin <edubezval@gmail.com>
-Reviewed-by: Daniel Kurtz <djkurtz@chromium.org>
 Signed-off-by: Javi Merino <javi.merino@arm.com>
 ---
+ Documentation/thermal/power_allocator.txt |   2 +-
+ drivers/thermal/power_allocator.c         | 101 +++++++++++++++++-------------
+ 2 files changed, 58 insertions(+), 45 deletions(-)
 
-While this would be easier to do by just ignoring the thermal zone if
-there was no tzp, I think the approach in this patch provides a more
-consistent behavior for the system integrator as it doesn't make a
-distinction between thermal zones created with tzp and those that don't.
-
- drivers/thermal/power_allocator.c | 32 +++++++++++++++++++++++++++-----
- 1 file changed, 27 insertions(+), 5 deletions(-)
-
+diff --git a/Documentation/thermal/power_allocator.txt b/Documentation/thermal/power_allocator.txt
+index c3797b529991..a1ce2235f121 100644
+--- a/Documentation/thermal/power_allocator.txt
++++ b/Documentation/thermal/power_allocator.txt
+@@ -4,7 +4,7 @@ Power allocator governor tunables
+ Trip points
+ -----------
+ 
+-The governor requires the following two passive trip points:
++The governor works optimally with the following two passive trip points:
+ 
+ 1.  "switch on" trip point: temperature above which the governor
+     control loop starts operating.  This is the first passive trip
 diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
-index 06e954cd81cc..78d589e7e65f 100644
+index 7fa6685f9c5b..06e954cd81cc 100644
 --- a/drivers/thermal/power_allocator.c
 +++ b/drivers/thermal/power_allocator.c
-@@ -58,6 +58,8 @@ static inline s64 div_frac(s64 x, s64 y)
+@@ -24,6 +24,8 @@
  
- /**
-  * struct power_allocator_params - parameters for the power allocator governor
-+ * @allocated_tzp:	whether we have allocated tzp for this thermal zone and
-+ *			it needs to be freed on unbind
-  * @err_integral:	accumulated error in the PID controller.
-  * @prev_err:	error in the previous iteration of the PID controller.
+ #include "thermal_core.h"
+ 
++#define INVALID_TRIP -1
++
+ #define FRAC_BITS 10
+ #define int_to_frac(x) ((x) << FRAC_BITS)
+ #define frac_to_int(x) ((x) >> FRAC_BITS)
+@@ -61,6 +63,8 @@ static inline s64 div_frac(s64 x, s64 y)
   *		Used to calculate the derivative term.
-@@ -70,6 +72,7 @@ static inline s64 div_frac(s64 x, s64 y)
+  * @trip_switch_on:	first passive trip point of the thermal zone.  The
+  *			governor switches on when this trip point is crossed.
++ *			If the thermal zone only has one passive trip point,
++ *			@trip_switch_on should be INVALID_TRIP.
+  * @trip_max_desired_temperature:	last passive trip point of the thermal
+  *					zone.  The temperature we are
   *					controlling for.
-  */
- struct power_allocator_params {
-+	bool allocated_tzp;
- 	s64 err_integral;
- 	s32 prev_err;
- 	int trip_switch_on;
-@@ -527,8 +530,7 @@ static void allow_maximum_power(struct thermal_zone_device *tz)
-  * Initialize the PID controller parameters and bind it to the thermal
-  * zone.
+@@ -432,43 +436,66 @@ unlock:
+ 	return ret;
+ }
+ 
+-static int get_governor_trips(struct thermal_zone_device *tz,
+-			      struct power_allocator_params *params)
++/**
++ * get_governor_trips() - get the number of the two trip points that are key for this governor
++ * @tz:	thermal zone to operate on
++ * @params:	pointer to private data for this governor
++ *
++ * The power allocator governor works optimally with two trips points:
++ * a "switch on" trip point and a "maximum desired temperature".  These
++ * are defined as the first and last passive trip points.
++ *
++ * If there is only one trip point, then that's considered to be the
++ * "maximum desired temperature" trip point and the governor is always
++ * on.  If there are no passive or active trip points, then the
++ * governor won't do anything.  In fact, its throttle function
++ * won't be called at all.
++ */
++static void get_governor_trips(struct thermal_zone_device *tz,
++			       struct power_allocator_params *params)
+ {
+-	int i, ret, last_passive;
++	int i, last_active, last_passive;
+ 	bool found_first_passive;
+ 
+ 	found_first_passive = false;
+-	last_passive = -1;
+-	ret = -EINVAL;
++	last_active = INVALID_TRIP;
++	last_passive = INVALID_TRIP;
+ 
+ 	for (i = 0; i < tz->trips; i++) {
+ 		enum thermal_trip_type type;
++		int ret;
+ 
+ 		ret = tz->ops->get_trip_type(tz, i, &type);
+-		if (ret)
+-			return ret;
++		if (ret) {
++			dev_warn(&tz->device,
++				 "Failed to get trip point %d type: %d\n", i,
++				 ret);
++			continue;
++		}
+ 
+-		if (!found_first_passive) {
+-			if (type == THERMAL_TRIP_PASSIVE) {
++		if (type == THERMAL_TRIP_PASSIVE) {
++			if (!found_first_passive) {
+ 				params->trip_switch_on = i;
+ 				found_first_passive = true;
++			} else  {
++				last_passive = i;
+ 			}
+-		} else if (type == THERMAL_TRIP_PASSIVE) {
+-			last_passive = i;
++		} else if (type == THERMAL_TRIP_ACTIVE) {
++			last_active = i;
+ 		} else {
+ 			break;
+ 		}
+ 	}
+ 
+-	if (last_passive != -1) {
++	if (last_passive != INVALID_TRIP) {
+ 		params->trip_max_desired_temperature = last_passive;
+-		ret = 0;
++	} else if (found_first_passive) {
++		params->trip_max_desired_temperature = params->trip_switch_on;
++		params->trip_switch_on = INVALID_TRIP;
+ 	} else {
+-		ret = -EINVAL;
++		params->trip_switch_on = INVALID_TRIP;
++		params->trip_max_desired_temperature = last_active;
+ 	}
+-
+-	return ret;
+ }
+ 
+ static void reset_pid_controller(struct power_allocator_params *params)
+@@ -497,11 +524,10 @@ static void allow_maximum_power(struct thermal_zone_device *tz)
+  * power_allocator_bind() - bind the power_allocator governor to a thermal zone
+  * @tz:	thermal zone to bind it to
   *
-- * Return: 0 on success, -EINVAL if the thermal zone doesn't have tzp or -ENOMEM
-- * if we ran out of memory.
-+ * Return: 0 on success, or -ENOMEM if we ran out of memory.
+- * Check that the thermal zone is valid for this governor, that is, it
+- * has two thermal trips.  If so, initialize the PID controller
+- * parameters and bind it to the thermal zone.
++ * Initialize the PID controller parameters and bind it to the thermal
++ * zone.
+  *
+- * Return: 0 on success, -EINVAL if the trips were invalid or -ENOMEM
++ * Return: 0 on success, -EINVAL if the thermal zone doesn't have tzp or -ENOMEM
+  * if we ran out of memory.
   */
  static int power_allocator_bind(struct thermal_zone_device *tz)
- {
-@@ -536,13 +538,20 @@ static int power_allocator_bind(struct thermal_zone_device *tz)
- 	struct power_allocator_params *params;
- 	unsigned long control_temp;
- 
--	if (!tz->tzp)
--		return -EINVAL;
--
- 	params = kzalloc(sizeof(*params), GFP_KERNEL);
- 	if (!params)
- 		return -ENOMEM;
- 
-+	if (!tz->tzp) {
-+		tz->tzp = kzalloc(sizeof(*tz->tzp), GFP_KERNEL);
-+		if (!tz->tzp) {
-+			ret = -ENOMEM;
-+			goto free_params;
-+		}
-+
-+		params->allocated_tzp = true;
-+	}
-+
+@@ -520,30 +546,23 @@ static int power_allocator_bind(struct thermal_zone_device *tz)
  	if (!tz->tzp->sustainable_power)
  		dev_warn(&tz->device, "power_allocator: sustainable_power will be estimated\n");
  
-@@ -563,11 +572,24 @@ static int power_allocator_bind(struct thermal_zone_device *tz)
+-	ret = get_governor_trips(tz, params);
+-	if (ret) {
+-		dev_err(&tz->device,
+-			"thermal zone %s has wrong trip setup for power allocator\n",
+-			tz->type);
+-		goto free;
+-	}
++	get_governor_trips(tz, params);
+ 
+-	ret = tz->ops->get_trip_temp(tz, params->trip_max_desired_temperature,
+-				     &control_temp);
+-	if (ret)
+-		goto free;
++	if (tz->trips > 0) {
++		ret = tz->ops->get_trip_temp(tz,
++					params->trip_max_desired_temperature,
++					&control_temp);
++		if (!ret)
++			estimate_pid_constants(tz, tz->tzp->sustainable_power,
++					       params->trip_switch_on,
++					       control_temp, false);
++	}
+ 
+-	estimate_pid_constants(tz, tz->tzp->sustainable_power,
+-			       params->trip_switch_on, control_temp, false);
+ 	reset_pid_controller(params);
+ 
  	tz->governor_data = params;
  
  	return 0;
-+
-+free_params:
-+	kfree(params);
-+
-+	return ret;
+-
+-free:
+-	kfree(params);
+-	return ret;
  }
  
  static void power_allocator_unbind(struct thermal_zone_device *tz)
- {
-+	struct power_allocator_params *params = tz->governor_data;
-+
- 	dev_dbg(&tz->device, "Unbinding from thermal zone %d\n", tz->id);
-+
-+	if (params->allocated_tzp) {
-+		kfree(tz->tzp);
-+		tz->tzp = NULL;
-+	}
-+
- 	kfree(tz->governor_data);
- 	tz->governor_data = NULL;
- }
+@@ -574,13 +593,7 @@ static int power_allocator_throttle(struct thermal_zone_device *tz, int trip)
+ 
+ 	ret = tz->ops->get_trip_temp(tz, params->trip_switch_on,
+ 				     &switch_on_temp);
+-	if (ret) {
+-		dev_warn(&tz->device,
+-			 "Failed to get switch on temperature: %d\n", ret);
+-		return ret;
+-	}
+-
+-	if (current_temp < switch_on_temp) {
++	if (!ret && (current_temp < switch_on_temp)) {
+ 		tz->passive = 0;
+ 		reset_pid_controller(params);
+ 		allow_maximum_power(tz);
 -- 
 1.9.1
-
