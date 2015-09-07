@@ -1,140 +1,105 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH] power: bq24261_charger: Add support for TI BQ24261 charger
-Date: Mon, 7 Sep 2015 12:57:56 +0900
-Message-ID: <CAJKOXPfDu+LxoiQrV+CsqUbEVwYb1Zmk-m9y-L_1JxrB6ouS0g@mail.gmail.com>
-References: <1441560187-23611-1-git-send-email-ramakrishna.pallala@intel.com>
+From: Daniel Kurtz <djkurtz@chromium.org>
+Subject: Re: [PATCH 2/2] arm64: dts: mt8173: Add thermal zone node for mt8173.
+Date: Mon, 7 Sep 2015 12:00:25 +0800
+Message-ID: <CAGS+omAxWDj+fHsJQhJ-KhFdWPZ-ymcVr63v5Q7ho2bAL_7PBQ@mail.gmail.com>
+References: <1441357309-61669-1-git-send-email-dawei.chien@mediatek.com> <1441357309-61669-3-git-send-email-dawei.chien@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f54.google.com ([209.85.192.54]:35172 "EHLO
-	mail-qg0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753428AbbIGD55 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 6 Sep 2015 23:57:57 -0400
-In-Reply-To: <1441560187-23611-1-git-send-email-ramakrishna.pallala@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1441357309-61669-3-git-send-email-dawei.chien@mediatek.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dawei Chien <dawei.chien@mediatek.com>
+Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Matthias Brugger <matthias.bgg@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>, Eddie Huang <eddie.huang@mediatek.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Howard Chen <howard.chen@linaro.org>, Yingjoe Chen <yingjoe.chen@mediatek.com>, "open list:OPEN FIRMWARE AND..." <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, srv_heupstream <srv>
 List-Id: linux-pm@vger.kernel.org
-To: Ramakrishna Pallala <ramakrishna.pallala@intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Jenny TC <jenny.tc@intel.com>, Andreas Dannenberg <dannenberg@ti.com>
 
-2015-09-07 2:23 GMT+09:00 Ramakrishna Pallala <ramakrishna.pallala@intel.com>:
+Hi Dawei,
+
+On Fri, Sep 4, 2015 at 5:01 PM, Dawei Chien <dawei.chien@mediatek.com> wrote:
+> Add thermal zone node to mt8173.dtsi.
 >
-> Add new charger driver support for BQ24261 charger IC.
->
-> BQ24261 charger driver relies on extcon notifications to get the
-> charger cable type and based on that it will set the charging parameters.
->
-> Signed-off-by: Ramakrishna Pallala <ramakrishna.pallala@intel.com>
-> Signed-off-by: Jennt TC <jenny.tc@intel.com>
+> Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
 > ---
->  .../devicetree/bindings/power/bq24261.txt          |   37 +
->  drivers/power/Kconfig                              |    6 +
->  drivers/power/Makefile                             |    1 +
->  drivers/power/bq24261_charger.c                    | 1208 ++++++++++++++++++++
->  include/linux/power/bq24261_charger.h              |   27 +
->  5 files changed, 1279 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/bq24261.txt
->  create mode 100644 drivers/power/bq24261_charger.c
->  create mode 100644 include/linux/power/bq24261_charger.h
+> This patch is base on following patches
+> https://patchwork.kernel.org/patch/6969581/
+> https://patchwork.kernel.org/patch/6969571/
+> https://patchwork.kernel.org/patch/6969381/
+> ---
+>  arch/arm64/boot/dts/mediatek/mt8173.dtsi |   44 ++++++++++++++++++++++++++++++
+>  1 file changed, 44 insertions(+)
 >
-> diff --git a/Documentation/devicetree/bindings/power/bq24261.txt b/Documentation/devicetree/bindings/power/bq24261.txt
-> new file mode 100644
-> index 0000000..25fc5c4
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/bq24261.txt
-> @@ -0,0 +1,37 @@
-> +Binding for TI bq24261 Li-Ion Charger
+> diff --git a/arch/arm64/boot/dts/mediatek/mt8173.dtsi b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+> index 208051a..6493bfd 100644
+> --- a/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+> +++ b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+> @@ -17,6 +17,7 @@
+>  #include <dt-bindings/power/mt8173-power.h>
+>  #include <dt-bindings/reset-controller/mt8173-resets.h>
+>  #include "mt8173-pinfunc.h"
+> +#include <dt-bindings/thermal/thermal.h>
 
-Please split the bindings into separate patch (the first patch in patchset).
+This include is not necessary, however...
 
-> +
-> +Required properties:
-> +- compatible: Should contain one of the following:
-> +    * "ti,bq24261"
-> +- reg: integer, i2c address of the device.
-> +- ti,charge-current: integer, default charging current (in mA);
-> +- ti,charge-voltage: integer, default charging voltage (in mV);
-> +- ti,termination-current: integer, charge will be terminated when current in
-> +    constant-voltage phase drops below this value (in mA);
-> +- ti,max-charge-current: integer, maximum charging current (in mA);
-> +- ti,max-charge-voltage: integer, maximum charging voltage (in mV);
-> +- ti,min-charge-temperature: integer, minimum charging temperature (in DegC);
-> +- ti,max-charge-temperature: integer, maximum charging temperature (in DegC).
-
-Before accepting "[PATCH 13/13] dt: power: bq24257-charger: Cover
-additional devices"
-http://www.spinics.net/lists/devicetree/msg92134.html
-
-could you and Andreas figure out common bindings? Look at this:
-
-+- ti,charge-current: integer, maximum charging current in uA.
-+- ti,charge-current: integer, default charging current (in mA);
-
-Different meaning and different units. This is madness! :)
-
-In the same time you are adding TI-common bindings (not device
-specific, there is no prefix) so I would expect exactly the same
-bindings if it is possible.
-
-
-> +
-> +Optional properties:
-> +- ti,thermal-sensing: boolean, if present thermal regulation will be enabled;
-
-What is the requirement for thermal-sensing? Can it be enabled always?
-If yes, then this is not really a hardware property.
-
-> +- ti,enable-user-write: boolean, if present driver will allow the user space
-> +    to control the charging current and voltage through sysfs;
-
-This is not DT property. It does not describe hardware.
-
-Best regards,
-Krzysztof
-
-> +
-> +Example:
-> +
-> +bq25890 {
-> +        compatible = "ti,bq24261
-> +        reg = <0x6b>;
-> +
-> +        ti,charge-current = <1000>;
-> +        ti,charge-voltage = <4200>;
-> +        ti,termination-current = <128>;
-> +        ti,max-charge-current = <3000>;
-> +        ti,max-charge-voltage = <4350>;
-> +        ti,min-charge-temperature = <0>;
-> +        ti,max-charge-temperature = <60>;
-> +
-> +        ti,thermal-sensing;
-> +        ti,enable-user-write;
-> +};
-> diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-> index f8758d6..cd47d0d 100644
-> --- a/drivers/power/Kconfig
-> +++ b/drivers/power/Kconfig
-> @@ -396,6 +396,12 @@ config CHARGER_BQ24190
->         help
->           Say Y to enable support for the TI BQ24190 battery charger.
 >
-> +config CHARGER_BQ24261
-> +       tristate "TI BQ24261 charger driver"
-> +       depends on I2C && EXTCON
-> +       help
-> +         Say Y here to enable support for TI BQ24261 battery charger.
+>  / {
+>         compatible = "mediatek,mt8173";
+> @@ -116,6 +117,49 @@
+>                 clock-output-names = "clk32k";
+>         };
+>
+> +       thermal-zones {
+> +               cpu_thermal: cpu_thermal {
+> +                       polling-delay-passive = <1000>; /* milliseconds */
+> +                       polling-delay = <1000>; /* milliseconds */
 > +
->  config CHARGER_BQ24257
->         tristate "TI BQ24257 battery charger driver"
->         depends on I2C
-> diff --git a/drivers/power/Makefile b/drivers/power/Makefile
-> index 5752ce8..bec8409 100644
-> --- a/drivers/power/Makefile
-> +++ b/drivers/power/Makefile
-> @@ -59,6 +59,7 @@ obj-$(CONFIG_CHARGER_MAX8997) += max8997_charger.o
->  obj-$(CONFIG_CHARGER_MAX8998)  += max8998_charger.o
->  obj-$(CONFIG_CHARGER_BQ2415X)  += bq2415x_charger.o
->  obj-$(CONFIG_CHARGER_BQ24190)  += bq24190_charger.o
-> +obj-$(CONFIG_CHARGER_BQ24261)  += bq24261_charger.o
->  obj-$(CONFIG_CHARGER_BQ24257)  += bq24257_charger.o
->  obj-$(CONFIG_CHARGER_BQ24735)  += bq24735-charger.o
->  obj-$(CONFIG_CHARGER_BQ25890)  += bq25890_charger.o
+> +                       thermal-sensors = <&thermal MT8173_THERMAL_ZONE_CA57>;
+
+this fails to compile, because MT8173_THERMAL_ZONE_CA57 is defined in:
+
+include/dt-bindings/thermal/mt8173.h
+
+-Dan
+
+
+> +                       sustainable-power = <1500>;
+> +
+> +                       trips {
+> +                               threshold: trip-point@0 {
+> +                                       temperature = <68000>;
+> +                                       hysteresis = <2000>;
+> +                                       type = "passive";
+> +                               };
+> +
+> +                               target: trip-point@1 {
+> +                                       temperature = <85000>;
+> +                                       hysteresis = <2000>;
+> +                                       type = "passive";
+> +                               };
+> +
+> +                               cpu_crit: cpu_crit@0 {
+> +                                       temperature = <115000>;
+> +                                       hysteresis = <2000>;
+> +                                       type = "critical";
+> +                               };
+> +                       };
+> +
+> +                       cooling-maps {
+> +                               map@0 {
+> +                                       trip = <&target>;
+> +                                       cooling-device = <&cpu0 0 0>;
+> +                                       contribution = <1024>;
+> +                               };
+> +                               map@1 {
+> +                                       trip = <&target>;
+> +                                       cooling-device = <&cpu2 0 0>;
+> +                                       contribution = <2048>;
+> +                               };
+> +                       };
+> +               };
+> +       };
+> +
+>         timer {
+>                 compatible = "arm,armv8-timer";
+>                 interrupt-parent = <&gic>;
+> --
+> 1.7.9.5
+>
