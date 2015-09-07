@@ -1,31 +1,43 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC PATCH 1/3] cpufreq: Add new attribute "base_frequency"
-Date: Mon, 7 Sep 2015 21:01:57 +0530
-Message-ID: <20150907153157.GV26760@linux>
-References: <1441387159-19860-1-git-send-email-srinivas.pandruvada@linux.intel.com>
- <20150907060648.GE26760@linux>
- <55EDAA7B.7020301@linux.intel.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v2 1/5] ACPI: add in a bad_madt_entry() function to eventually
+ replace the macro
+Date: Mon, 07 Sep 2015 16:32:05 +0100
+Message-ID: <55EDADF5.5060008@arm.com>
+References: <1440022048-6285-1-git-send-email-al.stone@linaro.org> <1440022048-6285-2-git-send-email-al.stone@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f48.google.com ([209.85.220.48]:36291 "EHLO
-	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750874AbbIGPcC (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Sep 2015 11:32:02 -0400
-Received: by padhk3 with SMTP id hk3so14732859pad.3
-        for <linux-pm@vger.kernel.org>; Mon, 07 Sep 2015 08:32:01 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <55EDAA7B.7020301@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1440022048-6285-2-git-send-email-al.stone@linaro.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Al Stone <al.stone@linaro.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>, "patches@linaro.org" <patches@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org
 
-On 07-09-15, 08:17, Srinivas pandruvada wrote:
-> I can only add to acpi cpufeq. Once configurable TDP becomes
-> standard feature, I think others will follow.
+Hi Al,
 
-We will move it to core then :)
+On 19/08/15 23:07, Al Stone wrote:
 
--- 
-viresh
+I finally got a chance to try this series on Juno. Well it exposed a 
+firmware bug in MADT table :)
+
+[..]
+
+>                  acpi_tbl_entry_handler handler,
+> @@ -245,6 +484,8 @@ acpi_parse_entries(char *id, unsigned long table_size,
+>                 table_end) {
+>                  if (entry->type == entry_id
+>                      && (!max_entries || count < max_entries)) {
+> +                       if (bad_madt_entry(table_header, entry))
+> +                               return -EINVAL;
+
+Not sure if we can have the above check here unconditionally.
+Currently I can see there are 2 other users of acpi_parse_entries i.e.
+PCC and NUMA. So may be it can be made conditional or return success for
+non-MADT tables from bad_madt_entry ?
+
+Other than that, you can add for ARM64 specific parts:
+Reviewed-and-tested-by: Sudeep Holla <sudeep.holla@arm.com>
+
+Regards,
+Sudeep
