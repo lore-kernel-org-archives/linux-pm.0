@@ -1,43 +1,60 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v2 1/5] ACPI: add in a bad_madt_entry() function to eventually
- replace the macro
-Date: Mon, 07 Sep 2015 16:32:05 +0100
-Message-ID: <55EDADF5.5060008@arm.com>
-References: <1440022048-6285-1-git-send-email-al.stone@linaro.org> <1440022048-6285-2-git-send-email-al.stone@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1440022048-6285-2-git-send-email-al.stone@linaro.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Al Stone <al.stone@linaro.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>, "patches@linaro.org" <patches@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH v4 0/4] cpufreq-dt: add suspend frequency support
+Date: Mon, 07 Sep 2015 17:41:37 +0200
+Message-ID: <1441640501-13613-1-git-send-email-b.zolnierkie@samsung.com>
+Return-path: <linux-clk-owner@vger.kernel.org>
+Sender: linux-clk-owner@vger.kernel.org
+To: Thomas Abraham <thomas.ab@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Al,
+Hi,
 
-On 19/08/15 23:07, Al Stone wrote:
+This patch series adds suspend frequency support (using opp-v2
+bindings and suspend-opp functionality) to cpufreq-dt driver and
+then adds suspend opp for Exynos4412 based boards.
 
-I finally got a chance to try this series on Juno. Well it exposed a 
-firmware bug in MADT table :)
+This patch series fixes suspend/resume support on Exynos4412
+based Trats2 board and reboot hang on Exynos4412 based Odroid
+U3 board.
 
-[..]
+Changes since v3:
+- fixed dev_pm_opp_get_suspend_opp() locking
+- shortened variable name in dev_pm_opp_get_suspend_opp()
+- adjusted cpufreq_generic_suspend() to work with cpufreq-dt
+- removed no longer needed cpufreq_dt_suspend()
+- added Acked-by tag from Viresh to patch #4
 
->                  acpi_tbl_entry_handler handler,
-> @@ -245,6 +484,8 @@ acpi_parse_entries(char *id, unsigned long table_size,
->                 table_end) {
->                  if (entry->type == entry_id
->                      && (!max_entries || count < max_entries)) {
-> +                       if (bad_madt_entry(table_header, entry))
-> +                               return -EINVAL;
+Changes since v2:
+- rewrote to use suspend-opp functionality
 
-Not sure if we can have the above check here unconditionally.
-Currently I can see there are 2 other users of acpi_parse_entries i.e.
-PCC and NUMA. So may be it can be made conditional or return success for
-non-MADT tables from bad_madt_entry ?
+Changes since v1:
+- removed superfluous ";"
 
-Other than that, you can add for ARM64 specific parts:
-Reviewed-and-tested-by: Sudeep Holla <sudeep.holla@arm.com>
+Depends on:
+- next-20150902 branch of linux-next kernel tree
 
-Regards,
-Sudeep
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+
+Bartlomiej Zolnierkiewicz (4):
+  PM / OPP: add dev_pm_opp_get_suspend_opp() helper
+  cpufreq: allow cpufreq_generic_suspend() to work without suspend
+    frequency
+  cpufreq-dt: add suspend frequency support
+  ARM: dts: add suspend opp to exynos4412
+
+ arch/arm/boot/dts/exynos4412.dtsi |  1 +
+ drivers/base/power/opp.c          | 30 ++++++++++++++++++++++++++++++
+ drivers/cpufreq/cpufreq-dt.c      | 11 +++++++++++
+ drivers/cpufreq/cpufreq.c         |  4 ++--
+ include/linux/pm_opp.h            |  6 ++++++
+ 5 files changed, 50 insertions(+), 2 deletions(-)
+
+-- 
+1.9.1
+
