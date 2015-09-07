@@ -1,53 +1,54 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2 1/9] cpufreq: Use __func__ to print function's name
-Date: Tue, 08 Sep 2015 01:42:23 +0200
-Message-ID: <2255089.Zk01N0S7pW@vostro.rjw.lan>
-References: <cover.1437999691.git.viresh.kumar@linaro.org> <a131c99933f5dd7eefbd39358a2dc2b13663ca7b.1437999691.git.viresh.kumar@linaro.org>
+From: Seiichi Ikarashi <s.ikarashi@jp.fujitsu.com>
+Subject: Re: [PATCH] intel_pstate: prevent max_perf_pct < min_perf_pct
+Date: Tue, 8 Sep 2015 08:18:46 +0900
+Message-ID: <55EE1B56.3010205@jp.fujitsu.com>
+References: <55E97973.1020301@jp.fujitsu.com>
+ <36DF59CE26D8EE47B0655C516E9CE6401CB04B52@SHSMSX101.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:45667 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751135AbbIGXOf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Sep 2015 19:14:35 -0400
-In-Reply-To: <a131c99933f5dd7eefbd39358a2dc2b13663ca7b.1437999691.git.viresh.kumar@linaro.org>
+Received: from mgwym04.jp.fujitsu.com ([211.128.242.43]:30194 "EHLO
+	mgwym04.jp.fujitsu.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751197AbbIGXUn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Sep 2015 19:20:43 -0400
+Received: from g01jpfmpwyt03.exch.g01.fujitsu.local (g01jpfmpwyt03.exch.g01.fujitsu.local [10.128.193.57])
+	by yt-mxq.gw.nic.fujitsu.com (Postfix) with ESMTP id DFF75AC0190
+	for <linux-pm@vger.kernel.org>; Tue,  8 Sep 2015 08:20:39 +0900 (JST)
+In-Reply-To: <36DF59CE26D8EE47B0655C516E9CE6401CB04B52@SHSMSX101.ccr.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, preeti.lkml@gmail.com, open list <linux-kernel@vger.kernel.org>
+To: "Chen, Yu C" <yu.c.chen@intel.com>
+Cc: "kristen@linux.intel.com" <kristen@linux.intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>
 
-On Monday, July 27, 2015 05:58:06 PM Viresh Kumar wrote:
-> Its better to use __func__ to print functions name instead of writing
-> the name in the print statement. This also has the advantage that a
-> change in function's name doesn't force us to change the print message
-> as well.
+Hi, Yu
+
+On 2015-09-07 18:00, Chen, Yu C wrote:
+> Hi, Seiichi
 > 
-> Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> -----Original Message-----
+>> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
+>> owner@vger.kernel.org] On Behalf Of Seiichi Ikarashi
+>> Sent: Friday, September 04, 2015 6:59 PM
+>> To: kristen@linux.intel.com; Wysocki, Rafael J
+>> Cc: linux-pm@vger.kernel.org
+>> Subject: [PATCH] intel_pstate: prevent max_perf_pct < min_perf_pct
+>>
+>> Add some value check to prevent a reversal, max_perf_pct < min_perf_pct.
+>>
+>> Signed-off-by: Seiichi Ikarashi <s.ikarashi@jp.fujitsu.com>
+>>
+> I guess a similar patch has been sent at:
+> https://patchwork.kernel.org/patch/6995461/
 
-OK, this is simple enough.  Applied, thanks!
+Yes, your patch looks better than mine from the point of view
+of covering intel_pstate_set_policy().
 
-> ---
->  drivers/cpufreq/cpufreq.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 46251e8d30f2..f620055279f3 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -2074,8 +2074,7 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
->  		if (!try_module_get(policy->governor->owner))
->  			return -EINVAL;
->  
-> -	pr_debug("__cpufreq_governor for CPU %u, event %u\n",
-> -		 policy->cpu, event);
-> +	pr_debug("%s: for CPU %u, event %u\n", __func__, policy->cpu, event);
->  
->  	mutex_lock(&cpufreq_governor_lock);
->  	if ((policy->governor_enabled && event == CPUFREQ_GOV_START)
-> 
+Still I have a question.
+Does your patch allow the following condition?
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+  limits.max_policy_pct > limits.min_perf_pct > limits.max_perf_pct > limits.min_policy_pct
+
+Regards,
+Ikarashi
+
