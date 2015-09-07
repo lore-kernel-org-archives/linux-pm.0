@@ -1,67 +1,106 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 7/7] ARM: smp: Add runtime PM support for CPU hotplug
-Date: Mon, 07 Sep 2015 15:04:10 +0200
-Message-ID: <2657565.lxWtPmdjyp@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1509051133100.30865-100000@netrider.rowland.org>
+Subject: Re: System will not suspend with highest numbered CPU offline [REGRESSION][BISECTED]
+Date: Mon, 07 Sep 2015 15:07:05 +0200
+Message-ID: <15201917.ny03gYuJf6@vostro.rjw.lan>
+References: <001401d0e691$302127b0$90637710$@net> <000f01d0e783$6fe75cf0$4fb616d0$@net> <001601d0e7af$01a22140$04e663c0$@net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:49187 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:61189 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750901AbbIGMgW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Sep 2015 08:36:22 -0400
-In-Reply-To: <Pine.LNX.4.44L0.1509051133100.30865-100000@netrider.rowland.org>
+	with SMTP id S1752048AbbIGMjQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Sep 2015 08:39:16 -0400
+In-Reply-To: <001601d0e7af$01a22140$04e663c0$@net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Grygorii Strashko <grygorii.strashko@ti.com>, Lina Iyer <lina.iyer@linaro.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Mark Rutland <mark.rutland@arm.com>, ulf.hansson@linaro.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-pm@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, k.kozlowski@samsung.com, msivasub@codeaurora.org, khilman@linaro.org, geert@linux-m68k.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-kernel@lists.infradead.org
+To: Doug Smythies <dsmythies@telus.net>
+Cc: "'Rafael J. Wysocki'" <rafael@kernel.org>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Saravana Kannan' <skannan@codeaurora.org>, linux-pm@vger.kernel.org
 
-On Saturday, September 05, 2015 11:39:20 AM Alan Stern wrote:
-> On Sat, 5 Sep 2015, Grygorii Strashko wrote:
+On Saturday, September 05, 2015 12:46:40 AM Doug Smythies wrote:
+> On 2015.09.05 19:35 Doug Smythies wrote:
+> > On 2015.09.04 17:23 Rafael J. Wysocki wrote:
+> >> On Sat, Sep 5, 2015 at 1:05 AM, Doug Smythies <dsmythies@telus.net> wrote:
+> >>> On 2015.09.04 15:26 Rafael J. Wysocki wrote:
+> >>>> On Fri, Sep 4, 2015 at 8:41 PM, Doug Smythies <dsmythies@telus.net> wrote:
+> >>>>> On 2015.09.04 07:43 Viresh Kumar wrote:
+> >>>>>> On 04-09-15, 16:59, Rafael J. Wysocki wrote:
+> >>>>>>> On Thursday, September 03, 2015 02:40:43 PM Doug Smythies wrote:
+> >>>>>>>> As of, or about, Kernel 4.2RC1 if I take my highest numbered
+> >>>>>>>> CPU offline (7 in my case), the system will not suspend.
 > 
-> > On 09/04/2015 09:45 PM, Alan Stern wrote:
-> > > On Fri, 4 Sep 2015, Grygorii Strashko wrote:
-> > > 
-> > >> There is one "small" problem with such approach :(
-> > >>
-> > >> - It's incompatible with -RT kernel, because PM runtime can't be used
-> > >> in atomic context on -RT.
-> > > 
-> > > Can you explain this more fully?  Why can't runtime PM be used in
-> > > atomic context in the -rt kernels?
-> > >  
-> > 
-> > See:
-> >  http://lwn.net/Articles/146861/
-> >  https://rt.wiki.kernel.org/index.php/Frequently_Asked_Questions#How_does_the_CONFIG_PREEMPT_RT_patch_work.3F
-> > 
-> > spinlock_t
-> >     Critical sections are preemptible. The _irq operations (e.g., spin_lock_irqsave())
-> >  do -not- disable hardware interrupts. Priority inheritance is used to prevent priority
-> >  inversion. An underlying rt_mutex is used to implement spinlock_t in PREEMPT_RT. 
-> > 
-> > As result, have to do things like:
-> > https://lkml.org/lkml/2015/8/18/161
-> > https://lkml.org/lkml/2015/8/18/162
-> > 
-> > Sorry for brief reply - Friday/Sat night :)
+> >>>> Hmm.
+> >>>> I suspect that your user space does something that fails during the pm-suspend.
+> >>>
+> >>> Are you saying that the patch might be O.K., but reveals
+> >>> and issue with pm-suspend that was always there?
+> >>
+> >> Or it breaks something that pm-suspend does before suspending.
+> >>
+> >> It would be good to know what it is. :-)
 > 
-> I see.  Although we normally think of interrupt contexts as being
-> atomic, in an -rt kernel this isn't true any more because things like
-> spin_lock_irq don't actually disable interrupts.
+> > While researching pm-utils bugs, I found reference to
+> > /var/log/pm-suspend.log, which I had not noticed before.
+> > Relevant extract attached.
 > 
-> Therefore it would be correct to say that in -rt kernels, runtime PM
-> can be used in interrupt context (if the device is marked as irq-safe),
-> but not in atomic context.  Right?
+> > It is not clear to me why that echo line (there is only one)
+> > would fail.
+> 
+> The echo line fails because the related CPU is offline.
+> If the failed echo is the last pass through the loop,
+> then the script interprets the overall execution of
+> 94cpufreq as a failure and aborts the suspend.
+
+That's correct AFAICS.
+
+> If the failed echo is not the last pass through the loop, then
+> the bad exit code gets overwritten with a good one before
+> the loop exits.
 
 Right.
 
-Whatever is suitable for interrupt context in the mainline, will be suitable
-for that in -rt kernels too.  However, what is suitable for the idle loop
-in the mainline, may not be suitable for that in -rt kernels.
+> Since the loop is merely setting a temporary governor,
+> to test I just used performance mode anyway, and commented
+> out the echo. pm-suspend with CPU 7 offline then worked fine.
+> 
+> I have not yet gone back to any before the patch kernel
+> to determine why it used to work (it is late in my time zone).
+> However, I would have to assume that before the commit in
+> question, the echo worked even if the CPU was offline.
 
-That's why raw_spin_lock/unlock() need to be used within the idle loop.
+It didn't have to, because the cpudreq directory was not present,
+so the
+
+[ -L "$x/cpufreq" ] && continue
+
+line would trigger.
+
+> Could someone please confirm or deny the above conclusion.
+> 
+> The relevant code segment, with some added debug
+> echo stuff, from /usr/lib/pm-utils/sleep.d/94cpufreq 
+> 
+> hibernate_cpufreq()
+> {
+>   ( cd /sys/devices/system/cpu/
+>   for x in cpu[0-9]*; do
+>      # if cpufreq is a symlink, it is handled by another cpu. Skip.
+>      [ -L "$x/cpufreq" ] && continue
+>      gov="$x/cpufreq/scaling_governor"
+>      # if we do not have a scaling_governor file, skip.
+>      [ -f "$gov" ] || continue
+>      # if our temporary governor is not available, skip.
+>      grep -q "$TEMPORARY_CPUFREQ_GOVERNOR" \
+>      "$x/cpufreq/scaling_available_governors" || continue
+>      savestate "${x}_governor" < "$gov"
+> # I added the next 3 lines
+>      echo "$x"
+>      echo "$TEMPORARY_CPUFREQ_GOVERNOR"
+>      echo "$gov"
+> # For a test, do not do the echo, as I already set performance mode
+> #    echo "$TEMPORARY_CPUFREQ_GOVERNOR" > "$gov"
+>   done )
+> }
 
 Thanks,
 Rafael
