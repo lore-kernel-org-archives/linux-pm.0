@@ -1,55 +1,40 @@
-From: Daniel Wagner <daniel.wagner@bmw-carit.de>
-Subject: Re: [RFC v0 2/9] suspend: Add getter function to report if freezing
- is active
-Date: Mon, 7 Sep 2015 10:55:43 +0200
-Message-ID: <55ED510F.7090702@bmw-carit.de>
-References: <1441373702-31796-1-git-send-email-daniel.wagner@bmw-carit.de>
- <1441373702-31796-3-git-send-email-daniel.wagner@bmw-carit.de>
- <1683655.HLd9k04Slu@vostro.rjw.lan>
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: RE: [PATCH] intel_pstate: prevent max_perf_pct < min_perf_pct
+Date: Mon, 7 Sep 2015 09:00:39 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE6401CB04B52@SHSMSX101.ccr.corp.intel.com>
+References: <55E97973.1020301@jp.fujitsu.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1683655.HLd9k04Slu@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([192.55.52.115]:28181 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751018AbbIGJBY convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Sep 2015 05:01:24 -0400
+In-Reply-To: <55E97973.1020301@jp.fujitsu.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Seiichi Ikarashi <s.ikarashi@jp.fujitsu.com>, "kristen@linux.intel.com" <kristen@linux.intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>
 
-On 09/05/2015 04:11 AM, Rafael J. Wysocki wrote:
-> On Friday, September 04, 2015 03:34:55 PM Daniel Wagner wrote:
->> Instead encode the FREEZE state via the CPU state we allow the
->> interesting subsystems (MCE, microcode) to query the power
->> subsystem directly.
+Hi, Seiichi
+
+> -----Original Message-----
+> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
+> owner@vger.kernel.org] On Behalf Of Seiichi Ikarashi
+> Sent: Friday, September 04, 2015 6:59 PM
+> To: kristen@linux.intel.com; Wysocki, Rafael J
+> Cc: linux-pm@vger.kernel.org
+> Subject: [PATCH] intel_pstate: prevent max_perf_pct < min_perf_pct
 > 
-> A use case, please.
-
-The motivation for this change is to reduce the complexity in the
-hotplug code. As tried to point out in the cover letter, the FROZEN
-bits have only a bunch of users after all those years (2007). So it is
-worth to have all the notifier users to handle the FROZEN state?
-
-Don't know if that counts as use case.
-
->> Most notifiers are not interested at all
->> in this information so rather have explicit calls to freeze_active()
->> instead adding complexity to the rest of the users of the CPU
->> notifiers.
+> Add some value check to prevent a reversal, max_perf_pct < min_perf_pct.
 > 
-> Why does it has anything to do with CPU notifiers?
+> Signed-off-by: Seiichi Ikarashi <s.ikarashi@jp.fujitsu.com>
+> 
+I guess a similar patch has been sent at:
+https://patchwork.kernel.org/patch/6995461/
 
-cpu_{down|up} will call the notifiers with the CPU_TASK_FROZEN bit set
-and so most notifiers are doing
 
-	switch (actcion ~CPU_TASK_FROZEN)
-
-to filter it out because they don't need to handle the system wide
-ongoing freeze operations.
-
-> We don't offline CPUs for suspend-to-idle.
-
-Sure. As I said the motivation is to reduce the complexity in the
-hotplug code.
-
-Thanks,
-Daniel
+Best Regards,
+Yu
