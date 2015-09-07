@@ -1,51 +1,68 @@
-From: Daniel Kurtz <djkurtz@chromium.org>
-Subject: Re: [PATCH 2/2] arm64: dts: mt8173: Add thermal zone node for mt8173.
-Date: Mon, 7 Sep 2015 12:05:01 +0800
-Message-ID: <CAGS+omDne19U+BzCQ8o9Hte=cDXNF3SL7zLE33UEFgWgMsPpOQ@mail.gmail.com>
-References: <1441357309-61669-1-git-send-email-dawei.chien@mediatek.com>
- <1441357309-61669-3-git-send-email-dawei.chien@mediatek.com> <CAGS+omAxWDj+fHsJQhJ-KhFdWPZ-ymcVr63v5Q7ho2bAL_7PBQ@mail.gmail.com>
+From: Petr Cvek <petr.cvek@tul.cz>
+Subject: Re: [PATCH v2 00/21] ARM: pxa: magician: Rework HTC Magician support
+Date: Mon, 7 Sep 2015 06:14:52 +0200
+Message-ID: <55ED0F3C.9040805@tul.cz>
+References: <55D2583B.8040602@tul.cz> <87fv2txjle.fsf@belgarion.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f178.google.com ([209.85.160.178]:34686 "EHLO
-	mail-yk0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750850AbbIGEFV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Sep 2015 00:05:21 -0400
-Received: by ykdg206 with SMTP id g206so70109803ykd.1
-        for <linux-pm@vger.kernel.org>; Sun, 06 Sep 2015 21:05:21 -0700 (PDT)
-In-Reply-To: <CAGS+omAxWDj+fHsJQhJ-KhFdWPZ-ymcVr63v5Q7ho2bAL_7PBQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=iso-8859-2
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-leds-owner@vger.kernel.org>
+In-Reply-To: <87fv2txjle.fsf@belgarion.home>
+Sender: linux-leds-owner@vger.kernel.org
+To: Robert Jarzmik <robert.jarzmik@free.fr>, philipp.zabel@gmail.com
+Cc: daniel@zonque.org, haojian.zhuang@gmail.com, sameo@linux.intel.com, lee.jones@linaro.org, cooloney@gmail.com, rpurdie@rpsys.net, j.anaszewski@samsung.com, linux@arm.linux.org.uk, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Dawei Chien <dawei.chien@mediatek.com>
-Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Matthias Brugger <matthias.bgg@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>, Eddie Huang <eddie.huang@mediatek.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Howard Chen <howard.chen@linaro.org>, Yingjoe Chen <yingjoe.chen@mediatek.com>, "open list:OPEN FIRMWARE AND..." <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, srv_heupstream <srv>
 
-On Mon, Sep 7, 2015 at 12:00 PM, Daniel Kurtz <djkurtz@chromium.org> wrote:
-> Hi Dawei,
->
-> On Fri, Sep 4, 2015 at 5:01 PM, Dawei Chien <dawei.chien@mediatek.com> wrote:
->> Add thermal zone node to mt8173.dtsi.
+Dne 5.9.2015 v 12:10 Robert Jarzmik napsal(a):
+> Petr Cvek <petr.cvek@tul.cz> writes:
+> 
+>> This patchset will clean, fix and finally add multiple PXA devices
+>> to HTC Magician machine. Also it adds leds-pasic3 driver to LED subsystem.
+>> This driver require changes into htc-pasic3 structures, which are used
+>> exclusively by magician.c code.
 >>
->> Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
->> ---
->> This patch is base on following patches
->> https://patchwork.kernel.org/patch/6969581/
->> https://patchwork.kernel.org/patch/6969571/
->> https://patchwork.kernel.org/patch/6969381/
->> ---
->>  arch/arm64/boot/dts/mediatek/mt8173.dtsi |   44 ++++++++++++++++++++++++++++++
->>  1 file changed, 44 insertions(+)
->>
->> diff --git a/arch/arm64/boot/dts/mediatek/mt8173.dtsi b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
->> index 208051a..6493bfd 100644
->> --- a/arch/arm64/boot/dts/mediatek/mt8173.dtsi
->> +++ b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
->> @@ -17,6 +17,7 @@
->>  #include <dt-bindings/power/mt8173-power.h>
->>  #include <dt-bindings/reset-controller/mt8173-resets.h>
->>  #include "mt8173-pinfunc.h"
->> +#include <dt-bindings/thermal/thermal.h>
+>> Petr Cvek (21):
+>>   ARM: pxa: magician: Fix Kconfig for magician to always include
+>>     htc-egpio
+>>   ARM: pxa: magician: Fix indentation and whitespaces
+>>   ARM: pxa: magician: Fix comments, debug functions and print strings
+>>   ARM: pxa: magician: Add, fix and init (new) GPIOs
+>>   ARM: pxa: magician: Add support for ADS7846 touchscreen
+>>   ARM: pxa: magician: Add normal and power I2C definition
+>>   ARM: pxa: magician: Fix IrDA pdata and redundant GPIO request
+>>   ARM: pxa: magician: Add StrataFlash Vpp GPIO and alternative driver
+>>   ARM: pxa: magician: Add OV9640 camera support
+>>   ARM: pxa: magician: Add UDA1380 sound support
+>>   ARM: pxa: magician: Add MAX1586 Vcore regulator support
+>>   ARM: pxa: magician: Add PXA27x UDC support
+>>   ARM: pxa: magician: Fix charging source and add NiCd backup charging
+>>   ARM: pxa: magician: Fix PXA USB OHCI port enable flags
+>>   ARM: pxa: magician: Fix PWM backlight regulator
+>>   ARM: pxa: magician: Add support for alternative LCD backlight
+>>   ARM: pxa: magician: Remove (temporarily) pasic3 LED support
+>>   mfd: htc-pasic3: Prepare driver for leds-pasic3
+>>   leds: leds-pasic3: Add support for PASIC3 LED controller
+>>   ARM: pxa: magician: Re-add pdata for new leds-pasic3 driver
+>>   ARM: pxa: magician: Move platform_add_devices() to the end of
+>>     magician_init()
+> 
+> Hi Petr,
+> 
+> If you want several of these patches targeted at v4.3, I need to know which ones
+> (in arch/arm/mach-pxa) are pure fixes without which magician is broken.
+> 
+> And a confirmation from Philip on this list would make my life easier.
+> 
 
-Also, as a nit, (#include <dt-bindings/thermal/mt8173.h>) should be
-above '#include "mt8173-pinfunc.h"'
+Sorry for delay, I was offline for few days and I have got frozen on creating rootfs suitable for NOR flash.
 
--djk
+I will send next patchset soon (this week I hope). 
+
+If it misses this devel window, it is OK to me (I'm no hurry :-D).
+
+Best regards,
+Petr
+
+
+> Cheers.
+> 
