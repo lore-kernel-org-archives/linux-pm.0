@@ -1,71 +1,67 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing runtime suspend
-Date: Mon, 07 Sep 2015 23:20:01 +0200
-Message-ID: <8981266.1iKleIVcUj@vostro.rjw.lan>
-References: <1441658561-26190-1-git-send-email-irina.tirdea@intel.com>
+Subject: Re: [RFC v0 2/9] suspend: Add getter function to report if freezing is active
+Date: Mon, 07 Sep 2015 23:44:41 +0200
+Message-ID: <1597290.WZUafm8kGW@vostro.rjw.lan>
+References: <1441373702-31796-1-git-send-email-daniel.wagner@bmw-carit.de> <1683655.HLd9k04Slu@vostro.rjw.lan> <55ED510F.7090702@bmw-carit.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:51867 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:48569 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751287AbbIGUwM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Sep 2015 16:52:12 -0400
-In-Reply-To: <1441658561-26190-1-git-send-email-irina.tirdea@intel.com>
+	with SMTP id S1750897AbbIGVQw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Sep 2015 17:16:52 -0400
+In-Reply-To: <55ED510F.7090702@bmw-carit.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Irina Tirdea <irina.tirdea@intel.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, linux-pm@vger.kernel.org, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Octavian Purdila <octavian.purdila@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Daniel Wagner <daniel.wagner@bmw-carit.de>
+Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
 
-On Monday, September 07, 2015 11:42:41 PM Irina Tirdea wrote:
-> Add new option to sysfs control interface, allowing the user to force
-> suspend the device.
-
-Had we thought this had been a good idea, we'd have added that thing to
-the interface from the start.
-
-The problem with it is that user space generally doesn't know when it is
-safe to suspend a device, so it cannot force anything into runtime suspend.
-
-> This is useful for devices that need to be
-> suspended when closing the lid of a laptop or the screen of a mobile
-> device, while userspace still holds open handles to it and the
-> system does not enter system suspend.
+On Monday, September 07, 2015 10:55:43 AM Daniel Wagner wrote:
+> On 09/05/2015 04:11 AM, Rafael J. Wysocki wrote:
+> > On Friday, September 04, 2015 03:34:55 PM Daniel Wagner wrote:
+> >> Instead encode the FREEZE state via the CPU state we allow the
+> >> interesting subsystems (MCE, microcode) to query the power
+> >> subsystem directly.
+> > 
+> > A use case, please.
 > 
-> Add the "off" option to the sysfs control power interface, along with
-> the already present "on" and "auto". When this attribute is set to
-> "off", the device will be force suspended by calling its runtime
-> suspend callback and disabling runtime power management so that
-> further acceses to the device will not change the actual state.
+> The motivation for this change is to reduce the complexity in the
+> hotplug code. As tried to point out in the cover letter, the FROZEN
+> bits have only a bunch of users after all those years (2007). So it is
+> worth to have all the notifier users to handle the FROZEN state?
+> 
+> Don't know if that counts as use case.
 
-And how is user space supposed to know that it doesn't break things
-this way?
+Well, the code you're changing has nothing to do with CPU hotplug and
+CPU_TASKS_FROZEN.  It is about suspend-to-idle.
 
-> The device can be resumed by setting the attribute to "on" or "auto".
-> The behaviour of the interface when switching only between "on"
-> and "auto" states remains unchanged.
-> 
-> Signed-off-by: Irina Tirdea <irina.tirdea@intel.com>
-> ---
-> 
-> Hi,
-> 
-> This is a proposal for suspending devices when the closing the lid of
-> a laptop or the screen of a mobile device.
-> 
-> I am testing this with a Goodix touchscreen [1] for an Android mobile
-> device. Android has an userspace layer (power HAL) that would normally
-> close the touchscreen when the screen is closed. Android touchscreen
-> drivers usually provide a custom sysfs interface to allow this.
-> This would be better implemented in a common place, to avoid code
-> duplication and to simplify the driver code (as previosly discussed
-> in [1]).
-> 
-> I know there are more ways to implement this, so I would appreciate
-> your feedback.
+Please grep for suspend_freeze_state and see what it is used for.
 
-So the feedback is that this is not going to work in general.  Please
-use a different approach.
+There is some confusion in the naming, but that is about the freezing of
+the whole system, while CPU_TASKS_FROZEN is about the freezing of user space.
+
+> >> Most notifiers are not interested at all
+> >> in this information so rather have explicit calls to freeze_active()
+> >> instead adding complexity to the rest of the users of the CPU
+> >> notifiers.
+> > 
+> > Why does it has anything to do with CPU notifiers?
+> 
+> cpu_{down|up} will call the notifiers with the CPU_TASK_FROZEN bit set
+> and so most notifiers are doing
+> 
+> 	switch (actcion ~CPU_TASK_FROZEN)
+> 
+> to filter it out because they don't need to handle the system wide
+> ongoing freeze operations.
+> 
+> > We don't offline CPUs for suspend-to-idle.
+> 
+> Sure. As I said the motivation is to reduce the complexity in the
+> hotplug code.
+
+You need to fine a different way to do that.
 
 Thanks,
 Rafael
