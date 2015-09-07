@@ -1,84 +1,61 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: System will not suspend with highest numbered CPU offline [REGRESSION][BISECTED]
-Date: Mon, 07 Sep 2015 15:32:22 +0200
-Message-ID: <36067670.SJVW3MBOsV@vostro.rjw.lan>
-References: <001401d0e691$302127b0$90637710$@net> <001601d0e7af$01a22140$04e663c0$@net> <20150905081407.GK5285@linux>
+Subject: Re: [RFC v0 2/9] suspend: Add getter function to report if freezing is active
+Date: Mon, 07 Sep 2015 15:42:25 +0200
+Message-ID: <2859137.3H6amPOryx@vostro.rjw.lan>
+References: <1441373702-31796-1-git-send-email-daniel.wagner@bmw-carit.de> <1683655.HLd9k04Slu@vostro.rjw.lan> <55ED510F.7090702@bmw-carit.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:49233 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:44672 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751098AbbIGNEd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Sep 2015 09:04:33 -0400
-In-Reply-To: <20150905081407.GK5285@linux>
+	with SMTP id S1750975AbbIGNOi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Sep 2015 09:14:38 -0400
+In-Reply-To: <55ED510F.7090702@bmw-carit.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Doug Smythies <dsmythies@telus.net>, "'Rafael J. Wysocki'" <rafael@kernel.org>, 'Saravana Kannan' <skannan@codeaurora.org>, linux-pm@vger.kernel.org
+To: Daniel Wagner <daniel.wagner@bmw-carit.de>
+Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
 
-On Saturday, September 05, 2015 01:44:07 PM Viresh Kumar wrote:
-> On 05-09-15, 00:46, Doug Smythies wrote:
-> > > It is not clear to me why that echo line (there is only one)
-> > > would fail.
-> 
-> To me it is clear now :)
-> 
-> > The echo line fails because the related CPU is offline.
-> > If the failed echo is the last pass through the loop,
-> > then the script interprets the overall execution of
-> > 94cpufreq as a failure and aborts the suspend. If the
-> > failed echo is not the last pass through the loop, then
-> > the bad exit code gets overwritten with a good one before
-> > the loop exits.
+On Monday, September 07, 2015 10:55:43 AM Daniel Wagner wrote:
+> On 09/05/2015 04:11 AM, Rafael J. Wysocki wrote:
+> > On Friday, September 04, 2015 03:34:55 PM Daniel Wagner wrote:
+> >> Instead encode the FREEZE state via the CPU state we allow the
+> >> interesting subsystems (MCE, microcode) to query the power
+> >> subsystem directly.
 > > 
-> > Since the loop is merely setting a temporary governor,
-> > to test I just used performance mode anyway, and commented
-> > out the echo. pm-suspend with CPU 7 offline then worked fine.
+> > A use case, please.
+> 
+> The motivation for this change is to reduce the complexity in the
+> hotplug code. As tried to point out in the cover letter, the FROZEN
+> bits have only a bunch of users after all those years (2007). So it is
+> worth to have all the notifier users to handle the FROZEN state?
+> 
+> Don't know if that counts as use case.
+> 
+> >> Most notifiers are not interested at all
+> >> in this information so rather have explicit calls to freeze_active()
+> >> instead adding complexity to the rest of the users of the CPU
+> >> notifiers.
 > > 
-> > I have not yet gone back to any before the patch kernel
-> > to determine why it used to work (it is late in my time zone).
-> > However, I would have to assume that before the commit in
-> > question, the echo worked even if the CPU was offline.
+> > Why does it has anything to do with CPU notifiers?
 > 
-> So here is the story behind it.
-> - In your system all CPUs are independent, that is there are no links
->   to cpufreq directory, so that check in the script is useless for
->   you.
-> - The $COMMIT in question did a significant change. Earlier, while
->   offlining the CPU, we used to remove the cpufreq directory from
->   sysfs, which is not the case any more.
+> cpu_{down|up} will call the notifiers with the CPU_TASK_FROZEN bit set
+> and so most notifiers are doing
 > 
-> - So to be precise, following lines came to your rescue earlier:
+> 	switch (actcion ~CPU_TASK_FROZEN)
 > 
-> # if we do not have a scaling_governor file, skip.
-> # [ -f "$gov" ] || continue
+> to filter it out because they don't need to handle the system wide
+> ongoing freeze operations.
 > 
-> - But they don't after the patch, as the file and directory are
->   present even if the CPU is offline.
-> - But because the CPU is offline, writing to those files isn't allowed
->   and so the echo failed.
+> > We don't offline CPUs for suspend-to-idle.
 > 
-> Solution to that is that we check for CPU offline as well in the
-> beginning of the script, and skip if the CPU is offline.
+> Sure. As I said the motivation is to reduce the complexity in the
+> hotplug code.
 
-That's a bug in the script.  It should discard all errors from the entire inner
-loop, but it doesn't discard errors from the last iteration of it.
+Well, it looks like I confused two things.
 
-That said, what store() in cpufreq.c does is questionable too.
-
-First, if policy->cpu is offline, the policy will be inactive to my eyes, so
-we don't need the second check.
-
-But if the policy is active (and policy->cpu is online), it will not generally
-fail for an offline CPU.  So, if the policy applies to more than 1 CPU, you
-can use any of them to manipulate it, even if one of them is offline as long
-as there are any online CPUs in the set.
-
-This isn't entirely consistent.  We should either fail store() for any offline
-CPU or make the changes for offline CPUs to.  And in the particular case of
-the governor, I'm wondering what will be the problem with changing last_governor
-for an inactive policy?
+Let me look at this again.
 
 Thanks,
 Rafael
