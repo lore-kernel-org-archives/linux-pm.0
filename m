@@ -1,59 +1,58 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH 5/9] clk: qcom: gcc-msm8960: add child devices support.
-Date: Tue, 8 Sep 2015 12:21:15 -0700
-Message-ID: <20150908192115.GP15099@codeaurora.org>
-References: <1436348838-22671-1-git-send-email-rnayak@codeaurora.org>
- <1436348838-22671-6-git-send-email-rnayak@codeaurora.org>
- <20150811224902.GO2839@codeaurora.org>
- <55CB0B26.2020105@linaro.org>
- <55CC1CFE.7000005@codeaurora.org>
- <20150814004206.GU26614@codeaurora.org>
- <55CD5BD2.3070907@codeaurora.org>
- <55E660F6.3020007@codeaurora.org>
- <20150903172743.GE15099@codeaurora.org>
- <55ED311E.1070404@codeaurora.org>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH 03/13] twl4030_charger: correctly handle -EPROBE_DEFER
+ from devm_usb_get_phy_by_node
+Date: Tue, 8 Sep 2015 13:14:17 -0700
+Message-ID: <20150908201417.GG4215@atomide.com>
+References: <20150730001113.4012.18086.stgit@noble>
+ <20150730001124.4012.31980.stgit@noble>
+ <CAMAWPa__hFOuz24YBcFiR+m5mOUArSuNpuqh3Ju1H+yj6qadfA@mail.gmail.com>
+ <CAMAWPa_s2ELgRBRtWzFucmREMuLXS_V5Akmad5yFU13-GrzBDA@mail.gmail.com>
+ <87si6x4a2f.fsf@notabene.neil.brown.name>
+ <20150902130724.GQ4215@atomide.com>
+ <CAMAWPa8q1BOMvvKqqU88vYq4-_QhuxefVqkM6=4BP4-FGZxRPw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:47408 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751651AbbIHTVR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Sep 2015 15:21:17 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <55ED311E.1070404@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <CAMAWPa8q1BOMvvKqqU88vYq4-_QhuxefVqkM6=4BP4-FGZxRPw@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Kevin Hilman <khilman@kernel.org>
+Cc: Neil Brown <neil@brown.name>, Sebastian Reichel <sre@kernel.org>, Samuel Ortiz <sameo@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, David Woodhouse <dwmw2@infradead.org>, lkml <linux-kernel@vger.kernel.org>, real GTA04 owners <gta04-owner@goldelico.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Pavel Machek <pavel@ucw.cz>, linux-omap <linux-omap@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Tyler Baker <tyler.baker@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Rajendra Nayak <rnayak@codeaurora.org>
-Cc: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, linux-arm-msm@vger.kernel.org, lina.iyer@linaro.org, nrajan@codeaurora.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
-On 09/07, Rajendra Nayak wrote:
+* Kevin Hilman <khilman@kernel.org> [150908 11:36]:
+> On Wed, Sep 2, 2015 at 6:07 AM, Tony Lindgren <tony@atomide.com> wrote:
+> > * Neil Brown <neil@brown.name> [150901 23:23]:
+> >> Kevin Hilman <khilman@kernel.org> writes:
+> >>
+> >> > ping... this boot failure has now landed in mainline
+> >>
+> >> sorry, I'm on leave at the moment and travelling so I'm unlikely to be
+> >> able to look at this properly.  I should be able to examine this issue
+> >> before the end of the month but cannot promise sooner than that (though
+> >> it is not impossible).
+> >>
+> >> Maybe it would be best to just revert it until a proper analysis can be
+> >> done.
 > >
-> >Yeah this might happen though because we've assigned the of_node
-> >pointer to the tsens device before we register it on the platform
-> >bus. The other way to pass that data down from gcc to tsens would
-> >be to not have an of_node assigned to the tsens device, and check
-> >for that case in the tsens driver. If there isn't an of_node,
-> >then we look at the parent device's of_node to figure out which
-> >gcc it is (if this even matters) and parse DT properties.
+> > OK yeah let's revert this one for now until we know what goes wrong.
 > 
-> Parsing DT properties from parent (in the tsens driver) is fine, but
-> the nvmem apis still expect an of_node for the tsens device and hence
-> fail.
-
-So pass the parent device to the nvmem APIs? Or adjust the nvmem
-APIs to look for a parent of_node if there isn't an of_node for
-the device being passed? Or make the nvmem APIs work without
-using DT, and copy over the nvmem information from the gcc node
-to the virtual tsens child device?
-
+> Looks like this is still in mainline.
 > 
-> Associating the of_node of the parent to the tsens device while being
-> probed ends up with the same issues of gcc ending up probing the device
-> and failing because tsens defers probe a couple times before a
-> successful probe.
+> Tony, can you revert?
 
-Yeah sounds like we shouldn't do it that way.
+Probably best that Sebastian does it as there's another fix needed
+too. It seems the following are needed:
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+- Revert $subject patch 3fc3895e4fe1 ("twl4030_charger: correctly
+  handle -EPROBE_DEFER from devm_usb_get_phy_by_node")
+
+- Apply compile fix "[PATCH] twl4030_charger: fix another compile
+  error"
+
+Just in case Sebastian is travelling or something.. Sebastian,
+can you please confirm?
+
+Regards,
+
+Tony
