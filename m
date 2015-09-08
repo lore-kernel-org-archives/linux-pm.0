@@ -1,58 +1,62 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH 03/13] twl4030_charger: correctly handle -EPROBE_DEFER
- from devm_usb_get_phy_by_node
-Date: Tue, 8 Sep 2015 13:14:17 -0700
-Message-ID: <20150908201417.GG4215@atomide.com>
-References: <20150730001113.4012.18086.stgit@noble>
- <20150730001124.4012.31980.stgit@noble>
- <CAMAWPa__hFOuz24YBcFiR+m5mOUArSuNpuqh3Ju1H+yj6qadfA@mail.gmail.com>
- <CAMAWPa_s2ELgRBRtWzFucmREMuLXS_V5Akmad5yFU13-GrzBDA@mail.gmail.com>
- <87si6x4a2f.fsf@notabene.neil.brown.name>
- <20150902130724.GQ4215@atomide.com>
- <CAMAWPa8q1BOMvvKqqU88vYq4-_QhuxefVqkM6=4BP4-FGZxRPw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing
+ runtime suspend
+Date: Tue, 8 Sep 2015 22:28:36 +0200
+Message-ID: <CAJZ5v0ghdvULcdb9nEAk_WkSNWJDDpVSXfXxvUE56_ViDKORFA@mail.gmail.com>
+References: <2125433.CLuFqMxLgc@vostro.rjw.lan>
+	<Pine.LNX.4.44L0.1509081055390.1533-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAMAWPa8q1BOMvvKqqU88vYq4-_QhuxefVqkM6=4BP4-FGZxRPw@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: Neil Brown <neil@brown.name>, Sebastian Reichel <sre@kernel.org>, Samuel Ortiz <sameo@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, David Woodhouse <dwmw2@infradead.org>, lkml <linux-kernel@vger.kernel.org>, real GTA04 owners <gta04-owner@goldelico.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Pavel Machek <pavel@ucw.cz>, linux-omap <linux-omap@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Tyler Baker <tyler.baker@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1509081055390.1533-100000@iolanthe.rowland.org>
+Sender: linux-input-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Tirdea, Irina" <irina.tirdea@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Purdila, Octavian" <octavian.purdila@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-* Kevin Hilman <khilman@kernel.org> [150908 11:36]:
-> On Wed, Sep 2, 2015 at 6:07 AM, Tony Lindgren <tony@atomide.com> wrote:
-> > * Neil Brown <neil@brown.name> [150901 23:23]:
-> >> Kevin Hilman <khilman@kernel.org> writes:
-> >>
-> >> > ping... this boot failure has now landed in mainline
-> >>
-> >> sorry, I'm on leave at the moment and travelling so I'm unlikely to be
-> >> able to look at this properly.  I should be able to examine this issue
-> >> before the end of the month but cannot promise sooner than that (though
-> >> it is not impossible).
-> >>
-> >> Maybe it would be best to just revert it until a proper analysis can be
-> >> done.
-> >
-> > OK yeah let's revert this one for now until we know what goes wrong.
-> 
-> Looks like this is still in mainline.
-> 
-> Tony, can you revert?
+Hi,
 
-Probably best that Sebastian does it as there's another fix needed
-too. It seems the following are needed:
+On Tue, Sep 8, 2015 at 5:00 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Tue, 8 Sep 2015, Rafael J. Wysocki wrote:
+>
+>> > > [1] http://marc.info/?l=linux-input&m=140564626306396&w=2
+>> >
+>> > Purely as a matter of interest, in that email Rafael also mentioned
+>> > that he and I had discussed a way to disable remote wakeup during
+>> > runtime suspend.  Oddly enough, the method we decided upon was to add
+>> > an "off" option to /sys/.../power/control.  :-)
+>>
+>> Wasn't that /sys/devices/.../power/wakeup rather?
+>
+> Not the way I remember.  Of course, it's possible that we misunderstood
+> each other at the time.
+>
+>> > It would not put the device into runtime suspend immediately, like you
+>> > are proposing.  Instead it would mean the same as the "auto" mode,
+>> > except that remote wakeup should be disabled during runtime suspend.
+>> >
+>> > We never got around to implementing this, however.
+>>
+>> I don't think this is what we discussed then really.
+>>
+>> There is a fundamental problem with forcing things into runtime suspend
+>> from user space, because that may happen in a wrong time.  In other words,
+>> the kernel can't guarantee that the device would actually be able to go
+>> into runtime suspend when requested.
+>
+> Exactly.  What we discussed at LinuxCon wasn't forcing things into
+> runtime suspend; it was disabling remote wakeup during runtime suspend.
+>
+> And even though the topic was quite different from Irina's proposal, we
+> ended up settling on the same API (according to my recollection).
 
-- Revert $subject patch 3fc3895e4fe1 ("twl4030_charger: correctly
-  handle -EPROBE_DEFER from devm_usb_get_phy_by_node")
+So I remember that differently.
 
-- Apply compile fix "[PATCH] twl4030_charger: fix another compile
-  error"
+My idea was to add a third value to /sys/devices/.../power/wakeup (in
+addition to "disabled" and "enabled") so user space can indicate that
+remote wakeup should not be enabled for runtime suspend for the device
+(since there's no way to indicate that today).  I don't see how
+/sys/devices/.../power/control might help here to be honest.
 
-Just in case Sebastian is travelling or something.. Sebastian,
-can you please confirm?
-
-Regards,
-
-Tony
+Thanks,
+Rafael
