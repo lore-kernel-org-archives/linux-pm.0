@@ -1,45 +1,77 @@
-From: Enric Balletbo i Serra <eballetbo@gmail.com>
-Subject: [PATCH 1/3] devicetree: Add TPS65217 charger binding.
-Date: Tue,  8 Sep 2015 10:09:37 +0200
-Message-ID: <1441699779-22189-2-git-send-email-enric.balletbo@collabora.com>
-References: <1441699779-22189-1-git-send-email-enric.balletbo@collabora.com>
+From: Daniel Wagner <daniel.wagner@bmw-carit.de>
+Subject: Re: [RFC v0 2/9] suspend: Add getter function to report if freezing
+ is active
+Date: Tue, 8 Sep 2015 10:19:35 +0200
+Message-ID: <55EE9A17.4010601@bmw-carit.de>
+References: <1441373702-31796-1-git-send-email-daniel.wagner@bmw-carit.de>
+ <1683655.HLd9k04Slu@vostro.rjw.lan> <55ED510F.7090702@bmw-carit.de>
+ <1597290.WZUafm8kGW@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f173.google.com ([209.85.212.173]:33967 "EHLO
-	mail-wi0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753821AbbIHIJw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Sep 2015 04:09:52 -0400
-In-Reply-To: <1441699779-22189-1-git-send-email-enric.balletbo@collabora.com>
+Received: from mail.bmw-carit.de ([62.245.222.98]:51348 "EHLO
+	mail.bmw-carit.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753308AbbIHITm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Sep 2015 04:19:42 -0400
+In-Reply-To: <1597290.WZUafm8kGW@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: devicetree@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, tony@atomide.com, sameo@linux.intel.com, lee.jones@linaro.org, sjoerd.simons@collabora.co.uk, javier@dowhile0.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
 
-The TPS65217 charger is a subnode of the TPS65217 MFD.
+On 09/07/2015 11:44 PM, Rafael J. Wysocki wrote:
+> On Monday, September 07, 2015 10:55:43 AM Daniel Wagner wrote:
+>> On 09/05/2015 04:11 AM, Rafael J. Wysocki wrote:
+>>> On Friday, September 04, 2015 03:34:55 PM Daniel Wagner wrote:
+>>>> Instead encode the FREEZE state via the CPU state we allow the
+>>>> interesting subsystems (MCE, microcode) to query the power
+>>>> subsystem directly.
+>>>
+>>> A use case, please.
+>>
+>> The motivation for this change is to reduce the complexity in the
+>> hotplug code. As tried to point out in the cover letter, the FROZEN
+>> bits have only a bunch of users after all those years (2007). So it is
+>> worth to have all the notifier users to handle the FROZEN state?
+>>
+>> Don't know if that counts as use case.
+> 
+> Well, the code you're changing has nothing to do with CPU hotplug and
+> CPU_TASKS_FROZEN.  It is about suspend-to-idle.
+> 
+> Please grep for suspend_freeze_state and see what it is used for.
+> 
+> There is some confusion in the naming, but that is about the freezing of
+> the whole system, while CPU_TASKS_FROZEN is about the freezing of user space.
 
-Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
----
- .../devicetree/bindings/power_supply/tps65217_charger.txt    | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power_supply/tps65217_charger.txt
+You are right. I got confused by all those frozen/freezing naming scheme.
 
-diff --git a/Documentation/devicetree/bindings/power_supply/tps65217_charger.txt b/Documentation/devicetree/bindings/power_supply/tps65217_charger.txt
-new file mode 100644
-index 0000000..98d131a
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power_supply/tps65217_charger.txt
-@@ -0,0 +1,12 @@
-+TPS65217 Charger
-+
-+Required Properties:
-+-compatible: "ti,tps65217-charger"
-+
-+This node is a subnode of the tps65217 PMIC.
-+
-+Example:
-+
-+	tps65217-charger {
-+		compatible = "ti,tps65090-charger";
-+	};
--- 
-2.1.0
+>>>> Most notifiers are not interested at all
+>>>> in this information so rather have explicit calls to freeze_active()
+>>>> instead adding complexity to the rest of the users of the CPU
+>>>> notifiers.
+>>>
+>>> Why does it has anything to do with CPU notifiers?
+>>
+>> cpu_{down|up} will call the notifiers with the CPU_TASK_FROZEN bit set
+>> and so most notifiers are doing
+>>
+>> 	switch (actcion ~CPU_TASK_FROZEN)
+>>
+>> to filter it out because they don't need to handle the system wide
+>> ongoing freeze operations.
+>>
+>>> We don't offline CPUs for suspend-to-idle.
+>>
+>> Sure. As I said the motivation is to reduce the complexity in the
+>> hotplug code.
+> 
+> You need to fine a different way to do that.
 
+I'll try something else.
+
+Thanks for taking the time explaining!
+
+cheers,
+Daniel
