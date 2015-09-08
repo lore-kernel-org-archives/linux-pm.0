@@ -1,144 +1,93 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: Re: [PATCH v4 0/22] On-demand device probing
-Date: Tue, 8 Sep 2015 09:30:41 +0200
-Message-ID: <CAAObsKDUzk-9H2_VrVmbc=ZeRaknGcjTMY3Mauh3JVZxLz4CiA@mail.gmail.com>
-References: <1441628627-5143-1-git-send-email-tomeu.vizoso@collabora.com> <CAL_Jsq+E31JaPcp5ELS_ztSqgSrK7U4OzB9xNcNz01Ayrrm+Yg@mail.gmail.com>
+From: Oliver Neukum <oneukum@suse.com>
+Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing
+ runtime suspend
+Date: Tue, 08 Sep 2015 09:35:44 +0200
+Message-ID: <1441697744.26994.21.camel@suse.com>
+References: <1441658561-26190-1-git-send-email-irina.tirdea@intel.com>
+	 <8981266.1iKleIVcUj@vostro.rjw.lan>
+	 <1F3AC3675D538145B1661F571FE1805F2F0C5CBE@irsmsx105.ger.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <CAL_Jsq+E31JaPcp5ELS_ztSqgSrK7U4OzB9xNcNz01Ayrrm+Yg@mail.gmail.com>
-Sender: linux-clk-owner@vger.kernel.org
-To: Rob Herring <robherring2@gmail.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Stephen Warren <swarren@wwwdotorg.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Mark Brown <broonie@kernel.org>, Thierry Reding <thierry.reding@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Linux USB List <linux-usb@vger.kernel.org>, Felipe Balbi <balbi@ti.com>, Linux PWM List <linux-pwm@vger.kernel.org>, =?UTF-8?Q?Terje_Bergstr=C3=B6m?= <tbergstrom@nvidia.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx2.suse.de ([195.135.220.15]:39760 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751803AbbIHHhN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 8 Sep 2015 03:37:13 -0400
+In-Reply-To: <1F3AC3675D538145B1661F571FE1805F2F0C5CBE@irsmsx105.ger.corp.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Tirdea, Irina" <irina.tirdea@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alan Stern <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Purdila, Octavian" <octavian.purdila@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-On 7 September 2015 at 22:50, Rob Herring <robherring2@gmail.com> wrote=
-:
-> On Mon, Sep 7, 2015 at 7:23 AM, Tomeu Vizoso <tomeu.vizoso@collabora.=
-com> wrote:
->> Hello,
->>
->> I have a problem with the panel on my Tegra Chromebook taking longer
->> than expected to be ready during boot (St=C3=A9phane Marchesin repor=
-ted what
->> is basically the same issue in [0]), and have looked into ordered
->> probing as a better way of solving this than moving nodes around in =
-the
->> DT or playing with initcall levels and linking order.
->>
->> While reading the thread [1] that Alexander Holler started with his
->> series to make probing order deterministic, it occurred to me that i=
-t
->> should be possible to achieve the same by probing devices as they ar=
-e
->> referenced by other devices.
->>
->> This basically reuses the information that is already implicit in th=
-e
->> probe() implementations, saving us from refactoring existing drivers=
- or
->> adding information to DTBs.
->>
->> During review of v1 of this series Linus Walleij suggested that it
->> should be the device driver core to make sure that dependencies are
->> ready before probing a device. I gave this idea a try [2] but Mark B=
-rown
->> pointed out to the logic duplication between the resource acquisitio=
-n
->> and dependency discovery code paths (though I think it's fairly mino=
-r).
->>
->> To address that code duplication I experimented with Arnd's devm_pro=
-be
->> [3] concept of having drivers declare their dependencies instead of
->> acquiring them during probe, and while it worked [4], I don't think =
-we
->> end up winning anything when compared to just probing devices on-dem=
-and
->> from resource getters.
->>
->> One remaining objection is to the "sprinkling" of calls to
->> of_device_probe() in the resource getters of each subsystem, but I t=
-hink
->> it's the right thing to do given that the storage of resources is
->> currently subsystem-specific.
->>
->> We could avoid the above by moving resource storage into the core, b=
-ut I
->> don't think there's a compelling case for that.
->>
->> I have tested this on boards with Tegra, iMX.6, Exynos, Rockchip and
->> OMAP SoCs, and these patches were enough to eliminate all the deferr=
-ed
->> probes (except one in PandaBoard because omap_dma_system doesn't hav=
-e a
->> firmware node as of yet).
->>
->> Have submitted a branch [5] with only these patches on top of thursd=
-ay's
->> linux-next to kernelci.org and I don't see any issues that could be
->> caused by them. For some reason it currently has more passes than th=
-e
->> version of -next it's based on!
->>
->> With this series I get the kernel to output to the panel in 0.5s,
->> instead of 2.8s.
->>
->> Regards,
->>
->> Tomeu
->>
->> [0] http://lists.freedesktop.org/archives/dri-devel/2014-August/0665=
-27.html
->>
->> [1] https://lkml.org/lkml/2014/5/12/452
->>
->> [2] https://lkml.org/lkml/2015/6/17/305
->>
->> [3] http://article.gmane.org/gmane.linux.ports.arm.kernel/277689
->>
->> [4] https://lkml.org/lkml/2015/7/21/441a
->>
->> [5] https://git.collabora.com/cgit/user/tomeu/linux.git/log/?h=3Don-=
-demand-probes-v6
->>
->> [6] http://kernelci.org/boot/all/job/collabora/kernel/v4.2-11902-g25=
-d80c927f8b/
->>
->> [7] http://kernelci.org/boot/all/job/next/kernel/next-20150903/
->>
->> Changes in v4:
->> - Added bus.pre_probe callback so the probes of Primecell devices ca=
-n be
->>   deferred if their device IDs cannot be yet read because of the clo=
-ck
->>   driver not having probed when they are registered. Maybe this goes
->>   overboard and the matching information should be in the DT if ther=
-e is
->>   one.
->
-> Seems overboard to me or at least a separate problem.
+On Tue, 2015-09-08 at 01:10 +0000, Tirdea, Irina wrote:
 
-It's a separate problem but this was preventing the series from
-working on a few boards.
+> However, in the scenario I mentioned this is exactly what is happening.
+> When turning off the screen of a mobile device, the user space
 
-> Most clocks have
-> to be setup before the driver model simply because timers depend on
-> clocks usually.
+Would you explain why user space doesn't simply stop using those
+devices, which in turn will make them idle? There are obvious cases
+like keyboards or SCSI hosts where the kernel controls stuff, but could
+you state where you expect this to be most useful?
+Or why devices cannot be closed, e.g. you need to be sure settings
+be not lost or is it something else?
 
-Yes, but in this case the apb clocks for the primecell devices are
-implemented in a normal platform driver (vexpress_osc_driver), instead
-of using CLK_OF_DECLARE.
+> is the one that suspends the devices that are not needed in order to save power
+> (like touchscreens). Each such driver export an enable/disable attribute
+> that calls the same code as resume/suspend (e.g. touchscreen drivers ads7846,
+> ad7877 and most Android drivers not merged upstream). This adds more
+> complexity to every driver by adding one more logical power state.
+> It would be good to have a common interface instead of doing this in
+> every 
 
-Regards,
+Now these are two distinct questions.
 
-Tomeu
+1. a common interface
+2. a capability implemented in common code
 
-> Rob
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kerne=
-l" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+It is important to keep that apart. I suppose if we want this at all
+#1 is a given. #2 however may be impossible in a generic manner
+
+> I might have not used "forced" in the proper way here. What I mean by it is that
+> the device can be runtime suspended while ignoring the runtime usage count.
+
+That is highly problematic. You'd need to audit the locking in every
+driver. Right now elevating the count means that suspend()/resume()
+cannot race with user space, as in the case of the system suspending
+user space is frozen.
+
+> In this implementation, user space is only allowed to change the states
+> bottom-up in the sysfs hierarchy (it cannot force suspend a device if it
+> has children that have not been suspended by user space).
+
+That is obviously not enough. Take the worst case: we are flashing some
+firmware. Or far more harmless: a key is has been pressed on a keyboard
+
+> Would it work if this would be a capability that individual drivers need
+> to declare?
+
+For some drivers. But it needs support in the driver. Right now we can
+make a device idle by calling close(). In fact we can benefit for
+example in mice from this. But it needs support in the drivers.
+
+> In the previous discussion thread , there were a couple of options
+> mentioned, but none seemed to reach a consensus. You mentioned
+> adding a "more aggressive runtime PM mode" [1]. I'm not sure how
+
+That would have to be done on a per driver base.
+
+> this would work except for adding a sysfs attribute that would trigger
+> a runtime suspend while ignoring usage count. Would that be a
+> better direction?
+
+No. If we want this at all, we need a new callback to notify drivers
+that user space is temporarily uninterested in a device. And the reverse
+of course.
+The power model is good. We must not assume that devices can be
+suspended at will. If we do this at all, we ought to see it as giving
+strong hints to drivers when a device can be considered idle.
+
+	Regards
+		Oliver
+
+
