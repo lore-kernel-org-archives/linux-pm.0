@@ -1,99 +1,69 @@
-From: "Tirdea, Irina" <irina.tirdea@intel.com>
-Subject: RE: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing
- runtime suspend
-Date: Tue, 8 Sep 2015 01:10:37 +0000
-Message-ID: <1F3AC3675D538145B1661F571FE1805F2F0C5CBE@irsmsx105.ger.corp.intel.com>
-References: <1441658561-26190-1-git-send-email-irina.tirdea@intel.com>
- <8981266.1iKleIVcUj@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 2/9] cpufreq: conservative: remove 'enable' field
+Date: Tue, 8 Sep 2015 07:03:09 +0530
+Message-ID: <20150908013309.GX26760@linux>
+References: <cover.1437999691.git.viresh.kumar@linaro.org>
+ <91abed4ff8fe68f26fe0bdc840982bb972dba6dc.1437999691.git.viresh.kumar@linaro.org>
+ <2910194.KRcaApdNFO@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-input-owner@vger.kernel.org>
-In-Reply-To: <8981266.1iKleIVcUj@vostro.rjw.lan>
-Content-Language: en-US
-Sender: linux-input-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Alan Stern <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Purdila, Octavian" <octavian.purdila@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f43.google.com ([209.85.220.43]:33176 "EHLO
+	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752311AbbIHBdO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Sep 2015 21:33:14 -0400
+Received: by pacex6 with SMTP id ex6so108744940pac.0
+        for <linux-pm@vger.kernel.org>; Mon, 07 Sep 2015 18:33:14 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <2910194.KRcaApdNFO@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, preeti.lkml@gmail.com, open list <linux-kernel@vger.kernel.org>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogbGludXgtaW5wdXQtb3du
-ZXJAdmdlci5rZXJuZWwub3JnIFttYWlsdG86bGludXgtaW5wdXQtb3duZXJAdmdlci5rZXJuZWwu
-b3JnXSBPbiBCZWhhbGYgT2YgUmFmYWVsIEouIFd5c29ja2kNCj4gU2VudDogMDggU2VwdGVtYmVy
-LCAyMDE1IDA6MjANCj4gVG86IFRpcmRlYSwgSXJpbmENCj4gQ2M6IEFsYW4gU3Rlcm47IGxpbnV4
-LXBtQHZnZXIua2VybmVsLm9yZzsgbGludXgtaW5wdXRAdmdlci5rZXJuZWwub3JnOyBsaW51eC1r
-ZXJuZWxAdmdlci5rZXJuZWwub3JnOyBCcm93biwgTGVuOyBQYXZlbCBNYWNoZWs7DQo+IFB1cmRp
-bGEsIE9jdGF2aWFuOyBEbWl0cnkgVG9yb2tob3YNCj4gU3ViamVjdDogUmU6IFtSRkMgUEFUQ0hd
-IFBNIC8gUnVudGltZTogcnVudGltZTogQWRkIHN5c2ZzIG9wdGlvbiBmb3IgZm9yY2luZyBydW50
-aW1lIHN1c3BlbmQNCj4gDQo+IE9uIE1vbmRheSwgU2VwdGVtYmVyIDA3LCAyMDE1IDExOjQyOjQx
-IFBNIElyaW5hIFRpcmRlYSB3cm90ZToNCj4gPiBBZGQgbmV3IG9wdGlvbiB0byBzeXNmcyBjb250
-cm9sIGludGVyZmFjZSwgYWxsb3dpbmcgdGhlIHVzZXIgdG8gZm9yY2UNCj4gPiBzdXNwZW5kIHRo
-ZSBkZXZpY2UuDQo+IA0KPiBIYWQgd2UgdGhvdWdodCB0aGlzIGhhZCBiZWVuIGEgZ29vZCBpZGVh
-LCB3ZSdkIGhhdmUgYWRkZWQgdGhhdCB0aGluZyB0bw0KPiB0aGUgaW50ZXJmYWNlIGZyb20gdGhl
-IHN0YXJ0Lg0KPiANCj4gVGhlIHByb2JsZW0gd2l0aCBpdCBpcyB0aGF0IHVzZXIgc3BhY2UgZ2Vu
-ZXJhbGx5IGRvZXNuJ3Qga25vdyB3aGVuIGl0IGlzDQo+IHNhZmUgdG8gc3VzcGVuZCBhIGRldmlj
-ZSwgc28gaXQgY2Fubm90IGZvcmNlIGFueXRoaW5nIGludG8gcnVudGltZSBzdXNwZW5kLg0KPiAN
-Cg0KWWVzLCB0aGlzIGlzIGdlbmVyYWxseSB0cnVlLiANCg0KSG93ZXZlciwgaW4gdGhlIHNjZW5h
-cmlvIEkgbWVudGlvbmVkIHRoaXMgaXMgZXhhY3RseSB3aGF0IGlzIGhhcHBlbmluZy4NCldoZW4g
-dHVybmluZyBvZmYgdGhlIHNjcmVlbiBvZiBhIG1vYmlsZSBkZXZpY2UsIHRoZSB1c2VyIHNwYWNl
-DQppcyB0aGUgb25lIHRoYXQgc3VzcGVuZHMgdGhlIGRldmljZXMgdGhhdCBhcmUgbm90IG5lZWRl
-ZCBpbiBvcmRlciB0byBzYXZlIHBvd2VyDQoobGlrZSB0b3VjaHNjcmVlbnMpLiBFYWNoIHN1Y2gg
-ZHJpdmVyIGV4cG9ydCBhbiBlbmFibGUvZGlzYWJsZSBhdHRyaWJ1dGUNCnRoYXQgY2FsbHMgdGhl
-IHNhbWUgY29kZSBhcyByZXN1bWUvc3VzcGVuZCAoZS5nLiB0b3VjaHNjcmVlbiBkcml2ZXJzIGFk
-czc4NDYsDQphZDc4NzcgYW5kIG1vc3QgQW5kcm9pZCBkcml2ZXJzIG5vdCBtZXJnZWQgdXBzdHJl
-YW0pLiBUaGlzIGFkZHMgbW9yZQ0KY29tcGxleGl0eSB0byBldmVyeSBkcml2ZXIgYnkgYWRkaW5n
-IG9uZSBtb3JlIGxvZ2ljYWwgcG93ZXIgc3RhdGUuDQpJdCB3b3VsZCBiZSBnb29kIHRvIGhhdmUg
-YSBjb21tb24gaW50ZXJmYWNlIGluc3RlYWQgb2YgZG9pbmcgdGhpcyBpbg0KZXZlcnkgZHJpdmVy
-Lg0KDQpJIG1pZ2h0IGhhdmUgbm90IHVzZWQgImZvcmNlZCIgaW4gdGhlIHByb3BlciB3YXkgaGVy
-ZS4gV2hhdCBJIG1lYW4gYnkgaXQgaXMgdGhhdA0KdGhlIGRldmljZSBjYW4gYmUgcnVudGltZSBz
-dXNwZW5kZWQgd2hpbGUgaWdub3JpbmcgdGhlIHJ1bnRpbWUgdXNhZ2UgY291bnQuDQoNCj4gPiBU
-aGlzIGlzIHVzZWZ1bCBmb3IgZGV2aWNlcyB0aGF0IG5lZWQgdG8gYmUNCj4gPiBzdXNwZW5kZWQg
-d2hlbiBjbG9zaW5nIHRoZSBsaWQgb2YgYSBsYXB0b3Agb3IgdGhlIHNjcmVlbiBvZiBhIG1vYmls
-ZQ0KPiA+IGRldmljZSwgd2hpbGUgdXNlciBzcGFjZSBzdGlsbCBob2xkcyBvcGVuIGhhbmRsZXMg
-dG8gaXQgYW5kIHRoZQ0KPiA+IHN5c3RlbSBkb2VzIG5vdCBlbnRlciBzeXN0ZW0gc3VzcGVuZC4N
-Cj4gPg0KPiA+IEFkZCB0aGUgIm9mZiIgb3B0aW9uIHRvIHRoZSBzeXNmcyBjb250cm9sIHBvd2Vy
-IGludGVyZmFjZSwgYWxvbmcgd2l0aA0KPiA+IHRoZSBhbHJlYWR5IHByZXNlbnQgIm9uIiBhbmQg
-ImF1dG8iLiBXaGVuIHRoaXMgYXR0cmlidXRlIGlzIHNldCB0bw0KPiA+ICJvZmYiLCB0aGUgZGV2
-aWNlIHdpbGwgYmUgZm9yY2Ugc3VzcGVuZGVkIGJ5IGNhbGxpbmcgaXRzIHJ1bnRpbWUNCj4gPiBz
-dXNwZW5kIGNhbGxiYWNrIGFuZCBkaXNhYmxpbmcgcnVudGltZSBwb3dlciBtYW5hZ2VtZW50IHNv
-IHRoYXQNCj4gPiBmdXJ0aGVyIGFjY2Vzc2VzIHRvIHRoZSBkZXZpY2Ugd2lsbCBub3QgY2hhbmdl
-IHRoZSBhY3R1YWwgc3RhdGUuDQo+IA0KPiBBbmQgaG93IGlzIHVzZXIgc3BhY2Ugc3VwcG9zZWQg
-dG8ga25vdyB0aGF0IGl0IGRvZXNuJ3QgYnJlYWsgdGhpbmdzDQo+IHRoaXMgd2F5Pw0KPiANCg0K
-SW4gdGhpcyBpbXBsZW1lbnRhdGlvbiwgdXNlciBzcGFjZSBpcyBvbmx5IGFsbG93ZWQgdG8gY2hh
-bmdlIHRoZSBzdGF0ZXMNCmJvdHRvbS11cCBpbiB0aGUgc3lzZnMgaGllcmFyY2h5IChpdCBjYW5u
-b3QgZm9yY2Ugc3VzcGVuZCBhIGRldmljZSBpZiBpdA0KaGFzIGNoaWxkcmVuIHRoYXQgaGF2ZSBu
-b3QgYmVlbiBzdXNwZW5kZWQgYnkgdXNlciBzcGFjZSkuDQoNCkFub3RoZXIgd2F5IHRvIGRvIHRo
-aXMgaXMgdG8ga2VlcCBydW50aW1lIHBvd2VyIG1hbmFnZW1lbnQgZW5hYmxlZA0KYnV0IHRvIGZv
-cmNlIHRoZSB1c2FnZSBjb3VudCB0byAwIHdoaWxlIHRoZSBkZXZpY2UgaXMgc2V0IHRvIHJ1bnRp
-bWUgbW9kZQ0KIm9mZiIuDQoNCj4gPiBUaGUgZGV2aWNlIGNhbiBiZSByZXN1bWVkIGJ5IHNldHRp
-bmcgdGhlIGF0dHJpYnV0ZSB0byAib24iIG9yICJhdXRvIi4NCj4gPiBUaGUgYmVoYXZpb3Igb2Yg
-dGhlIGludGVyZmFjZSB3aGVuIHN3aXRjaGluZyBvbmx5IGJldHdlZW4gIm9uIg0KPiA+IGFuZCAi
-YXV0byIgc3RhdGVzIHJlbWFpbnMgdW5jaGFuZ2VkLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTog
-SXJpbmEgVGlyZGVhIDxpcmluYS50aXJkZWFAaW50ZWwuY29tPg0KPiA+IC0tLQ0KPiA+DQo+ID4g
-SGksDQo+ID4NCj4gPiBUaGlzIGlzIGEgcHJvcG9zYWwgZm9yIHN1c3BlbmRpbmcgZGV2aWNlcyB3
-aGVuIHRoZSBjbG9zaW5nIHRoZSBsaWQgb2YNCj4gPiBhIGxhcHRvcCBvciB0aGUgc2NyZWVuIG9m
-IGEgbW9iaWxlIGRldmljZS4NCj4gPg0KPiA+IEkgYW0gdGVzdGluZyB0aGlzIHdpdGggYSBHb29k
-aXggdG91Y2hzY3JlZW4gWzFdIGZvciBhbiBBbmRyb2lkIG1vYmlsZQ0KPiA+IGRldmljZS4gQW5k
-cm9pZCBoYXMgYW4gdXNlciBzcGFjZSBsYXllciAocG93ZXIgSEFMKSB0aGF0IHdvdWxkIG5vcm1h
-bGx5DQo+ID4gY2xvc2UgdGhlIHRvdWNoc2NyZWVuIHdoZW4gdGhlIHNjcmVlbiBpcyBjbG9zZWQu
-IEFuZHJvaWQgdG91Y2hzY3JlZW4NCj4gPiBkcml2ZXJzIHVzdWFsbHkgcHJvdmlkZSBhIGN1c3Rv
-bSBzeXNmcyBpbnRlcmZhY2UgdG8gYWxsb3cgdGhpcy4NCj4gPiBUaGlzIHdvdWxkIGJlIGJldHRl
-ciBpbXBsZW1lbnRlZCBpbiBhIGNvbW1vbiBwbGFjZSwgdG8gYXZvaWQgY29kZQ0KPiA+IGR1cGxp
-Y2F0aW9uIGFuZCB0byBzaW1wbGlmeSB0aGUgZHJpdmVyIGNvZGUgKGFzIHByZXZpb3VzbHkgZGlz
-Y3Vzc2VkDQo+ID4gaW4gWzFdKS4NCj4gPg0KPiA+IEkga25vdyB0aGVyZSBhcmUgbW9yZSB3YXlz
-IHRvIGltcGxlbWVudCB0aGlzLCBzbyBJIHdvdWxkIGFwcHJlY2lhdGUNCj4gPiB5b3VyIGZlZWRi
-YWNrLg0KPiANCj4gU28gdGhlIGZlZWRiYWNrIGlzIHRoYXQgdGhpcyBpcyBub3QgZ29pbmcgdG8g
-d29yayBpbiBnZW5lcmFsLiAgUGxlYXNlDQo+IHVzZSBhIGRpZmZlcmVudCBhcHByb2FjaC4NCj4g
-DQoNCldvdWxkIGl0IHdvcmsgaWYgdGhpcyB3b3VsZCBiZSBhIGNhcGFiaWxpdHkgdGhhdCBpbmRp
-dmlkdWFsIGRyaXZlcnMgbmVlZA0KdG8gZGVjbGFyZT8NCg0KSW4gdGhlIHByZXZpb3VzIGRpc2N1
-c3Npb24gdGhyZWFkICwgdGhlcmUgd2VyZSBhIGNvdXBsZSBvZiBvcHRpb25zDQptZW50aW9uZWQs
-IGJ1dCBub25lIHNlZW1lZCB0byByZWFjaCBhIGNvbnNlbnN1cy4gWW91IG1lbnRpb25lZA0KYWRk
-aW5nIGEgIm1vcmUgYWdncmVzc2l2ZSBydW50aW1lIFBNIG1vZGUiIFsxXS4gSSdtIG5vdCBzdXJl
-IGhvdw0KdGhpcyB3b3VsZCB3b3JrIGV4Y2VwdCBmb3IgYWRkaW5nIGEgc3lzZnMgYXR0cmlidXRl
-IHRoYXQgd291bGQgdHJpZ2dlcg0KYSBydW50aW1lIHN1c3BlbmQgd2hpbGUgaWdub3JpbmcgdXNh
-Z2UgY291bnQuIFdvdWxkIHRoYXQgYmUgYQ0KYmV0dGVyIGRpcmVjdGlvbj8NCg0KVGhhbmsgeW91
-LA0KSXJpbmENCg0KWzFdIGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgtaW5wdXQmbT0xNDA1NjQ2
-MjYzMDYzOTYmdz0yDQoNCj4gVGhhbmtzLA0KPiBSYWZhZWwNCj4gDQo+IC0tDQo+IFRvIHVuc3Vi
-c2NyaWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51eC1p
-bnB1dCIgaW4NCj4gdGhlIGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5l
-bC5vcmcNCj4gTW9yZSBtYWpvcmRvbW8gaW5mbyBhdCAgaHR0cDovL3ZnZXIua2VybmVsLm9yZy9t
-YWpvcmRvbW8taW5mby5odG1sDQo=
+On 08-09-15, 02:17, Rafael J. Wysocki wrote:
+> >  static inline unsigned int get_freq_target(struct cs_dbs_tuners *cs_tuners,
+> >  					   struct cpufreq_policy *policy)
+> >  {
+> > @@ -119,12 +132,14 @@ static int dbs_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
+> >  	struct cpufreq_freqs *freq = data;
+> >  	struct cs_cpu_dbs_info_s *dbs_info =
+> >  					&per_cpu(cs_cpu_dbs_info, freq->cpu);
+> > -	struct cpufreq_policy *policy;
+> > +	struct cpufreq_policy *policy = cpufreq_cpu_get(freq->cpu);
+> >  
+> > -	if (!dbs_info->enable)
+> > +	if (!policy)
+> >  		return 0;
+> >  
+> > -	policy = dbs_info->cdbs.shared->policy;
+> 
+> So here we could get to the policy directly.  After the change we have to:
+> 
+> - acquire cpufreq_rwsem
+> - acquire cpufreq_driver_lock
+> - go the kobject_get on policy->kobj
+
+Hmm, actually we can do cpufreq_cpu_get_raw() here as this is getting
+called from notifier and policy isn't going to get freed for sure.
+
+And then it wouldn't be that bad.
+
+> and then finally drop the reference to the kobject when we're done.
+> 
+> So may I ask where exactly is the improvement?
+
+Agree. Let me resend it quickly.
+
+> > +	/* policy isn't governed by conservative governor */
+> > +	if (policy->governor != &cpufreq_gov_conservative)
+> > +		goto policy_put;
+> >  
+> >  	/*
+> >  	 * we only care if our internally tracked freq moves outside the 'valid'
+> 
+> Thanks,
+> Rafael
+
+-- 
+viresh
