@@ -1,104 +1,64 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH v2 7/7] ARM: smp: Add runtime PM support for CPU hotplug
-Date: Tue, 08 Sep 2015 15:03:52 -0700
-Message-ID: <7h613kmuuv.fsf@deeprootsystems.com>
-References: <Pine.LNX.4.44L0.1509051133100.30865-100000@netrider.rowland.org>
-	<2657565.lxWtPmdjyp@vostro.rjw.lan> <55ED9328.2010501@ti.com>
-	<2355864.I8qZFusWfm@vostro.rjw.lan> <55EE9AA1.8020200@ti.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing
+ runtime suspend
+Date: Wed, 9 Sep 2015 00:25:52 +0200
+Message-ID: <CAPDyKFrZqGcB9kMTnvAFRAWVqyvJ6REGFLce4iA2w5rqps=d4g@mail.gmail.com>
+References: <1441658561-26190-1-git-send-email-irina.tirdea@intel.com>
+	<8981266.1iKleIVcUj@vostro.rjw.lan>
+	<1F3AC3675D538145B1661F571FE1805F2F0C5CBE@irsmsx105.ger.corp.intel.com>
+	<1441697744.26994.21.camel@suse.com>
+	<CAJZ5v0jf1=YFW3iCh8LvOU+5diKgoVH7LtTeu80ym2H4TPYSkg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f51.google.com ([209.85.220.51]:36452 "EHLO
-	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752021AbbIHWDz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Sep 2015 18:03:55 -0400
-Received: by padhk3 with SMTP id hk3so50428915pad.3
-        for <linux-pm@vger.kernel.org>; Tue, 08 Sep 2015 15:03:54 -0700 (PDT)
-In-Reply-To: <55EE9AA1.8020200@ti.com> (Grygorii Strashko's message of "Tue, 8
-	Sep 2015 11:21:53 +0300")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0jf1=YFW3iCh8LvOU+5diKgoVH7LtTeu80ym2H4TPYSkg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>, "Tirdea, Irina" <irina.tirdea@intel.com>
+Cc: Oliver Neukum <oneukum@suse.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alan Stern <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Purdila, Octavian" <octavian.purdila@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alan Stern <stern@rowland.harvard.edu>, Thomas Gleixner <tglx@linutronix.de>, Lina Iyer <lina.iyer@linaro.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Mark Rutland <mark.rutland@arm.com>, ulf.hansson@linaro.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-pm@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, k.kozlowski@samsung.com, msivasub@codeaurora.org, geert@linux-m68k.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-kernel@lists.infradead.org, Ingo Molnar <mingo@kernel.org>
 
-Grygorii Strashko <grygorii.strashko@ti.com> writes:
-
-> On 09/07/2015 11:42 PM, Rafael J. Wysocki wrote:
->> On Monday, September 07, 2015 04:37:44 PM Grygorii Strashko wrote:
->>> On 09/07/2015 04:04 PM, Rafael J. Wysocki wrote:
->>>> On Saturday, September 05, 2015 11:39:20 AM Alan Stern wrote:
->>>>> On Sat, 5 Sep 2015, Grygorii Strashko wrote:
->>>>>
->>>>>> On 09/04/2015 09:45 PM, Alan Stern wrote:
->>>>>>> On Fri, 4 Sep 2015, Grygorii Strashko wrote:
->>>>>>>
->>>>>>>> There is one "small" problem with such approach :(
->>>>>>>>
->>>>>>>> - It's incompatible with -RT kernel, because PM runtime can't be used
->>>>>>>> in atomic context on -RT.
->>>>>>>
->>>>>>> Can you explain this more fully?  Why can't runtime PM be used in
->>>>>>> atomic context in the -rt kernels?
->>>>>>>    
->>>>>>
->>>>>> See:
->>>>>>    http://lwn.net/Articles/146861/
->>>>>>    https://rt.wiki.kernel.org/index.php/Frequently_Asked_Questions#How_does_the_CONFIG_PREEMPT_RT_patch_work.3F
->>>>>>
->>>>>> spinlock_t
->>>>>>       Critical sections are preemptible. The _irq operations (e.g., spin_lock_irqsave())
->>>>>>    do -not- disable hardware interrupts. Priority inheritance is used to prevent priority
->>>>>>    inversion. An underlying rt_mutex is used to implement spinlock_t in PREEMPT_RT.
->>>>>>
->>>>>> As result, have to do things like:
->>>>>> https://lkml.org/lkml/2015/8/18/161
->>>>>> https://lkml.org/lkml/2015/8/18/162
->>>>>>
->>>>>> Sorry for brief reply - Friday/Sat night :)
->>>>>
->>>>> I see.  Although we normally think of interrupt contexts as being
->>>>> atomic, in an -rt kernel this isn't true any more because things like
->>>>> spin_lock_irq don't actually disable interrupts.
->>>>>
->>>>> Therefore it would be correct to say that in -rt kernels, runtime PM
->>>>> can be used in interrupt context (if the device is marked as irq-safe),
->>>>> but not in atomic context.  Right?
->>>>
->>>> Right.
->>>>
->>>> Whatever is suitable for interrupt context in the mainline, will be suitable
->>>> for that in -rt kernels too.
->>>
->>> Not exactly true :(, since spinlock is converted to [rt_] mutex.
->>> Usually, this difference can't be seen because on -RT kernel all or
->>> mostly all HW IRQ handlers will be forced to be threaded.
->> 
->> Exactly.  And that's what I'm talking about.
->> 
->>> For the cases, where such automatic conversion is not working,
->>> (like chained irq handlers or HW-handler+Threaded handler) the code
->>> has to be carefully patched to work properly as for non-RT as for -RT.
->> 
->> Right.
->> 
->>> Also, this triggers some -RT incompatibility issues, like with PM runtime or
->> 
->> That I'm not sure about.  Why would runtime PM cause problems with -RT (apart
->> from attempts to use it from the idle loop, but that's not happening in the
->> mainline anyway)?
+On 8 September 2015 at 22:56, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Tue, Sep 8, 2015 at 9:35 AM, Oliver Neukum <oneukum@suse.com> wrote:
+>> On Tue, 2015-09-08 at 01:10 +0000, Tirdea, Irina wrote:
 >
+> [cut]
 >
-> I have to be more specific - sorry. "irq_safe" mode of PM runtime is incompatible with -RT.
+>>> this would work except for adding a sysfs attribute that would trigger
+>>> a runtime suspend while ignoring usage count. Would that be a
+>>> better direction?
+>>
+>> No. If we want this at all, we need a new callback to notify drivers
+>> that user space is temporarily uninterested in a device. And the reverse
+>> of course.
+>> The power model is good. We must not assume that devices can be
+>> suspended at will. If we do this at all, we ought to see it as giving
+>> strong hints to drivers when a device can be considered idle.
 >
-> Here is an example:
-> - HW IRQ handler in TI OMAP GPIO driver is implemented as chained IRQ handler and
->   contains pm_runtime_get_sync()/pm_runtime_put(). This works properly with vanilla kernel
->   because OMAP GPIO devices marked as irq_safe.
->   Chained IRQ handlers can't be forced threaded and PM runtime APIs trigger
->  "sleeping function called from invalid context" issues there, so corresponding code has to be reworked.
+> This is a good summary in my view.
+>
+> The only thing we can add, realistically, is an interface for user
+> space to "kick" drivers to check if the devices they handle may be
+> suspended at this point (or to run their ->runtime_idle callbacks
+> IOW).
+>
+> That would be quite similar to autosuspend except that the "kick" will
+> come from user space rather than from a timer function in the kernel.
 
-Isn't that why those are being converted to raw_*[1] ?
+Apologize for interrupting the discussion!
 
-Kevin
+Unless I miss the point, I assumes the above is somewhat already
+achievable via sysfs when changing the value of the auto-suspend
+timeout, since it triggers a call to
+pm_runtime_set_autosuspend_delay()...
 
-[1] http://marc.info/?l=linux-omap&m=143749603401221&w=2
+Also, according to the discussion so far, it seems like we are on
+agreement that we should really think twice when considering to extend
+the sysfs interface for runtime PM.
+
+>From the change-log/description to $subject patch, I fail to
+understand *why* the regular runtime PM *autosuspend* feature isn't
+sufficient. Perhaps Irina can elaborate more on the use case, to help
+me get a better understanding of the issue!?
+
+Kind regards
+Uffe
