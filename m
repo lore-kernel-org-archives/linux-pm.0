@@ -1,79 +1,105 @@
-From: Daniel Kurtz <djkurtz@chromium.org>
-Subject: Re: [PATCH v5 0/5] Let the power allocator thermal governor run on
- any thermal zone
-Date: Tue, 8 Sep 2015 09:46:23 +0800
-Message-ID: <CAGS+omDj_mtvYc-w1BLSVhXNO-xX3xY_7dHnHUczXMsRAycA=w@mail.gmail.com>
-References: <1440595604-27197-1-git-send-email-javi.merino@arm.com> <1441631969-3272-1-git-send-email-javi.merino@arm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 3/9] cpufreq: ondemand: only queue canceled works from
+ update_sampling_rate()
+Date: Tue, 8 Sep 2015 07:28:31 +0530
+Message-ID: <20150908015831.GY26760@linux>
+References: <cover.1437999691.git.viresh.kumar@linaro.org>
+ <5b568d732469de1a902e0aa1034ea24e863aa524.1437999691.git.viresh.kumar@linaro.org>
+ <1806697.T1XSqGqSN5@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f169.google.com ([209.85.160.169]:35131 "EHLO
-	mail-yk0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751237AbbIHBqn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Sep 2015 21:46:43 -0400
-Received: by ykdu9 with SMTP id u9so22289474ykd.2
-        for <linux-pm@vger.kernel.org>; Mon, 07 Sep 2015 18:46:43 -0700 (PDT)
-In-Reply-To: <1441631969-3272-1-git-send-email-javi.merino@arm.com>
+Received: from mail-pa0-f52.google.com ([209.85.220.52]:34994 "EHLO
+	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752536AbbIHB6f (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Sep 2015 21:58:35 -0400
+Received: by pacfv12 with SMTP id fv12so111824193pac.2
+        for <linux-pm@vger.kernel.org>; Mon, 07 Sep 2015 18:58:35 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1806697.T1XSqGqSN5@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: linux-pm@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Chung-yih Wang <cywang@chromium.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Punit Agrawal <punit.agrawal@arm.com>, Eduardo Valentin <edubezval@gmail.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, preeti.lkml@gmail.com, open list <linux-kernel@vger.kernel.org>
 
-Hi Javi,
+On 08-09-15, 03:11, Rafael J. Wysocki wrote:
+> There really are two cases, either you pass a CPU or gov_queue_work() has to
+> walk policy->cpus.
 
-On Mon, Sep 7, 2015 at 9:19 PM, Javi Merino <javi.merino@arm.com> wrote:
-> Relax the thermal governor requirements of sustainable_power and at
-> least two trip points so that it can be bound to any thermal zone.
-> Its behavior won't be optimal, it would be the best possible with the
-> data provided.
+Right (At least for now, we are doing just that.)
 
-I tested this whole series on my MT8173 board with a battery thermal
-zone with no trip points, so, for this whole series (not sure if both
-are needed, so take your pick):
+> Doing it the way you did hides that IMO.
 
-Reviewed-by: Daniel Kurtz <djkurtz@chromium.org>
-Tested-by: Daniel Kurtz <djkurtz@chromium.org>
+Maybe. But I see it otherwise. Adding special meaning to a variable
+(like int cpu == -1 being the special case to specify policy->cpus)
+hides things morei, as we need to look at how it is decoded finally in
+the routine gov_queue_work().
 
-I am a bit confused by MAINTAINERS for drivers/thermal.
-Will these patches be picked up by Eduardo or Zhang?
+But if we send a mask instead, it is very clear by reading the callers
+site, what we are trying to do.
 
-Thanks!
--Dan
+> I'd simply pass an int and use a special value to indicate that policy->cpus
+> is to be walked.
 
-> Changes since v4:
->    - Fix crash when a thermal zone with no trip points has no
->      get_trip_point_temp().  Reported by Daniel Kurtz.
->    - s/estimate_controller_constants()/estimate_pid_constants()/g
->
-> Changes since v3:
->    - Don't hardcode a value for sustainable power and re-estimate
->      the PID controllers every time if no sustainable power is given
->      as suggested by Eduardo Valentin.
->    - power_actor_get_min_power() moved to a patch of its own.
->
-> Changes since v2:
->   - Typos suggested by Daniel Kurtz
->
-> Changes since v1:
->   - Let the power allocator governor operate if the thermal zone
->     doesn't have tzp as suggested by Chung-yih Wang
->
-> Javi Merino (5):
->   thermal: Add a function to get the minimum power
->   thermal: power_allocator: relax the requirement of a sustainable_power
->     in tzp
->   thermal: power_allocator: relax the requirement of two passive trip
->      points
->   thermal: power_allocator: don't require tzp to be present for the
->     thermal zone
->   thermal: power_allocator: exit early if there are no cooling devices
->
->  Documentation/thermal/power_allocator.txt |   2 +-
->  drivers/thermal/power_allocator.c         | 243 ++++++++++++++++++++++--------
->  drivers/thermal/thermal_core.c            |  28 ++++
->  include/linux/thermal.h                   |   6 +
->  4 files changed, 214 insertions(+), 65 deletions(-)
->
-> --
-> 1.9.1
->
+Like cpu == -1 thing? Or something else?
+
+> > -	if (!all_cpus) {
+> > -		/*
+> > -		 * Use raw_smp_processor_id() to avoid preemptible warnings.
+> > -		 * We know that this is only called with all_cpus == false from
+> > -		 * works that have been queued with *_work_on() functions and
+> > -		 * those works are canceled during CPU_DOWN_PREPARE so they
+> > -		 * can't possibly run on any other CPU.
+> > -		 */
+> 
+> This was a useful comment and it should be moved along the logic it was supposed
+> to explain and not just dropped.
+
+Sigh
+
+> > -		__gov_queue_work(raw_smp_processor_id(), dbs_data, delay);
+> > -	} else {
+> > -		for_each_cpu(i, policy->cpus)
+> > -			__gov_queue_work(i, dbs_data, delay);
+> > -	}
+> > +	for_each_cpu(i, cpus)
+> > +		__gov_queue_work(i, dbs_data, delay);
+> >  
+> >  out_unlock:
+> >  	mutex_unlock(&cpufreq_governor_lock);
+> > @@ -232,7 +221,8 @@ static void dbs_timer(struct work_struct *work)
+> >  	struct cpufreq_policy *policy = shared->policy;
+> >  	struct dbs_data *dbs_data = policy->governor_data;
+> >  	unsigned int sampling_rate, delay;
+> > -	bool modify_all = true;
+> > +	const struct cpumask *cpus;
+> 
+> I don't think this local variable is necessary.
+> 
+> > +	bool load_eval;
+> >  
+> >  	mutex_lock(&shared->timer_mutex);
+> >  
+> > @@ -246,11 +236,11 @@ static void dbs_timer(struct work_struct *work)
+> >  		sampling_rate = od_tuners->sampling_rate;
+> >  	}
+> >  
+> > -	if (!need_load_eval(cdbs->shared, sampling_rate))
+> > -		modify_all = false;
+> > +	load_eval = need_load_eval(cdbs->shared, sampling_rate);
+> > +	cpus = load_eval ? policy->cpus : cpumask_of(raw_smp_processor_id());
+> >  
+> > -	delay = dbs_data->cdata->gov_dbs_timer(cdbs, dbs_data, modify_all);
+> > -	gov_queue_work(dbs_data, policy, delay, modify_all);
+> > +	delay = dbs_data->cdata->gov_dbs_timer(cdbs, dbs_data, load_eval);
+> > +	gov_queue_work(dbs_data, policy, delay, cpus);
+
+Avoiding that local variable would have made this a little longer, but
+I can surely drop it :)
+
+        gov_queue_work(dbs_data, policy, delay,
+                       load_eval ? policy->cpus :
+                                   cpumask_of(raw_smp_processor_id());
+
+-- 
+viresh
