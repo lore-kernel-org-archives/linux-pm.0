@@ -1,71 +1,85 @@
-From: Al Stone <ahs3@redhat.com>
-Subject: Re: [PATCH v2 1/5] ACPI: add in a bad_madt_entry() function to
- eventually replace the macro
-Date: Tue, 8 Sep 2015 17:00:05 -0600
-Message-ID: <55EF6875.9000404@redhat.com>
-References: <1440022048-6285-1-git-send-email-al.stone@linaro.org>
- <1440022048-6285-2-git-send-email-al.stone@linaro.org>
- <55EDADF5.5060008@arm.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing
+ runtime suspend
+Date: Wed, 9 Sep 2015 01:50:19 +0200
+Message-ID: <CAJZ5v0iCRUJoDJ4oy8TKDvngjZ7SbBUngK2+a7ccUEtVFhW0gg@mail.gmail.com>
+References: <1441658561-26190-1-git-send-email-irina.tirdea@intel.com>
+	<8981266.1iKleIVcUj@vostro.rjw.lan>
+	<1F3AC3675D538145B1661F571FE1805F2F0C5CBE@irsmsx105.ger.corp.intel.com>
+	<1441697744.26994.21.camel@suse.com>
+	<CAJZ5v0jf1=YFW3iCh8LvOU+5diKgoVH7LtTeu80ym2H4TPYSkg@mail.gmail.com>
+	<CAPDyKFrZqGcB9kMTnvAFRAWVqyvJ6REGFLce4iA2w5rqps=d4g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-ia64-owner@vger.kernel.org>
-In-Reply-To: <55EDADF5.5060008@arm.com>
-Sender: linux-ia64-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>, Al Stone <al.stone@linaro.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-Cc: "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>, "patches@linaro.org" <patches@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFrZqGcB9kMTnvAFRAWVqyvJ6REGFLce4iA2w5rqps=d4g@mail.gmail.com>
+Sender: linux-input-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Tirdea, Irina" <irina.tirdea@intel.com>, Oliver Neukum <oneukum@suse.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alan Stern <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Purdila, Octavian" <octavian.purdila@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 09/07/2015 09:32 AM, Sudeep Holla wrote:
-> Hi Al,
-> 
-> On 19/08/15 23:07, Al Stone wrote:
-> 
-> I finally got a chance to try this series on Juno. Well it exposed a firmware
-> bug in MADT table :)
+Hi,
 
-What?  The code did what it was supposed to do :-)?  Very cool.  Good to know.
+On Wed, Sep 9, 2015 at 12:25 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> On 8 September 2015 at 22:56, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>> On Tue, Sep 8, 2015 at 9:35 AM, Oliver Neukum <oneukum@suse.com> wrote:
+>>> On Tue, 2015-09-08 at 01:10 +0000, Tirdea, Irina wrote:
+>>
+>> [cut]
+>>
+>>>> this would work except for adding a sysfs attribute that would trigger
+>>>> a runtime suspend while ignoring usage count. Would that be a
+>>>> better direction?
+>>>
+>>> No. If we want this at all, we need a new callback to notify drivers
+>>> that user space is temporarily uninterested in a device. And the reverse
+>>> of course.
+>>> The power model is good. We must not assume that devices can be
+>>> suspended at will. If we do this at all, we ought to see it as giving
+>>> strong hints to drivers when a device can be considered idle.
+>>
+>> This is a good summary in my view.
+>>
+>> The only thing we can add, realistically, is an interface for user
+>> space to "kick" drivers to check if the devices they handle may be
+>> suspended at this point (or to run their ->runtime_idle callbacks
+>> IOW).
+>>
+>> That would be quite similar to autosuspend except that the "kick" will
+>> come from user space rather than from a timer function in the kernel.
+>
+> Apologize for interrupting the discussion!
+>
+> Unless I miss the point, I assumes the above is somewhat already
+> achievable via sysfs when changing the value of the auto-suspend
+> timeout, since it triggers a call to
+> pm_runtime_set_autosuspend_delay()...
 
-I talked to Graeme a bit, too, and he had some good suggestions for clean up.
-I'll post a v3 tomorrow.
+Well, from the initial comment in drivers/base/power/sysfs.c:
 
-> [..]
-> 
->>                  acpi_tbl_entry_handler handler,
->> @@ -245,6 +484,8 @@ acpi_parse_entries(char *id, unsigned long table_size,
->>                 table_end) {
->>                  if (entry->type == entry_id
->>                      && (!max_entries || count < max_entries)) {
->> +                       if (bad_madt_entry(table_header, entry))
->> +                               return -EINVAL;
-> 
-> Not sure if we can have the above check here unconditionally.
-> Currently I can see there are 2 other users of acpi_parse_entries i.e.
-> PCC and NUMA. So may be it can be made conditional or return success for
-> non-MADT tables from bad_madt_entry ?
+ *
+ *    NOTE: The autosuspend_delay_ms attribute and the autosuspend_delay
+ *    value are used only if the driver calls pm_runtime_use_autosuspend().
+ *
 
-I'll double check these uses.  I thought I had before, and based on what I
-saw the check would be reasonable.  It never hurts to check again, though.
+Some drivers don't do that and they would be the primary target
+audience for the new interface (if we agreed that it was useful after
+all).
 
-> Other than that, you can add for ARM64 specific parts:
-> Reviewed-and-tested-by: Sudeep Holla <sudeep.holla@arm.com>
+> Also, according to the discussion so far, it seems like we are on
+> agreement that we should really think twice when considering to extend
+> the sysfs interface for runtime PM.
 
-Thanks!
+That certainly is correct and not limited to runtime PM. :-)
 
-> Regards,
-> Sudeep
-> -- 
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> From the change-log/description to $subject patch, I fail to
+> understand *why* the regular runtime PM *autosuspend* feature isn't
+> sufficient. Perhaps Irina can elaborate more on the use case, to help
+> me get a better understanding of the issue!?
 
+My understanding is that the idea would be to trigger an attempt to
+suspend via a specific event (eg. lid closes) rather then via an
+inactivity timer.
 
--- 
-ciao,
-al
------------------------------------
-Al Stone
-Software Engineer
-Red Hat, Inc.
-ahs3@redhat.com
------------------------------------
+Thanks,
+Rafael
