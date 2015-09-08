@@ -1,142 +1,77 @@
-From: Charles Chiou <ch1102chiou@gmail.com>
-Subject: Need to distinct shut down or restart on driver side.
-Date: Tue, 08 Sep 2015 15:26:29 +0800
-Message-ID: <55EE8DA5.1090001@gmail.com>
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: RE: [PATCH] intel_pstate: prevent max_perf_pct < min_perf_pct
+Date: Tue, 8 Sep 2015 07:27:51 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE6401D4A70BF@SHSMSX101.ccr.corp.intel.com>
+References: <55E97973.1020301@jp.fujitsu.com>
+ <36DF59CE26D8EE47B0655C516E9CE6401CB04B52@SHSMSX101.ccr.corp.intel.com>
+ <55EE1B56.3010205@jp.fujitsu.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-scsi-owner@vger.kernel.org>
-Sender: linux-scsi-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, Christoph Hellwig <hch@infradead.org>, linux-scsi@vger.kernel.org
-Cc: grace.chang@tw.promise.com, linus.chen@tw.promise.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:43843 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751803AbbIHH3n convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Sep 2015 03:29:43 -0400
+In-Reply-To: <55EE1B56.3010205@jp.fujitsu.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Seiichi Ikarashi <s.ikarashi@jp.fujitsu.com>
+Cc: "kristen@linux.intel.com" <kristen@linux.intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>
 
-Hi, we need to get the information that specified the host is going to 
-shut down or restart. Ideally, our device can reference the HW signal to 
-know the host is going to shut down or restart, unfortunately, we face 
-the HW signal issue on various motherboards.
+Hi, Seiichi
 
-We experiment on many motherboards, and we observe that the restart
-signal is different on different motherboard. If device misses the
-signal, PCI loss or volume disappearance might happen.
+> -----Original Message-----
+> From: Seiichi Ikarashi [mailto:s.ikarashi@jp.fujitsu.com]
+> Sent: Tuesday, September 08, 2015 7:19 AM
+> To: Chen, Yu C
+> Cc: kristen@linux.intel.com; Wysocki, Rafael J; linux-pm@vger.kernel.org;
+> Zhang, Rui
+> Subject: Re: [PATCH] intel_pstate: prevent max_perf_pct < min_perf_pct
+> 
+> Hi, Yu
+> 
+> On 2015-09-07 18:00, Chen, Yu C wrote:
+> > Hi, Seiichi
+> >
+> >> -----Original Message-----
+> >> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
+> >> owner@vger.kernel.org] On Behalf Of Seiichi Ikarashi
+> >> Sent: Friday, September 04, 2015 6:59 PM
+> >> To: kristen@linux.intel.com; Wysocki, Rafael J
+> >> Cc: linux-pm@vger.kernel.org
+> >> Subject: [PATCH] intel_pstate: prevent max_perf_pct < min_perf_pct
+> >>
+> >> Add some value check to prevent a reversal, max_perf_pct <
+> min_perf_pct.
+> >>
+> >> Signed-off-by: Seiichi Ikarashi <s.ikarashi@jp.fujitsu.com>
+> >>
+> > I guess a similar patch has been sent at:
+> > https://patchwork.kernel.org/patch/6995461/
+> 
+> Yes, your patch looks better than mine from the point of view of covering
+> intel_pstate_set_policy().
+> 
+> Still I have a question.
+> Does your patch allow the following condition?
+> 
+>   limits.max_policy_pct > limits.min_perf_pct > limits.max_perf_pct >
+> limits.min_policy_pct
+> 
 
+Thanks!  Seems my previous patch does not guarantee
+ max_perf_pct >= min_perf_pct,  I think following logic would be better:
+Step0:  normalize the user input to [min_policy, max_policy]
+Step1: make sure max_perf_pct>= min_perf_pct
 
-Currently, stex.c cannot send reboot signal to the fw because the only 
-way to distinct shut down and restart on driver side is 
-register_reboot_notifier() which is not allow to SCSI driver.
+BTW,why I add step0 here is because we should not rely on user input, and
+different policy might have different (min,max), for example,
+max_policy_pct=40,min_policy_pct=30, and user input of 
+echo 50 > min_sysfs_pct would make the final min_perf_pct to
+50, it's not in legal policy scope, so...
 
-Could you provide some suggestions?
-
-
-Add reboot feature is the forth patch in stex.c patch series.
-Patch 1~3 have been sent to Linux-SCSI mailing list. Patch 4 is the 
-reboot patch and I don't sent it to Linux-SCSI mailing list.
-Attach patch 4 as following.
-BRS
-Charles
-
-
- From 35a709ea3ae213bef9982706e9a95ffb26e04e1e Mon Sep 17 00:00:00 2001
-From: Charles <charles.chiou@tw.promise.com>
-Date: Tue, 8 Sep 2015 15:09:42 +0800
-Subject: [PATCH 4/4] scsi:stex.c Add reboot support
-
-1. Add reboot support, Pegasus devices should be notified that
-    the host is going to shutdown/restart. I register reboot callback
-    function to distinct host is going to shutdown or to restart.
-
-Signed-off-by: Charles Chiou <charles.chiou@tw.promise.com>
----
-  drivers/scsi/stex.c | 25 +++++++++++++++++++++++--
-  1 file changed, 23 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/scsi/stex.c b/drivers/scsi/stex.c
-index c96a86d..63ca921 100644
---- a/drivers/scsi/stex.c
-+++ b/drivers/scsi/stex.c
-@@ -25,6 +25,7 @@
-  #include <linux/types.h>
-  #include <linux/module.h>
-  #include <linux/spinlock.h>
-+#include <linux/reboot.h>
-  #include <asm/io.h>
-  #include <asm/irq.h>
-  #include <asm/byteorder.h>
-@@ -351,6 +352,7 @@ struct st_card_info {
-  	u16 sts_count;
-  };
-
-+static int isRestart;
-  static int msi;
-  module_param(msi, int, 0);
-  MODULE_PARM_DESC(msi, "Enable Message Signaled Interrupts(0=off, 1=on)");
-@@ -372,6 +374,14 @@ MODULE_DESCRIPTION("Promise Technology SuperTrak EX 
-Controllers");
-  MODULE_LICENSE("GPL");
-  MODULE_VERSION(ST_DRIVER_VERSION);
-
-+static int stex_reboot_callback(struct notifier_block *self,
-+	unsigned long val, void *data)
-+{
-+	if (val == SYS_RESTART)
-+		isRestart = 1;
-+	return NOTIFY_OK;
-+}
-+
-  static void stex_gettime(__le64 *time)
-  {
-  	struct timeval tv;
-@@ -1547,6 +1557,7 @@ static int stex_probe(struct pci_dev *pdev, const 
-struct pci_device_id *id)
-  	u32 sts_offset, cp_offset, scratch_offset;
-  	int err;
-
-+	isRestart = 0;
-  	err = pci_enable_device(pdev);
-  	if (err)
-  		return err;
-@@ -1834,8 +1845,12 @@ static void stex_shutdown(struct pci_dev *pdev)
-
-  	if (hba->supports_pm == 0)
-  		stex_hba_stop(hba, ST_IGNORED);
--	else
--		stex_hba_stop(hba, ST_S5);
-+	else {
-+		if (isRestart)
-+			stex_hba_stop(hba, ST_S6);
-+		else
-+			stex_hba_stop(hba, ST_S5);
-+	}
-  }
-
-  static int stex_choice_sleep_mic(pm_message_t state)
-@@ -1882,18 +1897,24 @@ static struct pci_driver stex_pci_driver = {
-  	.resume		= stex_resume,
-  };
-
-+static struct notifier_block stex_reboot_notifier = {
-+	stex_reboot_callback, NULL, 0
-+};
-+
-  static int __init stex_init(void)
-  {
-  	printk(KERN_INFO DRV_NAME
-  		": Promise SuperTrak EX Driver version: %s\n",
-  		 ST_DRIVER_VERSION);
-
-+	register_reboot_notifier(&stex_reboot_notifier);
-  	return pci_register_driver(&stex_pci_driver);
-  }
-
-  static void __exit stex_exit(void)
-  {
-  	pci_unregister_driver(&stex_pci_driver);
-+	unregister_reboot_notifier(&stex_reboot_notifier);
-  }
-
-  module_init(stex_init);
--- 
-1.9.1
-
-
+Best Regards,
+Yu
 
