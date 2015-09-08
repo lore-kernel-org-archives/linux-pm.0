@@ -1,55 +1,40 @@
-From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: [PATCH] thermal: Fix thermal_zone_of_sensor_register to match documentation
-Date: Tue,  8 Sep 2015 14:51:12 +0100
-Message-ID: <1441720272-17338-1-git-send-email-punit.agrawal@arm.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH V6] Report interrupt(s) that caused system wakeup
+Date: Tue, 8 Sep 2015 10:18:46 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1509081013450.1533-100000@iolanthe.rowland.org>
+References: <7458110.bud3pBbYxc@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:59001 "EHLO
-	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754175AbbIHNuG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Sep 2015 09:50:06 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:42192 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754623AbbIHOSr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Sep 2015 10:18:47 -0400
+In-Reply-To: <7458110.bud3pBbYxc@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: edubezval@gmail.com, rui.zhang@intel.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux@roeck-us.net, Punit Agrawal <punit.agrawal@arm.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Alexandra Yates <alexandra.yates@linux.intel.com>, tglx@linutronix.de, kristen.c.accardi@intel.com, linux-pm@vger.kernel.org
 
-thermal_zone_of_sensor_register is documented as returning a pointer
-to either a valid thermal_zone_device on success, or a corresponding
-ERR_PTR() value.
+On Tue, 8 Sep 2015, Rafael J. Wysocki wrote:
 
-In contrast, the function returns NULL when THERMAL_OF is configured
-off. Fix this.
+> On Thursday, August 27, 2015 01:00:43 PM Alexandra Yates wrote:
+> > This feature reports which IRQs cause the system to wakeup from sleep last
+> > time it was suspended.
 
-Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
-Acked-by: Guenter Roeck <linux@roeck-us.net>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>
----
-Hi Eduardo, Rui,
+A minor complaint...  This doesn't actually report which IRQs caused
+the system to wake up.  In reality, it reports all the wakeup-enabled
+IRQs that have occurred since the system went to sleep.  _One_ of those
+IRQs was responsible for waking the system up, but the others weren't.
 
-This patch has been on the list without any objection for sometime [0]
- now. Could you pick this up for the next rc please?
+In fact, even that previous sentence need not be true.  If a 
+wakeup-enabled IRQ occurs at the right point during a system sleep 
+transition, it can cause the entire transition to be aborted.  The 
+sleep returns to normal operation without ever going fully to sleep.  
 
-Thanks,
-Punit
+Thus, it would be more accurate to say above that one of those IRQs was
+responsible for waking the system up or preventing the system from
+going to sleep.
 
-[0] http://thread.gmane.org/gmane.linux.kernel/2011466/focus=2013175
-
- include/linux/thermal.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 037e9df..f344e51 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -364,7 +364,7 @@ static inline struct thermal_zone_device *
- thermal_zone_of_sensor_register(struct device *dev, int id, void *data,
- 				const struct thermal_zone_of_device_ops *ops)
- {
--	return NULL;
-+	return ERR_PTR(-ENODEV);
- }
- 
- static inline
--- 
-2.5.0
+Alan Stern
 
