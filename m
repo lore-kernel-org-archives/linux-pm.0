@@ -1,47 +1,36 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH v5 4/4] ARM: dts: add suspend opp to exynos4412
-Date: Tue, 08 Sep 2015 18:41:04 +0200
-Message-ID: <1441730464-7947-5-git-send-email-b.zolnierkie@samsung.com>
-References: <1441730464-7947-1-git-send-email-b.zolnierkie@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1441730464-7947-1-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Abraham <thomas.ab@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
+Subject: [PATCH] cpufreq: s5pv210: remove superfluous CONFIG_PM ifdefs
+Date: Tue, 08 Sep 2015 19:02:12 +0200
+Message-ID: <1441731732-8624-1-git-send-email-b.zolnierkie@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-Mark 800MHz OPP as a suspend opp for Exynos4412 based
-boards so effectively cpufreq-dt driver behavior w.r.t.
-suspend frequency matches what the old exynos-cpufreq
-driver has been doing.
+CONFIG_PM ifdefs are superfluous and can be removed.
 
-This patch fixes suspend/resume support on Exynos4412 based
-Trats2 board and reboot hang on Exynos4412 based Odroid U3
-board.
-
-Cc: Thomas Abraham <thomas.ab@samsung.com>
-Cc: Javier Martinez Canillas <javier@osg.samsung.com>
+Cc: Kukjin Kim <kgene@kernel.org>
 Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Acked-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
- arch/arm/boot/dts/exynos4412.dtsi | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/cpufreq/s5pv210-cpufreq.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/arch/arm/boot/dts/exynos4412.dtsi b/arch/arm/boot/dts/exynos4412.dtsi
-index ca0e3c1..294cfe4 100644
---- a/arch/arm/boot/dts/exynos4412.dtsi
-+++ b/arch/arm/boot/dts/exynos4412.dtsi
-@@ -98,6 +98,7 @@
- 			opp-hz = /bits/ 64 <800000000>;
- 			opp-microvolt = <1000000>;
- 			clock-latency-ns = <200000>;
-+			opp-suspend;
- 		};
- 		opp07 {
- 			opp-hz = /bits/ 64 <900000000>;
+diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
+index 9e231f5..ef5282b 100644
+--- a/drivers/cpufreq/s5pv210-cpufreq.c
++++ b/drivers/cpufreq/s5pv210-cpufreq.c
+@@ -576,10 +576,8 @@ static struct cpufreq_driver s5pv210_driver = {
+ 	.get		= cpufreq_generic_get,
+ 	.init		= s5pv210_cpu_init,
+ 	.name		= "s5pv210",
+-#ifdef CONFIG_PM
+ 	.suspend	= cpufreq_generic_suspend,
+ 	.resume		= cpufreq_generic_suspend, /* We need to set SLEEP FREQ again */
+-#endif
+ };
+ 
+ static struct notifier_block s5pv210_cpufreq_reboot_notifier = {
 -- 
 1.9.1
