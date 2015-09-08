@@ -1,50 +1,46 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V6] Report interrupt(s) that caused system wakeup
-Date: Tue, 08 Sep 2015 17:09:30 +0200
-Message-ID: <1528648.teEtKm1WHf@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1509081013450.1533-100000@iolanthe.rowland.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: RE: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing
+ runtime suspend
+Date: Tue, 8 Sep 2015 10:44:04 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1509081039470.1533-100000@iolanthe.rowland.org>
+References: <1F3AC3675D538145B1661F571FE1805F2F0C5CBE@irsmsx105.ger.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:55283 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754718AbbIHOlm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Sep 2015 10:41:42 -0400
-In-Reply-To: <Pine.LNX.4.44L0.1509081013450.1533-100000@iolanthe.rowland.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:42308 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755036AbbIHOoF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Sep 2015 10:44:05 -0400
+In-Reply-To: <1F3AC3675D538145B1661F571FE1805F2F0C5CBE@irsmsx105.ger.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Alexandra Yates <alexandra.yates@linux.intel.com>, tglx@linutronix.de, kristen.c.accardi@intel.com, linux-pm@vger.kernel.org
+To: "Tirdea, Irina" <irina.tirdea@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Purdila, Octavian" <octavian.purdila@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-On Tuesday, September 08, 2015 10:18:46 AM Alan Stern wrote:
-> On Tue, 8 Sep 2015, Rafael J. Wysocki wrote:
+On Tue, 8 Sep 2015, Tirdea, Irina wrote:
+
+> In the previous discussion thread , there were a couple of options
+> mentioned, but none seemed to reach a consensus. You mentioned
+> adding a "more aggressive runtime PM mode" [1]. I'm not sure how
+> this would work except for adding a sysfs attribute that would trigger
+> a runtime suspend while ignoring usage count. Would that be a
+> better direction?
 > 
-> > On Thursday, August 27, 2015 01:00:43 PM Alexandra Yates wrote:
-> > > This feature reports which IRQs cause the system to wakeup from sleep last
-> > > time it was suspended.
+> Thank you,
+> Irina
 > 
-> A minor complaint...  This doesn't actually report which IRQs caused
-> the system to wake up.  In reality, it reports all the wakeup-enabled
-> IRQs that have occurred since the system went to sleep.
+> [1] http://marc.info/?l=linux-input&m=140564626306396&w=2
 
-The current version of the patch reports the last one to be precisie.
-It should report the first one though I think.
+Purely as a matter of interest, in that email Rafael also mentioned
+that he and I had discussed a way to disable remote wakeup during 
+runtime suspend.  Oddly enough, the method we decided upon was to add 
+an "off" option to /sys/.../power/control.  :-)
 
-> _One_ of those IRQs was responsible for waking the system up, but the
-> others weren't.
->
-> In fact, even that previous sentence need not be true.  If a 
-> wakeup-enabled IRQ occurs at the right point during a system sleep 
-> transition, it can cause the entire transition to be aborted.  The 
-> sleep returns to normal operation without ever going fully to sleep.  
-> 
-> Thus, it would be more accurate to say above that one of those IRQs was
-> responsible for waking the system up or preventing the system from
-> going to sleep.
+It would not put the device into runtime suspend immediately, like you
+are proposing.  Instead it would mean the same as the "auto" mode,
+except that remote wakeup should be disabled during runtime suspend.
 
-Right.
+We never got around to implementing this, however.
 
-Thanks,
-Rafael
+Alan Stern
 
