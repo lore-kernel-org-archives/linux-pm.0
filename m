@@ -1,36 +1,36 @@
-From: Oliver Neukum <oneukum@suse.com>
-Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing
- runtime suspend
-Date: Wed, 09 Sep 2015 08:26:06 +0200
-Message-ID: <1441779966.26994.52.camel@suse.com>
-References: <Pine.LNX.4.44L0.1509081039470.1533-100000@iolanthe.rowland.org>
+From: "Anaczkowski, Lukasz" <lukasz.anaczkowski@intel.com>
+Subject: RE: [PATCH 0/4] Fix how CPUs are enumerated when there's more than
+ 255 CPUs
+Date: Wed, 9 Sep 2015 07:01:19 +0000
+Message-ID: <C1C2579D7BE026428F81F41198ADB172378AACE4@irsmsx110.ger.corp.intel.com>
+References: <20150827093738.GA21134@red-moon>
+ <1441710480-17622-1-git-send-email-lukasz.anaczkowski@intel.com>
+ <1441710480-17622-2-git-send-email-lukasz.anaczkowski@intel.com>
+ <55EF0C7A.7070105@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-input-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1509081039470.1533-100000@iolanthe.rowland.org>
-Sender: linux-input-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Tirdea, Irina" <irina.tirdea@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Purdila, Octavian" <octavian.purdila@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <55EF0C7A.7070105@arm.com>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: Marc Zyngier <marc.zyngier@arm.com>, "lorenzo.pieralisi@arm.com" <lorenzo.pieralisi@arm.com>, "tomasz.nowicki@linaro.org" <tomasz.nowicki@linaro.org>, "tglx@linutronix.de" <tglx@linutronix.de>, "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>, "x86@kernel.org" <x86@kernel.org>, "jason@lakedaemon.net" <jason@lakedaemon.net>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2015-09-08 at 10:44 -0400, Alan Stern wrote:
-> It would not put the device into runtime suspend immediately, like you
-> are proposing.  Instead it would mean the same as the "auto" mode,
-> except that remote wakeup should be disabled during runtime suspend.
+From: Marc Zyngier [mailto:marc.zyngier@arm.com] 
+Sent: Tuesday, September 8, 2015 6:28 PM
 
-Hi,
+> In my view, this makes the change a lot more palatable, and it can fit in exactly two patches:
+>
+> 1) add the acpi_subtable_proc stuff with the compatibility helpers
+> 2) change arch/x86/kernel/acpi/boot.c to do whatever you want it
+>   to do
 
-this proposal is incomplete. If you don't want remote wakeup you
-imply that input is no longer needed or possible. If that is
-already known, we can just as well inform the driver, so that
-it can cease IO for input.
+> It will be a lot easier to review and to verify.
 
-Yet that is not necessarily the only scenario. For example
-if you run a screensaver, you might not care for where the
-user touches the screen, but the event as such is valuable.
+Thanks, Marc.
+Sounds you're right, I'll try to follow KISS rule better next time. Will send updated patches.
 
-	Regards
-		Oliver
-
-
+Cheers,
+Lukasz
