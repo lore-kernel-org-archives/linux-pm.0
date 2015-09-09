@@ -1,228 +1,208 @@
-From: Lukasz Anaczkowski <lukasz.anaczkowski@intel.com>
-Subject: [PATCH 1/2] acpi: Added acpi_subtable_proc to ACPI table parsers
-Date: Wed,  9 Sep 2015 11:30:17 +0200
-Message-ID: <1441791018-14669-2-git-send-email-lukasz.anaczkowski@intel.com>
-References: <55EF0C7A.7070105@arm.com>
- <1441791018-14669-1-git-send-email-lukasz.anaczkowski@intel.com>
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1441791018-14669-1-git-send-email-lukasz.anaczkowski@intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: marc.zyngier@arm.com, lorenzo.pieralisi@arm.com, tomasz.nowicki@linaro.org, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, jason@lakedaemon.net
-Cc: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, Lukasz Anaczkowski <lukasz.anaczkowski@intel.com>
+From: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+Subject: Re: [PATCH v4 0/22] On-demand device probing
+Date: Wed, 9 Sep 2015 11:40:17 +0200
+Message-ID: <CAAObsKBu+Y5ad1ghCAdZ3GHbCtw14bLLHhUK37rk18SNtc2k4g@mail.gmail.com>
+References: <1441628627-5143-1-git-send-email-tomeu.vizoso@collabora.com>
+ <CAL_Jsq+E31JaPcp5ELS_ztSqgSrK7U4OzB9xNcNz01Ayrrm+Yg@mail.gmail.com>
+ <CAAObsKDUzk-9H2_VrVmbc=ZeRaknGcjTMY3Mauh3JVZxLz4CiA@mail.gmail.com> <55EF8C65.4030706@kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <55EF8C65.4030706-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Javier Martinez Canillas <javier-JPH+aEBZ4P+UEJcrhfAQsw@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux USB List <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Felipe Balbi <balbi-l0cyMroinI0@public.gmane.org>, Linux PWM List <linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, =?UTF-8?Q?Terje_Bergstr=C3=B6m?= <tbergstrom-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Jingo
 List-Id: linux-pm@vger.kernel.org
 
-ACPI subtable parsing needs to be extended to allow two or more
-handlers to be run in the same ACPI table walk, thus adding
-acpi_subtable_proc structure which stores
-() ACPI table id
-() handler that processes table
-() counter how many items has been processed
-and passing it to acpi_parse_entries_array() and
-acpi_table_parse_entries_array().
+On 9 September 2015 at 03:33, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+> On 09/08/2015 02:30 AM, Tomeu Vizoso wrote:
+>> On 7 September 2015 at 22:50, Rob Herring <robherring2-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wr=
+ote:
+>>> On Mon, Sep 7, 2015 at 7:23 AM, Tomeu Vizoso <tomeu.vizoso@collabor=
+a.com> wrote:
+>>>> Hello,
+>>>>
+>>>> I have a problem with the panel on my Tegra Chromebook taking long=
+er
+>>>> than expected to be ready during boot (St=C3=A9phane Marchesin rep=
+orted what
+>>>> is basically the same issue in [0]), and have looked into ordered
+>>>> probing as a better way of solving this than moving nodes around i=
+n the
+>>>> DT or playing with initcall levels and linking order.
+>>>>
+>>>> While reading the thread [1] that Alexander Holler started with hi=
+s
+>>>> series to make probing order deterministic, it occurred to me that=
+ it
+>>>> should be possible to achieve the same by probing devices as they =
+are
+>>>> referenced by other devices.
+>>>>
+>>>> This basically reuses the information that is already implicit in =
+the
+>>>> probe() implementations, saving us from refactoring existing drive=
+rs or
+>>>> adding information to DTBs.
+>>>>
+>>>> During review of v1 of this series Linus Walleij suggested that it
+>>>> should be the device driver core to make sure that dependencies ar=
+e
+>>>> ready before probing a device. I gave this idea a try [2] but Mark=
+ Brown
+>>>> pointed out to the logic duplication between the resource acquisit=
+ion
+>>>> and dependency discovery code paths (though I think it's fairly mi=
+nor).
+>>>>
+>>>> To address that code duplication I experimented with Arnd's devm_p=
+robe
+>>>> [3] concept of having drivers declare their dependencies instead o=
+f
+>>>> acquiring them during probe, and while it worked [4], I don't thin=
+k we
+>>>> end up winning anything when compared to just probing devices on-d=
+emand
+>>>> from resource getters.
+>>>>
+>>>> One remaining objection is to the "sprinkling" of calls to
+>>>> of_device_probe() in the resource getters of each subsystem, but I=
+ think
+>>>> it's the right thing to do given that the storage of resources is
+>>>> currently subsystem-specific.
+>>>>
+>>>> We could avoid the above by moving resource storage into the core,=
+ but I
+>>>> don't think there's a compelling case for that.
+>>>>
+>>>> I have tested this on boards with Tegra, iMX.6, Exynos, Rockchip a=
+nd
+>>>> OMAP SoCs, and these patches were enough to eliminate all the defe=
+rred
+>>>> probes (except one in PandaBoard because omap_dma_system doesn't h=
+ave a
+>>>> firmware node as of yet).
+>>>>
+>>>> Have submitted a branch [5] with only these patches on top of thur=
+sday's
+>>>> linux-next to kernelci.org and I don't see any issues that could b=
+e
+>>>> caused by them. For some reason it currently has more passes than =
+the
+>>>> version of -next it's based on!
+>>>>
+>>>> With this series I get the kernel to output to the panel in 0.5s,
+>>>> instead of 2.8s.
+>>>>
+>>>> Regards,
+>>>>
+>>>> Tomeu
+>>>>
+>>>> [0] http://lists.freedesktop.org/archives/dri-devel/2014-August/06=
+6527.html
+>>>>
+>>>> [1] https://lkml.org/lkml/2014/5/12/452
+>>>>
+>>>> [2] https://lkml.org/lkml/2015/6/17/305
+>>>>
+>>>> [3] http://article.gmane.org/gmane.linux.ports.arm.kernel/277689
+>>>>
+>>>> [4] https://lkml.org/lkml/2015/7/21/441a
+>>>>
+>>>> [5] https://git.collabora.com/cgit/user/tomeu/linux.git/log/?h=3Do=
+n-demand-probes-v6
+>>>>
+>>>> [6] http://kernelci.org/boot/all/job/collabora/kernel/v4.2-11902-g=
+25d80c927f8b/
+>>>>
+>>>> [7] http://kernelci.org/boot/all/job/next/kernel/next-20150903/
+>>>>
+>>>> Changes in v4:
+>>>> - Added bus.pre_probe callback so the probes of Primecell devices =
+can be
+>>>>   deferred if their device IDs cannot be yet read because of the c=
+lock
+>>>>   driver not having probed when they are registered. Maybe this go=
+es
+>>>>   overboard and the matching information should be in the DT if th=
+ere is
+>>>>   one.
+>>>
+>>> Seems overboard to me or at least a separate problem.
+>>
+>> It's a separate problem but this was preventing the series from
+>> working on a few boards.
+>
+> What is the failure? Not booting? Fixing not working would certainly =
+not
+> be overboard.
 
-This is needed to fix CPU enumeration when APIC/X2APIC entries
-are interleaved.
+On the device I was testing on (qemu's vexpress-a15 machine) the
+machine booted and I was able to open a ssh session, but serial was
+broken among other AMBA devices:
 
-Signed-off-by: Lukasz Anaczkowski <lukasz.anaczkowski@intel.com>
----
- drivers/acpi/tables.c | 89 +++++++++++++++++++++++++++++++++++++++++----------
- include/linux/acpi.h  | 13 ++++++++
- 2 files changed, 85 insertions(+), 17 deletions(-)
+/memory-controller@2b0a0000
+/memory-controller@7ffd0000
+/dma@7ffb0000
+/smb/motherboard/iofpga@3,00000000/sysctl@020000
+/smb/motherboard/iofpga@3,00000000/aaci@040000
+/smb/motherboard/iofpga@3,00000000/mmci@050000
+/smb/motherboard/iofpga@3,00000000/kmi@060000
+/smb/motherboard/iofpga@3,00000000/kmi@070000
+/smb/motherboard/iofpga@3,00000000/uart@090000
+/smb/motherboard/iofpga@3,00000000/uart@0a0000
+/smb/motherboard/iofpga@3,00000000/uart@0b0000
+/smb/motherboard/iofpga@3,00000000/uart@0c0000
+/smb/motherboard/iofpga@3,00000000/wdt@0f0000
+/smb/motherboard/iofpga@3,00000000/timer@110000
+/smb/motherboard/iofpga@3,00000000/timer@120000
+/smb/motherboard/iofpga@3,00000000/rtc@170000
+/smb/motherboard/iofpga@3,00000000/clcd@1f0000
 
-diff --git a/drivers/acpi/tables.c b/drivers/acpi/tables.c
-index 2e19189..13e5089 100644
---- a/drivers/acpi/tables.c
-+++ b/drivers/acpi/tables.c
-@@ -214,20 +214,37 @@ void acpi_table_print_madt_entry(struct acpi_subtable_header *header)
- 	}
+Another way of avoiding this particular problem would be not delaying
+the probe of devices in the configuration bus, by doing something like
+this:
+
+diff --git a/drivers/bus/vexpress-config.c b/drivers/bus/vexpress-confi=
+g.c
+index 6575c0fe6a4e..eda293869cd3 100644
+--- a/drivers/bus/vexpress-config.c
++++ b/drivers/bus/vexpress-config.c
+@@ -181,7 +181,7 @@ static int vexpress_config_populate(struct
+device_node *node)
+        if (WARN_ON(!parent))
+                return -ENODEV;
+
+-       return of_platform_populate(node, NULL, NULL, parent);
++       return of_platform_populate_early(node, NULL, NULL, parent);
  }
- 
-+/**
-+ * acpi_parse_entries_array - for each proc_num find a subtable with proc->id
-+ *    and run proc->handler on it. Assumption is that there's only
-+ *    single handler for particular entry id.
-+ *
-+ * @id: table id (for debugging purposes)
-+ * @table_size: single entry size
-+ * @table_header: where does the table start?
-+ * @proc: array of acpi_subtable_proc struct containing entry id
-+ *        and associated handler with it
-+ * @proc_num: how big proc is?
-+ * @max_entries: how many entries can we process?
-+ *
-+ * On success returns sum of all matching entries for all proc handlers.
-+ * Oterwise, -ENODEV or -EINVAL is returned.
-+ */
- int __init
--acpi_parse_entries(char *id, unsigned long table_size,
--		acpi_tbl_entry_handler handler,
-+acpi_parse_entries_array(char *id, unsigned long table_size,
- 		struct acpi_table_header *table_header,
--		int entry_id, unsigned int max_entries)
-+		struct acpi_subtable_proc *proc, int proc_num,
-+		unsigned int max_entries)
- {
- 	struct acpi_subtable_header *entry;
--	int count = 0;
- 	unsigned long table_end;
-+	int count = 0;
-+	int i;
- 
- 	if (acpi_disabled)
- 		return -ENODEV;
- 
--	if (!id || !handler)
-+	if (!id)
- 		return -EINVAL;
- 
- 	if (!table_size)
-@@ -247,20 +264,27 @@ acpi_parse_entries(char *id, unsigned long table_size,
- 
- 	while (((unsigned long)entry) + sizeof(struct acpi_subtable_header) <
- 	       table_end) {
--		if (entry->type == entry_id
--		    && (!max_entries || count < max_entries)) {
--			if (handler(entry, table_end))
-+		if (max_entries && count >= max_entries)
-+			break;
-+
-+		for (i = 0; i < proc_num; i++) {
-+			if (entry->type != proc[i].id)
-+				continue;
-+			if (!proc->handler || proc[i].handler(entry, table_end))
- 				return -EINVAL;
- 
--			count++;
-+			proc->count++;
-+			break;
- 		}
-+		if (i != proc_num)
-+			count++;
- 
- 		/*
- 		 * If entry->length is 0, break from this loop to avoid
- 		 * infinite loop.
- 		 */
- 		if (entry->length == 0) {
--			pr_err("[%4.4s:0x%02x] Invalid zero length\n", id, entry_id);
-+			pr_err("[%4.4s:0x%02x] Invalid zero length\n", id, proc->id);
- 			return -EINVAL;
- 		}
- 
-@@ -270,17 +294,31 @@ acpi_parse_entries(char *id, unsigned long table_size,
- 
- 	if (max_entries && count > max_entries) {
- 		pr_warn("[%4.4s:0x%02x] ignored %i entries of %i found\n",
--			id, entry_id, count - max_entries, count);
-+			id, proc->id, count - max_entries, count);
- 	}
- 
- 	return count;
- }
- 
-+int __init acpi_parse_entries(char *id, unsigned long table_size,
-+			       acpi_tbl_entry_handler handler,
-+			       struct acpi_table_header *table_header,
-+			       int entry_id, unsigned int max_entries)
-+{
-+	struct acpi_subtable_proc proc = {
-+		.id		= entry_id,
-+		.handler	= handler,
-+		.count		= 0,
-+	};
-+
-+	return acpi_parse_entries_array(id, table_size, table_header,
-+			&proc, 1, max_entries);
-+}
-+
- int __init
--acpi_table_parse_entries(char *id,
-+acpi_table_parse_entries_array(char *id,
- 			 unsigned long table_size,
--			 int entry_id,
--			 acpi_tbl_entry_handler handler,
-+			 struct acpi_subtable_proc *proc, int proc_num,
- 			 unsigned int max_entries)
- {
- 	struct acpi_table_header *table_header = NULL;
-@@ -291,7 +329,7 @@ acpi_table_parse_entries(char *id,
- 	if (acpi_disabled)
- 		return -ENODEV;
- 
--	if (!id || !handler)
-+	if (!id)
- 		return -EINVAL;
- 
- 	if (!strncmp(id, ACPI_SIG_MADT, 4))
-@@ -303,14 +341,31 @@ acpi_table_parse_entries(char *id,
- 		return -ENODEV;
- 	}
- 
--	count = acpi_parse_entries(id, table_size, handler, table_header,
--			entry_id, max_entries);
-+	count = acpi_parse_entries_array(id, table_size, table_header,
-+			proc, proc_num, max_entries);
- 
- 	early_acpi_os_unmap_memory((char *)table_header, tbl_size);
- 	return count;
- }
- 
- int __init
-+acpi_table_parse_entries(char *id,
-+			unsigned long table_size,
-+			int entry_id,
-+			acpi_tbl_entry_handler handler,
-+			unsigned int max_entries)
-+{
-+	struct acpi_subtable_proc proc = {
-+		.id		= entry_id,
-+		.handler	= handler,
-+		.count		= 0,
-+	};
-+
-+	return acpi_table_parse_entries_array(id, table_size, &proc, 1,
-+						max_entries);
-+}
-+
-+int __init
- acpi_table_parse_madt(enum acpi_madt_type id,
- 		      acpi_tbl_entry_handler handler, unsigned int max_entries)
- {
-diff --git a/include/linux/acpi.h b/include/linux/acpi.h
-index d2445fa..7a25ef9 100644
---- a/include/linux/acpi.h
-+++ b/include/linux/acpi.h
-@@ -135,6 +135,12 @@ static inline void acpi_initrd_override(void *data, size_t size)
- 		(!entry) || (unsigned long)entry + sizeof(*entry) > end ||  \
- 		((struct acpi_subtable_header *)entry)->length < sizeof(*entry))
- 
-+struct acpi_subtable_proc {
-+	int id;
-+	acpi_tbl_entry_handler handler;
-+	int count;
-+};
-+
- char * __acpi_map_table (unsigned long phys_addr, unsigned long size);
- void __acpi_unmap_table(char *map, unsigned long size);
- int early_acpi_boot_init(void);
-@@ -149,10 +155,17 @@ int __init acpi_parse_entries(char *id, unsigned long table_size,
- 			      acpi_tbl_entry_handler handler,
- 			      struct acpi_table_header *table_header,
- 			      int entry_id, unsigned int max_entries);
-+int __init acpi_parse_entries_array(char *id, unsigned long table_size,
-+			      struct acpi_table_header *table_header,
-+			      struct acpi_subtable_proc *proc, int proc_num,
-+			      unsigned int max_entries);
- int __init acpi_table_parse_entries(char *id, unsigned long table_size,
- 				    int entry_id,
- 				    acpi_tbl_entry_handler handler,
- 				    unsigned int max_entries);
-+int __init acpi_table_parse_entries_array(char *id, unsigned long table_size,
-+				    struct acpi_subtable_proc *proc, int proc_num,
-+				    unsigned int max_entries);
- int acpi_table_parse_madt(enum acpi_madt_type id,
- 			  acpi_tbl_entry_handler handler,
- 			  unsigned int max_entries);
--- 
-1.8.3.1
 
+ static int __init vexpress_config_init(void)
+
+But I think this would be papering over the underlying issue and it
+would be better to have proper explicit dependencies.
+
+Regards,
+
+Tomeu
+
+>>> Most clocks have
+>>> to be setup before the driver model simply because timers depend on
+>>> clocks usually.
+>>
+>> Yes, but in this case the apb clocks for the primecell devices are
+>> implemented in a normal platform driver (vexpress_osc_driver), inste=
+ad
+>> of using CLK_OF_DECLARE.
+>
+> Okay.
+>
+> Rob
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kerne=
+l" in
+> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
