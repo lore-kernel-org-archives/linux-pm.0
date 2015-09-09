@@ -1,36 +1,34 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 3/9] cpufreq: ondemand: only queue canceled works from
- update_sampling_rate()
-Date: Wed, 9 Sep 2015 08:00:20 +0530
-Message-ID: <20150909023020.GI7639@linux>
-References: <cover.1437999691.git.viresh.kumar@linaro.org>
- <1806697.T1XSqGqSN5@vostro.rjw.lan>
- <20150908015831.GY26760@linux>
- <32794142.WpJFa6Ni1D@vostro.rjw.lan>
+Subject: Re: [PATCH V1 Resend 02/10] PM / OPP: Drop unlikely before
+ IS_ERR(_OR_NULL)
+Date: Wed, 9 Sep 2015 08:13:06 +0530
+Message-ID: <20150909024306.GK7639@linux>
+References: <cover.1439375087.git.viresh.kumar@linaro.org>
+ <455a29a594b92b9ba06b14249d8f61a7ffbbecc1.1439375087.git.viresh.kumar@linaro.org>
+ <4143341.O8kzUSgY49@vostro.rjw.lan>
+ <alpine.LNX.2.00.1508281551320.25821@pobox.suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f54.google.com ([209.85.220.54]:36266 "EHLO
-	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752879AbbIICaY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Sep 2015 22:30:24 -0400
-Received: by padhk3 with SMTP id hk3so56591188pad.3
-        for <linux-pm@vger.kernel.org>; Tue, 08 Sep 2015 19:30:23 -0700 (PDT)
+Received: from mail-pa0-f52.google.com ([209.85.220.52]:35185 "EHLO
+	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754549AbbIICnL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Sep 2015 22:43:11 -0400
+Received: by pacfv12 with SMTP id fv12so145065198pac.2
+        for <linux-pm@vger.kernel.org>; Tue, 08 Sep 2015 19:43:10 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <32794142.WpJFa6Ni1D@vostro.rjw.lan>
+In-Reply-To: <alpine.LNX.2.00.1508281551320.25821@pobox.suse.cz>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, preeti.lkml@gmail.com, open list <linux-kernel@vger.kernel.org>
+To: Jiri Kosina <jikos@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, "open list:SUSPEND TO RAM" <linux-pm@vger.kernel.org>
 
-On 09-09-15, 03:06, Rafael J. Wysocki wrote:
-> I've just realized that if you combined this patch with the [6/9],
-> you wouldn't need to make any changes to gov_queue_work() at all,
-> because that patch removes the case in point entirely.
+On 28-08-15, 15:52, Jiri Kosina wrote:
+> With series like this, I usually wait a couple weeks and the pick the ones 
+> which haven't been picked into maintainer trees (I check that by looking 
+> for its presence in linux-next) through trivial.git afterwards.
 
-Yeah, but then these are really two separate issues at hand and so I
-solved them separately. Lemme know how you want to see that and I can
-change :)
+Is it the right to get the remaining patches applied now?
 
 -- 
 viresh
