@@ -1,51 +1,73 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v4 2/2] dt: power: st: Provide bindings for ST's OPPs
-Date: Wed, 9 Sep 2015 17:36:20 +0100
-Message-ID: <20150909163620.GF3260@x1>
-References: <20150811151736.GO18282@x1>
- <20150812110841.GC20238@linux>
- <20150826120628.GZ19409@x1>
- <20150902080639.GA26744@linux>
- <CAL_JsqKMGp+3Z+oO6E0YYzjTCb=-R_QM=YF=B33NWayWmV057A@mail.gmail.com>
- <20150909062722.GA5266@linux>
- <20150909075930.GB3260@x1>
- <20150909083031.GB5266@linux>
- <20150909133930.GE3260@x1>
- <20150909160212.GJ5266@linux>
+From: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Subject: Re: [PATCH] thermal: armada: Fix possible overflow in the Armada 380 thermal sensor formula
+Date: Wed, 09 Sep 2015 18:44:08 +0200
+Message-ID: <87r3m78rvr.fsf@free-electrons.com>
+References: <1438877029-32514-1-git-send-email-gregory.clement@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f172.google.com ([209.85.212.172]:36708 "EHLO
-	mail-wi0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752438AbbIIQgZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Sep 2015 12:36:25 -0400
-Received: by wicgb1 with SMTP id gb1so123569989wic.1
-        for <linux-pm@vger.kernel.org>; Wed, 09 Sep 2015 09:36:24 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20150909160212.GJ5266@linux>
+Received: from down.free-electrons.com ([37.187.137.238]:48783 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752438AbbIIQoK convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Sep 2015 12:44:10 -0400
+In-Reply-To: <1438877029-32514-1-git-send-email-gregory.clement@free-electrons.com>
+	(Gregory CLEMENT's message of "Thu, 6 Aug 2015 18:03:49 +0200")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rob Herring <robherring2@gmail.com>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, kernel@stlinux.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Ajit Pal Singh <ajitpal.singh@st.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Boris BREZILLON <boris.brezillon@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>
 
-> > Or have I got the wrong end of the stick?
-> >=20
-> > NB: Note the suggested new property names.
->=20
-> Yeah, all looks fine to me.
+Hi Zhang,
+=20
+ On jeu., ao=C3=BBt 06 2015, Gregory CLEMENT <gregory.clement@free-elec=
+trons.com> wrote:
 
-I think these names are better:
+> From: Nadav Haklai <nadavh@marvell.com>
+>
+> Update the coefficients so the calculation will not overrun the
+> unsigned long 32bits boundary
 
-  opp-supply-range-name =3D> opp-microvolt-names
-  opp-cuts              =3D> opp-supported-hw
+What is the status of this patch?
 
-Apart from that, the binding is starting to come together.
+I still do not see it in your git tree. If you need any modification to
+take it, don't hesitate to tell me.
 
-Let's see what Rob and Stephen have to say about it.
+Thanks,
+
+Gregory
+
+
+>
+> Signed-off-by: Nadav Haklai <nadavh@marvell.com>
+> Reviewed-by: Victor Axelrod <victora@marvell.com>
+> Reviewed-by: Neta Zur Hershkovits <neta@marvell.com>
+> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
+> ---
+>  drivers/thermal/armada_thermal.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armad=
+a_thermal.c
+> index 01255fd65135..363bf91c32a3 100644
+> --- a/drivers/thermal/armada_thermal.c
+> +++ b/drivers/thermal/armada_thermal.c
+> @@ -224,9 +224,9 @@ static const struct armada_thermal_data armada380=
+_data =3D {
+>  	.is_valid_shift =3D 10,
+>  	.temp_shift =3D 0,
+>  	.temp_mask =3D 0x3ff,
+> -	.coef_b =3D 2931108200UL,
+> -	.coef_m =3D 5000000UL,
+> -	.coef_div =3D 10502,
+> +	.coef_b =3D 1172499100UL,
+> +	.coef_m =3D 2000096UL,
+> +	.coef_div =3D 4201,
+>  	.inverted =3D true,
+>  };
 
 --=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+Gregory Clement, Free Electrons
+Kernel, drivers, real-time and embedded Linux
+development, consulting, training and support.
+http://free-electrons.com
