@@ -1,66 +1,47 @@
-From: Colin Cross <ccross@google.com>
-Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing
- runtime suspend
-Date: Wed, 9 Sep 2015 13:16:34 -0700
-Message-ID: <CAMbhsRSXjPEidtqH3EUUzhhXGrcMDj_53yzTczoRAb=g5nFktg@mail.gmail.com>
-References: <Pine.LNX.4.44L0.1509091118000.2045-100000@iolanthe.rowland.org>
-	<4206072.KuQlnyyHaz@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v4 0/2] Fix how CPUs are enumerated when there's more than 255 CPUs
+Date: Wed, 09 Sep 2015 22:45:48 +0200
+Message-ID: <8172792.K9nu98zGau@vostro.rjw.lan>
+References: <55F00E55.9080008@arm.com> <1441806449-27481-1-git-send-email-lukasz.anaczkowski@intel.com> <1441806449-27481-2-git-send-email-lukasz.anaczkowski@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f172.google.com ([209.85.213.172]:38911 "EHLO
-	mail-ig0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754021AbbIIUQf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Sep 2015 16:16:35 -0400
-Received: by igxx6 with SMTP id x6so23400606igx.1
-        for <linux-pm@vger.kernel.org>; Wed, 09 Sep 2015 13:16:34 -0700 (PDT)
-In-Reply-To: <4206072.KuQlnyyHaz@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1441806449-27481-2-git-send-email-lukasz.anaczkowski@intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Lukasz Anaczkowski <lukasz.anaczkowski@intel.com>
+Cc: marc.zyngier@arm.com, lorenzo.pieralisi@arm.com, tomasz.nowicki@linaro.org, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, jason@lakedaemon.net, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Octavian Purdila <octavian.purdila@intel.com>, "Tirdea, Irina" <irina.tirdea@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Oliver Neukum <oneukum@suse.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-On Wed, Sep 9, 2015 at 1:35 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->
-> On Wednesday, September 09, 2015 11:20:25 AM Alan Stern wrote:
-> > On Wed, 9 Sep 2015, Rafael J. Wysocki wrote:
-> >
-> > > > The best example and actually the very specific problem we want to
-> > > > solve is handling touchscreens on a phone / tablet. When the screen is
-> > > > turned off, it is ideal to suspend the touchscreen for two reasons: to
-> > > > lower the power consumption as much as possible and to prevent
-> > > > interrupts to wake-up the CPU when the user touches the device, and
-> > > > thus save even more power as we allow the CPU to stay in deep idle
-> > > > states for longer periods.
-> > > >
-> > > > Note that when the screen is turned-on again, we want to resume the
-> > > > touchscreen so that it can send events again.
-> > >
-> > > In fact, then, what you need seems to be the feature discussed by Alan
-> > > and me some time ago allowing remote wakeup do be disabled for runtime
-> > > PM from user space as that in combination with autosuspend should
-> > > address your use case.
-> >
-> > That, plus they want the touchscreen to go into runtime suspend
-> > whenever the screen is off (was this not the main reason for the
-> > patch?).
->
-> Right.
->
-> > It seems to me that it should be possible to arrange for this to happen
-> > simply by making userspace close the touchscreen device when the screen
-> > is turned off.  Or am I missing something?
->
-> Honestly, I don't know.
->
-> Octavian, Irina, any reasons why things can't be done as Alan is suggesting?
+On Wednesday, September 09, 2015 03:47:27 PM Lukasz Anaczkowski wrote:
+> This series of patches attempts to fix how CPUs are enumerated by kernel when
+> there's more than 255 of them on single processor.
+> In such case, BIOS may interleave APIC/X2APIC MADT subtables, to obey requirements
+> specified in ACPI spec. Without this patches, kernel then would first enumerate
+> BSP, then X2APIC then APIC, resulting in low APIC IDs to be assigned with high
+> logical IDs and high APIC IDs to be assigned low logical IDs. Biggest consequence
+> of that could be performance penalties due to wrong L2 cache sharing.
+> More details in patch 2/2.
+> 
+> Also, simpler approach has been considered, which did not required ACPI parsing
+> interface changes, however it failed to meet requirements. More details can be
+> found here: https://lkml.org/lkml/2015/9/7/285
+> 
+> Lukasz Anaczkowski (2):
+>   acpi: Added acpi_subtable_proc to ACPI table parsers
+>   x86, acpi: Handle apic/x2apic entries in MADT in correct order
+> 
+>  arch/x86/kernel/acpi/boot.c | 22 +++++++++--
+>  drivers/acpi/tables.c       | 91 ++++++++++++++++++++++++++++++++++++---------
+>  include/linux/acpi.h        | 19 ++++++++--
+>  3 files changed, 107 insertions(+), 25 deletions(-)
 
+OK
 
-Early Android used early suspend, which notified various kernel
-drivers that the screen was turning off so they could go into low
-power states.  That meant there was no reason to close the touchscreen
-fd - the kernel already knew about the screen off event.  We then got
-rid of the early suspend hack and moved everything into userspace
-using the power HAL and sysfs files.  Getting rid of the touchscreen
-sysfs files and closing the touchscreen on screen off was on the
-nice-to-have list, but hasn't made it onto anybody's todo list.
+Does anyone in the CC have any objections against merging this series?
+
+If not, I'll queue it up as 4.3-rc material.
+
+Thanks,
+Rafael
+
