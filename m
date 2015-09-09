@@ -1,96 +1,71 @@
 From: Kristen Carlson Accardi <kristen@linux.intel.com>
-Subject: Re: [PATCH] [v2] intel_pstate: Fix user input of min/max to legal
- policy region
-Date: Wed, 9 Sep 2015 11:20:53 -0700
-Message-ID: <20150909112053.4123c939@kcaccard-desk.amr.corp.intel.com>
-References: <1441794451-29979-1-git-send-email-yu.c.chen@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Subject: [PATCH] intel_pstate: fix PCT_TO_HWP macro
+Date: Wed,  9 Sep 2015 11:41:22 -0700
+Message-ID: <1441824082-15403-1-git-send-email-kristen@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:32264 "EHLO mga09.intel.com"
+Received: from mga09.intel.com ([134.134.136.24]:29975 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750819AbbIISUy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 9 Sep 2015 14:20:54 -0400
-In-Reply-To: <1441794451-29979-1-git-send-email-yu.c.chen@intel.com>
+	id S1750819AbbIISlY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 9 Sep 2015 14:41:24 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, s.ikarashi@jp.fujitsu.com, rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org
 
-On Wed,  9 Sep 2015 18:27:31 +0800
-Chen Yu <yu.c.chen@intel.com> wrote:
+PCT_TO_HWP does not take the actual range of pstates exported
+by HWP_CAPABILITIES in account, and is broken on most platforms.
+Remove the macro and set the min and max pstate for hwp by
+determining the range and adjusting by the min and max percent
+limits values.
 
-> In current code, max_perf_pct might be smaller than min_perf_pct
-> by improper user input:
-> 
-> $ grep . /sys/devices/system/cpu/intel_pstate/m*_perf_pct
-> /sys/devices/system/cpu/intel_pstate/max_perf_pct:100
-> /sys/devices/system/cpu/intel_pstate/min_perf_pct:100
-> 
-> $ echo 80 > /sys/devices/system/cpu/intel_pstate/max_perf_pct
-> 
-> $ grep . /sys/devices/system/cpu/intel_pstate/m*_perf_pct
-> /sys/devices/system/cpu/intel_pstate/max_perf_pct:80
-> /sys/devices/system/cpu/intel_pstate/min_perf_pct:100
-> 
-> Fix this problem by 2 steps:
-> 1.Normalize the user input to [min_policy, max_policy].
-> 2.Make sure max_perf_pct>=min_perf_pct, suggested by Seiichi Ikarashi.
-> 
-> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+Signed-off-by: Kristen Carlson Accardi <kristen@linux.intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 21 ++++++++++++++-------
+ 1 file changed, 14 insertions(+), 7 deletions(-)
 
-Acked-by: Kristen Carlson Accardi <kristen@linux.intel.com>
-> ---
-> v2:
->  - Add logic to ensure max_perf_pct>=min_perf_pct.
-> ---
->  drivers/cpufreq/intel_pstate.c | 17 ++++++++++++++---
->  1 file changed, 14 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index fcb929e..a0b935f 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -423,6 +423,8 @@ static ssize_t store_max_perf_pct(struct kobject *a, struct attribute *b,
->  
->  	limits.max_sysfs_pct = clamp_t(int, input, 0 , 100);
->  	limits.max_perf_pct = min(limits.max_policy_pct, limits.max_sysfs_pct);
-> +	limits.max_perf_pct = max(limits.min_policy_pct, limits.max_perf_pct);
-> +	limits.max_perf_pct = max(limits.min_perf_pct, limits.max_perf_pct);
->  	limits.max_perf = div_fp(int_tofp(limits.max_perf_pct), int_tofp(100));
->  
->  	if (hwp_active)
-> @@ -442,6 +444,8 @@ static ssize_t store_min_perf_pct(struct kobject *a, struct attribute *b,
->  
->  	limits.min_sysfs_pct = clamp_t(int, input, 0 , 100);
->  	limits.min_perf_pct = max(limits.min_policy_pct, limits.min_sysfs_pct);
-> +	limits.min_perf_pct = min(limits.max_policy_pct, limits.min_perf_pct);
-> +	limits.min_perf_pct = min(limits.max_perf_pct, limits.min_perf_pct);
->  	limits.min_perf = div_fp(int_tofp(limits.min_perf_pct), int_tofp(100));
->  
->  	if (hwp_active)
-> @@ -985,12 +989,19 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
->  
->  	limits.min_policy_pct = (policy->min * 100) / policy->cpuinfo.max_freq;
->  	limits.min_policy_pct = clamp_t(int, limits.min_policy_pct, 0 , 100);
-> -	limits.min_perf_pct = max(limits.min_policy_pct, limits.min_sysfs_pct);
-> -	limits.min_perf = div_fp(int_tofp(limits.min_perf_pct), int_tofp(100));
-> -
->  	limits.max_policy_pct = (policy->max * 100) / policy->cpuinfo.max_freq;
->  	limits.max_policy_pct = clamp_t(int, limits.max_policy_pct, 0 , 100);
-> +
-> +	/* Normalize user input to [min_policy_pct, max_policy_pct] */
-> +	limits.min_perf_pct = max(limits.min_policy_pct, limits.min_sysfs_pct);
-> +	limits.min_perf_pct = min(limits.max_policy_pct, limits.min_perf_pct);
->  	limits.max_perf_pct = min(limits.max_policy_pct, limits.max_sysfs_pct);
-> +	limits.max_perf_pct = max(limits.min_policy_pct, limits.max_perf_pct);
-> +
-> +	/* Make sure min_perf_pct <= max_perf_pct */
-> +	limits.min_perf_pct = min(limits.max_perf_pct, limits.min_perf_pct);
-> +
-> +	limits.min_perf = div_fp(int_tofp(limits.min_perf_pct), int_tofp(100));
->  	limits.max_perf = div_fp(int_tofp(limits.max_perf_pct), int_tofp(100));
->  
->  	if (hwp_active)
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index fcb929e..c4bf8d8 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -260,24 +260,31 @@ static inline void update_turbo_state(void)
+ 		 cpu->pstate.max_pstate == cpu->pstate.turbo_pstate);
+ }
+ 
+-#define PCT_TO_HWP(x) (x * 255 / 100)
+ static void intel_pstate_hwp_set(void)
+ {
+-	int min, max, cpu;
+-	u64 value, freq;
++	int min, hw_min, max, hw_max, cpu, range, adj_range;
++	u64 value, cap;
++
++	rdmsrl(MSR_HWP_CAPABILITIES, cap);
++	hw_min = HWP_LOWEST_PERF(cap);
++	hw_max = HWP_HIGHEST_PERF(cap);
++	range = hw_max - hw_min;
+ 
+ 	get_online_cpus();
+ 
+ 	for_each_online_cpu(cpu) {
+ 		rdmsrl_on_cpu(cpu, MSR_HWP_REQUEST, &value);
+-		min = PCT_TO_HWP(limits.min_perf_pct);
++		adj_range = limits.min_perf_pct * range / 100;
++		min = hw_min + adj_range;
+ 		value &= ~HWP_MIN_PERF(~0L);
+ 		value |= HWP_MIN_PERF(min);
+ 
+-		max = PCT_TO_HWP(limits.max_perf_pct);
++		adj_range = limits.max_perf_pct * range / 100;
++		max = hw_min + adj_range;
+ 		if (limits.no_turbo) {
+-			rdmsrl( MSR_HWP_CAPABILITIES, freq);
+-			max = HWP_GUARANTEED_PERF(freq);
++			hw_max = HWP_GUARANTEED_PERF(cap);
++			if (hw_max < max)
++				max = hw_max;
+ 		}
+ 
+ 		value &= ~HWP_MAX_PERF(~0L);
+-- 
+2.4.3
 
