@@ -1,96 +1,96 @@
-From: "Pallala, Ramakrishna" <ramakrishna.pallala@intel.com>
-Subject: RE: [PATCH] power: bq24261_charger: Add support for TI BQ24261
- charger
-Date: Wed, 9 Sep 2015 18:11:15 +0000
-Message-ID: <D854C92F57B1B347B57E531E78D05EAD57904B8D@BGSMSX104.gar.corp.intel.com>
-References: <1441560187-23611-1-git-send-email-ramakrishna.pallala@intel.com>
- <CAJKOXPfDu+LxoiQrV+CsqUbEVwYb1Zmk-m9y-L_1JxrB6ouS0g@mail.gmail.com>
+From: Kristen Carlson Accardi <kristen@linux.intel.com>
+Subject: Re: [PATCH] [v2] intel_pstate: Fix user input of min/max to legal
+ policy region
+Date: Wed, 9 Sep 2015 11:20:53 -0700
+Message-ID: <20150909112053.4123c939@kcaccard-desk.amr.corp.intel.com>
+References: <1441794451-29979-1-git-send-email-yu.c.chen@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:32125 "EHLO mga03.intel.com"
+Received: from mga09.intel.com ([134.134.136.24]:32264 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751469AbbIISLm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 9 Sep 2015 14:11:42 -0400
-In-Reply-To: <CAJKOXPfDu+LxoiQrV+CsqUbEVwYb1Zmk-m9y-L_1JxrB6ouS0g@mail.gmail.com>
-Content-Language: en-US
+	id S1750819AbbIISUy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 9 Sep 2015 14:20:54 -0400
+In-Reply-To: <1441794451-29979-1-git-send-email-yu.c.chen@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, "Tc, Jenny" <jenny.tc@intel.com>, Andreas Dannenberg <dannenberg@ti.com>
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, s.ikarashi@jp.fujitsu.com, rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-SGksIA0KDQo+IEZyb206IGsua296bG93c2tpLmtAZ21haWwuY29tIFttYWlsdG86ay5rb3psb3dz
-a2kua0BnbWFpbC5jb21dIE9uIEJlaGFsZg0KPiBPZiBLcnp5c3p0b2YgS296bG93c2tpDQo+IFNl
-bnQ6IE1vbmRheSwgU2VwdGVtYmVyIDcsIDIwMTUgOToyOCBBTQ0KPiBUbzogUGFsbGFsYSwgUmFt
-YWtyaXNobmENCj4gQ2M6IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LXBtQHZn
-ZXIua2VybmVsLm9yZzsNCj4gZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IFNlYmFzdGlhbiBS
-ZWljaGVsOyBUYywgSmVubnk7IEFuZHJlYXMgRGFubmVuYmVyZw0KPiBTdWJqZWN0OiBSZTogW1BB
-VENIXSBwb3dlcjogYnEyNDI2MV9jaGFyZ2VyOiBBZGQgc3VwcG9ydCBmb3IgVEkgQlEyNDI2MQ0K
-PiBjaGFyZ2VyDQo+IA0KPiAyMDE1LTA5LTA3IDI6MjMgR01UKzA5OjAwIFJhbWFrcmlzaG5hIFBh
-bGxhbGENCj4gPHJhbWFrcmlzaG5hLnBhbGxhbGFAaW50ZWwuY29tPjoNCj4gPg0KPiA+IEFkZCBu
-ZXcgY2hhcmdlciBkcml2ZXIgc3VwcG9ydCBmb3IgQlEyNDI2MSBjaGFyZ2VyIElDLg0KPiA+DQo+
-ID4gQlEyNDI2MSBjaGFyZ2VyIGRyaXZlciByZWxpZXMgb24gZXh0Y29uIG5vdGlmaWNhdGlvbnMg
-dG8gZ2V0IHRoZQ0KPiA+IGNoYXJnZXIgY2FibGUgdHlwZSBhbmQgYmFzZWQgb24gdGhhdCBpdCB3
-aWxsIHNldCB0aGUgY2hhcmdpbmcgcGFyYW1ldGVycy4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6
-IFJhbWFrcmlzaG5hIFBhbGxhbGEgPHJhbWFrcmlzaG5hLnBhbGxhbGFAaW50ZWwuY29tPg0KPiA+
-IFNpZ25lZC1vZmYtYnk6IEplbm50IFRDIDxqZW5ueS50Y0BpbnRlbC5jb20+DQo+ID4gLS0tDQo+
-ID4gIC4uLi9kZXZpY2V0cmVlL2JpbmRpbmdzL3Bvd2VyL2JxMjQyNjEudHh0ICAgICAgICAgIHwg
-ICAzNyArDQo+ID4gIGRyaXZlcnMvcG93ZXIvS2NvbmZpZyAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgIHwgICAgNiArDQo+ID4gIGRyaXZlcnMvcG93ZXIvTWFrZWZpbGUgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgIHwgICAgMSArDQo+ID4gIGRyaXZlcnMvcG93ZXIvYnEyNDI2MV9jaGFy
-Z2VyLmMgICAgICAgICAgICAgICAgICAgIHwgMTIwOCArKysrKysrKysrKysrKysrKysrKw0KPiA+
-ICBpbmNsdWRlL2xpbnV4L3Bvd2VyL2JxMjQyNjFfY2hhcmdlci5oICAgICAgICAgICAgICB8ICAg
-MjcgKw0KPiA+ICA1IGZpbGVzIGNoYW5nZWQsIDEyNzkgaW5zZXJ0aW9ucygrKQ0KPiA+ICBjcmVh
-dGUgbW9kZSAxMDA2NDQNCj4gPiBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvcG93
-ZXIvYnEyNDI2MS50eHQNCj4gPiAgY3JlYXRlIG1vZGUgMTAwNjQ0IGRyaXZlcnMvcG93ZXIvYnEy
-NDI2MV9jaGFyZ2VyLmMgIGNyZWF0ZSBtb2RlDQo+ID4gMTAwNjQ0IGluY2x1ZGUvbGludXgvcG93
-ZXIvYnEyNDI2MV9jaGFyZ2VyLmgNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9u
-L2RldmljZXRyZWUvYmluZGluZ3MvcG93ZXIvYnEyNDI2MS50eHQNCj4gPiBiL0RvY3VtZW50YXRp
-b24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlci9icTI0MjYxLnR4dA0KPiA+IG5ldyBmaWxlIG1v
-ZGUgMTAwNjQ0DQo+ID4gaW5kZXggMDAwMDAwMC4uMjVmYzVjNA0KPiA+IC0tLSAvZGV2L251bGwN
-Cj4gPiArKysgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvcG93ZXIvYnEyNDI2
-MS50eHQNCj4gPiBAQCAtMCwwICsxLDM3IEBADQo+ID4gK0JpbmRpbmcgZm9yIFRJIGJxMjQyNjEg
-TGktSW9uIENoYXJnZXINCj4gDQo+IFBsZWFzZSBzcGxpdCB0aGUgYmluZGluZ3MgaW50byBzZXBh
-cmF0ZSBwYXRjaCAodGhlIGZpcnN0IHBhdGNoIGluIHBhdGNoc2V0KS4NCk9rLg0KDQoNCj4gPiAr
-DQo+ID4gK1JlcXVpcmVkIHByb3BlcnRpZXM6DQo+ID4gKy0gY29tcGF0aWJsZTogU2hvdWxkIGNv
-bnRhaW4gb25lIG9mIHRoZSBmb2xsb3dpbmc6DQo+ID4gKyAgICAqICJ0aSxicTI0MjYxIg0KPiA+
-ICstIHJlZzogaW50ZWdlciwgaTJjIGFkZHJlc3Mgb2YgdGhlIGRldmljZS4NCj4gPiArLSB0aSxj
-aGFyZ2UtY3VycmVudDogaW50ZWdlciwgZGVmYXVsdCBjaGFyZ2luZyBjdXJyZW50IChpbiBtQSk7
-DQo+ID4gKy0gdGksY2hhcmdlLXZvbHRhZ2U6IGludGVnZXIsIGRlZmF1bHQgY2hhcmdpbmcgdm9s
-dGFnZSAoaW4gbVYpOw0KPiA+ICstIHRpLHRlcm1pbmF0aW9uLWN1cnJlbnQ6IGludGVnZXIsIGNo
-YXJnZSB3aWxsIGJlIHRlcm1pbmF0ZWQgd2hlbiBjdXJyZW50IGluDQo+ID4gKyAgICBjb25zdGFu
-dC12b2x0YWdlIHBoYXNlIGRyb3BzIGJlbG93IHRoaXMgdmFsdWUgKGluIG1BKTsNCj4gPiArLSB0
-aSxtYXgtY2hhcmdlLWN1cnJlbnQ6IGludGVnZXIsIG1heGltdW0gY2hhcmdpbmcgY3VycmVudCAo
-aW4gbUEpOw0KPiA+ICstIHRpLG1heC1jaGFyZ2Utdm9sdGFnZTogaW50ZWdlciwgbWF4aW11bSBj
-aGFyZ2luZyB2b2x0YWdlIChpbiBtVik7DQo+ID4gKy0gdGksbWluLWNoYXJnZS10ZW1wZXJhdHVy
-ZTogaW50ZWdlciwgbWluaW11bSBjaGFyZ2luZyB0ZW1wZXJhdHVyZQ0KPiA+ICsoaW4gRGVnQyk7
-DQo+ID4gKy0gdGksbWF4LWNoYXJnZS10ZW1wZXJhdHVyZTogaW50ZWdlciwgbWF4aW11bSBjaGFy
-Z2luZyB0ZW1wZXJhdHVyZSAoaW4NCj4gRGVnQykuDQo+IA0KPiBCZWZvcmUgYWNjZXB0aW5nICJb
-UEFUQ0ggMTMvMTNdIGR0OiBwb3dlcjogYnEyNDI1Ny1jaGFyZ2VyOiBDb3ZlciBhZGRpdGlvbmFs
-DQo+IGRldmljZXMiDQo+IGh0dHA6Ly93d3cuc3Bpbmljcy5uZXQvbGlzdHMvZGV2aWNldHJlZS9t
-c2c5MjEzNC5odG1sDQo+IA0KPiBjb3VsZCB5b3UgYW5kIEFuZHJlYXMgZmlndXJlIG91dCBjb21t
-b24gYmluZGluZ3M/IExvb2sgYXQgdGhpczoNCj4gDQo+ICstIHRpLGNoYXJnZS1jdXJyZW50OiBp
-bnRlZ2VyLCBtYXhpbXVtIGNoYXJnaW5nIGN1cnJlbnQgaW4gdUEuDQo+ICstIHRpLGNoYXJnZS1j
-dXJyZW50OiBpbnRlZ2VyLCBkZWZhdWx0IGNoYXJnaW5nIGN1cnJlbnQgKGluIG1BKTsNCj4gDQo+
-IERpZmZlcmVudCBtZWFuaW5nIGFuZCBkaWZmZXJlbnQgdW5pdHMuIFRoaXMgaXMgbWFkbmVzcyEg
-OikNClRoaXMgaXMgYmVpbmcgY2xvc2VkIGJ5IEFuZHJlYXMgYW5kIHdlIHdvdWxkIHByb2JhYmx5
-IGdvIHdpdGggbUEvbVYNCg0KPiBJbiB0aGUgc2FtZSB0aW1lIHlvdSBhcmUgYWRkaW5nIFRJLWNv
-bW1vbiBiaW5kaW5ncyAobm90IGRldmljZSBzcGVjaWZpYywgdGhlcmUNCj4gaXMgbm8gcHJlZml4
-KSBzbyBJIHdvdWxkIGV4cGVjdCBleGFjdGx5IHRoZSBzYW1lIGJpbmRpbmdzIGlmIGl0IGlzIHBv
-c3NpYmxlLg0KT2suLi5pIHdpbGwgY2hlY2sgd2l0aCBvdGhlciBjaGFyZ2VyIGRyaXZlciBEVCBz
-ZXR0aW5ncyBhbmQgZml4IGl0Lg0KDQo+ID4gK09wdGlvbmFsIHByb3BlcnRpZXM6DQo+ID4gKy0g
-dGksdGhlcm1hbC1zZW5zaW5nOiBib29sZWFuLCBpZiBwcmVzZW50IHRoZXJtYWwgcmVndWxhdGlv
-biB3aWxsIGJlDQo+ID4gK2VuYWJsZWQ7DQo+IA0KPiBXaGF0IGlzIHRoZSByZXF1aXJlbWVudCBm
-b3IgdGhlcm1hbC1zZW5zaW5nPyBDYW4gaXQgYmUgZW5hYmxlZCBhbHdheXM/DQo+IElmIHllcywg
-dGhlbiB0aGlzIGlzIG5vdCByZWFsbHkgYSBoYXJkd2FyZSBwcm9wZXJ0eS4NClRJIEJRMjQyNjEg
-aGFzIHByb3Zpc2lvbiB0byBhZGQgQmF0dGVyeSBQYWNrIHRoZXJtaXN0b3IgYnV0IGl0IGhhcyBu
-byBBREMgcmVhZCBpdC4NClNvIGEgSFcgZGVzaWduZXIgd291bGQgb3IgbWF5IG5vdCBhZGQgdGhl
-IHRoZXJtaXN0b3IgdG8gY2hhcmdlciBhbmQgaW5zdGVhZCBoZSBjYW4NCmNvbm5lY3QgdG8gdGhl
-IEZ1ZWwgR2F1Z2UuDQoNCj4gPiArLSB0aSxlbmFibGUtdXNlci13cml0ZTogYm9vbGVhbiwgaWYg
-cHJlc2VudCBkcml2ZXIgd2lsbCBhbGxvdyB0aGUgdXNlciBzcGFjZQ0KPiA+ICsgICAgdG8gY29u
-dHJvbCB0aGUgY2hhcmdpbmcgY3VycmVudCBhbmQgdm9sdGFnZSB0aHJvdWdoIHN5c2ZzOw0KPiAN
-Cj4gVGhpcyBpcyBub3QgRFQgcHJvcGVydHkuIEl0IGRvZXMgbm90IGRlc2NyaWJlIGhhcmR3YXJl
-Lg0KV2UgbmVlZGVkIGEgbWVjaGFuaXNtIHRvIGVuYWJsZSB0aGUgc3lzZnMgd3JpdGVzIG9uIGNl
-cnRhaW4gcHJvcGVydGllcy4NCklmIERUIGlzIG5vdCB0aGUgcGxhY2Ugd2hlcmUgc2hvdWxkIGl0
-IGdvPw0KDQpUaGFua3MsDQpSYW0NCg0K
+On Wed,  9 Sep 2015 18:27:31 +0800
+Chen Yu <yu.c.chen@intel.com> wrote:
+
+> In current code, max_perf_pct might be smaller than min_perf_pct
+> by improper user input:
+> 
+> $ grep . /sys/devices/system/cpu/intel_pstate/m*_perf_pct
+> /sys/devices/system/cpu/intel_pstate/max_perf_pct:100
+> /sys/devices/system/cpu/intel_pstate/min_perf_pct:100
+> 
+> $ echo 80 > /sys/devices/system/cpu/intel_pstate/max_perf_pct
+> 
+> $ grep . /sys/devices/system/cpu/intel_pstate/m*_perf_pct
+> /sys/devices/system/cpu/intel_pstate/max_perf_pct:80
+> /sys/devices/system/cpu/intel_pstate/min_perf_pct:100
+> 
+> Fix this problem by 2 steps:
+> 1.Normalize the user input to [min_policy, max_policy].
+> 2.Make sure max_perf_pct>=min_perf_pct, suggested by Seiichi Ikarashi.
+> 
+> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+
+Acked-by: Kristen Carlson Accardi <kristen@linux.intel.com>
+> ---
+> v2:
+>  - Add logic to ensure max_perf_pct>=min_perf_pct.
+> ---
+>  drivers/cpufreq/intel_pstate.c | 17 ++++++++++++++---
+>  1 file changed, 14 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index fcb929e..a0b935f 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -423,6 +423,8 @@ static ssize_t store_max_perf_pct(struct kobject *a, struct attribute *b,
+>  
+>  	limits.max_sysfs_pct = clamp_t(int, input, 0 , 100);
+>  	limits.max_perf_pct = min(limits.max_policy_pct, limits.max_sysfs_pct);
+> +	limits.max_perf_pct = max(limits.min_policy_pct, limits.max_perf_pct);
+> +	limits.max_perf_pct = max(limits.min_perf_pct, limits.max_perf_pct);
+>  	limits.max_perf = div_fp(int_tofp(limits.max_perf_pct), int_tofp(100));
+>  
+>  	if (hwp_active)
+> @@ -442,6 +444,8 @@ static ssize_t store_min_perf_pct(struct kobject *a, struct attribute *b,
+>  
+>  	limits.min_sysfs_pct = clamp_t(int, input, 0 , 100);
+>  	limits.min_perf_pct = max(limits.min_policy_pct, limits.min_sysfs_pct);
+> +	limits.min_perf_pct = min(limits.max_policy_pct, limits.min_perf_pct);
+> +	limits.min_perf_pct = min(limits.max_perf_pct, limits.min_perf_pct);
+>  	limits.min_perf = div_fp(int_tofp(limits.min_perf_pct), int_tofp(100));
+>  
+>  	if (hwp_active)
+> @@ -985,12 +989,19 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+>  
+>  	limits.min_policy_pct = (policy->min * 100) / policy->cpuinfo.max_freq;
+>  	limits.min_policy_pct = clamp_t(int, limits.min_policy_pct, 0 , 100);
+> -	limits.min_perf_pct = max(limits.min_policy_pct, limits.min_sysfs_pct);
+> -	limits.min_perf = div_fp(int_tofp(limits.min_perf_pct), int_tofp(100));
+> -
+>  	limits.max_policy_pct = (policy->max * 100) / policy->cpuinfo.max_freq;
+>  	limits.max_policy_pct = clamp_t(int, limits.max_policy_pct, 0 , 100);
+> +
+> +	/* Normalize user input to [min_policy_pct, max_policy_pct] */
+> +	limits.min_perf_pct = max(limits.min_policy_pct, limits.min_sysfs_pct);
+> +	limits.min_perf_pct = min(limits.max_policy_pct, limits.min_perf_pct);
+>  	limits.max_perf_pct = min(limits.max_policy_pct, limits.max_sysfs_pct);
+> +	limits.max_perf_pct = max(limits.min_policy_pct, limits.max_perf_pct);
+> +
+> +	/* Make sure min_perf_pct <= max_perf_pct */
+> +	limits.min_perf_pct = min(limits.max_perf_pct, limits.min_perf_pct);
+> +
+> +	limits.min_perf = div_fp(int_tofp(limits.min_perf_pct), int_tofp(100));
+>  	limits.max_perf = div_fp(int_tofp(limits.max_perf_pct), int_tofp(100));
+>  
+>  	if (hwp_active)
+
