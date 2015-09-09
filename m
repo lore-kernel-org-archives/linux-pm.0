@@ -1,49 +1,175 @@
-From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: RE: [PATCH][rfc] intel_pstate: Fix user input of min/max to legal
- policy region
-Date: Wed, 9 Sep 2015 02:15:00 +0000
-Message-ID: <36DF59CE26D8EE47B0655C516E9CE6401D4A77CE@SHSMSX101.ccr.corp.intel.com>
-References: <1439351359-29532-1-git-send-email-yu.c.chen@intel.com>
- <1972415.RSWZSVEEko@vostro.rjw.lan>
+From: Andreas Dannenberg <dannenberg@ti.com>
+Subject: Re: [PATCH] power: bq24261_charger: Add support for TI BQ24261
+ charger
+Date: Tue, 8 Sep 2015 21:26:18 -0500
+Message-ID: <20150909022617.GA32255@beast>
+References: <1441560187-23611-1-git-send-email-ramakrishna.pallala@intel.com>
+ <CAJKOXPfDu+LxoiQrV+CsqUbEVwYb1Zmk-m9y-L_1JxrB6ouS0g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:7819 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754510AbbIICP0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 8 Sep 2015 22:15:26 -0400
-In-Reply-To: <1972415.RSWZSVEEko@vostro.rjw.lan>
-Content-Language: en-US
+Received: from devils.ext.ti.com ([198.47.26.153]:50563 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752829AbbIIC02 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Sep 2015 22:26:28 -0400
+Content-Disposition: inline
+In-Reply-To: <CAJKOXPfDu+LxoiQrV+CsqUbEVwYb1Zmk-m9y-L_1JxrB6ouS0g@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "kristen@linux.intel.com" <kristen@linux.intel.com>
-Cc: "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, "lenb@kernel.org" <lenb@kernel.org>, Seiichi Ikarashi <s.ikarashi@jp.fujitsu.com>
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Jenny TC <jenny.tc@intel.com>
 
-SGkgLFJhZmFlbA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFJhZmFl
-bCBKLiBXeXNvY2tpIFttYWlsdG86cmp3QHJqd3lzb2NraS5uZXRdDQo+IFNlbnQ6IFR1ZXNkYXks
-IFNlcHRlbWJlciAwOCwgMjAxNSA1OjQ3IEFNDQo+IFRvOiBDaGVuLCBZdSBDOyBrcmlzdGVuQGxp
-bnV4LmludGVsLmNvbQ0KPiBDYzogdmlyZXNoLmt1bWFyQGxpbmFyby5vcmc7IGxpbnV4LXBtQHZn
-ZXIua2VybmVsLm9yZzsgbGludXgtDQo+IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IFpoYW5nLCBS
-dWk7IGxlbmJAa2VybmVsLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIXVtyZmNdIGludGVsX3Bz
-dGF0ZTogRml4IHVzZXIgaW5wdXQgb2YgbWluL21heCB0byBsZWdhbA0KPiBwb2xpY3kgcmVnaW9u
-DQo+IA0KPiBPbiBXZWRuZXNkYXksIEF1Z3VzdCAxMiwgMjAxNSAxMTo0OToxOSBBTSBDaGVuIFl1
-IHdyb3RlOg0KPiA+IEluIGN1cnJlbnQgY29kZSwgaWYgc3lzdGVtIGlzIHVzaW5nIHBlcmZvcm1h
-bmNlIHBvbGljeSwgdXNlciBjYW4NCj4gPiBtb2RpZnkgdGhlIG1heF9wZXJmX3BjdCB0byBhbnkg
-dmFsdWVzIGxvd2VyIHRoYW4gMTAwOg0KPiA+DQo+ID4gJCBncmVwIC4gL3N5cy9kZXZpY2VzL3N5
-c3RlbS9jcHUvaW50ZWxfcHN0YXRlL20qX3BlcmZfcGN0DQo+ID4gL3N5cy9kZXZpY2VzL3N5c3Rl
-bS9jcHUvaW50ZWxfcHN0YXRlL21heF9wZXJmX3BjdDoxMDANCj4gPiAvc3lzL2RldmljZXMvc3lz
-dGVtL2NwdS9pbnRlbF9wc3RhdGUvbWluX3BlcmZfcGN0OjEwMA0KPiA+DQo+ID4gJCBlY2hvIDgw
-ID4gL3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUvaW50ZWxfcHN0YXRlL21heF9wZXJmX3BjdA0KPiA+
-DQo+ID4gJCBncmVwIC4gL3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUvaW50ZWxfcHN0YXRlL20qX3Bl
-cmZfcGN0DQo+ID4gL3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUvaW50ZWxfcHN0YXRlL21heF9wZXJm
-X3BjdDo4MA0KPiA+IC9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1L2ludGVsX3BzdGF0ZS9taW5fcGVy
-Zl9wY3Q6MTAwDQo+ID4NCj4gPiB0aGUgbWF4X3BlcmZfcGN0IGFib3ZlIGlzIGxvd2VyIHRoYW4g
-bWluX3BlcmZfcGN0LCB3aGljaCBpcyBub3QNCj4gPiByZWFzb25hYmxlLg0KPiA+DQo+ID4gVGhp
-cyBwYXRjaCBzb2x2ZXMgdGhpcyBwcm9ibGVtIGJ5IGNsYW1waW5nIG1pbl9wZXJmX3BjdCBhbmQN
-Cj4gPiBtYXhfcGVyZl9wY3QgdG8gYmUgc3RyaWN0bHkgaW5zaWRlIFttaW5fcG9saWN5X3BjdCxt
-YXhfcG9saWN5X3BjdF0uDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBDaGVuIFl1IDx5dS5jLmNo
-ZW5AaW50ZWwuY29tPg0KPiANCj4gTG9va3MgcmVhc29uYWJsZSB0byBtZS4NCj4gDQo+IEtyaXN0
-ZW4sIGFueSBvYmplY3Rpb25zPw0KPiANClRoYW5rcyBmb3IgeW91ciByZXBseSEgDQpBY2NvcmRp
-bmcgdG8gc3VnZ2VzdGlvbiBmcm9tICBTZWlpY2hpLCB3aWxsIHJlLXNlbmQgYSBWMiB2ZXJzaW9u
-IHBhdGNoLA0KdG8gbWFrZSBzb21lIHVwZGF0ZS4NCg0KQmVzdCBSZWdhcmRzLA0KWXUgDQoNCg==
+On Mon, Sep 07, 2015 at 12:57:56PM +0900, Krzysztof Kozlowski wrote:
+> 2015-09-07 2:23 GMT+09:00 Ramakrishna Pallala <ramakrishna.pallala@intel.com>:
+> >
+> > Add new charger driver support for BQ24261 charger IC.
+> >
+> > BQ24261 charger driver relies on extcon notifications to get the
+> > charger cable type and based on that it will set the charging parameters.
+> >
+> > Signed-off-by: Ramakrishna Pallala <ramakrishna.pallala@intel.com>
+> > Signed-off-by: Jennt TC <jenny.tc@intel.com>
+> > ---
+> >  .../devicetree/bindings/power/bq24261.txt          |   37 +
+> >  drivers/power/Kconfig                              |    6 +
+> >  drivers/power/Makefile                             |    1 +
+> >  drivers/power/bq24261_charger.c                    | 1208 ++++++++++++++++++++
+> >  include/linux/power/bq24261_charger.h              |   27 +
+> >  5 files changed, 1279 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/power/bq24261.txt
+> >  create mode 100644 drivers/power/bq24261_charger.c
+> >  create mode 100644 include/linux/power/bq24261_charger.h
+> >
+> > diff --git a/Documentation/devicetree/bindings/power/bq24261.txt b/Documentation/devicetree/bindings/power/bq24261.txt
+> > new file mode 100644
+> > index 0000000..25fc5c4
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/power/bq24261.txt
+> > @@ -0,0 +1,37 @@
+> > +Binding for TI bq24261 Li-Ion Charger
+> 
+> Please split the bindings into separate patch (the first patch in patchset).
+> 
+> > +
+> > +Required properties:
+> > +- compatible: Should contain one of the following:
+> > +    * "ti,bq24261"
+> > +- reg: integer, i2c address of the device.
+> > +- ti,charge-current: integer, default charging current (in mA);
+> > +- ti,charge-voltage: integer, default charging voltage (in mV);
+> > +- ti,termination-current: integer, charge will be terminated when current in
+> > +    constant-voltage phase drops below this value (in mA);
+> > +- ti,max-charge-current: integer, maximum charging current (in mA);
+> > +- ti,max-charge-voltage: integer, maximum charging voltage (in mV);
+> > +- ti,min-charge-temperature: integer, minimum charging temperature (in DegC);
+> > +- ti,max-charge-temperature: integer, maximum charging temperature (in DegC).
+> 
+> Before accepting "[PATCH 13/13] dt: power: bq24257-charger: Cover
+> additional devices"
+> http://www.spinics.net/lists/devicetree/msg92134.html
+> 
+> could you and Andreas figure out common bindings? Look at this:
+> 
+> +- ti,charge-current: integer, maximum charging current in uA.
+> +- ti,charge-current: integer, default charging current (in mA);
+> 
+> Different meaning and different units. This is madness! :)
+> 
+> In the same time you are adding TI-common bindings (not device
+> specific, there is no prefix) so I would expect exactly the same
+> bindings if it is possible.
+
+Krzysztof, good observation! In bq2425x_charger.c (formerly known as
+bq24257_charger.c :) that I worked on the unit used was uA. At that time
+I did a quick check and there didn't seem to be a clear standard whether
+to use the "micro" or "milli" units - different drivers use different
+units. However there seems to be a tendency for the TI drivers to prefer
+"milli" (bq2415x_charger.c, bq24735-charger.c)
+
+Personally I think "milli" units are more appropriate for chargers since
+they provide sufficient granularity and the numbers don't become too big
+(try typing a voltage in the Volt-range in uV, it's very easy to get the
+number of 0s wrong). However since the driver was already there I left
+that aspect alone to preserve compatibility.
+
+> > +
+> > +Optional properties:
+> > +- ti,thermal-sensing: boolean, if present thermal regulation will be enabled;
+> 
+> What is the requirement for thermal-sensing? Can it be enabled always?
+> If yes, then this is not really a hardware property.
+> 
+> > +- ti,enable-user-write: boolean, if present driver will allow the user space
+> > +    to control the charging current and voltage through sysfs;
+> 
+> This is not DT property. It does not describe hardware.
+
+I take responsibility for this one :) In an earlier thread we were
+discussing that it will be better to prevent sysfs write access to
+"dangerous" charger parameters (charge voltage, current, ...) but I
+argued that such access might still be desirable during development and
+debug, and that a DT property could be used to allow such write access
+(with the default being the charger properties being made read-only) -
+this way giving the best of both worlds. However then when I updated the
+bq24157_charger.c driver I ended up not really needing and implementing
+this feature.
+
+Out of curiosity, if it against best-practice to expose non hardware
+properties, how would one best address the above use case? Compile time
+switch? A sysfs property that allows write-enabling the other sysfs
+properties (doesn't sound right). Or...?
+
+--
+Andreas Dannenberg
+Texas Instruments Inc
+
+> Best regards,
+> Krzysztof
+> 
+> > +
+> > +Example:
+> > +
+> > +bq25890 {
+> > +        compatible = "ti,bq24261
+> > +        reg = <0x6b>;
+> > +
+> > +        ti,charge-current = <1000>;
+> > +        ti,charge-voltage = <4200>;
+> > +        ti,termination-current = <128>;
+> > +        ti,max-charge-current = <3000>;
+> > +        ti,max-charge-voltage = <4350>;
+> > +        ti,min-charge-temperature = <0>;
+> > +        ti,max-charge-temperature = <60>;
+> > +
+> > +        ti,thermal-sensing;
+> > +        ti,enable-user-write;
+> > +};
+> > diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
+> > index f8758d6..cd47d0d 100644
+> > --- a/drivers/power/Kconfig
+> > +++ b/drivers/power/Kconfig
+> > @@ -396,6 +396,12 @@ config CHARGER_BQ24190
+> >         help
+> >           Say Y to enable support for the TI BQ24190 battery charger.
+> >
+> > +config CHARGER_BQ24261
+> > +       tristate "TI BQ24261 charger driver"
+> > +       depends on I2C && EXTCON
+> > +       help
+> > +         Say Y here to enable support for TI BQ24261 battery charger.
+> > +
+> >  config CHARGER_BQ24257
+> >         tristate "TI BQ24257 battery charger driver"
+> >         depends on I2C
+> > diff --git a/drivers/power/Makefile b/drivers/power/Makefile
+> > index 5752ce8..bec8409 100644
+> > --- a/drivers/power/Makefile
+> > +++ b/drivers/power/Makefile
+> > @@ -59,6 +59,7 @@ obj-$(CONFIG_CHARGER_MAX8997) += max8997_charger.o
+> >  obj-$(CONFIG_CHARGER_MAX8998)  += max8998_charger.o
+> >  obj-$(CONFIG_CHARGER_BQ2415X)  += bq2415x_charger.o
+> >  obj-$(CONFIG_CHARGER_BQ24190)  += bq24190_charger.o
+> > +obj-$(CONFIG_CHARGER_BQ24261)  += bq24261_charger.o
+> >  obj-$(CONFIG_CHARGER_BQ24257)  += bq24257_charger.o
+> >  obj-$(CONFIG_CHARGER_BQ24735)  += bq24735-charger.o
+> >  obj-$(CONFIG_CHARGER_BQ25890)  += bq25890_charger.o
