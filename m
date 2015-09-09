@@ -1,164 +1,131 @@
 From: Andreas Dannenberg <dannenberg@ti.com>
-Subject: [PATCH v2 08/13] power: bq24257: Add charge type setting support
-Date: Tue, 8 Sep 2015 19:12:32 -0500
-Message-ID: <1441757557-7266-9-git-send-email-dannenberg@ti.com>
+Subject: [PATCH v2 06/13] power: bq24257: Add input DPM voltage threshold setting support
+Date: Tue, 8 Sep 2015 19:12:30 -0500
+Message-ID: <1441757557-7266-7-git-send-email-dannenberg@ti.com>
 References: <1441757557-7266-1-git-send-email-dannenberg@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:53482 "EHLO bear.ext.ti.com"
+Received: from comal.ext.ti.com ([198.47.26.152]:59821 "EHLO comal.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753945AbbIIAN7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 8 Sep 2015 20:13:59 -0400
+	id S1753945AbbIIANv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 8 Sep 2015 20:13:51 -0400
 In-Reply-To: <1441757557-7266-1-git-send-email-dannenberg@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Andreas Dannenberg <dannenberg@ti.com>
 
-The bq2425x devices support charging with a configurable charge current
-i_chg or a specific fixed low-current in what's called Low Charge mode.
-This patch exposes access to the Low Charge mode through a POWER_
-SUPPLY_PROP_CHARGE_TYPE sysfs property value of POWER_SUPPLY_CHARGE_
-TYPE_TRICKLE. It also allows to completely disable charging if desired
-by setting the property to POWER_SUPPLY_CHARGE_TYPE_NONE. Normal
-charging with the configured i_chg current is activated through
-POWER_SUPPLY_CHARGE_TYPE_FAST (default).
+A new optional device property called "ti,in-dpm-voltage" is introduced
+to allow configuring the input voltage threshold for the devices'
+dynamic power path management (DPM) feature. In short, it can be used to
+prevent the input voltage from dropping below a certain value as current
+is drawn to charge the battery or supply the system.
 
 Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
 ---
- drivers/power/bq24257_charger.c | 90 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 90 insertions(+)
+ drivers/power/bq24257_charger.c | 42 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 42 insertions(+)
 
 diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
-index f0d4307..886040c 100644
+index 917609b..c160fde 100644
 --- a/drivers/power/bq24257_charger.c
 +++ b/drivers/power/bq24257_charger.c
-@@ -265,6 +265,56 @@ enum bq24257_fault {
- 	FAULT_INPUT_LDO_LOW,
+@@ -76,6 +76,7 @@ struct bq24257_init_data {
+ 	u8 iterm;	/* termination current */
+ 	u8 in_ilimit;	/* input current limit */
+ 	u8 vovp;	/* over voltage protection voltage */
++	u8 vindpm;	/* VDMP input threshold voltage */
  };
  
-+static int bq24257_get_charge_type(struct bq24257_device *bq,
-+		union power_supply_propval *val)
-+{
-+	int ret;
-+
-+	ret = bq24257_field_read(bq, F_CE);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* Charge Enable is active-low */
-+	if (ret) {
-+		val->intval = POWER_SUPPLY_CHARGE_TYPE_NONE;
-+		return 0;
-+	}
-+
-+	/* Low Charge means a fixed low-current is used instead of i_chg */
-+	ret = bq24257_field_read(bq, F_LOW_CHG);
-+	if (ret < 0)
-+		return ret;
-+
-+	val->intval = ret ? POWER_SUPPLY_CHARGE_TYPE_TRICKLE :
-+			POWER_SUPPLY_CHARGE_TYPE_FAST;
-+
-+	return 0;
-+}
-+
-+static int bq24257_set_charge_type(struct bq24257_device *bq,
-+		const union power_supply_propval *val)
-+{
-+	int ret;
-+
-+	switch (val->intval) {
-+	case POWER_SUPPLY_CHARGE_TYPE_NONE:
-+		return bq24257_field_write(bq, F_CE, 1);
-+	case POWER_SUPPLY_CHARGE_TYPE_TRICKLE:
-+		ret = bq24257_field_write(bq, F_LOW_CHG, 1);
-+		break;
-+	case POWER_SUPPLY_CHARGE_TYPE_FAST:
-+		ret = bq24257_field_write(bq, F_LOW_CHG, 0);
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	if (ret < 0)
-+		return ret;
-+
-+	return bq24257_field_write(bq, F_CE, 0);
-+}
-+
- static int bq24257_power_supply_get_property(struct power_supply *psy,
- 					     enum power_supply_property psp,
- 					     union power_supply_propval *val)
-@@ -290,6 +340,10 @@ static int bq24257_power_supply_get_property(struct power_supply *psy,
- 			val->intval = POWER_SUPPLY_STATUS_UNKNOWN;
- 		break;
+ struct bq24257_state {
+@@ -206,6 +207,13 @@ static const u32 bq24257_vovp_map[] = {
  
-+	case POWER_SUPPLY_PROP_CHARGE_TYPE:
-+		ret = bq24257_get_charge_type(bq, val);
-+		break;
+ #define BQ24257_VOVP_MAP_SIZE		ARRAY_SIZE(bq24257_vovp_map)
+ 
++static const u32 bq24257_vindpm_map[] = {
++	4200000, 4280000, 4360000, 4440000, 4520000, 4600000, 4680000,
++	4760000
++};
 +
- 	case POWER_SUPPLY_PROP_MANUFACTURER:
- 		val->strval = BQ24257_MANUFACTURER;
- 		break;
-@@ -358,6 +412,39 @@ static int bq24257_power_supply_get_property(struct power_supply *psy,
- 	return ret;
++#define BQ24257_VINDPM_MAP_SIZE		ARRAY_SIZE(bq24257_vindpm_map)
++
+ static int bq24257_field_read(struct bq24257_device *bq,
+ 			      enum bq24257_fields field_id)
+ {
+@@ -432,6 +440,17 @@ enum bq24257_vovp {
+ 	VOVP_10500
+ };
+ 
++enum bq24257_vindpm {
++	VINDPM_4200,
++	VINDPM_4280,
++	VINDPM_4360,
++	VINDPM_4440,
++	VINDPM_4520,
++	VINDPM_4600,
++	VINDPM_4680,
++	VINDPM_4760
++};
++
+ enum bq24257_port_type {
+ 	PORT_TYPE_DCP,		/* Dedicated Charging Port */
+ 	PORT_TYPE_CDP,		/* Charging Downstream Port */
+@@ -615,6 +634,7 @@ static int bq24257_hw_init(struct bq24257_device *bq)
+ 		{F_VBAT, bq->init_data.vbat},
+ 		{F_ITERM, bq->init_data.iterm},
+ 		{F_VOVP, bq->init_data.vovp},
++		{F_VINDPM, bq->init_data.vindpm},
+ 	};
+ 
+ 	/*
+@@ -648,6 +668,7 @@ static int bq24257_hw_init(struct bq24257_device *bq)
+ 		/* program fixed input current limit */
+ 		ret = bq24257_field_write(bq, F_IILIMIT,
+ 					  bq->init_data.in_ilimit);
++
+ 		if (ret < 0)
+ 			return ret;
+ 	} else if (!state.power_good)
+@@ -695,10 +716,23 @@ static ssize_t bq24257_show_ovp_voltage(struct device *dev,
+ 			bq24257_vovp_map[bq->init_data.vovp]);
  }
  
-+static int bq24257_power_supply_set_property(struct power_supply *psy,
-+		enum power_supply_property prop,
-+		const union power_supply_propval *val)
++static ssize_t bq24257_show_in_dpm_voltage(struct device *dev,
++					   struct device_attribute *attr,
++					   char *buf)
 +{
++	struct power_supply *psy = dev_get_drvdata(dev);
 +	struct bq24257_device *bq = power_supply_get_drvdata(psy);
-+	int ret;
 +
-+	mutex_lock(&bq->lock);
-+
-+	switch (prop) {
-+	case POWER_SUPPLY_PROP_CHARGE_TYPE:
-+		ret = bq24257_set_charge_type(bq, val);
-+		break;
-+	default:
-+		ret = -EINVAL;
-+	}
-+
-+	mutex_unlock(&bq->lock);
-+
-+	return ret;
++	return scnprintf(buf, PAGE_SIZE, "%d\n",
++			bq24257_vindpm_map[bq->init_data.vindpm]);
 +}
 +
-+static int bq24257_power_supply_property_is_writeable(struct power_supply *psy,
-+		enum power_supply_property psp)
-+{
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_CHARGE_TYPE:
-+		return true;
-+	default:
-+		return false;
-+	}
-+}
-+
- static int bq24257_get_chip_state(struct bq24257_device *bq,
- 				  struct bq24257_state *state)
- {
-@@ -683,6 +770,7 @@ static enum power_supply_property bq24257_power_supply_props[] = {
- 	POWER_SUPPLY_PROP_MANUFACTURER,
- 	POWER_SUPPLY_PROP_MODEL_NAME,
- 	POWER_SUPPLY_PROP_STATUS,
-+	POWER_SUPPLY_PROP_CHARGE_TYPE,
- 	POWER_SUPPLY_PROP_ONLINE,
- 	POWER_SUPPLY_PROP_HEALTH,
- 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT,
-@@ -702,6 +790,8 @@ static const struct power_supply_desc bq24257_power_supply_desc = {
- 	.properties = bq24257_power_supply_props,
- 	.num_properties = ARRAY_SIZE(bq24257_power_supply_props),
- 	.get_property = bq24257_power_supply_get_property,
-+	.set_property = bq24257_power_supply_set_property,
-+	.property_is_writeable	= bq24257_power_supply_property_is_writeable
+ static DEVICE_ATTR(ovp_voltage, S_IRUGO, bq24257_show_ovp_voltage, NULL);
++static DEVICE_ATTR(in_dpm_voltage, S_IRUGO, bq24257_show_in_dpm_voltage, NULL);
+ 
+ static struct attribute *bq24257_charger_attr[] = {
+ 	&dev_attr_ovp_voltage.attr,
++	&dev_attr_in_dpm_voltage.attr,
+ 	NULL,
  };
  
- static ssize_t bq24257_show_ovp_voltage(struct device *dev,
+@@ -798,6 +832,14 @@ static int bq24257_fw_probe(struct bq24257_device *bq)
+ 		bq->init_data.vovp = bq24257_find_idx(property,
+ 				bq24257_vovp_map, BQ24257_VOVP_MAP_SIZE);
+ 
++	ret = device_property_read_u32(bq->dev, "ti,in-dpm-voltage",
++				       &property);
++	if (ret < 0)
++		bq->init_data.vindpm = VINDPM_4360;
++	else
++		bq->init_data.vindpm = bq24257_find_idx(property,
++				bq24257_vindpm_map, BQ24257_VINDPM_MAP_SIZE);
++
+ 	return 0;
+ }
+ 
 -- 
 1.9.1
 
