@@ -1,102 +1,104 @@
-From: Octavian Purdila <octavian.purdila@intel.com>
-Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing
- runtime suspend
-Date: Wed, 9 Sep 2015 14:13:11 +0300
-Message-ID: <CAE1zotJ_XPFww_dsOihF1vQRLrgi+OQmQ17e_8aBkAJ+yLqdNg@mail.gmail.com>
-References: <1441658561-26190-1-git-send-email-irina.tirdea@intel.com>
-	<8981266.1iKleIVcUj@vostro.rjw.lan>
-	<1F3AC3675D538145B1661F571FE1805F2F0C5CBE@irsmsx105.ger.corp.intel.com>
-	<1441697744.26994.21.camel@suse.com>
-	<CAJZ5v0jf1=YFW3iCh8LvOU+5diKgoVH7LtTeu80ym2H4TPYSkg@mail.gmail.com>
-	<CAPDyKFrZqGcB9kMTnvAFRAWVqyvJ6REGFLce4iA2w5rqps=d4g@mail.gmail.com>
-	<CAJZ5v0iCRUJoDJ4oy8TKDvngjZ7SbBUngK2+a7ccUEtVFhW0gg@mail.gmail.com>
+From: Seiichi Ikarashi <s.ikarashi@jp.fujitsu.com>
+Subject: Re: [PATCH] [v2] intel_pstate: Fix user input of min/max to legal
+ policy region
+Date: Wed, 9 Sep 2015 20:12:01 +0900
+Message-ID: <55F01401.10004@jp.fujitsu.com>
+References: <1441794451-29979-1-git-send-email-yu.c.chen@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-input-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0iCRUJoDJ4oy8TKDvngjZ7SbBUngK2+a7ccUEtVFhW0gg@mail.gmail.com>
-Sender: linux-input-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Tirdea, Irina" <irina.tirdea@intel.com>, Oliver Neukum <oneukum@suse.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alan Stern <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Content-Type: text/plain; charset="iso-2022-jp"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mgwkm04.jp.fujitsu.com ([202.219.69.171]:27106 "EHLO
+	mgwkm04.jp.fujitsu.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752187AbbIILQt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Sep 2015 07:16:49 -0400
+In-Reply-To: <1441794451-29979-1-git-send-email-yu.c.chen@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: kristen@linux.intel.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, Sep 9, 2015 at 2:50 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
->
-> Hi,
->
-> On Wed, Sep 9, 2015 at 12:25 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> > On 8 September 2015 at 22:56, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> >> On Tue, Sep 8, 2015 at 9:35 AM, Oliver Neukum <oneukum@suse.com> wrote:
-> >>> On Tue, 2015-09-08 at 01:10 +0000, Tirdea, Irina wrote:
-> >>
-> >> [cut]
-> >>
-> >>>> this would work except for adding a sysfs attribute that would trigger
-> >>>> a runtime suspend while ignoring usage count. Would that be a
-> >>>> better direction?
-> >>>
-> >>> No. If we want this at all, we need a new callback to notify drivers
-> >>> that user space is temporarily uninterested in a device. And the reverse
-> >>> of course.
-> >>> The power model is good. We must not assume that devices can be
-> >>> suspended at will. If we do this at all, we ought to see it as giving
-> >>> strong hints to drivers when a device can be considered idle.
-> >>
-> >> This is a good summary in my view.
-> >>
-> >> The only thing we can add, realistically, is an interface for user
-> >> space to "kick" drivers to check if the devices they handle may be
-> >> suspended at this point (or to run their ->runtime_idle callbacks
-> >> IOW).
-> >>
-> >> That would be quite similar to autosuspend except that the "kick" will
-> >> come from user space rather than from a timer function in the kernel.
-> >
-> > Apologize for interrupting the discussion!
-> >
-> > Unless I miss the point, I assumes the above is somewhat already
-> > achievable via sysfs when changing the value of the auto-suspend
-> > timeout, since it triggers a call to
-> > pm_runtime_set_autosuspend_delay()...
->
-> Well, from the initial comment in drivers/base/power/sysfs.c:
->
->  *
->  *    NOTE: The autosuspend_delay_ms attribute and the autosuspend_delay
->  *    value are used only if the driver calls pm_runtime_use_autosuspend().
->  *
->
-> Some drivers don't do that and they would be the primary target
-> audience for the new interface (if we agreed that it was useful after
-> all).
->
-> > Also, according to the discussion so far, it seems like we are on
-> > agreement that we should really think twice when considering to extend
-> > the sysfs interface for runtime PM.
->
-> That certainly is correct and not limited to runtime PM. :-)
->
-> > From the change-log/description to $subject patch, I fail to
-> > understand *why* the regular runtime PM *autosuspend* feature isn't
-> > sufficient. Perhaps Irina can elaborate more on the use case, to help
-> > me get a better understanding of the issue!?
->
-> My understanding is that the idea would be to trigger an attempt to
-> suspend via a specific event (eg. lid closes) rather then via an
-> inactivity timer.
->
+Hi, Yu
 
-The best example and actually the very specific problem we want to
-solve is handling touchscreens on a phone / tablet. When the screen is
-turned off, it is ideal to suspend the touchscreen for two reasons: to
-lower the power consumption as much as possible and to prevent
-interrupts to wake-up the CPU when the user touches the device, and
-thus save even more power as we allow the CPU to stay in deep idle
-states for longer periods.
+On 2015-09-09 19:27, Chen Yu wrote:
+> In current code, max_perf_pct might be smaller than min_perf_pct
+> by improper user input:
+> 
+> $ grep . /sys/devices/system/cpu/intel_pstate/m*_perf_pct
+> /sys/devices/system/cpu/intel_pstate/max_perf_pct:100
+> /sys/devices/system/cpu/intel_pstate/min_perf_pct:100
+> 
+> $ echo 80 > /sys/devices/system/cpu/intel_pstate/max_perf_pct
+> 
+> $ grep . /sys/devices/system/cpu/intel_pstate/m*_perf_pct
+> /sys/devices/system/cpu/intel_pstate/max_perf_pct:80
+> /sys/devices/system/cpu/intel_pstate/min_perf_pct:100
+> 
+> Fix this problem by 2 steps:
+> 1.Normalize the user input to [min_policy, max_policy].
+> 2.Make sure max_perf_pct>=min_perf_pct, suggested by Seiichi Ikarashi.
+> 
+> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> ---
+> v2:
+>  - Add logic to ensure max_perf_pct>=min_perf_pct.
+> ---
+>  drivers/cpufreq/intel_pstate.c | 17 ++++++++++++++---
+>  1 file changed, 14 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index fcb929e..a0b935f 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -423,6 +423,8 @@ static ssize_t store_max_perf_pct(struct kobject *a, struct attribute *b,
+>  
+>  	limits.max_sysfs_pct = clamp_t(int, input, 0 , 100);
+>  	limits.max_perf_pct = min(limits.max_policy_pct, limits.max_sysfs_pct);
+> +	limits.max_perf_pct = max(limits.min_policy_pct, limits.max_perf_pct);
+> +	limits.max_perf_pct = max(limits.min_perf_pct, limits.max_perf_pct);
+>  	limits.max_perf = div_fp(int_tofp(limits.max_perf_pct), int_tofp(100));
+>  
+>  	if (hwp_active)
+> @@ -442,6 +444,8 @@ static ssize_t store_min_perf_pct(struct kobject *a, struct attribute *b,
+>  
+>  	limits.min_sysfs_pct = clamp_t(int, input, 0 , 100);
+>  	limits.min_perf_pct = max(limits.min_policy_pct, limits.min_sysfs_pct);
+> +	limits.min_perf_pct = min(limits.max_policy_pct, limits.min_perf_pct);
+> +	limits.min_perf_pct = min(limits.max_perf_pct, limits.min_perf_pct);
+>  	limits.min_perf = div_fp(int_tofp(limits.min_perf_pct), int_tofp(100));
+>  
+>  	if (hwp_active)
+> @@ -985,12 +989,19 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+>  
+>  	limits.min_policy_pct = (policy->min * 100) / policy->cpuinfo.max_freq;
+>  	limits.min_policy_pct = clamp_t(int, limits.min_policy_pct, 0 , 100);
+> -	limits.min_perf_pct = max(limits.min_policy_pct, limits.min_sysfs_pct);
+> -	limits.min_perf = div_fp(int_tofp(limits.min_perf_pct), int_tofp(100));
+> -
+>  	limits.max_policy_pct = (policy->max * 100) / policy->cpuinfo.max_freq;
+>  	limits.max_policy_pct = clamp_t(int, limits.max_policy_pct, 0 , 100);
+> +
+> +	/* Normalize user input to [min_policy_pct, max_policy_pct] */
+> +	limits.min_perf_pct = max(limits.min_policy_pct, limits.min_sysfs_pct);
+> +	limits.min_perf_pct = min(limits.max_policy_pct, limits.min_perf_pct);
+>  	limits.max_perf_pct = min(limits.max_policy_pct, limits.max_sysfs_pct);
+> +	limits.max_perf_pct = max(limits.min_policy_pct, limits.max_perf_pct);
+> +
+> +	/* Make sure min_perf_pct <= max_perf_pct */
+> +	limits.min_perf_pct = min(limits.max_perf_pct, limits.min_perf_pct);
 
-Note that when the screen is turned-on again, we want to resume the
-touchscreen so that it can send events again.
+You chose max_perf_pct prior to min_perf_pct here.
+I agree.
 
-This is different then the lid closes examples, as in that case the
-user can not generate new events and thus the usual autosuspend
-feature is probably good enough (if the suspend power and autosuspend
-power consumption is similar).
+> +
+> +	limits.min_perf = div_fp(int_tofp(limits.min_perf_pct), int_tofp(100));
+>  	limits.max_perf = div_fp(int_tofp(limits.max_perf_pct), int_tofp(100));
+>  
+>  	if (hwp_active)
+> 
+
+I think this patch is what it should be. Good job.
+
+Regards,
+Seiichi
+
