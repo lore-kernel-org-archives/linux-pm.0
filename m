@@ -1,37 +1,119 @@
 From: Lukasz Anaczkowski <lukasz.anaczkowski@intel.com>
-Subject: [PATCH 0/2] Fix how CPUs are enumerated when there's more than 255 CPUs
-Date: Wed,  9 Sep 2015 11:30:16 +0200
-Message-ID: <1441791018-14669-1-git-send-email-lukasz.anaczkowski@intel.com>
+Subject: [PATCH 2/2] x86, acpi: Handle apic/x2apic entries in MADT in correct order
+Date: Wed,  9 Sep 2015 11:30:18 +0200
+Message-ID: <1441791018-14669-3-git-send-email-lukasz.anaczkowski@intel.com>
 References: <55EF0C7A.7070105@arm.com>
+ <1441791018-14669-1-git-send-email-lukasz.anaczkowski@intel.com>
+ <1441791018-14669-2-git-send-email-lukasz.anaczkowski@intel.com>
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <55EF0C7A.7070105@arm.com>
+In-Reply-To: <1441791018-14669-2-git-send-email-lukasz.anaczkowski@intel.com>
 Sender: linux-acpi-owner@vger.kernel.org
 To: marc.zyngier@arm.com, lorenzo.pieralisi@arm.com, tomasz.nowicki@linaro.org, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, jason@lakedaemon.net
 Cc: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, Lukasz Anaczkowski <lukasz.anaczkowski@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-This series of patches attempts to fix how CPUs are enumerated by kernel when
-there's more than 255 of them on single processor.
-In such case, BIOS may interleave APIC/X2APIC MADT subtables, to obey requirements
-specified in ACPI spec. Without this patches, kernel then would first enumerate
-BSP, then X2APIC then APIC, resulting in low APIC IDs to be assigned with high
-logical IDs and high APIC IDs to be assigned low logical IDs. Biggest consequence
-of that could be performance penalties due to wrong L2 cache sharing.
-More details in patch 2/2.
+ACPI specifies the following rules when listing APIC IDs:
+(1) Boot processor is listed first
+(2) For multi-threaded processors, BIOS should list the first logical
+    processor of each of the individual multi-threaded processors in MADT
+    before listing any of the second logical processors.
+(3) APIC IDs < 0xFF should be listed in APIC subtable, APIC IDs >= 0xFF
+    should be listed in X2APIC subtable
 
-Also, simpler approach has been considered, which did not required ACPI parsing
-interface changes, however it failed to meet requirements. More details can be
-found here: https://lkml.org/lkml/2015/9/7/285
+Because of above, when there's more than 0xFF logical CPUs, BIOS
+interleaves APIC/X2APIC subtables.
 
-Lukasz Anaczkowski (2):
-  acpi: Added acpi_subtable_proc to ACPI table parsers
-  x86, acpi: Handle apic/x2apic entries in MADT in correct order
+Assuming, there's 72 cores, 72 hyper-threads each, 288 CPUs total,
+listing is like this:
 
- arch/x86/kernel/acpi/boot.c | 22 +++++++++--
- drivers/acpi/tables.c       | 89 ++++++++++++++++++++++++++++++++++++---------
- include/linux/acpi.h        | 13 +++++++
- 3 files changed, 103 insertions(+), 21 deletions(-)
+APIC (0,4,8, .., 252)
+X2APIC (258,260,264, .. 284)
+APIC (1,5,9,...,253)
+X2APIC (259,261,265,...,285)
+APIC (2,6,10,...,254)
+X2APIC (260,262,266,..,286)
+APIC (3,7,11,...,251)
+X2APIC (255,261,262,266,..,287)
 
+Now, before this patch, due to how ACPI MADT subtables were parsed (BSP
+then X2APIC then APIC), kernel enumerated CPUs in reverted order (i.e.
+high APIC IDs were getting low logical IDs, and low APIC IDs were
+getting high logical IDs).
+This is wrong for the following reasons:
+() it's hard to predict how cores and threads are enumerated
+() when it's hard to predict, s/w threads cannot be properly affinitized
+   causing significant performance impact due to e.g. inproper cache
+   sharing
+() enumeration is inconsistent with how threads are enumerated on
+   other Intel Xeon processors
+
+So, order in which MADT APIC/X2APIC handlers are passed is
+reverse and both handlers are passed to be called during same MADT
+table to walk to achieve correct CPU enumeration.
+
+In scenario when someone boots kernel with options 'maxcpus=72 nox2apic',
+in result less cores may be booted, since some of the CPUs the kernel
+will try to use will have APIC ID >= 0xFF. In such case, one
+should not pass 'nox2apic'.
+
+Disclimer: code parsing MADT APIC/X2APIC has not been touched since 2009,
+when X2APIC support was initially added. I do not know why MADT parsing
+code was added in the reversed order in the first place.
+I guess it didn't matter at that time since nobody cared about cores
+with APIC IDs >= 0xFF, right?
+
+This patch is based on work of "Yinghai Lu <yinghai@kernel.org>"
+previously published at https://lkml.org/lkml/2013/1/21/563
+
+Here's the explanation why parsing interface needs to be changed
+and why simpler approach will not work https://lkml.org/lkml/2015/9/7/285
+
+Signed-off-by: Lukasz Anaczkowski <lukasz.anaczkowski@intel.com>
+Acked-by: Thomas Gleixner <tglx@linutronix.de> (commit message)
+---
+ arch/x86/kernel/acpi/boot.c | 22 ++++++++++++++++++----
+ 1 file changed, 18 insertions(+), 4 deletions(-)
+
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index e49ee24..116e911 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -981,6 +981,8 @@ static int __init acpi_parse_madt_lapic_entries(void)
+ {
+ 	int count;
+ 	int x2count = 0;
++	int ret;
++	struct acpi_subtable_proc madt_proc[2];
+ 
+ 	if (!cpu_has_apic)
+ 		return -ENODEV;
+@@ -1004,10 +1006,22 @@ static int __init acpi_parse_madt_lapic_entries(void)
+ 				      acpi_parse_sapic, MAX_LOCAL_APIC);
+ 
+ 	if (!count) {
+-		x2count = acpi_table_parse_madt(ACPI_MADT_TYPE_LOCAL_X2APIC,
+-					acpi_parse_x2apic, MAX_LOCAL_APIC);
+-		count = acpi_table_parse_madt(ACPI_MADT_TYPE_LOCAL_APIC,
+-					acpi_parse_lapic, MAX_LOCAL_APIC);
++		memset(madt_proc, 0, sizeof(madt_proc));
++		madt_proc[0].id = ACPI_MADT_TYPE_LOCAL_APIC;
++		madt_proc[0].handler = acpi_parse_lapic;
++		madt_proc[1].id = ACPI_MADT_TYPE_LOCAL_X2APIC;
++		madt_proc[1].handler = acpi_parse_x2apic;
++		ret = acpi_table_parse_entries_array(ACPI_SIG_MADT,
++				sizeof(struct acpi_table_madt),
++				madt_proc, ARRAY_SIZE(madt_proc), MAX_LOCAL_APIC);
++		if (ret < 0) {
++			printk(KERN_ERR PREFIX
++					"Error parsing LAPIC/X2APIC entries\n");
++			return ret;
++		}
++
++		x2count = madt_proc[0].count;
++		count = madt_proc[1].count;
+ 	}
+ 	if (!count && !x2count) {
+ 		printk(KERN_ERR PREFIX "No LAPIC entries present\n");
 -- 
 1.8.3.1
 
