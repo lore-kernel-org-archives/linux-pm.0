@@ -1,44 +1,86 @@
-From: Oliver Neukum <oneukum@suse.com>
-Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing
- runtime suspend
-Date: Wed, 09 Sep 2015 15:55:46 +0200
-Message-ID: <1441806946.19223.5.camel@suse.com>
-References: <1441658561-26190-1-git-send-email-irina.tirdea@intel.com>
-	 <8981266.1iKleIVcUj@vostro.rjw.lan>
-	 <1F3AC3675D538145B1661F571FE1805F2F0C5CBE@irsmsx105.ger.corp.intel.com>
-	 <1441697744.26994.21.camel@suse.com>
-	 <CAJZ5v0jf1=YFW3iCh8LvOU+5diKgoVH7LtTeu80ym2H4TPYSkg@mail.gmail.com>
-	 <CAPDyKFrZqGcB9kMTnvAFRAWVqyvJ6REGFLce4iA2w5rqps=d4g@mail.gmail.com>
-	 <CAJZ5v0iCRUJoDJ4oy8TKDvngjZ7SbBUngK2+a7ccUEtVFhW0gg@mail.gmail.com>
-	 <CAE1zotJ_XPFww_dsOihF1vQRLrgi+OQmQ17e_8aBkAJ+yLqdNg@mail.gmail.com>
-	 <CAJZ5v0j5XN3Y=YW4jWekUB9qwL5KAVkeDMdhMiKv6j=xLa8psA@mail.gmail.com>
+From: "Anaczkowski, Lukasz" <lukasz.anaczkowski@intel.com>
+Subject: RE: [PATCH 2/2] x86, acpi: Handle apic/x2apic entries in MADT in
+ correct order
+Date: Wed, 9 Sep 2015 14:27:47 +0000
+Message-ID: <C1C2579D7BE026428F81F41198ADB172378BEA81@irsmsx110.ger.corp.intel.com>
+References: <55EF0C7A.7070105@arm.com>
+ <1441791018-14669-1-git-send-email-lukasz.anaczkowski@intel.com>
+ <1441791018-14669-2-git-send-email-lukasz.anaczkowski@intel.com>
+ <1441791018-14669-3-git-send-email-lukasz.anaczkowski@intel.com>
+ <20150909135619.GA11965@red-moon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-input-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0j5XN3Y=YW4jWekUB9qwL5KAVkeDMdhMiKv6j=xLa8psA@mail.gmail.com>
-Sender: linux-input-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Octavian Purdila <octavian.purdila@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Tirdea, Irina" <irina.tirdea@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alan Stern <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([134.134.136.65]:32878 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753927AbbIIOaK convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Sep 2015 10:30:10 -0400
+In-Reply-To: <20150909135619.GA11965@red-moon>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Marc Zyngier <Marc.Zyngier@arm.com>, "tomasz.nowicki@linaro.org" <tomasz.nowicki@linaro.org>, "tglx@linutronix.de" <tglx@linutronix.de>, "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>, "x86@kernel.org" <x86@kernel.org>, "jason@lakedaemon.net" <jason@lakedaemon.net>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "Craft, Clayton A" <clayton.a.craft@intel.com>
 
-On Wed, 2015-09-09 at 14:22 +0200, Rafael J. Wysocki wrote:
-> > Note that when the screen is turned-on again, we want to resume the
-> > touchscreen so that it can send events again.
+-----Original Message-----
+From: Lorenzo Pieralisi [mailto:lorenzo.pieralisi@arm.com] 
+Sent: Wednesday, September 9, 2015 3:56 PM
 
-Why is it impractical to close the fd for the touchscreen?
-> 
-> In fact, then, what you need seems to be the feature discussed by Alan
-> and me some time ago allowing remote wakeup do be disabled for runtime
-> PM from user space as that in combination with autosuspend should
-> address your use case.
+> On Wed, Sep 09, 2015 at 10:30:18AM +0100, Lukasz Anaczkowski wrote:
+> > () it's hard to predict how cores and threads are enumerated
 
-I'd doubt that. Suppose you put the phone into your pocket while
-the device isn't suspended. The continuous stream of spurious events
-will keep it awake.
-The ability to disable remote wakeup is necessary but not sufficient.
+> So ? Why would the logical cpus order matters at all ? I guessed
+> there are probeable properties that allows the kernel to build
+> the affinity (ie topology list, shared caches, smt siblings, etc).
+> Please explain, since I am confused, to me all you need is a list
+> of existing physical ids, in whatever order they come, that's at least
+> what we need on ARM.
 
-	Regards
-		Oliver
+Hi Lorenzo,
 
+Sure, let me try to explain this better.
 
+Proper (i.e. predictable way of CPU enumeration) matters for HPC software,
+(this is where I come from) as there are workloads that have some assumptions 
+on CPU enumeration in order to keep cache hit ratio as high as possible.
+E.g. in KNL cores share L2 caches, and if during enumeration logical cores do not
+reflect physical cores, S/W can start affinitize threads to the same physical cores
+causing great performance impact exactly due to L2 cache misses.
+(e.g. s/w assumes that HT CPUs are separated by core count).
+
+Now, those changes would not be required if someone who have written
+APIC spec had reserved more than just 1 byte for CPU id :)
+Unfortunately, it's the case for x86 APIC ID and once it turns out there's a need
+to enumerate more than that, they added X2APIC spec which has 4 bytes for ID.
+Even that would be also fine if there were just physical cores, but with HT, ACPI
+clearly says, that first must be listed physical cores and only after that HT CPUs
+(and that's why APIC/X2APIC subtables are interleaved).
+
+When GIC spec was added, someone was smart enough to put 4 bytes from
+the begging, so you don't need to care about it on ARM :)
+
+> > () enumeration is inconsistent with how threads are enumerated on
+> >    other Intel Xeon processors
+
+> And why does that matter ? Is it because userspace is making assumptions
+> on the logical cpu enumeration scheme ? I am just asking, I would
+> like to understand.
+
+Yes, HPC software makes some assumptions about CPU enumeration (as mentioned 
+above) and having inconsistent enumeration between different x86 CPUs (Xeon vs Xeon Phi)
+make such s/w basically not portable.
+
+> > So, order in which MADT APIC/X2APIC handlers are passed is
+> > reverse and both handlers are passed to be called during same MADT
+> > table to walk to achieve correct CPU enumeration.
+
+> Define "correct" please, you define the logical ordering you
+> want to achieve, you do not define why that's more "correct"
+> than the current implementation.
+
+Ok, probably 'correct' word is not the best here :)
+Does 'compatible' sound better?
+
+Thanks,
+Lukasz
