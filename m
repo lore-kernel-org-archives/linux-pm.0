@@ -1,71 +1,37 @@
-From: Kristen Carlson Accardi <kristen@linux.intel.com>
-Subject: [PATCH] intel_pstate: fix PCT_TO_HWP macro
-Date: Wed,  9 Sep 2015 11:41:22 -0700
-Message-ID: <1441824082-15403-1-git-send-email-kristen@linux.intel.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V2 3/9] cpufreq: ondemand: only queue canceled works from update_sampling_rate()
+Date: Wed, 09 Sep 2015 22:10:12 +0200
+Message-ID: <110936806.IYePDC4zPm@vostro.rjw.lan>
+References: <cover.1437999691.git.viresh.kumar@linaro.org> <32794142.WpJFa6Ni1D@vostro.rjw.lan> <20150909023020.GI7639@linux>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:29975 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750819AbbIISlY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 9 Sep 2015 14:41:24 -0400
+Received: from v094114.home.net.pl ([79.96.170.134]:64892 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752066AbbIITmW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Sep 2015 15:42:22 -0400
+In-Reply-To: <20150909023020.GI7639@linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, preeti.lkml@gmail.com, open list <linux-kernel@vger.kernel.org>
 
-PCT_TO_HWP does not take the actual range of pstates exported
-by HWP_CAPABILITIES in account, and is broken on most platforms.
-Remove the macro and set the min and max pstate for hwp by
-determining the range and adjusting by the min and max percent
-limits values.
+On Wednesday, September 09, 2015 08:00:20 AM Viresh Kumar wrote:
+> On 09-09-15, 03:06, Rafael J. Wysocki wrote:
+> > I've just realized that if you combined this patch with the [6/9],
+> > you wouldn't need to make any changes to gov_queue_work() at all,
+> > because that patch removes the case in point entirely.
+> 
+> Yeah, but then these are really two separate issues at hand and so I
+> solved them separately. Lemme know how you want to see that and I can
+> change :)
 
-Signed-off-by: Kristen Carlson Accardi <kristen@linux.intel.com>
----
- drivers/cpufreq/intel_pstate.c | 21 ++++++++++++++-------
- 1 file changed, 14 insertions(+), 7 deletions(-)
+I don't want to make artificial changes.
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index fcb929e..c4bf8d8 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -260,24 +260,31 @@ static inline void update_turbo_state(void)
- 		 cpu->pstate.max_pstate == cpu->pstate.turbo_pstate);
- }
- 
--#define PCT_TO_HWP(x) (x * 255 / 100)
- static void intel_pstate_hwp_set(void)
- {
--	int min, max, cpu;
--	u64 value, freq;
-+	int min, hw_min, max, hw_max, cpu, range, adj_range;
-+	u64 value, cap;
-+
-+	rdmsrl(MSR_HWP_CAPABILITIES, cap);
-+	hw_min = HWP_LOWEST_PERF(cap);
-+	hw_max = HWP_HIGHEST_PERF(cap);
-+	range = hw_max - hw_min;
- 
- 	get_online_cpus();
- 
- 	for_each_online_cpu(cpu) {
- 		rdmsrl_on_cpu(cpu, MSR_HWP_REQUEST, &value);
--		min = PCT_TO_HWP(limits.min_perf_pct);
-+		adj_range = limits.min_perf_pct * range / 100;
-+		min = hw_min + adj_range;
- 		value &= ~HWP_MIN_PERF(~0L);
- 		value |= HWP_MIN_PERF(min);
- 
--		max = PCT_TO_HWP(limits.max_perf_pct);
-+		adj_range = limits.max_perf_pct * range / 100;
-+		max = hw_min + adj_range;
- 		if (limits.no_turbo) {
--			rdmsrl( MSR_HWP_CAPABILITIES, freq);
--			max = HWP_GUARANTEED_PERF(freq);
-+			hw_max = HWP_GUARANTEED_PERF(cap);
-+			if (hw_max < max)
-+				max = hw_max;
- 		}
- 
- 		value &= ~HWP_MAX_PERF(~0L);
--- 
-2.4.3
+If you can address two problems in one go with one relatively simple patch,
+why don't you do that?
+
+Thanks,
+Rafael
 
