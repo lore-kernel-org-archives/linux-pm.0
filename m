@@ -1,70 +1,59 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing runtime suspend
-Date: Wed, 09 Sep 2015 22:25:23 +0200
-Message-ID: <1870624.bK0YQxbsoD@vostro.rjw.lan>
-References: <1441658561-26190-1-git-send-email-irina.tirdea@intel.com> <1441806946.19223.5.camel@suse.com> <CAE1zotKye=grm2CR+0Q25t7B3ZFo_LjrHa5qLYbCUv9=tYTSmw@mail.gmail.com>
+From: Al Stone <ahs3@redhat.com>
+Subject: Re: [PATCH v2 1/5] ACPI: add in a bad_madt_entry() function to
+ eventually replace the macro
+Date: Wed, 9 Sep 2015 13:57:59 -0600
+Message-ID: <55F08F47.1070906@redhat.com>
+References: <1440022048-6285-1-git-send-email-al.stone@linaro.org>
+ <1440022048-6285-2-git-send-email-al.stone@linaro.org>
+ <55EDADF5.5060008@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAE1zotKye=grm2CR+0Q25t7B3ZFo_LjrHa5qLYbCUv9=tYTSmw@mail.gmail.com>
+In-Reply-To: <55EDADF5.5060008@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Octavian Purdila <octavian.purdila@intel.com>, Oliver Neukum <oneukum@suse.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Tirdea, Irina" <irina.tirdea@intel.com>, Alan Stern <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Colin Cross <ccross@android.com>, Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
+To: Sudeep Holla <sudeep.holla@arm.com>, Al Stone <al.stone@linaro.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>, "patches@linaro.org" <patches@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, September 09, 2015 06:02:02 PM Octavian Purdila wrote:
-> On Wed, Sep 9, 2015 at 4:55 PM, Oliver Neukum <oneukum@suse.com> wrote:
-> > On Wed, 2015-09-09 at 14:22 +0200, Rafael J. Wysocki wrote:
-> >> > Note that when the screen is turned-on again, we want to resume the
-> >> > touchscreen so that it can send events again.
-> >
-> > Why is it impractical to close the fd for the touchscreen?
-> >
+On 09/07/2015 09:32 AM, Sudeep Holla wrote:
+> Hi Al,
 > 
-> I am not sure, but I think it is this way due to historical reasons.
-> On Android devices early-suspend was used originally to save power
-> when the screen was turned-off but the device was not suspend. Later
-> Android moved to power HAL [1] and run-time PM for some devices,
-> however that is not sufficient for touchscreen.
+> On 19/08/15 23:07, Al Stone wrote:
 > 
-> i2c touchscreen devices usually have two low-power states: a deep
-> power state where event collection is disabled and the device needs to
-> be poked via i2c to restart collecting events and a shallow power
-> state where the device reduces the internal polling rate after it is
-> idle for some time. The latter it is usually implemented directly in
-> hardware. That means that you can't really implemented auto-suspend
-> with the deep power state, since the device can not resume itself.
+> I finally got a chance to try this series on Juno. Well it exposed a firmware
+> bug in MADT table :)
 > 
-> To address this limitation, Android used early suspend (and then the
-> power HAL mechanism) where the upper layers signals when you can turn
-> on or off certain devices.
+> [..]
 > 
-> I have added Colin and Arve to this thread who maybe can answer this better.
+>>                  acpi_tbl_entry_handler handler,
+>> @@ -245,6 +484,8 @@ acpi_parse_entries(char *id, unsigned long table_size,
+>>                 table_end) {
+>>                  if (entry->type == entry_id
+>>                      && (!max_entries || count < max_entries)) {
+>> +                       if (bad_madt_entry(table_header, entry))
+>> +                               return -EINVAL;
 > 
-> >> In fact, then, what you need seems to be the feature discussed by Alan
-> >> and me some time ago allowing remote wakeup do be disabled for runtime
-> >> PM from user space as that in combination with autosuspend should
-> >> address your use case.
-> >
-> > I'd doubt that. Suppose you put the phone into your pocket while
-> > the device isn't suspended. The continuous stream of spurious events
-> > will keep it awake.
+> Not sure if we can have the above check here unconditionally.
+> Currently I can see there are 2 other users of acpi_parse_entries i.e.
+> PCC and NUMA. So may be it can be made conditional or return success for
+> non-MADT tables from bad_madt_entry ?
 
-Why would they be regarded as spurious then?  They are just regular touch panel
-events in that case, aren't they?
+So, I went back and double checked the other users and they're looking at
+the return value for acpi_parse_entries properly; adding in the check above
+unconditionally should not cause any behavior change.  Further, despite the
+name, acpi_parse_entries is only used to examine MADT subtables.  Granted,
+we should probably make the name clearer at some point (too ambiguous as to
+which entries are parsed right now).  Nonetheless, current usage seems to
+be in order.
 
-> I agree.
-> 
-> > The ability to disable remote wakeup is necessary but not sufficient.
-> >
-> 
-> I don't know enough about remote wake-up, but do we even need to use
-> it for this kind of devices?
 
-Well, if the device is capable of generating wakeup events while suspended,
-the current expected behavior is to do that, but of course that needs to
-be enabled by the driver/bus type too.
-
-Thanks,
-Rafael
+-- 
+ciao,
+al
+-----------------------------------
+Al Stone
+Software Engineer
+Red Hat, Inc.
+ahs3@redhat.com
+-----------------------------------
