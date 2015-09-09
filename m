@@ -1,73 +1,57 @@
-From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: Re: [PATCH] thermal: armada: Fix possible overflow in the Armada 380 thermal sensor formula
-Date: Wed, 09 Sep 2015 18:44:08 +0200
-Message-ID: <87r3m78rvr.fsf@free-electrons.com>
-References: <1438877029-32514-1-git-send-email-gregory.clement@free-electrons.com>
+From: Andreas Dannenberg <dannenberg@ti.com>
+Subject: Re: [PATCH] power: bq24261_charger: Add support for TI BQ24261
+ charger
+Date: Wed, 9 Sep 2015 12:31:48 -0500
+Message-ID: <20150909173147.GA9887@beast>
+References: <1441560187-23611-1-git-send-email-ramakrishna.pallala@intel.com>
+ <CAJKOXPfDu+LxoiQrV+CsqUbEVwYb1Zmk-m9y-L_1JxrB6ouS0g@mail.gmail.com>
+ <20150909022617.GA32255@beast>
+ <55EFB2C7.30800@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from down.free-electrons.com ([37.187.137.238]:48783 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752438AbbIIQoK convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Sep 2015 12:44:10 -0400
-In-Reply-To: <1438877029-32514-1-git-send-email-gregory.clement@free-electrons.com>
-	(Gregory CLEMENT's message of "Thu, 6 Aug 2015 18:03:49 +0200")
+Received: from comal.ext.ti.com ([198.47.26.152]:43625 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752455AbbIIRcA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 9 Sep 2015 13:32:00 -0400
+Content-Disposition: inline
+In-Reply-To: <55EFB2C7.30800@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Ezequiel Garcia <ezequiel.garcia@free-electrons.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, Boris BREZILLON <boris.brezillon@free-electrons.com>, Lior Amsalem <alior@marvell.com>, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, laurentiu.palcu@intel.com
+Cc: Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Jenny TC <jenny.tc@intel.com>
 
-Hi Zhang,
-=20
- On jeu., ao=C3=BBt 06 2015, Gregory CLEMENT <gregory.clement@free-elec=
-trons.com> wrote:
+On Wed, Sep 09, 2015 at 01:17:11PM +0900, Krzysztof Kozlowski wrote:
+> On 09.09.2015 11:26, Andreas Dannenberg wrote:
+> > Krzysztof, good observation! In bq2425x_charger.c (formerly known as
+> > bq24257_charger.c :) that I worked on the unit used was uA. At that time
+> > I did a quick check and there didn't seem to be a clear standard whether
+> > to use the "micro" or "milli" units - different drivers use different
+> > units. However there seems to be a tendency for the TI drivers to prefer
+> > "milli" (bq2415x_charger.c, bq24735-charger.c)
+> > 
+> > Personally I think "milli" units are more appropriate for chargers since
+> > they provide sufficient granularity and the numbers don't become too big
+> > (try typing a voltage in the Volt-range in uV, it's very easy to get the
+> > number of 0s wrong). However since the driver was already there I left
+> > that aspect alone to preserve compatibility.
+> 
+> I am fine with both units but milli indeed seems easier to judge by fast
+> looking and less error-prone. Whatever you choose - choose the same one. :)
 
-> From: Nadav Haklai <nadavh@marvell.com>
->
-> Update the coefficients so the calculation will not overrun the
-> unsigned long 32bits boundary
+Ok sounds good. If so, I could go ahead and change the units in the
+bq2425x_charger.c over to mA and mV? It would be a bit labor some and I
+also want to see what Laurentiu thinks but this way we could have most
+of those TI charger drivers use the same units (the new bq24261 driver
+Ram posted also uses mA/mV). Except bq25890_charger.c.... that would
+still use uA/uV....
 
-What is the status of this patch?
-
-I still do not see it in your git tree. If you need any modification to
-take it, don't hesitate to tell me.
+Laurentiu -- what made you chose the "micro" units for bq24257_charger.c
+and bq25890_charger.c?
 
 Thanks,
 
-Gregory
+--
+Andreas Dannenberg
+Texas Instruments Inc
 
-
->
-> Signed-off-by: Nadav Haklai <nadavh@marvell.com>
-> Reviewed-by: Victor Axelrod <victora@marvell.com>
-> Reviewed-by: Neta Zur Hershkovits <neta@marvell.com>
-> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
-> ---
->  drivers/thermal/armada_thermal.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armad=
-a_thermal.c
-> index 01255fd65135..363bf91c32a3 100644
-> --- a/drivers/thermal/armada_thermal.c
-> +++ b/drivers/thermal/armada_thermal.c
-> @@ -224,9 +224,9 @@ static const struct armada_thermal_data armada380=
-_data =3D {
->  	.is_valid_shift =3D 10,
->  	.temp_shift =3D 0,
->  	.temp_mask =3D 0x3ff,
-> -	.coef_b =3D 2931108200UL,
-> -	.coef_m =3D 5000000UL,
-> -	.coef_div =3D 10502,
-> +	.coef_b =3D 1172499100UL,
-> +	.coef_m =3D 2000096UL,
-> +	.coef_div =3D 4201,
->  	.inverted =3D true,
->  };
-
---=20
-Gregory Clement, Free Electrons
-Kernel, drivers, real-time and embedded Linux
-development, consulting, training and support.
-http://free-electrons.com
