@@ -1,58 +1,49 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v5 0/4] cpufreq-dt: add suspend frequency support
-Date: Wed, 09 Sep 2015 03:16:48 +0200
-Message-ID: <2547413.Uj7KDUeGpY@vostro.rjw.lan>
-References: <1441730464-7947-1-git-send-email-b.zolnierkie@samsung.com>
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: RE: [PATCH][rfc] intel_pstate: Fix user input of min/max to legal
+ policy region
+Date: Wed, 9 Sep 2015 02:15:00 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE6401D4A77CE@SHSMSX101.ccr.corp.intel.com>
+References: <1439351359-29532-1-git-send-email-yu.c.chen@intel.com>
+ <1972415.RSWZSVEEko@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:56385 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753274AbbIIAs7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Sep 2015 20:48:59 -0400
-In-Reply-To: <1441730464-7947-1-git-send-email-b.zolnierkie@samsung.com>
+Received: from mga11.intel.com ([192.55.52.93]:7819 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754510AbbIICP0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 8 Sep 2015 22:15:26 -0400
+In-Reply-To: <1972415.RSWZSVEEko@vostro.rjw.lan>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Thomas Abraham <thomas.ab@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "kristen@linux.intel.com" <kristen@linux.intel.com>
+Cc: "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, "lenb@kernel.org" <lenb@kernel.org>, Seiichi Ikarashi <s.ikarashi@jp.fujitsu.com>
 
-On Tuesday, September 08, 2015 06:41:00 PM Bartlomiej Zolnierkiewicz wrote:
-> Hi,
-> 
-> This patch series adds suspend frequency support (using opp-v2
-> bindings and suspend-opp functionality) to cpufreq-dt driver and
-> then adds suspend opp for Exynos4412 based boards.
-> 
-> This patch series fixes suspend/resume support on Exynos4412
-> based Trats2 board and reboot hang on Exynos4412 based Odroid
-> U3 board.
-> 
-> Changes since v4:
-> - removed superfluous CONFIG_PM ifdefs
-> - added Acked-by tag from Krzysztof to patch #4
-> - added Acked-by tag from Viresh to patches #1-3
-> 
-> Changes since v3:
-> - fixed dev_pm_opp_get_suspend_opp() locking
-> - shortened variable name in dev_pm_opp_get_suspend_opp()
-> - adjusted cpufreq_generic_suspend() to work with cpufreq-dt
-> - removed no longer needed cpufreq_dt_suspend()
-> - added Acked-by tag from Viresh to patch #4
-> 
-> Changes since v2:
-> - rewrote to use suspend-opp functionality
-> 
-> Changes since v1:
-> - removed superfluous ";"
-> 
-> Depends on:
-> - next-20150902 branch of linux-next kernel tree
-
-I've queued up [1-3/4] for the next PM pull request.
-
-The [4/4] has to go in separately through the platform tree.
-
-Thanks,
-Rafael
-
+SGkgLFJhZmFlbA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFJhZmFl
+bCBKLiBXeXNvY2tpIFttYWlsdG86cmp3QHJqd3lzb2NraS5uZXRdDQo+IFNlbnQ6IFR1ZXNkYXks
+IFNlcHRlbWJlciAwOCwgMjAxNSA1OjQ3IEFNDQo+IFRvOiBDaGVuLCBZdSBDOyBrcmlzdGVuQGxp
+bnV4LmludGVsLmNvbQ0KPiBDYzogdmlyZXNoLmt1bWFyQGxpbmFyby5vcmc7IGxpbnV4LXBtQHZn
+ZXIua2VybmVsLm9yZzsgbGludXgtDQo+IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IFpoYW5nLCBS
+dWk7IGxlbmJAa2VybmVsLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIXVtyZmNdIGludGVsX3Bz
+dGF0ZTogRml4IHVzZXIgaW5wdXQgb2YgbWluL21heCB0byBsZWdhbA0KPiBwb2xpY3kgcmVnaW9u
+DQo+IA0KPiBPbiBXZWRuZXNkYXksIEF1Z3VzdCAxMiwgMjAxNSAxMTo0OToxOSBBTSBDaGVuIFl1
+IHdyb3RlOg0KPiA+IEluIGN1cnJlbnQgY29kZSwgaWYgc3lzdGVtIGlzIHVzaW5nIHBlcmZvcm1h
+bmNlIHBvbGljeSwgdXNlciBjYW4NCj4gPiBtb2RpZnkgdGhlIG1heF9wZXJmX3BjdCB0byBhbnkg
+dmFsdWVzIGxvd2VyIHRoYW4gMTAwOg0KPiA+DQo+ID4gJCBncmVwIC4gL3N5cy9kZXZpY2VzL3N5
+c3RlbS9jcHUvaW50ZWxfcHN0YXRlL20qX3BlcmZfcGN0DQo+ID4gL3N5cy9kZXZpY2VzL3N5c3Rl
+bS9jcHUvaW50ZWxfcHN0YXRlL21heF9wZXJmX3BjdDoxMDANCj4gPiAvc3lzL2RldmljZXMvc3lz
+dGVtL2NwdS9pbnRlbF9wc3RhdGUvbWluX3BlcmZfcGN0OjEwMA0KPiA+DQo+ID4gJCBlY2hvIDgw
+ID4gL3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUvaW50ZWxfcHN0YXRlL21heF9wZXJmX3BjdA0KPiA+
+DQo+ID4gJCBncmVwIC4gL3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUvaW50ZWxfcHN0YXRlL20qX3Bl
+cmZfcGN0DQo+ID4gL3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUvaW50ZWxfcHN0YXRlL21heF9wZXJm
+X3BjdDo4MA0KPiA+IC9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1L2ludGVsX3BzdGF0ZS9taW5fcGVy
+Zl9wY3Q6MTAwDQo+ID4NCj4gPiB0aGUgbWF4X3BlcmZfcGN0IGFib3ZlIGlzIGxvd2VyIHRoYW4g
+bWluX3BlcmZfcGN0LCB3aGljaCBpcyBub3QNCj4gPiByZWFzb25hYmxlLg0KPiA+DQo+ID4gVGhp
+cyBwYXRjaCBzb2x2ZXMgdGhpcyBwcm9ibGVtIGJ5IGNsYW1waW5nIG1pbl9wZXJmX3BjdCBhbmQN
+Cj4gPiBtYXhfcGVyZl9wY3QgdG8gYmUgc3RyaWN0bHkgaW5zaWRlIFttaW5fcG9saWN5X3BjdCxt
+YXhfcG9saWN5X3BjdF0uDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBDaGVuIFl1IDx5dS5jLmNo
+ZW5AaW50ZWwuY29tPg0KPiANCj4gTG9va3MgcmVhc29uYWJsZSB0byBtZS4NCj4gDQo+IEtyaXN0
+ZW4sIGFueSBvYmplY3Rpb25zPw0KPiANClRoYW5rcyBmb3IgeW91ciByZXBseSEgDQpBY2NvcmRp
+bmcgdG8gc3VnZ2VzdGlvbiBmcm9tICBTZWlpY2hpLCB3aWxsIHJlLXNlbmQgYSBWMiB2ZXJzaW9u
+IHBhdGNoLA0KdG8gbWFrZSBzb21lIHVwZGF0ZS4NCg0KQmVzdCBSZWdhcmRzLA0KWXUgDQoNCg==
