@@ -1,73 +1,123 @@
-From: Matt Fleming <matt-mF/unelCI9GS6iBeEJttW/XRex20P6io@public.gmane.org>
-Subject: Re: [PATCH v2 06/16] x86/efi: Generating random HMAC key for siging
- hibernate image
-Date: Wed, 9 Sep 2015 13:15:45 +0100
-Message-ID: <20150909121545.GD4973@codeblueprint.co.uk>
-References: <1439273796-25359-1-git-send-email-jlee@suse.com>
- <1439273796-25359-7-git-send-email-jlee@suse.com>
- <20150820204044.GG2567@codeblueprint.co.uk>
- <20150827090452.GB27415@linux-rxt1.site>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing
+ runtime suspend
+Date: Wed, 9 Sep 2015 14:22:55 +0200
+Message-ID: <CAJZ5v0j5XN3Y=YW4jWekUB9qwL5KAVkeDMdhMiKv6j=xLa8psA@mail.gmail.com>
+References: <1441658561-26190-1-git-send-email-irina.tirdea@intel.com>
+	<8981266.1iKleIVcUj@vostro.rjw.lan>
+	<1F3AC3675D538145B1661F571FE1805F2F0C5CBE@irsmsx105.ger.corp.intel.com>
+	<1441697744.26994.21.camel@suse.com>
+	<CAJZ5v0jf1=YFW3iCh8LvOU+5diKgoVH7LtTeu80ym2H4TPYSkg@mail.gmail.com>
+	<CAPDyKFrZqGcB9kMTnvAFRAWVqyvJ6REGFLce4iA2w5rqps=d4g@mail.gmail.com>
+	<CAJZ5v0iCRUJoDJ4oy8TKDvngjZ7SbBUngK2+a7ccUEtVFhW0gg@mail.gmail.com>
+	<CAE1zotJ_XPFww_dsOihF1vQRLrgi+OQmQ17e_8aBkAJ+yLqdNg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20150827090452.GB27415-empE8CJ7fzk2xCFIczX1Fw@public.gmane.org>
-Sender: linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: joeyli <jlee-IBi9RG/b67k@public.gmane.org>
-Cc: "Lee, Chun-Yi" <joeyli.kernel-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Matthew Garrett <matthew.garrett-05XSO3Yj/JvQT0dZR+AlfA@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Josh Boyer <jwboyer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Vojtech Pavlik <vojtech-AlSwsSmVLrQ@public.gmane.org>, Matt Fleming <matt.fleming-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Jiri Kosina <jkosina-AlSwsSmVLrQ@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f169.google.com ([209.85.212.169]:32773 "EHLO
+	mail-wi0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752281AbbIIMW5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Sep 2015 08:22:57 -0400
+In-Reply-To: <CAE1zotJ_XPFww_dsOihF1vQRLrgi+OQmQ17e_8aBkAJ+yLqdNg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Octavian Purdila <octavian.purdila@intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Tirdea, Irina" <irina.tirdea@intel.com>, Oliver Neukum <oneukum@suse.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alan Stern <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-On Thu, 27 Aug, at 05:04:52PM, joeyli wrote:
-> 
-> The purpose of checking attribute of hibernation key variable is 
-> in case someone created a key variable on runtime environment _before_
-> this kernel create boot service variable. That causes EFI stub may load
-> a key that from non-secure environment.
-> 
-> That's why delete non-boot service variable and create new one here.
- 
-I think bailing is more appropriate in that case, not deleting the
-variable. The environment is not what we expected it to be, so we
-shouldn't tamper with it.
+Hi,
 
-But I don't feel super strongly about this point. I just wanted to
-raise the question of whether it actually makes sense to delete the
-variable that we obviously didn't create or whether it makes more
-sense to refuse to verify hibernation images.
+On Wed, Sep 9, 2015 at 1:13 PM, Octavian Purdila
+<octavian.purdila@intel.com> wrote:
+> On Wed, Sep 9, 2015 at 2:50 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>>
+>> Hi,
+>>
+>> On Wed, Sep 9, 2015 at 12:25 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> > On 8 September 2015 at 22:56, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>> >> On Tue, Sep 8, 2015 at 9:35 AM, Oliver Neukum <oneukum@suse.com> wrote:
+>> >>> On Tue, 2015-09-08 at 01:10 +0000, Tirdea, Irina wrote:
+>> >>
+>> >> [cut]
+>> >>
+>> >>>> this would work except for adding a sysfs attribute that would trigger
+>> >>>> a runtime suspend while ignoring usage count. Would that be a
+>> >>>> better direction?
+>> >>>
+>> >>> No. If we want this at all, we need a new callback to notify drivers
+>> >>> that user space is temporarily uninterested in a device. And the reverse
+>> >>> of course.
+>> >>> The power model is good. We must not assume that devices can be
+>> >>> suspended at will. If we do this at all, we ought to see it as giving
+>> >>> strong hints to drivers when a device can be considered idle.
+>> >>
+>> >> This is a good summary in my view.
+>> >>
+>> >> The only thing we can add, realistically, is an interface for user
+>> >> space to "kick" drivers to check if the devices they handle may be
+>> >> suspended at this point (or to run their ->runtime_idle callbacks
+>> >> IOW).
+>> >>
+>> >> That would be quite similar to autosuspend except that the "kick" will
+>> >> come from user space rather than from a timer function in the kernel.
+>> >
+>> > Apologize for interrupting the discussion!
+>> >
+>> > Unless I miss the point, I assumes the above is somewhat already
+>> > achievable via sysfs when changing the value of the auto-suspend
+>> > timeout, since it triggers a call to
+>> > pm_runtime_set_autosuspend_delay()...
+>>
+>> Well, from the initial comment in drivers/base/power/sysfs.c:
+>>
+>>  *
+>>  *    NOTE: The autosuspend_delay_ms attribute and the autosuspend_delay
+>>  *    value are used only if the driver calls pm_runtime_use_autosuspend().
+>>  *
+>>
+>> Some drivers don't do that and they would be the primary target
+>> audience for the new interface (if we agreed that it was useful after
+>> all).
+>>
+>> > Also, according to the discussion so far, it seems like we are on
+>> > agreement that we should really think twice when considering to extend
+>> > the sysfs interface for runtime PM.
+>>
+>> That certainly is correct and not limited to runtime PM. :-)
+>>
+>> > From the change-log/description to $subject patch, I fail to
+>> > understand *why* the regular runtime PM *autosuspend* feature isn't
+>> > sufficient. Perhaps Irina can elaborate more on the use case, to help
+>> > me get a better understanding of the issue!?
+>>
+>> My understanding is that the idea would be to trigger an attempt to
+>> suspend via a specific event (eg. lid closes) rather then via an
+>> inactivity timer.
+>>
+>
+> The best example and actually the very specific problem we want to
+> solve is handling touchscreens on a phone / tablet. When the screen is
+> turned off, it is ideal to suspend the touchscreen for two reasons: to
+> lower the power consumption as much as possible and to prevent
+> interrupts to wake-up the CPU when the user touches the device, and
+> thus save even more power as we allow the CPU to stay in deep idle
+> states for longer periods.
+>
+> Note that when the screen is turned-on again, we want to resume the
+> touchscreen so that it can send events again.
 
-> > > diff --git a/arch/x86/include/asm/suspend.h b/arch/x86/include/asm/suspend.h
-> > > index 2fab6c2..ab463c4 100644
-> > > --- a/arch/x86/include/asm/suspend.h
-> > > +++ b/arch/x86/include/asm/suspend.h
-> > > @@ -3,3 +3,12 @@
-> > >  #else
-> > >  # include <asm/suspend_64.h>
-> > >  #endif
-> > > +
-> > > +#ifdef CONFIG_HIBERNATE_VERIFICATION
-> > > +#include <linux/suspend.h>
-> > > +
-> > > +struct hibernation_keys {
-> > > +	unsigned long hkey_status;
-> > > +	u8 hibernation_key[HIBERNATION_DIGEST_SIZE];
-> > > +};
-> > > +#endif
-> > 
-> > Have you given any thought to how things are going to work if we
-> > change the hash function in the future, or provide a choice? That
-> > information doesn't appear anywhere in the above struct.
-> > 
-> 
-> Do you mean the hash function of signing hibernation image changed, so the
-> hibernation key also need to re-generate for new length?
- 
-Yeah, that kind of thing.
+In fact, then, what you need seems to be the feature discussed by Alan
+and me some time ago allowing remote wakeup do be disabled for runtime
+PM from user space as that in combination with autosuspend should
+address your use case.
 
-> I will add a field in struct to forward the length of hibernation key variable.
-> In the future kernel can check the length to handle the change.
+> This is different then the lid closes examples, as in that case the
+> user can not generate new events and thus the usual autosuspend
+> feature is probably good enough (if the suspend power and autosuspend
+> power consumption is similar).
 
-Would it also make sense to explicitly record the hash function used
-as well as the length?
+Autosuspend just means checking the device state periodically and
+suspending it if idle (not in use).  It doesn't affect the energy
+consumption in the suspended state.
 
--- 
-Matt Fleming, Intel Open Source Technology Center
+Thanks,
+Rafael
