@@ -1,148 +1,183 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v4 0/22] On-demand device probing
-Date: Tue, 8 Sep 2015 20:33:25 -0500
-Message-ID: <55EF8C65.4030706@kernel.org>
-References: <1441628627-5143-1-git-send-email-tomeu.vizoso@collabora.com>
- <CAL_Jsq+E31JaPcp5ELS_ztSqgSrK7U4OzB9xNcNz01Ayrrm+Yg@mail.gmail.com>
- <CAAObsKDUzk-9H2_VrVmbc=ZeRaknGcjTMY3Mauh3JVZxLz4CiA@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v4 2/2] dt: power: st: Provide bindings for ST's OPPs
+Date: Wed, 9 Sep 2015 11:57:22 +0530
+Message-ID: <20150909062722.GA5266@linux>
+References: <20150811100941.GG5509@linux>
+ <20150811115425.GE18282@x1>
+ <20150811120124.GH5509@linux>
+ <20150811132756.GG18282@x1>
+ <20150811142812.GJ5509@linux>
+ <20150811151736.GO18282@x1>
+ <20150812110841.GC20238@linux>
+ <20150826120628.GZ19409@x1>
+ <20150902080639.GA26744@linux>
+ <CAL_JsqKMGp+3Z+oO6E0YYzjTCb=-R_QM=YF=B33NWayWmV057A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAAObsKDUzk-9H2_VrVmbc=ZeRaknGcjTMY3Mauh3JVZxLz4CiA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Stephen Warren <swarren@wwwdotorg.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Mark Brown <broonie@kernel.org>, Thierry Reding <thierry.reding@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Linux USB List <linux-usb@vger.kernel.org>, Felipe Balbi <balbi@ti.com>, Linux PWM List <linux-pwm@vger.kernel.org>, =?UTF-8?Q?Terje_Bergstr=c3=b6m?= <tbergstrom@nvidia.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jingo
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f52.google.com ([209.85.220.52]:36693 "EHLO
+	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751837AbbIIG1c (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Sep 2015 02:27:32 -0400
+Received: by padhk3 with SMTP id hk3so289958pad.3
+        for <linux-pm@vger.kernel.org>; Tue, 08 Sep 2015 23:27:31 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <CAL_JsqKMGp+3Z+oO6E0YYzjTCb=-R_QM=YF=B33NWayWmV057A@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rob Herring <robherring2@gmail.com>
+Cc: Lee Jones <lee.jones@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, kernel@stlinux.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Ajit Pal Singh <ajitpal.singh@st.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 09/08/2015 02:30 AM, Tomeu Vizoso wrote:
-> On 7 September 2015 at 22:50, Rob Herring <robherring2@gmail.com> wro=
-te:
->> On Mon, Sep 7, 2015 at 7:23 AM, Tomeu Vizoso <tomeu.vizoso@collabora=
-=2Ecom> wrote:
->>> Hello,
->>>
->>> I have a problem with the panel on my Tegra Chromebook taking longe=
-r
->>> than expected to be ready during boot (St=C3=A9phane Marchesin repo=
-rted what
->>> is basically the same issue in [0]), and have looked into ordered
->>> probing as a better way of solving this than moving nodes around in=
- the
->>> DT or playing with initcall levels and linking order.
->>>
->>> While reading the thread [1] that Alexander Holler started with his
->>> series to make probing order deterministic, it occurred to me that =
-it
->>> should be possible to achieve the same by probing devices as they a=
-re
->>> referenced by other devices.
->>>
->>> This basically reuses the information that is already implicit in t=
-he
->>> probe() implementations, saving us from refactoring existing driver=
-s or
->>> adding information to DTBs.
->>>
->>> During review of v1 of this series Linus Walleij suggested that it
->>> should be the device driver core to make sure that dependencies are
->>> ready before probing a device. I gave this idea a try [2] but Mark =
-Brown
->>> pointed out to the logic duplication between the resource acquisiti=
-on
->>> and dependency discovery code paths (though I think it's fairly min=
-or).
->>>
->>> To address that code duplication I experimented with Arnd's devm_pr=
-obe
->>> [3] concept of having drivers declare their dependencies instead of
->>> acquiring them during probe, and while it worked [4], I don't think=
- we
->>> end up winning anything when compared to just probing devices on-de=
-mand
->>> from resource getters.
->>>
->>> One remaining objection is to the "sprinkling" of calls to
->>> of_device_probe() in the resource getters of each subsystem, but I =
-think
->>> it's the right thing to do given that the storage of resources is
->>> currently subsystem-specific.
->>>
->>> We could avoid the above by moving resource storage into the core, =
-but I
->>> don't think there's a compelling case for that.
->>>
->>> I have tested this on boards with Tegra, iMX.6, Exynos, Rockchip an=
-d
->>> OMAP SoCs, and these patches were enough to eliminate all the defer=
-red
->>> probes (except one in PandaBoard because omap_dma_system doesn't ha=
-ve a
->>> firmware node as of yet).
->>>
->>> Have submitted a branch [5] with only these patches on top of thurs=
-day's
->>> linux-next to kernelci.org and I don't see any issues that could be
->>> caused by them. For some reason it currently has more passes than t=
-he
->>> version of -next it's based on!
->>>
->>> With this series I get the kernel to output to the panel in 0.5s,
->>> instead of 2.8s.
->>>
->>> Regards,
->>>
->>> Tomeu
->>>
->>> [0] http://lists.freedesktop.org/archives/dri-devel/2014-August/066=
-527.html
->>>
->>> [1] https://lkml.org/lkml/2014/5/12/452
->>>
->>> [2] https://lkml.org/lkml/2015/6/17/305
->>>
->>> [3] http://article.gmane.org/gmane.linux.ports.arm.kernel/277689
->>>
->>> [4] https://lkml.org/lkml/2015/7/21/441a
->>>
->>> [5] https://git.collabora.com/cgit/user/tomeu/linux.git/log/?h=3Don=
--demand-probes-v6
->>>
->>> [6] http://kernelci.org/boot/all/job/collabora/kernel/v4.2-11902-g2=
-5d80c927f8b/
->>>
->>> [7] http://kernelci.org/boot/all/job/next/kernel/next-20150903/
->>>
->>> Changes in v4:
->>> - Added bus.pre_probe callback so the probes of Primecell devices c=
-an be
->>>   deferred if their device IDs cannot be yet read because of the cl=
-ock
->>>   driver not having probed when they are registered. Maybe this goe=
-s
->>>   overboard and the matching information should be in the DT if the=
-re is
->>>   one.
->>
->> Seems overboard to me or at least a separate problem.
->=20
-> It's a separate problem but this was preventing the series from
-> working on a few boards.
+On 02-09-15, 13:58, Rob Herring wrote:
+> What do you expect here? It is your job to close it. Ultimately, this
+> will be your problem to deal with. If you have 10 different vendors
+> doing selection of OPPs in 10 different ways you will not be able to
+> change that easily later. Maybe if you can't come up with something
+> common, then this should just not go into DT. You can always look at
+> how to do this in a common way and move from the kernel to DT later.
 
-What is the failure? Not booting? Fixing not working would certainly no=
-t
-be overboard.
+After getting ranted a bit, here is an real attempt to solve the
+problem in a generic way. I hope this can take care of the complexity
+of both Qualcomm and ST Microelectronics SoCs.
 
->=20
->> Most clocks have
->> to be setup before the driver model simply because timers depend on
->> clocks usually.
->=20
-> Yes, but in this case the apb clocks for the primecell devices are
-> implemented in a normal platform driver (vexpress_osc_driver), instea=
-d
-> of using CLK_OF_DECLARE.
+@Lee and Stephen: Lemme know if this still wouldn't work :(
 
-Okay.
+-------------------------8<-------------------------
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Date: Wed, 9 Sep 2015 11:47:37 +0530
+Subject: [PATCH] PM / OPP: Add "opp-cuts" and "opp-supply-version" bindings
 
-Rob
+For many platforms it is unknown until runtime, about which OPPs should
+be used or if used what should be voltage range for the supplies for a
+particular frequency. And this mostly depends on the version of the
+device or hardware, for which the OPPs are getting used.
+
+This patch adds two new OPP bindings to get this solved.
+
+1. "opp-cuts": The purpose of this binding is to allow the platform to
+   identify the valid OPPs based on the different levels of versions
+   with which the hardware is identified.
+
+2. "opp-supply-name": The purpose of this binding is to allow the
+   platform to select the voltage range of the power supplies, for a
+   valid OPP.
+
+Both of these can be used together, as well as independently.
+
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ Documentation/devicetree/bindings/opp/opp.txt | 90 +++++++++++++++++++++++++++
+ 1 file changed, 90 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+index c56a6b1a44ef..def75f7a3614 100644
+--- a/Documentation/devicetree/bindings/opp/opp.txt
++++ b/Documentation/devicetree/bindings/opp/opp.txt
+@@ -98,6 +98,13 @@ This describes the OPPs belonging to a device. This node can have following
+   information. But for multiple power-supplies, this must be set to pass
+   triplet style values.
+ 
++- opp-supply-version: One or more strings describing version of the supplies on
++  the platform. This is useful for the cases, where the platform wants to select
++  the voltage range for supplies at runtime, based on the specific version of
++  the hardware. There should be one entry in opp-microvolt array, for each
++  string present here. OPPs for the device must be configured, only for a single
++  version of the supplies.
++
+ - status: Marks the OPP table enabled/disabled.
+ 
+ 
+@@ -144,6 +151,16 @@ properties.
+ - opp-suspend: Marks the OPP to be used during device suspend. Only one OPP in
+   the table should have this.
+ 
++- opp-cuts: Variable length field that contains versions/cuts/substrate of the
++  hardware for which the OPP is supported. Should contain entry per level of
++  version type. For example: a platform with three levels of versions (cuts
++  substrate pcode), this field should be like <X Y Z>, where X corresponds to
++  different cuts, Y corresponds to different substrates and Z corresponds to
++  different pcodes the OPP supports. Each bit of the value corresponds to a
++  particular version of the level, and so we can have maximum 32 different
++  values of any level. A value of 0xFFFFFFFF means that all the versions of the
++  level are supported.
++
+ - status: Marks the node enabled/disabled.
+ 
+ Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
+@@ -491,3 +508,76 @@ Example 5: Multiple OPP tables
+ 		};
+ 	};
+ };
++
++Example 6: OPP selection based on hardware version
++(example: three levels of versions: cuts, substrate and pcode)
++
++/ {
++	cpus {
++		cpu@0 {
++			compatible = "arm,cortex-a7";
++			...
++
++			cpu-supply = <&cpu_supply>
++			operating-points-v2 = <&cpu0_opp_table_slow>;
++		};
++	};
++
++	opp_table {
++		compatible = "operating-points-v2";
++		status = "okay";
++		opp-shared;
++
++		opp00 {
++			/*
++			 * Supports all substrate and pcode versions for 0xf
++			 * cuts, i.e. only first four cuts.
++			 */
++			opp-cuts = <0xf 0xffffffff 0xffffffff>
++			opp-hz = /bits/ 64 <600000000>;
++			...
++		};
++
++		opp01 {
++			/*
++			 * Supports all substrate and pcode versions for 0x20
++			 * cuts, i.e. only the 6th cut.
++			 */
++			opp-cuts = <0x20 0xffffffff 0xffffffff>
++			opp-hz = /bits/ 64 <800000000>;
++			...
++		};
++	};
++};
++
++Example 7: Multiple voltage-ranges (opp-supply-version) per supply
++(example: device with 2 supplies: vcc0 and vcc1, with two possible ranges of
++voltages: slow and fast)
++
++/ {
++	cpus {
++		cpu@0 {
++			compatible = "arm,cortex-a7";
++			...
++
++			vcc0-supply = <&cpu_supply0>;
++			vcc1-supply = <&cpu_supply1>;
++			operating-points-v2 = <&cpu0_opp_table>;
++		};
++	};
++
++	cpu0_opp_table: opp_table0 {
++		compatible = "operating-points-v2";
++		supply-names = "vcc0", "vcc1";
++		opp-supply-version = "slow", "fast";
++		opp-shared;
++
++		opp00 {
++			opp-hz = /bits/ 64 <1000000000>;
++			opp-microvolt = <900000 915000 925000>, /* Supply vcc0: slow */
++					<910000 925000 935000>, /* Supply vcc1: slow */
++					<970000 975000 985000>, /* Supply vcc0: fast */
++					<960000 965000 975000>; /* Supply vcc1: fast */
++		};
++	};
++};
