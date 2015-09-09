@@ -1,85 +1,177 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing
- runtime suspend
-Date: Wed, 9 Sep 2015 01:50:19 +0200
-Message-ID: <CAJZ5v0iCRUJoDJ4oy8TKDvngjZ7SbBUngK2+a7ccUEtVFhW0gg@mail.gmail.com>
-References: <1441658561-26190-1-git-send-email-irina.tirdea@intel.com>
-	<8981266.1iKleIVcUj@vostro.rjw.lan>
-	<1F3AC3675D538145B1661F571FE1805F2F0C5CBE@irsmsx105.ger.corp.intel.com>
-	<1441697744.26994.21.camel@suse.com>
-	<CAJZ5v0jf1=YFW3iCh8LvOU+5diKgoVH7LtTeu80ym2H4TPYSkg@mail.gmail.com>
-	<CAPDyKFrZqGcB9kMTnvAFRAWVqyvJ6REGFLce4iA2w5rqps=d4g@mail.gmail.com>
+From: Andreas Dannenberg <dannenberg@ti.com>
+Subject: [PATCH v2 02/13] power: bq24257: Add basic support for bq24250/bq24251
+Date: Tue, 8 Sep 2015 19:12:26 -0500
+Message-ID: <1441757557-7266-3-git-send-email-dannenberg@ti.com>
+References: <1441757557-7266-1-git-send-email-dannenberg@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-input-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFrZqGcB9kMTnvAFRAWVqyvJ6REGFLce4iA2w5rqps=d4g@mail.gmail.com>
-Sender: linux-input-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Tirdea, Irina" <irina.tirdea@intel.com>, Oliver Neukum <oneukum@suse.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alan Stern <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "Purdila, Octavian" <octavian.purdila@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from arroyo.ext.ti.com ([192.94.94.40]:58587 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752642AbbIIANg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 8 Sep 2015 20:13:36 -0400
+In-Reply-To: <1441757557-7266-1-git-send-email-dannenberg@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Andreas Dannenberg <dannenberg@ti.com>
 
-Hi,
+This patch adds basic support for bq24250 and bq24251 which are very
+similar to the bq24257 the driver was originally written for. Basic
+support means the ability to select a device through Kconfig, DT and
+ACPI, an instance variable allowing to check which chip is active, and
+the reporting back of the selected device through the
+POWER_SUPPLY_PROP_MODEL_NAME power supply sysfs property.
 
-On Wed, Sep 9, 2015 at 12:25 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 8 September 2015 at 22:56, Rafael J. Wysocki <rafael@kernel.org> wrote:
->> On Tue, Sep 8, 2015 at 9:35 AM, Oliver Neukum <oneukum@suse.com> wrote:
->>> On Tue, 2015-09-08 at 01:10 +0000, Tirdea, Irina wrote:
->>
->> [cut]
->>
->>>> this would work except for adding a sysfs attribute that would trigger
->>>> a runtime suspend while ignoring usage count. Would that be a
->>>> better direction?
->>>
->>> No. If we want this at all, we need a new callback to notify drivers
->>> that user space is temporarily uninterested in a device. And the reverse
->>> of course.
->>> The power model is good. We must not assume that devices can be
->>> suspended at will. If we do this at all, we ought to see it as giving
->>> strong hints to drivers when a device can be considered idle.
->>
->> This is a good summary in my view.
->>
->> The only thing we can add, realistically, is an interface for user
->> space to "kick" drivers to check if the devices they handle may be
->> suspended at this point (or to run their ->runtime_idle callbacks
->> IOW).
->>
->> That would be quite similar to autosuspend except that the "kick" will
->> come from user space rather than from a timer function in the kernel.
->
-> Apologize for interrupting the discussion!
->
-> Unless I miss the point, I assumes the above is somewhat already
-> achievable via sysfs when changing the value of the auto-suspend
-> timeout, since it triggers a call to
-> pm_runtime_set_autosuspend_delay()...
+This patch by itself is not sufficient to actually use those two added
+devices in a real-world setting due to some feature differences which
+are addressed by other patches in this series.
 
-Well, from the initial comment in drivers/base/power/sysfs.c:
+Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
+---
+ drivers/power/Kconfig           |  5 +++--
+ drivers/power/bq24257_charger.c | 50 ++++++++++++++++++++++++++++++++++++++---
+ 2 files changed, 50 insertions(+), 5 deletions(-)
 
- *
- *    NOTE: The autosuspend_delay_ms attribute and the autosuspend_delay
- *    value are used only if the driver calls pm_runtime_use_autosuspend().
- *
+diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
+index 08beeed..fa9b1d1 100644
+--- a/drivers/power/Kconfig
++++ b/drivers/power/Kconfig
+@@ -396,11 +396,12 @@ config CHARGER_BQ24190
+ 	  Say Y to enable support for the TI BQ24190 battery charger.
+ 
+ config CHARGER_BQ24257
+-	tristate "TI BQ24257 battery charger driver"
++	tristate "TI BQ2425x battery charger driver"
+ 	depends on I2C && GPIOLIB
+ 	depends on REGMAP_I2C
+ 	help
+-	  Say Y to enable support for the TI BQ24257 battery charger.
++	  Say Y to enable support for the TI BQ24250, BQ24251, and BQ24257 battery
++	  chargers.
+ 
+ config CHARGER_BQ24735
+ 	tristate "TI BQ24735 battery charger support"
+diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
+index db81356..670ca57 100644
+--- a/drivers/power/bq24257_charger.c
++++ b/drivers/power/bq24257_charger.c
+@@ -13,6 +13,10 @@
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
+  *
++ * Datasheets:
++ * http://www.ti.com/product/bq24250
++ * http://www.ti.com/product/bq24251
++ * http://www.ti.com/product/bq24257
+  */
+ 
+ #include <linux/module.h>
+@@ -41,6 +45,18 @@
+ 
+ #define BQ24257_ILIM_SET_DELAY		1000	/* msec */
+ 
++enum bq2425x_chip {
++	BQ24250,
++	BQ24251,
++	BQ24257,
++};
++
++static const char *bq2425x_chip_name[] = {
++	"bq24250",
++	"bq24251",
++	"bq24257",
++};
++
+ enum bq24257_fields {
+ 	F_WD_FAULT, F_WD_EN, F_STAT, F_FAULT,			    /* REG 1 */
+ 	F_RESET, F_IILIMIT, F_EN_STAT, F_EN_TERM, F_CE, F_HZ_MODE,  /* REG 2 */
+@@ -71,6 +87,8 @@ struct bq24257_device {
+ 	struct device *dev;
+ 	struct power_supply *charger;
+ 
++	enum bq2425x_chip chip;
++
+ 	struct regmap *rmap;
+ 	struct regmap_field *rmap_fields[F_MAX_FIELDS];
+ 
+@@ -250,6 +268,10 @@ static int bq24257_power_supply_get_property(struct power_supply *psy,
+ 		val->strval = BQ24257_MANUFACTURER;
+ 		break;
+ 
++	case POWER_SUPPLY_PROP_MODEL_NAME:
++		val->strval = bq2425x_chip_name[bq->chip];
++		break;
++
+ 	case POWER_SUPPLY_PROP_ONLINE:
+ 		val->intval = state.power_good;
+ 		break;
+@@ -570,6 +592,7 @@ static int bq24257_hw_init(struct bq24257_device *bq)
+ 
+ static enum power_supply_property bq24257_power_supply_props[] = {
+ 	POWER_SUPPLY_PROP_MANUFACTURER,
++	POWER_SUPPLY_PROP_MODEL_NAME,
+ 	POWER_SUPPLY_PROP_STATUS,
+ 	POWER_SUPPLY_PROP_ONLINE,
+ 	POWER_SUPPLY_PROP_HEALTH,
+@@ -667,6 +690,7 @@ static int bq24257_probe(struct i2c_client *client,
+ {
+ 	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
+ 	struct device *dev = &client->dev;
++	const struct acpi_device_id *acpi_id;
+ 	struct bq24257_device *bq;
+ 	int ret;
+ 	int i;
+@@ -683,6 +707,18 @@ static int bq24257_probe(struct i2c_client *client,
+ 	bq->client = client;
+ 	bq->dev = dev;
+ 
++	if (ACPI_HANDLE(dev)) {
++		acpi_id = acpi_match_device(dev->driver->acpi_match_table,
++				&client->dev);
++		if (!acpi_id) {
++			dev_err(dev, "Failed to match ACPI device\n");
++			return -ENODEV;
++		}
++		bq->chip = (enum bq2425x_chip)acpi_id->driver_data;
++	} else {
++		bq->chip = (enum bq2425x_chip)id->driver_data;
++	}
++
+ 	mutex_init(&bq->lock);
+ 
+ 	bq->rmap = devm_regmap_init_i2c(client, &bq24257_regmap_config);
+@@ -824,19 +860,27 @@ static const struct dev_pm_ops bq24257_pm = {
+ };
+ 
+ static const struct i2c_device_id bq24257_i2c_ids[] = {
+-	{ "bq24257", 0 },
++	{ "bq24250", BQ24250 },
++	{ "bq24251", BQ24251 },
++	{ "bq24257", BQ24257 },
+ 	{},
+ };
+ MODULE_DEVICE_TABLE(i2c, bq24257_i2c_ids);
+ 
+ static const struct of_device_id bq24257_of_match[] = {
+-	{ .compatible = "ti,bq24257", },
++	{
++		.compatible = "ti,bq24250",
++		.compatible = "ti,bq24251",
++		.compatible = "ti,bq24257",
++	},
+ 	{ },
+ };
+ MODULE_DEVICE_TABLE(of, bq24257_of_match);
+ 
+ static const struct acpi_device_id bq24257_acpi_match[] = {
+-	{"BQ242570", 0},
++	{ "BQ242500", BQ24250 },
++	{ "BQ242510", BQ24251 },
++	{ "BQ242570", BQ24257 },
+ 	{},
+ };
+ MODULE_DEVICE_TABLE(acpi, bq24257_acpi_match);
+-- 
+1.9.1
 
-Some drivers don't do that and they would be the primary target
-audience for the new interface (if we agreed that it was useful after
-all).
-
-> Also, according to the discussion so far, it seems like we are on
-> agreement that we should really think twice when considering to extend
-> the sysfs interface for runtime PM.
-
-That certainly is correct and not limited to runtime PM. :-)
-
-> From the change-log/description to $subject patch, I fail to
-> understand *why* the regular runtime PM *autosuspend* feature isn't
-> sufficient. Perhaps Irina can elaborate more on the use case, to help
-> me get a better understanding of the issue!?
-
-My understanding is that the idea would be to trigger an attempt to
-suspend via a specific event (eg. lid closes) rather then via an
-inactivity timer.
-
-Thanks,
-Rafael
