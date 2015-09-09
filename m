@@ -1,124 +1,234 @@
 From: Lukasz Anaczkowski <lukasz.anaczkowski@intel.com>
-Subject: [PATCH v4 2/2] x86, acpi: Handle apic/x2apic entries in MADT in correct order
-Date: Wed,  9 Sep 2015 15:47:29 +0200
-Message-ID: <1441806449-27481-4-git-send-email-lukasz.anaczkowski@intel.com>
+Subject: [PATCH v4 1/2] acpi: Added acpi_subtable_proc to ACPI table parsers
+Date: Wed,  9 Sep 2015 15:47:28 +0200
+Message-ID: <1441806449-27481-3-git-send-email-lukasz.anaczkowski@intel.com>
 References: <55F00E55.9080008@arm.com>
  <1441806449-27481-1-git-send-email-lukasz.anaczkowski@intel.com>
  <1441806449-27481-2-git-send-email-lukasz.anaczkowski@intel.com>
- <1441806449-27481-3-git-send-email-lukasz.anaczkowski@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:53423 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753563AbbIINrs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 9 Sep 2015 09:47:48 -0400
-In-Reply-To: <1441806449-27481-3-git-send-email-lukasz.anaczkowski@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1441806449-27481-2-git-send-email-lukasz.anaczkowski@intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
 To: marc.zyngier@arm.com, lorenzo.pieralisi@arm.com, tomasz.nowicki@linaro.org, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, jason@lakedaemon.net
 Cc: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, Lukasz Anaczkowski <lukasz.anaczkowski@intel.com>
+List-Id: linux-pm@vger.kernel.org
 
-ACPI specifies the following rules when listing APIC IDs:
-(1) Boot processor is listed first
-(2) For multi-threaded processors, BIOS should list the first logical
-    processor of each of the individual multi-threaded processors in MADT
-    before listing any of the second logical processors.
-(3) APIC IDs < 0xFF should be listed in APIC subtable, APIC IDs >= 0xFF
-    should be listed in X2APIC subtable
+ACPI subtable parsing needs to be extended to allow two or more
+handlers to be run in the same ACPI table walk, thus adding
+acpi_subtable_proc structure which stores
+() ACPI table id
+() handler that processes table
+() counter how many items has been processed
+and passing it to acpi_parse_entries_array() and
+acpi_table_parse_entries_array().
 
-Because of above, when there's more than 0xFF logical CPUs, BIOS
-interleaves APIC/X2APIC subtables.
-
-Assuming, there's 72 cores, 72 hyper-threads each, 288 CPUs total,
-listing is like this:
-
-APIC (0,4,8, .., 252)
-X2APIC (258,260,264, .. 284)
-APIC (1,5,9,...,253)
-X2APIC (259,261,265,...,285)
-APIC (2,6,10,...,254)
-X2APIC (260,262,266,..,286)
-APIC (3,7,11,...,251)
-X2APIC (255,261,262,266,..,287)
-
-Now, before this patch, due to how ACPI MADT subtables were parsed (BSP
-then X2APIC then APIC), kernel enumerated CPUs in reverted order (i.e.
-high APIC IDs were getting low logical IDs, and low APIC IDs were
-getting high logical IDs).
-This is wrong for the following reasons:
-() it's hard to predict how cores and threads are enumerated
-() when it's hard to predict, s/w threads cannot be properly affinitized
-   causing significant performance impact due to e.g. inproper cache
-   sharing
-() enumeration is inconsistent with how threads are enumerated on
-   other Intel Xeon processors
-
-So, order in which MADT APIC/X2APIC handlers are passed is
-reverse and both handlers are passed to be called during same MADT
-table to walk to achieve correct CPU enumeration.
-
-In scenario when someone boots kernel with options 'maxcpus=72 nox2apic',
-in result less cores may be booted, since some of the CPUs the kernel
-will try to use will have APIC ID >= 0xFF. In such case, one
-should not pass 'nox2apic'.
-
-Disclimer: code parsing MADT APIC/X2APIC has not been touched since 2009,
-when X2APIC support was initially added. I do not know why MADT parsing
-code was added in the reversed order in the first place.
-I guess it didn't matter at that time since nobody cared about cores
-with APIC IDs >= 0xFF, right?
-
-This patch is based on work of "Yinghai Lu <yinghai@kernel.org>"
-previously published at https://lkml.org/lkml/2013/1/21/563
-
-Here's the explanation why parsing interface needs to be changed
-and why simpler approach will not work https://lkml.org/lkml/2015/9/7/285
+This is needed to fix CPU enumeration when APIC/X2APIC entries
+are interleaved.
 
 Signed-off-by: Lukasz Anaczkowski <lukasz.anaczkowski@intel.com>
-Acked-by: Thomas Gleixner <tglx@linutronix.de> (commit message)
+Reviewed-by: Marc Zyngier <marc.zyngier@arm.com>
+Tested-by: Marc Zyngier <marc.zyngier@arm.com>
 ---
- arch/x86/kernel/acpi/boot.c | 22 ++++++++++++++++++----
- 1 file changed, 18 insertions(+), 4 deletions(-)
+ drivers/acpi/tables.c | 91 +++++++++++++++++++++++++++++++++++++++++----------
+ include/linux/acpi.h  | 19 +++++++++--
+ 2 files changed, 89 insertions(+), 21 deletions(-)
 
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index e49ee24..116e911 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -981,6 +981,8 @@ static int __init acpi_parse_madt_lapic_entries(void)
- {
- 	int count;
- 	int x2count = 0;
-+	int ret;
-+	struct acpi_subtable_proc madt_proc[2];
- 
- 	if (!cpu_has_apic)
- 		return -ENODEV;
-@@ -1004,10 +1006,22 @@ static int __init acpi_parse_madt_lapic_entries(void)
- 				      acpi_parse_sapic, MAX_LOCAL_APIC);
- 
- 	if (!count) {
--		x2count = acpi_table_parse_madt(ACPI_MADT_TYPE_LOCAL_X2APIC,
--					acpi_parse_x2apic, MAX_LOCAL_APIC);
--		count = acpi_table_parse_madt(ACPI_MADT_TYPE_LOCAL_APIC,
--					acpi_parse_lapic, MAX_LOCAL_APIC);
-+		memset(madt_proc, 0, sizeof(madt_proc));
-+		madt_proc[0].id = ACPI_MADT_TYPE_LOCAL_APIC;
-+		madt_proc[0].handler = acpi_parse_lapic;
-+		madt_proc[1].id = ACPI_MADT_TYPE_LOCAL_X2APIC;
-+		madt_proc[1].handler = acpi_parse_x2apic;
-+		ret = acpi_table_parse_entries_array(ACPI_SIG_MADT,
-+				sizeof(struct acpi_table_madt),
-+				madt_proc, ARRAY_SIZE(madt_proc), MAX_LOCAL_APIC);
-+		if (ret < 0) {
-+			printk(KERN_ERR PREFIX
-+					"Error parsing LAPIC/X2APIC entries\n");
-+			return ret;
-+		}
-+
-+		x2count = madt_proc[0].count;
-+		count = madt_proc[1].count;
+diff --git a/drivers/acpi/tables.c b/drivers/acpi/tables.c
+index 2e19189..b2608fe 100644
+--- a/drivers/acpi/tables.c
++++ b/drivers/acpi/tables.c
+@@ -214,20 +214,37 @@ void acpi_table_print_madt_entry(struct acpi_subtable_header *header)
  	}
- 	if (!count && !x2count) {
- 		printk(KERN_ERR PREFIX "No LAPIC entries present\n");
+ }
+ 
+-int __init
+-acpi_parse_entries(char *id, unsigned long table_size,
+-		acpi_tbl_entry_handler handler,
++/**
++ * acpi_parse_entries_array - for each proc_num find a subtable with proc->id
++ *    and run proc->handler on it. Assumption is that there's only
++ *    single handler for particular entry id.
++ *
++ * @id: table id (for debugging purposes)
++ * @table_size: single entry size
++ * @table_header: where does the table start?
++ * @proc: array of acpi_subtable_proc struct containing entry id
++ *        and associated handler with it
++ * @proc_num: how big proc is?
++ * @max_entries: how many entries can we process?
++ *
++ * On success returns sum of all matching entries for all proc handlers.
++ * Otherwise, -ENODEV or -EINVAL is returned.
++ */
++static int __init
++acpi_parse_entries_array(char *id, unsigned long table_size,
+ 		struct acpi_table_header *table_header,
+-		int entry_id, unsigned int max_entries)
++		struct acpi_subtable_proc *proc, int proc_num,
++		unsigned int max_entries)
+ {
+ 	struct acpi_subtable_header *entry;
+-	int count = 0;
+ 	unsigned long table_end;
++	int count = 0;
++	int i;
+ 
+ 	if (acpi_disabled)
+ 		return -ENODEV;
+ 
+-	if (!id || !handler)
++	if (!id)
+ 		return -EINVAL;
+ 
+ 	if (!table_size)
+@@ -247,20 +264,27 @@ acpi_parse_entries(char *id, unsigned long table_size,
+ 
+ 	while (((unsigned long)entry) + sizeof(struct acpi_subtable_header) <
+ 	       table_end) {
+-		if (entry->type == entry_id
+-		    && (!max_entries || count < max_entries)) {
+-			if (handler(entry, table_end))
++		if (max_entries && count >= max_entries)
++			break;
++
++		for (i = 0; i < proc_num; i++) {
++			if (entry->type != proc[i].id)
++				continue;
++			if (!proc->handler || proc[i].handler(entry, table_end))
+ 				return -EINVAL;
+ 
+-			count++;
++			proc->count++;
++			break;
+ 		}
++		if (i != proc_num)
++			count++;
+ 
+ 		/*
+ 		 * If entry->length is 0, break from this loop to avoid
+ 		 * infinite loop.
+ 		 */
+ 		if (entry->length == 0) {
+-			pr_err("[%4.4s:0x%02x] Invalid zero length\n", id, entry_id);
++			pr_err("[%4.4s:0x%02x] Invalid zero length\n", id, proc->id);
+ 			return -EINVAL;
+ 		}
+ 
+@@ -270,17 +294,32 @@ acpi_parse_entries(char *id, unsigned long table_size,
+ 
+ 	if (max_entries && count > max_entries) {
+ 		pr_warn("[%4.4s:0x%02x] ignored %i entries of %i found\n",
+-			id, entry_id, count - max_entries, count);
++			id, proc->id, count - max_entries, count);
+ 	}
+ 
+ 	return count;
+ }
+ 
+ int __init
+-acpi_table_parse_entries(char *id,
++acpi_parse_entries(char *id,
++			unsigned long table_size,
++			acpi_tbl_entry_handler handler,
++			struct acpi_table_header *table_header,
++			int entry_id, unsigned int max_entries)
++{
++	struct acpi_subtable_proc proc = {
++		.id		= entry_id,
++		.handler	= handler,
++	};
++
++	return acpi_parse_entries_array(id, table_size, table_header,
++			&proc, 1, max_entries);
++}
++
++int __init
++acpi_table_parse_entries_array(char *id,
+ 			 unsigned long table_size,
+-			 int entry_id,
+-			 acpi_tbl_entry_handler handler,
++			 struct acpi_subtable_proc *proc, int proc_num,
+ 			 unsigned int max_entries)
+ {
+ 	struct acpi_table_header *table_header = NULL;
+@@ -291,7 +330,7 @@ acpi_table_parse_entries(char *id,
+ 	if (acpi_disabled)
+ 		return -ENODEV;
+ 
+-	if (!id || !handler)
++	if (!id)
+ 		return -EINVAL;
+ 
+ 	if (!strncmp(id, ACPI_SIG_MADT, 4))
+@@ -303,14 +342,30 @@ acpi_table_parse_entries(char *id,
+ 		return -ENODEV;
+ 	}
+ 
+-	count = acpi_parse_entries(id, table_size, handler, table_header,
+-			entry_id, max_entries);
++	count = acpi_parse_entries_array(id, table_size, table_header,
++			proc, proc_num, max_entries);
+ 
+ 	early_acpi_os_unmap_memory((char *)table_header, tbl_size);
+ 	return count;
+ }
+ 
+ int __init
++acpi_table_parse_entries(char *id,
++			unsigned long table_size,
++			int entry_id,
++			acpi_tbl_entry_handler handler,
++			unsigned int max_entries)
++{
++	struct acpi_subtable_proc proc = {
++		.id		= entry_id,
++		.handler	= handler,
++	};
++
++	return acpi_table_parse_entries_array(id, table_size, &proc, 1,
++						max_entries);
++}
++
++int __init
+ acpi_table_parse_madt(enum acpi_madt_type id,
+ 		      acpi_tbl_entry_handler handler, unsigned int max_entries)
+ {
+diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+index d2445fa..3dd741f 100644
+--- a/include/linux/acpi.h
++++ b/include/linux/acpi.h
+@@ -135,6 +135,12 @@ static inline void acpi_initrd_override(void *data, size_t size)
+ 		(!entry) || (unsigned long)entry + sizeof(*entry) > end ||  \
+ 		((struct acpi_subtable_header *)entry)->length < sizeof(*entry))
+ 
++struct acpi_subtable_proc {
++	int id;
++	acpi_tbl_entry_handler handler;
++	int count;
++};
++
+ char * __acpi_map_table (unsigned long phys_addr, unsigned long size);
+ void __acpi_unmap_table(char *map, unsigned long size);
+ int early_acpi_boot_init(void);
+@@ -150,9 +156,16 @@ int __init acpi_parse_entries(char *id, unsigned long table_size,
+ 			      struct acpi_table_header *table_header,
+ 			      int entry_id, unsigned int max_entries);
+ int __init acpi_table_parse_entries(char *id, unsigned long table_size,
+-				    int entry_id,
+-				    acpi_tbl_entry_handler handler,
+-				    unsigned int max_entries);
++			      int entry_id,
++			      acpi_tbl_entry_handler handler,
++			      unsigned int max_entries);
++int __init acpi_table_parse_entries(char *id, unsigned long table_size,
++			      int entry_id,
++			      acpi_tbl_entry_handler handler,
++			      unsigned int max_entries);
++int __init acpi_table_parse_entries_array(char *id, unsigned long table_size,
++			      struct acpi_subtable_proc *proc, int proc_num,
++			      unsigned int max_entries);
+ int acpi_table_parse_madt(enum acpi_madt_type id,
+ 			  acpi_tbl_entry_handler handler,
+ 			  unsigned int max_entries);
 -- 
 1.8.3.1
 
