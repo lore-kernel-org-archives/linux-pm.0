@@ -1,59 +1,50 @@
-From: Al Stone <ahs3@redhat.com>
-Subject: Re: [PATCH v2 1/5] ACPI: add in a bad_madt_entry() function to
- eventually replace the macro
-Date: Wed, 9 Sep 2015 13:57:59 -0600
-Message-ID: <55F08F47.1070906@redhat.com>
-References: <1440022048-6285-1-git-send-email-al.stone@linaro.org>
- <1440022048-6285-2-git-send-email-al.stone@linaro.org>
- <55EDADF5.5060008@arm.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing runtime suspend
+Date: Wed, 09 Sep 2015 22:35:12 +0200
+Message-ID: <4206072.KuQlnyyHaz@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1509091118000.2045-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <55EDADF5.5060008@arm.com>
+In-Reply-To: <Pine.LNX.4.44L0.1509091118000.2045-100000@iolanthe.rowland.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>, Al Stone <al.stone@linaro.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-Cc: "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>, "patches@linaro.org" <patches@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>
+To: Alan Stern <stern@rowland.harvard.edu>, Octavian Purdila <octavian.purdila@intel.com>, "Tirdea, Irina" <irina.tirdea@intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Oliver Neukum <oneukum@suse.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 09/07/2015 09:32 AM, Sudeep Holla wrote:
-> Hi Al,
+On Wednesday, September 09, 2015 11:20:25 AM Alan Stern wrote:
+> On Wed, 9 Sep 2015, Rafael J. Wysocki wrote:
 > 
-> On 19/08/15 23:07, Al Stone wrote:
+> > > The best example and actually the very specific problem we want to
+> > > solve is handling touchscreens on a phone / tablet. When the screen is
+> > > turned off, it is ideal to suspend the touchscreen for two reasons: to
+> > > lower the power consumption as much as possible and to prevent
+> > > interrupts to wake-up the CPU when the user touches the device, and
+> > > thus save even more power as we allow the CPU to stay in deep idle
+> > > states for longer periods.
+> > >
+> > > Note that when the screen is turned-on again, we want to resume the
+> > > touchscreen so that it can send events again.
+> > 
+> > In fact, then, what you need seems to be the feature discussed by Alan
+> > and me some time ago allowing remote wakeup do be disabled for runtime
+> > PM from user space as that in combination with autosuspend should
+> > address your use case.
 > 
-> I finally got a chance to try this series on Juno. Well it exposed a firmware
-> bug in MADT table :)
-> 
-> [..]
-> 
->>                  acpi_tbl_entry_handler handler,
->> @@ -245,6 +484,8 @@ acpi_parse_entries(char *id, unsigned long table_size,
->>                 table_end) {
->>                  if (entry->type == entry_id
->>                      && (!max_entries || count < max_entries)) {
->> +                       if (bad_madt_entry(table_header, entry))
->> +                               return -EINVAL;
-> 
-> Not sure if we can have the above check here unconditionally.
-> Currently I can see there are 2 other users of acpi_parse_entries i.e.
-> PCC and NUMA. So may be it can be made conditional or return success for
-> non-MADT tables from bad_madt_entry ?
+> That, plus they want the touchscreen to go into runtime suspend 
+> whenever the screen is off (was this not the main reason for the 
+> patch?).
 
-So, I went back and double checked the other users and they're looking at
-the return value for acpi_parse_entries properly; adding in the check above
-unconditionally should not cause any behavior change.  Further, despite the
-name, acpi_parse_entries is only used to examine MADT subtables.  Granted,
-we should probably make the name clearer at some point (too ambiguous as to
-which entries are parsed right now).  Nonetheless, current usage seems to
-be in order.
+Right.
 
+> It seems to me that it should be possible to arrange for this to happen 
+> simply by making userspace close the touchscreen device when the screen 
+> is turned off.  Or am I missing something?
 
--- 
-ciao,
-al
------------------------------------
-Al Stone
-Software Engineer
-Red Hat, Inc.
-ahs3@redhat.com
------------------------------------
+Honestly, I don't know.
+
+Octavian, Irina, any reasons why things can't be done as Alan is suggesting?
+
+Thanks,
+Rafael
