@@ -1,151 +1,44 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH 2/2] x86, acpi: Handle apic/x2apic entries in MADT in
- correct order
-Date: Wed, 9 Sep 2015 14:56:19 +0100
-Message-ID: <20150909135619.GA11965@red-moon>
-References: <55EF0C7A.7070105@arm.com>
- <1441791018-14669-1-git-send-email-lukasz.anaczkowski@intel.com>
- <1441791018-14669-2-git-send-email-lukasz.anaczkowski@intel.com>
- <1441791018-14669-3-git-send-email-lukasz.anaczkowski@intel.com>
+From: Oliver Neukum <oneukum@suse.com>
+Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing
+ runtime suspend
+Date: Wed, 09 Sep 2015 15:55:46 +0200
+Message-ID: <1441806946.19223.5.camel@suse.com>
+References: <1441658561-26190-1-git-send-email-irina.tirdea@intel.com>
+	 <8981266.1iKleIVcUj@vostro.rjw.lan>
+	 <1F3AC3675D538145B1661F571FE1805F2F0C5CBE@irsmsx105.ger.corp.intel.com>
+	 <1441697744.26994.21.camel@suse.com>
+	 <CAJZ5v0jf1=YFW3iCh8LvOU+5diKgoVH7LtTeu80ym2H4TPYSkg@mail.gmail.com>
+	 <CAPDyKFrZqGcB9kMTnvAFRAWVqyvJ6REGFLce4iA2w5rqps=d4g@mail.gmail.com>
+	 <CAJZ5v0iCRUJoDJ4oy8TKDvngjZ7SbBUngK2+a7ccUEtVFhW0gg@mail.gmail.com>
+	 <CAE1zotJ_XPFww_dsOihF1vQRLrgi+OQmQ17e_8aBkAJ+yLqdNg@mail.gmail.com>
+	 <CAJZ5v0j5XN3Y=YW4jWekUB9qwL5KAVkeDMdhMiKv6j=xLa8psA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:58484 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751808AbbIIN4N (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 9 Sep 2015 09:56:13 -0400
-Content-Disposition: inline
-In-Reply-To: <1441791018-14669-3-git-send-email-lukasz.anaczkowski@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0j5XN3Y=YW4jWekUB9qwL5KAVkeDMdhMiKv6j=xLa8psA@mail.gmail.com>
+Sender: linux-input-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Octavian Purdila <octavian.purdila@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Tirdea, Irina" <irina.tirdea@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alan Stern <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Anaczkowski <lukasz.anaczkowski@intel.com>
-Cc: Marc Zyngier <Marc.Zyngier@arm.com>, "tomasz.nowicki@linaro.org" <tomasz.nowicki@linaro.org>, "tglx@linutronix.de" <tglx@linutronix.de>, "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>, "x86@kernel.org" <x86@kernel.org>, "jason@lakedaemon.net" <jason@lakedaemon.net>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
 
-On Wed, Sep 09, 2015 at 10:30:18AM +0100, Lukasz Anaczkowski wrote:
-> ACPI specifies the following rules when listing APIC IDs:
-> (1) Boot processor is listed first
-> (2) For multi-threaded processors, BIOS should list the first logical
->     processor of each of the individual multi-threaded processors in MADT
->     before listing any of the second logical processors.
-> (3) APIC IDs < 0xFF should be listed in APIC subtable, APIC IDs >= 0xFF
->     should be listed in X2APIC subtable
-> 
-> Because of above, when there's more than 0xFF logical CPUs, BIOS
-> interleaves APIC/X2APIC subtables.
-> 
-> Assuming, there's 72 cores, 72 hyper-threads each, 288 CPUs total,
-> listing is like this:
-> 
-> APIC (0,4,8, .., 252)
-> X2APIC (258,260,264, .. 284)
-> APIC (1,5,9,...,253)
-> X2APIC (259,261,265,...,285)
-> APIC (2,6,10,...,254)
-> X2APIC (260,262,266,..,286)
-> APIC (3,7,11,...,251)
-> X2APIC (255,261,262,266,..,287)
-> 
-> Now, before this patch, due to how ACPI MADT subtables were parsed (BSP
-> then X2APIC then APIC), kernel enumerated CPUs in reverted order (i.e.
-> high APIC IDs were getting low logical IDs, and low APIC IDs were
-> getting high logical IDs).
-> This is wrong for the following reasons:
-> () it's hard to predict how cores and threads are enumerated
+On Wed, 2015-09-09 at 14:22 +0200, Rafael J. Wysocki wrote:
+> > Note that when the screen is turned-on again, we want to resume the
+> > touchscreen so that it can send events again.
 
-So ? Why would the logical cpus order matters at all ? I guessed
-there are probeable properties that allows the kernel to build
-the affinity (ie topology list, shared caches, smt siblings, etc).
-Please explain, since I am confused, to me all you need is a list
-of existing physical ids, in whatever order they come, that's at least
-what we need on ARM.
-
-> () when it's hard to predict, s/w threads cannot be properly affinitized
->    causing significant performance impact due to e.g. inproper cache
->    sharing
-
-See above. Why cpus logical ordering would matter here ?
-
-> () enumeration is inconsistent with how threads are enumerated on
->    other Intel Xeon processors
-
-And why does that matter ? Is it because userspace is making assumptions
-on the logical cpu enumeration scheme ? I am just asking, I would
-like to understand.
-
-> So, order in which MADT APIC/X2APIC handlers are passed is
-> reverse and both handlers are passed to be called during same MADT
-> table to walk to achieve correct CPU enumeration.
-
-Define "correct" please, you define the logical ordering you
-want to achieve, you do not define why that's more "correct"
-than the current implementation.
-
-Thank you,
-Lorenzo
-
-> In scenario when someone boots kernel with options 'maxcpus=72 nox2apic',
-> in result less cores may be booted, since some of the CPUs the kernel
-> will try to use will have APIC ID >= 0xFF. In such case, one
-> should not pass 'nox2apic'.
+Why is it impractical to close the fd for the touchscreen?
 > 
-> Disclimer: code parsing MADT APIC/X2APIC has not been touched since 2009,
-> when X2APIC support was initially added. I do not know why MADT parsing
-> code was added in the reversed order in the first place.
-> I guess it didn't matter at that time since nobody cared about cores
-> with APIC IDs >= 0xFF, right?
-> 
-> This patch is based on work of "Yinghai Lu <yinghai@kernel.org>"
-> previously published at https://lkml.org/lkml/2013/1/21/563
-> 
-> Here's the explanation why parsing interface needs to be changed
-> and why simpler approach will not work https://lkml.org/lkml/2015/9/7/285
-> 
-> Signed-off-by: Lukasz Anaczkowski <lukasz.anaczkowski@intel.com>
-> Acked-by: Thomas Gleixner <tglx@linutronix.de> (commit message)
-> ---
->  arch/x86/kernel/acpi/boot.c | 22 ++++++++++++++++++----
->  1 file changed, 18 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-> index e49ee24..116e911 100644
-> --- a/arch/x86/kernel/acpi/boot.c
-> +++ b/arch/x86/kernel/acpi/boot.c
-> @@ -981,6 +981,8 @@ static int __init acpi_parse_madt_lapic_entries(void)
->  {
->  	int count;
->  	int x2count = 0;
-> +	int ret;
-> +	struct acpi_subtable_proc madt_proc[2];
->  
->  	if (!cpu_has_apic)
->  		return -ENODEV;
-> @@ -1004,10 +1006,22 @@ static int __init acpi_parse_madt_lapic_entries(void)
->  				      acpi_parse_sapic, MAX_LOCAL_APIC);
->  
->  	if (!count) {
-> -		x2count = acpi_table_parse_madt(ACPI_MADT_TYPE_LOCAL_X2APIC,
-> -					acpi_parse_x2apic, MAX_LOCAL_APIC);
-> -		count = acpi_table_parse_madt(ACPI_MADT_TYPE_LOCAL_APIC,
-> -					acpi_parse_lapic, MAX_LOCAL_APIC);
-> +		memset(madt_proc, 0, sizeof(madt_proc));
-> +		madt_proc[0].id = ACPI_MADT_TYPE_LOCAL_APIC;
-> +		madt_proc[0].handler = acpi_parse_lapic;
-> +		madt_proc[1].id = ACPI_MADT_TYPE_LOCAL_X2APIC;
-> +		madt_proc[1].handler = acpi_parse_x2apic;
-> +		ret = acpi_table_parse_entries_array(ACPI_SIG_MADT,
-> +				sizeof(struct acpi_table_madt),
-> +				madt_proc, ARRAY_SIZE(madt_proc), MAX_LOCAL_APIC);
-> +		if (ret < 0) {
-> +			printk(KERN_ERR PREFIX
-> +					"Error parsing LAPIC/X2APIC entries\n");
-> +			return ret;
-> +		}
-> +
-> +		x2count = madt_proc[0].count;
-> +		count = madt_proc[1].count;
->  	}
->  	if (!count && !x2count) {
->  		printk(KERN_ERR PREFIX "No LAPIC entries present\n");
-> -- 
-> 1.8.3.1
-> 
+> In fact, then, what you need seems to be the feature discussed by Alan
+> and me some time ago allowing remote wakeup do be disabled for runtime
+> PM from user space as that in combination with autosuspend should
+> address your use case.
+
+I'd doubt that. Suppose you put the phone into your pocket while
+the device isn't suspended. The continuous stream of spurious events
+will keep it awake.
+The ability to disable remote wakeup is necessary but not sufficient.
+
+	Regards
+		Oliver
+
+
