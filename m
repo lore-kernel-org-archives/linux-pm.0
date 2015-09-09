@@ -1,42 +1,52 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2 3/9] cpufreq: ondemand: only queue canceled works from update_sampling_rate()
-Date: Wed, 09 Sep 2015 03:06:39 +0200
-Message-ID: <32794142.WpJFa6Ni1D@vostro.rjw.lan>
-References: <cover.1437999691.git.viresh.kumar@linaro.org> <1806697.T1XSqGqSN5@vostro.rjw.lan> <20150908015831.GY26760@linux>
+Subject: Re: [PATCH] cpufreq: tegra20: remove superfluous CONFIG_PM ifdefs
+Date: Wed, 09 Sep 2015 03:13:45 +0200
+Message-ID: <9512123.FfVbKErfZO@vostro.rjw.lan>
+References: <1441732403-7248-1-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:50283 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:45672 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752627AbbIIAit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Sep 2015 20:38:49 -0400
-In-Reply-To: <20150908015831.GY26760@linux>
+	with SMTP id S1751808AbbIIApz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Sep 2015 20:45:55 -0400
+In-Reply-To: <1441732403-7248-1-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, preeti.lkml@gmail.com, open list <linux-kernel@vger.kernel.org>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tuesday, September 08, 2015 07:28:31 AM Viresh Kumar wrote:
-> On 08-09-15, 03:11, Rafael J. Wysocki wrote:
-> > There really are two cases, either you pass a CPU or gov_queue_work() has to
-> > walk policy->cpus.
+On Tuesday, September 08, 2015 07:13:23 PM Bartlomiej Zolnierkiewicz wrote:
+> CONFIG_PM ifdefs are superfluous and can be removed.
 > 
-> Right (At least for now, we are doing just that.)
+> Cc: Stephen Warren <swarren@wwwdotorg.org>
+> Cc: Thierry Reding <thierry.reding@gmail.com>
+> Cc: Alexandre Courbot <gnurou@gmail.com>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+
+What tree does this apply to?
+
+> ---
+>  drivers/cpufreq/tegra20-cpufreq.c | 2 --
+>  1 file changed, 2 deletions(-)
 > 
-> > Doing it the way you did hides that IMO.
+> diff --git a/drivers/cpufreq/tegra20-cpufreq.c b/drivers/cpufreq/tegra20-cpufreq.c
+> index 8084c7f..2bd6284 100644
+> --- a/drivers/cpufreq/tegra20-cpufreq.c
+> +++ b/drivers/cpufreq/tegra20-cpufreq.c
+> @@ -175,9 +175,7 @@ static struct cpufreq_driver tegra_cpufreq_driver = {
+>  	.exit			= tegra_cpu_exit,
+>  	.name			= "tegra",
+>  	.attr			= cpufreq_generic_attr,
+> -#ifdef CONFIG_PM
+>  	.suspend		= cpufreq_generic_suspend,
+> -#endif
+>  };
+>  
+>  static int __init tegra_cpufreq_init(void)
 > 
-> Maybe. But I see it otherwise. Adding special meaning to a variable
-> (like int cpu == -1 being the special case to specify policy->cpus)
-> hides things morei, as we need to look at how it is decoded finally in
-> the routine gov_queue_work().
 
-Oh well.
-
-I've just realized that if you combined this patch with the [6/9],
-you wouldn't need to make any changes to gov_queue_work() at all,
-because that patch removes the case in point entirely.
-
-Thanks,
-Rafael
-
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
