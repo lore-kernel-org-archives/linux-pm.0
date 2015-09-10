@@ -1,69 +1,97 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH V7] Report interrupt that caused system wakeup
-Date: Thu, 10 Sep 2015 15:15:24 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1509101501480.1422-100000@iolanthe.rowland.org>
-References: <55F1CF07.8070505@linux.intel.com>
+From: Andreas Dannenberg <dannenberg@ti.com>
+Subject: Re: [PATCH v2 11/13] power: bq24257: Add platform data based
+ initialization
+Date: Thu, 10 Sep 2015 14:49:19 -0500
+Message-ID: <20150910194919.GB7716@borg>
+References: <1441757557-7266-1-git-send-email-dannenberg@ti.com>
+ <1441757557-7266-12-git-send-email-dannenberg@ti.com>
+ <20150910144053.GM21512@lpalcu-desk>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:55008 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752847AbbIJTP0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Sep 2015 15:15:26 -0400
-In-Reply-To: <55F1CF07.8070505@linux.intel.com>
+Received: from arroyo.ext.ti.com ([192.94.94.40]:42184 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751536AbbIJTtt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 10 Sep 2015 15:49:49 -0400
+Content-Disposition: inline
+In-Reply-To: <20150910144053.GM21512@lpalcu-desk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alexandra Yates <alexandra.yates@linux.intel.com>
-Cc: tglx@linutronix.de, kristen.c.accardi@intel.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net
+To: Laurentiu Palcu <laurentiu.palcu@intel.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-On Thu, 10 Sep 2015, Alexandra Yates wrote:
+On Thu, Sep 10, 2015 at 05:40:53PM +0300, Laurentiu Palcu wrote:
+> On Tue, Sep 08, 2015 at 07:12:35PM -0500, Andreas Dannenberg wrote:
+> > The patch adds a way to setup and initialize the device through the use
+> > of platform data with configuration options equivalent to when using
+> > device firmware (DT or ACPI) for systems where this is not available.
+> > 
+> > Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
+> > ---
+> >  drivers/power/bq24257_charger.c       | 95 +++++++++++++++++++++++++++++++++--
+> >  include/linux/power/bq24257_charger.h | 30 +++++++++++
+> >  2 files changed, 120 insertions(+), 5 deletions(-)
+> >  create mode 100644 include/linux/power/bq24257_charger.h
+> > 
+> > diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
+> > index 9a4a7a0..b5e82ed 100644
+> > --- a/drivers/power/bq24257_charger.c
+> > +++ b/drivers/power/bq24257_charger.c
+> > @@ -27,10 +27,13 @@
+> >  #include <linux/gpio/consumer.h>
+> >  #include <linux/interrupt.h>
+> >  #include <linux/delay.h>
+> > +#include <linux/gpio.h>
+> >  
+> >  #include <linux/acpi.h>
+> >  #include <linux/of.h>
+> >  
+> > +#include <linux/power/bq24257_charger.h>
+> > +
+> >  #define BQ24257_REG_1			0x00
+> >  #define BQ24257_REG_2			0x01
+> >  #define BQ24257_REG_3			0x02
+> > @@ -958,28 +961,102 @@ static int bq24257_power_supply_init(struct bq24257_device *bq)
+> >  
+> >  static int bq24257_irq_probe(struct bq24257_device *bq)
+> >  {
+> > +	struct bq24257_platform_data *pdata = bq->client->dev.platform_data;
+> >  	struct gpio_desc *stat_irq;
+> > +	int ret;
+> > +
+> > +	if (!pdata)
+> > +		stat_irq = devm_gpiod_get_index(bq->dev, BQ24257_STAT_IRQ, 0,
+> > +				GPIOD_IN);
+> > +	else {
+> > +		if (!gpio_is_valid(pdata->stat_gpio)) {
+> > +			dev_err(bq->dev, "invalid stat_irq pin\n");
+> > +			return -EINVAL;
+> > +		}
+> > +
+> > +		ret = devm_gpio_request_one(bq->dev, pdata->stat_gpio,
+> > +				GPIOD_IN, BQ24257_STAT_IRQ);
+> > +		if (ret) {
+> > +			dev_err(bq->dev, "stat_irq pin request failed\n");
+> > +			return ret;
+> > +		}
+> > +
+> > +		stat_irq = gpio_to_desc(pdata->stat_gpio);
+> > +	}
+> >  
+> > -	stat_irq = devm_gpiod_get_index(bq->dev, BQ24257_STAT_IRQ, 0, GPIOD_IN);
+> >  	if (IS_ERR(stat_irq)) {
+> gpio_to_desc() can return NULL. In this case, IS_ERR() will be false. I
+> think this is not what you want...
 
-> Hi Alan,
+Good catch! Fixed.
+
+Thanks,
+
+--
+Andreas Dannenberg
+Texas Instruments Inc
+
 > 
-> On 09/10/2015 07:14 AM, Alan Stern wrote:
-> > On Wed, 9 Sep 2015, Alexandra Yates wrote:
-> >
-> >> This feature reports which IRQ cause the system to wakeup from sleep last
-> >> time it was suspended.
-> > I thought you said V7 of this patch was written based on the feedback I
-> > provided.  Obviously that is not true.
-> Yes, that was the intention.
-> > This feature does NOT report which IRQ caused the system to wake up
-> > from sleep the last time it was suspended!  All it does is report one
-> > of the IRQs which have occurred since the last time the system started
-> > a sleep transition.
-> I'm not sure why you say this, please elaborate further.
+> The rest seems fine.
 > 
-> The way I understand the code and proposed solution is that when
-> the system goes into freeze mode, at that point wakeup_irq is set to 0.
-
-I'm not sure what you mean by "freeze mode".  Do you mean that all the 
-user processes have been frozen?
-
-> Once the system sees an interrupt at wakeup from freeze. wakeup_irq is 
-> set to
-> the irq_number that caused the wakeup.  This path of code is protected 
-> by spin lock,
-
-The spin lock doesn't help if multiple IRQs have already been raised.  
-How do you know which one caused the system to wake up?
-
-> which should protect the code path from other IRQs that came after the 
-> first IRQ.
-
-Why so?  Waking up from sleep is a slow procedure; there is time for
-several IRQs to be asserted before the system is ready to handle any of
-them.  How do you know the first IRQ to be handled is the one that 
-caused the wake up?
-
-> This is only set once. When other IRQs come and the wakeup_irq is set 
-> then the code
-> doesn't store them.
-
-What if the system entered freeze mode but then returned to normal 
-operation without ever going to sleep, because an IRQ occurred first?  
-Wouldn't you then store that IRQ?  But that IRQ did not cause the 
-system to wake up, because the system never went to sleep.
-
-Alan Stern
-
+> laurentiu
