@@ -1,134 +1,95 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] driver core: Ensure proper suspend/resume ordering
-Date: Fri, 11 Sep 2015 00:08:02 +0200
-Message-ID: <10787470.V3kIoIEDW3@vostro.rjw.lan>
-References: <1441880343-30852-1-git-send-email-thierry.reding@gmail.com>
+Subject: Re: [PATCH V7] Report interrupt that caused system wakeup
+Date: Fri, 11 Sep 2015 00:21:13 +0200
+Message-ID: <1528855.hS8haWgnGz@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1509101501480.1422-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:52904 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:43992 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750877AbbIJVkK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Sep 2015 17:40:10 -0400
-In-Reply-To: <1441880343-30852-1-git-send-email-thierry.reding@gmail.com>
+	with SMTP id S1751042AbbIJVxU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Sep 2015 17:53:20 -0400
+In-Reply-To: <Pine.LNX.4.44L0.1509101501480.1422-100000@iolanthe.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thierry Reding <thierry.reding@gmail.com>, Alan Stern <stern@rowland.harvard.edu>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Alexandra Yates <alexandra.yates@linux.intel.com>, tglx@linutronix.de, kristen.c.accardi@intel.com, linux-pm@vger.kernel.org
 
-On Thursday, September 10, 2015 12:19:03 PM Thierry Reding wrote:
-> From: Thierry Reding <treding@nvidia.com>
+On Thursday, September 10, 2015 03:15:24 PM Alan Stern wrote:
+> On Thu, 10 Sep 2015, Alexandra Yates wrote:
 > 
-> Deferred probe can lead to strange situations where a device that is a
-> dependency for others will be moved to the end of the dpm_list. At the
-> same time the dependers may not be moved because at the time they will
-> be probed the dependee may already have been successfully reprobed and
-> they will not have to defer the probe themselves.
+> > Hi Alan,
+> > 
+> > On 09/10/2015 07:14 AM, Alan Stern wrote:
+> > > On Wed, 9 Sep 2015, Alexandra Yates wrote:
+> > >
+> > >> This feature reports which IRQ cause the system to wakeup from sleep last
+> > >> time it was suspended.
+> > > I thought you said V7 of this patch was written based on the feedback I
+> > > provided.  Obviously that is not true.
+> > Yes, that was the intention.
+> > > This feature does NOT report which IRQ caused the system to wake up
+> > > from sleep the last time it was suspended!  All it does is report one
+> > > of the IRQs which have occurred since the last time the system started
+> > > a sleep transition.
 
-So there's a bug in the implementation of deferred probing IMO.
+It doesn't do that.  It reports one of the IRQs that were armed for system
+wakeup and have occurred since suspend_device_irqs() was last called (and
+obviously before the subsequent resume_device_irqs() which clears the
+"armed for system wakeup" flag).
 
-> One example where this happens is the Jetson TK1 board (Tegra124). The
-> gpio-keys driver exposes the power key of the board as an input device
-> that can also be used as a wakeup source. Commit 17cdddf0fb68 ("ARM:
-> tegra: Add gpio-ranges property") results in the gpio-tegra driver
-> deferring probe because one of its dependencies, the pinctrl-tegra
-> driver, has not successfully completed probing. Currently the deferred
-> probe code will move the corresponding gpio-tegra device to the end of
-> the dpm_list, but by the time the gpio-keys device, depending on the
-> gpio-tegra device, is probed, gpio-tegra has already been reprobed, so
-> the gpio-keys device is not moved to the end of dpm_list itself. As a
-> result, the suspend ordering becomes pinctrl-tegra -> gpio-keys ->
-> gpio-tegra. That's problematic because the gpio-keys driver requests
-> the power key to be a wakeup source. However, the programming of the
-> wakeup interrupt registers happens in the gpio-tegra driver's suspend
-> callback, which is now called before that of the gpio-keys driver. The
-> result is that the wrong values are programmed and leaves the system
-> unable to be resumed using the power key.
+> > I'm not sure why you say this, please elaborate further.
+> > 
+> > The way I understand the code and proposed solution is that when
+> > the system goes into freeze mode, at that point wakeup_irq is set to 0.
 > 
-> To fix this situation, always move devices to the end of the dpm_list
-> before probing them. Technically this should only be done for devices
-> that have been successfully probed, but that won't work for recursive
-> probing of devices (think an I2C master that instantiates children in
-> its ->probe()). Effectively the dpm_list will end up ordered the same
-> way that devices were probed, hence taking care of dependencies.
+> I'm not sure what you mean by "freeze mode".  Do you mean that all the 
+> user processes have been frozen?
 > 
-> Signed-off-by: Thierry Reding <treding@nvidia.com>
-> ---
-> Note that this commit is kind of the PM equivalent of 52cdbdd49853
-> ("driver core: correct device's shutdown order) and that we have two
-> lists that are essentially the same (dpm_list and devices_kset). I'm
-> wondering if it would be worth looking into getting rid of one of
-> them? I don't see any reason why the ordering for shutdown and
-> suspend/resume should be different, and having a single list would
-> help keep this in sync.
-
-We move away things from dpm_list during suspend and add them back to it
-during resume to handle the situations in which some devices go away or
-appear during suspend/resume.  That makes this idea potentially problematic.
-
+> > Once the system sees an interrupt at wakeup from freeze. wakeup_irq is 
+> > set to
+> > the irq_number that caused the wakeup.  This path of code is protected 
+> > by spin lock,
 > 
->  drivers/base/dd.c | 33 +++++++++++++++++++++++----------
->  1 file changed, 23 insertions(+), 10 deletions(-)
+> The spin lock doesn't help if multiple IRQs have already been raised.  
+> How do you know which one caused the system to wake up?
+
+Actually, we don't, which is a good point.
+
+However, the purpose of this mechanism is mostly debugging spurious wakeup
+events and recording just the first wakeup interrupt we see should be
+sufficient for that.
+
+Spurious wakeup interrupts that always come it along with legitimate ones
+are not really so much interesting from that angle. :-)
+
+> > which should protect the code path from other IRQs that came after the 
+> > first IRQ.
 > 
-> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-> index be0eb4639128..56291b11049b 100644
-> --- a/drivers/base/dd.c
-> +++ b/drivers/base/dd.c
-> @@ -88,16 +88,6 @@ static void deferred_probe_work_func(struct work_struct *work)
->  		 */
->  		mutex_unlock(&deferred_probe_mutex);
->  
-> -		/*
-> -		 * Force the device to the end of the dpm_list since
-> -		 * the PM code assumes that the order we add things to
-> -		 * the list is a good order for suspend but deferred
-> -		 * probe makes that very unsafe.
-> -		 */
-> -		device_pm_lock();
-> -		device_pm_move_last(dev);
-> -		device_pm_unlock();
-> -
->  		dev_dbg(dev, "Retrying from deferred list\n");
->  		bus_probe_device(dev);
->  
-> @@ -312,6 +302,29 @@ static int really_probe(struct device *dev, struct device_driver *drv)
->  	 */
->  	devices_kset_move_last(dev);
->  
-> +	/*
-> +	 * Force the device to the end of the dpm_list since the PM code
-> +	 * assumes that the order we add things to the list is a good order
-> +	 * for suspend but deferred probe makes that very unsafe.
-> +	 *
-> +	 * Deferred probe can also cause situations in which a device that is
-> +	 * a dependency for others gets moved further down the dpm_list as a
-> +	 * result of probe deferral. In that case the dependee will end up
-> +	 * getting suspended before any of its dependers.
-> +	 *
-> +	 * To ensure proper ordering of suspend/resume, move every device that
-> +	 * is being probed to the end of the dpm_list. Note that technically
-> +	 * only successfully probed devices need to be moved, but that breaks
-> +	 * for recursively added devices because they would end up in the list
-> +	 * in reverse of the desired order, so we simply do it unconditionally
-> +	 * for all devices before they are being probed. In the worst case the
-> +	 * list will be reordered a couple more times than necessary, which
-> +	 * should be an insignificant amount of work.
-> +	 */
-> +	device_pm_lock();
-> +	device_pm_move_last(dev);
-> +	device_pm_unlock();
+> Why so?  Waking up from sleep is a slow procedure; there is time for
+> several IRQs to be asserted before the system is ready to handle any of
+> them.  How do you know the first IRQ to be handled is the one that 
+> caused the wake up?
 
-So I don't agree with doing that for every driver being probed against the
-same device.  That's just wasteful IMO.
-
-> +
->  	if (dev->bus->probe) {
->  		ret = dev->bus->probe(dev);
->  		if (ret)
+> > This is only set once. When other IRQs come and the wakeup_irq is set 
+> > then the code
+> > doesn't store them.
 > 
+> What if the system entered freeze mode but then returned to normal 
+> operation without ever going to sleep, because an IRQ occurred first?  
+> Wouldn't you then store that IRQ?
 
-Alan, what do you think about this?
+If the IRQ has been armed for system wakeup, that counts as a wakeup from
+sleep.
+
+> But that IRQ did not cause the system to wake up, because the system
+> never went to sleep.
+
+I guess we should just say in the changelog and the documentation that we
+report that first wakeup interrupt we've seen in the last cycle (which may
+not be the first one that really occured in some cases).
 
 Thanks,
 Rafael
