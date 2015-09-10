@@ -1,153 +1,78 @@
-From: Andreas Dannenberg <dannenberg@ti.com>
-Subject: Re: [PATCH v2 02/13] power: bq24257: Add basic support for
- bq24250/bq24251
-Date: Thu, 10 Sep 2015 11:19:44 -0500
-Message-ID: <20150910161944.GA16768@borg>
-References: <1441757557-7266-1-git-send-email-dannenberg@ti.com>
- <1441757557-7266-3-git-send-email-dannenberg@ti.com>
- <20150910124210.GD21512@lpalcu-desk>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v2 1/5] ACPI: add in a bad_madt_entry() function to
+ eventually replace the macro
+Date: Thu, 10 Sep 2015 17:20:20 +0100
+Message-ID: <55F1ADC4.7090005@arm.com>
+References: <1440022048-6285-1-git-send-email-al.stone@linaro.org>
+ <1440022048-6285-2-git-send-email-al.stone@linaro.org>
+ <55EDADF5.5060008@arm.com> <55F08F47.1070906@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:34552 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752626AbbIJQUT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 10 Sep 2015 12:20:19 -0400
-Content-Disposition: inline
-In-Reply-To: <20150910124210.GD21512@lpalcu-desk>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <55F08F47.1070906@redhat.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Al Stone <ahs3@redhat.com>, Al Stone <al.stone@linaro.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>, "patches@linaro.org" <patches@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Laurentiu Palcu <laurentiu.palcu@intel.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-On Thu, Sep 10, 2015 at 03:42:11PM +0300, Laurentiu Palcu wrote:
-> On Tue, Sep 08, 2015 at 07:12:26PM -0500, Andreas Dannenberg wrote:
-> [...]
-> >  
-> >  #include <linux/module.h>
-> > @@ -41,6 +45,18 @@
-> >  
-> >  #define BQ24257_ILIM_SET_DELAY		1000	/* msec */
-> >  
-> > +enum bq2425x_chip {
-> > +	BQ24250,
-> > +	BQ24251,
-> > +	BQ24257,
-> > +};
-> > +
-> > +static const char *bq2425x_chip_name[] = {
-> static const char *const bq2425x_chip_name[]
-> 
-> That's safer and it also makes checkpatch happy.
 
-Ok changed.
 
-> > +	"bq24250",
-> > +	"bq24251",
-> > +	"bq24257",
-> > +};
-> > +
-> >  enum bq24257_fields {
-> >  	F_WD_FAULT, F_WD_EN, F_STAT, F_FAULT,			    /* REG 1 */
-> >  	F_RESET, F_IILIMIT, F_EN_STAT, F_EN_TERM, F_CE, F_HZ_MODE,  /* REG 2 */
-> > @@ -71,6 +87,8 @@ struct bq24257_device {
-> >  	struct device *dev;
-> >  	struct power_supply *charger;
-> >  
-> > +	enum bq2425x_chip chip;
-> > +
-> >  	struct regmap *rmap;
-> >  	struct regmap_field *rmap_fields[F_MAX_FIELDS];
-> >  
-> > @@ -250,6 +268,10 @@ static int bq24257_power_supply_get_property(struct power_supply *psy,
-> >  		val->strval = BQ24257_MANUFACTURER;
-> >  		break;
-> >  
-> > +	case POWER_SUPPLY_PROP_MODEL_NAME:
-> > +		val->strval = bq2425x_chip_name[bq->chip];
-> > +		break;
-> > +
-> >  	case POWER_SUPPLY_PROP_ONLINE:
-> >  		val->intval = state.power_good;
-> >  		break;
-> > @@ -570,6 +592,7 @@ static int bq24257_hw_init(struct bq24257_device *bq)
-> >  
-> >  static enum power_supply_property bq24257_power_supply_props[] = {
-> >  	POWER_SUPPLY_PROP_MANUFACTURER,
-> > +	POWER_SUPPLY_PROP_MODEL_NAME,
-> >  	POWER_SUPPLY_PROP_STATUS,
-> >  	POWER_SUPPLY_PROP_ONLINE,
-> >  	POWER_SUPPLY_PROP_HEALTH,
-> > @@ -667,6 +690,7 @@ static int bq24257_probe(struct i2c_client *client,
-> >  {
-> >  	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
-> >  	struct device *dev = &client->dev;
-> > +	const struct acpi_device_id *acpi_id;
-> >  	struct bq24257_device *bq;
-> >  	int ret;
-> >  	int i;
-> > @@ -683,6 +707,18 @@ static int bq24257_probe(struct i2c_client *client,
-> >  	bq->client = client;
-> >  	bq->dev = dev;
-> >  
-> > +	if (ACPI_HANDLE(dev)) {
-> > +		acpi_id = acpi_match_device(dev->driver->acpi_match_table,
-> > +				&client->dev);
-> > +		if (!acpi_id) {
-> > +			dev_err(dev, "Failed to match ACPI device\n");
-> > +			return -ENODEV;
-> > +		}
-> > +		bq->chip = (enum bq2425x_chip)acpi_id->driver_data;
-> > +	} else {
-> > +		bq->chip = (enum bq2425x_chip)id->driver_data;
-> > +	}
-> > +
-> >  	mutex_init(&bq->lock);
-> >  
-> >  	bq->rmap = devm_regmap_init_i2c(client, &bq24257_regmap_config);
-> > @@ -824,19 +860,27 @@ static const struct dev_pm_ops bq24257_pm = {
-> >  };
-> >  
-> >  static const struct i2c_device_id bq24257_i2c_ids[] = {
-> > -	{ "bq24257", 0 },
-> > +	{ "bq24250", BQ24250 },
-> > +	{ "bq24251", BQ24251 },
-> > +	{ "bq24257", BQ24257 },
-> >  	{},
-> >  };
-> >  MODULE_DEVICE_TABLE(i2c, bq24257_i2c_ids);
-> >  
-> >  static const struct of_device_id bq24257_of_match[] = {
-> > -	{ .compatible = "ti,bq24257", },
-> > +	{
-> > +		.compatible = "ti,bq24250",
-> > +		.compatible = "ti,bq24251",
-> > +		.compatible = "ti,bq24257",
-> > +	},
-> Maybe you wanted:
-> 	{ .compatible = "ti,bq24250", },
-> 	{ .compatible = "ti,bq24251", },
-> 	{ .compatible = "ti,bq24252", },
+On 09/09/15 20:57, Al Stone wrote:
+> On 09/07/2015 09:32 AM, Sudeep Holla wrote:
+>> Hi Al,
+>>
+>> On 19/08/15 23:07, Al Stone wrote:
+>>
+>> I finally got a chance to try this series on Juno. Well it exposed a firmware
+>> bug in MADT table :)
+>>
+>> [..]
+>>
+>>>                   acpi_tbl_entry_handler handler,
+>>> @@ -245,6 +484,8 @@ acpi_parse_entries(char *id, unsigned long table_size,
+>>>                  table_end) {
+>>>                   if (entry->type == entry_id
+>>>                       && (!max_entries || count < max_entries)) {
+>>> +                       if (bad_madt_entry(table_header, entry))
+>>> +                               return -EINVAL;
+>>
+>> Not sure if we can have the above check here unconditionally.
+>> Currently I can see there are 2 other users of acpi_parse_entries i.e.
+>> PCC and NUMA. So may be it can be made conditional or return success for
+>> non-MADT tables from bad_madt_entry ?
+>
+> So, I went back and double checked the other users and they're looking at
+> the return value for acpi_parse_entries properly; adding in the check above
+> unconditionally should not cause any behavior change.
 
-Yes that's what I wanted. Interestingly in my testing the device
-configured in the device tree was identified correctly, but I suppose
-this worked because of some other fallback mechanism (maybe using the
-i2c_device_id?). Anyways it's fixed now.
+I disagree. I populated PCCT table on Juno to get this error for
+PCCT(PCCT header gets interpreted as MADT header):
+"
+ACPI: undefined version for either FADT 5.1 or MADT 1
+Error parsing PCC subspaces from PCCT
+"
+And here the stacktrace:
+[<ffffffc000881e58>] bad_madt_entry+0x90/0x16c
+[<ffffffc000882030>] acpi_table_parse_entries+0xfc/0x180
+[<ffffffc000895af8>] pcc_init+0x70/0x148
 
-> >  	{ },
-> >  };
-> 
-> BTW, ACPI enumeration works fine. I tested the series on my setup
-> (before starting to review the patches :D).
+> Further, despite the name, acpi_parse_entries is only used to examine MADT
+> subtables.  Granted, we should probably make the name clearer at some point
+> (too ambiguous as to which entries are parsed right now).  Nonetheless, current
+> usage seems to be in order.
+>
 
-Thanks for going the extra mile and testing ACPI support, I really
-appreciate it. I should get my MinnowBoard on Saturday (it'll make for a
-fun weekend!) so I should be able to do such testing for this and other
-TI drivers myself.
+ From the code inspection, I can see we have 3 users of 
+acpi_parse_entries not just MADT but also PCC and NUMA/SRAT
 
---
-Andreas Dannenberg
-Texas Instruments Inc
+Something like this solves this issue:
+-              if (bad_madt_entry(table_header, entry))
++              if (!strncmp(id, ACPI_SIG_MADT, 4) &&
++                      bad_madt_entry(table_header, entry)
 
-> 
-> laurentiu
+
+Or am I still missing something ?
+
+Regards,
+Sudeep
