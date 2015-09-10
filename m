@@ -1,61 +1,59 @@
-From: Alexandra Yates <alexandra.yates@linux.intel.com>
-Subject: Re: [PATCH V7] Report interrupt that caused system wakeup
-Date: Thu, 10 Sep 2015 11:42:15 -0700
-Message-ID: <55F1CF07.8070505@linux.intel.com>
-References: <Pine.LNX.4.44L0.1509101012180.1422-100000@iolanthe.rowland.org>
+From: Andreas Dannenberg <dannenberg@ti.com>
+Subject: Re: [PATCH v2 08/13] power: bq24257: Add charge type setting support
+Date: Thu, 10 Sep 2015 13:50:27 -0500
+Message-ID: <20150910185025.GC16768@borg>
+References: <1441757557-7266-1-git-send-email-dannenberg@ti.com>
+ <1441757557-7266-9-git-send-email-dannenberg@ti.com>
+ <20150910135622.GJ21512@lpalcu-desk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:9450 "EHLO mga09.intel.com"
+Received: from comal.ext.ti.com ([198.47.26.152]:44075 "EHLO comal.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752078AbbIJSkT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 10 Sep 2015 14:40:19 -0400
-In-Reply-To: <Pine.LNX.4.44L0.1509101012180.1422-100000@iolanthe.rowland.org>
+	id S1751447AbbIJSvA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 10 Sep 2015 14:51:00 -0400
+Content-Disposition: inline
+In-Reply-To: <20150910135622.GJ21512@lpalcu-desk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: tglx@linutronix.de, kristen.c.accardi@intel.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net
+To: Laurentiu Palcu <laurentiu.palcu@intel.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-Hi Alan,
+On Thu, Sep 10, 2015 at 04:56:22PM +0300, Laurentiu Palcu wrote:
+> On Tue, Sep 08, 2015 at 07:12:32PM -0500, Andreas Dannenberg wrote:
+> > The bq2425x devices support charging with a configurable charge current
+> > i_chg or a specific fixed low-current in what's called Low Charge mode.
+> > This patch exposes access to the Low Charge mode through a POWER_
+> > SUPPLY_PROP_CHARGE_TYPE sysfs property value of POWER_SUPPLY_CHARGE_
+> > TYPE_TRICKLE. It also allows to completely disable charging if desired
+> > by setting the property to POWER_SUPPLY_CHARGE_TYPE_NONE. Normal
+> > charging with the configured i_chg current is activated through
+> > POWER_SUPPLY_CHARGE_TYPE_FAST (default).
+> > 
+> > Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
+> 
+> I have some questions here. Are there any cases in the wild, when
+> userspace selects the charging type (apart from testing purposes)? And
+> if yes, how is userspace supposed to detect/decide when to switch from
+> trickle to fast?
+> 
+> I have the strange feeling that we're adding properties that will never
+> be used... Other people's opinions are welcomed too.
 
-On 09/10/2015 07:14 AM, Alan Stern wrote:
-> On Wed, 9 Sep 2015, Alexandra Yates wrote:
->
->> This feature reports which IRQ cause the system to wakeup from sleep last
->> time it was suspended.
-> I thought you said V7 of this patch was written based on the feedback I
-> provided.  Obviously that is not true.
-Yes, that was the intention.
-> This feature does NOT report which IRQ caused the system to wake up
-> from sleep the last time it was suspended!  All it does is report one
-> of the IRQs which have occurred since the last time the system started
-> a sleep transition.
-I'm not sure why you say this, please elaborate further.
+Hi Laurentiu. I just talked to our product people to see as to how the
+underlying LOW_CHG feature would be used and they essentially said its a
+legacy feature used by only one customer in the past and that it doesn't
+need to get exposed in our driver. I had initially implemented it in
+analogy with the bq24190_charger.c driver that exposes a somewhat
+similar feature but if nobody needs it from a TI point of view I'm ok
+dropping it. Unless somebody screams they want it :)
 
-The way I understand the code and proposed solution is that when
-the system goes into freeze mode, at that point wakeup_irq is set to 0.
+Regards,
 
-Once the system sees an interrupt at wakeup from freeze. wakeup_irq is 
-set to
-the irq_number that caused the wakeup.  This path of code is protected 
-by spin lock,
+--
+Andreas Dannenberg
+Texas Instruments Inc
 
-which should protect the code path from other IRQs that came after the 
-first IRQ.
-This is only set once. When other IRQs come and the wakeup_irq is set 
-then the code
-doesn't store them.
 
-> Alan Stern
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
-
--- 
-Thank you,
-<Alexandra>
-
+> 
+> laurentiu
