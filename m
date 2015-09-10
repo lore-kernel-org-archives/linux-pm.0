@@ -1,78 +1,48 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v2 1/5] ACPI: add in a bad_madt_entry() function to
- eventually replace the macro
-Date: Thu, 10 Sep 2015 17:20:20 +0100
-Message-ID: <55F1ADC4.7090005@arm.com>
-References: <1440022048-6285-1-git-send-email-al.stone@linaro.org>
- <1440022048-6285-2-git-send-email-al.stone@linaro.org>
- <55EDADF5.5060008@arm.com> <55F08F47.1070906@redhat.com>
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: Re: [PATCH] power: bq24261_charger: Add support for TI BQ24261
+ charger
+Date: Thu, 10 Sep 2015 11:42:37 -0500
+Message-ID: <55F1B2FD.4020608@ti.com>
+References: <1441560187-23611-1-git-send-email-ramakrishna.pallala@intel.com>
+ <CAJKOXPfDu+LxoiQrV+CsqUbEVwYb1Zmk-m9y-L_1JxrB6ouS0g@mail.gmail.com>
+ <D854C92F57B1B347B57E531E78D05EAD57904B8D@BGSMSX104.gar.corp.intel.com>
+ <55F0C522.6070705@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset="utf-8"; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <55F08F47.1070906@redhat.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Al Stone <ahs3@redhat.com>, Al Stone <al.stone@linaro.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>, "patches@linaro.org" <patches@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <55F0C522.6070705@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, "Pallala, Ramakrishna" <ramakrishna.pallala@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, "Tc, Jenny" <jenny.tc@intel.com>, Andreas Dannenberg <dannenberg@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On 09/09/15 20:57, Al Stone wrote:
-> On 09/07/2015 09:32 AM, Sudeep Holla wrote:
->> Hi Al,
->>
->> On 19/08/15 23:07, Al Stone wrote:
->>
->> I finally got a chance to try this series on Juno. Well it exposed a firmware
->> bug in MADT table :)
->>
->> [..]
->>
->>>                   acpi_tbl_entry_handler handler,
->>> @@ -245,6 +484,8 @@ acpi_parse_entries(char *id, unsigned long table_size,
->>>                  table_end) {
->>>                   if (entry->type == entry_id
->>>                       && (!max_entries || count < max_entries)) {
->>> +                       if (bad_madt_entry(table_header, entry))
->>> +                               return -EINVAL;
->>
->> Not sure if we can have the above check here unconditionally.
->> Currently I can see there are 2 other users of acpi_parse_entries i.e.
->> PCC and NUMA. So may be it can be made conditional or return success for
->> non-MADT tables from bad_madt_entry ?
+On 09/09/2015 06:47 PM, Krzysztof Kozlowski wrote:
+>>>> +- ti,enable-user-write: boolean, if present driver will allow the user space
+>>>> +    to control the charging current and voltage through sysfs;
+>>>
+>>> This is not DT property. It does not describe hardware.
+>> We needed a mechanism to enable the sysfs writes on certain properties.
+>> If DT is not the place where should it go?
 >
-> So, I went back and double checked the other users and they're looking at
-> the return value for acpi_parse_entries properly; adding in the check above
-> unconditionally should not cause any behavior change.
-
-I disagree. I populated PCCT table on Juno to get this error for
-PCCT(PCCT header gets interpreted as MADT header):
-"
-ACPI: undefined version for either FADT 5.1 or MADT 1
-Error parsing PCC subspaces from PCCT
-"
-And here the stacktrace:
-[<ffffffc000881e58>] bad_madt_entry+0x90/0x16c
-[<ffffffc000882030>] acpi_table_parse_entries+0xfc/0x180
-[<ffffffc000895af8>] pcc_init+0x70/0x148
-
-> Further, despite the name, acpi_parse_entries is only used to examine MADT
-> subtables.  Granted, we should probably make the name clearer at some point
-> (too ambiguous as to which entries are parsed right now).  Nonetheless, current
-> usage seems to be in order.
+> DT is not the place. As I discussed later with Andreas, if you really
+> need this and if mainline is a place for that then probably this should
+> be compile option (a Kconfig symbol).
 >
 
- From the code inspection, I can see we have 3 users of 
-acpi_parse_entries not just MADT but also PCC and NUMA/SRAT
+I think this would actually be a good use for module parameters, this way
+it could still be set at boot without re-compiling.
 
-Something like this solves this issue:
--              if (bad_madt_entry(table_header, entry))
-+              if (!strncmp(id, ACPI_SIG_MADT, 4) &&
-+                      bad_madt_entry(table_header, entry)
+I think compile-time disabling sysfs properties because they are "dangerous" is
+a little bit too artificially restricting and controlling, you can set permissions
+so only root can change them already. The kernel should not be restricting root,
+I understand the fear of someone rooting a machine and remotely over charging
+a LiPo[1], but these physical limits are hardware descriptions and can and should
+be set by DT, beyond this root should have full control over their machine.
+Besides root can already just unbind your driver and issue raw I2C commands to do
+the same thing. </rant>
 
-
-Or am I still missing something ?
+[1] http://i.imgur.com/vszJJ.jpg
 
 Regards,
-Sudeep
+Andrew
