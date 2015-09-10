@@ -1,33 +1,27 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH V7] Report interrupt that caused system wakeup
-Date: Thu, 10 Sep 2015 10:14:51 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1509101012180.1422-100000@iolanthe.rowland.org>
-References: <1441853301-3816-1-git-send-email-alexandra.yates@linux.intel.com>
+From: Laurentiu Palcu <laurentiu.palcu@intel.com>
+Subject: Re: [PATCH v2 12/13] power: bq24257: Renaming for consistency
+Date: Thu, 10 Sep 2015 17:41:08 +0300
+Message-ID: <20150910144108.GN21512@lpalcu-desk>
+References: <1441757557-7266-1-git-send-email-dannenberg@ti.com>
+ <1441757557-7266-13-git-send-email-dannenberg@ti.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:53468 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752847AbbIJOOw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Sep 2015 10:14:52 -0400
-In-Reply-To: <1441853301-3816-1-git-send-email-alexandra.yates@linux.intel.com>
+Received: from mga14.intel.com ([192.55.52.115]:33950 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752500AbbIJOlM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 10 Sep 2015 10:41:12 -0400
+Content-Disposition: inline
+In-Reply-To: <1441757557-7266-13-git-send-email-dannenberg@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alexandra Yates <alexandra.yates@linux.intel.com>
-Cc: tglx@linutronix.de, kristen.c.accardi@intel.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net
+To: Andreas Dannenberg <dannenberg@ti.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-On Wed, 9 Sep 2015, Alexandra Yates wrote:
-
-> This feature reports which IRQ cause the system to wakeup from sleep last
-> time it was suspended.
-
-I thought you said V7 of this patch was written based on the feedback I 
-provided.  Obviously that is not true.
-
-This feature does NOT report which IRQ caused the system to wake up
-from sleep the last time it was suspended!  All it does is report one
-of the IRQs which have occurred since the last time the system started
-a sleep transition.
-
-Alan Stern
-
+On Tue, Sep 08, 2015 at 07:12:36PM -0500, Andreas Dannenberg wrote:
+> Rename files and refactor definitions, function names, etc as well as
+> the driver name itself to reflect that this driver supports multiple
+> devices and not just the bq24257.
+> 
+> Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
+Reviewed-by: Laurentiu Palcu <laurentiu.palcu@intel.com>
