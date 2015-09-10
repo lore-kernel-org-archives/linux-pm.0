@@ -1,73 +1,58 @@
 From: Javi Merino <javi.merino@arm.com>
-Subject: [PATCH v6 0/5] Devfreq cooling device
-Date: Thu, 10 Sep 2015 18:09:27 +0100
-Message-ID: <1441904972-5809-1-git-send-email-javi.merino@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, cw00.choi@samsung.com, edubezval@gmail.com, Javi Merino <javi.merino@arm.com>
+Subject: [PATCH v6 2/5] PM / OPP: get the voltage for all OPPs
+Date: Thu, 10 Sep 2015 18:09:29 +0100
+Message-ID: <1441904972-5809-3-git-send-email-javi.merino@arm.com>
+References: <1441904972-5809-1-git-send-email-javi.merino@arm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:34827 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751707AbbIJRMp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 10 Sep 2015 13:12:45 -0400
+In-Reply-To: <1441904972-5809-1-git-send-email-javi.merino@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, cw00.choi@samsung.com, edubezval@gmail.com, Javi Merino <javi.merino@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-This series introduces a devfreq cooling device in the thermal
-framework.  Devfreq is used for DVFS for devices other than the CPUs.
-With a devfreq cooling device, the thermal framework can throttle them
-to control temperature.  The cooling device has the power extensions,
-so it can be used by all governors in the thermal framework, including
-the power allocator governor.
+The OPP library is now used for power models to calculate the power
+that a device would consume at a specific OPP.  To do that, we use a
+simple power model which takes frequency and voltage as inputs.  We get
+the voltage and frequency from the OPP library.
 
-Changes since v5:
-  - s/enable_disable_opps()/partition_enable_opps()
-  - Check the state in devfreq_cooling_state2power()
-  - Make the printing of the dynamic power table a dev_dbg printk
-  - Remove the warning of simple ondemand devfreq governor from the
-    code and document it in the Kconfig entry.
-  - Change the name of the cooling device to thermal-devfreq-X
-  - s/EXPORT_SYMBOL/EXPORT_SYMBOL_GPL/
-  - Use a simple dynamic power model if no dynamic power model is
-    supplied.
+The devfreq cooling device for the thermal framework controls
+temperature by disabling OPPs.  The power model needs to calculate the
+power that would be consumed if we reenabled the OPP.  Therefore, let
+dev_pm_opp_get_voltage() work for disabled OPPs.
 
-Changes since v4:
-  - Don't introduce a new function in the OPP library and instead fix
-    dev_pm_opp_get_voltage() as suggested by Viresh Kumar
-  - Don't allocate memory under RCU
-  - Don't call dev_pm_opp_enable/disable under RCU
-  - Generate the frequency table even if the power extensions were
-    not provided
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Javi Merino <javi.merino@arm.com>
+---
+ drivers/base/power/opp.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Changes since v3:
-  - Made devfreq_update_stats() a static inline function
-  - Add dev_pm_get_voltage_always() to get the voltage even for
-    disabled OPPs
-  - Don't rely on freq_table from the devfreq->profile being present
-    and create our own
-  - Don't use devm_k* to allocate memory
-  - Move struct devfreq_cooling_register to devfreq_cooling.c
-
-Javi Merino (4):
-  PM / devfreq: cache the last call to get_dev_status()
-  PM / OPP: get the voltage for all OPPs
-  devfreq_cooling: add trace information
-  PM / devfreq: drop comment about thermal setting max_freq
-
-=C3=98rjan Eide (1):
-  thermal: Add devfreq cooling
-
- drivers/base/power/opp.c                  |   4 +-
- drivers/devfreq/devfreq.c                 |   6 +-
- drivers/devfreq/governor_simpleondemand.c |  33 +-
- drivers/thermal/Kconfig                   |  14 +
- drivers/thermal/Makefile                  |   3 +
- drivers/thermal/devfreq_cooling.c         | 569 ++++++++++++++++++++++=
-++++++++
- include/linux/devfreq.h                   |  15 +
- include/linux/devfreq_cooling.h           |  81 +++++
- include/trace/events/thermal.h            |  53 +++
- 9 files changed, 758 insertions(+), 20 deletions(-)
- create mode 100644 drivers/thermal/devfreq_cooling.c
- create mode 100644 include/linux/devfreq_cooling.h
-
---=20
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index eb254497a494..c9a0187bba10 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -217,7 +217,7 @@ static struct device_opp *_find_device_opp(struct device *dev)
+ }
+ 
+ /**
+- * dev_pm_opp_get_voltage() - Gets the voltage corresponding to an available opp
++ * dev_pm_opp_get_voltage() - Gets the voltage corresponding to an opp
+  * @opp:	opp for which voltage has to be returned for
+  *
+  * Return: voltage in micro volt corresponding to the opp, else
+@@ -239,7 +239,7 @@ unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
+ 	opp_rcu_lockdep_assert();
+ 
+ 	tmp_opp = rcu_dereference(opp);
+-	if (IS_ERR_OR_NULL(tmp_opp) || !tmp_opp->available)
++	if (IS_ERR_OR_NULL(tmp_opp))
+ 		pr_err("%s: Invalid parameters\n", __func__);
+ 	else
+ 		v = tmp_opp->u_volt;
+-- 
 1.9.1
+
