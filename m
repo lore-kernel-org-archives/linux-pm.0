@@ -1,59 +1,49 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v4 2/2] dt: power: st: Provide bindings for ST's OPPs
-Date: Thu, 10 Sep 2015 06:34:26 +0530
-Message-ID: <20150910010426.GM5266@linux>
-References: <20150902080639.GA26744@linux>
- <CAL_JsqKMGp+3Z+oO6E0YYzjTCb=-R_QM=YF=B33NWayWmV057A@mail.gmail.com>
- <20150909062722.GA5266@linux>
- <20150909075930.GB3260@x1>
- <20150909083031.GB5266@linux>
- <20150909133930.GE3260@x1>
- <20150909160212.GJ5266@linux>
- <20150909163620.GF3260@x1>
- <55F0C5AB.5060609@kernel.org>
- <20150910005722.GA15099@codeaurora.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: pass policy to ->get() driver callback
+Date: Thu, 10 Sep 2015 03:41:45 +0200
+Message-ID: <11470100.cEo24Tpcgr@vostro.rjw.lan>
+References: <98e79b26d8250c33001c7a50378b0e288b8511db.1438339396.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20150910005722.GA15099@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Rob Herring <robh@kernel.org>, Lee Jones <lee.jones@linaro.org>, Nishanth Menon <nm@ti.com>, kernel@stlinux.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Ajit Pal Singh <ajitpal.singh@st.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:42720 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752821AbbIJBNy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Sep 2015 21:13:54 -0400
+In-Reply-To: <98e79b26d8250c33001c7a50378b0e288b8511db.1438339396.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Kristen Carlson Accardi <kristen@linux.intel.com>, open list <linux-kernel@vger.kernel.org>, Sudeep Holla <sudeep.holla@arm.com>
 
-On 09-09-15, 17:57, Stephen Boyd wrote:
-> I think it will work for qcom use cases.
-
-Thanks for the Rant Rob, it finally got me moving :)
-
-> We can collapse the
-> tables down to one node and have speed bin and version as the
-> opp-supported-hw property. The opp-microvolt-names property would
-
-I am probably going to remove opp-microvolt-names property as well, if
-we are going to use separate entries for all voltage ranges in OPP
-node. i.e. two voltage ranges, slow and fast, like this:
-
-                     regulator A       regulator B
-opp-microvolt-slow = <tarA minA maxA>, <tarB minB maxB>;
-opp-microvolt-fast = <tarA minA maxA>, <tarB minB maxB>;
-
-> be where we put the different voltage bins. What about the other
-> properties like opp-microamp or opp-suspend? Will all of those
-
-Lets keep them as is for now, unless we have a real user.
-
-> also get *-names properties to index into them based on some
-> string? I don't actually need those for my devices, but I'm just
-> pointing it out in case someone else wants to compress tables but
-> they have different microamps or clock latencies, etc.
+On Friday, July 31, 2015 04:14:33 PM Viresh Kumar wrote:
+> CPUFreq drivers today support ->get(cpu) callback, which returns current
+> clock rate of the CPU. The problem with ->get() is that it takes cpu
+> number as parameter and this unnecessarily makes things complex.
 > 
-> Finally, does this mean we will get rid of operating-points-names?
+> Firstly the core gets the cpu number by doing operation 'policy->cpu' on
+> the policy and then many drivers
 
-That's the next thing I wanted to ask from Rob. We are surely not
-going to use them and there are no users or kernel code to support
-them today. Can we get rid of them from the DT ?
+I see one.  That unfortunately is the acpi-cpufreq driver, but it still is one.
 
--- 
-viresh
+Well, cpufreq_generic_get() does _get_raw(), so I suppose acpi-cpufreq may
+do that too?
+
+> need to get the policy back and so do
+> cpufreq_cpu_get(cpu) on the cpu passed as argument to ->get().
+> 
+> It would be better if we pass them 'policy' directly and drivers can use
+> policy->cpu if that's all they need.
+
+Passing a pointer and dereferencing it is generally less efficient than passing
+a number.  Before the patch the core has to do the dereference before calling
+->get, so it likely doesn't matter here, but the code churn from this change
+is quite substantial and the benefit from it is in the noise IMO.
+
+Overall, we need to talk about the design aspect of cpufreq, because there
+are much more significant issues in it than things like this one.
+
+Thanks,
+Rafael
+
