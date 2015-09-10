@@ -1,137 +1,123 @@
 From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: Re: [PATCH] driver core: Ensure proper suspend/resume ordering
-Date: Thu, 10 Sep 2015 13:58:37 +0300
-Message-ID: <55F1625D.9090209@ti.com>
-References: <1441880343-30852-1-git-send-email-thierry.reding@gmail.com>
+Subject: Re: [PATCH v2 7/7] ARM: smp: Add runtime PM support for CPU hotplug
+Date: Thu, 10 Sep 2015 14:01:17 +0300
+Message-ID: <55F162FD.4050401@ti.com>
+References: <Pine.LNX.4.44L0.1509051133100.30865-100000@netrider.rowland.org>
+ <2657565.lxWtPmdjyp@vostro.rjw.lan> <55ED9328.2010501@ti.com>
+ <2355864.I8qZFusWfm@vostro.rjw.lan> <55EE9AA1.8020200@ti.com>
+ <7h613kmuuv.fsf@deeprootsystems.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:49839 "EHLO arroyo.ext.ti.com"
+Received: from bear.ext.ti.com ([192.94.94.41]:45274 "EHLO bear.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750741AbbIJK6o (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 10 Sep 2015 06:58:44 -0400
-In-Reply-To: <1441880343-30852-1-git-send-email-thierry.reding@gmail.com>
+	id S1750781AbbIJLCW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 10 Sep 2015 07:02:22 -0400
+In-Reply-To: <7h613kmuuv.fsf@deeprootsystems.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thierry Reding <thierry.reding@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, bilhuang@nvidia.com
+To: Kevin Hilman <khilman@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alan Stern <stern@rowland.harvard.edu>, Thomas Gleixner <tglx@linutronix.de>, Lina Iyer <lina.iyer@linaro.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Mark Rutland <mark.rutland@arm.com>, ulf.hansson@linaro.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-pm@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, k.kozlowski@samsung.com, msivasub@codeaurora.org, geert@linux-m68k.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-kernel@lists.infradead.org, Ingo Molnar <mingo@kernel.org>
 
-On 09/10/2015 01:19 PM, Thierry Reding wrote:
-> From: Thierry Reding <treding@nvidia.com>
+On 09/09/2015 01:03 AM, Kevin Hilman wrote:
+> Grygorii Strashko <grygorii.strashko@ti.com> writes:
 > 
-> Deferred probe can lead to strange situations where a device that is a
-> dependency for others will be moved to the end of the dpm_list. At the
-> same time the dependers may not be moved because at the time they will
-> be probed the dependee may already have been successfully reprobed and
-> they will not have to defer the probe themselves.
+>> On 09/07/2015 11:42 PM, Rafael J. Wysocki wrote:
+>>> On Monday, September 07, 2015 04:37:44 PM Grygorii Strashko wrote:
+>>>> On 09/07/2015 04:04 PM, Rafael J. Wysocki wrote:
+>>>>> On Saturday, September 05, 2015 11:39:20 AM Alan Stern wrote:
+>>>>>> On Sat, 5 Sep 2015, Grygorii Strashko wrote:
+>>>>>>
+>>>>>>> On 09/04/2015 09:45 PM, Alan Stern wrote:
+>>>>>>>> On Fri, 4 Sep 2015, Grygorii Strashko wrote:
+>>>>>>>>
+>>>>>>>>> There is one "small" problem with such approach :(
+>>>>>>>>>
+>>>>>>>>> - It's incompatible with -RT kernel, because PM runtime can't be used
+>>>>>>>>> in atomic context on -RT.
+>>>>>>>>
+>>>>>>>> Can you explain this more fully?  Why can't runtime PM be used in
+>>>>>>>> atomic context in the -rt kernels?
+>>>>>>>>     
+>>>>>>>
+>>>>>>> See:
+>>>>>>>     http://lwn.net/Articles/146861/
+>>>>>>>     https://rt.wiki.kernel.org/index.php/Frequently_Asked_Questions#How_does_the_CONFIG_PREEMPT_RT_patch_work.3F
+>>>>>>>
+>>>>>>> spinlock_t
+>>>>>>>        Critical sections are preemptible. The _irq operations (e.g., spin_lock_irqsave())
+>>>>>>>     do -not- disable hardware interrupts. Priority inheritance is used to prevent priority
+>>>>>>>     inversion. An underlying rt_mutex is used to implement spinlock_t in PREEMPT_RT.
+>>>>>>>
+>>>>>>> As result, have to do things like:
+>>>>>>> https://lkml.org/lkml/2015/8/18/161
+>>>>>>> https://lkml.org/lkml/2015/8/18/162
+>>>>>>>
+>>>>>>> Sorry for brief reply - Friday/Sat night :)
+>>>>>>
+>>>>>> I see.  Although we normally think of interrupt contexts as being
+>>>>>> atomic, in an -rt kernel this isn't true any more because things like
+>>>>>> spin_lock_irq don't actually disable interrupts.
+>>>>>>
+>>>>>> Therefore it would be correct to say that in -rt kernels, runtime PM
+>>>>>> can be used in interrupt context (if the device is marked as irq-safe),
+>>>>>> but not in atomic context.  Right?
+>>>>>
+>>>>> Right.
+>>>>>
+>>>>> Whatever is suitable for interrupt context in the mainline, will be suitable
+>>>>> for that in -rt kernels too.
+>>>>
+>>>> Not exactly true :(, since spinlock is converted to [rt_] mutex.
+>>>> Usually, this difference can't be seen because on -RT kernel all or
+>>>> mostly all HW IRQ handlers will be forced to be threaded.
+>>>
+>>> Exactly.  And that's what I'm talking about.
+>>>
+>>>> For the cases, where such automatic conversion is not working,
+>>>> (like chained irq handlers or HW-handler+Threaded handler) the code
+>>>> has to be carefully patched to work properly as for non-RT as for -RT.
+>>>
+>>> Right.
+>>>
+>>>> Also, this triggers some -RT incompatibility issues, like with PM runtime or
+>>>
+>>> That I'm not sure about.  Why would runtime PM cause problems with -RT (apart
+>>> from attempts to use it from the idle loop, but that's not happening in the
+>>> mainline anyway)?
+>>
+>>
+>> I have to be more specific - sorry. "irq_safe" mode of PM runtime is incompatible with -RT.
+>>
+>> Here is an example:
+>> - HW IRQ handler in TI OMAP GPIO driver is implemented as chained IRQ handler and
+>>    contains pm_runtime_get_sync()/pm_runtime_put(). This works properly with vanilla kernel
+>>    because OMAP GPIO devices marked as irq_safe.
+>>    Chained IRQ handlers can't be forced threaded and PM runtime APIs trigger
+>>   "sleeping function called from invalid context" issues there, so corresponding code has to be reworked.
 > 
-> One example where this happens is the Jetson TK1 board (Tegra124). The
-> gpio-keys driver exposes the power key of the board as an input device
-> that can also be used as a wakeup source. Commit 17cdddf0fb68 ("ARM:
-> tegra: Add gpio-ranges property") results in the gpio-tegra driver
-> deferring probe because one of its dependencies, the pinctrl-tegra
-> driver, has not successfully completed probing. Currently the deferred
-> probe code will move the corresponding gpio-tegra device to the end of
-> the dpm_list, but by the time the gpio-keys device, depending on the
-> gpio-tegra device, is probed, gpio-tegra has already been reprobed, so
-> the gpio-keys device is not moved to the end of dpm_list itself. As a
-> result, the suspend ordering becomes pinctrl-tegra -> gpio-keys ->
-> gpio-tegra. That's problematic because the gpio-keys driver requests
-> the power key to be a wakeup source. However, the programming of the
-> wakeup interrupt registers happens in the gpio-tegra driver's suspend
-> callback, which is now called before that of the gpio-keys driver. The
-> result is that the wrong values are programmed and leaves the system
-> unable to be resumed using the power key.
+> Isn't that why those are being converted to raw_*[1] ?
 > 
-> To fix this situation, always move devices to the end of the dpm_list
-> before probing them. Technically this should only be done for devices
-> that have been successfully probed, but that won't work for recursive
-> probing of devices (think an I2C master that instantiates children in
-> its ->probe()). Effectively the dpm_list will end up ordered the same
-> way that devices were probed, hence taking care of dependencies.
+> Kevin
+> 
+> [1] http://marc.info/?l=linux-omap&m=143749603401221&w=2
+> 
 
-Second try :), first one was here:
-"[RFC 1/1] driver core: re-order dpm_list after a succussful probe"
-https://lkml.org/lkml/2014/12/12/324
-and it was unsuccessful exactly because dpm_list was reordered after probe()
-and not before, i think.
+That's way I've tried to convert those to generic IRQ handler [2] :), 
+so on -RT it will be forced threaded. 
 
-I'll try to test it.
+raw_* is different kind of problem in gpio-omap - IRQ controllers
+have to use raw_* inside irq_chip callbacks, because IRQ core guards those
+callbacks using raw_* locks. 
+.irq_bus_lock()/irq_bus_sync_unlock() callbacks can be used [3]
+for any kind of operations which require non-atomic context.
 
-> 
-> Signed-off-by: Thierry Reding <treding@nvidia.com>
-> ---
-> Note that this commit is kind of the PM equivalent of 52cdbdd49853
-> ("driver core: correct device's shutdown order) and that we have two
-> lists that are essentially the same (dpm_list and devices_kset). I'm
-> wondering if it would be worth looking into getting rid of one of
-> them? I don't see any reason why the ordering for shutdown and
-> suspend/resume should be different, and having a single list would
-> help keep this in sync.
+[2] https://lkml.org/lkml/2015/8/18/162
+gpio: omap: convert to use generic irq handler
+[3] https://lkml.org/lkml/2015/8/18/161
+gpio: omap: move pm runtime in irq_chip.irq_bus_lock/sync_unlock
 
-Yep. I've tried to remove one of those lists while working on shutdown issue.
-I've tried to drop dmp_list, but my try was unsuccessful, because I was not
-able to find simple way to handle device's  dynamic creation/removal during
-suspend/resume :(.
-Also note, dmp_list's presence depends on Kconfig options.
-
-> 
->   drivers/base/dd.c | 33 +++++++++++++++++++++++----------
->   1 file changed, 23 insertions(+), 10 deletions(-)
-> 
-> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-> index be0eb4639128..56291b11049b 100644
-> --- a/drivers/base/dd.c
-> +++ b/drivers/base/dd.c
-> @@ -88,16 +88,6 @@ static void deferred_probe_work_func(struct work_struct *work)
->   		 */
->   		mutex_unlock(&deferred_probe_mutex);
->   
-> -		/*
-> -		 * Force the device to the end of the dpm_list since
-> -		 * the PM code assumes that the order we add things to
-> -		 * the list is a good order for suspend but deferred
-> -		 * probe makes that very unsafe.
-> -		 */
-> -		device_pm_lock();
-> -		device_pm_move_last(dev);
-> -		device_pm_unlock();
-> -
->   		dev_dbg(dev, "Retrying from deferred list\n");
->   		bus_probe_device(dev);
->   
-> @@ -312,6 +302,29 @@ static int really_probe(struct device *dev, struct device_driver *drv)
->   	 */
->   	devices_kset_move_last(dev);
->   
-> +	/*
-> +	 * Force the device to the end of the dpm_list since the PM code
-> +	 * assumes that the order we add things to the list is a good order
-> +	 * for suspend but deferred probe makes that very unsafe.
-> +	 *
-> +	 * Deferred probe can also cause situations in which a device that is
-> +	 * a dependency for others gets moved further down the dpm_list as a
-> +	 * result of probe deferral. In that case the dependee will end up
-> +	 * getting suspended before any of its dependers.
-> +	 *
-> +	 * To ensure proper ordering of suspend/resume, move every device that
-> +	 * is being probed to the end of the dpm_list. Note that technically
-> +	 * only successfully probed devices need to be moved, but that breaks
-> +	 * for recursively added devices because they would end up in the list
-> +	 * in reverse of the desired order, so we simply do it unconditionally
-> +	 * for all devices before they are being probed. In the worst case the
-> +	 * list will be reordered a couple more times than necessary, which
-> +	 * should be an insignificant amount of work.
-> +	 */
-> +	device_pm_lock();
-> +	device_pm_move_last(dev);
-> +	device_pm_unlock();
-> +
->   	if (dev->bus->probe) {
->   		ret = dev->bus->probe(dev);
->   		if (ret)
-> 
 
 
 -- 
