@@ -1,55 +1,48 @@
-From: Al Stone <ahs3@redhat.com>
-Subject: Re: [Linaro-acpi] [PATCH v3 1/5] ACPI: add in a bad_madt_entry()
- function to eventually replace the macro
-Date: Thu, 10 Sep 2015 08:13:36 -0600
-Message-ID: <55F19010.9060603@redhat.com>
-References: <1441832991-28200-1-git-send-email-al.stone@linaro.org>
- <1441832991-28200-2-git-send-email-al.stone@linaro.org>
- <20150910121413.GA11267@xora-haswell.xora.org.uk>
+From: Laurentiu Palcu <laurentiu.palcu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v2 10/13] power: bq24257: Add various device-specific
+ sysfs properties
+Date: Thu, 10 Sep 2015 17:13:32 +0300
+Message-ID: <20150910141331.GL21512@lpalcu-desk>
+References: <1441757557-7266-1-git-send-email-dannenberg@ti.com>
+ <1441757557-7266-11-git-send-email-dannenberg@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-ia64-owner@vger.kernel.org>
-In-Reply-To: <20150910121413.GA11267@xora-haswell.xora.org.uk>
-Sender: linux-ia64-owner@vger.kernel.org
-To: Graeme Gregory <graeme.gregory@linaro.org>, Al Stone <al.stone@linaro.org>
-Cc: linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, linux-ia64@vger.kernel.org, patches@linaro.org, linux-pm@vger.kernel.org, linaro-acpi@lists.linaro.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1441757557-7266-11-git-send-email-dannenberg-l0cyMroinI0@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
+Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 09/10/2015 06:14 AM, Graeme Gregory wrote:
-> On Wed, Sep 09, 2015 at 03:09:47PM -0600, Al Stone wrote:
->> The existing BAD_MADT_ENTRY macro only checks that the size of the data
->> structure for an MADT subtable matches the length entry in the subtable.
->> This is, unfortunately, not reliable.  Nor, as it turns out, does it have
->> anything to do with what the length should be in any particular table.
->>
-
-[snip...]
-  			if (handler(entry, table_end))
->>  				return -EINVAL;
->>  
->> @@ -349,7 +592,7 @@ int __init acpi_table_parse(char *id, acpi_tbl_table_handler handler)
->>  		return -ENODEV;
->>  }
->>  
->> -/* 
->> +/*
->>   * The BIOS is supposed to supply a single APIC/MADT,
->>   * but some report two.  Provide a knob to use either.
->>   * (don't you wish instance 0 and 1 were not the same?)
+On Tue, Sep 08, 2015 at 07:12:34PM -0500, Andreas Dannenberg wrote:
+> This patch adds support to enable/disable some device specific features
+> through device properties at boot time or sysfs properties at runtime
+> depending on whether they should be accessible during runtime or not.
+> The use of those features is be optional however they might be helpful
+> in certain scenarios:
 > 
-> Unrelated whitespace change snuck in here.
+> * High-impedance mode enable/disable (through sysfs r/w)
+> * Sysoff enable/disable (through sysfs r/w)
+> * 2X Timer enable/disable (through "ti,safety-timer-2x-enable" dev
+>   property)
 > 
-> Graeme
+> If not explicitly modified those settings are left at their device-
+> specific power-on defaults. Refer to the respectice device datasheets
+> for more information:
+> 
+> http://www.ti.com/product/bq24250
+> http://www.ti.com/product/bq24251
+> http://www.ti.com/product/bq24257
+> 
+> Signed-off-by: Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
 
-Bah.  Nice catch; not sure how that got in there, but duly noted.
+I'm OK with adding these properties, but I'll wait for your explanation
+on the mutex patch since I really don't think you need it, except for
+protecting chip state data.
 
--- 
-ciao,
-al
------------------------------------
-Al Stone
-Software Engineer
-Red Hat, Inc.
-ahs3@redhat.com
------------------------------------
+laurentiu
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
