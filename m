@@ -1,52 +1,52 @@
-From: "Zhang, Rui" <rui.zhang@intel.com>
-Subject: RE: [PATCH] thermal: Fix thermal_zone_of_sensor_register to match
- documentation
-Date: Thu, 10 Sep 2015 08:44:05 +0000
-Message-ID: <744357E9AAD1214791ACBA4B0B9092631DD4BF06@SHSMSX101.ccr.corp.intel.com>
-References: <1441720272-17338-1-git-send-email-punit.agrawal@arm.com>
- <20150910083923.GA2730@e104805>
+From: Oliver Neukum <oneukum@suse.com>
+Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing
+ runtime suspend
+Date: Thu, 10 Sep 2015 11:38:42 +0200
+Message-ID: <1441877922.19022.10.camel@suse.com>
+References: <1441658561-26190-1-git-send-email-irina.tirdea@intel.com>
+	 <1441806946.19223.5.camel@suse.com>
+	 <CAE1zotKye=grm2CR+0Q25t7B3ZFo_LjrHa5qLYbCUv9=tYTSmw@mail.gmail.com>
+	 <1870624.bK0YQxbsoD@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150910083923.GA2730@e104805>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>, Punit Agrawal <punit.agrawal@arm.com>
-Cc: "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux@roeck-us.net" <linux@roeck-us.net>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <1870624.bK0YQxbsoD@vostro.rjw.lan>
+Sender: linux-input-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Octavian Purdila <octavian.purdila@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Tirdea, Irina" <irina.tirdea@intel.com>, Alan Stern <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Colin Cross <ccross@android.com>, Arve =?ISO-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
 List-Id: linux-pm@vger.kernel.org
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogSmF2aSBNZXJpbm8gW21h
-aWx0bzpqYXZpLm1lcmlub0Bhcm0uY29tXQ0KPiBTZW50OiBUaHVyc2RheSwgU2VwdGVtYmVyIDEw
-LCAyMDE1IDQ6MzkgUE0NCj4gVG86IFB1bml0IEFncmF3YWwNCj4gQ2M6IGVkdWJlenZhbEBnbWFp
-bC5jb207IFpoYW5nLCBSdWk7IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgbGludXgtDQo+IGtl
-cm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4QHJvZWNrLXVzLm5ldA0KPiBTdWJqZWN0OiBSZTog
-W1BBVENIXSB0aGVybWFsOiBGaXggdGhlcm1hbF96b25lX29mX3NlbnNvcl9yZWdpc3RlciB0bw0K
-PiBtYXRjaCBkb2N1bWVudGF0aW9uDQo+IEltcG9ydGFuY2U6IEhpZ2gNCj4gDQo+IE9uIFR1ZSwg
-U2VwIDA4LCAyMDE1IGF0IDAyOjUxOjEyUE0gKzAxMDAsIFB1bml0IEFncmF3YWwgd3JvdGU6DQo+
-ID4gdGhlcm1hbF96b25lX29mX3NlbnNvcl9yZWdpc3RlciBpcyBkb2N1bWVudGVkIGFzIHJldHVy
-bmluZyBhIHBvaW50ZXINCj4gPiB0byBlaXRoZXIgYSB2YWxpZCB0aGVybWFsX3pvbmVfZGV2aWNl
-IG9uIHN1Y2Nlc3MsIG9yIGEgY29ycmVzcG9uZGluZw0KPiA+IEVSUl9QVFIoKSB2YWx1ZS4NCj4g
-Pg0KPiA+IEluIGNvbnRyYXN0LCB0aGUgZnVuY3Rpb24gcmV0dXJucyBOVUxMIHdoZW4gVEhFUk1B
-TF9PRiBpcyBjb25maWd1cmVkDQo+ID4gb2ZmLiBGaXggdGhpcy4NCj4gPg0KPiA+IFNpZ25lZC1v
-ZmYtYnk6IFB1bml0IEFncmF3YWwgPHB1bml0LmFncmF3YWxAYXJtLmNvbT4NCj4gPiBBY2tlZC1i
-eTogR3VlbnRlciBSb2VjayA8bGludXhAcm9lY2stdXMubmV0Pg0KPiA+IENjOiBFZHVhcmRvIFZh
-bGVudGluIDxlZHViZXp2YWxAZ21haWwuY29tPg0KPiA+IENjOiBaaGFuZyBSdWkgPHJ1aS56aGFu
-Z0BpbnRlbC5jb20+DQo+ID4gLS0tDQo+ID4gSGkgRWR1YXJkbywgUnVpLA0KPiA+DQo+ID4gVGhp
-cyBwYXRjaCBoYXMgYmVlbiBvbiB0aGUgbGlzdCB3aXRob3V0IGFueSBvYmplY3Rpb24gZm9yIHNv
-bWV0aW1lIFswXQ0KPiA+IG5vdy4gQ291bGQgeW91IHBpY2sgdGhpcyB1cCBmb3IgdGhlIG5leHQg
-cmMgcGxlYXNlPw0KPiA+DQpXaWxsIGFwcGx5IGFmdGVyIDQuMy1yYzEgbWVyZ2Ugd2luZG93IGNs
-b3NlZC4NCg0KVGhhbmtzLA0KcnVpDQo+ID4gVGhhbmtzLA0KPiA+IFB1bml0DQo+ID4NCj4gPiBb
-MF0gaHR0cDovL3RocmVhZC5nbWFuZS5vcmcvZ21hbmUubGludXgua2VybmVsLzIwMTE0NjYvZm9j
-dXM9MjAxMzE3NQ0KPiA+DQo+ID4gIGluY2x1ZGUvbGludXgvdGhlcm1hbC5oIHwgMiArLQ0KPiA+
-ICAxIGZpbGUgY2hhbmdlZCwgMSBpbnNlcnRpb24oKyksIDEgZGVsZXRpb24oLSkNCj4gDQo+IEZX
-SVcsDQo+IA0KPiBSZXZpZXdlZC1ieTogSmF2aSBNZXJpbm8gPGphdmkubWVyaW5vQGFybS5jb20+
-DQo+IA0KPiBDaGVlcnMsDQo+IEphdmkNCj4gDQo+ID4gZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGlu
-dXgvdGhlcm1hbC5oIGIvaW5jbHVkZS9saW51eC90aGVybWFsLmggaW5kZXgNCj4gPiAwMzdlOWRm
-Li5mMzQ0ZTUxIDEwMDY0NA0KPiA+IC0tLSBhL2luY2x1ZGUvbGludXgvdGhlcm1hbC5oDQo+ID4g
-KysrIGIvaW5jbHVkZS9saW51eC90aGVybWFsLmgNCj4gPiBAQCAtMzY0LDcgKzM2NCw3IEBAIHN0
-YXRpYyBpbmxpbmUgc3RydWN0IHRoZXJtYWxfem9uZV9kZXZpY2UgKg0KPiA+IHRoZXJtYWxfem9u
-ZV9vZl9zZW5zb3JfcmVnaXN0ZXIoc3RydWN0IGRldmljZSAqZGV2LCBpbnQgaWQsIHZvaWQgKmRh
-dGEsDQo+ID4gIAkJCQljb25zdCBzdHJ1Y3QgdGhlcm1hbF96b25lX29mX2RldmljZV9vcHMNCj4g
-Km9wcykgIHsNCj4gPiAtCXJldHVybiBOVUxMOw0KPiA+ICsJcmV0dXJuIEVSUl9QVFIoLUVOT0RF
-Vik7DQo+ID4gIH0NCj4gPg0KPiA+ICBzdGF0aWMgaW5saW5lDQo+ID4gLS0NCj4gPiAyLjUuMA0K
+On Wed, 2015-09-09 at 22:25 +0200, Rafael J. Wysocki wrote:
+> > >
+> > > I'd doubt that. Suppose you put the phone into your pocket while
+> > > the device isn't suspended. The continuous stream of spurious
+> events
+> > > will keep it awake.
+> 
+> Why would they be regarded as spurious then?  They are just regular
+> touch panel
+> events in that case, aren't they?
+
+These events are not expected to be caused by the user's hand.
+
+But it raises a design question; whose job it is to handle
+such information?
+It makes no sense to gather events from a touchscreen if you
+suspect the phone is randomly rubbing at things or to take
+video from a camera if you know that the lid is closed covering
+the lens. I think we can agree to that.
+
+The thing is that we handle all other availability in kernel
+space. You can argue that user space has an agreed interface
+(evdev, V4L or whatever) and it is the kernel's job to react
+if it learns that a device becomes temporarily unavailable
+and this is merely a question of adding an interface to the
+kernel by which user space can feed such information to the
+kernel.
+
+	Regards
+		Oliver
+
+
+
