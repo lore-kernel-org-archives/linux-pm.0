@@ -1,97 +1,79 @@
-From: Andreas Dannenberg <dannenberg@ti.com>
-Subject: Re: [PATCH v2 11/13] power: bq24257: Add platform data based
- initialization
-Date: Thu, 10 Sep 2015 14:49:19 -0500
-Message-ID: <20150910194919.GB7716@borg>
-References: <1441757557-7266-1-git-send-email-dannenberg@ti.com>
- <1441757557-7266-12-git-send-email-dannenberg@ti.com>
- <20150910144053.GM21512@lpalcu-desk>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH 03/13] twl4030_charger: correctly handle -EPROBE_DEFER
+ from devm_usb_get_phy_by_node
+Date: Thu, 10 Sep 2015 22:27:59 +0200
+Message-ID: <20150910202759.GA4844@earth>
+References: <20150730001113.4012.18086.stgit@noble>
+ <20150730001124.4012.31980.stgit@noble>
+ <CAMAWPa__hFOuz24YBcFiR+m5mOUArSuNpuqh3Ju1H+yj6qadfA@mail.gmail.com>
+ <CAMAWPa_s2ELgRBRtWzFucmREMuLXS_V5Akmad5yFU13-GrzBDA@mail.gmail.com>
+ <87si6x4a2f.fsf@notabene.neil.brown.name>
+ <20150902130724.GQ4215@atomide.com>
+ <CAMAWPa8q1BOMvvKqqU88vYq4-_QhuxefVqkM6=4BP4-FGZxRPw@mail.gmail.com>
+ <20150908201417.GG4215@atomide.com>
+ <20150910080849.GA6164@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="sdtB3X0nJg68CQEu"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:42184 "EHLO arroyo.ext.ti.com"
+Received: from mail.kernel.org ([198.145.29.136]:40828 "EHLO mail.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751536AbbIJTtt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 10 Sep 2015 15:49:49 -0400
+	id S1750789AbbIJU2E (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 10 Sep 2015 16:28:04 -0400
 Content-Disposition: inline
-In-Reply-To: <20150910144053.GM21512@lpalcu-desk>
+In-Reply-To: <20150910080849.GA6164@earth>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Laurentiu Palcu <laurentiu.palcu@intel.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: Kevin Hilman <khilman@kernel.org>, Neil Brown <neil@brown.name>, Samuel Ortiz <sameo@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, David Woodhouse <dwmw2@infradead.org>, lkml <linux-kernel@vger.kernel.org>, real GTA04 owners <gta04-owner@goldelico.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Pavel Machek <pavel@ucw.cz>, linux-omap <linux-omap@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Tyler Baker <tyler.baker@linaro.org>
 
-On Thu, Sep 10, 2015 at 05:40:53PM +0300, Laurentiu Palcu wrote:
-> On Tue, Sep 08, 2015 at 07:12:35PM -0500, Andreas Dannenberg wrote:
-> > The patch adds a way to setup and initialize the device through the use
-> > of platform data with configuration options equivalent to when using
-> > device firmware (DT or ACPI) for systems where this is not available.
-> > 
-> > Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
-> > ---
-> >  drivers/power/bq24257_charger.c       | 95 +++++++++++++++++++++++++++++++++--
-> >  include/linux/power/bq24257_charger.h | 30 +++++++++++
-> >  2 files changed, 120 insertions(+), 5 deletions(-)
-> >  create mode 100644 include/linux/power/bq24257_charger.h
-> > 
-> > diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
-> > index 9a4a7a0..b5e82ed 100644
-> > --- a/drivers/power/bq24257_charger.c
-> > +++ b/drivers/power/bq24257_charger.c
-> > @@ -27,10 +27,13 @@
-> >  #include <linux/gpio/consumer.h>
-> >  #include <linux/interrupt.h>
-> >  #include <linux/delay.h>
-> > +#include <linux/gpio.h>
-> >  
-> >  #include <linux/acpi.h>
-> >  #include <linux/of.h>
-> >  
-> > +#include <linux/power/bq24257_charger.h>
-> > +
-> >  #define BQ24257_REG_1			0x00
-> >  #define BQ24257_REG_2			0x01
-> >  #define BQ24257_REG_3			0x02
-> > @@ -958,28 +961,102 @@ static int bq24257_power_supply_init(struct bq24257_device *bq)
-> >  
-> >  static int bq24257_irq_probe(struct bq24257_device *bq)
-> >  {
-> > +	struct bq24257_platform_data *pdata = bq->client->dev.platform_data;
-> >  	struct gpio_desc *stat_irq;
-> > +	int ret;
-> > +
-> > +	if (!pdata)
-> > +		stat_irq = devm_gpiod_get_index(bq->dev, BQ24257_STAT_IRQ, 0,
-> > +				GPIOD_IN);
-> > +	else {
-> > +		if (!gpio_is_valid(pdata->stat_gpio)) {
-> > +			dev_err(bq->dev, "invalid stat_irq pin\n");
-> > +			return -EINVAL;
-> > +		}
-> > +
-> > +		ret = devm_gpio_request_one(bq->dev, pdata->stat_gpio,
-> > +				GPIOD_IN, BQ24257_STAT_IRQ);
-> > +		if (ret) {
-> > +			dev_err(bq->dev, "stat_irq pin request failed\n");
-> > +			return ret;
-> > +		}
-> > +
-> > +		stat_irq = gpio_to_desc(pdata->stat_gpio);
-> > +	}
-> >  
-> > -	stat_irq = devm_gpiod_get_index(bq->dev, BQ24257_STAT_IRQ, 0, GPIOD_IN);
-> >  	if (IS_ERR(stat_irq)) {
-> gpio_to_desc() can return NULL. In this case, IS_ERR() will be false. I
-> think this is not what you want...
 
-Good catch! Fixed.
+--sdtB3X0nJg68CQEu
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
+Hi,
 
---
-Andreas Dannenberg
-Texas Instruments Inc
+On Thu, Sep 10, 2015 at 10:08:50AM +0200, Sebastian Reichel wrote:
+> > Probably best that Sebastian does it as there's another fix needed
+> > too. It seems the following are needed:
+> >=20
+> > - Revert $subject patch 3fc3895e4fe1 ("twl4030_charger: correctly
+> >   handle -EPROBE_DEFER from devm_usb_get_phy_by_node")
+> >=20
+> > - Apply compile fix "[PATCH] twl4030_charger: fix another compile
+> >   error"
 
-> 
-> The rest seems fine.
-> 
-> laurentiu
+I just added these to my next branch:
+
+https://git.kernel.org/cgit/linux/kernel/git/sre/linux-power-supply.git/com=
+mit/?h=3Dnext&id=3Daefc574bbbbe74bb891ba392d98f2d59a417c774
+https://git.kernel.org/cgit/linux/kernel/git/sre/linux-power-supply.git/com=
+mit/?h=3Dnext&id=3De11fc21e756e662e465cac3da6547d438d0b1446
+
+-- Sebastian
+
+--sdtB3X0nJg68CQEu
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJV8efLAAoJENju1/PIO/qa1EIQAKMMyAuckg46bC5mz9cWt1Hz
+/+ylOf0K7xD8yXVXthICJupKY+jVJVcw/2Q4jSieXmogQWbtd3mrKHjKCy2vcS2/
+wrFGcO075tUSSj4vhsRZhnLV6PKvzgY+c+9v2xAFIDzY9DmJmict3sPaH1mIMAgk
+4hBlFu1/0YX7cE1yO8T1XOJfo7aIXbfRY2vUArQlbO4SQS/dNtqmEn2HTc93a6nj
+n859JZidccd1KCHGTe3TN9yaAlw39S2KuEvjWUn7QDxbEOliTA23ZLA63IYBu2UP
+Gx+4K/SVEHgsINrL8dAtUHyWq9LuNi6G6p90f2DFiunbb5OdSeT4paR/XwQQtpHX
+22WsM21oUyO96MvXKdfQv2K0ulCz84B2D66hI0O1yWV7G3QlvDgFcumkIwtO4sVl
+D15bVo8XOC1aMGNbDwlNdZzNFFh+yS8m8uRbhIgAexNMeRDXWGAo5kRiGYegix6p
+A+CFWOoeOxu8p+Uh7xA2yMWVTQ7XaFDOYHobTQ15EWGl/CSEeXpDPQtU/IfXZfBZ
+YjhBIflyNkBUusLKzvxIWkFoh/DDM0OaAe5H3UoAGKhaty6kLMzKdH7MewS5n6h4
+krKf4/obdZ37wiGY9k7lKraTcK6wWfMXWfTqmTmaWQDtKJccYndflrpmpsr6JmVE
+jf9hEEFTzNJU4Bx6tZvI
+=DUPb
+-----END PGP SIGNATURE-----
+
+--sdtB3X0nJg68CQEu--
