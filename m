@@ -1,79 +1,104 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 03/13] twl4030_charger: correctly handle -EPROBE_DEFER
- from devm_usb_get_phy_by_node
-Date: Thu, 10 Sep 2015 22:27:59 +0200
-Message-ID: <20150910202759.GA4844@earth>
-References: <20150730001113.4012.18086.stgit@noble>
- <20150730001124.4012.31980.stgit@noble>
- <CAMAWPa__hFOuz24YBcFiR+m5mOUArSuNpuqh3Ju1H+yj6qadfA@mail.gmail.com>
- <CAMAWPa_s2ELgRBRtWzFucmREMuLXS_V5Akmad5yFU13-GrzBDA@mail.gmail.com>
- <87si6x4a2f.fsf@notabene.neil.brown.name>
- <20150902130724.GQ4215@atomide.com>
- <CAMAWPa8q1BOMvvKqqU88vYq4-_QhuxefVqkM6=4BP4-FGZxRPw@mail.gmail.com>
- <20150908201417.GG4215@atomide.com>
- <20150910080849.GA6164@earth>
+From: Al Stone <ahs3@redhat.com>
+Subject: Re: [PATCH v2 1/5] ACPI: add in a bad_madt_entry() function to
+ eventually replace the macro
+Date: Thu, 10 Sep 2015 14:43:45 -0600
+Message-ID: <55F1EB81.9030908@redhat.com>
+References: <1440022048-6285-1-git-send-email-al.stone@linaro.org>
+ <1440022048-6285-2-git-send-email-al.stone@linaro.org>
+ <55EDADF5.5060008@arm.com> <55F08F47.1070906@redhat.com>
+ <55F1ADC4.7090005@arm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="sdtB3X0nJg68CQEu"
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:40828 "EHLO mail.kernel.org"
+Received: from mx1.redhat.com ([209.132.183.28]:43923 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750789AbbIJU2E (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 10 Sep 2015 16:28:04 -0400
-Content-Disposition: inline
-In-Reply-To: <20150910080849.GA6164@earth>
+	id S1751108AbbIJUnr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 10 Sep 2015 16:43:47 -0400
+In-Reply-To: <55F1ADC4.7090005@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Kevin Hilman <khilman@kernel.org>, Neil Brown <neil@brown.name>, Samuel Ortiz <sameo@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, David Woodhouse <dwmw2@infradead.org>, lkml <linux-kernel@vger.kernel.org>, real GTA04 owners <gta04-owner@goldelico.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Pavel Machek <pavel@ucw.cz>, linux-omap <linux-omap@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Tyler Baker <tyler.baker@linaro.org>
+To: Sudeep Holla <sudeep.holla@arm.com>, Al Stone <al.stone@linaro.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>, "patches@linaro.org" <patches@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>
 
+On 09/10/2015 10:20 AM, Sudeep Holla wrote:
+> 
+> 
+> On 09/09/15 20:57, Al Stone wrote:
+>> On 09/07/2015 09:32 AM, Sudeep Holla wrote:
+>>> Hi Al,
+>>>
+>>> On 19/08/15 23:07, Al Stone wrote:
+>>>
+>>> I finally got a chance to try this series on Juno. Well it exposed a firmware
+>>> bug in MADT table :)
+>>>
+>>> [..]
+>>>
+>>>>                   acpi_tbl_entry_handler handler,
+>>>> @@ -245,6 +484,8 @@ acpi_parse_entries(char *id, unsigned long table_size,
+>>>>                  table_end) {
+>>>>                   if (entry->type == entry_id
+>>>>                       && (!max_entries || count < max_entries)) {
+>>>> +                       if (bad_madt_entry(table_header, entry))
+>>>> +                               return -EINVAL;
+>>>
+>>> Not sure if we can have the above check here unconditionally.
+>>> Currently I can see there are 2 other users of acpi_parse_entries i.e.
+>>> PCC and NUMA. So may be it can be made conditional or return success for
+>>> non-MADT tables from bad_madt_entry ?
+>>
+>> So, I went back and double checked the other users and they're looking at
+>> the return value for acpi_parse_entries properly; adding in the check above
+>> unconditionally should not cause any behavior change.
+> 
+> I disagree. I populated PCCT table on Juno to get this error for
+> PCCT(PCCT header gets interpreted as MADT header):
+> "
+> ACPI: undefined version for either FADT 5.1 or MADT 1
+> Error parsing PCC subspaces from PCCT
+> "
+> And here the stacktrace:
+> [<ffffffc000881e58>] bad_madt_entry+0x90/0x16c
+> [<ffffffc000882030>] acpi_table_parse_entries+0xfc/0x180
+> [<ffffffc000895af8>] pcc_init+0x70/0x148
+> 
+>> Further, despite the name, acpi_parse_entries is only used to examine MADT
+>> subtables.  Granted, we should probably make the name clearer at some point
+>> (too ambiguous as to which entries are parsed right now).  Nonetheless, current
+>> usage seems to be in order.
+>>
+> 
+> From the code inspection, I can see we have 3 users of acpi_parse_entries not
+> just MADT but also PCC and NUMA/SRAT
+> 
+> Something like this solves this issue:
+> -              if (bad_madt_entry(table_header, entry))
+> +              if (!strncmp(id, ACPI_SIG_MADT, 4) &&
+> +                      bad_madt_entry(table_header, entry)
+> 
+> 
+> Or am I still missing something ?
+> 
+> Regards,
+> Sudeep
 
---sdtB3X0nJg68CQEu
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Nope, I missed it.  Your fix above will solve the problem; I misunderstood
+how acpi_parse_entries() was being used -- somehow I had it in my head that
+only MADT was in use, and just not seeing that it's being used for several
+other subtable traversals also.  Sorry about that, Sudeep.  My mistake.
 
-Hi,
+I'll add this fix for a v4, but I'll wait for a few days to see if I get any
+additional comments -- I haven't heard from any x86, ia64 or ACPI maintainers
+yet.  OTOH, it's nice to know we've already found and fixed two sets of arm64
+ACPI tables that are in error by using these patches, even with the flaws :).
 
-On Thu, Sep 10, 2015 at 10:08:50AM +0200, Sebastian Reichel wrote:
-> > Probably best that Sebastian does it as there's another fix needed
-> > too. It seems the following are needed:
-> >=20
-> > - Revert $subject patch 3fc3895e4fe1 ("twl4030_charger: correctly
-> >   handle -EPROBE_DEFER from devm_usb_get_phy_by_node")
-> >=20
-> > - Apply compile fix "[PATCH] twl4030_charger: fix another compile
-> >   error"
-
-I just added these to my next branch:
-
-https://git.kernel.org/cgit/linux/kernel/git/sre/linux-power-supply.git/com=
-mit/?h=3Dnext&id=3Daefc574bbbbe74bb891ba392d98f2d59a417c774
-https://git.kernel.org/cgit/linux/kernel/git/sre/linux-power-supply.git/com=
-mit/?h=3Dnext&id=3De11fc21e756e662e465cac3da6547d438d0b1446
-
--- Sebastian
-
---sdtB3X0nJg68CQEu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJV8efLAAoJENju1/PIO/qa1EIQAKMMyAuckg46bC5mz9cWt1Hz
-/+ylOf0K7xD8yXVXthICJupKY+jVJVcw/2Q4jSieXmogQWbtd3mrKHjKCy2vcS2/
-wrFGcO075tUSSj4vhsRZhnLV6PKvzgY+c+9v2xAFIDzY9DmJmict3sPaH1mIMAgk
-4hBlFu1/0YX7cE1yO8T1XOJfo7aIXbfRY2vUArQlbO4SQS/dNtqmEn2HTc93a6nj
-n859JZidccd1KCHGTe3TN9yaAlw39S2KuEvjWUn7QDxbEOliTA23ZLA63IYBu2UP
-Gx+4K/SVEHgsINrL8dAtUHyWq9LuNi6G6p90f2DFiunbb5OdSeT4paR/XwQQtpHX
-22WsM21oUyO96MvXKdfQv2K0ulCz84B2D66hI0O1yWV7G3QlvDgFcumkIwtO4sVl
-D15bVo8XOC1aMGNbDwlNdZzNFFh+yS8m8uRbhIgAexNMeRDXWGAo5kRiGYegix6p
-A+CFWOoeOxu8p+Uh7xA2yMWVTQ7XaFDOYHobTQ15EWGl/CSEeXpDPQtU/IfXZfBZ
-YjhBIflyNkBUusLKzvxIWkFoh/DDM0OaAe5H3UoAGKhaty6kLMzKdH7MewS5n6h4
-krKf4/obdZ37wiGY9k7lKraTcK6wWfMXWfTqmTmaWQDtKJccYndflrpmpsr6JmVE
-jf9hEEFTzNJU4Bx6tZvI
-=DUPb
------END PGP SIGNATURE-----
-
---sdtB3X0nJg68CQEu--
+-- 
+ciao,
+al
+-----------------------------------
+Al Stone
+Software Engineer
+Red Hat, Inc.
+ahs3@redhat.com
+-----------------------------------
