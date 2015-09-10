@@ -1,76 +1,62 @@
-From: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH v6 4/5] devfreq_cooling: add trace information
-Date: Thu, 10 Sep 2015 13:19:28 -0400
-Message-ID: <20150910131928.3c88fe28@gandalf.local.home>
-References: <1441904972-5809-1-git-send-email-javi.merino@arm.com>
-	<1441904972-5809-5-git-send-email-javi.merino@arm.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH] clk: tegra: dfll: Properly protect OPP list
+Date: Thu, 10 Sep 2015 10:51:44 -0700
+Message-ID: <20150910175144.GB15099@codeaurora.org>
+References: <1441893321-4563-1-git-send-email-thierry.reding@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1441904972-5809-5-git-send-email-javi.merino@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cw00.choi@samsung.com, edubezval@gmail.com, Zhang Rui <rui.zhang@intel.com>, Ingo Molnar <mingo@redhat.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:49860 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752233AbbIJRvq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Sep 2015 13:51:46 -0400
+Content-Disposition: inline
+In-Reply-To: <1441893321-4563-1-git-send-email-thierry.reding@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thierry Reding <thierry.reding@gmail.com>
+Cc: Alexandre Courbot <gnurou@gmail.com>, Stephen Warren <swarren@wwwdotorg.org>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, Tuomas Tynkkynen <ttynkkynen@nvidia.com>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, linux-tegra@vger.kernel.org
 
-On Thu, 10 Sep 2015 18:09:31 +0100
-Javi Merino <javi.merino@arm.com> wrote:
-
-> Tracing is useful for debugging and performance tuning.  Add similar
-> traces to what's present in the cpu cooling device.
+On 09/10, Thierry Reding wrote:
 > 
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Eduardo Valentin <edubezval@gmail.com>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Signed-off-by: Javi Merino <javi.merino@arm.com>
+> Signed-off-by: Thierry Reding <treding@nvidia.com>
+
+Fixes: ?
+
 > ---
->  drivers/thermal/devfreq_cooling.c |  6 +++++
->  include/trace/events/thermal.h    | 53 +++++++++++++++++++++++++++++++++++++++
->  2 files changed, 59 insertions(+)
+>  drivers/clk/tegra/clk-dfll.c | 8 ++++++++
+>  1 file changed, 8 insertions(+)
 > 
-> diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
-> index a032c5d5c374..a27206815066 100644
-> --- a/drivers/thermal/devfreq_cooling.c
-> +++ b/drivers/thermal/devfreq_cooling.c
-> @@ -25,6 +25,8 @@
->  #include <linux/pm_opp.h>
->  #include <linux/thermal.h>
+> diff --git a/drivers/clk/tegra/clk-dfll.c b/drivers/clk/tegra/clk-dfll.c
+> index aa026bcf5b00..8e25bd52da8c 100644
+> --- a/drivers/clk/tegra/clk-dfll.c
+> +++ b/drivers/clk/tegra/clk-dfll.c
+> @@ -632,11 +632,15 @@ static int find_lut_index_for_rate(struct tegra_dfll *td, unsigned long rate)
+>  	struct dev_pm_opp *opp;
+>  	int i, uv;
 >  
-> +#include <trace/events/thermal.h>
+> +	rcu_read_lock();
 > +
->  static DEFINE_MUTEX(devfreq_lock);
->  static DEFINE_IDR(devfreq_idr);
+>  	opp = dev_pm_opp_find_freq_ceil(td->soc->dev, &rate);
+>  	if (IS_ERR(opp))
+>  		return PTR_ERR(opp);
+>  	uv = dev_pm_opp_get_voltage(opp);
 >  
-> @@ -293,6 +295,9 @@ static int devfreq_cooling_get_requested_power(struct thermal_cooling_device *cd
->  	/* Get static power */
->  	static_power = get_static_power(dfc, freq);
->  
-> +	trace_thermal_power_devfreq_get_power(cdev, status, freq, dyn_power,
-> +					      static_power);
+> +	rcu_read_unlock();
 > +
->  	*power = dyn_power + static_power;
+>  	for (i = 0; i < td->i2c_lut_size; i++) {
+>  		if (regulator_list_voltage(td->vdd_reg, td->i2c_lut[i]) == uv)
+>  			return i;
+> @@ -1450,6 +1454,8 @@ static int dfll_build_i2c_lut(struct tegra_dfll *td)
+>  	td->i2c_lut[0] = lut;
 >  
->  	return 0;
-> @@ -348,6 +353,7 @@ static int devfreq_cooling_power2state(struct thermal_cooling_device *cdev,
->  			break;
->  
->  	*state = i;
-> +	trace_thermal_power_devfreq_limit(cdev, freq, *state, power);
+>  	for (j = 1, rate = 0; ; rate++) {
+> +		rcu_read_lock();
 
-I'm curious, does changing the above to:
+Don't we already have an rcu_read_lock() at the beginning of this
+function? I don't understand why we need to nest them in the same
+function.
 
-	trace_thermal_power_devfreq_limit(cdev, freq, i, power);
-
-make the compiled code better?
-
-A tracepoint does some whacky things, and gcc may not optimize this.
-
-The rest looks fine to me.
-
--- Steve
-
->  	return 0;
->  }
-\
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
