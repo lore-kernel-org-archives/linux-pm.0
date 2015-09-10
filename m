@@ -1,31 +1,38 @@
-From: Laurentiu Palcu <laurentiu.palcu@intel.com>
-Subject: Re: [PATCH v2 09/13] power: bq24257: Allow input current limit sysfs
- access
-Date: Thu, 10 Sep 2015 17:06:30 +0300
-Message-ID: <20150910140630.GK21512@lpalcu-desk>
-References: <1441757557-7266-1-git-send-email-dannenberg@ti.com>
- <1441757557-7266-10-git-send-email-dannenberg@ti.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] PM / Domains: Remove name based API for genpd
+Date: Thu, 10 Sep 2015 16:08:47 +0200
+Message-ID: <CAMuHMdXmECGYOYKms9Dg8Bx6D2NAYk4uJiz-3GHWy21xK_gzJQ@mail.gmail.com>
+References: <1441893650-19923-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:7215 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752116AbbIJOGd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 10 Sep 2015 10:06:33 -0400
-Content-Disposition: inline
-In-Reply-To: <1441757557-7266-10-git-send-email-dannenberg@ti.com>
+Received: from mail-ob0-f182.google.com ([209.85.214.182]:35049 "EHLO
+	mail-ob0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752116AbbIJOIs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Sep 2015 10:08:48 -0400
+Received: by obuk4 with SMTP id k4so35508859obu.2
+        for <linux-pm@vger.kernel.org>; Thu, 10 Sep 2015 07:08:47 -0700 (PDT)
+In-Reply-To: <1441893650-19923-1-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andreas Dannenberg <dannenberg@ti.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
 
-On Tue, Sep 08, 2015 at 07:12:33PM -0500, Andreas Dannenberg wrote:
-> This patch allows reading (and writing, if the D+/D- USB signal-based
-> charger type detection is disabled) of the input current limit through
-> the POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT sysfs property. This allows
-> userspace to see what charger was detected and to re-configure the
-> maximum current drawn from the external supply at runtime based on
-> system-level knowledge or user input.
-> 
-> Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
-Reviewed-by: Laurentiu Palcu <laurentiu.palcu@intel.com>
+On Thu, Sep 10, 2015 at 4:00 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> As all users of the named based APIs now have converted to the non-named
+> based APIs, the time has come to remove them.
+>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+
+Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
