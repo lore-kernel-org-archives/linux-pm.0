@@ -1,48 +1,57 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: Re: [PATCH] power: bq24261_charger: Add support for TI BQ24261
- charger
-Date: Thu, 10 Sep 2015 11:42:37 -0500
-Message-ID: <55F1B2FD.4020608@ti.com>
-References: <1441560187-23611-1-git-send-email-ramakrishna.pallala@intel.com>
- <CAJKOXPfDu+LxoiQrV+CsqUbEVwYb1Zmk-m9y-L_1JxrB6ouS0g@mail.gmail.com>
- <D854C92F57B1B347B57E531E78D05EAD57904B8D@BGSMSX104.gar.corp.intel.com>
- <55F0C522.6070705@samsung.com>
+From: Andreas Dannenberg <dannenberg@ti.com>
+Subject: Re: [PATCH v2 07/13] power: bq24257: Extend scope of mutex protection
+Date: Thu, 10 Sep 2015 12:05:49 -0500
+Message-ID: <20150910170547.GB16768@borg>
+References: <1441757557-7266-1-git-send-email-dannenberg@ti.com>
+ <1441757557-7266-8-git-send-email-dannenberg@ti.com>
+ <20150910134309.GI21512@lpalcu-desk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <55F0C522.6070705@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, "Pallala, Ramakrishna" <ramakrishna.pallala@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, "Tc, Jenny" <jenny.tc@intel.com>, Andreas Dannenberg <dannenberg@ti.com>
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bear.ext.ti.com ([192.94.94.41]:59521 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750970AbbIJRGU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 10 Sep 2015 13:06:20 -0400
+Content-Disposition: inline
+In-Reply-To: <20150910134309.GI21512@lpalcu-desk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Laurentiu Palcu <laurentiu.palcu@intel.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-On 09/09/2015 06:47 PM, Krzysztof Kozlowski wrote:
->>>> +- ti,enable-user-write: boolean, if present driver will allow the user space
->>>> +    to control the charging current and voltage through sysfs;
->>>
->>> This is not DT property. It does not describe hardware.
->> We needed a mechanism to enable the sysfs writes on certain properties.
->> If DT is not the place where should it go?
->
-> DT is not the place. As I discussed later with Andreas, if you really
-> need this and if mainline is a place for that then probably this should
-> be compile option (a Kconfig symbol).
->
+On Thu, Sep 10, 2015 at 04:43:10PM +0300, Laurentiu Palcu wrote:
+> On Tue, Sep 08, 2015 at 07:12:31PM -0500, Andreas Dannenberg wrote:
+> > This commit extends the use of the existing mutex to pave the way for
+> > using direct device access inside sysfs getter/setter routines in a
+> > way that the access during interrupts and timer routines does not
+> > interfere with device access by the CPU or between multiple cores.
+> > 
+> > This also addresses a potential race condition that could be caused
+> > by bq24257_irq_handler_thread() and bq24257_iilimit_autoset() accessing
+> > the device simultaneously.
+> What potential race? AFAIK, we're doing all the operations through
+> regmap, and regmap operations are serialized. It has its own mutex for
+> this. Unless I got it all wrong...
+> 
+> So, IMHO, you don't need to protect against simultaneous device access.
+> It's taken care of by regmap. Chip state data protection should be enough.
 
-I think this would actually be a good use for module parameters, this way
-it could still be set at boot without re-compiling.
+You are right, closely inspecting regmap.c shows that this driver indeed
+uses mutexes (and instantiates them during init if needed) which is a
+fantastic feature. The reasons for my proposed mutex changes were based
+on the assumption that there is no built-in protection. Since this
+assumption is wrong the potential race condition I pointed out in the
+original code doesn't exist and I also don't see a need despite the
+additions I make in this patch series to add/change the existing mutex
+scheme. Will drop that patch.
 
-I think compile-time disabling sysfs properties because they are "dangerous" is
-a little bit too artificially restricting and controlling, you can set permissions
-so only root can change them already. The kernel should not be restricting root,
-I understand the fear of someone rooting a machine and remotely over charging
-a LiPo[1], but these physical limits are hardware descriptions and can and should
-be set by DT, beyond this root should have full control over their machine.
-Besides root can already just unbind your driver and issue raw I2C commands to do
-the same thing. </rant>
+Thanks,
 
-[1] http://i.imgur.com/vszJJ.jpg
+--
+Andreas Dannenberg
+Texas Instruments Inc
 
-Regards,
-Andrew
+> 
+> laurentiu
+> 
+> 
