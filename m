@@ -1,38 +1,55 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] PM / Domains: Remove name based API for genpd
-Date: Thu, 10 Sep 2015 16:08:47 +0200
-Message-ID: <CAMuHMdXmECGYOYKms9Dg8Bx6D2NAYk4uJiz-3GHWy21xK_gzJQ@mail.gmail.com>
-References: <1441893650-19923-1-git-send-email-ulf.hansson@linaro.org>
+From: Al Stone <ahs3@redhat.com>
+Subject: Re: [Linaro-acpi] [PATCH v3 1/5] ACPI: add in a bad_madt_entry()
+ function to eventually replace the macro
+Date: Thu, 10 Sep 2015 08:13:36 -0600
+Message-ID: <55F19010.9060603@redhat.com>
+References: <1441832991-28200-1-git-send-email-al.stone@linaro.org>
+ <1441832991-28200-2-git-send-email-al.stone@linaro.org>
+ <20150910121413.GA11267@xora-haswell.xora.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f182.google.com ([209.85.214.182]:35049 "EHLO
-	mail-ob0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752116AbbIJOIs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Sep 2015 10:08:48 -0400
-Received: by obuk4 with SMTP id k4so35508859obu.2
-        for <linux-pm@vger.kernel.org>; Thu, 10 Sep 2015 07:08:47 -0700 (PDT)
-In-Reply-To: <1441893650-19923-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-ia64-owner@vger.kernel.org>
+In-Reply-To: <20150910121413.GA11267@xora-haswell.xora.org.uk>
+Sender: linux-ia64-owner@vger.kernel.org
+To: Graeme Gregory <graeme.gregory@linaro.org>, Al Stone <al.stone@linaro.org>
+Cc: linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, linux-ia64@vger.kernel.org, patches@linaro.org, linux-pm@vger.kernel.org, linaro-acpi@lists.linaro.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
 
-On Thu, Sep 10, 2015 at 4:00 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> As all users of the named based APIs now have converted to the non-named
-> based APIs, the time has come to remove them.
->
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+On 09/10/2015 06:14 AM, Graeme Gregory wrote:
+> On Wed, Sep 09, 2015 at 03:09:47PM -0600, Al Stone wrote:
+>> The existing BAD_MADT_ENTRY macro only checks that the size of the data
+>> structure for an MADT subtable matches the length entry in the subtable.
+>> This is, unfortunately, not reliable.  Nor, as it turns out, does it have
+>> anything to do with what the length should be in any particular table.
+>>
 
-Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
+[snip...]
+  			if (handler(entry, table_end))
+>>  				return -EINVAL;
+>>  
+>> @@ -349,7 +592,7 @@ int __init acpi_table_parse(char *id, acpi_tbl_table_handler handler)
+>>  		return -ENODEV;
+>>  }
+>>  
+>> -/* 
+>> +/*
+>>   * The BIOS is supposed to supply a single APIC/MADT,
+>>   * but some report two.  Provide a knob to use either.
+>>   * (don't you wish instance 0 and 1 were not the same?)
+> 
+> Unrelated whitespace change snuck in here.
+> 
+> Graeme
 
-Gr{oetje,eeting}s,
+Bah.  Nice catch; not sure how that got in there, but duly noted.
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+-- 
+ciao,
+al
+-----------------------------------
+Al Stone
+Software Engineer
+Red Hat, Inc.
+ahs3@redhat.com
+-----------------------------------
