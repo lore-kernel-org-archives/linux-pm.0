@@ -1,58 +1,154 @@
 From: Javi Merino <javi.merino@arm.com>
-Subject: [PATCH v6 2/5] PM / OPP: get the voltage for all OPPs
-Date: Thu, 10 Sep 2015 18:09:29 +0100
-Message-ID: <1441904972-5809-3-git-send-email-javi.merino@arm.com>
+Subject: [PATCH v6 1/5] PM / devfreq: cache the last call to get_dev_status()
+Date: Thu, 10 Sep 2015 18:09:28 +0100
+Message-ID: <1441904972-5809-2-git-send-email-javi.merino@arm.com>
 References: <1441904972-5809-1-git-send-email-javi.merino@arm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:34827 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751707AbbIJRMp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 10 Sep 2015 13:12:45 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1441904972-5809-1-git-send-email-javi.merino@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, cw00.choi@samsung.com, edubezval@gmail.com, Javi Merino <javi.merino@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-kernel@vger.kernel.org, cw00.choi@samsung.com, edubezval@gmail.com, Javi Merino <javi.merino@arm.com>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>
+List-Id: linux-pm@vger.kernel.org
 
-The OPP library is now used for power models to calculate the power
-that a device would consume at a specific OPP.  To do that, we use a
-simple power model which takes frequency and voltage as inputs.  We get
-the voltage and frequency from the OPP library.
+The return value of get_dev_status() can be reused.  Cache it so that
+other parts of the kernel can reuse it instead of having to call the
+same function again.
 
-The devfreq cooling device for the thermal framework controls
-temperature by disabling OPPs.  The power model needs to calculate the
-power that would be consumed if we reenabled the OPP.  Therefore, let
-dev_pm_opp_get_voltage() work for disabled OPPs.
-
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>
 Signed-off-by: Javi Merino <javi.merino@arm.com>
+Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 ---
- drivers/base/power/opp.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index eb254497a494..c9a0187bba10 100644
---- a/drivers/base/power/opp.c
-+++ b/drivers/base/power/opp.c
-@@ -217,7 +217,7 @@ static struct device_opp *_find_device_opp(struct device *dev)
- }
+Hi MyungJoo,
+    
+The patches in this series haven't changed from what you have in your
+tree.  I'm only including them because they're not yet in mainline.
+
+ drivers/devfreq/governor_simpleondemand.c | 33 +++++++++++++++++--------------
+ include/linux/devfreq.h                   | 15 ++++++++++++++
+ 2 files changed, 33 insertions(+), 15 deletions(-)
+
+diff --git a/drivers/devfreq/governor_simpleondemand.c b/drivers/devfreq/governor_simpleondemand.c
+index 0720ba84ca92..ae72ba5e78df 100644
+--- a/drivers/devfreq/governor_simpleondemand.c
++++ b/drivers/devfreq/governor_simpleondemand.c
+@@ -21,17 +21,20 @@
+ static int devfreq_simple_ondemand_func(struct devfreq *df,
+ 					unsigned long *freq)
+ {
+-	struct devfreq_dev_status stat;
+-	int err = df->profile->get_dev_status(df->dev.parent, &stat);
++	int err;
++	struct devfreq_dev_status *stat;
+ 	unsigned long long a, b;
+ 	unsigned int dfso_upthreshold = DFSO_UPTHRESHOLD;
+ 	unsigned int dfso_downdifferential = DFSO_DOWNDIFFERENCTIAL;
+ 	struct devfreq_simple_ondemand_data *data = df->data;
+ 	unsigned long max = (df->max_freq) ? df->max_freq : UINT_MAX;
  
++	err = devfreq_update_stats(df);
+ 	if (err)
+ 		return err;
+ 
++	stat = &df->last_status;
++
+ 	if (data) {
+ 		if (data->upthreshold)
+ 			dfso_upthreshold = data->upthreshold;
+@@ -43,41 +46,41 @@ static int devfreq_simple_ondemand_func(struct devfreq *df,
+ 		return -EINVAL;
+ 
+ 	/* Assume MAX if it is going to be divided by zero */
+-	if (stat.total_time == 0) {
++	if (stat->total_time == 0) {
+ 		*freq = max;
+ 		return 0;
+ 	}
+ 
+ 	/* Prevent overflow */
+-	if (stat.busy_time >= (1 << 24) || stat.total_time >= (1 << 24)) {
+-		stat.busy_time >>= 7;
+-		stat.total_time >>= 7;
++	if (stat->busy_time >= (1 << 24) || stat->total_time >= (1 << 24)) {
++		stat->busy_time >>= 7;
++		stat->total_time >>= 7;
+ 	}
+ 
+ 	/* Set MAX if it's busy enough */
+-	if (stat.busy_time * 100 >
+-	    stat.total_time * dfso_upthreshold) {
++	if (stat->busy_time * 100 >
++	    stat->total_time * dfso_upthreshold) {
+ 		*freq = max;
+ 		return 0;
+ 	}
+ 
+ 	/* Set MAX if we do not know the initial frequency */
+-	if (stat.current_frequency == 0) {
++	if (stat->current_frequency == 0) {
+ 		*freq = max;
+ 		return 0;
+ 	}
+ 
+ 	/* Keep the current frequency */
+-	if (stat.busy_time * 100 >
+-	    stat.total_time * (dfso_upthreshold - dfso_downdifferential)) {
+-		*freq = stat.current_frequency;
++	if (stat->busy_time * 100 >
++	    stat->total_time * (dfso_upthreshold - dfso_downdifferential)) {
++		*freq = stat->current_frequency;
+ 		return 0;
+ 	}
+ 
+ 	/* Set the desired frequency based on the load */
+-	a = stat.busy_time;
+-	a *= stat.current_frequency;
+-	b = div_u64(a, stat.total_time);
++	a = stat->busy_time;
++	a *= stat->current_frequency;
++	b = div_u64(a, stat->total_time);
+ 	b *= 100;
+ 	b = div_u64(b, (dfso_upthreshold - dfso_downdifferential / 2));
+ 	*freq = (unsigned long) b;
+diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+index ce447f0f1bad..70a1c60ddda4 100644
+--- a/include/linux/devfreq.h
++++ b/include/linux/devfreq.h
+@@ -161,6 +161,7 @@ struct devfreq {
+ 	struct delayed_work work;
+ 
+ 	unsigned long previous_freq;
++	struct devfreq_dev_status last_status;
+ 
+ 	void *data; /* private data for governors */
+ 
+@@ -204,6 +205,15 @@ extern int devm_devfreq_register_opp_notifier(struct device *dev,
+ extern void devm_devfreq_unregister_opp_notifier(struct device *dev,
+ 						struct devfreq *devfreq);
+ 
++/**
++ * devfreq_update_stats() - update the last_status pointer in struct devfreq
++ * @df:		the devfreq instance whose status needs updating
++ */
++static inline int devfreq_update_stats(struct devfreq *df)
++{
++	return df->profile->get_dev_status(df->dev.parent, &df->last_status);
++}
++
+ #if IS_ENABLED(CONFIG_DEVFREQ_GOV_SIMPLE_ONDEMAND)
  /**
-- * dev_pm_opp_get_voltage() - Gets the voltage corresponding to an available opp
-+ * dev_pm_opp_get_voltage() - Gets the voltage corresponding to an opp
-  * @opp:	opp for which voltage has to be returned for
-  *
-  * Return: voltage in micro volt corresponding to the opp, else
-@@ -239,7 +239,7 @@ unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
- 	opp_rcu_lockdep_assert();
+  * struct devfreq_simple_ondemand_data - void *data fed to struct devfreq
+@@ -289,6 +299,11 @@ static inline void devm_devfreq_unregister_opp_notifier(struct device *dev,
+ 							struct devfreq *devfreq)
+ {
+ }
++
++static inline int devfreq_update_stats(struct devfreq *df)
++{
++	return -EINVAL;
++}
+ #endif /* CONFIG_PM_DEVFREQ */
  
- 	tmp_opp = rcu_dereference(opp);
--	if (IS_ERR_OR_NULL(tmp_opp) || !tmp_opp->available)
-+	if (IS_ERR_OR_NULL(tmp_opp))
- 		pr_err("%s: Invalid parameters\n", __func__);
- 	else
- 		v = tmp_opp->u_volt;
+ #endif /* __LINUX_DEVFREQ_H__ */
 -- 
 1.9.1
-
