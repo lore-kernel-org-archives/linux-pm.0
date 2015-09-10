@@ -1,62 +1,61 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH] clk: tegra: dfll: Properly protect OPP list
-Date: Thu, 10 Sep 2015 10:51:44 -0700
-Message-ID: <20150910175144.GB15099@codeaurora.org>
-References: <1441893321-4563-1-git-send-email-thierry.reding@gmail.com>
+From: Alexandra Yates <alexandra.yates@linux.intel.com>
+Subject: Re: [PATCH V7] Report interrupt that caused system wakeup
+Date: Thu, 10 Sep 2015 11:42:15 -0700
+Message-ID: <55F1CF07.8070505@linux.intel.com>
+References: <Pine.LNX.4.44L0.1509101012180.1422-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:49860 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752233AbbIJRvq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Sep 2015 13:51:46 -0400
-Content-Disposition: inline
-In-Reply-To: <1441893321-4563-1-git-send-email-thierry.reding@gmail.com>
+Received: from mga09.intel.com ([134.134.136.24]:9450 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752078AbbIJSkT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 10 Sep 2015 14:40:19 -0400
+In-Reply-To: <Pine.LNX.4.44L0.1509101012180.1422-100000@iolanthe.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thierry Reding <thierry.reding@gmail.com>
-Cc: Alexandre Courbot <gnurou@gmail.com>, Stephen Warren <swarren@wwwdotorg.org>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, Tuomas Tynkkynen <ttynkkynen@nvidia.com>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, linux-tegra@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: tglx@linutronix.de, kristen.c.accardi@intel.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net
 
-On 09/10, Thierry Reding wrote:
-> 
-> Signed-off-by: Thierry Reding <treding@nvidia.com>
+Hi Alan,
 
-Fixes: ?
+On 09/10/2015 07:14 AM, Alan Stern wrote:
+> On Wed, 9 Sep 2015, Alexandra Yates wrote:
+>
+>> This feature reports which IRQ cause the system to wakeup from sleep last
+>> time it was suspended.
+> I thought you said V7 of this patch was written based on the feedback I
+> provided.  Obviously that is not true.
+Yes, that was the intention.
+> This feature does NOT report which IRQ caused the system to wake up
+> from sleep the last time it was suspended!  All it does is report one
+> of the IRQs which have occurred since the last time the system started
+> a sleep transition.
+I'm not sure why you say this, please elaborate further.
 
-> ---
->  drivers/clk/tegra/clk-dfll.c | 8 ++++++++
->  1 file changed, 8 insertions(+)
-> 
-> diff --git a/drivers/clk/tegra/clk-dfll.c b/drivers/clk/tegra/clk-dfll.c
-> index aa026bcf5b00..8e25bd52da8c 100644
-> --- a/drivers/clk/tegra/clk-dfll.c
-> +++ b/drivers/clk/tegra/clk-dfll.c
-> @@ -632,11 +632,15 @@ static int find_lut_index_for_rate(struct tegra_dfll *td, unsigned long rate)
->  	struct dev_pm_opp *opp;
->  	int i, uv;
->  
-> +	rcu_read_lock();
-> +
->  	opp = dev_pm_opp_find_freq_ceil(td->soc->dev, &rate);
->  	if (IS_ERR(opp))
->  		return PTR_ERR(opp);
->  	uv = dev_pm_opp_get_voltage(opp);
->  
-> +	rcu_read_unlock();
-> +
->  	for (i = 0; i < td->i2c_lut_size; i++) {
->  		if (regulator_list_voltage(td->vdd_reg, td->i2c_lut[i]) == uv)
->  			return i;
-> @@ -1450,6 +1454,8 @@ static int dfll_build_i2c_lut(struct tegra_dfll *td)
->  	td->i2c_lut[0] = lut;
->  
->  	for (j = 1, rate = 0; ; rate++) {
-> +		rcu_read_lock();
+The way I understand the code and proposed solution is that when
+the system goes into freeze mode, at that point wakeup_irq is set to 0.
 
-Don't we already have an rcu_read_lock() at the beginning of this
-function? I don't understand why we need to nest them in the same
-function.
+Once the system sees an interrupt at wakeup from freeze. wakeup_irq is 
+set to
+the irq_number that caused the wakeup.  This path of code is protected 
+by spin lock,
+
+which should protect the code path from other IRQs that came after the 
+first IRQ.
+This is only set once. When other IRQs come and the wakeup_irq is set 
+then the code
+doesn't store them.
+
+> Alan Stern
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
 
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+Thank you,
+<Alexandra>
+
