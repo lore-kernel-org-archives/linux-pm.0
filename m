@@ -1,70 +1,112 @@
-From: Andreas Dannenberg <dannenberg@ti.com>
-Subject: Re: [PATCH v2 13/13] dt: power: bq2425x-charger: Cover additional
- devices
-Date: Thu, 10 Sep 2015 16:05:44 -0500
-Message-ID: <20150910210544.GB16113@borg>
-References: <1441757557-7266-1-git-send-email-dannenberg@ti.com>
- <1441757557-7266-14-git-send-email-dannenberg@ti.com>
- <55EF7CDA.9030505@samsung.com>
- <20150909024841.GB32255@beast>
- <55EFBC61.1050405@samsung.com>
- <20150909201534.GB9887@beast>
- <55F0CB8D.9000507@samsung.com>
- <20150910150032.GP21512@lpalcu-desk>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: pass policy to ->get() driver callback
+Date: Thu, 10 Sep 2015 23:36:57 +0200
+Message-ID: <1725227.VMGKuhRxma@vostro.rjw.lan>
+References: <98e79b26d8250c33001c7a50378b0e288b8511db.1438339396.git.viresh.kumar@linaro.org> <11470100.cEo24Tpcgr@vostro.rjw.lan> <20150910012222.GN5266@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:40054 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751047AbbIJVGP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 10 Sep 2015 17:06:15 -0400
-Content-Disposition: inline
-In-Reply-To: <20150910150032.GP21512@lpalcu-desk>
+Received: from v094114.home.net.pl ([79.96.170.134]:50570 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751018AbbIJVJF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Sep 2015 17:09:05 -0400
+In-Reply-To: <20150910012222.GN5266@linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Laurentiu Palcu <laurentiu.palcu@intel.com>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Kristen Carlson Accardi <kristen@linux.intel.com>, open list <linux-kernel@vger.kernel.org>, Sudeep Holla <sudeep.holla@arm.com>
 
-On Thu, Sep 10, 2015 at 06:00:32PM +0300, Laurentiu Palcu wrote:
-> On Thu, Sep 10, 2015 at 09:15:09AM +0900, Krzysztof Kozlowski wrote:
-> > On 10.09.2015 05:15, Andreas Dannenberg wrote:
-
-[...]
-
-> > >> ti,current-limit (bq2425x) - maximum current to be drawn in *uA*
-> > > 
-> > > Ok. Again here my preference would be mA. Like already on the bq2415x.
-> > > If we can change the bq2425x driver to mA (see separate thread) we'd be
-> > > closer to a more unified set of properties. Otherwise we would have
-> > > properties with the same name but different units (is this even
-> > > possible?).
-> > 
-> > mA would be nice... but bq2425x driver must support existing device
-> > which means it must support existing bindings. Unfortunately the
-> > existing binding for bq24257 is in uA.
+On Thursday, September 10, 2015 06:52:22 AM Viresh Kumar wrote:
+> On 10-09-15, 03:41, Rafael J. Wysocki wrote:
+> > I see one.  That unfortunately is the acpi-cpufreq driver, but it still is one.
 > 
-> Oh boy... apparently this unit discrepancy mess for TI chargers was my
-> doing. :/
+> Hmm..
 > 
-> I replied on the other thread already on my bindings choice... As I said
-> there, all we can do now is agree on the binding names to be consistent.
-> I'm afraid the units (as Krzysztof pointed) are pretty much settled...
-> :|
+> > Well, cpufreq_generic_get() does _get_raw(), so I suppose acpi-cpufreq may
+> > do that too?
+> 
+> Yeah, it can.
 
-Hi Laurentiu,
+OK, so let's make that change.
 
-Yes let's keep the binding names consistent. And as for the units -
-given the new state of the world (recent driver additions, inability to
-change units on existing drivers) the way this aspects looks to me now
-we should probably go wih uA/uV for all new bqXXX chargers. It's not a
-big deal, looks like micro units are widely used in other parts of the
-Kernel already (see IIO framework).
+BTW, I wonder how much of the stuff in cpufreq.h can be moved to a local header
+under drivers/cpufreq/.  It looks like the majority of it is not used by
+anybody else.
 
-As indicated in the other thread I'll be happy to step in as the TI/bqXXX
-DT bindings maintainer moving forward.
+---
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Subject: cpufreq: acpi-cpufreq: Use cpufreq_cpu_get_raw() in ->get()
 
-Regards,
+cpufreq_cpu_get() called by get_cur_freq_on_cpu() is overkill,
+because the ->get() callback is always invoked in a context in
+which all of the conditions checked by cpufreq_cpu_get() are
+guaranteed to be satisfied.
 
---
-Andreas Dannenberg
-Texas Instruments Inc
+Use cpufreq_cpu_get_raw() instead of it and drop the
+corresponding cpufreq_cpu_put() from get_cur_freq_on_cpu().
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/acpi-cpufreq.c |    3 +--
+ drivers/cpufreq/cpufreq.c      |    2 +-
+ include/linux/cpufreq.h        |    5 +++++
+ 3 files changed, 7 insertions(+), 3 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/acpi-cpufreq.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/acpi-cpufreq.c
++++ linux-pm/drivers/cpufreq/acpi-cpufreq.c
+@@ -375,12 +375,11 @@ static unsigned int get_cur_freq_on_cpu(
+ 
+ 	pr_debug("get_cur_freq_on_cpu (%d)\n", cpu);
+ 
+-	policy = cpufreq_cpu_get(cpu);
++	policy = cpufreq_cpu_get_raw(cpu);
+ 	if (unlikely(!policy))
+ 		return 0;
+ 
+ 	data = policy->driver_data;
+-	cpufreq_cpu_put(policy);
+ 	if (unlikely(!data || !data->freq_table))
+ 		return 0;
+ 
+Index: linux-pm/drivers/cpufreq/cpufreq.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq.c
++++ linux-pm/drivers/cpufreq/cpufreq.c
+@@ -238,13 +238,13 @@ int cpufreq_generic_init(struct cpufreq_
+ }
+ EXPORT_SYMBOL_GPL(cpufreq_generic_init);
+ 
+-/* Only for cpufreq core internal use */
+ struct cpufreq_policy *cpufreq_cpu_get_raw(unsigned int cpu)
+ {
+ 	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
+ 
+ 	return policy && cpumask_test_cpu(cpu, policy->cpus) ? policy : NULL;
+ }
++EXPORT_SYMBOL_GPL(cpufreq_cpu_get_raw);
+ 
+ unsigned int cpufreq_generic_get(unsigned int cpu)
+ {
+Index: linux-pm/include/linux/cpufreq.h
+===================================================================
+--- linux-pm.orig/include/linux/cpufreq.h
++++ linux-pm/include/linux/cpufreq.h
+@@ -129,9 +129,14 @@ struct cpufreq_policy {
+ #define CPUFREQ_SHARED_TYPE_ANY	 (3) /* Freq can be set from any dependent CPU*/
+ 
+ #ifdef CONFIG_CPU_FREQ
++struct cpufreq_policy *cpufreq_cpu_get_raw(unsigned int cpu);
+ struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu);
+ void cpufreq_cpu_put(struct cpufreq_policy *policy);
+ #else
++static inline struct cpufreq_policy *cpufreq_cpu_get_raw(unsigned int cpu)
++{
++	return NULL;
++}
+ static inline struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu)
+ {
+ 	return NULL;
+
