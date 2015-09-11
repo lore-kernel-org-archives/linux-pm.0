@@ -1,133 +1,106 @@
-From: Andreas Dannenberg <dannenberg@ti.com>
-Subject: [PATCH v3 07/10] power: bq24257: Add input DPM voltage threshold setting support
-Date: Fri, 11 Sep 2015 15:26:39 -0500
-Message-ID: <1442003202-1430-8-git-send-email-dannenberg@ti.com>
-References: <1442003202-1430-1-git-send-email-dannenberg@ti.com>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: System will not suspend with highest numbered CPU offline [REGRESSION][BISECTED]
+Date: Fri, 11 Sep 2015 13:43:51 -0700
+Message-ID: <55F33D07.5090107@codeaurora.org>
+References: <001401d0e691$302127b0$90637710$@net> <001601d0e7af$01a22140$04e663c0$@net> <20150905081407.GK5285@linux> <36067670.SJVW3MBOsV@vostro.rjw.lan> <20150908024014.GD26760@linux>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:53991 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753877AbbIKU2O (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Sep 2015 16:28:14 -0400
-In-Reply-To: <1442003202-1430-1-git-send-email-dannenberg@ti.com>
+Received: from smtp.codeaurora.org ([198.145.29.96]:34040 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751841AbbIKUnx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Sep 2015 16:43:53 -0400
+In-Reply-To: <20150908024014.GD26760@linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Andreas Dannenberg <dannenberg@ti.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Doug Smythies <dsmythies@telus.net>, "'Rafael J. Wysocki'" <rafael@kernel.org>, linux-pm@vger.kernel.org
 
-A new optional device property called "ti,in-dpm-voltage" is introduced
-to allow configuring the input voltage threshold for the devices'
-dynamic power path management (DPM) feature. In short, it can be used to
-prevent the input voltage from dropping below a certain value as current
-is drawn to charge the battery or supply the system.
+Sorry about the late reply and not helping out earlier. Didn't check 
+this email account for sometime.
 
-Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
----
- drivers/power/bq24257_charger.c | 44 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 44 insertions(+)
+On 09/07/2015 07:40 PM, Viresh Kumar wrote:
+> On 07-09-15, 15:32, Rafael J. Wysocki wrote:
+>> First, if policy->cpu is offline, the policy will be inactive to my eyes, so
+>> we don't need the second check.
+>
+> Hmm, or maybe just drop the first check.
+>
+>> But if the policy is active (and policy->cpu is online), it will not generally
+>> fail for an offline CPU.
+>
+> Right.
+>
+>> So, if the policy applies to more than 1 CPU, you
+>> can use any of them to manipulate it, even if one of them is offline as long
+>> as there are any online CPUs in the set.
+>
+> Right.
+>
+>> This isn't entirely consistent.  We should either fail store() for any offline
+>> CPU
+>
+> At that point we have no idea of the CPU for which the sysfs operation
+> is called. And so we have to go ahead without failing, if policy is
+> active.
+>
+>> or make the changes for offline CPUs to.
+>
+> What does that mean? Most of the stuff we do is for the policy, rather
+> than per-cpu. And if there is per-cpu stuff, then we *only* should be
+> doing that for the online ones.
+>
+> Not sure if I understood what you meant here. :(
+>
+>> And in the particular case of
+>> the governor, I'm wondering what will be the problem with changing last_governor
+>> for an inactive policy?
+>
+> I don't think we should be adding special cases for updating sysfs
+> attributes of an inactive policy. Its not just about the last_governor
+> thing, but other sysfs attributes as well.
+>
 
-diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
-index 47af858..84a8945 100644
---- a/drivers/power/bq24257_charger.c
-+++ b/drivers/power/bq24257_charger.c
-@@ -76,6 +76,7 @@ struct bq24257_init_data {
- 	u8 iterm;	/* termination current */
- 	u8 in_ilimit;	/* input current limit */
- 	u8 vovp;	/* over voltage protection voltage */
-+	u8 vindpm;	/* VDMP input threshold voltage */
- };
- 
- struct bq24257_state {
-@@ -206,6 +207,13 @@ static const u32 bq24257_vovp_map[] = {
- 
- #define BQ24257_VOVP_MAP_SIZE		ARRAY_SIZE(bq24257_vovp_map)
- 
-+static const u32 bq24257_vindpm_map[] = {
-+	4200000, 4280000, 4360000, 4440000, 4520000, 4600000, 4680000,
-+	4760000
-+};
-+
-+#define BQ24257_VINDPM_MAP_SIZE		ARRAY_SIZE(bq24257_vindpm_map)
-+
- static int bq24257_field_read(struct bq24257_device *bq,
- 			      enum bq24257_fields field_id)
- {
-@@ -432,6 +440,17 @@ enum bq24257_vovp {
- 	VOVP_10500
- };
- 
-+enum bq24257_vindpm {
-+	VINDPM_4200,
-+	VINDPM_4280,
-+	VINDPM_4360,
-+	VINDPM_4440,
-+	VINDPM_4520,
-+	VINDPM_4600,
-+	VINDPM_4680,
-+	VINDPM_4760
-+};
-+
- enum bq24257_port_type {
- 	PORT_TYPE_DCP,		/* Dedicated Charging Port */
- 	PORT_TYPE_CDP,		/* Charging Downstream Port */
-@@ -615,6 +634,7 @@ static int bq24257_hw_init(struct bq24257_device *bq)
- 		{F_VBAT, bq->init_data.vbat},
- 		{F_ITERM, bq->init_data.iterm},
- 		{F_VOVP, bq->init_data.vovp},
-+		{F_VINDPM, bq->init_data.vindpm},
- 	};
- 
- 	/*
-@@ -648,6 +668,7 @@ static int bq24257_hw_init(struct bq24257_device *bq)
- 		/* program fixed input current limit */
- 		ret = bq24257_field_write(bq, F_IILIMIT,
- 					  bq->init_data.in_ilimit);
-+
- 		if (ret < 0)
- 			return ret;
- 	} else if (!state.power_good)
-@@ -695,10 +716,23 @@ static ssize_t bq24257_show_ovp_voltage(struct device *dev,
- 			 bq24257_vovp_map[bq->init_data.vovp]);
- }
- 
-+static ssize_t bq24257_show_in_dpm_voltage(struct device *dev,
-+					   struct device_attribute *attr,
-+					   char *buf)
-+{
-+	struct power_supply *psy = dev_get_drvdata(dev);
-+	struct bq24257_device *bq = power_supply_get_drvdata(psy);
-+
-+	return scnprintf(buf, PAGE_SIZE, "%d\n",
-+			 bq24257_vindpm_map[bq->init_data.vindpm]);
-+}
-+
- static DEVICE_ATTR(ovp_voltage, S_IRUGO, bq24257_show_ovp_voltage, NULL);
-+static DEVICE_ATTR(in_dpm_voltage, S_IRUGO, bq24257_show_in_dpm_voltage, NULL);
- 
- static struct attribute *bq24257_charger_attr[] = {
- 	&dev_attr_ovp_voltage.attr,
-+	&dev_attr_in_dpm_voltage.attr,
- 	NULL,
- };
- 
-@@ -801,6 +835,16 @@ static int bq24257_fw_probe(struct bq24257_device *bq)
- 						      bq24257_vovp_map,
- 						      BQ24257_VOVP_MAP_SIZE);
- 
-+	ret = device_property_read_u32(bq->dev, "ti,in-dpm-voltage",
-+				       &property);
-+	if (ret < 0)
-+		bq->init_data.vindpm = VINDPM_4360;
-+	else
-+		bq->init_data.vindpm =
-+				bq24257_find_idx(property,
-+						 bq24257_vindpm_map,
-+						 BQ24257_VINDPM_MAP_SIZE);
-+
- 	return 0;
- }
- 
+The way I see it, having the cpufreq policy control sysfs "bits" under 
+every CPU directory is what's causing some semantic confusion/inconsistency.
+
+Every single node under a cpufreq folder is for policy control and not 
+CPU control. But by putting the policy control bits under the cpuX 
+directory, we give the wrong semantic impression that it's a per CPU 
+attribute when it's really per-policy.
+
+Ideally (in terms of semantics) we would have put all the policy control 
+bits in a per policy directory under 
+/sys/devices/system/cpu/cpufreq/policyX/ where X would/could be the tied 
+to the first CPU in related CPUs -- so that it's easy to correlate and 
+also to avoid having the policy numbering being different depending on 
+the order in which CPUs get hotplugged.
+
+But we can't go about breaking userspace ABI by removing the cpufreq 
+directories out of the cpu directories just because of the semantic 
+confusion.
+
+Well, we COULD still put the policy directories under cpu/cpufreq/ and 
+then make every cpuX/cpufreq directory a symlink to the actual policy 
+directory. But that is not going to help with this specific 
+issue/discussion.
+
+Having said all that, I still think that stores to all these sysfs files 
+should work. I'm not saying it's a trivial change (like setting a 
+governor's polling time, etc would need some checks to cache the value 
+and not start a timer immediately, etc), but I think it's a more 
+consistent and user friendly API.
+
+If the user wants to set a min CPU freq, why should they care if the CPU 
+is online at that very instant? It gets especially painful if you have a 
+thermal daemon that's plugging in/out CPUs while the user or a script is 
+trying to set the parameters.
+
+Thanks,
+Saravana
+
 -- 
-1.9.1
-
+Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
