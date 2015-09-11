@@ -1,22 +1,20 @@
 From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Subject: [PATCH v5 2/6] mfd: da9150: Update DT bindings for Fuel-Gauge support
-Date: Fri, 11 Sep 2015 11:05:33 +0100
-Message-ID: <76d246fa02e5c5bc98dd3cb1bf536ee4a76bc952.1441964153.git.Adam.Thomson.Opensource@diasemi.com>
+Subject: [PATCH v5 6/6] mfd: da9150: Use DEFINE_RES_IRQ_NAMED() help macro for
+ IRQ resource
+Date: Fri, 11 Sep 2015 11:05:43 +0100
+Message-ID: <915ae1bb11234c2f11c1601e7a6b8887decd12ce.1441964153.git.Adam.Thomson.Opensource@diasemi.com>
 References: <cover.1441964153.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail1.bemta3.messagelabs.com ([195.245.230.167]:39539 "EHLO
-	mail1.bemta3.messagelabs.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751569AbbIKKMZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Sep 2015 06:12:25 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1441964153.git.Adam.Thomson.Opensource@diasemi.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
 Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Support Opensource <support.opensource@diasemi.com>
+List-Id: linux-pm@vger.kernel.org
 
 Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Suggested-by: Lee Jones <lee.jones@linaro.org>
 Acked-by: Lee Jones <lee.jones@linaro.org>
 ---
 
@@ -24,75 +22,65 @@ Changes in v5:
  - Rebase to v4.2
 
 Changes in v4:
- - Update compatible string of fuel-gauge to "da9150-fuel-gauge".
- - Node name tidy up, relating to maintainer comments on fuel-gauge DT
-   binding doc.
- - Removed Ack to patch from Lee Jones, as this has now been modified slightly
-   and didn't want to make assumptions of approval.
+ - N/A
 
 Changes in v3:
- - Removal of unwanted new-line.
- - Flesh out example bindings usage.
+ - Initial version.
 
 Changes in v2:
  - N/A
 
- Documentation/devicetree/bindings/mfd/da9150.txt | 27 ++++++++++++++++++++----
- 1 file changed, 23 insertions(+), 4 deletions(-)
+ drivers/mfd/da9150-core.c | 35 +++++------------------------------
+ 1 file changed, 5 insertions(+), 30 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/mfd/da9150.txt b/Documentation/devicetree/bindings/mfd/da9150.txt
-index d0588ea..970801d 100644
---- a/Documentation/devicetree/bindings/mfd/da9150.txt
-+++ b/Documentation/devicetree/bindings/mfd/da9150.txt
-@@ -6,6 +6,7 @@ Device			 Description
- ------			 -----------
- da9150-gpadc		: General Purpose ADC
- da9150-charger		: Battery Charger
-+da9150-fg		: Battery Fuel-Gauge
+diff --git a/drivers/mfd/da9150-core.c b/drivers/mfd/da9150-core.c
+index 85ca4b5..195fdcf 100644
+--- a/drivers/mfd/da9150-core.c
++++ b/drivers/mfd/da9150-core.c
+@@ -355,39 +355,14 @@ static const struct regmap_irq_chip da9150_regmap_irq_chip = {
+ };
 
- ======
+ static struct resource da9150_gpadc_resources[] = {
+-	{
+-		.name = "GPADC",
+-		.start = DA9150_IRQ_GPADC,
+-		.end = DA9150_IRQ_GPADC,
+-		.flags = IORESOURCE_IRQ,
+-	},
++	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_GPADC, "GPADC"),
+ };
 
-@@ -22,7 +23,7 @@ Required properties:
- Sub-devices:
- - da9150-gpadc: See Documentation/devicetree/bindings/iio/adc/da9150-gpadc.txt
- - da9150-charger: See Documentation/devicetree/bindings/power/da9150-charger.txt
--
-+- da9150-fg: See Documentation/devicetree/bindings/power/da9150-fg.txt
+ static struct resource da9150_charger_resources[] = {
+-	{
+-		.name = "CHG_STATUS",
+-		.start = DA9150_IRQ_CHG,
+-		.end = DA9150_IRQ_CHG,
+-		.flags = IORESOURCE_IRQ,
+-	},
+-	{
+-		.name = "CHG_TJUNC",
+-		.start = DA9150_IRQ_TJUNC,
+-		.end = DA9150_IRQ_TJUNC,
+-		.flags = IORESOURCE_IRQ,
+-	},
+-	{
+-		.name = "CHG_VFAULT",
+-		.start = DA9150_IRQ_VFAULT,
+-		.end = DA9150_IRQ_VFAULT,
+-		.flags = IORESOURCE_IRQ,
+-	},
+-	{
+-		.name = "CHG_VBUS",
+-		.start = DA9150_IRQ_VBUS,
+-		.end = DA9150_IRQ_VBUS,
+-		.flags = IORESOURCE_IRQ,
+-	},
++	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_CHG, "CHG_STATUS"),
++	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_TJUNC, "CHG_TJUNC"),
++	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_VFAULT, "CHG_VFAULT"),
++	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_VBUS, "CHG_VBUS"),
+ };
 
- Example:
-
-@@ -34,10 +35,28 @@ Example:
- 		interrupt-controller;
-
- 		gpadc: da9150-gpadc {
--			...
-+			compatible = "dlg,da9150-gpadc";
-+			#io-channel-cells = <1>;
-+		};
-+
-+		charger {
-+			compatible = "dlg,da9150-charger";
-+
-+			io-channels = <&gpadc 0>,
-+				      <&gpadc 2>,
-+				      <&gpadc 8>,
-+				      <&gpadc 5>;
-+			io-channel-names = "CHAN_IBUS",
-+					   "CHAN_VBUS",
-+					   "CHAN_TJUNC",
-+					   "CHAN_VBAT";
- 		};
-
--		da9150-charger {
--			...
-+		fuel-gauge {
-+			compatible = "dlg,da9150-fuel-gauge";
-+
-+			dlg,update-interval = <10000>;
-+			dlg,warn-soc-level = /bits/ 8 <15>;
-+			dlg,crit-soc-level = /bits/ 8 <5>
- 		};
- 	};
+ static struct resource da9150_fg_resources[] = {
 --
 1.9.3
-
