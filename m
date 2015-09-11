@@ -1,58 +1,73 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Subject: Re: [PATCH] clk: tegra: dfll: Properly protect OPP list
-Date: Fri, 11 Sep 2015 13:35:34 +0200
-Message-ID: <20150911113531.GA16323@ulmo>
-References: <1441893321-4563-1-git-send-email-thierry.reding@gmail.com>
- <20150910175144.GB15099@codeaurora.org>
- <20150911023527.GS5266@linux>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="azLHFNyN32YCQGCU"
-Return-path: <linux-clk-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20150911023527.GS5266@linux>
-Sender: linux-clk-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, Alexandre Courbot <gnurou@gmail.com>, Stephen Warren <swarren@wwwdotorg.org>, Mikko Perttunen <mikko.perttunen@kapsi.fi>, Tuomas Tynkkynen <ttynkkynen@nvidia.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, linux-tegra@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 00/16] PM / OPP: multiple regulators & opp-transition support
+Date: Fri, 11 Sep 2015 17:31:56 +0530
+Message-ID: <cover.1441972771.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f50.google.com ([209.85.220.50]:36743 "EHLO
+	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751772AbbIKMCT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Sep 2015 08:02:19 -0400
+Received: by padhk3 with SMTP id hk3so73532892pad.3
+        for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2015 05:02:19 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, rob.herring@linaro.org, lee.jones@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
 
+Hi Guys,
 
---azLHFNyN32YCQGCU
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This is rebased over following series that adds debugfs support to OPP
+core: http://marc.info/?i=cover.1441354424.git.viresh.kumar%40linaro.org
 
-On Fri, Sep 11, 2015 at 08:05:27AM +0530, Viresh Kumar wrote:
-> On 10-09-15, 10:51, Stephen Boyd wrote:
-> > Don't we already have an rcu_read_lock() at the beginning of this
-> > function? I don't understand why we need to nest them in the same
-> > function.
->=20
-> +1
+This series extends V2 bindings support further to make it usable to
+most of the platforms.
 
-My bad, I wasn't looking closely enough. The second hunk can be dropped.
+[1-2] update the bindings a bit to get them working for multiple
+      regulators case.
 
-Thierry
+[3-4] cleanups.
+[5-7] Multiple regulator support
+[8-16] OPP transition support, so that the user drivers can directly ask
+       to switch device to a particular OPP, instead of them dealing
+       with the complexity of handling clocks and voltages.
 
---azLHFNyN32YCQGCU
-Content-Type: application/pgp-signature; name="signature.asc"
+I have also got cpufreq-dt driver updated to work with the new bindings,
+but holded-off those changes to keep this series smaller. Those were
+another Nine patches.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+For curious developers/reviewers, all required code (debugfs, this and
+cpufreq-dt) is pushed to:
 
-iQIcBAABCAAGBQJV8ryBAAoJEN0jrNd/PrOh+KQP/2aIuBcTDy14pEduRd8+uCQo
-MrBUvw1C1PO0GiZXiNPGQzaDDs/3O2NnV9gs7oZo73AjHbLpeadjWiVx99b3etjm
-c5YlFdbyk34yhUdkw0us/Ux6W9bQKNhIl+TLiBtRjibYEYnv069Iv2iu4a8EJkVI
-PYH50CdpEBXsB71bfmAmV/gM8kB+wTirZfrAx7Esa6+hFvoHoxSGM2wicRFWb1/Z
-xuOo2ImWdEfs9Gyqg/Vn5dmb6aXQXdCKuujepnSLeCMwbN0tsFyd8hx6vqxeHGmG
-wEt/3hVXXNGEUyhgGHjdPsvJOwRlNbiKBcx6M3jyxe5M8KcKjbKovOqaffJS+nWz
-FIcfveK52OttVf3SD8Hsazng2P//Ro9VyZLq+egJyRvPbfSk0DCGgFQojCf/GZqJ
-fPVpWsO4eYPqLxnr+fa4AklCdj2ySe9G89QexLlIw/J44qqBg50uKzoJLQIOMQMf
-h+uV6GTA0sS6IBt+wsS/MyQd3PzOMLKvzFBNX1ZmupSiEUwKGzqhulGqC/CwpcmB
-8lvCzuV7dDZr9OqylCVwxLqmBENF1UEzY8Ng7m4pOJ0Wemc+TGHEOKs6pyYz18hu
-KqH//wZHfzPEWgil736s0YD3CCuitKdkUENCwPtbD1TWsjGtgr7O7r+AqoXkGhqD
-yax2xlK7OEMfzA82U2fs
-=9/vW
------END PGP SIGNATURE-----
+https://git.linaro.org/people/viresh.kumar/linux.git opp/multi-regulator-v1
 
---azLHFNyN32YCQGCU--
+Please help in getting this reviewed :)
+
+Viresh Kumar (16):
+  PM / OPP: Add 'supply-names' binding
+  PM / OPP: Add 'opp-microvolt-triplets' binding
+  PM / OPP: Improve debug print messages with pr_fmt
+  PM / OPP: Rename routines specific to old bindings with _v1
+  PM / OPP: Parse all power-supply related bindings together
+  PM / OPP: Create separate structure for regulator/supplies
+  PM / OPP: Add multiple regulators support
+  PM / OPP: get/put regulators from OPP core
+  PM / OPP: Disable OPPs that aren't supported by the regulators
+  PM / OPP: Introduce dev_pm_opp_get_max_volt_latency()
+  PM / OPP: Introduce dev_pm_opp_get_max_transition_latency()
+  PM / OPP: Parse clock and voltage tolerance for v1 bindings
+  PM / OPP: Manage device clk as well
+  PM / OPP: Add dev_pm_opp_set_regulator() to specify regulator
+  PM / OPP: Add dev_pm_opp_set_rate()
+  PM / OPP: don't print error message for deferred probing
+
+ Documentation/devicetree/bindings/opp/opp.txt |  40 +-
+ drivers/base/power/opp/core.c                 | 637 +++++++++++++++++++++++---
+ drivers/base/power/opp/cpu.c                  |   8 +-
+ drivers/base/power/opp/debugfs.c              |  52 ++-
+ drivers/base/power/opp/opp.h                  |  44 +-
+ include/linux/pm_opp.h                        |  25 +
+ 6 files changed, 722 insertions(+), 84 deletions(-)
+
+-- 
+2.4.0
+
