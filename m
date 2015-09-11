@@ -1,217 +1,187 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 15/16] PM / OPP: Add dev_pm_opp_set_rate()
-Date: Fri, 11 Sep 2015 17:32:11 +0530
-Message-ID: <9cae44895bc9d424b10445b959ba91ee60c85867.1441972771.git.viresh.kumar@linaro.org>
-References: <cover.1441972771.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1441972771.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1441972771.git.viresh.kumar@linaro.org>
-References: <cover.1441972771.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, rob.herring@linaro.org, lee.jones@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dmitry Torokhov <dtor@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+From: Thierry Reding <thierry.reding@gmail.com>
+Subject: Re: [PATCH] driver core: Ensure proper suspend/resume ordering
+Date: Fri, 11 Sep 2015 14:03:46 +0200
+Message-ID: <20150911120345.GB16323@ulmo>
+References: <1441880343-30852-1-git-send-email-thierry.reding@gmail.com>
+ <10787470.V3kIoIEDW3@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="QTprm0S8XgL7H0Dt"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f180.google.com ([209.85.212.180]:36982 "EHLO
+	mail-wi0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753185AbbIKMDt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Sep 2015 08:03:49 -0400
+Content-Disposition: inline
+In-Reply-To: <10787470.V3kIoIEDW3@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-This adds a routine, dev_pm_opp_set_rate(), responsible for configuring
-power-supplies and clock source for on an OPP.
 
-The OPP is found by matching against the target_freq passed to the
-routine. This shall replace similar code present in most of the OPP
-users and help simplify them a lot.
+--QTprm0S8XgL7H0Dt
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/base/power/opp/core.c | 152 ++++++++++++++++++++++++++++++++++++++++++
- include/linux/pm_opp.h        |   7 ++
- 2 files changed, 159 insertions(+)
+On Fri, Sep 11, 2015 at 12:08:02AM +0200, Rafael J. Wysocki wrote:
+> On Thursday, September 10, 2015 12:19:03 PM Thierry Reding wrote:
+> > From: Thierry Reding <treding@nvidia.com>
+> >=20
+> > Deferred probe can lead to strange situations where a device that is a
+> > dependency for others will be moved to the end of the dpm_list. At the
+> > same time the dependers may not be moved because at the time they will
+> > be probed the dependee may already have been successfully reprobed and
+> > they will not have to defer the probe themselves.
+>=20
+> So there's a bug in the implementation of deferred probing IMO.
 
-diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index 4ee0911b97ea..9fbc38222ca0 100644
---- a/drivers/base/power/opp/core.c
-+++ b/drivers/base/power/opp/core.c
-@@ -523,6 +523,158 @@ struct dev_pm_opp *dev_pm_opp_find_freq_floor(struct device *dev,
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_find_freq_floor);
- 
-+/*
-+ * _set_opp_voltages() - Configure device supplies for an OPP
-+ * @dev:	device for which we do this operation
-+ * @dev_opp:	dev_opp for the device
-+ * @opp:	opp for getting supply voltage levels
-+ *
-+ * This is used to configure all the power supplies, used by the device, to the
-+ * voltage levels specified by a particular OPP.
-+ */
-+static int _set_opp_voltages(struct device *dev, struct device_opp *dev_opp,
-+			     struct dev_pm_opp *opp)
-+{
-+	struct opp_supply *supply;
-+	struct regulator *reg;
-+	const char *name;
-+	int count, ret;
-+
-+	/* Sum max latencies for all supplies */
-+	for (count = 0; count < dev_opp->supply_count; count++) {
-+		supply = &opp->supplies[count];
-+		reg = dev_opp->regulators[count];
-+		name = dev_opp->supply_names[count];
-+
-+		/* Regulator may not be available for device */
-+		if (IS_ERR(reg)) {
-+			dev_dbg(dev, "%s: skipping %s regulator: %ld\n",
-+				__func__, name, PTR_ERR(reg));
-+			continue;
-+		}
-+
-+		dev_dbg(dev, "%s: Supply: %s, voltages (mV): %lu %lu %lu\n",
-+			__func__, name, supply->u_volt_min, supply->u_volt,
-+			supply->u_volt_max);
-+
-+		ret = regulator_set_voltage_triplet(reg, supply->u_volt_min,
-+						    supply->u_volt,
-+						    supply->u_volt_max);
-+		if (ret) {
-+			dev_err(dev, "%s: failed to set voltage for %s regulator (%lu %lu %lu mV): %d\n",
-+				__func__, name, supply->u_volt_min,
-+				supply->u_volt, supply->u_volt_max, ret);
-+			return ret;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * dev_pm_opp_set_rate() - Configure new OPP based on frequency
-+ * @dev:	 device for which we do this operation
-+ * @target_freq: frequency to achieve
-+ *
-+ * This configures the power-supplies and clock source to the levels specified
-+ * by the OPP corresponding to the target_freq. It takes all necessary locks
-+ * required for the operation and the caller doesn't need to care about the rcu
-+ * locks.
-+ */
-+int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
-+{
-+	struct device_opp *dev_opp;
-+	struct dev_pm_opp *old_opp, *opp;
-+	struct clk *clk;
-+	unsigned long freq, old_freq;
-+	int ret;
-+
-+	if (unlikely(!dev || !target_freq)) {
-+		pr_err("%s: Invalid arguments dev=%p, freq=%lu\n", __func__,
-+		       dev, target_freq);
-+		return -EINVAL;
-+	}
-+
-+	dev_opp = _find_device_opp(dev);
-+	if (IS_ERR(dev_opp)) {
-+		dev_err(dev, "%s: device opp doesn't exist\n", __func__);
-+		return PTR_ERR(dev_opp);
-+	}
-+
-+	clk = dev_opp->clk;
-+	if (IS_ERR(clk)) {
-+		dev_err(dev, "%s: No clock available for the device\n",
-+			__func__);
-+		return -EINVAL;
-+	}
-+
-+	freq = clk_round_rate(clk, target_freq);
-+	if ((long)freq <= 0)
-+		freq = target_freq;
-+
-+	old_freq = clk_get_rate(clk);
-+
-+	/* Return early if nothing to do */
-+	if (old_freq == freq) {
-+		dev_dbg(dev, "%s: old/new frequencies (%lu Hz) are same, nothing to do\n",
-+			__func__, freq);
-+		return 0;
-+	}
-+
-+	rcu_read_lock();
-+
-+	old_opp = dev_pm_opp_find_freq_ceil(dev, &old_freq);
-+	opp = dev_pm_opp_find_freq_ceil(dev, &freq);
-+
-+	if (IS_ERR(opp)) {
-+		ret = PTR_ERR(opp);
-+		dev_err(dev, "%s: failed to find OPP for freq %lu (%d)\n",
-+			__func__, freq, ret);
-+		goto unlock;
-+	}
-+
-+	/* Scaling up? Scale voltage before frequency */
-+	if (freq > old_freq) {
-+		ret = _set_opp_voltages(dev, dev_opp, opp);
-+		if (ret)
-+			goto restore_voltage;
-+	}
-+
-+	/* Change frequency */
-+
-+	dev_dbg(dev, "%s: switching OPP: %lu Hz --> %lu Hz\n",
-+		__func__, old_freq, freq);
-+
-+	ret = clk_set_rate(clk, freq);
-+	if (ret) {
-+		dev_err(dev, "%s: failed to set clock rate: %d\n", __func__,
-+			ret);
-+		goto restore_voltage;
-+	}
-+
-+	/* Scaling down? Scale voltage after frequency */
-+	if (freq < old_freq) {
-+		ret = _set_opp_voltages(dev, dev_opp, opp);
-+		if (ret)
-+			goto restore_freq;
-+	}
-+
-+	goto unlock;
-+
-+restore_freq:
-+	if (clk_set_rate(clk, old_freq))
-+		dev_err(dev, "%s: failed to restore old-freq (%lu Hz)\n",
-+			__func__, old_freq);
-+restore_voltage:
-+	/* This shouldn't harm if the voltages weren't updated earlier */
-+	_set_opp_voltages(dev, dev_opp, old_opp);
-+unlock:
-+	rcu_read_unlock();
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_opp_set_rate);
-+
- /* List-dev Helpers */
- static void _kfree_list_dev_rcu(struct rcu_head *head)
- {
-diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index e8aee03b974a..b0f71c0f333a 100644
---- a/include/linux/pm_opp.h
-+++ b/include/linux/pm_opp.h
-@@ -58,6 +58,7 @@ int dev_pm_opp_disable(struct device *dev, unsigned long freq);
- 
- struct srcu_notifier_head *dev_pm_opp_get_notifier(struct device *dev);
- int dev_pm_opp_set_regulator(struct device *dev, const char *id);
-+int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq);
- #else
- static inline unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
- {
-@@ -147,6 +148,12 @@ static inline int dev_pm_opp_set_regulator(struct device *dev, const char *id)
- {
- 	return -EINVAL;
- }
-+
-+static inline int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
-+{
-+	return -EINVAL;
-+}
-+
- #endif		/* CONFIG_PM_OPP */
- 
- #if defined(CONFIG_PM_OPP) && defined(CONFIG_OF)
--- 
-2.4.0
+Well, yeah. The root problem here is that we don't have dependency
+information and deferred probing is supposed to fix that. It does so
+fairly well, but it breaks in this particular case.
+
+> > One example where this happens is the Jetson TK1 board (Tegra124). The
+> > gpio-keys driver exposes the power key of the board as an input device
+> > that can also be used as a wakeup source. Commit 17cdddf0fb68 ("ARM:
+> > tegra: Add gpio-ranges property") results in the gpio-tegra driver
+> > deferring probe because one of its dependencies, the pinctrl-tegra
+> > driver, has not successfully completed probing. Currently the deferred
+> > probe code will move the corresponding gpio-tegra device to the end of
+> > the dpm_list, but by the time the gpio-keys device, depending on the
+> > gpio-tegra device, is probed, gpio-tegra has already been reprobed, so
+> > the gpio-keys device is not moved to the end of dpm_list itself. As a
+> > result, the suspend ordering becomes pinctrl-tegra -> gpio-keys ->
+> > gpio-tegra. That's problematic because the gpio-keys driver requests
+> > the power key to be a wakeup source. However, the programming of the
+> > wakeup interrupt registers happens in the gpio-tegra driver's suspend
+> > callback, which is now called before that of the gpio-keys driver. The
+> > result is that the wrong values are programmed and leaves the system
+> > unable to be resumed using the power key.
+> >=20
+> > To fix this situation, always move devices to the end of the dpm_list
+> > before probing them. Technically this should only be done for devices
+> > that have been successfully probed, but that won't work for recursive
+> > probing of devices (think an I2C master that instantiates children in
+> > its ->probe()). Effectively the dpm_list will end up ordered the same
+> > way that devices were probed, hence taking care of dependencies.
+> >=20
+> > Signed-off-by: Thierry Reding <treding@nvidia.com>
+> > ---
+> > Note that this commit is kind of the PM equivalent of 52cdbdd49853
+> > ("driver core: correct device's shutdown order) and that we have two
+> > lists that are essentially the same (dpm_list and devices_kset). I'm
+> > wondering if it would be worth looking into getting rid of one of
+> > them? I don't see any reason why the ordering for shutdown and
+> > suspend/resume should be different, and having a single list would
+> > help keep this in sync.
+>=20
+> We move away things from dpm_list during suspend and add them back to it
+> during resume to handle the situations in which some devices go away or
+> appear during suspend/resume.  That makes this idea potentially problemat=
+ic.
+
+Okay, I see. If they are used for different purposes it's fine to keep
+them both.
+
+> >  drivers/base/dd.c | 33 +++++++++++++++++++++++----------
+> >  1 file changed, 23 insertions(+), 10 deletions(-)
+> >=20
+> > diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+> > index be0eb4639128..56291b11049b 100644
+> > --- a/drivers/base/dd.c
+> > +++ b/drivers/base/dd.c
+> > @@ -88,16 +88,6 @@ static void deferred_probe_work_func(struct work_str=
+uct *work)
+> >  		 */
+> >  		mutex_unlock(&deferred_probe_mutex);
+> > =20
+> > -		/*
+> > -		 * Force the device to the end of the dpm_list since
+> > -		 * the PM code assumes that the order we add things to
+> > -		 * the list is a good order for suspend but deferred
+> > -		 * probe makes that very unsafe.
+> > -		 */
+> > -		device_pm_lock();
+> > -		device_pm_move_last(dev);
+> > -		device_pm_unlock();
+> > -
+> >  		dev_dbg(dev, "Retrying from deferred list\n");
+> >  		bus_probe_device(dev);
+> > =20
+> > @@ -312,6 +302,29 @@ static int really_probe(struct device *dev, struct=
+ device_driver *drv)
+> >  	 */
+> >  	devices_kset_move_last(dev);
+> > =20
+> > +	/*
+> > +	 * Force the device to the end of the dpm_list since the PM code
+> > +	 * assumes that the order we add things to the list is a good order
+> > +	 * for suspend but deferred probe makes that very unsafe.
+> > +	 *
+> > +	 * Deferred probe can also cause situations in which a device that is
+> > +	 * a dependency for others gets moved further down the dpm_list as a
+> > +	 * result of probe deferral. In that case the dependee will end up
+> > +	 * getting suspended before any of its dependers.
+> > +	 *
+> > +	 * To ensure proper ordering of suspend/resume, move every device that
+> > +	 * is being probed to the end of the dpm_list. Note that technically
+> > +	 * only successfully probed devices need to be moved, but that breaks
+> > +	 * for recursively added devices because they would end up in the list
+> > +	 * in reverse of the desired order, so we simply do it unconditionally
+> > +	 * for all devices before they are being probed. In the worst case the
+> > +	 * list will be reordered a couple more times than necessary, which
+> > +	 * should be an insignificant amount of work.
+> > +	 */
+> > +	device_pm_lock();
+> > +	device_pm_move_last(dev);
+> > +	device_pm_unlock();
+>=20
+> So I don't agree with doing that for every driver being probed against the
+> same device.  That's just wasteful IMO.
+
+I don't understand. At this point driver matching has already taken
+place, so this will only every happen for one particular driver and the
+corresponding device. In the most common case this will happen exactly
+once, when the device is probed. Worst case it will happen a second or
+more times if a driver defers probing for a specific device. But in that
+case moving the device to the end of the list is absolutely required to
+keep it properly ordered for suspend/resume. Note that this is already
+done by the original code in deferred_probe_work_func() that is removed
+in the first hunk. The fix here is to do it for every device to ensure
+that inter-device dependencies are properly dealt with.
+
+I agree that it's a little wasteful, but that's completely in line with
+deferred probe. It's a simple solution to a very difficult problem, so
+naturally it comes at a cost. But it's also fairly elegant in how it
+correctly solves the ordering problem with very little code. The only
+other way that I can think of to avoid reordering the list for every
+device probe would be to sort it in advance using dependency information
+which we don't have. So we'd need to first add all that dependency
+information, and using that information is likely to be more work than
+simply reordering the list for each probe.
+
+Thierry
+
+--QTprm0S8XgL7H0Dt
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCAAGBQJV8sMeAAoJEN0jrNd/PrOhgOwP/im5JMXG3PhChZ9fUciljV6r
+dt961kUp8BXxHPeV33Q5BFCcF4i5AyZvnDZQ3EuuYlV367OhgqXQG+LGaH38zqKq
+6w2hdRz6tKZQfdwtMAFWZWS5Q0zsG1CstRZj1WKtOE9m5SjRQjfT6FJkZn6WcZJv
+m3wGt08CldgoPCJJBYY7mMK7qZ9Lk7Z6U8p6JsH2PzXQA5nyrG3PXLlOB+WG7JhA
+iG1V+QFCw5bOszt3whOPoyAfqw2T5igNIewBdCJV6mR2CpOtWh59awh9dKVyDUrc
+2O2f8clGTfkGdROnOKJZ/QWgY61aje4NWwQ5zsusW9OG+aiH/UOcvQGN4jWzD0+2
+/gqyclZg03CDcnkLYxvSadWfmrehI9Ose3UxsE/rZM7Yfz4HA/bJL2eAvKBbwpA5
+x+k2MwLWWgqJM5OoteIk9lajZNzxnaMtINRdfg2i9GK7AxlHi+2nm6dEwggXwUkj
+q8dmybRFnTtjA/hWHIbCwzNrcDgJwnDUo04gr9rPBhrzDhZ97FRzOlTdYkbE/GXF
+pm6Y6Ki3N+H4HDGA2n4PWJNPeX/xMEMrySyEGPgcWZ1ykLRtCElxa6ztRF0Z7t2R
+JENzui3Lv0rRno8blm2x1FyLJdlmUcEnWOPrW9P5QeAjcht5N4kHBHy7SBRRlDpv
+Ue3C4YZB/SuzhkVuYnan
+=I3np
+-----END PGP SIGNATURE-----
+
+--QTprm0S8XgL7H0Dt--
