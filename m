@@ -1,96 +1,176 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V7] Report interrupt that caused system wakeup
-Date: Fri, 11 Sep 2015 00:21:13 +0200
-Message-ID: <1528855.hS8haWgnGz@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1509101501480.1422-100000@iolanthe.rowland.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: Alexandra Yates <alexandra.yates@linux.intel.com>
+Subject: [PATCH V8] Report interrupt that caused system wakeup
+Date: Thu, 10 Sep 2015 17:04:20 -0700
+Message-ID: <1441929860-5488-1-git-send-email-alexandra.yates@linux.intel.com>
+References: <[PATCH V8] Report interrupt that caused system wakeup>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:43992 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751042AbbIJVxU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Sep 2015 17:53:20 -0400
-In-Reply-To: <Pine.LNX.4.44L0.1509101501480.1422-100000@iolanthe.rowland.org>
+Received: from mga09.intel.com ([134.134.136.24]:39288 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750779AbbIKACf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 10 Sep 2015 20:02:35 -0400
+In-Reply-To: <[PATCH V8] Report interrupt that caused system wakeup>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Alexandra Yates <alexandra.yates@linux.intel.com>, tglx@linutronix.de, kristen.c.accardi@intel.com, linux-pm@vger.kernel.org
+To: tglx@linutronix.de, kristen.c.accardi@intel.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net
+Cc: Alexandra Yates <alexandra.yates@linux.intel.com>
 
-On Thursday, September 10, 2015 03:15:24 PM Alan Stern wrote:
-> On Thu, 10 Sep 2015, Alexandra Yates wrote:
-> 
-> > Hi Alan,
-> > 
-> > On 09/10/2015 07:14 AM, Alan Stern wrote:
-> > > On Wed, 9 Sep 2015, Alexandra Yates wrote:
-> > >
-> > >> This feature reports which IRQ cause the system to wakeup from sleep last
-> > >> time it was suspended.
-> > > I thought you said V7 of this patch was written based on the feedback I
-> > > provided.  Obviously that is not true.
-> > Yes, that was the intention.
-> > > This feature does NOT report which IRQ caused the system to wake up
-> > > from sleep the last time it was suspended!  All it does is report one
-> > > of the IRQs which have occurred since the last time the system started
-> > > a sleep transition.
+This feature reports the IRQ that was armed for system wakeup after
+the system was last time suspended. It adds a new sysfs attribute
+under /sys/power/ named: pm_last_wakeup_irq
 
-It doesn't do that.  It reports one of the IRQs that were armed for system
-wakeup and have occurred since suspend_device_irqs() was last called (and
-obviously before the subsequent resume_device_irqs() which clears the
-"armed for system wakeup" flag).
+This feature will be useful for system wakeup diagnostics of
+spurious wakeup interrupts.
 
-> > I'm not sure why you say this, please elaborate further.
-> > 
-> > The way I understand the code and proposed solution is that when
-> > the system goes into freeze mode, at that point wakeup_irq is set to 0.
-> 
-> I'm not sure what you mean by "freeze mode".  Do you mean that all the 
-> user processes have been frozen?
-> 
-> > Once the system sees an interrupt at wakeup from freeze. wakeup_irq is 
-> > set to
-> > the irq_number that caused the wakeup.  This path of code is protected 
-> > by spin lock,
-> 
-> The spin lock doesn't help if multiple IRQs have already been raised.  
-> How do you know which one caused the system to wake up?
+Signed-off-by: Alexandra Yates <alexandra.yates@linux.intel.com>
+---
+ Documentation/ABI/testing/sysfs-power | 11 +++++++++++
+ drivers/base/power/wakeup.c           | 12 ++++++++++++
+ include/linux/suspend.h               |  8 +++++++-
+ kernel/irq/pm.c                       |  4 ++--
+ kernel/power/main.c                   | 19 +++++++++++++++++++
+ 5 files changed, 51 insertions(+), 3 deletions(-)
 
-Actually, we don't, which is a good point.
-
-However, the purpose of this mechanism is mostly debugging spurious wakeup
-events and recording just the first wakeup interrupt we see should be
-sufficient for that.
-
-Spurious wakeup interrupts that always come it along with legitimate ones
-are not really so much interesting from that angle. :-)
-
-> > which should protect the code path from other IRQs that came after the 
-> > first IRQ.
-> 
-> Why so?  Waking up from sleep is a slow procedure; there is time for
-> several IRQs to be asserted before the system is ready to handle any of
-> them.  How do you know the first IRQ to be handled is the one that 
-> caused the wake up?
-
-> > This is only set once. When other IRQs come and the wakeup_irq is set 
-> > then the code
-> > doesn't store them.
-> 
-> What if the system entered freeze mode but then returned to normal 
-> operation without ever going to sleep, because an IRQ occurred first?  
-> Wouldn't you then store that IRQ?
-
-If the IRQ has been armed for system wakeup, that counts as a wakeup from
-sleep.
-
-> But that IRQ did not cause the system to wake up, because the system
-> never went to sleep.
-
-I guess we should just say in the changelog and the documentation that we
-report that first wakeup interrupt we've seen in the last cycle (which may
-not be the first one that really occured in some cases).
-
-Thanks,
-Rafael
+diff --git a/Documentation/ABI/testing/sysfs-power b/Documentation/ABI/testing/sysfs-power
+index f455181..75f27ed 100644
+--- a/Documentation/ABI/testing/sysfs-power
++++ b/Documentation/ABI/testing/sysfs-power
+@@ -256,3 +256,14 @@ Description:
+ 		Writing a "1" enables this printing while writing a "0"
+ 		disables it.  The default value is "0".  Reading from this file
+ 		will display the current value.
++
++What:		/sys/power/pm_last_wakeup_irq
++Date:		April 2015
++Contact:	Alexandra Yates <alexandra.yates@linux.intel.org>
++Description:
++		The /sys/power/pm_last_wakeup_irq file reports to user space
++		the IRQ that was armed for system wakeup and occurred since
++		suspend_device_irqs() was last called.
++
++		This output is useful for system wakeup diagnostics of spurious
++		wakeup interrupts.
+diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+index 51f15bc..f663fb1 100644
+--- a/drivers/base/power/wakeup.c
++++ b/drivers/base/power/wakeup.c
+@@ -870,6 +870,18 @@ void pm_wakeup_clear(void)
+ 	pm_abort_suspend = false;
+ }
+ 
++void pm_system_irq_wakeup(unsigned int irq_number)
++{
++	if (wakeup_irq == 0)
++		wakeup_irq = irq_number;
++	pm_system_wakeup();
++}
++
++void pm_last_wakeup_irq_reset(void)
++{
++	wakeup_irq = 0;
++}
++
+ /**
+  * pm_get_wakeup_count - Read the number of registered wakeup events.
+  * @count: Address to store the value at.
+diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+index 5efe743..eb5ad3b 100644
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -371,6 +371,9 @@ static inline bool hibernation_available(void) { return false; }
+ 
+ extern struct mutex pm_mutex;
+ 
++/* IRQ number which causes system wakeup  */
++extern unsigned int wakeup_irq;
++
+ #ifdef CONFIG_PM_SLEEP
+ void save_processor_state(void);
+ void restore_processor_state(void);
+@@ -378,7 +381,7 @@ void restore_processor_state(void);
+ /* kernel/power/main.c */
+ extern int register_pm_notifier(struct notifier_block *nb);
+ extern int unregister_pm_notifier(struct notifier_block *nb);
+-
++extern void pm_last_wakeup_irq_reset(void);
+ #define pm_notifier(fn, pri) {				\
+ 	static struct notifier_block fn##_nb =			\
+ 		{ .notifier_call = fn, .priority = pri };	\
+@@ -391,6 +394,7 @@ extern bool events_check_enabled;
+ extern bool pm_wakeup_pending(void);
+ extern void pm_system_wakeup(void);
+ extern void pm_wakeup_clear(void);
++extern void pm_system_irq_wakeup(unsigned int);
+ extern bool pm_get_wakeup_count(unsigned int *count, bool block);
+ extern bool pm_save_wakeup_count(unsigned int count);
+ extern void pm_wakep_autosleep_enabled(bool set);
+@@ -440,6 +444,8 @@ static inline int unregister_pm_notifier(struct notifier_block *nb)
+ static inline bool pm_wakeup_pending(void) { return false; }
+ static inline void pm_system_wakeup(void) {}
+ static inline void pm_wakeup_clear(void) {}
++static inline void pm_system_irq_wakeup(unsigned int) {}
++static inline void pm_last_wakeup_irq_reset(void){};
+ 
+ static inline void lock_system_sleep(void) {}
+ static inline void unlock_system_sleep(void) {}
+diff --git a/kernel/irq/pm.c b/kernel/irq/pm.c
+index d22786a..18178d7 100644
+--- a/kernel/irq/pm.c
++++ b/kernel/irq/pm.c
+@@ -21,7 +21,7 @@ bool irq_pm_check_wakeup(struct irq_desc *desc)
+ 		desc->istate |= IRQS_SUSPENDED | IRQS_PENDING;
+ 		desc->depth++;
+ 		irq_disable(desc);
+-		pm_system_wakeup();
++		pm_system_irq_wakeup(irq_desc_get_irq(desc));
+ 		return true;
+ 	}
+ 	return false;
+@@ -118,7 +118,7 @@ void suspend_device_irqs(void)
+ {
+ 	struct irq_desc *desc;
+ 	int irq;
+-
++	pm_last_wakeup_irq_reset();
+ 	for_each_irq_desc(irq, desc) {
+ 		unsigned long flags;
+ 		bool sync;
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index 63d395b..d2bd164 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -272,6 +272,24 @@ static inline void pm_print_times_init(void)
+ {
+ 	pm_print_times_enabled = !!initcall_debug;
+ }
++
++unsigned int wakeup_irq;
++EXPORT_SYMBOL_GPL(wakeup_irq);
++static ssize_t pm_last_wakeup_irq_show(struct kobject *kobj,
++					struct kobj_attribute *attr,
++					char *buf)
++{
++	return wakeup_irq ? sprintf(buf, "%u\n", wakeup_irq) : -EINVAL;
++}
++
++static ssize_t pm_last_wakeup_irq_store(struct kobject *kobj,
++					struct kobj_attribute *attr,
++					const char *buf, size_t n)
++{
++	return -EINVAL;
++}
++power_attr(pm_last_wakeup_irq);
++
+ #else /* !CONFIG_PM_SLEEP_DEBUG */
+ static inline void pm_print_times_init(void) {}
+ #endif /* CONFIG_PM_SLEEP_DEBUG */
+@@ -604,6 +622,7 @@ static struct attribute * g[] = {
+ #endif
+ #ifdef CONFIG_PM_SLEEP_DEBUG
+ 	&pm_print_times_attr.attr,
++	&pm_last_wakeup_irq_attr.attr,
+ #endif
+ #endif
+ #ifdef CONFIG_FREEZER
+-- 
+1.9.1
 
