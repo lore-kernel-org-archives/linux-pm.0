@@ -1,61 +1,60 @@
-From: Bai Ping <b51503@freescale.com>
-Subject: Re: [PATCH v2] cpufreq: imx: update the clock switch flow to support
- imx6ul
-Date: Fri, 11 Sep 2015 16:38:05 +0800
-Message-ID: <55F292ED.1080000@freescale.com>
-References: <1441986065-8821-1-git-send-email-b51503@freescale.com>
- <20150911080741.GJ9650@linux>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v2 1/5] ACPI: add in a bad_madt_entry() function to
+ eventually replace the macro
+Date: Fri, 11 Sep 2015 09:49:43 +0100
+Message-ID: <55F295A7.20406@arm.com>
+References: <1440022048-6285-1-git-send-email-al.stone@linaro.org>
+ <1440022048-6285-2-git-send-email-al.stone@linaro.org>
+ <55EDADF5.5060008@arm.com> <55F08F47.1070906@redhat.com>
+ <55F1ADC4.7090005@arm.com> <55F1EB81.9030908@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bl2on0143.outbound.protection.outlook.com ([65.55.169.143]:44236
-	"EHLO na01-bl2-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751273AbbIKIid (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 11 Sep 2015 04:38:33 -0400
-In-Reply-To: <20150911080741.GJ9650@linux>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <55F1EB81.9030908@redhat.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Al Stone <ahs3@redhat.com>, Al Stone <al.stone@linaro.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>, "patches@linaro.org" <patches@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
 
 
-On 2015/9/11 16:07, Viresh Kumar wrote:
-> On 11-09-15, 23:41, Bai Ping wrote:
->> +	if (of_machine_is_compatible("fsl,imx6ul")) {
->> +		pll2_bus_clk = clk_get(cpu_dev, "pll2_bus");
->> +		secondary_sel_clk = clk_get(cpu_dev, "secondary_sel");
->> +		if (IS_ERR(pll2_bus_clk) || IS_ERR(secondary_sel_clk)) {
->> +			dev_err(cpu_dev, "failed to get clocks specific to imx6ul\n");
->> +			ret = -ENOENT;
->> +			goto put_clk;
->> +		}
->> +	}
->> +
->>   	arm_reg = regulator_get(cpu_dev, "arm");
->>   	pu_reg = regulator_get_optional(cpu_dev, "pu");
->>   	soc_reg = regulator_get(cpu_dev, "soc");
->> @@ -331,6 +365,10 @@ put_clk:
->>   		clk_put(step_clk);
->>   	if (!IS_ERR(pll2_pfd2_396m_clk))
->>   		clk_put(pll2_pfd2_396m_clk);
->> +	if (!IS_ERR(pll2_bus_clk))
->> +		clk_put(pll2_bus_clk);
->> +	if (!IS_ERR(secondary_sel_clk))
->> +		clk_put(secondary_sel_clk);
->>   	of_node_put(np);
->>   	return ret;
->>   }
-> As part of good coding practices, you should free resources in the
-> reverse order to which they were allocated. The clocks don't follow
-> that, but its not a problem with just your patch. That's how it is
-> present today. Maybe you can write another patch to fix that.
+On 10/09/15 21:43, Al Stone wrote:
+> On 09/10/2015 10:20 AM, Sudeep Holla wrote:
+>>
 
-thanks for your suggestion, I will pay more attention to it in future 
-coding.
+[...]
 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>
+>>  From the code inspection, I can see we have 3 users of acpi_parse_entries not
+>> just MADT but also PCC and NUMA/SRAT
+>>
+>> Something like this solves this issue:
+>> -              if (bad_madt_entry(table_header, entry))
+>> +              if (!strncmp(id, ACPI_SIG_MADT, 4) &&
+>> +                      bad_madt_entry(table_header, entry)
+>>
+>>
+>> Or am I still missing something ?
+>
+> Nope, I missed it.  Your fix above will solve the problem; I misunderstood
+> how acpi_parse_entries() was being used -- somehow I had it in my head that
+> only MADT was in use, and just not seeing that it's being used for several
+> other subtable traversals also.  Sorry about that, Sudeep.  My mistake.
 >
 
+No worries.
+
+> I'll add this fix for a v4, but I'll wait for a few days to see if I get any
+> additional comments -- I haven't heard from any x86, ia64 or ACPI maintainers
+
+Makes sense.
+
+> yet.  OTOH, it's nice to know we've already found and fixed two sets of arm64
+> ACPI tables that are in error by using these patches, even with the flaws :).
+>
+
+Very much true indeed :)
+
+Regards,
+Sudeep
