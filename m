@@ -1,76 +1,25 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH] power: bq24261_charger: Add support for TI BQ24261 charger
-Date: Fri, 11 Sep 2015 09:58:40 +0900
-Message-ID: <55F22740.4080003@samsung.com>
-References: <1441560187-23611-1-git-send-email-ramakrishna.pallala@intel.com>
- <CAJKOXPfDu+LxoiQrV+CsqUbEVwYb1Zmk-m9y-L_1JxrB6ouS0g@mail.gmail.com>
- <D854C92F57B1B347B57E531E78D05EAD57904B8D@BGSMSX104.gar.corp.intel.com>
- <55F0C522.6070705@samsung.com> <55F1B2FD.4020608@ti.com>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH] clk: tegra: dfll: Properly protect OPP list
+Date: Fri, 11 Sep 2015 08:05:27 +0530
+Message-ID: <20150911023527.GS5266@linux>
+References: <1441893321-4563-1-git-send-email-thierry.reding@gmail.com>
+ <20150910175144.GB15099@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:63995 "EHLO
-	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751064AbbIKA6r (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Sep 2015 20:58:47 -0400
-In-reply-to: <55F1B2FD.4020608@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20150910175144.GB15099-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Mikko Perttunen <mikko.perttunen-/1wQRMveznE@public.gmane.org>, Tuomas Tynkkynen <ttynkkynen-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: "Andrew F. Davis" <afd@ti.com>, "Pallala, Ramakrishna" <ramakrishna.pallala@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, "Tc, Jenny" <jenny.tc@intel.com>, Andreas Dannenberg <dannenberg@ti.com>
 
-On 11.09.2015 01:42, Andrew F. Davis wrote:
-> On 09/09/2015 06:47 PM, Krzysztof Kozlowski wrote:
->>>>> +- ti,enable-user-write: boolean, if present driver will allow the
->>>>> user space
->>>>> +    to control the charging current and voltage through sysfs;
->>>>
->>>> This is not DT property. It does not describe hardware.
->>> We needed a mechanism to enable the sysfs writes on certain properties.
->>> If DT is not the place where should it go?
->>
->> DT is not the place. As I discussed later with Andreas, if you really
->> need this and if mainline is a place for that then probably this should
->> be compile option (a Kconfig symbol).
->>
-> 
-> I think this would actually be a good use for module parameters, this way
-> it could still be set at boot without re-compiling.
-> 
-> I think compile-time disabling sysfs properties because they are
-> "dangerous" is
-> a little bit too artificially restricting and controlling, you can set
-> permissions
-> so only root can change them already. The kernel should not be
-> restricting root,
-> I understand the fear of someone rooting a machine and remotely over
-> charging
-> a LiPo[1], but these physical limits are hardware descriptions and can
-> and should
-> be set by DT, beyond this root should have full control over their machine.
+On 10-09-15, 10:51, Stephen Boyd wrote:
+> Don't we already have an rcu_read_lock() at the beginning of this
+> function? I don't understand why we need to nest them in the same
+> function.
 
++1
 
-Indeed module parameters could be used for enabling/disabling debug
-options... but as fair as I understand these are for purely development
-purposes. That is why they got into DT initially, right? To allow the
-developer to play with it on the development board?
-
-This is why I am really not convinced that this should go to mainline.
-
-Anyway if it goes, then maybe compiling it out is the safest choice?
-What's the purpose of having it in kernel all the time? If this was a
-debug option, than some experienced user could turn it on and report to
-LKML with extended debug data. But it's not a debug but development option?
-
-> Besides root can already just unbind your driver and issue raw I2C
-> commands to do
-> the same thing. </rant>
-> 
-> [1] http://i.imgur.com/vszJJ.jpg
-
-Oh, these weird sickos... That's why I am using IPoAC and always check
-the bits by myself for weird looking I2C commands. :)
-
-Best regards,
-Krzysztof
+-- 
+viresh
