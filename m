@@ -1,71 +1,50 @@
-From: Arjun Sreedharan <arjun024@gmail.com>
-Subject: Re: [PATCH] cpupower: fix potential memory leak
-Date: Sat, 12 Sep 2015 01:21:09 +0530
-Message-ID: <CAJFMrCH_sq9d6R_rN3MA2H7gFYUgMB+XqMfwtg_UpyLGRjPV9w@mail.gmail.com>
-References: <1440244862-7255-1-git-send-email-arjun024@gmail.com>
+From: Andreas Dannenberg <dannenberg@ti.com>
+Subject: [PATCH v3 03/10] power: bq24257: Add bit definition for temp sense enable
+Date: Fri, 11 Sep 2015 15:26:35 -0500
+Message-ID: <1442003202-1430-4-git-send-email-dannenberg@ti.com>
+References: <1442003202-1430-1-git-send-email-dannenberg@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f172.google.com ([209.85.214.172]:34177 "EHLO
-	mail-ob0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751696AbbIKTvd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Sep 2015 15:51:33 -0400
-In-Reply-To: <1440244862-7255-1-git-send-email-arjun024@gmail.com>
+Received: from devils.ext.ti.com ([198.47.26.153]:53972 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751696AbbIKU1z (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Sep 2015 16:27:55 -0400
+In-Reply-To: <1442003202-1430-1-git-send-email-dannenberg@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Renninger <trenn@suse.com>
-Cc: linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Andreas Dannenberg <dannenberg@ti.com>
 
-Ping !
+Adding a missing bit definition for the sake of consistency device model
+vs. bit field representation. No change in functionality.
 
-On 22 August 2015 at 17:31, Arjun Sreedharan <arjun024@gmail.com> wrote:
-> Signed-off-by: Arjun Sreedharan <arjun024@gmail.com>
-> ---
->  tools/power/cpupower/bench/parse.c | 10 ++++++----
->  1 file changed, 6 insertions(+), 4 deletions(-)
->
-> diff --git a/tools/power/cpupower/bench/parse.c b/tools/power/cpupower/bench/parse.c
-> index f503fb5..058a351 100644
-> --- a/tools/power/cpupower/bench/parse.c
-> +++ b/tools/power/cpupower/bench/parse.c
-> @@ -65,7 +65,7 @@ FILE *prepare_output(const char *dirname)
->  {
->         FILE *output = NULL;
->         int len;
-> -       char *filename;
-> +       char *filename, *filename_tmp;
->         struct utsname sysdata;
->         DIR *dir;
->
-> @@ -80,17 +80,19 @@ FILE *prepare_output(const char *dirname)
->         }
->
->         len = strlen(dirname) + 30;
-> -       filename = malloc(sizeof(char) * len);
-> +       filename = malloc(sizeof(*filename) * len);
->
->         if (uname(&sysdata) == 0) {
->                 len += strlen(sysdata.nodename) + strlen(sysdata.release);
-> -               filename = realloc(filename, sizeof(char) * len);
-> +               filename_tmp = realloc(filename, sizeof(*filename) * len);
->
-> -               if (filename == NULL) {
-> +               if (filename_tmp == NULL) {
-> +                       free(filename);
->                         perror("realloc");
->                         return NULL;
->                 }
->
-> +               filename = filename_tmp;
->                 snprintf(filename, len - 1, "%s/benchmark_%s_%s_%li.log",
->                         dirname, sysdata.nodename, sysdata.release, time(NULL));
->         } else {
-> --
-> 2.4.5
->
+Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
+---
+ drivers/power/bq24257_charger.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-
-
+diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
+index 1b3ddfb..fdfe855 100644
+--- a/drivers/power/bq24257_charger.c
++++ b/drivers/power/bq24257_charger.c
+@@ -63,7 +63,7 @@ enum bq24257_fields {
+ 	F_VBAT, F_USB_DET,					    /* REG 3 */
+ 	F_ICHG, F_ITERM,					    /* REG 4 */
+ 	F_LOOP_STATUS, F_LOW_CHG, F_DPDM_EN, F_CE_STATUS, F_VINDPM, /* REG 5 */
+-	F_X2_TMR_EN, F_TMR, F_SYSOFF, F_TS_STAT,		    /* REG 6 */
++	F_X2_TMR_EN, F_TMR, F_SYSOFF, F_TS_EN, F_TS_STAT,	    /* REG 6 */
+ 	F_VOVP, F_CLR_VDP, F_FORCE_BATDET, F_FORCE_PTM,		    /* REG 7 */
+ 
+ 	F_MAX_FIELDS
+@@ -153,6 +153,7 @@ static const struct reg_field bq24257_reg_fields[] = {
+ 	[F_X2_TMR_EN]		= REG_FIELD(BQ24257_REG_6, 7, 7),
+ 	[F_TMR]			= REG_FIELD(BQ24257_REG_6, 5, 6),
+ 	[F_SYSOFF]		= REG_FIELD(BQ24257_REG_6, 4, 4),
++	[F_TS_EN]		= REG_FIELD(BQ24257_REG_6, 3, 3),
+ 	[F_TS_STAT]		= REG_FIELD(BQ24257_REG_6, 0, 2),
+ 	/* REG 7 */
+ 	[F_VOVP]		= REG_FIELD(BQ24257_REG_7, 5, 7),
 -- 
-Arjun Sreedharan
-arjunsreedharan.org
+1.9.1
+
