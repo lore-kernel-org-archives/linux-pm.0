@@ -1,48 +1,98 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
- SpeedStep enabled
-Date: Fri, 11 Sep 2015 10:09:01 +0000
-Message-ID: <bug-103351-137361-rUlDAYvDSU@https.bugzilla.kernel.org/>
-References: <bug-103351-137361@https.bugzilla.kernel.org/>
+From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Subject: [PATCH v5 2/6] mfd: da9150: Update DT bindings for Fuel-Gauge support
+Date: Fri, 11 Sep 2015 11:05:33 +0100
+Message-ID: <76d246fa02e5c5bc98dd3cb1bf536ee4a76bc952.1441964153.git.Adam.Thomson.Opensource@diasemi.com>
+References: <cover.1441964153.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:46875 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751301AbbIKKJG convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Sep 2015 06:09:06 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id 811EE207CE
-	for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2015 10:09:05 +0000 (UTC)
-Received: from bugzilla2.web.kernel.org (bugzilla2.web.kernel.org [172.20.200.52])
-	by mail.kernel.org (Postfix) with ESMTP id D3CD92082A
-	for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2015 10:09:03 +0000 (UTC)
-In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
+Received: from mail1.bemta3.messagelabs.com ([195.245.230.167]:39539 "EHLO
+	mail1.bemta3.messagelabs.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751569AbbIKKMZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Sep 2015 06:12:25 -0400
+In-Reply-To: <cover.1441964153.git.Adam.Thomson.Opensource@diasemi.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Support Opensource <support.opensource@diasemi.com>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D103351
+Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Acked-by: Lee Jones <lee.jones@linaro.org>
+---
 
-Ond=C5=99ej Jan=C3=A1s <ondrejanas@gmail.com> changed:
+Changes in v5:
+ - Rebase to v4.2
 
-           What    |Removed                     |Added
------------------------------------------------------------------------=
------
-                 CC|                            |ondrejanas@gmail.com
+Changes in v4:
+ - Update compatible string of fuel-gauge to "da9150-fuel-gauge".
+ - Node name tidy up, relating to maintainer comments on fuel-gauge DT
+   binding doc.
+ - Removed Ack to patch from Lee Jones, as this has now been modified slightly
+   and didn't want to make assumptions of approval.
 
---- Comment #10 from Ond=C5=99ej Jan=C3=A1s <ondrejanas@gmail.com> ---
-Hello,
+Changes in v3:
+ - Removal of unwanted new-line.
+ - Flesh out example bindings usage.
 
-recently I've got this laptop MSI GS70-2QD-Stealth. I installed ubuntu =
-14.04
-LTS without any problems and after i disabled Intel Speedstep, secure b=
-oot,
-fast boot in BIOS i am running the system without problems so far.(no G=
-RUB
-parameters were added)
+Changes in v2:
+ - N/A
 
---=20
-You are receiving this mail because:
-You are the assignee for the bug.
+ Documentation/devicetree/bindings/mfd/da9150.txt | 27 ++++++++++++++++++++----
+ 1 file changed, 23 insertions(+), 4 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/mfd/da9150.txt b/Documentation/devicetree/bindings/mfd/da9150.txt
+index d0588ea..970801d 100644
+--- a/Documentation/devicetree/bindings/mfd/da9150.txt
++++ b/Documentation/devicetree/bindings/mfd/da9150.txt
+@@ -6,6 +6,7 @@ Device			 Description
+ ------			 -----------
+ da9150-gpadc		: General Purpose ADC
+ da9150-charger		: Battery Charger
++da9150-fg		: Battery Fuel-Gauge
+
+ ======
+
+@@ -22,7 +23,7 @@ Required properties:
+ Sub-devices:
+ - da9150-gpadc: See Documentation/devicetree/bindings/iio/adc/da9150-gpadc.txt
+ - da9150-charger: See Documentation/devicetree/bindings/power/da9150-charger.txt
+-
++- da9150-fg: See Documentation/devicetree/bindings/power/da9150-fg.txt
+
+ Example:
+
+@@ -34,10 +35,28 @@ Example:
+ 		interrupt-controller;
+
+ 		gpadc: da9150-gpadc {
+-			...
++			compatible = "dlg,da9150-gpadc";
++			#io-channel-cells = <1>;
++		};
++
++		charger {
++			compatible = "dlg,da9150-charger";
++
++			io-channels = <&gpadc 0>,
++				      <&gpadc 2>,
++				      <&gpadc 8>,
++				      <&gpadc 5>;
++			io-channel-names = "CHAN_IBUS",
++					   "CHAN_VBUS",
++					   "CHAN_TJUNC",
++					   "CHAN_VBAT";
+ 		};
+
+-		da9150-charger {
+-			...
++		fuel-gauge {
++			compatible = "dlg,da9150-fuel-gauge";
++
++			dlg,update-interval = <10000>;
++			dlg,warn-soc-level = /bits/ 8 <15>;
++			dlg,crit-soc-level = /bits/ 8 <5>
+ 		};
+ 	};
+--
+1.9.3
+
