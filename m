@@ -1,121 +1,62 @@
 From: Andreas Dannenberg <dannenberg@ti.com>
-Subject: Re: [PATCH v2 13/13] dt: power: bq2425x-charger: Cover additional
- devices
-Date: Fri, 11 Sep 2015 09:47:06 -0500
-Message-ID: <20150911144704.GA17875@beast>
+Subject: Re: [PATCH v2 00/13] power: bq24257: Add support for bq24250/bq24251
+Date: Fri, 11 Sep 2015 10:06:45 -0500
+Message-ID: <20150911150645.GA18055@beast>
 References: <1441757557-7266-1-git-send-email-dannenberg@ti.com>
- <1441757557-7266-14-git-send-email-dannenberg@ti.com>
- <55EF7CDA.9030505@samsung.com>
- <20150909024841.GB32255@beast>
- <55EFBC61.1050405@samsung.com>
- <20150909201534.GB9887@beast>
- <55F0CB8D.9000507@samsung.com>
- <20150910205701.GA16113@borg>
- <55F22182.9000508@samsung.com>
+ <20150910122616.GB21512@lpalcu-desk>
+ <20150910212626.GA16256@borg>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:42326 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751875AbbIKOrl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Sep 2015 10:47:41 -0400
+Received: from bear.ext.ti.com ([192.94.94.41]:49128 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752626AbbIKPHU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 11 Sep 2015 11:07:20 -0400
 Content-Disposition: inline
-In-Reply-To: <55F22182.9000508@samsung.com>
+In-Reply-To: <20150910212626.GA16256@borg>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: Laurentiu Palcu <laurentiu.palcu@intel.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-On Fri, Sep 11, 2015 at 09:34:10AM +0900, Krzysztof Kozlowski wrote:
-> On 11.09.2015 05:57, Andreas Dannenberg wrote:
-> > On Thu, Sep 10, 2015 at 09:15:09AM +0900, Krzysztof Kozlowski wrote:
+On Thu, Sep 10, 2015 at 04:26:26PM -0500, Andreas Dannenberg wrote:
+> On Thu, Sep 10, 2015 at 03:26:16PM +0300, Laurentiu Palcu wrote:
+> > On Tue, Sep 08, 2015 at 07:12:24PM -0500, Andreas Dannenberg wrote:
+> > > v2:
+[...]
+> > > - Renamed/refactored filenames/symbols from bq24257 to bq2425x to
+> > >   better reflect that multiple devices are covered. Despite initial
+> > >   hesitation I feel this is a good opportunity for some clean-up as
+> > >   the driver is still very new in the Kernel so the change should be
+> > >   low risk. This also addresses one of Andrew Davis' feedback items.
+> > >   Plus, it makes for a nice alignment with the existing bq2415x_charger
+> > >   driver.
+> > I can't say I fully agree with this rename but, on the other hand, since you
+> > work for the chip manufacturer, you probably know better what other chips
+> > (if any), with the same naming scheme, are due to be released and make
+> > sure they are registry compatible. Otherwise, it'll be fun.
 > 
-> (...)
-> 
-> > 
-> >>>> bq2415x.txt - ti,current-limit  - maximum current to be drawn in mA
-> >>>>
-> >>>> New bindings:
-> >>>> ti,charge-current (bq24261) - default charge current in mA
-> >>>> ti,max-charge-current (bq24261) - maximum charging current in mA
-> >>>
-> >>> This ti,max-charge-current is actually an interesting one. It's not a
-> >>> device setting as it does not impact any of the device registers at all.
-> >>> Instead, it's an artificial limit that can be set through DT that
-> >>> prevents somebody from going into sysfs and configuring a charge current
-> >>> higher than ti,max-charge-current. In other drivers I have seen that the
-> >>> sysfs property reflecting that max charge current is just read-only and
-> >>> gives you the maximum the HW is capable of. From a device point of view
-> >>> there is nothing configurable about this property.
-> >>
-> >> Hmmm, so now I wonder whether this should be a DT binding. The purpose
-> >> of DT isn't the control of the driver like enable some stuff, set some
-> >> value used by the driver. The DT provides information about hardware so
-> >> the driver could properly configure the device and work with it.
-> >>
-> >> Reason to put this into DT would be:
-> >> For example one device configuration (device, board, connected battery)
-> >> could handle one maximum value and the other configuration would require
-> >> lower one. The device and its capabilities (bq24257 for example) are the
-> >> same but configuration changes.
-> > 
-> > Yes this could be useful in this case but this property only makes sense
-> > if userspace is allowed to change the actual charge current through
-> > sysfs as some drivers do including Ram's proposed bq24261 driver. But if we
-> > get rid of the general sysfs configurability of the charge current
-> > (which I say we should) we don't need that ti,max-charge-current property.
-> > Also see...
-> > 
-> > http://marc.info/?l=linux-pm&m=143080413218161&w=2
-> 
-> Right, that's my previous reply. :) I must admit that here and for
-> bq24261 I looked mostly at bindings so I did not initially about the
-> sysfs interface.
-> 
-> Anyway I am not convinced to having such sysfs interfaces and definitely
-> they should not mess with DT. I would rather expect these to be totally
-> orthogonal.
-> 
-> Summarizing all these bq24261 properties:
->  - ti,enable-user-write
->  - ti,max-charge-current
->  - ti,max-charge-voltage
-> are related to that sysfs interface, not to hardware configuration. If
-> that's true, then all should be gone.
-> 
-> > 
-> >> To prevent future issues in naming and bindings consistency maybe there
-> >> should be a dedicated maintainer for bq/TI charger devices? Pali Rohar
-> >> recently took care for devices related to Nokia N900 but maybe someone
-> >> from TI should also take care of rest or all of them (if TI is
-> >> interested in this)?
-> > 
-> > I'd be happy to step in here. Let me know how I can help and contribute.
-> 
-> I don't know Sebastian's opinion on that idea but I think usually a new
-> maintainer and reviewer of particular drivers is welcomed by community.
-> I see also Intel's interest and his contributions in these chargers.
-> Laurentiu seems to do a thorough review as well. There can be both
-> official reviewers.
+> Yes the expectation is that potential future devices will fit with minor
+> changes to the driver. I was given no indication that this wouldn't be
+> the case but I'm double-checking with the product/planning people for
+> that family.
 
-Hi Krzysztof,
-If we already have good coverage then that's great. The value I can add
-is that I literally sit in the same building with the "battery charger
-people" :) so it's easy to go talk to them to clarify technical details
-amongst other things that might come up as drivers are getting
-developed/reviewed. So at a minimum folks like Laurentiu should feel
-free to reach out to me as needed.
+Hi Laurentiu, full stop on the renaming. After double-checking with the
+responsible bq242xx engineers it turns out it will be difficult to
+maintain a family concept for the bq2425x driver moving forward (unless
+you like nested switch/case statements sprinkled throughout the driver).
 
-Regards,
+I feel sometimes even the most well-thought out and "future-proof"
+family naming schemes will eventually turn into nothing more than a set
+of GUIDs :) From a silicon vendor perspective there are several reasons
+for that including that the namespace for part numbers (including their
+length) is actually quite limited - a fact that's not immediately
+obvious from the outside.
+
+This being said I'll drop the renaming patch, and let's rely on folks
+using Kconfig to find and use the correct driver.
 
 --
 Andreas Dannenberg
 Texas Instruments Inc
 
- 
-> It's up to you people. Just make a first step and we'll see how other
-> people react (and what Sebastian thinks about it :) ).
-> 
-> Best regards,
-> Krzysztof
-> 
