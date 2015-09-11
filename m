@@ -1,60 +1,60 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v2 1/5] ACPI: add in a bad_madt_entry() function to
- eventually replace the macro
-Date: Fri, 11 Sep 2015 09:49:43 +0100
-Message-ID: <55F295A7.20406@arm.com>
-References: <1440022048-6285-1-git-send-email-al.stone@linaro.org>
- <1440022048-6285-2-git-send-email-al.stone@linaro.org>
- <55EDADF5.5060008@arm.com> <55F08F47.1070906@redhat.com>
- <55F1ADC4.7090005@arm.com> <55F1EB81.9030908@redhat.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH 15/17] thermal: st: allow compile test
+Date: Fri, 11 Sep 2015 10:23:35 +0100
+Message-ID: <20150911092335.GK3260@x1>
+References: <1441858273-4017-1-git-send-email-edubezval@gmail.com>
+ <1441858273-4017-16-git-send-email-edubezval@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <55F1EB81.9030908@redhat.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Al Stone <ahs3@redhat.com>, Al Stone <al.stone@linaro.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>, "patches@linaro.org" <patches@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linaro-acpi@lists.linaro.org" <linaro-acpi@lists.linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1441858273-4017-16-git-send-email-edubezval@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Rui Zhang <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Nicolas Boichat <drinkcat@chromium.org>, Mark Brown <broonie@kernel.org>, Fabian Frederick <fabf@skynet.be>, Wolfram Sang <wsa@the-dreams.de>
 List-Id: linux-pm@vger.kernel.org
 
+On Wed, 09 Sep 2015, Eduardo Valentin wrote:
 
+> Adding COMPILE_TEST flag to st driver to facilitate
+> maintenance.
+>=20
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: Nicolas Boichat <drinkcat@chromium.org>
+> Cc: Mark Brown <broonie@kernel.org>
+> Cc: Fabian Frederick <fabf@skynet.be>
+> Cc: Wolfram Sang <wsa@the-dreams.de>
+> Cc: Lee Jones <lee.jones@linaro.org>
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+> ---
+>  drivers/thermal/Kconfig | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-On 10/09/15 21:43, Al Stone wrote:
-> On 09/10/2015 10:20 AM, Sudeep Holla wrote:
->>
+Sounds reasonable.
 
-[...]
+So long as it's been tested and nothing breaks:
 
->>
->>  From the code inspection, I can see we have 3 users of acpi_parse_entries not
->> just MADT but also PCC and NUMA/SRAT
->>
->> Something like this solves this issue:
->> -              if (bad_madt_entry(table_header, entry))
->> +              if (!strncmp(id, ACPI_SIG_MADT, 4) &&
->> +                      bad_madt_entry(table_header, entry)
->>
->>
->> Or am I still missing something ?
->
-> Nope, I missed it.  Your fix above will solve the problem; I misunderstood
-> how acpi_parse_entries() was being used -- somehow I had it in my head that
-> only MADT was in use, and just not seeing that it's being used for several
-> other subtable traversals also.  Sorry about that, Sudeep.  My mistake.
->
+Acked-by: Lee Jones <lee.jones@linaro.org>
 
-No worries.
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index 9069cc7..d94b4e9 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -350,7 +350,7 @@ source "drivers/thermal/samsung/Kconfig"
+>  endmenu
+> =20
+>  menu "STMicroelectronics thermal drivers"
+> -depends on ARCH_STI && OF
+> +depends on (ARCH_STI || COMPILE_TEST) && OF
+>  source "drivers/thermal/st/Kconfig"
+>  endmenu
+> =20
 
-> I'll add this fix for a v4, but I'll wait for a few days to see if I get any
-> additional comments -- I haven't heard from any x86, ia64 or ACPI maintainers
-
-Makes sense.
-
-> yet.  OTOH, it's nice to know we've already found and fixed two sets of arm64
-> ACPI tables that are in error by using these patches, even with the flaws :).
->
-
-Very much true indeed :)
-
-Regards,
-Sudeep
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
