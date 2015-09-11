@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 13/16] PM / OPP: Manage device clk as well
-Date: Fri, 11 Sep 2015 17:32:09 +0530
-Message-ID: <c9e1111fd9520d528bba850a68ed837cce0e839d.1441972771.git.viresh.kumar@linaro.org>
+Subject: [PATCH 14/16] PM / OPP: Add dev_pm_opp_set_regulator() to specify regulator
+Date: Fri, 11 Sep 2015 17:32:10 +0530
+Message-ID: <1d8a3dabc6a0f46d1e94df0cbfec894c74e023a3.1441972771.git.viresh.kumar@linaro.org>
 References: <cover.1441972771.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1441972771.git.viresh.kumar@linaro.org>
@@ -12,69 +12,140 @@ To: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, rob.herring@linaro.org, lee.jones@linaro.org, Viresh Kumar <viresh.kumar@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dmitry Torokhov <dtor@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
 
-OPP core has got almost everything now to manage device's OPP
-transitions, the only thing left is device's clk. Get that as well.
+The new OPP V2 bindings have a way to find supplies for a particular
+device. But the old V1 bindings doesn't have any API to do it today.
+
+This is required in order to move the complexity of switching OPPs (i.e.
+changing clock and voltages), into the OPP core, rather then keeping
+that in individual drivers.
+
+This patch adds another API, to be used only for V1 bindings, which
+first finds the regulator for the dev_opp and then disables all OPPs
+that aren't supported by the regulator.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/base/power/opp/core.c | 9 +++++++++
- drivers/base/power/opp/opp.h  | 3 +++
- 2 files changed, 12 insertions(+)
+ drivers/base/power/opp/core.c | 74 ++++++++++++++++++++++++++++++++++++++++++-
+ include/linux/pm_opp.h        |  6 ++++
+ 2 files changed, 79 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index 9633f2fc3481..a04dcacb8a07 100644
+index a04dcacb8a07..4ee0911b97ea 100644
 --- a/drivers/base/power/opp/core.c
 +++ b/drivers/base/power/opp/core.c
-@@ -636,6 +636,11 @@ static struct device_opp *_add_device_opp(struct device *dev, int supply_count,
- 	if (supply_count == 1)
- 		*dev_opp->supply_names = dev_name(dev);
+@@ -970,6 +970,73 @@ static bool opp_supported_by_regulators(struct dev_pm_opp *opp,
+ 	return true;
+ }
  
-+	/* Find clk for the device */
-+	dev_opp->clk = clk_get(dev, NULL);
-+	if (IS_ERR(dev_opp->clk))
-+		dev_dbg(dev, "%s: Couldn't find clock\n", __func__);
++/**
++ * dev_pm_opp_set_regulator() - Set regulator for the device OPP
++ * @dev: Device for which the regulator has to be set.
++ * @id: String used to find regulator.
++ *
++ * This is only required for the V1 bindings, as regulator is automatically
++ * found for the V2 bindings. OPP core finds a regulator with name <reg>-supply,
++ * and then get/put it automatically. The name of the debugfs files isn't
++ * changed however, to keep it simple. They are named as <dev_name>_*.
++ */
++int dev_pm_opp_set_regulator(struct device *dev, const char *id)
++{
++	struct device_opp *dev_opp;
++	struct dev_pm_opp *opp;
++	struct regulator *reg;
++	int ret = 0;
 +
- 	srcu_init_notifier_head(&dev_opp->srcu_head);
- 	INIT_LIST_HEAD(&dev_opp->opp_list);
- 
-@@ -669,6 +674,10 @@ static void _remove_device_opp(struct device_opp *dev_opp)
- 	if (!list_empty(&dev_opp->opp_list))
- 		return;
- 
-+	/* Release clk */
-+	if (!IS_ERR(dev_opp->clk))
-+		clk_put(dev_opp->clk);
++	rcu_read_lock();
 +
- 	/* Release regulators */
- 	for (count = dev_opp->supply_count - 1; count >= 0; count--)
- 		regulator_put(dev_opp->regulators[count]);
-diff --git a/drivers/base/power/opp/opp.h b/drivers/base/power/opp/opp.h
-index 55205cbe59dc..e36ee6296f1a 100644
---- a/drivers/base/power/opp/opp.h
-+++ b/drivers/base/power/opp/opp.h
-@@ -14,6 +14,7 @@
- #ifndef __DRIVER_OPP_H__
- #define __DRIVER_OPP_H__
++	dev_opp = _find_device_opp(dev);
++	if (IS_ERR(dev_opp)) {
++		ret = PTR_ERR(dev_opp);
++		dev_err(dev, "%s: no device opp found: %d\n", __func__, ret);
++		goto unlock;
++	}
++
++	/* Do we already have a regulator attached to this dev_opp? */
++	if (!IS_ERR_OR_NULL(*dev_opp->regulators)) {
++		dev_err(dev, "%s: can't add (%s), regulator already present\n",
++			__func__, id);
++		ret = -EINVAL;
++		goto unlock;
++	}
++
++	reg = regulator_get_optional(dev, id);
++
++	/*
++	 * Few platforms may not have regulators for the device, and we need to
++	 * save error number in that case as well.
++	 */
++	*dev_opp->regulators = reg;
++
++	if (IS_ERR(reg)) {
++		ret = PTR_ERR(reg);
++		if (ret != -EPROBE_DEFER)
++			dev_err(dev, "%s: no regulator (%s) found: %d\n",
++				__func__, id, ret);
++		goto unlock;
++	}
++
++	list_for_each_entry_rcu(opp, &dev_opp->opp_list, node) {
++		/* Disable OPPs, that aren't supported by the regulator */
++		if (opp_supported_by_regulators(opp, dev_opp))
++			continue;
++
++		opp->available = false;
++		dev_warn(dev, "%s: disabled OPP (%lu), not supported by regulator (%s)\n",
++			 __func__, opp->rate, id);
++	}
++
++unlock:
++	rcu_read_unlock();
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(dev_pm_opp_set_regulator);
++
+ /* returns the number of entries used from microvolt */
+ static void opp_parse_single_supply(struct opp_supply *supply, bool triplet,
+ 				    u32 *microvolt, u32 *microamp)
+@@ -1493,9 +1560,14 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np)
+ 		if (IS_ERR(reg)) {
+ 			ret = PTR_ERR(reg);
+ 			if (ret != -EPROBE_DEFER)
++				dev_err(dev, "%s: deferring, no regulator (%s) found: %d\n",
++					__func__, *name, ret);
++			/* Regulator may not be compulsory for the device */
++			if (!string_count)
+ 				dev_err(dev, "%s: no regulator (%s) found: %d\n",
+ 					__func__, *name, ret);
+-			goto free_table;
++			else
++				goto free_table;
+ 		}
+ 		dev_opp->regulators[count] = reg;
+ 	}
+diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+index e36f347ff32b..e8aee03b974a 100644
+--- a/include/linux/pm_opp.h
++++ b/include/linux/pm_opp.h
+@@ -57,6 +57,7 @@ int dev_pm_opp_enable(struct device *dev, unsigned long freq);
+ int dev_pm_opp_disable(struct device *dev, unsigned long freq);
  
-+#include <linux/clk.h>
- #include <linux/device.h>
- #include <linux/kernel.h>
- #include <linux/list.h>
-@@ -135,6 +136,7 @@ struct device_list_opp {
-  * @dev_list:	list of devices that share these OPPs
-  * @opp_list:	list of opps
-  * @np:		struct device_node pointer for opp's DT node.
-+ * @clk:	struct clk pointer
-  * @supply_count: Number of power-supplies
-  * @regulators:	Array of regulators
-  * @supply_names: Array of strings containing names of the power-supplies
-@@ -163,6 +165,7 @@ struct device_opp {
- 	struct device_node *np;
- 	unsigned long clock_latency_ns_max;
+ struct srcu_notifier_head *dev_pm_opp_get_notifier(struct device *dev);
++int dev_pm_opp_set_regulator(struct device *dev, const char *id);
+ #else
+ static inline unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
+ {
+@@ -141,6 +142,11 @@ static inline struct srcu_notifier_head *dev_pm_opp_get_notifier(
+ {
+ 	return ERR_PTR(-EINVAL);
+ }
++
++static inline int dev_pm_opp_set_regulator(struct device *dev, const char *id)
++{
++	return -EINVAL;
++}
+ #endif		/* CONFIG_PM_OPP */
  
-+	struct clk *clk;
- 	unsigned int supply_count;
- 	struct regulator **regulators;
- 	const char **supply_names;
+ #if defined(CONFIG_PM_OPP) && defined(CONFIG_OF)
 -- 
 2.4.0
