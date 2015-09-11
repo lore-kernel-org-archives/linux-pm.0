@@ -1,46 +1,34 @@
-From: Thierry Reding <thierry.reding@gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH] driver core: Ensure proper suspend/resume ordering
-Date: Fri, 11 Sep 2015 14:03:46 +0200
-Message-ID: <20150911120345.GB16323@ulmo>
-References: <1441880343-30852-1-git-send-email-thierry.reding@gmail.com>
- <10787470.V3kIoIEDW3@vostro.rjw.lan>
+Date: Fri, 11 Sep 2015 10:05:39 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1509111004480.1667-100000@iolanthe.rowland.org>
+References: <10787470.V3kIoIEDW3@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="QTprm0S8XgL7H0Dt"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f180.google.com ([209.85.212.180]:36982 "EHLO
-	mail-wi0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753185AbbIKMDt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Sep 2015 08:03:49 -0400
-Content-Disposition: inline
+Received: from iolanthe.rowland.org ([192.131.102.54]:49429 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751795AbbIKOFk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Sep 2015 10:05:40 -0400
 In-Reply-To: <10787470.V3kIoIEDW3@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Thierry Reding <thierry.reding@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
+On Fri, 11 Sep 2015, Rafael J. Wysocki wrote:
 
---QTprm0S8XgL7H0Dt
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, Sep 11, 2015 at 12:08:02AM +0200, Rafael J. Wysocki wrote:
 > On Thursday, September 10, 2015 12:19:03 PM Thierry Reding wrote:
 > > From: Thierry Reding <treding@nvidia.com>
-> >=20
+> > 
 > > Deferred probe can lead to strange situations where a device that is a
 > > dependency for others will be moved to the end of the dpm_list. At the
 > > same time the dependers may not be moved because at the time they will
 > > be probed the dependee may already have been successfully reprobed and
 > > they will not have to defer the probe themselves.
->=20
+> 
 > So there's a bug in the implementation of deferred probing IMO.
-
-Well, yeah. The root problem here is that we don't have dependency
-information and deferred probing is supposed to fix that. It does so
-fairly well, but it breaks in this particular case.
-
+> 
 > > One example where this happens is the Jetson TK1 board (Tegra124). The
 > > gpio-keys driver exposes the power key of the board as an input device
 > > that can also be used as a wakeup source. Commit 17cdddf0fb68 ("ARM:
@@ -58,14 +46,14 @@ fairly well, but it breaks in this particular case.
 > > callback, which is now called before that of the gpio-keys driver. The
 > > result is that the wrong values are programmed and leaves the system
 > > unable to be resumed using the power key.
-> >=20
+> > 
 > > To fix this situation, always move devices to the end of the dpm_list
 > > before probing them. Technically this should only be done for devices
 > > that have been successfully probed, but that won't work for recursive
 > > probing of devices (think an I2C master that instantiates children in
 > > its ->probe()). Effectively the dpm_list will end up ordered the same
 > > way that devices were probed, hence taking care of dependencies.
-> >=20
+> > 
 > > Signed-off-by: Thierry Reding <treding@nvidia.com>
 > > ---
 > > Note that this commit is kind of the PM equivalent of 52cdbdd49853
@@ -75,113 +63,15 @@ fairly well, but it breaks in this particular case.
 > > them? I don't see any reason why the ordering for shutdown and
 > > suspend/resume should be different, and having a single list would
 > > help keep this in sync.
->=20
+> 
 > We move away things from dpm_list during suspend and add them back to it
 > during resume to handle the situations in which some devices go away or
-> appear during suspend/resume.  That makes this idea potentially problemat=
-ic.
+> appear during suspend/resume.  That makes this idea potentially problematic.
 
-Okay, I see. If they are used for different purposes it's fine to keep
-them both.
+> Alan, what do you think about this?
 
-> >  drivers/base/dd.c | 33 +++++++++++++++++++++++----------
-> >  1 file changed, 23 insertions(+), 10 deletions(-)
-> >=20
-> > diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-> > index be0eb4639128..56291b11049b 100644
-> > --- a/drivers/base/dd.c
-> > +++ b/drivers/base/dd.c
-> > @@ -88,16 +88,6 @@ static void deferred_probe_work_func(struct work_str=
-uct *work)
-> >  		 */
-> >  		mutex_unlock(&deferred_probe_mutex);
-> > =20
-> > -		/*
-> > -		 * Force the device to the end of the dpm_list since
-> > -		 * the PM code assumes that the order we add things to
-> > -		 * the list is a good order for suspend but deferred
-> > -		 * probe makes that very unsafe.
-> > -		 */
-> > -		device_pm_lock();
-> > -		device_pm_move_last(dev);
-> > -		device_pm_unlock();
-> > -
-> >  		dev_dbg(dev, "Retrying from deferred list\n");
-> >  		bus_probe_device(dev);
-> > =20
-> > @@ -312,6 +302,29 @@ static int really_probe(struct device *dev, struct=
- device_driver *drv)
-> >  	 */
-> >  	devices_kset_move_last(dev);
-> > =20
-> > +	/*
-> > +	 * Force the device to the end of the dpm_list since the PM code
-> > +	 * assumes that the order we add things to the list is a good order
-> > +	 * for suspend but deferred probe makes that very unsafe.
-> > +	 *
-> > +	 * Deferred probe can also cause situations in which a device that is
-> > +	 * a dependency for others gets moved further down the dpm_list as a
-> > +	 * result of probe deferral. In that case the dependee will end up
-> > +	 * getting suspended before any of its dependers.
-> > +	 *
-> > +	 * To ensure proper ordering of suspend/resume, move every device that
-> > +	 * is being probed to the end of the dpm_list. Note that technically
-> > +	 * only successfully probed devices need to be moved, but that breaks
-> > +	 * for recursively added devices because they would end up in the list
-> > +	 * in reverse of the desired order, so we simply do it unconditionally
-> > +	 * for all devices before they are being probed. In the worst case the
-> > +	 * list will be reordered a couple more times than necessary, which
-> > +	 * should be an insignificant amount of work.
-> > +	 */
-> > +	device_pm_lock();
-> > +	device_pm_move_last(dev);
-> > +	device_pm_unlock();
->=20
-> So I don't agree with doing that for every driver being probed against the
-> same device.  That's just wasteful IMO.
+It's a tricky problem.  Let me give it some thought and I'll get back 
+to you.
 
-I don't understand. At this point driver matching has already taken
-place, so this will only every happen for one particular driver and the
-corresponding device. In the most common case this will happen exactly
-once, when the device is probed. Worst case it will happen a second or
-more times if a driver defers probing for a specific device. But in that
-case moving the device to the end of the list is absolutely required to
-keep it properly ordered for suspend/resume. Note that this is already
-done by the original code in deferred_probe_work_func() that is removed
-in the first hunk. The fix here is to do it for every device to ensure
-that inter-device dependencies are properly dealt with.
+Alan Stern
 
-I agree that it's a little wasteful, but that's completely in line with
-deferred probe. It's a simple solution to a very difficult problem, so
-naturally it comes at a cost. But it's also fairly elegant in how it
-correctly solves the ordering problem with very little code. The only
-other way that I can think of to avoid reordering the list for every
-device probe would be to sort it in advance using dependency information
-which we don't have. So we'd need to first add all that dependency
-information, and using that information is likely to be more work than
-simply reordering the list for each probe.
-
-Thierry
-
---QTprm0S8XgL7H0Dt
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCAAGBQJV8sMeAAoJEN0jrNd/PrOhgOwP/im5JMXG3PhChZ9fUciljV6r
-dt961kUp8BXxHPeV33Q5BFCcF4i5AyZvnDZQ3EuuYlV367OhgqXQG+LGaH38zqKq
-6w2hdRz6tKZQfdwtMAFWZWS5Q0zsG1CstRZj1WKtOE9m5SjRQjfT6FJkZn6WcZJv
-m3wGt08CldgoPCJJBYY7mMK7qZ9Lk7Z6U8p6JsH2PzXQA5nyrG3PXLlOB+WG7JhA
-iG1V+QFCw5bOszt3whOPoyAfqw2T5igNIewBdCJV6mR2CpOtWh59awh9dKVyDUrc
-2O2f8clGTfkGdROnOKJZ/QWgY61aje4NWwQ5zsusW9OG+aiH/UOcvQGN4jWzD0+2
-/gqyclZg03CDcnkLYxvSadWfmrehI9Ose3UxsE/rZM7Yfz4HA/bJL2eAvKBbwpA5
-x+k2MwLWWgqJM5OoteIk9lajZNzxnaMtINRdfg2i9GK7AxlHi+2nm6dEwggXwUkj
-q8dmybRFnTtjA/hWHIbCwzNrcDgJwnDUo04gr9rPBhrzDhZ97FRzOlTdYkbE/GXF
-pm6Y6Ki3N+H4HDGA2n4PWJNPeX/xMEMrySyEGPgcWZ1ykLRtCElxa6ztRF0Z7t2R
-JENzui3Lv0rRno8blm2x1FyLJdlmUcEnWOPrW9P5QeAjcht5N4kHBHy7SBRRlDpv
-Ue3C4YZB/SuzhkVuYnan
-=I3np
------END PGP SIGNATURE-----
-
---QTprm0S8XgL7H0Dt--
