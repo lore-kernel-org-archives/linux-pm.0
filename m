@@ -1,134 +1,173 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: System will not suspend with highest numbered CPU offline [REGRESSION][BISECTED]
-Date: Fri, 11 Sep 2015 15:07:14 -0700
-Message-ID: <55F35092.7090207@codeaurora.org>
-References: <001401d0e691$302127b0$90637710$@net> <20150908024014.GD26760@linux> <55F33D07.5090107@codeaurora.org> <2418240.peTGggLtDn@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] driver core: Ensure proper suspend/resume ordering
+Date: Sat, 12 Sep 2015 00:38:19 +0200
+Message-ID: <4817586.89LbLFPz9W@vostro.rjw.lan>
+References: <1441880343-30852-1-git-send-email-thierry.reding@gmail.com> <10787470.V3kIoIEDW3@vostro.rjw.lan> <20150911120345.GB16323@ulmo>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:37856 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754392AbbIKWHQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Sep 2015 18:07:16 -0400
-In-Reply-To: <2418240.peTGggLtDn@vostro.rjw.lan>
+Received: from v094114.home.net.pl ([79.96.170.134]:41682 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753977AbbIKWK0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Sep 2015 18:10:26 -0400
+In-Reply-To: <20150911120345.GB16323@ulmo>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Doug Smythies <dsmythies@telus.net>, "'Rafael J. Wysocki'" <rafael@kernel.org>, linux-pm@vger.kernel.org
+To: Thierry Reding <thierry.reding@gmail.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 09/11/2015 02:30 PM, Rafael J. Wysocki wrote:
-> On Friday, September 11, 2015 01:43:51 PM Saravana Kannan wrote:
->> Sorry about the late reply and not helping out earlier. Didn't check
->> this email account for sometime.
->>
->> On 09/07/2015 07:40 PM, Viresh Kumar wrote:
->>> On 07-09-15, 15:32, Rafael J. Wysocki wrote:
->>>> First, if policy->cpu is offline, the policy will be inactive to my eyes, so
->>>> we don't need the second check.
->>>
->>> Hmm, or maybe just drop the first check.
->>>
->>>> But if the policy is active (and policy->cpu is online), it will not generally
->>>> fail for an offline CPU.
->>>
->>> Right.
->>>
->>>> So, if the policy applies to more than 1 CPU, you
->>>> can use any of them to manipulate it, even if one of them is offline as long
->>>> as there are any online CPUs in the set.
->>>
->>> Right.
->>>
->>>> This isn't entirely consistent.  We should either fail store() for any offline
->>>> CPU
->>>
->>> At that point we have no idea of the CPU for which the sysfs operation
->>> is called. And so we have to go ahead without failing, if policy is
->>> active.
->>>
->>>> or make the changes for offline CPUs to.
->>>
->>> What does that mean? Most of the stuff we do is for the policy, rather
->>> than per-cpu. And if there is per-cpu stuff, then we *only* should be
->>> doing that for the online ones.
->>>
->>> Not sure if I understood what you meant here. :(
->>>
->>>> And in the particular case of
->>>> the governor, I'm wondering what will be the problem with changing last_governor
->>>> for an inactive policy?
->>>
->>> I don't think we should be adding special cases for updating sysfs
->>> attributes of an inactive policy. Its not just about the last_governor
->>> thing, but other sysfs attributes as well.
->>>
->>
->> The way I see it, having the cpufreq policy control sysfs "bits" under
->> every CPU directory is what's causing some semantic confusion/inconsistency.
->>
->> Every single node under a cpufreq folder is for policy control and not
->> CPU control. But by putting the policy control bits under the cpuX
->> directory, we give the wrong semantic impression that it's a per CPU
->> attribute when it's really per-policy.
->>
->> Ideally (in terms of semantics) we would have put all the policy control
->> bits in a per policy directory under
->> /sys/devices/system/cpu/cpufreq/policyX/ where X would/could be the tied
->> to the first CPU in related CPUs -- so that it's easy to correlate and
->> also to avoid having the policy numbering being different depending on
->> the order in which CPUs get hotplugged.
->>
->> But we can't go about breaking userspace ABI by removing the cpufreq
->> directories out of the cpu directories just because of the semantic
->> confusion.
->>
->> Well, we COULD still put the policy directories under cpu/cpufreq/ and
->> then make every cpuX/cpufreq directory a symlink to the actual policy
->> directory. But that is not going to help with this specific
->> issue/discussion.
->
-> It isn't, but it'd be a good change in my view.
+On Friday, September 11, 2015 02:03:46 PM Thierry Reding wrote:
+> On Fri, Sep 11, 2015 at 12:08:02AM +0200, Rafael J. Wysocki wrote:
+> > On Thursday, September 10, 2015 12:19:03 PM Thierry Reding wrote:
+> > > From: Thierry Reding <treding@nvidia.com>
+> > >=20
+> > > Deferred probe can lead to strange situations where a device that is a
+> > > dependency for others will be moved to the end of the dpm_list. At the
+> > > same time the dependers may not be moved because at the time they will
+> > > be probed the dependee may already have been successfully reprobed and
+> > > they will not have to defer the probe themselves.
+> >=20
+> > So there's a bug in the implementation of deferred probing IMO.
+> 
+> Well, yeah. The root problem here is that we don't have dependency
+> information and deferred probing is supposed to fix that. It does so
+> fairly well, but it breaks in this particular case.
+> 
+> > > One example where this happens is the Jetson TK1 board (Tegra124). The
+> > > gpio-keys driver exposes the power key of the board as an input device
+> > > that can also be used as a wakeup source. Commit 17cdddf0fb68 ("ARM:
+> > > tegra: Add gpio-ranges property") results in the gpio-tegra driver
+> > > deferring probe because one of its dependencies, the pinctrl-tegra
+> > > driver, has not successfully completed probing. Currently the deferred
+> > > probe code will move the corresponding gpio-tegra device to the end of
+> > > the dpm_list, but by the time the gpio-keys device, depending on the
+> > > gpio-tegra device, is probed, gpio-tegra has already been reprobed, so
+> > > the gpio-keys device is not moved to the end of dpm_list itself.
 
+At this point, when checking its dependencies, gpio-keys should also check
+if their ordering with respect to it in dpm_list is correct and move itself
+to the end of it otherwise.
 
+There might be a helper for that I suppose.
 
->> Having said all that, I still think that stores to all these sysfs files
->> should work. I'm not saying it's a trivial change (like setting a
->> governor's polling time, etc would need some checks to cache the value
->> and not start a timer immediately, etc), but I think it's a more
->> consistent and user friendly API.
->
-> I agree.
->
-> It also is backwards compatible with scripts that walk the cpufreq directories
-> for all CPUs without checking the online attribute and expect things to work.
+> > > As a
+> > > result, the suspend ordering becomes pinctrl-tegra -> gpio-keys ->
+> > > gpio-tegra. That's problematic because the gpio-keys driver requests
+> > > the power key to be a wakeup source. However, the programming of the
+> > > wakeup interrupt registers happens in the gpio-tegra driver's suspend
+> > > callback, which is now called before that of the gpio-keys driver. The
+> > > result is that the wrong values are programmed and leaves the system
+> > > unable to be resumed using the power key.
+> > >=20
+> > > To fix this situation, always move devices to the end of the dpm_list
+> > > before probing them. Technically this should only be done for devices
+> > > that have been successfully probed, but that won't work for recursive
+> > > probing of devices (think an I2C master that instantiates children in
+> > > its ->probe()). Effectively the dpm_list will end up ordered the same
+> > > way that devices were probed, hence taking care of dependencies.
+> > >=20
+> > > Signed-off-by: Thierry Reding <treding@nvidia.com>
+> > > ---
+> > > Note that this commit is kind of the PM equivalent of 52cdbdd49853
+> > > ("driver core: correct device's shutdown order) and that we have two
+> > > lists that are essentially the same (dpm_list and devices_kset). I'm
+> > > wondering if it would be worth looking into getting rid of one of
+> > > them? I don't see any reason why the ordering for shutdown and
+> > > suspend/resume should be different, and having a single list would
+> > > help keep this in sync.
+> >=20
+> > We move away things from dpm_list during suspend and add them back to it
+> > during resume to handle the situations in which some devices go away or
+> > appear during suspend/resume.  That makes this idea potentially problemat=
+> ic.
+> 
+> Okay, I see. If they are used for different purposes it's fine to keep
+> them both.
+> 
+> > >  drivers/base/dd.c | 33 +++++++++++++++++++++++----------
+> > >  1 file changed, 23 insertions(+), 10 deletions(-)
+> > >=20
+> > > diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+> > > index be0eb4639128..56291b11049b 100644
+> > > --- a/drivers/base/dd.c
+> > > +++ b/drivers/base/dd.c
+> > > @@ -88,16 +88,6 @@ static void deferred_probe_work_func(struct work_str=
+> uct *work)
+> > >  		 */
+> > >  		mutex_unlock(&deferred_probe_mutex);
+> > > =20
+> > > -		/*
+> > > -		 * Force the device to the end of the dpm_list since
+> > > -		 * the PM code assumes that the order we add things to
+> > > -		 * the list is a good order for suspend but deferred
+> > > -		 * probe makes that very unsafe.
+> > > -		 */
+> > > -		device_pm_lock();
+> > > -		device_pm_move_last(dev);
+> > > -		device_pm_unlock();
+> > > -
+> > >  		dev_dbg(dev, "Retrying from deferred list\n");
+> > >  		bus_probe_device(dev);
+> > > =20
+> > > @@ -312,6 +302,29 @@ static int really_probe(struct device *dev, struct=
+>  device_driver *drv)
+> > >  	 */
+> > >  	devices_kset_move_last(dev);
+> > > =20
+> > > +	/*
+> > > +	 * Force the device to the end of the dpm_list since the PM code
+> > > +	 * assumes that the order we add things to the list is a good order
+> > > +	 * for suspend but deferred probe makes that very unsafe.
+> > > +	 *
+> > > +	 * Deferred probe can also cause situations in which a device that is
+> > > +	 * a dependency for others gets moved further down the dpm_list as a
+> > > +	 * result of probe deferral. In that case the dependee will end up
+> > > +	 * getting suspended before any of its dependers.
+> > > +	 *
+> > > +	 * To ensure proper ordering of suspend/resume, move every device that
+> > > +	 * is being probed to the end of the dpm_list. Note that technically
+> > > +	 * only successfully probed devices need to be moved, but that breaks
+> > > +	 * for recursively added devices because they would end up in the list
+> > > +	 * in reverse of the desired order, so we simply do it unconditionally
+> > > +	 * for all devices before they are being probed. In the worst case the
+> > > +	 * list will be reordered a couple more times than necessary, which
+> > > +	 * should be an insignificant amount of work.
+> > > +	 */
+> > > +	device_pm_lock();
+> > > +	device_pm_move_last(dev);
+> > > +	device_pm_unlock();
+> >=20
+> > So I don't agree with doing that for every driver being probed against the
+> > same device.  That's just wasteful IMO.
+> 
+> I don't understand. At this point driver matching has already taken
+> place, so this will only every happen for one particular driver and the
+> corresponding device. In the most common case this will happen exactly
+> once, when the device is probed. Worst case it will happen a second or
+> more times if a driver defers probing for a specific device. But in that
+> case moving the device to the end of the list is absolutely required to
+> keep it properly ordered for suspend/resume. Note that this is already
+> done by the original code in deferred_probe_work_func() that is removed
+> in the first hunk. The fix here is to do it for every device to ensure
+> that inter-device dependencies are properly dealt with.
+> 
+> I agree that it's a little wasteful, but that's completely in line with
+> deferred probe. It's a simple solution to a very difficult problem, so
+> naturally it comes at a cost. But it's also fairly elegant in how it
+> correctly solves the ordering problem with very little code. The only
+> other way that I can think of to avoid reordering the list for every
+> device probe would be to sort it in advance using dependency information
+> which we don't have. So we'd need to first add all that dependency
+> information, and using that information is likely to be more work than
+> simply reordering the list for each probe.
 
-Good to see some support. I do know Viresh doesn't like this :)
+But that is problematic too as Alan pointed it out.
 
-Thinking more about it, it'll also make the code simpler since we don't 
-have to decide which CPU has the real files vs which ones have symlinks. 
-We probably won't need policy->cpu or kobj_cpu anymore.
-
-I'd love to do all these changes, but I doubt I'll find the time with 
-the official job responsibilities I have. We'll see.
-
->> If the user wants to set a min CPU freq, why should they care if the CPU
->> is online at that very instant? It gets especially painful if you have a
->> thermal daemon that's plugging in/out CPUs while the user or a script is
->> trying to set the parameters.
->
-> You mean putting them offline/online I suppose?
-
-Yup, I meant that a thermal daemon is putting them online/offline -- so 
-used to using the terms plugging in/out internally since we don't have 
-to deal with physical removals on mobile devices (YET?!).
-
-It'll be quite an achievement to see a daemon actually plugging a CPU 
-in/out :)
+I'm always cautious about changes that make the core do something for every
+device/driver, because they are very likely to step on corner cases that we
+don't need to worry about otherwise.
 
 Thanks,
-Saravana
--- 
-Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+Rafael
+
