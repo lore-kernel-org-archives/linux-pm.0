@@ -1,176 +1,101 @@
-From: Alexandra Yates <alexandra.yates@linux.intel.com>
-Subject: [PATCH V8] Report interrupt that caused system wakeup
-Date: Thu, 10 Sep 2015 17:04:20 -0700
-Message-ID: <1441929860-5488-1-git-send-email-alexandra.yates@linux.intel.com>
-References: <[PATCH V8] Report interrupt that caused system wakeup>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v2 13/13] dt: power: bq2425x-charger: Cover additional
+ devices
+Date: Fri, 11 Sep 2015 09:34:10 +0900
+Message-ID: <55F22182.9000508@samsung.com>
+References: <1441757557-7266-1-git-send-email-dannenberg@ti.com>
+ <1441757557-7266-14-git-send-email-dannenberg@ti.com>
+ <55EF7CDA.9030505@samsung.com> <20150909024841.GB32255@beast>
+ <55EFBC61.1050405@samsung.com> <20150909201534.GB9887@beast>
+ <55F0CB8D.9000507@samsung.com> <20150910205701.GA16113@borg>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:39288 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750779AbbIKACf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 10 Sep 2015 20:02:35 -0400
-In-Reply-To: <[PATCH V8] Report interrupt that caused system wakeup>
+Received: from mailout3.w1.samsung.com ([210.118.77.13]:16904 "EHLO
+	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750786AbbIKAeM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Sep 2015 20:34:12 -0400
+In-reply-to: <20150910205701.GA16113@borg>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: tglx@linutronix.de, kristen.c.accardi@intel.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net
-Cc: Alexandra Yates <alexandra.yates@linux.intel.com>
+To: Andreas Dannenberg <dannenberg@ti.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-This feature reports the IRQ that was armed for system wakeup after
-the system was last time suspended. It adds a new sysfs attribute
-under /sys/power/ named: pm_last_wakeup_irq
+On 11.09.2015 05:57, Andreas Dannenberg wrote:
+> On Thu, Sep 10, 2015 at 09:15:09AM +0900, Krzysztof Kozlowski wrote:
 
-This feature will be useful for system wakeup diagnostics of
-spurious wakeup interrupts.
+(...)
 
-Signed-off-by: Alexandra Yates <alexandra.yates@linux.intel.com>
----
- Documentation/ABI/testing/sysfs-power | 11 +++++++++++
- drivers/base/power/wakeup.c           | 12 ++++++++++++
- include/linux/suspend.h               |  8 +++++++-
- kernel/irq/pm.c                       |  4 ++--
- kernel/power/main.c                   | 19 +++++++++++++++++++
- 5 files changed, 51 insertions(+), 3 deletions(-)
+> 
+>>>> bq2415x.txt - ti,current-limit  - maximum current to be drawn in mA
+>>>>
+>>>> New bindings:
+>>>> ti,charge-current (bq24261) - default charge current in mA
+>>>> ti,max-charge-current (bq24261) - maximum charging current in mA
+>>>
+>>> This ti,max-charge-current is actually an interesting one. It's not a
+>>> device setting as it does not impact any of the device registers at all.
+>>> Instead, it's an artificial limit that can be set through DT that
+>>> prevents somebody from going into sysfs and configuring a charge current
+>>> higher than ti,max-charge-current. In other drivers I have seen that the
+>>> sysfs property reflecting that max charge current is just read-only and
+>>> gives you the maximum the HW is capable of. From a device point of view
+>>> there is nothing configurable about this property.
+>>
+>> Hmmm, so now I wonder whether this should be a DT binding. The purpose
+>> of DT isn't the control of the driver like enable some stuff, set some
+>> value used by the driver. The DT provides information about hardware so
+>> the driver could properly configure the device and work with it.
+>>
+>> Reason to put this into DT would be:
+>> For example one device configuration (device, board, connected battery)
+>> could handle one maximum value and the other configuration would require
+>> lower one. The device and its capabilities (bq24257 for example) are the
+>> same but configuration changes.
+> 
+> Yes this could be useful in this case but this property only makes sense
+> if userspace is allowed to change the actual charge current through
+> sysfs as some drivers do including Ram's proposed bq24261 driver. But if we
+> get rid of the general sysfs configurability of the charge current
+> (which I say we should) we don't need that ti,max-charge-current property.
+> Also see...
+> 
+> http://marc.info/?l=linux-pm&m=143080413218161&w=2
 
-diff --git a/Documentation/ABI/testing/sysfs-power b/Documentation/ABI/testing/sysfs-power
-index f455181..75f27ed 100644
---- a/Documentation/ABI/testing/sysfs-power
-+++ b/Documentation/ABI/testing/sysfs-power
-@@ -256,3 +256,14 @@ Description:
- 		Writing a "1" enables this printing while writing a "0"
- 		disables it.  The default value is "0".  Reading from this file
- 		will display the current value.
-+
-+What:		/sys/power/pm_last_wakeup_irq
-+Date:		April 2015
-+Contact:	Alexandra Yates <alexandra.yates@linux.intel.org>
-+Description:
-+		The /sys/power/pm_last_wakeup_irq file reports to user space
-+		the IRQ that was armed for system wakeup and occurred since
-+		suspend_device_irqs() was last called.
-+
-+		This output is useful for system wakeup diagnostics of spurious
-+		wakeup interrupts.
-diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-index 51f15bc..f663fb1 100644
---- a/drivers/base/power/wakeup.c
-+++ b/drivers/base/power/wakeup.c
-@@ -870,6 +870,18 @@ void pm_wakeup_clear(void)
- 	pm_abort_suspend = false;
- }
- 
-+void pm_system_irq_wakeup(unsigned int irq_number)
-+{
-+	if (wakeup_irq == 0)
-+		wakeup_irq = irq_number;
-+	pm_system_wakeup();
-+}
-+
-+void pm_last_wakeup_irq_reset(void)
-+{
-+	wakeup_irq = 0;
-+}
-+
- /**
-  * pm_get_wakeup_count - Read the number of registered wakeup events.
-  * @count: Address to store the value at.
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index 5efe743..eb5ad3b 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -371,6 +371,9 @@ static inline bool hibernation_available(void) { return false; }
- 
- extern struct mutex pm_mutex;
- 
-+/* IRQ number which causes system wakeup  */
-+extern unsigned int wakeup_irq;
-+
- #ifdef CONFIG_PM_SLEEP
- void save_processor_state(void);
- void restore_processor_state(void);
-@@ -378,7 +381,7 @@ void restore_processor_state(void);
- /* kernel/power/main.c */
- extern int register_pm_notifier(struct notifier_block *nb);
- extern int unregister_pm_notifier(struct notifier_block *nb);
--
-+extern void pm_last_wakeup_irq_reset(void);
- #define pm_notifier(fn, pri) {				\
- 	static struct notifier_block fn##_nb =			\
- 		{ .notifier_call = fn, .priority = pri };	\
-@@ -391,6 +394,7 @@ extern bool events_check_enabled;
- extern bool pm_wakeup_pending(void);
- extern void pm_system_wakeup(void);
- extern void pm_wakeup_clear(void);
-+extern void pm_system_irq_wakeup(unsigned int);
- extern bool pm_get_wakeup_count(unsigned int *count, bool block);
- extern bool pm_save_wakeup_count(unsigned int count);
- extern void pm_wakep_autosleep_enabled(bool set);
-@@ -440,6 +444,8 @@ static inline int unregister_pm_notifier(struct notifier_block *nb)
- static inline bool pm_wakeup_pending(void) { return false; }
- static inline void pm_system_wakeup(void) {}
- static inline void pm_wakeup_clear(void) {}
-+static inline void pm_system_irq_wakeup(unsigned int) {}
-+static inline void pm_last_wakeup_irq_reset(void){};
- 
- static inline void lock_system_sleep(void) {}
- static inline void unlock_system_sleep(void) {}
-diff --git a/kernel/irq/pm.c b/kernel/irq/pm.c
-index d22786a..18178d7 100644
---- a/kernel/irq/pm.c
-+++ b/kernel/irq/pm.c
-@@ -21,7 +21,7 @@ bool irq_pm_check_wakeup(struct irq_desc *desc)
- 		desc->istate |= IRQS_SUSPENDED | IRQS_PENDING;
- 		desc->depth++;
- 		irq_disable(desc);
--		pm_system_wakeup();
-+		pm_system_irq_wakeup(irq_desc_get_irq(desc));
- 		return true;
- 	}
- 	return false;
-@@ -118,7 +118,7 @@ void suspend_device_irqs(void)
- {
- 	struct irq_desc *desc;
- 	int irq;
--
-+	pm_last_wakeup_irq_reset();
- 	for_each_irq_desc(irq, desc) {
- 		unsigned long flags;
- 		bool sync;
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index 63d395b..d2bd164 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -272,6 +272,24 @@ static inline void pm_print_times_init(void)
- {
- 	pm_print_times_enabled = !!initcall_debug;
- }
-+
-+unsigned int wakeup_irq;
-+EXPORT_SYMBOL_GPL(wakeup_irq);
-+static ssize_t pm_last_wakeup_irq_show(struct kobject *kobj,
-+					struct kobj_attribute *attr,
-+					char *buf)
-+{
-+	return wakeup_irq ? sprintf(buf, "%u\n", wakeup_irq) : -EINVAL;
-+}
-+
-+static ssize_t pm_last_wakeup_irq_store(struct kobject *kobj,
-+					struct kobj_attribute *attr,
-+					const char *buf, size_t n)
-+{
-+	return -EINVAL;
-+}
-+power_attr(pm_last_wakeup_irq);
-+
- #else /* !CONFIG_PM_SLEEP_DEBUG */
- static inline void pm_print_times_init(void) {}
- #endif /* CONFIG_PM_SLEEP_DEBUG */
-@@ -604,6 +622,7 @@ static struct attribute * g[] = {
- #endif
- #ifdef CONFIG_PM_SLEEP_DEBUG
- 	&pm_print_times_attr.attr,
-+	&pm_last_wakeup_irq_attr.attr,
- #endif
- #endif
- #ifdef CONFIG_FREEZER
--- 
-1.9.1
+Right, that's my previous reply. :) I must admit that here and for
+bq24261 I looked mostly at bindings so I did not initially about the
+sysfs interface.
+
+Anyway I am not convinced to having such sysfs interfaces and definitely
+they should not mess with DT. I would rather expect these to be totally
+orthogonal.
+
+Summarizing all these bq24261 properties:
+ - ti,enable-user-write
+ - ti,max-charge-current
+ - ti,max-charge-voltage
+are related to that sysfs interface, not to hardware configuration. If
+that's true, then all should be gone.
+
+> 
+>> To prevent future issues in naming and bindings consistency maybe there
+>> should be a dedicated maintainer for bq/TI charger devices? Pali Rohar
+>> recently took care for devices related to Nokia N900 but maybe someone
+>> from TI should also take care of rest or all of them (if TI is
+>> interested in this)?
+> 
+> I'd be happy to step in here. Let me know how I can help and contribute.
+
+I don't know Sebastian's opinion on that idea but I think usually a new
+maintainer and reviewer of particular drivers is welcomed by community.
+I see also Intel's interest and his contributions in these chargers.
+Laurentiu seems to do a thorough review as well. There can be both
+official reviewers.
+
+It's up to you people. Just make a first step and we'll see how other
+people react (and what Sebastian thinks about it :) ).
+
+Best regards,
+Krzysztof
 
