@@ -1,60 +1,162 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Subject: re: bq2415x_charger: Allow to load and use driver even if notify
- device is not registered yet
-Date: Sat, 12 Sep 2015 22:50:11 +0300
-Message-ID: <20150912195010.GA10112@mwanda>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Alexandra Yates <alexandra.yates@linux.intel.com>
+Subject: [PATCH V9] Report interrupt that caused system wakeup
+Date: Sat, 12 Sep 2015 14:41:18 -0700
+Message-ID: <1442094078-10962-1-git-send-email-alexandra.yates@linux.intel.com>
+References: <[PATCH V9] Report interrupt that caused system wakeup>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from userp1040.oracle.com ([156.151.31.81]:32019 "EHLO
-	userp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750878AbbILTuT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 12 Sep 2015 15:50:19 -0400
-Content-Disposition: inline
+Received: from mga02.intel.com ([134.134.136.20]:52894 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751914AbbILVjU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 12 Sep 2015 17:39:20 -0400
+In-Reply-To: <[PATCH V9] Report interrupt that caused system wakeup>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: pali.rohar@gmail.com
-Cc: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, tglx@linutronix.de, kristen.c.accardi@intel.com, linux-pm@vger.kernel.org
+Cc: Alexandra Yates <alexandra.yates@linux.intel.com>
 
-Hello Pali Roh=E1r,
+Add a sysfs attribute, /sys/power/pm_wakeup_irq, reporting the IRQ
+number of the first wakeup interrupt (that is, the first interrupt
+from an IRQ line armed for system wakeup) seen by the kernel during
+the most recent system suspend/resume cycle.
 
-This is a semi-automatic email about new static checker warnings.
+This feature will be useful for system wakeup diagnostics of
+spurious wakeup interrupts.
 
-The patch b68c3161430a: "bq2415x_charger: Allow to load and use=20
-driver even if notify device is not registered yet" from Aug 11,=20
-2015, leads to the following Smatch complaint:
+Signed-off-by: Alexandra Yates <alexandra.yates@linux.intel.com>
+---
+ Documentation/ABI/testing/sysfs-power | 12 ++++++++++++
+ drivers/base/power/wakeup.c           |  8 ++++++++
+ include/linux/suspend.h               |  5 +++++
+ kernel/irq/pm.c                       |  3 ++-
+ kernel/power/main.c                   | 18 ++++++++++++++++++
+ 5 files changed, 45 insertions(+), 1 deletion(-)
 
-drivers/power/bq2415x_charger.c:1707 bq2415x_probe()
-	 error: we previously assumed 'bq' could be null (see line 1581)
+diff --git a/Documentation/ABI/testing/sysfs-power b/Documentation/ABI/testing/sysfs-power
+index f455181..50b368d 100644
+--- a/Documentation/ABI/testing/sysfs-power
++++ b/Documentation/ABI/testing/sysfs-power
+@@ -256,3 +256,15 @@ Description:
+ 		Writing a "1" enables this printing while writing a "0"
+ 		disables it.  The default value is "0".  Reading from this file
+ 		will display the current value.
++
++What:		/sys/power/pm_wakeup_irq
++Date:		April 2015
++Contact:	Alexandra Yates <alexandra.yates@linux.intel.org>
++Description:
++		The /sys/power/pm_wakeup_irq file reports to user space the IRQ
++		number of the first wakeup interrupt (that is, the first
++		interrupt from an IRQ line armed for system wakeup) seen by the
++		kernel during the most recent system suspend/resume cycle.
++
++		This output is useful for system wakeup diagnostics of spurious
++		wakeup interrupts.
+diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+index 51f15bc..f6805bf 100644
+--- a/drivers/base/power/wakeup.c
++++ b/drivers/base/power/wakeup.c
+@@ -868,6 +868,14 @@ EXPORT_SYMBOL_GPL(pm_system_wakeup);
+ void pm_wakeup_clear(void)
+ {
+ 	pm_abort_suspend = false;
++	wakeup_irq = 0;
++}
++
++void pm_system_irq_wakeup(unsigned int irq_number)
++{
++	if (wakeup_irq == 0)
++		wakeup_irq = irq_number;
++	pm_system_wakeup();
+ }
+ 
+ /**
+diff --git a/include/linux/suspend.h b/include/linux/suspend.h
+index 5efe743..686ba2f 100644
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -371,6 +371,9 @@ static inline bool hibernation_available(void) { return false; }
+ 
+ extern struct mutex pm_mutex;
+ 
++/* IRQ number which causes system wakeup  */
++extern unsigned int wakeup_irq;
++
+ #ifdef CONFIG_PM_SLEEP
+ void save_processor_state(void);
+ void restore_processor_state(void);
+@@ -391,6 +394,7 @@ extern bool events_check_enabled;
+ extern bool pm_wakeup_pending(void);
+ extern void pm_system_wakeup(void);
+ extern void pm_wakeup_clear(void);
++extern void pm_system_irq_wakeup(unsigned int);
+ extern bool pm_get_wakeup_count(unsigned int *count, bool block);
+ extern bool pm_save_wakeup_count(unsigned int count);
+ extern void pm_wakep_autosleep_enabled(bool set);
+@@ -440,6 +444,7 @@ static inline int unregister_pm_notifier(struct notifier_block *nb)
+ static inline bool pm_wakeup_pending(void) { return false; }
+ static inline void pm_system_wakeup(void) {}
+ static inline void pm_wakeup_clear(void) {}
++static inline void pm_system_irq_wakeup(unsigned int) {}
+ 
+ static inline void lock_system_sleep(void) {}
+ static inline void unlock_system_sleep(void) {}
+diff --git a/kernel/irq/pm.c b/kernel/irq/pm.c
+index 21c6261..901febe 100644
+--- a/kernel/irq/pm.c
++++ b/kernel/irq/pm.c
+@@ -21,7 +21,7 @@ bool irq_pm_check_wakeup(struct irq_desc *desc)
+ 		desc->istate |= IRQS_SUSPENDED | IRQS_PENDING;
+ 		desc->depth++;
+ 		irq_disable(desc);
+-		pm_system_wakeup();
++		pm_system_irq_wakeup(irq_desc_get_irq(desc));
+ 		return true;
+ 	}
+ 	return false;
+@@ -73,6 +73,7 @@ static bool suspend_device_irq(struct irq_desc *desc)
+ 	if (!desc->action || desc->no_suspend_depth)
+ 		return false;
+ 
++
+ 	if (irqd_is_wakeup_set(&desc->irq_data)) {
+ 		irqd_set(&desc->irq_data, IRQD_WAKEUP_ARMED);
+ 		/*
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index 63d395b..9880bf8 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -272,6 +272,23 @@ static inline void pm_print_times_init(void)
+ {
+ 	pm_print_times_enabled = !!initcall_debug;
+ }
++
++unsigned int wakeup_irq;
++static ssize_t pm_wakeup_irq_show(struct kobject *kobj,
++					struct kobj_attribute *attr,
++					char *buf)
++{
++	return wakeup_irq ? sprintf(buf, "%u\n", wakeup_irq) : -ENODATA;
++}
++
++static ssize_t pm_wakeup_irq_store(struct kobject *kobj,
++					struct kobj_attribute *attr,
++					const char *buf, size_t n)
++{
++	return -EINVAL;
++}
++power_attr(pm_wakeup_irq);
++
+ #else /* !CONFIG_PM_SLEEP_DEBUG */
+ static inline void pm_print_times_init(void) {}
+ #endif /* CONFIG_PM_SLEEP_DEBUG */
+@@ -604,6 +621,7 @@ static struct attribute * g[] = {
+ #endif
+ #ifdef CONFIG_PM_SLEEP_DEBUG
+ 	&pm_print_times_attr.attr,
++	&pm_wakeup_irq_attr.attr,
+ #endif
+ #endif
+ #ifdef CONFIG_FREEZER
+-- 
+1.9.1
 
-drivers/power/bq2415x_charger.c
-  1580		bq =3D devm_kzalloc(&client->dev, sizeof(*bq), GFP_KERNEL);
-  1581		if (!bq) {
-  1582			ret =3D -ENOMEM;
-  1583			goto error_2;
-
-"bq" is NULL.
-
-  1584		}
-
-[ snip ]
-
-  1702	error_4:
-  1703		bq2415x_sysfs_exit(bq);
-  1704	error_3:
-  1705		bq2415x_power_supply_exit(bq);
-  1706	error_2:
-  1707		if (bq->notify_node)
-
-Patch adds a dereference.  Also the GW-BASIC label names are so ugly an=
-d
-inflexible, it's better to choose meaningful names that say what the
-label does like err_sysfs_exit, err_power_supply_exit, and err_node_put=
-=2E
-
-  1708			of_node_put(bq->notify_node);\
-  1709		kfree(name);
-
-regards,
-dan carpenter
