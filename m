@@ -1,50 +1,60 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] driver core: Ensure proper suspend/resume ordering
-Date: Sat, 12 Sep 2015 13:40:55 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1509121338090.13622-100000@netrider.rowland.org>
-References: <5347923.qphJvWEeRm@vostro.rjw.lan>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Subject: re: bq2415x_charger: Allow to load and use driver even if notify
+ device is not registered yet
+Date: Sat, 12 Sep 2015 22:50:11 +0300
+Message-ID: <20150912195010.GA10112@mwanda>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from netrider.rowland.org ([192.131.102.5]:33525 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752004AbbILRk4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 12 Sep 2015 13:40:56 -0400
-In-Reply-To: <5347923.qphJvWEeRm@vostro.rjw.lan>
+Received: from userp1040.oracle.com ([156.151.31.81]:32019 "EHLO
+	userp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750878AbbILTuT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 12 Sep 2015 15:50:19 -0400
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Thierry Reding <thierry.reding@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: pali.rohar@gmail.com
+Cc: linux-pm@vger.kernel.org
 
-On Sat, 12 Sep 2015, Rafael J. Wysocki wrote:
+Hello Pali Roh=E1r,
 
-> On Friday, September 11, 2015 03:01:14 PM Alan Stern wrote:
+This is a semi-automatic email about new static checker warnings.
 
-> > There's also an issue about other types of dependencies.  For instance,
-> > it's conceivable that device B might be discovered and depend on device
-> > A, even before A has been bound to a driver.  (B might be discovered by 
-> > A's subsystem rather than A's driver.)  In that case, moving A to the 
-> > end of the list would cause B to come before A even though B depends on 
-> > A.  Of course, deferred probing already has this problem.
-> 
-> That may actually happen for PCIe ports and devices below them AFAICS.
-> 
-> Devices below PCIe ports are discovered by the PCI subsystem and the PCIe
-> ports need not be probed before those devices are probed.
+The patch b68c3161430a: "bq2415x_charger: Allow to load and use=20
+driver even if notify device is not registered yet" from Aug 11,=20
+2015, leads to the following Smatch complaint:
 
-Is it possible to change this?  Make it so that devices below PCIe 
-ports are discovered by the port driver rather than by the PCI 
-subsystem?  Or would that be far too difficult?
+drivers/power/bq2415x_charger.c:1707 bq2415x_probe()
+	 error: we previously assumed 'bq' could be null (see line 1581)
 
-> > An easy way to check for this sort of thing would be to verify that a 
-> > device about to be probed doesn't have any children.  This wouldn't 
-> > catch all the potential dependencies, but it would be a reasonable 
-> > start.
-> 
-> That would address the PCIe ports issue.
+drivers/power/bq2415x_charger.c
+  1580		bq =3D devm_kzalloc(&client->dev, sizeof(*bq), GFP_KERNEL);
+  1581		if (!bq) {
+  1582			ret =3D -ENOMEM;
+  1583			goto error_2;
 
-Well, it would _detect_ the PCIe ports issue.  It might also detect 
-other things.
+"bq" is NULL.
 
-Alan Stern
+  1584		}
 
+[ snip ]
+
+  1702	error_4:
+  1703		bq2415x_sysfs_exit(bq);
+  1704	error_3:
+  1705		bq2415x_power_supply_exit(bq);
+  1706	error_2:
+  1707		if (bq->notify_node)
+
+Patch adds a dereference.  Also the GW-BASIC label names are so ugly an=
+d
+inflexible, it's better to choose meaningful names that say what the
+label does like err_sysfs_exit, err_power_supply_exit, and err_node_put=
+=2E
+
+  1708			of_node_put(bq->notify_node);\
+  1709		kfree(name);
+
+regards,
+dan carpenter
