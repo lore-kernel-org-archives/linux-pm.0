@@ -1,236 +1,103 @@
-From: Alexandra Yates <alexandra.yates@linux.intel.com>
-Subject: Re: [PATCH V8] Report interrupt that caused system wakeup
-Date: Sat, 12 Sep 2015 14:41:31 -0700
-Message-ID: <55F49C0B.3090903@linux.intel.com>
-References: <1441929860-5488-1-git-send-email-alexandra.yates@linux.intel.com>
- <2235143.PitGJtzR6R@vostro.rjw.lan>
+From: joeyli <jlee@suse.com>
+Subject: Re: [PATCH v2 06/16] x86/efi: Generating random HMAC key for siging
+ hibernate image
+Date: Sun, 13 Sep 2015 10:47:15 +0800
+Message-ID: <20150913024715.GA6752@linux-rxt1.site>
+References: <1439273796-25359-1-git-send-email-jlee@suse.com>
+ <1439273796-25359-7-git-send-email-jlee@suse.com>
+ <20150820204044.GG2567@codeblueprint.co.uk>
+ <20150827090452.GB27415@linux-rxt1.site>
+ <20150909121545.GD4973@codeblueprint.co.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:40893 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751914AbbILVj2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 12 Sep 2015 17:39:28 -0400
-In-Reply-To: <2235143.PitGJtzR6R@vostro.rjw.lan>
+Received: from smtp.nue.novell.com ([195.135.221.5]:46380 "EHLO
+	smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754550AbbIMCri (ORCPT
+	<rfc822;groupwise-linux-pm@vger.kernel.org:0:0>);
+	Sat, 12 Sep 2015 22:47:38 -0400
+Content-Disposition: inline
+In-Reply-To: <20150909121545.GD4973@codeblueprint.co.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: tglx@linutronix.de, kristen.c.accardi@intel.com, linux-pm@vger.kernel.org
+To: Matt Fleming <matt@codeblueprint.co.uk>
+Cc: "Lee, Chun-Yi" <joeyli.kernel@gmail.com>, linux-kernel@vger.kernel.org, linux-efi@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Matthew Garrett <matthew.garrett@nebula.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Josh Boyer <jwboyer@redhat.com>, Vojtech Pavlik <vojtech@suse.cz>, Matt Fleming <matt.fleming@intel.com>, Jiri Kosina <jkosina@suse.cz>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>
 
-Hi Rafael,
-
-On 09/11/2015 04:36 PM, Rafael J. Wysocki wrote:
-> On Thursday, September 10, 2015 05:04:20 PM Alexandra Yates wrote:
->> This feature reports the IRQ that was armed for system wakeup after
->> the system was last time suspended. It adds a new sysfs attribute
->> under /sys/power/ named: pm_last_wakeup_irq
-Sounds good
-> What about changing it this way:
->
-> Add a sysfs attribute, /sys/power/pm_wakeup_irq, reporting the IRQ number of
-> the first wakeup interrupt (that is, the first interrupt from an IRQ line
-> armed for system wakeup) seen by the kernel during the most recent system
-> suspend/resume cycle.
->
->> This feature will be useful for system wakeup diagnostics of
->> spurious wakeup interrupts.
->>
->> Signed-off-by: Alexandra Yates <alexandra.yates@linux.intel.com>
->> ---
->>   Documentation/ABI/testing/sysfs-power | 11 +++++++++++
->>   drivers/base/power/wakeup.c           | 12 ++++++++++++
->>   include/linux/suspend.h               |  8 +++++++-
->>   kernel/irq/pm.c                       |  4 ++--
->>   kernel/power/main.c                   | 19 +++++++++++++++++++
->>   5 files changed, 51 insertions(+), 3 deletions(-)
->>
->> diff --git a/Documentation/ABI/testing/sysfs-power b/Documentation/ABI/testing/sysfs-power
->> index f455181..75f27ed 100644
->> --- a/Documentation/ABI/testing/sysfs-power
->> +++ b/Documentation/ABI/testing/sysfs-power
->> @@ -256,3 +256,14 @@ Description:
->>   		Writing a "1" enables this printing while writing a "0"
->>   		disables it.  The default value is "0".  Reading from this file
->>   		will display the current value.
->> +
->> +What:		/sys/power/pm_last_wakeup_irq
-> I'd change that to /sys/power/pm_wakeup_irq
->
->> +Date:		April 2015
->> +Contact:	Alexandra Yates <alexandra.yates@linux.intel.org>
->> +Description:
->> +		The /sys/power/pm_last_wakeup_irq file reports to user space
->> +		the IRQ that was armed for system wakeup and occurred since
->> +		suspend_device_irqs() was last called.
-> And here I'd say:
->
-> The /sys/power/pm_wakeup_irq file reports to user space the IRQ number of
-> the first wakeup interrupt (that is, the first interrupt from an IRQ line
-> armed for system wakeup) seen by the kernel during the most recent system
-> suspend/resume cycle.
->
->> +
->> +		This output is useful for system wakeup diagnostics of spurious
->> +		wakeup interrupts.
->> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
->> index 51f15bc..f663fb1 100644
->> --- a/drivers/base/power/wakeup.c
->> +++ b/drivers/base/power/wakeup.c
->> @@ -870,6 +870,18 @@ void pm_wakeup_clear(void)
->>   	pm_abort_suspend = false;
->>   }
->>   
->> +void pm_system_irq_wakeup(unsigned int irq_number)
->> +{
->> +	if (wakeup_irq == 0)
->> +		wakeup_irq = irq_number;
->> +	pm_system_wakeup();
-> I'm wondering if we need to call pm_system_wakeup() in the wakeup_irq != 0 case?
->
-> If wakeup_irq != 0, pm_system_wakeup() has been called (at least) once already
-> and it is not necessary to call it more than once.  Or am I missing anything?
-Here I'm following Thomas advice to create pm_system_irq_wakeup to 
-handle the
-storage of wakeup_irq I'm simply calling/wrapping pm_system_wakeup() 
-since it was
-originally called from pm_system_irq_wakeup()with out other additional 
-conditionals.
-I think doing anything else here may have unwanted results.   The core 
-functionality of
-the code can be changed but I think that should be another patch. one 
-targeted towards
-performance optimization.  Please let me know and I could add this to my 
-to do list.
->> +}
->> +
->> +void pm_last_wakeup_irq_reset(void)
->> +{
->> +	wakeup_irq = 0;
->> +}
-Will do, good idea.
-> Why don't you clear wakeup_irq in pm_wakeup_clear()?  Can it actually change
-> between the time when pm_wakeup_clear() is called and when suspend_device_irqs()
-> runs?
->
->> +
->>   /**
->>    * pm_get_wakeup_count - Read the number of registered wakeup events.
->>    * @count: Address to store the value at.
->> diff --git a/include/linux/suspend.h b/include/linux/suspend.h
->> index 5efe743..eb5ad3b 100644
->> --- a/include/linux/suspend.h
->> +++ b/include/linux/suspend.h
->> @@ -371,6 +371,9 @@ static inline bool hibernation_available(void) { return false; }
->>   
->>   extern struct mutex pm_mutex;
->>   
->> +/* IRQ number which causes system wakeup  */
->> +extern unsigned int wakeup_irq;
->> +
->>   #ifdef CONFIG_PM_SLEEP
->>   void save_processor_state(void);
->>   void restore_processor_state(void);
->> @@ -378,7 +381,7 @@ void restore_processor_state(void);
->>   /* kernel/power/main.c */
->>   extern int register_pm_notifier(struct notifier_block *nb);
->>   extern int unregister_pm_notifier(struct notifier_block *nb);
->> -
->> +extern void pm_last_wakeup_irq_reset(void);
->>   #define pm_notifier(fn, pri) {				\
->>   	static struct notifier_block fn##_nb =			\
->>   		{ .notifier_call = fn, .priority = pri };	\
->> @@ -391,6 +394,7 @@ extern bool events_check_enabled;
->>   extern bool pm_wakeup_pending(void);
->>   extern void pm_system_wakeup(void);
->>   extern void pm_wakeup_clear(void);
->> +extern void pm_system_irq_wakeup(unsigned int);
->>   extern bool pm_get_wakeup_count(unsigned int *count, bool block);
->>   extern bool pm_save_wakeup_count(unsigned int count);
->>   extern void pm_wakep_autosleep_enabled(bool set);
->> @@ -440,6 +444,8 @@ static inline int unregister_pm_notifier(struct notifier_block *nb)
->>   static inline bool pm_wakeup_pending(void) { return false; }
->>   static inline void pm_system_wakeup(void) {}
->>   static inline void pm_wakeup_clear(void) {}
->> +static inline void pm_system_irq_wakeup(unsigned int) {}
->> +static inline void pm_last_wakeup_irq_reset(void){};
->>   
->>   static inline void lock_system_sleep(void) {}
->>   static inline void unlock_system_sleep(void) {}
->> diff --git a/kernel/irq/pm.c b/kernel/irq/pm.c
->> index d22786a..18178d7 100644
->> --- a/kernel/irq/pm.c
->> +++ b/kernel/irq/pm.c
->> @@ -21,7 +21,7 @@ bool irq_pm_check_wakeup(struct irq_desc *desc)
->>   		desc->istate |= IRQS_SUSPENDED | IRQS_PENDING;
->>   		desc->depth++;
->>   		irq_disable(desc);
->> -		pm_system_wakeup();
->> +		pm_system_irq_wakeup(irq_desc_get_irq(desc));
->>   		return true;
->>   	}
->>   	return false;
->> @@ -118,7 +118,7 @@ void suspend_device_irqs(void)
->>   {
->>   	struct irq_desc *desc;
->>   	int irq;
->> -
->> +	pm_last_wakeup_irq_reset();
->>   	for_each_irq_desc(irq, desc) {
->>   		unsigned long flags;
->>   		bool sync;
->> diff --git a/kernel/power/main.c b/kernel/power/main.c
->> index 63d395b..d2bd164 100644
->> --- a/kernel/power/main.c
->> +++ b/kernel/power/main.c
->> @@ -272,6 +272,24 @@ static inline void pm_print_times_init(void)
->>   {
->>   	pm_print_times_enabled = !!initcall_debug;
->>   }
->> +
->> +unsigned int wakeup_irq;
->> +EXPORT_SYMBOL_GPL(wakeup_irq);
-> It doesn't have to be exported to modules.
->
->> +static ssize_t pm_last_wakeup_irq_show(struct kobject *kobj,
->> +					struct kobj_attribute *attr,
->> +					char *buf)
->> +{
->> +	return wakeup_irq ? sprintf(buf, "%u\n", wakeup_irq) : -EINVAL;
-> -EINVAL means "invalid argument", which is not the case here.
->
-> I'd use -ENODATA.
->
->> +}
->> +
->> +static ssize_t pm_last_wakeup_irq_store(struct kobject *kobj,
->> +					struct kobj_attribute *attr,
->> +					const char *buf, size_t n)
->> +{
->> +	return -EINVAL;
->> +}
->> +power_attr(pm_last_wakeup_irq);
->> +
->>   #else /* !CONFIG_PM_SLEEP_DEBUG */
->>   static inline void pm_print_times_init(void) {}
->>   #endif /* CONFIG_PM_SLEEP_DEBUG */
->> @@ -604,6 +622,7 @@ static struct attribute * g[] = {
->>   #endif
->>   #ifdef CONFIG_PM_SLEEP_DEBUG
->>   	&pm_print_times_attr.attr,
->> +	&pm_last_wakeup_irq_attr.attr,
->>   #endif
->>   #endif
->>   #ifdef CONFIG_FREEZER
->>
-> Thanks,
-> Rafael
->
+On Wed, Sep 09, 2015 at 01:15:45PM +0100, Matt Fleming wrote:
+> On Thu, 27 Aug, at 05:04:52PM, joeyli wrote:
+> > 
+> > The purpose of checking attribute of hibernation key variable is 
+> > in case someone created a key variable on runtime environment _before_
+> > this kernel create boot service variable. That causes EFI stub may load
+> > a key that from non-secure environment.
+> > 
+> > That's why delete non-boot service variable and create new one here.
+>  
+> I think bailing is more appropriate in that case, not deleting the
+> variable. The environment is not what we expected it to be, so we
+> shouldn't tamper with it.
+> 
+> But I don't feel super strongly about this point. I just wanted to
+> raise the question of whether it actually makes sense to delete the
+> variable that we obviously didn't create or whether it makes more
+> sense to refuse to verify hibernation images.
 >
 
-I'm sending patch v9 for your review.
+Thanks for you point out. But, I want keep this logic to avoid someone
+create a runtime variable with the same name-SSID to confuse the key
+generator in EFI stub.
+ 
+> > > > diff --git a/arch/x86/include/asm/suspend.h b/arch/x86/include/asm/suspend.h
+> > > > index 2fab6c2..ab463c4 100644
+> > > > --- a/arch/x86/include/asm/suspend.h
+> > > > +++ b/arch/x86/include/asm/suspend.h
+> > > > @@ -3,3 +3,12 @@
+> > > >  #else
+> > > >  # include <asm/suspend_64.h>
+> > > >  #endif
+> > > > +
+> > > > +#ifdef CONFIG_HIBERNATE_VERIFICATION
+> > > > +#include <linux/suspend.h>
+> > > > +
+> > > > +struct hibernation_keys {
+> > > > +	unsigned long hkey_status;
+> > > > +	u8 hibernation_key[HIBERNATION_DIGEST_SIZE];
+> > > > +};
+> > > > +#endif
+> > > 
+> > > Have you given any thought to how things are going to work if we
+> > > change the hash function in the future, or provide a choice? That
+> > > information doesn't appear anywhere in the above struct.
+> > > 
+> > 
+> > Do you mean the hash function of signing hibernation image changed, so the
+> > hibernation key also need to re-generate for new length?
+>  
+> Yeah, that kind of thing.
+> 
+> > I will add a field in struct to forward the length of hibernation key variable.
+> > In the future kernel can check the length to handle the change.
+> 
+> Would it also make sense to explicitly record the hash function used
+> as well as the length?
+> 
+> -- 
+> Matt Fleming, Intel Open Source Technology Center
 
--- 
-Thank you,
-<Alexandra>
+The job of key generator in EFI stub is to generate appropriate length of key
+for usage by later activities. It doesn't need to know how does kernel use
+which kind of hash algorithm, so I think do not need record the hash function.
+
+But, kernel should knows the exactly length of old key to decide if it needs to
+use flag to trigger key regeneration process in EFI stub to create new key for
+new length.
+
+Only the other hand, the hash algorithm of hibernation was setted in kernel
+compiler time even user can change  it, so I think to forward the key length
+from querying efi variable is enough, don't need write the hash algorithm to
+EFI boot variable.
+
+
+Thanks a lot!
+Joey Lee
 
