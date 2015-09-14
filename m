@@ -1,56 +1,46 @@
 From: Javi Merino <javi.merino@arm.com>
-Subject: [PATCH v6 0/5] Let the power allocator thermal governor run on any thermal zone
-Date: Mon, 14 Sep 2015 14:23:49 +0100
-Message-ID: <1442237034-14817-1-git-send-email-javi.merino@arm.com>
+Subject: [PATCH v6 5/5] thermal: power_allocator: exit early if there are no cooling devices
+Date: Mon, 14 Sep 2015 14:23:54 +0100
+Message-ID: <1442237034-14817-6-git-send-email-javi.merino@arm.com>
 References: <1441631969-3272-1-git-send-email-javi.merino@arm.com>
+ <1442237034-14817-1-git-send-email-javi.merino@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1441631969-3272-1-git-send-email-javi.merino@arm.com>
+In-Reply-To: <1442237034-14817-1-git-send-email-javi.merino@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: dmitry.torokhov@gmail.com, cywang@chromium.org, linux-kernel@vger.kernel.org, punit.agrawal@arm.com, djkurtz@chromium.org, edubezval@gmail.com, Javi Merino <javi.merino@arm.com>
+Cc: dmitry.torokhov@gmail.com, cywang@chromium.org, linux-kernel@vger.kernel.org, punit.agrawal@arm.com, djkurtz@chromium.org, edubezval@gmail.com, Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Relax the thermal governor requirements of sustainable_power and at
-least two trip points so that it can be bound to any thermal zone.
-Its behavior won't be optimal, it would be the best possible with the
-data provided.
+Don't waste cycles in the power allocator governor's throttle function
+if there are no cooling devices and exit early.
 
-Changes since v5:
-   - Rebased on top of v4.3-rc1
+This commit doesn't change any functionality, but should provide better
+performance for the odd case of a thermal zone with trip points but
+without cooling devices.
 
-Changes since v4:
-   - Fix crash when a thermal zone with no trip points has no
-     get_trip_point_temp().  Reported by Daniel Kurtz.
-   - s/estimate_controller_constants()/estimate_pid_constants()/g
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Reviewed-by: Daniel Kurtz <djkurtz@chromium.org>
+Signed-off-by: Javi Merino <javi.merino@arm.com>
+---
+ drivers/thermal/power_allocator.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-Changes since v3:
-   - Don't hardcode a value for sustainable power and re-estimate
-     the PID controllers every time if no sustainable power is given
-     as suggested by Eduardo Valentin.
-   - power_actor_get_min_power() moved to a patch of its own.
-
-Changes since v2:
-  - Typos suggested by Daniel Kurtz
-
-Changes since v1:
-  - Let the power allocator governor operate if the thermal zone
-    doesn't have tzp as suggested by Chung-yih Wang
-
-Javi Merino (5):
-  thermal: Add a function to get the minimum power
-  thermal: power_allocator: relax the requirement of a sustainable_power
-    in tzp
-  thermal: power_allocator: relax the requirement of two passive trip   
-     points
-  thermal: power_allocator: don't require tzp to be present for the
-    thermal zone
-  thermal: power_allocator: exit early if there are no cooling devices
-
- Documentation/thermal/power_allocator.txt |   2 +-
- drivers/thermal/power_allocator.c         | 243 ++++++++++++++++++++++--------
- drivers/thermal/thermal_core.c            |  28 ++++
- include/linux/thermal.h                   |   6 +
- 4 files changed, 214 insertions(+), 65 deletions(-)
-
+diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
+index 718363f5be40..7ff96270c933 100644
+--- a/drivers/thermal/power_allocator.c
++++ b/drivers/thermal/power_allocator.c
+@@ -346,6 +346,11 @@ static int allocate_power(struct thermal_zone_device *tz,
+ 		}
+ 	}
+ 
++	if (!num_actors) {
++		ret = -ENODEV;
++		goto unlock;
++	}
++
+ 	/*
+ 	 * We need to allocate five arrays of the same size:
+ 	 * req_power, max_power, granted_power, extra_actor_power and
 -- 
 1.9.1
