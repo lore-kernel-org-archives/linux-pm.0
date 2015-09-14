@@ -1,52 +1,71 @@
-From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: [PATCHv2 03/10] thermal: rockchip: allow compile test
-Date: Sun, 13 Sep 2015 19:31:32 -0700
-Message-ID: <1442197899-5952-4-git-send-email-edubezval@gmail.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [PATCHv2 09/10] thermal: ti-soc: allow compile test
+Date: Sun, 13 Sep 2015 19:31:38 -0700
+Message-ID: <1442197899-5952-10-git-send-email-edubezval@gmail.com>
 References: <1442197899-5952-1-git-send-email-edubezval@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <1442197899-5952-1-git-send-email-edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
-List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: Rui Zhang <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f48.google.com ([209.85.220.48]:35877 "EHLO
+	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754104AbbINCcG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 13 Sep 2015 22:32:06 -0400
+In-Reply-To: <1442197899-5952-1-git-send-email-edubezval@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rui Zhang <rui.zhang@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, linux-omap@vger.kernel.org
 
-Adding COMPILE_TEST flag to rockchip driver to facilitate
+Adding COMPILE_TEST flag to ti-soc driver to facilitate
 maintenance.
 
-Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-Cc: linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Signed-off-by: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-omap@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/thermal/ti-soc-thermal/Kconfig | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 0334886..2e0aaee 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -190,7 +190,7 @@ config SPEAR_THERMAL
- 
- config ROCKCHIP_THERMAL
- 	tristate "Rockchip thermal driver"
--	depends on ARCH_ROCKCHIP
-+	depends on ARCH_ROCKCHIP || COMPILE_TEST
- 	depends on RESET_CONTROLLER
+diff --git a/drivers/thermal/ti-soc-thermal/Kconfig b/drivers/thermal/ti-soc-thermal/Kconfig
+index bd4c7be..7a24018 100644
+--- a/drivers/thermal/ti-soc-thermal/Kconfig
++++ b/drivers/thermal/ti-soc-thermal/Kconfig
+@@ -1,7 +1,7 @@
+ config TI_SOC_THERMAL
+ 	tristate "Texas Instruments SoCs temperature sensor driver"
+ 	depends on THERMAL
+-	depends on ARCH_HAS_BANDGAP
++	depends on ARCH_HAS_BANDGAP || COMPILE_TEST
  	help
- 	  Rockchip thermal driver provides support for Temperature sensor
+ 	  If you say yes here you get support for the Texas Instruments
+ 	  OMAP4460+ on die bandgap temperature sensor support. The register
+@@ -24,7 +24,7 @@ config TI_THERMAL
+ config OMAP4_THERMAL
+ 	bool "Texas Instruments OMAP4 thermal support"
+ 	depends on TI_SOC_THERMAL
+-	depends on ARCH_OMAP4
++	depends on ARCH_OMAP4 || COMPILE_TEST
+ 	help
+ 	  If you say yes here you get thermal support for the Texas Instruments
+ 	  OMAP4 SoC family. The current chip supported are:
+@@ -38,7 +38,7 @@ config OMAP4_THERMAL
+ config OMAP5_THERMAL
+ 	bool "Texas Instruments OMAP5 thermal support"
+ 	depends on TI_SOC_THERMAL
+-	depends on SOC_OMAP5
++	depends on SOC_OMAP5 || COMPILE_TEST
+ 	help
+ 	  If you say yes here you get thermal support for the Texas Instruments
+ 	  OMAP5 SoC family. The current chip supported are:
+@@ -50,7 +50,7 @@ config OMAP5_THERMAL
+ config DRA752_THERMAL
+ 	bool "Texas Instruments DRA752 thermal support"
+ 	depends on TI_SOC_THERMAL
+-	depends on SOC_DRA7XX
++	depends on SOC_DRA7XX || COMPILE_TEST
+ 	help
+ 	  If you say yes here you get thermal support for the Texas Instruments
+ 	  DRA752 SoC family. The current chip supported are:
 -- 
 2.5.0
+
