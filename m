@@ -1,107 +1,103 @@
 From: "Andrew F. Davis" <afd@ti.com>
-Subject: [PATCH v4 4/7] power: bq27xxx_battery: Fix typos and change naming for state of charge functions
-Date: Mon, 14 Sep 2015 16:26:10 -0500
-Message-ID: <1442265973-32261-5-git-send-email-afd@ti.com>
+Subject: [PATCH v4 3/7] power: bq27xxx_battery: Platform initialization must declare a device
+Date: Mon, 14 Sep 2015 16:26:09 -0500
+Message-ID: <1442265973-32261-4-git-send-email-afd@ti.com>
 References: <1442265973-32261-1-git-send-email-afd@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:45046 "EHLO comal.ext.ti.com"
+Received: from arroyo.ext.ti.com ([192.94.94.40]:33266 "EHLO arroyo.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751469AbbINV0p (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 14 Sep 2015 17:26:45 -0400
+	id S1751673AbbINV0q (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 14 Sep 2015 17:26:46 -0400
 In-Reply-To: <1442265973-32261-1-git-send-email-afd@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
 Cc: Dan Murphy <dmurphy@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Andrew F. Davis" <afd@ti.com>
 
-=46ix typos and change "relative state of charge" to "state of charge" =
-as not
-all supported devices use relative state of charge.
+When initialized as a platform device the initializer must now specify
+a device. An empty device name is no longer valid.
 
 Signed-off-by: Andrew F. Davis <afd@ti.com>
 ---
- drivers/power/bq27xxx_battery.c | 28 ++++++++++++++--------------
- 1 file changed, 14 insertions(+), 14 deletions(-)
+ drivers/power/bq27xxx_battery.c       | 9 ++++++---
+ drivers/w1/slaves/w1_bq27000.c        | 1 +
+ include/linux/power/bq27xxx_battery.h | 6 +++++-
+ 3 files changed, 12 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27xxx_ba=
-ttery.c
-index 0734413..1ff88ad 100644
+diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27xxx_battery.c
+index e72055c..0734413 100644
 --- a/drivers/power/bq27xxx_battery.c
 +++ b/drivers/power/bq27xxx_battery.c
-@@ -229,26 +229,26 @@ static bool bq27xxx_is_chip_version_higher(struct=
- bq27xxx_device_info *di)
- }
-=20
- /*
-- * Return the battery Relative State-of-Charge
-+ * Return the battery State-of-Charge
-  * Or < 0 if something fails.
+@@ -91,8 +91,6 @@ struct bq27xxx_access_methods {
+ 	int (*read)(struct bq27xxx_device_info *di, u8 reg, bool single);
+ };
+ 
+-enum bq27xxx_chip { BQ27000, BQ27500, BQ27425, BQ27742, BQ27510};
+-
+ struct bq27xxx_reg_cache {
+ 	int temperature;
+ 	int time_to_empty;
+@@ -1036,6 +1034,11 @@ static int bq27xxx_battery_platform_probe(struct platform_device *pdev)
+ 		return -EINVAL;
+ 	}
+ 
++	if (!pdata->chip) {
++		dev_err(&pdev->dev, "no device supplied\n");
++		return -EINVAL;
++	}
++
+ 	di = devm_kzalloc(&pdev->dev, sizeof(*di), GFP_KERNEL);
+ 	if (!di)
+ 		return -ENOMEM;
+@@ -1043,7 +1046,7 @@ static int bq27xxx_battery_platform_probe(struct platform_device *pdev)
+ 	platform_set_drvdata(pdev, di);
+ 
+ 	di->dev = &pdev->dev;
+-	di->chip = BQ27000;
++	di->chip = pdata->chip;
+ 
+ 	name = pdata->name ?: dev_name(&pdev->dev);
+ 	di->bus.read = &bq27xxx_battery_platform_read;
+diff --git a/drivers/w1/slaves/w1_bq27000.c b/drivers/w1/slaves/w1_bq27000.c
+index 8480531..9f4a86b 100644
+--- a/drivers/w1/slaves/w1_bq27000.c
++++ b/drivers/w1/slaves/w1_bq27000.c
+@@ -42,6 +42,7 @@ static int w1_bq27000_read(struct device *dev, unsigned int reg)
+ static struct bq27xxx_platform_data bq27000_battery_info = {
+ 	.read   = w1_bq27000_read,
+ 	.name   = "bq27000-battery",
++	.chip   = BQ27000,
+ };
+ 
+ static int w1_bq27000_add_slave(struct w1_slave *sl)
+diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
+index e70a93a..a4efb10 100644
+--- a/include/linux/power/bq27xxx_battery.h
++++ b/include/linux/power/bq27xxx_battery.h
+@@ -3,7 +3,8 @@
+ 
+ /**
+  * struct bq27xxx_plaform_data - Platform data for bq27xxx devices
+- * @name: Name of the battery. If NULL the driver will fallback to "bq27000".
++ * @name: Name of the battery.
++ * @chip: Chip class number of this device.
+  * @read: HDQ read callback.
+  *	This function should provide access to the HDQ bus the battery is
+  *	connected to.
+@@ -11,8 +12,11 @@
+  *	register to be read. The return value should either be the content of
+  *	the passed register or an error value.
   */
--static int bq27xxx_battery_read_rsoc(struct bq27xxx_device_info *di)
-+static int bq27xxx_battery_read_soc(struct bq27xxx_device_info *di)
- {
--	int rsoc;
-+	int soc;
-=20
- 	if (di->chip =3D=3D BQ27500 || di->chip =3D=3D BQ27742)
--		rsoc =3D bq27xxx_read(di, BQ27500_REG_SOC, false);
-+		soc =3D bq27xxx_read(di, BQ27500_REG_SOC, false);
- 	else if (di->chip =3D=3D BQ27510)
--		rsoc =3D bq27xxx_read(di, BQ27510_REG_SOC, false);
-+		soc =3D bq27xxx_read(di, BQ27510_REG_SOC, false);
- 	else if (di->chip =3D=3D BQ27425)
--		rsoc =3D bq27xxx_read(di, BQ27425_REG_SOC, false);
--	else
--		rsoc =3D bq27xxx_read(di, BQ27000_REG_RSOC, true);
-+		soc =3D bq27xxx_read(di, BQ27425_REG_SOC, false);
-+	else /* for the bq27000 we read the "relative" SoC register */
-+		soc =3D bq27xxx_read(di, BQ27000_REG_RSOC, true);
-=20
--	if (rsoc < 0)
--		dev_dbg(di->dev, "error reading relative State-of-Charge\n");
-+	if (soc < 0)
-+		dev_dbg(di->dev, "error reading State-of-Charge\n");
-=20
--	return rsoc;
-+	return soc;
- }
-=20
- /*
-@@ -275,7 +275,7 @@ static int bq27xxx_battery_read_charge(struct bq27x=
-xx_device_info *di, u8 reg)
- }
-=20
- /*
-- * Return the battery Nominal available capaciy in =C2=B5Ah
-+ * Return the battery Nominal available capacity in =C2=B5Ah
-  * Or < 0 if something fails.
-  */
- static inline int bq27xxx_battery_read_nac(struct bq27xxx_device_info =
-*di)
-@@ -416,7 +416,7 @@ static int bq27xxx_battery_read_time(struct bq27xxx=
-_device_info *di, u8 reg)
- }
-=20
- /*
-- * Read a power avg register.
-+ * Read an average power register.
-  * Return < 0 if something fails.
-  */
- static int bq27xxx_battery_read_pwr_avg(struct bq27xxx_device_info *di=
-, u8 reg)
-@@ -498,7 +498,7 @@ static void bq27xxx_battery_update(struct bq27xxx_d=
-evice_info *di)
- 			cache.charge_full =3D -ENODATA;
- 			cache.health =3D -ENODATA;
- 		} else {
--			cache.capacity =3D bq27xxx_battery_read_rsoc(di);
-+			cache.capacity =3D bq27xxx_battery_read_soc(di);
- 			if (is_bq27742 || is_bq27510)
- 				cache.time_to_empty =3D
- 					bq27xxx_battery_read_time(di,
---=20
++enum bq27xxx_chip { BQ27000 = 1, BQ27500, BQ27425, BQ27742, BQ27510 };
++
+ struct bq27xxx_platform_data {
+ 	const char *name;
++	enum bq27xxx_chip chip;
+ 	int (*read)(struct device *dev, unsigned int);
+ };
+ 
+-- 
 1.9.1
 
