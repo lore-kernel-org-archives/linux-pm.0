@@ -1,65 +1,107 @@
-From: Brian Norris <computersforpeace@gmail.com>
-Subject: Re: [PATCH] clk: divider: handle integer overflow when dividing
- large clock rates
-Date: Mon, 14 Sep 2015 14:08:39 -0700
-Message-ID: <20150914210839.GA60225@google.com>
-References: <1428966201-23365-1-git-send-email-computersforpeace@gmail.com>
- <20150414221137.19585.91216@quantum>
- <20150427154910.16410.11498@quantum>
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: [PATCH v4 4/7] power: bq27xxx_battery: Fix typos and change naming for state of charge functions
+Date: Mon, 14 Sep 2015 16:26:10 -0500
+Message-ID: <1442265973-32261-5-git-send-email-afd@ti.com>
+References: <1442265973-32261-1-git-send-email-afd@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f42.google.com ([209.85.220.42]:34406 "EHLO
-	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751576AbbINVIm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Sep 2015 17:08:42 -0400
-Content-Disposition: inline
-In-Reply-To: <20150427154910.16410.11498@quantum>
+Received: from comal.ext.ti.com ([198.47.26.152]:45046 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751469AbbINV0p (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 14 Sep 2015 17:26:45 -0400
+In-Reply-To: <1442265973-32261-1-git-send-email-afd@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Michael Turquette <mturquette@baylibre.com>
-Cc: Florian Fainelli <f.fainelli@gmail.com>, Jim Quinlan <jim2101024@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Stephen Boyd <sboyd@codeaurora.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, u.kleine-koenig@pengutronix.de
+To: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: Dan Murphy <dmurphy@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Andrew F. Davis" <afd@ti.com>
 
-(New address)
+=46ix typos and change "relative state of charge" to "state of charge" =
+as not
+all supported devices use relative state of charge.
 
-Hi Mike,
+Signed-off-by: Andrew F. Davis <afd@ti.com>
+---
+ drivers/power/bq27xxx_battery.c | 28 ++++++++++++++--------------
+ 1 file changed, 14 insertions(+), 14 deletions(-)
 
-On Mon, Apr 27, 2015 at 08:49:10AM -0700, Michael Turquette wrote:
-> Quoting Michael Turquette (2015-04-14 15:11:37)
-> > Quoting Brian Norris (2015-04-13 16:03:21)
-> > > On 32-bit architectures, 'unsigned long' (the type used to hold clock
-> > > rates, in Hz) is often only 32 bits wide. DIV_ROUND_UP() (as used in,
-> > > e.g., commit b11d282dbea2 "clk: divider: fix rate calculation for
-> > > fractional rates") can yield an integer overflow on clock rates that are
-> > > not (by themselves) too large to fit in 32 bits, because it performs
-> > > addition before the division. See for example:
-> > > 
-> > >   DIV_ROUND_UP(3000000000, 1500000000) = (3.0G + 1.5G - 1) / 1.5G
-> > >                                        = OVERFLOW / 1.5G
-> > > 
-> > > This patch fixes such cases by always promoting the dividend to 64-bits
-> > > (unsigned long long) before doing the division. While this patch does
-> > > not resolve the issue with large clock rates across the common clock
-> > > framework nor address the problems with doing full 64-bit arithmetic on
-> > > a 32-bit architecture, it does fix some issues seen when using clock
-> > > dividers on a 3GHz reference clock to produce a 1.5GHz CPU clock for an
-> > > ARMv7 Brahma B15 SoC.
-> > > 
-> > > Signed-off-by: Brian Norris <computersforpeace@gmail.com>
-> > > Reference: lkml.kernel.org/g/20150413201433.GQ32500@ld-irv-0074
-> > > ---
-> > > I'll admit I only compile-tested this particular patch. I have tested a version
-> > > of this patch on top of a few backports on an older kernel, and everything
-> > > works fine. Unforunately, some of my SoC's clock drivers still rely on
-> > > out-of-tree code.
-> > 
-> > I smoke tested this on some hardware and it seemed fine to me. I'll give
-> > some time for others to comment, otherwise I'll take this for 4.2 after
-> > -rc1 drops.
-> 
-> Applied to clk-next.
+diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27xxx_ba=
+ttery.c
+index 0734413..1ff88ad 100644
+--- a/drivers/power/bq27xxx_battery.c
++++ b/drivers/power/bq27xxx_battery.c
+@@ -229,26 +229,26 @@ static bool bq27xxx_is_chip_version_higher(struct=
+ bq27xxx_device_info *di)
+ }
+=20
+ /*
+- * Return the battery Relative State-of-Charge
++ * Return the battery State-of-Charge
+  * Or < 0 if something fails.
+  */
+-static int bq27xxx_battery_read_rsoc(struct bq27xxx_device_info *di)
++static int bq27xxx_battery_read_soc(struct bq27xxx_device_info *di)
+ {
+-	int rsoc;
++	int soc;
+=20
+ 	if (di->chip =3D=3D BQ27500 || di->chip =3D=3D BQ27742)
+-		rsoc =3D bq27xxx_read(di, BQ27500_REG_SOC, false);
++		soc =3D bq27xxx_read(di, BQ27500_REG_SOC, false);
+ 	else if (di->chip =3D=3D BQ27510)
+-		rsoc =3D bq27xxx_read(di, BQ27510_REG_SOC, false);
++		soc =3D bq27xxx_read(di, BQ27510_REG_SOC, false);
+ 	else if (di->chip =3D=3D BQ27425)
+-		rsoc =3D bq27xxx_read(di, BQ27425_REG_SOC, false);
+-	else
+-		rsoc =3D bq27xxx_read(di, BQ27000_REG_RSOC, true);
++		soc =3D bq27xxx_read(di, BQ27425_REG_SOC, false);
++	else /* for the bq27000 we read the "relative" SoC register */
++		soc =3D bq27xxx_read(di, BQ27000_REG_RSOC, true);
+=20
+-	if (rsoc < 0)
+-		dev_dbg(di->dev, "error reading relative State-of-Charge\n");
++	if (soc < 0)
++		dev_dbg(di->dev, "error reading State-of-Charge\n");
+=20
+-	return rsoc;
++	return soc;
+ }
+=20
+ /*
+@@ -275,7 +275,7 @@ static int bq27xxx_battery_read_charge(struct bq27x=
+xx_device_info *di, u8 reg)
+ }
+=20
+ /*
+- * Return the battery Nominal available capaciy in =C2=B5Ah
++ * Return the battery Nominal available capacity in =C2=B5Ah
+  * Or < 0 if something fails.
+  */
+ static inline int bq27xxx_battery_read_nac(struct bq27xxx_device_info =
+*di)
+@@ -416,7 +416,7 @@ static int bq27xxx_battery_read_time(struct bq27xxx=
+_device_info *di, u8 reg)
+ }
+=20
+ /*
+- * Read a power avg register.
++ * Read an average power register.
+  * Return < 0 if something fails.
+  */
+ static int bq27xxx_battery_read_pwr_avg(struct bq27xxx_device_info *di=
+, u8 reg)
+@@ -498,7 +498,7 @@ static void bq27xxx_battery_update(struct bq27xxx_d=
+evice_info *di)
+ 			cache.charge_full =3D -ENODATA;
+ 			cache.health =3D -ENODATA;
+ 		} else {
+-			cache.capacity =3D bq27xxx_battery_read_rsoc(di);
++			cache.capacity =3D bq27xxx_battery_read_soc(di);
+ 			if (is_bq27742 || is_bq27510)
+ 				cache.time_to_empty =3D
+ 					bq27xxx_battery_read_time(di,
+--=20
+1.9.1
 
-I was rebasing my old patches onto Linus' latest, and I noticed that
-this one never got in.
-
-Brian
