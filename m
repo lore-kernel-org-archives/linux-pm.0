@@ -1,61 +1,59 @@
-From: Daniel Kurtz <djkurtz@chromium.org>
-Subject: Re: [PATCH 2/3] thermal: Add Mediatek thermal controller support
-Date: Mon, 14 Sep 2015 15:32:56 +0800
-Message-ID: <CAGS+omCHAGrRPwM8Wghver+o5ky3MG2+JJqKiwWzHtDTQkaD4g@mail.gmail.com>
-References: <1441006446-4558-1-git-send-email-s.hauer@pengutronix.de> <1441006446-4558-3-git-send-email-s.hauer@pengutronix.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH v2] cpufreq : powernv: Report Pmax throttling if capped below nominal frequency
+Date: Mon, 14 Sep 2015 14:01:47 +0530
+Message-ID: <1442219507-6499-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+References: <1442207874-5016-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f179.google.com ([209.85.160.179]:35247 "EHLO
-	mail-yk0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751214AbbINHdR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Sep 2015 03:33:17 -0400
-Received: by ykdu9 with SMTP id u9so145604747ykd.2
-        for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2015 00:33:16 -0700 (PDT)
-In-Reply-To: <1441006446-4558-3-git-send-email-s.hauer@pengutronix.de>
+Received: from e28smtp04.in.ibm.com ([122.248.162.4]:47670 "EHLO
+	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752190AbbINIky (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Sep 2015 04:40:54 -0400
+Received: from /spool/local
+	by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+	Mon, 14 Sep 2015 14:07:14 +0530
+In-Reply-To: <1442207874-5016-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Mark Rutland <mark.rutland@arm.com>, "open list:OPEN FIRMWARE AND..." <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, linux-mediatek@lists.infradead.org, Sasha Hauer <kernel@pengutronix.de>, Matthias Brugger <matthias.bgg@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 
-Hi Sascha,
+Log a 'critical' message if the max frequency is reduced below nominal
+frequency. We already log 'info' message if the max frequency is
+capped below turbo frequency. CPU should guarantee atleast nominal
+frequency, but not turbo frequency in all system configurations and
+environments. So report the pmax throttling with severity when Pmax is
+dipped below nominal frequency.
 
-On Mon, Aug 31, 2015 at 3:34 PM, Sascha Hauer <s.hauer@pengutronix.de> wrote:
-> This adds support for the Mediatek thermal controller found on MT8173
-> and likely other SoCs.
-> The controller is a bit special. It does not have its own ADC, instead
-> it controls the on-SoC AUXADC via AHB bus accesses. For this reason
-> we need the physical address of the AUXADC. Also it controls a mux
-> using AHB bus accesses, so we need the APMIXEDSYS physical address aswell.
->
-> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-> Reviewed-by: Daniel Kurtz <djkurtz@chromium.org>
+Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+---
+Changes from v1:
+- Modified the printk messages as per Viresh's suggestion.
 
-[snip...]
+ drivers/cpufreq/powernv-cpufreq.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
-> +static int mtk_read_temp(void *data, long *temp)
-> +{
-> +       struct mtk_thermal_bank *bank = data;
-> +
-> +       mtk_thermal_get_bank(bank);
-> +
-> +       *temp = mtk_thermal_bank_temperature(bank);
-> +
-> +       mtk_thermal_put_bank(bank);
-> +
-> +       return 0;
-> +}
-> +
-> +static const struct thermal_zone_of_device_ops mtk_thermal_ops = {
-> +       .get_temp = mtk_read_temp,
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index 64994e1..cb50138 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -327,8 +327,14 @@ static void powernv_cpufreq_throttle_check(void *data)
+ 		if (chips[i].throttled)
+ 			goto next;
+ 		chips[i].throttled = true;
+-		pr_info("CPU %d on Chip %u has Pmax reduced to %d\n", cpu,
+-			chips[i].id, pmsr_pmax);
++		if (pmsr_pmax < powernv_pstate_info.nominal)
++			pr_crit("CPU %d on Chip %u has Pmax reduced below nominal frequency (%d < %d)\n",
++				cpu, chips[i].id, pmsr_pmax,
++				powernv_pstate_info.nominal);
++		else
++			pr_info("CPU %d on Chip %u has Pmax reduced below turbo frequency (%d < %d)\n",
++				cpu, chips[i].id, pmsr_pmax,
++				powernv_pstate_info.max);
+ 	} else if (chips[i].throttled) {
+ 		chips[i].throttled = false;
+ 		pr_info("CPU %d on Chip %u has Pmax restored to %d\n", cpu,
+-- 
+1.9.3
 
-On v4.3-rc1, this now causes a compile warning, since the prototype
-for get_temp was changed to:
-
-       int (*get_temp)(void *, int *);
-
-by:
-commit 17e8351a77397e8a83727eb17e3a3e9b8ab5257a
-    thermal: consistently use int for temperatures
-
--Dan
