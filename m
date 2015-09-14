@@ -1,26 +1,28 @@
 From: Brian Norris <computersforpeace@gmail.com>
 Subject: Re: [PATCH] clk: divider: handle integer overflow when dividing
  large clock rates
-Date: Mon, 14 Sep 2015 14:05:32 -0700
-Message-ID: <20150914210532.GA59490@google.com>
+Date: Mon, 14 Sep 2015 14:08:39 -0700
+Message-ID: <20150914210839.GA60225@google.com>
 References: <1428966201-23365-1-git-send-email-computersforpeace@gmail.com>
  <20150414221137.19585.91216@quantum>
  <20150427154910.16410.11498@quantum>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f42.google.com ([209.85.220.42]:33662 "EHLO
+Received: from mail-pa0-f42.google.com ([209.85.220.42]:34406 "EHLO
 	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751355AbbINVFf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Sep 2015 17:05:35 -0400
+	with ESMTP id S1751576AbbINVIm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Sep 2015 17:08:42 -0400
 Content-Disposition: inline
 In-Reply-To: <20150427154910.16410.11498@quantum>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Michael Turquette <mturquette@linaro.org>
+To: Michael Turquette <mturquette@baylibre.com>
 Cc: Florian Fainelli <f.fainelli@gmail.com>, Jim Quinlan <jim2101024@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Stephen Boyd <sboyd@codeaurora.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, u.kleine-koenig@pengutronix.de
 
-Hi Michael,
+(New address)
+
+Hi Mike,
 
 On Mon, Apr 27, 2015 at 08:49:10AM -0700, Michael Turquette wrote:
 > Quoting Michael Turquette (2015-04-14 15:11:37)
