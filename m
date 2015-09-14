@@ -1,63 +1,100 @@
-From: Bai Ping <b51503@freescale.com>
-Subject: [PATCH] thermal: imx: register irq handler later in probe
-Date: Mon, 14 Sep 2015 19:09:51 +0800
-Message-ID: <1442228991-10235-1-git-send-email-b51503@freescale.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [GIT PULL] Thermal-SoC management updates for v4.3-rc2
+Date: Sun, 13 Sep 2015 20:55:01 -0700
+Message-ID: <20150914035500.GC5075@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="MnLPg7ZWsaic7Fhd"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Rui Zhang <rui.zhang@intel.com>
+Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-The irq handler should be registered after the tempmon
-module has been initialized in a known state and the
-thermal_zone and cpu_cooling device have been registered
-successfully. Otherwise, if the irq is triggled earlier
-before thermal probe has been finished, it may lead to
-'NULL' pointer kernel panic.
 
-Signed-off-by: Bai Ping <b51503@freescale.com>
----
- drivers/thermal/imx_thermal.c | 19 +++++++++++--------
- 1 file changed, 11 insertions(+), 8 deletions(-)
+--MnLPg7ZWsaic7Fhd
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-index 4bec1d3..acd1c78 100644
---- a/drivers/thermal/imx_thermal.c
-+++ b/drivers/thermal/imx_thermal.c
-@@ -487,14 +487,6 @@ static int imx_thermal_probe(struct platform_device *pdev)
- 	if (data->irq < 0)
- 		return data->irq;
- 
--	ret = devm_request_threaded_irq(&pdev->dev, data->irq,
--			imx_thermal_alarm_irq, imx_thermal_alarm_irq_thread,
--			0, "imx_thermal", data);
--	if (ret < 0) {
--		dev_err(&pdev->dev, "failed to request alarm irq: %d\n", ret);
--		return ret;
--	}
--
- 	platform_set_drvdata(pdev, data);
- 
- 	ret = imx_get_sensor_data(pdev);
-@@ -571,6 +563,17 @@ static int imx_thermal_probe(struct platform_device *pdev)
- 	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
- 	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_MEASURE_TEMP);
- 
-+	ret = devm_request_threaded_irq(&pdev->dev, data->irq,
-+			imx_thermal_alarm_irq, imx_thermal_alarm_irq_thread,
-+			0, "imx_thermal", data);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev, "failed to request alarm irq: %d\n", ret);
-+		clk_disable_unprepare(data->thermal_clk);
-+		thermal_zone_device_unregister(data->tz);
-+		cpufreq_cooling_unregister(data->cdev);
-+		return ret;
-+	}
-+
- 	data->irq_enabled = true;
- 	data->mode = THERMAL_DEVICE_ENABLED;
- 
--- 
-1.9.1
+Hello Rui,
+
+(apologize for duplicates, now copying the mailing lists)
+
+Please pull from
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal fixes
+
+to receive Thermal-SoC Management updates for v4.3-rc2 with top-most
+
+eba4f88d5af84e0fcaa5d6eb4fe35a75c47203cb:
+
+  thermal: cpu_cooling: free power table on error or when unregistering (2015-09-13 20:34:05 -0700)
+
+on top of commit 6ff33f3902c3b1c5d0db6b1e2c70b6d76fba357f:
+
+  Linux 4.3-rc1 (2015-09-12 16:35:56 -0700)
+
+Specifics:
+- Add compile test flags on thermal drivers that allow it without
+producing compilation errors
+- Fixes around memory allocation on cpu_cooling
+- Fix on db8500 cpufreq code to allow autoload
+- Maintainer entries for cpu cooling device
+
+More fixes still to come, but if not for rc2, for rc3.
+
+BR,
+
+Eduardo Valentin
+----------------------------------------------------------------
+Eduardo Valentin (10):
+      thermal: hisi: allow compile test
+      thermal: spear: allow compile test
+      thermal: rockchip: allow compile test
+      thermal: kirkwood: allow compile test
+      thermal: dove: allow compile test
+      thermal: armada: allow compile test
+      thermal: exynos: allow compile test
+      thermal: qcom_spmi: allow compile test
+      thermal: ti-soc: allow compile test
+      thermal: ti-soc: Kconfig fix to avoid menu showing wrongly
+
+Javi Merino (2):
+      thermal: cpu_cooling: don't call kcalloc() under rcu_read_lock
+      thermal: cpu_cooling: free power table on error or when unregistering
+
+Luis de Bethencourt (1):
+      thermal: db8500_cpufreq_cooling: Fix module autoload for OF platform driver
+
+Punit Agrawal (1):
+      thermal: Fix thermal_zone_of_sensor_register to match documentation
+
+Viresh Kumar (1):
+      thermal: cpu_cooling: Add MAINTAINERS entry
+
+ MAINTAINERS                              | 10 ++++++
+ drivers/thermal/Kconfig                  | 17 ++++++-----
+ drivers/thermal/cpu_cooling.c            | 52 +++++++++++++++++++-------------
+ drivers/thermal/db8500_cpufreq_cooling.c |  1 +
+ drivers/thermal/ti-soc-thermal/Kconfig   |  8 ++---
+ include/linux/thermal.h                  |  2 +-
+ 6 files changed, 55 insertions(+), 35 deletions(-)
+
+--MnLPg7ZWsaic7Fhd
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQEcBAEBAgAGBQJV9kUMAAoJEMLUO4d9pOJW/4oH/187mKDBq/A74F+54NdXHQF+
+Kfkw+WFnpOcqLdQGGgGkZuzhlpy7B42Z2tyf6f8EmX10abSt1BQV9tiAc6aq9tpx
+o/F+ULFeobdd35nVqZ77lmMayX7YXwVdTPqmnkCJm37M5gfqAb2VMxDdkgx8WPzv
+QhC46ChKqEMZHW6WPsEfoxRRaAhcFohjS0C5EzjGX1bODmiOXMvdMlTrkDF51042
+XzqAkA+M8FLm6Wk7842L4rk0SKhyp2k6gMVUtZ1qRjkqfPpL//KgfOWsEvkhVnXZ
+Wb2LvnxJxMOecli9iOTz/LXc28PPEVcx982EmR338uKKdbHJdwdKmFvvfTsymlk=
+=zUBw
+-----END PGP SIGNATURE-----
+
+--MnLPg7ZWsaic7Fhd--
