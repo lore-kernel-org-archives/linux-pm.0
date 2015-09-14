@@ -1,52 +1,72 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH V10] Report interrupt that caused system wakeup
-Date: Tue, 15 Sep 2015 01:02:09 +0200 (CEST)
-Message-ID: <alpine.DEB.2.11.1509150100350.3971@nanos>
-References: <1442253742-14240-1-git-send-email-alexandra.yates@linux.intel.com> <3579246.1W0f3mW1op@vostro.rjw.lan>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH] clk: divider: handle integer overflow when dividing
+ large clock rates
+Date: Mon, 14 Sep 2015 16:08:40 -0700
+Message-ID: <20150914230840.GI23081@codeaurora.org>
+References: <1428966201-23365-1-git-send-email-computersforpeace@gmail.com>
+ <20150414221137.19585.91216@quantum>
+ <20150427154910.16410.11498@quantum>
+ <20150914210839.GA60225@google.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:41002 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751438AbbINXCt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Sep 2015 19:02:49 -0400
-In-Reply-To: <3579246.1W0f3mW1op@vostro.rjw.lan>
+Received: from smtp.codeaurora.org ([198.145.29.96]:33440 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751387AbbINXIm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Sep 2015 19:08:42 -0400
+Content-Disposition: inline
+In-Reply-To: <20150914210839.GA60225@google.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Alexandra Yates <alexandra.yates@linux.intel.com>, kristen.c.accardi@intel.com, linux-pm@vger.kernel.org
+To: Brian Norris <computersforpeace@gmail.com>
+Cc: Michael Turquette <mturquette@baylibre.com>, Florian Fainelli <f.fainelli@gmail.com>, Jim Quinlan <jim2101024@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, u.kleine-koenig@pengutronix.de
 
-On Tue, 15 Sep 2015, Rafael J. Wysocki wrote:
-> > diff --git a/kernel/irq/pm.c b/kernel/irq/pm.c
-> > index d22786a..d26a823 100644
-> > --- a/kernel/irq/pm.c
-> > +++ b/kernel/irq/pm.c
-> > @@ -21,7 +21,7 @@ bool irq_pm_check_wakeup(struct irq_desc *desc)
-> >  		desc->istate |= IRQS_SUSPENDED | IRQS_PENDING;
-> >  		desc->depth++;
-> >  		irq_disable(desc);
-> > -		pm_system_wakeup();
-> > +		pm_system_irq_wakeup(irq_desc_get_irq(desc));
-> >  		return true;
-> >  	}
+On 09/14, Brian Norris wrote:
+> (New address)
 > 
-> Thomas, any objections agains the above?
-
-Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
- 
-> >  	return false;
-> > @@ -73,6 +73,7 @@ static bool suspend_device_irq(struct irq_desc *desc, int irq)
-> >  	if (!desc->action || desc->no_suspend_depth)
-> >  		return false;
-> >  
-> > +
+> Hi Mike,
 > 
-> A leftover from the previous versions of the patch?
+> On Mon, Apr 27, 2015 at 08:49:10AM -0700, Michael Turquette wrote:
+> > Quoting Michael Turquette (2015-04-14 15:11:37)
+> > > Quoting Brian Norris (2015-04-13 16:03:21)
+> > > > On 32-bit architectures, 'unsigned long' (the type used to hold clock
+> > > > rates, in Hz) is often only 32 bits wide. DIV_ROUND_UP() (as used in,
+> > > > e.g., commit b11d282dbea2 "clk: divider: fix rate calculation for
+> > > > fractional rates") can yield an integer overflow on clock rates that are
+> > > > not (by themselves) too large to fit in 32 bits, because it performs
+> > > > addition before the division. See for example:
+> > > > 
+> > > >   DIV_ROUND_UP(3000000000, 1500000000) = (3.0G + 1.5G - 1) / 1.5G
+> > > >                                        = OVERFLOW / 1.5G
+> > > > 
+> > > > This patch fixes such cases by always promoting the dividend to 64-bits
+> > > > (unsigned long long) before doing the division. While this patch does
+> > > > not resolve the issue with large clock rates across the common clock
+> > > > framework nor address the problems with doing full 64-bit arithmetic on
+> > > > a 32-bit architecture, it does fix some issues seen when using clock
+> > > > dividers on a 3GHz reference clock to produce a 1.5GHz CPU clock for an
+> > > > ARMv7 Brahma B15 SoC.
+> > > > 
+> > > > Signed-off-by: Brian Norris <computersforpeace@gmail.com>
+> > > > Reference: lkml.kernel.org/g/20150413201433.GQ32500@ld-irv-0074
+> > > > ---
+> > > > I'll admit I only compile-tested this particular patch. I have tested a version
+> > > > of this patch on top of a few backports on an older kernel, and everything
+> > > > works fine. Unforunately, some of my SoC's clock drivers still rely on
+> > > > out-of-tree code.
+> > > 
+> > > I smoke tested this on some hardware and it seemed fine to me. I'll give
+> > > some time for others to comment, otherwise I'll take this for 4.2 after
+> > > -rc1 drops.
+> > 
+> > Applied to clk-next.
 > 
-> Not useful anyway.
+> I was rebasing my old patches onto Linus' latest, and I noticed that
+> this one never got in.
+> 
 
-You said it way more polite than I would have :)
+Odd. I've thrown it into clk-next.
 
-Thanks,
-
-	tglx
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
