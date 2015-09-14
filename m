@@ -1,7 +1,7 @@
 From: Alexandra Yates <alexandra.yates@linux.intel.com>
 Subject: Re: [PATCH V8] Report interrupt that caused system wakeup
-Date: Mon, 14 Sep 2015 11:08:02 -0700
-Message-ID: <55F70D02.6010902@linux.intel.com>
+Date: Mon, 14 Sep 2015 11:12:17 -0700
+Message-ID: <55F70E01.6080801@linux.intel.com>
 References: <1441929860-5488-1-git-send-email-alexandra.yates@linux.intel.com>
  <2235143.PitGJtzR6R@vostro.rjw.lan> <55F49C0B.3090903@linux.intel.com>
  <3945979.3EXZBXTxvt@vostro.rjw.lan>
@@ -9,10 +9,10 @@ Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:44173 "EHLO mga11.intel.com"
+Received: from mga14.intel.com ([192.55.52.115]:13426 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751357AbbINSF6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 14 Sep 2015 14:05:58 -0400
+	id S1751851AbbINSKN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 14 Sep 2015 14:10:13 -0400
 In-Reply-To: <3945979.3EXZBXTxvt@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -107,6 +107,13 @@ On 09/14/2015 06:56 AM, Rafael J. Wysocki wrote:
 >> targeted towards
 >> performance optimization.  Please let me know and I could add this to my
 >> to do list.
+My concern is how this change would impact any other IRQs that were armed.
+
+Apparently from my testing there is no further impact.
+
+The patch was sent with version10.  In case there are issues patch V09 
+doesn't
+include this change.
 > My point is that you can do
 >
 > 	if (wakeup_irq == 0) {
@@ -116,18 +123,14 @@ On 09/14/2015 06:56 AM, Rafael J. Wysocki wrote:
 >
 > instead of calling pm_system_wakeup() unconditionally even if wakeup_irq != 0,
 > can't you?
-
-My concern is how this change would impact any other IRQs that were armed.
-
-Apparently from my testing there is no further impact.
-
-The patch was sent with version10.  In case there are issues patch V09 
-doesn't
-include this change.
-
+>
 > Thanks,
 > Rafael
 >
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 >
 
 -- 
