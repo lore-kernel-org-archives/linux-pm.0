@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv2 04/10] thermal: kirkwood: allow compile test
-Date: Sun, 13 Sep 2015 19:31:33 -0700
-Message-ID: <1442197899-5952-5-git-send-email-edubezval@gmail.com>
+Subject: [PATCHv2 02/10] thermal: spear: allow compile test
+Date: Sun, 13 Sep 2015 19:31:31 -0700
+Message-ID: <1442197899-5952-3-git-send-email-edubezval@gmail.com>
 References: <1442197899-5952-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1442197899-5952-1-git-send-email-edubezval@gmail.com>
@@ -10,29 +10,30 @@ To: Rui Zhang <rui.zhang@intel.com>
 Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Adding COMPILE_TEST flag to kirkwood driver to facilitate
+Adding COMPILE_TEST flag to spear driver to facilitate
 maintenance.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
  drivers/thermal/Kconfig | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 2e0aaee..f1da24e 100644
+index f2b1d31..0334886 100644
 --- a/drivers/thermal/Kconfig
 +++ b/drivers/thermal/Kconfig
-@@ -208,7 +208,7 @@ config RCAR_THERMAL
+@@ -182,7 +182,7 @@ config IMX_THERMAL
  
- config KIRKWOOD_THERMAL
- 	tristate "Temperature sensor on Marvell Kirkwood SoCs"
--	depends on MACH_KIRKWOOD
-+	depends on MACH_KIRKWOOD || COMPILE_TEST
+ config SPEAR_THERMAL
+ 	bool "SPEAr thermal sensor driver"
+-	depends on PLAT_SPEAR
++	depends on PLAT_SPEAR || COMPILE_TEST
  	depends on OF
  	help
- 	  Support for the Kirkwood thermal sensor driver into the Linux thermal
+ 	  Enable this to plug the SPEAr thermal sensor driver into the Linux
 -- 
 2.5.0
