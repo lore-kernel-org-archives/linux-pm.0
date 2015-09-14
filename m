@@ -1,68 +1,53 @@
-From: joeyli <jlee-IBi9RG/b67k@public.gmane.org>
-Subject: Re: [PATCH v2 09/16] PM / hibernate: Reserve hibernation key and
- erase footprints
-Date: Sun, 13 Sep 2015 10:58:09 +0800
-Message-ID: <20150913025809.GB6752@linux-rxt1.site>
-References: <1439273796-25359-1-git-send-email-jlee@suse.com>
- <1439273796-25359-10-git-send-email-jlee@suse.com>
- <20150821132753.GC3310@codeblueprint.co.uk>
- <20150827102144.GE27415@linux-rxt1.site>
- <20150909122408.GE4973@codeblueprint.co.uk>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
+ SpeedStep enabled
+Date: Mon, 14 Sep 2015 00:32:37 +0000
+Message-ID: <bug-103351-137361-VWvQZKEy5Q@https.bugzilla.kernel.org/>
+References: <bug-103351-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20150909122408.GE4973-mF/unelCI9GS6iBeEJttW/XRex20P6io@public.gmane.org>
-Sender: linux-efi-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Matt Fleming <matt-mF/unelCI9GS6iBeEJttW/XRex20P6io@public.gmane.org>
-Cc: "Lee, Chun-Yi" <joeyli.kernel-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Matthew Garrett <matthew.garrett-05XSO3Yj/JvQT0dZR+AlfA@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Josh Boyer <jwboyer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Vojtech Pavlik <vojtech-AlSwsSmVLrQ@public.gmane.org>, Matt Fleming <matt.fleming-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Jiri Kosina <jkosina-AlSwsSmVLrQ@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:47384 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752143AbbINAcl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 13 Sep 2015 20:32:41 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+	by mail.kernel.org (Postfix) with ESMTP id 8A02320663
+	for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2015 00:32:40 +0000 (UTC)
+Received: from bugzilla2.web.kernel.org (bugzilla2.web.kernel.org [172.20.200.52])
+	by mail.kernel.org (Postfix) with ESMTP id 0320A20653
+	for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2015 00:32:39 +0000 (UTC)
+In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-On Wed, Sep 09, 2015 at 01:24:08PM +0100, Matt Fleming wrote:
-> On Thu, 27 Aug, at 06:21:44PM, joeyli wrote:
-> > On Fri, Aug 21, 2015 at 02:27:53PM +0100, Matt Fleming wrote:
-> > > On Tue, 11 Aug, at 02:16:29PM, Lee, Chun-Yi wrote:
-> > > > +static int __init init_hibernation_keys(void)
-> > > > +{
-> > > > +	struct hibernation_keys *keys;
-> > > > +	int ret = 0;
-> > > > +
-> > > > +	if (!keys_phys_addr)
-> > > > +		return -ENODEV;
-> > > > +
-> > > > +	keys = early_memremap(keys_phys_addr, sizeof(struct hibernation_keys));
-> > > > +
-> > > > +	/* Copy hibernation keys to a allocated page */
-> > > > +	hibernation_keys = (struct hibernation_keys *)get_zeroed_page(GFP_KERNEL);
-> > > > +	if (hibernation_keys) {
-> > > > +		*hibernation_keys = *keys;
-> > > > +	} else {
-> > > > +		pr_err("PM: Allocate hibernation keys page failed\n");
-> > > > +		ret = -ENOMEM;
-> > > > +	}
-> > > 
-> > > It seems overkill to allocate an entire page for 28 bytes of data.
-> > > 
-> > 
-> > Here to allocate an entire page because the basic unit is 'page' when
-> > hibernation code checking saveable page that should included/excluded in
-> > snapshot image.
-> > Allocating an page to hibernation key can clearer to check the page should
-> > excluded in snapshot image.
-> 
-> Do other pieces of code do something similar, i.e. allocate an entire
-> page because the hibernation code deals with pages? If so, it might be
-> possible to lump all these pieces of data together into a single
-> 'auxiliary' page.
-> 
-> -- 
-> Matt Fleming, Intel Open Source Technology Center
+https://bugzilla.kernel.org/show_bug.cgi?id=103351
 
-Thanks for your suggestions, I will lump all these data to into a single page
-with the key. I want keep all the contents in the page only for hibernation's
-usage but not to share with other subsystem in kernel, that's more safe to avoid
-the key be accessed by with other code.
+Jonas Platte <linux@jonasplatte.de> changed:
 
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |linux@jonasplatte.de
 
-Thanks a lot!
-Joey Lee
+--- Comment #11 from Jonas Platte <linux@jonasplatte.de> ---
+Can reproduce with i7-5775C as well. Adding cpufreq.governor=performance to the
+kernel command line makes the system more stable, but doesn't completely make
+the problem go away.
+
+I was also able to freeze Fedora 22, not with VM, but with chrooting into my
+arch system and running the configure script for glade (which is one of the
+things that reliably freezes my arch install) from there. Running the same
+script with the Fedora autotools and whatever is called by them doesn't freeze
+the system.
+
+FWIW, me and a few other people affected by this were discussing this are also
+discussing thing on the arch linux forums
+(https://bbs.archlinux.org/viewtopic.php?id=201194), and the best guess so far
+has been that this is caused by some exotic CPU instruction used by a core
+library like glibc, which is disabled in the Fedora build of that library.
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
