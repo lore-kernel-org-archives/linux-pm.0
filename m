@@ -1,55 +1,38 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv2 10/10] thermal: ti-soc: Kconfig fix to avoid menu showing wrongly
-Date: Sun, 13 Sep 2015 19:31:39 -0700
-Message-ID: <1442197899-5952-11-git-send-email-edubezval@gmail.com>
+Subject: [PATCHv2 08/10] thermal: qcom_spmi: allow compile test
+Date: Sun, 13 Sep 2015 19:31:37 -0700
+Message-ID: <1442197899-5952-9-git-send-email-edubezval@gmail.com>
 References: <1442197899-5952-1-git-send-email-edubezval@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f49.google.com ([209.85.220.49]:35908 "EHLO
-	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754111AbbINCcI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 13 Sep 2015 22:32:08 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1442197899-5952-1-git-send-email-edubezval@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Rui Zhang <rui.zhang@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, linux-omap@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
+List-Id: linux-pm@vger.kernel.org
 
-Move the dependencies to menu, so we avoid showing it wrongly.
+Adding COMPILE_TEST flag to qcom_spmi driver to facilitate
+maintenance.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
-Cc: linux-omap@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/Kconfig                | 1 +
- drivers/thermal/ti-soc-thermal/Kconfig | 2 --
- 2 files changed, 1 insertion(+), 2 deletions(-)
+ drivers/thermal/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 63b46c0..9453553 100644
+index 202905e8..63b46c0 100644
 --- a/drivers/thermal/Kconfig
 +++ b/drivers/thermal/Kconfig
-@@ -341,6 +341,7 @@ config ACPI_THERMAL_REL
- 	depends on ACPI
+@@ -356,7 +356,7 @@ endmenu
  
- menu "Texas Instruments thermal drivers"
-+depends on ARCH_HAS_BANDGAP || COMPILE_TEST
- source "drivers/thermal/ti-soc-thermal/Kconfig"
- endmenu
- 
-diff --git a/drivers/thermal/ti-soc-thermal/Kconfig b/drivers/thermal/ti-soc-thermal/Kconfig
-index 7a24018..cb6686f 100644
---- a/drivers/thermal/ti-soc-thermal/Kconfig
-+++ b/drivers/thermal/ti-soc-thermal/Kconfig
-@@ -1,7 +1,5 @@
- config TI_SOC_THERMAL
- 	tristate "Texas Instruments SoCs temperature sensor driver"
--	depends on THERMAL
--	depends on ARCH_HAS_BANDGAP || COMPILE_TEST
+ config QCOM_SPMI_TEMP_ALARM
+ 	tristate "Qualcomm SPMI PMIC Temperature Alarm"
+-	depends on OF && SPMI && IIO
++	depends on OF && (SPMI || COMPILE_TEST) && IIO
+ 	select REGMAP_SPMI
  	help
- 	  If you say yes here you get support for the Texas Instruments
- 	  OMAP4460+ on die bandgap temperature sensor support. The register
+ 	  This enables a thermal sysfs driver for Qualcomm plug-and-play (QPNP)
 -- 
 2.5.0
-
