@@ -1,155 +1,50 @@
-From: Alexandra Yates <alexandra.yates@linux.intel.com>
-Subject: [PATCH V11] Report interrupt that caused system wakeup
-Date: Tue, 15 Sep 2015 10:32:46 -0700
-Message-ID: <1442338366-16911-1-git-send-email-alexandra.yates@linux.intel.com>
-References: <[PATCH V11]Report interrupt that caused system wakeup>
+From: Andreas Dannenberg <dannenberg@ti.com>
+Subject: [PATCH v4 03/10] power: bq24257: Add bit definition for temp sense enable
+Date: Tue, 15 Sep 2015 12:58:27 -0500
+Message-ID: <1442339914-25843-4-git-send-email-dannenberg@ti.com>
+References: <1442339914-25843-1-git-send-email-dannenberg@ti.com>
+Mime-Version: 1.0
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:42841 "EHLO mga03.intel.com"
+Received: from comal.ext.ti.com ([198.47.26.152]:33482 "EHLO comal.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751070AbbIORas (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 15 Sep 2015 13:30:48 -0400
-In-Reply-To: <[PATCH V11]Report interrupt that caused system wakeup>
+	id S1751634AbbIOR7Q (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 15 Sep 2015 13:59:16 -0400
+In-Reply-To: <1442339914-25843-1-git-send-email-dannenberg@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, rjw@rjwysocki.net, tglx@linutronix.de, kristen.c.accardi@intel.com
-Cc: Alexandra Yates <alexandra.yates@linux.intel.com>
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Andreas Dannenberg <dannenberg@ti.com>
 
-Add a sysfs attribute, /sys/power/pm_wakeup_irq, reporting the IRQ
-number of the first wakeup interrupt (that is, the first interrupt
-from an IRQ line armed for system wakeup) seen by the kernel during
-the most recent system suspend/resume cycle.
+Adding a missing bit definition for the sake of consistency device model
+vs. bit field representation. No change in functionality.
 
-This feature will be useful for system wakeup diagnostics of
-spurious wakeup interrupts.
-
-Signed-off-by: Alexandra Yates <alexandra.yates@linux.intel.com>
+Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
 ---
- Documentation/ABI/testing/sysfs-power | 12 ++++++++++++
- drivers/base/power/wakeup.c           |  9 +++++++++
- include/linux/suspend.h               |  5 +++++
- kernel/irq/pm.c                       |  2 +-
- kernel/power/main.c                   | 18 ++++++++++++++++++
- 5 files changed, 45 insertions(+), 1 deletion(-)
+ drivers/power/bq24257_charger.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-power b/Documentation/ABI/testing/sysfs-power
-index f455181..50b368d 100644
---- a/Documentation/ABI/testing/sysfs-power
-+++ b/Documentation/ABI/testing/sysfs-power
-@@ -256,3 +256,15 @@ Description:
- 		Writing a "1" enables this printing while writing a "0"
- 		disables it.  The default value is "0".  Reading from this file
- 		will display the current value.
-+
-+What:		/sys/power/pm_wakeup_irq
-+Date:		April 2015
-+Contact:	Alexandra Yates <alexandra.yates@linux.intel.org>
-+Description:
-+		The /sys/power/pm_wakeup_irq file reports to user space the IRQ
-+		number of the first wakeup interrupt (that is, the first
-+		interrupt from an IRQ line armed for system wakeup) seen by the
-+		kernel during the most recent system suspend/resume cycle.
-+
-+		This output is useful for system wakeup diagnostics of spurious
-+		wakeup interrupts.
-diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-index 51f15bc..93cc12d 100644
---- a/drivers/base/power/wakeup.c
-+++ b/drivers/base/power/wakeup.c
-@@ -868,6 +868,15 @@ EXPORT_SYMBOL_GPL(pm_system_wakeup);
- void pm_wakeup_clear(void)
- {
- 	pm_abort_suspend = false;
-+	wakeup_irq = 0;
-+}
-+
-+void pm_system_irq_wakeup(unsigned int irq_number)
-+{
-+	if (wakeup_irq == 0) {
-+		wakeup_irq = irq_number;
-+		pm_system_wakeup();
-+	}
- }
+diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
+index 1b3ddfb..fdfe855 100644
+--- a/drivers/power/bq24257_charger.c
++++ b/drivers/power/bq24257_charger.c
+@@ -63,7 +63,7 @@ enum bq24257_fields {
+ 	F_VBAT, F_USB_DET,					    /* REG 3 */
+ 	F_ICHG, F_ITERM,					    /* REG 4 */
+ 	F_LOOP_STATUS, F_LOW_CHG, F_DPDM_EN, F_CE_STATUS, F_VINDPM, /* REG 5 */
+-	F_X2_TMR_EN, F_TMR, F_SYSOFF, F_TS_STAT,		    /* REG 6 */
++	F_X2_TMR_EN, F_TMR, F_SYSOFF, F_TS_EN, F_TS_STAT,	    /* REG 6 */
+ 	F_VOVP, F_CLR_VDP, F_FORCE_BATDET, F_FORCE_PTM,		    /* REG 7 */
  
- /**
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index 5efe743..686ba2f 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -371,6 +371,9 @@ static inline bool hibernation_available(void) { return false; }
- 
- extern struct mutex pm_mutex;
- 
-+/* IRQ number which causes system wakeup  */
-+extern unsigned int wakeup_irq;
-+
- #ifdef CONFIG_PM_SLEEP
- void save_processor_state(void);
- void restore_processor_state(void);
-@@ -391,6 +394,7 @@ extern bool events_check_enabled;
- extern bool pm_wakeup_pending(void);
- extern void pm_system_wakeup(void);
- extern void pm_wakeup_clear(void);
-+extern void pm_system_irq_wakeup(unsigned int);
- extern bool pm_get_wakeup_count(unsigned int *count, bool block);
- extern bool pm_save_wakeup_count(unsigned int count);
- extern void pm_wakep_autosleep_enabled(bool set);
-@@ -440,6 +444,7 @@ static inline int unregister_pm_notifier(struct notifier_block *nb)
- static inline bool pm_wakeup_pending(void) { return false; }
- static inline void pm_system_wakeup(void) {}
- static inline void pm_wakeup_clear(void) {}
-+static inline void pm_system_irq_wakeup(unsigned int) {}
- 
- static inline void lock_system_sleep(void) {}
- static inline void unlock_system_sleep(void) {}
-diff --git a/kernel/irq/pm.c b/kernel/irq/pm.c
-index 21c6261..e80c440 100644
---- a/kernel/irq/pm.c
-+++ b/kernel/irq/pm.c
-@@ -21,7 +21,7 @@ bool irq_pm_check_wakeup(struct irq_desc *desc)
- 		desc->istate |= IRQS_SUSPENDED | IRQS_PENDING;
- 		desc->depth++;
- 		irq_disable(desc);
--		pm_system_wakeup();
-+		pm_system_irq_wakeup(irq_desc_get_irq(desc));
- 		return true;
- 	}
- 	return false;
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index 63d395b..9880bf8 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -272,6 +272,23 @@ static inline void pm_print_times_init(void)
- {
- 	pm_print_times_enabled = !!initcall_debug;
- }
-+
-+unsigned int wakeup_irq;
-+static ssize_t pm_wakeup_irq_show(struct kobject *kobj,
-+					struct kobj_attribute *attr,
-+					char *buf)
-+{
-+	return wakeup_irq ? sprintf(buf, "%u\n", wakeup_irq) : -ENODATA;
-+}
-+
-+static ssize_t pm_wakeup_irq_store(struct kobject *kobj,
-+					struct kobj_attribute *attr,
-+					const char *buf, size_t n)
-+{
-+	return -EINVAL;
-+}
-+power_attr(pm_wakeup_irq);
-+
- #else /* !CONFIG_PM_SLEEP_DEBUG */
- static inline void pm_print_times_init(void) {}
- #endif /* CONFIG_PM_SLEEP_DEBUG */
-@@ -604,6 +621,7 @@ static struct attribute * g[] = {
- #endif
- #ifdef CONFIG_PM_SLEEP_DEBUG
- 	&pm_print_times_attr.attr,
-+	&pm_wakeup_irq_attr.attr,
- #endif
- #endif
- #ifdef CONFIG_FREEZER
+ 	F_MAX_FIELDS
+@@ -153,6 +153,7 @@ static const struct reg_field bq24257_reg_fields[] = {
+ 	[F_X2_TMR_EN]		= REG_FIELD(BQ24257_REG_6, 7, 7),
+ 	[F_TMR]			= REG_FIELD(BQ24257_REG_6, 5, 6),
+ 	[F_SYSOFF]		= REG_FIELD(BQ24257_REG_6, 4, 4),
++	[F_TS_EN]		= REG_FIELD(BQ24257_REG_6, 3, 3),
+ 	[F_TS_STAT]		= REG_FIELD(BQ24257_REG_6, 0, 2),
+ 	/* REG 7 */
+ 	[F_VOVP]		= REG_FIELD(BQ24257_REG_7, 5, 7),
 -- 
 1.9.1
 
