@@ -1,35 +1,18 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: pass policy to ->get() driver callback
-Date: Tue, 15 Sep 2015 13:28:49 +0530
-Message-ID: <20150915075849.GC6350@linux>
-References: <98e79b26d8250c33001c7a50378b0e288b8511db.1438339396.git.viresh.kumar@linaro.org>
- <11470100.cEo24Tpcgr@vostro.rjw.lan>
- <20150910012222.GN5266@linux>
- <1725227.VMGKuhRxma@vostro.rjw.lan>
- <20150911161802.GR9650@linux>
- <20150915073921.GA6350@linux>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20150915073921.GA6350@linux>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Kristen Carlson Accardi <kristen@linux.intel.com>, open list <linux-kernel@vger.kernel.org>, Sudeep Holla <sudeep.holla@arm.com>
+Subject: [PATCH] cpufreq: cpufreq_cpu_get_raw() isn't a static function anymore
+Date: Tue, 15 Sep 2015 13:40:16 +0530
+Message-ID: <d7e3e729d09d15cfc73ebaf251a2bb4d33ec54a9.1442303903.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:35657 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751961AbbIOIKa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2015 04:10:30 -0400
+Received: by pacfv12 with SMTP id fv12so173136878pac.2
+        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2015 01:10:30 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-
-On 15-09-15, 13:09, Viresh Kumar wrote:
-> I would have sent a patch for this, but I thought you would like to
-> edit the original patch itself to not break git bisect.
-
-But in case you are applying it separately, here is the fix.
-
--------------------------8<-------------------------
-
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Date: Tue, 15 Sep 2015 13:09:54 +0530
-Subject: [PATCH] cpufreq: cpufreq_cpu_get_raw() isn't a static function
- anymore
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, alexandra.yates@linux.intel.com, Viresh Kumar <viresh.kumar@linaro.org>, open list <linux-kernel@vger.kernel.org>
 
 Its used outside of the core file and is exported as well. Drop the
 'static' keyword from its declaration and fix below build error:
@@ -56,3 +39,6 @@ index a8252bb0f80c..ef5ed9470de9 100644
  {
  	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
  
+-- 
+2.4.0
+
