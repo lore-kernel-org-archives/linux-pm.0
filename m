@@ -1,117 +1,106 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: Re: [PATCH v4 7/7] power: bq27xxx_battery: Add interrupt handling
- support
-Date: Tue, 15 Sep 2015 15:53:06 -0500
-Message-ID: <55F88532.5010507@ti.com>
-References: <1442265973-32261-1-git-send-email-afd@ti.com>
- <1442265973-32261-8-git-send-email-afd@ti.com> <20150915184714.GB18055@beast>
+From: Al Stone <ahs3@redhat.com>
+Subject: Re: [PATCH v3 0/5] ACPI: Provide better MADT subtable sanity checks
+Date: Tue, 15 Sep 2015 15:13:12 -0600
+Message-ID: <55F889E8.3070706@redhat.com>
+References: <1441832991-28200-1-git-send-email-al.stone@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:38068 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751670AbbIOUxf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2015 16:53:35 -0400
-In-Reply-To: <20150915184714.GB18055@beast>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-ia64-owner@vger.kernel.org>
+In-Reply-To: <1441832991-28200-1-git-send-email-al.stone@linaro.org>
+Sender: linux-ia64-owner@vger.kernel.org
+To: Al Stone <al.stone@linaro.org>, linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org, linux-pm@vger.kernel.org, linaro-acpi@lists.linaro.org, linaro-kernel@lists.linaro.org, patches@linaro.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "lenb@kernel.org" <lenb@kernel.org>, "tony.luck@intel.com" <tony.luck@intel.com>, "fenghua.yu@intel.com" <fenghua.yu@intel.com>, Pavel Machek <pavel@ucw.cz>, "tglx@linutronix.de" <tglx@linutronix.de>, mingo@redhat.com, "H. Peter Anvin" <hpa@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Andreas Dannenberg <dannenberg@ti.com>
-Cc: =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Dan Murphy <dmurphy@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 09/15/2015 01:47 PM, Andreas Dannenberg wrote:
-> On Mon, Sep 14, 2015 at 04:26:13PM -0500, Andrew F. Davis wrote:
->> Some devices have a pin that can generate an interrupt when
->> the battery's status changes. Add an interrupt handler to
->> read the new battery status.
->>
->> Signed-off-by: Andrew F. Davis <afd@ti.com>
->> ---
->>   drivers/power/bq27xxx_battery.c | 23 +++++++++++++++++++++++
->>   1 file changed, 23 insertions(+)
->>
->> diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27xxx_battery.c
->> index 10be8a6..29fdcd7 100644
->> --- a/drivers/power/bq27xxx_battery.c
->> +++ b/drivers/power/bq27xxx_battery.c
->> @@ -48,6 +48,7 @@
->>   #include <linux/idr.h>
->>   #include <linux/i2c.h>
->>   #include <linux/slab.h>
->> +#include <linux/interrupt.h>
->>   #include <asm/unaligned.h>
->>
->>   #include <linux/power/bq27xxx_battery.h>
->> @@ -732,6 +733,15 @@ static void bq27xxx_battery_update(struct bq27xxx_device_info *di)
->>   	di->last_update = jiffies;
->>   }
->>
->> +static irqreturn_t bq27xxx_battery_irq_handler_thread(int irq, void *data)
->> +{
->> +	struct bq27xxx_device_info *di = data;
->> +
->> +	bq27xxx_battery_update(di);
->> +
->> +	return IRQ_HANDLED;
->> +}
->> +
->>   static void bq27xxx_battery_poll(struct work_struct *work)
->>   {
->>   	struct bq27xxx_device_info *di =
->> @@ -1137,6 +1147,19 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
->>
->>   	i2c_set_clientdata(client, di);
->>
->> +	if (client->irq) {
->> +		retval = devm_request_threaded_irq(&client->dev, client->irq,
->> +				NULL, bq27xxx_battery_irq_handler_thread,
->> +				IRQF_ONESHOT,
->> +				name, di);
->
-> Hi Andrew,
-> I think it'll be better if you explicitly specify the rising vs. falling
-> edge interrupt flags according to exactly what the bq27xxx will trigger
-> on to ensure the corresponding GPIO module is always configured properly.
->
+On 09/09/2015 03:09 PM, Al Stone wrote:
+> Currently, the BAD_MADT_ENTRY macro is used to do a very simple sanity
+> check on the various subtables that are defined for the MADT.  The check
+> compares the size of the subtable data structure as defined by ACPICA to
+> the length entry in the subtable.  If they are not the same, the assumption
+> is that the subtable is incorrect.
+> 
+> Over time, the ACPI spec has allowed for MADT subtables where this can
+> never be true (the local SAPIC subtable, for example).  Or, more recently,
+> the spec has accumulated some minor flaws where there are three possible 
+> sizes for a subtable, all of which are valid, but only for specific versions
+> of the spec (the GICC subtable).  In both cases, BAD_MADT_ENTRY reports these
+> subtables as bad when they are not.  In order to retain some sanity check
+> on the MADT subtables, we now have to special case these subtables.  Of
+> necessity, these special cases have ended up in arch-dependent code (arm64)
+> or an arch has simply decided to forgo the check (ia64).
+> 
+> This patch set replaces the BAD_MADT_ENTRY macro with a function called
+> bad_madt_entry().  This function uses a data set of details about the
+> subtables to provide more sanity checking than before:
+> 
+> 	-- is the subtable legal for the version given in the FADT?
+> 
+> 	-- is the subtable legal for the revision of the MADT in use?
+> 
+> 	-- is the subtable of the proper length (including checking
+> 	   on the one variable length subtable that is currently ignored),
+> 	   given the FADT version and the MADT revision?
+> 
+> Further, this patch set adds in the call to bad_madt_entry() from the 
+> acpi_table_parse_madt() function, allowing it to be used consistently
+> by all architectures, for all subtables, and removing the need for each
+> of the subtable traversal callback functions to use BAD_MADT_ENTRY.
+> 
+> In theory, as the ACPI specification changes, we would only have to add
+> additional information to the data set describing the MADT subtables in
+> order to continue providing sanity checks, even when new subtables are
+> added.
+> 
+> These patches have been tested on an APM Mustang (arm64) and are known to
+> work there.  They have also been cross-compiled for x86 and ia64 with no
+> known failures.
+> 
+> Changes for v3:
+>    -- Reviewed-and-tested-by from Sudeep Holla for arm64 parts
+>    -- Clearer language in error messages (Graeme Gregory, Timur Tabi)
+>    -- Double checked that inserting call to bad_madt_entry() into the
+>       function acpi_parse_entries() does not impact current behavior
+>       (Sudeep Holla)
+>    
+> Changes for v2:
+>    -- Acked-by on 2/5 from Marc Zyngier and Catalin Marinas for ARM
+>    -- Correct faulty end of loop test found by Timur Tabi
+> 
+> 
+> Al Stone (5):
+>   ACPI: add in a bad_madt_entry() function to eventually replace the
+>     macro
+>   ACPI / ARM64: remove usage of BAD_MADT_ENTRY/BAD_MADT_GICC_ENTRY
+>   ACPI / IA64: remove usage of BAD_MADT_ENTRY
+>   ACPI / X86: remove usage of BAD_MADT_ENTRY
+>   ACPI: remove definition of BAD_MADT_ENTRY macro
+> 
+>  arch/arm64/include/asm/acpi.h |   8 --
+>  arch/arm64/kernel/smp.c       |   2 -
+>  arch/ia64/kernel/acpi.c       |  20 ----
+>  arch/x86/kernel/acpi/boot.c   |  27 -----
+>  drivers/acpi/tables.c         | 245 +++++++++++++++++++++++++++++++++++++++++-
+>  drivers/irqchip/irq-gic.c     |   6 --
+>  include/linux/acpi.h          |   4 -
+>  7 files changed, 244 insertions(+), 68 deletions(-)
+> 
 
-That was how I was going to have it, but this may be device dependent, so
-I decided to leave it up to the interrupt controller and set it with DT:
+Ping?  Any additional comments on this version?  I have only received
+feedback from arm64 reviewers so far, over three revisions, even though
+everyone that needs to be (ACPI, ia64, x86) has also been CCd.
 
-interrupts = <28 IRQ_TYPE_EDGE_FALLING>;
+Anyone else before I fix a couple of things for v4 that the arm64 folks
+found?  ACKs?  NAKs?  Please don't bother me, I'm in the merge window :)?
 
-> While we are at it, was the platform-data based initialization in
-> conjunction with interrupts tested?
->
+Thanks.
 
-The only time we initialize with platform-data is when we are wired
-with HDQ, in that case this IRQ code does not get called, so nothing
-changes.
-
-Regards,
-Andrew
-
-> Regards,
->
-> --
-> Andreas Dannenberg
-> Texas Instruments Inc
->
->
->> +		if (retval) {
->> +			dev_err(&client->dev,
->> +				"Unable to register IRQ %d error %d\n",
->> +				client->irq, retval);
->> +			return retval;
->> +		}
->> +	}
->> +
->>   	return 0;
->>
->>   batt_failed:
->> --
->> 1.9.1
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+ciao,
+al
+-----------------------------------
+Al Stone
+Software Engineer
+Red Hat, Inc.
+ahs3@redhat.com
+-----------------------------------
