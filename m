@@ -1,247 +1,102 @@
 From: Andreas Dannenberg <dannenberg@ti.com>
-Subject: [PATCH v4 10/10] power: bq24257: Add platform data based initialization
-Date: Tue, 15 Sep 2015 12:58:34 -0500
-Message-ID: <1442339914-25843-11-git-send-email-dannenberg@ti.com>
-References: <1442339914-25843-1-git-send-email-dannenberg@ti.com>
+Subject: Re: [PATCH v4 7/7] power: bq27xxx_battery: Add interrupt handling
+ support
+Date: Tue, 15 Sep 2015 13:47:15 -0500
+Message-ID: <20150915184714.GB18055@beast>
+References: <1442265973-32261-1-git-send-email-afd@ti.com>
+ <1442265973-32261-8-git-send-email-afd@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:33502 "EHLO comal.ext.ti.com"
+Received: from arroyo.ext.ti.com ([192.94.94.40]:48926 "EHLO arroyo.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751810AbbIOR7q (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 15 Sep 2015 13:59:46 -0400
-In-Reply-To: <1442339914-25843-1-git-send-email-dannenberg@ti.com>
+	id S1751834AbbIOSrn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 15 Sep 2015 14:47:43 -0400
+Content-Disposition: inline
+In-Reply-To: <1442265973-32261-8-git-send-email-afd@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Andreas Dannenberg <dannenberg@ti.com>
+To: "Andrew F. Davis" <afd@ti.com>
+Cc: Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Dan Murphy <dmurphy@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The patch adds a way to setup and initialize the device through the use
-of platform data with configuration options equivalent to when using
-device firmware (DT or ACPI) for systems where this is not available.
+On Mon, Sep 14, 2015 at 04:26:13PM -0500, Andrew F. Davis wrote:
+> Some devices have a pin that can generate an interrupt when
+> the battery's status changes. Add an interrupt handler to
+> read the new battery status.
+> 
+> Signed-off-by: Andrew F. Davis <afd@ti.com>
+> ---
+>  drivers/power/bq27xxx_battery.c | 23 +++++++++++++++++++++++
+>  1 file changed, 23 insertions(+)
+> 
+> diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27xxx_battery.c
+> index 10be8a6..29fdcd7 100644
+> --- a/drivers/power/bq27xxx_battery.c
+> +++ b/drivers/power/bq27xxx_battery.c
+> @@ -48,6 +48,7 @@
+>  #include <linux/idr.h>
+>  #include <linux/i2c.h>
+>  #include <linux/slab.h>
+> +#include <linux/interrupt.h>
+>  #include <asm/unaligned.h>
+>  
+>  #include <linux/power/bq27xxx_battery.h>
+> @@ -732,6 +733,15 @@ static void bq27xxx_battery_update(struct bq27xxx_device_info *di)
+>  	di->last_update = jiffies;
+>  }
+>  
+> +static irqreturn_t bq27xxx_battery_irq_handler_thread(int irq, void *data)
+> +{
+> +	struct bq27xxx_device_info *di = data;
+> +
+> +	bq27xxx_battery_update(di);
+> +
+> +	return IRQ_HANDLED;
+> +}
+> +
+>  static void bq27xxx_battery_poll(struct work_struct *work)
+>  {
+>  	struct bq27xxx_device_info *di =
+> @@ -1137,6 +1147,19 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
+>  
+>  	i2c_set_clientdata(client, di);
+>  
+> +	if (client->irq) {
+> +		retval = devm_request_threaded_irq(&client->dev, client->irq,
+> +				NULL, bq27xxx_battery_irq_handler_thread,
+> +				IRQF_ONESHOT,
+> +				name, di);
 
-Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
----
- drivers/power/bq24257_charger.c       | 117 ++++++++++++++++++++++++++++++----
- include/linux/power/bq24257_charger.h |  29 +++++++++
- 2 files changed, 135 insertions(+), 11 deletions(-)
- create mode 100644 include/linux/power/bq24257_charger.h
+Hi Andrew,
+I think it'll be better if you explicitly specify the rising vs. falling
+edge interrupt flags according to exactly what the bq27xxx will trigger
+on to ensure the corresponding GPIO module is always configured properly.
 
-diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
-index a0cb33c..fa18b1f 100644
---- a/drivers/power/bq24257_charger.c
-+++ b/drivers/power/bq24257_charger.c
-@@ -27,10 +27,13 @@
- #include <linux/gpio/consumer.h>
- #include <linux/interrupt.h>
- #include <linux/delay.h>
-+#include <linux/gpio.h>
- 
- #include <linux/acpi.h>
- #include <linux/of.h>
- 
-+#include <linux/power/bq24257_charger.h>
-+
- #define BQ24257_REG_1			0x00
- #define BQ24257_REG_2			0x01
- #define BQ24257_REG_3			0x02
-@@ -877,28 +880,112 @@ static int bq24257_power_supply_init(struct bq24257_device *bq)
- 
- static int bq24257_irq_probe(struct bq24257_device *bq)
- {
-+	struct bq24257_platform_data *pdata = bq->client->dev.platform_data;
- 	struct gpio_desc *stat_irq;
-+	int ret;
-+
-+	if (!pdata) {
-+		stat_irq = devm_gpiod_get_index(bq->dev, BQ24257_STAT_IRQ, 0,
-+						GPIOD_IN);
-+		if (IS_ERR(stat_irq)) {
-+			dev_err(bq->dev, "could not probe stat_irq pin\n");
-+			return PTR_ERR(stat_irq);
-+		}
-+	} else {
-+		if (!gpio_is_valid(pdata->stat_gpio)) {
-+			dev_err(bq->dev, "invalid stat_irq pin\n");
-+			return -EINVAL;
-+		}
- 
--	stat_irq = devm_gpiod_get_index(bq->dev, BQ24257_STAT_IRQ, 0, GPIOD_IN);
--	if (IS_ERR(stat_irq)) {
--		dev_err(bq->dev, "could not probe stat_irq pin\n");
--		return PTR_ERR(stat_irq);
-+		ret = devm_gpio_request_one(bq->dev, pdata->stat_gpio,
-+					    GPIOD_IN, BQ24257_STAT_IRQ);
-+		if (ret) {
-+			dev_err(bq->dev, "stat_irq pin request failed\n");
-+			return ret;
-+		}
-+
-+		stat_irq = gpio_to_desc(pdata->stat_gpio);
-+		if (!stat_irq) {
-+			dev_err(bq->dev,
-+				"could not get stat_irq pin descriptor\n");
-+			return -EINVAL;
-+		}
- 	}
- 
-+	dev_dbg(bq->dev, "probed stat_irq pin = %d", desc_to_gpio(stat_irq));
-+
- 	return gpiod_to_irq(stat_irq);
- }
- 
- static int bq24257_pg_gpio_probe(struct bq24257_device *bq)
- {
--	bq->pg = devm_gpiod_get_index(bq->dev, BQ24257_PG_GPIO, 0, GPIOD_IN);
--	if (IS_ERR(bq->pg)) {
--		dev_info(bq->dev, "could not probe PG pin\n");
--		return PTR_ERR(bq->pg);
-+	struct bq24257_platform_data *pdata = bq->client->dev.platform_data;
-+	int ret;
-+
-+	if (!pdata) {
-+		bq->pg = devm_gpiod_get_index(bq->dev, BQ24257_PG_GPIO, 0,
-+					      GPIOD_IN);
-+		if (IS_ERR(bq->pg)) {
-+			dev_info(bq->dev, "could not probe PG pin\n");
-+			return PTR_ERR(bq->pg);
-+		}
-+	} else {
-+		if (!gpio_is_valid(pdata->pg_gpio)) {
-+			dev_info(bq->dev, "invalid PG pin\n");
-+			return -EINVAL;
-+		}
-+
-+		ret = devm_gpio_request_one(bq->dev, pdata->pg_gpio,
-+					    GPIOD_IN, BQ24257_PG_GPIO);
-+		if (ret) {
-+			dev_info(bq->dev, "PG pin request failed\n");
-+			return ret;
-+		}
-+
-+		bq->pg = gpio_to_desc(pdata->pg_gpio);
-+		if (!bq->pg) {
-+			dev_info(bq->dev, "could not get PG pin descriptor\n");
-+			return -EINVAL;
-+		}
- 	}
- 
-+	dev_dbg(bq->dev, "probed PG pin = %d", desc_to_gpio(bq->pg));
-+
- 	return 0;
- }
- 
-+static void bq24257_pdata_probe(struct bq24257_device *bq,
-+				struct bq24257_platform_data *pdata)
-+{
-+	bq->init_data.ichg = bq24257_find_idx(pdata->ichg,
-+					      bq24257_ichg_map,
-+					      BQ24257_ICHG_MAP_SIZE);
-+
-+	bq->init_data.vbat = bq24257_find_idx(pdata->vbat,
-+					      bq24257_vbat_map,
-+					      BQ24257_VBAT_MAP_SIZE);
-+
-+	bq->init_data.iterm = bq24257_find_idx(pdata->iterm,
-+					       bq24257_iterm_map,
-+					       BQ24257_ITERM_MAP_SIZE);
-+
-+	bq->init_data.in_ilimit = bq24257_find_idx(pdata->in_ilimit,
-+						   bq24257_iilimit_map,
-+						   BQ24257_IILIMIT_MAP_SIZE);
-+
-+	bq->init_data.vovp = bq24257_find_idx(pdata->vovp,
-+					      bq24257_vovp_map,
-+					      BQ24257_VOVP_MAP_SIZE);
-+
-+	bq->init_data.vindpm = bq24257_find_idx(pdata->vindpm,
-+						bq24257_vindpm_map,
-+						BQ24257_VINDPM_MAP_SIZE);
-+
-+	bq->in_ilimit_autoset_disable = pdata->in_ilimit_autoset_disable;
-+
-+	bq->pg_gpio_disable = pdata->pg_gpio_disable;
-+}
-+
- static int bq24257_fw_probe(struct bq24257_device *bq)
- {
- 	int ret;
-@@ -974,6 +1061,7 @@ static int bq24257_probe(struct i2c_client *client,
- 	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
- 	struct device *dev = &client->dev;
- 	const struct acpi_device_id *acpi_id;
-+	struct bq24257_platform_data *pdata = client->dev.platform_data;
- 	struct bq24257_device *bq;
- 	int ret;
- 	int i;
-@@ -1023,14 +1111,15 @@ static int bq24257_probe(struct i2c_client *client,
- 
- 	i2c_set_clientdata(client, bq);
- 
--	if (!dev->platform_data) {
-+	if (!pdata) {
- 		ret = bq24257_fw_probe(bq);
- 		if (ret < 0) {
- 			dev_err(dev, "Cannot read device properties.\n");
- 			return ret;
- 		}
- 	} else {
--		return -ENODEV;
-+		dev_dbg(dev, "init using platform data\n");
-+		bq24257_pdata_probe(bq, pdata);
- 	}
- 
- 	/*
-@@ -1087,7 +1176,13 @@ static int bq24257_probe(struct i2c_client *client,
- 		return ret;
- 	}
- 
--	if (client->irq <= 0)
-+	/*
-+	 * When using device firmware we either take the IRQ specified directly
-+	 * or probe for a pin named BQ24257_STAT_IRQ. In case of using platform
-+	 * data always run the IRQ pin probe function to finish IRQ and GPIO
-+	 * setup based on the stat pin specified in the platform data.
-+	 */
-+	if (client->irq <= 0 || pdata)
- 		client->irq = bq24257_irq_probe(bq);
- 
- 	if (client->irq < 0) {
-diff --git a/include/linux/power/bq24257_charger.h b/include/linux/power/bq24257_charger.h
-new file mode 100644
-index 0000000..d4f3703
---- /dev/null
-+++ b/include/linux/power/bq24257_charger.h
-@@ -0,0 +1,29 @@
-+/*
-+ * Platform data for the TI bq24257 battery charger driver.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#ifndef _BQ24257_CHARGER_H_
-+#define _BQ24257_CHARGER_H_
-+
-+#include <asm/types.h>
-+#include <linux/types.h>
-+
-+struct bq24257_platform_data {
-+	u32 ichg;				       /* charge current (uA) */
-+	u32 vbat;				   /* regulation voltage (uV) */
-+	u32 iterm;				  /* termination current (uA) */
-+	u32 in_ilimit;				  /* input current limit (uA) */
-+	u32 vovp;		      /* over voltage protection voltage (uV) */
-+	u32 vindpm;			 /* VDMP input threshold voltage (uV) */
-+	bool in_ilimit_autoset_disable;	/* auto-detect of input current limit */
-+	bool pg_gpio_disable;	     /* use of a dedicated pin for Power Good */
-+
-+	int stat_gpio;				  /* stat_int (interrupt) pin */
-+	int pg_gpio;					    /* power good pin */
-+};
-+
-+#endif
--- 
-1.9.1
+While we are at it, was the platform-data based initialization in
+conjunction with interrupts tested?
 
+Regards,
+
+--
+Andreas Dannenberg
+Texas Instruments Inc
+
+
+> +		if (retval) {
+> +			dev_err(&client->dev,
+> +				"Unable to register IRQ %d error %d\n",
+> +				client->irq, retval);
+> +			return retval;
+> +		}
+> +	}
+> +
+>  	return 0;
+>  
+>  batt_failed:
+> -- 
+> 1.9.1
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
