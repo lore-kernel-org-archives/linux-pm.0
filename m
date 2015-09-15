@@ -1,38 +1,56 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] power: align wakeup_sources format
-Date: Tue, 15 Sep 2015 13:19:15 +0200
-Message-ID: <20150915111915.GB32689@amd>
-References: <1439542767-689-1-git-send-email-check.kernel@gmail.com>
+Subject: Re: [PATCHv3 1/1] ti-soc-thermal: implement omap3 support
+Date: Tue, 15 Sep 2015 13:24:16 +0200
+Message-ID: <20150915112416.GC32689@amd>
+References: <1441861089-23868-1-git-send-email-edubezval@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:41890 "EHLO
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42042 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751480AbbIOLTS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2015 07:19:18 -0400
+	with ESMTP id S1751054AbbIOLYS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2015 07:24:18 -0400
 Content-Disposition: inline
-In-Reply-To: <1439542767-689-1-git-send-email-check.kernel@gmail.com>
+In-Reply-To: <1441861089-23868-1-git-send-email-edubezval@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: check.kernel@gmail.com
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, Ethan du <duhui@xiaomi.com>, Linghua Gu <gulinghua@xiaomi.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, yangdongdong <yangdongdong@xiaomi.com>
+To: Eduardo Valentin <edubezval@gmail.com>, pali.rohar@gmail.com
+Cc: Rui Zhang <rui.zhang@intel.com>, linux-omap@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On Fri 2015-08-14 16:59:27, check.kernel@gmail.com wrote:
-> From: yangdongdong <yangdongdong@xiaomi.com>
+On Wed 2015-09-09 21:58:09, Eduardo Valentin wrote:
+> From: Pavel Machek <pavel@ucw.cz>
 > 
-> This aligns every column of elements in wakeup_sources to
-> conveniently check any specific column for suspicious power
-> consumption wakeup source or for other easily readable purpose.
+> This adds support for OMAP3 chips to ti-soc-thermal. As requested by
+> TI people, it is marked unreliable and warning is printed.
 > 
-> Signed-off-by: Dongdong Yang <yangdongdong@xiaomi.com>
-> Signed-off-by: Linghua Gu <gulinghua@xiaomi.com>
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-omap@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Signed-off-by: Pavel Machek <pavel@ucw.cz>
+> Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 > ---
->  drivers/base/power/wakeup.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  .../devicetree/bindings/thermal/ti_soc_thermal.txt |   7 ++
+>  drivers/thermal/ti-soc-thermal/Kconfig             |  15 +++
+>  drivers/thermal/ti-soc-thermal/Makefile            |   1 +
+>  .../thermal/ti-soc-thermal/omap3-thermal-data.c    | 103 +++++++++++++++++++++
+>  drivers/thermal/ti-soc-thermal/ti-bandgap.c        |  10 ++
+>  drivers/thermal/ti-soc-thermal/ti-bandgap.h        |   9 ++
+>  6 files changed, 145 insertions(+)
+>  create mode 100644 drivers/thermal/ti-soc-thermal/omap3-thermal-data.c
+> ---
+> 
+> Just not leave Pavels work behind, I took his patch and amended a couple
+> of things:
+> (1) added the omap3 DT example
+> (2) improved the dev_warn message
+> (3) improved the code documentation
 
-Its debugfs, so format update should be ok.
+Thanks!
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+Is it on its way to mainline or is there something more to do?
+
+									Pavel
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
