@@ -1,175 +1,162 @@
 From: Andreas Dannenberg <dannenberg@ti.com>
-Subject: [PATCH v4 02/10] power: bq24257: Add basic support for bq24250/bq24251
-Date: Tue, 15 Sep 2015 12:58:26 -0500
-Message-ID: <1442339914-25843-3-git-send-email-dannenberg@ti.com>
+Subject: [PATCH v4 06/10] power: bq24257: Add over voltage protection setting support
+Date: Tue, 15 Sep 2015 12:58:30 -0500
+Message-ID: <1442339914-25843-7-git-send-email-dannenberg@ti.com>
 References: <1442339914-25843-1-git-send-email-dannenberg@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:43947 "EHLO bear.ext.ti.com"
+Received: from arroyo.ext.ti.com ([192.94.94.40]:47116 "EHLO arroyo.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752549AbbIOR7U (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 15 Sep 2015 13:59:20 -0400
+	id S1752582AbbIOR7f (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 15 Sep 2015 13:59:35 -0400
 In-Reply-To: <1442339914-25843-1-git-send-email-dannenberg@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 Cc: Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Andreas Dannenberg <dannenberg@ti.com>
 
-This patch adds basic support for bq24250 and bq24251 which are very
-similar to the bq24257 the driver was originally written for. Basic
-support means the ability to select a device through Kconfig, DT and
-ACPI, an instance variable allowing to check which chip is active, and
-the reporting back of the selected device through the
-POWER_SUPPLY_PROP_MODEL_NAME power supply sysfs property.
+A new optional device property called "ti,ovp-voltage" is introduced to
+allow configuring the input over voltage protection setting.
 
-This patch by itself is not sufficient to actually use those two added
-devices in a real-world setting due to some feature differences which
-are addressed by other patches in this series.
+This commit also adds the basic sysfs support for custom properties
+which is being used to allow userspace to read the current ovp-voltage
+setting.
 
 Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
 ---
- drivers/power/Kconfig           |  5 +++--
- drivers/power/bq24257_charger.c | 46 +++++++++++++++++++++++++++++++++++++++--
- 2 files changed, 47 insertions(+), 4 deletions(-)
+ drivers/power/bq24257_charger.c | 67 +++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 64 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-index f8758d6..7ecd9b6 100644
---- a/drivers/power/Kconfig
-+++ b/drivers/power/Kconfig
-@@ -397,12 +397,13 @@ config CHARGER_BQ24190
- 	  Say Y to enable support for the TI BQ24190 battery charger.
- 
- config CHARGER_BQ24257
--	tristate "TI BQ24257 battery charger driver"
-+	tristate "TI BQ24250/24251/24257 battery charger driver"
- 	depends on I2C
- 	depends on GPIOLIB || COMPILE_TEST
- 	depends on REGMAP_I2C
- 	help
--	  Say Y to enable support for the TI BQ24257 battery charger.
-+	  Say Y to enable support for the TI BQ24250, BQ24251, and BQ24257 battery
-+	  chargers.
- 
- config CHARGER_BQ24735
- 	tristate "TI BQ24735 battery charger support"
 diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
-index 5859bc7..1b3ddfb 100644
+index d7488cf..47af858 100644
 --- a/drivers/power/bq24257_charger.c
 +++ b/drivers/power/bq24257_charger.c
-@@ -13,6 +13,10 @@
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  * GNU General Public License for more details.
-  *
-+ * Datasheets:
-+ * http://www.ti.com/product/bq24250
-+ * http://www.ti.com/product/bq24251
-+ * http://www.ti.com/product/bq24257
-  */
+@@ -75,6 +75,7 @@ struct bq24257_init_data {
+ 	u8 vbat;	/* regulation voltage  */
+ 	u8 iterm;	/* termination current */
+ 	u8 in_ilimit;	/* input current limit */
++	u8 vovp;	/* over voltage protection voltage */
+ };
  
- #include <linux/module.h>
-@@ -41,6 +45,18 @@
+ struct bq24257_state {
+@@ -198,6 +199,13 @@ static const u32 bq24257_iilimit_map[] = {
  
- #define BQ24257_ILIM_SET_DELAY		1000	/* msec */
+ #define BQ24257_IILIMIT_MAP_SIZE	ARRAY_SIZE(bq24257_iilimit_map)
  
-+enum bq2425x_chip {
-+	BQ24250,
-+	BQ24251,
-+	BQ24257,
++static const u32 bq24257_vovp_map[] = {
++	6000000, 6500000, 7000000, 8000000, 9000000, 9500000, 10000000,
++	10500000
 +};
 +
-+static const char *const bq2425x_chip_name[] = {
-+	"bq24250",
-+	"bq24251",
-+	"bq24257",
-+};
++#define BQ24257_VOVP_MAP_SIZE		ARRAY_SIZE(bq24257_vovp_map)
 +
- enum bq24257_fields {
- 	F_WD_FAULT, F_WD_EN, F_STAT, F_FAULT,			    /* REG 1 */
- 	F_RESET, F_IILIMIT, F_EN_STAT, F_EN_TERM, F_CE, F_HZ_MODE,  /* REG 2 */
-@@ -71,6 +87,8 @@ struct bq24257_device {
- 	struct device *dev;
- 	struct power_supply *charger;
- 
-+	enum bq2425x_chip chip;
-+
- 	struct regmap *rmap;
- 	struct regmap_field *rmap_fields[F_MAX_FIELDS];
- 
-@@ -249,6 +267,10 @@ static int bq24257_power_supply_get_property(struct power_supply *psy,
- 		val->strval = BQ24257_MANUFACTURER;
- 		break;
- 
-+	case POWER_SUPPLY_PROP_MODEL_NAME:
-+		val->strval = bq2425x_chip_name[bq->chip];
-+		break;
-+
- 	case POWER_SUPPLY_PROP_ONLINE:
- 		val->intval = state.power_good;
- 		break;
-@@ -569,6 +591,7 @@ static int bq24257_hw_init(struct bq24257_device *bq)
- 
- static enum power_supply_property bq24257_power_supply_props[] = {
- 	POWER_SUPPLY_PROP_MANUFACTURER,
-+	POWER_SUPPLY_PROP_MODEL_NAME,
- 	POWER_SUPPLY_PROP_STATUS,
- 	POWER_SUPPLY_PROP_ONLINE,
- 	POWER_SUPPLY_PROP_HEALTH,
-@@ -666,6 +689,7 @@ static int bq24257_probe(struct i2c_client *client,
+ static int bq24257_field_read(struct bq24257_device *bq,
+ 			      enum bq24257_fields field_id)
  {
- 	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
- 	struct device *dev = &client->dev;
-+	const struct acpi_device_id *acpi_id;
- 	struct bq24257_device *bq;
- 	int ret;
- 	int i;
-@@ -682,6 +706,18 @@ static int bq24257_probe(struct i2c_client *client,
- 	bq->client = client;
- 	bq->dev = dev;
+@@ -413,6 +421,17 @@ enum bq24257_in_ilimit {
+ 	IILIMIT_NONE,
+ };
  
-+	if (ACPI_HANDLE(dev)) {
-+		acpi_id = acpi_match_device(dev->driver->acpi_match_table,
-+					    &client->dev);
-+		if (!acpi_id) {
-+			dev_err(dev, "Failed to match ACPI device\n");
-+			return -ENODEV;
-+		}
-+		bq->chip = (enum bq2425x_chip)acpi_id->driver_data;
-+	} else {
-+		bq->chip = (enum bq2425x_chip)id->driver_data;
++enum bq24257_vovp {
++	VOVP_6000,
++	VOVP_6500,
++	VOVP_7000,
++	VOVP_8000,
++	VOVP_9000,
++	VOVP_9500,
++	VOVP_10000,
++	VOVP_10500
++};
++
+ enum bq24257_port_type {
+ 	PORT_TYPE_DCP,		/* Dedicated Charging Port */
+ 	PORT_TYPE_CDP,		/* Charging Downstream Port */
+@@ -594,7 +613,8 @@ static int bq24257_hw_init(struct bq24257_device *bq)
+ 	} init_data[] = {
+ 		{F_ICHG, bq->init_data.ichg},
+ 		{F_VBAT, bq->init_data.vbat},
+-		{F_ITERM, bq->init_data.iterm}
++		{F_ITERM, bq->init_data.iterm},
++		{F_VOVP, bq->init_data.vovp},
+ 	};
+ 
+ 	/*
+@@ -664,6 +684,28 @@ static const struct power_supply_desc bq24257_power_supply_desc = {
+ 	.get_property = bq24257_power_supply_get_property,
+ };
+ 
++static ssize_t bq24257_show_ovp_voltage(struct device *dev,
++					struct device_attribute *attr,
++					char *buf)
++{
++	struct power_supply *psy = dev_get_drvdata(dev);
++	struct bq24257_device *bq = power_supply_get_drvdata(psy);
++
++	return scnprintf(buf, PAGE_SIZE, "%d\n",
++			 bq24257_vovp_map[bq->init_data.vovp]);
++}
++
++static DEVICE_ATTR(ovp_voltage, S_IRUGO, bq24257_show_ovp_voltage, NULL);
++
++static struct attribute *bq24257_charger_attr[] = {
++	&dev_attr_ovp_voltage.attr,
++	NULL,
++};
++
++static const struct attribute_group bq24257_attr_group = {
++	.attrs = bq24257_charger_attr,
++};
++
+ static int bq24257_power_supply_init(struct bq24257_device *bq)
+ {
+ 	struct power_supply_config psy_cfg = { .drv_data = bq, };
+@@ -750,6 +792,15 @@ static int bq24257_fw_probe(struct bq24257_device *bq)
+ 						 BQ24257_IILIMIT_MAP_SIZE);
+ 	}
+ 
++	ret = device_property_read_u32(bq->dev, "ti,ovp-voltage",
++				       &property);
++	if (ret < 0)
++		bq->init_data.vovp = VOVP_6500;
++	else
++		bq->init_data.vovp = bq24257_find_idx(property,
++						      bq24257_vovp_map,
++						      BQ24257_VOVP_MAP_SIZE);
++
+ 	return 0;
+ }
+ 
+@@ -889,10 +940,18 @@ static int bq24257_probe(struct i2c_client *client,
+ 		return ret;
+ 
+ 	ret = bq24257_power_supply_init(bq);
+-	if (ret < 0)
++	if (ret < 0) {
+ 		dev_err(dev, "Failed to register power supply\n");
++		return ret;
++	}
+ 
+-	return ret;
++	ret = sysfs_create_group(&bq->charger->dev.kobj, &bq24257_attr_group);
++	if (ret < 0) {
++		dev_err(dev, "Can't create sysfs entries\n");
++		return ret;
 +	}
 +
- 	mutex_init(&bq->lock);
++	return 0;
+ }
  
- 	bq->rmap = devm_regmap_init_i2c(client, &bq24257_regmap_config);
-@@ -823,19 +859,25 @@ static const struct dev_pm_ops bq24257_pm = {
- };
+ static int bq24257_remove(struct i2c_client *client)
+@@ -902,6 +961,8 @@ static int bq24257_remove(struct i2c_client *client)
+ 	if (!bq->in_ilimit_autoset_disable)
+ 		cancel_delayed_work_sync(&bq->iilimit_setup_work);
  
- static const struct i2c_device_id bq24257_i2c_ids[] = {
--	{ "bq24257", 0 },
-+	{ "bq24250", BQ24250 },
-+	{ "bq24251", BQ24251 },
-+	{ "bq24257", BQ24257 },
- 	{},
- };
- MODULE_DEVICE_TABLE(i2c, bq24257_i2c_ids);
++	sysfs_remove_group(&bq->charger->dev.kobj, &bq24257_attr_group);
++
+ 	power_supply_unregister(bq->charger);
  
- static const struct of_device_id bq24257_of_match[] = {
-+	{ .compatible = "ti,bq24250", },
-+	{ .compatible = "ti,bq24251", },
- 	{ .compatible = "ti,bq24257", },
- 	{ },
- };
- MODULE_DEVICE_TABLE(of, bq24257_of_match);
- 
- static const struct acpi_device_id bq24257_acpi_match[] = {
--	{"BQ242570", 0},
-+	{ "BQ242500", BQ24250 },
-+	{ "BQ242510", BQ24251 },
-+	{ "BQ242570", BQ24257 },
- 	{},
- };
- MODULE_DEVICE_TABLE(acpi, bq24257_acpi_match);
+ 	bq24257_field_write(bq, F_RESET, 1); /* reset to defaults */
 -- 
 1.9.1
 
