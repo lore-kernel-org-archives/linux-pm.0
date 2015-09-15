@@ -1,78 +1,134 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] driver core: Ensure proper suspend/resume ordering
-Date: Tue, 15 Sep 2015 10:23:07 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1509151020030.1420-100000@iolanthe.rowland.org>
-References: <CAJZ5v0ip4yOWxYXy6Qq8xViTYWvFvHOHcjjDAc-2Aj75rkfjcw@mail.gmail.com>
+From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
+Subject: [PATCH] clk: readd refcounting for struct clk instances
+Date: Tue, 15 Sep 2015 16:50:38 +0200
+Message-ID: <1878691.zhVxsBBBGg@diego>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0ip4yOWxYXy6Qq8xViTYWvFvHOHcjjDAc-2Aj75rkfjcw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thierry Reding <thierry.reding@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: mturquette@baylibre.com, sboyd@codeaurora.org
+Cc: linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 15 Sep 2015, Rafael J. Wysocki wrote:
+With the split into struct clk and struct clk_core, clocks lost the
+ability for nested __clk_get clkdev calls. While it stays possible to
+call __clk_get, the first call to (__)clk_put will clear the struct clk,
+making subsequent clk_put calls run into a NULL pointer dereference.
 
-> Hi Alan,
+One prime example of this sits in the generic power domain code, where it
+is possible to add the clocks both by name and by passing in a struct clk
+via pm_clk_add_clk(). __pm_clk_add() in turn then calls __clk_get to
+increase the refcount, so that the original code can put the clock again.
 
-Hi.
+A possible call-path looks like
+clk = of_clk_get();
+pm_clk_add_clk(dev, clk);
+clk_put(clk);
 
-> On Sat, Sep 12, 2015 at 7:40 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
-> > On Sat, 12 Sep 2015, Rafael J. Wysocki wrote:
-> >
-> >> On Friday, September 11, 2015 03:01:14 PM Alan Stern wrote:
-> >
-> >> > There's also an issue about other types of dependencies.  For instance,
-> >> > it's conceivable that device B might be discovered and depend on device
-> >> > A, even before A has been bound to a driver.  (B might be discovered by
-> >> > A's subsystem rather than A's driver.)  In that case, moving A to the
-> >> > end of the list would cause B to come before A even though B depends on
-> >> > A.  Of course, deferred probing already has this problem.
-> >>
-> >> That may actually happen for PCIe ports and devices below them AFAICS.
-> >>
-> >> Devices below PCIe ports are discovered by the PCI subsystem and the PCIe
-> >> ports need not be probed before those devices are probed.
-> >
-> > Is it possible to change this?  Make it so that devices below PCIe
-> > ports are discovered by the port driver rather than by the PCI
-> > subsystem?  Or would that be far too difficult?
-> 
-> I don't think it would be really useful.
-> 
-> PCIe ports are PCI bridges from the resource allocation and basic
-> functionality perspective, so they are handled accordingly.
-> 
-> The PCIe port driver provides additional services (such as PME/hotplug
-> interrupt handling and advanced error reporting) that aren't necessary
-> for probing devices below the ports.
-> 
-> I guess the ordering of PCIe ports probing might be changed to happen
-> at the "right" time, but care needs to be taken in that case too.
+with pm_clk_add_clk() => __pm_clk_add() then calling __clk_get on the clk
+and later clk_put when the pm clock list gets destroyed, thus creating
+a NULL pointer deref, as the struct clk doesn't exist anymore.
 
-Does suspending a PCIe port do anything significant?  In particular, 
-does it cut off normal communication with anything attached through 
-the port?
+So add a separate refcounting for struct clk instances and only clean up
+once the refcount reaches zero.
 
-If it does then we better not move the port device to the end of the 
-dpm_list after any descendant devices have been probed.
+Signed-off-by: Heiko Stuebner <heiko@sntech.de>
+---
+I stumbled upon this while applying the new Rockchip power-domain driver,
+but I guess the underlying issue is universal and probably present since
+the original clk/clk_core split, so this probably counts as fix.
 
-> >> > An easy way to check for this sort of thing would be to verify that a
-> >> > device about to be probed doesn't have any children.  This wouldn't
-> >> > catch all the potential dependencies, but it would be a reasonable
-> >> > start.
-> >>
-> >> That would address the PCIe ports issue.
-> >
-> > Well, it would _detect_ the PCIe ports issue.
-> 
-> That's what I meant. :-)
-> 
-> >  It might also detect other things.
-> 
-> Right.
+ drivers/clk/clk.c | 31 +++++++++++++++++++++----------
+ 1 file changed, 21 insertions(+), 10 deletions(-)
 
-All right, I'll try writing a test patch to report these things.
-
-Alan Stern
+diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+index 43e2c3a..7aab1a4 100644
+--- a/drivers/clk/clk.c
++++ b/drivers/clk/clk.c
+@@ -85,6 +85,7 @@ struct clk {
+ 	unsigned long min_rate;
+ 	unsigned long max_rate;
+ 	struct hlist_node clks_node;
++	struct kref ref;
+ };
+ 
+ /***           locking             ***/
+@@ -2590,7 +2591,7 @@ fail_out:
+ EXPORT_SYMBOL_GPL(clk_register);
+ 
+ /* Free memory allocated for a clock. */
+-static void __clk_release(struct kref *ref)
++static void __clk_core_release(struct kref *ref)
+ {
+ 	struct clk_core *core = container_of(ref, struct clk_core, ref);
+ 	int i = core->num_parents;
+@@ -2606,6 +2607,18 @@ static void __clk_release(struct kref *ref)
+ 	kfree(core);
+ }
+ 
++static void __clk_release(struct kref *ref)
++{
++	struct clk *clk = container_of(ref, struct clk, ref);
++
++	hlist_del(&clk->clks_node);
++	if ((clk->min_rate > clk->core->req_rate ||
++	     clk->max_rate < clk->core->req_rate))
++		clk_core_set_rate_nolock(clk->core, clk->core->req_rate);
++
++	kfree(clk);
++}
++
+ /*
+  * Empty clk_ops for unregistered clocks. These are used temporarily
+  * after clk_unregister() was called on a clock and until last clock
+@@ -2684,7 +2697,7 @@ void clk_unregister(struct clk *clk)
+ 	if (clk->core->prepare_count)
+ 		pr_warn("%s: unregistering prepared clock: %s\n",
+ 					__func__, clk->core->name);
+-	kref_put(&clk->core->ref, __clk_release);
++	kref_put(&clk->core->ref, __clk_core_release);
+ 
+ 	clk_prepare_unlock();
+ }
+@@ -2759,12 +2772,14 @@ int __clk_get(struct clk *clk)
+ 			return 0;
+ 
+ 		kref_get(&core->ref);
++		kref_get(&clk->ref);
+ 	}
+ 	return 1;
+ }
+ 
+ void __clk_put(struct clk *clk)
+ {
++	struct clk_core *core;
+ 	struct module *owner;
+ 
+ 	if (!clk || WARN_ON_ONCE(IS_ERR(clk)))
+@@ -2772,19 +2787,15 @@ void __clk_put(struct clk *clk)
+ 
+ 	clk_prepare_lock();
+ 
+-	hlist_del(&clk->clks_node);
+-	if (clk->min_rate > clk->core->req_rate ||
+-	    clk->max_rate < clk->core->req_rate)
+-		clk_core_set_rate_nolock(clk->core, clk->core->req_rate);
++	core = clk->core;
++	owner = core->owner;
+ 
+-	owner = clk->core->owner;
+-	kref_put(&clk->core->ref, __clk_release);
++	kref_put(&clk->ref, __clk_release);
++	kref_put(&core->ref, __clk_core_release);
+ 
+ 	clk_prepare_unlock();
+ 
+ 	module_put(owner);
+-
+-	kfree(clk);
+ }
+ 
+ /***        clk rate change notifiers        ***/
+-- 
+2.5.1
