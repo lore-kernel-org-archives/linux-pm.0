@@ -1,100 +1,117 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] driver core: Ensure proper suspend/resume ordering
-Date: Tue, 15 Sep 2015 15:18:19 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1509151505040.1420-100000@iolanthe.rowland.org>
-References: <20150915161047.GC25966@ulmo.nvidia.com>
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: Re: [PATCH v4 7/7] power: bq27xxx_battery: Add interrupt handling
+ support
+Date: Tue, 15 Sep 2015 15:53:06 -0500
+Message-ID: <55F88532.5010507@ti.com>
+References: <1442265973-32261-1-git-send-email-afd@ti.com>
+ <1442265973-32261-8-git-send-email-afd@ti.com> <20150915184714.GB18055@beast>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:56141 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751070AbbIOTSU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2015 15:18:20 -0400
-In-Reply-To: <20150915161047.GC25966@ulmo.nvidia.com>
+Received: from devils.ext.ti.com ([198.47.26.153]:38068 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751670AbbIOUxf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2015 16:53:35 -0400
+In-Reply-To: <20150915184714.GB18055@beast>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thierry Reding <thierry.reding@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Andreas Dannenberg <dannenberg@ti.com>
+Cc: =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Dan Murphy <dmurphy@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tue, 15 Sep 2015, Thierry Reding wrote:
+On 09/15/2015 01:47 PM, Andreas Dannenberg wrote:
+> On Mon, Sep 14, 2015 at 04:26:13PM -0500, Andrew F. Davis wrote:
+>> Some devices have a pin that can generate an interrupt when
+>> the battery's status changes. Add an interrupt handler to
+>> read the new battery status.
+>>
+>> Signed-off-by: Andrew F. Davis <afd@ti.com>
+>> ---
+>>   drivers/power/bq27xxx_battery.c | 23 +++++++++++++++++++++++
+>>   1 file changed, 23 insertions(+)
+>>
+>> diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27xxx_battery.c
+>> index 10be8a6..29fdcd7 100644
+>> --- a/drivers/power/bq27xxx_battery.c
+>> +++ b/drivers/power/bq27xxx_battery.c
+>> @@ -48,6 +48,7 @@
+>>   #include <linux/idr.h>
+>>   #include <linux/i2c.h>
+>>   #include <linux/slab.h>
+>> +#include <linux/interrupt.h>
+>>   #include <asm/unaligned.h>
+>>
+>>   #include <linux/power/bq27xxx_battery.h>
+>> @@ -732,6 +733,15 @@ static void bq27xxx_battery_update(struct bq27xxx_device_info *di)
+>>   	di->last_update = jiffies;
+>>   }
+>>
+>> +static irqreturn_t bq27xxx_battery_irq_handler_thread(int irq, void *data)
+>> +{
+>> +	struct bq27xxx_device_info *di = data;
+>> +
+>> +	bq27xxx_battery_update(di);
+>> +
+>> +	return IRQ_HANDLED;
+>> +}
+>> +
+>>   static void bq27xxx_battery_poll(struct work_struct *work)
+>>   {
+>>   	struct bq27xxx_device_info *di =
+>> @@ -1137,6 +1147,19 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
+>>
+>>   	i2c_set_clientdata(client, di);
+>>
+>> +	if (client->irq) {
+>> +		retval = devm_request_threaded_irq(&client->dev, client->irq,
+>> +				NULL, bq27xxx_battery_irq_handler_thread,
+>> +				IRQF_ONESHOT,
+>> +				name, di);
+>
+> Hi Andrew,
+> I think it'll be better if you explicitly specify the rising vs. falling
+> edge interrupt flags according to exactly what the bq27xxx will trigger
+> on to ensure the corresponding GPIO module is always configured properly.
+>
 
-> > There are a few things to watch out for.  Since the dpm_list gets
-> > modified during system sleep transitions, we would have to make sure
-> > that nothing gets probed during those times.  In principle, that's what
-> > the "prepare" stage is meant for, but there's still a race.  As long as
-> > no other kernel thread (such as the deferred probing mechanism) tries
-> > to probe a device once everything has been frozen, we should be okay.
-> > But if not, there will be trouble -- after the ->prepare callback runs, 
-> > the device is no longer on the dpm_list and so we don't want this patch 
-> > to put it back on that list.
-> 
-> Perhaps moving to the end of the list needs to be a little smarter. That
-> is it could check whether the device has been prepared for suspension or
-> not and only move when it hasn't?
+That was how I was going to have it, but this may be device dependent, so
+I decided to leave it up to the interrupt controller and set it with DT:
 
-Maybe.  But doesn't that mean it won't solve your problem completely?
+interrupts = <28 IRQ_TYPE_EDGE_FALLING>;
 
-> Then again, shouldn't the core even prohibit new probes once the suspend
-> has been triggered? Sounds like asking for a lot of trouble if it didn't
-> ...
+> While we are at it, was the platform-data based initialization in
+> conjunction with interrupts tested?
+>
 
-The core prohibits new devices from being registered.  It does not 
-prohibit probes of existing devices, because they currently do not 
-affect the dpm_list.
+The only time we initialize with platform-data is when we are wired
+with HDQ, in that case this IRQ code does not get called, so nothing
+changes.
 
-In general, we rely on subsystems not to do any probing once a device 
-is suspended.  It's probably reasonable to ask them not to do any 
-probing once a device has gone through the "prepare" stage.
+Regards,
+Andrew
 
-> > There's also an issue about other types of dependencies.  For instance,
-> > it's conceivable that device B might be discovered and depend on device
-> > A, even before A has been bound to a driver.  (B might be discovered by 
-> > A's subsystem rather than A's driver.)  In that case, moving A to the 
-> > end of the list would cause B to come before A even though B depends on 
-> > A.  Of course, deferred probing already has this problem.
-> 
-> But that's exactly the problem that I'm seeing.
-
-Not quite.
-
->  B isn't discovered by
-> A's subsystem, but the type of dependency is the same. A in this case
-> would be the GPIO controller and B the gpio-keys device. B clearly
-> depends on A, but deferred probe currently moves A to the end of the
-> list but not A, hence why the problem occurs.
-
-The difference is that in my example, B can be probed before A.  In
-your case it can't.  Therefore the patch works for your case but not
-for mine.
-
-> That's also a problem that I think this patch solves. By moving every
-> device to the end of the list before it is probed we ensure that the
-> dpm_list is ordered in the same way as the probe order. For this to work
-> the precondition of course is that drivers know about the dependencies
-> and will defer probe if necessary.
-
-Do I understand correctly?  You're saying a driver must defer a probe
-if the device it's probing depends on another device which hasn't
-been bound yet.  That does not sound like a reasonable sort of
-requirement -- we might know about the dependency but we shouldn't have
-to check whether the prerequisite device has been bound.
-
-> > An easy way to check for this sort of thing would be to verify that a 
-> > device about to be probed doesn't have any children.  This wouldn't 
-> > catch all the potential dependencies, but it would be a reasonable 
-> > start.  Do we currently check that after a device has been unbound, it 
-> > doesn't have any remaining children?  We should do that too.
-> 
-> I think that would cover the other half of the cases where deferred
-> probe isn't implemented because drivers are written with the assumption
-> that children will be instantiated after their parent has been probed.
-> 
-> But it won't catch all the cases where there is no parent-child
-> relationship between the depender and the dependee.
-
-No, it won't catch all cases.  But the cases it does catch are ones 
-where your patch is likely to cause trouble, so it would be good to 
-know about them.
-
-Alan Stern
-
+> Regards,
+>
+> --
+> Andreas Dannenberg
+> Texas Instruments Inc
+>
+>
+>> +		if (retval) {
+>> +			dev_err(&client->dev,
+>> +				"Unable to register IRQ %d error %d\n",
+>> +				client->irq, retval);
+>> +			return retval;
+>> +		}
+>> +	}
+>> +
+>>   	return 0;
+>>
+>>   batt_failed:
+>> --
+>> 1.9.1
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
