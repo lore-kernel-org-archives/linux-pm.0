@@ -1,178 +1,58 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v3 01/10] dt: power: bq24257-charger: Cover additional
- devices
-Date: Tue, 15 Sep 2015 16:56:52 +0900
-Message-ID: <55F7CF44.3010102@samsung.com>
-References: <1442003202-1430-1-git-send-email-dannenberg@ti.com>
- <1442003202-1430-2-git-send-email-dannenberg@ti.com>
- <55F66514.1080909@samsung.com> <20150914135430.GA21442@borg>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: pass policy to ->get() driver callback
+Date: Tue, 15 Sep 2015 13:28:49 +0530
+Message-ID: <20150915075849.GC6350@linux>
+References: <98e79b26d8250c33001c7a50378b0e288b8511db.1438339396.git.viresh.kumar@linaro.org>
+ <11470100.cEo24Tpcgr@vostro.rjw.lan>
+ <20150910012222.GN5266@linux>
+ <1725227.VMGKuhRxma@vostro.rjw.lan>
+ <20150911161802.GR9650@linux>
+ <20150915073921.GA6350@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:27522 "EHLO
-	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751496AbbIOH5D (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2015 03:57:03 -0400
-In-reply-to: <20150914135430.GA21442@borg>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20150915073921.GA6350@linux>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Kristen Carlson Accardi <kristen@linux.intel.com>, open list <linux-kernel@vger.kernel.org>, Sudeep Holla <sudeep.holla@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Andreas Dannenberg <dannenberg@ti.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-On 14.09.2015 22:54, Andreas Dannenberg wrote:
-> On Mon, Sep 14, 2015 at 03:11:32PM +0900, Krzysztof Kozlowski wrote:
->> On 12.09.2015 05:26, Andreas Dannenberg wrote:
->>> Extend the bq24257 charger's device tree documentation to cover the
->>> bq24250 and bq24251 devices as well feature additions.
->>>
->>> Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
->>> ---
->>>  .../devicetree/bindings/power/bq24257.txt          | 59 ++++++++++++++++++++--
->>>  1 file changed, 54 insertions(+), 5 deletions(-)
->>>
->>> diff --git a/Documentation/devicetree/bindings/power/bq24257.txt b/Documentation/devicetree/bindings/power/bq24257.txt
->>> index 5c9d394..4a88c96 100644
->>> --- a/Documentation/devicetree/bindings/power/bq24257.txt
->>> +++ b/Documentation/devicetree/bindings/power/bq24257.txt
->>> @@ -1,21 +1,70 @@
->>> -Binding for TI bq24257 Li-Ion Charger
->>> +Binding for TI bq24250/bq24251/bq24257 Li-Ion Charger
->>>  
->>>  Required properties:
->>>  - compatible: Should contain one of the following:
->>> + * "ti,bq24250"
->>> + * "ti,bq24251"
->>>   * "ti,bq24257"
->>> -- reg:			   integer, i2c address of the device.
->>> +- reg: integer, i2c address of the device.
->>> +- stat-gpios: GPIO used for the devices STAT_IN pin. Alternatively the pin can
->>> +    also be defined through the standard interrupt definition properties (see
->>> +    optional properties section below). Only use one method.
->>>  - ti,battery-regulation-voltage: integer, maximum charging voltage in uV.
->>> -- ti,charge-current:	   integer, maximum charging current in uA.
->>> -- ti,termination-current:  integer, charge will be terminated when current in
->>> -			   constant-voltage phase drops below this value (in uA).
->>> +- ti,charge-current: integer, maximum charging current in uA.
->>> +- ti,termination-current: integer, charge will be terminated when current in
->>> +    constant-voltage phase drops below this value (in uA).
->>> +
->>> +Optional properties:
->>> +- pg-gpios: GPIO used for connecting the bq2425x device PG (Power Good) pin.
->>> +    This pin is not available on all devices however it should be used if
->>> +    possible as this is the recommended way to obtain the charger's input PG
->>> +    state. If this pin is not specified a software-based approach for PG
->>> +    detection is used.
->>> +- ti,current-limit: The maximum current to be drawn from the charger's input
->>> +    (in uA). If this property is not specified a USB D+/D- signal based charger
->>> +    type detection is used (if available) and the input limit current is set
->>> +    accordingly. If the D+/D- based detection is not available on a given device
->>> +    a default of 500,000 is used (=500mA).
->>> +- ti,ovp-voltage: Configures the over voltage protection voltage (in uV). If
->>> +    not specified a default of 6,5000,000 (=6.5V) is used.
->>> +- ti,in-dpm-voltage: Configures the threshold input voltage for the dynamic
->>> +    power path management (in uV). If not specified a default of 4,360,000
->>> +    (=4.36V) is used.
->>> +- ti,safety-timer-2x-enable: If this property is set to 1 the device's safety
->>> +    timer is extended (slowed down) by a factor of two. Setting this property
->>> +    to 0 or not providing it will leave the safety timer at its default
->>> +    setting.
->>
->> Now I spotted the difference in this binding from previous emails.
->> Previously you made it as a boolean property. Now it is a integer
->> property for a boolean value. It is unusual. If you expect a need (or a
->> possibility of need) of:
->> 1. extending,
->> 2. overriding,
->> 3. using similar (extended) property in different drivers,
->> then it should be a real value, like:
->>
->> 1. ti,safety-timer: integer, in seconds
-> 
-> Hi Krzysztof,
-> 
-> I thought about this as well because the device actually allows
-> configuring different safety timer intervals (currently not exposed) and
-> it appears that the "2x enable" could be factored in there however it's
-> not as easy as it seems.  The "2x enable" is a dedicated HW feature
-> that's only being used in some states of the devices and with that does
-> not generally extend the safety timer under all conditions.
+On 15-09-15, 13:09, Viresh Kumar wrote:
+> I would have sent a patch for this, but I thought you would like to
+> edit the original patch itself to not break git bisect.
 
-Right, I read also the datasheet which explains it.
+But in case you are applying it separately, here is the fix.
 
-> 
->> 2. ti,safety-timer-ratio/multiplier: integer, supported values are: 0
->> (use default) or 2 (slow down by factor of 2)
->>
->> It is unusual and not obvious to use a integer value for boolean strict
->> property. With current solution you can actually only override it.
-> 
-> Yes that was the sole reason behind using integer instead of boolean.
-> The boolean "character" of this property was left intact because of the
-> direct mapping to a device HW feature (see below).
+-------------------------8<-------------------------
 
-DT serves a purpose of providing information allowing the kernel to use
-and configure the hardware. DT binding does not have to map device
-property. In the same time having a device property does not mean you
-create a DT binding.
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Date: Tue, 15 Sep 2015 13:09:54 +0530
+Subject: [PATCH] cpufreq: cpufreq_cpu_get_raw() isn't a static function
+ anymore
 
-If such requirement of mapping property to a HW feature was valid then
-each driver would expose each register in DT. Sometimes platform data
-did this... but DT is not pdata.
-You're using such argument also below but this argument is not sufficient.
+Its used outside of the core file and is exported as well. Drop the
+'static' keyword from its declaration and fix below build error:
 
-Sufficient argument would be: this property is necessary to configure
-the hardware in different board configurations (so on different boards
-it will have different values).
+linux/drivers/cpufreq/cpufreq.c:241:31: error: static declaration of
+'cpufreq_cpu_get_raw' follows non-static declaration
 
-Example of device features not matching to DeviceTree:
- - configuration changing over time:
-/sys/class/power/ds2760-battery.*/charge_full
+Fixes: 503655f70d9b ("cpufreq: acpi-cpufreq: Use cpufreq_cpu_get_raw() in ->get()")
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- - various timers:
-/sys/class/power_supply/max14577-charger/device/fast_charge_timer
-
- - various thresholds:
-/sys/class/power_supply/max77693-charger/device/top_off_threshold_current
-
-These are strictly HW features (they map to a bit in register) but they
-are not related to configuring device for specific board. They serve for
-user-space to use the devices in different ways.
-
-In this case - the 2XTMR_EN - I assume that for certain batteries or
-boards you want to extend the time of charging in case of special
-conditions?
-
-
-> But I can certainly
-> change this to ti,safety-timer-multiplier and use 0/2. This avoids the
-> inaccuracy as explained above with just using ti,safety-timer (the
-> corresponding underlying device property should be separate and could be
-> exposed if ever needed) and still leaves room for this property to grow
-> which may come in handy later.
-
-Hmmmm, the "2x" part of timer suggests to use a numerical value but
-actually the datasheet does the opposite. I would not expect different
-values... so your original idea makes sense (if DT is the place for it).
-Overriding could be achieved with /delete-property/ (I forgot about it...).
-
-> 
->> Extending is possible but would look really weird, like:
->> 	ti,safety-timer-2x-enable = <4>; /* Heh? 4x or (4*2)x ??? */
-> 
->>
->> To add even more confusion: why this property has to be configured in
->> Device Tree? How it is related to the hardware? It rather looks like a
->> job for sysfs.
-> 
-> This property maps directly to a corresponding bit in the device
-> register map so yes it is related to the HW and IMHO should be
-> applicable to DT. The reason for not providing write access to that bit
-> via sysfs is the same as this driver doesn't have write access to other
-> "critical" properties such as charge current/voltages.
-
-Responded to this above.
-
-Best regards,
-Krzysztof
-
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index a8252bb0f80c..ef5ed9470de9 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -238,7 +238,7 @@ int cpufreq_generic_init(struct cpufreq_policy *policy,
+ }
+ EXPORT_SYMBOL_GPL(cpufreq_generic_init);
+ 
+-static struct cpufreq_policy *cpufreq_cpu_get_raw(unsigned int cpu)
++struct cpufreq_policy *cpufreq_cpu_get_raw(unsigned int cpu)
+ {
+ 	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
+ 
