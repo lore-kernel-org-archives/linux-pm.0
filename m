@@ -1,88 +1,170 @@
-From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: Re: [PATCH v3 1/5] Documentation: add DT bindings for ARM SCPI sensors
-Date: Tue, 15 Sep 2015 17:04:48 +0100
-Message-ID: <9hheghzvfbz.fsf@e105922-lin.cambridge.arm.com>
-References: <1442235619-4029-1-git-send-email-punit.agrawal@arm.com>
-	<1442235619-4029-2-git-send-email-punit.agrawal@arm.com>
-	<20150914131448.GC7002@leverpostej>
-	<9hhh9mxf7lg.fsf@e105922-lin.cambridge.arm.com>
-	<20150914134949.GE7002@leverpostej>
-	<9hhk2rtdq1f.fsf@e105922-lin.cambridge.arm.com>
-	<1442251092.2850.53.camel@linaro.org>
-	<9hhy4g89g64.fsf@e105922-lin.cambridge.arm.com>
-	<1442313962.2917.25.camel@linaro.org>
+From: Thierry Reding <thierry.reding@gmail.com>
+Subject: Re: [PATCH] driver core: Ensure proper suspend/resume ordering
+Date: Tue, 15 Sep 2015 18:10:48 +0200
+Message-ID: <20150915161047.GC25966@ulmo.nvidia.com>
+References: <20150911120345.GB16323@ulmo>
+ <Pine.LNX.4.44L0.1509111445020.1667-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="TiqCXmo5T1hvSQQg"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:52620 "EHLO
-	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752395AbbIOQHD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2015 12:07:03 -0400
-In-Reply-To: <1442313962.2917.25.camel@linaro.org> (Jon Medhurst's message of
-	"Tue, 15 Sep 2015 11:46:02 +0100")
+Received: from mail-wi0-f175.google.com ([209.85.212.175]:37867 "EHLO
+	mail-wi0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752110AbbIOQKv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2015 12:10:51 -0400
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1509111445020.1667-100000@iolanthe.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Jon Medhurst (Tixy)" <tixy@linaro.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Liviu Dudau <Liviu.Dudau@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "linux@roeck-us.net" <linux@roeck-us.net>, Sudeep Holla <Sudeep.Holla@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-"Jon Medhurst (Tixy)" <tixy@linaro.org> writes:
 
-> On Tue, 2015-09-15 at 10:37 +0100, Punit Agrawal wrote:
->> "Jon Medhurst (Tixy)" <tixy@linaro.org> writes:
->> 
->> > On Mon, 2015-09-14 at 15:38 +0100, Punit Agrawal wrote:
->> >> Mark Rutland <mark.rutland@arm.com> writes:
->> >> 
-> [...]
->> >> The way the SCP interface is defined, the sensor identifiers are
->> >> contiguous,
->> >
->> > Is there any documentation other than DUI0922A? [1] From what I can seen
->> > that just says it's a 16-bit value and doesn't put any particular
->> > constraints on its value.
->> 
->> Although not explicitly stated, if you look at the Get Sensor Capability
->> [2] and Get Sensor Info [3] commands you can indirectly infer that the
->> Sensor IDs are contiguous.
->
-> I personally wouldn't even indirectly infer they are contiguous from
-> what the document says. If I were implementing the firmware I would feel
-> quite in my rights to, for example, use the top 8 bits of the ID for a
-> sensor type and the bottom 8 for an index, if that made dispatching of
-> requests more efficient. Or if some optional hardware was detected as
-> missing, leaving some holes in ID space.
+--TiqCXmo5T1hvSQQg
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-True. And without a command to convey the list of valid IDs, the
-consumer of the API would have to iterate over the entire 16bit space to
-locate valid IDs.
+On Fri, Sep 11, 2015 at 03:01:14PM -0400, Alan Stern wrote:
+> On Fri, 11 Sep 2015, Thierry Reding wrote:
+>=20
+> > On Fri, Sep 11, 2015 at 12:08:02AM +0200, Rafael J. Wysocki wrote:
+> > > On Thursday, September 10, 2015 12:19:03 PM Thierry Reding wrote:
+> > > > From: Thierry Reding <treding@nvidia.com>
+> > > >=20
+> > > > Deferred probe can lead to strange situations where a device that i=
+s a
+> > > > dependency for others will be moved to the end of the dpm_list. At =
+the
+> > > > same time the dependers may not be moved because at the time they w=
+ill
+> > > > be probed the dependee may already have been successfully reprobed =
+and
+> > > > they will not have to defer the probe themselves.
+> > >=20
+> > > So there's a bug in the implementation of deferred probing IMO.
+> >=20
+> > Well, yeah. The root problem here is that we don't have dependency
+> > information and deferred probing is supposed to fix that. It does so
+> > fairly well, but it breaks in this particular case.
+> >=20
+> > > > One example where this happens is the Jetson TK1 board (Tegra124). =
+The
+> > > > gpio-keys driver exposes the power key of the board as an input dev=
+ice
+> > > > that can also be used as a wakeup source. Commit 17cdddf0fb68 ("ARM:
+> > > > tegra: Add gpio-ranges property") results in the gpio-tegra driver
+> > > > deferring probe because one of its dependencies, the pinctrl-tegra
+> > > > driver, has not successfully completed probing. Currently the defer=
+red
+> > > > probe code will move the corresponding gpio-tegra device to the end=
+ of
+> > > > the dpm_list, but by the time the gpio-keys device, depending on the
+> > > > gpio-tegra device, is probed, gpio-tegra has already been reprobed,=
+ so
+> > > > the gpio-keys device is not moved to the end of dpm_list itself. As=
+ a
+> > > > result, the suspend ordering becomes pinctrl-tegra -> gpio-keys ->
+> > > > gpio-tegra. That's problematic because the gpio-keys driver requests
+> > > > the power key to be a wakeup source. However, the programming of the
+> > > > wakeup interrupt registers happens in the gpio-tegra driver's suspe=
+nd
+> > > > callback, which is now called before that of the gpio-keys driver. =
+The
+> > > > result is that the wrong values are programmed and leaves the system
+> > > > unable to be resumed using the power key.
+> > > >=20
+> > > > To fix this situation, always move devices to the end of the dpm_li=
+st
+> > > > before probing them. Technically this should only be done for devic=
+es
+> > > > that have been successfully probed, but that won't work for recursi=
+ve
+> > > > probing of devices (think an I2C master that instantiates children =
+in
+> > > > its ->probe()). Effectively the dpm_list will end up ordered the sa=
+me
+> > > > way that devices were probed, hence taking care of dependencies.
+>=20
+> I'm not worried about the overhead involved in moving a device to the=20
+> end of the list every time it is probed.  That ought to be relatively=20
+> small.
+>=20
+> There are a few things to watch out for.  Since the dpm_list gets
+> modified during system sleep transitions, we would have to make sure
+> that nothing gets probed during those times.  In principle, that's what
+> the "prepare" stage is meant for, but there's still a race.  As long as
+> no other kernel thread (such as the deferred probing mechanism) tries
+> to probe a device once everything has been frozen, we should be okay.
+> But if not, there will be trouble -- after the ->prepare callback runs,=
+=20
+> the device is no longer on the dpm_list and so we don't want this patch=
+=20
+> to put it back on that list.
 
->
-> As a specification of a 'standard' the document seems to be rather
-> lacking. So, Sensor ID should be documented as being "an unsigned
-> integer less than then number of sensors returned by the Get Sensor
-> Capability command", or something like that. I guess clocks and other
-> devices suffer from similar lack of specificity.
+Perhaps moving to the end of the list needs to be a little smarter. That
+is it could check whether the device has been prepared for suspension or
+not and only move when it hasn't?
 
-I was thinking of suggesting something similar as an update.
+Then again, shouldn't the core even prohibit new probes once the suspend
+has been triggered? Sounds like asking for a lot of trouble if it didn't
+=2E..
 
->
->>  Not the strongest guarantee I know.
->> 
->> All platforms currently using SCP (Juno R0 and R1) do indeed expose
->> contiguous identifiers.
->
-> IMO, Linux drivers should be coded to the standard or written
-> specification (where they are available) not the particular
-> implementations available.
->
->> >
->> > [1] http://community.arm.com/servlet/JiveServlet/download/8401-40-18262/DUI0922A_scp_message_interface.pdf
->> [2] http://arminfo.emea.arm.com/help/index.jsp?topic=/com.arm.doc.dui0922b/ch03s02s21.html
->> [3] http://arminfo.emea.arm.com/help/index.jsp?topic=/com.arm.doc.dui0922b/BABCCCJJ.html
->
-> I think those links are on ARM's intranet, they return NXDOMAIN for me.
+> There's also an issue about other types of dependencies.  For instance,
+> it's conceivable that device B might be discovered and depend on device
+> A, even before A has been bound to a driver.  (B might be discovered by=
+=20
+> A's subsystem rather than A's driver.)  In that case, moving A to the=20
+> end of the list would cause B to come before A even though B depends on=
+=20
+> A.  Of course, deferred probing already has this problem.
 
-Apologies, the below should work.
+But that's exactly the problem that I'm seeing. B isn't discovered by
+A's subsystem, but the type of dependency is the same. A in this case
+would be the GPIO controller and B the gpio-keys device. B clearly
+depends on A, but deferred probe currently moves A to the end of the
+list but not A, hence why the problem occurs.
 
-[2] http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0922b/ch03s02s21.html
-[3] http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0922b/BABCCCJJ.html
+That's also a problem that I think this patch solves. By moving every
+device to the end of the list before it is probed we ensure that the
+dpm_list is ordered in the same way as the probe order. For this to work
+the precondition of course is that drivers know about the dependencies
+and will defer probe if necessary.
+
+> An easy way to check for this sort of thing would be to verify that a=20
+> device about to be probed doesn't have any children.  This wouldn't=20
+> catch all the potential dependencies, but it would be a reasonable=20
+> start.  Do we currently check that after a device has been unbound, it=20
+> doesn't have any remaining children?  We should do that too.
+
+I think that would cover the other half of the cases where deferred
+probe isn't implemented because drivers are written with the assumption
+that children will be instantiated after their parent has been probed.
+
+But it won't catch all the cases where there is no parent-child
+relationship between the depender and the dependee.
+
+Thierry
+
+--TiqCXmo5T1hvSQQg
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCAAGBQJV+EMEAAoJEN0jrNd/PrOhLOQQALQr/ehPSGS4014I8O6OH6Uq
+CIxbtie2/yvSn1IzZLPNINxf5lytSu6mwkPWr9fKN6o5nQZyYBNpAtuvDI45SIzd
+wS0AClvlP69PEXfMj+lQDkx+yDcwQQa12JuxwsP/DA6SRyvG4h09vNKQbzS5dOwF
+v8ypdap1eaz133FmbePaZCMBeV5qSc+JVk53b5gbnrNywUmyRmWNGOWcBdpCgi+F
+2oc8a5nFpIdf0yJbg8FkC+0DW3be5XoymyRF+Hw9oIpt812o/grli+HFpUGwuYhx
+Y5equPUDwrf2Is0UguxRO5ipydipR65Vv+gpKmBJITqCG3fVTgKy72jpWZYI5PD8
+bbvxgnYxvT/UmnQSItx63YqUttF1jf5Rs94UH2AqitikExmCyxLwfmEVmR81+4A6
+RbzRMywDSVSc2GNR80ezd8PlZbAYqeZCWkdlIePXswPK0j8+OZuk6jm6STQiqYDZ
+wQPPpQJvYPk+oWSW4pu0Uw18HotSs5kBlQD4S1xGKd3uiA9UrkHeQfmGhm62iFIU
+7aTxobdMP8BF7Hye4cOt6V95TUkkv4t+CCTKeLJEIwV+XaiwTa1eFsKSI4lYZloA
+pXeGOeXDh68iJwCzBVgdgs2S7oF0ibqYkZTKASCkZrPEuJiZlaSJ1xX85eJw5r3+
+9/knCE0WSVV6vdQnXdJ0
+=kO8d
+-----END PGP SIGNATURE-----
+
+--TiqCXmo5T1hvSQQg--
