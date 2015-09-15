@@ -1,38 +1,100 @@
-From: Christ van Willegen <cvwillegen@gmail.com>
-Subject: Re: [Gta04-owner] [PATCH 10/13] twl4030_charger: add software
- controlled linear charging mode.
-Date: Tue, 15 Sep 2015 14:08:55 +0200
-Message-ID: <CA+Ot1Ow8d8Q+U6oFKibWiPHLcua5WknFbZy0PEsU36ONas=7UQ@mail.gmail.com>
-References: <20150730001113.4012.18086.stgit@noble> <20150730001124.4012.27784.stgit@noble>
- <20150915112825.GA10704@amd>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH v2] clk: samsung: fix cpu clock's flags checking
+Date: Tue, 15 Sep 2015 14:28:39 +0200
+Message-ID: <4294976.g7Mb9GifR6@amdc1976>
+References: <1440762575-21520-1-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150915112825.GA10704@amd>
+In-reply-to: <1440762575-21520-1-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: List for communicating with real GTA04 owners <gta04-owner@goldelico.com>
-Cc: NeilBrown <neil@brown.name>, Samuel Ortiz <sameo@linux.intel.com>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Lee Jones <lee.jones@linaro.org>, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-omap@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
+To: Michael Turquette <mturquette@baylibre.com>
+Cc: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Dan Carpenter <dan.carpenter@oracle.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi all,
 
-On Tue, Sep 15, 2015 at 1:28 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> On Thu 2015-07-30 10:11:24, NeilBrown wrote:
->>
->> Add a 'continuous' option for usb charging which enables
->> the "linear" charging mode of the twl4030.
->>
->> Linear charging does a good job with not-so-reliable power sources.
->> Auto mode does not work well as it switches off when voltage drops
->> momentarily.  Care must be taken not to over-charge.
->
-> Can you explain how the user can "care not to over-charge"?
+[ + Stephen on cc: ]
 
-Just my $0.02, I assumed (whoops!) that Neil mean that the _code_
-should take care not to over-charge... but not sure how he intended to
-to that.
+On Friday, August 28, 2015 01:49:35 PM Bartlomiej Zolnierkiewicz wrote:
+> CLK_CPU_HAS_DIV1 and CLK_CPU_NEEDS_DEBUG_ALT_DIV masks were
+> incorrectly used as a bit numbers.  Fix it.
+> 
+> Tested on Exynos4210 based Origen board and on Exynos5250 based
+> Arndale board.
+> 
+> Cc: Tomasz Figa <tomasz.figa@gmail.com>
+> Cc: Michael Turquette <mturquette@baylibre.com>
+> Cc: Thomas Abraham <thomas.ab@samsung.com>
+> Fixes: ddeac8d96 ("clk: samsung: add infrastructure to register cpu clocks")
+> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+> Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Reviewed-by: Javier Martinez Canillas <javier@dowhile0.org>
+> Acked-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> ---
+> v2:
+> - added Reviewed-by, Acked-by and Fixes tags (no code changes)
+> 
+> Michael, please apply.  Thank you.
 
-Anyway, that was my interpretation of the (indeed, it could be
-explained in different ways...) comment.
+Gentle ping.
 
-Christ van Willegen
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+>  drivers/clk/samsung/clk-cpu.c | 10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/clk/samsung/clk-cpu.c b/drivers/clk/samsung/clk-cpu.c
+> index 7c1e1f5..2fe37f7 100644
+> --- a/drivers/clk/samsung/clk-cpu.c
+> +++ b/drivers/clk/samsung/clk-cpu.c
+> @@ -164,7 +164,7 @@ static int exynos_cpuclk_pre_rate_change(struct clk_notifier_data *ndata,
+>  	 * the values for DIV_COPY and DIV_HPM dividers need not be set.
+>  	 */
+>  	div0 = cfg_data->div0;
+> -	if (test_bit(CLK_CPU_HAS_DIV1, &cpuclk->flags)) {
+> +	if (cpuclk->flags & CLK_CPU_HAS_DIV1) {
+>  		div1 = cfg_data->div1;
+>  		if (readl(base + E4210_SRC_CPU) & E4210_MUX_HPM_MASK)
+>  			div1 = readl(base + E4210_DIV_CPU1) &
+> @@ -185,7 +185,7 @@ static int exynos_cpuclk_pre_rate_change(struct clk_notifier_data *ndata,
+>  		alt_div = DIV_ROUND_UP(alt_prate, tmp_rate) - 1;
+>  		WARN_ON(alt_div >= MAX_DIV);
+>  
+> -		if (test_bit(CLK_CPU_NEEDS_DEBUG_ALT_DIV, &cpuclk->flags)) {
+> +		if (cpuclk->flags & CLK_CPU_NEEDS_DEBUG_ALT_DIV) {
+>  			/*
+>  			 * In Exynos4210, ATB clock parent is also mout_core. So
+>  			 * ATB clock also needs to be mantained at safe speed.
+> @@ -206,7 +206,7 @@ static int exynos_cpuclk_pre_rate_change(struct clk_notifier_data *ndata,
+>  	writel(div0, base + E4210_DIV_CPU0);
+>  	wait_until_divider_stable(base + E4210_DIV_STAT_CPU0, DIV_MASK_ALL);
+>  
+> -	if (test_bit(CLK_CPU_HAS_DIV1, &cpuclk->flags)) {
+> +	if (cpuclk->flags & CLK_CPU_HAS_DIV1) {
+>  		writel(div1, base + E4210_DIV_CPU1);
+>  		wait_until_divider_stable(base + E4210_DIV_STAT_CPU1,
+>  				DIV_MASK_ALL);
+> @@ -225,7 +225,7 @@ static int exynos_cpuclk_post_rate_change(struct clk_notifier_data *ndata,
+>  	unsigned long mux_reg;
+>  
+>  	/* find out the divider values to use for clock data */
+> -	if (test_bit(CLK_CPU_NEEDS_DEBUG_ALT_DIV, &cpuclk->flags)) {
+> +	if (cpuclk->flags & CLK_CPU_NEEDS_DEBUG_ALT_DIV) {
+>  		while ((cfg_data->prate * 1000) != ndata->new_rate) {
+>  			if (cfg_data->prate == 0)
+>  				return -EINVAL;
+> @@ -240,7 +240,7 @@ static int exynos_cpuclk_post_rate_change(struct clk_notifier_data *ndata,
+>  	writel(mux_reg & ~(1 << 16), base + E4210_SRC_CPU);
+>  	wait_until_mux_stable(base + E4210_STAT_CPU, 16, 1);
+>  
+> -	if (test_bit(CLK_CPU_NEEDS_DEBUG_ALT_DIV, &cpuclk->flags)) {
+> +	if (cpuclk->flags & CLK_CPU_NEEDS_DEBUG_ALT_DIV) {
+>  		div |= (cfg_data->div0 & E4210_DIV0_ATB_MASK);
+>  		div_mask |= E4210_DIV0_ATB_MASK;
+>  	}
