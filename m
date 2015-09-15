@@ -1,44 +1,48 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq: cpufreq_cpu_get_raw() isn't a static function anymore
-Date: Tue, 15 Sep 2015 13:40:16 +0530
-Message-ID: <d7e3e729d09d15cfc73ebaf251a2bb4d33ec54a9.1442303903.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f47.google.com ([209.85.220.47]:35657 "EHLO
-	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751961AbbIOIKa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2015 04:10:30 -0400
-Received: by pacfv12 with SMTP id fv12so173136878pac.2
-        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2015 01:10:30 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH] PM / sleep: Fix broken builds without CONFIG_PM_SLEEP_DEBUG
+Date: Tue, 15 Sep 2015 13:42:21 +0530
+Message-ID: <e7097f9c9cc28de234486e3f3865bf9bbea92aac.1442304707.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, alexandra.yates@linux.intel.com, Viresh Kumar <viresh.kumar@linaro.org>, open list <linux-kernel@vger.kernel.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, alexandra.yates@linux.intel.com, Viresh Kumar <viresh.kumar@linaro.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+List-Id: linux-pm@vger.kernel.org
 
-Its used outside of the core file and is exported as well. Drop the
-'static' keyword from its declaration and fix below build error:
+The variable 'wakeup_irq' is defined within #ifdef CONFIG_PM_SLEEP_DEBUG
+and used outside of it. And that breaks kernel build:
 
-linux/drivers/cpufreq/cpufreq.c:241:31: error: static declaration of
-'cpufreq_cpu_get_raw' follows non-static declaration
+/home/viresh/linux/drivers/base/power/wakeup.c:871: undefined reference to `wakeup_irq'
+/home/viresh/drivers/base/power/wakeup.c:871: undefined reference to `wakeup_irq'
 
-Fixes: 503655f70d9b ("cpufreq: acpi-cpufreq: Use cpufreq_cpu_get_raw() in ->get()")
+Fix it by defining the variable outside of the ifdef.
+
+Fixes: d1e59c235322 ("PM / sleep: Report interrupt that caused system wakeup")
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ kernel/power/main.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index a8252bb0f80c..ef5ed9470de9 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -238,7 +238,7 @@ int cpufreq_generic_init(struct cpufreq_policy *policy,
+diff --git a/kernel/power/main.c b/kernel/power/main.c
+index 9880bf888a5b..f97a188f4ccc 100644
+--- a/kernel/power/main.c
++++ b/kernel/power/main.c
+@@ -235,6 +235,9 @@ late_initcall(pm_debugfs_init);
+ 
+ #endif /* CONFIG_PM_SLEEP */
+ 
++/* IRQ number which causes system wakeup */
++unsigned int wakeup_irq;
++
+ #ifdef CONFIG_PM_SLEEP_DEBUG
+ /*
+  * pm_print_times: print time taken by devices to suspend and resume.
+@@ -273,7 +276,6 @@ static inline void pm_print_times_init(void)
+ 	pm_print_times_enabled = !!initcall_debug;
  }
- EXPORT_SYMBOL_GPL(cpufreq_generic_init);
  
--static struct cpufreq_policy *cpufreq_cpu_get_raw(unsigned int cpu)
-+struct cpufreq_policy *cpufreq_cpu_get_raw(unsigned int cpu)
- {
- 	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
- 
+-unsigned int wakeup_irq;
+ static ssize_t pm_wakeup_irq_show(struct kobject *kobj,
+ 					struct kobj_attribute *attr,
+ 					char *buf)
 -- 
 2.4.0
-
