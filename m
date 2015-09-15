@@ -1,88 +1,68 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [RFCv5 PATCH 38/46] sched: scheduler-driven cpu frequency
- selection
-Date: Tue, 15 Sep 2015 17:22:28 +0100
-Message-ID: <55F845C4.5020904@arm.com>
-References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
- <1436293469-25707-39-git-send-email-morten.rasmussen@arm.com>
- <20150815123531.GE10304@worktop.programming.kicks-ass.net>
- <55E99C50.8030306@arm.com> <55F6EE6F.6070209@arm.com>
- <20150915134556.GD16853@twins.programming.kicks-ass.net>
+From: "Jon Medhurst (Tixy)" <tixy@linaro.org>
+Subject: Re: [PATCH v3 1/5] Documentation: add DT bindings for ARM SCPI
+ sensors
+Date: Tue, 15 Sep 2015 17:31:29 +0100
+Message-ID: <1442334689.4040.68.camel@linaro.org>
+References: <1442235619-4029-1-git-send-email-punit.agrawal@arm.com>
+	 <1442235619-4029-2-git-send-email-punit.agrawal@arm.com>
+	 <20150914131448.GC7002@leverpostej>
+	 <9hhh9mxf7lg.fsf@e105922-lin.cambridge.arm.com>
+	 <20150914134949.GE7002@leverpostej>
+	 <9hhk2rtdq1f.fsf@e105922-lin.cambridge.arm.com>
+	 <1442251092.2850.53.camel@linaro.org>
+	 <9hhy4g89g64.fsf@e105922-lin.cambridge.arm.com>
+	 <1442313962.2917.25.camel@linaro.org>
+	 <9hheghzvfbz.fsf@e105922-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from eu-smtp-delivery-143.mimecast.com ([207.82.80.143]:7294 "EHLO
-	eu-smtp-delivery-143.mimecast.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751646AbbIOQVW convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 15 Sep 2015 12:21:22 -0400
-In-Reply-To: <20150915134556.GD16853@twins.programming.kicks-ass.net>
+Received: from smarthost01b.mail.zen.net.uk ([212.23.1.3]:45988 "EHLO
+	smarthost01b.mail.zen.net.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751622AbbIOQci (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2015 12:32:38 -0400
+In-Reply-To: <9hheghzvfbz.fsf@e105922-lin.cambridge.arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "mturquette@baylibre.com" <mturquette@baylibre.com>, "mingo@redhat.com" <mingo@redhat.com>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, "yuyang.du@intel.com" <yuyang.du@intel.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "sgurrappadi@nvidia.com" <sgurrappadi@nvidia.com>, "pang.xunlei@zte.com.cn" <pang.xunlei@zte.com.cn>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Punit Agrawal <punit.agrawal@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Liviu Dudau <Liviu.Dudau@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "lm-sensors@lm-sensors.org" <lm-sensors@lm-sensors.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "linux@roeck-us.net" <linux@roeck-us.net>, Sudeep Holla <Sudeep.Holla@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On 15/09/15 14:45, Peter Zijlstra wrote:
-> On Mon, Sep 14, 2015 at 04:57:35PM +0100, Juri Lelli wrote:
->> On 04/09/15 14:27, Juri Lelli wrote:
->>> So, just to recall what we discussed at LPC (I have Mike's slides
->>> at hand :-)). It seems that key points are:
->>>
->>> 1- we agreed that locking in cpufreq core has to change as we
->>>    have to access it from scheduler hot-paths; what Peter is
->>>    proposing above looks viable to me, what others (way more
->>>    confident then me with cpufreq inners) say?
+On Tue, 2015-09-15 at 17:04 +0100, Punit Agrawal wrote:
+> "Jon Medhurst (Tixy)" <tixy@linaro.org> writes:
 > 
-> Rafael had some thoughts IIRC.
->
-
-Yep, right. Rafael, could you please refresh our memory here? Do
-you foresee any problem trying to go as Peter suggested?
-
->>> 2- the interface has to be extended as we have to let other
->>>    scheduling classes drive freq selection too; I guess that how
->>>    we do aggregation depends on the nature of sched classes,
->>>    but we didn't really reach any sort of agreement here; is
->>>    this anyway something we can focus on after fixing locking?
+> > On Tue, 2015-09-15 at 10:37 +0100, Punit Agrawal wrote:
+> >> "Jon Medhurst (Tixy)" <tixy@linaro.org> writes:
+> >> 
+> >> > On Mon, 2015-09-14 at 15:38 +0100, Punit Agrawal wrote:
+> >> >> Mark Rutland <mark.rutland@arm.com> writes:
+> >> >> 
+> > [...]
+> >> >> The way the SCP interface is defined, the sensor identifiers are
+> >> >> contiguous,
+> >> >
+> >> > Is there any documentation other than DUI0922A? [1] From what I can seen
+> >> > that just says it's a 16-bit value and doesn't put any particular
+> >> > constraints on its value.
+> >> 
+> >> Although not explicitly stated, if you look at the Get Sensor Capability
+> >> [2] and Get Sensor Info [3] commands you can indirectly infer that the
+> >> Sensor IDs are contiguous.
+> >
+> > I personally wouldn't even indirectly infer they are contiguous from
+> > what the document says. If I were implementing the firmware I would feel
+> > quite in my rights to, for example, use the top 8 bits of the ID for a
+> > sensor type and the bottom 8 for an index, if that made dispatching of
+> > requests more efficient. Or if some optional hardware was detected as
+> > missing, leaving some holes in ID space.
 > 
-> Right, that's going to be interesting. Reading through that SchedTune
-> thread has been educational (I really had no clue what it was on about
-> on initial reading, the discussion that's on-going clarified a lot).
-> 
+> True. And without a command to convey the list of valid IDs, the
+> consumer of the API would have to iterate over the entire 16bit space to
+> locate valid IDs.
 
-That's good stuff yes.
+Or get IDs from device-tree :-) Anyway, I'm not arguing that the IDs
+shouldn't be 0..N-1, just that it should explicitly documented in the
+SCPI doc, which we're are in agreement on.
 
-> It seems that even the fair class might want to provide minimal hints
-> due to that 'boost' / 'interactive' nonsense.
-> 
-
-That's basically what we are doing with the SchedDVFS + SchedTune thing.
-Sometimes is helpful to be able to fake signals in order to get better
-performance. The current interface already allows us to do that, but
-we'll have to figure out how this need takes into account other classes
-as well (like this being still best effort and others having QoS
-requirements).
-
->>> 3- the interface should also support peripheral devices; this
->>>    seems a interesting feature to have, but how about we postpone
->>>    it after we've got previous points right?
-> 
-> Agreed, that's a can of worms :-) Better start with the 'simple' things.
-> 
-
-Good. :-)
-
-> That said; ISTR a patch set on this topic recently.
-> 
->   lkml.kernel.org/r/1441904972-5809-1-git-send-email-javi.merino@arm.com
-> 
-
-Yep, that has to be factored in as well eventually; we are actually
-trying to keep that in our minds as we proceed further with development
-(Javi sits a desk far from me ;-)), but, as you said, simpler things first.
-
-Thanks,
-
-- Juri
+-- 
+Tixy
 
