@@ -1,62 +1,49 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: cpufreq_cpu_get_raw() isn't a static function
- anymore
-Date: Tue, 15 Sep 2015 13:44:45 +0530
-Message-ID: <20150915081445.GD6350@linux>
-References: <d7e3e729d09d15cfc73ebaf251a2bb4d33ec54a9.1442303903.git.viresh.kumar@linaro.org>
+From: Laurentiu Palcu <laurentiu.palcu@intel.com>
+Subject: Re: [PATCH v4 2/7] power: bq27x00_battery: Renaming for consistency
+Date: Tue, 15 Sep 2015 11:32:24 +0300
+Message-ID: <20150915083224.GA3166@lpalcu-desk>
+References: <1442265973-32261-1-git-send-email-afd@ti.com>
+ <1442265973-32261-3-git-send-email-afd@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f50.google.com ([209.85.220.50]:33328 "EHLO
-	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751622AbbIOIOt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2015 04:14:49 -0400
-Received: by pacex6 with SMTP id ex6so170243477pac.0
-        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2015 01:14:49 -0700 (PDT)
+Received: from mga01.intel.com ([192.55.52.88]:41965 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751693AbbIOIca (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 15 Sep 2015 04:32:30 -0400
 Content-Disposition: inline
-In-Reply-To: <d7e3e729d09d15cfc73ebaf251a2bb4d33ec54a9.1442303903.git.viresh.kumar@linaro.org>
+In-Reply-To: <1442265973-32261-3-git-send-email-afd@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, alexandra.yates@linux.intel.com, open list <linux-kernel@vger.kernel.org>
+To: "Andrew F. Davis" <afd@ti.com>
+Cc: Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Dan Murphy <dmurphy@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 15-09-15, 13:40, Viresh Kumar wrote:
-> Its used outside of the core file and is exported as well. Drop the
-> 'static' keyword from its declaration and fix below build error:
+On Mon, Sep 14, 2015 at 04:26:08PM -0500, Andrew F. Davis wrote:
+> Rename functions that are used by multiple devices. New devices
+> have been added and the function names and driver name are no longer
+> general enough for the functionality they provide.
 > 
-> linux/drivers/cpufreq/cpufreq.c:241:31: error: static declaration of
-> 'cpufreq_cpu_get_raw' follows non-static declaration
-> 
-> Fixes: 503655f70d9b ("cpufreq: acpi-cpufreq: Use cpufreq_cpu_get_raw() in ->get()")
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Andrew F. Davis <afd@ti.com>
 > ---
->  drivers/cpufreq/cpufreq.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  MAINTAINERS                                        |   4 +-
+>  arch/arm/configs/omap2plus_defconfig               |   2 +-
+>  arch/unicore32/Kconfig                             |   2 +-
+>  drivers/power/Kconfig                              |  22 +-
+>  drivers/power/Makefile                             |   2 +-
+>  .../power/{bq27x00_battery.c => bq27xxx_battery.c} | 333 +++++++++++----------
 
-Urg, sorry for spamming wrong people (Thomas/Alexandra) for an
-unrelated patch.
+1000 chips! That's how many potential chips is this driver supposed to
+support, after the rename, with little or no modifications. Is it even
+possible to guarantee that all future chips, starting with 'bq27' in
+their naming scheme, are register compatible?
 
-Have sent the relevant patch with this subject now:
-"PM / sleep: Fix broken builds without CONFIG_PM_SLEEP_DEBUG"
+Call me conservative, but when I see driver names/renames containing
+wildcards, I get chills down my spine. I can probably get over single
+digit wildcards but 3 digit wildcards is a little too much. :)
 
-Though, this fix was also relevant, just sent it to wrong people :(
+I can't help but wonder what will one have to do if one single newly
+released bq27xxx chip is completely different... :/
 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index a8252bb0f80c..ef5ed9470de9 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -238,7 +238,7 @@ int cpufreq_generic_init(struct cpufreq_policy *policy,
->  }
->  EXPORT_SYMBOL_GPL(cpufreq_generic_init);
->  
-> -static struct cpufreq_policy *cpufreq_cpu_get_raw(unsigned int cpu)
-> +struct cpufreq_policy *cpufreq_cpu_get_raw(unsigned int cpu)
->  {
->  	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
->  
-> -- 
-> 2.4.0
-> 
+laurentiu
 
--- 
-viresh
+
