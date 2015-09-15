@@ -1,7 +1,7 @@
 From: Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
-Subject: [PATCH v4 05/10] power: bq24257: Add SW-based approach for Power Good determination
-Date: Tue, 15 Sep 2015 12:58:29 -0500
-Message-ID: <1442339914-25843-6-git-send-email-dannenberg@ti.com>
+Subject: [PATCH v4 01/10] dt: power: bq24257-charger: Cover additional devices
+Date: Tue, 15 Sep 2015 12:58:25 -0500
+Message-ID: <1442339914-25843-2-git-send-email-dannenberg@ti.com>
 References: <1442339914-25843-1-git-send-email-dannenberg@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -12,99 +12,90 @@ To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Erem
 Cc: Ramakrishna Pallala <ramakrishna.pallala-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-A software-based approach for determining the charger's input voltage
-"Power Good" state is introduced for devices like the bq24250 which
-don't have a dedicated hardware pin for that purpose. This SW-based
-approach is also used for other devices (with dedicated PG pin) as a
-fall back solution if that pin is not configured to be used through
-"pg-gpios".
+Extend the bq24257 charger's device tree documentation to cover the
+bq24250 and bq24251 devices as well feature additions.
 
 Signed-off-by: Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
 ---
- drivers/power/bq24257_charger.c | 49 ++++++++++++++++++++++++++++++++++++-----
- 1 file changed, 43 insertions(+), 6 deletions(-)
+ .../devicetree/bindings/power/bq24257.txt          | 55 ++++++++++++++++++++--
+ 1 file changed, 50 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
-index 55e4ee4..d7488cf 100644
---- a/drivers/power/bq24257_charger.c
-+++ b/drivers/power/bq24257_charger.c
-@@ -103,6 +103,7 @@ struct bq24257_device {
- 	struct mutex lock; /* protect state data */
+diff --git a/Documentation/devicetree/bindings/power/bq24257.txt b/Documentation/devicetree/bindings/power/bq24257.txt
+index 5c9d394..3815897 100644
+--- a/Documentation/devicetree/bindings/power/bq24257.txt
++++ b/Documentation/devicetree/bindings/power/bq24257.txt
+@@ -1,21 +1,66 @@
+-Binding for TI bq24257 Li-Ion Charger
++Binding for TI bq24250/bq24251/bq24257 Li-Ion Charger
  
- 	bool in_ilimit_autoset_disable;
-+	bool pg_gpio_disable;
- };
- 
- static bool bq24257_is_volatile_reg(struct device *dev, unsigned int reg)
-@@ -356,7 +357,26 @@ static int bq24257_get_chip_state(struct bq24257_device *bq,
- 
- 	state->fault = ret;
- 
--	state->power_good = !gpiod_get_value_cansleep(bq->pg);
-+	if (bq->pg_gpio_disable)
-+		/*
-+		 * If we have a chip without a dedicated power-good GPIO or
-+		 * some other explicit bit that would provide this information
-+		 * assume the power is good if there is no supply related
-+		 * fault - and not good otherwise. There is a possibility for
-+		 * other errors to mask that power in fact is not good but this
-+		 * is probably the best we can do here.
-+		 */
-+		switch (state->fault) {
-+		case FAULT_INPUT_OVP:
-+		case FAULT_INPUT_UVLO:
-+		case FAULT_INPUT_LDO_LOW:
-+			state->power_good = false;
-+			break;
-+		default:
-+			state->power_good = true;
-+		}
-+	else
-+		state->power_good = !gpiod_get_value_cansleep(bq->pg);
- 
- 	return 0;
- }
-@@ -676,7 +696,7 @@ static int bq24257_pg_gpio_probe(struct bq24257_device *bq)
- {
- 	bq->pg = devm_gpiod_get_index(bq->dev, BQ24257_PG_GPIO, 0, GPIOD_IN);
- 	if (IS_ERR(bq->pg)) {
--		dev_err(bq->dev, "could not probe PG pin\n");
-+		dev_info(bq->dev, "could not probe PG pin\n");
- 		return PTR_ERR(bq->pg);
- 	}
- 
-@@ -810,10 +830,27 @@ static int bq24257_probe(struct i2c_client *client,
- 		INIT_DELAYED_WORK(&bq->iilimit_setup_work,
- 				  bq24257_iilimit_setup_work);
- 
--	/* we can only check Power Good status by probing the PG pin */
--	ret = bq24257_pg_gpio_probe(bq);
--	if (ret < 0)
--		return ret;
-+	/*
-+	 * The BQ24250 doesn't have a dedicated Power Good (PG) pin so we
-+	 * explicitly disable this feature for this device and instead use
-+	 * a SW-based approach to determine the PG state.
-+	 */
-+	if (bq->chip == BQ24250)
-+		bq->pg_gpio_disable = true;
+ Required properties:
+ - compatible: Should contain one of the following:
++ * "ti,bq24250"
++ * "ti,bq24251"
+  * "ti,bq24257"
+-- reg:			   integer, i2c address of the device.
++- reg: integer, i2c address of the device.
++- stat-gpios: GPIO used for the devices STAT_IN pin. Alternatively the pin can
++    also be defined through the standard interrupt definition properties (see
++    optional properties section below). Only use one method.
+ - ti,battery-regulation-voltage: integer, maximum charging voltage in uV.
+-- ti,charge-current:	   integer, maximum charging current in uA.
+-- ti,termination-current:  integer, charge will be terminated when current in
+-			   constant-voltage phase drops below this value (in uA).
++- ti,charge-current: integer, maximum charging current in uA.
++- ti,termination-current: integer, charge will be terminated when current in
++    constant-voltage phase drops below this value (in uA).
 +
-+	/*
-+	 * For devices that do have a dedicated PG pin go ahead and probe it,
-+	 * using the SW-based approach as a fall back solution. Note that the
-+	 * use of the dedicated pin is preferred.
-+	 */
-+	if (!bq->pg_gpio_disable) {
-+		ret = bq24257_pg_gpio_probe(bq);
-+		if (ret < 0) {
-+			dev_info(bq->dev,
-+				 "using SW-based power-good detection\n");
-+			bq->pg_gpio_disable = true;
-+		}
-+	}
++Optional properties:
++- pg-gpios: GPIO used for connecting the bq2425x device PG (Power Good) pin.
++    This pin is not available on all devices however it should be used if
++    possible as this is the recommended way to obtain the charger's input PG
++    state. If this pin is not specified a software-based approach for PG
++    detection is used.
++- ti,current-limit: The maximum current to be drawn from the charger's input
++    (in uA). If this property is not specified a USB D+/D- signal based charger
++    type detection is used (if available) and the input limit current is set
++    accordingly. If the D+/D- based detection is not available on a given device
++    a default of 500,000 is used (=500mA).
++- ti,ovp-voltage: Configures the over voltage protection voltage (in uV). If
++    not specified a default of 6,5000,000 (=6.5V) is used.
++- ti,in-dpm-voltage: Configures the threshold input voltage for the dynamic
++    power path management (in uV). If not specified a default of 4,360,000
++    (=4.36V) is used.
++- interrupt-parent: Should be the phandle for the interrupt controller. Use in
++    conjunction with "interrupts" and only in case "stat-gpios" is not used.
++- interrupts: Interrupt mapping for GPIO IRQ (configure for both edges). Use in
++    conjunction with "interrupt-parent" and only in case "stat-gpios" is not
++    used.
  
- 	/* reset all registers to defaults */
- 	ret = bq24257_field_write(bq, F_RESET, 1);
+ Example:
+ 
+ bq24257 {
+ 	compatible = "ti,bq24257";
+ 	reg = <0x6a>;
++	stat-gpios = <&gpio1 16 GPIO_ACTIVE_HIGH>;
++	pg-gpios = <&gpio1 28 GPIO_ACTIVE_HIGH>;
+ 
+ 	ti,battery-regulation-voltage = <4200000>;
+ 	ti,charge-current = <1000000>;
+ 	ti,termination-current = <50000>;
+ };
++
++Example:
++
++bq24250 {
++	compatible = "ti,bq24250";
++	reg = <0x6a>;
++	interrupt-parent = <&gpio1>;
++	interrupts = <16 IRQ_TYPE_EDGE_BOTH>;
++
++	ti,battery-regulation-voltage = <4200000>;
++	ti,charge-current = <500000>;
++	ti,termination-current = <50000>;
++	ti,current-limit = <900000>;
++	ti,ovp-voltage = <9500000>;
++	ti,in-dpm-voltage = <4440000>;
++};
 -- 
 1.9.1
 
