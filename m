@@ -1,100 +1,69 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH v2] clk: samsung: fix cpu clock's flags checking
-Date: Tue, 15 Sep 2015 14:28:39 +0200
-Message-ID: <4294976.g7Mb9GifR6@amdc1976>
-References: <1440762575-21520-1-git-send-email-b.zolnierkie@samsung.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCHv2 3/4] power: Add Qualcomm SMBB driver
+Date: Tue, 15 Sep 2015 14:43:34 +0200
+Message-ID: <20150915124333.GA1442@earth>
+References: <1438278837-29967-1-git-send-email-bjorn.andersson@sonymobile.com>
+ <1438278837-29967-4-git-send-email-bjorn.andersson@sonymobile.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="6TrnltStXW4iwmi0"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1440762575-21520-1-git-send-email-b.zolnierkie@samsung.com>
+Content-Disposition: inline
+In-Reply-To: <1438278837-29967-4-git-send-email-bjorn.andersson@sonymobile.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Michael Turquette <mturquette@baylibre.com>
-Cc: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Dan Carpenter <dan.carpenter@oracle.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>
+To: Bjorn Andersson <bjorn.andersson@sonymobile.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, Courtney Cavin <courtney.cavin@sonymobile.com>
 List-Id: linux-pm@vger.kernel.org
 
 
-[ + Stephen on cc: ]
+--6TrnltStXW4iwmi0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Friday, August 28, 2015 01:49:35 PM Bartlomiej Zolnierkiewicz wrote:
-> CLK_CPU_HAS_DIV1 and CLK_CPU_NEEDS_DEBUG_ALT_DIV masks were
-> incorrectly used as a bit numbers.  Fix it.
-> 
-> Tested on Exynos4210 based Origen board and on Exynos5250 based
-> Arndale board.
-> 
-> Cc: Tomasz Figa <tomasz.figa@gmail.com>
-> Cc: Michael Turquette <mturquette@baylibre.com>
-> Cc: Thomas Abraham <thomas.ab@samsung.com>
-> Fixes: ddeac8d96 ("clk: samsung: add infrastructure to register cpu clocks")
-> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-> Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> Reviewed-by: Javier Martinez Canillas <javier@dowhile0.org>
-> Acked-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Hi,
+
+On Thu, Jul 30, 2015 at 10:53:56AM -0700, Bjorn Andersson wrote:
+> From: Courtney Cavin <courtney.cavin@sonymobile.com>
+>=20
+> Add the Qualcomm Switch-Mode Battery Charger and Boost driver, found in
+> pm8941.
+>=20
+> Signed-off-by: Courtney Cavin <courtney.cavin@sonymobile.com>
+> Signed-off-by: Bjorn Andersson <bjorn.andersson@sonymobile.com>
 > ---
-> v2:
-> - added Reviewed-by, Acked-by and Fixes tags (no code changes)
-> 
-> Michael, please apply.  Thank you.
+>=20
+> Changes since v1:
+> - Corrected authorship
+> - Dropped MODULE_ALIAS
 
-Gentle ping.
+Acked-By: Sebastian Reichel <sre@kernel.org>
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+I think the first patch made it into 4.3, so I can simply queue this
+patch together with the DT binding?
 
->  drivers/clk/samsung/clk-cpu.c | 10 +++++-----
->  1 file changed, 5 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/clk/samsung/clk-cpu.c b/drivers/clk/samsung/clk-cpu.c
-> index 7c1e1f5..2fe37f7 100644
-> --- a/drivers/clk/samsung/clk-cpu.c
-> +++ b/drivers/clk/samsung/clk-cpu.c
-> @@ -164,7 +164,7 @@ static int exynos_cpuclk_pre_rate_change(struct clk_notifier_data *ndata,
->  	 * the values for DIV_COPY and DIV_HPM dividers need not be set.
->  	 */
->  	div0 = cfg_data->div0;
-> -	if (test_bit(CLK_CPU_HAS_DIV1, &cpuclk->flags)) {
-> +	if (cpuclk->flags & CLK_CPU_HAS_DIV1) {
->  		div1 = cfg_data->div1;
->  		if (readl(base + E4210_SRC_CPU) & E4210_MUX_HPM_MASK)
->  			div1 = readl(base + E4210_DIV_CPU1) &
-> @@ -185,7 +185,7 @@ static int exynos_cpuclk_pre_rate_change(struct clk_notifier_data *ndata,
->  		alt_div = DIV_ROUND_UP(alt_prate, tmp_rate) - 1;
->  		WARN_ON(alt_div >= MAX_DIV);
->  
-> -		if (test_bit(CLK_CPU_NEEDS_DEBUG_ALT_DIV, &cpuclk->flags)) {
-> +		if (cpuclk->flags & CLK_CPU_NEEDS_DEBUG_ALT_DIV) {
->  			/*
->  			 * In Exynos4210, ATB clock parent is also mout_core. So
->  			 * ATB clock also needs to be mantained at safe speed.
-> @@ -206,7 +206,7 @@ static int exynos_cpuclk_pre_rate_change(struct clk_notifier_data *ndata,
->  	writel(div0, base + E4210_DIV_CPU0);
->  	wait_until_divider_stable(base + E4210_DIV_STAT_CPU0, DIV_MASK_ALL);
->  
-> -	if (test_bit(CLK_CPU_HAS_DIV1, &cpuclk->flags)) {
-> +	if (cpuclk->flags & CLK_CPU_HAS_DIV1) {
->  		writel(div1, base + E4210_DIV_CPU1);
->  		wait_until_divider_stable(base + E4210_DIV_STAT_CPU1,
->  				DIV_MASK_ALL);
-> @@ -225,7 +225,7 @@ static int exynos_cpuclk_post_rate_change(struct clk_notifier_data *ndata,
->  	unsigned long mux_reg;
->  
->  	/* find out the divider values to use for clock data */
-> -	if (test_bit(CLK_CPU_NEEDS_DEBUG_ALT_DIV, &cpuclk->flags)) {
-> +	if (cpuclk->flags & CLK_CPU_NEEDS_DEBUG_ALT_DIV) {
->  		while ((cfg_data->prate * 1000) != ndata->new_rate) {
->  			if (cfg_data->prate == 0)
->  				return -EINVAL;
-> @@ -240,7 +240,7 @@ static int exynos_cpuclk_post_rate_change(struct clk_notifier_data *ndata,
->  	writel(mux_reg & ~(1 << 16), base + E4210_SRC_CPU);
->  	wait_until_mux_stable(base + E4210_STAT_CPU, 16, 1);
->  
-> -	if (test_bit(CLK_CPU_NEEDS_DEBUG_ALT_DIV, &cpuclk->flags)) {
-> +	if (cpuclk->flags & CLK_CPU_NEEDS_DEBUG_ALT_DIV) {
->  		div |= (cfg_data->div0 & E4210_DIV0_ATB_MASK);
->  		div_mask |= E4210_DIV0_ATB_MASK;
->  	}
+-- Sebastian
+
+--6TrnltStXW4iwmi0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJV+BJxAAoJENju1/PIO/qauP4P+gJDUgBEiRdF/oC0JuIW+V+e
+bQ4y4W2ualuGhzE4SSmeD48a0b7oYmeteSlbh0+0l9PlxqiSFm/sy9pNM8oe6Nfe
+KQ+fFqLchOMRYOw2uSEDcdLj0JlJm5h8tZmymwqMv7NYvaPaF1i0Jz63mZ30b3w9
+SSHEY5xmZ2MEzYeVu+fiZ57hOrhKEKAoUbv+ZP5K6Jq8tatrxy4yzO/6p8nZq4zn
+9tYzqtUKT4bCppZB3nQwXv/oEsCPOEDt9BpdwlKEIOpgexs95rT3qAdzTWPsooe6
+yB1dkq7KZjrwFobS6VDdiXsG7i1THNx1+Q1d0HAtI+xKW4R8NesgvAaebVRA0Xgu
+VWhqPEGunPMMXaRLvNq9Zuq1hQxNRA1hxcjrrEdYhExwd7L1XZxhOSplKexqkB+N
+WmhKJn5KOjxqarWon2qoWQi2daa0ZWYdwC1EUvdyBBBuJdW/x1S2L9lCZWdYMKls
+EXD0Ljh0/NvlsDqyBUKN/GmOV66+GfiSh03grXqm5LYkByB26IJZJFXX9JwMKYPW
+045BQQj1DmFod/IyANNBLD7fkwY2wXSQOXF5hv15I9QLsUxM5Ygs5e1M8SzSux3d
+I76wFJ3sRX5olYqBZmgHWl1hHj96Lwzf2x9y+d7zVj8Jt/vGNqYq+rr+8U28i4MW
+oTurvT31V8V4Meuyk0/K
+=QVI1
+-----END PGP SIGNATURE-----
+
+--6TrnltStXW4iwmi0--
