@@ -1,102 +1,96 @@
-From: Andreas Dannenberg <dannenberg@ti.com>
-Subject: Re: [PATCH v4 7/7] power: bq27xxx_battery: Add interrupt handling
- support
-Date: Tue, 15 Sep 2015 13:47:15 -0500
-Message-ID: <20150915184714.GB18055@beast>
-References: <1442265973-32261-1-git-send-email-afd@ti.com>
- <1442265973-32261-8-git-send-email-afd@ti.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v2 2/2] irqchip: gic: Document optional Clock and Power
+ Domain properties
+Date: Tue, 15 Sep 2015 13:57:01 -0500
+Message-ID: <55F869FD.4090900@kernel.org>
+References: <1442261204-30931-1-git-send-email-geert+renesas@glider.be>
+ <1442261204-30931-3-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:48926 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751834AbbIOSrn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 15 Sep 2015 14:47:43 -0400
-Content-Disposition: inline
-In-Reply-To: <1442265973-32261-8-git-send-email-afd@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1442261204-30931-3-git-send-email-geert+renesas@glider.be>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Kumar Gala <galak@codeaurora.org>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Rob Herring <robh+dt@kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-sh@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Andrew F. Davis" <afd@ti.com>
-Cc: Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Dan Murphy <dmurphy@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, Sep 14, 2015 at 04:26:13PM -0500, Andrew F. Davis wrote:
-> Some devices have a pin that can generate an interrupt when
-> the battery's status changes. Add an interrupt handler to
-> read the new battery status.
+On 09/14/2015 03:06 PM, Geert Uytterhoeven wrote:
+> Depending on the GIC variant, the GIC module has one or more clock
+> inputs. Document the optional "clocks" and "clock-names" properties,
+> and their possible values, based on the Technical Reference Manuals.
+> optional.
 > 
-> Signed-off-by: Andrew F. Davis <afd@ti.com>
+> Add the optional "power-domains" property.
+> 
+> This will allow to describe in DT the relationship between the GIC and
+> the Clock and/or Power Domain topology on SoCs where this is relevant
+> and needed for proper operation.
+> 
+> Note: As the current GIC driver doesn't support Runtime PM yet, PM
+> Domain constraints must be handled elsewhere in e.g. platform code.
+> 
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 > ---
->  drivers/power/bq27xxx_battery.c | 23 +++++++++++++++++++++++
->  1 file changed, 23 insertions(+)
+> Note: v1 was Acked-by: Rob Herring <robh@kernel.org>, but I didn't add
+>       it, due to the addition of clock-names.
+
+For both: ack.
+
 > 
-> diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27xxx_battery.c
-> index 10be8a6..29fdcd7 100644
-> --- a/drivers/power/bq27xxx_battery.c
-> +++ b/drivers/power/bq27xxx_battery.c
-> @@ -48,6 +48,7 @@
->  #include <linux/idr.h>
->  #include <linux/i2c.h>
->  #include <linux/slab.h>
-> +#include <linux/interrupt.h>
->  #include <asm/unaligned.h>
->  
->  #include <linux/power/bq27xxx_battery.h>
-> @@ -732,6 +733,15 @@ static void bq27xxx_battery_update(struct bq27xxx_device_info *di)
->  	di->last_update = jiffies;
->  }
->  
-> +static irqreturn_t bq27xxx_battery_irq_handler_thread(int irq, void *data)
-> +{
-> +	struct bq27xxx_device_info *di = data;
-> +
-> +	bq27xxx_battery_update(di);
-> +
-> +	return IRQ_HANDLED;
-> +}
-> +
->  static void bq27xxx_battery_poll(struct work_struct *work)
->  {
->  	struct bq27xxx_device_info *di =
-> @@ -1137,6 +1147,19 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
->  
->  	i2c_set_clientdata(client, di);
->  
-> +	if (client->irq) {
-> +		retval = devm_request_threaded_irq(&client->dev, client->irq,
-> +				NULL, bq27xxx_battery_irq_handler_thread,
-> +				IRQF_ONESHOT,
-> +				name, di);
-
-Hi Andrew,
-I think it'll be better if you explicitly specify the rising vs. falling
-edge interrupt flags according to exactly what the bq27xxx will trigger
-on to ensure the corresponding GPIO module is always configured properly.
-
-While we are at it, was the platform-data based initialization in
-conjunction with interrupts tested?
-
-Regards,
-
---
-Andreas Dannenberg
-Texas Instruments Inc
-
-
-> +		if (retval) {
-> +			dev_err(&client->dev,
-> +				"Unable to register IRQ %d error %d\n",
-> +				client->irq, retval);
-> +			return retval;
-> +		}
-> +	}
-> +
->  	return 0;
->  
->  batt_failed:
-> -- 
-> 1.9.1
+> v2:
+>   - Add "clock-names",
+>   - Document clock inputs on various GIC variants.
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Clock inputs are based on the following documentation:
+>   - "ARM11 MPCore Processor Technical Reference Manual" (r2p0),
+>   - "Cortex-A9 MPCore Technical Reference Manual" (r4p1, r2p0),
+>   - "Cortex-A15 Technical Reference Manual" (r4p0, r2p0),
+>   - "CoreLink GIC-400 Generic Interrupt Controller Technical Reference
+>     Manual" (r0p1, r0p0),
+>   - "PrimeCell Generic Interrupt Controller (PL390) Technical Reference
+>     Manual" (r0p0).
+> 
+> I could not find clock input information in:
+>   - "ARM1176JZF Development Chip Technical Reference Manual" (r0p0),
+>   - "Cortex-A7 MPCore processors" (r0p5, r0p3).
+> 
+> Other:
+>   - "brcm,brahma-b15-gic" seems to be always used together with
+>     "arm,cortex-a15-gic".
+> 
+> No access to datasheets:
+>   - "qcom,msm-8660-qgic",
+>   - "qcom,msm-qgic2".
+> ---
+>  Documentation/devicetree/bindings/arm/gic.txt | 15 +++++++++++++++
+>  1 file changed, 15 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/arm/gic.txt b/Documentation/devicetree/bindings/arm/gic.txt
+> index 24742853ba460223..cc56021eb60babea 100644
+> --- a/Documentation/devicetree/bindings/arm/gic.txt
+> +++ b/Documentation/devicetree/bindings/arm/gic.txt
+> @@ -59,6 +59,21 @@ Optional
+>    regions, used when the GIC doesn't have banked registers. The offset is
+>    cpu-offset * cpu-nr.
+>  
+> +- clocks        : List of phandle and clock-specific pairs, one for each entry
+> +  in clock-names.
+> +- clock-names   : List of names for the GIC clock input(s). Valid clock names
+> +  depend on the GIC variant:
+> +	"ic_clk" (for "arm,arm11mp-gic")
+> +	"PERIPHCLKEN" (for "arm,cortex-a15-gic")
+> +	"PERIPHCLK", "PERIPHCLKEN" (for "arm,cortex-a9-gic")
+> +	"clk" (for "arm,gic-400")
+> +	"gclk" (for "arm,pl390")
+> +
+> +- power-domains : A phandle and PM domain specifier as defined by bindings of
+> +		  the power controller specified by phandle, used when the GIC
+> +		  is part of a Power or Clock Domain.
+> +
+> +
+>  Example:
+>  
+>  	intc: interrupt-controller@fff11000 {
+> 
+
