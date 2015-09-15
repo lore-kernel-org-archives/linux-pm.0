@@ -1,96 +1,100 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v2 2/2] irqchip: gic: Document optional Clock and Power
- Domain properties
-Date: Tue, 15 Sep 2015 13:57:01 -0500
-Message-ID: <55F869FD.4090900@kernel.org>
-References: <1442261204-30931-1-git-send-email-geert+renesas@glider.be>
- <1442261204-30931-3-git-send-email-geert+renesas@glider.be>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] driver core: Ensure proper suspend/resume ordering
+Date: Tue, 15 Sep 2015 15:18:19 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1509151505040.1420-100000@iolanthe.rowland.org>
+References: <20150915161047.GC25966@ulmo.nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <1442261204-30931-3-git-send-email-geert+renesas@glider.be>
-Sender: linux-sh-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Kumar Gala <galak@codeaurora.org>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Rob Herring <robh+dt@kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-sh@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:56141 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751070AbbIOTSU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2015 15:18:20 -0400
+In-Reply-To: <20150915161047.GC25966@ulmo.nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thierry Reding <thierry.reding@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 09/14/2015 03:06 PM, Geert Uytterhoeven wrote:
-> Depending on the GIC variant, the GIC module has one or more clock
-> inputs. Document the optional "clocks" and "clock-names" properties,
-> and their possible values, based on the Technical Reference Manuals.
-> optional.
-> 
-> Add the optional "power-domains" property.
-> 
-> This will allow to describe in DT the relationship between the GIC and
-> the Clock and/or Power Domain topology on SoCs where this is relevant
-> and needed for proper operation.
-> 
-> Note: As the current GIC driver doesn't support Runtime PM yet, PM
-> Domain constraints must be handled elsewhere in e.g. platform code.
-> 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> ---
-> Note: v1 was Acked-by: Rob Herring <robh@kernel.org>, but I didn't add
->       it, due to the addition of clock-names.
+On Tue, 15 Sep 2015, Thierry Reding wrote:
 
-For both: ack.
+> > There are a few things to watch out for.  Since the dpm_list gets
+> > modified during system sleep transitions, we would have to make sure
+> > that nothing gets probed during those times.  In principle, that's what
+> > the "prepare" stage is meant for, but there's still a race.  As long as
+> > no other kernel thread (such as the deferred probing mechanism) tries
+> > to probe a device once everything has been frozen, we should be okay.
+> > But if not, there will be trouble -- after the ->prepare callback runs, 
+> > the device is no longer on the dpm_list and so we don't want this patch 
+> > to put it back on that list.
+> 
+> Perhaps moving to the end of the list needs to be a little smarter. That
+> is it could check whether the device has been prepared for suspension or
+> not and only move when it hasn't?
 
+Maybe.  But doesn't that mean it won't solve your problem completely?
+
+> Then again, shouldn't the core even prohibit new probes once the suspend
+> has been triggered? Sounds like asking for a lot of trouble if it didn't
+> ...
+
+The core prohibits new devices from being registered.  It does not 
+prohibit probes of existing devices, because they currently do not 
+affect the dpm_list.
+
+In general, we rely on subsystems not to do any probing once a device 
+is suspended.  It's probably reasonable to ask them not to do any 
+probing once a device has gone through the "prepare" stage.
+
+> > There's also an issue about other types of dependencies.  For instance,
+> > it's conceivable that device B might be discovered and depend on device
+> > A, even before A has been bound to a driver.  (B might be discovered by 
+> > A's subsystem rather than A's driver.)  In that case, moving A to the 
+> > end of the list would cause B to come before A even though B depends on 
+> > A.  Of course, deferred probing already has this problem.
 > 
-> v2:
->   - Add "clock-names",
->   - Document clock inputs on various GIC variants.
+> But that's exactly the problem that I'm seeing.
+
+Not quite.
+
+>  B isn't discovered by
+> A's subsystem, but the type of dependency is the same. A in this case
+> would be the GPIO controller and B the gpio-keys device. B clearly
+> depends on A, but deferred probe currently moves A to the end of the
+> list but not A, hence why the problem occurs.
+
+The difference is that in my example, B can be probed before A.  In
+your case it can't.  Therefore the patch works for your case but not
+for mine.
+
+> That's also a problem that I think this patch solves. By moving every
+> device to the end of the list before it is probed we ensure that the
+> dpm_list is ordered in the same way as the probe order. For this to work
+> the precondition of course is that drivers know about the dependencies
+> and will defer probe if necessary.
+
+Do I understand correctly?  You're saying a driver must defer a probe
+if the device it's probing depends on another device which hasn't
+been bound yet.  That does not sound like a reasonable sort of
+requirement -- we might know about the dependency but we shouldn't have
+to check whether the prerequisite device has been bound.
+
+> > An easy way to check for this sort of thing would be to verify that a 
+> > device about to be probed doesn't have any children.  This wouldn't 
+> > catch all the potential dependencies, but it would be a reasonable 
+> > start.  Do we currently check that after a device has been unbound, it 
+> > doesn't have any remaining children?  We should do that too.
 > 
-> Clock inputs are based on the following documentation:
->   - "ARM11 MPCore Processor Technical Reference Manual" (r2p0),
->   - "Cortex-A9 MPCore Technical Reference Manual" (r4p1, r2p0),
->   - "Cortex-A15 Technical Reference Manual" (r4p0, r2p0),
->   - "CoreLink GIC-400 Generic Interrupt Controller Technical Reference
->     Manual" (r0p1, r0p0),
->   - "PrimeCell Generic Interrupt Controller (PL390) Technical Reference
->     Manual" (r0p0).
+> I think that would cover the other half of the cases where deferred
+> probe isn't implemented because drivers are written with the assumption
+> that children will be instantiated after their parent has been probed.
 > 
-> I could not find clock input information in:
->   - "ARM1176JZF Development Chip Technical Reference Manual" (r0p0),
->   - "Cortex-A7 MPCore processors" (r0p5, r0p3).
-> 
-> Other:
->   - "brcm,brahma-b15-gic" seems to be always used together with
->     "arm,cortex-a15-gic".
-> 
-> No access to datasheets:
->   - "qcom,msm-8660-qgic",
->   - "qcom,msm-qgic2".
-> ---
->  Documentation/devicetree/bindings/arm/gic.txt | 15 +++++++++++++++
->  1 file changed, 15 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/arm/gic.txt b/Documentation/devicetree/bindings/arm/gic.txt
-> index 24742853ba460223..cc56021eb60babea 100644
-> --- a/Documentation/devicetree/bindings/arm/gic.txt
-> +++ b/Documentation/devicetree/bindings/arm/gic.txt
-> @@ -59,6 +59,21 @@ Optional
->    regions, used when the GIC doesn't have banked registers. The offset is
->    cpu-offset * cpu-nr.
->  
-> +- clocks        : List of phandle and clock-specific pairs, one for each entry
-> +  in clock-names.
-> +- clock-names   : List of names for the GIC clock input(s). Valid clock names
-> +  depend on the GIC variant:
-> +	"ic_clk" (for "arm,arm11mp-gic")
-> +	"PERIPHCLKEN" (for "arm,cortex-a15-gic")
-> +	"PERIPHCLK", "PERIPHCLKEN" (for "arm,cortex-a9-gic")
-> +	"clk" (for "arm,gic-400")
-> +	"gclk" (for "arm,pl390")
-> +
-> +- power-domains : A phandle and PM domain specifier as defined by bindings of
-> +		  the power controller specified by phandle, used when the GIC
-> +		  is part of a Power or Clock Domain.
-> +
-> +
->  Example:
->  
->  	intc: interrupt-controller@fff11000 {
-> 
+> But it won't catch all the cases where there is no parent-child
+> relationship between the depender and the dependee.
+
+No, it won't catch all cases.  But the cases it does catch are ones 
+where your patch is likely to cause trouble, so it would be good to 
+know about them.
+
+Alan Stern
 
