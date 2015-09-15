@@ -1,105 +1,133 @@
-From: Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
-Subject: [PATCH v4 01/10] dt: power: bq24257-charger: Cover additional devices
-Date: Tue, 15 Sep 2015 12:58:25 -0500
-Message-ID: <1442339914-25843-2-git-send-email-dannenberg@ti.com>
+From: Andreas Dannenberg <dannenberg@ti.com>
+Subject: [PATCH v4 07/10] power: bq24257: Add input DPM voltage threshold setting support
+Date: Tue, 15 Sep 2015 12:58:31 -0500
+Message-ID: <1442339914-25843-8-git-send-email-dannenberg@ti.com>
 References: <1442339914-25843-1-git-send-email-dannenberg@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1442339914-25843-1-git-send-email-dannenberg-l0cyMroinI0@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Laurentiu Palcu <laurentiu.palcu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Cc: Ramakrishna Pallala <ramakrishna.pallala-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from comal.ext.ti.com ([198.47.26.152]:33494 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752582AbbIOR7c (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 15 Sep 2015 13:59:32 -0400
+In-Reply-To: <1442339914-25843-1-git-send-email-dannenberg@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Andreas Dannenberg <dannenberg@ti.com>
 
-Extend the bq24257 charger's device tree documentation to cover the
-bq24250 and bq24251 devices as well feature additions.
+A new optional device property called "ti,in-dpm-voltage" is introduced
+to allow configuring the input voltage threshold for the devices'
+dynamic power path management (DPM) feature. In short, it can be used to
+prevent the input voltage from dropping below a certain value as current
+is drawn to charge the battery or supply the system.
 
-Signed-off-by: Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
+Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
 ---
- .../devicetree/bindings/power/bq24257.txt          | 55 ++++++++++++++++++++--
- 1 file changed, 50 insertions(+), 5 deletions(-)
+ drivers/power/bq24257_charger.c | 44 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 44 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/bq24257.txt b/Documentation/devicetree/bindings/power/bq24257.txt
-index 5c9d394..3815897 100644
---- a/Documentation/devicetree/bindings/power/bq24257.txt
-+++ b/Documentation/devicetree/bindings/power/bq24257.txt
-@@ -1,21 +1,66 @@
--Binding for TI bq24257 Li-Ion Charger
-+Binding for TI bq24250/bq24251/bq24257 Li-Ion Charger
- 
- Required properties:
- - compatible: Should contain one of the following:
-+ * "ti,bq24250"
-+ * "ti,bq24251"
-  * "ti,bq24257"
--- reg:			   integer, i2c address of the device.
-+- reg: integer, i2c address of the device.
-+- stat-gpios: GPIO used for the devices STAT_IN pin. Alternatively the pin can
-+    also be defined through the standard interrupt definition properties (see
-+    optional properties section below). Only use one method.
- - ti,battery-regulation-voltage: integer, maximum charging voltage in uV.
--- ti,charge-current:	   integer, maximum charging current in uA.
--- ti,termination-current:  integer, charge will be terminated when current in
--			   constant-voltage phase drops below this value (in uA).
-+- ti,charge-current: integer, maximum charging current in uA.
-+- ti,termination-current: integer, charge will be terminated when current in
-+    constant-voltage phase drops below this value (in uA).
-+
-+Optional properties:
-+- pg-gpios: GPIO used for connecting the bq2425x device PG (Power Good) pin.
-+    This pin is not available on all devices however it should be used if
-+    possible as this is the recommended way to obtain the charger's input PG
-+    state. If this pin is not specified a software-based approach for PG
-+    detection is used.
-+- ti,current-limit: The maximum current to be drawn from the charger's input
-+    (in uA). If this property is not specified a USB D+/D- signal based charger
-+    type detection is used (if available) and the input limit current is set
-+    accordingly. If the D+/D- based detection is not available on a given device
-+    a default of 500,000 is used (=500mA).
-+- ti,ovp-voltage: Configures the over voltage protection voltage (in uV). If
-+    not specified a default of 6,5000,000 (=6.5V) is used.
-+- ti,in-dpm-voltage: Configures the threshold input voltage for the dynamic
-+    power path management (in uV). If not specified a default of 4,360,000
-+    (=4.36V) is used.
-+- interrupt-parent: Should be the phandle for the interrupt controller. Use in
-+    conjunction with "interrupts" and only in case "stat-gpios" is not used.
-+- interrupts: Interrupt mapping for GPIO IRQ (configure for both edges). Use in
-+    conjunction with "interrupt-parent" and only in case "stat-gpios" is not
-+    used.
- 
- Example:
- 
- bq24257 {
- 	compatible = "ti,bq24257";
- 	reg = <0x6a>;
-+	stat-gpios = <&gpio1 16 GPIO_ACTIVE_HIGH>;
-+	pg-gpios = <&gpio1 28 GPIO_ACTIVE_HIGH>;
- 
- 	ti,battery-regulation-voltage = <4200000>;
- 	ti,charge-current = <1000000>;
- 	ti,termination-current = <50000>;
+diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
+index 47af858..84a8945 100644
+--- a/drivers/power/bq24257_charger.c
++++ b/drivers/power/bq24257_charger.c
+@@ -76,6 +76,7 @@ struct bq24257_init_data {
+ 	u8 iterm;	/* termination current */
+ 	u8 in_ilimit;	/* input current limit */
+ 	u8 vovp;	/* over voltage protection voltage */
++	u8 vindpm;	/* VDMP input threshold voltage */
  };
-+
-+Example:
-+
-+bq24250 {
-+	compatible = "ti,bq24250";
-+	reg = <0x6a>;
-+	interrupt-parent = <&gpio1>;
-+	interrupts = <16 IRQ_TYPE_EDGE_BOTH>;
-+
-+	ti,battery-regulation-voltage = <4200000>;
-+	ti,charge-current = <500000>;
-+	ti,termination-current = <50000>;
-+	ti,current-limit = <900000>;
-+	ti,ovp-voltage = <9500000>;
-+	ti,in-dpm-voltage = <4440000>;
+ 
+ struct bq24257_state {
+@@ -206,6 +207,13 @@ static const u32 bq24257_vovp_map[] = {
+ 
+ #define BQ24257_VOVP_MAP_SIZE		ARRAY_SIZE(bq24257_vovp_map)
+ 
++static const u32 bq24257_vindpm_map[] = {
++	4200000, 4280000, 4360000, 4440000, 4520000, 4600000, 4680000,
++	4760000
 +};
++
++#define BQ24257_VINDPM_MAP_SIZE		ARRAY_SIZE(bq24257_vindpm_map)
++
+ static int bq24257_field_read(struct bq24257_device *bq,
+ 			      enum bq24257_fields field_id)
+ {
+@@ -432,6 +440,17 @@ enum bq24257_vovp {
+ 	VOVP_10500
+ };
+ 
++enum bq24257_vindpm {
++	VINDPM_4200,
++	VINDPM_4280,
++	VINDPM_4360,
++	VINDPM_4440,
++	VINDPM_4520,
++	VINDPM_4600,
++	VINDPM_4680,
++	VINDPM_4760
++};
++
+ enum bq24257_port_type {
+ 	PORT_TYPE_DCP,		/* Dedicated Charging Port */
+ 	PORT_TYPE_CDP,		/* Charging Downstream Port */
+@@ -615,6 +634,7 @@ static int bq24257_hw_init(struct bq24257_device *bq)
+ 		{F_VBAT, bq->init_data.vbat},
+ 		{F_ITERM, bq->init_data.iterm},
+ 		{F_VOVP, bq->init_data.vovp},
++		{F_VINDPM, bq->init_data.vindpm},
+ 	};
+ 
+ 	/*
+@@ -648,6 +668,7 @@ static int bq24257_hw_init(struct bq24257_device *bq)
+ 		/* program fixed input current limit */
+ 		ret = bq24257_field_write(bq, F_IILIMIT,
+ 					  bq->init_data.in_ilimit);
++
+ 		if (ret < 0)
+ 			return ret;
+ 	} else if (!state.power_good)
+@@ -695,10 +716,23 @@ static ssize_t bq24257_show_ovp_voltage(struct device *dev,
+ 			 bq24257_vovp_map[bq->init_data.vovp]);
+ }
+ 
++static ssize_t bq24257_show_in_dpm_voltage(struct device *dev,
++					   struct device_attribute *attr,
++					   char *buf)
++{
++	struct power_supply *psy = dev_get_drvdata(dev);
++	struct bq24257_device *bq = power_supply_get_drvdata(psy);
++
++	return scnprintf(buf, PAGE_SIZE, "%d\n",
++			 bq24257_vindpm_map[bq->init_data.vindpm]);
++}
++
+ static DEVICE_ATTR(ovp_voltage, S_IRUGO, bq24257_show_ovp_voltage, NULL);
++static DEVICE_ATTR(in_dpm_voltage, S_IRUGO, bq24257_show_in_dpm_voltage, NULL);
+ 
+ static struct attribute *bq24257_charger_attr[] = {
+ 	&dev_attr_ovp_voltage.attr,
++	&dev_attr_in_dpm_voltage.attr,
+ 	NULL,
+ };
+ 
+@@ -801,6 +835,16 @@ static int bq24257_fw_probe(struct bq24257_device *bq)
+ 						      bq24257_vovp_map,
+ 						      BQ24257_VOVP_MAP_SIZE);
+ 
++	ret = device_property_read_u32(bq->dev, "ti,in-dpm-voltage",
++				       &property);
++	if (ret < 0)
++		bq->init_data.vindpm = VINDPM_4360;
++	else
++		bq->init_data.vindpm =
++				bq24257_find_idx(property,
++						 bq24257_vindpm_map,
++						 BQ24257_VINDPM_MAP_SIZE);
++
+ 	return 0;
+ }
+ 
 -- 
 1.9.1
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
