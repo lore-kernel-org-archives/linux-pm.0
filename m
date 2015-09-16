@@ -1,37 +1,37 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] PM / sleep: Fix broken builds without
- CONFIG_PM_SLEEP_DEBUG
-Date: Wed, 16 Sep 2015 07:30:23 +0530
-Message-ID: <20150916020023.GB29235@linux>
-References: <e7097f9c9cc28de234486e3f3865bf9bbea92aac.1442304707.git.viresh.kumar@linaro.org>
- <4171587.Rkb7nBLebe@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V11] Report interrupt that caused system wakeup
+Date: Wed, 16 Sep 2015 04:40:04 +0200
+Message-ID: <17197937.G4AcryW2hF@vostro.rjw.lan>
+References: <1442338366-16911-1-git-send-email-alexandra.yates@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <4171587.Rkb7nBLebe@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, alexandra.yates@linux.intel.com, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:45015 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751772AbbIPCMF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2015 22:12:05 -0400
+In-Reply-To: <1442338366-16911-1-git-send-email-alexandra.yates@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alexandra Yates <alexandra.yates@linux.intel.com>
+Cc: linux-pm@vger.kernel.org, tglx@linutronix.de, kristen.c.accardi@intel.com
 
-On 16-09-15, 03:43, Rafael J. Wysocki wrote:
-> On Tuesday, September 15, 2015 01:42:21 PM Viresh Kumar wrote:
-> > The variable 'wakeup_irq' is defined within #ifdef CONFIG_PM_SLEEP_DEBUG
-> > and used outside of it. And that breaks kernel build:
-> > 
-> > /home/viresh/linux/drivers/base/power/wakeup.c:871: undefined reference to `wakeup_irq'
-> > /home/viresh/drivers/base/power/wakeup.c:871: undefined reference to `wakeup_irq'
-> > 
-> > Fix it by defining the variable outside of the ifdef.
-> > 
-> > Fixes: d1e59c235322 ("PM / sleep: Report interrupt that caused system wakeup")
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Tuesday, September 15, 2015 10:32:46 AM Alexandra Yates wrote:
+> Add a sysfs attribute, /sys/power/pm_wakeup_irq, reporting the IRQ
+> number of the first wakeup interrupt (that is, the first interrupt
+> from an IRQ line armed for system wakeup) seen by the kernel during
+> the most recent system suspend/resume cycle.
 > 
-> I've applied the v11 of the Alexandra's patch that doesn't have this problem AFAICS.
+> This feature will be useful for system wakeup diagnostics of
+> spurious wakeup interrupts.
+> 
+> Signed-off-by: Alexandra Yates <alexandra.yates@linux.intel.com>
 
-For the record, as we have talked on IRC, even the v11 patch suffers
-from this problem and you will be fixing it.
+I've applied this, but I needed to fix it up due to build problems.
 
--- 
-viresh
+I'd rather not to that again for any of your future patches.
+
+Thanks,
+Rafael
+
