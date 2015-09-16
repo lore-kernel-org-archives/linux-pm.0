@@ -1,56 +1,54 @@
-From: Zhaoyang Huang <zhaoyang.huang@linaro.org>
-Subject: [PATCH v4 2/2] add property of "linux,wakeup" for juno.dts
-Date: Wed, 16 Sep 2015 14:47:00 +0800
-Message-ID: <1442386021-5113-2-git-send-email-zhaoyang.huang@linaro.org>
-References: <1442386021-5113-1-git-send-email-zhaoyang.huang@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f47.google.com ([209.85.220.47]:34176 "EHLO
-	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752348AbbIPGrN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Sep 2015 02:47:13 -0400
-Received: by padhy16 with SMTP id hy16so200307232pad.1
-        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2015 23:47:12 -0700 (PDT)
-In-Reply-To: <1442386021-5113-1-git-send-email-zhaoyang.huang@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v4 2/2] dt: power: st: Provide bindings for ST's OPPs
+Date: Wed, 16 Sep 2015 07:52:46 +0100
+Message-ID: <20150916065246.GA3218@x1>
+References: <20150909075930.GB3260@x1>
+ <20150909083031.GB5266@linux>
+ <20150909133930.GE3260@x1>
+ <20150909160212.GJ5266@linux>
+ <20150909163620.GF3260@x1>
+ <55F0C5AB.5060609@kernel.org>
+ <20150910005722.GA15099@codeaurora.org>
+ <20150910010426.GM5266@linux>
+ <20150910083146.GG3260@x1>
+ <20150916043328.GA29943@linux>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20150916043328.GA29943@linux>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Stephen Boyd <sboyd@codeaurora.org>, Rob Herring <robh@kernel.org>, Nishanth Menon <nm@ti.com>, kernel@stlinux.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Ajit Pal Singh <ajitpal.singh@st.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: amit.kucheria@linaro.org, sudeep.holla@arm.com
 
-add property of "linux,wakeup" to let the driver know
-if the device should work as wakeup source
+On Wed, 16 Sep 2015, Viresh Kumar wrote:
 
-Signed-off-by: Zhaoyang Huang <zhaoyang.huang@linaro.org>
----
- Documentation/devicetree/bindings/serial/pl011.txt |    3 ++-
- arch/arm64/boot/dts/arm/juno-base.dtsi             |    1 +
- 2 files changed, 3 insertions(+), 1 deletion(-)
+> On 10-09-15, 09:31, Lee Jones wrote:
+> > I think you answered your own question.
+> >=20
+> > No users =3D=3D !ABI =3D=3D Strip it out.
+>=20
+> Okay, as I have delayed things enough for you, didn't wanted to do
+> that anymore. And so worked on it despite very tight schedule :)
+>=20
+> Below is the refreshed binding changes (I have split that into 3
+> patches, but kept the diff here for simplicity).
+>=20
+> Other than that, all code changes you need to test your driver are
+> pushed here:
+>=20
+> https://git.linaro.org/people/viresh.kumar/linux.git opp/supported-hw=
+-prop-name-v1
+>=20
+> I am not gonna post the patches to the lists, until the time existing
+> patches get reviewed.
 
-diff --git a/Documentation/devicetree/bindings/serial/pl011.txt b/Documentation/devicetree/bindings/serial/pl011.txt
-index cbae3d9..609e8e9 100644
---- a/Documentation/devicetree/bindings/serial/pl011.txt
-+++ b/Documentation/devicetree/bindings/serial/pl011.txt
-@@ -35,7 +35,8 @@ Optional properties:
- - poll-timeout-ms:
- 	   Poll timeout when auto-poll is set, default
- 	   3000ms.
--
-+- linux,wakeup:
-+	   set the pl011 work as wakeup source for suspend to ram/idle
- See also bindings/arm/primecell.txt
- 
- Example:
-diff --git a/arch/arm64/boot/dts/arm/juno-base.dtsi b/arch/arm64/boot/dts/arm/juno-base.dtsi
-index a3d5a77..f7bb150 100644
---- a/arch/arm64/boot/dts/arm/juno-base.dtsi
-+++ b/arch/arm64/boot/dts/arm/juno-base.dtsi
-@@ -152,6 +152,7 @@
- 		interrupts = <GIC_SPI 83 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&soc_uartclk>, <&soc_refclk100mhz>;
- 		clock-names = "uartclk", "apb_pclk";
-+		linux,wakeup;
- 	};
- 
- 	i2c@7ffa0000 {
--- 
-1.7.9.5
+Thanks dude.
 
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
