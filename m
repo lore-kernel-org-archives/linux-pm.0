@@ -1,62 +1,156 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: Pull Request for PM / devfreq, 4.3 RCx
-Date: Wed, 16 Sep 2015 03:04:48 +0200
-Message-ID: <3115429.14S40JYdX6@vostro.rjw.lan>
-References: <882046565.1068551442280819125.JavaMail.weblogic@ep2mlwas05a>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH] clk: readd refcounting for struct clk instances
+Date: Tue, 15 Sep 2015 17:39:31 -0700
+Message-ID: <20150916003931.GK23081@codeaurora.org>
+References: <1878691.zhVxsBBBGg@diego>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:47810 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752906AbbIPAgr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2015 20:36:47 -0400
-In-Reply-To: <882046565.1068551442280819125.JavaMail.weblogic@ep2mlwas05a>
+Received: from smtp.codeaurora.org ([198.145.29.96]:44391 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752639AbbIPAje (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2015 20:39:34 -0400
+Content-Disposition: inline
+In-Reply-To: <1878691.zhVxsBBBGg@diego>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: myungjoo.ham@samsung.com
-Cc: "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "myungjoo.ham@gmail.com" <myungjoo.ham@gmail.com>, "javi.merino@arm.com" <javi.merino@arm.com>, "yexl@marvell.com" <yexl@marvell.com>, =?utf-8?B?7LWc7LCs7Jqw?= <cw00.choi@samsung.com>
+To: Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>
+Cc: mturquette@baylibre.com, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
 
-On Tuesday, September 15, 2015 01:33:40 AM MyungJoo Ham wrote:
-> > On Saturday, September 12, 2015 12:20:31 AM Rafael J. Wysocki wrote:
-> > > On Friday, September 11, 2015 06:11:29 AM MyungJoo Ham wrote:
-> > > > The following changes since commit 64291f7db5bd8150a74ad2036f1037e6a0428df2:
-> > > > 
-> > > >   Linux 4.2 (2015-08-30 11:34:09 -0700)
-> > > > 
-> > > > are available in the git repository at:
-> > > > 
-> > > >   https://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git for-rafael
-> > > > 
-> > > > for you to fetch changes up to 5f25f066f75a67835abb5e400471a27abd09395b:
-> > > > 
-> > > >   PM / devfreq: Fix incorrect type issue. (2015-09-11 14:23:30 +0900)
-> > > > 
-> > > > ----------------------------------------------------------------
-> > > > Pull Request of Devfreq for Linux 4.3 / PM
-> > > 
-> > > I've just sent my second pull request for 4.3-rc1 to Linus and I won't be able
-> > > to sent another one before the -rc1 is out.  Had I received this two days ago,
-> > > it would have made it just fine.
-> > > 
-> > > I'll pull it on Monday.
-> > 
-> > Pulled, but got a conflict.
-> > 
-> > Please check the conflict resolution my bleeding-edge branch and let me know
-> > if that's not the right one.
-> > 
-> > Thanks,
-> > Rafael
-> > 
-> 
-> Diff shows no differences in devfreq related files and
-> each commit is intact. I guess it is simply because pm-devfreq
-> had old commits not included in 4.2.
-> 
-> So, that's the right one.
+On 09/15, Heiko St=FCbner wrote:
+> With the split into struct clk and struct clk_core, clocks lost the
+> ability for nested __clk_get clkdev calls. While it stays possible to
+> call __clk_get, the first call to (__)clk_put will clear the struct c=
+lk,
+> making subsequent clk_put calls run into a NULL pointer dereference.
+>=20
+> One prime example of this sits in the generic power domain code, wher=
+e it
+> is possible to add the clocks both by name and by passing in a struct=
+ clk
+> via pm_clk_add_clk(). __pm_clk_add() in turn then calls __clk_get to
+> increase the refcount, so that the original code can put the clock ag=
+ain.
+>=20
+> A possible call-path looks like
+> clk =3D of_clk_get();
+> pm_clk_add_clk(dev, clk);
+> clk_put(clk);
+>=20
+> with pm_clk_add_clk() =3D> __pm_clk_add() then calling __clk_get on t=
+he clk
+> and later clk_put when the pm clock list gets destroyed, thus creatin=
+g
+> a NULL pointer deref, as the struct clk doesn't exist anymore.
+>=20
+> So add a separate refcounting for struct clk instances and only clean=
+ up
+> once the refcount reaches zero.
+>=20
+> Signed-off-by: Heiko Stuebner <heiko@sntech.de>
+> ---
+> I stumbled upon this while applying the new Rockchip power-domain dri=
+ver,
+> but I guess the underlying issue is universal and probably present si=
+nce
+> the original clk/clk_core split, so this probably counts as fix.
 
-OK, thanks!
+Ok. The fix makes sense, but I wonder why we do this. Perhaps we
+should stop exporting __clk_get() and __clk_put() to everything
+that uses clkdev in the kernel. They're called per-user clks for
+a reason. There's one user. Now we have two users of the same
+struct clk instance, so we have to refcount it too? I hope the
+shared clk instance isn't being used to set rates in two pieces
+of code.
 
-Rafael
+And this only affects pm_clk_add_clk() callers right? So the only
+caller in the kernel (drivers/clk/shmobile/clk-mstp.c) doesn't
+seem to have this problem right now because it never calls
+clk_put() on the pointer it passes to pm_clk_add_clk().
 
+So what if we did the patch below? This would rely on callers not
+calling clk_put() before calling pm_clk_remove() or
+pm_clk_destroy(), and the life cycle would be clear, but the
+sharing is still there. Or we could say that after a clk is given
+to pm_clk_add_clk() that the caller shouldn't touch it anymore,
+like shmobile is doing right now. Then there's nothing to do
+besides remove the extra __clk_get() call in the pm layer.
+
+>=20
+> @@ -2606,6 +2607,18 @@ static void __clk_release(struct kref *ref)
+>  	kfree(core);
+>  }
+> =20
+> +static void __clk_release(struct kref *ref)
+> +{
+> +	struct clk *clk =3D container_of(ref, struct clk, ref);
+> +
+> +	hlist_del(&clk->clks_node);
+> +	if ((clk->min_rate > clk->core->req_rate ||
+> +	     clk->max_rate < clk->core->req_rate))
+
+Why did we grow a pair of parenthesis?
+
+> +		clk_core_set_rate_nolock(clk->core, clk->core->req_rate);
+> +
+> +	kfree(clk);
+> +}
+> +
+>  /*
+>   * Empty clk_ops for unregistered clocks. These are used temporarily
+>   * after clk_unregister() was called on a clock and until last clock
+
+
+diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_=
+ops.c
+index 652b5a367c1f..ef62bb3d7b26 100644
+--- a/drivers/base/power/clock_ops.c
++++ b/drivers/base/power/clock_ops.c
+@@ -31,6 +31,7 @@ struct pm_clock_entry {
+ 	char *con_id;
+ 	struct clk *clk;
+ 	enum pce_status status;
++	bool needs_clk_put;
+ };
+=20
+ /**
+@@ -59,8 +60,10 @@ static inline void __pm_clk_enable(struct device *de=
+v, struct pm_clock_entry *ce
+  */
+ static void pm_clk_acquire(struct device *dev, struct pm_clock_entry *=
+ce)
+ {
+-	if (!ce->clk)
++	if (!ce->clk) {
+ 		ce->clk =3D clk_get(dev, ce->con_id);
++		ce->needs_clk_put =3D true;
++	}
+ 	if (IS_ERR(ce->clk)) {
+ 		ce->status =3D PCE_STATUS_ERROR;
+ 	} else {
+@@ -93,7 +96,7 @@ static int __pm_clk_add(struct device *dev, const cha=
+r *con_id,
+ 			return -ENOMEM;
+ 		}
+ 	} else {
+-		if (IS_ERR(clk) || !__clk_get(clk)) {
++		if (IS_ERR(clk)) {
+ 			kfree(ce);
+ 			return -ENOENT;
+ 		}
+@@ -149,7 +152,8 @@ static void __pm_clk_remove(struct pm_clock_entry *=
+ce)
+=20
+ 		if (ce->status >=3D PCE_STATUS_ACQUIRED) {
+ 			clk_unprepare(ce->clk);
+-			clk_put(ce->clk);
++			if (ce->needs_clk_put)
++				clk_put(ce->clk);
+ 		}
+ 	}
+=20
+
+--=20
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
