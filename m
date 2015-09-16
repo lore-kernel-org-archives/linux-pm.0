@@ -1,48 +1,111 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v4 08/10] power: bq24257: Allow input current limit sysfs
- access
-Date: Wed, 16 Sep 2015 15:31:06 +0900
-Message-ID: <55F90CAA.5090701@samsung.com>
-References: <1442339914-25843-1-git-send-email-dannenberg@ti.com>
- <1442339914-25843-9-git-send-email-dannenberg@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+From: Zhaoyang Huang <zhaoyang.huang@linaro.org>
+Subject: [PATCH v4 1/2] modify pl011 driver to let it work as wakeup source
+Date: Wed, 16 Sep 2015 14:46:59 +0800
+Message-ID: <1442386021-5113-1-git-send-email-zhaoyang.huang@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.w1.samsung.com ([210.118.77.14]:19746 "EHLO
-	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752533AbbIPGbK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Sep 2015 02:31:10 -0400
-In-reply-to: <1442339914-25843-9-git-send-email-dannenberg@ti.com>
+Received: from mail-pa0-f54.google.com ([209.85.220.54]:33224 "EHLO
+	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752294AbbIPGrI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Sep 2015 02:47:08 -0400
+Received: by pacex6 with SMTP id ex6so200669238pac.0
+        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2015 23:47:07 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andreas Dannenberg <dannenberg@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>
-Cc: Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: amit.kucheria@linaro.org, sudeep.holla@arm.com
 
-On 16.09.2015 02:58, Andreas Dannenberg wrote:
-> This patch allows reading (and writing, if the D+/D- USB signal-based
-> charger type detection is disabled) of the input current limit through
-> the POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT sysfs property. This allows
-> userspace to see what charger was detected and to re-configure the
-> maximum current drawn from the external supply at runtime based on
-> system-level knowledge or user input.
-> 
-> Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
-> ---
->  drivers/power/bq24257_charger.c | 67 +++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 67 insertions(+)
-> 
+the commit use the latest dev_pm_set_wake_irq API instead
+of the enable_irq_wake and IRQF_NO_SUSPEND to configure the
+ttyAMA device to work as the wakeup source
 
-Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Signed-off-by: Zhaoyang Huang <zhaoyang.huang@linaro.org>
+---
+ drivers/tty/serial/amba-pl011.c |   47 ++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 46 insertions(+), 1 deletion(-)
 
-BTW you are exposing more and more sysfs attributes which are userspace
-interfaces. They should be documented:
-Documentation/SubmitChecklist - point 19
-Documentation/ABI/README
-
-Although not all new drivers (and perhaps not all reviewers) follow this
-rule...
-
-Best regards,
-Krzysztof
+diff --git a/drivers/tty/serial/amba-pl011.c b/drivers/tty/serial/amba-pl011.c
+index fd27e98..1923b94 100644
+--- a/drivers/tty/serial/amba-pl011.c
++++ b/drivers/tty/serial/amba-pl011.c
+@@ -59,6 +59,11 @@
+ #include <linux/sizes.h>
+ #include <linux/io.h>
+ #include <linux/acpi.h>
++#include <linux/suspend.h>
++#include <linux/pm_wakeirq.h>
++#include <linux/irq.h>
++
++static struct device *uart_dev;
+ 
+ #define UART_NR			14
+ 
+@@ -2353,11 +2358,29 @@ static int pl011_register_port(struct uart_amba_port *uap)
+ 	return ret;
+ }
+ 
++struct uart_match {
++	struct uart_port *port;
++	struct uart_driver *driver;
++};
++
++static int match_uart_port(struct device *dev, void *data)
++{
++	struct uart_match *match = data;
++
++	dev_t devt = MKDEV(match->driver->major, match->driver->minor) +
++		match->port->line;
++
++	pr_info("the match data of ttyAMA0 is %d %d\n",
++			(int)devt, (int)dev->devt);
++
++	return dev->devt == devt; /* Actually, only one tty per port */
++}
+ static int pl011_probe(struct amba_device *dev, const struct amba_id *id)
+ {
+ 	struct uart_amba_port *uap;
+ 	struct vendor_data *vendor = id->data;
+ 	int portnr, ret;
++	struct uart_match match;
+ 
+ 	portnr = pl011_find_free_port();
+ 	if (portnr < 0)
+@@ -2387,13 +2410,35 @@ static int pl011_probe(struct amba_device *dev, const struct amba_id *id)
+ 
+ 	amba_set_drvdata(dev, uap);
+ 
+-	return pl011_register_port(uap);
++	ret = pl011_register_port(uap);
++
++	if (!of_find_property(dev->dev.of_node, "linux,wakeup", NULL)) {
++		uart_dev = NULL;
++		return ret;
++	}
++
++	match.port = &uap->port;
++	match.driver = &amba_reg;
++
++	uart_dev = device_find_child(&dev->dev, &match, match_uart_port);
++
++	if (uart_dev) {
++		device_init_wakeup(uart_dev, true);
++		dev_pm_set_wake_irq(uart_dev, uap->port.irq);
++	}
++
++	return ret;
+ }
+ 
+ static int pl011_remove(struct amba_device *dev)
+ {
+ 	struct uart_amba_port *uap = amba_get_drvdata(dev);
+ 
++	if (uart_dev) {
++		dev_pm_clear_wake_irq(uart_dev);
++		device_init_wakeup(uart_dev, false);
++	}
++
+ 	uart_remove_one_port(&amba_reg, &uap->port);
+ 	pl011_unregister_port(uap);
+ 	return 0;
+-- 
+1.7.9.5
 
