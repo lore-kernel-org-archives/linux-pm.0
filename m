@@ -1,228 +1,133 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v4 04/10] power: bq24257: Allow manual setting of input
- current limit
-Date: Wed, 16 Sep 2015 09:41:49 +0900
-Message-ID: <55F8BACD.6090402@samsung.com>
-References: <1442339914-25843-1-git-send-email-dannenberg@ti.com>
- <1442339914-25843-5-git-send-email-dannenberg@ti.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] driver core: Ensure proper suspend/resume ordering
+Date: Wed, 16 Sep 2015 03:18:17 +0200
+Message-ID: <2849486.q7QWJNfWm1@vostro.rjw.lan>
+References: <1441880343-30852-1-git-send-email-thierry.reding@gmail.com> <4817586.89LbLFPz9W@vostro.rjw.lan> <20150915155301.GB25966@ulmo.nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.w1.samsung.com ([210.118.77.14]:14606 "EHLO
-	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753116AbbIPAly (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2015 20:41:54 -0400
-In-reply-to: <1442339914-25843-5-git-send-email-dannenberg@ti.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:55907 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751480AbbIPAuS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2015 20:50:18 -0400
+In-Reply-To: <20150915155301.GB25966@ulmo.nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andreas Dannenberg <dannenberg@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>
-Cc: Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: Thierry Reding <thierry.reding@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 16.09.2015 02:58, Andreas Dannenberg wrote:
-> A new optional device property called "ti,current-limit" is introduced
-> to allow disabling the D+/D- USB signal-based charger type auto-
-> detection algorithm used to set the input current limit and instead to
-> use a fixed input current limit.
+On Tuesday, September 15, 2015 05:53:02 PM Thierry Reding wrote:
+> On Sat, Sep 12, 2015 at 12:38:19AM +0200, Rafael J. Wysocki wrote:
+> > On Friday, September 11, 2015 02:03:46 PM Thierry Reding wrote:
+> > > On Fri, Sep 11, 2015 at 12:08:02AM +0200, Rafael J. Wysocki wrote:
+> > > > On Thursday, September 10, 2015 12:19:03 PM Thierry Reding wrote:
+> > > > > From: Thierry Reding <treding@nvidia.com>
+> > > > >=3D20
+> > > > > Deferred probe can lead to strange situations where a device that i=
+> s a
+> > > > > dependency for others will be moved to the end of the dpm_list. At =
+> the
+> > > > > same time the dependers may not be moved because at the time they w=
+> ill
+> > > > > be probed the dependee may already have been successfully reprobed =
+> and
+> > > > > they will not have to defer the probe themselves.
+> > > >=3D20
+> > > > So there's a bug in the implementation of deferred probing IMO.
+> > >=20
+> > > Well, yeah. The root problem here is that we don't have dependency
+> > > information and deferred probing is supposed to fix that. It does so
+> > > fairly well, but it breaks in this particular case.
+> > >=20
+> > > > > One example where this happens is the Jetson TK1 board (Tegra124). =
+> The
+> > > > > gpio-keys driver exposes the power key of the board as an input dev=
+> ice
+> > > > > that can also be used as a wakeup source. Commit 17cdddf0fb68 ("ARM:
+> > > > > tegra: Add gpio-ranges property") results in the gpio-tegra driver
+> > > > > deferring probe because one of its dependencies, the pinctrl-tegra
+> > > > > driver, has not successfully completed probing. Currently the defer=
+> red
+> > > > > probe code will move the corresponding gpio-tegra device to the end=
+>  of
+> > > > > the dpm_list, but by the time the gpio-keys device, depending on the
+> > > > > gpio-tegra device, is probed, gpio-tegra has already been reprobed,=
+>  so
+> > > > > the gpio-keys device is not moved to the end of dpm_list itself.
+> >=20
+> > At this point, when checking its dependencies, gpio-keys should also check
+> > if their ordering with respect to it in dpm_list is correct and move itse=
+> lf
+> > to the end of it otherwise.
+> >=20
+> > There might be a helper for that I suppose.
 > 
-> Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
-> ---
->  drivers/power/bq24257_charger.c | 102 +++++++++++++++++++++++++++++++---------
->  1 file changed, 81 insertions(+), 21 deletions(-)
+> But that's essentially the same thing as what this patch proposes,
+> except that every driver now needs to call this helper, rather than
+> having the core take care of it.
+
+Well, not quite.  Not "every driver", but "every driver with dependencies
+the driver core doesn't know about".  That's quite a difference in my view.
+ 
+[...]
+
+> > I'm always cautious about changes that make the core do something for eve=
+> ry
+> > device/driver, because they are very likely to step on corner cases that =
+> we
+> > don't need to worry about otherwise.
 > 
-> diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
-> index fdfe855..55e4ee4 100644
-> --- a/drivers/power/bq24257_charger.c
-> +++ b/drivers/power/bq24257_charger.c
-> @@ -74,6 +74,7 @@ struct bq24257_init_data {
->  	u8 ichg;	/* charge current      */
->  	u8 vbat;	/* regulation voltage  */
->  	u8 iterm;	/* termination current */
-> +	u8 in_ilimit;	/* input current limit */
->  };
->  
->  struct bq24257_state {
-> @@ -100,6 +101,8 @@ struct bq24257_device {
->  	struct bq24257_state state;
->  
->  	struct mutex lock; /* protect state data */
-> +
-> +	bool in_ilimit_autoset_disable;
->  };
->  
->  static bool bq24257_is_volatile_reg(struct device *dev, unsigned int reg)
-> @@ -188,6 +191,12 @@ static const u32 bq24257_iterm_map[] = {
->  
->  #define BQ24257_ITERM_MAP_SIZE		ARRAY_SIZE(bq24257_iterm_map)
->  
-> +static const u32 bq24257_iilimit_map[] = {
+> To me this seems more like a fundamental issue that should be fixed at
+> the root rather than be fixed up case by case as we find them. Keeping
+> the suspend/resume order the same as probe order sounds like the most
+> logical thing to do. I grant you that there could be cases where this
+> might break, but then I'd consider those cases to be broken rather than
+> the other way around.
 
-Too many ii? bq24257_ilimit_map? Or is it a shortcut for "in_ilimit"?
-New fields have pattern like "in_ilimit*".
-Anyway it's a confusing so maybe use everywhere the same pattern?
+We have to disagree, then.
 
+> With the current situation potentially every user of GPIOs (and the same
+> is true for other types of resources) is broken, though we may not
+> notice (immediately). In fact it was mostly by coincidence that I
+> noticed in this case. The GPIO key works perfectly fine for regular use,
+> it just doesn't work as a wakeup source anymore. That's not something
+> that people test very frequently, hence could've gone unnoticed for much
+> longer.
+> 
+> Of course reordering the dpm_list to follow the probe order has the
+> potential to break other setups in similarily subtle ways, so I do
+> understand your reluctance.
+> 
+> Perhaps it would help if we put this patch into some boot farm to get
+> more coverage, maybe that would give us a better picture for how
+> invasive the change is, or how bad the fallout could be?
 
-> +	100000, 150000, 500000, 900000, 1500000, 2000000
-> +};
-> +
-> +#define BQ24257_IILIMIT_MAP_SIZE	ARRAY_SIZE(bq24257_iilimit_map)
+I'd actually prefer to have a patch that I don't have to worry about
+even in theory.
 
-ditto: ILIMIT_MAP_SIZE?
+What about an opt-in mechanism for things that are likely to need this
+stuff instead of imposing it on everybody unconditionally?
 
-> +
->  static int bq24257_field_read(struct bq24257_device *bq,
->  			      enum bq24257_fields field_id)
->  {
-> @@ -479,24 +488,35 @@ static void bq24257_handle_state_change(struct bq24257_device *bq,
->  	old_state = bq->state;
->  	mutex_unlock(&bq->lock);
->  
-> -	if (!new_state->power_good) {			     /* power removed */
-> -		cancel_delayed_work_sync(&bq->iilimit_setup_work);
-> -
-> -		/* activate D+/D- port detection algorithm */
-> -		ret = bq24257_field_write(bq, F_DPDM_EN, 1);
-> -		if (ret < 0)
-> -			goto error;
-> +	/*
-> +	 * Handle BQ2425x state changes observing whether the D+/D- based input
-> +	 * current limit autoset functionality is enabled.
-> +	 */
-> +	if (!new_state->power_good) {
-> +		dev_dbg(bq->dev, "Power removed\n");
-> +		if (!bq->in_ilimit_autoset_disable) {
-> +			cancel_delayed_work_sync(&bq->iilimit_setup_work);
->  
-> -		reset_iilimit = true;
-> -	} else if (!old_state.power_good) {		    /* power inserted */
-> -		config_iilimit = true;
-> -	} else if (new_state->fault == FAULT_NO_BAT) {	   /* battery removed */
-> -		cancel_delayed_work_sync(&bq->iilimit_setup_work);
-> +			/* activate D+/D- port detection algorithm */
-> +			ret = bq24257_field_write(bq, F_DPDM_EN, 1);
-> +			if (ret < 0)
-> +				goto error;
->  
-> -		reset_iilimit = true;
-> -	} else if (old_state.fault == FAULT_NO_BAT) {    /* battery connected */
-> -		config_iilimit = true;
-> -	} else if (new_state->fault == FAULT_TIMER) { /* safety timer expired */
-> +			reset_iilimit = true;
-> +		}
-> +	} else if (!old_state.power_good) {
-> +		dev_dbg(bq->dev, "Power inserted\n");
-> +		config_iilimit = !bq->in_ilimit_autoset_disable;
-> +	} else if (new_state->fault == FAULT_NO_BAT) {
-> +		dev_warn(bq->dev, "Battery removed\n");
+> I can of course go and come up with a more ad-hoc solution that fixes
+> the issue for this particular use-case, but I'd like to avoid a
+> situation where we end up having to patch up drivers one by one, when
+> we could have a solution that works in the general case.
+> 
+> Also note that a recent commit (52cdbdd49853 "driver core: correct
+> device's shutdown order") patch already made an equivalent change to the
+> shutdown order. I'd expect that most devices would fail with that patch
+> already if ordering is a real problem. Of course shutdown is a one-way
+> ticket, so failure might not be as relevant as for suspend/resume.
 
-dev_warn? This wasn't here before... It's a bit too serious. Is removing
-a battery an error condition? Maybe user just unplugged it?
-dev_dbg or dev_info should be sufficient.
+Did you forget about the other Alan's concerns regarding probing devices
+during suspend/resume?
 
-BTW, it is useful to quickly find boot regressions with "dmesg -l
-warn,err". Removing a battery probably is not an error?
+> Grygorii, Greg: have you heard of any fallout caused by the above patch
+> yet?
 
-> +		if (!bq->in_ilimit_autoset_disable) {
-> +			cancel_delayed_work_sync(&bq->iilimit_setup_work);
-> +			reset_iilimit = true;
-> +		}
-> +	} else if (old_state.fault == FAULT_NO_BAT) {
-> +		dev_warn(bq->dev, "Battery connected\n");
+Did that patch manipulate dpm_list?
 
-Definitely not a warn. Inserting a battery is not an error condition.
-
-> +		config_iilimit = !bq->in_ilimit_autoset_disable;
-> +	} else if (new_state->fault == FAULT_TIMER) {
->  		dev_err(bq->dev, "Safety timer expired! Battery dead?\n");
->  	}
-
-Don't you have a schedule_delayed_work() call here which now will be
-executed always? Even when work was not INIT and nothing will cancel it?
-
->  
-> @@ -581,7 +601,16 @@ static int bq24257_hw_init(struct bq24257_device *bq)
->  	bq->state = state;
->  	mutex_unlock(&bq->lock);
->  
-> -	if (!state.power_good)
-> +	if (bq->in_ilimit_autoset_disable) {
-> +		dev_dbg(bq->dev, "manually setting iilimit = %d\n",
-> +			bq->init_data.in_ilimit);
-
-Nit, no actual difference but makes more sense to me because field is
-u8: "%u".
-
-> +
-> +		/* program fixed input current limit */
-> +		ret = bq24257_field_write(bq, F_IILIMIT,
-> +					  bq->init_data.in_ilimit);
-> +		if (ret < 0)
-> +			return ret;
-> +	} else if (!state.power_good)
->  		/* activate D+/D- detection algorithm */
->  		ret = bq24257_field_write(bq, F_DPDM_EN, 1);
->  	else if (state.fault != FAULT_NO_BAT)
-> @@ -659,6 +688,7 @@ static int bq24257_fw_probe(struct bq24257_device *bq)
->  	int ret;
->  	u32 property;
->  
-> +	/* Required properties */
->  	ret = device_property_read_u32(bq->dev, "ti,charge-current", &property);
->  	if (ret < 0)
->  		return ret;
-> @@ -682,6 +712,24 @@ static int bq24257_fw_probe(struct bq24257_device *bq)
->  	bq->init_data.iterm = bq24257_find_idx(property, bq24257_iterm_map,
->  					       BQ24257_ITERM_MAP_SIZE);
->  
-> +	/* Optional properties. If not provided use reasonable default. */
-> +	ret = device_property_read_u32(bq->dev, "ti,current-limit",
-> +				       &property);
-> +	if (ret < 0)
-> +		/*
-> +		 * Explicitly set a default value which will be needed for
-> +		 * devices that don't support the automatic setting of the input
-> +		 * current limit through the charger type detection mechanism.
-> +		 */
-> +		bq->init_data.in_ilimit = IILIMIT_500;
-> +	else {
-> +		bq->in_ilimit_autoset_disable = true;
-> +		bq->init_data.in_ilimit =
-> +				bq24257_find_idx(property,
-> +						 bq24257_iilimit_map,
-> +						 BQ24257_IILIMIT_MAP_SIZE);
-> +	}
-> +
->  	return 0;
->  }
->  
-> @@ -740,8 +788,6 @@ static int bq24257_probe(struct i2c_client *client,
->  
->  	i2c_set_clientdata(client, bq);
->  
-> -	INIT_DELAYED_WORK(&bq->iilimit_setup_work, bq24257_iilimit_setup_work);
-> -
->  	if (!dev->platform_data) {
->  		ret = bq24257_fw_probe(bq);
->  		if (ret < 0) {
-> @@ -752,6 +798,18 @@ static int bq24257_probe(struct i2c_client *client,
->  		return -ENODEV;
->  	}
->  
-> +	/*
-> +	 * The BQ24250 doesn't support the D+/D- based charger type detection
-> +	 * used for the automatic setting of the input current limit setting so
-> +	 * explicitly disable that feature.
-> +	 */
-> +	if (bq->chip == BQ24250)
-> +		bq->in_ilimit_autoset_disable = true;
-> +
-> +	if (!bq->in_ilimit_autoset_disable)
-
-In most places you have quite obfuscated negation of
-"autoset_disable"... So maybe just "bq->in_ilimit_autoset" or
-"bq->in_ilimit_autoset_enable" and the negation won't be needed? It
-could be more readable.
-
-Best regards,
-Krzysztof
+Thanks,
+Rafael
 
