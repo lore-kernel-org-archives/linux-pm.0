@@ -1,54 +1,73 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v4 2/2] dt: power: st: Provide bindings for ST's OPPs
-Date: Wed, 16 Sep 2015 07:52:46 +0100
-Message-ID: <20150916065246.GA3218@x1>
-References: <20150909075930.GB3260@x1>
- <20150909083031.GB5266@linux>
- <20150909133930.GE3260@x1>
- <20150909160212.GJ5266@linux>
- <20150909163620.GF3260@x1>
- <55F0C5AB.5060609@kernel.org>
- <20150910005722.GA15099@codeaurora.org>
- <20150910010426.GM5266@linux>
- <20150910083146.GG3260@x1>
- <20150916043328.GA29943@linux>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [RFC 08/14] sched/tune: add detailed documentation
+Date: Wed, 16 Sep 2015 09:47:24 +0200
+Message-ID: <20150916074724.GB27378@gmail.com>
+References: <1440010044-3402-9-git-send-email-patrick.bellasi@arm.com>
+ <20150902064958.GA18664@google.com>
+ <20150903091849.GB15649@e105326-lin>
+ <55F0938A.9000607@linaro.org>
+ <20150911110959.GA22876@e105326-lin>
+ <55F72773.9090001@linaro.org>
+ <20150915150044.GD3206@e105326-lin>
+ <20150915151953.GF16853@twins.programming.kicks-ass.net>
+ <55F8B915.30202@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-doc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20150916043328.GA29943@linux>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, Rob Herring <robh@kernel.org>, Nishanth Menon <nm@ti.com>, kernel@stlinux.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Arnd Bergmann <arnd.bergmann@linaro.org>, Ajit Pal Singh <ajitpal.singh@st.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+In-Reply-To: <55F8B915.30202@linaro.org>
+Sender: linux-doc-owner@vger.kernel.org
+To: Steve Muckle <steve.muckle@linaro.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Ricky Liang <jcliang@chromium.org>, Ingo Molnar <mingo@redhat.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 16 Sep 2015, Viresh Kumar wrote:
 
-> On 10-09-15, 09:31, Lee Jones wrote:
-> > I think you answered your own question.
-> >=20
-> > No users =3D=3D !ABI =3D=3D Strip it out.
->=20
-> Okay, as I have delayed things enough for you, didn't wanted to do
-> that anymore. And so worked on it despite very tight schedule :)
->=20
-> Below is the refreshed binding changes (I have split that into 3
-> patches, but kept the diff here for simplicity).
->=20
-> Other than that, all code changes you need to test your driver are
-> pushed here:
->=20
-> https://git.linaro.org/people/viresh.kumar/linux.git opp/supported-hw=
--prop-name-v1
->=20
-> I am not gonna post the patches to the lists, until the time existing
-> patches get reviewed.
+* Steve Muckle <steve.muckle@linaro.org> wrote:
 
-Thanks dude.
+> On 09/15/2015 08:19 AM, Peter Zijlstra wrote:
+> > Please flip the argument around; providing lots of knobs for vendors to
+> > do $magic with is _NOT_ a good thing.
+> > 
+> > The whole out-of-tree cpufreq governor hack fest Android thing is a
+> > complete and utter fail on all levels. Its the embedded, ship, forget,
+> > not contribute cycle all over again.
+> > 
+> > Making that harder is a _GOOD_ thing.
+> 
+> I get why the plugin-like governor interface may encourage out of tree
+> development, but why would providing lots of policy knobs/tunables from
+> the scheduler be bad?
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+There's many disadvantages:
+
+ - People/vendors learn to rely on their knob based hacks and start making noise 
+   if one of the knobs changes or goes away, reporting regressions, not always 
+   reporting that they have tunables twiddled.
+
+ - If distros start using knobs it's easy to get into a situation where different 
+   distros have different knobs, and people tune them further. For every single 
+   bugreport we'd have to first make 100% sure what the knobs are.
+
+ - Workloads can sometimes be improved by twiddling knobs - while breaking lots of 
+   other workloads. We'd like people who contribute to the scheduler to think 
+   about the hard problems and improve the whole picture, not just a small part of 
+   it. There's a rich set of 'knobs' to prevent the scheduler from doing things 
+   (the various resource affinity system calls and facilities), so it's not like
+   user-space does not have the flexibility.
+
+ - Having too much configuration space makes upgrades to newer kernels generally 
+   harder - and we want to have the opposite effects.
+
+> Shouldn't that hopefully reduce the likelihood that someone feels the need to 
+> roll their own stack of kernel modifications which never make it upstream?
+
+If a scheduler bug or inefficiency can be kludged around with a knob then that 
+reduces the likelihood of the scheduler getting improved.
+
+Otherwise I'd like to encourage people to change the source if they want to debug 
+a problem or improve things - so having to roll your own patches isn't an 
+unconditional negative - it's what this whole OSS thing is about.
+
+Thanks,
+
+	Ingo
