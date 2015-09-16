@@ -1,73 +1,114 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [RFC 08/14] sched/tune: add detailed documentation
-Date: Wed, 16 Sep 2015 09:47:24 +0200
-Message-ID: <20150916074724.GB27378@gmail.com>
-References: <1440010044-3402-9-git-send-email-patrick.bellasi@arm.com>
- <20150902064958.GA18664@google.com>
- <20150903091849.GB15649@e105326-lin>
- <55F0938A.9000607@linaro.org>
- <20150911110959.GA22876@e105326-lin>
- <55F72773.9090001@linaro.org>
- <20150915150044.GD3206@e105326-lin>
- <20150915151953.GF16853@twins.programming.kicks-ass.net>
- <55F8B915.30202@linaro.org>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v4 09/10] power: bq24257: Add various device-specific sysfs
+ properties
+Date: Wed, 16 Sep 2015 17:10:06 +0900
+Message-ID: <55F923DE.5010809@samsung.com>
+References: <1442339914-25843-1-git-send-email-dannenberg@ti.com>
+ <1442339914-25843-10-git-send-email-dannenberg@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-doc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <55F8B915.30202@linaro.org>
-Sender: linux-doc-owner@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Ricky Liang <jcliang@chromium.org>, Ingo Molnar <mingo@redhat.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.w1.samsung.com ([210.118.77.13]:27490 "EHLO
+	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752031AbbIPIKQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Sep 2015 04:10:16 -0400
+In-reply-to: <1442339914-25843-10-git-send-email-dannenberg@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andreas Dannenberg <dannenberg@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>
+Cc: Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-
-* Steve Muckle <steve.muckle@linaro.org> wrote:
-
-> On 09/15/2015 08:19 AM, Peter Zijlstra wrote:
-> > Please flip the argument around; providing lots of knobs for vendors to
-> > do $magic with is _NOT_ a good thing.
-> > 
-> > The whole out-of-tree cpufreq governor hack fest Android thing is a
-> > complete and utter fail on all levels. Its the embedded, ship, forget,
-> > not contribute cycle all over again.
-> > 
-> > Making that harder is a _GOOD_ thing.
+On 16.09.2015 02:58, Andreas Dannenberg wrote:
+> This patch adds support for enabling/disabling optional device specific
+> features through sysfs properties at runtime.
 > 
-> I get why the plugin-like governor interface may encourage out of tree
-> development, but why would providing lots of policy knobs/tunables from
-> the scheduler be bad?
+> * High-impedance mode enable/disable
+> * Sysoff enable/disable
+> 
+> Refer to the respective device datasheets for more information:
+> 
+> http://www.ti.com/product/bq24250
+> http://www.ti.com/product/bq24251
+> http://www.ti.com/product/bq24257
+> 
+> Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
+> ---
+>  drivers/power/bq24257_charger.c | 53 +++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 53 insertions(+)
+> 
+> diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
+> index 517a522..a0cb33c 100644
+> --- a/drivers/power/bq24257_charger.c
+> +++ b/drivers/power/bq24257_charger.c
+> @@ -794,12 +794,65 @@ static ssize_t bq24257_show_in_dpm_voltage(struct device *dev,
+>  			 bq24257_vindpm_map[bq->init_data.vindpm]);
+>  }
+>  
+> +static ssize_t bq24257_sysfs_show_enable(struct device *dev,
+> +					 struct device_attribute *attr,
+> +					 char *buf)
+> +{
+> +	struct power_supply *psy = dev_get_drvdata(dev);
+> +	struct bq24257_device *bq = power_supply_get_drvdata(psy);
+> +	int ret;
+> +
+> +	if (strcmp(attr->attr.name, "high_impedance_enable") == 0)
+> +		ret = bq24257_field_read(bq, F_HZ_MODE);
+> +	else if (strcmp(attr->attr.name, "sysoff_enable") == 0)
+> +		ret = bq24257_field_read(bq, F_SYSOFF);
+> +	else
+> +		return -EINVAL;
+> +
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	return scnprintf(buf, PAGE_SIZE, "%d\n", ret);
+> +}
+> +
+> +static ssize_t bq24257_sysfs_set_enable(struct device *dev,
+> +					struct device_attribute *attr,
+> +					const char *buf,
+> +					size_t count)
+> +{
+> +	struct power_supply *psy = dev_get_drvdata(dev);
+> +	struct bq24257_device *bq = power_supply_get_drvdata(psy);
+> +	long val;
+> +	int ret;
+> +
+> +	if (kstrtol(buf, 10, &val) < 0)
+> +		return -EINVAL;
+> +
 
-There's many disadvantages:
+There is no validation for input number. Although this is harmless but
+one may expect that writing value of 1, 2 or 3 would give the same
+result. But it would not. Value of 2 would be equal to 0, right?
 
- - People/vendors learn to rely on their knob based hacks and start making noise 
-   if one of the knobs changes or goes away, reporting regressions, not always 
-   reporting that they have tunables twiddled.
+> +	if (strcmp(attr->attr.name, "high_impedance_enable") == 0)
+> +		ret = bq24257_field_write(bq, F_HZ_MODE, val);
+> +	else if (strcmp(attr->attr.name, "sysoff_enable") == 0)
+> +		ret = bq24257_field_write(bq, F_SYSOFF, val);
+> +	else
+> +		return -EINVAL;
+> +
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	return count;
+> +}
+> +
+>  static DEVICE_ATTR(ovp_voltage, S_IRUGO, bq24257_show_ovp_voltage, NULL);
+>  static DEVICE_ATTR(in_dpm_voltage, S_IRUGO, bq24257_show_in_dpm_voltage, NULL);
 
- - If distros start using knobs it's easy to get into a situation where different 
-   distros have different knobs, and people tune them further. For every single 
-   bugreport we'd have to first make 100% sure what the knobs are.
+This applies to previous patches actually: DEVICE_ATTR_RO?
 
- - Workloads can sometimes be improved by twiddling knobs - while breaking lots of 
-   other workloads. We'd like people who contribute to the scheduler to think 
-   about the hard problems and improve the whole picture, not just a small part of 
-   it. There's a rich set of 'knobs' to prevent the scheduler from doing things 
-   (the various resource affinity system calls and facilities), so it's not like
-   user-space does not have the flexibility.
+> +static DEVICE_ATTR(high_impedance_enable, S_IWUSR | S_IRUGO,
+> +		   bq24257_sysfs_show_enable, bq24257_sysfs_set_enable);
+> +static DEVICE_ATTR(sysoff_enable, S_IWUSR | S_IRUGO,
+> +		   bq24257_sysfs_show_enable, bq24257_sysfs_set_enable);
 
- - Having too much configuration space makes upgrades to newer kernels generally 
-   harder - and we want to have the opposite effects.
+DEVICE_ATTR_RW?
 
-> Shouldn't that hopefully reduce the likelihood that someone feels the need to 
-> roll their own stack of kernel modifications which never make it upstream?
+Best regards,
+Krzysztof
 
-If a scheduler bug or inefficiency can be kludged around with a knob then that 
-reduces the likelihood of the scheduler getting improved.
-
-Otherwise I'd like to encourage people to change the source if they want to debug 
-a problem or improve things - so having to roll your own patches isn't an 
-unconditional negative - it's what this whole OSS thing is about.
-
-Thanks,
-
-	Ingo
