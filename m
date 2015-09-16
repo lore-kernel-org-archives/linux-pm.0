@@ -1,152 +1,80 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v4 07/10] power: bq24257: Add input DPM voltage threshold
- setting support
-Date: Wed, 16 Sep 2015 15:06:04 +0900
-Message-ID: <55F906CC.8090609@samsung.com>
-References: <1442339914-25843-1-git-send-email-dannenberg@ti.com>
- <1442339914-25843-8-git-send-email-dannenberg@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: [PATCH v2 0/9] qcom: Add support for TSENS driver
+Date: Wed, 16 Sep 2015 11:53:14 +0530
+Message-ID: <1442384603-26053-1-git-send-email-rnayak@codeaurora.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.w1.samsung.com ([210.118.77.14]:18623 "EHLO
-	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752136AbbIPGGI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Sep 2015 02:06:08 -0400
-In-reply-to: <1442339914-25843-8-git-send-email-dannenberg@ti.com>
+Received: from smtp.codeaurora.org ([198.145.29.96]:59642 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751739AbbIPGZD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Sep 2015 02:25:03 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andreas Dannenberg <dannenberg@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>
-Cc: Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com
+Cc: sboyd@codeaurora.org, srinivas.kandagatla@linaro.org, nrajan@codeaurora.org, lina.iyer@linaro.org, Rajendra Nayak <rnayak@codeaurora.org>
 
-On 16.09.2015 02:58, Andreas Dannenberg wrote:
-> A new optional device property called "ti,in-dpm-voltage" is introduced
-> to allow configuring the input voltage threshold for the devices'
-> dynamic power path management (DPM) feature. In short, it can be used to
-> prevent the input voltage from dropping below a certain value as current
-> is drawn to charge the battery or supply the system.
-> 
-> Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
-> ---
->  drivers/power/bq24257_charger.c | 44 +++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 44 insertions(+)
-> 
-> diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
-> index 47af858..84a8945 100644
-> --- a/drivers/power/bq24257_charger.c
-> +++ b/drivers/power/bq24257_charger.c
-> @@ -76,6 +76,7 @@ struct bq24257_init_data {
->  	u8 iterm;	/* termination current */
->  	u8 in_ilimit;	/* input current limit */
->  	u8 vovp;	/* over voltage protection voltage */
-> +	u8 vindpm;	/* VDMP input threshold voltage */
->  };
->  
->  struct bq24257_state {
-> @@ -206,6 +207,13 @@ static const u32 bq24257_vovp_map[] = {
->  
->  #define BQ24257_VOVP_MAP_SIZE		ARRAY_SIZE(bq24257_vovp_map)
->  
-> +static const u32 bq24257_vindpm_map[] = {
-> +	4200000, 4280000, 4360000, 4440000, 4520000, 4600000, 4680000,
-> +	4760000
-> +};
-> +
-> +#define BQ24257_VINDPM_MAP_SIZE		ARRAY_SIZE(bq24257_vindpm_map)
-> +
->  static int bq24257_field_read(struct bq24257_device *bq,
->  			      enum bq24257_fields field_id)
->  {
-> @@ -432,6 +440,17 @@ enum bq24257_vovp {
->  	VOVP_10500
->  };
->  
-> +enum bq24257_vindpm {
-> +	VINDPM_4200,
-> +	VINDPM_4280,
-> +	VINDPM_4360,
-> +	VINDPM_4440,
-> +	VINDPM_4520,
-> +	VINDPM_4600,
-> +	VINDPM_4680,
-> +	VINDPM_4760
-> +};
+Changes since v1:
+* Created virtual tsens device from gcc driver for 8960,
+with DT having a single node for gcc and tsens
+* Minor fixes with rebasing on 4.3-rc1
 
-Same as patch 6/10... but now see the use case - to choose default value
-not by index of array but from this enum.
+Changes since RFC:
+* Added support for 8916 and 8084
+* Based off the latest nvmem framework patches [1]
+* Minor review fixes for comments mostly from Lina
 
-I see the idea behind so skip that comment from 6/10.
+This is an attempt to have a single TSENS driver for
+the different versions of the TSENS IP that exist, on
+different qcom msm/apq SoCs'
+Support is added for msm8916, msm8960 and msm8974 families.
 
-> +
->  enum bq24257_port_type {
->  	PORT_TYPE_DCP,		/* Dedicated Charging Port */
->  	PORT_TYPE_CDP,		/* Charging Downstream Port */
-> @@ -615,6 +634,7 @@ static int bq24257_hw_init(struct bq24257_device *bq)
->  		{F_VBAT, bq->init_data.vbat},
->  		{F_ITERM, bq->init_data.iterm},
->  		{F_VOVP, bq->init_data.vovp},
-> +		{F_VINDPM, bq->init_data.vindpm},
->  	};
->  
->  	/*
-> @@ -648,6 +668,7 @@ static int bq24257_hw_init(struct bq24257_device *bq)
->  		/* program fixed input current limit */
->  		ret = bq24257_field_write(bq, F_IILIMIT,
->  					  bq->init_data.in_ilimit);
-> +
+A lot of the work is based of original code from Stephen Boyd
+and Siddartha Mohanadoss. I have also picked some of what
+Narendran Rajan did in his attempt to upstream the support
+for 8960 family. I could not keep the original authorship on
+any of the patches because I ended up moving the code around
+quite a bit in an effort to have a single driver for the
+various devices. I would be glad to change the authorship
+for any of the patches if needed.
 
-Not part of this patch. It confuses the reviewer of patch. If you need
-cleanups, make them separate.
+Rajendra Nayak (9):
+  thermal: qcom: tsens: Add a skeletal TSENS drivers
+  thermal: qcom: tsens-8916: Add support for 8916 family of SoCs
+  thermal: qcom: tsens-8974: Add support for 8974 family of SoCs
+  clk: qcom: create virtual child device for TSENS
+  thermal: qcom: tsens-8960: Add support for 8960 family of SoCs
+  arm: dts: msm8974: Add thermal zones, tsens and qfprom nodes
+  arm: dts: apq8064: Add thermal zones, tsens and qfprom nodes
+  arm: dts: apq8084: Add thermal zones, tsens and qfprom nodes
+  arm64: dts: msm8916: Add thermal zones, tsens and qfprom nodes
 
->  		if (ret < 0)
->  			return ret;
->  	} else if (!state.power_good)
-> @@ -695,10 +716,23 @@ static ssize_t bq24257_show_ovp_voltage(struct device *dev,
->  			 bq24257_vovp_map[bq->init_data.vovp]);
->  }
->  
-> +static ssize_t bq24257_show_in_dpm_voltage(struct device *dev,
-> +					   struct device_attribute *attr,
-> +					   char *buf)
-> +{
-> +	struct power_supply *psy = dev_get_drvdata(dev);
-> +	struct bq24257_device *bq = power_supply_get_drvdata(psy);
-> +
-> +	return scnprintf(buf, PAGE_SIZE, "%d\n",
-> +			 bq24257_vindpm_map[bq->init_data.vindpm]);
+ .../devicetree/bindings/thermal/qcom-tsens.txt     |  36 +++
+ arch/arm/boot/dts/qcom-apq8064.dtsi                | 101 +++++++
+ arch/arm/boot/dts/qcom-apq8084.dtsi                | 105 ++++++++
+ arch/arm/boot/dts/qcom-msm8974.dtsi                | 105 ++++++++
+ arch/arm64/boot/dts/qcom/msm8916.dtsi              |  66 +++++
+ drivers/clk/qcom/gcc-msm8960.c                     |  23 +-
+ drivers/thermal/Kconfig                            |   5 +
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/qcom/Kconfig                       |  10 +
+ drivers/thermal/qcom/Makefile                      |   2 +
+ drivers/thermal/qcom/tsens-8916.c                  | 107 ++++++++
+ drivers/thermal/qcom/tsens-8960.c                  | 291 +++++++++++++++++++++
+ drivers/thermal/qcom/tsens-8974.c                  | 239 +++++++++++++++++
+ drivers/thermal/qcom/tsens-common.c                | 130 +++++++++
+ drivers/thermal/qcom/tsens.c                       | 215 +++++++++++++++
+ drivers/thermal/qcom/tsens.h                       |  69 +++++
+ 16 files changed, 1504 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+ create mode 100644 drivers/thermal/qcom/Kconfig
+ create mode 100644 drivers/thermal/qcom/Makefile
+ create mode 100644 drivers/thermal/qcom/tsens-8916.c
+ create mode 100644 drivers/thermal/qcom/tsens-8960.c
+ create mode 100644 drivers/thermal/qcom/tsens-8974.c
+ create mode 100644 drivers/thermal/qcom/tsens-common.c
+ create mode 100644 drivers/thermal/qcom/tsens.c
+ create mode 100644 drivers/thermal/qcom/tsens.h
 
-Same as patch 6/10.
-
-Best regards,
-Krzysztof
-
-> +}
-> +
->  static DEVICE_ATTR(ovp_voltage, S_IRUGO, bq24257_show_ovp_voltage, NULL);
-> +static DEVICE_ATTR(in_dpm_voltage, S_IRUGO, bq24257_show_in_dpm_voltage, NULL);
->  
->  static struct attribute *bq24257_charger_attr[] = {
->  	&dev_attr_ovp_voltage.attr,
-> +	&dev_attr_in_dpm_voltage.attr,
->  	NULL,
->  };
->  
-> @@ -801,6 +835,16 @@ static int bq24257_fw_probe(struct bq24257_device *bq)
->  						      bq24257_vovp_map,
->  						      BQ24257_VOVP_MAP_SIZE);
->  
-> +	ret = device_property_read_u32(bq->dev, "ti,in-dpm-voltage",
-> +				       &property);
-> +	if (ret < 0)
-> +		bq->init_data.vindpm = VINDPM_4360;
-> +	else
-> +		bq->init_data.vindpm =
-> +				bq24257_find_idx(property,
-> +						 bq24257_vindpm_map,
-> +						 BQ24257_VINDPM_MAP_SIZE);
-> +
->  	return 0;
->  }
->  
-> 
+-- 
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation
 
