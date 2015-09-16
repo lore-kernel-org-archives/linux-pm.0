@@ -1,167 +1,144 @@
-From: Thierry Reding <thierry.reding@gmail.com>
+From: Grygorii Strashko <grygorii.strashko@ti.com>
 Subject: Re: [PATCH] driver core: Ensure proper suspend/resume ordering
-Date: Wed, 16 Sep 2015 15:16:43 +0200
-Message-ID: <20150916131641.GA13618@ulmo>
-References: <20150915161047.GC25966@ulmo.nvidia.com>
- <Pine.LNX.4.44L0.1509151505040.1420-100000@iolanthe.rowland.org>
+Date: Wed, 16 Sep 2015 16:38:07 +0300
+Message-ID: <55F970BF.2050107@ti.com>
+References: <1441880343-30852-1-git-send-email-thierry.reding@gmail.com>
+ <4817586.89LbLFPz9W@vostro.rjw.lan> <20150915155301.GB25966@ulmo.nvidia.com>
+ <2849486.q7QWJNfWm1@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="+QahgC5+KEYLbs62"
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f172.google.com ([209.85.212.172]:33478 "EHLO
-	mail-wi0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752110AbbIPNQq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Sep 2015 09:16:46 -0400
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1509151505040.1420-100000@iolanthe.rowland.org>
+Received: from comal.ext.ti.com ([198.47.26.152]:45442 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752306AbbIPNiT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 16 Sep 2015 09:38:19 -0400
+In-Reply-To: <2849486.q7QWJNfWm1@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thierry Reding <thierry.reding@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
+On 09/16/2015 04:18 AM, Rafael J. Wysocki wrote:
+> On Tuesday, September 15, 2015 05:53:02 PM Thierry Reding wrote:
+>> On Sat, Sep 12, 2015 at 12:38:19AM +0200, Rafael J. Wysocki wrote:
+>>> On Friday, September 11, 2015 02:03:46 PM Thierry Reding wrote:
+>>>> On Fri, Sep 11, 2015 at 12:08:02AM +0200, Rafael J. Wysocki wrote:
+>>>>> On Thursday, September 10, 2015 12:19:03 PM Thierry Reding wrote:
+>>>>>> From: Thierry Reding <treding@nvidia.com>
+>>>>>> =3D20
+>>>>>> Deferred probe can lead to strange situations where a device that i=
+>> s a
+>>>>>> dependency for others will be moved to the end of the dpm_list. At =
+>> the
+>>>>>> same time the dependers may not be moved because at the time they w=
+>> ill
+>>>>>> be probed the dependee may already have been successfully reprobed =
+>> and
+>>>>>> they will not have to defer the probe themselves.
+>>>>> =3D20
+>>>>> So there's a bug in the implementation of deferred probing IMO.
+>>>> =20
+>>>> Well, yeah. The root problem here is that we don't have dependency
+>>>> information and deferred probing is supposed to fix that. It does so
+>>>> fairly well, but it breaks in this particular case.
+>>>> =20
+>>>>>> One example where this happens is the Jetson TK1 board (Tegra124). =
+>> The
+>>>>>> gpio-keys driver exposes the power key of the board as an input dev=
+>> ice
+>>>>>> that can also be used as a wakeup source. Commit 17cdddf0fb68 ("ARM:
+>>>>>> tegra: Add gpio-ranges property") results in the gpio-tegra driver
+>>>>>> deferring probe because one of its dependencies, the pinctrl-tegra
+>>>>>> driver, has not successfully completed probing. Currently the defer=
+>> red
+>>>>>> probe code will move the corresponding gpio-tegra device to the end=
+>>   of
+>>>>>> the dpm_list, but by the time the gpio-keys device, depending on the
+>>>>>> gpio-tegra device, is probed, gpio-tegra has already been reprobed,=
+>>   so
+>>>>>> the gpio-keys device is not moved to the end of dpm_list itself.
+>>> =20
+>>> At this point, when checking its dependencies, gpio-keys should also check
+>>> if their ordering with respect to it in dpm_list is correct and move itse=
+>> lf
+>>> to the end of it otherwise.
+>>> =20
+>>> There might be a helper for that I suppose.
+>>
+>> But that's essentially the same thing as what this patch proposes,
+>> except that every driver now needs to call this helper, rather than
+>> having the core take care of it.
+>
+> Well, not quite.  Not "every driver", but "every driver with dependencies
+> the driver core doesn't know about".  That's quite a difference in my view.
+>
+> [...]
+>
+>>> I'm always cautious about changes that make the core do something for eve=
+>> ry
+>>> device/driver, because they are very likely to step on corner cases that =
+>> we
+>>> don't need to worry about otherwise.
+>>
+>> To me this seems more like a fundamental issue that should be fixed at
+>> the root rather than be fixed up case by case as we find them. Keeping
+>> the suspend/resume order the same as probe order sounds like the most
+>> logical thing to do. I grant you that there could be cases where this
+>> might break, but then I'd consider those cases to be broken rather than
+>> the other way around.
+>
+> We have to disagree, then.
+>
+>> With the current situation potentially every user of GPIOs (and the same
+>> is true for other types of resources) is broken, though we may not
+>> notice (immediately). In fact it was mostly by coincidence that I
+>> noticed in this case. The GPIO key works perfectly fine for regular use,
+>> it just doesn't work as a wakeup source anymore. That's not something
+>> that people test very frequently, hence could've gone unnoticed for much
+>> longer.
+>>
+>> Of course reordering the dpm_list to follow the probe order has the
+>> potential to break other setups in similarily subtle ways, so I do
+>> understand your reluctance.
+>>
+>> Perhaps it would help if we put this patch into some boot farm to get
+>> more coverage, maybe that would give us a better picture for how
+>> invasive the change is, or how bad the fallout could be?
+>
+> I'd actually prefer to have a patch that I don't have to worry about
+> even in theory.
+>
+> What about an opt-in mechanism for things that are likely to need this
+> stuff instead of imposing it on everybody unconditionally?
+>
+>> I can of course go and come up with a more ad-hoc solution that fixes
+>> the issue for this particular use-case, but I'd like to avoid a
+>> situation where we end up having to patch up drivers one by one, when
+>> we could have a solution that works in the general case.
+>>
+>> Also note that a recent commit (52cdbdd49853 "driver core: correct
+>> device's shutdown order") patch already made an equivalent change to the
+>> shutdown order. I'd expect that most devices would fail with that patch
+>> already if ordering is a real problem. Of course shutdown is a one-way
+>> ticket, so failure might not be as relevant as for suspend/resume.
 
---+QahgC5+KEYLbs62
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+It was in linux-next for at about one month or more.
 
-On Tue, Sep 15, 2015 at 03:18:19PM -0400, Alan Stern wrote:
-> On Tue, 15 Sep 2015, Thierry Reding wrote:
->=20
-> > > There are a few things to watch out for.  Since the dpm_list gets
-> > > modified during system sleep transitions, we would have to make sure
-> > > that nothing gets probed during those times.  In principle, that's wh=
-at
-> > > the "prepare" stage is meant for, but there's still a race.  As long =
-as
-> > > no other kernel thread (such as the deferred probing mechanism) tries
-> > > to probe a device once everything has been frozen, we should be okay.
-> > > But if not, there will be trouble -- after the ->prepare callback run=
-s,=20
-> > > the device is no longer on the dpm_list and so we don't want this pat=
-ch=20
-> > > to put it back on that list.
-> >=20
-> > Perhaps moving to the end of the list needs to be a little smarter. That
-> > is it could check whether the device has been prepared for suspension or
-> > not and only move when it hasn't?
->=20
-> Maybe.  But doesn't that mean it won't solve your problem completely?
+>
+> Did you forget about the other Alan's concerns regarding probing devices
+> during suspend/resume?
+>
+>> Grygorii, Greg: have you heard of any fallout caused by the above patch
+>> yet?
 
-It would solve the problem completely if probing was prohibited during
-the suspend/resume cycle. But if that were true there'd be no need to
-special-case in the first place.
+no
 
-> > Then again, shouldn't the core even prohibit new probes once the suspend
-> > has been triggered? Sounds like asking for a lot of trouble if it didn't
-> > ...
->=20
-> The core prohibits new devices from being registered.  It does not=20
-> prohibit probes of existing devices, because they currently do not=20
-> affect the dpm_list.
+>
+> Did that patch manipulate dpm_list?
 
-My understanding was that the core was guaranteed not to call suspend or
-resume callbacks for devices that haven't completed probe. At least I've
-never seen any driver code specifically check in their suspend or resume
-callbacks that they've been probed successfully. Allowing probes while a
-suspend is happening sounds racy.
+no.
 
-> In general, we rely on subsystems not to do any probing once a device=20
-> is suspended.  It's probably reasonable to ask them not to do any=20
-> probing once a device has gone through the "prepare" stage.
-
-Perhaps the reason why we seem to be talking across purposes is that I
-haven't thought much about devices where the bus does all the heavy
-lifting. So suspending the device from a bus' perspective makes sense
-even if the device hasn't been bound.
-
-And yes, I agree that preventing a probe for a device that has been
-prepared for suspension sounds like a very reasonable thing to do.
-
-> > > There's also an issue about other types of dependencies.  For instanc=
-e,
-> > > it's conceivable that device B might be discovered and depend on devi=
-ce
-> > > A, even before A has been bound to a driver.  (B might be discovered =
-by=20
-> > > A's subsystem rather than A's driver.)  In that case, moving A to the=
-=20
-> > > end of the list would cause B to come before A even though B depends =
-on=20
-> > > A.  Of course, deferred probing already has this problem.
-> >=20
-> > But that's exactly the problem that I'm seeing.
->=20
-> Not quite.
->=20
-> >  B isn't discovered by
-> > A's subsystem, but the type of dependency is the same. A in this case
-> > would be the GPIO controller and B the gpio-keys device. B clearly
-> > depends on A, but deferred probe currently moves A to the end of the
-> > list but not A, hence why the problem occurs.
->=20
-> The difference is that in my example, B can be probed before A.  In
-> your case it can't.  Therefore the patch works for your case but not
-> for mine.
-
-How would that even work in practice? Essentially you have a dependency
-between two devices and no way of guaranteeing any ordering. Either the
-dependency is completely optional, in which case the ordering of the
-dpm_list must be irrelevant to the interaction, or the drivers make too
-many assumptions and it is only working by accident.
-
-> > That's also a problem that I think this patch solves. By moving every
-> > device to the end of the list before it is probed we ensure that the
-> > dpm_list is ordered in the same way as the probe order. For this to work
-> > the precondition of course is that drivers know about the dependencies
-> > and will defer probe if necessary.
->=20
-> Do I understand correctly?  You're saying a driver must defer a probe
-> if the device it's probing depends on another device which hasn't
-> been bound yet.  That does not sound like a reasonable sort of
-> requirement -- we might know about the dependency but we shouldn't have
-> to check whether the prerequisite device has been bound.
-
-I guess that depends on the kind of dependency you have. For most cases
-that I'm aware of the dependencies are required dependencies. That is, a
-consumer uses a resource registered by a provider. The provider will
-register the resource at probe time, so if the consumer is probed before
-the provider, then the resource it needs isn't there. For a required
-dependency that implies that the consumer must defer probe until the
-provider has been bound because it simply can't continue without getting
-access to the resource first.
-
-I'm slightly confused by your statement. If a consumer depends on a
-provider for a resource, how can we finish the consumer's probe without
-checking that the provider has been bound? It's true that we don't
-technically check for the device to have been bound, but the end result
-is the same.
-
-Unless I misunderstand what you're saying we'd need to have some
-mechanism to notify the consumer (after it's been probed) that the
-provider of it's resource has become available.
-
-Thierry
-
---+QahgC5+KEYLbs62
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCAAGBQJV+Wu3AAoJEN0jrNd/PrOhKAwP/Rv/2w7/x+FTd7YglBDKHXu9
-G/Q0wwYjHHz/edGeabBs3zkcq/y83OaZX3BudSpEH4YXWbjUv3lzpobhL1MzPYKK
-bkLHeqYga51y6bTP1OJkmSZTQmrM7NHyZlF8b/0jo5tAzW8r5Is0/7rXZOq+QFPf
-Ko/McMbmv9smfz8OS1SDiCmEDsVNqXJT56EMm6ZuDoKEYr6beQhOvBJKNnHRCl8Q
-csAhqnzR/MT1EKQWhnymgRn6XOiVvrjy8LBiXneWQ8uqSe6MdMRhNFAS+KHgrpx/
-XU40zSxBcmUJjVBhuS5w1hlXMZLriEjNhg9zUUhhbt5B+tqPttf6ytZdZNpQ+q6s
-hz83q1xY73P5peUGuOYmmxmfAau62M85xE9bohr3bcCXkkTpfGrif8/kvlQG+bge
-RH+CSNg5LaxmtPzRtLkFxuxMpHNgsS93O7eBnjBaP/G90DL4IJAYXqncakXB2B6M
-KLizq8Ml2jD2AcGcFis06Zuj2JsxgRQEaCbYfoKPGhTqDYec67aV/uOkdvmn6uLZ
-/o7SM+9ocmEOzG+bHJUt5FpT3euKFuD3no/GV0HSt1wMpax0mLkfW5OlgBWa11ou
-B7cR17h/eEn0mJJ4EN1hoxPvi2QiPmx4wwMRKc4K63jZRrixn4ODcztitTSJVWWv
-w1KAhso0y/ZRsNTGzLHq
-=nhCX
------END PGP SIGNATURE-----
-
---+QahgC5+KEYLbs62--
+-- 
+regards,
+-grygorii
