@@ -1,55 +1,46 @@
-From: Luis de Bethencourt <luis@debethencourt.com>
-Subject: [PATCH] cpufreq: integrator: Fix module autoload for OF platform
- driver
-Date: Wed, 16 Sep 2015 22:24:46 +0200
-Message-ID: <20150916202446.GA4303@goodgumbo.baconseed.org>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH v2 4/9] clk: qcom: create virtual child device for TSENS
+Date: Wed, 16 Sep 2015 15:39:25 -0700
+Message-ID: <20150916223925.GP23081@codeaurora.org>
+References: <1442384603-26053-1-git-send-email-rnayak@codeaurora.org>
+ <1442384603-26053-5-git-send-email-rnayak@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f176.google.com ([209.85.212.176]:35350 "EHLO
-	mail-wi0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752354AbbIPUYt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Sep 2015 16:24:49 -0400
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1442384603-26053-5-git-send-email-rnayak@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Rajendra Nayak <rnayak@codeaurora.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com, srinivas.kandagatla@linaro.org, nrajan@codeaurora.org, lina.iyer@linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 
-This platform driver has a OF device ID table but the OF module
-alias information is not created so module autoloading won't work.
+On 09/16, Rajendra Nayak wrote:
+> @@ -3520,7 +3522,26 @@ static int gcc_msm8960_probe(struct platform_device *pdev)
+>  	if (IS_ERR(clk))
+>  		return PTR_ERR(clk);
+>  
+> -	return qcom_cc_probe(pdev, match->data);
+> +	ret = qcom_cc_probe(pdev, match->data);
+> +	if (ret)
+> +		return ret;
+> +
+> +	tsens = platform_device_alloc("qcom-tsens", -1);
+> +	if (!tsens) {
+> +		ret = -ENOMEM;
+> +		goto err_alloc;
+> +	}
+> +
+> +	tsens->dev.parent = &pdev->dev;
+> +	ret = platform_device_add(tsens);
+> +	if (ret)
+> +		goto err_add;
 
-Signed-off-by: Luis de Bethencourt <luisbg@osg.samsung.com>
----
+platform_device_register_data() instead of all these lines? We
+should probably remove the device when this driver is removed
+too.
 
-Hello,
+> +	return 0;
 
-This patch adds the missing MODULE_DEVICE_TABLE() for OF to export
-that information so modules have the correct aliases built-in and
-autoloading works correctly.
-
-A longer explanation by Javier Canillas can be found here:
-https://lkml.org/lkml/2015/7/30/519
-
-Thanks,
-Luis
-
- drivers/cpufreq/integrator-cpufreq.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/drivers/cpufreq/integrator-cpufreq.c b/drivers/cpufreq/integrator-cpufreq.c
-index 2faa421..79e3ff2 100644
---- a/drivers/cpufreq/integrator-cpufreq.c
-+++ b/drivers/cpufreq/integrator-cpufreq.c
-@@ -221,6 +221,8 @@ static const struct of_device_id integrator_cpufreq_match[] = {
- 	{ },
- };
- 
-+MODULE_DEVICE_TABLE(of, integrator_cpufreq_match);
-+
- static struct platform_driver integrator_cpufreq_driver = {
- 	.driver = {
- 		.name = "integrator-cpufreq",
 -- 
-2.4.6
-
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
