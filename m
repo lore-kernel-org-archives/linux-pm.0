@@ -1,111 +1,56 @@
 From: Zhaoyang Huang <zhaoyang.huang@linaro.org>
-Subject: [PATCH v4 1/2] modify pl011 driver to let it work as wakeup source
-Date: Wed, 16 Sep 2015 14:46:59 +0800
-Message-ID: <1442386021-5113-1-git-send-email-zhaoyang.huang@linaro.org>
+Subject: [PATCH v4 2/2] add property of "linux,wakeup" for juno.dts
+Date: Wed, 16 Sep 2015 14:47:00 +0800
+Message-ID: <1442386021-5113-2-git-send-email-zhaoyang.huang@linaro.org>
+References: <1442386021-5113-1-git-send-email-zhaoyang.huang@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f54.google.com ([209.85.220.54]:33224 "EHLO
-	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752294AbbIPGrI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Sep 2015 02:47:08 -0400
-Received: by pacex6 with SMTP id ex6so200669238pac.0
-        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2015 23:47:07 -0700 (PDT)
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:34176 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752348AbbIPGrN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Sep 2015 02:47:13 -0400
+Received: by padhy16 with SMTP id hy16so200307232pad.1
+        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2015 23:47:12 -0700 (PDT)
+In-Reply-To: <1442386021-5113-1-git-send-email-zhaoyang.huang@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: amit.kucheria@linaro.org, sudeep.holla@arm.com
 
-the commit use the latest dev_pm_set_wake_irq API instead
-of the enable_irq_wake and IRQF_NO_SUSPEND to configure the
-ttyAMA device to work as the wakeup source
+add property of "linux,wakeup" to let the driver know
+if the device should work as wakeup source
 
 Signed-off-by: Zhaoyang Huang <zhaoyang.huang@linaro.org>
 ---
- drivers/tty/serial/amba-pl011.c |   47 ++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 46 insertions(+), 1 deletion(-)
+ Documentation/devicetree/bindings/serial/pl011.txt |    3 ++-
+ arch/arm64/boot/dts/arm/juno-base.dtsi             |    1 +
+ 2 files changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/tty/serial/amba-pl011.c b/drivers/tty/serial/amba-pl011.c
-index fd27e98..1923b94 100644
---- a/drivers/tty/serial/amba-pl011.c
-+++ b/drivers/tty/serial/amba-pl011.c
-@@ -59,6 +59,11 @@
- #include <linux/sizes.h>
- #include <linux/io.h>
- #include <linux/acpi.h>
-+#include <linux/suspend.h>
-+#include <linux/pm_wakeirq.h>
-+#include <linux/irq.h>
-+
-+static struct device *uart_dev;
+diff --git a/Documentation/devicetree/bindings/serial/pl011.txt b/Documentation/devicetree/bindings/serial/pl011.txt
+index cbae3d9..609e8e9 100644
+--- a/Documentation/devicetree/bindings/serial/pl011.txt
++++ b/Documentation/devicetree/bindings/serial/pl011.txt
+@@ -35,7 +35,8 @@ Optional properties:
+ - poll-timeout-ms:
+ 	   Poll timeout when auto-poll is set, default
+ 	   3000ms.
+-
++- linux,wakeup:
++	   set the pl011 work as wakeup source for suspend to ram/idle
+ See also bindings/arm/primecell.txt
  
- #define UART_NR			14
+ Example:
+diff --git a/arch/arm64/boot/dts/arm/juno-base.dtsi b/arch/arm64/boot/dts/arm/juno-base.dtsi
+index a3d5a77..f7bb150 100644
+--- a/arch/arm64/boot/dts/arm/juno-base.dtsi
++++ b/arch/arm64/boot/dts/arm/juno-base.dtsi
+@@ -152,6 +152,7 @@
+ 		interrupts = <GIC_SPI 83 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&soc_uartclk>, <&soc_refclk100mhz>;
+ 		clock-names = "uartclk", "apb_pclk";
++		linux,wakeup;
+ 	};
  
-@@ -2353,11 +2358,29 @@ static int pl011_register_port(struct uart_amba_port *uap)
- 	return ret;
- }
- 
-+struct uart_match {
-+	struct uart_port *port;
-+	struct uart_driver *driver;
-+};
-+
-+static int match_uart_port(struct device *dev, void *data)
-+{
-+	struct uart_match *match = data;
-+
-+	dev_t devt = MKDEV(match->driver->major, match->driver->minor) +
-+		match->port->line;
-+
-+	pr_info("the match data of ttyAMA0 is %d %d\n",
-+			(int)devt, (int)dev->devt);
-+
-+	return dev->devt == devt; /* Actually, only one tty per port */
-+}
- static int pl011_probe(struct amba_device *dev, const struct amba_id *id)
- {
- 	struct uart_amba_port *uap;
- 	struct vendor_data *vendor = id->data;
- 	int portnr, ret;
-+	struct uart_match match;
- 
- 	portnr = pl011_find_free_port();
- 	if (portnr < 0)
-@@ -2387,13 +2410,35 @@ static int pl011_probe(struct amba_device *dev, const struct amba_id *id)
- 
- 	amba_set_drvdata(dev, uap);
- 
--	return pl011_register_port(uap);
-+	ret = pl011_register_port(uap);
-+
-+	if (!of_find_property(dev->dev.of_node, "linux,wakeup", NULL)) {
-+		uart_dev = NULL;
-+		return ret;
-+	}
-+
-+	match.port = &uap->port;
-+	match.driver = &amba_reg;
-+
-+	uart_dev = device_find_child(&dev->dev, &match, match_uart_port);
-+
-+	if (uart_dev) {
-+		device_init_wakeup(uart_dev, true);
-+		dev_pm_set_wake_irq(uart_dev, uap->port.irq);
-+	}
-+
-+	return ret;
- }
- 
- static int pl011_remove(struct amba_device *dev)
- {
- 	struct uart_amba_port *uap = amba_get_drvdata(dev);
- 
-+	if (uart_dev) {
-+		dev_pm_clear_wake_irq(uart_dev);
-+		device_init_wakeup(uart_dev, false);
-+	}
-+
- 	uart_remove_one_port(&amba_reg, &uap->port);
- 	pl011_unregister_port(uap);
- 	return 0;
+ 	i2c@7ffa0000 {
 -- 
 1.7.9.5
 
