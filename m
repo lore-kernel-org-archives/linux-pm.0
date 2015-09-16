@@ -1,156 +1,228 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH] clk: readd refcounting for struct clk instances
-Date: Tue, 15 Sep 2015 17:39:31 -0700
-Message-ID: <20150916003931.GK23081@codeaurora.org>
-References: <1878691.zhVxsBBBGg@diego>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v4 04/10] power: bq24257: Allow manual setting of input
+ current limit
+Date: Wed, 16 Sep 2015 09:41:49 +0900
+Message-ID: <55F8BACD.6090402@samsung.com>
+References: <1442339914-25843-1-git-send-email-dannenberg@ti.com>
+ <1442339914-25843-5-git-send-email-dannenberg@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:44391 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752639AbbIPAje (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2015 20:39:34 -0400
-Content-Disposition: inline
-In-Reply-To: <1878691.zhVxsBBBGg@diego>
+Received: from mailout4.w1.samsung.com ([210.118.77.14]:14606 "EHLO
+	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753116AbbIPAly (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2015 20:41:54 -0400
+In-reply-to: <1442339914-25843-5-git-send-email-dannenberg@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>
-Cc: mturquette@baylibre.com, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
+To: Andreas Dannenberg <dannenberg@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>
+Cc: Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-On 09/15, Heiko St=FCbner wrote:
-> With the split into struct clk and struct clk_core, clocks lost the
-> ability for nested __clk_get clkdev calls. While it stays possible to
-> call __clk_get, the first call to (__)clk_put will clear the struct c=
-lk,
-> making subsequent clk_put calls run into a NULL pointer dereference.
->=20
-> One prime example of this sits in the generic power domain code, wher=
-e it
-> is possible to add the clocks both by name and by passing in a struct=
- clk
-> via pm_clk_add_clk(). __pm_clk_add() in turn then calls __clk_get to
-> increase the refcount, so that the original code can put the clock ag=
-ain.
->=20
-> A possible call-path looks like
-> clk =3D of_clk_get();
-> pm_clk_add_clk(dev, clk);
-> clk_put(clk);
->=20
-> with pm_clk_add_clk() =3D> __pm_clk_add() then calling __clk_get on t=
-he clk
-> and later clk_put when the pm clock list gets destroyed, thus creatin=
-g
-> a NULL pointer deref, as the struct clk doesn't exist anymore.
->=20
-> So add a separate refcounting for struct clk instances and only clean=
- up
-> once the refcount reaches zero.
->=20
-> Signed-off-by: Heiko Stuebner <heiko@sntech.de>
+On 16.09.2015 02:58, Andreas Dannenberg wrote:
+> A new optional device property called "ti,current-limit" is introduced
+> to allow disabling the D+/D- USB signal-based charger type auto-
+> detection algorithm used to set the input current limit and instead to
+> use a fixed input current limit.
+> 
+> Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
 > ---
-> I stumbled upon this while applying the new Rockchip power-domain dri=
-ver,
-> but I guess the underlying issue is universal and probably present si=
-nce
-> the original clk/clk_core split, so this probably counts as fix.
+>  drivers/power/bq24257_charger.c | 102 +++++++++++++++++++++++++++++++---------
+>  1 file changed, 81 insertions(+), 21 deletions(-)
+> 
+> diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
+> index fdfe855..55e4ee4 100644
+> --- a/drivers/power/bq24257_charger.c
+> +++ b/drivers/power/bq24257_charger.c
+> @@ -74,6 +74,7 @@ struct bq24257_init_data {
+>  	u8 ichg;	/* charge current      */
+>  	u8 vbat;	/* regulation voltage  */
+>  	u8 iterm;	/* termination current */
+> +	u8 in_ilimit;	/* input current limit */
+>  };
+>  
+>  struct bq24257_state {
+> @@ -100,6 +101,8 @@ struct bq24257_device {
+>  	struct bq24257_state state;
+>  
+>  	struct mutex lock; /* protect state data */
+> +
+> +	bool in_ilimit_autoset_disable;
+>  };
+>  
+>  static bool bq24257_is_volatile_reg(struct device *dev, unsigned int reg)
+> @@ -188,6 +191,12 @@ static const u32 bq24257_iterm_map[] = {
+>  
+>  #define BQ24257_ITERM_MAP_SIZE		ARRAY_SIZE(bq24257_iterm_map)
+>  
+> +static const u32 bq24257_iilimit_map[] = {
 
-Ok. The fix makes sense, but I wonder why we do this. Perhaps we
-should stop exporting __clk_get() and __clk_put() to everything
-that uses clkdev in the kernel. They're called per-user clks for
-a reason. There's one user. Now we have two users of the same
-struct clk instance, so we have to refcount it too? I hope the
-shared clk instance isn't being used to set rates in two pieces
-of code.
+Too many ii? bq24257_ilimit_map? Or is it a shortcut for "in_ilimit"?
+New fields have pattern like "in_ilimit*".
+Anyway it's a confusing so maybe use everywhere the same pattern?
 
-And this only affects pm_clk_add_clk() callers right? So the only
-caller in the kernel (drivers/clk/shmobile/clk-mstp.c) doesn't
-seem to have this problem right now because it never calls
-clk_put() on the pointer it passes to pm_clk_add_clk().
 
-So what if we did the patch below? This would rely on callers not
-calling clk_put() before calling pm_clk_remove() or
-pm_clk_destroy(), and the life cycle would be clear, but the
-sharing is still there. Or we could say that after a clk is given
-to pm_clk_add_clk() that the caller shouldn't touch it anymore,
-like shmobile is doing right now. Then there's nothing to do
-besides remove the extra __clk_get() call in the pm layer.
+> +	100000, 150000, 500000, 900000, 1500000, 2000000
+> +};
+> +
+> +#define BQ24257_IILIMIT_MAP_SIZE	ARRAY_SIZE(bq24257_iilimit_map)
 
->=20
-> @@ -2606,6 +2607,18 @@ static void __clk_release(struct kref *ref)
->  	kfree(core);
+ditto: ILIMIT_MAP_SIZE?
+
+> +
+>  static int bq24257_field_read(struct bq24257_device *bq,
+>  			      enum bq24257_fields field_id)
+>  {
+> @@ -479,24 +488,35 @@ static void bq24257_handle_state_change(struct bq24257_device *bq,
+>  	old_state = bq->state;
+>  	mutex_unlock(&bq->lock);
+>  
+> -	if (!new_state->power_good) {			     /* power removed */
+> -		cancel_delayed_work_sync(&bq->iilimit_setup_work);
+> -
+> -		/* activate D+/D- port detection algorithm */
+> -		ret = bq24257_field_write(bq, F_DPDM_EN, 1);
+> -		if (ret < 0)
+> -			goto error;
+> +	/*
+> +	 * Handle BQ2425x state changes observing whether the D+/D- based input
+> +	 * current limit autoset functionality is enabled.
+> +	 */
+> +	if (!new_state->power_good) {
+> +		dev_dbg(bq->dev, "Power removed\n");
+> +		if (!bq->in_ilimit_autoset_disable) {
+> +			cancel_delayed_work_sync(&bq->iilimit_setup_work);
+>  
+> -		reset_iilimit = true;
+> -	} else if (!old_state.power_good) {		    /* power inserted */
+> -		config_iilimit = true;
+> -	} else if (new_state->fault == FAULT_NO_BAT) {	   /* battery removed */
+> -		cancel_delayed_work_sync(&bq->iilimit_setup_work);
+> +			/* activate D+/D- port detection algorithm */
+> +			ret = bq24257_field_write(bq, F_DPDM_EN, 1);
+> +			if (ret < 0)
+> +				goto error;
+>  
+> -		reset_iilimit = true;
+> -	} else if (old_state.fault == FAULT_NO_BAT) {    /* battery connected */
+> -		config_iilimit = true;
+> -	} else if (new_state->fault == FAULT_TIMER) { /* safety timer expired */
+> +			reset_iilimit = true;
+> +		}
+> +	} else if (!old_state.power_good) {
+> +		dev_dbg(bq->dev, "Power inserted\n");
+> +		config_iilimit = !bq->in_ilimit_autoset_disable;
+> +	} else if (new_state->fault == FAULT_NO_BAT) {
+> +		dev_warn(bq->dev, "Battery removed\n");
+
+dev_warn? This wasn't here before... It's a bit too serious. Is removing
+a battery an error condition? Maybe user just unplugged it?
+dev_dbg or dev_info should be sufficient.
+
+BTW, it is useful to quickly find boot regressions with "dmesg -l
+warn,err". Removing a battery probably is not an error?
+
+> +		if (!bq->in_ilimit_autoset_disable) {
+> +			cancel_delayed_work_sync(&bq->iilimit_setup_work);
+> +			reset_iilimit = true;
+> +		}
+> +	} else if (old_state.fault == FAULT_NO_BAT) {
+> +		dev_warn(bq->dev, "Battery connected\n");
+
+Definitely not a warn. Inserting a battery is not an error condition.
+
+> +		config_iilimit = !bq->in_ilimit_autoset_disable;
+> +	} else if (new_state->fault == FAULT_TIMER) {
+>  		dev_err(bq->dev, "Safety timer expired! Battery dead?\n");
+>  	}
+
+Don't you have a schedule_delayed_work() call here which now will be
+executed always? Even when work was not INIT and nothing will cancel it?
+
+>  
+> @@ -581,7 +601,16 @@ static int bq24257_hw_init(struct bq24257_device *bq)
+>  	bq->state = state;
+>  	mutex_unlock(&bq->lock);
+>  
+> -	if (!state.power_good)
+> +	if (bq->in_ilimit_autoset_disable) {
+> +		dev_dbg(bq->dev, "manually setting iilimit = %d\n",
+> +			bq->init_data.in_ilimit);
+
+Nit, no actual difference but makes more sense to me because field is
+u8: "%u".
+
+> +
+> +		/* program fixed input current limit */
+> +		ret = bq24257_field_write(bq, F_IILIMIT,
+> +					  bq->init_data.in_ilimit);
+> +		if (ret < 0)
+> +			return ret;
+> +	} else if (!state.power_good)
+>  		/* activate D+/D- detection algorithm */
+>  		ret = bq24257_field_write(bq, F_DPDM_EN, 1);
+>  	else if (state.fault != FAULT_NO_BAT)
+> @@ -659,6 +688,7 @@ static int bq24257_fw_probe(struct bq24257_device *bq)
+>  	int ret;
+>  	u32 property;
+>  
+> +	/* Required properties */
+>  	ret = device_property_read_u32(bq->dev, "ti,charge-current", &property);
+>  	if (ret < 0)
+>  		return ret;
+> @@ -682,6 +712,24 @@ static int bq24257_fw_probe(struct bq24257_device *bq)
+>  	bq->init_data.iterm = bq24257_find_idx(property, bq24257_iterm_map,
+>  					       BQ24257_ITERM_MAP_SIZE);
+>  
+> +	/* Optional properties. If not provided use reasonable default. */
+> +	ret = device_property_read_u32(bq->dev, "ti,current-limit",
+> +				       &property);
+> +	if (ret < 0)
+> +		/*
+> +		 * Explicitly set a default value which will be needed for
+> +		 * devices that don't support the automatic setting of the input
+> +		 * current limit through the charger type detection mechanism.
+> +		 */
+> +		bq->init_data.in_ilimit = IILIMIT_500;
+> +	else {
+> +		bq->in_ilimit_autoset_disable = true;
+> +		bq->init_data.in_ilimit =
+> +				bq24257_find_idx(property,
+> +						 bq24257_iilimit_map,
+> +						 BQ24257_IILIMIT_MAP_SIZE);
+> +	}
+> +
+>  	return 0;
 >  }
-> =20
-> +static void __clk_release(struct kref *ref)
-> +{
-> +	struct clk *clk =3D container_of(ref, struct clk, ref);
+>  
+> @@ -740,8 +788,6 @@ static int bq24257_probe(struct i2c_client *client,
+>  
+>  	i2c_set_clientdata(client, bq);
+>  
+> -	INIT_DELAYED_WORK(&bq->iilimit_setup_work, bq24257_iilimit_setup_work);
+> -
+>  	if (!dev->platform_data) {
+>  		ret = bq24257_fw_probe(bq);
+>  		if (ret < 0) {
+> @@ -752,6 +798,18 @@ static int bq24257_probe(struct i2c_client *client,
+>  		return -ENODEV;
+>  	}
+>  
+> +	/*
+> +	 * The BQ24250 doesn't support the D+/D- based charger type detection
+> +	 * used for the automatic setting of the input current limit setting so
+> +	 * explicitly disable that feature.
+> +	 */
+> +	if (bq->chip == BQ24250)
+> +		bq->in_ilimit_autoset_disable = true;
 > +
-> +	hlist_del(&clk->clks_node);
-> +	if ((clk->min_rate > clk->core->req_rate ||
-> +	     clk->max_rate < clk->core->req_rate))
+> +	if (!bq->in_ilimit_autoset_disable)
 
-Why did we grow a pair of parenthesis?
+In most places you have quite obfuscated negation of
+"autoset_disable"... So maybe just "bq->in_ilimit_autoset" or
+"bq->in_ilimit_autoset_enable" and the negation won't be needed? It
+could be more readable.
 
-> +		clk_core_set_rate_nolock(clk->core, clk->core->req_rate);
-> +
-> +	kfree(clk);
-> +}
-> +
->  /*
->   * Empty clk_ops for unregistered clocks. These are used temporarily
->   * after clk_unregister() was called on a clock and until last clock
+Best regards,
+Krzysztof
 
-
-diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_=
-ops.c
-index 652b5a367c1f..ef62bb3d7b26 100644
---- a/drivers/base/power/clock_ops.c
-+++ b/drivers/base/power/clock_ops.c
-@@ -31,6 +31,7 @@ struct pm_clock_entry {
- 	char *con_id;
- 	struct clk *clk;
- 	enum pce_status status;
-+	bool needs_clk_put;
- };
-=20
- /**
-@@ -59,8 +60,10 @@ static inline void __pm_clk_enable(struct device *de=
-v, struct pm_clock_entry *ce
-  */
- static void pm_clk_acquire(struct device *dev, struct pm_clock_entry *=
-ce)
- {
--	if (!ce->clk)
-+	if (!ce->clk) {
- 		ce->clk =3D clk_get(dev, ce->con_id);
-+		ce->needs_clk_put =3D true;
-+	}
- 	if (IS_ERR(ce->clk)) {
- 		ce->status =3D PCE_STATUS_ERROR;
- 	} else {
-@@ -93,7 +96,7 @@ static int __pm_clk_add(struct device *dev, const cha=
-r *con_id,
- 			return -ENOMEM;
- 		}
- 	} else {
--		if (IS_ERR(clk) || !__clk_get(clk)) {
-+		if (IS_ERR(clk)) {
- 			kfree(ce);
- 			return -ENOENT;
- 		}
-@@ -149,7 +152,8 @@ static void __pm_clk_remove(struct pm_clock_entry *=
-ce)
-=20
- 		if (ce->status >=3D PCE_STATUS_ACQUIRED) {
- 			clk_unprepare(ce->clk);
--			clk_put(ce->clk);
-+			if (ce->needs_clk_put)
-+				clk_put(ce->clk);
- 		}
- 	}
-=20
-
---=20
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
