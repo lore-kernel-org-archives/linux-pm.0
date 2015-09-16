@@ -1,111 +1,48 @@
-From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: [PATCH v2 9/9] arm64: dts: msm8916: Add thermal zones, tsens and qfprom nodes
-Date: Wed, 16 Sep 2015 11:53:23 +0530
-Message-ID: <1442384603-26053-10-git-send-email-rnayak@codeaurora.org>
-References: <1442384603-26053-1-git-send-email-rnayak@codeaurora.org>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v4 08/10] power: bq24257: Allow input current limit sysfs
+ access
+Date: Wed, 16 Sep 2015 15:31:06 +0900
+Message-ID: <55F90CAA.5090701@samsung.com>
+References: <1442339914-25843-1-git-send-email-dannenberg@ti.com>
+ <1442339914-25843-9-git-send-email-dannenberg@ti.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:59803 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752200AbbIPGZk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Sep 2015 02:25:40 -0400
-In-Reply-To: <1442384603-26053-1-git-send-email-rnayak@codeaurora.org>
+Received: from mailout4.w1.samsung.com ([210.118.77.14]:19746 "EHLO
+	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752533AbbIPGbK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Sep 2015 02:31:10 -0400
+In-reply-to: <1442339914-25843-9-git-send-email-dannenberg@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com
-Cc: sboyd@codeaurora.org, srinivas.kandagatla@linaro.org, nrajan@codeaurora.org, lina.iyer@linaro.org, Rajendra Nayak <rnayak@codeaurora.org>
+To: Andreas Dannenberg <dannenberg@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>
+Cc: Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-Add thermal zones, tsens and qfprom nodes
+On 16.09.2015 02:58, Andreas Dannenberg wrote:
+> This patch allows reading (and writing, if the D+/D- USB signal-based
+> charger type detection is disabled) of the input current limit through
+> the POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT sysfs property. This allows
+> userspace to see what charger was detected and to re-configure the
+> maximum current drawn from the external supply at runtime based on
+> system-level knowledge or user input.
+> 
+> Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
+> ---
+>  drivers/power/bq24257_charger.c | 67 +++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 67 insertions(+)
+> 
 
-Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
----
- arch/arm64/boot/dts/qcom/msm8916.dtsi | 66 +++++++++++++++++++++++++++++++++++
- 1 file changed, 66 insertions(+)
+Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-diff --git a/arch/arm64/boot/dts/qcom/msm8916.dtsi b/arch/arm64/boot/dts/qcom/msm8916.dtsi
-index 3e7083c..63b5262 100644
---- a/arch/arm64/boot/dts/qcom/msm8916.dtsi
-+++ b/arch/arm64/boot/dts/qcom/msm8916.dtsi
-@@ -68,6 +68,49 @@
- 		};
- 	};
- 
-+	thermal-zones {
-+		cpu-thermal0 {
-+			polling-delay-passive = <250>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&tsens 4>;
-+
-+			trips {
-+				cpu_alert0: trip@0 {
-+					temperature = <100000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+				cpu_crit0: trip@1 {
-+					temperature = <125000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+		cpu-thermal1 {
-+			polling-delay-passive = <250>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&tsens 3>;
-+
-+			trips {
-+				cpu_alert1: trip@0 {
-+					temperature = <100000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+				cpu_crit1: trip@1 {
-+					temperature = <125000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+
-+	};
-+
- 	timer {
- 		compatible = "arm,armv8-timer";
- 		interrupts = <GIC_PPI 2 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
-@@ -392,6 +435,29 @@
- 			interrupt-controller;
- 			#interrupt-cells = <4>;
- 		};
-+
-+		qfprom: qfprom@5c000 {
-+			compatible = "qcom,qfprom";
-+			reg = <0x5c000 0x1000>;
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			tsens_caldata: caldata@d0 {
-+				reg = <0xd0 0x8>;
-+			};
-+			tsens_calsel: calsel@ec {
-+				reg = <0xec 0x4>;
-+			};
-+		};
-+
-+		tsens: thermal-sensor@4a8000 {
-+			compatible = "qcom,msm8916-tsens";
-+			reg = <0x4a8000 0x2000>;
-+			nvmem-cells = <&tsens_caldata>, <&tsens_calsel>;
-+			nvmem-cell-names = "calib", "calib_sel";
-+			qcom,tsens-slopes = <3200 3200 3200 3200 3200>;
-+			qcom,sensor-id = <0 1 2 4 5>;
-+			#thermal-sensor-cells = <1>;
-+		};
- 	};
- };
- 
--- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation
+BTW you are exposing more and more sysfs attributes which are userspace
+interfaces. They should be documented:
+Documentation/SubmitChecklist - point 19
+Documentation/ABI/README
+
+Although not all new drivers (and perhaps not all reviewers) follow this
+rule...
+
+Best regards,
+Krzysztof
 
