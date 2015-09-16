@@ -1,46 +1,45 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH v2 4/9] clk: qcom: create virtual child device for TSENS
-Date: Wed, 16 Sep 2015 15:39:25 -0700
-Message-ID: <20150916223925.GP23081@codeaurora.org>
-References: <1442384603-26053-1-git-send-email-rnayak@codeaurora.org>
- <1442384603-26053-5-git-send-email-rnayak@codeaurora.org>
+From: Kukjin Kim <kgene@kernel.org>
+Subject: Re: [PATCH v4 0/4] cpufreq-dt: add suspend frequency support
+Date: Thu, 17 Sep 2015 07:44:53 +0900
+Message-ID: <55F9F0E5.7000805@kernel.org>
+References: <1441640501-13613-1-git-send-email-b.zolnierkie@samsung.com>
+ <20150908024659.GF26760@linux> <55EE5C79.2030604@samsung.com>
+ <20150908042017.GJ26760@linux> <55EE6892.3010304@samsung.com>
+ <20150908051053.GA18554@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1442384603-26053-5-git-send-email-rnayak@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Rajendra Nayak <rnayak@codeaurora.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com, srinivas.kandagatla@linaro.org, nrajan@codeaurora.org, lina.iyer@linaro.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20150908051053.GA18554@linux>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Michael Turquette <mturquette@baylibre.com>, Tomasz Figa <tomasz.figa@gmail.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, linux-clk@vger.kernel.org, Marek Szyprowski <m.szyprowski@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, linux-pm@vger.kernel.org, Javier Martinez Canillas <javier@osg.samsung.com>, Kukjin Kim <kgene@kernel.org>, Thomas Abraham <thomas.ab@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Kevin Hilman <khilman@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Anand Moon <linux.amoon@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
 List-Id: linux-pm@vger.kernel.org
 
-On 09/16, Rajendra Nayak wrote:
-> @@ -3520,7 +3522,26 @@ static int gcc_msm8960_probe(struct platform_device *pdev)
->  	if (IS_ERR(clk))
->  		return PTR_ERR(clk);
->  
-> -	return qcom_cc_probe(pdev, match->data);
-> +	ret = qcom_cc_probe(pdev, match->data);
-> +	if (ret)
-> +		return ret;
-> +
-> +	tsens = platform_device_alloc("qcom-tsens", -1);
-> +	if (!tsens) {
-> +		ret = -ENOMEM;
-> +		goto err_alloc;
-> +	}
-> +
-> +	tsens->dev.parent = &pdev->dev;
-> +	ret = platform_device_add(tsens);
-> +	if (ret)
-> +		goto err_add;
+On 09/08/15 14:10, Viresh Kumar wrote:
+> On 08-09-15, 13:48, Krzysztof Kozlowski wrote:
+>> Somehow my mind stuck on solving Exynos4x12 cpufreq issues.
+>>
+>> Right, it should go through Rafael's, probably except DTS patch (4/4)
+>> because it depends on previous DTS changes. These changes are still in
+>> arm-soc, not in Linus' tree [0].
+> 
+> That's bad :(
+> 
+> Anyway, 4/4 is kind of independent to this series, in the sense that
+> it wouldn't harm even if it gets applied separately.
+> 
+> So, go ahead and apply 4/4 to Samsung's tree and rest of this can be
+> picked by Rafael.
+> 
+Applied 4/4 into samsung tree, thanks.
 
-platform_device_register_data() instead of all these lines? We
-should probably remove the device when this driver is removed
-too.
-
-> +	return 0;
-
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+- Kukjin
