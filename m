@@ -1,63 +1,63 @@
-From: Al Stone <ahs3@redhat.com>
-Subject: Re: [PATCH v3 0/5] ACPI: Provide better MADT subtable sanity checks
-Date: Wed, 16 Sep 2015 13:26:32 -0600
-Message-ID: <55F9C268.5000604@redhat.com>
-References: <1441832991-28200-1-git-send-email-al.stone@linaro.org>
- <55F889E8.3070706@redhat.com> <1880799.vMhNVMG5Vc@vostro.rjw.lan>
- <55F997C1.20606@linaro.org> <55F9988D.5080002@redhat.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] driver core: Ensure proper suspend/resume ordering
+Date: Wed, 16 Sep 2015 15:27:55 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1509161523230.1993-100000@iolanthe.rowland.org>
+References: <55F9712F.1030305@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:57434 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752435AbbIPT0e (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 16 Sep 2015 15:26:34 -0400
-In-Reply-To: <55F9988D.5080002@redhat.com>
+Received: from iolanthe.rowland.org ([192.131.102.54]:58231 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752349AbbIPT14 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Sep 2015 15:27:56 -0400
+In-Reply-To: <55F9712F.1030305@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Al Stone <al.stone@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org, linux-pm@vger.kernel.org, linaro-acpi@lists.linaro.org, linaro-kernel@lists.linaro.org, patches@linaro.org, "lenb@kernel.org" <lenb@kernel.org>, "tony.luck@intel.com" <tony.luck@intel.com>, "fenghua.yu@intel.com" <fenghua.yu@intel.com>, Pavel Machek <pavel@ucw.cz>, "tglx@linutronix.de" <tglx@linutronix.de>, mingo@redhat.com, "H. Peter Anvin" <hpa@linux.intel.com>
+To: Grygorii Strashko <grygorii.strashko@ti.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thierry Reding <thierry.reding@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 09/16/2015 10:27 AM, Al Stone wrote:
-> On 09/16/2015 10:24 AM, Al Stone wrote:
->> On 09/15/2015 08:44 PM, Rafael J. Wysocki wrote:
->>> On Tuesday, September 15, 2015 03:13:12 PM Al Stone wrote:
->>>> On 09/09/2015 03:09 PM, Al Stone wrote:
->>>>> Currently, the BAD_MADT_ENTRY macro is used to do a very simple sanity
->>>>> check on the various subtables that are defined for the MADT.  The check
->>>>> compares the size of the subtable data structure as defined by ACPICA to
->>>>> the length entry in the subtable.  If they are not the same, the assumption
->>>>> is that the subtable is incorrect.
->>>>>
+On Wed, 16 Sep 2015, Grygorii Strashko wrote:
+
+> I think, It should prohibited to probe devices during suspend/hibernation.
+> And solution introduced in this patch might help to fix it -
+> in general, we could do :
+> - add sync point on suspend enter: wait_for_device_probe() and
+> - prohibit probing: move all devices which will request probing into
+> deferred_probe list
+> - one suspend exit: allow probing and do driver_deferred_probe_trigger
+
+That could work; it's a good idea.
+
+> I'd like to mention here that this patch will work only
+> if dmp_list will be filled according device creation order ("parent<-child" dependencies)
+> *AND* according device's probing order ("supplier<-consumer").
+> So, if there is the case when Parent device can be probed AFTER its children
+> - it will not work, because "parent<-child" dependencies will not be tracked
+> any more :( Sry, I could not even imagine that such crazy case exist :'(
+
+If we avoid moving devices to the end of the dpm_list when they already 
+have children, then we should be okay, right?
+
+> Are there any other subsystems with the same behavior like PCI?
+
+I don't know.
+
+> If not - probably, it could be fixed in PCI subsystem using device_pm_move_after() or 
+> device_move() in PCIe ports probe.
+> if yes - ... maybe we can scan/re-check and reorder dpm_list on suspend enter and
+> restore ("parent<-child" dependencies).
+
+> Truth is that smth. need to be done 100%. Personally, I was hit by this issue also,
+>  and it cost me 3 hours of debugging and I came up with the same patch as
+> Bill Huang, then spent some time trying to understand what is wrong with PCI
+> - finally, I've just changed the order of my devices in DT :)
 > 
-> [snip...]
-> 
->>> I'm going to apply this series if people have no problems with it.  I do think
->>> it is slightly overkill, but then as long as it works ...
+> Also, I think, it will be good to have this patch in -next to collect more feedbacks.
 
-Indeed it does.  We've found and fixed two MADTs with legitimate errors in them
-with these patches (both arm64 tables still in development).
+I like the idea of forcing all probes during a sleep transition to be 
+deferred.  We could carry them out just before unfreezing the user 
+threads.  That combined with the change mentioned above ought to be 
+worth testing.
 
->>> Thanks,
->>> Rafael
->>>
-> 
-> Would you prefer I send out the updated version with Sudeep's fix to apply
-> instead of this version?  Or have you picked that up already?  Easily updated
-> and sent out, if it'll make your life simpler....
-> 
+Alan Stern
 
-Bah.  Never mind.  An inadvertent use of the 01day builder by someone else
-found another nit; I'll spin out a v4 later today just so everything is very
-clear.
-
--- 
-ciao,
-al
------------------------------------
-Al Stone
-Software Engineer
-Red Hat, Inc.
-ahs3@redhat.com
------------------------------------
