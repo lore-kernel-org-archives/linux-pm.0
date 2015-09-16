@@ -1,28 +1,197 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [pm:bleeding-edge 24/34] kernel/power/snapshot.c:928:12: warning: 'swsusp_page_is_valid' defined but not used
-Date: Wed, 16 Sep 2015 02:43:15 +0200
-Message-ID: <1658485.DPiavY8Irk@vostro.rjw.lan>
-References: <201509150808.N1zPZE8x%fengguang.wu@intel.com> <36DF59CE26D8EE47B0655C516E9CE640265824E9@shsmsx102.ccr.corp.intel.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v4 02/10] power: bq24257: Add basic support for
+ bq24250/bq24251
+Date: Wed, 16 Sep 2015 09:19:11 +0900
+Message-ID: <55F8B57F.1020502@samsung.com>
+References: <1442339914-25843-1-git-send-email-dannenberg@ti.com>
+ <1442339914-25843-3-git-send-email-dannenberg@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:50804 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751772AbbIPAPP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2015 20:15:15 -0400
-In-Reply-To: <36DF59CE26D8EE47B0655C516E9CE640265824E9@shsmsx102.ccr.corp.intel.com>
+Received: from mailout3.w1.samsung.com ([210.118.77.13]:16314 "EHLO
+	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751644AbbIPATW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2015 20:19:22 -0400
+In-reply-to: <1442339914-25843-3-git-send-email-dannenberg@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Chen, Yu C" <yu.c.chen@intel.com>
-Cc: "Wu, Fengguang" <fengguang.wu@intel.com>, "kbuild-all@01.org" <kbuild-all@01.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Andreas Dannenberg <dannenberg@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>
+Cc: Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-On Tuesday, September 15, 2015 01:32:11 AM Chen, Yu C wrote:
-> Thanks!  Fengguang,
-> Then a '__attribute__ ((unused))' might be added in next version.
+On 16.09.2015 02:58, Andreas Dannenberg wrote:
+> This patch adds basic support for bq24250 and bq24251 which are very
+> similar to the bq24257 the driver was originally written for. Basic
+> support means the ability to select a device through Kconfig, DT and
+> ACPI, an instance variable allowing to check which chip is active, and
+> the reporting back of the selected device through the
+> POWER_SUPPLY_PROP_MODEL_NAME power supply sysfs property.
+> 
+> This patch by itself is not sufficient to actually use those two added
+> devices in a real-world setting due to some feature differences which
+> are addressed by other patches in this series.
+> 
+> Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
+> ---
+>  drivers/power/Kconfig           |  5 +++--
+>  drivers/power/bq24257_charger.c | 46 +++++++++++++++++++++++++++++++++++++++--
+>  2 files changed, 47 insertions(+), 4 deletions(-)
 
-I'm dropping the patch for now then and I'll wait for the next version.
+Two comments below, but they are just suggestions/questions. The code
+code now looks good:
 
-Thanks,
-Rafael
+Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+
+> 
+> diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
+> index f8758d6..7ecd9b6 100644
+> --- a/drivers/power/Kconfig
+> +++ b/drivers/power/Kconfig
+> @@ -397,12 +397,13 @@ config CHARGER_BQ24190
+>  	  Say Y to enable support for the TI BQ24190 battery charger.
+>  
+>  config CHARGER_BQ24257
+> -	tristate "TI BQ24257 battery charger driver"
+> +	tristate "TI BQ24250/24251/24257 battery charger driver"
+>  	depends on I2C
+>  	depends on GPIOLIB || COMPILE_TEST
+>  	depends on REGMAP_I2C
+>  	help
+> -	  Say Y to enable support for the TI BQ24257 battery charger.
+> +	  Say Y to enable support for the TI BQ24250, BQ24251, and BQ24257 battery
+> +	  chargers.
+>  
+>  config CHARGER_BQ24735
+>  	tristate "TI BQ24735 battery charger support"
+> diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
+> index 5859bc7..1b3ddfb 100644
+> --- a/drivers/power/bq24257_charger.c
+> +++ b/drivers/power/bq24257_charger.c
+> @@ -13,6 +13,10 @@
+>   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+>   * GNU General Public License for more details.
+>   *
+> + * Datasheets:
+> + * http://www.ti.com/product/bq24250
+> + * http://www.ti.com/product/bq24251
+> + * http://www.ti.com/product/bq24257
+>   */
+>  
+>  #include <linux/module.h>
+> @@ -41,6 +45,18 @@
+>  
+>  #define BQ24257_ILIM_SET_DELAY		1000	/* msec */
+>  
+> +enum bq2425x_chip {
+> +	BQ24250,
+> +	BQ24251,
+> +	BQ24257,
+> +};
+> +
+> +static const char *const bq2425x_chip_name[] = {
+> +	"bq24250",
+> +	"bq24251",
+> +	"bq24257",
+> +};
+> +
+>  enum bq24257_fields {
+>  	F_WD_FAULT, F_WD_EN, F_STAT, F_FAULT,			    /* REG 1 */
+>  	F_RESET, F_IILIMIT, F_EN_STAT, F_EN_TERM, F_CE, F_HZ_MODE,  /* REG 2 */
+> @@ -71,6 +87,8 @@ struct bq24257_device {
+>  	struct device *dev;
+>  	struct power_supply *charger;
+>  
+> +	enum bq2425x_chip chip;
+> +
+>  	struct regmap *rmap;
+>  	struct regmap_field *rmap_fields[F_MAX_FIELDS];
+>  
+> @@ -249,6 +267,10 @@ static int bq24257_power_supply_get_property(struct power_supply *psy,
+>  		val->strval = BQ24257_MANUFACTURER;
+>  		break;
+>  
+> +	case POWER_SUPPLY_PROP_MODEL_NAME:
+> +		val->strval = bq2425x_chip_name[bq->chip];
+
+You have now here strict relation between number of elements in
+bq2425x_chip_name and possible types of devices (enum values). Consider
+adding a comment at beginning or a BUILD_BUG_ON to prevent mismatches in
+the future (like someone will add a new value in enum but will forgot to
+add device name).
+
+> +		break;
+> +
+>  	case POWER_SUPPLY_PROP_ONLINE:
+>  		val->intval = state.power_good;
+>  		break;
+> @@ -569,6 +591,7 @@ static int bq24257_hw_init(struct bq24257_device *bq)
+>  
+>  static enum power_supply_property bq24257_power_supply_props[] = {
+>  	POWER_SUPPLY_PROP_MANUFACTURER,
+> +	POWER_SUPPLY_PROP_MODEL_NAME,
+>  	POWER_SUPPLY_PROP_STATUS,
+>  	POWER_SUPPLY_PROP_ONLINE,
+>  	POWER_SUPPLY_PROP_HEALTH,
+> @@ -666,6 +689,7 @@ static int bq24257_probe(struct i2c_client *client,
+>  {
+>  	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
+>  	struct device *dev = &client->dev;
+> +	const struct acpi_device_id *acpi_id;
+>  	struct bq24257_device *bq;
+>  	int ret;
+>  	int i;
+> @@ -682,6 +706,18 @@ static int bq24257_probe(struct i2c_client *client,
+>  	bq->client = client;
+>  	bq->dev = dev;
+>  
+> +	if (ACPI_HANDLE(dev)) {
+> +		acpi_id = acpi_match_device(dev->driver->acpi_match_table,
+> +					    &client->dev);
+> +		if (!acpi_id) {
+> +			dev_err(dev, "Failed to match ACPI device\n");
+> +			return -ENODEV;
+> +		}
+> +		bq->chip = (enum bq2425x_chip)acpi_id->driver_data;
+> +	} else {
+> +		bq->chip = (enum bq2425x_chip)id->driver_data;
+> +	}
+> +
+>  	mutex_init(&bq->lock);
+>  
+>  	bq->rmap = devm_regmap_init_i2c(client, &bq24257_regmap_config);
+> @@ -823,19 +859,25 @@ static const struct dev_pm_ops bq24257_pm = {
+>  };
+>  
+>  static const struct i2c_device_id bq24257_i2c_ids[] = {
+> -	{ "bq24257", 0 },
+> +	{ "bq24250", BQ24250 },
+> +	{ "bq24251", BQ24251 },
+> +	{ "bq24257", BQ24257 },
+>  	{},
+>  };
+>  MODULE_DEVICE_TABLE(i2c, bq24257_i2c_ids);
+>  
+>  static const struct of_device_id bq24257_of_match[] = {
+> +	{ .compatible = "ti,bq24250", },
+> +	{ .compatible = "ti,bq24251", },
+>  	{ .compatible = "ti,bq24257", },
+>  	{ },
+>  };
+>  MODULE_DEVICE_TABLE(of, bq24257_of_match);
+>  
+>  static const struct acpi_device_id bq24257_acpi_match[] = {
+> -	{"BQ242570", 0},
+> +	{ "BQ242500", BQ24250 },
+> +	{ "BQ242510", BQ24251 },
+> +	{ "BQ242570", BQ24257 },
+
+The last "0" in each device name (in string) is on purpose?
+
+Best regards,
+Krzysztof
+
+>  	{},
+>  };
+>  MODULE_DEVICE_TABLE(acpi, bq24257_acpi_match);
+> 
 
