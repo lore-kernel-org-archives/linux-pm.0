@@ -1,190 +1,219 @@
-From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: Re: [PATCH v2 2/9] thermal: qcom: tsens-8916: Add support for 8916 family of SoCs
-Date: Wed, 16 Sep 2015 14:46:46 +0100
-Message-ID: <9hh4miutr21.fsf@e105922-lin.cambridge.arm.com>
-References: <1442384603-26053-1-git-send-email-rnayak@codeaurora.org>
-	<1442384603-26053-3-git-send-email-rnayak@codeaurora.org>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [RFC 08/14] sched/tune: add detailed documentation
+Date: Wed, 16 Sep 2015 15:49:17 +0200
+Message-ID: <CAKfTPtD=j3DT+xSfoQrf-1Rgy0qmFDeb82TYyWVOXamngDe2zQ@mail.gmail.com>
+References: <1440010044-3402-9-git-send-email-patrick.bellasi@arm.com>
+ <20150902064958.GA18664@google.com> <20150903091849.GB15649@e105326-lin>
+ <55F0938A.9000607@linaro.org> <20150911110959.GA22876@e105326-lin>
+ <55F72773.9090001@linaro.org> <20150915150044.GD3206@e105326-lin>
+ <55F8AFE0.2040303@linaro.org> <55F935D9.2080607@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1442384603-26053-3-git-send-email-rnayak@codeaurora.org>
-	(Rajendra Nayak's message of "Wed, 16 Sep 2015 11:53:16 +0530")
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Rajendra Nayak <rnayak@codeaurora.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com, sboyd@codeaurora.org, srinivas.kandagatla@linaro.org, nrajan@codeaurora.org, lina.iyer@linaro.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <55F935D9.2080607@arm.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: Steve Muckle <steve.muckle@linaro.org>, Patrick Bellasi <Patrick.Bellasi@arm.com>, Ricky Liang <jcliang@chromium.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rajendra,
-
-One comment below.
-
-Rajendra Nayak <rnayak@codeaurora.org> writes:
-
-> Add support to calibrate sensors on 8916 family and also add common
-> functions to read temperature from sensors (This can be reused on
-> other SoCs having similar TSENS device)
-> The calibration data is read from eeprom using the generic nvmem
-> framework apis.
+On 16 September 2015 at 11:26, Juri Lelli <juri.lelli@arm.com> wrote:
 >
-> Based on the original code by Siddartha Mohanadoss and Stephen Boyd.
+> Hi Steve,
 >
-> Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
-> ---
->  drivers/thermal/qcom/Makefile       |   2 +-
->  drivers/thermal/qcom/tsens-8916.c   | 107 +++++++++++++++++++++++++++++
->  drivers/thermal/qcom/tsens-common.c | 130 ++++++++++++++++++++++++++++++++++++
->  drivers/thermal/qcom/tsens.c        |   1 +
->  drivers/thermal/qcom/tsens.h        |  11 +++
->  5 files changed, 250 insertions(+), 1 deletion(-)
->  create mode 100644 drivers/thermal/qcom/tsens-8916.c
->  create mode 100644 drivers/thermal/qcom/tsens-common.c
+> thanks a lot for this interesting discussion.
 >
+> On 16/09/15 00:55, Steve Muckle wrote:
+> > On 09/15/2015 08:00 AM, Patrick Bellasi wrote:
+> >>> Agreed, though I also think those tunable values might also change for a
+> >>> given set of tasks in different circumstances.
+> >>
+> >> Could you provide an example?
+> >>
+> >> In my view the per-task support should be exploited just for quite
+> >> specialized tasks, which are usually not subject to many different
+> >> phases during their execution.
+> >
+> > The surfaceflinger task in Android is a possible example. It can have
+> > the same issue as the graphics controller task you mentioned - needing
+> > to finish quickly so the overall display pipeline can meet its deadline,
+> > but often not exerting enough CPU demand by itself to raise the
+> > frequency high enough.
+> >
+>
+> SurfaceFlinger timeliness requirements, and maybe AudioFlinger's and
+> others' as well, might be better expressed by using other scheduling
+> classes, IMHO. SCHED_DEADLINE, for example, has built-in explicit
 
-[...]
+I fully agree on this point that we must be sure to not create knob to
+solve some latency/perf/power issue in a sched class whereas it can be
+easily solved with a more appropriate sched class.
+Surface flinger and sched_deadline is a good example for this kind of
+"critical" task that can accept a limited amount of latency
 
-> diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
-> new file mode 100644
-> index 0000000..4acf52c
-> --- /dev/null
-> +++ b/drivers/thermal/qcom/tsens-common.c
-> @@ -0,0 +1,130 @@
-> +/*
-> + * Copyright (c) 2015, The Linux Foundation. All rights reserved.
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 and
-> + * only version 2 as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + */
-> +
-> +#include <linux/platform_device.h>
-> +#include <linux/nvmem-consumer.h>
-> +#include <linux/err.h>
-> +#include <linux/io.h>
-> +#include <linux/of_address.h>
-> +#include <linux/regmap.h>
-> +#include "tsens.h"
-> +
-> +#define S0_ST_ADDR		0x1030
-> +#define SN_ADDR_OFFSET		0x4
-> +#define SN_ST_TEMP_MASK		0x3ff
-> +#define CAL_DEGC_PT1		30
-> +#define CAL_DEGC_PT2		120
-> +#define SLOPE_FACTOR		1000
-> +
-> +char *qfprom_read(struct device *dev, const char *cname)
-> +{
-> +	struct nvmem_cell *cell;
-> +	ssize_t data;
-> +	char *ret;
-> +
-> +	cell = nvmem_cell_get(dev, cname);
-> +	if (IS_ERR(cell))
-> +		return ERR_CAST(cell);
-> +
-> +	ret = nvmem_cell_read(cell, &data);
-> +	nvmem_cell_put(cell);
-> +	return ret;
-> +}
-> +
-> +void compute_intercept_slope(struct tsens_device *tmdev, u32 *p1,
-> +			     u32 *p2, u32 mode)
-> +{
-> +	int i;
-> +	int num, den;
-> +
-> +	for (i = 0; i < tmdev->num_sensors; i++) {
-> +		dev_dbg(tmdev->dev,
-> +			"sensor%d - data_point1:%#x data_point2:%#x\n",
-> +			i, p1[i], p2[i]);
-> +
-> +		if (mode == TWO_PT_CALIB) {
-> +			/*
-> +			 * slope (m) = adc_code2 - adc_code1 (y2 - y1)/
-> +			 *	temp_120_degc - temp_30_degc (x2 - x1)
-> +			 */
-> +			num = p2[i] - p1[i];
-> +			num *= SLOPE_FACTOR;
-> +			den = CAL_DEGC_PT2 - CAL_DEGC_PT1;
-> +			tmdev->sensor[i].slope = num / den;
-> +		}
-> +
-> +		tmdev->sensor[i].offset = (p1[i] * SLOPE_FACTOR) -
-> +				(CAL_DEGC_PT1 *
-> +				tmdev->sensor[i].slope);
-> +		dev_dbg(tmdev->dev, "offset:%d\n", tmdev->sensor[i].offset);
-> +	}
-> +}
-> +
-> +static inline int code_to_degc(u32 adc_code, const struct tsens_sensor *s)
-> +{
-> +	int degc, num, den;
-> +
-> +	num = (adc_code * SLOPE_FACTOR) - s->offset;
-> +	den = s->slope;
-> +
-> +	if (num > 0)
-> +		degc = num + (den / 2);
-> +	else if (num < 0)
-> +		degc = num - (den / 2);
-> +	else
-> +		degc = num;
-> +
-> +	degc /= den;
-> +
-> +	return degc;
-> +}
-> +
-> +int get_temp_common(struct tsens_device *tmdev, int id, int *temp)
-> +{
-> +	struct tsens_sensor *s = &tmdev->sensor[id];
-> +	u32 code;
-> +	unsigned int sensor_addr;
-> +	int last_temp = 0, ret;
-> +
-> +	sensor_addr = S0_ST_ADDR + s->hw_id * SN_ADDR_OFFSET;
-> +	ret = regmap_read(tmdev->map, sensor_addr, &code);
-> +	if (ret)
-> +		return ret;
-> +	last_temp = code & SN_ST_TEMP_MASK;
-> +
-> +	*temp = code_to_degc(last_temp, s) * 1000;
-> +
-> +	return 0;
-> +}
+Vincent
 
-The way this function is coded the temperature will only ever change by
-1C (i.e., 1000mC). Is there a chance that you're losing precision in the
-code_to_degc conversion that could be preserved perhaps?
-
-This is useful in scenarios where you use the power allocator governor
-and the greater precision allows better power budget estimation.
-
-> +
-> +static const struct regmap_config tsens_config = {
-> +	.reg_bits	= 32,
-> +	.val_bits	= 32,
-> +	.reg_stride	= 4,
-> +};
-> +
-> +int init_common(struct tsens_device *tmdev)
-> +{
-> +	void __iomem *base;
-> +
-> +	base = of_iomap(tmdev->dev->of_node, 0);
-> +	if (IS_ERR(base))
-> +		return -EINVAL;
-> +
-> +	tmdev->map = devm_regmap_init_mmio(tmdev->dev, base, &tsens_config);
-> +	if (!tmdev->map)
-> +		return -ENODEV;
-> +
-> +	return 0;
-> +}
-
-[...]
+>
+> deadlines awareness and might work better with this kind of activities.
+> Not to mention that Android has already started using SCHED_FIFO for
+> some of its time sensitive tasks. It seems to me that the long run goal
+> should be to give the scheduler more information about what is going on
+> and then use such information to do more informed decisions (scheduling,
+> OPP selection, etc.).
+>
+> > Since mobile platforms are so power sensitive though, it won't be
+> > possible to boost surfaceflinger all the time. Perhaps the
+> > surfaceflinger boost could be managed by some sort of userspace daemon
+> > monitoring the sort of usecase running and/or whether display deadlines
+> > are being missed, and updating a schedtune boost cgroup.
+> >
+>
+> I'd say you would like to "boost" just enough to meet a certain quality
+> of service in the end.
+>
+> >> For example, in a graphics rendering pipeline usually we have a host
+> > ...
+> >> With SchedTune we would like to get a similar result to the one you
+> >> describe using min_sample_time and above_hispeed_delay by linking
+> >> somehow the "interpretation" of the PELT signal with the boost value.
+> >>
+> >> Right now we have in sched-DVFS an idle % headroom which is hardcoded
+> >> to be ~20% of the current OPP capacity. When we cross that boundary
+> >> that threshold with the CPU usage, we switch straight to the max OPP.
+> >> If we could figure out a proper mechanism to link the boost signal to
+> >> both the idle % headroom and the target OPP, I think we could achieve
+> >> quite similar results than what you can get with the knobs offered by
+> >> the interactive governor.
+> >> The more you boost a task the bigger is the idle % headroom and
+> >> the higher is the OPP you will jump.
+> >
+> > Let's say I have a system with one task (to set aside the per-task vs.
+> > global policy issue temporarily) and I want to define a policy which
+> >
+> >  - quickly goes to 1.2GHz when the current frequency is less than
+> >    that and demand exceeds capacity
+> >
+> >  - waits at least 40ms (or just "a longer time") before increasing the
+> >    frequency if the current frequency is 1.2GHz or higher
+> >
+> > This is similar to (though a simplification of) what interactive is
+> > often configured to do on mobile platforms. AFAIK it's a fairly common
+> > strategy due to the power-perf curves and OPPs available on CPUs, and at
+> > the same time striving to maintain decent UI responsiveness.
+> >
+>
+> Not that this is already in place, but, once we'll have an energy model
+> of the platform available to the scheduler (the EAS idea), shouldn't
+> this kind of considerations be possible without any explicit
+> configuration? I mean, it seems to me that you start reasoning about
+> trade-offs after you obtained power-perf curves for your platform; but,
+> once this data will be available to the scheduler, don't you think we
+> could put a bit more intelligence there to make the same kind of
+> decisions you would configure a governor to do?
+>
+> > Even with the proposed modification to link boost with idle % and target
+> > OPP I don't think there'd currently be a way to express this policy,
+> > which goes beyond the linear scaling of the magnitude of CPU demand
+> > requested by a task, idle headroom or target OPP.
+> >
+> >>
+> > ...
+> >>> The hardcoded values in the
+> >>> task load tracking algorithm seem concerning though from a tuning
+> >>> standpoint.
+> >>
+> >> I agree, that's why we are thinking about the solution described
+> >> before. Exploit the boost value to replace the hardcoded thresholds
+> >> should allow to get more flexibility while being per-task defined.
+> >> Hopefully, tuning per task can be more easy and effective than
+> >> selection a single value fitting all needs.
+> >>
+> >>>
+> >>>>> The interactive functionality would require additional knobs. I
+> >>> ...
+> >>>> However, regarding specifically the latency on OPP changes, there are
+> >>>> a couple of extension we was thinking about:
+> >>>> 1. link the SchedTune boost value with the % of idle headroom which
+> >>>>    triggers an OPP increase
+> >>>> 2. use the SchedTune boost value to defined the high frequency to jump
+> >>>>    at when a CPU crosses the % of idle headroom
+> >>>
+> >>> Hmmm... This may be useful (only testing/profiling would tell) though it
+> >>> may be nice to be able to tune these values.
+> >>
+> >> Again, in my view the tuning should be per task with a single knob.
+> >> The value of the knob should than be properly mapped on other internal
+> >> values to obtain a well defined behavior driven by information shared
+> >> with the scheduler, i.e. a PELT signal.
+> >>
+> >>>> These are tunables which allows to parameterize the way the PELT
+> >>>> signal for CPU usage is interpreted by the sched-DVFS governor.
+> >>>>
+> >>>> How such tunables should be exposed and tuned is to be discussed.
+> >>>> Indeed, one of the main goals of the sched-DVFS and SchedTune
+> >>>> specifically, is to simplify the tuning of a platform by exposing to
+> >>>> userspace a reduced number of tunables, preferably just one.
+> >>>
+> >>> This last point (the desire for a single tunable) is perhaps at the root
+> >>> of my main concern. There are users/vendors for whom the current
+> >>> tunables are insufficient, resulting in their hacking the governors to
+> >>> add more tunables or features in the policy.
+> >>
+> >> We should also consider that we are proposing not only a single
+> >> tunable but also a completely different standpoint. Not more a "blind"
+> >> system-wide view on the average system behaviors, but instead a more
+> >> detailed view on tasks behaviors. A single tunable used to "tag" tasks
+> >> maybe it's not such a limited solution in this design.
+> >
+> > I think the algorithm is still fairly blind. There still has to be a
+> > heuristic for future CPU usage, it's now just per-task and in the
+> > scheduler (PELT), whereas it used to be per-CPU and in the governor.
+> >
+> > This allows for good features like adjusting frequency right away on
+> > task migration/creation/exit or per task boosting etc., but I think
+> > policy will still be important. Tasks change their behavior all the
+> > time, at least in the mobile usecases I've seen.
+> >
+> >>> Consolidating CPU frequency and idle management in the scheduler will
+> >>> clean things up and probably make things more effective, but I don't
+> >>> think it will remove the need for a highly configurable policy.
+> >>
+> >> This can be verified only by starting to use sched-DVFS + SchedTune on
+> >> real/synthetic setup to verify which features are eventually missing,
+> >> or specific use-cases not properly managed.
+> >> If we are able to setup these experiments perhaps we will be able to
+> >> identify a better design for a scheduler driver solution.
+> >
+> > Agree. I hope to be able to run some of these experiments to help.
+> >
+> >>> I'm curious about the drive for one tunable. Is that something there's
+> > ...
+> >> We have plenty of experience, collected on the past years, on CPUFreq
+> >> governors and customer specific mods.
+> >> Don't you think we can exploit that experience to reason around a
+> >> fresh new design that allows to satisfy all requirements while
+> >> providing possibly a simpler interface?
+> >
+> > Sure. I'm just communicating requirements I've seen :) .
+> >
+>
+> And that's great! :-)
+>
+> >> I agree with you that all the current scenarios must be supported by
+> >> the new proposal. We should probably start by listing them and come
+> >> out with a set of test cases that allow to verify where we are wrt
+> >> the state of the art.
+> >
+> > Sounds like a good plan to me... Perhaps we could discuss some mobile
+> > usecases next week at Linaro Connect?
+> >
+>
+> I'm up for it!
+>
+> Best,
+>
+> - Juri
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
