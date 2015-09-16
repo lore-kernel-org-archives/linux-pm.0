@@ -1,168 +1,338 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: Re: [PATCH] driver core: Ensure proper suspend/resume ordering
-Date: Wed, 16 Sep 2015 16:39:59 +0300
-Message-ID: <55F9712F.1030305@ti.com>
-References: <Pine.LNX.4.44L0.1509111445020.1667-100000@iolanthe.rowland.org>
- <5347923.qphJvWEeRm@vostro.rjw.lan>
+From: Punit Agrawal <punit.agrawal@arm.com>
+Subject: Re: [PATCH v2 1/9] thermal: qcom: tsens: Add a skeletal TSENS drivers
+Date: Wed, 16 Sep 2015 14:44:55 +0100
+Message-ID: <9hh613atr54.fsf@e105922-lin.cambridge.arm.com>
+References: <1442384603-26053-1-git-send-email-rnayak@codeaurora.org>
+	<1442384603-26053-2-git-send-email-rnayak@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:45526 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752864AbbIPNkI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 16 Sep 2015 09:40:08 -0400
-In-Reply-To: <5347923.qphJvWEeRm@vostro.rjw.lan>
+Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:54559 "EHLO
+	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752614AbbIPNpb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Sep 2015 09:45:31 -0400
+In-Reply-To: <1442384603-26053-2-git-send-email-rnayak@codeaurora.org>
+	(Rajendra Nayak's message of "Wed, 16 Sep 2015 11:53:15 +0530")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alan Stern <stern@rowland.harvard.edu>
-Cc: Thierry Reding <thierry.reding@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Rajendra Nayak <rnayak@codeaurora.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com, sboyd@codeaurora.org, srinivas.kandagatla@linaro.org, nrajan@codeaurora.org, lina.iyer@linaro.org
 
-Hi Thierry, Alan, Rafael,
+Hi Rajendra,
 
-On 09/12/2015 01:28 AM, Rafael J. Wysocki wrote:
-> On Friday, September 11, 2015 03:01:14 PM Alan Stern wrote:
->> On Fri, 11 Sep 2015, Thierry Reding wrote:
->>
->>> On Fri, Sep 11, 2015 at 12:08:02AM +0200, Rafael J. Wysocki wrote:
->>>> On Thursday, September 10, 2015 12:19:03 PM Thierry Reding wrote:
->>>>> From: Thierry Reding <treding@nvidia.com>
->>>>>
->>>>> Deferred probe can lead to strange situations where a device that is a
->>>>> dependency for others will be moved to the end of the dpm_list. At the
->>>>> same time the dependers may not be moved because at the time they will
->>>>> be probed the dependee may already have been successfully reprobed and
->>>>> they will not have to defer the probe themselves.
->>>>
->>>> So there's a bug in the implementation of deferred probing IMO.
->>>
->>> Well, yeah. The root problem here is that we don't have dependency
->>> information and deferred probing is supposed to fix that. It does so
->>> fairly well, but it breaks in this particular case.
+I have some comments on the code below (purely based on code review).
 
-Actually this is the old problem and deferred probing just makes it more
-reproducible.
+Rajendra Nayak <rnayak@codeaurora.org> writes:
 
-Lets say, we have device P-producer and device C-consumer.
-- devices are created/registered in the following order (It doesn't matter
-how they are created - dt, platform,..)
--- device C created
--- device P created
+> TSENS is Qualcomms' thermal temperature sensor device. It
+> supports reading temperatures from multiple thermal sensors
+> present on various QCOM SoCs.
+> Calibration data is generally read from a non-volatile memory
+> (eeprom) device.
+>
+> Add a skeleton driver with all the necessary abstractions so
+> a variety of qcom device families which support TSENS can
+> add driver extensions.
+>
+> Also add the required device tree bindings which can be used
+> to describe the TSENS device in DT.
+>
+> Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
+> Reviewed-by: Lina Iyer <lina.iyer@linaro.org>
+> ---
+>  .../devicetree/bindings/thermal/qcom-tsens.txt     |  36 ++++
+>  drivers/thermal/Kconfig                            |   5 +
+>  drivers/thermal/Makefile                           |   1 +
+>  drivers/thermal/qcom/Kconfig                       |  10 +
+>  drivers/thermal/qcom/Makefile                      |   2 +
+>  drivers/thermal/qcom/tsens.c                       | 208 +++++++++++++++++++++
+>  drivers/thermal/qcom/tsens.h                       |  58 ++++++
+>  7 files changed, 320 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+>  create mode 100644 drivers/thermal/qcom/Kconfig
+>  create mode 100644 drivers/thermal/qcom/Makefile
+>  create mode 100644 drivers/thermal/qcom/tsens.c
+>  create mode 100644 drivers/thermal/qcom/tsens.h
+>
+> diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.txt b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+> new file mode 100644
+> index 0000000..3d54d37
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+> @@ -0,0 +1,36 @@
+> +* QCOM SoC Temperature Sensor (TSENS)
+> +
+> +Required properties:
+> +- compatible :
+> + - "qcom,msm8916-tsens" : For 8916 Family of SoCs
+> + - "qcom,msm8974-tsens" : For 8974 Family of SoCs
+> +
+> +- reg: Address range of the thermal registers
+> +- qcom,tsens-slopes : Must contain slope value for each of the sensors controlled
+> +			by this device
+> +- #thermal-sensor-cells : Should be 1. See ./thermal.txt for a description.
+> +- Refer to Documentation/devicetree/bindings/nvmem/nvmem.txt to know how to specify
+> +nvmem cells
+> +
+> +Optional properties:
+> +- qcom,sensor-id: List of sensor instances used in a given SoC. A TSENS IP can
+> +		  have a fixed number of sensors (like 11) but a given SoC can
+> +		  use only 5 of these and they might not always the first 5. They
+> +		  could be sensors 0, 1, 4, 8 and 9. This property is used to
+> +		  describe the subset of the sensors used. If this property is
+> +		  missing they are assumed to be the first 'n' sensors numbered
+> +		  sequentially in which case the number of sensors defaults to
+> +		  the number of slope values.
+> +
+> +Example:
+> +tsens: thermal-sensor@900000 {
+> +		compatible = "qcom,msm8916-tsens";
+> +		qcom,tsens-slopes = <1176 1176 1154 1176 1111
+> +				1132 1132 1199 1132 1199
+> +				1132>;
+> +		nvmem-cells = <&tsens_caldata>, <&tsens_calsel>;
+> +		nvmem-cell-names = "caldata", "calsel";
+> +		qcom,tsens-slopes = <3200 3200 3200 3200 3200>;
+> +		qcom,sensor-id = <0 1 2 4 5>;
+> +		#thermal-sensor-cells = <1>;
+> +	};
 
-- devices probing order (legacy probing order depends on Makefiles and
-initcalls - no deferred probing)
--- device P probed
--- device C probed
+The qcom,tsens-slopes property appears twice in the above example.
 
-- suspend order
--- device P suspended
--- device C suspended (ops, device C may still need device P)
+[...]
 
-To W/A such issues:
-- driver's suspend code can be shifted between suspend layers (from
-.suspend() to .suspend_noirq(), for example)
-- device's registration order can be changed manually in DT or platform code
-- can play with initcalls
+> diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+> new file mode 100644
+> index 0000000..9615845
+> --- /dev/null
+> +++ b/drivers/thermal/qcom/tsens.c
+> @@ -0,0 +1,208 @@
+> +/*
+> + * Copyright (c) 2015, The Linux Foundation. All rights reserved.
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 and
+> + * only version 2 as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + */
+> +
+> +#include <linux/err.h>
+> +#include <linux/module.h>
+> +#include <linux/of.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/pm.h>
+> +#include <linux/slab.h>
+> +#include <linux/thermal.h>
+> +#include "tsens.h"
+> +
+> +static int tsens_get_temp(void *data, int *temp)
+> +{
+> +	const struct tsens_sensor *s = data;
+> +	struct tsens_device *tmdev = s->tmdev;
+> +
+> +	return tmdev->ops->get_temp(tmdev, s->id, temp);
+> +}
+> +
+> +static int tsens_get_trend(void *data, long *temp)
+> +{
+> +	const struct tsens_sensor *s = data;
+> +	struct tsens_device *tmdev = s->tmdev;
+> +
+> +	if (tmdev->ops->get_trend)
+> +		return tmdev->ops->get_trend(tmdev, s->id, temp);
+> +
+> +	return -ENOSYS;
+> +}
+> +
+> +#ifdef CONFIG_PM
+> +static int tsens_suspend(struct device *dev)
+> +{
+> +	struct tsens_device *tmdev = dev_get_drvdata(dev);
+> +
+> +	if (tmdev->ops && tmdev->ops->suspend)
+> +		return tmdev->ops->suspend(tmdev);
+> +
+> +	return 0;
+> +}
+> +
+> +static int tsens_resume(struct device *dev)
+> +{
+> +	struct tsens_device *tmdev = dev_get_drvdata(dev);
+> +
+> +	if (tmdev->ops && tmdev->ops->resume)
+> +		return tmdev->ops->resume(tmdev);
+> +
+> +	return 0;
+> +}
+> +
+> +static SIMPLE_DEV_PM_OPS(tsens_pm_ops, tsens_suspend, tsens_resume);
+> +#define TSENS_PM_OPS   (&tsens_pm_ops)
+> +
+> +#else /* CONFIG_PM_SLEEP */
+         ^
+         
+> +#define TSENS_PM_OPS NULL
+> +#endif /* CONFIG_PM_SLEEP */
+          ^
+          
+The comments don't match the #ifdef above. I maybe wrong but looking at
+other drivers it looks like you don't need the #else part. You should be
+able to use the tsens_pm_ops without having to set it to NULL.
 
-May be it was enough before, but now it's not :(, simply because, now
-there are much more generic/common frameworks in Kernel:
-gpio, regulators, dma ++ clk, syscon, phy, extcon, component, display framework..
-As result, It introduces more devices and dependencies between devices and,
-therefore, suspend ordering issue can be hit more often.
+> +
+> +static const struct of_device_id tsens_table[] = {
+> +	{
+> +		.compatible = "qcom,msm8916-tsens",
+> +	}, {
+> +		.compatible = "qcom,msm8974-tsens",
+> +	},
+> +	{}
+> +};
+> +MODULE_DEVICE_TABLE(of, tsens_table);
+> +
+> +static const struct thermal_zone_of_device_ops tsens_of_ops = {
+> +	.get_temp = tsens_get_temp,
+> +	.get_trend = tsens_get_trend,
+> +};
+> +
+> +static int tsens_register(struct tsens_device *tmdev)
+> +{
+> +	int i, ret;
+> +	struct thermal_zone_device *tzd;
+> +	u32 *hw_id, n = tmdev->num_sensors;
+> +	struct device_node *np = tmdev->dev->of_node;
+> +
+> +	hw_id = devm_kcalloc(tmdev->dev, n, sizeof(u32), GFP_KERNEL);
+> +	if (!hw_id)
+> +		return -ENOMEM;
+> +
+> +	ret = of_property_read_u32_array(np, "qcom,sensor-id", hw_id, n);
+> +	if (ret)
+> +		for (i = 0;  i < tmdev->num_sensors; i++)
+> +			tmdev->sensor[i].hw_id = i;
+> +	else
+> +		for (i = 0;  i < tmdev->num_sensors; i++)
+> +			tmdev->sensor[i].hw_id = hw_id[i];
+> +
 
->>>
->>>>> One example where this happens is the Jetson TK1 board (Tegra124). The
->>>>> gpio-keys driver exposes the power key of the board as an input device
->>>>> that can also be used as a wakeup source. Commit 17cdddf0fb68 ("ARM:
->>>>> tegra: Add gpio-ranges property") results in the gpio-tegra driver
->>>>> deferring probe because one of its dependencies, the pinctrl-tegra
->>>>> driver, has not successfully completed probing. Currently the deferred
->>>>> probe code will move the corresponding gpio-tegra device to the end of
->>>>> the dpm_list, but by the time the gpio-keys device, depending on the
->>>>> gpio-tegra device, is probed, gpio-tegra has already been reprobed, so
->>>>> the gpio-keys device is not moved to the end of dpm_list itself. As a
->>>>> result, the suspend ordering becomes pinctrl-tegra -> gpio-keys ->
->>>>> gpio-tegra. That's problematic because the gpio-keys driver requests
->>>>> the power key to be a wakeup source. However, the programming of the
->>>>> wakeup interrupt registers happens in the gpio-tegra driver's suspend
->>>>> callback, which is now called before that of the gpio-keys driver. The
->>>>> result is that the wrong values are programmed and leaves the system
->>>>> unable to be resumed using the power key.
->>>>>
->>>>> To fix this situation, always move devices to the end of the dpm_list
->>>>> before probing them. Technically this should only be done for devices
->>>>> that have been successfully probed, but that won't work for recursive
->>>>> probing of devices (think an I2C master that instantiates children in
->>>>> its ->probe()). Effectively the dpm_list will end up ordered the same
->>>>> way that devices were probed, hence taking care of dependencies.
->>
->> I'm not worried about the overhead involved in moving a device to the
->> end of the list every time it is probed.  That ought to be relatively
->> small.
->>
->> There are a few things to watch out for.  Since the dpm_list gets
->> modified during system sleep transitions, we would have to make sure
->> that nothing gets probed during those times.  In principle, that's what
->> the "prepare" stage is meant for, but there's still a race.  As long as
->> no other kernel thread (such as the deferred probing mechanism) tries
->> to probe a device once everything has been frozen, we should be okay.
->> But if not, there will be trouble -- after the ->prepare callback runs,
->> the device is no longer on the dpm_list and so we don't want this patch
->> to put it back on that list.
-> 
+You could move the check for vaild for valid sensor ids in the device
+tree (ret) inside a single for loop. In that case the loop above could
+be merged into the iteration over the sensors below.
 
-I think, It should prohibited to probe devices during suspend/hibernation.
-And solution introduced in this patch might help to fix it -
-in general, we could do :
-- add sync point on suspend enter: wait_for_device_probe() and
-- prohibit probing: move all devices which will request probing into
-deferred_probe list
-- one suspend exit: allow probing and do driver_deferred_probe_trigger
+> +	for (i = 0;  i < tmdev->num_sensors; i++) {
+> +		tmdev->sensor[i].tmdev = tmdev;
+> +		tmdev->sensor[i].id = i;
+> +		tzd = thermal_zone_of_sensor_register(tmdev->dev, i,
+> +						      &tmdev->sensor[i],
+> +						      &tsens_of_ops);
+> +		if (IS_ERR(tzd))
+> +			continue;
+> +		tmdev->sensor[i].tzd = tzd;
+> +		if (tmdev->ops->enable)
+> +			tmdev->ops->enable(tmdev, i);
+> +	}
+> +	return 0;
+> +}
+> +
+> +static int tsens_probe(struct platform_device *pdev)
+> +{
+> +	int ret, i, num;
+> +	struct device *dev;
+> +	struct device_node *np;
+> +	struct tsens_sensor *s;
+> +	struct tsens_device *tmdev;
+> +	const struct of_device_id *id;
+> +
+> +	dev = &pdev->dev;
+> +	np = dev->of_node;
 
-> 
->> There's also an issue about other types of dependencies.  For instance,
->> it's conceivable that device B might be discovered and depend on device
->> A, even before A has been bound to a driver.  (B might be discovered by
->> A's subsystem rather than A's driver.)  In that case, moving A to the
->> end of the list would cause B to come before A even though B depends on
->> A.  Of course, deferred probing already has this problem.
-> 
-> That may actually happen for PCIe ports and devices below them AFAICS.
-> 
-> Devices below PCIe ports are discovered by the PCI subsystem and the PCIe
-> ports need not be probed before those devices are probed.
+These assignments can be done with the declaration above.
 
-I'd like to mention here that this patch will work only
-if dmp_list will be filled according device creation order ("parent<-child" dependencies)
-*AND* according device's probing order ("supplier<-consumer").
-So, if there is the case when Parent device can be probed AFTER its children
-- it will not work, because "parent<-child" dependencies will not be tracked
-any more :( Sry, I could not even imagine that such crazy case exist :'(
+Thanks,
+Punit
+> +
+> +	num = of_property_count_u32_elems(np, "qcom,tsens-slopes");
+> +	if (num <= 0) {
+> +		dev_err(dev, "invalid tsens slopes\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	tmdev = devm_kzalloc(dev, sizeof(*tmdev) +
+> +			     num * sizeof(*s), GFP_KERNEL);
+> +	if (!tmdev)
+> +		return -ENOMEM;
+> +
+> +	tmdev->dev = dev;
+> +	tmdev->num_sensors = num;
+> +
+> +	for (i = 0, s = tmdev->sensor; i < tmdev->num_sensors; i++, s++)
+> +		of_property_read_u32_index(np, "qcom,tsens-slopes", i,
+> +					   &s->slope);
+> +
+> +	id = of_match_node(tsens_table, np);
+> +	if (!id)
+> +		return -ENODEV;
+> +
+> +	tmdev->ops = id->data;
+> +	if (!tmdev->ops || !tmdev->ops->init || !tmdev->ops->calibrate ||
+> +	    !tmdev->ops->get_temp)
+> +		return -EINVAL;
+> +
+> +	ret = tmdev->ops->init(tmdev);
+> +	if (ret < 0) {
+> +		dev_err(dev, "tsens init failed\n");
+> +		return ret;
+> +	}
+> +
+> +	ret = tmdev->ops->calibrate(tmdev);
+> +	if (ret < 0) {
+> +		dev_err(dev, "tsens calibration failed\n");
+> +		return ret;
+> +	}
+> +
+> +	ret = tsens_register(tmdev);
+> +
+> +	platform_set_drvdata(pdev, tmdev);
+> +
+> +	return ret;
+> +}
+> +
+> +static int tsens_remove(struct platform_device *pdev)
+> +{
+> +	int i;
+> +	struct tsens_device *tmdev = platform_get_drvdata(pdev);
+> +	struct thermal_zone_device *tzd;
+> +
+> +	if (tmdev->ops->disable)
+> +		tmdev->ops->disable(tmdev);
+> +
+> +	for (i = 0; i < tmdev->num_sensors; i++) {
+> +		tzd = tmdev->sensor[i].tzd;
+> +		thermal_zone_of_sensor_unregister(&pdev->dev, tzd);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static struct platform_driver tsens_driver = {
+> +	.probe = tsens_probe,
+> +	.remove = tsens_remove,
+> +	.driver = {
+> +		.name = "qcom-tsens",
+> +		.pm	= TSENS_PM_OPS,
+> +		.of_match_table = tsens_table,
+> +	},
+> +};
+> +module_platform_driver(tsens_driver);
+> +
+> +MODULE_LICENSE("GPL v2");
+> +MODULE_DESCRIPTION("QCOM Temperature Sensor driver");
+> +MODULE_ALIAS("platform:qcom-tsens");
 
-Are there any other subsystems with the same behavior like PCI?
-If not - probably, it could be fixed in PCI subsystem using device_pm_move_after() or 
-device_move() in PCIe ports probe.
-if yes - ... maybe we can scan/re-check and reorder dpm_list on suspend enter and
-restore ("parent<-child" dependencies).
+[...]
 
-> 
->> An easy way to check for this sort of thing would be to verify that a
->> device about to be probed doesn't have any children.  This wouldn't
->> catch all the potential dependencies, but it would be a reasonable
->> start.
-> 
-> That would address the PCIe ports issue.
-> 
-
-that might work also.
-
-Truth is that smth. need to be done 100%. Personally, I was hit by this issue also,
- and it cost me 3 hours of debugging and I came up with the same patch as
-Bill Huang, then spent some time trying to understand what is wrong with PCI
-- finally, I've just changed the order of my devices in DT :)
-
-Also, I think, it will be good to have this patch in -next to collect more feedbacks.
- 
--- 
-regards,
--grygorii
