@@ -1,84 +1,62 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] driver core: Ensure proper suspend/resume ordering
-Date: Wed, 16 Sep 2015 03:04:20 +0200
-Message-ID: <1709892.G7PPnhBrZV@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1509151020030.1420-100000@iolanthe.rowland.org>
+Subject: Re: Pull Request for PM / devfreq, 4.3 RCx
+Date: Wed, 16 Sep 2015 03:04:48 +0200
+Message-ID: <3115429.14S40JYdX6@vostro.rjw.lan>
+References: <882046565.1068551442280819125.JavaMail.weblogic@ep2mlwas05a>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1509151020030.1420-100000@iolanthe.rowland.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Thierry Reding <thierry.reding@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:47810 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752906AbbIPAgr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2015 20:36:47 -0400
+In-Reply-To: <882046565.1068551442280819125.JavaMail.weblogic@ep2mlwas05a>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: myungjoo.ham@samsung.com
+Cc: "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "myungjoo.ham@gmail.com" <myungjoo.ham@gmail.com>, "javi.merino@arm.com" <javi.merino@arm.com>, "yexl@marvell.com" <yexl@marvell.com>, =?utf-8?B?7LWc7LCs7Jqw?= <cw00.choi@samsung.com>
 
-On Tuesday, September 15, 2015 10:23:07 AM Alan Stern wrote:
-> On Tue, 15 Sep 2015, Rafael J. Wysocki wrote:
+On Tuesday, September 15, 2015 01:33:40 AM MyungJoo Ham wrote:
+> > On Saturday, September 12, 2015 12:20:31 AM Rafael J. Wysocki wrote:
+> > > On Friday, September 11, 2015 06:11:29 AM MyungJoo Ham wrote:
+> > > > The following changes since commit 64291f7db5bd8150a74ad2036f1037e6a0428df2:
+> > > > 
+> > > >   Linux 4.2 (2015-08-30 11:34:09 -0700)
+> > > > 
+> > > > are available in the git repository at:
+> > > > 
+> > > >   https://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git for-rafael
+> > > > 
+> > > > for you to fetch changes up to 5f25f066f75a67835abb5e400471a27abd09395b:
+> > > > 
+> > > >   PM / devfreq: Fix incorrect type issue. (2015-09-11 14:23:30 +0900)
+> > > > 
+> > > > ----------------------------------------------------------------
+> > > > Pull Request of Devfreq for Linux 4.3 / PM
+> > > 
+> > > I've just sent my second pull request for 4.3-rc1 to Linus and I won't be able
+> > > to sent another one before the -rc1 is out.  Had I received this two days ago,
+> > > it would have made it just fine.
+> > > 
+> > > I'll pull it on Monday.
+> > 
+> > Pulled, but got a conflict.
+> > 
+> > Please check the conflict resolution my bleeding-edge branch and let me know
+> > if that's not the right one.
+> > 
+> > Thanks,
+> > Rafael
+> > 
 > 
-> > Hi Alan,
+> Diff shows no differences in devfreq related files and
+> each commit is intact. I guess it is simply because pm-devfreq
+> had old commits not included in 4.2.
 > 
-> Hi.
-> 
-> > On Sat, Sep 12, 2015 at 7:40 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
-> > > On Sat, 12 Sep 2015, Rafael J. Wysocki wrote:
-> > >
-> > >> On Friday, September 11, 2015 03:01:14 PM Alan Stern wrote:
-> > >
-> > >> > There's also an issue about other types of dependencies.  For instance,
-> > >> > it's conceivable that device B might be discovered and depend on device
-> > >> > A, even before A has been bound to a driver.  (B might be discovered by
-> > >> > A's subsystem rather than A's driver.)  In that case, moving A to the
-> > >> > end of the list would cause B to come before A even though B depends on
-> > >> > A.  Of course, deferred probing already has this problem.
-> > >>
-> > >> That may actually happen for PCIe ports and devices below them AFAICS.
-> > >>
-> > >> Devices below PCIe ports are discovered by the PCI subsystem and the PCIe
-> > >> ports need not be probed before those devices are probed.
-> > >
-> > > Is it possible to change this?  Make it so that devices below PCIe
-> > > ports are discovered by the port driver rather than by the PCI
-> > > subsystem?  Or would that be far too difficult?
-> > 
-> > I don't think it would be really useful.
-> > 
-> > PCIe ports are PCI bridges from the resource allocation and basic
-> > functionality perspective, so they are handled accordingly.
-> > 
-> > The PCIe port driver provides additional services (such as PME/hotplug
-> > interrupt handling and advanced error reporting) that aren't necessary
-> > for probing devices below the ports.
-> > 
-> > I guess the ordering of PCIe ports probing might be changed to happen
-> > at the "right" time, but care needs to be taken in that case too.
-> 
-> Does suspending a PCIe port do anything significant?  In particular, 
-> does it cut off normal communication with anything attached through 
-> the port?
-
-No, it doesn't.
-
-> If it does then we better not move the port device to the end of the 
-> dpm_list after any descendant devices have been probed.
-> 
-> > >> > An easy way to check for this sort of thing would be to verify that a
-> > >> > device about to be probed doesn't have any children.  This wouldn't
-> > >> > catch all the potential dependencies, but it would be a reasonable
-> > >> > start.
-> > >>
-> > >> That would address the PCIe ports issue.
-> > >
-> > > Well, it would _detect_ the PCIe ports issue.
-> > 
-> > That's what I meant. :-)
-> > 
-> > >  It might also detect other things.
-> > 
-> > Right.
-> 
-> All right, I'll try writing a test patch to report these things.
+> So, that's the right one.
 
 OK, thanks!
 
 Rafael
+
