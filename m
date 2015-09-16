@@ -1,63 +1,199 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] driver core: Ensure proper suspend/resume ordering
-Date: Wed, 16 Sep 2015 15:27:55 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1509161523230.1993-100000@iolanthe.rowland.org>
-References: <55F9712F.1030305@ti.com>
+From: Andreas Dannenberg <dannenberg@ti.com>
+Subject: Re: [PATCH v4 06/10] power: bq24257: Add over voltage protection
+ setting support
+Date: Wed, 16 Sep 2015 14:34:58 -0500
+Message-ID: <20150916193456.GC27772@beast>
+References: <1442339914-25843-1-git-send-email-dannenberg@ti.com>
+ <1442339914-25843-7-git-send-email-dannenberg@ti.com>
+ <55F90440.60302@samsung.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:58231 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752349AbbIPT14 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Sep 2015 15:27:56 -0400
-In-Reply-To: <55F9712F.1030305@ti.com>
+Received: from devils.ext.ti.com ([198.47.26.153]:58969 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752435AbbIPTfd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Sep 2015 15:35:33 -0400
+Content-Disposition: inline
+In-Reply-To: <55F90440.60302@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thierry Reding <thierry.reding@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-On Wed, 16 Sep 2015, Grygorii Strashko wrote:
-
-> I think, It should prohibited to probe devices during suspend/hibernation.
-> And solution introduced in this patch might help to fix it -
-> in general, we could do :
-> - add sync point on suspend enter: wait_for_device_probe() and
-> - prohibit probing: move all devices which will request probing into
-> deferred_probe list
-> - one suspend exit: allow probing and do driver_deferred_probe_trigger
-
-That could work; it's a good idea.
-
-> I'd like to mention here that this patch will work only
-> if dmp_list will be filled according device creation order ("parent<-child" dependencies)
-> *AND* according device's probing order ("supplier<-consumer").
-> So, if there is the case when Parent device can be probed AFTER its children
-> - it will not work, because "parent<-child" dependencies will not be tracked
-> any more :( Sry, I could not even imagine that such crazy case exist :'(
-
-If we avoid moving devices to the end of the dpm_list when they already 
-have children, then we should be okay, right?
-
-> Are there any other subsystems with the same behavior like PCI?
-
-I don't know.
-
-> If not - probably, it could be fixed in PCI subsystem using device_pm_move_after() or 
-> device_move() in PCIe ports probe.
-> if yes - ... maybe we can scan/re-check and reorder dpm_list on suspend enter and
-> restore ("parent<-child" dependencies).
-
-> Truth is that smth. need to be done 100%. Personally, I was hit by this issue also,
->  and it cost me 3 hours of debugging and I came up with the same patch as
-> Bill Huang, then spent some time trying to understand what is wrong with PCI
-> - finally, I've just changed the order of my devices in DT :)
+On Wed, Sep 16, 2015 at 02:55:12PM +0900, Krzysztof Kozlowski wrote:
+> On 16.09.2015 02:58, Andreas Dannenberg wrote:
+> > A new optional device property called "ti,ovp-voltage" is introduced to
+> > allow configuring the input over voltage protection setting.
+> > 
+> > This commit also adds the basic sysfs support for custom properties
+> > which is being used to allow userspace to read the current ovp-voltage
+> > setting.
+> > 
+> > Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
+> > ---
+> >  drivers/power/bq24257_charger.c | 67 +++++++++++++++++++++++++++++++++++++++--
+> >  1 file changed, 64 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
+> > index d7488cf..47af858 100644
+> > --- a/drivers/power/bq24257_charger.c
+> > +++ b/drivers/power/bq24257_charger.c
+> > @@ -75,6 +75,7 @@ struct bq24257_init_data {
+> >  	u8 vbat;	/* regulation voltage  */
+> >  	u8 iterm;	/* termination current */
+> >  	u8 in_ilimit;	/* input current limit */
+> > +	u8 vovp;	/* over voltage protection voltage */
+> >  };
+> >  
+> >  struct bq24257_state {
+> > @@ -198,6 +199,13 @@ static const u32 bq24257_iilimit_map[] = {
+> >  
+> >  #define BQ24257_IILIMIT_MAP_SIZE	ARRAY_SIZE(bq24257_iilimit_map)
+> >  
+> > +static const u32 bq24257_vovp_map[] = {
+> > +	6000000, 6500000, 7000000, 8000000, 9000000, 9500000, 10000000,
+> > +	10500000
+> > +};
+> > +
+> > +#define BQ24257_VOVP_MAP_SIZE		ARRAY_SIZE(bq24257_vovp_map)
+> > +
+> >  static int bq24257_field_read(struct bq24257_device *bq,
+> >  			      enum bq24257_fields field_id)
+> >  {
+> > @@ -413,6 +421,17 @@ enum bq24257_in_ilimit {
+> >  	IILIMIT_NONE,
+> >  };
+> >  
+> > +enum bq24257_vovp {
+> > +	VOVP_6000,
+> > +	VOVP_6500,
+> > +	VOVP_7000,
+> > +	VOVP_8000,
+> > +	VOVP_9000,
+> > +	VOVP_9500,
+> > +	VOVP_10000,
+> > +	VOVP_10500
+> > +};
 > 
-> Also, I think, it will be good to have this patch in -next to collect more feedbacks.
+> What is the purpose of this enum? It is duplicating values from the map
+> (so you can make a mistake in its order) but actually is not used. I
+> don't see benefit.
 
-I like the idea of forcing all probes during a sleep transition to be 
-deferred.  We could carry them out just before unfreezing the user 
-threads.  That combined with the change mentioned above ought to be 
-worth testing.
+It's used in bq24257_power_supply_init() below (with "it" meaning one of
+the values is used). I wouldn't really expect any mistakes to be made
+since those tables are not something somebody can insert values into
+(only append if ever).
+ 
+> > +
+> >  enum bq24257_port_type {
+> >  	PORT_TYPE_DCP,		/* Dedicated Charging Port */
+> >  	PORT_TYPE_CDP,		/* Charging Downstream Port */
+> > @@ -594,7 +613,8 @@ static int bq24257_hw_init(struct bq24257_device *bq)
+> >  	} init_data[] = {
+> >  		{F_ICHG, bq->init_data.ichg},
+> >  		{F_VBAT, bq->init_data.vbat},
+> > -		{F_ITERM, bq->init_data.iterm}
+> > +		{F_ITERM, bq->init_data.iterm},
+> > +		{F_VOVP, bq->init_data.vovp},
+> >  	};
+> >  
+> >  	/*
+> > @@ -664,6 +684,28 @@ static const struct power_supply_desc bq24257_power_supply_desc = {
+> >  	.get_property = bq24257_power_supply_get_property,
+> >  };
+> >  
+> > +static ssize_t bq24257_show_ovp_voltage(struct device *dev,
+> > +					struct device_attribute *attr,
+> > +					char *buf)
+> > +{
+> > +	struct power_supply *psy = dev_get_drvdata(dev);
+> > +	struct bq24257_device *bq = power_supply_get_drvdata(psy);
+> > +
+> > +	return scnprintf(buf, PAGE_SIZE, "%d\n",
+> 
+> "%u", you are printing u32.
 
-Alan Stern
+Good catch.
 
+> > +}
+> > +
+> > +static DEVICE_ATTR(ovp_voltage, S_IRUGO, bq24257_show_ovp_voltage, NULL);
+> > +
+> > +static struct attribute *bq24257_charger_attr[] = {
+> > +	&dev_attr_ovp_voltage.attr,
+> > +	NULL,
+> > +};
+> > +
+> > +static const struct attribute_group bq24257_attr_group = {
+> > +	.attrs = bq24257_charger_attr,
+> > +};
+> > +
+> >  static int bq24257_power_supply_init(struct bq24257_device *bq)
+> >  {
+> >  	struct power_supply_config psy_cfg = { .drv_data = bq, };
+> > @@ -750,6 +792,15 @@ static int bq24257_fw_probe(struct bq24257_device *bq)
+> >  						 BQ24257_IILIMIT_MAP_SIZE);
+> >  	}
+> >  
+> > +	ret = device_property_read_u32(bq->dev, "ti,ovp-voltage",
+> > +				       &property);
+> > +	if (ret < 0)
+> > +		bq->init_data.vovp = VOVP_6500;
+> > +	else
+> > +		bq->init_data.vovp = bq24257_find_idx(property,
+> > +						      bq24257_vovp_map,
+> > +						      BQ24257_VOVP_MAP_SIZE);
+> > +
+> >  	return 0;
+> >  }
+> >  
+> > @@ -889,10 +940,18 @@ static int bq24257_probe(struct i2c_client *client,
+> >  		return ret;
+> >  
+> >  	ret = bq24257_power_supply_init(bq);
+> > -	if (ret < 0)
+> > +	if (ret < 0) {
+> >  		dev_err(dev, "Failed to register power supply\n");
+> > +		return ret;
+> > +	}
+> >  
+> > -	return ret;
+> > +	ret = sysfs_create_group(&bq->charger->dev.kobj, &bq24257_attr_group);
+> > +	if (ret < 0) {
+> > +		dev_err(dev, "Can't create sysfs entries\n");
+> 
+> power_supply_unregister(bq->charger);
+> or convert in separate patch to devm-like method.
+
+Nice find! I prefer using devm* methods any day if they exist. Will add
+an extra patch to fold that in.
+
+Regards,
+
+--
+Andreas Dannenberg
+Texas Instruments Inc
+
+
+> 
+> Best regards,
+> Krzysztof
+> 
+> > +		return ret;
+> > +	}
+> > +
+> > +	return 0;
+> >  }
+> >  
+> >  static int bq24257_remove(struct i2c_client *client)
+> > @@ -902,6 +961,8 @@ static int bq24257_remove(struct i2c_client *client)
+> >  	if (!bq->in_ilimit_autoset_disable)
+> >  		cancel_delayed_work_sync(&bq->iilimit_setup_work);
+> >  
+> > +	sysfs_remove_group(&bq->charger->dev.kobj, &bq24257_attr_group);
+> > +
+> >  	power_supply_unregister(bq->charger);
+> >  
+> >  	bq24257_field_write(bq, F_RESET, 1); /* reset to defaults */
+> > 
+> 
