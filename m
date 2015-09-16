@@ -1,50 +1,47 @@
-From: Al Stone <ahs3@redhat.com>
-Subject: Re: [PATCH v3 0/5] ACPI: Provide better MADT subtable sanity checks
-Date: Wed, 16 Sep 2015 10:27:57 -0600
-Message-ID: <55F9988D.5080002@redhat.com>
-References: <1441832991-28200-1-git-send-email-al.stone@linaro.org>
- <55F889E8.3070706@redhat.com> <1880799.vMhNVMG5Vc@vostro.rjw.lan>
- <55F997C1.20606@linaro.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] driver core: Ensure proper suspend/resume ordering
+Date: Wed, 16 Sep 2015 12:58:18 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1509161255140.1993-100000@iolanthe.rowland.org>
+References: <55F970D8.1090205@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <55F997C1.20606@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Al Stone <al.stone@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org, linux-pm@vger.kernel.org, linaro-acpi@lists.linaro.org, linaro-kernel@lists.linaro.org, patches@linaro.org, "lenb@kernel.org" <lenb@kernel.org>, "tony.luck@intel.com" <tony.luck@intel.com>, "fenghua.yu@intel.com" <fenghua.yu@intel.com>, Pavel Machek <pavel@ucw.cz>, "tglx@linutronix.de" <tglx@linutronix.de>, mingo@redhat.com, "H. Peter Anvin" <hpa@linux.intel.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:58131 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751921AbbIPQ6T (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Sep 2015 12:58:19 -0400
+In-Reply-To: <55F970D8.1090205@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Grygorii Strashko <grygorii.strashko@ti.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thierry Reding <thierry.reding@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 09/16/2015 10:24 AM, Al Stone wrote:
-> On 09/15/2015 08:44 PM, Rafael J. Wysocki wrote:
->> On Tuesday, September 15, 2015 03:13:12 PM Al Stone wrote:
->>> On 09/09/2015 03:09 PM, Al Stone wrote:
->>>> Currently, the BAD_MADT_ENTRY macro is used to do a very simple sanity
->>>> check on the various subtables that are defined for the MADT.  The check
->>>> compares the size of the subtable data structure as defined by ACPICA to
->>>> the length entry in the subtable.  If they are not the same, the assumption
->>>> is that the subtable is incorrect.
->>>>
+On Wed, 16 Sep 2015, Grygorii Strashko wrote:
 
-[snip...]
+> >> The core prohibits new devices from being registered.  It does not
+> >> prohibit probes of existing devices, because they currently do not
+> >> affect the dpm_list.
+> 
+> Seems I missed smth, but I can't find the place in Kernel that prohibits
+> creation of new devices during suspend.
+> 
+> Could someone point me on, please?
 
->> I'm going to apply this series if people have no problems with it.  I do think
->> it is slightly overkill, but then as long as it works ...
->>
->> Thanks,
->> Rafael
->>
+In Documentation/power/devices.txt, there is a section describing the
+various phases of system suspend.  The part about the "prepare" phase
+says:
 
-Would you prefer I send out the updated version with Sudeep's fix to apply
-instead of this version?  Or have you picked that up already?  Easily updated
-and sent out, if it'll make your life simpler....
+    1.	The prepare phase is meant to prevent races by preventing new devices
+	from being registered; the PM core would never know that all the
+	children of a device had been suspended if new children could be
+	registered at will.  (By contrast, devices may be unregistered at any
+	time.)  Unlike the other suspend-related phases, during the prepare
+	phase the device tree is traversed top-down.
 
--- 
-ciao,
-al
------------------------------------
-Al Stone
-Software Engineer
-Red Hat, Inc.
-ahs3@redhat.com
------------------------------------
+	After the prepare callback method returns, no new children may be
+	registered below the device.  The method may also prepare the device or
+	driver in some way for the upcoming system power transition, but it
+	should not put the device into a low-power state.
+
+Alan Stern
+
