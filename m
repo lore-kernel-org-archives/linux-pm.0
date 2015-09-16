@@ -1,287 +1,55 @@
-From: Andreas Dannenberg <dannenberg@ti.com>
-Subject: Re: [PATCH v4 10/10] power: bq24257: Add platform data based
- initialization
-Date: Wed, 16 Sep 2015 15:11:08 -0500
-Message-ID: <20150916201104.GG27772@beast>
-References: <1442339914-25843-1-git-send-email-dannenberg@ti.com>
- <1442339914-25843-11-git-send-email-dannenberg@ti.com>
- <55F928FE.5070706@samsung.com>
+From: Luis de Bethencourt <luis@debethencourt.com>
+Subject: [PATCH] cpufreq: integrator: Fix module autoload for OF platform
+ driver
+Date: Wed, 16 Sep 2015 22:24:46 +0200
+Message-ID: <20150916202446.GA4303@goodgumbo.baconseed.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:60383 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752352AbbIPULn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Sep 2015 16:11:43 -0400
+Received: from mail-wi0-f176.google.com ([209.85.212.176]:35350 "EHLO
+	mail-wi0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752354AbbIPUYt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Sep 2015 16:24:49 -0400
 Content-Disposition: inline
-In-Reply-To: <55F928FE.5070706@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 
-On Wed, Sep 16, 2015 at 05:31:58PM +0900, Krzysztof Kozlowski wrote:
-> On 16.09.2015 02:58, Andreas Dannenberg wrote:
-> > The patch adds a way to setup and initialize the device through the use
-> > of platform data with configuration options equivalent to when using
-> > device firmware (DT or ACPI) for systems where this is not available.
-> > 
-> > Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
-> > ---
-> >  drivers/power/bq24257_charger.c       | 117 ++++++++++++++++++++++++++++++----
-> >  include/linux/power/bq24257_charger.h |  29 +++++++++
-> >  2 files changed, 135 insertions(+), 11 deletions(-)
-> >  create mode 100644 include/linux/power/bq24257_charger.h
-> > 
-> > diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
-> > index a0cb33c..fa18b1f 100644
-> > --- a/drivers/power/bq24257_charger.c
-> > +++ b/drivers/power/bq24257_charger.c
-> > @@ -27,10 +27,13 @@
-> >  #include <linux/gpio/consumer.h>
-> >  #include <linux/interrupt.h>
-> >  #include <linux/delay.h>
-> > +#include <linux/gpio.h>
-> >  
-> >  #include <linux/acpi.h>
-> >  #include <linux/of.h>
-> >  
-> > +#include <linux/power/bq24257_charger.h>
-> > +
-> >  #define BQ24257_REG_1			0x00
-> >  #define BQ24257_REG_2			0x01
-> >  #define BQ24257_REG_3			0x02
-> > @@ -877,28 +880,112 @@ static int bq24257_power_supply_init(struct bq24257_device *bq)
-> >  
-> >  static int bq24257_irq_probe(struct bq24257_device *bq)
-> >  {
-> > +	struct bq24257_platform_data *pdata = bq->client->dev.platform_data;
-> >  	struct gpio_desc *stat_irq;
-> > +	int ret;
-> > +
-> > +	if (!pdata) {
-> > +		stat_irq = devm_gpiod_get_index(bq->dev, BQ24257_STAT_IRQ, 0,
-> > +						GPIOD_IN);
-> > +		if (IS_ERR(stat_irq)) {
-> > +			dev_err(bq->dev, "could not probe stat_irq pin\n");
-> > +			return PTR_ERR(stat_irq);
-> > +		}
-> > +	} else {
-> > +		if (!gpio_is_valid(pdata->stat_gpio)) {
-> > +			dev_err(bq->dev, "invalid stat_irq pin\n");
-> > +			return -EINVAL;
-> > +		}
-> >  
-> > -	stat_irq = devm_gpiod_get_index(bq->dev, BQ24257_STAT_IRQ, 0, GPIOD_IN);
-> > -	if (IS_ERR(stat_irq)) {
-> > -		dev_err(bq->dev, "could not probe stat_irq pin\n");
-> > -		return PTR_ERR(stat_irq);
-> > +		ret = devm_gpio_request_one(bq->dev, pdata->stat_gpio,
-> > +					    GPIOD_IN, BQ24257_STAT_IRQ);
-> 
-> That should be GPIOF_* flag, not GPIOD.
+This platform driver has a OF device ID table but the OF module
+alias information is not created so module autoloading won't work.
 
-Good catch. Looks like it worked because the definitions happen to result
-in the same value.
+Signed-off-by: Luis de Bethencourt <luisbg@osg.samsung.com>
+---
 
-> > +		if (ret) {
-> > +			dev_err(bq->dev, "stat_irq pin request failed\n");
-> > +			return ret;
-> > +		}
-> > +
-> > +		stat_irq = gpio_to_desc(pdata->stat_gpio);
-> > +		if (!stat_irq) {
-> > +			dev_err(bq->dev,
-> > +				"could not get stat_irq pin descriptor\n");
-> > +			return -EINVAL;
-> > +		}
-> >  	}
-> >  
-> > +	dev_dbg(bq->dev, "probed stat_irq pin = %d", desc_to_gpio(stat_irq));
-> > +
-> >  	return gpiod_to_irq(stat_irq);
-> >  }
-> >  
-> >  static int bq24257_pg_gpio_probe(struct bq24257_device *bq)
-> >  {
-> > -	bq->pg = devm_gpiod_get_index(bq->dev, BQ24257_PG_GPIO, 0, GPIOD_IN);
-> > -	if (IS_ERR(bq->pg)) {
-> > -		dev_info(bq->dev, "could not probe PG pin\n");
-> > -		return PTR_ERR(bq->pg);
-> > +	struct bq24257_platform_data *pdata = bq->client->dev.platform_data;
-> > +	int ret;
-> > +
-> > +	if (!pdata) {
-> > +		bq->pg = devm_gpiod_get_index(bq->dev, BQ24257_PG_GPIO, 0,
-> > +					      GPIOD_IN);
-> > +		if (IS_ERR(bq->pg)) {
-> > +			dev_info(bq->dev, "could not probe PG pin\n");
-> > +			return PTR_ERR(bq->pg);
-> > +		}
-> > +	} else {
-> > +		if (!gpio_is_valid(pdata->pg_gpio)) {
-> > +			dev_info(bq->dev, "invalid PG pin\n");
-> > +			return -EINVAL;
-> > +		}
-> > +
-> > +		ret = devm_gpio_request_one(bq->dev, pdata->pg_gpio,
-> > +					    GPIOD_IN, BQ24257_PG_GPIO);
-> 
-> ditto
+Hello,
 
-OK.
+This patch adds the missing MODULE_DEVICE_TABLE() for OF to export
+that information so modules have the correct aliases built-in and
+autoloading works correctly.
+
+A longer explanation by Javier Canillas can be found here:
+https://lkml.org/lkml/2015/7/30/519
+
+Thanks,
+Luis
+
+ drivers/cpufreq/integrator-cpufreq.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/cpufreq/integrator-cpufreq.c b/drivers/cpufreq/integrator-cpufreq.c
+index 2faa421..79e3ff2 100644
+--- a/drivers/cpufreq/integrator-cpufreq.c
++++ b/drivers/cpufreq/integrator-cpufreq.c
+@@ -221,6 +221,8 @@ static const struct of_device_id integrator_cpufreq_match[] = {
+ 	{ },
+ };
  
-> > +		if (ret) {
-> > +			dev_info(bq->dev, "PG pin request failed\n");
-> > +			return ret;
-> > +		}
-> > +
-> > +		bq->pg = gpio_to_desc(pdata->pg_gpio);
-> > +		if (!bq->pg) {
-> > +			dev_info(bq->dev, "could not get PG pin descriptor\n");
-> > +			return -EINVAL;
-> > +		}
-> >  	}
-> >  
-> > +	dev_dbg(bq->dev, "probed PG pin = %d", desc_to_gpio(bq->pg));
-> > +
-> >  	return 0;
-> >  }
-> >  
-> > +static void bq24257_pdata_probe(struct bq24257_device *bq,
-> > +				struct bq24257_platform_data *pdata)
-> > +{
-> > +	bq->init_data.ichg = bq24257_find_idx(pdata->ichg,
-> > +					      bq24257_ichg_map,
-> > +					      BQ24257_ICHG_MAP_SIZE);
-> > +
-> > +	bq->init_data.vbat = bq24257_find_idx(pdata->vbat,
-> > +					      bq24257_vbat_map,
-> > +					      BQ24257_VBAT_MAP_SIZE);
-> > +
-> > +	bq->init_data.iterm = bq24257_find_idx(pdata->iterm,
-> > +					       bq24257_iterm_map,
-> > +					       BQ24257_ITERM_MAP_SIZE);
-> > +
-> > +	bq->init_data.in_ilimit = bq24257_find_idx(pdata->in_ilimit,
-> > +						   bq24257_iilimit_map,
-> > +						   BQ24257_IILIMIT_MAP_SIZE);
-> > +
-> > +	bq->init_data.vovp = bq24257_find_idx(pdata->vovp,
-> > +					      bq24257_vovp_map,
-> > +					      BQ24257_VOVP_MAP_SIZE);
-> > +
-> > +	bq->init_data.vindpm = bq24257_find_idx(pdata->vindpm,
-> > +						bq24257_vindpm_map,
-> > +						BQ24257_VINDPM_MAP_SIZE);
-> > +
-> > +	bq->in_ilimit_autoset_disable = pdata->in_ilimit_autoset_disable;
-> > +
-> > +	bq->pg_gpio_disable = pdata->pg_gpio_disable;
-> > +}
-> > +
-> >  static int bq24257_fw_probe(struct bq24257_device *bq)
-> >  {
-> >  	int ret;
-> > @@ -974,6 +1061,7 @@ static int bq24257_probe(struct i2c_client *client,
-> >  	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
-> >  	struct device *dev = &client->dev;
-> >  	const struct acpi_device_id *acpi_id;
-> > +	struct bq24257_platform_data *pdata = client->dev.platform_data;
-> >  	struct bq24257_device *bq;
-> >  	int ret;
-> >  	int i;
-> > @@ -1023,14 +1111,15 @@ static int bq24257_probe(struct i2c_client *client,
-> >  
-> >  	i2c_set_clientdata(client, bq);
-> >  
-> > -	if (!dev->platform_data) {
-> > +	if (!pdata) {
-> >  		ret = bq24257_fw_probe(bq);
-> >  		if (ret < 0) {
-> >  			dev_err(dev, "Cannot read device properties.\n");
-> >  			return ret;
-> >  		}
-> >  	} else {
-> > -		return -ENODEV;
-> > +		dev_dbg(dev, "init using platform data\n");
-> > +		bq24257_pdata_probe(bq, pdata);
-> >  	}
-> >  
-> >  	/*
-> > @@ -1087,7 +1176,13 @@ static int bq24257_probe(struct i2c_client *client,
-> >  		return ret;
-> >  	}
-> >  
-> > -	if (client->irq <= 0)
-> > +	/*
-> > +	 * When using device firmware we either take the IRQ specified directly
-> > +	 * or probe for a pin named BQ24257_STAT_IRQ. In case of using platform
-> > +	 * data always run the IRQ pin probe function to finish IRQ and GPIO
-> > +	 * setup based on the stat pin specified in the platform data.
-> > +	 */
-> 
-> Why?
++MODULE_DEVICE_TABLE(of, integrator_cpufreq_match);
++
+ static struct platform_driver integrator_cpufreq_driver = {
+ 	.driver = {
+ 		.name = "integrator-cpufreq",
+-- 
+2.4.6
 
-The original driver would allow configuring the IRQ either through
-client->irq or through a separete DT entry called "stat_gpios" (which
-seems redundant... might it be required for ACPI? Or...?). I modeled the
-configuration via pdata the same way, this way aligning the fields in
-the pdata structure with the DT entries. Let me know if you have a
-preference to simplify this.
-
-> 
-> > +	if (client->irq <= 0 || pdata)
-> >  		client->irq = bq24257_irq_probe(bq);
-> >  
-> >  	if (client->irq < 0) {
-> > diff --git a/include/linux/power/bq24257_charger.h b/include/linux/power/bq24257_charger.h
-> > new file mode 100644
-> > index 0000000..d4f3703
-> > --- /dev/null
-> > +++ b/include/linux/power/bq24257_charger.h
-> > @@ -0,0 +1,29 @@
-> > +/*
-> > + * Platform data for the TI bq24257 battery charger driver.
-> > + *
-> > + * This program is free software; you can redistribute it and/or modify
-> > + * it under the terms of the GNU General Public License version 2 as
-> > + * published by the Free Software Foundation.
-> > + */
-> > +
-> > +#ifndef _BQ24257_CHARGER_H_
-> > +#define _BQ24257_CHARGER_H_
-> > +
-> > +#include <asm/types.h>
-> > +#include <linux/types.h>
-> > +
-> > +struct bq24257_platform_data {
-> > +	u32 ichg;				       /* charge current (uA) */
-> > +	u32 vbat;				   /* regulation voltage (uV) */
-> > +	u32 iterm;				  /* termination current (uA) */
-> > +	u32 in_ilimit;				  /* input current limit (uA) */
-> > +	u32 vovp;		      /* over voltage protection voltage (uV) */
-> > +	u32 vindpm;			 /* VDMP input threshold voltage (uV) */
-> > +	bool in_ilimit_autoset_disable;	/* auto-detect of input current limit */
-> > +	bool pg_gpio_disable;	     /* use of a dedicated pin for Power Good */
-> > +
-> > +	int stat_gpio;				  /* stat_int (interrupt) pin */
-> > +	int pg_gpio;					    /* power good pin */
-> > +};
-> > +
-> > +#endif
-> 
-> #endif /* _BQ24257_CHARGER_H_ */
-
-Ok.
-
-Regards,
-
---
-Andreas Dannenberg
-Texas Instruments Inc
-
-> 
-> Best regards,
-> Krzysztof
-> 
