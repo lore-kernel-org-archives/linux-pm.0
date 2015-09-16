@@ -1,47 +1,51 @@
 From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH] driver core: Ensure proper suspend/resume ordering
-Date: Wed, 16 Sep 2015 12:58:18 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1509161255140.1993-100000@iolanthe.rowland.org>
-References: <55F970D8.1090205@ti.com>
+Date: Wed, 16 Sep 2015 13:08:03 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1509161259480.1993-100000@iolanthe.rowland.org>
+References: <1475011.GNmxQvg88W@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:58131 "HELO
+Received: from iolanthe.rowland.org ([192.131.102.54]:58151 "HELO
 	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751921AbbIPQ6T (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Sep 2015 12:58:19 -0400
-In-Reply-To: <55F970D8.1090205@ti.com>
+	with SMTP id S1752551AbbIPRIE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Sep 2015 13:08:04 -0400
+In-Reply-To: <1475011.GNmxQvg88W@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thierry Reding <thierry.reding@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Thierry Reding <thierry.reding@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, 16 Sep 2015, Grygorii Strashko wrote:
+On Wed, 16 Sep 2015, Rafael J. Wysocki wrote:
 
-> >> The core prohibits new devices from being registered.  It does not
-> >> prohibit probes of existing devices, because they currently do not
-> >> affect the dpm_list.
+> > The core prohibits new devices from being registered.  It does not 
+> > prohibit probes of existing devices, because they currently do not 
+> > affect the dpm_list.
 > 
-> Seems I missed smth, but I can't find the place in Kernel that prohibits
-> creation of new devices during suspend.
+> Which may be a mistake, because it does affect callbacks executed during
+> suspend/resume (after successful probe the device potentially has a different
+> set of PM callbacks than before).
 > 
-> Could someone point me on, please?
+> > In general, we rely on subsystems not to do any probing once a device 
+> > is suspended.  It's probably reasonable to ask them not to do any 
+> > probing once a device has gone through the "prepare" stage.
+> 
+> Right.
+> 
+> Question is when it should be allowed to probe again.  I guess at the same
+> time we allow registrations to to take place again?
 
-In Documentation/power/devices.txt, there is a section describing the
-various phases of system suspend.  The part about the "prepare" phase
-says:
+That would make the most sense.  Particularly since registration 
+automatically causes probing to occur.
 
-    1.	The prepare phase is meant to prevent races by preventing new devices
-	from being registered; the PM core would never know that all the
-	children of a device had been suspended if new children could be
-	registered at will.  (By contrast, devices may be unregistered at any
-	time.)  Unlike the other suspend-related phases, during the prepare
-	phase the device tree is traversed top-down.
+Now, we do allow registration below a device as soon as the ->resume
+callback returns, whereas devices don't get added back to the dpm_list
+until after the "complete" phase is totally finished.  If a
+previously-existing device gets probed in between, it would be moved 
+off the dpm_prepared_list before its ->complete callback was invoked, 
+which means its ->complete wouldn't get called at all.
 
-	After the prepare callback method returns, no new children may be
-	registered below the device.  The method may also prepare the device or
-	driver in some way for the upcoming system power transition, but it
-	should not put the device into a low-power state.
+Perhaps this would be okay; it depends on the subsystem.
 
 Alan Stern
 
