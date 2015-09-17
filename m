@@ -1,36 +1,62 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] driver core: Ensure proper suspend/resume ordering
-Date: Thu, 17 Sep 2015 02:55:14 +0200
-Message-ID: <110984645.8TkJahYnoj@vostro.rjw.lan>
-References: <1441880343-30852-1-git-send-email-thierry.reding@gmail.com> <2849486.q7QWJNfWm1@vostro.rjw.lan> <55F970BF.2050107@ti.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: integrator: Fix module autoload for OF platform
+ driver
+Date: Thu, 17 Sep 2015 07:27:56 +0530
+Message-ID: <20150917015756.GQ29943@linux>
+References: <20150916202446.GA4303@goodgumbo.baconseed.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:47399 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752424AbbIQA1N (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Sep 2015 20:27:13 -0400
-In-Reply-To: <55F970BF.2050107@ti.com>
+Received: from mail-pa0-f49.google.com ([209.85.220.49]:35916 "EHLO
+	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752721AbbIQB6C (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Sep 2015 21:58:02 -0400
+Received: by padhk3 with SMTP id hk3so5022747pad.3
+        for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2015 18:58:01 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20150916202446.GA4303@goodgumbo.baconseed.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>
-Cc: Thierry Reding <thierry.reding@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Luis de Bethencourt <luis@debethencourt.com>
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 
-On Wednesday, September 16, 2015 04:38:07 PM Grygorii Strashko wrote:
-> On 09/16/2015 04:18 AM, Rafael J. Wysocki wrote:
-> > On Tuesday, September 15, 2015 05:53:02 PM Thierry Reding wrote:
-
-[cut]
-
+On 16-09-15, 22:24, Luis de Bethencourt wrote:
+> This platform driver has a OF device ID table but the OF module
+> alias information is not created so module autoloading won't work.
 > 
-> >
-> > Did that patch manipulate dpm_list?
+> Signed-off-by: Luis de Bethencourt <luisbg@osg.samsung.com>
+> ---
 > 
-> no.
+> Hello,
+> 
+> This patch adds the missing MODULE_DEVICE_TABLE() for OF to export
+> that information so modules have the correct aliases built-in and
+> autoloading works correctly.
+> 
+> A longer explanation by Javier Canillas can be found here:
+> https://lkml.org/lkml/2015/7/30/519
+> 
+> Thanks,
+> Luis
+> 
+>  drivers/cpufreq/integrator-cpufreq.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/integrator-cpufreq.c b/drivers/cpufreq/integrator-cpufreq.c
+> index 2faa421..79e3ff2 100644
+> --- a/drivers/cpufreq/integrator-cpufreq.c
+> +++ b/drivers/cpufreq/integrator-cpufreq.c
+> @@ -221,6 +221,8 @@ static const struct of_device_id integrator_cpufreq_match[] = {
+>  	{ },
+>  };
+>  
+> +MODULE_DEVICE_TABLE(of, integrator_cpufreq_match);
+> +
+>  static struct platform_driver integrator_cpufreq_driver = {
+>  	.driver = {
+>  		.name = "integrator-cpufreq",
 
-So whether or not there were any problems with it is meaningless here.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Thanks,
-Rafael
-
+-- 
+viresh
