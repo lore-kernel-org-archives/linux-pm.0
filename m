@@ -1,8 +1,8 @@
 From: Petr Cvek <petr.cvek@tul.cz>
-Subject: [PATCH v3 13/26] ARM: pxa: magician: Fix and add charging detection
- functions
-Date: Thu, 17 Sep 2015 06:59:12 +0200
-Message-ID: <55FA48A0.9090709@tul.cz>
+Subject: [PATCH v3 14/26] ARM: pxa: magician: Fix platform data for both
+ PXA27x I2C controllers
+Date: Thu, 17 Sep 2015 06:59:41 +0200
+Message-ID: <55FA48BD.4050900@tul.cz>
 References: <cover.1442462898.git.petr.cvek@tul.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-2
@@ -14,105 +14,56 @@ To: robert.jarzmik@free.fr, philipp.zabel@gmail.com, daniel@zonque.org, haojian.
 Cc: linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch fixes the charging detection functions for pda_power driver
-(according to newly discovered EGPIOs) and add NiCd backup accumulator
-charging support.
+This patch changes fast_mode settings for the normal and power I2C
+controller on the HTC Magician machine.
+
+Connected device on the Power I2C:
+- MAX1587A: working in the fast mode
+
+Connected devices on the Normal I2C:
+- UDA1380: working in the fast mode
+- OV9640: bus became stuck in the fast mode
+
+The OV9640 is not using a standard I2C protocol, but an SCCB variant. Maybe
+it is not fully compatible in the fast mode. Therefore fast mode for normal
+I2C is disabled. If you not using the OV9640 then you can enable the fast
+mode for the UDA1380.
 
 Signed-off-by: Petr Cvek <petr.cvek@tul.cz>
 ---
- arch/arm/mach-pxa/magician.c | 57 ++++++++++++++++++++++++++++++++++++++------
- 1 file changed, 50 insertions(+), 7 deletions(-)
+ arch/arm/mach-pxa/magician.c | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
 
 diff --git a/arch/arm/mach-pxa/magician.c b/arch/arm/mach-pxa/magician.c
-index b645288..906df6d 100644
+index 906df6d..86d395d 100644
 --- a/arch/arm/mach-pxa/magician.c
 +++ b/arch/arm/mach-pxa/magician.c
-@@ -596,18 +596,59 @@ static struct platform_device gpio_vbus = {
-  * External power
+@@ -818,7 +818,16 @@ static struct platform_device strataflash = {
   */
  
--static int power_supply_init(struct device *dev)
-+static int magician_supply_init(struct device *dev)
- {
--	return gpio_request(EGPIO_MAGICIAN_CABLE_TYPE, "Cable USB/AC type");
-+	int ret = -1;
+ static struct i2c_pxa_platform_data i2c_info = {
+-	.fast_mode = 1,
++	/* FIXME both I2C devices should support fast mode */
++	.fast_mode	= 0,
++};
 +
-+	ret = gpio_request(EGPIO_MAGICIAN_CABLE_TYPE, "Cable is AC charger");
-+	if (ret) {
-+		pr_err("Cannot request AC/USB charger GPIO (%i)\n", ret);
-+		goto err_ac;
-+	}
++/*
++ * PXA I2C power controller
++ */
 +
-+	ret = gpio_request(EGPIO_MAGICIAN_CABLE_INSERTED, "Cable inserted");
-+	if (ret) {
-+		pr_err("Cannot request cable detection GPIO (%i)\n", ret);
-+		goto err_usb;
-+	}
-+
-+	return 0;
-+
-+err_usb:
-+	gpio_free(EGPIO_MAGICIAN_CABLE_TYPE);
-+err_ac:
-+	return ret;
-+}
-+
-+static void magician_set_charge(int flags)
-+{
-+	if (flags & PDA_POWER_CHARGE_AC) {
-+		pr_debug("Charging from AC\n");
-+		gpio_set_value(EGPIO_MAGICIAN_NICD_CHARGE, 1);
-+	} else if (flags & PDA_POWER_CHARGE_USB) {
-+		pr_debug("Charging from USB\n");
-+		gpio_set_value(EGPIO_MAGICIAN_NICD_CHARGE, 1);
-+	} else {
-+		pr_debug("Charging disabled\n");
-+		gpio_set_value(EGPIO_MAGICIAN_NICD_CHARGE, 0);
-+	}
- }
- 
- static int magician_is_ac_online(void)
- {
--	return gpio_get_value(EGPIO_MAGICIAN_CABLE_TYPE);
-+	return gpio_get_value(EGPIO_MAGICIAN_CABLE_INSERTED) &&
-+		gpio_get_value(EGPIO_MAGICIAN_CABLE_TYPE); /* AC=1 */
-+}
-+
-+static int magician_is_usb_online(void)
-+{
-+	return gpio_get_value(EGPIO_MAGICIAN_CABLE_INSERTED) &&
-+		(!gpio_get_value(EGPIO_MAGICIAN_CABLE_TYPE)); /* USB=0 */
- }
- 
--static void power_supply_exit(struct device *dev)
-+static void magician_supply_exit(struct device *dev)
- {
-+	gpio_free(EGPIO_MAGICIAN_CABLE_INSERTED);
- 	gpio_free(EGPIO_MAGICIAN_CABLE_TYPE);
- }
- 
-@@ -616,9 +657,11 @@ static char *magician_supplicants[] = {
++static struct i2c_pxa_platform_data magician_i2c_power_info = {
++	.fast_mode	= 1,
  };
  
- static struct pda_power_pdata power_supply_info = {
--	.init			= power_supply_init,
-+	.init			= magician_supply_init,
-+	.exit			= magician_supply_exit,
- 	.is_ac_online		= magician_is_ac_online,
--	.exit			= power_supply_exit,
-+	.is_usb_online		= magician_is_usb_online,
-+	.set_charge		= magician_set_charge,
- 	.supplied_to		= magician_supplicants,
- 	.num_supplicants	= ARRAY_SIZE(magician_supplicants),
- };
-@@ -683,7 +726,7 @@ static struct gpio_regulator_config bq24022_info = {
+ /*
+@@ -866,7 +875,7 @@ static void __init magician_init(void)
+ 	platform_add_devices(ARRAY_AND_SIZE(devices));
  
- 	.enable_gpio		= GPIO30_MAGICIAN_BQ24022_nCHARGE_EN,
- 	.enable_high		= 0,
--	.enabled_at_boot	= 0,
-+	.enabled_at_boot	= 1,
- 
- 	.gpios			= bq24022_gpios,
- 	.nr_gpios		= ARRAY_SIZE(bq24022_gpios),
+ 	pxa_set_ficp_info(&magician_ficp_info);
+-	pxa27x_set_i2c_power_info(NULL);
++	pxa27x_set_i2c_power_info(&magician_i2c_power_info);
+ 	pxa_set_i2c_info(&i2c_info);
+ 	pxa_set_mci_info(&magician_mci_info);
+ 	pxa_set_ohci_info(&magician_ohci_info);
 -- 
 1.7.12.1
