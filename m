@@ -1,40 +1,58 @@
 From: Antoine Tenart <antoine.tenart@free-electrons.com>
-Subject: [PATCH v3 5/6] ARM: berlin: dts: add the cpufreq-dt bindings on the BG2CD
-Date: Thu, 17 Sep 2015 12:15:04 +0200
-Message-ID: <1442484905-15656-6-git-send-email-antoine.tenart@free-electrons.com>
-References: <1442484905-15656-1-git-send-email-antoine.tenart@free-electrons.com>
+Subject: [PATCH v3 0/6] ARM: berlin: add cpufreq support
+Date: Thu, 17 Sep 2015 12:14:59 +0200
+Message-ID: <1442484905-15656-1-git-send-email-antoine.tenart@free-electrons.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1442484905-15656-1-git-send-email-antoine.tenart@free-electrons.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: sebastian.hesselbarth@gmail.com
 Cc: Antoine Tenart <antoine.tenart@free-electrons.com>, zmxu@marvell.com, jszhang@marvell.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The BG2CD uses cpugreq-dt. Add the corresponding bindings.
+Hi,
 
-Signed-off-by: Antoine Tenart <antoine.tenart@free-electrons.com>
----
- arch/arm/boot/dts/berlin2cd.dtsi | 8 ++++++++
- 1 file changed, 8 insertions(+)
+This series adds the cpufreq support to the Berlin SoCs, using
+cpufreq-dt.
 
-diff --git a/arch/arm/boot/dts/berlin2cd.dtsi b/arch/arm/boot/dts/berlin2cd.dtsi
-index 900213d78a32..3c7a7404f10c 100644
---- a/arch/arm/boot/dts/berlin2cd.dtsi
-+++ b/arch/arm/boot/dts/berlin2cd.dtsi
-@@ -56,6 +56,14 @@
- 			device_type = "cpu";
- 			next-level-cache = <&l2>;
- 			reg = <0>;
-+
-+			clocks = <&chip_clk CLKID_CPU>;
-+			clock-latency = <100000>;
-+			operating-points = <
-+				/* kHz    uV */
-+				800000  1200000
-+				600000  1200000
-+			>;
- 		};
- 	};
- 
+First, the cpuclk clock is added to the BG2Q clock driver. This clock
+has a divider fixed to 1, so we use a fixed factor clock here.
+
+Then register a platform device for cpufreq-dt.
+
+I also added the OPP table definition in the BG2Q, BG2 and BG2CD device
+trees. When using a BG2Q, some bootloaders may update this table when
+booting (mine doesn't).
+
+Tested on a BG2Q DMP.
+
+Thanks,
+
+Antoine
+
+Changes since v2:
+	- rebased on top of v4.3-rc1
+
+Changes since v1:
+        - added the BG2 and BG2CD support
+        - moved MAX_CLKS out of the Berlin clk driver
+        - reordered the patches
+
+Antoine Tenart (6):
+  clk: berlin: move MAX_CLKS out of drivers/clk/berlin
+  clk: berlin: add cpuclk
+  ARM: berlin: dts: add the cpufreq-dt bindings on the BG2Q
+  ARM: berlin: dts: add the cpufreq-dt bindings on the BG2
+  ARM: berlin: dts: add the cpufreq-dt bindings on the BG2CD
+  ARM: berlin: register cpufreq-dt
+
+ arch/arm/boot/dts/berlin2.dtsi       | 10 ++++++++++
+ arch/arm/boot/dts/berlin2cd.dtsi     |  8 ++++++++
+ arch/arm/boot/dts/berlin2q.dtsi      | 11 +++++++++++
+ arch/arm/mach-berlin/berlin.c        |  6 ++++++
+ drivers/clk/berlin/bg2.c             |  1 -
+ drivers/clk/berlin/bg2q.c            | 13 ++++++-------
+ include/dt-bindings/clock/berlin2.h  |  2 ++
+ include/dt-bindings/clock/berlin2q.h |  3 +++
+ 8 files changed, 46 insertions(+), 8 deletions(-)
+
 -- 
 2.5.2
