@@ -1,83 +1,91 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] Added multiplier for APERF and MPERF counters
-Date: Thu, 17 Sep 2015 19:04:56 +0200
-Message-ID: <6353648.5IiCL7fVmQ@vostro.rjw.lan>
-References: <1442407938-5228-1-git-send-email-lukasz.anaczkowski@intel.com>
+From: Morten Rasmussen <morten.rasmussen@arm.com>
+Subject: Re: [RFCv5 PATCH 22/46] sched: Calculate energy consumption of
+ sched_group
+Date: Thu, 17 Sep 2015 17:41:52 +0100
+Message-ID: <20150917164152.GA6839@e105550-lin.cambridge.arm.com>
+References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
+ <1436293469-25707-23-git-send-email-morten.rasmussen@arm.com>
+ <20150902171923.GB12510@leoy-linaro>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1442407938-5228-1-git-send-email-lukasz.anaczkowski@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lukasz Anaczkowski <lukasz.anaczkowski@intel.com>
-Cc: len.brown@intel.com, dasaratharaman.chandramouli@intel.com, linux-kernel@vger.kernel.org, Hubert Chrzaniuk <hubert.chrzaniuk@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:42433 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752059AbbIQQh4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 17 Sep 2015 12:37:56 -0400
+Content-Disposition: inline
+In-Reply-To: <20150902171923.GB12510@leoy-linaro>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Leo Yan <leo.yan@linaro.org>
+Cc: peterz@infradead.org, mingo@redhat.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Wednesday, September 16, 2015 02:52:18 PM Lukasz Anaczkowski wrote:
-> From: Hubert Chrzaniuk <hubert.chrzaniuk@intel.com>
+On Thu, Sep 03, 2015 at 01:19:23AM +0800, Leo Yan wrote:
+> On Tue, Jul 07, 2015 at 07:24:05PM +0100, Morten Rasmussen wrote:
+> > +/*
+> > + * sched_group_energy(): Returns absolute energy consumption of cpus belonging
+> > + * to the sched_group including shared resources shared only by members of the
+> > + * group. Iterates over all cpus in the hierarchy below the sched_group starting
+> > + * from the bottom working it's way up before going to the next cpu until all
+> > + * cpus are covered at all levels. The current implementation is likely to
+> > + * gather the same usage statistics multiple times. This can probably be done in
+> > + * a faster but more complex way.
+> > + */
+> > +static unsigned int sched_group_energy(struct sched_group *sg_top)
+> > +{
+> > +	struct sched_domain *sd;
+> > +	int cpu, total_energy = 0;
+> > +	struct cpumask visit_cpus;
+> > +	struct sched_group *sg;
+> > +
+> > +	WARN_ON(!sg_top->sge);
+> > +
+> > +	cpumask_copy(&visit_cpus, sched_group_cpus(sg_top));
+> > +
+> > +	while (!cpumask_empty(&visit_cpus)) {
+> > +		struct sched_group *sg_shared_cap = NULL;
+> > +
+> > +		cpu = cpumask_first(&visit_cpus);
+> > +
+> > +		/*
+> > +		 * Is the group utilization affected by cpus outside this
+> > +		 * sched_group?
+> > +		 */
+> > +		sd = highest_flag_domain(cpu, SD_SHARE_CAP_STATES);
+> > +		if (sd && sd->parent)
+> > +			sg_shared_cap = sd->parent->groups;
 > 
-> Intel(R) Xeon Phi x200 (KNL) increments APERF/MPERF every
-> 1024 clocks, which is different than other Intel architectures
-> (incremented every single clock).
-> It results in understated values for %Busy and Avg_MHz values,
-> thus multiplier for APERF/MPERF counters.
+> If the sched domain is already the highest level, should directly use
+> its group to calculate shared capacity? so the code like below:
 > 
-> Signed-off-by: Hubert Chrzaniuk <hubert.chrzaniuk@intel.com>
-> Signed-off-by: Lukasz Anaczkowski <lukasz.anaczkowski@intel.com>
+>                 if (sd && sd->parent)
+>                         sg_shared_cap = sd->parent->groups;
+>                 else if (sd && !sd->parent)
+>                         sg_shared_cap = sd->groups;
 
-Please *always* send PM-related patches to linux-pm@vger.kernel.org (CCed now).
+This isn't really the right thing to do. The fundamental problem is that
+we need to know somehow which cpus that share the same clock source
+(frequency). We have chosen to use sched_groups to represent groups for
+all the energy model calculations, so we use sg_shared_cap to indicate
+which cpus that share the same clock source. In the loop above we find
+the sched_domain that spans all cpus sharing the same clock source, and
+sd->parent->groups trick gives us a sched_group spanning the same cpus,
+if such sched_domain/group exists. The problem is when it doesn't, i.e.
+all cpus share the same clock source. Using a sched_group at the current
+level would be wrong as it is only spanning a subset of the cpus that
+really share clock source.
 
-> ---
->  tools/power/x86/turbostat/turbostat.c | 13 +++++++++++++
->  1 file changed, 13 insertions(+)
-> 
-> diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-> index 9655cb4..1dda607 100644
-> --- a/tools/power/x86/turbostat/turbostat.c
-> +++ b/tools/power/x86/turbostat/turbostat.c
-> @@ -71,6 +71,7 @@ unsigned int extra_msr_offset32;
->  unsigned int extra_msr_offset64;
->  unsigned int extra_delta_offset32;
->  unsigned int extra_delta_offset64;
-> +unsigned int aperf_mperf_multiplier = 1;
->  int do_smi;
->  double bclk;
->  unsigned int show_pkg;
-> @@ -984,6 +985,8 @@ int get_counters(struct thread_data *t, struct core_data *c, struct pkg_data *p)
->  			return -3;
->  		if (get_msr(cpu, MSR_IA32_MPERF, &t->mperf))
->  			return -4;
-> +		t->aperf = t->aperf * aperf_mperf_multiplier;
-> +		t->mperf = t->mperf * aperf_mperf_multiplier;
->  	}
->  
->  	if (do_smi) {
-> @@ -2543,6 +2546,13 @@ int is_knl(unsigned int family, unsigned int model)
->  	return 0;
->  }
->  
-> +unsigned int get_aperf_mperf_multiplier(unsigned int family, unsigned int model)
-> +{
-> +	if (is_knl(family, model))
-> +		return 1024;
-> +	return 1;
-> +}
-> +
->  #define SLM_BCLK_FREQS 5
->  double slm_freq_table[SLM_BCLK_FREQS] = { 83.3, 100.0, 133.3, 116.7, 80.0};
->  
-> @@ -2744,6 +2754,9 @@ void process_cpuid()
->  		}
->  	}
->  
-> +	if (has_aperf)
-> +		aperf_mperf_multiplier = get_aperf_mperf_multiplier(family, model);
-> +
->  	do_nhm_platform_info = do_nhm_cstates = do_smi = probe_nhm_msrs(family, model);
->  	do_snb_cstates = has_snb_msrs(family, model);
->  	do_pc2 = do_snb_cstates && (pkg_cstate_limit >= PCL__2);
-> 
+It is clearly a missing piece in the current patch set. If you are
+after a quick and ugly fix you can either: 1) create a temporary
+sched_group spanning the same cpus as sd, or 2) change struct energy_env
+and find_new_capacity() to use a cpumask instead of a sched_group and
+pass the cpumask from the sd instead of sched_group pointer.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+IMHO, the right solution is to introduce a system-wide sched_group
+(there has been previous discussions on this) that spans all the cpus. I
+think it should work even without attaching any energy data to that
+sched_group. Otherwise, I think you can get away with just adding a zero
+cost capacity and idle state.
+
+Dietmar has already got patches that implements a system-wide
+sched_group which I'm sure he is willing to share ;-)
