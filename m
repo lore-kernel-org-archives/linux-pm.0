@@ -1,119 +1,103 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] [v4] PM / hibernate: Fix hibernation panic caused by
- inconsistent e820 map
-Date: Thu, 17 Sep 2015 22:43:43 +0200
-Message-ID: <20150917204343.GA14658@amd>
-References: <1442425343-8339-1-git-send-email-yu.c.chen@intel.com>
- <20150917060735.GF6665@amd>
- <36DF59CE26D8EE47B0655C516E9CE64026584C75@SHSMSX101.ccr.corp.intel.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] driver core: Ensure proper suspend/resume ordering
+Date: Thu, 17 Sep 2015 17:06:55 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1509171641270.1270-100000@iolanthe.rowland.org>
+References: <CAJZ5v0gAsgsA+P_oL=KnAwBpkdJY_P733jBnXnGPdFOs5yiUfw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:44678 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751487AbbIQUnp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Sep 2015 16:43:45 -0400
-Content-Disposition: inline
-In-Reply-To: <36DF59CE26D8EE47B0655C516E9CE64026584C75@SHSMSX101.ccr.corp.intel.com>
+Received: from iolanthe.rowland.org ([192.131.102.54]:53844 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751633AbbIQVG4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Sep 2015 17:06:56 -0400
+In-Reply-To: <CAJZ5v0gAsgsA+P_oL=KnAwBpkdJY_P733jBnXnGPdFOs5yiUfw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Chen, Yu C" <yu.c.chen@intel.com>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, "jlee@suse.com" <jlee@suse.com>, "joeyli.kernel@gmail.com" <joeyli.kernel@gmail.com>, "yinghai@kernel.org" <yinghai@kernel.org>, Ingo Molnar <mingo@kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Thierry Reding <thierry.reding@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-Hi!
+On Thu, 17 Sep 2015, Rafael J. Wysocki wrote:
 
-> > > This is also because BIOS provides different e820 memory map 
-> > > before/after hibernation, and linux regards it as invalid process 
-> > > and refuses to resume, in order to protect against data corruption.
-> > > However, this check might be too strict, consider the following scenario:
-> > 
-> > Well... yes, the check is strict, but why is BIOS doing that? Can you 
-> > fix it instead?
-> Humm, I sync with BIOS team, then  I got the answer that,  
-> the e820 map is allocated dynamically each time it boots up,
-> so it is poissible BIOS shows different map each time it boots up.
-> Currently our BIOS team is working on it, but some problematic BIOS
-> have already be released, so I think Linux should deal with this situation.
+> Note: Problems also may happen if device A depends on device B and its
+> driver to be present and functional and then the B's driver module is
+> unloaded.  The core doesn't prevent that from happening AFAICS.
 
-Well.. you can't really deal with the situation. That's what confuses
-me. If original kernel uses memory that is "not present" now, there's
-nothing you can do... but panic / fail resume.
+It also doesn't prevent B's driver from being unbound from the B 
+device.
 
-> > >    With v3 patch applied, I did 30 cycles on my problematic platform,
-> > >    no panic triggered anymore(50% reproducible before patched, by
-> > >    plugging/unplugging memory peripheral during hibernation), and it
-> > >    just warns of invalid pages.
-> > 
-> > "Just warns of invalid pages". Do you want to say that you "just cause data
-> > corruption"?
-> > 
-> > If you don't have enough memory, YOU DON'T RESTORE. Disks were synced,
-> > so not restoring is safe. Running with memory corruption is NOT.
-> >
-> Sorry, I do not quite understand this scenario, do you mean:
-> "Without this patch , the checking of memory consistency is at a early stage,
-> just before the actual pages restoring,so it's a safe time for system to determin 
-> restore or terminate.
-> And with this patch applied, the checking will be put off to a later stage, which
-> is not safe when memory is low?"
+To some extent the kernel _does_ prevent driver modules from being
+unloaded.  If A's driver uses code resources provided by B's driver
+then the module's refcount would be larger than 0.
+
+> I'd like to go back to my initial hunch that the driver knowing about
+> a dependency on another one should tell the core about that, so the
+> core can make the right things happen at various times (like system
+> suspend/resume etc).
 > 
-> I think in this patch, the  memory size checking has been moved 
-> a little later than Its original place, the checking is still before the 
-> actual  restoring image data pages:
-> It happens once the last meta_page has been readed:
-> prepare_image->mark_unsafe_pages  (before the actual restoing of
->    data pages)
-
-Aha, so you should still see some failures in the testing.
-
-
-
-> > > +	if (!swsusp_page_is_valid(pfn_to_page(pfn))) {
-> > > +		pr_err(
-> > > +		"PM: Hibernation failed, address %#010llx to restored not
-> > valid!\n",
-> > > +			(unsigned long long) pfn << PAGE_SHIFT);
-> > 
-> > ...and still bad english.
-> > 
-> Oh, will fix it: 
-> PM: Hibernation failed, address %#010llx to be restored is not  valid!
+> What if we introduce a mechanism allowing drivers to say "I depend on
+> device X and its driver to be present and functional from now on" and
+> store that information somewhere for the core to use?
 > 
-> Hope to hear from you, thanks!
+> Some time ago (a few years ago actually IIRC) I proposed something
+> called "PM links".  The idea was to have objects representing such
+> dependencies, although I was not taking the "the driver of the device
+> I depend on should be present and functional going forward" condition.
+> 
+> Say, if a driver wants to check the presence of the device+driver it
+> needs to be functional, it will do something like
+> 
+> ret = create_pm_link(dev, producer);
+> 
+> and that will return -EPROBE_DEFER if the producer device is not
+> functional.  If success is returned, the link has been created and now
+> the core will take it into account.
+> 
+> On driver removal the core may just delete the links where the device
+> is the "consumer".  Also there may be a delete_pm_link(dev, producer)
+> operation if needed.
+> 
+> The creation of a link may then include the reordering of dpm_list as
+> appropriate so all "producers" are now followed by all of their
+> "consumers".  Going forward, though, the core may use the links to
+> make all "producers" wait for the PM callbacks of their "consumers" to
+> complete during system suspend etc.  It also may use them to prevent
+> drivers being depended on from being unloaded and/or to force the
+> removal of drivers that depend on something being removed.  In
+> principle it may also use those links to coordinate runtime PM
+> transitions, but I guess that's not going to be useful in all cases,
+> so there needs to be an opt-in mechanism for that.
+> 
+> Please tell me what you think.
 
-Yes, that's better.
+Sounds familiar.  I recall this basic approach from a Plumbers
+conference some years ago -- maybe that was when you first proposed it!
 
-But I still don't like the patch.
+You might want to categorize the dependencies into different types.  I 
+can think of three types offhand:
 
-0) BIOS is broken, and this does not completely work around it. Users
-will still see the failed hibernation when the memory that is now
-unavailable was actually used.
+	The target device must be present before the current device
+	can be probed (hard to imagine how that could be stored as a PM
+	link if the target device isn't present, though);
 
-1) It allocates bm3 even on systems that don't need the workaround
-(arm, ia32)
+	The target device must be bound to a driver before the current
+	device can be probed;
 
-2) If you use hibernation on 32-bit kernel on affected system, you'll
-still get panic.
+	The target device must be at full power whenever the current
+	device is.
 
-3) I'm not sure I understand the changelog correctly. What happens
-when BIOS reports less memory on hibernation? Will you magically
-remove memory from kernel at runtime? Will /proc/meminfo be invalid
-after resume? Will all the memory management tuning need fixing?
+Maybe you can think of others.
 
-Changelog is really confusing. "failor" is not a english word.
+[Oddly enough, the USB subsystem has some dependencies that don't fall 
+into any of these categories.  They have to do with the peculiar way in 
+which a low- or full-speed device is handed off from a high-speed 
+controller to its companion low/full-speed controller, and they apply 
+only to system resume, not to normal operation.  (That is, device A 
+requires device B to be at full power when A is being resumed from a 
+system sleep, but not when A is operating normally or when A is being 
+runtime-resumed.)  For such things, we should keep the existing 
+device_pm_wait_for_dev() API.]
 
-After this patch applied, the panic will be replaced with the warning:
+This sounds like a big change, but it might be worthwhile.
 
-...
+Alan Stern
 
-according to your explanation, panic will be replaced with the resume
-failure, not mere warning.
-
-I believe we have case of "this BIOS problem can not be reasonably
-worked around" here.
-
-Best regards,
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
