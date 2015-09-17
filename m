@@ -1,155 +1,126 @@
 From: Petr Cvek <petr.cvek@tul.cz>
-Subject: [PATCH v3 07/26] ARM: pxa: magician: Fix HTC Magician pin mux
- definitions
-Date: Thu, 17 Sep 2015 06:56:45 +0200
-Message-ID: <55FA480D.4030602@tul.cz>
+Subject: [PATCH v3 08/26] ARM: pxa: magician: Rename abstract LCD GPIOs
+Date: Thu, 17 Sep 2015 06:57:11 +0200
+Message-ID: <55FA4827.7030307@tul.cz>
 References: <cover.1442462898.git.petr.cvek@tul.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-2
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bubo.tul.cz ([147.230.16.1]:36955 "EHLO bubo.tul.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752338AbbIQE4x (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 17 Sep 2015 00:56:53 -0400
+Return-path: <linux-leds-owner@vger.kernel.org>
 In-Reply-To: <cover.1442462898.git.petr.cvek@tul.cz>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-leds-owner@vger.kernel.org
 To: robert.jarzmik@free.fr, philipp.zabel@gmail.com, daniel@zonque.org, haojian.zhuang@gmail.com, cooloney@gmail.com, rpurdie@rpsys.net, j.anaszewski@samsung.com, linux@arm.linux.org.uk, sre@kernel.org, dbaryshkov@gmail.com, lee.jones@linaro.org, sameo@linux.intel.com, dwmw2@infradead.org, arnd@arndb.de, g.liakhovetski@gmx.de
 Cc: linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+List-Id: linux-pm@vger.kernel.org
 
-This patch fixes a pin mux for the HTC Magician machine. Wrong and missing
-definitions caused a bad LCD operation and an unavailability of several
-peripherals.
+This patch renames GPIOs, which are used to control the power lines to
+the LCD screen. New names correspond to a real functionality, which was
+measured on the HTC Magician board_id 0x3a.
 
 Signed-off-by: Petr Cvek <petr.cvek@tul.cz>
 ---
- arch/arm/mach-pxa/magician.c | 77 ++++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 70 insertions(+), 7 deletions(-)
+ arch/arm/mach-pxa/include/mach/magician.h |  6 +++---
+ arch/arm/mach-pxa/magician.c              | 33 +++++++++++++++++--------------
+ 2 files changed, 21 insertions(+), 18 deletions(-)
 
+diff --git a/arch/arm/mach-pxa/include/mach/magician.h b/arch/arm/mach-pxa/include/mach/magician.h
+index 88da10e..f0e08f8 100644
+--- a/arch/arm/mach-pxa/include/mach/magician.h
++++ b/arch/arm/mach-pxa/include/mach/magician.h
+@@ -52,9 +52,9 @@
+ #define GPIO101_MAGICIAN_KEY_VOL_DOWN 		101
+ #define GPIO102_MAGICIAN_KEY_PHONE		102
+ #define GPIO103_MAGICIAN_LED_KP		103
+-#define GPIO104_MAGICIAN_LCD_POWER_1 		104
+-#define GPIO105_MAGICIAN_LCD_POWER_2		105
+-#define GPIO106_MAGICIAN_LCD_POWER_3		106
++#define GPIO104_MAGICIAN_LCD_VOFF_EN		104
++#define GPIO105_MAGICIAN_LCD_VON_EN		105
++#define GPIO106_MAGICIAN_LCD_DCDC_NRESET	106
+ #define GPIO107_MAGICIAN_DS1WM_IRQ		107
+ #define GPIO108_MAGICIAN_GSM_READY		108
+ #define GPIO114_MAGICIAN_UNKNOWN		114
 diff --git a/arch/arm/mach-pxa/magician.c b/arch/arm/mach-pxa/magician.c
-index a93ed14..91d302b 100644
+index 91d302b..d78fc3a 100644
 --- a/arch/arm/mach-pxa/magician.c
 +++ b/arch/arm/mach-pxa/magician.c
-@@ -4,8 +4,9 @@
-  * and T-Mobile MDA Compact.
-  *
-  * Copyright (c) 2006-2007 Philipp Zabel
-+ * Copyright (c) 2014-2015 Petr Cvek (massive rework)
-  *
-- * Based on hx4700.c, spitz.c and others.
-+ * Based on hx4700.c, spitz.c, board-overo.c and others.
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License version 2 as
-@@ -56,6 +57,8 @@ static unsigned long magician_pin_config[] __initdata = {
- 	GPIO79_nCS_3,	/* EGPIO CPLD */
- 	GPIO80_nCS_4,
- 	GPIO33_nCS_5,
-+	GPIO49_nPWE,
-+	GPIO18_RDY,
+@@ -337,22 +337,22 @@ static void toppoly_lcd_power(int on, struct fb_var_screeninfo *si)
  
- 	/* I2C UDA1380 + OV9640 */
- 	GPIO117_I2C_SCL,
-@@ -64,6 +67,10 @@ static unsigned long magician_pin_config[] __initdata = {
- 	/* PWM 0 - LCD backlight */
- 	GPIO16_PWM0_OUT,
- 
-+	/* Omnivision camera power and reset GPIO */
-+	MFP_CFG_OUT(GPIO116, AF0, DRIVE_HIGH),	/* /Enable */
-+	MFP_CFG_OUT(GPIO57, AF0, DRIVE_HIGH),	/* Reset */
-+
- 	/* I2S UDA1380 capture */
- 	GPIO28_I2S_BITCLK_OUT,
- 	GPIO29_I2S_SDATA_IN,
-@@ -89,8 +96,26 @@ static unsigned long magician_pin_config[] __initdata = {
- 	GPIO111_MMC_DAT_3,
- 	GPIO112_MMC_CMD,
- 
--	/* LCD */
--	GPIOxx_LCD_TFT_16BPP,
-+	/*
-+	 * LCD
-+	 * NOTICE Samsung LTP280QV:
-+	 * cannot use GPIOxx_LCD_TFT_16BPP, GPIO75 is LCD power,
-+	 * 74 unused (AF0 by bootloader?)
-+	 */
-+	GPIOxx_LCD_16BPP,
-+	GPIO76_LCD_PCLK,
-+	GPIO77_LCD_BIAS,	/* data_valid (v/hsync) (ADS7846 sync?) */
+ 	if (on) {
+ 		gpio_set_value(EGPIO_MAGICIAN_TOPPOLY_POWER, 1);
+-		gpio_set_value(GPIO106_MAGICIAN_LCD_POWER_3, 1);
++		gpio_set_value(GPIO106_MAGICIAN_LCD_DCDC_NRESET, 1);
+ 		udelay(2000);
+ 		gpio_set_value(EGPIO_MAGICIAN_LCD_POWER, 1);
+ 		udelay(2000);
+ 		/* FIXME: enable LCDC here */
+ 		udelay(2000);
+-		gpio_set_value(GPIO104_MAGICIAN_LCD_POWER_1, 1);
++		gpio_set_value(GPIO104_MAGICIAN_LCD_VOFF_EN, 1);
+ 		udelay(2000);
+-		gpio_set_value(GPIO105_MAGICIAN_LCD_POWER_2, 1);
++		gpio_set_value(GPIO105_MAGICIAN_LCD_VON_EN, 1);
+ 	} else {
+ 		msleep(15);
+-		gpio_set_value(GPIO105_MAGICIAN_LCD_POWER_2, 0);
++		gpio_set_value(GPIO105_MAGICIAN_LCD_VON_EN, 0);
+ 		udelay(500);
+-		gpio_set_value(GPIO104_MAGICIAN_LCD_POWER_1, 0);
++		gpio_set_value(GPIO104_MAGICIAN_LCD_VOFF_EN, 0);
+ 		udelay(1000);
+-		gpio_set_value(GPIO106_MAGICIAN_LCD_POWER_3, 0);
++		gpio_set_value(GPIO106_MAGICIAN_LCD_DCDC_NRESET, 0);
+ 		gpio_set_value(EGPIO_MAGICIAN_LCD_POWER, 0);
+ 	}
+ }
+@@ -367,19 +367,19 @@ static void samsung_lcd_power(int on, struct fb_var_screeninfo *si)
+ 		else
+ 			gpio_set_value(EGPIO_MAGICIAN_LCD_POWER, 1);
+ 		mdelay(10);
+-		gpio_set_value(GPIO106_MAGICIAN_LCD_POWER_3, 1);
++		gpio_set_value(GPIO106_MAGICIAN_LCD_DCDC_NRESET, 1);
+ 		mdelay(10);
+-		gpio_set_value(GPIO104_MAGICIAN_LCD_POWER_1, 1);
++		gpio_set_value(GPIO104_MAGICIAN_LCD_VOFF_EN, 1);
+ 		mdelay(30);
+-		gpio_set_value(GPIO105_MAGICIAN_LCD_POWER_2, 1);
++		gpio_set_value(GPIO105_MAGICIAN_LCD_VON_EN, 1);
+ 		mdelay(10);
+ 	} else {
+ 		mdelay(10);
+-		gpio_set_value(GPIO105_MAGICIAN_LCD_POWER_2, 0);
++		gpio_set_value(GPIO105_MAGICIAN_LCD_VON_EN, 0);
+ 		mdelay(30);
+-		gpio_set_value(GPIO104_MAGICIAN_LCD_POWER_1, 0);
++		gpio_set_value(GPIO104_MAGICIAN_LCD_VOFF_EN, 0);
+ 		mdelay(10);
+-		gpio_set_value(GPIO106_MAGICIAN_LCD_POWER_3, 0);
++		gpio_set_value(GPIO106_MAGICIAN_LCD_DCDC_NRESET, 0);
+ 		mdelay(10);
+ 		if (system_rev < 3)
+ 			gpio_set_value(GPIO75_MAGICIAN_SAMSUNG_POWER, 0);
+@@ -796,9 +796,11 @@ static struct platform_device *devices[] __initdata = {
+ static struct gpio magician_global_gpios[] = {
+ 	{ GPIO13_MAGICIAN_CPLD_IRQ, GPIOF_IN, "CPLD_IRQ" },
+ 	{ GPIO107_MAGICIAN_DS1WM_IRQ, GPIOF_IN, "DS1WM_IRQ" },
+-	{ GPIO104_MAGICIAN_LCD_POWER_1, GPIOF_OUT_INIT_LOW, "LCD power 1" },
+-	{ GPIO105_MAGICIAN_LCD_POWER_2, GPIOF_OUT_INIT_LOW, "LCD power 2" },
+-	{ GPIO106_MAGICIAN_LCD_POWER_3, GPIOF_OUT_INIT_LOW, "LCD power 3" },
 +
 +	/* NOTICE valid LCD init sequence */
-+
-+	/* for GPIO75_MAGICIAN_SAMSUNG_POWER */
-+	MFP_CFG_OUT(GPIO75, AF0, DRIVE_HIGH),
-+	/* for GPIO106_MAGICIAN_LCD_DCDC_NRESET */
-+	MFP_CFG_OUT(GPIO106, AF0, DRIVE_HIGH),
-+	/* for GPIO104_MAGICIAN_LCD_VOFF_EN */
-+	MFP_CFG_OUT(GPIO104, AF0, DRIVE_HIGH),
-+	/* for GPIO105_MAGICIAN_LCD_VON_EN */
-+	MFP_CFG_OUT(GPIO105, AF0, DRIVE_HIGH),
- 
- 	/* QCI camera interface */
- 	GPIO12_CIF_DD_7,
-@@ -107,16 +132,54 @@ static unsigned long magician_pin_config[] __initdata = {
- 	GPIO85_CIF_LV,
- 
- 	/* Magician specific input GPIOs */
--	GPIO9_GPIO,	/* unknown */
- 	GPIO10_GPIO,	/* GSM_IRQ */
- 	GPIO13_GPIO,	/* CPLD_IRQ */
- 	GPIO107_GPIO,	/* DS1WM_IRQ */
- 	GPIO108_GPIO,	/* GSM_READY */
- 	GPIO115_GPIO,	/* nPEN_IRQ */
- 
--	/* I2C */
--	GPIO117_I2C_SCL,
--	GPIO118_I2C_SDA,
-+	/* Vibration motor */
-+	MFP_CFG_OUT(GPIO22, AF0, DRIVE_LOW),
-+
-+	/* Keypad LEDs (red/green phone) */
-+	MFP_CFG_OUT(GPIO103, AF0, DRIVE_LOW),
-+
-+	/* GSM pins */
-+	MFP_CFG_OUT(GPIO11, AF0, DRIVE_LOW),	/* CPU is unavailable(?) */
-+	MFP_CFG_OUT(GPIO26, AF0, DRIVE_LOW),	/* GSM power */
-+	MFP_CFG_OUT(GPIO86, AF0, DRIVE_HIGH),	/* GSM reset */
-+
-+	/* USB connector */
-+	MFP_CFG_OUT(GPIO27, AF0, DRIVE_LOW),	/* enable usbc pull-up */
-+	MFP_CFG_OUT(GPIO30, AF0, DRIVE_LOW),	/* /charging enable */
-+
-+	/* FFUART, FIXME never observed to do something, GSM data? */
-+	GPIO34_FFUART_RXD,
-+	GPIO35_FFUART_CTS,
-+	GPIO36_FFUART_DCD,
-+	GPIO39_FFUART_TXD,
-+	GPIO41_FFUART_RTS,
-+
-+	/* BTUART, AT commands/data, HTC port line discipline */
-+	GPIO42_BTUART_RXD,
-+	GPIO43_BTUART_TXD,
-+	GPIO44_BTUART_CTS,
-+	GPIO45_BTUART_RTS,
-+
-+	/* Power I2C, controller will overrule GPIO */
-+	GPIO3_GPIO,	/* SCL */
-+	GPIO4_GPIO,	/* SDA */
-+
-+	/* IrDA GPIOs, pxaficp will change it to correct AFx */
-+	MFP_CFG_IN(GPIO46, AF0),
-+	MFP_CFG_OUT(GPIO47, AF0, DRIVE_LOW),
-+	/* FIXME: probably IrDA transmitter disable */
-+	MFP_CFG_OUT(GPIO83, AF0, DRIVE_HIGH),
-+
-+	/* FIXME yet unknown exact function */
-+	GPIO9_GPIO,	/* unknown */
-+	MFP_CFG_OUT(GPIO40, AF0, DRIVE_LOW),	/* FIXME GSM? */
-+	MFP_CFG_OUT(GPIO87, AF0, DRIVE_LOW),	/* FIXME GSM? */
++	{ GPIO106_MAGICIAN_LCD_DCDC_NRESET, GPIOF_OUT_INIT_LOW, "LCD DCDC nreset" },
++	{ GPIO104_MAGICIAN_LCD_VOFF_EN, GPIOF_OUT_INIT_LOW, "LCD VOFF enable" },
++	{ GPIO105_MAGICIAN_LCD_VON_EN, GPIOF_OUT_INIT_LOW, "LCD VON enable" },
+ 	{ GPIO83_MAGICIAN_nIR_EN, GPIOF_OUT_INIT_HIGH, "nIR_EN" },
  };
  
- /*
+@@ -835,6 +837,7 @@ static void __init magician_init(void)
+ 		lcd_select = board_id & 0x8;
+ 		pr_info("LCD type: %s\n", lcd_select ? "Samsung" : "Toppoly");
+ 		if (lcd_select && (system_rev < 3))
++			/* NOTICE valid LCD init sequence */
+ 			gpio_request_one(GPIO75_MAGICIAN_SAMSUNG_POWER,
+ 				GPIOF_OUT_INIT_LOW, "Samsung LCD Power");
+ 		pxa_set_fb_info(NULL,
 -- 
 1.7.12.1
-
