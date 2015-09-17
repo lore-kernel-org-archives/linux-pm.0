@@ -1,66 +1,104 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v3 00/26] ARM: pxa: magician: Rework HTC Magician support
-Date: Thu, 17 Sep 2015 08:04:38 +0100
-Message-ID: <20150917070438.GC3218@x1>
-References: <55FA4756.9080309@tul.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-leds-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <55FA4756.9080309@tul.cz>
-Sender: linux-leds-owner@vger.kernel.org
-To: Petr Cvek <petr.cvek@tul.cz>
-Cc: robert.jarzmik@free.fr, philipp.zabel@gmail.com, daniel@zonque.org, haojian.zhuang@gmail.com, cooloney@gmail.com, rpurdie@rpsys.net, j.anaszewski@samsung.com, linux@arm.linux.org.uk, sre@kernel.org, dbaryshkov@gmail.com, sameo@linux.intel.com, dwmw2@infradead.org, arnd@arndb.de, g.liakhovetski@gmx.de, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+From: Zhaoyang Huang <zhaoyang.huang@linaro.org>
+Subject: [PATCH] modify pl011 driver to let it work as wakeup source
+Date: Thu, 17 Sep 2015 16:31:56 +0800
+Message-ID: <1442478716-7377-1-git-send-email-zhaoyang.huang@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux@arm.linux.org.uk, gregkh@linuxfoundation.org, jslaby@suse.com, linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: amit.kucheria@linaro.org, sudeep.holla@arm.com, daniel.lezcano@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 17 Sep 2015, Petr Cvek wrote:
+the commit use the latest dev_pm_set_wake_irq API instead
+of the enable_irq_wake and IRQF_NO_SUSPEND to configure the
+ttyAMA device to work as the wakeup source
 
-[...]
+Signed-off-by: Zhaoyang Huang <zhaoyang.huang@linaro.org>
+---
+ drivers/tty/serial/amba-pl011.c |   47 ++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 46 insertions(+), 1 deletion(-)
 
-> Petr Cvek (26):
->   ARM: pxa: magician: Fix indentation in machine files
->   ARM: pxa: magician: Change comments to be more informative
->   ARM: pxa: magician: Print more specific error message for global
->     GPIOs
->   ARM: pxa: magician: Optimize debug messages for LCD power
->   ARM: pxa: magician: Change description of LCD power GPIO
->   ARM: pxa: magician: Add new discovered EGPIO pins
->   ARM: pxa: magician: Fix HTC Magician pin mux definitions
->   ARM: pxa: magician: Rename abstract LCD GPIOs
->   ARM: pxa: magician: Optimize powerup delays for Samsung LCD
->   ARM: pxa: magician: Optimize Samsung LCD refresh to 50Hz
->   ARM: pxa: magician: Optimize EGPIO initial values
->   ARM: pxa: magician: Rename charger cable detection EGPIOs
->   ARM: pxa: magician: Fix and add charging detection functions
->   ARM: pxa: magician: Fix platform data for both PXA27x I2C controlle=
-rs
->   ARM: pxa: magician: Fix redundant GPIO request for pxaficp_ir
->   ARM: pxa: magician: Fix support for Intel Strata NOR Flash
->   ARM: pxa: magician: Fix wrongly enabled USB host ports
->   ARM: pxa: magician: Add support for ADS7846
->   ARM: pxa: magician: Add support for Omnivision OV9640 camera
->   ARM: pxa: magician: Add support for MAX1587A Vcore regulator
->   ARM: pxa: magician: Add support for PXA27x UDC
->   ARM: pxa: magician: Remove pdata for pasic3-leds
->   ARM: pxa: magician: Remove definition of the STUART port
->   ARM: pxa: magician: Add debug message for backlight brightness
->     function
->   ARM: pxa: magician: Add missing regulator for PWM backlight
->   ARM: pxa: magician: Move platform_add_devices() to the end of
->     magician_init()
-
-Why have you sent me 26 patches which have absolutely nothing to do
-with me?
-
->  arch/arm/mach-pxa/include/mach/magician.h |  78 +--
->  arch/arm/mach-pxa/magician.c              | 907 ++++++++++++++++++++=
-+---------
->  2 files changed, 682 insertions(+), 303 deletions(-)
->=20
-
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+diff --git a/drivers/tty/serial/amba-pl011.c b/drivers/tty/serial/amba-pl011.c
+index fd27e98..1923b94 100644
+--- a/drivers/tty/serial/amba-pl011.c
++++ b/drivers/tty/serial/amba-pl011.c
+@@ -59,6 +59,11 @@
+ #include <linux/sizes.h>
+ #include <linux/io.h>
+ #include <linux/acpi.h>
++#include <linux/suspend.h>
++#include <linux/pm_wakeirq.h>
++#include <linux/irq.h>
++
++static struct device *uart_dev;
+ 
+ #define UART_NR			14
+ 
+@@ -2353,11 +2358,29 @@ static int pl011_register_port(struct uart_amba_port *uap)
+ 	return ret;
+ }
+ 
++struct uart_match {
++	struct uart_port *port;
++	struct uart_driver *driver;
++};
++
++static int match_uart_port(struct device *dev, void *data)
++{
++	struct uart_match *match = data;
++
++	dev_t devt = MKDEV(match->driver->major, match->driver->minor) +
++		match->port->line;
++
++	pr_info("the match data of ttyAMA0 is %d %d\n",
++			(int)devt, (int)dev->devt);
++
++	return dev->devt == devt; /* Actually, only one tty per port */
++}
+ static int pl011_probe(struct amba_device *dev, const struct amba_id *id)
+ {
+ 	struct uart_amba_port *uap;
+ 	struct vendor_data *vendor = id->data;
+ 	int portnr, ret;
++	struct uart_match match;
+ 
+ 	portnr = pl011_find_free_port();
+ 	if (portnr < 0)
+@@ -2387,13 +2410,35 @@ static int pl011_probe(struct amba_device *dev, const struct amba_id *id)
+ 
+ 	amba_set_drvdata(dev, uap);
+ 
+-	return pl011_register_port(uap);
++	ret = pl011_register_port(uap);
++
++	if (!of_find_property(dev->dev.of_node, "linux,wakeup", NULL)) {
++		uart_dev = NULL;
++		return ret;
++	}
++
++	match.port = &uap->port;
++	match.driver = &amba_reg;
++
++	uart_dev = device_find_child(&dev->dev, &match, match_uart_port);
++
++	if (uart_dev) {
++		device_init_wakeup(uart_dev, true);
++		dev_pm_set_wake_irq(uart_dev, uap->port.irq);
++	}
++
++	return ret;
+ }
+ 
+ static int pl011_remove(struct amba_device *dev)
+ {
+ 	struct uart_amba_port *uap = amba_get_drvdata(dev);
+ 
++	if (uart_dev) {
++		dev_pm_clear_wake_irq(uart_dev);
++		device_init_wakeup(uart_dev, false);
++	}
++
+ 	uart_remove_one_port(&amba_reg, &uap->port);
+ 	pl011_unregister_port(uap);
+ 	return 0;
+-- 
+1.7.9.5
