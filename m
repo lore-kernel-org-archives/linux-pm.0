@@ -1,74 +1,88 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [RFC PATCH v2 0/4] thermal: iio bindings
-Date: Thu, 17 Sep 2015 15:30:50 -0700
-Message-ID: <1442529054-25803-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH 13/17] thermal: int340x: allow compile test
+Date: Thu, 17 Sep 2015 15:48:00 -0700
+Message-ID: <1442530080.2489.5.camel@spandruv-desk3.jf.intel.com>
+References: <1441858273-4017-1-git-send-email-edubezval@gmail.com>
+	 <1441858273-4017-14-git-send-email-edubezval@gmail.com>
+	 <CAMuHMdXd5=qZd17czeYPQMBDaUYyC7JCB+1S49dVPfgm=Xp_iQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:28277 "EHLO mga09.intel.com"
+Received: from mga01.intel.com ([192.55.52.88]:52789 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751797AbbIQWbZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 17 Sep 2015 18:31:25 -0400
+	id S1751633AbbIQWsW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 17 Sep 2015 18:48:22 -0400
+In-Reply-To: <CAMuHMdXd5=qZd17czeYPQMBDaUYyC7JCB+1S49dVPfgm=Xp_iQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: jic23@kernel.org, rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Rui Zhang <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jacob Pan <jacob.jun.pan@linux.intel.com>, "lan,Tianyu" <tianyu.lan@intel.com>, Ilkka Koskinen <ilkka.koskinen@linux.intel.com>
 
-v2
-- Rebase to 4.3.rc1
-- Additional parameter to thermal_zone_device_update for event type
-- Moved the dummy IIO callbacks to local include file, in this
-way "not used" warnings can be avoided
-- Remove changes from user space governor, rather notify from core
-- Validate the trigger, so that when thermal device supports async
-notifications, this will be exclusive trigger
-- Use new thermal core event type to differentiate events for iio
-threshold notification
+On Thu, 2015-09-10 at 08:31 +0200, Geert Uytterhoeven wrote:
+> On Thu, Sep 10, 2015 at 6:11 AM, Eduardo Valentin <edubezval@gmail.co=
+m> wrote:
+> > --- a/drivers/thermal/Kconfig
+> > +++ b/drivers/thermal/Kconfig
+> > @@ -317,7 +317,7 @@ config INTEL_QUARK_DTS_THERMAL
+> >
+> >  config INT340X_THERMAL
+> >         tristate "ACPI INT340X thermal drivers"
+> > -       depends on X86 && ACPI
+> > +       depends on (X86 && ACPI) || COMPILE_TEST
+> >         select THERMAL_GOV_USER_SPACE
+> >         select ACPI_THERMAL_REL
+> >         select ACPI_FAN
+>=20
+> This driver selects INTEL_SOC_DTS_IOSF_CORE, which uses an x86-specif=
+ic
+> header file.
+>=20
+> drivers/thermal/int340x_thermal/int3400_thermal.c: In function
+> =E2=80=98int3400_thermal_get_uuids=E2=80=99:
+> drivers/thermal/int340x_thermal/int3400_thermal.c:120: error:
+> dereferencing pointer to incomplete type
+>=20
+> Missing #include <linux/fs.h>
+>=20
+> drivers/thermal/int340x_thermal/acpi_thermal_rel.c: In function
+> =E2=80=98acpi_parse_trt=E2=80=99:
+> drivers/thermal/int340x_thermal/acpi_thermal_rel.c:85: error: implici=
+t
+> declaration of function =E2=80=98acpi_has_method=E2=80=99
+>=20
+> Missing #include <acpi/acpi_bus.h>
+>=20
+> drivers/thermal/int340x_thermal/acpi_thermal_rel.c: In function
+> =E2=80=98acpi_parse_trt=E2=80=99:
+> drivers/thermal/int340x_thermal/acpi_thermal_rel.c:125: error:
+> implicit declaration of function =E2=80=98acpi_bus_get_device=E2=80=99
+>=20
+> Definition depends on CONFIG_ACPI
+>=20
+Yes. This has dependency on ACPI. We need to also include ACPI modules
+to build. For IOSF we need to have stub functions for core calls.
 
-v1
-- Change commit message to be more clear
-- Split in three patches (First for thermal_iio.c, second to integrate
-to thermal_core and third for user space governor).
-- Removed IIO defines in thermal.h
-- Removed direct push to buffers
-- Other comments from Jonathan except introduce validate_trigger
+Thanks,
+Srinivas
 
-v0
-Base version for first review
+> Gr{oetje,eeting}s,
+>=20
+>                         Geert
+>=20
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linu=
+x-m68k.org
+>=20
+> In personal conversations with technical people, I call myself a hack=
+er. But
+> when I'm talking to journalists I just say "programmer" or something =
+like that.
+>                                 -- Linus Torvalds
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" i=
+n
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-
-Srinivas Pandruvada (4):
-  thermal: core: enhance thermal_zone_device_update
-  thermal: iio device for thermal sensor
-  thermal: use iio binding calls
-  thermal: x86_pkg_temp: Register threshold callbacks
-
- drivers/acpi/thermal.c                             |   2 +-
- drivers/platform/x86/acerhdf.c                     |   2 +-
- drivers/thermal/Kconfig                            |  12 +
- drivers/thermal/Makefile                           |   1 +
- drivers/thermal/db8500_thermal.c                   |   2 +-
- drivers/thermal/hisi_thermal.c                     |   3 +-
- drivers/thermal/imx_thermal.c                      |   4 +-
- .../thermal/int340x_thermal/int340x_thermal_zone.h |   2 +-
- drivers/thermal/intel_soc_dts_iosf.c               |   3 +-
- drivers/thermal/of-thermal.c                       |   2 +-
- drivers/thermal/qcom-spmi-temp-alarm.c             |   2 +-
- drivers/thermal/rcar_thermal.c                     |   3 +-
- drivers/thermal/rockchip_thermal.c                 |   3 +-
- drivers/thermal/samsung/exynos_tmu.c               |   2 +-
- drivers/thermal/st/st_thermal_memmap.c             |   3 +-
- drivers/thermal/thermal_core.c                     |  21 +-
- drivers/thermal/thermal_iio.c                      | 375 +++++++++++++++++++++
- drivers/thermal/thermal_iio.h                      |  45 +++
- drivers/thermal/ti-soc-thermal/ti-thermal-common.c |   4 +-
- drivers/thermal/x86_pkg_temp_thermal.c             |  11 +-
- include/linux/thermal.h                            |  26 +-
- 21 files changed, 503 insertions(+), 25 deletions(-)
- create mode 100644 drivers/thermal/thermal_iio.c
- create mode 100644 drivers/thermal/thermal_iio.h
-
--- 
-1.9.3
 
