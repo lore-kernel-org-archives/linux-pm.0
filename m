@@ -1,40 +1,43 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] driver core: Ensure proper suspend/resume ordering
-Date: Thu, 17 Sep 2015 20:15:49 +0200
-Message-ID: <CAJZ5v0gEMhJaJa6m7Sq41oottuJW+0XJRpxsWHNdUsbVmNHeDw@mail.gmail.com>
-References: <Pine.LNX.4.44L0.1509161503470.1993-100000@iolanthe.rowland.org>
-	<1564644.fC4l842KYa@vostro.rjw.lan>
-	<CAAObsKA8Ps_q4ZpsCVawKyrTCbySNC=1EQ=O=hdR7s_QiPdf-w@mail.gmail.com>
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: RE: [PATCH] [v4] PM / hibernate: Fix hibernation panic caused by
+ inconsistent e820 map
+Date: Thu, 17 Sep 2015 18:21:00 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE64026584C96@SHSMSX101.ccr.corp.intel.com>
+References: <1442425343-8339-1-git-send-email-yu.c.chen@intel.com>
+ <20150917060735.GF6665@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAAObsKA8Ps_q4ZpsCVawKyrTCbySNC=1EQ=O=hdR7s_QiPdf-w@mail.gmail.com>
+In-Reply-To: <20150917060735.GF6665@amd>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alan Stern <stern@rowland.harvard.edu>, Thierry Reding <thierry.reding@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Grygorii Strashko <grygorii.strashko@ti.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, "jlee@suse.com" <jlee@suse.com>, "joeyli.kernel@gmail.com" <joeyli.kernel@gmail.com>, "yinghai@kernel.org" <yinghai@kernel.org>, Ingo Molnar <mingo@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Hi ,Pavel
+> -----Original Message-----
+> From: Pavel Machek [mailto:pavel@ucw.cz]
+> Sent: Thursday, September 17, 2015 2:08 PM
+> To: Chen, Yu C
+> Cc: rjw@rjwysocki.net; Brown, Len; linux-pm@vger.kernel.org; linux-
+> kernel@vger.kernel.org; Zhang, Rui; jlee@suse.com;
+> joeyli.kernel@gmail.com; yinghai@kernel.org
+> Subject: Re: [PATCH] [v4] PM / hibernate: Fix hibernation panic caused by
+> inconsistent e820 map
+> 
+> >    With v3 patch applied, I did 30 cycles on my problematic platform,
+> >    no panic triggered anymore(50% reproducible before patched, by
+> >    plugging/unplugging memory peripheral during hibernation), and it
+> >    just warns of invalid pages.
+> 
+> NAK. Turning panic into data corruption is a bad idea.
+> 
+Once an invalid page is found , the whole restoring process would be terminated
+(before restoring the data pages)
+I 'm not sure what does "data corruption" mean here?  
+Thanks.
 
-On Thu, Sep 17, 2015 at 7:40 AM, Tomeu Vizoso
-<tomeu.vizoso@collabora.com> wrote:
-> On 17 September 2015 at 02:27, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> On Wednesday, September 16, 2015 03:22:37 PM Alan Stern wrote:
->>>
->>> It would also help if your patch checked to see if the device has any
->>> children, and avoided moving it to the end of the list if it does.  In
->>> fact, that might be sufficient to avoid almost all problems.
->>
->> I agree.
->>
->> In any case if a device that already has children is about to be probed,
->> this is sort of a corner case anyway and should be handled as such.
->
-> Just wanted to mention that it's very common in platforms that make
-> use of DT to have some devices registered before their parents have probed.
-> If I grep for DTS with simple-bus and simple-mfd I get 802 matches.
-
-
-This is good to know, thanks!
-
-Rafael
+Best Regards,
+Yu
