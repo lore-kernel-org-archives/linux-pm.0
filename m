@@ -1,104 +1,75 @@
-From: Zhaoyang Huang <zhaoyang.huang@linaro.org>
-Subject: [PATCH] modify pl011 driver to let it work as wakeup source
-Date: Thu, 17 Sep 2015 16:31:56 +0800
-Message-ID: <1442478716-7377-1-git-send-email-zhaoyang.huang@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux@arm.linux.org.uk, gregkh@linuxfoundation.org, jslaby@suse.com, linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: amit.kucheria@linaro.org, sudeep.holla@arm.com, daniel.lezcano@linaro.org
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH v4 15/16] clk: shmobile: mstp: Consider "zb_clk" suitable
+ for power management
+Date: Thu, 17 Sep 2015 17:45:18 +0900
+Message-ID: <20150917084446.GA8197@verge.net.au>
+References: <1438691297-29235-1-git-send-email-geert+renesas@glider.be>
+ <1438691297-29235-16-git-send-email-geert+renesas@glider.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from kirsty.vergenet.net ([202.4.237.240]:55647 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754131AbbIQIp0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Sep 2015 04:45:26 -0400
+Content-Disposition: inline
+In-Reply-To: <1438691297-29235-16-git-send-email-geert+renesas@glider.be>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Magnus Damm <magnus.damm@gmail.com>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 
-the commit use the latest dev_pm_set_wake_irq API instead
-of the enable_irq_wake and IRQF_NO_SUSPEND to configure the
-ttyAMA device to work as the wakeup source
+Hi Mike, Hi Stephen,
 
-Signed-off-by: Zhaoyang Huang <zhaoyang.huang@linaro.org>
----
- drivers/tty/serial/amba-pl011.c |   47 ++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 46 insertions(+), 1 deletion(-)
+On Tue, Aug 04, 2015 at 02:28:16PM +0200, Geert Uytterhoeven wrote:
+> Currently the CPG/MSTP Clock Domain code looks for MSTP clocks to power
+> manage a device.
+> 
+> Unfortunately, on R-Mobile APE6 (r8a73a4) and SH-Mobile AG5 (sh73a0),
+> the Bus State Controller (BSC) is not power-managed by an MSTP clock,
+> but by a plain CPG clock (zb_clk).  Add a special case to handle this,
+> so the clock is properly managed, and devices connected to the BSC work
+> as expected.
+> 
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-diff --git a/drivers/tty/serial/amba-pl011.c b/drivers/tty/serial/amba-pl011.c
-index fd27e98..1923b94 100644
---- a/drivers/tty/serial/amba-pl011.c
-+++ b/drivers/tty/serial/amba-pl011.c
-@@ -59,6 +59,11 @@
- #include <linux/sizes.h>
- #include <linux/io.h>
- #include <linux/acpi.h>
-+#include <linux/suspend.h>
-+#include <linux/pm_wakeirq.h>
-+#include <linux/irq.h>
-+
-+static struct device *uart_dev;
- 
- #define UART_NR			14
- 
-@@ -2353,11 +2358,29 @@ static int pl011_register_port(struct uart_amba_port *uap)
- 	return ret;
- }
- 
-+struct uart_match {
-+	struct uart_port *port;
-+	struct uart_driver *driver;
-+};
-+
-+static int match_uart_port(struct device *dev, void *data)
-+{
-+	struct uart_match *match = data;
-+
-+	dev_t devt = MKDEV(match->driver->major, match->driver->minor) +
-+		match->port->line;
-+
-+	pr_info("the match data of ttyAMA0 is %d %d\n",
-+			(int)devt, (int)dev->devt);
-+
-+	return dev->devt == devt; /* Actually, only one tty per port */
-+}
- static int pl011_probe(struct amba_device *dev, const struct amba_id *id)
- {
- 	struct uart_amba_port *uap;
- 	struct vendor_data *vendor = id->data;
- 	int portnr, ret;
-+	struct uart_match match;
- 
- 	portnr = pl011_find_free_port();
- 	if (portnr < 0)
-@@ -2387,13 +2410,35 @@ static int pl011_probe(struct amba_device *dev, const struct amba_id *id)
- 
- 	amba_set_drvdata(dev, uap);
- 
--	return pl011_register_port(uap);
-+	ret = pl011_register_port(uap);
-+
-+	if (!of_find_property(dev->dev.of_node, "linux,wakeup", NULL)) {
-+		uart_dev = NULL;
-+		return ret;
-+	}
-+
-+	match.port = &uap->port;
-+	match.driver = &amba_reg;
-+
-+	uart_dev = device_find_child(&dev->dev, &match, match_uart_port);
-+
-+	if (uart_dev) {
-+		device_init_wakeup(uart_dev, true);
-+		dev_pm_set_wake_irq(uart_dev, uap->port.irq);
-+	}
-+
-+	return ret;
- }
- 
- static int pl011_remove(struct amba_device *dev)
- {
- 	struct uart_amba_port *uap = amba_get_drvdata(dev);
- 
-+	if (uart_dev) {
-+		dev_pm_clear_wake_irq(uart_dev);
-+		device_init_wakeup(uart_dev, false);
-+	}
-+
- 	uart_remove_one_port(&amba_reg, &uap->port);
- 	pl011_unregister_port(uap);
- 	return 0;
--- 
-1.7.9.5
+for one reason or another I seem to have this patch queued up in
+my renesas tree for v4.4, without any Acks.
+
+I think it would be best if one of you took the patch instead.
+Though I'm also happy to take it with Acks.
+
+Let me know how you would like to proceed.
+
+> ---
+> v4:
+>   - Add Reviewed-by,
+> 
+> v3:
+>   - Use "CPG/MSTP Clock Domain" instead of "CPG Clock Domain",
+> 
+> v2:
+>   - New.
+> ---
+>  drivers/clk/shmobile/clk-mstp.c | 4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> diff --git a/drivers/clk/shmobile/clk-mstp.c b/drivers/clk/shmobile/clk-mstp.c
+> index b1df7b2f1e970adb..a117c3f0f257b5e1 100644
+> --- a/drivers/clk/shmobile/clk-mstp.c
+> +++ b/drivers/clk/shmobile/clk-mstp.c
+> @@ -259,6 +259,10 @@ int cpg_mstp_attach_dev(struct generic_pm_domain *domain, struct device *dev)
+>  					    "renesas,cpg-mstp-clocks"))
+>  			goto found;
+>  
+> +		/* BSC on r8a73a4/sh73a0 uses zb_clk instead of an mstp clock*/
+> +		if (!strcmp(clkspec.np->name, "zb_clk"))
+> +			goto found;
+> +
+>  		of_node_put(clkspec.np);
+>  		i++;
+>  	}
+> -- 
+> 1.9.1
+> 
