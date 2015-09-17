@@ -1,49 +1,66 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] [v4] PM / hibernate: Fix hibernation panic caused by
- inconsistent e820 map
-Date: Thu, 17 Sep 2015 08:07:35 +0200
-Message-ID: <20150917060735.GF6665@amd>
-References: <1442425343-8339-1-git-send-email-yu.c.chen@intel.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v3 00/26] ARM: pxa: magician: Rework HTC Magician support
+Date: Thu, 17 Sep 2015 08:04:38 +0100
+Message-ID: <20150917070438.GC3218@x1>
+References: <55FA4756.9080309@tul.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54978 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753036AbbIQGHk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Sep 2015 02:07:40 -0400
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-leds-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1442425343-8339-1-git-send-email-yu.c.chen@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <55FA4756.9080309@tul.cz>
+Sender: linux-leds-owner@vger.kernel.org
+To: Petr Cvek <petr.cvek@tul.cz>
+Cc: robert.jarzmik@free.fr, philipp.zabel@gmail.com, daniel@zonque.org, haojian.zhuang@gmail.com, cooloney@gmail.com, rpurdie@rpsys.net, j.anaszewski@samsung.com, linux@arm.linux.org.uk, sre@kernel.org, dbaryshkov@gmail.com, sameo@linux.intel.com, dwmw2@infradead.org, arnd@arndb.de, g.liakhovetski@gmx.de, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: rjw@rjwysocki.net, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rui.zhang@intel.com, jlee@suse.com, joeyli.kernel@gmail.com, yinghai@kernel.org
 
-> v3:
->  - Adjust the logic to exclude the end_pfn boundary in pfn_mapped
->    when invoking mark_valid_pages, because the end_pfn is not
->    a mapped page frame, we should not regard it as a valid page.
-> 
->    Move the sanity check of valid pages to a early stage in resuming
->    process(moved to mark_unsafe_pages), in this way, we can avoid
->    unnecessarily accessing these invalid pages in later stage(yes,
->    move to the original position Joey once introduced in:
->    Commit 84c91b7ae07c ("PM / hibernate: avoid unsafe pages in e820
->    reserved regions")
-> 
->    With v3 patch applied, I did 30 cycles on my problematic platform,
->    no panic triggered anymore(50% reproducible before patched, by
->    plugging/unplugging memory peripheral during hibernation), and it
->    just warns of invalid pages.
+On Thu, 17 Sep 2015, Petr Cvek wrote:
 
-NAK. Turning panic into data corruption is a bad idea.
+[...]
 
-> +	if (!swsusp_page_is_valid(pfn_to_page(pfn))) {
-> +		pr_err(
-> +		"PM: Hibernation failed, address %#010llx to restored not valid!\n",
-> +			(unsigned long long) pfn << PAGE_SHIFT);
+> Petr Cvek (26):
+>   ARM: pxa: magician: Fix indentation in machine files
+>   ARM: pxa: magician: Change comments to be more informative
+>   ARM: pxa: magician: Print more specific error message for global
+>     GPIOs
+>   ARM: pxa: magician: Optimize debug messages for LCD power
+>   ARM: pxa: magician: Change description of LCD power GPIO
+>   ARM: pxa: magician: Add new discovered EGPIO pins
+>   ARM: pxa: magician: Fix HTC Magician pin mux definitions
+>   ARM: pxa: magician: Rename abstract LCD GPIOs
+>   ARM: pxa: magician: Optimize powerup delays for Samsung LCD
+>   ARM: pxa: magician: Optimize Samsung LCD refresh to 50Hz
+>   ARM: pxa: magician: Optimize EGPIO initial values
+>   ARM: pxa: magician: Rename charger cable detection EGPIOs
+>   ARM: pxa: magician: Fix and add charging detection functions
+>   ARM: pxa: magician: Fix platform data for both PXA27x I2C controlle=
+rs
+>   ARM: pxa: magician: Fix redundant GPIO request for pxaficp_ir
+>   ARM: pxa: magician: Fix support for Intel Strata NOR Flash
+>   ARM: pxa: magician: Fix wrongly enabled USB host ports
+>   ARM: pxa: magician: Add support for ADS7846
+>   ARM: pxa: magician: Add support for Omnivision OV9640 camera
+>   ARM: pxa: magician: Add support for MAX1587A Vcore regulator
+>   ARM: pxa: magician: Add support for PXA27x UDC
+>   ARM: pxa: magician: Remove pdata for pasic3-leds
+>   ARM: pxa: magician: Remove definition of the STUART port
+>   ARM: pxa: magician: Add debug message for backlight brightness
+>     function
+>   ARM: pxa: magician: Add missing regulator for PWM backlight
+>   ARM: pxa: magician: Move platform_add_devices() to the end of
+>     magician_init()
 
-...and still bad english.
+Why have you sent me 26 patches which have absolutely nothing to do
+with me?
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+>  arch/arm/mach-pxa/include/mach/magician.h |  78 +--
+>  arch/arm/mach-pxa/magician.c              | 907 ++++++++++++++++++++=
++---------
+>  2 files changed, 682 insertions(+), 303 deletions(-)
+>=20
+
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
