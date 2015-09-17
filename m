@@ -1,62 +1,68 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] PM / OPP: of_property_count_u32_elems() can return errors
-Date: Thu, 17 Sep 2015 22:30:22 +0530
-Message-ID: <46a47430b8d65f509d47fe3ad1264c6b23086d61.1442508974.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f45.google.com ([209.85.220.45]:33138 "EHLO
-	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750792AbbIQRAc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Sep 2015 13:00:32 -0400
-Received: by pacex6 with SMTP id ex6so24750745pac.0
-        for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2015 10:00:31 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] driver core: Ensure proper suspend/resume ordering
+Date: Thu, 17 Sep 2015 13:02:39 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1509171253520.1270-100000@iolanthe.rowland.org>
+References: <CAJZ5v0hYUfO87hGAjKRAZMt_G4NnkEOXuVybSsVmKzAm6vznDA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0hYUfO87hGAjKRAZMt_G4NnkEOXuVybSsVmKzAm6vznDA@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Thierry Reding <thierry.reding@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, nm@ti.com, Viresh Kumar <viresh.kumar@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 
-of_property_count_u32_elems() will never return 0, but a -ve error value
-of a positive count. And so the current !count check is wrong.
+On Thu, 17 Sep 2015, Rafael J. Wysocki wrote:
 
-Also, a missing "opp-microvolt" property isn't a problem and so we need
-to do of_find_property() separately to confirm that.
+> On Thu, Sep 17, 2015 at 2:27 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Wednesday, September 16, 2015 03:22:37 PM Alan Stern wrote:
+> >> On Wed, 16 Sep 2015, Thierry Reding wrote:
+> 
+> [cut]
+> 
+> >
+> > And I'm wondering if and how that is related to runtime PM?  It only
+> > covers the system sleep transitions case, but who's responsible for the
+> > runtime PM part?  Device drivers?
 
-Fixes: 274659029c9d ("PM / OPP: Add support to parse "operating-points-v2" bindings")
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-For 4.3.
+In theory the drivers are responsible.  In practice, I don't know how 
+this is handled.
 
- drivers/base/power/opp.c | 13 +++++++++++--
- 1 file changed, 11 insertions(+), 2 deletions(-)
+> Which reminds me of something we all seem to be forgetting about:
+> there is asynchronous suspend and resume which may cause suspend and
+> resume callbacks of devices to be executed in an order that is
+> different from the dpm_list order.  In those cases the device that
+> depends on another one has to explicitly wait for the other one to
+> complete its callback in the current phase of the transition.
+> 
+> While correct ordering of dpm_list is essential for this to work too,
+> it by no means is sufficient, so in the end the driver having a
+> dependency needs to know about it and act on it as needed (or we need
+> an alternative mechanism that will do that automatically, but I'm not
+> sure what that may be).
+> 
+> Actually, I was thinking about adding something like pm_get() for this
+> purpose that will do pm_runtime_get_sync() on the target and will
+> ensure that the right things will happen during system suspend/resume
+> in addition to that, including reordering dpm_list if necessary.
+> Plus, of course, the complementary pm_put().
+> 
+> With something like that available, there should be no need to reorder
+> dpm_list anywhere else.  The problem with this approach is that the
+> reordering becomes quite complicated then, as it would need to move
+> the device itself after the target and anything that depends on it
+> along with it and tracking those dependencies becomes quite
+> problematic.
 
-diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index 28cd75c535b0..2048164d6c53 100644
---- a/drivers/base/power/opp.c
-+++ b/drivers/base/power/opp.c
-@@ -889,13 +889,22 @@ static int _opp_add_dynamic(struct device *dev, unsigned long freq,
- /* TODO: Support multiple regulators */
- static int opp_get_microvolt(struct dev_pm_opp *opp, struct device *dev)
- {
-+	struct property *prop;
- 	u32 microvolt[3] = {0};
- 	int count, ret;
- 
--	count = of_property_count_u32_elems(opp->np, "opp-microvolt");
--	if (!count)
-+	/* Missing property isn't a problem, but an invalid entry is */
-+	prop = of_find_property(opp->np, "opp-microvolt", NULL);
-+	if (!prop)
- 		return 0;
- 
-+	count = of_property_count_u32_elems(opp->np, "opp-microvolt");
-+	if (count < 0) {
-+		dev_err(dev, "%s: Invalid opp-microvolt property (%d)\n",
-+			__func__, count);
-+		return count;
-+	}
-+
- 	/* There can be one or three elements here */
- 	if (count != 1 && count != 3) {
- 		dev_err(dev, "%s: Invalid number of elements in opp-microvolt property (%d)\n",
--- 
-2.4.0
+Keeping explicit track of these non-child-parent dependencies seems 
+reasonable.  But I don't know how you could combine it with reordering 
+dpm_list.
 
+One possibility might be to do a topological sort of all devices, with 
+the initial set of constraints given by the explicit dependencies and 
+the parent-child relations.  So basically this would mean ignoring the 
+actual dpm_list and making up a new list of your own whenever a sleep 
+transition starts.  It might work, but I'm not sure how reliable it 
+would be.
+
+Alan Stern
