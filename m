@@ -1,65 +1,33 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] [v2] PM / hibernate: Fix hibernation panic caused by
- inconsistent e820 map
-Date: Thu, 17 Sep 2015 07:40:27 +0200
-Message-ID: <20150917054027.GC6665@amd>
-References: <1441101816-24567-1-git-send-email-yu.c.chen@intel.com>
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Subject: Re: [PATCH] driver core: Ensure proper suspend/resume ordering
+Date: Thu, 17 Sep 2015 07:40:15 +0200
+Message-ID: <CAAObsKA8Ps_q4ZpsCVawKyrTCbySNC=1EQ=O=hdR7s_QiPdf-w@mail.gmail.com>
+References: <Pine.LNX.4.44L0.1509161503470.1993-100000@iolanthe.rowland.org> <1564644.fC4l842KYa@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54629 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752173AbbIQFkd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Sep 2015 01:40:33 -0400
-Content-Disposition: inline
-In-Reply-To: <1441101816-24567-1-git-send-email-yu.c.chen@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1564644.fC4l842KYa@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Thierry Reding <thierry.reding@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Grygorii Strashko <grygorii.strashko@ti.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: rjw@rjwysocki.net, len.brown@intel.com, mingo@redhat.com, yinghai@kernel.org, joeyli.kernel@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi!
+On 17 September 2015 at 02:27, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Wednesday, September 16, 2015 03:22:37 PM Alan Stern wrote:
+>>
+>> It would also help if your patch checked to see if the device has any
+>> children, and avoided moving it to the end of the list if it does.  In
+>> fact, that might be sufficient to avoid almost all problems.
+>
+> I agree.
+>
+> In any case if a device that already has children is about to be probed,
+> this is sort of a corner case anyway and should be handled as such.
 
-> PM: Image mismatch: memory size
-> 
-> This is also because BIOS provides different e820 memory map before/after
-> hibernation, and linux regards it as invalid process and refuses to
-> resume, in order to protect against data corruption. However,
-> this check might be too strict, consider the following scenario:
+Just wanted to mention that it's very common in platforms that make
+use of DT to have some devices registered before their parents have probed.
+If I grep for DTS with simple-bus and simple-mfd I get 802 matches.
 
-Well... yes, the check is strict, but why is BIOS doing that? Can you
-fix it instead?
+Regards,
 
-> The hibernating system has a smaller memory capacity than
-> the resuming system, and the former memory region is a subset of the
-> latter, it should be allowed to resume. Here is a case for this
-> situation:
-> 
-> before hibernation:
-> 
-> BIOS-e820: [mem 0x0000000020200000-0x0000000077517fff] usable
-> BIOS-e820: [mem 0x0000000077518000-0x0000000077567fff] reserved
-> Memory: 3871356K/4058428K available (7595K kernel code, 1202K rwdata,
-> 3492K rodata, 1400K init, 1308K bss, 187072K reserved, 0K cma-reserved)
-> 
-> after hibernation:
-> BIOS-e820: [mem 0x0000000020200000-0x000000007753ffff] usable
-> BIOS-e820: [mem 0x0000000077540000-0x0000000077567fff] reserved
-> Memory: 3871516K/4058588K available (7595K kernel code, 1202K rwdata,
-> 3492K rodata, 1400K init, 1308K bss, 187072K reserved, 0K cma-reserved)
-> 
-> According to above data, the number of present_pages has increased by
-> 40(thus 160K), linux will terminate the resuming process. But since
-> [0x0000000020200000-0x0000000077517fff] is a subset of
-> [0x0000000020200000-0x000000007753ffff], we should let system
-> resume.
-
-Ok, complex, but will work. But what happens in the opposite case? On
-the next boot, bios gets you 160K less....
-
-Can you do echo powerdown > /sys/power/disk to work around this?
-
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Tomeu
