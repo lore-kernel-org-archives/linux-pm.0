@@ -1,7 +1,7 @@
 From: Vaishali Thakkar <vthakkar1994@gmail.com>
-Subject: [PATCH] 88pm860x_battery: Convert to using managed resources
-Date: Thu, 17 Sep 2015 18:03:40 +0530
-Message-ID: <20150917123340.GA10489@localhost>
+Subject: [PATCH] power: max17042_battery: Convert to using managed resources
+Date: Thu, 17 Sep 2015 18:27:52 +0530
+Message-ID: <20150917125752.GA26658@localhost>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -14,85 +14,69 @@ List-Id: linux-pm@vger.kernel.org
 Use managed resource functions devm_request_threaded_irq and
 devm_power_supply_register to simplify error handling.
 
-To be compatible with the change, various gotos are replaced
-with direct returns and unneeded labels are dropped. Also,
-remove pm860x_battery_remove as it is now redundant.
+Also, remove max17042_remove as it is now redundant.
 
 Signed-off-by: Vaishali Thakkar <vthakkar1994@gmail.com>
 ---
- drivers/power/88pm860x_battery.c | 37 +++++++++++--------------------------
- 1 file changed, 11 insertions(+), 26 deletions(-)
+ drivers/power/max17042_battery.c | 26 +++++++++-----------------
+ 1 file changed, 9 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/power/88pm860x_battery.c b/drivers/power/88pm860x_battery.c
-index d49579b..63c57dc 100644
---- a/drivers/power/88pm860x_battery.c
-+++ b/drivers/power/88pm860x_battery.c
-@@ -954,47 +954,33 @@ static int pm860x_battery_probe(struct platform_device *pdev)
- 	else
- 		info->resistor = 300;	/* set default internal resistor */
- 
--	info->battery = power_supply_register(&pdev->dev, &pm860x_battery_desc,
--					      NULL);
-+	info->battery = devm_power_supply_register(&pdev->dev,
-+						   &pm860x_battery_desc,
-+						   NULL);
- 	if (IS_ERR(info->battery))
- 		return PTR_ERR(info->battery);
- 	info->battery->dev.parent = &pdev->dev;
- 
--	ret = request_threaded_irq(info->irq_cc, NULL,
--				pm860x_coulomb_handler, IRQF_ONESHOT,
--				"coulomb", info);
-+	ret = devm_request_threaded_irq(chip->dev, info->irq_cc, NULL,
-+					pm860x_coulomb_handler, IRQF_ONESHOT,
-+					"coulomb", info);
- 	if (ret < 0) {
- 		dev_err(chip->dev, "Failed to request IRQ: #%d: %d\n",
- 			info->irq_cc, ret);
--		goto out_reg;
-+		return ret;
+diff --git a/drivers/power/max17042_battery.c b/drivers/power/max17042_battery.c
+index e892557..9c65f13 100644
+--- a/drivers/power/max17042_battery.c
++++ b/drivers/power/max17042_battery.c
+@@ -909,18 +909,21 @@ static int max17042_probe(struct i2c_client *client,
+ 		regmap_write(chip->regmap, MAX17042_LearnCFG, 0x0007);
  	}
  
--	ret = request_threaded_irq(info->irq_batt, NULL, pm860x_batt_handler,
--				IRQF_ONESHOT, "battery", info);
-+	ret = devm_request_threaded_irq(chip->dev, info->irq_batt, NULL,
-+					pm860x_batt_handler,
-+					IRQF_ONESHOT, "battery", info);
- 	if (ret < 0) {
- 		dev_err(chip->dev, "Failed to request IRQ: #%d: %d\n",
- 			info->irq_batt, ret);
--		goto out_coulomb;
-+		return ret;
+-	chip->battery = power_supply_register(&client->dev, max17042_desc,
+-						&psy_cfg);
++	chip->battery = devm_power_supply_register(&client->dev, max17042_desc,
++						   &psy_cfg);
+ 	if (IS_ERR(chip->battery)) {
+ 		dev_err(&client->dev, "failed: power supply register\n");
+ 		return PTR_ERR(chip->battery);
  	}
  
- 
+ 	if (client->irq) {
+-		ret = request_threaded_irq(client->irq, NULL,
+-					max17042_thread_handler,
+-					IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
+-					chip->battery->desc->name, chip);
++		ret = devm_request_threaded_irq(&client->dev, client->irq,
++						NULL,
++						max17042_thread_handler,
++						IRQF_TRIGGER_FALLING |
++						IRQF_ONESHOT,
++						chip->battery->desc->name,
++						chip);
+ 		if (!ret) {
+ 			regmap_update_bits(chip->regmap, MAX17042_CONFIG,
+ 					CONFIG_ALRT_BIT_ENBL,
+@@ -944,16 +947,6 @@ static int max17042_probe(struct i2c_client *client,
  	return 0;
--
--out_coulomb:
--	free_irq(info->irq_cc, info);
--out_reg:
--	power_supply_unregister(info->battery);
--	return ret;
--}
--
--static int pm860x_battery_remove(struct platform_device *pdev)
--{
--	struct pm860x_battery_info *info = platform_get_drvdata(pdev);
--
--	free_irq(info->irq_batt, info);
--	free_irq(info->irq_cc, info);
--	power_supply_unregister(info->battery);
--	return 0;
  }
  
+-static int max17042_remove(struct i2c_client *client)
+-{
+-	struct max17042_chip *chip = i2c_get_clientdata(client);
+-
+-	if (client->irq)
+-		free_irq(client->irq, chip);
+-	power_supply_unregister(chip->battery);
+-	return 0;
+-}
+-
  #ifdef CONFIG_PM_SLEEP
-@@ -1028,7 +1014,6 @@ static struct platform_driver pm860x_battery_driver = {
- 		   .pm = &pm860x_battery_pm_ops,
+ static int max17042_suspend(struct device *dev)
+ {
+@@ -1014,7 +1007,6 @@ static struct i2c_driver max17042_i2c_driver = {
+ 		.pm	= &max17042_pm_ops,
  	},
- 	.probe = pm860x_battery_probe,
--	.remove = pm860x_battery_remove,
+ 	.probe		= max17042_probe,
+-	.remove		= max17042_remove,
+ 	.id_table	= max17042_id,
  };
- module_platform_driver(pm860x_battery_driver);
- 
+ module_i2c_driver(max17042_i2c_driver);
 -- 
 1.9.1
