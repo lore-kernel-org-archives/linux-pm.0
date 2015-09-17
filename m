@@ -1,55 +1,40 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH] PM / OPP: of_property_count_u32_elems() can return errors
-Date: Thu, 17 Sep 2015 11:13:28 -0700
-Message-ID: <20150917181328.GQ23081@codeaurora.org>
-References: <46a47430b8d65f509d47fe3ad1264c6b23086d61.1442508974.git.viresh.kumar@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] driver core: Ensure proper suspend/resume ordering
+Date: Thu, 17 Sep 2015 20:15:49 +0200
+Message-ID: <CAJZ5v0gEMhJaJa6m7Sq41oottuJW+0XJRpxsWHNdUsbVmNHeDw@mail.gmail.com>
+References: <Pine.LNX.4.44L0.1509161503470.1993-100000@iolanthe.rowland.org>
+	<1564644.fC4l842KYa@vostro.rjw.lan>
+	<CAAObsKA8Ps_q4ZpsCVawKyrTCbySNC=1EQ=O=hdR7s_QiPdf-w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:33101 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752015AbbIQSNb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Sep 2015 14:13:31 -0400
-Content-Disposition: inline
-In-Reply-To: <46a47430b8d65f509d47fe3ad1264c6b23086d61.1442508974.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAAObsKA8Ps_q4ZpsCVawKyrTCbySNC=1EQ=O=hdR7s_QiPdf-w@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alan Stern <stern@rowland.harvard.edu>, Thierry Reding <thierry.reding@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Grygorii Strashko <grygorii.strashko@ti.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 
-On 09/17, Viresh Kumar wrote:
-> +++ b/drivers/base/power/opp.c
-> @@ -889,13 +889,22 @@ static int _opp_add_dynamic(struct device *dev, unsigned long freq,
->  /* TODO: Support multiple regulators */
->  static int opp_get_microvolt(struct dev_pm_opp *opp, struct device *dev)
->  {
-> +	struct property *prop;
->  	u32 microvolt[3] = {0};
->  	int count, ret;
->  
-> -	count = of_property_count_u32_elems(opp->np, "opp-microvolt");
-> -	if (!count)
-> +	/* Missing property isn't a problem, but an invalid entry is */
-> +	prop = of_find_property(opp->np, "opp-microvolt", NULL);
+Hi,
 
-Prop isn't used anywhere so why not remove the local variable and
-test the result of this call inside the if condition?
+On Thu, Sep 17, 2015 at 7:40 AM, Tomeu Vizoso
+<tomeu.vizoso@collabora.com> wrote:
+> On 17 September 2015 at 02:27, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> On Wednesday, September 16, 2015 03:22:37 PM Alan Stern wrote:
+>>>
+>>> It would also help if your patch checked to see if the device has any
+>>> children, and avoided moving it to the end of the list if it does.  In
+>>> fact, that might be sufficient to avoid almost all problems.
+>>
+>> I agree.
+>>
+>> In any case if a device that already has children is about to be probed,
+>> this is sort of a corner case anyway and should be handled as such.
+>
+> Just wanted to mention that it's very common in platforms that make
+> use of DT to have some devices registered before their parents have probed.
+> If I grep for DTS with simple-bus and simple-mfd I get 802 matches.
 
-> +	if (!prop)
->  		return 0;
->  
-> +	count = of_property_count_u32_elems(opp->np, "opp-microvolt");
-> +	if (count < 0) {
 
-We can't test count for -EINVAL to detect the missing property
-because -EINVAL is also returned on a non-multiple of u32 length
-property? Maybe we shouldn't worry about that case and turn
--EINVAL into 0.
+This is good to know, thanks!
 
-> +		dev_err(dev, "%s: Invalid opp-microvolt property (%d)\n",
-> +			__func__, count);
-> +		return count;
-
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+Rafael
