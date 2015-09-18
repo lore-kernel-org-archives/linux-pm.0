@@ -1,47 +1,57 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] Added multiplier for APERF and MPERF counters
-Date: Sat, 19 Sep 2015 00:17:36 +0200
-Message-ID: <15373816.LjezmY7jZV@vostro.rjw.lan>
-References: <1442407938-5228-1-git-send-email-lukasz.anaczkowski@intel.com> <6353648.5IiCL7fVmQ@vostro.rjw.lan> <C1C2579D7BE026428F81F41198ADB172378E74B2@irsmsx110.ger.corp.intel.com>
+Subject: Re: [PATCH] PCI / PM: Update runtime PM documentation for PCI devices
+Date: Sat, 19 Sep 2015 00:21:04 +0200
+Message-ID: <5988070.VHCyqfiYUc@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1509181028130.1681-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:54005 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754412AbbIRVtc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Sep 2015 17:49:32 -0400
-In-Reply-To: <C1C2579D7BE026428F81F41198ADB172378E74B2@irsmsx110.ger.corp.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1509181028130.1681-100000@iolanthe.rowland.org>
+Sender: linux-pci-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Anaczkowski, Lukasz" <lukasz.anaczkowski@intel.com>
-Cc: "Brown, Len" <len.brown@intel.com>, "Chandramouli, Dasaratharaman" <dasaratharaman.chandramouli@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Chrzaniuk, Hubert" <hubert.chrzaniuk@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Friday, September 18, 2015 07:08:47 AM Anaczkowski, Lukasz wrote:
-> From: Rafael J. Wysocki [mailto:rjw@rjwysocki.net] 
-> Sent: Thursday, September 17, 2015 7:05 PM
+On Friday, September 18, 2015 10:31:49 AM Alan Stern wrote:
+> On Fri, 18 Sep 2015, Rafael J. Wysocki wrote:
 > 
-> > Please *always* send PM-related patches to linux-pm@vger.kernel.org (CCed now).
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > Section 3.2 "Device Runtime Power Management" of pci.txt has become
+> > outdated, so update it to correctly reflect the current code flow.
+> > 
+> > Also update the comment in local_pci_probe() to document the fact
+> > that pm_runtime_put_noidle() is not the only runtime PM helper
+> > function that can be used to decrement the device's runtime PM
+> > usage counter in .probe().
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >  Documentation/power/pci.txt |   51 ++++++++++++++++++++++++++++++++------------
+> >  drivers/pci/pci-driver.c    |    7 +++---
+> >  2 files changed, 42 insertions(+), 16 deletions(-)
+> > 
+> > Index: linux-pm/Documentation/power/pci.txt
+> > ===================================================================
+> > --- linux-pm.orig/Documentation/power/pci.txt
+> > +++ linux-pm/Documentation/power/pci.txt
+> > @@ -979,20 +979,45 @@ every time right after the runtime_resum
 > 
-> Ok, thanks for noticing.
-> I've addressed my patch based on output of ./scripts/get_maintainer.pl
-> and gave me output like this:
+> ...
 > 
-> Len Brown <len.brown@xxx>
-> Dasaratharaman Chandramouli <dasaratharaman.chandramouli@xxx>
-> linux-kernel@vger.kernel.org
+> > +It is important to remember that the driver's runtime_suspend() callback
+> > +may be executed right after the usage counter has been decremented, because
+> > +user space may already have cuased the pm_runtime_allow() helper function
 > 
-> Should it be fixed somehow?
+> s/cuased/caused/.
 
-Well, so to speak, the script is not an intelligent entity and while it can
-give you hints, it by no means is an ultimate source of information.
+Fixed.
 
-If you did "grep -r -I -l APERF *" in the kernel source tree, you'll
-immediately see that PM uses it.
+> Otherwise,
+> 
+> Acked-by: Alan Stern <stern@rowland.harvard.edu>
 
-And while at it, we really should only be using the APERF/MPERF ratio so I'm
-not sure why this patch actually matters?
+Thanks a lot!
 
-Thanks,
 Rafael
-
