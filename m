@@ -1,215 +1,54 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Subject: Re: [PATCH] driver core: Ensure proper suspend/resume ordering
-Date: Fri, 18 Sep 2015 17:55:47 +0200
-Message-ID: <20150918155547.GB6692@ulmo.nvidia.com>
-References: <CAJZ5v0hYUfO87hGAjKRAZMt_G4NnkEOXuVybSsVmKzAm6vznDA@mail.gmail.com>
- <Pine.LNX.4.44L0.1509171253520.1270-100000@iolanthe.rowland.org>
- <CAJZ5v0gAsgsA+P_oL=KnAwBpkdJY_P733jBnXnGPdFOs5yiUfw@mail.gmail.com>
+From: Luis de Bethencourt <luis@debethencourt.com>
+Subject: [PATCH] PM / AVS: rockchip-io: Fix module autoload for OF platform
+ driver
+Date: Fri, 18 Sep 2015 18:52:58 +0200
+Message-ID: <20150918165258.GA27398@goodgumbo.baconseed.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="qlTNgmc+xy1dBmNv"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0gAsgsA+P_oL=KnAwBpkdJY_P733jBnXnGPdFOs5yiUfw@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-List-Id: linux-pm@vger.kernel.org
-
-
---qlTNgmc+xy1dBmNv
 Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f173.google.com ([209.85.212.173]:32813 "EHLO
+	mail-wi0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753701AbbIRQxA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Sep 2015 12:53:00 -0400
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Kevin Hilman <khilman@kernel.org>, Nishanth Menon <nm@ti.com>, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org
 
-On Thu, Sep 17, 2015 at 08:43:54PM +0200, Rafael J. Wysocki wrote:
-> Hi Alan,
->=20
-> On Thu, Sep 17, 2015 at 7:02 PM, Alan Stern <stern@rowland.harvard.edu> w=
-rote:
-> > On Thu, 17 Sep 2015, Rafael J. Wysocki wrote:
-> >
-> >> On Thu, Sep 17, 2015 at 2:27 AM, Rafael J. Wysocki <rjw@rjwysocki.net>=
- wrote:
-> >> > On Wednesday, September 16, 2015 03:22:37 PM Alan Stern wrote:
-> >> >> On Wed, 16 Sep 2015, Thierry Reding wrote:
-> >>
-> >> [cut]
-> >>
-> >> >
-> >> > And I'm wondering if and how that is related to runtime PM?  It only
-> >> > covers the system sleep transitions case, but who's responsible for =
-the
-> >> > runtime PM part?  Device drivers?
-> >
-> > In theory the drivers are responsible.  In practice, I don't know how
-> > this is handled.
->=20
-> Same here, unfortunately.
->=20
-> >> Which reminds me of something we all seem to be forgetting about:
-> >> there is asynchronous suspend and resume which may cause suspend and
-> >> resume callbacks of devices to be executed in an order that is
-> >> different from the dpm_list order.  In those cases the device that
-> >> depends on another one has to explicitly wait for the other one to
-> >> complete its callback in the current phase of the transition.
-> >>
-> >> While correct ordering of dpm_list is essential for this to work too,
-> >> it by no means is sufficient, so in the end the driver having a
-> >> dependency needs to know about it and act on it as needed (or we need
-> >> an alternative mechanism that will do that automatically, but I'm not
-> >> sure what that may be).
->=20
-> Note: Problems also may happen if device A depends on device B and its
-> driver to be present and functional and then the B's driver module is
-> unloaded.  The core doesn't prevent that from happening AFAICS.
+This platform driver has a OF device ID table but the OF module
+alias information is not created so module autoloading won't work.
 
-As Alan already mentioned this is typically solved by consumers taking a
-module reference. However that only makes sure that the module stays
-around, so references to code or global data will remain valid. However
-it does not prevent the device from being unbound and freeing all the
-resources associated with it.
+Signed-off-by: Luis de Bethencourt <luisbg@osg.samsung.com>
+---
 
-A lot of subsystems are buggy this way. Typically the solution here is
-to properly reference count objects that subsystems hand out. But that
-does not solve the problem entirely. You still need to deal with the
-situation where the device backing an object goes away. Consumers may
-keep a reference to the object, which ensures that the data stays around
-but operations on the objects would still fail (consider cases where the
-operation accesses registers that have been unmapped when the provider
-was unbound).
+Hello,
 
-If the core provided a means to prevent a device from being unbound if
-it still had consumers, that would fix a whole lot of problems at once.
+This patch adds the missing MODULE_DEVICE_TABLE() for OF to export
+that information so modules have the correct aliases built-in and
+autoloading works correctly.
 
-Of course there's still the matter of some types of devices physically
-disappearing (USB, PCI, ...).
+A longer explanation by Javier Canillas can be found here:
+https://lkml.org/lkml/2015/7/30/519
 
-> >> Actually, I was thinking about adding something like pm_get() for this
-> >> purpose that will do pm_runtime_get_sync() on the target and will
-> >> ensure that the right things will happen during system suspend/resume
-> >> in addition to that, including reordering dpm_list if necessary.
-> >> Plus, of course, the complementary pm_put().
-> >>
-> >> With something like that available, there should be no need to reorder
-> >> dpm_list anywhere else.  The problem with this approach is that the
-> >> reordering becomes quite complicated then, as it would need to move
-> >> the device itself after the target and anything that depends on it
-> >> along with it and tracking those dependencies becomes quite
-> >> problematic.
-> >
-> > Keeping explicit track of these non-child-parent dependencies seems
-> > reasonable.  But I don't know how you could combine it with reordering
-> > dpm_list.
-> >
-> > One possibility might be to do a topological sort of all devices, with
-> > the initial set of constraints given by the explicit dependencies and
-> > the parent-child relations.  So basically this would mean ignoring the
-> > actual dpm_list and making up a new list of your own whenever a sleep
-> > transition starts.  It might work, but I'm not sure how reliable it
-> > would be.
->=20
-> I'd like to go back to my initial hunch that the driver knowing about
-> a dependency on another one should tell the core about that, so the
-> core can make the right things happen at various times (like system
-> suspend/resume etc).
->=20
-> What if we introduce a mechanism allowing drivers to say "I depend on
-> device X and its driver to be present and functional from now on" and
-> store that information somewhere for the core to use?
->=20
-> Some time ago (a few years ago actually IIRC) I proposed something
-> called "PM links".  The idea was to have objects representing such
-> dependencies, although I was not taking the "the driver of the device
-> I depend on should be present and functional going forward" condition.
->=20
-> Say, if a driver wants to check the presence of the device+driver it
-> needs to be functional, it will do something like
->=20
-> ret =3D create_pm_link(dev, producer);
->=20
-> and that will return -EPROBE_DEFER if the producer device is not
-> functional.  If success is returned, the link has been created and now
-> the core will take it into account.
->=20
-> On driver removal the core may just delete the links where the device
-> is the "consumer".  Also there may be a delete_pm_link(dev, producer)
-> operation if needed.
->=20
-> The creation of a link may then include the reordering of dpm_list as
-> appropriate so all "producers" are now followed by all of their
-> "consumers".  Going forward, though, the core may use the links to
-> make all "producers" wait for the PM callbacks of their "consumers" to
-> complete during system suspend etc.  It also may use them to prevent
-> drivers being depended on from being unloaded and/or to force the
-> removal of drivers that depend on something being removed.  In
-> principle it may also use those links to coordinate runtime PM
-> transitions, but I guess that's not going to be useful in all cases,
-> so there needs to be an opt-in mechanism for that.
+Thanks,
+Luis
 
-Force-removing drivers that depend on a device that's being unbound
-would be a possibility to solve the problem where consumers depend on a
-device that could physically go away. It might also be the right thing
-to do in any case. Presumably somebody unloading a module want to do
-just that, and refusing to do so isn't playing very nice. Of course
-allowing random modules to be removed even if a lot of consumers might
-depend on it may not be friendly either. Consider if you unload a GPIO
-driver that provides a pin that's used to enable power to an eMMC that
-might have the root filesystem.
+ drivers/power/avs/rockchip-io-domain.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Then again, if you unload a module you better know what you're doing
-anyway, so maybe that's not something we need to be concerned about.
+diff --git a/drivers/power/avs/rockchip-io-domain.c b/drivers/power/avs/rockchip-io-domain.c
+index 2e30002..8099456 100644
+--- a/drivers/power/avs/rockchip-io-domain.c
++++ b/drivers/power/avs/rockchip-io-domain.c
+@@ -271,6 +271,7 @@ static const struct of_device_id rockchip_iodomain_match[] = {
+ 	},
+ 	{ /* sentinel */ },
+ };
++MODULE_DEVICE_TABLE(of, rockchip_iodomain_match);
+ 
+ static int rockchip_iodomain_probe(struct platform_device *pdev)
+ {
+-- 
+2.4.6
 
-> Please tell me what you think.
-
-I think that's a great idea. There's probably some bikeshedding to be
-had, but on the whole I think this would add very useful information to
-the driver model.
-
-Many subsystems nowadays already provide a very similar API, often of
-the form:
-
-	resource =3D [dev_]*_get(dev, "name");
-
-Subsystems usually use dev and "name" to look up the provider and the
-resource. When they do lookup the provider they will typically be able
-to get at the underlying struct device, so this would provide a very
-nice entrypoint to call the core function. That way we can move this
-into subsystems and individual drivers don't have to be updated.
-
-I think this would also tie in nicely with Tomeu's patch set to do
-on-demand probing. Essentially a [dev_]*_get() call could in turn call
-this new "declare dependency" API, and the new API could underneath do
-on-demand probing.
-
-Given that this isn't a strictly PM mechanism anymore, perhaps something
-like:
-
-	int device_depend(struct device *dev, struct device *target);
-
-would be a more generic option.
-
-Thierry
-
---qlTNgmc+xy1dBmNv
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCAAGBQJV/DQAAAoJEN0jrNd/PrOh0FMP/157s+4hX9o4AAXlInMFaItW
-3PRszANHh4pqJzVBUEGX5VLQZugUVVh6t1PiRvjqYiOEDi2NWmHXSflUAgAozy5v
-mG/TUqvDjMq1zeKTwMcQVTrL9/kYe8d1UfBDoLK/cA/iAjknvZ97QjrDvzrq5EjC
-hUVOnSNC4Qc2yYcG03wBCC8WJB3R+/w4payo3kYD0d7gxPk1y8Zx1JRjOTNtsMkP
-pwmdI4tEMSaOoPWEIs6OPqSB32THboG0LW6pJQ1BC3BmQXK5yUOIz52CyiZkkdCa
-8Y6DMV1wvCSEEdf0chuHLmLuoGa/Py6kNW6PpMEblLQKFkthbUB20XyCH43UEFFx
-L4KZ1CNmWlrmC2a+Euz7vORtDStwVICerf11Woo3TtLrAyAHJqFO6mXL08u4SK84
-/VBTNhYTMQdCrEdZEVBlQb3VroAWZkL/EJCwxFv4CwtEQwth3G7TDm51c5AHpkqc
-qKnSww67W+ugGU9juhkx5pYFGZ7+N/EHRF1W7u3O1oOSDc5hHZvdw714OV9Hxg3F
-cSZyUXOX6+WJPTfAJKPHgRxdcfEaoh1ifm9ReHfRM5Qob3o6PrM/UqOsQrpjxkUy
-aL5rL69It3OvrSE/M7SevEc8jJh+c2erjDImdKfrsZYbu+bkHMCRXmdlFg4JNArT
-RX92qYAF62hYhUOzWkKK
-=Mz1X
------END PGP SIGNATURE-----
-
---qlTNgmc+xy1dBmNv--
