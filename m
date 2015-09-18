@@ -1,114 +1,125 @@
-From: Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
-Subject: [PATCH v5 05/11] power: bq24257: Add SW-based approach for Power Good determination
-Date: Fri, 18 Sep 2015 16:39:53 -0500
-Message-ID: <1442612399-341-6-git-send-email-dannenberg@ti.com>
+From: Andreas Dannenberg <dannenberg@ti.com>
+Subject: [PATCH v5 08/11] power: bq24257: Add input DPM voltage threshold setting support
+Date: Fri, 18 Sep 2015 16:39:56 -0500
+Message-ID: <1442612399-341-9-git-send-email-dannenberg@ti.com>
 References: <1442612399-341-1-git-send-email-dannenberg@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1442612399-341-1-git-send-email-dannenberg-l0cyMroinI0@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Laurentiu Palcu <laurentiu.palcu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Cc: Ramakrishna Pallala <ramakrishna.pallala-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from comal.ext.ti.com ([198.47.26.152]:56810 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754659AbbIRVkz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 18 Sep 2015 17:40:55 -0400
+In-Reply-To: <1442612399-341-1-git-send-email-dannenberg@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Andreas Dannenberg <dannenberg@ti.com>
 
-A software-based approach for determining the charger's input voltage
-"Power Good" state is introduced for devices like the bq24250 which
-don't have a dedicated hardware pin for that purpose. This SW-based
-approach is also used for other devices (with dedicated PG pin) as a
-fall back solution if that pin is not configured to be used through
-"pg-gpios".
+A new optional device property called "ti,in-dpm-voltage" is introduced
+to allow configuring the input voltage threshold for the devices'
+dynamic power path management (DPM) feature. In short, it can be used to
+prevent the input voltage from dropping below a certain value as current
+is drawn to charge the battery or supply the system.
 
-Signed-off-by: Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
+Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
 ---
- drivers/power/bq24257_charger.c | 49 ++++++++++++++++++++++++++++++++++++-----
- 1 file changed, 43 insertions(+), 6 deletions(-)
+ drivers/power/bq24257_charger.c | 43 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 43 insertions(+)
 
 diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
-index 502dd8a5..135cfd4 100644
+index 8d7077d..615624c 100644
 --- a/drivers/power/bq24257_charger.c
 +++ b/drivers/power/bq24257_charger.c
-@@ -107,6 +107,7 @@ struct bq24257_device {
- 	struct mutex lock; /* protect state data */
- 
- 	bool iilimit_autoset_enable;
-+	bool pg_gpio_disable;
+@@ -80,6 +80,7 @@ struct bq24257_init_data {
+ 	u8 iterm;	/* termination current */
+ 	u8 iilimit;	/* input current limit */
+ 	u8 vovp;	/* over voltage protection voltage */
++	u8 vindpm;	/* VDMP input threshold voltage */
  };
  
- static bool bq24257_is_volatile_reg(struct device *dev, unsigned int reg)
-@@ -360,7 +361,26 @@ static int bq24257_get_chip_state(struct bq24257_device *bq,
+ struct bq24257_state {
+@@ -210,6 +211,13 @@ static const u32 bq24257_vovp_map[] = {
  
- 	state->fault = ret;
+ #define BQ24257_VOVP_MAP_SIZE		ARRAY_SIZE(bq24257_vovp_map)
  
--	state->power_good = !gpiod_get_value_cansleep(bq->pg);
-+	if (bq->pg_gpio_disable)
-+		/*
-+		 * If we have a chip without a dedicated power-good GPIO or
-+		 * some other explicit bit that would provide this information
-+		 * assume the power is good if there is no supply related
-+		 * fault - and not good otherwise. There is a possibility for
-+		 * other errors to mask that power in fact is not good but this
-+		 * is probably the best we can do here.
-+		 */
-+		switch (state->fault) {
-+		case FAULT_INPUT_OVP:
-+		case FAULT_INPUT_UVLO:
-+		case FAULT_INPUT_LDO_LOW:
-+			state->power_good = false;
-+			break;
-+		default:
-+			state->power_good = true;
-+		}
++static const u32 bq24257_vindpm_map[] = {
++	4200000, 4280000, 4360000, 4440000, 4520000, 4600000, 4680000,
++	4760000
++};
++
++#define BQ24257_VINDPM_MAP_SIZE		ARRAY_SIZE(bq24257_vindpm_map)
++
+ static int bq24257_field_read(struct bq24257_device *bq,
+ 			      enum bq24257_fields field_id)
+ {
+@@ -436,6 +444,17 @@ enum bq24257_vovp {
+ 	VOVP_10500
+ };
+ 
++enum bq24257_vindpm {
++	VINDPM_4200,
++	VINDPM_4280,
++	VINDPM_4360,
++	VINDPM_4440,
++	VINDPM_4520,
++	VINDPM_4600,
++	VINDPM_4680,
++	VINDPM_4760
++};
++
+ enum bq24257_port_type {
+ 	PORT_TYPE_DCP,		/* Dedicated Charging Port */
+ 	PORT_TYPE_CDP,		/* Charging Downstream Port */
+@@ -619,6 +638,7 @@ static int bq24257_hw_init(struct bq24257_device *bq)
+ 		{F_VBAT, bq->init_data.vbat},
+ 		{F_ITERM, bq->init_data.iterm},
+ 		{F_VOVP, bq->init_data.vovp},
++		{F_VINDPM, bq->init_data.vindpm},
+ 	};
+ 
+ 	/*
+@@ -699,10 +719,23 @@ static ssize_t bq24257_show_ovp_voltage(struct device *dev,
+ 			 bq24257_vovp_map[bq->init_data.vovp]);
+ }
+ 
++static ssize_t bq24257_show_in_dpm_voltage(struct device *dev,
++					   struct device_attribute *attr,
++					   char *buf)
++{
++	struct power_supply *psy = dev_get_drvdata(dev);
++	struct bq24257_device *bq = power_supply_get_drvdata(psy);
++
++	return scnprintf(buf, PAGE_SIZE, "%u\n",
++			 bq24257_vindpm_map[bq->init_data.vindpm]);
++}
++
+ static DEVICE_ATTR(ovp_voltage, S_IRUGO, bq24257_show_ovp_voltage, NULL);
++static DEVICE_ATTR(in_dpm_voltage, S_IRUGO, bq24257_show_in_dpm_voltage, NULL);
+ 
+ static struct attribute *bq24257_charger_attr[] = {
+ 	&dev_attr_ovp_voltage.attr,
++	&dev_attr_in_dpm_voltage.attr,
+ 	NULL,
+ };
+ 
+@@ -807,6 +840,16 @@ static int bq24257_fw_probe(struct bq24257_device *bq)
+ 						      bq24257_vovp_map,
+ 						      BQ24257_VOVP_MAP_SIZE);
+ 
++	ret = device_property_read_u32(bq->dev, "ti,in-dpm-voltage",
++				       &property);
++	if (ret < 0)
++		bq->init_data.vindpm = VINDPM_4360;
 +	else
-+		state->power_good = !gpiod_get_value_cansleep(bq->pg);
- 
++		bq->init_data.vindpm =
++				bq24257_find_idx(property,
++						 bq24257_vindpm_map,
++						 BQ24257_VINDPM_MAP_SIZE);
++
  	return 0;
  }
-@@ -680,7 +700,7 @@ static int bq24257_pg_gpio_probe(struct bq24257_device *bq)
- {
- 	bq->pg = devm_gpiod_get_index(bq->dev, BQ24257_PG_GPIO, 0, GPIOD_IN);
- 	if (IS_ERR(bq->pg)) {
--		dev_err(bq->dev, "could not probe PG pin\n");
-+		dev_info(bq->dev, "could not probe PG pin\n");
- 		return PTR_ERR(bq->pg);
- 	}
  
-@@ -814,10 +834,27 @@ static int bq24257_probe(struct i2c_client *client,
- 		INIT_DELAYED_WORK(&bq->iilimit_setup_work,
- 				  bq24257_iilimit_setup_work);
- 
--	/* we can only check Power Good status by probing the PG pin */
--	ret = bq24257_pg_gpio_probe(bq);
--	if (ret < 0)
--		return ret;
-+	/*
-+	 * The BQ24250 doesn't have a dedicated Power Good (PG) pin so we
-+	 * explicitly disable this feature for this device and instead use
-+	 * a SW-based approach to determine the PG state.
-+	 */
-+	if (bq->chip == BQ24250)
-+		bq->pg_gpio_disable = true;
-+
-+	/*
-+	 * For devices that do have a dedicated PG pin go ahead and probe it,
-+	 * using the SW-based approach as a fall back solution. Note that the
-+	 * use of the dedicated pin is preferred.
-+	 */
-+	if (!bq->pg_gpio_disable) {
-+		ret = bq24257_pg_gpio_probe(bq);
-+		if (ret < 0) {
-+			dev_info(bq->dev,
-+				 "using SW-based power-good detection\n");
-+			bq->pg_gpio_disable = true;
-+		}
-+	}
- 
- 	/* reset all registers to defaults */
- 	ret = bq24257_field_write(bq, F_RESET, 1);
 -- 
 1.9.1
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
