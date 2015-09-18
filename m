@@ -1,114 +1,82 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: Re: [RFCv5 PATCH 32/46] sched: Energy-aware wake-up task placement
-Date: Fri, 18 Sep 2015 11:34:23 +0100
-Message-ID: <55FBE8AF.3050200@arm.com>
-References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
- <1436293469-25707-33-git-send-email-morten.rasmussen@arm.com>
- <20150902171131.GA12510@leoy-linaro>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: [PATCH v6 4/5] devfreq_cooling: add trace information
+Date: Fri, 18 Sep 2015 14:55:51 +0100
+Message-ID: <20150918135550.GA5283@e104805>
+References: <1441904972-5809-1-git-send-email-javi.merino@arm.com>
+ <1441904972-5809-5-git-send-email-javi.merino@arm.com>
+ <20150910131928.3c88fe28@gandalf.local.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150902171131.GA12510@leoy-linaro>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Leo Yan <leo.yan@linaro.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>
-Cc: "peterz@infradead.org" <peterz@infradead.org>, "mingo@redhat.com" <mingo@redhat.com>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "yuyang.du@intel.com" <yuyang.du@intel.com>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Juri Lelli <Juri.Lelli@arm.com>, "sgurrappadi@nvidia.com" <sgurrappadi@nvidia.com>, "pang.xunlei@zte.com.cn" <pang.xunlei@zte.com.cn>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:57931 "EHLO
+	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752745AbbIRN4G (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Sep 2015 09:56:06 -0400
+Content-Disposition: inline
+In-Reply-To: <20150910131928.3c88fe28@gandalf.local.home>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cw00.choi@samsung.com" <cw00.choi@samsung.com>, "edubezval@gmail.com" <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Ingo Molnar <mingo@redhat.com>
 
-On 02/09/15 18:11, Leo Yan wrote:
-> On Tue, Jul 07, 2015 at 07:24:15PM +0100, Morten Rasmussen wrote:
->> Let available compute capacity and estimated energy impact select
->> wake-up target cpu when energy-aware scheduling is enabled and the
->> system in not over-utilized (above the tipping point).
->>
->> energy_aware_wake_cpu() attempts to find group of cpus with sufficient
->> compute capacity to accommodate the task and find a cpu with enough spare
->> capacity to handle the task within that group. Preference is given to
->> cpus with enough spare capacity at the current OPP. Finally, the energy
->> impact of the new target and the previous task cpu is compared to select
->> the wake-up target cpu.
->>
->> cc: Ingo Molnar <mingo@redhat.com>
->> cc: Peter Zijlstra <peterz@infradead.org>
->>
->> Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
->> ---
->>  kernel/sched/fair.c | 85 ++++++++++++++++++++++++++++++++++++++++++++++++++++-
->>  1 file changed, 84 insertions(+), 1 deletion(-)
->>
->> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
->> index 0f7dbda4..01f7337 100644
->> --- a/kernel/sched/fair.c
->> +++ b/kernel/sched/fair.c
->> @@ -5427,6 +5427,86 @@ static int select_idle_sibling(struct task_struct *p, int target)
->>  	return target;
->>  }
->>  
->> +static int energy_aware_wake_cpu(struct task_struct *p, int target)
->> +{
->> +	struct sched_domain *sd;
->> +	struct sched_group *sg, *sg_target;
->> +	int target_max_cap = INT_MAX;
->> +	int target_cpu = task_cpu(p);
->> +	int i;
->> +
->> +	sd = rcu_dereference(per_cpu(sd_ea, task_cpu(p)));
->> +
->> +	if (!sd)
->> +		return target;
->> +
->> +	sg = sd->groups;
->> +	sg_target = sg;
->> +
->> +	/*
->> +	 * Find group with sufficient capacity. We only get here if no cpu is
->> +	 * overutilized. We may end up overutilizing a cpu by adding the task,
->> +	 * but that should not be any worse than select_idle_sibling().
->> +	 * load_balance() should sort it out later as we get above the tipping
->> +	 * point.
->> +	 */
->> +	do {
->> +		/* Assuming all cpus are the same in group */
->> +		int max_cap_cpu = group_first_cpu(sg);
->> +
->> +		/*
->> +		 * Assume smaller max capacity means more energy-efficient.
->> +		 * Ideally we should query the energy model for the right
->> +		 * answer but it easily ends up in an exhaustive search.
->> +		 */
->> +		if (capacity_of(max_cap_cpu) < target_max_cap &&
->> +		    task_fits_capacity(p, max_cap_cpu)) {
->> +			sg_target = sg;
->> +			target_max_cap = capacity_of(max_cap_cpu);
->> +		}
-> 
-> Here should consider scenario for two groups have same capacity?
-> This will benefit for the case LITTLE.LITTLE. So the code will be
-> looks like below:
-> 
-> 	int target_sg_cpu = INT_MAX;
-> 
-> 	if (capacity_of(max_cap_cpu) <= target_max_cap &&
->             task_fits_capacity(p, max_cap_cpu)) {
-> 
->                 if ((capacity_of(max_cap_cpu) == target_max_cap) &&
-> 		    (target_sg_cpu < max_cap_cpu))
-> 		        continue;
-> 
-> 		target_sg_cpu = max_cap_cpu;
-> 		sg_target = sg;
-> 		target_max_cap = capacity_of(max_cap_cpu);
-> 	}
-> 
+Hi Steve,
 
-It's true that on your SMP system the target sched_group 'sg_target'
-depends only on 'task_cpu(p)' because this determines sched_domain 'sd'
-(and so the order of sched_groups for the iteration).
+On Thu, Sep 10, 2015 at 06:19:28PM +0100, Steven Rostedt wrote:
+> On Thu, 10 Sep 2015 18:09:31 +0100
+> Javi Merino <javi.merino@arm.com> wrote:
+> 
+> > Tracing is useful for debugging and performance tuning.  Add similar
+> > traces to what's present in the cpu cooling device.
+> > 
+> > Cc: Zhang Rui <rui.zhang@intel.com>
+> > Cc: Eduardo Valentin <edubezval@gmail.com>
+> > Cc: Steven Rostedt <rostedt@goodmis.org>
+> > Cc: Ingo Molnar <mingo@redhat.com>
+> > Signed-off-by: Javi Merino <javi.merino@arm.com>
+> > ---
+> >  drivers/thermal/devfreq_cooling.c |  6 +++++
+> >  include/trace/events/thermal.h    | 53 +++++++++++++++++++++++++++++++++++++++
+> >  2 files changed, 59 insertions(+)
+> > 
+> > diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
+> > index a032c5d5c374..a27206815066 100644
+> > --- a/drivers/thermal/devfreq_cooling.c
+> > +++ b/drivers/thermal/devfreq_cooling.c
+> > @@ -25,6 +25,8 @@
+> >  #include <linux/pm_opp.h>
+> >  #include <linux/thermal.h>
+> >  
+> > +#include <trace/events/thermal.h>
+> > +
+> >  static DEFINE_MUTEX(devfreq_lock);
+> >  static DEFINE_IDR(devfreq_idr);
+> >  
+> > @@ -293,6 +295,9 @@ static int devfreq_cooling_get_requested_power(struct thermal_cooling_device *cd
+> >  	/* Get static power */
+> >  	static_power = get_static_power(dfc, freq);
+> >  
+> > +	trace_thermal_power_devfreq_get_power(cdev, status, freq, dyn_power,
+> > +					      static_power);
+> > +
+> >  	*power = dyn_power + static_power;
+> >  
+> >  	return 0;
+> > @@ -348,6 +353,7 @@ static int devfreq_cooling_power2state(struct thermal_cooling_device *cdev,
+> >  			break;
+> >  
+> >  	*state = i;
+> > +	trace_thermal_power_devfreq_limit(cdev, freq, *state, power);
+> 
+> I'm curious, does changing the above to:
+> 
+> 	trace_thermal_power_devfreq_limit(cdev, freq, i, power);
+> 
+> make the compiled code better?
+> 
+> A tracepoint does some whacky things, and gcc may not optimize this.
 
-So the current do-while loop to select 'sg_target' for an SMP system
-makes little sense.
+I've compared the generated assembly on arm, arm64 and x86_64 and both
+options generate exactly the same code.
 
-But why should we favour the first sched_group (cluster) (the one w/ the
-lower max_cap_cpu number) in this situation?
-
-[...]
+Cheers,
+Javi
