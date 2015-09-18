@@ -1,26 +1,114 @@
-From: "Anaczkowski, Lukasz" <lukasz.anaczkowski@intel.com>
-Subject: RE: [PATCH] Added multiplier for APERF and MPERF counters
-Date: Fri, 18 Sep 2015 07:08:47 +0000
-Message-ID: <C1C2579D7BE026428F81F41198ADB172378E74B2@irsmsx110.ger.corp.intel.com>
-References: <1442407938-5228-1-git-send-email-lukasz.anaczkowski@intel.com>
- <6353648.5IiCL7fVmQ@vostro.rjw.lan>
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Subject: Re: [RFCv5 PATCH 32/46] sched: Energy-aware wake-up task placement
+Date: Fri, 18 Sep 2015 11:34:23 +0100
+Message-ID: <55FBE8AF.3050200@arm.com>
+References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
+ <1436293469-25707-33-git-send-email-morten.rasmussen@arm.com>
+ <20150902171131.GA12510@leoy-linaro>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <6353648.5IiCL7fVmQ@vostro.rjw.lan>
-Content-Language: en-US
+In-Reply-To: <20150902171131.GA12510@leoy-linaro>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Brown, Len" <len.brown@intel.com>, "Chandramouli, Dasaratharaman" <dasaratharaman.chandramouli@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Chrzaniuk, Hubert" <hubert.chrzaniuk@intel.com>, Linux PM list <linux-pm@vger.kernel.org>
+To: Leo Yan <leo.yan@linaro.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>
+Cc: "peterz@infradead.org" <peterz@infradead.org>, "mingo@redhat.com" <mingo@redhat.com>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "yuyang.du@intel.com" <yuyang.du@intel.com>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Juri Lelli <Juri.Lelli@arm.com>, "sgurrappadi@nvidia.com" <sgurrappadi@nvidia.com>, "pang.xunlei@zte.com.cn" <pang.xunlei@zte.com.cn>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-RnJvbTogUmFmYWVsIEouIFd5c29ja2kgW21haWx0bzpyandAcmp3eXNvY2tpLm5ldF0gDQpTZW50
-OiBUaHVyc2RheSwgU2VwdGVtYmVyIDE3LCAyMDE1IDc6MDUgUE0NCg0KPiBQbGVhc2UgKmFsd2F5
-cyogc2VuZCBQTS1yZWxhdGVkIHBhdGNoZXMgdG8gbGludXgtcG1Admdlci5rZXJuZWwub3JnIChD
-Q2VkIG5vdykuDQoNCk9rLCB0aGFua3MgZm9yIG5vdGljaW5nLg0KSSd2ZSBhZGRyZXNzZWQgbXkg
-cGF0Y2ggYmFzZWQgb24gb3V0cHV0IG9mIC4vc2NyaXB0cy9nZXRfbWFpbnRhaW5lci5wbA0KYW5k
-IGdhdmUgbWUgb3V0cHV0IGxpa2UgdGhpczoNCg0KTGVuIEJyb3duIDxsZW4uYnJvd25AeHh4Pg0K
-RGFzYXJhdGhhcmFtYW4gQ2hhbmRyYW1vdWxpIDxkYXNhcmF0aGFyYW1hbi5jaGFuZHJhbW91bGlA
-eHh4Pg0KbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw0KDQpTaG91bGQgaXQgYmUgZml4ZWQg
-c29tZWhvdz8NCg0KQ2hlZXJzLA0KTHVrYXN6DQo=
+On 02/09/15 18:11, Leo Yan wrote:
+> On Tue, Jul 07, 2015 at 07:24:15PM +0100, Morten Rasmussen wrote:
+>> Let available compute capacity and estimated energy impact select
+>> wake-up target cpu when energy-aware scheduling is enabled and the
+>> system in not over-utilized (above the tipping point).
+>>
+>> energy_aware_wake_cpu() attempts to find group of cpus with sufficient
+>> compute capacity to accommodate the task and find a cpu with enough spare
+>> capacity to handle the task within that group. Preference is given to
+>> cpus with enough spare capacity at the current OPP. Finally, the energy
+>> impact of the new target and the previous task cpu is compared to select
+>> the wake-up target cpu.
+>>
+>> cc: Ingo Molnar <mingo@redhat.com>
+>> cc: Peter Zijlstra <peterz@infradead.org>
+>>
+>> Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
+>> ---
+>>  kernel/sched/fair.c | 85 ++++++++++++++++++++++++++++++++++++++++++++++++++++-
+>>  1 file changed, 84 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+>> index 0f7dbda4..01f7337 100644
+>> --- a/kernel/sched/fair.c
+>> +++ b/kernel/sched/fair.c
+>> @@ -5427,6 +5427,86 @@ static int select_idle_sibling(struct task_struct *p, int target)
+>>  	return target;
+>>  }
+>>  
+>> +static int energy_aware_wake_cpu(struct task_struct *p, int target)
+>> +{
+>> +	struct sched_domain *sd;
+>> +	struct sched_group *sg, *sg_target;
+>> +	int target_max_cap = INT_MAX;
+>> +	int target_cpu = task_cpu(p);
+>> +	int i;
+>> +
+>> +	sd = rcu_dereference(per_cpu(sd_ea, task_cpu(p)));
+>> +
+>> +	if (!sd)
+>> +		return target;
+>> +
+>> +	sg = sd->groups;
+>> +	sg_target = sg;
+>> +
+>> +	/*
+>> +	 * Find group with sufficient capacity. We only get here if no cpu is
+>> +	 * overutilized. We may end up overutilizing a cpu by adding the task,
+>> +	 * but that should not be any worse than select_idle_sibling().
+>> +	 * load_balance() should sort it out later as we get above the tipping
+>> +	 * point.
+>> +	 */
+>> +	do {
+>> +		/* Assuming all cpus are the same in group */
+>> +		int max_cap_cpu = group_first_cpu(sg);
+>> +
+>> +		/*
+>> +		 * Assume smaller max capacity means more energy-efficient.
+>> +		 * Ideally we should query the energy model for the right
+>> +		 * answer but it easily ends up in an exhaustive search.
+>> +		 */
+>> +		if (capacity_of(max_cap_cpu) < target_max_cap &&
+>> +		    task_fits_capacity(p, max_cap_cpu)) {
+>> +			sg_target = sg;
+>> +			target_max_cap = capacity_of(max_cap_cpu);
+>> +		}
+> 
+> Here should consider scenario for two groups have same capacity?
+> This will benefit for the case LITTLE.LITTLE. So the code will be
+> looks like below:
+> 
+> 	int target_sg_cpu = INT_MAX;
+> 
+> 	if (capacity_of(max_cap_cpu) <= target_max_cap &&
+>             task_fits_capacity(p, max_cap_cpu)) {
+> 
+>                 if ((capacity_of(max_cap_cpu) == target_max_cap) &&
+> 		    (target_sg_cpu < max_cap_cpu))
+> 		        continue;
+> 
+> 		target_sg_cpu = max_cap_cpu;
+> 		sg_target = sg;
+> 		target_max_cap = capacity_of(max_cap_cpu);
+> 	}
+> 
+
+It's true that on your SMP system the target sched_group 'sg_target'
+depends only on 'task_cpu(p)' because this determines sched_domain 'sd'
+(and so the order of sched_groups for the iteration).
+
+So the current do-while loop to select 'sg_target' for an SMP system
+makes little sense.
+
+But why should we favour the first sched_group (cluster) (the one w/ the
+lower max_cap_cpu number) in this situation?
+
+[...]
