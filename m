@@ -1,102 +1,50 @@
 From: Andreas Dannenberg <dannenberg@ti.com>
-Subject: [PATCH v5 00/11] power: bq24257: Add support for bq24250/bq24251
-Date: Fri, 18 Sep 2015 16:39:48 -0500
-Message-ID: <1442612399-341-1-git-send-email-dannenberg@ti.com>
+Subject: [PATCH v5 03/11] power: bq24257: Add bit definition for temp sense enable
+Date: Fri, 18 Sep 2015 16:39:51 -0500
+Message-ID: <1442612399-341-4-git-send-email-dannenberg@ti.com>
+References: <1442612399-341-1-git-send-email-dannenberg@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:36893 "EHLO bear.ext.ti.com"
+Received: from bear.ext.ti.com ([192.94.94.41]:36898 "EHLO bear.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754046AbbIRVki (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 18 Sep 2015 17:40:38 -0400
+	id S1754046AbbIRVkl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 18 Sep 2015 17:40:41 -0400
+In-Reply-To: <1442612399-341-1-git-send-email-dannenberg@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 Cc: Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Andreas Dannenberg <dannenberg@ti.com>
 
-This patch series extends the driver to also support bq24250/bq24251.
+Adding a missing bit definition for the sake of consistency device model
+vs. bit field representation. No change in functionality.
 
-The bq24250/251/257 devices have a very similar feature set and are
-virtually identical from a control register point of view so it made
-sense to extend the existing driver rather than submitting a new driver.
-In addition to the new device support the driver is also extended to
-allow access to some device features previously hidden. Basic and
-potentially dangerous charger config parameters affecting the actual
-charging of the Li-Ion battery are only configurable through firmware
-rather than sysfs properties. However some newly introduced properties
-are exposed through sysfs properties as access to them may be desired
-from userspace. For example, it is now possible to manually configure
-the maximum current drawn from the input source to accommodate different
-chargers (0.5A, 1.5A, 2.0A and so on) based on system knowledge a
-userspace application may have rather than rely on the auto-detection
-mechanism that may not work in all possible scenarios.
+Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
+---
+ drivers/power/bq24257_charger.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Note that most patches have dependencies on other patches in the series.
-
-v5:
-- Added patch to use the managed version of power supply register which
-  also fixes a code flow issue that was introduced
-- Minor fixes / consistency cleanup (Krzysztof's feedback)
-
-v4:
-- Removed configurability of the safety timer multiplier through DT
-
-v3:
-- Dropped the driver/symbol rename patch from v2 due to anticipated
-  issues with upcoming bq2425x family additions
-- Reverted additional mutex coverage for I2C access due to regmap
-  built-in mutex protection being sufficient
-- Removed support for trickle charging due to being a rare/uncommon
-  use case
-- Fixed most checkpatch.pl --strict alignment issues (except where
-  the line length would exceed 80 chars)
-- Fixed an issue with how the return value of gpio_to_desc() was
-  handled
-- Fixed an issue with the definition of bq24257_of_match[]
-- Reordered the patch series to put the DT doc changes to the
-  beginning
-
-v2:
-- Aligned DT bindings better with existing "ti,*" charger bindings
-- Dropped patch that improperly reported a missing battery as a dead
-  battery
-- Fixed (hopefully, that is -- still waiting for my test platform)
-  issue with how the private ACPI driver_data used to identify which
-  bq2425x device to use
-- Removed boolean DT/ACPI properties mostly by replacing them with more
-  intelligent handling in the driver
-- Rework/clarification of DT bindings doc
-- Renamed/refactored filenames/symbols from bq24257 to bq2425x to
-  better reflect that multiple devices are covered. Despite initial
-  hesitation I feel this is a good opportunity for some clean-up as
-  the driver is still very new in the Kernel so the change should be
-  low risk. This also addresses one of Andrew Davis' feedback items.
-  Plus, it makes for a nice alignment with the existing bq2415x_charger
-  driver.
-
-v1:
-- Initial submission
-
-Andreas Dannenberg (11):
-  dt: power: bq24257-charger: Cover additional devices
-  power: bq24257: Add basic support for bq24250/bq24251
-  power: bq24257: Add bit definition for temp sense enable
-  power: bq24257: Allow manual setting of input current limit
-  power: bq24257: Add SW-based approach for Power Good determination
-  power: bq24257: Use managed power supply register
-  power: bq24257: Add over voltage protection setting support
-  power: bq24257: Add input DPM voltage threshold setting support
-  power: bq24257: Allow input current limit sysfs access
-  power: bq24257: Add various device-specific sysfs properties
-  power: bq24257: Add platform data based initialization
-
- .../devicetree/bindings/power/bq24257.txt          |  55 +-
- drivers/power/Kconfig                              |   5 +-
- drivers/power/bq24257_charger.c                    | 555 +++++++++++++++++++--
- include/linux/power/bq24257_charger.h              |  29 ++
- 4 files changed, 591 insertions(+), 53 deletions(-)
- create mode 100644 include/linux/power/bq24257_charger.h
-
+diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
+index 6e50239..bd496e5 100644
+--- a/drivers/power/bq24257_charger.c
++++ b/drivers/power/bq24257_charger.c
+@@ -67,7 +67,7 @@ enum bq24257_fields {
+ 	F_VBAT, F_USB_DET,					    /* REG 3 */
+ 	F_ICHG, F_ITERM,					    /* REG 4 */
+ 	F_LOOP_STATUS, F_LOW_CHG, F_DPDM_EN, F_CE_STATUS, F_VINDPM, /* REG 5 */
+-	F_X2_TMR_EN, F_TMR, F_SYSOFF, F_TS_STAT,		    /* REG 6 */
++	F_X2_TMR_EN, F_TMR, F_SYSOFF, F_TS_EN, F_TS_STAT,	    /* REG 6 */
+ 	F_VOVP, F_CLR_VDP, F_FORCE_BATDET, F_FORCE_PTM,		    /* REG 7 */
+ 
+ 	F_MAX_FIELDS
+@@ -157,6 +157,7 @@ static const struct reg_field bq24257_reg_fields[] = {
+ 	[F_X2_TMR_EN]		= REG_FIELD(BQ24257_REG_6, 7, 7),
+ 	[F_TMR]			= REG_FIELD(BQ24257_REG_6, 5, 6),
+ 	[F_SYSOFF]		= REG_FIELD(BQ24257_REG_6, 4, 4),
++	[F_TS_EN]		= REG_FIELD(BQ24257_REG_6, 3, 3),
+ 	[F_TS_STAT]		= REG_FIELD(BQ24257_REG_6, 0, 2),
+ 	/* REG 7 */
+ 	[F_VOVP]		= REG_FIELD(BQ24257_REG_7, 5, 7),
 -- 
 1.9.1
 
