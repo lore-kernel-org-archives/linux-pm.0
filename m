@@ -1,20 +1,19 @@
 From: Luis de Bethencourt <luis@debethencourt.com>
-Subject: [PATCH] PM / AVS: rockchip-io: Fix module autoload for OF platform
- driver
-Date: Fri, 18 Sep 2015 18:52:58 +0200
-Message-ID: <20150918165258.GA27398@goodgumbo.baconseed.org>
+Subject: [PATCH] tps65090-charger: Fix module autoload for OF platform driver
+Date: Fri, 18 Sep 2015 18:54:07 +0200
+Message-ID: <20150918165407.GA27491@goodgumbo.baconseed.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f173.google.com ([209.85.212.173]:32813 "EHLO
-	mail-wi0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753701AbbIRQxA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Sep 2015 12:53:00 -0400
+Received: from mail-wi0-f179.google.com ([209.85.212.179]:36692 "EHLO
+	mail-wi0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752754AbbIRQyJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Sep 2015 12:54:09 -0400
 Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: Kevin Hilman <khilman@kernel.org>, Nishanth Menon <nm@ti.com>, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org
 
 This platform driver has a OF device ID table but the OF module
 alias information is not created so module autoloading won't work.
@@ -34,21 +33,21 @@ https://lkml.org/lkml/2015/7/30/519
 Thanks,
 Luis
 
- drivers/power/avs/rockchip-io-domain.c | 1 +
+ drivers/power/tps65090-charger.c | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/drivers/power/avs/rockchip-io-domain.c b/drivers/power/avs/rockchip-io-domain.c
-index 2e30002..8099456 100644
---- a/drivers/power/avs/rockchip-io-domain.c
-+++ b/drivers/power/avs/rockchip-io-domain.c
-@@ -271,6 +271,7 @@ static const struct of_device_id rockchip_iodomain_match[] = {
- 	},
- 	{ /* sentinel */ },
+diff --git a/drivers/power/tps65090-charger.c b/drivers/power/tps65090-charger.c
+index 7e8fbd2..1b4b5e0 100644
+--- a/drivers/power/tps65090-charger.c
++++ b/drivers/power/tps65090-charger.c
+@@ -353,6 +353,7 @@ static const struct of_device_id of_tps65090_charger_match[] = {
+ 	{ .compatible = "ti,tps65090-charger", },
+ 	{ /* end */ }
  };
-+MODULE_DEVICE_TABLE(of, rockchip_iodomain_match);
++MODULE_DEVICE_TABLE(of, of_tps65090_charger_match);
  
- static int rockchip_iodomain_probe(struct platform_device *pdev)
- {
+ static struct platform_driver tps65090_charger_driver = {
+ 	.driver	= {
 -- 
 2.4.6
 
