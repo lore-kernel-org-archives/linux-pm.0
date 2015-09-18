@@ -1,162 +1,108 @@
 From: Andreas Dannenberg <dannenberg@ti.com>
-Subject: [PATCH v5 07/11] power: bq24257: Add over voltage protection setting support
-Date: Fri, 18 Sep 2015 16:39:55 -0500
-Message-ID: <1442612399-341-8-git-send-email-dannenberg@ti.com>
+Subject: [PATCH v5 10/11] power: bq24257: Add various device-specific sysfs properties
+Date: Fri, 18 Sep 2015 16:39:58 -0500
+Message-ID: <1442612399-341-11-git-send-email-dannenberg@ti.com>
 References: <1442612399-341-1-git-send-email-dannenberg@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:55041 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754659AbbIRVlB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Sep 2015 17:41:01 -0400
+Received: from comal.ext.ti.com ([198.47.26.152]:56817 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754659AbbIRVlE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 18 Sep 2015 17:41:04 -0400
 In-Reply-To: <1442612399-341-1-git-send-email-dannenberg@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 Cc: Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Andreas Dannenberg <dannenberg@ti.com>
 
-A new optional device property called "ti,ovp-voltage" is introduced to
-allow configuring the input over voltage protection setting.
+This patch adds support for enabling/disabling optional device specific
+features through sysfs properties at runtime.
 
-This commit also adds the basic sysfs support for custom properties
-which is being used to allow userspace to read the current ovp-voltage
-setting.
+* High-impedance mode enable/disable
+* Sysoff enable/disable
+
+Refer to the respective device datasheets for more information:
+
+http://www.ti.com/product/bq24250
+http://www.ti.com/product/bq24251
+http://www.ti.com/product/bq24257
 
 Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
 ---
- drivers/power/bq24257_charger.c | 67 +++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 64 insertions(+), 3 deletions(-)
+ drivers/power/bq24257_charger.c | 53 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 53 insertions(+)
 
 diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
-index 6ef61ae..8d7077d 100644
+index 66867d5..a1068291 100644
 --- a/drivers/power/bq24257_charger.c
 +++ b/drivers/power/bq24257_charger.c
-@@ -79,6 +79,7 @@ struct bq24257_init_data {
- 	u8 vbat;	/* regulation voltage  */
- 	u8 iterm;	/* termination current */
- 	u8 iilimit;	/* input current limit */
-+	u8 vovp;	/* over voltage protection voltage */
- };
+@@ -797,12 +797,65 @@ static ssize_t bq24257_show_in_dpm_voltage(struct device *dev,
+ 			 bq24257_vindpm_map[bq->init_data.vindpm]);
+ }
  
- struct bq24257_state {
-@@ -202,6 +203,13 @@ static const u32 bq24257_iilimit_map[] = {
- 
- #define BQ24257_IILIMIT_MAP_SIZE	ARRAY_SIZE(bq24257_iilimit_map)
- 
-+static const u32 bq24257_vovp_map[] = {
-+	6000000, 6500000, 7000000, 8000000, 9000000, 9500000, 10000000,
-+	10500000
-+};
-+
-+#define BQ24257_VOVP_MAP_SIZE		ARRAY_SIZE(bq24257_vovp_map)
-+
- static int bq24257_field_read(struct bq24257_device *bq,
- 			      enum bq24257_fields field_id)
- {
-@@ -417,6 +425,17 @@ enum bq24257_in_ilimit {
- 	IILIMIT_NONE,
- };
- 
-+enum bq24257_vovp {
-+	VOVP_6000,
-+	VOVP_6500,
-+	VOVP_7000,
-+	VOVP_8000,
-+	VOVP_9000,
-+	VOVP_9500,
-+	VOVP_10000,
-+	VOVP_10500
-+};
-+
- enum bq24257_port_type {
- 	PORT_TYPE_DCP,		/* Dedicated Charging Port */
- 	PORT_TYPE_CDP,		/* Charging Downstream Port */
-@@ -598,7 +617,8 @@ static int bq24257_hw_init(struct bq24257_device *bq)
- 	} init_data[] = {
- 		{F_ICHG, bq->init_data.ichg},
- 		{F_VBAT, bq->init_data.vbat},
--		{F_ITERM, bq->init_data.iterm}
-+		{F_ITERM, bq->init_data.iterm},
-+		{F_VOVP, bq->init_data.vovp},
- 	};
- 
- 	/*
-@@ -668,6 +688,28 @@ static const struct power_supply_desc bq24257_power_supply_desc = {
- 	.get_property = bq24257_power_supply_get_property,
- };
- 
-+static ssize_t bq24257_show_ovp_voltage(struct device *dev,
-+					struct device_attribute *attr,
-+					char *buf)
++static ssize_t bq24257_sysfs_show_enable(struct device *dev,
++					 struct device_attribute *attr,
++					 char *buf)
 +{
 +	struct power_supply *psy = dev_get_drvdata(dev);
 +	struct bq24257_device *bq = power_supply_get_drvdata(psy);
++	int ret;
 +
-+	return scnprintf(buf, PAGE_SIZE, "%u\n",
-+			 bq24257_vovp_map[bq->init_data.vovp]);
++	if (strcmp(attr->attr.name, "high_impedance_enable") == 0)
++		ret = bq24257_field_read(bq, F_HZ_MODE);
++	else if (strcmp(attr->attr.name, "sysoff_enable") == 0)
++		ret = bq24257_field_read(bq, F_SYSOFF);
++	else
++		return -EINVAL;
++
++	if (ret < 0)
++		return ret;
++
++	return scnprintf(buf, PAGE_SIZE, "%d\n", ret);
 +}
 +
-+static DEVICE_ATTR(ovp_voltage, S_IRUGO, bq24257_show_ovp_voltage, NULL);
++static ssize_t bq24257_sysfs_set_enable(struct device *dev,
++					struct device_attribute *attr,
++					const char *buf,
++					size_t count)
++{
++	struct power_supply *psy = dev_get_drvdata(dev);
++	struct bq24257_device *bq = power_supply_get_drvdata(psy);
++	long val;
++	int ret;
 +
-+static struct attribute *bq24257_charger_attr[] = {
-+	&dev_attr_ovp_voltage.attr,
-+	NULL,
-+};
++	if (kstrtol(buf, 10, &val) < 0)
++		return -EINVAL;
 +
-+static const struct attribute_group bq24257_attr_group = {
-+	.attrs = bq24257_charger_attr,
-+};
-+
- static int bq24257_power_supply_init(struct bq24257_device *bq)
- {
- 	struct power_supply_config psy_cfg = { .drv_data = bq, };
-@@ -756,6 +798,15 @@ static int bq24257_fw_probe(struct bq24257_device *bq)
- 						 bq24257_iilimit_map,
- 						 BQ24257_IILIMIT_MAP_SIZE);
- 
-+	ret = device_property_read_u32(bq->dev, "ti,ovp-voltage",
-+				       &property);
-+	if (ret < 0)
-+		bq->init_data.vovp = VOVP_6500;
++	if (strcmp(attr->attr.name, "high_impedance_enable") == 0)
++		ret = bq24257_field_write(bq, F_HZ_MODE, (bool)val);
++	else if (strcmp(attr->attr.name, "sysoff_enable") == 0)
++		ret = bq24257_field_write(bq, F_SYSOFF, (bool)val);
 +	else
-+		bq->init_data.vovp = bq24257_find_idx(property,
-+						      bq24257_vovp_map,
-+						      BQ24257_VOVP_MAP_SIZE);
++		return -EINVAL;
 +
- 	return 0;
- }
- 
-@@ -895,10 +946,18 @@ static int bq24257_probe(struct i2c_client *client,
- 		return ret;
- 
- 	ret = bq24257_power_supply_init(bq);
--	if (ret < 0)
-+	if (ret < 0) {
- 		dev_err(dev, "Failed to register power supply\n");
++	if (ret < 0)
 +		return ret;
-+	}
- 
--	return ret;
-+	ret = sysfs_create_group(&bq->charger->dev.kobj, &bq24257_attr_group);
-+	if (ret < 0) {
-+		dev_err(dev, "Can't create sysfs entries\n");
-+		return ret;
-+	}
 +
-+	return 0;
- }
- 
- static int bq24257_remove(struct i2c_client *client)
-@@ -908,6 +967,8 @@ static int bq24257_remove(struct i2c_client *client)
- 	if (bq->iilimit_autoset_enable)
- 		cancel_delayed_work_sync(&bq->iilimit_setup_work);
- 
-+	sysfs_remove_group(&bq->charger->dev.kobj, &bq24257_attr_group);
++	return count;
++}
 +
- 	bq24257_field_write(bq, F_RESET, 1); /* reset to defaults */
+ static DEVICE_ATTR(ovp_voltage, S_IRUGO, bq24257_show_ovp_voltage, NULL);
+ static DEVICE_ATTR(in_dpm_voltage, S_IRUGO, bq24257_show_in_dpm_voltage, NULL);
++static DEVICE_ATTR(high_impedance_enable, S_IWUSR | S_IRUGO,
++		   bq24257_sysfs_show_enable, bq24257_sysfs_set_enable);
++static DEVICE_ATTR(sysoff_enable, S_IWUSR | S_IRUGO,
++		   bq24257_sysfs_show_enable, bq24257_sysfs_set_enable);
  
- 	return 0;
+ static struct attribute *bq24257_charger_attr[] = {
+ 	&dev_attr_ovp_voltage.attr,
+ 	&dev_attr_in_dpm_voltage.attr,
++	&dev_attr_high_impedance_enable.attr,
++	&dev_attr_sysoff_enable.attr,
+ 	NULL,
+ };
+ 
 -- 
 1.9.1
 
