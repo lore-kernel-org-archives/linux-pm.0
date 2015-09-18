@@ -1,115 +1,102 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] PCI / PM: Update runtime PM documentation for PCI devices
-Date: Fri, 18 Sep 2015 03:08:40 +0200
-Message-ID: <2256432.RWZW2V6rYx@vostro.rjw.lan>
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: RE: [PATCH] [v4] PM / hibernate: Fix hibernation panic caused by
+ inconsistent e820 map
+Date: Fri, 18 Sep 2015 03:47:53 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE64026584EB5@SHSMSX101.ccr.corp.intel.com>
+References: <1442425343-8339-1-git-send-email-yu.c.chen@intel.com>
+ <20150917060735.GF6665@amd>
+ <36DF59CE26D8EE47B0655C516E9CE64026584C75@SHSMSX101.ccr.corp.intel.com>
+ <20150917204343.GA14658@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:59335 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751929AbbIRAkh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Sep 2015 20:40:37 -0400
+Received: from mga14.intel.com ([192.55.52.115]:7300 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752152AbbIRDsH convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Sep 2015 23:48:07 -0400
+In-Reply-To: <20150917204343.GA14658@amd>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Linux PCI <linux-pci@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Linux PM list <linux-pm@vger.kernel.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "Brown, Len" <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, "jlee@suse.com" <jlee@suse.com>, "joeyli.kernel@gmail.com" <joeyli.kernel@gmail.com>, "yinghai@kernel.org" <yinghai@kernel.org>, Ingo Molnar <mingo@kernel.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Thanks, Pavel,
 
-Section 3.2 "Device Runtime Power Management" of pci.txt has become
-outdated, so update it to correctly reflect the current code flow.
+> -----Original Message-----
+> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
+> owner@vger.kernel.org] On Behalf Of Pavel Machek
+> Sent: Friday, September 18, 2015 4:44 AM
+> To: Chen, Yu C
+> Cc: rjw@rjwysocki.net; Brown, Len; linux-pm@vger.kernel.org; linux-
+> kernel@vger.kernel.org; Zhang, Rui; jlee@suse.com;
+> joeyli.kernel@gmail.com; yinghai@kernel.org; Ingo Molnar
+> Subject: Re: [PATCH] [v4] PM / hibernate: Fix hibernation panic caused by
+> inconsistent e820 map
+> 
+> Yes, that's better.
+> 
+> But I still don't like the patch.
+> 
+> 0) BIOS is broken, and this does not completely work around it. Users will still
+> see the failed hibernation when the memory that is now unavailable was
+> actually used.
+> 
+Unfortunately , yes :(  the patch is trying to replace the 'panic' with 'failure', because I guess 'failure'
+is a little better than a 'panic' ? It is a workaround for inconsistent BIOS. 
+Actually, according to ACPI spec 5, page 626, BIOS should not change its memory table
+during S4:
+" The memory information returned from the system address map 
+reporting interfaces should be the same before and after an S4 sleep"
 
-Also update the comment in local_pci_probe() to document the fact
-that pm_runtime_put_noidle() is not the only runtime PM helper
-function that can be used to decrement the device's runtime PM
-usage counter in .probe().
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- Documentation/power/pci.txt |   51 ++++++++++++++++++++++++++++++++------------
- drivers/pci/pci-driver.c    |    7 +++---
- 2 files changed, 42 insertions(+), 16 deletions(-)
+> 1) It allocates bm3 even on systems that don't need the workaround (arm,
+> ia32)
+> 
+ I'll try to solve this.
+> 2) If you use hibernation on 32-bit kernel on affected system, you'll still get
+> panic.
+> 
+I think 32 bit kernel will not get panic?  because:
+1) If the page to be restored is in low memory, 
+     it will be checked by swsusp_page_is_valid, 
+     which will check if the page is in the directly-mapped region(pfn_mapped),
+     for 32 bit kernel, the pfn_mapped region contains mapping lower than max_low_pfn.
+    so accessing  low memory is ok.
 
-Index: linux-pm/Documentation/power/pci.txt
-===================================================================
---- linux-pm.orig/Documentation/power/pci.txt
-+++ linux-pm/Documentation/power/pci.txt
-@@ -979,20 +979,45 @@ every time right after the runtime_resum
- (alternatively, the runtime_suspend() callback will have to check if the
- device should really be suspended and return -EAGAIN if that is not the case).
- 
--The runtime PM of PCI devices is disabled by default.  It is also blocked by
--pci_pm_init() that runs the pm_runtime_forbid() helper function.  If a PCI
--driver implements the runtime PM callbacks and intends to use the runtime PM
--framework provided by the PM core and the PCI subsystem, it should enable this
--feature by executing the pm_runtime_enable() helper function.  However, the
--driver should not call the pm_runtime_allow() helper function unblocking
--the runtime PM of the device.  Instead, it should allow user space or some
--platform-specific code to do that (user space can do it via sysfs), although
--once it has called pm_runtime_enable(), it must be prepared to handle the
-+The runtime PM of PCI devices is enabled by default by the PCI core.  PCI
-+device drivers do not need to enable it and should not attempt to do so.
-+However, it is blocked by pci_pm_init() that runs the pm_runtime_forbid()
-+helper function.  In addition to that, the runtime PM usage counter of
-+each PCI device is incremented by local_pci_probe() before executing the
-+probe callback provided by the device's driver.
-+
-+If a PCI driver implements the runtime PM callbacks and intends to use the
-+runtime PM framework provided by the PM core and the PCI subsystem, it needs
-+to decrement the device's runtime PM usage counter in its probe callback
-+function.  If it doesn't do that, the counter will always be different from
-+zero for the device and it will never be runtime-suspended.  The simplest
-+way to do that is by calling pm_runtime_put_noidle(), but if the driver
-+wants to schedule an autosuspend right away, for example, it may call
-+pm_runtime_put_autosuspend() instead for this purpose.  Generally, it
-+just needs to call a function that decrements the devices usage counter
-+from its probe routine to make runtime PM work for the device.
-+
-+It is important to remember that the driver's runtime_suspend() callback
-+may be executed right after the usage counter has been decremented, because
-+user space may already have cuased the pm_runtime_allow() helper function
-+unblocking the runtime PM of the device to run via sysfs, so the driver must
-+be prepared to cope with that.
-+
-+The driver itself should not call pm_runtime_allow(), though.  Instead, it
-+should let user space or some platform-specific code do that (user space can
-+do it via sysfs as stated above), but it must be prepared to handle the
- runtime PM of the device correctly as soon as pm_runtime_allow() is called
--(which may happen at any time).  [It also is possible that user space causes
--pm_runtime_allow() to be called via sysfs before the driver is loaded, so in
--fact the driver has to be prepared to handle the runtime PM of the device as
--soon as it calls pm_runtime_enable().]
-+(which may happen at any time, even before the driver is loaded).
-+
-+When the driver's remove callback runs, it has to balance the decrementation
-+of the device's runtime PM usage counter at the probe time.  For this reason,
-+if it has decremented the counter in its probe callback, it must run
-+pm_runtime_get_noresume() in its remove callback.  [Since the core carries
-+out a runtime resume of the device and bumps up the device's usage counter
-+before running the driver's remove callback, the runtime PM of the device
-+is effectively disabled for the duration of the remove execution and all
-+runtime PM helper functions incrementing the device's usage counter are
-+then effectively equivalent to pm_runtime_get_noresume().]
- 
- The runtime PM framework works by processing requests to suspend or resume
- devices, or to check if they are idle (in which cases it is reasonable to
-Index: linux-pm/drivers/pci/pci-driver.c
-===================================================================
---- linux-pm.orig/drivers/pci/pci-driver.c
-+++ linux-pm/drivers/pci/pci-driver.c
-@@ -299,9 +299,10 @@ static long local_pci_probe(void *_ddi)
- 	 * Unbound PCI devices are always put in D0, regardless of
- 	 * runtime PM status.  During probe, the device is set to
- 	 * active and the usage count is incremented.  If the driver
--	 * supports runtime PM, it should call pm_runtime_put_noidle()
--	 * in its probe routine and pm_runtime_get_noresume() in its
--	 * remove routine.
-+	 * supports runtime PM, it should call pm_runtime_put_noidle(),
-+	 * or any other runtime PM helper function decrementing the usage
-+	 * count, in its probe routine and pm_runtime_get_noresume() in
-+	 * its remove routine.
- 	 */
- 	pm_runtime_get_sync(dev);
- 	pci_dev->driver = pci_drv;
+2) if the page to be restored is in high memory, it will be accessed by
+    kmap_atomic, so accessing high memory is ok.
+
+> 3) I'm not sure I understand the changelog correctly. What happens when
+> BIOS reports less memory on hibernation? Will you magically remove
+> memory from kernel at runtime? Will /proc/meminfo be invalid after resume?
+> Will all the memory management tuning need fixing?
+> 
+Oh, I did not notice it before. So deleting the logic of 
+' info->num_physpages != get_num_physpages()' is not suitable. 
+The subset relationship should not be considered in this patch.
+
+> Changelog is really confusing. "failor" is not a english word.
+> 
+Sorry for my poor English, I'll check it again.
+
+> After this patch applied, the panic will be replaced with the warning:
+> 
+> ...
+> 
+> according to your explanation, panic will be replaced with the resume failure,
+> not mere warning.
+> 
+> I believe we have case of "this BIOS problem can not be reasonably worked
+> around" here.
+> 
+Agree, so I guess the current patch is trying to make the problem more acceptable to user,
+at least  make user aware of the inconsistent BIOS.
+
+Thanks!
+
+
+Best Regards,
+Yu
 
