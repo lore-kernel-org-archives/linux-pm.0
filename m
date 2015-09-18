@@ -1,32 +1,47 @@
-From: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH v6 4/5] devfreq_cooling: add trace information
-Date: Fri, 18 Sep 2015 10:04:28 -0400
-Message-ID: <20150918100428.0d2f71f5@gandalf.local.home>
-References: <1441904972-5809-1-git-send-email-javi.merino@arm.com>
-	<1441904972-5809-5-git-send-email-javi.merino@arm.com>
-	<20150910131928.3c88fe28@gandalf.local.home>
-	<20150918135550.GA5283@e104805>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] PCI / PM: Update runtime PM documentation for PCI devices
+Date: Fri, 18 Sep 2015 10:31:49 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1509181028130.1681-100000@iolanthe.rowland.org>
+References: <2256432.RWZW2V6rYx@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150918135550.GA5283@e104805>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "cw00.choi@samsung.com" <cw00.choi@samsung.com>, "edubezval@gmail.com" <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Ingo Molnar <mingo@redhat.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <2256432.RWZW2V6rYx@vostro.rjw.lan>
+Sender: linux-pci-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, Jesse Barnes <jbarnes@virtuousgeek.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 18 Sep 2015 14:55:51 +0100
-Javi Merino <javi.merino@arm.com> wrote:
+On Fri, 18 Sep 2015, Rafael J. Wysocki wrote:
 
-
-> > A tracepoint does some whacky things, and gcc may not optimize this.
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> I've compared the generated assembly on arm, arm64 and x86_64 and both
-> options generate exactly the same code.
+> Section 3.2 "Device Runtime Power Management" of pci.txt has become
+> outdated, so update it to correctly reflect the current code flow.
+> 
+> Also update the comment in local_pci_probe() to document the fact
+> that pm_runtime_put_noidle() is not the only runtime PM helper
+> function that can be used to decrement the device's runtime PM
+> usage counter in .probe().
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  Documentation/power/pci.txt |   51 ++++++++++++++++++++++++++++++++------------
+>  drivers/pci/pci-driver.c    |    7 +++---
+>  2 files changed, 42 insertions(+), 16 deletions(-)
+> 
+> Index: linux-pm/Documentation/power/pci.txt
+> ===================================================================
+> --- linux-pm.orig/Documentation/power/pci.txt
+> +++ linux-pm/Documentation/power/pci.txt
+> @@ -979,20 +979,45 @@ every time right after the runtime_resum
 
-Thanks for checking. I was just curious, and I'm wary about trusting
-gcc to optimize correctly ;-)
+...
 
+> +It is important to remember that the driver's runtime_suspend() callback
+> +may be executed right after the usage counter has been decremented, because
+> +user space may already have cuased the pm_runtime_allow() helper function
 
--- Steve
+s/cuased/caused/.  Otherwise,
+
+Acked-by: Alan Stern <stern@rowland.harvard.edu>
