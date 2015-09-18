@@ -1,50 +1,105 @@
 From: Andreas Dannenberg <dannenberg@ti.com>
-Subject: [PATCH v5 03/11] power: bq24257: Add bit definition for temp sense enable
-Date: Fri, 18 Sep 2015 16:39:51 -0500
-Message-ID: <1442612399-341-4-git-send-email-dannenberg@ti.com>
+Subject: [PATCH v5 01/11] dt: power: bq24257-charger: Cover additional devices
+Date: Fri, 18 Sep 2015 16:39:49 -0500
+Message-ID: <1442612399-341-2-git-send-email-dannenberg@ti.com>
 References: <1442612399-341-1-git-send-email-dannenberg@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:36898 "EHLO bear.ext.ti.com"
+Received: from bear.ext.ti.com ([192.94.94.41]:36892 "EHLO bear.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754046AbbIRVkl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 18 Sep 2015 17:40:41 -0400
+	id S1753526AbbIRVki (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 18 Sep 2015 17:40:38 -0400
 In-Reply-To: <1442612399-341-1-git-send-email-dannenberg@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 Cc: Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Andreas Dannenberg <dannenberg@ti.com>
 
-Adding a missing bit definition for the sake of consistency device model
-vs. bit field representation. No change in functionality.
+Extend the bq24257 charger's device tree documentation to cover the
+bq24250 and bq24251 devices as well feature additions.
 
 Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
 ---
- drivers/power/bq24257_charger.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ .../devicetree/bindings/power/bq24257.txt          | 55 ++++++++++++++++++++--
+ 1 file changed, 50 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
-index 6e50239..bd496e5 100644
---- a/drivers/power/bq24257_charger.c
-+++ b/drivers/power/bq24257_charger.c
-@@ -67,7 +67,7 @@ enum bq24257_fields {
- 	F_VBAT, F_USB_DET,					    /* REG 3 */
- 	F_ICHG, F_ITERM,					    /* REG 4 */
- 	F_LOOP_STATUS, F_LOW_CHG, F_DPDM_EN, F_CE_STATUS, F_VINDPM, /* REG 5 */
--	F_X2_TMR_EN, F_TMR, F_SYSOFF, F_TS_STAT,		    /* REG 6 */
-+	F_X2_TMR_EN, F_TMR, F_SYSOFF, F_TS_EN, F_TS_STAT,	    /* REG 6 */
- 	F_VOVP, F_CLR_VDP, F_FORCE_BATDET, F_FORCE_PTM,		    /* REG 7 */
+diff --git a/Documentation/devicetree/bindings/power/bq24257.txt b/Documentation/devicetree/bindings/power/bq24257.txt
+index 5c9d394..3815897 100644
+--- a/Documentation/devicetree/bindings/power/bq24257.txt
++++ b/Documentation/devicetree/bindings/power/bq24257.txt
+@@ -1,21 +1,66 @@
+-Binding for TI bq24257 Li-Ion Charger
++Binding for TI bq24250/bq24251/bq24257 Li-Ion Charger
  
- 	F_MAX_FIELDS
-@@ -157,6 +157,7 @@ static const struct reg_field bq24257_reg_fields[] = {
- 	[F_X2_TMR_EN]		= REG_FIELD(BQ24257_REG_6, 7, 7),
- 	[F_TMR]			= REG_FIELD(BQ24257_REG_6, 5, 6),
- 	[F_SYSOFF]		= REG_FIELD(BQ24257_REG_6, 4, 4),
-+	[F_TS_EN]		= REG_FIELD(BQ24257_REG_6, 3, 3),
- 	[F_TS_STAT]		= REG_FIELD(BQ24257_REG_6, 0, 2),
- 	/* REG 7 */
- 	[F_VOVP]		= REG_FIELD(BQ24257_REG_7, 5, 7),
+ Required properties:
+ - compatible: Should contain one of the following:
++ * "ti,bq24250"
++ * "ti,bq24251"
+  * "ti,bq24257"
+-- reg:			   integer, i2c address of the device.
++- reg: integer, i2c address of the device.
++- stat-gpios: GPIO used for the devices STAT_IN pin. Alternatively the pin can
++    also be defined through the standard interrupt definition properties (see
++    optional properties section below). Only use one method.
+ - ti,battery-regulation-voltage: integer, maximum charging voltage in uV.
+-- ti,charge-current:	   integer, maximum charging current in uA.
+-- ti,termination-current:  integer, charge will be terminated when current in
+-			   constant-voltage phase drops below this value (in uA).
++- ti,charge-current: integer, maximum charging current in uA.
++- ti,termination-current: integer, charge will be terminated when current in
++    constant-voltage phase drops below this value (in uA).
++
++Optional properties:
++- pg-gpios: GPIO used for connecting the bq2425x device PG (Power Good) pin.
++    This pin is not available on all devices however it should be used if
++    possible as this is the recommended way to obtain the charger's input PG
++    state. If this pin is not specified a software-based approach for PG
++    detection is used.
++- ti,current-limit: The maximum current to be drawn from the charger's input
++    (in uA). If this property is not specified a USB D+/D- signal based charger
++    type detection is used (if available) and the input limit current is set
++    accordingly. If the D+/D- based detection is not available on a given device
++    a default of 500,000 is used (=500mA).
++- ti,ovp-voltage: Configures the over voltage protection voltage (in uV). If
++    not specified a default of 6,5000,000 (=6.5V) is used.
++- ti,in-dpm-voltage: Configures the threshold input voltage for the dynamic
++    power path management (in uV). If not specified a default of 4,360,000
++    (=4.36V) is used.
++- interrupt-parent: Should be the phandle for the interrupt controller. Use in
++    conjunction with "interrupts" and only in case "stat-gpios" is not used.
++- interrupts: Interrupt mapping for GPIO IRQ (configure for both edges). Use in
++    conjunction with "interrupt-parent" and only in case "stat-gpios" is not
++    used.
+ 
+ Example:
+ 
+ bq24257 {
+ 	compatible = "ti,bq24257";
+ 	reg = <0x6a>;
++	stat-gpios = <&gpio1 16 GPIO_ACTIVE_HIGH>;
++	pg-gpios = <&gpio1 28 GPIO_ACTIVE_HIGH>;
+ 
+ 	ti,battery-regulation-voltage = <4200000>;
+ 	ti,charge-current = <1000000>;
+ 	ti,termination-current = <50000>;
+ };
++
++Example:
++
++bq24250 {
++	compatible = "ti,bq24250";
++	reg = <0x6a>;
++	interrupt-parent = <&gpio1>;
++	interrupts = <16 IRQ_TYPE_EDGE_BOTH>;
++
++	ti,battery-regulation-voltage = <4200000>;
++	ti,charge-current = <500000>;
++	ti,termination-current = <50000>;
++	ti,current-limit = <900000>;
++	ti,ovp-voltage = <9500000>;
++	ti,in-dpm-voltage = <4440000>;
++};
 -- 
 1.9.1
 
