@@ -1,109 +1,41 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: [PATCH v2 3/5] OPP: Allow notifiers to call dev_pm_opp_get_{voltage,
- freq} RCU-free
-Date: Fri, 18 Sep 2015 17:52:07 -0700
-Message-ID: <1442623929-4507-4-git-send-email-sboyd@codeaurora.org>
-References: <1442623929-4507-1-git-send-email-sboyd@codeaurora.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] PM / OPP: of_property_count_u32_elems() can return errors
+Date: Fri, 18 Sep 2015 20:21:13 -0700
+Message-ID: <20150919032113.GA24314@linux>
+References: <46a47430b8d65f509d47fe3ad1264c6b23086d61.1442508974.git.viresh.kumar@linaro.org>
+ <20150917181328.GQ23081@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1442623929-4507-1-git-send-email-sboyd@codeaurora.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-arm-msm@vger.kernel.org
-Cc: Nishanth Menon <nm@ti.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, David Collins <collinsd@codeaurora.org>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, Mark Brown <broonie@kernel.org>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Andy Gross <agross@codeaurora.org>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f48.google.com ([209.85.220.48]:34138 "EHLO
+	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754317AbbISDVR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 18 Sep 2015 23:21:17 -0400
+Received: by padhy16 with SMTP id hy16so66350118pad.1
+        for <linux-pm@vger.kernel.org>; Fri, 18 Sep 2015 20:21:17 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20150917181328.GQ23081@codeaurora.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 
-We pass the dev_pm_opp structure to OPP notifiers but the users
-of the notifier need to surround calls to dev_pm_opp_get_*() with
-RCU read locks to avoid lockdep warnings. The notifier is already
-called with the dev_opp's srcu lock held, so it should be safe to
-assume the devm_pm_opp structure is already protected inside the
-notifier. Update the lockdep check for this.
+On 17-09-15, 11:13, Stephen Boyd wrote:
+> > +	count = of_property_count_u32_elems(opp->np, "opp-microvolt");
+> > +	if (count < 0) {
+> 
+> We can't test count for -EINVAL to detect the missing property
+> because -EINVAL is also returned on a non-multiple of u32 length
+> property? Maybe we shouldn't worry about that case and turn
+> -EINVAL into 0.
 
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
----
- drivers/base/power/opp.c | 19 +++++++++++--------
- 1 file changed, 11 insertions(+), 8 deletions(-)
+So you are saying that we go ahead without regulators if a incorrect
+values are present in opp-microvolt? i.e. even if the length property
+was invalid, we return 0 from this function.
 
-diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
-index 35b66c46dcb7..1d8c45e53245 100644
---- a/drivers/base/power/opp.c
-+++ b/drivers/base/power/opp.c
-@@ -146,9 +146,10 @@ static LIST_HEAD(dev_opp_list);
- /* Lock to allow exclusive modification to the device and opp lists */
- static DEFINE_MUTEX(dev_opp_list_lock);
- 
--#define opp_rcu_lockdep_assert()					\
-+#define opp_rcu_lockdep_assert(s)					\
- do {									\
- 	RCU_LOCKDEP_WARN(!rcu_read_lock_held() &&			\
-+				!(s && srcu_read_lock_held(s)) &&	\
- 				!lockdep_is_held(&dev_opp_list_lock),	\
- 			   "Missing rcu_read_lock() or "		\
- 			   "dev_opp_list_lock protection");		\
-@@ -236,9 +237,10 @@ unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
- 	struct dev_pm_opp *tmp_opp;
- 	unsigned long v = 0;
- 
--	opp_rcu_lockdep_assert();
-+	opp_rcu_lockdep_assert(&opp->dev_opp->srcu_head.srcu);
- 
--	tmp_opp = rcu_dereference(opp);
-+	tmp_opp = srcu_dereference_check(opp, &opp->dev_opp->srcu_head.srcu,
-+					 rcu_read_lock_held());
- 	if (IS_ERR_OR_NULL(tmp_opp) || !tmp_opp->available)
- 		pr_err("%s: Invalid parameters\n", __func__);
- 	else
-@@ -268,9 +270,10 @@ unsigned long dev_pm_opp_get_freq(struct dev_pm_opp *opp)
- 	struct dev_pm_opp *tmp_opp;
- 	unsigned long f = 0;
- 
--	opp_rcu_lockdep_assert();
-+	opp_rcu_lockdep_assert(&opp->dev_opp->srcu_head.srcu);
- 
--	tmp_opp = rcu_dereference(opp);
-+	tmp_opp = srcu_dereference_check(opp, &opp->dev_opp->srcu_head.srcu,
-+					 rcu_read_lock_held());
- 	if (IS_ERR_OR_NULL(tmp_opp) || !tmp_opp->available)
- 		pr_err("%s: Invalid parameters\n", __func__);
- 	else
-@@ -437,7 +440,7 @@ struct dev_pm_opp *dev_pm_opp_find_freq_exact(struct device *dev,
- 	struct device_opp *dev_opp;
- 	struct dev_pm_opp *temp_opp, *opp = ERR_PTR(-ERANGE);
- 
--	opp_rcu_lockdep_assert();
-+	opp_rcu_lockdep_assert(NULL);
- 
- 	dev_opp = _find_device_opp(dev);
- 	if (IS_ERR(dev_opp)) {
-@@ -485,7 +488,7 @@ struct dev_pm_opp *dev_pm_opp_find_freq_ceil(struct device *dev,
- 	struct device_opp *dev_opp;
- 	struct dev_pm_opp *temp_opp, *opp = ERR_PTR(-ERANGE);
- 
--	opp_rcu_lockdep_assert();
-+	opp_rcu_lockdep_assert(NULL);
- 
- 	if (!dev || !freq) {
- 		dev_err(dev, "%s: Invalid argument freq=%p\n", __func__, freq);
-@@ -535,7 +538,7 @@ struct dev_pm_opp *dev_pm_opp_find_freq_floor(struct device *dev,
- 	struct device_opp *dev_opp;
- 	struct dev_pm_opp *temp_opp, *opp = ERR_PTR(-ERANGE);
- 
--	opp_rcu_lockdep_assert();
-+	opp_rcu_lockdep_assert(NULL);
- 
- 	if (!dev || !freq) {
- 		dev_err(dev, "%s: Invalid argument freq=%p\n", __func__, freq);
+The problem here is that we will try changing the frequency without
+changing the regulator in that case, and it might not be safe for the
+platform, isn't it?
+
 -- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
+viresh
