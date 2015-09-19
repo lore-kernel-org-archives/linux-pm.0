@@ -1,67 +1,72 @@
 From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH 02/16] PM / OPP: Add 'opp-microvolt-triplets' binding
-Date: Sat, 19 Sep 2015 08:39:56 -0700
-Message-ID: <20150919153956.GB30445@sirena.org.uk>
-References: <cover.1441972771.git.viresh.kumar@linaro.org>
- <254dd353453a495bb0921fa23e430428484f36fa.1441972771.git.viresh.kumar@linaro.org>
- <55F72E65.6000205@kernel.org>
- <20150915033027.GJ32551@linux>
+Subject: Re: [PATCH v2 1/5] regulator: smd: Add floor and corner operations
+Date: Sat, 19 Sep 2015 09:57:13 -0700
+Message-ID: <20150919165712.GH30445@sirena.org.uk>
+References: <1442623929-4507-1-git-send-email-sboyd@codeaurora.org>
+ <1442623929-4507-2-git-send-email-sboyd@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="XOIedfhf+7KOe/yw"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20150915033027.GJ32551@linux>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rob Herring <robh@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, lee.jones@linaro.org, devicetree@vger.kernel.org, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, open list <linux-kernel@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Content-Type: multipart/mixed; boundary="===============0536376546321097136=="
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1442623929-4507-2-git-send-email-sboyd@codeaurora.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Nishanth Menon <nm@ti.com>, David Collins <collinsd@codeaurora.org>, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, Andy Gross <agross@codeaurora.org>, linux-kernel@vger.kernel.org, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Georgi Djakov <georgi.djakov@linaro.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
 
---XOIedfhf+7KOe/yw
+--===============0536376546321097136==
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="jaoouwwPWoQSJZYp"
+Content-Disposition: inline
+
+
+--jaoouwwPWoQSJZYp
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Tue, Sep 15, 2015 at 09:00:27AM +0530, Viresh Kumar wrote:
+On Fri, Sep 18, 2015 at 05:52:05PM -0700, Stephen Boyd wrote:
 
-> [+Cc Mark, I thought I cc'd him earlier, but no, I cc'd him only for
-> the first patch]
+> +EXPORT_SYMBOL(qcom_rpm_set_floor);
 
-I'm reading this on a plane so have no other context and to be honest
-I'm struggling to understand what is being discussed here.  It would be
-really helpful if you were to describe in words what proposed bindings
-are intended to do as well as presenting examples, the examples by
-themselves require the reader to reverse engineer what the semantics are
-intended to be.
+The entire regulator API is EXPORT_SYMBOL_GPL(), adding plain
+EXPORT_SYMBOL() exports is not good.
 
-> But if we can define something like:
-
-> supply0: regulator@f8000000 {
->         regulator-cells or microvolt-cells = 1 or 3;
->         ...
-> }
-
-As far as I can tell this is proposing adding something to the regulator
-binding specifying if users must present either a single value or a
-min/target/max triplet.  This is obviously problematic since regulators
-can be shared - the needs of one user may not match the needs of another
-user, and of course most users should not be specifying voltages at all
-in the device tree in the first place.
-
---XOIedfhf+7KOe/yw
+--jaoouwwPWoQSJZYp
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBCAAGBQJV/YHLAAoJECTWi3JdVIfQOBUH/1cZY0IKlsHJ3WdHQ1y06Onn
-xBBnmjp+EDrGPng7m9Lf6Y4dh0+8vKIPMDdsNnKQA53s6P688w1eu25fKpP7sbMZ
-y6M2P9pmy7aQ4XI66XPufzjYK+EeATUzXMfwDbHrACBBnRmqTuedpb5s6HwvxMJ/
-Lp+iaspSxisNVZjz8hPRzVomh3QXlUbgHJygbZnkd+wKb/5B6TqkZbgqvxxN8HwA
-69rIbUMepEhxdHXmowTuiuIYDGhOQXTJVKn3BVTVju62wVQu8LXYKIy3NOmc85dh
-uXTH/gxmceUY/T58aXGhZ6CGpKLSmygVJ2kwJfD2pS3yS4s9wpFUOXGKtgZh/vM=
-=CCMY
+iQEcBAEBCAAGBQJV/ZPoAAoJECTWi3JdVIfQxjQH/AiDSrAK+P5mMDHbJuQ+uwaG
+CMngt+9tquBjYh16ECDiqDR4cgAmfKEqF3sjUe+V5Il8Yc+qd/Y8ZzdqRc8nGvVN
+M4epyR+tzyUOCL4nMT0RPlCPM21czIF71GtDjRA6WTeSYS1CbE+QT7sJEpQiMdTW
+PCyLk4Ef/0tKXsgL+I8re7uxlHHHrL7mtv7GrXrj+oVTBCK5v5hkRZTIshRfZQ62
+K96dMqRwP4A2ptivJzcR/6i2oZC+T8nRnwRw+VdE/n6MsAKt8QAcjash2Q9/9ki/
+covareyMqYbxPx9Zrrs8RIh8c2LGhDYdjegZSUmDvqP0HzG0NHCXee8WMK5KBfs=
+=uuSh
 -----END PGP SIGNATURE-----
 
---XOIedfhf+7KOe/yw--
+--jaoouwwPWoQSJZYp--
+
+
+--===============0536376546321097136==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+linux-arm-kernel mailing list
+linux-arm-kernel@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+
+--===============0536376546321097136==--
