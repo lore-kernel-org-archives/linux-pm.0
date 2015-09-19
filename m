@@ -1,46 +1,67 @@
 From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH v2 0/5] Support CPR on MSM8916
-Date: Sat, 19 Sep 2015 14:46:17 +0100
-Message-ID: <20150919134617.GL12027@sirena.org.uk>
-References: <1442623929-4507-1-git-send-email-sboyd@codeaurora.org>
+Subject: Re: [PATCH 02/16] PM / OPP: Add 'opp-microvolt-triplets' binding
+Date: Sat, 19 Sep 2015 08:39:56 -0700
+Message-ID: <20150919153956.GB30445@sirena.org.uk>
+References: <cover.1441972771.git.viresh.kumar@linaro.org>
+ <254dd353453a495bb0921fa23e430428484f36fa.1441972771.git.viresh.kumar@linaro.org>
+ <55F72E65.6000205@kernel.org>
+ <20150915033027.GJ32551@linux>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="bM6T5tSEJf/15wE6"
+	protocol="application/pgp-signature"; boundary="XOIedfhf+7KOe/yw"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1442623929-4507-1-git-send-email-sboyd@codeaurora.org>
+In-Reply-To: <20150915033027.GJ32551@linux>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Nishanth Menon <nm@ti.com>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Andy Gross <agross@codeaurora.org>, linux-pm@vger.kernel.org, David Collins <collinsd@codeaurora.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rob Herring <robh@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, lee.jones@linaro.org, devicetree@vger.kernel.org, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, open list <linux-kernel@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
 
---bM6T5tSEJf/15wE6
+--XOIedfhf+7KOe/yw
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Fri, Sep 18, 2015 at 05:52:04PM -0700, Stephen Boyd wrote:
-> This patch series adds support for CPR on MSM8916. The first
-> patch exposes a corner voting API to the CPR driver so that we can
+On Tue, Sep 15, 2015 at 09:00:27AM +0530, Viresh Kumar wrote:
 
-You might want to expand on the acronym CPR since I'm reasonably sure
-that you don't in fact mean the normal expansion cardiopulmonary
-resuscitation.
+> [+Cc Mark, I thought I cc'd him earlier, but no, I cc'd him only for
+> the first patch]
 
---bM6T5tSEJf/15wE6
+I'm reading this on a plane so have no other context and to be honest
+I'm struggling to understand what is being discussed here.  It would be
+really helpful if you were to describe in words what proposed bindings
+are intended to do as well as presenting examples, the examples by
+themselves require the reader to reverse engineer what the semantics are
+intended to be.
+
+> But if we can define something like:
+
+> supply0: regulator@f8000000 {
+>         regulator-cells or microvolt-cells = 1 or 3;
+>         ...
+> }
+
+As far as I can tell this is proposing adding something to the regulator
+binding specifying if users must present either a single value or a
+min/target/max triplet.  This is obviously problematic since regulators
+can be shared - the needs of one user may not match the needs of another
+user, and of course most users should not be specifying voltages at all
+in the device tree in the first place.
+
+--XOIedfhf+7KOe/yw
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQEcBAEBCAAGBQJV/WclAAoJECTWi3JdVIfQqy4H/RdZJEe5gM5eBZf0Uvm6it4P
-kYY20EBjr0lmD0IESgi9lgEHqDfWKSgKJ+dM7hTdq7JVBAEhYaR8zKe5VmNR4//j
-ew7PN6lzRyVkXF0K+5PIvPpo9ndO56JAGgn29LJ/n1yJDQaZoph5iQ93/eMN43sv
-OZPjmhIxgNNl4CIXj7tMqEeCgkdui8x8btuBhNPqcdTncjP7NQkN/T6HA7O+y3RR
-3qkx87gppnLGectgGulfLjawwkGaok+Qg5HlBeSNFAgaiQ2Fu4k2Z5YE3TV6xyeh
-m+CfRnZyWhti25xB5l6yyFLzyc+nwb7oThT1Oa+WpAwpl1sp5lHCFm3kcRPOCHs=
-=Cnw4
+iQEcBAEBCAAGBQJV/YHLAAoJECTWi3JdVIfQOBUH/1cZY0IKlsHJ3WdHQ1y06Onn
+xBBnmjp+EDrGPng7m9Lf6Y4dh0+8vKIPMDdsNnKQA53s6P688w1eu25fKpP7sbMZ
+y6M2P9pmy7aQ4XI66XPufzjYK+EeATUzXMfwDbHrACBBnRmqTuedpb5s6HwvxMJ/
+Lp+iaspSxisNVZjz8hPRzVomh3QXlUbgHJygbZnkd+wKb/5B6TqkZbgqvxxN8HwA
+69rIbUMepEhxdHXmowTuiuIYDGhOQXTJVKn3BVTVju62wVQu8LXYKIy3NOmc85dh
+uXTH/gxmceUY/T58aXGhZ6CGpKLSmygVJ2kwJfD2pS3yS4s9wpFUOXGKtgZh/vM=
+=CCMY
 -----END PGP SIGNATURE-----
 
---bM6T5tSEJf/15wE6--
+--XOIedfhf+7KOe/yw--
