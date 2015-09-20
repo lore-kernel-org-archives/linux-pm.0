@@ -1,44 +1,61 @@
-From: Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
-Subject: Re: [PATCH v3 0/6] ARM: berlin: add cpufreq support
-Date: Sun, 20 Sep 2015 20:23:19 +0200
-Message-ID: <55FEF997.8030002@gmail.com>
-References: <1442484905-15656-1-git-send-email-antoine.tenart@free-electrons.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [RFCv5 PATCH 32/46] sched: Energy-aware wake-up task placement
+Date: Sun, 20 Sep 2015 11:39:16 -0700
+Message-ID: <55FEFD54.3010206@linaro.org>
+References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
+ <1436293469-25707-33-git-send-email-morten.rasmussen@arm.com>
+ <20150902171131.GA12510@leoy-linaro> <55FBE8AF.3050200@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1442484905-15656-1-git-send-email-antoine.tenart@free-electrons.com>
+In-Reply-To: <55FBE8AF.3050200@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Antoine Tenart <antoine.tenart@free-electrons.com>
-Cc: zmxu@marvell.com, jszhang@marvell.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>, Leo Yan <leo.yan@linaro.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>
+Cc: "peterz@infradead.org" <peterz@infradead.org>, "mingo@redhat.com" <mingo@redhat.com>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "yuyang.du@intel.com" <yuyang.du@intel.com>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Juri Lelli <Juri.Lelli@arm.com>, "sgurrappadi@nvidia.com" <sgurrappadi@nvidia.com>, "pang.xunlei@zte.com.cn" <pang.xunlei@zte.com.cn>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 17.09.2015 12:14, Antoine Tenart wrote:
-> This series adds the cpufreq support to the Berlin SoCs, using
-> cpufreq-dt.
-[...]
-> Antoine Tenart (6):
->    clk: berlin: move MAX_CLKS out of drivers/clk/berlin
->    clk: berlin: add cpuclk
->    ARM: berlin: dts: add the cpufreq-dt bindings on the BG2Q
->    ARM: berlin: dts: add the cpufreq-dt bindings on the BG2
->    ARM: berlin: dts: add the cpufreq-dt bindings on the BG2CD
->    ARM: berlin: register cpufreq-dt
+On 09/18/2015 03:34 AM, Dietmar Eggemann wrote:
+>> Here should consider scenario for two groups have same capacity?
+>> This will benefit for the case LITTLE.LITTLE. So the code will be
+>> looks like below:
+>>
+>> 	int target_sg_cpu = INT_MAX;
+>>
+>> 	if (capacity_of(max_cap_cpu) <= target_max_cap &&
+>>             task_fits_capacity(p, max_cap_cpu)) {
+>>
+>>                 if ((capacity_of(max_cap_cpu) == target_max_cap) &&
+>> 		    (target_sg_cpu < max_cap_cpu))
+>> 		        continue;
+>>
+>> 		target_sg_cpu = max_cap_cpu;
+>> 		sg_target = sg;
+>> 		target_max_cap = capacity_of(max_cap_cpu);
+>> 	}
+>>
+> 
+> It's true that on your SMP system the target sched_group 'sg_target'
+> depends only on 'task_cpu(p)' because this determines sched_domain 'sd'
+> (and so the order of sched_groups for the iteration).
+> 
+> So the current do-while loop to select 'sg_target' for an SMP system
+> makes little sense.
+> 
+> But why should we favour the first sched_group (cluster) (the one w/ the
+> lower max_cap_cpu number) in this situation?
 
-Applied 1, 2 with Mike's and Stephen's Acked-by to berlin/driver.
+Running the originally proposed code on a system with two identical
+clusters, it looks like we'll always end up doing an energy-aware search
+in the task's prev_cpu cluster (sched_group). If you had small tasks
+scattered across both clusters, energy_aware_wake_cpu() would not
+consider condensing them on a single cluster. Leo was this the issue you
+were seeing?
 
-Applied 3, 4, 5 to berlin/dt.
+However I think there may be negative side effects with the proposed
+policy above as well - won't this cause us to pack the first cluster
+until it's 100% full (running at fmax) before using the second cluster?
+That would also be bad for power.
 
-Applied 6 to berlin/driver again.
-
-Sebastian
-
->   arch/arm/boot/dts/berlin2.dtsi       | 10 ++++++++++
->   arch/arm/boot/dts/berlin2cd.dtsi     |  8 ++++++++
->   arch/arm/boot/dts/berlin2q.dtsi      | 11 +++++++++++
->   arch/arm/mach-berlin/berlin.c        |  6 ++++++
->   drivers/clk/berlin/bg2.c             |  1 -
->   drivers/clk/berlin/bg2q.c            | 13 ++++++-------
->   include/dt-bindings/clock/berlin2.h  |  2 ++
->   include/dt-bindings/clock/berlin2q.h |  3 +++
->   8 files changed, 46 insertions(+), 8 deletions(-)
->
+thanks,
+Steve
