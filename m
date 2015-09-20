@@ -1,365 +1,146 @@
-From: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [RFC PATCH v2 1/4] thermal: core: enhance
- thermal_zone_device_update
-Date: Sun, 20 Sep 2015 11:31:59 +0100
-Message-ID: <55FE8B1F.80400@kernel.org>
-References: <1442529054-25803-1-git-send-email-srinivas.pandruvada@linux.intel.com>
- <1442529054-25803-2-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
+Subject: Re: [PATCH] clk: readd refcounting for struct clk instances [when used in pm_clk_add_clk(), genpd]
+Date: Sun, 20 Sep 2015 14:38:38 +0200
+Message-ID: <1513357.mLLrRzFF5g@diego>
+References: <1878691.zhVxsBBBGg@diego> <20150916003931.GK23081@codeaurora.org> <9158634.8HmHM8CzF6@diego>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1442529054-25803-2-git-send-email-srinivas.pandruvada-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Srinivas Pandruvada <srinivas.pandruvada-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-Reply-To: <9158634.8HmHM8CzF6@diego>
+Sender: linux-clk-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, mturquette@baylibre.com, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Kevin Hilman <khilman@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 17/09/15 23:30, Srinivas Pandruvada wrote:
-> thermal_zone_device_update is called by thermal core and clients to
-> trigger reading of temperature, evaluation of trips and take governor
-> specified actions. There can be number of reasons this may be triggered,
-> for example when HW calculates new temperature sample or violation of a
-> threshold. Since this is the only interface available for client drivers
-> to trigger thermal core actions, it should also should have a way to
-> specify the trigger event type.
-> This change adds additional parameter to specify event. This is optional
-> for the driver to specify event type, in that case this can be just
-> THERMAL_DEVICE_EVENT_NONE. Alternately they can select
-> THERMAL_DEVICE_EVENT_THRESHOLD for temperature threshold event,
-> THERMAL_DEVICE_EVENT_TEMP_SAMPLE for new temperature sample notification,
-> THERMAL_DEVICE_TRIP_TEMP_CHANGE for a temperature trip change.
-This seems sensible to me.  In the next patch I raise the question
-if you want to be able to filter your trigger based on which of these
-occurs.. I guess that can be added later without breaking ABI so maybe
-leave it for now.
-> 
-> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-> ---
->  drivers/acpi/thermal.c                                 |  2 +-
->  drivers/platform/x86/acerhdf.c                         |  2 +-
->  drivers/thermal/db8500_thermal.c                       |  2 +-
->  drivers/thermal/hisi_thermal.c                         |  3 ++-
->  drivers/thermal/imx_thermal.c                          |  4 ++--
->  drivers/thermal/int340x_thermal/int340x_thermal_zone.h |  2 +-
->  drivers/thermal/intel_soc_dts_iosf.c                   |  3 ++-
->  drivers/thermal/of-thermal.c                           |  2 +-
->  drivers/thermal/qcom-spmi-temp-alarm.c                 |  2 +-
->  drivers/thermal/rcar_thermal.c                         |  3 ++-
->  drivers/thermal/rockchip_thermal.c                     |  3 ++-
->  drivers/thermal/samsung/exynos_tmu.c                   |  2 +-
->  drivers/thermal/st/st_thermal_memmap.c                 |  3 ++-
->  drivers/thermal/thermal_core.c                         | 11 ++++++-----
->  drivers/thermal/ti-soc-thermal/ti-thermal-common.c     |  4 ++--
->  drivers/thermal/x86_pkg_temp_thermal.c                 |  3 ++-
->  include/linux/thermal.h                                | 13 +++++++++++--
->  17 files changed, 40 insertions(+), 24 deletions(-)
-> 
-> diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
-> index 30d8518..e4f547b 100644
-> --- a/drivers/acpi/thermal.c
-> +++ b/drivers/acpi/thermal.c
-> @@ -520,7 +520,7 @@ static void acpi_thermal_check(void *data)
->  	if (!tz->tz_enabled)
->  		return;
->  
-> -	thermal_zone_device_update(tz->thermal_zone);
-> +	thermal_zone_device_update(tz->thermal_zone, THERMAL_DEVICE_EVENT_NONE);
->  }
->  
->  /* sys I/F for generic thermal sysfs support */
-> diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
-> index 460fa67..6382d4e 100644
-> --- a/drivers/platform/x86/acerhdf.c
-> +++ b/drivers/platform/x86/acerhdf.c
-> @@ -405,7 +405,7 @@ static inline void acerhdf_enable_kernelmode(void)
->  	kernelmode = 1;
->  
->  	thz_dev->polling_delay = interval*1000;
-> -	thermal_zone_device_update(thz_dev);
-> +	thermal_zone_device_update(thz_dev, THERMAL_DEVICE_EVENT_NONE);
->  	pr_notice("kernel mode fan control ON\n");
->  }
->  
-> diff --git a/drivers/thermal/db8500_thermal.c b/drivers/thermal/db8500_thermal.c
-> index 652acd8..e4cbbe6 100644
-> --- a/drivers/thermal/db8500_thermal.c
-> +++ b/drivers/thermal/db8500_thermal.c
-> @@ -306,7 +306,7 @@ static void db8500_thermal_work(struct work_struct *work)
->  	if (cur_mode == THERMAL_DEVICE_DISABLED)
->  		return;
->  
-> -	thermal_zone_device_update(pzone->therm_dev);
-> +	thermal_zone_device_update(pzone->therm_dev, THERMAL_DEVICE_EVENT_NONE);
->  	dev_dbg(&pzone->therm_dev->device, "thermal work finished.\n");
->  }
->  
-> diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-> index 36d0729..65f3432 100644
-> --- a/drivers/thermal/hisi_thermal.c
-> +++ b/drivers/thermal/hisi_thermal.c
-> @@ -227,7 +227,8 @@ static irqreturn_t hisi_thermal_alarm_irq_thread(int irq, void *dev)
->  	mutex_unlock(&data->thermal_lock);
->  
->  	for (i = 0; i < HISI_MAX_SENSORS; i++)
-> -		thermal_zone_device_update(data->sensors[i].tzd);
-> +		thermal_zone_device_update(data->sensors[i].tzd,
-> +					   THERMAL_DEVICE_EVENT_NONE);
->  
->  	return IRQ_HANDLED;
->  }
-> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-> index 4bec1d3..24b3aa6 100644
-> --- a/drivers/thermal/imx_thermal.c
-> +++ b/drivers/thermal/imx_thermal.c
-> @@ -249,7 +249,7 @@ static int imx_set_mode(struct thermal_zone_device *tz,
->  	}
->  
->  	data->mode = mode;
-> -	thermal_zone_device_update(tz);
-> +	thermal_zone_device_update(tz, THERMAL_DEVICE_EVENT_NONE);
->  
->  	return 0;
->  }
-> @@ -436,7 +436,7 @@ static irqreturn_t imx_thermal_alarm_irq_thread(int irq, void *dev)
->  	dev_dbg(&data->tz->device, "THERMAL ALARM: T > %d\n",
->  		data->alarm_temp / 1000);
->  
-> -	thermal_zone_device_update(data->tz);
-> +	thermal_zone_device_update(data->tz, THERMAL_DEVICE_EVENT_NONE);
->  
->  	return IRQ_HANDLED;
->  }
-> diff --git a/drivers/thermal/int340x_thermal/int340x_thermal_zone.h b/drivers/thermal/int340x_thermal/int340x_thermal_zone.h
-> index aaadf72..2f93b85 100644
-> --- a/drivers/thermal/int340x_thermal/int340x_thermal_zone.h
-> +++ b/drivers/thermal/int340x_thermal/int340x_thermal_zone.h
-> @@ -62,7 +62,7 @@ static inline void *int340x_thermal_zone_get_priv_data(
->  static inline void int340x_thermal_zone_device_update(
->  			struct int34x_thermal_zone *tzone)
->  {
-> -	thermal_zone_device_update(tzone->zone);
-> +	thermal_zone_device_update(tzone->zone, THERMAL_DEVICE_EVENT_THRESHOLD);
->  }
->  
->  #endif
-> diff --git a/drivers/thermal/intel_soc_dts_iosf.c b/drivers/thermal/intel_soc_dts_iosf.c
-> index 5841d1d..4402ab0 100644
-> --- a/drivers/thermal/intel_soc_dts_iosf.c
-> +++ b/drivers/thermal/intel_soc_dts_iosf.c
-> @@ -392,7 +392,8 @@ void intel_soc_dts_iosf_interrupt_handler(struct intel_soc_dts_sensors *sensors)
->  
->  		for (i = 0; i < SOC_MAX_DTS_SENSORS; ++i) {
->  			pr_debug("TZD update for zone %d\n", i);
-> -			thermal_zone_device_update(sensors->soc_dts[i].tzone);
-> +			thermal_zone_device_update(sensors->soc_dts[i].tzone,
-> +						THERMAL_DEVICE_EVENT_THRESHOLD);
->  		}
->  	} else
->  		spin_unlock_irqrestore(&sensors->intr_notify_lock, flags);
-> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-> index 42b7d42..4168bf9 100644
-> --- a/drivers/thermal/of-thermal.c
-> +++ b/drivers/thermal/of-thermal.c
-> @@ -292,7 +292,7 @@ static int of_thermal_set_mode(struct thermal_zone_device *tz,
->  	mutex_unlock(&tz->lock);
->  
->  	data->mode = mode;
-> -	thermal_zone_device_update(tz);
-> +	thermal_zone_device_update(tz, THERMAL_DEVICE_EVENT_NONE);
->  
->  	return 0;
->  }
-> diff --git a/drivers/thermal/qcom-spmi-temp-alarm.c b/drivers/thermal/qcom-spmi-temp-alarm.c
-> index b677aad..bf3da3c 100644
-> --- a/drivers/thermal/qcom-spmi-temp-alarm.c
-> +++ b/drivers/thermal/qcom-spmi-temp-alarm.c
-> @@ -150,7 +150,7 @@ static irqreturn_t qpnp_tm_isr(int irq, void *data)
->  {
->  	struct qpnp_tm_chip *chip = data;
->  
-> -	thermal_zone_device_update(chip->tz_dev);
-> +	thermal_zone_device_update(chip->tz_dev, THERMAL_DEVICE_EVENT_NONE);
->  
->  	return IRQ_HANDLED;
->  }
-> diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
-> index 5d4ae7d..2eac44a 100644
-> --- a/drivers/thermal/rcar_thermal.c
-> +++ b/drivers/thermal/rcar_thermal.c
-> @@ -308,7 +308,8 @@ static void rcar_thermal_work(struct work_struct *work)
->  
->  	rcar_thermal_get_temp(priv->zone, &nctemp);
->  	if (nctemp != cctemp)
-> -		thermal_zone_device_update(priv->zone);
-> +		thermal_zone_device_update(priv->zone,
-> +					   THERMAL_DEVICE_EVENT_NONE);
->  }
->  
->  static u32 rcar_thermal_had_changed(struct rcar_thermal_priv *priv, u32 status)
-> diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-> index c89ffb2..b3d7214 100644
-> --- a/drivers/thermal/rockchip_thermal.c
-> +++ b/drivers/thermal/rockchip_thermal.c
-> @@ -361,7 +361,8 @@ static irqreturn_t rockchip_thermal_alarm_irq_thread(int irq, void *dev)
->  	thermal->chip->irq_ack(thermal->regs);
->  
->  	for (i = 0; i < ARRAY_SIZE(thermal->sensors); i++)
-> -		thermal_zone_device_update(thermal->sensors[i].tzd);
-> +		thermal_zone_device_update(thermal->sensors[i].tzd,
-> +					   THERMAL_DEVICE_EVENT_NONE);
->  
->  	return IRQ_HANDLED;
->  }
-> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-> index 0bae8cc..80ccc92 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.c
-> +++ b/drivers/thermal/samsung/exynos_tmu.c
-> @@ -223,7 +223,7 @@ static void exynos_report_trigger(struct exynos_tmu_data *p)
->  		return;
->  	}
->  
-> -	thermal_zone_device_update(tz);
-> +	thermal_zone_device_update(tz, THERMAL_DEVICE_EVENT_NONE);
->  
->  	mutex_lock(&tz->lock);
->  	/* Find the level for which trip happened */
-> diff --git a/drivers/thermal/st/st_thermal_memmap.c b/drivers/thermal/st/st_thermal_memmap.c
-> index fc0c9e1..45b6b9f 100644
-> --- a/drivers/thermal/st/st_thermal_memmap.c
-> +++ b/drivers/thermal/st/st_thermal_memmap.c
-> @@ -42,7 +42,8 @@ static irqreturn_t st_mmap_thermal_trip_handler(int irq, void *sdata)
->  {
->  	struct st_thermal_sensor *sensor = sdata;
->  
-> -	thermal_zone_device_update(sensor->thermal_dev);
-> +	thermal_zone_device_update(sensor->thermal_dev,
-> +				   THERMAL_DEVICE_EVENT_NONE);
->  
->  	return IRQ_HANDLED;
->  }
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index 5e5fc70..18e7802 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -536,7 +536,8 @@ static void update_temperature(struct thermal_zone_device *tz)
->  				tz->last_temperature, tz->temperature);
->  }
->  
-> -void thermal_zone_device_update(struct thermal_zone_device *tz)
-> +void thermal_zone_device_update(struct thermal_zone_device *tz,
-> +				enum thermal_device_event_type event)
->  {
->  	int count;
->  
-> @@ -555,7 +556,7 @@ static void thermal_zone_device_check(struct work_struct *work)
->  	struct thermal_zone_device *tz = container_of(work, struct
->  						      thermal_zone_device,
->  						      poll_queue.work);
-> -	thermal_zone_device_update(tz);
-> +	thermal_zone_device_update(tz, THERMAL_DEVICE_EVENT_NONE);
->  }
->  
->  /* sys I/F for thermal zone */
-> @@ -794,7 +795,7 @@ passive_store(struct device *dev, struct device_attribute *attr,
->  
->  	tz->forced_passive = state;
->  
-> -	thermal_zone_device_update(tz);
-> +	thermal_zone_device_update(tz, THERMAL_DEVICE_EVENT_NONE);
->  
->  	return count;
->  }
-> @@ -885,7 +886,7 @@ emul_temp_store(struct device *dev, struct device_attribute *attr,
->  	}
->  
->  	if (!ret)
-> -		thermal_zone_device_update(tz);
-> +		thermal_zone_device_update(tz, THERMAL_DEVICE_EVENT_NONE);
->  
->  	return ret ? ret : count;
->  }
-> @@ -1872,7 +1873,7 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
->  
->  	INIT_DELAYED_WORK(&(tz->poll_queue), thermal_zone_device_check);
->  
-> -	thermal_zone_device_update(tz);
-> +	thermal_zone_device_update(tz, THERMAL_DEVICE_EVENT_NONE);
->  
->  	return tz;
->  
-> diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-> index b213a12..ab2a011 100644
-> --- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-> +++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-> @@ -52,7 +52,7 @@ static void ti_thermal_work(struct work_struct *work)
->  	struct ti_thermal_data *data = container_of(work,
->  					struct ti_thermal_data, thermal_wq);
->  
-> -	thermal_zone_device_update(data->ti_thermal);
-> +	thermal_zone_device_update(data->ti_thermal, THERMAL_DEVICE_EVENT_NONE);
->  
->  	dev_dbg(&data->ti_thermal->device, "updated thermal zone %s\n",
->  		data->ti_thermal->type);
-> @@ -205,7 +205,7 @@ static int ti_thermal_set_mode(struct thermal_zone_device *thermal,
->  	data->mode = mode;
->  	ti_bandgap_write_update_interval(bgp, data->sensor_id,
->  					data->ti_thermal->polling_delay);
-> -	thermal_zone_device_update(data->ti_thermal);
-> +	thermal_zone_device_update(data->ti_thermal, THERMAL_DEVICE_EVENT_NONE);
->  	dev_dbg(&thermal->device, "thermal polling set for duration=%d msec\n",
->  		data->ti_thermal->polling_delay);
->  
-> diff --git a/drivers/thermal/x86_pkg_temp_thermal.c b/drivers/thermal/x86_pkg_temp_thermal.c
-> index 7fc919f..849f682 100644
-> --- a/drivers/thermal/x86_pkg_temp_thermal.c
-> +++ b/drivers/thermal/x86_pkg_temp_thermal.c
-> @@ -348,7 +348,8 @@ static void pkg_temp_thermal_threshold_work_fn(struct work_struct *work)
->  	}
->  	if (notify) {
->  		pr_debug("thermal_zone_device_update\n");
-> -		thermal_zone_device_update(phdev->tzone);
-> +		thermal_zone_device_update(phdev->tzone,
-> +					   THERMAL_DEVICE_EVENT_THRESHOLD);
->  	}
->  }
->  
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index 17292fe..c074f6a 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -87,6 +87,13 @@ enum thermal_trend {
->  	THERMAL_TREND_DROP_FULL, /* apply lowest cooling action */
->  };
->  
-> +enum thermal_device_event_type {
-> +	THERMAL_DEVICE_EVENT_NONE, /* No specific reason */
-> +	THERMAL_DEVICE_EVENT_THRESHOLD, /* temp thereshold event */
-> +	THERMAL_DEVICE_EVENT_TEMP_SAMPLE, /* New temp sample notify */
-> +	THERMAL_DEVICE_TRIP_TEMP_CHANGE, /* trip temp change */
-> +};
-> +
->  struct thermal_zone_device_ops {
->  	int (*bind) (struct thermal_zone_device *,
->  		     struct thermal_cooling_device *);
-> @@ -393,7 +400,8 @@ int thermal_zone_bind_cooling_device(struct thermal_zone_device *, int,
->  				     unsigned int);
->  int thermal_zone_unbind_cooling_device(struct thermal_zone_device *, int,
->  				       struct thermal_cooling_device *);
-> -void thermal_zone_device_update(struct thermal_zone_device *);
-> +void thermal_zone_device_update(struct thermal_zone_device *,
-> +				enum thermal_device_event_type);
->  
->  struct thermal_cooling_device *thermal_cooling_device_register(char *, void *,
->  		const struct thermal_cooling_device_ops *);
-> @@ -436,7 +444,8 @@ static inline int thermal_zone_unbind_cooling_device(
->  	struct thermal_zone_device *tz, int trip,
->  	struct thermal_cooling_device *cdev)
->  { return -ENODEV; }
-> -static inline void thermal_zone_device_update(struct thermal_zone_device *tz)
-> +static inline void thermal_zone_device_update(struct thermal_zone_device *tz,
-> +					      enum thermal_device_event_type)
->  { }
->  static inline struct thermal_cooling_device *
->  thermal_cooling_device_register(char *type, void *devdata,
-> 
+Hi Stephen,
+
+Am Mittwoch, 16. September 2015, 11:18:05 schrieb Heiko St=FCbner:
+> Am Dienstag, 15. September 2015, 17:39:31 schrieb Stephen Boyd:
+> > On 09/15, Heiko St=FCbner wrote:
+> > > With the split into struct clk and struct clk_core, clocks lost t=
+he
+> > > ability for nested __clk_get clkdev calls. While it stays possibl=
+e to
+> > > call __clk_get, the first call to (__)clk_put will clear the stru=
+ct clk,
+> > > making subsequent clk_put calls run into a NULL pointer dereferen=
+ce.
+> > >=20
+> > > One prime example of this sits in the generic power domain code, =
+where
+> > > it
+> > > is possible to add the clocks both by name and by passing in a st=
+ruct
+> > > clk
+> > > via pm_clk_add_clk(). __pm_clk_add() in turn then calls __clk_get=
+ to
+> > > increase the refcount, so that the original code can put the cloc=
+k
+> > > again.
+> > >=20
+> > > A possible call-path looks like
+> > > clk =3D of_clk_get();
+> > > pm_clk_add_clk(dev, clk);
+> > > clk_put(clk);
+> > >=20
+> > > with pm_clk_add_clk() =3D> __pm_clk_add() then calling __clk_get =
+on the
+> > > clk
+> > > and later clk_put when the pm clock list gets destroyed, thus cre=
+ating
+> > > a NULL pointer deref, as the struct clk doesn't exist anymore.
+> > >=20
+> > > So add a separate refcounting for struct clk instances and only c=
+lean up
+> > > once the refcount reaches zero.
+> > >=20
+> > > Signed-off-by: Heiko Stuebner <heiko@sntech.de>
+> > > ---
+> > > I stumbled upon this while applying the new Rockchip power-domain
+> > > driver,
+> > > but I guess the underlying issue is universal and probably presen=
+t since
+> > > the original clk/clk_core split, so this probably counts as fix.
+> >=20
+> > Ok. The fix makes sense, but I wonder why we do this. Perhaps we
+> > should stop exporting __clk_get() and __clk_put() to everything
+> > that uses clkdev in the kernel. They're called per-user clks for
+> > a reason. There's one user. Now we have two users of the same
+> > struct clk instance, so we have to refcount it too? I hope the
+> > shared clk instance isn't being used to set rates in two pieces
+> > of code.
+> >=20
+> > And this only affects pm_clk_add_clk() callers right? So the only
+> > caller in the kernel (drivers/clk/shmobile/clk-mstp.c) doesn't
+> > seem to have this problem right now because it never calls
+> > clk_put() on the pointer it passes to pm_clk_add_clk().
+>=20
+> As written above, I stumbled upon this with the new Rockchip power-do=
+main
+> driver [0] which calls pm_clk_add_clk in its rockchip_pd_attach_dev()
+> function
+>=20
+>=20
+> [0] http://www.spinics.net/lists/kernel/msg2070432.html
+>=20
+> > So what if we did the patch below? This would rely on callers not
+> > calling clk_put() before calling pm_clk_remove() or
+> > pm_clk_destroy(), and the life cycle would be clear, but the
+> > sharing is still there. Or we could say that after a clk is given
+> > to pm_clk_add_clk() that the caller shouldn't touch it anymore,
+> > like shmobile is doing right now. Then there's nothing to do
+> > besides remove the extra __clk_get() call in the pm layer.
+>=20
+> I guess that is the call of the genpd people (Rafael and Pavel accord=
+ing to
+> get_maintainers.pl). I'm very much fine with adapting the Rockchip po=
+wer-
+> domain driver as needed to new handling paradigms.
+>=20
+> Personally I'd prefer your solution of making the initial handler do =
+all the
+> getting and putting, as doing clk_get in the power-domain driver and
+> relying on clk_put being done in the genpd core feels awkward. Althou=
+gh
+> that solution would mean, the calling driver would also need to keep =
+track
+> of clocks, while the current rockchip power-domain driver can just ca=
+ll
+> clk_put after handing the clock of to genpd.
+
+after looking more into the suggested change, I'd like to retract that=20
+statement :-) .
+
+=46or reference the code in question is at [0] and currently=20
+rockchip_pd_attach_dev() can just do (when expecting refcounting works)
+
+	while ((clk =3D of_clk_get(dev->of_node, i++)) && !IS_ERR(clk)) {
+		error =3D pm_clk_add_clk(dev, clk);
+		clk_put(clk);
+	}
+
+effectively handing the clock off to the power-domain code.
+
+These clocks are necessary to be on for the synchronous reset of the de=
+vice=20
+when powerdomain state changes and thus get read from the device nodes =
+as=20
+discussed during the 18 revision the powerdomain code took.
+
+Now if the caller really needs to keep track of that, this would requir=
+e=20
+duplicating large parts of the pm-clock handling, like the keeping trac=
+k of=20
+what devices actually got attached to what power-domain, and of course =
+all the=20
+clock references of each device, as they would need to be "put" in=20
+rockchip_pd_detach_dev() then.
+
+
+Heiko
+
+
+[0] https://git.kernel.org/cgit/linux/kernel/git/mmind/linux-rockchip.g=
+it/commit/?h=3Dv4.4-armsoc/drivers&id=3De329c10ed7f244da48fa17ab85fb266=
+bf5bbebcc
