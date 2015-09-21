@@ -1,90 +1,85 @@
 From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: [PATCH 04/17] powerpc: mpic: use IRQCHIP_SKIP_SET_WAKE instead of redundant mpic_irq_set_wake
-Date: Mon, 21 Sep 2015 16:47:00 +0100
-Message-ID: <1442850433-5903-5-git-send-email-sudeep.holla@arm.com>
+Subject: [PATCH 12/17] ARM: OMAP2+: remove misuse of IRQF_NO_SUSPEND flag
+Date: Mon, 21 Sep 2015 16:47:08 +0100
+Message-ID: <1442850433-5903-13-git-send-email-sudeep.holla@arm.com>
 References: <1442850433-5903-1-git-send-email-sudeep.holla@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1442850433-5903-1-git-send-email-sudeep.holla@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Scott Wood <scottwood@freescale.com>, Hongtao Jia <hongtao.jia@freescale.com>, Marc Zyngier <marc.zyngier@arm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Tony Lindgren <tony@atomide.com>, Kevin Hilman <khilman@deeprootsystems.com>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-mpic_irq_set_wake return -ENXIO for non FSL MPIC and sets IRQF_NO_SUSPEND
-flag for FSL ones. enable_irq_wake already returns -ENXIO if irq_set_wak
-is not implemented. Also there's no need to set the IRQF_NO_SUSPEND flag
-as it doesn't guarantee wakeup for that interrupt.
+The IRQF_NO_SUSPEND flag is used to identify the interrupts that should
+be left enabled so as to allow them to work as expected during the
+suspend-resume cycle, but doesn't guarantee that it will wake the system
+from a suspended state, enable_irq_wake is recommended to be used for
+the wakeup.
 
-This patch removes the redundant mpic_irq_set_wake and sets the
-IRQCHIP_SKIP_SET_WAKE for only FSL MPIC.
+This patch removes the use of IRQF_NO_SUSPEND flags replacing it with
+enable_irq_wake instead.
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Scott Wood <scottwood@freescale.com>
-Cc: Hongtao Jia <hongtao.jia@freescale.com>
-Cc: Marc Zyngier <marc.zyngier@arm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Tony Lindgren <tony@atomide.com>
+Cc: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: linux-omap@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
 Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 ---
- arch/powerpc/sysdev/mpic.c | 23 ++++-------------------
- 1 file changed, 4 insertions(+), 19 deletions(-)
+ arch/arm/mach-omap2/mux.c    | 4 ++--
+ arch/arm/mach-omap2/pm34xx.c | 9 ++++-----
+ 2 files changed, 6 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index 537e5db85a06..123e43612f0a 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -924,22 +924,6 @@ int mpic_set_irq_type(struct irq_data *d, unsigned int flow_type)
- 	return IRQ_SET_MASK_OK_NOCOPY;
+diff --git a/arch/arm/mach-omap2/mux.c b/arch/arm/mach-omap2/mux.c
+index 176eef6ef338..12012bef8e63 100644
+--- a/arch/arm/mach-omap2/mux.c
++++ b/arch/arm/mach-omap2/mux.c
+@@ -810,13 +810,13 @@ int __init omap_mux_late_init(void)
+ 		return 0;
+ 
+ 	ret = request_irq(omap_prcm_event_to_irq("io"),
+-		omap_hwmod_mux_handle_irq, IRQF_SHARED | IRQF_NO_SUSPEND,
++		omap_hwmod_mux_handle_irq, IRQF_SHARED,
+ 			"hwmod_io", omap_mux_late_init);
+ 
+ 	if (ret)
+ 		pr_warn("mux: Failed to setup hwmod io irq %d\n", ret);
+ 
+-	return 0;
++	return enable_irq_wake(omap_prcm_event_to_irq("io"));
  }
  
--static int mpic_irq_set_wake(struct irq_data *d, unsigned int on)
--{
--	struct irq_desc *desc = container_of(d, struct irq_desc, irq_data);
--	struct mpic *mpic = mpic_from_irq_data(d);
--
--	if (!(mpic->flags & MPIC_FSL))
--		return -ENXIO;
--
--	if (on)
--		desc->action->flags |= IRQF_NO_SUSPEND;
--	else
--		desc->action->flags &= ~IRQF_NO_SUSPEND;
--
--	return 0;
--}
--
- void mpic_set_vector(unsigned int virq, unsigned int vector)
- {
- 	struct mpic *mpic = mpic_from_irq(virq);
-@@ -977,7 +961,6 @@ static struct irq_chip mpic_irq_chip = {
- 	.irq_unmask	= mpic_unmask_irq,
- 	.irq_eoi	= mpic_end_irq,
- 	.irq_set_type	= mpic_set_irq_type,
--	.irq_set_wake	= mpic_irq_set_wake,
- };
+ static void __init omap_mux_package_fixup(struct omap_mux *p,
+diff --git a/arch/arm/mach-omap2/pm34xx.c b/arch/arm/mach-omap2/pm34xx.c
+index 87b98bf92366..4b7ac7cd633a 100644
+--- a/arch/arm/mach-omap2/pm34xx.c
++++ b/arch/arm/mach-omap2/pm34xx.c
+@@ -472,23 +472,22 @@ int __init omap3_pm_init(void)
+ 	prcm_setup_regs();
  
- #ifdef CONFIG_SMP
-@@ -992,7 +975,6 @@ static struct irq_chip mpic_tm_chip = {
- 	.irq_mask	= mpic_mask_tm,
- 	.irq_unmask	= mpic_unmask_tm,
- 	.irq_eoi	= mpic_end_irq,
--	.irq_set_wake	= mpic_irq_set_wake,
- };
+ 	ret = request_irq(omap_prcm_event_to_irq("wkup"),
+-		_prcm_int_handle_wakeup, IRQF_NO_SUSPEND, "pm_wkup", NULL);
++		_prcm_int_handle_wakeup, 0, "pm_wkup", NULL);
  
- #ifdef CONFIG_MPIC_U3_HT_IRQS
-@@ -1283,8 +1265,11 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- 		flags |= MPIC_NO_RESET;
- 	if (of_get_property(node, "single-cpu-affinity", NULL))
- 		flags |= MPIC_SINGLE_DEST_CPU;
--	if (of_device_is_compatible(node, "fsl,mpic"))
-+	if (of_device_is_compatible(node, "fsl,mpic")) {
- 		flags |= MPIC_FSL | MPIC_LARGE_VECTORS;
-+		mpic_irq_chip.flags |= IRQCHIP_SKIP_SET_WAKE;
-+		mpic_tm_chip.flags |= IRQCHIP_SKIP_SET_WAKE;
-+	}
+ 	if (ret) {
+ 		pr_err("pm: Failed to request pm_wkup irq\n");
+ 		goto err1;
+ 	}
++	enable_irq_wake(omap_prcm_event_to_irq("wkup"));
  
- 	mpic = kzalloc(sizeof(struct mpic), GFP_KERNEL);
- 	if (mpic == NULL)
+ 	/* IO interrupt is shared with mux code */
+ 	ret = request_irq(omap_prcm_event_to_irq("io"),
+-		_prcm_int_handle_io, IRQF_SHARED | IRQF_NO_SUSPEND, "pm_io",
+-		omap3_pm_init);
+-	enable_irq(omap_prcm_event_to_irq("io"));
+-
++		_prcm_int_handle_io, IRQF_SHARED, "pm_io", omap3_pm_init);
+ 	if (ret) {
+ 		pr_err("pm: Failed to request pm_io irq\n");
+ 		goto err2;
+ 	}
++	enable_irq_wake(omap_prcm_event_to_irq("io"));
+ 
+ 	ret = pwrdm_for_each(pwrdms_setup, NULL);
+ 	if (ret) {
 -- 
 1.9.1
