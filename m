@@ -1,48 +1,46 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing
- runtime suspend
-Date: Mon, 21 Sep 2015 10:38:46 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1509211035000.1713-100000@iolanthe.rowland.org>
-References: <20150921123055.GB16589@amd>
+From: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>
+Subject: [PATCH] bq2415x_charger: Fix null pointer dereference
+Date: Mon, 21 Sep 2015 16:58:20 +0200
+Message-ID: <1442847500-22435-1-git-send-email-pali.rohar@gmail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:46331 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756542AbbIUOir (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Sep 2015 10:38:47 -0400
-In-Reply-To: <20150921123055.GB16589@amd>
+Received: from mail-wi0-f172.google.com ([209.85.212.172]:38333 "EHLO
+	mail-wi0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752126AbbIUO6m (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Sep 2015 10:58:42 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Octavian Purdila <octavian.purdila@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Tirdea, Irina" <irina.tirdea@intel.com>, Oliver Neukum <oneukum@suse.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Dan Carpenter <dan.carpenter@oracle.com>, =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>
 
-On Mon, 21 Sep 2015, Pavel Machek wrote:
+Commit b68c3161430a (bq2415x_charger: Allow to load and use driver even=
+ if
+notify device is not registered yet) introduced null pointer dereferenc=
+e in
+case bq is NULL. This patch fixes it.
 
-> > > In fact, then, what you need seems to be the feature discussed by Alan
-> > > and me some time ago allowing remote wakeup do be disabled for runtime
-> > > PM from user space as that in combination with autosuspend should
-> > > address your use case.
-> > 
-> > That, plus they want the touchscreen to go into runtime suspend 
-> > whenever the screen is off (was this not the main reason for the 
-> > patch?).
-> > 
-> > It seems to me that it should be possible to arrange for this to happen 
-> > simply by making userspace close the touchscreen device when the screen 
-> > is turned off.  Or am I missing something?
-> 
-> Well... that's not what existing userspace expects. Your X windows
-> server will not close the touchscreen.
+Signed-off-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
+Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+---
+ drivers/power/bq2415x_charger.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Surely that's a userspace issue, rather than a kernel problem?  The X
-server does have some notion of power management and power savings; why
-not extend that notion to include touchscreens?
-
-> ..and it would be nice to have enough hardware abstraction in the
-> kernel so that X can be used on phones...
-
-What -- not Wayland?!  :-)
-
-Alan Stern
+diff --git a/drivers/power/bq2415x_charger.c b/drivers/power/bq2415x_ch=
+arger.c
+index ec212b5..4afd768 100644
+--- a/drivers/power/bq2415x_charger.c
++++ b/drivers/power/bq2415x_charger.c
+@@ -1704,7 +1704,7 @@ error_4:
+ error_3:
+ 	bq2415x_power_supply_exit(bq);
+ error_2:
+-	if (bq->notify_node)
++	if (bq && bq->notify_node)
+ 		of_node_put(bq->notify_node);
+ 	kfree(name);
+ error_1:
+--=20
+1.7.10.4
 
