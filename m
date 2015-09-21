@@ -1,50 +1,45 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [GIT PULL] Thermal-SoC management updates for v4.3-rc2
-Date: Mon, 21 Sep 2015 09:57:45 +0100
-Message-ID: <20150921085744.GB2746@e104805>
-References: <20150914035500.GC5075@localhost.localdomain>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing
+ runtime suspend
+Date: Mon, 21 Sep 2015 14:29:19 +0200
+Message-ID: <20150921122919.GA16589@amd>
+References: <1441658561-26190-1-git-send-email-irina.tirdea@intel.com>
+ <1441806946.19223.5.camel@suse.com>
+ <CAE1zotKye=grm2CR+0Q25t7B3ZFo_LjrHa5qLYbCUv9=tYTSmw@mail.gmail.com>
+ <1870624.bK0YQxbsoD@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57145 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752732AbbIUM3X (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Sep 2015 08:29:23 -0400
 Content-Disposition: inline
-In-Reply-To: <20150914035500.GC5075@localhost.localdomain>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rui Zhang <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1870624.bK0YQxbsoD@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Octavian Purdila <octavian.purdila@intel.com>, Oliver Neukum <oneukum@suse.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Tirdea, Irina" <irina.tirdea@intel.com>, Alan Stern <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Colin Cross <ccross@android.com>, Arve =?iso-8859-1?B?SGr4bm5lduVn?= <arve@android.com>
 
-Hi Eduardo, Rui,
+> > >> In fact, then, what you need seems to be the feature discussed by Alan
+> > >> and me some time ago allowing remote wakeup do be disabled for runtime
+> > >> PM from user space as that in combination with autosuspend should
+> > >> address your use case.
+> > >
+> > > I'd doubt that. Suppose you put the phone into your pocket while
+> > > the device isn't suspended. The continuous stream of spurious events
+> > > will keep it awake.
+> 
+> Why would they be regarded as spurious then?  They are just regular touch panel
+> events in that case, aren't they?
 
-On Mon, Sep 14, 2015 at 04:55:01AM +0100, Eduardo Valentin wrote:
-> Hello Rui,
-> 
-> (apologize for duplicates, now copying the mailing lists)
-> 
-> Please pull from
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal fixes
-> 
-> to receive Thermal-SoC Management updates for v4.3-rc2 with top-most
-> 
-> eba4f88d5af84e0fcaa5d6eb4fe35a75c47203cb:
-> 
->   thermal: cpu_cooling: free power table on error or when unregistering (2015-09-13 20:34:05 -0700)
-> 
-> on top of commit 6ff33f3902c3b1c5d0db6b1e2c70b6d76fba357f:
-> 
->   Linux 4.3-rc1 (2015-09-12 16:35:56 -0700)
-> 
-> Specifics:
-> - Add compile test flags on thermal drivers that allow it without
-> producing compilation errors
-> - Fixes around memory allocation on cpu_cooling
-> - Fix on db8500 cpufreq code to allow autoload
-> - Maintainer entries for cpu cooling device
-> 
-> More fixes still to come, but if not for rc2, for rc3.
+>From userspace... they are spurious. Userspace does not known that
+your device is commonly placed into the pocket, and the events it sees
+are not from user.
 
-Looks like this didn't make it for -rc2.  Please send a pull request
-for -rc3.
-
-Thanks,
-Javi
+I have mainline X/mate running on n900 cellphone. And this means
+battery life is in "2 hours" range.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
