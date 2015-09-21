@@ -1,52 +1,54 @@
-From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: Re: [PATCH v2 4/9] clk: qcom: create virtual child device for TSENS
-Date: Mon, 21 Sep 2015 09:58:59 +0530
-Message-ID: <55FF878B.5010009@codeaurora.org>
-References: <1442384603-26053-1-git-send-email-rnayak@codeaurora.org> <1442384603-26053-5-git-send-email-rnayak@codeaurora.org> <20150916223925.GP23081@codeaurora.org>
+From: Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>
+Subject: Re: [PATCH v4 1/7] power: bq27x00_battery: Remove unneeded i2c
+ MODULE_ALIAS
+Date: Mon, 21 Sep 2015 10:33:45 +0200
+Message-ID: <20150921083345.GE20113@pali>
+References: <1442265973-32261-1-git-send-email-afd@ti.com>
+ <1442265973-32261-2-git-send-email-afd@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:33171 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750889AbbIUE3G (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Sep 2015 00:29:06 -0400
-In-Reply-To: <20150916223925.GP23081@codeaurora.org>
+Received: from mail-wi0-f182.google.com ([209.85.212.182]:33859 "EHLO
+	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756176AbbIUIdr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Sep 2015 04:33:47 -0400
+Content-Disposition: inline
+In-Reply-To: <1442265973-32261-2-git-send-email-afd@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com, srinivas.kandagatla@linaro.org, nrajan@codeaurora.org, lina.iyer@linaro.org
+To: "Andrew F. Davis" <afd@ti.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Dan Murphy <dmurphy@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
+On Monday 14 September 2015 16:26:07 Andrew F. Davis wrote:
+> The MODULE_DEVICE_TABLE macro automatically adds all needed
+> i2c MODULE_ALIASes so remove the extra MODULE_ALIAS.
+>=20
+> Signed-off-by: Andrew F. Davis <afd@ti.com>
 
+Acked-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
 
-On 09/17/2015 04:09 AM, Stephen Boyd wrote:
-> On 09/16, Rajendra Nayak wrote:
->> @@ -3520,7 +3522,26 @@ static int gcc_msm8960_probe(struct platform_device *pdev)
->>   	if (IS_ERR(clk))
->>   		return PTR_ERR(clk);
->>
->> -	return qcom_cc_probe(pdev, match->data);
->> +	ret = qcom_cc_probe(pdev, match->data);
->> +	if (ret)
->> +		return ret;
->> +
->> +	tsens = platform_device_alloc("qcom-tsens", -1);
->> +	if (!tsens) {
->> +		ret = -ENOMEM;
->> +		goto err_alloc;
->> +	}
->> +
->> +	tsens->dev.parent = &pdev->dev;
->> +	ret = platform_device_add(tsens);
->> +	if (ret)
->> +		goto err_add;
->
-> platform_device_register_data() instead of all these lines? We
-> should probably remove the device when this driver is removed
-> too.
+> ---
+>  drivers/power/bq27x00_battery.c | 4 ----
+>  1 file changed, 4 deletions(-)
+>=20
+> diff --git a/drivers/power/bq27x00_battery.c b/drivers/power/bq27x00_=
+battery.c
+> index 8287261f..d0b2f3b 100644
+> --- a/drivers/power/bq27x00_battery.c
+> +++ b/drivers/power/bq27x00_battery.c
+> @@ -1120,10 +1120,6 @@ module_exit(bq27x00_battery_exit);
+>  MODULE_ALIAS("platform:bq27000-battery");
+>  #endif
+> =20
+> -#ifdef CONFIG_BATTERY_BQ27X00_I2C
+> -MODULE_ALIAS("i2c:bq27000-battery");
+> -#endif
+> -
+>  MODULE_AUTHOR("Rodolfo Giometti <giometti@linux.it>");
+>  MODULE_DESCRIPTION("BQ27x00 battery monitor driver");
+>  MODULE_LICENSE("GPL");
 
-Thanks Stephen, I'll fix it.
-
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-hosted by The Linux Foundation
+--=20
+Pali Roh=C3=A1r
+pali.rohar@gmail.com
