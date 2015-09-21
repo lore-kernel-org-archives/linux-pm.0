@@ -1,13 +1,13 @@
 From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: [PATCH 05/17] platform: x86: remove misuse of IRQF_NO_SUSPEND flag
-Date: Mon, 21 Sep 2015 16:47:01 +0100
-Message-ID: <1442850433-5903-6-git-send-email-sudeep.holla@arm.com>
+Subject: [PATCH 02/17] rtc: ab8500: remove misuse of IRQF_NO_SUSPEND flag
+Date: Mon, 21 Sep 2015 16:46:58 +0100
+Message-ID: <1442850433-5903-3-git-send-email-sudeep.holla@arm.com>
 References: <1442850433-5903-1-git-send-email-sudeep.holla@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1442850433-5903-1-git-send-email-sudeep.holla@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Darren Hart <dvhart@infradead.org>, platform-driver-x86@vger.kernel.org
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linus Walleij <linus.walleij@linaro.org>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, rtc-linux@googlegroups.com
 List-Id: linux-pm@vger.kernel.org
 
 The IRQF_NO_SUSPEND flag is used to identify the interrupts that should
@@ -19,53 +19,49 @@ the wakeup.
 This patch removes the use of IRQF_NO_SUSPEND flags and uses newly
 introduce PM wakeup APIs dev_pm_{set,clear}_wake_irq.
 
-Cc: Darren Hart <dvhart@infradead.org>
-Cc: platform-driver-x86@vger.kernel.org
+Cc: Linus Walleij <linus.walleij@linaro.org>
+Cc: Alessandro Zummo <a.zummo@towertech.it>
+Cc: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Cc: rtc-linux@googlegroups.com
 Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 ---
- drivers/platform/x86/intel_mid_powerbtn.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ drivers/rtc/rtc-ab8500.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/platform/x86/intel_mid_powerbtn.c b/drivers/platform/x86/intel_mid_powerbtn.c
-index 22606d6b2af3..1fc0de870ff8 100644
---- a/drivers/platform/x86/intel_mid_powerbtn.c
-+++ b/drivers/platform/x86/intel_mid_powerbtn.c
-@@ -24,6 +24,7 @@
- #include <linux/platform_device.h>
- #include <linux/input.h>
- #include <linux/mfd/intel_msic.h>
+diff --git a/drivers/rtc/rtc-ab8500.c b/drivers/rtc/rtc-ab8500.c
+index 51407c4c7bd2..24a0af650a1b 100644
+--- a/drivers/rtc/rtc-ab8500.c
++++ b/drivers/rtc/rtc-ab8500.c
+@@ -18,6 +18,7 @@
+ #include <linux/mfd/abx500/ab8500.h>
+ #include <linux/delay.h>
+ #include <linux/of.h>
 +#include <linux/pm_wakeirq.h>
  
- #define DRIVER_NAME "msic_power_btn"
- 
-@@ -76,14 +77,17 @@ static int mfld_pb_probe(struct platform_device *pdev)
- 
- 	input_set_capability(input, EV_KEY, KEY_POWER);
- 
--	error = request_threaded_irq(irq, NULL, mfld_pb_isr, IRQF_NO_SUSPEND,
--			DRIVER_NAME, input);
-+	error = request_threaded_irq(irq, NULL, mfld_pb_isr, 0,
-+				     DRIVER_NAME, input);
- 	if (error) {
- 		dev_err(&pdev->dev, "Unable to request irq %d for mfld power"
- 				"button\n", irq);
- 		goto err_free_input;
+ #define AB8500_RTC_SOFF_STAT_REG	0x00
+ #define AB8500_RTC_CC_CONF_REG		0x01
+@@ -493,11 +494,12 @@ static int ab8500_rtc_probe(struct platform_device *pdev)
  	}
  
-+	device_init_wakeup(&pdev->dev, true);
-+	dev_pm_set_wake_irq(&pdev->dev, irq);
-+
- 	error = input_register_device(input);
- 	if (error) {
- 		dev_err(&pdev->dev, "Unable to register input dev, error "
-@@ -124,6 +128,8 @@ static int mfld_pb_remove(struct platform_device *pdev)
- 	struct input_dev *input = platform_get_drvdata(pdev);
- 	int irq = platform_get_irq(pdev, 0);
+ 	err = devm_request_threaded_irq(&pdev->dev, irq, NULL,
+-			rtc_alarm_handler, IRQF_NO_SUSPEND | IRQF_ONESHOT,
++			rtc_alarm_handler, IRQF_ONESHOT,
+ 			"ab8500-rtc", rtc);
+ 	if (err < 0)
+ 		return err;
  
++	dev_pm_set_wake_irq(&pdev->dev, irq);
+ 	platform_set_drvdata(pdev, rtc);
+ 
+ 	err = ab8500_sysfs_rtc_register(&pdev->dev);
+@@ -513,6 +515,8 @@ static int ab8500_rtc_probe(struct platform_device *pdev)
+ 
+ static int ab8500_rtc_remove(struct platform_device *pdev)
+ {
 +	dev_pm_clear_wake_irq(&pdev->dev);
 +	device_init_wakeup(&pdev->dev, false);
- 	free_irq(irq, input);
- 	input_unregister_device(input);
+ 	ab8500_sysfs_rtc_unregister(&pdev->dev);
  
+ 	return 0;
 -- 
 1.9.1
