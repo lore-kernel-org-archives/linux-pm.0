@@ -1,66 +1,51 @@
 From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: Re: [PATCH v2 2/9] thermal: qcom: tsens-8916: Add support for 8916
- family of SoCs
-Date: Mon, 21 Sep 2015 09:58:17 +0530
-Message-ID: <55FF8761.9010808@codeaurora.org>
-References: <1442384603-26053-1-git-send-email-rnayak@codeaurora.org>	<1442384603-26053-3-git-send-email-rnayak@codeaurora.org> <9hh4miutr21.fsf@e105922-lin.cambridge.arm.com>
+Subject: Re: [PATCH v2 4/9] clk: qcom: create virtual child device for TSENS
+Date: Mon, 21 Sep 2015 09:58:59 +0530
+Message-ID: <55FF878B.5010009@codeaurora.org>
+References: <1442384603-26053-1-git-send-email-rnayak@codeaurora.org> <1442384603-26053-5-git-send-email-rnayak@codeaurora.org> <20150916223925.GP23081@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <9hh4miutr21.fsf@e105922-lin.cambridge.arm.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Punit Agrawal <punit.agrawal@arm.com>
-Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com, sboyd@codeaurora.org, srinivas.kandagatla@linaro.org, nrajan@codeaurora.org, lina.iyer@linaro.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:33171 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750889AbbIUE3G (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Sep 2015 00:29:06 -0400
+In-Reply-To: <20150916223925.GP23081@codeaurora.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com, srinivas.kandagatla@linaro.org, nrajan@codeaurora.org, lina.iyer@linaro.org
 
-[]..
 
->> +static inline int code_to_degc(u32 adc_code, const struct tsens_sensor *s)
->> +{
->> +	int degc, num, den;
->> +
->> +	num = (adc_code * SLOPE_FACTOR) - s->offset;
->> +	den = s->slope;
->> +
->> +	if (num > 0)
->> +		degc = num + (den / 2);
->> +	else if (num < 0)
->> +		degc = num - (den / 2);
->> +	else
->> +		degc = num;
->> +
->> +	degc /= den;
->> +
->> +	return degc;
->> +}
->> +
->> +int get_temp_common(struct tsens_device *tmdev, int id, int *temp)
->> +{
->> +	struct tsens_sensor *s = &tmdev->sensor[id];
->> +	u32 code;
->> +	unsigned int sensor_addr;
->> +	int last_temp = 0, ret;
->> +
->> +	sensor_addr = S0_ST_ADDR + s->hw_id * SN_ADDR_OFFSET;
->> +	ret = regmap_read(tmdev->map, sensor_addr, &code);
+
+On 09/17/2015 04:09 AM, Stephen Boyd wrote:
+> On 09/16, Rajendra Nayak wrote:
+>> @@ -3520,7 +3522,26 @@ static int gcc_msm8960_probe(struct platform_device *pdev)
+>>   	if (IS_ERR(clk))
+>>   		return PTR_ERR(clk);
+>>
+>> -	return qcom_cc_probe(pdev, match->data);
+>> +	ret = qcom_cc_probe(pdev, match->data);
 >> +	if (ret)
 >> +		return ret;
->> +	last_temp = code & SN_ST_TEMP_MASK;
 >> +
->> +	*temp = code_to_degc(last_temp, s) * 1000;
+>> +	tsens = platform_device_alloc("qcom-tsens", -1);
+>> +	if (!tsens) {
+>> +		ret = -ENOMEM;
+>> +		goto err_alloc;
+>> +	}
 >> +
->> +	return 0;
->> +}
+>> +	tsens->dev.parent = &pdev->dev;
+>> +	ret = platform_device_add(tsens);
+>> +	if (ret)
+>> +		goto err_add;
 >
-> The way this function is coded the temperature will only ever change by
-> 1C (i.e., 1000mC). Is there a chance that you're losing precision in the
-> code_to_degc conversion that could be preserved perhaps?
->
-> This is useful in scenarios where you use the power allocator governor
-> and the greater precision allows better power budget estimation.
+> platform_device_register_data() instead of all these lines? We
+> should probably remove the device when this driver is removed
+> too.
 
-I'll take a look to see if we can get better precision. Thanks.
+Thanks Stephen, I'll fix it.
 
 -- 
 Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
