@@ -1,43 +1,51 @@
-From: "Zhang, Rui" <rui.zhang@intel.com>
-Subject: RE: [GIT PULL] Thermal-SoC management updates for v4.3-rc2
-Date: Mon, 21 Sep 2015 13:36:35 +0000
-Message-ID: <744357E9AAD1214791ACBA4B0B90926332E930C2@SHSMSX101.ccr.corp.intel.com>
-References: <20150914035500.GC5075@localhost.localdomain>
- <20150921085744.GB2746@e104805>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] driver core: Ensure proper suspend/resume ordering
+Date: Mon, 21 Sep 2015 10:34:54 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1509211031210.1713-100000@iolanthe.rowland.org>
+References: <20150921085100.GF19865@ulmo.nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150921085744.GB2746@e104805>
-Content-Language: en-US
+In-Reply-To: <20150921085100.GF19865@ulmo.nvidia.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Thierry Reding <thierry.reding@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-WWVhaCwgd2lsbCBzZW5kIGZvciAtcmMzLg0KDQpUaGFua3MsDQpydWkNCg0KPiAtLS0tLU9yaWdp
-bmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBKYXZpIE1lcmlubyBbbWFpbHRvOmphdmkubWVyaW5v
-QGFybS5jb21dDQo+IFNlbnQ6IE1vbmRheSwgU2VwdGVtYmVyIDIxLCAyMDE1IDQ6NTggUE0NCj4g
-VG86IFpoYW5nLCBSdWk7IEVkdWFyZG8gVmFsZW50aW4NCj4gQ2M6IExpbnV4IEFDUEk7IExpbnV4
-IFBNOyBMS01MDQo+IFN1YmplY3Q6IFJlOiBbR0lUIFBVTExdIFRoZXJtYWwtU29DIG1hbmFnZW1l
-bnQgdXBkYXRlcyBmb3IgdjQuMy1yYzINCj4gSW1wb3J0YW5jZTogSGlnaA0KPiANCj4gSGkgRWR1
-YXJkbywgUnVpLA0KPiANCj4gT24gTW9uLCBTZXAgMTQsIDIwMTUgYXQgMDQ6NTU6MDFBTSArMDEw
-MCwgRWR1YXJkbyBWYWxlbnRpbiB3cm90ZToNCj4gPiBIZWxsbyBSdWksDQo+ID4NCj4gPiAoYXBv
-bG9naXplIGZvciBkdXBsaWNhdGVzLCBub3cgY29weWluZyB0aGUgbWFpbGluZyBsaXN0cykNCj4g
-Pg0KPiA+IFBsZWFzZSBwdWxsIGZyb20NCj4gPg0KPiA+DQo+ID4gZ2l0Oi8vZ2l0Lmtlcm5lbC5v
-cmcvcHViL3NjbS9saW51eC9rZXJuZWwvZ2l0L2V2YWxlbnRpL2xpbnV4LXNvYy10aGVybQ0KPiA+
-IGFsIGZpeGVzDQo+ID4NCj4gPiB0byByZWNlaXZlIFRoZXJtYWwtU29DIE1hbmFnZW1lbnQgdXBk
-YXRlcyBmb3IgdjQuMy1yYzIgd2l0aCB0b3AtbW9zdA0KPiA+DQo+ID4gZWJhNGY4OGQ1YWY4NGUw
-ZmNhYTVkNmViNGZlMzVhNzVjNDcyMDNjYjoNCj4gPg0KPiA+ICAgdGhlcm1hbDogY3B1X2Nvb2xp
-bmc6IGZyZWUgcG93ZXIgdGFibGUgb24gZXJyb3Igb3Igd2hlbg0KPiA+IHVucmVnaXN0ZXJpbmcg
-KDIwMTUtMDktMTMgMjA6MzQ6MDUgLTA3MDApDQo+ID4NCj4gPiBvbiB0b3Agb2YgY29tbWl0IDZm
-ZjMzZjM5MDJjM2IxYzVkMGRiNmIxZTJjNzBiNmQ3NmZiYTM1N2Y6DQo+ID4NCj4gPiAgIExpbnV4
-IDQuMy1yYzEgKDIwMTUtMDktMTIgMTY6MzU6NTYgLTA3MDApDQo+ID4NCj4gPiBTcGVjaWZpY3M6
-DQo+ID4gLSBBZGQgY29tcGlsZSB0ZXN0IGZsYWdzIG9uIHRoZXJtYWwgZHJpdmVycyB0aGF0IGFs
-bG93IGl0IHdpdGhvdXQNCj4gPiBwcm9kdWNpbmcgY29tcGlsYXRpb24gZXJyb3JzDQo+ID4gLSBG
-aXhlcyBhcm91bmQgbWVtb3J5IGFsbG9jYXRpb24gb24gY3B1X2Nvb2xpbmcNCj4gPiAtIEZpeCBv
-biBkYjg1MDAgY3B1ZnJlcSBjb2RlIHRvIGFsbG93IGF1dG9sb2FkDQo+ID4gLSBNYWludGFpbmVy
-IGVudHJpZXMgZm9yIGNwdSBjb29saW5nIGRldmljZQ0KPiA+DQo+ID4gTW9yZSBmaXhlcyBzdGls
-bCB0byBjb21lLCBidXQgaWYgbm90IGZvciByYzIsIGZvciByYzMuDQo+IA0KPiBMb29rcyBsaWtl
-IHRoaXMgZGlkbid0IG1ha2UgaXQgZm9yIC1yYzIuICBQbGVhc2Ugc2VuZCBhIHB1bGwgcmVxdWVz
-dCBmb3IgLXJjMy4NCj4gDQo+IFRoYW5rcywNCj4gSmF2aQ0K
+On Mon, 21 Sep 2015, Thierry Reding wrote:
+
+> > > Force-removing drivers that depend on a device that's being unbound
+> > > would be a possibility to solve the problem where consumers depend on a
+> > > device that could physically go away. It might also be the right thing
+> > > to do in any case. Presumably somebody unloading a module want to do
+> > > just that, and refusing to do so isn't playing very nice. Of course
+> > > allowing random modules to be removed even if a lot of consumers might
+> > > depend on it may not be friendly either. Consider if you unload a GPIO
+> > > driver that provides a pin that's used to enable power to an eMMC that
+> > > might have the root filesystem.
+> > >
+> > > Then again, if you unload a module you better know what you're doing
+> > > anyway, so maybe that's not something we need to be concerned about.
+> > 
+> > I think that it's better to fail module unloads in such cases by
+> > default (to prevent simple silly mistakes from having possibly severe
+> > consequences), but if a "force" option is used, we should regard that
+> > as "the user really means it" and do as requested.  That would be very
+> > much analogous to the hot-unplug situation from the software
+> > perspective.
+> 
+> Sounds very reasonable to me.
+
+I'm not so sure about this.  For one thing, how are you going to 
+distinguish which module unloads are safe?
+
+For another, even if you do make this distinction, don't you think 
+people will get into the habit of always using the "force" option?  My 
+impression is that most module unloads end up causing some device to be 
+unbound from a driver, or even completely deregistered.
+
+Right now the kernel uses the "You better know what you're doing when
+you unload a module" point of view, and I don't see any good reasons
+for changing.
+
+Alan Stern
