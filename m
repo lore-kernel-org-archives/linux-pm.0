@@ -1,58 +1,43 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing
- runtime suspend
-Date: Mon, 21 Sep 2015 14:30:55 +0200
-Message-ID: <20150921123055.GB16589@amd>
-References: <CAJZ5v0j5XN3Y=YW4jWekUB9qwL5KAVkeDMdhMiKv6j=xLa8psA@mail.gmail.com>
- <Pine.LNX.4.44L0.1509091118000.2045-100000@iolanthe.rowland.org>
+From: "Zhang, Rui" <rui.zhang@intel.com>
+Subject: RE: [GIT PULL] Thermal-SoC management updates for v4.3-rc2
+Date: Mon, 21 Sep 2015 13:36:35 +0000
+Message-ID: <744357E9AAD1214791ACBA4B0B90926332E930C2@SHSMSX101.ccr.corp.intel.com>
+References: <20150914035500.GC5075@localhost.localdomain>
+ <20150921085744.GB2746@e104805>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57299 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752732AbbIUMa6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Sep 2015 08:30:58 -0400
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1509091118000.2045-100000@iolanthe.rowland.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150921085744.GB2746@e104805>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Javi Merino <javi.merino@arm.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Octavian Purdila <octavian.purdila@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Tirdea, Irina" <irina.tirdea@intel.com>, Oliver Neukum <oneukum@suse.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-On Wed 2015-09-09 11:20:25, Alan Stern wrote:
-> On Wed, 9 Sep 2015, Rafael J. Wysocki wrote:
-> 
-> > > The best example and actually the very specific problem we want to
-> > > solve is handling touchscreens on a phone / tablet. When the screen is
-> > > turned off, it is ideal to suspend the touchscreen for two reasons: to
-> > > lower the power consumption as much as possible and to prevent
-> > > interrupts to wake-up the CPU when the user touches the device, and
-> > > thus save even more power as we allow the CPU to stay in deep idle
-> > > states for longer periods.
-> > >
-> > > Note that when the screen is turned-on again, we want to resume the
-> > > touchscreen so that it can send events again.
-> > 
-> > In fact, then, what you need seems to be the feature discussed by Alan
-> > and me some time ago allowing remote wakeup do be disabled for runtime
-> > PM from user space as that in combination with autosuspend should
-> > address your use case.
-> 
-> That, plus they want the touchscreen to go into runtime suspend 
-> whenever the screen is off (was this not the main reason for the 
-> patch?).
-> 
-> It seems to me that it should be possible to arrange for this to happen 
-> simply by making userspace close the touchscreen device when the screen 
-> is turned off.  Or am I missing something?
-
-Well... that's not what existing userspace expects. Your X windows
-server will not close the touchscreen.
-
-..and it would be nice to have enough hardware abstraction in the
-kernel so that X can be used on phones...
-									
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+WWVhaCwgd2lsbCBzZW5kIGZvciAtcmMzLg0KDQpUaGFua3MsDQpydWkNCg0KPiAtLS0tLU9yaWdp
+bmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBKYXZpIE1lcmlubyBbbWFpbHRvOmphdmkubWVyaW5v
+QGFybS5jb21dDQo+IFNlbnQ6IE1vbmRheSwgU2VwdGVtYmVyIDIxLCAyMDE1IDQ6NTggUE0NCj4g
+VG86IFpoYW5nLCBSdWk7IEVkdWFyZG8gVmFsZW50aW4NCj4gQ2M6IExpbnV4IEFDUEk7IExpbnV4
+IFBNOyBMS01MDQo+IFN1YmplY3Q6IFJlOiBbR0lUIFBVTExdIFRoZXJtYWwtU29DIG1hbmFnZW1l
+bnQgdXBkYXRlcyBmb3IgdjQuMy1yYzINCj4gSW1wb3J0YW5jZTogSGlnaA0KPiANCj4gSGkgRWR1
+YXJkbywgUnVpLA0KPiANCj4gT24gTW9uLCBTZXAgMTQsIDIwMTUgYXQgMDQ6NTU6MDFBTSArMDEw
+MCwgRWR1YXJkbyBWYWxlbnRpbiB3cm90ZToNCj4gPiBIZWxsbyBSdWksDQo+ID4NCj4gPiAoYXBv
+bG9naXplIGZvciBkdXBsaWNhdGVzLCBub3cgY29weWluZyB0aGUgbWFpbGluZyBsaXN0cykNCj4g
+Pg0KPiA+IFBsZWFzZSBwdWxsIGZyb20NCj4gPg0KPiA+DQo+ID4gZ2l0Oi8vZ2l0Lmtlcm5lbC5v
+cmcvcHViL3NjbS9saW51eC9rZXJuZWwvZ2l0L2V2YWxlbnRpL2xpbnV4LXNvYy10aGVybQ0KPiA+
+IGFsIGZpeGVzDQo+ID4NCj4gPiB0byByZWNlaXZlIFRoZXJtYWwtU29DIE1hbmFnZW1lbnQgdXBk
+YXRlcyBmb3IgdjQuMy1yYzIgd2l0aCB0b3AtbW9zdA0KPiA+DQo+ID4gZWJhNGY4OGQ1YWY4NGUw
+ZmNhYTVkNmViNGZlMzVhNzVjNDcyMDNjYjoNCj4gPg0KPiA+ICAgdGhlcm1hbDogY3B1X2Nvb2xp
+bmc6IGZyZWUgcG93ZXIgdGFibGUgb24gZXJyb3Igb3Igd2hlbg0KPiA+IHVucmVnaXN0ZXJpbmcg
+KDIwMTUtMDktMTMgMjA6MzQ6MDUgLTA3MDApDQo+ID4NCj4gPiBvbiB0b3Agb2YgY29tbWl0IDZm
+ZjMzZjM5MDJjM2IxYzVkMGRiNmIxZTJjNzBiNmQ3NmZiYTM1N2Y6DQo+ID4NCj4gPiAgIExpbnV4
+IDQuMy1yYzEgKDIwMTUtMDktMTIgMTY6MzU6NTYgLTA3MDApDQo+ID4NCj4gPiBTcGVjaWZpY3M6
+DQo+ID4gLSBBZGQgY29tcGlsZSB0ZXN0IGZsYWdzIG9uIHRoZXJtYWwgZHJpdmVycyB0aGF0IGFs
+bG93IGl0IHdpdGhvdXQNCj4gPiBwcm9kdWNpbmcgY29tcGlsYXRpb24gZXJyb3JzDQo+ID4gLSBG
+aXhlcyBhcm91bmQgbWVtb3J5IGFsbG9jYXRpb24gb24gY3B1X2Nvb2xpbmcNCj4gPiAtIEZpeCBv
+biBkYjg1MDAgY3B1ZnJlcSBjb2RlIHRvIGFsbG93IGF1dG9sb2FkDQo+ID4gLSBNYWludGFpbmVy
+IGVudHJpZXMgZm9yIGNwdSBjb29saW5nIGRldmljZQ0KPiA+DQo+ID4gTW9yZSBmaXhlcyBzdGls
+bCB0byBjb21lLCBidXQgaWYgbm90IGZvciByYzIsIGZvciByYzMuDQo+IA0KPiBMb29rcyBsaWtl
+IHRoaXMgZGlkbid0IG1ha2UgaXQgZm9yIC1yYzIuICBQbGVhc2Ugc2VuZCBhIHB1bGwgcmVxdWVz
+dCBmb3IgLXJjMy4NCj4gDQo+IFRoYW5rcywNCj4gSmF2aQ0K
