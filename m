@@ -1,86 +1,109 @@
-From: Leo Yan <leo.yan@linaro.org>
-Subject: Re: [RFCv5 PATCH 32/46] sched: Energy-aware wake-up task placement
-Date: Mon, 21 Sep 2015 06:03:24 +0800
-Message-ID: <20150920220324.GA20859@leoy-linaro>
-References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
- <1436293469-25707-33-git-send-email-morten.rasmussen@arm.com>
- <20150902171131.GA12510@leoy-linaro>
- <55FBE8AF.3050200@arm.com>
- <55FEFD54.3010206@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Caesar Wang <wxt@rock-chips.com>
+Subject: [PATCH 0/5] Support the thermal for RK3368 SoCs
+Date: Mon, 21 Sep 2015 12:16:06 +0800
+Message-ID: <1442808971-2619-1-git-send-email-wxt@rock-chips.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f46.google.com ([209.85.220.46]:34838 "EHLO
-	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751876AbbITWDa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 20 Sep 2015 18:03:30 -0400
-Received: by pacfv12 with SMTP id fv12so100050262pac.2
-        for <linux-pm@vger.kernel.org>; Sun, 20 Sep 2015 15:03:30 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <55FEFD54.3010206@linaro.org>
+Received: from mail-pa0-f48.google.com ([209.85.220.48]:34159 "EHLO
+	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750763AbbIUEQc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Sep 2015 00:16:32 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <Morten.Rasmussen@arm.com>, "peterz@infradead.org" <peterz@infradead.org>, "mingo@redhat.com" <mingo@redhat.com>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "yuyang.du@intel.com" <yuyang.du@intel.com>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Juri Lelli <Juri.Lelli@arm.com>, "sgurrappadi@nvidia.com" <sgurrappadi@nvidia.com>, "pang.xunlei@zte.com.cn" <pang.xunlei@zte.com.cn>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: heiko@sntech.de, edubezval@gmail.com, rui.zhang@intel.com
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, will.deacon@arm.com, robh+dt@kernel.org, inux-kernel@vger.kernel.org, galak@codeaurora.org, linux-rockchip@lists.infradead.org, dmitry.torokhov@gmail.com, mark.rutland@arm.com, olof@lixom.net, linux-arm-kernel@lists.infradead.org, catalin.marinas@arm.com, ijc+devicetree@hellion.org.uk, Caesar Wang <wxt@rock-chips.com>
 
-On Sun, Sep 20, 2015 at 11:39:16AM -0700, Steve Muckle wrote:
-> On 09/18/2015 03:34 AM, Dietmar Eggemann wrote:
-> >> Here should consider scenario for two groups have same capacity?
-> >> This will benefit for the case LITTLE.LITTLE. So the code will be
-> >> looks like below:
-> >>
-> >> 	int target_sg_cpu = INT_MAX;
-> >>
-> >> 	if (capacity_of(max_cap_cpu) <= target_max_cap &&
-> >>             task_fits_capacity(p, max_cap_cpu)) {
-> >>
-> >>                 if ((capacity_of(max_cap_cpu) == target_max_cap) &&
-> >> 		    (target_sg_cpu < max_cap_cpu))
-> >> 		        continue;
-> >>
-> >> 		target_sg_cpu = max_cap_cpu;
-> >> 		sg_target = sg;
-> >> 		target_max_cap = capacity_of(max_cap_cpu);
-> >> 	}
-> >>
-> > 
-> > It's true that on your SMP system the target sched_group 'sg_target'
-> > depends only on 'task_cpu(p)' because this determines sched_domain 'sd'
-> > (and so the order of sched_groups for the iteration).
-> > 
-> > So the current do-while loop to select 'sg_target' for an SMP system
-> > makes little sense.
-> > 
-> > But why should we favour the first sched_group (cluster) (the one w/ the
-> > lower max_cap_cpu number) in this situation?
-> 
-> Running the originally proposed code on a system with two identical
-> clusters, it looks like we'll always end up doing an energy-aware search
-> in the task's prev_cpu cluster (sched_group). If you had small tasks
-> scattered across both clusters, energy_aware_wake_cpu() would not
-> consider condensing them on a single cluster. Leo was this the issue you
-> were seeing?
+This series patchs are working for RK3368 on Rockchip platform.
 
-Exactly.
+This patchset are based on linus master branch.
+(Note: add Dmitry two thermal patchs for rockchip
+ https://patchwork.kernel.org/patch/6973101/
+ https://patchwork.kernel.org/patch/6973131/
+)
 
-> However I think there may be negative side effects with the proposed
-> policy above as well - won't this cause us to pack the first cluster
-> until it's 100% full (running at fmax) before using the second cluster?
-> That would also be bad for power.
+the git log oneline as follows:
 
-In this case of CPU is running at fmax, it's true that
-task_fits_capacity() will return true. But here i think
-cpu_overutilized() also will return true, so that means scheduler will
-go back to use CFS's old way for loading balance. Finally tasks also
-will be spread into two clusters.
+30451f4 arm64: dts: Enable the Thermal on R88 board.
+1637a7c arm64: dts: Add main Thermal info to rk3368.dtsi
+8f908b7 arm64: dts: Add the thermal data found on RK3368
+a501fad thermal: rockchip: Support the RK3368 SoCs in thermal driver
+c765254 dt-bindings: thermal: Support the RK3368 SoCs compatible
+ff7fd5d thermal: rockhip: fix setting thermal shutdown polarity
+f54373c thermal: rockchip: fix handling of invalid readings
+0410a40 arm64: dts: rockchip: Add the needed timer for RK3368 SoC
+f696cac arm64: Enable the timer on Rockchip architecture
+e84d626 clocksource: rockchip: Make the driver more readability and compatible
+1f93e4a Linux 4.3-rc2
+.....
 
-Also reviewed the profiling result on Hikey with this modification
-[1], rt-app 6%/13%/19%/25% place 8 tasks into one cluster as
-possible, but rt-app 31%/38%/44%/50% also will place tasks to second
-cluster. NOTE, I get this conclusion from CPU idle's duty cycle, but
-not from real power data.
+@Heiko,
+The PATCH [4/5] is working based on big/littel cluster cpufreq added.
+Anyway, the PATCH [4/5] also work for next kernel.
 
-[1] https://lists.linaro.org/pipermail/eas-dev/2015-September/000218.html
+@Eduardo,
 
-Thanks,
-Leo Yan
+The PATCH[2/4] is based on the Dmitry's patchs.
+
+ https://patchwork.kernel.org/patch/6973101/
+ https://patchwork.kernel.org/patch/6973131/
+
+---
+This series are tested on RK3368 board.
+
+while true;do ls >/dev/null; done&
+
+while true; do grep "" /sys/class/thermal/thermal_zone[1-2]/temp;date;sleep .5;
+done &
+
+You can get the temperature form sensors.
+
+/sys/class/thermal/thermal_zone0/temp:27500
+/sys/class/thermal/thermal_zone1/temp:30000
+/sys/class/thermal/thermal_zone0/temp:30000
+/sys/class/thermal/thermal_zone1/temp:30000
+/sys/class/thermal/thermal_zone0/temp:27500
+/sys/class/thermal/thermal_zone1/temp:30000
+/sys/class/thermal/thermal_zone0/temp:30000
+/sys/class/thermal/thermal_zone1/temp:30000
+/sys/class/thermal/thermal_zone0/temp:25000
+/sys/class/thermal/thermal_zone1/temp:30000
+/sys/class/thermal/thermal_zone0/temp:32500
+/sys/class/thermal/thermal_zone1/temp:30000
+/sys/class/thermal/thermal_zone0/temp:30000
+/sys/class/thermal/thermal_zone1/temp:30000
+/sys/class/thermal/thermal_zone0/temp:22500
+/sys/class/thermal/thermal_zone1/temp:32500
+/sys/class/thermal/thermal_zone0/temp:25000
+/sys/class/thermal/thermal_zone1/temp:30000
+/sys/class/thermal/thermal_zone0/temp:25000
+/sys/class/thermal/thermal_zone1/temp:30000
+/sys/class/thermal/thermal_zone0/temp:22500
+/sys/class/thermal/thermal_zone1/temp:30000
+/sys/class/thermal/thermal_zone0/temp:30000
+/sys/class/thermal/thermal_zone1/temp:32500
+/sys/class/thermal/thermal_zone0/temp:25000
+/sys/class/thermal/thermal_zone1/temp:32500
+/sys/class/thermal/thermal_zone0/temp:32500
+/sys/class/thermal/thermal_zone1/temp:30000
+/sys/class/thermal/thermal_zone0/temp:25000
+/sys/class/thermal/thermal_zone1/temp:32500
+
+
+
+Caesar Wang (5):
+  dt-bindings: thermal: Support the RK3368 SoCs compatible
+  thermal: rockchip: Support the RK3368 SoCs in thermal driver
+  arm64: dts: Add the thermal data found on RK3368
+  arm64: dts: Add main Thermal info to rk3368.dtsi
+  arm64: dts: Enable the Thermal on R88 board
+
+ .../bindings/thermal/rockchip-thermal.txt          |   4 +-
+ arch/arm64/boot/dts/rockchip/rk3368-r88.dts        |   6 +
+ arch/arm64/boot/dts/rockchip/rk3368-thermal.dtsi   | 112 ++++++++++++
+ arch/arm64/boot/dts/rockchip/rk3368.dtsi           |  30 +++
+ drivers/thermal/rockchip_thermal.c                 | 201 ++++++++++++++++++---
+ 5 files changed, 327 insertions(+), 26 deletions(-)
+ create mode 100644 arch/arm64/boot/dts/rockchip/rk3368-thermal.dtsi
+
+-- 
+1.9.1
+
