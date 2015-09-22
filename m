@@ -1,65 +1,89 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v4 5/5] power: wm831x_power: Support USB charger current
- limit management
-Date: Tue, 22 Sep 2015 15:29:43 +0200
-Message-ID: <20150922132943.GF23334@earth>
-References: <cover.1440135007.git.baolin.wang@linaro.org>
- <6e7ee1181bf16ee3680cb25225089cfb4a2a72f7.1440135007.git.baolin.wang@linaro.org>
+Subject: Re: [PATCH 2/3] power_supply: Add support for tps65217-charger.
+Date: Tue, 22 Sep 2015 15:44:32 +0200
+Message-ID: <20150922134432.GG23334@earth>
+References: <1441699779-22189-1-git-send-email-enric.balletbo@collabora.com>
+ <1441699779-22189-3-git-send-email-enric.balletbo@collabora.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="z0eOaCaDLjvTGF2l"
+	protocol="application/pgp-signature"; boundary="z9ECzHErBrwFF8sy"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <6e7ee1181bf16ee3680cb25225089cfb4a2a72f7.1440135007.git.baolin.wang@linaro.org>
+In-Reply-To: <1441699779-22189-3-git-send-email-enric.balletbo@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Baolin Wang <baolin.wang@linaro.org>
-Cc: balbi@ti.com, broonie@kernel.org, linus.walleij@linaro.org, linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org, peter.chen@freescale.com, sojka@merica.cz, stern@rowland.harvard.edu, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, dbaryshkov@gmail.com, dwmw2@infradead.org, sameo@linux.intel.com, lee.jones@linaro.org, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org
+To: Enric Balletbo i Serra <eballetbo@gmail.com>
+Cc: devicetree@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, dbaryshkov@gmail.com, dwmw2@infradead.org, tony@atomide.com, sameo@linux.intel.com, lee.jones@linaro.org, sjoerd.simons@collabora.co.uk, javier@dowhile0.org
 List-Id: linux-pm@vger.kernel.org
 
 
---z0eOaCaDLjvTGF2l
+--z9ECzHErBrwFF8sy
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Fri, Aug 21, 2015 at 01:34:52PM +0800, Baolin Wang wrote:
-> Integrate with the newly added USB charger interface to limit the current
-> we draw from the USB input based on the input device configuration
-> identified by the USB stack, allowing us to charge more quickly from high
-> current inputs without drawing more current than specified from others.
->=20
-> Signed-off-by: Mark Brown <broonie@kernel.org>
-> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
-> Acked-by: Lee Jones <lee.jones@linaro.org>
-> Acked-by: Charles Keepax <ckeepax@opensource.wolfsonmicro.com>
-> Acked-by: Peter Chen <peter.chen@freescale.com>
+On Tue, Sep 08, 2015 at 10:09:38AM +0200, Enric Balletbo i Serra wrote:
+> This patch adds support for the tps65217 charger driver. This driver is
+> responsible for controlling the charger aspect of the tps65217 mfd.
+> Currently, this mainly consists of turning on and off the charger, but
+> some other features of the charger can be supported through this driver.
 
-Acked-by: Sebastian Reichel <sre@kernel.org>
+Driver looks mostly fine. I have two comments though:
+
+> [...]
+>
+> +static int tps65217_ac_get_property(struct power_supply *psy,
+> +			enum power_supply_property psp,
+> +			union power_supply_propval *val)
+> +{
+> +	struct tps65217_charger *charger = power_supply_get_drvdata(psy);
+> +
+> +	if (psp == POWER_SUPPLY_PROP_ONLINE) {
+> +		val->intval = charger->ac_online;
+> +		charger->prev_ac_online = charger->ac_online;
+
+I think prev_ac_online should be set at the beginning of
+tps65217_charger_irq().
+
+> [...]
+>
+> +static int tps65217_charger_probe(struct platform_device *pdev)
+> +{
+>
+> [...]
+>
+> +	charger->ac = power_supply_register(&pdev->dev,
+> +					&tps65217_charger_desc, NULL);
+> +	if (IS_ERR(charger->ac)) {
+> +		dev_err(&pdev->dev, "failed: power supply register\n");
+> +		return PTR_ERR(charger->ac);
+> +	}
+
+You can use devm_power_supply_register(...) to simplify the driver
+a bit more.
 
 -- Sebastian
 
---z0eOaCaDLjvTGF2l
+--z9ECzHErBrwFF8sy
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJWAVfEAAoJENju1/PIO/qaG/MQAKEDtNrhlNOBxEm5adP9Xm3Y
-HyRHMyRSrgjZt5YFtdzzCNS8a3mY+gubODgyOK14a/tQXqmbBnJHd1zRhhWBgHRz
-7Necrzm23FtNJdRqxb0tMWZO9MkBXEJJOp4C32V2ya7EMic8b9/PifExyWzxIIxf
-KOM84aYMGI9GRMGTm7b7671MLZ+tKu7Bg+1lIFFp/F7LaJ4Zsu57Yk9Fs9Lf2L8V
-LBDxRbcomVIH1d2IN0KDfam7vHiGPe6QsGUV0Ibal6+GDKaX9y2DQO8RX+8X4Z1h
-7HNNfnTulU/3wKeAH2WMSyUL9+9JmakVfG1dH/EiWCOmYLj/egL41hSxI7bZI3Ue
-FXk1HBFp/7CSx7rayxen7+XOx5s8JMvKc3ZrAo/mtFlaJwanBhwfn8KmvbBsPwVZ
-crM+BbeYV6c5rjEQO/+FKDVMX3bO6XU89GTTsx6mElj1CuiILT/GW3qUksFmyo9s
-Qk0gZ9cy6tcExqf8LGADekkhg7D5oE8Ww2UnWEX/Z/RlNRpCpzZ2unZD1qytUFiE
-vcth1i35jW0pfkfNrB/Eo41WAef1ultEvG8PxhzIEvIHyNXnmgSr7qmzI43dXLPf
-SfWfBorAgJl+zqlAg5l2yxbKeR4bpYKNxtrB7mca+XbdF6qW43gD1MeIN2GW38AA
-WRFN/Ee375Cs2Gzvm89d
-=wane
+iQIcBAEBCgAGBQJWAVs9AAoJENju1/PIO/qaMZwP/2hkjOS3EBALtiClJtJQ9pkP
+J1WFNEJqAjg9gBzz0qQraa6ObwQaK7bvR3IIizpWEztNuAcbg9zK6EJc7LGfwgFr
+tmbDpWsJ/x30WVpeg/7c3GWZipFo6xgBCbA/1Ew6DD3ZWrgd9nwJb8CnMPIO1Bw8
+QoSJb88AxCb74k2dwrBhkCp2b/d7+DQXDAbDRXj50ZiPmZIieFXrRe1bGKingUs9
+pTaMm4e1+u2EfN4UyMhCulLaguyhp3skZY5T7eCLEhU5X8ieAABFbHINWngfjGch
+twj2VU9AZgvOkB5ipcdAdj4mPuI3fEH8XuvHx/3U6V5NeDH7EW647Wx3TW7359DX
+VXETmoqeLezM4mojTv3gRaQwbeiKINwkxpNsreANNCcd+sONTkuGCZS3w7jkJu8T
+0lrZ+C1PkzuyroGoXWt1PPgCzmqbR4ldojx8W/wfpKECyuaVI/RiwzTf4nneOtWX
+76DXZn3S+76GhgEjRo7p8IYk9oFRZdAFOQKfDmnvv6Sc6R0THqH0nTXdTXnORc3p
+8yDgpIr7KjWfD96Wt1FEEXVYsxudgLMk2cQrbFY33BhCkKcoToHZ9bMwNR875j+M
+HMsRlxyLssrTrLmuR8qdAd7VByAyO/C9Do1B0N0TNRY3WZQVVui6e3KsiCIOpC4q
+yaCUV1iG5jDaqNiWdgD+
+=Oas6
 -----END PGP SIGNATURE-----
 
---z0eOaCaDLjvTGF2l--
+--z9ECzHErBrwFF8sy--
