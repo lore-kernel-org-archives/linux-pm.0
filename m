@@ -1,35 +1,37 @@
 From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH V2] PM / OPP: of_property_count_u32_elems() can return
- errors
-Date: Tue, 22 Sep 2015 09:51:27 -0700
-Message-ID: <20150922165127.GH23081@codeaurora.org>
-References: <3ad0ce115028e628e556a505689d396b6e98f04e.1442939340.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2] clk: samsung: fix cpu clock's flags checking
+Date: Tue, 22 Sep 2015 10:09:43 -0700
+Message-ID: <20150922170943.GI23081@codeaurora.org>
+References: <1440762575-21520-1-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:51035 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757764AbbIVQv3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Sep 2015 12:51:29 -0400
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <3ad0ce115028e628e556a505689d396b6e98f04e.1442939340.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1440762575-21520-1-git-send-email-b.zolnierkie@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Michael Turquette <mturquette@baylibre.com>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Dan Carpenter <dan.carpenter@oracle.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 
-On 09/22, Viresh Kumar wrote:
-> of_property_count_u32_elems() will never return 0, but a -ve error value
-> of a positive count. And so the current !count check is wrong.
+On 08/28, Bartlomiej Zolnierkiewicz wrote:
+> CLK_CPU_HAS_DIV1 and CLK_CPU_NEEDS_DEBUG_ALT_DIV masks were
+> incorrectly used as a bit numbers.  Fix it.
 > 
-> Also, a missing "opp-microvolt" property isn't a problem and so we need
-> to do of_find_property() separately to confirm that.
+> Tested on Exynos4210 based Origen board and on Exynos5250 based
+> Arndale board.
 > 
-> Fixes: 274659029c9d ("PM / OPP: Add support to parse "operating-points-v2" bindings")
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: Tomasz Figa <tomasz.figa@gmail.com>
+> Cc: Michael Turquette <mturquette@baylibre.com>
+> Cc: Thomas Abraham <thomas.ab@samsung.com>
+> Fixes: ddeac8d96 ("clk: samsung: add infrastructure to register cpu clocks")
+> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+> Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Reviewed-by: Javier Martinez Canillas <javier@dowhile0.org>
+> Acked-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 > ---
 
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+Applied to clk-fixes
 
 -- 
 Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
