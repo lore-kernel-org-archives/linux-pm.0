@@ -1,59 +1,58 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] PM / OPP: of_property_count_u32_elems() can return errors
-Date: Tue, 22 Sep 2015 09:35:05 -0700
-Message-ID: <20150922163505.GF24314@linux>
-References: <46a47430b8d65f509d47fe3ad1264c6b23086d61.1442508974.git.viresh.kumar@linaro.org>
- <20150917181328.GQ23081@codeaurora.org>
- <20150919032113.GA24314@linux>
- <20150919222219.GE23081@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: [PATCH V2] PM / OPP: of_property_count_u32_elems() can return errors
+Date: Tue, 22 Sep 2015 09:35:31 -0700
+Message-ID: <3ad0ce115028e628e556a505689d396b6e98f04e.1442939340.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f42.google.com ([209.85.220.42]:33671 "EHLO
-	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758598AbbIVQfH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Sep 2015 12:35:07 -0400
-Received: by pacex6 with SMTP id ex6so13676515pac.0
-        for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2015 09:35:06 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20150919222219.GE23081@codeaurora.org>
+Received: from mail-pa0-f49.google.com ([209.85.220.49]:33260 "EHLO
+	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758607AbbIVQft (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Sep 2015 12:35:49 -0400
+Received: by pacex6 with SMTP id ex6so13691720pac.0
+        for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2015 09:35:49 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, nm@ti.com, Viresh Kumar <viresh.kumar@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 
-On 19-09-15, 15:22, Stephen Boyd wrote:
-> On 09/18, Viresh Kumar wrote:
-> > On 17-09-15, 11:13, Stephen Boyd wrote:
-> > > > +	count = of_property_count_u32_elems(opp->np, "opp-microvolt");
-> > > > +	if (count < 0) {
-> > > 
-> > > We can't test count for -EINVAL to detect the missing property
-> > > because -EINVAL is also returned on a non-multiple of u32 length
-> > > property? Maybe we shouldn't worry about that case and turn
-> > > -EINVAL into 0.
-> > 
-> > So you are saying that we go ahead without regulators if a incorrect
-> > values are present in opp-microvolt? i.e. even if the length property
-> > was invalid, we return 0 from this function.
-> > 
-> > The problem here is that we will try changing the frequency without
-> > changing the regulator in that case, and it might not be safe for the
-> > platform, isn't it?
-> > 
-> 
-> Do we care if a platform has changed the length of the property
-> to something that isn't a multiple of u32? That sounds very rare,
-> that's all. I agree it's a bug.
+of_property_count_u32_elems() will never return 0, but a -ve error value
+of a positive count. And so the current !count check is wrong.
 
-Hmm, okay.. I got it now.
+Also, a missing "opp-microvolt" property isn't a problem and so we need
+to do of_find_property() separately to confirm that.
 
-Maybe we can update of_property_count_u32_elems() to return zero in
-that case, but that might not be the appropriate return value.
+Fixes: 274659029c9d ("PM / OPP: Add support to parse "operating-points-v2" bindings")
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+V1->V2:
+- Dropped 'prop' variable.
 
-It *can* be confused against the case where the user has written an
-empty property. But even in that case we are returning -ENODATA
-instead of 0 :)
+ drivers/base/power/opp.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index 28cd75c535b0..1194669c2bb5 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -892,10 +892,17 @@ static int opp_get_microvolt(struct dev_pm_opp *opp, struct device *dev)
+ 	u32 microvolt[3] = {0};
+ 	int count, ret;
+ 
+-	count = of_property_count_u32_elems(opp->np, "opp-microvolt");
+-	if (!count)
++	/* Missing property isn't a problem, but an invalid entry is */
++	if (!of_find_property(opp->np, "opp-microvolt", NULL))
+ 		return 0;
+ 
++	count = of_property_count_u32_elems(opp->np, "opp-microvolt");
++	if (count < 0) {
++		dev_err(dev, "%s: Invalid opp-microvolt property (%d)\n",
++			__func__, count);
++		return count;
++	}
++
+ 	/* There can be one or three elements here */
+ 	if (count != 1 && count != 3) {
+ 		dev_err(dev, "%s: Invalid number of elements in opp-microvolt property (%d)\n",
 -- 
-viresh
+2.4.0
+
