@@ -1,67 +1,29 @@
 From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH 16/17] pinctrl: single: remove misuse of IRQF_NO_SUSPEND
- flag
-Date: Tue, 22 Sep 2015 10:42:39 +0100
-Message-ID: <5601228F.5080403@arm.com>
+Subject: Re: [PATCH 07/17] input: tegra-kbc: drop use of IRQF_NO_SUSPEND flag
+Date: Tue, 22 Sep 2015 11:00:25 +0100
+Message-ID: <560126B9.2000106@arm.com>
 References: <1442850433-5903-1-git-send-email-sudeep.holla@arm.com>
- <1442850433-5903-17-git-send-email-sudeep.holla@arm.com>
- <alpine.DEB.2.11.1509212049500.5606@nanos>
+ <1442850433-5903-8-git-send-email-sudeep.holla@arm.com>
+ <20150921232132.GE11284@x1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-gpio-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.11.1509212049500.5606@nanos>
-Sender: linux-gpio-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linus Walleij <linus.walleij@linaro.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150921232132.GE11284@x1>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Samuel Ortiz <sameo@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
+Hi Lee,
 
-
-On 21/09/15 19:53, Thomas Gleixner wrote:
-> On Mon, 21 Sep 2015, Sudeep Holla wrote:
->> The IRQF_NO_SUSPEND flag is used to identify the interrupts that should
->> be left enabled so as to allow them to work as expected during the
->> suspend-resume cycle, but doesn't guarantee that it will wake the system
->> from a suspended state, enable_irq_wake is recommended to be used for
->> the wakeup.
->>
->> This patch removes the use of IRQF_NO_SUSPEND flags replacing it with
->> irq_set_irq_wake instead.
->>
->> Cc: Linus Walleij <linus.walleij@linaro.org>
->> Cc: linux-gpio@vger.kernel.org
->> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
->> ---
->>   drivers/pinctrl/pinctrl-single.c | 7 ++++---
->>   1 file changed, 4 insertions(+), 3 deletions(-)
->>
->> diff --git a/drivers/pinctrl/pinctrl-single.c b/drivers/pinctrl/pinctrl-single.c
->> index ef04b962c3d5..a5d0f0e52de1 100644
->> --- a/drivers/pinctrl/pinctrl-single.c
->> +++ b/drivers/pinctrl/pinctrl-single.c
->> @@ -1615,12 +1615,14 @@ static void pcs_irq_unmask(struct irq_data *d)
->>    */
->>   static int pcs_irq_set_wake(struct irq_data *d, unsigned int state)
->>   {
->> +	struct pcs_soc_data *pcs_soc = irq_data_get_irq_chip_data(d);
->> +
->>   	if (state)
->>   		pcs_irq_unmask(d);
->>   	else
->>   		pcs_irq_mask(d);
->>
->> -	return 0;
->> +	return irq_set_irq_wake(pcs_soc->irq, state);
->
-> That's going to create at least a lockdep splat due to nesting
-> irq_desc->lock.
+On 22/09/15 00:21, Lee Jones wrote:
+> The $SUBJECT is not correct.
 >
 
-Ah right, I noted that I must fix it when you pointed out similar issue
-on the other thread[1]. I forgot later, sorry will look into that.
+Any suggestions ? Most of this series I have used "remove misuse..."
+But this driver was doing things correctly, just that it left this
+flag as is.
 
 Regards,
 Sudeep
-
-[1] https://lkml.org/lkml/2015/9/8/617
