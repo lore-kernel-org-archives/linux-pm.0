@@ -1,66 +1,59 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v5 01/11] dt: power: bq24257-charger: Cover additional
- devices
-Date: Tue, 22 Sep 2015 18:24:48 +0200
-Message-ID: <20150922162448.GE4235@earth>
-References: <1442612399-341-1-git-send-email-dannenberg@ti.com>
- <1442612399-341-2-git-send-email-dannenberg@ti.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] PM / OPP: of_property_count_u32_elems() can return errors
+Date: Tue, 22 Sep 2015 09:35:05 -0700
+Message-ID: <20150922163505.GF24314@linux>
+References: <46a47430b8d65f509d47fe3ad1264c6b23086d61.1442508974.git.viresh.kumar@linaro.org>
+ <20150917181328.GQ23081@codeaurora.org>
+ <20150919032113.GA24314@linux>
+ <20150919222219.GE23081@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="hwvH6HDNit2nSK4j"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:53740 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751927AbbIVQYw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 22 Sep 2015 12:24:52 -0400
+Received: from mail-pa0-f42.google.com ([209.85.220.42]:33671 "EHLO
+	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758598AbbIVQfH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Sep 2015 12:35:07 -0400
+Received: by pacex6 with SMTP id ex6so13676515pac.0
+        for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2015 09:35:06 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <1442612399-341-2-git-send-email-dannenberg@ti.com>
+In-Reply-To: <20150919222219.GE23081@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andreas Dannenberg <dannenberg@ti.com>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 
+On 19-09-15, 15:22, Stephen Boyd wrote:
+> On 09/18, Viresh Kumar wrote:
+> > On 17-09-15, 11:13, Stephen Boyd wrote:
+> > > > +	count = of_property_count_u32_elems(opp->np, "opp-microvolt");
+> > > > +	if (count < 0) {
+> > > 
+> > > We can't test count for -EINVAL to detect the missing property
+> > > because -EINVAL is also returned on a non-multiple of u32 length
+> > > property? Maybe we shouldn't worry about that case and turn
+> > > -EINVAL into 0.
+> > 
+> > So you are saying that we go ahead without regulators if a incorrect
+> > values are present in opp-microvolt? i.e. even if the length property
+> > was invalid, we return 0 from this function.
+> > 
+> > The problem here is that we will try changing the frequency without
+> > changing the regulator in that case, and it might not be safe for the
+> > platform, isn't it?
+> > 
+> 
+> Do we care if a platform has changed the length of the property
+> to something that isn't a multiple of u32? That sounds very rare,
+> that's all. I agree it's a bug.
 
---hwvH6HDNit2nSK4j
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Hmm, okay.. I got it now.
 
-Hi,
+Maybe we can update of_property_count_u32_elems() to return zero in
+that case, but that might not be the appropriate return value.
 
-On Fri, Sep 18, 2015 at 04:39:49PM -0500, Andreas Dannenberg wrote:
-> Extend the bq24257 charger's device tree documentation to cover the
-> bq24250 and bq24251 devices as well feature additions.
+It *can* be confused against the case where the user has written an
+empty property. But even in that case we are returning -ENODATA
+instead of 0 :)
 
-The binding looks fine to except for:
-
-> +- stat-gpios: GPIO used for the devices STAT_IN pin. Alternatively the pin can
-> +    also be defined through the standard interrupt definition properties (see
-> +    optional properties section below). Only use one method.
-
-Why do you expose two ways for this?
-
--- Sebastian
-
---hwvH6HDNit2nSK4j
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJWAYDNAAoJENju1/PIO/qabwcP/RgyDAy7vFAHbO3QZ69kDJzG
-mVkNLkc7dkT2LV0V32a5pLCI4HObctAVkq5lzlruXIsGE8uYoPz+p5Szg9saRFTk
-+tzJXU+lqNpNlERrKX7lsPVJQNL4ILrNcU5L30NgCH/mWn/AdPGxd+aTKjTL2oA6
-pxy/vkW2uldpHtDrYk/CuhdSY7w3AhEAjlPVd0+aGd0dA/XEGhpIBv1MMHhw1ATZ
-qSP71amNo9/eSaulRnO7bIkwfJHu3uWjmM/1zKrrUYB/a831eCVWUhNpEv+bQ0B0
-ZP8u6WfYyZsD2a/y6c6BlOdLlqt/0hNvfv3X8xWuL9Qa9Xot5iNwjinlRGSmenm/
-QkYWeLpyRoENtdbza1eMMDMbbr01XJ26QCF+8ob3QH2YaQRXhKQuWTzAxGH8aSV2
-DzgwHKML18T90NXRyRyxAZAHiuZg6C+oEkfuc+yw2Ac6KS4m1JCT4EwSIBdkv6DU
-Y1VAOGEQichjC++aT5PUa00E7R+ouJukw1HHjyzlUzaoz1B3SD0tEkCP0AwhUDI6
-AB9EXTlehXITaYT3onUo0N6RQLwxR6w9Lr7YR65lqSU5T3QMxtE9f9qJFjRiY7xY
-aXmM1y3F7K3wv/bqtha6rNiXivmkoONS+UXsTdu2wVW4+68fzcrzKEzDjsps8HCO
-D8FC0tg5UIsuq30uVnw0
-=hiGT
------END PGP SIGNATURE-----
-
---hwvH6HDNit2nSK4j--
+-- 
+viresh
