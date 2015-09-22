@@ -1,29 +1,49 @@
-From: Doug Anderson <dianders@chromium.org>
-Subject: Re: [PATCH] power: print function name of callbacks
-Date: Tue, 22 Sep 2015 10:38:26 -0700
-Message-ID: <CAD=FV=V1NTm7HsBcvHkXUnkxGHj=VC9fWQZdn3g4aSe3OQxnNg@mail.gmail.com>
-References: <1442942797-17433-1-git-send-email-dianders@chromium.org>
-	<1A7043D5F58CCB44A599DFD55ED4C9484692486F@fmsmsx115.amr.corp.intel.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH v2 2/5] PM / OPP: Support adjusting OPP voltages at
+ runtime
+Date: Tue, 22 Sep 2015 10:46:43 -0700
+Message-ID: <20150922174643.GJ23081@codeaurora.org>
+References: <1442623929-4507-1-git-send-email-sboyd@codeaurora.org>
+ <1442623929-4507-3-git-send-email-sboyd@codeaurora.org>
+ <20150922165041.GG24314@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1A7043D5F58CCB44A599DFD55ED4C9484692486F@fmsmsx115.amr.corp.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Brown, Len" <len.brown@intel.com>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:55414 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751927AbbIVRqp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Sep 2015 13:46:45 -0400
+Content-Disposition: inline
+In-Reply-To: <20150922165041.GG24314@linux>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Nishanth Menon <nm@ti.com>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Andy Gross <agross@codeaurora.org>, linux-pm@vger.kernel.org, Mark Brown <broonie@kernel.org>, David Collins <collinsd@codeaurora.org>
 
-Hi,
+On 09/22, Viresh Kumar wrote:
+> On 18-09-15, 17:52, Stephen Boyd wrote:
+> >  /**
+> > + * dev_pm_opp_adjust_voltage() - helper to change the voltage of an OPP
+> > + * @dev:		device for which we do this operation
+> > + * @freq:		OPP frequency to adjust voltage of
+> > + * @u_volt:		new OPP voltage
+> > + *
+> > + * Change the voltage of an OPP with an RCU operation.
+> > + *
+> > + * Return: -EINVAL for bad pointers, -ENOMEM if no memory available for the
+> > + * copy operation, returns 0 if no modifcation was done OR modification was
+> 
+>                                       modification
+> 
+> > + * successful.
+> 
+> Otherwise,
+> 
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
 
-On Tue, Sep 22, 2015 at 10:33 AM, Brown, Len <len.brown@intel.com> wrote:
-> have you used analyze_suspend?
-> It used to parse this output, but that was abandoned
-> when it cut over to using ftrace directly.
->
-> https://01.org/suspendresume
+This typo is all over the file! I'll send a patch for that too.
 
-Ah, good to know about.  In my case this output is enabled on shipping
-devices and sometimes we get back bug reports with these prints in the
-log, so I'm interested in making the prints more useful.  :)
-
--Doug
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
