@@ -1,83 +1,146 @@
-From: Douglas Anderson <dianders@chromium.org>
-Subject: [PATCH] power: print function name of callbacks
-Date: Tue, 22 Sep 2015 10:26:37 -0700
-Message-ID: <1442942797-17433-1-git-send-email-dianders@chromium.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Douglas Anderson <dianders@chromium.org>, pavel@ucw.cz, len.brown@intel.com, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v2 7/7] ARM: smp: Add runtime PM support for CPU hotplug
+Date: Tue, 22 Sep 2015 10:32:36 -0700
+Message-ID: <20150922173236.GB19183@linaro.org>
+References: <Pine.LNX.4.44L0.1509051133100.30865-100000@netrider.rowland.org>
+ <2657565.lxWtPmdjyp@vostro.rjw.lan>
+ <55ED9328.2010501@ti.com>
+ <2355864.I8qZFusWfm@vostro.rjw.lan>
+ <55EE9AA1.8020200@ti.com>
+ <7h613kmuuv.fsf@deeprootsystems.com>
+ <55F162FD.4050401@ti.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f52.google.com ([209.85.220.52]:36476 "EHLO
+	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751529AbbIVRck (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Sep 2015 13:32:40 -0400
+Received: by pacgz1 with SMTP id gz1so12185951pac.3
+        for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2015 10:32:40 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <55F162FD.4050401@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Grygorii Strashko <grygorii.strashko@ti.com>
+Cc: Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alan Stern <stern@rowland.harvard.edu>, Thomas Gleixner <tglx@linutronix.de>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Mark Rutland <mark.rutland@arm.com>, ulf.hansson@linaro.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-pm@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, k.kozlowski@samsung.com, msivasub@codeaurora.org, geert@linux-m68k.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-kernel@lists.infradead.org, Ingo Molnar <mingo@kernel.org>, john.stultz@linaro.org
 
-The printouts writen to the logs by suspend can be a bit opaque: it can
-be hard to track them down to the actual function called.  You might
-see:
+On Thu, Sep 10 2015 at 04:01 -0700, Grygorii Strashko wrote:
+>On 09/09/2015 01:03 AM, Kevin Hilman wrote:
+>> Grygorii Strashko <grygorii.strashko@ti.com> writes:
+>>
+>>> On 09/07/2015 11:42 PM, Rafael J. Wysocki wrote:
+>>>> On Monday, September 07, 2015 04:37:44 PM Grygorii Strashko wrote:
+>>>>> On 09/07/2015 04:04 PM, Rafael J. Wysocki wrote:
+>>>>>> On Saturday, September 05, 2015 11:39:20 AM Alan Stern wrote:
+>>>>>>> On Sat, 5 Sep 2015, Grygorii Strashko wrote:
+>>>>>>>
+>>>>>>>> On 09/04/2015 09:45 PM, Alan Stern wrote:
+>>>>>>>>> On Fri, 4 Sep 2015, Grygorii Strashko wrote:
+>>>>>>>>>
+>>>>>>>>>> There is one "small" problem with such approach :(
+>>>>>>>>>>
+>>>>>>>>>> - It's incompatible with -RT kernel, because PM runtime can't be used
+>>>>>>>>>> in atomic context on -RT.
+>>>>>>>>>
+>>>>>>>>> Can you explain this more fully?  Why can't runtime PM be used in
+>>>>>>>>> atomic context in the -rt kernels?
+>>>>>>>>>
+>>>>>>>>
+>>>>>>>> See:
+>>>>>>>>     http://lwn.net/Articles/146861/
+>>>>>>>>     https://rt.wiki.kernel.org/index.php/Frequently_Asked_Questions#How_does_the_CONFIG_PREEMPT_RT_patch_work.3F
+>>>>>>>>
+>>>>>>>> spinlock_t
+>>>>>>>>        Critical sections are preemptible. The _irq operations (e.g., spin_lock_irqsave())
+>>>>>>>>     do -not- disable hardware interrupts. Priority inheritance is used to prevent priority
+>>>>>>>>     inversion. An underlying rt_mutex is used to implement spinlock_t in PREEMPT_RT.
+>>>>>>>>
+>>>>>>>> As result, have to do things like:
+>>>>>>>> https://lkml.org/lkml/2015/8/18/161
+>>>>>>>> https://lkml.org/lkml/2015/8/18/162
+>>>>>>>>
+>>>>>>>> Sorry for brief reply - Friday/Sat night :)
+>>>>>>>
+>>>>>>> I see.  Although we normally think of interrupt contexts as being
+>>>>>>> atomic, in an -rt kernel this isn't true any more because things like
+>>>>>>> spin_lock_irq don't actually disable interrupts.
+>>>>>>>
+>>>>>>> Therefore it would be correct to say that in -rt kernels, runtime PM
+>>>>>>> can be used in interrupt context (if the device is marked as irq-safe),
+>>>>>>> but not in atomic context.  Right?
+>>>>>>
+>>>>>> Right.
+>>>>>>
+>>>>>> Whatever is suitable for interrupt context in the mainline, will be suitable
+>>>>>> for that in -rt kernels too.
+>>>>>
+>>>>> Not exactly true :(, since spinlock is converted to [rt_] mutex.
+>>>>> Usually, this difference can't be seen because on -RT kernel all or
+>>>>> mostly all HW IRQ handlers will be forced to be threaded.
+>>>>
+>>>> Exactly.  And that's what I'm talking about.
+>>>>
+>>>>> For the cases, where such automatic conversion is not working,
+>>>>> (like chained irq handlers or HW-handler+Threaded handler) the code
+>>>>> has to be carefully patched to work properly as for non-RT as for -RT.
+>>>>
+>>>> Right.
+>>>>
+>>>>> Also, this triggers some -RT incompatibility issues, like with PM runtime or
+>>>>
+>>>> That I'm not sure about.  Why would runtime PM cause problems with -RT (apart
+>>>> from attempts to use it from the idle loop, but that's not happening in the
+>>>> mainline anyway)?
+>>>
+>>>
+>>> I have to be more specific - sorry. "irq_safe" mode of PM runtime is incompatible with -RT.
+>>>
+>>> Here is an example:
+>>> - HW IRQ handler in TI OMAP GPIO driver is implemented as chained IRQ handler and
+>>>    contains pm_runtime_get_sync()/pm_runtime_put(). This works properly with vanilla kernel
+>>>    because OMAP GPIO devices marked as irq_safe.
+>>>    Chained IRQ handlers can't be forced threaded and PM runtime APIs trigger
+>>>   "sleeping function called from invalid context" issues there, so corresponding code has to be reworked.
+>>
+>> Isn't that why those are being converted to raw_*[1] ?
+>>
+>> Kevin
+>>
+>> [1] http://marc.info/?l=linux-omap&m=143749603401221&w=2
+>>
+>
+>That's way I've tried to convert those to generic IRQ handler [2] :),
+>so on -RT it will be forced threaded.
+>
+>raw_* is different kind of problem in gpio-omap - IRQ controllers
+>have to use raw_* inside irq_chip callbacks, because IRQ core guards those
+>callbacks using raw_* locks.
+>.irq_bus_lock()/irq_bus_sync_unlock() callbacks can be used [3]
+>for any kind of operations which require non-atomic context.
+>
+Talking to John Stultz at Linaro Connect: Is cpuidle relevant in
+-RT kernel? I dont know much about -RT. I thought this might be point
+that we should consider.
 
-  calling  rfkill1+ @ 19473, parent: phy0
-  call rfkill1+ returned 0 after 1 usecs
-  calling  phy0+ @ 19473, parent: mmc2:0001:1
-  call phy0+ returned 0 after 19 usecs
+As it stands today, on a 800 Mhz ARM quad core, I am seeing a latency of
+50-70 usec for the additional runtime PM in the cpuidle. Ofcourse, there
+is a definite need to optimize and there are opportunities to do that.
 
-It's a bit hard to know what's actually happening.  Instead, it's nice
-to see:
+Since each CPU does its own runtime PM, we could probably avoid any kind
+of locks in the runtime PM. But locks in genpd may be unavoidable. Will
+look more into that.
 
-  calling  rfkill1+ @ 15793, parent: phy0, cb: rfkill_suspend
-  call rfkill1+ returned 0 after 1 usecs
-  calling  phy0+ @ 15793, parent: mmc2:0001:1, cb: wiphy_suspend [cfg80211]
-  call phy0+ returned 0 after 7 usecs
+Thanks,
+Lina
 
-That makes it very obvious what's going on.  It also has the nice side
-effect of making the suspend/resume spew a little more obvious, since
-many resume functions have the word "resume" in the name:
-
-  calling  phy0+ @ 15793, parent: mmc2:0001:1, cb: wiphy_resume [cfg80211]
-  call phy0+ returned 0 after 12 usecs
-  calling  rfkill1+ @ 15793, parent: phy0, cb: rfkill_resume
-  call rfkill1+ returned 0 after 1 usecs
-
-Signed-off-by: Douglas Anderson <dianders@chromium.org>
----
- drivers/base/power/main.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 1710c26..e2b1f14 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -188,14 +188,14 @@ void device_pm_move_last(struct device *dev)
- 	list_move_tail(&dev->power.entry, &dpm_list);
- }
- 
--static ktime_t initcall_debug_start(struct device *dev)
-+static ktime_t initcall_debug_start(struct device *dev, void *cb)
- {
- 	ktime_t calltime = ktime_set(0, 0);
- 
- 	if (pm_print_times_enabled) {
--		pr_info("calling  %s+ @ %i, parent: %s\n",
-+		pr_info("calling  %s+ @ %i, parent: %s, cb: %pf\n",
- 			dev_name(dev), task_pid_nr(current),
--			dev->parent ? dev_name(dev->parent) : "none");
-+			dev->parent ? dev_name(dev->parent) : "none", cb);
- 		calltime = ktime_get();
- 	}
- 
-@@ -382,7 +382,7 @@ static int dpm_run_callback(pm_callback_t cb, struct device *dev,
- 	if (!cb)
- 		return 0;
- 
--	calltime = initcall_debug_start(dev);
-+	calltime = initcall_debug_start(dev, cb);
- 
- 	pm_dev_dbg(dev, state, info);
- 	trace_device_pm_callback_start(dev, info, state.event);
-@@ -1324,7 +1324,7 @@ static int legacy_suspend(struct device *dev, pm_message_t state,
- 	int error;
- 	ktime_t calltime;
- 
--	calltime = initcall_debug_start(dev);
-+	calltime = initcall_debug_start(dev, cb);
- 
- 	trace_device_pm_callback_start(dev, info, state.event);
- 	error = cb(dev, state);
--- 
-2.6.0.rc0.131.gf624c3d
+>[2] https://lkml.org/lkml/2015/8/18/162
+>gpio: omap: convert to use generic irq handler
+>[3] https://lkml.org/lkml/2015/8/18/161
+>gpio: omap: move pm runtime in irq_chip.irq_bus_lock/sync_unlock
+>
+>
+>
+>-- 
+>regards,
+>-grygorii
