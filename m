@@ -1,47 +1,36 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 2/5] PM / OPP: Support adjusting OPP voltages at runtime
-Date: Tue, 22 Sep 2015 09:50:41 -0700
-Message-ID: <20150922165041.GG24314@linux>
-References: <1442623929-4507-1-git-send-email-sboyd@codeaurora.org>
- <1442623929-4507-3-git-send-email-sboyd@codeaurora.org>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH V2] PM / OPP: of_property_count_u32_elems() can return
+ errors
+Date: Tue, 22 Sep 2015 09:51:27 -0700
+Message-ID: <20150922165127.GH23081@codeaurora.org>
+References: <3ad0ce115028e628e556a505689d396b6e98f04e.1442939340.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:51035 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757764AbbIVQv3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Sep 2015 12:51:29 -0400
 Content-Disposition: inline
-In-Reply-To: <1442623929-4507-3-git-send-email-sboyd@codeaurora.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Nishanth Menon <nm@ti.com>, David Collins <collinsd@codeaurora.org>, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, Mark Brown <broonie@kernel.org>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Andy Gross <agross@codeaurora.org>, linux-arm-kernel@lists.infradead.org
+In-Reply-To: <3ad0ce115028e628e556a505689d396b6e98f04e.1442939340.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 
-On 18-09-15, 17:52, Stephen Boyd wrote:
->  /**
-> + * dev_pm_opp_adjust_voltage() - helper to change the voltage of an OPP
-> + * @dev:		device for which we do this operation
-> + * @freq:		OPP frequency to adjust voltage of
-> + * @u_volt:		new OPP voltage
-> + *
-> + * Change the voltage of an OPP with an RCU operation.
-> + *
-> + * Return: -EINVAL for bad pointers, -ENOMEM if no memory available for the
-> + * copy operation, returns 0 if no modifcation was done OR modification was
+On 09/22, Viresh Kumar wrote:
+> of_property_count_u32_elems() will never return 0, but a -ve error value
+> of a positive count. And so the current !count check is wrong.
+> 
+> Also, a missing "opp-microvolt" property isn't a problem and so we need
+> to do of_find_property() separately to confirm that.
+> 
+> Fixes: 274659029c9d ("PM / OPP: Add support to parse "operating-points-v2" bindings")
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
 
-                                      modification
-
-> + * successful.
-
-Otherwise,
-
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 
 -- 
-viresh
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
