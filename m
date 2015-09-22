@@ -1,63 +1,29 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing
- runtime suspend
-Date: Tue, 22 Sep 2015 11:22:24 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1509221116430.1742-100000@iolanthe.rowland.org>
-References: <1442932301.6240.11.camel@suse.de>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Subject: Re: [PATCH v3 0/5] power/reset: at91: cleanups and slow clock
+Date: Tue, 22 Sep 2015 17:35:16 +0200
+Message-ID: <20150922153515.GO4287@piout.net>
+References: <1439284370-13803-1-git-send-email-alexandre.belloni@free-electrons.com>
+ <20150922151335.GA2533@earth>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:45282 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758359AbbIVPWZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Sep 2015 11:22:25 -0400
-In-Reply-To: <1442932301.6240.11.camel@suse.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20150922151335.GA2533@earth>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Oliver Neukum <oneukum@suse.de>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Irina Tirdea <irina.tirdea@intel.com>, Len Brown <len.brown@intel.com>, Octavian Purdila <octavian.purdila@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Tue, 22 Sep 2015, Oliver Neukum wrote:
-
-> > I'm not sure I understand what you're saying.  Are you suggesting that
-> > this "inhibit" mechanism should involve a new callback different from
+On 22/09/2015 at 17:13:35 +0200, Sebastian Reichel wrote :
+> Thanks, queued for 4.4. You may want to add another patch adding
 > 
-> Yes, there is no necessary relation to power management. If you put
-> your phone into your pocket, you will want to inhibit the touchscreen
-> even if that doesn't save power.
+> MODULE_DEVICE_TABLE(of, xxx_of_match);
 > 
-> > the existing runtime-PM callbacks?  And when this new callback is
-> > invoked, drivers should cancel existing input requests (these devices
-> > are input-only) and go to low power?
-> 
-> Cancel, yes, going to low power is a consequence which needn't bother
-> the power subsystem.
 
-Going to low power needn't involve the power subsystem?  That sounds 
-weird.
+Sure, I will do.
 
->  You need a callback. If there are spurious
-> events, the current heuristics will keep devices awake.
-> You must discard them anyway, as they are spurious. There's no point
-> in transporting over the bus at all. We can cease IO for input.
-> 
-> > This would create a parallel runtime-PM mechanism which is independent
-> > of the existing one.  Is that really a good idea?
-> 
-> It isn't strictly PM. It helps PM to do a better job, but
-> conceptually it is independent.
 
-So my next question is: _How_ can this help PM to do a better job?  
-That is, what are the mechanisms?
-
-One you have already stated: Lack of spurious events will help prevent 
-unwanted wakeups (or unwanted failures to go to sleep).
-
-But Dmitry made a stronger claim: Inhibiting an input device should 
-allow the device to go to low power.  I would like to know how we can 
-implement this cleanly.  The most straightforward approach is to use 
-runtime PM, but it's not obvious how this can be made to work with the 
-current API.
-
-Alan Stern
-
+-- 
+Alexandre Belloni, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
