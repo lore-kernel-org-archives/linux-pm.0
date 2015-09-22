@@ -1,40 +1,67 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing
- runtime suspend
-Date: Tue, 22 Sep 2015 10:15:02 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1509221013470.1742-100000@iolanthe.rowland.org>
-References: <1442923519.6240.6.camel@suse.com>
+From: Manoil Claudiu <claudiu.manoil@freescale.com>
+Subject: RE: [PATCH 13/17] net: gianfar: remove misuse of IRQF_NO_SUSPEND flag
+Date: Tue, 22 Sep 2015 14:04:53 +0000
+Message-ID: <BY2PR0301MB072767325C2CBDB3D5CA8E1A9C450@BY2PR0301MB0727.namprd03.prod.outlook.com>
+References: <1442850433-5903-1-git-send-email-sudeep.holla@arm.com>
+ <1442850433-5903-14-git-send-email-sudeep.holla@arm.com>
+ <BY2PR0301MB072700F43F00CFC273FED1B59C460@BY2PR0301MB0727.namprd03.prod.outlook.com>
+ <alpine.DEB.2.11.1509211848510.5606@nanos>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1442923519.6240.6.camel@suse.com>
+In-Reply-To: <alpine.DEB.2.11.1509211848510.5606@nanos>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Oliver Neukum <oneukum@suse.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rafael@kernel.org>, Octavian Purdila <octavian.purdila@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Tirdea, Irina" <irina.tirdea@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "David S. Miller" <davem@davemloft.net>, Kevin Hao <haokexin@gmail.com>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 22 Sep 2015, Oliver Neukum wrote:
+>-----Original Message-----
+>From: Thomas Gleixner [mailto:tglx@linutronix.de]
+>Sent: Monday, September 21, 2015 7:52 PM
+>To: Manoil Claudiu-B08782 <claudiu.manoil@freescale.com>
+>Cc: Sudeep Holla <sudeep.holla@arm.com>; linux-pm@vger.kernel.org; linux-
+>kernel@vger.kernel.org; Rafael J. Wysocki <rjw@rjwysocki.net>; David S.
+>Miller <davem@davemloft.net>; Kevin Hao <haokexin@gmail.com>;
+>netdev@vger.kernel.org
+>Subject: RE: [PATCH 13/17] net: gianfar: remove misuse of
+>IRQF_NO_SUSPEND flag
+>
+>On Mon, 21 Sep 2015, Manoil Claudiu wrote:
+>> >The device is set as wakeup capable using proper wakeup API but the
+>> >driver misuses IRQF_NO_SUSPEND to set the interrupt as wakeup source
+>> >which is incorrect.
+>> >
+>> >This patch removes the use of IRQF_NO_SUSPEND flags replacing it with
+>> >enable_irq_wake instead.
+>> >
+>>
+>> What would be the purpose of IRQF_NO_SUSPEND flag then?  The flag is a
+>> friendlier API compared to calling enable_irq_wake().  For older kernels,
+>
+>It's not an API, it's just a bandaid for lazy programmers.
+>
+>> on PPC architectures, the flag did the job.  When did this change? Since
+>> when using IRQF_NO_SUSPEND is a "misuse"?
+>
+>It always was. Simply because IRQF_NO_SUSPEND has absolutely nothing
+>to do with wakeup interrupt sources. It's a flag which excludes the
+>interrupt from the suspend mechanism, but it does not flag it a wakeup
+>source.
+>
 
-> Indeed. We can handle output to suspended devices by waking them.
-> I don't see why this case is different. We are talking about input
-> only.
-> 
-> > The runtime-PM "usage" value for these devices is a little tricky to 
-> > calculate.  It should be nonzero if there are any open files _and_ the 
-> > device isn't "inhibited".  I don't know the best way to represent that 
-> > kind of condition in the runtime PM framework.
-> 
-> Does that make sense in the generic framework at all? I still
-> think that drivers should cease IO for input in such cases.
-> That should involve a common callback, but no counter.
-
-I'm not sure I understand what you're saying.  Are you suggesting that
-this "inhibit" mechanism should involve a new callback different from
-the existing runtime-PM callbacks?  And when this new callback is
-invoked, drivers should cancel existing input requests (these devices
-are input-only) and go to low power?
-
-This would create a parallel runtime-PM mechanism which is independent
-of the existing one.  Is that really a good idea?
-
-Alan Stern
+I'm seeing also a "powerpc: mpic" patch in the series, unfortunately I can't
+afford to test it right now. However I ran a quick test with this gianfar patch
+in isolation on a powerpc system, and seen some difference in the behavior
+(with and w/o the patch).  In both cases the system wakes up from standby
+by magic packet.  However, without the IRQF_NO_SUSPEND flag 2 wake-up
+interrupts are reported in /proc/interrupts for one magic packet; with the
+flag on there's just 1 interrupt.  Maybe this is not relevant, maybe the
+"powerpc: mpic" patch from this series changes this behavior.
+But if this is the API, what can I say? We'll see in time.  Btw, enable_irq_wake()
+returns an error code, normally it should be handled by printing a warning
+message at least, right?  But since most drivers don't handle that, I'm assuming
+it should be left unhandled to avoid overcomplicating things.
+FWIW
+Acked-by: Claudiu Manoil <claudiu.manoil@freescale.com>
