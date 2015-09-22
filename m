@@ -1,73 +1,98 @@
 From: "Andrew F. Davis" <afd@ti.com>
-Subject: [PATCH v5 0/6] Add support for additional bq27xxx devices
-Date: Tue, 22 Sep 2015 14:35:05 -0500
-Message-ID: <1442950511-16122-1-git-send-email-afd@ti.com>
+Subject: [PATCH v5 2/6] power: bq27xxx_battery: Platform initialization must declare a device
+Date: Tue, 22 Sep 2015 14:35:07 -0500
+Message-ID: <1442950511-16122-3-git-send-email-afd@ti.com>
+References: <1442950511-16122-1-git-send-email-afd@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1442950511-16122-1-git-send-email-afd@ti.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Andrew F. Davis" <afd@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-This series adds support for several additional bq27xxx devices and
-makes a few related fixes. v1 can be found here: [1] v2: [2] v3: [3]
-v4: [4]
+When initialized as a platform device the initializer must now specify
+a device. An empty device name is no longer valid.
 
-Changes from v4:
- - Changed if-then chains into lookups
- - Rebased onto git://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git (branch "next")
+Signed-off-by: Andrew F. Davis <afd@ti.com>
+---
+ drivers/power/bq27xxx_battery.c       | 9 ++++++---
+ drivers/w1/slaves/w1_bq27000.c        | 1 +
+ include/linux/power/bq27xxx_battery.h | 6 +++++-
+ 3 files changed, 12 insertions(+), 4 deletions(-)
 
-Changes from v3:
- - Added interrupt handling patch to series
- - Rebased on v4.3-rc1
-
-Changes from v2:
- - Fix alignment issue
- - Fix commit message typo
- - Use INVALID_REG_ADDR in register mappings
-
-Changes from v1:
- - Drop first four patches from series as they have been queued
-   at git://git.infradead.org/battery-2.6.git
- - Remove MODULE_ALIAS
- - Add comment about State-of-Charge
- - Add additional links to documentation
- - Add device names to id table
- - Add unlikely to if statement
- - Change return types to bool for status check functions
-
-[1] http://www.spinics.net/lists/kernel/msg2039278.html
-[2] http://www.spinics.net/lists/kernel/msg2043759.html
-[3] http://www.spinics.net/lists/kernel/msg2050196.html
-[4] http://www.spinics.net/lists/kernel/msg2074530.html
-
-Andrew F. Davis (6):
-  power: bq27x00_battery: Renaming for consistency
-  power: bq27xxx_battery: Platform initialization must declare a device
-  power: bq27xxx_battery: Fix typos and change naming for state of
-    charge functions
-  power: bq27xxx_battery: Add support for additional bq27xxx family
-    devices
-  power: bq27xxx_battery: Cleanup health checking
-  power: bq27xxx_battery: Add interrupt handling support
-
- MAINTAINERS                           |    4 +-
- arch/arm/configs/omap2plus_defconfig  |    2 +-
- arch/unicore32/Kconfig                |    2 +-
- drivers/power/Kconfig                 |   22 +-
- drivers/power/Makefile                |    2 +-
- drivers/power/bq27x00_battery.c       | 1125 ---------------------------
- drivers/power/bq27xxx_battery.c       | 1374 +++++++++++++++++++++++++++++++++
- drivers/w1/slaves/w1_bq27000.c        |    5 +-
- include/linux/power/bq27x00_battery.h |   19 -
- include/linux/power/bq27xxx_battery.h |   31 +
- 10 files changed, 1424 insertions(+), 1162 deletions(-)
- delete mode 100644 drivers/power/bq27x00_battery.c
- create mode 100644 drivers/power/bq27xxx_battery.c
- delete mode 100644 include/linux/power/bq27x00_battery.h
- create mode 100644 include/linux/power/bq27xxx_battery.h
-
+diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27xxx_battery.c
+index e72055c..0734413 100644
+--- a/drivers/power/bq27xxx_battery.c
++++ b/drivers/power/bq27xxx_battery.c
+@@ -91,8 +91,6 @@ struct bq27xxx_access_methods {
+ 	int (*read)(struct bq27xxx_device_info *di, u8 reg, bool single);
+ };
+ 
+-enum bq27xxx_chip { BQ27000, BQ27500, BQ27425, BQ27742, BQ27510};
+-
+ struct bq27xxx_reg_cache {
+ 	int temperature;
+ 	int time_to_empty;
+@@ -1036,6 +1034,11 @@ static int bq27xxx_battery_platform_probe(struct platform_device *pdev)
+ 		return -EINVAL;
+ 	}
+ 
++	if (!pdata->chip) {
++		dev_err(&pdev->dev, "no device supplied\n");
++		return -EINVAL;
++	}
++
+ 	di = devm_kzalloc(&pdev->dev, sizeof(*di), GFP_KERNEL);
+ 	if (!di)
+ 		return -ENOMEM;
+@@ -1043,7 +1046,7 @@ static int bq27xxx_battery_platform_probe(struct platform_device *pdev)
+ 	platform_set_drvdata(pdev, di);
+ 
+ 	di->dev = &pdev->dev;
+-	di->chip = BQ27000;
++	di->chip = pdata->chip;
+ 
+ 	name = pdata->name ?: dev_name(&pdev->dev);
+ 	di->bus.read = &bq27xxx_battery_platform_read;
+diff --git a/drivers/w1/slaves/w1_bq27000.c b/drivers/w1/slaves/w1_bq27000.c
+index 8480531..9f4a86b 100644
+--- a/drivers/w1/slaves/w1_bq27000.c
++++ b/drivers/w1/slaves/w1_bq27000.c
+@@ -42,6 +42,7 @@ static int w1_bq27000_read(struct device *dev, unsigned int reg)
+ static struct bq27xxx_platform_data bq27000_battery_info = {
+ 	.read   = w1_bq27000_read,
+ 	.name   = "bq27000-battery",
++	.chip   = BQ27000,
+ };
+ 
+ static int w1_bq27000_add_slave(struct w1_slave *sl)
+diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
+index e70a93a..a4efb10 100644
+--- a/include/linux/power/bq27xxx_battery.h
++++ b/include/linux/power/bq27xxx_battery.h
+@@ -3,7 +3,8 @@
+ 
+ /**
+  * struct bq27xxx_plaform_data - Platform data for bq27xxx devices
+- * @name: Name of the battery. If NULL the driver will fallback to "bq27000".
++ * @name: Name of the battery.
++ * @chip: Chip class number of this device.
+  * @read: HDQ read callback.
+  *	This function should provide access to the HDQ bus the battery is
+  *	connected to.
+@@ -11,8 +12,11 @@
+  *	register to be read. The return value should either be the content of
+  *	the passed register or an error value.
+  */
++enum bq27xxx_chip { BQ27000 = 1, BQ27500, BQ27425, BQ27742, BQ27510 };
++
+ struct bq27xxx_platform_data {
+ 	const char *name;
++	enum bq27xxx_chip chip;
+ 	int (*read)(struct device *dev, unsigned int);
+ };
+ 
 -- 
 1.9.1
