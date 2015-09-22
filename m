@@ -1,132 +1,137 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: [PATCH v5 5/6] power: bq27xxx_battery: Cleanup health checking
-Date: Tue, 22 Sep 2015 14:35:10 -0500
-Message-ID: <1442950511-16122-6-git-send-email-afd@ti.com>
-References: <1442950511-16122-1-git-send-email-afd@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1442950511-16122-1-git-send-email-afd@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Andrew F. Davis" <afd@ti.com>
+From: Marek Belisko <marek@goldelico.com>
+Subject: [PATCH v2 1/3] drivers: power: twl4030_charger: fix link problems when building as module
+Date: Tue, 22 Sep 2015 22:19:29 +0200
+Message-ID: <1442953171-19718-1-git-send-email-marek@goldelico.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f175.google.com ([209.85.212.175]:33967 "EHLO
+	mail-wi0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756770AbbIVUTw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Sep 2015 16:19:52 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
+Cc: linux-pm@vger.kernel.org, hns@goldelico.com, linux-kernel@vger.kernel.org, neilb@suse.de, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Marek Belisko <marek@goldelico.com>
 
-Reorganize the logic checking battery health and add under temperature
-condition checking.
+If either twl4030_charger or twl4030_madc is configured as MODULE,
+we get build (link) errors.
 
-Signed-off-by: Andrew F. Davis <afd@ti.com>
-Acked-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
+To solve, the direct call of twl4030_get_madc_conversion() is replaced
+by a call to iio_read_channel_processed().
+
+Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
+Signed-off-by: Marek Belisko <marek@goldelico.com>
 ---
- drivers/power/bq27xxx_battery.c | 64 +++++++++++++++++++++++++++------=
---------
- 1 file changed, 42 insertions(+), 22 deletions(-)
+changes from V1: added missing iio_channel_release + document and add new DT bindings
 
-diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27xxx_ba=
-ttery.c
-index 236c588..fe18a2d 100644
---- a/drivers/power/bq27xxx_battery.c
-+++ b/drivers/power/bq27xxx_battery.c
-@@ -63,6 +63,8 @@
- #define BQ27XXX_FLAG_FC		BIT(9)
- #define BQ27XXX_FLAG_OTD	BIT(14)
- #define BQ27XXX_FLAG_OTC	BIT(15)
-+#define BQ27XXX_FLAG_UT		BIT(14)
-+#define BQ27XXX_FLAG_OT		BIT(15)
-=20
- /* BQ27000 has different layout for Flags register */
- #define BQ27000_FLAG_EDVF	BIT(0) /* Final End-of-Discharge-Voltage fla=
-g */
-@@ -650,12 +652,36 @@ static int bq27xxx_battery_read_pwr_avg(struct bq=
-27xxx_device_info *di)
- /*
-  * Returns true if a battery over temperature condition is detected
+ drivers/power/twl4030_charger.c | 36 ++++++++++++++++++++++++++++--------
+ 1 file changed, 28 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/power/twl4030_charger.c b/drivers/power/twl4030_charger.c
+index f4f2c1f..5e68be4 100644
+--- a/drivers/power/twl4030_charger.c
++++ b/drivers/power/twl4030_charger.c
+@@ -22,7 +22,7 @@
+ #include <linux/power_supply.h>
+ #include <linux/notifier.h>
+ #include <linux/usb/otg.h>
+-#include <linux/i2c/twl4030-madc.h>
++#include <linux/iio/consumer.h>
+ 
+ #define TWL4030_BCIMDEN		0x00
+ #define TWL4030_BCIMDKEY	0x01
+@@ -96,12 +96,17 @@
+  * If AC (Accessory Charger) voltage exceeds 4.5V (MADC 11)
+  * then AC is available.
   */
--static int bq27xxx_battery_overtemp(struct bq27xxx_device_info *di, u1=
-6 flags)
-+static bool bq27xxx_battery_overtemp(struct bq27xxx_device_info *di, u=
-16 flags)
+-static inline int ac_available(void)
++static inline int ac_available(struct iio_channel *channel_vac)
  {
--	if (di->chip =3D=3D BQ27500 || di->chip =3D=3D BQ27541)
-+	if (di->chip =3D=3D BQ27500 || di->chip =3D=3D BQ27541 || di->chip =3D=
-=3D BQ27545)
- 		return flags & (BQ27XXX_FLAG_OTC | BQ27XXX_FLAG_OTD);
-+	if (di->chip =3D=3D BQ27530 || di->chip =3D=3D BQ27421)
-+		return flags & BQ27XXX_FLAG_OT;
+-	return twl4030_get_madc_conversion(11) > 4500;
++	int val, err;
 +
-+	return false;
-+}
-+
-+/*
-+ * Returns true if a battery under temperature condition is detected
-+ */
-+static bool bq27xxx_battery_undertemp(struct bq27xxx_device_info *di, =
-u16 flags)
-+{
-+	if (di->chip =3D=3D BQ27530 || di->chip =3D=3D BQ27421)
-+		return flags & BQ27XXX_FLAG_UT;
-+
-+	return false;
-+}
-+
-+/*
-+ * Returns true if a low state of charge condition is detected
-+ */
-+static bool bq27xxx_battery_dead(struct bq27xxx_device_info *di, u16 f=
-lags)
-+{
-+	if (di->chip =3D=3D BQ27000 || di->chip =3D=3D BQ27010)
-+		return flags & (BQ27000_FLAG_EDV1 | BQ27000_FLAG_EDVF);
- 	else
--		return flags & BQ27XXX_FLAG_OTC;
-+		return flags & (BQ27XXX_FLAG_SOC1 | BQ27XXX_FLAG_SOCF);
++	err = iio_read_channel_processed(channel_vac, &val);
++	if (err < 0)
++		return 0;
++	return val > 4500;
  }
-=20
- /*
-@@ -664,29 +690,23 @@ static int bq27xxx_battery_overtemp(struct bq27xx=
-x_device_info *di, u16 flags)
-  */
- static int bq27xxx_battery_read_health(struct bq27xxx_device_info *di)
+ #else
+-static inline int ac_available(void)
++static inline int ac_available(struct iio_channel *channel_vac)
  {
--	u16 tval;
-+	u16 flags;
-=20
--	tval =3D bq27xxx_read(di, BQ27XXX_REG_FLAGS, false);
--	if (tval < 0) {
--		dev_err(di->dev, "error reading flag register:%d\n", tval);
--		return tval;
-+	flags =3D bq27xxx_read(di, BQ27XXX_REG_FLAGS, false);
-+	if (flags < 0) {
-+		dev_err(di->dev, "error reading flag register:%d\n", flags);
-+		return flags;
+ 	return 0;
+ }
+@@ -128,6 +133,7 @@ struct twl4030_bci {
+ 	 */
+ 	unsigned int		ichg_eoc, ichg_lo, ichg_hi;
+ 	unsigned int		usb_cur, ac_cur;
++	struct iio_channel	*channel_vac;
+ 	bool			ac_is_active;
+ 	int			usb_mode, ac_mode; /* charging mode requested */
+ #define	CHARGE_OFF	0
+@@ -278,7 +284,7 @@ static int twl4030_charger_update_current(struct twl4030_bci *bci)
+ 	 * If AC (Accessory Charger) voltage exceeds 4.5V (MADC 11)
+ 	 * and AC is enabled, set current for 'ac'
+ 	 */
+-	if (ac_available()) {
++	if (ac_available(bci->channel_vac)) {
+ 		cur = bci->ac_cur;
+ 		bci->ac_is_active = true;
+ 	} else {
+@@ -1048,6 +1054,12 @@ static int twl4030_bci_probe(struct platform_device *pdev)
+ 		return ret;
  	}
-=20
--	if (di->chip =3D=3D BQ27000 || di->chip =3D=3D BQ27010) {
--		if (tval & BQ27000_FLAG_EDV1)
--			tval =3D POWER_SUPPLY_HEALTH_DEAD;
--		else
--			tval =3D POWER_SUPPLY_HEALTH_GOOD;
--	} else {
--		if (tval & BQ27XXX_FLAG_SOCF)
--			tval =3D POWER_SUPPLY_HEALTH_DEAD;
--		else if (bq27xxx_battery_overtemp(di, tval))
--			tval =3D POWER_SUPPLY_HEALTH_OVERHEAT;
--		else
--			tval =3D POWER_SUPPLY_HEALTH_GOOD;
--	}
-+	/* Unlikely but important to return first */
-+	if (unlikely(bq27xxx_battery_overtemp(di, flags)))
-+		return POWER_SUPPLY_HEALTH_OVERHEAT;
-+	if (unlikely(bq27xxx_battery_undertemp(di, flags)))
-+		return POWER_SUPPLY_HEALTH_COLD;
-+	if (unlikely(bq27xxx_battery_dead(di, flags)))
-+		return POWER_SUPPLY_HEALTH_DEAD;
-=20
--	return tval;
-+	return POWER_SUPPLY_HEALTH_GOOD;
+ 
++	bci->channel_vac = iio_channel_get(&pdev->dev, "vac");
++	if (IS_ERR(bci->channel_vac)) {
++		dev_err(&pdev->dev, "could not request vac iio channel");
++		return PTR_ERR(bci->channel_vac);
++	}
++
+ 	INIT_WORK(&bci->work, twl4030_bci_usb_work);
+ 	INIT_DELAYED_WORK(&bci->current_worker, twl4030_current_worker);
+ 
+@@ -1061,8 +1073,10 @@ static int twl4030_bci_probe(struct platform_device *pdev)
+ 			bci->transceiver = devm_usb_get_phy_by_node(
+ 				bci->dev, phynode, &bci->usb_nb);
+ 			if (IS_ERR(bci->transceiver) &&
+-			    PTR_ERR(bci->transceiver) == -EPROBE_DEFER)
+-				return -EPROBE_DEFER;
++			    PTR_ERR(bci->transceiver) == -EPROBE_DEFER) {
++				ret = -EPROBE_DEFER;
++				goto fail;
++			}
+ 		}
+ 	}
+ 
+@@ -1073,7 +1087,7 @@ static int twl4030_bci_probe(struct platform_device *pdev)
+ 			       TWL4030_INTERRUPTS_BCIIMR1A);
+ 	if (ret < 0) {
+ 		dev_err(&pdev->dev, "failed to unmask interrupts: %d\n", ret);
+-		return ret;
++		goto fail;
+ 	}
+ 
+ 	reg = ~(u32)(TWL4030_VBATOV | TWL4030_VBUSOV | TWL4030_ACCHGOV);
+@@ -1106,6 +1120,10 @@ static int twl4030_bci_probe(struct platform_device *pdev)
+ 		twl4030_charger_enable_backup(0, 0);
+ 
+ 	return 0;
++fail:
++	iio_channel_release(bci->channel_vac);
++
++	return ret;
  }
-=20
- static void bq27xxx_battery_update(struct bq27xxx_device_info *di)
---=20
+ 
+ static int __exit twl4030_bci_remove(struct platform_device *pdev)
+@@ -1116,6 +1134,8 @@ static int __exit twl4030_bci_remove(struct platform_device *pdev)
+ 	twl4030_charger_enable_usb(bci, false);
+ 	twl4030_charger_enable_backup(0, 0);
+ 
++	iio_channel_release(bci->channel_vac);
++
+ 	device_remove_file(&bci->usb->dev, &dev_attr_max_current);
+ 	device_remove_file(&bci->usb->dev, &dev_attr_mode);
+ 	device_remove_file(&bci->ac->dev, &dev_attr_max_current);
+-- 
 1.9.1
+
