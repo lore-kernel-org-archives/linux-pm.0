@@ -1,64 +1,72 @@
-From: Oliver Neukum <oneukum@suse.de>
-Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing
- runtime suspend
-Date: Tue, 22 Sep 2015 16:31:41 +0200
-Message-ID: <1442932301.6240.11.camel@suse.de>
-References: <Pine.LNX.4.44L0.1509221013470.1742-100000@iolanthe.rowland.org>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH 13/17] net: gianfar: remove misuse of IRQF_NO_SUSPEND flag
+Date: Tue, 22 Sep 2015 16:09:48 +0100
+Message-ID: <56016F3C.2070704@arm.com>
+References: <1442850433-5903-1-git-send-email-sudeep.holla@arm.com>
+ <1442850433-5903-14-git-send-email-sudeep.holla@arm.com>
+ <BY2PR0301MB072700F43F00CFC273FED1B59C460@BY2PR0301MB0727.namprd03.prod.outlook.com>
+ <alpine.DEB.2.11.1509211848510.5606@nanos>
+ <BY2PR0301MB072767325C2CBDB3D5CA8E1A9C450@BY2PR0301MB0727.namprd03.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:59330 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757882AbbIVOdK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 22 Sep 2015 10:33:10 -0400
-In-Reply-To: <Pine.LNX.4.44L0.1509221013470.1742-100000@iolanthe.rowland.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <BY2PR0301MB072767325C2CBDB3D5CA8E1A9C450@BY2PR0301MB0727.namprd03.prod.outlook.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Manoil Claudiu <claudiu.manoil@freescale.com>, Thomas Gleixner <tglx@linutronix.de>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "David S. Miller" <davem@davemloft.net>, Kevin Hao <haokexin@gmail.com>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Irina Tirdea <irina.tirdea@intel.com>, Len Brown <len.brown@intel.com>, Octavian Purdila <octavian.purdila@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-
-On Tue, 2015-09-22 at 10:15 -0400, Alan Stern wrote:
-> On Tue, 22 Sep 2015, Oliver Neukum wrote:
-> 
-> > Indeed. We can handle output to suspended devices by waking them.
-> > I don't see why this case is different. We are talking about input
-> > only.
-> > 
-> > > The runtime-PM "usage" value for these devices is a little tricky to 
-> > > calculate.  It should be nonzero if there are any open files _and_ the 
-> > > device isn't "inhibited".  I don't know the best way to represent that 
-> > > kind of condition in the runtime PM framework.
-> > 
-> > Does that make sense in the generic framework at all? I still
-> > think that drivers should cease IO for input in such cases.
-> > That should involve a common callback, but no counter.
-> 
-> I'm not sure I understand what you're saying.  Are you suggesting that
-> this "inhibit" mechanism should involve a new callback different from
-
-Yes, there is no necessary relation to power management. If you put
-your phone into your pocket, you will want to inhibit the touchscreen
-even if that doesn't save power.
-
-> the existing runtime-PM callbacks?  And when this new callback is
-> invoked, drivers should cancel existing input requests (these devices
-> are input-only) and go to low power?
-
-Cancel, yes, going to low power is a consequence which needn't bother
-the power subsystem. You need a callback. If there are spurious
-events, the current heuristics will keep devices awake.
-You must discard them anyway, as they are spurious. There's no point
-in transporting over the bus at all. We can cease IO for input.
-
-> This would create a parallel runtime-PM mechanism which is independent
-> of the existing one.  Is that really a good idea?
-
-It isn't strictly PM. It helps PM to do a better job, but
-conceptually it is independent.
-
-	Regards
-		Oliver
 
 
 
+On 22/09/15 15:04, Manoil Claudiu wrote:
+>> -----Original Message-----
+>> From: Thomas Gleixner [mailto:tglx@linutronix.de]
+
+[...]
+
+>>> on PPC architectures, the flag did the job.  When did this change? Since
+>>> when using IRQF_NO_SUSPEND is a "misuse"?
+>>
+>> It always was. Simply because IRQF_NO_SUSPEND has absolutely nothing
+>> to do with wakeup interrupt sources. It's a flag which excludes the
+>> interrupt from the suspend mechanism, but it does not flag it a wakeup
+>> source.
+>>
+>
+> I'm seeing also a "powerpc: mpic" patch in the series, unfortunately I can't
+
+Yes I think that was a redundant code, so I removed it. IIRC it was
+setting IRQF_NO_SUSPEND in irq_set_wake callback which again is incorrect.
+
+> afford to test it right now. However I ran a quick test with this gianfar patch
+> in isolation on a powerpc system, and seen some difference in the behavior
+> (with and w/o the patch).  In both cases the system wakes up from standby
+> by magic packet.  However, without the IRQF_NO_SUSPEND flag 2 wake-up
+> interrupts are reported in /proc/interrupts for one magic packet; with the
+
+OK that's interesting, will have check if I have similar behavior on my
+setup too.
+
+> flag on there's just 1 interrupt.  Maybe this is not relevant, maybe the
+> "powerpc: mpic" patch from this series changes this behavior.
+
+Hmm not sure, but better to test it together if possible. If required we
+can reorder for bisect-ability reasons.
+
+> But if this is the API, what can I say? We'll see in time.  Btw, enable_irq_wake()
+> returns an error code, normally it should be handled by printing a warning
+> message at least, right?  But since most drivers don't handle that, I'm assuming
+> it should be left unhandled to avoid overcomplicating things.
+
+Yes I left it so that I can add if the maintainer insist and not churn
+too much code adding warning.
+
+> FWIW
+> Acked-by: Claudiu Manoil <claudiu.manoil@freescale.com>
+>
+
+Thanks.
+
+Regards,
+Sudeep
