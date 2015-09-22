@@ -1,62 +1,83 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v5 0/6] Add support for DA9150 Fuel-Gauge
-Date: Tue, 22 Sep 2015 18:10:32 +0100
-Message-ID: <20150922171032.GH11284@x1>
-References: <cover.1441964153.git.Adam.Thomson.Opensource@diasemi.com>
- <20150922160405.GC4235@earth>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f49.google.com ([209.85.220.49]:36664 "EHLO
-	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756350AbbIVRKm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Sep 2015 13:10:42 -0400
-Received: by pacgz1 with SMTP id gz1so11712265pac.3
-        for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2015 10:10:42 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20150922160405.GC4235@earth>
-Sender: linux-pm-owner@vger.kernel.org
+From: Douglas Anderson <dianders@chromium.org>
+Subject: [PATCH] power: print function name of callbacks
+Date: Tue, 22 Sep 2015 10:26:37 -0700
+Message-ID: <1442942797-17433-1-git-send-email-dianders@chromium.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Douglas Anderson <dianders@chromium.org>, pavel@ucw.cz, len.brown@intel.com, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>, Samuel Ortiz <sameo@linux.intel.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Support Opensource <support.opensource@diasemi.com>
 
-On Tue, 22 Sep 2015, Sebastian Reichel wrote:
-> On Fri, Sep 11, 2015 at 11:05:21AM +0100, Adam Thomson wrote:
-> > This patch set adds support for the Dialog DA9150 Fuel-Gauge.
-> >
-> > [...]
-> >=20
-> > Adam Thomson (6):
-> >   mfd: da9150: Add support for Fuel-Gauge
-> >   mfd: da9150: Update DT bindings for Fuel-Gauge support
-> >   power: Add support for DA9150 Fuel-Gauge
-> >   power: da9150: Add DT bindings documentation for Fuel-Gauge
-> >   mfd: da9150: Use relative paths in DT bindings document
-> >   mfd: da9150: Use DEFINE_RES_IRQ_NAMED() help macro for IRQ resour=
-ce
-> >=20
-> >  Documentation/devicetree/bindings/mfd/da9150.txt   |  33 +-
-> >  .../devicetree/bindings/power/da9150-fg.txt        |  23 +
-> >  drivers/mfd/da9150-core.c                          | 191 +++++--
-> >  drivers/power/Kconfig                              |  10 +
-> >  drivers/power/Makefile                             |   1 +
-> >  drivers/power/da9150-fg.c                          | 578 +++++++++=
-++++++++++++
-> >  include/linux/mfd/da9150/core.h                    |  19 +-
-> >  7 files changed, 810 insertions(+), 45 deletions(-)
-> >  create mode 100644 Documentation/devicetree/bindings/power/da9150-=
-fg.txt
-> >  create mode 100644 drivers/power/da9150-fg.c
->=20
-> I suggest, that you take the whole patchset via the mfd tree.
+The printouts writen to the logs by suspend can be a bit opaque: it can
+be hard to track them down to the actual function called.  You might
+see:
 
-That's fine, but I'm still missing an Ack for patch 4.
+  calling  rfkill1+ @ 19473, parent: phy0
+  call rfkill1+ returned 0 after 1 usecs
+  calling  phy0+ @ 19473, parent: mmc2:0001:1
+  call phy0+ returned 0 after 19 usecs
 
+It's a bit hard to know what's actually happening.  Instead, it's nice
+to see:
 
+  calling  rfkill1+ @ 15793, parent: phy0, cb: rfkill_suspend
+  call rfkill1+ returned 0 after 1 usecs
+  calling  phy0+ @ 15793, parent: mmc2:0001:1, cb: wiphy_suspend [cfg80211]
+  call phy0+ returned 0 after 7 usecs
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+That makes it very obvious what's going on.  It also has the nice side
+effect of making the suspend/resume spew a little more obvious, since
+many resume functions have the word "resume" in the name:
+
+  calling  phy0+ @ 15793, parent: mmc2:0001:1, cb: wiphy_resume [cfg80211]
+  call phy0+ returned 0 after 12 usecs
+  calling  rfkill1+ @ 15793, parent: phy0, cb: rfkill_resume
+  call rfkill1+ returned 0 after 1 usecs
+
+Signed-off-by: Douglas Anderson <dianders@chromium.org>
+---
+ drivers/base/power/main.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 1710c26..e2b1f14 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -188,14 +188,14 @@ void device_pm_move_last(struct device *dev)
+ 	list_move_tail(&dev->power.entry, &dpm_list);
+ }
+ 
+-static ktime_t initcall_debug_start(struct device *dev)
++static ktime_t initcall_debug_start(struct device *dev, void *cb)
+ {
+ 	ktime_t calltime = ktime_set(0, 0);
+ 
+ 	if (pm_print_times_enabled) {
+-		pr_info("calling  %s+ @ %i, parent: %s\n",
++		pr_info("calling  %s+ @ %i, parent: %s, cb: %pf\n",
+ 			dev_name(dev), task_pid_nr(current),
+-			dev->parent ? dev_name(dev->parent) : "none");
++			dev->parent ? dev_name(dev->parent) : "none", cb);
+ 		calltime = ktime_get();
+ 	}
+ 
+@@ -382,7 +382,7 @@ static int dpm_run_callback(pm_callback_t cb, struct device *dev,
+ 	if (!cb)
+ 		return 0;
+ 
+-	calltime = initcall_debug_start(dev);
++	calltime = initcall_debug_start(dev, cb);
+ 
+ 	pm_dev_dbg(dev, state, info);
+ 	trace_device_pm_callback_start(dev, info, state.event);
+@@ -1324,7 +1324,7 @@ static int legacy_suspend(struct device *dev, pm_message_t state,
+ 	int error;
+ 	ktime_t calltime;
+ 
+-	calltime = initcall_debug_start(dev);
++	calltime = initcall_debug_start(dev, cb);
+ 
+ 	trace_device_pm_callback_start(dev, info, state.event);
+ 	error = cb(dev, state);
+-- 
+2.6.0.rc0.131.gf624c3d
