@@ -1,82 +1,49 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCHv2 3/4] power: Add Qualcomm SMBB driver
-Date: Tue, 22 Sep 2015 15:07:41 +0200
-Message-ID: <20150922130741.GA23334@earth>
-References: <1438278837-29967-1-git-send-email-bjorn.andersson@sonymobile.com>
- <1438278837-29967-4-git-send-email-bjorn.andersson@sonymobile.com>
- <20150915124333.GA1442@earth>
- <20150915133300.GL13472@usrtlx11787.corpusers.net>
+From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v4 resend 0/2] power: Add an
+ axp20x-usb-power driver
+Date: Tue, 22 Sep 2015 15:12:31 +0200
+Message-ID: <20150922131231.GB23334@earth>
+References: <1442752773-22635-1-git-send-email-hdegoede@redhat.com>
+Reply-To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="UugvWAfsgieZRqgk"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+	protocol="application/pgp-signature"; boundary="pvezYHf7grwyp3Bc"
+Return-path: <linux-sunxi+bncBDXMLNOH5ANRBQ5HQWYAKGQEQYGXBLY-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20150915133300.GL13472@usrtlx11787.corpusers.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Andersson <bjorn.andersson@sonymobile.com>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "Cavin, Courtney" <Courtney.Cavin@sonymobile.com>
+In-Reply-To: <1442752773-22635-1-git-send-email-hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <http://groups.google.com/group/linux-sunxi
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+List-Subscribe: <http://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <http://groups.google.com/group/linux-sunxi/subscribe>
+To: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Cc: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Felipe Balbi <balbi-l0cyMroinI0@public.gmane.org>, Kishon Vijay Abraham I <kishon-l0cyMroinI0@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Bruno =?iso-8859-1?Q?Pr=E9mont?= <bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-usb <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-
---UugvWAfsgieZRqgk
-Content-Type: text/plain; charset=us-ascii
+--pvezYHf7grwyp3Bc
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, Sep 15, 2015 at 06:33:00AM -0700, Bjorn Andersson wrote:
-> On Tue 15 Sep 05:43 PDT 2015, Sebastian Reichel wrote:
->=20
-> > Hi,
-> >=20
-> > On Thu, Jul 30, 2015 at 10:53:56AM -0700, Bjorn Andersson wrote:
-> > > From: Courtney Cavin <courtney.cavin@sonymobile.com>
-> > >=20
-> > > Add the Qualcomm Switch-Mode Battery Charger and Boost driver, found =
-in
-> > > pm8941.
-> > >=20
-> > > Signed-off-by: Courtney Cavin <courtney.cavin@sonymobile.com>
-> > > Signed-off-by: Bjorn Andersson <bjorn.andersson@sonymobile.com>
-> > > ---
-> > >=20
-> > > Changes since v1:
-> > > - Corrected authorship
-> > > - Dropped MODULE_ALIAS
-> >=20
-> > Acked-By: Sebastian Reichel <sre@kernel.org>
-> >=20
-> > I think the first patch made it into 4.3, so I can simply queue this
-> > patch together with the DT binding?
-> >=20
->=20
-> That is correct, sorry for it not being mentioned in the thread.
+On Sun, Sep 20, 2015 at 08:39:31AM -0400, Hans de Goede wrote:
+> This is a resend of v4 of the axp20x-usb-power power-supply driver,
+> after v4 there have been no further comments, so I assume that this
+> version is ready for merging, yet for some reason it has not been
+> merged yet.
 
-Thanks, queued.
+My fault. I did not have enough time before my vacation.
+
+> Can we please get this driver merged (preferably into 4.3,
+
+It's obviously too late now.
+
+> but if not at least lets get it into next / 4.4 asap).
+
+I already merged this into my (local) dev branch last week. I
+just pushed it out, so it should appear in next tomorrow.
 
 -- Sebastian
-
---UugvWAfsgieZRqgk
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJWAVKaAAoJENju1/PIO/qaXIAQAJek4BXMSZFapZAxwjAnmRCY
-1xL01/udixPvABTOqNpcZ6eC8e/guiSGW+mOoOMAGBm4A1kFRnIwGF981OPrwKYS
-CN+ilzhOd1hOEiFggMPM7gmrPdRWLbY8RL6XoCNF9poWkUmJvlRslxDPS82rh8Yh
-A7QmUMXDfbn3bDPjIbKT7PGNC/BOddTP4UdXODZ4sD4bMPhRVdwuWQn0k3+jTXmC
-y35ntWGmXNH56Kwx/sreUV4xCL/2RUBt1mJseFhNhMgShNkGTjLvc7rta2HZlI7F
-RucGb5ZP54QvPF4Ur+T5ybNSZ06CZryMZSt5D9wPliswVHnZtGrnxz67rT018DhP
-QoQOUvaRDVx8GocUSx3An4oNvc2i5DKYrihIwQQwyzMpGR+I02NH8qPTEpgY7iy/
-FvEMzNW2jVAfHp/2nBIQ+yG2jqTzA3N3asUZoJgePK5WCJjMWfXvepMAWY+wEVRl
-WMGdXKTKNk1h8+FJix7dl4pMdl2ctSEFCF0F9NDU4UoDT3zLmlTNyq6deQRhQjim
-ibi0RL1JRfwBldalKwhZGByXwvis11ykMs0WU9NUtIeLkAWLcJt0be2atfX6QoHR
-S0Wx6KQcCyhsoUjNy9nX5gzjt8z4dfsOC3D5MePR2wFvlbpbpEg8UrWHO15NJwiL
-shwVKCtirQC64Lz3V4I+
-=jZQX
------END PGP SIGNATURE-----
-
---UugvWAfsgieZRqgk--
+--pvezYHf7grwyp3Bc--
