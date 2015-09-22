@@ -1,86 +1,73 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] driver core: Ensure proper suspend/resume ordering
-Date: Mon, 21 Sep 2015 21:22:53 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1509212107460.4834-100000@netrider.rowland.org>
-References: <2256962.SaUkYyVfIx@vostro.rjw.lan>
+From: Daniel Kurtz <djkurtz@chromium.org>
+Subject: Re: [PATCH 2/3] thermal: Add Mediatek thermal controller support
+Date: Tue, 22 Sep 2015 15:30:47 +0800
+Message-ID: <CAGS+omCFD1omrRA7xR6ADYOHyGDp8=Lh4JF-S9ikN9rKNyeDOQ@mail.gmail.com>
+References: <1441006446-4558-1-git-send-email-s.hauer@pengutronix.de>
+ <1441006446-4558-3-git-send-email-s.hauer@pengutronix.de> <CAGS+omCHAGrRPwM8Wghver+o5ky3MG2+JJqKiwWzHtDTQkaD4g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from netrider.rowland.org ([192.131.102.5]:46044 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757548AbbIVBWy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Sep 2015 21:22:54 -0400
-In-Reply-To: <2256962.SaUkYyVfIx@vostro.rjw.lan>
+Received: from mail-yk0-f172.google.com ([209.85.160.172]:33672 "EHLO
+	mail-yk0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757396AbbIVHbI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Sep 2015 03:31:08 -0400
+Received: by ykft14 with SMTP id t14so1248757ykf.0
+        for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2015 00:31:07 -0700 (PDT)
+In-Reply-To: <CAGS+omCHAGrRPwM8Wghver+o5ky3MG2+JJqKiwWzHtDTQkaD4g@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Thierry Reding <thierry.reding@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Grygorii Strashko <grygorii.strashko@ti.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Mark Rutland <mark.rutland@arm.com>, "open list:OPEN FIRMWARE AND..." <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, linux-mediatek@lists.infradead.org, Sasha Hauer <kernel@pengutronix.de>, Matthias Brugger <matthias.bgg@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Tue, 22 Sep 2015, Rafael J. Wysocki wrote:
+On Mon, Sep 14, 2015 at 3:32 PM, Daniel Kurtz <djkurtz@chromium.org> wrote:
+>
+> Hi Sascha,
+>
+> On Mon, Aug 31, 2015 at 3:34 PM, Sascha Hauer <s.hauer@pengutronix.de> wrote:
+> > This adds support for the Mediatek thermal controller found on MT8173
+> > and likely other SoCs.
+> > The controller is a bit special. It does not have its own ADC, instead
+> > it controls the on-SoC AUXADC via AHB bus accesses. For this reason
+> > we need the physical address of the AUXADC. Also it controls a mux
+> > using AHB bus accesses, so we need the APMIXEDSYS physical address aswell.
+> >
+> > Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> > Reviewed-by: Daniel Kurtz <djkurtz@chromium.org>
+>
+> [snip...]
+>
+> > +static int mtk_read_temp(void *data, long *temp)
+> > +{
+> > +       struct mtk_thermal_bank *bank = data;
+> > +
+> > +       mtk_thermal_get_bank(bank);
+> > +
+> > +       *temp = mtk_thermal_bank_temperature(bank);
+> > +
+> > +       mtk_thermal_put_bank(bank);
+> > +
+> > +       return 0;
+> > +}
+> > +
+> > +static const struct thermal_zone_of_device_ops mtk_thermal_ops = {
+> > +       .get_temp = mtk_read_temp,
+>
+> On v4.3-rc1, this now causes a compile warning, since the prototype
+> for get_temp was changed to:
+>
+>        int (*get_temp)(void *, int *);
+>
+> by:
+> commit 17e8351a77397e8a83727eb17e3a3e9b8ab5257a
+>     thermal: consistently use int for temperatures
 
-> On Monday, September 21, 2015 10:34:54 AM Alan Stern wrote:
-> > On Mon, 21 Sep 2015, Thierry Reding wrote:
-> > 
-> > > > > Force-removing drivers that depend on a device that's being unbound
-> > > > > would be a possibility to solve the problem where consumers depend on a
-> > > > > device that could physically go away. It might also be the right thing
-> > > > > to do in any case. Presumably somebody unloading a module want to do
-> > > > > just that, and refusing to do so isn't playing very nice. Of course
-> > > > > allowing random modules to be removed even if a lot of consumers might
-> > > > > depend on it may not be friendly either. Consider if you unload a GPIO
-> > > > > driver that provides a pin that's used to enable power to an eMMC that
-> > > > > might have the root filesystem.
-> > > > >
-> > > > > Then again, if you unload a module you better know what you're doing
-> > > > > anyway, so maybe that's not something we need to be concerned about.
-> > > > 
-> > > > I think that it's better to fail module unloads in such cases by
-> > > > default (to prevent simple silly mistakes from having possibly severe
-> > > > consequences), but if a "force" option is used, we should regard that
-> > > > as "the user really means it" and do as requested.  That would be very
-> > > > much analogous to the hot-unplug situation from the software
-> > > > perspective.
-> > > 
-> > > Sounds very reasonable to me.
-> > 
-> > I'm not so sure about this.  For one thing, how are you going to 
-> > distinguish which module unloads are safe?
-> 
-> Ones that have no dependencies?
+It is actually a little worse than a warning.  This actually causes a
+crash on boot.
+Sascha, can you send out a rebased patch set on v4.3-rc1?
 
-Does a parent-child relationship count as a dependency?  AFAIK, that's 
-the only sort of dependency we have for mounted filesystems, in 
-general.
+Thanks,
+-Dan
 
-> Very simple: If the driver being unloaded is explicitly depended on by
-> something (ie. there is a "device link" to it), we fail the unload with
-> -EBUSY unless the "force" option is used.
-
-Hmmm.  In other words, you will iterate through all the drivers,
-checking the ->owner field against the module being removed.  Then for
-each matching driver, you will iterate through all the bound devices,
-and all their descendants, looking for links of the appropriate type.  
-And perhaps do the same thing for subsystems and classes.
-
-Doable, I guess, even if it is inelegant.  Fortunately module unload
-has no timing requirements.
-
-> > For another, even if you do make this distinction, don't you think 
-> > people will get into the habit of always using the "force" option?  My 
-> > impression is that most module unloads end up causing some device to be 
-> > unbound from a driver, or even completely deregistered.
-> > 
-> > Right now the kernel uses the "You better know what you're doing when
-> > you unload a module" point of view, and I don't see any good reasons
-> > for changing.
-> 
-> Well, is that point of view appropriate from the users' perspective?
-
-I suspect people will find it more appropriate than the new point of
-view you are proposing.  I don't know how often people unload modules,
-but I suspect almost every time they do, it involves unregistering one
-or more devices.  Goodness knows how many of those devices will be the
-target of a dependency link, though.
-
-Alan Stern
-
+>
+>
+> -Dan
