@@ -1,102 +1,174 @@
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 04/17] powerpc: mpic: use IRQCHIP_SKIP_SET_WAKE instead
- of redundant mpic_irq_set_wake
-Date: Tue, 22 Sep 2015 18:50:05 -0500
-Message-ID: <1442965805.19102.303.camel@freescale.com>
-References: <1442850433-5903-1-git-send-email-sudeep.holla@arm.com>
-	 <1442850433-5903-5-git-send-email-sudeep.holla@arm.com>
+From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
+Subject: [PATCH v2] clk: readd refcounting for struct clk instances
+Date: Wed, 23 Sep 2015 01:55:47 +0200
+Message-ID: <6257096.h7pub3XnDQ@diego>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1442850433-5903-5-git-send-email-sudeep.holla@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Hongtao Jia <hongtao.jia@freescale.com>, Marc Zyngier <marc.zyngier@arm.com>, linuxppc-dev@lists.ozlabs.org, Wang Dongsheng <dongsheng.wang@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-clk-owner@vger.kernel.org>
+Sender: linux-clk-owner@vger.kernel.org
+To: mturquette@baylibre.com, sboyd@codeaurora.org, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>
+Cc: Caesar Wang <wxt@rock-chips.com>, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2015-09-21 at 16:47 +0100, Sudeep Holla wrote:
-> mpic_irq_set_wake return -ENXIO for non FSL MPIC and sets IRQF_NO_SUSPEND
-> flag for FSL ones. enable_irq_wake already returns -ENXIO if irq_set_wak
-> is not implemented. Also there's no need to set the IRQF_NO_SUSPEND flag
-> as it doesn't guarantee wakeup for that interrupt.
-> 
-> This patch removes the redundant mpic_irq_set_wake and sets the
-> IRQCHIP_SKIP_SET_WAKE for only FSL MPIC.
-> 
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Scott Wood <scottwood@freescale.com>
-> Cc: Hongtao Jia <hongtao.jia@freescale.com>
-> Cc: Marc Zyngier <marc.zyngier@arm.com>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-> ---
->  arch/powerpc/sysdev/mpic.c | 23 ++++-------------------
->  1 file changed, 4 insertions(+), 19 deletions(-)
-> 
-> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-> index 537e5db85a06..123e43612f0a 100644
-> --- a/arch/powerpc/sysdev/mpic.c
-> +++ b/arch/powerpc/sysdev/mpic.c
-> @@ -924,22 +924,6 @@ int mpic_set_irq_type(struct irq_data *d, unsigned int 
-> flow_type)
->       return IRQ_SET_MASK_OK_NOCOPY;
->  }
->  
-> -static int mpic_irq_set_wake(struct irq_data *d, unsigned int on)
-> -{
-> -     struct irq_desc *desc = container_of(d, struct irq_desc, irq_data);
-> -     struct mpic *mpic = mpic_from_irq_data(d);
-> -
-> -     if (!(mpic->flags & MPIC_FSL))
-> -             return -ENXIO;
-> -
-> -     if (on)
-> -             desc->action->flags |= IRQF_NO_SUSPEND;
-> -     else
-> -             desc->action->flags &= ~IRQF_NO_SUSPEND;
-> -
-> -     return 0;
-> -}
-> -
->  void mpic_set_vector(unsigned int virq, unsigned int vector)
->  {
->       struct mpic *mpic = mpic_from_irq(virq);
-> @@ -977,7 +961,6 @@ static struct irq_chip mpic_irq_chip = {
->       .irq_unmask     = mpic_unmask_irq,
->       .irq_eoi        = mpic_end_irq,
->       .irq_set_type   = mpic_set_irq_type,
-> -     .irq_set_wake   = mpic_irq_set_wake,
->  };
->  
->  #ifdef CONFIG_SMP
-> @@ -992,7 +975,6 @@ static struct irq_chip mpic_tm_chip = {
->       .irq_mask       = mpic_mask_tm,
->       .irq_unmask     = mpic_unmask_tm,
->       .irq_eoi        = mpic_end_irq,
-> -     .irq_set_wake   = mpic_irq_set_wake,
->  };
->  
->  #ifdef CONFIG_MPIC_U3_HT_IRQS
-> @@ -1283,8 +1265,11 @@ struct mpic * __init mpic_alloc(struct device_node 
-> *node,
->               flags |= MPIC_NO_RESET;
->       if (of_get_property(node, "single-cpu-affinity", NULL))
->               flags |= MPIC_SINGLE_DEST_CPU;
-> -     if (of_device_is_compatible(node, "fsl,mpic"))
-> +     if (of_device_is_compatible(node, "fsl,mpic")) {
->               flags |= MPIC_FSL | MPIC_LARGE_VECTORS;
-> +             mpic_irq_chip.flags |= IRQCHIP_SKIP_SET_WAKE;
-> +             mpic_tm_chip.flags |= IRQCHIP_SKIP_SET_WAKE;
-> +     }
+With the split into struct clk and struct clk_core, clocks lost the
+ability for nested __clk_get clkdev calls. While it stays possible to
+call __clk_get, the first call to (__)clk_put will clear the struct clk,
+making subsequent clk_put calls run into a NULL pointer dereference.
 
-What difference does IRQCHIP_SKIP_SET_WAKE make in the absence of an 
-.irq_set_wake() callback?
+One prime example of this sits in the generic power domain code, where it
+is possible to add the clocks both by name and by passing in a struct clk
+via pm_clk_add_clk(). __pm_clk_add() in turn then calls __clk_get to
+increase the refcount, so that the original code can put the clock again.
 
-This is basically repealing commit 5ff04b7287d87c1db7 ("powerpc/mpic: add 
-irq_set_wake support").  Wang Dongsheng, can you explain why that patch was 
-needed?
+A possible call-path looks like
+clk = of_clk_get();
+pm_clk_add_clk(dev, clk);
+clk_put(clk);
 
--Scott
+with pm_clk_add_clk() => __pm_clk_add() then calling __clk_get on the clk
+and later clk_put when the pm clock list gets destroyed, thus creating
+a NULL pointer deref, as the struct clk doesn't exist anymore.
+
+So add a separate refcounting for struct clk instances and only clean up
+once the refcount reaches zero. This makes it possible again to hand off
+a clock reference to common code without needing to track it further.
+
+Signed-off-by: Heiko Stuebner <heiko@sntech.de>
+---
+
+While it may be nice to do the actual handling of the clock references
+only in the calling code, in this current use case it would create
+a big additional overhead.
+
+It looks like this so called synchronous reset on power-domain state-
+changes, requiring device clocks to be turned on, is not that uncommon
+or rockchip-specific.
+For this Kevin requested that we read the clocks from the actual consumer
+devices and not double-list them in the power-domain node as well.
+
+So when expecting pm_clk_add_clk() to work, the current powerdomain code
+can simply do when adding a device to a domain in rockchip_pd_attach_dev():
+    while ((clk = of_clk_get(dev->of_node, i++)) && !IS_ERR(clk)) {
+	dev_dbg(dev, "adding clock '%pC' to list of PM clocks\n", clk);
+	error = pm_clk_add_clk(dev, clk);
+	clk_put(clk);
+    }
+
+The clock gets handed off to the generic pm clock handling and thus
+clk_put in there.
+
+
+On the other hand when only the rockchip power-domain code is expected
+to get and put the clock, we would require a lot of new overhead, as now
+the code would also need to track which devices got added to what
+domain and also all clock-references until the device gets detached
+again. So this would essentially duplicate a big part of what the
+genpd-code does (per-domain device-list and per-device clock-list).
+
+As this seems to be not uncommon, future powerdomain drivers
+might need that too and would also need to duplicate that handling.
+
+When allowing multiple __clk_get and __clk_put calls on the other
+hand, the overhead for the regular case comes down to one atomic_inc,
+atomic_sub_and_test and the function call to the new separate release
+function ;-) .
+
+
+changes in v2: removed double parentheses found by Stephen Boyd
+
+ drivers/clk/clk.c | 31 +++++++++++++++++++++----------
+ 1 file changed, 21 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+index 43e2c3a..7aab1a4 100644
+--- a/drivers/clk/clk.c
++++ b/drivers/clk/clk.c
+@@ -85,6 +85,7 @@ struct clk {
+ 	unsigned long min_rate;
+ 	unsigned long max_rate;
+ 	struct hlist_node clks_node;
++	struct kref ref;
+ };
+ 
+ /***           locking             ***/
+@@ -2590,7 +2591,7 @@ fail_out:
+ EXPORT_SYMBOL_GPL(clk_register);
+ 
+ /* Free memory allocated for a clock. */
+-static void __clk_release(struct kref *ref)
++static void __clk_core_release(struct kref *ref)
+ {
+ 	struct clk_core *core = container_of(ref, struct clk_core, ref);
+ 	int i = core->num_parents;
+@@ -2606,6 +2607,18 @@ static void __clk_release(struct kref *ref)
+ 	kfree(core);
+ }
+ 
++static void __clk_release(struct kref *ref)
++{
++	struct clk *clk = container_of(ref, struct clk, ref);
++
++	hlist_del(&clk->clks_node);
++	if (clk->min_rate > clk->core->req_rate ||
++	    clk->max_rate < clk->core->req_rate)
++		clk_core_set_rate_nolock(clk->core, clk->core->req_rate);
++
++	kfree(clk);
++}
++
+ /*
+  * Empty clk_ops for unregistered clocks. These are used temporarily
+  * after clk_unregister() was called on a clock and until last clock
+@@ -2684,7 +2697,7 @@ void clk_unregister(struct clk *clk)
+ 	if (clk->core->prepare_count)
+ 		pr_warn("%s: unregistering prepared clock: %s\n",
+ 					__func__, clk->core->name);
+-	kref_put(&clk->core->ref, __clk_release);
++	kref_put(&clk->core->ref, __clk_core_release);
+ 
+ 	clk_prepare_unlock();
+ }
+@@ -2759,12 +2772,14 @@ int __clk_get(struct clk *clk)
+ 			return 0;
+ 
+ 		kref_get(&core->ref);
++		kref_get(&clk->ref);
+ 	}
+ 	return 1;
+ }
+ 
+ void __clk_put(struct clk *clk)
+ {
++	struct clk_core *core;
+ 	struct module *owner;
+ 
+ 	if (!clk || WARN_ON_ONCE(IS_ERR(clk)))
+@@ -2772,19 +2787,15 @@ void __clk_put(struct clk *clk)
+ 
+ 	clk_prepare_lock();
+ 
+-	hlist_del(&clk->clks_node);
+-	if (clk->min_rate > clk->core->req_rate ||
+-	    clk->max_rate < clk->core->req_rate)
+-		clk_core_set_rate_nolock(clk->core, clk->core->req_rate);
++	core = clk->core;
++	owner = core->owner;
+ 
+-	owner = clk->core->owner;
+-	kref_put(&clk->core->ref, __clk_release);
++	kref_put(&clk->ref, __clk_release);
++	kref_put(&core->ref, __clk_core_release);
+ 
+ 	clk_prepare_unlock();
+ 
+ 	module_put(owner);
+-
+-	kfree(clk);
+ }
+ 
+ /***        clk rate change notifiers        ***/
+-- 
+2.5.1
+
+
