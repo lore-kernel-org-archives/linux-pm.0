@@ -1,103 +1,55 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: [PATCH v5 3/6] power: bq27xxx_battery: Fix typos and change naming for state of charge functions
-Date: Tue, 22 Sep 2015 14:35:08 -0500
-Message-ID: <1442950511-16122-4-git-send-email-afd@ti.com>
-References: <1442950511-16122-1-git-send-email-afd@ti.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v3 5/5] cpufreq: qoriq: Don't look at clock
+ implementation details
+Date: Tue, 22 Sep 2015 12:46:54 -0700
+Message-ID: <20150922194654.GJ24314@linux>
+References: <1442723397-26329-1-git-send-email-scottwood@freescale.com>
+ <1442723397-26329-6-git-send-email-scottwood@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1442950511-16122-1-git-send-email-afd@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Andrew F. Davis" <afd@ti.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f51.google.com ([209.85.220.51]:34478 "EHLO
+	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934333AbbIVTq7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Sep 2015 15:46:59 -0400
+Received: by padhy16 with SMTP id hy16so17880539pad.1
+        for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2015 12:46:58 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1442723397-26329-6-git-send-email-scottwood@freescale.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Scott Wood <scottwood@freescale.com>
+Cc: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@arm.linux.org.uk>, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, Tang Yuantian <Yuantian.Tang@freescale.com>
 
-=46ix typos and change "relative state of charge" to "state of charge" =
-as not
-all supported devices use relative state of charge.
+On 19-09-15, 23:29, Scott Wood wrote:
+> Get the CPU clock's potential parent clocks from the clock interface
+> itself, rather than manually parsing the clocks property to find a
+> phandle, looking at the clock-names property of that, and assuming that
+> those are valid parent clocks for the cpu clock.
+> 
+> This is necessary now that the clocks are generated based on the clock
+> driver's knowledge of the chip rather than a fragile device-tree
+> description of the mux options.
+> 
+> We can now rely on the clock driver to ensure that the mux only exposes
+> options that are valid.  The cpufreq driver was currently being overly
+> conservative in some cases -- for example, the "min_cpufreq =
+> get_bus_freq()" restriction only applies to chips with erratum
+> A-004510, and whether the freq_mask used on p5020 is needed depends on
+> the actual frequencies of the PLLs (FWIW, p5040 has a similar
+> limitation but its .freq_mask was zero) -- and the frequency mask
+> mechanism made assumptions about particular parent clock indices that
+> are no longer valid.
+> 
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> ---
+> v3: was patch 1/5 and patch 4/5, plus blacklist e6500 and changes
+> to clk api usage
+> 
+>  drivers/cpufreq/qoriq-cpufreq.c | 137 ++++++++++++----------------------------
+>  1 file changed, 40 insertions(+), 97 deletions(-)
 
-Signed-off-by: Andrew F. Davis <afd@ti.com>
-Acked-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
----
- drivers/power/bq27xxx_battery.c | 28 ++++++++++++++--------------
- 1 file changed, 14 insertions(+), 14 deletions(-)
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27xxx_ba=
-ttery.c
-index 0734413..1ff88ad 100644
---- a/drivers/power/bq27xxx_battery.c
-+++ b/drivers/power/bq27xxx_battery.c
-@@ -229,26 +229,26 @@ static bool bq27xxx_is_chip_version_higher(struct=
- bq27xxx_device_info *di)
- }
-=20
- /*
-- * Return the battery Relative State-of-Charge
-+ * Return the battery State-of-Charge
-  * Or < 0 if something fails.
-  */
--static int bq27xxx_battery_read_rsoc(struct bq27xxx_device_info *di)
-+static int bq27xxx_battery_read_soc(struct bq27xxx_device_info *di)
- {
--	int rsoc;
-+	int soc;
-=20
- 	if (di->chip =3D=3D BQ27500 || di->chip =3D=3D BQ27742)
--		rsoc =3D bq27xxx_read(di, BQ27500_REG_SOC, false);
-+		soc =3D bq27xxx_read(di, BQ27500_REG_SOC, false);
- 	else if (di->chip =3D=3D BQ27510)
--		rsoc =3D bq27xxx_read(di, BQ27510_REG_SOC, false);
-+		soc =3D bq27xxx_read(di, BQ27510_REG_SOC, false);
- 	else if (di->chip =3D=3D BQ27425)
--		rsoc =3D bq27xxx_read(di, BQ27425_REG_SOC, false);
--	else
--		rsoc =3D bq27xxx_read(di, BQ27000_REG_RSOC, true);
-+		soc =3D bq27xxx_read(di, BQ27425_REG_SOC, false);
-+	else /* for the bq27000 we read the "relative" SoC register */
-+		soc =3D bq27xxx_read(di, BQ27000_REG_RSOC, true);
-=20
--	if (rsoc < 0)
--		dev_dbg(di->dev, "error reading relative State-of-Charge\n");
-+	if (soc < 0)
-+		dev_dbg(di->dev, "error reading State-of-Charge\n");
-=20
--	return rsoc;
-+	return soc;
- }
-=20
- /*
-@@ -275,7 +275,7 @@ static int bq27xxx_battery_read_charge(struct bq27x=
-xx_device_info *di, u8 reg)
- }
-=20
- /*
-- * Return the battery Nominal available capaciy in =C2=B5Ah
-+ * Return the battery Nominal available capacity in =C2=B5Ah
-  * Or < 0 if something fails.
-  */
- static inline int bq27xxx_battery_read_nac(struct bq27xxx_device_info =
-*di)
-@@ -416,7 +416,7 @@ static int bq27xxx_battery_read_time(struct bq27xxx=
-_device_info *di, u8 reg)
- }
-=20
- /*
-- * Read a power avg register.
-+ * Read an average power register.
-  * Return < 0 if something fails.
-  */
- static int bq27xxx_battery_read_pwr_avg(struct bq27xxx_device_info *di=
-, u8 reg)
-@@ -498,7 +498,7 @@ static void bq27xxx_battery_update(struct bq27xxx_d=
-evice_info *di)
- 			cache.charge_full =3D -ENODATA;
- 			cache.health =3D -ENODATA;
- 		} else {
--			cache.capacity =3D bq27xxx_battery_read_rsoc(di);
-+			cache.capacity =3D bq27xxx_battery_read_soc(di);
- 			if (is_bq27742 || is_bq27510)
- 				cache.time_to_empty =3D
- 					bq27xxx_battery_read_time(di,
---=20
-1.9.1
+-- 
+viresh
