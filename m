@@ -1,89 +1,40 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 2/3] power_supply: Add support for tps65217-charger.
-Date: Tue, 22 Sep 2015 15:44:32 +0200
-Message-ID: <20150922134432.GG23334@earth>
-References: <1441699779-22189-1-git-send-email-enric.balletbo@collabora.com>
- <1441699779-22189-3-git-send-email-enric.balletbo@collabora.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing
+ runtime suspend
+Date: Tue, 22 Sep 2015 10:15:02 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1509221013470.1742-100000@iolanthe.rowland.org>
+References: <1442923519.6240.6.camel@suse.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="z9ECzHErBrwFF8sy"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1441699779-22189-3-git-send-email-enric.balletbo@collabora.com>
+In-Reply-To: <1442923519.6240.6.camel@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Enric Balletbo i Serra <eballetbo@gmail.com>
-Cc: devicetree@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, dbaryshkov@gmail.com, dwmw2@infradead.org, tony@atomide.com, sameo@linux.intel.com, lee.jones@linaro.org, sjoerd.simons@collabora.co.uk, javier@dowhile0.org
+To: Oliver Neukum <oneukum@suse.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rafael@kernel.org>, Octavian Purdila <octavian.purdila@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Tirdea, Irina" <irina.tirdea@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
+On Tue, 22 Sep 2015, Oliver Neukum wrote:
 
---z9ECzHErBrwFF8sy
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> Indeed. We can handle output to suspended devices by waking them.
+> I don't see why this case is different. We are talking about input
+> only.
+> 
+> > The runtime-PM "usage" value for these devices is a little tricky to 
+> > calculate.  It should be nonzero if there are any open files _and_ the 
+> > device isn't "inhibited".  I don't know the best way to represent that 
+> > kind of condition in the runtime PM framework.
+> 
+> Does that make sense in the generic framework at all? I still
+> think that drivers should cease IO for input in such cases.
+> That should involve a common callback, but no counter.
 
-Hi,
+I'm not sure I understand what you're saying.  Are you suggesting that
+this "inhibit" mechanism should involve a new callback different from
+the existing runtime-PM callbacks?  And when this new callback is
+invoked, drivers should cancel existing input requests (these devices
+are input-only) and go to low power?
 
-On Tue, Sep 08, 2015 at 10:09:38AM +0200, Enric Balletbo i Serra wrote:
-> This patch adds support for the tps65217 charger driver. This driver is
-> responsible for controlling the charger aspect of the tps65217 mfd.
-> Currently, this mainly consists of turning on and off the charger, but
-> some other features of the charger can be supported through this driver.
+This would create a parallel runtime-PM mechanism which is independent
+of the existing one.  Is that really a good idea?
 
-Driver looks mostly fine. I have two comments though:
-
-> [...]
->
-> +static int tps65217_ac_get_property(struct power_supply *psy,
-> +			enum power_supply_property psp,
-> +			union power_supply_propval *val)
-> +{
-> +	struct tps65217_charger *charger = power_supply_get_drvdata(psy);
-> +
-> +	if (psp == POWER_SUPPLY_PROP_ONLINE) {
-> +		val->intval = charger->ac_online;
-> +		charger->prev_ac_online = charger->ac_online;
-
-I think prev_ac_online should be set at the beginning of
-tps65217_charger_irq().
-
-> [...]
->
-> +static int tps65217_charger_probe(struct platform_device *pdev)
-> +{
->
-> [...]
->
-> +	charger->ac = power_supply_register(&pdev->dev,
-> +					&tps65217_charger_desc, NULL);
-> +	if (IS_ERR(charger->ac)) {
-> +		dev_err(&pdev->dev, "failed: power supply register\n");
-> +		return PTR_ERR(charger->ac);
-> +	}
-
-You can use devm_power_supply_register(...) to simplify the driver
-a bit more.
-
--- Sebastian
-
---z9ECzHErBrwFF8sy
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJWAVs9AAoJENju1/PIO/qaMZwP/2hkjOS3EBALtiClJtJQ9pkP
-J1WFNEJqAjg9gBzz0qQraa6ObwQaK7bvR3IIizpWEztNuAcbg9zK6EJc7LGfwgFr
-tmbDpWsJ/x30WVpeg/7c3GWZipFo6xgBCbA/1Ew6DD3ZWrgd9nwJb8CnMPIO1Bw8
-QoSJb88AxCb74k2dwrBhkCp2b/d7+DQXDAbDRXj50ZiPmZIieFXrRe1bGKingUs9
-pTaMm4e1+u2EfN4UyMhCulLaguyhp3skZY5T7eCLEhU5X8ieAABFbHINWngfjGch
-twj2VU9AZgvOkB5ipcdAdj4mPuI3fEH8XuvHx/3U6V5NeDH7EW647Wx3TW7359DX
-VXETmoqeLezM4mojTv3gRaQwbeiKINwkxpNsreANNCcd+sONTkuGCZS3w7jkJu8T
-0lrZ+C1PkzuyroGoXWt1PPgCzmqbR4ldojx8W/wfpKECyuaVI/RiwzTf4nneOtWX
-76DXZn3S+76GhgEjRo7p8IYk9oFRZdAFOQKfDmnvv6Sc6R0THqH0nTXdTXnORc3p
-8yDgpIr7KjWfD96Wt1FEEXVYsxudgLMk2cQrbFY33BhCkKcoToHZ9bMwNR875j+M
-HMsRlxyLssrTrLmuR8qdAd7VByAyO/C9Do1B0N0TNRY3WZQVVui6e3KsiCIOpC4q
-yaCUV1iG5jDaqNiWdgD+
-=Oas6
------END PGP SIGNATURE-----
-
---z9ECzHErBrwFF8sy--
+Alan Stern
