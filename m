@@ -1,116 +1,200 @@
-From: "Brown, Len" <len.brown@intel.com>
-Subject: RE: [PATCH] power: print function name of callbacks
-Date: Tue, 22 Sep 2015 17:33:14 +0000
-Message-ID: <1A7043D5F58CCB44A599DFD55ED4C9484692486F@fmsmsx115.amr.corp.intel.com>
-References: <1442942797-17433-1-git-send-email-dianders@chromium.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2 4/5] cpufreq-dt: Handle OPP voltage adjust events
+Date: Tue, 22 Sep 2015 10:36:34 -0700
+Message-ID: <20150922173612.GI24314@linux>
+References: <1442623929-4507-1-git-send-email-sboyd@codeaurora.org>
+ <1442623929-4507-5-git-send-email-sboyd@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:30466 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752272AbbIVRdZ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Sep 2015 13:33:25 -0400
-In-Reply-To: <1442942797-17433-1-git-send-email-dianders@chromium.org>
-Content-Language: en-US
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:35966 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751118AbbIVRgl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Sep 2015 13:36:41 -0400
+Received: by pacgz1 with SMTP id gz1so12273237pac.3
+        for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2015 10:36:40 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1442623929-4507-5-git-send-email-sboyd@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Douglas Anderson <dianders@chromium.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Nishanth Menon <nm@ti.com>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Andy Gross <agross@codeaurora.org>, linux-pm@vger.kernel.org, Mark Brown <broonie@kernel.org>, David Collins <collinsd@codeaurora.org>
 
-have you used analyze_suspend?
-It used to parse this output, but that was abandoned
-when it cut over to using ftrace directly.
-
-https://01.org/suspendresume
-
-cheers,
--Len
-
-
-> -----Original Message-----
-> From: Douglas Anderson [mailto:dianders@chromium.org]
-> Sent: Tuesday, September 22, 2015 1:27 PM
-> To: rjw@rjwysocki.net
-> Cc: Dmitry Torokhov; Douglas Anderson; pavel@ucw.cz; Brown, Len;
-> gregkh@linuxfoundation.org; linux-pm@vger.kernel.org; linux-
-> kernel@vger.kernel.org
-> Subject: [PATCH] power: print function name of callbacks
+On 18-09-15, 17:52, Stephen Boyd wrote:
+> On some SoCs the Adaptive Voltage Scaling (AVS) technique is
+> employed to optimize the operating voltage of a device. At a
+> given frequency, the hardware monitors dynamic factors and either
+> makes a suggestion for how much to adjust a voltage for the
+> current frequency, or it automatically adjusts the voltage
+> without software intervention.
 > 
-> The printouts writen to the logs by suspend can be a bit opaque: it can
-> be hard to track them down to the actual function called.  You might
-> see:
+> In the former case, an AVS driver will call
+> dev_pm_opp_modify_voltage() and update the voltage for the
+> particular OPP the CPUs are using. Add an OPP notifier to
+> cpufreq-dt so that we can adjust the voltage of the CPU when AVS
+> updates the OPP.
 > 
->   calling  rfkill1+ @ 19473, parent: phy0
->   call rfkill1+ returned 0 after 1 usecs
->   calling  phy0+ @ 19473, parent: mmc2:0001:1
->   call phy0+ returned 0 after 19 usecs
-> 
-> It's a bit hard to know what's actually happening.  Instead, it's nice
-> to see:
-> 
->   calling  rfkill1+ @ 15793, parent: phy0, cb: rfkill_suspend
->   call rfkill1+ returned 0 after 1 usecs
->   calling  phy0+ @ 15793, parent: mmc2:0001:1, cb: wiphy_suspend
-> [cfg80211]
->   call phy0+ returned 0 after 7 usecs
-> 
-> That makes it very obvious what's going on.  It also has the nice side
-> effect of making the suspend/resume spew a little more obvious, since
-> many resume functions have the word "resume" in the name:
-> 
->   calling  phy0+ @ 15793, parent: mmc2:0001:1, cb: wiphy_resume [cfg80211]
->   call phy0+ returned 0 after 12 usecs
->   calling  rfkill1+ @ 15793, parent: phy0, cb: rfkill_resume
->   call rfkill1+ returned 0 after 1 usecs
-> 
-> Signed-off-by: Douglas Anderson <dianders@chromium.org>
+> Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
 > ---
->  drivers/base/power/main.c | 10 +++++-----
->  1 file changed, 5 insertions(+), 5 deletions(-)
+>  drivers/cpufreq/cpufreq-dt.c | 63 +++++++++++++++++++++++++++++++++++++++-----
+>  1 file changed, 57 insertions(+), 6 deletions(-)
 > 
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index 1710c26..e2b1f14 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -188,14 +188,14 @@ void device_pm_move_last(struct device *dev)
->  	list_move_tail(&dev->power.entry, &dpm_list);
->  }
-> 
-> -static ktime_t initcall_debug_start(struct device *dev)
-> +static ktime_t initcall_debug_start(struct device *dev, void *cb)
+> diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+> index 7c0d70e2a861..1bf3ae4d4ee1 100644
+> --- a/drivers/cpufreq/cpufreq-dt.c
+> +++ b/drivers/cpufreq/cpufreq-dt.c
+> @@ -34,6 +34,9 @@ struct private_data {
+>  	struct regulator *cpu_reg;
+>  	struct thermal_cooling_device *cdev;
+>  	unsigned int voltage_tolerance; /* in percentage */
+> +	struct notifier_block opp_nb;
+> +	struct mutex lock;
+> +	unsigned long opp_freq;
+>  };
+>  
+>  static struct freq_attr *cpufreq_dt_attr[] = {
+> @@ -42,6 +45,33 @@ static struct freq_attr *cpufreq_dt_attr[] = {
+>  	NULL,
+>  };
+>  
+> +static int opp_notifier(struct notifier_block *nb, unsigned long event,
+> +			void *data)
+> +{
+> +	struct dev_pm_opp *opp = data;
+> +	struct private_data *priv = container_of(nb, struct private_data,
+> +						 opp_nb);
+> +	struct device *cpu_dev = priv->cpu_dev;
+> +	struct regulator *cpu_reg = priv->cpu_reg;
+> +	unsigned long volt, tol, freq;
+> +	int ret = 0;
+> +
+> +	if (event == OPP_EVENT_ADJUST_VOLTAGE) {
+> +		volt = dev_pm_opp_get_voltage(opp);
+> +		freq = dev_pm_opp_get_freq(opp);
+> +		tol = volt * priv->voltage_tolerance / 100;
+> +
+> +		mutex_lock(&priv->lock);
+> +		if (freq == priv->opp_freq)
+> +			ret = regulator_set_voltage_tol(cpu_reg, volt, tol);
+> +		mutex_unlock(&priv->lock);
+> +		if (ret)
+> +			dev_err(cpu_dev, "failed to scale voltage: %d\n", ret);
+> +	}
+> +
+> +	return notifier_from_errno(ret);
+> +}
+> +
+>  static int set_target(struct cpufreq_policy *policy, unsigned int index)
 >  {
->  	ktime_t calltime = ktime_set(0, 0);
-> 
->  	if (pm_print_times_enabled) {
-> -		pr_info("calling  %s+ @ %i, parent: %s\n",
-> +		pr_info("calling  %s+ @ %i, parent: %s, cb: %pf\n",
->  			dev_name(dev), task_pid_nr(current),
-> -			dev->parent ? dev_name(dev->parent) : "none");
-> +			dev->parent ? dev_name(dev->parent) : "none", cb);
->  		calltime = ktime_get();
+>  	struct dev_pm_opp *opp;
+> @@ -53,6 +83,7 @@ static int set_target(struct cpufreq_policy *policy, unsigned int index)
+>  	unsigned long volt = 0, volt_old = 0, tol = 0;
+>  	unsigned int old_freq, new_freq;
+>  	long freq_Hz, freq_exact;
+> +	unsigned long opp_freq = 0;
+>  	int ret;
+>  
+>  	freq_Hz = clk_round_rate(cpu_clk, freq_table[index].frequency * 1000);
+> @@ -63,8 +94,8 @@ static int set_target(struct cpufreq_policy *policy, unsigned int index)
+>  	new_freq = freq_Hz / 1000;
+>  	old_freq = clk_get_rate(cpu_clk) / 1000;
+>  
+> +	mutex_lock(&priv->lock);
+>  	if (!IS_ERR(cpu_reg)) {
+> -		unsigned long opp_freq;
+>  
+>  		rcu_read_lock();
+>  		opp = dev_pm_opp_find_freq_ceil(cpu_dev, &freq_Hz);
+> @@ -72,7 +103,8 @@ static int set_target(struct cpufreq_policy *policy, unsigned int index)
+>  			rcu_read_unlock();
+>  			dev_err(cpu_dev, "failed to find OPP for %ld\n",
+>  				freq_Hz);
+> -			return PTR_ERR(opp);
+> +			ret = PTR_ERR(opp);
+> +			goto out;
+>  		}
+>  		volt = dev_pm_opp_get_voltage(opp);
+>  		opp_freq = dev_pm_opp_get_freq(opp);
+> @@ -93,7 +125,7 @@ static int set_target(struct cpufreq_policy *policy, unsigned int index)
+>  		if (ret) {
+>  			dev_err(cpu_dev, "failed to scale voltage up: %d\n",
+>  				ret);
+> -			return ret;
+> +			goto out;
+>  		}
 >  	}
-> 
-> @@ -382,7 +382,7 @@ static int dpm_run_callback(pm_callback_t cb, struct
-> device *dev,
->  	if (!cb)
->  		return 0;
-> 
-> -	calltime = initcall_debug_start(dev);
-> +	calltime = initcall_debug_start(dev, cb);
-> 
->  	pm_dev_dbg(dev, state, info);
->  	trace_device_pm_callback_start(dev, info, state.event);
-> @@ -1324,7 +1324,7 @@ static int legacy_suspend(struct device *dev,
-> pm_message_t state,
->  	int error;
->  	ktime_t calltime;
-> 
-> -	calltime = initcall_debug_start(dev);
-> +	calltime = initcall_debug_start(dev, cb);
-> 
->  	trace_device_pm_callback_start(dev, info, state.event);
->  	error = cb(dev, state);
-> --
-> 2.6.0.rc0.131.gf624c3d
+>  
+> @@ -102,7 +134,7 @@ static int set_target(struct cpufreq_policy *policy, unsigned int index)
+>  		dev_err(cpu_dev, "failed to set clock rate: %d\n", ret);
+>  		if (!IS_ERR(cpu_reg) && volt_old > 0)
+>  			regulator_set_voltage_tol(cpu_reg, volt_old, tol);
+> -		return ret;
+> +		goto out;
+>  	}
+>  
+>  	/* scaling down?  scale voltage after frequency */
+> @@ -112,9 +144,12 @@ static int set_target(struct cpufreq_policy *policy, unsigned int index)
+>  			dev_err(cpu_dev, "failed to scale voltage down: %d\n",
+>  				ret);
+>  			clk_set_rate(cpu_clk, old_freq * 1000);
+> +			goto out;
+>  		}
+>  	}
+> -
+> +	priv->opp_freq = opp_freq;
+> +out:
+> +	mutex_unlock(&priv->lock);
+>  	return ret;
+>  }
+>  
+> @@ -201,6 +236,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+>  	unsigned int transition_latency;
+>  	bool need_update = false;
+>  	int ret;
+> +	struct srcu_notifier_head *opp_srcu_head;
+>  
+>  	ret = allocate_resources(policy->cpu, &cpu_dev, &cpu_reg, &cpu_clk);
+>  	if (ret) {
+> @@ -277,6 +313,19 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+>  		goto out_free_opp;
+>  	}
+>  
+> +	mutex_init(&priv->lock);
+> +
+> +	opp_srcu_head = dev_pm_opp_get_notifier(cpu_dev);
+> +	if (IS_ERR(opp_srcu_head)) {
+> +		ret = PTR_ERR(opp_srcu_head);
+> +		goto out_free_priv;
+> +	}
+> +
+> +	priv->opp_nb.notifier_call = opp_notifier;
+> +	ret = srcu_notifier_chain_register(opp_srcu_head, &priv->opp_nb);
+> +	if (ret)
+> +		goto out_free_priv;
+> +
+>  	of_property_read_u32(np, "voltage-tolerance", &priv->voltage_tolerance);
+>  
+>  	if (!transition_latency)
+> @@ -326,7 +375,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+>  	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
+>  	if (ret) {
+>  		pr_err("failed to init cpufreq table: %d\n", ret);
+> -		goto out_free_priv;
+> +		goto out_unregister_nb;
+>  	}
+>  
+>  	priv->cpu_dev = cpu_dev;
+> @@ -365,6 +414,8 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+>  
+>  out_free_cpufreq_table:
+>  	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
+> +out_unregister_nb:
+> +	srcu_notifier_chain_unregister(opp_srcu_head, &priv->opp_nb);
+>  out_free_priv:
+>  	kfree(priv);
+>  out_free_opp:
 
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+-- 
+viresh
