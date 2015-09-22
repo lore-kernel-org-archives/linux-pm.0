@@ -1,107 +1,213 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power: bq24261_charger: Add support for TI BQ24261
- charger
-Date: Tue, 22 Sep 2015 17:37:25 +0200
-Message-ID: <20150922153725.GA4235@earth>
-References: <1441560187-23611-1-git-send-email-ramakrishna.pallala@intel.com>
- <CAJKOXPfDu+LxoiQrV+CsqUbEVwYb1Zmk-m9y-L_1JxrB6ouS0g@mail.gmail.com>
- <D854C92F57B1B347B57E531E78D05EAD57904B8D@BGSMSX104.gar.corp.intel.com>
- <55F0C522.6070705@samsung.com>
- <55F1B2FD.4020608@ti.com>
- <55F22740.4080003@samsung.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="FCuugMFkClbJLl1L"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <55F22740.4080003@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: "Andrew F. Davis" <afd@ti.com>, "Pallala, Ramakrishna" <ramakrishna.pallala@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "Tc, Jenny" <jenny.tc@intel.com>, Andreas Dannenberg <dannenberg@ti.com>
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH/RFC v2 0/4] Renesas CPG/MSTP DT Binding Proposal
+Date: Tue, 22 Sep 2015 17:44:02 +0200
+Message-ID: <1442936646-30362-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-clk-owner@vger.kernel.org>
+Sender: linux-clk-owner@vger.kernel.org
+To: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, Magnus Damm <damm+renesas@opensource.se>, Simon Horman <horms@verge.net.au>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Ulrich Hecht <ulrich.hecht+renesas@gmail.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <p.zabel@pengutronix.de>
+Cc: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-sh@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
+This is v2 of "Renesas CPG/MSTP DT Binding Proposal"
+(http://www.spinics.net/lists/linux-clk/msg01189.html"), this time
+including some actual patches.
 
---FCuugMFkClbJLl1L
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Introduction
+------------
 
-On Fri, Sep 11, 2015 at 09:58:40AM +0900, Krzysztof Kozlowski wrote:
-> On 11.09.2015 01:42, Andrew F. Davis wrote:
-> > On 09/09/2015 06:47 PM, Krzysztof Kozlowski wrote:
-> >>>>> +- ti,enable-user-write: boolean, if present driver will allow the
-> >>>>> user space
-> >>>>> +    to control the charging current and voltage through sysfs;
-> >>>>
-> >>>> This is not DT property. It does not describe hardware.
-> >>> We needed a mechanism to enable the sysfs writes on certain propertie=
-s.
-> >>> If DT is not the place where should it go?
-> >>
-> >> DT is not the place. As I discussed later with Andreas, if you really
-> >> need this and if mainline is a place for that then probably this should
-> >> be compile option (a Kconfig symbol).
-> >>
-> >=20
-> > I think this would actually be a good use for module parameters, this w=
-ay
-> > it could still be set at boot without re-compiling.
-> >=20
-> > I think compile-time disabling sysfs properties because they are
-> > "dangerous" is
-> > a little bit too artificially restricting and controlling, you can set
-> > permissions
-> > so only root can change them already. The kernel should not be
-> > restricting root,
-> > I understand the fear of someone rooting a machine and remotely over
-> > charging
-> > a LiPo[1], but these physical limits are hardware descriptions and can
-> > and should
-> > be set by DT, beyond this root should have full control over their mach=
-ine.
->=20
->=20
-> Indeed module parameters could be used for enabling/disabling debug
-> options... but as fair as I understand these are for purely development
-> purposes. That is why they got into DT initially, right? To allow the
-> developer to play with it on the development board?
->=20
-> This is why I am really not convinced that this should go to mainline.
->=20
-> Anyway if it goes, then maybe compiling it out is the safest choice?
-> What's the purpose of having it in kernel all the time? If this was a
-> debug option, than some experienced user could turn it on and report to
-> LKML with extended debug data. But it's not a debug but development optio=
-n?
+On Renesas SoCs (SH/R-Mobile, R-Car, RZ), the CPG (Clock Pulse
+Generator), MSSR (Module Standby and Software Reset), and APMU (Advanced
+Power Management Unit for AP-System Core) blocks are very intimately
+tied.
 
-Changing the current limit is useful for "expert" users with custom
-usb power supplies, that are not correctly detected by extcon. I
-also think a module parameter would be the best option here.
+  - The CPG clock generates various clocks for LSI internal generation,
+  - The MSSR block provides two functions:
+      1. Module Standby: "Clock supply to specified modules is stopped
+	 by setting the module stop control register bits."
+         However, the clock supply to a module is not stopped until all
+	 CPUs in the SoC agree.  Indeed, there are separate MSTP
+	 registers for application (Cortex-A) and real-time (SH and/or
+	 Cortex-R) cores.
+      2. Reset Control. to perform a software reset of a specific
+         module.
+  - The APMU controls power and clock supply to the AP-system core (e.g.
+    CA7/CA53, CA15/A57, SCU).
 
--- Sebastian
+MSTP and CPG registers are mixed in one register block.
+The APMU has one or two separate register blocks.
 
---FCuugMFkClbJLl1L
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+The current DT bindings are split across 5 different binding documents:
+  1. Renesas SoC-specific "core" CPG clocks that cannot be represented
+     easily in DT in another way (cfr. [1]),
+  2. Renesas-specific MSTP "Module Standby" clocks (cfr. [2]),
+  3. Renesas-specific "DIV6" variable factor clocks, also generated by
+     the CPG (cfr. [3]).
+  4. Generic "fixed-factor-clock" clocks, generated by the CPG, but
+     represented in DT using the generic ""fixed-factor-clock" bindings
+     (cfr. [4]),
+  5. Renesas-specific APMU bindings are under development (cfr. [8]).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Note that currently the Reset Control function of the MSSR block is not
+supported by DT nor Linux, and that there are no DT bindings for the
+APMU block yet.
 
-iQIcBAEBCgAGBQJWAXWyAAoJENju1/PIO/qalAUP/iQ8j956h3v2LOgMF4BPIZKx
-s0vtTW9Bf/PvtJFzhEKzdDxW12ZFyqgUS3gk9GJssP9rr65fBvzEripZqmP6lDzz
-A7fm3vEGVsrmvIMDdk08ll2GLKs7TsFfcz+DKIvriuHba4v4yys8G9sM/p1Zm6WI
-ZI4eNbKv/7kf64U+rB1rQHoHi6zzXkq2pdKWkrzPh3h5evkBqQPYlNJ2t13plh93
-p+nGMfPPRG7HGP06o89ZScF+sRzGgGM5f1Pin3t3rESwbBDjNYMpLiZwpzqpclBX
-GlRJhq5mj7Xe4FTprPHQTqGu8pYQYaXUxToZvDqxp7iNR5SImxofLptMFL+XIg/4
-BrjvaO6yjczdJlO8WochXcLL3s0OOjPHyLYZOrrQ3DyIzid6uihiOFbbvu51qXHE
-pQq9HbQZuwnnEFl6T+XI+49ZPFCGMsMmQM/BgN0RuKI/b89tOeCiKpKR7fCFGS8D
-DM4RyEanAWUYmpD+ZcPlo9U31h6fAPlSkNpDl6GAzzfeQ3z25ILuM+HSUquzbl9N
-PntM6HhfrdD0Ie7QDywVhRs78kGpJdfP3z+HKtObKKrs+11k3WD0EV2eceJVdUEV
-S7cHbfFn3CDG32FFsndCCQ1D2YkslCJ1E0Fq8Z4jGTB7raaW9VcfWEFZbzLfq4aK
-hbiQUBDf5hv3RM3+cKnN
-=BCk3
------END PGP SIGNATURE-----
 
---FCuugMFkClbJLl1L--
+Issues with current bindings
+----------------------------
+
+General:
+  - Tight coupling of CPG and MSTP is not represented in DT:
+      - There's one CPG node, and separate MSTP nodes (one for each
+	block of up to 32 possible MSTP clocks) next to it,
+      - CPG Clock Domain requires "power-domain = <...>" properties
+	linking individual device nodes to the "CPG/MSTP" clock domain
+	provider.
+        For now I use a link to the (single) CPG device node, while the
+	clock provider (mostly) controls the (multiple) MSTP clocks
+	(cfr. [5]).
+      - On R-Car Gen3, any CPG/MSTP (and APMU) register write access
+	requires writing a special value to a specific "Write Protect
+	Register" inside the CPG first. Exact details and impact are
+	still under investigation (cfr. [6]).
+
+MSTP-specific:
+  - The clock hierarchy (parent-child relationship) is represented in a
+    flat structure,
+  - Multiple arrays have to be kept in sync:
+      - "clocks" (parents),
+      - "clock-indices" (sparse bit index inside register),
+      - "clock-output-names",
+  - MSTP clocks are referred to using a reference to a device node and a
+    bit index:
+       - Bit index definitions in
+	 include/dt-bindings/clock/<soc>-clock.h are separated from the
+	 .dtsi file,
+       - There's no protection against using a bit index definition for
+	 a different MSTP register, e.g.
+           - clocks = <&mstp8_clks R8A7791_CLK_QSPI_MOD> (wrong),
+           - clocks = <&mstp9_clks R8A7791_CLK_QSPI_MOD> (correct),
+   - The "reg" properties contain only the SMSTPCRx (control register
+     for System CPU) and MSTPSRx (optional status register) registers
+     only.
+     However, in reality there are many more register sets (up to 10 as
+     of R-Car Gen3):
+       - Separate control registers for application (Cortex-A,
+	 supported) and real-time (SH and/or Cortex-R, not supported)
+	 cores,
+       - various software reset registers (not supported).
+     To make matters more complicated:
+       - Many registers are optional.
+         The current bindings just support one control register and one
+	 optional status register, but this doesn't scale to more
+	 register sets,
+       - Register sets are not linear and not contiguous in the register
+	 space.
+         I.e. it's not possible to derive the address of SMSTPCRx from
+	 the address of SMSTPCRy, or the address of MSTPSRx from the
+	 address of SMSTPCRx.
+
+
+Proposal
+--------
+
+I'd like to propose the following, to resolve (some of) the issues with
+the current bindings:
+
+  - Get rid of the "clocks" node.
+    This is something we already did on r8a7795, and can be done for
+    older SoCs without breaking backwards-compatibility,
+  - Replace the existing MSTP driver by a new MSSR driver, which is
+    planned to be extensible to handle module reset as well,
+  - MSTP clocks:
+      - All MSTP clocks are now grouped inside the CPG node, under a new
+	"mssr" subnode, covering the same register block as the parent
+	CPG node,
+      - The list of available registers is maintained inside the new
+	MSSR driver,
+      - MSTP clocks are still referred to by a one cell clock specifier,
+	but this is now global, and encodes both the MSTP register
+	number and the MSTP register bit, crafted to look like the MSTP
+	numbers in the datasheet,
+  - Reset control:
+     - Added "#reset-cells = 1",
+     - One cell reset specifiers will use the MSTP clock numbers, as
+       these are actually module numbers (hmm, perhaps I should start
+       calling them "module numbers", too)
+     - Reset control support is still to be implemented.
+
+While this is mainly intended for R-Car Gen3 (r8a7795), it was developed
+and tested on r8a7791/koelsch.
+
+
+Changes compared to v1
+----------------------
+
+  - Renamed "mstp" node to "mssr" node, added "reg" and "compatible"
+    properties.
+    While at first I wanted to not put a "reg" nor "compatible" property
+    in the "mssr" node at all, and let the CPG driver handle the
+    registration of the MSTP clocks itself. However, I believe (I
+    haven't tried) that won't work, as some MSTP clocks have a DIV6
+    clock as parent, which isn't instantiated yet (usually the DIV6
+    clock has a CPG clock as parent).
+  - Retained arrays of "clocks", "clock-output-names", and
+    "clock-indices" properties, as this was apparently something the
+    clock maintainer(s) insisted upon when the original bindings were
+    developed.
+  - Replace the existing MSTP driver by a new MSSR driver, preparing for
+    reset control,
+  - Drop changing the compatible value for the CPG node, as everything
+    is now handled in the new MSSR driver,
+  - Working patches are now included (for r8a7791/koelsch only).
+
+
+References
+----------
+
+  [1] Documentation/devicetree/bindings/clock/renesas,<SoC>-cpg-clocks.txt
+      where <SoC> is a single SoC name or a family of SoCs
+  [2] Documentation/devicetree/bindings/clock/renesas,cpg-mstp-clocks.txt
+  [3] Documentation/devicetree/bindings/clock/renesas,cpg-div6-clocks.txt
+  [4] Documentation/devicetree/bindings/clock/fixed-factor-clock.txt
+  [5] Series "[PATCH v2 00/14] ARM: shmobile: Add CPG Clock Domains"
+      (https://lkml.org/lkml/2015/5/28/590,
+       http://lkml.iu.edu/hypermail/linux/kernel/1505.3/03336.html)
+  [6] Series "[PATCH 0/6][RFC] arm64: Renesas Gen3 initial patch"
+      (http://www.spinics.net/lists/linux-sh/msg42683.html)
+  [7] Series "[PATCH v3 00/09] ARM: shmobile: APMU DT support via SMP
+      Enable method V3"
+      (http://www.spinics.net/lists/devicetree/msg94094.html)
+
+
+Geert Uytterhoeven (4):
+  [RFC] ARM: shmobile: r8a7791 dtsi: Move DIV6 and MSTP clocks under CPG
+  [RFC] ARM: shmobile: r8a7791/koelsch dts(i): Switch from MSTP to MSSR
+  [RFC] clk: shmobile: Add Renesas Module Standby and Software Reset
+    driver
+  [RFC] clk: shmobile: rcar-gen2: Switch from old MSTP to new MSSR
+    driver
+
+ arch/arm/boot/dts/r8a7791-koelsch.dts     |   6 +-
+ arch/arm/boot/dts/r8a7791.dtsi            | 650 ++++++++++++++++--------------
+ drivers/clk/shmobile/Makefile             |   2 +-
+ drivers/clk/shmobile/clk-mssr.c           | 365 +++++++++++++++++
+ drivers/clk/shmobile/clk-rcar-gen2.c      |   2 +-
+ include/dt-bindings/clock/r8a7791-clock.h | 232 +++++------
+ include/linux/clk/shmobile.h              |   2 +
+ 7 files changed, 827 insertions(+), 432 deletions(-)
+ create mode 100644 drivers/clk/shmobile/clk-mssr.c
+
+-- 
+1.9.1
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
