@@ -1,62 +1,52 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH 17/17] mfd : ab8500/db8500: fix the abuse of
- IRQF_NO_SUSPEND
-Date: Tue, 22 Sep 2015 11:04:46 +0100
-Message-ID: <560127BE.9030604@arm.com>
-References: <1442850433-5903-1-git-send-email-sudeep.holla@arm.com>
- <1442850433-5903-18-git-send-email-sudeep.holla@arm.com>
- <20150921232027.GD11284@x1>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
+ SpeedStep enabled
+Date: Tue, 22 Sep 2015 10:48:08 +0000
+Message-ID: <bug-103351-137361-cRhMAOQEqf@https.bugzilla.kernel.org/>
+References: <bug-103351-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:57124 "EHLO foss.arm.com"
+Received: from mail.kernel.org ([198.145.29.136]:54793 "EHLO mail.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752084AbbIVKEu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 22 Sep 2015 06:04:50 -0400
-In-Reply-To: <20150921232027.GD11284@x1>
+	id S1757838AbbIVKsL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 22 Sep 2015 06:48:11 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+	by mail.kernel.org (Postfix) with ESMTP id 9136520763
+	for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2015 10:48:10 +0000 (UTC)
+Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
+	by mail.kernel.org (Postfix) with ESMTP id A1A1A20762
+	for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2015 10:48:09 +0000 (UTC)
+In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linus Walleij <linus.walleij@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: linux-pm@vger.kernel.org
 
+https://bugzilla.kernel.org/show_bug.cgi?id=103351
 
+Alexey Dyachenko <adotfive@gmail.com> changed:
 
-On 22/09/15 00:20, Lee Jones wrote:
-> On Mon, 21 Sep 2015, Sudeep Holla wrote:
->
->> The IRQF_NO_SUSPEND flag is used to identify the interrupts that should
->> be left enabled so as to allow them to work as expected during the
->> suspend-resume cycle, but doesn't guarantee that it will wake the system
->> from a suspended state, enable_irq_wake is recommended to be used for
->> the wakeup.
->>
->> This patch removes the use of IRQF_NO_SUSPEND flags replacing it with
->> enable_irq_wake instead.
->>
->> Cc: Linus Walleij <linus.walleij@linaro.org>
->> Cc: linux-arm-kernel@lists.infradead.org
->> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
->> ---
->>   drivers/mfd/ab8500-core.c        | 11 +++++++++--
->>   drivers/mfd/ab8500-debugfs.c     |  2 +-
->>   drivers/mfd/ab8500-gpadc.c       | 15 +++++++++++----
->>   drivers/mfd/db8500-prcmu.c       | 24 +++++++++++++++++-------
->>   drivers/power/ab8500_btemp.c     |  6 ++++--
->>   drivers/power/ab8500_charger.c   |  6 ++++--
->>   drivers/power/ab8500_fg.c        |  9 ++++++---
->>   drivers/thermal/db8500_thermal.c |  5 ++---
->>   drivers/usb/phy/phy-ab8500-usb.c | 10 ++++++----
->>   9 files changed, 60 insertions(+), 28 deletions(-)
->
-> Is there a reason for bundling the changes in all of these subsystems
-> together into a single patch?
->
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |adotfive@gmail.com
 
-No, I understand this needs to be split. Since I was not 100% confident
-about this change, I wanted LinusW to review and provide feedback and
-gets things working before I can split this changes. I must have added
-RFC, but usually it gets ignored :)
+--- Comment #12 from Alexey Dyachenko <adotfive@gmail.com> ---
+i5-5675C is affected as well (with GA-Z97-HD3 rev2.0 F9; Arch Linux). I have
+disabled Turbo Boost, as BIOS doesn't have setting for SpeedStep, C1E,C3,C6/C7
+were also disabled, however the issue still occurs.
 
-Regards,
-Sudeep
+"processor.max_cstate=0 intel_idle.max_cstate=0 idle=poll" does not help.
+
+Speaking of instructions these CPUs are indeed affected by HLE bug
+
+Program received signal SIGSEGV, Segmentation fault.
+0x00007ffff6b877e0 in __lll_unlock_elision () from /usr/lib/libpthread.so.0
+
+Thinking its some instruction that causes MCE, I recompiled glibc without
+elision lock and with -march=ivybridge and installed linux-ck-ivybridge,
+however machine still hangs under load (like compiling glibc).
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
