@@ -1,72 +1,69 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH 13/17] net: gianfar: remove misuse of IRQF_NO_SUSPEND flag
-Date: Tue, 22 Sep 2015 16:09:48 +0100
-Message-ID: <56016F3C.2070704@arm.com>
-References: <1442850433-5903-1-git-send-email-sudeep.holla@arm.com>
- <1442850433-5903-14-git-send-email-sudeep.holla@arm.com>
- <BY2PR0301MB072700F43F00CFC273FED1B59C460@BY2PR0301MB0727.namprd03.prod.outlook.com>
- <alpine.DEB.2.11.1509211848510.5606@nanos>
- <BY2PR0301MB072767325C2CBDB3D5CA8E1A9C450@BY2PR0301MB0727.namprd03.prod.outlook.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v3 0/5] power/reset: at91: cleanups and slow clock
+Date: Tue, 22 Sep 2015 17:13:35 +0200
+Message-ID: <20150922151335.GA2533@earth>
+References: <1439284370-13803-1-git-send-email-alexandre.belloni@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <BY2PR0301MB072767325C2CBDB3D5CA8E1A9C450@BY2PR0301MB0727.namprd03.prod.outlook.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Manoil Claudiu <claudiu.manoil@freescale.com>, Thomas Gleixner <tglx@linutronix.de>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "David S. Miller" <davem@davemloft.net>, Kevin Hao <haokexin@gmail.com>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="mP3DRpeJDSE+ciuQ"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:43764 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754464AbbIVPNj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 22 Sep 2015 11:13:39 -0400
+Content-Disposition: inline
+In-Reply-To: <1439284370-13803-1-git-send-email-alexandre.belloni@free-electrons.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, Maxime Ripard <maxime.ripard@free-electrons.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
 
+--mP3DRpeJDSE+ciuQ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On 22/09/15 15:04, Manoil Claudiu wrote:
->> -----Original Message-----
->> From: Thomas Gleixner [mailto:tglx@linutronix.de]
+Hi,
 
-[...]
-
->>> on PPC architectures, the flag did the job.  When did this change? Since
->>> when using IRQF_NO_SUSPEND is a "misuse"?
->>
->> It always was. Simply because IRQF_NO_SUSPEND has absolutely nothing
->> to do with wakeup interrupt sources. It's a flag which excludes the
->> interrupt from the suspend mechanism, but it does not flag it a wakeup
->> source.
->>
+On Tue, Aug 11, 2015 at 11:12:45AM +0200, Alexandre Belloni wrote:
+> As discussed this series is now removing non DT initialization, allowing to
+> compile the drivers as modules and finally adding slow clock support to the
+> drivers.
 >
-> I'm seeing also a "powerpc: mpic" patch in the series, unfortunately I can't
-
-Yes I think that was a redundant code, so I removed it. IIRC it was
-setting IRQF_NO_SUSPEND in irq_set_wake callback which again is incorrect.
-
-> afford to test it right now. However I ran a quick test with this gianfar patch
-> in isolation on a powerpc system, and seen some difference in the behavior
-> (with and w/o the patch).  In both cases the system wakes up from standby
-> by magic packet.  However, without the IRQF_NO_SUSPEND flag 2 wake-up
-> interrupts are reported in /proc/interrupts for one magic packet; with the
-
-OK that's interesting, will have check if I have similar behavior on my
-setup too.
-
-> flag on there's just 1 interrupt.  Maybe this is not relevant, maybe the
-> "powerpc: mpic" patch from this series changes this behavior.
-
-Hmm not sure, but better to test it together if possible. If required we
-can reorder for bisect-ability reasons.
-
-> But if this is the API, what can I say? We'll see in time.  Btw, enable_irq_wake()
-> returns an error code, normally it should be handled by printing a warning
-> message at least, right?  But since most drivers don't handle that, I'm assuming
-> it should be left unhandled to avoid overcomplicating things.
-
-Yes I left it so that I can add if the maintainer insist and not churn
-too much code adding warning.
-
-> FWIW
-> Acked-by: Claudiu Manoil <claudiu.manoil@freescale.com>
+> [...]
 >
+>   power/reset: at91-reset: remove useless at91_reset_platform_probe()
+>   power/reset: at91-reset: allow compiling as a module
+>   power/reset: at91-reset: get and use slow clock
+>   power/reset: at91-poweroff: allow compiling as a module
+>   power/reset: at91-poweroff: get and use slow clock
 
-Thanks.
+Thanks, queued for 4.4. You may want to add another patch adding
 
-Regards,
-Sudeep
+MODULE_DEVICE_TABLE(of, xxx_of_match);
+
+-- Sebastian
+
+--mP3DRpeJDSE+ciuQ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJWAXAbAAoJENju1/PIO/qanJYP/j6srEDRzqhbNIcre4gjvZu6
+X961nnwA9FdP8fdztlzA6XpAi6AtUVz3qjBrvbbzjJcvdP/dRpKMy5T2sAlXy6Rs
+ZwiGErO0CbfyNai7A/4UWbGEIIw3lt3p0mJLQpTzaAkZtNmLMbEXGAcZpB3h6NXj
+WVf9gewJY+F+SmPX+unhEMEzKJz3yuABmnwZ6b1zytqzIbulVLWiktoVytWwkbRj
+kXxS56blFTiRTjTWvXN4p1xza/dmBDveW/6gXsrRQCxsU2AtwuApJ8qMZ4Wt2Q+W
+ZIbcQgwbnY4c13ZCPKmYaJrVRj2lpsnwMyq/FViTZZPBDed2cqqnwCEjUErN6SYL
+yHM/YEXudOqQsiAtqn3Ix9gxFIhhUfzPEq1xxBj4/KClaL4Cepgj9528MxEqZj1Z
+Upbc7KQ6jXCavAmajPqXnxesGWiSA/yfmZogbVoA9C1aBHd1763P9dcVBAIMz9es
+SFJhtWkY45cHJTZVtRZEQQhyzwh6OITu6clgnYAoBNV49u7wCR6+vQV49EfxzQFQ
+C7elrz3H+/IhsjcCL68Ns56JCZKmPkuWOZoXRXOhZuoYseQzYc+PX1swM8pNg7BT
+OdFW8ZhCTMXU8xSIIbOeJrvudMUcYzAeGbQ9fwGFm8YIgzLiXgOHthGWqYncvmMd
+4VTLCZdrPWeeJyhqb/TV
+=d+8E
+-----END PGP SIGNATURE-----
+
+--mP3DRpeJDSE+ciuQ--
