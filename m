@@ -1,60 +1,73 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH 07/17] input: tegra-kbc: drop use of IRQF_NO_SUSPEND flag
-Date: Tue, 22 Sep 2015 22:08:16 +0100
-Message-ID: <20150922210632.GB3442@x1>
-References: <1442850433-5903-1-git-send-email-sudeep.holla@arm.com>
- <1442850433-5903-8-git-send-email-sudeep.holla@arm.com>
- <20150921232132.GE11284@x1>
- <CAKdAkRRWWxwWREiBiBcqBwBcZ6q0GHDgR1pyKfBXw=trP3cX_A@mail.gmail.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v2 1/3] drivers: power: twl4030_charger: fix link
+ problems when building as module
+Date: Tue, 22 Sep 2015 23:29:38 +0200
+Message-ID: <20150922212900.GB15646@earth>
+References: <1442953171-19718-1-git-send-email-marek@goldelico.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="Bn2rw/3z4jIqBvZU"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f42.google.com ([209.85.220.42]:34054 "EHLO
-	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752088AbbIVVIX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Sep 2015 17:08:23 -0400
-Received: by padhy16 with SMTP id hy16so19588238pad.1
-        for <linux-pm@vger.kernel.org>; Tue, 22 Sep 2015 14:08:23 -0700 (PDT)
+Received: from mail.kernel.org ([198.145.29.136]:52672 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934130AbbIVV3t (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 22 Sep 2015 17:29:49 -0400
 Content-Disposition: inline
-In-Reply-To: <CAKdAkRRWWxwWREiBiBcqBwBcZ6q0GHDgR1pyKfBXw=trP3cX_A@mail.gmail.com>
+In-Reply-To: <1442953171-19718-1-git-send-email-marek@goldelico.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Samuel Ortiz <sameo@linux.intel.com>
+To: Marek Belisko <marek@goldelico.com>
+Cc: dbaryshkov@gmail.com, dwmw2@infradead.org, linux-pm@vger.kernel.org, hns@goldelico.com, linux-kernel@vger.kernel.org, neilb@suse.de, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Mon, 21 Sep 2015, Dmitry Torokhov wrote:
 
-> On Mon, Sep 21, 2015 at 4:21 PM, Lee Jones <lee.jones@linaro.org> wro=
-te:
-> > The $SUBJECT is not correct.
-> >
-> >> The driver handles wakeup irq correctly using irq_set_irq_wake. Th=
-ere's
-> >> no need to use IRQF_NO_SUSPEND while registering the interrupt.
-> >>
-> >> This patch removes the use of IRQF_NO_SUSPEND flag.
-> >>
-> >> Cc: Samuel Ortiz <sameo@linux.intel.com>
-> >> Cc: Lee Jones <lee.jones@linaro.org>
-> >> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-> >> ---
-> >>  drivers/mfd/qcom_rpm.c | 2 +-
-> >>  1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > ... code is fine though:
-> >
-> > Acked-by: Lee Jones <lee.jones@linaro.org>
-> >
-> > Please re-submit with the subject line fixed.
+--Bn2rw/3z4jIqBvZU
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Marek,
+
+On Tue, Sep 22, 2015 at 10:19:29PM +0200, Marek Belisko wrote:
+> If either twl4030_charger or twl4030_madc is configured as MODULE,
+> we get build (link) errors.
 >=20
-> What's wrong with the subject?
+> To solve, the direct call of twl4030_get_madc_conversion() is replaced
+> by a call to iio_read_channel_processed().
+>
+> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
+> Signed-off-by: Marek Belisko <marek@goldelico.com>
+> ---
+> changes from V1: added missing iio_channel_release + document and add new=
+ DT bindings
 
-This patch has nothing to do with Input and the first word of the
-explanatory sentence should start with an uppercase character.
+That was fast :) Patchset looks fine to me except for one last
+thing: Let's make the iio-channel optional, so that old DT blobs
+are still supported. Also the IS_REACHABLE(CONFIG_TWL4030_MADC)
+check can be removed, it should no longer be needed with
+iio_read_channel_processed().
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+-- Sebastian
+
+--Bn2rw/3z4jIqBvZU
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJWAcgZAAoJENju1/PIO/qaJn4QAJQVkPeQMwlPmqqcjCuC+pC7
+r0KH63HVGJGbNlaqNCHn0rSSv0F0UbKjJKZ1tyM4bYrFTPJChSEnNS7mc30m5stO
+8AQ4JZZNQd5YP4/RRgQf85dHBH16CN0hlL3v2VPnAKbs9+7w6mkC/kXvqSXoPftE
+XNn0FT5byFQhCxE3i1EBcggijhmUqAyfycJQsakzjOX2QORFblhvP7Jih/7n6OdR
+9PicTYvHbAdBP4FR4Gg54NpbdLooeOlKhKuF90IuaqMr89K1tn1oHaK8Z2Lab0pq
+ice+7U4d7M73lalsNS6qLw6N8TG6RnNfdtgNLqzQYuxsWPvzE7M3bz/g2VrtQK/F
+1H6q2ff7+3iZm3wokFRTAk1e7/1HeBA0jWqjcRLJ7Kl0w08Msv/Cs5ZiiwBHFGpg
+esDqTASWhHptMoVHjV9C3WBGe/805h0DhpiijnQCA280qaACh10xf2mUwdW/MRaD
+U1rn47+ySYP7d3JaAnLnB3hL01cE7Fc2wbQwHGvukseHCsIQI4b+VrZArPFNXI15
+ZD3Jpdi+W5BuCoadYlTpcKLnSas6A4Y/JXuUAZvxf8MWdq/xLXMOh1ue7sUFATWA
+nww3WNG/Qh47lzkRs8dUr+6FL+/hUVI02uSV40c/CtQtF8CgoMtMD7Rv7WGVXQ1p
+dwFJbWLfH3zYM+w7PAqY
+=jM4l
+-----END PGP SIGNATURE-----
+
+--Bn2rw/3z4jIqBvZU--
