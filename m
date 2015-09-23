@@ -1,56 +1,67 @@
 From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH 07/17] input: tegra-kbc: drop use of IRQF_NO_SUSPEND flag
-Date: Wed, 23 Sep 2015 09:53:48 +0100
-Message-ID: <5602689C.30000@arm.com>
+Subject: Re: [PATCH 17/17] mfd : ab8500/db8500: fix the abuse of
+ IRQF_NO_SUSPEND
+Date: Wed, 23 Sep 2015 10:44:07 +0100
+Message-ID: <56027467.1020803@arm.com>
 References: <1442850433-5903-1-git-send-email-sudeep.holla@arm.com>
- <1442850433-5903-8-git-send-email-sudeep.holla@arm.com>
- <20150921232132.GE11284@x1>
- <CAKdAkRRWWxwWREiBiBcqBwBcZ6q0GHDgR1pyKfBXw=trP3cX_A@mail.gmail.com>
- <20150922210632.GB3442@x1>
+ <1442850433-5903-18-git-send-email-sudeep.holla@arm.com>
+ <20150921232027.GD11284@x1> <560127BE.9030604@arm.com>
+ <20150922210322.GA3442@x1>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150922210632.GB3442@x1>
+In-Reply-To: <20150922210322.GA3442@x1>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Samuel Ortiz <sameo@linux.intel.com>
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linus Walleij <linus.walleij@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
 
 
-On 22/09/15 22:08, Lee Jones wrote:
-> On Mon, 21 Sep 2015, Dmitry Torokhov wrote:
->
->> On Mon, Sep 21, 2015 at 4:21 PM, Lee Jones <lee.jones@linaro.org> wrote:
->>> The $SUBJECT is not correct.
+On 22/09/15 22:03, Lee Jones wrote:
+> On Tue, 22 Sep 2015, Sudeep Holla wrote:
+>> On 22/09/15 00:20, Lee Jones wrote:
+>>> On Mon, 21 Sep 2015, Sudeep Holla wrote:
 >>>
->>>> The driver handles wakeup irq correctly using irq_set_irq_wake. There's
->>>> no need to use IRQF_NO_SUSPEND while registering the interrupt.
+>>>> The IRQF_NO_SUSPEND flag is used to identify the interrupts that should
+>>>> be left enabled so as to allow them to work as expected during the
+>>>> suspend-resume cycle, but doesn't guarantee that it will wake the system
+>>> >from a suspended state, enable_irq_wake is recommended to be used for
+>>>> the wakeup.
 >>>>
->>>> This patch removes the use of IRQF_NO_SUSPEND flag.
+>>>> This patch removes the use of IRQF_NO_SUSPEND flags replacing it with
+>>>> enable_irq_wake instead.
 >>>>
->>>> Cc: Samuel Ortiz <sameo@linux.intel.com>
->>>> Cc: Lee Jones <lee.jones@linaro.org>
+>>>> Cc: Linus Walleij <linus.walleij@linaro.org>
+>>>> Cc: linux-arm-kernel@lists.infradead.org
 >>>> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 >>>> ---
->>>>   drivers/mfd/qcom_rpm.c | 2 +-
->>>>   1 file changed, 1 insertion(+), 1 deletion(-)
+>>>>   drivers/mfd/ab8500-core.c        | 11 +++++++++--
+>>>>   drivers/mfd/ab8500-debugfs.c     |  2 +-
+>>>>   drivers/mfd/ab8500-gpadc.c       | 15 +++++++++++----
+>>>>   drivers/mfd/db8500-prcmu.c       | 24 +++++++++++++++++-------
+>>>>   drivers/power/ab8500_btemp.c     |  6 ++++--
+>>>>   drivers/power/ab8500_charger.c   |  6 ++++--
+>>>>   drivers/power/ab8500_fg.c        |  9 ++++++---
+>>>>   drivers/thermal/db8500_thermal.c |  5 ++---
+>>>>   drivers/usb/phy/phy-ab8500-usb.c | 10 ++++++----
+>>>>   9 files changed, 60 insertions(+), 28 deletions(-)
 >>>
->>> ... code is fine though:
+>>> Is there a reason for bundling the changes in all of these subsystems
+>>> together into a single patch?
 >>>
->>> Acked-by: Lee Jones <lee.jones@linaro.org>
->>>
->>> Please re-submit with the subject line fixed.
 >>
->> What's wrong with the subject?
+>> No, I understand this needs to be split. Since I was not 100% confident
+>> about this change, I wanted LinusW to review and provide feedback and
+>> gets things working before I can split this changes. I must have added
+>> RFC, but usually it gets ignored :)
 >
-> This patch has nothing to do with Input and the first word of the
-> explanatory sentence should start with an uppercase character.
+> Best if Linus reviews the correct patch-set.  Please split and
+> resubmit.
 >
-
-Ah my stupid mistake, I didn't realize it. Sorry for the noise, will
-fix it and send.
+Sure, but would like to get some feedback before I proceed just to
+ensure my understanding is correct.
 
 Regards,
 Sudeep
