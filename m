@@ -1,32 +1,50 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH v5 1/6] power: bq27x00_battery: Renaming for consistency
-Date: Tue, 22 Sep 2015 18:07:35 -0700
-Message-ID: <20150923010735.GD23801@atomide.com>
-References: <1442950511-16122-1-git-send-email-afd@ti.com>
- <1442950511-16122-2-git-send-email-afd@ti.com>
- <20150922210028.GA15646@earth>
+From: Wang Dongsheng <Dongsheng.Wang@freescale.com>
+Subject: RE: [PATCH 04/17] powerpc: mpic: use IRQCHIP_SKIP_SET_WAKE instead of
+ redundant mpic_irq_set_wake
+Date: Wed, 23 Sep 2015 02:35:51 +0000
+Message-ID: <SN1PR0301MB1616AD6C1C410ACB49A5D9279D440@SN1PR0301MB1616.namprd03.prod.outlook.com>
+References: <1442850433-5903-1-git-send-email-sudeep.holla@arm.com>
+	 <1442850433-5903-5-git-send-email-sudeep.holla@arm.com>
+ <1442965805.19102.303.camel@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:53458 "EHLO muru.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759787AbbIWBHk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 22 Sep 2015 21:07:40 -0400
-Content-Disposition: inline
-In-Reply-To: <20150922210028.GA15646@earth>
+Received: from mail-bl2on0107.outbound.protection.outlook.com ([65.55.169.107]:35008
+	"EHLO na01-bl2-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753075AbbIWCfy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 22 Sep 2015 22:35:54 -0400
+In-Reply-To: <1442965805.19102.303.camel@freescale.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Guan Xuetao <gxt@mprc.pku.edu.cn>, "Andrew F. Davis" <afd@ti.com>, Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Scott Wood <scottwood@freescale.com>, Sudeep Holla <sudeep.holla@arm.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Hongtao Jia <hongtao.jia@freescale.com>, Marc Zyngier <marc.zyngier@arm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 
-* Sebastian Reichel <sre@kernel.org> [150922 14:04]:
-> Hi Tony and Guan,
-> 
-> I plan to merge the following patch, which changes
-> CONFIG_BATTERY_BQ27x00 to CONFIG_BATTERY_BQ27xxx.
-> This includes changes to omap2plus_defconfig and
-> unicore32. Can you Ack this patch?
-
-For omap2plus_defconfig:
-
-Acked-by: Tony Lindgren <tony@atomide.com>
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogV2VkbmVzZGF5LCBTZXB0ZW1iZXIgMjMsIDIwMTUgNzo1MCBBTQ0KPiBUbzog
+U3VkZWVwIEhvbGxhDQo+IENjOiBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWtlcm5l
+bEB2Z2VyLmtlcm5lbC5vcmc7IFRob21hcyBHbGVpeG5lcjsNCj4gUmFmYWVsIEouIFd5c29ja2k7
+IEJlbmphbWluIEhlcnJlbnNjaG1pZHQ7IFBhdWwgTWFja2VycmFzOyBNaWNoYWVsIEVsbGVybWFu
+OyBKaWENCj4gSG9uZ3Rhby1CMzg5NTE7IE1hcmMgWnluZ2llcjsgbGludXhwcGMtZGV2QGxpc3Rz
+Lm96bGFicy5vcmc7IFdhbmcgRG9uZ3NoZW5nLQ0KPiBCNDA1MzQNCj4gU3ViamVjdDogUmU6IFtQ
+QVRDSCAwNC8xN10gcG93ZXJwYzogbXBpYzogdXNlIElSUUNISVBfU0tJUF9TRVRfV0FLRSBpbnN0
+ZWFkIG9mDQo+IHJlZHVuZGFudCBtcGljX2lycV9zZXRfd2FrZQ0KPiANCj4gT24gTW9uLCAyMDE1
+LTA5LTIxIGF0IDE2OjQ3ICswMTAwLCBTdWRlZXAgSG9sbGEgd3JvdGU6DQo+ID4gbXBpY19pcnFf
+c2V0X3dha2UgcmV0dXJuIC1FTlhJTyBmb3Igbm9uIEZTTCBNUElDIGFuZCBzZXRzIElSUUZfTk9f
+U1VTUEVORA0KPiA+IGZsYWcgZm9yIEZTTCBvbmVzLiBlbmFibGVfaXJxX3dha2UgYWxyZWFkeSBy
+ZXR1cm5zIC1FTlhJTyBpZiBpcnFfc2V0X3dhaw0KPiA+IGlzIG5vdCBpbXBsZW1lbnRlZC4gQWxz
+byB0aGVyZSdzIG5vIG5lZWQgdG8gc2V0IHRoZSBJUlFGX05PX1NVU1BFTkQgZmxhZw0KPiA+IGFz
+IGl0IGRvZXNuJ3QgZ3VhcmFudGVlIHdha2V1cCBmb3IgdGhhdCBpbnRlcnJ1cHQuDQo+ID4NCg0K
+Tm9uLWZyZWVzY2FsZSByZXR1cm4gLUVOWElPLCBpcyB0aGVyZSBhbnkgaXNzdWU/IElmIG5vbi1m
+cmVlc2NhbGUgcGxhdGZvcm0gZG9lcw0Kbm90IHN1cHBvcnQgaXQsIGJ1dCBJUHMgc3RpbGwgdXNl
+IGVuYWJsZS9kaXNhYmxlX2lycV93YWtlLCB3ZSBzaG91bGQgcmV0dXJuIGEgZXJyb3IgbnVtYmVy
+Lg0KDQpJUlFDSElQX1NLSVBfU0VUX1dBS0UganVzdCBza2lwIHRoaXMgZmVhdHVyZSwgdGhpcyBp
+cyBub3Qgb3VyIGV4cGVjdGVkLg0KSWYgbm9uLWZyZWVzY2FsZSBwbGF0Zm9ybSBuZWVkIHRoaXMg
+ZmxhZyB0byBza2lwIHRoaXMgZmVhdHVyZSwgaXQgc2hvdWxkIGJlIGFkZA0KaW4gc2VsZiBwbGF0
+Zm9ybS4NCg0KQFNjb3R0Og0KSWYgc2V0IHRoaXMgZmxhZyB3ZSBjYW5ub3Qga2VlcCBhIGlycSBh
+cyBhIHdha2V1cCBzb3VyY2Ugd2hlbiBzeXN0ZW0gZ29pbmcgdG8NClNVU1BFTkQgb3IgTUVNLg0K
+DQppcnFfc2V0X3dha2UoKSBtZWFucyB3ZSBjYW4gc2V0IHRoaXMgaXJxIGFzIGEgd2FrZSBzb3Vy
+Y2UuDQpJUlFDSElQX1NLSVBfU0VUX1dBS0UgaXMgaWdub3JlIGlycV9zZXRfd2FrZSgpIGZlYXR1
+cmUuDQoNClJlZ2FyZHMsDQotRG9uZ3NoZW5nDQoNCg==
