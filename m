@@ -1,78 +1,65 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: RE: [PATCH 04/17] powerpc: mpic: use IRQCHIP_SKIP_SET_WAKE instead
- of redundant mpic_irq_set_wake
-Date: Wed, 23 Sep 2015 10:00:24 +0200 (CEST)
-Message-ID: <alpine.DEB.2.11.1509230958300.4371@nanos>
-References: <1442850433-5903-1-git-send-email-sudeep.holla@arm.com>  <1442850433-5903-5-git-send-email-sudeep.holla@arm.com> <1442965805.19102.303.camel@freescale.com> <SN1PR0301MB1616AD6C1C410ACB49A5D9279D440@SN1PR0301MB1616.namprd03.prod.outlook.com>
- <alpine.DEB.2.11.1509230545580.5606@nanos> <SN1PR0301MB1616CF7415825908030E0C829D440@SN1PR0301MB1616.namprd03.prod.outlook.com>
+From: Laurentiu Palcu <laurentiu.palcu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v5 01/11] dt: power: bq24257-charger: Cover additional
+ devices
+Date: Wed, 23 Sep 2015 11:14:56 +0300
+Message-ID: <20150923081456.GC15509@lpalcu-desk>
+References: <1442612399-341-1-git-send-email-dannenberg@ti.com>
+ <1442612399-341-2-git-send-email-dannenberg@ti.com>
+ <20150922162448.GE4235@earth>
+ <20150922215823.GA30297@beast>
+ <20150923003414.GB4359@earth>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <SN1PR0301MB1616CF7415825908030E0C829D440@SN1PR0301MB1616.namprd03.prod.outlook.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Wang Dongsheng <Dongsheng.Wang@freescale.com>
-Cc: Scott Wood <scottwood@freescale.com>, Sudeep Holla <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Hongtao Jia <hongtao.jia@freescale.com>, Marc Zyngier <marc.zyngier@arm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20150923003414.GB4359@earth>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Ramakrishna Pallala <ramakrishna.pallala-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 23 Sep 2015, Wang Dongsheng wrote:
-> > -----Original Message-----
-> > From: linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-
-> > owner@vger.kernel.org] On Behalf Of Thomas Gleixner
-> > Sent: Wednesday, September 23, 2015 11:49 AM
-> > To: Wang Dongsheng-B40534
-> > Cc: Wood Scott-B07421; Sudeep Holla; linux-pm@vger.kernel.org; linux-
-> > kernel@vger.kernel.org; Rafael J. Wysocki; Benjamin Herrenschmidt; Paul
-> > Mackerras; Michael Ellerman; Jia Hongtao-B38951; Marc Zyngier; linuxppc-
-> > dev@lists.ozlabs.org
-> > Subject: RE: [PATCH 04/17] powerpc: mpic: use IRQCHIP_SKIP_SET_WAKE instead of
-> > redundant mpic_irq_set_wake
+Hi,
 
-Can you please fix you mail client to get rid of that silly copy of
-the mail header?
-
-> > On Wed, 23 Sep 2015, Wang Dongsheng wrote:
-> > > > On Mon, 2015-09-21 at 16:47 +0100, Sudeep Holla wrote:
-> > > > > mpic_irq_set_wake return -ENXIO for non FSL MPIC and sets IRQF_NO_SUSPEND
-> > > > > flag for FSL ones. enable_irq_wake already returns -ENXIO if irq_set_wak
-> > > > > is not implemented. Also there's no need to set the IRQF_NO_SUSPEND flag
-> > > > > as it doesn't guarantee wakeup for that interrupt.
-> > > > >
-> > >
-> > > Non-freescale return -ENXIO, is there any issue? If non-freescale
-> > > platform does not support it, but IPs still use
-> > > enable/disable_irq_wake, we should return a error number.
-> > 
-> > You can just set IRQCHIP_SKIP_SET_WAKE for FSL chips and not for the
-> > others.
-> > 
-> > > @Scott:
-> > > If set this flag we cannot keep a irq as a wakeup source when system going to
-> > > SUSPEND or MEM.
-> > >
-> > > irq_set_wake() means we can set this irq as a wake source.
-> > > IRQCHIP_SKIP_SET_WAKE is ignore irq_set_wake() feature.
-> > 
-> > Nonsense. IRQCHIP_SKIP_SET_WAKE merily tells the core not to bail on
-> > !chip->irq_set_wake(), but its still marking the interrupt as wakeup
-> > source and therefor not masking it on suspend.
-> > 
+On Wed, Sep 23, 2015 at 02:34:15AM +0200, Sebastian Reichel wrote:
+> Hi,
 > 
-> Sorry, I just check irq_set_irq_wake() code, right, IRQCHIP_SKIP_SET_WAKE also can
-> going to irqd_set to mask IRQD_WAKEUP_STATE.
+> On Tue, Sep 22, 2015 at 04:58:24PM -0500, Andreas Dannenberg wrote:
+> > On Tue, Sep 22, 2015 at 06:24:48PM +0200, Sebastian Reichel wrote:
+> > > On Fri, Sep 18, 2015 at 04:39:49PM -0500, Andreas Dannenberg wrote:
+> > > > Extend the bq24257 charger's device tree documentation to cover the
+> > > > bq24250 and bq24251 devices as well feature additions.
+> > > 
+> > > The binding looks fine to except for:
+> > > 
+> > > > +- stat-gpios: GPIO used for the devices STAT_IN pin. Alternatively the pin can
+> > > > +    also be defined through the standard interrupt definition properties (see
+> > > > +    optional properties section below). Only use one method.
+> > > 
+> > > Why do you expose two ways for this?
+> > 
+> > Hi Sebastian. The original driver exposed this - it just didn't
+> > document it in the DT binding doc. I'm not sure why this was introduced
+> > in the first place (Laurentiu?). I know we can't change the API but
+> > since it was never documented maybe we can remove it?
 > 
-> Yes, this flag just skip the irq_set_wake() not this feature.
+> It seems this is neither documented, nor used. So I guess it can be
+> removed. Let's wait for feedback from Laurentiu, though.
+This was needed to have both ACPI and DT enumeration work. At the time I
+wrote the driver, GpioInt resources in ACPI were not passed to the
+driver in client->irq, as opposed to DT enumeration.
 
-And just for completeness. That commit 5ff04b7287d87c 'powerpc/mpic:
-add irq_set_wake support' is another example of trainwreck engineering.
+However, conveniently enough, the patch below landed in master by the
+same time bq24257 driver went in. So, I believe it should be safe now to
+remove the stat-gpio probing.
 
-    desc->action->flags |= IRQF_NO_SUSPEND;
+commit 845c877009cf014b971aab7f54613f9185a824b0
+Author: Mika Westerberg <mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Date:   Wed May 6 13:29:08 2015 +0300
 
-This is not only horribly avoiding any of the existing APIs, it's also
-broken as hell. desc->action can be NULL when that is called.
+    i2c / ACPI: Assign IRQ for devices that have GpioInt automatically
 
-It seems fleascale is hell bent to fiddle with the guts of the core
-code mindlessly. See commit c866cda47f2c
-
-Yours grumpy
-
-      tglx
+laurentiu
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
