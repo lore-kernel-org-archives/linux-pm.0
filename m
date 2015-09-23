@@ -1,50 +1,65 @@
-From: Wang Dongsheng <Dongsheng.Wang@freescale.com>
-Subject: RE: [PATCH 04/17] powerpc: mpic: use IRQCHIP_SKIP_SET_WAKE instead of
- redundant mpic_irq_set_wake
-Date: Wed, 23 Sep 2015 02:35:51 +0000
-Message-ID: <SN1PR0301MB1616AD6C1C410ACB49A5D9279D440@SN1PR0301MB1616.namprd03.prod.outlook.com>
-References: <1442850433-5903-1-git-send-email-sudeep.holla@arm.com>
-	 <1442850433-5903-5-git-send-email-sudeep.holla@arm.com>
- <1442965805.19102.303.camel@freescale.com>
+From: Oliver Neukum <oneukum@suse.de>
+Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing
+ runtime suspend
+Date: Wed, 23 Sep 2015 05:03:14 +0200
+Message-ID: <1442977394.8607.8.camel@suse.de>
+References: <Pine.LNX.4.44L0.1509221116430.1742-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bl2on0107.outbound.protection.outlook.com ([65.55.169.107]:35008
-	"EHLO na01-bl2-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753075AbbIWCfy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 22 Sep 2015 22:35:54 -0400
-In-Reply-To: <1442965805.19102.303.camel@freescale.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1509221116430.1742-100000@iolanthe.rowland.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Irina Tirdea <irina.tirdea@intel.com>, Len Brown <len.brown@intel.com>, Octavian Purdila <octavian.purdila@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Scott Wood <scottwood@freescale.com>, Sudeep Holla <sudeep.holla@arm.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Hongtao Jia <hongtao.jia@freescale.com>, Marc Zyngier <marc.zyngier@arm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogV2VkbmVzZGF5LCBTZXB0ZW1iZXIgMjMsIDIwMTUgNzo1MCBBTQ0KPiBUbzog
-U3VkZWVwIEhvbGxhDQo+IENjOiBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWtlcm5l
-bEB2Z2VyLmtlcm5lbC5vcmc7IFRob21hcyBHbGVpeG5lcjsNCj4gUmFmYWVsIEouIFd5c29ja2k7
-IEJlbmphbWluIEhlcnJlbnNjaG1pZHQ7IFBhdWwgTWFja2VycmFzOyBNaWNoYWVsIEVsbGVybWFu
-OyBKaWENCj4gSG9uZ3Rhby1CMzg5NTE7IE1hcmMgWnluZ2llcjsgbGludXhwcGMtZGV2QGxpc3Rz
-Lm96bGFicy5vcmc7IFdhbmcgRG9uZ3NoZW5nLQ0KPiBCNDA1MzQNCj4gU3ViamVjdDogUmU6IFtQ
-QVRDSCAwNC8xN10gcG93ZXJwYzogbXBpYzogdXNlIElSUUNISVBfU0tJUF9TRVRfV0FLRSBpbnN0
-ZWFkIG9mDQo+IHJlZHVuZGFudCBtcGljX2lycV9zZXRfd2FrZQ0KPiANCj4gT24gTW9uLCAyMDE1
-LTA5LTIxIGF0IDE2OjQ3ICswMTAwLCBTdWRlZXAgSG9sbGEgd3JvdGU6DQo+ID4gbXBpY19pcnFf
-c2V0X3dha2UgcmV0dXJuIC1FTlhJTyBmb3Igbm9uIEZTTCBNUElDIGFuZCBzZXRzIElSUUZfTk9f
-U1VTUEVORA0KPiA+IGZsYWcgZm9yIEZTTCBvbmVzLiBlbmFibGVfaXJxX3dha2UgYWxyZWFkeSBy
-ZXR1cm5zIC1FTlhJTyBpZiBpcnFfc2V0X3dhaw0KPiA+IGlzIG5vdCBpbXBsZW1lbnRlZC4gQWxz
-byB0aGVyZSdzIG5vIG5lZWQgdG8gc2V0IHRoZSBJUlFGX05PX1NVU1BFTkQgZmxhZw0KPiA+IGFz
-IGl0IGRvZXNuJ3QgZ3VhcmFudGVlIHdha2V1cCBmb3IgdGhhdCBpbnRlcnJ1cHQuDQo+ID4NCg0K
-Tm9uLWZyZWVzY2FsZSByZXR1cm4gLUVOWElPLCBpcyB0aGVyZSBhbnkgaXNzdWU/IElmIG5vbi1m
-cmVlc2NhbGUgcGxhdGZvcm0gZG9lcw0Kbm90IHN1cHBvcnQgaXQsIGJ1dCBJUHMgc3RpbGwgdXNl
-IGVuYWJsZS9kaXNhYmxlX2lycV93YWtlLCB3ZSBzaG91bGQgcmV0dXJuIGEgZXJyb3IgbnVtYmVy
-Lg0KDQpJUlFDSElQX1NLSVBfU0VUX1dBS0UganVzdCBza2lwIHRoaXMgZmVhdHVyZSwgdGhpcyBp
-cyBub3Qgb3VyIGV4cGVjdGVkLg0KSWYgbm9uLWZyZWVzY2FsZSBwbGF0Zm9ybSBuZWVkIHRoaXMg
-ZmxhZyB0byBza2lwIHRoaXMgZmVhdHVyZSwgaXQgc2hvdWxkIGJlIGFkZA0KaW4gc2VsZiBwbGF0
-Zm9ybS4NCg0KQFNjb3R0Og0KSWYgc2V0IHRoaXMgZmxhZyB3ZSBjYW5ub3Qga2VlcCBhIGlycSBh
-cyBhIHdha2V1cCBzb3VyY2Ugd2hlbiBzeXN0ZW0gZ29pbmcgdG8NClNVU1BFTkQgb3IgTUVNLg0K
-DQppcnFfc2V0X3dha2UoKSBtZWFucyB3ZSBjYW4gc2V0IHRoaXMgaXJxIGFzIGEgd2FrZSBzb3Vy
-Y2UuDQpJUlFDSElQX1NLSVBfU0VUX1dBS0UgaXMgaWdub3JlIGlycV9zZXRfd2FrZSgpIGZlYXR1
-cmUuDQoNClJlZ2FyZHMsDQotRG9uZ3NoZW5nDQoNCg==
+On Tue, 2015-09-22 at 11:22 -0400, Alan Stern wrote:
+> On Tue, 22 Sep 2015, Oliver Neukum wrote:
+>  
+> > Cancel, yes, going to low power is a consequence which needn't bother
+> > the power subsystem.
+> 
+> Going to low power needn't involve the power subsystem?  That sounds 
+> weird.
+
+Think of it like rfkill. It makes sense to suspend an rfkilled device.
+It still is the job of the driver to report that its device is idle.
+
+> >  You need a callback. If there are spurious
+> > events, the current heuristics will keep devices awake.
+> > You must discard them anyway, as they are spurious. There's no point
+> > in transporting over the bus at all. We can cease IO for input.
+> > 
+> > > This would create a parallel runtime-PM mechanism which is independent
+> > > of the existing one.  Is that really a good idea?
+> > 
+> > It isn't strictly PM. It helps PM to do a better job, but
+> > conceptually it is independent.
+> 
+> So my next question is: _How_ can this help PM to do a better job?  
+> That is, what are the mechanisms?
+
+"inhibit" -> driver stops input -> driver sets PM count to zero
+-> PM subsystem acts
+
+To go from the first to the second step a callback is needed
+
+> One you have already stated: Lack of spurious events will help prevent 
+> unwanted wakeups (or unwanted failures to go to sleep).
+
+That too. We also save CPU cycles.
+
+> But Dmitry made a stronger claim: Inhibiting an input device should 
+> allow the device to go to low power.  I would like to know how we can 
+> implement this cleanly.  The most straightforward approach is to use 
+> runtime PM, but it's not obvious how this can be made to work with the 
+> current API.
+
+Yes, we can use the current API.
+The key is that you think of the mechanism as induced idleness,
+not forced suspend. We already have a perfectly working mechanism
+for suspending idle devices.
+
+	Regards
+		Oliver
