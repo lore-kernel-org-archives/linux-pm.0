@@ -1,59 +1,56 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH 08/17] hwmon: abx500: drop the use of IRQF_NO_SUSPEND
-Date: Wed, 23 Sep 2015 08:32:57 -0700
-Message-ID: <5602C629.3080109@roeck-us.net>
-References: <1442850433-5903-1-git-send-email-sudeep.holla@arm.com>
- <1442850433-5903-9-git-send-email-sudeep.holla@arm.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v5 0/6] Add support for additional bq27xxx devices
+Date: Wed, 23 Sep 2015 18:42:18 +0200
+Message-ID: <20150923164217.GA27606@earth>
+References: <1442950511-16122-1-git-send-email-afd@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:41168 "EHLO
-	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753832AbbIWPdD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Sep 2015 11:33:03 -0400
-In-Reply-To: <1442850433-5903-9-git-send-email-sudeep.holla@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="PEIAKu/WMn1b1Hv9"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1442950511-16122-1-git-send-email-afd@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Andrew F. Davis" <afd@ti.com>
+Cc: Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jean Delvare <jdelvare@suse.com>, lm-sensors@lm-sensors.org
 
-On 09/21/2015 08:47 AM, Sudeep Holla wrote:
-> The description in the driver states: "ABX500 does not provide auto ADC,
-> so to monitor the required temperatures, a periodic work is used. It is
-> more important to not wake up the CPU... If the chip gets too hot during
-> a sleep state it's most likely due to external factors, such as the
-> surrounding temperature and nothing can be done in S/W."
->
-> So it makes no sense to keep IRQs enabled as it need not be wakeup
-> source. This patch removes the use of IRQF_NO_SUSPEND flag
->
-> Cc: Jean Delvare <jdelvare@suse.com>
-> Cc: Guenter Roeck <linux@roeck-us.net>
-> Cc: lm-sensors@lm-sensors.org
-> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 
-Applied to hwmon-next.
+--PEIAKu/WMn1b1Hv9
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Thanks,
-Guenter
+Hi Andrew,
 
-> ---
->   drivers/hwmon/abx500.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/hwmon/abx500.c b/drivers/hwmon/abx500.c
-> index 6cb89c0ebab6..dcab258f60c1 100644
-> --- a/drivers/hwmon/abx500.c
-> +++ b/drivers/hwmon/abx500.c
-> @@ -377,7 +377,7 @@ static int setup_irqs(struct platform_device *pdev)
->   	}
->
->   	ret = devm_request_threaded_irq(&pdev->dev, irq, NULL,
-> -		abx500_temp_irq_handler, IRQF_NO_SUSPEND, "abx500-temp", pdev);
-> +		abx500_temp_irq_handler, 0, "abx500-temp", pdev);
->   	if (ret < 0)
->   		dev_err(&pdev->dev, "Request threaded irq failed (%d)\n", ret);
->
->
+On Tue, Sep 22, 2015 at 02:35:05PM -0500, Andrew F. Davis wrote:
+> This series adds support for several additional bq27xxx devices and
+> makes a few related fixes.
 
+Thanks, I queued all remaining patches. I wonder if this driver
+should be converted to regmap. It supports lots of chips now and
+it might be useful to get register dumps from debugfs.
+
+-- Sebastian
+
+--PEIAKu/WMn1b1Hv9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJWAtZnAAoJENju1/PIO/qaEecP/iZe36hBdFBqbKXk+afpSaOV
+94OJGPNawf0lnlJvWARwbgxjRjAe9wIp94oCDBxj7Cc3q1wuqB2KEcmVLniooOld
+/pQ35J2cGOsP3XSAQrN5WKbafP+Ioqav+ibhElilDOjwIKKDpRtvktlb22lDXdD6
+vmBe1d11YODnlNP0zdd+F43XhWx+4iCFnHwj+BJbZHVMS/DqqRB849vKfeKpzW1+
+WgDoMg5v1FN+l1x73eYj1yBlwc2ShiPQikyj4pW9iY2/mojjgUSknRiKCE3YORRB
+J37HQBTxWSLHN1t8GIZKNRmTKitf0p+C74YhidZ7RVLxNlshr3mLqEGiKQv9J9mF
+IptN4oO5siEIDgDCIy6Gn7hXN7z601VqkYjHVH4X78CoLlu2hhEkF8+9cgVc7GcM
+5MF78v4lmnsZ6NpWmjHd6SyVe7BAANlRB9b3uTYxSobgtt7+9iT3RdqvDdMHa4Eo
+oNZ5b6xIecSsljj0c36I8Fab/4qzbBPv515accEhbwTam+ArlnjyvilTYT10GFTt
+wmZWywxi0T52tbX/wW5W6A6daYHdfuqtvz4OlL74qwGR+5qsrVTlSTrrmiJkspjQ
+VOuUrKS7mcfI335u+jdZ/CH+PYtkxSB15W+kdkMT1t2hikO+a4FvPmhz78v8Yjx3
+EAk/rFciZ/0db+hKxq8I
+=vyI4
+-----END PGP SIGNATURE-----
+
+--PEIAKu/WMn1b1Hv9--
