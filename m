@@ -1,65 +1,50 @@
-From: Oliver Neukum <oneukum@suse.de>
-Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing
- runtime suspend
-Date: Wed, 23 Sep 2015 05:03:14 +0200
-Message-ID: <1442977394.8607.8.camel@suse.de>
-References: <Pine.LNX.4.44L0.1509221116430.1742-100000@iolanthe.rowland.org>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: RE: [PATCH 04/17] powerpc: mpic: use IRQCHIP_SKIP_SET_WAKE instead
+ of redundant mpic_irq_set_wake
+Date: Wed, 23 Sep 2015 05:49:10 +0200 (CEST)
+Message-ID: <alpine.DEB.2.11.1509230545580.5606@nanos>
+References: <1442850433-5903-1-git-send-email-sudeep.holla@arm.com>  <1442850433-5903-5-git-send-email-sudeep.holla@arm.com> <1442965805.19102.303.camel@freescale.com> <SN1PR0301MB1616AD6C1C410ACB49A5D9279D440@SN1PR0301MB1616.namprd03.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1509221116430.1742-100000@iolanthe.rowland.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Irina Tirdea <irina.tirdea@intel.com>, Len Brown <len.brown@intel.com>, Octavian Purdila <octavian.purdila@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from www.linutronix.de ([62.245.132.108]:44030 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752842AbbIWDtv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Sep 2015 23:49:51 -0400
+In-Reply-To: <SN1PR0301MB1616AD6C1C410ACB49A5D9279D440@SN1PR0301MB1616.namprd03.prod.outlook.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Wang Dongsheng <Dongsheng.Wang@freescale.com>
+Cc: Scott Wood <scottwood@freescale.com>, Sudeep Holla <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Hongtao Jia <hongtao.jia@freescale.com>, Marc Zyngier <marc.zyngier@arm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 
-On Tue, 2015-09-22 at 11:22 -0400, Alan Stern wrote:
-> On Tue, 22 Sep 2015, Oliver Neukum wrote:
->  
-> > Cancel, yes, going to low power is a consequence which needn't bother
-> > the power subsystem.
+On Wed, 23 Sep 2015, Wang Dongsheng wrote:
+> > On Mon, 2015-09-21 at 16:47 +0100, Sudeep Holla wrote:
+> > > mpic_irq_set_wake return -ENXIO for non FSL MPIC and sets IRQF_NO_SUSPEND
+> > > flag for FSL ones. enable_irq_wake already returns -ENXIO if irq_set_wak
+> > > is not implemented. Also there's no need to set the IRQF_NO_SUSPEND flag
+> > > as it doesn't guarantee wakeup for that interrupt.
+> > >
 > 
-> Going to low power needn't involve the power subsystem?  That sounds 
-> weird.
+> Non-freescale return -ENXIO, is there any issue? If non-freescale
+> platform does not support it, but IPs still use
+> enable/disable_irq_wake, we should return a error number.
 
-Think of it like rfkill. It makes sense to suspend an rfkilled device.
-It still is the job of the driver to report that its device is idle.
+You can just set IRQCHIP_SKIP_SET_WAKE for FSL chips and not for the
+others.
 
-> >  You need a callback. If there are spurious
-> > events, the current heuristics will keep devices awake.
-> > You must discard them anyway, as they are spurious. There's no point
-> > in transporting over the bus at all. We can cease IO for input.
-> > 
-> > > This would create a parallel runtime-PM mechanism which is independent
-> > > of the existing one.  Is that really a good idea?
-> > 
-> > It isn't strictly PM. It helps PM to do a better job, but
-> > conceptually it is independent.
+> @Scott:
+> If set this flag we cannot keep a irq as a wakeup source when system going to
+> SUSPEND or MEM.
 > 
-> So my next question is: _How_ can this help PM to do a better job?  
-> That is, what are the mechanisms?
+> irq_set_wake() means we can set this irq as a wake source.
+> IRQCHIP_SKIP_SET_WAKE is ignore irq_set_wake() feature.
 
-"inhibit" -> driver stops input -> driver sets PM count to zero
--> PM subsystem acts
+Nonsense. IRQCHIP_SKIP_SET_WAKE merily tells the core not to bail on
+!chip->irq_set_wake(), but its still marking the interrupt as wakeup
+source and therefor not masking it on suspend.
 
-To go from the first to the second step a callback is needed
+IRQF_NO_SUSPEND is the wrong tool. End of story.
 
-> One you have already stated: Lack of spurious events will help prevent 
-> unwanted wakeups (or unwanted failures to go to sleep).
+Thanks,
 
-That too. We also save CPU cycles.
-
-> But Dmitry made a stronger claim: Inhibiting an input device should 
-> allow the device to go to low power.  I would like to know how we can 
-> implement this cleanly.  The most straightforward approach is to use 
-> runtime PM, but it's not obvious how this can be made to work with the 
-> current API.
-
-Yes, we can use the current API.
-The key is that you think of the mechanism as induced idleness,
-not forced suspend. We already have a perfectly working mechanism
-for suspending idle devices.
-
-	Regards
-		Oliver
+	tglx
