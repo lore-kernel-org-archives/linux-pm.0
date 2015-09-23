@@ -1,82 +1,62 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v5 09/11] power: bq24257: Allow input current limit sysfs
- access
-Date: Wed, 23 Sep 2015 02:29:06 +0200
-Message-ID: <20150923002906.GA4359@earth>
-References: <1442612399-341-1-git-send-email-dannenberg@ti.com>
- <1442612399-341-10-git-send-email-dannenberg@ti.com>
- <20150922191649.GA9949@earth>
- <20150922221044.GB30297@beast>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] x86: correct spelling for hwp_notify flag
+Date: Wed, 23 Sep 2015 02:58:39 +0200
+Message-ID: <17624046.4u3f9C2Tn1@vostro.rjw.lan>
+References: <1442944296-11737-1-git-send-email-kristen@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="T4sUOijqQbZv57TR"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:33444 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758219AbbIWA3L (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 22 Sep 2015 20:29:11 -0400
-Content-Disposition: inline
-In-Reply-To: <20150922221044.GB30297@beast>
+Received: from v094114.home.net.pl ([79.96.170.134]:41740 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1759653AbbIWAaa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Sep 2015 20:30:30 -0400
+In-Reply-To: <1442944296-11737-1-git-send-email-kristen@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andreas Dannenberg <dannenberg@ti.com>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: Kristen Carlson Accardi <kristen@linux.intel.com>
+Cc: hpa@zytor.com, linux-pm@vger.kernel.org, x86@kernel.org
 
+On Tuesday, September 22, 2015 10:51:36 AM Kristen Carlson Accardi wrote:
+> Because noitification just isn't right.
+> 
+> Signed-off-by: Kristen Carlson Accardi <kristen@linux.intel.com>
 
---T4sUOijqQbZv57TR
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-On Tue, Sep 22, 2015 at 05:10:45PM -0500, Andreas Dannenberg wrote:
-> On Tue, Sep 22, 2015 at 09:16:49PM +0200, Sebastian Reichel wrote:
-> > On Fri, Sep 18, 2015 at 04:39:57PM -0500, Andreas Dannenberg wrote:
-> > > This patch allows reading (and writing, if the D+/D- USB signal-based
-> > > charger type detection is disabled) of the input current limit through
-> > > the power supply's input_current_limit sysfs property. This allows
-> > > userspace to see what charger was detected and to re-configure the
-> > > maximum current drawn from the external supply at runtime based on
-> > > system-level knowledge or user input.
-> >=20
-> > Maybe also support writing into input_current_limit in auto mode.
-> > Just disable auto detection until "auto" is written into sysfs node.
->=20
-> Auto-detection was enabled by default in the original driver so I think
-> that should be left intact. I added the ability to manually override
-> this via DT with a fixed value, and then configure said fixed value
-> through sysfs at runtime.
->=20
-> I'm not 100% clear on the usecase of runtime enabling/disabling auto so
-> I'd rather leave the implementation as-is. Either auto mode is enabled
-> or not -- and this is directly tied to the DT setting. But if someone
-> has a strong usecase for this I can certainly add it.
+> ---
+>  arch/x86/include/asm/cpufeature.h | 2 +-
+>  arch/x86/kernel/cpu/scattered.c   | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/x86/include/asm/cpufeature.h b/arch/x86/include/asm/cpufeature.h
+> index 3d6606f..ae372cd 100644
+> --- a/arch/x86/include/asm/cpufeature.h
+> +++ b/arch/x86/include/asm/cpufeature.h
+> @@ -191,7 +191,7 @@
+>  #define X86_FEATURE_HW_PSTATE	( 7*32+ 8) /* AMD HW-PState */
+>  #define X86_FEATURE_PROC_FEEDBACK ( 7*32+ 9) /* AMD ProcFeedbackInterface */
+>  #define X86_FEATURE_HWP		( 7*32+ 10) /* "hwp" Intel HWP */
+> -#define X86_FEATURE_HWP_NOITFY	( 7*32+ 11) /* Intel HWP_NOTIFY */
+> +#define X86_FEATURE_HWP_NOTIFY	( 7*32+ 11) /* Intel HWP_NOTIFY */
+>  #define X86_FEATURE_HWP_ACT_WINDOW ( 7*32+ 12) /* Intel HWP_ACT_WINDOW */
+>  #define X86_FEATURE_HWP_EPP	( 7*32+13) /* Intel HWP_EPP */
+>  #define X86_FEATURE_HWP_PKG_REQ ( 7*32+14) /* Intel HWP_PKG_REQ */
+> diff --git a/arch/x86/kernel/cpu/scattered.c b/arch/x86/kernel/cpu/scattered.c
+> index 3d423a1..608fb26 100644
+> --- a/arch/x86/kernel/cpu/scattered.c
+> +++ b/arch/x86/kernel/cpu/scattered.c
+> @@ -37,7 +37,7 @@ void init_scattered_cpuid_features(struct cpuinfo_x86 *c)
+>  		{ X86_FEATURE_PLN,		CR_EAX, 4, 0x00000006, 0 },
+>  		{ X86_FEATURE_PTS,		CR_EAX, 6, 0x00000006, 0 },
+>  		{ X86_FEATURE_HWP,		CR_EAX, 7, 0x00000006, 0 },
+> -		{ X86_FEATURE_HWP_NOITFY,	CR_EAX, 8, 0x00000006, 0 },
+> +		{ X86_FEATURE_HWP_NOTIFY,	CR_EAX, 8, 0x00000006, 0 },
+>  		{ X86_FEATURE_HWP_ACT_WINDOW,	CR_EAX, 9, 0x00000006, 0 },
+>  		{ X86_FEATURE_HWP_EPP,		CR_EAX,10, 0x00000006, 0 },
+>  		{ X86_FEATURE_HWP_PKG_REQ,	CR_EAX,11, 0x00000006, 0 },
+> 
 
-For some usb power supplies auto-detection doesn't work very well,
-resulting in a 100mA default fallback. Users knowing their hardware
-could force charging with the correct input current limitation.
-
--- Sebastian
-
---T4sUOijqQbZv57TR
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJWAfJPAAoJENju1/PIO/qaEGYP/2Ykr5YV0PNzJiEXw81Fec5N
-xeOAs67S2JJW66qx4GuVt5LtEX+fLsH6wP19fJe/1ATNWVtH49OTpms0PSyYZc9m
-WCQY/MIrGpgNRc/kPxCINm6Kw0HH3JArOnOGb0Af0EpVbcpmkGYoBbiSiFJ4J5O3
-3peLqkffpAnF5n4wH8V70YmJEE/qbvXGV57imMnMAXp41N5ZUC8jJ4rrXKr6wT6y
-C5A07e6FtUzJ6dIJlTJ2xMb0KGxTL78gUpykpRhUDaoBJ9ieH4RYjVuk/+iuyw7r
-mvz9NuGbAZnHSUgsz7qV50wGgEezImx8nhDNqEUMdE+wO9a912v19XvxWx9LM8B7
-TLybaoNBv1Lor5OIPx4QGWRyNoJIu0TLI5zQS7WgeYIhiVu6OkIZBK8cOhesrJp5
-KMAfWca8yW3IYs48CgghG1nn0vN9G1J2aR1QUX/KfbPDp1rD7fkdgTnwBjvYGk6x
-SydL9CJprajs0YOCiFCKT6xGtchaO3lwvcCHyoG3mNa94MSV52354t/EvMFApjdr
-hWtrTrobciZBl/n9CUjPxEg3zw0jiWjLNVTHSzM1P7W5Sm/rIoI2Tdtkjjn1Dm3I
-Z196W40X4OJO0ibkePqxiEYVRaQtag3TFNO3zQ/HSswlr+AHOdsGDSyYqaGMGM7+
-bfzPP8MR6qM/DhX0cWwW
-=3rwV
------END PGP SIGNATURE-----
-
---T4sUOijqQbZv57TR--
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
