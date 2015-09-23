@@ -1,139 +1,128 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing
- runtime suspend
-Date: Wed, 23 Sep 2015 10:55:52 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1509231030270.1670-100000@iolanthe.rowland.org>
-References: <1442977394.8607.8.camel@suse.de>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v5 09/11] power: bq24257: Allow input current limit sysfs
+ access
+Date: Wed, 23 Sep 2015 17:02:28 +0200
+Message-ID: <20150923150228.GA5254@earth>
+References: <1442612399-341-1-git-send-email-dannenberg@ti.com>
+ <1442612399-341-10-git-send-email-dannenberg@ti.com>
+ <20150922191649.GA9949@earth>
+ <20150922221044.GB30297@beast>
+ <20150923002906.GA4359@earth>
+ <20150923141146.GA6289@borg>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-input-owner@vger.kernel.org>
-In-Reply-To: <1442977394.8607.8.camel@suse.de>
-Sender: linux-input-owner@vger.kernel.org
-To: Oliver Neukum <oneukum@suse.de>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Irina Tirdea <irina.tirdea@intel.com>, Len Brown <len.brown@intel.com>, Octavian Purdila <octavian.purdila@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="PEIAKu/WMn1b1Hv9"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:50717 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754944AbbIWPCd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 23 Sep 2015 11:02:33 -0400
+Content-Disposition: inline
+In-Reply-To: <20150923141146.GA6289@borg>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andreas Dannenberg <dannenberg@ti.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-On Wed, 23 Sep 2015, Oliver Neukum wrote:
 
-> On Tue, 2015-09-22 at 11:22 -0400, Alan Stern wrote:
-> > On Tue, 22 Sep 2015, Oliver Neukum wrote:
-> >  
-> > > Cancel, yes, going to low power is a consequence which needn't bother
-> > > the power subsystem.
-> > 
-> > Going to low power needn't involve the power subsystem?  That sounds 
-> > weird.
-> 
-> Think of it like rfkill. It makes sense to suspend an rfkilled device.
-> It still is the job of the driver to report that its device is idle.
+--PEIAKu/WMn1b1Hv9
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Reporting that the device is idle _does_ involve the power subsystem.  
-But never mind...
+Hi,
 
-> > So my next question is: _How_ can this help PM to do a better job?  
-> > That is, what are the mechanisms?
-> 
-> "inhibit" -> driver stops input -> driver sets PM count to zero
-> -> PM subsystem acts
+On Wed, Sep 23, 2015 at 09:11:46AM -0500, Andreas Dannenberg wrote:
+> On Wed, Sep 23, 2015 at 02:29:06AM +0200, Sebastian Reichel wrote:
+> > On Tue, Sep 22, 2015 at 05:10:45PM -0500, Andreas Dannenberg wrote:
+> > > On Tue, Sep 22, 2015 at 09:16:49PM +0200, Sebastian Reichel wrote:
+> > > > On Fri, Sep 18, 2015 at 04:39:57PM -0500, Andreas Dannenberg wrote:
+> > > > > This patch allows reading (and writing, if the D+/D- USB signal-b=
+ased
+> > > > > charger type detection is disabled) of the input current limit th=
+rough
+> > > > > the power supply's input_current_limit sysfs property. This allows
+> > > > > userspace to see what charger was detected and to re-configure the
+> > > > > maximum current drawn from the external supply at runtime based on
+> > > > > system-level knowledge or user input.
+> > > >=20
+> > > > Maybe also support writing into input_current_limit in auto mode.
+> > > > Just disable auto detection until "auto" is written into sysfs node.
+> > >=20
+> > > Auto-detection was enabled by default in the original driver so I thi=
+nk
+> > > that should be left intact. I added the ability to manually override
+> > > this via DT with a fixed value, and then configure said fixed value
+> > > through sysfs at runtime.
+> > >=20
+> > > I'm not 100% clear on the usecase of runtime enabling/disabling auto =
+so
+> > > I'd rather leave the implementation as-is. Either auto mode is enabled
+> > > or not -- and this is directly tied to the DT setting. But if someone
+> > > has a strong usecase for this I can certainly add it.
+> >=20
+> > For some usb power supplies auto-detection doesn't work very well,
+> > resulting in a 100mA default fallback. Users knowing their hardware
+> > could force charging with the correct input current limitation.
+>=20
+> Ok. So how should we best go about extending the usage of the
+> 'input_current_limit' sysfs node for this charger? You mentioned
+> writing 'auto' into it should enable the auto-detection mode. I suppose
+> writing a fixed current value will disable it. But how to indicate to
+> the user when reading 'input_current_limit' whether auto mode is enabled
+> or not (I think this is something we should do).
 
-Your third step here poses problems.  There is no runtime-PM API a 
-driver or subsystem can use to set its usage counter to 0.  All it can 
-do is increment or decrement the counter.
+Right, I haven't thought of this.
 
-> To go from the first to the second step a callback is needed
-> 
-> > One you have already stated: Lack of spurious events will help prevent 
-> > unwanted wakeups (or unwanted failures to go to sleep).
-> 
-> That too. We also save CPU cycles.
-> 
-> > But Dmitry made a stronger claim: Inhibiting an input device should 
-> > allow the device to go to low power.  I would like to know how we can 
-> > implement this cleanly.  The most straightforward approach is to use 
-> > runtime PM, but it's not obvious how this can be made to work with the 
-> > current API.
-> 
-> Yes, we can use the current API.
-> The key is that you think of the mechanism as induced idleness,
-> not forced suspend. We already have a perfectly working mechanism
-> for suspending idle devices.
+> Can we return a mixed number/string like this?
+>=20
+> # Example: charger auto detection mode is disabled, and input current
+> # limit is configured as 500mA.
+>=20
+> $ cat input_current_limit
+> 500000
+>=20
+> # Example: charger auto detection mode is enabled, and a charger
+> # supporting 1A was detected (note the mixed number/string thats
+> # returned)
+>=20
+> $ cat input_current_limit
+> 1000000 (auto)
+>=20
+> Would that work?
 
-After thinking some more about this, here's what I've got.
+No. sysfs nodes should only contain one value per file.
 
-Let's talk about input-only devices being in an "idle" state or a
-"running" state:
+> Or should we introduce a new sysfs property?
 
-	When the device is in the idle state, its driver does not 
-	communicate with the device.  In particular, the driver does 
-	not monitor for events or report them to the rest of the 
-	kernel.  It is appropriate to put the device in runtime suspend
-	with remote wakeup disabled.
+So maybe keep this patch as is (disallow setting the limit in auto
+mode) and create another file for setting (and getting) the mode.
 
-	When the device is in the running state, its driver receives
-	event reports from the device and propagates them forward.
-	The subsystem/driver may choose to put the device in runtime
-	suspend between events with remote wakeup enabled (like we do
-	for USB keyboards if no LEDs are on) or it may choose to leave
-	the device at full power the whole time.
+Also it might be a good idea to return to safe defaults when the
+charger is disconnected (-> reset to DT specified values).
 
-The idea is that a device is in the idle state whenever the open file 
-count is 0 _or_ it is "inhibited"; otherwise it is in the running 
-state.
+-- Sebastian
 
-I tried to come up with a way to do some of this work in a central
-core.  All I could think of was that the core should detect state
-changes and inform the subsystem/driver when they occur.  Everything
-else (starting and stopping I/O, adjusting the runtime-PM usage
-counter) would have to be done by the subsystem/driver.
+--PEIAKu/WMn1b1Hv9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-The problem is that a core generally isn't aware of when a file 
-reference is opened or released.  Only the driver is.  Which means 
-there's nothing that the core can do here; the driver and subsystem 
-have to manage pretty much the whole thing.  A simple example:
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-open()
-{
-	mutex_lock(&dev->open_mutex);
-	if (dev->open_count++ == 0 && !dev->inhibited) {
-		pm_runtime_get_sync(dev);
-		start_io(dev);
-	}
-	mutex_unlock(&dev->open_mutex);
-}
+iQIcBAEBCgAGBQJWAr8AAAoJENju1/PIO/qaI2sP/jgdxRw2VL/3Xhvyb8RC6zSk
+oTv2eDSMSekrzoTiMMNNroMf7x8hU+fmBGqmXvjkn14h1GwpOYNcQ9/Bb2EG7v+L
+kVYYCfOANyQkIxw9sA9Xa+QmqYFLfzHLB7pdupkfOHvkJQnvnS1m/uOIkIkL8XyQ
+EKCb+6kTS2a66Kb4TYJd+Xt6IGipTDKBugrHVRr3WYTgUpc9qgHsLBuDZb5okGDL
+zB+NSQzsCGLqbDpU6PBEz/TB7aw3XvPBqovLJfP3VjAMOW60wlLJQwxwG+Z9O08I
+9cdILtzyg7LQgW9IAzOPgYogDOZDFldDNW16Z5fB8PTSb548U9foAhTwyHKM4yVD
+y11dbArCorhOc7aaWcXO0ckeYRUVByYXEGKZnpOyvtm1mlvQhKORJ+1IKJHO6LAR
+SSmSwuotTcCJv3RrmYwuH73wH6kqLPO9lHrSZc3+BOFmL9gEmFP3I0nP5kCRedI7
+xVP73BQcUx4FEQEdahJEZzVpdUX9ymTZEcoXWPfDEQEhzx6e+g4tR+pFJbXF3C40
+KdguD0RY4RIHXgjE+T1E2rDq9feebDsfEJgqPmd6YbQ8ZZrjXHeNrQfNEHbcZ0yK
+ob9oLlFrkwgrbhMyiDa+OLZDnxvjj2zfkfl5SAwqYcfiMyiTaKr0r6Yr5Xs7BItu
+KTRh1tLP1LSfxcAwvCzD
+=Ifty
+-----END PGP SIGNATURE-----
 
-release()
-{
-	mutex_lock(&dev->open_mutex);
-	if (--dev->open_count == 0 && !dev->inhibited) {
-		stop_io(dev);
-		pm_runtime_put(dev);
-	}
-	mutex_unlock(&dev->open_mutex);
-}
-
-inhibit()
-{
-	mutex_lock(&dev->open_mutex);
-	dev->inhibited = true;
-	if (dev->open_count > 0) {
-		stop_io(dev);
-		pm_runtime_put(dev);
-	}
-	mutex_unlock(&dev->open_mutex);
-}
-
-uninhibit()
-{
-	mutex_lock(&dev->open_mutex);
-	dev->inhibited = false;
-	if (dev->open_count > 0) {
-		pm_runtime_get_sync(dev);
-		start_io(dev);
-	}
-	mutex_unlock(&dev->open_mutex);
-}
-
-This doesn't leave much room for the PM core or anything else.
-
-Alan Stern
-
+--PEIAKu/WMn1b1Hv9--
