@@ -1,62 +1,81 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] x86: correct spelling for hwp_notify flag
-Date: Wed, 23 Sep 2015 02:58:39 +0200
-Message-ID: <17624046.4u3f9C2Tn1@vostro.rjw.lan>
-References: <1442944296-11737-1-git-send-email-kristen@linux.intel.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v5 01/11] dt: power: bq24257-charger: Cover additional
+ devices
+Date: Wed, 23 Sep 2015 02:34:15 +0200
+Message-ID: <20150923003414.GB4359@earth>
+References: <1442612399-341-1-git-send-email-dannenberg@ti.com>
+ <1442612399-341-2-git-send-email-dannenberg@ti.com>
+ <20150922162448.GE4235@earth>
+ <20150922215823.GA30297@beast>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="JYK4vJDZwFMowpUq"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:41740 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1759653AbbIWAaa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Sep 2015 20:30:30 -0400
-In-Reply-To: <1442944296-11737-1-git-send-email-kristen@linux.intel.com>
+Received: from mail.kernel.org ([198.145.29.136]:33760 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759757AbbIWAeT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 22 Sep 2015 20:34:19 -0400
+Content-Disposition: inline
+In-Reply-To: <20150922215823.GA30297@beast>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kristen Carlson Accardi <kristen@linux.intel.com>
-Cc: hpa@zytor.com, linux-pm@vger.kernel.org, x86@kernel.org
+To: Andreas Dannenberg <dannenberg@ti.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-On Tuesday, September 22, 2015 10:51:36 AM Kristen Carlson Accardi wrote:
-> Because noitification just isn't right.
-> 
-> Signed-off-by: Kristen Carlson Accardi <kristen@linux.intel.com>
 
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+--JYK4vJDZwFMowpUq
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> ---
->  arch/x86/include/asm/cpufeature.h | 2 +-
->  arch/x86/kernel/cpu/scattered.c   | 2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/x86/include/asm/cpufeature.h b/arch/x86/include/asm/cpufeature.h
-> index 3d6606f..ae372cd 100644
-> --- a/arch/x86/include/asm/cpufeature.h
-> +++ b/arch/x86/include/asm/cpufeature.h
-> @@ -191,7 +191,7 @@
->  #define X86_FEATURE_HW_PSTATE	( 7*32+ 8) /* AMD HW-PState */
->  #define X86_FEATURE_PROC_FEEDBACK ( 7*32+ 9) /* AMD ProcFeedbackInterface */
->  #define X86_FEATURE_HWP		( 7*32+ 10) /* "hwp" Intel HWP */
-> -#define X86_FEATURE_HWP_NOITFY	( 7*32+ 11) /* Intel HWP_NOTIFY */
-> +#define X86_FEATURE_HWP_NOTIFY	( 7*32+ 11) /* Intel HWP_NOTIFY */
->  #define X86_FEATURE_HWP_ACT_WINDOW ( 7*32+ 12) /* Intel HWP_ACT_WINDOW */
->  #define X86_FEATURE_HWP_EPP	( 7*32+13) /* Intel HWP_EPP */
->  #define X86_FEATURE_HWP_PKG_REQ ( 7*32+14) /* Intel HWP_PKG_REQ */
-> diff --git a/arch/x86/kernel/cpu/scattered.c b/arch/x86/kernel/cpu/scattered.c
-> index 3d423a1..608fb26 100644
-> --- a/arch/x86/kernel/cpu/scattered.c
-> +++ b/arch/x86/kernel/cpu/scattered.c
-> @@ -37,7 +37,7 @@ void init_scattered_cpuid_features(struct cpuinfo_x86 *c)
->  		{ X86_FEATURE_PLN,		CR_EAX, 4, 0x00000006, 0 },
->  		{ X86_FEATURE_PTS,		CR_EAX, 6, 0x00000006, 0 },
->  		{ X86_FEATURE_HWP,		CR_EAX, 7, 0x00000006, 0 },
-> -		{ X86_FEATURE_HWP_NOITFY,	CR_EAX, 8, 0x00000006, 0 },
-> +		{ X86_FEATURE_HWP_NOTIFY,	CR_EAX, 8, 0x00000006, 0 },
->  		{ X86_FEATURE_HWP_ACT_WINDOW,	CR_EAX, 9, 0x00000006, 0 },
->  		{ X86_FEATURE_HWP_EPP,		CR_EAX,10, 0x00000006, 0 },
->  		{ X86_FEATURE_HWP_PKG_REQ,	CR_EAX,11, 0x00000006, 0 },
-> 
+Hi,
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+On Tue, Sep 22, 2015 at 04:58:24PM -0500, Andreas Dannenberg wrote:
+> On Tue, Sep 22, 2015 at 06:24:48PM +0200, Sebastian Reichel wrote:
+> > On Fri, Sep 18, 2015 at 04:39:49PM -0500, Andreas Dannenberg wrote:
+> > > Extend the bq24257 charger's device tree documentation to cover the
+> > > bq24250 and bq24251 devices as well feature additions.
+> >=20
+> > The binding looks fine to except for:
+> >=20
+> > > +- stat-gpios: GPIO used for the devices STAT_IN pin. Alternatively t=
+he pin can
+> > > +    also be defined through the standard interrupt definition proper=
+ties (see
+> > > +    optional properties section below). Only use one method.
+> >=20
+> > Why do you expose two ways for this?
+>=20
+> Hi Sebastian. The original driver exposed this - it just didn't
+> document it in the DT binding doc. I'm not sure why this was introduced
+> in the first place (Laurentiu?). I know we can't change the API but
+> since it was never documented maybe we can remove it?
+
+It seems this is neither documented, nor used. So I guess it can be
+removed. Let's wait for feedback from Laurentiu, though.
+
+-- Sebastian
+
+--JYK4vJDZwFMowpUq
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJWAfOGAAoJENju1/PIO/qaXPMP/iornNTJzenD7SJfS6LNVP8d
+p+E/DRV4eVPseBR836b8gy+UnCYADIwyWOFPJ8uPVs2ZX5J46hcDDUTZcgfc1Lap
+5e0vFYg76Epzybti5v4m8Q+R9sgbnDlE2bXJ6rxpXKueVEMW9NA06C2KvpU0apxP
+dGe7CI7/SIqwIdjjdK8eEp2h2qtDNGkWnGiOOS+nhhoOfCygyfZAWKqjj1o0+PZs
+sFbZr3B5mpuE6BbxdkJPORI8Hjoodyd/4iExiM4FdFB4j+BO/eDBdAnQ1rSV5znt
+XKKaryr0Y2pTkZ2jOS3d1MELSQGq8inVCH8xtGKwU04hZMTvfhGWHCnE/VGBrj2W
+8YQhcV9Ci++t538gJZTQCDt3OQw8z/b/rfhwvMupIY+OOoA94EscB+RUPh1sIc0/
+w4bHrm+lRguZpKcRyi+w2WY+GEZEsBIjk9acU+g97xDmVThKFXhARZlffN57rbss
+otXpVi3fC1cyvWu8AXuwgwdYx2z3YjdjQ8h8DzMp15y7rFO9ktznUBU4PVlrApaL
+capDvf3A8SzVFsSmCXT1rjvcEO9+OiARWxnqsUaAxQUrmzFfC5pF02MCs3QQQbe+
+dRO8nfgeHf1qRDI9sEfsaSiCK0F18VOK3zZ7u3sS3iaK4IJb7Zn4q0N+bTMoDJpS
+w9Z7WrDTUBP6t4Pu0MZi
+=jXa4
+-----END PGP SIGNATURE-----
+
+--JYK4vJDZwFMowpUq--
