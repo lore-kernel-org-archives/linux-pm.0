@@ -1,55 +1,46 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: [PATCH] PM / OPP: Fix typo modifcation -> modification
-Date: Thu, 24 Sep 2015 12:28:44 -0700
-Message-ID: <1443122924-17017-1-git-send-email-sboyd@codeaurora.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:45953 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751290AbbIXT2r (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Sep 2015 15:28:47 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Enric Balletbo i Serra <eballetbo-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: [PATCHv3 0/2] Add support for tps65217 charger
+Date: Thu, 24 Sep 2015 21:44:19 +0200
+Message-ID: <1443123861-3473-1-git-send-email-enric.balletbo@collabora.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org, sameo-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sjoerd.simons-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org, javier-0uQlZySMnqxg9hUCZPvPmw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-Reported-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
----
- drivers/base/power/opp/core.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+Hi all,
 
-diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index 8a72f0e586e8..62b918144b5b 100644
---- a/drivers/base/power/opp/core.c
-+++ b/drivers/base/power/opp/core.c
-@@ -961,7 +961,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_add);
-  * share a common logic which is isolated here.
-  *
-  * Return: -EINVAL for bad pointers, -ENOMEM if no memory available for the
-- * copy operation, returns 0 if no modifcation was done OR modification was
-+ * copy operation, returns 0 if no modification was done OR modification was
-  * successful.
-  *
-  * Locking: The internal device_opp and opp structures are RCU protected.
-@@ -1049,7 +1049,7 @@ unlock:
-  * mutex locking or synchronize_rcu() blocking calls cannot be used.
-  *
-  * Return: -EINVAL for bad pointers, -ENOMEM if no memory available for the
-- * copy operation, returns 0 if no modifcation was done OR modification was
-+ * copy operation, returns 0 if no modification was done OR modification was
-  * successful.
-  */
- int dev_pm_opp_enable(struct device *dev, unsigned long freq)
-@@ -1075,7 +1075,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_enable);
-  * mutex locking or synchronize_rcu() blocking calls cannot be used.
-  *
-  * Return: -EINVAL for bad pointers, -ENOMEM if no memory available for the
-- * copy operation, returns 0 if no modifcation was done OR modification was
-+ * copy operation, returns 0 if no modification was done OR modification was
-  * successful.
-  */
- int dev_pm_opp_disable(struct device *dev, unsigned long freq)
+The following series add initial support for tps65217 battery charger.
+
+Changes since v2:
+  - Requested by Sebastian Reichel
+    - Assign prev_ac_online to ac_online is no longer needed at this place.
+    - Remove power_supply_unregistersince it wouldb be called by managed resources.
+
+Changes since v1:
+  - Requested by Sebastian Reichel
+    - Set prev_ac_online at the beginning of the tps56217_charger_irq()
+    - Use devm_power_supply_register call.
+  - Fix style problems reported by checkpatch.pl --strict
+
+Best regards,
+
+Enric Balletbo i Serra (2):
+  devicetree: Add TPS65217 charger binding.
+  power_supply: Add support for tps65217-charger.
+
+ .../bindings/power_supply/tps65217_charger.txt     |  12 +
+ drivers/power/Kconfig                              |   7 +
+ drivers/power/Makefile                             |   1 +
+ drivers/power/tps65217_charger.c                   | 264 +++++++++++++++++++++
+ 4 files changed, 284 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power_supply/tps65217_charger.txt
+ create mode 100644 drivers/power/tps65217_charger.c
+
 -- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
+2.1.0
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
