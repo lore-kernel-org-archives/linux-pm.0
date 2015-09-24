@@ -1,40 +1,43 @@
-From: Enric Balletbo i Serra <eballetbo@gmail.com>
-Subject: [PATCHv3 1/2] devicetree: Add TPS65217 charger binding.
-Date: Thu, 24 Sep 2015 21:44:20 +0200
-Message-ID: <1443123861-3473-2-git-send-email-enric.balletbo@collabora.com>
-References: <1443123861-3473-1-git-send-email-enric.balletbo@collabora.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1443123861-3473-1-git-send-email-enric.balletbo@collabora.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: devicetree@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, tony@atomide.com, sameo@linux.intel.com, lee.jones@linaro.org, sjoerd.simons@collabora.co.uk, javier@dowhile0.org
+From: Courtney Cavin <courtney.cavin@sonymobile.com>
+Subject: Re: [patch] power: qcom_smbb: test the correct variable
+Date: Thu, 24 Sep 2015 12:50:12 -0700
+Message-ID: <20150924195012.GB3193@sonymobile.com>
+References: <20150924184137.GA28804@mwanda>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <kernel-janitors-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20150924184137.GA28804@mwanda>
+Sender: kernel-janitors-owner@vger.kernel.org
+To: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-The TPS65217 charger is a subnode of the TPS65217 MFD.
+On Thu, Sep 24, 2015 at 08:41:37PM +0200, Dan Carpenter wrote:
+> "state" is a bool so it's never less than zero.  The intent was to test
+> "ret" instead.
+> 
+> Fixes: 56d7df8716b2 ('power: Add Qualcomm SMBB driver')
+> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> 
+> diff --git a/drivers/power/qcom_smbb.c b/drivers/power/qcom_smbb.c
+> index 0dabfe8..5eb1e9e 100644
+> --- a/drivers/power/qcom_smbb.c
+> +++ b/drivers/power/qcom_smbb.c
+> @@ -351,7 +351,7 @@ static void smbb_set_line_flag(struct smbb_charger *chg, int irq, int flag)
+>  	int ret;
+>  
+>  	ret = irq_get_irqchip_state(irq, IRQCHIP_STATE_LINE_LEVEL, &state);
+> -	if (state < 0) {
+> +	if (ret < 0) {
+>  		dev_err(chg->dev, "failed to read irq line\n");
+>  		return;
+>  	}
 
-Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
----
- .../devicetree/bindings/power_supply/tps65217_charger.txt    | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power_supply/tps65217_charger.txt
+Hrm.  This must be a leftover from when this was using Bjorn's
+irq_read_line().  Thanks!
 
-diff --git a/Documentation/devicetree/bindings/power_supply/tps65217_charger.txt b/Documentation/devicetree/bindings/power_supply/tps65217_charger.txt
-new file mode 100644
-index 0000000..98d131a
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power_supply/tps65217_charger.txt
-@@ -0,0 +1,12 @@
-+TPS65217 Charger
-+
-+Required Properties:
-+-compatible: "ti,tps65217-charger"
-+
-+This node is a subnode of the tps65217 PMIC.
-+
-+Example:
-+
-+	tps65217-charger {
-+		compatible = "ti,tps65090-charger";
-+	};
--- 
-2.1.0
+I guess you caught this with smatch?  Neither sparse nor gcc give me a
+warning here, which is disappointing.
+
+-Courtney
