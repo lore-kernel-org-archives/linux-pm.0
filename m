@@ -1,76 +1,47 @@
-From: Enric Balletbo Serra <eballetbo@gmail.com>
-Subject: Re: [PATCHv2 2/2] power_supply: Add support for tps65217-charger.
-Date: Thu, 24 Sep 2015 17:55:35 +0200
-Message-ID: <CAFqH_52FJMY=p5jSZwxegSNvCUtwmsYNr2oPtimz990gy9JtCw@mail.gmail.com>
-References: <1443079405-17813-1-git-send-email-enric.balletbo@collabora.com>
-	<1443079405-17813-3-git-send-email-enric.balletbo@collabora.com>
-	<20150924154529.GB3125@earth>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f173.google.com ([209.85.223.173]:35342 "EHLO
-	mail-io0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754895AbbIXPzh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 24 Sep 2015 11:55:37 -0400
-In-Reply-To: <20150924154529.GB3125@earth>
-Sender: linux-pm-owner@vger.kernel.org
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: [PATCH v4 0/5] Introduce usb charger framework to deal with the usb gadget power negotation
+Date: Thu, 24 Sep 2015 10:39:22 -0700
+Message-ID: <cover.1443057229.git.baolin.wang@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: balbi@ti.com, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
+Cc: gregkh@linuxfoundation.org, peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, sojka@merica.cz, yoshihiro.shimoda.uh@renesas.com, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, sameo@linux.intel.com, lee.jones@linaro.org, ckeepax@opensource.wolfsonmicro.com, broonie@kernel.org, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, baolin.wang@linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Tony Lindgren <tony@atomide.com>, sameo@linux.intel.com, Lee Jones <lee.jones@linaro.org>, Sjoerd Simons <sjoerd.simons@collabora.co.uk>, Javier Martinez Canillas <javier@dowhile0.org>
 
-Hi,
+Currently the Linux kernel does not provide any standard integration of this
+feature that integrates the USB subsystem with the system power regulation
+provided by PMICs meaning that either vendors must add this in their kernels
+or USB gadget devices based on Linux (such as mobile phones) may not behave
+as they should.
 
-2015-09-24 17:45 GMT+02:00 Sebastian Reichel <sre@kernel.org>:
-> Hi,
->
-> On Thu, Sep 24, 2015 at 09:23:25AM +0200, Enric Balletbo i Serra wrote:
->> This patch adds support for the tps65217 charger driver. This driver is
->> responsible for controlling the charger aspect of the tps65217 mfd.
->> Currently, this mainly consists of turning on and off the charger, but
->> some other features of the charger can be supported through this driver.
->>
->> [...]
->>
->> +static int tps65217_ac_get_property(struct power_supply *psy,
->> +                     enum power_supply_property psp,
->> +                     union power_supply_propval *val)
->> +{
->> +     struct tps65217_charger *charger = power_supply_get_drvdata(psy);
->> +
->> +     if (psp == POWER_SUPPLY_PROP_ONLINE) {
->> +             val->intval = charger->ac_online;
->> +             charger->prev_ac_online = charger->ac_online;
->
-> I think this is no longer needed at this place.
->
-Right, as I moved ...
+Providing a standard framework for doing this in the kernel.
 
->> +             return 0;
->> +     }
->> +     return -EINVAL;
->> +}
->>
->> [...]
->>
->> +static int tps65217_charger_remove(struct platform_device *pdev)
->> +{
->> +     struct tps65217_charger *charger = platform_get_drvdata(pdev);
->> +
->> +     kthread_stop(charger->poll_task);
->> +
->> +     power_supply_unregister(charger->ac);
->
-> This is not needed with devm_power_supply_register() and actually
-> it's wrong, since it would be called again by managed resources
-> infrastructure.
->
+Now introduce one user with wm831x_power to support and test the usb charger,
+which is pending testing. Moreover there may be other potential users will use
+it in future.
 
-Yes I missed this unregister. I'll send v3
+Changes since v3:
+ - Re-order the patch and split the patch to avoid breaking build.
+ - Other modifications.
 
-Thanks,
-Enric
+Baolin Wang (5):
+  gadget: Introduce the notifier functions
+  gadget: Introduce the usb charger framework
+  gadget: Support for the usb charger framework
+  gadget: Integrate with the usb gadget supporting for usb charger
+  power: wm831x_power: Support USB charger current limit management
 
->> +     return 0;
->> +}
->
-> -- Sebastian
+ drivers/power/wm831x_power.c      |  69 +++++
+ drivers/usb/gadget/Kconfig        |   7 +
+ drivers/usb/gadget/Makefile       |   1 +
+ drivers/usb/gadget/charger.c      | 538 ++++++++++++++++++++++++++++++++++++++
+ drivers/usb/gadget/udc/udc-core.c |  40 +++
+ include/linux/mfd/wm831x/pdata.h  |   3 +
+ include/linux/usb/gadget.h        |  20 ++
+ include/linux/usb/usb_charger.h   | 138 ++++++++++
+ 8 files changed, 816 insertions(+)
+ create mode 100644 drivers/usb/gadget/charger.c
+ create mode 100644 include/linux/usb/usb_charger.h
+
+-- 
+1.9.1
