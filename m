@@ -1,97 +1,50 @@
 From: Marc Titinger <mtitinger@baylibre.com>
-Subject: [RFC 1/7] arm64: pm/domains: try mutualize CPU domains init between arm/arm64
-Date: Fri, 25 Sep 2015 15:04:03 +0200
-Message-ID: <1443186249-14596-2-git-send-email-mtitinger+renesas@baylibre.com>
-References: <1443186249-14596-1-git-send-email-mtitinger+renesas@baylibre.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1443186249-14596-1-git-send-email-mtitinger+renesas@baylibre.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: khilman@kernel.org, rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, ahaslam@baylibre.com, bcousson@baylibre.com, lina.iyer@linaro.org, Marc Titinger <mtitinger@baylibre.com>
+Subject: [PATCH 0/2] Trace: PM: promote event 'power_domain_target' to generic power domains.
+Date: Fri, 25 Sep 2015 15:22:23 +0200
+Message-ID: <1443187345-14834-1-git-send-email-mtitinger+renesas@baylibre.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f182.google.com ([209.85.212.182]:37204 "EHLO
+	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756151AbbIYNWh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Sep 2015 09:22:37 -0400
+Received: by wicfx3 with SMTP id fx3so19376079wic.0
+        for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2015 06:22:36 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: khilman@kernel.org, rostedt@goodmis.org, rjw@rjwysocki.net
+Cc: linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, Marc Titinger <mtitinger+renesas@baylibre.com>
 
-From: Marc Titinger <mtitinger@baylibre.com>
+- change arg3 to a state name string: we got the current CPU from the trace
+backend already. This also prepares for multiple/named states in the power
+domain.
 
-fake path to start testing, eventually move this out of /arch/.
-incidently enable PM_GENERIC_DOMAINS for VExpress.
+- tested with Juno Dev Platform
 
-Signed-off-by: Marc Titinger <mtitinger@baylibre.com>
----
- arch/arm/common/domains.c       | 4 ++--
- arch/arm64/Kconfig              | 1 +
- arch/arm64/include/asm/arm-pd.h | 1 +
- arch/arm64/kernel/Makefile      | 6 ++++++
- arch/arm64/kernel/domains.c     | 1 +
- 5 files changed, 11 insertions(+), 2 deletions(-)
- create mode 120000 arch/arm64/include/asm/arm-pd.h
- create mode 120000 arch/arm64/kernel/domains.c
+<idle>-0     [000]    42.395510: power_domain_target:  a53_pd index=0 'cluster-sleep-0'
+<idle>-0     [000]    42.395528: cpu_idle:             state=4294967295 cpu_id=0
+<idle>-0     [000]    42.395668: cpu_idle:             state=2 cpu_id=0
 
-diff --git a/arch/arm/common/domains.c b/arch/arm/common/domains.c
-index d3207da..68908d4 100644
---- a/arch/arm/common/domains.c
-+++ b/arch/arm/common/domains.c
-@@ -20,7 +20,7 @@
- 
- #include <asm/arm-pd.h>
- 
--#define NAME_MAX 36
-+#define GENPD_NAME_MAX 36
- 
- struct arm_pm_domain {
- 	struct generic_pm_domain genpd;
-@@ -182,7 +182,7 @@ static int __init arm_domain_init(void)
- 		}
- 
- 		/* Initialize rest of CPU PM domain specifics */
--		pd->genpd.name = kstrndup(np->name, NAME_MAX, GFP_KERNEL);
-+		pd->genpd.name = kstrndup(np->name, GENPD_NAME_MAX, GFP_KERNEL);
- 		pd->genpd.power_off = arm_pd_power_down;
- 		pd->genpd.power_on = arm_pd_power_up;
- 		pd->genpd.flags |= GENPD_FLAG_IRQ_SAFE;
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index 7c55a63..d35f213 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -250,6 +250,7 @@ config ARCH_VEXPRESS
- 	select COMMON_CLK_VERSATILE
- 	select POWER_RESET_VEXPRESS
- 	select VEXPRESS_CONFIG
-+	select PM_GENERIC_DOMAINS if PM
- 	help
- 	  This enables support for the ARMv8 software model (Versatile
- 	  Express).
-diff --git a/arch/arm64/include/asm/arm-pd.h b/arch/arm64/include/asm/arm-pd.h
-new file mode 120000
-index 0000000..ecc5437
---- /dev/null
-+++ b/arch/arm64/include/asm/arm-pd.h
-@@ -0,0 +1 @@
-+../../../arm/include/asm/arm-pd.h
-\ No newline at end of file
-diff --git a/arch/arm64/kernel/Makefile b/arch/arm64/kernel/Makefile
-index 426d076..4689565 100644
---- a/arch/arm64/kernel/Makefile
-+++ b/arch/arm64/kernel/Makefile
-@@ -30,6 +30,12 @@ arm64-obj-$(CONFIG_HW_PERF_EVENTS)	+= perf_event.o
- arm64-obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= hw_breakpoint.o
- arm64-obj-$(CONFIG_CPU_PM)		+= sleep.o suspend.o
- arm64-obj-$(CONFIG_CPU_IDLE)		+= cpuidle.o
-+
-+# CPU domains: try mutualize for arm/arm64 in a first step.
-+# Eventually make this more generic.
-+#
-+arm64-obj-$(CONFIG_PM_GENERIC_DOMAINS)	+= domains.o
-+
- arm64-obj-$(CONFIG_JUMP_LABEL)		+= jump_label.o
- arm64-obj-$(CONFIG_KGDB)		+= kgdb.o
- arm64-obj-$(CONFIG_EFI)			+= efi.o efi-stub.o efi-entry.o
-diff --git a/arch/arm64/kernel/domains.c b/arch/arm64/kernel/domains.c
-new file mode 120000
-index 0000000..bf17c69
---- /dev/null
-+++ b/arch/arm64/kernel/domains.c
-@@ -0,0 +1 @@
-+../../arm/common/domains.c
-\ No newline at end of file
+- compiled for Omap2+
+
+Depends on this patch set from Axel Haslam:
+
+[v7,1/5] PM / Domains: prepare for multiple states
+[v7,2/5] PM / Domains: core changes for multiple states
+[v7,3/5] PM / Domains: make governor select deepest state
+[v7,4/5] ARM: imx6: pm: declare pm domain latency on power_state struct.
+[v7,5/5] PM / Domains: remove old power on/off latencies.
+
+
+Marc Titinger (2):
+  Trace: PM: promote event 'power_domain_target' to generic power
+    domains.
+  arm: omap2+: PM: change trace_power_domain_target event format.
+
+ arch/arm/mach-omap2/powerdomain.c | 32 ++++++++++++++++++++------------
+ drivers/base/power/domain.c       |  9 +++++++++
+ include/trace/events/power.h      | 29 +++++++++++++++--------------
+ 3 files changed, 44 insertions(+), 26 deletions(-)
+
 -- 
 1.9.1
+
