@@ -1,55 +1,49 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [patch] PM / OPP: passing NULL to PTR_ERR()
-Date: Fri, 25 Sep 2015 23:55:29 +0200
-Message-ID: <6540909.mH5lzIF4eN@vostro.rjw.lan>
-References: <20150921162602.GE5648@mwanda> <20150921185939.GB24314@linux>
+Subject: Re: [PATCH v2 0/5] Support CPR on MSM8916
+Date: Sat, 26 Sep 2015 00:03:26 +0200
+Message-ID: <7646588.WPLWGVmoNH@vostro.rjw.lan>
+References: <1442623929-4507-1-git-send-email-sboyd@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <kernel-janitors-owner@vger.kernel.org>
-In-Reply-To: <20150921185939.GB24314@linux>
-Sender: kernel-janitors-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Dan Carpenter <dan.carpenter@oracle.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Stephen Boyd <sboyd@codeaurora.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1442623929-4507-1-git-send-email-sboyd@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Nishanth Menon <nm@ti.com>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Andy Gross <agross@codeaurora.org>, linux-pm@vger.kernel.org, Mark Brown <broonie@kernel.org>, David Collins <collinsd@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, September 21, 2015 11:59:39 AM Viresh Kumar wrote:
-> On 21-09-15, 19:26, Dan Carpenter wrote:
-> > The code was using PTR_ERR(NULL) which causes a static checker warning.
-> > I have fixed up the printks and changed the return to -ENOENT.
-> > 
-> > Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-> > 
-> > diff --git a/drivers/base/power/opp/cpu.c b/drivers/base/power/opp/cpu.c
-> > index 3d946b5..7654c56 100644
-> > --- a/drivers/base/power/opp/cpu.c
-> > +++ b/drivers/base/power/opp/cpu.c
-> > @@ -223,8 +223,7 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask
-> >  	/* Get OPP descriptor node */
-> >  	np = _of_get_opp_desc_node(cpu_dev);
-> >  	if (!np) {
-> > -		dev_dbg(cpu_dev, "%s: Couldn't find opp node: %ld\n", __func__,
-> > -			PTR_ERR(np));
-> > +		dev_dbg(cpu_dev, "%s: Couldn't find cpu_dev node.\n", __func__);
-> >  		return -ENOENT;
-> >  	}
-> >  
-> > @@ -247,9 +246,9 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask
-> >  		/* Get OPP descriptor node */
-> >  		tmp_np = _of_get_opp_desc_node(tcpu_dev);
-> >  		if (!tmp_np) {
-> > -			dev_err(tcpu_dev, "%s: Couldn't find opp node: %ld\n",
-> > -				__func__, PTR_ERR(tmp_np));
-> > -			ret = PTR_ERR(tmp_np);
-> > +			dev_err(tcpu_dev, "%s: Couldn't find tcpu_dev node.\n",
-> > +				__func__);
-> > +			ret = -ENOENT;
-> >  			goto put_cpu_node;
-> >  		}
+On Friday, September 18, 2015 05:52:04 PM Stephen Boyd wrote:
+> This patch series adds support for CPR on MSM8916. The first
+> patch exposes a corner voting API to the CPR driver so that we can
+> change the corner for the MX regulator. If possible I would
+> like to make this patch prettier, but I don't have any great
+> ideas right now. The next patch adds support to adjust voltages in the OPP
+> layer, and then hooks that up to cpufreq-dt so that we can adjust
+> the voltage in response to what CPR tells us to do. I've also thrown
+> in a patch to make RCU lockdep warnings go away, but I'm not sure if it's
+> right. There's still work to do.
 > 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> The final patch adds the CPR driver. This still has some rough edges. With
+> the OPPv2 bindings I'm thinking of moving the frequency tables into DT
+> and adding a custom vendor property to describe which fuse corner to use for
+> each frequency.
+> 
+> Once you have these patches in place along with a CPU clock driver you
+> can eanble enable cpufreq-dt and add the cpufreq-dt device (maybe the
+> CPR driver should add the cpufreq-dt device?) and you'll see interrupts
+> for CPR and OPP voltage adjustments triggering CPUfreq to modify voltages.
+> 
+> Andy Gross (1):
+>   regulator: smd: Add floor and corner operations
+> 
+> Stephen Boyd (4):
+>   PM / OPP: Support adjusting OPP voltages at runtime
+>   OPP: Allow notifiers to call dev_pm_opp_get_{voltage,freq} RCU-free
+>   cpufreq-dt: Handle OPP voltage adjust events
+>   power: avs: Add support for CPR (Core Power Reduction)
 
-Applied, thanks!
+>From the responses so far I gather there will be a v3?
 
+Thanks,
 Rafael
-
