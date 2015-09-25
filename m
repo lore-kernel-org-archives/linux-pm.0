@@ -1,138 +1,102 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH][RFC] ACPI / PM: Fix incorrect wakeup irq setting before suspend-to-idle
-Date: Fri, 25 Sep 2015 03:23:48 +0200
-Message-ID: <1921486.iFXFBYijSj@vostro.rjw.lan>
-References: <1439172686-16360-1-git-send-email-yu.c.chen@intel.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: [GIT PULL] Thermal management updates for v4.3-rc3
+Date: Fri, 25 Sep 2015 09:48:15 +0800
+Message-ID: <1443145695.6491.5.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1439172686-16360-1-git-send-email-yu.c.chen@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: rafael.j.wysocki@intel.com, jiang.liu@linux.intel.com, rui.zhang@intel.com, len.brown@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([134.134.136.65]:5503 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753190AbbIYBsZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 24 Sep 2015 21:48:25 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, "Zhang, Rui" <rui.zhang@intel.com>
 
-On Monday, August 10, 2015 10:11:26 AM Chen Yu wrote:
-> For ACPI compatible system, SCI(ACPI System Control
-> Interrupt) is used to wake system up from suspend-to-idle.
-> Once CPU is woken up by SCI, interrupt handler will
-> firstly checks if current interrupt is legal to wake up
-> the whole system, thus irq_pm_check_wakeup is invoked
-> to validate the irq number. However, before suspend-to-idle,
-> acpi_gbl_FADT.sci_interrupt is marked rather than actual
-> irq number in acpi_freeze_prepare, this might lead to unable
-> to wake up the system.
-> 
-> This patch fixes this problem by marking the irq number
-> return by acpi_gsi_to_irq as IRQD_WAKEUP_STATE, rather than
-> marking the acpi_gbl_FADT.sci_interrupt.
-> 
-> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+Hi, Linus,
 
-That would only really matter if GPE devices were used, but I've never seen
-a system using them in practice, so this is more of a theoretical issue.
+Please pull from
+  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
 
-> ---
->  drivers/acpi/osl.c   |  5 ++++-
->  drivers/acpi/sleep.c | 20 ++++++++++++++++++--
->  drivers/acpi/sleep.h |  5 +++++
->  3 files changed, 27 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/acpi/osl.c b/drivers/acpi/osl.c
-> index 3b8963f..8e1420a 100644
-> --- a/drivers/acpi/osl.c
-> +++ b/drivers/acpi/osl.c
-> @@ -49,6 +49,7 @@
->  #include <asm/uaccess.h>
->  
->  #include "internal.h"
-> +#include "sleep.h"
->  
->  #define _COMPONENT		ACPI_OS_SERVICES
->  ACPI_MODULE_NAME("osl");
-> @@ -850,7 +851,9 @@ acpi_os_install_interrupt_handler(u32 gsi, acpi_osd_handler handler,
->  		       gsi);
->  		return AE_OK;
->  	}
-> -
-> +#ifdef CONFIG_SUSPEND
-> +	set_wake_irq_freeze(irq);
-> +#endif
+to receive the latest Thermal Management updates for 4.3-rc3 with
+top-most commit 97584d1838b7e2545c3b10aacef3327fcaa9531b:
 
-Please don't use #ifdefs in function bodies.  You can use IS_ENABLED() for that.
+  thermal: power_allocator: exit early if there are no cooling devices
+(2015-09-20 15:37:16 +0800)
 
->  	acpi_irq_handler = handler;
->  	acpi_irq_context = context;
->  	if (request_irq(irq, acpi_irq, IRQF_SHARED, "acpi", acpi_irq)) {
-> diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
-> index 2f0d4db..9e7b54e 100644
-> --- a/drivers/acpi/sleep.c
-> +++ b/drivers/acpi/sleep.c
-> @@ -620,6 +620,22 @@ static const struct platform_suspend_ops acpi_suspend_ops_old = {
->  	.end = acpi_pm_end,
->  	.recover = acpi_pm_finish,
->  };
-> +static int wake_irq_freeze = -EINVAL;
+on top of commit 6ff33f3902c3b1c5d0db6b1e2c70b6d76fba357f:
 
-There may be more than one of these in theory.
+  Linux 4.3-rc1 (2015-09-12 16:35:56 -0700)
 
-> +
-> +int get_wake_irq_freeze(void)
-> +{
-> +	if (IS_ERR_VALUE(wake_irq_freeze))
-> +		return acpi_gbl_FADT.sci_interrupt;
-> +	else
-> +		return wake_irq_freeze;
 
-That would look better this way IMO:
+Specifics:
 
-	return IS_ERR_VALUE(wake_irq_freeze) ?
-		acpi_gbl_FADT.sci_interrupt : wake_irq_freeze;
+- Power allocator governor changes to allow binding on thermal zones
+with missing power estimates information. From: Javi Merino.
 
-> +}
-> +EXPORT_SYMBOL_GPL(get_wake_irq_freeze);
-> +
-> +void set_wake_irq_freeze(unsigned int irq)
-> +{
-> +	wake_irq_freeze = (int)irq;
-> +}
-> +EXPORT_SYMBOL_GPL(set_wake_irq_freeze);
->  
->  static int acpi_freeze_begin(void)
->  {
-> @@ -632,14 +648,14 @@ static int acpi_freeze_prepare(void)
->  	acpi_enable_wakeup_devices(ACPI_STATE_S0);
->  	acpi_enable_all_wakeup_gpes();
->  	acpi_os_wait_events_complete();
-> -	enable_irq_wake(acpi_gbl_FADT.sci_interrupt);
-> +	enable_irq_wake(get_wake_irq_freeze());
->  	return 0;
->  }
->  
->  static void acpi_freeze_restore(void)
->  {
->  	acpi_disable_wakeup_devices(ACPI_STATE_S0);
-> -	disable_irq_wake(acpi_gbl_FADT.sci_interrupt);
-> +	disable_irq_wake(get_wake_irq_freeze());
->  	acpi_enable_all_runtime_gpes();
->  }
->  
-> diff --git a/drivers/acpi/sleep.h b/drivers/acpi/sleep.h
-> index c797ffa..eca4fda 100644
-> --- a/drivers/acpi/sleep.h
-> +++ b/drivers/acpi/sleep.h
-> @@ -6,3 +6,8 @@ extern struct list_head acpi_wakeup_device_list;
->  extern struct mutex acpi_device_lock;
->  
->  extern void acpi_resume_power_resources(void);
-> +
-> +#ifdef CONFIG_SUSPEND
-> +extern int get_wake_irq_freeze(void);
-> +extern void set_wake_irq_freeze(unsigned int irq);
-> +#endif
+- Add compile test flags on thermal drivers that allow it without
+producing compilation errors. From: Eduardo Valentin.
 
-Is the #ifdef needed here at all?
+- Fixes around memory allocation on cpu_cooling. From: Javi Merino.
 
-Thanks,
-Rafael
+- Fix on db8500 cpufreq code to allow autoload. From: Luis de
+Bethencourt.
+
+- Maintainer entries for cpu cooling device.
+
+thanks,
+rui
+
+----------------------------------------------------------------
+Eduardo Valentin (10):
+      thermal: hisi: allow compile test
+      thermal: spear: allow compile test
+      thermal: rockchip: allow compile test
+      thermal: kirkwood: allow compile test
+      thermal: dove: allow compile test
+      thermal: armada: allow compile test
+      thermal: exynos: allow compile test
+      thermal: qcom_spmi: allow compile test
+      thermal: ti-soc: allow compile test
+      thermal: ti-soc: Kconfig fix to avoid menu showing wrongly
+
+Javi Merino (7):
+      thermal: cpu_cooling: don't call kcalloc() under rcu_read_lock
+      thermal: cpu_cooling: free power table on error or when
+unregistering
+      thermal: Add a function to get the minimum power
+      thermal: power_allocator: relax the requirement of a
+sustainable_power in tzp
+      thermal: power_allocator: relax the requirement of two passive
+trip points
+      thermal: power_allocator: don't require tzp to be present for the
+thermal zone
+      thermal: power_allocator: exit early if there are no cooling
+devices
+
+Luis de Bethencourt (1):
+      thermal: db8500_cpufreq_cooling: Fix module autoload for OF
+platform driver
+
+Punit Agrawal (1):
+      thermal: Fix thermal_zone_of_sensor_register to match
+documentation
+
+Viresh Kumar (1):
+      thermal: cpu_cooling: Add MAINTAINERS entry
+
+ Documentation/thermal/power_allocator.txt |   2 +-
+ MAINTAINERS                               |  10 ++
+ drivers/thermal/Kconfig                   |  17 ++-
+ drivers/thermal/cpu_cooling.c             |  52 ++++---
+ drivers/thermal/db8500_cpufreq_cooling.c  |   1 +
+ drivers/thermal/power_allocator.c         | 243
+++++++++++++++++++++++--------
+ drivers/thermal/thermal_core.c            |  28 ++++
+ drivers/thermal/ti-soc-thermal/Kconfig    |   8 +-
+ include/linux/thermal.h                   |   8 +-
+ 9 files changed, 269 insertions(+), 100 deletions(-)
+
+
