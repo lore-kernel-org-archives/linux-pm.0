@@ -1,99 +1,98 @@
-From: Andreas Dannenberg <dannenberg@ti.com>
-Subject: [PATCH v6 14/14] Documentation: power: bq24257: Document exported sysfs entries
-Date: Thu, 24 Sep 2015 22:26:58 -0500
-Message-ID: <1443151618-29742-15-git-send-email-dannenberg@ti.com>
-References: <1443151618-29742-1-git-send-email-dannenberg@ti.com>
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH V3] thermal: qoriq: Add thermal management support
+Date: Fri, 25 Sep 2015 00:12:08 -0500
+Message-ID: <1443157928.32298.108.camel@freescale.com>
+References: <1442996938-47147-1-git-send-email-hongtao.jia@freescale.com>
+	 <1443132592.32298.56.camel@freescale.com>
+	 <BLUPR03MB14997B46CC6AFC247EDC340E1420@BLUPR03MB149.namprd03.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([192.94.94.40]:45961 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932190AbbIYD2z (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 24 Sep 2015 23:28:55 -0400
-In-Reply-To: <1443151618-29742-1-git-send-email-dannenberg@ti.com>
+Received: from mail-bn1on0114.outbound.protection.outlook.com ([157.56.110.114]:14945
+	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750807AbbIYFMS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 25 Sep 2015 01:12:18 -0400
+In-Reply-To: <BLUPR03MB14997B46CC6AFC247EDC340E1420@BLUPR03MB149.namprd03.prod.outlook.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-api@vger.kernel.org, Andreas Dannenberg <dannenberg@ti.com>
+To: Jia Hongtao-B38951 <hongtao.jia@freescale.com>
+Cc: "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 
-Document the settings exported by bq24257 charger driver through sysfs
-entries:
-- ovp_voltage
-- in_dpm_voltage
-- high_impedance_enable
-- sysoff_enable
+On Thu, 2015-09-24 at 22:09 -0500, Jia Hongtao-B38951 wrote:
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Friday, September 25, 2015 6:10 AM
+> > To: Jia Hongtao-B38951
+> > Cc: edubezval@gmail.com; linux-pm@vger.kernel.org; linuxppc-
+> > dev@lists.ozlabs.org
+> > Subject: Re: [PATCH V3] thermal: qoriq: Add thermal management support
+> > 
+> > On Wed, 2015-09-23 at 16:28 +0800, Jia Hongtao wrote:
+> > > This driver add thermal management support by enabling TMU (Thermal
+> > > Monitoring Unit) on QorIQ platform.
+> > > 
+> > > It's based on thermal of framework:
+> > > - Trip points defined in device tree.
+> > > - Cpufreq as cooling device registered in qoriq cpufreq driver.
+> > 
+> > I don't see any cooling device registered in the qoriq cpufreq driver.
+> > Is this dependent on some other patch?
+> 
+> It's not depend on any patch. But I saw your patch below:
+> [PATCH v3 5/5] cpufreq: qoriq: Don't look at clock implementation details
+> So I hold my patch waiting for your patch merged or there will be conflict.
+> 
+> I could send it out too if you are fine with it.
 
-Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
----
- Documentation/ABI/testing/sysfs-class-power | 58 +++++++++++++++++++++++++++++
- 1 file changed, 58 insertions(+)
+Yes, rebase it on that patch and send it.  Mention below the --- that you're 
+depending on that patch, and provide a patchwork/archive link.
 
-diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
-index 369d2a2..fd6cb79 100644
---- a/Documentation/ABI/testing/sysfs-class-power
-+++ b/Documentation/ABI/testing/sysfs-class-power
-@@ -74,3 +74,61 @@ Description:
- 
- 		Valid values:
- 		- 0 - 70 (minutes), step by 10 (rounded down)
-+
-+What:		/sys/class/power_supply/bq24257-charger/ovp_voltage
-+Date:		September 2015
-+KernelVersion: 4.3.0
-+Contact:	Andreas Dannenberg <dannenberg@ti.com>
-+Description:
-+		This entry configures the overvoltage protection feature of bq24257-
-+		type charger devices. This feature protects the device and other
-+		components against damage from overvoltage on the input supply. See
-+		device datasheet for details.
-+
-+		Valid values:
-+		- 6000000, 6500000, 7000000, 8000000, 9000000, 9500000, 10000000,
-+		  10500000 (all uV)
-+
-+What:		/sys/class/power_supply/bq24257-charger/in_dpm_voltage
-+Date:		September 2015
-+KernelVersion: 4.3.0
-+Contact:	Andreas Dannenberg <dannenberg@ti.com>
-+Description:
-+		This entry configures the input dynamic power path management voltage of
-+		bq24257-type charger devices. Once the supply drops to the configured
-+		voltage, the input current limit is reduced down to prevent the further
-+		drop of the supply. When the IC enters this mode, the charge current is
-+		lower than the set. See device datasheet for details.
-+
-+		Valid values:
-+		- 4200000, 4280000, 4360000, 4440000, 4520000, 4600000, 4680000,
-+		  4760000 (all uV)
-+
-+What:		/sys/class/power_supply/bq24257-charger/high_impedance_enable
-+Date:		September 2015
-+KernelVersion: 4.3.0
-+Contact:	Andreas Dannenberg <dannenberg@ti.com>
-+Description:
-+		This entry allows enabling the high-impedance mode of bq24257-type
-+		charger devices. If enabled, it places the charger IC into low power
-+		standby mode with the switch mode controller disabled. When disabled,
-+		the charger operates normally. See device datasheet for details.
-+
-+		Valid values:
-+		- 1: enabled
-+		- 0: disabled
-+
-+What:		/sys/class/power_supply/bq24257-charger/sysoff_enable
-+Date:		September 2015
-+KernelVersion: 4.3.0
-+Contact:	Andreas Dannenberg <dannenberg@ti.com>
-+Description:
-+		This entry allows enabling the sysoff mode of bq24257-type charger
-+		devices. If enabled and the input is removed, the internal battery FET
-+		is turned off in order to reduce the leakage from the BAT pin to less
-+		than 1uA. Note that on some devices/systems this disconnects the battery
-+		from the system. See device datasheet for details.
-+
-+		Valid values:
-+		- 1: enabled
-+		- 0: disabled
--- 
-1.9.1
+> > > +static int tmu_get_temp(void *p, int *temp) {
+> > > +     u8 val;
+> > > +     struct qoriq_tmu_data *data = p;
+> > > +
+> > > +     val = ioread32be(&data->regs->site[0].tritsr);
+> > > +     *temp = (int)val * 1000;
+> > 
+> > Why don't you declare val as int in the first place?
+> 
+> It's a 32bit register.
+> Only the least significant 8 bits represent the temperature.
+> The most significant bit shows the validness of the value.
+> I use u8 type to remove the rest 24bits influence.
+
+That's even worse.  Use an explicit & operation to extract the field you're 
+interested in.
+
+> > > +     ret = qoriq_tmu_calibration(pdev);      /* TMU calibration */
+> > > +     if (ret < 0) {
+> > > +             dev_err(&pdev->dev, "TMU calibration failed.\n");
+> > > +             ret = -ENODEV;
+> > > +             goto err_iomap;
+> > > +     }
+> > 
+> > That function returns negative when device tree properties are missing,
+> > not when a calibration procedure fails.
+> 
+> What's your suggestion here to return then?
+
+Remove this message and add a message in qoriq_tmu_calibration for each error 
+condition.  Also have qoriq_tmu_calibration pass back a proper error code, 
+not -1.
+
+> > > +static const struct of_device_id qoriq_tmu_match[] = {
+> > > +     { .compatible = "fsl,qoriq-tmu", },
+> > > +     {},
+> > > +};
+> > 
+> > Binding?
+> 
+> Not send out yet.
+
+The binding needs to come before the driver that uses it.
+
+-Scott
+
 
