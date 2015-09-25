@@ -1,65 +1,96 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing runtime suspend
-Date: Sat, 26 Sep 2015 01:04:29 +0200
-Message-ID: <1645828.psusZpgl4n@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1509251651320.1847-100000@iolanthe.rowland.org> <1772681.BcTRmqsgvW@vostro.rjw.lan>
+Subject: Re: [PATCH v4 0/5] Provide better MADT subtable sanity checks
+Date: Sat, 26 Sep 2015 01:29:43 +0200
+Message-ID: <1883446.cx2ktyZcIz@vostro.rjw.lan>
+References: <1442446005-19799-1-git-send-email-al.stone@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1772681.BcTRmqsgvW@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Oliver Neukum <oneukum@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Irina Tirdea <irina.tirdea@intel.com>, Len Brown <len.brown@intel.com>, Octavian Purdila <octavian.purdila@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Pavel Machek <pavel@ucw.cz>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1442446005-19799-1-git-send-email-al.stone@linaro.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Al Stone <al.stone@linaro.org>
+Cc: linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org, linux-pm@vger.kernel.org, linaro-acpi@lists.linaro.org, linaro-kernel@lists.linaro.org, patches@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, September 25, 2015 11:52:23 PM Rafael J. Wysocki wrote:
-> On Friday, September 25, 2015 05:13:04 PM Alan Stern wrote:
-> > On Fri, 25 Sep 2015, Rafael J. Wysocki wrote:
-> > 
-> > > On Friday, September 25, 2015 10:29:55 AM Alan Stern wrote:
-> > > > On Fri, 25 Sep 2015, Rafael J. Wysocki wrote:
-> > > > 
-> > > > > We are missing the "no remote wakeup" bit now (well, there is a PM QoS flag,
-> > > > > but it isn't very useful, so I'd prefer to replace it with a "no remote wakeup"
-> > > > > bit in struct dev_pm_info or something similar).
-> > > > > 
-> > > > > That is actually quite important, because (a) we can save energy but not
-> > > > > configuring the device to do remote wakeup in the first place and (b) that
-> > > > > may involve more than just the driver (for example, disabling PCI or ACPI
-> > > > > remote wakeup involves the bus type or similar).
-> > > > > 
-> > > > > So it looks like we need to be able to distinguish between "runtime suspend
-> > > > > with remote wakeup" and "runtime suspend without remote wakeup".
-> > > > > 
-> > > > > And if we do the latter, we may not even need the "inhibit" thing any more,
-> > > > > because suspended devices without that are not configured to do remote wakeup
-> > > > > cannot really signal anything in the majority of cases.
-> > > > 
-> > > > That works only for drivers that use autosuspend to go to low power in
-> > > > between events.  It doesn't work for drivers that remain at full power 
-> > > > as long as the device file is open.  That kind of driver does require 
-> > > > an "inhibit" interface.
-> > > 
-> > > Or an interface allowing user space to trigger pm_request_idle() for them.
-> > > 
-> > > So user space would change the "no remote wakeup" setting and then do the
-> > > "try to suspend now" thing.
-> > 
-> > So something like:
-> > 
-> > 	echo on >/sys/.../power/control  (in case the device was
-> > 			already in runtime suspend with wakeups enabled)
-> > 	echo off >/sys/.../power/wakeup
-> > 	echo auto >/sys/.../power/control
+On Wednesday, September 16, 2015 05:26:40 PM Al Stone wrote:
+> Currently, the BAD_MADT_ENTRY macro is used to do a very simple sanity
+> check on the various subtables that are defined for the MADT.  The check
+> compares the size of the subtable data structure as defined by ACPICA to
+> the length entry in the subtable.  If they are not the same, the assumption
+> is that the subtable is incorrect.
 > 
-> That, or there may be an additional value, say "aggressive", to write to the
-> control file in which case it becomes just
+> Over time, the ACPI spec has allowed for MADT subtables where this can
+> never be true (the local SAPIC subtable, for example).  Or, more recently,
+> the spec has accumulated some minor flaws where there are three possible 
+> sizes for a subtable, all of which are valid, but only for specific versions
+> of the spec (the GICC subtable).  In both cases, BAD_MADT_ENTRY reports these
+> subtables as bad when they are not.  In order to retain some sanity check
+> on the MADT subtables, we now have to special case these subtables.  Of
+> necessity, these special cases have ended up in arch-dependent code (arm64)
+> or an arch has simply decided to forgo the check (ia64).
 > 
-> echo aggressive >/sys/.../power/control
+> This patch set replaces the BAD_MADT_ENTRY macro with a function called
+> bad_madt_entry().  This function uses a data set of details about the
+> subtables to provide more sanity checking than before:
+> 
+> 	-- is the subtable legal for the version given in the FADT?
+> 
+> 	-- is the subtable legal for the revision of the MADT in use?
+> 
+> 	-- is the subtable of the proper length (including checking
+> 	   on the one variable length subtable that is currently ignored),
+> 	   given the FADT version and the MADT revision?
+> 
+> Further, this patch set adds in the call to bad_madt_entry() from the 
+> acpi_table_parse_madt() function, allowing it to be used consistently
+> by all architectures, for all subtables, and removing the need for each
+> of the subtable traversal callback functions to use BAD_MADT_ENTRY.
+> 
+> In theory, as the ACPI specification changes, we would only have to add
+> additional information to the data set describing the MADT subtables in
+> order to continue providing sanity checks, even when new subtables are
+> added.
+> 
+> These patches have been tested on an APM Mustang (arm64) and are known to
+> work there.  They have also been cross-compiled for x86 and ia64 with no
+> known failures.
+> 
+> Changes for v4:
+>    -- Remove extraneous white space change (Graeme Gregory)
+>    -- acpi_parse_entries() changes also needed a check to make sure that
+>       only MADT entries used bad_madt_entry() (Sudeep Holla)
+>    -- inadvertent use of 01day build noted that bad_madt_entry() can be
+>       static, so added it (Sudeep Holla, Fengguang Wu)
+> 
+> Changes for v3:
+>    -- Reviewed-and-tested-by from Sudeep Holla for arm64 parts
+>    -- Clearer language in error messages (Graeme Gregory, Timur Tabi)
+>    -- Double checked that inserting call to bad_madt_entry() into the
+>       function acpi_parse_entries() does not impact current behavior
+>       (Sudeep Holla)
+>    
+> Changes for v2:
+>    -- Acked-by on 2/5 from Marc Zyngier and Catalin Marinas for ARM
+>    -- Correct faulty end of loop test found by Timur Tabi
+> 
+> 
+> Al Stone (5):
+>   ACPI: add in a bad_madt_entry() function to eventually replace the
+>     macro
+>   ACPI / ARM64: remove usage of BAD_MADT_ENTRY/BAD_MADT_GICC_ENTRY
+>   ACPI / IA64: remove usage of BAD_MADT_ENTRY
+>   ACPI / X86: remove usage of BAD_MADT_ENTRY
+>   ACPI: remove definition of BAD_MADT_ENTRY macro
 
-That said I suppose that the "off" value for the "wakeup" file might also be
-useful in some other cases, so it likely is a better approach.
+I've queued this up for v4.4, but I had to rebase it on top of some previous
+changes in my linux-next branch.
+
+Can you please look at my bleeding-edge branch and see if the result of the
+rebase is as intended?  In particular, I'm not sure if we really need to return
+-EINVAL from acpi_parse_entries_array() when we find a bad MADT entry or it
+will be sufficient to simply go to the next entry in that case?
 
 Thanks,
 Rafael
+
