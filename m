@@ -1,92 +1,46 @@
-From: Rob Herring <robherring2@gmail.com>
-Subject: Re: [PATCH 1/2] of: thermal: Fix inconsitency between cooling-*-state
- and cooling-*-level
-Date: Fri, 25 Sep 2015 13:33:15 -0500
-Message-ID: <CAL_JsqKGk1v1FJ8De8L+UoMUC=T04SYK+WqHz6rZEYipiPYnqA@mail.gmail.com>
-References: <1441711013-11220-1-git-send-email-punit.agrawal@arm.com> <1441711249-11434-1-git-send-email-punit.agrawal@arm.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing runtime suspend
+Date: Fri, 25 Sep 2015 22:15:28 +0200
+Message-ID: <1825872.1pMPkfpiYH@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1509251026290.1847-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f176.google.com ([209.85.160.176]:36463 "EHLO
-	mail-yk0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932784AbbIYSdf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Sep 2015 14:33:35 -0400
-In-Reply-To: <1441711249-11434-1-git-send-email-punit.agrawal@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1509251026290.1847-100000@iolanthe.rowland.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Oliver Neukum <oneukum@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Irina Tirdea <irina.tirdea@intel.com>, Len Brown <len.brown@intel.com>, Octavian Purdila <octavian.purdila@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Pavel Machek <pavel@ucw.cz>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Punit Agrawal <punit.agrawal@arm.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
 
-On Tue, Sep 8, 2015 at 6:20 AM, Punit Agrawal <punit.agrawal@arm.com> wrote:
-> The device trees in the kernel as well as the binding description in
-> Documentation/devicetree/bindings/cpufreq/cpufreq-dt.txt use the
-> cooling-{min,max}-level property.
->
-> Fix the inconsistency with the binding description in
-> Documentation/devicetree/bindings/thermal/thermal.txt by changing
-> cooling-*-state properties to cooling-*-level.
->
-> Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
-> Cc: Eduardo Valentin <edubezval@gmail.com>
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: Mark Rutland <mark.rutland@arm.com>
-> Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
-> Cc: Kumar Gala <galak@codeaurora.org>
+On Friday, September 25, 2015 10:29:55 AM Alan Stern wrote:
+> On Fri, 25 Sep 2015, Rafael J. Wysocki wrote:
+> 
+> > We are missing the "no remote wakeup" bit now (well, there is a PM QoS flag,
+> > but it isn't very useful, so I'd prefer to replace it with a "no remote wakeup"
+> > bit in struct dev_pm_info or something similar).
+> > 
+> > That is actually quite important, because (a) we can save energy but not
+> > configuring the device to do remote wakeup in the first place and (b) that
+> > may involve more than just the driver (for example, disabling PCI or ACPI
+> > remote wakeup involves the bus type or similar).
+> > 
+> > So it looks like we need to be able to distinguish between "runtime suspend
+> > with remote wakeup" and "runtime suspend without remote wakeup".
+> > 
+> > And if we do the latter, we may not even need the "inhibit" thing any more,
+> > because suspended devices without that are not configured to do remote wakeup
+> > cannot really signal anything in the majority of cases.
+> 
+> That works only for drivers that use autosuspend to go to low power in
+> between events.  It doesn't work for drivers that remain at full power 
+> as long as the device file is open.  That kind of driver does require 
+> an "inhibit" interface.
 
-Both patches applied. Thanks.
+Or an interface allowing user space to trigger pm_request_idle() for them.
 
-Rob
+So user space would change the "no remote wakeup" setting and then do the
+"try to suspend now" thing.
 
-> ---
->  Documentation/devicetree/bindings/thermal/thermal.txt | 14 +++++++-------
->  1 file changed, 7 insertions(+), 7 deletions(-)
->
-> diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/Documentation/devicetree/bindings/thermal/thermal.txt
-> index 8a49362..8320186 100644
-> --- a/Documentation/devicetree/bindings/thermal/thermal.txt
-> +++ b/Documentation/devicetree/bindings/thermal/thermal.txt
-> @@ -55,16 +55,16 @@ of heat dissipation). For example a fan's cooling states correspond to
->  the different fan speeds possible. Cooling states are referred to by
->  single unsigned integers, where larger numbers mean greater heat
->  dissipation. The precise set of cooling states associated with a device
-> -(as referred to be the cooling-min-state and cooling-max-state
-> +(as referred to by the cooling-min-level and cooling-max-level
->  properties) should be defined in a particular device's binding.
->  For more examples of cooling devices, refer to the example sections below.
->
->  Required properties:
-> -- cooling-min-state:   An integer indicating the smallest
-> +- cooling-min-level:   An integer indicating the smallest
->    Type: unsigned       cooling state accepted. Typically 0.
->    Size: one cell
->
-> -- cooling-max-state:   An integer indicating the largest
-> +- cooling-max-level:   An integer indicating the largest
->    Type: unsigned       cooling state accepted.
->    Size: one cell
->
-> @@ -225,8 +225,8 @@ cpus {
->                         396000  950000
->                         198000  850000
->                 >;
-> -               cooling-min-state = <0>;
-> -               cooling-max-state = <3>;
-> +               cooling-min-level = <0>;
-> +               cooling-max-level = <3>;
->                 #cooling-cells = <2>; /* min followed by max */
->         };
->         ...
-> @@ -240,8 +240,8 @@ cpus {
->          */
->         fan0: fan@0x48 {
->                 ...
-> -               cooling-min-state = <0>;
-> -               cooling-max-state = <9>;
-> +               cooling-min-level = <0>;
-> +               cooling-max-level = <9>;
->                 #cooling-cells = <2>; /* min followed by max */
->         };
->  };
-> --
-> 2.5.0
->
+Thanks,
+Rafael
