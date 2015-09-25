@@ -1,156 +1,138 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing runtime suspend
-Date: Fri, 25 Sep 2015 02:43:22 +0200
-Message-ID: <3793944.MpK6fmXUQr@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1509231030270.1670-100000@iolanthe.rowland.org>
+Subject: Re: [PATCH][RFC] ACPI / PM: Fix incorrect wakeup irq setting before suspend-to-idle
+Date: Fri, 25 Sep 2015 03:23:48 +0200
+Message-ID: <1921486.iFXFBYijSj@vostro.rjw.lan>
+References: <1439172686-16360-1-git-send-email-yu.c.chen@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1509231030270.1670-100000@iolanthe.rowland.org>
+In-Reply-To: <1439172686-16360-1-git-send-email-yu.c.chen@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Oliver Neukum <oneukum@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Irina Tirdea <irina.tirdea@intel.com>, Len Brown <len.brown@intel.com>, Octavian Purdila <octavian.purdila@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Pavel Machek <pavel@ucw.cz>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: rafael.j.wysocki@intel.com, jiang.liu@linux.intel.com, rui.zhang@intel.com, len.brown@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, September 23, 2015 10:55:52 AM Alan Stern wrote:
-> On Wed, 23 Sep 2015, Oliver Neukum wrote:
+On Monday, August 10, 2015 10:11:26 AM Chen Yu wrote:
+> For ACPI compatible system, SCI(ACPI System Control
+> Interrupt) is used to wake system up from suspend-to-idle.
+> Once CPU is woken up by SCI, interrupt handler will
+> firstly checks if current interrupt is legal to wake up
+> the whole system, thus irq_pm_check_wakeup is invoked
+> to validate the irq number. However, before suspend-to-idle,
+> acpi_gbl_FADT.sci_interrupt is marked rather than actual
+> irq number in acpi_freeze_prepare, this might lead to unable
+> to wake up the system.
 > 
-> > On Tue, 2015-09-22 at 11:22 -0400, Alan Stern wrote:
-> > > On Tue, 22 Sep 2015, Oliver Neukum wrote:
-> > >  
-> > > > Cancel, yes, going to low power is a consequence which needn't bother
-> > > > the power subsystem.
-> > > 
-> > > Going to low power needn't involve the power subsystem?  That sounds 
-> > > weird.
-> > 
-> > Think of it like rfkill. It makes sense to suspend an rfkilled device.
-> > It still is the job of the driver to report that its device is idle.
+> This patch fixes this problem by marking the irq number
+> return by acpi_gsi_to_irq as IRQD_WAKEUP_STATE, rather than
+> marking the acpi_gbl_FADT.sci_interrupt.
 > 
-> Reporting that the device is idle _does_ involve the power subsystem.  
-> But never mind...
-> 
-> > > So my next question is: _How_ can this help PM to do a better job?  
-> > > That is, what are the mechanisms?
-> > 
-> > "inhibit" -> driver stops input -> driver sets PM count to zero
-> > -> PM subsystem acts
-> 
-> Your third step here poses problems.  There is no runtime-PM API a 
-> driver or subsystem can use to set its usage counter to 0.  All it can 
-> do is increment or decrement the counter.
-> 
-> > To go from the first to the second step a callback is needed
-> > 
-> > > One you have already stated: Lack of spurious events will help prevent 
-> > > unwanted wakeups (or unwanted failures to go to sleep).
-> > 
-> > That too. We also save CPU cycles.
-> > 
-> > > But Dmitry made a stronger claim: Inhibiting an input device should 
-> > > allow the device to go to low power.  I would like to know how we can 
-> > > implement this cleanly.  The most straightforward approach is to use 
-> > > runtime PM, but it's not obvious how this can be made to work with the 
-> > > current API.
-> > 
-> > Yes, we can use the current API.
-> > The key is that you think of the mechanism as induced idleness,
-> > not forced suspend. We already have a perfectly working mechanism
-> > for suspending idle devices.
-> 
-> After thinking some more about this, here's what I've got.
-> 
-> Let's talk about input-only devices being in an "idle" state or a
-> "running" state:
-> 
-> 	When the device is in the idle state, its driver does not 
-> 	communicate with the device.  In particular, the driver does 
-> 	not monitor for events or report them to the rest of the 
-> 	kernel.  It is appropriate to put the device in runtime suspend
-> 	with remote wakeup disabled.
-> 
-> 	When the device is in the running state, its driver receives
-> 	event reports from the device and propagates them forward.
-> 	The subsystem/driver may choose to put the device in runtime
-> 	suspend between events with remote wakeup enabled (like we do
-> 	for USB keyboards if no LEDs are on) or it may choose to leave
-> 	the device at full power the whole time.
-> 
-> The idea is that a device is in the idle state whenever the open file 
-> count is 0 _or_ it is "inhibited"; otherwise it is in the running 
-> state.
-> 
-> I tried to come up with a way to do some of this work in a central
-> core.  All I could think of was that the core should detect state
-> changes and inform the subsystem/driver when they occur.  Everything
-> else (starting and stopping I/O, adjusting the runtime-PM usage
-> counter) would have to be done by the subsystem/driver.
-> 
-> The problem is that a core generally isn't aware of when a file 
-> reference is opened or released.  Only the driver is.  Which means 
-> there's nothing that the core can do here; the driver and subsystem 
-> have to manage pretty much the whole thing.  A simple example:
-> 
-> open()
-> {
-> 	mutex_lock(&dev->open_mutex);
-> 	if (dev->open_count++ == 0 && !dev->inhibited) {
-> 		pm_runtime_get_sync(dev);
-> 		start_io(dev);
-> 	}
-> 	mutex_unlock(&dev->open_mutex);
-> }
-> 
-> release()
-> {
-> 	mutex_lock(&dev->open_mutex);
-> 	if (--dev->open_count == 0 && !dev->inhibited) {
-> 		stop_io(dev);
-> 		pm_runtime_put(dev);
-> 	}
-> 	mutex_unlock(&dev->open_mutex);
-> }
-> 
-> inhibit()
-> {
-> 	mutex_lock(&dev->open_mutex);
-> 	dev->inhibited = true;
-> 	if (dev->open_count > 0) {
-> 		stop_io(dev);
-> 		pm_runtime_put(dev);
-> 	}
-> 	mutex_unlock(&dev->open_mutex);
-> }
-> 
-> uninhibit()
-> {
-> 	mutex_lock(&dev->open_mutex);
-> 	dev->inhibited = false;
-> 	if (dev->open_count > 0) {
-> 		pm_runtime_get_sync(dev);
-> 		start_io(dev);
-> 	}
-> 	mutex_unlock(&dev->open_mutex);
-> }
-> 
-> This doesn't leave much room for the PM core or anything else.
+> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
 
-We are missing the "no remote wakeup" bit now (well, there is a PM QoS flag,
-but it isn't very useful, so I'd prefer to replace it with a "no remote wakeup"
-bit in struct dev_pm_info or something similar).
+That would only really matter if GPE devices were used, but I've never seen
+a system using them in practice, so this is more of a theoretical issue.
 
-That is actually quite important, because (a) we can save energy but not
-configuring the device to do remote wakeup in the first place and (b) that
-may involve more than just the driver (for example, disabling PCI or ACPI
-remote wakeup involves the bus type or similar).
+> ---
+>  drivers/acpi/osl.c   |  5 ++++-
+>  drivers/acpi/sleep.c | 20 ++++++++++++++++++--
+>  drivers/acpi/sleep.h |  5 +++++
+>  3 files changed, 27 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/acpi/osl.c b/drivers/acpi/osl.c
+> index 3b8963f..8e1420a 100644
+> --- a/drivers/acpi/osl.c
+> +++ b/drivers/acpi/osl.c
+> @@ -49,6 +49,7 @@
+>  #include <asm/uaccess.h>
+>  
+>  #include "internal.h"
+> +#include "sleep.h"
+>  
+>  #define _COMPONENT		ACPI_OS_SERVICES
+>  ACPI_MODULE_NAME("osl");
+> @@ -850,7 +851,9 @@ acpi_os_install_interrupt_handler(u32 gsi, acpi_osd_handler handler,
+>  		       gsi);
+>  		return AE_OK;
+>  	}
+> -
+> +#ifdef CONFIG_SUSPEND
+> +	set_wake_irq_freeze(irq);
+> +#endif
 
-So it looks like we need to be able to distinguish between "runtime suspend
-with remote wakeup" and "runtime suspend without remote wakeup".
+Please don't use #ifdefs in function bodies.  You can use IS_ENABLED() for that.
 
-And if we do the latter, we may not even need the "inhibit" thing any more,
-because suspended devices without that are not configured to do remote wakeup
-cannot really signal anything in the majority of cases.
+>  	acpi_irq_handler = handler;
+>  	acpi_irq_context = context;
+>  	if (request_irq(irq, acpi_irq, IRQF_SHARED, "acpi", acpi_irq)) {
+> diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
+> index 2f0d4db..9e7b54e 100644
+> --- a/drivers/acpi/sleep.c
+> +++ b/drivers/acpi/sleep.c
+> @@ -620,6 +620,22 @@ static const struct platform_suspend_ops acpi_suspend_ops_old = {
+>  	.end = acpi_pm_end,
+>  	.recover = acpi_pm_finish,
+>  };
+> +static int wake_irq_freeze = -EINVAL;
+
+There may be more than one of these in theory.
+
+> +
+> +int get_wake_irq_freeze(void)
+> +{
+> +	if (IS_ERR_VALUE(wake_irq_freeze))
+> +		return acpi_gbl_FADT.sci_interrupt;
+> +	else
+> +		return wake_irq_freeze;
+
+That would look better this way IMO:
+
+	return IS_ERR_VALUE(wake_irq_freeze) ?
+		acpi_gbl_FADT.sci_interrupt : wake_irq_freeze;
+
+> +}
+> +EXPORT_SYMBOL_GPL(get_wake_irq_freeze);
+> +
+> +void set_wake_irq_freeze(unsigned int irq)
+> +{
+> +	wake_irq_freeze = (int)irq;
+> +}
+> +EXPORT_SYMBOL_GPL(set_wake_irq_freeze);
+>  
+>  static int acpi_freeze_begin(void)
+>  {
+> @@ -632,14 +648,14 @@ static int acpi_freeze_prepare(void)
+>  	acpi_enable_wakeup_devices(ACPI_STATE_S0);
+>  	acpi_enable_all_wakeup_gpes();
+>  	acpi_os_wait_events_complete();
+> -	enable_irq_wake(acpi_gbl_FADT.sci_interrupt);
+> +	enable_irq_wake(get_wake_irq_freeze());
+>  	return 0;
+>  }
+>  
+>  static void acpi_freeze_restore(void)
+>  {
+>  	acpi_disable_wakeup_devices(ACPI_STATE_S0);
+> -	disable_irq_wake(acpi_gbl_FADT.sci_interrupt);
+> +	disable_irq_wake(get_wake_irq_freeze());
+>  	acpi_enable_all_runtime_gpes();
+>  }
+>  
+> diff --git a/drivers/acpi/sleep.h b/drivers/acpi/sleep.h
+> index c797ffa..eca4fda 100644
+> --- a/drivers/acpi/sleep.h
+> +++ b/drivers/acpi/sleep.h
+> @@ -6,3 +6,8 @@ extern struct list_head acpi_wakeup_device_list;
+>  extern struct mutex acpi_device_lock;
+>  
+>  extern void acpi_resume_power_resources(void);
+> +
+> +#ifdef CONFIG_SUSPEND
+> +extern int get_wake_irq_freeze(void);
+> +extern void set_wake_irq_freeze(unsigned int irq);
+> +#endif
+
+Is the #ifdef needed here at all?
 
 Thanks,
 Rafael
