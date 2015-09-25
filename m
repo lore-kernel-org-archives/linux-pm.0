@@ -1,40 +1,46 @@
-From: =?UTF-8?Q?YesGrowth_Loans=C2=AE?= <info@gmail.com>
-Subject: Guten Tag,
-Date: Fri, 25 Sep 2015 11:28:49 +0100
-Message-ID: <9c18897a5d4be64c84b260ec462ba8da__18439.203935168$1443177333$gmane$org@multivision.com.ve>
-Reply-To: <yesgrowth1986@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: [PATCH 07/17][UPDATE] mfd: qcom_rpm: Drop use of IRQF_NO_SUSPEND flag
+Date: Fri, 25 Sep 2015 13:39:13 +0100
+Message-ID: <1443184753-6803-1-git-send-email-sudeep.holla@arm.com>
+References: <1442850433-5903-8-git-send-email-sudeep.holla@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mvx1.ifxnw.com.ve ([200.62.27.83]:44799 "EHLO mvx1.ifxnw.com.ve"
+Received: from foss.arm.com ([217.140.101.70]:41885 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752178AbbIYKfV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 25 Sep 2015 06:35:21 -0400
+	id S1754412AbbIYMjW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 25 Sep 2015 08:39:22 -0400
+In-Reply-To: <1442850433-5903-8-git-send-email-sudeep.holla@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>, Samuel Ortiz <sameo@linux.intel.com>
 
+The driver handles wakeup irq correctly using irq_set_irq_wake. There's
+no need to use IRQF_NO_SUSPEND while registering the interrupt.
 
+This patch removes the use of IRQF_NO_SUSPEND flag.
 
---=20
-Guten Tag,
+Cc: Samuel Ortiz <sameo@linux.intel.com>
+Acked-by: Lee Jones <lee.jones@linaro.org>
+Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+---
+ drivers/mfd/qcom_rpm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-    Ich bin Mrs. Rose Butler, die vollziehende Mittel aus einem gut=20
-erkannt legitimen Darlehensgeberin als YesGrowth Darlehen bekannt. Habe=
-n=20
-Sie schlechte Kredit haben, oder Sie brauchen Geld, um Ihre Rechnungen=20
-zu bezahlen sind? unser Zinssatz von 3%.
+Updated version with the $subject fixed and Lee's ACK.
 
-   f=C3=BCllen Sie das folgende Formular aus, wenn interessiert.
+diff --git a/drivers/mfd/qcom_rpm.c b/drivers/mfd/qcom_rpm.c
+index 6afc9fabd94c..207a3bd68559 100644
+--- a/drivers/mfd/qcom_rpm.c
++++ b/drivers/mfd/qcom_rpm.c
+@@ -550,7 +550,7 @@ static int qcom_rpm_probe(struct platform_device *pdev)
+ 	ret = devm_request_irq(&pdev->dev,
+ 			       irq_ack,
+ 			       qcom_rpm_ack_interrupt,
+-			       IRQF_TRIGGER_RISING | IRQF_NO_SUSPEND,
++			       IRQF_TRIGGER_RISING,
+ 			       "qcom_rpm_ack",
+ 			       rpm);
+ 	if (ret) {
+-- 
+1.9.1
 
-Voller Name:
-Geschlecht:
-Ben=C3=B6tigte Menge:
-Dauer:
-
-Sie k=C3=B6nnen uns per Telefon kontaktieren: +447045734550,=20
-yesgrowth1986@gmail.com
-
-   Mit freundlichen Gr=C3=BC=C3=9Fen,
-=46rau Rose Butler
