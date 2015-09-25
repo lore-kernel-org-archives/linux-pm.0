@@ -1,98 +1,73 @@
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH V3] thermal: qoriq: Add thermal management support
-Date: Fri, 25 Sep 2015 00:12:08 -0500
-Message-ID: <1443157928.32298.108.camel@freescale.com>
-References: <1442996938-47147-1-git-send-email-hongtao.jia@freescale.com>
-	 <1443132592.32298.56.camel@freescale.com>
-	 <BLUPR03MB14997B46CC6AFC247EDC340E1420@BLUPR03MB149.namprd03.prod.outlook.com>
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: RE: [PATCH][RFC] ACPI / PM: Fix incorrect wakeup irq setting before
+ suspend-to-idle
+Date: Fri, 25 Sep 2015 06:42:41 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE64026586EF4@SHSMSX101.ccr.corp.intel.com>
+References: <1439172686-16360-1-git-send-email-yu.c.chen@intel.com>
+ <1921486.iFXFBYijSj@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bn1on0114.outbound.protection.outlook.com ([157.56.110.114]:14945
-	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750807AbbIYFMS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 25 Sep 2015 01:12:18 -0400
-In-Reply-To: <BLUPR03MB14997B46CC6AFC247EDC340E1420@BLUPR03MB149.namprd03.prod.outlook.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1921486.iFXFBYijSj@vostro.rjw.lan>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "jiang.liu@linux.intel.com" <jiang.liu@linux.intel.com>, "Zhang, Rui" <rui.zhang@intel.com>, "Brown, Len" <len.brown@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Jia Hongtao-B38951 <hongtao.jia@freescale.com>
-Cc: "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 
-On Thu, 2015-09-24 at 22:09 -0500, Jia Hongtao-B38951 wrote:
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Friday, September 25, 2015 6:10 AM
-> > To: Jia Hongtao-B38951
-> > Cc: edubezval@gmail.com; linux-pm@vger.kernel.org; linuxppc-
-> > dev@lists.ozlabs.org
-> > Subject: Re: [PATCH V3] thermal: qoriq: Add thermal management support
-> > 
-> > On Wed, 2015-09-23 at 16:28 +0800, Jia Hongtao wrote:
-> > > This driver add thermal management support by enabling TMU (Thermal
-> > > Monitoring Unit) on QorIQ platform.
-> > > 
-> > > It's based on thermal of framework:
-> > > - Trip points defined in device tree.
-> > > - Cpufreq as cooling device registered in qoriq cpufreq driver.
-> > 
-> > I don't see any cooling device registered in the qoriq cpufreq driver.
-> > Is this dependent on some other patch?
-> 
-> It's not depend on any patch. But I saw your patch below:
-> [PATCH v3 5/5] cpufreq: qoriq: Don't look at clock implementation details
-> So I hold my patch waiting for your patch merged or there will be conflict.
-> 
-> I could send it out too if you are fine with it.
-
-Yes, rebase it on that patch and send it.  Mention below the --- that you're 
-depending on that patch, and provide a patchwork/archive link.
-
-> > > +static int tmu_get_temp(void *p, int *temp) {
-> > > +     u8 val;
-> > > +     struct qoriq_tmu_data *data = p;
-> > > +
-> > > +     val = ioread32be(&data->regs->site[0].tritsr);
-> > > +     *temp = (int)val * 1000;
-> > 
-> > Why don't you declare val as int in the first place?
-> 
-> It's a 32bit register.
-> Only the least significant 8 bits represent the temperature.
-> The most significant bit shows the validness of the value.
-> I use u8 type to remove the rest 24bits influence.
-
-That's even worse.  Use an explicit & operation to extract the field you're 
-interested in.
-
-> > > +     ret = qoriq_tmu_calibration(pdev);      /* TMU calibration */
-> > > +     if (ret < 0) {
-> > > +             dev_err(&pdev->dev, "TMU calibration failed.\n");
-> > > +             ret = -ENODEV;
-> > > +             goto err_iomap;
-> > > +     }
-> > 
-> > That function returns negative when device tree properties are missing,
-> > not when a calibration procedure fails.
-> 
-> What's your suggestion here to return then?
-
-Remove this message and add a message in qoriq_tmu_calibration for each error 
-condition.  Also have qoriq_tmu_calibration pass back a proper error code, 
-not -1.
-
-> > > +static const struct of_device_id qoriq_tmu_match[] = {
-> > > +     { .compatible = "fsl,qoriq-tmu", },
-> > > +     {},
-> > > +};
-> > 
-> > Binding?
-> 
-> Not send out yet.
-
-The binding needs to come before the driver that uses it.
-
--Scott
-
-
+SGksUmFmYWVsLCB0aGFua3MgYSBsb3QgZm9yIHlvdXIgcmV2aWV3LCB3aWxsIHJlc2VuZCB2MiB2
+ZXJzaW9uLg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFJhZmFlbCBK
+LiBXeXNvY2tpIFttYWlsdG86cmp3QHJqd3lzb2NraS5uZXRdDQo+IFNlbnQ6IEZyaWRheSwgU2Vw
+dGVtYmVyIDI1LCAyMDE1IDk6MjQgQU0NCj4gVG86IENoZW4sIFl1IEMNCj4gQ2M6IFd5c29ja2ks
+IFJhZmFlbCBKOyBqaWFuZy5saXVAbGludXguaW50ZWwuY29tOyBaaGFuZywgUnVpOyBCcm93biwg
+TGVuOyBsaW51eC0NCj4ga2VybmVsQHZnZXIua2VybmVsLm9yZzsgbGludXgtcG1Admdlci5rZXJu
+ZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdW1JGQ10gQUNQSSAvIFBNOiBGaXggaW5jb3Jy
+ZWN0IHdha2V1cCBpcnEgc2V0dGluZyBiZWZvcmUNCj4gc3VzcGVuZC10by1pZGxlDQo+IA0KPiBP
+biBNb25kYXksIEF1Z3VzdCAxMCwgMjAxNSAxMDoxMToyNiBBTSBDaGVuIFl1IHdyb3RlOg0KPiA+
+IFNpZ25lZC1vZmYtYnk6IENoZW4gWXUgPHl1LmMuY2hlbkBpbnRlbC5jb20+DQo+IA0KPiBUaGF0
+IHdvdWxkIG9ubHkgcmVhbGx5IG1hdHRlciBpZiBHUEUgZGV2aWNlcyB3ZXJlIHVzZWQsIGJ1dCBJ
+J3ZlIG5ldmVyIHNlZW4gYQ0KPiBzeXN0ZW0gdXNpbmcgdGhlbSBpbiBwcmFjdGljZSwgc28gdGhp
+cyBpcyBtb3JlIG9mIGEgdGhlb3JldGljYWwgaXNzdWUuDQo+IA0KSSBoYXZlbid0IGVuY291bnRl
+cmVkIHRoaXMgcHJvYmxlbSwgIGp1c3QgZmluZCB0aGlzIHN1c3BpY2lvdXMgDQp3aGVuIEkgd2Fz
+IGRvaW5nIHNvbWUgb3RoZXIgZGVidWdnaW5nLg0KPiA+IC0tLQ0KPiA+ICBkcml2ZXJzL2FjcGkv
+b3NsLmMgICB8ICA1ICsrKystDQo+ID4gIGRyaXZlcnMvYWNwaS9zbGVlcC5jIHwgMjAgKysrKysr
+KysrKysrKysrKysrLS0gIGRyaXZlcnMvYWNwaS9zbGVlcC5oDQo+ID4gfCAgNSArKysrKw0KPiA+
+ICAzIGZpbGVzIGNoYW5nZWQsIDI3IGluc2VydGlvbnMoKyksIDMgZGVsZXRpb25zKC0pDQo+ID4N
+Cj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9hY3BpL29zbC5jIGIvZHJpdmVycy9hY3BpL29zbC5j
+IGluZGV4DQo+ID4gM2I4OTYzZi4uOGUxNDIwYSAxMDA2NDQNCj4gPiAtLS0gYS9kcml2ZXJzL2Fj
+cGkvb3NsLmMNCj4gPiArKysgYi9kcml2ZXJzL2FjcGkvb3NsLmMNCj4gPiBAQCAtODUwLDcgKzg1
+MSw5IEBAIGFjcGlfb3NfaW5zdGFsbF9pbnRlcnJ1cHRfaGFuZGxlcih1MzIgZ3NpLA0KPiBhY3Bp
+X29zZF9oYW5kbGVyIGhhbmRsZXIsDQo+ID4gIAkJICAgICAgIGdzaSk7DQo+ID4gIAkJcmV0dXJu
+IEFFX09LOw0KPiA+ICAJfQ0KPiA+IC0NCj4gPiArI2lmZGVmIENPTkZJR19TVVNQRU5EDQo+ID4g
+KwlzZXRfd2FrZV9pcnFfZnJlZXplKGlycSk7DQo+ID4gKyNlbmRpZg0KPiANCj4gUGxlYXNlIGRv
+bid0IHVzZSAjaWZkZWZzIGluIGZ1bmN0aW9uIGJvZGllcy4gIFlvdSBjYW4gdXNlIElTX0VOQUJM
+RUQoKSBmb3INCj4gdGhhdC4NCj4gDQpPSywgd2lsbCBkby4NCj4gPiAgCWFjcGlfaXJxX2hhbmRs
+ZXIgPSBoYW5kbGVyOw0KPiA+ICAJYWNwaV9pcnFfY29udGV4dCA9IGNvbnRleHQ7DQo+ID4gIAlp
+ZiAocmVxdWVzdF9pcnEoaXJxLCBhY3BpX2lycSwgSVJRRl9TSEFSRUQsICJhY3BpIiwgYWNwaV9p
+cnEpKSB7DQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvYWNwaS9zbGVlcC5jIGIvZHJpdmVycy9h
+Y3BpL3NsZWVwLmMgaW5kZXgNCj4gPiAyZjBkNGRiLi45ZTdiNTRlIDEwMDY0NA0KPiA+IC0tLSBh
+L2RyaXZlcnMvYWNwaS9zbGVlcC5jDQo+ID4gKysrIGIvZHJpdmVycy9hY3BpL3NsZWVwLmMNCj4g
+PiBAQCAtNjIwLDYgKzYyMCwyMiBAQCBzdGF0aWMgY29uc3Qgc3RydWN0IHBsYXRmb3JtX3N1c3Bl
+bmRfb3BzDQo+IGFjcGlfc3VzcGVuZF9vcHNfb2xkID0gew0KPiA+ICAJLmVuZCA9IGFjcGlfcG1f
+ZW5kLA0KPiA+ICAJLnJlY292ZXIgPSBhY3BpX3BtX2ZpbmlzaCwNCj4gPiAgfTsNCj4gPiArc3Rh
+dGljIGludCB3YWtlX2lycV9mcmVlemUgPSAtRUlOVkFMOw0KPiANCj4gVGhlcmUgbWF5IGJlIG1v
+cmUgdGhhbiBvbmUgb2YgdGhlc2UgaW4gdGhlb3J5Lg0KPiANCk9oLCBkbyB5b3UgbWVhbiB0aGUg
+bmFtaW5nIGZvciB0aGlzIHZhcmlhYmxlIGlzIHVuLXN1aXRhYmxlPyBPSywgSSdsbCBjaGFuZ2Ug
+aXQgdG8NCmFjcGlfZnJlZXplX3dha2VfaXJxIA0KPiA+ICsNCj4gPiAraW50IGdldF93YWtlX2ly
+cV9mcmVlemUodm9pZCkNCj4gPiArew0KPiA+ICsJaWYgKElTX0VSUl9WQUxVRSh3YWtlX2lycV9m
+cmVlemUpKQ0KPiA+ICsJCXJldHVybiBhY3BpX2dibF9GQURULnNjaV9pbnRlcnJ1cHQ7DQo+ID4g
+KwllbHNlDQo+ID4gKwkJcmV0dXJuIHdha2VfaXJxX2ZyZWV6ZTsNCj4gDQo+IFRoYXQgd291bGQg
+bG9vayBiZXR0ZXIgdGhpcyB3YXkgSU1POg0KPiANCj4gCXJldHVybiBJU19FUlJfVkFMVUUod2Fr
+ZV9pcnFfZnJlZXplKSA/DQo+IAkJYWNwaV9nYmxfRkFEVC5zY2lfaW50ZXJydXB0IDogd2FrZV9p
+cnFfZnJlZXplOw0KPiANCk9LLCB3aWxsIGRvLg0KDQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMv
+YWNwaS9zbGVlcC5oIGIvZHJpdmVycy9hY3BpL3NsZWVwLmggaW5kZXgNCj4gPiBjNzk3ZmZhLi5l
+Y2E0ZmRhIDEwMDY0NA0KPiA+IC0tLSBhL2RyaXZlcnMvYWNwaS9zbGVlcC5oDQo+ID4gKysrIGIv
+ZHJpdmVycy9hY3BpL3NsZWVwLmgNCj4gPiBAQCAtNiwzICs2LDggQEAgZXh0ZXJuIHN0cnVjdCBs
+aXN0X2hlYWQgYWNwaV93YWtldXBfZGV2aWNlX2xpc3Q7DQo+ID4gZXh0ZXJuIHN0cnVjdCBtdXRl
+eCBhY3BpX2RldmljZV9sb2NrOw0KPiA+DQo+ID4gIGV4dGVybiB2b2lkIGFjcGlfcmVzdW1lX3Bv
+d2VyX3Jlc291cmNlcyh2b2lkKTsNCj4gPiArDQo+ID4gKyNpZmRlZiBDT05GSUdfU1VTUEVORA0K
+PiA+ICtleHRlcm4gaW50IGdldF93YWtlX2lycV9mcmVlemUodm9pZCk7IGV4dGVybiB2b2lkDQo+
+ID4gK3NldF93YWtlX2lycV9mcmVlemUodW5zaWduZWQgaW50IGlycSk7ICNlbmRpZg0KPiANCj4g
+SXMgdGhlICNpZmRlZiBuZWVkZWQgaGVyZSBhdCBhbGw/DQo+IA0KV2lsbCBkZWxldGUgdGhlICNp
+ZmRlZg0KDQoNCkJlc3QgUmVnYXJkcywNCll1DQo=
