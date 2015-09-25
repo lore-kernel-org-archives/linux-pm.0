@@ -1,59 +1,77 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3 5/5] cpufreq: qoriq: Don't look at clock implementation details
-Date: Fri, 25 Sep 2015 23:50:02 +0200
-Message-ID: <2148611.GEpYdTfpoR@vostro.rjw.lan>
-References: <1442723397-26329-1-git-send-email-scottwood@freescale.com> <3374654.Hks5DeSGVV@vostro.rjw.lan> <1443215827.32298.130.camel@freescale.com>
+Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing runtime suspend
+Date: Fri, 25 Sep 2015 23:52:23 +0200
+Message-ID: <1772681.BcTRmqsgvW@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1509251651320.1847-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <1443215827.32298.130.camel@freescale.com>
-Sender: linux-clk-owner@vger.kernel.org
-To: Scott Wood <scottwood@freescale.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Russell King <linux@arm.linux.org.uk>, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, Tang Yuantian <Yuantian.Tang@freescale.com>
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1509251651320.1847-100000@iolanthe.rowland.org>
+Sender: linux-input-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Oliver Neukum <oneukum@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Irina Tirdea <irina.tirdea@intel.com>, Len Brown <len.brown@intel.com>, Octavian Purdila <octavian.purdila@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Pavel Machek <pavel@ucw.cz>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, September 25, 2015 04:17:07 PM Scott Wood wrote:
-> On Fri, 2015-09-25 at 23:42 +0200, Rafael J. Wysocki wrote:
-> > On Tuesday, September 22, 2015 12:46:54 PM Viresh Kumar wrote:
-> > > On 19-09-15, 23:29, Scott Wood wrote:
-> > > > Get the CPU clock's potential parent clocks from the clock interface
-> > > > itself, rather than manually parsing the clocks property to find a
-> > > > phandle, looking at the clock-names property of that, and assuming that
-> > > > those are valid parent clocks for the cpu clock.
-> > > > 
-> > > > This is necessary now that the clocks are generated based on the clock
-> > > > driver's knowledge of the chip rather than a fragile device-tree
-> > > > description of the mux options.
-> > > > 
-> > > > We can now rely on the clock driver to ensure that the mux only exposes
-> > > > options that are valid.  The cpufreq driver was currently being overly
-> > > > conservative in some cases -- for example, the "min_cpufreq =
-> > > > get_bus_freq()" restriction only applies to chips with erratum
-> > > > A-004510, and whether the freq_mask used on p5020 is needed depends on
-> > > > the actual frequencies of the PLLs (FWIW, p5040 has a similar
-> > > > limitation but its .freq_mask was zero) -- and the frequency mask
-> > > > mechanism made assumptions about particular parent clock indices that
-> > > > are no longer valid.
-> > > > 
-> > > > Signed-off-by: Scott Wood <scottwood@freescale.com>
-> > > > ---
-> > > > v3: was patch 1/5 and patch 4/5, plus blacklist e6500 and changes
-> > > > to clk api usage
-> > > > 
-> > > >  drivers/cpufreq/qoriq-cpufreq.c | 137 ++++++++++++---------------------
-> > > > -------
-> > > >  1 file changed, 40 insertions(+), 97 deletions(-)
-> > > 
-> > > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > 
-> > I'm wondering who's supposed to be merging this set?
+On Friday, September 25, 2015 05:13:04 PM Alan Stern wrote:
+> On Fri, 25 Sep 2015, Rafael J. Wysocki wrote:
 > 
-> As I noted in the cover letter, I'm looking for acks so that I can apply 
-> these to a topic branch which can be pulled through the PPC and ARM trees, 
-> each of which will have patches that depend on it.
+> > On Friday, September 25, 2015 10:29:55 AM Alan Stern wrote:
+> > > On Fri, 25 Sep 2015, Rafael J. Wysocki wrote:
+> > > 
+> > > > We are missing the "no remote wakeup" bit now (well, there is a PM QoS flag,
+> > > > but it isn't very useful, so I'd prefer to replace it with a "no remote wakeup"
+> > > > bit in struct dev_pm_info or something similar).
+> > > > 
+> > > > That is actually quite important, because (a) we can save energy but not
+> > > > configuring the device to do remote wakeup in the first place and (b) that
+> > > > may involve more than just the driver (for example, disabling PCI or ACPI
+> > > > remote wakeup involves the bus type or similar).
+> > > > 
+> > > > So it looks like we need to be able to distinguish between "runtime suspend
+> > > > with remote wakeup" and "runtime suspend without remote wakeup".
+> > > > 
+> > > > And if we do the latter, we may not even need the "inhibit" thing any more,
+> > > > because suspended devices without that are not configured to do remote wakeup
+> > > > cannot really signal anything in the majority of cases.
+> > > 
+> > > That works only for drivers that use autosuspend to go to low power in
+> > > between events.  It doesn't work for drivers that remain at full power 
+> > > as long as the device file is open.  That kind of driver does require 
+> > > an "inhibit" interface.
+> > 
+> > Or an interface allowing user space to trigger pm_request_idle() for them.
+> > 
+> > So user space would change the "no remote wakeup" setting and then do the
+> > "try to suspend now" thing.
+> 
+> So something like:
+> 
+> 	echo on >/sys/.../power/control  (in case the device was
+> 			already in runtime suspend with wakeups enabled)
+> 	echo off >/sys/.../power/wakeup
+> 	echo auto >/sys/.../power/control
 
-OK, so no objections from the cpufreq side and you have the ACK from Viresh.
+That, or there may be an additional value, say "aggressive", to write to the
+control file in which case it becomes just
+
+echo aggressive >/sys/.../power/control
+
+> 
+> This should work.  But it would require that the driver doesn't
+> increment the usage counter when the device file is opened.
+
+Right.
+
+> I can imagine this might lead to trouble if you're dealing with hardware that
+> doesn't support remote wakeup very well.  The driver wouldn't be able
+> to work around the hardware issue by incrementing the usage counter.
+
+Or the "aggressive" mode wouldn't work for it.
+
+> In real life this might not be a serious issue.  I don't know.
+
+Me neither.
 
 Thanks,
 Rafael
