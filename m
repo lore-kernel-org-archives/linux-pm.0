@@ -1,57 +1,65 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH 07/17][UPDATE] mfd: qcom_rpm: Drop use of IRQF_NO_SUSPEND
- flag
-Date: Fri, 25 Sep 2015 17:08:28 +0100
-Message-ID: <20150925160828.GG27197@x1>
-References: <1442850433-5903-8-git-send-email-sudeep.holla@arm.com>
- <1443184753-6803-1-git-send-email-sudeep.holla@arm.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: Voltage setting on chained regulators, how?
+Date: Fri, 25 Sep 2015 09:47:26 -0700
+Message-ID: <20150925164726.GI30445@sirena.org.uk>
+References: <20150925090724.GH7858@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="ZZc4RZLlj7DA0l+0"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:49659 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932234AbbIYQsC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Sep 2015 12:48:02 -0400
 Content-Disposition: inline
-In-Reply-To: <1443184753-6803-1-git-send-email-sudeep.holla@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Samuel Ortiz <sameo@linux.intel.com>
+In-Reply-To: <20150925090724.GH7858@pengutronix.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>, kernel@pengutronix.de, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Fri, 25 Sep 2015, Sudeep Holla wrote:
 
-> The driver handles wakeup irq correctly using irq_set_irq_wake. There=
-'s
-> no need to use IRQF_NO_SUSPEND while registering the interrupt.
->=20
-> This patch removes the use of IRQF_NO_SUSPEND flag.
->=20
-> Cc: Samuel Ortiz <sameo@linux.intel.com>
-> Acked-by: Lee Jones <lee.jones@linaro.org>
-> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-> ---
->  drivers/mfd/qcom_rpm.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> Updated version with the $subject fixed and Lee's ACK.
+--ZZc4RZLlj7DA0l+0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Applied, thanks.
+On Fri, Sep 25, 2015 at 11:07:24AM +0200, Sascha Hauer wrote:
 
-> diff --git a/drivers/mfd/qcom_rpm.c b/drivers/mfd/qcom_rpm.c
-> index 6afc9fabd94c..207a3bd68559 100644
-> --- a/drivers/mfd/qcom_rpm.c
-> +++ b/drivers/mfd/qcom_rpm.c
-> @@ -550,7 +550,7 @@ static int qcom_rpm_probe(struct platform_device =
-*pdev)
->  	ret =3D devm_request_irq(&pdev->dev,
->  			       irq_ack,
->  			       qcom_rpm_ack_interrupt,
-> -			       IRQF_TRIGGER_RISING | IRQF_NO_SUSPEND,
-> +			       IRQF_TRIGGER_RISING,
->  			       "qcom_rpm_ack",
->  			       rpm);
->  	if (ret) {
+> Any idea how such a scenario could be implemented? The regulator
+> framework already has some idea of supply regulators, but it only takes
+> care of en/disabling the supplies and will not change the voltage on the
+> supplies. Should this be implemented in the regulator framework?  Some
+> first experiments brought me into a locking hell quite fast.
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+It's just a case of implementation, but yes the locking is fun.  I don't
+think it's that big a deal to rethink it, it's partly complicated since
+the existing locking is designed to be really simple and easy to review.
+
+> For added fun ideally we want to put the LDOs in bypass mode instead of
+> configuring them for minimum dropout. The bypass mode doesn't work for
+> the 1.2GHz operating point though since the ripple on the switching
+> regulator gets too high. So we can't just statically configure bypass
+> mode but have to enable it dynamically based on the operating points.
+
+I suspect you always want the LDO in there to clean the supply up, it's
+just a more serious issue when more power is being drawn.  Having a DCDC
+doing most of the voltage drop for efficiency with a LDO to clean up the
+output of the DCDC is pretty common.
+
+--ZZc4RZLlj7DA0l+0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJWBXqdAAoJECTWi3JdVIfQAWIH+gILdDFJ0Qwvqz7KQ5YNl1/n
+WHqiMVu9OryFzxcGHbszd+0UA+KVHRZtjNMqjwbT4/JoImiyLqgjJhJgWd92pupA
+YeRmw/xyCLHnR/0jrjhA1e+eIlUnoya5pqbAb7/rwLVdnY8vyo1NIGd2dnjGfEjP
+XjctB8emYPj/FeaHyKxy0BJYyWv2nhxVYXaB/wZteeVPbGHPfJVwRWpO12tkwMfV
+w3Y5F6hMbhWRfKbMCh1RfVvFBUuQFK854AyqRrCAefuQNCI8GIL4Ocgo9VjRjPjr
+6PFAMUTS3r7isXWiPzl9f/0sreuNodrWd459JkPWnvWBfr1o/nWzzFzCf+4XL68=
+=Axoe
+-----END PGP SIGNATURE-----
+
+--ZZc4RZLlj7DA0l+0--
