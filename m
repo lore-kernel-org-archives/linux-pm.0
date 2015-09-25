@@ -1,85 +1,56 @@
-From: Hongtao Jia <hongtao.jia@freescale.com>
-Subject: RE: [PATCH V3] thermal: qoriq: Add thermal management support
-Date: Fri, 25 Sep 2015 07:36:04 +0000
-Message-ID: <BLUPR03MB149D7CAE2B82F34325BAB14E1420@BLUPR03MB149.namprd03.prod.outlook.com>
-References: <1442996938-47147-1-git-send-email-hongtao.jia@freescale.com>
-	 <1443132592.32298.56.camel@freescale.com>
-	 <BLUPR03MB14997B46CC6AFC247EDC340E1420@BLUPR03MB149.namprd03.prod.outlook.com>
- <1443157928.32298.108.camel@freescale.com>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Voltage setting on chained regulators, how?
+Date: Fri, 25 Sep 2015 11:07:24 +0200
+Message-ID: <20150925090724.GH7858@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bl2on0124.outbound.protection.outlook.com ([65.55.169.124]:60032
-	"EHLO na01-bl2-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751106AbbIYHgI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 25 Sep 2015 03:36:08 -0400
-In-Reply-To: <1443157928.32298.108.camel@freescale.com>
-Content-Language: en-US
+Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:49527 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755487AbbIYJH3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Sep 2015 05:07:29 -0400
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Scott Wood <scottwood@freescale.com>
-Cc: "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, kernel@pengutronix.de, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
 
-DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIx
-DQo+IFNlbnQ6IEZyaWRheSwgU2VwdGVtYmVyIDI1LCAyMDE1IDE6MTIgUE0NCj4gVG86IEppYSBI
-b25ndGFvLUIzODk1MQ0KPiBDYzogZWR1YmV6dmFsQGdtYWlsLmNvbTsgbGludXgtcG1Admdlci5r
-ZXJuZWwub3JnOyBsaW51eHBwYy0NCj4gZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gU3ViamVjdDog
-UmU6IFtQQVRDSCBWM10gdGhlcm1hbDogcW9yaXE6IEFkZCB0aGVybWFsIG1hbmFnZW1lbnQgc3Vw
-cG9ydA0KPiANCj4gT24gVGh1LCAyMDE1LTA5LTI0IGF0IDIyOjA5IC0wNTAwLCBKaWEgSG9uZ3Rh
-by1CMzg5NTEgd3JvdGU6DQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4g
-RnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gPiA+IFNlbnQ6IEZyaWRheSwgU2VwdGVtYmVyIDI1
-LCAyMDE1IDY6MTAgQU0NCj4gPiA+IFRvOiBKaWEgSG9uZ3Rhby1CMzg5NTENCj4gPiA+IENjOiBl
-ZHViZXp2YWxAZ21haWwuY29tOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLQ0K
-PiA+ID4gZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggVjNd
-IHRoZXJtYWw6IHFvcmlxOiBBZGQgdGhlcm1hbCBtYW5hZ2VtZW50DQo+IHN1cHBvcnQNCj4gPiA+
-DQo+ID4gPiBPbiBXZWQsIDIwMTUtMDktMjMgYXQgMTY6MjggKzA4MDAsIEppYSBIb25ndGFvIHdy
-b3RlOg0KPiA+ID4gPiBUaGlzIGRyaXZlciBhZGQgdGhlcm1hbCBtYW5hZ2VtZW50IHN1cHBvcnQg
-YnkgZW5hYmxpbmcgVE1VIChUaGVybWFsDQo+ID4gPiA+IE1vbml0b3JpbmcgVW5pdCkgb24gUW9y
-SVEgcGxhdGZvcm0uDQo+ID4gPiA+DQo+ID4gPiA+IEl0J3MgYmFzZWQgb24gdGhlcm1hbCBvZiBm
-cmFtZXdvcms6DQo+ID4gPiA+IC0gVHJpcCBwb2ludHMgZGVmaW5lZCBpbiBkZXZpY2UgdHJlZS4N
-Cj4gPiA+ID4gLSBDcHVmcmVxIGFzIGNvb2xpbmcgZGV2aWNlIHJlZ2lzdGVyZWQgaW4gcW9yaXEg
-Y3B1ZnJlcSBkcml2ZXIuDQo+ID4gPg0KPiA+ID4gSSBkb24ndCBzZWUgYW55IGNvb2xpbmcgZGV2
-aWNlIHJlZ2lzdGVyZWQgaW4gdGhlIHFvcmlxIGNwdWZyZXEgZHJpdmVyLg0KPiA+ID4gSXMgdGhp
-cyBkZXBlbmRlbnQgb24gc29tZSBvdGhlciBwYXRjaD8NCj4gPg0KPiA+IEl0J3Mgbm90IGRlcGVu
-ZCBvbiBhbnkgcGF0Y2guIEJ1dCBJIHNhdyB5b3VyIHBhdGNoIGJlbG93Og0KPiA+IFtQQVRDSCB2
-MyA1LzVdIGNwdWZyZXE6IHFvcmlxOiBEb24ndCBsb29rIGF0IGNsb2NrIGltcGxlbWVudGF0aW9u
-DQo+IGRldGFpbHMNCj4gPiBTbyBJIGhvbGQgbXkgcGF0Y2ggd2FpdGluZyBmb3IgeW91ciBwYXRj
-aCBtZXJnZWQgb3IgdGhlcmUgd2lsbCBiZQ0KPiBjb25mbGljdC4NCj4gPg0KPiA+IEkgY291bGQg
-c2VuZCBpdCBvdXQgdG9vIGlmIHlvdSBhcmUgZmluZSB3aXRoIGl0Lg0KPiANCj4gWWVzLCByZWJh
-c2UgaXQgb24gdGhhdCBwYXRjaCBhbmQgc2VuZCBpdC4gIE1lbnRpb24gYmVsb3cgdGhlIC0tLSB0
-aGF0DQo+IHlvdSdyZQ0KPiBkZXBlbmRpbmcgb24gdGhhdCBwYXRjaCwgYW5kIHByb3ZpZGUgYSBw
-YXRjaHdvcmsvYXJjaGl2ZSBsaW5rLg0KDQpPay4gQnV0IEkgbmVlZCByZWJhc2UgYWdhaW4gaWYg
-eW91IGhhdmUgZnVydGhlciBjaGFuZ2VzIG9uIHRoYXQgcGF0Y2guDQpBbnl3YXksIHRoaXMgaXMg
-bm90IGEgYmlnIHByb2JsZW0gZm9yIG1lLg0KDQo+IA0KPiA+ID4gPiArc3RhdGljIGludCB0bXVf
-Z2V0X3RlbXAodm9pZCAqcCwgaW50ICp0ZW1wKSB7DQo+ID4gPiA+ICsgICAgIHU4IHZhbDsNCj4g
-PiA+ID4gKyAgICAgc3RydWN0IHFvcmlxX3RtdV9kYXRhICpkYXRhID0gcDsNCj4gPiA+ID4gKw0K
-PiA+ID4gPiArICAgICB2YWwgPSBpb3JlYWQzMmJlKCZkYXRhLT5yZWdzLT5zaXRlWzBdLnRyaXRz
-cik7DQo+ID4gPiA+ICsgICAgICp0ZW1wID0gKGludCl2YWwgKiAxMDAwOw0KPiA+ID4NCj4gPiA+
-IFdoeSBkb24ndCB5b3UgZGVjbGFyZSB2YWwgYXMgaW50IGluIHRoZSBmaXJzdCBwbGFjZT8NCj4g
-Pg0KPiA+IEl0J3MgYSAzMmJpdCByZWdpc3Rlci4NCj4gPiBPbmx5IHRoZSBsZWFzdCBzaWduaWZp
-Y2FudCA4IGJpdHMgcmVwcmVzZW50IHRoZSB0ZW1wZXJhdHVyZS4NCj4gPiBUaGUgbW9zdCBzaWdu
-aWZpY2FudCBiaXQgc2hvd3MgdGhlIHZhbGlkbmVzcyBvZiB0aGUgdmFsdWUuDQo+ID4gSSB1c2Ug
-dTggdHlwZSB0byByZW1vdmUgdGhlIHJlc3QgMjRiaXRzIGluZmx1ZW5jZS4NCj4gDQo+IFRoYXQn
-cyBldmVuIHdvcnNlLiAgVXNlIGFuIGV4cGxpY2l0ICYgb3BlcmF0aW9uIHRvIGV4dHJhY3QgdGhl
-IGZpZWxkDQo+IHlvdSdyZQ0KPiBpbnRlcmVzdGVkIGluLg0KDQpXaWxsIGNoYW5nZSBmb3IgbmV4
-dCB2ZXJzaW9uLg0KDQo+IA0KPiA+ID4gPiArICAgICByZXQgPSBxb3JpcV90bXVfY2FsaWJyYXRp
-b24ocGRldik7ICAgICAgLyogVE1VIGNhbGlicmF0aW9uICovDQo+ID4gPiA+ICsgICAgIGlmIChy
-ZXQgPCAwKSB7DQo+ID4gPiA+ICsgICAgICAgICAgICAgZGV2X2VycigmcGRldi0+ZGV2LCAiVE1V
-IGNhbGlicmF0aW9uIGZhaWxlZC5cbiIpOw0KPiA+ID4gPiArICAgICAgICAgICAgIHJldCA9IC1F
-Tk9ERVY7DQo+ID4gPiA+ICsgICAgICAgICAgICAgZ290byBlcnJfaW9tYXA7DQo+ID4gPiA+ICsg
-ICAgIH0NCj4gPiA+DQo+ID4gPiBUaGF0IGZ1bmN0aW9uIHJldHVybnMgbmVnYXRpdmUgd2hlbiBk
-ZXZpY2UgdHJlZSBwcm9wZXJ0aWVzIGFyZQ0KPiBtaXNzaW5nLA0KPiA+ID4gbm90IHdoZW4gYSBj
-YWxpYnJhdGlvbiBwcm9jZWR1cmUgZmFpbHMuDQo+ID4NCj4gPiBXaGF0J3MgeW91ciBzdWdnZXN0
-aW9uIGhlcmUgdG8gcmV0dXJuIHRoZW4/DQo+IA0KPiBSZW1vdmUgdGhpcyBtZXNzYWdlIGFuZCBh
-ZGQgYSBtZXNzYWdlIGluIHFvcmlxX3RtdV9jYWxpYnJhdGlvbiBmb3IgZWFjaA0KPiBlcnJvcg0K
-PiBjb25kaXRpb24uICBBbHNvIGhhdmUgcW9yaXFfdG11X2NhbGlicmF0aW9uIHBhc3MgYmFjayBh
-IHByb3BlciBlcnJvciBjb2RlLA0KPiBub3QgLTEuDQoNClllcywgdGhpcyBpcyBtb3JlIHJlYXNv
-bmFibGUuDQoNCj4gDQo+ID4gPiA+ICtzdGF0aWMgY29uc3Qgc3RydWN0IG9mX2RldmljZV9pZCBx
-b3JpcV90bXVfbWF0Y2hbXSA9IHsNCj4gPiA+ID4gKyAgICAgeyAuY29tcGF0aWJsZSA9ICJmc2ws
-cW9yaXEtdG11IiwgfSwNCj4gPiA+ID4gKyAgICAge30sDQo+ID4gPiA+ICt9Ow0KPiA+ID4NCj4g
-PiA+IEJpbmRpbmc/DQo+ID4NCj4gPiBOb3Qgc2VuZCBvdXQgeWV0Lg0KPiANCj4gVGhlIGJpbmRp
-bmcgbmVlZHMgdG8gY29tZSBiZWZvcmUgdGhlIGRyaXZlciB0aGF0IHVzZXMgaXQuDQoNClJpZ2h0
-LiBJIHdpbGwgc2VuZCBvdXQgdGhlIHdob2xlIHBhdGNoc2V0Lg0KDQo+IA0KPiAtU2NvdHQNCj4g
-DQoNCg==
+Hi,
+
+On i.MX6 we have the situation that the CPU is supplied by a SoC
+internal linear regulator which in turn is supplied by an external
+switching regulator:
+
+---> Switching regulator ---> LDO ---> CPU
+
+For energy efficiency reasons we want to minimize the dropout voltage on
+the LDO.
+
+Any idea how such a scenario could be implemented? The regulator
+framework already has some idea of supply regulators, but it only takes
+care of en/disabling the supplies and will not change the voltage on the
+supplies. Should this be implemented in the regulator framework?  Some
+first experiments brought me into a locking hell quite fast.
+
+Another possibility of course would be to implement this completely in
+the cpufreq driver and not bother the regulator framework. Looking at
+drivers/cpufreq/imx6q-cpufreq.c the regulator handling code in there is
+already complicated enough since in reality it's not one LDO but three
+and we would have to add another two regulators to this driver.
+
+For added fun ideally we want to put the LDOs in bypass mode instead of
+configuring them for minimum dropout. The bypass mode doesn't work for
+the 1.2GHz operating point though since the ripple on the switching
+regulator gets too high. So we can't just statically configure bypass
+mode but have to enable it dynamically based on the operating points.
+
+Any ideas/input how to proceed?
+
+Thanks
+  Sascha
+
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
