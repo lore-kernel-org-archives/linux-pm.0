@@ -1,125 +1,89 @@
-From: Marc Titinger <mtitinger@baylibre.com>
-Subject: Re: [PATCH 2/2] arm: omap2+: PM: change trace_power_domain_target
- event format.
-Date: Fri, 25 Sep 2015 16:57:49 +0200
-Message-ID: <560560ED.5000803@baylibre.com>
-References: <1443187345-14834-1-git-send-email-mtitinger+renesas@baylibre.com>
- <1443187345-14834-3-git-send-email-mtitinger+renesas@baylibre.com>
- <20150925101025.6b3862bf@gandalf.local.home>
+From: Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
+Subject: [PATCH v7 02/15] power: bq24257: Remove IRQ config through stat-gpios
+Date: Fri, 25 Sep 2015 10:54:07 -0500
+Message-ID: <1443196460-26156-3-git-send-email-dannenberg@ti.com>
+References: <1443196460-26156-1-git-send-email-dannenberg@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f182.google.com ([209.85.212.182]:35288 "EHLO
-	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756982AbbIYO5y (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Sep 2015 10:57:54 -0400
-Received: by wicge5 with SMTP id ge5so24507278wic.0
-        for <linux-pm@vger.kernel.org>; Fri, 25 Sep 2015 07:57:52 -0700 (PDT)
-In-Reply-To: <20150925101025.6b3862bf@gandalf.local.home>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-api-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1443196460-26156-1-git-send-email-dannenberg-l0cyMroinI0@public.gmane.org>
+Sender: linux-api-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Laurentiu Palcu <laurentiu.palcu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Cc: Ramakrishna Pallala <ramakrishna.pallala-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: khilman@kernel.org, rjw@rjwysocki.net, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org
 
+At the time the driver was written GpioInt resources in ACPI were not
+passed to the driver in client->irq, as opposed to DT enumeration. To
+accommodate this use case, a "stat-gpios" property was introduced to
+allow configuring the IRQ.
 
+However this issue with ACPI was fixed in commit "845c877 i2c / ACPI:
+Assign IRQ for devices that have GpioInt automatically" and makes this
+workaround no longer necessary, hence we can remove the support for the
+"stat-gpios" property and the associated code from the bq24257 driver.
 
-On 25/09/2015 16:10, Steven Rostedt wrote:
-> On Fri, 25 Sep 2015 15:22:25 +0200
-> Marc Titinger <mtitinger@baylibre.com> wrote:
->
->> From: Marc Titinger <mtitinger@baylibre.com>
->>
->> power_domain_target arg3 is now a string (event name) with generic power
->> domains. In the case of Omap, it is a hint to the prev/next switch op.
->> Incidentally this trace is now conditioned by CONFIG_PM_ADVANCED_DEBUG.
-> I'm curious to why the addition of this config option?
->
-I meant to be consistent with Juno/generic-power-domains, so that this 
-trace always (or never) requires this switch.
-I think I will remove this condition for both actually.
+Signed-off-by: Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
+---
+ drivers/power/bq24257_charger.c | 28 ++++------------------------
+ 1 file changed, 4 insertions(+), 24 deletions(-)
 
->> Compiled for Omap2+ but not tested.
->>
->> Signed-off-by: Marc Titinger <mtitinger@baylibre.com>
->> ---
->>   arch/arm/mach-omap2/powerdomain.c | 32 ++++++++++++++++++++------------
->>   1 file changed, 20 insertions(+), 12 deletions(-)
->>
->> diff --git a/arch/arm/mach-omap2/powerdomain.c b/arch/arm/mach-omap2/powerdomain.c
->> index 78af6d8..cd77696 100644
->> --- a/arch/arm/mach-omap2/powerdomain.c
->> +++ b/arch/arm/mach-omap2/powerdomain.c
->> @@ -160,7 +160,7 @@ static void _update_logic_membank_counters(struct powerdomain *pwrdm)
->>   static int _pwrdm_state_switch(struct powerdomain *pwrdm, int flag)
->>   {
->>   
->> -	int prev, next, state, trace_state = 0;
->> +	int prev, state;
->>   
->>   	if (pwrdm == NULL)
->>   		return -EINVAL;
->> @@ -177,18 +177,25 @@ static int _pwrdm_state_switch(struct powerdomain *pwrdm, int flag)
->>   			pwrdm->state_counter[prev]++;
->>   		if (prev == PWRDM_POWER_RET)
->>   			_update_logic_membank_counters(pwrdm);
->> -		/*
->> -		 * If the power domain did not hit the desired state,
->> -		 * generate a trace event with both the desired and hit states
->> -		 */
->> -		next = pwrdm_read_next_pwrst(pwrdm);
->> -		if (next != prev) {
->> -			trace_state = (PWRDM_TRACE_STATES_FLAG |
->> +
->> +#ifdef CONFIG_PM_ADVANCED_DEBUG
-> You do realize that you can add this to the block:
->
->
-> 	if (trace_power_domain_target_enabled()) {
-Nope I didn't, but now I do ;) thanks.
-
-Marc.
-
->
-> as it seems this code is only run to pass data to the tracepoint. The
-> above if statement will keep this block in the 'out-of-line' path when
-> tracing is not enabled via a static_key (jump-label).
->
-> -- Steve
->
->> +		{
->> +			/*
->> +			 * If the power domain did not hit the desired state,
->> +			 * generate a trace event with both the desired and hit
->> +			 * states */
->> +			int next = pwrdm_read_next_pwrst(pwrdm);
->> +
->> +			if (next != prev) {
->> +				int trace_state = (PWRDM_TRACE_STATES_FLAG |
->>   				       ((next & OMAP_POWERSTATE_MASK) << 8) |
->>   				       ((prev & OMAP_POWERSTATE_MASK) << 0));
->> -			trace_power_domain_target(pwrdm->name, trace_state,
->> -						  smp_processor_id());
->> +				trace_power_domain_target(pwrdm->name,
->> +					trace_state, "PWRDM_STATE_PREV");
->> +			}
->>   		}
->> +#endif
->> +
->>   		break;
->>   	default:
->>   		return -EINVAL;
->> @@ -522,9 +529,10 @@ int pwrdm_set_next_pwrst(struct powerdomain *pwrdm, u8 pwrst)
->>   		 pwrdm->name, pwrst);
->>   
->>   	if (arch_pwrdm && arch_pwrdm->pwrdm_set_next_pwrst) {
->> +#ifdef CONFIG_PM_ADVANCED_DEBUG
->>   		/* Trace the pwrdm desired target state */
->> -		trace_power_domain_target(pwrdm->name, pwrst,
->> -					  smp_processor_id());
->> +		trace_power_domain_target(pwrdm->name, pwrst, "set_next_pwrst");
->> +#endif
->>   		/* Program the pwrdm desired target state */
->>   		ret = arch_pwrdm->pwrdm_set_next_pwrst(pwrdm, pwrst);
->>   	}
-
+diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
+index 5859bc7..69b53d0 100644
+--- a/drivers/power/bq24257_charger.c
++++ b/drivers/power/bq24257_charger.c
+@@ -36,7 +36,6 @@
+ #define BQ24257_REG_7			0x06
+ 
+ #define BQ24257_MANUFACTURER		"Texas Instruments"
+-#define BQ24257_STAT_IRQ		"stat"
+ #define BQ24257_PG_GPIO			"pg"
+ 
+ #define BQ24257_ILIM_SET_DELAY		1000	/* msec */
+@@ -606,19 +605,6 @@ static int bq24257_power_supply_init(struct bq24257_device *bq)
+ 	return 0;
+ }
+ 
+-static int bq24257_irq_probe(struct bq24257_device *bq)
+-{
+-	struct gpio_desc *stat_irq;
+-
+-	stat_irq = devm_gpiod_get_index(bq->dev, BQ24257_STAT_IRQ, 0, GPIOD_IN);
+-	if (IS_ERR(stat_irq)) {
+-		dev_err(bq->dev, "could not probe stat_irq pin\n");
+-		return PTR_ERR(stat_irq);
+-	}
+-
+-	return gpiod_to_irq(stat_irq);
+-}
+-
+ static int bq24257_pg_gpio_probe(struct bq24257_device *bq)
+ {
+ 	bq->pg = devm_gpiod_get_index(bq->dev, BQ24257_PG_GPIO, 0, GPIOD_IN);
+@@ -740,21 +726,15 @@ static int bq24257_probe(struct i2c_client *client,
+ 		return ret;
+ 	}
+ 
+-	if (client->irq <= 0)
+-		client->irq = bq24257_irq_probe(bq);
+-
+-	if (client->irq < 0) {
+-		dev_err(dev, "no irq resource found\n");
+-		return client->irq;
+-	}
+-
+ 	ret = devm_request_threaded_irq(dev, client->irq, NULL,
+ 					bq24257_irq_handler_thread,
+ 					IRQF_TRIGGER_FALLING |
+ 					IRQF_TRIGGER_RISING | IRQF_ONESHOT,
+-					BQ24257_STAT_IRQ, bq);
+-	if (ret)
++					"bq24257", bq);
++	if (ret) {
++		dev_err(dev, "Failed to request IRQ #%d\n", client->irq);
+ 		return ret;
++	}
+ 
+ 	ret = bq24257_power_supply_init(bq);
+ 	if (ret < 0)
+-- 
+1.9.1
