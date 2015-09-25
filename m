@@ -1,105 +1,57 @@
-From: Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
-Subject: [PATCH v7 03/15] power: bq24257: Streamline input current limit setup
-Date: Fri, 25 Sep 2015 10:54:08 -0500
-Message-ID: <1443196460-26156-4-git-send-email-dannenberg@ti.com>
-References: <1443196460-26156-1-git-send-email-dannenberg@ti.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH 07/17][UPDATE] mfd: qcom_rpm: Drop use of IRQF_NO_SUSPEND
+ flag
+Date: Fri, 25 Sep 2015 17:08:28 +0100
+Message-ID: <20150925160828.GG27197@x1>
+References: <1442850433-5903-8-git-send-email-sudeep.holla@arm.com>
+ <1443184753-6803-1-git-send-email-sudeep.holla@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1443196460-26156-1-git-send-email-dannenberg-l0cyMroinI0@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Laurentiu Palcu <laurentiu.palcu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Cc: Ramakrishna Pallala <ramakrishna.pallala-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1443184753-6803-1-git-send-email-sudeep.holla@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Samuel Ortiz <sameo@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-The maximum amount of input current the charger should draw is dependent
-on the power supply and should only be (re-)configured when the power
-supply gets connected and disconnected. However the driver was also
-lowering the bq24257's input current limit setting to 500mA when the
-battery was removed and restored the previous setting according to the
-power supply capabilities when the battery was reconnected although
-these events are not impacting the amount of power that can be drawn
-from the supply. Furthermore, a re-configuration of the input current
-limit to 500mA when the battery gets disconnected is actually dangerous
-if the limit was set higher previously and the system draws more than
-500mA in which case the system voltage would be reduced in order to
-maintain 500mA which could result in the system getting too low of a
-supply to maintain operation. Last but not least the mechanism itself
-used for battery re-connection detection did not work in corner cases
-such as when the device's input current loop becomes active and the
-bq24257 device clears its battery fault error resulting in incorrectly
-reporting that the battery got reconnected.
+On Fri, 25 Sep 2015, Sudeep Holla wrote:
 
-This patches removes the impact the battery removal/insertion has on the
-input current limit configured for the bq24257 and simplifies the
-associated handler routine.
+> The driver handles wakeup irq correctly using irq_set_irq_wake. There=
+'s
+> no need to use IRQF_NO_SUSPEND while registering the interrupt.
+>=20
+> This patch removes the use of IRQF_NO_SUSPEND flag.
+>=20
+> Cc: Samuel Ortiz <sameo@linux.intel.com>
+> Acked-by: Lee Jones <lee.jones@linaro.org>
+> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+> ---
+>  drivers/mfd/qcom_rpm.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> Updated version with the $subject fixed and Lee's ACK.
 
-Signed-off-by: Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
----
- drivers/power/bq24257_charger.c | 29 +++++++++++------------------
- 1 file changed, 11 insertions(+), 18 deletions(-)
+Applied, thanks.
 
-diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
-index 69b53d0..d2d077c 100644
---- a/drivers/power/bq24257_charger.c
-+++ b/drivers/power/bq24257_charger.c
-@@ -448,14 +448,13 @@ static void bq24257_handle_state_change(struct bq24257_device *bq,
- {
- 	int ret;
- 	struct bq24257_state old_state;
--	bool reset_iilimit = false;
--	bool config_iilimit = false;
- 
- 	mutex_lock(&bq->lock);
- 	old_state = bq->state;
- 	mutex_unlock(&bq->lock);
- 
--	if (!new_state->power_good) {			     /* power removed */
-+	if (!new_state->power_good) {
-+		dev_dbg(bq->dev, "Power removed\n");
- 		cancel_delayed_work_sync(&bq->iilimit_setup_work);
- 
- 		/* activate D+/D- port detection algorithm */
-@@ -463,26 +462,20 @@ static void bq24257_handle_state_change(struct bq24257_device *bq,
- 		if (ret < 0)
- 			goto error;
- 
--		reset_iilimit = true;
--	} else if (!old_state.power_good) {		    /* power inserted */
--		config_iilimit = true;
--	} else if (new_state->fault == FAULT_NO_BAT) {	   /* battery removed */
--		cancel_delayed_work_sync(&bq->iilimit_setup_work);
--
--		reset_iilimit = true;
--	} else if (old_state.fault == FAULT_NO_BAT) {    /* battery connected */
--		config_iilimit = true;
--	} else if (new_state->fault == FAULT_TIMER) { /* safety timer expired */
--		dev_err(bq->dev, "Safety timer expired! Battery dead?\n");
--	}
--
--	if (reset_iilimit) {
-+		/* reset input current limit */
- 		ret = bq24257_field_write(bq, F_IILIMIT, IILIMIT_500);
- 		if (ret < 0)
- 			goto error;
--	} else if (config_iilimit) {
-+	} else if (!old_state.power_good) {
-+		dev_dbg(bq->dev, "Power inserted\n");
-+
-+		/* configure input current limit */
- 		schedule_delayed_work(&bq->iilimit_setup_work,
- 				      msecs_to_jiffies(BQ24257_ILIM_SET_DELAY));
-+	} else if (new_state->fault == FAULT_NO_BAT) {
-+		dev_warn(bq->dev, "Battery removed\n");
-+	} else if (new_state->fault == FAULT_TIMER) {
-+		dev_err(bq->dev, "Safety timer expired! Battery dead?\n");
- 	}
- 
- 	return;
--- 
-1.9.1
+> diff --git a/drivers/mfd/qcom_rpm.c b/drivers/mfd/qcom_rpm.c
+> index 6afc9fabd94c..207a3bd68559 100644
+> --- a/drivers/mfd/qcom_rpm.c
+> +++ b/drivers/mfd/qcom_rpm.c
+> @@ -550,7 +550,7 @@ static int qcom_rpm_probe(struct platform_device =
+*pdev)
+>  	ret =3D devm_request_irq(&pdev->dev,
+>  			       irq_ack,
+>  			       qcom_rpm_ack_interrupt,
+> -			       IRQF_TRIGGER_RISING | IRQF_NO_SUSPEND,
+> +			       IRQF_TRIGGER_RISING,
+>  			       "qcom_rpm_ack",
+>  			       rpm);
+>  	if (ret) {
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
