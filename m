@@ -1,49 +1,65 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 0/5] Support CPR on MSM8916
-Date: Sat, 26 Sep 2015 00:03:26 +0200
-Message-ID: <7646588.WPLWGVmoNH@vostro.rjw.lan>
-References: <1442623929-4507-1-git-send-email-sboyd@codeaurora.org>
+Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing runtime suspend
+Date: Sat, 26 Sep 2015 01:04:29 +0200
+Message-ID: <1645828.psusZpgl4n@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1509251651320.1847-100000@iolanthe.rowland.org> <1772681.BcTRmqsgvW@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1442623929-4507-1-git-send-email-sboyd@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Nishanth Menon <nm@ti.com>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Andy Gross <agross@codeaurora.org>, linux-pm@vger.kernel.org, Mark Brown <broonie@kernel.org>, David Collins <collinsd@codeaurora.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1772681.BcTRmqsgvW@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Oliver Neukum <oneukum@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Irina Tirdea <irina.tirdea@intel.com>, Len Brown <len.brown@intel.com>, Octavian Purdila <octavian.purdila@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Pavel Machek <pavel@ucw.cz>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, September 18, 2015 05:52:04 PM Stephen Boyd wrote:
-> This patch series adds support for CPR on MSM8916. The first
-> patch exposes a corner voting API to the CPR driver so that we can
-> change the corner for the MX regulator. If possible I would
-> like to make this patch prettier, but I don't have any great
-> ideas right now. The next patch adds support to adjust voltages in the OPP
-> layer, and then hooks that up to cpufreq-dt so that we can adjust
-> the voltage in response to what CPR tells us to do. I've also thrown
-> in a patch to make RCU lockdep warnings go away, but I'm not sure if it's
-> right. There's still work to do.
+On Friday, September 25, 2015 11:52:23 PM Rafael J. Wysocki wrote:
+> On Friday, September 25, 2015 05:13:04 PM Alan Stern wrote:
+> > On Fri, 25 Sep 2015, Rafael J. Wysocki wrote:
+> > 
+> > > On Friday, September 25, 2015 10:29:55 AM Alan Stern wrote:
+> > > > On Fri, 25 Sep 2015, Rafael J. Wysocki wrote:
+> > > > 
+> > > > > We are missing the "no remote wakeup" bit now (well, there is a PM QoS flag,
+> > > > > but it isn't very useful, so I'd prefer to replace it with a "no remote wakeup"
+> > > > > bit in struct dev_pm_info or something similar).
+> > > > > 
+> > > > > That is actually quite important, because (a) we can save energy but not
+> > > > > configuring the device to do remote wakeup in the first place and (b) that
+> > > > > may involve more than just the driver (for example, disabling PCI or ACPI
+> > > > > remote wakeup involves the bus type or similar).
+> > > > > 
+> > > > > So it looks like we need to be able to distinguish between "runtime suspend
+> > > > > with remote wakeup" and "runtime suspend without remote wakeup".
+> > > > > 
+> > > > > And if we do the latter, we may not even need the "inhibit" thing any more,
+> > > > > because suspended devices without that are not configured to do remote wakeup
+> > > > > cannot really signal anything in the majority of cases.
+> > > > 
+> > > > That works only for drivers that use autosuspend to go to low power in
+> > > > between events.  It doesn't work for drivers that remain at full power 
+> > > > as long as the device file is open.  That kind of driver does require 
+> > > > an "inhibit" interface.
+> > > 
+> > > Or an interface allowing user space to trigger pm_request_idle() for them.
+> > > 
+> > > So user space would change the "no remote wakeup" setting and then do the
+> > > "try to suspend now" thing.
+> > 
+> > So something like:
+> > 
+> > 	echo on >/sys/.../power/control  (in case the device was
+> > 			already in runtime suspend with wakeups enabled)
+> > 	echo off >/sys/.../power/wakeup
+> > 	echo auto >/sys/.../power/control
 > 
-> The final patch adds the CPR driver. This still has some rough edges. With
-> the OPPv2 bindings I'm thinking of moving the frequency tables into DT
-> and adding a custom vendor property to describe which fuse corner to use for
-> each frequency.
+> That, or there may be an additional value, say "aggressive", to write to the
+> control file in which case it becomes just
 > 
-> Once you have these patches in place along with a CPU clock driver you
-> can eanble enable cpufreq-dt and add the cpufreq-dt device (maybe the
-> CPR driver should add the cpufreq-dt device?) and you'll see interrupts
-> for CPR and OPP voltage adjustments triggering CPUfreq to modify voltages.
-> 
-> Andy Gross (1):
->   regulator: smd: Add floor and corner operations
-> 
-> Stephen Boyd (4):
->   PM / OPP: Support adjusting OPP voltages at runtime
->   OPP: Allow notifiers to call dev_pm_opp_get_{voltage,freq} RCU-free
->   cpufreq-dt: Handle OPP voltage adjust events
->   power: avs: Add support for CPR (Core Power Reduction)
+> echo aggressive >/sys/.../power/control
 
->From the responses so far I gather there will be a v3?
+That said I suppose that the "off" value for the "wakeup" file might also be
+useful in some other cases, so it likely is a better approach.
 
 Thanks,
 Rafael
