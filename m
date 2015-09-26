@@ -1,40 +1,47 @@
-From: Robert Jarzmik <robert.jarzmik@free.fr>
-Subject: Re: [PATCH v3 13/26] ARM: pxa: magician: Fix and add charging detection functions
-Date: Sat, 26 Sep 2015 16:45:32 +0200
-Message-ID: <87eghli6di.fsf@belgarion.home>
-References: <cover.1442462898.git.petr.cvek@tul.cz> <55FA48A0.9090709@tul.cz>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing
+ runtime suspend
+Date: Sat, 26 Sep 2015 11:20:50 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1509261110470.4211-100000@netrider.rowland.org>
+References: <1645828.psusZpgl4n@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp10.smtpout.orange.fr ([80.12.242.132]:53428 "EHLO
-	smtp.smtpout.orange.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751118AbbIZOx3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 26 Sep 2015 10:53:29 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <1645828.psusZpgl4n@vostro.rjw.lan>
+Sender: linux-input-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Oliver Neukum <oneukum@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Irina Tirdea <irina.tirdea@intel.com>, Len Brown <len.brown@intel.com>, Octavian Purdila <octavian.purdila@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Pavel Machek <pavel@ucw.cz>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Petr Cvek <petr.cvek@tul.cz>
-Cc: philipp.zabel@gmail.com, daniel@zonque.org, haojian.zhuang@gmail.com, cooloney@gmail.com, rpurdie@rpsys.net, j.anaszewski@samsung.com, linux@arm.linux.org.uk, sre@kernel.org, dbaryshkov@gmail.com, lee.jones@linaro.org, sameo@linux.intel.com, dwmw2@infradead.org, arnd@arndb.de, g.liakhovetski@gmx.de, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-Petr Cvek <petr.cvek@tul.cz> writes:
+On Sat, 26 Sep 2015, Rafael J. Wysocki wrote:
 
-> This patch fixes the charging detection functions for pda_power driver
-> (according to newly discovered EGPIOs) and add NiCd backup accumulator
-> charging support.
->
-> Signed-off-by: Petr Cvek <petr.cvek@tul.cz>
-> ---
-> +static int magician_is_usb_online(void)
-> +{
-> +	return gpio_get_value(EGPIO_MAGICIAN_CABLE_INSERTED) &&
-> +		(!gpio_get_value(EGPIO_MAGICIAN_CABLE_TYPE)); /* USB=0 */
-No need to the extra parenthesis, just :
-> +	return gpio_get_value(EGPIO_MAGICIAN_CABLE_INSERTED) &&
-> +		!gpio_get_value(EGPIO_MAGICIAN_CABLE_TYPE); /* USB=0 */
+> > > So something like:
+> > > 
+> > > 	echo on >/sys/.../power/control  (in case the device was
+> > > 			already in runtime suspend with wakeups enabled)
+> > > 	echo off >/sys/.../power/wakeup
+> > > 	echo auto >/sys/.../power/control
 
-As the remaining looks sgood to me, I'll wait for a week for Philipp's ack and
-queuing it after with this parenthesis thing fixed, won't cost me much.
+Cases where the driver wants to avoid runtime suspend (while the device
+is active) because of bad wakeup support in the hardware can be handled
+easily enough.  The runtime-idle or runtime-suspend callback routine
+can check whether wakeup == off; if it isn't then the callback should
+return -EBUSY.  Thus the driver can prevent runtime suspend without any
+need to increment the usage counter.
 
-Cheers.
+> > That, or there may be an additional value, say "aggressive", to write to the
+> > control file in which case it becomes just
+> > 
+> > echo aggressive >/sys/.../power/control
+> 
+> That said I suppose that the "off" value for the "wakeup" file might also be
+> useful in some other cases, so it likely is a better approach.
 
---
-Robert
+We still need some sort of "inhibit" callback for cases where the
+driver doesn't want to go into runtime suspend but does want to turn
+off all I/O.  Should this callback be triggered when the user writes
+"off" to power/wakeup, or when the user writes "inhibit" to
+power/control, or should there be a separate sysfs attribute?
+
+Alan Stern
+
