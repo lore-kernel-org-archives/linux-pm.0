@@ -1,66 +1,26 @@
-From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: RE: [PATCH][RFC] ACPI / PM: Fix incorrect wakeup irq setting before
- suspend-to-idle
-Date: Sat, 26 Sep 2015 14:37:19 +0000
-Message-ID: <36DF59CE26D8EE47B0655C516E9CE64026587434@SHSMSX101.ccr.corp.intel.com>
-References: <1439172686-16360-1-git-send-email-yu.c.chen@intel.com>
- <1921486.iFXFBYijSj@vostro.rjw.lan>
- <36DF59CE26D8EE47B0655C516E9CE64026586EF4@SHSMSX101.ccr.corp.intel.com>
- <1660650.dn5zct2eoN@vostro.rjw.lan>
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+Subject: Re: [PATCH v3 04/26] ARM: pxa: magician: Optimize debug messages for LCD power
+Date: Sat, 26 Sep 2015 13:55:19 +0200
+Message-ID: <87twqhjkyc.fsf@belgarion.home>
+References: <cover.1442462898.git.petr.cvek@tul.cz> <55FA47C9.7040908@tul.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:50570 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750855AbbIZOhY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 26 Sep 2015 10:37:24 -0400
-In-Reply-To: <1660650.dn5zct2eoN@vostro.rjw.lan>
-Content-Language: en-US
+Received: from smtp10.smtpout.orange.fr ([80.12.242.132]:51650 "EHLO
+	smtp.smtpout.orange.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750939AbbIZOxU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 26 Sep 2015 10:53:20 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "jiang.liu@linux.intel.com" <jiang.liu@linux.intel.com>, "Zhang, Rui" <rui.zhang@intel.com>, "Brown, Len" <len.brown@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Petr Cvek <petr.cvek@tul.cz>
+Cc: philipp.zabel@gmail.com, daniel@zonque.org, haojian.zhuang@gmail.com, cooloney@gmail.com, rpurdie@rpsys.net, j.anaszewski@samsung.com, linux@arm.linux.org.uk, sre@kernel.org, dbaryshkov@gmail.com, lee.jones@linaro.org, sameo@linux.intel.com, dwmw2@infradead.org, arnd@arndb.de, g.liakhovetski@gmx.de, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-SGksIFJhZmFlbCwNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBsaW51
-eC1wbS1vd25lckB2Z2VyLmtlcm5lbC5vcmcgW21haWx0bzpsaW51eC1wbS0NCj4gb3duZXJAdmdl
-ci5rZXJuZWwub3JnXSBPbiBCZWhhbGYgT2YgUmFmYWVsIEouIFd5c29ja2kNCj4gU2VudDogRnJp
-ZGF5LCBTZXB0ZW1iZXIgMjUsIDIwMTUgOTo1NyBQTQ0KPiBUbzogQ2hlbiwgWXUgQw0KPiBDYzog
-V3lzb2NraSwgUmFmYWVsIEo7IGppYW5nLmxpdUBsaW51eC5pbnRlbC5jb207IFpoYW5nLCBSdWk7
-IEJyb3duLCBMZW47IGxpbnV4LQ0KPiBrZXJuZWxAdmdlci5rZXJuZWwub3JnOyBsaW51eC1wbUB2
-Z2VyLmtlcm5lbC5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSF1bUkZDXSBBQ1BJIC8gUE06IEZp
-eCBpbmNvcnJlY3Qgd2FrZXVwIGlycSBzZXR0aW5nIGJlZm9yZQ0KPiBzdXNwZW5kLXRvLWlkbGUN
-Cj4gDQo+IE9uIEZyaWRheSwgU2VwdGVtYmVyIDI1LCAyMDE1IDA2OjQyOjQxIEFNIENoZW4sIFl1
-IEMgd3JvdGU6DQo+ID4gSGksUmFmYWVsLCB0aGFua3MgYSBsb3QgZm9yIHlvdXIgcmV2aWV3LCB3
-aWxsIHJlc2VuZCB2MiB2ZXJzaW9uLg0KPiA+DQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2Ut
-LS0tLQ0KPiA+ID4gRnJvbTogUmFmYWVsIEouIFd5c29ja2kgW21haWx0bzpyandAcmp3eXNvY2tp
-Lm5ldF0NCj4gPiA+IFNlbnQ6IEZyaWRheSwgU2VwdGVtYmVyIDI1LCAyMDE1IDk6MjQgQU0NCj4g
-PiA+IFRvOiBDaGVuLCBZdSBDDQo+ID4gPiBDYzogV3lzb2NraSwgUmFmYWVsIEo7IGppYW5nLmxp
-dUBsaW51eC5pbnRlbC5jb207IFpoYW5nLCBSdWk7IEJyb3duLA0KPiA+ID4gTGVuOyBsaW51eC0g
-a2VybmVsQHZnZXIua2VybmVsLm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3JnDQo+ID4gPiBT
-dWJqZWN0OiBSZTogW1BBVENIXVtSRkNdIEFDUEkgLyBQTTogRml4IGluY29ycmVjdCB3YWtldXAg
-aXJxDQo+ID4gPiBzZXR0aW5nIGJlZm9yZSBzdXNwZW5kLXRvLWlkbGUNCj4gPiA+DQo+ID4gPiBP
-biBNb25kYXksIEF1Z3VzdCAxMCwgMjAxNSAxMDoxMToyNiBBTSBDaGVuIFl1IHdyb3RlOg0KPiA+
-ID4gPiArI2lmZGVmIENPTkZJR19TVVNQRU5EDQo+ID4gPiA+ICsJc2V0X3dha2VfaXJxX2ZyZWV6
-ZShpcnEpOw0KPiA+ID4gPiArI2VuZGlmDQo+IA0KPiBBbHRlcm5hdGl2ZWx5LCB5b3UgY2FuIGRl
-ZmluZSBhbiBlbXB0eSBzdGF0aWMgaW5saW5lIHN0dWIgb2YNCj4gc2V0X3dha2VfaXJxX2ZyZWV6
-ZSgpIGZvciBDT05GSUdfU1VTUEVORCBhbmQgYXZvaWQgdXNpbmcgSVNfRU5BQkxFRCgpDQo+IGV2
-ZW4uDQo+IA0KPiBCdXQgSSdkIHJhdGhlciBkZWZpbmUgYSBnbG9iYWwgYWNwaV9pcnEgdmFyaWFi
-bGUsIHN0b3JlIGlycSBpbiBpdCBhbmQgYWNjZXNzIGl0DQo+IGRpcmVjdGx5IGZyb20gYWNwaV9m
-cmVlemVfcHJlcGFyZSgpLiAgQW5kIGl0IGRvZXNuJ3QgaGF2ZSB0byBkZXBlbmQgb24NCj4gQ09O
-RklHX1NVU1BFTkQgYXMgaXQgaXMganVzdCB0aGUgSVJRIG51bWJlciBhY3R1YWxseSB1c2VkIGJ5
-IEFDUEkuDQo+IA0KT0ssIEkndmUgY29udmVydCBpdCB0byBhIGdsb2JhbCB2YXJpYWJsZSBhY3Bp
-X2ludXNlX2lycS4NCg0KPiBCVFcsIEkgd29uZGVyIGlmIHRoZXJlIGFyZSBvdGhlciBwbGFjZXMg
-dXNpbmcgYWNwaV9nYmxfRkFEVC5zY2lfaW50ZXJydXB0DQo+IGRpcmVjdGx5IHdoaWNoIHRoZXkg
-c2hvdWxkbid0IGRvPw0KPiANCkkgc2VhcmNoZWQgdGhlIGNvZGUgYW5kIGZvdW5kIHRoZXJlIGFy
-ZSB0d28gb3RoZXIgcG90ZW50aWFsIG1pc3VzZSBvZiANCmFjcGlfZ2JsX0ZBRFQuc2NpX2ludGVy
-cnVwdCwgdGhleSBhcmUgaW4gYWNwaV9vc19yZW1vdmVfaW50ZXJydXB0X2hhbmRsZXINCmFuZCBh
-Y3BpX29zX3dhaXRfZXZlbnRzX2NvbXBsZXRlLCBzbyBJIHNlbnQgb3V0IGEgdmVyc2lvbiAyIHBh
-dGNoDQpmb3IgdGhlbS4NCg0KPiA+IE9oLCBkbyB5b3UgbWVhbiB0aGUgbmFtaW5nIGZvciB0aGlz
-IHZhcmlhYmxlIGlzIHVuLXN1aXRhYmxlPyBPSywgSSdsbA0KPiA+IGNoYW5nZSBpdCB0byBhY3Bp
-X2ZyZWV6ZV93YWtlX2lycQ0KPiANCj4gTm8uICBXaGF0IEkgbWVhbiBpcyB0aGF0IGluIHRoZW9y
-eSB0aGVyZSBtYXkgYmUgbXVsdGlwbGUgQUNQSSBpbnRlcnJ1cHRzLg0KPiANCj4gQnV0IHlvdSBu
-ZWVkIG5vdCBjYXJlIGFib3V0IHRoaXMgY2FzZSBiZWNhdXNlIG9mIHRoZQ0KPiANCj4gCWlmIChn
-c2kgIT0gYWNwaV9nYmxfRkFEVC5zY2lfaW50ZXJydXB0KQ0KPiAJCXJldHVybiBBRV9CQURfUEFS
-QU1FVEVSOw0KPiBjaGVjayBpbiBhY3BpX29zX2luc3RhbGxfaW50ZXJydXB0X2hhbmRsZXIoKS4N
-Cj4gDQpPSywgdGhhbmtzIQ0KDQpCZXN0IFJlZ2FyZHMsDQpZdQ0K
+Petr Cvek <petr.cvek@tul.cz> writes:
+
+> Optimize the debug messages for the LCD power.
+Waiting for a week for Philipp's ack, then queing it.
+
+Cheers.
+
+--
+Robert
