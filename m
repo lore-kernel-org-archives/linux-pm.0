@@ -1,44 +1,58 @@
 From: Len Brown <lenb@kernel.org>
-Subject: intel_idle and turbostat patches for Linux-4.3
-Date: Sat, 26 Sep 2015 01:05:11 -0400
-Message-ID: <1443243915-6696-1-git-send-email-lenb@kernel.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f43.google.com ([209.85.192.43]:34989 "EHLO
-	mail-qg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750815AbbIZFFx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 26 Sep 2015 01:05:53 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH 1/4] intel_idle: Skylake Client Support - updated
+Date: Sat, 26 Sep 2015 01:05:12 -0400
+Message-ID: <135919a3a80565070b9645009e65f73e72c661c0.1443243089.git.len.brown@intel.com>
+References: <1443243915-6696-1-git-send-email-lenb@kernel.org>
+Reply-To: Len Brown <lenb@kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1443243915-6696-1-git-send-email-lenb@kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@rjwysocki.net, linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael,
+From: Len Brown <len.brown@intel.com>
 
-The following patches are available on my "intel_idle"
-and "turbostat" branches, as usual, plus here for review.
+Addition of PC9 state, and minor tweaks to existing PC6 and PC8 states.
 
-[PATCH 1/4] intel_idle: Skylake Client Support - updated
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ drivers/idle/intel_idle.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
-	Initial SKL intel_idle support went into 4.3-rc1.
-	That patch works, but this patch makes it more optimal,
-	under some conditions.
-
-[PATCH 2/4] tools/power turbostat: IVB Xeon: fix --debug regression
-
-	This is a regression fix for a 4.1-rc1 patch
-	It was rude for turbostat to start failing on IVB-Xeon boxes.
-
-[PATCH 3/4] tools/power turbostat: KNL workaround for %Busy and
-
-	This works around a newly documented hardware quirk.
-
-[PATCH 4/4] tools/power turbostat: SKL: Adjust for TSC difference
-
-	This works around an accuracy error that initially
-	looked insignificant, but on some configurations it will
-	be big enough to be noticed and confuse users, so here
-	we address it fully.
-
-Thanks,
-Len Brown, Intel Open Source Technology Center
-
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index 3a3738f..cd4510a 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -620,7 +620,7 @@ static struct cpuidle_state skl_cstates[] = {
+ 		.name = "C6-SKL",
+ 		.desc = "MWAIT 0x20",
+ 		.flags = MWAIT2flg(0x20) | CPUIDLE_FLAG_TLB_FLUSHED,
+-		.exit_latency = 75,
++		.exit_latency = 85,
+ 		.target_residency = 200,
+ 		.enter = &intel_idle,
+ 		.enter_freeze = intel_idle_freeze, },
+@@ -636,11 +636,19 @@ static struct cpuidle_state skl_cstates[] = {
+ 		.name = "C8-SKL",
+ 		.desc = "MWAIT 0x40",
+ 		.flags = MWAIT2flg(0x40) | CPUIDLE_FLAG_TLB_FLUSHED,
+-		.exit_latency = 174,
++		.exit_latency = 200,
+ 		.target_residency = 800,
+ 		.enter = &intel_idle,
+ 		.enter_freeze = intel_idle_freeze, },
+ 	{
++		.name = "C9-SKL",
++		.desc = "MWAIT 0x50",
++		.flags = MWAIT2flg(0x50) | CPUIDLE_FLAG_TLB_FLUSHED,
++		.exit_latency = 480,
++		.target_residency = 5000,
++		.enter = &intel_idle,
++		.enter_freeze = intel_idle_freeze, },
++	{
+ 		.name = "C10-SKL",
+ 		.desc = "MWAIT 0x60",
+ 		.flags = MWAIT2flg(0x60) | CPUIDLE_FLAG_TLB_FLUSHED,
+-- 
+2.6.0.rc1
