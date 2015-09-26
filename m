@@ -1,66 +1,89 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v3] drivers: power: twl4030_charger: fix link problems
- when building as module
-Date: Sat, 26 Sep 2015 19:23:54 +0200
-Message-ID: <20150926172353.GC22315@earth>
+From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v3] ARM: dts: twl4030: Add iio properties for bci subnode
+Date: Sat, 26 Sep 2015 19:29:37 +0200
+Message-ID: <20150926172936.GD22315@earth>
 References: <1443212447-5841-1-git-send-email-marek@goldelico.com>
+ <1443212447-5841-3-git-send-email-marek@goldelico.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="RIYY1s2vRbPFwWeW"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:57037 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752137AbbIZRX7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 26 Sep 2015 13:23:59 -0400
+	protocol="application/pgp-signature"; boundary="Qrgsu6vtpU/OV/zm"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1443212447-5841-1-git-send-email-marek@goldelico.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1443212447-5841-3-git-send-email-marek-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Marek Belisko <marek-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>
+Cc: neilb-l3A5Bk7waGM@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, hns-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Marek Belisko <marek@goldelico.com>
-Cc: dbaryshkov@gmail.com, dwmw2@infradead.org, neilb@suse.de, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, hns@goldelico.com
 
 
---RIYY1s2vRbPFwWeW
-Content-Type: text/plain; charset=us-ascii
+--Qrgsu6vtpU/OV/zm
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi Marek,
 
-On Fri, Sep 25, 2015 at 10:20:45PM +0200, Marek Belisko wrote:
-> If either twl4030_charger or twl4030_madc is configured as MODULE,
-> we get build (link) errors.
+On Fri, Sep 25, 2015 at 10:20:47PM +0200, Marek Belisko wrote:
+> Added new iio properties which are required for twl4030-charger driver and
+> allow to use twl4030-madc indirectly.
 >=20
-> To solve, the direct call of twl4030_get_madc_conversion() is replaced
-> by a call to iio_read_channel_processed().
+> Signed-off-by: Marek Belisko <marek-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>
+> ---
+>  arch/arm/boot/dts/twl4030.dtsi | 2 ++
+>  1 file changed, 2 insertions(+)
 >=20
-> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
-> Signed-off-by: Marek Belisko <marek@goldelico.com>
+> diff --git a/arch/arm/boot/dts/twl4030.dtsi b/arch/arm/boot/dts/twl4030.d=
+tsi
+> index 36ae916..482b7aa 100644
+> --- a/arch/arm/boot/dts/twl4030.dtsi
+> +++ b/arch/arm/boot/dts/twl4030.dtsi
+> @@ -22,6 +22,8 @@
+>  	charger: bci {
+>  		compatible =3D "ti,twl4030-bci";
+>  		interrupts =3D <9>, <2>;
+> +		io-channels =3D <&twl4030_madc 11>;
+> +		io-channel-name =3D "vac";
+>  		bci3v1-supply =3D <&vusb3v1>;
+>  	};
 
-Thanks, queued for 4.4 together with the DT binding patch.
+Acked-By: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+
+This patch is missing correct To/Cc:
+
+$ grep -A5 "OMAP DEVICE TREE SUPPORT" MAINTAINERS
+OMAP DEVICE TREE SUPPORT
+M:	Beno=EEt Cousson <bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
+M:	Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
+L:	linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+L:	devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+S:	Maintained
 
 -- Sebastian
 
---RIYY1s2vRbPFwWeW
+--Qrgsu6vtpU/OV/zm
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJWBtSpAAoJENju1/PIO/qa7XsQAI0OKnqgAPA8EcYcOgVODjxT
-g80HaNA1m+Wq/KQtfP4t5CabCH0T20b90vXEl3tnqYtc8Dw9Be4AQzlWyf95PH/x
-jgOSuSbz2Ma/MftO9livTv2heoLQJt7rBXeml1TVVn3kCc9SFzrQrTvS6SeblV2c
-2MJAdxG5biK58RTp3pUTT1zb7xoCRtUV1pX1t8jyXDJ6h9pJ/PHsXo9DRTnMqHMb
-stqoYbLEQierFHwzT0+TFEgFAllFE6LCzpGwuE08eCESqUsVnjbPkUkclG7amvs4
-hX7C5ZPDs7zYX37RVnqXEyDHnk7rgvoFuu+UpqTViJUk3ZS2fAZSOKGV48WcLGtI
-zVfOcAVgr8IJTWtjOvOsOhtqN5pnpDg8DU70fETIRhSQBN+H/SzLaUw0fHiT8stO
-+H14RCnq6Qk9kpcqENBdOlHJ14rLBd6BTBaecEjX6qhZ19NIvxwhx6LbutTfDl7W
-RAVZhETz9UiQKE3MAeZ2u4VX7hqPwdtO/ze6/L/CBdHR8+hJPhuOQr2SRsVWHUkm
-Mh16NjzqP86FQzNollnxujP9w7tipTzvQ6w0KzD0LjNT2UsmdyDsqQhrSItADlNJ
-k4eMaNk2sELZBLM69VrmoPQSD3PBQ1JuXf60kFaBy/kvohLF1xcNKFTcJmuYF9Yo
-4CPbfsatkfsPr5T7fUIs
-=gtH6
+iQIcBAEBCgAGBQJWBtYAAAoJENju1/PIO/qaTBgP/juvubxn1mu0n055xYZNGn0u
+Ed1wWKF4gaUn+3iPW8Coxo1aZxzUQ37iEtYt2eW66GgSfsFl2aAfqN2S8WeU9f0L
+NoJS9p+5PnAWYNy1BbUygUT7c/x5z5PGEsDfhaTwZwMvGmpucFqdZ5AlcFmObMGn
+GvyHsdLfQP9R9qwRLXao9cy3fhoy/cvnrKZ03y5y//xtn1/7Q0psRui5+guV3dJN
+GNaChaPgFyPBuyRBsCeiBh5LZK1gdCM6XyAvzam/hBMa3DO9Gg+I94JbgGRAkfpd
+BulYBsUBXAY6SoyxVvbUBP+yAPEZ3A15pzEu3suWy5oEJjDPC6OrKiNU+yQCPN+n
+xjj25w5xGSrWV5yJzKqXuop43VfSQ2BOMc8nvHL7Fj3YodG0fDjySdGa2t5kzPUp
+R+rDJ493Lt17qOBwZp7Ns7++hYREXg5uBU59Xm9yjhGWnLKC54euyLAxN1jAdNwd
+i+6P9TMhsVVL6osNCyO32/mlcq6b4EdCVNKCFQ2t+0Ac+KJIFn+O1rz9a5iBXkPy
+47DHLtYNqzCV2flpWU0oZBvIcl7wmfkegdKqqt6rnejeFKwP5nTXxc1bIWf9TXJ4
+svR3MmH4bTabMm4CQEo4U1LNK67VwOvMKI1dBzNUb3oR6VSR6Yg3YP4qQtFjbY7v
+c9Q9Z8mSS7SobCGTYojJ
+=7GMb
 -----END PGP SIGNATURE-----
 
---RIYY1s2vRbPFwWeW--
+--Qrgsu6vtpU/OV/zm--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
