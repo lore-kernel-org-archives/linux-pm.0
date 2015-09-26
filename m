@@ -1,47 +1,42 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing
- runtime suspend
-Date: Sat, 26 Sep 2015 11:20:50 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1509261110470.4211-100000@netrider.rowland.org>
-References: <1645828.psusZpgl4n@vostro.rjw.lan>
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+Subject: Re: [PATCH v3 00/26] ARM: pxa: magician: Rework HTC Magician support
+Date: Sat, 26 Sep 2015 17:15:57 +0200
+Message-ID: <87zj09fbyq.fsf@belgarion.home>
+References: <55FA4756.9080309@tul.cz>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-input-owner@vger.kernel.org>
-In-Reply-To: <1645828.psusZpgl4n@vostro.rjw.lan>
-Sender: linux-input-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Oliver Neukum <oneukum@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Irina Tirdea <irina.tirdea@intel.com>, Len Brown <len.brown@intel.com>, Octavian Purdila <octavian.purdila@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Pavel Machek <pavel@ucw.cz>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain
+Return-path: <linux-leds-owner@vger.kernel.org>
+In-Reply-To: <55FA4756.9080309@tul.cz> (Petr Cvek's message of "Thu, 17 Sep
+	2015 06:53:42 +0200")
+Sender: linux-leds-owner@vger.kernel.org
+To: Petr Cvek <petr.cvek@tul.cz>, philipp.zabel@gmail.com
+Cc: daniel@zonque.org, haojian.zhuang@gmail.com, cooloney@gmail.com, rpurdie@rpsys.net, j.anaszewski@samsung.com, linux@arm.linux.org.uk, sre@kernel.org, dbaryshkov@gmail.com, lee.jones@linaro.org, sameo@linux.intel.com, dwmw2@infradead.org, arnd@arndb.de, g.liakhovetski@gmx.de, linux-leds@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, 26 Sep 2015, Rafael J. Wysocki wrote:
+Petr Cvek <petr.cvek@tul.cz> writes:
 
-> > > So something like:
-> > > 
-> > > 	echo on >/sys/.../power/control  (in case the device was
-> > > 			already in runtime suspend with wakeups enabled)
-> > > 	echo off >/sys/.../power/wakeup
-> > > 	echo auto >/sys/.../power/control
+> This patchset will clean, fix, optimize and add multiple devices,
+> which can be found on the HTC Magician machine.
+... zip ...
+>  arch/arm/mach-pxa/include/mach/magician.h |  78 +--
+>  arch/arm/mach-pxa/magician.c              | 907 +++++++++++++++++++++---------
+>  2 files changed, 682 insertions(+), 303 deletions(-)
 
-Cases where the driver wants to avoid runtime suspend (while the device
-is active) because of bad wakeup support in the hardware can be handled
-easily enough.  The runtime-idle or runtime-suspend callback routine
-can check whether wakeup == off; if it isn't then the callback should
-return -EBUSY.  Thus the driver can prevent runtime suspend without any
-need to increment the usage counter.
+Ok Petr, that's way better.
+This is how I see the next step :
+ 1) You fix the patch 1/26 and resend only that one, it's trivial whitespacing,
+    no need to send another complete patchset
+ 2) I wait a week for Philip to ack all the patches I replied to (ie. all except
+    patch 19/26 and 22/26)
+ 3) If Philipp doesn't NAK, then I'll queue all these patches to my next tree
+    (git://github.com/rjarzmik/linux.git pxa/for-next)
 
-> > That, or there may be an additional value, say "aggressive", to write to the
-> > control file in which case it becomes just
-> > 
-> > echo aggressive >/sys/.../power/control
-> 
-> That said I suppose that the "off" value for the "wakeup" file might also be
-> useful in some other cases, so it likely is a better approach.
+Meanwhile, I'll have time to answer to patches 19 and 22. Next Sunday, I'll
+reply once more that I have queued your patches (provided that you update patch
+1/26), and you will be able to rebase on this tree, leaving at most 2 patches to
+deal with.
 
-We still need some sort of "inhibit" callback for cases where the
-driver doesn't want to go into runtime suspend but does want to turn
-off all I/O.  Should this callback be triggered when the user writes
-"off" to power/wakeup, or when the user writes "inhibit" to
-power/control, or should there be a separate sysfs attribute?
+Cheers.
 
-Alan Stern
-
+-- 
+Robert
