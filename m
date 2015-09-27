@@ -1,73 +1,102 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing
- runtime suspend
-Date: Sun, 27 Sep 2015 10:27:25 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1509270958310.2226-100000@netrider.rowland.org>
-References: <1493729.nvxxQyxdme@vostro.rjw.lan>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH 0/6] thermal: iio bindings
+Date: Sun, 27 Sep 2015 07:29:16 -0700
+Message-ID: <1443364156.2907.2.camel@linux.intel.com>
+References: <1443305111-28272-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	 <5607D1F8.5060807@linaro.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-input-owner@vger.kernel.org>
-In-Reply-To: <1493729.nvxxQyxdme@vostro.rjw.lan>
-Sender: linux-input-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Oliver Neukum <oneukum@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Irina Tirdea <irina.tirdea@intel.com>, Len Brown <len.brown@intel.com>, Octavian Purdila <octavian.purdila@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Pavel Machek <pavel@ucw.cz>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:38377 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755900AbbI0O3h (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 27 Sep 2015 10:29:37 -0400
+In-Reply-To: <5607D1F8.5060807@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, jic23@kernel.org, rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org
 
-On Sun, 27 Sep 2015, Rafael J. Wysocki wrote:
-
-> On Saturday, September 26, 2015 11:20:50 AM Alan Stern wrote:
-> > On Sat, 26 Sep 2015, Rafael J. Wysocki wrote:
-> > 
-> > > > > So something like:
-> > > > > 
-> > > > > 	echo on >/sys/.../power/control  (in case the device was
-> > > > > 			already in runtime suspend with wakeups enabled)
-> > > > > 	echo off >/sys/.../power/wakeup
-> > > > > 	echo auto >/sys/.../power/control
-
-> > We still need some sort of "inhibit" callback for cases where the
-> > driver doesn't want to go into runtime suspend but does want to turn
-> > off all I/O.  Should this callback be triggered when the user writes
-> > "off" to power/wakeup, or when the user writes "inhibit" to
-> > power/control, or should there be a separate sysfs attribute?
+On Sun, 2015-09-27 at 04:24 -0700, Daniel Lezcano wrote:
+> On 09/26/2015 03:05 PM, Srinivas Pandruvada wrote:
+> > v0
+> > Since this was discussed during LPC in Seattle and three versions
+> > of RFC are
+> > published and reviwed, this is posted as non RFC version. This has
+> > changes in iio interface file as suggested by Jonathan. We may add
+> > threshold
+> > event direction flag later if required, without much impact by
+> > adding new
+> > event type.
 > 
-> My first thought is that if there is a separate attribute, then it only actually
-> makes sense for devices that generate input events, while the "off" thing may
-> be generally useful in principle (eg. it may indicate to disable PME for the
-> device to the PCI layer etc).
-
-I'm not sure how much sense that distinction makes.  It seems to me the
-only time you want to ignore potential wakeup events is if you want to
-ignore _all_ input.  Which is basically what "inhibit" means.
-
-This suggests we forget about power/wakeup == "off" and introduce an 
-"inhibit" attribute instead.
-
-> OTOH, the additional "inhibit" attribute may only be exposed if the corresponding
-> callback is present, so I'm not really sure.
-
-It could be a separate attribute, or it could be a new entry for
-power/control.  Come to think of it, a separate attribute might be
-better.  Otherwise we would lose track of whether runtime suspend was
-permitted (the "on" vs. "auto" distinction) when the device was
-inhibited.  I can imagine someone might want to forbid runtime suspend
-but still inhibit a device.
-
-However, I agree that there's no point registering a separate attribute
-or accepting a write of "inhibit" to power/control if there's no
-corresponding callback.
-
-> Question is, though, what's the use case for turning off I/O when we don't
-> go into runtime suspend.  After all, runtime suspend need not mean putting
-> the device into any kind of low-power state and the "off" thing may very
-> well be defined to mean that all input is discarded if the device is
-> runtime-suspended and the device is not configured to do remote wakeup
-> then.
-
-Well, I suppose there might be a driver that supports inhibit but
-doesn't support runtime PM, unlikely as that seems.  Or the driver
-might support both but the user might leave power/control == "on" while
-inhibiting the device.
-
-Alan Stern
-
+> Not everyone was at LPC.
+> 
+> You should fix the changelog(s) and explain what you are trying to
+> solve 
+> and why it is important.
+Sure. The very first RFC had this. I hope you did get chance to look at
+this.
+> 
+> 
+> > RFC v2
+> > - Rebase to 4.3.rc1
+> > - Additional parameter to thermal_zone_device_update for event type
+> > - Moved the dummy IIO callbacks to local include file, in this
+> > way "not used" warnings can be avoided
+> > - Remove changes from user space governor, rather notify from core
+> > - Validate the trigger, so that when thermal device supports async
+> > notifications, this will be exclusive trigger
+> > - Use new thermal core event type to differentiate events for iio
+> > threshold notification
+> > 
+> > RFC v1
+> > - Change commit message to be more clear
+> > - Split in three patches (First for thermal_iio.c, second to
+> > integrate
+> > to thermal_core and third for user space governor).
+> > - Removed IIO defines in thermal.h
+> > - Removed direct push to buffers
+> > - Other comments from Jonathan except introduce validate_trigger
+> > 
+> > RFC v0
+> > Base version for first review
+> > 
+> > Srinivas Pandruvada (6):
+> >    thermal: core: enhance thermal_zone_device_update
+> >    thermal: documentation update
+> >    thermal: iio device for thermal sensor
+> >    thermal: use iio binding calls
+> >    thermal: iio Documentation
+> >    thermal: x86_pkg_temp: Register threshold callbacks
+> > 
+> >   Documentation/thermal/sysfs-api.txt                |  10 +
+> >   Documentation/thermal/thermal_iio_binding          |  88 +++++
+> >   drivers/acpi/thermal.c                             |   2 +-
+> >   drivers/platform/x86/acerhdf.c                     |   2 +-
+> >   drivers/thermal/Kconfig                            |  12 +
+> >   drivers/thermal/Makefile                           |   1 +
+> >   drivers/thermal/db8500_thermal.c                   |   2 +-
+> >   drivers/thermal/hisi_thermal.c                     |   3 +-
+> >   drivers/thermal/imx_thermal.c                      |   4 +-
+> >   .../thermal/int340x_thermal/int340x_thermal_zone.h |   2 +-
+> >   drivers/thermal/intel_soc_dts_iosf.c               |   3 +-
+> >   drivers/thermal/of-thermal.c                       |   2 +-
+> >   drivers/thermal/qcom-spmi-temp-alarm.c             |   2 +-
+> >   drivers/thermal/rcar_thermal.c                     |   3 +-
+> >   drivers/thermal/rockchip_thermal.c                 |   3 +-
+> >   drivers/thermal/samsung/exynos_tmu.c               |   2 +-
+> >   drivers/thermal/st/st_thermal_memmap.c             |   3 +-
+> >   drivers/thermal/thermal_core.c                     |  21 +-
+> >   drivers/thermal/thermal_iio.c                      | 383
+> > +++++++++++++++++++++
+> >   drivers/thermal/thermal_iio.h                      |  45 +++
+> >   drivers/thermal/ti-soc-thermal/ti-thermal-common.c |   4 +-
+> >   drivers/thermal/x86_pkg_temp_thermal.c             |  11 +-
+> >   include/linux/thermal.h                            |  26 +-
+> >   23 files changed, 609 insertions(+), 25 deletions(-)
+> >   create mode 100644 Documentation/thermal/thermal_iio_binding
+> >   create mode 100644 drivers/thermal/thermal_iio.c
+> >   create mode 100644 drivers/thermal/thermal_iio.h
+> > 
+> 
+> 
