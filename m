@@ -1,109 +1,73 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 0/6] thermal: iio bindings
-Date: Sun, 27 Sep 2015 04:24:40 -0700
-Message-ID: <5607D1F8.5060807@linaro.org>
-References: <1443305111-28272-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH][RFC] ACPI / PM: Fix incorrect wakeup irq setting before suspend-to-idle
+Date: Sun, 27 Sep 2015 15:30:16 +0200
+Message-ID: <14896395.L30bH9BMzP@vostro.rjw.lan>
+References: <1439172686-16360-1-git-send-email-yu.c.chen@intel.com> <1660650.dn5zct2eoN@vostro.rjw.lan> <36DF59CE26D8EE47B0655C516E9CE64026587434@SHSMSX101.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f182.google.com ([209.85.212.182]:38705 "EHLO
-	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755483AbbI0LYo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 27 Sep 2015 07:24:44 -0400
-Received: by wiclk2 with SMTP id lk2so67907377wic.1
-        for <linux-pm@vger.kernel.org>; Sun, 27 Sep 2015 04:24:43 -0700 (PDT)
-In-Reply-To: <1443305111-28272-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:64063 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755806AbbI0NB7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 27 Sep 2015 09:01:59 -0400
+In-Reply-To: <36DF59CE26D8EE47B0655C516E9CE64026587434@SHSMSX101.ccr.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, jic23@kernel.org, rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org
+To: "Chen, Yu C" <yu.c.chen@intel.com>
+Cc: "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "jiang.liu@linux.intel.com" <jiang.liu@linux.intel.com>, "Zhang, Rui" <rui.zhang@intel.com>, "Brown, Len" <len.brown@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 09/26/2015 03:05 PM, Srinivas Pandruvada wrote:
-> v0
-> Since this was discussed during LPC in Seattle and three versions of =
-RFC are
-> published and reviwed, this is posted as non RFC version. This has
-> changes in iio interface file as suggested by Jonathan. We may add th=
-reshold
-> event direction flag later if required, without much impact by adding=
- new
-> event type.
+On Saturday, September 26, 2015 02:37:19 PM Chen, Yu C wrote:
+> Hi, Rafael,
+> 
+> > -----Original Message-----
+> > From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
+> > owner@vger.kernel.org] On Behalf Of Rafael J. Wysocki
+> > Sent: Friday, September 25, 2015 9:57 PM
+> > To: Chen, Yu C
+> > Cc: Wysocki, Rafael J; jiang.liu@linux.intel.com; Zhang, Rui; Brown, Len; linux-
+> > kernel@vger.kernel.org; linux-pm@vger.kernel.org
+> > Subject: Re: [PATCH][RFC] ACPI / PM: Fix incorrect wakeup irq setting before
+> > suspend-to-idle
+> > 
+> > On Friday, September 25, 2015 06:42:41 AM Chen, Yu C wrote:
+> > > Hi,Rafael, thanks a lot for your review, will resend v2 version.
+> > >
+> > > > -----Original Message-----
+> > > > From: Rafael J. Wysocki [mailto:rjw@rjwysocki.net]
+> > > > Sent: Friday, September 25, 2015 9:24 AM
+> > > > To: Chen, Yu C
+> > > > Cc: Wysocki, Rafael J; jiang.liu@linux.intel.com; Zhang, Rui; Brown,
+> > > > Len; linux- kernel@vger.kernel.org; linux-pm@vger.kernel.org
+> > > > Subject: Re: [PATCH][RFC] ACPI / PM: Fix incorrect wakeup irq
+> > > > setting before suspend-to-idle
+> > > >
+> > > > On Monday, August 10, 2015 10:11:26 AM Chen Yu wrote:
+> > > > > +#ifdef CONFIG_SUSPEND
+> > > > > +	set_wake_irq_freeze(irq);
+> > > > > +#endif
+> > 
+> > Alternatively, you can define an empty static inline stub of
+> > set_wake_irq_freeze() for CONFIG_SUSPEND and avoid using IS_ENABLED()
+> > even.
+> > 
+> > But I'd rather define a global acpi_irq variable, store irq in it and access it
+> > directly from acpi_freeze_prepare().  And it doesn't have to depend on
+> > CONFIG_SUSPEND as it is just the IRQ number actually used by ACPI.
+> > 
+> OK, I've convert it to a global variable acpi_inuse_irq.
 
-Not everyone was at LPC.
+Why do you need the "inuse" part?  Why is acpi_irq not sufficient?
 
-You should fix the changelog(s) and explain what you are trying to solv=
-e=20
-and why it is important.
+> > BTW, I wonder if there are other places using acpi_gbl_FADT.sci_interrupt
+> > directly which they shouldn't do?
+> > 
+> I searched the code and found there are two other potential misuse of 
+> acpi_gbl_FADT.sci_interrupt, they are in acpi_os_remove_interrupt_handler
+> and acpi_os_wait_events_complete, so I sent out a version 2 patch
+> for them.
 
+OK, thanks!
 
-> RFC v2
-> - Rebase to 4.3.rc1
-> - Additional parameter to thermal_zone_device_update for event type
-> - Moved the dummy IIO callbacks to local include file, in this
-> way "not used" warnings can be avoided
-> - Remove changes from user space governor, rather notify from core
-> - Validate the trigger, so that when thermal device supports async
-> notifications, this will be exclusive trigger
-> - Use new thermal core event type to differentiate events for iio
-> threshold notification
->
-> RFC v1
-> - Change commit message to be more clear
-> - Split in three patches (First for thermal_iio.c, second to integrat=
-e
-> to thermal_core and third for user space governor).
-> - Removed IIO defines in thermal.h
-> - Removed direct push to buffers
-> - Other comments from Jonathan except introduce validate_trigger
->
-> RFC v0
-> Base version for first review
->
-> Srinivas Pandruvada (6):
->    thermal: core: enhance thermal_zone_device_update
->    thermal: documentation update
->    thermal: iio device for thermal sensor
->    thermal: use iio binding calls
->    thermal: iio Documentation
->    thermal: x86_pkg_temp: Register threshold callbacks
->
->   Documentation/thermal/sysfs-api.txt                |  10 +
->   Documentation/thermal/thermal_iio_binding          |  88 +++++
->   drivers/acpi/thermal.c                             |   2 +-
->   drivers/platform/x86/acerhdf.c                     |   2 +-
->   drivers/thermal/Kconfig                            |  12 +
->   drivers/thermal/Makefile                           |   1 +
->   drivers/thermal/db8500_thermal.c                   |   2 +-
->   drivers/thermal/hisi_thermal.c                     |   3 +-
->   drivers/thermal/imx_thermal.c                      |   4 +-
->   .../thermal/int340x_thermal/int340x_thermal_zone.h |   2 +-
->   drivers/thermal/intel_soc_dts_iosf.c               |   3 +-
->   drivers/thermal/of-thermal.c                       |   2 +-
->   drivers/thermal/qcom-spmi-temp-alarm.c             |   2 +-
->   drivers/thermal/rcar_thermal.c                     |   3 +-
->   drivers/thermal/rockchip_thermal.c                 |   3 +-
->   drivers/thermal/samsung/exynos_tmu.c               |   2 +-
->   drivers/thermal/st/st_thermal_memmap.c             |   3 +-
->   drivers/thermal/thermal_core.c                     |  21 +-
->   drivers/thermal/thermal_iio.c                      | 383 ++++++++++=
-+++++++++++
->   drivers/thermal/thermal_iio.h                      |  45 +++
->   drivers/thermal/ti-soc-thermal/ti-thermal-common.c |   4 +-
->   drivers/thermal/x86_pkg_temp_thermal.c             |  11 +-
->   include/linux/thermal.h                            |  26 +-
->   23 files changed, 609 insertions(+), 25 deletions(-)
->   create mode 100644 Documentation/thermal/thermal_iio_binding
->   create mode 100644 drivers/thermal/thermal_iio.c
->   create mode 100644 drivers/thermal/thermal_iio.h
->
-
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Rafael
 
