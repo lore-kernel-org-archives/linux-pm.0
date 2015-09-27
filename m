@@ -1,59 +1,73 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: intel_idle and turbostat patches for Linux-4.3
-Date: Sun, 27 Sep 2015 15:55:36 +0200
-Message-ID: <1728562.eVm5FbEZtc@vostro.rjw.lan>
-References: <1443243915-6696-1-git-send-email-lenb@kernel.org>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing
+ runtime suspend
+Date: Sun, 27 Sep 2015 10:27:25 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1509270958310.2226-100000@netrider.rowland.org>
+References: <1493729.nvxxQyxdme@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:52369 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755703AbbI0N1T (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 27 Sep 2015 09:27:19 -0400
-In-Reply-To: <1443243915-6696-1-git-send-email-lenb@kernel.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <1493729.nvxxQyxdme@vostro.rjw.lan>
+Sender: linux-input-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Oliver Neukum <oneukum@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Irina Tirdea <irina.tirdea@intel.com>, Len Brown <len.brown@intel.com>, Octavian Purdila <octavian.purdila@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Pavel Machek <pavel@ucw.cz>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Saturday, September 26, 2015 01:05:11 AM Len Brown wrote:
-> Hi Rafael,
+On Sun, 27 Sep 2015, Rafael J. Wysocki wrote:
 
-Hi Len,
+> On Saturday, September 26, 2015 11:20:50 AM Alan Stern wrote:
+> > On Sat, 26 Sep 2015, Rafael J. Wysocki wrote:
+> > 
+> > > > > So something like:
+> > > > > 
+> > > > > 	echo on >/sys/.../power/control  (in case the device was
+> > > > > 			already in runtime suspend with wakeups enabled)
+> > > > > 	echo off >/sys/.../power/wakeup
+> > > > > 	echo auto >/sys/.../power/control
 
-> The following patches are available on my "intel_idle"
-> and "turbostat" branches, as usual, plus here for review.
-
-There's no intel_idle branch in your tree, but there is a cpuidle one
-and I found the patch below in it, so I pulled from there.
-
-> [PATCH 1/4] intel_idle: Skylake Client Support - updated
+> > We still need some sort of "inhibit" callback for cases where the
+> > driver doesn't want to go into runtime suspend but does want to turn
+> > off all I/O.  Should this callback be triggered when the user writes
+> > "off" to power/wakeup, or when the user writes "inhibit" to
+> > power/control, or should there be a separate sysfs attribute?
 > 
-> 	Initial SKL intel_idle support went into 4.3-rc1.
-> 	That patch works, but this patch makes it more optimal,
-> 	under some conditions.
-> 
-> [PATCH 2/4] tools/power turbostat: IVB Xeon: fix --debug regression
-> 
-> 	This is a regression fix for a 4.1-rc1 patch
-> 	It was rude for turbostat to start failing on IVB-Xeon boxes.
-> 
-> [PATCH 3/4] tools/power turbostat: KNL workaround for %Busy and
-> 
-> 	This works around a newly documented hardware quirk.
-> 
-> [PATCH 4/4] tools/power turbostat: SKL: Adjust for TSC difference
-> 
-> 	This works around an accuracy error that initially
-> 	looked insignificant, but on some configurations it will
-> 	be big enough to be noticed and confuse users, so here
-> 	we address it fully.
+> My first thought is that if there is a separate attribute, then it only actually
+> makes sense for devices that generate input events, while the "off" thing may
+> be generally useful in principle (eg. it may indicate to disable PME for the
+> device to the PCI layer etc).
 
-Pulled, thanks!
+I'm not sure how much sense that distinction makes.  It seems to me the
+only time you want to ignore potential wakeup events is if you want to
+ignore _all_ input.  Which is basically what "inhibit" means.
 
-Will push to Linus for 4.3-rc4.
+This suggests we forget about power/wakeup == "off" and introduce an 
+"inhibit" attribute instead.
 
-Thanks,
-Rafael
+> OTOH, the additional "inhibit" attribute may only be exposed if the corresponding
+> callback is present, so I'm not really sure.
+
+It could be a separate attribute, or it could be a new entry for
+power/control.  Come to think of it, a separate attribute might be
+better.  Otherwise we would lose track of whether runtime suspend was
+permitted (the "on" vs. "auto" distinction) when the device was
+inhibited.  I can imagine someone might want to forbid runtime suspend
+but still inhibit a device.
+
+However, I agree that there's no point registering a separate attribute
+or accepting a write of "inhibit" to power/control if there's no
+corresponding callback.
+
+> Question is, though, what's the use case for turning off I/O when we don't
+> go into runtime suspend.  After all, runtime suspend need not mean putting
+> the device into any kind of low-power state and the "off" thing may very
+> well be defined to mean that all input is discarded if the device is
+> runtime-suspended and the device is not configured to do remote wakeup
+> then.
+
+Well, I suppose there might be a driver that supports inhibit but
+doesn't support runtime PM, unlikely as that seems.  Or the driver
+might support both but the user might leave power/control == "on" while
+inhibiting the device.
+
+Alan Stern
 
