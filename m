@@ -1,144 +1,109 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Subject: [PATCH 1/3] Thermal: initialize thermal zone device correctly
-Date: Sun, 27 Sep 2015 13:48:28 +0800
-Message-ID: <1443332908-13948-1-git-send-email-yu.c.chen@intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, edubezval@gmail.com, javi.merino@arm.com
-Cc: rui.zhang@intel.com, linux-kernel@vger.kernel.org, stable@vger.kernel.org
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 0/6] thermal: iio bindings
+Date: Sun, 27 Sep 2015 04:24:40 -0700
+Message-ID: <5607D1F8.5060807@linaro.org>
+References: <1443305111-28272-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f182.google.com ([209.85.212.182]:38705 "EHLO
+	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755483AbbI0LYo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 27 Sep 2015 07:24:44 -0400
+Received: by wiclk2 with SMTP id lk2so67907377wic.1
+        for <linux-pm@vger.kernel.org>; Sun, 27 Sep 2015 04:24:43 -0700 (PDT)
+In-Reply-To: <1443305111-28272-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, jic23@kernel.org, rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org
 
-From: Zhang Rui <rui.zhang@intel.com>
+On 09/26/2015 03:05 PM, Srinivas Pandruvada wrote:
+> v0
+> Since this was discussed during LPC in Seattle and three versions of =
+RFC are
+> published and reviwed, this is posted as non RFC version. This has
+> changes in iio interface file as suggested by Jonathan. We may add th=
+reshold
+> event direction flag later if required, without much impact by adding=
+ new
+> event type.
 
-After thermal zone device registered, as we have not read any
-temperature before, thus tz->temperature should not be 0,
-which actually means 0C, and thermal trend is not available.
-In this case, we need specially handling for the first
-thermal_zone_device_update().
+Not everyone was at LPC.
 
-Both thermal core framework and step_wise governor is
-enhanced to handle this.
+You should fix the changelog(s) and explain what you are trying to solv=
+e=20
+and why it is important.
 
-CC: <stable@vger.kernel.org> #3.18+
-Tested-by: Manuel Krause <manuelkrause@netscape.net>
-Tested-by: szegad <szegadlo@poczta.onet.pl>
-Tested-by: prash <prash.n.rao@gmail.com>
-Tested-by: amish <ammdispose-arch@yahoo.com>
-Tested-by: Matthias <morpheusxyz123@yahoo.de>
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
----
- drivers/thermal/step_wise.c    | 18 ++++++++++++++++--
- drivers/thermal/thermal_core.c | 19 +++++++++++++++++--
- drivers/thermal/thermal_core.h |  1 +
- include/linux/thermal.h        |  3 +++
- 4 files changed, 37 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
-index 2f9f708..405de04 100644
---- a/drivers/thermal/step_wise.c
-+++ b/drivers/thermal/step_wise.c
-@@ -63,6 +63,19 @@ static unsigned long get_target_state(struct thermal_instance *instance,
- 	next_target = instance->target;
- 	dev_dbg(&cdev->device, "cur_state=%ld\n", cur_state);
- 
-+	if (!instance->initialized) {
-+		if (throttle) {
-+			next_target = (cur_state + 1) >= instance->upper ?
-+					instance->upper :
-+					((cur_state + 1) < instance->lower ?
-+					instance->lower : (cur_state + 1));
-+		} else {
-+			next_target = THERMAL_NO_TARGET;
-+		}
-+
-+		return next_target;
-+	}
-+
- 	switch (trend) {
- 	case THERMAL_TREND_RAISING:
- 		if (throttle) {
-@@ -149,7 +162,8 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
- 		dev_dbg(&instance->cdev->device, "old_target=%d, target=%d\n",
- 					old_target, (int)instance->target);
- 
--		if (old_target == instance->target)
-+		if (instance->initialized &&
-+		    old_target == instance->target)
- 			continue;
- 
- 		/* Activate a passive thermal instance */
-@@ -161,7 +175,7 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
- 			instance->target == THERMAL_NO_TARGET)
- 			update_passive_instance(tz, trip_type, -1);
- 
--
-+		instance->initialized = true;
- 		instance->cdev->updated = false; /* cdev needs update */
- 	}
- 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index d9e525c..682bc1e 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -532,8 +532,22 @@ static void update_temperature(struct thermal_zone_device *tz)
- 	mutex_unlock(&tz->lock);
- 
- 	trace_thermal_temperature(tz);
--	dev_dbg(&tz->device, "last_temperature=%d, current_temperature=%d\n",
--				tz->last_temperature, tz->temperature);
-+	if (tz->last_temperature == THERMAL_TEMP_INVALID)
-+		dev_dbg(&tz->device, "last_temperature N/A, current_temperature=%d\n",
-+			tz->temperature);
-+	else
-+		dev_dbg(&tz->device, "last_temperature=%d, current_temperature=%d\n",
-+			tz->last_temperature, tz->temperature);
-+}
-+
-+static void thermal_zone_device_reset(struct thermal_zone_device *tz)
-+{
-+	struct thermal_instance *pos;
-+
-+	tz->temperature = THERMAL_TEMP_INVALID;
-+	tz->passive = 0;
-+	list_for_each_entry(pos, &tz->thermal_instances, tz_node)
-+		pos->initialized = false;
- }
- 
- void thermal_zone_device_update(struct thermal_zone_device *tz)
-@@ -1900,6 +1914,7 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
- 
- 	INIT_DELAYED_WORK(&(tz->poll_queue), thermal_zone_device_check);
- 
-+	thermal_zone_device_reset(tz);
- 	thermal_zone_device_update(tz);
- 
- 	return tz;
-diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
-index d7ac1fc..749d41a 100644
---- a/drivers/thermal/thermal_core.h
-+++ b/drivers/thermal/thermal_core.h
-@@ -41,6 +41,7 @@ struct thermal_instance {
- 	struct thermal_zone_device *tz;
- 	struct thermal_cooling_device *cdev;
- 	int trip;
-+	bool initialized;
- 	unsigned long upper;	/* Highest cooling state for this trip point */
- 	unsigned long lower;	/* Lowest cooling state for this trip point */
- 	unsigned long target;	/* expected cooling state */
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 157d366..5bcabc7 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -43,6 +43,9 @@
- /* Default weight of a bound cooling device */
- #define THERMAL_WEIGHT_DEFAULT 0
- 
-+/* use value, which < 0K, to indicate an invalid/uninitialized temperature */
-+#define THERMAL_TEMP_INVALID	-274000
-+
- /* Unit conversion macros */
- #define KELVIN_TO_CELSIUS(t)	(long)(((long)t-2732 >= 0) ?	\
- 				((long)t-2732+5)/10 : ((long)t-2732-5)/10)
--- 
-1.8.4.2
+> RFC v2
+> - Rebase to 4.3.rc1
+> - Additional parameter to thermal_zone_device_update for event type
+> - Moved the dummy IIO callbacks to local include file, in this
+> way "not used" warnings can be avoided
+> - Remove changes from user space governor, rather notify from core
+> - Validate the trigger, so that when thermal device supports async
+> notifications, this will be exclusive trigger
+> - Use new thermal core event type to differentiate events for iio
+> threshold notification
+>
+> RFC v1
+> - Change commit message to be more clear
+> - Split in three patches (First for thermal_iio.c, second to integrat=
+e
+> to thermal_core and third for user space governor).
+> - Removed IIO defines in thermal.h
+> - Removed direct push to buffers
+> - Other comments from Jonathan except introduce validate_trigger
+>
+> RFC v0
+> Base version for first review
+>
+> Srinivas Pandruvada (6):
+>    thermal: core: enhance thermal_zone_device_update
+>    thermal: documentation update
+>    thermal: iio device for thermal sensor
+>    thermal: use iio binding calls
+>    thermal: iio Documentation
+>    thermal: x86_pkg_temp: Register threshold callbacks
+>
+>   Documentation/thermal/sysfs-api.txt                |  10 +
+>   Documentation/thermal/thermal_iio_binding          |  88 +++++
+>   drivers/acpi/thermal.c                             |   2 +-
+>   drivers/platform/x86/acerhdf.c                     |   2 +-
+>   drivers/thermal/Kconfig                            |  12 +
+>   drivers/thermal/Makefile                           |   1 +
+>   drivers/thermal/db8500_thermal.c                   |   2 +-
+>   drivers/thermal/hisi_thermal.c                     |   3 +-
+>   drivers/thermal/imx_thermal.c                      |   4 +-
+>   .../thermal/int340x_thermal/int340x_thermal_zone.h |   2 +-
+>   drivers/thermal/intel_soc_dts_iosf.c               |   3 +-
+>   drivers/thermal/of-thermal.c                       |   2 +-
+>   drivers/thermal/qcom-spmi-temp-alarm.c             |   2 +-
+>   drivers/thermal/rcar_thermal.c                     |   3 +-
+>   drivers/thermal/rockchip_thermal.c                 |   3 +-
+>   drivers/thermal/samsung/exynos_tmu.c               |   2 +-
+>   drivers/thermal/st/st_thermal_memmap.c             |   3 +-
+>   drivers/thermal/thermal_core.c                     |  21 +-
+>   drivers/thermal/thermal_iio.c                      | 383 ++++++++++=
++++++++++++
+>   drivers/thermal/thermal_iio.h                      |  45 +++
+>   drivers/thermal/ti-soc-thermal/ti-thermal-common.c |   4 +-
+>   drivers/thermal/x86_pkg_temp_thermal.c             |  11 +-
+>   include/linux/thermal.h                            |  26 +-
+>   23 files changed, 609 insertions(+), 25 deletions(-)
+>   create mode 100644 Documentation/thermal/thermal_iio_binding
+>   create mode 100644 drivers/thermal/thermal_iio.c
+>   create mode 100644 drivers/thermal/thermal_iio.h
+>
+
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
