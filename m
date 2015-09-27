@@ -1,65 +1,59 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing runtime suspend
-Date: Sun, 27 Sep 2015 15:41:23 +0200
-Message-ID: <1493729.nvxxQyxdme@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1509261110470.4211-100000@netrider.rowland.org>
+Subject: Re: intel_idle and turbostat patches for Linux-4.3
+Date: Sun, 27 Sep 2015 15:55:36 +0200
+Message-ID: <1728562.eVm5FbEZtc@vostro.rjw.lan>
+References: <1443243915-6696-1-git-send-email-lenb@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1509261110470.4211-100000@netrider.rowland.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Oliver Neukum <oneukum@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Irina Tirdea <irina.tirdea@intel.com>, Len Brown <len.brown@intel.com>, Octavian Purdila <octavian.purdila@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Pavel Machek <pavel@ucw.cz>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:52369 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755703AbbI0N1T (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 27 Sep 2015 09:27:19 -0400
+In-Reply-To: <1443243915-6696-1-git-send-email-lenb@kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Saturday, September 26, 2015 11:20:50 AM Alan Stern wrote:
-> On Sat, 26 Sep 2015, Rafael J. Wysocki wrote:
+On Saturday, September 26, 2015 01:05:11 AM Len Brown wrote:
+> Hi Rafael,
+
+Hi Len,
+
+> The following patches are available on my "intel_idle"
+> and "turbostat" branches, as usual, plus here for review.
+
+There's no intel_idle branch in your tree, but there is a cpuidle one
+and I found the patch below in it, so I pulled from there.
+
+> [PATCH 1/4] intel_idle: Skylake Client Support - updated
 > 
-> > > > So something like:
-> > > > 
-> > > > 	echo on >/sys/.../power/control  (in case the device was
-> > > > 			already in runtime suspend with wakeups enabled)
-> > > > 	echo off >/sys/.../power/wakeup
-> > > > 	echo auto >/sys/.../power/control
+> 	Initial SKL intel_idle support went into 4.3-rc1.
+> 	That patch works, but this patch makes it more optimal,
+> 	under some conditions.
 > 
-> Cases where the driver wants to avoid runtime suspend (while the device
-> is active) because of bad wakeup support in the hardware can be handled
-> easily enough.  The runtime-idle or runtime-suspend callback routine
-> can check whether wakeup == off; if it isn't then the callback should
-> return -EBUSY.  Thus the driver can prevent runtime suspend without any
-> need to increment the usage counter.
-
-Right.
-
-> > > That, or there may be an additional value, say "aggressive", to write to the
-> > > control file in which case it becomes just
-> > > 
-> > > echo aggressive >/sys/.../power/control
-> > 
-> > That said I suppose that the "off" value for the "wakeup" file might also be
-> > useful in some other cases, so it likely is a better approach.
+> [PATCH 2/4] tools/power turbostat: IVB Xeon: fix --debug regression
 > 
-> We still need some sort of "inhibit" callback for cases where the
-> driver doesn't want to go into runtime suspend but does want to turn
-> off all I/O.  Should this callback be triggered when the user writes
-> "off" to power/wakeup, or when the user writes "inhibit" to
-> power/control, or should there be a separate sysfs attribute?
+> 	This is a regression fix for a 4.1-rc1 patch
+> 	It was rude for turbostat to start failing on IVB-Xeon boxes.
+> 
+> [PATCH 3/4] tools/power turbostat: KNL workaround for %Busy and
+> 
+> 	This works around a newly documented hardware quirk.
+> 
+> [PATCH 4/4] tools/power turbostat: SKL: Adjust for TSC difference
+> 
+> 	This works around an accuracy error that initially
+> 	looked insignificant, but on some configurations it will
+> 	be big enough to be noticed and confuse users, so here
+> 	we address it fully.
 
-My first thought is that if there is a separate attribute, then it only actually
-makes sense for devices that generate input events, while the "off" thing may
-be generally useful in principle (eg. it may indicate to disable PME for the
-device to the PCI layer etc).
+Pulled, thanks!
 
-OTOH, the additional "inhibit" attribute may only be exposed if the corresponding
-callback is present, so I'm not really sure.
-
-Question is, though, what's the use case for turning off I/O when we don't
-go into runtime suspend.  After all, runtime suspend need not mean putting
-the device into any kind of low-power state and the "off" thing may very
-well be defined to mean that all input is discarded if the device is
-runtime-suspended and the device is not configured to do remote wakeup
-then.
+Will push to Linus for 4.3-rc4.
 
 Thanks,
 Rafael
+
