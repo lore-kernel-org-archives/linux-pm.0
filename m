@@ -1,65 +1,67 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] fix handling bq27xxx_read result
-Date: Mon, 28 Sep 2015 18:34:22 +0200
-Message-ID: <20150928163419.GC3660@earth>
-References: <1443430287-575-1-git-send-email-a.hajda@samsung.com>
+From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v7 02/15] power: bq24257: Remove IRQ config through
+ stat-gpios
+Date: Mon, 28 Sep 2015 18:38:26 +0200
+Message-ID: <20150928163825.GD3660@earth>
+References: <1443196460-26156-1-git-send-email-dannenberg@ti.com>
+ <1443196460-26156-3-git-send-email-dannenberg@ti.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="2JFBq9zoW8cOFH7v"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:41283 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933821AbbI1Qec (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 28 Sep 2015 12:34:32 -0400
+	protocol="application/pgp-signature"; boundary="1sNVjLsmu1MXqwQ/"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1443430287-575-1-git-send-email-a.hajda@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1443196460-26156-3-git-send-email-dannenberg-l0cyMroinI0@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Laurentiu Palcu <laurentiu.palcu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Ramakrishna Pallala <ramakrishna.pallala-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Andrzej Hajda <a.hajda@samsung.com>
-Cc: linux-kernel@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "open list:POWER SUPPLY CLASS/SUBSYSTEM and DRIVERS" <linux-pm@vger.kernel.org>
 
 
---2JFBq9zoW8cOFH7v
+--1sNVjLsmu1MXqwQ/
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Mon, Sep 28, 2015 at 10:51:27AM +0200, Andrzej Hajda wrote:
-> The function can return negative value.
+On Fri, Sep 25, 2015 at 10:54:07AM -0500, Andreas Dannenberg wrote:
+> At the time the driver was written GpioInt resources in ACPI were not
+> passed to the driver in client->irq, as opposed to DT enumeration. To
+> accommodate this use case, a "stat-gpios" property was introduced to
+> allow configuring the IRQ.
 >=20
-> The problem has been detected using proposed semantic patch
-> scripts/coccinelle/tests/unsigned_lesser_than_zero.cocci [1].
->=20
-> [1]: http://permalink.gmane.org/gmane.linux.kernel/2038576
->=20
-> Signed-off-by: Andrzej Hajda <a.hajda@samsung.com>
+> However this issue with ACPI was fixed in commit "845c877 i2c / ACPI:
+> Assign IRQ for devices that have GpioInt automatically" and makes this
+> workaround no longer necessary, hence we can remove the support for the
+> "stat-gpios" property and the associated code from the bq24257 driver.
 
-Thanks, queued with some bits from Dan Carpenter's patch
-description.
+Thanks, queued.
 
 -- Sebastian
 
---2JFBq9zoW8cOFH7v
+--1sNVjLsmu1MXqwQ/
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJWCWwLAAoJENju1/PIO/qadSMP/33joNGT7ktLzYKtYrPoR6/s
-z+UL8IMmE64Of8x2NXjuyaxZp6sYvEQWY8Kzvg8iGFynPpyfsoVKuegj7yGdnN+Q
-39mEWtZOaJVQJJid/lf1FpTzeQE0R1nse7TidA+CpHgYGiZWt/tPeZ83wXWGQcK0
-Vmtcpz0uC0/c01sFcQRa5YZZJX5TLYedyksz2qVhc+UFQPe2EipiK6CqaP7rG63s
-MTKnkCIpNxal7HR5vPuuAYVKehlGkjO3K5qNrS/0EmkWZJCB6wNIaqv2fcSho++k
-tGFrkCHhxVu2SJ3PldCvNga6ynxxi6T3Lj2C2KgHfqPnFhKZPl8ts16CXOYr6paI
-NSPzS8e5B9Eiyr2RYU7hQbreKMo5iem99ncRU4sfpFfqPcDf/Vr86F4sutNa4lfQ
-/03dXB/k2/T/J1ykgc7T7Txp9e7JTyrJT+A7kwvz3CMKQGs57wwpLg587risvVRw
-FYfsRKJmADRymAIdFyLGArKQVPJBuK3LQL3gGlUdWrGeA4FlFyKXs6Q8EvrDPJtu
-5BaeqMSanduqGRr+x3+EmHrM+R6U7zfAp0c25MDEKLuu5/2Mr73mQUw/Qx+uieOa
-2+z5C1QIuQ4cIYlKz2ltXEAcXAdaQjmyFobQrc4wU5bsrUnHNFUlts6x82fmURnr
-1/5amEalcZ72Siz8vE4Y
-=UHkN
+iQIcBAEBCgAGBQJWCW0BAAoJENju1/PIO/qaUOsP/AslesqcRf3DIzhbbZik7xR2
+1j6fMTnWqkVOT+tGk5gFF+DhWJwXKmfibPG04yNNojuMZ1FXjY9CVsqrIl5ncUWP
+cvjDRde1wRwibtnxhMjIDw14B3gxk3wVGEHRELCSTFiMpISsKL83PbqqdIKMJpKW
+me0p0BpS0u1xq4DGRsnw7XFE5TB+DRj/Is9SPt9ErjWIxHKxQEAsSWalk+oX3c4v
+ZSf/oLnoj/iuXLMOindPuhYKS6HWadoJjxKfJV6/cxvPw9nLeVLTJk1NJ1itlo9E
+N6rCj6wTNcMdacD05kEJGIzJoShdpUxgcfXwqOXJXPGGocmJPpRUaFlF3QPeb9ii
+pLI8qz/5ljIGeSh7tG29ziyqm6IWPNINzupWgjL4ljKuYR5Bqpiw2iVInCt6dMAy
+ImCpWZLc2OYOw/aGaORthe+DHRPsp7lGbppEmwYNkjvysvDxxjbKm+HahxDr/2kA
+490K3EeYpQVXzKFHHRJpqWUwcYaxi8VWlbpjCSaaSt4s/GPh6iL/Rr0xBdBXDkco
+D+jW+Gm+FA/ox+ct0nQME4inHXvynFOEu8vencRUfE1LrXMaVLhTRvDven6BfePr
+ttUMGqzpGfsC9iVnZJ2I4sVy/1lUMs9ZBVR9dAS2GGtvGPX099Pcds9CPAA0ch9G
+QNKe5csieX/OaTkx4GLB
+=RlQL
 -----END PGP SIGNATURE-----
 
---2JFBq9zoW8cOFH7v--
+--1sNVjLsmu1MXqwQ/--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
