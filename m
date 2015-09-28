@@ -1,75 +1,108 @@
-From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
-Subject: Re: [PATCH] fix handling bq27xxx_read result
-Date: Mon, 28 Sep 2015 10:57:05 +0200
-Message-ID: <201509281057.05307@pali>
-References: <1443430287-575-1-git-send-email-a.hajda@samsung.com>
+From: Punit Agrawal <punit.agrawal@arm.com>
+Subject: Re: [PATCH 1/2] of: thermal: Fix inconsitency between cooling-*-state and cooling-*-level
+Date: Mon, 28 Sep 2015 09:58:04 +0100
+Message-ID: <9hhpp12apk3.fsf@e105922-lin.cambridge.arm.com>
+References: <1441711013-11220-1-git-send-email-punit.agrawal@arm.com>
+	<1441711249-11434-1-git-send-email-punit.agrawal@arm.com>
+	<CAL_JsqKGk1v1FJ8De8L+UoMUC=T04SYK+WqHz6rZEYipiPYnqA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1847815.4eCdhqXIaL";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f172.google.com ([209.85.212.172]:37768 "EHLO
-	mail-wi0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753045AbbI1I5I (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Sep 2015 04:57:08 -0400
-In-Reply-To: <1443430287-575-1-git-send-email-a.hajda@samsung.com>
+Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:58824 "EHLO
+	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757048AbbI1I6R (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Sep 2015 04:58:17 -0400
+In-Reply-To: <CAL_JsqKGk1v1FJ8De8L+UoMUC=T04SYK+WqHz6rZEYipiPYnqA@mail.gmail.com>
+	(Rob Herring's message of "Fri, 25 Sep 2015 13:33:15 -0500")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andrzej Hajda <a.hajda@samsung.com>
-Cc: linux-kernel@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "open list:POWER SUPPLY CLASS/SUBSYSTEM and DRIVERS" <linux-pm@vger.kernel.org>
+To: Rob Herring <robherring2@gmail.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
 
---nextPart1847815.4eCdhqXIaL
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Hi Rob,
 
-On Monday 28 September 2015 10:51:27 Andrzej Hajda wrote:
-> The function can return negative value.
->=20
-> The problem has been detected using proposed semantic patch
-> scripts/coccinelle/tests/unsigned_lesser_than_zero.cocci [1].
->=20
-> [1]: http://permalink.gmane.org/gmane.linux.kernel/2038576
->=20
-> Signed-off-by: Andrzej Hajda <a.hajda@samsung.com>
-> ---
->  drivers/power/bq27xxx_battery.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/power/bq27xxx_battery.c
-> b/drivers/power/bq27xxx_battery.c index 473aa2f..994c78d 100644
-> --- a/drivers/power/bq27xxx_battery.c
-> +++ b/drivers/power/bq27xxx_battery.c
-> @@ -691,7 +691,7 @@ static bool bq27xxx_battery_dead(struct
-> bq27xxx_device_info *di, u16 flags) */
->  static int bq27xxx_battery_read_health(struct bq27xxx_device_info
-> *di) {
-> -	u16 flags;
-> +	int flags;
->=20
->  	flags =3D bq27xxx_read(di, BQ27XXX_REG_FLAGS, false);
->  	if (flags < 0) {
+Rob Herring <robherring2@gmail.com> writes:
 
-Seems legal change, so
+> On Tue, Sep 8, 2015 at 6:20 AM, Punit Agrawal <punit.agrawal@arm.com> wrote:
+>> The device trees in the kernel as well as the binding description in
+>> Documentation/devicetree/bindings/cpufreq/cpufreq-dt.txt use the
+>> cooling-{min,max}-level property.
+>>
+>> Fix the inconsistency with the binding description in
+>> Documentation/devicetree/bindings/thermal/thermal.txt by changing
+>> cooling-*-state properties to cooling-*-level.
+>>
+>> Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
+>> Cc: Eduardo Valentin <edubezval@gmail.com>
+>> Cc: Rob Herring <robh+dt@kernel.org>
+>> Cc: Mark Rutland <mark.rutland@arm.com>
+>> Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
+>> Cc: Kumar Gala <galak@codeaurora.org>
+>
+> Both patches applied. Thanks.
 
-Acked-By: Pali Roh=C3=A1r <pali.rohar@gmail.com>
+I see the patches in v4.3-rc3 now. Thanks for picking up these fixes.
 
-=2D-=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
+Cheers,
+Punit
 
---nextPart1847815.4eCdhqXIaL
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iEYEABECAAYFAlYJAOEACgkQi/DJPQPkQ1KHYgCfYKbi1sHPHWJ6eHXJgzXdr9h4
-/UUAn184LLK1kXy5dpCsGxgF/sufndQu
-=Z+JE
------END PGP SIGNATURE-----
-
---nextPart1847815.4eCdhqXIaL--
+>
+> Rob
+>
+>> ---
+>>  Documentation/devicetree/bindings/thermal/thermal.txt | 14 +++++++-------
+>>  1 file changed, 7 insertions(+), 7 deletions(-)
+>>
+>> diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/Documentation/devicetree/bindings/thermal/thermal.txt
+>> index 8a49362..8320186 100644
+>> --- a/Documentation/devicetree/bindings/thermal/thermal.txt
+>> +++ b/Documentation/devicetree/bindings/thermal/thermal.txt
+>> @@ -55,16 +55,16 @@ of heat dissipation). For example a fan's cooling states correspond to
+>>  the different fan speeds possible. Cooling states are referred to by
+>>  single unsigned integers, where larger numbers mean greater heat
+>>  dissipation. The precise set of cooling states associated with a device
+>> -(as referred to be the cooling-min-state and cooling-max-state
+>> +(as referred to by the cooling-min-level and cooling-max-level
+>>  properties) should be defined in a particular device's binding.
+>>  For more examples of cooling devices, refer to the example sections below.
+>>
+>>  Required properties:
+>> -- cooling-min-state:   An integer indicating the smallest
+>> +- cooling-min-level:   An integer indicating the smallest
+>>    Type: unsigned       cooling state accepted. Typically 0.
+>>    Size: one cell
+>>
+>> -- cooling-max-state:   An integer indicating the largest
+>> +- cooling-max-level:   An integer indicating the largest
+>>    Type: unsigned       cooling state accepted.
+>>    Size: one cell
+>>
+>> @@ -225,8 +225,8 @@ cpus {
+>>                         396000  950000
+>>                         198000  850000
+>>                 >;
+>> -               cooling-min-state = <0>;
+>> -               cooling-max-state = <3>;
+>> +               cooling-min-level = <0>;
+>> +               cooling-max-level = <3>;
+>>                 #cooling-cells = <2>; /* min followed by max */
+>>         };
+>>         ...
+>> @@ -240,8 +240,8 @@ cpus {
+>>          */
+>>         fan0: fan@0x48 {
+>>                 ...
+>> -               cooling-min-state = <0>;
+>> -               cooling-max-state = <9>;
+>> +               cooling-min-level = <0>;
+>> +               cooling-max-level = <9>;
+>>                 #cooling-cells = <2>; /* min followed by max */
+>>         };
+>>  };
+>> --
+>> 2.5.0
+>>
+> --
+> To unsubscribe from this list: send the line "unsubscribe devicetree" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
