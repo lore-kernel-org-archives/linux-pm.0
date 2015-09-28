@@ -1,64 +1,53 @@
 From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH 1/3] Thermal: initialize thermal zone device correctly
-Date: Mon, 28 Sep 2015 18:47:08 +0100
-Message-ID: <20150928174708.GC2823@e104805>
-References: <1443332908-13948-1-git-send-email-yu.c.chen@intel.com>
- <20150928142812.GA8359@e104805>
- <36DF59CE26D8EE47B0655C516E9CE64026F225EA@SHSMSX101.ccr.corp.intel.com>
+Subject: Re: [PATCH 2/3] Thermal: handle thermal zone device properly during
+ system sleep
+Date: Mon, 28 Sep 2015 18:48:26 +0100
+Message-ID: <20150928174826.GD2823@e104805>
+References: <1443332915-13988-1-git-send-email-yu.c.chen@intel.com>
+ <20150928142847.GA8796@e104805>
+ <36DF59CE26D8EE47B0655C516E9CE64026F22613@SHSMSX101.ccr.corp.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <stable-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <36DF59CE26D8EE47B0655C516E9CE64026F225EA@SHSMSX101.ccr.corp.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
+In-Reply-To: <36DF59CE26D8EE47B0655C516E9CE64026F22613@SHSMSX101.ccr.corp.intel.com>
+Sender: stable-owner@vger.kernel.org
 To: "Chen, Yu C" <yu.c.chen@intel.com>
 Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "Zhang, Rui" <rui.zhang@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Sep 28, 2015 at 06:30:30PM +0100, Chen, Yu C wrote:
-> Hi, Javi,
+On Mon, Sep 28, 2015 at 06:36:33PM +0100, Chen, Yu C wrote:
+> Hi, Javi
 > 
 > > -----Original Message-----
 > > From: Javi Merino [mailto:javi.merino@arm.com]
-> > Sent: Monday, September 28, 2015 10:28 PM
+> > Sent: Monday, September 28, 2015 10:29 PM
 > > To: Chen, Yu C
 > > Cc: linux-pm@vger.kernel.org; edubezval@gmail.com; Zhang, Rui; linux-
 > > kernel@vger.kernel.org; stable@vger.kernel.org
-> > Subject: Re: [PATCH 1/3] Thermal: initialize thermal zone device correctly
+> > Subject: Re: [PATCH 2/3] Thermal: handle thermal zone device properly
+> > during system sleep
 > > 
-> > On Sun, Sep 27, 2015 at 06:48:28AM +0100, Chen Yu wrote:
+> > On Sun, Sep 27, 2015 at 06:48:35AM +0100, Chen Yu wrote:
 > > > From: Zhang Rui <rui.zhang@intel.com>
 > > >
-> > > After thermal zone device registered, as we have not read any
-> > > temperature before, thus tz->temperature should not be 0, which
-> > > actually means 0C, and thermal trend is not available.
-> > > In this case, we need specially handling for the first
-> > > thermal_zone_device_update().
 > > >
-> > > Both thermal core framework and step_wise governor is enhanced to
-> > > handle this.
+> > > +	register_pm_notifier(&thermal_pm_nb);
 > > 
-> > It may be worth pointing out that the step_wise governor is the only one
-> > that uses trends, so it's the only thermal governor that needs to be updated.
+> > What if register_pm_notifier() fails?  It can't fail now, but that may in the
+> > future.  If we fail to register thermal when we can't register the genetlink
+> > family, maybe we should also fail to register thermal if we fail to register the
+> > pm notifier, don't you think?
 > > 
-> OK, will add.
-> > 
-> > > -		if (old_target == instance->target)
-> > > +		if (instance->initialized &&
-> > > +		    old_target == instance->target)
-> > 
-> > nit: it fits in one line,
-> > 
-> > 		if (instance->initialized && old_target == instance->target)
-> > 
-> > is 77 characters.
-> > 
-> Not sure if the limit for one line is 75 in checkpatch.pl, I'll have a try.
+> This pm notifier is mainly used for suspending situation, but it's not so 'critical' 
+> to terminate the initialization of thermal core if it failed, IMO. 
 
-The limit is 80:
-
-https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/Documentation/CodingStyle#n79
-https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/scripts/checkpatch.pl#n47
+In that case, just print a warning.
 
 Cheers,
 Javi
+
+> Hi, Rui, what do you think? Thx
+> 
+> Best Regards,
+> Yu
