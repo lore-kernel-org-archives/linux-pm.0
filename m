@@ -1,51 +1,49 @@
-From: Andreas Dannenberg <dannenberg@ti.com>
-Subject: Re: [PATCH v7 06/15] power: bq24257: Add basic support for
- bq24250/bq24251
-Date: Mon, 28 Sep 2015 08:38:10 -0500
-Message-ID: <20150928133810.GB12676@borg>
-References: <1443196460-26156-1-git-send-email-dannenberg@ti.com>
- <1443196460-26156-7-git-send-email-dannenberg@ti.com>
- <56093D50.5010604@samsung.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
+ SpeedStep enabled
+Date: Mon, 28 Sep 2015 14:23:47 +0000
+Message-ID: <bug-103351-137361-x9ykjYFuJo@https.bugzilla.kernel.org/>
+References: <bug-103351-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:59431 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755837AbbI1NjD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Sep 2015 09:39:03 -0400
-Content-Disposition: inline
-In-Reply-To: <56093D50.5010604@samsung.com>
+Received: from mail.kernel.org ([198.145.29.136]:32868 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933806AbbI1OXu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 28 Sep 2015 10:23:50 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+	by mail.kernel.org (Postfix) with ESMTP id 2FF8B20760
+	for <linux-pm@vger.kernel.org>; Mon, 28 Sep 2015 14:23:49 +0000 (UTC)
+Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
+	by mail.kernel.org (Postfix) with ESMTP id 295A920723
+	for <linux-pm@vger.kernel.org>; Mon, 28 Sep 2015 14:23:48 +0000 (UTC)
+In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-api@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-On Mon, Sep 28, 2015 at 10:14:56PM +0900, Krzysztof Kozlowski wrote:
-> W dniu 26.09.2015 o 00:54, Andreas Dannenberg pisze:
-> > This patch adds basic support for bq24250 and bq24251 which are very
-> > similar to the bq24257 the driver was originally written for. Basic
-> > support means the ability to select a device through Kconfig, DT and
-> > ACPI, an instance variable allowing to check which chip is active, and
-> > the reporting back of the selected device through the model_name power
-> > supply sysfs property.
-> > 
-> > This patch by itself is not sufficient to actually use those two added
-> > devices in a real-world setting due to some feature differences which
-> > are addressed by other patches in this series.
-> > 
-> > Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
-> 
-> For the second time (after 1st patch changing DT documentation) I am
-> confused - my reviewed-by was not added.
-> 
-> I assume it got lost due to misunderstanding or something else but
-> anyway I won't insist. If you want it, just let me know.
+https://bugzilla.kernel.org/show_bug.cgi?id=103351
 
-Hi Krzysztof, thanks for the reviewed-by's. Yes there was a
-misunderstanding. Will make sure to carry them forward from now on.
+firefox.cat-fox@gmx.net changed:
 
-Regards,
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |firefox.cat-fox@gmx.net
 
---
-Andreas Dannenberg
-Texas Instruments Inc
+--- Comment #14 from firefox.cat-fox@gmx.net ---
+Hello,
+
+same on Schenker XMG P505 with Intel i-5700HQ. Tried with Kubuntu 15.04 and
+15.10-beta1. Kernel version is: 4.1.0-3.3 Ubuntu, from upstream Version 4.1.3
+
+"processor.max_cstate=0 intel_idle.max_cstate=0 idle=poll" can be used as
+workaround but the fan is quiet noisy and nervous.
+
+Speedstep cannot be switched off in bios.
+
+best regards.
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
