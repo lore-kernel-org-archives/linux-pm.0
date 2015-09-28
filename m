@@ -1,134 +1,96 @@
-From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
-Subject: Re: [PATCH v2] clk: readd refcounting for struct clk instances
-Date: Mon, 28 Sep 2015 21:36:31 +0200
-Message-ID: <1541157.TohRuBEVWh@diego>
-References: <6257096.h7pub3XnDQ@diego> <20150928184640.GM23081@codeaurora.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing
+ runtime suspend
+Date: Mon, 28 Sep 2015 22:03:28 +0200
+Message-ID: <CAJZ5v0iROHkuXBPKw_tY_xRuV+N8_C=rU_rWePK44YJVWz36Gg@mail.gmail.com>
+References: <1935189.6gJVPG4I9g@vostro.rjw.lan>
+	<Pine.LNX.4.44L0.1509281015220.1612-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gloria.sntech.de ([95.129.55.99]:41446 "EHLO gloria.sntech.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751262AbbI1Tgk convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Sep 2015 15:36:40 -0400
-In-Reply-To: <20150928184640.GM23081@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1509281015220.1612-100000@iolanthe.rowland.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Oliver Neukum <oneukum@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Irina Tirdea <irina.tirdea@intel.com>, Len Brown <len.brown@intel.com>, Octavian Purdila <octavian.purdila@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Pavel Machek <pavel@ucw.cz>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: mturquette@baylibre.com, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Caesar Wang <wxt@rock-chips.com>, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Am Montag, 28. September 2015, 11:46:40 schrieb Stephen Boyd:
-> On 09/23, Heiko St=FCbner wrote:
-> > ---
-> >=20
-> > While it may be nice to do the actual handling of the clock referen=
-ces
-> > only in the calling code, in this current use case it would create
-> > a big additional overhead.
-> >=20
-> > It looks like this so called synchronous reset on power-domain stat=
-e-
-> > changes, requiring device clocks to be turned on, is not that uncom=
-mon
-> > or rockchip-specific.
-> > For this Kevin requested that we read the clocks from the actual co=
-nsumer
-> > devices and not double-list them in the power-domain node as well.
-> >=20
-> > So when expecting pm_clk_add_clk() to work, the current powerdomain=
- code
-> >=20
-> > can simply do when adding a device to a domain in=20
-rockchip_pd_attach_dev():
-> >     while ((clk =3D of_clk_get(dev->of_node, i++)) && !IS_ERR(clk))=
- {
-> > =09
-> > 	dev_dbg(dev, "adding clock '%pC' to list of PM clocks\n", clk);
-> > 	error =3D pm_clk_add_clk(dev, clk);
-> > 	clk_put(clk);
-> > =09
-> >     }
-> >=20
-> > The clock gets handed off to the generic pm clock handling and thus
-> > clk_put in there.
-> >=20
-> >=20
-> > On the other hand when only the rockchip power-domain code is expec=
-ted
-> > to get and put the clock, we would require a lot of new overhead, a=
-s now
-> > the code would also need to track which devices got added to what
-> > domain and also all clock-references until the device gets detached
-> > again. So this would essentially duplicate a big part of what the
-> > genpd-code does (per-domain device-list and per-device clock-list).
-> >=20
-> > As this seems to be not uncommon, future powerdomain drivers
-> > might need that too and would also need to duplicate that handling.
-> >=20
-> > When allowing multiple __clk_get and __clk_put calls on the other
-> > hand, the overhead for the regular case comes down to one atomic_in=
-c,
-> > atomic_sub_and_test and the function call to the new separate relea=
-se
-> > function ;-) .
->=20
-> Why are we doing of_clk_get(), pm_clk_add_clk(), and then
-> clk_put()?  Just drop that clk_put() in the caller and remove the
-> __clk_get() inside pm_clk_add_clk() and everything works the
-> same. This patch does most of that, except it doesn't handle the
-> error path where we would need to throw a clk_put().
+Hi Alan,
 
-I guess that was my try to keep all the gets and puts together, but als=
-o an=20
-instance of not seeing the forest for the trees. Looking at your soluti=
-on=20
-below does look actually really cool.
+On Mon, Sep 28, 2015 at 4:29 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Mon, 28 Sep 2015, Rafael J. Wysocki wrote:
+>
+>> > This suggests we forget about power/wakeup == "off" and introduce an
+>> > "inhibit" attribute instead.
+>>
+>> If we do that, can it still be regarded as a PM attribute?
+>
+> Why not?  Consider this: Is there any reason to support inhibit when
+> CONFIG_PM is disabled?  I can't come up with any.
 
-Would still be nice if the genpd people would speak up on their prefere=
-nce. In=20
-the worst case I'll try hunting them down at ELCE next week :-)
+Well, the "I don't want any input from you now, because the phone is
+going into a pocket" case?
 
-I guess for the error path, one could just set the notion that if=20
-pm_clk_add_clk returns sucessfully it has taken over the clock referenc=
-e=20
-completely and in the error case the caller should clean up?
+It isn't stticlty dependent on PM.
 
+>> And what about the corresponding callback?  Should that be a PM callback or
+>> a general one?
+>
+> Well, if "inhibit" is a PM attribute then the callback should be a PM
+> callback.  :-)
+>
+>> > > Question is, though, what's the use case for turning off I/O when we don't
+>> > > go into runtime suspend.  After all, runtime suspend need not mean putting
+>> > > the device into any kind of low-power state and the "off" thing may very
+>> > > well be defined to mean that all input is discarded if the device is
+>> > > runtime-suspended and the device is not configured to do remote wakeup
+>> > > then.
+>> >
+>> > Well, I suppose there might be a driver that supports inhibit but
+>> > doesn't support runtime PM, unlikely as that seems.  Or the driver
+>> > might support both but the user might leave power/control == "on" while
+>> > inhibiting the device.
+>>
+>> That sounds like a general rather than PM-related mechanism then.
+>
+> I don't follow your reasoning.
 
->=20
-> Really, that snippet of code that loops over a device's clocks
-> and adds them to a pm domain is an example of duplicate code that
-> should go into some common layer like the PM clock stuff. Then we
-> don't have any kind of situation where we're passing struct clk
-> pointers off to other layers of code and this "problem" doesn't
-> exist.
->=20
-> ----8<----
-> diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/cloc=
-k_ops.c
-> index acef9f9f759a..529a03e8282c 100644
-> --- a/drivers/base/power/clock_ops.c
-> +++ b/drivers/base/power/clock_ops.c
-> @@ -95,7 +95,7 @@ static int __pm_clk_add(struct device *dev, const c=
-har
-> *con_id, return -ENOMEM;
->                 }
->         } else {
-> -               if (IS_ERR(clk) || !__clk_get(clk)) {
-> +               if (IS_ERR(clk)) {
->                         kfree(ce);
->                         return -ENOENT;
->                 }
-> @@ -129,7 +129,7 @@ int pm_clk_add(struct device *dev, const char *co=
-n_id)
->   * @clk: Clock pointer
->   *
->   * Add the clock to the list of clocks used for the power management=
- of
-> @dev. - * It will increment refcount on clock pointer, use clk_put() =
-on it
-> when done. + * Callers should not call clk_put() on @clk after callin=
-g this
-> function. */
->  int pm_clk_add_clk(struct device *dev, struct clk *clk)
->  {
+Support for "inhibit" and lack of runtime PM support means that the
+feature has nothing to do with PM any more AFAICS.
 
+That's why I think it may be regarded by more than just PM.  It should
+make runtime PM behave in a specific way if supported, but then it
+should work withot it too, shouldn't it?
+
+>> I guess we need a real use case for that last thing or it will be rather
+>> difficult to convince Greg to accept the patch. :-)
+>
+> The hard part is to come up with a design that Greg agrees with.  If
+> the design is okay, there's no reason not to accept the patch.
+>
+> One of the questions amounts to this: Do we want to allow situations
+> where input is inhibited but the user prevents the device from going
+> into runtime suspend by setting power/control = "on"?  If the answer is
+> Yes then "inhibit" should be a separate attribute.  Otherwise, we can
+> just let "inhibit" be another setting in power/control.
+
+I think that the answer really is "yes" in general as long as it makes
+sense to discard input without closing the device.
+
+My understanding of "inhibit" would be "discard all input including
+any wakeup events from now on".  It would be quite natural for runtime
+suspend to trigger if that is set (unless disabled or not supported,
+of course), but I don't think that this should be a requirement.
+
+> Another question is: Do we want to make it easy for drivers to support
+> inhibit while still incrementing their PM usage counter every time the
+> device file is opened?  If we do then inhibit must be considered
+> separate from runtime suspend, because a device _can't_ go directly
+> into runtime suspend when the usage counter is > 1.  If we don't then
+> we will most likely have to change the runtime-PM support in some
+> drivers before they can implement inhibit.
+
+My opinion is that "inhibit" should affect PM, but should not require
+PM to function (there's no technical reason for that).
+
+Thanks,
+Rafael
