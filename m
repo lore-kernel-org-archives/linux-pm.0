@@ -1,107 +1,74 @@
-From: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH v7 01/15] dt: power: bq24257-charger: Cover additional
- devices
-Date: Mon, 28 Sep 2015 21:16:22 +0900
-Message-ID: <56092F96.4000502@samsung.com>
-References: <1443196460-26156-1-git-send-email-dannenberg@ti.com>
- <1443196460-26156-2-git-send-email-dannenberg@ti.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH][RFC] ACPI / PM: Fix incorrect wakeup irq setting before suspend-to-idle
+Date: Mon, 28 Sep 2015 14:56:09 +0200
+Message-ID: <2077382.8itqOgEaxv@vostro.rjw.lan>
+References: <1439172686-16360-1-git-send-email-yu.c.chen@intel.com> <14896395.L30bH9BMzP@vostro.rjw.lan> <36DF59CE26D8EE47B0655C516E9CE64026587A89@SHSMSX101.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-api-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1443196460-26156-2-git-send-email-dannenberg-l0cyMroinI0@public.gmane.org>
-Sender: linux-api-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Laurentiu Palcu <laurentiu.palcu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: Ramakrishna Pallala <ramakrishna.pallala-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <36DF59CE26D8EE47B0655C516E9CE64026587A89@SHSMSX101.ccr.corp.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Chen, Yu C" <yu.c.chen@intel.com>
+Cc: "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "jiang.liu@linux.intel.com" <jiang.liu@linux.intel.com>, "Zhang, Rui" <rui.zhang@intel.com>, "Brown, Len" <len.brown@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-W dniu 26.09.2015 o 00:54, Andreas Dannenberg pisze:
-> Extend the bq24257 charger's device tree documentation to cover the
-> bq24250 and bq24251 devices as well feature additions.
+On Monday, September 28, 2015 01:51:09 AM Chen, Yu C wrote:
+> Hi, Rafael,
 > 
-> Signed-off-by: Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
-> ---
->  .../devicetree/bindings/power/bq24257.txt          | 53 ++++++++++++++++++++--
->  1 file changed, 48 insertions(+), 5 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/power/bq24257.txt b/Documentation/devicetree/bindings/power/bq24257.txt
-> index 5c9d394..6c376ef 100644
-> --- a/Documentation/devicetree/bindings/power/bq24257.txt
-> +++ b/Documentation/devicetree/bindings/power/bq24257.txt
-> @@ -1,21 +1,64 @@
-> -Binding for TI bq24257 Li-Ion Charger
-> +Binding for TI bq24250/bq24251/bq24257 Li-Ion Charger
->  
->  Required properties:
->  - compatible: Should contain one of the following:
-> + * "ti,bq24250"
-> + * "ti,bq24251"
->   * "ti,bq24257"
-> -- reg:			   integer, i2c address of the device.
-> +- reg: integer, i2c address of the device.
-> +- interrupt-parent: Should be the phandle for the interrupt controller. Use in
-> +    conjunction with "interrupts".
-> +- interrupts: Interrupt mapping for GPIO IRQ (configure for both edges). Use in
-> +    conjunction with "interrupt-parent".
->  - ti,battery-regulation-voltage: integer, maximum charging voltage in uV.
-> -- ti,charge-current:	   integer, maximum charging current in uA.
-> -- ti,termination-current:  integer, charge will be terminated when current in
-> -			   constant-voltage phase drops below this value (in uA).
-> +- ti,charge-current: integer, maximum charging current in uA.
-> +- ti,termination-current: integer, charge will be terminated when current in
-> +    constant-voltage phase drops below this value (in uA).
-> +
-> +Optional properties:
-> +- pg-gpios: GPIO used for connecting the bq2425x device PG (Power Good) pin.
-> +    This pin is not available on all devices however it should be used if
-> +    possible as this is the recommended way to obtain the charger's input PG
-> +    state. If this pin is not specified a software-based approach for PG
-> +    detection is used.
-> +- ti,current-limit: The maximum current to be drawn from the charger's input
-> +    (in uA). If this property is not specified a USB D+/D- signal based charger
-> +    type detection is used (if available) and the input limit current is set
-> +    accordingly. If the D+/D- based detection is not available on a given device
-> +    a default of 500,000 is used (=500mA).
-> +- ti,ovp-voltage: Configures the over voltage protection voltage (in uV). If
-> +    not specified a default of 6,5000,000 (=6.5V) is used.
-> +- ti,in-dpm-voltage: Configures the threshold input voltage for the dynamic
-> +    power path management (in uV). If not specified a default of 4,360,000
-> +    (=4.36V) is used.
->  
->  Example:
->  
->  bq24257 {
->  	compatible = "ti,bq24257";
->  	reg = <0x6a>;
-> +	interrupt-parent = <&gpio1>;
-> +	interrupts = <16 IRQ_TYPE_EDGE_BOTH>;
-> +
-> +	pg-gpios = <&gpio1 28 GPIO_ACTIVE_HIGH>;
->  
->  	ti,battery-regulation-voltage = <4200000>;
->  	ti,charge-current = <1000000>;
->  	ti,termination-current = <50000>;
->  };
-> +
-> +Example:
-> +
-> +bq24250 {
-> +	compatible = "ti,bq24250";
-> +	reg = <0x6a>;
-> +	interrupt-parent = <&gpio1>;
-> +	interrupts = <16 IRQ_TYPE_EDGE_BOTH>;
-> +
-> +	ti,battery-regulation-voltage = <4200000>;
-> +	ti,charge-current = <500000>;
-> +	ti,termination-current = <50000>;
-> +	ti,current-limit = <900000>;
-> +	ti,ovp-voltage = <9500000>;
-> +	ti,in-dpm-voltage = <4440000>;
-> +};
+> > -----Original Message-----
+> > From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
+> > owner@vger.kernel.org] On Behalf Of Rafael J. Wysocki
+> > Sent: Sunday, September 27, 2015 9:30 PM
+> > To: Chen, Yu C
+> > Cc: Wysocki, Rafael J; jiang.liu@linux.intel.com; Zhang, Rui; Brown, Len; linux-
+> > kernel@vger.kernel.org; linux-pm@vger.kernel.org
+> > Subject: Re: [PATCH][RFC] ACPI / PM: Fix incorrect wakeup irq setting before
+> > suspend-to-idle
+> > 
+> > On Saturday, September 26, 2015 02:37:19 PM Chen, Yu C wrote:
+> > > Hi, Rafael,
+> > >
+> > > > -----Original Message-----
+> > > > From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
+> > > > owner@vger.kernel.org] On Behalf Of Rafael J. Wysocki
+> > > > Sent: Friday, September 25, 2015 9:57 PM
+> > > > To: Chen, Yu C
+> > > > Cc: Wysocki, Rafael J; jiang.liu@linux.intel.com; Zhang, Rui; Brown,
+> > > > Len; linux- kernel@vger.kernel.org; linux-pm@vger.kernel.org
+> > > > Subject: Re: [PATCH][RFC] ACPI / PM: Fix incorrect wakeup irq
+> > > > setting before suspend-to-idle
+> > > >
+> > > > On Friday, September 25, 2015 06:42:41 AM Chen, Yu C wrote:
+> > > > > Hi,Rafael, thanks a lot for your review, will resend v2 version.
+> > > > >
+> > > > > > -----Original Message-----
+> > > > > > From: Rafael J. Wysocki [mailto:rjw@rjwysocki.net]
+> > > > > > Sent: Friday, September 25, 2015 9:24 AM
+> > > > > > To: Chen, Yu C
+> > > > > > Cc: Wysocki, Rafael J; jiang.liu@linux.intel.com; Zhang, Rui;
+> > > > > > Brown, Len; linux- kernel@vger.kernel.org;
+> > > > > > linux-pm@vger.kernel.org
+> > > > > > Subject: Re: [PATCH][RFC] ACPI / PM: Fix incorrect wakeup irq
+> > > > > > setting before suspend-to-idle
+> > > > > >
+> > > > > > On Monday, August 10, 2015 10:11:26 AM Chen Yu wrote:
+> > > >
+> > > > But I'd rather define a global acpi_irq variable, store irq in it
+> > > > and access it directly from acpi_freeze_prepare().  And it doesn't
+> > > > have to depend on CONFIG_SUSPEND as it is just the IRQ number
+> > actually used by ACPI.
+> > > >
+> > > OK, I've convert it to a global variable acpi_inuse_irq.
+> > 
+> > Why do you need the "inuse" part?  Why is acpi_irq not sufficient?
+> Because the name of acpi_irq is already used by acpi irq handler at
+> drivers/acpi/osl.c:
+> request_irq(irq, acpi_irq, IRQF_SHARED, "acpi", acpi_irq)
 
-Once again:
+Ah, this is the name of the handler.  I forgot about that, sorry.
 
-Reviewed-by: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Well, it might be worth renaming the handler to something like acpi_interrupt(), then.
 
-Best regards,
-Krzysztof
+Thanks,
+Rafael
