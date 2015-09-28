@@ -1,96 +1,88 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing
- runtime suspend
-Date: Mon, 28 Sep 2015 22:03:28 +0200
-Message-ID: <CAJZ5v0iROHkuXBPKw_tY_xRuV+N8_C=rU_rWePK44YJVWz36Gg@mail.gmail.com>
-References: <1935189.6gJVPG4I9g@vostro.rjw.lan>
-	<Pine.LNX.4.44L0.1509281015220.1612-100000@iolanthe.rowland.org>
+Subject: Re: [PATCH][RFC] ACPI / PM: Fix incorrect wakeup irq setting before suspend-to-idle
+Date: Mon, 28 Sep 2015 22:05:53 +0200
+Message-ID: <CAJZ5v0h=fjAzLKOio1sAH3J_3FL6pY041jiLvLs8MPTkbvm9Ag@mail.gmail.com>
+References: <1439172686-16360-1-git-send-email-yu.c.chen@intel.com>
+	<14896395.L30bH9BMzP@vostro.rjw.lan>
+	<36DF59CE26D8EE47B0655C516E9CE64026587A89@SHSMSX101.ccr.corp.intel.com>
+	<2077382.8itqOgEaxv@vostro.rjw.lan>
+	<36DF59CE26D8EE47B0655C516E9CE64026F22661@SHSMSX101.ccr.corp.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1509281015220.1612-100000@iolanthe.rowland.org>
+In-Reply-To: <36DF59CE26D8EE47B0655C516E9CE64026F22661@SHSMSX101.ccr.corp.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Oliver Neukum <oneukum@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Irina Tirdea <irina.tirdea@intel.com>, Len Brown <len.brown@intel.com>, Octavian Purdila <octavian.purdila@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Pavel Machek <pavel@ucw.cz>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: "Chen, Yu C" <yu.c.chen@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "jiang.liu@linux.intel.com" <jiang.liu@linux.intel.com>, "Zhang, Rui" <rui.zhang@intel.com>, "Brown, Len" <len.brown@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Alan,
+Hi,
 
-On Mon, Sep 28, 2015 at 4:29 PM, Alan Stern <stern@rowland.harvard.edu> wrote:
-> On Mon, 28 Sep 2015, Rafael J. Wysocki wrote:
+On Mon, Sep 28, 2015 at 7:56 PM, Chen, Yu C <yu.c.chen@intel.com> wrote:
+> Hi,
 >
->> > This suggests we forget about power/wakeup == "off" and introduce an
->> > "inhibit" attribute instead.
+>> -----Original Message-----
+>> From: Rafael J. Wysocki [mailto:rjw@rjwysocki.net]
+>> Sent: Monday, September 28, 2015 8:56 PM
+>> To: Chen, Yu C
+>> Cc: Wysocki, Rafael J; jiang.liu@linux.intel.com; Zhang, Rui; Brown, Len; linux-
+>> kernel@vger.kernel.org; linux-pm@vger.kernel.org
+>> Subject: Re: [PATCH][RFC] ACPI / PM: Fix incorrect wakeup irq setting before
+>> suspend-to-idle
 >>
->> If we do that, can it still be regarded as a PM attribute?
->
-> Why not?  Consider this: Is there any reason to support inhibit when
-> CONFIG_PM is disabled?  I can't come up with any.
-
-Well, the "I don't want any input from you now, because the phone is
-going into a pocket" case?
-
-It isn't stticlty dependent on PM.
-
->> And what about the corresponding callback?  Should that be a PM callback or
->> a general one?
->
-> Well, if "inhibit" is a PM attribute then the callback should be a PM
-> callback.  :-)
->
->> > > Question is, though, what's the use case for turning off I/O when we don't
->> > > go into runtime suspend.  After all, runtime suspend need not mean putting
->> > > the device into any kind of low-power state and the "off" thing may very
->> > > well be defined to mean that all input is discarded if the device is
->> > > runtime-suspended and the device is not configured to do remote wakeup
->> > > then.
+>> On Monday, September 28, 2015 01:51:09 AM Chen, Yu C wrote:
+>> > Hi, Rafael,
 >> >
->> > Well, I suppose there might be a driver that supports inhibit but
->> > doesn't support runtime PM, unlikely as that seems.  Or the driver
->> > might support both but the user might leave power/control == "on" while
->> > inhibiting the device.
+>> > > -----Original Message-----
+>> > > From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
+>> > > owner@vger.kernel.org] On Behalf Of Rafael J. Wysocki
+>> > > Sent: Sunday, September 27, 2015 9:30 PM
+>> > > To: Chen, Yu C
+>> > > Cc: Wysocki, Rafael J; jiang.liu@linux.intel.com; Zhang, Rui; Brown,
+>> > > Len; linux- kernel@vger.kernel.org; linux-pm@vger.kernel.org
+>> > > Subject: Re: [PATCH][RFC] ACPI / PM: Fix incorrect wakeup irq
+>> > > setting before suspend-to-idle
+>> > >
+>> > > On Saturday, September 26, 2015 02:37:19 PM Chen, Yu C wrote:
+>> > > > Hi, Rafael,
+>> > > >
+>> > > > > -----Original Message-----
+>> > > > > From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
+>> > > > > owner@vger.kernel.org] On Behalf Of Rafael J. Wysocki
+>> > > > > Sent: Friday, September 25, 2015 9:57 PM
+>> > > > > To: Chen, Yu C
+>> > > > > Cc: Wysocki, Rafael J; jiang.liu@linux.intel.com; Zhang, Rui;
+>> > > > > Brown, Len; linux- kernel@vger.kernel.org;
+>> > > > > linux-pm@vger.kernel.org
+>> > > > > Subject: Re: [PATCH][RFC] ACPI / PM: Fix incorrect wakeup irq
+>> > > > > setting before suspend-to-idle
+>> > > > >
+>> > > > > On Friday, September 25, 2015 06:42:41 AM Chen, Yu C wrote:
+>> > > > > > Hi,Rafael, thanks a lot for your review, will resend v2 version.
+>> > > > > >
+>> > > > > > > -----Original Message-----
+>> > > > > > > From: Rafael J. Wysocki [mailto:rjw@rjwysocki.net]
+>> > > > > > > Sent: Friday, September 25, 2015 9:24 AM
+>> > > > > > > To: Chen, Yu C
+>> > > > > > > Cc: Wysocki, Rafael J; jiang.liu@linux.intel.com; Zhang,
+>> > > > > > > Rui; Brown, Len; linux- kernel@vger.kernel.org;
+>> > > > > > > linux-pm@vger.kernel.org
+>> > > > > > > Subject: Re: [PATCH][RFC] ACPI / PM: Fix incorrect wakeup
+>> > > > > > > irq setting before suspend-to-idle
+>> > > > > > >
+>> > > > > > > On Monday, August 10, 2015 10:11:26 AM Chen Yu wrote:
+>> > > > >
+>> > Because the name of acpi_irq is already used by acpi irq handler at
+>> > drivers/acpi/osl.c:
+>> > request_irq(irq, acpi_irq, IRQF_SHARED, "acpi", acpi_irq)
 >>
->> That sounds like a general rather than PM-related mechanism then.
->
-> I don't follow your reasoning.
+>> Ah, this is the name of the handler.  I forgot about that, sorry.
+>>
+>> Well, it might be worth renaming the handler to something like
+>> acpi_interrupt(), then.
+> OK, will rewrite the patch, Thanks!
 
-Support for "inhibit" and lack of runtime PM support means that the
-feature has nothing to do with PM any more AFAICS.
-
-That's why I think it may be regarded by more than just PM.  It should
-make runtime PM behave in a specific way if supported, but then it
-should work withot it too, shouldn't it?
-
->> I guess we need a real use case for that last thing or it will be rather
->> difficult to convince Greg to accept the patch. :-)
->
-> The hard part is to come up with a design that Greg agrees with.  If
-> the design is okay, there's no reason not to accept the patch.
->
-> One of the questions amounts to this: Do we want to allow situations
-> where input is inhibited but the user prevents the device from going
-> into runtime suspend by setting power/control = "on"?  If the answer is
-> Yes then "inhibit" should be a separate attribute.  Otherwise, we can
-> just let "inhibit" be another setting in power/control.
-
-I think that the answer really is "yes" in general as long as it makes
-sense to discard input without closing the device.
-
-My understanding of "inhibit" would be "discard all input including
-any wakeup events from now on".  It would be quite natural for runtime
-suspend to trigger if that is set (unless disabled or not supported,
-of course), but I don't think that this should be a requirement.
-
-> Another question is: Do we want to make it easy for drivers to support
-> inhibit while still incrementing their PM usage counter every time the
-> device file is opened?  If we do then inhibit must be considered
-> separate from runtime suspend, because a device _can't_ go directly
-> into runtime suspend when the usage counter is > 1.  If we don't then
-> we will most likely have to change the runtime-PM support in some
-> drivers before they can implement inhibit.
-
-My opinion is that "inhibit" should affect PM, but should not require
-PM to function (there's no technical reason for that).
+Alternatively, you can call the new variable acpi_sci_irq.
 
 Thanks,
 Rafael
