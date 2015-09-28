@@ -1,49 +1,95 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
- SpeedStep enabled
-Date: Mon, 28 Sep 2015 14:23:47 +0000
-Message-ID: <bug-103351-137361-x9ykjYFuJo@https.bugzilla.kernel.org/>
-References: <bug-103351-137361@https.bugzilla.kernel.org/>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: [PATCH 1/3] Thermal: initialize thermal zone device correctly
+Date: Mon, 28 Sep 2015 15:28:13 +0100
+Message-ID: <20150928142812.GA8359@e104805>
+References: <1443332908-13948-1-git-send-email-yu.c.chen@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:32868 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933806AbbI1OXu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 28 Sep 2015 10:23:50 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id 2FF8B20760
-	for <linux-pm@vger.kernel.org>; Mon, 28 Sep 2015 14:23:49 +0000 (UTC)
-Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
-	by mail.kernel.org (Postfix) with ESMTP id 295A920723
-	for <linux-pm@vger.kernel.org>; Mon, 28 Sep 2015 14:23:48 +0000 (UTC)
-In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
+Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:56431 "EHLO
+	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756584AbbI1O2S (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Sep 2015 10:28:18 -0400
+Content-Disposition: inline
+In-Reply-To: <1443332908-13948-1-git-send-email-yu.c.chen@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=103351
+On Sun, Sep 27, 2015 at 06:48:28AM +0100, Chen Yu wrote:
+> From: Zhang Rui <rui.zhang@intel.com>
+> 
+> After thermal zone device registered, as we have not read any
+> temperature before, thus tz->temperature should not be 0,
+> which actually means 0C, and thermal trend is not available.
+> In this case, we need specially handling for the first
+> thermal_zone_device_update().
+> 
+> Both thermal core framework and step_wise governor is
+> enhanced to handle this.
 
-firefox.cat-fox@gmx.net changed:
+It may be worth pointing out that the step_wise governor is the only
+one that uses trends, so it's the only thermal governor that needs to
+be updated.
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |firefox.cat-fox@gmx.net
+> CC: <stable@vger.kernel.org> #3.18+
+> Tested-by: Manuel Krause <manuelkrause@netscape.net>
+> Tested-by: szegad <szegadlo@poczta.onet.pl>
+> Tested-by: prash <prash.n.rao@gmail.com>
+> Tested-by: amish <ammdispose-arch@yahoo.com>
+> Tested-by: Matthias <morpheusxyz123@yahoo.de>
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
 
---- Comment #14 from firefox.cat-fox@gmx.net ---
-Hello,
+One minor nit below, other than that,
 
-same on Schenker XMG P505 with Intel i-5700HQ. Tried with Kubuntu 15.04 and
-15.10-beta1. Kernel version is: 4.1.0-3.3 Ubuntu, from upstream Version 4.1.3
+Reviewed-by: Javi Merino <javi.merino@arm.com>
 
-"processor.max_cstate=0 intel_idle.max_cstate=0 idle=poll" can be used as
-workaround but the fan is quiet noisy and nervous.
+> ---
+>  drivers/thermal/step_wise.c    | 18 ++++++++++++++++--
+>  drivers/thermal/thermal_core.c | 19 +++++++++++++++++--
+>  drivers/thermal/thermal_core.h |  1 +
+>  include/linux/thermal.h        |  3 +++
+>  4 files changed, 37 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
+> index 2f9f708..405de04 100644
+> --- a/drivers/thermal/step_wise.c
+> +++ b/drivers/thermal/step_wise.c
+> @@ -63,6 +63,19 @@ static unsigned long get_target_state(struct thermal_instance *instance,
+>  	next_target = instance->target;
+>  	dev_dbg(&cdev->device, "cur_state=%ld\n", cur_state);
+>  
+> +	if (!instance->initialized) {
+> +		if (throttle) {
+> +			next_target = (cur_state + 1) >= instance->upper ?
+> +					instance->upper :
+> +					((cur_state + 1) < instance->lower ?
+> +					instance->lower : (cur_state + 1));
+> +		} else {
+> +			next_target = THERMAL_NO_TARGET;
+> +		}
+> +
+> +		return next_target;
+> +	}
+> +
+>  	switch (trend) {
+>  	case THERMAL_TREND_RAISING:
+>  		if (throttle) {
+> @@ -149,7 +162,8 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
+>  		dev_dbg(&instance->cdev->device, "old_target=%d, target=%d\n",
+>  					old_target, (int)instance->target);
+>  
+> -		if (old_target == instance->target)
+> +		if (instance->initialized &&
+> +		    old_target == instance->target)
 
-Speedstep cannot be switched off in bios.
+nit: it fits in one line,
 
-best regards.
+		if (instance->initialized && old_target == instance->target)
 
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+is 77 characters.
+
+Cheers,
+Javi
