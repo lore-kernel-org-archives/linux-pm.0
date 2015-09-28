@@ -1,56 +1,47 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
- SpeedStep enabled
-Date: Mon, 28 Sep 2015 14:58:37 +0000
-Message-ID: <bug-103351-137361-295KgggJ4T@https.bugzilla.kernel.org/>
-References: <bug-103351-137361@https.bugzilla.kernel.org/>
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: Re: [patch] power: bq27xxx_battery: signedness bug in
+ bq27xxx_battery_read_health()
+Date: Mon, 28 Sep 2015 10:08:37 -0500
+Message-ID: <560957F5.3090900@ti.com>
+References: <20150928091653.GA11367@mwanda>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="windows-1252"; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:35767 "EHLO mail.kernel.org"
+Received: from comal.ext.ti.com ([198.47.26.152]:55243 "EHLO comal.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933483AbbI1O6l (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 28 Sep 2015 10:58:41 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id 0479A20741
-	for <linux-pm@vger.kernel.org>; Mon, 28 Sep 2015 14:58:40 +0000 (UTC)
-Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
-	by mail.kernel.org (Postfix) with ESMTP id DD8AC20755
-	for <linux-pm@vger.kernel.org>; Mon, 28 Sep 2015 14:58:38 +0000 (UTC)
-In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
+	id S933851AbbI1PJV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 28 Sep 2015 11:09:21 -0400
+In-Reply-To: <20150928091653.GA11367@mwanda>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Dan Carpenter <dan.carpenter@oracle.com>, =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali.rohar@gmail.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=103351
+On 09/28/2015 04:16 AM, Dan Carpenter wrote:
+> We need flags to be signed for the error handling to work.
+>
+> Fixes: 74aab849f342 ('power: bq27xxx_battery: Cleanup health checking')
 
-Crashbit <crashbit@gmail.com> changed:
+This bug looks to have been added back in c91d36ea8116, either way the
+fix itself is correct so,
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |crashbit@gmail.com
+> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+>
 
---- Comment #15 from Crashbit <crashbit@gmail.com> ---
-I have similar problems with i5 5675C. I ran Windows without any problem. I use
-Intel Diagnostics Software and CPU is ok.
+Acked-by: Andrew F. Davis <afd@ti.com>
 
-First, I have random blocks with Ubuntu 14.04 and 15.10 liveusb.
-Finally I can install Ubuntu 15.10 server.
-
-System works well without stress. When I install the desktop it appears random
-freezes and MCE errors.
-
-mcelog only show Family 6 Model 47 CPU: Only decoding architectural errors
-
-I have been using at restricted drivers Intel microcode firmware on Ubuntu
-15.10 daily update, with kernel 4.2.0-11-generic.
-
-My motherboard is Asus H97-Pro Gamer.
-
-I try to dissable Intel StepSpeed, C-States, and Turbo Mode and have random
-freezes
-
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+> diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27xxx_battery.c
+> index 473aa2f..994c78d 100644
+> --- a/drivers/power/bq27xxx_battery.c
+> +++ b/drivers/power/bq27xxx_battery.c
+> @@ -691,7 +691,7 @@ static bool bq27xxx_battery_dead(struct bq27xxx_device_info *di, u16 flags)
+>    */
+>   static int bq27xxx_battery_read_health(struct bq27xxx_device_info *di)
+>   {
+> -	u16 flags;
+> +	int flags;
+>
+>   	flags = bq27xxx_read(di, BQ27XXX_REG_FLAGS, false);
+>   	if (flags < 0) {
+>
