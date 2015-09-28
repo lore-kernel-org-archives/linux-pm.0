@@ -1,93 +1,46 @@
-From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v7 04/15] power: bq24257: Use managed power supply
- register
-Date: Mon, 28 Sep 2015 19:22:25 +0200
-Message-ID: <20150928172222.GF3660@earth>
-References: <1443196460-26156-1-git-send-email-dannenberg@ti.com>
- <1443196460-26156-5-git-send-email-dannenberg@ti.com>
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: RE: [PATCH 1/3] Thermal: initialize thermal zone device correctly
+Date: Mon, 28 Sep 2015 17:30:30 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE64026F225EA@SHSMSX101.ccr.corp.intel.com>
+References: <1443332908-13948-1-git-send-email-yu.c.chen@intel.com>
+ <20150928142812.GA8359@e104805>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="oPmsXEqKQNHCSXW7"
-Return-path: <linux-api-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1443196460-26156-5-git-send-email-dannenberg-l0cyMroinI0@public.gmane.org>
-Sender: linux-api-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Laurentiu Palcu <laurentiu.palcu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Ramakrishna Pallala <ramakrishna.pallala-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:18806 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933540AbbI1Rae (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 28 Sep 2015 13:30:34 -0400
+In-Reply-To: <20150928142812.GA8359@e104805>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Javi Merino <javi.merino@arm.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "Zhang, Rui" <rui.zhang@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>
 
-
---oPmsXEqKQNHCSXW7
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-On Fri, Sep 25, 2015 at 10:54:09AM -0500, Andreas Dannenberg wrote:
-> Use the devm_* managed version of the function to register the power
-> supply and remove the associated unregister function.
->=20
-> Signed-off-by: Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
-> ---
->  drivers/power/bq24257_charger.c | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
->=20
-> diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_char=
-ger.c
-> index d2d077c..6757b41 100644
-> --- a/drivers/power/bq24257_charger.c
-> +++ b/drivers/power/bq24257_charger.c
-> @@ -590,8 +590,10 @@ static int bq24257_power_supply_init(struct bq24257_=
-device *bq)
->  	psy_cfg.supplied_to =3D bq24257_charger_supplied_to;
->  	psy_cfg.num_supplicants =3D ARRAY_SIZE(bq24257_charger_supplied_to);
-> =20
-> -	bq->charger =3D power_supply_register(bq->dev, &bq24257_power_supply_de=
-sc,
-> -					    &psy_cfg);
-> +	bq->charger =3D devm_power_supply_register(bq->dev,
-> +						 &bq24257_power_supply_desc,
-> +						 &psy_cfg);
-> +
->  	if (IS_ERR(bq->charger))
->  		return PTR_ERR(bq->charger);
-> =20
-> @@ -742,8 +744,6 @@ static int bq24257_remove(struct i2c_client *client)
-> =20
->  	cancel_delayed_work_sync(&bq->iilimit_setup_work);
-> =20
-> -	power_supply_unregister(bq->charger);
-> -
->  	bq24257_field_write(bq, F_RESET, 1); /* reset to defaults */
-
-
-This effectively reordering bq24257_field_write() before
-power_supply_unregister(), so you may want to loose a few words in
-the patch description, that this is a known/unproblematic
-side-effect.
-
--- Sebastian
-
---oPmsXEqKQNHCSXW7
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJWCXdLAAoJENju1/PIO/qaTZMP/2ZO6ptxsioCUYb/lYJDZGOr
-6KnmXt2NoWvpI2IUYQ2zbdQ7OI5NIWDbEM4BgMqXQNL9hVDtxJLQa4YYGgPQ4o5G
-sLDfiMQeeo4JyeT/C5cec/14NRm3K/n1GYSctuhWiyvV2q7YW37dFTYi/Art9uJ9
-KcUfkQye6jmiynME5PTEbbA3HIDs5qE6LPTFOD3tqigBL9xlVrg1ovzWyxRTzF4A
-Xd27vhk9eI5rU3or+LpUjt6tVw7sot+3btf8DtnP5R8VCrF8rWCd2tr/ypBjqtbb
-sEoJZGWP4KA4P6G9M3zaESSI8xVVGRFKSGKZk7hqXTGAT48j1tF1SeWdrq4B1Ntk
-7jB5SZ/MXflWYHIytDeDXjgQk2+6+uZinjZPkiaXNw7htqbPGzk5IT9aIvl8xGnl
-v0/9VHfAOphzMv+QrEsyETb/aeN90F2d6JwTaWASoWNIZ01Ik3/IFgNpaerFpTmp
-bXY06rUGyOEC4C9/3F1Q5datfQbpMT4diyk7rahK2vL5kofy67i1o7h35QktBkMo
-NPzPr5XJJpmbmU2AIMVuEJWLCGjWZcj9seiZYWpvximeq8aC7BcdMt848kZjqOkY
-I6JOUQW2EdFwZ/2BHE7xPDbxb3xwDRP16zrJOEP+kKAi4d0LPX4MuI6A0F3zwFtk
-UZaDlg7H5+0c+vklfWNd
-=Sf3L
------END PGP SIGNATURE-----
-
---oPmsXEqKQNHCSXW7--
+SGksIEphdmksDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogSmF2aSBN
+ZXJpbm8gW21haWx0bzpqYXZpLm1lcmlub0Bhcm0uY29tXQ0KPiBTZW50OiBNb25kYXksIFNlcHRl
+bWJlciAyOCwgMjAxNSAxMDoyOCBQTQ0KPiBUbzogQ2hlbiwgWXUgQw0KPiBDYzogbGludXgtcG1A
+dmdlci5rZXJuZWwub3JnOyBlZHViZXp2YWxAZ21haWwuY29tOyBaaGFuZywgUnVpOyBsaW51eC0N
+Cj4ga2VybmVsQHZnZXIua2VybmVsLm9yZzsgc3RhYmxlQHZnZXIua2VybmVsLm9yZw0KPiBTdWJq
+ZWN0OiBSZTogW1BBVENIIDEvM10gVGhlcm1hbDogaW5pdGlhbGl6ZSB0aGVybWFsIHpvbmUgZGV2
+aWNlIGNvcnJlY3RseQ0KPiANCj4gT24gU3VuLCBTZXAgMjcsIDIwMTUgYXQgMDY6NDg6MjhBTSAr
+MDEwMCwgQ2hlbiBZdSB3cm90ZToNCj4gPiBGcm9tOiBaaGFuZyBSdWkgPHJ1aS56aGFuZ0BpbnRl
+bC5jb20+DQo+ID4NCj4gPiBBZnRlciB0aGVybWFsIHpvbmUgZGV2aWNlIHJlZ2lzdGVyZWQsIGFz
+IHdlIGhhdmUgbm90IHJlYWQgYW55DQo+ID4gdGVtcGVyYXR1cmUgYmVmb3JlLCB0aHVzIHR6LT50
+ZW1wZXJhdHVyZSBzaG91bGQgbm90IGJlIDAsIHdoaWNoDQo+ID4gYWN0dWFsbHkgbWVhbnMgMEMs
+IGFuZCB0aGVybWFsIHRyZW5kIGlzIG5vdCBhdmFpbGFibGUuDQo+ID4gSW4gdGhpcyBjYXNlLCB3
+ZSBuZWVkIHNwZWNpYWxseSBoYW5kbGluZyBmb3IgdGhlIGZpcnN0DQo+ID4gdGhlcm1hbF96b25l
+X2RldmljZV91cGRhdGUoKS4NCj4gPg0KPiA+IEJvdGggdGhlcm1hbCBjb3JlIGZyYW1ld29yayBh
+bmQgc3RlcF93aXNlIGdvdmVybm9yIGlzIGVuaGFuY2VkIHRvDQo+ID4gaGFuZGxlIHRoaXMuDQo+
+IA0KPiBJdCBtYXkgYmUgd29ydGggcG9pbnRpbmcgb3V0IHRoYXQgdGhlIHN0ZXBfd2lzZSBnb3Zl
+cm5vciBpcyB0aGUgb25seSBvbmUNCj4gdGhhdCB1c2VzIHRyZW5kcywgc28gaXQncyB0aGUgb25s
+eSB0aGVybWFsIGdvdmVybm9yIHRoYXQgbmVlZHMgdG8gYmUgdXBkYXRlZC4NCj4gDQpPSywgd2ls
+bCBhZGQuDQo+IA0KPiA+IC0JCWlmIChvbGRfdGFyZ2V0ID09IGluc3RhbmNlLT50YXJnZXQpDQo+
+ID4gKwkJaWYgKGluc3RhbmNlLT5pbml0aWFsaXplZCAmJg0KPiA+ICsJCSAgICBvbGRfdGFyZ2V0
+ID09IGluc3RhbmNlLT50YXJnZXQpDQo+IA0KPiBuaXQ6IGl0IGZpdHMgaW4gb25lIGxpbmUsDQo+
+IA0KPiAJCWlmIChpbnN0YW5jZS0+aW5pdGlhbGl6ZWQgJiYgb2xkX3RhcmdldCA9PSBpbnN0YW5j
+ZS0+dGFyZ2V0KQ0KPiANCj4gaXMgNzcgY2hhcmFjdGVycy4NCj4gDQpOb3Qgc3VyZSBpZiB0aGUg
+bGltaXQgZm9yIG9uZSBsaW5lIGlzIDc1IGluIGNoZWNrcGF0Y2gucGwsIEknbGwgaGF2ZSBhIHRy
+eS4NClRoYW5rcyENCg0KQmVzdCBSZWdhcmRzLA0KWXUNCg==
