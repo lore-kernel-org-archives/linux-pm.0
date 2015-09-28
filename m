@@ -1,47 +1,68 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: Re: [patch] power: bq27xxx_battery: signedness bug in
- bq27xxx_battery_read_health()
-Date: Mon, 28 Sep 2015 10:08:37 -0500
-Message-ID: <560957F5.3090900@ti.com>
-References: <20150928091653.GA11367@mwanda>
+From: Andreas Dannenberg <dannenberg@ti.com>
+Subject: Re: [PATCH v7 09/15] power: bq24257: Add SW-based approach for Power
+ Good determination
+Date: Mon, 28 Sep 2015 10:49:07 -0500
+Message-ID: <20150928154906.GD4051@beast>
+References: <1443196460-26156-1-git-send-email-dannenberg@ti.com>
+ <1443196460-26156-10-git-send-email-dannenberg@ti.com>
+ <20150927202025.GA2051@earth>
+ <20150928120412.GA12676@borg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:55243 "EHLO comal.ext.ti.com"
+Received: from comal.ext.ti.com ([198.47.26.152]:57275 "EHLO comal.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933851AbbI1PJV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 28 Sep 2015 11:09:21 -0400
-In-Reply-To: <20150928091653.GA11367@mwanda>
+	id S934034AbbI1Pty (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 28 Sep 2015 11:49:54 -0400
+Content-Disposition: inline
+In-Reply-To: <20150928120412.GA12676@borg>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dan Carpenter <dan.carpenter@oracle.com>, =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali.rohar@gmail.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-api@vger.kernel.org
 
-On 09/28/2015 04:16 AM, Dan Carpenter wrote:
-> We need flags to be signed for the error handling to work.
->
-> Fixes: 74aab849f342 ('power: bq27xxx_battery: Cleanup health checking')
+On Mon, Sep 28, 2015 at 07:04:12AM -0500, Andreas Dannenberg wrote:
+> On Sun, Sep 27, 2015 at 10:20:26PM +0200, Sebastian Reichel wrote:
+> > Hi,
+> > 
+> > On Fri, Sep 25, 2015 at 10:54:14AM -0500, Andreas Dannenberg wrote:
+> > > @@ -651,15 +670,18 @@ static int bq24257_power_supply_init(struct bq24257_device *bq)
+> > >  	return PTR_ERR_OR_ZERO(bq->charger);
+> > >  }
+> > >  
+> > > -static int bq24257_pg_gpio_probe(struct bq24257_device *bq)
+> > > +static void bq24257_pg_gpio_probe(struct bq24257_device *bq)
+> > >  {
+> > > -	bq->pg = devm_gpiod_get_index(bq->dev, BQ24257_PG_GPIO, 0, GPIOD_IN);
+> > > +	bq->pg = devm_gpiod_get_optional(bq->dev, BQ24257_PG_GPIO, GPIOD_IN);
+> > > +
+> > >  	if (IS_ERR(bq->pg)) {
+> > > -		dev_err(bq->dev, "could not probe PG pin\n");
+> > > -		return PTR_ERR(bq->pg);
+> > > +		dev_err(bq->dev, "error probing PG pin\n");
+> > > +		bq->pg = NULL;
+> > > +		return;
+> > >  	}
+> > 
+> > You should handle -EPROBE_DEFER here.
+> 
+> Hi Sebastian. From having a quick look at the Kernel tree it seems like
+> this error shouldn't get exposed to the user (which it doesn't since it
+> would get zeroe'd out) and the error itself suggests that I should
+> "retry" which none of the things I looked at in the Kernel through "git
+> grep" seemed to do. So before making any assumptions I wanted to see if
+> I'm missing something or you could give me any pointers how to proceed.
 
-This bug looks to have been added back in c91d36ea8116, either way the
-fix itself is correct so,
+Ok after checking drivers/base/dd.c it seems like what I should be doing
+here is to simply exit the probe function and pass on -EPROBE_DEFER as
+the return value of the probe function, and the system would then
+automatically take care of re-trying the probe later, correct? Please
+let know, I want to make sure this patch series is converging into an
+acceptable state.
 
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
->
+Regards,
 
-Acked-by: Andrew F. Davis <afd@ti.com>
+--
+Andreas Dannenberg
+Texas Instruments Inc
 
-> diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27xxx_battery.c
-> index 473aa2f..994c78d 100644
-> --- a/drivers/power/bq27xxx_battery.c
-> +++ b/drivers/power/bq27xxx_battery.c
-> @@ -691,7 +691,7 @@ static bool bq27xxx_battery_dead(struct bq27xxx_device_info *di, u16 flags)
->    */
->   static int bq27xxx_battery_read_health(struct bq27xxx_device_info *di)
->   {
-> -	u16 flags;
-> +	int flags;
->
->   	flags = bq27xxx_read(di, BQ27XXX_REG_FLAGS, false);
->   	if (flags < 0) {
->
