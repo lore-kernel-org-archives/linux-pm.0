@@ -1,72 +1,64 @@
-From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v7 09/15] power: bq24257: Add SW-based approach for Power
- Good determination
-Date: Sun, 27 Sep 2015 22:20:26 +0200
-Message-ID: <20150927202025.GA2051@earth>
-References: <1443196460-26156-1-git-send-email-dannenberg@ti.com>
- <1443196460-26156-10-git-send-email-dannenberg@ti.com>
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: RE: [PATCH][RFC] ACPI / PM: Fix incorrect wakeup irq setting before
+ suspend-to-idle
+Date: Mon, 28 Sep 2015 01:51:09 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE64026587A89@SHSMSX101.ccr.corp.intel.com>
+References: <1439172686-16360-1-git-send-email-yu.c.chen@intel.com>
+ <1660650.dn5zct2eoN@vostro.rjw.lan>
+ <36DF59CE26D8EE47B0655C516E9CE64026587434@SHSMSX101.ccr.corp.intel.com>
+ <14896395.L30bH9BMzP@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="DocE+STaALJfprDB"
-Return-path: <linux-api-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1443196460-26156-10-git-send-email-dannenberg-l0cyMroinI0@public.gmane.org>
-Sender: linux-api-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Laurentiu Palcu <laurentiu.palcu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Ramakrishna Pallala <ramakrishna.pallala-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga09.intel.com ([134.134.136.24]:2436 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752864AbbI1BvP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 27 Sep 2015 21:51:15 -0400
+In-Reply-To: <14896395.L30bH9BMzP@vostro.rjw.lan>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "jiang.liu@linux.intel.com" <jiang.liu@linux.intel.com>, "Zhang, Rui" <rui.zhang@intel.com>, "Brown, Len" <len.brown@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-
---DocE+STaALJfprDB
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-On Fri, Sep 25, 2015 at 10:54:14AM -0500, Andreas Dannenberg wrote:
-> @@ -651,15 +670,18 @@ static int bq24257_power_supply_init(struct bq24257=
-_device *bq)
->  	return PTR_ERR_OR_ZERO(bq->charger);
->  }
-> =20
-> -static int bq24257_pg_gpio_probe(struct bq24257_device *bq)
-> +static void bq24257_pg_gpio_probe(struct bq24257_device *bq)
->  {
-> -	bq->pg =3D devm_gpiod_get_index(bq->dev, BQ24257_PG_GPIO, 0, GPIOD_IN);
-> +	bq->pg =3D devm_gpiod_get_optional(bq->dev, BQ24257_PG_GPIO, GPIOD_IN);
-> +
->  	if (IS_ERR(bq->pg)) {
-> -		dev_err(bq->dev, "could not probe PG pin\n");
-> -		return PTR_ERR(bq->pg);
-> +		dev_err(bq->dev, "error probing PG pin\n");
-> +		bq->pg =3D NULL;
-> +		return;
->  	}
-
-You should handle -EPROBE_DEFER here.
-
--- Sebastian
-
---DocE+STaALJfprDB
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJWCE+DAAoJENju1/PIO/qaZUEP/2S1lAhgHf+/+XynwRX9d3o/
-AnhltiMB0xv78O+KHGaTufRT5mMfu8T40WMndJXsOJXfUUsY/xq1IAORGN3kfGzo
-grW5aTWme1IAnw3nxPce0F2mII7/rlKQKVZyMh1vJqw9I2o3v8OGI9kXR6OjQ6Fl
-GEwehFkdMc5ZSn2V6J84R5/mkgAl8xKvIjMVDPfoNH1AjPGijd7SE4olXrEeq5yI
-4wYgOcXt2ZCNQ5wP+ju18BOWaUmVDe3fTaIAw6V/r++CSg97qum5fw15o1bdtDTB
-vjTtguzh4VZGJnAzI+V6lhZWEg611UfOfFWMUfOxFRdAmXXG7atY+NlEiJgfK3P+
-o1Ozq84dOVjKgt850KVSaYwcXtAUCwlBQF1N74rKiT7xgwhqIiPozkoZ0IAT5OAl
-jSiVB2kqLE3VNu/GQ9SabVg/tdFvhJhAWPngRf4pzVRlWr25PBOgvtlJCN8CL2ZY
-X8bi/abwK4dDK4Untbzla8jNS6KhGJE09c4eWlzq1GPYBUV1hDQLOFHz+0XGWaFh
-4DCu3lEB2FUEQnXHq2vInMVwnns3s5mXXy6ledggDItMkc5hmgX20HgoAyxYR0mj
-SRUdpwIJLL+7oCRisqkMzCNXiPx+55W0BijPeeNz9kxF+84V42cDOHao481Uz+pk
-1fioLsoUslesQbyQbA5P
-=pyhu
------END PGP SIGNATURE-----
-
---DocE+STaALJfprDB--
+SGksIFJhZmFlbCwNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBsaW51
+eC1wbS1vd25lckB2Z2VyLmtlcm5lbC5vcmcgW21haWx0bzpsaW51eC1wbS0NCj4gb3duZXJAdmdl
+ci5rZXJuZWwub3JnXSBPbiBCZWhhbGYgT2YgUmFmYWVsIEouIFd5c29ja2kNCj4gU2VudDogU3Vu
+ZGF5LCBTZXB0ZW1iZXIgMjcsIDIwMTUgOTozMCBQTQ0KPiBUbzogQ2hlbiwgWXUgQw0KPiBDYzog
+V3lzb2NraSwgUmFmYWVsIEo7IGppYW5nLmxpdUBsaW51eC5pbnRlbC5jb207IFpoYW5nLCBSdWk7
+IEJyb3duLCBMZW47IGxpbnV4LQ0KPiBrZXJuZWxAdmdlci5rZXJuZWwub3JnOyBsaW51eC1wbUB2
+Z2VyLmtlcm5lbC5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSF1bUkZDXSBBQ1BJIC8gUE06IEZp
+eCBpbmNvcnJlY3Qgd2FrZXVwIGlycSBzZXR0aW5nIGJlZm9yZQ0KPiBzdXNwZW5kLXRvLWlkbGUN
+Cj4gDQo+IE9uIFNhdHVyZGF5LCBTZXB0ZW1iZXIgMjYsIDIwMTUgMDI6Mzc6MTkgUE0gQ2hlbiwg
+WXUgQyB3cm90ZToNCj4gPiBIaSwgUmFmYWVsLA0KPiA+DQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1l
+c3NhZ2UtLS0tLQ0KPiA+ID4gRnJvbTogbGludXgtcG0tb3duZXJAdmdlci5rZXJuZWwub3JnIFtt
+YWlsdG86bGludXgtcG0tDQo+ID4gPiBvd25lckB2Z2VyLmtlcm5lbC5vcmddIE9uIEJlaGFsZiBP
+ZiBSYWZhZWwgSi4gV3lzb2NraQ0KPiA+ID4gU2VudDogRnJpZGF5LCBTZXB0ZW1iZXIgMjUsIDIw
+MTUgOTo1NyBQTQ0KPiA+ID4gVG86IENoZW4sIFl1IEMNCj4gPiA+IENjOiBXeXNvY2tpLCBSYWZh
+ZWwgSjsgamlhbmcubGl1QGxpbnV4LmludGVsLmNvbTsgWmhhbmcsIFJ1aTsgQnJvd24sDQo+ID4g
+PiBMZW47IGxpbnV4LSBrZXJuZWxAdmdlci5rZXJuZWwub3JnOyBsaW51eC1wbUB2Z2VyLmtlcm5l
+bC5vcmcNCj4gPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdW1JGQ10gQUNQSSAvIFBNOiBGaXggaW5j
+b3JyZWN0IHdha2V1cCBpcnENCj4gPiA+IHNldHRpbmcgYmVmb3JlIHN1c3BlbmQtdG8taWRsZQ0K
+PiA+ID4NCj4gPiA+IE9uIEZyaWRheSwgU2VwdGVtYmVyIDI1LCAyMDE1IDA2OjQyOjQxIEFNIENo
+ZW4sIFl1IEMgd3JvdGU6DQo+ID4gPiA+IEhpLFJhZmFlbCwgdGhhbmtzIGEgbG90IGZvciB5b3Vy
+IHJldmlldywgd2lsbCByZXNlbmQgdjIgdmVyc2lvbi4NCj4gPiA+ID4NCj4gPiA+ID4gPiAtLS0t
+LU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiA+IEZyb206IFJhZmFlbCBKLiBXeXNvY2tp
+IFttYWlsdG86cmp3QHJqd3lzb2NraS5uZXRdDQo+ID4gPiA+ID4gU2VudDogRnJpZGF5LCBTZXB0
+ZW1iZXIgMjUsIDIwMTUgOToyNCBBTQ0KPiA+ID4gPiA+IFRvOiBDaGVuLCBZdSBDDQo+ID4gPiA+
+ID4gQ2M6IFd5c29ja2ksIFJhZmFlbCBKOyBqaWFuZy5saXVAbGludXguaW50ZWwuY29tOyBaaGFu
+ZywgUnVpOw0KPiA+ID4gPiA+IEJyb3duLCBMZW47IGxpbnV4LSBrZXJuZWxAdmdlci5rZXJuZWwu
+b3JnOw0KPiA+ID4gPiA+IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZw0KPiA+ID4gPiA+IFN1Ympl
+Y3Q6IFJlOiBbUEFUQ0hdW1JGQ10gQUNQSSAvIFBNOiBGaXggaW5jb3JyZWN0IHdha2V1cCBpcnEN
+Cj4gPiA+ID4gPiBzZXR0aW5nIGJlZm9yZSBzdXNwZW5kLXRvLWlkbGUNCj4gPiA+ID4gPg0KPiA+
+ID4gPiA+IE9uIE1vbmRheSwgQXVndXN0IDEwLCAyMDE1IDEwOjExOjI2IEFNIENoZW4gWXUgd3Jv
+dGU6DQo+ID4gPg0KPiA+ID4gQnV0IEknZCByYXRoZXIgZGVmaW5lIGEgZ2xvYmFsIGFjcGlfaXJx
+IHZhcmlhYmxlLCBzdG9yZSBpcnEgaW4gaXQNCj4gPiA+IGFuZCBhY2Nlc3MgaXQgZGlyZWN0bHkg
+ZnJvbSBhY3BpX2ZyZWV6ZV9wcmVwYXJlKCkuICBBbmQgaXQgZG9lc24ndA0KPiA+ID4gaGF2ZSB0
+byBkZXBlbmQgb24gQ09ORklHX1NVU1BFTkQgYXMgaXQgaXMganVzdCB0aGUgSVJRIG51bWJlcg0K
+PiBhY3R1YWxseSB1c2VkIGJ5IEFDUEkuDQo+ID4gPg0KPiA+IE9LLCBJJ3ZlIGNvbnZlcnQgaXQg
+dG8gYSBnbG9iYWwgdmFyaWFibGUgYWNwaV9pbnVzZV9pcnEuDQo+IA0KPiBXaHkgZG8geW91IG5l
+ZWQgdGhlICJpbnVzZSIgcGFydD8gIFdoeSBpcyBhY3BpX2lycSBub3Qgc3VmZmljaWVudD8NCkJl
+Y2F1c2UgdGhlIG5hbWUgb2YgYWNwaV9pcnEgaXMgYWxyZWFkeSB1c2VkIGJ5IGFjcGkgaXJxIGhh
+bmRsZXIgYXQNCmRyaXZlcnMvYWNwaS9vc2wuYzoNCnJlcXVlc3RfaXJxKGlycSwgYWNwaV9pcnEs
+IElSUUZfU0hBUkVELCAiYWNwaSIsIGFjcGlfaXJxKQ0KDQpUaGFua3MNCll1DQoNCg==
