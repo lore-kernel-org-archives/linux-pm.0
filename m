@@ -1,64 +1,87 @@
-From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: RE: [PATCH][RFC] ACPI / PM: Fix incorrect wakeup irq setting before
- suspend-to-idle
-Date: Mon, 28 Sep 2015 01:51:09 +0000
-Message-ID: <36DF59CE26D8EE47B0655C516E9CE64026587A89@SHSMSX101.ccr.corp.intel.com>
-References: <1439172686-16360-1-git-send-email-yu.c.chen@intel.com>
- <1660650.dn5zct2eoN@vostro.rjw.lan>
- <36DF59CE26D8EE47B0655C516E9CE64026587434@SHSMSX101.ccr.corp.intel.com>
- <14896395.L30bH9BMzP@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+From: Marc Titinger <mtitinger@baylibre.com>
+Subject: [PATCH v2 2/2] arm: omap2+: PM: change trace_power_domain_target event format.
+Date: Mon, 28 Sep 2015 10:44:24 +0200
+Message-ID: <1443429864-4177-2-git-send-email-mtitinger+renesas@baylibre.com>
+References: <1443429864-4177-1-git-send-email-mtitinger+renesas@baylibre.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:2436 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752864AbbI1BvP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 27 Sep 2015 21:51:15 -0400
-In-Reply-To: <14896395.L30bH9BMzP@vostro.rjw.lan>
-Content-Language: en-US
+Received: from mail-wi0-f177.google.com ([209.85.212.177]:35666 "EHLO
+	mail-wi0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932144AbbI1Io4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Sep 2015 04:44:56 -0400
+Received: by wicge5 with SMTP id ge5so94347073wic.0
+        for <linux-pm@vger.kernel.org>; Mon, 28 Sep 2015 01:44:55 -0700 (PDT)
+In-Reply-To: <1443429864-4177-1-git-send-email-mtitinger+renesas@baylibre.com>
+In-Reply-To: <1443187345-14834-2-git-send-email-mtitinger+renesas@baylibre.com>
+References: <1443187345-14834-2-git-send-email-mtitinger+renesas@baylibre.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "jiang.liu@linux.intel.com" <jiang.liu@linux.intel.com>, "Zhang, Rui" <rui.zhang@intel.com>, "Brown, Len" <len.brown@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: rostedt@goodmis.org
+Cc: khilman@kernel.org, rjw@rjwysocki.net, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, Marc Titinger <mtitinger+renesas@baylibre.com>, Marc Titinger <mtitinger@baylibre.com>
 
-SGksIFJhZmFlbCwNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBsaW51
-eC1wbS1vd25lckB2Z2VyLmtlcm5lbC5vcmcgW21haWx0bzpsaW51eC1wbS0NCj4gb3duZXJAdmdl
-ci5rZXJuZWwub3JnXSBPbiBCZWhhbGYgT2YgUmFmYWVsIEouIFd5c29ja2kNCj4gU2VudDogU3Vu
-ZGF5LCBTZXB0ZW1iZXIgMjcsIDIwMTUgOTozMCBQTQ0KPiBUbzogQ2hlbiwgWXUgQw0KPiBDYzog
-V3lzb2NraSwgUmFmYWVsIEo7IGppYW5nLmxpdUBsaW51eC5pbnRlbC5jb207IFpoYW5nLCBSdWk7
-IEJyb3duLCBMZW47IGxpbnV4LQ0KPiBrZXJuZWxAdmdlci5rZXJuZWwub3JnOyBsaW51eC1wbUB2
-Z2VyLmtlcm5lbC5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSF1bUkZDXSBBQ1BJIC8gUE06IEZp
-eCBpbmNvcnJlY3Qgd2FrZXVwIGlycSBzZXR0aW5nIGJlZm9yZQ0KPiBzdXNwZW5kLXRvLWlkbGUN
-Cj4gDQo+IE9uIFNhdHVyZGF5LCBTZXB0ZW1iZXIgMjYsIDIwMTUgMDI6Mzc6MTkgUE0gQ2hlbiwg
-WXUgQyB3cm90ZToNCj4gPiBIaSwgUmFmYWVsLA0KPiA+DQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1l
-c3NhZ2UtLS0tLQ0KPiA+ID4gRnJvbTogbGludXgtcG0tb3duZXJAdmdlci5rZXJuZWwub3JnIFtt
-YWlsdG86bGludXgtcG0tDQo+ID4gPiBvd25lckB2Z2VyLmtlcm5lbC5vcmddIE9uIEJlaGFsZiBP
-ZiBSYWZhZWwgSi4gV3lzb2NraQ0KPiA+ID4gU2VudDogRnJpZGF5LCBTZXB0ZW1iZXIgMjUsIDIw
-MTUgOTo1NyBQTQ0KPiA+ID4gVG86IENoZW4sIFl1IEMNCj4gPiA+IENjOiBXeXNvY2tpLCBSYWZh
-ZWwgSjsgamlhbmcubGl1QGxpbnV4LmludGVsLmNvbTsgWmhhbmcsIFJ1aTsgQnJvd24sDQo+ID4g
-PiBMZW47IGxpbnV4LSBrZXJuZWxAdmdlci5rZXJuZWwub3JnOyBsaW51eC1wbUB2Z2VyLmtlcm5l
-bC5vcmcNCj4gPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdW1JGQ10gQUNQSSAvIFBNOiBGaXggaW5j
-b3JyZWN0IHdha2V1cCBpcnENCj4gPiA+IHNldHRpbmcgYmVmb3JlIHN1c3BlbmQtdG8taWRsZQ0K
-PiA+ID4NCj4gPiA+IE9uIEZyaWRheSwgU2VwdGVtYmVyIDI1LCAyMDE1IDA2OjQyOjQxIEFNIENo
-ZW4sIFl1IEMgd3JvdGU6DQo+ID4gPiA+IEhpLFJhZmFlbCwgdGhhbmtzIGEgbG90IGZvciB5b3Vy
-IHJldmlldywgd2lsbCByZXNlbmQgdjIgdmVyc2lvbi4NCj4gPiA+ID4NCj4gPiA+ID4gPiAtLS0t
-LU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiA+IEZyb206IFJhZmFlbCBKLiBXeXNvY2tp
-IFttYWlsdG86cmp3QHJqd3lzb2NraS5uZXRdDQo+ID4gPiA+ID4gU2VudDogRnJpZGF5LCBTZXB0
-ZW1iZXIgMjUsIDIwMTUgOToyNCBBTQ0KPiA+ID4gPiA+IFRvOiBDaGVuLCBZdSBDDQo+ID4gPiA+
-ID4gQ2M6IFd5c29ja2ksIFJhZmFlbCBKOyBqaWFuZy5saXVAbGludXguaW50ZWwuY29tOyBaaGFu
-ZywgUnVpOw0KPiA+ID4gPiA+IEJyb3duLCBMZW47IGxpbnV4LSBrZXJuZWxAdmdlci5rZXJuZWwu
-b3JnOw0KPiA+ID4gPiA+IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZw0KPiA+ID4gPiA+IFN1Ympl
-Y3Q6IFJlOiBbUEFUQ0hdW1JGQ10gQUNQSSAvIFBNOiBGaXggaW5jb3JyZWN0IHdha2V1cCBpcnEN
-Cj4gPiA+ID4gPiBzZXR0aW5nIGJlZm9yZSBzdXNwZW5kLXRvLWlkbGUNCj4gPiA+ID4gPg0KPiA+
-ID4gPiA+IE9uIE1vbmRheSwgQXVndXN0IDEwLCAyMDE1IDEwOjExOjI2IEFNIENoZW4gWXUgd3Jv
-dGU6DQo+ID4gPg0KPiA+ID4gQnV0IEknZCByYXRoZXIgZGVmaW5lIGEgZ2xvYmFsIGFjcGlfaXJx
-IHZhcmlhYmxlLCBzdG9yZSBpcnEgaW4gaXQNCj4gPiA+IGFuZCBhY2Nlc3MgaXQgZGlyZWN0bHkg
-ZnJvbSBhY3BpX2ZyZWV6ZV9wcmVwYXJlKCkuICBBbmQgaXQgZG9lc24ndA0KPiA+ID4gaGF2ZSB0
-byBkZXBlbmQgb24gQ09ORklHX1NVU1BFTkQgYXMgaXQgaXMganVzdCB0aGUgSVJRIG51bWJlcg0K
-PiBhY3R1YWxseSB1c2VkIGJ5IEFDUEkuDQo+ID4gPg0KPiA+IE9LLCBJJ3ZlIGNvbnZlcnQgaXQg
-dG8gYSBnbG9iYWwgdmFyaWFibGUgYWNwaV9pbnVzZV9pcnEuDQo+IA0KPiBXaHkgZG8geW91IG5l
-ZWQgdGhlICJpbnVzZSIgcGFydD8gIFdoeSBpcyBhY3BpX2lycSBub3Qgc3VmZmljaWVudD8NCkJl
-Y2F1c2UgdGhlIG5hbWUgb2YgYWNwaV9pcnEgaXMgYWxyZWFkeSB1c2VkIGJ5IGFjcGkgaXJxIGhh
-bmRsZXIgYXQNCmRyaXZlcnMvYWNwaS9vc2wuYzoNCnJlcXVlc3RfaXJxKGlycSwgYWNwaV9pcnEs
-IElSUUZfU0hBUkVELCAiYWNwaSIsIGFjcGlfaXJxKQ0KDQpUaGFua3MNCll1DQoNCg==
+power_domain_target arg3 is now a string (event name) with generic power
+domains. In the case of Omap, it is a hint to the prev/next switch op.
+
+Compiled for Omap2+ but not tested.
+
+Signed-off-by: Marc Titinger <mtitinger@baylibre.com>
+---
+ arch/arm/mach-omap2/powerdomain.c | 27 +++++++++++++++------------
+ 1 file changed, 15 insertions(+), 12 deletions(-)
+
+diff --git a/arch/arm/mach-omap2/powerdomain.c b/arch/arm/mach-omap2/powerdomain.c
+index 78af6d8..02167c2 100644
+--- a/arch/arm/mach-omap2/powerdomain.c
++++ b/arch/arm/mach-omap2/powerdomain.c
+@@ -160,7 +160,7 @@ static void _update_logic_membank_counters(struct powerdomain *pwrdm)
+ static int _pwrdm_state_switch(struct powerdomain *pwrdm, int flag)
+ {
+ 
+-	int prev, next, state, trace_state = 0;
++	int prev, state;
+ 
+ 	if (pwrdm == NULL)
+ 		return -EINVAL;
+@@ -177,17 +177,21 @@ static int _pwrdm_state_switch(struct powerdomain *pwrdm, int flag)
+ 			pwrdm->state_counter[prev]++;
+ 		if (prev == PWRDM_POWER_RET)
+ 			_update_logic_membank_counters(pwrdm);
+-		/*
+-		 * If the power domain did not hit the desired state,
+-		 * generate a trace event with both the desired and hit states
+-		 */
+-		next = pwrdm_read_next_pwrst(pwrdm);
+-		if (next != prev) {
+-			trace_state = (PWRDM_TRACE_STATES_FLAG |
++
++		if (trace_power_domain_target_enabled()) {
++			/*
++			 * If the power domain did not hit the desired state,
++			 * generate a trace event with both the desired and hit
++			 * states */
++			int next = pwrdm_read_next_pwrst(pwrdm);
++
++			if (next != prev) {
++				int trace_state = (PWRDM_TRACE_STATES_FLAG |
+ 				       ((next & OMAP_POWERSTATE_MASK) << 8) |
+ 				       ((prev & OMAP_POWERSTATE_MASK) << 0));
+-			trace_power_domain_target(pwrdm->name, trace_state,
+-						  smp_processor_id());
++				trace_power_domain_target(pwrdm->name,
++					trace_state, "PWRDM_STATE_PREV");
++			}
+ 		}
+ 		break;
+ 	default:
+@@ -523,8 +527,7 @@ int pwrdm_set_next_pwrst(struct powerdomain *pwrdm, u8 pwrst)
+ 
+ 	if (arch_pwrdm && arch_pwrdm->pwrdm_set_next_pwrst) {
+ 		/* Trace the pwrdm desired target state */
+-		trace_power_domain_target(pwrdm->name, pwrst,
+-					  smp_processor_id());
++		trace_power_domain_target(pwrdm->name, pwrst, "set_next_pwrst");
+ 		/* Program the pwrdm desired target state */
+ 		ret = arch_pwrdm->pwrdm_set_next_pwrst(pwrdm, pwrst);
+ 	}
+-- 
+1.9.1
+
