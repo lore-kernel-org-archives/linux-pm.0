@@ -1,41 +1,64 @@
-From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: RE: [PATCH 2/3] Thermal: handle thermal zone device properly during
- system sleep
-Date: Mon, 28 Sep 2015 17:36:33 +0000
-Message-ID: <36DF59CE26D8EE47B0655C516E9CE64026F22613@SHSMSX101.ccr.corp.intel.com>
-References: <1443332915-13988-1-git-send-email-yu.c.chen@intel.com>
- <20150928142847.GA8796@e104805>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: [PATCH 1/3] Thermal: initialize thermal zone device correctly
+Date: Mon, 28 Sep 2015 18:47:08 +0100
+Message-ID: <20150928174708.GC2823@e104805>
+References: <1443332908-13948-1-git-send-email-yu.c.chen@intel.com>
+ <20150928142812.GA8359@e104805>
+ <36DF59CE26D8EE47B0655C516E9CE64026F225EA@SHSMSX101.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:57450 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933540AbbI1Rgy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 28 Sep 2015 13:36:54 -0400
-In-Reply-To: <20150928142847.GA8796@e104805>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <36DF59CE26D8EE47B0655C516E9CE64026F225EA@SHSMSX101.ccr.corp.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Chen, Yu C" <yu.c.chen@intel.com>
 Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "Zhang, Rui" <rui.zhang@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-SGksIEphdmkNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBKYXZpIE1l
-cmlubyBbbWFpbHRvOmphdmkubWVyaW5vQGFybS5jb21dDQo+IFNlbnQ6IE1vbmRheSwgU2VwdGVt
-YmVyIDI4LCAyMDE1IDEwOjI5IFBNDQo+IFRvOiBDaGVuLCBZdSBDDQo+IENjOiBsaW51eC1wbUB2
-Z2VyLmtlcm5lbC5vcmc7IGVkdWJlenZhbEBnbWFpbC5jb207IFpoYW5nLCBSdWk7IGxpbnV4LQ0K
-PiBrZXJuZWxAdmdlci5rZXJuZWwub3JnOyBzdGFibGVAdmdlci5rZXJuZWwub3JnDQo+IFN1Ympl
-Y3Q6IFJlOiBbUEFUQ0ggMi8zXSBUaGVybWFsOiBoYW5kbGUgdGhlcm1hbCB6b25lIGRldmljZSBw
-cm9wZXJseQ0KPiBkdXJpbmcgc3lzdGVtIHNsZWVwDQo+IA0KPiBPbiBTdW4sIFNlcCAyNywgMjAx
-NSBhdCAwNjo0ODozNUFNICswMTAwLCBDaGVuIFl1IHdyb3RlOg0KPiA+IEZyb206IFpoYW5nIFJ1
-aSA8cnVpLnpoYW5nQGludGVsLmNvbT4NCj4gPg0KPiA+DQo+ID4gKwlyZWdpc3Rlcl9wbV9ub3Rp
-ZmllcigmdGhlcm1hbF9wbV9uYik7DQo+IA0KPiBXaGF0IGlmIHJlZ2lzdGVyX3BtX25vdGlmaWVy
-KCkgZmFpbHM/ICBJdCBjYW4ndCBmYWlsIG5vdywgYnV0IHRoYXQgbWF5IGluIHRoZQ0KPiBmdXR1
-cmUuICBJZiB3ZSBmYWlsIHRvIHJlZ2lzdGVyIHRoZXJtYWwgd2hlbiB3ZSBjYW4ndCByZWdpc3Rl
-ciB0aGUgZ2VuZXRsaW5rDQo+IGZhbWlseSwgbWF5YmUgd2Ugc2hvdWxkIGFsc28gZmFpbCB0byBy
-ZWdpc3RlciB0aGVybWFsIGlmIHdlIGZhaWwgdG8gcmVnaXN0ZXIgdGhlDQo+IHBtIG5vdGlmaWVy
-LCBkb24ndCB5b3UgdGhpbms/DQo+IA0KVGhpcyBwbSBub3RpZmllciBpcyBtYWlubHkgdXNlZCBm
-b3Igc3VzcGVuZGluZyBzaXR1YXRpb24sIGJ1dCBpdCdzIG5vdCBzbyAnY3JpdGljYWwnIA0KdG8g
-dGVybWluYXRlIHRoZSBpbml0aWFsaXphdGlvbiBvZiB0aGVybWFsIGNvcmUgaWYgaXQgZmFpbGVk
-LCBJTU8uIA0KSGksIFJ1aSwgd2hhdCBkbyB5b3UgdGhpbms/IFRoeA0KDQpCZXN0IFJlZ2FyZHMs
-DQpZdQ0K
+On Mon, Sep 28, 2015 at 06:30:30PM +0100, Chen, Yu C wrote:
+> Hi, Javi,
+> 
+> > -----Original Message-----
+> > From: Javi Merino [mailto:javi.merino@arm.com]
+> > Sent: Monday, September 28, 2015 10:28 PM
+> > To: Chen, Yu C
+> > Cc: linux-pm@vger.kernel.org; edubezval@gmail.com; Zhang, Rui; linux-
+> > kernel@vger.kernel.org; stable@vger.kernel.org
+> > Subject: Re: [PATCH 1/3] Thermal: initialize thermal zone device correctly
+> > 
+> > On Sun, Sep 27, 2015 at 06:48:28AM +0100, Chen Yu wrote:
+> > > From: Zhang Rui <rui.zhang@intel.com>
+> > >
+> > > After thermal zone device registered, as we have not read any
+> > > temperature before, thus tz->temperature should not be 0, which
+> > > actually means 0C, and thermal trend is not available.
+> > > In this case, we need specially handling for the first
+> > > thermal_zone_device_update().
+> > >
+> > > Both thermal core framework and step_wise governor is enhanced to
+> > > handle this.
+> > 
+> > It may be worth pointing out that the step_wise governor is the only one
+> > that uses trends, so it's the only thermal governor that needs to be updated.
+> > 
+> OK, will add.
+> > 
+> > > -		if (old_target == instance->target)
+> > > +		if (instance->initialized &&
+> > > +		    old_target == instance->target)
+> > 
+> > nit: it fits in one line,
+> > 
+> > 		if (instance->initialized && old_target == instance->target)
+> > 
+> > is 77 characters.
+> > 
+> Not sure if the limit for one line is 75 in checkpatch.pl, I'll have a try.
+
+The limit is 80:
+
+https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/Documentation/CodingStyle#n79
+https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/scripts/checkpatch.pl#n47
+
+Cheers,
+Javi
