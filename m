@@ -1,72 +1,80 @@
-From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: RE: [PATCH][RFC] ACPI / PM: Fix incorrect wakeup irq setting before
- suspend-to-idle
-Date: Mon, 28 Sep 2015 17:56:03 +0000
-Message-ID: <36DF59CE26D8EE47B0655C516E9CE64026F22661@SHSMSX101.ccr.corp.intel.com>
-References: <1439172686-16360-1-git-send-email-yu.c.chen@intel.com>
- <14896395.L30bH9BMzP@vostro.rjw.lan>
- <36DF59CE26D8EE47B0655C516E9CE64026587A89@SHSMSX101.ccr.corp.intel.com>
- <2077382.8itqOgEaxv@vostro.rjw.lan>
+From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v7 14/15] power: bq24257: Add platform data based
+ initialization
+Date: Mon, 28 Sep 2015 19:58:12 +0200
+Message-ID: <20150928175811.GG3660@earth>
+References: <1443196460-26156-1-git-send-email-dannenberg@ti.com>
+ <1443196460-26156-15-git-send-email-dannenberg@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:21410 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754951AbbI1R4T (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 28 Sep 2015 13:56:19 -0400
-In-Reply-To: <2077382.8itqOgEaxv@vostro.rjw.lan>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="I3tAPq1Rm2pUxvsp"
+Return-path: <linux-api-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1443196460-26156-15-git-send-email-dannenberg-l0cyMroinI0@public.gmane.org>
+Sender: linux-api-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Laurentiu Palcu <laurentiu.palcu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Ramakrishna Pallala <ramakrishna.pallala-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "jiang.liu@linux.intel.com" <jiang.liu@linux.intel.com>, "Zhang, Rui" <rui.zhang@intel.com>, "Brown, Len" <len.brown@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-SGksDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogUmFmYWVsIEouIFd5
-c29ja2kgW21haWx0bzpyandAcmp3eXNvY2tpLm5ldF0NCj4gU2VudDogTW9uZGF5LCBTZXB0ZW1i
-ZXIgMjgsIDIwMTUgODo1NiBQTQ0KPiBUbzogQ2hlbiwgWXUgQw0KPiBDYzogV3lzb2NraSwgUmFm
-YWVsIEo7IGppYW5nLmxpdUBsaW51eC5pbnRlbC5jb207IFpoYW5nLCBSdWk7IEJyb3duLCBMZW47
-IGxpbnV4LQ0KPiBrZXJuZWxAdmdlci5rZXJuZWwub3JnOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5v
-cmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSF1bUkZDXSBBQ1BJIC8gUE06IEZpeCBpbmNvcnJlY3Qg
-d2FrZXVwIGlycSBzZXR0aW5nIGJlZm9yZQ0KPiBzdXNwZW5kLXRvLWlkbGUNCj4gDQo+IE9uIE1v
-bmRheSwgU2VwdGVtYmVyIDI4LCAyMDE1IDAxOjUxOjA5IEFNIENoZW4sIFl1IEMgd3JvdGU6DQo+
-ID4gSGksIFJhZmFlbCwNCj4gPg0KPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4g
-PiA+IEZyb206IGxpbnV4LXBtLW93bmVyQHZnZXIua2VybmVsLm9yZyBbbWFpbHRvOmxpbnV4LXBt
-LQ0KPiA+ID4gb3duZXJAdmdlci5rZXJuZWwub3JnXSBPbiBCZWhhbGYgT2YgUmFmYWVsIEouIFd5
-c29ja2kNCj4gPiA+IFNlbnQ6IFN1bmRheSwgU2VwdGVtYmVyIDI3LCAyMDE1IDk6MzAgUE0NCj4g
-PiA+IFRvOiBDaGVuLCBZdSBDDQo+ID4gPiBDYzogV3lzb2NraSwgUmFmYWVsIEo7IGppYW5nLmxp
-dUBsaW51eC5pbnRlbC5jb207IFpoYW5nLCBSdWk7IEJyb3duLA0KPiA+ID4gTGVuOyBsaW51eC0g
-a2VybmVsQHZnZXIua2VybmVsLm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3JnDQo+ID4gPiBT
-dWJqZWN0OiBSZTogW1BBVENIXVtSRkNdIEFDUEkgLyBQTTogRml4IGluY29ycmVjdCB3YWtldXAg
-aXJxDQo+ID4gPiBzZXR0aW5nIGJlZm9yZSBzdXNwZW5kLXRvLWlkbGUNCj4gPiA+DQo+ID4gPiBP
-biBTYXR1cmRheSwgU2VwdGVtYmVyIDI2LCAyMDE1IDAyOjM3OjE5IFBNIENoZW4sIFl1IEMgd3Jv
-dGU6DQo+ID4gPiA+IEhpLCBSYWZhZWwsDQo+ID4gPiA+DQo+ID4gPiA+ID4gLS0tLS1PcmlnaW5h
-bCBNZXNzYWdlLS0tLS0NCj4gPiA+ID4gPiBGcm9tOiBsaW51eC1wbS1vd25lckB2Z2VyLmtlcm5l
-bC5vcmcgW21haWx0bzpsaW51eC1wbS0NCj4gPiA+ID4gPiBvd25lckB2Z2VyLmtlcm5lbC5vcmdd
-IE9uIEJlaGFsZiBPZiBSYWZhZWwgSi4gV3lzb2NraQ0KPiA+ID4gPiA+IFNlbnQ6IEZyaWRheSwg
-U2VwdGVtYmVyIDI1LCAyMDE1IDk6NTcgUE0NCj4gPiA+ID4gPiBUbzogQ2hlbiwgWXUgQw0KPiA+
-ID4gPiA+IENjOiBXeXNvY2tpLCBSYWZhZWwgSjsgamlhbmcubGl1QGxpbnV4LmludGVsLmNvbTsg
-WmhhbmcsIFJ1aTsNCj4gPiA+ID4gPiBCcm93biwgTGVuOyBsaW51eC0ga2VybmVsQHZnZXIua2Vy
-bmVsLm9yZzsNCj4gPiA+ID4gPiBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmcNCj4gPiA+ID4gPiBT
-dWJqZWN0OiBSZTogW1BBVENIXVtSRkNdIEFDUEkgLyBQTTogRml4IGluY29ycmVjdCB3YWtldXAg
-aXJxDQo+ID4gPiA+ID4gc2V0dGluZyBiZWZvcmUgc3VzcGVuZC10by1pZGxlDQo+ID4gPiA+ID4N
-Cj4gPiA+ID4gPiBPbiBGcmlkYXksIFNlcHRlbWJlciAyNSwgMjAxNSAwNjo0Mjo0MSBBTSBDaGVu
-LCBZdSBDIHdyb3RlOg0KPiA+ID4gPiA+ID4gSGksUmFmYWVsLCB0aGFua3MgYSBsb3QgZm9yIHlv
-dXIgcmV2aWV3LCB3aWxsIHJlc2VuZCB2MiB2ZXJzaW9uLg0KPiA+ID4gPiA+ID4NCj4gPiA+ID4g
-PiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+ID4gPiA+ID4gRnJvbTogUmFm
-YWVsIEouIFd5c29ja2kgW21haWx0bzpyandAcmp3eXNvY2tpLm5ldF0NCj4gPiA+ID4gPiA+ID4g
-U2VudDogRnJpZGF5LCBTZXB0ZW1iZXIgMjUsIDIwMTUgOToyNCBBTQ0KPiA+ID4gPiA+ID4gPiBU
-bzogQ2hlbiwgWXUgQw0KPiA+ID4gPiA+ID4gPiBDYzogV3lzb2NraSwgUmFmYWVsIEo7IGppYW5n
-LmxpdUBsaW51eC5pbnRlbC5jb207IFpoYW5nLA0KPiA+ID4gPiA+ID4gPiBSdWk7IEJyb3duLCBM
-ZW47IGxpbnV4LSBrZXJuZWxAdmdlci5rZXJuZWwub3JnOw0KPiA+ID4gPiA+ID4gPiBsaW51eC1w
-bUB2Z2VyLmtlcm5lbC5vcmcNCj4gPiA+ID4gPiA+ID4gU3ViamVjdDogUmU6IFtQQVRDSF1bUkZD
-XSBBQ1BJIC8gUE06IEZpeCBpbmNvcnJlY3Qgd2FrZXVwDQo+ID4gPiA+ID4gPiA+IGlycSBzZXR0
-aW5nIGJlZm9yZSBzdXNwZW5kLXRvLWlkbGUNCj4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4g
-T24gTW9uZGF5LCBBdWd1c3QgMTAsIDIwMTUgMTA6MTE6MjYgQU0gQ2hlbiBZdSB3cm90ZToNCj4g
-PiA+ID4gPg0KPiA+IEJlY2F1c2UgdGhlIG5hbWUgb2YgYWNwaV9pcnEgaXMgYWxyZWFkeSB1c2Vk
-IGJ5IGFjcGkgaXJxIGhhbmRsZXIgYXQNCj4gPiBkcml2ZXJzL2FjcGkvb3NsLmM6DQo+ID4gcmVx
-dWVzdF9pcnEoaXJxLCBhY3BpX2lycSwgSVJRRl9TSEFSRUQsICJhY3BpIiwgYWNwaV9pcnEpDQo+
-IA0KPiBBaCwgdGhpcyBpcyB0aGUgbmFtZSBvZiB0aGUgaGFuZGxlci4gIEkgZm9yZ290IGFib3V0
-IHRoYXQsIHNvcnJ5Lg0KPiANCj4gV2VsbCwgaXQgbWlnaHQgYmUgd29ydGggcmVuYW1pbmcgdGhl
-IGhhbmRsZXIgdG8gc29tZXRoaW5nIGxpa2UNCj4gYWNwaV9pbnRlcnJ1cHQoKSwgdGhlbi4NCk9L
-LCB3aWxsIHJld3JpdGUgdGhlIHBhdGNoLCBUaGFua3MhDQoNCkJlc3QgUmVnYXJkcywNCll1DQo=
+
+--I3tAPq1Rm2pUxvsp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On Fri, Sep 25, 2015 at 10:54:19AM -0500, Andreas Dannenberg wrote:
+> The patch adds a way to setup and initialize the device through the use
+> of platform data with configuration options equivalent to when using
+> device firmware (DT or ACPI) for systems where this is not available.
+
+Which board is this btw? Looks like most arm board code is going
+away in the next few kernel releases, so I wonder if this patch
+will just increase maintainence without any proper user.
+
+> Signed-off-by: Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
+> ---
+>  drivers/power/bq24257_charger.c       | 39 +++++++++++++++++++++++++++++=
+++++--
+>  include/linux/power/bq24257_charger.h | 25 ++++++++++++++++++++++
+>  2 files changed, 62 insertions(+), 2 deletions(-)
+>  create mode 100644 include/linux/power/bq24257_charger.h
+>=20
+> diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_char=
+ger.c
+> index 19a0962..3b1a3b6 100644
+> --- a/drivers/power/bq24257_charger.c
+> +++ b/drivers/power/bq24257_charger.c
+> @@ -27,10 +27,13 @@
+>  #include <linux/gpio/consumer.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/delay.h>
+> +#include <linux/gpio.h>
+
+You can drop this include. It's not needed with gpiod_*().
+
+-- Sebastian
+
+--I3tAPq1Rm2pUxvsp
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJWCX+wAAoJENju1/PIO/qaiToQAJ+Zi2x4A6pECjdfQbVA7Pfu
+SAgyuV8ELRSs4C+xFgrc6UOadLyJyknM09cDDyhnEy4dIUK626jiE6AxSH3OQZPM
+wJT4nYF/q7IjiO5BWIb3lcVOqppXTtW9e/lisMmDvNTmQuXaRGSAXZULcSctHzXG
+4YU33vNofKOH7FmJc3Q5JzCGzX3AWanputgqmrDhDUNi+EYxRxv6PE9DN59T0eX4
+SiP/eUlGUzCy3SBjoiB9hBj6ziz/cU41R8yF36nrpO+pZpSfCEJ+bTme/GTitH/4
+bLWkrBD9vqekfidtukJohzGH5Z6bt6nfn55wTPjTKkzHwVWsfDNZDCP6GZ9GbL3j
+RmInaRH5GZaVISQhBbaukYdsAK9W4QkGgtqWytPJEW72lBZRhwAyJ3QWpvURAVcA
+YebN+XBmqd/Cjio0sdlxYMBPQteYwJmji56JfTIqZX3IP4xcBYhESYbQIY9yJO++
+kwyZpxVzMhBrABjQ855diBzFaNm3pqDhnBAJL18F4MweZZV3XPlcbAqLAA10OXGN
+NIYXi1Tw67Zk1D6805r+4AqEOdf+/OG49IAxrE1641lEEU19RV55DNXnhQp21W8b
+FuyjRLCFgtPVPO/cJaxuWdoIWCOnVIcnFGyVp3MPaYsH9zVZNUlonRXCvqZSpUu9
+PTPrnta1wDw6vlxrdJwj
+=nqN4
+-----END PGP SIGNATURE-----
+
+--I3tAPq1Rm2pUxvsp--
