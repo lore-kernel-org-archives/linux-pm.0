@@ -1,27 +1,63 @@
-From: Andrea Arcangeli <aarcange@redhat.com>
-Subject: [PATCH] thermal: avoid division by zero in power allocator
-Date: Mon, 28 Sep 2015 23:28:33 +0200
-Message-ID: <1443475714-19871-1-git-send-email-aarcange@redhat.com>
+From: Andreas Dannenberg <dannenberg@ti.com>
+Subject: [PATCH v8 03/14] power: bq24257: Use managed power supply register
+Date: Mon, 28 Sep 2015 17:33:51 -0500
+Message-ID: <1443479642-23712-4-git-send-email-dannenberg@ti.com>
+References: <1443479642-23712-1-git-send-email-dannenberg@ti.com>
+Mime-Version: 1.0
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:37431 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752855AbbI1V2h (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 28 Sep 2015 17:28:37 -0400
+Received: from devils.ext.ti.com ([198.47.26.153]:55604 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752930AbbI1We4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Sep 2015 18:34:56 -0400
+In-Reply-To: <1443479642-23712-1-git-send-email-dannenberg@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Kurtz <djkurtz@chromium.org>
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-api@vger.kernel.org, Andreas Dannenberg <dannenberg@ti.com>
 
-Hello,
+Use the devm_* managed version of the function to register the power
+supply and remove the associated unregister function. This will simplify
+error handling moving forward as it allows the unregister to happen
+automatically. It also saves a few lines of code.
 
-This is needed for my workstations or they Oops at boot since
-v4.3-rc3.
+As this changes the order of putting the bq24257 into reset vs.
+unregistering the power-supply during driver remove re-tested various
+driver unload scenario to make sure that this doesn't cause any
+unintended side effects such as erroneous interrupts.
 
-Andrea Arcangeli (1):
-  thermal: avoid division by zero in power allocator
+Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
+Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+---
+ drivers/power/bq24257_charger.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
- drivers/thermal/power_allocator.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+diff --git a/drivers/power/bq24257_charger.c b/drivers/power/bq24257_charger.c
+index d2d077c..6757b41 100644
+--- a/drivers/power/bq24257_charger.c
++++ b/drivers/power/bq24257_charger.c
+@@ -590,8 +590,10 @@ static int bq24257_power_supply_init(struct bq24257_device *bq)
+ 	psy_cfg.supplied_to = bq24257_charger_supplied_to;
+ 	psy_cfg.num_supplicants = ARRAY_SIZE(bq24257_charger_supplied_to);
+ 
+-	bq->charger = power_supply_register(bq->dev, &bq24257_power_supply_desc,
+-					    &psy_cfg);
++	bq->charger = devm_power_supply_register(bq->dev,
++						 &bq24257_power_supply_desc,
++						 &psy_cfg);
++
+ 	if (IS_ERR(bq->charger))
+ 		return PTR_ERR(bq->charger);
+ 
+@@ -742,8 +744,6 @@ static int bq24257_remove(struct i2c_client *client)
+ 
+ 	cancel_delayed_work_sync(&bq->iilimit_setup_work);
+ 
+-	power_supply_unregister(bq->charger);
+-
+ 	bq24257_field_write(bq, F_RESET, 1); /* reset to defaults */
+ 
+ 	return 0;
+-- 
+1.9.1
 
-Thanks,
-Andrea
