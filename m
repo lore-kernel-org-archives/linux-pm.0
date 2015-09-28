@@ -1,83 +1,73 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH 3/3] Thermal: do thermal zone update after a cooling
- device registered
-Date: Mon, 28 Sep 2015 15:29:09 +0100
-Message-ID: <20150928142902.GA9175@e104805>
-References: <1443332924-14028-1-git-send-email-yu.c.chen@intel.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC PATCH] PM / Runtime: runtime: Add sysfs option for forcing
+ runtime suspend
+Date: Mon, 28 Sep 2015 10:29:33 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1509281015220.1612-100000@iolanthe.rowland.org>
+References: <1935189.6gJVPG4I9g@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:30287 "EHLO
-	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S933318AbbI1O3N (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Sep 2015 10:29:13 -0400
-Content-Disposition: inline
-In-Reply-To: <1443332924-14028-1-git-send-email-yu.c.chen@intel.com>
+Received: from iolanthe.rowland.org ([192.131.102.54]:54204 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S933975AbbI1O3e (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Sep 2015 10:29:34 -0400
+In-Reply-To: <1935189.6gJVPG4I9g@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Oliver Neukum <oneukum@suse.de>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Irina Tirdea <irina.tirdea@intel.com>, Len Brown <len.brown@intel.com>, Octavian Purdila <octavian.purdila@intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Pavel Machek <pavel@ucw.cz>, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-On Sun, Sep 27, 2015 at 06:48:44AM +0100, Chen Yu wrote:
-> From: Zhang Rui <rui.zhang@intel.com>
+On Mon, 28 Sep 2015, Rafael J. Wysocki wrote:
+
+> > This suggests we forget about power/wakeup == "off" and introduce an 
+> > "inhibit" attribute instead.
 > 
-> When a new cooling device is registered, we need to update the
-> thermal zone to set the new registered cooling device to a proper
-> state.
+> If we do that, can it still be regarded as a PM attribute?
+
+Why not?  Consider this: Is there any reason to support inhibit when
+CONFIG_PM is disabled?  I can't come up with any.
+
+> And what about the corresponding callback?  Should that be a PM callback or
+> a general one?
+
+Well, if "inhibit" is a PM attribute then the callback should be a PM 
+callback.  :-)
+
+> > > Question is, though, what's the use case for turning off I/O when we don't
+> > > go into runtime suspend.  After all, runtime suspend need not mean putting
+> > > the device into any kind of low-power state and the "off" thing may very
+> > > well be defined to mean that all input is discarded if the device is
+> > > runtime-suspended and the device is not configured to do remote wakeup
+> > > then.
+> > 
+> > Well, I suppose there might be a driver that supports inhibit but
+> > doesn't support runtime PM, unlikely as that seems.  Or the driver
+> > might support both but the user might leave power/control == "on" while
+> > inhibiting the device.
 > 
-> This fixes a problem that the system is cool, while the fan devices
-> are left running on full speed after boot, if fan device is registered
-> after thermal zone device.
-> 
-> CC: <stable@vger.kernel.org> #3.18+
-> Reference:https://bugzilla.kernel.org/show_bug.cgi?id=92431
-> Tested-by: Manuel Krause <manuelkrause@netscape.net>
-> Tested-by: szegad <szegadlo@poczta.onet.pl>
-> Tested-by: prash <prash.n.rao@gmail.com>
-> Tested-by: amish <ammdispose-arch@yahoo.com>
-> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
-> ---
->  drivers/thermal/thermal_core.c | 10 ++++++++++
->  1 file changed, 10 insertions(+)
-> 
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index c3bdb48..09c78a4 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -1450,6 +1450,7 @@ __thermal_cooling_device_register(struct device_node *np,
->  				  const struct thermal_cooling_device_ops *ops)
->  {
->  	struct thermal_cooling_device *cdev;
-> +	struct thermal_instance *pos, *next;
->  	int result;
->  
->  	if (type && strlen(type) >= THERMAL_NAME_LENGTH)
-> @@ -1494,6 +1495,15 @@ __thermal_cooling_device_register(struct device_node *np,
->  	/* Update binding information for 'this' new cdev */
->  	bind_cdev(cdev);
->  
+> That sounds like a general rather than PM-related mechanism then.
 
-I think you need to hold cdev->lock here, to make sure that no thermal
-zone is added or removed from cdev->thermal_instances while you are looping.
+I don't follow your reasoning.
 
-> +	list_for_each_entry_safe(pos, next, &cdev->thermal_instances, cdev_node) {
+> I guess we need a real use case for that last thing or it will be rather
+> difficult to convince Greg to accept the patch. :-)
 
-Why list_for_each_entry_safe() ?  You are not going to remove any
-entry, so you can just use list_for_each_entry()
+The hard part is to come up with a design that Greg agrees with.  If 
+the design is okay, there's no reason not to accept the patch.
 
-> +			if (next->cdev_node.next == &cdev->thermal_instances) {
-> +				thermal_zone_device_update(next->tz);
-> +				break;
-> +			}
-> +			if (pos->tz != next->tz)
-> +				thermal_zone_device_update(pos->tz);
-> +	}
+One of the questions amounts to this: Do we want to allow situations
+where input is inhibited but the user prevents the device from going
+into runtime suspend by setting power/control = "on"?  If the answer is
+Yes then "inhibit" should be a separate attribute.  Otherwise, we can 
+just let "inhibit" be another setting in power/control.
 
-Why is this so complicated?  Can't you just do:
+Another question is: Do we want to make it easy for drivers to support
+inhibit while still incrementing their PM usage counter every time the
+device file is opened?  If we do then inhibit must be considered
+separate from runtime suspend, because a device _can't_ go directly
+into runtime suspend when the usage counter is > 1.  If we don't then 
+we will most likely have to change the runtime-PM support in some 
+drivers before they can implement inhibit.
 
-	list_for_each_entry(pos, &cdev->thermal_instances, cdev_node)
-        	thermal_zone_device_update(pos->tz);
+Alan Stern
 
-Cheers,
-Javi
