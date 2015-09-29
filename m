@@ -1,103 +1,46 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH] PM / Domains: Remove in_progress counter from struct generic_pm_domain
-Date: Tue, 29 Sep 2015 15:12:37 +0200
-Message-ID: <1443532357-3157-1-git-send-email-ulf.hansson@linaro.org>
+From: Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [PATCH/RFC v2 4/4] clk: shmobile: rcar-gen2: Switch from old MSTP
+ to new MSSR driver
+Date: Tue, 29 Sep 2015 22:30:30 +0900
+Message-ID: <CANqRtoTMgZRU6bmp9VoK6O5xDNKc0zkf-xmepgkY2ZyYXW5-mQ@mail.gmail.com>
+References: <1442936646-30362-1-git-send-email-geert+renesas@glider.be>
+	<1442936646-30362-5-git-send-email-geert+renesas@glider.be>
+	<CAMuHMdW3o0WCGCXuyYJtd8nC691N62wK7NNTzTQTM7fAvCn8jg@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f53.google.com ([209.85.215.53]:32934 "EHLO
-	mail-la0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964828AbbI2NNB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Sep 2015 09:13:01 -0400
-Received: by lahh2 with SMTP id h2so7998776lah.0
-        for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2015 06:12:59 -0700 (PDT)
+Received: from mail-vk0-f53.google.com ([209.85.213.53]:36789 "EHLO
+	mail-vk0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964828AbbI2Nab (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Sep 2015 09:30:31 -0400
+In-Reply-To: <CAMuHMdW3o0WCGCXuyYJtd8nC691N62wK7NNTzTQTM7fAvCn8jg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, Magnus Damm <damm+renesas@opensource.se>, Simon Horman <horms@verge.net.au>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Ulrich Hecht <ulrich.hecht+renesas@gmail.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <p.zabel@pengutronix.de>, linux-clk <linux-clk@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
 
-Commit ba2bbfbf6307 ("PM / Domains: Remove intermediate states..") changed
-the power off sequence (pm_genpd_poweroff()), which from locking point of
-view means the genpd mutex is held throughout the sequence.
+Hi Geert,
 
-The above change means the in_progress counter can't be updated while
-pm_genpd_poweroff() is executing, which allows us to remove the counter.
+On Tue, Sep 29, 2015 at 9:48 PM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> On Tue, Sep 22, 2015 at 5:44 PM, Geert Uytterhoeven
+> <geert+renesas@glider.be> wrote:
+>> --- a/drivers/clk/shmobile/clk-rcar-gen2.c
+>> +++ b/drivers/clk/shmobile/clk-rcar-gen2.c
+>> @@ -431,7 +431,7 @@ static void __init rcar_gen2_cpg_clocks_init(struct device_node *np)
+>>
+>>         of_clk_add_provider(np, of_clk_src_onecell_get, &cpg->data);
+>>
+>> -       cpg_mstp_add_clk_domain(np);
+>> +       cpg_mssr_add_clk_domain(np);
+>
+> Of course this should become conditional on the presence of the new
+> "renesas,r8a7791-cpg-mssr" compatible value, to preserve
+> backwards-compatibility with old DTSes.
 
-Instead we inform pm_genpd_poweroff() via a bool parameter, to indicate
-whether we call it from the scheduled work or from the ->runtime_suspend()
-callback, since that all that matters.
+Yeah, and we should probably link in both clk-mstp.o and clk-mssr.o
+for older SoCs.
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/base/power/domain.c | 12 +++++-------
- include/linux/pm_domain.h   |  1 -
- 2 files changed, 5 insertions(+), 8 deletions(-)
+Cheers,
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index cf4950d..c785f2e 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -315,11 +315,12 @@ static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
- /**
-  * pm_genpd_poweroff - Remove power from a given PM domain.
-  * @genpd: PM domain to power down.
-+ * @is_async: PM domain is powered down from a scheduled work
-  *
-  * If all of the @genpd's devices have been suspended and all of its subdomains
-  * have been powered down, remove power from @genpd.
-  */
--static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
-+static int pm_genpd_poweroff(struct generic_pm_domain *genpd, bool is_async)
- {
- 	struct pm_domain_data *pdd;
- 	struct gpd_link *link;
-@@ -351,7 +352,7 @@ static int pm_genpd_poweroff(struct generic_pm_domain *genpd)
- 			not_suspended++;
- 	}
- 
--	if (not_suspended > genpd->in_progress)
-+	if (not_suspended > 1 || (not_suspended == 1 && is_async))
- 		return -EBUSY;
- 
- 	if (genpd->gov && genpd->gov->power_down_ok) {
-@@ -399,7 +400,7 @@ static void genpd_power_off_work_fn(struct work_struct *work)
- 	genpd = container_of(work, struct generic_pm_domain, power_off_work);
- 
- 	mutex_lock(&genpd->lock);
--	pm_genpd_poweroff(genpd);
-+	pm_genpd_poweroff(genpd, true);
- 	mutex_unlock(&genpd->lock);
- }
- 
-@@ -445,9 +446,7 @@ static int pm_genpd_runtime_suspend(struct device *dev)
- 		return 0;
- 
- 	mutex_lock(&genpd->lock);
--	genpd->in_progress++;
--	pm_genpd_poweroff(genpd);
--	genpd->in_progress--;
-+	pm_genpd_poweroff(genpd, false);
- 	mutex_unlock(&genpd->lock);
- 
- 	return 0;
-@@ -1462,7 +1461,6 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
- 	mutex_init(&genpd->lock);
- 	genpd->gov = gov;
- 	INIT_WORK(&genpd->power_off_work, genpd_power_off_work_fn);
--	genpd->in_progress = 0;
- 	atomic_set(&genpd->sd_count, 0);
- 	genpd->status = is_off ? GPD_STATE_POWER_OFF : GPD_STATE_ACTIVE;
- 	genpd->device_count = 0;
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 384b1d1..0eaa730 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -47,7 +47,6 @@ struct generic_pm_domain {
- 	struct dev_power_governor *gov;
- 	struct work_struct power_off_work;
- 	const char *name;
--	unsigned int in_progress;	/* Number of devices being suspended now */
- 	atomic_t sd_count;	/* Number of subdomains with power "on" */
- 	enum gpd_status status;	/* Current state of the domain */
- 	unsigned int device_count;	/* Number of devices */
--- 
-1.9.1
-
+/ magnus
