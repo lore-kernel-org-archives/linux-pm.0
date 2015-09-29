@@ -1,80 +1,81 @@
 From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH 3/3] Thermal: do thermal zone update after a cooling
- device registered
-Date: Tue, 29 Sep 2015 17:01:34 +0100
-Message-ID: <20150929160133.GA11588@e104805>
-References: <1443332924-14028-1-git-send-email-yu.c.chen@intel.com>
- <20150928142902.GA9175@e104805>
- <36DF59CE26D8EE47B0655C516E9CE64026F22641@SHSMSX101.ccr.corp.intel.com>
+Subject: Re: [PATCH] thermal: cpu_cooling: Remove usage of devm functions
+Date: Tue, 29 Sep 2015 17:39:07 +0100
+Message-ID: <20150929163907.GC2717@e104805>
+References: <20150819062219.GA10032@localhost>
+ <CAOh2x=mN2dnuGD7BfbrrKa7_LgzDo0n5+b7KbfQg_6e7tpoMNw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Return-path: <stable-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <36DF59CE26D8EE47B0655C516E9CE64026F22641@SHSMSX101.ccr.corp.intel.com>
-Sender: stable-owner@vger.kernel.org
-To: "Chen, Yu C" <yu.c.chen@intel.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "Zhang, Rui" <rui.zhang@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>
+In-Reply-To: <CAOh2x=mN2dnuGD7BfbrrKa7_LgzDo0n5+b7KbfQg_6e7tpoMNw@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
+Cc: Vaishali Thakkar <vthakkar1994@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Yu,
+Hi Eduardo, Rui,
 
-On Mon, Sep 28, 2015 at 06:52:00PM +0100, Chen, Yu C wrote:
-> Hi, Javi,
+On Thu, Aug 27, 2015 at 02:57:08AM +0100, Viresh Kumar wrote:
+> On Wed, Aug 19, 2015 at 11:52 AM, Vaishali Thakkar
+> <vthakkar1994@gmail.com> wrote:
+> > In the function cpufreq_get_requested_power, the memory allocated
+> > for load_cpu is live within the function only. And after the
+> > allocation it is immediately freed with devm_kfree. There is no
+> > need to allocate memory for load_cpu with devm function so replace
+> > devm_kcalloc with kcalloc and devm_kfree with kfree.
+> >
+> > Signed-off-by: Vaishali Thakkar <vthakkar1994@gmail.com>
+> > ---
+> > This patch is having one checkpatch.pl warning which suggests that
+> > kfree(NULL) is safe. But I think leaving code with if is nice
+> > because it reflects the fact that kcalloc was under an if. So, I
+> > have ignored checkpatch. If maintainer wants me to go for changing
+> > things, I am fine with it too.
+> > ---
+> >  drivers/thermal/cpu_cooling.c | 7 +++----
+> >  1 file changed, 3 insertions(+), 4 deletions(-)
+> >
+> > diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> > index 620dcd4..babf8b3 100644
+> > --- a/drivers/thermal/cpu_cooling.c
+> > +++ b/drivers/thermal/cpu_cooling.c
+> > @@ -584,8 +584,7 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
+> >         if (trace_thermal_power_cpu_get_power_enabled()) {
+> >                 u32 ncpus = cpumask_weight(&cpufreq_device->allowed_cpus);
+> >
+> > -               load_cpu = devm_kcalloc(&cdev->device, ncpus, sizeof(*load_cpu),
+> > -                                       GFP_KERNEL);
+> > +               load_cpu = kcalloc(ncpus, sizeof(*load_cpu), GFP_KERNEL);
+> >         }
+> >
+> >         for_each_cpu(cpu, &cpufreq_device->allowed_cpus) {
+> > @@ -609,7 +608,7 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
+> >         ret = get_static_power(cpufreq_device, tz, freq, &static_power);
+> >         if (ret) {
+> >                 if (load_cpu)
+> > -                       devm_kfree(&cdev->device, load_cpu);
+> > +                       kfree(load_cpu);
+> >                 return ret;
+> >         }
+> >
+> > @@ -618,7 +617,7 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
+> >                         &cpufreq_device->allowed_cpus,
+> >                         freq, load_cpu, i, dynamic_power, static_power);
+> >
+> > -               devm_kfree(&cdev->device, load_cpu);
+> > +               kfree(load_cpu);
+> >         }
+> >
+> >         *power = static_power + dynamic_power;
 > 
-> > -----Original Message-----
-> > From: Javi Merino [mailto:javi.merino@arm.com]
-> > Sent: Monday, September 28, 2015 10:29 PM
-> > To: Chen, Yu C
-> > Cc: linux-pm@vger.kernel.org; edubezval@gmail.com; Zhang, Rui; linux-
-> > kernel@vger.kernel.org; stable@vger.kernel.org
-> > Subject: Re: [PATCH 3/3] Thermal: do thermal zone update after a cooling
-> > device registered
-> > 
-> > On Sun, Sep 27, 2015 at 06:48:44AM +0100, Chen Yu wrote:
-> > > From: Zhang Rui <rui.zhang@intel.com>
-> > >
-> > >
-> > 
-> > I think you need to hold cdev->lock here, to make sure that no thermal zone
-> > is added or removed from cdev->thermal_instances while you are looping.
-> > 
-> Ah right, will add. If I add the cdev ->lock here, will there be a AB-BA lock with 
-> thermal_zone_unbind_cooling_device?
-
-You're right, it could lead to a deadlock.  The locks can't be
-swapped because that won't work in step_wise.
-
-The best way that I can think of accessing thermal_instances
-atomically is by making it RCU protected instead of with mutexes.
-What do you think?
-
-
-> > Why list_for_each_entry_safe() ?  You are not going to remove any entry, so
-> > you can just use list_for_each_entry()
-> > 
-> > 
-> > Why is this so complicated?  Can't you just do:
-> > 
-> > 	list_for_each_entry(pos, &cdev->thermal_instances, cdev_node)
-> >         	thermal_zone_device_update(pos->tz);
-> > 
+> Acked-by: Javi Merino <javi.merino@arm.com>
+>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 > 
-> This is an optimization here:
-> Ignore thermal instance that refers to the same thermal zone in this loop,
-> this works because bind_cdev() always binds the cooling device to one 
-> thermal zone first, and then binds to the next thermal zone.
+> @Eduardo: Ignore V2 and apply this one :)
 
-It has taken me a while to understand this optimization.  Please
-document both "if"s in the code.  For the first "if" maybe you can use
-list_is_last() to make it easier to understand that you're looking for
-the last element in the list:
-
-		if (list_is_last(&pos->cdev_node, &cdev->thermal_instances)) {
-			thermal_zone_device_update(pos->tz);
-
-For the second "if" you can say that you only need to run
-thermal_zone_device_update() once per thermal zone, even though
-multiple thermal instances may refer to the same thermal zone.
+Looks like this fell through the cracks.  Can you pick it up?
 
 Cheers,
 Javi
