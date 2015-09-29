@@ -1,109 +1,60 @@
-From: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH v8 14/14] Documentation: power: bq24257: Document exported
- sysfs entries
-Date: Tue, 29 Sep 2015 15:22:29 +0900
-Message-ID: <560A2E25.70004@samsung.com>
-References: <1443479642-23712-1-git-send-email-dannenberg@ti.com>
- <1443479642-23712-15-git-send-email-dannenberg@ti.com>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: Voltage setting on chained regulators, how?
+Date: Tue, 29 Sep 2015 10:00:44 +0200
+Message-ID: <20150929080044.GS7858@pengutronix.de>
+References: <20150925090724.GH7858@pengutronix.de>
+ <20150925164726.GI30445@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-api-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1443479642-23712-15-git-send-email-dannenberg-l0cyMroinI0@public.gmane.org>
-Sender: linux-api-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Laurentiu Palcu <laurentiu.palcu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: Ramakrishna Pallala <ramakrishna.pallala-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-api-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:60259 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755785AbbI2IAv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Sep 2015 04:00:51 -0400
+Content-Disposition: inline
+In-Reply-To: <20150925164726.GI30445@sirena.org.uk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mark Brown <broonie@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>, kernel@pengutronix.de, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
 
-W dniu 29.09.2015 o 07:34, Andreas Dannenberg pisze:
-> Document the settings exported by bq24257 charger driver through sysfs
-> entries:
-> - ovp_voltage
-> - in_dpm_voltage
-> - high_impedance_enable
-> - sysoff_enable
+On Fri, Sep 25, 2015 at 09:47:26AM -0700, Mark Brown wrote:
+> On Fri, Sep 25, 2015 at 11:07:24AM +0200, Sascha Hauer wrote:
 > 
-> Signed-off-by: Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
-> ---
->  Documentation/ABI/testing/sysfs-class-power | 58 +++++++++++++++++++++++++++++
->  1 file changed, 58 insertions(+)
+> > Any idea how such a scenario could be implemented? The regulator
+> > framework already has some idea of supply regulators, but it only takes
+> > care of en/disabling the supplies and will not change the voltage on the
+> > supplies. Should this be implemented in the regulator framework?  Some
+> > first experiments brought me into a locking hell quite fast.
 > 
-> diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
-> index 369d2a2..d96b5fc 100644
-> --- a/Documentation/ABI/testing/sysfs-class-power
-> +++ b/Documentation/ABI/testing/sysfs-class-power
-> @@ -74,3 +74,61 @@ Description:
->  
->  		Valid values:
->  		- 0 - 70 (minutes), step by 10 (rounded down)
-> +
-> +What:		/sys/class/power_supply/bq24257-charger/ovp_voltage
-> +Date:		September 2015
-> +KernelVersion: 4.3.0
+> It's just a case of implementation, but yes the locking is fun.  I don't
+> think it's that big a deal to rethink it, it's partly complicated since
+> the existing locking is designed to be really simple and easy to review.
 
-Date: October 2015 (yes, the future)
-Kernel 4.4. We are already at 4.3 cycle so it won't go into 4.3.
+Ok, it seems you're generally ok with putting this into the regulator
+core. I'll try and see what I can come up with. Maybe I leave the
+locking part for later to see if this otherwise solves my problem or if
+there are other pitfalls I don't see yet.
 
-Rest looks good:
-
-Reviewed-by: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-
-Best regards,
-Krzysztof
-
-
-> +Contact:	Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
-> +Description:
-> +		This entry configures the overvoltage protection feature of bq24257-
-> +		type charger devices. This feature protects the device and other
-> +		components against damage from overvoltage on the input supply. See
-> +		device datasheet for details.
-> +
-> +		Valid values:
-> +		- 6000000, 6500000, 7000000, 8000000, 9000000, 9500000, 10000000,
-> +		  10500000 (all uV)
-> +
-> +What:		/sys/class/power_supply/bq24257-charger/in_dpm_voltage
-> +Date:		September 2015
-> +KernelVersion: 4.3.0
-> +Contact:	Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
-> +Description:
-> +		This entry configures the input dynamic power path management voltage of
-> +		bq24257-type charger devices. Once the supply drops to the configured
-> +		voltage, the input current limit is reduced down to prevent the further
-> +		drop of the supply. When the IC enters this mode, the charge current is
-> +		lower than the set value. See device datasheet for details.
-> +
-> +		Valid values:
-> +		- 4200000, 4280000, 4360000, 4440000, 4520000, 4600000, 4680000,
-> +		  4760000 (all uV)
-> +
-> +What:		/sys/class/power_supply/bq24257-charger/high_impedance_enable
-> +Date:		September 2015
-> +KernelVersion: 4.3.0
-> +Contact:	Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
-> +Description:
-> +		This entry allows enabling the high-impedance mode of bq24257-type
-> +		charger devices. If enabled, it places the charger IC into low power
-> +		standby mode with the switch mode controller disabled. When disabled,
-> +		the charger operates normally. See device datasheet for details.
-> +
-> +		Valid values:
-> +		- 1: enabled
-> +		- 0: disabled
-> +
-> +What:		/sys/class/power_supply/bq24257-charger/sysoff_enable
-> +Date:		September 2015
-> +KernelVersion: 4.3.0
-> +Contact:	Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
-> +Description:
-> +		This entry allows enabling the sysoff mode of bq24257-type charger
-> +		devices. If enabled and the input is removed, the internal battery FET
-> +		is turned off in order to reduce the leakage from the BAT pin to less
-> +		than 1uA. Note that on some devices/systems this disconnects the battery
-> +		from the system. See device datasheet for details.
-> +
-> +		Valid values:
-> +		- 1: enabled
-> +		- 0: disabled
 > 
+> > For added fun ideally we want to put the LDOs in bypass mode instead of
+> > configuring them for minimum dropout. The bypass mode doesn't work for
+> > the 1.2GHz operating point though since the ripple on the switching
+> > regulator gets too high. So we can't just statically configure bypass
+> > mode but have to enable it dynamically based on the operating points.
+> 
+> I suspect you always want the LDO in there to clean the supply up, it's
+> just a more serious issue when more power is being drawn.
+
+I just had a look at the i.MX6 datasheets and saw that while it's
+possible to put the LDOs in bypass mode the expected lifetime of the SoC
+decreases without the LDOs. So it seems better to let them enabled and
+just make the voltage drop as small as possible.
+
+Sascha
+
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
