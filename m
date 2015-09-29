@@ -1,49 +1,59 @@
-From: Steve Muckle <steve.muckle@linaro.org>
-Subject: Re: [RFCv5 PATCH 38/46] sched: scheduler-driven cpu frequency
- selection
-Date: Mon, 28 Sep 2015 17:26:55 -0700
-Message-ID: <5609DACF.7040505@linaro.org>
-References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
- <1436293469-25707-39-git-send-email-morten.rasmussen@arm.com>
- <9hh8u7qa3rq.fsf@e105922-lin.cambridge.arm.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
+ SpeedStep enabled
+Date: Tue, 29 Sep 2015 00:47:28 +0000
+Message-ID: <bug-103351-137361-VbJUITwH50@https.bugzilla.kernel.org/>
+References: <bug-103351-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <9hh8u7qa3rq.fsf@e105922-lin.cambridge.arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Punit Agrawal <punit.agrawal@arm.com>, mturquette@baylibre.com
-Cc: Morten Rasmussen <morten.rasmussen@arm.com>, peterz@infradead.org, mingo@redhat.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:40603 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754098AbbI2Arc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 28 Sep 2015 20:47:32 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+	by mail.kernel.org (Postfix) with ESMTP id 82D48206F0
+	for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2015 00:47:31 +0000 (UTC)
+Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
+	by mail.kernel.org (Postfix) with ESMTP id 0712320726
+	for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2015 00:47:30 +0000 (UTC)
+In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-Hi Punit,
+https://bugzilla.kernel.org/show_bug.cgi?id=103351
 
-On 09/28/2015 09:48 AM, Punit Agrawal wrote:
-> Hi Mike,
-> 
-> I ran into an issue when using this patch. Posting it here as this is
-> the latest posting I can find.
-> 
-> Morten Rasmussen <morten.rasmussen@arm.com> writes:
-> 
->> From: Michael Turquette <mturquette@baylibre.com>
->>
-...
->> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
->> index 1f2c9a1..30241c9 100644
->> --- a/include/linux/cpufreq.h
->> +++ b/include/linux/cpufreq.h
->> @@ -494,6 +494,9 @@ extern struct cpufreq_governor cpufreq_gov_ondemand;
->>  #elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE)
->>  extern struct cpufreq_governor cpufreq_gov_conservative;
->>  #define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_conservative)
->> +#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_SCHED_GOV)
->> +extern struct cpufreq_governor cpufreq_gov_sched_gov;
->> +#define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_sched)
->>  #endif
-> 
-> You have extra 'gov' in CONFIG_CPU_FREQ_DEFAULT_GOV_SCHED_GOV and
-> cpufreq_gov_sched_gov above.
+matthew.dewitt@gmail.com changed:
 
-Thanks, this was pointed out earlier and will be fixed in subsequent
-revisions of the patchset.
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |matthew.dewitt@gmail.com
+
+--- Comment #16 from matthew.dewitt@gmail.com ---
+This is definitely a GCC/GLIBC issue/trigger:
+
+- Slackware 14.1 w/ 4.2.1 kernel from kernel.org
+- No issues.
+- Compiles and runs without issue.
+
+- Slackware 14.1 Stable (with/without 4.2.1, else stock 3.x 14.1 kernel huge.s)
+- 'slackpkg upgrade-all' (exclude kernel, update slackpkg first, etc)
+- Machine crashes half way throught the update (update of GCC?)
+
+- Slackware -Current (as of 09/28/15)
+- Machine is unstable, crashes during any large compile (recompile kernel)
+
+- Fedora 22 - Stable. No issues. GCC not installed.
+
+- Fedora 23 BETA (As of 09/28/15) does not even finish install from Live CD.
+Crashes.
+
+System:
+
+i7 5700HQ
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
