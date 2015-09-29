@@ -1,12 +1,12 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v3 2/6] cpufreq: intel_pstate: get P1 from TAR when available
-Date: Tue, 29 Sep 2015 15:54:04 -0700
-Message-ID: <1443567248-27134-3-git-send-email-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v3 3/6] cpufreq: intel-pstate: Use separate max pstate for scaling
+Date: Tue, 29 Sep 2015 15:54:05 -0700
+Message-ID: <1443567248-27134-4-git-send-email-srinivas.pandruvada@linux.intel.com>
 References: <1443567248-27134-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:65153 "EHLO mga14.intel.com"
+Received: from mga14.intel.com ([192.55.52.115]:30963 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751509AbbI2Wyn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	id S1751539AbbI2Wyn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
 	Tue, 29 Sep 2015 18:54:43 -0400
 In-Reply-To: <1443567248-27134-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
@@ -14,102 +14,110 @@ List-Id: linux-pm@vger.kernel.org
 To: kristen.c.accardi@intel.com, rafael.j.wysocki@intel.com, len.brown@intel.com
 Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-After Ivybridge, the max non turbo ratio obtained from platform info msr
-is not always guaranteed P1 on client platforms. The max non turbo
-activation ratio (TAR), determines the max for the current level of TDP.
-The ratio in platform info is physical max. The TAR MSR can be locked,
-so updating this value is not possible on all platforms.
-This change gets this ratio from MSR TURBO_ACTIVATION_RATIO if
-available,
-but also do some sanity checking to make sure that this value is
-correct.
-The sanity check involves reading the TDP ratio for the current tdp
-control value when platform has configurable TDP present and matching
-TAC
-with this.
+Systems with configurable TDP have multiple max non turbo p state. Intel
+P state uses max non turbo P state for scaling. But using the real max
+non turbo p state causes underestimation of next P state. So using
+the physical max non turbo P state as before for scaling.
 
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- arch/x86/include/asm/msr-index.h |  7 +++++++
- drivers/cpufreq/intel_pstate.c   | 39 +++++++++++++++++++++++++++++++++++----
- 2 files changed, 42 insertions(+), 4 deletions(-)
+ drivers/cpufreq/intel_pstate.c | 20 ++++++++++++++++++--
+ 1 file changed, 18 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
-index b8c14bb..9f39056 100644
---- a/arch/x86/include/asm/msr-index.h
-+++ b/arch/x86/include/asm/msr-index.h
-@@ -206,6 +206,13 @@
- #define MSR_GFX_PERF_LIMIT_REASONS	0x000006B0
- #define MSR_RING_PERF_LIMIT_REASONS	0x000006B1
- 
-+/* Config TDP MSRs */
-+#define MSR_CONFIG_TDP_NOMINAL		0x00000648
-+#define MSR_CONFIG_TDP_LEVEL1		0x00000649
-+#define MSR_CONFIG_TDP_LEVEL2		0x0000064A
-+#define MSR_CONFIG_TDP_CONTROL		0x0000064B
-+#define MSR_TURBO_ACTIVATION_RATIO	0x0000064C
-+
- /* Hardware P state interface */
- #define MSR_PPERF			0x0000064e
- #define MSR_PERF_LIMIT_REASONS		0x0000064f
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 576d9e8..b0ae951 100644
+index b0ae951..0ae9618 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -43,7 +43,6 @@
- #define int_tofp(X) ((int64_t)(X) << FRAC_BITS)
- #define fp_toint(X) ((X) >> FRAC_BITS)
+@@ -77,6 +77,7 @@ struct pstate_data {
+ 	int	current_pstate;
+ 	int	min_pstate;
+ 	int	max_pstate;
++	int	max_pstate_physical;
+ 	int	scaling;
+ 	int	turbo_pstate;
+ 	u64	turbo_ratio_limit;
+@@ -127,6 +128,7 @@ struct pstate_adjust_policy {
  
--
- static inline int32_t mul_fp(int32_t x, int32_t y)
- {
- 	return ((int64_t)x * (int64_t)y) >> FRAC_BITS;
-@@ -613,10 +612,42 @@ static int core_get_min_pstate(void)
- 
- static int core_get_max_pstate(void)
- {
--	u64 value;
-+	u64 tar;
-+	u64 plat_info;
-+	int max_pstate;
-+	int err;
-+
-+	rdmsrl(MSR_PLATFORM_INFO, plat_info);
-+	max_pstate = (plat_info >> 8) & 0xFF;
-+
-+	err = rdmsrl_safe(MSR_TURBO_ACTIVATION_RATIO, &tar);
-+	if (!err) {
-+		/* Do some sanity checking for safety */
-+		if (plat_info & 0x600000000) {
-+			u64 tdp_ctrl;
-+			u64 tdp_ratio;
-+			int tdp_msr;
-+
-+			err = rdmsrl_safe(MSR_CONFIG_TDP_CONTROL, &tdp_ctrl);
-+			if (err)
-+				goto skip_tar;
-+
-+			tdp_msr = MSR_CONFIG_TDP_NOMINAL + tdp_ctrl;
-+			err = rdmsrl_safe(tdp_msr, &tdp_ratio);
-+			if (err)
-+				goto skip_tar;
-+
-+			if (tdp_ratio - 1 == tar) {
-+				max_pstate = tar;
-+				pr_debug("max_pstate=TAC %x\n", max_pstate);
-+			} else {
-+				goto skip_tar;
-+			}
-+		}
-+	}
- 
--	rdmsrl(MSR_PLATFORM_INFO, value);
--	return (value >> 8) & 0xFF;
-+skip_tar:
-+	return max_pstate;
+ struct pstate_funcs {
+ 	int (*get_max)(void);
++	int (*get_max_physical)(void);
+ 	int (*get_min)(void);
+ 	int (*get_turbo)(void);
+ 	int (*get_scaling)(void);
+@@ -610,6 +612,14 @@ static int core_get_min_pstate(void)
+ 	return (value >> 40) & 0xFF;
  }
  
- static int core_get_turbo_pstate(void)
++static int core_get_max_pstate_physical(void)
++{
++	u64 value;
++
++	rdmsrl(MSR_PLATFORM_INFO, value);
++	return (value >> 8) & 0xFF;
++}
++
+ static int core_get_max_pstate(void)
+ {
+ 	u64 tar;
+@@ -752,6 +762,7 @@ static struct cpu_defaults core_params = {
+ 	},
+ 	.funcs = {
+ 		.get_max = core_get_max_pstate,
++		.get_max_physical = core_get_max_pstate_physical,
+ 		.get_min = core_get_min_pstate,
+ 		.get_turbo = core_get_turbo_pstate,
+ 		.get_scaling = core_get_scaling,
+@@ -772,6 +783,7 @@ static struct cpu_defaults byt_params = {
+ 	},
+ 	.funcs = {
+ 		.get_max = byt_get_max_pstate,
++		.get_max_physical = byt_get_max_pstate,
+ 		.get_min = byt_get_min_pstate,
+ 		.get_turbo = byt_get_turbo_pstate,
+ 		.set = byt_set_pstate,
+@@ -791,6 +803,7 @@ static struct cpu_defaults knl_params = {
+ 	},
+ 	.funcs = {
+ 		.get_max = core_get_max_pstate,
++		.get_max_physical = core_get_max_pstate_physical,
+ 		.get_min = core_get_min_pstate,
+ 		.get_turbo = knl_get_turbo_pstate,
+ 		.get_scaling = core_get_scaling,
+@@ -845,6 +858,7 @@ static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
+ {
+ 	cpu->pstate.min_pstate = pstate_funcs.get_min();
+ 	cpu->pstate.max_pstate = pstate_funcs.get_max();
++	cpu->pstate.max_pstate_physical = pstate_funcs.get_max_physical();
+ 	cpu->pstate.turbo_pstate = pstate_funcs.get_turbo();
+ 	cpu->pstate.scaling = pstate_funcs.get_scaling();
+ 	if (pstate_funcs.get_turbo_ratio_limit &&
+@@ -866,7 +880,8 @@ static inline void intel_pstate_calc_busy(struct cpudata *cpu)
+ 
+ 	sample->freq = fp_toint(
+ 		mul_fp(int_tofp(
+-			cpu->pstate.max_pstate * cpu->pstate.scaling / 100),
++			cpu->pstate.max_pstate_physical *
++			cpu->pstate.scaling / 100),
+ 			core_pct));
+ 
+ 	sample->core_pct_busy = (int32_t)core_pct;
+@@ -934,7 +949,7 @@ static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
+ 	 * specified pstate.
+ 	 */
+ 	core_busy = cpu->sample.core_pct_busy;
+-	max_pstate = int_tofp(cpu->pstate.max_pstate);
++	max_pstate = int_tofp(cpu->pstate.max_pstate_physical);
+ 	current_pstate = int_tofp(cpu->pstate.current_pstate);
+ 	core_busy = mul_fp(core_busy, div_fp(max_pstate, current_pstate));
+ 
+@@ -1232,6 +1247,7 @@ static void copy_pid_params(struct pstate_adjust_policy *policy)
+ static void copy_cpu_funcs(struct pstate_funcs *funcs)
+ {
+ 	pstate_funcs.get_max   = funcs->get_max;
++	pstate_funcs.get_max_physical = funcs->get_max_physical;
+ 	pstate_funcs.get_min   = funcs->get_min;
+ 	pstate_funcs.get_turbo = funcs->get_turbo;
+ 	pstate_funcs.get_scaling = funcs->get_scaling;
 -- 
 1.9.3
 
