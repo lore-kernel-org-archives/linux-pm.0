@@ -1,58 +1,63 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] thermal: avoid division by zero in power allocator
-Date: Tue, 29 Sep 2015 13:33:30 -0700
-Message-ID: <20150929133330.809e7058004395e6db79dec1@linux-foundation.org>
-References: <1443475714-19871-1-git-send-email-aarcange@redhat.com>
-	<1443475714-19871-2-git-send-email-aarcange@redhat.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCHv3 1/1] ti-soc-thermal: implement omap3 support
+Date: Tue, 29 Sep 2015 14:18:55 -0700
+Message-ID: <20150929211853.GA22673@localhost.localdomain>
+References: <1441861089-23868-1-git-send-email-edubezval@gmail.com>
+ <20150915112416.GC32689@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:39218 "EHLO
-	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751166AbbI2Udc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Sep 2015 16:33:32 -0400
-In-Reply-To: <1443475714-19871-2-git-send-email-aarcange@redhat.com>
+Received: from mail-pa0-f54.google.com ([209.85.220.54]:35287 "EHLO
+	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751746AbbI2VS6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Sep 2015 17:18:58 -0400
+Content-Disposition: inline
+In-Reply-To: <20150915112416.GC32689@amd>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andrea Arcangeli <aarcange@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Kurtz <djkurtz@chromium.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: pali.rohar@gmail.com, Rui Zhang <rui.zhang@intel.com>, linux-omap@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On Mon, 28 Sep 2015 23:28:34 +0200 Andrea Arcangeli <aarcange@redhat.com> wrote:
-
-> During boot I get a div by zero Oops regression starting in v4.3-rc3.
+On Tue, Sep 15, 2015 at 01:24:16PM +0200, Pavel Machek wrote:
+> On Wed 2015-09-09 21:58:09, Eduardo Valentin wrote:
+> > From: Pavel Machek <pavel@ucw.cz>
+> > 
+> > This adds support for OMAP3 chips to ti-soc-thermal. As requested by
+> > TI people, it is marked unreliable and warning is printed.
+> > 
+> > Cc: Zhang Rui <rui.zhang@intel.com>
+> > Cc: linux-pm@vger.kernel.org
+> > Cc: linux-omap@vger.kernel.org
+> > Cc: linux-kernel@vger.kernel.org
+> > Signed-off-by: Pavel Machek <pavel@ucw.cz>
+> > Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+> > ---
+> >  .../devicetree/bindings/thermal/ti_soc_thermal.txt |   7 ++
+> >  drivers/thermal/ti-soc-thermal/Kconfig             |  15 +++
+> >  drivers/thermal/ti-soc-thermal/Makefile            |   1 +
+> >  .../thermal/ti-soc-thermal/omap3-thermal-data.c    | 103 +++++++++++++++++++++
+> >  drivers/thermal/ti-soc-thermal/ti-bandgap.c        |  10 ++
+> >  drivers/thermal/ti-soc-thermal/ti-bandgap.h        |   9 ++
+> >  6 files changed, 145 insertions(+)
+> >  create mode 100644 drivers/thermal/ti-soc-thermal/omap3-thermal-data.c
+> > ---
+> > 
+> > Just not leave Pavels work behind, I took his patch and amended a couple
+> > of things:
+> > (1) added the omap3 DT example
+> > (2) improved the dev_warn message
+> > (3) improved the code documentation
 > 
-> ...
->
-> --- a/drivers/thermal/power_allocator.c
-> +++ b/drivers/thermal/power_allocator.c
-> @@ -144,6 +144,16 @@ static void estimate_pid_constants(struct thermal_zone_device *tz,
->  		switch_on_temp = 0;
->  
->  	temperature_threshold = control_temp - switch_on_temp;
-> +	/*
-> +	 * estimate_pid_constants() tries to find appropriate default
-> +	 * values for thermal zones that don't provide them. If a
-> +	 * system integrator has configured a thermal zone with two
-> +	 * passive trip points at the same temperature, that person
-> +	 * hasn't put any effort to set up the thermal zone properly
-> +	 * so just give up.
-> +	 */
-> +	if (!temperature_threshold)
-> +		return;
->  
->  	if (!tz->tzp->k_po || force)
->  		tz->tzp->k_po = int_to_frac(sustainable_power) /
+> Thanks!
+> 
+> Is it on its way to mainline or is there something more to do?
 
-a) Are we sure this won't leave tz->tzp fields uninitialized?
 
-b) I'm not understanding that code at all.  The "proportional" term
-   in a PID controller is supposed to be proportional to the (desired -
-   actual) difference (aka "the error").
+Nothing else to do. I am applying to my next branch.
 
-   But estimate_pid_constants() appears to be setting the
-   "proportional" term to be proportional to 1/error!
-
-   Maybe a description of local `temperature_threshold' would help
-   clue me in.
-
+> 
+> 									Pavel
+> 
+> -- 
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
