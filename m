@@ -1,59 +1,38 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
- SpeedStep enabled
-Date: Tue, 29 Sep 2015 00:47:28 +0000
-Message-ID: <bug-103351-137361-VbJUITwH50@https.bugzilla.kernel.org/>
-References: <bug-103351-137361@https.bugzilla.kernel.org/>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v7 08/15] power: bq24257: Allow manual setting of input
+ current limit
+Date: Tue, 29 Sep 2015 15:02:51 +0900
+Message-ID: <560A298B.6030505@samsung.com>
+References: <1443196460-26156-1-git-send-email-dannenberg@ti.com>
+ <1443196460-26156-9-git-send-email-dannenberg@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=iso-8859-2
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:40603 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754098AbbI2Arc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 28 Sep 2015 20:47:32 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id 82D48206F0
-	for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2015 00:47:31 +0000 (UTC)
-Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
-	by mail.kernel.org (Postfix) with ESMTP id 0712320726
-	for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2015 00:47:30 +0000 (UTC)
-In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
+Received: from mail-pa0-f52.google.com ([209.85.220.52]:34901 "EHLO
+	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755232AbbI2GC5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Sep 2015 02:02:57 -0400
+In-Reply-To: <1443196460-26156-9-git-send-email-dannenberg@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Andreas Dannenberg <dannenberg@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>
+Cc: Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-api@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=103351
+W dniu 26.09.2015 o 00:54, Andreas Dannenberg pisze:
+> A new optional device property called "ti,current-limit" is introduced
+> to allow disabling the D+/D- USB signal-based charger type auto-
+> detection algorithm used to set the input current limit and instead to
+> use a fixed input current limit.
+> 
+> Signed-off-by: Andreas Dannenberg <dannenberg@ti.com>
+> ---
+>  drivers/power/bq24257_charger.c | 93 +++++++++++++++++++++++++++++++++--------
+>  1 file changed, 75 insertions(+), 18 deletions(-)
+> 
 
-matthew.dewitt@gmail.com changed:
+Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |matthew.dewitt@gmail.com
+Best regards,
+Krzysztof
 
---- Comment #16 from matthew.dewitt@gmail.com ---
-This is definitely a GCC/GLIBC issue/trigger:
-
-- Slackware 14.1 w/ 4.2.1 kernel from kernel.org
-- No issues.
-- Compiles and runs without issue.
-
-- Slackware 14.1 Stable (with/without 4.2.1, else stock 3.x 14.1 kernel huge.s)
-- 'slackpkg upgrade-all' (exclude kernel, update slackpkg first, etc)
-- Machine crashes half way throught the update (update of GCC?)
-
-- Slackware -Current (as of 09/28/15)
-- Machine is unstable, crashes during any large compile (recompile kernel)
-
-- Fedora 22 - Stable. No issues. GCC not installed.
-
-- Fedora 23 BETA (As of 09/28/15) does not even finish install from Live CD.
-Crashes.
-
-System:
-
-i7 5700HQ
-
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
