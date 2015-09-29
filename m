@@ -1,85 +1,124 @@
 From: Al Stone <al.stone@linaro.org>
-Subject: [PATCH v5 2/5] ACPI / ARM64: remove usage of BAD_MADT_ENTRY/BAD_MADT_GICC_ENTRY
-Date: Tue, 29 Sep 2015 17:45:43 -0600
-Message-ID: <1443570346-15378-3-git-send-email-al.stone@linaro.org>
+Subject: [PATCH v5 4/5] ACPI / X86: remove usage of BAD_MADT_ENTRY
+Date: Tue, 29 Sep 2015 17:45:45 -0600
+Message-ID: <1443570346-15378-5-git-send-email-al.stone@linaro.org>
 References: <1443570346-15378-1-git-send-email-al.stone@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f175.google.com ([209.85.213.175]:38277 "EHLO
-	mail-ig0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752037AbbI2XqD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Sep 2015 19:46:03 -0400
-Received: by igxx6 with SMTP id x6so19029337igx.1
-        for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2015 16:46:02 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1443570346-15378-1-git-send-email-al.stone@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org, linux-pm@vger.kernel.org, linaro-acpi@lists.linaro.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Al Stone <al.stone@linaro.org>, Will Deacon <will.deacon@arm.com>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>
+Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org, linux-pm@vger.kernel.org, linaro-acpi@lists.linaro.org, linaro-kernel@lists.linaro.org, patches@linaro.org, Al Stone <al.stone@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 Now that we have introduced the bad_madt_entry() function, and that
 function is being invoked in acpi_table_parse_madt() for us, there
-is no longer any need to use the BAD_MADT_ENTRY macro, or in the case
-of arm64, the BAD_MADT_GICC_ENTRY, too.
+is no longer any need to use the BAD_MADT_ENTRY macro.
 
 Signed-off-by: Al Stone <al.stone@linaro.org>
-Acked-by: Catalin Marinas <catalin.marinas@arm.com>
-Acked-by: Marc Zyngier <marc.zyngier@arm.com>
-Reviewed-and-tested-by: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Will Deacon <will.deacon@arm.com>
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Pavel Machek <pavel@ucw.cz>
 Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Jason Cooper <jason@lakedaemon.net>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: x86@kernel.org
 ---
- arch/arm64/include/asm/acpi.h | 8 --------
- arch/arm64/kernel/smp.c       | 2 --
- drivers/irqchip/irq-gic.c     | 3 ---
- 3 files changed, 13 deletions(-)
+ arch/x86/kernel/acpi/boot.c | 27 ---------------------------
+ 1 file changed, 27 deletions(-)
 
-diff --git a/arch/arm64/include/asm/acpi.h b/arch/arm64/include/asm/acpi.h
-index 6894205..05656fc 100644
---- a/arch/arm64/include/asm/acpi.h
-+++ b/arch/arm64/include/asm/acpi.h
-@@ -18,14 +18,6 @@
- #include <asm/cputype.h>
- #include <asm/smp_plat.h>
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index e759076..e65bcea 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -194,9 +194,6 @@ acpi_parse_x2apic(struct acpi_subtable_header *header, const unsigned long end)
  
--/* Macros for consistency checks of the GICC subtable of MADT */
--#define ACPI_MADT_GICC_LENGTH	\
--	(acpi_gbl_FADT.header.revision < 6 ? 76 : 80)
--
--#define BAD_MADT_GICC_ENTRY(entry, end)						\
--	(!(entry) || (unsigned long)(entry) + sizeof(*(entry)) > (end) ||	\
--	 (entry)->header.length != ACPI_MADT_GICC_LENGTH)
--
- /* Basic configuration for ACPI */
- #ifdef	CONFIG_ACPI
- /* ACPI table mapping after acpi_gbl_permanent_mmap is set */
-diff --git a/arch/arm64/kernel/smp.c b/arch/arm64/kernel/smp.c
-index dbdaacd..66cc8c4 100644
---- a/arch/arm64/kernel/smp.c
-+++ b/arch/arm64/kernel/smp.c
-@@ -451,8 +451,6 @@ acpi_parse_gic_cpu_interface(struct acpi_subtable_header *header,
- 	struct acpi_madt_generic_interrupt *processor;
+ 	processor = (struct acpi_madt_local_x2apic *)header;
  
- 	processor = (struct acpi_madt_generic_interrupt *)header;
--	if (BAD_MADT_GICC_ENTRY(processor, end))
+-	if (BAD_MADT_ENTRY(processor, end))
 -		return -EINVAL;
- 
+-
  	acpi_table_print_madt_entry(header);
  
-diff --git a/drivers/irqchip/irq-gic.c b/drivers/irqchip/irq-gic.c
-index d4add30..67b7b48 100644
---- a/drivers/irqchip/irq-gic.c
-+++ b/drivers/irqchip/irq-gic.c
-@@ -1206,9 +1206,6 @@ gic_acpi_parse_madt_cpu(struct acpi_subtable_header *header,
+ 	apic_id = processor->local_apic_id;
+@@ -227,9 +224,6 @@ acpi_parse_lapic(struct acpi_subtable_header * header, const unsigned long end)
  
- 	processor = (struct acpi_madt_generic_interrupt *)header;
+ 	processor = (struct acpi_madt_local_apic *)header;
  
--	if (BAD_MADT_GICC_ENTRY(processor, end))
+-	if (BAD_MADT_ENTRY(processor, end))
 -		return -EINVAL;
 -
+ 	acpi_table_print_madt_entry(header);
+ 
  	/*
- 	 * There is no support for non-banked GICv1/2 register in ACPI spec.
- 	 * All CPU interface addresses have to be the same.
+@@ -252,9 +246,6 @@ acpi_parse_sapic(struct acpi_subtable_header *header, const unsigned long end)
+ 
+ 	processor = (struct acpi_madt_local_sapic *)header;
+ 
+-	if (BAD_MADT_ENTRY(processor, end))
+-		return -EINVAL;
+-
+ 	acpi_table_print_madt_entry(header);
+ 
+ 	acpi_register_lapic((processor->id << 8) | processor->eid,/* APIC ID */
+@@ -271,9 +262,6 @@ acpi_parse_lapic_addr_ovr(struct acpi_subtable_header * header,
+ 
+ 	lapic_addr_ovr = (struct acpi_madt_local_apic_override *)header;
+ 
+-	if (BAD_MADT_ENTRY(lapic_addr_ovr, end))
+-		return -EINVAL;
+-
+ 	acpi_lapic_addr = lapic_addr_ovr->address;
+ 
+ 	return 0;
+@@ -287,9 +275,6 @@ acpi_parse_x2apic_nmi(struct acpi_subtable_header *header,
+ 
+ 	x2apic_nmi = (struct acpi_madt_local_x2apic_nmi *)header;
+ 
+-	if (BAD_MADT_ENTRY(x2apic_nmi, end))
+-		return -EINVAL;
+-
+ 	acpi_table_print_madt_entry(header);
+ 
+ 	if (x2apic_nmi->lint != 1)
+@@ -305,9 +290,6 @@ acpi_parse_lapic_nmi(struct acpi_subtable_header * header, const unsigned long e
+ 
+ 	lapic_nmi = (struct acpi_madt_local_apic_nmi *)header;
+ 
+-	if (BAD_MADT_ENTRY(lapic_nmi, end))
+-		return -EINVAL;
+-
+ 	acpi_table_print_madt_entry(header);
+ 
+ 	if (lapic_nmi->lint != 1)
+@@ -411,9 +393,6 @@ acpi_parse_ioapic(struct acpi_subtable_header * header, const unsigned long end)
+ 
+ 	ioapic = (struct acpi_madt_io_apic *)header;
+ 
+-	if (BAD_MADT_ENTRY(ioapic, end))
+-		return -EINVAL;
+-
+ 	acpi_table_print_madt_entry(header);
+ 
+ 	/* Statically assign IRQ numbers for IOAPICs hosting legacy IRQs */
+@@ -463,9 +442,6 @@ acpi_parse_int_src_ovr(struct acpi_subtable_header * header,
+ 
+ 	intsrc = (struct acpi_madt_interrupt_override *)header;
+ 
+-	if (BAD_MADT_ENTRY(intsrc, end))
+-		return -EINVAL;
+-
+ 	acpi_table_print_madt_entry(header);
+ 
+ 	if (intsrc->source_irq == acpi_gbl_FADT.sci_interrupt) {
+@@ -504,9 +480,6 @@ acpi_parse_nmi_src(struct acpi_subtable_header * header, const unsigned long end
+ 
+ 	nmi_src = (struct acpi_madt_nmi_source *)header;
+ 
+-	if (BAD_MADT_ENTRY(nmi_src, end))
+-		return -EINVAL;
+-
+ 	acpi_table_print_madt_entry(header);
+ 
+ 	/* TBD: Support nimsrc entries? */
 -- 
 2.4.3
-
