@@ -1,89 +1,60 @@
-From: Jacob Tanenbaum <jtanenba@redhat.com>
-Subject: cpupower reports uninitialized values for offline cpus
-Date: Tue, 29 Sep 2015 14:58:29 -0400
-Message-ID: <560ADF55.6090901@redhat.com>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [RFCv5 PATCH 25/46] sched: Add over-utilization/tipping point
+ indicator
+Date: Tue, 29 Sep 2015 13:08:46 -0700
+Message-ID: <560AEFCE.1070905@linaro.org>
+References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
+ <1436293469-25707-26-git-send-email-morten.rasmussen@arm.com>
+ <20150813173533.GZ19282@twins.programming.kicks-ass.net>
+ <20150814130247.GD29326@e105550-lin.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:57204 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965174AbbI2S6a (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 29 Sep 2015 14:58:30 -0400
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:34000 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751558AbbI2UIt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Sep 2015 16:08:49 -0400
+Received: by padhy16 with SMTP id hy16so15215391pad.1
+        for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2015 13:08:48 -0700 (PDT)
+In-Reply-To: <20150814130247.GD29326@e105550-lin.cambridge.arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: trenn@suse.com, Prarit Bhargava <prarit@redhat.com>
+To: Morten Rasmussen <morten.rasmussen@arm.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: mingo@redhat.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, yuyang.du@intel.com, mturquette@baylibre.com, rjw@rjwysocki.net, Juri Lelli <Juri.Lelli@arm.com>, sgurrappadi@nvidia.com, pang.xunlei@zte.com.cn, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hi guys,
+On 08/14/2015 06:02 AM, Morten Rasmussen wrote:
+> To be sure not to break smp_nice, we have defined over-utilization as
+> when:
+> 
+> cpu_rq(any)::cfs::avg::util_avg + margin > cpu_rq(any)::capacity
+> 
+> is true for any cpu in the system. IOW, as soon as one cpu is (nearly)
+> 100% utilized, we switch to load_avg to factor in priority.
+> 
+> Now with this definition, we can skip periodic load-balance as no cpu
+> has an always-running task when the system is not over-utilized. All
+> tasks will be periodic and we can balance them at wake-up. This
+> conservative condition does however mean that some scenarios that could
+> benefit from energy-aware decisions even if one cpu is fully utilized
+> would not get those benefits.
+> 
+> For system where some cpus might have reduced capacity on some cpus
+> (RT-pressure and/or big.LITTLE), we want periodic load-balance checks as
+> soon a just a single cpu is fully utilized as it might one of those with
+> reduced capacity and in that case we want to migrate it.
+> 
+> I haven't found any reasonably easy-to-track conditions that would work
+> better. Suggestions are very welcome.
 
-I have found a bug in the cpupower tool. In the most recent pull of 
-linus's tree cpupower reports bogus information for offlined cpus.
+Workloads with a single heavy task and many small tasks are pretty
+common. I'm worried about the single heavy task tripping the
+over-utilization condition on a b.L system, EAS getting turned off, and
+small tasks running on big CPUs, leading to an increase in power
+consumption.
 
-[root@hp-dl980g7-02 linux]# uname -a
-Linux hp-dl980g7-02.rhts.eng.bos.redhat.com 4.3.0-rc3+ #1 SMP Tue Sep 29 
-12:03:15 EDT 2015 x86_64 x86_64 x86_64 GNU/Linux
-[root@hp-dl980g7-02 linux]#  echo 0 > /sys/devices/system/cpu/cpu150/online
-[root@hp-dl980g7-02 linux]#  echo 0 > /sys/devices/system/cpu/cpu1/online
-[root@hp-dl980g7-02 linux]#  echo 0 > /sys/devices/system/cpu/cpu140/online
-[root@hp-dl980g7-02 linux]# cpupower monitor
-               |Nehalem                    || Mperf              || 
-Idle_Stats
-PKG |CORE|CPU | C3   | C6   | PC3  | PC6  || C0   | Cx   | Freq || POLL 
-| C1-N | C1E- | C3-N | C6-N
-    0|   0|   0|  0.00| 99.24|  0.00|  0.00||  0.38| 99.62|  1596|| 
-0.00|  0.00|  0.00|  0.00| 99.92
-    0|   0|  80|  0.00| 99.25|  0.00|  0.00||  0.28| 99.72|  1681|| 
-0.00|  0.00|  0.00|  0.00| 99.97
-    0|   1|  81|  0.00| 99.47|  0.00|  0.00||  0.27| 99.73|  1711|| 
-0.00|  0.00|  0.00|  0.00| 99.94
-...
-    7|   7| 157|  0.00| 99.47|  0.00|  0.00||  0.25| 99.75|  1735|| 
-0.00|  0.00|  0.00|  0.00| 99.98
-    7|   8|  78|  0.00| 99.48|  0.00|  0.00||  0.26| 99.74|  1741|| 
-0.00|  0.00|  0.00|  0.00| 99.98
-    7|   8| 158|  0.00| 99.47|  0.00|  0.00||  0.25| 99.75|  1726|| 
-0.00|  0.00|  0.00|  0.00| 99.98
-    7|   9|  79|  0.00| 99.57|  0.00|  0.00||  0.23| 99.77|  1745|| 
-0.00|  0.00|  0.00|  0.00| 99.96
-5472|   0|   1|******|******|******|******||******|******|******|| 
-0.00|  0.00|  0.00|  0.00|  0.00 *is offline
-10567|   0| 159|******|******|******|******||******|******|******|| 
-0.00|  0.00|  0.00|  0.00|  0.00 *is offline
-1661206560|859272560| 
-150|******|******|******|******||******|******|******||  0.00| 0.00|  
-0.00|  0.00|  0.00 *is offline
-1661206560|943093104| 
-140|******|******|******|******||******|******|******||  0.00| 0.00|  
-0.00|  0.00|  0.00 *is offline
+Perhaps an extension to the over-utilization logic such as the following
+could cause big CPUs being saturated by a single task to be ignored?
 
-
-Also the number of sockets in cpu->pkgs from get_cpu_topology will be wrong.
-
-This is because when a cpu is downed the topology directory 
-/sys/devices/system/cpu/cpu[num]/ is removed and get_cpu_topology
-relies on the files there to get the correct information. Patch 
-404c2db6... has the loop skip acquiring the data for the offline
-cpus but that causes the values to remain uninitialized. Because of the 
-way cpu_top->pkgs is calculated each uninitialized and
-unique cpu_top->core_info[cpu].core will erroneously increase the 
-cpu_top->pkgs value.
-
-I want to fix this bug I am just not sure how to proceed, I see three 
-options...
-
-   1. Change the code to not report any information on offline cpus
-   2. When printing the results check if the cpu is offline and if it is 
-obscure the incorrect information and change the cpu->pkg
-      value to reflect all sockets with at least one online cpu.
-   3. Change the sysfs to retain topology data for offlined cpus, may 
-require adding an additional state to reflect the difference
-      between a processor that has been brought down via software and a 
-processor that has been removed from the machine.
-
-I would like to submit a patch to fix this bug and not have one 
-presented to me to test.
-
-Thanks for the direction,
-Jake T.
-
+util(cpu X) + margin > capacity(cpu X) &&
+  (capacity(cpu X) != max_capacity ? 1 : nr_running(cpu X) > 1)
