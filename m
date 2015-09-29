@@ -1,71 +1,60 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: [PATCH v5 2/2] USB / PM: Allow USB devices to remain runtime-suspended when sleeping
-Date: Tue, 29 Sep 2015 14:29:20 +0200
-Message-ID: <1443529760-17612-3-git-send-email-tomeu.vizoso@collabora.com>
-References: <1443529760-17612-1-git-send-email-tomeu.vizoso@collabora.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1443529760-17612-1-git-send-email-tomeu.vizoso@collabora.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, martyn.welch@collabora.co.uk
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH/RFC v2 2/4] ARM: shmobile: r8a7791/koelsch dts(i): Switch
+ from MSTP to MSSR
+Date: Tue, 29 Sep 2015 14:45:57 +0200
+Message-ID: <CAMuHMdV4yJj+17uvZz7m5hyrtWnO+O56RiO8C44vPduLxm+e7Q@mail.gmail.com>
+References: <1442936646-30362-1-git-send-email-geert+renesas@glider.be>
+	<1442936646-30362-3-git-send-email-geert+renesas@glider.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1442936646-30362-3-git-send-email-geert+renesas@glider.be>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, Magnus Damm <damm+renesas@opensource.se>, Simon Horman <horms@verge.net.au>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Ulrich Hecht <ulrich.hecht+renesas@gmail.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Philipp Zabel <p.zabel@pengutronix.de>, linux-clk <linux-clk@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Have dev_pm_ops.prepare return 1 for USB devices and ports so that USB
-devices can remain runtime-suspended when the system goes to a sleep
-state, if their wakeup state is correct and they have runtime PM enabled.
+On Tue, Sep 22, 2015 at 5:44 PM, Geert Uytterhoeven
+<geert+renesas@glider.be> wrote:
+> Switch from the old "renesas,cpg-mstp-clocks" bindings to the new
+> "renesas,r8a7791-cpg-mssr" bindings:
 
-Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
----
+[...]
 
+>   - Change the R8A7791_CLK_* macro definitions to include the MSTP
+>     register number, so the user-visible numbers match the datasheet
+>     clock numbers, and pack them to avoid wasting space in sparse
+>     clk_onecell_data arrays.
 
- drivers/usb/core/port.c |  6 ++++++
- drivers/usb/core/usb.c  | 11 ++++++++++-
- 2 files changed, 16 insertions(+), 1 deletion(-)
+Apparently the packing can be handled purely inside the driver, instead of
+in <dt-bindings/clock/r8a7791-clock.h>, by passing a custom variant of
+of_clk_src_onecell_get() to of_clk_add_provider().
 
-diff --git a/drivers/usb/core/port.c b/drivers/usb/core/port.c
-index 210618319f10..f49707d73b5a 100644
---- a/drivers/usb/core/port.c
-+++ b/drivers/usb/core/port.c
-@@ -168,12 +168,18 @@ static int usb_port_runtime_suspend(struct device *dev)
- 
- 	return retval;
- }
-+
-+static int usb_port_prepare(struct device *dev)
-+{
-+	return 1;
-+}
- #endif
- 
- static const struct dev_pm_ops usb_port_pm_ops = {
- #ifdef CONFIG_PM
- 	.runtime_suspend =	usb_port_runtime_suspend,
- 	.runtime_resume =	usb_port_runtime_resume,
-+	.prepare =		usb_port_prepare,
- #endif
- };
- 
-diff --git a/drivers/usb/core/usb.c b/drivers/usb/core/usb.c
-index 8d5b2f4113cd..cf4dde11db1c 100644
---- a/drivers/usb/core/usb.c
-+++ b/drivers/usb/core/usb.c
-@@ -316,7 +316,16 @@ static int usb_dev_uevent(struct device *dev, struct kobj_uevent_env *env)
- 
- static int usb_dev_prepare(struct device *dev)
- {
--	return 0;		/* Implement eventually? */
-+	struct usb_device *udev = to_usb_device(dev);
-+
-+	if (!pm_runtime_enabled(dev))
-+		return 0;
-+
-+	/* Return 0 if the current wakeup setting is wrong, otherwise 1 */
-+	if (udev->do_remote_wakeup != device_may_wakeup(dev))
-+		return 0;
-+
-+	return 1;
- }
- 
- static void usb_dev_complete(struct device *dev)
--- 
-2.4.3
+> --- a/include/dt-bindings/clock/r8a7791-clock.h
+> +++ b/include/dt-bindings/clock/r8a7791-clock.h
+> @@ -23,141 +23,143 @@
+>  #define R8A7791_CLK_RCAN               9
+>  #define R8A7791_CLK_ADSP               10
+>
+> +#define MSTP(n)                                (n / 100 * 32 + n % 100)
+
+Hence this macro can be removed...
+
+> +
+>  /* MSTP0 */
+> -#define R8A7791_CLK_MSIOF0             0
+> +#define R8A7791_CLK_MSIOF0             MSTP(0)
+
+... and all of these can just become plain human-readable numbers that
+match the datasheets.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
