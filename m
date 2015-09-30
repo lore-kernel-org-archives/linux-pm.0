@@ -1,53 +1,89 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
- SpeedStep enabled
-Date: Wed, 30 Sep 2015 16:52:27 +0000
-Message-ID: <bug-103351-137361-Dm7f70wPhh@https.bugzilla.kernel.org/>
-References: <bug-103351-137361@https.bugzilla.kernel.org/>
+From: Luiz Capitulino <lcapitulino@redhat.com>
+Subject: Re: [RFC 0/3] sched/idle: run-time support for setting idle polling
+Date: Wed, 30 Sep 2015 13:16:10 -0400
+Message-ID: <20150930131610.1c2ba9c2@redhat.com>
+References: <1442954062-28578-1-git-send-email-lcapitulino@redhat.com>
+	<1593595.NpzC8TsdGC@vostro.rjw.lan>
+	<20150930154835.GP3604@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:43808 "EHLO mail.kernel.org"
+Received: from mx1.redhat.com ([209.132.183.28]:50947 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752673AbbI3Qwc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 30 Sep 2015 12:52:32 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id 94E1120668
-	for <linux-pm@vger.kernel.org>; Wed, 30 Sep 2015 16:52:31 +0000 (UTC)
-Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
-	by mail.kernel.org (Postfix) with ESMTP id AB4B4206DC
-	for <linux-pm@vger.kernel.org>; Wed, 30 Sep 2015 16:52:29 +0000 (UTC)
-In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
+	id S1753337AbbI3RQP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 30 Sep 2015 13:16:15 -0400
+In-Reply-To: <20150930154835.GP3604@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, riel@redhat.com, rafael.j.wysocki@intel.com, mingo@kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=103351
+On Wed, 30 Sep 2015 17:48:35 +0200
+Peter Zijlstra <peterz@infradead.org> wrote:
 
---- Comment #27 from kernel@benjam.info <kernel@benjam.info> ---
-(In reply to matthew.dewitt from comment #26)
-> Created attachment 189091 [details]
-> attachment-9832-0.html
+> On Wed, Sep 23, 2015 at 03:17:59AM +0200, Rafael J. Wysocki wrote:
+> > On Tuesday, September 22, 2015 04:34:19 PM Luiz Capitulino wrote:
+> > > Hi,
+> > 
+> > Hi,
+> > 
+> > Please always CC patches related to power management to linux-pm@vger.kernel.org.
+> >
+> > Also CCing Len Brown who's the maintainer of the intel_idle driver and Peter Z.
 > 
-> Can someone post a link to clear instructions on the microcode update with
-> 5700HQ, so folks who haven't done this before can get it resolved? Thanks!
+> And the sched people for touching kernel/sched (thanks Rafael)!
+> 
+> > > Some archs allow the system administrator to set the
+> > > idle thread behavior to spin instead of entering
+> > > sleep states. The x86 arch, for example, has a idle=
+> > > command-line parameter for this purpose.
+> > > 
+> > > However, the command-line parameter has two problems:
+> > > 
+> > >  1. You have to reboot if you change your mind
+> > >  2. This setting affects all system cores
+> > > 
+> > > The second point is relevant for systems where cores
+> > > are partitioned into bookkeeping and low-latency cores.
+> > > Usually, it's OK for bookkeeping cores to enter deeper
+> > > sleep states. It's only the low-latency cores that should
+> > > poll when entering idle.
+> > 
+> > This looks like a use case for PM QoS to me rather.  You'd need to make it
+> > work per-CPU rather than globally, but that really is about asking for
+> > minimum latency.
+> 
+> Agreed, this should very much hook into the PM QoS stuff.
+> 
+> > 
+> > > This series adds the following file:
+> > > 
+> > >  /sys/devices/system/cpu/cpu_idle
+> > > 
+> > > This file outputs and stores a cpumask of the cores
+> > > which will have idle polling behavior.
+> > 
+> > I don't like this interface at all.
+> > 
+> > You have a cpuidle directory per core already, so what's the reason to add an
+> 
+> Yeah this should very much not be exposed like this.
+> 
+> Ideally every cpuidle driver would get 'polling' as a
+> default state and the QoS constraints might select it if nothing else
+> matches.
 
-1. Check what microcode version you have by running `grep microcode
-/proc/cpuinfo`
-2. Extract the tarfile.
-3. Install iucode-tool.
-4. For each .bin file that was in the tarfile, run iucode-tool over it. For
-example, `sudo iucode-tool 2494656.bin`. You can pass multiple files at once to
-iucode-tool, so you could alternatively just run something like `sudo
-iucode-tool *.bin`
-5. Check if your version of the microcode has changed with `grep microcode
-/proc/cpuinfo`
-6. If your version of the microcode changed, then hopefully your issue is
-fixed. Make sure to re-run step 4 every time after you reboot, until your
-distribution's intel-microcode package is updated, or until you get a UEFI
-update.
+So, I didn't know we had support for polling from the idle
+thread via cpuidle. This solves the first part of the problem.
 
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+The second part is having this available in KVM guests. Looks
+like there's work being done to have PV idle support in KVM,
+so this solves the second problem.
+
+No need for this series then.
+
+> 
+> And no mucking about with the force polling flag at _all_.
+> 
+
