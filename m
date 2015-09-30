@@ -1,34 +1,65 @@
-From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: Re: [PATCH 2/2] thermal: ti-soc-thermal: add OMAP36xx support
-Date: Wed, 30 Sep 2015 10:40:31 +0100
-Message-ID: <9hhlhbo5jow.fsf@e105922-lin.cambridge.arm.com>
-References: <1443561552-23254-1-git-send-email-edubezval@gmail.com>
-	<1443561552-23254-3-git-send-email-edubezval@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1443561552-23254-3-git-send-email-edubezval@gmail.com> (Eduardo
-	Valentin's message of "Tue, 29 Sep 2015 14:19:12 -0700")
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: pavel@ucw.cz, linux-omap@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezva@gmail.com>
+From: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+Subject: [PATCH v7 0/2] Allow USB devices to remain runtime-suspended when sleeping
+Date: Wed, 30 Sep 2015 11:58:16 +0200
+Message-ID: <1443607098-26666-1-git-send-email-tomeu.vizoso@collabora.com>
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, martyn.welch-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org
+Cc: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Eduardo,
+Hi,
 
-Eduardo Valentin <edubezval@gmail.com> writes:
+this is v7 of an attempt to make it easier for devices to remain in
+runtime PM when the system goes to sleep, mainly to reduce the time
+spent resuming devices.
 
-> Add OMAP36xx support to ti-soc-thermal driver. This
-> chip is also unreliable. The data provided here is
-> based on OMAP36xx TRM:
-> http://www.ti.com/lit/ug/swpu177aa/swpu177aa.pdf
->
-> Signed-off-by: Eduardo Valentin <edubezva@gmail.com>
-> Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+For this, we interpret the absence of all PM callback implementations as
+it being safe to do direct_complete, so their ancestors aren't prevented
+from remaining runtime-suspended.
 
-You've got duplicate Signed-off-bys in this patch. 
+Additionally, the prepare() callback of USB devices will return 1 if
+runtime PM is enabled and the current wakeup settings are correct.
+
+With these changes, a uvcvideo device (for example) stays in runtime
+suspend when the system goes to sleep and is left in that state when the
+system resumes, not delaying it unnecessarily.
 
 Thanks,
-Punit
 
-[...]
+Tomeu
+
+Changes in v7:
+- Reduce indentation by adding a label in device_prepare()
+
+Changes in v6:
+- Add stub for !CONFIG_PM.
+- Move implementation of device_check_pm_callbacks to power/main.c as it
+  doesn't belong to CONFIG_PM_SLEEP.
+- Take dev->power.lock before modifying flag.
+
+Changes in v5:
+- Check for all dev_pm_ops instances associated to a device, updating a
+  no_pm_callbacks flag at the times when that could change.
+
+Tomeu Vizoso (2):
+  PM / sleep: Go direct_complete if driver has no callbacks
+  USB / PM: Allow USB devices to remain runtime-suspended when sleeping
+
+ drivers/base/dd.c           |  3 +++
+ drivers/base/power/common.c | 27 +++++++++++++++++++++++++++
+ drivers/base/power/domain.c |  5 +++++
+ drivers/base/power/main.c   |  8 ++++++++
+ drivers/base/power/power.h  |  6 ++++++
+ drivers/usb/core/port.c     |  6 ++++++
+ drivers/usb/core/usb.c      | 11 ++++++++++-
+ include/linux/pm.h          |  1 +
+ 8 files changed, 66 insertions(+), 1 deletion(-)
+
+-- 
+2.4.3
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
