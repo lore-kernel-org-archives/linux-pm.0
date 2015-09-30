@@ -1,68 +1,46 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH 2/3] thermal: Add Mediatek thermal controller support
-Date: Wed, 30 Sep 2015 08:14:59 +0200
-Message-ID: <20150930061459.GW7858@pengutronix.de>
-References: <1443015463-23639-1-git-send-email-s.hauer@pengutronix.de>
- <1443015463-23639-3-git-send-email-s.hauer@pengutronix.de>
- <5602EFF0.8040207@mentor.com>
+From: "Opensource [Adam Thomson]" <Adam.Thomson.Opensource@diasemi.com>
+Subject: RE: [PATCH v5 0/6] Add support for DA9150 Fuel-Gauge
+Date: Wed, 30 Sep 2015 08:52:36 +0000
+Message-ID: <2E89032DDAA8B9408CB92943514A0337D46067BA@SW-EX-MBX01.diasemi.com>
+References: <cover.1441964153.git.Adam.Thomson.Opensource@diasemi.com>
+ <20150922160405.GC4235@earth> <20150922171032.GH11284@x1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:58905 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753496AbbI3GPZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Sep 2015 02:15:25 -0400
-Content-Disposition: inline
-In-Reply-To: <5602EFF0.8040207@mentor.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150922171032.GH11284@x1>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>
+Cc: "Opensource [Adam Thomson]" <Adam.Thomson.Opensource@diasemi.com>, Samuel Ortiz <sameo@linux.intel.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
 List-Id: linux-pm@vger.kernel.org
-To: Vladimir Zapolskiy <vladimir_zapolskiy@mentor.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Matthias Brugger <matthias.bgg@gmail.com>, devicetree@vger.kernel.org, mark.rutland@arm.com, robh+dt@kernel.org
 
-Hi Vladimir,
-
-On Wed, Sep 23, 2015 at 09:31:12PM +0300, Vladimir Zapolskiy wrote:
-> Hi Sascha,
-> 
-> in case of OF_DYNAMIC enabled of_parse_phandle() requires of_node_put(),
-> which is fine to place right here.
-> 
-> > +	if (auxadc_phys_base == OF_BAD_ADDR) {
-> > +		dev_err(&pdev->dev, "Can't get auxadc phys address\n");
-> > +		return -EINVAL;
-> > +	}
-> > +
-> 
-> [snip]
-> 
-> > +
-> > +	/*
-> > +	 * These calibration values should finally be provided by the
-> > +	 * firmware or fuses. For now use default values.
-> > +	 */
-> > +	mt->calib_slope = -123;
-> > +	mt->calib_offset = 465124;
-> > +
-> > +	for (i = 0; i < MT8173_NUM_ZONES; i++)
-> > +		mtk_thermal_init_bank(mt, i, apmixed_phys_base, auxadc_phys_base);
-> > +
-> > +	platform_set_drvdata(pdev, mt);
-> > +
-> > +	for (i = 0; i < MT8173_NUM_ZONES; i++) {
-> > +		struct mtk_thermal_bank *bank = &mt->banks[i];
-> > +
-> > +		bank->tzd = thermal_zone_of_sensor_register(&pdev->dev, i, bank,
-> > +				&mtk_thermal_ops);
-> 
-> I would propose to add return value checks here, otherwise there might
-> be an oops in mtk_thermal_remove(), if something goes wrong.
-
-Thanks for the input. I'll fix that in the next round.
-
-Sascha
-
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+T24gU2VwdGVtYmVyIDIyLCAyMDE1IDE4OjExLCBMZWUgSm9uZXMgd3JvdGU6DQoNCj4gT24gVHVl
+LCAyMiBTZXAgMjAxNSwgU2ViYXN0aWFuIFJlaWNoZWwgd3JvdGU6DQo+ID4gT24gRnJpLCBTZXAg
+MTEsIDIwMTUgYXQgMTE6MDU6MjFBTSArMDEwMCwgQWRhbSBUaG9tc29uIHdyb3RlOg0KPiA+ID4g
+VGhpcyBwYXRjaCBzZXQgYWRkcyBzdXBwb3J0IGZvciB0aGUgRGlhbG9nIERBOTE1MCBGdWVsLUdh
+dWdlLg0KPiA+ID4NCj4gPiA+IFsuLi5dDQo+ID4gPg0KPiA+ID4gQWRhbSBUaG9tc29uICg2KToN
+Cj4gPiA+ICAgbWZkOiBkYTkxNTA6IEFkZCBzdXBwb3J0IGZvciBGdWVsLUdhdWdlDQo+ID4gPiAg
+IG1mZDogZGE5MTUwOiBVcGRhdGUgRFQgYmluZGluZ3MgZm9yIEZ1ZWwtR2F1Z2Ugc3VwcG9ydA0K
+PiA+ID4gICBwb3dlcjogQWRkIHN1cHBvcnQgZm9yIERBOTE1MCBGdWVsLUdhdWdlDQo+ID4gPiAg
+IHBvd2VyOiBkYTkxNTA6IEFkZCBEVCBiaW5kaW5ncyBkb2N1bWVudGF0aW9uIGZvciBGdWVsLUdh
+dWdlDQo+ID4gPiAgIG1mZDogZGE5MTUwOiBVc2UgcmVsYXRpdmUgcGF0aHMgaW4gRFQgYmluZGlu
+Z3MgZG9jdW1lbnQNCj4gPiA+ICAgbWZkOiBkYTkxNTA6IFVzZSBERUZJTkVfUkVTX0lSUV9OQU1F
+RCgpIGhlbHAgbWFjcm8gZm9yIElSUSByZXNvdXJjZQ0KPiA+ID4NCj4gPiA+ICBEb2N1bWVudGF0
+aW9uL2RldmljZXRyZWUvYmluZGluZ3MvbWZkL2RhOTE1MC50eHQgICB8ICAzMyArLQ0KPiA+ID4g
+IC4uLi9kZXZpY2V0cmVlL2JpbmRpbmdzL3Bvd2VyL2RhOTE1MC1mZy50eHQgICAgICAgIHwgIDIz
+ICsNCj4gPiA+ICBkcml2ZXJzL21mZC9kYTkxNTAtY29yZS5jICAgICAgICAgICAgICAgICAgICAg
+ICAgICB8IDE5MSArKysrKy0tDQo+ID4gPiAgZHJpdmVycy9wb3dlci9LY29uZmlnICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgfCAgMTAgKw0KPiA+ID4gIGRyaXZlcnMvcG93ZXIvTWFrZWZp
+bGUgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgICAxICsNCj4gPiA+ICBkcml2ZXJzL3Bv
+d2VyL2RhOTE1MC1mZy5jICAgICAgICAgICAgICAgICAgICAgICAgICB8IDU3OCArKysrKysrKysr
+KysrKysrKysrKysNCj4gPiA+ICBpbmNsdWRlL2xpbnV4L21mZC9kYTkxNTAvY29yZS5oICAgICAg
+ICAgICAgICAgICAgICB8ICAxOSArLQ0KPiA+ID4gIDcgZmlsZXMgY2hhbmdlZCwgODEwIGluc2Vy
+dGlvbnMoKyksIDQ1IGRlbGV0aW9ucygtKQ0KPiA+ID4gIGNyZWF0ZSBtb2RlIDEwMDY0NCBEb2N1
+bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvcG93ZXIvZGE5MTUwLWZnLnR4dA0KPiA+ID4g
+IGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL3Bvd2VyL2RhOTE1MC1mZy5jDQo+ID4NCj4gPiBJ
+IHN1Z2dlc3QsIHRoYXQgeW91IHRha2UgdGhlIHdob2xlIHBhdGNoc2V0IHZpYSB0aGUgbWZkIHRy
+ZWUuDQo+IA0KPiBUaGF0J3MgZmluZSwgYnV0IEknbSBzdGlsbCBtaXNzaW5nIGFuIEFjayBmb3Ig
+cGF0Y2ggNC4NCg0KSGkgTGVlLA0KDQpJIGJlbGlldmUgYWxsIHBhdGNoZXMgYXJlIG5vdyBhY2tl
+ZC4gSXMgdGhlcmUgYW55dGhpbmcgZWxzZSBuZWVkZWQgdG8gaGVscCB0aGlzDQphbG9uZz8NCg0K
+VGhhbmtzDQpBZGFtDQo=
