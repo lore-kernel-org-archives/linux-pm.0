@@ -1,46 +1,103 @@
-From: "Opensource [Adam Thomson]" <Adam.Thomson.Opensource@diasemi.com>
-Subject: RE: [PATCH v5 0/6] Add support for DA9150 Fuel-Gauge
-Date: Wed, 30 Sep 2015 08:52:36 +0000
-Message-ID: <2E89032DDAA8B9408CB92943514A0337D46067BA@SW-EX-MBX01.diasemi.com>
-References: <cover.1441964153.git.Adam.Thomson.Opensource@diasemi.com>
- <20150922160405.GC4235@earth> <20150922171032.GH11284@x1>
+From: Hanjun Guo <guohanjun@huawei.com>
+Subject: Re: [PATCH v5 0/5] Provide better MADT subtable sanity checks
+Date: Wed, 30 Sep 2015 17:00:57 +0800
+Message-ID: <560BA4C9.7090607@huawei.com>
+References: <1443570346-15378-1-git-send-email-al.stone@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150922171032.GH11284@x1>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>
-Cc: "Opensource [Adam Thomson]" <Adam.Thomson.Opensource@diasemi.com>, Samuel Ortiz <sameo@linux.intel.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1443570346-15378-1-git-send-email-al.stone@linaro.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Al Stone <al.stone@linaro.org>, linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: linaro-kernel@lists.linaro.org, linux-ia64@vger.kernel.org, patches@linaro.org, linux-pm@vger.kernel.org, linaro-acpi@lists.linaro.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gU2VwdGVtYmVyIDIyLCAyMDE1IDE4OjExLCBMZWUgSm9uZXMgd3JvdGU6DQoNCj4gT24gVHVl
-LCAyMiBTZXAgMjAxNSwgU2ViYXN0aWFuIFJlaWNoZWwgd3JvdGU6DQo+ID4gT24gRnJpLCBTZXAg
-MTEsIDIwMTUgYXQgMTE6MDU6MjFBTSArMDEwMCwgQWRhbSBUaG9tc29uIHdyb3RlOg0KPiA+ID4g
-VGhpcyBwYXRjaCBzZXQgYWRkcyBzdXBwb3J0IGZvciB0aGUgRGlhbG9nIERBOTE1MCBGdWVsLUdh
-dWdlLg0KPiA+ID4NCj4gPiA+IFsuLi5dDQo+ID4gPg0KPiA+ID4gQWRhbSBUaG9tc29uICg2KToN
-Cj4gPiA+ICAgbWZkOiBkYTkxNTA6IEFkZCBzdXBwb3J0IGZvciBGdWVsLUdhdWdlDQo+ID4gPiAg
-IG1mZDogZGE5MTUwOiBVcGRhdGUgRFQgYmluZGluZ3MgZm9yIEZ1ZWwtR2F1Z2Ugc3VwcG9ydA0K
-PiA+ID4gICBwb3dlcjogQWRkIHN1cHBvcnQgZm9yIERBOTE1MCBGdWVsLUdhdWdlDQo+ID4gPiAg
-IHBvd2VyOiBkYTkxNTA6IEFkZCBEVCBiaW5kaW5ncyBkb2N1bWVudGF0aW9uIGZvciBGdWVsLUdh
-dWdlDQo+ID4gPiAgIG1mZDogZGE5MTUwOiBVc2UgcmVsYXRpdmUgcGF0aHMgaW4gRFQgYmluZGlu
-Z3MgZG9jdW1lbnQNCj4gPiA+ICAgbWZkOiBkYTkxNTA6IFVzZSBERUZJTkVfUkVTX0lSUV9OQU1F
-RCgpIGhlbHAgbWFjcm8gZm9yIElSUSByZXNvdXJjZQ0KPiA+ID4NCj4gPiA+ICBEb2N1bWVudGF0
-aW9uL2RldmljZXRyZWUvYmluZGluZ3MvbWZkL2RhOTE1MC50eHQgICB8ICAzMyArLQ0KPiA+ID4g
-IC4uLi9kZXZpY2V0cmVlL2JpbmRpbmdzL3Bvd2VyL2RhOTE1MC1mZy50eHQgICAgICAgIHwgIDIz
-ICsNCj4gPiA+ICBkcml2ZXJzL21mZC9kYTkxNTAtY29yZS5jICAgICAgICAgICAgICAgICAgICAg
-ICAgICB8IDE5MSArKysrKy0tDQo+ID4gPiAgZHJpdmVycy9wb3dlci9LY29uZmlnICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgfCAgMTAgKw0KPiA+ID4gIGRyaXZlcnMvcG93ZXIvTWFrZWZp
-bGUgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgICAxICsNCj4gPiA+ICBkcml2ZXJzL3Bv
-d2VyL2RhOTE1MC1mZy5jICAgICAgICAgICAgICAgICAgICAgICAgICB8IDU3OCArKysrKysrKysr
-KysrKysrKysrKysNCj4gPiA+ICBpbmNsdWRlL2xpbnV4L21mZC9kYTkxNTAvY29yZS5oICAgICAg
-ICAgICAgICAgICAgICB8ICAxOSArLQ0KPiA+ID4gIDcgZmlsZXMgY2hhbmdlZCwgODEwIGluc2Vy
-dGlvbnMoKyksIDQ1IGRlbGV0aW9ucygtKQ0KPiA+ID4gIGNyZWF0ZSBtb2RlIDEwMDY0NCBEb2N1
-bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvcG93ZXIvZGE5MTUwLWZnLnR4dA0KPiA+ID4g
-IGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2ZXJzL3Bvd2VyL2RhOTE1MC1mZy5jDQo+ID4NCj4gPiBJ
-IHN1Z2dlc3QsIHRoYXQgeW91IHRha2UgdGhlIHdob2xlIHBhdGNoc2V0IHZpYSB0aGUgbWZkIHRy
-ZWUuDQo+IA0KPiBUaGF0J3MgZmluZSwgYnV0IEknbSBzdGlsbCBtaXNzaW5nIGFuIEFjayBmb3Ig
-cGF0Y2ggNC4NCg0KSGkgTGVlLA0KDQpJIGJlbGlldmUgYWxsIHBhdGNoZXMgYXJlIG5vdyBhY2tl
-ZC4gSXMgdGhlcmUgYW55dGhpbmcgZWxzZSBuZWVkZWQgdG8gaGVscCB0aGlzDQphbG9uZz8NCg0K
-VGhhbmtzDQpBZGFtDQo=
+On 2015/9/30 7:45, Al Stone wrote:
+> NB: this patch set is for use against the linux-pm bleeding edge branch.
+>
+> Currently, the BAD_MADT_ENTRY macro is used to do a very simple sanity
+> check on the various subtables that are defined for the MADT.  The check
+> compares the size of the subtable data structure as defined by ACPICA to
+> the length entry in the subtable.  If they are not the same, the assumption
+> is that the subtable is incorrect.
+>
+> Over time, the ACPI spec has allowed for MADT subtables where this can
+> never be true (the local SAPIC subtable, for example).  Or, more recently,
+> the spec has accumulated some minor flaws where there are three possible 
+> sizes for a subtable, all of which are valid, but only for specific versions
+> of the spec (the GICC subtable).  In both cases, BAD_MADT_ENTRY reports these
+> subtables as bad when they are not.  In order to retain some sanity check
+> on the MADT subtables, we now have to special case these subtables.  Of
+> necessity, these special cases have ended up in arch-dependent code (arm64)
+> or an arch has simply decided to forgo the check (ia64).
+>
+> This patch set replaces the BAD_MADT_ENTRY macro with a function called
+> bad_madt_entry().  This function uses a data set of details about the
+> subtables to provide more sanity checking than before:
+>
+> 	-- is the subtable legal for the version given in the FADT?
+>
+> 	-- is the subtable legal for the revision of the MADT in use?
+>
+> 	-- is the subtable of the proper length (including checking
+> 	   on the one variable length subtable that is currently ignored),
+> 	   given the FADT version and the MADT revision?
+>
+> Further, this patch set adds in the call to bad_madt_entry() from the 
+> acpi_table_parse_madt() function, allowing it to be used consistently
+> by all architectures, for all subtables, and removing the need for each
+> of the subtable traversal callback functions to use BAD_MADT_ENTRY.
+>
+> In theory, as the ACPI specification changes, we would only have to add
+> additional information to the data set describing the MADT subtables in
+> order to continue providing sanity checks, even when new subtables are
+> added.
+>
+> These patches have been tested on an APM Mustang (arm64) and are known to
+> work there.  They have also been cross-compiled for x86 and ia64 with no
+> known failures.
+>
+> Changes for v5:
+>    -- 0-day found incorrect data in the table describing allowed MADT
+>       subtables; this only affected ACPI 1.0 firmware.  Corrected the
+>       data to meet the 1.0b spec.
+>    -- Rebase to bleeding-edge branch for Rafael Wysocki; this patch set
+>       now requires that a patch set from Marc Zyngier be applied first:
+>       https://lkml.org/lkml/2015/9/28/421
+>    -- Tested on AMD Seattle (linux-pm tree) also
+>
+> Changes for v4:
+>    -- Remove extraneous white space change (Graeme Gregory)
+>    -- acpi_parse_entries() changes also needed a check to make sure that
+>       only MADT entries used bad_madt_entry() (Sudeep Holla)
+>    -- inadvertent use of 01day build noted that bad_madt_entry() can be
+>       static, so added it (Sudeep Holla, Fengguang Wu)
+>
+> Changes for v3:
+>    -- Reviewed-and-tested-by from Sudeep Holla for arm64 parts
+>    -- Clearer language in error messages (Graeme Gregory, Timur Tabi)
+>    -- Double checked that inserting call to bad_madt_entry() into the
+>       function acpi_parse_entries() does not impact current behavior
+>       (Sudeep Holla)
+>    
+> Changes for v2:
+>    -- Acked-by on 2/5 from Marc Zyngier and Catalin Marinas for ARM
+>    -- Correct faulty end of loop test found by Timur Tabi
+>
+>
+> Al Stone (5):
+>   ACPI: add in a bad_madt_entry() function to eventually replace the
+>     macro
+>   ACPI / ARM64: remove usage of BAD_MADT_ENTRY/BAD_MADT_GICC_ENTRY
+>   ACPI / IA64: remove usage of BAD_MADT_ENTRY
+>   ACPI / X86: remove usage of BAD_MADT_ENTRY
+>   ACPI: remove definition of BAD_MADT_ENTRY macro
+
+For this patch set,
+
+Reviewed-by: Hanjun Guo <hanjun.guo@linaro.org>
+
+Thanks
+Hanjun
+
