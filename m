@@ -1,95 +1,69 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH RFC RFT 2/3] clk: clk_put WARNs if user has not disabled clk
-Date: Wed, 30 Sep 2015 17:38:46 +0200
-Message-ID: <CAMuHMdX8Fq3AfxuZMLe4-CYFzrDiQcwnREQhX5fSGXzYNSkKsA@mail.gmail.com>
-References: <1438974570-20812-1-git-send-email-mturquette@baylibre.com>
-	<1438974570-20812-3-git-send-email-mturquette@baylibre.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC 0/3] sched/idle: run-time support for setting idle polling
+Date: Wed, 30 Sep 2015 17:48:35 +0200
+Message-ID: <20150930154835.GP3604@twins.programming.kicks-ass.net>
+References: <1442954062-28578-1-git-send-email-lcapitulino@redhat.com>
+ <1593595.NpzC8TsdGC@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <1438974570-20812-3-git-send-email-mturquette@baylibre.com>
-Sender: linux-clk-owner@vger.kernel.org
-To: Michael Turquette <mturquette@baylibre.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Sascha Hauer <s.hauer@pengutronix.de>, Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>, Tony Lindgren <tony@atomide.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1593595.NpzC8TsdGC@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Luiz Capitulino <lcapitulino@redhat.com>, linux-kernel@vger.kernel.org, riel@redhat.com, rafael.j.wysocki@intel.com, mingo@kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Mike,
-
-On Fri, Aug 7, 2015 at 9:09 PM, Michael Turquette
-<mturquette@baylibre.com> wrote:
-> From the clk_put kerneldoc in include/linux/clk.h:
+On Wed, Sep 23, 2015 at 03:17:59AM +0200, Rafael J. Wysocki wrote:
+> On Tuesday, September 22, 2015 04:34:19 PM Luiz Capitulino wrote:
+> > Hi,
+> 
+> Hi,
+> 
+> Please always CC patches related to power management to linux-pm@vger.kernel.org.
 >
-> """
-> Note: drivers must ensure that all clk_enable calls made on this clock
-> source are balanced by clk_disable calls prior to calling this function.
-> """
->
-> The common clock framework implementation of the clk.h api has per-user
-> reference counts for calls to clk_prepare and clk_disable. As such it
-> can enforce the requirement to properly call clk_disable and
-> clk_unprepare before calling clk_put.
->
-> Because this requirement is probably violated in many places, this patch
-> starts with a simple warning. Once offending code has been fixed this
-> check could additionally release the reference counts automatically.
->
-> Signed-off-by: Michael Turquette <mturquette@baylibre.com>
-> ---
->  drivers/clk/clk.c | 8 ++++++++
->  1 file changed, 8 insertions(+)
->
-> diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
-> index 72feee9..6ec0f77 100644
-> --- a/drivers/clk/clk.c
-> +++ b/drivers/clk/clk.c
-> @@ -2764,6 +2764,14 @@ void __clk_put(struct clk *clk)
->             clk->max_rate < clk->core->req_rate)
->                 clk_core_set_rate_nolock(clk->core, clk->core->req_rate);
->
-> +       /*
-> +        * before calling clk_put, all calls to clk_prepare and clk_enable from
-> +        * a given user must be balanced with calls to clk_disable and
-> +        * clk_unprepare by that same user
-> +        */
-> +       WARN_ON(clk->prepare_count);
-> +       WARN_ON(clk->enable_count);
+> Also CCing Len Brown who's the maintainer of the intel_idle driver and Peter Z.
 
-These two WARN_ON()s are triggered a lot when using a legacy clock domain,
-and CONFIG_PM=n. Indeed, without Runtime PM, the idea is that the module clocks
-get enabled unconditionally, which violates the assumptions above.
+And the sched people for touching kernel/sched (thanks Rafael)!
 
-Cfr. the CONFIG_PM=n version of pm_clk_notify() in
-drivers/base/power/clock_ops.c, which calls enable_clock():
+> > Some archs allow the system administrator to set the
+> > idle thread behavior to spin instead of entering
+> > sleep states. The x86 arch, for example, has a idle=
+> > command-line parameter for this purpose.
+> > 
+> > However, the command-line parameter has two problems:
+> > 
+> >  1. You have to reboot if you change your mind
+> >  2. This setting affects all system cores
+> > 
+> > The second point is relevant for systems where cores
+> > are partitioned into bookkeeping and low-latency cores.
+> > Usually, it's OK for bookkeeping cores to enter deeper
+> > sleep states. It's only the low-latency cores that should
+> > poll when entering idle.
+> 
+> This looks like a use case for PM QoS to me rather.  You'd need to make it
+> work per-CPU rather than globally, but that really is about asking for
+> minimum latency.
 
-    /**
-     * enable_clock - Enable a device clock.
-     * @dev: Device whose clock is to be enabled.
-     * @con_id: Connection ID of the clock.
-     */
-    static void enable_clock(struct device *dev, const char *con_id)
-    {
-            struct clk *clk;
+Agreed, this should very much hook into the PM QoS stuff.
 
-            clk = clk_get(dev, con_id);
-            if (!IS_ERR(clk)) {
-                    clk_prepare_enable(clk);
-                    clk_put(clk);
-                    dev_info(dev, "Runtime PM disabled, clock forced on.\n");
-            }
-    }
+> 
+> > This series adds the following file:
+> > 
+> >  /sys/devices/system/cpu/cpu_idle
+> > 
+> > This file outputs and stores a cpumask of the cores
+> > which will have idle polling behavior.
+> 
+> I don't like this interface at all.
+> 
+> You have a cpuidle directory per core already, so what's the reason to add an
 
-I think this affects shmobile, keystone, davinci, omap1, and legacy sh.
+Yeah this should very much not be exposed like this.
 
-Sorry for not noticing before, we usually build with CONFIG_PM=y.
-One more reason for making CONFIG_PM=y mandatory on SoCs with clock domains?
+Ideally every cpuidle driver would get 'polling' as a
+default state and the QoS constraints might select it if nothing else
+matches.
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+And no mucking about with the force polling flag at _all_.
