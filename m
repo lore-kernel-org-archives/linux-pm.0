@@ -1,68 +1,53 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: cpupower reports uninitialized values for offline cpus
-Date: Wed, 30 Sep 2015 18:23:58 +0200
-Message-ID: <2397035.37ChXSYNtU@skinner>
-References: <560ADF55.6090901@redhat.com> <560AF3CB.1090401@redhat.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
+ SpeedStep enabled
+Date: Wed, 30 Sep 2015 16:52:27 +0000
+Message-ID: <bug-103351-137361-Dm7f70wPhh@https.bugzilla.kernel.org/>
+References: <bug-103351-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:47977 "EHLO mx2.suse.de"
+Received: from mail.kernel.org ([198.145.29.136]:43808 "EHLO mail.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754459AbbI3QYA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 30 Sep 2015 12:24:00 -0400
-In-Reply-To: <560AF3CB.1090401@redhat.com>
+	id S1752673AbbI3Qwc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 30 Sep 2015 12:52:32 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+	by mail.kernel.org (Postfix) with ESMTP id 94E1120668
+	for <linux-pm@vger.kernel.org>; Wed, 30 Sep 2015 16:52:31 +0000 (UTC)
+Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
+	by mail.kernel.org (Postfix) with ESMTP id AB4B4206DC
+	for <linux-pm@vger.kernel.org>; Wed, 30 Sep 2015 16:52:29 +0000 (UTC)
+In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Prarit Bhargava <prarit@redhat.com>
-Cc: Jacob Tanenbaum <jtanenba@redhat.com>, linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-On Tuesday, September 29, 2015 04:25:47 PM Prarit Bhargava wrote:
-> On 09/29/2015 02:58 PM, Jacob Tanenbaum wrote:
-> > Hi guys,
-> > 
-> > I have found a bug in the cpupower tool. In the most recent pull of
-> > linus's tree cpupower reports bogus information for offlined cpus.
-...
-> Thomas,
+https://bugzilla.kernel.org/show_bug.cgi?id=103351
+
+--- Comment #27 from kernel@benjam.info <kernel@benjam.info> ---
+(In reply to matthew.dewitt from comment #26)
+> Created attachment 189091 [details]
+> attachment-9832-0.html
 > 
-> I'm not sure I see any benefit in reporting the offline cpu status here.
-There have been discussions to use CPU offlining as a power saving mechanism.
-This is afaik no real option on x86, at least not too frequent, but it could
-be on other archs?
-So the info would be nice to have...
+> Can someone post a link to clear instructions on the microcode update with
+> 5700HQ, so folks who haven't done this before can get it resolved? Thanks!
 
-> We
-> could I suppose output a message at the beginning of the output to indicate
-> that some cpus have been hotplugged, but I'm not sure that is even
-> necessary.
-Yep, just that people do not complain that cores are missing...
-May make sense.
- 
-> I would prefer changing cpupower to reporting only online CPUs, but there's
-> probably some situation I'm unaware of that we need to report offline cpu
-> status.
-> >   2. When printing the results check if the cpu is offline and if it is
-> >   obscure> 
-> > the incorrect information and change the cpu->pkg
-> >      value to reflect all sockets with at least one online cpu.
+1. Check what microcode version you have by running `grep microcode
+/proc/cpuinfo`
+2. Extract the tarfile.
+3. Install iucode-tool.
+4. For each .bin file that was in the tarfile, run iucode-tool over it. For
+example, `sudo iucode-tool 2494656.bin`. You can pass multiple files at once to
+iucode-tool, so you could alternatively just run something like `sudo
+iucode-tool *.bin`
+5. Check if your version of the microcode has changed with `grep microcode
+/proc/cpuinfo`
+6. If your version of the microcode changed, then hopefully your issue is
+fixed. Make sure to re-run step 4 every time after you reboot, until your
+distribution's intel-microcode package is updated, or until you get a UEFI
+update.
 
-Hm, not sure how difficult to implement that is right now, but IMO info should
-be set to -1 if the files do not exist or initialized with -1.
-In this case there is no sane info to show and the cores need not to show up.
-
-> 
-> This is papering over the issue IMO, but still an option.
-> 
-> >   3. Change the sysfs to retain topology data for offlined cpus, may
-> >   require
-
-I had a quick look. I think this could be done.
-/sys/devices/system/cpu/cpu*/cpuidle
-also is kept, not sure why, because I cannot see any advantage to access
-this info on an offlined CPU.
-
-But reading the topology of offlined CPUs makes sense.
-Argh, but yes. For real on-/offlining this is hard...
-
-    Thomas
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
