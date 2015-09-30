@@ -1,246 +1,191 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v6 1/2] PM / sleep: Go direct_complete if driver has no callbacks
-Date: Wed, 30 Sep 2015 03:54:04 +0200
-Message-ID: <4510775.Blnf0hBMfL@vostro.rjw.lan>
-References: <1443540774-5286-1-git-send-email-tomeu.vizoso@collabora.com> <1443540774-5286-2-git-send-email-tomeu.vizoso@collabora.com>
+From: "Zheng, Lv" <lv.zheng@intel.com>
+Subject: [RFC] ECDT support in early stage
+Date: Wed, 30 Sep 2015 03:31:57 +0000
+Message-ID: <1AE640813FDE7649BE1B193DEA596E88340673F9@SHSMSX101.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:61831 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752534AbbI3BZo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Sep 2015 21:25:44 -0400
-In-Reply-To: <1443540774-5286-2-git-send-email-tomeu.vizoso@collabora.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "Moore, Robert" <robert.moore@intel.com>, "Brown, Len" <len.brown@intel.com>
+Cc: Maxim Levitsky <maximlevitsky@gmail.com>, Ryan Underwood <nemesis@icequake.net>, Eddy Petri?or <eddy.petrisor+linbug@gmail.com>, John Morris <mailjohnmorris@gmail.com>, Alex Shumakovitch <shurik@gwu.edu>, "admin@movzx.org" <admin@movzx.org>, Milo Casagrande <milo_casagrande@yahoo.it>, "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>, Jiri Kosina <jikos@jikos.cz>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, martyn.welch@collabora.co.uk, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>, Ulf Hansson <ulf.hansson@linaro.org>
 
-On Tuesday, September 29, 2015 05:32:53 PM Tomeu Vizoso wrote:
-> If a suitable prepare callback cannot be found for a given device and
-> its driver has no PM callbacks at all, assume that it can go direct to
-> complete when the system goes to sleep.
-> 
-> The reason for this is that there's lots of devices in a system that do
-> no PM at all and there's no reason for them to prevent their ancestors
-> to do direct_complete if they can support it.
-> 
-> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-> ---
-> 
-> Changes in v6:
-> - Add stub for !CONFIG_PM.
-> - Move implementation of device_check_pm_callbacks to power/main.c as it
->   doesn't belong to CONFIG_PM_SLEEP.
-> - Take dev->power.lock before modifying flag.
-> 
-> Changes in v5:
-> - Check for all dev_pm_ops instances associated to a device, updating a
->   no_pm_callbacks flag at the times when that could change.
-> 
->  drivers/base/dd.c           |  3 +++
->  drivers/base/power/common.c | 27 +++++++++++++++++++++++++++
->  drivers/base/power/domain.c |  5 +++++
->  drivers/base/power/main.c   | 44 +++++++++++++++++++++++++-------------------
->  drivers/base/power/power.h  |  6 ++++++
->  include/linux/pm.h          |  1 +
->  6 files changed, 67 insertions(+), 19 deletions(-)
-> 
-> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-> index be0eb4639128..fe0e9cb684b8 100644
-> --- a/drivers/base/dd.c
-> +++ b/drivers/base/dd.c
-> @@ -205,6 +205,8 @@ static void driver_bound(struct device *dev)
->  
->  	klist_add_tail(&dev->p->knode_driver, &dev->driver->p->klist_devices);
->  
-> +	device_check_pm_callbacks(dev);
-> +
->  	/*
->  	 * Make sure the device is no longer in one of the deferred lists and
->  	 * kick off retrying all pending devices
-> @@ -695,6 +697,7 @@ static void __device_release_driver(struct device *dev)
->  			dev->pm_domain->dismiss(dev);
->  
->  		klist_remove(&dev->p->knode_driver);
-> +		device_check_pm_callbacks(dev);
->  		if (dev->bus)
->  			blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
->  						     BUS_NOTIFY_UNBOUND_DRIVER,
-> diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
-> index f32b802b98f4..1bba85f8bf8a 100644
-> --- a/drivers/base/power/common.c
-> +++ b/drivers/base/power/common.c
-> @@ -128,3 +128,30 @@ void dev_pm_domain_detach(struct device *dev, bool power_off)
->  		dev->pm_domain->detach(dev, power_off);
->  }
->  EXPORT_SYMBOL_GPL(dev_pm_domain_detach);
-> +
-> +static bool pm_ops_is_empty(const struct dev_pm_ops *ops)
-> +{
-> +	if (!ops)
-> +		return true;
-> +
-> +	return !ops->prepare &&
-> +	       !ops->suspend &&
-> +	       !ops->suspend_late &&
-> +	       !ops->suspend_noirq &&
-> +	       !ops->resume_noirq &&
-> +	       !ops->resume_early &&
-> +	       !ops->resume &&
-> +	       !ops->complete;
-> +}
-> +
-> +void device_check_pm_callbacks(struct device *dev)
-> +{
-> +	spin_lock_irq(&dev->power.lock);
-> +	dev->power.no_pm_callbacks =
-> +		(!dev->bus || pm_ops_is_empty(dev->bus->pm)) &&
-> +		(!dev->class || pm_ops_is_empty(dev->class->pm)) &&
-> +		(!dev->type || pm_ops_is_empty(dev->type->pm)) &&
-> +		(!dev->pm_domain || pm_ops_is_empty(&dev->pm_domain->ops)) &&
-> +		(!dev->driver || pm_ops_is_empty(dev->driver->pm));
-> +	spin_unlock_irq(&dev->power.lock);
-> +}
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 16550c63d611..3cae1aa1885b 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -20,6 +20,8 @@
->  #include <linux/suspend.h>
->  #include <linux/export.h>
->  
-> +#include "power.h"
-> +
->  #define GENPD_RETRY_MAX_MS	250		/* Approximate */
->  
->  #define GENPD_DEV_CALLBACK(genpd, type, callback, dev)		\
-> @@ -1305,6 +1307,7 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
->  
->  	list_add_tail(&gpd_data->base.list_node, &genpd->dev_list);
->  
-> +	device_check_pm_callbacks(dev);
->   out:
->  	mutex_unlock(&genpd->lock);
->  
-> @@ -1369,6 +1372,8 @@ int pm_genpd_remove_device(struct generic_pm_domain *genpd,
->  
->  	genpd_free_dev_data(dev, gpd_data);
->  
-> +	device_check_pm_callbacks(dev);
-> +
->  	return 0;
->  
->   out:
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index 1710c26ba097..8f9cdaf21ee4 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -131,6 +131,8 @@ void device_pm_add(struct device *dev)
->  			dev_name(dev->parent));
->  	list_add_tail(&dev->power.entry, &dpm_list);
->  	mutex_unlock(&dpm_list_mtx);
-> +
-> +	device_check_pm_callbacks(dev);
->  }
->  
->  /**
-> @@ -1569,27 +1571,31 @@ static int device_prepare(struct device *dev, pm_message_t state)
->  
->  	dev->power.wakeup_path = device_may_wakeup(dev);
->  
-> -	if (dev->pm_domain) {
-> -		info = "preparing power domain ";
-> -		callback = dev->pm_domain->ops.prepare;
-> -	} else if (dev->type && dev->type->pm) {
-> -		info = "preparing type ";
-> -		callback = dev->type->pm->prepare;
-> -	} else if (dev->class && dev->class->pm) {
-> -		info = "preparing class ";
-> -		callback = dev->class->pm->prepare;
-> -	} else if (dev->bus && dev->bus->pm) {
-> -		info = "preparing bus ";
-> -		callback = dev->bus->pm->prepare;
-> -	}
-> +	if (dev->power.no_pm_callbacks)
-> +		ret = 1;	/* Let device go direct_complete */
+There are many ECDT quirks in drivers/acpi/ec.c.
 
-Braces here, please.
+I tracked the commit log back to learn what was happening on each ECDT related commits.
 
-Plus I'd rather jump to a new label from here to avoid the extra indentation
-and the patch would be simpler then.
+My observation result is:
+For ACPI 2.0+ compliant platforms, where ECDT may be introduced, the BIOSes that
+contain the ECDT will make the named object's value that originally is flagged in
+EC._REG() flagged very early (either default is flagged or flagged in _SB._INI) in order
+to have all _INI control methods invoked with EC operation region accessibility ready.
+This is one of the key ACPI 2.0 features.
+And this implies that, for ACPI 2.0+, before executing all _INI control methods, BIOSes
+have already a deal with OSPMs in the spec that there shouldn't be any control methods
+executed before _SB._INI. In other words, for EC, in order to support ECDT in early stage,
+when ECDT is probed, it:
+1. Shouldn't enable GPE in order not to execute any _Lxx/_Exx;
+2. Shouldn't handle SCI_EVT in order not to execute any _Qxx;
+3. Shouldn't invoke _REG but should still make the region handler ready;
+4. Shouldn't visit any namespace objects (either _GPE/_CRS or the EC device itself)
+    since it shouldn't think the namespace is ready at this point.
 
-> +	else {
-> +		if (dev->pm_domain) {
-> +			info = "preparing power domain ";
-> +			callback = dev->pm_domain->ops.prepare;
-> +		} else if (dev->type && dev->type->pm) {
-> +			info = "preparing type ";
-> +			callback = dev->type->pm->prepare;
-> +		} else if (dev->class && dev->class->pm) {
-> +			info = "preparing class ";
-> +			callback = dev->class->pm->prepare;
-> +		} else if (dev->bus && dev->bus->pm) {
-> +			info = "preparing bus ";
-> +			callback = dev->bus->pm->prepare;
-> +		}
->  
-> -	if (!callback && dev->driver && dev->driver->pm) {
-> -		info = "preparing driver ";
-> -		callback = dev->driver->pm->prepare;
-> -	}
-> +		if (!callback && dev->driver && dev->driver->pm) {
-> +			info = "preparing driver ";
-> +			callback = dev->driver->pm->prepare;
-> +		}
->  
-> -	if (callback)
-> -		ret = callback(dev);
-> +		if (callback)
-> +			ret = callback(dev);
-> +	}
->  
->  	device_unlock(dev);
->  
-> diff --git a/drivers/base/power/power.h b/drivers/base/power/power.h
-> index 998fa6b23084..f665a7850016 100644
-> --- a/drivers/base/power/power.h
-> +++ b/drivers/base/power/power.h
-> @@ -29,6 +29,8 @@ struct wake_irq {
->  extern void dev_pm_arm_wake_irq(struct wake_irq *wirq);
->  extern void dev_pm_disarm_wake_irq(struct wake_irq *wirq);
->  
-> +extern void device_check_pm_callbacks(struct device *dev);
-> +
->  #ifdef CONFIG_PM_SLEEP
->  
->  extern int device_wakeup_attach_irq(struct device *dev,
-> @@ -102,6 +104,10 @@ static inline void dev_pm_disarm_wake_irq(struct wake_irq *wirq)
->  {
->  }
->  
-> +static inline void device_check_pm_callbacks(struct device *dev)
-> +{
-> +}
-> +
->  #endif
->  
->  #ifdef CONFIG_PM_SLEEP
-> diff --git a/include/linux/pm.h b/include/linux/pm.h
-> index 35d599e7250d..e334b9b8cd46 100644
-> --- a/include/linux/pm.h
-> +++ b/include/linux/pm.h
-> @@ -566,6 +566,7 @@ struct dev_pm_info {
->  	bool			ignore_children:1;
->  	bool			early_init:1;	/* Owned by the PM core */
->  	bool			direct_complete:1;	/* Owned by the PM core */
-> +	bool			no_pm_callbacks:1;	/* Owned by the PM core */
->  	spinlock_t		lock;
->  #ifdef CONFIG_PM_SLEEP
->  	struct list_head	entry;
-> 
+Here is the details:
 
-Thanks,
-Rafael
+1. Pre-loaded DSDT EC
+   Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=9916
+   Reporter: Jiri Kosina <jikos@jikos.cz>
+   Machine: Lenovo ThinkPad X61s
+   DSDT: \_SB.PCI0.LPC.EC
+   ECDT: \_SB.PCI0.LPC.EC
+   _REG: Store(Arg1, \H8DR)
+   \_H8DR: Default is Zero, set to One very early in \_SB._INI when _REV >= 2.
+   Root cause: Shouldn't register EC GPE handler in early stage.
+   Old fix: http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=208c70a
+   New fix: http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=2044702
 
+It looks to me that:
+1. The commit 208c70a is wrong, it shouldn't invoke acpi_get_handle() here.
+2. The commit 2044702 is correct, it avoids executing control methods during early stage.
+
+2. Pre-loaded DSDT EC is broken/reworked
+   Bugzilla: http://bugzilla.kernel.org/show_bug.cgi?id=10100
+             https://lkml.org/lkml/2008/2/25/282
+   Reporter: Michael S. Tsirkin <m.s.tsirkin@gmail.com>
+   Machine: Lenovo ThinkPad T61p
+            DSDT: https://lkml.org/lkml/2008/2/25/337
+   Root cause: Shouldn't register _Qxx handlers in early stage.
+   DSDT: \_SB.PCI0.LPC.EC
+   ECDT: \_SB.PCI0.LPC.EC
+   _REG: Store(Arg1, \H8DR)
+   \_H8DR: Default is Zero, set to One very early in \_SB._INI when _REV >= 2.
+   Old Fix: http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=4af8e10
+   New fix: http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=ce52ddf
+
+It looks to me that:
+1. The commit 4af8e10 is correct, it reverts wrong commit 208c70a.
+2. The commit ce52ddf is wrong, it splits the _Qxx registration from ec_parse_devices() while it really should be there,
+     and again invokes acpi_get_handle() in early stage.
+
+Lenovo ThinkPad X61s and T61p are also good ECDT support examples that:
+If OSPMs support ACPI 2.0, EC is accessible in AML before executing its _REG.
+EC accessibility thus is ready very early in \_SB._INI so that all _INI control methods can access EC.
+
+3. Wrong ECDT - reversed
+   Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=9399
+   Reporter: Milo Casagrande <milo_casagrande@yahoo.it>
+   Machine: Asus L4R, Asus M6R
+   DSDT: \_SB.PCI0.SBRG.EC0
+   ECDT: \_SB.PCI0.SBRG.EC0
+   _REG: Store (Arg1, \_SB.PCI0.SBRG.EC0.REGC)
+   \_SB.PCI0.SBRG.EC0.REGC: Default is Zero, returned from \_SB.PCI0.SBRG.EC0.ECAV.
+   \_SB.PCI0.SBRG.EC0.ECAV: Return One  If (_REG(0x03, Ones) && _REV >= 2) || _REG(0x03,  One)
+                            Return Zero If (_REG(0x03, Ones) && _REV <  2) || _REG(0x03, zero)
+                            When ECAV returns Zero, sometimes port 0x66 (EC command/status register) is directly accessed, sometimes no-op.
+   Root cause: ECDT is broken. The command/data IO port addresses are reversed.
+   Old fix: http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=2500822
+   New fix: http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=c6cb0e8
+
+It looks to me that:
+1. The commit 2500822 is good, it adds quirks for the root cause.
+2. The commit c6cb0e8 is wrong, it makes the platform working by use namespace EC
+     instead of ECDT EC which make the early namespace referencing problem more serious.
+
+For this platform, it looks _REG(0x03, Ones) may be invoked by an OEM driver.
+So we may not fix this platform using such a kind of quirk.
+If we want to add quirk for this platform in Linux,  we may just make sure:
+  EC data register address < EC status/command register address
+
+4. Wrong ECDT - dummy
+   Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=11880
+   Reporter: <admin@movzx.org>
+   Machine: Asus X50GL
+   DSDT: \_SB.PCI0.SBRG.EC0
+   ECDT: \_SB.PCI0.ISA.EC
+   _REG: Store (Arg1, \_SB.PCI0.SBRG.EC0.ECFL)
+   \_SB.PCI0.SBRG.EC0.ECFL: Default is Ones, returned from \_SB.PCI0.SBRG.EC0.ECAV
+   \_SB.PCI0.SBRG.EC0.ECAV: Return  One If _REV >= 2 || ECFL ==  One
+                            Return Zero If _REV <  2 || ECFL == Ones || ECFL == Zero
+                            When ECAV returns Zero, always no-op.
+   Root cause: ECDT is broken. Both the command/data I/O port addresses and GPE are zero. EC Namepath is incorrect.
+   Old fix: http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=c5279de
+
+It looks to me that:
+1. The commit 2500822 is good, ECDT validation is always needed, but we should
+    abort ECDT probing rather than initializing namespace EC instead or we should override ECDT instead.
+
+By investigation, on this platform, EC accessibility can be ready even earlier than thinkpad.
+As all EC accesses are allowed even before executing \_SB._INI if OSPMs support ACPI 2.0.
+
+5. Limit pre-loaded DSDT EC to Asus
+   Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=11884
+   Reporter: Alex Shumakovitch <shurik@gwu.edu>
+   Machine: HP EliteBook 2730p
+   DSDT: \_SB.PCI0.LPCB.EC0
+   ECDT: N/A
+   Old fix: http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=235c4a5
+
+It looks to me that this is a small coding issue fix.
+See comments for the 9th bug.
+
+6. Wrong ECDT - reversed
+   Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=12461
+   Reporter: John Morris <mailjohnmorris@gmail.com>
+   Machine: MSI MS-171F
+   DSDT: \_SB.PCI0.SBRG.EC0
+   ECDT: \_SB.PCI0.SBRG.EC0
+   _REG: Store (Arg1, \_SB.PCI0.SBRG.EC0.MYEC)
+   \_SB.PCI0.SBRG.MYEC: Default is One.
+   Root cause: ECDT is broken. The command/data IO port addresses are reversed.
+   Old fix: http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=a5032bf
+
+It looks to me that:
+1. The commit a5032bf is wrong, it shouldn't invoke ec_parse_devices() in early stage.
+
+On this platform, EC accessibility can be ready even earlier than thinkpad/asus.
+As all EC accesses are allowed even before loading the DSDT.
+
+7. Broken MSI quirk
+   Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=14081
+   Reporter: Ryan Underwood <nemesis@icequake.net>
+   Machine: HP Pavilion dv2700
+   Root cause: DMI table includes "Notebook" which matches MSI quirk
+   Old fix: http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=0adf3c7
+
+It looks to me that this is a small coding issue fix.
+See comments for the 9th bug.
+
+8. ECDT probe code execute control method too early
+   Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=14086
+   Reporter: Maxim Levitsky <maximlevitsky@gmail.com>
+   Machine: Acer Aspire 5720G
+   DSDT: \LPCB.EC0
+   ECDT: N/A
+   _REG: Store (Arg1, \LPCB.EC0.Z009)
+   Root cause: _REG shouldn't be invoked (but not fixed correctly)
+   Old fix: http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=478fa03
+
+It looks to me that this is a good example that good platforms are broken by the wrong approach (a5032bf).
+And the reporter is so good that he has root caused the issue.
+
+9. Broken MSI quirk
+   Bugzilla: http://bugzilla.kernel.org/show_bug.cgi?id=14446
+   Reporter: Eddy Petri?or <eddy.petrisor+linbug@gmail.com>
+   Machine: MSI S271
+   Root cause: 
+   Old fix: http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=55b313f
+
+It looks to me that this is a small coding issue fix. 
+And 5,7,8,9 looks to me like that good vendors do not want the buggy quirk applying on their platforms.
+
+The early namespace referencing becomes a serious problem affecting others:
+1. After ACPI 2.0, module level AML is actually valid, but this prevents it from
+    being correctly supported.
+2. Since AML interpreter may be executed in early stage where threading is
+     not ready, any AML interpreter fixes need to consider a portable solution for
+     both environments while it needn't be that complicated.
+
+Thanks and best regards
+-Lv
