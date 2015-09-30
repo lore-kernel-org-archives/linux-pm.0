@@ -1,50 +1,95 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH 2/2] PM / sleep: Kick devices that might have been
- reset by firmware
-Date: Wed, 30 Sep 2015 10:46:03 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1509301039270.15216-100000@netrider.rowland.org>
-References: <5732365.XVsXxYIbHS@vostro.rjw.lan>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH RFC RFT 2/3] clk: clk_put WARNs if user has not disabled clk
+Date: Wed, 30 Sep 2015 17:38:46 +0200
+Message-ID: <CAMuHMdX8Fq3AfxuZMLe4-CYFzrDiQcwnREQhX5fSGXzYNSkKsA@mail.gmail.com>
+References: <1438974570-20812-1-git-send-email-mturquette@baylibre.com>
+	<1438974570-20812-3-git-send-email-mturquette@baylibre.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from netrider.rowland.org ([192.131.102.5]:44522 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751695AbbI3OqE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Sep 2015 10:46:04 -0400
-In-Reply-To: <5732365.XVsXxYIbHS@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-Reply-To: <1438974570-20812-3-git-send-email-mturquette@baylibre.com>
+Sender: linux-clk-owner@vger.kernel.org
+To: Michael Turquette <mturquette@baylibre.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Sascha Hauer <s.hauer@pengutronix.de>, Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>, Tony Lindgren <tony@atomide.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Daniel Vetter <daniel.vetter@intel.com>
 
-On Wed, 30 Sep 2015, Rafael J. Wysocki wrote:
+Hi Mike,
 
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> If the platform firmware was involved in the system resume that's
-> being completed, there is a concern that some devices might have
-> been reset by it and if those devices had the power.direct_complete
-> flag set during the preceding suspend transition, they may stay
-> in a reset-power-on state indefinitely (until they are runtime-resumed
-> and then suspended again).  That may not be a big deal from the
-> individual device's perspective, but if the system is an SoC, it may
-> be prevented from entering deep SoC-wide low-power states on idle
-> because of that.
-> 
-> To prevent that from happening, force a runtime resume for devices
-> with power.direct_complete set if the platform firmware was involved
-> in the resume transition currently in progress.
-> 
-> Something similar was done by the ACPI PM domain, but regardless of
-> the platform firmware involvement, and the new mechanism should be
-> sufficient to replace that code, so drop it.
+On Fri, Aug 7, 2015 at 9:09 PM, Michael Turquette
+<mturquette@baylibre.com> wrote:
+> From the clk_put kerneldoc in include/linux/clk.h:
+>
+> """
+> Note: drivers must ensure that all clk_enable calls made on this clock
+> source are balanced by clk_disable calls prior to calling this function.
+> """
+>
+> The common clock framework implementation of the clk.h api has per-user
+> reference counts for calls to clk_prepare and clk_disable. As such it
+> can enforce the requirement to properly call clk_disable and
+> clk_unprepare before calling clk_put.
+>
+> Because this requirement is probably violated in many places, this patch
+> starts with a simple warning. Once offending code has been fixed this
+> check could additionally release the reference counts automatically.
+>
+> Signed-off-by: Michael Turquette <mturquette@baylibre.com>
+> ---
+>  drivers/clk/clk.c | 8 ++++++++
+>  1 file changed, 8 insertions(+)
+>
+> diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+> index 72feee9..6ec0f77 100644
+> --- a/drivers/clk/clk.c
+> +++ b/drivers/clk/clk.c
+> @@ -2764,6 +2764,14 @@ void __clk_put(struct clk *clk)
+>             clk->max_rate < clk->core->req_rate)
+>                 clk_core_set_rate_nolock(clk->core, clk->core->req_rate);
+>
+> +       /*
+> +        * before calling clk_put, all calls to clk_prepare and clk_enable from
+> +        * a given user must be balanced with calls to clk_disable and
+> +        * clk_unprepare by that same user
+> +        */
+> +       WARN_ON(clk->prepare_count);
+> +       WARN_ON(clk->enable_count);
 
-Maybe I'm not reading patch 1/2 correctly, but it looks like an
-ordinary ACPI-based desktop PC will always believe the firmware was
-involved in an S3 sleep transition.  If that's so then won't this
-change defeat all the work being done by people trying to prevent
-unneeded runtime resumes during system resume?  direct_complete would 
-be useful only on non-ACPI systems.
+These two WARN_ON()s are triggered a lot when using a legacy clock domain,
+and CONFIG_PM=n. Indeed, without Runtime PM, the idea is that the module clocks
+get enabled unconditionally, which violates the assumptions above.
 
-Alan Stern
+Cfr. the CONFIG_PM=n version of pm_clk_notify() in
+drivers/base/power/clock_ops.c, which calls enable_clock():
 
+    /**
+     * enable_clock - Enable a device clock.
+     * @dev: Device whose clock is to be enabled.
+     * @con_id: Connection ID of the clock.
+     */
+    static void enable_clock(struct device *dev, const char *con_id)
+    {
+            struct clk *clk;
+
+            clk = clk_get(dev, con_id);
+            if (!IS_ERR(clk)) {
+                    clk_prepare_enable(clk);
+                    clk_put(clk);
+                    dev_info(dev, "Runtime PM disabled, clock forced on.\n");
+            }
+    }
+
+I think this affects shmobile, keystone, davinci, omap1, and legacy sh.
+
+Sorry for not noticing before, we usually build with CONFIG_PM=y.
+One more reason for making CONFIG_PM=y mandatory on SoCs with clock domains?
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
