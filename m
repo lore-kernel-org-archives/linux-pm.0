@@ -1,65 +1,71 @@
-From: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
-Subject: [PATCH v7 0/2] Allow USB devices to remain runtime-suspended when sleeping
-Date: Wed, 30 Sep 2015 11:58:16 +0200
-Message-ID: <1443607098-26666-1-git-send-email-tomeu.vizoso@collabora.com>
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, martyn.welch-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org
-Cc: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Subject: [PATCH v7 2/2] USB / PM: Allow USB devices to remain runtime-suspended when sleeping
+Date: Wed, 30 Sep 2015 11:58:18 +0200
+Message-ID: <1443607098-26666-3-git-send-email-tomeu.vizoso@collabora.com>
+References: <1443607098-26666-1-git-send-email-tomeu.vizoso@collabora.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1443607098-26666-1-git-send-email-tomeu.vizoso@collabora.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, martyn.welch@collabora.co.uk
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Have dev_pm_ops.prepare return 1 for USB devices and ports so that USB
+devices can remain runtime-suspended when the system goes to a sleep
+state, if their wakeup state is correct and they have runtime PM enabled.
 
-this is v7 of an attempt to make it easier for devices to remain in
-runtime PM when the system goes to sleep, mainly to reduce the time
-spent resuming devices.
+Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+---
 
-For this, we interpret the absence of all PM callback implementations as
-it being safe to do direct_complete, so their ancestors aren't prevented
-from remaining runtime-suspended.
 
-Additionally, the prepare() callback of USB devices will return 1 if
-runtime PM is enabled and the current wakeup settings are correct.
+ drivers/usb/core/port.c |  6 ++++++
+ drivers/usb/core/usb.c  | 11 ++++++++++-
+ 2 files changed, 16 insertions(+), 1 deletion(-)
 
-With these changes, a uvcvideo device (for example) stays in runtime
-suspend when the system goes to sleep and is left in that state when the
-system resumes, not delaying it unnecessarily.
-
-Thanks,
-
-Tomeu
-
-Changes in v7:
-- Reduce indentation by adding a label in device_prepare()
-
-Changes in v6:
-- Add stub for !CONFIG_PM.
-- Move implementation of device_check_pm_callbacks to power/main.c as it
-  doesn't belong to CONFIG_PM_SLEEP.
-- Take dev->power.lock before modifying flag.
-
-Changes in v5:
-- Check for all dev_pm_ops instances associated to a device, updating a
-  no_pm_callbacks flag at the times when that could change.
-
-Tomeu Vizoso (2):
-  PM / sleep: Go direct_complete if driver has no callbacks
-  USB / PM: Allow USB devices to remain runtime-suspended when sleeping
-
- drivers/base/dd.c           |  3 +++
- drivers/base/power/common.c | 27 +++++++++++++++++++++++++++
- drivers/base/power/domain.c |  5 +++++
- drivers/base/power/main.c   |  8 ++++++++
- drivers/base/power/power.h  |  6 ++++++
- drivers/usb/core/port.c     |  6 ++++++
- drivers/usb/core/usb.c      | 11 ++++++++++-
- include/linux/pm.h          |  1 +
- 8 files changed, 66 insertions(+), 1 deletion(-)
-
+diff --git a/drivers/usb/core/port.c b/drivers/usb/core/port.c
+index 210618319f10..f49707d73b5a 100644
+--- a/drivers/usb/core/port.c
++++ b/drivers/usb/core/port.c
+@@ -168,12 +168,18 @@ static int usb_port_runtime_suspend(struct device *dev)
+ 
+ 	return retval;
+ }
++
++static int usb_port_prepare(struct device *dev)
++{
++	return 1;
++}
+ #endif
+ 
+ static const struct dev_pm_ops usb_port_pm_ops = {
+ #ifdef CONFIG_PM
+ 	.runtime_suspend =	usb_port_runtime_suspend,
+ 	.runtime_resume =	usb_port_runtime_resume,
++	.prepare =		usb_port_prepare,
+ #endif
+ };
+ 
+diff --git a/drivers/usb/core/usb.c b/drivers/usb/core/usb.c
+index 8d5b2f4113cd..cf4dde11db1c 100644
+--- a/drivers/usb/core/usb.c
++++ b/drivers/usb/core/usb.c
+@@ -316,7 +316,16 @@ static int usb_dev_uevent(struct device *dev, struct kobj_uevent_env *env)
+ 
+ static int usb_dev_prepare(struct device *dev)
+ {
+-	return 0;		/* Implement eventually? */
++	struct usb_device *udev = to_usb_device(dev);
++
++	if (!pm_runtime_enabled(dev))
++		return 0;
++
++	/* Return 0 if the current wakeup setting is wrong, otherwise 1 */
++	if (udev->do_remote_wakeup != device_may_wakeup(dev))
++		return 0;
++
++	return 1;
+ }
+ 
+ static void usb_dev_complete(struct device *dev)
 -- 
 2.4.3
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
