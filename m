@@ -1,206 +1,66 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: [PATCH v7 1/2] PM / sleep: Go direct_complete if driver has no callbacks
-Date: Wed, 30 Sep 2015 11:58:17 +0200
-Message-ID: <1443607098-26666-2-git-send-email-tomeu.vizoso@collabora.com>
-References: <1443607098-26666-1-git-send-email-tomeu.vizoso@collabora.com>
+From: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: [PATCH 2/3] thermal: Add Mediatek thermal controller support
+Date: Wed, 30 Sep 2015 12:37:04 +0200
+Message-ID: <20150930103704.GA7858@pengutronix.de>
+References: <1443015463-23639-1-git-send-email-s.hauer@pengutronix.de>
+ <1443015463-23639-3-git-send-email-s.hauer@pengutronix.de>
+ <9hhpp105jw1.fsf@e105922-lin.cambridge.arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f178.google.com ([209.85.212.178]:35808 "EHLO
-	mail-wi0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932535AbbI3J6z (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Sep 2015 05:58:55 -0400
-In-Reply-To: <1443607098-26666-1-git-send-email-tomeu.vizoso@collabora.com>
+Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:37245 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932208AbbI3Khe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Sep 2015 06:37:34 -0400
+Content-Disposition: inline
+In-Reply-To: <9hhpp105jw1.fsf@e105922-lin.cambridge.arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, martyn.welch@collabora.co.uk
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Punit Agrawal <punit.agrawal@arm.com>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Matthias Brugger <matthias.bgg@gmail.com>, devicetree@vger.kernel.org, mark.rutland@arm.com, robh+dt@kernel.org
 
-If a suitable prepare callback cannot be found for a given device and
-its driver has no PM callbacks at all, assume that it can go direct to
-complete when the system goes to sleep.
+Hi Punit,
 
-The reason for this is that there's lots of devices in a system that do
-no PM at all and there's no reason for them to prevent their ancestors
-to do direct_complete if they can support it.
+On Wed, Sep 30, 2015 at 10:36:14AM +0100, Punit Agrawal wrote:
+> Hi Sascha,
+> 
+> Re-posting a comment from v7. Perhaps you missed it...
 
-Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
----
+Uh, sorry. In fact I didn't miss it and I thought I have answered it.
+Appearantly I haven't.
 
-Changes in v7:
-- Reduce indentation by adding a label in device_prepare()
+> > +	struct mtk_thermal *mt = bank->mt;
+> > +	int temp, i, max;
+> > +	u32 raw;
+> > +
+> > +	temp = max = INT_MIN;
+> > +
+> > +	for (i = 0; i < bank_data[bank->id].num_sensors; i++) {
+> > +		raw = readl(mt->thermal_base + sensing_points[i].msr);
+> > +
+> > +		temp = raw_to_mcelsius(mt, raw);
+> > +
+> > +		/*
+> > +		 * The first read of a sensor often contains very high bogus
+> > +		 * temperature value. Filter these out so that the system does
+> > +		 * not immediately shut down.
+> > +		 */
+> > +		if (temp > 200000)
+> > +			temp = 0;
+> > +
+> 
+> If the bogus value is only the first time the sensor is read, instead of
+> filtering here, you could call mtk_thermal_bank_temperature at probe
+> time when you are initialising the banks and ignore the returned value.
 
-Changes in v6:
-- Add stub for !CONFIG_PM.
-- Move implementation of device_check_pm_callbacks to power/main.c as it
-  doesn't belong to CONFIG_PM_SLEEP.
-- Take dev->power.lock before modifying flag.
+It seems that after initialization the hardware needs some time to
+settle before correct values can be read. Doing what you suggest would
+mean we have to delay the boot by several 100ms. I'd rather not do that.
 
-Changes in v5:
-- Check for all dev_pm_ops instances associated to a device, updating a
-  no_pm_callbacks flag at the times when that could change.
+Sascha
 
- drivers/base/dd.c           |  3 +++
- drivers/base/power/common.c | 27 +++++++++++++++++++++++++++
- drivers/base/power/domain.c |  5 +++++
- drivers/base/power/main.c   |  8 ++++++++
- drivers/base/power/power.h  |  6 ++++++
- include/linux/pm.h          |  1 +
- 6 files changed, 50 insertions(+)
-
-diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-index be0eb4639128..fe0e9cb684b8 100644
---- a/drivers/base/dd.c
-+++ b/drivers/base/dd.c
-@@ -205,6 +205,8 @@ static void driver_bound(struct device *dev)
- 
- 	klist_add_tail(&dev->p->knode_driver, &dev->driver->p->klist_devices);
- 
-+	device_check_pm_callbacks(dev);
-+
- 	/*
- 	 * Make sure the device is no longer in one of the deferred lists and
- 	 * kick off retrying all pending devices
-@@ -695,6 +697,7 @@ static void __device_release_driver(struct device *dev)
- 			dev->pm_domain->dismiss(dev);
- 
- 		klist_remove(&dev->p->knode_driver);
-+		device_check_pm_callbacks(dev);
- 		if (dev->bus)
- 			blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
- 						     BUS_NOTIFY_UNBOUND_DRIVER,
-diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
-index f32b802b98f4..1bba85f8bf8a 100644
---- a/drivers/base/power/common.c
-+++ b/drivers/base/power/common.c
-@@ -128,3 +128,30 @@ void dev_pm_domain_detach(struct device *dev, bool power_off)
- 		dev->pm_domain->detach(dev, power_off);
- }
- EXPORT_SYMBOL_GPL(dev_pm_domain_detach);
-+
-+static bool pm_ops_is_empty(const struct dev_pm_ops *ops)
-+{
-+	if (!ops)
-+		return true;
-+
-+	return !ops->prepare &&
-+	       !ops->suspend &&
-+	       !ops->suspend_late &&
-+	       !ops->suspend_noirq &&
-+	       !ops->resume_noirq &&
-+	       !ops->resume_early &&
-+	       !ops->resume &&
-+	       !ops->complete;
-+}
-+
-+void device_check_pm_callbacks(struct device *dev)
-+{
-+	spin_lock_irq(&dev->power.lock);
-+	dev->power.no_pm_callbacks =
-+		(!dev->bus || pm_ops_is_empty(dev->bus->pm)) &&
-+		(!dev->class || pm_ops_is_empty(dev->class->pm)) &&
-+		(!dev->type || pm_ops_is_empty(dev->type->pm)) &&
-+		(!dev->pm_domain || pm_ops_is_empty(&dev->pm_domain->ops)) &&
-+		(!dev->driver || pm_ops_is_empty(dev->driver->pm));
-+	spin_unlock_irq(&dev->power.lock);
-+}
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 16550c63d611..3cae1aa1885b 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -20,6 +20,8 @@
- #include <linux/suspend.h>
- #include <linux/export.h>
- 
-+#include "power.h"
-+
- #define GENPD_RETRY_MAX_MS	250		/* Approximate */
- 
- #define GENPD_DEV_CALLBACK(genpd, type, callback, dev)		\
-@@ -1305,6 +1307,7 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
- 
- 	list_add_tail(&gpd_data->base.list_node, &genpd->dev_list);
- 
-+	device_check_pm_callbacks(dev);
-  out:
- 	mutex_unlock(&genpd->lock);
- 
-@@ -1369,6 +1372,8 @@ int pm_genpd_remove_device(struct generic_pm_domain *genpd,
- 
- 	genpd_free_dev_data(dev, gpd_data);
- 
-+	device_check_pm_callbacks(dev);
-+
- 	return 0;
- 
-  out:
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 1710c26ba097..5af45d20b677 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -131,6 +131,8 @@ void device_pm_add(struct device *dev)
- 			dev_name(dev->parent));
- 	list_add_tail(&dev->power.entry, &dpm_list);
- 	mutex_unlock(&dpm_list_mtx);
-+
-+	device_check_pm_callbacks(dev);
- }
- 
- /**
-@@ -1569,6 +1571,11 @@ static int device_prepare(struct device *dev, pm_message_t state)
- 
- 	dev->power.wakeup_path = device_may_wakeup(dev);
- 
-+	if (dev->power.no_pm_callbacks) {
-+		ret = 1;	/* Let device go direct_complete */
-+		goto unlock;
-+	}
-+
- 	if (dev->pm_domain) {
- 		info = "preparing power domain ";
- 		callback = dev->pm_domain->ops.prepare;
-@@ -1591,6 +1598,7 @@ static int device_prepare(struct device *dev, pm_message_t state)
- 	if (callback)
- 		ret = callback(dev);
- 
-+unlock:
- 	device_unlock(dev);
- 
- 	if (ret < 0) {
-diff --git a/drivers/base/power/power.h b/drivers/base/power/power.h
-index 998fa6b23084..f665a7850016 100644
---- a/drivers/base/power/power.h
-+++ b/drivers/base/power/power.h
-@@ -29,6 +29,8 @@ struct wake_irq {
- extern void dev_pm_arm_wake_irq(struct wake_irq *wirq);
- extern void dev_pm_disarm_wake_irq(struct wake_irq *wirq);
- 
-+extern void device_check_pm_callbacks(struct device *dev);
-+
- #ifdef CONFIG_PM_SLEEP
- 
- extern int device_wakeup_attach_irq(struct device *dev,
-@@ -102,6 +104,10 @@ static inline void dev_pm_disarm_wake_irq(struct wake_irq *wirq)
- {
- }
- 
-+static inline void device_check_pm_callbacks(struct device *dev)
-+{
-+}
-+
- #endif
- 
- #ifdef CONFIG_PM_SLEEP
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index 35d599e7250d..e334b9b8cd46 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -566,6 +566,7 @@ struct dev_pm_info {
- 	bool			ignore_children:1;
- 	bool			early_init:1;	/* Owned by the PM core */
- 	bool			direct_complete:1;	/* Owned by the PM core */
-+	bool			no_pm_callbacks:1;	/* Owned by the PM core */
- 	spinlock_t		lock;
- #ifdef CONFIG_PM_SLEEP
- 	struct list_head	entry;
 -- 
-2.4.3
-
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
