@@ -1,50 +1,50 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: Re: [PATCH v7 1/2] PM / sleep: Go direct_complete if driver has no callbacks
-Date: Wed, 30 Sep 2015 15:59:48 +0200
-Message-ID: <CAAObsKBZLnRBQA-nDzWG1SEyjaR6W68XnS6vBpES=WEQQSWgiA@mail.gmail.com>
-References: <1443607098-26666-1-git-send-email-tomeu.vizoso@collabora.com>
- <1443607098-26666-2-git-send-email-tomeu.vizoso@collabora.com>
- <CAPDyKFoSWLEzeLUWC0gPY2_a0Mvo3vbbWm5e0f-_rjZbwdY0Sw@mail.gmail.com> <8277579.lpDi4B1kd8@vostro.rjw.lan>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH 2/2] PM / sleep: Kick devices that might have been
+ reset by firmware
+Date: Wed, 30 Sep 2015 10:46:03 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1509301039270.15216-100000@netrider.rowland.org>
+References: <5732365.XVsXxYIbHS@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <8277579.lpDi4B1kd8@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, martyn.welch@collabora.co.uk, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from netrider.rowland.org ([192.131.102.5]:44522 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751695AbbI3OqE (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 30 Sep 2015 10:46:04 -0400
+In-Reply-To: <5732365.XVsXxYIbHS@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Daniel Vetter <daniel.vetter@intel.com>
 
-On 30 September 2015 at 15:05, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Wednesday, September 30, 2015 01:33:29 PM Ulf Hansson wrote:
->> On 30 September 2015 at 11:58, Tomeu Vizoso <tomeu.vizoso@collabora.com> wrote:
->> > @@ -1369,6 +1372,8 @@ int pm_genpd_remove_device(struct generic_pm_domain *genpd,
->> >
->> >         genpd_free_dev_data(dev, gpd_data);
->> >
->> > +       device_check_pm_callbacks(dev);
->> > +
->> >         return 0;
->>
->> I can't tell whether this is an interesting feature to use for devices
->> that gets attached to the ACPI PM domain. Although, you currently
->> doesn't deal with that case, and too me I think this looks a bit
->> weird/unsymmetrical.
->
-> Good point.
->
-> It needs to be done in every situation where a PM domain is or can be used.
->
-> I guess we might require all PM domains to be attached to devices after
-> a successful probe at the latest (no PM domains should be attached/detached
-> after probe succeeds IOW), in which case it should be sufficient to do the
-> device_check_pm_callbacks() thing each time after probe successds.
->
-> Thoughts?
+On Wed, 30 Sep 2015, Rafael J. Wysocki wrote:
 
-Sound good to me. How were you thinking of doing that? Manually
-checking that that's currently the case and adding a WARN() if a
-pm_domain is attached to a device that has been probed already?
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> If the platform firmware was involved in the system resume that's
+> being completed, there is a concern that some devices might have
+> been reset by it and if those devices had the power.direct_complete
+> flag set during the preceding suspend transition, they may stay
+> in a reset-power-on state indefinitely (until they are runtime-resumed
+> and then suspended again).  That may not be a big deal from the
+> individual device's perspective, but if the system is an SoC, it may
+> be prevented from entering deep SoC-wide low-power states on idle
+> because of that.
+> 
+> To prevent that from happening, force a runtime resume for devices
+> with power.direct_complete set if the platform firmware was involved
+> in the resume transition currently in progress.
+> 
+> Something similar was done by the ACPI PM domain, but regardless of
+> the platform firmware involvement, and the new mechanism should be
+> sufficient to replace that code, so drop it.
 
-Thanks,
+Maybe I'm not reading patch 1/2 correctly, but it looks like an
+ordinary ACPI-based desktop PC will always believe the firmware was
+involved in an S3 sleep transition.  If that's so then won't this
+change defeat all the work being done by people trying to prevent
+unneeded runtime resumes during system resume?  direct_complete would 
+be useful only on non-ACPI systems.
 
-Tomeu
+Alan Stern
+
