@@ -1,40 +1,37 @@
-From: Geliang Tang <geliangtang@163.com>
-Subject: [PATCH] PM/hibernate: fix a comment typo
-Date: Tue, 29 Sep 2015 20:36:58 -0700
-Message-ID: <48afe60c70d67dfb4f8f832f5c634a5f179417b5.1443612115.git.geliangtang@163.com>
-References: <4fb037c2ae2e494be58dc752483fb2f852a4cd70.1443612355.git.geliangtang@163.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
+ SpeedStep enabled
+Date: Wed, 30 Sep 2015 04:13:42 +0000
+Message-ID: <bug-103351-137361-pLvhRbqAOa@https.bugzilla.kernel.org/>
+References: <bug-103351-137361@https.bugzilla.kernel.org/>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from m12-18.163.com ([220.181.12.18]:52693 "EHLO m12-18.163.com"
+Received: from mail.kernel.org ([198.145.29.136]:44256 "EHLO mail.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752751AbbI3Dh5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 29 Sep 2015 23:37:57 -0400
-In-Reply-To: <4fb037c2ae2e494be58dc752483fb2f852a4cd70.1443612355.git.geliangtang@163.com>
+	id S1750833AbbI3ENq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 30 Sep 2015 00:13:46 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+	by mail.kernel.org (Postfix) with ESMTP id 6C52E206DC
+	for <linux-pm@vger.kernel.org>; Wed, 30 Sep 2015 04:13:45 +0000 (UTC)
+Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
+	by mail.kernel.org (Postfix) with ESMTP id 4071B206F3
+	for <linux-pm@vger.kernel.org>; Wed, 30 Sep 2015 04:13:44 +0000 (UTC)
+In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
-Cc: Geliang Tang <geliangtang@163.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-Just fix a typo in a function name in kerneldoc comments.
+https://bugzilla.kernel.org/show_bug.cgi?id=103351
 
-Signed-off-by: Geliang Tang <geliangtang@163.com>
----
- kernel/power/hibernate.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+--- Comment #22 from kernel@benjam.info <kernel@benjam.info> ---
+MSI claims to have a UEFI update for their 5700HQ-based machines that fixes
+this: https://forum-en.msi.com/index.php?topic=261054.msg1498718#msg1498718
 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index 690f78f..b7342a2 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -733,7 +733,7 @@ int hibernate(void)
-  * contents of memory is restored from the saved image.
-  *
-  * If this is successful, control reappears in the restored target kernel in
-- * hibernation_snaphot() which returns to hibernate().  Otherwise, the routine
-+ * hibernation_snapshot() which returns to hibernate().  Otherwise, the routine
-  * attempts to recover gracefully and make the kernel return to the normal mode
-  * of operation.
-  */
+My guess is that we need to collectively spam our motherboard manufacturers
+asking for a similar update.
+
 -- 
-1.9.1
-
-
+You are receiving this mail because:
+You are the assignee for the bug.
