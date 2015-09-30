@@ -1,42 +1,68 @@
-From: Al Stone <ahs3@redhat.com>
-Subject: Re: [PATCH v5 0/5] Provide better MADT subtable sanity checks
-Date: Wed, 30 Sep 2015 10:10:16 -0600
-Message-ID: <560C0968.6020904@redhat.com>
-References: <1443570346-15378-1-git-send-email-al.stone@linaro.org>
- <560BA4C9.7090607@huawei.com>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: cpupower reports uninitialized values for offline cpus
+Date: Wed, 30 Sep 2015 18:23:58 +0200
+Message-ID: <2397035.37ChXSYNtU@skinner>
+References: <560ADF55.6090901@redhat.com> <560AF3CB.1090401@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-ia64-owner@vger.kernel.org>
-In-Reply-To: <560BA4C9.7090607@huawei.com>
-Sender: linux-ia64-owner@vger.kernel.org
-To: Hanjun Guo <guohanjun@huawei.com>, Al Stone <al.stone@linaro.org>, linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: linaro-kernel@lists.linaro.org, linux-ia64@vger.kernel.org, patches@linaro.org, linux-pm@vger.kernel.org, linaro-acpi@lists.linaro.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx2.suse.de ([195.135.220.15]:47977 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754459AbbI3QYA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 30 Sep 2015 12:24:00 -0400
+In-Reply-To: <560AF3CB.1090401@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: Jacob Tanenbaum <jtanenba@redhat.com>, linux-pm@vger.kernel.org
 
-On 09/30/2015 03:00 AM, Hanjun Guo wrote:
-> On 2015/9/30 7:45, Al Stone wrote:
->> NB: this patch set is for use against the linux-pm bleeding edge branch.
->>
+On Tuesday, September 29, 2015 04:25:47 PM Prarit Bhargava wrote:
+> On 09/29/2015 02:58 PM, Jacob Tanenbaum wrote:
+> > Hi guys,
+> > 
+> > I have found a bug in the cpupower tool. In the most recent pull of
+> > linus's tree cpupower reports bogus information for offlined cpus.
+...
+> Thomas,
+> 
+> I'm not sure I see any benefit in reporting the offline cpu status here.
+There have been discussions to use CPU offlining as a power saving mechanism.
+This is afaik no real option on x86, at least not too frequent, but it could
+be on other archs?
+So the info would be nice to have...
 
-[snip...]
+> We
+> could I suppose output a message at the beginning of the output to indicate
+> that some cpus have been hotplugged, but I'm not sure that is even
+> necessary.
+Yep, just that people do not complain that cores are missing...
+May make sense.
+ 
+> I would prefer changing cpupower to reporting only online CPUs, but there's
+> probably some situation I'm unaware of that we need to report offline cpu
+> status.
+> >   2. When printing the results check if the cpu is offline and if it is
+> >   obscure> 
+> > the incorrect information and change the cpu->pkg
+> >      value to reflect all sockets with at least one online cpu.
+
+Hm, not sure how difficult to implement that is right now, but IMO info should
+be set to -1 if the files do not exist or initialized with -1.
+In this case there is no sane info to show and the cores need not to show up.
 
 > 
-> For this patch set,
+> This is papering over the issue IMO, but still an option.
 > 
-> Reviewed-by: Hanjun Guo <hanjun.guo@linaro.org>
-> 
-> Thanks
-> Hanjun
+> >   3. Change the sysfs to retain topology data for offlined cpus, may
+> >   require
 
-Thanks, Hanjun!
+I had a quick look. I think this could be done.
+/sys/devices/system/cpu/cpu*/cpuidle
+also is kept, not sure why, because I cannot see any advantage to access
+this info on an offlined CPU.
 
--- 
-ciao,
-al
------------------------------------
-Al Stone
-Software Engineer
-Red Hat, Inc.
-ahs3@redhat.com
------------------------------------
+But reading the topology of offlined CPUs makes sense.
+Argh, but yes. For real on-/offlining this is hard...
+
+    Thomas
