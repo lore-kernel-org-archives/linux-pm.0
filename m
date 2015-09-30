@@ -1,69 +1,42 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC 0/3] sched/idle: run-time support for setting idle polling
-Date: Wed, 30 Sep 2015 17:48:35 +0200
-Message-ID: <20150930154835.GP3604@twins.programming.kicks-ass.net>
-References: <1442954062-28578-1-git-send-email-lcapitulino@redhat.com>
- <1593595.NpzC8TsdGC@vostro.rjw.lan>
+From: Al Stone <ahs3@redhat.com>
+Subject: Re: [PATCH v5 0/5] Provide better MADT subtable sanity checks
+Date: Wed, 30 Sep 2015 10:10:16 -0600
+Message-ID: <560C0968.6020904@redhat.com>
+References: <1443570346-15378-1-git-send-email-al.stone@linaro.org>
+ <560BA4C9.7090607@huawei.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1593595.NpzC8TsdGC@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Luiz Capitulino <lcapitulino@redhat.com>, linux-kernel@vger.kernel.org, riel@redhat.com, rafael.j.wysocki@intel.com, mingo@kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-ia64-owner@vger.kernel.org>
+In-Reply-To: <560BA4C9.7090607@huawei.com>
+Sender: linux-ia64-owner@vger.kernel.org
+To: Hanjun Guo <guohanjun@huawei.com>, Al Stone <al.stone@linaro.org>, linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: linaro-kernel@lists.linaro.org, linux-ia64@vger.kernel.org, patches@linaro.org, linux-pm@vger.kernel.org, linaro-acpi@lists.linaro.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Sep 23, 2015 at 03:17:59AM +0200, Rafael J. Wysocki wrote:
-> On Tuesday, September 22, 2015 04:34:19 PM Luiz Capitulino wrote:
-> > Hi,
-> 
-> Hi,
-> 
-> Please always CC patches related to power management to linux-pm@vger.kernel.org.
->
-> Also CCing Len Brown who's the maintainer of the intel_idle driver and Peter Z.
+On 09/30/2015 03:00 AM, Hanjun Guo wrote:
+> On 2015/9/30 7:45, Al Stone wrote:
+>> NB: this patch set is for use against the linux-pm bleeding edge branch.
+>>
 
-And the sched people for touching kernel/sched (thanks Rafael)!
-
-> > Some archs allow the system administrator to set the
-> > idle thread behavior to spin instead of entering
-> > sleep states. The x86 arch, for example, has a idle=
-> > command-line parameter for this purpose.
-> > 
-> > However, the command-line parameter has two problems:
-> > 
-> >  1. You have to reboot if you change your mind
-> >  2. This setting affects all system cores
-> > 
-> > The second point is relevant for systems where cores
-> > are partitioned into bookkeeping and low-latency cores.
-> > Usually, it's OK for bookkeeping cores to enter deeper
-> > sleep states. It's only the low-latency cores that should
-> > poll when entering idle.
-> 
-> This looks like a use case for PM QoS to me rather.  You'd need to make it
-> work per-CPU rather than globally, but that really is about asking for
-> minimum latency.
-
-Agreed, this should very much hook into the PM QoS stuff.
+[snip...]
 
 > 
-> > This series adds the following file:
-> > 
-> >  /sys/devices/system/cpu/cpu_idle
-> > 
-> > This file outputs and stores a cpumask of the cores
-> > which will have idle polling behavior.
+> For this patch set,
 > 
-> I don't like this interface at all.
+> Reviewed-by: Hanjun Guo <hanjun.guo@linaro.org>
 > 
-> You have a cpuidle directory per core already, so what's the reason to add an
+> Thanks
+> Hanjun
 
-Yeah this should very much not be exposed like this.
+Thanks, Hanjun!
 
-Ideally every cpuidle driver would get 'polling' as a
-default state and the QoS constraints might select it if nothing else
-matches.
-
-And no mucking about with the force polling flag at _all_.
+-- 
+ciao,
+al
+-----------------------------------
+Al Stone
+Software Engineer
+Red Hat, Inc.
+ahs3@redhat.com
+-----------------------------------
