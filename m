@@ -1,75 +1,67 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v7 1/2] PM / sleep: Go direct_complete if driver has no callbacks
-Date: Fri, 02 Oct 2015 00:23:16 +0200
-Message-ID: <2611471.DTHhsJrc8q@vostro.rjw.lan>
-References: <1443607098-26666-1-git-send-email-tomeu.vizoso@collabora.com> <13396826.8glsaARCUj@vostro.rjw.lan> <CAPDyKFqGL_=wRauQhXO3rgjc4-UgwJQ0xwgdyQa9LsR98qYstA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 1/2] cpufreq: acpi_cpufreq: prevent crash on reading freqdomain_cpus
+Date: Thu,  1 Oct 2015 15:23:01 -0700
+Message-ID: <1443738182-4077-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:51567 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750789AbbJAVyy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 1 Oct 2015 17:54:54 -0400
-In-Reply-To: <CAPDyKFqGL_=wRauQhXO3rgjc4-UgwJQ0xwgdyQa9LsR98qYstA@mail.gmail.com>
+Received: from mga09.intel.com ([134.134.136.24]:51414 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751007AbbJAWX5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 1 Oct 2015 18:23:57 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, martyn.welch@collabora.co.uk, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>
+To: rafael.j.wysocki@intel.com, viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Thursday, October 01, 2015 11:04:17 AM Ulf Hansson wrote:
-> On 30 September 2015 at 23:17, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > On Wednesday, September 30, 2015 03:59:48 PM Tomeu Vizoso wrote:
-> >> On 30 September 2015 at 15:05, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >> > On Wednesday, September 30, 2015 01:33:29 PM Ulf Hansson wrote:
-> >> >> On 30 September 2015 at 11:58, Tomeu Vizoso <tomeu.vizoso@collabora.com> wrote:
-> >> >> > @@ -1369,6 +1372,8 @@ int pm_genpd_remove_device(struct generic_pm_domain *genpd,
-> >> >> >
-> >> >> >         genpd_free_dev_data(dev, gpd_data);
-> >> >> >
-> >> >> > +       device_check_pm_callbacks(dev);
-> >> >> > +
-> >> >> >         return 0;
-> >> >>
-> >> >> I can't tell whether this is an interesting feature to use for devices
-> >> >> that gets attached to the ACPI PM domain. Although, you currently
-> >> >> doesn't deal with that case, and too me I think this looks a bit
-> >> >> weird/unsymmetrical.
-> >> >
-> >> > Good point.
-> >> >
-> >> > It needs to be done in every situation where a PM domain is or can be used.
-> >> >
-> >> > I guess we might require all PM domains to be attached to devices after
-> >> > a successful probe at the latest (no PM domains should be attached/detached
-> >> > after probe succeeds IOW), in which case it should be sufficient to do the
-> >> > device_check_pm_callbacks() thing each time after probe successds.
-> >> >
-> >> > Thoughts?
-> >>
-> >> Sound good to me. How were you thinking of doing that? Manually
-> >> checking that that's currently the case and adding a WARN() if a
-> >> pm_domain is attached to a device that has been probed already?
-> >
-> > I guess we need a function for setting/clearing the pm_domain pointer that
-> > will check whether or not the device has been probed and WARN() in that case.
-> >
-> > Then, convert all users of PM domains to use that function instead of
-> > manipulating the pointer directly.
-> 
-> Why would ever a device be fully probed without first having its PM
-> domain pointer assigned?
-> 
-> To me that wouldn't even work, as the device would rather depend on
-> that the PM domain is power up to succeed being probed (at least in
-> general case), and unless the PM domain pointer is set we can't
-> control that.
+When freqdomain_cpus attribute is read from an offlined cpu, it will
+cause crash. This change prevents calling cpufreq_show_cpus when
+mask is NULL. Alternatively we can add this NULL check in
+cpufreq_show_cpus function.
 
-That generally is the case, but then I can imagine a situation in which setting
-the pm_domain pointer after probe may work for somebody and my point is that
-we should enforce things that we are going to rely on for correctness rather
-then hope that everybody will do them just because they make sense.
+Crash info:
 
-Thanks,
-Rafael
+[  170.814949] BUG: unable to handle kernel NULL pointer dereference at 0000000000000018
+[  170.814990] IP: [<ffffffff813b2490>] _find_next_bit.part.0+0x10/0x70
+[  170.815021] PGD 227d30067 PUD 229e56067 PMD 0
+[  170.815043] Oops: 0000 [#2] SMP
+[  170.816022] CPU: 3 PID: 3121 Comm: cat Tainted: G      D    OE   4.3.0-rc3+ #33
+...
+...
+[  170.816657] Call Trace:
+[  170.816672]  [<ffffffff813b2505>] ? find_next_bit+0x15/0x20
+[  170.816696]  [<ffffffff8160e47c>] cpufreq_show_cpus+0x5c/0xd0
+[  170.816722]  [<ffffffffa031a409>] show_freqdomain_cpus+0x19/0x20 [acpi_cpufreq]
+[  170.816749]  [<ffffffff8160e65b>] show+0x3b/0x60
+[  170.816769]  [<ffffffff8129b31c>] sysfs_kf_seq_show+0xbc/0x130
+[  170.816793]  [<ffffffff81299be3>] kernfs_seq_show+0x23/0x30
+[  170.816816]  [<ffffffff81240f2c>] seq_read+0xec/0x390
+[  170.816837]  [<ffffffff8129a64a>] kernfs_fop_read+0x10a/0x160
+[  170.816861]  [<ffffffff8121d9b7>] __vfs_read+0x37/0x100
+[  170.816883]  [<ffffffff813217c0>] ? security_file_permission+0xa0/0xc0
+[  170.816909]  [<ffffffff8121e2e3>] vfs_read+0x83/0x130
+[  170.816930]  [<ffffffff8121f035>] SyS_read+0x55/0xc0
+...
+...
+[  170.817185] ---[ end trace bc6eadf82b2b965a ]---
+
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/cpufreq/acpi-cpufreq.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index 7982772..cec1ee2 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -149,6 +149,9 @@ static ssize_t show_freqdomain_cpus(struct cpufreq_policy *policy, char *buf)
+ {
+ 	struct acpi_cpufreq_data *data = policy->driver_data;
+ 
++	if (unlikely(!data))
++		return -ENODEV;
++
+ 	return cpufreq_show_cpus(data->freqdomain_cpus, buf);
+ }
+ 
+-- 
+2.4.3
 
