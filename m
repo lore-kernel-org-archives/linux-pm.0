@@ -1,59 +1,56 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: cpupower reports uninitialized values for offline cpus
-Date: Thu, 01 Oct 2015 09:11:55 -0400
-Message-ID: <560D311B.8090507@redhat.com>
-References: <560ADF55.6090901@redhat.com> <2397035.37ChXSYNtU@skinner> <560C292B.5030905@redhat.com> <3211183.5fvOAutzxZ@skinner>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH] thermal: exynos: fix register read in TMU
+Date: Thu, 1 Oct 2015 22:18:57 +0900
+Message-ID: <CAJKOXPfyC8etcPe373q6Pc1qWb2zVnHE96V+Rh5mPmpzAxFjiA@mail.gmail.com>
+References: <1443699599-9693-1-git-send-email-sudipm.mukherjee@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:42313 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933358AbbJANL4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 1 Oct 2015 09:11:56 -0400
-In-Reply-To: <3211183.5fvOAutzxZ@skinner>
+Received: from mail-qg0-f44.google.com ([209.85.192.44]:33434 "EHLO
+	mail-qg0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932966AbbJANS6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 1 Oct 2015 09:18:58 -0400
+In-Reply-To: <1443699599-9693-1-git-send-email-sudipm.mukherjee@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Renninger <trenn@suse.de>
-Cc: Jacob Tanenbaum <jtanenba@redhat.com>, linux-pm@vger.kernel.org
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
+2015-10-01 20:39 GMT+09:00 Sudip Mukherjee <sudipm.mukherjee@gmail.com>:
+> The value of emul_con was getting overwritten if the selected soc is
+> SOC_ARCH_EXYNOS5260. And so as a result we were reading from the wrong
+> register in the case of SOC_ARCH_EXYNOS5260.
 
+How the value is overwritten if the soc is Exynos5260? I can't see it
+(although the "else if" is still more obvious than "if" but how does
+the description match the code?).
 
-On 10/01/2015 08:29 AM, Thomas Renninger wrote:
-> On Wednesday, September 30, 2015 02:25:47 PM Prarit Bhargava wrote:
->> On 09/30/2015 12:23 PM, Thomas Renninger wrote:
-> ...
->> Yeah, we'd have to add an additional state to the CPU hotplug callback state
->> machine (CPU_ADD_PHYSICAL?) to identify when a cpu was hot-added.  I
->> suppose it could be done but it seems like an awful lot of churn for little
->> gain.
-> 
-> It shouldn't be that hard.
-> If I find some time I give it a try.
-> This is a rather central piece of kernel code and affects
-> more or less all architectures, so getting this finally mainline
-> may take a while...
-> 
-> So it would be nice if somewhen in the future we have 2 independent
-> fixes:
-> 
-> The cpupower one as you wrote before, ignoring cores without
-> topology sysfs info (but not simply checking for "is core offline"),
-> better check whether the directory or a specific file exists.
-> 
-> And a kernel one which still shows topology info of soft offlined
-> cores which with above cpupower solution will result in previous
-> output (offlined cores listed, but with valid topology info).
-> 
-> Makes sense?
+Best regards,
+Krzysztof
 
-Yup, makes sense.  Jacob (Jake) is going to handle the cpupower stuff right
-away.  I'll dive into the topology stuff in a little bit and/or assist Jake with it.
-
-Thanks Thomas :)
-
-P.
-
-> 
->       Thomas
-> 
+>
+> Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+> ---
+>  drivers/thermal/samsung/exynos_tmu.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+> index 0bae8cc..ca920b0 100644
+> --- a/drivers/thermal/samsung/exynos_tmu.c
+> +++ b/drivers/thermal/samsung/exynos_tmu.c
+> @@ -932,7 +932,7 @@ static void exynos4412_tmu_set_emulation(struct exynos_tmu_data *data,
+>
+>         if (data->soc == SOC_ARCH_EXYNOS5260)
+>                 emul_con = EXYNOS5260_EMUL_CON;
+> -       if (data->soc == SOC_ARCH_EXYNOS5433)
+> +       else if (data->soc == SOC_ARCH_EXYNOS5433)
+>                 emul_con = EXYNOS5433_TMU_EMUL_CON;
+>         else if (data->soc == SOC_ARCH_EXYNOS7)
+>                 emul_con = EXYNOS7_TMU_REG_EMUL_CON;
+> --
+> 1.9.1
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
