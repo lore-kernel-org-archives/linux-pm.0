@@ -1,44 +1,38 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 2/2] dmaengine: usb-dmac: Fix pm_runtime_{enable,disable}() imbalance
-Date: Thu,  1 Oct 2015 09:22:18 +0200
-Message-ID: <1443684138-32252-3-git-send-email-geert+renesas@glider.be>
-References: <1443684138-32252-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <1443684138-32252-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-sh-owner@vger.kernel.org
+Subject: [PATCH 0/2] dmaengine: usb-dmac: Runtime PM Related Fixes
+Date: Thu,  1 Oct 2015 09:22:16 +0200
+Message-ID: <1443684138-32252-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from laurent.telenet-ops.be ([195.130.137.89]:45816 "EHLO
+	laurent.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755468AbbJAHWM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 1 Oct 2015 03:22:12 -0400
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Vinod Koul <vinod.koul@intel.com>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
 Cc: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, dmaengine@vger.kernel.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
-List-Id: linux-pm@vger.kernel.org
 
-If the call to pm_runtime_get_sync() failed, Runtime PM was left
-enabled.
+	Hi Vinod, Shimoda-san,
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
- drivers/dma/sh/usb-dmac.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+This series fixes a crash and an imbalance in the usb-dmac driver.
 
-diff --git a/drivers/dma/sh/usb-dmac.c b/drivers/dma/sh/usb-dmac.c
-index f305738b5adf8cc9..f1bcc2a163b30cef 100644
---- a/drivers/dma/sh/usb-dmac.c
-+++ b/drivers/dma/sh/usb-dmac.c
-@@ -802,7 +802,7 @@ static int usb_dmac_probe(struct platform_device *pdev)
- 	ret = pm_runtime_get_sync(&pdev->dev);
- 	if (ret < 0) {
- 		dev_err(&pdev->dev, "runtime PM get sync failed (%d)\n", ret);
--		return ret;
-+		goto error_pm;
- 	}
- 
- 	ret = usb_dmac_init(dmac);
-@@ -859,6 +859,7 @@ static int usb_dmac_probe(struct platform_device *pdev)
- error:
- 	of_dma_controller_free(pdev->dev.of_node);
- 	pm_runtime_put(&pdev->dev);
-+error_pm:
- 	pm_runtime_disable(&pdev->dev);
- 	return ret;
- }
+Geert Uytterhoeven (2):
+  dmaengine: usb-dmac: Fix crash on runtime suspend
+  dmaengine: usb-dmac: Fix pm_runtime_{enable,disable}() imbalance
+
+ drivers/dma/sh/usb-dmac.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
+
 -- 
 1.9.1
 
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
