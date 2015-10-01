@@ -1,64 +1,63 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH 2/2] PM / sleep: Kick devices that might have been
- reset by firmware
-Date: Thu, 1 Oct 2015 10:47:26 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1510011034080.1689-100000@iolanthe.rowland.org>
-References: <2877152.vgpvethKO3@vostro.rjw.lan>
+From: Olaf Hering <olaf@aepfle.de>
+Subject: adjusting broken ACPI thermal trip points
+Date: Thu, 1 Oct 2015 18:16:22 +0200
+Message-ID: <20151001161622.GA21024@aepfle.de>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <2877152.vgpvethKO3@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Daniel Vetter <daniel.vetter@intel.com>
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mo4-p00-ob.smtp.rzone.de ([81.169.146.160]:38677 "EHLO
+	mo4-p00-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752232AbbJAQWp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 1 Oct 2015 12:22:45 -0400
+Received: from probook.fritz.box ([2001:a62:17:8701:1ec1:deff:feb9:bb48])
+	by smtp.strato.de (RZmta 37.12 AUTH)
+	with ESMTPSA id u02acdr91GGOgZf
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with 521 ECDH bits, eq. 15360 bits RSA))
+	(Client did not present a certificate)
+	for <linux-pm@vger.kernel.org>;
+	Thu, 1 Oct 2015 18:16:24 +0200 (CEST)
+Content-Disposition: inline
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-On Wed, 30 Sep 2015, Rafael J. Wysocki wrote:
+My HP ProBook 6555b has broken trip points. As a result the fan is
+either off, or running at full speed until it cooled down, the its off
+again.
 
-> > If that's so then won't this change defeat all the work being done by
-> > people trying to prevent unneeded runtime resumes during system resume?
-> > direct_complete would be useful only on non-ACPI systems.
-> 
-> To me at least the main motivation for direct_complete was to avoid unneeded
-> runtime resumes during system suspend and this patch doesn't change that.
+How is this supposed to be handled?
 
-I always thought that at least part of the motivation was to allow 
-devices to remain in runtime suspend throughout an entire system sleep 
-transition: The device starts out in runtime suspend before the 
-system goes to sleep and it is still in runtime suspend after the 
-system wakes up.
 
-> Moreover, there is a difference between scheduling an asynchronous runtime
-> resume during system resume and doing a synchrouous runtime resume at that
-> point.  In the latter case the resume process has to wait for the runtime
-> resume to complete, while in the former case we can get to thawing user
-> space while the scheduled runtime resume is in progress (or even still
-> waiting for that matter).
+And the long version is:
 
-True.  However, in practice what generally happened (before you
-introduced direct_complete) is that the device would get set back to
-full power during the system resume, just as though it had not been in
-runtime suspend before the system went to sleep.
+Initially I reported https://bugzilla.kernel.org/show_bug.cgi?id=67101
+and provided some details about the machine and I was pointed to some
+patches in https://bugzilla.kernel.org/show_bug.cgi?id=78201. At some
+point the mainboard was replaced by HP, and it got a new firmware.  This
+one is appearently (still?) broken, the trip points are wrong. I used
+the patches from #78201 and added a hack ontop which forced sane values
+in ACPI code. This worked well enough for me to not be constantly
+annoyed by the noise changes.
 
-If the device uses async suspend/resume then this is not quite as bad
-as doing a synchronous runtime resume.  But as you say, it's still not
-as good as doing an async runtime resume, so I guess the effects of
-your patch aren't quite as bad as I thought at first.
+This week I checked the state of #78201 again and noticed some or all of
+the suggested changes are in mainline, which is what runs right now.
+This allows me to manually start the fan by writing to sysfs, just like
+I have done it in the last months. But I have not yet ported my hack for
+the ACPI core (acpi_thermal_trips_update) to adjust the hardware trip points.
 
-> This means that direct_complete would be useful even for S3 transitions
-> with this patch applied.  Not to mention the suspend-to-idle case in which
-> the resume really doesn't go through the firmware.
+Thats because I saw during make oldconfig a new config option which is
+supposed to avoid such hack. But so far I have not seen the
+corresponding sysfs files to tweak the trip points at runtime.
 
-Certainly.
+So what should be done for this machine? Fix the firmware during boot
+with some custom DSDT as suggested in comment #35, use that new
+trip-adjustment interface, or something else?
 
-> That said, perhaps the check as proposed is too coarse-grained.  We need to
-> do something like this in the ACPI PM domain code (and we do it already) and
-> for PCI devices that are likely to be affected by the issue at hand.  So
-> what about the appended patch (on top of https://patchwork.kernel.org/patch/7291711/)
-> instead?
 
-It seems reasonable.  If it turns out that more drivers need to check 
-for firmware interference, we can add them in later on.
+Another question: how does one control the fan speed anyway? I think the
+firmware provides no info about the current state of the fan, if and how
+fast it runs. It looks like the only way to decide which of the three
+states should be activated is to poll the current temperature and enable
+one of the states. Are there already GUI tools to control fan behaviour?
 
-Alan Stern
-
+Olaf
