@@ -1,161 +1,75 @@
-From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Subject: [PATCH] linux/thermal.h: rename KELVIN_TO_CELSIUS to DECI_KELVIN_TO_CELSIUS
-Date: Thu,  1 Oct 2015 23:45:31 +0200
-Message-ID: <1443735931-8406-1-git-send-email-linux@rasmusvillemoes.dk>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v7 1/2] PM / sleep: Go direct_complete if driver has no callbacks
+Date: Fri, 02 Oct 2015 00:23:16 +0200
+Message-ID: <2611471.DTHhsJrc8q@vostro.rjw.lan>
+References: <1443607098-26666-1-git-send-email-tomeu.vizoso@collabora.com> <13396826.8glsaARCUj@vostro.rjw.lan> <CAPDyKFqGL_=wRauQhXO3rgjc4-UgwJQ0xwgdyQa9LsR98qYstA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-la0-f51.google.com ([209.85.215.51]:33001 "EHLO
-	mail-la0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750868AbbJAVpp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 1 Oct 2015 17:45:45 -0400
-Received: by laddd9 with SMTP id dd9so686777lad.0
-        for <linux-pm@vger.kernel.org>; Thu, 01 Oct 2015 14:45:44 -0700 (PDT)
+Received: from v094114.home.net.pl ([79.96.170.134]:51567 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750789AbbJAVyy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 1 Oct 2015 17:54:54 -0400
+In-Reply-To: <CAPDyKFqGL_=wRauQhXO3rgjc4-UgwJQ0xwgdyQa9LsR98qYstA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, linux-pm@vger.kernel.org, Rasmus Villemoes <linux@rasmusvillemoes.dk>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, martyn.welch@collabora.co.uk, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>
 
-The macros KELVIN_TO_CELSIUS and CELSIUS_TO_KELVIN actually convert
-between deciKelvins and Celsius, so rename them to reflect that. While
-at it, use a statement expression in DECI_KELVIN_TO_CELSIUS to prevent
-expanding the argument multiple times and get rid of a few casts.
+On Thursday, October 01, 2015 11:04:17 AM Ulf Hansson wrote:
+> On 30 September 2015 at 23:17, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Wednesday, September 30, 2015 03:59:48 PM Tomeu Vizoso wrote:
+> >> On 30 September 2015 at 15:05, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> >> > On Wednesday, September 30, 2015 01:33:29 PM Ulf Hansson wrote:
+> >> >> On 30 September 2015 at 11:58, Tomeu Vizoso <tomeu.vizoso@collabora.com> wrote:
+> >> >> > @@ -1369,6 +1372,8 @@ int pm_genpd_remove_device(struct generic_pm_domain *genpd,
+> >> >> >
+> >> >> >         genpd_free_dev_data(dev, gpd_data);
+> >> >> >
+> >> >> > +       device_check_pm_callbacks(dev);
+> >> >> > +
+> >> >> >         return 0;
+> >> >>
+> >> >> I can't tell whether this is an interesting feature to use for devices
+> >> >> that gets attached to the ACPI PM domain. Although, you currently
+> >> >> doesn't deal with that case, and too me I think this looks a bit
+> >> >> weird/unsymmetrical.
+> >> >
+> >> > Good point.
+> >> >
+> >> > It needs to be done in every situation where a PM domain is or can be used.
+> >> >
+> >> > I guess we might require all PM domains to be attached to devices after
+> >> > a successful probe at the latest (no PM domains should be attached/detached
+> >> > after probe succeeds IOW), in which case it should be sufficient to do the
+> >> > device_check_pm_callbacks() thing each time after probe successds.
+> >> >
+> >> > Thoughts?
+> >>
+> >> Sound good to me. How were you thinking of doing that? Manually
+> >> checking that that's currently the case and adding a WARN() if a
+> >> pm_domain is attached to a device that has been probed already?
+> >
+> > I guess we need a function for setting/clearing the pm_domain pointer that
+> > will check whether or not the device has been probed and WARN() in that case.
+> >
+> > Then, convert all users of PM domains to use that function instead of
+> > manipulating the pointer directly.
+> 
+> Why would ever a device be fully probed without first having its PM
+> domain pointer assigned?
+> 
+> To me that wouldn't even work, as the device would rather depend on
+> that the PM domain is power up to succeed being probed (at least in
+> general case), and unless the PM domain pointer is set we can't
+> control that.
 
-Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
----
-Cleaning out old branches, I stumbled on this which apparently fell
-through the cracks
-[http://thread.gmane.org/gmane.linux.drivers.platform.x86.devel/5349]. The
-unit mismatch still bugs the physicist in me, so I'm resending.
+That generally is the case, but then I can imagine a situation in which setting
+the pm_domain pointer after probe may work for somebody and my point is that
+we should enforce things that we are going to rely on for correctness rather
+then hope that everybody will do them just because they make sense.
 
- drivers/acpi/thermal.c              | 12 ++++++------
- drivers/platform/x86/asus-wmi.c     |  2 +-
- drivers/platform/x86/intel_menlow.c |  8 ++++----
- include/linux/thermal.h             |  8 +++++---
- 4 files changed, 16 insertions(+), 14 deletions(-)
-
-diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
-index 30d8518b25fb..82707f9824ca 100644
---- a/drivers/acpi/thermal.c
-+++ b/drivers/acpi/thermal.c
-@@ -315,7 +315,7 @@ static int acpi_thermal_trips_update(struct acpi_thermal *tz, int flag)
- 			if (crt == -1) {
- 				tz->trips.critical.flags.valid = 0;
- 			} else if (crt > 0) {
--				unsigned long crt_k = CELSIUS_TO_KELVIN(crt);
-+				unsigned long crt_k = CELSIUS_TO_DECI_KELVIN(crt);
- 				/*
- 				 * Allow override critical threshold
- 				 */
-@@ -351,7 +351,7 @@ static int acpi_thermal_trips_update(struct acpi_thermal *tz, int flag)
- 		if (psv == -1) {
- 			status = AE_SUPPORT;
- 		} else if (psv > 0) {
--			tmp = CELSIUS_TO_KELVIN(psv);
-+			tmp = CELSIUS_TO_DECI_KELVIN(psv);
- 			status = AE_OK;
- 		} else {
- 			status = acpi_evaluate_integer(tz->device->handle,
-@@ -431,7 +431,7 @@ static int acpi_thermal_trips_update(struct acpi_thermal *tz, int flag)
- 					break;
- 				if (i == 1)
- 					tz->trips.active[0].temperature =
--						CELSIUS_TO_KELVIN(act);
-+						CELSIUS_TO_DECI_KELVIN(act);
- 				else
- 					/*
- 					 * Don't allow override higher than
-@@ -439,9 +439,9 @@ static int acpi_thermal_trips_update(struct acpi_thermal *tz, int flag)
- 					 */
- 					tz->trips.active[i - 1].temperature =
- 						(tz->trips.active[i - 2].temperature <
--						CELSIUS_TO_KELVIN(act) ?
-+						CELSIUS_TO_DECI_KELVIN(act) ?
- 						tz->trips.active[i - 2].temperature :
--						CELSIUS_TO_KELVIN(act));
-+						CELSIUS_TO_DECI_KELVIN(act));
- 				break;
- 			} else {
- 				tz->trips.active[i].temperature = tmp;
-@@ -1105,7 +1105,7 @@ static int acpi_thermal_add(struct acpi_device *device)
- 	INIT_WORK(&tz->thermal_check_work, acpi_thermal_check_fn);
- 
- 	pr_info(PREFIX "%s [%s] (%ld C)\n", acpi_device_name(device),
--		acpi_device_bid(device), KELVIN_TO_CELSIUS(tz->temperature));
-+		acpi_device_bid(device), DECI_KELVIN_TO_CELSIUS(tz->temperature));
- 	goto end;
- 
- free_memory:
-diff --git a/drivers/platform/x86/asus-wmi.c b/drivers/platform/x86/asus-wmi.c
-index efbc3f0c592b..bb80f7a29496 100644
---- a/drivers/platform/x86/asus-wmi.c
-+++ b/drivers/platform/x86/asus-wmi.c
-@@ -1318,7 +1318,7 @@ static ssize_t asus_hwmon_temp1(struct device *dev,
- 	if (err < 0)
- 		return err;
- 
--	value = KELVIN_TO_CELSIUS((value & 0xFFFF)) * 1000;
-+	value = DECI_KELVIN_TO_CELSIUS((value & 0xFFFF)) * 1000;
- 
- 	return sprintf(buf, "%d\n", value);
- }
-diff --git a/drivers/platform/x86/intel_menlow.c b/drivers/platform/x86/intel_menlow.c
-index e8b46d2c468c..0a919d81662c 100644
---- a/drivers/platform/x86/intel_menlow.c
-+++ b/drivers/platform/x86/intel_menlow.c
-@@ -315,7 +315,7 @@ static ssize_t aux0_show(struct device *dev,
- 
- 	result = sensor_get_auxtrip(attr->handle, 0, &value);
- 
--	return result ? result : sprintf(buf, "%lu", KELVIN_TO_CELSIUS(value));
-+	return result ? result : sprintf(buf, "%lu", DECI_KELVIN_TO_CELSIUS(value));
- }
- 
- static ssize_t aux1_show(struct device *dev,
-@@ -327,7 +327,7 @@ static ssize_t aux1_show(struct device *dev,
- 
- 	result = sensor_get_auxtrip(attr->handle, 1, &value);
- 
--	return result ? result : sprintf(buf, "%lu", KELVIN_TO_CELSIUS(value));
-+	return result ? result : sprintf(buf, "%lu", DECI_KELVIN_TO_CELSIUS(value));
- }
- 
- static ssize_t aux0_store(struct device *dev,
-@@ -345,7 +345,7 @@ static ssize_t aux0_store(struct device *dev,
- 	if (value < 0)
- 		return -EINVAL;
- 
--	result = sensor_set_auxtrip(attr->handle, 0, CELSIUS_TO_KELVIN(value));
-+	result = sensor_set_auxtrip(attr->handle, 0, CELSIUS_TO_DECI_KELVIN(value));
- 	return result ? result : count;
- }
- 
-@@ -364,7 +364,7 @@ static ssize_t aux1_store(struct device *dev,
- 	if (value < 0)
- 		return -EINVAL;
- 
--	result = sensor_set_auxtrip(attr->handle, 1, CELSIUS_TO_KELVIN(value));
-+	result = sensor_set_auxtrip(attr->handle, 1, CELSIUS_TO_DECI_KELVIN(value));
- 	return result ? result : count;
- }
- 
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 157d366e761b..4014a59828fc 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -44,9 +44,11 @@
- #define THERMAL_WEIGHT_DEFAULT 0
- 
- /* Unit conversion macros */
--#define KELVIN_TO_CELSIUS(t)	(long)(((long)t-2732 >= 0) ?	\
--				((long)t-2732+5)/10 : ((long)t-2732-5)/10)
--#define CELSIUS_TO_KELVIN(t)	((t)*10+2732)
-+#define DECI_KELVIN_TO_CELSIUS(t)	({			\
-+	long _t = (t);						\
-+	((_t-2732 >= 0) ? (_t-2732+5)/10 : (_t-2732-5)/10);	\
-+})
-+#define CELSIUS_TO_DECI_KELVIN(t)	((t)*10+2732)
- #define DECI_KELVIN_TO_MILLICELSIUS_WITH_OFFSET(t, off) (((t) - (off)) * 100)
- #define DECI_KELVIN_TO_MILLICELSIUS(t) DECI_KELVIN_TO_MILLICELSIUS_WITH_OFFSET(t, 2732)
- #define MILLICELSIUS_TO_DECI_KELVIN_WITH_OFFSET(t, off) (((t) / 100) + (off))
--- 
-2.1.3
+Thanks,
+Rafael
 
