@@ -1,90 +1,62 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH] thermal: avoid division by zero in power allocator
-Date: Thu, 1 Oct 2015 11:17:00 +0100
-Message-ID: <20151001101659.GA2817@e104805>
-References: <1443475714-19871-1-git-send-email-aarcange@redhat.com>
- <1443475714-19871-2-git-send-email-aarcange@redhat.com>
- <20150929133330.809e7058004395e6db79dec1@linux-foundation.org>
+From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Subject: Re: [PATCH v9 1/5] ACPI: Introduce CPU performance controls using CPPC
+Date: Thu, 1 Oct 2015 06:20:50 -0400
+Message-ID: <CAJ5Y-eYZxR4Sk27bhnBytamBi=aDp0475GC0oU-hNn=ZQ-iDUg@mail.gmail.com>
+References: <cover.1441830300.git.ashwin.chaugule@linaro.org>
+	<10036388.hkOY1zLhN4@vostro.rjw.lan>
+	<CAJ5Y-eb0vYaf6krUMT-XKESkD56nkFwbB+gc_Rzwii8ctp65Gw@mail.gmail.com>
+	<14309818.LXTR0vLlii@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:59774 "EHLO
-	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754533AbbJAKRJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 1 Oct 2015 06:17:09 -0400
-Content-Disposition: inline
-In-Reply-To: <20150929133330.809e7058004395e6db79dec1@linux-foundation.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <14309818.LXTR0vLlii@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux acpi <linux-acpi@vger.kernel.org>, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, Patch Tracking <patches@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "rwells@codeaurora.org" <rwells@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andrea Arcangeli <aarcange@redhat.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Kurtz <djkurtz@chromium.org>
 
-On Tue, Sep 29, 2015 at 09:33:30PM +0100, Andrew Morton wrote:
-> On Mon, 28 Sep 2015 23:28:34 +0200 Andrea Arcangeli <aarcange@redhat.com> wrote:
-> 
-> > During boot I get a div by zero Oops regression starting in v4.3-rc3.
-> > 
-> > ...
-> >
-> > --- a/drivers/thermal/power_allocator.c
-> > +++ b/drivers/thermal/power_allocator.c
-> > @@ -144,6 +144,16 @@ static void estimate_pid_constants(struct thermal_zone_device *tz,
-> >  		switch_on_temp = 0;
-> >  
-> >  	temperature_threshold = control_temp - switch_on_temp;
-> > +	/*
-> > +	 * estimate_pid_constants() tries to find appropriate default
-> > +	 * values for thermal zones that don't provide them. If a
-> > +	 * system integrator has configured a thermal zone with two
-> > +	 * passive trip points at the same temperature, that person
-> > +	 * hasn't put any effort to set up the thermal zone properly
-> > +	 * so just give up.
-> > +	 */
-> > +	if (!temperature_threshold)
-> > +		return;
-> >  
-> >  	if (!tz->tzp->k_po || force)
-> >  		tz->tzp->k_po = int_to_frac(sustainable_power) /
-> 
-> a) Are we sure this won't leave tz->tzp fields uninitialized?
+Hi Rafael,
 
-They will be all zeros.  That's good enough.
+On 28 September 2015 at 09:36, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Sunday, September 27, 2015 01:15:20 PM Ashwin Chaugule wrote:
+>> On 25 September 2015 at 20:05, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> > On Wednesday, September 09, 2015 04:27:04 PM Ashwin Chaugule wrote:
+>> >> +int cppc_get_perf_ctrs(int cpunum, struct cppc_perf_fb_ctrs *perf_fb_ctrs)
+>> >> +{
+>> >> +     struct cpc_desc *cpc_desc = per_cpu(cpc_desc_ptr, cpunum);
+>> >> +     struct cpc_register_resource *delivered_reg, *reference_reg;
+>> >> +     u64 delivered, reference;
+>> >> +     int ret = 0;
+>> >> +
+>> >> +     if (!cpc_desc) {
+>> >> +             pr_debug("No CPC descriptor for CPU:%d\n", cpunum);
+>> >> +             return -ENODEV;
+>> >> +     }
+>> >> +
+>> >> +     delivered_reg = &cpc_desc->cpc_regs[DELIVERED_CTR];
+>> >> +     reference_reg = &cpc_desc->cpc_regs[REFERENCE_CTR];
+>> >> +
+>> >> +     spin_lock(&pcc_lock);
+>> >
+>> > I still have the question about this lock.
+>> >
+>> > Why does it have to be a spinlock?
+>>
+>> The idea is to let CPUs send in their requests as quickly as possible.
+>> The PCC transaction only relays the request. So the CPUs don't really
+>> wait for all the clk + voltage toggling etc. I think any other
+>> primitive, might cause unnecessary delays in sending requests.
+>
+> It might if there was contention.
+>
+>> Also FWIW, this is another thing I was influenced by from the pcc-cpufreq.c
+>> driver. :)
+>
+> OK, so this sounds like an optimization, which is fine.
+>
 
-> b) I'm not understanding that code at all.  The "proportional" term
->    in a PID controller is supposed to be proportional to the (desired -
->    actual) difference (aka "the error").
-> 
->    But estimate_pid_constants() appears to be setting the
->    "proportional" term to be proportional to 1/error!
+Great. Would you prefer a git pull request with the kernel doc +
+compiler warning fix, or should I send V10 ?
 
-estimate_pid_constants() calculate the constants that you use in the
-PID algorithm.  Say:
-
-k_p * error + k_i * integral_of_error + k_d * diff_of_error
-
-This code is calculating a reasonable k_p, k_i and k_d when they are
-not provided by the platform.
-
->    Maybe a description of local `temperature_threshold' would help
->    clue me in.
-
-The `error' in the above definition is:
-
-target_temperature - current_temperature
-
-whereas `temperature_threshold' is:
-
-`target_temperature' - `switch_on_temperature'
-
-`switch_on_temperature' is the temperature above which the thermal
-governor starts operating and throttling cpus (or whatever cooling
-device is configured).
-
-The `switch_on_temperature' and `target_temperature' are defined using
-trip points.  A platform that sets two trip points to the same
-temperature is not properly configured.  With Andrea's patch we
-provide degraded behavior instead of crashing.  I agree with that
-approach (hence my Reviewed-by, maybe it should be an Acked-by?).
-
-Cheers,
-Javi
+Regards,
+Ashwin.
