@@ -1,77 +1,51 @@
-From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
-Subject: [PATCH] PM / clk: Do not __clk_get passed in clock-references
-Date: Thu, 01 Oct 2015 21:05:09 +0200
-Message-ID: <4072102.uMAk2BYxyL@diego>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH] clk: qcom: Make oxili GDSC parent of oxili_cx GDSC
+Date: Thu, 1 Oct 2015 12:06:39 -0700
+Message-ID: <20151001190639.GI19319@codeaurora.org>
+References: <1443035362-10914-1-git-send-email-sboyd@codeaurora.org>
+ <560CED90.9050201@codeaurora.org>
+ <20151001175227.GE19319@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20151001175227.GE19319@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Rajendra Nayak <rnayak@codeaurora.org>
+Cc: Mike Turquette <mturquette@baylibre.com>, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Stephen Boyd <sboyd@codeaurora.org>
+On 10/01, Stephen Boyd wrote:
+> On 10/01, Rajendra Nayak wrote:
+> > On 09/24/2015 12:39 AM, Stephen Boyd wrote:
+> > >+
+> > >+	ret = pm_genpd_add_subdomain(&oxili_gdsc.pd, &oxilicx_gdsc.pd);
+> > 
+> > We'll need pm_genpd_add_subdomain() to be EXPORT_SYMBOL_GPL'ed so
+> > clk-qcom can be built as a module.
+> 
+> Good catch! Do we need to call pm_genpd_remove_subdomain() too?
 
-Clock references are on a per-user basis now, so they are not supposed
-to be refcounted by itself anymore. Therefore multiple cascaded get and
-put calls will fail.
+Looks like yes.
 
-When a clock reference gets passed into pm_clk_add_clk we can assume
-that the pm clock handling will take control of the clock reference,
-so after this functions returns the caller should've given up control
-of that handle.
+> 
+> > 
+> > It would also be nicer if this parent/child relationship can
+> > somehow be represented in data (struct gdsc) that gets passed to
+> > the gdsc driver which then sets it up, instead of individual
+> > clock drivers doing it.
+> 
+> Agreed. I'd rather that we do nothing besides register domains
+> and then let the core code handle hooking up domains and
+> subdomains.
 
-So remove the additional call to __clk_get() in __pm_clk_add().
+A little closer inspection makes me want to skip this. PM domains
+can have multiple "master" domains, and pm_genpd_init() is the
+only API that would be able to do the linking. That API is mostly
+about initializing things to default values, so it doesn't seem
+like a good fit. I'll send a v2 with the remove part and the
+exports.
 
-The only current user of pm_clk_add_clk is drivers/clk/shmobile/clk-mstp.c
-which already follows this paradigm by only getting the clock but not
-puting it after passing the reference into pm_clk_add_clk.
-
-In the error case the caller is expected to clean up the clock, as it
-may very well try to do something different if pm_clk_add_clk() fails.
-
-Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
-[add commit-message]
-Signed-off-by: Heiko Stuebner <heiko@sntech.de>
----
-Hi Rafael, Pavel,
-
-if that looks acceptable to you, it would be cool if you could ack the
-patch and allow me to put it in front of [0] or alternatively
-provide a stable-branch I could include.
-
-Thanks
-Heiko
-
-[0] https://git.kernel.org/cgit/linux/kernel/git/mmind/linux-rockchip.git/commit/?h=v4.4-armsoc/drivers
-
- drivers/base/power/clock_ops.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
-index 652b5a3..6ce7693 100644
---- a/drivers/base/power/clock_ops.c
-+++ b/drivers/base/power/clock_ops.c
-@@ -93,7 +93,7 @@ static int __pm_clk_add(struct device *dev, const char *con_id,
- 			return -ENOMEM;
- 		}
- 	} else {
--		if (IS_ERR(clk) || !__clk_get(clk)) {
-+		if (IS_ERR(clk)) {
- 			kfree(ce);
- 			return -ENOENT;
- 		}
-@@ -127,7 +127,9 @@ int pm_clk_add(struct device *dev, const char *con_id)
-  * @clk: Clock pointer
-  *
-  * Add the clock to the list of clocks used for the power management of @dev.
-- * It will increment refcount on clock pointer, use clk_put() on it when done.
-+ * The power-management code will take control of the clock reference, so
-+ * callers should not call clk_put() on @clk after this function sucessfully
-+ * returned.
-  */
- int pm_clk_add_clk(struct device *dev, struct clk *clk)
- {
 -- 
-2.5.3
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
