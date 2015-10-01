@@ -1,77 +1,98 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v8 00/14] power: bq24257: Add support for bq24250/bq24251
-Date: Thu, 1 Oct 2015 04:58:47 +0200
-Message-ID: <20151001025847.GA12283@earth>
-References: <1443479642-23712-1-git-send-email-dannenberg@ti.com>
+From: Neil Brown <neil@brown.name>
+Subject: Re: [PATCH 10/13] twl4030_charger: add software controlled linear charging mode.
+Date: Thu, 01 Oct 2015 16:14:41 +1000
+Message-ID: <87bncjjesu.fsf@notabene.neil.brown.name>
+References: <20150730001113.4012.18086.stgit@noble> <20150730001124.4012.27784.stgit@noble> <20150915112825.GA10704@amd>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="vkogqOf2sHV7VnPd"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:49257 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755118AbbJAC6v (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 30 Sep 2015 22:58:51 -0400
-Content-Disposition: inline
-In-Reply-To: <1443479642-23712-1-git-send-email-dannenberg@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; boundary="=-=-=";
+	micalg=pgp-sha256; protocol="application/pgp-signature"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20150915112825.GA10704@amd>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Sebastian Reichel <sre@kernel.org>, Samuel Ortiz <sameo@linux.intel.com>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, real GTA04 owners <gta04-owner@goldelico.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-omap@vger.kernel.org, Lee Jones <lee.jones@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Andreas Dannenberg <dannenberg@ti.com>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-api@vger.kernel.org
 
-
---vkogqOf2sHV7VnPd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--=-=-=
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Pavel Machek <pavel@ucw.cz> writes:
 
-On Mon, Sep 28, 2015 at 05:33:48PM -0500, Andreas Dannenberg wrote:
-> This patch series extends the driver to also support bq24250/bq24251.
->=20
-> The bq24250/251/257 devices have a very similar feature set and are
-> virtually identical from a control register point of view so it made
-> sense to extend the existing driver rather than submitting a new driver.
-> In addition to the new device support the driver is also extended to
-> allow access to some device features previously hidden. Basic and
-> potentially dangerous charger config parameters affecting the actual
-> charging of the Li-Ion battery are only configurable through firmware
-> rather than sysfs properties. However some newly introduced properties
-> are exposed through sysfs properties as access to them may be desired
-> from userspace. For example, it is now possible to manually configure
-> the maximum current drawn from the input source to accommodate different
-> chargers (0.5A, 1.5A, 2.0A and so on) based on system knowledge a
-> userspace application may have rather than rely on the auto-detection
-> mechanism that may not work in all possible scenarios.
+> On Thu 2015-07-30 10:11:24, NeilBrown wrote:
+>>=20
+>> Add a 'continuous' option for usb charging which enables
+>> the "linear" charging mode of the twl4030.
+>>=20
+>> Linear charging does a good job with not-so-reliable power sources.
+>> Auto mode does not work well as it switches off when voltage drops
+>> momentarily.  Care must be taken not to over-charge.
+>
+> Can you explain how the user can "care not to over-charge"?
 
-Thanks, I queued all remaining patches except for
+The following text reads:
 
->   power: bq24257: Add platform data based initialization
+    It was used with a bike hub dynamo since a year or so. In that case
+    there are automatically charging stops when the cyclist needs a break.
 
-I'm still not convinced, that it should be added without any
-consumer in the mainline kernel.
+so: take a break from cycling occasionally.
 
--- Sebastian
+>
+>> @@ -750,6 +784,17 @@ static int twl4030_bci_get_property(struct power_su=
+pply *psy,
+>>  		is_charging =3D state & TWL4030_MSTATEC_USB;
+>>  	else
+>>  		is_charging =3D state & TWL4030_MSTATEC_AC;
+>> +	if (!is_charging) {
+>> +		u8 s;
+>> +		twl4030_bci_read(TWL4030_BCIMDEN, &s);
+>> +		if (psy->desc->type =3D=3D POWER_SUPPLY_TYPE_USB)
+>> +			is_charging =3D s & 1;
+>> +		else
+>> +			is_charging =3D s & 2;
+>> +		if (is_charging)
+>> +			/* A little white lie */
+>> +			state =3D TWL4030_MSTATEC_QUICK1;
+>
+> I'm not sure... can't this white lie turn into black smoke?
+>
+> Like.. normally, when battery is below something (like 3.5V) it must
+> not be quick-charged (because something is very wrong with it). Are
+> you just forcing the quick charge here?
 
---vkogqOf2sHV7VnPd
+No.  That value is only used for reporting a status via sysfs.
+That 'lie' gets translated to "POWER_SUPPLY_STATUS_CHARGING" which is
+not a lie.
+
+Thanks,
+NeilBrown
+
+
+>
+> 									Pavel
+> --=20
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/b=
+log.html
+
+--=-=-=
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Version: GnuPG v2
 
-iQIcBAEBCgAGBQJWDKFiAAoJENju1/PIO/qa1OwQAKeoqrNeMzia0AD5gnT/3dKt
-EvNnOS9E1DfxLx3j3etfO5fpoN2d6TaJsOCEXJNlhcd5gM2vMIO/N7lx2U33cGUr
-rdaokmm4nR0PUwNv2S5vToBwcH2KGrNPk9uikUBalgtkeJSlWYeLbGzp05XSZt5d
-PKdBYWdC5SUCJwj+K/kuX2ZDm+oURt5Zlku8WcgEZcAHexxxWYqlHMxOrXqW8GZT
-JzbqCSrbQWOkLx885XNbiNU6OWwS7E0R5X/v6AtXiqgIm6q1v/y9TrRPPgz0l6O9
-XuttDdK/sUCNt/yscu/Ci/zMmnHk7wiqjwov2vhANWlHILjZLH8QROV9c2WAWor8
-sjeI9wteZFHUrPbvaitKuEeoQ4G7iIR3khxqlYq+h4NYy0dQm4oUZJ8cdaWbgtsU
-IubVnUE48YQeBJ8O1sjzge6adowvVwnkRKLrREUIrTK3Cu1X2sZG5KNvAoKlBT3Z
-/AhWpPIbTr0scEjnSleuK/pc5/Ukdw1It0VxuqJ0EDApFS5l5++fTE3vLucfOZik
-sEtbIXQ15sQ4GOKM7Sp5A1mP4mMyQ83uKyLNHTLi2Y+UO4L9fKX7mrhyuICcTY8W
-vgcvjR2BPBFjlyiTTzC8/BAiik5bGpelXrZGrMzp2EwHW/7cDsYQ1+Lky4U1z8x0
-IL2omdObbxL3deNNgb7Z
-=04yO
+iQIcBAEBCAAGBQJWDM9RAAoJEDnsnt1WYoG5g7wP/28bIljTq0v9OLBMAxbE6E42
+IBr3dZDbAs3zLQfYXkEhSEGnJL1S91leoKwvDW7NXXb5FPCx1LIxapxOuUkkIF5b
+CVaKjO8boSa1ch4x9pA/h4Zaqe+7AskYmwgGzjkzslRN7HgTVMIt+lEm905+M19s
+ykML/vmPQzSXnakSYqQIQg0WiaBX/Y82EYqGoX1D/eXtwPcOqlojuZZ+prH7OteI
+SmX/IEWzIy8YAibbFGCCGkEdw2sGCVySVJrI89fslJ/Sf4qmzMYTYpHlXRFpTo3j
+d9oWK+qnuep43Pg5odR7ocweRhNxSTnkxS5NbyGD1dzfCfye4HfgdEhNnzzf2AiK
+Lr0lxufRq1lgaC8WOfVPcjAJn4KVOeLkuWoBfwFuIwSTGPa/UfrdEAZjqYvTJeNQ
+aLFpAU+Q2S3hHJz1AootJiHsqGuPwbdZNkmxIypATURagQMHaH3p4R/7fN4hi9+r
+43v/n+/nxnoxAUzIjxlUnxmlTIoXOlsIBwPKPW3SiSfpe+oFCP4Z3SAg0nzF+ZJv
+kPWsMvW6B0nO9DX1od8vMx4C5PHdk6oi+O00l4R9UM9ss2Qslny2KpSUqel3pTHt
+4u1Gza/N7yCxYDXWaguE9Ls7TY5uVoCzhfQLUh9F04D704y1L8esv6yzB50I3Tyg
++Y1GEAvrQO5i9BwZ4FIQ
+=aASZ
 -----END PGP SIGNATURE-----
-
---vkogqOf2sHV7VnPd--
+--=-=-=--
