@@ -1,59 +1,54 @@
 From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: [PATCH v2 2/2] clk: qcom: Make oxili GDSC parent of oxili_cx GDSC
-Date: Thu,  1 Oct 2015 12:22:54 -0700
-Message-ID: <1443727374-1539-3-git-send-email-sboyd@codeaurora.org>
+Subject: [PATCH v2 1/2] PM / Domains: Make pm_genpd_{add,remove}_subdomain() available to modules
+Date: Thu,  1 Oct 2015 12:22:53 -0700
+Message-ID: <1443727374-1539-2-git-send-email-sboyd@codeaurora.org>
 References: <1443727374-1539-1-git-send-email-sboyd@codeaurora.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:39822 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754146AbbJATXB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 1 Oct 2015 15:23:01 -0400
 In-Reply-To: <1443727374-1539-1-git-send-email-sboyd@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mike Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>
-Cc: linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, Rob Clark <robdclark@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mike Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>
+Cc: linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, Rob Clark <robdclark@gmail.com>, Rajendra Nayak <rnayak@codeaurora.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
 
-The oxili_cx GDSC is inside the power domain of the oxili GDSC.
-Add the dependency so that the CX domain can properly power up.
+Export these symbols so they can be used in loadable kernel
+modules.
 
-Reported-by: Rob Clark <robdclark@gmail.com>
+Cc: Rob Clark <robdclark@gmail.com>
 Cc: Rajendra Nayak <rnayak@codeaurora.org>
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: Kevin Hilman <khilman@kernel.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>
 Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
 
- drivers/clk/qcom/mmcc-msm8974.c | 11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
+ drivers/base/power/domain.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/clk/qcom/mmcc-msm8974.c b/drivers/clk/qcom/mmcc-msm8974.c
-index fe8320dc41db..cf2a7c9c95e6 100644
---- a/drivers/clk/qcom/mmcc-msm8974.c
-+++ b/drivers/clk/qcom/mmcc-msm8974.c
-@@ -2615,6 +2615,7 @@ MODULE_DEVICE_TABLE(of, mmcc_msm8974_match_table);
- static int mmcc_msm8974_probe(struct platform_device *pdev)
- {
- 	struct regmap *regmap;
-+	int ret;
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index cf4950d92937..9b0f5a06a82b 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -1348,6 +1348,7 @@ int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
  
- 	regmap = qcom_cc_map(pdev, &mmcc_msm8974_desc);
- 	if (IS_ERR(regmap))
-@@ -2623,11 +2624,19 @@ static int mmcc_msm8974_probe(struct platform_device *pdev)
- 	clk_pll_configure_sr_hpm_lp(&mmpll1, regmap, &mmpll1_config, true);
- 	clk_pll_configure_sr_hpm_lp(&mmpll3, regmap, &mmpll3_config, false);
- 
--	return qcom_cc_really_probe(pdev, &mmcc_msm8974_desc, regmap);
-+	ret = qcom_cc_really_probe(pdev, &mmcc_msm8974_desc, regmap);
-+	if (ret)
-+		return ret;
-+
-+	ret = pm_genpd_add_subdomain(&oxili_gdsc.pd, &oxilicx_gdsc.pd);
-+	if (ret)
-+		qcom_cc_remove(pdev);
-+	return ret;
+ 	return ret;
  }
++EXPORT_SYMBOL_GPL(pm_genpd_add_subdomain);
  
- static int mmcc_msm8974_remove(struct platform_device *pdev)
- {
-+	pm_genpd_remove_subdomain(&oxili_gdsc.pd, &oxilicx_gdsc.pd);
- 	qcom_cc_remove(pdev);
- 	return 0;
+ /**
+  * pm_genpd_remove_subdomain - Remove a subdomain from an I/O PM domain.
+@@ -1395,6 +1396,7 @@ out:
+ 
+ 	return ret;
  }
++EXPORT_SYMBOL_GPL(pm_genpd_remove_subdomain);
+ 
+ /* Default device callbacks for generic PM domains. */
+ 
 -- 
 The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
 a Linux Foundation Collaborative Project
+
