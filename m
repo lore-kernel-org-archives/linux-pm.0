@@ -1,63 +1,64 @@
-From: Olaf Hering <olaf@aepfle.de>
-Subject: adjusting broken ACPI thermal trip points
-Date: Thu, 1 Oct 2015 18:16:22 +0200
-Message-ID: <20151001161622.GA21024@aepfle.de>
+From: Andreas Dannenberg <dannenberg@ti.com>
+Subject: Re: [PATCH v8 00/14] power: bq24257: Add support for bq24250/bq24251
+Date: Thu, 1 Oct 2015 11:53:48 -0500
+Message-ID: <20151001165348.GA31342@beast>
+References: <1443479642-23712-1-git-send-email-dannenberg@ti.com>
+ <20151001025847.GA12283@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mo4-p00-ob.smtp.rzone.de ([81.169.146.160]:38677 "EHLO
-	mo4-p00-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752232AbbJAQWp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 1 Oct 2015 12:22:45 -0400
-Received: from probook.fritz.box ([2001:a62:17:8701:1ec1:deff:feb9:bb48])
-	by smtp.strato.de (RZmta 37.12 AUTH)
-	with ESMTPSA id u02acdr91GGOgZf
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with 521 ECDH bits, eq. 15360 bits RSA))
-	(Client did not present a certificate)
-	for <linux-pm@vger.kernel.org>;
-	Thu, 1 Oct 2015 18:16:24 +0200 (CEST)
+Received: from comal.ext.ti.com ([198.47.26.152]:35028 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753777AbbJAQy1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 1 Oct 2015 12:54:27 -0400
 Content-Disposition: inline
+In-Reply-To: <20151001025847.GA12283@earth>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Laurentiu Palcu <laurentiu.palcu@intel.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Ramakrishna Pallala <ramakrishna.pallala@intel.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-api@vger.kernel.org
 
-My HP ProBook 6555b has broken trip points. As a result the fan is
-either off, or running at full speed until it cooled down, the its off
-again.
+On Thu, Oct 01, 2015 at 04:58:47AM +0200, Sebastian Reichel wrote:
+> Hi,
+> 
+> On Mon, Sep 28, 2015 at 05:33:48PM -0500, Andreas Dannenberg wrote:
+> > This patch series extends the driver to also support bq24250/bq24251.
+> > 
+> > The bq24250/251/257 devices have a very similar feature set and are
+> > virtually identical from a control register point of view so it made
+> > sense to extend the existing driver rather than submitting a new driver.
+> > In addition to the new device support the driver is also extended to
+> > allow access to some device features previously hidden. Basic and
+> > potentially dangerous charger config parameters affecting the actual
+> > charging of the Li-Ion battery are only configurable through firmware
+> > rather than sysfs properties. However some newly introduced properties
+> > are exposed through sysfs properties as access to them may be desired
+> > from userspace. For example, it is now possible to manually configure
+> > the maximum current drawn from the input source to accommodate different
+> > chargers (0.5A, 1.5A, 2.0A and so on) based on system knowledge a
+> > userspace application may have rather than rely on the auto-detection
+> > mechanism that may not work in all possible scenarios.
+> 
+> Thanks, I queued all remaining patches except for
 
-How is this supposed to be handled?
+Sebastian, I just pulled your tree and re-ran some of my tests. Looks
+like everything is still working as it should. Thanks again for your
+help reviewing. Same goes for Krzysztof and Laurentiu -- thanks for
+your time and feedback too.
 
+> >   power: bq24257: Add platform data based initialization
+> 
+> I'm still not convinced, that it should be added without any
+> consumer in the mainline kernel.
 
-And the long version is:
+Well I tried to make my case (giving access to the largest audience
+possible). If you don't want to include it that's fine. I guess it can
+always get added if a specific need arises... For future reference here
+is the link to the latest version of that patch:
 
-Initially I reported https://bugzilla.kernel.org/show_bug.cgi?id=67101
-and provided some details about the machine and I was pointed to some
-patches in https://bugzilla.kernel.org/show_bug.cgi?id=78201. At some
-point the mainboard was replaced by HP, and it got a new firmware.  This
-one is appearently (still?) broken, the trip points are wrong. I used
-the patches from #78201 and added a hack ontop which forced sane values
-in ACPI code. This worked well enough for me to not be constantly
-annoyed by the noise changes.
+http://marc.info/?l=linux-pm&m=144347973708093&w=2
 
-This week I checked the state of #78201 again and noticed some or all of
-the suggested changes are in mainline, which is what runs right now.
-This allows me to manually start the fan by writing to sysfs, just like
-I have done it in the last months. But I have not yet ported my hack for
-the ACPI core (acpi_thermal_trips_update) to adjust the hardware trip points.
+--
+Andreas Dannenberg
+Texas Instruments Inc
 
-Thats because I saw during make oldconfig a new config option which is
-supposed to avoid such hack. But so far I have not seen the
-corresponding sysfs files to tweak the trip points at runtime.
-
-So what should be done for this machine? Fix the firmware during boot
-with some custom DSDT as suggested in comment #35, use that new
-trip-adjustment interface, or something else?
-
-
-Another question: how does one control the fan speed anyway? I think the
-firmware provides no info about the current state of the fan, if and how
-fast it runs. It looks like the only way to decide which of the three
-states should be activated is to poll the current temperature and enable
-one of the states. Are there already GUI tools to control fan behaviour?
-
-Olaf
