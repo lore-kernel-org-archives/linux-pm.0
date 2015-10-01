@@ -1,69 +1,54 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH] clk: qcom: Make oxili GDSC parent of oxili_cx GDSC
-Date: Thu, 1 Oct 2015 10:52:27 -0700
-Message-ID: <20151001175227.GE19319@codeaurora.org>
-References: <1443035362-10914-1-git-send-email-sboyd@codeaurora.org>
- <560CED90.9050201@codeaurora.org>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v4 1/5] gadget: Introduce the notifier functions
+Date: Thu, 1 Oct 2015 18:43:08 +0100
+Message-ID: <20151001174308.GL12635@sirena.org.uk>
+References: <cover.1443057229.git.baolin.wang@linaro.org>
+ <e58e4f26028c37877d02907831cf4ae411eaf984.1443057231.git.baolin.wang@linaro.org>
+ <20151001172932.GG4469@saruman.tx.rr.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-clk-owner@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="yQDbd2FCF2Yhw41T"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:34708 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752058AbbJARwl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 1 Oct 2015 13:52:41 -0400
 Content-Disposition: inline
-In-Reply-To: <560CED90.9050201@codeaurora.org>
-Sender: linux-clk-owner@vger.kernel.org
-To: Rajendra Nayak <rnayak@codeaurora.org>
-Cc: Mike Turquette <mturquette@baylibre.com>, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org
+In-Reply-To: <20151001172932.GG4469@saruman.tx.rr.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Felipe Balbi <balbi@ti.com>
+Cc: Baolin Wang <baolin.wang@linaro.org>, Greg KH <gregkh@linuxfoundation.org>, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, sojka@merica.cz, yoshihiro.shimoda.uh@renesas.com, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, sameo@linux.intel.com, lee.jones@linaro.org, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, device-mainlining@lists.linuxfoundation.org
 
-On 10/01, Rajendra Nayak wrote:
-> On 09/24/2015 12:39 AM, Stephen Boyd wrote:
-> >The oxili_cx GDSC is inside the power domain of the oxili GDSC.
-> >Add the dependency so that the CX domain can properly power up.
-> >
-> >Reported-by: Rob Clark <robdclark@gmail.com>
-> >Cc: Rajendra Nayak <rnayak@codeaurora.org>
-> >Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
-> >---
-> >  drivers/clk/qcom/mmcc-msm8974.c | 10 +++++++++-
-> >  1 file changed, 9 insertions(+), 1 deletion(-)
-> >
-> >diff --git a/drivers/clk/qcom/mmcc-msm8974.c b/drivers/clk/qcom/mmcc-msm8974.c
-> >index fe8320dc41db..3613db0a73e3 100644
-> >--- a/drivers/clk/qcom/mmcc-msm8974.c
-> >+++ b/drivers/clk/qcom/mmcc-msm8974.c
-> >@@ -2615,6 +2615,7 @@ MODULE_DEVICE_TABLE(of, mmcc_msm8974_match_table);
-> >  static int mmcc_msm8974_probe(struct platform_device *pdev)
-> >  {
-> >  	struct regmap *regmap;
-> >+	int ret;
-> >
-> >  	regmap = qcom_cc_map(pdev, &mmcc_msm8974_desc);
-> >  	if (IS_ERR(regmap))
-> >@@ -2623,7 +2624,14 @@ static int mmcc_msm8974_probe(struct platform_device *pdev)
-> >  	clk_pll_configure_sr_hpm_lp(&mmpll1, regmap, &mmpll1_config, true);
-> >  	clk_pll_configure_sr_hpm_lp(&mmpll3, regmap, &mmpll3_config, false);
-> >
-> >-	return qcom_cc_really_probe(pdev, &mmcc_msm8974_desc, regmap);
-> >+	ret = qcom_cc_really_probe(pdev, &mmcc_msm8974_desc, regmap);
-> >+	if (ret)
-> >+		return ret;
-> >+
-> >+	ret = pm_genpd_add_subdomain(&oxili_gdsc.pd, &oxilicx_gdsc.pd);
-> 
-> We'll need pm_genpd_add_subdomain() to be EXPORT_SYMBOL_GPL'ed so
-> clk-qcom can be built as a module.
 
-Good catch! Do we need to call pm_genpd_remove_subdomain() too?
+--yQDbd2FCF2Yhw41T
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> 
-> It would also be nicer if this parent/child relationship can
-> somehow be represented in data (struct gdsc) that gets passed to
-> the gdsc driver which then sets it up, instead of individual
-> clock drivers doing it.
+On Thu, Oct 01, 2015 at 12:29:32PM -0500, Felipe Balbi wrote:
 
-Agreed. I'd rather that we do nothing besides register domains
-and then let the core code handle hooking up domains and
-subdomains.
+> Frankly, I wanted all of this to be decided in userland with the
+> kernel just providing notification and basic safety checks (we don't
+> want to allow a bogus userspace daemon frying anybody's devices).
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+What's the advantage of pushing this to userspace?  By the time we
+provide enough discoverability to enable userspace to configure itself
+it seems like we'd have enough information to do the job anyway.
+
+--yQDbd2FCF2Yhw41T
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJWDXCnAAoJECTWi3JdVIfQmFEH/0qoAywAYV0Ujl6TxyWZbX33
+SqtvVnNf57Aq0/iKAtXr+Jp45Qxpx93vxLUrJal2DIguUDRGMvoLy9Qc1wMmxQ3K
+o7mWvcBQj2ERorGFOOOq+iRG/46+7C+K/3+CvUy6AWWLyoCQW6s+cBp3XPZnhAKu
+damSBQ2ImV5g4ofqg/Z5cFmHELiiS52dbOL8UAApu++xHPv1H3ZOAjSxyy48xoro
+wWK6QTTF8WVZKCvHDHcGwigWDPP15bZbi7ZeAtuDDkAuiajAi+4RRkeu2ys6f+5N
+fmyKtaW/TLlZtSg1Q7p+VhAOUy4RmOT/cJ3xlB17+/Dzhwh6+GZ/NhpQOh7MM1c=
+=/4BT
+-----END PGP SIGNATURE-----
+
+--yQDbd2FCF2Yhw41T--
