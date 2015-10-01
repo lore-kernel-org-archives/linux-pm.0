@@ -1,54 +1,46 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: [PATCH v2 1/2] PM / Domains: Make pm_genpd_{add,remove}_subdomain() available to modules
-Date: Thu,  1 Oct 2015 12:22:53 -0700
-Message-ID: <1443727374-1539-2-git-send-email-sboyd@codeaurora.org>
-References: <1443727374-1539-1-git-send-email-sboyd@codeaurora.org>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
+ SpeedStep enabled
+Date: Thu, 01 Oct 2015 20:09:00 +0000
+Message-ID: <bug-103351-137361-xuq17ZbEaF@https.bugzilla.kernel.org/>
+References: <bug-103351-137361@https.bugzilla.kernel.org/>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:39822 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754146AbbJATXB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 1 Oct 2015 15:23:01 -0400
-In-Reply-To: <1443727374-1539-1-git-send-email-sboyd@codeaurora.org>
+Received: from mail.kernel.org ([198.145.29.136]:56235 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751705AbbJAUJF convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 1 Oct 2015 16:09:05 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+	by mail.kernel.org (Postfix) with ESMTP id 63534207E1
+	for <linux-pm@vger.kernel.org>; Thu,  1 Oct 2015 20:09:03 +0000 (UTC)
+Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
+	by mail.kernel.org (Postfix) with ESMTP id 81B6E207C5
+	for <linux-pm@vger.kernel.org>; Thu,  1 Oct 2015 20:09:02 +0000 (UTC)
+In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mike Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>
-Cc: linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, Rob Clark <robdclark@gmail.com>, Rajendra Nayak <rnayak@codeaurora.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
+To: linux-pm@vger.kernel.org
 
-Export these symbols so they can be used in loadable kernel
-modules.
+https://bugzilla.kernel.org/show_bug.cgi?id=3D103351
 
-Cc: Rob Clark <robdclark@gmail.com>
-Cc: Rajendra Nayak <rnayak@codeaurora.org>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Kevin Hilman <khilman@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>
-Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
----
+--- Comment #34 from Krist=C3=B3f Marussy <kris7topher@gmail.com> ---
+This kind of fix should be probably applied before init is ran so that =
+if some
+cpuinfo flags are changed, they are properly exposed event to early use=
+rspace.
+I think you should load the .bin with the kernel early microcode loadin=
+g
+facility: https://www.kernel.org/doc/Documentation/x86/early-microcode.=
+txt
 
- drivers/base/power/domain.c | 2 ++
- 1 file changed, 2 insertions(+)
+Note that multiple initrd files can be passed to the kernel, so there i=
+s no
+need to concatenate the microcode cpio with the original initrd, see e.=
+g.
+https://wiki.archlinux.org/index.php/Microcode
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index cf4950d92937..9b0f5a06a82b 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -1348,6 +1348,7 @@ int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
- 
- 	return ret;
- }
-+EXPORT_SYMBOL_GPL(pm_genpd_add_subdomain);
- 
- /**
-  * pm_genpd_remove_subdomain - Remove a subdomain from an I/O PM domain.
-@@ -1395,6 +1396,7 @@ out:
- 
- 	return ret;
- }
-+EXPORT_SYMBOL_GPL(pm_genpd_remove_subdomain);
- 
- /* Default device callbacks for generic PM domains. */
- 
--- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
-
+--=20
+You are receiving this mail because:
+You are the assignee for the bug.
