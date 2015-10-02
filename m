@@ -1,110 +1,140 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management and ACPI updates for v4.3-rc4
-Date: Fri, 2 Oct 2015 03:11:44 +0200
-Message-ID: <CAJZ5v0jwdZM9ompxN+x8iMGWZBrKoRGpxXgoAqi4wrhO56LHXw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [RFC][PATCH v2 1/2] PM / sleep: Add flags to indicate platform firmware involvement
+Date: Fri, 02 Oct 2015 03:52:34 +0200
+Message-ID: <1753290.aWURjseO2E@vostro.rjw.lan>
+References: <10641052.oOBhM6BU9G@vostro.rjw.lan> <5472042.4c1h9diL7E@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f180.google.com ([209.85.217.180]:34219 "EHLO
-	mail-lb0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751099AbbJBBLq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 1 Oct 2015 21:11:46 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <5472042.4c1h9diL7E@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Daniel Vetter <daniel.vetter@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Linux PCI <linux-pci@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Hi Linus,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Please pull from
+There are quite a few cases in which device drivers, bus types or
+even the PM core itself may benefit from knowing whether or not
+the platform firmware will be involved in the upcoming system power
+transition (during system suspend) or whether or not it was involved
+in it (during system resume).
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm+acpi-4.3-rc4
+For this reason, introduce global system suspend flags that can be
+used by the platform code to expose that information for the benefit
+of the other parts of the kernel and make the ACPI core set them
+as appropriate.
 
-to receive power management and ACPI material for v4.3-rc4 with
-top-most commit eb6d1c287ae1f7221248d5be26a5b1560073c09e
+Users of the new flags will be added later.
 
- Merge branches 'pm-cpuidle', 'pm-opp' and 'pm-tools'
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
-on top of commit 9ffecb10283508260936b96022d4ee43a7798b4c
+v1 -> v2: Apply EXPORT_SYMBOL_GPL() to pm_suspend_global_flags so modular
+drivers can use it too.
 
- Linux 4.3-rc3
+---
+ drivers/acpi/sleep.c    |    3 +++
+ include/linux/suspend.h |   36 ++++++++++++++++++++++++++++++++++++
+ kernel/power/suspend.c  |    4 ++++
+ 3 files changed, 43 insertions(+)
 
-These are fixes mostly, for a few changes made in this cycle
-(the intel_idle driver, the OPP library, the ACPI EC driver,
-turbostat) and for some issues that have just been discovered
-(ACPI PCI IRQ management, PCI power management
-documentation, turbostat), with a couple of cleanups on top
-of them.
+Index: linux-pm/include/linux/suspend.h
+===================================================================
+--- linux-pm.orig/include/linux/suspend.h
++++ linux-pm/include/linux/suspend.h
+@@ -202,6 +202,36 @@ struct platform_freeze_ops {
+ extern void suspend_set_ops(const struct platform_suspend_ops *ops);
+ extern int suspend_valid_only_mem(suspend_state_t state);
+ 
++extern unsigned int pm_suspend_global_flags;
++
++#define PM_SUSPEND_FLAG_FW_SUSPEND	(1 << 0)
++#define PM_SUSPEND_FLAG_FW_RESUME	(1 << 1)
++
++static inline void pm_suspend_clear_flags(void)
++{
++	pm_suspend_global_flags = 0;
++}
++
++static inline void pm_set_suspend_via_firmware(void)
++{
++	pm_suspend_global_flags |= PM_SUSPEND_FLAG_FW_SUSPEND;
++}
++
++static inline void pm_set_resume_via_firmware(void)
++{
++	pm_suspend_global_flags |= PM_SUSPEND_FLAG_FW_RESUME;
++}
++
++static inline bool pm_suspend_via_firmware(void)
++{
++	return !!(pm_suspend_global_flags & PM_SUSPEND_FLAG_FW_SUSPEND);
++}
++
++static inline bool pm_resume_via_firmware(void)
++{
++	return !!(pm_suspend_global_flags & PM_SUSPEND_FLAG_FW_RESUME);
++}
++
+ /* Suspend-to-idle state machnine. */
+ enum freeze_state {
+ 	FREEZE_STATE_NONE,      /* Not suspended/suspending. */
+@@ -241,6 +271,12 @@ extern int pm_suspend(suspend_state_t st
+ #else /* !CONFIG_SUSPEND */
+ #define suspend_valid_only_mem	NULL
+ 
++static inline void pm_suspend_clear_flags(void) {}
++static inline void pm_set_suspend_via_firmware(void) {}
++static inline void pm_set_resume_via_firmware(void) {}
++static inline bool pm_suspend_via_firmware(void) { return false; }
++static inline bool pm_resume_via_firmware(void) { return false; }
++
+ static inline void suspend_set_ops(const struct platform_suspend_ops *ops) {}
+ static inline int pm_suspend(suspend_state_t state) { return -ENOSYS; }
+ static inline bool idle_should_freeze(void) { return false; }
+Index: linux-pm/kernel/power/suspend.c
+===================================================================
+--- linux-pm.orig/kernel/power/suspend.c
++++ linux-pm/kernel/power/suspend.c
+@@ -35,6 +35,9 @@
+ const char *pm_labels[] = { "mem", "standby", "freeze", NULL };
+ const char *pm_states[PM_SUSPEND_MAX];
+ 
++unsigned int pm_suspend_global_flags;
++EXPORT_SYMBOL_GPL(pm_suspend_global_flags);
++
+ static const struct platform_suspend_ops *suspend_ops;
+ static const struct platform_freeze_ops *freeze_ops;
+ static DECLARE_WAIT_QUEUE_HEAD(suspend_freeze_wait_head);
+@@ -493,6 +496,7 @@ static int enter_state(suspend_state_t s
+ #endif
+ 
+ 	pr_debug("PM: Preparing system for sleep (%s)\n", pm_states[state]);
++	pm_suspend_clear_flags();
+ 	error = suspend_prepare(state);
+ 	if (error)
+ 		goto Unlock;
+Index: linux-pm/drivers/acpi/sleep.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/sleep.c
++++ linux-pm/drivers/acpi/sleep.c
+@@ -487,6 +487,8 @@ static int acpi_suspend_begin(suspend_st
+ 		pr_err("ACPI does not support sleep state S%u\n", acpi_state);
+ 		return -ENOSYS;
+ 	}
++	if (acpi_state > ACPI_STATE_S1)
++		pm_set_suspend_via_firmware();
+ 
+ 	acpi_pm_start(acpi_state);
+ 	return 0;
+@@ -522,6 +524,7 @@ static int acpi_suspend_enter(suspend_st
+ 		if (error)
+ 			return error;
+ 		pr_info(PREFIX "Low-level resume complete\n");
++		pm_set_resume_via_firmware();
+ 		break;
+ 	}
+ 	trace_suspend_resume(TPS("acpi_suspend"), acpi_state, false);
 
-Specifics:
-
- - intel_idle driver fixup for the recently added Skylake chips
-   support (Len Brown).
-
- - Operating Performance Points (OPP) library fix related to the
-   recently added support for new DT bindings and a fix for a typo
-   in a comment (Viresh Kumar, Stephen Boyd).
-
- - ACPI EC driver fix for a recently introduced memory leak in an
-   error code path (Lv Zheng).
-
- - ACPI PCI IRQ management fix for the issue where an ISA IRQ is
-   shared with a PCI device which requires it to be configured in a
-   different way and may cause an interrupt storm to happen as a
-   result with an extra ACPI SCI IRQ handling simplification on top
-   of it (Jiang Liu).
-
- - Update of the PCI power management documentation that became
-   outdated and started to actively confuse the readers to make
-   it actually reflect the code (Rafael J Wysocki).
-
- - turbostat fixes including an IVB Xeon regression fix (related to
-   the --debug command line option), Skylake adjustment for the TSC
-   running at a frequency that doesn't match the base one exactly,
-   and a Knights Landing quirk to account for the fact that it only
-   updates APERF and MPERF every 1024 clock cycles plus bumping up
-   the turbostat version number (Len Brown, Hubert Chrzaniuk).
-
-Thanks!
-
-
----------------
-
-Hubert Chrzaniuk (1):
-      tools/power turbostat: KNL workaround for %Busy and Avg_MHz
-
-Jiang Liu (2):
-      ACPI, PCI, irq: Do not share PCI IRQ with ISA IRQ
-      ACPI / PCI: Remove duplicated penalty on SCI IRQ
-
-Len Brown (4):
-      intel_idle: Skylake Client Support - updated
-      tools/power turbostat: IVB Xeon: fix --debug regression
-      tools/power turbostat: SKL: Adjust for TSC difference from base frequency
-      tools/power turbosat: update version number
-
-Lv Zheng (1):
-      ACPI / EC: Fix a memory leak issue in acpi_ec_query()
-
-Rafael J. Wysocki (1):
-      PCI / PM: Update runtime PM documentation for PCI devices
-
-Stephen Boyd (1):
-      PM / OPP: Fix typo modifcation -> modification
-
-Viresh Kumar (1):
-      PM / OPP: of_property_count_u32_elems() can return errors
-
----------------
-
- Documentation/power/pci.txt           | 51 ++++++++++++++++++++++++++---------
- drivers/acpi/ec.c                     |  2 ++
- drivers/acpi/pci_irq.c                |  1 +
- drivers/acpi/pci_link.c               | 16 +++++++++--
- drivers/base/power/opp.c              | 17 ++++++++----
- drivers/idle/intel_idle.c             | 12 +++++++--
- drivers/pci/pci-driver.c              |  7 ++---
- include/linux/acpi.h                  |  1 +
- tools/power/x86/turbostat/turbostat.c | 39 +++++++++++++++++++++++----
- 9 files changed, 116 insertions(+), 30 deletions(-)
