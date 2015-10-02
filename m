@@ -1,72 +1,43 @@
-From: James Liao <jamesjj.liao-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Subject: Re: [PATCH] soc: mediatek: Fix random hang up issue while kernel
- init
-Date: Fri, 2 Oct 2015 18:37:00 +0800
-Message-ID: <1443782220.1714.102.camel@mtksdaap41>
-References: <1443162717-64831-1-git-send-email-jamesjj.liao@mediatek.com>
-	 <1443169573.3135.9.camel@pengutronix.de> <5607D224.4050801@gmail.com>
-	 <CAGS+omCXMRf4bxWancSJSq2a1pc38TYYY46Os9ASWWCRp95_ig@mail.gmail.com>
-	 <1443604022.3185.17.camel@pengutronix.de>
-	 <1443683750.1714.25.camel@mtksdaap41>
-	 <CAGS+omCpWqtKPKoyjFb=q4BxmfUGGsfvQGEZas8g8VLZKPtKbQ@mail.gmail.com>
-	 <1443691590.1714.73.camel@mtksdaap41>
-	 <CAGS+omCm2pKczooGkMf75HjQL=oF7Ufo6DsRCvvikt0QA1jx-g@mail.gmail.com>
-	 <1443754838.1714.94.camel@mtksdaap41>
-	 <CAGS+omBQLVGeWrNoD+8L_J0C9DjzkXO_cfph2tQgMGiPBJq2vw@mail.gmail.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH 01/17] rtc: pl031: remove misuse of IRQF_NO_SUSPEND flag
+Date: Fri, 2 Oct 2015 03:40:53 -0700
+Message-ID: <CACRpkdaa+J76vMGHrZsTZukUS-VyDQFPqwg6teV=m050a=P8Pg@mail.gmail.com>
+References: <1442850433-5903-1-git-send-email-sudeep.holla@arm.com>
+	<1442850433-5903-2-git-send-email-sudeep.holla@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAGS+omBQLVGeWrNoD+8L_J0C9DjzkXO_cfph2tQgMGiPBJq2vw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Daniel Kurtz <djkurtz-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Cc: Lucas Stach <l.stach-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "open list:OPEN FIRMWARE AND..." <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, srv_heupstream <srv_heupstream-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rjw-KKrjLPT3xs0@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ob0-f170.google.com ([209.85.214.170]:34431 "EHLO
+	mail-ob0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750730AbbJBKkx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 2 Oct 2015 06:40:53 -0400
+Received: by obbda8 with SMTP id da8so78925049obb.1
+        for <linux-pm@vger.kernel.org>; Fri, 02 Oct 2015 03:40:53 -0700 (PDT)
+In-Reply-To: <1442850433-5903-2-git-send-email-sudeep.holla@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, "rtc-linux@googlegroups.com" <rtc-linux@googlegroups.com>
 
-HI Daniel,
+On Mon, Sep 21, 2015 at 8:46 AM, Sudeep Holla <sudeep.holla@arm.com> wrote:
 
-On Fri, 2015-10-02 at 17:25 +0800, Daniel Kurtz wrote:
-> Actually, I should have proposed adding prepare / unprepare callbacks
-> to mtk_clk_gate_ops in which we prepare_enable/disable_unprepare
-> venc_sel (& mm_sel).
-> This should correctly track all of the clk reference counting needed
-> to access the venc clock control registers.
-> 
-> 
-> However, this would not actually solve the issue that this patch is
-> trying to fix, since nobody would have called the
-> prepare_clk(venc_cke0) before clk_disable_unused_subtree(venc_cke0).
-> Bummer.
+> The IRQF_NO_SUSPEND flag is used to identify the interrupts that should
+> be left enabled so as to allow them to work as expected during the
+> suspend-resume cycle, but doesn't guarantee that it will wake the system
+> from a suspended state, enable_irq_wake is recommended to be used for
+> the wakeup.
+>
+> This patch removes the use of IRQF_NO_SUSPEND flags and uses newly
+> introduce PM wakeup APIs dev_pm_{set,clear}_wake_irq.
+>
+> Cc: Linus Walleij <linus.walleij@linaro.org>
+> Cc: Alessandro Zummo <a.zummo@towertech.it>
+> Cc: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+> Cc: rtc-linux@googlegroups.com
+> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 
-Hmm... it's true.
+Looks correct to me.
+Acked-by: Linus Walleij <linus.walleij@linaro.org>
 
-> I think the crux of the original issue is that the mediatek/clk-gate.c
-> is_enabled() callbacks may be called at a point in time when venc_sel
-> is disabled but VENC PD is enabled.
-> So, perhaps an easier, but still a little hacky way out is to keep the
-> clk & PD problems separate, and just check __clk_is_enabled(venc_sel)
-> before reading the venc clk status register.
-> 
-> WDYT?
-
-This may be a way to resolve this issue, but model the prerequisite
-clock of subsystem clocks is not straightforward. And once we model the
-prerequisite clocks, someone may suggest us to enable prerequisite
-clocks before operate subsystem clocks, which may have concerns on
-overhead and complexity.
-
-> By the way, I'm not really opposed to your current implementation
-> either, I was just helping Matthias & Lucas understand in enough
-> detail that they can help review.
-
-I know and many thanks for your suggestion on this patch.
-
-
-Best regards,
-
-James
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Yours,
+Linus Walleij
