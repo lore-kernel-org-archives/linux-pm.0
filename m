@@ -1,75 +1,92 @@
-From: James Liao <jamesjj.liao@mediatek.com>
-Subject: Re: [PATCH] soc: mediatek: Fix random hang up issue while kernel
- init
-Date: Fri, 2 Oct 2015 11:00:38 +0800
-Message-ID: <1443754838.1714.94.camel@mtksdaap41>
-References: <1443162717-64831-1-git-send-email-jamesjj.liao@mediatek.com>
-	 <1443169573.3135.9.camel@pengutronix.de> <5607D224.4050801@gmail.com>
-	 <CAGS+omCXMRf4bxWancSJSq2a1pc38TYYY46Os9ASWWCRp95_ig@mail.gmail.com>
-	 <1443604022.3185.17.camel@pengutronix.de>
-	 <1443683750.1714.25.camel@mtksdaap41>
-	 <CAGS+omCpWqtKPKoyjFb=q4BxmfUGGsfvQGEZas8g8VLZKPtKbQ@mail.gmail.com>
-	 <1443691590.1714.73.camel@mtksdaap41>
-	 <CAGS+omCm2pKczooGkMf75HjQL=oF7Ufo6DsRCvvikt0QA1jx-g@mail.gmail.com>
+From: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH v4 1/5] gadget: Introduce the notifier functions
+Date: Fri, 2 Oct 2015 07:41:07 +0200
+Message-ID: <20151002054107.GB18406@kroah.com>
+References: <cover.1443057229.git.baolin.wang@linaro.org>
+ <e58e4f26028c37877d02907831cf4ae411eaf984.1443057231.git.baolin.wang@linaro.org>
+ <20151001172932.GG4469@saruman.tx.rr.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <CAGS+omCm2pKczooGkMf75HjQL=oF7Ufo6DsRCvvikt0QA1jx-g@mail.gmail.com>
-Sender: linux-clk-owner@vger.kernel.org
-To: Daniel Kurtz <djkurtz@chromium.org>
-Cc: Lucas Stach <l.stach@pengutronix.de>, Matthias Brugger <matthias.bgg@gmail.com>, Sascha Hauer <kernel@pengutronix.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "open list:OPEN FIRMWARE AND..." <devicetree@vger.kernel.org>, srv_heupstream <srv_heupstream@mediatek.com>, Kevin Hilman <khilman@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-mediatek@lists.infradead.org, linux-clk@vger.kernel.org, Mike Turquette <mturquette@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, linux-pm@vger.kernel.org, rjw@sisk.pl
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20151001172932.GG4469@saruman.tx.rr.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Felipe Balbi <balbi@ti.com>
+Cc: Baolin Wang <baolin.wang@linaro.org>, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, sojka@merica.cz, yoshihiro.shimoda.uh@renesas.com, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, sameo@linux.intel.com, lee.jones@linaro.org, ckeepax@opensource.wolfsonmicro.com, broonie@kernel.org, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, device-mainlining@lists.linuxfoundation.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Daniel,
-
-On Thu, 2015-10-01 at 18:08 +0800, Daniel Kurtz wrote:
-> I see two cases where "a power domain is a consumer of a clock":
->   (a) the clock is needed to access the power domain control
-> registers.  The clock must actually be in another power domain, since
-> otherwise you could never turn *on* the power domain in question.
->   (b) the clock is needed to talk to the power domain that is about to
-> turn off, or that was just turned on - these clocks are usually used
-> to control some kind of bus arbitration, etc.  In this case, the
-> clocks are only accessed when the power domain is on.
+On Thu, Oct 01, 2015 at 12:29:32PM -0500, Felipe Balbi wrote:
+> On Thu, Sep 24, 2015 at 10:39:23AM -0700, Baolin Wang wrote:
+> > The usb charger framework is based on usb gadget. The usb charger
+> > need to be notified the state changing of usb gadget to confirm the
+> > usb charger state.
+> > 
+> > Thus this patch adds a notifier mechanism for usb gadget to report a
+> > event to usb charger when the usb gadget state is changed.
+> > 
+> > Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+> > ---
+> >  drivers/usb/gadget/udc/udc-core.c | 32 ++++++++++++++++++++++++++++++++
+> >  include/linux/usb/gadget.h        | 18 ++++++++++++++++++
+> >  2 files changed, 50 insertions(+)
+> > 
+> > diff --git a/drivers/usb/gadget/udc/udc-core.c b/drivers/usb/gadget/udc/udc-core.c
+> > index f660afb..4238fc3 100644
+> > --- a/drivers/usb/gadget/udc/udc-core.c
+> > +++ b/drivers/usb/gadget/udc/udc-core.c
+> > @@ -129,6 +129,32 @@ void usb_gadget_giveback_request(struct usb_ep *ep,
+> >  }
+> >  EXPORT_SYMBOL_GPL(usb_gadget_giveback_request);
+> >  
+> > +int usb_gadget_register_notify(struct usb_gadget *gadget,
+> > +			       struct notifier_block *nb)
+> > +{
+> > +	int ret;
+> > +
+> > +	mutex_lock(&gadget->lock);
+> > +	ret = raw_notifier_chain_register(&gadget->nh, nb);
+> > +	mutex_unlock(&gadget->lock);
+> > +
+> > +	return ret;
+> > +}
+> > +EXPORT_SYMBOL_GPL(usb_gadget_register_notify);
+> > +
+> > +int usb_gadget_unregister_notify(struct usb_gadget *gadget,
+> > +				 struct notifier_block *nb)
+> > +{
+> > +	int ret;
+> > +
+> > +	mutex_lock(&gadget->lock);
+> > +	ret = raw_notifier_chain_unregister(&gadget->nh, nb);
 > 
-> I would argue that in both cases, the clock should in theory should
-> only be enabled/disabled by the power on/off routine for the duration
-> of time that is needed, and that it should not be "left enabled" by
-> the power domain on/off function...  I can see how this might be a
-> useful optimization - but it also seems like a way to burn extra power
-> by leaving on a clock that is not necessarily being used.
+> Greg, this is the kind of thing I wanted to avoid adding more of.
 > 
-> But - perhaps I am over thinking this, and it is standard practice to
-> bundle power domains with the clocks that service components in the
-> power domain.
+> I was wondering if you would accept subsystems using kdbus for
+> this sort of notification. I'm okay waiting for kdbus for another
+> couple merge windows (if we have to) before that's merged, but
+> if we take this raw notifier approach now, we will end up having
+> to support it forever.
 
-Yes, you are right. Power domain on/off operations need clocks to get
-status of the subsystem. Keeping clocks on during power domain on is an
-optimization.
+kdbus is userspace <-> userspace messages, it doesn't do kernel <->
+userspace messages, sorry.
 
-But to model a clock controller as a power domain consumer, or say we
-need to control power domain before clock on/off, is not a good practice
-because we always consider clock operations should be light weight.
-Power domains should be controlled explicitly by subsystem drivers,
-instead of hiding behind clock controls.
+> Also, because soon enough we will have to support USB Power Delivery
+> with Type C connector, this is bound to change in the coming months.
+> 
+> Frankly, I wanted all of this to be decided in userland with the
+> kernel just providing notification and basic safety checks (we don't
+> want to allow a bogus userspace daemon frying anybody's devices).
+> 
+> How would you feel about that ?
 
-> Or, alternatively, just prepare venc_sel once during init, for each
-> clock controller that needs it, when configuring the clock controller
-> node (for example, in mtk_vencsys_init()). This is similar to how we
-> set up 'critical clocks'.
-> By just preparing the clock, you tell the common clock core:
->  "my clock controller will need this clock later; please make sure
-> that it can be enabled/disabled later during atomic context."
+I agree I don't like new notifier chains being added, but as this is all
+in-kernel, we can change the api in the future and there would not be a
+problem, right?
 
-In current implementation, PLLs will be turned on in clk_prepare(). So
-if a clock is always prepared, its parent PLL will be kept on even if
-the clock is not enabled. It consumes extra power, so we don't prefer
-this kind of solution.
+And yeah, I'm worried about the USB Power delivery patches, I haven't
+seen them yet, but I hear about different groups doing different things
+here, and that worries me.
 
+thanks,
 
-Best regards,
-
-James
-
-
+greg k-h
