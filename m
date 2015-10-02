@@ -1,174 +1,189 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH v4 1/5] gadget: Introduce the notifier functions
-Date: Fri, 2 Oct 2015 17:47:43 +0100
-Message-ID: <20151002164743.GR12635@sirena.org.uk>
-References: <cover.1443057229.git.baolin.wang@linaro.org>
- <e58e4f26028c37877d02907831cf4ae411eaf984.1443057231.git.baolin.wang@linaro.org>
- <20151001172932.GG4469@saruman.tx.rr.com>
- <20151001174308.GL12635@sirena.org.uk>
- <20151001175849.GH4469@saruman.tx.rr.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH 5/6] thermal: iio Documentation
+Date: Fri, 02 Oct 2015 10:01:13 -0700
+Message-ID: <1443805273.3085.3.camel@linux.intel.com>
+References: <1443305111-28272-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	 <1443305111-28272-6-git-send-email-srinivas.pandruvada@linux.intel.com>
+	 <5608340F.8060406@kernel.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="5xr6Gr0irOxp3+3c"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:35817 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752315AbbJBQsZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 2 Oct 2015 12:48:25 -0400
-Content-Disposition: inline
-In-Reply-To: <20151001175849.GH4469@saruman.tx.rr.com>
+Received: from mga01.intel.com ([192.55.52.88]:1728 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750846AbbJBRBc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 2 Oct 2015 13:01:32 -0400
+In-Reply-To: <5608340F.8060406@kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Felipe Balbi <balbi@ti.com>
-Cc: Baolin Wang <baolin.wang@linaro.org>, Greg KH <gregkh@linuxfoundation.org>, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, sojka@merica.cz, yoshihiro.shimoda.uh@renesas.com, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, sameo@linux.intel.com, lee.jones@linaro.org, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, device-mainlining@lists.linuxfoundation.org
+To: Jonathan Cameron <jic23@kernel.org>, rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org
 
+On Sun, 2015-09-27 at 19:23 +0100, Jonathan Cameron wrote:
+> On 26/09/15 23:05, Srinivas Pandruvada wrote:
+> > An overview document about thermal iio binding.
+> >=20
+> > Signed-off-by: Srinivas Pandruvada <
+> > srinivas.pandruvada@linux.intel.com>
+> > ---
+> >  Documentation/thermal/thermal_iio_binding | 88
+> > +++++++++++++++++++++++++++++++
+> >  1 file changed, 88 insertions(+)
+> >  create mode 100644 Documentation/thermal/thermal_iio_binding
+> >=20
+> > diff --git a/Documentation/thermal/thermal_iio_binding
+> > b/Documentation/thermal/thermal_iio_binding
+> > new file mode 100644
+> > index 0000000..df501f1
+> > --- /dev/null
+> > +++ b/Documentation/thermal/thermal_iio_binding
+> > @@ -0,0 +1,88 @@
+> > +
+> > +Thermal IIO Bindings
+> > +
+> > +When CONFIG_THERMAL_IIO is enabled, in addition to the regular
+> > thermal
+> > +zone attributes, an additional entry for an IIO device is created.
+> > +IIO sysfs ABI documents is available at Documentation/ABI/sysfs
+> > -bus-iio.
+> > +
+> > +The following example shows the contents of the IIO:device in a
+> > thermal
+> > +zone.
+> > +
+> > +thermal_zoneX
+> > +=E2=94=9C=E2=94=80=E2=94=80 iio:device9
+> > +=E2=94=82   =E2=94=9C=E2=94=80=E2=94=80 buffer
+> > +=E2=94=82   =E2=94=82   =E2=94=9C=E2=94=80=E2=94=80 enable
+> > +=E2=94=82   =E2=94=82   =E2=94=9C=E2=94=80=E2=94=80 length
+> > +=E2=94=82   =E2=94=82   =E2=94=94=E2=94=80=E2=94=80 watermark
+> > +=E2=94=82   =E2=94=9C=E2=94=80=E2=94=80 events
+> > +=E2=94=82   =E2=94=82   =E2=94=9C=E2=94=80=E2=94=80 in_temp_thresh=
+_either_en
+> > +=E2=94=82   =E2=94=82   =E2=94=94=E2=94=80=E2=94=80 in_temp_thresh=
+_either_value
+> > +=E2=94=82   =E2=94=9C=E2=94=80=E2=94=80 in_temp_raw
+> > +=E2=94=82   =E2=94=9C=E2=94=80=E2=94=80 name
+> > +=E2=94=82   =E2=94=9C=E2=94=80=E2=94=80 scan_elements
+> > +=E2=94=82   =E2=94=82   =E2=94=9C=E2=94=80=E2=94=80 in_temp_en
+> > +=E2=94=82   =E2=94=82   =E2=94=9C=E2=94=80=E2=94=80 in_temp_index
+> > +=E2=94=82   =E2=94=82   =E2=94=9C=E2=94=80=E2=94=80 in_temp_type
+> > +=E2=94=82   =E2=94=82   =E2=94=9C=E2=94=80=E2=94=80 in_timestamp_e=
+n
+> > +=E2=94=82   =E2=94=82   =E2=94=9C=E2=94=80=E2=94=80 in_timestamp_i=
+ndex
+> > +=E2=94=82   =E2=94=82   =E2=94=94=E2=94=80=E2=94=80 in_timestamp_t=
+ype
+> > +=E2=94=82   =E2=94=9C=E2=94=80=E2=94=80 subsystem -> ../../../../.=
+=2E/bus/iio
+> > +=E2=94=82   =E2=94=9C=E2=94=80=E2=94=80 trigger0
+> > +=E2=94=82   =E2=94=82   =E2=94=94=E2=94=80=E2=94=80 name
+> > +=E2=94=82   =E2=94=9C=E2=94=80=E2=94=80 trigger
+> > +=E2=94=82   =E2=94=82   =E2=94=94=E2=94=80=E2=94=80 current_trigge=
+r
+> > +=E2=94=82   =E2=94=94=E2=94=80=E2=94=80 uevent
+> > +=E2=94=9C=E2=94=80=E2=94=80 integral_cutoff
+> > +...
+> > +... other thermal_zone attributes
+> > +...
+> > +
+> > +
+> > +IIO Attributes
+> > +
+> > +name: This shows iio device name, which will match
+> > thermal_zone/type attribute
+> > +in_temp_raw: This will show raw temperature values same as
+> > thermal_zone/temp
+> > +attribute.
+> > +
+> > +trigger/current_trigger: This is IIO way of specifying data ready
+> > indication.
+> Kind of, given it's not exposed to userspace to read, but rather
+> hooked directly
+> to the filling of the buffer.  You might want to reword to not imply
+> userspace can
+> discover that it has fired directly.
+OK
+> > +If the thermal client can provide asynchronous notifications, then
+> > a iio trigger
+> > +device is created under trigger0. The name of this trigger will be
+> > thermal
+> > +device name suffixed with devX. To enable iio buffer
+> > notifications,
+> > +trigger/current_trigger cab be updated with this trigger. For
+> > example
+> > +
+> > +#echo "x86_pkg_temp-dev9" > trigger/current_trigger
+> > +
+> > +In addition of samples can be pushed to iio buffers with external
+> > standard IIO
+> > +device triggers, E.g. sysfs trigger.
+> > +
+> > +How to enable events?
+> > +To enable events a suitable threshold temperature can be written
+> > to
+> > +in_temp_thresh_either_value
+> > +and enable by writing 1 to in_temp_thresh_either_en.
+> > +
+> > +To monitor events a good user space program is here:
+> > +tools/iio/iio_event_monitor.c
+> > +
+> > +For example
+> > +# echo 50000 >
+> > /sys/devices/virtual/thermal/thermal_zone9/iio:device9/events/in_te
+> > mp_thresh_either_value
+> > +# echo 1 >
+> > /sys/devices/virtual/thermal/thermal_zone9/iio:device9/events/in_te
+> > mp_thresh_either_en
+> > +# ./iio_event_monitor x86_pkg_temp
+> > +Found IIO device with name x86_pkg_temp with device number 9
+> > +Event: time: 1443297126626859289, type: temp, channel: 0, evtype:
+> > thresh, direction: either
+> > +
+> > +How to read temperature samples?
+> > +When thermal client or core driver calls
+> > thermal_zone_device_update, this will
+> > +result in sample pushed to iio buffers. These samples can be read
+> > from
+> > +/dev/iio:deviceX file.
+> > +
+> > +To enable buffer select scan_elements
+> > +# echo 1 > scan_elements/in_temp_en
+> > +
+> > +Set buffer length to n samples and enable buffer.
+> > +# echo 2 > buffer/length
+> > +# echo 1 > buffer/enable
+> > +
+> > +Then user can poll/select or /dev/iio:deviceX (Here X correspond
+> > to iio device number),
+> > +and read temperature samples. A good example is at
+> > tools/iio/generic_buffer.c.
+> > +
+> One too many blank lines at the end.
+> > +
+> Reasonable docs to get people started I think, but whether they are
+> detailed enough is
+> going to be a question for the thermal guys!
+>=20
+Idea here is to just give pointers to the IIO documentation and
+examples to get developers to explore if they want to use this I/F.
 
---5xr6Gr0irOxp3+3c
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> Also, perhaps a cross reference to Daniel's doc book on IIO?
+> Documentation/DocBook/iio/
+>=20
+> As that expands in detail it might include lots of stuff that isn't
+> relevant
+> to thermal, but it might also fill in details that we don't want to
+> explicitly
+> layout here.
+>=20
+Thanks for your reviews.
 
-On Thu, Oct 01, 2015 at 12:58:49PM -0500, Felipe Balbi wrote:
-> On Thu, Oct 01, 2015 at 06:43:08PM +0100, Mark Brown wrote:
-> > On Thu, Oct 01, 2015 at 12:29:32PM -0500, Felipe Balbi wrote:
+-Srinivas
 
-> > > Frankly, I wanted all of this to be decided in userland with the
-> > > kernel just providing notification and basic safety checks (we don't
-> > > want to allow a bogus userspace daemon frying anybody's devices).
-
-> > What's the advantage of pushing this to userspace?  By the time we
-> > provide enough discoverability to enable userspace to configure itself
-> > it seems like we'd have enough information to do the job anyway.
-
-
-> you're going to be dealing with a setup where each vendor does one thing
-> differently. Some will have it all in the SoC part of a single IP (dwc3 c=
-an be
-> configured that way), some will push it out to companion IC, some might e=
-ven use
-> some mostly discrete setup and so on...
-
-Right, and that was exactly what this was supposed to be all about when
-I was discussing this originally with Baolin (who's on holiday until
-sometime next week BTW, hence me answering).
-
-> We're gonna be dealing with a decision that involves information from mul=
-tiple
-> subsystems (USB, regulator, hwmon, power supply to name a few).
-
-Sure, that was part of the idea here - provide a central point
-representing the logical port where we can aggregate all the information
-we get in and distribute it to consumers. =20
-
-> We tried doing it all in the kernel back in N800, N810 and N900/N9 days a=
-nd it's
-> just plain difficult. To make matters worse, N900 had two USB PHYs, one f=
-or
-> actual runtime use and another just for detecting the charger type on the=
- other
-> end.
-
-Can you elaborate on what the difficulties are and how punting to
-userspace helps?  If anything I'd expect punting to userspace to make
-things more difficult, if nothing else it means we need to get whatever
-userspace component deployed in all relevant userspace stacks with
-appropriate configuration in order to do things. =20
-
-We do punt a lot of configuration to userspace for audio because there
-are substantial device specific policy elements in the configuration and
-it's a far from painless experience getting the code and configuration
-deployed where people need it, definitely a not great for users.
-
-> On top of all that, we still need to figure out what to do when a particu=
-lar
-> configuration gets chosen, and what to do when the bus goes into the diff=
-erent
-> suspend levels.
-
-> It's going to be a lot of policy getting added to the kernel. On top of a=
-ll
-> that, when Type C and power delivery is finally a thing, there will an en=
-tire
-> new stack for USB C commands (using the Type C CC pins or modulated on VB=
-US for
-> legacy connectors) which we will have to add to the kernel. And different
-> devices will support different charging profiles (there are at least 6 of=
- those,
-> IIRC).
-
-Yes, USB C was part of the thinking with starting this work - it's going
-to make ensuring that the system is paying attention to limits much more
-important.  I think there's two things here.  One is working out how the
-system is glued together and the other thing is working out what to do
-with that system. =20
-
-I think that where we can do it the bit where work out how the various
-components are connected and aggregate their functionality together is
-definitely a kernel job.  It means that userspace doesn't need to worry
-about implementation details of the particular system and instead gets a
-consistent, standard view of the device (in this case a USB port and how
-much power we can draw from it).
-
-For the policy stuff we do want to have userspace be able to control
-things but we need to think about how to do that - for example does the
-entire flow need to be in userspace, or can we just expose settings
-which userspace can manage?
-
-> With all these different things going on, it's best to do what e.g. NFC f=
-olks
-> did. Just a small set of hooks in the kernel, but actual implementation d=
-one by
-> a userspace daemon. This makes it even easier for middleware development =
-since
-> we can provide a higher level API for middleware to talk to the charging =
-daemon.
-
-I'm not sure that the NFC model is working well for everyone - it's OK
-if you happen to be running Android but if you aren't you're often left
-sitting there working out what to do with an Android HAL.  We can do the
-middleware thing without going quite that far, we do already have power
-management daemons in userspace even on desktop (GNOME has upowerd for
-example).
-
-> Another benefit is that this charging daemon can also give hints to power
-> management policy that e.g. we're charging at 10W or 100W and we can e.g.=
- switch
-> to performance governor safely even though battery is rather low.
-
-We definitely want userspace to be able to see the current state, even
-if it just passes it straight on to the user it's a common part of UIs
-on both desktop and mobile operating systems.
-
-> Anyway, there's really a lot that needs to happen and shuving it all in t=
-he
-> kernel is, IMHO, the wrong decision. I would be much happier with minimal=
- safety
-> requirements in the kernel and let a userspace daemon (which we should ce=
-rtainly
-> provide a reference implementation) figure out what to do. This might be =
-better
-> for things like Chromebooks and Android phones too which might make compl=
-etely
-> different decisions given a certain charging profile.
-
-Saying we don't want to have absolutely everything in kernel space
-doesn't mean we should have nothing at all there, doing that seems like
-going too far in the other direction.
-
---5xr6Gr0irOxp3+3c
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJWDrUuAAoJECTWi3JdVIfQjv0H/Rkkn21V3ZdCYb5BUGWXPEsv
-cJ4kJxJMSHTI3mVh3Q09OLfMqu+U8VXQ3Oq1MgFQRdmdeaRPblDhZ9xBYWPRk3Tc
-EvfYVWCgyk7dm6BoCE9gCWxDfNgZOpGWffRyUgDdbh4XPg0OfMWOT9GI4BYzg9sd
-/o2XFKwtQiFuku6cFcXfh8fpzz0OUBP6myG7vxBxTpQAqQnhp0khuKqapcKMALyJ
-NzhUSXu/G8oS0EcuZmJmBuHGEj9MQJl3iMoSyKDLZvjrv2I1A3usjnVEViAvYBsp
-2sKK+xBxNZBP9CTUQZ9omf/oeqneAtMiG6J9DoD2mzlvR0IGyDheY5Oa42eiO6o=
-=X7lp
------END PGP SIGNATURE-----
-
---5xr6Gr0irOxp3+3c--
+> Jonathan
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm"
+> in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
