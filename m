@@ -1,48 +1,60 @@
 From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH] PM / devfreq: fix double kfree
-Date: Fri, 02 Oct 2015 02:11:27 +0000 (GMT)
-Message-ID: <361552041.487551443751886669.JavaMail.weblogic@epmlwas01a>
+Subject: [GIT PULL: Linux-PM] devfreq fixes for 4.3-rc4
+Date: Fri, 02 Oct 2015 02:18:04 +0000 (GMT)
+Message-ID: <26450868.488131443752283554.JavaMail.weblogic@epmlwas01a>
 Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:43178 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750924AbbJBCLb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 1 Oct 2015 22:11:31 -0400
-Received: from epcpsbgr4.samsung.com
- (u144.gpu120.samsung.co.kr [203.254.230.144])
- by mailout2.samsung.com (Oracle Communications Messaging Server 7.0.5.31.0
+Received: from mailout1.samsung.com ([203.254.224.24]:43215 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751095AbbJBCSG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 1 Oct 2015 22:18:06 -0400
+Received: from epcpsbgr2.samsung.com
+ (u142.gpu120.samsung.co.kr [203.254.230.142])
+ by mailout1.samsung.com (Oracle Communications Messaging Server 7.0.5.31.0
  64bit (built May  5 2014))
- with ESMTP id <0NVK02QZUM34TA90@mailout2.samsung.com> for
- linux-pm@vger.kernel.org; Fri, 02 Oct 2015 11:11:28 +0900 (KST)
+ with ESMTP id <0NVK01GR8ME4LC40@mailout1.samsung.com> for
+ linux-pm@vger.kernel.org; Fri, 02 Oct 2015 11:18:04 +0900 (KST)
 MIME-version: 1.0
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geliang Tang <geliangtang@163.com>, =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org
+Cc: myungjoo.ham@gmail.com, geliangtang@163.com, tjakobi@math.uni-bielefeld.de
 
-PiBXaGVuIGRldmljZV9yZWdpc3RlcigpIGZhaWxzLCBrZnJlZShkZXZmcmVxKSBpcyBjYWxsZWQg
-YWxyZWFkeSBpbg0KPiBkZXZmcmVxX2Rldl9yZWxlYXNlKCksIGhlbmNlIHRoZXJlIGlzIG5vIG5l
-ZWQgdG8gY2FsbCBrZnJlZShkZXZmcmVxKQ0KPiBpbiBlcnJfZGV2IGFnYWluLg0KPiANCj4gU2ln
-bmVkLW9mZi1ieTogR2VsaWFuZyBUYW5nIDxnZWxpYW5ndGFuZ0AxNjMuY29tPg0KDQpUaGFuayB5
-b3UgZm9yIHBvaW50aW5nIG91dCB0aGF0IHB1dF9kZXZpY2UoKSB3aWxsIGV2ZW50dWFsbHkgY2Fs
-bCBrZnJlZSBhbnl3YXkuDQoNClNpZ25lZC1vZmYtYnk6IE15dW5nSm9vIEhhbSA8bXl1bmdqb28u
-aGFtQHNhbXN1bmcuY29tPg0KDQoNCg0KQ2hlZXJzLA0KTXl1bmdKb28NCg0KPiAtLS0NCj4gIGRy
-aXZlcnMvZGV2ZnJlcS9kZXZmcmVxLmMgfCAzICstLQ0KPiAgMSBmaWxlIGNoYW5nZWQsIDEgaW5z
-ZXJ0aW9uKCspLCAyIGRlbGV0aW9ucygtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvZGV2
-ZnJlcS9kZXZmcmVxLmMgYi9kcml2ZXJzL2RldmZyZXEvZGV2ZnJlcS5jDQo+IGluZGV4IDM5Mjdl
-ZDkuLjliMzUyZGEgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvZGV2ZnJlcS9kZXZmcmVxLmMNCj4g
-KysrIGIvZHJpdmVycy9kZXZmcmVxL2RldmZyZXEuYw0KPiBAQCAtNDkyLDcgKzQ5Miw3IEBAIHN0
-cnVjdCBkZXZmcmVxICpkZXZmcmVxX2FkZF9kZXZpY2Uoc3RydWN0IGRldmljZSAqZGV2LA0KPiAg
-CWlmIChlcnIpIHsNCj4gIAkJcHV0X2RldmljZSgmZGV2ZnJlcS0+ZGV2KTsNCj4gIAkJbXV0ZXhf
-dW5sb2NrKCZkZXZmcmVxLT5sb2NrKTsNCj4gLQkJZ290byBlcnJfZGV2Ow0KPiArCQlnb3RvIGVy
-cl9vdXQ7DQo+ICAJfQ0KPiAgDQo+ICAJbXV0ZXhfdW5sb2NrKCZkZXZmcmVxLT5sb2NrKTsNCj4g
-QEAgLTUxOCw3ICs1MTgsNiBAQCBzdHJ1Y3QgZGV2ZnJlcSAqZGV2ZnJlcV9hZGRfZGV2aWNlKHN0
-cnVjdCBkZXZpY2UgKmRldiwNCj4gIGVycl9pbml0Og0KPiAgCWxpc3RfZGVsKCZkZXZmcmVxLT5u
-b2RlKTsNCj4gIAlkZXZpY2VfdW5yZWdpc3RlcigmZGV2ZnJlcS0+ZGV2KTsNCj4gLWVycl9kZXY6
-DQo+ICAJa2ZyZWUoZGV2ZnJlcSk7DQo+ICBlcnJfb3V0Og0KPiAgCXJldHVybiBFUlJfUFRSKGVy
-cik7DQo+IC0tIA0KPiAyLjUuMA0K
+RGVhciBSYWZhZWwsDQoNCkhlcmUgZ29lcyBhIHB1bGwtcmVxdWVzdCBmb3IgdHdvIGJ1Z2ZpeGVz
+IG9mIGRldmZyZXEuDQoNCg0KQ2hlZXJzLA0KTXl1bmdKb28NCg0KLS0tLS1CRUdJTiBQR1AgU0lH
+TkVEIE1FU1NBR0UtLS0tLQ0KSGFzaDogU0hBMQ0KDQpUaGUgZm9sbG93aW5nIGNoYW5nZXMgc2lu
+Y2UgY29tbWl0IDlmZmVjYjEwMjgzNTA4MjYwOTM2Yjk2MDIyZDRlZTQzYTc3OThiNGM6DQoNCiAg
+TGludXggNC4zLXJjMyAoMjAxNS0wOS0yNyAwNzo1MDowOCAtMDQwMCkNCg0KYXJlIGF2YWlsYWJs
+ZSBpbiB0aGUgZ2l0IHJlcG9zaXRvcnkgYXQ6DQoNCiAgaHR0cHM6Ly9naXQua2VybmVsLm9yZy9w
+dWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvbXp4L2RldmZyZXEuZ2l0IHRhZ3MvcHVsbF9yZXFfNC4z
+X3JjNA0KDQpmb3IgeW91IHRvIGZldGNoIGNoYW5nZXMgdXAgdG8gNmQzY2JmYTcxOGVlZWRkNzBl
+ZmI5ZWIwNGNlOWIyNjFiNmZhNWI3YjoNCg0KICBQTSAvIGRldmZyZXE6IGZpeCBkb3VibGUga2Zy
+ZWUgKDIwMTUtMTAtMDIgMTE6MDU6NTggKzA5MDApDQoNCi0gLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KUHVsbCByZXF1ZXN0
+IGZvciBSYWZhZWwgZnJvbSBkZXZmcmVxIHRhcmdldHRpbmcgbmV4dCBSQyAoNC4zLXJjWCkNCg0K
+VGhlcmUgYXJlIHR3byBidWdmaXhlcyBpbmNsdWRlZC4NCg0KLSAtLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQpHZWxpYW5nIFRh
+bmcgKDEpOg0KICAgICAgUE0gLyBkZXZmcmVxOiBmaXggZG91YmxlIGtmcmVlDQoNClRvYmlhcyBK
+YWtvYmkgKDEpOg0KICAgICAgUE0gLyBkZXZmcmVxOiBGaXggZ292ZXJub3Jfc3RvcmUoKQ0KDQog
+ZHJpdmVycy9kZXZmcmVxL2RldmZyZXEuYyB8IDcgKysrKy0tLQ0KIDEgZmlsZSBjaGFuZ2VkLCA0
+IGluc2VydGlvbnMoKyksIDMgZGVsZXRpb25zKC0pDQotLS0tLUJFR0lOIFBHUCBTSUdOQVRVUkUt
+LS0tLQ0KVmVyc2lvbjogR251UEcgdjENCg0KaVFJY0JBRUJBZ0FHQlFKV0RlaUZBQW9KRUJPaHVy
+dldCb0NLeEYwUUFLQ3B6akNRaDJ0dVlUWmFNQk5BOEt2TA0KdTdJNEpxRVZlQWRyMk9NdVRKdGJG
+bXR6Mi9YaXZOUkIrbW9QanlzdkliRENqU2VJTzJOTkNkRzZIWEJnN0lYaw0KWnFVTDdvNU9xTXNk
+bTMzQWsxZUJRUTJXRmlqOXhpcnRFVFJkNUg2U0plNGVRaFloalpONUVPdzVtcFBSemZEVg0KajFx
+RlBwOVRhVy9pSGdnOS9WbEphN0V3Tk1EalZOTDNFR3F4SjR5TkFEZ01UUEpMN1VSYWFCTGQyZ1V5
+cXI3Zw0KRzJBL3drdnpWZlBGVXJvR25aQmpHVUE5Tm9tWUlWWFpQWmhsVVZ3UWlibDZBQVRENHlF
+VFM0M3k1RmZsWHpDWA0KeThZQVViWDU5a2phWUthbWJBQm5FZ3dTSGpYTEFFUE44Rm1ROE1VTE9r
+TEV0elRuYmYvZEUvU2JTcVV3c0JNOQ0KZkZ1SHd6QVU5K1dTUFo2K1RVeUhXY3g2L015aTZXT0V1
+UncwL0J1RnEzUi9uY0RldkgxYjJDd3d4dloreXNlaQ0KSDhWZ1RxYmhmbDdCaDFOSHFvbm1YTkEw
+bTB6SGdiVjNnWU9kb3AyQkF3V0p2RytBMzZadWtrQytkZlcvbytiUg0KeXZpdngvUnZxTnMzVXVF
+WWZDaSsyakV4Rm1mbUZwK2x5RC93YlN5WWI5RVhnK2FQYU9lV0NJVjFURUJKK2Frdg0KR01VaUhD
+QkJUQ1dJRm0yOTF5cVJtMFVzcUI1RWFqUHZVZkNLQ1QrQlc1aXQxeU80VmFzaDVCVnFuUWNEQ3Bz
+QQ0KMXhIUmpGM29td0RFREhTNkQ0ODdnL3pKcDBkYTlJNjlDeEZtVlN4UEswVGJkUkxFcU8vY1lr
+YzFoWnp6OVBvZA0KbHVTRmtlcmhDd3o5bWk0OWthcWoNCj10T2Y5DQotLS0tLUVORCBQR1AgU0lH
+TkFUVVJFLS0tLS0NCg==
 
 
