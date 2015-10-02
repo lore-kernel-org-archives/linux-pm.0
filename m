@@ -1,88 +1,62 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v8 1/4] device core: add device_is_bound()
-Date: Fri, 02 Oct 2015 15:46:03 +0200
-Message-ID: <51568206.X8ORLbUhNI@vostro.rjw.lan>
-References: <1443770071-2570-1-git-send-email-tomeu.vizoso@collabora.com> <1443770071-2570-2-git-send-email-tomeu.vizoso@collabora.com>
+Subject: Re: [GIT PULL: Linux-PM] devfreq fixes for 4.3-rc4
+Date: Fri, 02 Oct 2015 15:54:45 +0200
+Message-ID: <2321637.rEGvrQpaR1@vostro.rjw.lan>
+References: <26450868.488131443752283554.JavaMail.weblogic@epmlwas01a>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:57104 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:47712 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752035AbbJBNRi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 2 Oct 2015 09:17:38 -0400
-In-Reply-To: <1443770071-2570-2-git-send-email-tomeu.vizoso@collabora.com>
+	with SMTP id S1752835AbbJBN0V (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 2 Oct 2015 09:26:21 -0400
+In-Reply-To: <26450868.488131443752283554.JavaMail.weblogic@epmlwas01a>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, martyn.welch@collabora.co.uk, Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org
+To: myungjoo.ham@samsung.com
+Cc: rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org, myungjoo.ham@gmail.com, geliangtang@163.com, tjakobi@math.uni-bielefeld.de
 
-On Friday, October 02, 2015 09:14:28 AM Tomeu Vizoso wrote:
-> Adds a function that tells whether a device is already bound to a
-> driver.
+On Friday, October 02, 2015 02:18:04 AM MyungJoo Ham wrote:
+> Dear Rafael,
 > 
-> This is needed to warn when there is an attempt to change the PM domain
-> of a device that has finished probing already. The reason why we want to
-> enforce that is because in the general case that can cause problems and
-> also that we can simplify code quite a bit if we can always assume that.
+> Here goes a pull-request for two bugfixes of devfreq.
 > 
-> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-> ---
 > 
-> Changes in v8:
-> - Add device_is_bound()
+> Cheers,
+> MyungJoo
 > 
->  drivers/base/dd.c      | 9 +++++++--
->  include/linux/device.h | 2 ++
->  2 files changed, 9 insertions(+), 2 deletions(-)
+> The following changes since commit 9ffecb10283508260936b96022d4ee43a7798b4c:
 > 
-> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-> index be0eb4639128..f2007fa7316f 100644
-> --- a/drivers/base/dd.c
-> +++ b/drivers/base/dd.c
-> @@ -192,9 +192,14 @@ static int deferred_probe_initcall(void)
->  }
->  late_initcall(deferred_probe_initcall);
->  
-> +bool device_is_bound(struct device *dev)
-> +{
-> +	return klist_node_attached(&dev->p->knode_driver);
-> +}
+>   Linux 4.3-rc3 (2015-09-27 07:50:08 -0400)
+> 
+> are available in the git repository at:
+> 
+>   https://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git tags/pull_req_4.3_rc4
+> 
+> for you to fetch changes up to 6d3cbfa718eeedd70efb9eb04ce9b261b6fa5b7b:
+> 
+>   PM / devfreq: fix double kfree (2015-10-02 11:05:58 +0900)
+> 
+> ----------------------------------------------------------------
+> Pull request for Rafael from devfreq targetting next RC (4.3-rcX)
+> 
+> There are two bugfixes included.
+> 
+> ----------------------------------------------------------------
+> Geliang Tang (1):
+>       PM / devfreq: fix double kfree
+> 
+> Tobias Jakobi (1):
+>       PM / devfreq: Fix governor_store()
+> 
+>  drivers/devfreq/devfreq.c | 7 ++++---
+>  1 file changed, 4 insertions(+), 3 deletions(-)
+> 
 
-It would be useful here to add a comment explaining what locks need to be held
-around this for it to be non-racy IMO.
+Pulled, thanks!
 
-> +
->  static void driver_bound(struct device *dev)
->  {
-> -	if (klist_node_attached(&dev->p->knode_driver)) {
-> +	if (device_is_bound(dev)) {
->  		printk(KERN_WARNING "%s: device %s already bound\n",
->  			__func__, kobject_name(&dev->kobj));
->  		return;
-> @@ -545,7 +550,7 @@ static int __device_attach(struct device *dev, bool allow_async)
->  
->  	device_lock(dev);
->  	if (dev->driver) {
-> -		if (klist_node_attached(&dev->p->knode_driver)) {
-> +		if (device_is_bound(dev)) {
->  			ret = 1;
->  			goto out_unlock;
->  		}
-> diff --git a/include/linux/device.h b/include/linux/device.h
-> index 5d7bc6349930..9b41c05fb479 100644
-> --- a/include/linux/device.h
-> +++ b/include/linux/device.h
-> @@ -1035,6 +1035,8 @@ extern int __must_check driver_attach(struct device_driver *drv);
->  extern void device_initial_probe(struct device *dev);
->  extern int __must_check device_reprobe(struct device *dev);
->  
-> +extern bool device_is_bound(struct device *dev);
-> +
->  /*
->   * Easy functions for dynamically creating devices on the fly
->   */
-> 
+I've queued them up for 4.3-rc5.
 
 Thanks,
 Rafael
