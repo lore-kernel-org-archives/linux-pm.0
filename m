@@ -1,56 +1,89 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Subject: Re: [PATCH 01/17] rtc: pl031: remove misuse of IRQF_NO_SUSPEND flag
-Date: Fri, 2 Oct 2015 15:16:43 +0200
-Message-ID: <20151002131643.GD10444@piout.net>
-References: <1442850433-5903-1-git-send-email-sudeep.holla@arm.com>
- <1442850433-5903-2-git-send-email-sudeep.holla@arm.com>
- <CACRpkdaa+J76vMGHrZsTZukUS-VyDQFPqwg6teV=m050a=P8Pg@mail.gmail.com>
- <560E603E.8080603@arm.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v8 1/4] device core: add device_is_bound()
+Date: Fri, 02 Oct 2015 15:46:03 +0200
+Message-ID: <51568206.X8ORLbUhNI@vostro.rjw.lan>
+References: <1443770071-2570-1-git-send-email-tomeu.vizoso@collabora.com> <1443770071-2570-2-git-send-email-tomeu.vizoso@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <560E603E.8080603@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Linus Walleij <linus.walleij@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alessandro Zummo <a.zummo@towertech.it>, "rtc-linux@googlegroups.com" <rtc-linux@googlegroups.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:57104 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752035AbbJBNRi (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 2 Oct 2015 09:17:38 -0400
+In-Reply-To: <1443770071-2570-2-git-send-email-tomeu.vizoso@collabora.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, martyn.welch@collabora.co.uk, Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org
 
-On 02/10/2015 at 11:45:18 +0100, Sudeep Holla wrote :
+On Friday, October 02, 2015 09:14:28 AM Tomeu Vizoso wrote:
+> Adds a function that tells whether a device is already bound to a
+> driver.
 > 
+> This is needed to warn when there is an attempt to change the PM domain
+> of a device that has finished probing already. The reason why we want to
+> enforce that is because in the general case that can cause problems and
+> also that we can simplify code quite a bit if we can always assume that.
 > 
-> On 02/10/15 11:40, Linus Walleij wrote:
-> >On Mon, Sep 21, 2015 at 8:46 AM, Sudeep Holla <sudeep.holla@arm.com> wrote:
-> >
-> >>The IRQF_NO_SUSPEND flag is used to identify the interrupts that should
-> >>be left enabled so as to allow them to work as expected during the
-> >>suspend-resume cycle, but doesn't guarantee that it will wake the system
-> >>from a suspended state, enable_irq_wake is recommended to be used for
-> >>the wakeup.
-> >>
-> >>This patch removes the use of IRQF_NO_SUSPEND flags and uses newly
-> >>introduce PM wakeup APIs dev_pm_{set,clear}_wake_irq.
-> >>
-> >>Cc: Linus Walleij <linus.walleij@linaro.org>
-> >>Cc: Alessandro Zummo <a.zummo@towertech.it>
-> >>Cc: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-> >>Cc: rtc-linux@googlegroups.com
-> >>Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-> >
-> >Looks correct to me.
-> >Acked-by: Linus Walleij <linus.walleij@linaro.org>
-> >
+> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+> ---
 > 
-> Thanks, while you are at it, do you know what interrupt stv2_pl031
-> shares so that I can fix the TODO in the comment or the code(whichever
-> applicable).
+> Changes in v8:
+> - Add device_is_bound()
+> 
+>  drivers/base/dd.c      | 9 +++++++--
+>  include/linux/device.h | 2 ++
+>  2 files changed, 9 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+> index be0eb4639128..f2007fa7316f 100644
+> --- a/drivers/base/dd.c
+> +++ b/drivers/base/dd.c
+> @@ -192,9 +192,14 @@ static int deferred_probe_initcall(void)
+>  }
+>  late_initcall(deferred_probe_initcall);
+>  
+> +bool device_is_bound(struct device *dev)
+> +{
+> +	return klist_node_attached(&dev->p->knode_driver);
+> +}
+
+It would be useful here to add a comment explaining what locks need to be held
+around this for it to be non-racy IMO.
+
+> +
+>  static void driver_bound(struct device *dev)
+>  {
+> -	if (klist_node_attached(&dev->p->knode_driver)) {
+> +	if (device_is_bound(dev)) {
+>  		printk(KERN_WARNING "%s: device %s already bound\n",
+>  			__func__, kobject_name(&dev->kobj));
+>  		return;
+> @@ -545,7 +550,7 @@ static int __device_attach(struct device *dev, bool allow_async)
+>  
+>  	device_lock(dev);
+>  	if (dev->driver) {
+> -		if (klist_node_attached(&dev->p->knode_driver)) {
+> +		if (device_is_bound(dev)) {
+>  			ret = 1;
+>  			goto out_unlock;
+>  		}
+> diff --git a/include/linux/device.h b/include/linux/device.h
+> index 5d7bc6349930..9b41c05fb479 100644
+> --- a/include/linux/device.h
+> +++ b/include/linux/device.h
+> @@ -1035,6 +1035,8 @@ extern int __must_check driver_attach(struct device_driver *drv);
+>  extern void device_initial_probe(struct device *dev);
+>  extern int __must_check device_reprobe(struct device *dev);
+>  
+> +extern bool device_is_bound(struct device *dev);
+> +
+>  /*
+>   * Easy functions for dynamically creating devices on the fly
+>   */
 > 
 
-So that you know, I'm planning to apply them this weekend, I couldn't
-find time to do it before.
+Thanks,
+Rafael
 
--- 
-Alexandre Belloni, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
