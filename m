@@ -1,51 +1,56 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH 01/17] rtc: pl031: remove misuse of IRQF_NO_SUSPEND flag
-Date: Fri, 2 Oct 2015 11:45:18 +0100
-Message-ID: <560E603E.8080603@arm.com>
-References: <1442850433-5903-1-git-send-email-sudeep.holla@arm.com>
- <1442850433-5903-2-git-send-email-sudeep.holla@arm.com>
- <CACRpkdaa+J76vMGHrZsTZukUS-VyDQFPqwg6teV=m050a=P8Pg@mail.gmail.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH 1/2] ARM: cpuidle: make cpuidle_ops interfaces ARM64
+ compliant
+Date: Fri, 2 Oct 2015 11:52:17 +0100
+Message-ID: <20151002105217.GA1533@red-moon>
+References: <1443689933-28882-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1443689933-28882-2-git-send-email-lorenzo.pieralisi@arm.com>
+ <560E5076.7020906@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:39769 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:39789 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751293AbbJBKpW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 2 Oct 2015 06:45:22 -0400
-In-Reply-To: <CACRpkdaa+J76vMGHrZsTZukUS-VyDQFPqwg6teV=m050a=P8Pg@mail.gmail.com>
+	id S1750777AbbJBKvy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 2 Oct 2015 06:51:54 -0400
+Content-Disposition: inline
+In-Reply-To: <560E5076.7020906@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, "rtc-linux@googlegroups.com" <rtc-linux@googlegroups.com>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Russell King <linux@arm.linux.org.uk>, Will Deacon <Will.Deacon@arm.com>, Sudeep Holla <Sudeep.Holla@arm.com>, Catalin Marinas <Catalin.Marinas@arm.com>, Mark Rutland <Mark.Rutland@arm.com>, Jisheng Zhang <jszhang@marvell.com>
 
+On Fri, Oct 02, 2015 at 10:37:58AM +0100, Daniel Lezcano wrote:
 
+[...]
 
-On 02/10/15 11:40, Linus Walleij wrote:
-> On Mon, Sep 21, 2015 at 8:46 AM, Sudeep Holla <sudeep.holla@arm.com> wrote:
->
->> The IRQF_NO_SUSPEND flag is used to identify the interrupts that should
->> be left enabled so as to allow them to work as expected during the
->> suspend-resume cycle, but doesn't guarantee that it will wake the system
->> from a suspended state, enable_irq_wake is recommended to be used for
->> the wakeup.
->>
->> This patch removes the use of IRQF_NO_SUSPEND flags and uses newly
->> introduce PM wakeup APIs dev_pm_{set,clear}_wake_irq.
->>
->> Cc: Linus Walleij <linus.walleij@linaro.org>
->> Cc: Alessandro Zummo <a.zummo@towertech.it>
->> Cc: Alexandre Belloni <alexandre.belloni@free-electrons.com>
->> Cc: rtc-linux@googlegroups.com
->> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
->
-> Looks correct to me.
-> Acked-by: Linus Walleij <linus.walleij@linaro.org>
->
+> > diff --git a/arch/arm/include/asm/cpuidle.h b/arch/arm/include/asm/cpuidle.h
+> > index 0f84249..ee36dd4 100644
+> > --- a/arch/arm/include/asm/cpuidle.h
+> > +++ b/arch/arm/include/asm/cpuidle.h
+> > @@ -30,8 +30,8 @@ static inline int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
+> >   struct device_node;
+> >
+> >   struct cpuidle_ops {
+> > -	int (*suspend)(int cpu, unsigned long arg);
+> > -	int (*init)(struct device_node *, int cpu);
+> 
+> I don't know the reason why the 'cpu_psci_cpu_init_idle' signature was 
+> changed. It has before the same signature as this ops.
 
-Thanks, while you are at it, do you know what interrupt stv2_pl031
-shares so that I can fix the TODO in the comment or the code(whichever
-applicable).
+Short answer, ACPI (ie device_node is useless on ACPI systems, so
+there is no point in passing it).
 
-Regards,
-Sudeep
+> As in ARM, we can have more than one driver using the cpuidle_ops 
+> infrastructure, removing the struct device_node * parameter will force 
+> to add a call to of_get_cpu_node(cpu, NULL) in each driver with a call 
+> to of_node_put (btw it is missing below in qcom_cpuidle_init), the 
+> rollback labels and this will lead to duplicated code.
+> 
+> So why not change ARM64 signature instead ?
+
+See above, I will see what I can do and I understand your concern,
+it makes sense.
+
+Thanks,
+Lorenzo
