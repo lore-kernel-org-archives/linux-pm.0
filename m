@@ -1,174 +1,79 @@
 From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: [PATCH v8 3/4] PM / sleep: Go direct_complete if driver has no callbacks
-Date: Fri,  2 Oct 2015 09:14:30 +0200
-Message-ID: <1443770071-2570-4-git-send-email-tomeu.vizoso@collabora.com>
+Subject: [PATCH v8 1/4] device core: add device_is_bound()
+Date: Fri,  2 Oct 2015 09:14:28 +0200
+Message-ID: <1443770071-2570-2-git-send-email-tomeu.vizoso@collabora.com>
 References: <1443770071-2570-1-git-send-email-tomeu.vizoso@collabora.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f174.google.com ([209.85.212.174]:33297 "EHLO
+	mail-wi0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751425AbbJBHQl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 2 Oct 2015 03:16:41 -0400
 In-Reply-To: <1443770071-2570-1-git-send-email-tomeu.vizoso@collabora.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, martyn.welch@collabora.co.uk, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, martyn.welch@collabora.co.uk, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org
 
-If a suitable prepare callback cannot be found for a given device and
-its driver has no PM callbacks at all, assume that it can go direct to
-complete when the system goes to sleep.
+Adds a function that tells whether a device is already bound to a
+driver.
 
-The reason for this is that there's lots of devices in a system that do
-no PM at all and there's no reason for them to prevent their ancestors
-to do direct_complete if they can support it.
+This is needed to warn when there is an attempt to change the PM domain
+of a device that has finished probing already. The reason why we want to
+enforce that is because in the general case that can cause problems and
+also that we can simplify code quite a bit if we can always assume that.
 
 Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
 ---
 
 Changes in v8:
-- Move no_pm_callbacks field into CONFIG_PM_SLEEP
-- Call device_check_pm_callbacks only after a device is bound or unbound
+- Add device_is_bound()
 
-Changes in v7:
-- Reduce indentation by adding a label in device_prepare()
-
-Changes in v6:
-- Add stub for !CONFIG_PM.
-- Move implementation of device_check_pm_callbacks to power/main.c as it
-  doesn't belong to CONFIG_PM_SLEEP.
-- Take dev->power.lock before modifying flag.
-
-Changes in v5:
-- Check for all dev_pm_ops instances associated to a device, updating a
-  no_pm_callbacks flag at the times when that could change.
-
- drivers/base/dd.c           |  3 +++
- drivers/base/power/domain.c |  2 ++
- drivers/base/power/main.c   | 33 +++++++++++++++++++++++++++++++++
- drivers/base/power/power.h  |  6 ++++++
- include/linux/pm.h          |  1 +
- 5 files changed, 45 insertions(+)
+ drivers/base/dd.c      | 9 +++++++--
+ include/linux/device.h | 2 ++
+ 2 files changed, 9 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-index f2007fa7316f..2e3809affb06 100644
+index be0eb4639128..f2007fa7316f 100644
 --- a/drivers/base/dd.c
 +++ b/drivers/base/dd.c
-@@ -210,6 +210,8 @@ static void driver_bound(struct device *dev)
- 
- 	klist_add_tail(&dev->p->knode_driver, &dev->driver->p->klist_devices);
- 
-+	device_check_pm_callbacks(dev);
-+
- 	/*
- 	 * Make sure the device is no longer in one of the deferred lists and
- 	 * kick off retrying all pending devices
-@@ -700,6 +702,7 @@ static void __device_release_driver(struct device *dev)
- 			dev->pm_domain->dismiss(dev);
- 
- 		klist_remove(&dev->p->knode_driver);
-+		device_check_pm_callbacks(dev);
- 		if (dev->bus)
- 			blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
- 						     BUS_NOTIFY_UNBOUND_DRIVER,
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index b75d02aa8d93..9dc1ce9c573b 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -20,6 +20,8 @@
- #include <linux/suspend.h>
- #include <linux/export.h>
- 
-+#include "power.h"
-+
- #define GENPD_RETRY_MAX_MS	250		/* Approximate */
- 
- #define GENPD_DEV_CALLBACK(genpd, type, callback, dev)		\
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 1710c26ba097..43b44f8251c7 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -1569,6 +1569,11 @@ static int device_prepare(struct device *dev, pm_message_t state)
- 
- 	dev->power.wakeup_path = device_may_wakeup(dev);
- 
-+	if (dev->power.no_pm_callbacks) {
-+		ret = 1;	/* Let device go direct_complete */
-+		goto unlock;
-+	}
-+
- 	if (dev->pm_domain) {
- 		info = "preparing power domain ";
- 		callback = dev->pm_domain->ops.prepare;
-@@ -1591,6 +1596,7 @@ static int device_prepare(struct device *dev, pm_message_t state)
- 	if (callback)
- 		ret = callback(dev);
- 
-+unlock:
- 	device_unlock(dev);
- 
- 	if (ret < 0) {
-@@ -1719,3 +1725,30 @@ void dpm_for_each_dev(void *data, void (*fn)(struct device *, void *))
- 	device_pm_unlock();
+@@ -192,9 +192,14 @@ static int deferred_probe_initcall(void)
  }
- EXPORT_SYMBOL_GPL(dpm_for_each_dev);
-+
-+static bool pm_ops_is_empty(const struct dev_pm_ops *ops)
+ late_initcall(deferred_probe_initcall);
+ 
++bool device_is_bound(struct device *dev)
 +{
-+	if (!ops)
-+		return true;
-+
-+	return !ops->prepare &&
-+	       !ops->suspend &&
-+	       !ops->suspend_late &&
-+	       !ops->suspend_noirq &&
-+	       !ops->resume_noirq &&
-+	       !ops->resume_early &&
-+	       !ops->resume &&
-+	       !ops->complete;
++	return klist_node_attached(&dev->p->knode_driver);
 +}
 +
-+void device_check_pm_callbacks(struct device *dev)
-+{
-+	spin_lock_irq(&dev->power.lock);
-+	dev->power.no_pm_callbacks =
-+		(!dev->bus || pm_ops_is_empty(dev->bus->pm)) &&
-+		(!dev->class || pm_ops_is_empty(dev->class->pm)) &&
-+		(!dev->type || pm_ops_is_empty(dev->type->pm)) &&
-+		(!dev->pm_domain || pm_ops_is_empty(&dev->pm_domain->ops)) &&
-+		(!dev->driver || pm_ops_is_empty(dev->driver->pm));
-+	spin_unlock_irq(&dev->power.lock);
-+}
-diff --git a/drivers/base/power/power.h b/drivers/base/power/power.h
-index 998fa6b23084..b3e35e825cd8 100644
---- a/drivers/base/power/power.h
-+++ b/drivers/base/power/power.h
-@@ -37,6 +37,8 @@ extern void device_wakeup_detach_irq(struct device *dev);
- extern void device_wakeup_arm_wake_irqs(void);
- extern void device_wakeup_disarm_wake_irqs(void);
- 
-+extern void device_check_pm_callbacks(struct device *dev);
-+
- #else
- 
- static inline int
-@@ -58,6 +60,10 @@ static inline void device_wakeup_disarm_wake_irqs(void)
+ static void driver_bound(struct device *dev)
  {
- }
+-	if (klist_node_attached(&dev->p->knode_driver)) {
++	if (device_is_bound(dev)) {
+ 		printk(KERN_WARNING "%s: device %s already bound\n",
+ 			__func__, kobject_name(&dev->kobj));
+ 		return;
+@@ -545,7 +550,7 @@ static int __device_attach(struct device *dev, bool allow_async)
  
-+static inline void device_check_pm_callbacks(struct device *dev)
-+{
-+}
+ 	device_lock(dev);
+ 	if (dev->driver) {
+-		if (klist_node_attached(&dev->p->knode_driver)) {
++		if (device_is_bound(dev)) {
+ 			ret = 1;
+ 			goto out_unlock;
+ 		}
+diff --git a/include/linux/device.h b/include/linux/device.h
+index 5d7bc6349930..9b41c05fb479 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -1035,6 +1035,8 @@ extern int __must_check driver_attach(struct device_driver *drv);
+ extern void device_initial_probe(struct device *dev);
+ extern int __must_check device_reprobe(struct device *dev);
+ 
++extern bool device_is_bound(struct device *dev);
 +
- #endif /* CONFIG_PM_SLEEP */
- 
  /*
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index 35d599e7250d..7943acb74ae4 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -573,6 +573,7 @@ struct dev_pm_info {
- 	struct wakeup_source	*wakeup;
- 	bool			wakeup_path:1;
- 	bool			syscore:1;
-+	bool			no_pm_callbacks:1;	/* Owned by the PM core */
- #else
- 	unsigned int		should_wakeup:1;
- #endif
+  * Easy functions for dynamically creating devices on the fly
+  */
 -- 
 2.4.3
+
