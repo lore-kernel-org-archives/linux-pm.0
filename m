@@ -1,101 +1,144 @@
-From: Daniel Kurtz <djkurtz@chromium.org>
-Subject: Re: [PATCH] soc: mediatek: Fix random hang up issue while kernel init
-Date: Fri, 2 Oct 2015 17:25:29 +0800
-Message-ID: <CAGS+omBQLVGeWrNoD+8L_J0C9DjzkXO_cfph2tQgMGiPBJq2vw@mail.gmail.com>
-References: <1443162717-64831-1-git-send-email-jamesjj.liao@mediatek.com>
- <1443169573.3135.9.camel@pengutronix.de> <5607D224.4050801@gmail.com>
- <CAGS+omCXMRf4bxWancSJSq2a1pc38TYYY46Os9ASWWCRp95_ig@mail.gmail.com>
- <1443604022.3185.17.camel@pengutronix.de> <1443683750.1714.25.camel@mtksdaap41>
- <CAGS+omCpWqtKPKoyjFb=q4BxmfUGGsfvQGEZas8g8VLZKPtKbQ@mail.gmail.com>
- <1443691590.1714.73.camel@mtksdaap41> <CAGS+omCm2pKczooGkMf75HjQL=oF7Ufo6DsRCvvikt0QA1jx-g@mail.gmail.com>
- <1443754838.1714.94.camel@mtksdaap41>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 1/2] ARM: cpuidle: make cpuidle_ops interfaces ARM64
+ compliant
+Date: Fri, 2 Oct 2015 11:37:58 +0200
+Message-ID: <560E5076.7020906@linaro.org>
+References: <1443689933-28882-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1443689933-28882-2-git-send-email-lorenzo.pieralisi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <1443754838.1714.94.camel@mtksdaap41>
-Sender: linux-clk-owner@vger.kernel.org
-To: James Liao <jamesjj.liao@mediatek.com>
-Cc: Lucas Stach <l.stach@pengutronix.de>, Matthias Brugger <matthias.bgg@gmail.com>, Sascha Hauer <kernel@pengutronix.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "open list:OPEN FIRMWARE AND..." <devicetree@vger.kernel.org>, srv_heupstream <srv_heupstream@mediatek.com>, Kevin Hilman <khilman@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-mediatek@lists.infradead.org, linux-clk@vger.kernel.org, Mike Turquette <mturquette@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, linux-pm@vger.kernel.org, rjw@sisk.pl
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f177.google.com ([209.85.212.177]:36453 "EHLO
+	mail-wi0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751932AbbJBJiC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 2 Oct 2015 05:38:02 -0400
+Received: by wicgb1 with SMTP id gb1so24697170wic.1
+        for <linux-pm@vger.kernel.org>; Fri, 02 Oct 2015 02:38:00 -0700 (PDT)
+In-Reply-To: <1443689933-28882-2-git-send-email-lorenzo.pieralisi@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-
-On Fri, Oct 2, 2015 at 11:00 AM, James Liao <jamesjj.liao@mediatek.com> wrote:
-> Hi Daniel,
->
-> On Thu, 2015-10-01 at 18:08 +0800, Daniel Kurtz wrote:
->> I see two cases where "a power domain is a consumer of a clock":
->>   (a) the clock is needed to access the power domain control
->> registers.  The clock must actually be in another power domain, since
->> otherwise you could never turn *on* the power domain in question.
->>   (b) the clock is needed to talk to the power domain that is about to
->> turn off, or that was just turned on - these clocks are usually used
->> to control some kind of bus arbitration, etc.  In this case, the
->> clocks are only accessed when the power domain is on.
->>
->> I would argue that in both cases, the clock should in theory should
->> only be enabled/disabled by the power on/off routine for the duration
->> of time that is needed, and that it should not be "left enabled" by
->> the power domain on/off function...  I can see how this might be a
->> useful optimization - but it also seems like a way to burn extra power
->> by leaving on a clock that is not necessarily being used.
->>
->> But - perhaps I am over thinking this, and it is standard practice to
->> bundle power domains with the clocks that service components in the
->> power domain.
->
-> Yes, you are right. Power domain on/off operations need clocks to get
-> status of the subsystem. Keeping clocks on during power domain on is an
-> optimization.
->
-> But to model a clock controller as a power domain consumer, or say we
-> need to control power domain before clock on/off, is not a good practice
-> because we always consider clock operations should be light weight.
-> Power domains should be controlled explicitly by subsystem drivers,
-> instead of hiding behind clock controls.
->
->> Or, alternatively, just prepare venc_sel once during init, for each
->> clock controller that needs it, when configuring the clock controller
->> node (for example, in mtk_vencsys_init()). This is similar to how we
->> set up 'critical clocks'.
->> By just preparing the clock, you tell the common clock core:
->>  "my clock controller will need this clock later; please make sure
->> that it can be enabled/disabled later during atomic context."
->
-> In current implementation, PLLs will be turned on in clk_prepare(). So
-> if a clock is always prepared, its parent PLL will be kept on even if
-> the clock is not enabled. It consumes extra power, so we don't prefer
-> this kind of solution.
-
-Actually, I should have proposed adding prepare / unprepare callbacks
-to mtk_clk_gate_ops in which we prepare_enable/disable_unprepare
-venc_sel (& mm_sel).
-This should correctly track all of the clk reference counting needed
-to access the venc clock control registers.
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Cc: Lina Iyer <lina.iyer@linaro.org>, Russell King <linux@arm.linux.org.uk>, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, Jisheng Zhang <jszhang@marvell.com>
 
 
-However, this would not actually solve the issue that this patch is
-trying to fix, since nobody would have called the
-prepare_clk(venc_cke0) before clk_disable_unused_subtree(venc_cke0).
-Bummer.
+Hi Lorenzo,
 
-I think the crux of the original issue is that the mediatek/clk-gate.c
-is_enabled() callbacks may be called at a point in time when venc_sel
-is disabled but VENC PD is enabled.
-So, perhaps an easier, but still a little hacky way out is to keep the
-clk & PD problems separate, and just check __clk_is_enabled(venc_sel)
-before reading the venc clk status register.
 
-WDYT?
+On 10/01/2015 10:58 AM, Lorenzo Pieralisi wrote:
+> In preparation for sharing PSCI idle operations on ARM and ARM64,
+> this patch refines the ARM cpuidle_ops interfaces so that the
+> two arches can use the same interfaces seamlessly.
+>
+> Based-on-patch-by: Jisheng Zhang <jszhang@marvell.com>
+> Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> Cc: Lina Iyer <lina.iyer@linaro.org>
+> Cc: Russell King <linux@arm.linux.org.uk>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+>   arch/arm/include/asm/cpuidle.h | 4 ++--
+>   arch/arm/kernel/cpuidle.c      | 4 ++--
+>   drivers/soc/qcom/spm.c         | 9 +++++++--
+>   3 files changed, 11 insertions(+), 6 deletions(-)
+>
+> diff --git a/arch/arm/include/asm/cpuidle.h b/arch/arm/include/asm/cp=
+uidle.h
+> index 0f84249..ee36dd4 100644
+> --- a/arch/arm/include/asm/cpuidle.h
+> +++ b/arch/arm/include/asm/cpuidle.h
+> @@ -30,8 +30,8 @@ static inline int arm_cpuidle_simple_enter(struct c=
+puidle_device *dev,
+>   struct device_node;
+>
+>   struct cpuidle_ops {
+> -	int (*suspend)(int cpu, unsigned long arg);
+> -	int (*init)(struct device_node *, int cpu);
 
-By the way, I'm not really opposed to your current implementation
-either, I was just helping Matthias & Lucas understand in enough
-detail that they can help review.
+I don't know the reason why the 'cpu_psci_cpu_init_idle' signature was=20
+changed. It has before the same signature as this ops.
 
--Dan
+As in ARM, we can have more than one driver using the cpuidle_ops=20
+infrastructure, removing the struct device_node * parameter will force=20
+to add a call to of_get_cpu_node(cpu, NULL) in each driver with a call=20
+to of_node_put (btw it is missing below in qcom_cpuidle_init), the=20
+rollback labels and this will lead to duplicated code.
 
+So why not change ARM64 signature instead ?
+
+> +	int (*suspend)(unsigned long arg);
+> +	int (*init)(unsigned int cpu);
+>   };
 >
+>   struct of_cpuidle_method {
+> diff --git a/arch/arm/kernel/cpuidle.c b/arch/arm/kernel/cpuidle.c
+> index 318da33..a75b7ae 100644
+> --- a/arch/arm/kernel/cpuidle.c
+> +++ b/arch/arm/kernel/cpuidle.c
+> @@ -56,7 +56,7 @@ int arm_cpuidle_suspend(int index)
+>   	int cpu =3D smp_processor_id();
 >
-> Best regards,
+>   	if (cpuidle_ops[cpu].suspend)
+> -		ret =3D cpuidle_ops[cpu].suspend(cpu, index);
+> +		ret =3D cpuidle_ops[cpu].suspend(index);
 >
-> James
+>   	return ret;
+>   }
+> @@ -144,7 +144,7 @@ int __init arm_cpuidle_init(int cpu)
 >
+>   	ret =3D arm_cpuidle_read_ops(cpu_node, cpu);
+>   	if (!ret && cpuidle_ops[cpu].init)
+> -		ret =3D cpuidle_ops[cpu].init(cpu_node, cpu);
+> +		ret =3D cpuidle_ops[cpu].init(cpu);
 >
+>   	of_node_put(cpu_node);
+>
+> diff --git a/drivers/soc/qcom/spm.c b/drivers/soc/qcom/spm.c
+> index b04b05a..8deaea0 100644
+> --- a/drivers/soc/qcom/spm.c
+> +++ b/drivers/soc/qcom/spm.c
+> @@ -197,8 +197,9 @@ static int qcom_cpu_spc(int cpu)
+>   	return ret;
+>   }
+>
+> -static int qcom_idle_enter(int cpu, unsigned long index)
+> +static int qcom_idle_enter(unsigned long index)
+>   {
+> +	int cpu =3D smp_processor_id();
+>   	return per_cpu(qcom_idle_ops, cpu)[index](cpu);
+>   }
+>
+> @@ -207,7 +208,7 @@ static const struct of_device_id qcom_idle_state_=
+match[] __initconst =3D {
+>   	{ },
+>   };
+>
+> -static int __init qcom_cpuidle_init(struct device_node *cpu_node, in=
+t cpu)
+> +static int __init qcom_cpuidle_init(unsigned int cpu)
+>   {
+>   	const struct of_device_id *match_id;
+>   	struct device_node *state_node;
+> @@ -217,6 +218,10 @@ static int __init qcom_cpuidle_init(struct devic=
+e_node *cpu_node, int cpu)
+>   	idle_fn *fns;
+>   	cpumask_t mask;
+>   	bool use_scm_power_down =3D false;
+> +	struct device_node *cpu_node =3D of_get_cpu_node(cpu, NULL);
+> +
+> +	if (!cpu_node)
+> +		return -ENODEV;
+>
+>   	for (i =3D 0; ; i++) {
+>   		state_node =3D of_parse_phandle(cpu_node, "cpu-idle-states", i);
+>
+
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
