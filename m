@@ -1,254 +1,66 @@
-From: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Subject: [PATCH] CPPC: Add a CPUFreq driver for use with CPPC
-Date: Fri,  2 Oct 2015 10:04:01 -0400
-Message-ID: <1443794641-6960-1-git-send-email-ashwin.chaugule@linaro.org>
-References: <6d24b51b0387f4ef6cc4a2517ace2e5e9731d7be.1441830300.git.ashwin.chaugule@linaro.org>
+From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
+Subject: Re: [PATCH] PM / AVS: rockchip-io: Fix module autoload for OF platform driver
+Date: Fri, 02 Oct 2015 16:08:02 +0200
+Message-ID: <1959860.KNdhvIZiRr@diego>
+References: <20150918165258.GA27398@goodgumbo.baconseed.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f178.google.com ([209.85.212.178]:36407 "EHLO
-	mail-wi0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752119AbbJBOEJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 2 Oct 2015 10:04:09 -0400
-Received: by wicgb1 with SMTP id gb1so34520634wic.1
-        for <linux-pm@vger.kernel.org>; Fri, 02 Oct 2015 07:04:08 -0700 (PDT)
-In-Reply-To: <6d24b51b0387f4ef6cc4a2517ace2e5e9731d7be.1441830300.git.ashwin.chaugule@linaro.org>
+Received: from gloria.sntech.de ([95.129.55.99]:35885 "EHLO gloria.sntech.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752040AbbJBOIJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 2 Oct 2015 10:08:09 -0400
+In-Reply-To: <20150918165258.GA27398@goodgumbo.baconseed.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: sudeep.holla@arm.com, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linaro-acpi@lists.linaro.org, patches@linaro.org, viresh.kumar@linaro.org, rwells@codeaurora.org, Ashwin Chaugule <ashwin.chaugule@linaro.org>
+To: Luis de Bethencourt <luis@debethencourt.com>
+Cc: linux-kernel@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Nishanth Menon <nm@ti.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org
 
-This driver utilizes the methods introduced in a previous
-patch titled - "ACPI: Introduce CPU performance controls using CPPC"
-and enables usage with existing CPUFreq governors.
+Am Freitag, 18. September 2015, 18:52:58 schrieb Luis de Bethencourt:
+> This platform driver has a OF device ID table but the OF module
+> alias information is not created so module autoloading won't work.
+> 
+> Signed-off-by: Luis de Bethencourt <luisbg@osg.samsung.com>
 
-Signed-off-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-Reviewed-by: Al Stone <al.stone@linaro.org>
----
- drivers/cpufreq/Kconfig.arm    |  17 ++++
- drivers/cpufreq/Makefile       |   2 +
- drivers/cpufreq/cppc_cpufreq.c | 176 +++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 195 insertions(+)
- create mode 100644 drivers/cpufreq/cppc_cpufreq.c
+looks obviously correct.
 
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index cc8a71c..e8bb41b 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -261,3 +261,20 @@ config ARM_PXA2xx_CPUFREQ
- 	  This add the CPUFreq driver support for Intel PXA2xx SOCs.
- 
- 	  If in doubt, say N.
-+
-+config ACPI_CPPC_CPUFREQ
-+	tristate "CPUFreq driver based on the ACPI CPPC spec"
-+	depends on ACPI
-+	select ACPI_CPPC_LIB
-+	default n
-+	help
-+	  This adds a CPUFreq driver which uses CPPC methods
-+	  as described in the ACPIv5.1 spec. CPPC stands for
-+	  Collaborative Processor Performance Controls. It
-+	  is based on an abstract continuous scale of CPU
-+	  performance values which allows the remote power
-+	  processor to flexibly optimize for power and
-+	  performance. CPPC relies on power management firmware
-+	  support for its operation.
-+
-+	  If in doubt, say N.
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index 2169bf7..676660e 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -78,6 +78,8 @@ obj-$(CONFIG_ARM_SA1110_CPUFREQ)	+= sa1110-cpufreq.o
- obj-$(CONFIG_ARM_SPEAR_CPUFREQ)		+= spear-cpufreq.o
- obj-$(CONFIG_ARM_TEGRA_CPUFREQ)		+= tegra-cpufreq.o
- obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ)	+= vexpress-spc-cpufreq.o
-+obj-$(CONFIG_ACPI_CPPC_CPUFREQ) += cppc_cpufreq.o
-+
- 
- ##################################################################################
- # PowerPC platform drivers
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-new file mode 100644
-index 0000000..93c219f
---- /dev/null
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -0,0 +1,176 @@
-+/*
-+ * CPPC (Collaborative Processor Performance Control) driver for
-+ * interfacing with the CPUfreq layer and governors. See
-+ * cppc_acpi.c for CPPC specific methods.
-+ *
-+ * (C) Copyright 2014, 2015 Linaro Ltd.
-+ * Author: Ashwin Chaugule <ashwin.chaugule@linaro.org>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; version 2
-+ * of the License.
-+ */
-+
-+#define pr_fmt(fmt)	"CPPC Cpufreq:"	fmt
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/delay.h>
-+#include <linux/cpu.h>
-+#include <linux/cpufreq.h>
-+#include <linux/vmalloc.h>
-+
-+#include <acpi/cppc_acpi.h>
-+
-+/*
-+ * These structs contain information parsed from per CPU
-+ * ACPI _CPC structures.
-+ * e.g. For each CPU the highest, lowest supported
-+ * performance capabilities, desired performance level
-+ * requested etc.
-+ */
-+static struct cpudata **all_cpu_data;
-+
-+static int cppc_cpufreq_set_target(struct cpufreq_policy *policy,
-+		unsigned int target_freq,
-+		unsigned int relation)
-+{
-+	struct cpudata *cpu;
-+	struct cpufreq_freqs freqs;
-+	int ret = 0;
-+
-+	cpu = all_cpu_data[policy->cpu];
-+
-+	cpu->perf_ctrls.desired_perf = target_freq;
-+	freqs.old = policy->cur;
-+	freqs.new = target_freq;
-+
-+	cpufreq_freq_transition_begin(policy, &freqs);
-+	ret = cppc_set_perf(cpu->cpu, &cpu->perf_ctrls);
-+	cpufreq_freq_transition_end(policy, &freqs, ret != 0);
-+
-+	if (ret)
-+		pr_debug("Failed to set target on CPU:%d. ret:%d\n",
-+				cpu->cpu, ret);
-+
-+	return ret;
-+}
-+
-+static int cppc_verify_policy(struct cpufreq_policy *policy)
-+{
-+	cpufreq_verify_within_cpu_limits(policy);
-+	return 0;
-+}
-+
-+static void cppc_cpufreq_stop_cpu(struct cpufreq_policy *policy)
-+{
-+	int cpu_num = policy->cpu;
-+	struct cpudata *cpu = all_cpu_data[cpu_num];
-+	int ret;
-+
-+	cpu->perf_ctrls.desired_perf = cpu->perf_caps.lowest_perf;
-+
-+	ret = cppc_set_perf(cpu_num, &cpu->perf_ctrls);
-+	if (ret)
-+		pr_debug("Err setting perf value:%d on CPU:%d. ret:%d\n",
-+				cpu->perf_caps.lowest_perf, cpu_num, ret);
-+}
-+
-+static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
-+{
-+	struct cpudata *cpu;
-+	unsigned int cpu_num = policy->cpu;
-+	int ret = 0;
-+
-+	cpu = all_cpu_data[policy->cpu];
-+
-+	cpu->cpu = cpu_num;
-+	ret = cppc_get_perf_caps(policy->cpu, &cpu->perf_caps);
-+
-+	if (ret) {
-+		pr_debug("Err reading CPU%d perf capabilities. ret:%d\n",
-+				cpu_num, ret);
-+		return ret;
-+	}
-+
-+	policy->min = cpu->perf_caps.lowest_perf;
-+	policy->max = cpu->perf_caps.highest_perf;
-+	policy->cpuinfo.min_freq = policy->min;
-+	policy->cpuinfo.max_freq = policy->max;
-+
-+	if (policy->shared_type == CPUFREQ_SHARED_TYPE_ANY)
-+		cpumask_copy(policy->cpus, cpu->shared_cpu_map);
-+	else {
-+		/* Support only SW_ANY for now. */
-+		pr_debug("Unsupported CPU co-ord type\n");
-+		return -EFAULT;
-+	}
-+
-+	cpumask_set_cpu(policy->cpu, policy->cpus);
-+	cpu->cur_policy = policy;
-+
-+	/* Set policy->cur to max now. The governors will adjust later. */
-+	policy->cur = cpu->perf_ctrls.desired_perf = cpu->perf_caps.highest_perf;
-+
-+	ret = cppc_set_perf(cpu_num, &cpu->perf_ctrls);
-+	if (ret)
-+		pr_debug("Err setting perf value:%d on CPU:%d. ret:%d\n",
-+				cpu->perf_caps.highest_perf, cpu_num, ret);
-+
-+	return ret;
-+}
-+
-+static struct cpufreq_driver cppc_cpufreq_driver = {
-+	.flags = CPUFREQ_CONST_LOOPS,
-+	.verify = cppc_verify_policy,
-+	.target = cppc_cpufreq_set_target,
-+	.init = cppc_cpufreq_cpu_init,
-+	.stop_cpu = cppc_cpufreq_stop_cpu,
-+	.name = "cppc_cpufreq",
-+};
-+
-+static int __init cppc_cpufreq_init(void)
-+{
-+	int i, ret = 0;
-+	struct cpudata *cpu;
-+
-+	if (acpi_disabled)
-+		return -ENODEV;
-+
-+	all_cpu_data = kzalloc(sizeof(void *) * num_possible_cpus(), GFP_KERNEL);
-+	if (!all_cpu_data)
-+		return -ENOMEM;
-+
-+	for_each_possible_cpu(i) {
-+		all_cpu_data[i] = kzalloc(sizeof(struct cpudata), GFP_KERNEL);
-+		if (!all_cpu_data[i])
-+			goto out;
-+
-+		cpu = all_cpu_data[i];
-+		if (!zalloc_cpumask_var(&cpu->shared_cpu_map, GFP_KERNEL))
-+			goto out;
-+	}
-+
-+	ret = acpi_get_psd_map(all_cpu_data);
-+	if (ret) {
-+		pr_debug("Error parsing PSD data. Aborting cpufreq registration.\n");
-+		goto out;
-+	}
-+
-+	ret = cpufreq_register_driver(&cppc_cpufreq_driver);
-+	if (ret)
-+		goto out;
-+
-+	return ret;
-+
-+out:
-+	for_each_possible_cpu(i)
-+		if (all_cpu_data[i])
-+			kfree(all_cpu_data[i]);
-+
-+	kfree(all_cpu_data);
-+	return -ENODEV;
-+}
-+
-+late_initcall(cppc_cpufreq_init);
--- 
-1.9.1
+Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+
+
+depending on how Kevin wants to handle that single patch, you might want to 
+resent it with Rafael Wysocki in the to-list though
+
+
+Heiko
+
+> ---
+> 
+> Hello,
+> 
+> This patch adds the missing MODULE_DEVICE_TABLE() for OF to export
+> that information so modules have the correct aliases built-in and
+> autoloading works correctly.
+> 
+> A longer explanation by Javier Canillas can be found here:
+> https://lkml.org/lkml/2015/7/30/519
+> 
+> Thanks,
+> Luis
+> 
+>  drivers/power/avs/rockchip-io-domain.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/power/avs/rockchip-io-domain.c
+> b/drivers/power/avs/rockchip-io-domain.c index 2e30002..8099456 100644
+> --- a/drivers/power/avs/rockchip-io-domain.c
+> +++ b/drivers/power/avs/rockchip-io-domain.c
+> @@ -271,6 +271,7 @@ static const struct of_device_id
+> rockchip_iodomain_match[] = { },
+>  	{ /* sentinel */ },
+>  };
+> +MODULE_DEVICE_TABLE(of, rockchip_iodomain_match);
+> 
+>  static int rockchip_iodomain_probe(struct platform_device *pdev)
+>  {
 
