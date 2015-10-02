@@ -1,92 +1,78 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH v4 1/5] gadget: Introduce the notifier functions
-Date: Fri, 2 Oct 2015 07:41:07 +0200
-Message-ID: <20151002054107.GB18406@kroah.com>
-References: <cover.1443057229.git.baolin.wang@linaro.org>
- <e58e4f26028c37877d02907831cf4ae411eaf984.1443057231.git.baolin.wang@linaro.org>
- <20151001172932.GG4469@saruman.tx.rr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20151001172932.GG4469@saruman.tx.rr.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Felipe Balbi <balbi@ti.com>
-Cc: Baolin Wang <baolin.wang@linaro.org>, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, sojka@merica.cz, yoshihiro.shimoda.uh@renesas.com, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, sameo@linux.intel.com, lee.jones@linaro.org, ckeepax@opensource.wolfsonmicro.com, broonie@kernel.org, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, device-mainlining@lists.linuxfoundation.org
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Subject: [PATCH v8 0/4] Allow USB devices to remain runtime-suspended when sleeping
+Date: Fri,  2 Oct 2015 09:14:27 +0200
+Message-ID: <1443770071-2570-1-git-send-email-tomeu.vizoso@collabora.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, martyn.welch@collabora.co.uk, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, David Airlie <airlied@linux.ie>, Tomas Winkler <tomas.winkler@intel.com>, linux-usb@vger.kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Russell King <linux@arm.linux.org.uk>, Len Brown <lenb@kernel.org>, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@kernel.org>, Tony Lindgren <tony@atomide.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-omap@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Oct 01, 2015 at 12:29:32PM -0500, Felipe Balbi wrote:
-> On Thu, Sep 24, 2015 at 10:39:23AM -0700, Baolin Wang wrote:
-> > The usb charger framework is based on usb gadget. The usb charger
-> > need to be notified the state changing of usb gadget to confirm the
-> > usb charger state.
-> > 
-> > Thus this patch adds a notifier mechanism for usb gadget to report a
-> > event to usb charger when the usb gadget state is changed.
-> > 
-> > Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
-> > ---
-> >  drivers/usb/gadget/udc/udc-core.c | 32 ++++++++++++++++++++++++++++++++
-> >  include/linux/usb/gadget.h        | 18 ++++++++++++++++++
-> >  2 files changed, 50 insertions(+)
-> > 
-> > diff --git a/drivers/usb/gadget/udc/udc-core.c b/drivers/usb/gadget/udc/udc-core.c
-> > index f660afb..4238fc3 100644
-> > --- a/drivers/usb/gadget/udc/udc-core.c
-> > +++ b/drivers/usb/gadget/udc/udc-core.c
-> > @@ -129,6 +129,32 @@ void usb_gadget_giveback_request(struct usb_ep *ep,
-> >  }
-> >  EXPORT_SYMBOL_GPL(usb_gadget_giveback_request);
-> >  
-> > +int usb_gadget_register_notify(struct usb_gadget *gadget,
-> > +			       struct notifier_block *nb)
-> > +{
-> > +	int ret;
-> > +
-> > +	mutex_lock(&gadget->lock);
-> > +	ret = raw_notifier_chain_register(&gadget->nh, nb);
-> > +	mutex_unlock(&gadget->lock);
-> > +
-> > +	return ret;
-> > +}
-> > +EXPORT_SYMBOL_GPL(usb_gadget_register_notify);
-> > +
-> > +int usb_gadget_unregister_notify(struct usb_gadget *gadget,
-> > +				 struct notifier_block *nb)
-> > +{
-> > +	int ret;
-> > +
-> > +	mutex_lock(&gadget->lock);
-> > +	ret = raw_notifier_chain_unregister(&gadget->nh, nb);
-> 
-> Greg, this is the kind of thing I wanted to avoid adding more of.
-> 
-> I was wondering if you would accept subsystems using kdbus for
-> this sort of notification. I'm okay waiting for kdbus for another
-> couple merge windows (if we have to) before that's merged, but
-> if we take this raw notifier approach now, we will end up having
-> to support it forever.
+Hi,
 
-kdbus is userspace <-> userspace messages, it doesn't do kernel <->
-userspace messages, sorry.
+this is v8 of an attempt to make it easier for devices to remain in
+runtime PM when the system goes to sleep, mainly to reduce the time
+spent resuming devices.
 
-> Also, because soon enough we will have to support USB Power Delivery
-> with Type C connector, this is bound to change in the coming months.
-> 
-> Frankly, I wanted all of this to be decided in userland with the
-> kernel just providing notification and basic safety checks (we don't
-> want to allow a bogus userspace daemon frying anybody's devices).
-> 
-> How would you feel about that ?
+For this, we interpret the absence of all PM callback implementations as
+it being safe to do direct_complete, so their ancestors aren't prevented
+from remaining runtime-suspended.
 
-I agree I don't like new notifier chains being added, but as this is all
-in-kernel, we can change the api in the future and there would not be a
-problem, right?
+Additionally, the prepare() callback of USB devices will return 1 if
+runtime PM is enabled and the current wakeup settings are correct.
 
-And yeah, I'm worried about the USB Power delivery patches, I haven't
-seen them yet, but I hear about different groups doing different things
-here, and that worries me.
+With these changes, a uvcvideo device (for example) stays in runtime
+suspend when the system goes to sleep and is left in that state when the
+system resumes, not delaying it unnecessarily.
 
-thanks,
+Thanks,
 
-greg k-h
+Tomeu
+
+Changes in v8:
+- Add device_is_bound()
+- Add dev_pm_domain_set() and update code to use it
+- Move no_pm_callbacks field into CONFIG_PM_SLEEP
+- Call device_check_pm_callbacks only after a device is bound or unbound
+
+Changes in v7:
+- Reduce indentation by adding a label in device_prepare()
+
+Changes in v6:
+- Add stub for !CONFIG_PM.
+- Move implementation of device_check_pm_callbacks to power/main.c as it
+  doesn't belong to CONFIG_PM_SLEEP.
+- Take dev->power.lock before modifying flag.
+
+Changes in v5:
+- Check for all dev_pm_ops instances associated to a device, updating a
+  no_pm_callbacks flag at the times when that could change.
+
+Tomeu Vizoso (4):
+  device core: add device_is_bound()
+  PM / Domains: add setter for dev.pm_domain
+  PM / sleep: Go direct_complete if driver has no callbacks
+  USB / PM: Allow USB devices to remain runtime-suspended when sleeping
+
+ arch/arm/mach-omap2/omap_device.c |  7 ++++---
+ drivers/acpi/acpi_lpss.c          |  5 +++--
+ drivers/acpi/device_pm.c          |  5 +++--
+ drivers/base/dd.c                 | 12 ++++++++++--
+ drivers/base/power/clock_ops.c    |  5 +++--
+ drivers/base/power/common.c       |  8 ++++++++
+ drivers/base/power/domain.c       |  6 ++++--
+ drivers/base/power/main.c         | 33 +++++++++++++++++++++++++++++++++
+ drivers/base/power/power.h        |  6 ++++++
+ drivers/gpu/vga/vga_switcheroo.c  | 10 +++++-----
+ drivers/misc/mei/pci-me.c         |  5 +++--
+ drivers/misc/mei/pci-txe.c        |  5 +++--
+ drivers/usb/core/port.c           |  6 ++++++
+ drivers/usb/core/usb.c            | 11 ++++++++++-
+ include/linux/device.h            |  2 ++
+ include/linux/pm.h                |  1 +
+ include/linux/pm_domain.h         |  3 +++
+ 17 files changed, 107 insertions(+), 23 deletions(-)
+
+-- 
+2.4.3
+
