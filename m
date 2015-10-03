@@ -1,51 +1,45 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: Re: [PATCH] tools/thermal: tmon: use pkg-config also for CFLAGS
-Date: Sat, 3 Oct 2015 06:03:38 -0700
-Message-ID: <20151003060338.7a37611e@yairi>
-References: <1443779445-19821-1-git-send-email-olaf@aepfle.de>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Subject: Re: [PATCH 01/17] rtc: pl031: remove misuse of IRQF_NO_SUSPEND flag
+Date: Sat, 3 Oct 2015 17:20:18 +0200
+Message-ID: <20151003152018.GA2694@piout.net>
+References: <1442850433-5903-1-git-send-email-sudeep.holla@arm.com>
+ <1442850433-5903-2-git-send-email-sudeep.holla@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:9656 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752143AbbJCNDj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 3 Oct 2015 09:03:39 -0400
-In-Reply-To: <1443779445-19821-1-git-send-email-olaf@aepfle.de>
+Received: from down.free-electrons.com ([37.187.137.238]:42676 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751960AbbJCPUX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 3 Oct 2015 11:20:23 -0400
+Content-Disposition: inline
+In-Reply-To: <1442850433-5903-2-git-send-email-sudeep.holla@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Olaf Hering <olaf@aepfle.de>
-Cc: Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linus Walleij <linus.walleij@linaro.org>, Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com
 
-On Fri,  2 Oct 2015 09:50:45 +0000
-Olaf Hering <olaf@aepfle.de> wrote:
-
-> The header <panel.h> might be in /usr/include/ncursesw, which is not
-> part of the standard include path. This fixes compile on openSUSE.
+On 21/09/2015 at 16:46:57 +0100, Sudeep Holla wrote :
+> The IRQF_NO_SUSPEND flag is used to identify the interrupts that should
+> be left enabled so as to allow them to work as expected during the
+> suspend-resume cycle, but doesn't guarantee that it will wake the system
+> from a suspended state, enable_irq_wake is recommended to be used for
+> the wakeup.
 > 
-Acked:by: Jacob Pan <jacob.jun.pan@linux.intel.com>
-
-thanks
-
-> Signed-off-by: Olaf Hering <olaf@aepfle.de>
+> This patch removes the use of IRQF_NO_SUSPEND flags and uses newly
+> introduce PM wakeup APIs dev_pm_{set,clear}_wake_irq.
+> 
+> Cc: Linus Walleij <linus.walleij@linaro.org>
+> Cc: Alessandro Zummo <a.zummo@towertech.it>
+> Cc: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+> Cc: rtc-linux@googlegroups.com
+> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 > ---
->  tools/thermal/tmon/Makefile | 3 +++
->  1 file changed, 3 insertions(+)
+>  drivers/rtc/rtc-pl031.c | 13 ++++++++-----
+>  1 file changed, 8 insertions(+), 5 deletions(-)
 > 
-> diff --git a/tools/thermal/tmon/Makefile b/tools/thermal/tmon/Makefile
-> index 2e83dd3..3a961e9 100644
-> --- a/tools/thermal/tmon/Makefile
-> +++ b/tools/thermal/tmon/Makefile
-> @@ -22,6 +22,9 @@ TMON_LIBS += $(shell pkg-config --libs $(STATIC)
-> panelw ncursesw 2> /dev/null || pkg-config --libs $(STATIC) panel
-> ncurses 2> /dev/null || \ echo -lpanel -lncurses)
->  
-> +CFLAGS    += $(shell pkg-config --cflags $(STATIC) panelw ncursesw
-> 2> /dev/null || \
-> +		     pkg-config --cflags $(STATIC) panel ncurses
-> 2> /dev/null) +
->  OBJS = tmon.o tui.o sysfs.o pid.o
->  OBJS +=
->  
+Applied, thanks.
 
-[Jacob Pan]
+-- 
+Alexandre Belloni, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
