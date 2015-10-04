@@ -1,40 +1,44 @@
-From: Darren Hart <dvhart@infradead.org>
-Subject: Re: [PATCH 05/17] platform: x86: remove misuse of IRQF_NO_SUSPEND
- flag
-Date: Sat, 3 Oct 2015 09:09:12 -0700
-Message-ID: <20151003160912.GA110874@vmdeb7>
-References: <1442850433-5903-1-git-send-email-sudeep.holla@arm.com>
- <1442850433-5903-6-git-send-email-sudeep.holla@arm.com>
+From: Olaf Hering <olaf@aepfle.de>
+Subject: Re: adjusting broken ACPI thermal trip points
+Date: Sun, 4 Oct 2015 08:36:56 +0200
+Message-ID: <20151004063656.GA4202@aepfle.de>
+References: <20151001161622.GA21024@aepfle.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([198.137.202.9]:60555 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752102AbbJCQJj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 3 Oct 2015 12:09:39 -0400
+Received: from mo4-p00-ob.smtp.rzone.de ([81.169.146.221]:62168 "EHLO
+	mo4-p00-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751208AbbJDGhA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 4 Oct 2015 02:37:00 -0400
+Received: from probook.fritz.box ([2001:a62:17:8701:1ec1:deff:feb9:bb48])
+	by smtp.strato.de (RZmta 37.12 AUTH)
+	with ESMTPSA id V06995r946avDI2
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve secp521r1 with 521 ECDH bits, eq. 15360 bits RSA))
+	(Client did not present a certificate)
+	for <linux-pm@vger.kernel.org>;
+	Sun, 4 Oct 2015 08:36:57 +0200 (CEST)
 Content-Disposition: inline
-In-Reply-To: <1442850433-5903-6-git-send-email-sudeep.holla@arm.com>
+In-Reply-To: <20151001161622.GA21024@aepfle.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, platform-driver-x86@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-On Mon, Sep 21, 2015 at 04:47:01PM +0100, Sudeep Holla wrote:
-> The IRQF_NO_SUSPEND flag is used to identify the interrupts that should
-> be left enabled so as to allow them to work as expected during the
-> suspend-resume cycle, but doesn't guarantee that it will wake the system
-> from a suspended state, enable_irq_wake is recommended to be used for
-> the wakeup.
-> 
-> This patch removes the use of IRQF_NO_SUSPEND flags and uses newly
-> introduce PM wakeup APIs dev_pm_{set,clear}_wake_irq.
-> 
-> Cc: Darren Hart <dvhart@infradead.org>
-> Cc: platform-driver-x86@vger.kernel.org
-> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+On Thu, Oct 01, Olaf Hering wrote:
 
-Queued to testing, thanks Sudeep.
+> Initially I reported https://bugzilla.kernel.org/show_bug.cgi?id=67101
 
--- 
-Darren Hart
-Intel Open Source Technology Center
+And related to this:
+
+why would the first command enable the fan after boot only sometimes,
+while the second one will succeed every time? Is this a kernel or
+firmware bug?
+
+# while :;do for i in 2 4 ; do echo 1 > /sys/class/thermal/cooling_device$i/cur_state ; cat /sys/class/thermal/cooling_device$i/cur_state > /dev/null ; done ; sleep 2 ; done
+
+# while :;do for i in 2 4 ; do echo 1 > /sys/class/thermal/cooling_device$i/cur_state ; done ; sleep 2 ; done
+
+
+Appearently cur_state must be read right after writing to it to have an
+effect when selecting fan speeds for 0, 1 or 2.
+
+Olaf
