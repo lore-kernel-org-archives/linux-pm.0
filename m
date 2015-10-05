@@ -1,130 +1,72 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [RFC PATCH] cpuidle: mvebu: indicate failure to enter deeper
- sleep states
-Date: Mon, 5 Oct 2015 13:45:21 +0200
-Message-ID: <561262D1.5070506@linaro.org>
-References: <E1ZiI7T-0002zo-Ez@rmk-PC.arm.linux.org.uk>
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Subject: Re: [PATCH v8 3/4] PM / sleep: Go direct_complete if driver has no callbacks
+Date: Mon, 5 Oct 2015 14:21:34 +0200
+Message-ID: <CAAObsKBFNdGgjB+8bkvwvLkkPZYzaWN4DKrw5u8+b++iMcpz3Q@mail.gmail.com>
+References: <1443770071-2570-1-git-send-email-tomeu.vizoso@collabora.com>
+ <CAAObsKBM2tto0cFAu-pyvatGQevB6ynvuuSNghHNQGQSgfLzdA@mail.gmail.com>
+ <CAPDyKFrDO37Tuy3QosWXxogG2WSrwr79yxr_894TvWk6EO7T8w@mail.gmail.com> <3377500.WbTIbyZKB6@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f169.google.com ([209.85.212.169]:34671 "EHLO
-	mail-wi0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750901AbbJELpY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 Oct 2015 07:45:24 -0400
-Received: by wicfx3 with SMTP id fx3so115524451wic.1
-        for <linux-pm@vger.kernel.org>; Mon, 05 Oct 2015 04:45:23 -0700 (PDT)
-In-Reply-To: <E1ZiI7T-0002zo-Ez@rmk-PC.arm.linux.org.uk>
+Received: from mail-wi0-f177.google.com ([209.85.212.177]:36065 "EHLO
+	mail-wi0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751981AbbJEMVz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 Oct 2015 08:21:55 -0400
+In-Reply-To: <3377500.WbTIbyZKB6@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Russell King <rmk+kernel@arm.linux.org.uk>, Gregory CLEMENT <gregory.clement@free-electrons.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, martyn.welch@collabora.co.uk, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>
 
-On 10/03/2015 10:24 AM, Russell King wrote:
-> The cpuidle ->enter method expects the return value to be the sleep
-> state we entered.  Returning negative numbers or other codes is not
-> permissible since coupled CPU idle was merged.
-
-
-
-> At least some of the mvebu_v7_cpu_suspend() implementations return th=
-e
-> value from cpu_suspend(), which returns zero if the CPU vectors back
-> into the kernel via cpu_resume() (the success case), or the non-zero
-> return value of the suspend actor, or one (failure cases).
+On 2 October 2015 at 15:42, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Friday, October 02, 2015 10:40:49 AM Ulf Hansson wrote:
+>> On 2 October 2015 at 10:10, Tomeu Vizoso <tomeu.vizoso@collabora.com> wrote:
+>> > On 2 October 2015 at 09:48, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> >> On 2 October 2015 at 09:14, Tomeu Vizoso <tomeu.vizoso@collabora.com> wrote:
+>> >>> If a suitable prepare callback cannot be found for a given device and
+>> >>> its driver has no PM callbacks at all, assume that it can go direct to
+>> >>> complete when the system goes to sleep.
+>> >>>
+>> >>> The reason for this is that there's lots of devices in a system that do
+>> >>> no PM at all and there's no reason for them to prevent their ancestors
+>> >>> to do direct_complete if they can support it.
+>> >>>
+>> >>> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+>> >>> ---
+>> >>>
+>> >>> Changes in v8:
+>> >>> - Move no_pm_callbacks field into CONFIG_PM_SLEEP
+>> >>> - Call device_check_pm_callbacks only after a device is bound or unbound
+>> >>
+>> >> Devices that don't use a driver, will not get this feature for "free".
+>> >> I expect in those cases, they will have to call
+>> >> device_check_pm_callbacks() themselves, right?
+>> >
+>> > You are right, but wonder if we shouldn't go back to calling
+>> > device_check_pm_callbacks() from device_pm_add() and
+>> > dev_pm_domain_set() so they don't have to.
+>>
+>> That seems reasonable to me, and I didn't quite understand why you
+>> decided to remove it. :-)
 >
-> We do not want to be returning the failure case value back to CPU idl=
-e
-> as that indicates that we successfully entered one of the deeper idle
-> states.  Always return zero instead, indicating that we slept for the
-> shortest amount of time.
+> Right.
 >
-> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-> ---
-> Please think about this - having only an Armada 388 platform, I can't
-> test this due to CPU idle being disabled there.  However, the code pa=
-ths
-> indicate that if we fail to sleep in armada_370_xp_pmsu_idle_enter() =
-or
-> armada_38x_do_cpu_suspend() fail to sleep, we end up reporting that w=
-e
-> successfully slept in CPU idle state 1 in both cases.
+> device_check_pm_callbacks() needs to be called on device registration too
+> (in case the device doesn't have a driver and doesn't use a PM domain) and
+> it won't hurt to call it in dev_pm_domain_set() either, although that likely
+> will be redundant in the majority of cases.
+
+I got it. I misunderstood your comment from the other day.
+
+Thanks,
+
+Tomeu
+
+> Thanks,
+> Rafael
 >
-> Rafael - the code in cpuidle.c prior to the addition of coupled CPU i=
-dle
-> seems to allow the return of negative error numbers from the ->enter(=
-)
-> method:
->
->          if (entered_state >=3D 0) {
->                  /* Update cpuidle counters */
->                  /* This can be moved to within driver enter routine
->                   * but that results in multiple copies of same code.
->                   */
->                  dev->states_usage[entered_state].time +=3D dev->last=
-_residency;
->                  dev->states_usage[entered_state].usage++;
->          } else {
->                  dev->last_residency =3D 0;
->          }
->
-> Since coupled CPU idle, negative return codes will give a negative ta=
-ble
-> index inside cpuidle_state_is_coupled() - which is obviously buggy.  =
-Does
-> this need fixing?  If so, this patch below is wrong, and we should be
-> returning a negative errno rather than zero on failure to enter a low
-> power state.
-
-It is not possible since the commit 0b89e9aa2.
-
-This change was to prevent to re-enable the local interrupt when we are=
-=20
-in the process of coupling an idle state and let the coupled code to=20
-handle that.
-
-If the backend driver changed the state in our back (for example to a=20
-shallower state) to a non coupled one, the local interrupt will be=20
-re-enabled. If at the contrary, the backend driver choose a deeper idle=
-=20
-state which is coupled, we won't re-enable the interrupt. I don't know=20
-any driver doing this but the code allows it (not sure it is a good=20
-thing - anyway).
-
-So the test:
-
-if (!cpuidle_state_is_coupled(dev, drv, entered_state))
-
-should be:
-
-if (!cpuidle_state_is_coupled(dev, drv, *index*))
-
-=2E.. in order to have the decisions made when entering this function=20
-symmetric to the ones which will be taken when exiting the function=20
-because they will be based on the same index.
-
-It is the same behavior than the broadcast timer enter/exit in the same=
-=20
-function.
-
-To be clean, the above should be fixed.
-
-But in any case, armada_370_xp_pmsu_idle_enter and=20
-armada_38x_do_cpu_suspend can return a negative value because they don'=
-t=20
-depend on the ARCH_NEEDS_CPU_IDLE_COUPLED, and cpuidle_state_is_coupled=
-=20
-is an inline for 'return false'.
-
-  -- Daniel
-
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
-
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
