@@ -1,73 +1,51 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH v1] thermal: kconfig: select THERMAL_WRITABLE_TRIPS for
- x86 thermal
-Date: Mon, 05 Oct 2015 10:58:35 -0700
-Message-ID: <1444067915.17895.59.camel@spandruv-desk3.jf.intel.com>
-References: <1438600396-3482-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-	 <1438600396-3482-2-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH] clk: qcom: Make oxili GDSC parent of oxili_cx GDSC
+Date: Mon, 5 Oct 2015 11:13:51 -0700
+Message-ID: <20151005181351.GD12338@codeaurora.org>
+References: <1443035362-10914-1-git-send-email-sboyd@codeaurora.org>
+ <560CED90.9050201@codeaurora.org>
+ <20151001175227.GE19319@codeaurora.org>
+ <20151001190639.GI19319@codeaurora.org>
+ <56120582.1050707@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:34518 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752552AbbJER7G (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 5 Oct 2015 13:59:06 -0400
-In-Reply-To: <1438600396-3482-2-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <56120582.1050707@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rajendra Nayak <rnayak@codeaurora.org>
+Cc: Mike Turquette <mturquette@baylibre.com>, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: edubezval@gmail.com, rui.zhang@intel.com
-Cc: linux-pm@vger.kernel.org
 
-Hi,
-
-Can we take this patch? Changing config for some customers is a big
-deal. Also distros didn't add this config, so it broke async support.
-
-Thanks,
-Srinivas
-
-On Mon, 2015-08-03 at 04:13 -0700, Srinivas Pandruvada wrote:
-> After the commit "thermal: core: Add Kconfig option to enable writable
-> trips", by default the trips are read only. This cause user space thermal
-> controllers to poll for temperature as they can't set temperature
-> thresholds for getting a notification via uevents. These programs use RW
-> trip in a zone to register thresholds. Since we need to enable the new
-> config introduced by above commit to allow writable trips, selecting
-> CONFIG_THERMAL_WRITABLE_TRIP for x86 thermal drivers.
+On 10/05, Rajendra Nayak wrote:
+> []...
 > 
-> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> ---
->  drivers/thermal/Kconfig | 3 +++
->  1 file changed, 3 insertions(+)
+> >>> It would also be nicer if this parent/child relationship can
+> >>> somehow be represented in data (struct gdsc) that gets passed to
+> >>> the gdsc driver which then sets it up, instead of individual
+> >>> clock drivers doing it.
+> >>
+> >> Agreed. I'd rather that we do nothing besides register domains
+> >> and then let the core code handle hooking up domains and
+> >> subdomains.
+> > 
+> > A little closer inspection makes me want to skip this. PM domains
+> > can have multiple "master" domains, and pm_genpd_init() is the
+> > only API that would be able to do the linking. That API is mostly
+> > about initializing things to default values, so it doesn't seem
+> > like a good fit. I'll send a v2 with the remove part and the
+> > exports.
 > 
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index 118938e..0e3b576 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -275,6 +275,7 @@ config X86_PKG_TEMP_THERMAL
->  	tristate "X86 package temperature thermal driver"
->  	depends on X86_THERMAL_VECTOR
->  	select THERMAL_GOV_USER_SPACE
-> +	select THERMAL_WRITABLE_TRIPS
->  	default m
->  	help
->  	  Enable this to register CPU digital sensor for package temperature as
-> @@ -296,6 +297,7 @@ config INTEL_SOC_DTS_THERMAL
->  	tristate "Intel SoCs DTS thermal driver"
->  	depends on X86
->  	select INTEL_SOC_DTS_IOSF_CORE
-> +	select THERMAL_WRITABLE_TRIPS
->  	help
->  	  Enable this to register Intel SoCs (e.g. Bay Trail) platform digital
->  	  temperature sensor (DTS). These SoCs have two additional DTSs in
-> @@ -322,6 +324,7 @@ config INT340X_THERMAL
->  	select ACPI_THERMAL_REL
->  	select ACPI_FAN
->  	select INTEL_SOC_DTS_IOSF_CORE
-> +	select THERMAL_WRITABLE_TRIPS
->  	help
->  	  Newer laptops and tablets that use ACPI may have thermal sensors and
->  	  other devices with thermal control capabilities outside the core
+> What I was suggesting is that the qcom gdsc driver handle this
+> instead of the qcom clock drivers.
+> Something like..
 
+Ah ok. This patch will still need the gdscs to be in a certain
+order though so that we don't add a subdomain on an uninitialized
+domain. So I guess some list of pointer pairs to call the
+function on could be done in the qcom_cc_desc structure if we
+need to do this more than a couple times.
 
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
