@@ -1,52 +1,73 @@
-From: Al Stone <ahs3@redhat.com>
-Subject: Re: [PATCH v5 0/5] Provide better MADT subtable sanity checks
-Date: Mon, 5 Oct 2015 11:12:04 -0600
-Message-ID: <5612AF64.4060900@redhat.com>
-References: <1443570346-15378-1-git-send-email-al.stone@linaro.org>
- <560BA4C9.7090607@huawei.com> <560C0968.6020904@redhat.com>
- <2808057.teMg2oCLf6@vostro.rjw.lan>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH v1] thermal: kconfig: select THERMAL_WRITABLE_TRIPS for
+ x86 thermal
+Date: Mon, 05 Oct 2015 10:58:35 -0700
+Message-ID: <1444067915.17895.59.camel@spandruv-desk3.jf.intel.com>
+References: <1438600396-3482-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	 <1438600396-3482-2-git-send-email-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-ia64-owner@vger.kernel.org>
-In-Reply-To: <2808057.teMg2oCLf6@vostro.rjw.lan>
-Sender: linux-ia64-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Hanjun Guo <guohanjun@huawei.com>, Al Stone <al.stone@linaro.org>, linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linaro-kernel@lists.linaro.org, linux-ia64@vger.kernel.org, patches@linaro.org, linux-pm@vger.kernel.org, linaro-acpi@lists.linaro.org, linux-kernel@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([134.134.136.65]:34518 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752552AbbJER7G (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 5 Oct 2015 13:59:06 -0400
+In-Reply-To: <1438600396-3482-2-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: edubezval@gmail.com, rui.zhang@intel.com
+Cc: linux-pm@vger.kernel.org
 
-On 10/05/2015 07:39 AM, Rafael J. Wysocki wrote:
-> On Wednesday, September 30, 2015 10:10:16 AM Al Stone wrote:
->> On 09/30/2015 03:00 AM, Hanjun Guo wrote:
->>> On 2015/9/30 7:45, Al Stone wrote:
->>>> NB: this patch set is for use against the linux-pm bleeding edge branch.
->>>>
->>
->> [snip...]
->>
->>>
->>> For this patch set,
->>>
->>> Reviewed-by: Hanjun Guo <hanjun.guo@linaro.org>
->>>
->>> Thanks
->>> Hanjun
->>
->> Thanks, Hanjun!
-> 
-> Series applied, thanks!
-> 
-> Rafael
-> 
+Hi,
 
-Thanks, Rafael!
+Can we take this patch? Changing config for some customers is a big
+deal. Also distros didn't add this config, so it broke async support.
 
--- 
-ciao,
-al
------------------------------------
-Al Stone
-Software Engineer
-Red Hat, Inc.
-ahs3@redhat.com
------------------------------------
+Thanks,
+Srinivas
+
+On Mon, 2015-08-03 at 04:13 -0700, Srinivas Pandruvada wrote:
+> After the commit "thermal: core: Add Kconfig option to enable writable
+> trips", by default the trips are read only. This cause user space thermal
+> controllers to poll for temperature as they can't set temperature
+> thresholds for getting a notification via uevents. These programs use RW
+> trip in a zone to register thresholds. Since we need to enable the new
+> config introduced by above commit to allow writable trips, selecting
+> CONFIG_THERMAL_WRITABLE_TRIP for x86 thermal drivers.
+> 
+> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> ---
+>  drivers/thermal/Kconfig | 3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index 118938e..0e3b576 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -275,6 +275,7 @@ config X86_PKG_TEMP_THERMAL
+>  	tristate "X86 package temperature thermal driver"
+>  	depends on X86_THERMAL_VECTOR
+>  	select THERMAL_GOV_USER_SPACE
+> +	select THERMAL_WRITABLE_TRIPS
+>  	default m
+>  	help
+>  	  Enable this to register CPU digital sensor for package temperature as
+> @@ -296,6 +297,7 @@ config INTEL_SOC_DTS_THERMAL
+>  	tristate "Intel SoCs DTS thermal driver"
+>  	depends on X86
+>  	select INTEL_SOC_DTS_IOSF_CORE
+> +	select THERMAL_WRITABLE_TRIPS
+>  	help
+>  	  Enable this to register Intel SoCs (e.g. Bay Trail) platform digital
+>  	  temperature sensor (DTS). These SoCs have two additional DTSs in
+> @@ -322,6 +324,7 @@ config INT340X_THERMAL
+>  	select ACPI_THERMAL_REL
+>  	select ACPI_FAN
+>  	select INTEL_SOC_DTS_IOSF_CORE
+> +	select THERMAL_WRITABLE_TRIPS
+>  	help
+>  	  Newer laptops and tablets that use ACPI may have thermal sensors and
+>  	  other devices with thermal control capabilities outside the core
+
+
