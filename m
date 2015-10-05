@@ -1,8 +1,7 @@
 From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Subject: [PATCH v6 4/6] power: da9150: Add DT bindings documentation for
- Fuel-Gauge
-Date: Mon, 5 Oct 2015 17:03:42 +0100
-Message-ID: <e1897106f6f411d00ba040669bf13381616bbd70.1444059987.git.Adam.Thomson.Opensource@diasemi.com>
+Subject: [PATCH v6 5/6] mfd: da9150: Use relative paths in DT bindings document
+Date: Mon, 5 Oct 2015 17:03:44 +0100
+Message-ID: <9c7e79df7db805985acef8559eda03bfea914052.1444059987.git.Adam.Thomson.Opensource@diasemi.com>
 References: <cover.1444059987.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -13,8 +12,12 @@ To: Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Seba
 Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Support Opensource <support.opensource@diasemi.com>
 List-Id: linux-pm@vger.kernel.org
 
+When referencing other DT bindings documentation, use relative
+path rather than absolute.
+
 Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Acked-By: Sebastian Reichel <sre@kernel.org>
+Suggested-by: Lee Jones <lee.jones@linaro.org>
+Acked-by: Lee Jones <lee.jones@linaro.org>
 ---
 
 Changes in v6:
@@ -24,47 +27,38 @@ Changes in v5:
  - Rebase to v4.2
 
 Changes in v4:
- - Update compatible string of fuel-gauge to "dlg,da9150-fuel-gauge".
- - Changed example node name to "fuel-gauge".
+ - N/A
 
 Changes in v3:
- - N/A
+ - Initial version.
 
 Changes in v2:
  - N/A
 
- .../devicetree/bindings/power/da9150-fg.txt        | 23 ++++++++++++++++++++++
- 1 file changed, 23 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/da9150-fg.txt
+ Documentation/devicetree/bindings/mfd/da9150.txt | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/power/da9150-fg.txt b/Documentation/devicetree/bindings/power/da9150-fg.txt
-new file mode 100644
-index 0000000..00236fe
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/da9150-fg.txt
-@@ -0,0 +1,23 @@
-+Dialog Semiconductor DA9150 Fuel-Gauge Power Supply bindings
-+
-+Required properties:
-+- compatible: "dlg,da9150-fuel-gauge" for DA9150 Fuel-Gauge Power Supply
-+
-+Optional properties:
-+- dlg,update-interval: Interval time (milliseconds) between battery level checks.
-+- dlg,warn-soc-level: Battery discharge level (%) where warning event raised.
-+      [1 - 100]
-+- dlg,crit-soc-level: Battery discharge level (%) where critical event raised.
-+  This value should be lower than the warning level.
-+      [1 - 100]
-+
-+
-+Example:
-+
-+	fuel-gauge {
-+		compatible = "dlg,da9150-fuel-gauge";
-+
-+		dlg,update-interval = <10000>;
-+		dlg,warn-soc-level = /bits/ 8 <15>;
-+		dlg,crit-soc-level = /bits/ 8 <5>;
-+	};
+diff --git a/Documentation/devicetree/bindings/mfd/da9150.txt b/Documentation/devicetree/bindings/mfd/da9150.txt
+index 970801d..fd4dca7 100644
+--- a/Documentation/devicetree/bindings/mfd/da9150.txt
++++ b/Documentation/devicetree/bindings/mfd/da9150.txt
+@@ -17,13 +17,13 @@ Required properties:
+   the IRQs from da9150 are delivered to.
+ - interrupts: IRQ line info for da9150 chip.
+ - interrupt-controller: da9150 has internal IRQs (own IRQ domain).
+-  (See Documentation/devicetree/bindings/interrupt-controller/interrupts.txt for
++  (See ../interrupt-controller/interrupts.txt for
+    further information relating to interrupt properties)
+
+ Sub-devices:
+-- da9150-gpadc: See Documentation/devicetree/bindings/iio/adc/da9150-gpadc.txt
+-- da9150-charger: See Documentation/devicetree/bindings/power/da9150-charger.txt
+-- da9150-fg: See Documentation/devicetree/bindings/power/da9150-fg.txt
++- da9150-gpadc: See ../iio/adc/da9150-gpadc.txt
++- da9150-charger: See ../power/da9150-charger.txt
++- da9150-fg: See ../power/da9150-fg.txt
+
+ Example:
+
 --
 1.9.3
