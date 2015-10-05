@@ -1,60 +1,58 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] cpufreq : powernv: Report Pmax throttling if capped below nominal frequency
-Date: Mon, 05 Oct 2015 22:50:58 +0200
-Message-ID: <2149242.U2nasEWuDM@vostro.rjw.lan>
-References: <1442207874-5016-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <1442219507-6499-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <20150914102809.GD32551@linux>
+Subject: Re: [PATCH] cpufreq: integrator: Fix module autoload for OF platform driver
+Date: Mon, 05 Oct 2015 22:51:42 +0200
+Message-ID: <1776253.J5g3a7BOh2@vostro.rjw.lan>
+References: <20150916202446.GA4303@goodgumbo.baconseed.org> <20150917015756.GQ29943@linux>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:46034 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:51689 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751382AbbJEUW2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 Oct 2015 16:22:28 -0400
-In-Reply-To: <20150914102809.GD32551@linux>
+	with SMTP id S1751394AbbJEUXN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 Oct 2015 16:23:13 -0400
+In-Reply-To: <20150917015756.GQ29943@linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Luis de Bethencourt <luis@debethencourt.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Monday, September 14, 2015 03:58:09 PM Viresh Kumar wrote:
-> On 14-09-15, 14:01, Shilpasri G Bhat wrote:
-> > Log a 'critical' message if the max frequency is reduced below nominal
-> > frequency. We already log 'info' message if the max frequency is
-> > capped below turbo frequency. CPU should guarantee atleast nominal
-> > frequency, but not turbo frequency in all system configurations and
-> > environments. So report the pmax throttling with severity when Pmax is
-> > dipped below nominal frequency.
+On Thursday, September 17, 2015 07:27:56 AM Viresh Kumar wrote:
+> On 16-09-15, 22:24, Luis de Bethencourt wrote:
+> > This platform driver has a OF device ID table but the OF module
+> > alias information is not created so module autoloading won't work.
 > > 
-> > Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+> > Signed-off-by: Luis de Bethencourt <luisbg@osg.samsung.com>
 > > ---
-> > Changes from v1:
-> > - Modified the printk messages as per Viresh's suggestion.
 > > 
-> >  drivers/cpufreq/powernv-cpufreq.c | 10 ++++++++--
-> >  1 file changed, 8 insertions(+), 2 deletions(-)
+> > Hello,
 > > 
-> > diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> > index 64994e1..cb50138 100644
-> > --- a/drivers/cpufreq/powernv-cpufreq.c
-> > +++ b/drivers/cpufreq/powernv-cpufreq.c
-> > @@ -327,8 +327,14 @@ static void powernv_cpufreq_throttle_check(void *data)
-> >  		if (chips[i].throttled)
-> >  			goto next;
-> >  		chips[i].throttled = true;
-> > -		pr_info("CPU %d on Chip %u has Pmax reduced to %d\n", cpu,
-> > -			chips[i].id, pmsr_pmax);
-> > +		if (pmsr_pmax < powernv_pstate_info.nominal)
-> > +			pr_crit("CPU %d on Chip %u has Pmax reduced below nominal frequency (%d < %d)\n",
-> > +				cpu, chips[i].id, pmsr_pmax,
-> > +				powernv_pstate_info.nominal);
-> > +		else
-> > +			pr_info("CPU %d on Chip %u has Pmax reduced below turbo frequency (%d < %d)\n",
-> > +				cpu, chips[i].id, pmsr_pmax,
-> > +				powernv_pstate_info.max);
-> >  	} else if (chips[i].throttled) {
-> >  		chips[i].throttled = false;
-> >  		pr_info("CPU %d on Chip %u has Pmax restored to %d\n", cpu,
+> > This patch adds the missing MODULE_DEVICE_TABLE() for OF to export
+> > that information so modules have the correct aliases built-in and
+> > autoloading works correctly.
+> > 
+> > A longer explanation by Javier Canillas can be found here:
+> > https://lkml.org/lkml/2015/7/30/519
+> > 
+> > Thanks,
+> > Luis
+> > 
+> >  drivers/cpufreq/integrator-cpufreq.c | 2 ++
+> >  1 file changed, 2 insertions(+)
+> > 
+> > diff --git a/drivers/cpufreq/integrator-cpufreq.c b/drivers/cpufreq/integrator-cpufreq.c
+> > index 2faa421..79e3ff2 100644
+> > --- a/drivers/cpufreq/integrator-cpufreq.c
+> > +++ b/drivers/cpufreq/integrator-cpufreq.c
+> > @@ -221,6 +221,8 @@ static const struct of_device_id integrator_cpufreq_match[] = {
+> >  	{ },
+> >  };
+> >  
+> > +MODULE_DEVICE_TABLE(of, integrator_cpufreq_match);
+> > +
+> >  static struct platform_driver integrator_cpufreq_driver = {
+> >  	.driver = {
+> >  		.name = "integrator-cpufreq",
 > 
 > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
