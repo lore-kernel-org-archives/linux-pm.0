@@ -1,61 +1,64 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] cpufreq: imx: update the clock switch flow to support imx6ul
-Date: Mon, 05 Oct 2015 22:49:32 +0200
-Message-ID: <40126314.fXMZovt841@vostro.rjw.lan>
-References: <1441986065-8821-1-git-send-email-b51503@freescale.com> <20150911080741.GJ9650@linux> <55F292ED.1080000@freescale.com>
+Subject: Re: [PATCH v2] cpufreq : powernv: Report Pmax throttling if capped below nominal frequency
+Date: Mon, 05 Oct 2015 22:50:58 +0200
+Message-ID: <2149242.U2nasEWuDM@vostro.rjw.lan>
+References: <1442207874-5016-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <1442219507-6499-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <20150914102809.GD32551@linux>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:43593 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:46034 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751115AbbJEUVD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 Oct 2015 16:21:03 -0400
-In-Reply-To: <55F292ED.1080000@freescale.com>
+	with SMTP id S1751382AbbJEUW2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 Oct 2015 16:22:28 -0400
+In-Reply-To: <20150914102809.GD32551@linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bai Ping <b51503@freescale.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Friday, September 11, 2015 04:38:05 PM Bai Ping wrote:
+On Monday, September 14, 2015 03:58:09 PM Viresh Kumar wrote:
+> On 14-09-15, 14:01, Shilpasri G Bhat wrote:
+> > Log a 'critical' message if the max frequency is reduced below nominal
+> > frequency. We already log 'info' message if the max frequency is
+> > capped below turbo frequency. CPU should guarantee atleast nominal
+> > frequency, but not turbo frequency in all system configurations and
+> > environments. So report the pmax throttling with severity when Pmax is
+> > dipped below nominal frequency.
+> > 
+> > Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+> > ---
+> > Changes from v1:
+> > - Modified the printk messages as per Viresh's suggestion.
+> > 
+> >  drivers/cpufreq/powernv-cpufreq.c | 10 ++++++++--
+> >  1 file changed, 8 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+> > index 64994e1..cb50138 100644
+> > --- a/drivers/cpufreq/powernv-cpufreq.c
+> > +++ b/drivers/cpufreq/powernv-cpufreq.c
+> > @@ -327,8 +327,14 @@ static void powernv_cpufreq_throttle_check(void *data)
+> >  		if (chips[i].throttled)
+> >  			goto next;
+> >  		chips[i].throttled = true;
+> > -		pr_info("CPU %d on Chip %u has Pmax reduced to %d\n", cpu,
+> > -			chips[i].id, pmsr_pmax);
+> > +		if (pmsr_pmax < powernv_pstate_info.nominal)
+> > +			pr_crit("CPU %d on Chip %u has Pmax reduced below nominal frequency (%d < %d)\n",
+> > +				cpu, chips[i].id, pmsr_pmax,
+> > +				powernv_pstate_info.nominal);
+> > +		else
+> > +			pr_info("CPU %d on Chip %u has Pmax reduced below turbo frequency (%d < %d)\n",
+> > +				cpu, chips[i].id, pmsr_pmax,
+> > +				powernv_pstate_info.max);
+> >  	} else if (chips[i].throttled) {
+> >  		chips[i].throttled = false;
+> >  		pr_info("CPU %d on Chip %u has Pmax restored to %d\n", cpu,
 > 
-> On 2015/9/11 16:07, Viresh Kumar wrote:
-> > On 11-09-15, 23:41, Bai Ping wrote:
-> >> +	if (of_machine_is_compatible("fsl,imx6ul")) {
-> >> +		pll2_bus_clk = clk_get(cpu_dev, "pll2_bus");
-> >> +		secondary_sel_clk = clk_get(cpu_dev, "secondary_sel");
-> >> +		if (IS_ERR(pll2_bus_clk) || IS_ERR(secondary_sel_clk)) {
-> >> +			dev_err(cpu_dev, "failed to get clocks specific to imx6ul\n");
-> >> +			ret = -ENOENT;
-> >> +			goto put_clk;
-> >> +		}
-> >> +	}
-> >> +
-> >>   	arm_reg = regulator_get(cpu_dev, "arm");
-> >>   	pu_reg = regulator_get_optional(cpu_dev, "pu");
-> >>   	soc_reg = regulator_get(cpu_dev, "soc");
-> >> @@ -331,6 +365,10 @@ put_clk:
-> >>   		clk_put(step_clk);
-> >>   	if (!IS_ERR(pll2_pfd2_396m_clk))
-> >>   		clk_put(pll2_pfd2_396m_clk);
-> >> +	if (!IS_ERR(pll2_bus_clk))
-> >> +		clk_put(pll2_bus_clk);
-> >> +	if (!IS_ERR(secondary_sel_clk))
-> >> +		clk_put(secondary_sel_clk);
-> >>   	of_node_put(np);
-> >>   	return ret;
-> >>   }
-> > As part of good coding practices, you should free resources in the
-> > reverse order to which they were allocated. The clocks don't follow
-> > that, but its not a problem with just your patch. That's how it is
-> > present today. Maybe you can write another patch to fix that.
-> 
-> thanks for your suggestion, I will pay more attention to it in future 
-> coding.
-> 
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Patch applied, thanks!
+Applied, thanks!
 
 Rafael
 
