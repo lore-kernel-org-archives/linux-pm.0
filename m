@@ -1,96 +1,26 @@
-From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Subject: [PATCH v6 2/6] mfd: da9150: Update DT bindings for Fuel-Gauge support
-Date: Mon, 5 Oct 2015 17:03:37 +0100
-Message-ID: <0fba7f849b31b230970543240bcfa28ff2c17f0e.1444059987.git.Adam.Thomson.Opensource@diasemi.com>
+From: Fabio Estevam <festevam@gmail.com>
+Subject: Re: [PATCH v6 3/6] power: Add support for DA9150 Fuel-Gauge
+Date: Mon, 5 Oct 2015 13:10:12 -0300
+Message-ID: <CAOMZO5BnrNrXnuVOdhtNXsmgtm4KVVzs41g3CfZX9penEHLutg@mail.gmail.com>
 References: <cover.1444059987.git.Adam.Thomson.Opensource@diasemi.com>
+	<80d467703ba19bef12e9bcdd246e1de7bd33a8b1.1444059987.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1444059987.git.Adam.Thomson.Opensource@diasemi.com>
+In-Reply-To: <80d467703ba19bef12e9bcdd246e1de7bd33a8b1.1444059987.git.Adam.Thomson.Opensource@diasemi.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Support Opensource <support.opensource@diasemi.com>
+To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Cc: Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Support Opensource <support.opensource@diasemi.com>
 List-Id: linux-pm@vger.kernel.org
 
-Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Acked-by: Lee Jones <lee.jones@linaro.org>
----
+On Mon, Oct 5, 2015 at 1:03 PM, Adam Thomson
+<Adam.Thomson.Opensource@diasemi.com> wrote:
 
-Changes in v6:
- - Rebase to v4.3-rc4
+> +       /* Register IRQ */
+> +       irq = platform_get_irq_byname(pdev, "FG");
+> +       if (irq < 0) {
+> +               dev_err(dev, "Failed to get IRQ FG: %d\n", irq);
 
-Changes in v5:
- - Rebase to v4.2
+You need to do "ret = irq" here. Otherwise you will return success in irq_fail.
 
-Changes in v4:
- - Update compatible string of fuel-gauge to "da9150-fuel-gauge".
- - Node name tidy up, relating to maintainer comments on fuel-gauge DT
-   binding doc.
- - Removed Ack to patch from Lee Jones, as this has now been modified slightly
-   and didn't want to make assumptions of approval.
-
-Changes in v3:
- - Removal of unwanted new-line.
- - Flesh out example bindings usage.
-
-Changes in v2:
- - N/A
-
- Documentation/devicetree/bindings/mfd/da9150.txt | 27 ++++++++++++++++++++----
- 1 file changed, 23 insertions(+), 4 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/mfd/da9150.txt b/Documentation/devicetree/bindings/mfd/da9150.txt
-index d0588ea..970801d 100644
---- a/Documentation/devicetree/bindings/mfd/da9150.txt
-+++ b/Documentation/devicetree/bindings/mfd/da9150.txt
-@@ -6,6 +6,7 @@ Device			 Description
- ------			 -----------
- da9150-gpadc		: General Purpose ADC
- da9150-charger		: Battery Charger
-+da9150-fg		: Battery Fuel-Gauge
-
- ======
-
-@@ -22,7 +23,7 @@ Required properties:
- Sub-devices:
- - da9150-gpadc: See Documentation/devicetree/bindings/iio/adc/da9150-gpadc.txt
- - da9150-charger: See Documentation/devicetree/bindings/power/da9150-charger.txt
--
-+- da9150-fg: See Documentation/devicetree/bindings/power/da9150-fg.txt
-
- Example:
-
-@@ -34,10 +35,28 @@ Example:
- 		interrupt-controller;
-
- 		gpadc: da9150-gpadc {
--			...
-+			compatible = "dlg,da9150-gpadc";
-+			#io-channel-cells = <1>;
-+		};
-+
-+		charger {
-+			compatible = "dlg,da9150-charger";
-+
-+			io-channels = <&gpadc 0>,
-+				      <&gpadc 2>,
-+				      <&gpadc 8>,
-+				      <&gpadc 5>;
-+			io-channel-names = "CHAN_IBUS",
-+					   "CHAN_VBUS",
-+					   "CHAN_TJUNC",
-+					   "CHAN_VBAT";
- 		};
-
--		da9150-charger {
--			...
-+		fuel-gauge {
-+			compatible = "dlg,da9150-fuel-gauge";
-+
-+			dlg,update-interval = <10000>;
-+			dlg,warn-soc-level = /bits/ 8 <15>;
-+			dlg,crit-soc-level = /bits/ 8 <5>
- 		};
- 	};
---
-1.9.3
+> +               goto irq_fail;
