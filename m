@@ -1,77 +1,68 @@
-From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: Re: [PATCH] clk: qcom: Make oxili GDSC parent of oxili_cx GDSC
-Date: Mon, 05 Oct 2015 10:37:14 +0530
-Message-ID: <56120582.1050707@codeaurora.org>
-References: <1443035362-10914-1-git-send-email-sboyd@codeaurora.org> <560CED90.9050201@codeaurora.org> <20151001175227.GE19319@codeaurora.org> <20151001190639.GI19319@codeaurora.org>
+From: Thierry Reding <thierry.reding@gmail.com>
+Subject: Re: [PATCH 03/17] input: tegra-kbc: drop use of IRQF_NO_SUSPEND flag
+Date: Mon, 5 Oct 2015 07:44:37 +0200
+Message-ID: <20151005054437.GA30219@ulmo>
+References: <1442850433-5903-1-git-send-email-sudeep.holla@arm.com>
+ <1442850433-5903-4-git-send-email-sudeep.holla@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <20151001190639.GI19319@codeaurora.org>
-Sender: linux-clk-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Mike Turquette <mturquette@baylibre.com>, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="ZPt4rx8FFjLCG7dd"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f178.google.com ([209.85.212.178]:37811 "EHLO
+	mail-wi0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750951AbbJEFom (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 Oct 2015 01:44:42 -0400
+Content-Disposition: inline
+In-Reply-To: <1442850433-5903-4-git-send-email-sudeep.holla@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Laxman Dewangan <ldewangan@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, linux-input@vger.kernel.org, linux-tegra@vger.kernel.org
 
-[]...
 
->>> It would also be nicer if this parent/child relationship can
->>> somehow be represented in data (struct gdsc) that gets passed to
->>> the gdsc driver which then sets it up, instead of individual
->>> clock drivers doing it.
->>
->> Agreed. I'd rather that we do nothing besides register domains
->> and then let the core code handle hooking up domains and
->> subdomains.
-> 
-> A little closer inspection makes me want to skip this. PM domains
-> can have multiple "master" domains, and pm_genpd_init() is the
-> only API that would be able to do the linking. That API is mostly
-> about initializing things to default values, so it doesn't seem
-> like a good fit. I'll send a v2 with the remove part and the
-> exports.
+--ZPt4rx8FFjLCG7dd
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-What I was suggesting is that the qcom gdsc driver handle this
-instead of the qcom clock drivers.
-Something like..
+On Mon, Sep 21, 2015 at 04:46:59PM +0100, Sudeep Holla wrote:
+> The driver handles wakeup irq correctly using device_init_wakeup and
+> enable_irq_wake. There's no need to use IRQF_NO_SUSPEND while registering
+> the interrupt.
+>=20
+> This patch removes the use of IRQF_NO_SUSPEND flag.
+>=20
+> Cc: Laxman Dewangan <ldewangan@nvidia.com>
+> Cc: Stephen Warren <swarren@wwwdotorg.org>
+> Cc: Thierry Reding <thierry.reding@gmail.com>
+> Cc: linux-input@vger.kernel.org
+> Cc: linux-tegra@vger.kernel.org
+> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+> ---
+>  drivers/input/keyboard/tegra-kbc.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/clk/qcom/gdsc.c b/drivers/clk/qcom/gdsc.c
-index da9fad8..00edb2d 100644
---- a/drivers/clk/qcom/gdsc.c
-+++ b/drivers/clk/qcom/gdsc.c
-@@ -226,6 +226,8 @@ int gdsc_register(struct device *dev, struct gdsc **scs, size_t num,
- 		if (ret)
- 			return ret;
- 		data->domains[i] = &scs[i]->pd;
-+		if (scs[i]->parent)
-+			pm_genpd_add_subdomain(scs[i]->parent, &scs[i]->pd);
- 	}
- 
- 	return of_genpd_add_provider_onecell(dev->of_node, data);
-diff --git a/drivers/clk/qcom/gdsc.h b/drivers/clk/qcom/gdsc.h
-index 5ded268..bc5791f 100644
---- a/drivers/clk/qcom/gdsc.h
-+++ b/drivers/clk/qcom/gdsc.h
-@@ -49,6 +49,7 @@ struct gdsc {
- 	struct reset_controller_dev	*rcdev;
- 	unsigned int			*resets;
- 	unsigned int			reset_count;
-+	struct generic_pm_domain	*parent;
- };
- 
- #ifdef CONFIG_QCOM_GDSC
-diff --git a/drivers/clk/qcom/mmcc-msm8974.c b/drivers/clk/qcom/mmcc-msm8974.c
-index fe8320d..51ad8de 100644
---- a/drivers/clk/qcom/mmcc-msm8974.c
-+++ b/drivers/clk/qcom/mmcc-msm8974.c
-@@ -2400,6 +2400,7 @@ static struct gdsc oxilicx_gdsc = {
- 	.pd = {
- 		.name = "oxilicx",
- 	},
-+	.parent = &oxili_gdsc.pd,
- 	.pwrsts = PWRSTS_OFF_ON,
- };
+Acked-by: Thierry Reding <treding@nvidia.com>
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-hosted by The Linux Foundation
+--ZPt4rx8FFjLCG7dd
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCAAGBQJWEg5CAAoJEN0jrNd/PrOhm+oP/1Rz10pjJd96H5ykorFq+JNi
+dU6QymIjSEVuuox09KycGn+AQswuOlZyOPADlMKhFyDosD5XfxlHSy8U7xXdd0CF
+H6qXH7MZbnGCH/Aed0SxfI6lsYQSyRfdBI0soKIIqIDJTlIdEgecH6q2GQRF0d//
+PPhiJdUkEwQZVem2+igAVMHbU29ZfqAsiK7i3BWOlyI21Rh0EJz5GBOcLxBnCYvI
+d5Og4I2YasrzpCwa+vWos38n47X2iFc4yZBKIXHKWUI6LizIEtszNs9tPqmVt1n7
+zwQvacqyxpVQF2ytkd5JigEIaiqpjDN/xw7pSoPA9TlMjU9dUM0L59aH3N2Wcspq
+sXBtIEVu87Cz+uGnnLw1o7SnyP2VhFf+kmXJ0jbBIkSNhHjAkQB5ZH9a7/9AUmkM
+PC+dcIanX0ROs7PjpsnZiEm1F4Y0pUQOhMUL1NhBnBeCJPc++Ex9ohYeMtPu/BEE
+b1fi91GiJo4nQZ3pdN7EG8t2UfZdyxLlqXGzWe+eOKkTJ7zne3lFMXUIXq1GcIxO
+1A/TyYoSKqSANQQt3C9fWHMZzFm+guwHXIupajT0R94w0W+pNmhtNYE/zM0AvAVy
+jChCxFct1zQN2NGTM1Ba+2pZ9NJGNFaL9nY8Jrb1C5HSlDUTyUOE72qyHerkpL46
+2eGvht14ppSY4Rbq0i1j
+=VScf
+-----END PGP SIGNATURE-----
+
+--ZPt4rx8FFjLCG7dd--
