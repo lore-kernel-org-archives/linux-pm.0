@@ -1,241 +1,37 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: Re: [PATCH v5 1/2] PM / sleep: Go direct_complete if driver has no callbacks
-Date: Mon, 5 Oct 2015 10:25:45 +0200
-Message-ID: <CAAObsKDtE_uj7iA53pzMaoT+EPctCgnHxypVhXL6GuVUQimn+w@mail.gmail.com>
-References: <1443529760-17612-1-git-send-email-tomeu.vizoso@collabora.com>
- <1443529760-17612-2-git-send-email-tomeu.vizoso@collabora.com> <20151004151621.GA12684@xo-6d-61-c0.localdomain>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH 01/17] rtc: pl031: remove misuse of IRQF_NO_SUSPEND flag
+Date: Mon, 5 Oct 2015 10:49:01 +0200
+Message-ID: <CACRpkdYURqgeh9kzED7yvwgR29qUPd9KgxrTAXZkAUdXazoJLA@mail.gmail.com>
+References: <1442850433-5903-1-git-send-email-sudeep.holla@arm.com>
+	<1442850433-5903-2-git-send-email-sudeep.holla@arm.com>
+	<CACRpkdaa+J76vMGHrZsTZukUS-VyDQFPqwg6teV=m050a=P8Pg@mail.gmail.com>
+	<560E603E.8080603@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f174.google.com ([209.85.212.174]:36618 "EHLO
-	mail-wi0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750896AbbJEI0G (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 Oct 2015 04:26:06 -0400
-In-Reply-To: <20151004151621.GA12684@xo-6d-61-c0.localdomain>
+Received: from mail-ob0-f171.google.com ([209.85.214.171]:36673 "EHLO
+	mail-ob0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752030AbbJEItC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 5 Oct 2015 04:49:02 -0400
+Received: by obcgx8 with SMTP id gx8so123197295obc.3
+        for <linux-pm@vger.kernel.org>; Mon, 05 Oct 2015 01:49:01 -0700 (PDT)
+In-Reply-To: <560E603E.8080603@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, martyn.welch@collabora.co.uk, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, "rtc-linux@googlegroups.com" <rtc-linux@googlegroups.com>
 
-On 4 October 2015 at 17:16, Pavel Machek <pavel@ucw.cz> wrote:
-> On Tue 2015-09-29 14:29:19, Tomeu Vizoso wrote:
->> If a suitable prepare callback cannot be found for a given device and
->> its driver has no PM callbacks at all, assume that it can go direct to
->> complete when the system goes to sleep.
->>
->> The reason for this is that there's lots of devices in a system that do
->> no PM at all and there's no reason for them to prevent their ancestors
->> to do direct_complete if they can support it.
+On Fri, Oct 2, 2015 at 12:45 PM, Sudeep Holla <sudeep.holla@arm.com> wrote:
+
+>> Looks correct to me.
+>> Acked-by: Linus Walleij <linus.walleij@linaro.org>
 >
-> Dunno. This sounds like asking for trouble. Even if most devices can handle
-> this, is not this bound to introduce some bugs?
+> Thanks, while you are at it, do you know what interrupt stv2_pl031
+> shares so that I can fix the TODO in the comment or the code(whichever
+> applicable).
 
-Hi Pavel,
+This is shared with a hardware called RTT (real-time timer) that has
+no upstream driver as of now.
 
-in which situations do you think that this could be problematic?
-
-Thanks,
-
-Tomeu
-
-> Thanks,
->                                                                         Pavel
->
->>
->> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
->> ---
->>
->> Changes in v5:
->> - Check for all dev_pm_ops instances associated to a device, updating a
->>   no_pm_callbacks flag at the times when that could change.
->>
->>  drivers/base/dd.c           |  3 ++
->>  drivers/base/power/domain.c |  5 ++++
->>  drivers/base/power/main.c   | 69 ++++++++++++++++++++++++++++++++-------------
->>  drivers/base/power/power.h  |  2 ++
->>  include/linux/pm.h          |  1 +
->>  5 files changed, 61 insertions(+), 19 deletions(-)
->>
->> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
->> index be0eb4639128..fe0e9cb684b8 100644
->> --- a/drivers/base/dd.c
->> +++ b/drivers/base/dd.c
->> @@ -205,6 +205,8 @@ static void driver_bound(struct device *dev)
->>
->>       klist_add_tail(&dev->p->knode_driver, &dev->driver->p->klist_devices);
->>
->> +     device_check_pm_callbacks(dev);
->> +
->>       /*
->>        * Make sure the device is no longer in one of the deferred lists and
->>        * kick off retrying all pending devices
->> @@ -695,6 +697,7 @@ static void __device_release_driver(struct device *dev)
->>                       dev->pm_domain->dismiss(dev);
->>
->>               klist_remove(&dev->p->knode_driver);
->> +             device_check_pm_callbacks(dev);
->>               if (dev->bus)
->>                       blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
->>                                                    BUS_NOTIFY_UNBOUND_DRIVER,
->> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->> index 16550c63d611..3cae1aa1885b 100644
->> --- a/drivers/base/power/domain.c
->> +++ b/drivers/base/power/domain.c
->> @@ -20,6 +20,8 @@
->>  #include <linux/suspend.h>
->>  #include <linux/export.h>
->>
->> +#include "power.h"
->> +
->>  #define GENPD_RETRY_MAX_MS   250             /* Approximate */
->>
->>  #define GENPD_DEV_CALLBACK(genpd, type, callback, dev)               \
->> @@ -1305,6 +1307,7 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
->>
->>       list_add_tail(&gpd_data->base.list_node, &genpd->dev_list);
->>
->> +     device_check_pm_callbacks(dev);
->>   out:
->>       mutex_unlock(&genpd->lock);
->>
->> @@ -1369,6 +1372,8 @@ int pm_genpd_remove_device(struct generic_pm_domain *genpd,
->>
->>       genpd_free_dev_data(dev, gpd_data);
->>
->> +     device_check_pm_callbacks(dev);
->> +
->>       return 0;
->>
->>   out:
->> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
->> index 1710c26ba097..b6eaa00b2540 100644
->> --- a/drivers/base/power/main.c
->> +++ b/drivers/base/power/main.c
->> @@ -117,6 +117,31 @@ void device_pm_unlock(void)
->>       mutex_unlock(&dpm_list_mtx);
->>  }
->>
->> +static bool pm_ops_is_empty(const struct dev_pm_ops *ops)
->> +{
->> +     if (!ops)
->> +             return true;
->> +
->> +     return !ops->prepare &&
->> +            !ops->suspend &&
->> +            !ops->suspend_late &&
->> +            !ops->suspend_noirq &&
->> +            !ops->resume_noirq &&
->> +            !ops->resume_early &&
->> +            !ops->resume &&
->> +            !ops->complete;
->> +}
->> +
->> +void device_check_pm_callbacks(struct device *dev)
->> +{
->> +     dev->power.no_pm_callbacks =
->> +             (!dev->bus || pm_ops_is_empty(dev->bus->pm)) &&
->> +             (!dev->class || pm_ops_is_empty(dev->class->pm)) &&
->> +             (!dev->type || pm_ops_is_empty(dev->type->pm)) &&
->> +             (!dev->pm_domain || pm_ops_is_empty(&dev->pm_domain->ops)) &&
->> +             (!dev->driver || pm_ops_is_empty(dev->driver->pm));
->> +}
->> +
->>  /**
->>   * device_pm_add - Add a device to the PM core's list of active devices.
->>   * @dev: Device to add to the list.
->> @@ -131,6 +156,8 @@ void device_pm_add(struct device *dev)
->>                       dev_name(dev->parent));
->>       list_add_tail(&dev->power.entry, &dpm_list);
->>       mutex_unlock(&dpm_list_mtx);
->> +
->> +     device_check_pm_callbacks(dev);
->>  }
->>
->>  /**
->> @@ -1569,27 +1596,31 @@ static int device_prepare(struct device *dev, pm_message_t state)
->>
->>       dev->power.wakeup_path = device_may_wakeup(dev);
->>
->> -     if (dev->pm_domain) {
->> -             info = "preparing power domain ";
->> -             callback = dev->pm_domain->ops.prepare;
->> -     } else if (dev->type && dev->type->pm) {
->> -             info = "preparing type ";
->> -             callback = dev->type->pm->prepare;
->> -     } else if (dev->class && dev->class->pm) {
->> -             info = "preparing class ";
->> -             callback = dev->class->pm->prepare;
->> -     } else if (dev->bus && dev->bus->pm) {
->> -             info = "preparing bus ";
->> -             callback = dev->bus->pm->prepare;
->> -     }
->> +     if (dev->power.no_pm_callbacks)
->> +             ret = 1;        /* Let device go direct_complete */
->> +     else {
->> +             if (dev->pm_domain) {
->> +                     info = "preparing power domain ";
->> +                     callback = dev->pm_domain->ops.prepare;
->> +             } else if (dev->type && dev->type->pm) {
->> +                     info = "preparing type ";
->> +                     callback = dev->type->pm->prepare;
->> +             } else if (dev->class && dev->class->pm) {
->> +                     info = "preparing class ";
->> +                     callback = dev->class->pm->prepare;
->> +             } else if (dev->bus && dev->bus->pm) {
->> +                     info = "preparing bus ";
->> +                     callback = dev->bus->pm->prepare;
->> +             }
->>
->> -     if (!callback && dev->driver && dev->driver->pm) {
->> -             info = "preparing driver ";
->> -             callback = dev->driver->pm->prepare;
->> -     }
->> +             if (!callback && dev->driver && dev->driver->pm) {
->> +                     info = "preparing driver ";
->> +                     callback = dev->driver->pm->prepare;
->> +             }
->>
->> -     if (callback)
->> -             ret = callback(dev);
->> +             if (callback)
->> +                     ret = callback(dev);
->> +     }
->>
->>       device_unlock(dev);
->>
->> diff --git a/drivers/base/power/power.h b/drivers/base/power/power.h
->> index 998fa6b23084..518a8fc84e8d 100644
->> --- a/drivers/base/power/power.h
->> +++ b/drivers/base/power/power.h
->> @@ -9,6 +9,8 @@ static inline void device_pm_init_common(struct device *dev)
->>       }
->>  }
->>
->> +extern void device_check_pm_callbacks(struct device *dev);
->> +
->>  #ifdef CONFIG_PM
->>
->>  static inline void pm_runtime_early_init(struct device *dev)
->> diff --git a/include/linux/pm.h b/include/linux/pm.h
->> index 35d599e7250d..e334b9b8cd46 100644
->> --- a/include/linux/pm.h
->> +++ b/include/linux/pm.h
->> @@ -566,6 +566,7 @@ struct dev_pm_info {
->>       bool                    ignore_children:1;
->>       bool                    early_init:1;   /* Owned by the PM core */
->>       bool                    direct_complete:1;      /* Owned by the PM core */
->> +     bool                    no_pm_callbacks:1;      /* Owned by the PM core */
->>       spinlock_t              lock;
->>  #ifdef CONFIG_PM_SLEEP
->>       struct list_head        entry;
->> --
->> 2.4.3
->
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Yours,
+Linus Walleij
