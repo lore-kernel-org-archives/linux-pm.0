@@ -1,7 +1,8 @@
 From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Subject: [PATCH v6 5/6] mfd: da9150: Use relative paths in DT bindings document
-Date: Mon, 5 Oct 2015 17:03:44 +0100
-Message-ID: <9c7e79df7db805985acef8559eda03bfea914052.1444059987.git.Adam.Thomson.Opensource@diasemi.com>
+Subject: [PATCH v6 6/6] mfd: da9150: Use DEFINE_RES_IRQ_NAMED() help macro for
+ IRQ resource
+Date: Mon, 5 Oct 2015 17:03:46 +0100
+Message-ID: <2c72b0c62e18b4c8c2ae5d74ae999d62f2fab2e5.1444059987.git.Adam.Thomson.Opensource@diasemi.com>
 References: <cover.1444059987.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -11,9 +12,6 @@ Sender: linux-kernel-owner@vger.kernel.org
 To: Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
 Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Support Opensource <support.opensource@diasemi.com>
 List-Id: linux-pm@vger.kernel.org
-
-When referencing other DT bindings documentation, use relative
-path rather than absolute.
 
 Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
 Suggested-by: Lee Jones <lee.jones@linaro.org>
@@ -35,30 +33,57 @@ Changes in v3:
 Changes in v2:
  - N/A
 
- Documentation/devicetree/bindings/mfd/da9150.txt | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/mfd/da9150-core.c | 35 +++++------------------------------
+ 1 file changed, 5 insertions(+), 30 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/mfd/da9150.txt b/Documentation/devicetree/bindings/mfd/da9150.txt
-index 970801d..fd4dca7 100644
---- a/Documentation/devicetree/bindings/mfd/da9150.txt
-+++ b/Documentation/devicetree/bindings/mfd/da9150.txt
-@@ -17,13 +17,13 @@ Required properties:
-   the IRQs from da9150 are delivered to.
- - interrupts: IRQ line info for da9150 chip.
- - interrupt-controller: da9150 has internal IRQs (own IRQ domain).
--  (See Documentation/devicetree/bindings/interrupt-controller/interrupts.txt for
-+  (See ../interrupt-controller/interrupts.txt for
-    further information relating to interrupt properties)
+diff --git a/drivers/mfd/da9150-core.c b/drivers/mfd/da9150-core.c
+index 85ca4b5..195fdcf 100644
+--- a/drivers/mfd/da9150-core.c
++++ b/drivers/mfd/da9150-core.c
+@@ -355,39 +355,14 @@ static const struct regmap_irq_chip da9150_regmap_irq_chip = {
+ };
 
- Sub-devices:
--- da9150-gpadc: See Documentation/devicetree/bindings/iio/adc/da9150-gpadc.txt
--- da9150-charger: See Documentation/devicetree/bindings/power/da9150-charger.txt
--- da9150-fg: See Documentation/devicetree/bindings/power/da9150-fg.txt
-+- da9150-gpadc: See ../iio/adc/da9150-gpadc.txt
-+- da9150-charger: See ../power/da9150-charger.txt
-+- da9150-fg: See ../power/da9150-fg.txt
+ static struct resource da9150_gpadc_resources[] = {
+-	{
+-		.name = "GPADC",
+-		.start = DA9150_IRQ_GPADC,
+-		.end = DA9150_IRQ_GPADC,
+-		.flags = IORESOURCE_IRQ,
+-	},
++	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_GPADC, "GPADC"),
+ };
 
- Example:
+ static struct resource da9150_charger_resources[] = {
+-	{
+-		.name = "CHG_STATUS",
+-		.start = DA9150_IRQ_CHG,
+-		.end = DA9150_IRQ_CHG,
+-		.flags = IORESOURCE_IRQ,
+-	},
+-	{
+-		.name = "CHG_TJUNC",
+-		.start = DA9150_IRQ_TJUNC,
+-		.end = DA9150_IRQ_TJUNC,
+-		.flags = IORESOURCE_IRQ,
+-	},
+-	{
+-		.name = "CHG_VFAULT",
+-		.start = DA9150_IRQ_VFAULT,
+-		.end = DA9150_IRQ_VFAULT,
+-		.flags = IORESOURCE_IRQ,
+-	},
+-	{
+-		.name = "CHG_VBUS",
+-		.start = DA9150_IRQ_VBUS,
+-		.end = DA9150_IRQ_VBUS,
+-		.flags = IORESOURCE_IRQ,
+-	},
++	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_CHG, "CHG_STATUS"),
++	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_TJUNC, "CHG_TJUNC"),
++	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_VFAULT, "CHG_VFAULT"),
++	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_VBUS, "CHG_VBUS"),
+ };
 
+ static struct resource da9150_fg_resources[] = {
 --
 1.9.3
