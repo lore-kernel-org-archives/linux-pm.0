@@ -1,158 +1,34 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v3 2/3] PM / PCI / ACPI: Kick devices that might have been reset by firmware
-Date: Wed, 07 Oct 2015 00:50:24 +0200
-Message-ID: <1973640.XGUdor7p6A@vostro.rjw.lan>
-References: <10641052.oOBhM6BU9G@vostro.rjw.lan> <5472042.4c1h9diL7E@vostro.rjw.lan> <2723857.EVg1dAvTli@vostro.rjw.lan>
+Subject: [PATCH v3 0/3] PM / sleep: Make it possible to check if suspend/resume goes via firmware
+Date: Wed, 07 Oct 2015 00:48:33 +0200
+Message-ID: <2723857.EVg1dAvTli@vostro.rjw.lan>
+References: <10641052.oOBhM6BU9G@vostro.rjw.lan> <5472042.4c1h9diL7E@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2723857.EVg1dAvTli@vostro.rjw.lan>
+In-Reply-To: <5472042.4c1h9diL7E@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Linux PM list <linux-pm@vger.kernel.org>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Daniel Vetter <daniel.vetter@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Linux PCI <linux-pci@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Friday, October 02, 2015 03:50:42 AM Rafael J. Wysocki wrote:
+> On Wednesday, September 30, 2015 02:46:10 AM Rafael J. Wysocki wrote:
+> > Hi All,
+> > 
+> > Patch [1/2] introduces a new mechanism that can be used to check whether or not
+> > platform firmware is going to be involved in system suspend or was involved
+> > in system resume.
+> 
+> That's still the case, but patch [2/2] modifies the PCI PM layer and the general
+> ACPI PM domain only to use the mechanism added by the [1/2].
 
-There is a concern that if the platform firmware was involved in
-the system resume that's being completed,  some devices might have
-been reset by it and if those devices had the power.direct_complete
-flag set during the preceding suspend transition, they may stay
-in a reset-power-on state indefinitely (until they are runtime-resumed
-and then suspended again).  That may not be a big deal from the
-individual device's perspective, but if the system is an SoC, it may
-be prevented from entering deep SoC-wide low-power states on idle
-because of that.
+The first two patches are unchanged (in the face of the continuing lack of
+comments I'll add them to my v4.4 queue at one point).
 
-The devices that are most likely to be affected by this issue are
-PCI devices and ACPI-enumerated devices using the general ACPI PM
-domain, so to prevent it from happening for those devices, force a
-runtime resume for them if they have their power.direct_complete
-flags set and the platform firmware was involved in the resume
-transition currently in progress.
+The last patch is new and actually is an RFC, but it shows how the new
+mechanism introduced by [1/3] can be used.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/acpi/acpi_lpss.c         |    2 +-
- drivers/acpi/device_pm.c         |   19 +------------------
- drivers/base/power/generic_ops.c |   23 +++++++++++++++++++++++
- drivers/pci/pci-driver.c         |    2 +-
- include/linux/pm.h               |    2 +-
- 5 files changed, 27 insertions(+), 21 deletions(-)
-
-Index: linux-pm/drivers/acpi/device_pm.c
-===================================================================
---- linux-pm.orig/drivers/acpi/device_pm.c
-+++ linux-pm/drivers/acpi/device_pm.c
-@@ -963,23 +963,6 @@ int acpi_subsys_prepare(struct device *d
- EXPORT_SYMBOL_GPL(acpi_subsys_prepare);
- 
- /**
-- * acpi_subsys_complete - Finalize device's resume during system resume.
-- * @dev: Device to handle.
-- */
--void acpi_subsys_complete(struct device *dev)
--{
--	pm_generic_complete(dev);
--	/*
--	 * If the device had been runtime-suspended before the system went into
--	 * the sleep state it is going out of and it has never been resumed till
--	 * now, resume it in case the firmware powered it up.
--	 */
--	if (dev->power.direct_complete)
--		pm_request_resume(dev);
--}
--EXPORT_SYMBOL_GPL(acpi_subsys_complete);
--
--/**
-  * acpi_subsys_suspend - Run the device driver's suspend callback.
-  * @dev: Device to handle.
-  *
-@@ -1047,7 +1030,7 @@ static struct dev_pm_domain acpi_general
- 		.runtime_resume = acpi_subsys_runtime_resume,
- #ifdef CONFIG_PM_SLEEP
- 		.prepare = acpi_subsys_prepare,
--		.complete = acpi_subsys_complete,
-+		.complete = pm_complete_with_resume_check,
- 		.suspend = acpi_subsys_suspend,
- 		.suspend_late = acpi_subsys_suspend_late,
- 		.resume_early = acpi_subsys_resume_early,
-Index: linux-pm/drivers/acpi/acpi_lpss.c
-===================================================================
---- linux-pm.orig/drivers/acpi/acpi_lpss.c
-+++ linux-pm/drivers/acpi/acpi_lpss.c
-@@ -664,7 +664,7 @@ static struct dev_pm_domain acpi_lpss_pm
- #ifdef CONFIG_PM
- #ifdef CONFIG_PM_SLEEP
- 		.prepare = acpi_subsys_prepare,
--		.complete = acpi_subsys_complete,
-+		.complete = pm_complete_with_resume_check,
- 		.suspend = acpi_subsys_suspend,
- 		.suspend_late = acpi_lpss_suspend_late,
- 		.resume_early = acpi_lpss_resume_early,
-Index: linux-pm/drivers/base/power/generic_ops.c
-===================================================================
---- linux-pm.orig/drivers/base/power/generic_ops.c
-+++ linux-pm/drivers/base/power/generic_ops.c
-@@ -9,6 +9,7 @@
- #include <linux/pm.h>
- #include <linux/pm_runtime.h>
- #include <linux/export.h>
-+#include <linux/suspend.h>
- 
- #ifdef CONFIG_PM
- /**
-@@ -297,4 +298,26 @@ void pm_generic_complete(struct device *
- 	if (drv && drv->pm && drv->pm->complete)
- 		drv->pm->complete(dev);
- }
-+
-+/**
-+ * pm_complete_with_resume_check - Complete a device power transition.
-+ * @dev: Device to handle.
-+ *
-+ * Complete a device power transition during a system-wide power transition and
-+ * optionally schedule a runtime resume of the device if the system resume in
-+ * progress has been initated by the platform firmware and the device had its
-+ * power.direct_complete flag set.
-+ */
-+void pm_complete_with_resume_check(struct device *dev)
-+{
-+	pm_generic_complete(dev);
-+	/*
-+	 * If the device had been runtime-suspended before the system went into
-+	 * the sleep state it is going out of and it has never been resumed till
-+	 * now, resume it in case the firmware powered it up.
-+	 */
-+	if (dev->power.direct_complete && pm_resume_via_firmware())
-+		pm_request_resume(dev);
-+}
-+EXPORT_SYMBOL_GPL(pm_complete_with_resume_check);
- #endif /* CONFIG_PM_SLEEP */
-Index: linux-pm/drivers/pci/pci-driver.c
-===================================================================
---- linux-pm.orig/drivers/pci/pci-driver.c
-+++ linux-pm/drivers/pci/pci-driver.c
-@@ -687,7 +687,7 @@ static int pci_pm_prepare(struct device
- static void pci_pm_complete(struct device *dev)
- {
- 	pci_dev_complete_resume(to_pci_dev(dev));
--	pm_generic_complete(dev);
-+	pm_complete_with_resume_check(dev);
- }
- 
- #else /* !CONFIG_PM_SLEEP */
-Index: linux-pm/include/linux/pm.h
-===================================================================
---- linux-pm.orig/include/linux/pm.h
-+++ linux-pm/include/linux/pm.h
-@@ -731,7 +731,7 @@ extern int pm_generic_restore(struct dev
- extern int pm_generic_poweroff_noirq(struct device *dev);
- extern int pm_generic_poweroff_late(struct device *dev);
- extern int pm_generic_poweroff(struct device *dev);
--extern void pm_generic_complete(struct device *dev);
-+extern void pm_complete_with_resume_check(struct device *dev);
- 
- #else /* !CONFIG_PM_SLEEP */
- 
+Thanks,
+Rafael
