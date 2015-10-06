@@ -1,118 +1,158 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq, intel_pstate, set max_sysfs_pct and min_sysfs_pct on governor switch
-Date: Wed, 07 Oct 2015 00:43:55 +0200
-Message-ID: <1755198.JNkaHg87IV@vostro.rjw.lan>
-References: <1444168147-17812-1-git-send-email-prarit@redhat.com>
+Subject: [PATCH v3 2/3] PM / PCI / ACPI: Kick devices that might have been reset by firmware
+Date: Wed, 07 Oct 2015 00:50:24 +0200
+Message-ID: <1973640.XGUdor7p6A@vostro.rjw.lan>
+References: <10641052.oOBhM6BU9G@vostro.rjw.lan> <5472042.4c1h9diL7E@vostro.rjw.lan> <2723857.EVg1dAvTli@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:47451 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752567AbbJFWPY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 Oct 2015 18:15:24 -0400
-In-Reply-To: <1444168147-17812-1-git-send-email-prarit@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <2723857.EVg1dAvTli@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Daniel Vetter <daniel.vetter@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Linux PCI <linux-pci@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Prarit Bhargava <prarit@redhat.com>, Kristen Carlson Accardi <kristen@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 
-On Tuesday, October 06, 2015 05:49:07 PM Prarit Bhargava wrote:
-> Intel CPUs will not enter higher p-states when after switching from the
-> performance governor to the powersave governor, until
-> /sys/devices/system/cpu/intel_pstate/min_perf_pct is set to a low value.
-> This differs from previous behaviour in which a switch to the powersave
-> governor would result in a low default value for min_perf_pct.
-> 
-> The behavior of the powersave governor changed after commit a04759924e25
-> ("[cpufreq] intel_pstate: honor user space min_perf_pct override on
-> resume").  The commit introduced tracking of performance percentage
-> changes via sysfs in order to restore userspace changes during
-> suspend/resume.  The problem occurs because the global values of the newly
-> introduced max_sysfs_pct and min_sysfs_pct are not reset on a governor
-> change and this causes the new governor to inherit the previous governor's
-> settings.
-> 
-> This patch sets max_sysfs_pct to 100 and min_sysfs_pct to 0 on a governor
-> change which fixes the problem with governor switching.  These changes
-> also make the initial calculations for max_perf_pct and min_perf_pct
-> slightly simpler.
-> 
-> Before patch:
-> [root@intel-skylake-y-01 power]# cpupower frequency-set -g performance
-> [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/min_perf_pct
-> 100
-> [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
-> 100
-> [root@intel-skylake-y-01 power]# cpupower frequency-set -g powersave
-> [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/min_perf_pct
-> 100
-> [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
-> 100
-> 
-> After patch:
-> [root@intel-skylake-y-01 power]# cpupower frequency-set -g performance
-> [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/min_perf_pct
-> 100
-> [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
-> 100
-> [root@intel-skylake-y-01 power]# cpupower frequency-set -g powersave
-> [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/min_perf_pct
-> 14
-> [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
-> 100
-> 
-> Also note that I have tested suspend/resume (using CONFIG_PM_DEBUG):
-> [root@intel-skylake-y-01 power]# echo 50 > /sys/devices/system/cpu/intel_pstate/min_perf_pct
-> [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/*_perf_pct
-> 100
-> 50
-> [root@intel-skylake-y-01 power]# echo devices > /sys/power/pm_test
-> [root@intel-skylake-y-01 power]# echo platform > /sys/power/disk
-> [root@intel-skylake-y-01 power]# echo disk > /sys/power/state
-> [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/*_perf_pct
-> 100
-> 50
-> 
-> Fixes: a04759924e25 ("[cpufreq] intel_pstate: honor user space min_perf_pct override on resume")
-> Cc: Kristen Carlson Accardi <kristen@linux.intel.com>
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
-> ---
->  drivers/cpufreq/intel_pstate.c |    7 +++++--
->  1 file changed, 5 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 3af9dd7..bb24458 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -986,6 +986,9 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
->  	if (!policy->cpuinfo.max_freq)
->  		return -ENODEV;
->  
-> +	limits.min_sysfs_pct = 0;
-> +	limits.max_sysfs_pct = 100;
-> +
->  	if (policy->policy == CPUFREQ_POLICY_PERFORMANCE &&
->  	    policy->max >= policy->cpuinfo.max_freq) {
->  		limits.min_policy_pct = 100;
-> @@ -1004,9 +1007,9 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
->  	limits.max_policy_pct = clamp_t(int, limits.max_policy_pct, 0 , 100);
->  
->  	/* Normalize user input to [min_policy_pct, max_policy_pct] */
-> -	limits.min_perf_pct = max(limits.min_policy_pct, limits.min_sysfs_pct);
-> +	limits.min_perf_pct = limits.min_policy_pct;
->  	limits.min_perf_pct = min(limits.max_policy_pct, limits.min_perf_pct);
-> -	limits.max_perf_pct = min(limits.max_policy_pct, limits.max_sysfs_pct);
-> +	limits.max_perf_pct = limits.max_sysfs_pct;
->  	limits.max_perf_pct = max(limits.min_policy_pct, limits.max_perf_pct);
->  
->  	/* Make sure min_perf_pct <= max_perf_pct */
-> 
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Makes sense to me.
+There is a concern that if the platform firmware was involved in
+the system resume that's being completed,  some devices might have
+been reset by it and if those devices had the power.direct_complete
+flag set during the preceding suspend transition, they may stay
+in a reset-power-on state indefinitely (until they are runtime-resumed
+and then suspended again).  That may not be a big deal from the
+individual device's perspective, but if the system is an SoC, it may
+be prevented from entering deep SoC-wide low-power states on idle
+because of that.
 
-Kristen?
+The devices that are most likely to be affected by this issue are
+PCI devices and ACPI-enumerated devices using the general ACPI PM
+domain, so to prevent it from happening for those devices, force a
+runtime resume for them if they have their power.direct_complete
+flags set and the platform firmware was involved in the resume
+transition currently in progress.
 
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/acpi/acpi_lpss.c         |    2 +-
+ drivers/acpi/device_pm.c         |   19 +------------------
+ drivers/base/power/generic_ops.c |   23 +++++++++++++++++++++++
+ drivers/pci/pci-driver.c         |    2 +-
+ include/linux/pm.h               |    2 +-
+ 5 files changed, 27 insertions(+), 21 deletions(-)
+
+Index: linux-pm/drivers/acpi/device_pm.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/device_pm.c
++++ linux-pm/drivers/acpi/device_pm.c
+@@ -963,23 +963,6 @@ int acpi_subsys_prepare(struct device *d
+ EXPORT_SYMBOL_GPL(acpi_subsys_prepare);
+ 
+ /**
+- * acpi_subsys_complete - Finalize device's resume during system resume.
+- * @dev: Device to handle.
+- */
+-void acpi_subsys_complete(struct device *dev)
+-{
+-	pm_generic_complete(dev);
+-	/*
+-	 * If the device had been runtime-suspended before the system went into
+-	 * the sleep state it is going out of and it has never been resumed till
+-	 * now, resume it in case the firmware powered it up.
+-	 */
+-	if (dev->power.direct_complete)
+-		pm_request_resume(dev);
+-}
+-EXPORT_SYMBOL_GPL(acpi_subsys_complete);
+-
+-/**
+  * acpi_subsys_suspend - Run the device driver's suspend callback.
+  * @dev: Device to handle.
+  *
+@@ -1047,7 +1030,7 @@ static struct dev_pm_domain acpi_general
+ 		.runtime_resume = acpi_subsys_runtime_resume,
+ #ifdef CONFIG_PM_SLEEP
+ 		.prepare = acpi_subsys_prepare,
+-		.complete = acpi_subsys_complete,
++		.complete = pm_complete_with_resume_check,
+ 		.suspend = acpi_subsys_suspend,
+ 		.suspend_late = acpi_subsys_suspend_late,
+ 		.resume_early = acpi_subsys_resume_early,
+Index: linux-pm/drivers/acpi/acpi_lpss.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/acpi_lpss.c
++++ linux-pm/drivers/acpi/acpi_lpss.c
+@@ -664,7 +664,7 @@ static struct dev_pm_domain acpi_lpss_pm
+ #ifdef CONFIG_PM
+ #ifdef CONFIG_PM_SLEEP
+ 		.prepare = acpi_subsys_prepare,
+-		.complete = acpi_subsys_complete,
++		.complete = pm_complete_with_resume_check,
+ 		.suspend = acpi_subsys_suspend,
+ 		.suspend_late = acpi_lpss_suspend_late,
+ 		.resume_early = acpi_lpss_resume_early,
+Index: linux-pm/drivers/base/power/generic_ops.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/generic_ops.c
++++ linux-pm/drivers/base/power/generic_ops.c
+@@ -9,6 +9,7 @@
+ #include <linux/pm.h>
+ #include <linux/pm_runtime.h>
+ #include <linux/export.h>
++#include <linux/suspend.h>
+ 
+ #ifdef CONFIG_PM
+ /**
+@@ -297,4 +298,26 @@ void pm_generic_complete(struct device *
+ 	if (drv && drv->pm && drv->pm->complete)
+ 		drv->pm->complete(dev);
+ }
++
++/**
++ * pm_complete_with_resume_check - Complete a device power transition.
++ * @dev: Device to handle.
++ *
++ * Complete a device power transition during a system-wide power transition and
++ * optionally schedule a runtime resume of the device if the system resume in
++ * progress has been initated by the platform firmware and the device had its
++ * power.direct_complete flag set.
++ */
++void pm_complete_with_resume_check(struct device *dev)
++{
++	pm_generic_complete(dev);
++	/*
++	 * If the device had been runtime-suspended before the system went into
++	 * the sleep state it is going out of and it has never been resumed till
++	 * now, resume it in case the firmware powered it up.
++	 */
++	if (dev->power.direct_complete && pm_resume_via_firmware())
++		pm_request_resume(dev);
++}
++EXPORT_SYMBOL_GPL(pm_complete_with_resume_check);
+ #endif /* CONFIG_PM_SLEEP */
+Index: linux-pm/drivers/pci/pci-driver.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pci-driver.c
++++ linux-pm/drivers/pci/pci-driver.c
+@@ -687,7 +687,7 @@ static int pci_pm_prepare(struct device
+ static void pci_pm_complete(struct device *dev)
+ {
+ 	pci_dev_complete_resume(to_pci_dev(dev));
+-	pm_generic_complete(dev);
++	pm_complete_with_resume_check(dev);
+ }
+ 
+ #else /* !CONFIG_PM_SLEEP */
+Index: linux-pm/include/linux/pm.h
+===================================================================
+--- linux-pm.orig/include/linux/pm.h
++++ linux-pm/include/linux/pm.h
+@@ -731,7 +731,7 @@ extern int pm_generic_restore(struct dev
+ extern int pm_generic_poweroff_noirq(struct device *dev);
+ extern int pm_generic_poweroff_late(struct device *dev);
+ extern int pm_generic_poweroff(struct device *dev);
+-extern void pm_generic_complete(struct device *dev);
++extern void pm_complete_with_resume_check(struct device *dev);
+ 
+ #else /* !CONFIG_PM_SLEEP */
+ 
