@@ -1,134 +1,36 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v3 1/3] PM / sleep: Add flags to indicate platform firmware involvement
-Date: Wed, 07 Oct 2015 00:49:34 +0200
-Message-ID: <3703527.UxzUnnSz5F@vostro.rjw.lan>
-References: <10641052.oOBhM6BU9G@vostro.rjw.lan> <5472042.4c1h9diL7E@vostro.rjw.lan> <2723857.EVg1dAvTli@vostro.rjw.lan>
+From: Darren Hart <dvhart@infradead.org>
+Subject: Re: [PATCH] linux/thermal.h: rename KELVIN_TO_CELSIUS to
+ DECI_KELVIN_TO_CELSIUS
+Date: Tue, 6 Oct 2015 23:30:34 +0100
+Message-ID: <20151006223034.GB43526@vmdeb7>
+References: <1443735931-8406-1-git-send-email-linux@rasmusvillemoes.dk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2723857.EVg1dAvTli@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Daniel Vetter <daniel.vetter@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Linux PCI <linux-pci@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bombadil.infradead.org ([198.137.202.9]:59880 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752847AbbJFWam (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 Oct 2015 18:30:42 -0400
+Content-Disposition: inline
+In-Reply-To: <1443735931-8406-1-git-send-email-linux@rasmusvillemoes.dk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Cc: Zhang Rui <rui.zhang@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Thu, Oct 01, 2015 at 11:45:31PM +0200, Rasmus Villemoes wrote:
+> The macros KELVIN_TO_CELSIUS and CELSIUS_TO_KELVIN actually convert
+> between deciKelvins and Celsius, so rename them to reflect that. While
+> at it, use a statement expression in DECI_KELVIN_TO_CELSIUS to prevent
+> expanding the argument multiple times and get rid of a few casts.
+> 
+> Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 
-There are quite a few cases in which device drivers, bus types or
-even the PM core itself may benefit from knowing whether or not
-the platform firmware will be involved in the upcoming system power
-transition (during system suspend) or whether or not it was involved
-in it (during system resume).
+If Zhang and Rafael are happy with the termal change, then for the
+resulting platform/drivers/x86 changes:
 
-For this reason, introduce global system suspend flags that can be
-used by the platform code to expose that information for the benefit
-of the other parts of the kernel and make the ACPI core set them
-as appropriate.
+Acked-by: Darren Hart <dvhart@linux.intel.com>
 
-Users of the new flags will be added later.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/acpi/sleep.c    |    3 +++
- include/linux/suspend.h |   36 ++++++++++++++++++++++++++++++++++++
- kernel/power/suspend.c  |    4 ++++
- 3 files changed, 43 insertions(+)
-
-Index: linux-pm/include/linux/suspend.h
-===================================================================
---- linux-pm.orig/include/linux/suspend.h
-+++ linux-pm/include/linux/suspend.h
-@@ -202,6 +202,36 @@ struct platform_freeze_ops {
- extern void suspend_set_ops(const struct platform_suspend_ops *ops);
- extern int suspend_valid_only_mem(suspend_state_t state);
- 
-+extern unsigned int pm_suspend_global_flags;
-+
-+#define PM_SUSPEND_FLAG_FW_SUSPEND	(1 << 0)
-+#define PM_SUSPEND_FLAG_FW_RESUME	(1 << 1)
-+
-+static inline void pm_suspend_clear_flags(void)
-+{
-+	pm_suspend_global_flags = 0;
-+}
-+
-+static inline void pm_set_suspend_via_firmware(void)
-+{
-+	pm_suspend_global_flags |= PM_SUSPEND_FLAG_FW_SUSPEND;
-+}
-+
-+static inline void pm_set_resume_via_firmware(void)
-+{
-+	pm_suspend_global_flags |= PM_SUSPEND_FLAG_FW_RESUME;
-+}
-+
-+static inline bool pm_suspend_via_firmware(void)
-+{
-+	return !!(pm_suspend_global_flags & PM_SUSPEND_FLAG_FW_SUSPEND);
-+}
-+
-+static inline bool pm_resume_via_firmware(void)
-+{
-+	return !!(pm_suspend_global_flags & PM_SUSPEND_FLAG_FW_RESUME);
-+}
-+
- /* Suspend-to-idle state machnine. */
- enum freeze_state {
- 	FREEZE_STATE_NONE,      /* Not suspended/suspending. */
-@@ -241,6 +271,12 @@ extern int pm_suspend(suspend_state_t st
- #else /* !CONFIG_SUSPEND */
- #define suspend_valid_only_mem	NULL
- 
-+static inline void pm_suspend_clear_flags(void) {}
-+static inline void pm_set_suspend_via_firmware(void) {}
-+static inline void pm_set_resume_via_firmware(void) {}
-+static inline bool pm_suspend_via_firmware(void) { return false; }
-+static inline bool pm_resume_via_firmware(void) { return false; }
-+
- static inline void suspend_set_ops(const struct platform_suspend_ops *ops) {}
- static inline int pm_suspend(suspend_state_t state) { return -ENOSYS; }
- static inline bool idle_should_freeze(void) { return false; }
-Index: linux-pm/kernel/power/suspend.c
-===================================================================
---- linux-pm.orig/kernel/power/suspend.c
-+++ linux-pm/kernel/power/suspend.c
-@@ -35,6 +35,9 @@
- const char *pm_labels[] = { "mem", "standby", "freeze", NULL };
- const char *pm_states[PM_SUSPEND_MAX];
- 
-+unsigned int pm_suspend_global_flags;
-+EXPORT_SYMBOL_GPL(pm_suspend_global_flags);
-+
- static const struct platform_suspend_ops *suspend_ops;
- static const struct platform_freeze_ops *freeze_ops;
- static DECLARE_WAIT_QUEUE_HEAD(suspend_freeze_wait_head);
-@@ -493,6 +496,7 @@ static int enter_state(suspend_state_t s
- #endif
- 
- 	pr_debug("PM: Preparing system for sleep (%s)\n", pm_states[state]);
-+	pm_suspend_clear_flags();
- 	error = suspend_prepare(state);
- 	if (error)
- 		goto Unlock;
-Index: linux-pm/drivers/acpi/sleep.c
-===================================================================
---- linux-pm.orig/drivers/acpi/sleep.c
-+++ linux-pm/drivers/acpi/sleep.c
-@@ -487,6 +487,8 @@ static int acpi_suspend_begin(suspend_st
- 		pr_err("ACPI does not support sleep state S%u\n", acpi_state);
- 		return -ENOSYS;
- 	}
-+	if (acpi_state > ACPI_STATE_S1)
-+		pm_set_suspend_via_firmware();
- 
- 	acpi_pm_start(acpi_state);
- 	return 0;
-@@ -522,6 +524,7 @@ static int acpi_suspend_enter(suspend_st
- 		if (error)
- 			return error;
- 		pr_info(PREFIX "Low-level resume complete\n");
-+		pm_set_resume_via_firmware();
- 		break;
- 	}
- 	trace_suspend_resume(TPS("acpi_suspend"), acpi_state, false);
+-- 
+Darren Hart
+Intel Open Source Technology Center
