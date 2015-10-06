@@ -1,58 +1,45 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 10/13] twl4030_charger: add software controlled linear
- charging mode.
-Date: Tue, 6 Oct 2015 16:34:07 +0200
-Message-ID: <20151006143407.GA24518@xo-6d-61-c0.localdomain>
-References: <20150730001113.4012.18086.stgit@noble>
- <20150730001124.4012.27784.stgit@noble>
- <20150915112825.GA10704@amd>
- <87bncjjesu.fsf@notabene.neil.brown.name>
+Subject: Re: [PATCH] PM / hibernate: Move pm_init/pm_disk_init to
+ late_initcall_sync
+Date: Tue, 6 Oct 2015 16:42:13 +0200
+Message-ID: <20151006144213.GB24518@xo-6d-61-c0.localdomain>
+References: <1444093820-6934-1-git-send-email-wonhong.kwon@lge.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58094 "EHLO
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58313 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751443AbbJFOeR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 Oct 2015 10:34:17 -0400
+	with ESMTP id S1751531AbbJFOmT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 Oct 2015 10:42:19 -0400
 Content-Disposition: inline
-In-Reply-To: <87bncjjesu.fsf@notabene.neil.brown.name>
+In-Reply-To: <1444093820-6934-1-git-send-email-wonhong.kwon@lge.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Neil Brown <neil@brown.name>
-Cc: Sebastian Reichel <sre@kernel.org>, Samuel Ortiz <sameo@linux.intel.com>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, real GTA04 owners <gta04-owner@goldelico.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-omap@vger.kernel.org, Lee Jones <lee.jones@linaro.org>
+To: Wonhong Kwon <wonhongkwon@gmail.com>
+Cc: rjw@rjwysocki.net, len.brown@intel.com, linux-pm@vger.kernel.org, gunho.lee@lge.com, Wonhong Kwon <wonhong.kwon@lge.com>
 
-Hi!
-
-> Pavel Machek <pavel@ucw.cz> writes:
-> > On Thu 2015-07-30 10:11:24, NeilBrown wrote:
-> >> 
-> >> Add a 'continuous' option for usb charging which enables
-> >> the "linear" charging mode of the twl4030.
-> >> 
-> >> Linear charging does a good job with not-so-reliable power sources.
-> >> Auto mode does not work well as it switches off when voltage drops
-> >> momentarily.  Care must be taken not to over-charge.
-> >
-> > Can you explain how the user can "care not to over-charge"?
+On Tue 2015-10-06 10:10:20, Wonhong Kwon wrote:
+> pm_init is being invoked by core_initcall and hibernate_image_size_init
+> calculates preferred image size (image_size) based on total pages
+> (totalram_pages). This totalram_pages can be modified during various
+> initcall-s phase and this can cause miscalculated image_size.
 > 
-> The following text reads:
+> For example, when CMA is being used, init_cma_reserved_pageblock tries
+> to change the totalram_pages and this job is done during core_initcall.
+> In order words, the totalram_pages doesn't take CMA reserved pages into
+> account when image_size is calculated and it can be too small.
 > 
->     It was used with a bike hub dynamo since a year or so. In that case
->     there are automatically charging stops when the cyclist needs a break.
-> 
-> so: take a break from cycling occasionally.
+> Move pm_init and pm_disk_init to late_initcall_sync so that it happens
+> after all other initcall-s change the totalram_pages.
 
-If the charger does not exceed 4.2V, I'd not call it overcharge. (Yes, some clever
-chargers actually let the battery drop below 4.2V when charge is done, but...)
+Hmm, someone else hit same (similar) problem, but had way more complex solution.
 
-If the charger _does_ exceed 4.2V, then the battery will explode. Don't do that. Don't
-offer that to the user.
+So it is nice this is easy.
 
-On a related note... I've just killed USB charger by overloading it. They are not protected.
+But is it enough? Can CMA be modular? Can CMA allocate memory after boot?
 
-I believe your automatically-pull-max-power really should stick to the well-known charging
-currents (.5A, 1A, 1.7A), at the very minimum.
-
+THanks,
+									Pavel
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
