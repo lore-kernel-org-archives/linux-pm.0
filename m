@@ -1,98 +1,71 @@
-From: Felipe Balbi <balbi@ti.com>
-Subject: Re: cpufreq-dt error: failed to init cpufreq table: -61
-Date: Tue, 6 Oct 2015 11:10:52 -0500
-Message-ID: <87a8rw2d0z.fsf@saruman.tx.rr.com>
-References: <CAAfyv370DFbz9v8URqcipQt-AQ-6du19hf8di2fPeVfTdBzXww@mail.gmail.com> <87fv1o3xmo.fsf@saruman.tx.rr.com> <CAAfyv35mMiuLCCnJFjodNcx-iyOsz56-BPU7fkSc=AL1Xw5nJw@mail.gmail.com> <CAAfyv366=LOfy4_JeuRgjsbgBADWCanRt9X1JDv_eVkYe872Dw@mail.gmail.com> <87zizw2fyv.fsf@saruman.tx.rr.com>
+From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
+Subject: Re: [PATCH v3 1/6] cpufreq: intel_p_state: Fix limiting turbo sub
+ states
+Date: Tue, 6 Oct 2015 17:08:14 +0000
+Message-ID: <1444151263.17895.114.camel@spandruv-desk3.jf.intel.com>
+References: <1443567248-27134-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	 <1443567248-27134-2-git-send-email-srinivas.pandruvada@linux.intel.com>
+	 <1962931.XZqpddDuF8@vostro.rjw.lan>
+	 <1444092185.17895.99.camel@spandruv-desk3.jf.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-="; micalg=pgp-sha1;
-	protocol="application/pgp-signature"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:33585 "EHLO comal.ext.ti.com"
+Received: from mga01.intel.com ([192.55.52.88]:17927 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751706AbbJFQLA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 6 Oct 2015 12:11:00 -0400
-In-Reply-To: <87zizw2fyv.fsf@saruman.tx.rr.com>
+	id S1752738AbbJFRJf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 6 Oct 2015 13:09:35 -0400
+In-Reply-To: <1444092185.17895.99.camel@spandruv-desk3.jf.intel.com>
+Content-Language: en-US
+Content-ID: <D900278302B42E45AEB248874657216D@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Belisko Marek <marek.belisko@gmail.com>
-Cc: Tony Lindgren <tony@atomide.com>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Linux PM mailing list <linux-pm@vger.kernel.org>
+To: "rjw@rjwysocki.net" <rjw@rjwysocki.net>
+Cc: "Brown, Len" <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Accardi, Kristen C" <kristen.c.accardi@intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>
 
---=-=-=
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-Felipe Balbi <balbi@ti.com> writes:
-
-> Belisko Marek <marek.belisko@gmail.com> writes:
->
->> Hi,
->>
->> On Tue, Oct 6, 2015 at 4:03 PM, Belisko Marek <marek.belisko@gmail.com> =
-wrote:
->>> Hi Felipe,
->>>
->>> On Tue, Oct 6, 2015 at 4:00 PM, Felipe Balbi <balbi@ti.com> wrote:
->>>>
->>>> Hi,
->>>>
->>>> Belisko Marek <marek.belisko@gmail.com> writes:
->>>>> Hi Tony,
->>>>>
->>>>> I'm using custom am33xx board where mpu voltage can be changed through
->>>>> gpio regulator on 4.1 (latest stable) kernel. I defined gpio-regulator
->>>>> node and also operating-points to DT. Gpio regulator seems to be
->>>>> working fine but during probing cpufreq-dt I get error:
->>>>> failed to init cpufreq table: -61
->>>>>
->>>>> I did small investigation and seem that dev_pm_opp_init_cpufreq_table
->>>>> fails at first condition dev_pm_opp_get_opp_count <=3D 0 and this is
->>>>> because opp_list is empty. So it seems that any opp for am33xx aren't
->>>>> defined if I'm getting it right. I did look to mach-omap2/opp3xxx_data
->>>>> but there is nothing am33xx specific. It is known problem or exist
->>>>> some patches around to fix that? Many thanks.
->>>>
->>>> OPP initialization is not in mainline yet, there are some out-of-tree
->>>> patches which TI has been working on. If you want to use them, have a
->>>> look at TI's vendor kernel at [1]
->>> Thanks for link. One thing which is still not puzzled before I use 3.9
->>> kernel and it was working fine
->>> it's stops working when bumped to 4.1.
->>
->> Sorry information was incorrect. On 3.9 kernel we did use tps, pmic
->> now we have only gpio regulator so this is the difference.
->
-> okay, if it's only a regulator how can you set different voltages ?
-                       ^^^^^^^^^
-                       GPIO, rather
-
-
-> Seems like you won't be able to do anything more than enable/disable a
-> voltage rail.
->
-> --=20
-> balbi
-
-=2D-=20
-balbi
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJWE/KNAAoJEIaOsuA1yqRE+7cP/3YeYeq6f9EgxiBWZQIPc9KY
-8sm/1ps3exQyKr8WcDNdoYQtxp/ognVTx1hkflvjTp2S0k0kQmNuitaUxCEw2LFx
-l52yBt0D4OY/TmWeDWDjYQtQvhv/hhNOvzHUz/N3evRB2HVjZLHEeY1W2FvOGSVP
-xpkkra0r/R3PvKHOfSJFB6j2Nr9+YoWigrtTzJpDqXABHoH7MBPt4sZwV5bY+221
-nwDlSvUQ/1QC1PzOXAixCUBEVoZVMW8ubJDFSSGqj7JOp+e1ZI19zeBCfA96JBT/
-hvXKbObC0frYub/SBOVWNZxi1l0Ws3mQWDSaWL4D9rsrvay+kIGjwXxbJUcMoQJl
-qAYOy6kqRZ3Yg6sEob34Oz0SdHbNDFUTQyUtpzwbjXoQiD9qf+11cEkX1AnvlAdk
-qX4EpXnN90r8igBy9nQSUVMsfdPSkcshs7TLVfYK7lUdiCZEqPXc6TKo51huCKAO
-aPCpOM2cZEAA4mjYmzFTQHC5nzn/rLku599WwybT7c5G2zRVIpyTjA1wNjRIwick
-WUQqQ922slwXQDt6JZlZAWbVM/c6NGU1cnYFSRgM5zZ37wyLLu81hJtBQiuJtPyx
-yBU+mT8YaHteOJUBR9g8H9DBUendNZu1S/zFnvp7Mc2ppOBlLTjkL28aJVmlNNHz
-KmYSTGg33/tWSBs3XP7U
-=Pg1x
------END PGP SIGNATURE-----
---=-=-=--
+T24gTW9uLCAyMDE1LTEwLTA1IGF0IDE3OjQzIC0wNzAwLCBTcmluaXZhcyBQYW5kcnV2YWRhIHdy
+b3RlOg0KPiBPbiBUdWUsIDIwMTUtMTAtMDYgYXQgMDA6NTYgKzAyMDAsIFJhZmFlbCBKLiBXeXNv
+Y2tpIHdyb3RlOg0KWy4uXQ0KPiA+ICBzdHJ1Y3QgdmlkX2RhdGEgew0KPiA+IEBAIC0xMzIsNiAr
+MTMzLDggQEAgc3RydWN0IHBzdGF0ZV9mdW5jcyB7DQo+ID4gICAgIGludCAoKmdldF9zY2FsaW5n
+KSh2b2lkKTsNCj4gPiAgICAgdm9pZCAoKnNldCkoc3RydWN0IGNwdWRhdGEqLCBpbnQgcHN0YXRl
+KTsNCj4gPiAgICAgdm9pZCAoKmdldF92aWQpKHN0cnVjdCBjcHVkYXRhICopOw0KPiA+ICsgICB1
+NjQgKCpnZXRfdHVyYm9fcmF0aW9fbGltaXQpKHN0cnVjdCBjcHVkYXRhICopOw0KPiA+ICsgICBp
+bnQgKCpzZXRfdHVyYm9fcmF0aW9fbGltaXQpKHN0cnVjdCBjcHVkYXRhICosIHU2NCwgdTY0KTsN
+Cj4gDQo+IEFuIGludCBpcyBhbHdheXMgcGFzc2VkIGFzIHRoZSBsYXN0IGFyZyB0byB0aGlzLCBz
+byB3aHkgaXMgdGhlIGFyZw0KdTY0Pw0KPiANCkl0IGNhbiBiZSBpbnQgYXMgd2UgY2FyZSBvbmx5
+IGFib3V0IGxvdyBieXRlIHdoaWNoIGlzIG1heCB0dXJibyByYXRpby4NCj4gPiAgfTsNClsuLl0N
+Cj4gPiAgSW5zdGVhZCBvZiBzaGlmdGluZyBkZWZfcmF0aW8gYW5kIG5ld19yYXRpbyBpbiBlYWNo
+DQo+ID4gc3RlcCwgSSdkIHNoaWZ0IG1heF9yYXRpbyBhbmQgdGhlIG1hc2s6DQo+ID4gDQo+ID4g
+CXU2NCBtYXNrID0gMHhmZjsNCj4gPiAJdTY0IG1heF9yYXRpbyA9IG5ld19yYXRpbyAmIG1hc2s7
+DQo+ID4gDQo+ID4gCXdoaWxlIChtYXNrKSB7DQo+ID4gCQlpZiAoZGVmX3JhdGlvICYgbWFzaykg
+ew0KPiA+IAkJCXU2NCByYXRpbzsNCj4gPiANCj4gPiAJCQlpZiAobmV3X3JhdGlvICYgbWFzaykg
+ew0KPiA+IAkJCQlyYXRpbyA9IG5ld19yYXRpbyAmIG1hc2s7DQo+ID4gCQkJfSBlbHNlIHsNCj4g
+PiAJCQkJcmF0aW8gPSBkZWZfcmF0aW8gJiBtYXNrOw0KPiA+IAkJCQlpZiAocmF0aW8gPiBtYXhf
+cmF0aW8pDQo+ID4gCQkJCQlyYXRpbyA9IG1heF9yYXRpbzsNCj4gPiAJCQl9DQo+ID4gCQkJb3V0
+X3JhdGlvIHw9IHJhdGlvOw0KPiA+IAkJfQ0KPiA+IAkJbWF4X3JhdGlvIDw8PSA4Ow0KPiA+IAkJ
+bWFzayA8PD0gODsNCj4gPiAJfQ0KPiA+IA0KPiBJIHdpbGwgZXhwZXJpbWVudCB3aXRoIHlvdXIg
+YWxnb3JpdGhtIGFuZCBjaGVjay4NCj4gDQpZb3VyIGFsZ29yaXRobSB3b3Jrcywgc28gd2lsbCBj
+aGFuZ2UgdG8gdGhpcy4NCg0KWy4uXQ0KDQo+ID4gPiArCWlmIChwc3RhdGVfZnVuY3MuZ2V0X3R1
+cmJvX3JhdGlvX2xpbWl0ICYmDQo+ID4gPiArCSAgICAhY3B1LT5wc3RhdGUudHVyYm9fcmF0aW9f
+bGltaXQpDQo+ID4gPiArCQljcHUtPnBzdGF0ZS50dXJib19yYXRpb19saW1pdCA9DQo+ID4gPiAr
+CQkJcHN0YXRlX2Z1bmNzLmdldF90dXJib19yYXRpb19saW1pdChjcHUpOw0KPiA+IA0KPiA+IFNv
+IHdlIHJlYWQgTVNSX05ITV9UVVJCT19SQVRJT19MSU1JVCBhbmQgc3RvcmUgaXQgaW50byBwc3Rh
+dGUudHVyYm9fcmF0aW9fbGltaXQNCj4gPiB1bmxlc3MgYWxyZWFkIHBvcHVsYXRlZC4gIFRoaXMg
+bWVhbnMgd2UgZG8gaXQgb25seSBvbmNlIGR1cmluZyBpbml0aWFsaXphdGlvbi4NCj4gPiANCj4g
+PiBXaGF0IGlmIHRoZSB2YWx1ZSB3ZSBoYXZlIGluIHRoZXJlIGlzIHN0YWxlIGFmdGVyLCBzYXks
+IHN5c3RlbSBzdXNwZW5kLXJlc3VtZT8NCj4gPiANCj4gRGlkIEkgbWVzcyB1cCBoZXJlPyBZb3Ug
+bWVhbiBkYXRhIHN0b3JlZCBpbiBhIHZhcmlhYmxlDQo+IGNwdS0+cHN0YXRlLnR1cmJvX3JhdGlv
+X2xpbWl0IGlzIGNvcnJ1cHRlZCBhZnRlciBzdXNwZW5kL3Jlc3VtZS4gVGhpcyBpcw0KPiBhIHZ6
+YWxsb2MgbWVtb3J5Li4gDQo+IGFsbF9jcHVfZGF0YSA9IHZ6YWxsb2Moc2l6ZW9mKHZvaWQgKikg
+KiBudW1fcG9zc2libGVfY3B1cygpKSBvbmUgdGltZQ0KPiBkdXJpbmcgX19pbml0IGludGVsX3Bz
+dGF0ZV9pbml0DQpBbHNvIAlhbGxfY3B1X2RhdGFbY3B1bnVtXSBpcyBhbGxvY2F0ZWQgb25seSBv
+bmNlIGR1cmluZyBmaXJzdCBjcHVmcmVxDQpjYWxsYmFjayBmb3IgaW5pdCBhbmQgbm90IGZyZWVk
+DQoJaWYgKCFhbGxfY3B1X2RhdGFbY3B1bnVtXSkNCgkJYWxsX2NwdV9kYXRhW2NwdW51bV0gPSBr
+emFsbG9jKHNpemVvZihzdHJ1Y3QgY3B1ZGF0YSksDQoJCQkJCSAgICAgICBHRlBfS0VSTkVMKTsN
+CkRpZCBTVFIgdGVzdHMsIGRpZG4ndCBzZWUgaXNzdWUuIE5vdCBzdXJlIGhvdyBlbHNlIGNvcnJ1
+cHRpb24gY2FuIGhhcHBlbg0KdW5sZXNzIHNsYWIgbWVtb3J5IGlzIGNvcnJ1cHRlZC4gQ2FuIHlv
+dSB0ZWxsIGhvdyBpdCB3aWxsIGJlIHN0YWxlPw0KDQpUaGFua3MsDQpTcmluaXZhcw0KPiAtLQ0K
+PiBUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3Jp
+YmUgbGludXgtcG0iIGluDQo+IHRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdl
+ci5rZXJuZWwub3JnDQo+IE1vcmUgbWFqb3Jkb21vIGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtlcm5l
+bC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbA0KDQo=
