@@ -1,93 +1,122 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [RFC][PATCH v3 3/3] input: i8042: Avoid resetting controller on
- system suspend/resume
-Date: Tue, 6 Oct 2015 15:34:42 -0700
-Message-ID: <20151006223442.GA31850@dtor-ws>
-References: <10641052.oOBhM6BU9G@vostro.rjw.lan>
- <5472042.4c1h9diL7E@vostro.rjw.lan>
- <2723857.EVg1dAvTli@vostro.rjw.lan>
- <3385784.1Q539YNd1G@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq, intel_pstate, set max_sysfs_pct and min_sysfs_pct on governor switch
+Date: Wed, 07 Oct 2015 01:06:17 +0200
+Message-ID: <1594304.lVcRDcB3yL@vostro.rjw.lan>
+References: <1444168147-17812-1-git-send-email-prarit@redhat.com> <1755198.JNkaHg87IV@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <3385784.1Q539YNd1G@vostro.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Vetter <daniel.vetter@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Linux PCI <linux-pci@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:55159 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752971AbbJFWhq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 Oct 2015 18:37:46 -0400
+In-Reply-To: <1755198.JNkaHg87IV@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: Kristen Carlson Accardi <kristen@linux.intel.com>, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 
-On Wed, Oct 07, 2015 at 12:53:49AM +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> If the upcoming system suspend is not going to be handled by the
-> platform firmware, like in the suspend-to-idle case, it is not
-> necessary to reset the controller in i8042_pm_suspend(), so avoid
-> doing that.
-> 
-> Moreover, if the system resume currently in progress has not been
-> started by the platform firmware, like in the suspend-to-idle case,
-> i8042_controller_resume() need not be called by i8042_pm_resume(),
-> so avoid doing that too in that case.
-> 
-> Additionally, try to catch the event that woke up the system by
-> calling the interrupt handler early during system resume if it has
-> not been started by the platform firmware.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/input/serio/i8042.c |   15 +++++++++++++--
->  1 file changed, 13 insertions(+), 2 deletions(-)
-> 
-> Index: linux-pm/drivers/input/serio/i8042.c
-> ===================================================================
-> --- linux-pm.orig/drivers/input/serio/i8042.c
-> +++ linux-pm/drivers/input/serio/i8042.c
-> @@ -24,6 +24,7 @@
->  #include <linux/platform_device.h>
->  #include <linux/i8042.h>
->  #include <linux/slab.h>
-> +#include <linux/suspend.h>
->  
->  #include <asm/io.h>
->  
-> @@ -1170,7 +1171,8 @@ static int i8042_pm_suspend(struct devic
->  {
->  	int i;
->  
-> -	i8042_controller_reset(true);
-> +	if (pm_suspend_via_firmware())
-> +		i8042_controller_reset(true);
->  
->  	/* Set up serio interrupts for system wakeup. */
->  	for (i = 0; i < I8042_NUM_PORTS; i++) {
-> @@ -1183,6 +1185,14 @@ static int i8042_pm_suspend(struct devic
->  	return 0;
->  }
->  
-> +static int i8042_pm_resume_noirq(struct device *dev)
-> +{
-> +	if (!pm_resume_via_firmware())
-> +		i8042_interrupt(0, NULL);
-> +
-> +	return 0;
-> +}
-> +
->  static int i8042_pm_resume(struct device *dev)
->  {
->  	int i;
-> @@ -1199,7 +1209,7 @@ static int i8042_pm_resume(struct device
->  	 * to bring it in a sane state. (In case of S2D we expect
->  	 * BIOS to reset the controller for us.)
->  	 */
-> -	return i8042_controller_resume(true);
-> +	return pm_resume_via_firmware() ? i8042_controller_resume(true) : 0;
+On Wednesday, October 07, 2015 12:43:55 AM Rafael J. Wysocki wrote:
+> On Tuesday, October 06, 2015 05:49:07 PM Prarit Bhargava wrote:
+> > Intel CPUs will not enter higher p-states when after switching from the
+> > performance governor to the powersave governor, until
+> > /sys/devices/system/cpu/intel_pstate/min_perf_pct is set to a low value.
+> > This differs from previous behaviour in which a switch to the powersave
+> > governor would result in a low default value for min_perf_pct.
+> > 
+> > The behavior of the powersave governor changed after commit a04759924e25
+> > ("[cpufreq] intel_pstate: honor user space min_perf_pct override on
+> > resume").  The commit introduced tracking of performance percentage
+> > changes via sysfs in order to restore userspace changes during
+> > suspend/resume.  The problem occurs because the global values of the newly
+> > introduced max_sysfs_pct and min_sysfs_pct are not reset on a governor
+> > change and this causes the new governor to inherit the previous governor's
+> > settings.
+> > 
+> > This patch sets max_sysfs_pct to 100 and min_sysfs_pct to 0 on a governor
+> > change which fixes the problem with governor switching.  These changes
+> > also make the initial calculations for max_perf_pct and min_perf_pct
+> > slightly simpler.
+> > 
+> > Before patch:
+> > [root@intel-skylake-y-01 power]# cpupower frequency-set -g performance
+> > [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/min_perf_pct
+> > 100
+> > [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
+> > 100
+> > [root@intel-skylake-y-01 power]# cpupower frequency-set -g powersave
+> > [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/min_perf_pct
+> > 100
+> > [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
+> > 100
+> > 
+> > After patch:
+> > [root@intel-skylake-y-01 power]# cpupower frequency-set -g performance
+> > [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/min_perf_pct
+> > 100
+> > [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
+> > 100
+> > [root@intel-skylake-y-01 power]# cpupower frequency-set -g powersave
+> > [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/min_perf_pct
+> > 14
+> > [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
+> > 100
+> > 
+> > Also note that I have tested suspend/resume (using CONFIG_PM_DEBUG):
+> > [root@intel-skylake-y-01 power]# echo 50 > /sys/devices/system/cpu/intel_pstate/min_perf_pct
+> > [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/*_perf_pct
+> > 100
+> > 50
+> > [root@intel-skylake-y-01 power]# echo devices > /sys/power/pm_test
+> > [root@intel-skylake-y-01 power]# echo platform > /sys/power/disk
+> > [root@intel-skylake-y-01 power]# echo disk > /sys/power/state
+> > [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/*_perf_pct
+> > 100
+> > 50
+> > 
+> > Fixes: a04759924e25 ("[cpufreq] intel_pstate: honor user space min_perf_pct override on resume")
+> > Cc: Kristen Carlson Accardi <kristen@linux.intel.com>
+> > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> > Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> > Cc: linux-pm@vger.kernel.org
+> > Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+> > ---
+> >  drivers/cpufreq/intel_pstate.c |    7 +++++--
+> >  1 file changed, 5 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> > index 3af9dd7..bb24458 100644
+> > --- a/drivers/cpufreq/intel_pstate.c
+> > +++ b/drivers/cpufreq/intel_pstate.c
+> > @@ -986,6 +986,9 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+> >  	if (!policy->cpuinfo.max_freq)
+> >  		return -ENODEV;
+> >  
+> > +	limits.min_sysfs_pct = 0;
+> > +	limits.max_sysfs_pct = 100;
+> > +
+> >  	if (policy->policy == CPUFREQ_POLICY_PERFORMANCE &&
+> >  	    policy->max >= policy->cpuinfo.max_freq) {
+> >  		limits.min_policy_pct = 100;
+> > @@ -1004,9 +1007,9 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+> >  	limits.max_policy_pct = clamp_t(int, limits.max_policy_pct, 0 , 100);
+> >  
+> >  	/* Normalize user input to [min_policy_pct, max_policy_pct] */
+> > -	limits.min_perf_pct = max(limits.min_policy_pct, limits.min_sysfs_pct);
+> > +	limits.min_perf_pct = limits.min_policy_pct;
+> >  	limits.min_perf_pct = min(limits.max_policy_pct, limits.min_perf_pct);
+> > -	limits.max_perf_pct = min(limits.max_policy_pct, limits.max_sysfs_pct);
+> > +	limits.max_perf_pct = limits.max_sysfs_pct;
 
-What happens if we were going to suspend via firmware so we reset the
-controller but then we got wakeup condition and we actually did not
-suspend. What pm_resume_via_firmware() will return in this case?
+On a second thought, isn't that always 100?  If so, doesn't it basically discard
+limits.max_policy_pct?
 
-Thanks.
+> >  	limits.max_perf_pct = max(limits.min_policy_pct, limits.max_perf_pct);
+> >  
+> >  	/* Make sure min_perf_pct <= max_perf_pct */
+> > 
 
--- 
-Dmitry
+Thanks,
+Rafael
+
