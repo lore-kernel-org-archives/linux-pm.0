@@ -1,85 +1,39 @@
-From: Belisko Marek <marek.belisko@gmail.com>
-Subject: Re: cpufreq-dt error: failed to init cpufreq table: -61
-Date: Tue, 6 Oct 2015 20:57:30 +0200
-Message-ID: <CAAfyv34AbbgPP0OuMOUxYtcVDnL4C=h4nMB5VKxbHjubdqekrQ@mail.gmail.com>
-References: <CAAfyv370DFbz9v8URqcipQt-AQ-6du19hf8di2fPeVfTdBzXww@mail.gmail.com>
-	<87fv1o3xmo.fsf@saruman.tx.rr.com>
-	<CAAfyv35mMiuLCCnJFjodNcx-iyOsz56-BPU7fkSc=AL1Xw5nJw@mail.gmail.com>
-	<CAAfyv366=LOfy4_JeuRgjsbgBADWCanRt9X1JDv_eVkYe872Dw@mail.gmail.com>
-	<87zizw2fyv.fsf@saruman.tx.rr.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH v2 1/2] PM / Domains: Make
+ pm_genpd_{add,remove}_subdomain() available to modules
+Date: Tue, 6 Oct 2015 12:32:13 -0700
+Message-ID: <20151006193213.GG12338@codeaurora.org>
+References: <1443727374-1539-1-git-send-email-sboyd@codeaurora.org>
+ <1443727374-1539-2-git-send-email-sboyd@codeaurora.org>
+ <6374611.5Nvbqg0Ugs@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f171.google.com ([209.85.212.171]:37781 "EHLO
-	mail-wi0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752456AbbJFS5d (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 Oct 2015 14:57:33 -0400
-In-Reply-To: <87zizw2fyv.fsf@saruman.tx.rr.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-clk-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <6374611.5Nvbqg0Ugs@vostro.rjw.lan>
+Sender: linux-clk-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Mike Turquette <mturquette@baylibre.com>, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, Rob Clark <robdclark@gmail.com>, Rajendra Nayak <rnayak@codeaurora.org>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Felipe Balbi <balbi@ti.com>
-Cc: Tony Lindgren <tony@atomide.com>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Linux PM mailing list <linux-pm@vger.kernel.org>
 
-On Tue, Oct 6, 2015 at 5:07 PM, Felipe Balbi <balbi@ti.com> wrote:
-> Belisko Marek <marek.belisko@gmail.com> writes:
->
->> Hi,
->>
->> On Tue, Oct 6, 2015 at 4:03 PM, Belisko Marek <marek.belisko@gmail.com> wrote:
->>> Hi Felipe,
->>>
->>> On Tue, Oct 6, 2015 at 4:00 PM, Felipe Balbi <balbi@ti.com> wrote:
->>>>
->>>> Hi,
->>>>
->>>> Belisko Marek <marek.belisko@gmail.com> writes:
->>>>> Hi Tony,
->>>>>
->>>>> I'm using custom am33xx board where mpu voltage can be changed through
->>>>> gpio regulator on 4.1 (latest stable) kernel. I defined gpio-regulator
->>>>> node and also operating-points to DT. Gpio regulator seems to be
->>>>> working fine but during probing cpufreq-dt I get error:
->>>>> failed to init cpufreq table: -61
->>>>>
->>>>> I did small investigation and seem that dev_pm_opp_init_cpufreq_table
->>>>> fails at first condition dev_pm_opp_get_opp_count <= 0 and this is
->>>>> because opp_list is empty. So it seems that any opp for am33xx aren't
->>>>> defined if I'm getting it right. I did look to mach-omap2/opp3xxx_data
->>>>> but there is nothing am33xx specific. It is known problem or exist
->>>>> some patches around to fix that? Many thanks.
->>>>
->>>> OPP initialization is not in mainline yet, there are some out-of-tree
->>>> patches which TI has been working on. If you want to use them, have a
->>>> look at TI's vendor kernel at [1]
->>> Thanks for link. One thing which is still not puzzled before I use 3.9
->>> kernel and it was working fine
->>> it's stops working when bumped to 4.1.
->>
->> Sorry information was incorrect. On 3.9 kernel we did use tps, pmic
->> now we have only gpio regulator so this is the difference.
->
-> okay, if it's only a regulator how can you set different voltages ?
-> Seems like you won't be able to do anything more than enable/disable a
-> voltage rail.
-Sorry I wasn't precise. There are 2 gpios's with some small logic so
-we have 4 voltage
-states.
->
-> --
-> balbi
+On 10/05, Rafael J. Wysocki wrote:
+> On Thursday, October 01, 2015 12:22:53 PM Stephen Boyd wrote:
+> >  
+> >  /**
+> >   * pm_genpd_remove_subdomain - Remove a subdomain from an I/O PM domain.
+> > @@ -1395,6 +1396,7 @@ out:
+> >  
+> >  	return ret;
+> >  }
+> > +EXPORT_SYMBOL_GPL(pm_genpd_remove_subdomain);
+> >  
+> >  /* Default device callbacks for generic PM domains. */
+> 
+> This is fine by me, please feel free to add my ACK to it.
+> 
 
-BR,
-
-marek
+Thanks. Applied to clk-next.
 
 -- 
-as simple and primitive as possible
--------------------------------------------------
-Marek Belisko - OPEN-NANDRA
-Freelance Developer
-
-Ruska Nova Ves 219 | Presov, 08005 Slovak Republic
-Tel: +421 915 052 184
-skype: marekwhite
-twitter: #opennandra
-web: http://open-nandra.com
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
