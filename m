@@ -1,60 +1,77 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] PM / OPP: fix debugfs files for 64-bit
-Date: Wed, 7 Oct 2015 18:33:24 +0530
-Message-ID: <20151007130324.GA4557@linux>
-References: <5706174.BUsqiXljxZ@wuerfel>
- <20151007105911.GC9892@linux>
- <20151007110302.GD9892@linux>
- <20151007110755.GA6601@kroah.com>
- <20151007112149.GB22530@linux>
- <20151007125735.GA8170@kroah.com>
+From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Subject: [PATCH v7 0/6] Add support for DA9150 Fuel-Gauge
+Date: Wed, 7 Oct 2015 14:54:02 +0100
+Message-ID: <cover.1444225050.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f54.google.com ([209.85.220.54]:35415 "EHLO
-	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751157AbbJGND3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2015 09:03:29 -0400
-Received: by pacfv12 with SMTP id fv12so21647342pac.2
-        for <linux-pm@vger.kernel.org>; Wed, 07 Oct 2015 06:03:28 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20151007125735.GA8170@kroah.com>
+Received: from mail1.bemta14.messagelabs.com ([193.109.254.114]:13416 "EHLO
+	mail1.bemta14.messagelabs.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753363AbbJGNyM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2015 09:54:12 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Michael Turquette <mturquette@baylibre.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Stephen Boyd <sboyd@codeaurora.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Nishanth Menon <nm@ti.com>, Dmitry Torokhov <dtor@chromium.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Support Opensource <support.opensource@diasemi.com>
 
-Cc'ing Mike and Stephen..
+This patch set adds support for the Dialog DA9150 Fuel-Gauge.
 
-On 07-10-15, 13:57, Greg Kroah-Hartman wrote:
-> On Wed, Oct 07, 2015 at 04:51:49PM +0530, Viresh Kumar wrote:
-> > On 07-10-15, 12:07, Greg Kroah-Hartman wrote:
-> > > Why would you be wanting to create a "unsigned long" as an api anyway?
-> > > Just force it to be u64 all the time, can't you do that?
-> > 
-> > Okay, so the variable in question (lets say frequency) is an 'unsigned
-> > long' and that's how all the APIs of clock framework expect/define
-> > it.
-> > 
-> > And you are probably saying that we do this:
-> > 
-> > unsigned long freq;
-> > 
-> > debugfs_create_u64((u64 *)&freq);
-> > 
-> > Right? Or are you asking to update clock APIs to be converted to u64?
-> 
-> Yes, they should be u64 as I doubt you want to debug problems that you
-> have in the driver where it works on a 64bit system but doesn't on a
-> 32bit one.
+In this patch set the following is provided:
+ - MFD Core and DT bindings updates.
+ - Power Supply Fuel-Gauge support and DT bindings documentation.
 
-Firstly changing the clock API (and other similar APIs) to make
-frequency u64 instead of 'unsigned long', looks like a giant effort.
-There are too many users of those API, etc..
+This patch set is baselined against the v4.3-rc4 kernel version.
 
-Over that, it might be good performance wise to use u32 for 32 bit
-systems and u64 for 64 bit one, to represent clock frequency and maybe
-that's why we chose unsigned long there.
+Changes in v7:
+ - Fix return code handling for platform_get_irq_byname() call in fuel-gauge.
 
--- 
-viresh
+Changes in v6:
+ - Rebase to v4.3-rc4
+
+Changes in v5:
+ - Rebase to v4.2
+
+Changes in v4:
+ - MFD, Power, DT: Update DT compatible & driver name strings for Fuel Gauge,
+                   in line with maintainers request.
+ - Power: Update Kconfig and Makefile to use BATTERY_* for config entry instead
+          of FG_*. Also fuel-gauge module now depends on MFD not Charger.
+ - Power: Added helper function to simplify single attribute accesses using QIF
+          interface of fuel-gauge.
+ - Power: Use of devm_* functions for IRQ and power_supply registration.
+ - Power: Added checking of result from platform_get_irq_byname().
+
+Changes in v3:
+ - MFD: Some tidy up of code (gotos, dropped FG header, DEFINE_RES_IRQ_NAMED)
+ - MFD & Power: Drop use of callback function for temperature reading, as
+                requested by Lee Jones.
+ - MFD (DT): Binding doc update to flesh out example text.
+ - MFD (DT): New patch to change MFD binding doc to use relative paths.
+ - MFD: New patch to use DEFINE_RES_IRQ_NAMED for all other IRQ resources.
+
+Changes in v2:
+ - Moved temp callback function prototype to be part of power fuel-gauge patch,
+   as requested by Lee Jones.
+
+Adam Thomson (6):
+  mfd: da9150: Add support for Fuel-Gauge
+  mfd: da9150: Update DT bindings for Fuel-Gauge support
+  power: Add support for DA9150 Fuel-Gauge
+  power: da9150: Add DT bindings documentation for Fuel-Gauge
+  mfd: da9150: Use relative paths in DT bindings document
+  mfd: da9150: Use DEFINE_RES_IRQ_NAMED() help macro for IRQ resource
+
+ Documentation/devicetree/bindings/mfd/da9150.txt   |  33 +-
+ .../devicetree/bindings/power/da9150-fg.txt        |  23 +
+ drivers/mfd/da9150-core.c                          | 191 +++++--
+ drivers/power/Kconfig                              |  10 +
+ drivers/power/Makefile                             |   1 +
+ drivers/power/da9150-fg.c                          | 579 +++++++++++++++++++++
+ include/linux/mfd/da9150/core.h                    |  19 +-
+ 7 files changed, 811 insertions(+), 45 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/da9150-fg.txt
+ create mode 100644 drivers/power/da9150-fg.c
+
+--
+1.9.3
+
