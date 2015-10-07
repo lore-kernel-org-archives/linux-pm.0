@@ -1,75 +1,76 @@
-From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
-Subject: Re: [PATCH 3/4] power:bq27x00: don't fill system log by missing battery
-Date: Thu, 8 Oct 2015 00:23:14 +0200
-Message-ID: <201510080023.14795@pali>
-References: <cover.1444243358.git.hns@goldelico.com> <73cb8d96728805597ecb50e7e7b51bf6272b6d61.1444243358.git.hns@goldelico.com>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [PATCH] cpufreq, intel_pstate, set max_sysfs_pct and min_sysfs_pct on governor switch
+Date: Wed, 7 Oct 2015 15:26:00 -0700
+Message-ID: <001001d1014f$2613efe0$723bcfa0$@net>
+References: <1444168147-17812-1-git-send-email-prarit@redhat.com> <000f01d10131$59c67a60$0d536f20$@net> <56158F2D.50200@redhat.com> <10053399.aMfHfU7Xt3@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2063884.UOCKiuylfk";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain;
+	charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f172.google.com ([209.85.212.172]:35673 "EHLO
-	mail-wi0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756592AbbJGWXS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2015 18:23:18 -0400
-Received: by wicge5 with SMTP id ge5so595359wic.0
-        for <linux-pm@vger.kernel.org>; Wed, 07 Oct 2015 15:23:16 -0700 (PDT)
-In-Reply-To: <73cb8d96728805597ecb50e7e7b51bf6272b6d61.1444243358.git.hns@goldelico.com>
+Received: from cmta10.telus.net ([209.171.16.83]:58951 "EHLO cmta10.telus.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751020AbbJGW0D (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 7 Oct 2015 18:26:03 -0400
+In-Reply-To: <10053399.aMfHfU7Xt3@vostro.rjw.lan>
+Content-Language: en-ca
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "H. Nikolaus Schaller" <hns@goldelico.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, NeilBrown <neilb@suse.de>
+To: 'Prarit Bhargava' <prarit@redhat.com>
+Cc: 'Kristen Carlson Accardi' <kristen@linux.intel.com>, linux-kernel@vger.kernel.org, 'Viresh Kumar' <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, Doug Smythies <dsmythies@telus.net>
 
---nextPart2063884.UOCKiuylfk
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+On 2015.10.07 15:06 Rafael J. Wysocki wrote:
+> On Wednesday, October 07, 2015 05:31:25 PM Prarit Bhargava wrote:
+>> On 10/07/2015 02:52 PM, Doug Smythies wrote:
+>>> On 2015.10.07 08:46 Prarit Bhargava wrote:
+>>>> On 10/07/2015 11:40 AM, Doug Smythies wrote:
+>>>>>
+>>>>> Do we agree or disagree that the root issue seems to be (from your test)?:
+>>>>>
+>>>>> \#  echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct
+>>>>>
+>>>>> [   21.483436] store_min_perf_pct[453] min_sysfs_pct = 100
+>>>>> [   21.489373] store_min_perf_pct[456] min_perf_pct = 100
+>>>>> [   21.495203] store_min_perf_pct[459] min_perf_pct = 100
+>>>>> [   21.501050] store_min_perf_pct[462] min_perf_pct = 100
+>>>>
+>>>> Yep, and it appears to be done by default in Fedora & RHEL :/ ... the issue is
+>>>> still the same IMO that min_sysfs_pct & max_sysfs_pct are not cleared on a
+>>>> governor switch.
+>>> 
+>>> Clearing them will break some other things. For example, and as
+>>> shown in my original reply, resume from suspend.
+>>> 
+>>> Why? Because, at least on my computer, the governor is changed to
+>>> "performance" during suspend, and the "powersave" governor is
+>>> restored sometime during resume. The users wants the settings they had
+>>> before the suspend.
+>>> 
+>> Looking at this in more detail after having tested on a Intel(R) Core(TM)
+>> i7-2600 CPU @ 3.40GHz in Fedora and RHEL.
+>> 
+>> I have a feeling that the switch you're seeing (poweersave->performance, suspend
+>> ... resume, performance->powersave) is occurring in userspace, and not as a
+>> result of the kernel.
+Agreed. It is pm-suspend doing it.
 
-On Wednesday 07 October 2015 20:42:38 H. Nikolaus Schaller wrote:
-> From: NeilBrown <neilb@suse.de>
->=20
-> Print message that battery is not calibrated only during debug build
-> but not during normal operation.
->=20
-> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
-> ---
->  drivers/power/bq27x00_battery.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/power/bq27x00_battery.c
-> b/drivers/power/bq27x00_battery.c index 8287261f..709d1e4 100644
-> --- a/drivers/power/bq27x00_battery.c
-> +++ b/drivers/power/bq27x00_battery.c
-> @@ -491,7 +491,7 @@ static void bq27x00_update(struct
-> bq27x00_device_info *di) if (cache.flags >=3D 0) {
->  		if (!is_bq27500 && !is_bq27425 && !is_bq27742 && !is_bq27510
->  				&& (cache.flags & BQ27000_FLAG_CI)) {
-> -			dev_info(di->dev, "battery is not calibrated! ignoring=20
-capacity
-> values\n"); +			dev_dbg(di->dev, "battery is not calibrated!
-> ignoring capacity values\n"); cache.capacity =3D -ENODATA;
->  			cache.energy =3D -ENODATA;
->  			cache.time_to_empty =3D -ENODATA;
+>>  IMO if userspace changes the governor, all bets are off
+>> on maintaining max_sysfs_pct and min_sysfs_pct.
+>> 
+>> Here's something I cannot figure out (because I do not have an Ubuntu install).
+>>  *Why* is Ubuntu making the governor switch during suspend/resume?  Is it
+>> because of archaic brokeness they were trying to paper over?
 
-Hi! I think that better approach would be to use WARN_ONCE or similar=20
-macro. Still use INFO level, just warn about this problem only once...
+>> That's not limited to Ubuntu, pm-utils has been doing that forever.
 
-=2D-=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
+Agreed. This in pm-utils, and not limited to Ubuntu.
+We can ignore this issue if everyone wants, but I can envision bug reports.
 
---nextPart2063884.UOCKiuylfk
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+> I have no idea why has it been doing that, though.  I guess the reason
+> was to "speed up" PM transitions (in case it started when you were in a
+> low-frequency P-state and then there was no time to bump it up before
+> things got too far).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+I have no idea either, but the stated theory seems sound.
 
-iEYEABECAAYFAlYVm1IACgkQi/DJPQPkQ1LMfgCfRFVID4aYMMl8e5tCgdosia1p
-DF8AnR9dObkQAkqO58JGY0ewRhsuIarL
-=fZ2Q
------END PGP SIGNATURE-----
 
---nextPart2063884.UOCKiuylfk--
