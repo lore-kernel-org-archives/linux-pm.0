@@ -1,77 +1,230 @@
-From: =?ks_c_5601-1987?B?RGF2aWQgS3dvbiAosce/+MirKQ==?=
-	<wonhong.kwon@lge.com>
-Subject: RE: [PATCH] PM / hibernate: Move pm_init/pm_disk_init to late_initcall_sync
-Date: Wed, 7 Oct 2015 11:08:56 +0900
-Message-ID: <016101d100a5$1f342550$5d9c6ff0$@lge.com>
-References: <1444093820-6934-1-git-send-email-wonhong.kwon@lge.com> <20151006144213.GB24518@xo-6d-61-c0.localdomain>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [PATCH] cpufreq, intel_pstate, set max_sysfs_pct and min_sysfs_pct on governor switch
+Date: Tue, 6 Oct 2015 23:51:28 -0700
+Message-ID: <002701d100cc$98cb8c60$ca62a520$@net>
+References: <1444168147-17812-1-git-send-email-prarit@redhat.com> <1755198.JNkaHg87IV@vostro.rjw.lan> <1594304.lVcRDcB3yL@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain;
-	charset="ks_c_5601-1987"
+	charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from LGEAMRELO12.lge.com ([156.147.23.52]:53144 "EHLO
-	lgeamrelo12.lge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752713AbbJGCYA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 Oct 2015 22:24:00 -0400
-In-Reply-To: <20151006144213.GB24518@xo-6d-61-c0.localdomain>
-Content-Language: ko
+Received: from cmta6.telus.net ([209.171.16.79]:33673 "EHLO cmta6.telus.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751026AbbJGGvb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 7 Oct 2015 02:51:31 -0400
+In-Reply-To: <1594304.lVcRDcB3yL@vostro.rjw.lan>
+Content-Language: en-ca
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: 'Pavel Machek' <pavel@ucw.cz>, 'Wonhong Kwon' <wonhongkwon@gmail.com>
-Cc: rjw@rjwysocki.net, len.brown@intel.com, linux-pm@vger.kernel.org, gunho.lee@lge.com
+To: 'Prarit Bhargava' <prarit@redhat.com>
+Cc: 'Kristen Carlson Accardi' <kristen@linux.intel.com>, linux-kernel@vger.kernel.org, 'Viresh Kumar' <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, Doug Smythies <dsmythies@telus.net>
 
-> On Tue 2015-10-06 10:10:20, Wonhong Kwon wrote:
-> > pm_init is being invoked by core_initcall and
-> > hibernate_image_size_init calculates preferred image size (image_size)
-> > based on total pages (totalram_pages). This totalram_pages can be
-> > modified during various initcall-s phase and this can cause
-> miscalculated image_size.
-> >
-> > For example, when CMA is being used, init_cma_reserved_pageblock tries
-> > to change the totalram_pages and this job is done during core_initcall.
-> > In order words, the totalram_pages doesn't take CMA reserved pages
-> > into account when image_size is calculated and it can be too small.
-> >
-> > Move pm_init and pm_disk_init to late_initcall_sync so that it happens
-> > after all other initcall-s change the totalram_pages.
-> 
-> Hmm, someone else hit same (similar) problem, but had way more complex
-> solution.
-> 
-> So it is nice this is easy.
-> 
-> But is it enough? 
 
-I'm not a MM expert, but AFAIU, lots of things including CMA try to change
-totalram_pages during and after boot. For instance, memory is being plugged
-out after boot, __offline_pages invokes adjust_managed_page_count and
-totalram_pages
-can be changed.
+On 2015.09.06 16:48 Rafael J. Wysocki wrote:
+> On Wednesday, October 07, 2015 12:43:55 AM Rafael J. Wysocki wrote:
+>> On Tuesday, October 06, 2015 05:49:07 PM Prarit Bhargava wrote:
+>>> Intel CPUs will not enter higher p-states when after switching from the
+>>> performance governor to the powersave governor, until
+>>> /sys/devices/system/cpu/intel_pstate/min_perf_pct is set to a low value.
 
-However, image_size can be changed by user via sysfs after boot, and I think
-user's preferred size should have a high priority than one calculated with
-totalram_pages.
+It works properly for me.
 
-So, my patch was intended to calculate default image_size based on more
-accurate
-totalram_pages during boot, not based on real one on any time after boot.
+Isn't the root issue here an incompatibility between
+tools/power/cpupower/utils/cpufreq-set.c and
+drivers/cpufreq/intel_pstate.c?
+(see experiment results below, where I do not use "cpupower")
 
-> Can CMA be modular? Can CMA allocate memory after boot?
+I am not familiar with tools/power/cpupower/utils/cpufreq-set.c, but will
+look at it more tomorrow.
 
-AFAIK, CMA cannot intercept any memory after boot. Reserving memory for CMA
-area
-should be required on early stage.
+>>> This differs from previous behaviour in which a switch to the powersave
+>>> governor would result in a low default value for min_perf_pct.
+>>> 
+>>> The behavior of the powersave governor changed after commit a04759924e25
+>>> ("[cpufreq] intel_pstate: honor user space min_perf_pct override on
+>>> resume").  The commit introduced tracking of performance percentage
+>>> changes via sysfs in order to restore userspace changes during
+>>> suspend/resume.  The problem occurs because the global values of the newly
+>>> introduced max_sysfs_pct and min_sysfs_pct are not reset on a governor
+>>> change and this causes the new governor to inherit the previous governor's
+>>> settings.
+>>> 
+>>> This patch sets max_sysfs_pct to 100 and min_sysfs_pct to 0 on a governor
+>>> change which fixes the problem with governor switching.  These changes
+>>> also make the initial calculations for max_perf_pct and min_perf_pct
+>>> slightly simpler.
+>>> 
+>>> Before patch:
+>>> [root@intel-skylake-y-01 power]# cpupower frequency-set -g performance
+>>> [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/min_perf_pct
+>>> 100
+>>> [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
+>>> 100
+>>> [root@intel-skylake-y-01 power]# cpupower frequency-set -g powersave
+>>> [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/min_perf_pct
+>>> 100
+>>> [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
+>>> 100
 
-Thanks,
-Wonhong
+And before patch I get, using primitives and not cpupower:
+Executive Summary: Everything works fine (or at least as I thought it was supposed to).
 
-> 
-> THanks,
+root@s15:/home/doug/temp# grep . /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor:powersave
+...
+/sys/devices/system/cpu/cpu7/cpufreq/scaling_governor:powersave
+root@s15:/home/doug/temp# grep . /sys/devices/system/cpu/intel_pstate/*_perf_*
+/sys/devices/system/cpu/intel_pstate/max_perf_pct:100
+/sys/devices/system/cpu/intel_pstate/min_perf_pct:42
+root@s15:/home/doug/temp# echo 50 > /sys/devices/system/cpu/intel_pstate/min_perf_pct
+root@s15:/home/doug/temp# echo 80 > /sys/devices/system/cpu/intel_pstate/max_perf_pct
+root@s15:/home/doug/temp# grep . /sys/devices/system/cpu/intel_pstate/*_perf_*
+/sys/devices/system/cpu/intel_pstate/max_perf_pct:80
+/sys/devices/system/cpu/intel_pstate/min_perf_pct:50
+root@s15:/home/doug/temp# for file in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo "performance" > $file; done
+root@s15:/home/doug/temp# grep . /sys/devices/system/cpu/intel_pstate/*_perf_*
+/sys/devices/system/cpu/intel_pstate/max_perf_pct:100
+/sys/devices/system/cpu/intel_pstate/min_perf_pct:100
+root@s15:/home/doug/temp# grep . /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor:performance
+...
+/sys/devices/system/cpu/cpu7/cpufreq/scaling_governor:performance
+root@s15:/home/doug/temp# for file in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo "powersave" > $file; done
+root@s15:/home/doug/temp# grep . /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor:powersave
+...
+/sys/devices/system/cpu/cpu7/cpufreq/scaling_governor:powersave
+root@s15:/home/doug/temp# grep . /sys/devices/system/cpu/intel_pstate/*_perf_*
+/sys/devices/system/cpu/intel_pstate/max_perf_pct:80
+/sys/devices/system/cpu/intel_pstate/min_perf_pct:50
+
+>>> 
+>>> After patch:
+>>> [root@intel-skylake-y-01 power]# cpupower frequency-set -g performance
+>>> [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/min_perf_pct
+>>> 100
+>>> [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
+>>> 100
+>>> [root@intel-skylake-y-01 power]# cpupower frequency-set -g powersave
+>>> [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/min_perf_pct
+>>> 14
+>>> [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
+>>> 100
+>>> 
+
+And after the patch I get, using primitives and not cpupower:
+Executive Summary: Settings go back to default, and user settings are lost.
+This is not how I thought things were supposed to behave, but I'm not actually sure.
+
+root@s15:/home/doug/temp# grep . /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor:powersave
+...
+/sys/devices/system/cpu/cpu7/cpufreq/scaling_governor:powersave
+root@s15:/home/doug/temp# grep . /sys/devices/system/cpu/intel_pstate/*_perf_*
+/sys/devices/system/cpu/intel_pstate/max_perf_pct:100
+/sys/devices/system/cpu/intel_pstate/min_perf_pct:42
+root@s15:/home/doug/temp# echo 50 > /sys/devices/system/cpu/intel_pstate/min_perf_pct
+root@s15:/home/doug/temp# echo 80 > /sys/devices/system/cpu/intel_pstate/max_perf_pct
+root@s15:/home/doug/temp# grep . /sys/devices/system/cpu/intel_pstate/*_perf_*
+/sys/devices/system/cpu/intel_pstate/max_perf_pct:80
+/sys/devices/system/cpu/intel_pstate/min_perf_pct:50
+root@s15:/home/doug/temp# for file in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo "performance" > $file; done
+root@s15:/home/doug/temp# grep . /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor:performance
+...
+/sys/devices/system/cpu/cpu7/cpufreq/scaling_governor:performance
+root@s15:/home/doug/temp# grep . /sys/devices/system/cpu/intel_pstate/*_perf_*
+/sys/devices/system/cpu/intel_pstate/max_perf_pct:100
+/sys/devices/system/cpu/intel_pstate/min_perf_pct:100
+root@s15:/home/doug/temp# for file in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo "powersave" > $file; done
+root@s15:/home/doug/temp# grep . /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor:powersave
+...
+/sys/devices/system/cpu/cpu7/cpufreq/scaling_governor:powersave
+root@s15:/home/doug/temp# grep . /sys/devices/system/cpu/intel_pstate/*_perf_*
+/sys/devices/system/cpu/intel_pstate/max_perf_pct:100
+/sys/devices/system/cpu/intel_pstate/min_perf_pct:42
+
+>>> Also note that I have tested suspend/resume (using CONFIG_PM_DEBUG):
+>>> [root@intel-skylake-y-01 power]# echo 50 > /sys/devices/system/cpu/intel_pstate/min_perf_pct
+>>> [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/*_perf_pct
+>>> 100
+>>> 50
+>>> [root@intel-skylake-y-01 power]# echo devices > /sys/power/pm_test
+>>> [root@intel-skylake-y-01 power]# echo platform > /sys/power/disk
+>>> [root@intel-skylake-y-01 power]# echo disk > /sys/power/state
+>>> [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/*_perf_pct
+>>> 100
+>>> 50
+
+Before Patch, I get:
+
+root@s15:/home/doug/temp# grep . /sys/devices/system/cpu/intel_pstate/*_perf_*
+/sys/devices/system/cpu/intel_pstate/max_perf_pct:80
+/sys/devices/system/cpu/intel_pstate/min_perf_pct:50
+root@s15:/home/doug/temp# pm-suspend
+...
+root@s15:/home/doug/temp# grep . /sys/devices/system/cpu/intel_pstate/*_perf_*
+/sys/devices/system/cpu/intel_pstate/max_perf_pct:80
+/sys/devices/system/cpu/intel_pstate/min_perf_pct:50
+
+After Patch, I get:
+
+root@s15:/home/doug/temp# grep . /sys/devices/system/cpu/intel_pstate/*_perf_*
+/sys/devices/system/cpu/intel_pstate/max_perf_pct:80
+/sys/devices/system/cpu/intel_pstate/min_perf_pct:50
+root@s15:/home/doug/temp# pm-suspend
+...
+root@s15:/home/doug/temp# grep . /sys/devices/system/cpu/intel_pstate/*_perf_*
+/sys/devices/system/cpu/intel_pstate/max_perf_pct:100
+/sys/devices/system/cpu/intel_pstate/min_perf_pct:42
+
+>>> 
+>>> Fixes: a04759924e25 ("[cpufreq] intel_pstate: honor user space min_perf_pct override on resume")
+>>> Cc: Kristen Carlson Accardi <kristen@linux.intel.com>
+>>> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+>>> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+>>> Cc: linux-pm@vger.kernel.org
+>>> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+>>> ---
+>>>  drivers/cpufreq/intel_pstate.c |    7 +++++--
+>>>  1 file changed, 5 insertions(+), 2 deletions(-)
+>>> 
+>>> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+>>> index 3af9dd7..bb24458 100644
+>>> --- a/drivers/cpufreq/intel_pstate.c
+>>> +++ b/drivers/cpufreq/intel_pstate.c
+>>> @@ -986,6 +986,9 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+>>>  	if (!policy->cpuinfo.max_freq)
+>>>  		return -ENODEV;
+>>>  
+>>> +	limits.min_sysfs_pct = 0;
+>>> +	limits.max_sysfs_pct = 100;
+>>> +
+>>>  	if (policy->policy == CPUFREQ_POLICY_PERFORMANCE &&
+>>>  	    policy->max >= policy->cpuinfo.max_freq) {
+>>>  		limits.min_policy_pct = 100;
+>>> @@ -1004,9 +1007,9 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+>>>  	limits.max_policy_pct = clamp_t(int, limits.max_policy_pct, 0 , 100);
+>>>  
+>>>  	/* Normalize user input to [min_policy_pct, max_policy_pct] */
+>>> -	limits.min_perf_pct = max(limits.min_policy_pct, limits.min_sysfs_pct);
+>>> +	limits.min_perf_pct = limits.min_policy_pct;
+>>>  	limits.min_perf_pct = min(limits.max_policy_pct, limits.min_perf_pct);
+>>> -	limits.max_perf_pct = min(limits.max_policy_pct, limits.max_sysfs_pct);
+>>> +	limits.max_perf_pct = limits.max_sysfs_pct;
 >
-Pavel
-> 
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures)
-> http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> On a second thought, isn't that always 100?  If so, doesn't it basically discard
+> limits.max_policy_pct?
+>
+
+Yes, I think so, see above.
+
+>>>  	limits.max_perf_pct = max(limits.min_policy_pct, limits.max_perf_pct);
+>>>  
+>>>  	/* Make sure min_perf_pct <= max_perf_pct */
+>>> 
+
+Kernels used: 4.3-rc4 and same plus this patch.
+
 
