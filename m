@@ -1,69 +1,45 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v1 1/2] cpufreq: acpi_cpufreq: prevent crash on reading freqdomain_cpus
-Date: Wed,  7 Oct 2015 13:50:43 -0700
-Message-ID: <1444251044-11231-2-git-send-email-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v1 2/2] cpufreq: prevent lockup on reading scaling_available_frequencies
+Date: Wed,  7 Oct 2015 13:50:44 -0700
+Message-ID: <1444251044-11231-3-git-send-email-srinivas.pandruvada@linux.intel.com>
 References: <1444251044-11231-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
 Received: from mga09.intel.com ([134.134.136.24]:8113 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753605AbbJGUvY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 7 Oct 2015 16:51:24 -0400
+	id S1753487AbbJGUvZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 7 Oct 2015 16:51:25 -0400
 In-Reply-To: <1444251044-11231-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: rafael.j.wysocki@intel.com, viresh.kumar@linaro.org
 Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-When freqdomain_cpus attribute is read from an offlined cpu, it will
-cause crash. This change prevents calling cpufreq_show_cpus when
-policy driver_data is NULL.
-
-Crash info:
-
-[  170.814949] BUG: unable to handle kernel NULL pointer dereference at 0000000000000018
-[  170.814990] IP: [<ffffffff813b2490>] _find_next_bit.part.0+0x10/0x70
-[  170.815021] PGD 227d30067 PUD 229e56067 PMD 0
-[  170.815043] Oops: 0000 [#2] SMP
-[  170.816022] CPU: 3 PID: 3121 Comm: cat Tainted: G      D    OE   4.3.0-rc3+ #33
-...
-...
-[  170.816657] Call Trace:
-[  170.816672]  [<ffffffff813b2505>] ? find_next_bit+0x15/0x20
-[  170.816696]  [<ffffffff8160e47c>] cpufreq_show_cpus+0x5c/0xd0
-[  170.816722]  [<ffffffffa031a409>] show_freqdomain_cpus+0x19/0x20 [acpi_cpufreq]
-[  170.816749]  [<ffffffff8160e65b>] show+0x3b/0x60
-[  170.816769]  [<ffffffff8129b31c>] sysfs_kf_seq_show+0xbc/0x130
-[  170.816793]  [<ffffffff81299be3>] kernfs_seq_show+0x23/0x30
-[  170.816816]  [<ffffffff81240f2c>] seq_read+0xec/0x390
-[  170.816837]  [<ffffffff8129a64a>] kernfs_fop_read+0x10a/0x160
-[  170.816861]  [<ffffffff8121d9b7>] __vfs_read+0x37/0x100
-[  170.816883]  [<ffffffff813217c0>] ? security_file_permission+0xa0/0xc0
-[  170.816909]  [<ffffffff8121e2e3>] vfs_read+0x83/0x130
-[  170.816930]  [<ffffffff8121f035>] SyS_read+0x55/0xc0
-...
-...
-[  170.817185] ---[ end trace bc6eadf82b2b965a ]---
+When scaling_available_frequencies is read on an offlined cpu, then
+either lockup or junk values are displayed. This is caused by
+freed freq_table, which policy is using.
 
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/acpi-cpufreq.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/cpufreq/cpufreq.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 7982772..cec1ee2 100644
---- a/drivers/cpufreq/acpi-cpufreq.c
-+++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -149,6 +149,9 @@ static ssize_t show_freqdomain_cpus(struct cpufreq_policy *policy, char *buf)
- {
- 	struct acpi_cpufreq_data *data = policy->driver_data;
- 
-+	if (unlikely(!data))
-+		return -ENODEV;
-+
- 	return cpufreq_show_cpus(data->freqdomain_cpus, buf);
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index ef5ed94..25c4c15 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1436,8 +1436,10 @@ static void cpufreq_offline_finish(unsigned int cpu)
+ 	 * since this is a core component, and is essential for the
+ 	 * subsequent light-weight ->init() to succeed.
+ 	 */
+-	if (cpufreq_driver->exit)
++	if (cpufreq_driver->exit) {
+ 		cpufreq_driver->exit(policy);
++		policy->freq_table = NULL;
++	}
  }
  
+ /**
 -- 
 1.9.3
 
