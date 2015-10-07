@@ -1,89 +1,51 @@
-From: Neil Brown <neilb@suse.de>
-Subject: Re: [PATCH 3/4] power:bq27x00: don't fill system log by missing battery
-Date: Thu, 08 Oct 2015 09:50:26 +1100
-Message-ID: <871td68f9p.fsf@notabene.neil.brown.name>
-References: <cover.1444243358.git.hns@goldelico.com> <73cb8d96728805597ecb50e7e7b51bf6272b6d61.1444243358.git.hns@goldelico.com> <201510080023.14795@pali>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: As of kernel 4.3-rc1 system will not stay in S3 suspend [REGRESSION]
+Date: Wed, 7 Oct 2015 15:51:13 -0700
+Message-ID: <001f01d10152$ab653de0$022fb9a0$@net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-	micalg=pgp-sha256; protocol="application/pgp-signature"
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:54908 "EHLO mx2.suse.de"
+Received: from cmta13.telus.net ([209.171.16.86]:37273 "EHLO cmta13.telus.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752169AbbJGWuf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 7 Oct 2015 18:50:35 -0400
-In-Reply-To: <201510080023.14795@pali>
+	id S1751716AbbJGWvP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 7 Oct 2015 18:51:15 -0400
+Content-Language: en-ca
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pali =?utf-8?Q?Roh=C3=A1r?= <pali.rohar@gmail.com>, "H. Nikolaus Schaller" <hns@goldelico.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org
+To: 'Viresh Kumar' <viresh.kumar@linaro.org>, "'Rafael J. Wysocki'" <rafael@kernel.org>
+Cc: linux-pm@vger.kernel.org, Doug Smythies <dsmythies@telus.net>
 
---=-=-=
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-Pali Roh=C3=A1r <pali.rohar@gmail.com> writes:
+This started somewhere between Kernel 4.2 and 4.3-rc1,
+but I only noticed it now.
 
-> On Wednesday 07 October 2015 20:42:38 H. Nikolaus Schaller wrote:
->> From: NeilBrown <neilb@suse.de>
->>=20
->> Print message that battery is not calibrated only during debug build
->> but not during normal operation.
->>=20
->> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
->> ---
->>  drivers/power/bq27x00_battery.c | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>=20
->> diff --git a/drivers/power/bq27x00_battery.c
->> b/drivers/power/bq27x00_battery.c index 8287261f..709d1e4 100644
->> --- a/drivers/power/bq27x00_battery.c
->> +++ b/drivers/power/bq27x00_battery.c
->> @@ -491,7 +491,7 @@ static void bq27x00_update(struct
->> bq27x00_device_info *di) if (cache.flags >=3D 0) {
->>  		if (!is_bq27500 && !is_bq27425 && !is_bq27742 && !is_bq27510
->>  				&& (cache.flags & BQ27000_FLAG_CI)) {
->> -			dev_info(di->dev, "battery is not calibrated! ignoring=20
-> capacity
->> values\n"); +			dev_dbg(di->dev, "battery is not calibrated!
->> ignoring capacity values\n"); cache.capacity =3D -ENODATA;
->>  			cache.energy =3D -ENODATA;
->>  			cache.time_to_empty =3D -ENODATA;
->
-> Hi! I think that better approach would be to use WARN_ONCE or similar=20
-> macro. Still use INFO level, just warn about this problem only once...
+The first S3 suspend after a fresh boot works fine.
+Thereafter, suspends simply resume again immediately.
 
-Why do you need any warning?
-The status of whether the battery is calibrated is trivially determined
-From=20the sysfs attributes (several of which will return ENODATA).
-So if some app is being used to report battery status, then it can
-easily report "not calibrated", and if no such app is being used, who
-will care to know?
+I get the following errors on my console:
 
-I'm not exactly against a once-only warning (though not with WARN_ONCE,
-maybe dev_info_once()) but I don't think that it brings any value at
-all.
+[  152.697247] i915 0000:00:02.0: GEM idle failed, resume might fail
+[  152.697258] pci_pm_suspend(): i915_pm_suspend+0x0/0x50 [i915] returns -11
+[  152.697262] dpm_run_callback(): pci_pm_suspend+0x0/0x140 returns -11
+[  152.697264] PM: Device 0000:00:02.0 failed to suspend async: error -11
+[  152.697306] PM: Some devices failed to suspend, or early wake event detected
 
-Thanks,
-NeilBrown
+The issue is not limited to my normal way of doing suspend, using "pm-suspend".
+It also happens using the "echo mem > /sys/power/state" method that Rafael mentioned
+during the 4.2 cycle.
 
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
+I have searched the bug reports and such and didn't find a related bug, (which
+doesn't mean it doesn't exist, just that if it does I didn't find it).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+I am about to start bisecting the kernel, but thought to ask here first, just in case
+someone already knows the root issue.
 
-iQIcBAEBCAAGBQJWFaGyAAoJEDnsnt1WYoG5RzEP/2opcGDT33RhHqOky7m+64jH
-4f+Osvwr6BCDR9cpTU0erd5MkRooY0lTSyZ4Or5DlMyQn2v80fSEdiIhgj8gGMTH
-lpjd2nvkHQJZ0jV5y/9WdFBJQTru8jX1CpvKrmKpjB9esNMYUSyoIHT9kCAdtyjw
-xmveDlm2tMQQnPopYzAJBuC6uIF1iI9tQLtdYQBS4MCuSzbZFHpFOYI2dXyZJLmA
-0jqYIyU2WHLxPp/z5qdLyVgzaKxWNlB+VWcoTOrbGGq+jcrI4VmiuyRE3VVe5Fd2
-pCOzwNMR6Q5UNu65+KXyvTaP6rTo2Z1n46HuQuc4/SoWy/ojSijguhsDi7fK56qn
-TZ+zk1YFp4DcNV0q4tEXIyW+zVmODb7I2ee8OI9kUE+9Pl3IODWhagzlk1mwthVn
-H6H27/81Fi3Ixn/qKE9beyvdUFnYAl/SE/fXOzu43ZRqCTLwR3unUzVSi50RyPR+
-GAVziwrH7tMGBUhAl8JnxoamBgvYNDlYrpN1srnopQQPayEFd+P0EJERLZRgUV+d
-d7wNjoT6CsI6bmoWD4I/yrNcrYCwUb950UxkjwOE+m5sY+uPBijjKcghs0dUBizA
-z2ia6WDxNXCVuIxQ/wz4VLYnyuKh6ryDgvDjFe/HTGVp/uaaJd5V65Bp699FhZqC
-jp5kTPUfxhEOXqoIeS9o
-=pCRV
------END PGP SIGNATURE-----
---=-=-=--
+Note: There was the e-mail earlier 
+"Gigabyte P35-DS3: does not stay suspended with default "ug" wake-on-lan setting"
+But he has had the issue since kernel 3.19.0, and I tried his workaround, without
+success, anyhow.
+
+
