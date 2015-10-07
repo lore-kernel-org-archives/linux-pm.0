@@ -1,47 +1,41 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Subject: [PATCH] PM / OPP: fix build warning
-Date: Wed,  7 Oct 2015 16:49:25 +0530
-Message-ID: <1444216765-9189-1-git-send-email-sudipm.mukherjee@gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] PM / OPP: fix debugfs files for 64-bit
+Date: Wed, 7 Oct 2015 16:51:49 +0530
+Message-ID: <20151007112149.GB22530@linux>
+References: <5706174.BUsqiXljxZ@wuerfel>
+ <20151007105911.GC9892@linux>
+ <20151007110302.GD9892@linux>
+ <20151007110755.GA6601@kroah.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20151007110755.GA6601@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Stephen Boyd <sboyd@codeaurora.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Nishanth Menon <nm@ti.com>, Dmitry Torokhov <dtor@chromium.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-We were getting build warning that:
-expected 'bool *' but argument is of type 'u32 *'
+On 07-10-15, 12:07, Greg Kroah-Hartman wrote:
+> Why would you be wanting to create a "unsigned long" as an api anyway?
+> Just force it to be u64 all the time, can't you do that?
 
-debugfs_create_bool() used to take the argument as (u32 *), but commit
-621a5f7ad9cd ("debugfs: Pass bool pointer to debugfs_create_bool()")
-has modified it and now it accepts bool, so no need to typecast a bool
-to (u32 *).
+Okay, so the variable in question (lets say frequency) is an 'unsigned
+long' and that's how all the APIs of clock framework expect/define
+it.
 
-Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
----
- drivers/base/power/opp/debugfs.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+And you are probably saying that we do this:
 
-diff --git a/drivers/base/power/opp/debugfs.c b/drivers/base/power/opp/debugfs.c
-index 865cbfa..251966b 100644
---- a/drivers/base/power/opp/debugfs.c
-+++ b/drivers/base/power/opp/debugfs.c
-@@ -45,14 +45,13 @@ int opp_debug_create_one(struct dev_pm_opp *opp, struct device_opp *dev_opp)
- 	if (!d)
- 		return -ENOMEM;
- 
--	if (!debugfs_create_bool("available", S_IRUGO, d,
--				 (u32 *)&opp->available))
-+	if (!debugfs_create_bool("available", S_IRUGO, d, &opp->available))
- 		return -ENOMEM;
- 
--	if (!debugfs_create_bool("dynamic", S_IRUGO, d, (u32 *)&opp->dynamic))
-+	if (!debugfs_create_bool("dynamic", S_IRUGO, d, &opp->dynamic))
- 		return -ENOMEM;
- 
--	if (!debugfs_create_bool("turbo", S_IRUGO, d, (u32 *)&opp->turbo))
-+	if (!debugfs_create_bool("turbo", S_IRUGO, d, &opp->turbo))
- 		return -ENOMEM;
- 
- 	if (!debugfs_create_u32("rate_hz", S_IRUGO, d, (u32 *)&opp->rate))
+unsigned long freq;
+
+debugfs_create_u64((u64 *)&freq);
+
+Right? Or are you asking to update clock APIs to be converted to u64?
+
+This will break things on a 32 bit architecture where unsigned long is
+32 bits long, as doing this will overwrite the next 32 bits:
+
+*freq = XYZ;
+
 -- 
-1.9.1
+viresh
