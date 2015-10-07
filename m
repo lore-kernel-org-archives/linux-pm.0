@@ -1,41 +1,60 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
- SpeedStep enabled
-Date: Wed, 07 Oct 2015 12:57:51 +0000
-Message-ID: <bug-103351-137361-ITExO9E2Us@https.bugzilla.kernel.org/>
-References: <bug-103351-137361@https.bugzilla.kernel.org/>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] PM / OPP: fix debugfs files for 64-bit
+Date: Wed, 7 Oct 2015 18:33:24 +0530
+Message-ID: <20151007130324.GA4557@linux>
+References: <5706174.BUsqiXljxZ@wuerfel>
+ <20151007105911.GC9892@linux>
+ <20151007110302.GD9892@linux>
+ <20151007110755.GA6601@kroah.com>
+ <20151007112149.GB22530@linux>
+ <20151007125735.GA8170@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:53928 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752135AbbJGM54 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 7 Oct 2015 08:57:56 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id 2BA5C2072E
-	for <linux-pm@vger.kernel.org>; Wed,  7 Oct 2015 12:57:55 +0000 (UTC)
-Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
-	by mail.kernel.org (Postfix) with ESMTP id A827B20751
-	for <linux-pm@vger.kernel.org>; Wed,  7 Oct 2015 12:57:53 +0000 (UTC)
-In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
+Received: from mail-pa0-f54.google.com ([209.85.220.54]:35415 "EHLO
+	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751157AbbJGND3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2015 09:03:29 -0400
+Received: by pacfv12 with SMTP id fv12so21647342pac.2
+        for <linux-pm@vger.kernel.org>; Wed, 07 Oct 2015 06:03:28 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20151007125735.GA8170@kroah.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Michael Turquette <mturquette@baylibre.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Stephen Boyd <sboyd@codeaurora.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Nishanth Menon <nm@ti.com>, Dmitry Torokhov <dtor@chromium.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=103351
+Cc'ing Mike and Stephen..
 
---- Comment #39 from Henrique de Moraes Holschuh <hmh@hmh.eng.br> ---
-Thank you.
+On 07-10-15, 13:57, Greg Kroah-Hartman wrote:
+> On Wed, Oct 07, 2015 at 04:51:49PM +0530, Viresh Kumar wrote:
+> > On 07-10-15, 12:07, Greg Kroah-Hartman wrote:
+> > > Why would you be wanting to create a "unsigned long" as an api anyway?
+> > > Just force it to be u64 all the time, can't you do that?
+> > 
+> > Okay, so the variable in question (lets say frequency) is an 'unsigned
+> > long' and that's how all the APIs of clock framework expect/define
+> > it.
+> > 
+> > And you are probably saying that we do this:
+> > 
+> > unsigned long freq;
+> > 
+> > debugfs_create_u64((u64 *)&freq);
+> > 
+> > Right? Or are you asking to update clock APIs to be converted to u64?
+> 
+> Yes, they should be u64 as I doubt you want to debug problems that you
+> have in the driver where it works on a 64bit system but doesn't on a
+> 32bit one.
 
-The cpuinfo dump for rev. 0x12 shows HLE and RTM still enabled.  
+Firstly changing the clock API (and other similar APIs) to make
+frequency u64 instead of 'unsigned long', looks like a giant effort.
+There are too many users of those API, etc..
 
-Can you confirm through the kernel log that the microcode update was applied by
-the "early" microcode update driver (check the kernel log for "early" in the
-microcode update log entries) ?
-
-Does glibc with lock elision enabled work properly with that microcode?
+Over that, it might be good performance wise to use u32 for 32 bit
+systems and u64 for 64 bit one, to represent clock frequency and maybe
+that's why we chose unsigned long there.
 
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+viresh
