@@ -1,40 +1,53 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] PM / OPP: fix debugfs files for 64-bit
-Date: Wed, 7 Oct 2015 22:06:59 +0530
-Message-ID: <20151007163659.GB4557@linux>
-References: <5706174.BUsqiXljxZ@wuerfel>
- <20151007105911.GC9892@linux>
- <20151007110302.GD9892@linux>
- <20151007110755.GA6601@kroah.com>
- <20151007112149.GB22530@linux>
- <20151007163309.GM21513@n2100.arm.linux.org.uk>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
+ SpeedStep enabled
+Date: Wed, 07 Oct 2015 16:37:44 +0000
+Message-ID: <bug-103351-137361-jItOgyur9t@https.bugzilla.kernel.org/>
+References: <bug-103351-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20151007163309.GM21513@n2100.arm.linux.org.uk>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Nishanth Menon <nm@ti.com>, Len Brown <len.brown@intel.com>, Arnd Bergmann <arnd@arndb.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Dmitry Torokhov <dtor@chromium.org>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:42987 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755145AbbJGQhx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 7 Oct 2015 12:37:53 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+	by mail.kernel.org (Postfix) with ESMTP id 2A7CC205EE
+	for <linux-pm@vger.kernel.org>; Wed,  7 Oct 2015 16:37:52 +0000 (UTC)
+Received: from bugzilla2.web.kernel.org (bugzilla2.web.kernel.org [172.20.200.52])
+	by mail.kernel.org (Postfix) with ESMTP id 1D27E20741
+	for <linux-pm@vger.kernel.org>; Wed,  7 Oct 2015 16:37:47 +0000 (UTC)
+In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-On 07-10-15, 17:33, Russell King - ARM Linux wrote:
-> Don't you even think about doing that - that's totally broken no matter
-> what, and this is a good example of why casts are Bad.
-> 
-> debugfs_create_u64() will create a debugfs object that will want to
-> access a 64-bit value, but the value pointed to is only 32-bit.  The
-> net result is that the debugfs file ends up reading or writing the
-> neigbouring 32-bits, which may potentially be unaligned.
+https://bugzilla.kernel.org/show_bug.cgi?id=103351
 
-Yeah, that's what I was also saying. Its broken.
+--- Comment #41 from kernel@benjam.info <kernel@benjam.info> ---
+I can confirm on my system that with an "early" microcode update:
 
-> The variable pointed to for debugfs_create_u64() must be a 64-bit
-> value.  No casts allowed.
-> 
-> An alternative would be to have debugfs_create_ulong()
+[    0.000000] microcode: CPU0 microcode updated early to revision 0x12, date =
+2015-06-19
+[    0.077976] microcode: CPU1 microcode updated early to revision 0x12, date =
+2015-06-19
+[    0.095826] microcode: CPU2 microcode updated early to revision 0x12, date =
+2015-06-19
+[    0.113756] microcode: CPU3 microcode updated early to revision 0x12, date =
+2015-06-19
+[    0.586568] microcode: CPU0 sig=0x40671, pf=0x2, revision=0x12
+[    0.586573] microcode: CPU1 sig=0x40671, pf=0x2, revision=0x12
+[    0.586577] microcode: CPU2 sig=0x40671, pf=0x2, revision=0x12
+[    0.586582] microcode: CPU3 sig=0x40671, pf=0x2, revision=0x12
+[    0.586611] microcode: Microcode Update Driver: v2.00
+<tigran@aivazian.fsnet.co.uk>, Peter Oruba
 
-And that's what I suggested.
+HLE and RTM are still enabled.
+
+I've attached /proc/cpuinfo for my machine. (Sorry for sending two emails, I'm
+still trying to grasp bugzilla)
 
 -- 
-viresh
+You are receiving this mail because:
+You are the assignee for the bug.
