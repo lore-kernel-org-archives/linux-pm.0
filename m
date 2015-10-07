@@ -1,55 +1,60 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: As of kernel 4.3-rc1 system will not stay in S3 suspend [REGRESSION]
-Date: Thu, 8 Oct 2015 01:40:57 +0200
-Message-ID: <CAJZ5v0h=5UXgCzPKkraRUPxEumODC-kpQ5-j6oHoYZVinbFzHA@mail.gmail.com>
-References: <001f01d10152$ab653de0$022fb9a0$@net>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH v1 0/2] crash on reading cpufreq sysfs
+Date: Wed, 07 Oct 2015 16:50:00 -0700
+Message-ID: <1444261800.7437.7.camel@spandruv-desk3.jf.intel.com>
+References: <1444251044-11231-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	 <1543959.r5bbusBA6I@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f176.google.com ([209.85.217.176]:34566 "EHLO
-	mail-lb0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751251AbbJGXk6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2015 19:40:58 -0400
-Received: by lbbwt4 with SMTP id wt4so28781216lbb.1
-        for <linux-pm@vger.kernel.org>; Wed, 07 Oct 2015 16:40:57 -0700 (PDT)
-In-Reply-To: <001f01d10152$ab653de0$022fb9a0$@net>
+Received: from mga03.intel.com ([134.134.136.65]:55591 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751563AbbJGXwQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 7 Oct 2015 19:52:16 -0400
+In-Reply-To: <1543959.r5bbusBA6I@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Daniel Vetter <daniel.vetter@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: rafael.j.wysocki@intel.com, viresh.kumar@linaro.org, linux-pm@vger.kernel.org
 
-On Thu, Oct 8, 2015 at 12:51 AM, Doug Smythies <dsmythies@telus.net> wrote:
-> Hi,
->
-> This started somewhere between Kernel 4.2 and 4.3-rc1,
-> but I only noticed it now.
->
-> The first S3 suspend after a fresh boot works fine.
-> Thereafter, suspends simply resume again immediately.
->
-> I get the following errors on my console:
->
-> [  152.697247] i915 0000:00:02.0: GEM idle failed, resume might fail
-> [  152.697258] pci_pm_suspend(): i915_pm_suspend+0x0/0x50 [i915] returns -11
-> [  152.697262] dpm_run_callback(): pci_pm_suspend+0x0/0x140 returns -11
-> [  152.697264] PM: Device 0000:00:02.0 failed to suspend async: error -11
-
-This indicates some problems with the i915 graphics driver, so CCing
-its maintainer Daniel Vetter.
-
-> [  152.697306] PM: Some devices failed to suspend, or early wake event detected
->
-> The issue is not limited to my normal way of doing suspend, using "pm-suspend".
-> It also happens using the "echo mem > /sys/power/state" method that Rafael mentioned
-> during the 4.2 cycle.
->
-> I have searched the bug reports and such and didn't find a related bug, (which
-> doesn't mean it doesn't exist, just that if it does I didn't find it).
->
-> I am about to start bisecting the kernel, but thought to ask here first, just in case
-> someone already knows the root issue.
-
-You may try to restrict the bisection to the i915 commits to start with.
+On Thu, 2015-10-08 at 00:50 +0200, Rafael J. Wysocki wrote:
+> On Wednesday, October 07, 2015 01:50:42 PM Srinivas Pandruvada wrote:
+> > Fixes for crash on reading cpufreq sysfs for offline cpus
+> > 
+> > v1
+> > Fix commit discription on Patch 1/2. Included Acks from Viresh.
+> > It has both patches, even though only one patch has change.
+> > 
+> > v0
+> > two patches: one for acp-cpufreq and one for cpufreq core
+> > 
+> > Srinivas Pandruvada (2):
+> >   cpufreq: acpi_cpufreq: prevent crash on reading freqdomain_cpus
+> >   cpufreq: prevent lockup on reading scaling_available_frequencies
+> 
+> Both applied, but they look like -stable material to me.
+> 
+I tested in 4.1 kernels, since on offline, cpufreq folder is not
+available there is no issue.
+For 4.2 kernels the I didn't see crash fixed by cpufreq core patch (cat
+scaling_available_frequencies), but the "cat freqdomain_cpus" still
+causes crash. So we need to apply cpufreq:acpi-cpufreq patch only. So
+one patch is applicable for stable tree.
 
 Thanks,
-Rafael
+Srinivas
+
+
+> What kernel versions are they applicable too (and in what kernels
+> are they needed)?
+> 
+> Thanks,
+> Rafael
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+
