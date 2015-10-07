@@ -1,110 +1,62 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [PATCH] cpufreq, intel_pstate, set max_sysfs_pct and min_sysfs_pct on governor switch
-Date: Wed, 7 Oct 2015 11:52:42 -0700
-Message-ID: <000f01d10131$59c67a60$0d536f20$@net>
-References: <1444168147-17812-1-git-send-email-prarit@redhat.com> <1755198.JNkaHg87IV@vostro.rjw.lan> <1594304.lVcRDcB3yL@vostro.rjw.lan> <002701d100cc$98cb8c60$ca62a520$@net> <5614ED1C.8070709@redhat.com> <000001d10109$10d34630$3279d290$@net> <561527D9.3020009@redhat.com> <000301d10116$88852330$998f6990$@net> <56153E55.3060306@redhat.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] PM / OPP: fix debugfs files for 64-bit
+Date: Wed, 07 Oct 2015 21:12:55 +0200
+Message-ID: <5308760.2G5KJFF9Pi@wuerfel>
+References: <5706174.BUsqiXljxZ@wuerfel> <20151007125735.GA8170@kroah.com> <20151007130324.GA4557@linux>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cmta13.telus.net ([209.171.16.86]:45568 "EHLO cmta13.telus.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752154AbbJGSwp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 7 Oct 2015 14:52:45 -0400
-In-Reply-To: <56153E55.3060306@redhat.com>
-Content-Language: en-ca
+Received: from mout.kundenserver.de ([212.227.126.187]:50207 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751688AbbJGTNL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2015 15:13:11 -0400
+In-Reply-To: <20151007130324.GA4557@linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: 'Prarit Bhargava' <prarit@redhat.com>
-Cc: 'Kristen Carlson Accardi' <kristen@linux.intel.com>, linux-kernel@vger.kernel.org, 'Viresh Kumar' <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, Doug Smythies <dsmythies@telus.net>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Nishanth Menon <nm@ti.com>, Dmitry Torokhov <dtor@chromium.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On 2015.10.07 08:46 Prarit Bhargava wrote:
-> On 10/07/2015 11:40 AM, Doug Smythies wrote:
->> 
->> Do we agree or disagree that the root issue seems to be (from your test)?:
->> 
->> \#  echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct
->> 
->> [   21.483436] store_min_perf_pct[453] min_sysfs_pct = 100
->> [   21.489373] store_min_perf_pct[456] min_perf_pct = 100
->> [   21.495203] store_min_perf_pct[459] min_perf_pct = 100
->> [   21.501050] store_min_perf_pct[462] min_perf_pct = 100
->
-> Yep, and it appears to be done by default in Fedora & RHEL :/ ... the issue is
-> still the same IMO that min_sysfs_pct & max_sysfs_pct are not cleared on a
-> governor switch.
+On Wednesday 07 October 2015 18:33:24 Viresh Kumar wrote:
+> Cc'ing Mike and Stephen..
+> 
+> On 07-10-15, 13:57, Greg Kroah-Hartman wrote:
+> > On Wed, Oct 07, 2015 at 04:51:49PM +0530, Viresh Kumar wrote:
+> > > On 07-10-15, 12:07, Greg Kroah-Hartman wrote:
+> > > > Why would you be wanting to create a "unsigned long" as an api anyway?
+> > > > Just force it to be u64 all the time, can't you do that?
+> > > 
+> > > Okay, so the variable in question (lets say frequency) is an 'unsigned
+> > > long' and that's how all the APIs of clock framework expect/define
+> > > it.
+> > > 
+> > > And you are probably saying that we do this:
+> > > 
+> > > unsigned long freq;
+> > > 
+> > > debugfs_create_u64((u64 *)&freq);
+> > > 
+> > > Right? Or are you asking to update clock APIs to be converted to u64?
+> > 
+> > Yes, they should be u64 as I doubt you want to debug problems that you
+> > have in the driver where it works on a 64bit system but doesn't on a
+> > 32bit one.
+> 
+> Firstly changing the clock API (and other similar APIs) to make
+> frequency u64 instead of 'unsigned long', looks like a giant effort.
+> There are too many users of those API, etc..
+> 
+> Over that, it might be good performance wise to use u32 for 32 bit
+> systems and u64 for 64 bit one, to represent clock frequency and maybe
+> that's why we chose unsigned long there.
 
-Clearing them will break some other things. For example, and as
-shown in my original reply, resume from suspend.
+I think it clearly makes sense to have a fixed length for each of these
+members: either 32 bit is enough to represent all possible values, then
+there is no need to make them 'long' on 64-bit architectures, or 32 bit
+is not enough and then the code is broken on 32-bit architectures today
+and should be fixed.
 
-Why? Because, at least on my computer, the governor is changed to
-"performance" during suspend, and the "powersave" governor is
-restored sometime during resume. The users wants the settings they had
-before the suspend.
+In my patch, I assumed that if 32-bit architectures work fine today, then
+we don't need more range on 64-bit architectures either.
 
-Continuing with that printk debug kernel from earlier:
-
-pm-suspend:
-
-[12599.912028] intel_pstate_set_policy[1001] min_perf_pct = 100
-[12599.913781] intel_pstate_set_policy[1001] min_perf_pct = 100
-[12599.915343] intel_pstate_set_policy[1001] min_perf_pct = 100
-[12599.916877] intel_pstate_set_policy[1001] min_perf_pct = 100
-[12599.918444] intel_pstate_set_policy[1001] min_perf_pct = 100
-[12599.919686] intel_pstate_set_policy[1001] min_perf_pct = 100
-[12599.920932] intel_pstate_set_policy[1001] min_perf_pct = 100
-[12599.922191] intel_pstate_set_policy[1001] min_perf_pct = 100
-
-Then push the power button, i.e. resume:
-
-[12609.953358] intel_pstate_set_policy[1020] min_perf_pct = 50
-[12609.953360] intel_pstate_set_policy[1023] min_perf_pct = 50
-[12609.953361] intel_pstate_set_policy[1028] min_perf_pct = 50
-[12609.953796] intel_pstate_set_policy[1020] min_perf_pct = 50
-[12609.953797] intel_pstate_set_policy[1023] min_perf_pct = 50
-[12609.953798] intel_pstate_set_policy[1028] min_perf_pct = 50
-[12609.954209] intel_pstate_set_policy[1020] min_perf_pct = 50
-[12609.954210] intel_pstate_set_policy[1023] min_perf_pct = 50
-[12609.954211] intel_pstate_set_policy[1028] min_perf_pct = 50
-[12609.954619] intel_pstate_set_policy[1020] min_perf_pct = 50
-[12609.954620] intel_pstate_set_policy[1023] min_perf_pct = 50
-[12609.954621] intel_pstate_set_policy[1028] min_perf_pct = 50
-[12609.955028] intel_pstate_set_policy[1020] min_perf_pct = 50
-[12609.955029] intel_pstate_set_policy[1023] min_perf_pct = 50
-[12609.955030] intel_pstate_set_policy[1028] min_perf_pct = 50
-[12609.955431] intel_pstate_set_policy[1020] min_perf_pct = 50
-[12609.955432] intel_pstate_set_policy[1023] min_perf_pct = 50
-[12609.955433] intel_pstate_set_policy[1028] min_perf_pct = 50
-[12609.955833] intel_pstate_set_policy[1020] min_perf_pct = 50
-[12609.955834] intel_pstate_set_policy[1023] min_perf_pct = 50
-[12609.955835] intel_pstate_set_policy[1028] min_perf_pct = 50
-[12609.956234] intel_pstate_set_policy[1020] min_perf_pct = 50
-[12609.956235] intel_pstate_set_policy[1023] min_perf_pct = 50
-[12609.956235] intel_pstate_set_policy[1028] min_perf_pct = 50
-
-The below is copied from my original reply:
-
-Before Patch, I get:
-
-root@s15:/home/doug/temp# grep . /sys/devices/system/cpu/intel_pstate/*_perf_*
-/sys/devices/system/cpu/intel_pstate/max_perf_pct:80
-/sys/devices/system/cpu/intel_pstate/min_perf_pct:50
-root@s15:/home/doug/temp# pm-suspend
-...
-root@s15:/home/doug/temp# grep . /sys/devices/system/cpu/intel_pstate/*_perf_*
-/sys/devices/system/cpu/intel_pstate/max_perf_pct:80
-/sys/devices/system/cpu/intel_pstate/min_perf_pct:50
-
-After Patch, I get:
-
-root@s15:/home/doug/temp# grep . /sys/devices/system/cpu/intel_pstate/*_perf_*
-/sys/devices/system/cpu/intel_pstate/max_perf_pct:80
-/sys/devices/system/cpu/intel_pstate/min_perf_pct:50
-root@s15:/home/doug/temp# pm-suspend
-...
-root@s15:/home/doug/temp# grep . /sys/devices/system/cpu/intel_pstate/*_perf_*
-/sys/devices/system/cpu/intel_pstate/max_perf_pct:100
-/sys/devices/system/cpu/intel_pstate/min_perf_pct:42
-
-
+	Arnd
