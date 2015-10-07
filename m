@@ -1,110 +1,77 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [Update][PATCH 3/3] input: i8042: Avoid resetting controller on system suspend/resume
-Date: Wed, 07 Oct 2015 03:03:57 +0200
-Message-ID: <1738265.GZcYUZQGSy@vostro.rjw.lan>
-References: <10641052.oOBhM6BU9G@vostro.rjw.lan> <2723857.EVg1dAvTli@vostro.rjw.lan> <3385784.1Q539YNd1G@vostro.rjw.lan>
+From: =?ks_c_5601-1987?B?RGF2aWQgS3dvbiAosce/+MirKQ==?=
+	<wonhong.kwon@lge.com>
+Subject: RE: [PATCH] PM / hibernate: Move pm_init/pm_disk_init to late_initcall_sync
+Date: Wed, 7 Oct 2015 11:08:56 +0900
+Message-ID: <016101d100a5$1f342550$5d9c6ff0$@lge.com>
+References: <1444093820-6934-1-git-send-email-wonhong.kwon@lge.com> <20151006144213.GB24518@xo-6d-61-c0.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <3385784.1Q539YNd1G@vostro.rjw.lan>
-Sender: linux-pci-owner@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Vetter <daniel.vetter@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Linux PCI <linux-pci@vger.kernel.org>
+Content-Type: text/plain;
+	charset="ks_c_5601-1987"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from LGEAMRELO12.lge.com ([156.147.23.52]:53144 "EHLO
+	lgeamrelo12.lge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752713AbbJGCYA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 6 Oct 2015 22:24:00 -0400
+In-Reply-To: <20151006144213.GB24518@xo-6d-61-c0.localdomain>
+Content-Language: ko
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: 'Pavel Machek' <pavel@ucw.cz>, 'Wonhong Kwon' <wonhongkwon@gmail.com>
+Cc: rjw@rjwysocki.net, len.brown@intel.com, linux-pm@vger.kernel.org, gunho.lee@lge.com
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> On Tue 2015-10-06 10:10:20, Wonhong Kwon wrote:
+> > pm_init is being invoked by core_initcall and
+> > hibernate_image_size_init calculates preferred image size (image_size)
+> > based on total pages (totalram_pages). This totalram_pages can be
+> > modified during various initcall-s phase and this can cause
+> miscalculated image_size.
+> >
+> > For example, when CMA is being used, init_cma_reserved_pageblock tries
+> > to change the totalram_pages and this job is done during core_initcall.
+> > In order words, the totalram_pages doesn't take CMA reserved pages
+> > into account when image_size is calculated and it can be too small.
+> >
+> > Move pm_init and pm_disk_init to late_initcall_sync so that it happens
+> > after all other initcall-s change the totalram_pages.
+> 
+> Hmm, someone else hit same (similar) problem, but had way more complex
+> solution.
+> 
+> So it is nice this is easy.
+> 
+> But is it enough? 
 
-If the upcoming system suspend is not going to be handled by the
-platform firmware, like in the suspend-to-idle case, it is not
-necessary to reset the controller in i8042_pm_suspend(), so avoid
-doing that.
+I'm not a MM expert, but AFAIU, lots of things including CMA try to change
+totalram_pages during and after boot. For instance, memory is being plugged
+out after boot, __offline_pages invokes adjust_managed_page_count and
+totalram_pages
+can be changed.
 
-Moreover, if the system resume currently in progress has not been
-started by the platform firmware, like in the suspend-to-idle case,
-i8042_controller_resume() need not be called by i8042_pm_resume(),
-so avoid doing that too in that case.
+However, image_size can be changed by user via sysfs after boot, and I think
+user's preferred size should have a high priority than one calculated with
+totalram_pages.
 
-Additionally, try to catch the event that woke up the system by
-calling the interrupt handler early during system resume if it has
-not been started by the platform firmware.
+So, my patch was intended to calculate default image_size based on more
+accurate
+totalram_pages during boot, not based on real one on any time after boot.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/input/serio/i8042.c |   32 +++++++++++++++++++++++++++-----
- 1 file changed, 27 insertions(+), 5 deletions(-)
+> Can CMA be modular? Can CMA allocate memory after boot?
 
-Index: linux-pm/drivers/input/serio/i8042.c
-===================================================================
---- linux-pm.orig/drivers/input/serio/i8042.c
-+++ linux-pm/drivers/input/serio/i8042.c
-@@ -24,6 +24,7 @@
- #include <linux/platform_device.h>
- #include <linux/i8042.h>
- #include <linux/slab.h>
-+#include <linux/suspend.h>
- 
- #include <asm/io.h>
- 
-@@ -1170,7 +1171,8 @@ static int i8042_pm_suspend(struct devic
- {
- 	int i;
- 
--	i8042_controller_reset(true);
-+	if (pm_suspend_via_firmware())
-+		i8042_controller_reset(true);
- 
- 	/* Set up serio interrupts for system wakeup. */
- 	for (i = 0; i < I8042_NUM_PORTS; i++) {
-@@ -1183,8 +1185,17 @@ static int i8042_pm_suspend(struct devic
- 	return 0;
- }
- 
-+static int i8042_pm_resume_noirq(struct device *dev)
-+{
-+	if (!pm_resume_via_firmware())
-+		i8042_interrupt(0, NULL);
-+
-+	return 0;
-+}
-+
- static int i8042_pm_resume(struct device *dev)
- {
-+	bool force_reset;
- 	int i;
- 
- 	for (i = 0; i < I8042_NUM_PORTS; i++) {
-@@ -1195,11 +1206,21 @@ static int i8042_pm_resume(struct device
- 	}
- 
- 	/*
--	 * On resume from S2R we always try to reset the controller
--	 * to bring it in a sane state. (In case of S2D we expect
--	 * BIOS to reset the controller for us.)
-+	 * If platform firmware was not going to be involved in suspend, we did
-+	 * not restore the controller state to whatever it had been at boot
-+	 * time, so we do not need to do anything.
- 	 */
--	return i8042_controller_resume(true);
-+	if (!pm_suspend_via_firmware())
-+		return 0;
-+
-+	/*
-+	 * We only need to reset the controller if we are resuming after handing
-+	 * off control to the platform firmware, otherwise we can simply restore
-+	 * the mode.
-+	 */
-+	force_reset = pm_resume_via_firmware();
-+
-+	return i8042_controller_resume(force_reset);
- }
- 
- static int i8042_pm_thaw(struct device *dev)
-@@ -1223,6 +1244,7 @@ static int i8042_pm_restore(struct devic
- 
- static const struct dev_pm_ops i8042_pm_ops = {
- 	.suspend	= i8042_pm_suspend,
-+	.resume_noirq	= i8042_pm_resume_noirq,
- 	.resume		= i8042_pm_resume,
- 	.thaw		= i8042_pm_thaw,
- 	.poweroff	= i8042_pm_reset,
+AFAIK, CMA cannot intercept any memory after boot. Reserving memory for CMA
+area
+should be required on early stage.
+
+Thanks,
+Wonhong
+
+> 
+> THanks,
+>
+Pavel
+> 
+> --
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures)
+> http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
