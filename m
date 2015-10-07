@@ -1,35 +1,40 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
- SpeedStep enabled
-Date: Wed, 07 Oct 2015 16:36:39 +0000
-Message-ID: <bug-103351-137361-66tFoTFWJB@https.bugzilla.kernel.org/>
-References: <bug-103351-137361@https.bugzilla.kernel.org/>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] PM / OPP: fix debugfs files for 64-bit
+Date: Wed, 7 Oct 2015 22:06:59 +0530
+Message-ID: <20151007163659.GB4557@linux>
+References: <5706174.BUsqiXljxZ@wuerfel>
+ <20151007105911.GC9892@linux>
+ <20151007110302.GD9892@linux>
+ <20151007110755.GA6601@kroah.com>
+ <20151007112149.GB22530@linux>
+ <20151007163309.GM21513@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:42750 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752518AbbJGQgo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 7 Oct 2015 12:36:44 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id 4F7432069B
-	for <linux-pm@vger.kernel.org>; Wed,  7 Oct 2015 16:36:43 +0000 (UTC)
-Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
-	by mail.kernel.org (Postfix) with ESMTP id 3E28720747
-	for <linux-pm@vger.kernel.org>; Wed,  7 Oct 2015 16:36:42 +0000 (UTC)
-In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20151007163309.GM21513@n2100.arm.linux.org.uk>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Nishanth Menon <nm@ti.com>, Len Brown <len.brown@intel.com>, Arnd Bergmann <arnd@arndb.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Dmitry Torokhov <dtor@chromium.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=103351
+On 07-10-15, 17:33, Russell King - ARM Linux wrote:
+> Don't you even think about doing that - that's totally broken no matter
+> what, and this is a good example of why casts are Bad.
+> 
+> debugfs_create_u64() will create a debugfs object that will want to
+> access a 64-bit value, but the value pointed to is only 32-bit.  The
+> net result is that the debugfs file ends up reading or writing the
+> neigbouring 32-bits, which may potentially be unaligned.
 
---- Comment #40 from kernel@benjam.info <kernel@benjam.info> ---
-Created attachment 189651
-  --> https://bugzilla.kernel.org/attachment.cgi?id=189651&action=edit
-/proc/cpuinfo for i5-5675C with the 0x12 ucode patch applied at early boot.
+Yeah, that's what I was also saying. Its broken.
+
+> The variable pointed to for debugfs_create_u64() must be a 64-bit
+> value.  No casts allowed.
+> 
+> An alternative would be to have debugfs_create_ulong()
+
+And that's what I suggested.
 
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+viresh
