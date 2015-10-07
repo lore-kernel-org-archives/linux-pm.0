@@ -1,75 +1,63 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH 2/2] cpufreq: prevent lockup on reading
- scaling_available_frequencies
-Date: Wed, 07 Oct 2015 09:18:57 -0700
-Message-ID: <1444234737.3514.17.camel@spandruv-desk3.jf.intel.com>
-References: <1443738182-4077-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-	 <1443738182-4077-2-git-send-email-srinivas.pandruvada@linux.intel.com>
-	 <20151007124508.GG902@linux>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH] PM / OPP: fix debugfs files for 64-bit
+Date: Wed, 7 Oct 2015 17:33:09 +0100
+Message-ID: <20151007163309.GM21513@n2100.arm.linux.org.uk>
+References: <5706174.BUsqiXljxZ@wuerfel>
+ <20151007105911.GC9892@linux>
+ <20151007110302.GD9892@linux>
+ <20151007110755.GA6601@kroah.com>
+ <20151007112149.GB22530@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:46655 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754275AbbJGQUo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 7 Oct 2015 12:20:44 -0400
-In-Reply-To: <20151007124508.GG902@linux>
+Received: from pandora.arm.linux.org.uk ([78.32.30.218]:45786 "EHLO
+	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753818AbbJGQda (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2015 12:33:30 -0400
+Content-Disposition: inline
+In-Reply-To: <20151007112149.GB22530@linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Nishanth Menon <nm@ti.com>, Len Brown <len.brown@intel.com>, Arnd Bergmann <arnd@arndb.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Dmitry Torokhov <dtor@chromium.org>, linux-arm-kernel@lists.infradead.org
 
-On Wed, 2015-10-07 at 18:15 +0530, Viresh Kumar wrote:
-> On 01-10-15, 15:23, Srinivas Pandruvada wrote:
-> > When scaling_available_frequencies is read on an offlined cpu, then
-> > either lockup or junk values are displayed. This is caused by
-> > freed freq_table, which policy is using.
-> > 
-> > Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> > ---
-> >  drivers/cpufreq/cpufreq.c | 4 +++-
-> >  1 file changed, 3 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> > index ef5ed94..25c4c15 100644
-> > --- a/drivers/cpufreq/cpufreq.c
-> > +++ b/drivers/cpufreq/cpufreq.c
-> > @@ -1436,8 +1436,10 @@ static void cpufreq_offline_finish(unsigned int cpu)
-> >  	 * since this is a core component, and is essential for the
-> >  	 * subsequent light-weight ->init() to succeed.
-> >  	 */
-> > -	if (cpufreq_driver->exit)
-> > +	if (cpufreq_driver->exit) {
-> >  		cpufreq_driver->exit(policy);
-> > +		policy->freq_table = NULL;
-> > +	}
-> >  }
+On Wed, Oct 07, 2015 at 04:51:49PM +0530, Viresh Kumar wrote:
+> On 07-10-15, 12:07, Greg Kroah-Hartman wrote:
+> > Why would you be wanting to create a "unsigned long" as an api anyway?
+> > Just force it to be u64 all the time, can't you do that?
 > 
-> freq_table was set from the ->init() callbacks and only they should
-> set it to NULL, isn't it?
-freq_table is allocated in init() callbacks and freed on exit()
-callback. But I don't see any driver changing policy->freq_table to NULL
-or setting value to policy->freq_table to their allocated freq_table .
-
-I see policy->freq_table is only assigned value in function
-cpufreq_table_validate_and_show, as part of the core API. So I think we
-should set to NULL after clients freed the freq_table as part of core
-function.
-
-Otherwise we need to modify every client cpufreq driver and assign
-policy->freq_table=NULL on .exit().  Since they don't assign value to
-this policy->freq_table in first place, they shouldn't change this.
-
-Also I don't know why we need to keep the sysfs entry cpufreq after
-offline. There are other values, which we can read without crash, but
-may not be valid. We may delete this sysfs entry. But may be some
-cpufreq driver cares about this even after offline. If we can delete
-this entry, it can be part of cleanup of cpufreq subsystem.
-
-Thanks,
-Srinivas
-
+> Okay, so the variable in question (lets say frequency) is an 'unsigned
+> long' and that's how all the APIs of clock framework expect/define
+> it.
 > 
+> And you are probably saying that we do this:
+> 
+> unsigned long freq;
+> 
+> debugfs_create_u64((u64 *)&freq);
+> 
+> Right? Or are you asking to update clock APIs to be converted to u64?
 
+Don't you even think about doing that - that's totally broken no matter
+what, and this is a good example of why casts are Bad.
 
+debugfs_create_u64() will create a debugfs object that will want to
+access a 64-bit value, but the value pointed to is only 32-bit.  The
+net result is that the debugfs file ends up reading or writing the
+neigbouring 32-bits, which may potentially be unaligned.
+
+The variable pointed to for debugfs_create_u64() must be a 64-bit
+value.  No casts allowed.
+
+An alternative would be to have debugfs_create_ulong() or similar
+which has accessors for standard C types.
+
+I don't think forcing subsystems wanting to use debugfs to have to use
+u{8,16,32,64} types for internal data is on - these are for things that
+we want to say "we want this to be a 8, 16, 32 or 64-bit type
+respectively" which is not what most subsystems need to do with
+internal data.  This looks like a debugfs cockup to me. :)
+
+-- 
+FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
+according to speedtest.net.
