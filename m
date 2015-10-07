@@ -1,53 +1,47 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: prevent lockup on reading
- scaling_available_frequencies
-Date: Wed, 7 Oct 2015 18:15:08 +0530
-Message-ID: <20151007124508.GG902@linux>
-References: <1443738182-4077-1-git-send-email-srinivas.pandruvada@linux.intel.com>
- <1443738182-4077-2-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH] PM / OPP: fix debugfs files for 64-bit
+Date: Wed, 7 Oct 2015 13:57:35 +0100
+Message-ID: <20151007125735.GA8170@kroah.com>
+References: <5706174.BUsqiXljxZ@wuerfel>
+ <20151007105911.GC9892@linux>
+ <20151007110302.GD9892@linux>
+ <20151007110755.GA6601@kroah.com>
+ <20151007112149.GB22530@linux>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f51.google.com ([209.85.220.51]:35419 "EHLO
-	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751302AbbJGMpO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2015 08:45:14 -0400
-Received: by pacfv12 with SMTP id fv12so21232440pac.2
-        for <linux-pm@vger.kernel.org>; Wed, 07 Oct 2015 05:45:13 -0700 (PDT)
+Received: from mail.linuxfoundation.org ([140.211.169.12]:33271 "EHLO
+	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752153AbbJGM5p (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2015 08:57:45 -0400
 Content-Disposition: inline
-In-Reply-To: <1443738182-4077-2-git-send-email-srinivas.pandruvada@linux.intel.com>
+In-Reply-To: <20151007112149.GB22530@linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Stephen Boyd <sboyd@codeaurora.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Nishanth Menon <nm@ti.com>, Dmitry Torokhov <dtor@chromium.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On 01-10-15, 15:23, Srinivas Pandruvada wrote:
-> When scaling_available_frequencies is read on an offlined cpu, then
-> either lockup or junk values are displayed. This is caused by
-> freed freq_table, which policy is using.
+On Wed, Oct 07, 2015 at 04:51:49PM +0530, Viresh Kumar wrote:
+> On 07-10-15, 12:07, Greg Kroah-Hartman wrote:
+> > Why would you be wanting to create a "unsigned long" as an api anyway?
+> > Just force it to be u64 all the time, can't you do that?
 > 
-> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> ---
->  drivers/cpufreq/cpufreq.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
+> Okay, so the variable in question (lets say frequency) is an 'unsigned
+> long' and that's how all the APIs of clock framework expect/define
+> it.
 > 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index ef5ed94..25c4c15 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1436,8 +1436,10 @@ static void cpufreq_offline_finish(unsigned int cpu)
->  	 * since this is a core component, and is essential for the
->  	 * subsequent light-weight ->init() to succeed.
->  	 */
-> -	if (cpufreq_driver->exit)
-> +	if (cpufreq_driver->exit) {
->  		cpufreq_driver->exit(policy);
-> +		policy->freq_table = NULL;
-> +	}
->  }
+> And you are probably saying that we do this:
+> 
+> unsigned long freq;
+> 
+> debugfs_create_u64((u64 *)&freq);
+> 
+> Right? Or are you asking to update clock APIs to be converted to u64?
 
-freq_table was set from the ->init() callbacks and only they should
-set it to NULL, isn't it?
+Yes, they should be u64 as I doubt you want to debug problems that you
+have in the driver where it works on a 64bit system but doesn't on a
+32bit one.
 
--- 
-viresh
+thanks,
+
+greg k-h
