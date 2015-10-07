@@ -1,88 +1,55 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH] cpufreq, intel_pstate, set max_sysfs_pct and min_sysfs_pct
- on governor switch
-Date: Wed, 07 Oct 2015 19:17:56 -0400
-Message-ID: <5615A824.4040908@redhat.com>
-References: <1444168147-17812-1-git-send-email-prarit@redhat.com> <000f01d10131$59c67a60$0d536f20$@net> <56158F2D.50200@redhat.com> <10053399.aMfHfU7Xt3@vostro.rjw.lan> <001001d1014f$2613efe0$723bcfa0$@net>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: As of kernel 4.3-rc1 system will not stay in S3 suspend [REGRESSION]
+Date: Thu, 8 Oct 2015 01:40:57 +0200
+Message-ID: <CAJZ5v0h=5UXgCzPKkraRUPxEumODC-kpQ5-j6oHoYZVinbFzHA@mail.gmail.com>
+References: <001f01d10152$ab653de0$022fb9a0$@net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <001001d1014f$2613efe0$723bcfa0$@net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: 'Kristen Carlson Accardi' <kristen@linux.intel.com>, linux-kernel@vger.kernel.org, 'Viresh Kumar' <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f176.google.com ([209.85.217.176]:34566 "EHLO
+	mail-lb0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751251AbbJGXk6 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2015 19:40:58 -0400
+Received: by lbbwt4 with SMTP id wt4so28781216lbb.1
+        for <linux-pm@vger.kernel.org>; Wed, 07 Oct 2015 16:40:57 -0700 (PDT)
+In-Reply-To: <001f01d10152$ab653de0$022fb9a0$@net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Doug Smythies <dsmythies@telus.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Daniel Vetter <daniel.vetter@intel.com>
 
+On Thu, Oct 8, 2015 at 12:51 AM, Doug Smythies <dsmythies@telus.net> wrote:
+> Hi,
+>
+> This started somewhere between Kernel 4.2 and 4.3-rc1,
+> but I only noticed it now.
+>
+> The first S3 suspend after a fresh boot works fine.
+> Thereafter, suspends simply resume again immediately.
+>
+> I get the following errors on my console:
+>
+> [  152.697247] i915 0000:00:02.0: GEM idle failed, resume might fail
+> [  152.697258] pci_pm_suspend(): i915_pm_suspend+0x0/0x50 [i915] returns -11
+> [  152.697262] dpm_run_callback(): pci_pm_suspend+0x0/0x140 returns -11
+> [  152.697264] PM: Device 0000:00:02.0 failed to suspend async: error -11
 
+This indicates some problems with the i915 graphics driver, so CCing
+its maintainer Daniel Vetter.
 
-On 10/07/2015 06:26 PM, Doug Smythies wrote:
-> On 2015.10.07 15:06 Rafael J. Wysocki wrote:
->> On Wednesday, October 07, 2015 05:31:25 PM Prarit Bhargava wrote:
->>> On 10/07/2015 02:52 PM, Doug Smythies wrote:
->>>> On 2015.10.07 08:46 Prarit Bhargava wrote:
->>>>> On 10/07/2015 11:40 AM, Doug Smythies wrote:
->>>>>>
->>>>>> Do we agree or disagree that the root issue seems to be (from your test)?:
->>>>>>
->>>>>> \#  echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct
->>>>>>
->>>>>> [   21.483436] store_min_perf_pct[453] min_sysfs_pct = 100
->>>>>> [   21.489373] store_min_perf_pct[456] min_perf_pct = 100
->>>>>> [   21.495203] store_min_perf_pct[459] min_perf_pct = 100
->>>>>> [   21.501050] store_min_perf_pct[462] min_perf_pct = 100
->>>>>
->>>>> Yep, and it appears to be done by default in Fedora & RHEL :/ ... the issue is
->>>>> still the same IMO that min_sysfs_pct & max_sysfs_pct are not cleared on a
->>>>> governor switch.
->>>>
->>>> Clearing them will break some other things. For example, and as
->>>> shown in my original reply, resume from suspend.
->>>>
->>>> Why? Because, at least on my computer, the governor is changed to
->>>> "performance" during suspend, and the "powersave" governor is
->>>> restored sometime during resume. The users wants the settings they had
->>>> before the suspend.
->>>>
->>> Looking at this in more detail after having tested on a Intel(R) Core(TM)
->>> i7-2600 CPU @ 3.40GHz in Fedora and RHEL.
->>>
->>> I have a feeling that the switch you're seeing (poweersave->performance, suspend
->>> ... resume, performance->powersave) is occurring in userspace, and not as a
->>> result of the kernel.
-> Agreed. It is pm-suspend doing it.
-> 
->>>  IMO if userspace changes the governor, all bets are off
->>> on maintaining max_sysfs_pct and min_sysfs_pct.
->>>
->>> Here's something I cannot figure out (because I do not have an Ubuntu install).
->>>  *Why* is Ubuntu making the governor switch during suspend/resume?  Is it
->>> because of archaic brokeness they were trying to paper over?
-> 
->>> That's not limited to Ubuntu, pm-utils has been doing that forever.
-> 
-> Agreed. This in pm-utils, and not limited to Ubuntu.
-> We can ignore this issue if everyone wants, but I can envision bug reports.
-> 
+> [  152.697306] PM: Some devices failed to suspend, or early wake event detected
+>
+> The issue is not limited to my normal way of doing suspend, using "pm-suspend".
+> It also happens using the "echo mem > /sys/power/state" method that Rafael mentioned
+> during the 4.2 cycle.
+>
+> I have searched the bug reports and such and didn't find a related bug, (which
+> doesn't mean it doesn't exist, just that if it does I didn't find it).
+>
+> I am about to start bisecting the kernel, but thought to ask here first, just in case
+> someone already knows the root issue.
 
-Yeah -- I'd rather not just ignore it.  Sorry to repeat myself but I just sent
-out a reply that said I'm going to submit a patch to pm-utils that blacklists
-the intel-pstate driver.  Suspend/Resume is known to work with intel-pstate and
-we shouldn't be doing anything fancy there.  I will put it on my TODO list to
-also later on take a look at acpi-cpufreq.
+You may try to restrict the bisection to the i915 commits to start with.
 
->> I have no idea why has it been doing that, though.  I guess the reason
->> was to "speed up" PM transitions (in case it started when you were in a
->> low-frequency P-state and then there was no time to bump it up before
->> things got too far).
-> 
-> I have no idea either, but the stated theory seems sound.
-
-Looking at various comments here and there online, it sounds like they wanted to
-put the system into a "sane state" before attempting to suspend/resume.  The
-code has been untouched since 2008.  We've come a long way and I'm willing to
-argue that we don't need it anymore.
-
-P.
-> 
-> 
+Thanks,
+Rafael
