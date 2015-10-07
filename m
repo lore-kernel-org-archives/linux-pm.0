@@ -1,76 +1,79 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [PATCH] cpufreq, intel_pstate, set max_sysfs_pct and min_sysfs_pct on governor switch
-Date: Wed, 7 Oct 2015 15:26:00 -0700
-Message-ID: <001001d1014f$2613efe0$723bcfa0$@net>
-References: <1444168147-17812-1-git-send-email-prarit@redhat.com> <000f01d10131$59c67a60$0d536f20$@net> <56158F2D.50200@redhat.com> <10053399.aMfHfU7Xt3@vostro.rjw.lan>
+From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
+Subject: Re: [PATCH 4/4] w1:slaves:bq27000: load battery driver kernel module if required
+Date: Thu, 8 Oct 2015 00:26:21 +0200
+Message-ID: <201510080026.21233@pali>
+References: <cover.1444243358.git.hns@goldelico.com> <c9ee31c641a8612c49172123cd56407484e699d6.1444243358.git.hns@goldelico.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="UTF-8"
+Content-Type: multipart/signed;
+  boundary="nextPart9966930.0hnHccjWvP";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cmta10.telus.net ([209.171.16.83]:58951 "EHLO cmta10.telus.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751020AbbJGW0D (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 7 Oct 2015 18:26:03 -0400
-In-Reply-To: <10053399.aMfHfU7Xt3@vostro.rjw.lan>
-Content-Language: en-ca
+Received: from mail-wi0-f170.google.com ([209.85.212.170]:35008 "EHLO
+	mail-wi0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753691AbbJGW0X (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2015 18:26:23 -0400
+Received: by wicge5 with SMTP id ge5so662375wic.0
+        for <linux-pm@vger.kernel.org>; Wed, 07 Oct 2015 15:26:22 -0700 (PDT)
+In-Reply-To: <c9ee31c641a8612c49172123cd56407484e699d6.1444243358.git.hns@goldelico.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: 'Prarit Bhargava' <prarit@redhat.com>
-Cc: 'Kristen Carlson Accardi' <kristen@linux.intel.com>, linux-kernel@vger.kernel.org, 'Viresh Kumar' <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, Doug Smythies <dsmythies@telus.net>
+To: "H. Nikolaus Schaller" <hns@goldelico.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org
 
-On 2015.10.07 15:06 Rafael J. Wysocki wrote:
-> On Wednesday, October 07, 2015 05:31:25 PM Prarit Bhargava wrote:
->> On 10/07/2015 02:52 PM, Doug Smythies wrote:
->>> On 2015.10.07 08:46 Prarit Bhargava wrote:
->>>> On 10/07/2015 11:40 AM, Doug Smythies wrote:
->>>>>
->>>>> Do we agree or disagree that the root issue seems to be (from your test)?:
->>>>>
->>>>> \#  echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct
->>>>>
->>>>> [   21.483436] store_min_perf_pct[453] min_sysfs_pct = 100
->>>>> [   21.489373] store_min_perf_pct[456] min_perf_pct = 100
->>>>> [   21.495203] store_min_perf_pct[459] min_perf_pct = 100
->>>>> [   21.501050] store_min_perf_pct[462] min_perf_pct = 100
->>>>
->>>> Yep, and it appears to be done by default in Fedora & RHEL :/ ... the issue is
->>>> still the same IMO that min_sysfs_pct & max_sysfs_pct are not cleared on a
->>>> governor switch.
->>> 
->>> Clearing them will break some other things. For example, and as
->>> shown in my original reply, resume from suspend.
->>> 
->>> Why? Because, at least on my computer, the governor is changed to
->>> "performance" during suspend, and the "powersave" governor is
->>> restored sometime during resume. The users wants the settings they had
->>> before the suspend.
->>> 
->> Looking at this in more detail after having tested on a Intel(R) Core(TM)
->> i7-2600 CPU @ 3.40GHz in Fedora and RHEL.
->> 
->> I have a feeling that the switch you're seeing (poweersave->performance, suspend
->> ... resume, performance->powersave) is occurring in userspace, and not as a
->> result of the kernel.
-Agreed. It is pm-suspend doing it.
+--nextPart9966930.0hnHccjWvP
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 
->>  IMO if userspace changes the governor, all bets are off
->> on maintaining max_sysfs_pct and min_sysfs_pct.
->> 
->> Here's something I cannot figure out (because I do not have an Ubuntu install).
->>  *Why* is Ubuntu making the governor switch during suspend/resume?  Is it
->> because of archaic brokeness they were trying to paper over?
+On Wednesday 07 October 2015 20:42:39 H. Nikolaus Schaller wrote:
+> Explicitly call request_module() in the wrapper so that the
+> bq27x00_battery driver is loded on demand, when compiled as module.
+>=20
+> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
+> ---
+>  drivers/w1/slaves/w1_bq27000.c | 2 ++
+>  1 file changed, 2 insertions(+)
+>=20
+> diff --git a/drivers/w1/slaves/w1_bq27000.c
+> b/drivers/w1/slaves/w1_bq27000.c index caafb17..745bd6e 100644
+> --- a/drivers/w1/slaves/w1_bq27000.c
+> +++ b/drivers/w1/slaves/w1_bq27000.c
+> @@ -49,6 +49,8 @@ static int w1_bq27000_add_slave(struct w1_slave
+> *sl) int ret;
+>  	struct platform_device *pdev;
+>=20
+> +	request_module("bq27x00_battery");  /* load as module if needed */
+> +
+>  	pdev =3D platform_device_alloc("bq27000-battery", -1);
+>  	if (!pdev) {
+>  		ret =3D -ENOMEM;
 
->> That's not limited to Ubuntu, pm-utils has been doing that forever.
+Hi! Function platform_device_alloc would allocate kernel device and it=20
+should also load appropriate kernel driver (via platform:bq27000-battery=20
+alias). If that does not work, problem is somewhere else. Maybe depmod=20
+is not properly generated? Or bq27x00_batter.ko modules does not contain=20
+needed alias?
 
-Agreed. This in pm-utils, and not limited to Ubuntu.
-We can ignore this issue if everyone wants, but I can envision bug reports.
+Adding request_module() here is not proper solution. Real problem is=20
+somewhere else... Anyway there is series of patches for bq27x00_battery=20
+which should cleanup some problems, so maybe they also fix your problem.
 
-> I have no idea why has it been doing that, though.  I guess the reason
-> was to "speed up" PM transitions (in case it started when you were in a
-> low-frequency P-state and then there was no time to bump it up before
-> things got too far).
+=2D-=20
+Pali Roh=C3=A1r
+pali.rohar@gmail.com
 
-I have no idea either, but the stated theory seems sound.
+--nextPart9966930.0hnHccjWvP
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
+iEYEABECAAYFAlYVnA0ACgkQi/DJPQPkQ1LLWACgy6LNJondpNGxosMorQU1ZXYE
+UdQAoKp0/pvMsyFYQvBOgRclSPiZEQ6O
+=VAH2
+-----END PGP SIGNATURE-----
+
+--nextPart9966930.0hnHccjWvP--
