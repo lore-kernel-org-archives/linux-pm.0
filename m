@@ -1,52 +1,42 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: prevent lockup on reading
- scaling_available_frequencies
-Date: Thu, 8 Oct 2015 00:02:00 +0530
-Message-ID: <20151007183200.GJ4557@linux>
-References: <1443738182-4077-1-git-send-email-srinivas.pandruvada@linux.intel.com>
- <1443738182-4077-2-git-send-email-srinivas.pandruvada@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: "H. Nikolaus Schaller" <hns@goldelico.com>
+Subject: [PATCH 4/4] w1:slaves:bq27000: load battery driver kernel module if required
+Date: Wed,  7 Oct 2015 20:42:39 +0200
+Message-ID: <c9ee31c641a8612c49172123cd56407484e699d6.1444243358.git.hns@goldelico.com>
+References: <cover.1444243358.git.hns@goldelico.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f53.google.com ([209.85.220.53]:36715 "EHLO
-	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751329AbbJGScF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2015 14:32:05 -0400
-Received: by pablk4 with SMTP id lk4so28488667pab.3
-        for <linux-pm@vger.kernel.org>; Wed, 07 Oct 2015 11:32:04 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1443738182-4077-2-git-send-email-srinivas.pandruvada@linux.intel.com>
+Received: from mo4-p00-ob.smtp.rzone.de ([81.169.146.217]:33328 "EHLO
+	mo4-p00-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753600AbbJGSmr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2015 14:42:47 -0400
+In-Reply-To: <cover.1444243358.git.hns@goldelico.com>
+In-Reply-To: <cover.1444243358.git.hns@goldelico.com>
+References: <cover.1444243358.git.hns@goldelico.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org
+To: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: linux-pm@vger.kernel.org, "H. Nikolaus Schaller" <hns@goldelico.com>
 
-On 01-10-15, 15:23, Srinivas Pandruvada wrote:
-> When scaling_available_frequencies is read on an offlined cpu, then
-> either lockup or junk values are displayed. This is caused by
-> freed freq_table, which policy is using.
-> 
-> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> ---
->  drivers/cpufreq/cpufreq.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index ef5ed94..25c4c15 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1436,8 +1436,10 @@ static void cpufreq_offline_finish(unsigned int cpu)
->  	 * since this is a core component, and is essential for the
->  	 * subsequent light-weight ->init() to succeed.
->  	 */
-> -	if (cpufreq_driver->exit)
-> +	if (cpufreq_driver->exit) {
->  		cpufreq_driver->exit(policy);
-> +		policy->freq_table = NULL;
-> +	}
->  }
+Explicitly call request_module() in the wrapper so that the bq27x00_battery
+driver is loded on demand, when compiled as module.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
+---
+ drivers/w1/slaves/w1_bq27000.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
+diff --git a/drivers/w1/slaves/w1_bq27000.c b/drivers/w1/slaves/w1_bq27000.c
+index caafb17..745bd6e 100644
+--- a/drivers/w1/slaves/w1_bq27000.c
++++ b/drivers/w1/slaves/w1_bq27000.c
+@@ -49,6 +49,8 @@ static int w1_bq27000_add_slave(struct w1_slave *sl)
+ 	int ret;
+ 	struct platform_device *pdev;
+ 
++	request_module("bq27x00_battery");  /* load as module if needed */
++
+ 	pdev = platform_device_alloc("bq27000-battery", -1);
+ 	if (!pdev) {
+ 		ret = -ENOMEM;
 -- 
-viresh
+2.5.1
+
