@@ -1,124 +1,37 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH] cpufreq, intel_pstate, set max_sysfs_pct and min_sysfs_pct
- on governor switch
-Date: Wed, 07 Oct 2015 07:38:57 -0400
-Message-ID: <56150451.4060505@redhat.com>
-References: <1444168147-17812-1-git-send-email-prarit@redhat.com> <1755198.JNkaHg87IV@vostro.rjw.lan> <1594304.lVcRDcB3yL@vostro.rjw.lan>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
+ SpeedStep enabled
+Date: Wed, 07 Oct 2015 11:40:24 +0000
+Message-ID: <bug-103351-137361-ZtiSpBPp01@https.bugzilla.kernel.org/>
+References: <bug-103351-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:46591 "EHLO mx1.redhat.com"
+Received: from mail.kernel.org ([198.145.29.136]:48883 "EHLO mail.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753205AbbJGLi6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 7 Oct 2015 07:38:58 -0400
-In-Reply-To: <1594304.lVcRDcB3yL@vostro.rjw.lan>
+	id S1752800AbbJGLke (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 7 Oct 2015 07:40:34 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+	by mail.kernel.org (Postfix) with ESMTP id 7944020788
+	for <linux-pm@vger.kernel.org>; Wed,  7 Oct 2015 11:40:28 +0000 (UTC)
+Received: from bugzilla2.web.kernel.org (bugzilla2.web.kernel.org [172.20.200.52])
+	by mail.kernel.org (Postfix) with ESMTP id 9A35D206DE
+	for <linux-pm@vger.kernel.org>; Wed,  7 Oct 2015 11:40:27 +0000 (UTC)
+In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Kristen Carlson Accardi <kristen@linux.intel.com>, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
+https://bugzilla.kernel.org/show_bug.cgi?id=103351
 
+--- Comment #38 from Jonas Platte <linux@jonasplatte.de> ---
+Created attachment 189601
+  --> https://bugzilla.kernel.org/attachment.cgi?id=189601&action=edit
+/proc/cpuinfo when booted with microcode update 0x12
 
-On 10/06/2015 07:06 PM, Rafael J. Wysocki wrote:
-> On Wednesday, October 07, 2015 12:43:55 AM Rafael J. Wysocki wrote:
->> On Tuesday, October 06, 2015 05:49:07 PM Prarit Bhargava wrote:
->>> Intel CPUs will not enter higher p-states when after switching from the
->>> performance governor to the powersave governor, until
->>> /sys/devices/system/cpu/intel_pstate/min_perf_pct is set to a low value.
->>> This differs from previous behaviour in which a switch to the powersave
->>> governor would result in a low default value for min_perf_pct.
->>>
->>> The behavior of the powersave governor changed after commit a04759924e25
->>> ("[cpufreq] intel_pstate: honor user space min_perf_pct override on
->>> resume").  The commit introduced tracking of performance percentage
->>> changes via sysfs in order to restore userspace changes during
->>> suspend/resume.  The problem occurs because the global values of the newly
->>> introduced max_sysfs_pct and min_sysfs_pct are not reset on a governor
->>> change and this causes the new governor to inherit the previous governor's
->>> settings.
->>>
->>> This patch sets max_sysfs_pct to 100 and min_sysfs_pct to 0 on a governor
->>> change which fixes the problem with governor switching.  These changes
->>> also make the initial calculations for max_perf_pct and min_perf_pct
->>> slightly simpler.
->>>
->>> Before patch:
->>> [root@intel-skylake-y-01 power]# cpupower frequency-set -g performance
->>> [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/min_perf_pct
->>> 100
->>> [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
->>> 100
->>> [root@intel-skylake-y-01 power]# cpupower frequency-set -g powersave
->>> [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/min_perf_pct
->>> 100
->>> [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
->>> 100
->>>
->>> After patch:
->>> [root@intel-skylake-y-01 power]# cpupower frequency-set -g performance
->>> [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/min_perf_pct
->>> 100
->>> [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
->>> 100
->>> [root@intel-skylake-y-01 power]# cpupower frequency-set -g powersave
->>> [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/min_perf_pct
->>> 14
->>> [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
->>> 100
->>>
->>> Also note that I have tested suspend/resume (using CONFIG_PM_DEBUG):
->>> [root@intel-skylake-y-01 power]# echo 50 > /sys/devices/system/cpu/intel_pstate/min_perf_pct
->>> [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/*_perf_pct
->>> 100
->>> 50
->>> [root@intel-skylake-y-01 power]# echo devices > /sys/power/pm_test
->>> [root@intel-skylake-y-01 power]# echo platform > /sys/power/disk
->>> [root@intel-skylake-y-01 power]# echo disk > /sys/power/state
->>> [root@intel-skylake-y-01 power]# cat /sys/devices/system/cpu/intel_pstate/*_perf_pct
->>> 100
->>> 50
->>>
->>> Fixes: a04759924e25 ("[cpufreq] intel_pstate: honor user space min_perf_pct override on resume")
->>> Cc: Kristen Carlson Accardi <kristen@linux.intel.com>
->>> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
->>> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->>> Cc: linux-pm@vger.kernel.org
->>> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
->>> ---
->>>  drivers/cpufreq/intel_pstate.c |    7 +++++--
->>>  1 file changed, 5 insertions(+), 2 deletions(-)
->>>
->>> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
->>> index 3af9dd7..bb24458 100644
->>> --- a/drivers/cpufreq/intel_pstate.c
->>> +++ b/drivers/cpufreq/intel_pstate.c
->>> @@ -986,6 +986,9 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
->>>  	if (!policy->cpuinfo.max_freq)
->>>  		return -ENODEV;
->>>  
->>> +	limits.min_sysfs_pct = 0;
->>> +	limits.max_sysfs_pct = 100;
->>> +
->>>  	if (policy->policy == CPUFREQ_POLICY_PERFORMANCE &&
->>>  	    policy->max >= policy->cpuinfo.max_freq) {
->>>  		limits.min_policy_pct = 100;
->>> @@ -1004,9 +1007,9 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
->>>  	limits.max_policy_pct = clamp_t(int, limits.max_policy_pct, 0 , 100);
->>>  
->>>  	/* Normalize user input to [min_policy_pct, max_policy_pct] */
->>> -	limits.min_perf_pct = max(limits.min_policy_pct, limits.min_sysfs_pct);
->>> +	limits.min_perf_pct = limits.min_policy_pct;
->>>  	limits.min_perf_pct = min(limits.max_policy_pct, limits.min_perf_pct);
->>> -	limits.max_perf_pct = min(limits.max_policy_pct, limits.max_sysfs_pct);
->>> +	limits.max_perf_pct = limits.max_sysfs_pct;
-> 
-> On a second thought, isn't that always 100?  If so, doesn't it basically discard
-> limits.max_policy_pct?
+Here you go.
 
-Looking at it, yes.  And that's definitely an unintended consequence of this
-patch :).  I'll take a closer look.  I thought it should be permissible to set a
-range of (min_perf_pct, max_perf_pct) while changing p-states and I thought the
-purpose of max_perf_pct was to set the higher percentage limit.
-
-P.
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
