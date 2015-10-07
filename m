@@ -1,29 +1,20 @@
 From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Subject: [PATCH v7 0/6] Add support for DA9150 Fuel-Gauge
-Date: Wed, 7 Oct 2015 14:54:02 +0100
-Message-ID: <cover.1444225050.git.Adam.Thomson.Opensource@diasemi.com>
+Subject: [PATCH v7 2/6] mfd: da9150: Update DT bindings for Fuel-Gauge support
+Date: Wed, 7 Oct 2015 14:54:12 +0100
+Message-ID: <0fba7f849b31b230970543240bcfa28ff2c17f0e.1444225050.git.Adam.Thomson.Opensource@diasemi.com>
+References: <cover.1444225050.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail1.bemta14.messagelabs.com ([193.109.254.114]:13416 "EHLO
-	mail1.bemta14.messagelabs.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753363AbbJGNyM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2015 09:54:12 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1444225050.git.Adam.Thomson.Opensource@diasemi.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Lee Jones <lee.jones@linaro.org>, Samuel Ortiz <sameo@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
 Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Support Opensource <support.opensource@diasemi.com>
+List-Id: linux-pm@vger.kernel.org
 
-This patch set adds support for the Dialog DA9150 Fuel-Gauge.
-
-In this patch set the following is provided:
- - MFD Core and DT bindings updates.
- - Power Supply Fuel-Gauge support and DT bindings documentation.
-
-This patch set is baselined against the v4.3-rc4 kernel version.
-
-Changes in v7:
- - Fix return code handling for platform_get_irq_byname() call in fuel-gauge.
+Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Acked-by: Lee Jones <lee.jones@linaro.org>
+---
 
 Changes in v6:
  - Rebase to v4.3-rc4
@@ -32,46 +23,71 @@ Changes in v5:
  - Rebase to v4.2
 
 Changes in v4:
- - MFD, Power, DT: Update DT compatible & driver name strings for Fuel Gauge,
-                   in line with maintainers request.
- - Power: Update Kconfig and Makefile to use BATTERY_* for config entry instead
-          of FG_*. Also fuel-gauge module now depends on MFD not Charger.
- - Power: Added helper function to simplify single attribute accesses using QIF
-          interface of fuel-gauge.
- - Power: Use of devm_* functions for IRQ and power_supply registration.
- - Power: Added checking of result from platform_get_irq_byname().
+ - Update compatible string of fuel-gauge to "da9150-fuel-gauge".
+ - Node name tidy up, relating to maintainer comments on fuel-gauge DT
+   binding doc.
+ - Removed Ack to patch from Lee Jones, as this has now been modified slightly
+   and didn't want to make assumptions of approval.
 
 Changes in v3:
- - MFD: Some tidy up of code (gotos, dropped FG header, DEFINE_RES_IRQ_NAMED)
- - MFD & Power: Drop use of callback function for temperature reading, as
-                requested by Lee Jones.
- - MFD (DT): Binding doc update to flesh out example text.
- - MFD (DT): New patch to change MFD binding doc to use relative paths.
- - MFD: New patch to use DEFINE_RES_IRQ_NAMED for all other IRQ resources.
+ - Removal of unwanted new-line.
+ - Flesh out example bindings usage.
 
-Changes in v2:
- - Moved temp callback function prototype to be part of power fuel-gauge patch,
-   as requested by Lee Jones.
+ Documentation/devicetree/bindings/mfd/da9150.txt | 27 ++++++++++++++++++++----
+ 1 file changed, 23 insertions(+), 4 deletions(-)
 
-Adam Thomson (6):
-  mfd: da9150: Add support for Fuel-Gauge
-  mfd: da9150: Update DT bindings for Fuel-Gauge support
-  power: Add support for DA9150 Fuel-Gauge
-  power: da9150: Add DT bindings documentation for Fuel-Gauge
-  mfd: da9150: Use relative paths in DT bindings document
-  mfd: da9150: Use DEFINE_RES_IRQ_NAMED() help macro for IRQ resource
+diff --git a/Documentation/devicetree/bindings/mfd/da9150.txt b/Documentation/devicetree/bindings/mfd/da9150.txt
+index d0588ea..970801d 100644
+--- a/Documentation/devicetree/bindings/mfd/da9150.txt
++++ b/Documentation/devicetree/bindings/mfd/da9150.txt
+@@ -6,6 +6,7 @@ Device			 Description
+ ------			 -----------
+ da9150-gpadc		: General Purpose ADC
+ da9150-charger		: Battery Charger
++da9150-fg		: Battery Fuel-Gauge
 
- Documentation/devicetree/bindings/mfd/da9150.txt   |  33 +-
- .../devicetree/bindings/power/da9150-fg.txt        |  23 +
- drivers/mfd/da9150-core.c                          | 191 +++++--
- drivers/power/Kconfig                              |  10 +
- drivers/power/Makefile                             |   1 +
- drivers/power/da9150-fg.c                          | 579 +++++++++++++++++++++
- include/linux/mfd/da9150/core.h                    |  19 +-
- 7 files changed, 811 insertions(+), 45 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power/da9150-fg.txt
- create mode 100644 drivers/power/da9150-fg.c
+ ======
 
+@@ -22,7 +23,7 @@ Required properties:
+ Sub-devices:
+ - da9150-gpadc: See Documentation/devicetree/bindings/iio/adc/da9150-gpadc.txt
+ - da9150-charger: See Documentation/devicetree/bindings/power/da9150-charger.txt
+-
++- da9150-fg: See Documentation/devicetree/bindings/power/da9150-fg.txt
+
+ Example:
+
+@@ -34,10 +35,28 @@ Example:
+ 		interrupt-controller;
+
+ 		gpadc: da9150-gpadc {
+-			...
++			compatible = "dlg,da9150-gpadc";
++			#io-channel-cells = <1>;
++		};
++
++		charger {
++			compatible = "dlg,da9150-charger";
++
++			io-channels = <&gpadc 0>,
++				      <&gpadc 2>,
++				      <&gpadc 8>,
++				      <&gpadc 5>;
++			io-channel-names = "CHAN_IBUS",
++					   "CHAN_VBUS",
++					   "CHAN_TJUNC",
++					   "CHAN_VBAT";
+ 		};
+
+-		da9150-charger {
+-			...
++		fuel-gauge {
++			compatible = "dlg,da9150-fuel-gauge";
++
++			dlg,update-interval = <10000>;
++			dlg,warn-soc-level = /bits/ 8 <15>;
++			dlg,crit-soc-level = /bits/ 8 <5>
+ 		};
+ 	};
 --
 1.9.3
-
