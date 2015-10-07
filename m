@@ -1,83 +1,75 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH v2 1/2] thermal: mediatek: Add cpu power cooling model.
-Date: Wed, 7 Oct 2015 16:57:45 +0100
-Message-ID: <20151007155745.GD28981@leverpostej>
-References: <1444220561-26139-1-git-send-email-dawei.chien@mediatek.com>
- <1444220561-26139-2-git-send-email-dawei.chien@mediatek.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH 2/2] cpufreq: prevent lockup on reading
+ scaling_available_frequencies
+Date: Wed, 07 Oct 2015 09:18:57 -0700
+Message-ID: <1444234737.3514.17.camel@spandruv-desk3.jf.intel.com>
+References: <1443738182-4077-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	 <1443738182-4077-2-git-send-email-srinivas.pandruvada@linux.intel.com>
+	 <20151007124508.GG902@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1444220561-26139-2-git-send-email-dawei.chien@mediatek.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dawei Chien <dawei.chien@mediatek.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Matthias Brugger <matthias.bgg@gmail.com>, Daniel Kurtz <djkurtz@chromium.org>, Sascha Hauer <s.hauer@pengutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, Sascha Hauer <kernel@pengutronix.de>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:46655 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754275AbbJGQUo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 7 Oct 2015 12:20:44 -0400
+In-Reply-To: <20151007124508.GG902@linux>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org
 
-On Wed, Oct 07, 2015 at 08:22:40PM +0800, Dawei Chien wrote:
-> From: "Dawei.Chien" <dawei.chien@mediatek.com>
+On Wed, 2015-10-07 at 18:15 +0530, Viresh Kumar wrote:
+> On 01-10-15, 15:23, Srinivas Pandruvada wrote:
+> > When scaling_available_frequencies is read on an offlined cpu, then
+> > either lockup or junk values are displayed. This is caused by
+> > freed freq_table, which policy is using.
+> > 
+> > Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> > ---
+> >  drivers/cpufreq/cpufreq.c | 4 +++-
+> >  1 file changed, 3 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> > index ef5ed94..25c4c15 100644
+> > --- a/drivers/cpufreq/cpufreq.c
+> > +++ b/drivers/cpufreq/cpufreq.c
+> > @@ -1436,8 +1436,10 @@ static void cpufreq_offline_finish(unsigned int cpu)
+> >  	 * since this is a core component, and is essential for the
+> >  	 * subsequent light-weight ->init() to succeed.
+> >  	 */
+> > -	if (cpufreq_driver->exit)
+> > +	if (cpufreq_driver->exit) {
+> >  		cpufreq_driver->exit(policy);
+> > +		policy->freq_table = NULL;
+> > +	}
+> >  }
 > 
-> This power model is base on Intelligent Power Allocation (IPA) technical,
-> requires that the operating-points of the CPUs are registered using the
-> kernel's opp library and the `cpufreq_frequency_table` is assigned to the
-> `struct device` of the cpu MT8173.
-> 
-> Signed-off-by: Dawei.Chien <dawei.chien@mediatek.com>
-> ---
-> This patch is base on
-> https://patchwork.kernel.org/patch/7034601/
-> ---
->  drivers/cpufreq/mt8173-cpufreq.c |   97 +++++++++++++++++++++++++++++++++-----
->  1 file changed, 86 insertions(+), 11 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/mt8173-cpufreq.c b/drivers/cpufreq/mt8173-cpufreq.c
-> index 49caed2..9233ec5 100644
-> --- a/drivers/cpufreq/mt8173-cpufreq.c
-> +++ b/drivers/cpufreq/mt8173-cpufreq.c
-> @@ -28,7 +28,8 @@
->  #define MAX_VOLT_SHIFT		(200000)
->  #define MAX_VOLT_LIMIT		(1150000)
->  #define VOLT_TOL		(10000)
-> -
-> +#define CAPACITANCE_CA53	(263)
-> +#define CAPACITANCE_CA57	(530)
->  /*
->   * The struct mtk_cpu_dvfs_info holds necessary information for doing CPU DVFS
->   * on each CPU power/clock domain of Mediatek SoCs. Each CPU cluster in
-> @@ -51,6 +52,72 @@ struct mtk_cpu_dvfs_info {
->  	bool need_voltage_tracking;
->  };
->  
-> +struct mtk_cpu_static_power {
-> +	unsigned long voltage;
-> +	unsigned int power;
-> +};
-> +
-> +/* measured by WA program. */
-> +static const struct mtk_cpu_static_power mtk_ca53_static_power[] = {
-> +	{859000, 43},
-> +	{908000, 52},
-> +	{983000, 86},
-> +	{1009000, 123},
-> +	{1028000, 138},
-> +	{1083000, 172},
-> +	{1109000, 180},
-> +	{1125000, 192},
-> +};
-> +
-> +/* measured by WA program. */
-> +static const struct mtk_cpu_static_power mtk_ca57_static_power[] = {
-> +	{828000, 72},
-> +	{867000, 90},
-> +	{927000, 156},
-> +	{968000, 181},
-> +	{1007000, 298},
-> +	{1049000, 435},
-> +	{1089000, 533},
-> +	{1125000, 533},
-> +};
+> freq_table was set from the ->init() callbacks and only they should
+> set it to NULL, isn't it?
+freq_table is allocated in init() callbacks and freed on exit()
+callback. But I don't see any driver changing policy->freq_table to NULL
+or setting value to policy->freq_table to their allocated freq_table .
 
-This should be described in the DT, rather than necessitating tonnes of
-these tables in the kernel.
+I see policy->freq_table is only assigned value in function
+cpufreq_table_validate_and_show, as part of the core API. So I think we
+should set to NULL after clients freed the freq_table as part of core
+function.
 
-Mark.
+Otherwise we need to modify every client cpufreq driver and assign
+policy->freq_table=NULL on .exit().  Since they don't assign value to
+this policy->freq_table in first place, they shouldn't change this.
+
+Also I don't know why we need to keep the sysfs entry cpufreq after
+offline. There are other values, which we can read without crash, but
+may not be valid. We may delete this sysfs entry. But may be some
+cpufreq driver cares about this even after offline. If we can delete
+this entry, it can be part of cleanup of cpufreq subsystem.
+
+Thanks,
+Srinivas
+
+> 
+
+
