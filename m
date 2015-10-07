@@ -1,51 +1,77 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: As of kernel 4.3-rc1 system will not stay in S3 suspend [REGRESSION]
-Date: Wed, 7 Oct 2015 15:51:13 -0700
-Message-ID: <001f01d10152$ab653de0$022fb9a0$@net>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH] cpufreq, intel_pstate, set max_sysfs_pct and min_sysfs_pct
+ on governor switch
+Date: Wed, 07 Oct 2015 19:08:59 -0400
+Message-ID: <5615A60B.3050501@redhat.com>
+References: <1444168147-17812-1-git-send-email-prarit@redhat.com> <000f01d10131$59c67a60$0d536f20$@net> <56158F2D.50200@redhat.com> <10053399.aMfHfU7Xt3@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cmta13.telus.net ([209.171.16.86]:37273 "EHLO cmta13.telus.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751716AbbJGWvP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 7 Oct 2015 18:51:15 -0400
-Content-Language: en-ca
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <10053399.aMfHfU7Xt3@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Doug Smythies <dsmythies@telus.net>, 'Kristen Carlson Accardi' <kristen@linux.intel.com>, linux-kernel@vger.kernel.org, 'Viresh Kumar' <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: 'Viresh Kumar' <viresh.kumar@linaro.org>, "'Rafael J. Wysocki'" <rafael@kernel.org>
-Cc: linux-pm@vger.kernel.org, Doug Smythies <dsmythies@telus.net>
-
-Hi,
-
-This started somewhere between Kernel 4.2 and 4.3-rc1,
-but I only noticed it now.
-
-The first S3 suspend after a fresh boot works fine.
-Thereafter, suspends simply resume again immediately.
-
-I get the following errors on my console:
-
-[  152.697247] i915 0000:00:02.0: GEM idle failed, resume might fail
-[  152.697258] pci_pm_suspend(): i915_pm_suspend+0x0/0x50 [i915] returns -11
-[  152.697262] dpm_run_callback(): pci_pm_suspend+0x0/0x140 returns -11
-[  152.697264] PM: Device 0000:00:02.0 failed to suspend async: error -11
-[  152.697306] PM: Some devices failed to suspend, or early wake event detected
-
-The issue is not limited to my normal way of doing suspend, using "pm-suspend".
-It also happens using the "echo mem > /sys/power/state" method that Rafael mentioned
-during the 4.2 cycle.
-
-I have searched the bug reports and such and didn't find a related bug, (which
-doesn't mean it doesn't exist, just that if it does I didn't find it).
-
-I am about to start bisecting the kernel, but thought to ask here first, just in case
-someone already knows the root issue.
-
-Note: There was the e-mail earlier 
-"Gigabyte P35-DS3: does not stay suspended with default "ug" wake-on-lan setting"
-But he has had the issue since kernel 3.19.0, and I tried his workaround, without
-success, anyhow.
 
 
+
+On 10/07/2015 06:05 PM, Rafael J. Wysocki wrote:
+> On Wednesday, October 07, 2015 05:31:25 PM Prarit Bhargava wrote:
+>>
+>> On 10/07/2015 02:52 PM, Doug Smythies wrote:
+>>> On 2015.10.07 08:46 Prarit Bhargava wrote:
+>>>> On 10/07/2015 11:40 AM, Doug Smythies wrote:
+>>>>>
+>>>>> Do we agree or disagree that the root issue seems to be (from your test)?:
+>>>>>
+>>>>> \#  echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct
+>>>>>
+>>>>> [   21.483436] store_min_perf_pct[453] min_sysfs_pct = 100
+>>>>> [   21.489373] store_min_perf_pct[456] min_perf_pct = 100
+>>>>> [   21.495203] store_min_perf_pct[459] min_perf_pct = 100
+>>>>> [   21.501050] store_min_perf_pct[462] min_perf_pct = 100
+>>>>
+>>>> Yep, and it appears to be done by default in Fedora & RHEL :/ ... the issue is
+>>>> still the same IMO that min_sysfs_pct & max_sysfs_pct are not cleared on a
+>>>> governor switch.
+>>>
+>>> Clearing them will break some other things. For example, and as
+>>> shown in my original reply, resume from suspend.
+>>>
+>>> Why? Because, at least on my computer, the governor is changed to
+>>> "performance" during suspend, and the "powersave" governor is
+>>> restored sometime during resume. The users wants the settings they had
+>>> before the suspend.
+>>>
+>>
+>> Looking at this in more detail after having tested on a Intel(R) Core(TM)
+>> i7-2600 CPU @ 3.40GHz in Fedora and RHEL.
+>>
+>> I have a feeling that the switch you're seeing (poweersave->performance, suspend
+>> ... resume, performance->powersave) is occurring in userspace, and not as a
+>> result of the kernel.  IMO if userspace changes the governor, all bets are off
+>> on maintaining max_sysfs_pct and min_sysfs_pct.
+>>
+>> Here's something I cannot figure out (because I do not have an Ubuntu install).
+>>  *Why* is Ubuntu making the governor switch during suspend/resume?  Is it
+>> because of archaic brokeness they were trying to paper over?
+> 
+> That's not limited to Ubuntu, pm-utils has been doing that forever.
+> 
+> I have no idea why has it been doing that, though.  I guess the reason
+> was to "speed up" PM transitions (in case it started when you were in a
+> low-frequency P-state and then there was no time to bump it up before
+> things got too far).
+
+Nuts :/.  Okay, it looks like git://anongit.freedesktop.org/git/pm-utils
+pm/sleep.d/94cpufreq is the culprit here.  suspend/resume is known to work with
+the intel_pstate driver and IMO should be blacklisted.  I'll install Ubuntu and
+do some testing.
+
+P.
+
+> 
+> Thanks,
+> Rafael
+> 
