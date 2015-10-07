@@ -1,52 +1,41 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
- SpeedStep enabled
-Date: Wed, 07 Oct 2015 21:51:24 +0000
-Message-ID: <bug-103351-137361-IDa56WP72w@https.bugzilla.kernel.org/>
-References: <bug-103351-137361@https.bugzilla.kernel.org/>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v1 0/2] crash on reading cpufreq sysfs
+Date: Thu, 08 Oct 2015 00:50:33 +0200
+Message-ID: <1543959.r5bbusBA6I@vostro.rjw.lan>
+References: <1444251044-11231-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:57027 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754667AbbJGVv3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 7 Oct 2015 17:51:29 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id 0CC1D2072B
-	for <linux-pm@vger.kernel.org>; Wed,  7 Oct 2015 21:51:28 +0000 (UTC)
-Received: from bugzilla2.web.kernel.org (bugzilla2.web.kernel.org [172.20.200.52])
-	by mail.kernel.org (Postfix) with ESMTP id 10E1220778
-	for <linux-pm@vger.kernel.org>; Wed,  7 Oct 2015 21:51:27 +0000 (UTC)
-In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
+Received: from v094114.home.net.pl ([79.96.170.134]:64926 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754229AbbJGWWD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2015 18:22:03 -0400
+In-Reply-To: <1444251044-11231-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: rafael.j.wysocki@intel.com, viresh.kumar@linaro.org, linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=103351
+On Wednesday, October 07, 2015 01:50:42 PM Srinivas Pandruvada wrote:
+> Fixes for crash on reading cpufreq sysfs for offline cpus
+> 
+> v1
+> Fix commit discription on Patch 1/2. Included Acks from Viresh.
+> It has both patches, even though only one patch has change.
+> 
+> v0
+> two patches: one for acp-cpufreq and one for cpufreq core
+> 
+> Srinivas Pandruvada (2):
+>   cpufreq: acpi_cpufreq: prevent crash on reading freqdomain_cpus
+>   cpufreq: prevent lockup on reading scaling_available_frequencies
 
---- Comment #44 from matthew.dewitt@gmail.com ---
-I'll do that tonight
+Both applied, but they look like -stable material to me.
 
-On Wed, Oct 7, 2015 at 4:21 PM, <bugzilla-daemon@bugzilla.kernel.org> wrote:
+What kernel versions are they applicable too (and in what kernels
+are they needed)?
 
-> https://bugzilla.kernel.org/show_bug.cgi?id=103351
->
-> --- Comment #43 from Henrique de Moraes Holschuh <hmh@hmh.eng.br> ---
-> Jonas Platte: Thanks for the information.  Sorry, I didn't notice you were
-> not
-> one of the people who also reported glibc issues.
->
-> Benjan: Thanks for the information.
->
-> Alexey, Matthew: If at all possible, maybe you could repeat the glibc
-> lock-elision testing with microcode 0x12, using a VM or chroot?
->
-> --
-> You are receiving this mail because:
-> You are on the CC list for the bug.
->
+Thanks,
+Rafael
 
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
