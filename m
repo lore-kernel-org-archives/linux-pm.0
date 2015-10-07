@@ -1,79 +1,89 @@
-From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
-Subject: Re: [PATCH 4/4] w1:slaves:bq27000: load battery driver kernel module if required
-Date: Thu, 8 Oct 2015 00:26:21 +0200
-Message-ID: <201510080026.21233@pali>
-References: <cover.1444243358.git.hns@goldelico.com> <c9ee31c641a8612c49172123cd56407484e699d6.1444243358.git.hns@goldelico.com>
+From: Neil Brown <neilb@suse.de>
+Subject: Re: [PATCH 3/4] power:bq27x00: don't fill system log by missing battery
+Date: Thu, 08 Oct 2015 09:50:26 +1100
+Message-ID: <871td68f9p.fsf@notabene.neil.brown.name>
+References: <cover.1444243358.git.hns@goldelico.com> <73cb8d96728805597ecb50e7e7b51bf6272b6d61.1444243358.git.hns@goldelico.com> <201510080023.14795@pali>
 Mime-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart9966930.0hnHccjWvP";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; boundary="=-=-=";
+	micalg=pgp-sha256; protocol="application/pgp-signature"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f170.google.com ([209.85.212.170]:35008 "EHLO
-	mail-wi0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753691AbbJGW0X (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2015 18:26:23 -0400
-Received: by wicge5 with SMTP id ge5so662375wic.0
-        for <linux-pm@vger.kernel.org>; Wed, 07 Oct 2015 15:26:22 -0700 (PDT)
-In-Reply-To: <c9ee31c641a8612c49172123cd56407484e699d6.1444243358.git.hns@goldelico.com>
+Received: from mx2.suse.de ([195.135.220.15]:54908 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752169AbbJGWuf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 7 Oct 2015 18:50:35 -0400
+In-Reply-To: <201510080023.14795@pali>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "H. Nikolaus Schaller" <hns@goldelico.com>
+To: Pali =?utf-8?Q?Roh=C3=A1r?= <pali.rohar@gmail.com>, "H. Nikolaus Schaller" <hns@goldelico.com>
 Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org
 
---nextPart9966930.0hnHccjWvP
-Content-Type: Text/Plain;
-  charset="utf-8"
+--=-=-=
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
-On Wednesday 07 October 2015 20:42:39 H. Nikolaus Schaller wrote:
-> Explicitly call request_module() in the wrapper so that the
-> bq27x00_battery driver is loded on demand, when compiled as module.
->=20
-> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
-> ---
->  drivers/w1/slaves/w1_bq27000.c | 2 ++
->  1 file changed, 2 insertions(+)
->=20
-> diff --git a/drivers/w1/slaves/w1_bq27000.c
-> b/drivers/w1/slaves/w1_bq27000.c index caafb17..745bd6e 100644
-> --- a/drivers/w1/slaves/w1_bq27000.c
-> +++ b/drivers/w1/slaves/w1_bq27000.c
-> @@ -49,6 +49,8 @@ static int w1_bq27000_add_slave(struct w1_slave
-> *sl) int ret;
->  	struct platform_device *pdev;
->=20
-> +	request_module("bq27x00_battery");  /* load as module if needed */
-> +
->  	pdev =3D platform_device_alloc("bq27000-battery", -1);
->  	if (!pdev) {
->  		ret =3D -ENOMEM;
+Pali Roh=C3=A1r <pali.rohar@gmail.com> writes:
 
-Hi! Function platform_device_alloc would allocate kernel device and it=20
-should also load appropriate kernel driver (via platform:bq27000-battery=20
-alias). If that does not work, problem is somewhere else. Maybe depmod=20
-is not properly generated? Or bq27x00_batter.ko modules does not contain=20
-needed alias?
+> On Wednesday 07 October 2015 20:42:38 H. Nikolaus Schaller wrote:
+>> From: NeilBrown <neilb@suse.de>
+>>=20
+>> Print message that battery is not calibrated only during debug build
+>> but not during normal operation.
+>>=20
+>> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
+>> ---
+>>  drivers/power/bq27x00_battery.c | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>=20
+>> diff --git a/drivers/power/bq27x00_battery.c
+>> b/drivers/power/bq27x00_battery.c index 8287261f..709d1e4 100644
+>> --- a/drivers/power/bq27x00_battery.c
+>> +++ b/drivers/power/bq27x00_battery.c
+>> @@ -491,7 +491,7 @@ static void bq27x00_update(struct
+>> bq27x00_device_info *di) if (cache.flags >=3D 0) {
+>>  		if (!is_bq27500 && !is_bq27425 && !is_bq27742 && !is_bq27510
+>>  				&& (cache.flags & BQ27000_FLAG_CI)) {
+>> -			dev_info(di->dev, "battery is not calibrated! ignoring=20
+> capacity
+>> values\n"); +			dev_dbg(di->dev, "battery is not calibrated!
+>> ignoring capacity values\n"); cache.capacity =3D -ENODATA;
+>>  			cache.energy =3D -ENODATA;
+>>  			cache.time_to_empty =3D -ENODATA;
+>
+> Hi! I think that better approach would be to use WARN_ONCE or similar=20
+> macro. Still use INFO level, just warn about this problem only once...
 
-Adding request_module() here is not proper solution. Real problem is=20
-somewhere else... Anyway there is series of patches for bq27x00_battery=20
-which should cleanup some problems, so maybe they also fix your problem.
+Why do you need any warning?
+The status of whether the battery is calibrated is trivially determined
+From=20the sysfs attributes (several of which will return ENODATA).
+So if some app is being used to report battery status, then it can
+easily report "not calibrated", and if no such app is being used, who
+will care to know?
 
-=2D-=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
+I'm not exactly against a once-only warning (though not with WARN_ONCE,
+maybe dev_info_once()) but I don't think that it brings any value at
+all.
 
---nextPart9966930.0hnHccjWvP
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Thanks,
+NeilBrown
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+Version: GnuPG v2
 
-iEYEABECAAYFAlYVnA0ACgkQi/DJPQPkQ1LLWACgy6LNJondpNGxosMorQU1ZXYE
-UdQAoKp0/pvMsyFYQvBOgRclSPiZEQ6O
-=VAH2
+iQIcBAEBCAAGBQJWFaGyAAoJEDnsnt1WYoG5RzEP/2opcGDT33RhHqOky7m+64jH
+4f+Osvwr6BCDR9cpTU0erd5MkRooY0lTSyZ4Or5DlMyQn2v80fSEdiIhgj8gGMTH
+lpjd2nvkHQJZ0jV5y/9WdFBJQTru8jX1CpvKrmKpjB9esNMYUSyoIHT9kCAdtyjw
+xmveDlm2tMQQnPopYzAJBuC6uIF1iI9tQLtdYQBS4MCuSzbZFHpFOYI2dXyZJLmA
+0jqYIyU2WHLxPp/z5qdLyVgzaKxWNlB+VWcoTOrbGGq+jcrI4VmiuyRE3VVe5Fd2
+pCOzwNMR6Q5UNu65+KXyvTaP6rTo2Z1n46HuQuc4/SoWy/ojSijguhsDi7fK56qn
+TZ+zk1YFp4DcNV0q4tEXIyW+zVmODb7I2ee8OI9kUE+9Pl3IODWhagzlk1mwthVn
+H6H27/81Fi3Ixn/qKE9beyvdUFnYAl/SE/fXOzu43ZRqCTLwR3unUzVSi50RyPR+
+GAVziwrH7tMGBUhAl8JnxoamBgvYNDlYrpN1srnopQQPayEFd+P0EJERLZRgUV+d
+d7wNjoT6CsI6bmoWD4I/yrNcrYCwUb950UxkjwOE+m5sY+uPBijjKcghs0dUBizA
+z2ia6WDxNXCVuIxQ/wz4VLYnyuKh6ryDgvDjFe/HTGVp/uaaJd5V65Bp699FhZqC
+jp5kTPUfxhEOXqoIeS9o
+=pCRV
 -----END PGP SIGNATURE-----
-
---nextPart9966930.0hnHccjWvP--
+--=-=-=--
