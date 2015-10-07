@@ -1,51 +1,43 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH] cpufreq, intel_pstate, set max_sysfs_pct and min_sysfs_pct
- on governor switch
-Date: Wed, 07 Oct 2015 05:59:56 -0400
-Message-ID: <5614ED1C.8070709@redhat.com>
-References: <1444168147-17812-1-git-send-email-prarit@redhat.com> <1755198.JNkaHg87IV@vostro.rjw.lan> <1594304.lVcRDcB3yL@vostro.rjw.lan> <002701d100cc$98cb8c60$ca62a520$@net>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
+ SpeedStep enabled
+Date: Wed, 07 Oct 2015 10:42:41 +0000
+Message-ID: <bug-103351-137361-eJqFS7rdED@https.bugzilla.kernel.org/>
+References: <bug-103351-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:47627 "EHLO mx1.redhat.com"
+Received: from mail.kernel.org ([198.145.29.136]:42664 "EHLO mail.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750916AbbJGJ76 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 7 Oct 2015 05:59:58 -0400
-In-Reply-To: <002701d100cc$98cb8c60$ca62a520$@net>
+	id S1752541AbbJGKmr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 7 Oct 2015 06:42:47 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+	by mail.kernel.org (Postfix) with ESMTP id D938520749
+	for <linux-pm@vger.kernel.org>; Wed,  7 Oct 2015 10:42:45 +0000 (UTC)
+Received: from bugzilla2.web.kernel.org (bugzilla2.web.kernel.org [172.20.200.52])
+	by mail.kernel.org (Postfix) with ESMTP id 0289B20780
+	for <linux-pm@vger.kernel.org>; Wed,  7 Oct 2015 10:42:44 +0000 (UTC)
+In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: 'Kristen Carlson Accardi' <kristen@linux.intel.com>, linux-kernel@vger.kernel.org, 'Viresh Kumar' <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
+To: linux-pm@vger.kernel.org
 
+https://bugzilla.kernel.org/show_bug.cgi?id=103351
 
+Henrique de Moraes Holschuh <hmh@hmh.eng.br> changed:
 
-On 10/07/2015 02:51 AM, Doug Smythies wrote:
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |hmh@hmh.eng.br
 
-> 
-> And before patch I get, using primitives and not cpupower:
-> Executive Summary: Everything works fine (or at least as I thought it was supposed to).
-> 
-> root@s15:/home/doug/temp# grep . /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
-> /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor:powersave
-> ...
-> /sys/devices/system/cpu/cpu7/cpufreq/scaling_governor:powersave
-> root@s15:/home/doug/temp# grep . /sys/devices/system/cpu/intel_pstate/*_perf_*
-> /sys/devices/system/cpu/intel_pstate/max_perf_pct:100
-> /sys/devices/system/cpu/intel_pstate/min_perf_pct:42
-> root@s15:/home/doug/temp# echo 50 > /sys/devices/system/cpu/intel_pstate/min_perf_pct
-> root@s15:/home/doug/temp# echo 80 > /sys/devices/system/cpu/intel_pstate/max_perf_pct
-> root@s15:/home/doug/temp# grep . /sys/devices/system/cpu/intel_pstate/*_perf_*
-> /sys/devices/system/cpu/intel_pstate/max_perf_pct:80
-> /sys/devices/system/cpu/intel_pstate/min_perf_pct:50
-> root@s15:/home/doug/temp# for file in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do echo "performance" > $file; done
-> root@s15:/home/doug/temp# grep . /sys/devices/system/cpu/intel_pstate/*_perf_*
-> /sys/devices/system/cpu/intel_pstate/max_perf_pct:100
-> /sys/devices/system/cpu/intel_pstate/min_perf_pct:100
-> root@s15:/home/doug/temp# grep . /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
-> /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor:performance
+--- Comment #37 from Henrique de Moraes Holschuh <hmh@hmh.eng.br> ---
+It would be really helpful to have the output of /proc/cpuinfo on the systems
+with the fixed microcode, both Broadwell and Skylake.
 
-The switch has to be from performance to powersave.  Switch again and you'll see
-the problem.  I can also reproduce this without using 'cpupower'.
+Can someone with those processors and using the microcode provided in github
+please attach the output of cat /proc/cpuinfo here?
 
-P.
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
