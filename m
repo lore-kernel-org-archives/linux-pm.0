@@ -1,52 +1,69 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH] cpufreq, intel_pstate, set max_sysfs_pct and min_sysfs_pct
- on governor switch
-Date: Wed, 07 Oct 2015 16:40:44 -0400
-Message-ID: <5615834C.80108@redhat.com>
-References: <1444168147-17812-1-git-send-email-prarit@redhat.com> <1755198.JNkaHg87IV@vostro.rjw.lan> <1594304.lVcRDcB3yL@vostro.rjw.lan> <002701d100cc$98cb8c60$ca62a520$@net> <5614ED1C.8070709@redhat.com> <000001d10109$10d34630$3279d290$@net> <561527D9.3020009@redhat.com> <000301d10116$88852330$998f6990$@net> <56153E55.3060306@redhat.com> <000f01d10131$59c67a60$0d536f20$@net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v1 1/2] cpufreq: acpi_cpufreq: prevent crash on reading freqdomain_cpus
+Date: Wed,  7 Oct 2015 13:50:43 -0700
+Message-ID: <1444251044-11231-2-git-send-email-srinivas.pandruvada@linux.intel.com>
+References: <1444251044-11231-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:40894 "EHLO mx1.redhat.com"
+Received: from mga09.intel.com ([134.134.136.24]:8113 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756198AbbJGUkq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 7 Oct 2015 16:40:46 -0400
-In-Reply-To: <000f01d10131$59c67a60$0d536f20$@net>
+	id S1753605AbbJGUvY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 7 Oct 2015 16:51:24 -0400
+In-Reply-To: <1444251044-11231-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: 'Kristen Carlson Accardi' <kristen@linux.intel.com>, linux-kernel@vger.kernel.org, 'Viresh Kumar' <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
+To: rafael.j.wysocki@intel.com, viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
+When freqdomain_cpus attribute is read from an offlined cpu, it will
+cause crash. This change prevents calling cpufreq_show_cpus when
+policy driver_data is NULL.
 
+Crash info:
 
-On 10/07/2015 02:52 PM, Doug Smythies wrote:
-> On 2015.10.07 08:46 Prarit Bhargava wrote:
->> On 10/07/2015 11:40 AM, Doug Smythies wrote:
->>>
->>> Do we agree or disagree that the root issue seems to be (from your test)?:
->>>
->>> \#  echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct
->>>
->>> [   21.483436] store_min_perf_pct[453] min_sysfs_pct = 100
->>> [   21.489373] store_min_perf_pct[456] min_perf_pct = 100
->>> [   21.495203] store_min_perf_pct[459] min_perf_pct = 100
->>> [   21.501050] store_min_perf_pct[462] min_perf_pct = 100
->>
->> Yep, and it appears to be done by default in Fedora & RHEL :/ ... the issue is
->> still the same IMO that min_sysfs_pct & max_sysfs_pct are not cleared on a
->> governor switch.
-> 
-> Clearing them will break some other things. For example, and as
-> shown in my original reply, resume from suspend.
-> 
-> Why? Because, at least on my computer, the governor is changed to
-> "performance" during suspend, and the "powersave" governor is
-> restored sometime during resume. The users wants the settings they had
-> before the suspend.
+[  170.814949] BUG: unable to handle kernel NULL pointer dereference at 0000000000000018
+[  170.814990] IP: [<ffffffff813b2490>] _find_next_bit.part.0+0x10/0x70
+[  170.815021] PGD 227d30067 PUD 229e56067 PMD 0
+[  170.815043] Oops: 0000 [#2] SMP
+[  170.816022] CPU: 3 PID: 3121 Comm: cat Tainted: G      D    OE   4.3.0-rc3+ #33
+...
+...
+[  170.816657] Call Trace:
+[  170.816672]  [<ffffffff813b2505>] ? find_next_bit+0x15/0x20
+[  170.816696]  [<ffffffff8160e47c>] cpufreq_show_cpus+0x5c/0xd0
+[  170.816722]  [<ffffffffa031a409>] show_freqdomain_cpus+0x19/0x20 [acpi_cpufreq]
+[  170.816749]  [<ffffffff8160e65b>] show+0x3b/0x60
+[  170.816769]  [<ffffffff8129b31c>] sysfs_kf_seq_show+0xbc/0x130
+[  170.816793]  [<ffffffff81299be3>] kernfs_seq_show+0x23/0x30
+[  170.816816]  [<ffffffff81240f2c>] seq_read+0xec/0x390
+[  170.816837]  [<ffffffff8129a64a>] kernfs_fop_read+0x10a/0x160
+[  170.816861]  [<ffffffff8121d9b7>] __vfs_read+0x37/0x100
+[  170.816883]  [<ffffffff813217c0>] ? security_file_permission+0xa0/0xc0
+[  170.816909]  [<ffffffff8121e2e3>] vfs_read+0x83/0x130
+[  170.816930]  [<ffffffff8121f035>] SyS_read+0x55/0xc0
+...
+...
+[  170.817185] ---[ end trace bc6eadf82b2b965a ]---
 
-Hmm ... okay.  I'm going to try again with a new patch and I'll add an
-additional test of starting with the powersave governor, changing the
-min_perf_pct, and then doing a suspend/resume.
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/acpi-cpufreq.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-P.
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index 7982772..cec1ee2 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -149,6 +149,9 @@ static ssize_t show_freqdomain_cpus(struct cpufreq_policy *policy, char *buf)
+ {
+ 	struct acpi_cpufreq_data *data = policy->driver_data;
+ 
++	if (unlikely(!data))
++		return -ENODEV;
++
+ 	return cpufreq_show_cpus(data->freqdomain_cpus, buf);
+ }
+ 
+-- 
+1.9.3
+
