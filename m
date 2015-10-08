@@ -1,53 +1,78 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v1 0/2] crash on reading cpufreq sysfs
-Date: Thu, 8 Oct 2015 02:17:06 +0200
-Message-ID: <CAJZ5v0j0=WKGoERT_uJjs=gkAiDuR2_RdTOTObHx9up-vzLZuQ@mail.gmail.com>
-References: <1444251044-11231-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-	<1543959.r5bbusBA6I@vostro.rjw.lan>
-	<1444261800.7437.7.camel@spandruv-desk3.jf.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f174.google.com ([209.85.217.174]:34874 "EHLO
-	mail-lb0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750908AbbJHARI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2015 20:17:08 -0400
-Received: by lbwr8 with SMTP id r8so29058615lbw.2
-        for <linux-pm@vger.kernel.org>; Wed, 07 Oct 2015 17:17:06 -0700 (PDT)
-In-Reply-To: <1444261800.7437.7.camel@spandruv-desk3.jf.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: [PATCH v3 0/9] qcom: Add support for TSENS driver
+Date: Thu,  8 Oct 2015 10:30:59 +0530
+Message-ID: <1444280468-17159-1-git-send-email-rnayak@codeaurora.org>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com
+Cc: sboyd@codeaurora.org, srinivas.kandagatla@linaro.org, nrajan@codeaurora.org, lina.iyer@linaro.org, punit.agrawal@arm.com, Rajendra Nayak <rnayak@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Thu, Oct 8, 2015 at 1:50 AM, Srinivas Pandruvada
-<srinivas.pandruvada@linux.intel.com> wrote:
-> On Thu, 2015-10-08 at 00:50 +0200, Rafael J. Wysocki wrote:
->> On Wednesday, October 07, 2015 01:50:42 PM Srinivas Pandruvada wrote:
->> > Fixes for crash on reading cpufreq sysfs for offline cpus
->> >
->> > v1
->> > Fix commit discription on Patch 1/2. Included Acks from Viresh.
->> > It has both patches, even though only one patch has change.
->> >
->> > v0
->> > two patches: one for acp-cpufreq and one for cpufreq core
->> >
->> > Srinivas Pandruvada (2):
->> >   cpufreq: acpi_cpufreq: prevent crash on reading freqdomain_cpus
->> >   cpufreq: prevent lockup on reading scaling_available_frequencies
->>
->> Both applied, but they look like -stable material to me.
->>
-> I tested in 4.1 kernels, since on offline, cpufreq folder is not
-> available there is no issue.
-> For 4.2 kernels the I didn't see crash fixed by cpufreq core patch (cat
-> scaling_available_frequencies), but the "cat freqdomain_cpus" still
-> causes crash. So we need to apply cpufreq:acpi-cpufreq patch only. So
-> one patch is applicable for stable tree.
+Changes since v2:
+* Minor review fixes from Stephen/Punit and rebase on 4.3-rc4
 
-So [1/2] should go into 4.2.y and [2/2] fixes a regression introduced
-in this cycle, right?
+Changes since v1:
+* Created virtual tsens device from gcc driver for 8960,
+with DT having a single node for gcc and tsens
+* Minor fixes with rebasing on 4.3-rc1
 
-Thanks,
-Rafael
+Changes since RFC:
+* Added support for 8916 and 8084
+* Based off the latest nvmem framework patches [1]
+* Minor review fixes for comments mostly from Lina
+
+This is an attempt to have a single TSENS driver for
+the different versions of the TSENS IP that exist, on
+different qcom msm/apq SoCs'
+Support is added for msm8916, msm8960 and msm8974 families.
+
+A lot of the work is based of original code from Stephen Boyd
+and Siddartha Mohanadoss. I have also picked some of what
+Narendran Rajan did in his attempt to upstream the support
+for 8960 family. I could not keep the original authorship on
+any of the patches because I ended up moving the code around
+quite a bit in an effort to have a single driver for the
+various devices. I would be glad to change the authorship
+for any of the patches if needed.
+
+Rajendra Nayak (9):
+  thermal: qcom: tsens: Add a skeletal TSENS drivers
+  thermal: qcom: tsens-8916: Add support for 8916 family of SoCs
+  thermal: qcom: tsens-8974: Add support for 8974 family of SoCs
+  clk: qcom: create virtual child device for TSENS
+  thermal: qcom: tsens-8960: Add support for 8960 family of SoCs
+  arm: dts: msm8974: Add thermal zones, tsens and qfprom nodes
+  arm: dts: apq8064: Add thermal zones, tsens and qfprom nodes
+  arm: dts: apq8084: Add thermal zones, tsens and qfprom nodes
+  arm64: dts: msm8916: Add thermal zones, tsens and qfprom nodes
+
+ .../devicetree/bindings/thermal/qcom-tsens.txt     |  33 +++
+ arch/arm/boot/dts/qcom-apq8064.dtsi                | 101 +++++++
+ arch/arm/boot/dts/qcom-apq8084.dtsi                | 105 ++++++++
+ arch/arm/boot/dts/qcom-msm8974.dtsi                | 105 ++++++++
+ arch/arm64/boot/dts/qcom/msm8916.dtsi              |  66 +++++
+ drivers/clk/qcom/gcc-msm8960.c                     |  19 +-
+ drivers/thermal/Kconfig                            |   5 +
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/qcom/Kconfig                       |  10 +
+ drivers/thermal/qcom/Makefile                      |   2 +
+ drivers/thermal/qcom/tsens-8916.c                  | 107 ++++++++
+ drivers/thermal/qcom/tsens-8960.c                  | 291 +++++++++++++++++++++
+ drivers/thermal/qcom/tsens-8974.c                  | 239 +++++++++++++++++
+ drivers/thermal/qcom/tsens-common.c                | 130 +++++++++
+ drivers/thermal/qcom/tsens.c                       | 206 +++++++++++++++
+ drivers/thermal/qcom/tsens.h                       |  69 +++++
+ 16 files changed, 1488 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+ create mode 100644 drivers/thermal/qcom/Kconfig
+ create mode 100644 drivers/thermal/qcom/Makefile
+ create mode 100644 drivers/thermal/qcom/tsens-8916.c
+ create mode 100644 drivers/thermal/qcom/tsens-8960.c
+ create mode 100644 drivers/thermal/qcom/tsens-8974.c
+ create mode 100644 drivers/thermal/qcom/tsens-common.c
+ create mode 100644 drivers/thermal/qcom/tsens.c
+ create mode 100644 drivers/thermal/qcom/tsens.h
+
+-- 
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation
