@@ -1,102 +1,110 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: PM / OPP: Add debugfs support
-Date: Thu, 8 Oct 2015 14:47:00 +0530
-Message-ID: <20151008091700.GB18898@linux>
-References: <20150922123454.GE27407@mwanda>
+From: "Jon Medhurst (Tixy)" <tixy@linaro.org>
+Subject: Re: [PATCH] cpufreq: arm_big_little: fix frequency check when bL
+ switcher is active
+Date: Thu, 08 Oct 2015 10:23:49 +0100
+Message-ID: <1444296229.2847.9.camel@linaro.org>
+References: <1443807532.2845.25.camel@linaro.org>
+	 <20151007173920.GG4557@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f51.google.com ([209.85.220.51]:36740 "EHLO
-	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754965AbbJHJRF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 Oct 2015 05:17:05 -0400
-Received: by pablk4 with SMTP id lk4so49550883pab.3
-        for <linux-pm@vger.kernel.org>; Thu, 08 Oct 2015 02:17:05 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20150922123454.GE27407@mwanda>
+Received: from queue01a.mail.zen.net.uk ([212.23.3.234]:56790 "EHLO
+	queue01a.mail.zen.net.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754138AbbJHJXz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 Oct 2015 05:23:55 -0400
+In-Reply-To: <20151007173920.GG4557@linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Michael Turquette <mike.turquette@linaro.org>
 
-Hi Dan,
-
-Sorry for being too late. Was in the middle of a conference earlier,
-and that followed with 10 days of leave.
-
-On 22-09-15, 15:34, Dan Carpenter wrote:
-> Hello Viresh Kumar,
+On Wed, 2015-10-07 at 23:09 +0530, Viresh Kumar wrote:
+[...]
+> And why not fix it properly by doing this:
 > 
-> The patch 5cb5fdbf3877: "PM / OPP: Add debugfs support" from Sep 4,
-> 2015, leads to a bunch of static checker warnings:
-> 
-> drivers/base/power/opp/debugfs.c:41 opp_debug_create_one() error: format string overflow. buf_size: 15 length: 24
-> drivers/base/power/opp/debugfs.c:48 opp_debug_create_one() warn: passing casted pointer '&opp->available' to 'debugfs_create_bool()' 1 vs 32.
-> drivers/base/power/opp/debugfs.c:52 opp_debug_create_one() warn: passing casted pointer '&opp->dynamic' to 'debugfs_create_bool()' 1 vs 32.
-> drivers/base/power/opp/debugfs.c:55 opp_debug_create_one() warn: passing casted pointer '&opp->turbo' to 'debugfs_create_bool()' 1 vs 32.
-> drivers/base/power/opp/debugfs.c:58 opp_debug_create_one() warn: passing casted pointer '&opp->rate' to 'debugfs_create_u32()' 64 vs 32.
-> drivers/base/power/opp/debugfs.c:61 opp_debug_create_one() warn: passing casted pointer '&opp->u_volt' to 'debugfs_create_u32()' 64 vs 32.
-> drivers/base/power/opp/debugfs.c:65 opp_debug_create_one() warn: passing casted pointer '&opp->u_volt_min' to 'debugfs_create_u32()' 64 vs 32.
-> drivers/base/power/opp/debugfs.c:69 opp_debug_create_one() warn: passing casted pointer '&opp->u_volt_max' to 'debugfs_create_u32()' 64 vs 32.
-> drivers/base/power/opp/debugfs.c:73 opp_debug_create_one() warn: passing casted pointer '&opp->u_amp' to 'debugfs_create_u32()' 64 vs 32.
-> drivers/base/power/opp/debugfs.c:76 opp_debug_create_one() warn: passing casted pointer '&opp->clock_latency_ns' to 'debugfs_create_u32()' 64 vs 32.
-> 
-> drivers/base/power/opp/debugfs.c
->     34  int opp_debug_create_one(struct dev_pm_opp *opp, struct device_opp *dev_opp)
->     35  {
->     36          struct dentry *pdentry = dev_opp->dentry;
->     37          struct dentry *d;
->     38          char name[15];
->     39  
->     40          /* Rate is unique to each OPP, use it to give opp-name */
->     41          sprintf(name, "opp:%lu", opp->rate);
-> 
-> opp->rate is unsigned long so the static checker says this can overflow
-> on 64 bit systems.  The static checker tries to do cross function
-> analysis, but it's actually wrong.  There is a later bug which cancels
-> out this bug.
+> diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+> index f1e42f8ce0fc..5b36657a76d6 100644
+> --- a/drivers/cpufreq/arm_big_little.c
+> +++ b/drivers/cpufreq/arm_big_little.c
+> @@ -128,7 +128,7 @@ static unsigned int bL_cpufreq_get_rate(unsigned int cpu)
+>  static unsigned int
+>  bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
+>  {
+> -	u32 new_rate, prev_rate;
+> +	u32 new_rate, prev_rate, target_rate;
+>  	int ret;
+>  	bool bLs = is_bL_switching_enabled();
+>  
+> @@ -140,9 +140,11 @@ bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
+>  		per_cpu(physical_cluster, cpu) = new_cluster;
+>  
+>  		new_rate = find_cluster_maxfreq(new_cluster);
+> +		target_rate = new_rate;
+>  		new_rate = ACTUAL_FREQ(new_cluster, new_rate);
+>  	} else {
+>  		new_rate = rate;
+> +		target_rate = new_rate;
+>  	}
+>  
+>  	pr_debug("%s: cpu: %d, old cluster: %d, new cluster: %d, freq: %d\n",
+> @@ -196,7 +198,7 @@ bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
+>  	 * be reading only the cached value anyway. This needs to  be removed
+>  	 * once clk core is fixed.
+>  	 */
+> -	if (bL_cpufreq_get_rate(cpu) != new_rate)
+> +	if (bL_cpufreq_get_rate(cpu) != target_rate)
+>  		return -EIO;
+>  	return 0;
+>  }
 
-I did change it to snprintf in my local repository and yes it should
-be fixed. About the length, yes I missed the u64 type for 64bit
-systems and so that's a bug.
+You call that a proper fix? ;-) It's comparing an 'virtual' frequency to
+an 'actual' frequency.
 
-> Anyway, we should make the buffer larger and or change it to use
-> snprintf().
-> 
->     42  
->     43          /* Create per-opp directory */
->     44          d = debugfs_create_dir(name, pdentry);
->     45          if (!d)
->     46                  return -ENOMEM;
->     47  
->     48          if (!debugfs_create_bool("available", S_IRUGO, d,
->     49                                   (u32 *)&opp->available))
-> 
-> debugfs_create_bool() writes 32 bits, but we only have 8 bits of space
-> so this corrupts memory.
+If the real intent is to check that clk_set_rate works I would have
+thought the patch below would be correct. But I didn't propose that as
+it's the obvious implementation and I assumed the original patch didn't
+do it that way for a reason.
 
-Right, so I fixed this in a different way. I have changed
-debugfs_create_bool() API to accept a bool and update memory only for
-a bool, instead of 8 or 32 bits. That patch is merged now and so the
-cast can be dropped right away.
+diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+index f1e42f8..59115a4 100644
+--- a/drivers/cpufreq/arm_big_little.c
++++ b/drivers/cpufreq/arm_big_little.c
+@@ -149,6 +149,18 @@ bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
+ 			__func__, cpu, old_cluster, new_cluster, new_rate);
+ 
+ 	ret = clk_set_rate(clk[new_cluster], new_rate * 1000);
++	if (!ret) {
++		/*
++		 * FIXME: clk_set_rate has to handle the case where clk_change_rate
++		 * can fail due to hardware or firmware issues. Until the clk core
++		 * layer is fixed, we can check here. In most of the cases we will
++		 * be reading only the cached value anyway. This needs to  be removed
++		 * once clk core is fixed.
++		 */
++		if (clk_get_rate(clk[new_cluster]) != new_rate * 1000)
++			ret = -EIO;
++	}
++
+ 	if (WARN_ON(ret)) {
+ 		pr_err("clk_set_rate failed: %d, new cluster: %d\n", ret,
+ 				new_cluster);
+@@ -189,15 +201,6 @@ bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
+ 		mutex_unlock(&cluster_lock[old_cluster]);
+ 	}
+ 
+-	/*
+-	 * FIXME: clk_set_rate has to handle the case where clk_change_rate
+-	 * can fail due to hardware or firmware issues. Until the clk core
+-	 * layer is fixed, we can check here. In most of the cases we will
+-	 * be reading only the cached value anyway. This needs to  be removed
+-	 * once clk core is fixed.
+-	 */
+-	if (bL_cpufreq_get_rate(cpu) != new_rate)
+-		return -EIO;
+ 	return 0;
+ }
+ 
 
-Over that, the $Subject patch is dropped by Rafael now, due to
-conflicts with the debugfs_create_bool() series that got merged.
 
-And so I need to resend it anyway.
 
->     57  
->     58          if (!debugfs_create_u32("rate_hz", S_IRUGO, d, (u32 *)&opp->rate))
->     59                  return -ENOMEM;
-> 
-> This only writes to the first 32 bits of the unsigned long.  Which will
-> not work on big endian systems.
-> 
-> I don't know why is there no debugfs_create_ul() function.  It seems
-> like it wouldn't be that complicated to create one.
-
-I am fighting hard to get one, but Greg isn't liking the idea very
-much :)
-
--- 
-viresh
