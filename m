@@ -1,80 +1,68 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
- SpeedStep enabled
-Date: Thu, 08 Oct 2015 16:36:06 +0000
-Message-ID: <bug-103351-137361-VJ6ZerWYhk@https.bugzilla.kernel.org/>
-References: <bug-103351-137361@https.bugzilla.kernel.org/>
+From: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [Device-mainlining] [PATCH v2 2/3] gadget: Introduce the usb
+ charger framework
+Date: Thu, 8 Oct 2015 12:23:16 -0400
+Message-ID: <20151008162316.GA5833@kroah.com>
+References: <cover.1439519412.git.baolin.wang@linaro.org>
+ <0c41e21239f69c4e1aa89aba020c91edfc17c4e8.1439519413.git.baolin.wang@linaro.org>
+ <20150814152723.GA17892@kroah.com>
+ <CAMz4kuL=6mGjNHcKHA9RYbabYqn3Lgu=rK6s8WkH5YGeV1T2+w@mail.gmail.com>
+ <55D1FCDF.6060709@sonymobile.com>
+ <20151008155031.GE11776@xo-6d-61-c0.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:33484 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933103AbbJHQgO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 8 Oct 2015 12:36:14 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id 40767205CD
-	for <linux-pm@vger.kernel.org>; Thu,  8 Oct 2015 16:36:13 +0000 (UTC)
-Received: from bugzilla2.web.kernel.org (bugzilla2.web.kernel.org [172.20.200.52])
-	by mail.kernel.org (Postfix) with ESMTP id 8ABDC205C2
-	for <linux-pm@vger.kernel.org>; Thu,  8 Oct 2015 16:36:10 +0000 (UTC)
-In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
+Received: from mail.linuxfoundation.org ([140.211.169.12]:48305 "EHLO
+	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933103AbbJHQks (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 Oct 2015 12:40:48 -0400
+Content-Disposition: inline
+In-Reply-To: <20151008155031.GE11776@xo-6d-61-c0.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Tim Bird <tim.bird@sonymobile.com>, Baolin Wang <baolin.wang@linaro.org>, "patches@opensource.wolfsonmicro.com" <patches@opensource.wolfsonmicro.com>, "sameo@linux.intel.com" <sameo@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "r.baldyga@samsung.com" <r.baldyga@samsung.com>, "sojka@merica.cz" <sojka@merica.cz>, Felipe Balbi <balbi@ti.com>, LKML <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Peter Chen <peter.chen@freescale.com>, "sre@kernel.org" <sre@kernel.org>, Lee Jones <lee.jones@linaro.org>, "device-mainlining@lists.linuxfoundation.org" <device-mainlining@lists.linuxfoundation.org>, "yoshihiro.shimoda.uh@renesas.com" <yoshihiro.shimoda.uh@renesas.com>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=103351
+On Thu, Oct 08, 2015 at 05:50:31PM +0200, Pavel Machek wrote:
+> Hi!
+> 
+> > On 08/16/2015 08:03 PM, Baolin Wang via device-mainlining wrote:
+> > > On 14 August 2015 at 23:27, Greg KH <gregkh@linuxfoundation.org> wrote:
+> > >> On Fri, Aug 14, 2015 at 05:47:45PM +0800, Baolin Wang wrote:
+> > >>> + *
+> > >>> + * This program is free software; you can redistribute it and/or modify
+> > >>> + * it under the terms of the GNU General Public License as published by
+> > >>> + * the Free Software Foundation; either version 2 of the License, or
+> > >>> + * (at your option) any later version.
+> > >>
+> > >> I have to ask, do you really mean "any later version"?
+> > >>
+> > > 
+> > > I think I did not get your point, could you explain it detailedly?
+> > 
+> > The full kernel is licensed under v2 of the GPL only, not "any later version".
+> > See the second paragraph at the top of the COPYING file in the root directory
+> > of the kernel source tree. There are differences on individual files, but
+> > having this file allow "any later version" makes it different from much of
+> > rest of the kernel.
+> > 
+> > Unless you have a specific reason to allow greater-than-V2 GPL licensing on this
+> > file, you should change the licensing clause.  The following wording appears
+> > to be pretty popular:
+> > 
+> > * This program is free software; you can redistribute it and/or modify
+> > * it under the terms of the GNU General Public License version 2 as
+> > * published by the Free Software Foundation.
+> 
+> Please, keep it V2 or later, if you can. It makes sharing code with U-Boot (for
+> example) easier.
+> 
+> There's long tradition of "V2 or later" code in the kernel.
 
---- Comment #48 from Henrique de Moraes Holschuh <hmh@hmh.eng.br> ---
-Alexey,
+And there's even longer "v2 only" tradition as well.  It's up to the
+person / company submitting the code to pick the license for it, let
+them make the decision please.
 
-I have no idea why it is taking so long for Intel to release a new "linux
-microcode update package", and I certainly agree that Intel dragging their feet
-on this is hurting end-users.  It is not like motherboard vendors do a proper
-job of issuing firmware updates.
+thanks,
 
-
-Anyway, here's how to deploy early microcode updates, Arch-style.
-
-1. Install iucode_tool.
-
-If your Linux distro already has it, just use the one provided by your distro.
-
-Otherwise, get the source code and compile it with "./configure ; make", and
-copy the iucode_tool binary to somewhere in your PATH (e.g. using "make
-install" as root).  It only needs glibc, gcc and make to build.
-
-The iucode_tool source code tarball is available from:
-https://gitlab.com/iucode-tool/releases/tree/latest
-
-
-2. Update or create the early-initramfs image with the microcode update:
-
-iucode-tool -Sl --overwrite --write-earlyfw=/boot/intel-ucode.img
-/lib/firmware/intel-ucode my-new-microcodes.bin
-
-It will consider any microcodes in /lib/firmware/intel-ucode, as well as any
-microcodes in the ".bin" files you give it on the command line (I used
-"my-new-microcodes.bin" in the example).  You can list as many files as you
-want.
-
-
-3. Set up grub to load the microcodes as per the *Arch-Linux* recommendation
-(i.e. using a separate initramfs image for microcode):
-
-https://wiki.archlinux.org/index.php/Microcode
-
-
-If your distro uses the "single initramfs" mode of early microcode updates
-(Debian, Ubuntu, Fedora), this should *override* the early-initramfs microcode
-update provided by the distro:  AFAIK, the kernel uses the first early
-microcode update datafile it finds.
-
-For this reason, make sure to regenerate intel-ucode.bin every time you get a
-new microcode update package from your distro.  You should probably discontinue
-its use and switch back to the distro microcode distribution should it start
-shipping recent enough microcode for your processor.
-
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+greg k-h
