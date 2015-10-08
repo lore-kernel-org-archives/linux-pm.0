@@ -1,56 +1,47 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
- SpeedStep enabled
-Date: Thu, 08 Oct 2015 18:02:25 +0000
-Message-ID: <bug-103351-137361-WyzQ8q0TTY@https.bugzilla.kernel.org/>
-References: <bug-103351-137361@https.bugzilla.kernel.org/>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH] clk: qcom: Drop calls to qcom_cc_remove()
+Date: Thu, 8 Oct 2015 11:09:36 -0700
+Message-ID: <20151008180936.GG26883@codeaurora.org>
+References: <1444288678-24594-1-git-send-email-sboyd@codeaurora.org>
+ <56163F97.1060604@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:39418 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753294AbbJHSCc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 8 Oct 2015 14:02:32 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id 0CDC020820
-	for <linux-pm@vger.kernel.org>; Thu,  8 Oct 2015 18:02:31 +0000 (UTC)
-Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
-	by mail.kernel.org (Postfix) with ESMTP id 03AE92083A
-	for <linux-pm@vger.kernel.org>; Thu,  8 Oct 2015 18:02:27 +0000 (UTC)
-In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
+Received: from smtp.codeaurora.org ([198.145.29.96]:50155 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755052AbbJHSJj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 Oct 2015 14:09:39 -0400
+Content-Disposition: inline
+In-Reply-To: <56163F97.1060604@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Rajendra Nayak <rnayak@codeaurora.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com, srinivas.kandagatla@linaro.org, nrajan@codeaurora.org, lina.iyer@linaro.org, punit.agrawal@arm.com
 
-https://bugzilla.kernel.org/show_bug.cgi?id=103351
+On 10/08, Rajendra Nayak wrote:
+> On 10/08/2015 12:47 PM, Stephen Boyd wrote:
+> > Now that qcom_cc_remove() is a nop, drop calls to
+> > qcom_cc_remove() and any empty driver remove functions.
+> > 
+> > Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
+> > ---
+> > 
+> > And here's the driver part. I left 8960_remove in place to make your patch
+> > easier to apply. Time to sleep.
+> 
+> I was trying to test this out, but looks like none of our clock drivers
+> support a clean remove and reprobe (with or without this patch)
+> 
+> The problem seems to be the fixed rate clocks that get registered at probe,
+> never unregistered, causing the subsequent probe to fail.
 
---- Comment #51 from matthew.dewitt@gmail.com ---
-How do I get 0x13??
+Yeah the gcc drivers are not so good there. We should probably fix those too.
 
-On Thu, Oct 8, 2015 at 1:48 PM, <bugzilla-daemon@bugzilla.kernel.org> wrote:
-
-> https://bugzilla.kernel.org/show_bug.cgi?id=103351
->
-> --- Comment #50 from Henrique de Moraes Holschuh <hmh@hmh.eng.br> ---
-> Ah, that's very good news, indeed!
->
-> First, because anyone that has Broadwell-H with microcode 0x13 should be
-> able
-> to run any Linux distro without it crashing either the kernel, or
-> glibc...  At
-> least as far as the two errata mentioned in this bug report are concerned.
->
-> Second, because it means the chance of TSX-NI (RTM) being fixed in
-> Broadwell-H
-> really should be non-existent as the erratum text says, so blacklisting it
-> becomes uncontroversial.
->
-> --
-> You are receiving this mail because:
-> You are on the CC list for the bug.
->
+The mmcc drivers support a clean remove and reprobe though. So I
+tested it on msm8960 with these patches and everything looks
+good. Removing gcc is sort of annoying because it provides the
+clock for the serial console.
 
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
