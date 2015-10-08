@@ -1,77 +1,63 @@
-From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: Re: [PATCH v2 2/9] thermal: qcom: tsens-8916: Add support for 8916 family of SoCs
-Date: Thu, 08 Oct 2015 15:32:13 +0100
-Message-ID: <9hhk2qxfn2q.fsf@e105922-lin.cambridge.arm.com>
-References: <1442384603-26053-1-git-send-email-rnayak@codeaurora.org>
-	<1442384603-26053-3-git-send-email-rnayak@codeaurora.org>
-	<9hh4miutr21.fsf@e105922-lin.cambridge.arm.com>
-	<55FF8761.9010808@codeaurora.org> <5615F99C.5000004@codeaurora.org>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH v1 0/2] crash on reading cpufreq sysfs
+Date: Thu, 08 Oct 2015 08:17:57 -0700
+Message-ID: <1444317477.2971.1.camel@linux.intel.com>
+References: <1444251044-11231-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	 <1543959.r5bbusBA6I@vostro.rjw.lan>
+	 <1444261800.7437.7.camel@spandruv-desk3.jf.intel.com>
+	 <CAJZ5v0j0=WKGoERT_uJjs=gkAiDuR2_RdTOTObHx9up-vzLZuQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:59977 "EHLO
-	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756191AbbJHOcs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 Oct 2015 10:32:48 -0400
-In-Reply-To: <5615F99C.5000004@codeaurora.org> (Rajendra Nayak's message of
-	"Thu, 08 Oct 2015 10:35:32 +0530")
+Received: from mga11.intel.com ([192.55.52.93]:19682 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933524AbbJHPSV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 8 Oct 2015 11:18:21 -0400
+In-Reply-To: <CAJZ5v0j0=WKGoERT_uJjs=gkAiDuR2_RdTOTObHx9up-vzLZuQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rajendra Nayak <rnayak@codeaurora.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com, sboyd@codeaurora.org, srinivas.kandagatla@linaro.org, nrajan@codeaurora.org, lina.iyer@linaro.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Rajendra Nayak <rnayak@codeaurora.org> writes:
+On Thu, 2015-10-08 at 02:17 +0200, Rafael J. Wysocki wrote:
+> On Thu, Oct 8, 2015 at 1:50 AM, Srinivas Pandruvada
+> <srinivas.pandruvada@linux.intel.com> wrote:
+> > On Thu, 2015-10-08 at 00:50 +0200, Rafael J. Wysocki wrote:
+> > > On Wednesday, October 07, 2015 01:50:42 PM Srinivas Pandruvada
+> > > wrote:
+> > > > Fixes for crash on reading cpufreq sysfs for offline cpus
+> > > > 
+> > > > v1
+> > > > Fix commit discription on Patch 1/2. Included Acks from Viresh.
+> > > > It has both patches, even though only one patch has change.
+> > > > 
+> > > > v0
+> > > > two patches: one for acp-cpufreq and one for cpufreq core
+> > > > 
+> > > > Srinivas Pandruvada (2):
+> > > >   cpufreq: acpi_cpufreq: prevent crash on reading
+> > > > freqdomain_cpus
+> > > >   cpufreq: prevent lockup on reading
+> > > > scaling_available_frequencies
+> > > 
+> > > Both applied, but they look like -stable material to me.
+> > > 
+> > I tested in 4.1 kernels, since on offline, cpufreq folder is not
+> > available there is no issue.
+> > For 4.2 kernels the I didn't see crash fixed by cpufreq core patch
+> > (cat
+> > scaling_available_frequencies), but the "cat freqdomain_cpus" still
+> > causes crash. So we need to apply cpufreq:acpi-cpufreq patch only.
+> > So
+> > one patch is applicable for stable tree.
+> 
+> So [1/2] should go into 4.2.y and [2/2] fixes a regression introduced
+> in this cycle, right?
+Yes.
 
-> On 09/21/2015 09:58 AM, Rajendra Nayak wrote:
->> []..
->> 
->>>> +static inline int code_to_degc(u32 adc_code, const struct tsens_sensor *s)
->>>> +{
->>>> +    int degc, num, den;
->>>> +
->>>> +    num = (adc_code * SLOPE_FACTOR) - s->offset;
->>>> +    den = s->slope;
->>>> +
->>>> +    if (num > 0)
->>>> +        degc = num + (den / 2);
->>>> +    else if (num < 0)
->>>> +        degc = num - (den / 2);
->>>> +    else
->>>> +        degc = num;
->>>> +
->>>> +    degc /= den;
->>>> +
->>>> +    return degc;
->>>> +}
->>>> +
->>>> +int get_temp_common(struct tsens_device *tmdev, int id, int *temp)
->>>> +{
->>>> +    struct tsens_sensor *s = &tmdev->sensor[id];
->>>> +    u32 code;
->>>> +    unsigned int sensor_addr;
->>>> +    int last_temp = 0, ret;
->>>> +
->>>> +    sensor_addr = S0_ST_ADDR + s->hw_id * SN_ADDR_OFFSET;
->>>> +    ret = regmap_read(tmdev->map, sensor_addr, &code);
->>>> +    if (ret)
->>>> +        return ret;
->>>> +    last_temp = code & SN_ST_TEMP_MASK;
->>>> +
->>>> +    *temp = code_to_degc(last_temp, s) * 1000;
->>>> +
->>>> +    return 0;
->>>> +}
->>>
->>> The way this function is coded the temperature will only ever change by
->>> 1C (i.e., 1000mC). Is there a chance that you're losing precision in the
->>> code_to_degc conversion that could be preserved perhaps?
->>>
->>> This is useful in scenarios where you use the power allocator governor
->>> and the greater precision allows better power budget estimation.
->> 
->> I'll take a look to see if we can get better precision. Thanks.
->
-> I checked, and it does not look like these devices can support better precision
-> than degC.
-
-Ah well. Thanks for checking!
+Thanks,
+Srinivas
+> 
+> Thanks,
+> Rafael
