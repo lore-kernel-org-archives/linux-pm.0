@@ -1,82 +1,49 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: arm_big_little: fix frequency check when bL
- switcher is active
-Date: Thu, 8 Oct 2015 16:54:54 +0530
-Message-ID: <20151008112454.GE18898@linux>
-References: <1443807532.2845.25.camel@linaro.org>
- <20151007173920.GG4557@linux>
- <1444296229.2847.9.camel@linaro.org>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
+ SpeedStep enabled
+Date: Thu, 08 Oct 2015 11:47:32 +0000
+Message-ID: <bug-103351-137361-TOV549Xjxn@https.bugzilla.kernel.org/>
+References: <bug-103351-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1444296229.2847.9.camel@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Jon Medhurst (Tixy)" <tixy@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Michael Turquette <mike.turquette@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:40135 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756407AbbJHLrh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 8 Oct 2015 07:47:37 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+	by mail.kernel.org (Postfix) with ESMTP id 02B012061C
+	for <linux-pm@vger.kernel.org>; Thu,  8 Oct 2015 11:47:36 +0000 (UTC)
+Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
+	by mail.kernel.org (Postfix) with ESMTP id 2959F20617
+	for <linux-pm@vger.kernel.org>; Thu,  8 Oct 2015 11:47:35 +0000 (UTC)
+In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-On 08-10-15, 10:23, Jon Medhurst (Tixy) wrote:
-> On Wed, 2015-10-07 at 23:09 +0530, Viresh Kumar wrote:
-> [...]
-> > And why not fix it properly by doing this:
-> > 
-> > diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-> > index f1e42f8ce0fc..5b36657a76d6 100644
-> > --- a/drivers/cpufreq/arm_big_little.c
-> > +++ b/drivers/cpufreq/arm_big_little.c
-> > @@ -128,7 +128,7 @@ static unsigned int bL_cpufreq_get_rate(unsigned int cpu)
-> >  static unsigned int
-> >  bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
-> >  {
-> > -	u32 new_rate, prev_rate;
-> > +	u32 new_rate, prev_rate, target_rate;
-> >  	int ret;
-> >  	bool bLs = is_bL_switching_enabled();
-> >  
-> > @@ -140,9 +140,11 @@ bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
-> >  		per_cpu(physical_cluster, cpu) = new_cluster;
-> >  
-> >  		new_rate = find_cluster_maxfreq(new_cluster);
-> > +		target_rate = new_rate;
+https://bugzilla.kernel.org/show_bug.cgi?id=103351
 
-This is still a virtual freq ...
+--- Comment #46 from Henrique de Moraes Holschuh <hmh@hmh.eng.br> ---
+Alexey,
 
-> >  		new_rate = ACTUAL_FREQ(new_cluster, new_rate);
+Thank you very much for confirming that TSX-NI in Broadwell-H is still broken
+*and active* on microcode 0x12, dated 2015-06-19.
 
-And new_rate is the actual freq..
+I highly recommend that you deploy early microcode updates on your system. 
+When you use the late microcode update mode, you are still at risk of hitting
+errata that would be fixed by the microcode update.
 
-> >  	} else {
-> >  		new_rate = rate;
-> > +		target_rate = new_rate;
+Also, when you don't do an "early" update, the kernel won't know about any
+"processor feature" flags change caused by the microcode update (yes, this is a
+known bug): it will continue to operate with the set of flags it got from the
+boot microcode for all intents and purposes (including, but not limited to
+/proc/cpuinfo "flags" information being stale).
 
-Here both are actual freqs, and no virtual freq.
-
-> >  	}
-> >  
-> >  	pr_debug("%s: cpu: %d, old cluster: %d, new cluster: %d, freq: %d\n",
-> > @@ -196,7 +198,7 @@ bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
-> >  	 * be reading only the cached value anyway. This needs to  be removed
-> >  	 * once clk core is fixed.
-> >  	 */
-> > -	if (bL_cpufreq_get_rate(cpu) != new_rate)
-> > +	if (bL_cpufreq_get_rate(cpu) != target_rate)
-> >  		return -EIO;
-> >  	return 0;
-> >  }
-> 
-> You call that a proper fix? ;-) It's comparing an 'virtual' frequency to
-> an 'actual' frequency.
-
-So, why do you say so? I thought both are virtual freqs only.
-
-> If the real intent is to check that clk_set_rate works I would have
-> thought the patch below would be correct. But I didn't propose that as
-> it's the obvious implementation and I assumed the original patch didn't
-> do it that way for a reason.
-
-Maybe yes. Only Sudeep can tell why he didn't do it that way. But
-yeah, the intent was only what the comment says.
+I'd also start pestering the motherboard vendor for firmware updates at least
+every two months, or something to that effect :-(
 
 -- 
-viresh
+You are receiving this mail because:
+You are the assignee for the bug.
