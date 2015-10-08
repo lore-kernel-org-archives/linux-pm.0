@@ -1,47 +1,128 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH] clk: qcom: Drop calls to qcom_cc_remove()
-Date: Thu, 8 Oct 2015 11:09:36 -0700
-Message-ID: <20151008180936.GG26883@codeaurora.org>
-References: <1444288678-24594-1-git-send-email-sboyd@codeaurora.org>
- <56163F97.1060604@codeaurora.org>
+From: Grygorii Strashko <grygorii.strashko@ti.com>
+Subject: Re: [PATCH 2/2] PM / sleep: prohibit devices probing during
+ suspend/hibernation
+Date: Thu, 8 Oct 2015 13:54:39 -0500
+Message-ID: <5616BBEF.90303@ti.com>
+References: <Pine.LNX.4.44L0.1510081314400.1502-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:50155 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755052AbbJHSJj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 Oct 2015 14:09:39 -0400
-Content-Disposition: inline
-In-Reply-To: <56163F97.1060604@codeaurora.org>
+Received: from devils.ext.ti.com ([198.47.26.153]:33313 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755115AbbJHSyt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 Oct 2015 14:54:49 -0400
+In-Reply-To: <Pine.LNX.4.44L0.1510081314400.1502-100000@iolanthe.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rajendra Nayak <rnayak@codeaurora.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com, srinivas.kandagatla@linaro.org, nrajan@codeaurora.org, lina.iyer@linaro.org, punit.agrawal@arm.com
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>
 
-On 10/08, Rajendra Nayak wrote:
-> On 10/08/2015 12:47 PM, Stephen Boyd wrote:
-> > Now that qcom_cc_remove() is a nop, drop calls to
-> > qcom_cc_remove() and any empty driver remove functions.
-> > 
-> > Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
-> > ---
-> > 
-> > And here's the driver part. I left 8960_remove in place to make your patch
-> > easier to apply. Time to sleep.
+On 10/08/2015 12:24 PM, Alan Stern wrote:
+> On Thu, 8 Oct 2015, Grygorii Strashko wrote:
 > 
-> I was trying to test this out, but looks like none of our clock drivers
-> support a clean remove and reprobe (with or without this patch)
+>> It is unsafe [1] if probing of devices will happen during suspend or
+>> hibernation and system behavior will be unpredictable in this case.
+>> So, lets prohibit device's probing in dpm_prepare() and defer their
 > 
-> The problem seems to be the fixed rate clocks that get registered at probe,
-> never unregistered, causing the subsequent probe to fail.
+> s/lets/let's/, and same for the comment in the code.
+> 
+>> probing instead. The normal behavior will be restored in
+>> dpm_complete().
+> 
+> 
+>> @@ -172,6 +179,26 @@ static void driver_deferred_probe_trigger(void)
+>>   }
+>>   
+>>   /**
+>> + * device_defer_all_probes() - Enable/disable probing of devices
+>> + * @enable:  Enable/disable probing of devices
+>> + *
+>> + * if @enable = true
+>> + *	It will disable probing of devices and defer their probes.
+>> + * otherwise
+>> + *	It will restore normal behavior and trigger re-probing of deferred
+>> + *	devices.
+>> + */
+>> +void device_defer_all_probes(bool enable)
+>> +{
+>> +	defer_all_probes = enable;
+>> +	if (enable)
+>> +		/* sync with probes to avoid any races. */
+>> +		wait_for_device_probe();
 
-Yeah the gcc drivers are not so good there. We should probably fix those too.
+^ pls, pay attention on above code line
 
-The mmcc drivers support a clean remove and reprobe though. So I
-tested it on msm8960 with these patches and everything looks
-good. Removing gcc is sort of annoying because it provides the
-clock for the serial console.
+>> +	else
+>> +		driver_deferred_probe_trigger();
+>> +}
+> 
+> Some people might prefer to see two separate functions, an enable
+> routine and a disable routine.  I don't much care.
+
+May be. Should I change it?
+
+> 
+>> @@ -277,9 +304,15 @@ static DECLARE_WAIT_QUEUE_HEAD(probe_waitqueue);
+>>   
+>>   static int really_probe(struct device *dev, struct device_driver *drv)
+>>   {
+>> -	int ret = 0;
+>> +	int ret = -EPROBE_DEFER;
+>>   	int local_trigger_count = atomic_read(&deferred_trigger_count);
+>>   
+>> +	if (defer_all_probes) {
+>> +		dev_dbg(dev, "Driver %s force probe deferral\n", drv->name);
+>> +		driver_deferred_probe_add(dev);
+>> +		return ret;
+>> +	}
+> 
+> In theory there's a race here.  If one CPU sets defer_all_probes, the
+> new value might not be perceived by another CPU until a little while
+> later.  Is there an easy way to insure that this race won't cause any
+> problems?
+
+Yes. this question was raised by Rafael also [1].
+
+> 
+> Or do we already know that when this mechanism gets used, the system is
+> already running on a single CPU?  I forget when that happens.
+
+No. nonboot cpus are still  on.
+
+> 
+>> @@ -1624,6 +1627,16 @@ int dpm_prepare(pm_message_t state)
+>>   	trace_suspend_resume(TPS("dpm_prepare"), state.event, true);
+>>   	might_sleep();
+>>   
+>> +	/* Give a chance for the known devices to complete their probing. */
+>> +	wait_for_device_probe();
+
+^ this sync point is important at least at boot time + hibernation restore
+
+>> +	/*
+>> +	 * It is unsafe if probing of devices will happen during suspend or
+>> +	 * hibernation and system behavior will be unpredictable in this case.
+>> +	 * So, lets prohibit device's probing here and defer their probes
+>> +	 * instead. The normal behavior will be restored in dpm_complete().
+>> +	 */
+>> +	device_defer_all_probes(true);
+> 
+> Don't you want to call these two functions in the opposite order?
+> First prevent new probes from occurring, then wait for any probes that
+> are already in progress?  The way you have it here, a new probe could
+> start between these two lines.
+
+No. Initially I did it as below:
+     wait_for_device_probe(); <- wait for active probes
+     device_defer_all_probes(true); <- prohibit probing
+     wait_for_device_probe(); <- sync again to avoid races
+
+then I decided to move second wait_for_device_probe() call inside
+device_defer_all_probes() because it's always required.
+
+[1] https://lkml.org/lkml/2015/9/17/857
 
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+regards,
+-grygorii
