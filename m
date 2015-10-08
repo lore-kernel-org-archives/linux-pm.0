@@ -1,56 +1,93 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 1/2] PM / sleep: ensure deferred probe workqueue is
- finished in wait_for_device_probe
-Date: Thu, 8 Oct 2015 16:53:12 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1510081637570.1284-100000@iolanthe.rowland.org>
-References: <2181899.pIHuaJgxyC@vostro.rjw.lan>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH v3 4/9] clk: qcom: create virtual child device for TSENS
+Date: Thu, 8 Oct 2015 16:21:11 -0700
+Message-ID: <20151008232110.GK26883@codeaurora.org>
+References: <1444280468-17159-1-git-send-email-rnayak@codeaurora.org>
+ <1444280468-17159-5-git-send-email-rnayak@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:49901 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751888AbbJHUxN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 Oct 2015 16:53:13 -0400
-In-Reply-To: <2181899.pIHuaJgxyC@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1444280468-17159-5-git-send-email-rnayak@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Rajendra Nayak <rnayak@codeaurora.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com, srinivas.kandagatla@linaro.org, nrajan@codeaurora.org, lina.iyer@linaro.org, punit.agrawal@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Grygorii Strashko <grygorii.strashko@ti.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>
 
-On Thu, 8 Oct 2015, Rafael J. Wysocki wrote:
-
-> > @@ -391,6 +391,10 @@ int driver_probe_done(void)
-> >   */
-> >  void wait_for_device_probe(void)
-> >  {
-> > +	/* wait for the deferred probe workqueue to finish */
-> > +	if (driver_deferred_probe_enable)
-> > +		flush_workqueue(deferred_wq);
-> > +
-> >  	/* wait for the known devices to complete their probing */
-> >  	wait_event(probe_waitqueue, atomic_read(&probe_count) == 0);
-> >  	async_synchronize_full();
+On 10/08, Rajendra Nayak wrote:
+> 8960 family of devices have TSENS as part of GCC in hardware.
+> Hence DT would represent a GCC node with GCC properties as well
+> as TSENS. Create a virtual platform child device here for TSENS
+> so the driver can probe it and use the parent (GCC) to extract DT
+> properties.
 > 
-> I'm not sure if this is sufficient.
-> 
-> Something may be added to the workqueue right after you've flushed it and
-> then be reporobed after the wait_event() in theory.  Or am I missing anything?
+> Suggested-by: Stephen Boyd <sboyd@codeaurora.org>
+> Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
+> ---
 
-Maybe I'm missing part of this, but I think the point is to make sure 
-that every probe which began or was queued before this function got 
-called, has finished before the function returns.
+Applied to clk-next with some massaging. Is there going to be an
+update to the gcc binding too?
 
-Thus, in the case at hand we want to defer all probes starting from
-some point in the system sleep transition.  Grygorii sets his
-defer_all_probes variable and then calls this function.  It waits for
-any probes that were initiated before the function call.  Any probe
-that was initiated after the function call (for example, the ones
-you're concerned about between the flush_workqueue and wait_event) will
-see that defer_all_probes is set and so will defer itself.
+---8<----
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: [PATCH] clk: qcom: create virtual child device for TSENS
 
-Now, I'm not sure what happens when a probe that was deferred tries to 
-defer itself again.  Do we end up in an infinite probing loop?  Is
-the deferred_wq workqueue freezable?
+8960 family of devices have TSENS as part of GCC in hardware.
+Hence DT would represent a GCC node with GCC properties as well
+as TSENS. Create a virtual platform child device here for TSENS
+so the driver can probe it and use the parent (GCC) to extract DT
+properties.
 
-Alan Stern
+Suggested-by: Stephen Boyd <sboyd@codeaurora.org>
+Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
+[sboyd@codeaurora.org: Massaged to work with devm friendly
+qcom_cc_probe()]
+Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
+---
+ drivers/clk/qcom/gcc-msm8960.c | 19 ++++++++++++++++++-
+ 1 file changed, 18 insertions(+), 1 deletion(-)
 
+diff --git a/drivers/clk/qcom/gcc-msm8960.c b/drivers/clk/qcom/gcc-msm8960.c
+index b52153903893..66c18bc97857 100644
+--- a/drivers/clk/qcom/gcc-msm8960.c
++++ b/drivers/clk/qcom/gcc-msm8960.c
+@@ -3506,6 +3506,8 @@ static int gcc_msm8960_probe(struct platform_device *pdev)
+ 	struct clk *clk;
+ 	struct device *dev = &pdev->dev;
+ 	const struct of_device_id *match;
++	struct platform_device *tsens;
++	int ret;
+ 
+ 	match = of_match_device(gcc_msm8960_match_table, &pdev->dev);
+ 	if (!match)
+@@ -3520,11 +3522,26 @@ static int gcc_msm8960_probe(struct platform_device *pdev)
+ 	if (IS_ERR(clk))
+ 		return PTR_ERR(clk);
+ 
+-	return qcom_cc_probe(pdev, match->data);
++	ret = qcom_cc_probe(pdev, match->data);
++	if (ret)
++		return ret;
++
++	tsens = platform_device_register_data(&pdev->dev, "qcom-tsens", -1,
++					      NULL, 0);
++	if (IS_ERR(tsens))
++		return PTR_ERR(tsens);
++
++	platform_set_drvdata(pdev, tsens);
++
++	return 0;
+ }
+ 
+ static int gcc_msm8960_remove(struct platform_device *pdev)
+ {
++	struct platform_device *tsens = platform_get_drvdata(pdev);
++
++	platform_device_unregister(tsens);
++
+ 	return 0;
+ }
+ 
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
