@@ -1,180 +1,34 @@
-From: "H. Nikolaus Schaller" <hns@goldelico.com>
-Subject: Re: [PATCH 4/4] w1:slaves:bq27000: load battery driver kernel module if required
-Date: Thu, 8 Oct 2015 11:58:11 +0200
-Message-ID: <26C0F0E3-E588-4DB1-B5DE-26D31C9E507B@goldelico.com>
-References: <cover.1444243358.git.hns@goldelico.com> <c9ee31c641a8612c49172123cd56407484e699d6.1444243358.git.hns@goldelico.com> <201510080026.21233@pali> <7F953A3F-D9F5-4BA0-A7B5-0CF8AAB5C937@goldelico.com> <20151008075422.GC27737@pali>
-Mime-Version: 1.0 (Mac OS X Mail 7.3 \(1878.6\))
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mo4-p00-ob.smtp.rzone.de ([81.169.146.216]:11514 "EHLO
-	mo4-p00-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752100AbbJHJ6T convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 Oct 2015 05:58:19 -0400
-In-Reply-To: <20151008075422.GC27737@pali>
-Sender: linux-pm-owner@vger.kernel.org
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: Re: [PATCH] clk: qcom: Drop calls to qcom_cc_remove()
+Date: Thu, 08 Oct 2015 15:34:07 +0530
+Message-ID: <56163F97.1060604@codeaurora.org>
+References: <1444288678-24594-1-git-send-email-sboyd@codeaurora.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1444288678-24594-1-git-send-email-sboyd@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com, srinivas.kandagatla@linaro.org, nrajan@codeaurora.org, lina.iyer@linaro.org, punit.agrawal@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: =?iso-8859-1?Q?Pali_Roh=E1r?= <pali.rohar@gmail.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org
 
-Hi,
+On 10/08/2015 12:47 PM, Stephen Boyd wrote:
+> Now that qcom_cc_remove() is a nop, drop calls to
+> qcom_cc_remove() and any empty driver remove functions.
+> 
+> Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
+> ---
+> 
+> And here's the driver part. I left 8960_remove in place to make your patch
+> easier to apply. Time to sleep.
 
-Am 08.10.2015 um 09:54 schrieb Pali Roh=E1r <pali.rohar@gmail.com>:
+I was trying to test this out, but looks like none of our clock drivers
+support a clean remove and reprobe (with or without this patch)
 
-> On Thursday 08 October 2015 09:26:26 H. Nikolaus Schaller wrote:
->>=20
->> Am 08.10.2015 um 00:26 schrieb Pali Roh=E1r <pali.rohar@gmail.com>:
->>=20
->>> On Wednesday 07 October 2015 20:42:39 H. Nikolaus Schaller wrote:
->>>> Explicitly call request_module() in the wrapper so that the
->>>> bq27x00_battery driver is loded on demand, when compiled as module=
-=2E
->>>>=20
->>>> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
->>>> ---
->>>> drivers/w1/slaves/w1_bq27000.c | 2 ++
->>>> 1 file changed, 2 insertions(+)
->>>>=20
->>>> diff --git a/drivers/w1/slaves/w1_bq27000.c
->>>> b/drivers/w1/slaves/w1_bq27000.c index caafb17..745bd6e 100644
->>>> --- a/drivers/w1/slaves/w1_bq27000.c
->>>> +++ b/drivers/w1/slaves/w1_bq27000.c
->>>> @@ -49,6 +49,8 @@ static int w1_bq27000_add_slave(struct w1_slave
->>>> *sl) int ret;
->>>> 	struct platform_device *pdev;
->>>>=20
->>>> +	request_module("bq27x00_battery");  /* load as module if needed =
-*/
->>>> +
->>>> 	pdev =3D platform_device_alloc("bq27000-battery", -1);
->>>> 	if (!pdev) {
->>>> 		ret =3D -ENOMEM;
->>>=20
->>> Hi! Function platform_device_alloc would allocate kernel device and=
- it=20
->>> should also load appropriate kernel driver (via platform:bq27000-ba=
-ttery=20
->>> alias). If that does not work, problem is somewhere else. Maybe dep=
-mod=20
->>> is not properly generated? Or bq27x00_batter.ko modules does not co=
-ntain=20
->>> needed alias?
->>=20
->=20
-> At least driver is renaming in upstream kernel, so hardcoding driver
-> name is wrong approach. It will be broken... If we show that
-> request_module is really needed (but I believe not!) then please use
-> alias instead.
+The problem seems to be the fixed rate clocks that get registered at probe,
+never unregistered, causing the subsequent probe to fail.
 
->=20
->> alias exists:
->>=20
->> #ifdef CONFIG_BATTERY_BQ27X00_PLATFORM
->> MODULE_ALIAS("platform:bq27000-battery");
->> #endif
->>=20
->> depmod entry exist:
->>=20
->> root@letux:~# modprobe -c | fgrep bq27
->> alias i2c:bq27000_battery bq27x00_battery
->> alias i2c:bq27200 bq27x00_battery
->> alias i2c:bq27425 bq27x00_battery
->> alias i2c:bq27500 bq27x00_battery
->> alias i2c:bq27510 bq27x00_battery
->> alias i2c:bq27742 bq27x00_battery
->> alias platform:bq27000_battery bq27x00_battery
->> alias w1_family_0x01 w1_bq27000
->>=20
->> And I have traced all calls to call_modprobe
->>=20
->> [    9.969085] call_modprobe w1-family-0x01
->> [   10.189727] call_modprobe bq27x00_battery
-
-I have tried without request_module("bq27x00_battery") and this
-call to call_modprobe() disappears.
-
-But it still works, i.e. the module appears in lsmod!
-
-I am a bit puzzled now...
-
-What could have happened:
-* there was no automatic module load when we developed
-the patch (a while ago - it was sleeping in our development tree)
-* when automatic load was improved somewhere else, we
-did not notice (because a second request_module() does
-not have a visible side-effects)
-* so we just though that this is still required and did not check
-that it isn't any more
-
-So as it appears to work, we can simply drop it from the patch
-set (and our development tree) v2.
-
-Sorry for the noise and thanks for helping to find it.
-
->> [   29.879333] call_modprobe net-pf-10
->> [   30.530548] call_modprobe netdev-eth0
->> [   30.548156] call_modprobe eth0
->> [   30.565063] call_modprobe netdev-eth0
->> [   30.581420] call_modprobe eth0
->> [   31.301300] call_modprobe netdev-eth1
->> [   31.316101] call_modprobe eth1
->> [   32.008270] call_modprobe usbfunc:ecm
->> [   35.554748] call_modprobe net-pf-16-proto-9
->> [   36.243164] call_modprobe net-pf-31
->> [   36.614410] call_modprobe bt-proto-4
->> [   73.888122] call_modprobe net-pf-16-proto-9
->> [   73.921112] call_modprobe net-pf-16-proto-9
->> [   77.153625] call_modprobe net-pf-16-proto-9
->> [   77.188262] call_modprobe net-pf-16-proto-9
->> [   77.342895] call_modprobe net-pf-16-proto-9
->> [   77.389129] call_modprobe net-pf-16-proto-9
->> [   77.419006] call_modprobe net-pf-16-proto-9
->>=20
->> And there is only the line I have added. I.e. I can't find an automa=
-tic attempt
->> to load the platform:bq27000-battery. It also doesn't help to change=
- to=20
->> platform_device_alloc("bq27000_battery", -1)
->>=20
->> So I think platform_device_alloc() does only what it tells: it alloc=
-ates a device
->> but does *not* try to load a kernel module. It only binds to a drive=
-r compiled
->> into the kernel. AFAIR the I2C bus driver also calls request_module(=
-) at some
->> stage after finding a client (i2c:bq27000_battery).
->>=20
->=20
-> Try to call platform_device_register(). E.g for rx51-battery power
-> supply device it is working fine. Device itself is allocated and
-> registered in arch/arm/mach-omap2/board-rx51-peripherals.c and driver=
- is
-> in drivers/power/rx51_battery.c. You can also try to reuse that code.=
-=2E.
-> I see that w1 is quite different.
->=20
->>> Adding request_module() here is not proper solution. Real problem i=
-s=20
->>> somewhere else... Anyway there is series of patches for bq27x00_bat=
-tery=20
->>> which should cleanup some problems, so maybe they also fix your pro=
-blem.
->>=20
->> Is there a tree where I can pull the patches to cross-check if they =
-change
->> something?
->>=20
->=20
-> Sebastian? Where are those new bq27k patches now?
->=20
->> BR,
->> Nikolaus
->>=20
->=20
-> --=20
-> Pali Roh=E1r
-> pali.rohar@gmail.com
-
-BR,
-Nikolaus
-
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
