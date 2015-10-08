@@ -1,62 +1,76 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 01/16] PM / OPP: Add 'supply-names' binding
-Date: Thu, 8 Oct 2015 14:57:09 +0530
-Message-ID: <20151008092709.GC18898@linux>
-References: <cover.1441972771.git.viresh.kumar@linaro.org>
- <2b87b162eabd1570ae2311e1ef8655acda72f678.1441972771.git.viresh.kumar@linaro.org>
- <55F72C97.2030306@kernel.org>
- <20150915024747.GI32551@linux>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [RFCv5 PATCH 38/46] sched: scheduler-driven cpu frequency
+ selection
+Date: Thu, 8 Oct 2015 10:41:53 +0100
+Message-ID: <56163A61.6030207@arm.com>
+References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
+ <1436293469-25707-39-git-send-email-morten.rasmussen@arm.com>
+ <20150815130545.GI10304@worktop.programming.kicks-ass.net>
+ <55DC475B.2080502@arm.com> <5615B55C.8010804@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=WINDOWS-1252
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f44.google.com ([209.85.220.44]:36531 "EHLO
-	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755296AbbJHJ1O (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 Oct 2015 05:27:14 -0400
-Received: by pablk4 with SMTP id lk4so49813346pab.3
-        for <linux-pm@vger.kernel.org>; Thu, 08 Oct 2015 02:27:14 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20150915024747.GI32551@linux>
+Received: from eu-smtp-delivery-143.mimecast.com ([207.82.80.143]:23612 "EHLO
+	eu-smtp-delivery-143.mimecast.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755648AbbJHJl5 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 8 Oct 2015 05:41:57 -0400
+In-Reply-To: <5615B55C.8010804@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, rob.herring@linaro.org, lee.jones@linaro.org, Mark Brown <broonie@kernel.org>, devicetree@vger.kernel.org, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, open list <linux-kernel@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: Steve Muckle <steve.muckle@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>, "mturquette@baylibre.com" <mturquette@baylibre.com>
+Cc: "mingo@redhat.com" <mingo@redhat.com>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, "yuyang.du@intel.com" <yuyang.du@intel.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "sgurrappadi@nvidia.com" <sgurrappadi@nvidia.com>, "pang.xunlei@zte.com.cn" <pang.xunlei@zte.com.cn>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Rob,
+On 08/10/15 01:14, Steve Muckle wrote:
+> On 08/25/2015 03:45 AM, Juri Lelli wrote:
+>> But, it is true that if the above events happened the other way around
+>> (we trigger an update after load balancing and a new task arrives), we
+>> may miss the opportunity to jump to max with the new task. In my mind
+>> this is probably not a big deal, as we'll have a tick pretty soon that
+>> will fix things anyway (saving us some complexity in the backend).
+>>
+>> What you think?
+> 
+> I fear that waiting up to a full tick to resolve a shortfall in CPU
+> bandwidth will cause complaints.
+>
 
-On 15-09-15, 08:17, Viresh Kumar wrote:
-> On 14-09-15, 15:22, Rob Herring wrote:
-> > What if we have a 2nd device and supply rail? For example, what if the
-> > L2$ has a separate rail from the cores but is linked to the OPPs.
-> 
-> Right, so that is the case with the Mediatek SoC as well, AFAIR. How
-> do we plan to treat L2 devices? For example, in the mediatek cpufreq
-> driver, they change L2's supplies together with CPUs.
-> 
-> One way to get that done, with such very closely bound devices is to
-> add two regulators:
-> 
-> cpu-supply = ...;
-> l2-supply = ...;
-> 
-> And then a property in OPP table:
-> 
-> supply-name = "cpu", "l2";
-> 
-> And maybe fix the order in which the supplies which be updated, based
-> on the order in which entries are present in the above property.
-> 
-> Any other way you suggest for doing that ?
-> 
-> > Remind me of when do we have multiple regulators for a cpu?
-> 
-> I haven't seen that yet, but its more like what I explained above.
-> i.e. one for the CPU and other one for the L2 cache.
-> 
-> But, these bindings do apply for other devices as well, where it
-> should be very much possible.
+Right, especially now that we'll extend the thing for other classes
+as well. So, I guess we'll actually need to buffer requests, as Peter
+was already suggesting.
 
-Not sure if you still have any objections to this patch?
+> Thinking about how this would be implemented raises a couple questions
+> for me though.
+> 
+> 1. To avoid issuing a frequency change request while one is already in
+> flight, the current code uses the stated cpufreq driver transition
+> latency to throttle. Wouldn't it be more accurate to block further
+> requests until the CPUFREQ_POSTCHANGE notifier has run? In addition to
+> removing the requirement of supplying a latency value, frequency
+> transitions may take different amounts of time depending on system state
+> so a single latency value may often be incorrect.
+> 
 
--- 
-viresh
+Looks good to me.
+
+> 2. The decision of whether or not to call into the low level cpufreq
+> driver in the scheduler hot paths currently hinges on whether or not the
+> low level cpufreq driver will sleep. Even if the cpufreq driver does not
+> sleep however, the latency to enqueue a frequency change (and complete
+> it if the low level driver is not asynchronous) may still be high,
+> making it unsuitable to run in a scheduler hot path. Should the
+> semantics of the flag be changed to indicate whether a cpufreq driver is
+> fast enough to run in this context? Sleeping would still of course mean
+> that it is not.
+> 
+
+Yeah, we assumed that not sleeping means fast. I didn't really played
+with this configuration, so I can't say if this is a problem or not.
+But, I agree with you that, if this is a problem, we could change
+semantic of the flag (maybe it is just more general?).
+
+Thanks,
+
+- Juri
+
