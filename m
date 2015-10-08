@@ -1,44 +1,63 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 2/2] PM / sleep: prohibit devices probing during
- suspend/hibernation
-Date: Thu, 8 Oct 2015 16:05:34 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1510081601520.1284-100000@iolanthe.rowland.org>
-References: <5616C87F.5070200@ti.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 2/2] PM / sleep: prohibit devices probing during suspend/hibernation
+Date: Thu, 08 Oct 2015 22:46:02 +0200
+Message-ID: <15556679.oJAEDkJbZ7@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1510081512130.1284-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:49869 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758260AbbJHUFf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 Oct 2015 16:05:35 -0400
-In-Reply-To: <5616C87F.5070200@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1510081512130.1284-100000@iolanthe.rowland.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>, Grygorii Strashko <grygorii.strashko@ti.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>
 
-On Thu, 8 Oct 2015, Grygorii Strashko wrote:
-
-> >>>> @@ -277,9 +304,15 @@ static DECLARE_WAIT_QUEUE_HEAD(probe_waitqueue);
-> >>>>    
-> >>>>    static int really_probe(struct device *dev, struct device_driver *drv)
-> >>>>    {
-> >>>> -	int ret = 0;
-> >>>> +	int ret = -EPROBE_DEFER;
-> >>>>    	int local_trigger_count = atomic_read(&deferred_trigger_count);
-> >>>>    
-> >>>> +	if (defer_all_probes) {
+On Thursday, October 08, 2015 03:20:08 PM Alan Stern wrote:
+> On Thu, 8 Oct 2015, Grygorii Strashko wrote:
 > 
-> Will it be ok If I add below comment here?
-> 		/*
-> 		 * Value of defer_all_probes can be set only by
-> 		 * device_defer_all_probes_enable() which, in turn, will call
-> 		 * wait_for_device_probe() right after that to avoid any races.
-> 		 */
+> > >>   /**
+> > >> + * device_defer_all_probes() - Enable/disable probing of devices
+> > >> + * @enable:  Enable/disable probing of devices
+> > >> + *
+> > >> + * if @enable = true
+> > >> + *	It will disable probing of devices and defer their probes.
+> > >> + * otherwise
+> > >> + *	It will restore normal behavior and trigger re-probing of deferred
+> > >> + *	devices.
+> > >> + */
+> > >> +void device_defer_all_probes(bool enable)
+> > >> +{
+> > >> +	defer_all_probes = enable;
+> > >> +	if (enable)
+> > >> +		/* sync with probes to avoid any races. */
+> > >> +		wait_for_device_probe();
+> > 
+> > ^ pls, pay attention on above code line
+> > 
+> > >> +	else
+> > >> +		driver_deferred_probe_trigger();
+> > >> +}
+> > > 
+> > > Some people might prefer to see two separate functions, an enable
+> > > routine and a disable routine.  I don't much care.
+> > 
+> > May be. Should I change it?
+> 
+> It would then be more in line with functions like 
+> pm_runtime_set_{active|suspended} or pm_runtime_[dont_]use_autosuspend.
 
-That will help.  You could also add a comment where
-wait_for_device_probe is called before device_defer_all_probes_enable,
-explaining that is needed.
+Also it would be cleaner code without conditionals:
 
-Alan Stern
+enable:
+	defer_all_probes = true;
+	wait_for_device_probe();
 
+disable:
+	defer_all_probes = false;
+	driver_deferred_probe_trigger();
+
+Cleaner, no?
+
+Thanks,
+Rafael
