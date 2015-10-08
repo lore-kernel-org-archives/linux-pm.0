@@ -1,93 +1,48 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH v3 4/9] clk: qcom: create virtual child device for TSENS
-Date: Thu, 8 Oct 2015 16:21:11 -0700
-Message-ID: <20151008232110.GK26883@codeaurora.org>
-References: <1444280468-17159-1-git-send-email-rnayak@codeaurora.org>
- <1444280468-17159-5-git-send-email-rnayak@codeaurora.org>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
+ SpeedStep enabled
+Date: Thu, 08 Oct 2015 23:21:59 +0000
+Message-ID: <bug-103351-137361-CwOfN6eedN@https.bugzilla.kernel.org/>
+References: <bug-103351-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1444280468-17159-5-git-send-email-rnayak@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Rajendra Nayak <rnayak@codeaurora.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com, srinivas.kandagatla@linaro.org, nrajan@codeaurora.org, lina.iyer@linaro.org, punit.agrawal@arm.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:54444 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752922AbbJHXWF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 8 Oct 2015 19:22:05 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+	by mail.kernel.org (Postfix) with ESMTP id C966320814
+	for <linux-pm@vger.kernel.org>; Thu,  8 Oct 2015 23:22:03 +0000 (UTC)
+Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
+	by mail.kernel.org (Postfix) with ESMTP id A539520808
+	for <linux-pm@vger.kernel.org>; Thu,  8 Oct 2015 23:22:02 +0000 (UTC)
+In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-On 10/08, Rajendra Nayak wrote:
-> 8960 family of devices have TSENS as part of GCC in hardware.
-> Hence DT would represent a GCC node with GCC properties as well
-> as TSENS. Create a virtual platform child device here for TSENS
-> so the driver can probe it and use the parent (GCC) to extract DT
-> properties.
+https://bugzilla.kernel.org/show_bug.cgi?id=103351
+
+--- Comment #52 from kernel@benjam.info <kernel@benjam.info> ---
+(In reply to matthew.dewitt from comment #51)
 > 
-> Suggested-by: Stephen Boyd <sboyd@codeaurora.org>
-> Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
-> ---
+> How do I get 0x13??
 
-Applied to clk-next with some massaging. Is there going to be an
-update to the gcc binding too?
+I think the 5700HQ updates include microcode version 0x13, but the UEFI update
+I pulled the 5675C and 5775C updates from was older than the 5700HQ update.
+It's also possible that the different processors use different version numbers.
 
----8<----
-From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: [PATCH] clk: qcom: create virtual child device for TSENS
+However, looking at the microcode signatures, the last 5x75C microcode update
+is dated 2015-06-19, while the last 5700HQ microcode update is dated
+2015-03-27, so I don't really know. I really wish Intel would tell us
+something.
 
-8960 family of devices have TSENS as part of GCC in hardware.
-Hence DT would represent a GCC node with GCC properties as well
-as TSENS. Create a virtual platform child device here for TSENS
-so the driver can probe it and use the parent (GCC) to extract DT
-properties.
+If anyone can find a 5675C or 5775C motherboard that installs a microcode
+version past 0x12 for the 5675C or 5775C, I'd be happy to extract the microcode
+updates and add them to the Github repository.
 
-Suggested-by: Stephen Boyd <sboyd@codeaurora.org>
-Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
-[sboyd@codeaurora.org: Massaged to work with devm friendly
-qcom_cc_probe()]
-Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
----
- drivers/clk/qcom/gcc-msm8960.c | 19 ++++++++++++++++++-
- 1 file changed, 18 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/clk/qcom/gcc-msm8960.c b/drivers/clk/qcom/gcc-msm8960.c
-index b52153903893..66c18bc97857 100644
---- a/drivers/clk/qcom/gcc-msm8960.c
-+++ b/drivers/clk/qcom/gcc-msm8960.c
-@@ -3506,6 +3506,8 @@ static int gcc_msm8960_probe(struct platform_device *pdev)
- 	struct clk *clk;
- 	struct device *dev = &pdev->dev;
- 	const struct of_device_id *match;
-+	struct platform_device *tsens;
-+	int ret;
- 
- 	match = of_match_device(gcc_msm8960_match_table, &pdev->dev);
- 	if (!match)
-@@ -3520,11 +3522,26 @@ static int gcc_msm8960_probe(struct platform_device *pdev)
- 	if (IS_ERR(clk))
- 		return PTR_ERR(clk);
- 
--	return qcom_cc_probe(pdev, match->data);
-+	ret = qcom_cc_probe(pdev, match->data);
-+	if (ret)
-+		return ret;
-+
-+	tsens = platform_device_register_data(&pdev->dev, "qcom-tsens", -1,
-+					      NULL, 0);
-+	if (IS_ERR(tsens))
-+		return PTR_ERR(tsens);
-+
-+	platform_set_drvdata(pdev, tsens);
-+
-+	return 0;
- }
- 
- static int gcc_msm8960_remove(struct platform_device *pdev)
- {
-+	struct platform_device *tsens = platform_get_drvdata(pdev);
-+
-+	platform_device_unregister(tsens);
-+
- 	return 0;
- }
- 
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+You are receiving this mail because:
+You are the assignee for the bug.
