@@ -1,76 +1,180 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [RFCv5 PATCH 38/46] sched: scheduler-driven cpu frequency
- selection
-Date: Thu, 8 Oct 2015 10:41:53 +0100
-Message-ID: <56163A61.6030207@arm.com>
-References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
- <1436293469-25707-39-git-send-email-morten.rasmussen@arm.com>
- <20150815130545.GI10304@worktop.programming.kicks-ass.net>
- <55DC475B.2080502@arm.com> <5615B55C.8010804@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=WINDOWS-1252
-Content-Transfer-Encoding: 8BIT
+From: "H. Nikolaus Schaller" <hns@goldelico.com>
+Subject: Re: [PATCH 4/4] w1:slaves:bq27000: load battery driver kernel module if required
+Date: Thu, 8 Oct 2015 11:58:11 +0200
+Message-ID: <26C0F0E3-E588-4DB1-B5DE-26D31C9E507B@goldelico.com>
+References: <cover.1444243358.git.hns@goldelico.com> <c9ee31c641a8612c49172123cd56407484e699d6.1444243358.git.hns@goldelico.com> <201510080026.21233@pali> <7F953A3F-D9F5-4BA0-A7B5-0CF8AAB5C937@goldelico.com> <20151008075422.GC27737@pali>
+Mime-Version: 1.0 (Mac OS X Mail 7.3 \(1878.6\))
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from eu-smtp-delivery-143.mimecast.com ([207.82.80.143]:23612 "EHLO
-	eu-smtp-delivery-143.mimecast.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755648AbbJHJl5 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 8 Oct 2015 05:41:57 -0400
-In-Reply-To: <5615B55C.8010804@linaro.org>
+Received: from mo4-p00-ob.smtp.rzone.de ([81.169.146.216]:11514 "EHLO
+	mo4-p00-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752100AbbJHJ6T convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 Oct 2015 05:58:19 -0400
+In-Reply-To: <20151008075422.GC27737@pali>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>, "mturquette@baylibre.com" <mturquette@baylibre.com>
-Cc: "mingo@redhat.com" <mingo@redhat.com>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, "yuyang.du@intel.com" <yuyang.du@intel.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "sgurrappadi@nvidia.com" <sgurrappadi@nvidia.com>, "pang.xunlei@zte.com.cn" <pang.xunlei@zte.com.cn>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: =?iso-8859-1?Q?Pali_Roh=E1r?= <pali.rohar@gmail.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org
 
-On 08/10/15 01:14, Steve Muckle wrote:
-> On 08/25/2015 03:45 AM, Juri Lelli wrote:
->> But, it is true that if the above events happened the other way around
->> (we trigger an update after load balancing and a new task arrives), we
->> may miss the opportunity to jump to max with the new task. In my mind
->> this is probably not a big deal, as we'll have a tick pretty soon that
->> will fix things anyway (saving us some complexity in the backend).
->>
->> What you think?
-> 
-> I fear that waiting up to a full tick to resolve a shortfall in CPU
-> bandwidth will cause complaints.
->
+Hi,
 
-Right, especially now that we'll extend the thing for other classes
-as well. So, I guess we'll actually need to buffer requests, as Peter
-was already suggesting.
+Am 08.10.2015 um 09:54 schrieb Pali Roh=E1r <pali.rohar@gmail.com>:
 
-> Thinking about how this would be implemented raises a couple questions
-> for me though.
-> 
-> 1. To avoid issuing a frequency change request while one is already in
-> flight, the current code uses the stated cpufreq driver transition
-> latency to throttle. Wouldn't it be more accurate to block further
-> requests until the CPUFREQ_POSTCHANGE notifier has run? In addition to
-> removing the requirement of supplying a latency value, frequency
-> transitions may take different amounts of time depending on system state
-> so a single latency value may often be incorrect.
-> 
+> On Thursday 08 October 2015 09:26:26 H. Nikolaus Schaller wrote:
+>>=20
+>> Am 08.10.2015 um 00:26 schrieb Pali Roh=E1r <pali.rohar@gmail.com>:
+>>=20
+>>> On Wednesday 07 October 2015 20:42:39 H. Nikolaus Schaller wrote:
+>>>> Explicitly call request_module() in the wrapper so that the
+>>>> bq27x00_battery driver is loded on demand, when compiled as module=
+=2E
+>>>>=20
+>>>> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
+>>>> ---
+>>>> drivers/w1/slaves/w1_bq27000.c | 2 ++
+>>>> 1 file changed, 2 insertions(+)
+>>>>=20
+>>>> diff --git a/drivers/w1/slaves/w1_bq27000.c
+>>>> b/drivers/w1/slaves/w1_bq27000.c index caafb17..745bd6e 100644
+>>>> --- a/drivers/w1/slaves/w1_bq27000.c
+>>>> +++ b/drivers/w1/slaves/w1_bq27000.c
+>>>> @@ -49,6 +49,8 @@ static int w1_bq27000_add_slave(struct w1_slave
+>>>> *sl) int ret;
+>>>> 	struct platform_device *pdev;
+>>>>=20
+>>>> +	request_module("bq27x00_battery");  /* load as module if needed =
+*/
+>>>> +
+>>>> 	pdev =3D platform_device_alloc("bq27000-battery", -1);
+>>>> 	if (!pdev) {
+>>>> 		ret =3D -ENOMEM;
+>>>=20
+>>> Hi! Function platform_device_alloc would allocate kernel device and=
+ it=20
+>>> should also load appropriate kernel driver (via platform:bq27000-ba=
+ttery=20
+>>> alias). If that does not work, problem is somewhere else. Maybe dep=
+mod=20
+>>> is not properly generated? Or bq27x00_batter.ko modules does not co=
+ntain=20
+>>> needed alias?
+>>=20
+>=20
+> At least driver is renaming in upstream kernel, so hardcoding driver
+> name is wrong approach. It will be broken... If we show that
+> request_module is really needed (but I believe not!) then please use
+> alias instead.
 
-Looks good to me.
+>=20
+>> alias exists:
+>>=20
+>> #ifdef CONFIG_BATTERY_BQ27X00_PLATFORM
+>> MODULE_ALIAS("platform:bq27000-battery");
+>> #endif
+>>=20
+>> depmod entry exist:
+>>=20
+>> root@letux:~# modprobe -c | fgrep bq27
+>> alias i2c:bq27000_battery bq27x00_battery
+>> alias i2c:bq27200 bq27x00_battery
+>> alias i2c:bq27425 bq27x00_battery
+>> alias i2c:bq27500 bq27x00_battery
+>> alias i2c:bq27510 bq27x00_battery
+>> alias i2c:bq27742 bq27x00_battery
+>> alias platform:bq27000_battery bq27x00_battery
+>> alias w1_family_0x01 w1_bq27000
+>>=20
+>> And I have traced all calls to call_modprobe
+>>=20
+>> [    9.969085] call_modprobe w1-family-0x01
+>> [   10.189727] call_modprobe bq27x00_battery
 
-> 2. The decision of whether or not to call into the low level cpufreq
-> driver in the scheduler hot paths currently hinges on whether or not the
-> low level cpufreq driver will sleep. Even if the cpufreq driver does not
-> sleep however, the latency to enqueue a frequency change (and complete
-> it if the low level driver is not asynchronous) may still be high,
-> making it unsuitable to run in a scheduler hot path. Should the
-> semantics of the flag be changed to indicate whether a cpufreq driver is
-> fast enough to run in this context? Sleeping would still of course mean
-> that it is not.
-> 
+I have tried without request_module("bq27x00_battery") and this
+call to call_modprobe() disappears.
 
-Yeah, we assumed that not sleeping means fast. I didn't really played
-with this configuration, so I can't say if this is a problem or not.
-But, I agree with you that, if this is a problem, we could change
-semantic of the flag (maybe it is just more general?).
+But it still works, i.e. the module appears in lsmod!
 
-Thanks,
+I am a bit puzzled now...
 
-- Juri
+What could have happened:
+* there was no automatic module load when we developed
+the patch (a while ago - it was sleeping in our development tree)
+* when automatic load was improved somewhere else, we
+did not notice (because a second request_module() does
+not have a visible side-effects)
+* so we just though that this is still required and did not check
+that it isn't any more
+
+So as it appears to work, we can simply drop it from the patch
+set (and our development tree) v2.
+
+Sorry for the noise and thanks for helping to find it.
+
+>> [   29.879333] call_modprobe net-pf-10
+>> [   30.530548] call_modprobe netdev-eth0
+>> [   30.548156] call_modprobe eth0
+>> [   30.565063] call_modprobe netdev-eth0
+>> [   30.581420] call_modprobe eth0
+>> [   31.301300] call_modprobe netdev-eth1
+>> [   31.316101] call_modprobe eth1
+>> [   32.008270] call_modprobe usbfunc:ecm
+>> [   35.554748] call_modprobe net-pf-16-proto-9
+>> [   36.243164] call_modprobe net-pf-31
+>> [   36.614410] call_modprobe bt-proto-4
+>> [   73.888122] call_modprobe net-pf-16-proto-9
+>> [   73.921112] call_modprobe net-pf-16-proto-9
+>> [   77.153625] call_modprobe net-pf-16-proto-9
+>> [   77.188262] call_modprobe net-pf-16-proto-9
+>> [   77.342895] call_modprobe net-pf-16-proto-9
+>> [   77.389129] call_modprobe net-pf-16-proto-9
+>> [   77.419006] call_modprobe net-pf-16-proto-9
+>>=20
+>> And there is only the line I have added. I.e. I can't find an automa=
+tic attempt
+>> to load the platform:bq27000-battery. It also doesn't help to change=
+ to=20
+>> platform_device_alloc("bq27000_battery", -1)
+>>=20
+>> So I think platform_device_alloc() does only what it tells: it alloc=
+ates a device
+>> but does *not* try to load a kernel module. It only binds to a drive=
+r compiled
+>> into the kernel. AFAIR the I2C bus driver also calls request_module(=
+) at some
+>> stage after finding a client (i2c:bq27000_battery).
+>>=20
+>=20
+> Try to call platform_device_register(). E.g for rx51-battery power
+> supply device it is working fine. Device itself is allocated and
+> registered in arch/arm/mach-omap2/board-rx51-peripherals.c and driver=
+ is
+> in drivers/power/rx51_battery.c. You can also try to reuse that code.=
+=2E.
+> I see that w1 is quite different.
+>=20
+>>> Adding request_module() here is not proper solution. Real problem i=
+s=20
+>>> somewhere else... Anyway there is series of patches for bq27x00_bat=
+tery=20
+>>> which should cleanup some problems, so maybe they also fix your pro=
+blem.
+>>=20
+>> Is there a tree where I can pull the patches to cross-check if they =
+change
+>> something?
+>>=20
+>=20
+> Sebastian? Where are those new bq27k patches now?
+>=20
+>> BR,
+>> Nikolaus
+>>=20
+>=20
+> --=20
+> Pali Roh=E1r
+> pali.rohar@gmail.com
+
+BR,
+Nikolaus
 
