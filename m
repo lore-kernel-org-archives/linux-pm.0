@@ -1,58 +1,53 @@
-From: Steve Muckle <steve.muckle@linaro.org>
-Subject: Re: [RFCv5 PATCH 38/46] sched: scheduler-driven cpu frequency
- selection
-Date: Wed, 7 Oct 2015 17:14:20 -0700
-Message-ID: <5615B55C.8010804@linaro.org>
-References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
- <1436293469-25707-39-git-send-email-morten.rasmussen@arm.com>
- <20150815130545.GI10304@worktop.programming.kicks-ass.net>
- <55DC475B.2080502@arm.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v1 0/2] crash on reading cpufreq sysfs
+Date: Thu, 8 Oct 2015 02:17:06 +0200
+Message-ID: <CAJZ5v0j0=WKGoERT_uJjs=gkAiDuR2_RdTOTObHx9up-vzLZuQ@mail.gmail.com>
+References: <1444251044-11231-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	<1543959.r5bbusBA6I@vostro.rjw.lan>
+	<1444261800.7437.7.camel@spandruv-desk3.jf.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f53.google.com ([209.85.220.53]:34988 "EHLO
-	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750944AbbJHAOX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2015 20:14:23 -0400
-Received: by pacfv12 with SMTP id fv12so36392581pac.2
-        for <linux-pm@vger.kernel.org>; Wed, 07 Oct 2015 17:14:22 -0700 (PDT)
-In-Reply-To: <55DC475B.2080502@arm.com>
+Received: from mail-lb0-f174.google.com ([209.85.217.174]:34874 "EHLO
+	mail-lb0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750908AbbJHARI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2015 20:17:08 -0400
+Received: by lbwr8 with SMTP id r8so29058615lbw.2
+        for <linux-pm@vger.kernel.org>; Wed, 07 Oct 2015 17:17:06 -0700 (PDT)
+In-Reply-To: <1444261800.7437.7.camel@spandruv-desk3.jf.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>, "mturquette@baylibre.com" <mturquette@baylibre.com>
-Cc: "mingo@redhat.com" <mingo@redhat.com>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, "yuyang.du@intel.com" <yuyang.du@intel.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "sgurrappadi@nvidia.com" <sgurrappadi@nvidia.com>, "pang.xunlei@zte.com.cn" <pang.xunlei@zte.com.cn>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 08/25/2015 03:45 AM, Juri Lelli wrote:
-> But, it is true that if the above events happened the other way around
-> (we trigger an update after load balancing and a new task arrives), we
-> may miss the opportunity to jump to max with the new task. In my mind
-> this is probably not a big deal, as we'll have a tick pretty soon that
-> will fix things anyway (saving us some complexity in the backend).
-> 
-> What you think?
+On Thu, Oct 8, 2015 at 1:50 AM, Srinivas Pandruvada
+<srinivas.pandruvada@linux.intel.com> wrote:
+> On Thu, 2015-10-08 at 00:50 +0200, Rafael J. Wysocki wrote:
+>> On Wednesday, October 07, 2015 01:50:42 PM Srinivas Pandruvada wrote:
+>> > Fixes for crash on reading cpufreq sysfs for offline cpus
+>> >
+>> > v1
+>> > Fix commit discription on Patch 1/2. Included Acks from Viresh.
+>> > It has both patches, even though only one patch has change.
+>> >
+>> > v0
+>> > two patches: one for acp-cpufreq and one for cpufreq core
+>> >
+>> > Srinivas Pandruvada (2):
+>> >   cpufreq: acpi_cpufreq: prevent crash on reading freqdomain_cpus
+>> >   cpufreq: prevent lockup on reading scaling_available_frequencies
+>>
+>> Both applied, but they look like -stable material to me.
+>>
+> I tested in 4.1 kernels, since on offline, cpufreq folder is not
+> available there is no issue.
+> For 4.2 kernels the I didn't see crash fixed by cpufreq core patch (cat
+> scaling_available_frequencies), but the "cat freqdomain_cpus" still
+> causes crash. So we need to apply cpufreq:acpi-cpufreq patch only. So
+> one patch is applicable for stable tree.
 
-I fear that waiting up to a full tick to resolve a shortfall in CPU
-bandwidth will cause complaints.
+So [1/2] should go into 4.2.y and [2/2] fixes a regression introduced
+in this cycle, right?
 
-Thinking about how this would be implemented raises a couple questions
-for me though.
-
-1. To avoid issuing a frequency change request while one is already in
-flight, the current code uses the stated cpufreq driver transition
-latency to throttle. Wouldn't it be more accurate to block further
-requests until the CPUFREQ_POSTCHANGE notifier has run? In addition to
-removing the requirement of supplying a latency value, frequency
-transitions may take different amounts of time depending on system state
-so a single latency value may often be incorrect.
-
-2. The decision of whether or not to call into the low level cpufreq
-driver in the scheduler hot paths currently hinges on whether or not the
-low level cpufreq driver will sleep. Even if the cpufreq driver does not
-sleep however, the latency to enqueue a frequency change (and complete
-it if the low level driver is not asynchronous) may still be high,
-making it unsuitable to run in a scheduler hot path. Should the
-semantics of the flag be changed to indicate whether a cpufreq driver is
-fast enough to run in this context? Sleeping would still of course mean
-that it is not.
-
+Thanks,
+Rafael
