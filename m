@@ -1,60 +1,100 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH v1 0/2] crash on reading cpufreq sysfs
-Date: Wed, 07 Oct 2015 16:50:00 -0700
-Message-ID: <1444261800.7437.7.camel@spandruv-desk3.jf.intel.com>
-References: <1444251044-11231-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-	 <1543959.r5bbusBA6I@vostro.rjw.lan>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH] cpufreq, intel_pstate, set max_sysfs_pct and min_sysfs_pct
+ on governor switch
+Date: Wed, 07 Oct 2015 20:13:23 -0400
+Message-ID: <5615B523.8020501@redhat.com>
+References: <1444168147-17812-1-git-send-email-prarit@redhat.com> <000f01d10131$59c67a60$0d536f20$@net> <56158F2D.50200@redhat.com> <10053399.aMfHfU7Xt3@vostro.rjw.lan> <001001d1014f$2613efe0$723bcfa0$@net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:55591 "EHLO mga03.intel.com"
+Received: from mx1.redhat.com ([209.132.183.28]:38571 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751563AbbJGXwQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 7 Oct 2015 19:52:16 -0400
-In-Reply-To: <1543959.r5bbusBA6I@vostro.rjw.lan>
+	id S1752238AbbJHANZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 7 Oct 2015 20:13:25 -0400
+In-Reply-To: <001001d1014f$2613efe0$723bcfa0$@net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: rafael.j.wysocki@intel.com, viresh.kumar@linaro.org, linux-pm@vger.kernel.org
+To: Doug Smythies <dsmythies@telus.net>
+Cc: 'Kristen Carlson Accardi' <kristen@linux.intel.com>, linux-kernel@vger.kernel.org, 'Viresh Kumar' <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
 
-On Thu, 2015-10-08 at 00:50 +0200, Rafael J. Wysocki wrote:
-> On Wednesday, October 07, 2015 01:50:42 PM Srinivas Pandruvada wrote:
-> > Fixes for crash on reading cpufreq sysfs for offline cpus
-> > 
-> > v1
-> > Fix commit discription on Patch 1/2. Included Acks from Viresh.
-> > It has both patches, even though only one patch has change.
-> > 
-> > v0
-> > two patches: one for acp-cpufreq and one for cpufreq core
-> > 
-> > Srinivas Pandruvada (2):
-> >   cpufreq: acpi_cpufreq: prevent crash on reading freqdomain_cpus
-> >   cpufreq: prevent lockup on reading scaling_available_frequencies
+
+
+On 10/07/2015 06:26 PM, Doug Smythies wrote:
+> On 2015.10.07 15:06 Rafael J. Wysocki wrote:
+>> On Wednesday, October 07, 2015 05:31:25 PM Prarit Bhargava wrote:
+>>> On 10/07/2015 02:52 PM, Doug Smythies wrote:
+>>>> On 2015.10.07 08:46 Prarit Bhargava wrote:
+>>>>> On 10/07/2015 11:40 AM, Doug Smythies wrote:
+>>>>>>
+>>>>>> Do we agree or disagree that the root issue seems to be (from your test)?:
+>>>>>>
+>>>>>> \#  echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct
+>>>>>>
+>>>>>> [   21.483436] store_min_perf_pct[453] min_sysfs_pct = 100
+>>>>>> [   21.489373] store_min_perf_pct[456] min_perf_pct = 100
+>>>>>> [   21.495203] store_min_perf_pct[459] min_perf_pct = 100
+>>>>>> [   21.501050] store_min_perf_pct[462] min_perf_pct = 100
+>>>>>
+>>>>> Yep, and it appears to be done by default in Fedora & RHEL :/ ... the issue is
+>>>>> still the same IMO that min_sysfs_pct & max_sysfs_pct are not cleared on a
+>>>>> governor switch.
+>>>>
+>>>> Clearing them will break some other things. For example, and as
+>>>> shown in my original reply, resume from suspend.
+>>>>
+>>>> Why? Because, at least on my computer, the governor is changed to
+>>>> "performance" during suspend, and the "powersave" governor is
+>>>> restored sometime during resume. The users wants the settings they had
+>>>> before the suspend.
+>>>>
+>>> Looking at this in more detail after having tested on a Intel(R) Core(TM)
+>>> i7-2600 CPU @ 3.40GHz in Fedora and RHEL.
+>>>
+>>> I have a feeling that the switch you're seeing (poweersave->performance, suspend
+>>> ... resume, performance->powersave) is occurring in userspace, and not as a
+>>> result of the kernel.
+> Agreed. It is pm-suspend doing it.
 > 
-> Both applied, but they look like -stable material to me.
+>>>  IMO if userspace changes the governor, all bets are off
+>>> on maintaining max_sysfs_pct and min_sysfs_pct.
+>>>
+>>> Here's something I cannot figure out (because I do not have an Ubuntu install).
+>>>  *Why* is Ubuntu making the governor switch during suspend/resume?  Is it
+>>> because of archaic brokeness they were trying to paper over?
 > 
-I tested in 4.1 kernels, since on offline, cpufreq folder is not
-available there is no issue.
-For 4.2 kernels the I didn't see crash fixed by cpufreq core patch (cat
-scaling_available_frequencies), but the "cat freqdomain_cpus" still
-causes crash. So we need to apply cpufreq:acpi-cpufreq patch only. So
-one patch is applicable for stable tree.
+>>> That's not limited to Ubuntu, pm-utils has been doing that forever.
+> 
+> Agreed. This in pm-utils, and not limited to Ubuntu.
+> We can ignore this issue if everyone wants, but I can envision bug reports.
+> 
+>> I have no idea why has it been doing that, though.  I guess the reason
+>> was to "speed up" PM transitions (in case it started when you were in a
+>> low-frequency P-state and then there was no time to bump it up before
+>> things got too far).
+> 
+> I have no idea either, but the stated theory seems sound.
+
+Doug, can you also apply (sorry for the cut-and-paste)
+
+diff --git a/pm/sleep.d/94cpufreq b/pm/sleep.d/94cpufreq
+index 6807681..2c83e8e 100755
+--- a/pm/sleep.d/94cpufreq
++++ b/pm/sleep.d/94cpufreq
+@@ -16,6 +16,8 @@ hibernate_cpufreq()
+                gov="$x/cpufreq/scaling_governor"
+                # if we do not have a scaling_governor file, skip.
+                [ -f "$gov" ] || continue
++               # Is the governor known to work?
++               [ "$gov" == "intel_pstate" ] && continue
+                # if our temporary governor is not available, skip.
+                grep -q "$TEMPORARY_CPUFREQ_GOVERNOR" \
+                        "$x/cpufreq/scaling_available_governors" || continue
+
+and re-test?
 
 Thanks,
-Srinivas
 
-
-> What kernel versions are they applicable too (and in what kernels
-> are they needed)?
+P.
 > 
-> Thanks,
-> Rafael
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
-
