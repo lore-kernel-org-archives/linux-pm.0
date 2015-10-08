@@ -1,68 +1,147 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [Device-mainlining] [PATCH v2 2/3] gadget: Introduce the usb
- charger framework
-Date: Thu, 8 Oct 2015 12:23:16 -0400
-Message-ID: <20151008162316.GA5833@kroah.com>
-References: <cover.1439519412.git.baolin.wang@linaro.org>
- <0c41e21239f69c4e1aa89aba020c91edfc17c4e8.1439519413.git.baolin.wang@linaro.org>
- <20150814152723.GA17892@kroah.com>
- <CAMz4kuL=6mGjNHcKHA9RYbabYqn3Lgu=rK6s8WkH5YGeV1T2+w@mail.gmail.com>
- <55D1FCDF.6060709@sonymobile.com>
- <20151008155031.GE11776@xo-6d-61-c0.localdomain>
+From: Alim Akhtar <alim.akhtar@gmail.com>
+Subject: Re: [PATCH 2/5] thermal: exynos: Fix first temperature read after
+ registering sensor
+Date: Thu, 8 Oct 2015 22:13:21 +0530
+Message-ID: <CAGOxZ51BuqBGBECngB3YnNQJ4Ae+LNfTvqntg+GxdAih4GPXzQ@mail.gmail.com>
+References: <1444282446-6419-1-git-send-email-k.kozlowski@samsung.com> <1444282446-6419-2-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:48305 "EHLO
-	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933103AbbJHQks (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 Oct 2015 12:40:48 -0400
-Content-Disposition: inline
-In-Reply-To: <20151008155031.GE11776@xo-6d-61-c0.localdomain>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1444282446-6419-2-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, linux-pm@vger.kernel.org, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Tim Bird <tim.bird@sonymobile.com>, Baolin Wang <baolin.wang@linaro.org>, "patches@opensource.wolfsonmicro.com" <patches@opensource.wolfsonmicro.com>, "sameo@linux.intel.com" <sameo@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "r.baldyga@samsung.com" <r.baldyga@samsung.com>, "sojka@merica.cz" <sojka@merica.cz>, Felipe Balbi <balbi@ti.com>, LKML <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Peter Chen <peter.chen@freescale.com>, "sre@kernel.org" <sre@kernel.org>, Lee Jones <lee.jones@linaro.org>, "device-mainlining@lists.linuxfoundation.org" <device-mainlining@lists.linuxfoundation.org>, "yoshihiro.shimoda.uh@renesas.com" <yoshihiro.shimoda.uh@renesas.com>
 
-On Thu, Oct 08, 2015 at 05:50:31PM +0200, Pavel Machek wrote:
-> Hi!
-> 
-> > On 08/16/2015 08:03 PM, Baolin Wang via device-mainlining wrote:
-> > > On 14 August 2015 at 23:27, Greg KH <gregkh@linuxfoundation.org> wrote:
-> > >> On Fri, Aug 14, 2015 at 05:47:45PM +0800, Baolin Wang wrote:
-> > >>> + *
-> > >>> + * This program is free software; you can redistribute it and/or modify
-> > >>> + * it under the terms of the GNU General Public License as published by
-> > >>> + * the Free Software Foundation; either version 2 of the License, or
-> > >>> + * (at your option) any later version.
-> > >>
-> > >> I have to ask, do you really mean "any later version"?
-> > >>
-> > > 
-> > > I think I did not get your point, could you explain it detailedly?
-> > 
-> > The full kernel is licensed under v2 of the GPL only, not "any later version".
-> > See the second paragraph at the top of the COPYING file in the root directory
-> > of the kernel source tree. There are differences on individual files, but
-> > having this file allow "any later version" makes it different from much of
-> > rest of the kernel.
-> > 
-> > Unless you have a specific reason to allow greater-than-V2 GPL licensing on this
-> > file, you should change the licensing clause.  The following wording appears
-> > to be pretty popular:
-> > 
-> > * This program is free software; you can redistribute it and/or modify
-> > * it under the terms of the GNU General Public License version 2 as
-> > * published by the Free Software Foundation.
-> 
-> Please, keep it V2 or later, if you can. It makes sharing code with U-Boot (for
-> example) easier.
-> 
-> There's long tradition of "V2 or later" code in the kernel.
+Hello,
 
-And there's even longer "v2 only" tradition as well.  It's up to the
-person / company submitting the code to pick the license for it, let
-them make the decision please.
+On Thu, Oct 8, 2015 at 11:04 AM, Krzysztof Kozlowski
+<k.kozlowski@samsung.com> wrote:
+> Thermal core could not read the temperature after registering the
+> thermal sensor with thermal_zone_of_sensor_register() because the driver
+> was not yet initialized.
+>
+> The call trace looked like:
+>     exynos_tmu_probe()
+>         thermal_zone_of_sensor_register()
+>             of_thermal_set_mode()
+>                 thermal_zone_device_update()
+>                     exynos_get_temp()
+>                         if (!data->tmu_read) return -EINVAL;
+>         exynos_map_dt_data()
+>             data->tmu_read = ...
+>
+> This produced an error in dmesg:
+> thermal thermal_zone0: failed to read out thermal zone (-22)
+>
+> Register the thermal_zone_device later, after parsing Device Tree and
+> enabling necessary clocks, but before calling exynos_tmu_initialize()
+> which uses the registered thermal_zone_device.
+>
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Fixes: 3b6a1a805f34 ("thermal: samsung: core: Exynos TMU rework to use device tree for configuration")
+> ---
+Patch looks good to me.
 
-thanks,
+Before this patch I was getting below on exynos5800 board:
+[    2.648629] thermal thermal_zone0: failed to read out thermal zone (-22)
+[    2.653906] 10060000.tmu supply vtmu not found, using dummy regulator
+[    2.660521] thermal thermal_zone1: failed to read out thermal zone (-22)
+[    2.666985] 10064000.tmu supply vtmu not found, using dummy regulator
+[    2.673658] thermal thermal_zone2: failed to read out thermal zone (-22)
+[    2.680093] 10068000.tmu supply vtmu not found, using dummy regulator
+[    2.686901] thermal thermal_zone3: failed to read out thermal zone (-22)
+[    2.693187] 1006c000.tmu supply vtmu not found, using dummy regulator
+[    2.699914] thermal thermal_zone4: failed to read out thermal zone (-22)
+[    2.706332] 100a0000.tmu supply vtmu not found, using dummy regulator
 
-greg k-h
+
+Reviewed-by: Alim Akhtar <alim.akhtar@samsung.com>
+
+Tested on exynos5800 peach board, so
+Tested-by: Alim Akhtar <alim.akhtar@samsung.com>
+
+
+>  drivers/thermal/samsung/exynos_tmu.c | 27 +++++++++++++++++--------
+--
+>  1 file changed, 17 insertions(+), 10 deletions(-)
+>
+> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+> index 23f4320f8ef7..bc71a61f0c4a 100644
+> --- a/drivers/thermal/samsung/exynos_tmu.c
+> +++ b/drivers/thermal/samsung/exynos_tmu.c
+> @@ -1289,13 +1289,6 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+>         platform_set_drvdata(pdev, data);
+>         mutex_init(&data->lock);
+>
+> -       data->tzd = thermal_zone_of_sensor_register(&pdev->dev, 0, data,
+> -                                                   &exynos_sensor_ops);
+> -       if (IS_ERR(data->tzd)) {
+> -               pr_err("thermal: tz: %p ERROR\n", data->tzd);
+> -               return PTR_ERR(data->tzd);
+> -       }
+> -
+>         /*
+>          * Try enabling the regulator if found
+>          * TODO: Add regulator as an SOC feature, so that regulator enable
+> @@ -1365,21 +1358,36 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+>                 break;
+>         };
+>
+> +       /*
+> +        * data->tzd must be registered before calling exynos_tmu_initialize(),
+> +        * requesting irq and calling exynos_tmu_control().
+> +        */
+> +       data->tzd = thermal_zone_of_sensor_register(&pdev->dev, 0, data,
+> +                                                   &exynos_sensor_ops);
+> +       if (IS_ERR(data->tzd)) {
+> +               ret = PTR_ERR(data->tzd);
+> +               dev_err(&pdev->dev, "Failed to register sensor: %d\n", ret);
+> +               goto err_sclk;
+> +       }
+> +
+>         ret = exynos_tmu_initialize(pdev);
+>         if (ret) {
+>                 dev_err(&pdev->dev, "Failed to initialize TMU\n");
+> -               goto err_sclk;
+> +               goto err_thermal;
+>         }
+>
+>         ret = devm_request_irq(&pdev->dev, data->irq, exynos_tmu_irq,
+>                 IRQF_TRIGGER_RISING | IRQF_SHARED, dev_name(&pdev->dev), data);
+>         if (ret) {
+>                 dev_err(&pdev->dev, "Failed to request irq: %d\n", data->irq);
+> -               goto err_sclk;
+> +               goto err_thermal;
+>         }
+>
+>         exynos_tmu_control(pdev, true);
+>         return 0;
+> +
+> +err_thermal:
+> +       thermal_zone_of_sensor_unregister(&pdev->dev, data->tzd);
+>  err_sclk:
+>         clk_disable_unprepare(data->sclk);
+>  err_clk:
+> @@ -1390,7 +1398,6 @@ err_clk_sec:
+>  err_sensor:
+>         if (!IS_ERR_OR_NULL(data->regulator))
+>                 regulator_disable(data->regulator);
+> -       thermal_zone_of_sensor_unregister(&pdev->dev, data->tzd);
+>
+>         return ret;
+>  }
+> --
+> 1.9.1
+>
+>
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+
+
+
+-- 
+Regards,
+Alim
