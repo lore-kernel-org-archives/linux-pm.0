@@ -1,100 +1,58 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH] cpufreq, intel_pstate, set max_sysfs_pct and min_sysfs_pct
- on governor switch
-Date: Wed, 07 Oct 2015 20:13:23 -0400
-Message-ID: <5615B523.8020501@redhat.com>
-References: <1444168147-17812-1-git-send-email-prarit@redhat.com> <000f01d10131$59c67a60$0d536f20$@net> <56158F2D.50200@redhat.com> <10053399.aMfHfU7Xt3@vostro.rjw.lan> <001001d1014f$2613efe0$723bcfa0$@net>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [RFCv5 PATCH 38/46] sched: scheduler-driven cpu frequency
+ selection
+Date: Wed, 7 Oct 2015 17:14:20 -0700
+Message-ID: <5615B55C.8010804@linaro.org>
+References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
+ <1436293469-25707-39-git-send-email-morten.rasmussen@arm.com>
+ <20150815130545.GI10304@worktop.programming.kicks-ass.net>
+ <55DC475B.2080502@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:38571 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752238AbbJHANZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 7 Oct 2015 20:13:25 -0400
-In-Reply-To: <001001d1014f$2613efe0$723bcfa0$@net>
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:34988 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750944AbbJHAOX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2015 20:14:23 -0400
+Received: by pacfv12 with SMTP id fv12so36392581pac.2
+        for <linux-pm@vger.kernel.org>; Wed, 07 Oct 2015 17:14:22 -0700 (PDT)
+In-Reply-To: <55DC475B.2080502@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: 'Kristen Carlson Accardi' <kristen@linux.intel.com>, linux-kernel@vger.kernel.org, 'Viresh Kumar' <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
+To: Juri Lelli <juri.lelli@arm.com>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <Morten.Rasmussen@arm.com>, "mturquette@baylibre.com" <mturquette@baylibre.com>
+Cc: "mingo@redhat.com" <mingo@redhat.com>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, "yuyang.du@intel.com" <yuyang.du@intel.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "sgurrappadi@nvidia.com" <sgurrappadi@nvidia.com>, "pang.xunlei@zte.com.cn" <pang.xunlei@zte.com.cn>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-
-
-On 10/07/2015 06:26 PM, Doug Smythies wrote:
-> On 2015.10.07 15:06 Rafael J. Wysocki wrote:
->> On Wednesday, October 07, 2015 05:31:25 PM Prarit Bhargava wrote:
->>> On 10/07/2015 02:52 PM, Doug Smythies wrote:
->>>> On 2015.10.07 08:46 Prarit Bhargava wrote:
->>>>> On 10/07/2015 11:40 AM, Doug Smythies wrote:
->>>>>>
->>>>>> Do we agree or disagree that the root issue seems to be (from your test)?:
->>>>>>
->>>>>> \#  echo 100 > /sys/devices/system/cpu/intel_pstate/min_perf_pct
->>>>>>
->>>>>> [   21.483436] store_min_perf_pct[453] min_sysfs_pct = 100
->>>>>> [   21.489373] store_min_perf_pct[456] min_perf_pct = 100
->>>>>> [   21.495203] store_min_perf_pct[459] min_perf_pct = 100
->>>>>> [   21.501050] store_min_perf_pct[462] min_perf_pct = 100
->>>>>
->>>>> Yep, and it appears to be done by default in Fedora & RHEL :/ ... the issue is
->>>>> still the same IMO that min_sysfs_pct & max_sysfs_pct are not cleared on a
->>>>> governor switch.
->>>>
->>>> Clearing them will break some other things. For example, and as
->>>> shown in my original reply, resume from suspend.
->>>>
->>>> Why? Because, at least on my computer, the governor is changed to
->>>> "performance" during suspend, and the "powersave" governor is
->>>> restored sometime during resume. The users wants the settings they had
->>>> before the suspend.
->>>>
->>> Looking at this in more detail after having tested on a Intel(R) Core(TM)
->>> i7-2600 CPU @ 3.40GHz in Fedora and RHEL.
->>>
->>> I have a feeling that the switch you're seeing (poweersave->performance, suspend
->>> ... resume, performance->powersave) is occurring in userspace, and not as a
->>> result of the kernel.
-> Agreed. It is pm-suspend doing it.
+On 08/25/2015 03:45 AM, Juri Lelli wrote:
+> But, it is true that if the above events happened the other way around
+> (we trigger an update after load balancing and a new task arrives), we
+> may miss the opportunity to jump to max with the new task. In my mind
+> this is probably not a big deal, as we'll have a tick pretty soon that
+> will fix things anyway (saving us some complexity in the backend).
 > 
->>>  IMO if userspace changes the governor, all bets are off
->>> on maintaining max_sysfs_pct and min_sysfs_pct.
->>>
->>> Here's something I cannot figure out (because I do not have an Ubuntu install).
->>>  *Why* is Ubuntu making the governor switch during suspend/resume?  Is it
->>> because of archaic brokeness they were trying to paper over?
-> 
->>> That's not limited to Ubuntu, pm-utils has been doing that forever.
-> 
-> Agreed. This in pm-utils, and not limited to Ubuntu.
-> We can ignore this issue if everyone wants, but I can envision bug reports.
-> 
->> I have no idea why has it been doing that, though.  I guess the reason
->> was to "speed up" PM transitions (in case it started when you were in a
->> low-frequency P-state and then there was no time to bump it up before
->> things got too far).
-> 
-> I have no idea either, but the stated theory seems sound.
+> What you think?
 
-Doug, can you also apply (sorry for the cut-and-paste)
+I fear that waiting up to a full tick to resolve a shortfall in CPU
+bandwidth will cause complaints.
 
-diff --git a/pm/sleep.d/94cpufreq b/pm/sleep.d/94cpufreq
-index 6807681..2c83e8e 100755
---- a/pm/sleep.d/94cpufreq
-+++ b/pm/sleep.d/94cpufreq
-@@ -16,6 +16,8 @@ hibernate_cpufreq()
-                gov="$x/cpufreq/scaling_governor"
-                # if we do not have a scaling_governor file, skip.
-                [ -f "$gov" ] || continue
-+               # Is the governor known to work?
-+               [ "$gov" == "intel_pstate" ] && continue
-                # if our temporary governor is not available, skip.
-                grep -q "$TEMPORARY_CPUFREQ_GOVERNOR" \
-                        "$x/cpufreq/scaling_available_governors" || continue
+Thinking about how this would be implemented raises a couple questions
+for me though.
 
-and re-test?
+1. To avoid issuing a frequency change request while one is already in
+flight, the current code uses the stated cpufreq driver transition
+latency to throttle. Wouldn't it be more accurate to block further
+requests until the CPUFREQ_POSTCHANGE notifier has run? In addition to
+removing the requirement of supplying a latency value, frequency
+transitions may take different amounts of time depending on system state
+so a single latency value may often be incorrect.
 
-Thanks,
+2. The decision of whether or not to call into the low level cpufreq
+driver in the scheduler hot paths currently hinges on whether or not the
+low level cpufreq driver will sleep. Even if the cpufreq driver does not
+sleep however, the latency to enqueue a frequency change (and complete
+it if the low level driver is not asynchronous) may still be high,
+making it unsuitable to run in a scheduler hot path. Should the
+semantics of the flag be changed to indicate whether a cpufreq driver is
+fast enough to run in this context? Sleeping would still of course mean
+that it is not.
 
-P.
-> 
-> 
