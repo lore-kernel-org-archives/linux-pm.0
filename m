@@ -1,43 +1,57 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v4 1/5] gadget: Introduce the notifier functions
-Date: Thu, 8 Oct 2015 17:51:01 +0200
-Message-ID: <20151008155100.GI11776@xo-6d-61-c0.localdomain>
-References: <cover.1443057229.git.baolin.wang@linaro.org>
- <e58e4f26028c37877d02907831cf4ae411eaf984.1443057231.git.baolin.wang@linaro.org>
- <20151001172932.GG4469@saruman.tx.rr.com>
- <20151001174308.GL12635@sirena.org.uk>
- <20151001175849.GH4469@saruman.tx.rr.com>
+Subject: Re: [Device-mainlining] [PATCH v2 2/3] gadget: Introduce the usb
+ charger framework
+Date: Thu, 8 Oct 2015 17:50:31 +0200
+Message-ID: <20151008155031.GE11776@xo-6d-61-c0.localdomain>
+References: <cover.1439519412.git.baolin.wang@linaro.org>
+ <0c41e21239f69c4e1aa89aba020c91edfc17c4e8.1439519413.git.baolin.wang@linaro.org>
+ <20150814152723.GA17892@kroah.com>
+ <CAMz4kuL=6mGjNHcKHA9RYbabYqn3Lgu=rK6s8WkH5YGeV1T2+w@mail.gmail.com>
+ <55D1FCDF.6060709@sonymobile.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20151001175849.GH4469@saruman.tx.rr.com>
+In-Reply-To: <55D1FCDF.6060709@sonymobile.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Felipe Balbi <balbi@ti.com>
-Cc: Mark Brown <broonie@kernel.org>, Baolin Wang <baolin.wang@linaro.org>, Greg KH <gregkh@linuxfoundation.org>, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, sojka@merica.cz, yoshihiro.shimoda.uh@renesas.com, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, sameo@linux.intel.com, lee.jones@linaro.org, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, device-mainlining@lists.linuxfoundation.org
+To: Tim Bird <tim.bird@sonymobile.com>
+Cc: Baolin Wang <baolin.wang@linaro.org>, Greg KH <gregkh@linuxfoundation.org>, "patches@opensource.wolfsonmicro.com" <patches@opensource.wolfsonmicro.com>, "sameo@linux.intel.com" <sameo@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "r.baldyga@samsung.com" <r.baldyga@samsung.com>, "sojka@merica.cz" <sojka@merica.cz>, Felipe Balbi <balbi@ti.com>, LKML <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Peter Chen <peter.chen@freescale.com>, "sre@kernel.org" <sre@kernel.org>, Lee Jones <lee.jones@linaro.org>, "device-mainlining@lists.linuxfoundation.org" <device-mainlining@lists.linuxfoundation.org>, "yoshihiro.shimoda.uh@renesas.com" <yoshihiro.shimoda.uh@renesas.com>
 List-Id: linux-pm@vger.kernel.org
 
 Hi!
 
-> > What's the advantage of pushing this to userspace?  By the time we
-> > provide enough discoverability to enable userspace to configure itself
-> > it seems like we'd have enough information to do the job anyway.
+> On 08/16/2015 08:03 PM, Baolin Wang via device-mainlining wrote:
+> > On 14 August 2015 at 23:27, Greg KH <gregkh@linuxfoundation.org> wrote:
+> >> On Fri, Aug 14, 2015 at 05:47:45PM +0800, Baolin Wang wrote:
+> >>> + *
+> >>> + * This program is free software; you can redistribute it and/or modify
+> >>> + * it under the terms of the GNU General Public License as published by
+> >>> + * the Free Software Foundation; either version 2 of the License, or
+> >>> + * (at your option) any later version.
+> >>
+> >> I have to ask, do you really mean "any later version"?
+> >>
+> > 
+> > I think I did not get your point, could you explain it detailedly?
 > 
-> you're going to be dealing with a setup where each vendor does one thing
-> differently. Some will have it all in the SoC part of a single IP (dwc3 can be
-> configured that way), some will push it out to companion IC, some might even use
-> some mostly discrete setup and so on...
+> The full kernel is licensed under v2 of the GPL only, not "any later version".
+> See the second paragraph at the top of the COPYING file in the root directory
+> of the kernel source tree. There are differences on individual files, but
+> having this file allow "any later version" makes it different from much of
+> rest of the kernel.
 > 
-> We're gonna be dealing with a decision that involves information from multiple
-> subsystems (USB, regulator, hwmon, power supply to name a few).
+> Unless you have a specific reason to allow greater-than-V2 GPL licensing on this
+> file, you should change the licensing clause.  The following wording appears
+> to be pretty popular:
 > 
-> We tried doing it all in the kernel back in N800, N810 and N900/N9 days and it's
-> just plain difficult. To make matters worse, N900 had two USB PHYs, one for
-> actual runtime use and another just for detecting the charger type on the other
-> end.
+> * This program is free software; you can redistribute it and/or modify
+> * it under the terms of the GNU General Public License version 2 as
+> * published by the Free Software Foundation.
 
-N900 does charging from kernel these days.
+Please, keep it V2 or later, if you can. It makes sharing code with U-Boot (for
+example) easier.
 
-Not being able to boot generic distribution would be regression there...
+There's long tradition of "V2 or later" code in the kernel.
 
-										Pavel
+Best regards,
+									Pavel
