@@ -1,106 +1,70 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: [PATCH 2/5] thermal: exynos: Fix first temperature read after
- registering sensor
-Date: Thu, 08 Oct 2015 14:34:03 +0900
-Message-ID: <1444282446-6419-2-git-send-email-k.kozlowski@samsung.com>
-References: <1444282446-6419-1-git-send-email-k.kozlowski@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1444282446-6419-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH v3 4/9] clk: qcom: create virtual child device for TSENS
+Date: Wed, 7 Oct 2015 23:05:57 -0700
+Message-ID: <20151008060557.GD26883@codeaurora.org>
+References: <1444280468-17159-1-git-send-email-rnayak@codeaurora.org>
+ <1444280468-17159-5-git-send-email-rnayak@codeaurora.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1444280468-17159-5-git-send-email-rnayak@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Rajendra Nayak <rnayak@codeaurora.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com, srinivas.kandagatla@linaro.org, nrajan@codeaurora.org, lina.iyer@linaro.org, punit.agrawal@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-Thermal core could not read the temperature after registering the
-thermal sensor with thermal_zone_of_sensor_register() because the driver
-was not yet initialized.
+On 10/08, Rajendra Nayak wrote:
+> @@ -3520,11 +3522,26 @@ static int gcc_msm8960_probe(struct platform_device *pdev)
+>  	if (IS_ERR(clk))
+>  		return PTR_ERR(clk);
+>  
+> -	return qcom_cc_probe(pdev, match->data);
+> +	ret = qcom_cc_probe(pdev, match->data);
+> +	if (ret)
+> +		return ret;
+> +
+> +	tsens = platform_device_register_data(&pdev->dev, "qcom-tsens", -1,
+> +					      NULL, 0);
+> +	if (IS_ERR(tsens)) {
+> +		qcom_cc_remove(pdev);
+> +		return PTR_ERR(tsens);
+> +	}
+> +	platform_set_drvdata(pdev, tsens);
 
-The call trace looked like:
-    exynos_tmu_probe()
-        thermal_zone_of_sensor_register()
-            of_thermal_set_mode()
-                thermal_zone_device_update()
-                    exynos_get_temp()
-                        if (!data->tmu_read) return -EINVAL;
-        exynos_map_dt_data()
-            data->tmu_read = ...
+We just blew away the pointer that qcom_cc_probe() stores.
 
-This produced an error in dmesg:
-thermal thermal_zone0: failed to read out thermal zone (-22)
+> +
+> +	return 0;
+>  }
+>  
+>  static int gcc_msm8960_remove(struct platform_device *pdev)
+>  {
+> +	struct platform_device *tsens = platform_get_drvdata(pdev);
+> +
+> +	platform_device_unregister(tsens);
+>  	qcom_cc_remove(pdev);
 
-Register the thermal_zone_device later, after parsing Device Tree and
-enabling necessary clocks, but before calling exynos_tmu_initialize()
-which uses the registered thermal_zone_device.
+So now we've leaked the reset controller.
 
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Fixes: 3b6a1a805f34 ("thermal: samsung: core: Exynos TMU rework to use device tree for configuration")
----
- drivers/thermal/samsung/exynos_tmu.c | 27 +++++++++++++++++----------
- 1 file changed, 17 insertions(+), 10 deletions(-)
+I suppose the simplest solution is to get the drvdata pointer
+after qcom_cc_probe(), allocate a container structure to hold
+that as a void * plus the tsens device, i.e.
 
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index 23f4320f8ef7..bc71a61f0c4a 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -1289,13 +1289,6 @@ static int exynos_tmu_probe(struct platform_device *pdev)
- 	platform_set_drvdata(pdev, data);
- 	mutex_init(&data->lock);
- 
--	data->tzd = thermal_zone_of_sensor_register(&pdev->dev, 0, data,
--						    &exynos_sensor_ops);
--	if (IS_ERR(data->tzd)) {
--		pr_err("thermal: tz: %p ERROR\n", data->tzd);
--		return PTR_ERR(data->tzd);
--	}
--
- 	/*
- 	 * Try enabling the regulator if found
- 	 * TODO: Add regulator as an SOC feature, so that regulator enable
-@@ -1365,21 +1358,36 @@ static int exynos_tmu_probe(struct platform_device *pdev)
- 		break;
- 	};
- 
-+	/*
-+	 * data->tzd must be registered before calling exynos_tmu_initialize(),
-+	 * requesting irq and calling exynos_tmu_control().
-+	 */
-+	data->tzd = thermal_zone_of_sensor_register(&pdev->dev, 0, data,
-+						    &exynos_sensor_ops);
-+	if (IS_ERR(data->tzd)) {
-+		ret = PTR_ERR(data->tzd);
-+		dev_err(&pdev->dev, "Failed to register sensor: %d\n", ret);
-+		goto err_sclk;
-+	}
-+
- 	ret = exynos_tmu_initialize(pdev);
- 	if (ret) {
- 		dev_err(&pdev->dev, "Failed to initialize TMU\n");
--		goto err_sclk;
-+		goto err_thermal;
- 	}
- 
- 	ret = devm_request_irq(&pdev->dev, data->irq, exynos_tmu_irq,
- 		IRQF_TRIGGER_RISING | IRQF_SHARED, dev_name(&pdev->dev), data);
- 	if (ret) {
- 		dev_err(&pdev->dev, "Failed to request irq: %d\n", data->irq);
--		goto err_sclk;
-+		goto err_thermal;
- 	}
- 
- 	exynos_tmu_control(pdev, true);
- 	return 0;
-+
-+err_thermal:
-+	thermal_zone_of_sensor_unregister(&pdev->dev, data->tzd);
- err_sclk:
- 	clk_disable_unprepare(data->sclk);
- err_clk:
-@@ -1390,7 +1398,6 @@ err_clk_sec:
- err_sensor:
- 	if (!IS_ERR_OR_NULL(data->regulator))
- 		regulator_disable(data->regulator);
--	thermal_zone_of_sensor_unregister(&pdev->dev, data->tzd);
- 
- 	return ret;
- }
+	struct container {
+		void *data;
+		struct platform_device *tsens;
+	};
+	
+and then set the drvdata to that. And finally undo all that and
+restore the drvdata pointer on remove.
+
+I've also been considering putting some devm stuff inside
+qcom_cc_probe() itself so that in the normal case you don't even
+need to call qcom_cc_remove(), it just gets done automatically.
+That would open up the possibility for drivers to use the drvdata
+member as they wish.
+
 -- 
-1.9.1
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
