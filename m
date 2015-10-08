@@ -1,350 +1,348 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [RFC v2 2/6] PM / Domains: prepare for devices that might
- register a power state
-Date: Thu, 8 Oct 2015 10:11:56 -0600
-Message-ID: <20151008161156.GA921@linaro.org>
+Subject: Re: [RFC v2 3/6] PM / Domains: introduce power-states consistent
+ with c-states.
+Date: Thu, 8 Oct 2015 10:27:04 -0600
+Message-ID: <20151008162704.GB921@linaro.org>
 References: <20151006022702.GA78570@linaro.org>
  <1444141665-18534-1-git-send-email-mtitinger+renesas@baylibre.com>
- <1444141665-18534-3-git-send-email-mtitinger+renesas@baylibre.com>
+ <1444141665-18534-4-git-send-email-mtitinger+renesas@baylibre.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f41.google.com ([209.85.220.41]:36760 "EHLO
-	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932929AbbJHQL6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 Oct 2015 12:11:58 -0400
-Received: by pablk4 with SMTP id lk4so58810826pab.3
-        for <linux-pm@vger.kernel.org>; Thu, 08 Oct 2015 09:11:58 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1444141665-18534-3-git-send-email-mtitinger+renesas@baylibre.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <1444141665-18534-4-git-send-email-mtitinger+renesas@baylibre.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Marc Titinger <mtitinger@baylibre.com>
 Cc: khilman@kernel.org, rjw@rjwysocki.net, ahaslam@baylibre.com, bcousson@baylibre.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Marc Titinger <mtitinger+renesas@baylibre.com>
-
-Hi Marc,
-
-Thanks for rebasing on top of my latest series.
+List-Id: linux-pm@vger.kernel.org
 
 On Tue, Oct 06 2015 at 08:27 -0600, Marc Titinger wrote:
->Devices may register an intermediate retention state into the domain upon
+>This patch allows cluster-level C-states to being soaked in as generic
+>domain power states, in order for the domain governor to chose the most
+>efficient power state compatible with the device constraints. Similarly,
+>devices can register power-states into the cluster domain, in a manner
+>consistent with c-states.
 >
-I may agree with the usability of dynamic adding a state to the domain,
-but I dont see why a device attaching to a domain should bring about a
-new domain state.
+A domain power state as depicted in the DT is no different than the CPU
+idle state. I think you can achieve this without adding another
+compatible - arm,power-state.
 
-A domain should define its power states, independent of the devices that
-may attach. The way I see it, devices have their own idle states and
-domains have their own. I do see a relationship between possible domain
-states depending on the states of the individual devices in the domain.
-For ex, a CPU domain can only be in a retention state (low voltage,
-memory retained), if its CPU devices are in retention state, i.e, the
-domain cannot be powered off; alternately, the domain may be in
-retention or power down if the CPU devices are in power down state.
+I think I am still at loss trying to understand why a device is
+populating the domain's power states.
 
-Could you elaborate on why this is a need?
+>With Juno, in this example the c-state 'cluster-sleep-0 ' is known from
+>each cluster generic domain, as the deepest sate.
+>
+>cat /sys/kernel/debug/pm_genpd/*
+>
+>  Domain             State name        Enter (ns) / Exit (ns)
+>-------------------------------------------------------------
+>a53_pd               cluster-sleep-0      1500000 / 800000
+>a57_pd               cluster-sleep-0      1500000 / 800000
+>
+>    domain                      status pstate     slaves
+>           /device                                      runtime status
+>-----------------------------------------------------------------------
+>a53_pd                          on
+>    /devices/system/cpu/cpu0                            active
+>    /devices/system/cpu/cpu3                            suspended
+>    /devices/system/cpu/cpu4                            suspended
+>    /devices/system/cpu/cpu5                            suspended
+>    /devices/platform/D1                                suspended
+>a57_pd                          cluster-sleep-0
+>    /devices/system/cpu/cpu1                            suspended
+>    /devices/system/cpu/cpu2                            suspended
+>
+>Signed-off-by: Marc Titinger <mtitinger+renesas@baylibre.com>
+>---
+> .../devicetree/bindings/arm/idle-states.txt        |  21 ++++-
+> .../devicetree/bindings/power/power_domain.txt     |  29 ++++++
+> arch/arm64/boot/dts/arm/juno.dts                   |  10 ++-
+> drivers/base/power/cpu-pd.c                        |   5 ++
+> drivers/base/power/domain.c                        | 100 +++++++++++++++++++++
+> include/linux/pm_domain.h                          |   3 +
+> 6 files changed, 163 insertions(+), 5 deletions(-)
+>
+>diff --git a/Documentation/devicetree/bindings/arm/idle-states.txt b/Documentation/devicetree/bindings/arm/idle-states.txt
+>index a8274ea..18fdeaf 100644
+>--- a/Documentation/devicetree/bindings/arm/idle-states.txt
+>+++ b/Documentation/devicetree/bindings/arm/idle-states.txt
+>@@ -270,7 +270,8 @@ follows:
+> 	- compatible
+> 		Usage: Required
+> 		Value type: <stringlist>
+>-		Definition: Must be "arm,idle-state".
+>+		Definition: Must be "arm,idle-state",
+>+			or "arm,power-state" (see section 5)
+>
+> 	- local-timer-stop
+> 		Usage: See definition
+>@@ -680,7 +681,23 @@ cpus {
+> };
+>
+> ===========================================
+>-5 - References
+>+5 - power state
+>+===========================================
+>+
+>+Device in a generic power domain may expose an intermediate retention
+>+state that can be opted to by the domain governor when the last-man
+>+CPU is powered off. Those power-states will not be entered by the
+>+cpuidle.ops based on a state index, but instead can be elected by the
+>+domain governor and entered to by the generic domain.
+>+
+Agreed.
+
+>+ - compatible
+>+                Usage: Required
+>+                Value type: <stringlist>
+>+                Definition: Must be "arm,power-state".
+>+
+>+
+>+===========================================
+>+6 - References
+> ===========================================
+>
+> [1] ARM Linux Kernel documentation - CPUs bindings
+>diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+>index 0f8ed37..d437385 100644
+>--- a/Documentation/devicetree/bindings/power/power_domain.txt
+>+++ b/Documentation/devicetree/bindings/power/power_domain.txt
+>@@ -29,6 +29,16 @@ Optional properties:
+>    specified by this binding. More details about power domain specifier are
+>    available in the next section.
+>
+>+ - power-states : a phandle of an idle-state that shall be soaked into a
+>+		  generic domain power state.
+>+   CPU domains: Deep c-states that match a cluster power-off can be delegated to the
+>+   generic power domain. Device other than CPUs may have register intermediate
+>+   power states in the same domain. The domain governor can do a good job in
+>+   electing a power state when the last cpu is powered off as devices in the
+>+   same genpd may register intermediate states.
+>
+Devices may enable a certain domain state, but should not be defining
+the domain state. The domain its state and the domain governor may
+choose to enter that state on a vote from its devices.
+
+>+   Devices : a device may register an intermediate c-state matching a memory
+>+   retention feature for instance.
+>
+This point onwards is where I need clarity.
 
 Thanks,
 Lina
 
->attaching. Currently generic domain would register an array of states upon
->init. This patch prepares for later insertion (sort per depth, remove).
+>+
+> Example:
 >
->Signed-off-by: Marc Titinger <mtitinger+renesas@baylibre.com>
->---
-> drivers/base/power/domain.c | 189 +++++++++++++++++++-------------------------
-> include/linux/pm_domain.h   |  18 ++++-
-> 2 files changed, 97 insertions(+), 110 deletions(-)
+> 	power: power-controller@12340000 {
+>@@ -55,6 +65,25 @@ Example 2:
+> 		#power-domain-cells = <1>;
+> 	};
 >
+>+Example 3:
+>+
+>+        pm-domains {
+>+                a57_pd: a57_pd@ {
+>+                        /* will have a57 platform ARM_PD_METHOD_OF_DECLARE*/
+>+                        compatible = "arm,pd","arm,cortex-a57";
+>+                        #power-domain-cells = <0>;
+>+                        power-states = <&CLUSTER_SLEEP_0>;
+>+                };
+>+
+>+                a53_pd: a53_pd@ {
+>+                        /* will have a a53 platform ARM_PD_METHOD_OF_DECLARE*/
+>+                        compatible = "arm,pd","arm,cortex-a53";
+>+                        #power-domain-cells = <0>;
+>+                        power-states = <&CLUSTER_SLEEP_0>;
+>+                };
+>+        };
+>+
+>+
+> The nodes above define two power controllers: 'parent' and 'child'.
+> Domains created by the 'child' power controller are subdomains of '0' power
+> domain provided by the 'parent' power controller.
+>diff --git a/arch/arm64/boot/dts/arm/juno.dts b/arch/arm64/boot/dts/arm/juno.dts
+>index 499f035..cadc5de 100644
+>--- a/arch/arm64/boot/dts/arm/juno.dts
+>+++ b/arch/arm64/boot/dts/arm/juno.dts
+>@@ -47,7 +47,7 @@
+> 			};
+>
+> 			CLUSTER_SLEEP_0: cluster-sleep-0 {
+>-				compatible = "arm,idle-state";
+>+				compatible = "arm,idle-state","arm,power-state";
+> 				arm,psci-suspend-param = <0x1010000>;
+> 				local-timer-stop;
+> 				entry-latency-us = <800>;
+>@@ -128,13 +128,17 @@
+> 	pm-domains {
+>
+> 		a57_pd: a57_pd@ {
+>-			compatible = "arm,pd";
+>+			/* will have the a53 platform ARM_PD_METHOD_OF_DECLARE*/
+>+			compatible = "arm,pd","arm,cortex-a57";
+> 			#power-domain-cells = <0>;
+>+			power-states = <&CLUSTER_SLEEP_0>;
+> 		};
+>
+> 		a53_pd: a53_pd@ {
+>-			compatible = "arm,pd";
+>+			/* will have the a53 platform ARM_PD_METHOD_OF_DECLARE*/
+>+			compatible = "arm,pd","arm,cortex-a57";
+> 			#power-domain-cells = <0>;
+>+			power-states = <&CLUSTER_SLEEP_0>;
+> 		};
+> 	};
+>
+>diff --git a/drivers/base/power/cpu-pd.c b/drivers/base/power/cpu-pd.c
+>index 5f30025..3c4cb12 100644
+>--- a/drivers/base/power/cpu-pd.c
+>+++ b/drivers/base/power/cpu-pd.c
+>@@ -163,6 +163,11 @@ int of_register_cpu_pm_domain(struct device_node *dn,
+> 	pm_genpd_init(pd->genpd, &simple_qos_governor, false);
+> 	of_genpd_add_provider_simple(dn, pd->genpd);
+>
+>+	/* if a cpuidle-state is declared in this domain node, it will
+>+	 * be the domain's job to enter/exit this state, if the device
+>+	 * subdomain constraints are compatible */
+>+	of_genpd_device_parse_states(dn, &pd->genpd);
+>+
+> 	/* Attach the CPUs to the CPU PM domain */
+> 	return of_pm_domain_attach_cpus();
+> }
 >diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->index 3e27a2b..e5f4c00b 100644
+>index e5f4c00b..1ca28a2 100644
 >--- a/drivers/base/power/domain.c
 >+++ b/drivers/base/power/domain.c
->@@ -19,6 +19,7 @@
-> #include <linux/sched.h>
-> #include <linux/suspend.h>
-> #include <linux/export.h>
->+#include <linux/sort.h>
->
-> #define GENPD_RETRY_MAX_MS	250		/* Approximate */
->
->@@ -50,12 +51,6 @@
-> 	__retval;								\
-> })
->
->-#define GENPD_MAX_NAME_SIZE 20
->-
->-static int pm_genpd_alloc_states_names(struct generic_pm_domain *genpd,
->-				       const struct genpd_power_state *st,
->-				       unsigned int st_count);
->-
-> static LIST_HEAD(gpd_list);
-> static DEFINE_MUTEX(gpd_list_lock);
->
->@@ -1364,46 +1359,6 @@ static void genpd_free_dev_data(struct device *dev,
-> 	dev_pm_put_subsys_data(dev);
+>@@ -2156,6 +2156,104 @@ static void genpd_dev_pm_sync(struct device *dev)
+> 	genpd_queue_power_off_work(pd);
 > }
 >
->-static int genpd_alloc_states_data(struct generic_pm_domain *genpd,
->-				   const struct genpd_power_state *st,
->-				   unsigned int st_count)
->-{
->-	int ret = 0;
->-	unsigned int i;
->-
->-	if (IS_ERR_OR_NULL(genpd)) {
->-		ret = -EINVAL;
->-		goto err;
->-	}
->-
->-	if (!st || (st_count < 1)) {
->-		ret = -EINVAL;
->-		goto err;
->-	}
->-
->-	/* Allocate the local memory to keep the states for this genpd */
->-	genpd->states = kcalloc(st_count, sizeof(*st), GFP_KERNEL);
->-	if (!genpd->states) {
->-		ret = -ENOMEM;
->-		goto err;
->-	}
->-
->-	for (i = 0; i < st_count; i++) {
->-		genpd->states[i].power_on_latency_ns =
->-			st[i].power_on_latency_ns;
->-		genpd->states[i].power_off_latency_ns =
->-			st[i].power_off_latency_ns;
->-	}
->-
->-	genpd->state_count = st_count;
->-
->-	/* to save memory, Name allocation will happen if debug is enabled */
->-	pm_genpd_alloc_states_names(genpd, st, st_count);
->-
->-err:
->-	return ret;
->-}
->-
-> /**
->  * __pm_genpd_add_device - Add a device to an I/O PM domain.
->  * @genpd: PM domain to add the device to.
->@@ -1833,6 +1788,75 @@ static void genpd_lock_init(struct generic_pm_domain *genpd)
-> 	}
-> }
->
->+
->+/*
->+* state depth comparison function.
->+*/
->+static int state_cmp(const void *a, const void *b)
+>+static int dt_cpuidle_to_genpd_power_state(struct genpd_power_state
+>+					   *genpd_state,
+>+					   const struct of_device_id *matches,
+>+					   struct device_node *state_node)
 >+{
->+	struct genpd_power_state *state_a = (struct genpd_power_state *)(a);
->+	struct genpd_power_state *state_b = (struct genpd_power_state *)(b);
+>+	const struct of_device_id *match_id;
+>+	int err = 0;
+>+	u32 latency;
 >+
->+	s64 depth_a =
->+		state_a->power_on_latency_ns + state_a->power_off_latency_ns;
->+	s64 depth_b =
->+		state_b->power_on_latency_ns + state_b->power_off_latency_ns;
+>+	match_id = of_match_node(matches, state_node);
+>+	if (!match_id)
+>+		return -ENODEV;
 >+
->+	return (depth_a > depth_b) ? 0 : -1;
+>+	err = of_property_read_u32(state_node, "wakeup-latency-us", &latency);
+>+	if (err) {
+>+		u32 entry_latency, exit_latency;
+>+
+>+		err = of_property_read_u32(state_node, "entry-latency-us",
+>+					   &entry_latency);
+>+		if (err) {
+>+			pr_debug(" * %s missing entry-latency-us property\n",
+>+				 state_node->full_name);
+>+			return -EINVAL;
+>+		}
+>+
+>+		err = of_property_read_u32(state_node, "exit-latency-us",
+>+					   &exit_latency);
+>+		if (err) {
+>+			pr_debug(" * %s missing exit-latency-us property\n",
+>+				 state_node->full_name);
+>+			return -EINVAL;
+>+		}
+>+		/*
+>+		 * If wakeup-latency-us is missing, default to entry+exit
+>+		 * latencies as defined in idle states bindings
+>+		 */
+>+		latency = entry_latency + exit_latency;
+>+	}
+>+
+>+	genpd_state->power_on_latency_ns = 1000 * latency;
+>+
+>+	err = of_property_read_u32(state_node, "entry-latency-us", &latency);
+>+	if (err) {
+>+		pr_debug(" * %s missing min-residency-us property\n",
+>+			 state_node->full_name);
+>+		return -EINVAL;
+>+	}
+>+
+>+	genpd_state->power_off_latency_ns = 1000 * latency;
+>+
+>+	return 0;
 >+}
 >+
->+/*
->+* TODO: antagonist routine.
->+*/
->+int pm_genpd_insert_state(struct generic_pm_domain *genpd,
->+	const struct genpd_power_state *state)
+>+static const struct of_device_id power_state_match[] = {
+>+	{.compatible = "arm,power-state",
+>+	 },
+>+};
+>+
+>+int of_genpd_device_parse_states(struct device_node *np,
+>+				 struct generic_pm_domain *genpd)
 >+{
->+	int ret = 0;
->+	int state_count = genpd->state_count;
+>+	struct device_node *state_node;
+>+	int i, err = 0;
 >+
->+	if (IS_ERR_OR_NULL(genpd) || (!state))
->+		ret = -EINVAL;
+>+	for (i = 0;; i++) {
+>+		struct genpd_power_state genpd_state;
 >+
->+	if (state_count >= GENPD_POWER_STATES_MAX)
->+		ret = -ENOMEM;
+>+		state_node = of_parse_phandle(np, "power-states", i);
+>+		if (!state_node)
+>+			break;
 >+
+>+		err = dt_cpuidle_to_genpd_power_state(&genpd_state,
+>+						      power_state_match,
+>+						      state_node);
+>+		if (err) {
+>+			pr_err
+>+			    ("Parsing idle state node %s failed with err %d\n",
+>+			     state_node->full_name, err);
+>+			err = -EINVAL;
+>+			break;
+>+		}
 >+#ifdef CONFIG_PM_ADVANCED_DEBUG
->+	/* to save memory, Name allocation will happen if debug is enabled */
->+	genpd->states[state_count].name = kstrndup(state->name,
->+			GENPD_MAX_NAME_SIZE,
->+			GFP_KERNEL);
->+	if (!genpd->states[state_count].name) {
->+		pr_err("%s Failed to allocate state '%s' name.\n",
->+			genpd->name, state->name);
->+		ret = -ENOMEM;
->+	}
+>+		genpd_state.name = kstrndup(state_node->name,
+>+					    GENPD_MAX_NAME_SIZE, GFP_KERNEL);
+>+		if (!genpd_state.name)
+>+			err = -ENOMEM;
 >+#endif
->+	genpd_lock(genpd);
->+
->+	if (!ret) {
->+		genpd->states[state_count].power_on_latency_ns =
->+			state->power_on_latency_ns;
->+		genpd->states[state_count].power_off_latency_ns =
->+			state->power_off_latency_ns;
->+		genpd->state_count++;
+>+		of_node_put(state_node);
+>+		err = pm_genpd_insert_state(genpd, &genpd_state);
+>+		if (err)
+>+			break;
+>+#ifdef CONFIG_PM_ADVANCED_DEBUG
+>+		kfree(genpd_state.name);
+>+#endif
 >+	}
->+
->+	/* sort from shallowest to deepest */
->+	sort(genpd->states, genpd->state_count,
->+		sizeof(genpd->states[0]), state_cmp, NULL /*generic swap */);
->+
->+	/* Sanity check for current state index */
->+	if (genpd->state_idx >= genpd->state_count) {
->+		pr_warn("pm domain %s Invalid initial state.\n", genpd->name);
->+		genpd->state_idx = genpd->state_count - 1;
->+	}
->+
->+	genpd_unlock(genpd);
->+
->+	return ret;
+>+	return err;
 >+}
 >+
->+
 > /**
->  * pm_genpd_init - Initialize a generic I/O PM domain object.
->  * @genpd: PM domain object to initialize.
->@@ -1846,36 +1870,24 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
-> 		   const struct genpd_power_state *states,
-> 		   unsigned int state_count, bool is_off)
-> {
->-	static const struct genpd_power_state genpd_default_state[] = {
->-		{
->-			.name = "OFF",
->-			.power_off_latency_ns = 0,
->-			.power_on_latency_ns = 0,
->-		},
->-	};
->-	int ret;
->+	int i;
+>  * genpd_dev_pm_attach - Attach a device to its PM domain using DT.
+>  * @dev: Device to attach.
+>@@ -2224,6 +2322,8 @@ int genpd_dev_pm_attach(struct device *dev)
+> 		return ret;
+> 	}
 >
-> 	if (IS_ERR_OR_NULL(genpd))
-> 		return;
->
->-	/* If no states defined, use the default OFF state */
->-	if (!states || (state_count < 1))
->-		ret = genpd_alloc_states_data(genpd, genpd_default_state,
->-					      ARRAY_SIZE(genpd_default_state));
->-	else
->-		ret = genpd_alloc_states_data(genpd, states, state_count);
->-
->-	if (ret) {
->-		pr_err("Fail to allocate states for %s\n", genpd->name);
->-		return;
->-	}
->+	/* simply use an array, we wish to add/remove new retention states
->+	   from later device init/exit. */
->+	memset(genpd->states, 0, GENPD_POWER_STATES_MAX
->+	       * sizeof(struct genpd_power_state));
->
->-	/* Sanity check for initial state */
->-	if (genpd->state_idx >= genpd->state_count) {
->-		pr_warn("pm domain %s Invalid initial state.\n",
->-			genpd->name);
->-		genpd->state_idx = genpd->state_count - 1;
->-	}
->+	if (!states || !state_count) {
->+		/* require a provider for a default state */
->+		genpd->state_count = 0;
->+		genpd->state_idx = 0;
->+	} else
->+		for (i = 0; i < state_count; i++)
->+			if (pm_genpd_insert_state(genpd, &states[i]))
->+				return;
->
-> 	INIT_LIST_HEAD(&genpd->master_links);
-> 	INIT_LIST_HEAD(&genpd->slave_links);
->@@ -2233,33 +2245,6 @@ EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
-> #include <linux/kobject.h>
-> static struct dentry *pm_genpd_debugfs_dir;
->
->-static int pm_genpd_alloc_states_names(struct generic_pm_domain *genpd,
->-				       const struct genpd_power_state *st,
->-				       unsigned int st_count)
->-{
->-	unsigned int i;
->-
->-	if (IS_ERR_OR_NULL(genpd))
->-		return -EINVAL;
->-
->-	if (genpd->state_count != st_count) {
->-		pr_err("Invalid allocated state count\n");
->-		return -EINVAL;
->-	}
->-
->-	for (i = 0; i < st_count; i++) {
->-		genpd->states[i].name = kstrndup(st[i].name,
->-				GENPD_MAX_NAME_SIZE, GFP_KERNEL);
->-		if (!genpd->states[i].name) {
->-			pr_err("%s Failed to allocate state %d name.\n",
->-				genpd->name, i);
->-			return -ENOMEM;
->-		}
->-	}
->-
->-	return 0;
->-}
->-
-> /*
->  * TODO: This function is a slightly modified version of rtpm_status_show
->  * from sysfs.c, so generalize it.
->@@ -2398,12 +2383,4 @@ static void __exit pm_genpd_debug_exit(void)
-> {
-> 	debugfs_remove_recursive(pm_genpd_debugfs_dir);
-> }
->-__exitcall(pm_genpd_debug_exit);
->-#else
->-static inline int pm_genpd_alloc_states_names(struct generic_pm_domain *genpd,
->-					const struct genpd_power_state *st,
->-					unsigned int st_count)
->-{
->-	return 0;
->-}
-> #endif /* CONFIG_PM_ADVANCED_DEBUG */
+>+	of_genpd_device_parse_states(dev->of_node, pd);
+>+
+> 	dev->pm_domain->detach = genpd_dev_pm_detach;
+> 	dev->pm_domain->sync = genpd_dev_pm_sync;
+> 	pm_genpd_poweron(pd);
 >diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
->index 9d37292..8a4eab0 100644
+>index 8a4eab0..791a8ac 100644
 >--- a/include/linux/pm_domain.h
 >+++ b/include/linux/pm_domain.h
->@@ -45,6 +45,13 @@ struct gpd_cpuidle_data {
-> 	struct cpuidle_state *idle_state;
-> };
+>@@ -302,6 +302,9 @@ struct generic_pm_domain *__of_genpd_xlate_onecell(
+> 					struct of_phandle_args *genpdspec,
+> 					void *data);
 >
+>+int of_genpd_device_parse_states(struct device_node *np,
+>+	struct generic_pm_domain *genpd);
 >+
->+/* Arbitrary max number of devices registering a special
->+ * retention state with the PD, to keep things simple.
->+ */
->+#define GENPD_POWER_STATES_MAX	12
->+#define GENPD_MAX_NAME_SIZE	40
->+
-> struct genpd_power_state {
-> 	char *name;
-> 	s64 power_off_latency_ns;
->@@ -80,7 +87,8 @@ struct generic_pm_domain {
-> 			   struct device *dev);
-> 	unsigned int flags;		/* Bit field of configs for genpd */
->
->-	struct genpd_power_state *states;
->+	struct genpd_power_state states[GENPD_POWER_STATES_MAX];
->+
-> 	unsigned int state_count; /* number of states */
-> 	unsigned int state_idx; /* state that genpd will go to when off */
->
->@@ -159,10 +167,12 @@ extern int pm_genpd_attach_cpuidle(struct generic_pm_domain *genpd, int state);
-> extern int pm_genpd_name_attach_cpuidle(const char *name, int state);
-> extern int pm_genpd_detach_cpuidle(struct generic_pm_domain *genpd);
-> extern int pm_genpd_name_detach_cpuidle(const char *name);
->+extern int pm_genpd_insert_state(struct generic_pm_domain *genpd,
->+			const struct genpd_power_state *state);
-> extern void pm_genpd_init(struct generic_pm_domain *genpd,
->-			  struct dev_power_governor *gov,
->-			  const struct genpd_power_state *states,
->-			  unsigned int state_count, bool is_off);
->+			struct dev_power_governor *gov,
->+			const struct genpd_power_state *states,
->+			unsigned int state_count, bool is_off);
->
-> extern int pm_genpd_poweron(struct generic_pm_domain *genpd);
-> extern int pm_genpd_name_poweron(const char *domain_name);
+> int genpd_dev_pm_attach(struct device *dev);
+> #else /* !CONFIG_PM_GENERIC_DOMAINS_OF */
+> static inline int __of_genpd_add_provider(struct device_node *np,
 >-- 
 >1.9.1
 >
