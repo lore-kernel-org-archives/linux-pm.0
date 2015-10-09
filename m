@@ -1,84 +1,140 @@
-From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: RE: [PATCH] [v2] ACPI / PM: Fix incorrect wakeup irq setting before
- suspend-to-idle
-Date: Fri, 9 Oct 2015 08:14:45 +0000
-Message-ID: <36DF59CE26D8EE47B0655C516E9CE6402865A35E@shsmsx102.ccr.corp.intel.com>
-References: <1443316990-8265-1-git-send-email-yu.c.chen@intel.com>
- <1507758.qzQp1pmTJW@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: [PATCH][v3] ACPI / PM: Fix incorrect wakeup irq setting before suspend-to-idle
+Date: Fri,  9 Oct 2015 16:20:13 +0800
+Message-ID: <1444378813-17857-1-git-send-email-yu.c.chen@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:13497 "EHLO mga02.intel.com"
+Received: from mga09.intel.com ([134.134.136.24]:31052 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756065AbbJIIOt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 9 Oct 2015 04:14:49 -0400
-In-Reply-To: <1507758.qzQp1pmTJW@vostro.rjw.lan>
-Content-Language: en-US
+	id S1756184AbbJIIRf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 9 Oct 2015 04:17:35 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "lenb@kernel.org" <lenb@kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, "jiang.liu@linux.intel.com" <jiang.liu@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: rjw@rjwysocki.net, lenb@kernel.org
+Cc: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, rui.zhang@intel.com, lv.zheng@intel.com, Chen Yu <yu.c.chen@intel.com>
 
-SGksIFJhZmFlbA0KU29ycnkgZm9yIG15IGxhdGUgcmVzcG9uc2UsIGp1c3QgY2FtZSBiYWNrIGZy
-b20gaG9tZTopDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogbGludXgt
-cG0tb3duZXJAdmdlci5rZXJuZWwub3JnIFttYWlsdG86bGludXgtcG0tDQo+IG93bmVyQHZnZXIu
-a2VybmVsLm9yZ10gT24gQmVoYWxmIE9mIFJhZmFlbCBKLiBXeXNvY2tpDQo+IFNlbnQ6IFRodXJz
-ZGF5LCBPY3RvYmVyIDAxLCAyMDE1IDk6MTEgQU0NCj4gVG86IENoZW4sIFl1IEMNCj4gQ2M6IGxl
-bmJAa2VybmVsLm9yZzsgWmhhbmcsIFJ1aTsgamlhbmcubGl1QGxpbnV4LmludGVsLmNvbTsgbGlu
-dXgtDQo+IHBtQHZnZXIua2VybmVsLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw0K
-PiBTdWJqZWN0OiBSZTogW1BBVENIXSBbdjJdIEFDUEkgLyBQTTogRml4IGluY29ycmVjdCB3YWtl
-dXAgaXJxIHNldHRpbmcgYmVmb3JlDQo+IHN1c3BlbmQtdG8taWRsZQ0KPiANCj4gT24gU3VuZGF5
-LCBTZXB0ZW1iZXIgMjcsIDIwMTUgMDk6MjM6MTAgQU0gQ2hlbiBZdSB3cm90ZToNCj4gPiBkaWZm
-IC0tZ2l0IGEvZHJpdmVycy9hY3BpL29zbC5jIGIvZHJpdmVycy9hY3BpL29zbC5jIGluZGV4DQo+
-ID4gNzM5YTRhNi4uOTc1MDdmYyAxMDA2NDQNCj4gPiAtLS0gYS9kcml2ZXJzL2FjcGkvb3NsLmMN
-Cj4gPiArKysgYi9kcml2ZXJzL2FjcGkvb3NsLmMNCj4gPiBAQCAtODEsNiArODEsNyBAQCBzdGF0
-aWMgc3RydWN0IHdvcmtxdWV1ZV9zdHJ1Y3QgKmthY3BpZF93cTsgIHN0YXRpYw0KPiA+IHN0cnVj
-dCB3b3JrcXVldWVfc3RydWN0ICprYWNwaV9ub3RpZnlfd3E7ICBzdGF0aWMgc3RydWN0DQo+ID4g
-d29ya3F1ZXVlX3N0cnVjdCAqa2FjcGlfaG90cGx1Z193cTsgIHN0YXRpYyBib29sIGFjcGlfb3Nf
-aW5pdGlhbGl6ZWQ7DQo+ID4gK3Vuc2lnbmVkIGludCBhY3BpX2ludXNlX2lycSA9IElOVkFMSURf
-QUNQSV9JUlE7DQo+IA0KPiBXaGF0IGFib3V0IGNhbGxpbmcgaXQgYWNwaV9zY2lfaXJxIGluc3Rl
-YWQ/DQo+IA0KT0suIA0KPiA+IEBAIC04NjUsNiArODY3LDkgQEAgYWNwaV9zdGF0dXMNCj4gYWNw
-aV9vc19yZW1vdmVfaW50ZXJydXB0X2hhbmRsZXIodTMyIGlycSwgYWNwaV9vc2RfaGFuZGxlciBo
-YW5kbGVyKQ0KPiA+ICAJaWYgKGlycSAhPSBhY3BpX2dibF9GQURULnNjaV9pbnRlcnJ1cHQpDQo+
-ID4gIAkJcmV0dXJuIEFFX0JBRF9QQVJBTUVURVI7DQo+ID4NCj4gPiArCWlmICghSVNfSU5WQUxJ
-RF9BQ1BJX0lSUShhY3BpX2ludXNlX2lycSkpDQo+ID4gKwkJaXJxID0gYWNwaV9pbnVzZV9pcnE7
-DQo+IA0KPiBJJ2QgdGhpbmsgdGhhdCB3ZSBzaG91bGQgcmV0dXJuIGZyb20gaGVyZSBpZiBhY3Bp
-X2ludXNlX2lycSBpcyBpbnZhbGlkPw0KPiANCj4gSXQgc3VyZWx5IGNhbid0IGJlIGludmFsaWQg
-aWYgYWNwaV9vc19pbnN0YWxsX2ludGVycnVwdF9oYW5kbGVyKCkgaGFzIHN1Y2NlZWRlZCwNCj4g
-cmlnaHQ/DQo+IA0KWWVzLCB0aGVyZSBpcyBubyBuZWVkIHRvIHJlbW92ZSB0aGUgaGFuZGxlciBp
-ZiBpdCBpcyBub3QgcmVnaXN0ZXJlZCwgd2lsbCByZXdpdGUgaXQuDQoNCj4gPiArDQo+ID4gIAlm
-cmVlX2lycShpcnEsIGFjcGlfaXJxKTsNCj4gPiAgCWFjcGlfaXJxX2hhbmRsZXIgPSBOVUxMOw0K
-PiA+DQo+ID4gQEAgLTExNzYsMTIgKzExODEsMTQgQEAgRVhQT1JUX1NZTUJPTChhY3BpX29zX2V4
-ZWN1dGUpOw0KPiA+DQo+ID4gIHZvaWQgYWNwaV9vc193YWl0X2V2ZW50c19jb21wbGV0ZSh2b2lk
-KQ0KPiA+ICB7DQo+ID4gKwl1bnNpZ25lZCBpbnQgaXJxID0gSVNfSU5WQUxJRF9BQ1BJX0lSUShh
-Y3BpX2ludXNlX2lycSkgPw0KPiA+ICsJCWFjcGlfZ2JsX0ZBRFQuc2NpX2ludGVycnVwdCA6IGFj
-cGlfaW51c2VfaXJxOw0KPiANCj4gVGhhdCwgYWdhaW4uICBJZiBhY3BpX2ludXNlX2lycSBpcyBp
-bnZhbGlkLCBhY3BpX29zX2luc3RhbGxfaW50ZXJydXB0X2hhbmRsZXIoKQ0KPiBoYXMgZmFpbGVk
-LCBzbyB3ZSBoYXZlIG5vdGhpbmcgdG8gc3luY2hyb25pemUgaGVyZSwgb3IgYW0gSSBtaXNzaW5n
-IGFueXRoaW5nPw0KPiANClJpZ2h0LCB3aWxsIG9wdGltaXplIHRoaXMuDQo+ID4gIHN0YXRpYyBp
-bnQgYWNwaV9mcmVlemVfcHJlcGFyZSh2b2lkKQ0KPiA+ICB7DQo+ID4gKwl1bnNpZ25lZCBpbnQg
-aXJxID0gSVNfSU5WQUxJRF9BQ1BJX0lSUShhY3BpX2ludXNlX2lycSkgPw0KPiA+ICsJCWFjcGlf
-Z2JsX0ZBRFQuc2NpX2ludGVycnVwdCA6IGFjcGlfaW51c2VfaXJxOw0KPiANCj4gU2FtZSBjb21t
-ZW50IGFzIGFib3ZlLg0KPiANCj4gUGx1cywgeW91IHNlZW0gdG8gYmUgZHVwbGljYXRpbmcgY29k
-ZSBmcm9tIGFjcGlfb3Nfd2FpdF9ldmVudHNfY29tcGxldGUoKQ0KPiBoZXJlLCBzbyB3aGF0IGFi
-b3V0IHB1dHRpbmcgaXQgaW50byBhIHNlcGFyYXRlIHJvdXRpbmUgKG1heWJlIHN0YXRpYyBpbmxp
-bmUpPw0KPiANCg0KSSd2ZSBzZW50IG91dCBhbm90aGVyIHZlcnNpb24gMyBwYXRjaCwgd2hpY2gg
-c2ltcGxpZmllZCB0aGlzIGxvZ2ljIHRoYXQsIA0KdGhlIGNvZGUgZmxvdyB3aWxsIGZpcnN0bHkg
-IGNoZWNrIGlmIHRoZSBhY3BpIGlycSBpcyByZWdpc3RlcmVkLA0KSWYgbm90LCB3ZSBzaW1wbHkg
-YnlwYXNzIHRoZSBjb2RlLiBTbyB0aGUgZHVwbGljYXRpbmcgY29kZSB3b3VsZCBiZWNvbWUNCm9u
-ZSBsaW5lOg0KIiBpZiAoIUlTX0lOVkFMSURfQUNQSV9JUlEoYWNwaV9zY2lfaXJxKSkiIA0KDQp2
-MzoNCiAtIDEuUmVuYW1lIGFjcGlfaW51c2VfaXJxIHRvIGFjcGlfc2NpX2lycSBmb3IgYmV0dGVy
-IHVuZGVyc3RhbmRpbmcuDQoNCiAgIDIuSWYgdGhlIGlycSBoYW5kbGVyIGlzIG5vdCByZWdpc3Rl
-cmVkLCBza2lwIHRoZSBzeW5jaHJvbml6ZV9oYXJkaXJxDQogICAgIGluIGFjcGlfb3Nfd2FpdF9l
-dmVudHNfY29tcGxldGUgYW5kIHJldHVybiBpbW1lZGlhdGVseSBpbg0KICAgICBhY3BpX29zX3Jl
-bW92ZV9pbnRlcnJ1cHRfaGFuZGxlci4NCg0KICAgMy5Gb3IgYWNwaV9mcmVlemVfcHJlcGFyZSBh
-bmQgYWNwaV9mcmVlemVfcmVzdG9yZSwgaWYgdGhlIGFjcGkgaXJxDQogICAgIGhhbmRsZXIgaXMg
-bm90IHByb3Blcmx5IHJlZ2lzdGVyZWQsIHdlIGRvIG5vdCBsZXZlcmFnZSBhY3BpIGlycQ0KICAg
-ICB0byB3YWtlIHVwIHRoZSBzeXN0ZW0sIGJ1dCBleHBlY3Qgb3RoZXIgcGVyaXBoZXJhbHMoc3Vj
-aCBhcyBQQ0kgZGV2aWNlcw0KICAgICBhbmQgVVNCIGRldmljZXMpdG8gaW52b2tlIGVuYWJsZV9p
-cnFfd2FrZSBmb3IgdXMuDQoNCj4gVGhhbmtzLA0KPiBSYWZhZWwNCj4gDQo+IC0tDQo+IFRvIHVu
-c3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51
-eC1wbSIgaW4gdGhlDQo+IGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5l
-bC5vcmcgTW9yZSBtYWpvcmRvbW8gaW5mbyBhdA0KPiBodHRwOi8vdmdlci5rZXJuZWwub3JnL21h
-am9yZG9tby1pbmZvLmh0bWwNCg==
+For ACPI compatible system, SCI(ACPI System Control
+Interrupt) is used to wake system up from suspend-to-idle.
+Once CPU is woken up by SCI, interrupt handler will
+firstly checks if current interrupt is legal to wake up
+the whole system, thus irq_pm_check_wakeup is invoked
+to validate the irq number. However, before suspend-to-idle,
+acpi_gbl_FADT.sci_interrupt is marked rather than actual
+irq number in acpi_freeze_prepare, this might lead to unable
+to wake up the system.
+
+This patch fixes this problem by marking the irq number
+return by acpi_gsi_to_irq as IRQD_WAKEUP_STATE, rather than
+marking the acpi_gbl_FADT.sci_interrupt. Meanwhile this patch
+fixes the same problems inside acpi_os_remove_interrupt_handler
+and acpi_os_wait_events_complete respectively.
+
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+---
+v3:
+ - 1.Rename acpi_inuse_irq to acpi_sci_irq for better understanding.
+   2.If the irq handler is not registered, skip the synchronize_hardirq
+     in acpi_os_wait_events_complete and return immediately in
+     acpi_os_remove_interrupt_handler.
+   3.For acpi_freeze_prepare and acpi_freeze_restore, if the acpi irq
+     handler is not properly registered, we do not leverage acpi irq
+     to wake up the system, but expect other peripherals(such as PCI devices
+     and USB devices)to invoke enable_irq_wake for us.
+v2:
+ - 1.Define a global acpi_inuse_irq variable, store irq in it
+     and access it directly from acpi_freeze_prepare(), and it
+     doesn't have to depend on CONFIG_SUSPEND as it is just the
+     IRQ number actually used by ACPI.
+   2.Also fix the same problems inside acpi_os_remove_interrupt_handler,
+     acpi_os_wait_events_complete.
+---
+ drivers/acpi/osl.c   | 12 ++++++++----
+ drivers/acpi/sleep.c |  6 ++++--
+ include/linux/acpi.h |  3 +++
+ 3 files changed, 15 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/acpi/osl.c b/drivers/acpi/osl.c
+index 739a4a6..8e1a5d3 100644
+--- a/drivers/acpi/osl.c
++++ b/drivers/acpi/osl.c
+@@ -81,6 +81,7 @@ static struct workqueue_struct *kacpid_wq;
+ static struct workqueue_struct *kacpi_notify_wq;
+ static struct workqueue_struct *kacpi_hotplug_wq;
+ static bool acpi_os_initialized;
++unsigned int acpi_sci_irq = INVALID_ACPI_IRQ;
+ 
+ /*
+  * This list of permanent mappings is for memory that may be accessed from
+@@ -856,17 +857,20 @@ acpi_os_install_interrupt_handler(u32 gsi, acpi_osd_handler handler,
+ 		acpi_irq_handler = NULL;
+ 		return AE_NOT_ACQUIRED;
+ 	}
++	acpi_sci_irq = irq;
+ 
+ 	return AE_OK;
+ }
+ 
+ acpi_status acpi_os_remove_interrupt_handler(u32 irq, acpi_osd_handler handler)
+ {
+-	if (irq != acpi_gbl_FADT.sci_interrupt)
++	if ((irq != acpi_gbl_FADT.sci_interrupt) ||
++			IS_INVALID_ACPI_IRQ(acpi_sci_irq))
+ 		return AE_BAD_PARAMETER;
+ 
+-	free_irq(irq, acpi_irq);
++	free_irq(acpi_sci_irq, acpi_irq);
+ 	acpi_irq_handler = NULL;
++	acpi_sci_irq = INVALID_ACPI_IRQ;
+ 
+ 	return AE_OK;
+ }
+@@ -1180,8 +1184,8 @@ void acpi_os_wait_events_complete(void)
+ 	 * Make sure the GPE handler or the fixed event handler is not used
+ 	 * on another CPU after removal.
+ 	 */
+-	if (acpi_irq_handler)
+-		synchronize_hardirq(acpi_gbl_FADT.sci_interrupt);
++	if (!IS_INVALID_ACPI_IRQ(acpi_sci_irq))
++		synchronize_hardirq(acpi_sci_irq);
+ 	flush_workqueue(kacpid_wq);
+ 	flush_workqueue(kacpi_notify_wq);
+ }
+diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
+index 2f0d4db..1704595 100644
+--- a/drivers/acpi/sleep.c
++++ b/drivers/acpi/sleep.c
+@@ -632,14 +632,16 @@ static int acpi_freeze_prepare(void)
+ 	acpi_enable_wakeup_devices(ACPI_STATE_S0);
+ 	acpi_enable_all_wakeup_gpes();
+ 	acpi_os_wait_events_complete();
+-	enable_irq_wake(acpi_gbl_FADT.sci_interrupt);
++	if (!IS_INVALID_ACPI_IRQ(acpi_sci_irq))
++		enable_irq_wake(acpi_sci_irq);
+ 	return 0;
+ }
+ 
+ static void acpi_freeze_restore(void)
+ {
+ 	acpi_disable_wakeup_devices(ACPI_STATE_S0);
+-	disable_irq_wake(acpi_gbl_FADT.sci_interrupt);
++	if (!IS_INVALID_ACPI_IRQ(acpi_sci_irq))
++		disable_irq_wake(acpi_sci_irq);
+ 	acpi_enable_all_runtime_gpes();
+ }
+ 
+diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+index 43856d1..2f05dc0 100644
+--- a/include/linux/acpi.h
++++ b/include/linux/acpi.h
+@@ -193,6 +193,9 @@ int acpi_ioapic_registered(acpi_handle handle, u32 gsi_base);
+ void acpi_irq_stats_init(void);
+ extern u32 acpi_irq_handled;
+ extern u32 acpi_irq_not_handled;
++extern unsigned int acpi_sci_irq;
++#define INVALID_ACPI_IRQ  ((unsigned)-1)
++#define IS_INVALID_ACPI_IRQ(x) unlikely((x) == INVALID_ACPI_IRQ)
+ 
+ extern int sbf_port;
+ extern unsigned long acpi_realmode_flags;
+-- 
+1.8.4.2
+
