@@ -1,80 +1,96 @@
-From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: RE: [PATCH] [v4] x86, suspend: Save/restore extra MSR registers for
- suspend
-Date: Fri, 9 Oct 2015 09:39:26 +0000
-Message-ID: <36DF59CE26D8EE47B0655C516E9CE6402865A403@shsmsx102.ccr.corp.intel.com>
-References: <1440645507-17768-1-git-send-email-yu.c.chen@intel.com>
- <20150917053004.GB6665@amd>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20150917053004.GB6665@amd>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@kernel.org>
-Cc: "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "tglx@linutronix.de" <tglx@linutronix.de>, "hpa@zytor.com" <hpa@zytor.com>, "bp@alien8.de" <bp@alien8.de>, "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: [PATCH v4 0/8] qcom: Add support for TSENS driver
+Date: Fri,  9 Oct 2015 15:11:02 +0530
+Message-ID: <1444383670-32693-1-git-send-email-rnayak@codeaurora.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:42813 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754300AbbJIJlZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 Oct 2015 05:41:25 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: edubezval@gmail.com, agross@codeaurora.org
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rui.zhang@intel.com, sboyd@codeaurora.org, srinivas.kandagatla@linaro.org, nrajan@codeaurora.org, lina.iyer@linaro.org, punit.agrawal@arm.com, Rajendra Nayak <rnayak@codeaurora.org>
 
-Thanks Pavel !
+Patches 1/8 to 4/8 will need to go via the thermal tree/Eduardo.
+Patches 5/8 to 8/8 will need to go via qcom-msm tree/Andy.
 
-Hi, Ingo,
-do you have a bandwidth to help look at this version, 
-since this bug has been on bugzilla for a while.
-Thanks a lot.
+Eduardo, can you please take a look at the patches and let me
+know if you see any issues.
 
-Best Regards,
-Yu
+Current set of patches apply on 4.3-rc4. Need to pull in clk-next
+(for a dependent patch) to be able to test on ifc6410 board.
 
-> -----Original Message-----
-> From: Pavel Machek [mailto:pavel@ucw.cz]
-> Sent: Thursday, September 17, 2015 1:30 PM
-> To: Chen, Yu C
-> Cc: rjw@rjwysocki.net; tglx@linutronix.de; mingo@redhat.com;
-> hpa@zytor.com; bp@alien8.de; Zhang, Rui; linux-pm@vger.kernel.org;
-> x86@kernel.org; linux-kernel@vger.kernel.org
-> Subject: Re: [PATCH] [v4] x86, suspend: Save/restore extra MSR registers for
-> suspend
-> 
-> On Thu 2015-08-27 11:18:27, Chen Yu wrote:
-> > A bug is reported(https://bugzilla.redhat.com/show_bug.cgi?id=1227208)
-> > that, after resumed from S3, CPU is running at a low speed.
-> > After investigation, it is found that, BIOS has modified the value of
-> > THERM_CONTROL register during S3, and changes it from 0 to 0x10, since
-> > value of 0x10 means CPU can only get 25% of the Duty Cycle, this
-> > triggers the problem.
-> >
-> > Here is a simple scenario to reproduce the issue:
-> > 1.Boot up the system
-> > 2.Get MSR with address 0x19a, it should be 0 3.Put the system into
-> > sleep, then wake it up 4.Get MSR with address 0x19a, it should be
-> > 0(actually it shows 0x10)
-> >
-> > Although this is a BIOS issue, it would be more robust for linux to
-> > deal with this situation. This patch fixes this issue by introducing a
-> > framework to save/restore specified MSR registers(THERM_CONTROL in
-> > this case) for suspend/resume.
-> >
-> > When user encounters a problematic platform and needs to protect the
-> > MSRs during suspending, he can simply add a quirk entry in
-> > msr_save_dmi_table, and customizes MSR registers inside the quirk
-> > callback, for example:
-> >
-> > u32 msr_id_need_to_save[] = {MSR_ID0, MSR_ID1, MSR_ID2...};
-> >
-> > and the quirk mechanism ensures that, once resumed from suspended,
-> the
-> > MSRs indicated by these IDs will be restored to their original values
-> > before suspended.
-> >
-> > Since both 64/32-bit kernels are affected, this patch covers 64/32-bit
-> > common code path. And because the MSRs specified by the user might not
-> > be available or readable in any situation, we use rdmsrl_safe to
-> > safely save these MSRs.
-> >
-> > Tested-by: Marcin Kaszewski <marcin.kaszewski@intel.com>
-> > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
-> 
-> Acked-by: Pavel Machek <pavel@ucw.cz>
-> 
-> --
+Changes since v3:
+* Dropped 'clk: qcom: create virtual child device for TSENS' which
+is picked up by Stephen
+* Updated GCC bindings with optional TSENS properties
+
+Changes since v2:
+* Minor review fixes from Stephen/Punit and rebase on 4.3-rc4
+
+Changes since v1:
+* Created virtual tsens device from gcc driver for 8960,
+with DT having a single node for gcc and tsens
+* Minor fixes with rebasing on 4.3-rc1
+
+Changes since RFC:
+* Added support for 8916 and 8084
+* Based off the latest nvmem framework patches [1]
+* Minor review fixes for comments mostly from Lina
+
+This is an attempt to have a single TSENS driver for
+the different versions of the TSENS IP that exist, on
+different qcom msm/apq SoCs'
+Support is added for msm8916, msm8960 and msm8974 families.
+
+A lot of the work is based of original code from Stephen Boyd
+and Siddartha Mohanadoss. I have also picked some of what
+Narendran Rajan did in his attempt to upstream the support
+for 8960 family. I could not keep the original authorship on
+any of the patches because I ended up moving the code around
+quite a bit in an effort to have a single driver for the
+various devices. I would be glad to change the authorship
+for any of the patches if needed.
+
+Rajendra Nayak (8):
+  thermal: qcom: tsens: Add a skeletal TSENS drivers
+  thermal: qcom: tsens-8916: Add support for 8916 family of SoCs
+  thermal: qcom: tsens-8974: Add support for 8974 family of SoCs
+  thermal: qcom: tsens-8960: Add support for 8960 family of SoCs
+  arm: dts: msm8974: Add thermal zones, tsens and qfprom nodes
+  arm: dts: apq8064: Add thermal zones, tsens and qfprom nodes
+  arm: dts: apq8084: Add thermal zones, tsens and qfprom nodes
+  arm64: dts: msm8916: Add thermal zones, tsens and qfprom nodes
+
+ .../devicetree/bindings/clock/qcom,gcc.txt         |  20 ++
+ .../devicetree/bindings/thermal/qcom-tsens.txt     |  33 +++
+ arch/arm/boot/dts/qcom-apq8064.dtsi                | 101 +++++++
+ arch/arm/boot/dts/qcom-apq8084.dtsi                | 105 ++++++++
+ arch/arm/boot/dts/qcom-msm8974.dtsi                | 105 ++++++++
+ arch/arm64/boot/dts/qcom/msm8916.dtsi              |  66 +++++
+ drivers/thermal/Kconfig                            |   5 +
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/qcom/Kconfig                       |  10 +
+ drivers/thermal/qcom/Makefile                      |   2 +
+ drivers/thermal/qcom/tsens-8916.c                  | 107 ++++++++
+ drivers/thermal/qcom/tsens-8960.c                  | 291 +++++++++++++++++++++
+ drivers/thermal/qcom/tsens-8974.c                  | 239 +++++++++++++++++
+ drivers/thermal/qcom/tsens-common.c                | 130 +++++++++
+ drivers/thermal/qcom/tsens.c                       | 206 +++++++++++++++
+ drivers/thermal/qcom/tsens.h                       |  69 +++++
+ 16 files changed, 1490 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/qcom-tsens.txt
+ create mode 100644 drivers/thermal/qcom/Kconfig
+ create mode 100644 drivers/thermal/qcom/Makefile
+ create mode 100644 drivers/thermal/qcom/tsens-8916.c
+ create mode 100644 drivers/thermal/qcom/tsens-8960.c
+ create mode 100644 drivers/thermal/qcom/tsens-8974.c
+ create mode 100644 drivers/thermal/qcom/tsens-common.c
+ create mode 100644 drivers/thermal/qcom/tsens.c
+ create mode 100644 drivers/thermal/qcom/tsens.h
+
+-- 
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation
+
