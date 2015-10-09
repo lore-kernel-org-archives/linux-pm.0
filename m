@@ -1,123 +1,62 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH 1/5] thermal: exynos: Fix unbalanced regulator disable on
- probe failure
-Date: Fri, 9 Oct 2015 19:58:08 +0900
-Message-ID: <56179DC0.1040003@samsung.com>
-References: <1444282446-6419-1-git-send-email-k.kozlowski@samsung.com>
- <CAGOxZ52DE42YA3b5z-16H7fxs58f6Mv+AjMcaaaJEM6bftEmnA@mail.gmail.com>
+Subject: Re: [PATCH] thermal: exynos: fix register read in TMU
+Date: Fri, 9 Oct 2015 20:35:50 +0900
+Message-ID: <CAJKOXPfbrdm75n_v+dRnq8dqAFAGvHj28QQ4ZY8WZms1D6eLZQ@mail.gmail.com>
+References: <1443699599-9693-1-git-send-email-sudipm.mukherjee@gmail.com>
+	<CAJKOXPfyC8etcPe373q6Pc1qWb2zVnHE96V+Rh5mPmpzAxFjiA@mail.gmail.com>
+	<20151001141243.GA5061@sudip-pc>
+	<CAJKOXPdVs9i9sVP84wa2wU0qVH1-o4unvaDC+O7c1za6bJUSLw@mail.gmail.com>
+	<20151008142129.GC10587@sudip-pc>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f46.google.com ([209.85.220.46]:33194 "EHLO
-	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932355AbbJIK6O (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 Oct 2015 06:58:14 -0400
-In-Reply-To: <CAGOxZ52DE42YA3b5z-16H7fxs58f6Mv+AjMcaaaJEM6bftEmnA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <20151008142129.GC10587@sudip-pc>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Alim Akhtar <alim.akhtar@gmail.com>
-Cc: k.kozlowski.k@gmail.com, Lukasz Majewski <l.majewski@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, linux-pm@vger.kernel.org, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, stable@vger.kernel.org
 
-W dniu 09.10.2015 o 01:45, Alim Akhtar pisze:
-> Hello,
-> 
-> On Thu, Oct 8, 2015 at 11:04 AM, Krzysztof Kozlowski
-> <k.kozlowski@samsung.com> wrote:
->> During probe if the regulator could not be enabled, the error exit path
->> would still disable it. This could lead to unbalanced counter of
->> regulator enable/disable.
+2015-10-08 23:21 GMT+09:00 Sudip Mukherjee <sudipm.mukherjee@gmail.com>:
+> On Fri, Oct 02, 2015 at 08:43:52AM +0900, Krzysztof Kozlowski wrote:
+>> 2015-10-01 23:12 GMT+09:00 Sudip Mukherjee <sudipm.mukherjee@gmail.com>:
+>> > On Thu, Oct 01, 2015 at 10:18:57PM +0900, Krzysztof Kozlowski wrote:
+>> >> 2015-10-01 20:39 GMT+09:00 Sudip Mukherjee <sudipm.mukherjee@gmail.com>:
+>> >> > The value of emul_con was getting overwritten if the selected soc is
+>> >> > SOC_ARCH_EXYNOS5260. And so as a result we were reading from the wrong
+>> >> > register in the case of SOC_ARCH_EXYNOS5260.
+>> >>
+>> >> How the value is overwritten if the soc is Exynos5260? I can't see it
+>> >> (although the "else if" is still more obvious than "if" but how does
+>> >> the description match the code?).
+>> > The code here is:
+>> > if (data->soc == SOC_ARCH_EXYNOS5260)
+>> >         emul_con = EXYNOS5260_EMUL_CON;
+>> > if (data->soc == SOC_ARCH_EXYNOS5433)
+>> >         emul_con = EXYNOS5433_TMU_EMUL_CON;
+>> > else if (data->soc == SOC_ARCH_EXYNOS7)
+>> >         emul_con = EXYNOS7_TMU_REG_EMUL_CON;
+>> > else
+>> >         emul_con = EXYNOS_EMUL_CON;
+>> >
+>> > So if data->soc is SOC_ARCH_EXYNOS5260 , then emul_con becomes
+>> > EXYNOS5260_EMUL_CON. But again for the else part it will become
+>> > EXYNOS_EMUL_CON.
 >>
-> Do you see a regulator unbalanced reported here during boot? You may
-> want to add that to commit message.
+>> Indeed!
+>>
+>> Fixes: 488c7455d74c ("thermal: exynos: Add the support for Exynos5433 TMU")
+>>
+>> Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+>
+> Hi Krzysztof,
+> Who will pick this one up? I still do not see it in linux-next.
 
-I did not see the warning/error message about unbalanced disable. It
-would happen in certain condition only - no other enables of regulator
-and count going below 0.
+Hi!
 
-I would have to simulate this error to get the warning message. I don't
-think it is worth the effort.
+I guess it is a patch for Lukasz.
+
+Lukasz,
+Do you plan to pick it up or maybe this should go through samsung-soc tree?
 
 Best regards,
 Krzysztof
-
-> 
->> The patch moves code for getting and enabling the regulator from
->> exynos_map_dt_data() to probe function because it is really not a part
->> of getting Device Tree properties.
->>
->> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
->> Fixes: 5f09a5cbd14a ("thermal: exynos: Disable the regulator on probe failure")
->> Cc: <stable@vger.kernel.org>
->> ---
->>  drivers/thermal/samsung/exynos_tmu.c | 34 +++++++++++++++++-----------------
->>  1 file changed, 17 insertions(+), 17 deletions(-)
->>
->> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
->> index 0bae8cc6c23a..23f4320f8ef7 100644
->> --- a/drivers/thermal/samsung/exynos_tmu.c
->> +++ b/drivers/thermal/samsung/exynos_tmu.c
->> @@ -1168,27 +1168,10 @@ static int exynos_map_dt_data(struct platform_device *pdev)
->>         struct exynos_tmu_data *data = platform_get_drvdata(pdev);
->>         struct exynos_tmu_platform_data *pdata;
->>         struct resource res;
->> -       int ret;
->>
->>         if (!data || !pdev->dev.of_node)
->>                 return -ENODEV;
->>
->> -       /*
->> -        * Try enabling the regulator if found
->> -        * TODO: Add regulator as an SOC feature, so that regulator enable
->> -        * is a compulsory call.
->> -        */
->> -       data->regulator = devm_regulator_get(&pdev->dev, "vtmu");
->> -       if (!IS_ERR(data->regulator)) {
->> -               ret = regulator_enable(data->regulator);
->> -               if (ret) {
->> -                       dev_err(&pdev->dev, "failed to enable vtmu\n");
->> -                       return ret;
->> -               }
->> -       } else {
->> -               dev_info(&pdev->dev, "Regulator node (vtmu) not found\n");
->> -       }
->> -
->>         data->id = of_alias_get_id(pdev->dev.of_node, "tmuctrl");
->>         if (data->id < 0)
->>                 data->id = 0;
->> @@ -1312,6 +1295,23 @@ static int exynos_tmu_probe(struct platform_device *pdev)
->>                 pr_err("thermal: tz: %p ERROR\n", data->tzd);
->>                 return PTR_ERR(data->tzd);
->>         }
->> +
->> +       /*
->> +        * Try enabling the regulator if found
->> +        * TODO: Add regulator as an SOC feature, so that regulator enable
->> +        * is a compulsory call.
->> +        */
->> +       data->regulator = devm_regulator_get(&pdev->dev, "vtmu");
->> +       if (!IS_ERR(data->regulator)) {
->> +               ret = regulator_enable(data->regulator);
->> +               if (ret) {
->> +                       dev_err(&pdev->dev, "failed to enable vtmu\n");
->> +                       return ret;
->> +               }
->> +       } else {
->> +               dev_info(&pdev->dev, "Regulator node (vtmu) not found\n");
->> +       }
->> +
->>         ret = exynos_map_dt_data(pdev);
->>         if (ret)
->>                 goto err_sensor;
->> --
->> 1.9.1
->>
->>
->> _______________________________________________
->> linux-arm-kernel mailing list
->> linux-arm-kernel@lists.infradead.org
->> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-> 
-> 
-> 
-
