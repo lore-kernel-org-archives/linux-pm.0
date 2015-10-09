@@ -1,41 +1,84 @@
-From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: Re: [PATCH v3 4/9] clk: qcom: create virtual child device for TSENS
-Date: Fri, 09 Oct 2015 08:44:42 +0530
-Message-ID: <56173122.2030203@codeaurora.org>
-References: <1444280468-17159-1-git-send-email-rnayak@codeaurora.org> <1444280468-17159-5-git-send-email-rnayak@codeaurora.org> <20151008232110.GK26883@codeaurora.org>
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: RE: [PATCH] [v2] ACPI / PM: Fix incorrect wakeup irq setting before
+ suspend-to-idle
+Date: Fri, 9 Oct 2015 08:14:45 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE6402865A35E@shsmsx102.ccr.corp.intel.com>
+References: <1443316990-8265-1-git-send-email-yu.c.chen@intel.com>
+ <1507758.qzQp1pmTJW@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:49819 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753433AbbJIDOt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 8 Oct 2015 23:14:49 -0400
-In-Reply-To: <20151008232110.GK26883@codeaurora.org>
+Received: from mga02.intel.com ([134.134.136.20]:13497 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756065AbbJIIOt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 9 Oct 2015 04:14:49 -0400
+In-Reply-To: <1507758.qzQp1pmTJW@vostro.rjw.lan>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com, srinivas.kandagatla@linaro.org, nrajan@codeaurora.org, lina.iyer@linaro.org, punit.agrawal@arm.com
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "lenb@kernel.org" <lenb@kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, "jiang.liu@linux.intel.com" <jiang.liu@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-
-On 10/09/2015 04:51 AM, Stephen Boyd wrote:
-> On 10/08, Rajendra Nayak wrote:
->> 8960 family of devices have TSENS as part of GCC in hardware.
->> Hence DT would represent a GCC node with GCC properties as well
->> as TSENS. Create a virtual platform child device here for TSENS
->> so the driver can probe it and use the parent (GCC) to extract DT
->> properties.
->>
->> Suggested-by: Stephen Boyd <sboyd@codeaurora.org>
->> Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
->> ---
-> 
-> Applied to clk-next with some massaging. Is there going to be an
-> update to the gcc binding too?
-
-Thanks, I will update the gcc bindings as part of the patch which
-adds support for 8960 tsens.
-
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-hosted by The Linux Foundation
+SGksIFJhZmFlbA0KU29ycnkgZm9yIG15IGxhdGUgcmVzcG9uc2UsIGp1c3QgY2FtZSBiYWNrIGZy
+b20gaG9tZTopDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogbGludXgt
+cG0tb3duZXJAdmdlci5rZXJuZWwub3JnIFttYWlsdG86bGludXgtcG0tDQo+IG93bmVyQHZnZXIu
+a2VybmVsLm9yZ10gT24gQmVoYWxmIE9mIFJhZmFlbCBKLiBXeXNvY2tpDQo+IFNlbnQ6IFRodXJz
+ZGF5LCBPY3RvYmVyIDAxLCAyMDE1IDk6MTEgQU0NCj4gVG86IENoZW4sIFl1IEMNCj4gQ2M6IGxl
+bmJAa2VybmVsLm9yZzsgWmhhbmcsIFJ1aTsgamlhbmcubGl1QGxpbnV4LmludGVsLmNvbTsgbGlu
+dXgtDQo+IHBtQHZnZXIua2VybmVsLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw0K
+PiBTdWJqZWN0OiBSZTogW1BBVENIXSBbdjJdIEFDUEkgLyBQTTogRml4IGluY29ycmVjdCB3YWtl
+dXAgaXJxIHNldHRpbmcgYmVmb3JlDQo+IHN1c3BlbmQtdG8taWRsZQ0KPiANCj4gT24gU3VuZGF5
+LCBTZXB0ZW1iZXIgMjcsIDIwMTUgMDk6MjM6MTAgQU0gQ2hlbiBZdSB3cm90ZToNCj4gPiBkaWZm
+IC0tZ2l0IGEvZHJpdmVycy9hY3BpL29zbC5jIGIvZHJpdmVycy9hY3BpL29zbC5jIGluZGV4DQo+
+ID4gNzM5YTRhNi4uOTc1MDdmYyAxMDA2NDQNCj4gPiAtLS0gYS9kcml2ZXJzL2FjcGkvb3NsLmMN
+Cj4gPiArKysgYi9kcml2ZXJzL2FjcGkvb3NsLmMNCj4gPiBAQCAtODEsNiArODEsNyBAQCBzdGF0
+aWMgc3RydWN0IHdvcmtxdWV1ZV9zdHJ1Y3QgKmthY3BpZF93cTsgIHN0YXRpYw0KPiA+IHN0cnVj
+dCB3b3JrcXVldWVfc3RydWN0ICprYWNwaV9ub3RpZnlfd3E7ICBzdGF0aWMgc3RydWN0DQo+ID4g
+d29ya3F1ZXVlX3N0cnVjdCAqa2FjcGlfaG90cGx1Z193cTsgIHN0YXRpYyBib29sIGFjcGlfb3Nf
+aW5pdGlhbGl6ZWQ7DQo+ID4gK3Vuc2lnbmVkIGludCBhY3BpX2ludXNlX2lycSA9IElOVkFMSURf
+QUNQSV9JUlE7DQo+IA0KPiBXaGF0IGFib3V0IGNhbGxpbmcgaXQgYWNwaV9zY2lfaXJxIGluc3Rl
+YWQ/DQo+IA0KT0suIA0KPiA+IEBAIC04NjUsNiArODY3LDkgQEAgYWNwaV9zdGF0dXMNCj4gYWNw
+aV9vc19yZW1vdmVfaW50ZXJydXB0X2hhbmRsZXIodTMyIGlycSwgYWNwaV9vc2RfaGFuZGxlciBo
+YW5kbGVyKQ0KPiA+ICAJaWYgKGlycSAhPSBhY3BpX2dibF9GQURULnNjaV9pbnRlcnJ1cHQpDQo+
+ID4gIAkJcmV0dXJuIEFFX0JBRF9QQVJBTUVURVI7DQo+ID4NCj4gPiArCWlmICghSVNfSU5WQUxJ
+RF9BQ1BJX0lSUShhY3BpX2ludXNlX2lycSkpDQo+ID4gKwkJaXJxID0gYWNwaV9pbnVzZV9pcnE7
+DQo+IA0KPiBJJ2QgdGhpbmsgdGhhdCB3ZSBzaG91bGQgcmV0dXJuIGZyb20gaGVyZSBpZiBhY3Bp
+X2ludXNlX2lycSBpcyBpbnZhbGlkPw0KPiANCj4gSXQgc3VyZWx5IGNhbid0IGJlIGludmFsaWQg
+aWYgYWNwaV9vc19pbnN0YWxsX2ludGVycnVwdF9oYW5kbGVyKCkgaGFzIHN1Y2NlZWRlZCwNCj4g
+cmlnaHQ/DQo+IA0KWWVzLCB0aGVyZSBpcyBubyBuZWVkIHRvIHJlbW92ZSB0aGUgaGFuZGxlciBp
+ZiBpdCBpcyBub3QgcmVnaXN0ZXJlZCwgd2lsbCByZXdpdGUgaXQuDQoNCj4gPiArDQo+ID4gIAlm
+cmVlX2lycShpcnEsIGFjcGlfaXJxKTsNCj4gPiAgCWFjcGlfaXJxX2hhbmRsZXIgPSBOVUxMOw0K
+PiA+DQo+ID4gQEAgLTExNzYsMTIgKzExODEsMTQgQEAgRVhQT1JUX1NZTUJPTChhY3BpX29zX2V4
+ZWN1dGUpOw0KPiA+DQo+ID4gIHZvaWQgYWNwaV9vc193YWl0X2V2ZW50c19jb21wbGV0ZSh2b2lk
+KQ0KPiA+ICB7DQo+ID4gKwl1bnNpZ25lZCBpbnQgaXJxID0gSVNfSU5WQUxJRF9BQ1BJX0lSUShh
+Y3BpX2ludXNlX2lycSkgPw0KPiA+ICsJCWFjcGlfZ2JsX0ZBRFQuc2NpX2ludGVycnVwdCA6IGFj
+cGlfaW51c2VfaXJxOw0KPiANCj4gVGhhdCwgYWdhaW4uICBJZiBhY3BpX2ludXNlX2lycSBpcyBp
+bnZhbGlkLCBhY3BpX29zX2luc3RhbGxfaW50ZXJydXB0X2hhbmRsZXIoKQ0KPiBoYXMgZmFpbGVk
+LCBzbyB3ZSBoYXZlIG5vdGhpbmcgdG8gc3luY2hyb25pemUgaGVyZSwgb3IgYW0gSSBtaXNzaW5n
+IGFueXRoaW5nPw0KPiANClJpZ2h0LCB3aWxsIG9wdGltaXplIHRoaXMuDQo+ID4gIHN0YXRpYyBp
+bnQgYWNwaV9mcmVlemVfcHJlcGFyZSh2b2lkKQ0KPiA+ICB7DQo+ID4gKwl1bnNpZ25lZCBpbnQg
+aXJxID0gSVNfSU5WQUxJRF9BQ1BJX0lSUShhY3BpX2ludXNlX2lycSkgPw0KPiA+ICsJCWFjcGlf
+Z2JsX0ZBRFQuc2NpX2ludGVycnVwdCA6IGFjcGlfaW51c2VfaXJxOw0KPiANCj4gU2FtZSBjb21t
+ZW50IGFzIGFib3ZlLg0KPiANCj4gUGx1cywgeW91IHNlZW0gdG8gYmUgZHVwbGljYXRpbmcgY29k
+ZSBmcm9tIGFjcGlfb3Nfd2FpdF9ldmVudHNfY29tcGxldGUoKQ0KPiBoZXJlLCBzbyB3aGF0IGFi
+b3V0IHB1dHRpbmcgaXQgaW50byBhIHNlcGFyYXRlIHJvdXRpbmUgKG1heWJlIHN0YXRpYyBpbmxp
+bmUpPw0KPiANCg0KSSd2ZSBzZW50IG91dCBhbm90aGVyIHZlcnNpb24gMyBwYXRjaCwgd2hpY2gg
+c2ltcGxpZmllZCB0aGlzIGxvZ2ljIHRoYXQsIA0KdGhlIGNvZGUgZmxvdyB3aWxsIGZpcnN0bHkg
+IGNoZWNrIGlmIHRoZSBhY3BpIGlycSBpcyByZWdpc3RlcmVkLA0KSWYgbm90LCB3ZSBzaW1wbHkg
+YnlwYXNzIHRoZSBjb2RlLiBTbyB0aGUgZHVwbGljYXRpbmcgY29kZSB3b3VsZCBiZWNvbWUNCm9u
+ZSBsaW5lOg0KIiBpZiAoIUlTX0lOVkFMSURfQUNQSV9JUlEoYWNwaV9zY2lfaXJxKSkiIA0KDQp2
+MzoNCiAtIDEuUmVuYW1lIGFjcGlfaW51c2VfaXJxIHRvIGFjcGlfc2NpX2lycSBmb3IgYmV0dGVy
+IHVuZGVyc3RhbmRpbmcuDQoNCiAgIDIuSWYgdGhlIGlycSBoYW5kbGVyIGlzIG5vdCByZWdpc3Rl
+cmVkLCBza2lwIHRoZSBzeW5jaHJvbml6ZV9oYXJkaXJxDQogICAgIGluIGFjcGlfb3Nfd2FpdF9l
+dmVudHNfY29tcGxldGUgYW5kIHJldHVybiBpbW1lZGlhdGVseSBpbg0KICAgICBhY3BpX29zX3Jl
+bW92ZV9pbnRlcnJ1cHRfaGFuZGxlci4NCg0KICAgMy5Gb3IgYWNwaV9mcmVlemVfcHJlcGFyZSBh
+bmQgYWNwaV9mcmVlemVfcmVzdG9yZSwgaWYgdGhlIGFjcGkgaXJxDQogICAgIGhhbmRsZXIgaXMg
+bm90IHByb3Blcmx5IHJlZ2lzdGVyZWQsIHdlIGRvIG5vdCBsZXZlcmFnZSBhY3BpIGlycQ0KICAg
+ICB0byB3YWtlIHVwIHRoZSBzeXN0ZW0sIGJ1dCBleHBlY3Qgb3RoZXIgcGVyaXBoZXJhbHMoc3Vj
+aCBhcyBQQ0kgZGV2aWNlcw0KICAgICBhbmQgVVNCIGRldmljZXMpdG8gaW52b2tlIGVuYWJsZV9p
+cnFfd2FrZSBmb3IgdXMuDQoNCj4gVGhhbmtzLA0KPiBSYWZhZWwNCj4gDQo+IC0tDQo+IFRvIHVu
+c3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51
+eC1wbSIgaW4gdGhlDQo+IGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5l
+bC5vcmcgTW9yZSBtYWpvcmRvbW8gaW5mbyBhdA0KPiBodHRwOi8vdmdlci5rZXJuZWwub3JnL21h
+am9yZG9tby1pbmZvLmh0bWwNCg==
