@@ -1,7 +1,7 @@
 From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: [PATCH v4 7/8] arm: dts: apq8084: Add thermal zones, tsens and qfprom nodes
-Date: Fri,  9 Oct 2015 15:11:09 +0530
-Message-ID: <1444383670-32693-8-git-send-email-rnayak@codeaurora.org>
+Subject: [PATCH v4 6/8] arm: dts: apq8064: Add thermal zones, tsens and qfprom nodes
+Date: Fri,  9 Oct 2015 15:11:08 +0530
+Message-ID: <1444383670-32693-7-git-send-email-rnayak@codeaurora.org>
 References: <1444383670-32693-1-git-send-email-rnayak@codeaurora.org>
 Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1444383670-32693-1-git-send-email-rnayak@codeaurora.org>
@@ -10,18 +10,57 @@ To: edubezval@gmail.com, agross@codeaurora.org
 Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rui.zhang@intel.com, sboyd@codeaurora.org, srinivas.kandagatla@linaro.org, nrajan@codeaurora.org, lina.iyer@linaro.org, punit.agrawal@arm.com, Rajendra Nayak <rnayak@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add thermal zones, tsens and qfprom nodes
+TSENS is part of GCC, hence add TSENS properties as part of GCC node.
+Also add thermal zones and qfprom nodes.
+Update GCC bindings doc to mention the possibility of optional TSENS
+properties that can be part of GCC node.
 
 Cc: Andy Gross <agross@codeaurora.org>
 Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
 ---
- arch/arm/boot/dts/qcom-apq8084.dtsi | 105 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 105 insertions(+)
+ .../devicetree/bindings/clock/qcom,gcc.txt         |  20 ++++
+ arch/arm/boot/dts/qcom-apq8064.dtsi                | 101 +++++++++++++++++++++
+ 2 files changed, 121 insertions(+)
 
-diff --git a/arch/arm/boot/dts/qcom-apq8084.dtsi b/arch/arm/boot/dts/qcom-apq8084.dtsi
-index 0554fbd..80570a1 100644
---- a/arch/arm/boot/dts/qcom-apq8084.dtsi
-+++ b/arch/arm/boot/dts/qcom-apq8084.dtsi
+diff --git a/Documentation/devicetree/bindings/clock/qcom,gcc.txt b/Documentation/devicetree/bindings/clock/qcom,gcc.txt
+index 54c23f3..f1cf499 100644
+--- a/Documentation/devicetree/bindings/clock/qcom,gcc.txt
++++ b/Documentation/devicetree/bindings/clock/qcom,gcc.txt
+@@ -18,6 +18,13 @@ Required properties :
+ - #clock-cells : shall contain 1
+ - #reset-cells : shall contain 1
+ 
++Optional properties:
++- Qualcomm TSENS (thermal sensor device) on some devices can
++be part of GCC and hence the TSENS properties can also be
++part of the GCC/clock-controller node.
++For more details on the TSENS properties please refer
++Documentation/devicetree/bindings/thermal/qcom-tsens.txt
++
+ Example:
+ 	clock-controller@900000 {
+ 		compatible = "qcom,gcc-msm8960";
+@@ -25,3 +32,16 @@ Example:
+ 		#clock-cells = <1>;
+ 		#reset-cells = <1>;
+ 	};
++
++Example of GCC with TSENS properties:
++	clock-controller@900000 {
++		compatible = "qcom,gcc-apq8064";
++		reg = <0x00900000 0x4000>;
++		nvmem-cells = <&tsens_calib>, <&tsens_backup>;
++		nvmem-cell-names = "calib", "calib_backup";
++		qcom,tsens-slopes = <1176 1176 1154 1176 1111
++				1132 1132 1199 1132 1199 1132>;
++		#clock-cells = <1>;
++		#reset-cells = <1>;
++		#thermal-sensor-cells = <1>;
++	};
+diff --git a/arch/arm/boot/dts/qcom-apq8064.dtsi b/arch/arm/boot/dts/qcom-apq8064.dtsi
+index d2e94d6..6a0866b 100644
+--- a/arch/arm/boot/dts/qcom-apq8064.dtsi
++++ b/arch/arm/boot/dts/qcom-apq8064.dtsi
 @@ -75,6 +75,88 @@
  		};
  	};
@@ -31,7 +70,7 @@ index 0554fbd..80570a1 100644
 +			polling-delay-passive = <250>;
 +			polling-delay = <1000>;
 +
-+			thermal-sensors = <&tsens 5>;
++			thermal-sensors = <&gcc 7>;
 +
 +			trips {
 +				cpu_alert0: trip@0 {
@@ -51,7 +90,7 @@ index 0554fbd..80570a1 100644
 +			polling-delay-passive = <250>;
 +			polling-delay = <1000>;
 +
-+			thermal-sensors = <&tsens 6>;
++			thermal-sensors = <&gcc 8>;
 +
 +			trips {
 +				cpu_alert1: trip@0 {
@@ -71,7 +110,7 @@ index 0554fbd..80570a1 100644
 +			polling-delay-passive = <250>;
 +			polling-delay = <1000>;
 +
-+			thermal-sensors = <&tsens 7>;
++			thermal-sensors = <&gcc 9>;
 +
 +			trips {
 +				cpu_alert2: trip@0 {
@@ -91,7 +130,7 @@ index 0554fbd..80570a1 100644
 +			polling-delay-passive = <250>;
 +			polling-delay = <1000>;
 +
-+			thermal-sensors = <&tsens 8>;
++			thermal-sensors = <&gcc 10>;
 +
 +			trips {
 +				cpu_alert3: trip@0 {
@@ -110,37 +149,38 @@ index 0554fbd..80570a1 100644
 +
  	cpu-pmu {
  		compatible = "qcom,krait-pmu";
- 		interrupts = <1 7 0xf04>;
-@@ -103,6 +185,29 @@
- 			      <0xf9002000 0x1000>;
+ 		interrupts = <1 10 0x304>;
+@@ -364,11 +446,30 @@
+ 			};
  		};
  
-+		qfprom: qfprom@fc4bc000 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "qcom,qfprom";
-+			reg = <0xfc4bc000 0x1000>;
-+			tsens_calib: calib@d0 {
-+				reg = <0xd0 0x18>;
++		qfprom: qfprom@00700000 {
++			compatible	= "qcom,qfprom";
++			reg		= <0x00700000 0x1000>;
++			#address-cells	= <1>;
++			#size-cells	= <1>;
++			ranges;
++			tsens_calib: calib {
++				reg = <0x404 0x10>;
 +			};
-+			tsens_backup: backup@440 {
-+				reg = <0x440 0x10>;
++			tsens_backup: backup_calib {
++				reg = <0x414 0x10>;
 +			};
 +		};
 +
-+		tsens: thermal-sensor@fc4a8000 {
-+			compatible = "qcom,msm8974-tsens";
-+			reg = <0xfc4a8000 0x2000>;
+ 		gcc: clock-controller@900000 {
+ 			compatible = "qcom,gcc-apq8064";
+ 			reg = <0x00900000 0x4000>;
 +			nvmem-cells = <&tsens_calib>, <&tsens_backup>;
 +			nvmem-cell-names = "calib", "calib_backup";
-+			qcom,tsens-slopes = <3200 3200 3200 3200 3200 3200
-+				3200 3200 3200 3200 3200>;
++			qcom,tsens-slopes = <1176 1176 1154 1176 1111
++				1132 1132 1199 1132 1199 1132>;
+ 			#clock-cells = <1>;
+ 			#reset-cells = <1>;
 +			#thermal-sensor-cells = <1>;
-+		};
-+
- 		timer@f9020000 {
- 			#address-cells = <1>;
- 			#size-cells = <1>;
+ 		};
+ 
+ 		lcc: clock-controller@28000000 {
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
 of Code Aurora Forum, hosted by The Linux Foundation
