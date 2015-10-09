@@ -1,56 +1,32 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH] cpufreq: acpi_cpufreq: base frequency attribute support
-Date: Fri, 09 Oct 2015 08:34:06 -0700
-Message-ID: <1444404846.7437.13.camel@spandruv-desk3.jf.intel.com>
-References: <1443738317-4224-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-	 <20151007172343.GE4557@linux>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH] debugfs: Add debugfs_create_ulong()
+Date: Fri, 9 Oct 2015 09:39:41 -0700
+Message-ID: <20151009163941.GQ26883@codeaurora.org>
+References: <3a48d2bb4320bba82f91354d7165c300ef8108bd.1444402709.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:51234 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754061AbbJIPek (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 9 Oct 2015 11:34:40 -0400
-In-Reply-To: <20151007172343.GE4557@linux>
+Received: from smtp.codeaurora.org ([198.145.29.96]:49423 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757049AbbJIQjo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 9 Oct 2015 12:39:44 -0400
+Content-Disposition: inline
+In-Reply-To: <3a48d2bb4320bba82f91354d7165c300ef8108bd.1444402709.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linaro-kernel@lists.linaro.org, Rafael Wysocki <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, arnd@arndb.de, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, stern@rowland.harvard.edu
 
-On Wed, 2015-10-07 at 22:53 +0530, Viresh Kumar wrote:
-> On 01-10-15, 15:25, Srinivas Pandruvada wrote:
-> > Currently scaling_available_frequencies displays list of available
-> > frequencies which can be used to set max/min or current scaling frequency.
-> > 
-> > >cat scaling_available_frequencies
-> > 2301000 2300000 2200000 2000000 1900000 1800000 1700000 1500000 1400000
-> > 1300000 1100000 1000000 900000 800000 600000 500000
-> > 
-> > Here traditionally it is assumed that only 2301000 is a turbo frequency,
-> > which is purely opportunistic, anything else user can request and may
-> > get it.
-> > But because of configurable thermal design power implementation in several
-> > Intel CPUs, the opportunistic frequency start can be any frequency in this
-> > range. For example it can be 2300000 or any lower value.
-> > This change adds an optional new attribute called "base_frequency",
-> > which displays the max non-turbo frequency (base frequency). For example:
-> > >cat base_frequency
-> > 2200000
-> > This will allow user to choose a certain frequency which is not
-> > opportunistic.
-> > 
-> > Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> > ---
-> >  drivers/cpufreq/acpi-cpufreq.c | 34 ++++++++++++++++++++++++++++++++++
-> >  1 file changed, 34 insertions(+)
-> 
-> Look for scaling_boost_frequencies_show() and see if you can reuse it.
-Initially I have planned to use this, but there is a issue in using it.
-Checking internally again.
+On 10/09, Viresh Kumar wrote:
+> @@ -87,6 +89,8 @@ struct dentry *debugfs_create_x32(const char *name, umode_t mode,
+>  				  struct dentry *parent, u32 *value);
+>  struct dentry *debugfs_create_x64(const char *name, umode_t mode,
+>  				  struct dentry *parent, u64 *value);
+> +struct dentry *debugfs_create_xlong(const char *name, umode_t mode,
+> +				    struct dentry *parent, unsigned long *value);
 
-Thanks,
-Srinivas
-> 
+Where is this function defined? The non-x version looks ok.
 
-
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
