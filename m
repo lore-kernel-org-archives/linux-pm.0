@@ -1,88 +1,77 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH] thermal: exynos: fix register read in TMU
-Date: Sat, 10 Oct 2015 13:36:16 +0900
-Message-ID: <561895C0.5030400@samsung.com>
-References: <1443699599-9693-1-git-send-email-sudipm.mukherjee@gmail.com>
- <CAJKOXPfyC8etcPe373q6Pc1qWb2zVnHE96V+Rh5mPmpzAxFjiA@mail.gmail.com>
- <20151001141243.GA5061@sudip-pc>
- <CAJKOXPdVs9i9sVP84wa2wU0qVH1-o4unvaDC+O7c1za6bJUSLw@mail.gmail.com>
- <20151008142129.GC10587@sudip-pc>
- <CAJKOXPfbrdm75n_v+dRnq8dqAFAGvHj28QQ4ZY8WZms1D6eLZQ@mail.gmail.com>
- <20151009140716.0c6e57b7@amdc2363>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH] thermal: cpu_cooling: Remove usage of devm functions
+Date: Sat, 10 Oct 2015 16:49:27 +0800
+Message-ID: <1444466967.450.2.camel@rzhang1-mobl4>
+References: <20150819062219.GA10032@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f45.google.com ([209.85.220.45]:33830 "EHLO
-	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751318AbbJJEgX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 10 Oct 2015 00:36:23 -0400
-In-Reply-To: <20151009140716.0c6e57b7@amdc2363>
+Received: from mga11.intel.com ([192.55.52.93]:33441 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751337AbbJJItc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 10 Oct 2015 04:49:32 -0400
+In-Reply-To: <20150819062219.GA10032@localhost>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Majewski <l.majewski@samsung.com>
-Cc: k.kozlowski.k@gmail.com, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, linux-arm-kernel@lists.infradead.org
+To: Vaishali Thakkar <vthakkar1994@gmail.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-W dniu 09.10.2015 o 21:07, Lukasz Majewski pisze:
-> Hi Krzysztof,
+On Wed, 2015-08-19 at 11:52 +0530, Vaishali Thakkar wrote:
+> In the function cpufreq_get_requested_power, the memory allocated
+> for load_cpu is live within the function only. And after the
+> allocation it is immediately freed with devm_kfree. There is no
+> need to allocate memory for load_cpu with devm function so replace
+> devm_kcalloc with kcalloc and devm_kfree with kfree.
 > 
->> 2015-10-08 23:21 GMT+09:00 Sudip Mukherjee
->> <sudipm.mukherjee@gmail.com>:
->>> On Fri, Oct 02, 2015 at 08:43:52AM +0900, Krzysztof Kozlowski wrote:
->>>> 2015-10-01 23:12 GMT+09:00 Sudip Mukherjee
->>>> <sudipm.mukherjee@gmail.com>:
->>>>> On Thu, Oct 01, 2015 at 10:18:57PM +0900, Krzysztof Kozlowski
->>>>> wrote:
->>>>>> 2015-10-01 20:39 GMT+09:00 Sudip Mukherjee
->>>>>> <sudipm.mukherjee@gmail.com>:
->>>>>>> The value of emul_con was getting overwritten if the selected
->>>>>>> soc is SOC_ARCH_EXYNOS5260. And so as a result we were
->>>>>>> reading from the wrong register in the case of
->>>>>>> SOC_ARCH_EXYNOS5260.
->>>>>>
->>>>>> How the value is overwritten if the soc is Exynos5260? I can't
->>>>>> see it (although the "else if" is still more obvious than "if"
->>>>>> but how does the description match the code?).
->>>>> The code here is:
->>>>> if (data->soc == SOC_ARCH_EXYNOS5260)
->>>>>         emul_con = EXYNOS5260_EMUL_CON;
->>>>> if (data->soc == SOC_ARCH_EXYNOS5433)
->>>>>         emul_con = EXYNOS5433_TMU_EMUL_CON;
->>>>> else if (data->soc == SOC_ARCH_EXYNOS7)
->>>>>         emul_con = EXYNOS7_TMU_REG_EMUL_CON;
->>>>> else
->>>>>         emul_con = EXYNOS_EMUL_CON;
->>>>>
->>>>> So if data->soc is SOC_ARCH_EXYNOS5260 , then emul_con becomes
->>>>> EXYNOS5260_EMUL_CON. But again for the else part it will become
->>>>> EXYNOS_EMUL_CON.
->>>>
->>>> Indeed!
->>>>
->>>> Fixes: 488c7455d74c ("thermal: exynos: Add the support for
->>>> Exynos5433 TMU")
->>>>
->>>> Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
->>>
->>> Hi Krzysztof,
->>> Who will pick this one up? I still do not see it in linux-next.
->>
->> Hi!
->>
->> I guess it is a patch for Lukasz.
->>
->> Lukasz,
->> Do you plan to pick it up or maybe this should go through samsung-soc
->> tree?
-> 
-> This is the only one patch, which is waiting in my queue. Since no more
-> fixes available, please feel free to grab this patch to samsung-soc.
-> 
-> Acked-by: Lukasz Majewski <l.majewski@samsung.com>
+> Signed-off-by: Vaishali Thakkar <vthakkar1994@gmail.com>
+> ---
+> This patch is having one checkpatch.pl warning which suggests that
+> kfree(NULL) is safe. But I think leaving code with if is nice
+> because it reflects the fact that kcalloc was under an if. So, I
+> have ignored checkpatch. If maintainer wants me to go for changing
+> things, I am fine with it too.
 
-Okay, thanks! Applied to fixes for current cycle. I'll it send later to
-Kukjin (unless he picks it as well).
+Applied. And I've removed the "if (load_cpu)" for kfree() to avoid
+warning reports.
 
-Best regards,
-Krzysztof
+thanks,
+rui
+> ---
+>  drivers/thermal/cpu_cooling.c | 7 +++----
+>  1 file changed, 3 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> index 620dcd4..babf8b3 100644
+> --- a/drivers/thermal/cpu_cooling.c
+> +++ b/drivers/thermal/cpu_cooling.c
+> @@ -584,8 +584,7 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
+>  	if (trace_thermal_power_cpu_get_power_enabled()) {
+>  		u32 ncpus = cpumask_weight(&cpufreq_device->allowed_cpus);
+>  
+> -		load_cpu = devm_kcalloc(&cdev->device, ncpus, sizeof(*load_cpu),
+> -					GFP_KERNEL);
+> +		load_cpu = kcalloc(ncpus, sizeof(*load_cpu), GFP_KERNEL);
+>  	}
+>  
+>  	for_each_cpu(cpu, &cpufreq_device->allowed_cpus) {
+> @@ -609,7 +608,7 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
+>  	ret = get_static_power(cpufreq_device, tz, freq, &static_power);
+>  	if (ret) {
+>  		if (load_cpu)
+> -			devm_kfree(&cdev->device, load_cpu);
+> +			kfree(load_cpu);
+>  		return ret;
+>  	}
+>  
+> @@ -618,7 +617,7 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
+>  			&cpufreq_device->allowed_cpus,
+>  			freq, load_cpu, i, dynamic_power, static_power);
+>  
+> -		devm_kfree(&cdev->device, load_cpu);
+> +		kfree(load_cpu);
+>  	}
+>  
+>  	*power = static_power + dynamic_power;
+
 
