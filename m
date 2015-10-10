@@ -1,51 +1,134 @@
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [RFC PATCH 0/8] clk: qoriq: Move chip-specific knowledge into
- driver
-Date: Fri, 9 Oct 2015 18:57:44 -0500
-Message-ID: <1444435064.5185.16.camel@freescale.com>
-References: <1434682158-7243-1-git-send-email-scottwood@freescale.com>
-	 <20150811182535.31346.52965@quantum>
-	 <1443745589.5336.185.camel@freescale.com>
+From: Alim Akhtar <alim.akhtar@gmail.com>
+Subject: Re: [PATCH 1/5] thermal: exynos: Fix unbalanced regulator disable on
+ probe failure
+Date: Sat, 10 Oct 2015 07:16:27 +0530
+Message-ID: <CAGOxZ53KA3bB6F4Ucc8r7rLZFfYiATPsQjKs2BOeWV2BdK=nvA@mail.gmail.com>
+References: <1444282446-6419-1-git-send-email-k.kozlowski@samsung.com>
+ <CAGOxZ52DE42YA3b5z-16H7fxs58f6Mv+AjMcaaaJEM6bftEmnA@mail.gmail.com> <56179DC0.1040003@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bn1bon0132.outbound.protection.outlook.com ([157.56.111.132]:38624
-	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750753AbbJIX54 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 9 Oct 2015 19:57:56 -0400
-In-Reply-To: <1443745589.5336.185.camel@freescale.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <56179DC0.1040003@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: k.kozlowski.k@gmail.com, Lukasz Majewski <l.majewski@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, linux-pm@vger.kernel.org, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Michael Turquette <mturquette@baylibre.com>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, Tang Yuantian <Yuantian.Tang@freescale.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Liberman Igal-B31950 <Igal.Liberman@freescale.com>, Bucur Madalin-Cristian-B32716 <madalin.bucur@freescale.com>, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org
 
-On Thu, 2015-10-01 at 19:26 -0500, Scott Wood wrote:
-> [Resending to updated e-mail address]
-> 
-> On Tue, 2015-08-11 at 11:25 -0700, Michael Turquette wrote:
-> > Hi Scott,
-> > 
-> > Quoting Scott Wood (2015-06-18 19:49:10)
-> > > The existing device tree bindings are error-prone and inflexible. 
-> > > Correct the mistake by moving the knowledge into the driver, which
-> > > has more flexibility in describing the quirks of each chip.  This leaves
-> > > the device tree to its proper role of identifying a programming 
-> > > interface
-> > > rather than describing its individual registers.
-> > 
-> > Sorry for not responding to this one sooner. Fell through the cracks.
-> > 
-> > All of the changes to drives/clk/clk-qoriq.c look great to me. I assume
-> > you need to keep all of these patches together and want to the take
-> > through the freescale tree? If so feel free to add,
-> > 
-> > Acked-by: Michael Turquette <mturquette@baylibre.com>
-> 
-> Is the ack still valid for the v3 patchset?
+Hello,
 
-ping
+On Fri, Oct 9, 2015 at 4:28 PM, Krzysztof Kozlowski
+<k.kozlowski@samsung.com> wrote:
+> W dniu 09.10.2015 o 01:45, Alim Akhtar pisze:
+>> Hello,
+>>
+>> On Thu, Oct 8, 2015 at 11:04 AM, Krzysztof Kozlowski
+>> <k.kozlowski@samsung.com> wrote:
+>>> During probe if the regulator could not be enabled, the error exit path
+>>> would still disable it. This could lead to unbalanced counter of
+>>> regulator enable/disable.
+>>>
+>> Do you see a regulator unbalanced reported here during boot? You may
+>> want to add that to commit message.
+>
+> I did not see the warning/error message about unbalanced disable. It
+> would happen in certain condition only - no other enables of regulator
+> and count going below 0.
+>
+> I would have to simulate this error to get the warning message. I don't
+> think it is worth the effort.
+>
+Ok, looking at code, it does looks to be calling regulator disable in
+case regulator enable fails.
+Feel free to add
+Reviewed-by: Alim Akhtar <alim.akhtar@samsung.com>
+Thanks!!
 
--Scott
+> Best regards,
+> Krzysztof
+>
+>>
+>>> The patch moves code for getting and enabling the regulator from
+>>> exynos_map_dt_data() to probe function because it is really not a part
+>>> of getting Device Tree properties.
+>>>
+>>> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+>>> Fixes: 5f09a5cbd14a ("thermal: exynos: Disable the regulator on probe failure")
+>>> Cc: <stable@vger.kernel.org>
+>>> ---
+>>>  drivers/thermal/samsung/exynos_tmu.c | 34 +++++++++++++++++-----------------
+>>>  1 file changed, 17 insertions(+), 17 deletions(-)
+>>>
+>>> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+>>> index 0bae8cc6c23a..23f4320f8ef7 100644
+>>> --- a/drivers/thermal/samsung/exynos_tmu.c
+>>> +++ b/drivers/thermal/samsung/exynos_tmu.c
+>>> @@ -1168,27 +1168,10 @@ static int exynos_map_dt_data(struct platform_device *pdev)
+>>>         struct exynos_tmu_data *data = platform_get_drvdata(pdev);
+>>>         struct exynos_tmu_platform_data *pdata;
+>>>         struct resource res;
+>>> -       int ret;
+>>>
+>>>         if (!data || !pdev->dev.of_node)
+>>>                 return -ENODEV;
+>>>
+>>> -       /*
+>>> -        * Try enabling the regulator if found
+>>> -        * TODO: Add regulator as an SOC feature, so that regulator enable
+>>> -        * is a compulsory call.
+>>> -        */
+>>> -       data->regulator = devm_regulator_get(&pdev->dev, "vtmu");
+>>> -       if (!IS_ERR(data->regulator)) {
+>>> -               ret = regulator_enable(data->regulator);
+>>> -               if (ret) {
+>>> -                       dev_err(&pdev->dev, "failed to enable vtmu\n");
+>>> -                       return ret;
+>>> -               }
+>>> -       } else {
+>>> -               dev_info(&pdev->dev, "Regulator node (vtmu) not found\n");
+>>> -       }
+>>> -
+>>>         data->id = of_alias_get_id(pdev->dev.of_node, "tmuctrl");
+>>>         if (data->id < 0)
+>>>                 data->id = 0;
+>>> @@ -1312,6 +1295,23 @@ static int exynos_tmu_probe(struct platform_device *pdev)
+>>>                 pr_err("thermal: tz: %p ERROR\n", data->tzd);
+>>>                 return PTR_ERR(data->tzd);
+>>>         }
+>>> +
+>>> +       /*
+>>> +        * Try enabling the regulator if found
+>>> +        * TODO: Add regulator as an SOC feature, so that regulator enable
+>>> +        * is a compulsory call.
+>>> +        */
+>>> +       data->regulator = devm_regulator_get(&pdev->dev, "vtmu");
+>>> +       if (!IS_ERR(data->regulator)) {
+>>> +               ret = regulator_enable(data->regulator);
+>>> +               if (ret) {
+>>> +                       dev_err(&pdev->dev, "failed to enable vtmu\n");
+>>> +                       return ret;
+>>> +               }
+>>> +       } else {
+>>> +               dev_info(&pdev->dev, "Regulator node (vtmu) not found\n");
+>>> +       }
+>>> +
+>>>         ret = exynos_map_dt_data(pdev);
+>>>         if (ret)
+>>>                 goto err_sensor;
+>>> --
+>>> 1.9.1
+>>>
+>>>
+>>> _______________________________________________
+>>> linux-arm-kernel mailing list
+>>> linux-arm-kernel@lists.infradead.org
+>>> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+>>
+>>
+>>
+>
 
+
+
+-- 
+Regards,
+Alim
