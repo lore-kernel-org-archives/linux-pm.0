@@ -1,83 +1,256 @@
-From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: RE: [PATCH] [v4] x86, suspend: Save/restore extra MSR registers for
- suspend
-Date: Sun, 11 Oct 2015 02:43:11 +0000
-Message-ID: <36DF59CE26D8EE47B0655C516E9CE6402865AA20@shsmsx102.ccr.corp.intel.com>
-References: <1440645507-17768-1-git-send-email-yu.c.chen@intel.com>
- <1958160.rOz1oQAdlv@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:50883 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751231AbbJKCnV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 10 Oct 2015 22:43:21 -0400
-In-Reply-To: <1958160.rOz1oQAdlv@vostro.rjw.lan>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: [PATCH][v5] x86, suspend: Save/restore extra MSR registers for suspend
+Date: Sun, 11 Oct 2015 11:20:01 +0800
+Message-ID: <1444533601-12330-1-git-send-email-yu.c.chen@intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: mingo@redhat.com, rjw@rjwysocki.net, pavel@ucw.cz, bp@suse.de
+Cc: tglx@linutronix.de, hpa@zytor.com, rui.zhang@intel.com, luto@kernel.org, linux@horizon.com, dsmythies@telus.net, linux-pm@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, marcin.kaszewski@intel.com, Chen Yu <yu.c.chen@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "pavel@ucw.cz" <pavel@ucw.cz>, "tglx@linutronix.de" <tglx@linutronix.de>, "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>, "bp@alien8.de" <bp@alien8.de>, "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-SGkgUmFmYWVsLCB0aGFua3MgZm9yIHlvdXIgY29tbWVudCwNCg0KPiAtLS0tLU9yaWdpbmFsIE1l
-c3NhZ2UtLS0tLQ0KPiBGcm9tOiBSYWZhZWwgSi4gV3lzb2NraSBbbWFpbHRvOnJqd0Byand5c29j
-a2kubmV0XQ0KPiBTZW50OiBTYXR1cmRheSwgT2N0b2JlciAxMCwgMjAxNSA1OjUwIEFNDQo+IFRv
-OiBDaGVuLCBZdSBDDQo+IENjOiBwYXZlbEB1Y3cuY3o7IHRnbHhAbGludXRyb25peC5kZTsgbWlu
-Z29AcmVkaGF0LmNvbTsgaHBhQHp5dG9yLmNvbTsNCj4gYnBAYWxpZW44LmRlOyBaaGFuZywgUnVp
-OyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IHg4NkBrZXJuZWwub3JnOyBsaW51eC0NCj4ga2Vy
-bmVsQHZnZXIua2VybmVsLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSBbdjRdIHg4Niwgc3Vz
-cGVuZDogU2F2ZS9yZXN0b3JlIGV4dHJhIE1TUiByZWdpc3RlcnMgZm9yDQo+IHN1c3BlbmQNCj4g
-DQo+IE9uIFRodXJzZGF5LCBBdWd1c3QgMjcsIDIwMTUgMTE6MTg6MjcgQU0gQ2hlbiBZdSB3cm90
-ZToNCj4gPg0KPiA+ICtzdHJ1Y3QgbXNyX3R5cGUgew0KPiANCj4gSSdkIGNhbGwgdGhpcyBtc3Jf
-ZGF0YS4NCj4gDQpPSywgd2lsbCBjaGFuZ2UgaXRzIG5hbWUuIEJ1dCBtc3JfZGF0YSBpcyBhbHJl
-YWR5IGRlZmluZWQNCmluIGt2bV9ob3N0LmggLCBzbyBJIGNoYW5nZWQgaXQgdG8gbXNyX3NhdmVf
-ZGF0YSBpbiB0aGUgbmV3IHBhdGNoIHZlcnNpb24uDQoNCj4gPiArCWJvb2wgbXNyX3NhdmVkOw0K
-PiA+ICsJc3RydWN0IG1zcl9pbmZvIHJ2Ow0KPiA+ICt9Ow0KPiA+ICsNCj4gPiArc3RydWN0IHNh
-dmVkX21zciB7DQo+IA0KPiBBbmQgdGhpcyBtc3JfY29udGV4dC4NCj4gDQpPSywgd2lsbCBkby4N
-Cj4gPiArCXVuc2lnbmVkIHNob3J0IG51bTsNCj4gPiArCXN0cnVjdCBtc3JfdHlwZSAqbXNyX2Fy
-cmF5Ow0KPiA+ICt9Ow0KPiA+ICsNCj4gPiAgLyogaW1hZ2Ugb2YgdGhlIHNhdmVkIHByb2Nlc3Nv
-ciBzdGF0ZSAqLyAgc3RydWN0IHNhdmVkX2NvbnRleHQgew0KPiA+ICAJdTE2IGVzLCBmcywgZ3Ms
-IHNzOw0KPiA+ICAJdW5zaWduZWQgbG9uZyBjcjAsIGNyMiwgY3IzLCBjcjQ7DQo+ID4gIAl1NjQg
-bWlzY19lbmFibGU7DQo+ID4gIAlib29sIG1pc2NfZW5hYmxlX3NhdmVkOw0KPiA+ICsJc3RydWN0
-IHNhdmVkX21zciBtc3JfZm9yX3NhdmU7DQo+IA0KPiAibXNyX3RvX3NhdmUiPw0KPiANCk9LLCB3
-aWxsIGNoYW5nZS4NCg0KPiA+ICtzdHJ1Y3QgbXNyX3R5cGUgew0KPiA+ICsJYm9vbCBtc3Jfc2F2
-ZWQ7DQo+ID4gKwlzdHJ1Y3QgbXNyX2luZm8gcnY7DQo+ID4gK307DQo+ID4gKw0KPiA+ICtzdHJ1
-Y3Qgc2F2ZWRfbXNyIHsNCj4gPiArCXVuc2lnbmVkIHNob3J0IG51bTsNCj4gPiArCXN0cnVjdCBt
-c3JfdHlwZSAqbXNyX2FycmF5Ow0KPiA+ICt9Ow0KPiANCj4gVGhlIGRlZmluaXRpb25zIGxvb2sg
-dGhlIHNhbWUgYXMgdGhlIHByZXZpb3VzIG9uZXMuDQo+IA0KPiBDYW4gd2Ugc2hhcmUgdGhlbSBz
-b21laG93Pw0KPiANClllcywgSSd2ZSBtb3ZlZCB0aGUgY29tbW9uIGNvZGUgdG8gYXJjaC94ODYv
-aW5jbHVkZS9hc20vbXNyLmguDQo+ID4gK3N0YXRpYyB2b2lkIG1zcl9zYXZlX2NvbnRleHQoc3Ry
-dWN0IHNhdmVkX2NvbnRleHQgKmN0eHQpIHsNCj4gPiArCWludCBpID0gMDsNCj4gPiArDQo+ID4g
-Kwlmb3IgKGkgPSAwOyBpIDwgY3R4dC0+bXNyX2Zvcl9zYXZlLm51bTsgaSsrKSB7DQo+ID4gKwkJ
-c3RydWN0IG1zcl90eXBlICptc3IgPSAmY3R4dC0+bXNyX2Zvcl9zYXZlLm1zcl9hcnJheVtpXTsN
-Cj4gPiArDQo+ID4gKwkJbXNyLT5tc3Jfc2F2ZWQgPSAhcmRtc3JsX3NhZmUobXNyLT5ydi5tc3Jf
-bm8sDQo+ID4gKwkJCSZtc3ItPnJ2LnJlZy5xKTsNCj4gPiArCX0NCj4gDQo+IElmIHlvdSBkaWQg
-c29tZXRoaW5nIGxpa2UNCj4gDQo+IAlzdHJ1Y3QgbXNyX3R5cGUgKm1zciA9IGN0eHQtPm1zcl9m
-b3Jfc2F2ZS5tc3JfYXJyYXk7DQo+IAlzdHJ1Y3QgbXNyX3R5cGUgKmVuZCA9IG1zciArIGN0eHQt
-Pm1zcl9mb3Jfc2F2ZS5udW07DQo+IA0KPiAJd2hpbGUgKG1zciA8IGVuZCkgew0KPiAJCW1zci0+
-bXNyX3NhdmVkID0gIXJkbXNybF9zYWZlKG1zci0+cnYubXNyX25vLCAmbXNyLQ0KPiA+cnYucmVn
-LnEpOw0KPiAJCW1zcisrOw0KPiAJfQ0KPiANCj4gaGVyZSAoYW5kIGFuYWxvZ291c2x5IGJlbG93
-KSwgaXQgd291bGQgYmUgc29tZXdoYXQgZWFzaWVyIHRvIGZvbGxvdyBJTU8uDQo+IA0KT0ssIGNo
-YW5nZWQgdGhlIGNvZGUuDQoNCj4gPiArLyogV2UgY29uc3RyYWluIHRoZSBudW1iZXIgb2YgTVNS
-cyB0byA2NC4gKi8NCj4gDQo+IFdoeSA2NCBpbiBwYXJ0aWN1bGFyPw0KPiANCk9uY2UgSSBsb29r
-ZWQgdXAgdGhlIFNETSBhbmQgZXN0aW1hdGUgdGhhdCA2NCBzaG91bGQgYmUgZW5vdWdoIGZvciBz
-b21lIGltcG9ydGFudA0KTVNSIHJlZ2lzdGVycy4gDQo+ID4gKyNkZWZpbmUgTUFYX01TUl9TQVZF
-RAk2NA0KPiA+ICsNCj4gPiArc3RhdGljIHN0cnVjdCBtc3JfdHlwZSBtc3JfY29udGV4dF9hcnJh
-eVtNQVhfTVNSX1NBVkVEXTsNCj4gDQo+IEkgd29uZGVyIGlmIHRoaXMgYXJyYXkgbWF5IGJlIGFs
-bG9jYXRlZCBkeW5hbWljYWxseT8NCj4gDQo+IFdlJ2xsIHdhc3RlIG1lbW9yeSBoZXJlIGluIHRo
-ZSBtYWpvcml0eSBvZiBjYXNlcy4NCj4gDQpPSywgSSd2ZSBjaGFuZ2VkIGl0IHRvIHVzZSBrbWFs
-bG9jX2FycmF5IGZvciBzdG9yaW5nLg0KDQo+ID4gKw0KPiA+ICsvKg0KPiA+ICsgKiBGb2xsb3dp
-bmcgc2VjdGlvbiBpcyBhIHF1aXJrIGZyYW1ld29yayBmb3IgcHJvYmxlbWF0aWMgQklPUzoNCj4g
-DQo+ICJUaGUgZm9sbG93aW5nIC4uLiINCj4gDQpPSy4NCj4gPiArICogU29tZXRpbWVzIE1TUnMg
-YXJlIG1vZGlmaWVkIGJ5IEJJT1MgYWZ0ZXIgc3VzcGVuZGVkIHRvDQo+ID4gKyAqIHJhbSwgdGhp
-cyBtaWdodCBjYXVzZSB1bmV4cGVjdGVkIGJlaGF2aW9yIGFmdGVyIHJlc3VtZWQuDQo+IA0KPiAi
-UkFNIiAoaW4gY2FwaXRhbHMpIGFuZCAiZHVyaW5nIHJlc3VtZSIgb3IgImFmdGVyIHdha2V1cCIu
-DQo+IA0KT0suIHdpbGwgZG8uDQoNCj4gPiArICogVGh1cyB3ZSBzYXZlL3Jlc3RvcmUgdGhlc2Ug
-c3BlY2lmaWVkIE1TUnMgZHVyaW5nIHN1c3BlbmRpbmcNCj4gPiArICogaW4gb3JkZXIgdG8gd29y
-ayBhcm91bmQgaXQuDQo+ID4gKyAqIEEgdHlwaWNhbCBidWcgaXMgcmVwb3J0ZWQgYXQ6DQo+ID4g
-KyAqIGh0dHBzOi8vYnVnemlsbGEucmVkaGF0LmNvbS9zaG93X2J1Zy5jZ2k/aWQ9MTIyNzIwOA0K
-PiA+ICsgKi8NCj4gPiArc3RhdGljIGludCBtc3Jfc2V0X2luZm8oY29uc3QgdTMyICptc3JfaWQs
-IGNvbnN0IGludCB0b3RhbF9udW0pDQo+IA0KPiBJJ2QgY2FsbCBpdCAibXNyX2luaXRfY29udGV4
-dCIgb3Igc29tZXRoaW5nIGxpa2UgdGhhdC4NCj4gDQpPSywgY2hhbmdlZCBpdCB0byBtc3JfaW5p
-dF9jb250ZXh0Lg0KPiBUaGFua3MsDQo+IFJhZmFlbA0KDQpCZXN0IFJlZ2FyZHMsDQpZdQ0K
+A bug is reported(https://bugzilla.redhat.com/show_bug.cgi?id=1227208)
+that, after resumed from S3, CPU is running at a low speed.
+After investigation, it is found that, BIOS has modified the value
+of THERM_CONTROL register during S3, and changes it from 0 to 0x10
+(thus changes the clock modulation from reserved to enabled),
+since value of 0x10 means CPU can only get 25% of the Duty Cycle,
+this triggers the problem.
+
+Here is a simple scenario to reproduce the issue(only for above case):
+1.Boot up the system
+2.Get MSR with address 0x19a, it should be 0
+3.Put the system into sleep, then wake it up
+4.Get MSR with address 0x19a, it should be 0(actually it shows 0x10)
+
+Although this is a BIOS issue, it would be more robust for linux to deal
+with this situation. This patch fixes this issue by introducing a framework
+to save/restore specified MSR registers(THERM_CONTROL in this case)
+for suspend/resume.
+
+When user encounters a problematic platform and needs to protect the
+MSRs during suspending, he can simply add a quirk entry in
+msr_save_dmi_table, and customizes MSR registers inside the quirk
+callback, for example:
+
+u32 msr_id_need_to_save[] = {MSR_ID0, MSR_ID1, MSR_ID2...};
+
+and the quirk mechanism ensures that, once resumed from suspended,
+the MSRs indicated by these IDs will be restored to their original values
+before suspended.
+
+Since both 64/32-bit kernels are affected, this patch covers 64/32-bit
+common code path. And because the MSRs specified by the user might not
+be available or readable in any situation, we use rdmsrl_safe to safely
+save these MSRs.
+
+Tested-by: Marcin Kaszewski <marcin.kaszewski@intel.com>
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+---
+v5:
+ - Rename some structures and variables for better understanding.
+   Put the defination of struct saved_msr and struct msr_save_data to
+   header: arch/x86/include/asm/msr.h.
+   Re-implement the msr_save_context and msr_restore_context for better
+   maintaining.
+   Convert the msr_context_array to be dynamically allocated.
+   Fix some typos in code comments.
+v4:
+ - Revert v3 to v2, and fix some typos in changelog/comments. 
+   Use msr_info structure instead of msr_id + msr_value.
+   Adjust some codes for better readability.
+v3:
+ - Simplify the patch to only focus on THERM_CONTROL register.
+   This will make things 'just work'.
+v2:
+ - Cover both 64/32-bit common code path.
+   Use rdmsrl_safe to safely read MSR.
+   Introduce a quirk framework for save/restore specified MSR on different
+   platforms.
+---
+ arch/x86/include/asm/msr.h        | 10 ++++
+ arch/x86/include/asm/suspend_32.h |  1 +
+ arch/x86/include/asm/suspend_64.h |  1 +
+ arch/x86/power/cpu.c              | 98 +++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 110 insertions(+)
+
+diff --git a/arch/x86/include/asm/msr.h b/arch/x86/include/asm/msr.h
+index 77d8b28..5ae24ed 100644
+--- a/arch/x86/include/asm/msr.h
++++ b/arch/x86/include/asm/msr.h
+@@ -32,6 +32,16 @@ struct msr_regs_info {
+ 	int err;
+ };
+ 
++struct msr_save_data {
++	bool msr_saved;
++	struct msr_info rv;
++};
++
++struct msr_context {
++	unsigned short num;
++	struct msr_save_data *msr_array;
++};
++
+ static inline unsigned long long native_read_tscp(unsigned int *aux)
+ {
+ 	unsigned long low, high;
+diff --git a/arch/x86/include/asm/suspend_32.h b/arch/x86/include/asm/suspend_32.h
+index d1793f0..5057f65 100644
+--- a/arch/x86/include/asm/suspend_32.h
++++ b/arch/x86/include/asm/suspend_32.h
+@@ -15,6 +15,7 @@ struct saved_context {
+ 	unsigned long cr0, cr2, cr3, cr4;
+ 	u64 misc_enable;
+ 	bool misc_enable_saved;
++	struct msr_context msr_to_save;
+ 	struct desc_ptr gdt_desc;
+ 	struct desc_ptr idt;
+ 	u16 ldt;
+diff --git a/arch/x86/include/asm/suspend_64.h b/arch/x86/include/asm/suspend_64.h
+index 7ebf0eb..60941de 100644
+--- a/arch/x86/include/asm/suspend_64.h
++++ b/arch/x86/include/asm/suspend_64.h
+@@ -24,6 +24,7 @@ struct saved_context {
+ 	unsigned long cr0, cr2, cr3, cr4, cr8;
+ 	u64 misc_enable;
+ 	bool misc_enable_saved;
++	struct msr_context msr_to_save;
+ 	unsigned long efer;
+ 	u16 gdt_pad; /* Unused */
+ 	struct desc_ptr gdt_desc;
+diff --git a/arch/x86/power/cpu.c b/arch/x86/power/cpu.c
+index 9ab5279..fd3243a 100644
+--- a/arch/x86/power/cpu.c
++++ b/arch/x86/power/cpu.c
+@@ -23,6 +23,7 @@
+ #include <asm/debugreg.h>
+ #include <asm/cpu.h>
+ #include <asm/mmu_context.h>
++#include <linux/dmi.h>
+ 
+ #ifdef CONFIG_X86_32
+ __visible unsigned long saved_context_ebx;
+@@ -32,6 +33,29 @@ __visible unsigned long saved_context_eflags;
+ #endif
+ struct saved_context saved_context;
+ 
++static void msr_save_context(struct saved_context *ctxt)
++{
++	struct msr_save_data *msr = ctxt->msr_to_save.msr_array;
++	struct msr_save_data *end = msr + ctxt->msr_to_save.num;
++
++	while (msr < end) {
++		msr->msr_saved = !rdmsrl_safe(msr->rv.msr_no, &msr->rv.reg.q);
++		msr++;
++	}
++}
++
++static void msr_restore_context(struct saved_context *ctxt)
++{
++	struct msr_save_data *msr = ctxt->msr_to_save.msr_array;
++	struct msr_save_data *end = msr + ctxt->msr_to_save.num;
++
++	while (msr < end) {
++		if (msr->msr_saved)
++			wrmsrl(msr->rv.msr_no, msr->rv.reg.q);
++		msr++;
++	}
++}
++
+ /**
+  *	__save_processor_state - save CPU registers before creating a
+  *		hibernation image and before restoring the memory state from it
+@@ -111,6 +135,7 @@ static void __save_processor_state(struct saved_context *ctxt)
+ #endif
+ 	ctxt->misc_enable_saved = !rdmsrl_safe(MSR_IA32_MISC_ENABLE,
+ 					       &ctxt->misc_enable);
++	msr_save_context(ctxt);
+ }
+ 
+ /* Needed by apm.c */
+@@ -229,6 +254,7 @@ static void notrace __restore_processor_state(struct saved_context *ctxt)
+ 	x86_platform.restore_sched_clock_state();
+ 	mtrr_bp_restore();
+ 	perf_restore_debug_store();
++	msr_restore_context(ctxt);
+ }
+ 
+ /* Needed by apm.c */
+@@ -320,3 +346,75 @@ static int __init bsp_pm_check_init(void)
+ }
+ 
+ core_initcall(bsp_pm_check_init);
++
++/*
++ * The following section is a quirk framework for problematic BIOS:
++ * Sometimes MSRs are modified by BIOS after suspended to
++ * RAM, this might cause unexpected behavior after wakeup.
++ * Thus we save/restore these specified MSRs during suspending
++ * in order to work around it.
++ * A typical bug is reported at:
++ * https://bugzilla.redhat.com/show_bug.cgi?id=1227208
++ */
++static int msr_init_context(const u32 *msr_id, const int total_num)
++{
++	int i = 0;
++	struct msr_save_data *msr_data = NULL;
++
++	if (saved_context.msr_to_save.msr_array ||
++			saved_context.msr_to_save.num > 0) {
++		pr_err("PM: quirk already applied, please check your dmi match table.\n");
++		return -EINVAL;
++	}
++
++	msr_data = kmalloc_array(total_num,
++			sizeof(struct msr_save_data), GFP_KERNEL);
++	if (!msr_data) {
++		pr_err("PM: can not allocate memory to save/restore MSRs during suspend.\n");
++		return -ENOMEM;
++	}
++
++	for (i = 0; i < total_num; i++) {
++		msr_data[i].rv.msr_no = msr_id[i];
++		msr_data[i].msr_saved = false;
++		msr_data[i].rv.reg.q = 0;
++	}
++	saved_context.msr_to_save.num = total_num;
++	saved_context.msr_to_save.msr_array = msr_data;
++	return 0;
++}
++
++/*
++ * For any further problematic BIOS/platforms,
++ * please add your own function similar to msr_initialize_bdw.
++ */
++static int msr_initialize_bdw(const struct dmi_system_id *d)
++{
++	/* Add any extra MSR ids into this array. */
++	u32 bdw_msr_id[] = {MSR_IA32_THERM_CONTROL};
++
++	pr_info("PM: %s detected, MSR saving is needed during suspending.\n",
++		d->ident);
++	return msr_init_context(bdw_msr_id, ARRAY_SIZE(bdw_msr_id));
++}
++
++static struct dmi_system_id msr_save_dmi_table[] = {
++	{
++	 .callback = msr_initialize_bdw,
++	 .ident = "BROADWELL BDX_EP",
++	 .matches = {
++		DMI_MATCH(DMI_SYS_VENDOR, "Intel Corporation"),
++		DMI_MATCH(DMI_PRODUCT_NAME, "GRANTLEY"),
++		DMI_MATCH(DMI_PRODUCT_VERSION, "E63448-400"),
++		},
++	},
++	{}
++};
++
++static int pm_check_save_msr(void)
++{
++	dmi_check_system(msr_save_dmi_table);
++	return 0;
++}
++
++late_initcall(pm_check_save_msr);
+-- 
+1.8.4.2
