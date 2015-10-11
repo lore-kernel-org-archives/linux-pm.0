@@ -1,54 +1,62 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 5/5] cpufreq: Drop redundant check for inactive policies
-Date: Sun, 11 Oct 2015 22:51:14 +0530
-Message-ID: <2d6d59c2b0654872a32a9b63874b750e6b808cb5.1444583718.git.viresh.kumar@linaro.org>
-References: <cover.1444583718.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f49.google.com ([209.85.220.49]:35189 "EHLO
-	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752326AbbJKRVt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 11 Oct 2015 13:21:49 -0400
-Received: by pabve7 with SMTP id ve7so74365267pab.2
-        for <linux-pm@vger.kernel.org>; Sun, 11 Oct 2015 10:21:48 -0700 (PDT)
-In-Reply-To: <cover.1444583718.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1444583718.git.viresh.kumar@linaro.org>
-References: <cover.1444583718.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Lubomir Rintel <lkundrak@v3.sk>
+Subject: [PATCH] bcm2835: Add Raspberry Pi CPU frequency control to the device
+ tree
+Date: Sun, 11 Oct 2015 21:46:35 +0200
+Message-ID: <1444592795-15129-1-git-send-email-lkundrak@v3.sk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: linux-rpi-kernel@lists.infradead.org
+Cc: Lee Jones <lee@kernel.org>, Stephen Warren <swarren@wwwdotorg.org>, Lubomir Rintel <lkundrak@v3.sk>, linux-pm@vger.kernel.org, Eric Anholt <eric@anholt.net>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, skannan@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>, open list <linux-kernel@vger.kernel.org>
 
-We just made sure policy->cpu is online and this check will always fail
-as the policy is active. Drop it.
+This adds a device tree binding for Broadcom BCM2834 CPU frequency control
+driven via Raspberry Pi VideoCore 4 firmware interface.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
+Cc: Stephen Warren <swarren@wwwdotorg.org>
+Cc: Lee Jones <lee@kernel.org>
+Cc: Eric Anholt <eric@anholt.net>
+Cc: linux-rpi-kernel@lists.infradead.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-pm@vger.kernel.org
 ---
- drivers/cpufreq/cpufreq.c | 7 -------
- 1 file changed, 7 deletions(-)
+Depends on the RPi Firmware driver submitted on linux-rpi-kernel a while ago. 
+Can't see it in arm-soc or linux-next yet though (?). Available in branch 
+'rpi-firmware' of https://github.com/anholt/linux
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 58aabe0f2d2c..4fa2215cc6ec 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -843,18 +843,11 @@ static ssize_t store(struct kobject *kobj, struct attribute *attr,
- 
- 	down_write(&policy->rwsem);
- 
--	/* Updating inactive policies is invalid, so avoid doing that. */
--	if (unlikely(policy_is_inactive(policy))) {
--		ret = -EBUSY;
--		goto unlock_policy_rwsem;
--	}
--
- 	if (fattr->store)
- 		ret = fattr->store(policy, buf, count);
- 	else
- 		ret = -EIO;
- 
--unlock_policy_rwsem:
- 	up_write(&policy->rwsem);
- unlock:
- 	put_online_cpus();
+ .../bindings/cpufreq/raspberrypi,bcm2835-cpufreq.txt        | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/raspberrypi,bcm2835-cpufreq.txt
+
+diff --git a/Documentation/devicetree/bindings/cpufreq/raspberrypi,bcm2835-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/raspberrypi,bcm2835-cpufreq.txt
+new file mode 100644
+index 0000000..eb126d3
+--- /dev/null
++++ b/Documentation/devicetree/bindings/cpufreq/raspberrypi,bcm2835-cpufreq.txt
+@@ -0,0 +1,13 @@
++Raspberry Pi Broadcom BCM2835 CPU frequency control
++
++Required properties:
++
++- compatible : should be "raspberrypi,bcm2835-cpufreq"
++- firmware : the Raspberry Pi firmware node
++
++Example:
++
++cpufreq {
++        compatible = "raspberrypi,bcm2835-cpufreq";
++        firmware = <&firmware>;
++};
 -- 
-2.4.0
-
+2.4.3
