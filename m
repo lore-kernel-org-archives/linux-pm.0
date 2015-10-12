@@ -1,87 +1,80 @@
-From: Hanjun Guo <hanjun.guo@linaro.org>
-Subject: Re: [Linaro-acpi] [PATCH v5 0/5] Provide better MADT subtable sanity
- checks
-Date: Mon, 12 Oct 2015 15:04:30 +0800
-Message-ID: <561B5B7E.6080901@linaro.org>
-References: <1443570346-15378-1-git-send-email-al.stone@linaro.org> <560BA4C9.7090607@huawei.com> <560C0968.6020904@redhat.com> <2808057.teMg2oCLf6@vostro.rjw.lan> <5612AF64.4060900@redhat.com> <561B2442.9050600@erley.org> <561B2DAD.5070601@linaro.org> <561B2FCA.1010504@erley.org>
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: RE: [PATCH 3/3] Thermal: do thermal zone update after a cooling
+ device registered
+Date: Mon, 12 Oct 2015 09:23:28 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE6402865B04D@shsmsx102.ccr.corp.intel.com>
+References: <1443332924-14028-1-git-send-email-yu.c.chen@intel.com>
+ <20150928142902.GA9175@e104805>
+ <36DF59CE26D8EE47B0655C516E9CE64026F22641@SHSMSX101.ccr.corp.intel.com>
+ <20150929160133.GA11588@e104805>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-ia64-owner@vger.kernel.org>
-In-Reply-To: <561B2FCA.1010504@erley.org>
-Sender: linux-ia64-owner@vger.kernel.org
-To: Pat Erley <pat-lkml@erley.org>, Al Stone <ahs3@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-ia64@vger.kernel.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-acpi@lists.linaro.org, linux-acpi@vger.kernel.org, Hanjun Guo <guohanjun@huawei.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([192.55.52.115]:51900 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751460AbbJLJXf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 12 Oct 2015 05:23:35 -0400
+In-Reply-To: <20150929160133.GA11588@e104805>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Javi Merino <javi.merino@arm.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "Zhang, Rui" <rui.zhang@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>, "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
 
-On 10/12/2015 11:58 AM, Pat Erley wrote:
-> On 10/11/2015 08:49 PM, Hanjun Guo wrote:
->> On 10/12/2015 11:08 AM, Pat Erley wrote:
->>> On 10/05/2015 10:12 AM, Al Stone wrote:
->>>> On 10/05/2015 07:39 AM, Rafael J. Wysocki wrote:
->>>>> On Wednesday, September 30, 2015 10:10:16 AM Al Stone wrote:
->>>>>> On 09/30/2015 03:00 AM, Hanjun Guo wrote:
->>>>>>> On 2015/9/30 7:45, Al Stone wrote:
->>>>>>>> NB: this patch set is for use against the linux-pm bleeding edge
->>>>>>>> branch.
->>>>>>>>
->>>>>>
->>>>>> [snip...]
->>>>>>
->>>>>>>
->>>>>>> For this patch set,
->>>>>>>
->>>>>>> Reviewed-by: Hanjun Guo <hanjun.guo@linaro.org>
->>>>>>>
->>>>>>> Thanks
->>>>>>> Hanjun
->>>>>>
->>>>>> Thanks, Hanjun!
->>>>>
->>>>> Series applied, thanks!
->>>>>
->>>>> Rafael
->>>>>
->>>>
->>>> Thanks, Rafael!
->>>>
->>>
->>> Just decided to test out linux-next (to see the new nouveau cleanups).
->>> This change set prevents my Lenovo W510 from booting properly.
->>>
->>> Reverting: 7494b0 "ACPI: add in a bad_madt_entry() function to
->>> eventually replace the macro"
->>>
->>> Gets the system booting again.  I'm attaching my dmesg from the failed
->>> boot, who wants the acpidump?
->>
->> [    0.000000] ACPI: undefined version for either FADT 4.0 or MADT 1
->> [    0.000000] ACPI: Error parsing LAPIC address override entry
->> [    0.000000] ACPI: Invalid BIOS MADT, disabling ACPI
->>
->> Seems the MADT revision is not right, could you dump the ACPI MADT
->> (APIC) table and send it out? I will take a look :)
->>
->> Thanks
->> Hanjun
->
-> Here ya go, enjoy.  Feel free to CC me on any patches that might fix it.
-
-Thanks! I think I had the right guess, the MADT revision is not right
-for ACPI 4.0:
-
-[000h 0000   4]                    Signature : "APIC"    [Multiple APIC 
-Description Table (MADT)]
-[004h 0004   4]                 Table Length : 000000BC
-[008h 0008   1]                     *Revision : 01*
-
-I encountered such problem before because the table was just copied from
-previous version, and without the update for table revision.
-
-I think we may need to ignore the table revision for x86, but restrict
-it for ARM64, I'd like Al and Rafael's suggestion before I send out a
-patch.
-
-Thanks
-Hanjun
-
+SGksIEphdmkNClNvcnJ5IGZvciBteSBsYXRlIHJlc3BvbnNlLA0KDQo+IC0tLS0tT3JpZ2luYWwg
+TWVzc2FnZS0tLS0tDQo+IEZyb206IEphdmkgTWVyaW5vIFttYWlsdG86amF2aS5tZXJpbm9AYXJt
+LmNvbV0NCj4gU2VudDogV2VkbmVzZGF5LCBTZXB0ZW1iZXIgMzAsIDIwMTUgMTI6MDIgQU0NCj4g
+VG86IENoZW4sIFl1IEMNCj4gQ2M6IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgZWR1YmV6dmFs
+QGdtYWlsLmNvbTsgWmhhbmcsIFJ1aTsgbGludXgtDQo+IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7
+IHN0YWJsZUB2Z2VyLmtlcm5lbC5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCAzLzNdIFRoZXJt
+YWw6IGRvIHRoZXJtYWwgem9uZSB1cGRhdGUgYWZ0ZXIgYSBjb29saW5nDQo+IGRldmljZSByZWdp
+c3RlcmVkDQo+IA0KPiBIaSBZdSwNCj4gDQo+IE9uIE1vbiwgU2VwIDI4LCAyMDE1IGF0IDA2OjUy
+OjAwUE0gKzAxMDAsIENoZW4sIFl1IEMgd3JvdGU6DQo+ID4gSGksIEphdmksDQo+ID4NCj4gPiA+
+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBKYXZpIE1lcmlubyBbbWFp
+bHRvOmphdmkubWVyaW5vQGFybS5jb21dDQo+ID4gPiBTZW50OiBNb25kYXksIFNlcHRlbWJlciAy
+OCwgMjAxNSAxMDoyOSBQTQ0KPiA+ID4gVG86IENoZW4sIFl1IEMNCj4gPiA+IENjOiBsaW51eC1w
+bUB2Z2VyLmtlcm5lbC5vcmc7IGVkdWJlenZhbEBnbWFpbC5jb207IFpoYW5nLCBSdWk7DQo+ID4g
+PiBsaW51eC0ga2VybmVsQHZnZXIua2VybmVsLm9yZzsgc3RhYmxlQHZnZXIua2VybmVsLm9yZw0K
+PiA+ID4gU3ViamVjdDogUmU6IFtQQVRDSCAzLzNdIFRoZXJtYWw6IGRvIHRoZXJtYWwgem9uZSB1
+cGRhdGUgYWZ0ZXIgYQ0KPiA+ID4gY29vbGluZyBkZXZpY2UgcmVnaXN0ZXJlZA0KPiA+ID4NCj4g
+PiA+IE9uIFN1biwgU2VwIDI3LCAyMDE1IGF0IDA2OjQ4OjQ0QU0gKzAxMDAsIENoZW4gWXUgd3Jv
+dGU6DQo+ID4gPiA+IEZyb206IFpoYW5nIFJ1aSA8cnVpLnpoYW5nQGludGVsLmNvbT4NCj4gPiA+
+ID4NCj4gPiA+ID4NCj4gPiA+DQo+ID4gPiBJIHRoaW5rIHlvdSBuZWVkIHRvIGhvbGQgY2Rldi0+
+bG9jayBoZXJlLCB0byBtYWtlIHN1cmUgdGhhdCBubw0KPiA+ID4gdGhlcm1hbCB6b25lIGlzIGFk
+ZGVkIG9yIHJlbW92ZWQgZnJvbSBjZGV2LT50aGVybWFsX2luc3RhbmNlcyB3aGlsZQ0KPiB5b3Ug
+YXJlIGxvb3BpbmcuDQo+ID4gPg0KPiA+IEFoIHJpZ2h0LCB3aWxsIGFkZC4gSWYgSSBhZGQgdGhl
+IGNkZXYgLT5sb2NrIGhlcmUsIHdpbGwgdGhlcmUgYmUgYQ0KPiA+IEFCLUJBIGxvY2sgd2l0aCB0
+aGVybWFsX3pvbmVfdW5iaW5kX2Nvb2xpbmdfZGV2aWNlPw0KPiANCj4gWW91J3JlIHJpZ2h0LCBp
+dCBjb3VsZCBsZWFkIHRvIGEgZGVhZGxvY2suICBUaGUgbG9ja3MgY2FuJ3QgYmUgc3dhcHBlZCBi
+ZWNhdXNlDQo+IHRoYXQgd29uJ3Qgd29yayBpbiBzdGVwX3dpc2UuDQo+IA0KPiBUaGUgYmVzdCB3
+YXkgdGhhdCBJIGNhbiB0aGluayBvZiBhY2Nlc3NpbmcgdGhlcm1hbF9pbnN0YW5jZXMgYXRvbWlj
+YWxseSBpcyBieQ0KPiBtYWtpbmcgaXQgUkNVIHByb3RlY3RlZCBpbnN0ZWFkIG9mIHdpdGggbXV0
+ZXhlcy4NCj4gV2hhdCBkbyB5b3UgdGhpbms/DQo+IA0KUkNVIHdvdWxkIG5lZWQgZXh0cmEgc3Bp
+bmxvY2tzIHRvIHByb3RlY3QgdGhlIGxpc3QsIGFuZCBuZWVkIHRvIHN5bmNfcmN1IGFmdGVyIHdl
+IGRlbGV0ZQ0Kb25lIGluc3RhbmNlIGZyb20gdGhlcm1hbF9pbnN0YW5jZSBsaXN0LCAgSSB0aGlu
+ayBpdCBpcyB0b28gY29tcGxpY2F0ZWQgZm9yIG1lIHRvIHJld3JpdGU6ICgNCkhvdyBhYm91dCB1
+c2luZyB0aGVybWFsX2xpc3RfbG9jayBpbnN0ZWFkIG9mIGNkZXYgLT5sb2NrPw0KVGhpcyBndXkg
+c2hvdWxkIGJlIGJpZyBlbm91Z2ggdG8gcHJvdGVjdCB0aGUgZGV2aWNlLnRoZXJtYWxfaW5zdGFu
+Y2UgbGlzdC4NCg0KPiANCj4gPiA+IFdoeSBsaXN0X2Zvcl9lYWNoX2VudHJ5X3NhZmUoKSA/ICBZ
+b3UgYXJlIG5vdCBnb2luZyB0byByZW1vdmUgYW55DQo+ID4gPiBlbnRyeSwgc28geW91IGNhbiBq
+dXN0IHVzZSBsaXN0X2Zvcl9lYWNoX2VudHJ5KCkNCj4gPiA+DQo+ID4gPg0KPiA+ID4gV2h5IGlz
+IHRoaXMgc28gY29tcGxpY2F0ZWQ/ICBDYW4ndCB5b3UganVzdCBkbzoNCj4gPiA+DQo+ID4gPiAJ
+bGlzdF9mb3JfZWFjaF9lbnRyeShwb3MsICZjZGV2LT50aGVybWFsX2luc3RhbmNlcywgY2Rldl9u
+b2RlKQ0KPiA+ID4gICAgICAgICAJdGhlcm1hbF96b25lX2RldmljZV91cGRhdGUocG9zLT50eik7
+DQo+ID4gPg0KPiA+DQo+ID4gVGhpcyBpcyBhbiBvcHRpbWl6YXRpb24gaGVyZToNCj4gPiBJZ25v
+cmUgdGhlcm1hbCBpbnN0YW5jZSB0aGF0IHJlZmVycyB0byB0aGUgc2FtZSB0aGVybWFsIHpvbmUg
+aW4gdGhpcw0KPiA+IGxvb3AsIHRoaXMgd29ya3MgYmVjYXVzZSBiaW5kX2NkZXYoKSBhbHdheXMg
+YmluZHMgdGhlIGNvb2xpbmcgZGV2aWNlDQo+ID4gdG8gb25lIHRoZXJtYWwgem9uZSBmaXJzdCwg
+YW5kIHRoZW4gYmluZHMgdG8gdGhlIG5leHQgdGhlcm1hbCB6b25lLg0KPiANCj4gSXQgaGFzIHRh
+a2VuIG1lIGEgd2hpbGUgdG8gdW5kZXJzdGFuZCB0aGlzIG9wdGltaXphdGlvbi4gIFBsZWFzZSBk
+b2N1bWVudA0KPiBib3RoICJpZiJzIGluIHRoZSBjb2RlLiAgRm9yIHRoZSBmaXJzdCAiaWYiIG1h
+eWJlIHlvdSBjYW4gdXNlDQo+IGxpc3RfaXNfbGFzdCgpIHRvIG1ha2UgaXQgZWFzaWVyIHRvIHVu
+ZGVyc3RhbmQgdGhhdCB5b3UncmUgbG9va2luZyBmb3IgdGhlIGxhc3QNCj4gZWxlbWVudCBpbiB0
+aGUgbGlzdDoNCj4gDQo+IAkJaWYgKGxpc3RfaXNfbGFzdCgmcG9zLT5jZGV2X25vZGUsICZjZGV2
+LQ0KPiA+dGhlcm1hbF9pbnN0YW5jZXMpKSB7DQo+IAkJCXRoZXJtYWxfem9uZV9kZXZpY2VfdXBk
+YXRlKHBvcy0+dHopOw0KPiANClN1cmUsIG9rDQo+IEZvciB0aGUgc2Vjb25kICJpZiIgeW91IGNh
+biBzYXkgdGhhdCB5b3Ugb25seSBuZWVkIHRvIHJ1bg0KPiB0aGVybWFsX3pvbmVfZGV2aWNlX3Vw
+ZGF0ZSgpIG9uY2UgcGVyIHRoZXJtYWwgem9uZSwgZXZlbiB0aG91Z2gNCj4gbXVsdGlwbGUgdGhl
+cm1hbCBpbnN0YW5jZXMgbWF5IHJlZmVyIHRvIHRoZSBzYW1lIHRoZXJtYWwgem9uZS4NCj4gDQpP
+Sw0KDQoNCkJlc3QgUmVnYXJkcywNCll1DQo=
