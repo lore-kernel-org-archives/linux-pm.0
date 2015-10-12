@@ -1,347 +1,104 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: [PATCH v2 2/2] ARM64: kernel: PSCI: move PSCI idle management code to drivers/firmware
-Date: Mon, 12 Oct 2015 12:17:08 +0100
-Message-ID: <1444648628-24790-3-git-send-email-lorenzo.pieralisi@arm.com>
-References: <1444648628-24790-1-git-send-email-lorenzo.pieralisi@arm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:46790 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751460AbbJLLQw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 12 Oct 2015 07:16:52 -0400
-In-Reply-To: <1444648628-24790-1-git-send-email-lorenzo.pieralisi@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Hanjun Guo <hanjun.guo@linaro.org>
+Subject: Re: [Linaro-acpi] [PATCH v5 0/5] Provide better MADT subtable sanity
+ checks
+Date: Mon, 12 Oct 2015 21:04:32 +0800
+Message-ID: <561BAFE0.9090401@linaro.org>
+References: <1443570346-15378-1-git-send-email-al.stone@linaro.org> <560BA4C9.7090607@huawei.com> <560C0968.6020904@redhat.com> <2808057.teMg2oCLf6@vostro.rjw.lan> <5612AF64.4060900@redhat.com> <561B2442.9050600@erley.org> <561B2DAD.5070601@linaro.org> <561B2FCA.1010504@erley.org> <561B5B7E.6080901@linaro.org> <561B8114.4060800@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <561B8114.4060800@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>, Pat Erley <pat-lkml@erley.org>, Al Stone <ahs3@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-ia64@vger.kernel.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-acpi@lists.linaro.org, linux-acpi@vger.kernel.org, Hanjun Guo <guohanjun@huawei.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Russell King <linux@arm.linux.org.uk>, Daniel Lezcano <daniel.lezcano@linaro.org>, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, Jisheng Zhang <jszhang@marvell.com>
 
-ARM64 PSCI kernel interfaces that initialize idle states and implement
-the suspend API to enter them are generic and can be shared with the
-ARM architecture.
+On 10/12/2015 05:44 PM, Sudeep Holla wrote:
+>
+>
+> On 12/10/15 08:04, Hanjun Guo wrote:
+>> On 10/12/2015 11:58 AM, Pat Erley wrote:
+>>> On 10/11/2015 08:49 PM, Hanjun Guo wrote:
+>>>> On 10/12/2015 11:08 AM, Pat Erley wrote:
+>>>>> On 10/05/2015 10:12 AM, Al Stone wrote:
+>>>>>> On 10/05/2015 07:39 AM, Rafael J. Wysocki wrote:
+>>>>>>> On Wednesday, September 30, 2015 10:10:16 AM Al Stone wrote:
+>>>>>>>> On 09/30/2015 03:00 AM, Hanjun Guo wrote:
+>>>>>>>>> On 2015/9/30 7:45, Al Stone wrote:
+>>>>>>>>>> NB: this patch set is for use against the linux-pm bleeding edge
+>>>>>>>>>> branch.
+>>>>>>>>>>
+>>>>>>>>
+>>>>>>>> [snip...]
+>>>>>>>>
+>>>>>>>>>
+>>>>>>>>> For this patch set,
+>>>>>>>>>
+>>>>>>>>> Reviewed-by: Hanjun Guo <hanjun.guo@linaro.org>
+>>>>>>>>>
+>>>>>>>>> Thanks
+>>>>>>>>> Hanjun
+>>>>>>>>
+>>>>>>>> Thanks, Hanjun!
+>>>>>>>
+>>>>>>> Series applied, thanks!
+>>>>>>>
+>>>>>>> Rafael
+>>>>>>>
+>>>>>>
+>>>>>> Thanks, Rafael!
+>>>>>>
+>>>>>
+>>>>> Just decided to test out linux-next (to see the new nouveau cleanups).
+>>>>> This change set prevents my Lenovo W510 from booting properly.
+>>>>>
+>>>>> Reverting: 7494b0 "ACPI: add in a bad_madt_entry() function to
+>>>>> eventually replace the macro"
+>>>>>
+>>>>> Gets the system booting again.  I'm attaching my dmesg from the failed
+>>>>> boot, who wants the acpidump?
+>>>>
+>>>> [    0.000000] ACPI: undefined version for either FADT 4.0 or MADT 1
+>>>> [    0.000000] ACPI: Error parsing LAPIC address override entry
+>>>> [    0.000000] ACPI: Invalid BIOS MADT, disabling ACPI
+>>>>
+>>>> Seems the MADT revision is not right, could you dump the ACPI MADT
+>>>> (APIC) table and send it out? I will take a look :)
+>>>>
+>>>> Thanks
+>>>> Hanjun
+>>>
+>>> Here ya go, enjoy.  Feel free to CC me on any patches that might fix it.
+>>
+>> Thanks! I think I had the right guess, the MADT revision is not right
+>> for ACPI 4.0:
+>>
+>> [000h 0000   4]                    Signature : "APIC"    [Multiple APIC
+>> Description Table (MADT)]
+>> [004h 0004   4]                 Table Length : 000000BC
+>> [008h 0008   1]                     *Revision : 01*
+>>
+>> I encountered such problem before because the table was just copied from
+>> previous version, and without the update for table revision.
+>>
+>> I think we may need to ignore the table revision for x86, but restrict
+>> it for ARM64, I'd like Al and Rafael's suggestion before I send out a
+>> patch.
+>>
+>
+> Instead of just removing the check completely on x86, IMO restrict it to
+> some newer/later version of ACPI so you can still force vendors to fix
+> their ACPI tables at-least in future.
 
-To achieve that goal, this patch moves ARM64 PSCI idle management
-code to drivers/firmware by creating a file that contains PSCI
-helper functions implementing the common kernel interface required
-by ARM and ARM64 to share the PSCI idle management code.
+I agree.
 
-The ARM generic CPUidle implementation also requires the definition of
-a cpuidle_ops section entry for the kernel to initialize the CPUidle
-operations at boot based on the enable-method (ie ARM64 has the
-statically initialized cpu_ops counterparts for that purpose); therefore
-this patch also adds the required section entry on CONFIG_ARM for PSCI so
-that the kernel can initialize the PSCI CPUidle back-end when PSCI is
-the probed enable-method.
+>
+> It would be good to get such sanity check in the tools used to build
+> those tables, but yes since such static tables can be built in many
+> ways, its difficult to deal it in all those tools.
 
-On ARM64 this patch provides no functional change.
+At least we can check that in the FWTS. :)
 
-Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Will Deacon <will.deacon@arm.com>
-Cc: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Jisheng Zhang <jszhang@marvell.com>
----
- arch/arm64/kernel/psci.c       |  99 +-----------------------------
- drivers/firmware/Makefile      |   2 +-
- drivers/firmware/psci_cpuops.c | 133 +++++++++++++++++++++++++++++++++++++++++
- include/linux/psci.h           |   3 +
- 4 files changed, 139 insertions(+), 98 deletions(-)
- create mode 100644 drivers/firmware/psci_cpuops.c
-
-diff --git a/arch/arm64/kernel/psci.c b/arch/arm64/kernel/psci.c
-index f67f35b..42816be 100644
---- a/arch/arm64/kernel/psci.c
-+++ b/arch/arm64/kernel/psci.c
-@@ -20,7 +20,6 @@
- #include <linux/smp.h>
- #include <linux/delay.h>
- #include <linux/psci.h>
--#include <linux/slab.h>
- 
- #include <uapi/linux/psci.h>
- 
-@@ -28,73 +27,6 @@
- #include <asm/cpu_ops.h>
- #include <asm/errno.h>
- #include <asm/smp_plat.h>
--#include <asm/suspend.h>
--
--static DEFINE_PER_CPU_READ_MOSTLY(u32 *, psci_power_state);
--
--static int __maybe_unused cpu_psci_cpu_init_idle(unsigned int cpu)
--{
--	int i, ret, count = 0;
--	u32 *psci_states;
--	struct device_node *state_node, *cpu_node;
--
--	cpu_node = of_get_cpu_node(cpu, NULL);
--	if (!cpu_node)
--		return -ENODEV;
--
--	/*
--	 * If the PSCI cpu_suspend function hook has not been initialized
--	 * idle states must not be enabled, so bail out
--	 */
--	if (!psci_ops.cpu_suspend)
--		return -EOPNOTSUPP;
--
--	/* Count idle states */
--	while ((state_node = of_parse_phandle(cpu_node, "cpu-idle-states",
--					      count))) {
--		count++;
--		of_node_put(state_node);
--	}
--
--	if (!count)
--		return -ENODEV;
--
--	psci_states = kcalloc(count, sizeof(*psci_states), GFP_KERNEL);
--	if (!psci_states)
--		return -ENOMEM;
--
--	for (i = 0; i < count; i++) {
--		u32 state;
--
--		state_node = of_parse_phandle(cpu_node, "cpu-idle-states", i);
--
--		ret = of_property_read_u32(state_node,
--					   "arm,psci-suspend-param",
--					   &state);
--		if (ret) {
--			pr_warn(" * %s missing arm,psci-suspend-param property\n",
--				state_node->full_name);
--			of_node_put(state_node);
--			goto free_mem;
--		}
--
--		of_node_put(state_node);
--		pr_debug("psci-power-state %#x index %d\n", state, i);
--		if (!psci_power_state_is_valid(state)) {
--			pr_warn("Invalid PSCI power state %#x\n", state);
--			ret = -EINVAL;
--			goto free_mem;
--		}
--		psci_states[i] = state;
--	}
--	/* Idle states parsed correctly, initialize per-cpu pointer */
--	per_cpu(psci_power_state, cpu) = psci_states;
--	return 0;
--
--free_mem:
--	kfree(psci_states);
--	return ret;
--}
- 
- static int __init cpu_psci_cpu_init(unsigned int cpu)
- {
-@@ -178,38 +110,11 @@ static int cpu_psci_cpu_kill(unsigned int cpu)
- }
- #endif
- 
--static int psci_suspend_finisher(unsigned long index)
--{
--	u32 *state = __this_cpu_read(psci_power_state);
--
--	return psci_ops.cpu_suspend(state[index - 1],
--				    virt_to_phys(cpu_resume));
--}
--
--static int __maybe_unused cpu_psci_cpu_suspend(unsigned long index)
--{
--	int ret;
--	u32 *state = __this_cpu_read(psci_power_state);
--	/*
--	 * idle state index 0 corresponds to wfi, should never be called
--	 * from the cpu_suspend operations
--	 */
--	if (WARN_ON_ONCE(!index))
--		return -EINVAL;
--
--	if (!psci_power_state_loses_context(state[index - 1]))
--		ret = psci_ops.cpu_suspend(state[index - 1], 0);
--	else
--		ret = cpu_suspend(index, psci_suspend_finisher);
--
--	return ret;
--}
--
- const struct cpu_operations cpu_psci_ops = {
- 	.name		= "psci",
- #ifdef CONFIG_CPU_IDLE
--	.cpu_init_idle	= cpu_psci_cpu_init_idle,
--	.cpu_suspend	= cpu_psci_cpu_suspend,
-+	.cpu_init_idle	= psci_cpu_init_idle,
-+	.cpu_suspend	= psci_cpu_suspend_enter,
- #endif
- 	.cpu_init	= cpu_psci_cpu_init,
- 	.cpu_prepare	= cpu_psci_cpu_prepare,
-diff --git a/drivers/firmware/Makefile b/drivers/firmware/Makefile
-index 000830f..77553ab 100644
---- a/drivers/firmware/Makefile
-+++ b/drivers/firmware/Makefile
-@@ -1,7 +1,7 @@
- #
- # Makefile for the linux kernel.
- #
--obj-$(CONFIG_ARM_PSCI_FW)	+= psci.o
-+obj-$(CONFIG_ARM_PSCI_FW)	+= psci.o psci_cpuops.o
- obj-$(CONFIG_DMI)		+= dmi_scan.o
- obj-$(CONFIG_DMI_SYSFS)		+= dmi-sysfs.o
- obj-$(CONFIG_EDD)		+= edd.o
-diff --git a/drivers/firmware/psci_cpuops.c b/drivers/firmware/psci_cpuops.c
-new file mode 100644
-index 0000000..f9e68ab
---- /dev/null
-+++ b/drivers/firmware/psci_cpuops.c
-@@ -0,0 +1,133 @@
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * Copyright (C) 2015 ARM Limited
-+ */
-+#include <linux/cpuidle.h>
-+#include <linux/of.h>
-+#include <linux/psci.h>
-+#include <linux/slab.h>
-+
-+#include <asm/cpuidle.h>
-+#include <asm/suspend.h>
-+
-+static DEFINE_PER_CPU_READ_MOSTLY(u32 *, psci_power_state);
-+
-+static int psci_dt_cpu_init_idle(struct device_node *cpu_node, int cpu)
-+{
-+	int i, ret, count = 0;
-+	u32 *psci_states;
-+	struct device_node *state_node;
-+
-+	/*
-+	 * If the PSCI cpu_suspend function hook has not been initialized
-+	 * idle states must not be enabled, so bail out
-+	 */
-+	if (!psci_ops.cpu_suspend)
-+		return -EOPNOTSUPP;
-+
-+	/* Count idle states */
-+	while ((state_node = of_parse_phandle(cpu_node, "cpu-idle-states",
-+					      count))) {
-+		count++;
-+		of_node_put(state_node);
-+	}
-+
-+	if (!count)
-+		return -ENODEV;
-+
-+	psci_states = kcalloc(count, sizeof(*psci_states), GFP_KERNEL);
-+	if (!psci_states)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < count; i++) {
-+		u32 state;
-+
-+		state_node = of_parse_phandle(cpu_node, "cpu-idle-states", i);
-+
-+		ret = of_property_read_u32(state_node,
-+					   "arm,psci-suspend-param",
-+					   &state);
-+		if (ret) {
-+			pr_warn(" * %s missing arm,psci-suspend-param property\n",
-+				state_node->full_name);
-+			of_node_put(state_node);
-+			goto free_mem;
-+		}
-+
-+		of_node_put(state_node);
-+		pr_debug("psci-power-state %#x index %d\n", state, i);
-+		if (!psci_power_state_is_valid(state)) {
-+			pr_warn("Invalid PSCI power state %#x\n", state);
-+			ret = -EINVAL;
-+			goto free_mem;
-+		}
-+		psci_states[i] = state;
-+	}
-+	/* Idle states parsed correctly, initialize per-cpu pointer */
-+	per_cpu(psci_power_state, cpu) = psci_states;
-+	return 0;
-+
-+free_mem:
-+	kfree(psci_states);
-+	return ret;
-+}
-+
-+int psci_cpu_init_idle(unsigned int cpu)
-+{
-+	struct device_node *cpu_node;
-+	int ret;
-+
-+	cpu_node = of_get_cpu_node(cpu, NULL);
-+	if (!cpu_node)
-+		return -ENODEV;
-+
-+	ret = psci_dt_cpu_init_idle(cpu_node, cpu);
-+
-+	of_node_put(cpu_node);
-+
-+	return ret;
-+}
-+
-+static int psci_suspend_finisher(unsigned long index)
-+{
-+	u32 *state = __this_cpu_read(psci_power_state);
-+
-+	return psci_ops.cpu_suspend(state[index - 1],
-+				    virt_to_phys(cpu_resume));
-+}
-+
-+int psci_cpu_suspend_enter(unsigned long index)
-+{
-+	int ret;
-+	u32 *state = __this_cpu_read(psci_power_state);
-+	/*
-+	 * idle state index 0 corresponds to wfi, should never be called
-+	 * from the cpu_suspend operations
-+	 */
-+	if (WARN_ON_ONCE(!index))
-+		return -EINVAL;
-+
-+	if (!psci_power_state_loses_context(state[index - 1]))
-+		ret = psci_ops.cpu_suspend(state[index - 1], 0);
-+	else
-+		ret = cpu_suspend(index, psci_suspend_finisher);
-+
-+	return ret;
-+}
-+
-+#ifdef CONFIG_ARM
-+struct cpuidle_ops psci_cpuidle_ops __initdata = {
-+	.suspend = psci_cpu_suspend_enter,
-+	.init = psci_dt_cpu_init_idle,
-+};
-+
-+CPUIDLE_METHOD_OF_DECLARE(psci, "arm,psci", &psci_cpuidle_ops);
-+#endif
-diff --git a/include/linux/psci.h b/include/linux/psci.h
-index 12c4865..393efe2 100644
---- a/include/linux/psci.h
-+++ b/include/linux/psci.h
-@@ -24,6 +24,9 @@ bool psci_tos_resident_on(int cpu);
- bool psci_power_state_loses_context(u32 state);
- bool psci_power_state_is_valid(u32 state);
- 
-+int psci_cpu_init_idle(unsigned int cpu);
-+int psci_cpu_suspend_enter(unsigned long index);
-+
- struct psci_operations {
- 	int (*cpu_suspend)(u32 state, unsigned long entry_point);
- 	int (*cpu_off)(u32 state);
--- 
-2.5.1
-
+Thanks
+Hanjun
