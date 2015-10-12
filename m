@@ -1,36 +1,39 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / sleep: Drop pm_request_idle() from pm_generic_complete()
-Date: Mon, 12 Oct 2015 22:15:33 +0200
-Message-ID: <1729985.4Y6lgbpPqx@vostro.rjw.lan>
-References: <4970284.9k6NVjxDce@vostro.rjw.lan>
+Subject: Re: [Update][PATCH 3/3] input: i8042: Avoid resetting controller on system suspend/resume
+Date: Mon, 12 Oct 2015 22:17:05 +0200
+Message-ID: <5474174.JsPHbLRjZ7@vostro.rjw.lan>
+References: <10641052.oOBhM6BU9G@vostro.rjw.lan> <3385784.1Q539YNd1G@vostro.rjw.lan> <1738265.GZcYUZQGSy@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <4970284.9k6NVjxDce@vostro.rjw.lan>
-Sender: linux-pci-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1738265.GZcYUZQGSy@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Vetter <daniel.vetter@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Linux PCI <linux-pci@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, September 30, 2015 02:44:29 AM Rafael J. Wysocki wrote:
+On Wednesday, October 07, 2015 03:03:57 AM Rafael J. Wysocki wrote:
 > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> The pm_request_idle() in pm_generic_complete() is pointless as it is
-> called with the runtime PM usage counter different from zero (bumped
-> up by the core during the prepare phase of system suspend) and the
-> core calls pm_runtime_put() for all devices after executing their
-> complete callbacks, so drop it.
+> If the upcoming system suspend is not going to be handled by the
+> platform firmware, like in the suspend-to-idle case, it is not
+> necessary to reset the controller in i8042_pm_suspend(), so avoid
+> doing that.
 > 
-> This allows the PCI PM layer to use pm_generic_complete() too.
+> Moreover, if the system resume currently in progress has not been
+> started by the platform firmware, like in the suspend-to-idle case,
+> i8042_controller_resume() need not be called by i8042_pm_resume(),
+> so avoid doing that too in that case.
+> 
+> Additionally, try to catch the event that woke up the system by
+> calling the interrupt handler early during system resume if it has
+> not been started by the platform firmware.
 > 
 > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
-> 
-> On top of https://patchwork.kernel.org/patch/7291251/ .
 
-Due to the lack of comments for the last several days (which I'm taking as
-the lack of objections), I'm tentatively queing this up for v4.4.
+If there are no more comments here, I'll tentatively queue it up for v4.4
+along with the [1-2/3] from this series.
 
 Please let me know if there are any problems with that.
 
@@ -39,52 +42,82 @@ Rafael
 
 
 > ---
->  drivers/base/power/generic_ops.c |    6 ------
->  drivers/pci/pci-driver.c         |    9 ++-------
->  2 files changed, 2 insertions(+), 13 deletions(-)
+>  drivers/input/serio/i8042.c |   32 +++++++++++++++++++++++++++-----
+>  1 file changed, 27 insertions(+), 5 deletions(-)
 > 
-> Index: linux-pm/drivers/base/power/generic_ops.c
+> Index: linux-pm/drivers/input/serio/i8042.c
 > ===================================================================
-> --- linux-pm.orig/drivers/base/power/generic_ops.c
-> +++ linux-pm/drivers/base/power/generic_ops.c
-> @@ -296,11 +296,5 @@ void pm_generic_complete(struct device *
+> --- linux-pm.orig/drivers/input/serio/i8042.c
+> +++ linux-pm/drivers/input/serio/i8042.c
+> @@ -24,6 +24,7 @@
+>  #include <linux/platform_device.h>
+>  #include <linux/i8042.h>
+>  #include <linux/slab.h>
+> +#include <linux/suspend.h>
 >  
->  	if (drv && drv->pm && drv->pm->complete)
->  		drv->pm->complete(dev);
-> -
-> -	/*
-> -	 * Let runtime PM try to suspend devices that haven't been in use before
-> -	 * going into the system-wide sleep state we're resuming from.
-> -	 */
-> -	pm_request_idle(dev);
->  }
->  #endif /* CONFIG_PM_SLEEP */
-> Index: linux-pm/drivers/pci/pci-driver.c
-> ===================================================================
-> --- linux-pm.orig/drivers/pci/pci-driver.c
-> +++ linux-pm/drivers/pci/pci-driver.c
-> @@ -686,13 +686,8 @@ static int pci_pm_prepare(struct device
+>  #include <asm/io.h>
 >  
->  static void pci_pm_complete(struct device *dev)
+> @@ -1170,7 +1171,8 @@ static int i8042_pm_suspend(struct devic
 >  {
-> -	struct device_driver *drv = dev->driver;
-> -	struct pci_dev *pci_dev = to_pci_dev(dev);
-> -
-> -	pci_dev_complete_resume(pci_dev);
-> -
-> -	if (drv && drv->pm && drv->pm->complete)
-> -		drv->pm->complete(dev);
-> +	pci_dev_complete_resume(to_pci_dev(dev));
-> +	pm_generic_complete(dev);
+>  	int i;
+>  
+> -	i8042_controller_reset(true);
+> +	if (pm_suspend_via_firmware())
+> +		i8042_controller_reset(true);
+>  
+>  	/* Set up serio interrupts for system wakeup. */
+>  	for (i = 0; i < I8042_NUM_PORTS; i++) {
+> @@ -1183,8 +1185,17 @@ static int i8042_pm_suspend(struct devic
+>  	return 0;
 >  }
 >  
->  #else /* !CONFIG_PM_SLEEP */
+> +static int i8042_pm_resume_noirq(struct device *dev)
+> +{
+> +	if (!pm_resume_via_firmware())
+> +		i8042_interrupt(0, NULL);
+> +
+> +	return 0;
+> +}
+> +
+>  static int i8042_pm_resume(struct device *dev)
+>  {
+> +	bool force_reset;
+>  	int i;
+>  
+>  	for (i = 0; i < I8042_NUM_PORTS; i++) {
+> @@ -1195,11 +1206,21 @@ static int i8042_pm_resume(struct device
+>  	}
+>  
+>  	/*
+> -	 * On resume from S2R we always try to reset the controller
+> -	 * to bring it in a sane state. (In case of S2D we expect
+> -	 * BIOS to reset the controller for us.)
+> +	 * If platform firmware was not going to be involved in suspend, we did
+> +	 * not restore the controller state to whatever it had been at boot
+> +	 * time, so we do not need to do anything.
+>  	 */
+> -	return i8042_controller_resume(true);
+> +	if (!pm_suspend_via_firmware())
+> +		return 0;
+> +
+> +	/*
+> +	 * We only need to reset the controller if we are resuming after handing
+> +	 * off control to the platform firmware, otherwise we can simply restore
+> +	 * the mode.
+> +	 */
+> +	force_reset = pm_resume_via_firmware();
+> +
+> +	return i8042_controller_resume(force_reset);
+>  }
+>  
+>  static int i8042_pm_thaw(struct device *dev)
+> @@ -1223,6 +1244,7 @@ static int i8042_pm_restore(struct devic
+>  
+>  static const struct dev_pm_ops i8042_pm_ops = {
+>  	.suspend	= i8042_pm_suspend,
+> +	.resume_noirq	= i8042_pm_resume_noirq,
+>  	.resume		= i8042_pm_resume,
+>  	.thaw		= i8042_pm_thaw,
+>  	.poweroff	= i8042_pm_reset,
 > 
 > --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
