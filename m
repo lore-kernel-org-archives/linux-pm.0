@@ -1,54 +1,52 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH][v3] ACPI / PM: Fix incorrect wakeup irq setting before suspend-to-idle
-Date: Mon, 12 Oct 2015 22:20:28 +0200
-Message-ID: <4932550.izVA1bjiZk@vostro.rjw.lan>
-References: <1444378813-17857-1-git-send-email-yu.c.chen@intel.com> <1AE640813FDE7649BE1B193DEA596E883BAC6884@SHSMSX101.ccr.corp.intel.com> <36DF59CE26D8EE47B0655C516E9CE6402865A448@shsmsx102.ccr.corp.intel.com>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [Update][PATCH 3/3] input: i8042: Avoid resetting controller on
+ system suspend/resume
+Date: Mon, 12 Oct 2015 13:11:44 -0700
+Message-ID: <20151012201144.GB4010@dtor-ws>
+References: <10641052.oOBhM6BU9G@vostro.rjw.lan>
+ <3385784.1Q539YNd1G@vostro.rjw.lan>
+ <1738265.GZcYUZQGSy@vostro.rjw.lan>
+ <5474174.JsPHbLRjZ7@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:62049 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752715AbbJLTvt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 Oct 2015 15:51:49 -0400
-In-Reply-To: <36DF59CE26D8EE47B0655C516E9CE6402865A448@shsmsx102.ccr.corp.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <5474174.JsPHbLRjZ7@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Vetter <daniel.vetter@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Linux PCI <linux-pci@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Chen, Yu C" <yu.c.chen@intel.com>
-Cc: "Zheng, Lv" <lv.zheng@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "Brown, Len" <len.brown@intel.com>
 
-On Friday, October 09, 2015 09:50:21 AM Chen, Yu C wrote:
-> Hi, LV
+On Mon, Oct 12, 2015 at 10:17:05PM +0200, Rafael J. Wysocki wrote:
+> On Wednesday, October 07, 2015 03:03:57 AM Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > If the upcoming system suspend is not going to be handled by the
+> > platform firmware, like in the suspend-to-idle case, it is not
+> > necessary to reset the controller in i8042_pm_suspend(), so avoid
+> > doing that.
+> > 
+> > Moreover, if the system resume currently in progress has not been
+> > started by the platform firmware, like in the suspend-to-idle case,
+> > i8042_controller_resume() need not be called by i8042_pm_resume(),
+> > so avoid doing that too in that case.
+> > 
+> > Additionally, try to catch the event that woke up the system by
+> > calling the interrupt handler early during system resume if it has
+> > not been started by the platform firmware.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> > -----Original Message-----
-> > From: Zheng, Lv
-> > Sent: Friday, October 09, 2015 4:33 PM
-> > To: Chen, Yu C; rjw@rjwysocki.net; lenb@kernel.org
-> > Cc: linux-pm@vger.kernel.org; linux-acpi@vger.kernel.org; linux-
-> > kernel@vger.kernel.org; Zhang, Rui
-> > Subject: RE: [PATCH][v3] ACPI / PM: Fix incorrect wakeup irq setting before
-> > suspend-to-idle
-> > 
-> > Hi, Yu
-> > 
-> > > From: Chen, Yu C
-> > > Sent: Friday, October 09, 2015 4:20 PM
-> > >
-> > >
-> > >  acpi_status acpi_os_remove_interrupt_handler(u32 irq,
-> > > acpi_osd_handler handler)
-> > 
-> > Why don't you rename irq here to gsi to improve the readability?
-> > The false naming and the wrong example written for this function are
-> > probably the root causes of all other bad code.
-> > So if we want to stop people making future mistakes, we need to cleanup
-> > ourselves.
-> > 
-> OK, will rewrite in next version.
+> If there are no more comments here, I'll tentatively queue it up for v4.4
+> along with the [1-2/3] from this series.
+> 
+> Please let me know if there are any problems with that.
 
-It would be good to change the subject of the patch too I think, because it is
-not about wakeup IRQs only any more.
+No problems from my POV.
 
-Thanks,
-Rafael
+Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
+Thanks.
+
+-- 
+Dmitry
