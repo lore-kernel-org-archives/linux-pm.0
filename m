@@ -1,74 +1,77 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH] cpufreq: arm_big_little: fix frequency check when bL
- switcher is active
-Date: Mon, 12 Oct 2015 14:20:26 +0100
-Message-ID: <561BB39A.4020400@arm.com>
-References: <1443807532.2845.25.camel@linaro.org>
- <20151007173920.GG4557@linux> <1444296229.2847.9.camel@linaro.org>
+From: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCH v2 2/2] ARM64: kernel: PSCI: move PSCI idle management
+ code to drivers/firmware
+Date: Mon, 12 Oct 2015 15:29:26 +0100
+Message-ID: <20151012142926.GB7452@leverpostej>
+References: <1444648628-24790-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1444648628-24790-3-git-send-email-lorenzo.pieralisi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:47241 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:47699 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751801AbbJLNUa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 12 Oct 2015 09:20:30 -0400
-In-Reply-To: <1444296229.2847.9.camel@linaro.org>
+	id S1752359AbbJLO3t (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 12 Oct 2015 10:29:49 -0400
+Content-Disposition: inline
+In-Reply-To: <1444648628-24790-3-git-send-email-lorenzo.pieralisi@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Jon Medhurst (Tixy)" <tixy@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Michael Turquette <mike.turquette@linaro.org>
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Russell King <linux@arm.linux.org.uk>, Daniel Lezcano <daniel.lezcano@linaro.org>, Catalin Marinas <catalin.marinas@arm.com>, Jisheng Zhang <jszhang@marvell.com>
 
+Hi Lorenzo,
 
+On Mon, Oct 12, 2015 at 12:17:08PM +0100, Lorenzo Pieralisi wrote:
+> ARM64 PSCI kernel interfaces that initialize idle states and implement
+> the suspend API to enter them are generic and can be shared with the
+> ARM architecture.
+> 
+> To achieve that goal, this patch moves ARM64 PSCI idle management
+> code to drivers/firmware by creating a file that contains PSCI
+> helper functions implementing the common kernel interface required
+> by ARM and ARM64 to share the PSCI idle management code.
+> 
+> The ARM generic CPUidle implementation also requires the definition of
+> a cpuidle_ops section entry for the kernel to initialize the CPUidle
+> operations at boot based on the enable-method (ie ARM64 has the
+> statically initialized cpu_ops counterparts for that purpose); therefore
+> this patch also adds the required section entry on CONFIG_ARM for PSCI so
+> that the kernel can initialize the PSCI CPUidle back-end when PSCI is
+> the probed enable-method.
+> 
+> On ARM64 this patch provides no functional change.
+> 
+> Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> Cc: Will Deacon <will.deacon@arm.com>
+> Cc: Sudeep Holla <sudeep.holla@arm.com>
+> Cc: Russell King <linux@arm.linux.org.uk>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: Catalin Marinas <catalin.marinas@arm.com>
+> Cc: Mark Rutland <mark.rutland@arm.com>
+> Cc: Jisheng Zhang <jszhang@marvell.com>
+> ---
+>  arch/arm64/kernel/psci.c       |  99 +-----------------------------
+>  drivers/firmware/Makefile      |   2 +-
+>  drivers/firmware/psci_cpuops.c | 133 +++++++++++++++++++++++++++++++++++++++++
 
-On 08/10/15 10:23, Jon Medhurst (Tixy) wrote:
-[...]
+Do we really need the new file, given most of this lived happily in
+psci.c previously?
 
-> diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-> index f1e42f8..59115a4 100644
-> --- a/drivers/cpufreq/arm_big_little.c
-> +++ b/drivers/cpufreq/arm_big_little.c
-> @@ -149,6 +149,18 @@ bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
->   			__func__, cpu, old_cluster, new_cluster, new_rate);
->
->   	ret = clk_set_rate(clk[new_cluster], new_rate * 1000);
-> +	if (!ret) {
-> +		/*
-> +		 * FIXME: clk_set_rate has to handle the case where clk_change_rate
-> +		 * can fail due to hardware or firmware issues. Until the clk core
-> +		 * layer is fixed, we can check here. In most of the cases we will
-> +		 * be reading only the cached value anyway. This needs to  be removed
-> +		 * once clk core is fixed.
-> +		 */
-> +		if (clk_get_rate(clk[new_cluster]) != new_rate * 1000)
-> +			ret = -EIO;
-> +	}
+> +#ifdef CONFIG_ARM
+> +struct cpuidle_ops psci_cpuidle_ops __initdata = {
+> +	.suspend = psci_cpu_suspend_enter,
+> +	.init = psci_dt_cpu_init_idle,
+> +};
 > +
->   	if (WARN_ON(ret)) {
->   		pr_err("clk_set_rate failed: %d, new cluster: %d\n", ret,
->   				new_cluster);
-> @@ -189,15 +201,6 @@ bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
->   		mutex_unlock(&cluster_lock[old_cluster]);
->   	}
->
-> -	/*
-> -	 * FIXME: clk_set_rate has to handle the case where clk_change_rate
-> -	 * can fail due to hardware or firmware issues. Until the clk core
-> -	 * layer is fixed, we can check here. In most of the cases we will
-> -	 * be reading only the cached value anyway. This needs to  be removed
-> -	 * once clk core is fixed.
-> -	 */
-> -	if (bL_cpufreq_get_rate(cpu) != new_rate)
-> -		return -EIO;
->   	return 0;
->   }
->
->
->
->
+> +CPUIDLE_METHOD_OF_DECLARE(psci, "arm,psci", &psci_cpuidle_ops);
+> +#endif
 
-The above change looks good to me but with minor nit. You can get rid of
-if(!ret) check if you move the hunk after if (WARN_ON(ret))
+Don't these also need to be guarded for CONFIG_CPU_IDLE?
 
--- 
-Regards, Sudeep
+The definitions of cpuidle_ops and CPUIDLE_METHOD_OF_DECLARE in
+arch/arm/include/asm/cpuidle.h depend on it.
+
+Otherwise this looks fine to me.
+
+Thanks,
+Mark.
