@@ -1,141 +1,60 @@
 From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH 4/5] cpufreq: create cpu/cpufreq/policyX directories
-Date: Mon, 12 Oct 2015 12:31:23 -0700
-Message-ID: <561C0A8B.5010509@codeaurora.org>
-References: <cover.1444583718.git.viresh.kumar@linaro.org> <dd7e6cab3e879e94305c0fca1ea6033e79d166ca.1444583718.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH 5/5] cpufreq: Drop redundant check for inactive policies
+Date: Mon, 12 Oct 2015 12:35:38 -0700
+Message-ID: <561C0B8A.5020808@codeaurora.org>
+References: <cover.1444583718.git.viresh.kumar@linaro.org> <2d6d59c2b0654872a32a9b63874b750e6b808cb5.1444583718.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:41179 "EHLO
+Received: from smtp.codeaurora.org ([198.145.29.96]:41442 "EHLO
 	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751276AbbJLTbZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 Oct 2015 15:31:25 -0400
-In-Reply-To: <dd7e6cab3e879e94305c0fca1ea6033e79d166ca.1444583718.git.viresh.kumar@linaro.org>
+	with ESMTP id S1751116AbbJLTfk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 Oct 2015 15:35:40 -0400
+In-Reply-To: <2d6d59c2b0654872a32a9b63874b750e6b808cb5.1444583718.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, open list <linux-kernel@vger.kernel.org>
 
 On 10/11/2015 10:21 AM, Viresh Kumar wrote:
-> The cpufreq sysfs interface had been a bit inconsistent as one of the
-> CPUs for a policy had a real directory within its sysfs 'cpuX' directory
-> and all other CPUs had links to it. That also made the code a bit
-> complex as we need to take care of moving the sysfs directory if the CPU
-> containing the real directory is getting physically hot-unplugged.
-
-This should actually make hotplug a bit faster too.
-
-> Solve this by creating 'policyX' directories (per-policy) in
-> /sys/devices/system/cpu/cpufreq/ directory, where X is the CPU for which
-> the policy was first created.
-Can we use the first CPU in the related CPUs mask? Instead of the first 
-CPU that the policy got created on? The policyX numbering would be a bit 
-more consistent that way.
-
->
-> This also removes the need of keeping kobj_cpu and we can remove it now.
+> We just made sure policy->cpu is online and this check will always fail
+> as the policy is active. Drop it.
 >
 > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-Suggested-by: ?
-
 > ---
->   drivers/cpufreq/cpufreq.c | 34 ++++------------------------------
->   include/linux/cpufreq.h   |  1 -
->   2 files changed, 4 insertions(+), 31 deletions(-)
+>   drivers/cpufreq/cpufreq.c | 7 -------
+>   1 file changed, 7 deletions(-)
 >
 > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 2cb0e3b8170e..58aabe0f2d2c 100644
+> index 58aabe0f2d2c..4fa2215cc6ec 100644
 > --- a/drivers/cpufreq/cpufreq.c
 > +++ b/drivers/cpufreq/cpufreq.c
-> @@ -917,9 +917,6 @@ static int cpufreq_add_dev_symlink(struct cpufreq_policy *policy)
+> @@ -843,18 +843,11 @@ static ssize_t store(struct kobject *kobj, struct attribute *attr,
 >
->   	/* Some related CPUs might not be present (physically hotplugged) */
->   	for_each_cpu(j, policy->real_cpus) {
-Didn't notice when this got added. Do we really need this anymore if we 
-don't care about moving the directory and creating symlinks? I don't 
-think we need it anymore. And if we really need to know related - 
-offline, we can use for_each_cpu_and(related, online/present mask)
+>   	down_write(&policy->rwsem);
+>
+> -	/* Updating inactive policies is invalid, so avoid doing that. */
+> -	if (unlikely(policy_is_inactive(policy))) {
+> -		ret = -EBUSY;
+> -		goto unlock_policy_rwsem;
+> -	}
+> -
+>   	if (fattr->store)
+>   		ret = fattr->store(policy, buf, count);
+>   	else
+>   		ret = -EIO;
+>
+> -unlock_policy_rwsem:
+>   	up_write(&policy->rwsem);
+>   unlock:
+>   	put_online_cpus();
+>
 
-> -		if (j == policy->kobj_cpu)
-> -			continue;
-> -
->   		ret = add_cpu_dev_symlink(policy, j);
->   		if (ret)
->   			break;
-> @@ -933,12 +930,8 @@ static void cpufreq_remove_dev_symlink(struct cpufreq_policy *policy)
->   	unsigned int j;
->
->   	/* Some related CPUs might not be present (physically hotplugged) */
-> -	for_each_cpu(j, policy->real_cpus) {
-> -		if (j == policy->kobj_cpu)
-> -			continue;
-> -
-> +	for_each_cpu(j, policy->real_cpus)
->   		remove_cpu_dev_symlink(policy, j);
-> -	}
->   }
->
->   static int cpufreq_add_dev_interface(struct cpufreq_policy *policy)
-> @@ -1054,8 +1047,8 @@ static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
->   	if (!zalloc_cpumask_var(&policy->real_cpus, GFP_KERNEL))
->   		goto err_free_rcpumask;
->
-> -	ret = kobject_init_and_add(&policy->kobj, &ktype_cpufreq, &dev->kobj,
-> -				   "cpufreq");
-> +	ret = kobject_init_and_add(&policy->kobj, &ktype_cpufreq,
-> +				   cpufreq_global_kobject, "policy%u", cpu);
->   	if (ret) {
->   		pr_err("%s: failed to init policy->kobj: %d\n", __func__, ret);
->   		goto err_free_real_cpus;
-> @@ -1069,10 +1062,6 @@ static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
->   	INIT_WORK(&policy->update, handle_update);
->
->   	policy->cpu = cpu;
-> -
-> -	/* Set this once on allocation */
-> -	policy->kobj_cpu = cpu;
-> -
->   	return policy;
->
->   err_free_real_cpus:
-> @@ -1424,22 +1413,7 @@ static void cpufreq_remove_dev(struct device *dev, struct subsys_interface *sif)
->   		return;
->   	}
->
-> -	if (cpu != policy->kobj_cpu) {
-> -		remove_cpu_dev_symlink(policy, cpu);
-> -	} else {
-> -		/*
-> -		 * The CPU owning the policy object is going away.  Move it to
-> -		 * another suitable CPU.
-> -		 */
-> -		unsigned int new_cpu = cpumask_first(policy->real_cpus);
-> -		struct device *new_dev = get_cpu_device(new_cpu);
-> -
-> -		dev_dbg(dev, "%s: Moving policy object to CPU%u\n", __func__, new_cpu);
-> -
-> -		sysfs_remove_link(&new_dev->kobj, "cpufreq");
-> -		policy->kobj_cpu = new_cpu;
-> -		WARN_ON(kobject_move(&policy->kobj, &new_dev->kobj));
-> -	}
-> +	remove_cpu_dev_symlink(policy, cpu);
->   }
->
->   static void handle_update(struct work_struct *work)
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index 9623218d996a..ef4c5b1a860f 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -65,7 +65,6 @@ struct cpufreq_policy {
->   	unsigned int		shared_type; /* ACPI: ANY or ALL affected CPUs
->   						should set cpufreq */
->   	unsigned int		cpu;    /* cpu managing this policy, must be online */
-> -	unsigned int		kobj_cpu; /* cpu managing sysfs files, can be offline */
->
->   	struct clk		*clk;
->   	struct cpufreq_cpuinfo	cpuinfo;/* see above */
->
+Doesn't really seem related to the sysfs reorg/clean up. Should it be a 
+separate patch outside of this series?
+
+Acked-by: Saravana Kannan <skannan@codeaurora.org>
 
 -Saravana
 
