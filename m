@@ -1,38 +1,82 @@
-From: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH v3] ARM: dts: twl4030: Add iio properties for bci subnode
-Date: Mon, 12 Oct 2015 15:20:10 -0700
-Message-ID: <20151012222009.GH23801@atomide.com>
-References: <1443212447-5841-1-git-send-email-marek@goldelico.com>
- <1443212447-5841-3-git-send-email-marek@goldelico.com>
- <20150926172936.GD22315@earth>
- <CAAfyv36nZ3c-yw7QQHwBWk3GwY31rV3Uq2n0dz5hppn5JFhEcA@mail.gmail.com>
- <20151012213827.GC23801@atomide.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH 2/2] arm: omap2+: PM: change trace_power_domain_target
+ event format.
+Date: Mon, 12 Oct 2015 16:33:28 -0700
+Message-ID: <20151012233327.GQ23801@atomide.com>
+References: <1443187345-14834-1-git-send-email-mtitinger+renesas@baylibre.com>
+ <1443187345-14834-3-git-send-email-mtitinger+renesas@baylibre.com>
+ <20150925101025.6b3862bf@gandalf.local.home>
+ <560560ED.5000803@baylibre.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from muru.com ([72.249.23.125]:58015 "EHLO muru.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751878AbbJLXdc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 12 Oct 2015 19:33:32 -0400
 Content-Disposition: inline
-In-Reply-To: <20151012213827.GC23801-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Belisko Marek <marek.belisko-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM mailing list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Neil Brown <neilb-l3A5Bk7waGM@public.gmane.org>, "Dr. H. Nikolaus Schaller" <hns-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Benoit Cousson <bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, "linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <560560ED.5000803@baylibre.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Marc Titinger <mtitinger@baylibre.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, khilman@kernel.org, rjw@rjwysocki.net, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org
 
-* Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org> [151012 14:43]:
-> * Belisko Marek <marek.belisko-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> [150926 13:02]:
-> > Tony sorry I forgot to add you to the recipients for this patchset.
-> > Can you please queue this patch. Many thanks.
+* Marc Titinger <mtitinger@baylibre.com> [150925 08:02]:
 > 
-> OK applying into omap-for-v4.4/dt thanks.
+> 
+> On 25/09/2015 16:10, Steven Rostedt wrote:
+> >On Fri, 25 Sep 2015 15:22:25 +0200
+> >Marc Titinger <mtitinger@baylibre.com> wrote:
+> >
+> >>From: Marc Titinger <mtitinger@baylibre.com>
+> >>
+> >>power_domain_target arg3 is now a string (event name) with generic power
+> >>domains. In the case of Omap, it is a hint to the prev/next switch op.
+> >>Incidentally this trace is now conditioned by CONFIG_PM_ADVANCED_DEBUG.
+> >I'm curious to why the addition of this config option?
+> >
+> I meant to be consistent with Juno/generic-power-domains, so that this trace
+> always (or never) requires this switch.
+> I think I will remove this condition for both actually.
+> 
+> >>Compiled for Omap2+ but not tested.
+> >>
+> >>Signed-off-by: Marc Titinger <mtitinger@baylibre.com>
+> >>---
+> >>  arch/arm/mach-omap2/powerdomain.c | 32 ++++++++++++++++++++------------
+> >>  1 file changed, 20 insertions(+), 12 deletions(-)
+> >>
+> >>diff --git a/arch/arm/mach-omap2/powerdomain.c b/arch/arm/mach-omap2/powerdomain.c
+> >>index 78af6d8..cd77696 100644
+> >>--- a/arch/arm/mach-omap2/powerdomain.c
+> >>+++ b/arch/arm/mach-omap2/powerdomain.c
+> >>@@ -160,7 +160,7 @@ static void _update_logic_membank_counters(struct powerdomain *pwrdm)
+> >>  static int _pwrdm_state_switch(struct powerdomain *pwrdm, int flag)
+> >>  {
+> >>-	int prev, next, state, trace_state = 0;
+> >>+	int prev, state;
+> >>  	if (pwrdm == NULL)
+> >>  		return -EINVAL;
+> >>@@ -177,18 +177,25 @@ static int _pwrdm_state_switch(struct powerdomain *pwrdm, int flag)
+> >>  			pwrdm->state_counter[prev]++;
+> >>  		if (prev == PWRDM_POWER_RET)
+> >>  			_update_logic_membank_counters(pwrdm);
+> >>-		/*
+> >>-		 * If the power domain did not hit the desired state,
+> >>-		 * generate a trace event with both the desired and hit states
+> >>-		 */
+> >>-		next = pwrdm_read_next_pwrst(pwrdm);
+> >>-		if (next != prev) {
+> >>-			trace_state = (PWRDM_TRACE_STATES_FLAG |
+> >>+
+> >>+#ifdef CONFIG_PM_ADVANCED_DEBUG
+> >You do realize that you can add this to the block:
+> >
+> >
+> >	if (trace_power_domain_target_enabled()) {
+> Nope I didn't, but now I do ;) thanks.
 
-Actually dropping this one, it makes build fail as we don't
-have twl4030_madc yet.
+Probably best to keep this with your series, it should not cause merge conflicts,
+so:
 
-Maybe please send a separate set of dts patches for me.
-
-Regards,
-
-Tony
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Acked-by: Tony Lindgren <tony@atomide.com>
