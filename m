@@ -1,59 +1,51 @@
-From: Borislav Petkov <bp@suse.de>
-Subject: Re: [PATCH][v5] x86, suspend: Save/restore extra MSR registers for
- suspend
-Date: Mon, 12 Oct 2015 18:37:50 +0200
-Message-ID: <20151012163750.GA4539@pd.tnic>
-References: <1444533601-12330-1-git-send-email-yu.c.chen@intel.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v4 1/5] gadget: Introduce the notifier functions
+Date: Mon, 12 Oct 2015 17:56:11 +0100
+Message-ID: <20151012165611.GM4238@sirena.org.uk>
+References: <cover.1443057229.git.baolin.wang@linaro.org>
+ <e58e4f26028c37877d02907831cf4ae411eaf984.1443057231.git.baolin.wang@linaro.org>
+ <20151001172932.GG4469@saruman.tx.rr.com>
+ <20151008155052.GH11776@xo-6d-61-c0.localdomain>
+ <87oag7u4go.fsf@saruman.tx.rr.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:37458 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751178AbbJLQiF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 12 Oct 2015 12:38:05 -0400
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="O27Gs9jTTFWz3gAR"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1444533601-12330-1-git-send-email-yu.c.chen@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <87oag7u4go.fsf@saruman.tx.rr.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Felipe Balbi <balbi@ti.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Baolin Wang <baolin.wang@linaro.org>, Greg KH <gregkh@linuxfoundation.org>, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, sojka@merica.cz, yoshihiro.shimoda.uh@renesas.com, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, sameo@linux.intel.com, lee.jones@linaro.org, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, device-mainlining@lists.linuxfoundation.org
 List-Id: linux-pm@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: mingo@redhat.com, rjw@rjwysocki.net, pavel@ucw.cz, tglx@linutronix.de, hpa@zytor.com, rui.zhang@intel.com, luto@kernel.org, linux@horizon.com, dsmythies@telus.net, linux-pm@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, marcin.kaszewski@intel.com
 
-On Sun, Oct 11, 2015 at 11:20:01AM +0800, Chen Yu wrote:
-> A bug is reported(https://bugzilla.redhat.com/show_bug.cgi?id=3D12272=
-08)
 
-I get:
+--O27Gs9jTTFWz3gAR
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-"You are not authorized to access bug #1227208.
+On Fri, Oct 09, 2015 at 04:17:27PM -0500, Felipe Balbi wrote:
 
-Most likely the bug has been restricted for internal development
-processes and we cannot grant access."
+> Mark, when can we try to have a discussion about how to get this
+> upstream ? It seems like designing everything in the mailing list will
+> just take forever. Any ideas ?
 
-> that, after resumed from S3, CPU is running at a low speed.
-> After investigation, it is found that, BIOS has modified the value
-> of THERM_CONTROL register during S3, and changes it from 0 to 0x10
-> (thus changes the clock modulation from reserved to enabled),
-> since value of 0x10 means CPU can only get 25% of the Duty Cycle,
-> this triggers the problem.
+Can we take this off-list?  I'm in the UK, Baolin is in China and I
+believe you're in the US so it might be a fun one to schedule...
 
-Is this what the bug described above is? In any case, please remove the
-private bugzilla link and describe the bug in text here.
+--O27Gs9jTTFWz3gAR
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-Also, from reading the other thread about the v4 patch, it sounds like
-intel_pstate can't handle the clock modulation properly, according to
-what Doug says.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-So let's have this aspect sorted out properly first please before addin=
-g
-yet another ugly BIOS workaround.
+iQEcBAEBCAAGBQJWG+YqAAoJECTWi3JdVIfQarwH/R3HrxEKFMQZ744BVJeSA65Q
+ikWKPralmZNx4mZAXqjbrDf5t3L3woiljhGHT9pWl06mCgBo9xdGr/TSVbgcLSTY
+EUQj37VwuwxFnQXTGkfqr394+azc+DHBgxxv3DI1xs/qGruAEEXCXbWFXAxvC/Cm
+cN6clKAZSD1KXZTFl89pbGWVdKGgeRCurlalUnKb9DKqYrUfggCZz6zib+12jvNC
+Q4HHh8IbUzc5s7U+laugSSdVPrMH1OpOIwGoWfLGNRZEuXy7tLBJLP3oTGKyfYZR
+5FE+6TEZVqG1nEdwKgsqUMGXBMV6bajyb245vNZUIzeYRMnquW136Orex0rvygU=
+=N9fR
+-----END PGP SIGNATURE-----
 
-Btw, why can't that BIOS be fixed instead?
-
---=20
-Regards/Gruss,
-    Boris.
-
-SUSE Linux GmbH, GF: Felix Imend=C3=B6rffer, Jane Smithard, Graham Nort=
-on, HRB 21284 (AG N=C3=BCrnberg)
---=20
+--O27Gs9jTTFWz3gAR--
