@@ -1,107 +1,102 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [Linaro-acpi] [PATCH v5 0/5] Provide better MADT subtable sanity
- checks
-Date: Mon, 12 Oct 2015 10:44:52 +0100
-Message-ID: <561B8114.4060800@arm.com>
-References: <1443570346-15378-1-git-send-email-al.stone@linaro.org>
- <560BA4C9.7090607@huawei.com> <560C0968.6020904@redhat.com>
- <2808057.teMg2oCLf6@vostro.rjw.lan> <5612AF64.4060900@redhat.com>
- <561B2442.9050600@erley.org> <561B2DAD.5070601@linaro.org>
- <561B2FCA.1010504@erley.org> <561B5B7E.6080901@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: [PATCH v2 1/2] ARM: cpuidle: remove cpu parameter from the cpuidle_ops suspend hook
+Date: Mon, 12 Oct 2015 12:17:07 +0100
+Message-ID: <1444648628-24790-2-git-send-email-lorenzo.pieralisi@arm.com>
+References: <1444648628-24790-1-git-send-email-lorenzo.pieralisi@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:46484 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:46778 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751157AbbJLJo6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 12 Oct 2015 05:44:58 -0400
-In-Reply-To: <561B5B7E.6080901@linaro.org>
+	id S1751457AbbJLLQl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 12 Oct 2015 07:16:41 -0400
+In-Reply-To: <1444648628-24790-1-git-send-email-lorenzo.pieralisi@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Hanjun Guo <hanjun.guo@linaro.org>, Pat Erley <pat-lkml@erley.org>, Al Stone <ahs3@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, linaro-kernel@lists.linaro.org, linux-ia64@vger.kernel.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-acpi@lists.linaro.org, linux-acpi@vger.kernel.org, Hanjun Guo <guohanjun@huawei.com>, linux-arm-kernel@lists.infradead.org
+To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Lina Iyer <lina.iyer@linaro.org>, Russell King <linux@arm.linux.org.uk>, Daniel Lezcano <daniel.lezcano@linaro.org>, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, Jisheng Zhang <jszhang@marvell.com>
 
+The suspend() hook in the cpuidle_ops struct is always called on
+the cpu entering idle, which means that the cpu parameter passed
+to the suspend hook always corresponds to the local cpu, making
+it somewhat redundant.
 
+This patch removes the logical cpu parameter from the ARM
+cpuidle_ops.suspend hook and updates all the existing kernel
+implementations to reflect this change.
 
-On 12/10/15 08:04, Hanjun Guo wrote:
-> On 10/12/2015 11:58 AM, Pat Erley wrote:
->> On 10/11/2015 08:49 PM, Hanjun Guo wrote:
->>> On 10/12/2015 11:08 AM, Pat Erley wrote:
->>>> On 10/05/2015 10:12 AM, Al Stone wrote:
->>>>> On 10/05/2015 07:39 AM, Rafael J. Wysocki wrote:
->>>>>> On Wednesday, September 30, 2015 10:10:16 AM Al Stone wrote:
->>>>>>> On 09/30/2015 03:00 AM, Hanjun Guo wrote:
->>>>>>>> On 2015/9/30 7:45, Al Stone wrote:
->>>>>>>>> NB: this patch set is for use against the linux-pm bleeding edge
->>>>>>>>> branch.
->>>>>>>>>
->>>>>>>
->>>>>>> [snip...]
->>>>>>>
->>>>>>>>
->>>>>>>> For this patch set,
->>>>>>>>
->>>>>>>> Reviewed-by: Hanjun Guo <hanjun.guo@linaro.org>
->>>>>>>>
->>>>>>>> Thanks
->>>>>>>> Hanjun
->>>>>>>
->>>>>>> Thanks, Hanjun!
->>>>>>
->>>>>> Series applied, thanks!
->>>>>>
->>>>>> Rafael
->>>>>>
->>>>>
->>>>> Thanks, Rafael!
->>>>>
->>>>
->>>> Just decided to test out linux-next (to see the new nouveau cleanups).
->>>> This change set prevents my Lenovo W510 from booting properly.
->>>>
->>>> Reverting: 7494b0 "ACPI: add in a bad_madt_entry() function to
->>>> eventually replace the macro"
->>>>
->>>> Gets the system booting again.  I'm attaching my dmesg from the failed
->>>> boot, who wants the acpidump?
->>>
->>> [    0.000000] ACPI: undefined version for either FADT 4.0 or MADT 1
->>> [    0.000000] ACPI: Error parsing LAPIC address override entry
->>> [    0.000000] ACPI: Invalid BIOS MADT, disabling ACPI
->>>
->>> Seems the MADT revision is not right, could you dump the ACPI MADT
->>> (APIC) table and send it out? I will take a look :)
->>>
->>> Thanks
->>> Hanjun
->>
->> Here ya go, enjoy.  Feel free to CC me on any patches that might fix it.
->
-> Thanks! I think I had the right guess, the MADT revision is not right
-> for ACPI 4.0:
->
-> [000h 0000   4]                    Signature : "APIC"    [Multiple APIC
-> Description Table (MADT)]
-> [004h 0004   4]                 Table Length : 000000BC
-> [008h 0008   1]                     *Revision : 01*
->
-> I encountered such problem before because the table was just copied from
-> previous version, and without the update for table revision.
->
-> I think we may need to ignore the table revision for x86, but restrict
-> it for ARM64, I'd like Al and Rafael's suggestion before I send out a
-> patch.
->
+Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Lina Iyer <lina.iyer@linaro.org>
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ arch/arm/include/asm/cpuidle.h |  2 +-
+ arch/arm/kernel/cpuidle.c      |  2 +-
+ drivers/soc/qcom/spm.c         | 10 +++++-----
+ 3 files changed, 7 insertions(+), 7 deletions(-)
 
-Instead of just removing the check completely on x86, IMO restrict it to
-some newer/later version of ACPI so you can still force vendors to fix
-their ACPI tables at-least in future.
-
-It would be good to get such sanity check in the tools used to build
-those tables, but yes since such static tables can be built in many
-ways, its difficult to deal it in all those tools.
-
+diff --git a/arch/arm/include/asm/cpuidle.h b/arch/arm/include/asm/cpuidle.h
+index 0f84249..3848259 100644
+--- a/arch/arm/include/asm/cpuidle.h
++++ b/arch/arm/include/asm/cpuidle.h
+@@ -30,7 +30,7 @@ static inline int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
+ struct device_node;
+ 
+ struct cpuidle_ops {
+-	int (*suspend)(int cpu, unsigned long arg);
++	int (*suspend)(unsigned long arg);
+ 	int (*init)(struct device_node *, int cpu);
+ };
+ 
+diff --git a/arch/arm/kernel/cpuidle.c b/arch/arm/kernel/cpuidle.c
+index 318da33..703926e 100644
+--- a/arch/arm/kernel/cpuidle.c
++++ b/arch/arm/kernel/cpuidle.c
+@@ -56,7 +56,7 @@ int arm_cpuidle_suspend(int index)
+ 	int cpu = smp_processor_id();
+ 
+ 	if (cpuidle_ops[cpu].suspend)
+-		ret = cpuidle_ops[cpu].suspend(cpu, index);
++		ret = cpuidle_ops[cpu].suspend(index);
+ 
+ 	return ret;
+ }
+diff --git a/drivers/soc/qcom/spm.c b/drivers/soc/qcom/spm.c
+index b04b05a..0ad66fa 100644
+--- a/drivers/soc/qcom/spm.c
++++ b/drivers/soc/qcom/spm.c
+@@ -116,7 +116,7 @@ static const struct spm_reg_data spm_reg_8064_cpu = {
+ 
+ static DEFINE_PER_CPU(struct spm_driver_data *, cpu_spm_drv);
+ 
+-typedef int (*idle_fn)(int);
++typedef int (*idle_fn)(void);
+ static DEFINE_PER_CPU(idle_fn*, qcom_idle_ops);
+ 
+ static inline void spm_register_write(struct spm_driver_data *drv,
+@@ -179,10 +179,10 @@ static int qcom_pm_collapse(unsigned long int unused)
+ 	return -1;
+ }
+ 
+-static int qcom_cpu_spc(int cpu)
++static int qcom_cpu_spc(void)
+ {
+ 	int ret;
+-	struct spm_driver_data *drv = per_cpu(cpu_spm_drv, cpu);
++	struct spm_driver_data *drv = __this_cpu_read(cpu_spm_drv);
+ 
+ 	spm_set_low_power_mode(drv, PM_SLEEP_MODE_SPC);
+ 	ret = cpu_suspend(0, qcom_pm_collapse);
+@@ -197,9 +197,9 @@ static int qcom_cpu_spc(int cpu)
+ 	return ret;
+ }
+ 
+-static int qcom_idle_enter(int cpu, unsigned long index)
++static int qcom_idle_enter(unsigned long index)
+ {
+-	return per_cpu(qcom_idle_ops, cpu)[index](cpu);
++	return __this_cpu_read(qcom_idle_ops)[index]();
+ }
+ 
+ static const struct of_device_id qcom_idle_state_match[] __initconst = {
 -- 
-Regards,
-Sudeep
+2.5.1
+
