@@ -1,104 +1,74 @@
-From: Hanjun Guo <hanjun.guo@linaro.org>
-Subject: Re: [Linaro-acpi] [PATCH v5 0/5] Provide better MADT subtable sanity
- checks
-Date: Mon, 12 Oct 2015 21:04:32 +0800
-Message-ID: <561BAFE0.9090401@linaro.org>
-References: <1443570346-15378-1-git-send-email-al.stone@linaro.org> <560BA4C9.7090607@huawei.com> <560C0968.6020904@redhat.com> <2808057.teMg2oCLf6@vostro.rjw.lan> <5612AF64.4060900@redhat.com> <561B2442.9050600@erley.org> <561B2DAD.5070601@linaro.org> <561B2FCA.1010504@erley.org> <561B5B7E.6080901@linaro.org> <561B8114.4060800@arm.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH] cpufreq: arm_big_little: fix frequency check when bL
+ switcher is active
+Date: Mon, 12 Oct 2015 14:20:26 +0100
+Message-ID: <561BB39A.4020400@arm.com>
+References: <1443807532.2845.25.camel@linaro.org>
+ <20151007173920.GG4557@linux> <1444296229.2847.9.camel@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <561B8114.4060800@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>, Pat Erley <pat-lkml@erley.org>, Al Stone <ahs3@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-ia64@vger.kernel.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-acpi@lists.linaro.org, linux-acpi@vger.kernel.org, Hanjun Guo <guohanjun@huawei.com>, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:47241 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751801AbbJLNUa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 12 Oct 2015 09:20:30 -0400
+In-Reply-To: <1444296229.2847.9.camel@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Jon Medhurst (Tixy)" <tixy@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Michael Turquette <mike.turquette@linaro.org>
 
-On 10/12/2015 05:44 PM, Sudeep Holla wrote:
+
+
+On 08/10/15 10:23, Jon Medhurst (Tixy) wrote:
+[...]
+
+> diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+> index f1e42f8..59115a4 100644
+> --- a/drivers/cpufreq/arm_big_little.c
+> +++ b/drivers/cpufreq/arm_big_little.c
+> @@ -149,6 +149,18 @@ bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
+>   			__func__, cpu, old_cluster, new_cluster, new_rate);
+>
+>   	ret = clk_set_rate(clk[new_cluster], new_rate * 1000);
+> +	if (!ret) {
+> +		/*
+> +		 * FIXME: clk_set_rate has to handle the case where clk_change_rate
+> +		 * can fail due to hardware or firmware issues. Until the clk core
+> +		 * layer is fixed, we can check here. In most of the cases we will
+> +		 * be reading only the cached value anyway. This needs to  be removed
+> +		 * once clk core is fixed.
+> +		 */
+> +		if (clk_get_rate(clk[new_cluster]) != new_rate * 1000)
+> +			ret = -EIO;
+> +	}
+> +
+>   	if (WARN_ON(ret)) {
+>   		pr_err("clk_set_rate failed: %d, new cluster: %d\n", ret,
+>   				new_cluster);
+> @@ -189,15 +201,6 @@ bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
+>   		mutex_unlock(&cluster_lock[old_cluster]);
+>   	}
+>
+> -	/*
+> -	 * FIXME: clk_set_rate has to handle the case where clk_change_rate
+> -	 * can fail due to hardware or firmware issues. Until the clk core
+> -	 * layer is fixed, we can check here. In most of the cases we will
+> -	 * be reading only the cached value anyway. This needs to  be removed
+> -	 * once clk core is fixed.
+> -	 */
+> -	if (bL_cpufreq_get_rate(cpu) != new_rate)
+> -		return -EIO;
+>   	return 0;
+>   }
 >
 >
-> On 12/10/15 08:04, Hanjun Guo wrote:
->> On 10/12/2015 11:58 AM, Pat Erley wrote:
->>> On 10/11/2015 08:49 PM, Hanjun Guo wrote:
->>>> On 10/12/2015 11:08 AM, Pat Erley wrote:
->>>>> On 10/05/2015 10:12 AM, Al Stone wrote:
->>>>>> On 10/05/2015 07:39 AM, Rafael J. Wysocki wrote:
->>>>>>> On Wednesday, September 30, 2015 10:10:16 AM Al Stone wrote:
->>>>>>>> On 09/30/2015 03:00 AM, Hanjun Guo wrote:
->>>>>>>>> On 2015/9/30 7:45, Al Stone wrote:
->>>>>>>>>> NB: this patch set is for use against the linux-pm bleeding edge
->>>>>>>>>> branch.
->>>>>>>>>>
->>>>>>>>
->>>>>>>> [snip...]
->>>>>>>>
->>>>>>>>>
->>>>>>>>> For this patch set,
->>>>>>>>>
->>>>>>>>> Reviewed-by: Hanjun Guo <hanjun.guo@linaro.org>
->>>>>>>>>
->>>>>>>>> Thanks
->>>>>>>>> Hanjun
->>>>>>>>
->>>>>>>> Thanks, Hanjun!
->>>>>>>
->>>>>>> Series applied, thanks!
->>>>>>>
->>>>>>> Rafael
->>>>>>>
->>>>>>
->>>>>> Thanks, Rafael!
->>>>>>
->>>>>
->>>>> Just decided to test out linux-next (to see the new nouveau cleanups).
->>>>> This change set prevents my Lenovo W510 from booting properly.
->>>>>
->>>>> Reverting: 7494b0 "ACPI: add in a bad_madt_entry() function to
->>>>> eventually replace the macro"
->>>>>
->>>>> Gets the system booting again.  I'm attaching my dmesg from the failed
->>>>> boot, who wants the acpidump?
->>>>
->>>> [    0.000000] ACPI: undefined version for either FADT 4.0 or MADT 1
->>>> [    0.000000] ACPI: Error parsing LAPIC address override entry
->>>> [    0.000000] ACPI: Invalid BIOS MADT, disabling ACPI
->>>>
->>>> Seems the MADT revision is not right, could you dump the ACPI MADT
->>>> (APIC) table and send it out? I will take a look :)
->>>>
->>>> Thanks
->>>> Hanjun
->>>
->>> Here ya go, enjoy.  Feel free to CC me on any patches that might fix it.
->>
->> Thanks! I think I had the right guess, the MADT revision is not right
->> for ACPI 4.0:
->>
->> [000h 0000   4]                    Signature : "APIC"    [Multiple APIC
->> Description Table (MADT)]
->> [004h 0004   4]                 Table Length : 000000BC
->> [008h 0008   1]                     *Revision : 01*
->>
->> I encountered such problem before because the table was just copied from
->> previous version, and without the update for table revision.
->>
->> I think we may need to ignore the table revision for x86, but restrict
->> it for ARM64, I'd like Al and Rafael's suggestion before I send out a
->> patch.
->>
 >
-> Instead of just removing the check completely on x86, IMO restrict it to
-> some newer/later version of ACPI so you can still force vendors to fix
-> their ACPI tables at-least in future.
-
-I agree.
-
 >
-> It would be good to get such sanity check in the tools used to build
-> those tables, but yes since such static tables can be built in many
-> ways, its difficult to deal it in all those tools.
 
-At least we can check that in the FWTS. :)
+The above change looks good to me but with minor nit. You can get rid of
+if(!ret) check if you move the hunk after if (WARN_ON(ret))
 
-Thanks
-Hanjun
+-- 
+Regards, Sudeep
