@@ -1,82 +1,46 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH 2/2] arm: omap2+: PM: change trace_power_domain_target
- event format.
-Date: Mon, 12 Oct 2015 16:33:28 -0700
-Message-ID: <20151012233327.GQ23801@atomide.com>
-References: <1443187345-14834-1-git-send-email-mtitinger+renesas@baylibre.com>
- <1443187345-14834-3-git-send-email-mtitinger+renesas@baylibre.com>
- <20150925101025.6b3862bf@gandalf.local.home>
- <560560ED.5000803@baylibre.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: [PATCH] thermal: exynos: Fix register read in TMU
+Date: Tue, 13 Oct 2015 08:51:49 +0900
+Message-ID: <1444693909-17754-1-git-send-email-k.kozlowski@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:58015 "EHLO muru.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751878AbbJLXdc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 12 Oct 2015 19:33:32 -0400
-Content-Disposition: inline
-In-Reply-To: <560560ED.5000803@baylibre.com>
+Received: from mailout3.w1.samsung.com ([210.118.77.13]:45394 "EHLO
+	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751950AbbJLXwP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 Oct 2015 19:52:15 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Marc Titinger <mtitinger@baylibre.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, khilman@kernel.org, rjw@rjwysocki.net, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org
+To: Kukjin Kim <kgene@kernel.org>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: Lukasz Majewski <l.majewski@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Sudip Mukherjee <sudip@vectorindia.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-* Marc Titinger <mtitinger@baylibre.com> [150925 08:02]:
-> 
-> 
-> On 25/09/2015 16:10, Steven Rostedt wrote:
-> >On Fri, 25 Sep 2015 15:22:25 +0200
-> >Marc Titinger <mtitinger@baylibre.com> wrote:
-> >
-> >>From: Marc Titinger <mtitinger@baylibre.com>
-> >>
-> >>power_domain_target arg3 is now a string (event name) with generic power
-> >>domains. In the case of Omap, it is a hint to the prev/next switch op.
-> >>Incidentally this trace is now conditioned by CONFIG_PM_ADVANCED_DEBUG.
-> >I'm curious to why the addition of this config option?
-> >
-> I meant to be consistent with Juno/generic-power-domains, so that this trace
-> always (or never) requires this switch.
-> I think I will remove this condition for both actually.
-> 
-> >>Compiled for Omap2+ but not tested.
-> >>
-> >>Signed-off-by: Marc Titinger <mtitinger@baylibre.com>
-> >>---
-> >>  arch/arm/mach-omap2/powerdomain.c | 32 ++++++++++++++++++++------------
-> >>  1 file changed, 20 insertions(+), 12 deletions(-)
-> >>
-> >>diff --git a/arch/arm/mach-omap2/powerdomain.c b/arch/arm/mach-omap2/powerdomain.c
-> >>index 78af6d8..cd77696 100644
-> >>--- a/arch/arm/mach-omap2/powerdomain.c
-> >>+++ b/arch/arm/mach-omap2/powerdomain.c
-> >>@@ -160,7 +160,7 @@ static void _update_logic_membank_counters(struct powerdomain *pwrdm)
-> >>  static int _pwrdm_state_switch(struct powerdomain *pwrdm, int flag)
-> >>  {
-> >>-	int prev, next, state, trace_state = 0;
-> >>+	int prev, state;
-> >>  	if (pwrdm == NULL)
-> >>  		return -EINVAL;
-> >>@@ -177,18 +177,25 @@ static int _pwrdm_state_switch(struct powerdomain *pwrdm, int flag)
-> >>  			pwrdm->state_counter[prev]++;
-> >>  		if (prev == PWRDM_POWER_RET)
-> >>  			_update_logic_membank_counters(pwrdm);
-> >>-		/*
-> >>-		 * If the power domain did not hit the desired state,
-> >>-		 * generate a trace event with both the desired and hit states
-> >>-		 */
-> >>-		next = pwrdm_read_next_pwrst(pwrdm);
-> >>-		if (next != prev) {
-> >>-			trace_state = (PWRDM_TRACE_STATES_FLAG |
-> >>+
-> >>+#ifdef CONFIG_PM_ADVANCED_DEBUG
-> >You do realize that you can add this to the block:
-> >
-> >
-> >	if (trace_power_domain_target_enabled()) {
-> Nope I didn't, but now I do ;) thanks.
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
-Probably best to keep this with your series, it should not cause merge conflicts,
-so:
+The value of emul_con was getting overwritten if the selected soc is
+SOC_ARCH_EXYNOS5260. And so as a result we were reading from the wrong
+register in the case of SOC_ARCH_EXYNOS5260.
 
-Acked-by: Tony Lindgren <tony@atomide.com>
+Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+Acked-by: Lukasz Majewski <l.majewski@samsung.com>
+Fixes: 488c7455d74c ("thermal: exynos: Add the support for Exynos5433 TMU")
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+---
+ drivers/thermal/samsung/exynos_tmu.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+index 0bae8cc6c23a..ca920b0ecf8f 100644
+--- a/drivers/thermal/samsung/exynos_tmu.c
++++ b/drivers/thermal/samsung/exynos_tmu.c
+@@ -932,7 +932,7 @@ static void exynos4412_tmu_set_emulation(struct exynos_tmu_data *data,
+ 
+ 	if (data->soc == SOC_ARCH_EXYNOS5260)
+ 		emul_con = EXYNOS5260_EMUL_CON;
+-	if (data->soc == SOC_ARCH_EXYNOS5433)
++	else if (data->soc == SOC_ARCH_EXYNOS5433)
+ 		emul_con = EXYNOS5433_TMU_EMUL_CON;
+ 	else if (data->soc == SOC_ARCH_EXYNOS7)
+ 		emul_con = EXYNOS7_TMU_REG_EMUL_CON;
+-- 
+1.9.1
+
