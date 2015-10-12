@@ -1,47 +1,59 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v2 1/2] ARM: cpuidle: remove cpu parameter from the
- cpuidle_ops suspend hook
-Date: Mon, 12 Oct 2015 16:40:54 +0100
-Message-ID: <20151012154054.GA23364@red-moon>
-References: <1444648628-24790-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1444648628-24790-2-git-send-email-lorenzo.pieralisi@arm.com>
- <20151012145640.GF921@linaro.org>
+From: Borislav Petkov <bp@suse.de>
+Subject: Re: [PATCH][v5] x86, suspend: Save/restore extra MSR registers for
+ suspend
+Date: Mon, 12 Oct 2015 18:37:50 +0200
+Message-ID: <20151012163750.GA4539@pd.tnic>
+References: <1444533601-12330-1-git-send-email-yu.c.chen@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:48148 "EHLO foss.arm.com"
+Received: from mx2.suse.de ([195.135.220.15]:37458 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751041AbbJLPkW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 12 Oct 2015 11:40:22 -0400
+	id S1751178AbbJLQiF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 12 Oct 2015 12:38:05 -0400
 Content-Disposition: inline
-In-Reply-To: <20151012145640.GF921@linaro.org>
+In-Reply-To: <1444533601-12330-1-git-send-email-yu.c.chen@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Russell King <linux@arm.linux.org.uk>, Daniel Lezcano <daniel.lezcano@linaro.org>, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, Jisheng Zhang <jszhang@marvell.com>
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: mingo@redhat.com, rjw@rjwysocki.net, pavel@ucw.cz, tglx@linutronix.de, hpa@zytor.com, rui.zhang@intel.com, luto@kernel.org, linux@horizon.com, dsmythies@telus.net, linux-pm@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, marcin.kaszewski@intel.com
 
-Hi Lina,
+On Sun, Oct 11, 2015 at 11:20:01AM +0800, Chen Yu wrote:
+> A bug is reported(https://bugzilla.redhat.com/show_bug.cgi?id=3D12272=
+08)
 
-On Mon, Oct 12, 2015 at 08:56:40AM -0600, Lina Iyer wrote:
-> On Mon, Oct 12 2015 at 05:16 -0600, Lorenzo Pieralisi wrote:
-> >The suspend() hook in the cpuidle_ops struct is always called on
-> >the cpu entering idle, which means that the cpu parameter passed
-> >to the suspend hook always corresponds to the local cpu, making
-> >it somewhat redundant.
-> >
-> >This patch removes the logical cpu parameter from the ARM
-> >cpuidle_ops.suspend hook and updates all the existing kernel
-> >implementations to reflect this change.
-> >
-> >Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> >Cc: Lina Iyer <lina.iyer@linaro.org>
-> >Cc: Russell King <linux@arm.linux.org.uk>
-> >Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> 
-> Reviewed-by: Lina Iyer <lina.iyer@linaro.org>
+I get:
 
-Thank you very much. May I also ask you to test it please, a Tested-by
-is needed since it affects QCOM platforms I can't test on at present.
+"You are not authorized to access bug #1227208.
 
-Thank you,
-Lorenzo
+Most likely the bug has been restricted for internal development
+processes and we cannot grant access."
+
+> that, after resumed from S3, CPU is running at a low speed.
+> After investigation, it is found that, BIOS has modified the value
+> of THERM_CONTROL register during S3, and changes it from 0 to 0x10
+> (thus changes the clock modulation from reserved to enabled),
+> since value of 0x10 means CPU can only get 25% of the Duty Cycle,
+> this triggers the problem.
+
+Is this what the bug described above is? In any case, please remove the
+private bugzilla link and describe the bug in text here.
+
+Also, from reading the other thread about the v4 patch, it sounds like
+intel_pstate can't handle the clock modulation properly, according to
+what Doug says.
+
+So let's have this aspect sorted out properly first please before addin=
+g
+yet another ugly BIOS workaround.
+
+Btw, why can't that BIOS be fixed instead?
+
+--=20
+Regards/Gruss,
+    Boris.
+
+SUSE Linux GmbH, GF: Felix Imend=C3=B6rffer, Jane Smithard, Graham Nort=
+on, HRB 21284 (AG N=C3=BCrnberg)
+--=20
