@@ -1,113 +1,94 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH v2 1/2] ARM: cpuidle: remove cpu parameter from the
- cpuidle_ops suspend hook
-Date: Mon, 12 Oct 2015 08:56:40 -0600
-Message-ID: <20151012145640.GF921@linaro.org>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v2 2/2] ARM64: kernel: PSCI: move PSCI idle management
+ code to drivers/firmware
+Date: Mon, 12 Oct 2015 16:12:20 +0100
+Message-ID: <20151012151220.GA12925@red-moon>
 References: <1444648628-24790-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1444648628-24790-2-git-send-email-lorenzo.pieralisi@arm.com>
+ <1444648628-24790-3-git-send-email-lorenzo.pieralisi@arm.com>
+ <20151012142926.GB7452@leverpostej>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f46.google.com ([209.85.220.46]:33515 "EHLO
-	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751755AbbJLO4e (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 12 Oct 2015 10:56:34 -0400
-Received: by pabrc13 with SMTP id rc13so21256390pab.0
-        for <linux-pm@vger.kernel.org>; Mon, 12 Oct 2015 07:56:33 -0700 (PDT)
+Received: from foss.arm.com ([217.140.101.70]:47971 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751449AbbJLPLt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 12 Oct 2015 11:11:49 -0400
 Content-Disposition: inline
-In-Reply-To: <1444648628-24790-2-git-send-email-lorenzo.pieralisi@arm.com>
+In-Reply-To: <20151012142926.GB7452@leverpostej>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Russell King <linux@arm.linux.org.uk>, Daniel Lezcano <daniel.lezcano@linaro.org>, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, Jisheng Zhang <jszhang@marvell.com>
+To: Mark Rutland <mark.rutland@arm.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Russell King <linux@arm.linux.org.uk>, Daniel Lezcano <daniel.lezcano@linaro.org>, Catalin Marinas <catalin.marinas@arm.com>, Jisheng Zhang <jszhang@marvell.com>
 
-On Mon, Oct 12 2015 at 05:16 -0600, Lorenzo Pieralisi wrote:
->The suspend() hook in the cpuidle_ops struct is always called on
->the cpu entering idle, which means that the cpu parameter passed
->to the suspend hook always corresponds to the local cpu, making
->it somewhat redundant.
->
->This patch removes the logical cpu parameter from the ARM
->cpuidle_ops.suspend hook and updates all the existing kernel
->implementations to reflect this change.
->
->Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
->Cc: Lina Iyer <lina.iyer@linaro.org>
->Cc: Russell King <linux@arm.linux.org.uk>
->Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Hi Mark,
 
-Reviewed-by: Lina Iyer <lina.iyer@linaro.org>
+On Mon, Oct 12, 2015 at 03:29:26PM +0100, Mark Rutland wrote:
+> Hi Lorenzo,
+> 
+> On Mon, Oct 12, 2015 at 12:17:08PM +0100, Lorenzo Pieralisi wrote:
+> > ARM64 PSCI kernel interfaces that initialize idle states and implement
+> > the suspend API to enter them are generic and can be shared with the
+> > ARM architecture.
+> > 
+> > To achieve that goal, this patch moves ARM64 PSCI idle management
+> > code to drivers/firmware by creating a file that contains PSCI
+> > helper functions implementing the common kernel interface required
+> > by ARM and ARM64 to share the PSCI idle management code.
+> > 
+> > The ARM generic CPUidle implementation also requires the definition of
+> > a cpuidle_ops section entry for the kernel to initialize the CPUidle
+> > operations at boot based on the enable-method (ie ARM64 has the
+> > statically initialized cpu_ops counterparts for that purpose); therefore
+> > this patch also adds the required section entry on CONFIG_ARM for PSCI so
+> > that the kernel can initialize the PSCI CPUidle back-end when PSCI is
+> > the probed enable-method.
+> > 
+> > On ARM64 this patch provides no functional change.
+> > 
+> > Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> > Cc: Will Deacon <will.deacon@arm.com>
+> > Cc: Sudeep Holla <sudeep.holla@arm.com>
+> > Cc: Russell King <linux@arm.linux.org.uk>
+> > Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> > Cc: Catalin Marinas <catalin.marinas@arm.com>
+> > Cc: Mark Rutland <mark.rutland@arm.com>
+> > Cc: Jisheng Zhang <jszhang@marvell.com>
+> > ---
+> >  arch/arm64/kernel/psci.c       |  99 +-----------------------------
+> >  drivers/firmware/Makefile      |   2 +-
+> >  drivers/firmware/psci_cpuops.c | 133 +++++++++++++++++++++++++++++++++++++++++
+> 
+> Do we really need the new file, given most of this lived happily in
+> psci.c previously?
 
->---
-> arch/arm/include/asm/cpuidle.h |  2 +-
-> arch/arm/kernel/cpuidle.c      |  2 +-
-> drivers/soc/qcom/spm.c         | 10 +++++-----
-> 3 files changed, 7 insertions(+), 7 deletions(-)
->
->diff --git a/arch/arm/include/asm/cpuidle.h b/arch/arm/include/asm/cpuidle.h
->index 0f84249..3848259 100644
->--- a/arch/arm/include/asm/cpuidle.h
->+++ b/arch/arm/include/asm/cpuidle.h
->@@ -30,7 +30,7 @@ static inline int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
-> struct device_node;
->
-> struct cpuidle_ops {
->-	int (*suspend)(int cpu, unsigned long arg);
->+	int (*suspend)(unsigned long arg);
-> 	int (*init)(struct device_node *, int cpu);
-> };
->
->diff --git a/arch/arm/kernel/cpuidle.c b/arch/arm/kernel/cpuidle.c
->index 318da33..703926e 100644
->--- a/arch/arm/kernel/cpuidle.c
->+++ b/arch/arm/kernel/cpuidle.c
->@@ -56,7 +56,7 @@ int arm_cpuidle_suspend(int index)
-> 	int cpu = smp_processor_id();
->
-> 	if (cpuidle_ops[cpu].suspend)
->-		ret = cpuidle_ops[cpu].suspend(cpu, index);
->+		ret = cpuidle_ops[cpu].suspend(index);
->
-> 	return ret;
-> }
->diff --git a/drivers/soc/qcom/spm.c b/drivers/soc/qcom/spm.c
->index b04b05a..0ad66fa 100644
->--- a/drivers/soc/qcom/spm.c
->+++ b/drivers/soc/qcom/spm.c
->@@ -116,7 +116,7 @@ static const struct spm_reg_data spm_reg_8064_cpu = {
->
-> static DEFINE_PER_CPU(struct spm_driver_data *, cpu_spm_drv);
->
->-typedef int (*idle_fn)(int);
->+typedef int (*idle_fn)(void);
-> static DEFINE_PER_CPU(idle_fn*, qcom_idle_ops);
->
-> static inline void spm_register_write(struct spm_driver_data *drv,
->@@ -179,10 +179,10 @@ static int qcom_pm_collapse(unsigned long int unused)
-> 	return -1;
-> }
->
->-static int qcom_cpu_spc(int cpu)
->+static int qcom_cpu_spc(void)
-> {
-> 	int ret;
->-	struct spm_driver_data *drv = per_cpu(cpu_spm_drv, cpu);
->+	struct spm_driver_data *drv = __this_cpu_read(cpu_spm_drv);
->
-> 	spm_set_low_power_mode(drv, PM_SLEEP_MODE_SPC);
-> 	ret = cpu_suspend(0, qcom_pm_collapse);
->@@ -197,9 +197,9 @@ static int qcom_cpu_spc(int cpu)
-> 	return ret;
-> }
->
->-static int qcom_idle_enter(int cpu, unsigned long index)
->+static int qcom_idle_enter(unsigned long index)
-> {
->-	return per_cpu(qcom_idle_ops, cpu)[index](cpu);
->+	return __this_cpu_read(qcom_idle_ops)[index]();
-> }
->
-> static const struct of_device_id qcom_idle_state_match[] __initconst = {
->-- 
->2.5.1
->
+No, I thought we could separate the PSCI FW API (eg psci_cpu_suspend())
+from helper functions that are basically a kernel glue layer (but we have
+already helper functions in psci.c like psci_tos_resident_on() so..),
+if we think it is fine to keep them in the same file I can move the
+functions to psci.c.
+
+> > +#ifdef CONFIG_ARM
+> > +struct cpuidle_ops psci_cpuidle_ops __initdata = {
+> > +	.suspend = psci_cpu_suspend_enter,
+> > +	.init = psci_dt_cpu_init_idle,
+> > +};
+> > +
+> > +CPUIDLE_METHOD_OF_DECLARE(psci, "arm,psci", &psci_cpuidle_ops);
+> > +#endif
+> 
+> Don't these also need to be guarded for CONFIG_CPU_IDLE?
+> 
+> The definitions of cpuidle_ops and CPUIDLE_METHOD_OF_DECLARE in
+> arch/arm/include/asm/cpuidle.h depend on it.
+
+Not really, they are not guarded, the side effect of not having
+a CONFIG_CPU_IDLE guard is just a struct that is compiled in
+and freed after boot, I thought about that but I am tempted to leave
+it as is to avoid further ifdeffery, I am not fussed either way.
+
+> Otherwise this looks fine to me.
+
+Great, I will prepare a v3 shortly.
+
+Thanks !
+Lorenzo
