@@ -1,49 +1,89 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH][v5] x86, suspend: Save/restore extra MSR registers for suspend
-Date: Mon, 12 Oct 2015 21:15:44 +0200
-Message-ID: <8500000.DY8G18orHR@vostro.rjw.lan>
-References: <1444533601-12330-1-git-send-email-yu.c.chen@intel.com> <20151012163750.GA4539@pd.tnic>
+Subject: Re: [Linaro-acpi] [PATCH v5 0/5] Provide better MADT subtable sanity checks
+Date: Mon, 12 Oct 2015 21:21:46 +0200
+Message-ID: <1776686.ko2Ldkd9he@vostro.rjw.lan>
+References: <1443570346-15378-1-git-send-email-al.stone@linaro.org> <561B2FCA.1010504@erley.org> <561B5B7E.6080901@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20151012163750.GA4539@pd.tnic>
+In-Reply-To: <561B5B7E.6080901@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Borislav Petkov <bp@suse.de>
-Cc: Chen Yu <yu.c.chen@intel.com>, mingo@redhat.com, pavel@ucw.cz, tglx@linutronix.de, hpa@zytor.com, rui.zhang@intel.com, luto@kernel.org, linux@horizon.com, dsmythies@telus.net, linux-pm@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, marcin.kaszewski@intel.com
+To: Hanjun Guo <hanjun.guo@linaro.org>
+Cc: Pat Erley <pat-lkml@erley.org>, Al Stone <ahs3@redhat.com>, linaro-kernel@lists.linaro.org, linux-ia64@vger.kernel.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-acpi@lists.linaro.org, linux-acpi@vger.kernel.org, Hanjun Guo <guohanjun@huawei.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, October 12, 2015 06:37:50 PM Borislav Petkov wrote:
-> On Sun, Oct 11, 2015 at 11:20:01AM +0800, Chen Yu wrote:
-> > A bug is reported(https://bugzilla.redhat.com/show_bug.cgi?id=1227208)
+On Monday, October 12, 2015 03:04:30 PM Hanjun Guo wrote:
+> On 10/12/2015 11:58 AM, Pat Erley wrote:
+> > On 10/11/2015 08:49 PM, Hanjun Guo wrote:
+> >> On 10/12/2015 11:08 AM, Pat Erley wrote:
+> >>> On 10/05/2015 10:12 AM, Al Stone wrote:
+> >>>> On 10/05/2015 07:39 AM, Rafael J. Wysocki wrote:
+> >>>>> On Wednesday, September 30, 2015 10:10:16 AM Al Stone wrote:
+> >>>>>> On 09/30/2015 03:00 AM, Hanjun Guo wrote:
+> >>>>>>> On 2015/9/30 7:45, Al Stone wrote:
+> >>>>>>>> NB: this patch set is for use against the linux-pm bleeding edge
+> >>>>>>>> branch.
+> >>>>>>>>
+> >>>>>>
+> >>>>>> [snip...]
+> >>>>>>
+> >>>>>>>
+> >>>>>>> For this patch set,
+> >>>>>>>
+> >>>>>>> Reviewed-by: Hanjun Guo <hanjun.guo@linaro.org>
+> >>>>>>>
+> >>>>>>> Thanks
+> >>>>>>> Hanjun
+> >>>>>>
+> >>>>>> Thanks, Hanjun!
+> >>>>>
+> >>>>> Series applied, thanks!
+> >>>>>
+> >>>>> Rafael
+> >>>>>
+> >>>>
+> >>>> Thanks, Rafael!
+> >>>>
+> >>>
+> >>> Just decided to test out linux-next (to see the new nouveau cleanups).
+> >>> This change set prevents my Lenovo W510 from booting properly.
+> >>>
+> >>> Reverting: 7494b0 "ACPI: add in a bad_madt_entry() function to
+> >>> eventually replace the macro"
+> >>>
+> >>> Gets the system booting again.  I'm attaching my dmesg from the failed
+> >>> boot, who wants the acpidump?
+> >>
+> >> [    0.000000] ACPI: undefined version for either FADT 4.0 or MADT 1
+> >> [    0.000000] ACPI: Error parsing LAPIC address override entry
+> >> [    0.000000] ACPI: Invalid BIOS MADT, disabling ACPI
+> >>
+> >> Seems the MADT revision is not right, could you dump the ACPI MADT
+> >> (APIC) table and send it out? I will take a look :)
+> >>
+> >> Thanks
+> >> Hanjun
+> >
+> > Here ya go, enjoy.  Feel free to CC me on any patches that might fix it.
 > 
-> I get:
+> Thanks! I think I had the right guess, the MADT revision is not right
+> for ACPI 4.0:
 > 
-> "You are not authorized to access bug #1227208.
+> [000h 0000   4]                    Signature : "APIC"    [Multiple APIC 
+> Description Table (MADT)]
+> [004h 0004   4]                 Table Length : 000000BC
+> [008h 0008   1]                     *Revision : 01*
 > 
-> Most likely the bug has been restricted for internal development
-> processes and we cannot grant access."
+> I encountered such problem before because the table was just copied from
+> previous version, and without the update for table revision.
 > 
-> > that, after resumed from S3, CPU is running at a low speed.
-> > After investigation, it is found that, BIOS has modified the value
-> > of THERM_CONTROL register during S3, and changes it from 0 to 0x10
-> > (thus changes the clock modulation from reserved to enabled),
-> > since value of 0x10 means CPU can only get 25% of the Duty Cycle,
-> > this triggers the problem.
-> 
-> Is this what the bug described above is? In any case, please remove the
-> private bugzilla link and describe the bug in text here.
-> 
-> Also, from reading the other thread about the v4 patch, it sounds like
-> intel_pstate can't handle the clock modulation properly, according to
-> what Doug says.
-> 
-> So let's have this aspect sorted out properly first please before adding
-> yet another ugly BIOS workaround.
-> 
-> Btw, why can't that BIOS be fixed instead?
+> I think we may need to ignore the table revision for x86, but restrict
+> it for ARM64, I'd like Al and Rafael's suggestion before I send out a
+> patch.
 
-Because it's been shipped to users.
+As I said before to Al, we definitely can't break systems that worked before
+the commit in question.
 
 Thanks,
 Rafael
