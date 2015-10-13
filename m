@@ -1,93 +1,37 @@
-From: Hanjun Guo <hanjun.guo@linaro.org>
-Subject: Re: [Linaro-acpi] [PATCH v5 0/5] Provide better MADT subtable sanity
- checks
-Date: Tue, 13 Oct 2015 09:23:30 +0800
-Message-ID: <561C5D12.1000408@linaro.org>
-References: <1443570346-15378-1-git-send-email-al.stone@linaro.org> <561B2FCA.1010504@erley.org> <561B5B7E.6080901@linaro.org> <1776686.ko2Ldkd9he@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/5] cpufreq: Use cpumask_copy instead of cpumask_or to
+ copy a mask
+Date: Tue, 13 Oct 2015 08:53:01 +0530
+Message-ID: <20151013032301.GL5386@linux>
+References: <cover.1444583718.git.viresh.kumar@linaro.org>
+ <b8dc587ec7767b89b1d24f1348acd1a341e54a4a.1444583718.git.viresh.kumar@linaro.org>
+ <561C0638.8060105@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-ia64-owner@vger.kernel.org>
-In-Reply-To: <1776686.ko2Ldkd9he@vostro.rjw.lan>
-Sender: linux-ia64-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Pat Erley <pat-lkml@erley.org>, Al Stone <ahs3@redhat.com>, linaro-kernel@lists.linaro.org, linux-ia64@vger.kernel.org, patches@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linaro-acpi@lists.linaro.org, linux-acpi@vger.kernel.org, Hanjun Guo <guohanjun@huawei.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <561C0638.8060105@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 10/13/2015 03:21 AM, Rafael J. Wysocki wrote:
-> On Monday, October 12, 2015 03:04:30 PM Hanjun Guo wrote:
->> On 10/12/2015 11:58 AM, Pat Erley wrote:
->>> On 10/11/2015 08:49 PM, Hanjun Guo wrote:
->>>> On 10/12/2015 11:08 AM, Pat Erley wrote:
->>>>> On 10/05/2015 10:12 AM, Al Stone wrote:
->>>>>> On 10/05/2015 07:39 AM, Rafael J. Wysocki wrote:
->>>>>>> On Wednesday, September 30, 2015 10:10:16 AM Al Stone wrote:
->>>>>>>> On 09/30/2015 03:00 AM, Hanjun Guo wrote:
->>>>>>>>> On 2015/9/30 7:45, Al Stone wrote:
->>>>>>>>>> NB: this patch set is for use against the linux-pm bleeding edge
->>>>>>>>>> branch.
->>>>>>>>>>
->>>>>>>>
->>>>>>>> [snip...]
->>>>>>>>
->>>>>>>>>
->>>>>>>>> For this patch set,
->>>>>>>>>
->>>>>>>>> Reviewed-by: Hanjun Guo <hanjun.guo@linaro.org>
->>>>>>>>>
->>>>>>>>> Thanks
->>>>>>>>> Hanjun
->>>>>>>>
->>>>>>>> Thanks, Hanjun!
->>>>>>>
->>>>>>> Series applied, thanks!
->>>>>>>
->>>>>>> Rafael
->>>>>>>
->>>>>>
->>>>>> Thanks, Rafael!
->>>>>>
->>>>>
->>>>> Just decided to test out linux-next (to see the new nouveau cleanups).
->>>>> This change set prevents my Lenovo W510 from booting properly.
->>>>>
->>>>> Reverting: 7494b0 "ACPI: add in a bad_madt_entry() function to
->>>>> eventually replace the macro"
->>>>>
->>>>> Gets the system booting again.  I'm attaching my dmesg from the failed
->>>>> boot, who wants the acpidump?
->>>>
->>>> [    0.000000] ACPI: undefined version for either FADT 4.0 or MADT 1
->>>> [    0.000000] ACPI: Error parsing LAPIC address override entry
->>>> [    0.000000] ACPI: Invalid BIOS MADT, disabling ACPI
->>>>
->>>> Seems the MADT revision is not right, could you dump the ACPI MADT
->>>> (APIC) table and send it out? I will take a look :)
->>>>
->>>> Thanks
->>>> Hanjun
->>>
->>> Here ya go, enjoy.  Feel free to CC me on any patches that might fix it.
->>
->> Thanks! I think I had the right guess, the MADT revision is not right
->> for ACPI 4.0:
->>
->> [000h 0000   4]                    Signature : "APIC"    [Multiple APIC
->> Description Table (MADT)]
->> [004h 0004   4]                 Table Length : 000000BC
->> [008h 0008   1]                     *Revision : 01*
->>
->> I encountered such problem before because the table was just copied from
->> previous version, and without the update for table revision.
->>
->> I think we may need to ignore the table revision for x86, but restrict
->> it for ARM64, I'd like Al and Rafael's suggestion before I send out a
->> patch.
->
-> As I said before to Al, we definitely can't break systems that worked before
-> the commit in question.
+On 12-10-15, 12:12, Saravana Kannan wrote:
+> >  	if (new_policy) {
+> >  		/* related_cpus should at least include policy->cpus. */
+> >-		cpumask_or(policy->related_cpus, policy->related_cpus, policy->cpus);
+> >+		cpumask_copy(policy->related_cpus, policy->cpus);
+> 
+> Again, why? It actually seems wrong. A 4 core cluster could come up
+> with just 2 cores when the policy is added. But the related CPUs
+> would be 4 CPUs.
 
-Sure :)
+Firstly, the patch hasn't changed anything at all. related_cpus was
+empty until this point, and orring or setting it with ->cpus will
+result in the same output.
 
-Thanks
-Hanjun
+Secondly, this is what we always wanted. related_cpus should contain
+the mask of all possible CPUs for that cluster.
+
+-- 
+viresh
