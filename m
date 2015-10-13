@@ -1,58 +1,49 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH 4/5] cpufreq: create cpu/cpufreq/policyX directories
-Date: Tue, 13 Oct 2015 12:29:09 -0700
-Message-ID: <561D5B85.4010103@codeaurora.org>
-References: <cover.1444583718.git.viresh.kumar@linaro.org> <dd7e6cab3e879e94305c0fca1ea6033e79d166ca.1444583718.git.viresh.kumar@linaro.org> <561C0A8B.5010509@codeaurora.org> <20151013033912.GN5386@linux>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [RFCv5 PATCH 40/46] sched/cpufreq_sched: compute freq_new based
+ on capacity_orig_of()
+Date: Tue, 13 Oct 2015 12:47:53 -0700
+Message-ID: <561D5FE9.2050503@linaro.org>
+References: <1436293469-25707-1-git-send-email-morten.rasmussen@arm.com>
+ <1436293469-25707-41-git-send-email-morten.rasmussen@arm.com>
+ <20150815124638.GG10304@worktop.programming.kicks-ass.net>
+ <20150816040333.31346.22542@quantum>
+ <20150816202401.GJ10304@worktop.programming.kicks-ass.net>
+ <55D1D16F.1070106@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:39082 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752156AbbJMT3L (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 Oct 2015 15:29:11 -0400
-In-Reply-To: <20151013033912.GN5386@linux>
+Received: from mail-pa0-f43.google.com ([209.85.220.43]:35260 "EHLO
+	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752592AbbJMTr4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 Oct 2015 15:47:56 -0400
+Received: by pabve7 with SMTP id ve7so30574221pab.2
+        for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2015 12:47:56 -0700 (PDT)
+In-Reply-To: <55D1D16F.1070106@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, open list <linux-kernel@vger.kernel.org>
+To: Juri Lelli <juri.lelli@arm.com>, Peter Zijlstra <peterz@infradead.org>, Michael Turquette <mturquette@baylibre.com>
+Cc: Morten Rasmussen <Morten.Rasmussen@arm.com>, "mingo@redhat.com" <mingo@redhat.com>, "vincent.guittot@linaro.org" <vincent.guittot@linaro.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, Dietmar Eggemann <Dietmar.Eggemann@arm.com>, "yuyang.du@intel.com" <yuyang.du@intel.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "sgurrappadi@nvidia.com" <sgurrappadi@nvidia.com>, "pang.xunlei@zte.com.cn" <pang.xunlei@zte.com.cn>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 10/12/2015 08:39 PM, Viresh Kumar wrote:
-> On 12-10-15, 12:31, Saravana Kannan wrote:
->> Can we use the first CPU in the related CPUs mask? Instead of the
->> first CPU that the policy got created on? The policyX numbering
->> would be a bit more consistent that way.
->
-> Okay..
->
->> Suggested-by: ?
->
-> Will add. Though me/Rafael thought about it long back, but then
-> dropped the idea :)
->
->> Didn't notice when this got added. Do we really need this anymore if
->> we don't care about moving the directory and creating symlinks? I
->> don't think we need it anymore. And if we really need to know
->> related - offline, we can use for_each_cpu_and(related,
->> online/present mask)
->
-> Its about tracking present-cpus, for which the link is present. So, it
-> is still required.
+On 08/17/2015 05:19 AM, Juri Lelli wrote:
+>> Nah, just maybe: (capacity << SCHED_CAPACITY_SHIFT) / capacity_orig_of()
+>> > such that you don't have to export that knowledge to this thing.
+>> > 
+> Oh, right. I guess we can just go with something like:
+> 
+>  req_cap = get_cpu_usage(cpu) * capacity_margin / capacity_orig_of(cpu);
+> 
+> on fair.c side and switch back to
+> 
+>  freq_new = capacity * policy->max >> SCHED_CAPACITY_SHIFT;
+> 
+> on cpufreq_sched.c side. That saves us exporting capacity_orig_of().
 
-But we don't need to track track of "present-cpus" separately though. We 
-could do the for_each_cpu_and() when we create the symlinks for the 
-first time. And after that, we can just use the subsystem interface 
-callbacks (cpufreq_add_dev() and cpufreq_remove_dev()) to keep the 
-symlinks updated.
+Another good reason to make this change - I believe the current code
+will not support a cpufreq policy covering CPUs of different types (such
+as a b.L system in a single frequency domain).
 
-I don't see any place where keeping track of this separately is more 
-efficient. This would save some memory savings when the number of CPUs 
-is large and also simplify the code because we won't have to keep 
-another field up to date.
-
--Saravana
-
--- 
-Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+The max requested capacity is calculated using the absolute/global
+capacity values requested from each CPU. A small CPU needing a higher
+OPP may get ignored because of a request from a big CPU for a lower OPP,
+because the big CPU @ lower OPP shows up as the max capacity request.
