@@ -1,16 +1,16 @@
 From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v7 5/6] mfd: da9150: Use relative paths in DT bindings
- document
-Date: Tue, 13 Oct 2015 10:26:42 +0100
-Message-ID: <20151013092642.GW32409@x1>
+Subject: Re: [PATCH v7 6/6] mfd: da9150: Use DEFINE_RES_IRQ_NAMED() help
+ macro for IRQ resource
+Date: Tue, 13 Oct 2015 10:26:52 +0100
+Message-ID: <20151013092652.GX32409@x1>
 References: <cover.1444225050.git.Adam.Thomson.Opensource@diasemi.com>
- <111d8cc33a416d304e99b568fabbf56224f6886d.1444225050.git.Adam.Thomson.Opensource@diasemi.com>
+ <d5715f971e87517c30dd07a9907fd8c223dd7650.1444225050.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <111d8cc33a416d304e99b568fabbf56224f6886d.1444225050.git.Adam.Thomson.Opensource@diasemi.com>
+In-Reply-To: <d5715f971e87517c30dd07a9907fd8c223dd7650.1444225050.git.Adam.Thomson.Opensource@diasemi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
 Cc: Samuel Ortiz <sameo@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Support Opensource <support.opensource@diasemi.com>
@@ -18,9 +18,6 @@ List-Id: linux-pm@vger.kernel.org
 
 On Wed, 07 Oct 2015, Adam Thomson wrote:
 
-> When referencing other DT bindings documentation, use relative
-> path rather than absolute.
->=20
 > Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
 > Suggested-by: Lee Jones <lee.jones@linaro.org>
 > Acked-by: Lee Jones <lee.jones@linaro.org>
@@ -35,39 +32,61 @@ On Wed, 07 Oct 2015, Adam Thomson wrote:
 > Changes in v3:
 >  - Initial version.
 >=20
->=20
->  Documentation/devicetree/bindings/mfd/da9150.txt | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
+>  drivers/mfd/da9150-core.c | 35 +++++------------------------------
+>  1 file changed, 5 insertions(+), 30 deletions(-)
 
 Applied, thanks.
 
-> diff --git a/Documentation/devicetree/bindings/mfd/da9150.txt b/Docum=
-entation/devicetree/bindings/mfd/da9150.txt
-> index 970801d..fd4dca7 100644
-> --- a/Documentation/devicetree/bindings/mfd/da9150.txt
-> +++ b/Documentation/devicetree/bindings/mfd/da9150.txt
-> @@ -17,13 +17,13 @@ Required properties:
->    the IRQs from da9150 are delivered to.
->  - interrupts: IRQ line info for da9150 chip.
->  - interrupt-controller: da9150 has internal IRQs (own IRQ domain).
-> -  (See Documentation/devicetree/bindings/interrupt-controller/interr=
-upts.txt for
-> +  (See ../interrupt-controller/interrupts.txt for
->     further information relating to interrupt properties)
+> diff --git a/drivers/mfd/da9150-core.c b/drivers/mfd/da9150-core.c
+> index 85ca4b5..195fdcf 100644
+> --- a/drivers/mfd/da9150-core.c
+> +++ b/drivers/mfd/da9150-core.c
+> @@ -355,39 +355,14 @@ static const struct regmap_irq_chip da9150_regm=
+ap_irq_chip =3D {
+>  };
 >=20
->  Sub-devices:
-> -- da9150-gpadc: See Documentation/devicetree/bindings/iio/adc/da9150=
--gpadc.txt
-> -- da9150-charger: See Documentation/devicetree/bindings/power/da9150=
--charger.txt
-> -- da9150-fg: See Documentation/devicetree/bindings/power/da9150-fg.t=
-xt
-> +- da9150-gpadc: See ../iio/adc/da9150-gpadc.txt
-> +- da9150-charger: See ../power/da9150-charger.txt
-> +- da9150-fg: See ../power/da9150-fg.txt
+>  static struct resource da9150_gpadc_resources[] =3D {
+> -	{
+> -		.name =3D "GPADC",
+> -		.start =3D DA9150_IRQ_GPADC,
+> -		.end =3D DA9150_IRQ_GPADC,
+> -		.flags =3D IORESOURCE_IRQ,
+> -	},
+> +	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_GPADC, "GPADC"),
+>  };
 >=20
->  Example:
+>  static struct resource da9150_charger_resources[] =3D {
+> -	{
+> -		.name =3D "CHG_STATUS",
+> -		.start =3D DA9150_IRQ_CHG,
+> -		.end =3D DA9150_IRQ_CHG,
+> -		.flags =3D IORESOURCE_IRQ,
+> -	},
+> -	{
+> -		.name =3D "CHG_TJUNC",
+> -		.start =3D DA9150_IRQ_TJUNC,
+> -		.end =3D DA9150_IRQ_TJUNC,
+> -		.flags =3D IORESOURCE_IRQ,
+> -	},
+> -	{
+> -		.name =3D "CHG_VFAULT",
+> -		.start =3D DA9150_IRQ_VFAULT,
+> -		.end =3D DA9150_IRQ_VFAULT,
+> -		.flags =3D IORESOURCE_IRQ,
+> -	},
+> -	{
+> -		.name =3D "CHG_VBUS",
+> -		.start =3D DA9150_IRQ_VBUS,
+> -		.end =3D DA9150_IRQ_VBUS,
+> -		.flags =3D IORESOURCE_IRQ,
+> -	},
+> +	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_CHG, "CHG_STATUS"),
+> +	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_TJUNC, "CHG_TJUNC"),
+> +	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_VFAULT, "CHG_VFAULT"),
+> +	DEFINE_RES_IRQ_NAMED(DA9150_IRQ_VBUS, "CHG_VBUS"),
+>  };
 >=20
+>  static struct resource da9150_fg_resources[] =3D {
 
 --=20
 Lee Jones
