@@ -1,39 +1,55 @@
-From: amy.l.wiles@intel.com
-Subject: [PATCH] The x86 cpu RAPL id was added in to support BXT core
-Date: Tue, 13 Oct 2015 08:59:23 -0700
-Message-ID: <1444751963-23743-1-git-send-email-amy.l.wiles@intel.com>
+From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
+Subject: Re: [PATCH] Add PCI ID of BXT thermal reporting device
+Date: Tue, 13 Oct 2015 23:05:47 +0000
+Message-ID: <1444777519.10629.4.camel@intel.com>
+References: <1444751449-23686-1-git-send-email-amy.l.wiles@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:62582 "EHLO mga03.intel.com"
+Received: from mga02.intel.com ([134.134.136.20]:20127 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751342AbbJMXDZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 13 Oct 2015 19:03:25 -0400
+	id S1751708AbbJMXFt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 13 Oct 2015 19:05:49 -0400
+In-Reply-To: <1444751449-23686-1-git-send-email-amy.l.wiles@intel.com>
+Content-Language: en-US
+Content-ID: <70333702D198224EABB40D698BC69B7E@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, srinivas.pandruvada@intel.com, linux-pm@vger.kernel.org
-Cc: Amy Wiles <amy.l.wiles@intel.com>
+To: "Zhang, Rui" <rui.zhang@intel.com>, "Wiles, Amy L" <amy.l.wiles@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-From: Amy Wiles <amy.l.wiles@intel.com>
-
-BUG=None
-TEST=Navigate to /sys/class/powercap and check that the directory intel-rapl:0 is present
-
-Signed-off-by: Amy Wiles <amy.l.wiles@intel.com>
----
- drivers/powercap/intel_rapl.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-index 5efacd0..cc97f08 100644
---- a/drivers/powercap/intel_rapl.c
-+++ b/drivers/powercap/intel_rapl.c
-@@ -1102,6 +1102,7 @@ static const struct x86_cpu_id rapl_ids[] __initconst = {
- 	RAPL_CPU(0x4A, rapl_defaults_tng),/* Tangier */
- 	RAPL_CPU(0x56, rapl_defaults_core),/* Future Xeon */
- 	RAPL_CPU(0x5A, rapl_defaults_ann),/* Annidale */
-+	RAPL_CPU(0X5C, rapl_defaults_core),/* Broxton */
- 	RAPL_CPU(0x5E, rapl_defaults_core),/* Skylake-H/S */
- 	RAPL_CPU(0x57, rapl_defaults_hsw_server),/* Knights Landing */
- 	{}
--- 
-1.9.1
-
+T24gVHVlLCAyMDE1LTEwLTEzIGF0IDA4OjUwIC0wNzAwLCBhbXkubC53aWxlc0BpbnRlbC5jb20g
+d3JvdGU6DQo+IEZyb206IEFteSBXaWxlcyA8YW15Lmwud2lsZXNAaW50ZWwuY29tPg0KPiANCj4g
+QlVHPU5vbmUNCj4gVEVTVD1OYXZpZ2F0ZSB0byAvc3lzL2NsYXNzL3RoZXJtYWwuIENoZWNrIHRo
+ZXJtYWxfem9uZXggZGlyZWN0b3JpZXMNCj4gZm9yIG9uZSB0aGF0IGlzIGEgY3B1Lg0KDQpSZW1v
+dmUgYWJvdmUgbGluZXMgYW5kIGp1c3Qgc2F5ICJFbmFibGVkIEJyb3h0b24gU29DIHRoZXJtYWwg
+cmVwb3J0aW5nDQpkZXZpY2UiIEFsc28gaW4gc3ViamVjdCBiZXR0ZXIgdG8gc2F5IEJyb3h0b24u
+DQoNClRoYW5rcywNClNyaW5pdmFzDQoNCj4gU2lnbmVkLW9mZi1ieTogQW15IFdpbGVzIDxhbXku
+bC53aWxlc0BpbnRlbC5jb20+DQo+IC0tLQ0KPiAgZHJpdmVycy90aGVybWFsL2ludDM0MHhfdGhl
+cm1hbC9wcm9jZXNzb3JfdGhlcm1hbF9kZXZpY2UuYyB8IDEwDQo+ICsrKysrKysrKysNCj4gIDEg
+ZmlsZSBjaGFuZ2VkLCAxMCBpbnNlcnRpb25zKCspDQo+IA0KPiBkaWZmIC0tZ2l0DQo+IGEvZHJp
+dmVycy90aGVybWFsL2ludDM0MHhfdGhlcm1hbC9wcm9jZXNzb3JfdGhlcm1hbF9kZXZpY2UuYw0K
+PiBiL2RyaXZlcnMvdGhlcm1hbC9pbnQzNDB4X3RoZXJtYWwvcHJvY2Vzc29yX3RoZXJtYWxfZGV2
+aWNlLmMNCj4gaW5kZXggY2NjMGFkMC4uMzZmYTcyNCAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy90
+aGVybWFsL2ludDM0MHhfdGhlcm1hbC9wcm9jZXNzb3JfdGhlcm1hbF9kZXZpY2UuYw0KPiArKysg
+Yi9kcml2ZXJzL3RoZXJtYWwvaW50MzQweF90aGVybWFsL3Byb2Nlc3Nvcl90aGVybWFsX2Rldmlj
+ZS5jDQo+IEBAIC0zMyw2ICszMywxMiBAQA0KPiAgLyogQnJhc3dlbGwgdGhlcm1hbCByZXBvcnRp
+bmcgZGV2aWNlICovDQo+ICAjZGVmaW5lIFBDSV9ERVZJQ0VfSURfUFJPQ19CU1dfVEhFUk1BTAkw
+eDIyREMNCj4gIA0KPiArLyogQnJveHRvbiB0aGVybWFsIHJlcG9ydGluZyBkZXZpY2UgKi8NCj4g
+KyNkZWZpbmUgUENJX0RFVklDRV9JRF9QUk9DX0JYVDBfVEhFUk1BTCAgMHgwQThDDQo+ICsjZGVm
+aW5lIFBDSV9ERVZJQ0VfSURfUFJPQ19CWFQxX1RIRVJNQUwgIDB4MUE4Qw0KPiArI2RlZmluZSBQ
+Q0lfREVWSUNFX0lEX1BST0NfQlhUWF9USEVSTUFMICAweDRBOEMNCj4gKyNkZWZpbmUgUENJX0RF
+VklDRV9JRF9QUk9DX0JYVFBfVEhFUk1BTCAgMHg1QThDDQo+ICsNCj4gIHN0cnVjdCBwb3dlcl9j
+b25maWcgew0KPiAgCXUzMglpbmRleDsNCj4gIAl1MzIJbWluX3V3Ow0KPiBAQCAtNDA0LDYgKzQx
+MCwxMCBAQCBzdGF0aWMgY29uc3Qgc3RydWN0IHBjaV9kZXZpY2VfaWQNCj4gcHJvY190aGVybWFs
+X3BjaV9pZHNbXSA9IHsNCj4gIAl7IFBDSV9ERVZJQ0UoUENJX1ZFTkRPUl9JRF9JTlRFTCwNCj4g
+UENJX0RFVklDRV9JRF9QUk9DX0hTQl9USEVSTUFMKX0sDQo+ICAJeyBQQ0lfREVWSUNFKFBDSV9W
+RU5ET1JfSURfSU5URUwsDQo+IFBDSV9ERVZJQ0VfSURfUFJPQ19TS0xfVEhFUk1BTCl9LA0KPiAg
+CXsgUENJX0RFVklDRShQQ0lfVkVORE9SX0lEX0lOVEVMLA0KPiBQQ0lfREVWSUNFX0lEX1BST0Nf
+QlNXX1RIRVJNQUwpfSwNCj4gKwl7IFBDSV9ERVZJQ0UoUENJX1ZFTkRPUl9JRF9JTlRFTCwNCj4g
+UENJX0RFVklDRV9JRF9QUk9DX0JYVDBfVEhFUk1BTCl9LA0KPiArCXsgUENJX0RFVklDRShQQ0lf
+VkVORE9SX0lEX0lOVEVMLA0KPiBQQ0lfREVWSUNFX0lEX1BST0NfQlhUMV9USEVSTUFMKX0sDQo+
+ICsJeyBQQ0lfREVWSUNFKFBDSV9WRU5ET1JfSURfSU5URUwsDQo+IFBDSV9ERVZJQ0VfSURfUFJP
+Q19CWFRYX1RIRVJNQUwpfSwNCj4gKwl7IFBDSV9ERVZJQ0UoUENJX1ZFTkRPUl9JRF9JTlRFTCwN
+Cj4gUENJX0RFVklDRV9JRF9QUk9DX0JYVFBfVEhFUk1BTCl9LA0KPiAgCXsgMCwgfSwNCj4gIH07
+DQo+ICA=
