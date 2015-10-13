@@ -1,96 +1,98 @@
-From: Jisheng Zhang <jszhang@marvell.com>
-Subject: Re: [PATCH v2 0/2] Enabling PSCI based idle on ARM 32-bit platforms
-Date: Tue, 13 Oct 2015 19:34:13 +0800
-Message-ID: <20151013193413.2e62bff9@xhacker>
-References: <1444648628-24790-1-git-send-email-lorenzo.pieralisi@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH] PM / Domains: Fix validation of latency constraints in genpd governor
+Date: Tue, 13 Oct 2015 16:10:28 +0200
+Message-ID: <1444745428-4396-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0a-0016f401.pphosted.com ([67.231.148.174]:40679 "EHLO
-	mx0a-0016f401.pphosted.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752073AbbJMLi1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 Oct 2015 07:38:27 -0400
-In-Reply-To: <1444648628-24790-1-git-send-email-lorenzo.pieralisi@arm.com>
+Received: from mail-lb0-f173.google.com ([209.85.217.173]:33550 "EHLO
+	mail-lb0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751904AbbJMOKq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 Oct 2015 10:10:46 -0400
+Received: by lbbk10 with SMTP id k10so21797048lbb.0
+        for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2015 07:10:44 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Russell King <linux@arm.linux.org.uk>, Daniel Lezcano <daniel.lezcano@linaro.org>, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
 
-Dear Lorenzo,
+Commit ba2bbfbf6307 ("PM / Domains: Remove intermediate states from the
+power off sequence") changed the power off sequence in genpd. That also
+required some updates regarding the validation of latency constraints in
+the genpd governor. Unfortunate that wasn't covered, so let's fix this.
 
-On Mon, 12 Oct 2015 12:17:06 +0100
-Lorenzo Pieralisi <lorenzo.pieralisi@arm.com> wrote:
+>From a runtime PM and latency point of view, we need to consider the worst
+case scenario while validating latency constraints. That's typically when
+a call to pm_runtime_get_sync() needs to wait for a ongoing runtime
+suspend operation to be carried out, as it then also needs to wait for the
+device to be runtime resumed again.
 
-> This patch series is v2 of a previous posting:
-> 
-> http://lists.infradead.org/pipermail/linux-arm-kernel/2015-October/373756.html
-> 
-> v1->v2:
-> 
-> - Refactored patch 1 to remove cpu parameter from cpuidle_ops
->   suspend hook
-> - Refactored psci_cpu_init_idle to stub out dt parsing function and
->   make it usable on both ARM/ARM64 with no additional changes
-> - Updated ARM cpuidle_ops to new interfaces
-> - Fixed PSCI enable method string in ARM cpuidle_ops struct
-> 
-> PSCI firmware provides a kernel API that, through a standard interface,
-> allows to manage power states transitions in a seamless manner for
-> ARM and ARM64 systems.
-> 
-> Current PSCI code that initializes CPUidle states on PSCI based
-> systems lives in arch/arm64 directory but it is not ARM64 specific
-> and can be shared with ARM 32-bit systems so that the generic
-> ARM CPUidle driver can leverage the common PSCI interface.
-> 
-> This patch series moves PSCI CPUidle management code to
-> drivers/firmware directory so that ARM and ARM64 architecture
-> can actually share the code.
-> 
-> It is made up of two patches:
-> 
-> Patch 1 refactors ARM 32-bit generic idle implementation to remove
-> the cpu parameter from the cpuidle_ops suspend hook, in preparation
-> for a common PSCI implementation for ARM/ARM64 PSCI idle.
-> 
-> Patch 2 moves ARM64 PSCI CPUidle functions implementation to
-> drivers/firmware so that it can be shared with ARM 32-bit platforms
-> code. This patch also adds a PSCI entry section on ARM 32-bit systems
-> so that the PSCI CPUidle back-end can be enabled when the enable-method
-> corresponds to PSCI.
-> 
-> Patches apply on top of current patch stack to enable PSCI 1.0:
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/lpieralisi/linux.git tags/firmware/psci-1.0
-> 
-> Tested on Juno board (ARM64), compile tested only on ARM 32-bit systems.
-> 
-> Lorenzo Pieralisi (2):
->   ARM: cpuidle: remove cpu parameter from the cpuidle_ops suspend hook
->   ARM64: kernel: PSCI: move PSCI idle management code to
->     drivers/firmware
+The above mentioned commit made the genpd governor's ->stop_ok() callback
+responsible of validating genpd's device's runtime suspend/resume latency.
+In other words, the constraint needs to be validated towards the relevant
+latencies present in genpd's ->runtime_suspend|resume() callbacks.
 
-I did a simple test, it works ARM 32 PSCI system
+Earlier, that included latencies from the ->stop|start() callbacks, but as
+->save|restore_state() are now also being invoked from genpd's
+->runtime_suspend|resume() and to comply with the worst case scenario,
+let's take also those latencies into account.
 
-So for this series except the qcom changes (I have no qcom platform), feel
-free to add 
+Fixes: ba2bbfbf6307 ("PM / Domains: Remove intermediate states from the
+power off sequence")
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+ drivers/base/power/domain_governor.c | 22 ++++++----------------
+ 1 file changed, 6 insertions(+), 16 deletions(-)
 
-Tested-by: Jisheng Zhang <jszhang@marvell.com>
-
-I also could simple test v3 when it is out.
-
-thanks a lot for these patches!
-
-> 
->  arch/arm/include/asm/cpuidle.h |   2 +-
->  arch/arm/kernel/cpuidle.c      |   2 +-
->  arch/arm64/kernel/psci.c       |  99 +-----------------------------
->  drivers/firmware/Makefile      |   2 +-
->  drivers/firmware/psci_cpuops.c | 133 +++++++++++++++++++++++++++++++++++++++++
->  drivers/soc/qcom/spm.c         |  10 ++--
->  include/linux/psci.h           |   3 +
->  7 files changed, 146 insertions(+), 105 deletions(-)
->  create mode 100644 drivers/firmware/psci_cpuops.c
-> 
+diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
+index 2a4154a..85e17ba 100644
+--- a/drivers/base/power/domain_governor.c
++++ b/drivers/base/power/domain_governor.c
+@@ -77,13 +77,16 @@ static bool default_stop_ok(struct device *dev)
+ 				      dev_update_qos_constraint);
+ 
+ 	if (constraint_ns > 0) {
+-		constraint_ns -= td->start_latency_ns;
++		constraint_ns -= td->save_state_latency_ns +
++				td->stop_latency_ns +
++				td->start_latency_ns +
++				td->restore_state_latency_ns;
+ 		if (constraint_ns == 0)
+ 			return false;
+ 	}
+ 	td->effective_constraint_ns = constraint_ns;
+-	td->cached_stop_ok = constraint_ns > td->stop_latency_ns ||
+-				constraint_ns == 0;
++	td->cached_stop_ok = constraint_ns >= 0;
++
+ 	/*
+ 	 * The children have been suspended already, so we don't need to take
+ 	 * their stop latencies into account here.
+@@ -126,18 +129,6 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
+ 
+ 	off_on_time_ns = genpd->power_off_latency_ns +
+ 				genpd->power_on_latency_ns;
+-	/*
+-	 * It doesn't make sense to remove power from the domain if saving
+-	 * the state of all devices in it and the power off/power on operations
+-	 * take too much time.
+-	 *
+-	 * All devices in this domain have been stopped already at this point.
+-	 */
+-	list_for_each_entry(pdd, &genpd->dev_list, list_node) {
+-		if (pdd->dev->driver)
+-			off_on_time_ns +=
+-				to_gpd_data(pdd)->td.save_state_latency_ns;
+-	}
+ 
+ 	min_off_time_ns = -1;
+ 	/*
+@@ -193,7 +184,6 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
+ 		 * constraint_ns cannot be negative here, because the device has
+ 		 * been suspended.
+ 		 */
+-		constraint_ns -= td->restore_state_latency_ns;
+ 		if (constraint_ns <= off_on_time_ns)
+ 			return false;
+ 
+-- 
+1.9.1
 
