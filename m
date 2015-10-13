@@ -1,70 +1,53 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: Re: [PATCH 1/2] PM / sleep: ensure deferred probe workqueue is
- finished in wait_for_device_probe
-Date: Tue, 13 Oct 2015 21:25:28 +0300
-Message-ID: <561D4C98.9070002@ti.com>
-References: <Pine.LNX.4.44L0.1510081637570.1284-100000@iolanthe.rowland.org>
- <5617D155.60700@ti.com> <2953623.dd2aFp1rBS@vostro.rjw.lan>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH 1/5] cpufreq: Use cpumask_copy instead of cpumask_or to
+ copy a mask
+Date: Tue, 13 Oct 2015 12:22:43 -0700
+Message-ID: <561D5A03.3010204@codeaurora.org>
+References: <cover.1444583718.git.viresh.kumar@linaro.org> <b8dc587ec7767b89b1d24f1348acd1a341e54a4a.1444583718.git.viresh.kumar@linaro.org> <561C0638.8060105@codeaurora.org> <20151013032301.GL5386@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:42198 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750984AbbJMSZl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 13 Oct 2015 14:25:41 -0400
-In-Reply-To: <2953623.dd2aFp1rBS@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20151013032301.GL5386@linux>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>
 
-On 10/10/2015 12:16 AM, Rafael J. Wysocki wrote:
-> On Friday, October 09, 2015 09:38:13 AM Grygorii Strashko wrote:
->> On 10/08/2015 03:53 PM, Alan Stern wrote:
->>> On Thu, 8 Oct 2015, Rafael J. Wysocki wrote:
->>>
->>>>> @@ -391,6 +391,10 @@ int driver_probe_done(void)
->>>>>     */
->>>>>    void wait_for_device_probe(void)
->>>>>    {
->>>>> +	/* wait for the deferred probe workqueue to finish */
->>>>> +	if (driver_deferred_probe_enable)
->>>>> +		flush_workqueue(deferred_wq);
->>>>> +
->>>>>    	/* wait for the known devices to complete their probing */
->>>>>    	wait_event(probe_waitqueue, atomic_read(&probe_count) == 0);
->>>>>    	async_synchronize_full();
->>>>
->>>> I'm not sure if this is sufficient.
->>>>
->>>> Something may be added to the workqueue right after you've flushed it and
->>>> then be reporobed after the wait_event() in theory.  Or am I missing anything?
->>>
->>> Maybe I'm missing part of this, but I think the point is to make sure
->>> that every probe which began or was queued before this function got
->>> called, has finished before the function returns.
->>>
->>> Thus, in the case at hand we want to defer all probes starting from
->>> some point in the system sleep transition.  Grygorii sets his
->>> defer_all_probes variable and then calls this function.  It waits for
->>> any probes that were initiated before the function call.  Any probe
->>> that was initiated after the function call (for example, the ones
->>> you're concerned about between the flush_workqueue and wait_event) will
->>> see that defer_all_probes is set and so will defer itself.
+On 10/12/2015 08:23 PM, Viresh Kumar wrote:
+> On 12-10-15, 12:12, Saravana Kannan wrote:
+>>>   	if (new_policy) {
+>>>   		/* related_cpus should at least include policy->cpus. */
+>>> -		cpumask_or(policy->related_cpus, policy->related_cpus, policy->cpus);
+>>> +		cpumask_copy(policy->related_cpus, policy->cpus);
 >>
->> Yes. It will work as expected with the next patch.
->> For all other case, where this API is used alone -
->> it will make things more safe, but there is no way to completely block
->> scheduling of new probes.
+>> Again, why? It actually seems wrong. A 4 core cluster could come up
+>> with just 2 cores when the policy is added. But the related CPUs
+>> would be 4 CPUs.
 >
-> Well, in that case why don't you make it part of the second patch after all
-> instead of making a false impression of fixing a more general problem?
->
+> Firstly, the patch hasn't changed anything at all. related_cpus was
+> empty until this point, and orring or setting it with ->cpus will
+> result in the same output.
 
-ok.
+I was under the impression that the CPUfreq drivers were expected to 
+fill in related_cpus and the or-ing was a safety net. If that's not the 
+case, then this change is fine.
 
+> Secondly, this is what we always wanted. related_cpus should contain
+> the mask of all possible CPUs for that cluster.
+
+I think the confusion was that I thought the drivers are supposed to do 
+this. If this doesn't mess up other CPUfreq drivers that I'm not 
+familiar with, then I don't have concerns.
+
+Can you still explain the why in the commit text though? If it's just 
+that related_cpus is always empty and copying is more efficient than 
+or-ing, then mention that?
+
+Thanks,
+Saravana
 
 -- 
-regards,
--grygorii
+Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
