@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 1/5] cpufreq: ondemand: Drop unnecessary locks from update_sampling_rate()
-Date: Tue, 13 Oct 2015 13:39:01 +0530
-Message-ID: <56084623b2c27372a4c2c598151dd47176c3e26f.1444723240.git.viresh.kumar@linaro.org>
+Subject: [PATCH V3 2/5] cpufreq: ondemand: update sampling rate immediately
+Date: Tue, 13 Oct 2015 13:39:02 +0530
+Message-ID: <1746c301a8f0a94578f550026cf41e532e6e0f41.1444723240.git.viresh.kumar@linaro.org>
 References: <cover.1444723240.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1444723240.git.viresh.kumar@linaro.org>
@@ -9,55 +9,73 @@ In-Reply-To: <cover.1444723240.git.viresh.kumar@linaro.org>
 References: <cover.1444723240.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, open list <linux-kernel@vger.kernel.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-'timer_mutex' is required to sync work-handlers of policy->cpus.
-update_sampling_rate() is just canceling the works and queuing them
-again. This isn't protecting anything at all in update_sampling_rate()
-and is not gonna be of any use.
+We are immediately updating sampling rate for already queued-works, only
+if the new expiry is lesser than the old one.
 
-Even if a work-handler is already running for a CPU,
-cancel_delayed_work_sync() will wait for it to finish.
+But what about the case, where the user doesn't want frequent events and
+want to increase sampling time immediately? Shouldn't we cancel the
+works (and so their interrupts) on all policy->cpus (which might occur
+very shortly).
 
-Drop these unnecessary locks.
+This patch removes this special case and simplifies code by immediately
+updating the expiry.
 
-Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq_ondemand.c | 10 +---------
- 1 file changed, 1 insertion(+), 9 deletions(-)
+ drivers/cpufreq/cpufreq_ondemand.c | 25 ++++---------------------
+ 1 file changed, 4 insertions(+), 21 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index 1fa9088c84a8..03ac6ce54042 100644
+index 03ac6ce54042..bf0511a9735c 100644
 --- a/drivers/cpufreq/cpufreq_ondemand.c
 +++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -267,27 +267,19 @@ static void update_sampling_rate(struct dbs_data *dbs_data,
- 		dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
- 		cpufreq_cpu_put(policy);
+@@ -231,17 +231,8 @@ static unsigned int od_dbs_timer(struct cpu_dbs_info *cdbs,
+ static struct common_dbs_data od_dbs_cdata;
  
--		mutex_lock(&dbs_info->cdbs.shared->timer_mutex);
--
--		if (!delayed_work_pending(&dbs_info->cdbs.dwork)) {
--			mutex_unlock(&dbs_info->cdbs.shared->timer_mutex);
-+		if (!delayed_work_pending(&dbs_info->cdbs.dwork))
+ /**
+- * update_sampling_rate - update sampling rate effective immediately if needed.
++ * update_sampling_rate - update sampling rate immediately.
+  * @new_rate: new sampling rate
+- *
+- * If new rate is smaller than the old, simply updating
+- * dbs_tuners_int.sampling_rate might not be appropriate. For example, if the
+- * original sampling_rate was 1 second and the requested new sampling rate is 10
+- * ms because the user needs immediate reaction from ondemand governor, but not
+- * sure if higher frequency will be required or not, then, the governor may
+- * change the sampling rate too late; up to 1 second later. Thus, if we are
+- * reducing the sampling rate, we need to make the new value effective
+- * immediately.
+  */
+ static void update_sampling_rate(struct dbs_data *dbs_data,
+ 		unsigned int new_rate)
+@@ -255,7 +246,6 @@ static void update_sampling_rate(struct dbs_data *dbs_data,
+ 	for_each_online_cpu(cpu) {
+ 		struct cpufreq_policy *policy;
+ 		struct od_cpu_dbs_info_s *dbs_info;
+-		unsigned long next_sampling, appointed_at;
+ 
+ 		policy = cpufreq_cpu_get(cpu);
+ 		if (!policy)
+@@ -270,16 +260,9 @@ static void update_sampling_rate(struct dbs_data *dbs_data,
+ 		if (!delayed_work_pending(&dbs_info->cdbs.dwork))
  			continue;
--		}
  
- 		next_sampling = jiffies + usecs_to_jiffies(new_rate);
- 		appointed_at = dbs_info->cdbs.dwork.timer.expires;
- 
- 		if (time_before(next_sampling, appointed_at)) {
+-		next_sampling = jiffies + usecs_to_jiffies(new_rate);
+-		appointed_at = dbs_info->cdbs.dwork.timer.expires;
 -
--			mutex_unlock(&dbs_info->cdbs.shared->timer_mutex);
- 			cancel_delayed_work_sync(&dbs_info->cdbs.dwork);
--			mutex_lock(&dbs_info->cdbs.shared->timer_mutex);
- 
- 			gov_queue_work(dbs_data, policy,
- 				       usecs_to_jiffies(new_rate), true);
- 
- 		}
--		mutex_unlock(&dbs_info->cdbs.shared->timer_mutex);
+-		if (time_before(next_sampling, appointed_at)) {
+-			cancel_delayed_work_sync(&dbs_info->cdbs.dwork);
+-
+-			gov_queue_work(dbs_data, policy,
+-				       usecs_to_jiffies(new_rate), true);
+-
+-		}
++		cancel_delayed_work_sync(&dbs_info->cdbs.dwork);
++		gov_queue_work(dbs_data, policy, usecs_to_jiffies(new_rate),
++			       true);
  	}
  }
  
