@@ -1,98 +1,168 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH] PM / Domains: Fix validation of latency constraints in genpd governor
-Date: Tue, 13 Oct 2015 16:10:28 +0200
-Message-ID: <1444745428-4396-1-git-send-email-ulf.hansson@linaro.org>
+From: Tim Harvey <tharvey@gateworks.com>
+Subject: Re: [PATCH] imx: thermal: use CPU temperature grade info for thresholds
+Date: Tue, 13 Oct 2015 07:16:05 -0700
+Message-ID: <CAJ+vNU2jbuN0FbQEFvrd42wEAFFxoH+ESFnXxmjRWv861fLadw@mail.gmail.com>
+References: <1430409757-16195-1-git-send-email-tharvey@gateworks.com>
+	<CALHpu36RGN-7x1eK7PSjLtW3DPj1f4Rvaf-FSP4qR4G08mRMqg@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f173.google.com ([209.85.217.173]:33550 "EHLO
-	mail-lb0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751904AbbJMOKq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 Oct 2015 10:10:46 -0400
-Received: by lbbk10 with SMTP id k10so21797048lbb.0
-        for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2015 07:10:44 -0700 (PDT)
+Received: from mail-oi0-f42.google.com ([209.85.218.42]:33874 "EHLO
+	mail-oi0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932190AbbJMOQG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 Oct 2015 10:16:06 -0400
+Received: by oiak8 with SMTP id k8so10198068oia.1
+        for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2015 07:16:06 -0700 (PDT)
+In-Reply-To: <CALHpu36RGN-7x1eK7PSjLtW3DPj1f4Rvaf-FSP4qR4G08mRMqg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-pm@vger.kernel.org, Jon Nettleton <jon.nettleton@gmail.com>, Fabio Estevam <fabio.estevam@freescale.com>, Anson Huang <b20788@freescale.com>, Shawn Guo <shawn.guo@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-Commit ba2bbfbf6307 ("PM / Domains: Remove intermediate states from the
-power off sequence") changed the power off sequence in genpd. That also
-required some updates regarding the validation of latency constraints in
-the genpd governor. Unfortunate that wasn't covered, so let's fix this.
+On Thu, Jul 30, 2015 at 12:19 AM, Jon Nettleton <jon.nettleton@gmail.com> wrote:
+> On Thu, Apr 30, 2015 at 6:02 PM, Tim Harvey <tharvey@gateworks.com> wrote:
+>> The IMX6Q/IMX6DL SoC's have a 2-bit temperature grade stored in OTP. Instead
+>> of assuming 85C for passive cooling threshold and 105C for critical use
+>> the thermal grade for these configurations. For IMX6SX which does not have
+>> a temperature grade in OTP (according to the ref manual) assume 105C critical.
+>> We will default the user-settable passive threshold to crit - 20C.
+>>
+>> Cc: Anson Huang <b20788@freescale.com>
+>> Cc: Fabio Estevam <fabio.estevam@freescale.com>
+>> Cc: Shawn Guo <shawn.guo@linaro.org>
+>> Signed-off-by: Tim Harvey <tharvey@gateworks.com>
+>> ---
+>>  drivers/thermal/imx_thermal.c | 64 +++++++++++++++++++++++++++++++++----------
+>>  1 file changed, 49 insertions(+), 15 deletions(-)
+>>
+>> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+>> index 2ccbc07..c6a4eed 100644
+>> --- a/drivers/thermal/imx_thermal.c
+>> +++ b/drivers/thermal/imx_thermal.c
+>> @@ -55,6 +55,7 @@
+>>  #define TEMPSENSE2_PANIC_VALUE_SHIFT   16
+>>  #define TEMPSENSE2_PANIC_VALUE_MASK    0xfff0000
+>>
+>> +#define OCOTP_MEM0                     0x0480
+>>  #define OCOTP_ANA1                     0x04e0
+>>
+>>  /* The driver supports 1 passive trip point and 1 critical trip point */
+>> @@ -64,12 +65,6 @@ enum imx_thermal_trip {
+>>         IMX_TRIP_NUM,
+>>  };
+>>
+>> -/*
+>> - * It defines the temperature in millicelsius for passive trip point
+>> - * that will trigger cooling action when crossed.
+>> - */
+>> -#define IMX_TEMP_PASSIVE               85000
+>> -
+>>  #define IMX_POLLING_DELAY              2000 /* millisecond */
+>>  #define IMX_PASSIVE_DELAY              1000
+>>
+>> @@ -106,6 +101,7 @@ struct imx_thermal_data {
+>>         int irq;
+>>         struct clk *thermal_clk;
+>>         const struct thermal_soc_data *socdata;
+>> +       const char *temp_grade;
+>>  };
+>>
+>>  static void imx_set_panic_temp(struct imx_thermal_data *data,
+>> @@ -289,7 +285,8 @@ static int imx_set_trip_temp(struct thermal_zone_device *tz, int trip,
+>>         if (trip == IMX_TRIP_CRITICAL)
+>>                 return -EPERM;
+>>
+>> -       if (temp > IMX_TEMP_PASSIVE)
+>> +       /* do not allow passive to be set higher than critical - 20C */
+>> +       if (temp > (data->temp_critical - (1000 * 20)))
+>>                 return -EINVAL;
+>>
+>>         data->temp_passive = temp;
+>> @@ -404,17 +401,50 @@ static int imx_get_sensor_data(struct platform_device *pdev)
+>>         data->c1 = temp64;
+>>         data->c2 = n1 * data->c1 + 1000 * t1;
+>>
+>> -       /*
+>> -        * Set the default passive cooling trip point,
+>> -        * can be changed from userspace.
+>> -        */
+>> -       data->temp_passive = IMX_TEMP_PASSIVE;
+>> +       /* Assume Extended Commercial temperature grade limits (105C max) */
+>> +       data->temp_grade = "unknown";
+>> +       data->temp_critical = 105000;
+>> +
+>> +       /* For IMX6Q use OTP for thermal grade */
+>> +       if (data->socdata->version == TEMPMON_IMX6Q) {
+>> +               ret = regmap_read(map, OCOTP_MEM0, &val);
+>> +               if (ret) {
+>> +                       dev_err(&pdev->dev, "failed to read temp grade: %d\n",
+>> +                               ret);
+>> +                       return ret;
+>> +               }
+>> +
+>> +               if (val == 0 || val == ~0) {
+>> +                       dev_err(&pdev->dev, "invalid temp grade data\n");
+>> +                       return -EINVAL;
+>> +               }
+>> +
+>> +               /* The maximum die temp is specified by the Temperature Grade */
+>> +               switch ((val >> 6) & 0x3) {
+>> +               case 0: /* Commercial (0 to 95C) */
+>> +                       data->temp_grade = "Commercial";
+>> +                       data->temp_critical = 95000;
+>> +                       break;
+>> +               case 1: /* Extended Commercial (-20 to 105C) */
+>> +                       data->temp_grade = "Extended Commercial";
+>> +                       data->temp_critical = 105000;
+>> +                       break;
+>> +               case 2: /* Industrial (-40 to 105C) */
+>> +                       data->temp_grade = "Industrial";
+>> +                       data->temp_critical = 105000;
+>> +                       break;
+>> +               case 3: /* Automotive (-40 to 125C) */
+>> +                       data->temp_grade = "Automotive";
+>> +                       data->temp_critical = 125000;
+>> +                       break;
+>> +               }
+>> +       }
+>>
+>>         /*
+>> -        * The maximum die temperature set to 20 C higher than
+>> -        * IMX_TEMP_PASSIVE.
+>> +        * Set the default passive cooling trip point to critical - 20C
+>> +        * (can be changed from userspace)
+>>          */
+>> -       data->temp_critical = 1000 * 20 + data->temp_passive;
+>> +       data->temp_passive = data->temp_critical - (1000 * 20);
+>>
+>>         return 0;
+>>  }
+>> @@ -559,6 +589,10 @@ static int imx_thermal_probe(struct platform_device *pdev)
+>>                 return ret;
+>>         }
+>>
+>> +       dev_info(&pdev->dev, "%s CPU temperature grade - "
+>> +                "thresholds: crit:%ldC passive:%ldC\n", data->temp_grade,
+>> +                data->temp_critical / 1000, data->temp_passive / 1000);
+>> +
+>>         /* Enable measurements at ~ 10 Hz */
+>>         regmap_write(map, TEMPSENSE1 + REG_CLR, TEMPSENSE1_MEASURE_FREQ);
+>>         measure_freq = DIV_ROUND_UP(32768, 10); /* 10 Hz */
+>> --
+>> 1.9.1
+>>
+>>
+>
+> I think this is a fine start and we can build off it.
+>
+> Acked-by: Jon Nettleton <jon@solid-run.com>
 
->From a runtime PM and latency point of view, we need to consider the worst
-case scenario while validating latency constraints. That's typically when
-a call to pm_runtime_get_sync() needs to wait for a ongoing runtime
-suspend operation to be carried out, as it then also needs to wait for the
-device to be runtime resumed again.
+adding CC linux-pm@vger.kernel.org
 
-The above mentioned commit made the genpd governor's ->stop_ok() callback
-responsible of validating genpd's device's runtime suspend/resume latency.
-In other words, the constraint needs to be validated towards the relevant
-latencies present in genpd's ->runtime_suspend|resume() callbacks.
+Zhang / Eduardo,
 
-Earlier, that included latencies from the ->stop|start() callbacks, but as
-->save|restore_state() are now also being invoked from genpd's
-->runtime_suspend|resume() and to comply with the worst case scenario,
-let's take also those latencies into account.
+This seems to have gotten missed - can you please review this for merge?
 
-Fixes: ba2bbfbf6307 ("PM / Domains: Remove intermediate states from the
-power off sequence")
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/base/power/domain_governor.c | 22 ++++++----------------
- 1 file changed, 6 insertions(+), 16 deletions(-)
+Regards,
 
-diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
-index 2a4154a..85e17ba 100644
---- a/drivers/base/power/domain_governor.c
-+++ b/drivers/base/power/domain_governor.c
-@@ -77,13 +77,16 @@ static bool default_stop_ok(struct device *dev)
- 				      dev_update_qos_constraint);
- 
- 	if (constraint_ns > 0) {
--		constraint_ns -= td->start_latency_ns;
-+		constraint_ns -= td->save_state_latency_ns +
-+				td->stop_latency_ns +
-+				td->start_latency_ns +
-+				td->restore_state_latency_ns;
- 		if (constraint_ns == 0)
- 			return false;
- 	}
- 	td->effective_constraint_ns = constraint_ns;
--	td->cached_stop_ok = constraint_ns > td->stop_latency_ns ||
--				constraint_ns == 0;
-+	td->cached_stop_ok = constraint_ns >= 0;
-+
- 	/*
- 	 * The children have been suspended already, so we don't need to take
- 	 * their stop latencies into account here.
-@@ -126,18 +129,6 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
- 
- 	off_on_time_ns = genpd->power_off_latency_ns +
- 				genpd->power_on_latency_ns;
--	/*
--	 * It doesn't make sense to remove power from the domain if saving
--	 * the state of all devices in it and the power off/power on operations
--	 * take too much time.
--	 *
--	 * All devices in this domain have been stopped already at this point.
--	 */
--	list_for_each_entry(pdd, &genpd->dev_list, list_node) {
--		if (pdd->dev->driver)
--			off_on_time_ns +=
--				to_gpd_data(pdd)->td.save_state_latency_ns;
--	}
- 
- 	min_off_time_ns = -1;
- 	/*
-@@ -193,7 +184,6 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
- 		 * constraint_ns cannot be negative here, because the device has
- 		 * been suspended.
- 		 */
--		constraint_ns -= td->restore_state_latency_ns;
- 		if (constraint_ns <= off_on_time_ns)
- 			return false;
- 
--- 
-1.9.1
-
+Tim
