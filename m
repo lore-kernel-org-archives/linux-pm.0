@@ -1,65 +1,83 @@
-From: Belisko Marek <marek.belisko@gmail.com>
-Subject: Re: [PATCH v3] ARM: dts: twl4030: Add iio properties for bci subnode
-Date: Tue, 13 Oct 2015 08:43:07 +0200
-Message-ID: <CAAfyv37SFd+fq_=x9oO0KBzgcFDpyJZXCZ_QEQkFPzwTf+r9Cg@mail.gmail.com>
-References: <1443212447-5841-1-git-send-email-marek@goldelico.com>
-	<1443212447-5841-3-git-send-email-marek@goldelico.com>
-	<20150926172936.GD22315@earth>
-	<CAAfyv36nZ3c-yw7QQHwBWk3GwY31rV3Uq2n0dz5hppn5JFhEcA@mail.gmail.com>
-	<20151012213827.GC23801@atomide.com>
-	<20151012222009.GH23801@atomide.com>
-	<20151012235343.GA7755@earth>
+From: "Jon Medhurst (Tixy)" <tixy@linaro.org>
+Subject: Re: [PATCH] cpufreq: arm_big_little: fix frequency check when bL
+ switcher is active
+Date: Tue, 13 Oct 2015 08:19:04 +0100
+Message-ID: <1444720744.2686.10.camel@linaro.org>
+References: <1443807532.2845.25.camel@linaro.org>
+	 <20151007173920.GG4557@linux> <1444296229.2847.9.camel@linaro.org>
+	 <561BB39A.4020400@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20151012235343.GA7755@earth>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Tony Lindgren <tony@atomide.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux PM mailing list <linux-pm@vger.kernel.org>, Neil Brown <neilb@suse.de>, "Dr. H. Nikolaus Schaller" <hns@goldelico.com>, LKML <linux-kernel@vger.kernel.org>, Benoit Cousson <bcousson@baylibre.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smarthost01b.mail.zen.net.uk ([212.23.1.3]:57729 "EHLO
+	smarthost01b.mail.zen.net.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751765AbbJMHTI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 Oct 2015 03:19:08 -0400
+In-Reply-To: <561BB39A.4020400@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, 2015-10-12 at 14:20 +0100, Sudeep Holla wrote:
+> 
+> On 08/10/15 10:23, Jon Medhurst (Tixy) wrote:
+> [...]
+> 
+> > diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+> > index f1e42f8..59115a4 100644
+> > --- a/drivers/cpufreq/arm_big_little.c
+> > +++ b/drivers/cpufreq/arm_big_little.c
+> > @@ -149,6 +149,18 @@ bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
+> >   			__func__, cpu, old_cluster, new_cluster, new_rate);
+> >
+> >   	ret = clk_set_rate(clk[new_cluster], new_rate * 1000);
+> > +	if (!ret) {
+> > +		/*
+> > +		 * FIXME: clk_set_rate has to handle the case where clk_change_rate
+> > +		 * can fail due to hardware or firmware issues. Until the clk core
+> > +		 * layer is fixed, we can check here. In most of the cases we will
+> > +		 * be reading only the cached value anyway. This needs to  be removed
+> > +		 * once clk core is fixed.
+> > +		 */
+> > +		if (clk_get_rate(clk[new_cluster]) != new_rate * 1000)
+> > +			ret = -EIO;
+> > +	}
+> > +
+> >   	if (WARN_ON(ret)) {
+> >   		pr_err("clk_set_rate failed: %d, new cluster: %d\n", ret,
+> >   				new_cluster);
+> > @@ -189,15 +201,6 @@ bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
+> >   		mutex_unlock(&cluster_lock[old_cluster]);
+> >   	}
+> >
+> > -	/*
+> > -	 * FIXME: clk_set_rate has to handle the case where clk_change_rate
+> > -	 * can fail due to hardware or firmware issues. Until the clk core
+> > -	 * layer is fixed, we can check here. In most of the cases we will
+> > -	 * be reading only the cached value anyway. This needs to  be removed
+> > -	 * once clk core is fixed.
+> > -	 */
+> > -	if (bL_cpufreq_get_rate(cpu) != new_rate)
+> > -		return -EIO;
+> >   	return 0;
+> >   }
+> >
+> >
+> >
+> >
+> 
+> The above change looks good to me but with minor nit. You can get rid of
+> if(!ret) check if you move the hunk after if (WARN_ON(ret))
 
-On Tue, Oct 13, 2015 at 1:53 AM, Sebastian Reichel <sre@kernel.org> wrote:
-> Hi,
->
-> On Mon, Oct 12, 2015 at 03:20:10PM -0700, Tony Lindgren wrote:
->> * Tony Lindgren <tony@atomide.com> [151012 14:43]:
->> > * Belisko Marek <marek.belisko@gmail.com> [150926 13:02]:
->> > > Tony sorry I forgot to add you to the recipients for this patchset.
->> > > Can you please queue this patch. Many thanks.
->> >
->> > OK applying into omap-for-v4.4/dt thanks.
->>
->> Actually dropping this one, it makes build fail as we don't
->> have twl4030_madc yet.
->>
->> Maybe please send a separate set of dts patches for me.
->
-> mh that's strange, twl4030-madc is there since a long time. But
-> checking the patch, it seems Marek got the phandle wrong:
-OK, thanks for letting me know. I'll send update soon. Thanks.
->
-> $ grep -B1 "ti,twl4030-madc" arch/arm/boot/dts/twl4030.dtsi
->         twl_madc: madc {
->                 compatible = "ti,twl4030-madc";
->
-> Once that is fixed, the patch should have no dependencies.
->
-> -- Sebastian
+But then we wouldn't get the WARN_ON and pr_err triggered when we detect
+the clock rate isn't set, which surely is half the reason for the check
+in the first place?
 
-BR,
-
-marek
+(P.S. I'm on holiday this week without access to my main computer, dev
+boards or decent internet connectivity).
 
 -- 
-as simple and primitive as possible
--------------------------------------------------
-Marek Belisko - OPEN-NANDRA
-Freelance Developer
+Tixy
 
-Ruska Nova Ves 219 | Presov, 08005 Slovak Republic
-Tel: +421 915 052 184
-skype: marekwhite
-twitter: #opennandra
-web: http://open-nandra.com
