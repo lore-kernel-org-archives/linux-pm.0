@@ -1,95 +1,70 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH 12/17] ARM: OMAP2+: remove misuse of IRQF_NO_SUSPEND flag
-Date: Tue, 13 Oct 2015 16:20:15 +0100
-Message-ID: <561D212F.3050603@arm.com>
-References: <1442850433-5903-1-git-send-email-sudeep.holla@arm.com>
- <1442850433-5903-13-git-send-email-sudeep.holla@arm.com>
- <20151012202047.GR23801@atomide.com> <20151012202847.GS23801@atomide.com>
- <561CE017.7030704@arm.com> <20151013145359.GV23801@atomide.com>
+From: Grygorii Strashko <grygorii.strashko@ti.com>
+Subject: Re: [PATCH 1/2] PM / sleep: ensure deferred probe workqueue is
+ finished in wait_for_device_probe
+Date: Tue, 13 Oct 2015 21:25:28 +0300
+Message-ID: <561D4C98.9070002@ti.com>
+References: <Pine.LNX.4.44L0.1510081637570.1284-100000@iolanthe.rowland.org>
+ <5617D155.60700@ti.com> <2953623.dd2aFp1rBS@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Type: text/plain; charset="utf-8"; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20151013145359.GV23801@atomide.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: linux-pm@vger.kernel.org, Kevin Hilman <khilman@deeprootsystems.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Sudeep Holla <sudeep.holla@arm.com>, Thomas Gleixner <tglx@linutronix.de>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from comal.ext.ti.com ([198.47.26.152]:42198 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750984AbbJMSZl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 13 Oct 2015 14:25:41 -0400
+In-Reply-To: <2953623.dd2aFp1rBS@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>
 
-
-
-On 13/10/15 15:53, Tony Lindgren wrote:
-> * Sudeep Holla <sudeep.holla@arm.com> [151013 03:46]:
->>
->>
->> On 12/10/15 21:28, Tony Lindgren wrote:
->>> * Tony Lindgren <tony@atomide.com> [151012 13:27]:
->>>> * Sudeep Holla <sudeep.holla@arm.com> [150921 08:52]:
->>>>> The IRQF_NO_SUSPEND flag is used to identify the interrupts that should
->>>>> be left enabled so as to allow them to work as expected during the
->>>>> suspend-resume cycle, but doesn't guarantee that it will wake the system
->>>> >from a suspended state, enable_irq_wake is recommended to be used for
->>>>> the wakeup.
->>>>>
->>>>> This patch removes the use of IRQF_NO_SUSPEND flags replacing it with
->>>>> enable_irq_wake instead.
+On 10/10/2015 12:16 AM, Rafael J. Wysocki wrote:
+> On Friday, October 09, 2015 09:38:13 AM Grygorii Strashko wrote:
+>> On 10/08/2015 03:53 PM, Alan Stern wrote:
+>>> On Thu, 8 Oct 2015, Rafael J. Wysocki wrote:
+>>>
+>>>>> @@ -391,6 +391,10 @@ int driver_probe_done(void)
+>>>>>     */
+>>>>>    void wait_for_device_probe(void)
+>>>>>    {
+>>>>> +	/* wait for the deferred probe workqueue to finish */
+>>>>> +	if (driver_deferred_probe_enable)
+>>>>> +		flush_workqueue(deferred_wq);
+>>>>> +
+>>>>>    	/* wait for the known devices to complete their probing */
+>>>>>    	wait_event(probe_waitqueue, atomic_read(&probe_count) == 0);
+>>>>>    	async_synchronize_full();
 >>>>
->>>> Applying into omap-for-v4.4/cleanup thanks.
+>>>> I'm not sure if this is sufficient.
+>>>>
+>>>> Something may be added to the workqueue right after you've flushed it and
+>>>> then be reporobed after the wait_event() in theory.  Or am I missing anything?
 >>>
->>> Actually I don't think this does the right thing. The interrupts
->>> in the $subject patch are in the always on powerdomain, and we really
->>
->> Agreed
->>
->>> want them to be excluded from the suspend.
+>>> Maybe I'm missing part of this, but I think the point is to make sure
+>>> that every probe which began or was queued before this function got
+>>> called, has finished before the function returns.
 >>>
+>>> Thus, in the case at hand we want to defer all probes starting from
+>>> some point in the system sleep transition.  Grygorii sets his
+>>> defer_all_probes variable and then calls this function.  It waits for
+>>> any probes that were initiated before the function call.  Any probe
+>>> that was initiated after the function call (for example, the ones
+>>> you're concerned about between the flush_workqueue and wait_event) will
+>>> see that defer_all_probes is set and so will defer itself.
 >>
->> OK but what's wrong with this patch. At-least the name suggest it's a
->> wakeup interrupt. And using IRQF_NO_SUSPEND for the wakeup interrupt is
->> simply wrong.
+>> Yes. It will work as expected with the next patch.
+>> For all other case, where this API is used alone -
+>> it will make things more safe, but there is no way to completely block
+>> scheduling of new probes.
 >
-> Hmm so if we have a separate always on irq controller for the wake-up events
-> and we want to keep it always on and exclude it from any suspend related
-> things.. Why would we not use IRQF_NO_SUSPEND on it?
->
-> Above you say "The IRQF_NO_SUSPEND flag is used to identify the interrupts
-> that should be left enabled so as to allow them to work as expected during
-> the suspend-resume cycle..." and that's exactly what we want to do here :)
+> Well, in that case why don't you make it part of the second patch after all
+> instead of making a false impression of fixing a more general problem?
 >
 
-OK if these interrupts meet that criteria to use IRQF_NO_SUSPEND, then
-it should be fine, my earlier argument was based on the assumption that
-it's just another wakeup interrupt.
+ok.
 
-> For the dedicated wake-up interrupts, we have separate registers to enable
-> and disable them. The $subject irq is the shared interrupt that allows
-> making use of the pin specific wake-up interrupts, and for those yes we
-> are using enable_irq_wake().
->
 
-If it's already take care, then fine. I am just hunting all the misuse
-of IRQF_NO_SUSPEND flag especially as wakeup source and fixing them
-
->>> So not applying without further explanations.
->>>
->>
->> But I don't understand the real need for IRQF_NO_SUSPEND over wakeup APIs ?
->
-> Because in the $subject case we just want to always keep it on and
-> never suspend it. It's unrelated to the wakeup APIs at least for the
-> omap related SoCs.
->
-
-OK, understood now. Thanks
-
---
-Regards,
-Sudeep
+-- 
+regards,
+-grygorii
