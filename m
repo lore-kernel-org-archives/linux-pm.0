@@ -1,92 +1,110 @@
-From: Marc Titinger <mtitinger@baylibre.com>
-Subject: Re: [PATCH 2/2] arm: omap2+: PM: change trace_power_domain_target
- event format.
-Date: Tue, 13 Oct 2015 09:59:00 +0200
-Message-ID: <561CB9C4.9070809@baylibre.com>
-References: <1443187345-14834-1-git-send-email-mtitinger+renesas@baylibre.com>
- <1443187345-14834-3-git-send-email-mtitinger+renesas@baylibre.com>
- <20150925101025.6b3862bf@gandalf.local.home> <560560ED.5000803@baylibre.com>
- <20151012233327.GQ23801@atomide.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] PM / sleep: Drop pm_request_idle() from pm_generic_complete()
+Date: Tue, 13 Oct 2015 10:01:29 +0200
+Message-ID: <CAPDyKFoERBD00U1Wwr==K4E8bj+gaWJsZ7qZt5wRsUFmvFW6Tw@mail.gmail.com>
+References: <4970284.9k6NVjxDce@vostro.rjw.lan>
+	<1729985.4Y6lgbpPqx@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f182.google.com ([209.85.212.182]:36061 "EHLO
+Received: from mail-wi0-f182.google.com ([209.85.212.182]:38723 "EHLO
 	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752144AbbJMH7E (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 Oct 2015 03:59:04 -0400
-Received: by wicgb1 with SMTP id gb1so177041978wic.1
-        for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2015 00:59:02 -0700 (PDT)
-In-Reply-To: <20151012233327.GQ23801@atomide.com>
+	with ESMTP id S932069AbbJMIBa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 Oct 2015 04:01:30 -0400
+Received: by wieq12 with SMTP id q12so18849902wie.1
+        for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2015 01:01:29 -0700 (PDT)
+In-Reply-To: <1729985.4Y6lgbpPqx@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, khilman@kernel.org, rjw@rjwysocki.net, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>
 
-On 13/10/2015 01:33, Tony Lindgren wrote:
-> * Marc Titinger <mtitinger@baylibre.com> [150925 08:02]:
+On 12 October 2015 at 22:15, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Wednesday, September 30, 2015 02:44:29 AM Rafael J. Wysocki wrote:
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >>
+>> The pm_request_idle() in pm_generic_complete() is pointless as it is
+>> called with the runtime PM usage counter different from zero (bumped
+>> up by the core during the prepare phase of system suspend) and the
+>> core calls pm_runtime_put() for all devices after executing their
+>> complete callbacks, so drop it.
 >>
->> On 25/09/2015 16:10, Steven Rostedt wrote:
->>> On Fri, 25 Sep 2015 15:22:25 +0200
->>> Marc Titinger <mtitinger@baylibre.com> wrote:
->>>
->>>> From: Marc Titinger <mtitinger@baylibre.com>
->>>>
->>>> power_domain_target arg3 is now a string (event name) with generic power
->>>> domains. In the case of Omap, it is a hint to the prev/next switch op.
->>>> Incidentally this trace is now conditioned by CONFIG_PM_ADVANCED_DEBUG.
->>> I'm curious to why the addition of this config option?
->>>
->> I meant to be consistent with Juno/generic-power-domains, so that this trace
->> always (or never) requires this switch.
->> I think I will remove this condition for both actually.
+>> This allows the PCI PM layer to use pm_generic_complete() too.
 >>
->>>> Compiled for Omap2+ but not tested.
->>>>
->>>> Signed-off-by: Marc Titinger <mtitinger@baylibre.com>
->>>> ---
->>>>   arch/arm/mach-omap2/powerdomain.c | 32 ++++++++++++++++++++------------
->>>>   1 file changed, 20 insertions(+), 12 deletions(-)
->>>>
->>>> diff --git a/arch/arm/mach-omap2/powerdomain.c b/arch/arm/mach-omap2/powerdomain.c
->>>> index 78af6d8..cd77696 100644
->>>> --- a/arch/arm/mach-omap2/powerdomain.c
->>>> +++ b/arch/arm/mach-omap2/powerdomain.c
->>>> @@ -160,7 +160,7 @@ static void _update_logic_membank_counters(struct powerdomain *pwrdm)
->>>>   static int _pwrdm_state_switch(struct powerdomain *pwrdm, int flag)
->>>>   {
->>>> -	int prev, next, state, trace_state = 0;
->>>> +	int prev, state;
->>>>   	if (pwrdm == NULL)
->>>>   		return -EINVAL;
->>>> @@ -177,18 +177,25 @@ static int _pwrdm_state_switch(struct powerdomain *pwrdm, int flag)
->>>>   			pwrdm->state_counter[prev]++;
->>>>   		if (prev == PWRDM_POWER_RET)
->>>>   			_update_logic_membank_counters(pwrdm);
->>>> -		/*
->>>> -		 * If the power domain did not hit the desired state,
->>>> -		 * generate a trace event with both the desired and hit states
->>>> -		 */
->>>> -		next = pwrdm_read_next_pwrst(pwrdm);
->>>> -		if (next != prev) {
->>>> -			trace_state = (PWRDM_TRACE_STATES_FLAG |
->>>> +
->>>> +#ifdef CONFIG_PM_ADVANCED_DEBUG
->>> You do realize that you can add this to the block:
->>>
->>>
->>> 	if (trace_power_domain_target_enabled()) {
->> Nope I didn't, but now I do ;) thanks.
+>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> ---
+>>
+>> On top of https://patchwork.kernel.org/patch/7291251/ .
 >
-> Probably best to keep this with your series, it should not cause merge conflicts,
-> so:
+> Due to the lack of comments for the last several days (which I'm taking as
+> the lack of objections), I'm tentatively queing this up for v4.4.
 >
-> Acked-by: Tony Lindgren <tony@atomide.com>
+> Please let me know if there are any problems with that.
+
+Looks good to me, so unless it's too late you may add my reviewed-by tag.
+
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+
+Kind regards
+Uffe
+
 >
-
-Thanks for the ack. Indeed, I rebased it on current but figured that 
-it's not that usefull until 'multiple states' are merged in.
-
-M.
-
+> Thanks,
+> Rafael
+>
+>
+>> ---
+>>  drivers/base/power/generic_ops.c |    6 ------
+>>  drivers/pci/pci-driver.c         |    9 ++-------
+>>  2 files changed, 2 insertions(+), 13 deletions(-)
+>>
+>> Index: linux-pm/drivers/base/power/generic_ops.c
+>> ===================================================================
+>> --- linux-pm.orig/drivers/base/power/generic_ops.c
+>> +++ linux-pm/drivers/base/power/generic_ops.c
+>> @@ -296,11 +296,5 @@ void pm_generic_complete(struct device *
+>>
+>>       if (drv && drv->pm && drv->pm->complete)
+>>               drv->pm->complete(dev);
+>> -
+>> -     /*
+>> -      * Let runtime PM try to suspend devices that haven't been in use before
+>> -      * going into the system-wide sleep state we're resuming from.
+>> -      */
+>> -     pm_request_idle(dev);
+>>  }
+>>  #endif /* CONFIG_PM_SLEEP */
+>> Index: linux-pm/drivers/pci/pci-driver.c
+>> ===================================================================
+>> --- linux-pm.orig/drivers/pci/pci-driver.c
+>> +++ linux-pm/drivers/pci/pci-driver.c
+>> @@ -686,13 +686,8 @@ static int pci_pm_prepare(struct device
+>>
+>>  static void pci_pm_complete(struct device *dev)
+>>  {
+>> -     struct device_driver *drv = dev->driver;
+>> -     struct pci_dev *pci_dev = to_pci_dev(dev);
+>> -
+>> -     pci_dev_complete_resume(pci_dev);
+>> -
+>> -     if (drv && drv->pm && drv->pm->complete)
+>> -             drv->pm->complete(dev);
+>> +     pci_dev_complete_resume(to_pci_dev(dev));
+>> +     pm_generic_complete(dev);
+>>  }
+>>
+>>  #else /* !CONFIG_PM_SLEEP */
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+> --
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
