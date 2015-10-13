@@ -1,50 +1,134 @@
 From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Subject: Re: [PATCH v3 5/6] Documentation: kernel_parameters for Intel P
- state driver
-Date: Tue, 13 Oct 2015 13:39:32 -0700
-Message-ID: <20151013133932.7d6881e2@kcaccard-desk.amr.corp.intel.com>
+Subject: Re: [PATCH v3 6/6] cpufreq: intel_pstate: Avoid calculation for
+ max/min
+Date: Tue, 13 Oct 2015 13:41:20 -0700
+Message-ID: <20151013134120.0a99a6ec@kcaccard-desk.amr.corp.intel.com>
 References: <1443567248-27134-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-	<1443567248-27134-6-git-send-email-srinivas.pandruvada@linux.intel.com>
+	<1443567248-27134-7-git-send-email-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:32370 "EHLO mga02.intel.com"
+Received: from mga03.intel.com ([134.134.136.65]:16819 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752803AbbJMUje (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 13 Oct 2015 16:39:34 -0400
-In-Reply-To: <1443567248-27134-6-git-send-email-srinivas.pandruvada@linux.intel.com>
+	id S1752712AbbJMUlW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 13 Oct 2015 16:41:22 -0400
+In-Reply-To: <1443567248-27134-7-git-send-email-srinivas.pandruvada@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 Cc: rafael.j.wysocki@intel.com, len.brown@intel.com, linux-pm@vger.kernel.org
 
-On Tue, 29 Sep 2015 15:54:07 -0700
+On Tue, 29 Sep 2015 15:54:08 -0700
 Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com> wrote:
 
-> Added new option "no_acpi" for not using ACPI processor performance
-> control objects in Intel P state driver.
+> When requested from cpufreq to set policy, look into _pss and get
+> control values, instead of using max/min perf calculations. These
+> calculation misses next control state in boundary conditions.
 > 
 > Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
 Acked-by: Kristen Carlson Accardi <kristen@linux.intel.com>
 
 > ---
->  Documentation/kernel-parameters.txt | 3 +++
->  1 file changed, 3 insertions(+)
+>  drivers/cpufreq/intel_pstate.c | 50 +++++++++++++++++++++++++++++++++++++-----
+>  1 file changed, 45 insertions(+), 5 deletions(-)
 > 
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index 22a4b68..9b75e2a 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -1546,6 +1546,9 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
->  		hwp_only
->  			Only load intel_pstate on systems which support
->  			hardware P state control (HWP) if available.
-> +		no_acpi
-> +			Don't use ACPI processor performance control objects
-> +			_PSS and _PPC specified limits.
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 869f074..49a16ff 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -166,6 +166,8 @@ struct perf_limits {
+>  	int max_sysfs_pct;
+>  	int min_policy_pct;
+>  	int min_sysfs_pct;
+> +	int max_perf_ctl;
+> +	int min_perf_ctl;
+>  };
 >  
->  	intremap=	[X86-64, Intel-IOMMU]
->  			on	enable Interrupt Remapping (default)
+>  static struct perf_limits limits = {
+> @@ -179,6 +181,8 @@ static struct perf_limits limits = {
+>  	.max_sysfs_pct = 100,
+>  	.min_policy_pct = 0,
+>  	.min_sysfs_pct = 0,
+> +	.max_perf_ctl = 0,
+> +	.min_perf_ctl = 0,
+>  };
+>  
+>  #if IS_ENABLED(CONFIG_ACPI)
+> @@ -980,12 +984,23 @@ static void intel_pstate_get_min_max(struct cpudata *cpu, int *min, int *max)
+>  	 * policy, or by cpu specific default values determined through
+>  	 * experimentation.
+>  	 */
+> -	max_perf_adj = fp_toint(mul_fp(int_tofp(max_perf), limits.max_perf));
+> -	*max = clamp_t(int, max_perf_adj,
+> -			cpu->pstate.min_pstate, cpu->pstate.turbo_pstate);
+> +	if (limits.max_perf_ctl && limits.max_sysfs_pct >=
+> +						limits.max_policy_pct) {
+> +		*max = limits.max_perf_ctl;
+> +	} else {
+> +		max_perf_adj = fp_toint(mul_fp(int_tofp(max_perf),
+> +					limits.max_perf));
+> +		*max = clamp_t(int, max_perf_adj, cpu->pstate.min_pstate,
+> +			       cpu->pstate.turbo_pstate);
+> +	}
+>  
+> -	min_perf = fp_toint(mul_fp(int_tofp(max_perf), limits.min_perf));
+> -	*min = clamp_t(int, min_perf, cpu->pstate.min_pstate, max_perf);
+> +	if (limits.min_perf_ctl) {
+> +		*min = limits.min_perf_ctl;
+> +	} else {
+> +		min_perf = fp_toint(mul_fp(int_tofp(max_perf),
+> +				    limits.min_perf));
+> +		*min = clamp_t(int, min_perf, cpu->pstate.min_pstate, max_perf);
+> +	}
+>  }
+>  
+>  static void intel_pstate_set_pstate(struct cpudata *cpu, int pstate, bool force)
+> @@ -1272,6 +1287,12 @@ static unsigned int intel_pstate_get(unsigned int cpu_num)
+>  
+>  static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+>  {
+> +#if IS_ENABLED(CONFIG_ACPI)
+> +	struct cpudata *cpu;
+> +	int i;
+> +#endif
+> +	pr_debug("intel_pstate: %s max %u policy->max %u\n", __func__,
+> +		 policy->cpuinfo.max_freq, policy->max);
+>  	if (!policy->cpuinfo.max_freq)
+>  		return -ENODEV;
+>  
+> @@ -1284,6 +1305,8 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+>  		limits.max_perf_pct = 100;
+>  		limits.max_perf = int_tofp(1);
+>  		limits.no_turbo = 0;
+> +		limits.max_perf_ctl = 0;
+> +		limits.min_perf_ctl = 0;
+>  		return 0;
+>  	}
+>  
+> @@ -1304,6 +1327,23 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+>  	limits.min_perf = div_fp(int_tofp(limits.min_perf_pct), int_tofp(100));
+>  	limits.max_perf = div_fp(int_tofp(limits.max_perf_pct), int_tofp(100));
+>  
+> +#if IS_ENABLED(CONFIG_ACPI)
+> +	cpu = all_cpu_data[policy->cpu];
+> +	for (i = 0; i < cpu->acpi_perf_data.state_count; i++) {
+> +		int control;
+> +
+> +		control = convert_to_native_pstate_format(cpu, i);
+> +		if (control * cpu->pstate.scaling == policy->max)
+> +			limits.max_perf_ctl = control;
+> +		if (control * cpu->pstate.scaling == policy->min)
+> +			limits.min_perf_ctl = control;
+> +	}
+> +
+> +	pr_debug("intel_pstate: max %u policy_max %u perf_ctl [0x%x-0x%x]\n",
+> +		 policy->cpuinfo.max_freq, policy->max, limits.min_perf_ctl,
+> +		 limits.max_perf_ctl);
+> +#endif
+> +
+>  	if (hwp_active)
+>  		intel_pstate_hwp_set();
+>  
 
