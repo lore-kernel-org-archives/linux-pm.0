@@ -1,59 +1,65 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 0/5] CPUFreq: governors: further cleanups
-Date: Tue, 13 Oct 2015 13:39:00 +0530
-Message-ID: <cover.1444723240.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f47.google.com ([209.85.220.47]:36303 "EHLO
-	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752549AbbJMIJP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 13 Oct 2015 04:09:15 -0400
-Received: by pacex6 with SMTP id ex6so14158823pac.3
-        for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2015 01:09:15 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH V3 1/5] cpufreq: ondemand: Drop unnecessary locks from update_sampling_rate()
+Date: Tue, 13 Oct 2015 13:39:01 +0530
+Message-ID: <56084623b2c27372a4c2c598151dd47176c3e26f.1444723240.git.viresh.kumar@linaro.org>
+References: <cover.1444723240.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1444723240.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1444723240.git.viresh.kumar@linaro.org>
+References: <cover.1444723240.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, open list <linux-kernel@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael,
+'timer_mutex' is required to sync work-handlers of policy->cpus.
+update_sampling_rate() is just canceling the works and queuing them
+again. This isn't protecting anything at all in update_sampling_rate()
+and is not gonna be of any use.
 
-Here is the third version based on the review comments you gave. I have
-tried to resolve most of them, and it looks much better now. Thanks for
-your comments.
+Even if a work-handler is already running for a CPU,
+cancel_delayed_work_sync() will wait for it to finish.
 
-As I am traveling this week, don't have access to hardware to retest the
-series. But I am quite sure it should work just fine, as there weren't
-lots of updates from how the final code looked earlier. Anyway, I have
-pushed this for the build bot sometime back and it will let us know of
-any obvious issues.
+Drop these unnecessary locks.
 
-V2->V3:
-- Few got merged already, and are dropped now
-- Patches are reordered a bit to make them more sensible
-- gov_queue_work() isn't modified at all with the mask of CPUs, as you
-  suggested earlier.
-- Some minor commit/logs updated.
+Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq_ondemand.c | 10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
 
-V1->V2:
-- Dropped 2/10 from V1 as it wasn't required
-- 3/10 saw some changes due to above patch being dropped
-- 7/10 changed a bit as we check for pending work items by looking at
-  shared->policy, rather than calling delayed_work_pending. We wanted to
-  check if governor is operational or not and the new check is enough
-  for that.
-
-Viresh Kumar (5):
-  cpufreq: ondemand: Drop unnecessary locks from update_sampling_rate()
-  cpufreq: ondemand: update sampling rate immediately
-  cpufreq: ondemand: queue work for policy->cpus together
-  cpufreq: governor: Quit work-handlers early if governor is stopped
-  cpufreq: Get rid of ->governor_enabled and its lock
-
- drivers/cpufreq/cpufreq.c          | 24 ------------------
- drivers/cpufreq/cpufreq_governor.c | 33 +++++++++++++++++--------
- drivers/cpufreq/cpufreq_ondemand.c | 50 ++++++++++++--------------------------
- include/linux/cpufreq.h            |  1 -
- 4 files changed, 39 insertions(+), 69 deletions(-)
-
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index 1fa9088c84a8..03ac6ce54042 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -267,27 +267,19 @@ static void update_sampling_rate(struct dbs_data *dbs_data,
+ 		dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
+ 		cpufreq_cpu_put(policy);
+ 
+-		mutex_lock(&dbs_info->cdbs.shared->timer_mutex);
+-
+-		if (!delayed_work_pending(&dbs_info->cdbs.dwork)) {
+-			mutex_unlock(&dbs_info->cdbs.shared->timer_mutex);
++		if (!delayed_work_pending(&dbs_info->cdbs.dwork))
+ 			continue;
+-		}
+ 
+ 		next_sampling = jiffies + usecs_to_jiffies(new_rate);
+ 		appointed_at = dbs_info->cdbs.dwork.timer.expires;
+ 
+ 		if (time_before(next_sampling, appointed_at)) {
+-
+-			mutex_unlock(&dbs_info->cdbs.shared->timer_mutex);
+ 			cancel_delayed_work_sync(&dbs_info->cdbs.dwork);
+-			mutex_lock(&dbs_info->cdbs.shared->timer_mutex);
+ 
+ 			gov_queue_work(dbs_data, policy,
+ 				       usecs_to_jiffies(new_rate), true);
+ 
+ 		}
+-		mutex_unlock(&dbs_info->cdbs.shared->timer_mutex);
+ 	}
+ }
+ 
 -- 
 2.4.0
-
