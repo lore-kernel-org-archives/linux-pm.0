@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 4/5] cpufreq: governor: Quit work-handlers early if governor is stopped
-Date: Tue, 13 Oct 2015 13:39:04 +0530
-Message-ID: <1e579d2bf8dbee09295725cda37bd92222fe61fb.1444723240.git.viresh.kumar@linaro.org>
+Subject: [PATCH V3 5/5] cpufreq: Get rid of ->governor_enabled and its lock
+Date: Tue, 13 Oct 2015 13:39:05 +0530
+Message-ID: <123bfd25c7433733005efd57f819a27471471f81.1444723240.git.viresh.kumar@linaro.org>
 References: <cover.1444723240.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1444723240.git.viresh.kumar@linaro.org>
@@ -12,124 +12,78 @@ To: Rafael Wysocki <rjw@rjwysocki.net>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-cpufreq_governor_lock is abused by using it outside of cpufreq core,
-i.e. in cpufreq-governors. But we didn't had a better solution to the
-problem (described later) at that point of time, and following was the
-only acceptable solution:
+Invalid state-transitions is verified by governor core now and there is
+no need to replicate that in cpufreq core.
 
-6f1e4efd882e ("cpufreq: Fix timer/workqueue corruption by protecting
-reading governor_enabled")
-
-The cpufreq governor core is fixed against possible races now and things
-are in much better shape.
-
-The original problem:
-
-When a CPU is hot unplugged, we cancel delayed works for all
-policy->cpus via gov_cancel_work(). If the work is already running on
-any CPU, the workqueue code will wait for the work to finish, to prevent
-the work items from re-queuing themselves.
-
-This works most of the time, except for the case where the work handler
-determines that it should adjust the delay for all other CPUs, that the
-policy is managing. When this happens, the canceling CPU will cancel its
-own work but can queue up the works on other policy->cpus.
-
-For example, consider CPU 0-4 in a policy and we called
-gov_cancel_work() for them. Workqueue core canceled the works for 0-3
-and is waiting for the handler to finish on CPU4. At that time, handler
-on CPU4 can restart works on CPU 0-3 again. Which makes 0-3 run works,
-which the governor core thinks are canceled.
-
-To fix that in a different (non-hacky) way, set set shared->policy to
-false before trying to cancel the work. It should be updated within
-timer_mutex, which will prevent the work-handlers to start. Once the
-work-handlers finds that we are already trying to stop the governor, it
-will exit early. And that will prevent queuing of works again as well.
+Stop verifying the same in cpufreq core. That will get rid of
+policy->governor_enabled and cpufreq_governor_lock.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq_governor.c | 33 +++++++++++++++++++++++----------
- 1 file changed, 23 insertions(+), 10 deletions(-)
+ drivers/cpufreq/cpufreq.c | 24 ------------------------
+ include/linux/cpufreq.h   |  1 -
+ 2 files changed, 25 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index 750626d8fb03..931424ca96d9 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -171,10 +171,6 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
- {
- 	int i;
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 25c4c15103a0..0c89b09672e4 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -102,7 +102,6 @@ static LIST_HEAD(cpufreq_governor_list);
+ static struct cpufreq_driver *cpufreq_driver;
+ static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
+ static DEFINE_RWLOCK(cpufreq_driver_lock);
+-DEFINE_MUTEX(cpufreq_governor_lock);
+ 
+ /* Flag to suspend/resume CPUFreq governors */
+ static bool cpufreq_suspended;
+@@ -2035,21 +2034,6 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+ 
+ 	pr_debug("%s: for CPU %u, event %u\n", __func__, policy->cpu, event);
  
 -	mutex_lock(&cpufreq_governor_lock);
--	if (!policy->governor_enabled)
--		goto out_unlock;
+-	if ((policy->governor_enabled && event == CPUFREQ_GOV_START)
+-	    || (!policy->governor_enabled
+-	    && (event == CPUFREQ_GOV_LIMITS || event == CPUFREQ_GOV_STOP))) {
+-		mutex_unlock(&cpufreq_governor_lock);
+-		return -EBUSY;
+-	}
 -
- 	if (!all_cpus) {
- 		/*
- 		 * Use raw_smp_processor_id() to avoid preemptible warnings.
-@@ -188,9 +184,6 @@ void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
- 		for_each_cpu(i, policy->cpus)
- 			__gov_queue_work(i, dbs_data, delay);
- 	}
+-	if (event == CPUFREQ_GOV_STOP)
+-		policy->governor_enabled = false;
+-	else if (event == CPUFREQ_GOV_START)
+-		policy->governor_enabled = true;
 -
--out_unlock:
 -	mutex_unlock(&cpufreq_governor_lock);
- }
- EXPORT_SYMBOL_GPL(gov_queue_work);
+-
+ 	ret = policy->governor->governor(policy, event);
  
-@@ -229,13 +222,24 @@ static void dbs_timer(struct work_struct *work)
- 	struct cpu_dbs_info *cdbs = container_of(work, struct cpu_dbs_info,
- 						 dwork.work);
- 	struct cpu_common_dbs_info *shared = cdbs->shared;
--	struct cpufreq_policy *policy = shared->policy;
--	struct dbs_data *dbs_data = policy->governor_data;
-+	struct cpufreq_policy *policy;
-+	struct dbs_data *dbs_data;
- 	unsigned int sampling_rate, delay;
- 	bool modify_all = true;
+ 	if (!ret) {
+@@ -2057,14 +2041,6 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
+ 			policy->governor->initialized++;
+ 		else if (event == CPUFREQ_GOV_POLICY_EXIT)
+ 			policy->governor->initialized--;
+-	} else {
+-		/* Restore original values */
+-		mutex_lock(&cpufreq_governor_lock);
+-		if (event == CPUFREQ_GOV_STOP)
+-			policy->governor_enabled = true;
+-		else if (event == CPUFREQ_GOV_START)
+-			policy->governor_enabled = false;
+-		mutex_unlock(&cpufreq_governor_lock);
+ 	}
  
- 	mutex_lock(&shared->timer_mutex);
+ 	if (((event == CPUFREQ_GOV_POLICY_INIT) && ret) ||
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index dca22de98d94..d211da0763b7 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -80,7 +80,6 @@ struct cpufreq_policy {
+ 	unsigned int		policy; /* see above */
+ 	struct cpufreq_governor	*governor; /* see below */
+ 	void			*governor_data;
+-	bool			governor_enabled; /* governor start/stop flag */
+ 	char			last_governor[CPUFREQ_NAME_LEN]; /* last governor used */
  
-+	policy = shared->policy;
-+
-+	/*
-+	 * Governor might already be disabled and there is no point continuing
-+	 * with the work-handler.
-+	 */
-+	if (!policy)
-+		goto unlock;
-+
-+	dbs_data = policy->governor_data;
-+
- 	if (dbs_data->cdata->governor == GOV_CONSERVATIVE) {
- 		struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
- 
-@@ -252,6 +256,7 @@ static void dbs_timer(struct work_struct *work)
- 	delay = dbs_data->cdata->gov_dbs_timer(cdbs, dbs_data, modify_all);
- 	gov_queue_work(dbs_data, policy, delay, modify_all);
- 
-+unlock:
- 	mutex_unlock(&shared->timer_mutex);
- }
- 
-@@ -488,9 +493,17 @@ static int cpufreq_governor_stop(struct cpufreq_policy *policy,
- 	if (!shared || !shared->policy)
- 		return -EBUSY;
- 
-+	/*
-+	 * Work-handler must see this updated, as it should not proceed any
-+	 * further after governor is disabled. And so timer_mutex is taken while
-+	 * updating this value.
-+	 */
-+	mutex_lock(&shared->timer_mutex);
-+	shared->policy = NULL;
-+	mutex_unlock(&shared->timer_mutex);
-+
- 	gov_cancel_work(dbs_data, policy);
- 
--	shared->policy = NULL;
- 	mutex_destroy(&shared->timer_mutex);
- 	return 0;
- }
+ 	struct work_struct	update; /* if update_policy() needs to be
 -- 
 2.4.0
