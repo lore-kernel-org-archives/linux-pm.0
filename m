@@ -1,60 +1,46 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
- SpeedStep enabled
-Date: Wed, 14 Oct 2015 21:31:01 +0000
-Message-ID: <bug-103351-137361-5HQrbD0A3q@https.bugzilla.kernel.org/>
-References: <bug-103351-137361@https.bugzilla.kernel.org/>
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Subject: Re: [PATCH] PM / OPP: Remove confusing error message in
+ of_cpumask_init_opp_table()
+Date: Wed, 14 Oct 2015 23:31:33 +0200
+Message-ID: <20151014233133.6293cbc3@free-electrons.com>
+References: <1444837943-32263-1-git-send-email-thomas.petazzoni@free-electrons.com>
+	<2736370.6HB7CanQEp@vostro.rjw.lan>
+	<20151014232927.4b43a897@free-electrons.com>
+	<1480730.ra5d89GYrs@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:51425 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932785AbbJNVbJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 14 Oct 2015 17:31:09 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id 95AC020528
-	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2015 21:31:08 +0000 (UTC)
-Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
-	by mail.kernel.org (Postfix) with ESMTP id CEEE420660
-	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2015 21:31:03 +0000 (UTC)
-In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
+Received: from down.free-electrons.com ([37.187.137.238]:47037 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753301AbbJNVbg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Oct 2015 17:31:36 -0400
+In-Reply-To: <1480730.ra5d89GYrs@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>, Gregory Clement <gregory.clement@free-electrons.com>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=103351
+Rafael,
 
---- Comment #63 from Fredrik Atmer <fredrik+kernel@atmer.se> ---
-I just tried the experimental branch and it works for me. I'm at 0x13 =)
+On Wed, 14 Oct 2015 23:59:45 +0200, Rafael J. Wysocki wrote:
 
-Although the --persist-debian still doesn't persist. I'm back at 0xd after a
-reboot. This is my output from install.sh. I don't know if update-initramfs
-looks in the wrong place or what?
+> > Yes, I wasn't sure if it really is a fix, and if so, which commit it is
+> > fixing. It is really 8d4d4e98acd68c31435ebb7beea591dbf60b9eb2 that
+> > introduces the confusing message, but the message will not appear until
+> > the newly added function gets used in
+> > 2e02d8723edf6599988852a8ade8f83b2f766cb8.
+> > 
+> > But if 2e02d8723edf6599988852a8ade8f83b2f766cb8 is considered to be the
+> > commit actually introducing the regression, then I'll resubmit an
+> > updated version with the Fixes: tag.
+> 
+> I've added the tag and applied the patch already.
 
+Awesome, thanks!
 
-*** Initial microcode version information:
-microcode    : 0x13
-microcode    : 0x13
-microcode    : 0x13
-microcode    : 0x13
-
-*** Applying microcode updates
-*** Setting up persistence
-FYI: You can safely ignore warnings about files already existing.
-/usr/sbin/iucode-tool: 06-47-01: cannot write to, or create file: File exists
-*** Running update-initramfs
-update-initramfs: Generating /boot/initrd.img-3.19.0-30-generic
-
-*** Current microcode version information:
-microcode    : 0x13
-microcode    : 0x13
-microcode    : 0x13
-microcode    : 0x13
-
-No errors encountered.
-If the microcode version did not change, no update has been applied.
-
+Thomas
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+Thomas Petazzoni, CTO, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
