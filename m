@@ -1,116 +1,107 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v4 1/5] cpufreq: intel_pstate: get P1 from TAR when available
-Date: Wed, 14 Oct 2015 16:11:59 -0700
-Message-ID: <1444864323-4196-2-git-send-email-srinivas.pandruvada@linux.intel.com>
-References: <1444864323-4196-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH v3 0/6] Intel P states enhancements
+Date: Wed, 14 Oct 2015 16:15:41 -0700
+Message-ID: <1444864541.6025.2.camel@linux.intel.com>
+References: <1443567248-27134-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	 <3622861.qdYqraFPgE@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:26788 "EHLO mga11.intel.com"
+Received: from mga09.intel.com ([134.134.136.24]:47034 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753717AbbJNXM4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 14 Oct 2015 19:12:56 -0400
-In-Reply-To: <1444864323-4196-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	id S1753664AbbJNXQJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 14 Oct 2015 19:16:09 -0400
+In-Reply-To: <3622861.qdYqraFPgE@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: kristen.c.accardi@intel.com, rafael.j.wysocki@intel.com, len.brown@intel.com
-Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: kristen.c.accardi@intel.com, rafael.j.wysocki@intel.com, len.brown@intel.com, linux-pm@vger.kernel.org
 
-After Ivybridge, the max non turbo ratio obtained from platform info msr
-is not always guaranteed P1 on client platforms. The max non turbo
-activation ratio (TAR), determines the max for the current level of TDP.
-The ratio in platform info is physical max. The TAR MSR can be locked,
-so updating this value is not possible on all platforms.
-This change gets this ratio from MSR TURBO_ACTIVATION_RATIO if
-available,
-but also do some sanity checking to make sure that this value is
-correct.
-The sanity check involves reading the TDP ratio for the current tdp
-control value when platform has configurable TDP present and matching
-TAC
-with this.
+On Wed, 2015-10-14 at 02:52 +0200, Rafael J. Wysocki wrote:
+> On Tuesday, September 29, 2015 03:54:02 PM Srinivas Pandruvada wrote:
+> > This series enhances Intel P state drivers with the following
+> > features:
+> > - When max_perf_pct is reduced in turbo range, we can change the
+> > turbo ratios
+> > when platform allows. This is particularly useful in limiting
+> > performance with
+> > HWP where whole range is turbo.
+> > - Use Turbo Activation Ratio, when calculating max non turbo P
+> > state. This will
+> > show now correct percentage in turbo range
+> > - To calculate busy percent, the estimate is not correct when the
+> > max non turbo
+> > is limited by tar, hence using physical max non turbo as before.
+> > - Use ACPI _PSS and _PPC in intel_ptate driver.
+> > - Avoid calculation for P state control value when cpufreq policy
+> > requests
+> > frequency limits when matched in _PSS. Sometime calculations causes
+> > reduced
+> > control value in boundary conditions.
+> > Although they are independent patches, sending as series to help
+> > applying and
+> > testing.
+> > I appreciate review and testing on multiple platforms.
+> > 
+> > v3:
+> > - Added function : convert_to_native_pstate_format to convert from
+> > perf_ctl value to pstate used ratios.
+> > - Fix bug identified by Rafael
+> > 
+> > v2:
+> > - When CONFIG_ACPI not defined, then acpi/processor.h can't be
+> > included.
+> > Also some variables will be unused when CONFIG_ACPI is not defined,
+> > so there
+> > were warnings. Fixed all these compile issues.
+> > 
+> > v1:
+> > - Change the command line option to "no_acpi"
+> > - changed kernel parameter documentation file and added "no_acpi"
+> > parameter
+> > - pr_debug prefixed with "intel_pstate" as suggested by Doug
+> > - Changed the logic to determine turbo freq in _PSS using odd/even
+> > convention,
+> > although this is the way it is defined in _PSS. But atleast two
+> > reviewers has
+> > questioned the source of this. This is defined usually in non
+> > public documents
+> > like BIOS writer guides. Now using the control field value to
+> > determine the
+> > turbo and non turbo max.
+> > - Fix the Kconfig dependency on ACPI for ACPI_PROCESSOR
+> > - multi line comment styles
+> > 
+> > v0:
+> > Base version
+> > 
+> > Srinivas Pandruvada (6):
+> >   cpufreq: intel_p_state: Fix limiting turbo sub states
+> >   cpufreq: intel_pstate: get P1 from TAR when available
+> >   cpufreq: intel-pstate: Use separate max pstate for scaling
+> >   cpufreq: intel_pstate: Use ACPI perf configuration
+> >   Documentation: kernel_parameters for Intel P state driver
+> >   cpufreq: intel_pstate: Avoid calculation for max/min
+> 
+> I'm waiting for an update of [1/6].
+> 
+> If any of [2-6/6] do not depend on it (ie. can be applied
+> separately),
+> please let me know.
+Other patches don't depend on this, but will not apply because of line
+number change. I submitted v4 by removing this patch with Kristen's
+ACK. I will submit this patch 1/6 separately.
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Acked-by: Kristen Carlson Accardi <kristen@linux.intel.com>
----
- arch/x86/include/asm/msr-index.h |  7 +++++++
- drivers/cpufreq/intel_pstate.c   | 39 +++++++++++++++++++++++++++++++++++----
- 2 files changed, 42 insertions(+), 4 deletions(-)
+Thanks,
+Srinivas
 
-diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
-index b8c14bb..9f39056 100644
---- a/arch/x86/include/asm/msr-index.h
-+++ b/arch/x86/include/asm/msr-index.h
-@@ -206,6 +206,13 @@
- #define MSR_GFX_PERF_LIMIT_REASONS	0x000006B0
- #define MSR_RING_PERF_LIMIT_REASONS	0x000006B1
- 
-+/* Config TDP MSRs */
-+#define MSR_CONFIG_TDP_NOMINAL		0x00000648
-+#define MSR_CONFIG_TDP_LEVEL1		0x00000649
-+#define MSR_CONFIG_TDP_LEVEL2		0x0000064A
-+#define MSR_CONFIG_TDP_CONTROL		0x0000064B
-+#define MSR_TURBO_ACTIVATION_RATIO	0x0000064C
-+
- /* Hardware P state interface */
- #define MSR_PPERF			0x0000064e
- #define MSR_PERF_LIMIT_REASONS		0x0000064f
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 3af9dd7..da92d02 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -43,7 +43,6 @@
- #define int_tofp(X) ((int64_t)(X) << FRAC_BITS)
- #define fp_toint(X) ((X) >> FRAC_BITS)
- 
--
- static inline int32_t mul_fp(int32_t x, int32_t y)
- {
- 	return ((int64_t)x * (int64_t)y) >> FRAC_BITS;
-@@ -593,10 +592,42 @@ static int core_get_min_pstate(void)
- 
- static int core_get_max_pstate(void)
- {
--	u64 value;
-+	u64 tar;
-+	u64 plat_info;
-+	int max_pstate;
-+	int err;
-+
-+	rdmsrl(MSR_PLATFORM_INFO, plat_info);
-+	max_pstate = (plat_info >> 8) & 0xFF;
-+
-+	err = rdmsrl_safe(MSR_TURBO_ACTIVATION_RATIO, &tar);
-+	if (!err) {
-+		/* Do some sanity checking for safety */
-+		if (plat_info & 0x600000000) {
-+			u64 tdp_ctrl;
-+			u64 tdp_ratio;
-+			int tdp_msr;
-+
-+			err = rdmsrl_safe(MSR_CONFIG_TDP_CONTROL, &tdp_ctrl);
-+			if (err)
-+				goto skip_tar;
-+
-+			tdp_msr = MSR_CONFIG_TDP_NOMINAL + tdp_ctrl;
-+			err = rdmsrl_safe(tdp_msr, &tdp_ratio);
-+			if (err)
-+				goto skip_tar;
-+
-+			if (tdp_ratio - 1 == tar) {
-+				max_pstate = tar;
-+				pr_debug("max_pstate=TAC %x\n", max_pstate);
-+			} else {
-+				goto skip_tar;
-+			}
-+		}
-+	}
- 
--	rdmsrl(MSR_PLATFORM_INFO, value);
--	return (value >> 8) & 0xFF;
-+skip_tar:
-+	return max_pstate;
- }
- 
- static int core_get_turbo_pstate(void)
--- 
-2.1.4
-
+> 
+> Thanks,
+> Rafael
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm"
+> in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
