@@ -1,54 +1,49 @@
 From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: RE: [PATCH][v5] x86, suspend: Save/restore extra MSR registers for
- suspend
-Date: Wed, 14 Oct 2015 17:41:10 +0000
-Message-ID: <36DF59CE26D8EE47B0655C516E9CE6402865BC04@shsmsx102.ccr.corp.intel.com>
-References: <1444533601-12330-1-git-send-email-yu.c.chen@intel.com>
- <20151012163750.GA4539@pd.tnic>
+Subject: RE: [PATCH][v3] ACPI / PM: Fix incorrect wakeup irq setting before
+ suspend-to-idle
+Date: Wed, 14 Oct 2015 17:44:12 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE6402865BC19@shsmsx102.ccr.corp.intel.com>
+References: <1444378813-17857-1-git-send-email-yu.c.chen@intel.com>
+ <1AE640813FDE7649BE1B193DEA596E883BAC6884@SHSMSX101.ccr.corp.intel.com>
+ <36DF59CE26D8EE47B0655C516E9CE6402865A448@shsmsx102.ccr.corp.intel.com>
+ <4932550.izVA1bjiZk@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20151012163750.GA4539@pd.tnic>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <4932550.izVA1bjiZk@vostro.rjw.lan>
 Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Borislav Petkov <bp@suse.de>
-Cc: "mingo@redhat.com" <mingo@redhat.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "pavel@ucw.cz" <pavel@ucw.cz>, "tglx@linutronix.de" <tglx@linutronix.de>, "hpa@zytor.com" <hpa@zytor.com>, "Zhang, Rui" <rui.zhang@intel.com>, "luto@kernel.org" <luto@kernel.org>, "linux@horizon.com" <linux@horizon.com>, "dsmythies@telus.net" <dsmythies@telus.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Kaszewski, Marcin" <marcin.kaszewski@intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Zheng, Lv" <lv.zheng@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "Brown, Len" <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-SGksIEJvcmlzLCB0aGFua3MgZm9yIHlvdSByZXBseQ0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2Fn
-ZS0tLS0tDQo+IEZyb206IEJvcmlzbGF2IFBldGtvdiBbbWFpbHRvOmJwQHN1c2UuZGVdDQo+IFNl
-bnQ6IFR1ZXNkYXksIE9jdG9iZXIgMTMsIDIwMTUgMTI6MzggQU0NCj4gVG86IENoZW4sIFl1IEMN
-Cj4gQ2M6IG1pbmdvQHJlZGhhdC5jb207IHJqd0Byand5c29ja2kubmV0OyBwYXZlbEB1Y3cuY3o7
-DQo+IHRnbHhAbGludXRyb25peC5kZTsgaHBhQHp5dG9yLmNvbTsgWmhhbmcsIFJ1aTsgbHV0b0Br
-ZXJuZWwub3JnOw0KPiBsaW51eEBob3Jpem9uLmNvbTsgZHNteXRoaWVzQHRlbHVzLm5ldDsgbGlu
-dXgtcG1Admdlci5rZXJuZWwub3JnOw0KPiB4ODZAa2VybmVsLm9yZzsgbGludXgta2VybmVsQHZn
-ZXIua2VybmVsLm9yZzsgS2FzemV3c2tpLCBNYXJjaW4NCj4gU3ViamVjdDogUmU6IFtQQVRDSF1b
-djVdIHg4Niwgc3VzcGVuZDogU2F2ZS9yZXN0b3JlIGV4dHJhIE1TUiByZWdpc3RlcnMgZm9yDQo+
-IHN1c3BlbmQNCj4gDQo+IE9uIFN1biwgT2N0IDExLCAyMDE1IGF0IDExOjIwOjAxQU0gKzA4MDAs
-IENoZW4gWXUgd3JvdGU6DQo+ID4gQSBidWcgaXMgcmVwb3J0ZWQoaHR0cHM6Ly9idWd6aWxsYS5y
-ZWRoYXQuY29tL3Nob3dfYnVnLmNnaT9pZD0xMjI3MjA4KQ0KPiANCj4gSSBnZXQ6DQo+IA0KPiAi
-WW91IGFyZSBub3QgYXV0aG9yaXplZCB0byBhY2Nlc3MgYnVnICMxMjI3MjA4Lg0KPiANCj4gTW9z
-dCBsaWtlbHkgdGhlIGJ1ZyBoYXMgYmVlbiByZXN0cmljdGVkIGZvciBpbnRlcm5hbCBkZXZlbG9w
-bWVudCBwcm9jZXNzZXMNCj4gYW5kIHdlIGNhbm5vdCBncmFudCBhY2Nlc3MuIg0KPiANCj4gPiB0
-aGF0LCBhZnRlciByZXN1bWVkIGZyb20gUzMsIENQVSBpcyBydW5uaW5nIGF0IGEgbG93IHNwZWVk
-Lg0KPiA+IEFmdGVyIGludmVzdGlnYXRpb24sIGl0IGlzIGZvdW5kIHRoYXQsIEJJT1MgaGFzIG1v
-ZGlmaWVkIHRoZSB2YWx1ZSBvZg0KPiA+IFRIRVJNX0NPTlRST0wgcmVnaXN0ZXIgZHVyaW5nIFMz
-LCBhbmQgY2hhbmdlcyBpdCBmcm9tIDAgdG8gMHgxMCAodGh1cw0KPiA+IGNoYW5nZXMgdGhlIGNs
-b2NrIG1vZHVsYXRpb24gZnJvbSByZXNlcnZlZCB0byBlbmFibGVkKSwgc2luY2UgdmFsdWUgb2YN
-Cj4gPiAweDEwIG1lYW5zIENQVSBjYW4gb25seSBnZXQgMjUlIG9mIHRoZSBEdXR5IEN5Y2xlLCB0
-aGlzIHRyaWdnZXJzIHRoZQ0KPiA+IHByb2JsZW0uDQo+IA0KPiBJcyB0aGlzIHdoYXQgdGhlIGJ1
-ZyBkZXNjcmliZWQgYWJvdmUgaXM/IEluIGFueSBjYXNlLCBwbGVhc2UgcmVtb3ZlIHRoZQ0KPiBw
-cml2YXRlIGJ1Z3ppbGxhIGxpbmsgYW5kIGRlc2NyaWJlIHRoZSBidWcgaW4gdGV4dCBoZXJlLg0K
-T0ssIHdpbGwgcmVtb3ZlIHRoZSBsaW5rIGhlcmUgYW5kIGluc2lkZSB0aGUgY29kZS4NCj4gDQo+
-IEFsc28sIGZyb20gcmVhZGluZyB0aGUgb3RoZXIgdGhyZWFkIGFib3V0IHRoZSB2NCBwYXRjaCwg
-aXQgc291bmRzIGxpa2UNCj4gaW50ZWxfcHN0YXRlIGNhbid0IGhhbmRsZSB0aGUgY2xvY2sgbW9k
-dWxhdGlvbiBwcm9wZXJseSwgYWNjb3JkaW5nIHRvIHdoYXQNCj4gRG91ZyBzYXlzLg0KPiANCj4g
-U28gbGV0J3MgaGF2ZSB0aGlzIGFzcGVjdCBzb3J0ZWQgb3V0IHByb3Blcmx5IGZpcnN0IHBsZWFz
-ZSBiZWZvcmUgYWRkaW5nIHlldA0KPiBhbm90aGVyIHVnbHkgQklPUyB3b3JrYXJvdW5kLg0KPiAN
-CldlbGwsIHRoYXQgbWlnaHQgYmUgYW5vdGhlciBkcml2ZXIgYnVnIElNTy4gSSdsbCBkaWcgaW50
-byB0aGF0IG9uZS4NCg0KPiBCdHcsIHdoeSBjYW4ndCB0aGF0IEJJT1MgYmUgZml4ZWQgaW5zdGVh
-ZD8NClRoaXMgYnVnIGlzIGZvdW5kIG9uIGEgcmVsZWFzZWQgcmVkaGF0IHNlcnZlciwgc28gSSB0
-aGluayBpdCB3b3VsZCBiZQ0KaGFyZCB0byB1cGRhdGUgYWxsIHVzZXJzJyBtYWNoaW5lcy4gDQo+
-IA0KPiAtLQ0KPiBSZWdhcmRzL0dydXNzLA0KPiAgICAgQm9yaXMuDQoNCkJlc3QgUmVnYXJkcywN
-Cll1DQo=
+SGkgLFJhZmFlbCwNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBSYWZh
+ZWwgSi4gV3lzb2NraSBbbWFpbHRvOnJqd0Byand5c29ja2kubmV0XQ0KPiBTZW50OiBUdWVzZGF5
+LCBPY3RvYmVyIDEzLCAyMDE1IDQ6MjAgQU0NCj4gVG86IENoZW4sIFl1IEMNCj4gQ2M6IFpoZW5n
+LCBMdjsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBsaW51eC1hY3BpQHZnZXIua2VybmVsLm9y
+ZzsgbGludXgtDQo+IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IFpoYW5nLCBSdWk7IFd5c29ja2ks
+IFJhZmFlbCBKOyBCcm93biwgTGVuDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdW3YzXSBBQ1BJIC8g
+UE06IEZpeCBpbmNvcnJlY3Qgd2FrZXVwIGlycSBzZXR0aW5nIGJlZm9yZQ0KPiBzdXNwZW5kLXRv
+LWlkbGUNCj4gDQo+IE9uIEZyaWRheSwgT2N0b2JlciAwOSwgMjAxNSAwOTo1MDoyMSBBTSBDaGVu
+LCBZdSBDIHdyb3RlOg0KPiA+IEhpLCBMVg0KPiA+DQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3Nh
+Z2UtLS0tLQ0KPiA+ID4gRnJvbTogWmhlbmcsIEx2DQo+ID4gPiBTZW50OiBGcmlkYXksIE9jdG9i
+ZXIgMDksIDIwMTUgNDozMyBQTQ0KPiA+ID4gVG86IENoZW4sIFl1IEM7IHJqd0Byand5c29ja2ku
+bmV0OyBsZW5iQGtlcm5lbC5vcmcNCj4gPiA+IENjOiBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7
+IGxpbnV4LWFjcGlAdmdlci5rZXJuZWwub3JnOyBsaW51eC0NCj4gPiA+IGtlcm5lbEB2Z2VyLmtl
+cm5lbC5vcmc7IFpoYW5nLCBSdWkNCj4gPiA+IFN1YmplY3Q6IFJFOiBbUEFUQ0hdW3YzXSBBQ1BJ
+IC8gUE06IEZpeCBpbmNvcnJlY3Qgd2FrZXVwIGlycSBzZXR0aW5nDQo+ID4gPiBiZWZvcmUgc3Vz
+cGVuZC10by1pZGxlDQo+ID4gPg0KPiA+ID4gSGksIFl1DQo+ID4gPg0KPiA+ID4gPiBGcm9tOiBD
+aGVuLCBZdSBDDQo+ID4gPiA+IFNlbnQ6IEZyaWRheSwgT2N0b2JlciAwOSwgMjAxNSA0OjIwIFBN
+DQo+ID4gPiA+DQo+ID4gPiA+DQo+ID4gPiA+ICBhY3BpX3N0YXR1cyBhY3BpX29zX3JlbW92ZV9p
+bnRlcnJ1cHRfaGFuZGxlcih1MzIgaXJxLA0KPiA+ID4gPiBhY3BpX29zZF9oYW5kbGVyIGhhbmRs
+ZXIpDQo+ID4gPg0KPiA+ID4gV2h5IGRvbid0IHlvdSByZW5hbWUgaXJxIGhlcmUgdG8gZ3NpIHRv
+IGltcHJvdmUgdGhlIHJlYWRhYmlsaXR5Pw0KPiA+ID4gVGhlIGZhbHNlIG5hbWluZyBhbmQgdGhl
+IHdyb25nIGV4YW1wbGUgd3JpdHRlbiBmb3IgdGhpcyBmdW5jdGlvbiBhcmUNCj4gPiA+IHByb2Jh
+Ymx5IHRoZSByb290IGNhdXNlcyBvZiBhbGwgb3RoZXIgYmFkIGNvZGUuDQo+ID4gPiBTbyBpZiB3
+ZSB3YW50IHRvIHN0b3AgcGVvcGxlIG1ha2luZyBmdXR1cmUgbWlzdGFrZXMsIHdlIG5lZWQgdG8N
+Cj4gPiA+IGNsZWFudXAgb3Vyc2VsdmVzLg0KPiA+ID4NCj4gPiBPSywgd2lsbCByZXdyaXRlIGlu
+IG5leHQgdmVyc2lvbi4NCj4gDQo+IEl0IHdvdWxkIGJlIGdvb2QgdG8gY2hhbmdlIHRoZSBzdWJq
+ZWN0IG9mIHRoZSBwYXRjaCB0b28gSSB0aGluaywgYmVjYXVzZSBpdCBpcw0KPiBub3QgYWJvdXQg
+d2FrZXVwIElSUXMgb25seSBhbnkgbW9yZS4NCj4gDQpPSywgd2lsbCBzZW5kIGFub3RoZXIgc2Vy
+aWVzIG9mIHBhdGNoZXMuDQoNCkJlc3QgUmVnYXJkcywNCll1DQoNCg==
