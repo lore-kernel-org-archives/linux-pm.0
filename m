@@ -1,162 +1,81 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v2 0/2] Enabling PSCI based idle on ARM 32-bit platforms
-Date: Wed, 14 Oct 2015 09:39:00 +0100
-Message-ID: <20151014083900.GA14523@red-moon>
-References: <1444648628-24790-1-git-send-email-lorenzo.pieralisi@arm.com>
- <561CC185.60001@linaro.org>
- <20151013104424.GA13899@red-moon>
- <561CE865.2000509@linaro.org>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH] cpufreq: arm_big_little: fix frequency check when bL
+ switcher is active
+Date: Wed, 14 Oct 2015 09:48:32 +0100
+Message-ID: <561E16E0.8030906@arm.com>
+References: <1443807532.2845.25.camel@linaro.org>
+ <20151007173920.GG4557@linux> <1444296229.2847.9.camel@linaro.org>
+ <561BB39A.4020400@arm.com> <1444720744.2686.10.camel@linaro.org>
+ <561CDEA9.7020700@arm.com> <1444806720.2691.15.camel@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:56691 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:56727 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751501AbbJNIi2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 14 Oct 2015 04:38:28 -0400
-Content-Disposition: inline
-In-Reply-To: <561CE865.2000509@linaro.org>
+	id S1751329AbbJNIsf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 14 Oct 2015 04:48:35 -0400
+In-Reply-To: <1444806720.2691.15.camel@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, arnd@arndb.de
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Russell King <linux@arm.linux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, Jisheng Zhang <jszhang@marvell.com>, Lina Iyer <lina.iyer@linaro.org>
+To: "Jon Medhurst (Tixy)" <tixy@linaro.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Daniel, Arnd,
 
-On Tue, Oct 13, 2015 at 01:17:57PM +0200, Daniel Lezcano wrote:
-> On 10/13/2015 12:44 PM, Lorenzo Pieralisi wrote:
-> >Hi Daniel,
-> >
-> >On Tue, Oct 13, 2015 at 10:32:05AM +0200, Daniel Lezcano wrote:
-> >>
-> >>Hi Lorenzo,
-> >>
-> >>I would like to take this patch through my tree but it does not app=
-ly.
-> >
-> >That's because as I mentioned in the cover letter the series is buil=
-t
-> >on top of:
-> >
-> >git://git.kernel.org/pub/scm/linux/kernel/git/lpieralisi/linux.git t=
-ags/firmware/psci-1.0
-> >
-> >Hopefully this tag will soon get pulled in arm-soc, I will respin a =
-v3
-> >anyway to add tags and fold psci_cpuops.c in psci.c, how do you want=
- to
-> >merge this then ?
->=20
-> May be you can create a branch with your modifications to be shared
-> with arm-soc and me ?
 
-I asked Arnd to create an immutable branch containing the patches
-in my pull request below in arm-soc:
+On 14/10/15 08:12, Jon Medhurst (Tixy) wrote:
+> On Tue, 2015-10-13 at 11:36 +0100, Sudeep Holla wrote:
+>>
+>> On 13/10/15 08:19, Jon Medhurst (Tixy) wrote:
+> [...]
+>>> But then we wouldn't get the WARN_ON and pr_err triggered when we detect
+>>> the clock rate isn't set, which surely is half the reason for the check
+>>> in the first place?
+>>>
+>>
+>> Not sure if I understand what you mean or may be I was not clear, so
+>> thought I will put the delta here. Let me know if and how its still a
+>> problem.
+>>
+>> diff --git i/drivers/cpufreq/arm_big_little.c
+>> w/drivers/cpufreq/arm_big_little.c
+>> index f1e42f8ce0fc..05e850f80f39 100644
+>> --- i/drivers/cpufreq/arm_big_little.c
+>> +++ w/drivers/cpufreq/arm_big_little.c
+>> @@ -164,6 +164,16 @@ bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32
+>> new_cluster, u32 rate)
+>>
+>>           mutex_unlock(&cluster_lock[new_cluster]);
+>>
+>> +       /*
+>> +        * FIXME: clk_set_rate has to handle the case where clk_change_rate
+>> +        * can fail due to hardware or firmware issues. Until the clk core
+>> +        * layer is fixed, we can check here. In most of the cases we will
+>> +        * be reading only the cached value anyway. This needs to  be
+>> removed
+>> +        * once clk core is fixed.
+>> +        */
+>> +       if (bL_cpufreq_get_rate(cpu) != new_rate)
+>> +               return -EIO;
+>> +
+>>           /* Recalc freq for old cluster when switching clusters */
+>>           if (old_cluster != new_cluster) {
+>>                   pr_debug("%s: cpu: %d, old cluster: %d, new cluster: %d\n",
+>
+> That's what I though you meant, and I can't see why you would want to do
+> that and bypass the error reporting for clk_get_rate failing. After all,
+> the code we're moving around is explicitly there to workaround the fact
+> that clk_set_rate doesn't actually pass through all errors, so it's
+> doing additional error checking. (At least, that's what the comment
+> says). So this looks more logical to me.
+>
 
-http://lists.infradead.org/pipermail/linux-arm-kernel/2015-October/3745=
-47.html
+OK, I understand what you mean now. I don't have a strong opinion, but
+here is the reason why I prefer the approach I said earlier:
+clk_set_rate doesn't return error if the h/w or f/w return error which
+is usually the last step. So calling clk_get_rate when clk_set_rate
+return error quite early makes no sense to me.
 
-I can then resend v3 of this series on top of it, or if you prefer I
-will send you a pull request (to a branch based on the arm-soc one with
-my patches on top) just let me know.
-
-Thanks !
-Lorenzo
-
-> >>Mind to refresh it against linux-pm or v4.3-rc5 ?
-> >>
-> >>   -- Daniel
-> >>
-> >>
-> >>On 10/12/2015 01:17 PM, Lorenzo Pieralisi wrote:
-> >>>This patch series is v2 of a previous posting:
-> >>>
-> >>>http://lists.infradead.org/pipermail/linux-arm-kernel/2015-October=
-/373756.html
-> >>>
-> >>>v1->v2:
-> >>>
-> >>>- Refactored patch 1 to remove cpu parameter from cpuidle_ops
-> >>>   suspend hook
-> >>>- Refactored psci_cpu_init_idle to stub out dt parsing function an=
-d
-> >>>   make it usable on both ARM/ARM64 with no additional changes
-> >>>- Updated ARM cpuidle_ops to new interfaces
-> >>>- Fixed PSCI enable method string in ARM cpuidle_ops struct
-> >>>
-> >>>PSCI firmware provides a kernel API that, through a standard inter=
-face,
-> >>>allows to manage power states transitions in a seamless manner for
-> >>>ARM and ARM64 systems.
-> >>>
-> >>>Current PSCI code that initializes CPUidle states on PSCI based
-> >>>systems lives in arch/arm64 directory but it is not ARM64 specific
-> >>>and can be shared with ARM 32-bit systems so that the generic
-> >>>ARM CPUidle driver can leverage the common PSCI interface.
-> >>>
-> >>>This patch series moves PSCI CPUidle management code to
-> >>>drivers/firmware directory so that ARM and ARM64 architecture
-> >>>can actually share the code.
-> >>>
-> >>>It is made up of two patches:
-> >>>
-> >>>Patch 1 refactors ARM 32-bit generic idle implementation to remove
-> >>>the cpu parameter from the cpuidle_ops suspend hook, in preparatio=
-n
-> >>>for a common PSCI implementation for ARM/ARM64 PSCI idle.
-> >>>
-> >>>Patch 2 moves ARM64 PSCI CPUidle functions implementation to
-> >>>drivers/firmware so that it can be shared with ARM 32-bit platform=
-s
-> >>>code. This patch also adds a PSCI entry section on ARM 32-bit syst=
-ems
-> >>>so that the PSCI CPUidle back-end can be enabled when the enable-m=
-ethod
-> >>>corresponds to PSCI.
-> >>>
-> >>>Patches apply on top of current patch stack to enable PSCI 1.0:
-> >>>
-> >>>git://git.kernel.org/pub/scm/linux/kernel/git/lpieralisi/linux.git=
- tags/firmware/psci-1.0
-> >>>
-> >>>Tested on Juno board (ARM64), compile tested only on ARM 32-bit sy=
-stems.
-> >>>
-> >>>Lorenzo Pieralisi (2):
-> >>>   ARM: cpuidle: remove cpu parameter from the cpuidle_ops suspend=
- hook
-> >>>   ARM64: kernel: PSCI: move PSCI idle management code to
-> >>>     drivers/firmware
-> >>>
-> >>>  arch/arm/include/asm/cpuidle.h |   2 +-
-> >>>  arch/arm/kernel/cpuidle.c      |   2 +-
-> >>>  arch/arm64/kernel/psci.c       |  99 +--------------------------=
----
-> >>>  drivers/firmware/Makefile      |   2 +-
-> >>>  drivers/firmware/psci_cpuops.c | 133 +++++++++++++++++++++++++++=
-++++++++++++++
-> >>>  drivers/soc/qcom/spm.c         |  10 ++--
-> >>>  include/linux/psci.h           |   3 +
-> >>>  7 files changed, 146 insertions(+), 105 deletions(-)
-> >>>  create mode 100644 drivers/firmware/psci_cpuops.c
-> >>>
-> >>
-> >>
-> >>--
-> >>  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source softwar=
-e for ARM SoCs
-> >>
-> >>Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-> >><http://twitter.com/#!/linaroorg> Twitter |
-> >><http://www.linaro.org/linaro-blog/> Blog
-> >>
->=20
->=20
-> --=20
->  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software f=
-or ARM SoCs
->=20
-> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-> <http://twitter.com/#!/linaroorg> Twitter |
-> <http://www.linaro.org/linaro-blog/> Blog
->=20
+-- 
+Regards,
+Sudeep
