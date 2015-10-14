@@ -1,265 +1,380 @@
-From: kbuild test robot <lkp@intel.com>
-Subject: Re: [PATCH][v5] PM / hibernate: Print the possible panic reason when
- resuming with inconsistent e820 map
-Date: Thu, 15 Oct 2015 04:10:59 +0800
-Message-ID: <201510150435.b66kiwpS%fengguang.wu@intel.com>
-References: <1444849196-7048-1-git-send-email-yu.c.chen@intel.com>
+From: Al Stone <ahs3@redhat.com>
+Subject: Re: [Linaro-acpi] [PATCH v5 0/5] Provide better MADT subtable sanity
+ checks
+Date: Wed, 14 Oct 2015 14:20:51 -0600
+Message-ID: <561EB923.6010109@redhat.com>
+References: <1443570346-15378-1-git-send-email-al.stone@linaro.org>
+ <560BA4C9.7090607@huawei.com> <560C0968.6020904@redhat.com>
+ <2808057.teMg2oCLf6@vostro.rjw.lan> <5612AF64.4060900@redhat.com>
+ <561B2442.9050600@erley.org> <561B2DAD.5070601@linaro.org>
+ <561B2FCA.1010504@erley.org> <561C1D87.8010106@linaro.org>
+ <561C8351.3030304@erley.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="ZGiS0Q5IWpPtfppv"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1444849196-7048-1-git-send-email-yu.c.chen@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-Cc: kbuild-all@01.org, pavel@ucw.cz, rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, len.brown@intel.com, rui.zhang@intel.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>
+Content-Type: multipart/mixed;
+ boundary="------------020400080004050109020606"
+Return-path: <linux-ia64-owner@vger.kernel.org>
+In-Reply-To: <561C8351.3030304@erley.org>
+Sender: linux-ia64-owner@vger.kernel.org
+To: Pat Erley <pat-lkml@erley.org>, Al Stone <al.stone@linaro.org>, Hanjun Guo <hanjun.guo@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-ia64@vger.kernel.org, linaro-acpi@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, patches@linaro.org, Hanjun Guo <guohanjun@huawei.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------020400080004050109020606
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 
---ZGiS0Q5IWpPtfppv
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+On 10/12/2015 10:06 PM, Pat Erley wrote:
+> On 10/12/2015 01:52 PM, Al Stone wrote:
+>> On 10/11/2015 09:58 PM, Pat Erley wrote:
+>>> On 10/11/2015 08:49 PM, Hanjun Guo wrote:
+>>>> On 10/12/2015 11:08 AM, Pat Erley wrote:
+>>>>> On 10/05/2015 10:12 AM, Al Stone wrote:
+>>>>>> On 10/05/2015 07:39 AM, Rafael J. Wysocki wrote:
+>>>>>>> On Wednesday, September 30, 2015 10:10:16 AM Al Stone wrote:
+>>>>>>>> On 09/30/2015 03:00 AM, Hanjun Guo wrote:
+>>>>>>>>> On 2015/9/30 7:45, Al Stone wrote:
+>>>>>>>>>> NB: this patch set is for use against the linux-pm bleeding edge
+>>>>>>>>>> branch.
+>>>>>>>>>>
+>>>>>>>>
+>>>>>>>> [snip...]
+>>>>>>>>
+>>>>>>>>>
+>>>>>>>>> For this patch set,
+>>>>>>>>>
+>>>>>>>>> Reviewed-by: Hanjun Guo <hanjun.guo@linaro.org>
+>>>>>>>>>
+>>>>>>>>> Thanks
+>>>>>>>>> Hanjun
+>>>>>>>>
+>>>>>>>> Thanks, Hanjun!
+>>>>>>>
+>>>>>>> Series applied, thanks!
+>>>>>>>
+>>>>>>> Rafael
+>>>>>>>
+>>>>>>
+>>>>>> Thanks, Rafael!
+>>>>>>
+>>>>>
+>>>>> Just decided to test out linux-next (to see the new nouveau cleanups).
+>>>>> This change set prevents my Lenovo W510 from booting properly.
+>>>>>
+>>>>> Reverting: 7494b0 "ACPI: add in a bad_madt_entry() function to
+>>>>> eventually replace the macro"
+>>>>>
+>>>>> Gets the system booting again.  I'm attaching my dmesg from the failed
+>>>>> boot, who wants the acpidump?
+>>>>
+>>>> [    0.000000] ACPI: undefined version for either FADT 4.0 or MADT 1
+>>>> [    0.000000] ACPI: Error parsing LAPIC address override entry
+>>>> [    0.000000] ACPI: Invalid BIOS MADT, disabling ACPI
+>>>>
+>>>> Seems the MADT revision is not right, could you dump the ACPI MADT
+>>>> (APIC) table and send it out? I will take a look :)
+>>>>
+>>>> Thanks
+>>>> Hanjun
+>>>
+>>> Here ya go, enjoy.  Feel free to CC me on any patches that might fix it.
+>>
+>> Pat,
+>>
+>> Would you mind sending a copy of the FADT, also, please?  The first of the
+>> ACPI messages is a check of version correspondence between the FADT and MADT,
+>> while the second message is from looking at just an MADT subtable.  Thanks
+>> for sending the MADT out -- that helps me quite a lot in thinking this through.
+>>
+>> BTW, whoever is providing the BIOS (Lenovo, I assume) may want to have a look
+>> at these, also:
+>>
+>> [    0.000000] ACPI BIOS Warning (bug): 32/64X length mismatch in
+>> FADT/Pm1aControlBlock: 16/32 (20150818/tbfadt-623)
+>> [    0.000000] ACPI BIOS Warning (bug): Invalid length for
+>> FADT/Pm1aControlBlock: 32, using default 16 (20150818/tbfadt-704)
+>>
+>> Not inherently dangerous, but definitely sloppy and mind-numbingly easy to
+>> avoid, IIRC.
+>>
+> 
+> Here ya go.
 
-Hi Chen,
+Okay.  There's just a lot of weird stuff out there in ACPI-land.  I've
+attached four minor fixes for the special cases that have been reported
+(well, the last one is actually a fix for a typo in the spec, but just
+the same...).
 
-[auto build test ERROR on tip/x86/core -- if it's inappropriate base, please suggest rules for selecting the more suitable base]
+These should apply on top of linux-next; would you mind trying them out
+to make sure I didn't break anything else on your laptop?  If they behave
+as I hope they will, I think I'll have covered all the places where the
+checking of MADT subtables needs to be be relaxed a bit.  These work for
+me on arm64, but if they work for you and a couple of other testers, then
+I'll send them to Rafael properly.
 
-url:    https://github.com/0day-ci/linux/commits/Chen-Yu/PM-hibernate-Print-the-possible-panic-reason-when-resuming-with-inconsistent-e820-map/20151015-030054
-config: m68k-sun3_defconfig (attached as .config)
-reproduce:
-        wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # save the attached .config to linux build tree
-        make.cross ARCH=m68k 
+Many thanks!
 
-All errors (new ones prefixed by >>):
+-- 
+ciao,
+al
+-----------------------------------
+Al Stone
+Software Engineer
+Red Hat, Inc.
+ahs3@redhat.com
+-----------------------------------
 
-   In file included from drivers/tty/sysrq.c:34:0:
->> include/linux/suspend.h:11:25: fatal error: asm/suspend.h: No such file or directory
-    #include <asm/suspend.h>
-                            ^
-   compilation terminated.
+--------------020400080004050109020606
+Content-Type: text/x-patch;
+ name="0001-ACPI-workaround-x86-firmware-using-reserved-MADT-sub.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename*0="0001-ACPI-workaround-x86-firmware-using-reserved-MADT-sub.pa";
+ filename*1="tch"
 
-vim +11 include/linux/suspend.h
+>From 52a2011c4998674d80c4456e6fd8ba11beaee65c Mon Sep 17 00:00:00 2001
+From: Al Stone <ahs3@redhat.com>
+Date: Tue, 13 Oct 2015 15:29:15 -0600
+Subject: [PATCH 1/4] ACPI: workaround x86 firmware using reserved MADT
+ subtable IDs
 
-     5	#include <linux/notifier.h>
-     6	#include <linux/init.h>
-     7	#include <linux/pm.h>
-     8	#include <linux/mm.h>
-     9	#include <linux/freezer.h>
-    10	#include <asm/errno.h>
-  > 11	#include <asm/suspend.h>
-    12	
-    13	#ifdef CONFIG_VT
-    14	extern void pm_set_vt_switch(int);
+According to the ACPI specification, version 6.0, table 5-46,  MADT
+subtable IDs in the range of 0x10-0x7f are reserved for possible
+future use by the specification.  The function bad_madt_entry() tries
+to enforce the spec, but it turns out there are x86 machines that use
+0x7f even though they should not.
 
+So, continue to enforce this rule for arm64, since we're starting out
+fresh, but relax it for systems already out there so we don't keep them
+from booting.
+
+Signed-off-by: Al Stone <al.stone@linaro.org>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+ drivers/acpi/tables.c | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
 
---ZGiS0Q5IWpPtfppv
-Content-Type: application/octet-stream
-Content-Disposition: attachment; filename=".config.gz"
-Content-Transfer-Encoding: base64
+diff --git a/drivers/acpi/tables.c b/drivers/acpi/tables.c
+index a2ed38a..e5cfd72 100644
+--- a/drivers/acpi/tables.c
++++ b/drivers/acpi/tables.c
+@@ -413,9 +413,17 @@ static int __init bad_madt_entry(struct acpi_table_header *table,
+ 	}
+ 
+ 	if (entry->type >= ms->num_types) {
+-		pr_err("undefined MADT subtable type for FADT %d.%d: %d (length %d)\n",
+-		       major, minor, entry->type, entry->length);
+-		return 1;
++		if (IS_ENABLED(CONFIG_ARM64)) {
++			/* Enforce this stricture on arm64... */
++			pr_err("undefined MADT subtable type for FADT %d.%d: %d (length %d)\n",
++			       major, minor, entry->type, entry->length);
++			return 1;
++		} else {
++			/* ... but relax it on legacy systems so they boot */
++			pr_warn("undefined MADT subtable type for FADT %d.%d: %d (length %d)\n",
++			         major, minor, entry->type, entry->length);
++			return 0;
++		}
+ 	}
+ 
+ 	/* verify that the table is allowed for this version of the spec */
+-- 
+2.4.3
 
-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
 
---ZGiS0Q5IWpPtfppv--
+--------------020400080004050109020606
+Content-Type: text/x-patch;
+ name="0002-ACPI-workaround-x86-firmware-with-mis-matched-FADT-M.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename*0="0002-ACPI-workaround-x86-firmware-with-mis-matched-FADT-M.pa";
+ filename*1="tch"
+
+>From 8b7e93421a1bd3a35ed6200fb778b87e9bff34c5 Mon Sep 17 00:00:00 2001
+From: Al Stone <ahs3@redhat.com>
+Date: Tue, 13 Oct 2015 15:51:13 -0600
+Subject: [PATCH 2/4] ACPI: workaround x86 firmware with mis-matched FADT/MADT
+ revisions
+
+Looking across multiple versions of the ACPI specification, certain
+versions introduce new revision numbers for the FADT and/or MADT
+tables.  So, for example, an FADT indicating it is revision 4 should
+not be paired with an MADT revision of anything less than 2.
+
+However, there are systems out there that do not update the revision
+fields in the FADT and MADT tables as they should.  So, for arm64, we
+can be stricter in complying with the specification, but we need to
+relax the checking for legacy systems.
+
+Signed-off-by: Al Stone <al.stone@linaro.org>
+---
+ drivers/acpi/tables.c | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/acpi/tables.c b/drivers/acpi/tables.c
+index e5cfd72..3b5ddfb 100644
+--- a/drivers/acpi/tables.c
++++ b/drivers/acpi/tables.c
+@@ -407,9 +407,17 @@ static int __init bad_madt_entry(struct acpi_table_header *table,
+ 		ms++;
+ 	}
+ 	if (!ms->num_types) {
+-		pr_err("undefined version for either FADT %d.%d or MADT %d\n",
+-		       major, minor, madt->header.revision);
+-		return 1;
++		if (IS_ENABLED(CONFIG_ARM64)) {
++			/* Enforce this stricture on arm64... */
++			pr_err("undefined version for either FADT %d.%d or MADT %d\n",
++			       major, minor, madt->header.revision);
++			return 1;
++		} else {
++			/* ... but relax it on legacy systems so they boot */
++			pr_warn("undefined version for either FADT %d.%d or MADT %d\n",
++			        major, minor, madt->header.revision);
++			return 0;
++		}
+ 	}
+ 
+ 	if (entry->type >= ms->num_types) {
+-- 
+2.4.3
+
+
+--------------020400080004050109020606
+Content-Type: text/x-patch;
+ name="0003-ACPI-workaround-FADT-always-being-revision-2.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="0003-ACPI-workaround-FADT-always-being-revision-2.patch"
+
+>From 773dd448360098b6faf6c171dd716371d603f3ef Mon Sep 17 00:00:00 2001
+From: Al Stone <ahs3@redhat.com>
+Date: Tue, 13 Oct 2015 16:23:21 -0600
+Subject: [PATCH 3/4] ACPI: workaround FADT always being revision 2
+
+In some environments, the FADT revision number is always 2, independent
+of any other factors indicating that it may be a newer revision.  So,
+we cannot rely on the FADT and MADT revisions being in proper step.  For
+those environments, relax the checking so we only enforce the size check,
+even if we do issue warnings on other problems.
+
+If we do not relax the rules, these systems will not boot as they have in
+the past.
+
+Signed-off-by: Al Stone <al.stone@linaro.org>
+---
+ drivers/acpi/tables.c | 34 +++++++++++++++++++++++++++++-----
+ 1 file changed, 29 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/acpi/tables.c b/drivers/acpi/tables.c
+index 3b5ddfb..790d4b0 100644
+--- a/drivers/acpi/tables.c
++++ b/drivers/acpi/tables.c
+@@ -416,7 +416,6 @@ static int __init bad_madt_entry(struct acpi_table_header *table,
+ 			/* ... but relax it on legacy systems so they boot */
+ 			pr_warn("undefined version for either FADT %d.%d or MADT %d\n",
+ 			        major, minor, madt->header.revision);
+-			return 0;
+ 		}
+ 	}
+ 
+@@ -430,16 +429,41 @@ static int __init bad_madt_entry(struct acpi_table_header *table,
+ 			/* ... but relax it on legacy systems so they boot */
+ 			pr_warn("undefined MADT subtable type for FADT %d.%d: %d (length %d)\n",
+ 			         major, minor, entry->type, entry->length);
+-			return 0;
+ 		}
+ 	}
+ 
+ 	/* verify that the table is allowed for this version of the spec */
+ 	len = ms->lengths[entry->type];
+ 	if (!len) {
+-		pr_err("MADT subtable %d not defined for FADT %d.%d\n",
+-			 entry->type, major, minor);
+-		return 1;
++		if (IS_ENABLED(CONFIG_ARM64)) {
++			pr_err("MADT subtable %d not defined for FADT %d.%d\n",
++			       entry->type, major, minor);
++			return 1;
++		} else {
++			pr_warn("MADT subtable %d not defined for FADT %d.%d\n",
++			        entry->type, major, minor);
++		}
++	}
++
++	/*
++	 * When we get this far, we may have issued warnings on either
++	 * a mismatch in FADT/MADT revisions, or have noted that the subtable
++	 * ID is not defined for the MADT revision we're using.  On some
++	 * architectures, this is an error, but for legacy systems, we need
++	 * to push on with other checks of the subtable.
++	 *
++	 * In fact, there are environments where the *only* value the FADT
++	 * revision will ever have is 2, regardless of anything else.  So,
++	 * for those systems to boot, we have to pretend the MADT is the
++	 * latest version to allow all known subtables since we have no way
++	 * to determine what revision it should be.
++	 */
++	if (!IS_ENABLED(CONFIG_ARM64) && major == 2) {
++		ms = spec_info;
++		while (ms->num_types != 0)
++			ms++;
++		ms--;
++		len = ms->lengths[entry->type];
+ 	}
+ 
+ 	/* verify that the length is what we expect */
+-- 
+2.4.3
+
+
+--------------020400080004050109020606
+Content-Type: text/x-patch;
+ name="0004-ACPI-for-bad_madt_entry-the-GIC-ITS-table-is-20-byte.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename*0="0004-ACPI-for-bad_madt_entry-the-GIC-ITS-table-is-20-byte.pa";
+ filename*1="tch"
+
+>From 6d3189ccfcbac9a61e6502df70499bd2ee808509 Mon Sep 17 00:00:00 2001
+From: Al Stone <ahs3@redhat.com>
+Date: Tue, 13 Oct 2015 16:31:50 -0600
+Subject: [PATCH 4/4] ACPI: for bad_madt_entry(), the GIC ITS table is 20 bytes
+ long, not 16
+
+Correct a typo where bad_madt_entry() expected the MADT GIC ITS subtable
+to be 16 bytes long, but it is actually 20 bytes.  This is a cut'n'paste
+error picked up from the spec and inadvertently replicated in code.
+
+Signed-off-by: Al Stone <al.stone@linaro.org>
+---
+ drivers/acpi/tables.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/acpi/tables.c b/drivers/acpi/tables.c
+index 790d4b0..1b7c13e 100644
+--- a/drivers/acpi/tables.c
++++ b/drivers/acpi/tables.c
+@@ -292,7 +292,7 @@ void acpi_table_print_madt_entry(struct acpi_subtable_header *header)
+  * GICD                  0xc                         24    24    24
+  * GICv2m MSI            0xd                               24    24
+  * GICR                  0xe                               16    16
+- * GIC ITS               0xf                                     16
++ * GIC ITS               0xf                                     20
+  *
+  * In the table, each length entry is what should be in the length
+  * field of the subtable, and -- in general -- it should match the
+@@ -366,7 +366,7 @@ static struct acpi_madt_subtable_lengths spec_info[] = {
+ 		.madt_version = 3,
+ 		.num_types = 16,
+ 		.lengths = { 8, 12, 10, 8, 6, 12, 16, SUBTABLE_VARIABLE,
+-			     16, 16, 12, 80, 24, 24, 16, 16 }
++			     16, 16, 12, 80, 24, 24, 16, 20 }
+ 	},
+ 	{ /* terminator */
+ 		.major_version = 0,
+-- 
+2.4.3
+
+
+--------------020400080004050109020606--
