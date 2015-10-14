@@ -1,259 +1,323 @@
-From: kbuild test robot <lkp@intel.com>
-Subject: Re: [PATCH][v5] PM / hibernate: Print the possible panic reason when
- resuming with inconsistent e820 map
-Date: Thu, 15 Oct 2015 05:04:50 +0800
-Message-ID: <201510150524.FNlN97gI%fengguang.wu@intel.com>
-References: <1444849196-7048-1-git-send-email-yu.c.chen@intel.com>
+From: Kristen Carlson Accardi <kristen@linux.intel.com>
+Subject: Re: [PATCH] cpufreq, intel_pstate, Fix intel_pstate powersave
+ min_perf_pct value
+Date: Wed, 14 Oct 2015 14:09:57 -0700
+Message-ID: <20151014140957.36523ea9@kcaccard-desk.amr.corp.intel.com>
+References: <1444822919-14650-1-git-send-email-prarit@redhat.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="zhXaljGHf11kAtnf"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1444849196-7048-1-git-send-email-yu.c.chen@intel.com>
+In-Reply-To: <1444822919-14650-1-git-send-email-prarit@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
-Cc: kbuild-all@01.org, pavel@ucw.cz, rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, len.brown@intel.com, rui.zhang@intel.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Doug Smythies <dsmythies@telus.net>
 List-Id: linux-pm@vger.kernel.org
 
+On Wed, 14 Oct 2015 07:41:59 -0400
+Prarit Bhargava <prarit@redhat.com> wrote:
 
---zhXaljGHf11kAtnf
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> On systems that initialize the intel_pstate driver with the performance
+> governor, and then switch to the powersave governor will not transition to
+> lower cpu frequencies until /sys/devices/system/cpu/intel_pstate/min_perf_pct
+> is set to a low value.
+> 
+> The behavior of governor switching changed after commit a04759924e25
+> ("[cpufreq] intel_pstate: honor user space min_perf_pct override on
+>  resume").  The commit introduced tracking of performance percentage
+> changes via sysfs in order to restore userspace changes during
+> suspend/resume.  The problem occurs because the global values of the newly
+> introduced max_sysfs_pct and min_sysfs_pct are not lowered on the governor
+> change and this causes the powersave governor to inherit the performance
+> governor's settings.
+> 
+> A simple change would have been to reset max_sysfs_pct to 100 and
+> min_sysfs_pct to 0 on a governor change, which fixes the problem with
+> governor switching.  However, since we cannot break userspace[1] the fix
+> is now to give each governor its own limits storage area so that governor
+> specific changes are tracked.
+> 
+> I successfully tested this by booting with both the performance governor
+> and the powersave governor by default, and switching between the two
+> governors (while monitoring /sys/devices/system/cpu/intel_pstate/ values,
+> and looking at the output of cpupower frequency-info).  Suspend/Resume
+> testing was performed by Doug Smythies.
+> 
+> [1] Systems which suspend/resume using the unmaintained pm-utils package
+> will always transition to the performance governor before the suspend and
+> after the resume.  This means a system using the powersave governor will
+> go from powersave to performance, then suspend/resume, performance to
+> powersave.  The simple change during governor changes would have been
+> overwritten when the governor changed before and after the suspend/resume.
+> I have submitted https://bugzilla.redhat.com/show_bug.cgi?id=1271225
+> against Fedora to remove the 94cpufreq file that causes the problem.  It
+> should be noted that pm-utils is obsoleted with newer versions of systemd.
+> 
+> Cc: Kristen Carlson Accardi <kristen@linux.intel.com>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: linux-pm@vger.kernel.org
+> Cc: Doug Smythies <dsmythies@telus.net>
+> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
 
-Hi Chen,
+Acked-by: Kristen Carlson Accardi <kristen@linux.intel.com>
 
-[auto build test ERROR on tip/x86/core -- if it's inappropriate base, please suggest rules for selecting the more suitable base]
+BTW - I think I can see an issue here with HWP enabled systems.  It
+looks to me like the hwp settings will not be programmed correctly
+during a governor switch.  This probably needs to be addressed in a
+separate patch.
 
-url:    https://github.com/0day-ci/linux/commits/Chen-Yu/PM-hibernate-Print-the-possible-panic-reason-when-resuming-with-inconsistent-e820-map/20151015-030054
-config: um-x86_64_defconfig (attached as .config)
-reproduce:
-        # save the attached .config to linux build tree
-        make ARCH=um SUBARCH=x86_64
-
-All error/warnings (new ones prefixed by >>):
-
-   In file included from arch/x86/include/asm/suspend_64.h:9:0,
-                    from arch/x86/include/asm/suspend.h:4,
-                    from include/linux/suspend.h:11,
-                    from drivers/base/syscore.c:12:
->> arch/x86/um/asm/desc.h:6:0: warning: "LDT_empty" redefined
-    #define LDT_empty(info) (\
-    ^
-   In file included from arch/um/include/asm/mmu.h:10:0,
-                    from include/linux/mm_types.h:16,
-                    from include/linux/sched.h:27,
-                    from include/linux/cgroup.h:11,
-                    from include/linux/memcontrol.h:22,
-                    from include/linux/swap.h:8,
-                    from include/linux/suspend.h:4,
-                    from drivers/base/syscore.c:12:
-   arch/x86/um/asm/mm_context.h:63:0: note: this is the location of the previous definition
-    #define LDT_empty(info) (_LDT_empty(info) && ((info)->lm == 0))
-    ^
-   In file included from arch/x86/include/asm/suspend.h:4:0,
-                    from include/linux/suspend.h:11,
-                    from drivers/base/syscore.c:12:
->> arch/x86/include/asm/suspend_64.h:29:18: error: field 'gdt_desc' has incomplete type
-     struct desc_ptr gdt_desc;
-                     ^
->> arch/x86/include/asm/suspend_64.h:46:13: error: 'restore_registers' redeclared as different kind of symbol
-    extern char restore_registers;
-                ^
-   In file included from arch/um/include/asm/processor-generic.h:14:0,
-                    from arch/x86/um/asm/processor.h:33,
-                    from arch/x86/include/asm/atomic.h:6,
-                    from include/linux/atomic.h:4,
-                    from include/linux/mutex.h:18,
-                    from drivers/base/syscore.c:10:
-   arch/um/include/shared/registers.h:17:12: note: previous declaration of 'restore_registers' was here
-    extern int restore_registers(int pid, struct uml_pt_regs *regs);
-               ^
-   In file included from drivers/base/syscore.c:12:0:
-   include/linux/suspend.h:366:20: error: static declaration of 'arch_image_info_check' follows non-static declaration
-    static inline bool arch_image_info_check(const char *new,
-                       ^
-   In file included from include/linux/suspend.h:11:0,
-                    from drivers/base/syscore.c:12:
-   arch/x86/include/asm/suspend.h:8:13: note: previous declaration of 'arch_image_info_check' was here
-    extern bool arch_image_info_check(const char *new, const char *old);
-                ^
-   In file included from drivers/base/syscore.c:12:0:
-   include/linux/suspend.h:372:19: error: static declaration of 'arch_image_info_save' follows non-static declaration
-    static inline int arch_image_info_save(char *dst,
-                      ^
-   In file included from include/linux/suspend.h:11:0,
-                    from drivers/base/syscore.c:12:
-   arch/x86/include/asm/suspend.h:7:12: note: previous declaration of 'arch_image_info_save' was here
-    extern int arch_image_info_save(char *dst, char *src, unsigned int limit_len);
-               ^
-
-vim +/gdt_desc +29 arch/x86/include/asm/suspend_64.h
-
-^1da177e include/asm-x86_64/suspend.h      Linus Torvalds        2005-04-16  23  	unsigned long gs_base, gs_kernel_base, fs_base;
-8d783b3e include/asm-x86_64/suspend.h      Pavel Machek          2005-06-25  24  	unsigned long cr0, cr2, cr3, cr4, cr8;
-85a0e753 arch/x86/include/asm/suspend_64.h Ondrej Zary           2010-06-08  25  	u64 misc_enable;
-85a0e753 arch/x86/include/asm/suspend_64.h Ondrej Zary           2010-06-08  26  	bool misc_enable_saved;
-3c321bce include/asm-x86_64/suspend.h      Vivek Goyal           2007-05-02  27  	unsigned long efer;
-cc456c4e arch/x86/include/asm/suspend_64.h Konrad Rzeszutek Wilk 2013-05-01  28  	u16 gdt_pad; /* Unused */
-cc456c4e arch/x86/include/asm/suspend_64.h Konrad Rzeszutek Wilk 2013-05-01 @29  	struct desc_ptr gdt_desc;
-^1da177e include/asm-x86_64/suspend.h      Linus Torvalds        2005-04-16  30  	u16 idt_pad;
-^1da177e include/asm-x86_64/suspend.h      Linus Torvalds        2005-04-16  31  	u16 idt_limit;
-^1da177e include/asm-x86_64/suspend.h      Linus Torvalds        2005-04-16  32  	unsigned long idt_base;
-^1da177e include/asm-x86_64/suspend.h      Linus Torvalds        2005-04-16  33  	u16 ldt;
-^1da177e include/asm-x86_64/suspend.h      Linus Torvalds        2005-04-16  34  	u16 tss;
-^1da177e include/asm-x86_64/suspend.h      Linus Torvalds        2005-04-16  35  	unsigned long tr;
-^1da177e include/asm-x86_64/suspend.h      Linus Torvalds        2005-04-16  36  	unsigned long safety;
-^1da177e include/asm-x86_64/suspend.h      Linus Torvalds        2005-04-16  37  	unsigned long return_address;
-^1da177e include/asm-x86_64/suspend.h      Linus Torvalds        2005-04-16  38  } __attribute__((packed));
-^1da177e include/asm-x86_64/suspend.h      Linus Torvalds        2005-04-16  39  
-^1da177e include/asm-x86_64/suspend.h      Linus Torvalds        2005-04-16  40  #define loaddebug(thread,register) \
-2b514e74 include/asm-x86_64/suspend.h      Jan Beulich           2006-03-25  41  	set_debugreg((thread)->debugreg##register, register)
-^1da177e include/asm-x86_64/suspend.h      Linus Torvalds        2005-04-16  42  
-^1da177e include/asm-x86_64/suspend.h      Linus Torvalds        2005-04-16  43  /* routines for saving/restoring kernel state */
-^1da177e include/asm-x86_64/suspend.h      Linus Torvalds        2005-04-16  44  extern int acpi_save_state_mem(void);
-d158cbdf include/asm-x86/suspend_64.h      Rafael J. Wysocki     2007-10-18  45  extern char core_restore_code;
-d158cbdf include/asm-x86/suspend_64.h      Rafael J. Wysocki     2007-10-18 @46  extern char restore_registers;
-0de80bcc include/asm-x86/suspend_64.h      Rafael J. Wysocki     2007-10-23  47  
-1965aae3 arch/x86/include/asm/suspend_64.h H. Peter Anvin        2008-10-22  48  #endif /* _ASM_X86_SUSPEND_64_H */
-
-:::::: The code at line 29 was first introduced by commit
-:::::: cc456c4e7cac3837a86aaa7ca3cb9f488d44d196 x86, gdt, hibernate: Store/load GDT for hibernate path.
-
-:::::: TO: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>
-:::::: CC: H. Peter Anvin <hpa@linux.intel.com>
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
-
---zhXaljGHf11kAtnf
-Content-Type: application/octet-stream
-Content-Disposition: attachment; filename=".config.gz"
-Content-Transfer-Encoding: base64
-
-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
-ZAAA
-
---zhXaljGHf11kAtnf--
+> ---
+>  drivers/cpufreq/intel_pstate.c |  120 +++++++++++++++++++++++++---------------
+>  1 file changed, 75 insertions(+), 45 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 3af9dd7..78b4be5 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -156,7 +156,20 @@ struct perf_limits {
+>  	int min_sysfs_pct;
+>  };
+>  
+> -static struct perf_limits limits = {
+> +static struct perf_limits performance_limits = {
+> +	.no_turbo = 0,
+> +	.turbo_disabled = 0,
+> +	.max_perf_pct = 100,
+> +	.max_perf = int_tofp(1),
+> +	.min_perf_pct = 100,
+> +	.min_perf = int_tofp(1),
+> +	.max_policy_pct = 100,
+> +	.max_sysfs_pct = 100,
+> +	.min_policy_pct = 0,
+> +	.min_sysfs_pct = 0,
+> +};
+> +
+> +static struct perf_limits powersave_limits = {
+>  	.no_turbo = 0,
+>  	.turbo_disabled = 0,
+>  	.max_perf_pct = 100,
+> @@ -169,6 +182,12 @@ static struct perf_limits limits = {
+>  	.min_sysfs_pct = 0,
+>  };
+>  
+> +#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE
+> +static struct perf_limits *limits = &performance_limits;
+> +#else
+> +static struct perf_limits *limits = &powersave_limits;
+> +#endif
+> +
+>  static inline void pid_reset(struct _pid *pid, int setpoint, int busy,
+>  			     int deadband, int integral) {
+>  	pid->setpoint = setpoint;
+> @@ -255,7 +274,7 @@ static inline void update_turbo_state(void)
+>  
+>  	cpu = all_cpu_data[0];
+>  	rdmsrl(MSR_IA32_MISC_ENABLE, misc_en);
+> -	limits.turbo_disabled =
+> +	limits->turbo_disabled =
+>  		(misc_en & MSR_IA32_MISC_ENABLE_TURBO_DISABLE ||
+>  		 cpu->pstate.max_pstate == cpu->pstate.turbo_pstate);
+>  }
+> @@ -274,14 +293,14 @@ static void intel_pstate_hwp_set(void)
+>  
+>  	for_each_online_cpu(cpu) {
+>  		rdmsrl_on_cpu(cpu, MSR_HWP_REQUEST, &value);
+> -		adj_range = limits.min_perf_pct * range / 100;
+> +		adj_range = limits->min_perf_pct * range / 100;
+>  		min = hw_min + adj_range;
+>  		value &= ~HWP_MIN_PERF(~0L);
+>  		value |= HWP_MIN_PERF(min);
+>  
+> -		adj_range = limits.max_perf_pct * range / 100;
+> +		adj_range = limits->max_perf_pct * range / 100;
+>  		max = hw_min + adj_range;
+> -		if (limits.no_turbo) {
+> +		if (limits->no_turbo) {
+>  			hw_max = HWP_GUARANTEED_PERF(cap);
+>  			if (hw_max < max)
+>  				max = hw_max;
+> @@ -350,7 +369,7 @@ static void __init intel_pstate_debug_expose_params(void)
+>  	static ssize_t show_##file_name					\
+>  	(struct kobject *kobj, struct attribute *attr, char *buf)	\
+>  	{								\
+> -		return sprintf(buf, "%u\n", limits.object);		\
+> +		return sprintf(buf, "%u\n", limits->object);		\
+>  	}
+>  
+>  static ssize_t show_turbo_pct(struct kobject *kobj,
+> @@ -386,10 +405,10 @@ static ssize_t show_no_turbo(struct kobject *kobj,
+>  	ssize_t ret;
+>  
+>  	update_turbo_state();
+> -	if (limits.turbo_disabled)
+> -		ret = sprintf(buf, "%u\n", limits.turbo_disabled);
+> +	if (limits->turbo_disabled)
+> +		ret = sprintf(buf, "%u\n", limits->turbo_disabled);
+>  	else
+> -		ret = sprintf(buf, "%u\n", limits.no_turbo);
+> +		ret = sprintf(buf, "%u\n", limits->no_turbo);
+>  
+>  	return ret;
+>  }
+> @@ -405,12 +424,12 @@ static ssize_t store_no_turbo(struct kobject *a, struct attribute *b,
+>  		return -EINVAL;
+>  
+>  	update_turbo_state();
+> -	if (limits.turbo_disabled) {
+> +	if (limits->turbo_disabled) {
+>  		pr_warn("intel_pstate: Turbo disabled by BIOS or unavailable on processor\n");
+>  		return -EPERM;
+>  	}
+>  
+> -	limits.no_turbo = clamp_t(int, input, 0, 1);
+> +	limits->no_turbo = clamp_t(int, input, 0, 1);
+>  
+>  	if (hwp_active)
+>  		intel_pstate_hwp_set();
+> @@ -428,11 +447,15 @@ static ssize_t store_max_perf_pct(struct kobject *a, struct attribute *b,
+>  	if (ret != 1)
+>  		return -EINVAL;
+>  
+> -	limits.max_sysfs_pct = clamp_t(int, input, 0 , 100);
+> -	limits.max_perf_pct = min(limits.max_policy_pct, limits.max_sysfs_pct);
+> -	limits.max_perf_pct = max(limits.min_policy_pct, limits.max_perf_pct);
+> -	limits.max_perf_pct = max(limits.min_perf_pct, limits.max_perf_pct);
+> -	limits.max_perf = div_fp(int_tofp(limits.max_perf_pct), int_tofp(100));
+> +	limits->max_sysfs_pct = clamp_t(int, input, 0 , 100);
+> +	limits->max_perf_pct = min(limits->max_policy_pct,
+> +				   limits->max_sysfs_pct);
+> +	limits->max_perf_pct = max(limits->min_policy_pct,
+> +				   limits->max_perf_pct);
+> +	limits->max_perf_pct = max(limits->min_perf_pct,
+> +				   limits->max_perf_pct);
+> +	limits->max_perf = div_fp(int_tofp(limits->max_perf_pct),
+> +				  int_tofp(100));
+>  
+>  	if (hwp_active)
+>  		intel_pstate_hwp_set();
+> @@ -449,11 +472,15 @@ static ssize_t store_min_perf_pct(struct kobject *a, struct attribute *b,
+>  	if (ret != 1)
+>  		return -EINVAL;
+>  
+> -	limits.min_sysfs_pct = clamp_t(int, input, 0 , 100);
+> -	limits.min_perf_pct = max(limits.min_policy_pct, limits.min_sysfs_pct);
+> -	limits.min_perf_pct = min(limits.max_policy_pct, limits.min_perf_pct);
+> -	limits.min_perf_pct = min(limits.max_perf_pct, limits.min_perf_pct);
+> -	limits.min_perf = div_fp(int_tofp(limits.min_perf_pct), int_tofp(100));
+> +	limits->min_sysfs_pct = clamp_t(int, input, 0 , 100);
+> +	limits->min_perf_pct = max(limits->min_policy_pct,
+> +				   limits->min_sysfs_pct);
+> +	limits->min_perf_pct = min(limits->max_policy_pct,
+> +				   limits->min_perf_pct);
+> +	limits->min_perf_pct = min(limits->max_perf_pct,
+> +				   limits->min_perf_pct);
+> +	limits->min_perf = div_fp(int_tofp(limits->min_perf_pct),
+> +				  int_tofp(100));
+>  
+>  	if (hwp_active)
+>  		intel_pstate_hwp_set();
+> @@ -533,7 +560,7 @@ static void byt_set_pstate(struct cpudata *cpudata, int pstate)
+>  	u32 vid;
+>  
+>  	val = (u64)pstate << 8;
+> -	if (limits.no_turbo && !limits.turbo_disabled)
+> +	if (limits->no_turbo && !limits->turbo_disabled)
+>  		val |= (u64)1 << 32;
+>  
+>  	vid_fp = cpudata->vid.min + mul_fp(
+> @@ -622,7 +649,7 @@ static void core_set_pstate(struct cpudata *cpudata, int pstate)
+>  	u64 val;
+>  
+>  	val = (u64)pstate << 8;
+> -	if (limits.no_turbo && !limits.turbo_disabled)
+> +	if (limits->no_turbo && !limits->turbo_disabled)
+>  		val |= (u64)1 << 32;
+>  
+>  	wrmsrl_on_cpu(cpudata->cpu, MSR_IA32_PERF_CTL, val);
+> @@ -702,7 +729,7 @@ static void intel_pstate_get_min_max(struct cpudata *cpu, int *min, int *max)
+>  	int max_perf_adj;
+>  	int min_perf;
+>  
+> -	if (limits.no_turbo || limits.turbo_disabled)
+> +	if (limits->no_turbo || limits->turbo_disabled)
+>  		max_perf = cpu->pstate.max_pstate;
+>  
+>  	/*
+> @@ -710,11 +737,11 @@ static void intel_pstate_get_min_max(struct cpudata *cpu, int *min, int *max)
+>  	 * policy, or by cpu specific default values determined through
+>  	 * experimentation.
+>  	 */
+> -	max_perf_adj = fp_toint(mul_fp(int_tofp(max_perf), limits.max_perf));
+> +	max_perf_adj = fp_toint(mul_fp(int_tofp(max_perf), limits->max_perf));
+>  	*max = clamp_t(int, max_perf_adj,
+>  			cpu->pstate.min_pstate, cpu->pstate.turbo_pstate);
+>  
+> -	min_perf = fp_toint(mul_fp(int_tofp(max_perf), limits.min_perf));
+> +	min_perf = fp_toint(mul_fp(int_tofp(max_perf), limits->min_perf));
+>  	*min = clamp_t(int, min_perf, cpu->pstate.min_pstate, max_perf);
+>  }
+>  
+> @@ -988,32 +1015,35 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+>  
+>  	if (policy->policy == CPUFREQ_POLICY_PERFORMANCE &&
+>  	    policy->max >= policy->cpuinfo.max_freq) {
+> -		limits.min_policy_pct = 100;
+> -		limits.min_perf_pct = 100;
+> -		limits.min_perf = int_tofp(1);
+> -		limits.max_policy_pct = 100;
+> -		limits.max_perf_pct = 100;
+> -		limits.max_perf = int_tofp(1);
+> -		limits.no_turbo = 0;
+> +		pr_debug("intel_pstate: set performance\n");
+> +		limits = &performance_limits;
+>  		return 0;
+>  	}
+>  
+> -	limits.min_policy_pct = (policy->min * 100) / policy->cpuinfo.max_freq;
+> -	limits.min_policy_pct = clamp_t(int, limits.min_policy_pct, 0 , 100);
+> -	limits.max_policy_pct = (policy->max * 100) / policy->cpuinfo.max_freq;
+> -	limits.max_policy_pct = clamp_t(int, limits.max_policy_pct, 0 , 100);
+> +	pr_debug("intel_pstate: set powersave\n");
+> +	limits = &powersave_limits;
+> +	limits->min_policy_pct = (policy->min * 100) / policy->cpuinfo.max_freq;
+> +	limits->min_policy_pct = clamp_t(int, limits->min_policy_pct, 0 , 100);
+> +	limits->max_policy_pct = (policy->max * 100) / policy->cpuinfo.max_freq;
+> +	limits->max_policy_pct = clamp_t(int, limits->max_policy_pct, 0 , 100);
+>  
+>  	/* Normalize user input to [min_policy_pct, max_policy_pct] */
+> -	limits.min_perf_pct = max(limits.min_policy_pct, limits.min_sysfs_pct);
+> -	limits.min_perf_pct = min(limits.max_policy_pct, limits.min_perf_pct);
+> -	limits.max_perf_pct = min(limits.max_policy_pct, limits.max_sysfs_pct);
+> -	limits.max_perf_pct = max(limits.min_policy_pct, limits.max_perf_pct);
+> +	limits->min_perf_pct = max(limits->min_policy_pct,
+> +				   limits->min_sysfs_pct);
+> +	limits->min_perf_pct = min(limits->max_policy_pct,
+> +				   limits->min_perf_pct);
+> +	limits->max_perf_pct = min(limits->max_policy_pct,
+> +				   limits->max_sysfs_pct);
+> +	limits->max_perf_pct = max(limits->min_policy_pct,
+> +				   limits->max_perf_pct);
+>  
+>  	/* Make sure min_perf_pct <= max_perf_pct */
+> -	limits.min_perf_pct = min(limits.max_perf_pct, limits.min_perf_pct);
+> +	limits->min_perf_pct = min(limits->max_perf_pct, limits->min_perf_pct);
+>  
+> -	limits.min_perf = div_fp(int_tofp(limits.min_perf_pct), int_tofp(100));
+> -	limits.max_perf = div_fp(int_tofp(limits.max_perf_pct), int_tofp(100));
+> +	limits->min_perf = div_fp(int_tofp(limits->min_perf_pct),
+> +				  int_tofp(100));
+> +	limits->max_perf = div_fp(int_tofp(limits->max_perf_pct),
+> +				  int_tofp(100));
+>  
+>  	if (hwp_active)
+>  		intel_pstate_hwp_set();
+> @@ -1057,7 +1087,7 @@ static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
+>  
+>  	cpu = all_cpu_data[policy->cpu];
+>  
+> -	if (limits.min_perf_pct == 100 && limits.max_perf_pct == 100)
+> +	if (limits->min_perf_pct == 100 && limits->max_perf_pct == 100)
+>  		policy->policy = CPUFREQ_POLICY_PERFORMANCE;
+>  	else
+>  		policy->policy = CPUFREQ_POLICY_POWERSAVE;
