@@ -1,91 +1,54 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH 3/3] Thermal: do thermal zone update after a cooling
- device registered
-Date: Wed, 14 Oct 2015 18:07:39 +0100
-Message-ID: <20151014170739.GB2998@e104805>
-References: <1443332924-14028-1-git-send-email-yu.c.chen@intel.com>
- <20150928142902.GA9175@e104805>
- <36DF59CE26D8EE47B0655C516E9CE64026F22641@SHSMSX101.ccr.corp.intel.com>
- <20150929160133.GA11588@e104805>
- <36DF59CE26D8EE47B0655C516E9CE6402865B04D@shsmsx102.ccr.corp.intel.com>
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: RE: [PATCH][v5] x86, suspend: Save/restore extra MSR registers for
+ suspend
+Date: Wed, 14 Oct 2015 17:41:10 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE6402865BC04@shsmsx102.ccr.corp.intel.com>
+References: <1444533601-12330-1-git-send-email-yu.c.chen@intel.com>
+ <20151012163750.GA4539@pd.tnic>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:59703 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752755AbbJNRHn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 14 Oct 2015 13:07:43 -0400
-Content-Disposition: inline
-In-Reply-To: <36DF59CE26D8EE47B0655C516E9CE6402865B04D@shsmsx102.ccr.corp.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20151012163750.GA4539@pd.tnic>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Borislav Petkov <bp@suse.de>
+Cc: "mingo@redhat.com" <mingo@redhat.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "pavel@ucw.cz" <pavel@ucw.cz>, "tglx@linutronix.de" <tglx@linutronix.de>, "hpa@zytor.com" <hpa@zytor.com>, "Zhang, Rui" <rui.zhang@intel.com>, "luto@kernel.org" <luto@kernel.org>, "linux@horizon.com" <linux@horizon.com>, "dsmythies@telus.net" <dsmythies@telus.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Kaszewski, Marcin" <marcin.kaszewski@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Chen, Yu C" <yu.c.chen@intel.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "Zhang, Rui" <rui.zhang@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>, "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
 
-On Mon, Oct 12, 2015 at 09:23:28AM +0000, Chen, Yu C wrote:
-> Hi, Javi
-> Sorry for my late response,
-> 
-> > -----Original Message-----
-> > From: Javi Merino [mailto:javi.merino@arm.com]
-> > Sent: Wednesday, September 30, 2015 12:02 AM
-> > To: Chen, Yu C
-> > Cc: linux-pm@vger.kernel.org; edubezval@gmail.com; Zhang, Rui; linux-
-> > kernel@vger.kernel.org; stable@vger.kernel.org
-> > Subject: Re: [PATCH 3/3] Thermal: do thermal zone update after a cooling
-> > device registered
-> > 
-> > Hi Yu,
-> > 
-> > On Mon, Sep 28, 2015 at 06:52:00PM +0100, Chen, Yu C wrote:
-> > > Hi, Javi,
-> > >
-> > > > -----Original Message-----
-> > > > From: Javi Merino [mailto:javi.merino@arm.com]
-> > > > Sent: Monday, September 28, 2015 10:29 PM
-> > > > To: Chen, Yu C
-> > > > Cc: linux-pm@vger.kernel.org; edubezval@gmail.com; Zhang, Rui;
-> > > > linux- kernel@vger.kernel.org; stable@vger.kernel.org
-> > > > Subject: Re: [PATCH 3/3] Thermal: do thermal zone update after a
-> > > > cooling device registered
-> > > >
-> > > > On Sun, Sep 27, 2015 at 06:48:44AM +0100, Chen Yu wrote:
-> > > > > From: Zhang Rui <rui.zhang@intel.com>
-> > > > >
-> > > > >
-> > > >
-> > > > I think you need to hold cdev->lock here, to make sure that no
-> > > > thermal zone is added or removed from cdev->thermal_instances while
-> > you are looping.
-> > > >
-> > > Ah right, will add. If I add the cdev ->lock here, will there be a
-> > > AB-BA lock with thermal_zone_unbind_cooling_device?
-> > 
-> > You're right, it could lead to a deadlock.  The locks can't be swapped because
-> > that won't work in step_wise.
-> > 
-> > The best way that I can think of accessing thermal_instances atomically is by
-> > making it RCU protected instead of with mutexes.
-> > What do you think?
-> > 
-> RCU would need extra spinlocks to protect the list, and need to sync_rcu after we delete
-> one instance from thermal_instance list,  I think it is too complicated for me to rewrite: (
-> How about using thermal_list_lock instead of cdev ->lock?
-> This guy should be big enough to protect the device.thermal_instance list.
-
-thermal_list_lock protects thermal_tz_list and thermal_cdev_list, but
-it doesn't protect the thermal_instances list.  For example,
-thermal_zone_bind_cooling_device() adds a cooling device to the
-cdev->thermal_instances list without taking thermal_tz_list.
-
-To sum up, you have to protect accessing the cdev->thermal_instances
-list but with the current locking scheme, you would create an AB-BA
-deadlock.  As I see it you would have to change the locking scheme to
-either RCU or add a new mutex that protects the
-cdev->thermal_instances and tz->thermal_instances lists and change all
-accesses to them to make sure they comply with the new locking scheme.
-
-Is there a better way of solving this?  Cheers,
-Javi
-
-
+SGksIEJvcmlzLCB0aGFua3MgZm9yIHlvdSByZXBseQ0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2Fn
+ZS0tLS0tDQo+IEZyb206IEJvcmlzbGF2IFBldGtvdiBbbWFpbHRvOmJwQHN1c2UuZGVdDQo+IFNl
+bnQ6IFR1ZXNkYXksIE9jdG9iZXIgMTMsIDIwMTUgMTI6MzggQU0NCj4gVG86IENoZW4sIFl1IEMN
+Cj4gQ2M6IG1pbmdvQHJlZGhhdC5jb207IHJqd0Byand5c29ja2kubmV0OyBwYXZlbEB1Y3cuY3o7
+DQo+IHRnbHhAbGludXRyb25peC5kZTsgaHBhQHp5dG9yLmNvbTsgWmhhbmcsIFJ1aTsgbHV0b0Br
+ZXJuZWwub3JnOw0KPiBsaW51eEBob3Jpem9uLmNvbTsgZHNteXRoaWVzQHRlbHVzLm5ldDsgbGlu
+dXgtcG1Admdlci5rZXJuZWwub3JnOw0KPiB4ODZAa2VybmVsLm9yZzsgbGludXgta2VybmVsQHZn
+ZXIua2VybmVsLm9yZzsgS2FzemV3c2tpLCBNYXJjaW4NCj4gU3ViamVjdDogUmU6IFtQQVRDSF1b
+djVdIHg4Niwgc3VzcGVuZDogU2F2ZS9yZXN0b3JlIGV4dHJhIE1TUiByZWdpc3RlcnMgZm9yDQo+
+IHN1c3BlbmQNCj4gDQo+IE9uIFN1biwgT2N0IDExLCAyMDE1IGF0IDExOjIwOjAxQU0gKzA4MDAs
+IENoZW4gWXUgd3JvdGU6DQo+ID4gQSBidWcgaXMgcmVwb3J0ZWQoaHR0cHM6Ly9idWd6aWxsYS5y
+ZWRoYXQuY29tL3Nob3dfYnVnLmNnaT9pZD0xMjI3MjA4KQ0KPiANCj4gSSBnZXQ6DQo+IA0KPiAi
+WW91IGFyZSBub3QgYXV0aG9yaXplZCB0byBhY2Nlc3MgYnVnICMxMjI3MjA4Lg0KPiANCj4gTW9z
+dCBsaWtlbHkgdGhlIGJ1ZyBoYXMgYmVlbiByZXN0cmljdGVkIGZvciBpbnRlcm5hbCBkZXZlbG9w
+bWVudCBwcm9jZXNzZXMNCj4gYW5kIHdlIGNhbm5vdCBncmFudCBhY2Nlc3MuIg0KPiANCj4gPiB0
+aGF0LCBhZnRlciByZXN1bWVkIGZyb20gUzMsIENQVSBpcyBydW5uaW5nIGF0IGEgbG93IHNwZWVk
+Lg0KPiA+IEFmdGVyIGludmVzdGlnYXRpb24sIGl0IGlzIGZvdW5kIHRoYXQsIEJJT1MgaGFzIG1v
+ZGlmaWVkIHRoZSB2YWx1ZSBvZg0KPiA+IFRIRVJNX0NPTlRST0wgcmVnaXN0ZXIgZHVyaW5nIFMz
+LCBhbmQgY2hhbmdlcyBpdCBmcm9tIDAgdG8gMHgxMCAodGh1cw0KPiA+IGNoYW5nZXMgdGhlIGNs
+b2NrIG1vZHVsYXRpb24gZnJvbSByZXNlcnZlZCB0byBlbmFibGVkKSwgc2luY2UgdmFsdWUgb2YN
+Cj4gPiAweDEwIG1lYW5zIENQVSBjYW4gb25seSBnZXQgMjUlIG9mIHRoZSBEdXR5IEN5Y2xlLCB0
+aGlzIHRyaWdnZXJzIHRoZQ0KPiA+IHByb2JsZW0uDQo+IA0KPiBJcyB0aGlzIHdoYXQgdGhlIGJ1
+ZyBkZXNjcmliZWQgYWJvdmUgaXM/IEluIGFueSBjYXNlLCBwbGVhc2UgcmVtb3ZlIHRoZQ0KPiBw
+cml2YXRlIGJ1Z3ppbGxhIGxpbmsgYW5kIGRlc2NyaWJlIHRoZSBidWcgaW4gdGV4dCBoZXJlLg0K
+T0ssIHdpbGwgcmVtb3ZlIHRoZSBsaW5rIGhlcmUgYW5kIGluc2lkZSB0aGUgY29kZS4NCj4gDQo+
+IEFsc28sIGZyb20gcmVhZGluZyB0aGUgb3RoZXIgdGhyZWFkIGFib3V0IHRoZSB2NCBwYXRjaCwg
+aXQgc291bmRzIGxpa2UNCj4gaW50ZWxfcHN0YXRlIGNhbid0IGhhbmRsZSB0aGUgY2xvY2sgbW9k
+dWxhdGlvbiBwcm9wZXJseSwgYWNjb3JkaW5nIHRvIHdoYXQNCj4gRG91ZyBzYXlzLg0KPiANCj4g
+U28gbGV0J3MgaGF2ZSB0aGlzIGFzcGVjdCBzb3J0ZWQgb3V0IHByb3Blcmx5IGZpcnN0IHBsZWFz
+ZSBiZWZvcmUgYWRkaW5nIHlldA0KPiBhbm90aGVyIHVnbHkgQklPUyB3b3JrYXJvdW5kLg0KPiAN
+CldlbGwsIHRoYXQgbWlnaHQgYmUgYW5vdGhlciBkcml2ZXIgYnVnIElNTy4gSSdsbCBkaWcgaW50
+byB0aGF0IG9uZS4NCg0KPiBCdHcsIHdoeSBjYW4ndCB0aGF0IEJJT1MgYmUgZml4ZWQgaW5zdGVh
+ZD8NClRoaXMgYnVnIGlzIGZvdW5kIG9uIGEgcmVsZWFzZWQgcmVkaGF0IHNlcnZlciwgc28gSSB0
+aGluayBpdCB3b3VsZCBiZQ0KaGFyZCB0byB1cGRhdGUgYWxsIHVzZXJzJyBtYWNoaW5lcy4gDQo+
+IA0KPiAtLQ0KPiBSZWdhcmRzL0dydXNzLA0KPiAgICAgQm9yaXMuDQoNCkJlc3QgUmVnYXJkcywN
+Cll1DQo=
