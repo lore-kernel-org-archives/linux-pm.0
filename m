@@ -1,50 +1,57 @@
-From: Luis de Bethencourt <luisbg@osg.samsung.com>
-Subject: [PATCH] thermal: kconfig: When possible, compile drivers with COMPILE_TEST
-Date: Wed, 14 Oct 2015 17:16:20 +0100
-Message-ID: <1444839380-29236-1-git-send-email-luisbg@osg.samsung.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v3 1/2] Trace: PM: promote event 'power_domain_target' to generic power domains.
+Date: Wed, 14 Oct 2015 18:49:11 +0200
+Message-ID: <5770595.eudVgXqToR@vostro.rjw.lan>
+References: <1443429864-4177-2-git-send-email-mtitinger+renesas@baylibre.com> <1842060.xHgP7up4AJ@vostro.rjw.lan> <561E0FD3.6010809@baylibre.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lists.s-osg.org ([54.187.51.154]:53305 "EHLO lists.s-osg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754284AbbJNQQc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 14 Oct 2015 12:16:32 -0400
+Received: from v094114.home.net.pl ([79.96.170.134]:49535 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932472AbbJNQUa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Oct 2015 12:20:30 -0400
+In-Reply-To: <561E0FD3.6010809@baylibre.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, javier@osg.samsung.com, Luis de Bethencourt <luisbg@osg.samsung.com>
+To: Marc Titinger <mtitinger@baylibre.com>
+Cc: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, Marc Titinger <mtitinger+renesas@baylibre.com>, ahaslam@baylibre.com
 
-These drivers only have runtime but no build time dependencies, so they can
-be built for testing purposes if the Kconfig COMPILE_TEST option is enabled.
+On Wednesday, October 14, 2015 10:18:27 AM Marc Titinger wrote:
+> On 14/10/2015 02:55, Rafael J. Wysocki wrote:
+> > On Monday, September 28, 2015 03:20:44 PM Marc Titinger wrote:
+> >> - change arg3 to a state name string: we got the current CPU rom the trace
+> >> backend already. This also prepares for multiple/named states in the power
+> >> domain, consistent with idle-states. states in the domain may match given
+> >> CPU states in this case, we will trace them by their name, and potentially
+> >> use arg2 as a link to their index for the cpuidle driver.
+> >>
+> >> - tested with Juno DP
+> >>
+> >> <idle>-0     [000]    42.395510: power_domain_target:  a53_pd index=0 'cluster-sleep-0'
+> >> <idle>-0     [000]    42.395528: cpu_idle:             state=4294967295 cpu_id=0
+> >> <idle>-0     [000]    42.395668: cpu_idle:             state=2 cpu_id=0
+> >>
+> >> - compiled for Omap2+
+> >>
+> >> Signed-off-by: Marc Titinger <mtitinger@baylibre.com>
+> >
+> > Hi,
+> >
+> > What's your intent regarding this series?  Do you want it to be applied
+> > separately, or is it going to be part of a larger series?
+> 
+> Hi Rafael,
+> 
+> v3 is a missed attempt to rebase this on the current head, but I did not 
+> fix v3 because thinking twice it's not that useful until Axel Haslam's 
+> multiple genpd states stuff is merged in. I'm finding v2 useful, shall I 
+> re-post v2 as v4 for clarity then ?
 
-This is useful to have more build coverage and make sure that drivers are
-not affected by changes that could cause build regressions.
+That's up to you mostly.
 
-Signed-off-by: Luis de Bethencourt <luisbg@osg.samsung.com>
----
- drivers/thermal/Kconfig | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+If I get ACKs from all of the appropriate people on those, I can easily apply them.
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index a94ebb5..844c219 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -252,7 +252,7 @@ config TEGRA_SOCTHERM
- 
- config DB8500_CPUFREQ_COOLING
- 	tristate "DB8500 cpufreq cooling"
--	depends on ARCH_U8500
-+	depends on ARCH_U8500 || COMPILE_TEST
- 	depends on CPU_THERMAL
- 	default y
- 	help
-@@ -309,7 +309,7 @@ config INTEL_SOC_DTS_THERMAL
- 
- config INTEL_QUARK_DTS_THERMAL
- 	tristate "Intel Quark DTS thermal driver"
--	depends on X86_INTEL_QUARK
-+	depends on X86_INTEL_QUARK || COMPILE_TEST
- 	help
- 	  Enable this to register Intel Quark SoC (e.g. X1000) platform digital
- 	  temperature sensor (DTS). For X1000 SoC, it has one on-die DTS.
--- 
-2.5.1
+Thanks,
+Rafael
 
