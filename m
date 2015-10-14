@@ -1,58 +1,46 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: Re: [PATCH] The x86 cpu RAPL id was added in to support BXT core
-Date: Tue, 13 Oct 2015 21:53:36 -0700
-Message-ID: <20151013215336.2a12b2c2@yairi>
-References: <1444751963-23743-1-git-send-email-amy.l.wiles@intel.com>
-	<1444777614.10629.6.camel@intel.com>
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: RE: [PATCH] thermal: power_allocator: Use temperature reading from
+ tz
+Date: Wed, 14 Oct 2015 05:28:49 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE6402865B959@shsmsx102.ccr.corp.intel.com>
+References: <1444735801-18267-1-git-send-email-kapileshwar.singh@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:44939 "EHLO mga02.intel.com"
+Received: from mga11.intel.com ([192.55.52.93]:48228 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750817AbbJNExi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 14 Oct 2015 00:53:38 -0400
-In-Reply-To: <1444777614.10629.6.camel@intel.com>
+	id S1750769AbbJNF2x convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Oct 2015 01:28:53 -0400
+In-Reply-To: <1444735801-18267-1-git-send-email-kapileshwar.singh@arm.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
-Cc: "Zhang, Rui" <rui.zhang@intel.com>, "Wiles, Amy L" <amy.l.wiles@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Kapileshwar Singh <kapileshwar.singh@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: Javi Merino <javi.merino@arm.com>, Eduardo Valentin <edubezval@gmail.com>, Daniel Kurtz <djkurtz@chromium.org>, "Zhang, Rui" <rui.zhang@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>, Andrea Arcangeli <aarcange@redhat.com>
 
-On Tue, 13 Oct 2015 23:07:21 +0000
-"Pandruvada, Srinivas" <srinivas.pandruvada@intel.com> wrote:
+Hi,
 
-> On Tue, 2015-10-13 at 08:59 -0700, amy.l.wiles@intel.com wrote:
-> > From: Amy Wiles <amy.l.wiles@intel.com>
-> > 
-> > BUG=None
-> > TEST=Navigate to /sys/class/powercap and check that the directory 
-> > intel-rapl:0 is present
-> Remove above lines and just say "Enabled Broxton RAPL support".
-> Copied to Jacob.
+> -----Original Message-----
+> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
+> owner@vger.kernel.org] On Behalf Of Kapileshwar Singh
+> Sent: Tuesday, October 13, 2015 7:30 PM
+> To: linux-pm@vger.kernel.org
+> Cc: Kapileshwar Singh; Javi Merino; Eduardo Valentin; Daniel Kurtz; Zhang, Rui;
+> Dmitry Torokhov; Sascha Hauer; Andrea Arcangeli
+> Subject: [PATCH] thermal: power_allocator: Use temperature reading from
+> tz
 > 
-agreed, other than that looks good to me.
-> Thanks,
-> Srinivas
+> All thermal governors use the temperature value stored in struct
+> thermal_zone_device.
 > 
+>    thermal_zone_device->temperature
 > 
-> > Signed-off-by: Amy Wiles <amy.l.wiles@intel.com>
-> > ---
-> >  drivers/powercap/intel_rapl.c | 1 +
-> >  1 file changed, 1 insertion(+)
-> > 
-> > diff --git a/drivers/powercap/intel_rapl.c
-> > b/drivers/powercap/intel_rapl.c
-> > index 5efacd0..cc97f08 100644
-> > --- a/drivers/powercap/intel_rapl.c
-> > +++ b/drivers/powercap/intel_rapl.c
-> > @@ -1102,6 +1102,7 @@ static const struct x86_cpu_id rapl_ids[]
-> > __initconst = {
-> >  	RAPL_CPU(0x4A, rapl_defaults_tng),/* Tangier */
-> >  	RAPL_CPU(0x56, rapl_defaults_core),/* Future Xeon */
-> >  	RAPL_CPU(0x5A, rapl_defaults_ann),/* Annidale */
-> > +	RAPL_CPU(0X5C, rapl_defaults_core),/* Broxton */
-> >  	RAPL_CPU(0x5E, rapl_defaults_core),/* Skylake-H/S */
-> >  	RAPL_CPU(0x57, rapl_defaults_hsw_server),/* Knights Landing
-> > */
-> >  	{}
-[Jacob Pan]
+> power_allocator governor should not deviate from this and use the same.
+> 
+Just my 2 cents:
+I wonder if tz->temperature would vary during power_allocator_throttle? 
+because we don't have tz->lock to protect here.
+
+Best Regards,
+Yu
