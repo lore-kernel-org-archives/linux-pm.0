@@ -1,31 +1,63 @@
-From: Axel Haslam <ahaslam@baylibre.com>
-Subject: Re: [RFC v2 0/6] Managing cluser-level c-states with generic power domains
-Date: Wed, 14 Oct 2015 10:10:20 +0200
-Message-ID: <CAKXjFTNDSBYqm5GqtX54PMR3XzFU3i7CYSZbw-vQdBO5TChODA@mail.gmail.com>
-References: <20151006022702.GA78570@linaro.org>
-	<1444141665-18534-1-git-send-email-mtitinger+renesas@baylibre.com>
-	<7hr3kyz7or.fsf@deeprootsystems.com>
+From: Marc Titinger <mtitinger@baylibre.com>
+Subject: Re: [PATCH v3 1/2] Trace: PM: promote event 'power_domain_target' to
+ generic power domains.
+Date: Wed, 14 Oct 2015 10:18:27 +0200
+Message-ID: <561E0FD3.6010809@baylibre.com>
+References: <1443429864-4177-2-git-send-email-mtitinger+renesas@baylibre.com>
+ <1443446445-11418-1-git-send-email-mtitinger+renesas@baylibre.com>
+ <1842060.xHgP7up4AJ@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f181.google.com ([209.85.214.181]:35162 "EHLO
-	mail-ob0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751869AbbJNIKV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Oct 2015 04:10:21 -0400
-Received: by obbzf10 with SMTP id zf10so33564446obb.2
-        for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2015 01:10:20 -0700 (PDT)
-In-Reply-To: <7hr3kyz7or.fsf@deeprootsystems.com>
+Received: from mail-wi0-f180.google.com ([209.85.212.180]:33989 "EHLO
+	mail-wi0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752523AbbJNISa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Oct 2015 04:18:30 -0400
+Received: by wicgb1 with SMTP id gb1so119381143wic.1
+        for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2015 01:18:29 -0700 (PDT)
+In-Reply-To: <1842060.xHgP7up4AJ@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: Marc Titinger <mtitinger@baylibre.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lina Iyer <lina.iyer@linaro.org>, Benoit Cousson <bcousson@baylibre.com>, Linux PM list <linux-pm@vger.kernel.org>, linux-kernel@vger.kernel.org, Marc Titinger <mtitinger+renesas@baylibre.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, Marc Titinger <mtitinger+renesas@baylibre.com>, ahaslam@baylibre.com
 
-> @Axel: any plans to repost your series now that we have a little more
-> momentum here?
+On 14/10/2015 02:55, Rafael J. Wysocki wrote:
+> On Monday, September 28, 2015 03:20:44 PM Marc Titinger wrote:
+>> - change arg3 to a state name string: we got the current CPU rom the trace
+>> backend already. This also prepares for multiple/named states in the power
+>> domain, consistent with idle-states. states in the domain may match given
+>> CPU states in this case, we will trace them by their name, and potentially
+>> use arg2 as a link to their index for the cpuidle driver.
+>>
+>> - tested with Juno DP
+>>
+>> <idle>-0     [000]    42.395510: power_domain_target:  a53_pd index=0 'cluster-sleep-0'
+>> <idle>-0     [000]    42.395528: cpu_idle:             state=4294967295 cpu_id=0
+>> <idle>-0     [000]    42.395668: cpu_idle:             state=2 cpu_id=0
+>>
+>> - compiled for Omap2+
+>>
+>> Signed-off-by: Marc Titinger <mtitinger@baylibre.com>
+>
+> Hi,
+>
+> What's your intent regarding this series?  Do you want it to be applied
+> separately, or is it going to be part of a larger series?
+
+Hi Rafael,
+
+v3 is a missed attempt to rebase this on the current head, but I did not 
+fix v3 because thinking twice it's not that useful until Axel Haslam's 
+multiple genpd states stuff is merged in. I'm finding v2 useful, shall I 
+re-post v2 as v4 for clarity then ?
+
+Thanks,
+Marc.
+
+
+>
+> Thanks,
+> Rafael
 >
 
-sure, no problem, ill rebase adding Marc's patch for the debugfs file
-and re-post them.
-
-Regards,
-Axel
