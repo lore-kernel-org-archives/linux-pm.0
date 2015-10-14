@@ -1,46 +1,124 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/2] Enabled Broxton RAPL support
-Date: Thu, 15 Oct 2015 01:29:04 +0200
-Message-ID: <34419145.BT4t4sgNS0@vostro.rjw.lan>
-References: <1444835355-26582-3-git-send-email-amy.l.wiles@intel.com> <1444835355-26582-4-git-send-email-amy.l.wiles@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v4 2/5] cpufreq: intel-pstate: Use separate max pstate for scaling
+Date: Wed, 14 Oct 2015 16:12:00 -0700
+Message-ID: <1444864323-4196-3-git-send-email-srinivas.pandruvada@linux.intel.com>
+References: <1444864323-4196-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:62367 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753433AbbJNXAW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Oct 2015 19:00:22 -0400
-In-Reply-To: <1444835355-26582-4-git-send-email-amy.l.wiles@intel.com>
+Received: from mga11.intel.com ([192.55.52.93]:26788 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754687AbbJNXMz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 14 Oct 2015 19:12:55 -0400
+In-Reply-To: <1444864323-4196-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: amy.l.wiles@intel.com, Jacob Pan Jun <jacob.jun.pan@intel.com>
-Cc: rui.zhang@intel.com, srinivas.pandruvada@intel.com, linux-pm@vger.kernel.org
+To: kristen.c.accardi@intel.com, rafael.j.wysocki@intel.com, len.brown@intel.com
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Wednesday, October 14, 2015 08:09:15 AM amy.l.wiles@intel.com wrote:
-> From: Amy Wiles <amy.l.wiles@intel.com>
-> 
-> Signed-off-by: Amy Wiles <amy.l.wiles@intel.com>
-> ---
->  drivers/powercap/intel_rapl.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-> index 5efacd0..cc97f08 100644
-> --- a/drivers/powercap/intel_rapl.c
-> +++ b/drivers/powercap/intel_rapl.c
-> @@ -1102,6 +1102,7 @@ static const struct x86_cpu_id rapl_ids[] __initconst = {
->  	RAPL_CPU(0x4A, rapl_defaults_tng),/* Tangier */
->  	RAPL_CPU(0x56, rapl_defaults_core),/* Future Xeon */
->  	RAPL_CPU(0x5A, rapl_defaults_ann),/* Annidale */
-> +	RAPL_CPU(0X5C, rapl_defaults_core),/* Broxton */
->  	RAPL_CPU(0x5E, rapl_defaults_core),/* Skylake-H/S */
->  	RAPL_CPU(0x57, rapl_defaults_hsw_server),/* Knights Landing */
->  	{}
-> 
+Systems with configurable TDP have multiple max non turbo p state. Intel
+P state uses max non turbo P state for scaling. But using the real max
+non turbo p state causes underestimation of next P state. So using
+the physical max non turbo P state as before for scaling.
 
-Jacob, any problems with this one?
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Acked-by: Kristen Carlson Accardi <kristen@linux.intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 20 ++++++++++++++++++--
+ 1 file changed, 18 insertions(+), 2 deletions(-)
 
-Thanks,
-Rafael
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index da92d02..1369afd 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -77,6 +77,7 @@ struct pstate_data {
+ 	int	current_pstate;
+ 	int	min_pstate;
+ 	int	max_pstate;
++	int	max_pstate_physical;
+ 	int	scaling;
+ 	int	turbo_pstate;
+ };
+@@ -126,6 +127,7 @@ struct pstate_adjust_policy {
+ 
+ struct pstate_funcs {
+ 	int (*get_max)(void);
++	int (*get_max_physical)(void);
+ 	int (*get_min)(void);
+ 	int (*get_turbo)(void);
+ 	int (*get_scaling)(void);
+@@ -590,6 +592,14 @@ static int core_get_min_pstate(void)
+ 	return (value >> 40) & 0xFF;
+ }
+ 
++static int core_get_max_pstate_physical(void)
++{
++	u64 value;
++
++	rdmsrl(MSR_PLATFORM_INFO, value);
++	return (value >> 8) & 0xFF;
++}
++
+ static int core_get_max_pstate(void)
+ {
+ 	u64 tar;
+@@ -683,6 +693,7 @@ static struct cpu_defaults core_params = {
+ 	},
+ 	.funcs = {
+ 		.get_max = core_get_max_pstate,
++		.get_max_physical = core_get_max_pstate_physical,
+ 		.get_min = core_get_min_pstate,
+ 		.get_turbo = core_get_turbo_pstate,
+ 		.get_scaling = core_get_scaling,
+@@ -701,6 +712,7 @@ static struct cpu_defaults byt_params = {
+ 	},
+ 	.funcs = {
+ 		.get_max = byt_get_max_pstate,
++		.get_max_physical = byt_get_max_pstate,
+ 		.get_min = byt_get_min_pstate,
+ 		.get_turbo = byt_get_turbo_pstate,
+ 		.set = byt_set_pstate,
+@@ -720,6 +732,7 @@ static struct cpu_defaults knl_params = {
+ 	},
+ 	.funcs = {
+ 		.get_max = core_get_max_pstate,
++		.get_max_physical = core_get_max_pstate_physical,
+ 		.get_min = core_get_min_pstate,
+ 		.get_turbo = knl_get_turbo_pstate,
+ 		.get_scaling = core_get_scaling,
+@@ -774,6 +787,7 @@ static void intel_pstate_get_cpu_pstates(struct cpudata *cpu)
+ {
+ 	cpu->pstate.min_pstate = pstate_funcs.get_min();
+ 	cpu->pstate.max_pstate = pstate_funcs.get_max();
++	cpu->pstate.max_pstate_physical = pstate_funcs.get_max_physical();
+ 	cpu->pstate.turbo_pstate = pstate_funcs.get_turbo();
+ 	cpu->pstate.scaling = pstate_funcs.get_scaling();
+ 
+@@ -792,7 +806,8 @@ static inline void intel_pstate_calc_busy(struct cpudata *cpu)
+ 
+ 	sample->freq = fp_toint(
+ 		mul_fp(int_tofp(
+-			cpu->pstate.max_pstate * cpu->pstate.scaling / 100),
++			cpu->pstate.max_pstate_physical *
++			cpu->pstate.scaling / 100),
+ 			core_pct));
+ 
+ 	sample->core_pct_busy = (int32_t)core_pct;
+@@ -860,7 +875,7 @@ static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
+ 	 * specified pstate.
+ 	 */
+ 	core_busy = cpu->sample.core_pct_busy;
+-	max_pstate = int_tofp(cpu->pstate.max_pstate);
++	max_pstate = int_tofp(cpu->pstate.max_pstate_physical);
+ 	current_pstate = int_tofp(cpu->pstate.current_pstate);
+ 	core_busy = mul_fp(core_busy, div_fp(max_pstate, current_pstate));
+ 
+@@ -1144,6 +1159,7 @@ static void copy_pid_params(struct pstate_adjust_policy *policy)
+ static void copy_cpu_funcs(struct pstate_funcs *funcs)
+ {
+ 	pstate_funcs.get_max   = funcs->get_max;
++	pstate_funcs.get_max_physical = funcs->get_max_physical;
+ 	pstate_funcs.get_min   = funcs->get_min;
+ 	pstate_funcs.get_turbo = funcs->get_turbo;
+ 	pstate_funcs.get_scaling = funcs->get_scaling;
+-- 
+2.1.4
 
