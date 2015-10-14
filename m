@@ -1,62 +1,66 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
- SpeedStep enabled
-Date: Wed, 14 Oct 2015 15:23:45 +0000
-Message-ID: <bug-103351-137361-hgFdEfrf2s@https.bugzilla.kernel.org/>
-References: <bug-103351-137361@https.bugzilla.kernel.org/>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Subject: [PATCH] PM / OPP: Remove confusing error message in of_cpumask_init_opp_table()
+Date: Wed, 14 Oct 2015 17:52:23 +0200
+Message-ID: <1444837943-32263-1-git-send-email-thomas.petazzoni@free-electrons.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:51055 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753156AbbJNPXu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 14 Oct 2015 11:23:50 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id 13E0D20938
-	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2015 15:23:49 +0000 (UTC)
-Received: from bugzilla2.web.kernel.org (bugzilla2.web.kernel.org [172.20.200.52])
-	by mail.kernel.org (Postfix) with ESMTP id 1BC802098D
-	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2015 15:23:48 +0000 (UTC)
-In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
+Received: from down.free-electrons.com ([37.187.137.238]:40974 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754135AbbJNPxR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Oct 2015 11:53:17 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>, Gregory Clement <gregory.clement@free-electrons.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=103351
+The of_cpumask_init_opp_table() function will print an error message
+(with pr_err) if it cannot find the OPP table for a certain CPU in the
+Device Tree.
 
-Fredrik Atmer <fredrik+kernel@atmer.se> changed:
+There are users of the cpufreq-dt driver (which is the one calling
+of_cpumask_init_opp_table) that do not have the OPP points defined in
+the Device Tree. Instead, such users dynamically create the OPP table
+at boot time depending on the system configuration. Such a case is
+planned in the cpufreq-dt driver, which on purpose ignores the return
+value of of_cpumask_init_opp_table() with the following comment: "OPPs
+might be populated at runtime, don't check for error here".
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |fredrik+kernel@atmer.se
+For such platforms, the of_cpumask_init_opp_table() prints a spurious
+and confusing error message for each CPU:
 
---- Comment #57 from Fredrik Atmer <fredrik+kernel@atmer.se> ---
-First, thank you, thank you, thank you =)
+[    1.749548] of_cpumask_init_opp_table: couldn't find opp table for cpu:0, -19
+[    1.756784] of_cpumask_init_opp_table: couldn't find opp table for cpu:1, -19
+[    1.764031] of_cpumask_init_opp_table: couldn't find opp table for cpu:2, -19
+[    1.771268] of_cpumask_init_opp_table: couldn't find opp table for cpu:3, -19
 
-I've had my setup i5-5675C on an Asus H97I-Plus motherboard for some time now.
-It's not until now that it actually "works". I was afraid something was broken
-in my system due to random crashes.
+This is confusing because everything is working fine, cpufreq works
+and it knows the OPP table that was registered at boot time (on
+Marvell Armada XP):
 
-I first tried to install Ubuntu 15.04, but the installer kept crashing. So I
-tried 14.04 which worked. Turns out I needed 14.10 for the Intel graphic
-drivers. That worked as well. Well, Unity didn't, and I kind of like it.. So
-I've been running Metacity since, with the few random crashes. Then I just
-realized 14.10 is no more. Then at 3:30 AM I find this thread. I did sleep
-first, but the day after I was able to do a dist-upgrade of my 14.10 system to
-15.04 using the 0x12 microcode (I used to have 0xd).
+$ cat /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state
+666500 1884
+1333000 23333
 
-This has to be the most haxxor I ever did. Now I'm running Unity without
-problems so far in 15.04, Speedstep and Turbo active. I always thought
-microcode was something embedded in the processor, not to be accessed from the
-outside world.
+To avoid this confusion, this patch simply deletes the error message.
 
-I'm using the script from the git repository. It works, but the
---persist-debian option fails to make it persistent. I don't know if I'm using
-it incorrectly, and I'm happy to provide more information if requested. I also
-tried the method with iucode-tool described above, with the same result. The
-install.sh script does just that, right?
+Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+---
+ drivers/base/power/opp.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
+diff --git a/drivers/base/power/opp.c b/drivers/base/power/opp.c
+index 7ae7cd9..11206d2 100644
+--- a/drivers/base/power/opp.c
++++ b/drivers/base/power/opp.c
+@@ -1489,9 +1489,6 @@ int of_cpumask_init_opp_table(cpumask_var_t cpumask)
+ 
+ 		ret = of_init_opp_table(cpu_dev);
+ 		if (ret) {
+-			pr_err("%s: couldn't find opp table for cpu:%d, %d\n",
+-			       __func__, cpu, ret);
+-
+ 			/* Free all other OPPs */
+ 			of_cpumask_free_opp_table(cpumask);
+ 			break;
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+2.6.1
+
