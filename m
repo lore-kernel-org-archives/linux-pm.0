@@ -1,57 +1,91 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3 1/2] Trace: PM: promote event 'power_domain_target' to generic power domains.
-Date: Wed, 14 Oct 2015 18:49:11 +0200
-Message-ID: <5770595.eudVgXqToR@vostro.rjw.lan>
-References: <1443429864-4177-2-git-send-email-mtitinger+renesas@baylibre.com> <1842060.xHgP7up4AJ@vostro.rjw.lan> <561E0FD3.6010809@baylibre.com>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: [PATCH 3/3] Thermal: do thermal zone update after a cooling
+ device registered
+Date: Wed, 14 Oct 2015 18:07:39 +0100
+Message-ID: <20151014170739.GB2998@e104805>
+References: <1443332924-14028-1-git-send-email-yu.c.chen@intel.com>
+ <20150928142902.GA9175@e104805>
+ <36DF59CE26D8EE47B0655C516E9CE64026F22641@SHSMSX101.ccr.corp.intel.com>
+ <20150929160133.GA11588@e104805>
+ <36DF59CE26D8EE47B0655C516E9CE6402865B04D@shsmsx102.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:49535 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932472AbbJNQUa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Oct 2015 12:20:30 -0400
-In-Reply-To: <561E0FD3.6010809@baylibre.com>
+Received: from foss.arm.com ([217.140.101.70]:59703 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752755AbbJNRHn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 14 Oct 2015 13:07:43 -0400
+Content-Disposition: inline
+In-Reply-To: <36DF59CE26D8EE47B0655C516E9CE6402865B04D@shsmsx102.ccr.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Marc Titinger <mtitinger@baylibre.com>
-Cc: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, Marc Titinger <mtitinger+renesas@baylibre.com>, ahaslam@baylibre.com
+To: "Chen, Yu C" <yu.c.chen@intel.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "Zhang, Rui" <rui.zhang@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>, "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
 
-On Wednesday, October 14, 2015 10:18:27 AM Marc Titinger wrote:
-> On 14/10/2015 02:55, Rafael J. Wysocki wrote:
-> > On Monday, September 28, 2015 03:20:44 PM Marc Titinger wrote:
-> >> - change arg3 to a state name string: we got the current CPU rom the trace
-> >> backend already. This also prepares for multiple/named states in the power
-> >> domain, consistent with idle-states. states in the domain may match given
-> >> CPU states in this case, we will trace them by their name, and potentially
-> >> use arg2 as a link to their index for the cpuidle driver.
-> >>
-> >> - tested with Juno DP
-> >>
-> >> <idle>-0     [000]    42.395510: power_domain_target:  a53_pd index=0 'cluster-sleep-0'
-> >> <idle>-0     [000]    42.395528: cpu_idle:             state=4294967295 cpu_id=0
-> >> <idle>-0     [000]    42.395668: cpu_idle:             state=2 cpu_id=0
-> >>
-> >> - compiled for Omap2+
-> >>
-> >> Signed-off-by: Marc Titinger <mtitinger@baylibre.com>
-> >
-> > Hi,
-> >
-> > What's your intent regarding this series?  Do you want it to be applied
-> > separately, or is it going to be part of a larger series?
+On Mon, Oct 12, 2015 at 09:23:28AM +0000, Chen, Yu C wrote:
+> Hi, Javi
+> Sorry for my late response,
 > 
-> Hi Rafael,
-> 
-> v3 is a missed attempt to rebase this on the current head, but I did not 
-> fix v3 because thinking twice it's not that useful until Axel Haslam's 
-> multiple genpd states stuff is merged in. I'm finding v2 useful, shall I 
-> re-post v2 as v4 for clarity then ?
+> > -----Original Message-----
+> > From: Javi Merino [mailto:javi.merino@arm.com]
+> > Sent: Wednesday, September 30, 2015 12:02 AM
+> > To: Chen, Yu C
+> > Cc: linux-pm@vger.kernel.org; edubezval@gmail.com; Zhang, Rui; linux-
+> > kernel@vger.kernel.org; stable@vger.kernel.org
+> > Subject: Re: [PATCH 3/3] Thermal: do thermal zone update after a cooling
+> > device registered
+> > 
+> > Hi Yu,
+> > 
+> > On Mon, Sep 28, 2015 at 06:52:00PM +0100, Chen, Yu C wrote:
+> > > Hi, Javi,
+> > >
+> > > > -----Original Message-----
+> > > > From: Javi Merino [mailto:javi.merino@arm.com]
+> > > > Sent: Monday, September 28, 2015 10:29 PM
+> > > > To: Chen, Yu C
+> > > > Cc: linux-pm@vger.kernel.org; edubezval@gmail.com; Zhang, Rui;
+> > > > linux- kernel@vger.kernel.org; stable@vger.kernel.org
+> > > > Subject: Re: [PATCH 3/3] Thermal: do thermal zone update after a
+> > > > cooling device registered
+> > > >
+> > > > On Sun, Sep 27, 2015 at 06:48:44AM +0100, Chen Yu wrote:
+> > > > > From: Zhang Rui <rui.zhang@intel.com>
+> > > > >
+> > > > >
+> > > >
+> > > > I think you need to hold cdev->lock here, to make sure that no
+> > > > thermal zone is added or removed from cdev->thermal_instances while
+> > you are looping.
+> > > >
+> > > Ah right, will add. If I add the cdev ->lock here, will there be a
+> > > AB-BA lock with thermal_zone_unbind_cooling_device?
+> > 
+> > You're right, it could lead to a deadlock.  The locks can't be swapped because
+> > that won't work in step_wise.
+> > 
+> > The best way that I can think of accessing thermal_instances atomically is by
+> > making it RCU protected instead of with mutexes.
+> > What do you think?
+> > 
+> RCU would need extra spinlocks to protect the list, and need to sync_rcu after we delete
+> one instance from thermal_instance list,  I think it is too complicated for me to rewrite: (
+> How about using thermal_list_lock instead of cdev ->lock?
+> This guy should be big enough to protect the device.thermal_instance list.
 
-That's up to you mostly.
+thermal_list_lock protects thermal_tz_list and thermal_cdev_list, but
+it doesn't protect the thermal_instances list.  For example,
+thermal_zone_bind_cooling_device() adds a cooling device to the
+cdev->thermal_instances list without taking thermal_tz_list.
 
-If I get ACKs from all of the appropriate people on those, I can easily apply them.
+To sum up, you have to protect accessing the cdev->thermal_instances
+list but with the current locking scheme, you would create an AB-BA
+deadlock.  As I see it you would have to change the locking scheme to
+either RCU or add a new mutex that protects the
+cdev->thermal_instances and tz->thermal_instances lists and change all
+accesses to them to make sure they comply with the new locking scheme.
 
-Thanks,
-Rafael
+Is there a better way of solving this?  Cheers,
+Javi
+
 
