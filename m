@@ -1,49 +1,47 @@
-From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: RE: [PATCH][v3] ACPI / PM: Fix incorrect wakeup irq setting before
- suspend-to-idle
-Date: Wed, 14 Oct 2015 17:44:12 +0000
-Message-ID: <36DF59CE26D8EE47B0655C516E9CE6402865BC19@shsmsx102.ccr.corp.intel.com>
-References: <1444378813-17857-1-git-send-email-yu.c.chen@intel.com>
- <1AE640813FDE7649BE1B193DEA596E883BAC6884@SHSMSX101.ccr.corp.intel.com>
- <36DF59CE26D8EE47B0655C516E9CE6402865A448@shsmsx102.ccr.corp.intel.com>
- <4932550.izVA1bjiZk@vostro.rjw.lan>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
+ SpeedStep enabled
+Date: Wed, 14 Oct 2015 18:21:18 +0000
+Message-ID: <bug-103351-137361-df28kqBxxw@https.bugzilla.kernel.org/>
+References: <bug-103351-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <4932550.izVA1bjiZk@vostro.rjw.lan>
-Content-Language: en-US
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Zheng, Lv" <lv.zheng@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "Brown, Len" <len.brown@intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:37673 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751889AbbJNSVZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 14 Oct 2015 14:21:25 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+	by mail.kernel.org (Postfix) with ESMTP id A619E20843
+	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2015 18:21:23 +0000 (UTC)
+Received: from bugzilla2.web.kernel.org (bugzilla2.web.kernel.org [172.20.200.52])
+	by mail.kernel.org (Postfix) with ESMTP id AECED208C3
+	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2015 18:21:21 +0000 (UTC)
+In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-SGkgLFJhZmFlbCwNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBSYWZh
-ZWwgSi4gV3lzb2NraSBbbWFpbHRvOnJqd0Byand5c29ja2kubmV0XQ0KPiBTZW50OiBUdWVzZGF5
-LCBPY3RvYmVyIDEzLCAyMDE1IDQ6MjAgQU0NCj4gVG86IENoZW4sIFl1IEMNCj4gQ2M6IFpoZW5n
-LCBMdjsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBsaW51eC1hY3BpQHZnZXIua2VybmVsLm9y
-ZzsgbGludXgtDQo+IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IFpoYW5nLCBSdWk7IFd5c29ja2ks
-IFJhZmFlbCBKOyBCcm93biwgTGVuDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdW3YzXSBBQ1BJIC8g
-UE06IEZpeCBpbmNvcnJlY3Qgd2FrZXVwIGlycSBzZXR0aW5nIGJlZm9yZQ0KPiBzdXNwZW5kLXRv
-LWlkbGUNCj4gDQo+IE9uIEZyaWRheSwgT2N0b2JlciAwOSwgMjAxNSAwOTo1MDoyMSBBTSBDaGVu
-LCBZdSBDIHdyb3RlOg0KPiA+IEhpLCBMVg0KPiA+DQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3Nh
-Z2UtLS0tLQ0KPiA+ID4gRnJvbTogWmhlbmcsIEx2DQo+ID4gPiBTZW50OiBGcmlkYXksIE9jdG9i
-ZXIgMDksIDIwMTUgNDozMyBQTQ0KPiA+ID4gVG86IENoZW4sIFl1IEM7IHJqd0Byand5c29ja2ku
-bmV0OyBsZW5iQGtlcm5lbC5vcmcNCj4gPiA+IENjOiBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7
-IGxpbnV4LWFjcGlAdmdlci5rZXJuZWwub3JnOyBsaW51eC0NCj4gPiA+IGtlcm5lbEB2Z2VyLmtl
-cm5lbC5vcmc7IFpoYW5nLCBSdWkNCj4gPiA+IFN1YmplY3Q6IFJFOiBbUEFUQ0hdW3YzXSBBQ1BJ
-IC8gUE06IEZpeCBpbmNvcnJlY3Qgd2FrZXVwIGlycSBzZXR0aW5nDQo+ID4gPiBiZWZvcmUgc3Vz
-cGVuZC10by1pZGxlDQo+ID4gPg0KPiA+ID4gSGksIFl1DQo+ID4gPg0KPiA+ID4gPiBGcm9tOiBD
-aGVuLCBZdSBDDQo+ID4gPiA+IFNlbnQ6IEZyaWRheSwgT2N0b2JlciAwOSwgMjAxNSA0OjIwIFBN
-DQo+ID4gPiA+DQo+ID4gPiA+DQo+ID4gPiA+ICBhY3BpX3N0YXR1cyBhY3BpX29zX3JlbW92ZV9p
-bnRlcnJ1cHRfaGFuZGxlcih1MzIgaXJxLA0KPiA+ID4gPiBhY3BpX29zZF9oYW5kbGVyIGhhbmRs
-ZXIpDQo+ID4gPg0KPiA+ID4gV2h5IGRvbid0IHlvdSByZW5hbWUgaXJxIGhlcmUgdG8gZ3NpIHRv
-IGltcHJvdmUgdGhlIHJlYWRhYmlsaXR5Pw0KPiA+ID4gVGhlIGZhbHNlIG5hbWluZyBhbmQgdGhl
-IHdyb25nIGV4YW1wbGUgd3JpdHRlbiBmb3IgdGhpcyBmdW5jdGlvbiBhcmUNCj4gPiA+IHByb2Jh
-Ymx5IHRoZSByb290IGNhdXNlcyBvZiBhbGwgb3RoZXIgYmFkIGNvZGUuDQo+ID4gPiBTbyBpZiB3
-ZSB3YW50IHRvIHN0b3AgcGVvcGxlIG1ha2luZyBmdXR1cmUgbWlzdGFrZXMsIHdlIG5lZWQgdG8N
-Cj4gPiA+IGNsZWFudXAgb3Vyc2VsdmVzLg0KPiA+ID4NCj4gPiBPSywgd2lsbCByZXdyaXRlIGlu
-IG5leHQgdmVyc2lvbi4NCj4gDQo+IEl0IHdvdWxkIGJlIGdvb2QgdG8gY2hhbmdlIHRoZSBzdWJq
-ZWN0IG9mIHRoZSBwYXRjaCB0b28gSSB0aGluaywgYmVjYXVzZSBpdCBpcw0KPiBub3QgYWJvdXQg
-d2FrZXVwIElSUXMgb25seSBhbnkgbW9yZS4NCj4gDQpPSywgd2lsbCBzZW5kIGFub3RoZXIgc2Vy
-aWVzIG9mIHBhdGNoZXMuDQoNCkJlc3QgUmVnYXJkcywNCll1DQoNCg==
+https://bugzilla.kernel.org/show_bug.cgi?id=103351
+
+--- Comment #58 from Henrique de Moraes Holschuh <hmh@hmh.eng.br> ---
+(In reply to Fredrik Atmer from comment #57)
+> I've had my setup i5-5675C on an Asus H97I-Plus motherboard for some time
+
+...
+
+> first, but the day after I was able to do a dist-upgrade of my 14.10 system
+> to 15.04 using the 0x12 microcode (I used to have 0xd).
+
+Hmm, libpthreads (glibc POSIX threads support) in Ubuntu 15.04 is supposed to
+have lock elision enabled, and it should not be really happy with the i5-5675C
+with microcode 0x12 (you'd need microcode 0x13).
+
+Is "rtm" listed in your /proc/cpuinfo "flags" line?
+
+Can you run heavily threaded applications without crashes?
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
