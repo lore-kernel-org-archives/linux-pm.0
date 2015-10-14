@@ -1,69 +1,60 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / OPP: Remove confusing error message in of_cpumask_init_opp_table()
-Date: Wed, 14 Oct 2015 23:59:45 +0200
-Message-ID: <1480730.ra5d89GYrs@vostro.rjw.lan>
-References: <1444837943-32263-1-git-send-email-thomas.petazzoni@free-electrons.com> <2736370.6HB7CanQEp@vostro.rjw.lan> <20151014232927.4b43a897@free-electrons.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
+ SpeedStep enabled
+Date: Wed, 14 Oct 2015 21:31:01 +0000
+Message-ID: <bug-103351-137361-5HQrbD0A3q@https.bugzilla.kernel.org/>
+References: <bug-103351-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:50049 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753612AbbJNVbE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Oct 2015 17:31:04 -0400
-In-Reply-To: <20151014232927.4b43a897@free-electrons.com>
+Received: from mail.kernel.org ([198.145.29.136]:51425 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932785AbbJNVbJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 14 Oct 2015 17:31:09 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+	by mail.kernel.org (Postfix) with ESMTP id 95AC020528
+	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2015 21:31:08 +0000 (UTC)
+Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
+	by mail.kernel.org (Postfix) with ESMTP id CEEE420660
+	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2015 21:31:03 +0000 (UTC)
+In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>, Gregory Clement <gregory.clement@free-electrons.com>
+To: linux-pm@vger.kernel.org
 
-On Wednesday, October 14, 2015 11:29:27 PM Thomas Petazzoni wrote:
-> Hello,
-> 
-> On Wed, 14 Oct 2015 23:44:03 +0200, Rafael J. Wysocki wrote:
-> > On Wednesday, October 14, 2015 11:10:39 PM Thomas Petazzoni wrote:
-> > > Rafael,
-> > > 
-> > > On Wed, 14 Oct 2015 23:28:51 +0200, Rafael J. Wysocki wrote:
-> > > 
-> > > > > To avoid this confusion, this patch simply deletes the error message.
-> > > > > 
-> > > > > Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-> > > > 
-> > > > That's only present in linux-next now, right?
-> > > 
-> > > No, it is already in 4.3-rc since 4.3-rc1. The commit adding the
-> > > problematic function is 8d4d4e98acd68c31435ebb7beea591dbf60b9eb2, and
-> > > this function gets used in cpufreq-dt starting at commit
-> > > 2e02d8723edf6599988852a8ade8f83b2f766cb8.
-> > > 
-> > > $ git tag --contains 2e02d8723edf6599988852a8ade8f83b2f766cb8
-> > > v4.3-rc1
-> > > v4.3-rc2
-> > > v4.3-rc3
-> > > v4.3-rc4
-> > > v4.3-rc5
-> > 
-> > OK, thanks!
-> > 
-> > It should carry a
-> > 
-> > Fixes: 2e02d8723edf
-> > 
-> > tag then, right?
-> 
-> Yes, I wasn't sure if it really is a fix, and if so, which commit it is
-> fixing. It is really 8d4d4e98acd68c31435ebb7beea591dbf60b9eb2 that
-> introduces the confusing message, but the message will not appear until
-> the newly added function gets used in
-> 2e02d8723edf6599988852a8ade8f83b2f766cb8.
-> 
-> But if 2e02d8723edf6599988852a8ade8f83b2f766cb8 is considered to be the
-> commit actually introducing the regression, then I'll resubmit an
-> updated version with the Fixes: tag.
+https://bugzilla.kernel.org/show_bug.cgi?id=103351
 
-I've added the tag and applied the patch already.
+--- Comment #63 from Fredrik Atmer <fredrik+kernel@atmer.se> ---
+I just tried the experimental branch and it works for me. I'm at 0x13 =)
 
-Thanks,
-Rafael
+Although the --persist-debian still doesn't persist. I'm back at 0xd after a
+reboot. This is my output from install.sh. I don't know if update-initramfs
+looks in the wrong place or what?
 
+
+*** Initial microcode version information:
+microcode    : 0x13
+microcode    : 0x13
+microcode    : 0x13
+microcode    : 0x13
+
+*** Applying microcode updates
+*** Setting up persistence
+FYI: You can safely ignore warnings about files already existing.
+/usr/sbin/iucode-tool: 06-47-01: cannot write to, or create file: File exists
+*** Running update-initramfs
+update-initramfs: Generating /boot/initrd.img-3.19.0-30-generic
+
+*** Current microcode version information:
+microcode    : 0x13
+microcode    : 0x13
+microcode    : 0x13
+microcode    : 0x13
+
+No errors encountered.
+If the microcode version did not change, no update has been applied.
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
