@@ -1,23 +1,23 @@
 From: bugzilla-daemon@bugzilla.kernel.org
 Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
  SpeedStep enabled
-Date: Wed, 14 Oct 2015 20:50:59 +0000
-Message-ID: <bug-103351-137361-Zx5Ip0qu4D@https.bugzilla.kernel.org/>
+Date: Wed, 14 Oct 2015 20:55:23 +0000
+Message-ID: <bug-103351-137361-fUVga3xKyo@https.bugzilla.kernel.org/>
 References: <bug-103351-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:47294 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.136]:47719 "EHLO mail.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753432AbbJNUvF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 14 Oct 2015 16:51:05 -0400
+	id S1751615AbbJNUz2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 14 Oct 2015 16:55:28 -0400
 Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id C349720876
-	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2015 20:51:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D58D520876
+	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2015 20:55:26 +0000 (UTC)
 Received: from bugzilla2.web.kernel.org (bugzilla2.web.kernel.org [172.20.200.52])
-	by mail.kernel.org (Postfix) with ESMTP id 70E13209C6
-	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2015 20:51:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E63C6209CC
+	for <linux-pm@vger.kernel.org>; Wed, 14 Oct 2015 20:55:25 +0000 (UTC)
 In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -25,41 +25,21 @@ To: linux-pm@vger.kernel.org
 
 https://bugzilla.kernel.org/show_bug.cgi?id=103351
 
---- Comment #59 from kernel@benjam.info <kernel@benjam.info> ---
-Great news! I tried some other MSI UEFI updates, and managed to extract a
-microcode update that brings my 5675C up to version 0x13! Since the update came
-from a laptop UEFI update, and since the 5775C, 5675C, and 5700HQ all have the
-same signature (https://bugzilla.kernel.org/show_bug.cgi?id=103351#c53), I'm
-presuming that this means this one update should work for everyone.
+--- Comment #60 from kernel@benjam.info <kernel@benjam.info> ---
+(In reply to Fredrik Atmer from comment #57)
+> I'm using the script from the git repository. It works, but the
+> --persist-debian option fails to make it persistent. I don't know if I'm
+> using it incorrectly, and I'm happy to provide more information if
+> requested. I also tried the method with iucode-tool described above, with
+> the same result. The install.sh script does just that, right?
 
-To be safe, I've added the new update in a separate "experimental" branch. Once
-people can independently confirm it works on all the different types of
-processors, I'll merge it to master.
+If you're curious what the `install.sh` script does, you can just open it in a
+text file and see for yourself. It uses `iucode-tool` with the
+`--write-firmware` flag to copy the file to `/lib/firmware/intel-ucode`, and
+then `update-initramfs` to rebuild the early-boot image.
 
-To use the update in the experimental branch, simply run:
-
----
-$ git clone https://github.com/bgw/bdw-ucode-update-tool.git
-$ cd bdw-ucode-update-tool
-$ git checkout experimental
-$ ./install.sh
----
-
-I've installed this persistently on my machine, and verified that it applies at
-early boot. My cpu flags with 0x13 are:
-
----
-fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush
-dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm
-constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc
-aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3 fma
-cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes
-xsave avx f16c rdrand lahf_lm abm 3dnowprefetch ida arat pln pts dtherm
-intel_pt tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 hle
-avx2 smep bmi2 erms invpcid rtm rdseed adx smap xsaveopt
----
-
-Which is exactly the same as it was with 0x12.
+I haven't tested this on Ubuntu (I'm using Debian Jessie), but I'll do some
+experimentation in a virtual machine.
 
 -- 
 You are receiving this mail because:
