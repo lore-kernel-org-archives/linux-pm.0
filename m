@@ -1,115 +1,56 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [Linaro-acpi] [PATCH v5 0/5] Provide better MADT subtable sanity checks
-Date: Wed, 14 Oct 2015 23:25:48 +0200
-Message-ID: <3556673.VbpJrNsKqP@vostro.rjw.lan>
-References: <1443570346-15378-1-git-send-email-al.stone@linaro.org> <561C8351.3030304@erley.org> <561EB923.6010109@redhat.com>
+Subject: Re: [PATCH] PM / OPP: Remove confusing error message in of_cpumask_init_opp_table()
+Date: Wed, 14 Oct 2015 23:28:51 +0200
+Message-ID: <2178316.qF1soG5NSE@vostro.rjw.lan>
+References: <1444837943-32263-1-git-send-email-thomas.petazzoni@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <561EB923.6010109@redhat.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Al Stone <ahs3@redhat.com>
-Cc: Pat Erley <pat-lkml@erley.org>, Al Stone <al.stone@linaro.org>, Hanjun Guo <hanjun.guo@linaro.org>, linaro-kernel@lists.linaro.org, linux-ia64@vger.kernel.org, linaro-acpi@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, patches@linaro.org, Hanjun Guo <guohanjun@huawei.com>, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:45333 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932399AbbJNVAJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Oct 2015 17:00:09 -0400
+In-Reply-To: <1444837943-32263-1-git-send-email-thomas.petazzoni@free-electrons.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>, Gregory Clement <gregory.clement@free-electrons.com>
 
-On Wednesday, October 14, 2015 02:20:51 PM Al Stone wrote:
-> This is a multi-part message in MIME format.
-> --------------020400080004050109020606
-> Content-Type: text/plain; charset=utf-8
-> Content-Transfer-Encoding: 7bit
+On Wednesday, October 14, 2015 05:52:23 PM Thomas Petazzoni wrote:
+> The of_cpumask_init_opp_table() function will print an error message
+> (with pr_err) if it cannot find the OPP table for a certain CPU in the
+> Device Tree.
 > 
-> On 10/12/2015 10:06 PM, Pat Erley wrote:
-> > On 10/12/2015 01:52 PM, Al Stone wrote:
-> >> On 10/11/2015 09:58 PM, Pat Erley wrote:
-> >>> On 10/11/2015 08:49 PM, Hanjun Guo wrote:
-> >>>> On 10/12/2015 11:08 AM, Pat Erley wrote:
-> >>>>> On 10/05/2015 10:12 AM, Al Stone wrote:
-> >>>>>> On 10/05/2015 07:39 AM, Rafael J. Wysocki wrote:
-> >>>>>>> On Wednesday, September 30, 2015 10:10:16 AM Al Stone wrote:
-> >>>>>>>> On 09/30/2015 03:00 AM, Hanjun Guo wrote:
-> >>>>>>>>> On 2015/9/30 7:45, Al Stone wrote:
-> >>>>>>>>>> NB: this patch set is for use against the linux-pm bleeding edge
-> >>>>>>>>>> branch.
-> >>>>>>>>>>
-> >>>>>>>>
-> >>>>>>>> [snip...]
-> >>>>>>>>
-> >>>>>>>>>
-> >>>>>>>>> For this patch set,
-> >>>>>>>>>
-> >>>>>>>>> Reviewed-by: Hanjun Guo <hanjun.guo@linaro.org>
-> >>>>>>>>>
-> >>>>>>>>> Thanks
-> >>>>>>>>> Hanjun
-> >>>>>>>>
-> >>>>>>>> Thanks, Hanjun!
-> >>>>>>>
-> >>>>>>> Series applied, thanks!
-> >>>>>>>
-> >>>>>>> Rafael
-> >>>>>>>
-> >>>>>>
-> >>>>>> Thanks, Rafael!
-> >>>>>>
-> >>>>>
-> >>>>> Just decided to test out linux-next (to see the new nouveau cleanups).
-> >>>>> This change set prevents my Lenovo W510 from booting properly.
-> >>>>>
-> >>>>> Reverting: 7494b0 "ACPI: add in a bad_madt_entry() function to
-> >>>>> eventually replace the macro"
-> >>>>>
-> >>>>> Gets the system booting again.  I'm attaching my dmesg from the failed
-> >>>>> boot, who wants the acpidump?
-> >>>>
-> >>>> [    0.000000] ACPI: undefined version for either FADT 4.0 or MADT 1
-> >>>> [    0.000000] ACPI: Error parsing LAPIC address override entry
-> >>>> [    0.000000] ACPI: Invalid BIOS MADT, disabling ACPI
-> >>>>
-> >>>> Seems the MADT revision is not right, could you dump the ACPI MADT
-> >>>> (APIC) table and send it out? I will take a look :)
-> >>>>
-> >>>> Thanks
-> >>>> Hanjun
-> >>>
-> >>> Here ya go, enjoy.  Feel free to CC me on any patches that might fix it.
-> >>
-> >> Pat,
-> >>
-> >> Would you mind sending a copy of the FADT, also, please?  The first of the
-> >> ACPI messages is a check of version correspondence between the FADT and MADT,
-> >> while the second message is from looking at just an MADT subtable.  Thanks
-> >> for sending the MADT out -- that helps me quite a lot in thinking this through.
-> >>
-> >> BTW, whoever is providing the BIOS (Lenovo, I assume) may want to have a look
-> >> at these, also:
-> >>
-> >> [    0.000000] ACPI BIOS Warning (bug): 32/64X length mismatch in
-> >> FADT/Pm1aControlBlock: 16/32 (20150818/tbfadt-623)
-> >> [    0.000000] ACPI BIOS Warning (bug): Invalid length for
-> >> FADT/Pm1aControlBlock: 32, using default 16 (20150818/tbfadt-704)
-> >>
-> >> Not inherently dangerous, but definitely sloppy and mind-numbingly easy to
-> >> avoid, IIRC.
-> >>
-> > 
-> > Here ya go.
+> There are users of the cpufreq-dt driver (which is the one calling
+> of_cpumask_init_opp_table) that do not have the OPP points defined in
+> the Device Tree. Instead, such users dynamically create the OPP table
+> at boot time depending on the system configuration. Such a case is
+> planned in the cpufreq-dt driver, which on purpose ignores the return
+> value of of_cpumask_init_opp_table() with the following comment: "OPPs
+> might be populated at runtime, don't check for error here".
 > 
-> Okay.  There's just a lot of weird stuff out there in ACPI-land.  I've
-> attached four minor fixes for the special cases that have been reported
-> (well, the last one is actually a fix for a typo in the spec, but just
-> the same...).
+> For such platforms, the of_cpumask_init_opp_table() prints a spurious
+> and confusing error message for each CPU:
 > 
-> These should apply on top of linux-next; would you mind trying them out
-> to make sure I didn't break anything else on your laptop?  If they behave
-> as I hope they will, I think I'll have covered all the places where the
-> checking of MADT subtables needs to be be relaxed a bit.  These work for
-> me on arm64, but if they work for you and a couple of other testers, then
-> I'll send them to Rafael properly.
+> [    1.749548] of_cpumask_init_opp_table: couldn't find opp table for cpu:0, -19
+> [    1.756784] of_cpumask_init_opp_table: couldn't find opp table for cpu:1, -19
+> [    1.764031] of_cpumask_init_opp_table: couldn't find opp table for cpu:2, -19
+> [    1.771268] of_cpumask_init_opp_table: couldn't find opp table for cpu:3, -19
+> 
+> This is confusing because everything is working fine, cpufreq works
+> and it knows the OPP table that was registered at boot time (on
+> Marvell Armada XP):
+> 
+> $ cat /sys/devices/system/cpu/cpu0/cpufreq/stats/time_in_state
+> 666500 1884
+> 1333000 23333
+> 
+> To avoid this confusion, this patch simply deletes the error message.
+> 
+> Signed-off-by: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 
-Well, you might as well submit them properly right away, so I could pick
-them up and put them into my linux-next branch, which then might make it
-easier for some people to test them.
+That's only present in linux-next now, right?
 
 Thanks,
 Rafael
