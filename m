@@ -1,55 +1,77 @@
-From: Jacob Pan <jacob.jun.pan@intel.com>
-Subject: Re: [PATCH 2/2] Enabled Broxton RAPL support
-Date: Wed, 14 Oct 2015 20:11:58 -0700
-Message-ID: <20151014201158.36826c09@yairi>
-References: <1444835355-26582-3-git-send-email-amy.l.wiles@intel.com>
-	<1444835355-26582-4-git-send-email-amy.l.wiles@intel.com>
-	<34419145.BT4t4sgNS0@vostro.rjw.lan>
+From: Hou Zhiqiang <B48286@freescale.com>
+Subject: RE: [v3,1/5] powerpc/fsl: Move fsl_guts.h out of arch/powerpc
+Date: Thu, 15 Oct 2015 06:45:25 +0000
+Message-ID: <CY1PR0301MB07809DEB86BE03CD1FF608A98B3E0@CY1PR0301MB0780.namprd03.prod.outlook.com>
+References: <BN3PR0301MB12498818CCEA66A001228FAC843E0@BN3PR0301MB1249.namprd03.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:8502 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932437AbbJODMA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 14 Oct 2015 23:12:00 -0400
-In-Reply-To: <34419145.BT4t4sgNS0@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-Reply-To: <BN3PR0301MB12498818CCEA66A001228FAC843E0@BN3PR0301MB1249.namprd03.prod.outlook.com>
+Content-Language: en-US
+Sender: linux-clk-owner@vger.kernel.org
+To: Scott Wood <scottwood@freescale.com>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Yuantian Tang <Yuantian.Tang@freescale.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Hu Vincent <Mingkai.Hu@freescale.com>, Hou Zhiqiang <B48286@freescale.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: amy.l.wiles@intel.com, rui.zhang@intel.com, srinivas.pandruvada@intel.com, linux-pm@vger.kernel.org, jacob.jun.pan@intel.com
 
-On Thu, 15 Oct 2015 01:29:04 +0200
-"Rafael J. Wysocki" <rjw@rjwysocki.net> wrote:
-
-> On Wednesday, October 14, 2015 08:09:15 AM amy.l.wiles@intel.com
-> wrote:
-> > From: Amy Wiles <amy.l.wiles@intel.com>
-> > 
-> > Signed-off-by: Amy Wiles <amy.l.wiles@intel.com>
-> > ---
-> >  drivers/powercap/intel_rapl.c | 1 +
-> >  1 file changed, 1 insertion(+)
-> > 
-> > diff --git a/drivers/powercap/intel_rapl.c
-> > b/drivers/powercap/intel_rapl.c index 5efacd0..cc97f08 100644
-> > --- a/drivers/powercap/intel_rapl.c
-> > +++ b/drivers/powercap/intel_rapl.c
-> > @@ -1102,6 +1102,7 @@ static const struct x86_cpu_id rapl_ids[]
-> > __initconst = { RAPL_CPU(0x4A, rapl_defaults_tng),/* Tangier */
-> >  	RAPL_CPU(0x56, rapl_defaults_core),/* Future Xeon */
-> >  	RAPL_CPU(0x5A, rapl_defaults_ann),/* Annidale */
-> > +	RAPL_CPU(0X5C, rapl_defaults_core),/* Broxton */
-> >  	RAPL_CPU(0x5E, rapl_defaults_core),/* Skylake-H/S */
-> >  	RAPL_CPU(0x57, rapl_defaults_hsw_server),/* Knights
-> > Landing */ {}
-> > 
-> 
-> Jacob, any problems with this one?
-> 
-looks good to me. I also tested it.
-> Thanks,
-> Rafael
-> 
-
-[Jacob Pan]
+DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb20gcGF0Y2h3b3JrIFN1biBTZXAg
+MjAgMDQ6Mjk6NTMgMjAxNSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAN
+Cj4gQ29udGVudC1UeXBlOiB0ZXh0L3BsYWluOyBjaGFyc2V0PSJ1dGYtOCIgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgIA0KPiBNSU1FLVZlcnNpb246IDEuMCAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgDQo+IENv
+bnRlbnQtVHJhbnNmZXItRW5jb2Rpbmc6IDdiaXQgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICANCj4gU3ViamVjdDogW3YzLDEvNV0gcG93ZXJwYy9mc2w6IE1v
+dmUgZnNsX2d1dHMuaCBvdXQgb2YgYXJjaC9wb3dlcnBjICAgICAgICAgICAgIA0KPiBGcm9tOiBT
+Y290dCBXb29kIDxzY290dHdvb2RAZnJlZXNjYWxlLmNvbT4gICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgDQo+IFgtUGF0Y2h3b3JrLUlkOiA3MjI1NDIxICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICANCj4gTWVzc2FnZS1JZDog
+PDE0NDI3MjMzOTctMjYzMjktMi1naXQtc2VuZC1lbWFpbC1zY290dHdvb2RAZnJlZXNjYWxlLmNv
+bT4gICAgICAgIA0KPiBUbzogTWljaGFlbCBUdXJxdWV0dGUgPG10dXJxdWV0dGVAYmF5bGlicmUu
+Y29tPiwgU3RlcGhlbiBCb3lkICAgICAgICAgICAgICAgICAgDQo+ICAgICAgIDxzYm95ZEBjb2Rl
+YXVyb3JhLm9yZz4sICJSYWZhZWwgSi4gV3lzb2NraSIgPHJqd0Byand5c29ja2kubmV0PiwgICAg
+ICAgICANCj4gICAgICAgVmlyZXNoIEt1bWFyICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA0KPiAgICAgICA8dmlyZXNoLmt1bWFyQGxp
+bmFyby5vcmc+LCBSdXNzZWxsIEtpbmcgPGxpbnV4QGFybS5saW51eC5vcmcudWs+ICAgICAgICAg
+DQo+IENjOiBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmcsIFRhbmcgWXVhbnRpYW4gPFl1YW50aWFu
+LlRhbmdAZnJlZXNjYWxlLmNvbT4sICAgICANCj4gICAgICAgU2NvdHQgV29vZCA8c2NvdHR3b29k
+QGZyZWVzY2FsZS5jb20+LCBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZywgICAgIA0KPiAg
+ICAgICBsaW51eC1jbGtAdmdlci5rZXJuZWwub3JnLCBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmlu
+ZnJhZGVhZC5vcmcgICAgICAgICAgDQo+IERhdGU6IFNhdCwgMTkgU2VwIDIwMTUgMjM6Mjk6NTMg
+LTA1MDAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICANCj4gICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgIA0KPiBGcmVlc2NhbGUncyBMYXllcnNjYXBlIEFSTSBjaGlwcyB1c2Ug
+dGhlIHNhbWUgc3RydWN0dXJlLiAgICAgICAgICAgICAgICAgICAgICAgDQo+ICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICANCj4gU2lnbmVkLW9mZi1ieTogU2NvdHQgV29vZCA8c2NvdHR3b29kQGZyZWVz
+Y2FsZS5jb20+ICAgICAgICAgICAgICAgICAgICAgICAgICAgIA0KPiAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgDQo+IC0tLSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICANCj4gdjM6IHdhcyBwYXRjaCAyLzUgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+IA0KPiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgDQo+ICBhcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20v
+ZnNsX2d1dHMuaCAgICAgICAgfCAxOTIgLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCj4g
+IGFyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvODV4eC9tcGM4NXh4X21kcy5jICB8ICAgMiArLSAgICAg
+ICAgICAgICAgICAgICAgICAgICAgIA0KPiAgYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy84NXh4L21w
+Yzg1eHhfcmRiLmMgIHwgICAyICstICAgICAgICAgICAgICAgICAgICAgICAgICAgDQo+ICBhcmNo
+L3Bvd2VycGMvcGxhdGZvcm1zLzg1eHgvcDEwMjJfZHMuYyAgICAgfCAgIDIgKy0gICAgICAgICAg
+ICAgICAgICAgICAgICAgICANCj4gIGFyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvODV4eC9wMTAyMl9y
+ZGsuYyAgICB8ICAgMiArLSAgICAgICAgICAgICAgICAgICAgICAgICAgIA0KPiAgYXJjaC9wb3dl
+cnBjL3BsYXRmb3Jtcy84NXh4L3NtcC5jICAgICAgICAgIHwgICAyICstICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgDQo+ICBhcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzg1eHgvdHdyX3AxMDJ4LmMg
+ICAgfCAgIDIgKy0gICAgICAgICAgICAgICAgICAgICAgICAgICANCj4gIGFyY2gvcG93ZXJwYy9w
+bGF0Zm9ybXMvODZ4eC9tcGM4NjEwX2hwY2QuYyB8ICAgMiArLSAgICAgICAgICAgICAgICAgICAg
+ICAgICAgIA0KPiAgZHJpdmVycy9pb21tdS9mc2xfcGFtdS5jICAgICAgICAgICAgICAgICAgIHwg
+ICAyICstICAgICAgICAgICAgICAgICAgICAgICAgICAgDQo+ICBpbmNsdWRlL2xpbnV4L2ZzbC9n
+dXRzLmggICAgICAgICAgICAgICAgICAgfCAxOTIgKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KysNCj4gIHNvdW5kL3NvYy9mc2wvbXBjODYxMF9ocGNkLmMgICAgICAgICAgICAgICB8ICAgMiAr
+LSAgICAgICAgICAgICAgICAgICAgICAgICAgIA0KPiAgc291bmQvc29jL2ZzbC9wMTAyMl9kcy5j
+ICAgICAgICAgICAgICAgICAgIHwgICAyICstICAgICAgICAgICAgICAgICAgICAgICAgICAgDQo+
+ICBzb3VuZC9zb2MvZnNsL3AxMDIyX3Jkay5jICAgICAgICAgICAgICAgICAgfCAgIDIgKy0gICAg
+ICAgICAgICAgICAgICAgICAgICAgICANCj4gIDEzIGZpbGVzIGNoYW5nZWQsIDIwMyBpbnNlcnRp
+b25zKCspLCAyMDMgZGVsZXRpb25zKC0pICAgICAgICAgICAgICAgICAgICAgICAgIA0KPiAgZGVs
+ZXRlIG1vZGUgMTAwNjQ0IGFyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9mc2xfZ3V0cy5oICAgICAg
+ICAgICAgICAgICAgICAgICAgDQo+ICBjcmVhdGUgbW9kZSAxMDA2NDQgaW5jbHVkZS9saW51eC9m
+c2wvZ3V0cy5oICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICANCg0KTFMxMDQzQSBj
+bG9jayBkcml2ZXIgZGVwZW5kcyBvbiB0aGlzIHBhdGNoc2V0LCBhbmQgdGVzdGVkIG9uIExTMTA0
+M0FSREIgYm9hcmQuDQoNClRoYW5rcywNClpoaXFpYW5nDQo=
