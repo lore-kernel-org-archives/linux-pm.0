@@ -1,62 +1,47 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
- SpeedStep enabled
-Date: Thu, 15 Oct 2015 18:06:36 +0000
-Message-ID: <bug-103351-137361-oUqufBO3Zt@https.bugzilla.kernel.org/>
-References: <bug-103351-137361@https.bugzilla.kernel.org/>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH V2] debugfs: Add debugfs_create_ulong()
+Date: Thu, 15 Oct 2015 11:25:55 -0700
+Message-ID: <20151015182555.GI4558@codeaurora.org>
+References: <3a48d2bb4320bba82f91354d7165c300ef8108bd.1444402709.git.viresh.kumar@linaro.org>
+ <69e3888403d23de9aadf3792be3c0bdce57495b0.1444410517.git.viresh.kumar@linaro.org>
+ <20151014185102.GI26883@codeaurora.org>
+ <20151015071218.GD19018@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:47145 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751855AbbJOSGm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 15 Oct 2015 14:06:42 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id 19FB120817
-	for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2015 18:06:41 +0000 (UTC)
-Received: from bugzilla2.web.kernel.org (bugzilla2.web.kernel.org [172.20.200.52])
-	by mail.kernel.org (Postfix) with ESMTP id D031120825
-	for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2015 18:06:38 +0000 (UTC)
-In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
+Received: from smtp.codeaurora.org ([198.145.29.96]:44369 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751889AbbJOSZ5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 Oct 2015 14:25:57 -0400
+Content-Disposition: inline
+In-Reply-To: <20151015071218.GD19018@linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linaro-kernel@lists.linaro.org, Rafael Wysocki <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, arnd@arndb.de, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, stern@rowland.harvard.edu
 
-https://bugzilla.kernel.org/show_bug.cgi?id=103351
+On 10/15, Viresh Kumar wrote:
+> On 14-10-15, 11:51, Stephen Boyd wrote:
+> > On 10/09, Viresh Kumar wrote:
+> > > +struct dentry *debugfs_create_xlong(const char *name, umode_t mode,
+> > > +				    struct dentry *parent, unsigned long *value)
+> > > +{
+> > > +	return debugfs_create_file(name, mode, parent, value, &fops_xlong);
+> > 
+> > Were you going to refresh this on my debugfs_create_mode()
+> > patches? Otherwise the patch looks fine to me.
+> 
+> I thought you need to refresh your set as I posted this before you
+> have :)
+> 
 
---- Comment #71 from kernel@benjam.info <kernel@benjam.info> ---
-(In reply to Henrique de Moraes Holschuh from comment #66)
-> Assuming the microcode was *really* applied by the early microcode loader
-> (please double-check):
+:)
 
-It's really being applied by the early microcode loader:
-
----
-[    0.000000] microcode: CPU0 microcode updated early to revision 0x13, date =
-2015-08-03
-[    0.078198] microcode: CPU1 microcode updated early to revision 0x13, date =
-2015-08-03
-[    0.096059] microcode: CPU2 microcode updated early to revision 0x13, date =
-2015-08-03
-[    0.113892] microcode: CPU3 microcode updated early to revision 0x13, date =
-2015-08-03
-[    0.590510] microcode: CPU0 sig=0x40671, pf=0x2, revision=0x13
-[    0.590515] microcode: CPU1 sig=0x40671, pf=0x2, revision=0x13
-[    0.590519] microcode: CPU2 sig=0x40671, pf=0x2, revision=0x13
-[    0.590522] microcode: CPU3 sig=0x40671, pf=0x2, revision=0x13
-[    0.590549] microcode: Microcode Update Driver: v2.00
-<tigran@aivazian.fsnet.co.uk>, Peter Oruba
----
-
-I don't understand it either, and I'm as frustrated as everyone else by the
-lack of communication from Intel.
-
-Thanks for the warning about applying the updates after early boot. I still
-want to support the normal installation mechanism, because it's easier for some
-people, but I'll certainly look into adding more specific disclaimers and
-tweaking the way the installation works.
+Well this patch is creating xlong without any
+read-only/write-only ops, so it has the same potential problems
+as what the debugfs_create_mode() series was fixing. I'm fine
+either way though.
 
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
