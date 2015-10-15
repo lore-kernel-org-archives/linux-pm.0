@@ -1,45 +1,45 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH 4/5] cpufreq: create cpu/cpufreq/policyX directories
-Date: Thu, 15 Oct 2015 12:28:10 -0700
-Message-ID: <561FFE4A.5070103@codeaurora.org>
-References: <cover.1444583718.git.viresh.kumar@linaro.org> <dd7e6cab3e879e94305c0fca1ea6033e79d166ca.1444583718.git.viresh.kumar@linaro.org> <561C0A8B.5010509@codeaurora.org> <20151013033912.GN5386@linux> <561D5B85.4010103@codeaurora.org> <20151015065503.GB19018@linux>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v1] cpufreq: intel_pstate: divide by zero on Knights Landing (KNL)
+Date: Thu, 15 Oct 2015 12:34:21 -0700
+Message-ID: <1444937661-9519-2-git-send-email-srinivas.pandruvada@linux.intel.com>
+References: <1444937661-9519-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:49793 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751329AbbJOT2L (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 Oct 2015 15:28:11 -0400
-In-Reply-To: <20151015065503.GB19018@linux>
+Received: from mga09.intel.com ([134.134.136.24]:28094 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752145AbbJOTe7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 15 Oct 2015 15:34:59 -0400
+In-Reply-To: <1444937661-9519-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, open list <linux-kernel@vger.kernel.org>
+To: kristen.c.accardi@intel.com, rafael.j.wysocki@intel.com, len.brown@intel.com
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On 10/14/2015 11:55 PM, Viresh Kumar wrote:
-> On 13-10-15, 12:29, Saravana Kannan wrote:
->> But we don't need to track track of "present-cpus" separately
->> though. We could do the for_each_cpu_and() when we create the
->> symlinks for the first time. And after that, we can just use the
->> subsystem interface callbacks (cpufreq_add_dev() and
->> cpufreq_remove_dev()) to keep the symlinks updated.
->>
->> I don't see any place where keeping track of this separately is more
->> efficient. This would save some memory savings when the number of
->> CPUs is large and also simplify the code because we won't have to
->> keep another field up to date.
->
-> It is still required to track when can we free the policy.
->
+This is a workaround for KNL platform, where in some cases MPERF counter
+will not have updated value before next read of MSR_IA32_MPERF. In this
+case divide by zero will occur. This change ignores current sample for
+busy calculation in this case.
 
-Ok, I'm not very familiar with this new field's uses. I'll take a closer 
-look later and respond if I have other thoughts.
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-Thanks,
-Saravana
-
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 3af9dd7..aa33b92 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -776,6 +776,11 @@ static inline void intel_pstate_sample(struct cpudata *cpu)
+ 	local_irq_save(flags);
+ 	rdmsrl(MSR_IA32_APERF, aperf);
+ 	rdmsrl(MSR_IA32_MPERF, mperf);
++	if (cpu->prev_mperf == mperf) {
++		local_irq_restore(flags);
++		return;
++	}
++
+ 	tsc = rdtsc();
+ 	local_irq_restore(flags);
+ 
 -- 
-Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+1.9.3
+
