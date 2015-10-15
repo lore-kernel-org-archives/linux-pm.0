@@ -1,79 +1,111 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: [GIT PULL] On-demand device probing
-Date: Thu, 15 Oct 2015 13:42:08 +0200
-Message-ID: <1444909328-24761-1-git-send-email-tomeu.vizoso@collabora.com>
-References: <20151014092644.GO14956@sirena.org.uk>
-Return-path: <linux-gpio-owner@vger.kernel.org>
-In-Reply-To: <20151014092644.GO14956@sirena.org.uk>
-Sender: linux-gpio-owner@vger.kernel.org
-To: Rob Herring <robh+dt@kernel.org>
-Cc: Russell King <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, =?UTF-8?q?Terje=20Bergstr=C3=B6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Frank Rowand <frowand.list@gmail.com>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Felipe Balbi <balbi@ti.com>
+From: ahaslam@baylibre.com
+Subject: [PATCH v8 0/6] Multiple intermediate states for genpd
+Date: Thu, 15 Oct 2015 14:16:30 +0200
+Message-ID: <1444911396-3473-1-git-send-email-ahaslam@baylibre.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f176.google.com ([209.85.212.176]:34367 "EHLO
+	mail-wi0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752839AbbJOMQo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 Oct 2015 08:16:44 -0400
+Received: by wicgb1 with SMTP id gb1so25564847wic.1
+        for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2015 05:16:43 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: khilman@linaro.org, ulf.hansson@linaro.org, lina.iyer@linaro.org, geert@glider.be, k.kozlowski.k@gmail.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org
+Cc: bcousson@baylibre.com, mturquette@baylibre.com, Axel Haslam <ahaslam+renesas@baylibre.com>
 
-Hi,
+From: Axel Haslam <ahaslam+renesas@baylibre.com>
 
-this second pull request replaces the last references to device_initcall_sync with late_initcall, as noticed by Frank Rowand.
+Some architectures may have intermediate power levels between on and off.
 
-Also fixes the url of the git repo and the wrapping, as suggested by Mark Brown.
+This patch set adds the ability to declare multiple states for a given
+generic power domain, the idea is that the deepest state will be entered
+which does not violate any of the device or sub-domain latency constraints.
 
-Thanks,
+Changes since v7:
+* rebase to 4.3-rc5
 
-Tomeu
+* add genpd_init_simple (Lina's suggestion) for platforms that don't have
+multiple states and don't declare initial latencies. A default OFF
+state with initial 0 latencies will be used in this case.
 
-The following changes since commit 6ff33f3902c3b1c5d0db6b1e2c70b6d76fba357f:
+* Append Mark's patch to add "states" and "timings" to the genpd
+debugfs
 
-  Linux 4.3-rc1 (2015-09-12 16:35:56 -0700)
+Changes since v6:
+* change int to unsigned int were appropriate.
 
-are available in the git repository at:
+* spelling mistakes, and fix commit message for removal of latencies.
 
-  git://git.collabora.com/git/user/tomeu/linux.git on-demand-probes-for-next
+Changes since v5:
+* rebase to 4.1-rc1
 
-for you to fetch changes up to c074fef5d36e1c27dfdf7474e23c01a1b044ff98:
+* Pass state array as an init argument on pm_genpd_init
 
-  of/platform: Defer probes of registered devices (2015-10-15 13:25:47 +0200)
+* declare a default OFF state with no latencies, that will be used if a
+null state argument is given.
 
-----------------------------------------------------------------
-Tomeu Vizoso (20):
-      driver core: handle -EPROBE_DEFER from bus_type.match()
-      ARM: amba: Move reading of periphid to amba_match()
-      of/platform: Point to struct device from device node
-      of: add function to allow probing a device from a OF node
-      gpio: Probe GPIO drivers on demand
-      pinctrl: Probe pinctrl devices on demand
-      regulator: core: Probe regulators on demand
-      drm: Probe panels on demand
-      drm/tegra: Probe dpaux devices on demand
-      i2c: core: Probe i2c adapters and devices on demand
-      pwm: Probe PWM chip devices on demand
-      backlight: Probe backlight devices on demand
-      usb: phy: Probe phy devices on demand
-      clk: Probe clk providers on demand
-      pinctrl: Probe pinctrl devices on demand
-      phy: core: Probe phy providers on demand
-      dma: of: Probe DMA controllers on demand
-      power-supply: Probe power supplies on demand
-      driver core: Allow deferring probes until late init
-      of/platform: Defer probes of registered devices
+* set the deepest state when using sync_poweroff.
 
- drivers/amba/bus.c                  | 88 +++++++++++++++++++------------------
- drivers/base/Kconfig                | 18 ++++++++
- drivers/base/dd.c                   | 30 ++++++++++++-
- drivers/clk/clk.c                   |  3 ++
- drivers/dma/of-dma.c                |  3 ++
- drivers/gpio/gpiolib-of.c           |  5 +++
- drivers/gpu/drm/drm_panel.c         |  3 ++
- drivers/gpu/drm/tegra/dpaux.c       |  3 ++
- drivers/i2c/i2c-core.c              |  4 ++
- drivers/of/device.c                 | 61 +++++++++++++++++++++++++
- drivers/of/platform.c               | 30 ++++++++-----
- drivers/phy/phy-core.c              |  3 ++
- drivers/pinctrl/devicetree.c        |  3 ++
- drivers/power/power_supply_core.c   |  3 ++
- drivers/pwm/core.c                  |  3 ++
- drivers/regulator/core.c            |  2 +
- drivers/usb/phy/phy.c               |  3 ++
- drivers/video/backlight/backlight.c |  3 ++
- include/linux/device.h              |  4 +-
- include/linux/of.h                  |  1 +
- include/linux/of_device.h           |  3 ++
- 21 files changed, 219 insertions(+), 57 deletions(-)
+* create and use name allocation function in the debug area
+instead of inline.
+
+Changes since v4:
+* move to power_on/off callbacks out of the state array Platforms can
+check the state_idx to know what state the power on/off corresponds to.
+
+* convert states to pointer,
+Dynamically allocate the states array to save memory on platforms
+with several power domains.
+
+* rename target_state to state_idx and remove init_state.
+
+Changes since v3:
+* remove old power on/off function at the end of the
+series so that compilation will not break in between.
+
+Changes since v2:
+* remove state argument and macros from save/restore callbacks.
+
+* added init_state for platforms to pass the initial state when the genpd
+is initially off.
+
+* convert current genpd users for the structure changes.
+
+Changes since v1:
+* split the changes so that the actual logic that selects the target state
+is a separate patch.
+
+* move the cached logic out of the state function and add
+it back to default_power_down_ok.
+
+* rename default_power_down_ok_state to power_down_ok_for_state
+
+Axel Haslam (5):
+  PM / Domains: prepare for multiple states
+  PM / Domains: core changes for multiple states
+  PM / Domains: make governor select deepest state
+  ARM: imx6: pm: declare pm domain latency on power_state struct.
+  PM / Domains: remove old power on/off latencies.
+
+Marc Titinger (1):
+  PM / Domains: add debugfs 'states' and 'timings' seq files
+
+ arch/arm/mach-exynos/pm_domains.c     |   2 +-
+ arch/arm/mach-imx/gpc.c               |  18 ++-
+ arch/arm/mach-s3c64xx/pm.c            |   4 +-
+ arch/arm/mach-shmobile/pm-r8a7779.c   |   2 +-
+ arch/arm/mach-shmobile/pm-rmobile.c   |   2 +-
+ arch/arm/mach-ux500/pm_domains.c      |   2 +-
+ arch/arm/mach-zx/zx296702-pm-domain.c |   2 +-
+ drivers/base/power/domain.c           | 253 ++++++++++++++++++++++++++++++++--
+ drivers/base/power/domain_governor.c  |  71 ++++++----
+ drivers/clk/shmobile/clk-mstp.c       |   2 +-
+ drivers/soc/dove/pmu.c                |   2 +-
+ drivers/soc/mediatek/mtk-scpsys.c     |   2 +-
+ include/linux/pm_domain.h             |  25 +++-
+ 13 files changed, 336 insertions(+), 51 deletions(-)
+
+-- 
+2.4.5
+
