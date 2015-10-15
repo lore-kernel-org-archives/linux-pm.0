@@ -1,92 +1,87 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 3/5] cpufreq: remove cpufreq_sysfs_{create|remove}_file()
-Date: Thu, 15 Oct 2015 21:35:23 +0530
-Message-ID: <8be4873ecf696c6202b0dc4cbc71258ab5fcdbd5.1444924623.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 5/5] cpufreq: postfix policy directory with the first CPU in related_cpus
+Date: Thu, 15 Oct 2015 21:35:25 +0530
+Message-ID: <f64c9a0941f179d55ab95f4b9a038df0acbfefa3.1444924623.git.viresh.kumar@linaro.org>
 References: <cover.1444924623.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f48.google.com ([209.85.220.48]:33694 "EHLO
+	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753754AbbJOQGU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 Oct 2015 12:06:20 -0400
+Received: by pabrc13 with SMTP id rc13so91737394pab.0
+        for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2015 09:06:20 -0700 (PDT)
 In-Reply-To: <cover.1444924623.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1444924623.git.viresh.kumar@linaro.org>
 References: <cover.1444924623.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, skannan@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>, open list <linux-kernel@vger.kernel.org>
-List-Id: linux-pm@vger.kernel.org
 
-They don't do anything special now, remove the unnecessary wrapper.
+The sysfs policy directory is postfixed currently with the CPU number
+for which the policy was created, which isn't necessarily the first CPU
+in related_cpus mask.
 
-Reviewed-by: Saravana Kannan <skannan@codeaurora.org>
+To make it more consistent and predictable, lets postfix the policy with
+the first cpu in related-cpus mask.
+
+Suggested-by: Saravana Kannan <skannan@codeaurora.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 22 +++++-----------------
- include/linux/cpufreq.h   |  2 --
- 2 files changed, 5 insertions(+), 19 deletions(-)
+ drivers/cpufreq/cpufreq.c | 19 ++++++++++---------
+ 1 file changed, 10 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index c1fd57db50bd..04222e7bbc73 100644
+index 4fa2215cc6ec..3fe13875565d 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -873,21 +873,6 @@ static struct kobj_type ktype_cpufreq = {
- 	.release	= cpufreq_sysfs_release,
- };
- 
--struct kobject *cpufreq_global_kobject;
--EXPORT_SYMBOL(cpufreq_global_kobject);
--
--int cpufreq_sysfs_create_file(const struct attribute *attr)
--{
--	return sysfs_create_file(cpufreq_global_kobject, attr);
--}
--EXPORT_SYMBOL(cpufreq_sysfs_create_file);
--
--void cpufreq_sysfs_remove_file(const struct attribute *attr)
--{
--	sysfs_remove_file(cpufreq_global_kobject, attr);
--}
--EXPORT_SYMBOL(cpufreq_sysfs_remove_file);
--
- static int add_cpu_dev_symlink(struct cpufreq_policy *policy, int cpu)
+@@ -1022,7 +1022,6 @@ static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
  {
- 	struct device *cpu_dev;
-@@ -2390,7 +2375,7 @@ static int create_boost_sysfs_file(void)
- 	if (!cpufreq_driver->set_boost)
- 		cpufreq_driver->set_boost = cpufreq_boost_set_sw;
+ 	struct device *dev = get_cpu_device(cpu);
+ 	struct cpufreq_policy *policy;
+-	int ret;
  
--	ret = cpufreq_sysfs_create_file(&boost.attr);
-+	ret = sysfs_create_file(cpufreq_global_kobject, &boost.attr);
- 	if (ret)
- 		pr_err("%s: cannot register global BOOST sysfs file\n",
- 		       __func__);
-@@ -2401,7 +2386,7 @@ static int create_boost_sysfs_file(void)
- static void remove_boost_sysfs_file(void)
- {
- 	if (cpufreq_boost_supported())
--		cpufreq_sysfs_remove_file(&boost.attr);
-+		sysfs_remove_file(cpufreq_global_kobject, &boost.attr);
- }
+ 	if (WARN_ON(!dev))
+ 		return NULL;
+@@ -1040,13 +1039,6 @@ static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
+ 	if (!zalloc_cpumask_var(&policy->real_cpus, GFP_KERNEL))
+ 		goto err_free_rcpumask;
  
- int cpufreq_enable_boost_support(void)
-@@ -2549,6 +2534,9 @@ static struct syscore_ops cpufreq_syscore_ops = {
- 	.shutdown = cpufreq_suspend,
- };
+-	ret = kobject_init_and_add(&policy->kobj, &ktype_cpufreq,
+-				   cpufreq_global_kobject, "policy%u", cpu);
+-	if (ret) {
+-		pr_err("%s: failed to init policy->kobj: %d\n", __func__, ret);
+-		goto err_free_real_cpus;
+-	}
+-
+ 	INIT_LIST_HEAD(&policy->policy_list);
+ 	init_rwsem(&policy->rwsem);
+ 	spin_lock_init(&policy->transition_lock);
+@@ -1057,7 +1049,6 @@ static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
+ 	policy->cpu = cpu;
+ 	return policy;
  
-+struct kobject *cpufreq_global_kobject;
-+EXPORT_SYMBOL(cpufreq_global_kobject);
+-err_free_real_cpus:
+ 	free_cpumask_var(policy->real_cpus);
+ err_free_rcpumask:
+ 	free_cpumask_var(policy->related_cpus);
+@@ -1163,6 +1154,16 @@ static int cpufreq_online(unsigned int cpu)
+ 		cpumask_copy(policy->related_cpus, policy->cpus);
+ 		/* Remember CPUs present at the policy creation time. */
+ 		cpumask_and(policy->real_cpus, policy->cpus, cpu_present_mask);
 +
- static int __init cpufreq_core_init(void)
- {
- 	if (cpufreq_disabled())
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 338bf0e59bb8..9623218d996a 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -149,8 +149,6 @@ static inline bool policy_is_shared(struct cpufreq_policy *policy)
++		/* Initialize the kobject */
++		ret = kobject_init_and_add(&policy->kobj, &ktype_cpufreq,
++					   cpufreq_global_kobject, "policy%u",
++					   cpumask_first(policy->related_cpus));
++		if (ret) {
++			pr_err("%s: failed to init policy->kobj: %d\n",
++			       __func__, ret);
++			goto out_exit_policy;
++		}
+ 	}
  
- /* /sys/devices/system/cpu/cpufreq: entry point for global variables */
- extern struct kobject *cpufreq_global_kobject;
--int cpufreq_sysfs_create_file(const struct attribute *attr);
--void cpufreq_sysfs_remove_file(const struct attribute *attr);
- 
- #ifdef CONFIG_CPU_FREQ
- unsigned int cpufreq_get(unsigned int cpu);
+ 	/*
 -- 
 2.4.0
+
