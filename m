@@ -1,47 +1,41 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH V2] debugfs: Add debugfs_create_ulong()
-Date: Thu, 15 Oct 2015 11:25:55 -0700
-Message-ID: <20151015182555.GI4558@codeaurora.org>
-References: <3a48d2bb4320bba82f91354d7165c300ef8108bd.1444402709.git.viresh.kumar@linaro.org>
- <69e3888403d23de9aadf3792be3c0bdce57495b0.1444410517.git.viresh.kumar@linaro.org>
- <20151014185102.GI26883@codeaurora.org>
- <20151015071218.GD19018@linux>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] cpufreq: intel_pstate: divide by zero on Knights Landing (KNL)
+Date: Thu, 15 Oct 2015 11:32:48 -0700
+Message-ID: <1444933968-5431-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:44369 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751889AbbJOSZ5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 Oct 2015 14:25:57 -0400
-Content-Disposition: inline
-In-Reply-To: <20151015071218.GD19018@linux>
+Received: from mga01.intel.com ([192.55.52.88]:34606 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751855AbbJOSde (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 15 Oct 2015 14:33:34 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linaro-kernel@lists.linaro.org, Rafael Wysocki <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, arnd@arndb.de, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, stern@rowland.harvard.edu
+To: kristen.c.accardi@intel.com, rafael.j.wysocki@intel.com, len.brown@intel.com
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On 10/15, Viresh Kumar wrote:
-> On 14-10-15, 11:51, Stephen Boyd wrote:
-> > On 10/09, Viresh Kumar wrote:
-> > > +struct dentry *debugfs_create_xlong(const char *name, umode_t mode,
-> > > +				    struct dentry *parent, unsigned long *value)
-> > > +{
-> > > +	return debugfs_create_file(name, mode, parent, value, &fops_xlong);
-> > 
-> > Were you going to refresh this on my debugfs_create_mode()
-> > patches? Otherwise the patch looks fine to me.
-> 
-> I thought you need to refresh your set as I posted this before you
-> have :)
-> 
+This is a workaround for KNL platform, where in some cases MPERF counter
+will not have updated value before next read of MSR_IA32_MPERF. In this
+case divide by zero will occur. This change ignores current sample for
+busy calculation in this case.
 
-:)
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-Well this patch is creating xlong without any
-read-only/write-only ops, so it has the same potential problems
-as what the debugfs_create_mode() series was fixing. I'm fine
-either way though.
-
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 3af9dd7..d4126e1 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -776,6 +776,9 @@ static inline void intel_pstate_sample(struct cpudata *cpu)
+ 	local_irq_save(flags);
+ 	rdmsrl(MSR_IA32_APERF, aperf);
+ 	rdmsrl(MSR_IA32_MPERF, mperf);
++	if (cpu->prev_mperf == mperf)
++		return;
++
+ 	tsc = rdtsc();
+ 	local_irq_restore(flags);
+ 
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+1.9.3
+
