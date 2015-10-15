@@ -1,293 +1,132 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH 2/2] PM / Domains: Merge measurements for PM QoS device
- latencies
-Date: Thu, 15 Oct 2015 15:18:10 -0600
-Message-ID: <20151015211810.GK921@linaro.org>
-References: <1444921339-22614-1-git-send-email-ulf.hansson@linaro.org>
+From: Jacob Tanenbaum <jtanenba@redhat.com>
+Subject: Re: [PATCH] Fix cpupower reporting uninitialized values for offline
+ cpus
+Date: Thu, 15 Oct 2015 18:06:04 -0400
+Message-ID: <5620234C.5000104@redhat.com>
+References: <1443726584-18709-1-git-send-email-jtanenba@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f43.google.com ([209.85.220.43]:33590 "EHLO
-	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753053AbbJOVSO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 Oct 2015 17:18:14 -0400
-Received: by pabrc13 with SMTP id rc13so98129395pab.0
-        for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2015 14:18:14 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1444921339-22614-1-git-send-email-ulf.hansson@linaro.org>
+Received: from mx1.redhat.com ([209.132.183.28]:36036 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751302AbbJOWGI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 15 Oct 2015 18:06:08 -0400
+In-Reply-To: <1443726584-18709-1-git-send-email-jtanenba@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
+To: trenn@suse.com
+Cc: linux-pm@vger.kernel.org, prarit@redhat.com
 
-On Thu, Oct 15 2015 at 09:02 -0600, Ulf Hansson wrote:
->Measure latency does by itself contribute to an increased latency, thus we
->should avoid it when it isn't needed.
->
->By merging the latency measurements for the ->save_state() and the
->->stop() callbacks, we get one measurement instead of two and we get one
->value to store instead of two. Let's also apply the likewise change for
->the ->start() and ->restore_state() callbacks.
->
-We should consider (at some point in the future) to make time
-measurements domain-optional. Not all domains need to measure enter and
-exit latency at runtime and they may not be needed. For example, the
-latency of CPU domains is usually known and would be different
-depending on the state of the domain. Ofcourse, that would need a new
-governor as well.
+Hi Thomas,
 
-That aside, this consolidation is a good step.
+Have you gotten a chance to look at this patch?
 
->Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Jacob
 
-Reviewed-by: Lina Iyer <lina.iyer@linaro.org>
+On 10/01/2015 03:09 PM, Jacob Tanenbaum wrote:
+> cpupower monitor reports uninitialized values for offline cpus
+>
+> [root@hp-dl980g7-02 linux]# cpupower monitor
+> ...
+> 5472|   0|   1|******|******|******|******||******|******|******|| 0.00|  0.00|  0.00|  0.00|  0.00 *is offline
+> 10567|   0| 159|******|******|******|******||******|******|******||  0.00|  0.00|  0.00|  0.00|  0.00 *is offline
+> 1661206560|859272560| 150|******|******|******|******||******|******|******|| 0.00|  0.00|  0.00|  0.00|  0.00 *is offline
+> 1661206560|943093104| 140|******|******|******|******||******|******|******|| 0.00|  0.00|  0.00|  0.00|  0.00 *is offline
+>
+> because of this cpupower also holds the incorrect value for the number
+> of physical packages in the machine
+>
+> Changed cpupower to initialize the values of an offline cpu's socket and
+> core to -1, warn the user that one or more cpus is/are
+> offline and not print statistics for offline cpus.
+>
+> Thomas Renninger suggested fixing the issue by checking for the
+> existence of the topology files which the code already does, so I
+> decided to use a check on if the cpu was online.
+>
+> Example output after the patch is applied:
+> [root@hp-dl980g7-02 ~]# cpupower monitor
+> WARNING: at least one cpu is offline
+>                |Nehalem                    || Mperf              || Idle_Stats
+> PKG |CORE|CPU | C3   | C6   | PC3  | PC6  || C0   | Cx   | Freq || POLL || C1-N | C1E- | C3-N | C6-N
+>     0|   0|   0|  0.00| 99.37|  0.00|  0.00||  0.35| 99.65|  1596||  0.00|  0.00|  0.00|  0.00| 99.85
+>     0|   0|  80|  0.00| 99.37|  0.00|  0.00||  0.30| 99.70|  1645||  0.00|  0.00|  0.00|  0.00| 99.98
+>     0|   1|  81|  0.00| 99.53|  0.00|  0.00||  0.29| 99.71|  1655||  0.00|  0.00|  0.00|  0.00| 99.33
+>     0|   2|   2|  0.00| 99.47|  0.00|  0.00||  0.29| 99.71|  1660||  0.00|  0.00|  0.00|  0.00| 99.35
+> ...
+>
+> Signed-off-by: Jacob Tanenbaum <jtanenba@redhat.com>
+>
+> diff --git a/tools/power/cpupower/utils/helpers/topology.c b/tools/power/cpupower/utils/helpers/topology.c
+> index cea398c..019a712 100644
+> --- a/tools/power/cpupower/utils/helpers/topology.c
+> +++ b/tools/power/cpupower/utils/helpers/topology.c
+> @@ -73,8 +73,11 @@ int get_cpu_topology(struct cpupower_topology *cpu_top)
+>   	for (cpu = 0; cpu < cpus; cpu++) {
+>   		cpu_top->core_info[cpu].cpu = cpu;
+>   		cpu_top->core_info[cpu].is_online = sysfs_is_cpu_online(cpu);
+> -		if (!cpu_top->core_info[cpu].is_online)
+> +		if (!cpu_top->core_info[cpu].is_online) {
+> +			cpu_top->core_info[cpu].pkg = -1;
+> +			cpu_top->core_info[cpu].core = -1;
+>   			continue;
+> +		}
+>   		if(sysfs_topology_read_file(
+>   			cpu,
+>   			"physical_package_id",
+> @@ -95,12 +98,15 @@ int get_cpu_topology(struct cpupower_topology *cpu_top)
+>   	   done by pkg value. */
+>   	last_pkg = cpu_top->core_info[0].pkg;
+>   	for(cpu = 1; cpu < cpus; cpu++) {
+> -		if(cpu_top->core_info[cpu].pkg != last_pkg) {
+> +		if (cpu_top->core_info[cpu].pkg != last_pkg &&
+> +				cpu_top->core_info[cpu].pkg != -1) {
+> +
+>   			last_pkg = cpu_top->core_info[cpu].pkg;
+>   			cpu_top->pkgs++;
+>   		}
+>   	}
+> -	cpu_top->pkgs++;
+> +	if (!cpu_top->core_info[0].is_online)
+> +		cpu_top->pkgs++;
+>   
+>   	/* Intel's cores count is not consecutively numbered, there may
+>   	 * be a core_id of 3, but none of 2. Assume there always is 0
+> diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
+> index c4bae92..8efc5b9 100644
+> --- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
+> +++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
+> @@ -143,6 +143,8 @@ void print_results(int topology_depth, int cpu)
+>   	/* Be careful CPUs may got resorted for pkg value do not just use cpu */
+>   	if (!bitmask_isbitset(cpus_chosen, cpu_top.core_info[cpu].cpu))
+>   		return;
+> +	if (!cpu_top.core_info[cpu].is_online)
+> +		return;
+>   
+>   	if (topology_depth > 2)
+>   		printf("%4d|", cpu_top.core_info[cpu].pkg);
+> @@ -191,11 +193,7 @@ void print_results(int topology_depth, int cpu)
+>   	 * It's up to the monitor plug-in to check .is_online, this one
+>   	 * is just for additional info.
+>   	 */
+> -	if (!cpu_top.core_info[cpu].is_online) {
+> -		printf(_(" *is offline\n"));
+> -		return;
+> -	} else
+> -		printf("\n");
+> +	printf("\n");
+>   }
+>   
+>   
+> @@ -388,6 +386,9 @@ int cmd_monitor(int argc, char **argv)
+>   		return EXIT_FAILURE;
+>   	}
+>   
+> +	if (!cpu_top.core_info[0].is_online)
+> +		printf("WARNING: at least one cpu is offline\n");
+> +
+>   	/* Default is: monitor all CPUs */
+>   	if (bitmask_isallclear(cpus_chosen))
+>   		bitmask_setall(cpus_chosen);
 
-Thanks,
-Lina
-
->---
-> drivers/base/power/domain.c          | 99 +++++++++++++++++++-----------------
-> drivers/base/power/domain_governor.c |  6 +--
-> include/linux/pm_domain.h            |  6 +--
-> 3 files changed, 55 insertions(+), 56 deletions(-)
->
->diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->index a1c3ec4..a7dfdf9 100644
->--- a/drivers/base/power/domain.c
->+++ b/drivers/base/power/domain.c
->@@ -34,22 +34,6 @@
-> 	__ret;							\
-> })
->
->-#define GENPD_DEV_TIMED_CALLBACK(genpd, type, callback, dev, field, name)	\
->-({										\
->-	ktime_t __start = ktime_get();						\
->-	type __retval = GENPD_DEV_CALLBACK(genpd, type, callback, dev);		\
->-	s64 __elapsed = ktime_to_ns(ktime_sub(ktime_get(), __start));		\
->-	struct gpd_timing_data *__td = &dev_gpd_data(dev)->td;			\
->-	if (!__retval && __elapsed > __td->field) {				\
->-		__td->field = __elapsed;					\
->-		dev_dbg(dev, name " latency exceeded, new value %lld ns\n",	\
->-			__elapsed);						\
->-		genpd->max_off_time_changed = true;				\
->-		__td->constraint_changed = true;				\
->-	}									\
->-	__retval;								\
->-})
->-
-> static LIST_HEAD(gpd_list);
-> static DEFINE_MUTEX(gpd_list_lock);
->
->@@ -90,24 +74,14 @@ static struct generic_pm_domain *dev_to_genpd(struct device *dev)
-> 	return pd_to_genpd(dev->pm_domain);
-> }
->
->-static int genpd_stop_dev(struct generic_pm_domain *genpd, struct device *dev,
->-			bool timed)
->+static int genpd_stop_dev(struct generic_pm_domain *genpd, struct device *dev)
-> {
->-	if (!timed)
->-		return GENPD_DEV_CALLBACK(genpd, int, stop, dev);
->-
->-	return GENPD_DEV_TIMED_CALLBACK(genpd, int, stop, dev,
->-					stop_latency_ns, "stop");
->+	return GENPD_DEV_CALLBACK(genpd, int, stop, dev);
-> }
->
->-static int genpd_start_dev(struct generic_pm_domain *genpd, struct device *dev,
->-			bool timed)
->+static int genpd_start_dev(struct generic_pm_domain *genpd, struct device *dev)
-> {
->-	if (!timed)
->-		return GENPD_DEV_CALLBACK(genpd, int, start, dev);
->-
->-	return GENPD_DEV_TIMED_CALLBACK(genpd, int, start, dev,
->-					start_latency_ns, "start");
->+	return GENPD_DEV_CALLBACK(genpd, int, start, dev);
-> }
->
-> static bool genpd_sd_counter_dec(struct generic_pm_domain *genpd)
->@@ -263,19 +237,13 @@ static int genpd_poweron(struct generic_pm_domain *genpd)
->
-> static int genpd_save_dev(struct generic_pm_domain *genpd, struct device *dev)
-> {
->-	return GENPD_DEV_TIMED_CALLBACK(genpd, int, save_state, dev,
->-					save_state_latency_ns, "state save");
->+	return GENPD_DEV_CALLBACK(genpd, int, save_state, dev);
-> }
->
-> static int genpd_restore_dev(struct generic_pm_domain *genpd,
->-			struct device *dev, bool timed)
->+			struct device *dev)
-> {
->-	if (!timed)
->-		return GENPD_DEV_CALLBACK(genpd, int, restore_state, dev);
->-
->-	return GENPD_DEV_TIMED_CALLBACK(genpd, int, restore_state, dev,
->-					restore_state_latency_ns,
->-					"state restore");
->+	return GENPD_DEV_CALLBACK(genpd, int, restore_state, dev);
-> }
->
-> static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
->@@ -422,6 +390,9 @@ static int pm_genpd_runtime_suspend(struct device *dev)
-> {
-> 	struct generic_pm_domain *genpd;
-> 	bool (*stop_ok)(struct device *__dev);
->+	struct gpd_timing_data *td = &dev_gpd_data(dev)->td;
->+	ktime_t time_start;
->+	s64 elapsed_ns;
-> 	int ret;
->
-> 	dev_dbg(dev, "%s()\n", __func__);
->@@ -434,16 +405,29 @@ static int pm_genpd_runtime_suspend(struct device *dev)
-> 	if (stop_ok && !stop_ok(dev))
-> 		return -EBUSY;
->
->+	/* Measure suspend latency. */
->+	time_start = ktime_get();
->+
-> 	ret = genpd_save_dev(genpd, dev);
-> 	if (ret)
-> 		return ret;
->
->-	ret = genpd_stop_dev(genpd, dev, true);
->+	ret = genpd_stop_dev(genpd, dev);
-> 	if (ret) {
->-		genpd_restore_dev(genpd, dev, true);
->+		genpd_restore_dev(genpd, dev);
-> 		return ret;
-> 	}
->
->+	/* Update suspend latency value if the measured time exceeds it. */
->+	elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
->+	if (elapsed_ns > td->suspend_latency_ns) {
->+		td->suspend_latency_ns = elapsed_ns;
->+		dev_dbg(dev, "suspend latency exceeded, %lld ns\n",
->+			elapsed_ns);
->+		genpd->max_off_time_changed = true;
->+		td->constraint_changed = true;
->+	}
->+
-> 	/*
-> 	 * If power.irq_safe is set, this routine will be run with interrupts
-> 	 * off, so it can't use mutexes.
->@@ -469,6 +453,9 @@ static int pm_genpd_runtime_suspend(struct device *dev)
-> static int pm_genpd_runtime_resume(struct device *dev)
-> {
-> 	struct generic_pm_domain *genpd;
->+	struct gpd_timing_data *td = &dev_gpd_data(dev)->td;
->+	ktime_t time_start;
->+	s64 elapsed_ns;
-> 	int ret;
-> 	bool timed = true;
->
->@@ -492,8 +479,24 @@ static int pm_genpd_runtime_resume(struct device *dev)
-> 		return ret;
->
->  out:
->-	genpd_start_dev(genpd, dev, timed);
->-	genpd_restore_dev(genpd, dev, timed);
->+	/* Measure resume latency. */
->+	if (timed)
->+		time_start = ktime_get();
->+
->+	genpd_start_dev(genpd, dev);
->+	genpd_restore_dev(genpd, dev);
->+
->+	/* Update resume latency value if the measured time exceeds it. */
->+	if (timed) {
->+		elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
->+		if (elapsed_ns > td->resume_latency_ns) {
->+			td->resume_latency_ns = elapsed_ns;
->+			dev_dbg(dev, "resume latency exceeded, %lld ns\n",
->+				elapsed_ns);
->+			genpd->max_off_time_changed = true;
->+			td->constraint_changed = true;
->+		}
->+	}
->
-> 	return 0;
-> }
->@@ -783,7 +786,7 @@ static int pm_genpd_suspend_noirq(struct device *dev)
-> 	    || (dev->power.wakeup_path && genpd_dev_active_wakeup(genpd, dev)))
-> 		return 0;
->
->-	genpd_stop_dev(genpd, dev, false);
->+	genpd_stop_dev(genpd, dev);
->
-> 	/*
-> 	 * Since all of the "noirq" callbacks are executed sequentially, it is
->@@ -824,7 +827,7 @@ static int pm_genpd_resume_noirq(struct device *dev)
-> 	pm_genpd_sync_poweron(genpd, true);
-> 	genpd->suspended_count--;
->
->-	return genpd_start_dev(genpd, dev, false);
->+	return genpd_start_dev(genpd, dev);
-> }
->
-> /**
->@@ -932,7 +935,7 @@ static int pm_genpd_freeze_noirq(struct device *dev)
-> 	if (IS_ERR(genpd))
-> 		return -EINVAL;
->
->-	return genpd->suspend_power_off ? 0 : genpd_stop_dev(genpd, dev, false);
->+	return genpd->suspend_power_off ? 0 : genpd_stop_dev(genpd, dev);
-> }
->
-> /**
->@@ -953,7 +956,7 @@ static int pm_genpd_thaw_noirq(struct device *dev)
-> 		return -EINVAL;
->
-> 	return genpd->suspend_power_off ?
->-		0 : genpd_start_dev(genpd, dev, false);
->+		0 : genpd_start_dev(genpd, dev);
-> }
->
-> /**
->@@ -1047,7 +1050,7 @@ static int pm_genpd_restore_noirq(struct device *dev)
->
-> 	pm_genpd_sync_poweron(genpd, true);
->
->-	return genpd_start_dev(genpd, dev, false);
->+	return genpd_start_dev(genpd, dev);
-> }
->
-> /**
->diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
->index 85e17ba..e60dd12 100644
->--- a/drivers/base/power/domain_governor.c
->+++ b/drivers/base/power/domain_governor.c
->@@ -77,10 +77,8 @@ static bool default_stop_ok(struct device *dev)
-> 				      dev_update_qos_constraint);
->
-> 	if (constraint_ns > 0) {
->-		constraint_ns -= td->save_state_latency_ns +
->-				td->stop_latency_ns +
->-				td->start_latency_ns +
->-				td->restore_state_latency_ns;
->+		constraint_ns -= td->suspend_latency_ns +
->+				td->resume_latency_ns;
-> 		if (constraint_ns == 0)
-> 			return false;
-> 	}
->diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
->index f4dd810..ba4ced3 100644
->--- a/include/linux/pm_domain.h
->+++ b/include/linux/pm_domain.h
->@@ -81,10 +81,8 @@ struct gpd_link {
-> };
->
-> struct gpd_timing_data {
->-	s64 stop_latency_ns;
->-	s64 start_latency_ns;
->-	s64 save_state_latency_ns;
->-	s64 restore_state_latency_ns;
->+	s64 suspend_latency_ns;
->+	s64 resume_latency_ns;
-> 	s64 effective_constraint_ns;
-> 	bool constraint_changed;
-> 	bool cached_stop_ok;
->-- 
->1.9.1
->
