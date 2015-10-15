@@ -1,134 +1,97 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Subject: Runtime PM causes oops on next-20151015
-Date: Thu, 15 Oct 2015 11:22:13 +0200
-Message-ID: <20151015092213.GA26614@ulmo.nvidia.com>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: Runtime PM causes oops on next-20151015
+Date: Thu, 15 Oct 2015 21:04:54 +1100
+Message-ID: <1444903494.8464.5.camel@ellerman.id.au>
+References: <20151015092213.GA26614@ulmo.nvidia.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="AqsLC8rIMeq19msA"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f42.google.com ([209.85.220.42]:35498 "EHLO
-	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750852AbbJOJWS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 Oct 2015 05:22:18 -0400
-Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-next-owner@vger.kernel.org>
+In-Reply-To: <20151015092213.GA26614@ulmo.nvidia.com>
+Sender: linux-next-owner@vger.kernel.org
+To: Thierry Reding <thierry.reding@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Wonhong Kwon <wonhong.kwon@lge.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-next@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Wonhong Kwon <wonhong.kwon@lge.com>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-next@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+
+On Thu, 2015-10-15 at 11:22 +0200, Thierry Reding wrote:
+> Hi Rafael, Wonhong,
+> 
+> Todays linux-next breaks rather spectacularly for drivers using runtime
+> PM. The culprit seems to be this commit:
+> 
+> 	commit 7d24068e144adc03b805806645d732cf79488717
+> 	Author: Wonhong Kwon <wonhongkwon@gmail.com>
+> 	Date:   Tue Oct 6 10:10:20 2015 +0900
+> 
+> 	    PM / hibernate: Move pm_init/pm_disk_init to late_initcall_sync
+> 
+> 	    pm_init is being invoked by core_initcall and hibernate_image_size_init
+> 	    calculates preferred image size (image_size) based on total pages
+> 	    (totalram_pages). This totalram_pages can be modified during various
+> 	    initcall-s phase and this can cause miscalculated image_size.
+> 
+> 	    For example, when CMA is being used, init_cma_reserved_pageblock tries
+> 	    to change the totalram_pages and this job is done during core_initcall.
+> 	    In order words, the totalram_pages doesn't take CMA reserved pages into
+> 	    account when image_size is calculated and it can be too small.
+> 
+> 	    Move pm_init and pm_disk_init to late_initcall_sync so that it happens
+> 	    after all other initcall-s change the totalram_pages.
+> 
+> 	    Reported-by: Sangseok Lee <sangseok.lee@lge.com>
+> 	    Signed-off-by: Wonhong Kwon <wonhong.kwon@lge.com>
+> 	    Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+
+I'm seeing one too on powerpc:
+
+Unable to handle kernel paging request for data at address 0x00000030
+Faulting instruction address: 0xc0000000002e4094
+Oops: Kernel access of bad area, sig: 11 [#1]
+SMP NR_CPUS=2048 NUMA pSeries
+Modules linked in:
+CPU: 5 PID: 1 Comm: swapper/0 Not tainted 4.3.0-rc5-next-20151015-50217-ge2be40d-dirty #37
+task: c0000001fefc0000 ti: c0000001fb000000 task.ti: c0000001fb000000
+NIP: c0000000002e4094 LR: c000000000c79dd4 CTR: c000000000c79d90
+REGS: c0000001fb003900 TRAP: 0300   Not tainted  (4.3.0-rc5-next-20151015-50217-ge2be40d-dirty)
+MSR: 8000000100009032 <SF,EE,ME,IR,DR,RI>  CR: 28000882  XER: 20000000
+CFAR: c0000000000d117c DAR: 0000000000000030 DSISR: 40000000 SOFTE: 1 
+GPR00: c00000000000b074 c0000001fb003b80 c000000000e93800 0000000000000000 
+GPR04: c000000000d15c80 0000000000000000 00000001ff150000 0000000000000026 
+GPR08: c000000000d0f748 c000000000f41a10 c000000000d0f8e8 c000000000abc59d 
+GPR12: c000000000b42400 c00000000fdc1680 c00000000000b960 0000000000000000 
+GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
+GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
+GPR24: 0000000000000000 c000000000de0360 c000000000c45d28 0000000000000000 
+GPR28: c000000000deca80 c000000000d103c0 c0000001fbc905c0 c000000000d103c0 
+NIP [c0000000002e4094] .sysfs_create_file_ns+0x4/0x50
+LR [c000000000c79dd4] .__machine_initcall_pseries_apo_pm_init+0x44/0x60
+Call Trace:
+[c0000001fb003b80] [c0000000004852cc] .kasprintf+0x2c/0x40 (unreliable)
+[c0000001fb003bf0] [c00000000000b074] .do_one_initcall+0xc4/0x250
+[c0000001fb003ce0] [c000000000c64560] .kernel_init_freeable+0x268/0x348
+[c0000001fb003db0] [c00000000000b97c] .kernel_init+0x1c/0x140
+[c0000001fb003e30] [c0000000000095ac] .ret_from_kernel_thread+0x58/0xac
+Instruction dump:
+419e001c 3ce2ffa8 38e7be60 4bfffea4 3ce2ffa8 38e7bea8 4bfffe9c 3ce2ffa8 
+38e7bea8 4bfffe8c 60000000 2c230000 <e8630030> 41820028 2fa30000 419e0020 
+---[ end trace d2a742ce359651dd ]---
+
+Kernel panic - not syncing: Attempted to kill init! exitcode=0x0000000b
 
 
---AqsLC8rIMeq19msA
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Which starts at:
 
-Hi Rafael, Wonhong,
+  static int __init apo_pm_init(void)
+  {
+  	return (sysfs_create_file(power_kobj, &auto_poweron_attr.attr));
+  }
+  machine_device_initcall(pseries, apo_pm_init);
 
-Todays linux-next breaks rather spectacularly for drivers using runtime
-PM. The culprit seems to be this commit:
+And seems to be caused by power_kobj being NULL:
 
-	commit 7d24068e144adc03b805806645d732cf79488717
-	Author: Wonhong Kwon <wonhongkwon@gmail.com>
-	Date:   Tue Oct 6 10:10:20 2015 +0900
+  0:mon> d $power_kobj
+  c000000000f41a10 0000000000000000 0000000000000000  |................|
 
-	    PM / hibernate: Move pm_init/pm_disk_init to late_initcall_sync
 
-	    pm_init is being invoked by core_initcall and hibernate_image_size_init
-	    calculates preferred image size (image_size) based on total pages
-	    (totalram_pages). This totalram_pages can be modified during various
-	    initcall-s phase and this can cause miscalculated image_size.
-
-	    For example, when CMA is being used, init_cma_reserved_pageblock tries
-	    to change the totalram_pages and this job is done during core_initcall.
-	    In order words, the totalram_pages doesn't take CMA reserved pages into
-	    account when image_size is calculated and it can be too small.
-
-	    Move pm_init and pm_disk_init to late_initcall_sync so that it happens
-	    after all other initcall-s change the totalram_pages.
-
-	    Reported-by: Sangseok Lee <sangseok.lee@lge.com>
-	    Signed-off-by: Wonhong Kwon <wonhong.kwon@lge.com>
-	    Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
-I can't reply to it directly because I don't have it in any of my mail
-boxes (it seems to have been sent only to the linux-pm mailing list,
-even Google finds only a single match).
-
-Here's an extract of the oops:
-
-	[    1.395928] Unable to handle kernel NULL pointer dereference at virtual=
- address 00000100
-	[    1.404013] pgd =3D ffffffc000e0e000
-	[    1.407417] [00000100] *pgd=3D000000013c007003, *pud=3D000000013c007003=
-, *pmd=3D000000013c008003, *pte=3D0060000050041707
-	[    1.417746] Internal error: Oops: 96000005 [#1] PREEMPT SMP
-	[    1.423316] Modules linked in:
-	[    1.426400] CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.3.0-rc5-next-20=
-151015+ #1338
-	[    1.434138] Hardware name: NVIDIA Tegra210 P2371 (P2180/P2597) referenc=
-e board (DT)
-	[    1.441789] task: ffffffc0bc0a8000 ti: ffffffc0bc084000 task.ti: ffffff=
-c0bc084000
-	[    1.449280] PC is at __queue_work+0x2c/0x240
-	[    1.453551] LR is at queue_work_on+0x60/0x78
-	...
-	[    1.836517] Call trace:
-	[    1.838968] [<ffffffc0000b4134>] __queue_work+0x2c/0x240
-	[    1.844280] [<ffffffc0000b43a4>] queue_work_on+0x5c/0x78
-	[    1.849599] [<ffffffc00052e508>] rpm_idle+0xc0/0x140
-	[    1.854565] [<ffffffc00052e5dc>] __pm_runtime_idle+0x54/0x98
-	[    1.860229] [<ffffffc00052414c>] driver_probe_device+0x164/0x2f8
-	[    1.866236] [<ffffffc000524378>] __driver_attach+0x98/0xa0
-	[    1.871724] [<ffffffc00052231c>] bus_for_each_dev+0x5c/0xa0
-	[    1.877294] [<ffffffc000523ab4>] driver_attach+0x1c/0x28
-	[    1.882608] [<ffffffc0005236e4>] bus_add_driver+0x1cc/0x238
-	[    1.888180] [<ffffffc000524b1c>] driver_register+0x5c/0xf8
-	[    1.893675] [<ffffffc000431800>] mipi_dsi_driver_register_full+0x50/0x60
-	[    1.900374] [<ffffffc000ba1570>] panel_simple_init+0x2c/0x44
-	[    1.906035] [<ffffffc000082934>] do_one_initcall+0x8c/0x1a0
-	[    1.911612] [<ffffffc000b80aa8>] kernel_init_freeable+0x150/0x1f8
-	[    1.917711] [<ffffffc0007f78fc>] kernel_init+0xc/0xe0
-
-Instrumenting the code shows that pm_wq (passed to queue_work in the
-rpm_idle() function) is NULL at this point. This matches up with the
-change done in the above-mentioned commit, since now pm_wq only gets
-initialized at late_initcall time, whereas all built-in drivers will
-already be probed at device_initcall time. So I suspect that this is
-going to cause crashes on a whole lot of systems (essentially every
-system that tries to use runtime PM from a built-in driver).
-
-Given the commit message I suspect that the right fix would be to split
-pm_init() into two functions, one that initializes the hibernation image
-and another with the PM core initialization. The pm_hibernate_init() is
-probably going to work fine as late_initcall (I assume this was tested)
-but the rest should probably stay at core_initcall.
-
-I can provide a patch for the latter if everyone agrees that it's the
-right thing, but in the meantime, can you please drop the above patch
-=66rom your tree to unbreak linux-next for all affected users?
-
-Thanks,
-Thierry
-
---AqsLC8rIMeq19msA
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCAAGBQJWH3BBAAoJEN0jrNd/PrOhHSoP/1ZeTcRYa6Jwd83hDe9CSfr1
-7vu69628yAHdpm4X6ZJjjsaSTMA8bPDs9eazyWe9xjWBfUenLHZZKpJLPtufU4VX
-HzlzHZOVYcaYqaERtBDCqbLZ7wc5WgffPYbNd3VN4wnehnYmHEjl2giQ6buhaxVH
-PYl+4lJ4N6MDdP1Yo4/HUTIrab2uB3o60LW7FSCbgXGGZewXbXDH7LgeViP/EG3B
-NjnalvwKXfRcvdqXKaMiZ9lKA9/waDJLgxLsFElgxzwYXJ3ypCyzPdM1E0GozT4q
-a/ONE4lR07Dp3EzP2FyjFV6aEZBkVINRIGx4LjaY3pC00SCJldh4CiIZF6UC5KIy
-PNujOaZu7rQf/pH6j5HQiZ89jyF+hZcexdwun/WJ9Cdn2zkPn7S0QZlhz3JXLNUe
-CdK/jjBbep/v3VxQ+CShHTKqCSkI4/F4gLDwf35n+70OOzth0YvLUI1r7aZ6Ookb
-b3deJcopkuvWWBaNbDzCyq5xLdQ4VYIiKmJrOxShKpZUKjtcPlsgcQ/FE9hWkowK
-yDol3SYRXIlxcuQehhVluOAy4iPNi81gmTPoh85t30hFsuSCm+mFJhiVMPXfKppb
-bOtf0Z6zhiODnjaV9B6Dd/UQFTpzi3KKwvs5aV/CQMtgAjpK7yTbi4eb/xeYeGXL
-aqYiyLhqC3/7zfF9mk0O
-=jZP2
------END PGP SIGNATURE-----
-
---AqsLC8rIMeq19msA--
+cheers
