@@ -1,183 +1,64 @@
-From: ahaslam@baylibre.com
-Subject: [PATCH v8 6/6] PM / Domains: add debugfs 'states' and 'timings' seq files
-Date: Thu, 15 Oct 2015 14:16:36 +0200
-Message-ID: <1444911396-3473-7-git-send-email-ahaslam@baylibre.com>
-References: <1444911396-3473-1-git-send-email-ahaslam@baylibre.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
+ SpeedStep enabled
+Date: Thu, 15 Oct 2015 13:18:26 +0000
+Message-ID: <bug-103351-137361-c7uXLjoGXl@https.bugzilla.kernel.org/>
+References: <bug-103351-137361@https.bugzilla.kernel.org/>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f182.google.com ([209.85.212.182]:35827 "EHLO
-	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753201AbbJOMQ6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 Oct 2015 08:16:58 -0400
-Received: by wicll6 with SMTP id ll6so37913844wic.0
-        for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2015 05:16:57 -0700 (PDT)
-In-Reply-To: <1444911396-3473-1-git-send-email-ahaslam@baylibre.com>
+Received: from mail.kernel.org ([198.145.29.136]:49153 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750774AbbJONSc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 15 Oct 2015 09:18:32 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+	by mail.kernel.org (Postfix) with ESMTP id 831E520841
+	for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2015 13:18:31 +0000 (UTC)
+Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
+	by mail.kernel.org (Postfix) with ESMTP id 288462087F
+	for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2015 13:18:29 +0000 (UTC)
+In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: khilman@linaro.org, ulf.hansson@linaro.org, lina.iyer@linaro.org, geert@glider.be, k.kozlowski.k@gmail.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org
-Cc: bcousson@baylibre.com, mturquette@baylibre.com, Marc Titinger <mtitinger@baylibre.com>
+To: linux-pm@vger.kernel.org
 
-From: Marc Titinger <mtitinger@baylibre.com>
+https://bugzilla.kernel.org/show_bug.cgi?id=103351
 
-This purpose of these debug seq-files is to help investigate generic
-power domain state transitions, based on device constraints.
+--- Comment #66 from Henrique de Moraes Holschuh <hmh@hmh.eng.br> ---
+> I've installed this persistently on my machine, and verified that it applies
+> at early boot. My cpu flags with 0x13 are:
+> 
+> ---
+> fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36
+> clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm
+> constant_tsc arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc
+> aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2 ssse3
+> fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer
+> aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch ida arat pln pts dtherm
+> intel_pt tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust bmi1 hle
+> avx2 smep bmi2 erms invpcid rtm rdseed adx smap xsaveopt
+> ---
+> 
+> Which is exactly the same as it was with 0x12.
 
-also rename 'summary' from 'pm_genpd_summary'
+Assuming the microcode was *really* applied by the early microcode loader
+(please double-check):
 
-sample output for 'states'
-==========================
+This is really strange, since it was reported to remove the rtm and hle flags
+on some processors, and the processor errata text is very specific that Intel
+TSX is NOT supposed to be available (even when it is, in fact, reported to be
+available by CPUID).  Argh.  Conflicting/incomplete information, and
+conflicting runtime behavior.  Thank you, Intel!
 
-  Domain             State name        Eval = 2200nter + Exit = Min_off_on (ns)
------------------------------------------------------------------------
-a53_pd               cluster-sleep-0      1500000+800000=2300000
-a57_pd               d1-retention         1000000+800000=1800000
-a57_pd               cluster-sleep-0      1500000+800000=2300000
+Maybe this thing is related to a boot-locked MSR?  The microcode might change
+the default on power-up, but still respect writes to such a MSR by the BIOS. 
+That would mean you really want a BIOS update to get everything right.
 
-sample output for 'timings'
-===========================
+So, it boils down to whether people with microcode 0x13 usually have RTM
+enabled or not, and whether glibc with lock elision works fine on heavy
+threaded workloads for those that do have RTM enabled on microcode 0x13...
 
-    Domain Devices, Timings in ns
-                       Stop/Start Save/Restore, Effective
-----------------------------------------------------  ---
-a53_pd
-    /cpus/cpu@100        1060  /660    1580  /1940  ,0 (cached stop)
-    /cpus/cpu@101        1060  /740    1520  /1600  ,0 (cached stop)
-    /cpus/cpu@102        880   /620    1380  /1780  ,0 (cached stop)
-    /cpus/cpu@103        1080  /640    1340  /1600  ,0 (cached stop)
-a57_pd
-    /cpus/cpu@0          1160  /740    3280  /1800  ,0 (cached stop)
-    /cpus/cpu@1          780   /1400   1440  /2080  ,0 (cached stop)
-    /D1                  600   /540    7140  /6420  ,2199460 (cached stop)
-
-Signed-off-by: Marc Titinger <mtitinger@baylibre.com>
----
- drivers/base/power/domain.c | 107 +++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 105 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index df2f244..c1750ba 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -2277,6 +2277,96 @@ static const struct file_operations pm_genpd_summary_fops = {
- 	.release = single_release,
- };
- 
-+static int pm_genpd_states_show(struct seq_file *s, void *data)
-+{
-+	struct generic_pm_domain *genpd;
-+
-+	seq_puts(s,
-+		 "\n  Domain             State name        Enter + Exit = Min_off_on (ns)\n");
-+	seq_puts(s,
-+		 "-----------------------------------------------------------------------\n");
-+
-+	list_for_each_entry(genpd, &gpd_list, gpd_list_node) {
-+
-+		int i;
-+
-+		for (i = 0; i < genpd->state_count; i++) {
-+			seq_printf(s, "%-20s %-20s %lld+%lld=%lld\n",
-+				   genpd->name,
-+				   genpd->states[i].name,
-+				   genpd->states[i].power_on_latency_ns,
-+				   genpd->states[i].power_off_latency_ns,
-+				   genpd->states[i].power_off_latency_ns
-+				   + genpd->states[i].power_on_latency_ns);
-+		}
-+
-+	}
-+
-+	seq_puts(s, "\n");
-+
-+	return 0;
-+}
-+
-+static int pm_genpd_states_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, pm_genpd_states_show, NULL);
-+}
-+
-+static const struct file_operations pm_genpd_states_fops = {
-+	.open = pm_genpd_states_open,
-+	.read = seq_read,
-+	.llseek = seq_lseek,
-+	.release = single_release,
-+};
-+
-+static int pm_genpd_timing_show(struct seq_file *s, void *data)
-+{
-+	struct generic_pm_domain *genpd;
-+
-+	seq_puts(s, "\n    Domain Devices, Timings in ns\n");
-+	seq_puts(s,
-+		 "                       Stop/Start Save/Restore, Effective\n");
-+	seq_puts(s,
-+		 "----------------------------------------------------  ---\n");
-+
-+	list_for_each_entry(genpd, &gpd_list, gpd_list_node) {
-+		struct pm_domain_data *pm_data;
-+
-+		seq_printf(s, "%-30s", genpd->name);
-+
-+		list_for_each_entry(pm_data, &genpd->dev_list, list_node) {
-+			struct gpd_timing_data *td = &to_gpd_data(pm_data)->td;
-+
-+			if (!pm_data->dev->of_node)
-+				continue;
-+
-+			seq_printf(s,
-+				   "\n    %-20s %-6lld/%-6lld %-6lld/%-6lld,%lld %s%s",
-+				   pm_data->dev->of_node->full_name,
-+				   td->stop_latency_ns, td->start_latency_ns,
-+				   td->save_state_latency_ns,
-+				   td->restore_state_latency_ns,
-+				   td->effective_constraint_ns,
-+				   td->cached_stop_ok ? "(cached stop) " : "",
-+				   td->constraint_changed ? "(changed)" : "");
-+		}
-+		seq_puts(s, "\n");
-+	}
-+	return 0;
-+}
-+
-+static int pm_genpd_timing_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, pm_genpd_timing_show, NULL);
-+}
-+
-+static const struct file_operations pm_genpd_timing_fops = {
-+	.open = pm_genpd_timing_open,
-+	.read = seq_read,
-+	.llseek = seq_lseek,
-+	.release = single_release,
-+};
-+
- static int __init pm_genpd_debug_init(void)
- {
- 	struct dentry *d;
-@@ -2286,8 +2376,21 @@ static int __init pm_genpd_debug_init(void)
- 	if (!pm_genpd_debugfs_dir)
- 		return -ENOMEM;
- 
--	d = debugfs_create_file("pm_genpd_summary", S_IRUGO,
--			pm_genpd_debugfs_dir, NULL, &pm_genpd_summary_fops);
-+	d = debugfs_create_file("summary", S_IRUGO,
-+				pm_genpd_debugfs_dir, NULL,
-+				&pm_genpd_summary_fops);
-+	if (!d)
-+		return -ENOMEM;
-+
-+	d = debugfs_create_file("states", S_IRUGO,
-+				pm_genpd_debugfs_dir, NULL,
-+				&pm_genpd_states_fops);
-+	if (!d)
-+		return -ENOMEM;
-+
-+	d = debugfs_create_file("timings", S_IRUGO,
-+				pm_genpd_debugfs_dir, NULL,
-+				&pm_genpd_timing_fops);
- 	if (!d)
- 		return -ENOMEM;
- 
 -- 
-2.4.5
-
+You are receiving this mail because:
+You are the assignee for the bug.
