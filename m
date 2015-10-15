@@ -1,46 +1,65 @@
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: Re: [PATCH] PM / OPP: Remove confusing error message in
- of_cpumask_init_opp_table()
-Date: Thu, 15 Oct 2015 09:42:47 +0200
-Message-ID: <20151015094247.44f29da9@free-electrons.com>
-References: <1444837943-32263-1-git-send-email-thomas.petazzoni@free-electrons.com>
-	<20151015073544.GE19018@linux>
+From: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Subject: Re: [PATCH 1/4] soc: dove: Let genpd deal with disabling of unused PM domains
+Date: Thu, 15 Oct 2015 09:57:55 +0200
+Message-ID: <87a8rk36nw.fsf@free-electrons.com>
+References: <1444134450-17895-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from down.free-electrons.com ([37.187.137.238]:56062 "EHLO
+Received: from down.free-electrons.com ([37.187.137.238]:56189 "EHLO
 	mail.free-electrons.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750752AbbJOHnh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 Oct 2015 03:43:37 -0400
-In-Reply-To: <20151015073544.GE19018@linux>
+	with ESMTP id S1750711AbbJOH6H (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 Oct 2015 03:58:07 -0400
+In-Reply-To: <1444134450-17895-1-git-send-email-ulf.hansson@linaro.org> (Ulf
+	Hansson's message of "Tue, 6 Oct 2015 14:27:30 +0200")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Tawfik Bayouk <tawfik@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Lior Amsalem <alior@marvell.com>, Gregory Clement <gregory.clement@free-electrons.com>
+To: Ulf Hansson <ulf.hansson@linaro.org>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>, Russell King <rmk+kernel@arm.linux.org.uk>, Andrew Lunn <andrew@lunn.ch>
 
-Viresh, Rafael,
+Hi Ulf and Sebastian,
+ 
+ On mar., oct. 06 2015, Ulf Hansson <ulf.hansson@linaro.org> wrote:
 
-On Thu, 15 Oct 2015 13:05:44 +0530, Viresh Kumar wrote:
-> On 14-10-15, 17:52, Thomas Petazzoni wrote:
-> >  		ret = of_init_opp_table(cpu_dev);
-> >  		if (ret) {
-> > -			pr_err("%s: couldn't find opp table for cpu:%d, %d\n",
-> > -			       __func__, cpu, ret);
-> > -
-> 
-> It should have be modified to pr_debug() at least.
+> Genpd tries from a late_initcall to disable unused PM domains, which makes
+> it unnecessary to also manage this from any earlier phase when for example
+> initializing a genpd.
 
-Would be fine as well, but then maybe with a rewording:
+I can't test it and I didn't follow this part.
 
-	pr_debug("%s: no static opp table found for cpu %d, assuming one will be added at runtime (%d)\n",
-		 __func__, cpu, ret);
+Sebastian could you have a look on this patch?
 
-Do you want me to resend a new version? Or a follow-up patch based on
-the latest tree from Rafael now that he has applied the previous version?
+Thanks,
 
-Thomas
+Gregory
+
+>
+> Cc: Russell King <rmk+kernel@arm.linux.org.uk>
+> Cc: Andrew Lunn <andrew@lunn.ch>
+> Cc: Gregory CLEMENT <gregory.clement@free-electrons.com>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>  drivers/soc/dove/pmu.c | 1 -
+>  1 file changed, 1 deletion(-)
+>
+> diff --git a/drivers/soc/dove/pmu.c b/drivers/soc/dove/pmu.c
+> index 052aecf..abd0879 100644
+> --- a/drivers/soc/dove/pmu.c
+> +++ b/drivers/soc/dove/pmu.c
+> @@ -396,7 +396,6 @@ int __init dove_init_pmu(void)
+>  
+>  		__pmu_domain_register(domain, np);
+>  	}
+> -	pm_genpd_poweroff_unused();
+>  
+>  	/* Loss of the interrupt controller is not a fatal error. */
+>  	parent_irq = irq_of_parse_and_map(pmu->of_node, 0);
+> -- 
+> 1.9.1
+>
+
 -- 
-Thomas Petazzoni, CTO, Free Electrons
-Embedded Linux, Kernel and Android engineering
+Gregory Clement, Free Electrons
+Kernel, drivers, real-time and embedded Linux
+development, consulting, training and support.
 http://free-electrons.com
