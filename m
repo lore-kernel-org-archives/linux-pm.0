@@ -1,369 +1,79 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: [PATCH v2] cpufreq, intel_pstate, Fix intel_pstate powersave min_perf_pct value
-Date: Thu, 15 Oct 2015 07:34:15 -0400
-Message-ID: <1444908855-25145-1-git-send-email-prarit@redhat.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:47664 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752712AbbJOLeU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 15 Oct 2015 07:34:20 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Subject: [GIT PULL] On-demand device probing
+Date: Thu, 15 Oct 2015 13:42:08 +0200
+Message-ID: <1444909328-24761-1-git-send-email-tomeu.vizoso@collabora.com>
+References: <20151014092644.GO14956@sirena.org.uk>
+Return-path: <linux-gpio-owner@vger.kernel.org>
+In-Reply-To: <20151014092644.GO14956@sirena.org.uk>
+Sender: linux-gpio-owner@vger.kernel.org
+To: Rob Herring <robh+dt@kernel.org>
+Cc: Russell King <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, =?UTF-8?q?Terje=20Bergstr=C3=B6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Frank Rowand <frowand.list@gmail.com>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Felipe Balbi <balbi@ti.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Prarit Bhargava <prarit@redhat.com>, Kristen Carlson Accardi <kristen@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Doug Smythies <dsmythies@telus.net>
 
-Rafael, as requested ...
+Hi,
 
-[v2]: rebased on
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+this second pull request replaces the last references to device_initcall_sync with late_initcall, as noticed by Frank Rowand.
 
-^^^ prolly doesn't need to be in the commit log
+Also fixes the url of the git repo and the wrapping, as suggested by Mark Brown.
 
-P.
+Thanks,
 
----8<---
+Tomeu
 
-On systems that initialize the intel_pstate driver with the performance
-governor, and then switch to the powersave governor will not transition to
-lower cpu frequencies until /sys/devices/system/cpu/intel_pstate/min_perf_pct
-is set to a low value.
+The following changes since commit 6ff33f3902c3b1c5d0db6b1e2c70b6d76fba357f:
 
-The behavior of governor switching changed after commit a04759924e25
-("[cpufreq] intel_pstate: honor user space min_perf_pct override on
- resume").  The commit introduced tracking of performance percentage
-changes via sysfs in order to restore userspace changes during
-suspend/resume.  The problem occurs because the global values of the newly
-introduced max_sysfs_pct and min_sysfs_pct are not lowered on the governor
-change and this causes the powersave governor to inherit the performance
-governor's settings.
+  Linux 4.3-rc1 (2015-09-12 16:35:56 -0700)
 
-A simple change would have been to reset max_sysfs_pct to 100 and
-min_sysfs_pct to 0 on a governor change, which fixes the problem with
-governor switching.  However, since we cannot break userspace[1] the fix
-is now to give each governor its own limits storage area so that governor
-specific changes are tracked.
+are available in the git repository at:
 
-I successfully tested this by booting with both the performance governor
-and the powersave governor by default, and switching between the two
-governors (while monitoring /sys/devices/system/cpu/intel_pstate/ values,
-and looking at the output of cpupower frequency-info).  Suspend/Resume
-testing was performed by Doug Smythies.
+  git://git.collabora.com/git/user/tomeu/linux.git on-demand-probes-for-next
 
-[1] Systems which suspend/resume using the unmaintained pm-utils package
-will always transition to the performance governor before the suspend and
-after the resume.  This means a system using the powersave governor will
-go from powersave to performance, then suspend/resume, performance to
-powersave.  The simple change during governor changes would have been
-overwritten when the governor changed before and after the suspend/resume.
-I have submitted https://bugzilla.redhat.com/show_bug.cgi?id=1271225
-against Fedora to remove the 94cpufreq file that causes the problem.  It
-should be noted that pm-utils is obsoleted with newer versions of systemd.
+for you to fetch changes up to c074fef5d36e1c27dfdf7474e23c01a1b044ff98:
 
-Cc: Kristen Carlson Accardi <kristen@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org
-Cc: Doug Smythies <dsmythies@telus.net>
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
----
- drivers/cpufreq/intel_pstate.c | 142 ++++++++++++++++++++++++-----------------
- 1 file changed, 85 insertions(+), 57 deletions(-)
+  of/platform: Defer probes of registered devices (2015-10-15 13:25:47 +0200)
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index c568226..cde38c8 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -167,7 +167,20 @@ struct perf_limits {
- 	int min_perf_ctl;
- };
- 
--static struct perf_limits limits = {
-+static struct perf_limits performance_limits = {
-+	.no_turbo = 0,
-+	.turbo_disabled = 0,
-+	.max_perf_pct = 100,
-+	.max_perf = int_tofp(1),
-+	.min_perf_pct = 100,
-+	.min_perf = int_tofp(1),
-+	.max_policy_pct = 100,
-+	.max_sysfs_pct = 100,
-+	.min_policy_pct = 0,
-+	.min_sysfs_pct = 0,
-+};
-+
-+static struct perf_limits powersave_limits = {
- 	.no_turbo = 0,
- 	.turbo_disabled = 0,
- 	.max_perf_pct = 100,
-@@ -182,6 +195,12 @@ static struct perf_limits limits = {
- 	.min_perf_ctl = 0,
- };
- 
-+#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE
-+static struct perf_limits *limits = &performance_limits;
-+#else
-+static struct perf_limits *limits = &powersave_limits;
-+#endif
-+
- #if IS_ENABLED(CONFIG_ACPI)
- /*
-  * The max target pstate ratio is a 8 bit value in both PLATFORM_INFO MSR and
-@@ -256,7 +275,7 @@ static int intel_pstate_init_perf_limits(struct cpufreq_policy *policy)
- 	if (turbo_pss_ctl <= cpu->pstate.max_pstate &&
- 	    turbo_pss_ctl > cpu->pstate.min_pstate) {
- 		pr_debug("intel_pstate: no turbo range exists in _PSS\n");
--		limits.no_turbo = limits.turbo_disabled = 1;
-+		limits->no_turbo = limits->turbo_disabled = 1;
- 		cpu->pstate.turbo_pstate = cpu->pstate.max_pstate;
- 		turbo_absent = true;
- 	}
-@@ -415,7 +434,7 @@ static inline void update_turbo_state(void)
- 
- 	cpu = all_cpu_data[0];
- 	rdmsrl(MSR_IA32_MISC_ENABLE, misc_en);
--	limits.turbo_disabled =
-+	limits->turbo_disabled =
- 		(misc_en & MSR_IA32_MISC_ENABLE_TURBO_DISABLE ||
- 		 cpu->pstate.max_pstate == cpu->pstate.turbo_pstate);
- }
-@@ -434,14 +453,14 @@ static void intel_pstate_hwp_set(void)
- 
- 	for_each_online_cpu(cpu) {
- 		rdmsrl_on_cpu(cpu, MSR_HWP_REQUEST, &value);
--		adj_range = limits.min_perf_pct * range / 100;
-+		adj_range = limits->min_perf_pct * range / 100;
- 		min = hw_min + adj_range;
- 		value &= ~HWP_MIN_PERF(~0L);
- 		value |= HWP_MIN_PERF(min);
- 
--		adj_range = limits.max_perf_pct * range / 100;
-+		adj_range = limits->max_perf_pct * range / 100;
- 		max = hw_min + adj_range;
--		if (limits.no_turbo) {
-+		if (limits->no_turbo) {
- 			hw_max = HWP_GUARANTEED_PERF(cap);
- 			if (hw_max < max)
- 				max = hw_max;
-@@ -510,7 +529,7 @@ static void __init intel_pstate_debug_expose_params(void)
- 	static ssize_t show_##file_name					\
- 	(struct kobject *kobj, struct attribute *attr, char *buf)	\
- 	{								\
--		return sprintf(buf, "%u\n", limits.object);		\
-+		return sprintf(buf, "%u\n", limits->object);		\
- 	}
- 
- static ssize_t show_turbo_pct(struct kobject *kobj,
-@@ -546,10 +565,10 @@ static ssize_t show_no_turbo(struct kobject *kobj,
- 	ssize_t ret;
- 
- 	update_turbo_state();
--	if (limits.turbo_disabled)
--		ret = sprintf(buf, "%u\n", limits.turbo_disabled);
-+	if (limits->turbo_disabled)
-+		ret = sprintf(buf, "%u\n", limits->turbo_disabled);
- 	else
--		ret = sprintf(buf, "%u\n", limits.no_turbo);
-+		ret = sprintf(buf, "%u\n", limits->no_turbo);
- 
- 	return ret;
- }
-@@ -565,12 +584,12 @@ static ssize_t store_no_turbo(struct kobject *a, struct attribute *b,
- 		return -EINVAL;
- 
- 	update_turbo_state();
--	if (limits.turbo_disabled) {
-+	if (limits->turbo_disabled) {
- 		pr_warn("intel_pstate: Turbo disabled by BIOS or unavailable on processor\n");
- 		return -EPERM;
- 	}
- 
--	limits.no_turbo = clamp_t(int, input, 0, 1);
-+	limits->no_turbo = clamp_t(int, input, 0, 1);
- 
- 	if (hwp_active)
- 		intel_pstate_hwp_set();
-@@ -588,11 +607,15 @@ static ssize_t store_max_perf_pct(struct kobject *a, struct attribute *b,
- 	if (ret != 1)
- 		return -EINVAL;
- 
--	limits.max_sysfs_pct = clamp_t(int, input, 0 , 100);
--	limits.max_perf_pct = min(limits.max_policy_pct, limits.max_sysfs_pct);
--	limits.max_perf_pct = max(limits.min_policy_pct, limits.max_perf_pct);
--	limits.max_perf_pct = max(limits.min_perf_pct, limits.max_perf_pct);
--	limits.max_perf = div_fp(int_tofp(limits.max_perf_pct), int_tofp(100));
-+	limits->max_sysfs_pct = clamp_t(int, input, 0 , 100);
-+	limits->max_perf_pct = min(limits->max_policy_pct,
-+				   limits->max_sysfs_pct);
-+	limits->max_perf_pct = max(limits->min_policy_pct,
-+				   limits->max_perf_pct);
-+	limits->max_perf_pct = max(limits->min_perf_pct,
-+				   limits->max_perf_pct);
-+	limits->max_perf = div_fp(int_tofp(limits->max_perf_pct),
-+				  int_tofp(100));
- 
- 	if (hwp_active)
- 		intel_pstate_hwp_set();
-@@ -609,11 +632,15 @@ static ssize_t store_min_perf_pct(struct kobject *a, struct attribute *b,
- 	if (ret != 1)
- 		return -EINVAL;
- 
--	limits.min_sysfs_pct = clamp_t(int, input, 0 , 100);
--	limits.min_perf_pct = max(limits.min_policy_pct, limits.min_sysfs_pct);
--	limits.min_perf_pct = min(limits.max_policy_pct, limits.min_perf_pct);
--	limits.min_perf_pct = min(limits.max_perf_pct, limits.min_perf_pct);
--	limits.min_perf = div_fp(int_tofp(limits.min_perf_pct), int_tofp(100));
-+	limits->min_sysfs_pct = clamp_t(int, input, 0 , 100);
-+	limits->min_perf_pct = max(limits->min_policy_pct,
-+				   limits->min_sysfs_pct);
-+	limits->min_perf_pct = min(limits->max_policy_pct,
-+				   limits->min_perf_pct);
-+	limits->min_perf_pct = min(limits->max_perf_pct,
-+				   limits->min_perf_pct);
-+	limits->min_perf = div_fp(int_tofp(limits->min_perf_pct),
-+				  int_tofp(100));
- 
- 	if (hwp_active)
- 		intel_pstate_hwp_set();
-@@ -693,7 +720,7 @@ static void byt_set_pstate(struct cpudata *cpudata, int pstate)
- 	u32 vid;
- 
- 	val = (u64)pstate << 8;
--	if (limits.no_turbo && !limits.turbo_disabled)
-+	if (limits->no_turbo && !limits->turbo_disabled)
- 		val |= (u64)1 << 32;
- 
- 	vid_fp = cpudata->vid.min + mul_fp(
-@@ -822,7 +849,7 @@ static void core_set_pstate(struct cpudata *cpudata, int pstate)
- 	u64 val;
- 
- 	val = (u64)pstate << 8;
--	if (limits.no_turbo && !limits.turbo_disabled)
-+	if (limits->no_turbo && !limits->turbo_disabled)
- 		val |= (u64)1 << 32;
- 
- 	wrmsrl_on_cpu(cpudata->cpu, MSR_IA32_PERF_CTL, val);
-@@ -905,7 +932,7 @@ static void intel_pstate_get_min_max(struct cpudata *cpu, int *min, int *max)
- 	int max_perf_adj;
- 	int min_perf;
- 
--	if (limits.no_turbo || limits.turbo_disabled)
-+	if (limits->no_turbo || limits->turbo_disabled)
- 		max_perf = cpu->pstate.max_pstate;
- 
- 	/*
-@@ -913,21 +940,21 @@ static void intel_pstate_get_min_max(struct cpudata *cpu, int *min, int *max)
- 	 * policy, or by cpu specific default values determined through
- 	 * experimentation.
- 	 */
--	if (limits.max_perf_ctl && limits.max_sysfs_pct >=
--						limits.max_policy_pct) {
--		*max = limits.max_perf_ctl;
-+	if (limits->max_perf_ctl && limits->max_sysfs_pct >=
-+						limits->max_policy_pct) {
-+		*max = limits->max_perf_ctl;
- 	} else {
- 		max_perf_adj = fp_toint(mul_fp(int_tofp(max_perf),
--					limits.max_perf));
-+					limits->max_perf));
- 		*max = clamp_t(int, max_perf_adj, cpu->pstate.min_pstate,
- 			       cpu->pstate.turbo_pstate);
- 	}
- 
--	if (limits.min_perf_ctl) {
--		*min = limits.min_perf_ctl;
-+	if (limits->min_perf_ctl) {
-+		*min = limits->min_perf_ctl;
- 	} else {
- 		min_perf = fp_toint(mul_fp(int_tofp(max_perf),
--				    limits.min_perf));
-+				    limits->min_perf));
- 		*min = clamp_t(int, min_perf, cpu->pstate.min_pstate, max_perf);
- 	}
- }
-@@ -1210,34 +1237,35 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
- 
- 	if (policy->policy == CPUFREQ_POLICY_PERFORMANCE &&
- 	    policy->max >= policy->cpuinfo.max_freq) {
--		limits.min_policy_pct = 100;
--		limits.min_perf_pct = 100;
--		limits.min_perf = int_tofp(1);
--		limits.max_policy_pct = 100;
--		limits.max_perf_pct = 100;
--		limits.max_perf = int_tofp(1);
--		limits.no_turbo = 0;
--		limits.max_perf_ctl = 0;
--		limits.min_perf_ctl = 0;
-+		pr_debug("intel_pstate: set performance\n");
-+		limits = &performance_limits;
- 		return 0;
- 	}
- 
--	limits.min_policy_pct = (policy->min * 100) / policy->cpuinfo.max_freq;
--	limits.min_policy_pct = clamp_t(int, limits.min_policy_pct, 0 , 100);
--	limits.max_policy_pct = (policy->max * 100) / policy->cpuinfo.max_freq;
--	limits.max_policy_pct = clamp_t(int, limits.max_policy_pct, 0 , 100);
-+	pr_debug("intel_pstate: set powersave\n");
-+	limits = &powersave_limits;
-+	limits->min_policy_pct = (policy->min * 100) / policy->cpuinfo.max_freq;
-+	limits->min_policy_pct = clamp_t(int, limits->min_policy_pct, 0 , 100);
-+	limits->max_policy_pct = (policy->max * 100) / policy->cpuinfo.max_freq;
-+	limits->max_policy_pct = clamp_t(int, limits->max_policy_pct, 0 , 100);
- 
- 	/* Normalize user input to [min_policy_pct, max_policy_pct] */
--	limits.min_perf_pct = max(limits.min_policy_pct, limits.min_sysfs_pct);
--	limits.min_perf_pct = min(limits.max_policy_pct, limits.min_perf_pct);
--	limits.max_perf_pct = min(limits.max_policy_pct, limits.max_sysfs_pct);
--	limits.max_perf_pct = max(limits.min_policy_pct, limits.max_perf_pct);
-+	limits->min_perf_pct = max(limits->min_policy_pct,
-+				   limits->min_sysfs_pct);
-+	limits->min_perf_pct = min(limits->max_policy_pct,
-+				   limits->min_perf_pct);
-+	limits->max_perf_pct = min(limits->max_policy_pct,
-+				   limits->max_sysfs_pct);
-+	limits->max_perf_pct = max(limits->min_policy_pct,
-+				   limits->max_perf_pct);
- 
- 	/* Make sure min_perf_pct <= max_perf_pct */
--	limits.min_perf_pct = min(limits.max_perf_pct, limits.min_perf_pct);
-+	limits->min_perf_pct = min(limits->max_perf_pct, limits->min_perf_pct);
- 
--	limits.min_perf = div_fp(int_tofp(limits.min_perf_pct), int_tofp(100));
--	limits.max_perf = div_fp(int_tofp(limits.max_perf_pct), int_tofp(100));
-+	limits->min_perf = div_fp(int_tofp(limits->min_perf_pct),
-+				  int_tofp(100));
-+	limits->max_perf = div_fp(int_tofp(limits->max_perf_pct),
-+				  int_tofp(100));
- 
- #if IS_ENABLED(CONFIG_ACPI)
- 	cpu = all_cpu_data[policy->cpu];
-@@ -1246,14 +1274,14 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
- 
- 		control = convert_to_native_pstate_format(cpu, i);
- 		if (control * cpu->pstate.scaling == policy->max)
--			limits.max_perf_ctl = control;
-+			limits->max_perf_ctl = control;
- 		if (control * cpu->pstate.scaling == policy->min)
--			limits.min_perf_ctl = control;
-+			limits->min_perf_ctl = control;
- 	}
- 
- 	pr_debug("intel_pstate: max %u policy_max %u perf_ctl [0x%x-0x%x]\n",
--		 policy->cpuinfo.max_freq, policy->max, limits.min_perf_ctl,
--		 limits.max_perf_ctl);
-+		 policy->cpuinfo.max_freq, policy->max, limits->min_perf_ctl,
-+		 limits->max_perf_ctl);
- #endif
- 
- 	if (hwp_active)
-@@ -1298,7 +1326,7 @@ static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
- 
- 	cpu = all_cpu_data[policy->cpu];
- 
--	if (limits.min_perf_pct == 100 && limits.max_perf_pct == 100)
-+	if (limits->min_perf_pct == 100 && limits->max_perf_pct == 100)
- 		policy->policy = CPUFREQ_POLICY_PERFORMANCE;
- 	else
- 		policy->policy = CPUFREQ_POLICY_POWERSAVE;
--- 
-1.8.3.1
+----------------------------------------------------------------
+Tomeu Vizoso (20):
+      driver core: handle -EPROBE_DEFER from bus_type.match()
+      ARM: amba: Move reading of periphid to amba_match()
+      of/platform: Point to struct device from device node
+      of: add function to allow probing a device from a OF node
+      gpio: Probe GPIO drivers on demand
+      pinctrl: Probe pinctrl devices on demand
+      regulator: core: Probe regulators on demand
+      drm: Probe panels on demand
+      drm/tegra: Probe dpaux devices on demand
+      i2c: core: Probe i2c adapters and devices on demand
+      pwm: Probe PWM chip devices on demand
+      backlight: Probe backlight devices on demand
+      usb: phy: Probe phy devices on demand
+      clk: Probe clk providers on demand
+      pinctrl: Probe pinctrl devices on demand
+      phy: core: Probe phy providers on demand
+      dma: of: Probe DMA controllers on demand
+      power-supply: Probe power supplies on demand
+      driver core: Allow deferring probes until late init
+      of/platform: Defer probes of registered devices
 
+ drivers/amba/bus.c                  | 88 +++++++++++++++++++------------------
+ drivers/base/Kconfig                | 18 ++++++++
+ drivers/base/dd.c                   | 30 ++++++++++++-
+ drivers/clk/clk.c                   |  3 ++
+ drivers/dma/of-dma.c                |  3 ++
+ drivers/gpio/gpiolib-of.c           |  5 +++
+ drivers/gpu/drm/drm_panel.c         |  3 ++
+ drivers/gpu/drm/tegra/dpaux.c       |  3 ++
+ drivers/i2c/i2c-core.c              |  4 ++
+ drivers/of/device.c                 | 61 +++++++++++++++++++++++++
+ drivers/of/platform.c               | 30 ++++++++-----
+ drivers/phy/phy-core.c              |  3 ++
+ drivers/pinctrl/devicetree.c        |  3 ++
+ drivers/power/power_supply_core.c   |  3 ++
+ drivers/pwm/core.c                  |  3 ++
+ drivers/regulator/core.c            |  2 +
+ drivers/usb/phy/phy.c               |  3 ++
+ drivers/video/backlight/backlight.c |  3 ++
+ include/linux/device.h              |  4 +-
+ include/linux/of.h                  |  1 +
+ include/linux/of_device.h           |  3 ++
+ 21 files changed, 219 insertions(+), 57 deletions(-)
