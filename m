@@ -1,96 +1,81 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH] cpufreq, intel_pstate, Fix intel_pstate powersave min_perf_pct
- value
-Date: Wed, 14 Oct 2015 20:02:02 -0400
-Message-ID: <561EECF9.4070500@redhat.com>
-References: <1444822919-14650-1-git-send-email-prarit@redhat.com> <20151014140957.36523ea9@kcaccard-desk.amr.corp.intel.com> <561EEC6A.7000904@redhat.com> <2038385.VTvETXG82F@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v4 0/5] Intel P states enhancements
+Date: Thu, 15 Oct 2015 02:31 +0200
+Message-ID: <6382651.sBYEmNhDsd@vostro.rjw.lan>
+References: <1444864323-4196-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:47743 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753766AbbJOACE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 14 Oct 2015 20:02:04 -0400
-In-Reply-To: <2038385.VTvETXG82F@vostro.rjw.lan>
+Received: from v094114.home.net.pl ([79.96.170.134]:58656 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753766AbbJOACR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Oct 2015 20:02:17 -0400
+In-Reply-To: <1444864323-4196-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Kristen Carlson Accardi <kristen@linux.intel.com>, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Doug Smythies <dsmythies@telus.net>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: kristen.c.accardi@intel.com, rafael.j.wysocki@intel.com, len.brown@intel.com, linux-pm@vger.kernel.org
 
-
-
-On 10/14/2015 08:29 PM, Rafael J. Wysocki wrote:
-> On Wednesday, October 14, 2015 07:59:38 PM Prarit Bhargava wrote:
->>
->> On 10/14/2015 05:09 PM, Kristen Carlson Accardi wrote:
->>> On Wed, 14 Oct 2015 07:41:59 -0400
->>> Prarit Bhargava <prarit@redhat.com> wrote:
->>>
->>>> On systems that initialize the intel_pstate driver with the performance
->>>> governor, and then switch to the powersave governor will not transition to
->>>> lower cpu frequencies until /sys/devices/system/cpu/intel_pstate/min_perf_pct
->>>> is set to a low value.
->>>>
->>>> The behavior of governor switching changed after commit a04759924e25
->>>> ("[cpufreq] intel_pstate: honor user space min_perf_pct override on
->>>>  resume").  The commit introduced tracking of performance percentage
->>>> changes via sysfs in order to restore userspace changes during
->>>> suspend/resume.  The problem occurs because the global values of the newly
->>>> introduced max_sysfs_pct and min_sysfs_pct are not lowered on the governor
->>>> change and this causes the powersave governor to inherit the performance
->>>> governor's settings.
->>>>
->>>> A simple change would have been to reset max_sysfs_pct to 100 and
->>>> min_sysfs_pct to 0 on a governor change, which fixes the problem with
->>>> governor switching.  However, since we cannot break userspace[1] the fix
->>>> is now to give each governor its own limits storage area so that governor
->>>> specific changes are tracked.
->>>>
->>>> I successfully tested this by booting with both the performance governor
->>>> and the powersave governor by default, and switching between the two
->>>> governors (while monitoring /sys/devices/system/cpu/intel_pstate/ values,
->>>> and looking at the output of cpupower frequency-info).  Suspend/Resume
->>>> testing was performed by Doug Smythies.
->>>>
->>>> [1] Systems which suspend/resume using the unmaintained pm-utils package
->>>> will always transition to the performance governor before the suspend and
->>>> after the resume.  This means a system using the powersave governor will
->>>> go from powersave to performance, then suspend/resume, performance to
->>>> powersave.  The simple change during governor changes would have been
->>>> overwritten when the governor changed before and after the suspend/resume.
->>>> I have submitted https://bugzilla.redhat.com/show_bug.cgi?id=1271225
->>>> against Fedora to remove the 94cpufreq file that causes the problem.  It
->>>> should be noted that pm-utils is obsoleted with newer versions of systemd.
->>>>
->>>> Cc: Kristen Carlson Accardi <kristen@linux.intel.com>
->>>> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
->>>> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->>>> Cc: linux-pm@vger.kernel.org
->>>> Cc: Doug Smythies <dsmythies@telus.net>
->>>> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
->>>
->>> Acked-by: Kristen Carlson Accardi <kristen@linux.intel.com>
->>>
->>> BTW - I think I can see an issue here with HWP enabled systems.  It
->>> looks to me like the hwp settings will not be programmed correctly
->>> during a governor switch.  This probably needs to be addressed in a
->>> separate patch.
->>>
->>
->> Oh, I see it now too.  I'll get to that in another patch.  Thanks for pointing
->> that out Kristen.
+On Wednesday, October 14, 2015 04:11:58 PM Srinivas Pandruvada wrote:
+> This series enhances Intel P state drivers with the following features:
+> - Use Turbo Activation Ratio, when calculating max non turbo P state. This will
+> show now correct percentage in turbo range
+> - To calculate busy percent, the estimate is not correct when the max non turbo
+> is limited by tar, hence using physical max non turbo as before.
+> - Use ACPI _PSS and _PPC in intel_ptate driver.
+> - Avoid calculation for P state control value when cpufreq policy requests
+> frequency limits when matched in _PSS. Sometime calculations causes reduced
+> control value in boundary conditions.
+> Although they are independent patches, sending as series to help applying and
+> testing.
+> I appreciate review and testing on multiple platforms.
 > 
-> The $subject patch doesn't apply any more after the series from Srinivas that
-> I've just applied.
+> v4:
+> - Dropped patch 1/6 : cpufreq: intel_p_state: Fix limiting turbo sub states
+> Will submit it separately. The other patches are not dependent on this
+> change.
 > 
-> Can you please rebase it on top of my bleeding-edge branch?
+> v3:
+> - Added function : convert_to_native_pstate_format to convert from
+> perf_ctl value to pstate used ratios.
+> - Fix bug identified by Rafael
 > 
-
-Sure -- can you send me a pointer to the branch?
-
-P.
-
-> Thanks,
-> Rafael
+> v2:
+> - When CONFIG_ACPI not defined, then acpi/processor.h can't be included.
+> Also some variables will be unused when CONFIG_ACPI is not defined, so there
+> were warnings. Fixed all these compile issues.
 > 
+> v1:
+> - Change the command line option to "no_acpi"
+> - changed kernel parameter documentation file and added "no_acpi" parameter
+> - pr_debug prefixed with "intel_pstate" as suggested by Doug
+> - Changed the logic to determine turbo freq in _PSS using odd/even convention,
+> although this is the way it is defined in _PSS. But atleast two reviewers has
+> questioned the source of this. This is defined usually in non public documents
+> like BIOS writer guides. Now using the control field value to determine the
+> turbo and non turbo max.
+> - Fix the Kconfig dependency on ACPI for ACPI_PROCESSOR
+> - multi line comment styles
+> 
+> v0:
+> Base version
+> 
+> 
+> Srinivas Pandruvada (5):
+>   cpufreq: intel_pstate: get P1 from TAR when available
+>   cpufreq: intel-pstate: Use separate max pstate for scaling
+>   cpufreq: intel_pstate: Use ACPI perf configuration
+>   Documentation: kernel_parameters for Intel P state driver
+>   cpufreq: intel_pstate: Avoid calculation for max/min
+> 
+>  Documentation/kernel-parameters.txt |   3 +
+>  arch/x86/include/asm/msr-index.h    |   7 +
+>  drivers/cpufreq/Kconfig.x86         |   1 +
+>  drivers/cpufreq/intel_pstate.c      | 276 ++++++++++++++++++++++++++++++++++--
+>  4 files changed, 277 insertions(+), 10 deletions(-)
+
+Series queued up for v4.4, thanks!
+
+Rafael
+
