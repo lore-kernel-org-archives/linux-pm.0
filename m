@@ -1,15 +1,15 @@
 From: ahaslam@baylibre.com
-Subject: [PATCH v8 2/6] PM / Domains: core changes for multiple states
-Date: Thu, 15 Oct 2015 14:16:32 +0200
-Message-ID: <1444911396-3473-3-git-send-email-ahaslam@baylibre.com>
+Subject: [PATCH v8 3/6] PM / Domains: make governor select deepest state
+Date: Thu, 15 Oct 2015 14:16:33 +0200
+Message-ID: <1444911396-3473-4-git-send-email-ahaslam@baylibre.com>
 References: <1444911396-3473-1-git-send-email-ahaslam@baylibre.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f170.google.com ([209.85.212.170]:33188 "EHLO
-	mail-wi0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752695AbbJOMQu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 Oct 2015 08:16:50 -0400
-Received: by wijp11 with SMTP id p11so26618779wij.0
-        for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2015 05:16:48 -0700 (PDT)
+Received: from mail-wi0-f176.google.com ([209.85.212.176]:38215 "EHLO
+	mail-wi0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753236AbbJOMQw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 Oct 2015 08:16:52 -0400
+Received: by wicll6 with SMTP id ll6so16343091wic.1
+        for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2015 05:16:51 -0700 (PDT)
 In-Reply-To: <1444911396-3473-1-git-send-email-ahaslam@baylibre.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -18,379 +18,139 @@ Cc: bcousson@baylibre.com, mturquette@baylibre.com, Axel Haslam <ahaslam+renesas
 
 From: Axel Haslam <ahaslam+renesas@baylibre.com>
 
-Add the core changes to be able to declare multiple states.
-When trying to set a power domain to off, genpd will be able to choose
-from an array of states declared by the platform. The power on and off
-latencies are now tied to a state.
+Now that the structures of genpd can support multiple state definitions,
+add the logic in the governor to select the deepest possible state when
+powering down.
 
-States should be declared in ascending order from shallowest to deepest,
-deepest meaning the state which takes longer to enter and exit.
+For this, create the new function power_down_ok_for_state which will test
+if a particular state will not violate the devices and sub-domains
+constraints.
 
-the power_off and power_on function can use the 'state_idx' field of the
-generic_pm_domain structure, to distinguish between the different states
-and act accordingly.
+default_power_down_ok is modified to try each state starting from the
+deepest until a valid state is found or there are no more states to test.
 
-Example:
-
-static int pd1_power_on(struct generic_pm_domain *domain)
-{
-	/* domain->state_idx = state the domain is coming from */
-}
-
-static int pd1_power_off(struct generic_pm_domain *domain)
-{
-	/* domain->state_idx = desired powered off state */
-}
-
-const struct genpd_power_state pd_states[] = {
-	{
-		.name = "RET",
-		.power_on_latency_ns = ON_LATENCY_FAST,
-		.power_off_latency_ns = OFF_LATENCY_FAST,
-	},
-	{
-		.name = "DEEP_RET",
-		.power_on_latency_ns = ON_LATENCY_MED,
-		.power_off_latency_ns = OFF_LATENCY_MED,
-	},
-	{
-		.name = "OFF",
-		.power_on_latency_ns = ON_LATENCY_SLOW,
-		.power_off_latency_ns = OFF_LATENCY_SLOW,
-	}
-};
-
-struct generic_pm_domain pd1 = {
-	.name = "PD1",
-	.power_on = pd1_power_on,
-	.power_off = pd1_power_off,
-	[...]
-};
-
-int xxx_init_pm_domain(){
-
-	pm_genpd_init(struct generic_pm_domain,
-		pd1, pd_states, ARRAY_SIZE(pd_states), true);
-
-}
+the resulting state will be valid until there are latency or constraint
+changes, thus, we can avoid looping every power_down, and use the cached
+results instead.
 
 Signed-off-by: Axel Haslam <ahaslam+renesas@baylibre.com>
 ---
- drivers/base/power/domain.c          | 144 +++++++++++++++++++++++++++++++++--
- drivers/base/power/domain_governor.c |  13 +++-
- include/linux/pm_domain.h            |   4 +
- 3 files changed, 151 insertions(+), 10 deletions(-)
+ drivers/base/power/domain_governor.c | 76 +++++++++++++++++++++---------------
+ 1 file changed, 45 insertions(+), 31 deletions(-)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index a51c4b0..c475fdd 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -50,6 +50,12 @@
- 	__retval;								\
- })
- 
-+#define GENPD_MAX_NAME_SIZE 20
-+
-+static int pm_genpd_alloc_states_names(struct generic_pm_domain *genpd,
-+				       const struct genpd_power_state *st,
-+				       unsigned int st_count);
-+
- static LIST_HEAD(gpd_list);
- static DEFINE_MUTEX(gpd_list_lock);
- 
-@@ -142,12 +148,13 @@ static void genpd_sd_counter_inc(struct generic_pm_domain *genpd)
- 
- static void genpd_recalc_cpu_exit_latency(struct generic_pm_domain *genpd)
- {
-+	unsigned int state_idx = genpd->state_idx;
- 	s64 usecs64;
- 
- 	if (!genpd->cpuidle_data)
- 		return;
- 
--	usecs64 = genpd->power_on_latency_ns;
-+	usecs64 = genpd->states[state_idx].power_on_latency_ns;
- 	do_div(usecs64, NSEC_PER_USEC);
- 	usecs64 += genpd->cpuidle_data->saved_exit_latency;
- 	genpd->cpuidle_data->idle_state->exit_latency = usecs64;
-@@ -155,6 +162,7 @@ static void genpd_recalc_cpu_exit_latency(struct generic_pm_domain *genpd)
- 
- static int genpd_power_on(struct generic_pm_domain *genpd, bool timed)
- {
-+	unsigned int state_idx = genpd->state_idx;
- 	ktime_t time_start;
- 	s64 elapsed_ns;
- 	int ret;
-@@ -171,10 +179,10 @@ static int genpd_power_on(struct generic_pm_domain *genpd, bool timed)
- 		return ret;
- 
- 	elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
--	if (elapsed_ns <= genpd->power_on_latency_ns)
-+	if (elapsed_ns <= genpd->states[state_idx].power_on_latency_ns)
- 		return ret;
- 
--	genpd->power_on_latency_ns = elapsed_ns;
-+	genpd->states[state_idx].power_on_latency_ns = elapsed_ns;
- 	genpd->max_off_time_changed = true;
- 	genpd_recalc_cpu_exit_latency(genpd);
- 	pr_debug("%s: Power-%s latency exceeded, new value %lld ns\n",
-@@ -185,6 +193,7 @@ static int genpd_power_on(struct generic_pm_domain *genpd, bool timed)
- 
- static int genpd_power_off(struct generic_pm_domain *genpd, bool timed)
- {
-+	unsigned int state_idx = genpd->state_idx;
- 	ktime_t time_start;
- 	s64 elapsed_ns;
- 	int ret;
-@@ -201,10 +210,10 @@ static int genpd_power_off(struct generic_pm_domain *genpd, bool timed)
- 		return ret;
- 
- 	elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
--	if (elapsed_ns <= genpd->power_off_latency_ns)
-+	if (elapsed_ns <= genpd->states[state_idx].power_off_latency_ns)
- 		return ret;
- 
--	genpd->power_off_latency_ns = elapsed_ns;
-+	genpd->states[state_idx].power_off_latency_ns = elapsed_ns;
- 	genpd->max_off_time_changed = true;
- 	pr_debug("%s: Power-%s latency exceeded, new value %lld ns\n",
- 		 genpd->name, "off", elapsed_ns);
-@@ -646,6 +655,8 @@ static void pm_genpd_sync_poweroff(struct generic_pm_domain *genpd,
- 	    || atomic_read(&genpd->sd_count) > 0)
- 		return;
- 
-+	/* Choose the deepest state when suspending */
-+	genpd->state_idx = genpd->state_count - 1;
- 	genpd_power_off(genpd, timed);
- 
- 	genpd->status = GPD_STATE_POWER_OFF;
-@@ -1268,6 +1279,61 @@ static void genpd_free_dev_data(struct device *dev,
- 	dev_pm_put_subsys_data(dev);
- }
- 
-+static int genpd_alloc_states_data(struct generic_pm_domain *genpd,
-+				   const struct genpd_power_state *st,
-+				   unsigned int st_count)
-+{
-+	int ret = 0;
-+	unsigned int i;
-+
-+	if (IS_ERR_OR_NULL(genpd)) {
-+		ret = -EINVAL;
-+		goto err;
-+	}
-+
-+	if (!st || (st_count < 1)) {
-+		ret = -EINVAL;
-+		goto err;
-+	}
-+
-+	/* Allocate the local memory to keep the states for this genpd */
-+	genpd->states = kcalloc(st_count, sizeof(*st), GFP_KERNEL);
-+	if (!genpd->states) {
-+		ret = -ENOMEM;
-+		goto err;
-+	}
-+
-+	for (i = 0; i < st_count; i++) {
-+		genpd->states[i].power_on_latency_ns =
-+			st[i].power_on_latency_ns;
-+		genpd->states[i].power_off_latency_ns =
-+			st[i].power_off_latency_ns;
-+	}
-+
-+	/*
-+	 * Copy the latency values To keep compatibility with
-+	 * platforms that are not converted to use the multiple states.
-+	 * This will be removed once all platforms are converted to use
-+	 * multiple states. note that non converted platforms will use the
-+	 * default single off state.
-+	 */
-+	if (genpd->power_on_latency_ns != 0)
-+		genpd->states[0].power_on_latency_ns =
-+				genpd->power_on_latency_ns;
-+
-+	if (genpd->power_off_latency_ns != 0)
-+		genpd->states[0].power_off_latency_ns =
-+				genpd->power_off_latency_ns;
-+
-+	genpd->state_count = st_count;
-+
-+	/* to save memory, Name allocation will happen if debug is enabled */
-+	pm_genpd_alloc_states_names(genpd, st, st_count);
-+
-+err:
-+	return ret;
-+}
-+
- /**
-  * __pm_genpd_add_device - Add a device to an I/O PM domain.
-  * @genpd: PM domain to add the device to.
-@@ -1683,9 +1749,23 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
- 		   const struct genpd_power_state *states,
- 		   unsigned int state_count, bool is_off)
- {
-+	int ret;
-+
- 	if (IS_ERR_OR_NULL(genpd))
- 		return;
- 
-+	/* State data should be provided */
-+	if (!states || (state_count < 1)) {
-+		pr_err("Invalid state data\n");
-+		return;
-+	}
-+
-+	ret = genpd_alloc_states_data(genpd, states, state_count);
-+	if (ret) {
-+		pr_err("Failed to allocate states for %s\n", genpd->name);
-+		return;
-+	}
-+
- 	INIT_LIST_HEAD(&genpd->master_links);
- 	INIT_LIST_HEAD(&genpd->slave_links);
- 	INIT_LIST_HEAD(&genpd->dev_list);
-@@ -1698,6 +1778,8 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
- 	genpd->device_count = 0;
- 	genpd->max_off_time_ns = -1;
- 	genpd->max_off_time_changed = true;
-+	/* Assume the deepest state on init*/
-+	genpd->state_idx = genpd->state_count - 1;
- 	genpd->domain.ops.runtime_suspend = pm_genpd_runtime_suspend;
- 	genpd->domain.ops.runtime_resume = pm_genpd_runtime_resume;
- 	genpd->domain.ops.prepare = pm_genpd_prepare;
-@@ -1743,7 +1825,16 @@ EXPORT_SYMBOL_GPL(pm_genpd_init);
- void pm_genpd_init_simple(struct generic_pm_domain *genpd,
- 		   struct dev_power_governor *gov, bool is_off)
- {
--	pm_genpd_init(genpd, gov, NULL, 0, is_off);
-+	static const struct genpd_power_state genpd_default_idle_states[] = {
-+		{
-+			.name = "OFF",
-+			.power_off_latency_ns = 0,
-+			.power_on_latency_ns = 0,
-+		},
-+	};
-+
-+	pm_genpd_init(genpd, gov, genpd_default_idle_states,
-+			ARRAY_SIZE(genpd_default_idle_states), is_off);
- }
- EXPORT_SYMBOL_GPL(pm_genpd_init_simple);
- 
-@@ -2060,6 +2151,33 @@ EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
- #include <linux/kobject.h>
- static struct dentry *pm_genpd_debugfs_dir;
- 
-+static int pm_genpd_alloc_states_names(struct generic_pm_domain *genpd,
-+				       const struct genpd_power_state *st,
-+				       unsigned int st_count)
-+{
-+	unsigned int i;
-+
-+	if (IS_ERR_OR_NULL(genpd))
-+		return -EINVAL;
-+
-+	if (genpd->state_count != st_count) {
-+		pr_err("Invalid allocated state count\n");
-+		return -EINVAL;
-+	}
-+
-+	for (i = 0; i < st_count; i++) {
-+		genpd->states[i].name = kstrndup(st[i].name,
-+				GENPD_MAX_NAME_SIZE, GFP_KERNEL);
-+		if (!genpd->states[i].name) {
-+			pr_err("%s Failed to allocate state %d name.\n",
-+				genpd->name, i);
-+			return -ENOMEM;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
- /*
-  * TODO: This function is a slightly modified version of rtpm_status_show
-  * from sysfs.c, so generalize it.
-@@ -2093,6 +2211,7 @@ static int pm_genpd_summary_one(struct seq_file *s,
- 		[GPD_STATE_ACTIVE] = "on",
- 		[GPD_STATE_POWER_OFF] = "off"
- 	};
-+	unsigned int state_idx = genpd->state_idx;
- 	struct pm_domain_data *pm_data;
- 	const char *kobj_path;
- 	struct gpd_link *link;
-@@ -2104,7 +2223,11 @@ static int pm_genpd_summary_one(struct seq_file *s,
- 
- 	if (WARN_ON(genpd->status >= ARRAY_SIZE(status_lookup)))
- 		goto exit;
--	seq_printf(s, "%-30s  %-15s ", genpd->name, status_lookup[genpd->status]);
-+
-+	seq_printf(s, "%-30s  %-15s  ", genpd->name,
-+		   (genpd->status == GPD_STATE_POWER_OFF) ?
-+		   genpd->states[state_idx].name :
-+		   status_lookup[genpd->status]);
- 
- 	/*
- 	 * Modifications on the list require holding locks on both
-@@ -2192,4 +2315,11 @@ static void __exit pm_genpd_debug_exit(void)
- 	debugfs_remove_recursive(pm_genpd_debugfs_dir);
- }
- __exitcall(pm_genpd_debug_exit);
-+#else
-+static inline int pm_genpd_alloc_states_names(struct generic_pm_domain *genpd,
-+					const struct genpd_power_state *st,
-+					unsigned int st_count)
-+{
-+	return 0;
-+}
- #endif /* CONFIG_PM_ADVANCED_DEBUG */
 diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
-index 2a4154a..5e63a84 100644
+index 5e63a84..8139c01 100644
 --- a/drivers/base/power/domain_governor.c
 +++ b/drivers/base/power/domain_governor.c
-@@ -124,8 +124,12 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
- 		return genpd->cached_power_down_ok;
- 	}
+@@ -97,7 +97,8 @@ static bool default_stop_ok(struct device *dev)
+  *
+  * This routine must be executed under the PM domain's lock.
+  */
+-static bool default_power_down_ok(struct dev_pm_domain *pd)
++static bool power_down_ok_for_state(struct dev_pm_domain *pd,
++				     unsigned int state)
+ {
+ 	struct generic_pm_domain *genpd = pd_to_genpd(pd);
+ 	struct gpd_link *link;
+@@ -105,31 +106,8 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
+ 	s64 min_off_time_ns;
+ 	s64 off_on_time_ns;
  
--	off_on_time_ns = genpd->power_off_latency_ns +
--				genpd->power_on_latency_ns;
-+	/*
-+	 * Use the only available state, until multiple state support is added
-+	 * to the governor.
-+	 */
-+	off_on_time_ns = genpd->states[0].power_off_latency_ns +
-+				genpd->states[0].power_on_latency_ns;
+-	if (genpd->max_off_time_changed) {
+-		struct gpd_link *link;
+-
+-		/*
+-		 * We have to invalidate the cached results for the masters, so
+-		 * use the observation that default_power_down_ok() is not
+-		 * going to be called for any master until this instance
+-		 * returns.
+-		 */
+-		list_for_each_entry(link, &genpd->slave_links, slave_node)
+-			link->master->max_off_time_changed = true;
+-
+-		genpd->max_off_time_changed = false;
+-		genpd->cached_power_down_ok = false;
+-		genpd->max_off_time_ns = -1;
+-	} else {
+-		return genpd->cached_power_down_ok;
+-	}
+-
+-	/*
+-	 * Use the only available state, until multiple state support is added
+-	 * to the governor.
+-	 */
+-	off_on_time_ns = genpd->states[0].power_off_latency_ns +
+-				genpd->states[0].power_on_latency_ns;
++	off_on_time_ns = genpd->states[state].power_off_latency_ns +
++		genpd->states[state].power_on_latency_ns;
  	/*
  	 * It doesn't make sense to remove power from the domain if saving
  	 * the state of all devices in it and the power off/power on operations
-@@ -215,8 +219,11 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
+@@ -205,8 +183,6 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
+ 			min_off_time_ns = constraint_ns;
+ 	}
+ 
+-	genpd->cached_power_down_ok = true;
+-
+ 	/*
+ 	 * If the computed minimum device off time is negative, there are no
+ 	 * latency constraints, so the domain can spend arbitrary time in the
+@@ -219,14 +195,52 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
  	 * The difference between the computed minimum subdomain or device off
  	 * time and the time needed to turn the domain on is the maximum
  	 * theoretical time this domain can spend in the "off" state.
-+	 * Use the only available state, until multiple state support is added
-+	 * to the governor.
+-	 * Use the only available state, until multiple state support is added
+-	 * to the governor.
  	 */
--	genpd->max_off_time_ns = min_off_time_ns - genpd->power_on_latency_ns;
-+	genpd->max_off_time_ns = min_off_time_ns -
-+		genpd->states[0].power_on_latency_ns;
+ 	genpd->max_off_time_ns = min_off_time_ns -
+-		genpd->states[0].power_on_latency_ns;
++			genpd->states[state].power_on_latency_ns;
  	return true;
  }
  
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index e5e7ca9..52d91d0 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -80,6 +80,10 @@ struct generic_pm_domain {
- 	void (*detach_dev)(struct generic_pm_domain *domain,
- 			   struct device *dev);
- 	unsigned int flags;		/* Bit field of configs for genpd */
-+	struct genpd_power_state *states;
-+	unsigned int state_count; /* number of states */
-+	unsigned int state_idx; /* state that genpd will go to when off */
++static bool default_power_down_ok(struct dev_pm_domain *pd)
++{
++	struct generic_pm_domain *genpd = pd_to_genpd(pd);
++	unsigned int last_state_idx = genpd->state_count - 1;
++	struct gpd_link *link;
++	bool retval = false;
++	unsigned int i;
 +
- };
- 
- static inline struct generic_pm_domain *pd_to_genpd(struct dev_pm_domain *pd)
++	/*
++	 * if there was no change on max_off_time, we can return the
++	 * cached value and we dont need to find a new target_state
++	 */
++	if (!genpd->max_off_time_changed)
++		return genpd->cached_power_down_ok;
++
++	/*
++	 * We have to invalidate the cached results for the masters, so
++	 * use the observation that default_power_down_ok() is not
++	 * going to be called for any master until this instance
++	 * returns.
++	 */
++	list_for_each_entry(link, &genpd->slave_links, slave_node)
++		link->master->max_off_time_changed = true;
++
++	genpd->max_off_time_ns = -1;
++	genpd->max_off_time_changed = false;
++
++	/* find a state to power down to, starting from the deepest */
++	for (i = 0; i < genpd->state_count; i++) {
++		if (power_down_ok_for_state(pd, last_state_idx - i)) {
++			genpd->state_idx = last_state_idx - i;
++			retval = true;
++			break;
++		}
++	}
++
++	genpd->cached_power_down_ok = retval;
++	return retval;
++}
++
+ static bool always_on_power_down_ok(struct dev_pm_domain *domain)
+ {
+ 	return false;
 -- 
 2.4.5
 
