@@ -1,15 +1,15 @@
 From: ahaslam@baylibre.com
-Subject: [PATCH v8 4/6] ARM: imx6: pm: declare pm domain latency on power_state struct.
-Date: Thu, 15 Oct 2015 14:16:34 +0200
-Message-ID: <1444911396-3473-5-git-send-email-ahaslam@baylibre.com>
+Subject: [PATCH v8 5/6] PM / Domains: remove old power on/off latencies.
+Date: Thu, 15 Oct 2015 14:16:35 +0200
+Message-ID: <1444911396-3473-6-git-send-email-ahaslam@baylibre.com>
 References: <1444911396-3473-1-git-send-email-ahaslam@baylibre.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f175.google.com ([209.85.212.175]:34632 "EHLO
-	mail-wi0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753236AbbJOMQy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 Oct 2015 08:16:54 -0400
-Received: by wicgb1 with SMTP id gb1so25571761wic.1
-        for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2015 05:16:53 -0700 (PDT)
+Received: from mail-wi0-f181.google.com ([209.85.212.181]:38338 "EHLO
+	mail-wi0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752612AbbJOMQ4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 Oct 2015 08:16:56 -0400
+Received: by wicll6 with SMTP id ll6so16346286wic.1
+        for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2015 05:16:55 -0700 (PDT)
 In-Reply-To: <1444911396-3473-1-git-send-email-ahaslam@baylibre.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -18,70 +18,55 @@ Cc: bcousson@baylibre.com, mturquette@baylibre.com, Axel Haslam <ahaslam+renesas
 
 From: Axel Haslam <ahaslam+renesas@baylibre.com>
 
-The generic_pm_domain structure uses an array of latencies to be able to
-declare multiple intermediate states.
-
-Declare a single "OFF" state with the default latencies So that the
-power_off_latency_ns and power_on_latency_ns fields of generic_pm_domain
-structure can be eventualy removed.
+Now that all known users have been converted to use state latencies,
+we can remove the latency field in the generic_pm_domain structure.
 
 Signed-off-by: Axel Haslam <ahaslam+renesas@baylibre.com>
 ---
- arch/arm/mach-imx/gpc.c | 18 +++++++++++++++---
- 1 file changed, 15 insertions(+), 3 deletions(-)
+ drivers/base/power/domain.c | 15 ---------------
+ include/linux/pm_domain.h   |  2 --
+ 2 files changed, 17 deletions(-)
 
-diff --git a/arch/arm/mach-imx/gpc.c b/arch/arm/mach-imx/gpc.c
-index 76658f8..367a00c 100644
---- a/arch/arm/mach-imx/gpc.c
-+++ b/arch/arm/mach-imx/gpc.c
-@@ -45,9 +45,11 @@
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index c475fdd..df2f244 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -1310,21 +1310,6 @@ static int genpd_alloc_states_data(struct generic_pm_domain *genpd,
+ 			st[i].power_off_latency_ns;
+ 	}
  
- struct pu_domain {
- 	struct generic_pm_domain base;
-+	struct genpd_power_state *states;
- 	struct regulator *reg;
- 	struct clk *clk[GPC_CLK_MAX];
- 	int num_clks;
-+	unsigned int num_states;
- };
+-	/*
+-	 * Copy the latency values To keep compatibility with
+-	 * platforms that are not converted to use the multiple states.
+-	 * This will be removed once all platforms are converted to use
+-	 * multiple states. note that non converted platforms will use the
+-	 * default single off state.
+-	 */
+-	if (genpd->power_on_latency_ns != 0)
+-		genpd->states[0].power_on_latency_ns =
+-				genpd->power_on_latency_ns;
+-
+-	if (genpd->power_off_latency_ns != 0)
+-		genpd->states[0].power_off_latency_ns =
+-				genpd->power_off_latency_ns;
+-
+ 	genpd->state_count = st_count;
  
- static void __iomem *gpc_base;
-@@ -369,14 +371,22 @@ static struct generic_pm_domain imx6q_arm_domain = {
- 	.name = "ARM",
- };
- 
-+static struct genpd_power_state imx6q_arm_domain_states[] = {
-+	{
-+		.name = "OFF",
-+		.power_off_latency_ns = 25000,
-+		.power_on_latency_ns = 2000000,
-+	},
-+};
-+
- static struct pu_domain imx6q_pu_domain = {
- 	.base = {
- 		.name = "PU",
- 		.power_off = imx6q_pm_pu_power_off,
- 		.power_on = imx6q_pm_pu_power_on,
--		.power_off_latency_ns = 25000,
--		.power_on_latency_ns = 2000000,
- 	},
-+	.states = imx6q_arm_domain_states,
-+	.num_states = ARRAY_SIZE(imx6q_arm_domain_states),
- };
- 
- static struct generic_pm_domain imx6sl_display_domain = {
-@@ -419,7 +429,9 @@ static int imx_gpc_genpd_init(struct device *dev, struct regulator *pu_reg)
- 	if (!IS_ENABLED(CONFIG_PM_GENERIC_DOMAINS))
- 		return 0;
- 
--	pm_genpd_init_simple(&imx6q_pu_domain.base, NULL, false);
-+	pm_genpd_init(&imx6q_pu_domain.base, NULL, imx6q_pu_domain.states,
-+			imx6q_pu_domain.num_states, false);
-+
- 	return of_genpd_add_provider_onecell(dev->of_node,
- 					     &imx_gpc_onecell_data);
- 
+ 	/* to save memory, Name allocation will happen if debug is enabled */
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 52d91d0..c4b9322 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -67,9 +67,7 @@ struct generic_pm_domain {
+ 	unsigned int prepared_count;	/* Suspend counter of prepared devices */
+ 	bool suspend_power_off;	/* Power status before system suspend */
+ 	int (*power_off)(struct generic_pm_domain *domain);
+-	s64 power_off_latency_ns;
+ 	int (*power_on)(struct generic_pm_domain *domain);
+-	s64 power_on_latency_ns;
+ 	struct gpd_dev_ops dev_ops;
+ 	s64 max_off_time_ns;	/* Maximum allowed "suspended" time. */
+ 	bool max_off_time_changed;
 -- 
 2.4.5
 
