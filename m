@@ -1,77 +1,35 @@
-From: Hou Zhiqiang <B48286@freescale.com>
-Subject: RE: [v3,1/5] powerpc/fsl: Move fsl_guts.h out of arch/powerpc
-Date: Thu, 15 Oct 2015 06:45:25 +0000
-Message-ID: <CY1PR0301MB07809DEB86BE03CD1FF608A98B3E0@CY1PR0301MB0780.namprd03.prod.outlook.com>
-References: <BN3PR0301MB12498818CCEA66A001228FAC843E0@BN3PR0301MB1249.namprd03.prod.outlook.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 4/5] cpufreq: create cpu/cpufreq/policyX directories
+Date: Thu, 15 Oct 2015 12:25:03 +0530
+Message-ID: <20151015065503.GB19018@linux>
+References: <cover.1444583718.git.viresh.kumar@linaro.org>
+ <dd7e6cab3e879e94305c0fca1ea6033e79d166ca.1444583718.git.viresh.kumar@linaro.org>
+ <561C0A8B.5010509@codeaurora.org>
+ <20151013033912.GN5386@linux>
+ <561D5B85.4010103@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <BN3PR0301MB12498818CCEA66A001228FAC843E0@BN3PR0301MB1249.namprd03.prod.outlook.com>
-Content-Language: en-US
-Sender: linux-clk-owner@vger.kernel.org
-To: Scott Wood <scottwood@freescale.com>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Yuantian Tang <Yuantian.Tang@freescale.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Hu Vincent <Mingkai.Hu@freescale.com>, Hou Zhiqiang <B48286@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <561D5B85.4010103@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb20gcGF0Y2h3b3JrIFN1biBTZXAg
-MjAgMDQ6Mjk6NTMgMjAxNSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAN
-Cj4gQ29udGVudC1UeXBlOiB0ZXh0L3BsYWluOyBjaGFyc2V0PSJ1dGYtOCIgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgIA0KPiBNSU1FLVZlcnNpb246IDEuMCAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgDQo+IENv
-bnRlbnQtVHJhbnNmZXItRW5jb2Rpbmc6IDdiaXQgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICANCj4gU3ViamVjdDogW3YzLDEvNV0gcG93ZXJwYy9mc2w6IE1v
-dmUgZnNsX2d1dHMuaCBvdXQgb2YgYXJjaC9wb3dlcnBjICAgICAgICAgICAgIA0KPiBGcm9tOiBT
-Y290dCBXb29kIDxzY290dHdvb2RAZnJlZXNjYWxlLmNvbT4gICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgDQo+IFgtUGF0Y2h3b3JrLUlkOiA3MjI1NDIxICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICANCj4gTWVzc2FnZS1JZDog
-PDE0NDI3MjMzOTctMjYzMjktMi1naXQtc2VuZC1lbWFpbC1zY290dHdvb2RAZnJlZXNjYWxlLmNv
-bT4gICAgICAgIA0KPiBUbzogTWljaGFlbCBUdXJxdWV0dGUgPG10dXJxdWV0dGVAYmF5bGlicmUu
-Y29tPiwgU3RlcGhlbiBCb3lkICAgICAgICAgICAgICAgICAgDQo+ICAgICAgIDxzYm95ZEBjb2Rl
-YXVyb3JhLm9yZz4sICJSYWZhZWwgSi4gV3lzb2NraSIgPHJqd0Byand5c29ja2kubmV0PiwgICAg
-ICAgICANCj4gICAgICAgVmlyZXNoIEt1bWFyICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA0KPiAgICAgICA8dmlyZXNoLmt1bWFyQGxp
-bmFyby5vcmc+LCBSdXNzZWxsIEtpbmcgPGxpbnV4QGFybS5saW51eC5vcmcudWs+ICAgICAgICAg
-DQo+IENjOiBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmcsIFRhbmcgWXVhbnRpYW4gPFl1YW50aWFu
-LlRhbmdAZnJlZXNjYWxlLmNvbT4sICAgICANCj4gICAgICAgU2NvdHQgV29vZCA8c2NvdHR3b29k
-QGZyZWVzY2FsZS5jb20+LCBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZywgICAgIA0KPiAg
-ICAgICBsaW51eC1jbGtAdmdlci5rZXJuZWwub3JnLCBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmlu
-ZnJhZGVhZC5vcmcgICAgICAgICAgDQo+IERhdGU6IFNhdCwgMTkgU2VwIDIwMTUgMjM6Mjk6NTMg
-LTA1MDAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICANCj4gICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgIA0KPiBGcmVlc2NhbGUncyBMYXllcnNjYXBlIEFSTSBjaGlwcyB1c2Ug
-dGhlIHNhbWUgc3RydWN0dXJlLiAgICAgICAgICAgICAgICAgICAgICAgDQo+ICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICANCj4gU2lnbmVkLW9mZi1ieTogU2NvdHQgV29vZCA8c2NvdHR3b29kQGZyZWVz
-Y2FsZS5jb20+ICAgICAgICAgICAgICAgICAgICAgICAgICAgIA0KPiAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgDQo+IC0tLSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICANCj4gdjM6IHdhcyBwYXRjaCAyLzUgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-IA0KPiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgDQo+ICBhcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20v
-ZnNsX2d1dHMuaCAgICAgICAgfCAxOTIgLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCj4g
-IGFyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvODV4eC9tcGM4NXh4X21kcy5jICB8ICAgMiArLSAgICAg
-ICAgICAgICAgICAgICAgICAgICAgIA0KPiAgYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy84NXh4L21w
-Yzg1eHhfcmRiLmMgIHwgICAyICstICAgICAgICAgICAgICAgICAgICAgICAgICAgDQo+ICBhcmNo
-L3Bvd2VycGMvcGxhdGZvcm1zLzg1eHgvcDEwMjJfZHMuYyAgICAgfCAgIDIgKy0gICAgICAgICAg
-ICAgICAgICAgICAgICAgICANCj4gIGFyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvODV4eC9wMTAyMl9y
-ZGsuYyAgICB8ICAgMiArLSAgICAgICAgICAgICAgICAgICAgICAgICAgIA0KPiAgYXJjaC9wb3dl
-cnBjL3BsYXRmb3Jtcy84NXh4L3NtcC5jICAgICAgICAgIHwgICAyICstICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgDQo+ICBhcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzg1eHgvdHdyX3AxMDJ4LmMg
-ICAgfCAgIDIgKy0gICAgICAgICAgICAgICAgICAgICAgICAgICANCj4gIGFyY2gvcG93ZXJwYy9w
-bGF0Zm9ybXMvODZ4eC9tcGM4NjEwX2hwY2QuYyB8ICAgMiArLSAgICAgICAgICAgICAgICAgICAg
-ICAgICAgIA0KPiAgZHJpdmVycy9pb21tdS9mc2xfcGFtdS5jICAgICAgICAgICAgICAgICAgIHwg
-ICAyICstICAgICAgICAgICAgICAgICAgICAgICAgICAgDQo+ICBpbmNsdWRlL2xpbnV4L2ZzbC9n
-dXRzLmggICAgICAgICAgICAgICAgICAgfCAxOTIgKysrKysrKysrKysrKysrKysrKysrKysrKysr
-KysNCj4gIHNvdW5kL3NvYy9mc2wvbXBjODYxMF9ocGNkLmMgICAgICAgICAgICAgICB8ICAgMiAr
-LSAgICAgICAgICAgICAgICAgICAgICAgICAgIA0KPiAgc291bmQvc29jL2ZzbC9wMTAyMl9kcy5j
-ICAgICAgICAgICAgICAgICAgIHwgICAyICstICAgICAgICAgICAgICAgICAgICAgICAgICAgDQo+
-ICBzb3VuZC9zb2MvZnNsL3AxMDIyX3Jkay5jICAgICAgICAgICAgICAgICAgfCAgIDIgKy0gICAg
-ICAgICAgICAgICAgICAgICAgICAgICANCj4gIDEzIGZpbGVzIGNoYW5nZWQsIDIwMyBpbnNlcnRp
-b25zKCspLCAyMDMgZGVsZXRpb25zKC0pICAgICAgICAgICAgICAgICAgICAgICAgIA0KPiAgZGVs
-ZXRlIG1vZGUgMTAwNjQ0IGFyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9mc2xfZ3V0cy5oICAgICAg
-ICAgICAgICAgICAgICAgICAgDQo+ICBjcmVhdGUgbW9kZSAxMDA2NDQgaW5jbHVkZS9saW51eC9m
-c2wvZ3V0cy5oICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICANCg0KTFMxMDQzQSBj
-bG9jayBkcml2ZXIgZGVwZW5kcyBvbiB0aGlzIHBhdGNoc2V0LCBhbmQgdGVzdGVkIG9uIExTMTA0
-M0FSREIgYm9hcmQuDQoNClRoYW5rcywNClpoaXFpYW5nDQo=
+On 13-10-15, 12:29, Saravana Kannan wrote:
+> But we don't need to track track of "present-cpus" separately
+> though. We could do the for_each_cpu_and() when we create the
+> symlinks for the first time. And after that, we can just use the
+> subsystem interface callbacks (cpufreq_add_dev() and
+> cpufreq_remove_dev()) to keep the symlinks updated.
+> 
+> I don't see any place where keeping track of this separately is more
+> efficient. This would save some memory savings when the number of
+> CPUs is large and also simplify the code because we won't have to
+> keep another field up to date.
+
+It is still required to track when can we free the policy.
+
+-- 
+viresh
