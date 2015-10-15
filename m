@@ -1,52 +1,55 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH Resend] cpufreq: Drop redundant check for inactive policies
-Date: Wed, 14 Oct 2015 18:51:07 -0700
-Message-ID: <561F068B.60506@codeaurora.org>
-References: <2d6d59c2b0654872a32a9b63874b750e6b808cb5.1444713966.git.viresh.kumar@linaro.org> <90321921.5bFa9a5dDU@vostro.rjw.lan>
+From: Jacob Pan <jacob.jun.pan@intel.com>
+Subject: Re: [PATCH 2/2] Enabled Broxton RAPL support
+Date: Wed, 14 Oct 2015 20:11:58 -0700
+Message-ID: <20151014201158.36826c09@yairi>
+References: <1444835355-26582-3-git-send-email-amy.l.wiles@intel.com>
+	<1444835355-26582-4-git-send-email-amy.l.wiles@intel.com>
+	<34419145.BT4t4sgNS0@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:33671 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932105AbbJOBvJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Oct 2015 21:51:09 -0400
-In-Reply-To: <90321921.5bFa9a5dDU@vostro.rjw.lan>
+Received: from mga14.intel.com ([192.55.52.115]:8502 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932437AbbJODMA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 14 Oct 2015 23:12:00 -0400
+In-Reply-To: <34419145.BT4t4sgNS0@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, open list <linux-kernel@vger.kernel.org>
+Cc: amy.l.wiles@intel.com, rui.zhang@intel.com, srinivas.pandruvada@intel.com, linux-pm@vger.kernel.org, jacob.jun.pan@intel.com
 
-On 10/14/2015 05:35 PM, Rafael J. Wysocki wrote:
-> On Tuesday, October 13, 2015 10:57:13 AM Viresh Kumar wrote:
->> We just made sure policy->cpu is online and this check will always fail
->> as the policy is active. Drop it.
->>
->> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->> Acked-by: Saravana Kannan <skannan@codeaurora.org>
->
-> Applied, thanks!
->
+On Thu, 15 Oct 2015 01:29:04 +0200
+"Rafael J. Wysocki" <rjw@rjwysocki.net> wrote:
+
+> On Wednesday, October 14, 2015 08:09:15 AM amy.l.wiles@intel.com
+> wrote:
+> > From: Amy Wiles <amy.l.wiles@intel.com>
+> > 
+> > Signed-off-by: Amy Wiles <amy.l.wiles@intel.com>
+> > ---
+> >  drivers/powercap/intel_rapl.c | 1 +
+> >  1 file changed, 1 insertion(+)
+> > 
+> > diff --git a/drivers/powercap/intel_rapl.c
+> > b/drivers/powercap/intel_rapl.c index 5efacd0..cc97f08 100644
+> > --- a/drivers/powercap/intel_rapl.c
+> > +++ b/drivers/powercap/intel_rapl.c
+> > @@ -1102,6 +1102,7 @@ static const struct x86_cpu_id rapl_ids[]
+> > __initconst = { RAPL_CPU(0x4A, rapl_defaults_tng),/* Tangier */
+> >  	RAPL_CPU(0x56, rapl_defaults_core),/* Future Xeon */
+> >  	RAPL_CPU(0x5A, rapl_defaults_ann),/* Annidale */
+> > +	RAPL_CPU(0X5C, rapl_defaults_core),/* Broxton */
+> >  	RAPL_CPU(0x5E, rapl_defaults_core),/* Skylake-H/S */
+> >  	RAPL_CPU(0x57, rapl_defaults_hsw_server),/* Knights
+> > Landing */ {}
+> > 
+> 
+> Jacob, any problems with this one?
+> 
+looks good to me. I also tested it.
+> Thanks,
 > Rafael
->
+> 
 
-I didn't give a clear ack/review for the series. So, to clarify my 
-ack/review
-
-For all patches except 4/5, I'm okay with either/all of this:
-Reviewed-by:  Saravana Kannan <skannan@codeaurora.org>
-Acked-by: Saravana Kannan <skannan@codeaurora.org>
-
-For 4/5, I would still like us to move the sysfs creating after init. 
-That part shouldn't be too hard. We don't need to create the sysfs file 
-before init.
-
-Once that's done, I wouldn't mind giving an Ack.
-
-Thanks,
-Saravana
-
--- 
-Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+[Jacob Pan]
