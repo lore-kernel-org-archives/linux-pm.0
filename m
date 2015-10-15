@@ -1,76 +1,66 @@
-From: Eric Anholt <eric@anholt.net>
-Subject: Re: [PATCH] bcm2835: Add Raspberry Pi CPU frequency control to the device tree
-Date: Wed, 14 Oct 2015 17:29:28 -0700
-Message-ID: <87bnc1gejb.fsf@eliezer.anholt.net>
-References: <1444592795-15129-1-git-send-email-lkundrak@v3.sk>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
+ SpeedStep enabled
+Date: Thu, 15 Oct 2015 01:05:23 +0000
+Message-ID: <bug-103351-137361-VWyQfl6nkW@https.bugzilla.kernel.org/>
+References: <bug-103351-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-	micalg=pgp-sha512; protocol="application/pgp-signature"
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gabe.freedesktop.org ([131.252.210.177]:33389 "EHLO
-	gabe.freedesktop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753272AbbJOA3b (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Oct 2015 20:29:31 -0400
-In-Reply-To: <1444592795-15129-1-git-send-email-lkundrak@v3.sk>
+Received: from mail.kernel.org ([198.145.29.136]:60452 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752698AbbJOBF2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 14 Oct 2015 21:05:28 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+	by mail.kernel.org (Postfix) with ESMTP id A0E022073E
+	for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2015 01:05:27 +0000 (UTC)
+Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
+	by mail.kernel.org (Postfix) with ESMTP id 6C6B420852
+	for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2015 01:05:26 +0000 (UTC)
+In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-rpi-kernel@lists.infradead.org
-Cc: Lubomir Rintel <lkundrak@v3.sk>, Stephen Warren <swarren@wwwdotorg.org>, Lee Jones <lee@kernel.org>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
---=-=-=
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+https://bugzilla.kernel.org/show_bug.cgi?id=103351
 
-Lubomir Rintel <lkundrak@v3.sk> writes:
+--- Comment #65 from Henrique de Moraes Holschuh <hmh@hmh.eng.br> ---
+General Warning:
 
-> This adds a device tree binding for Broadcom BCM2834 CPU frequency control
-> driven via Raspberry Pi VideoCore 4 firmware interface.
->
-> Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
-> Cc: Stephen Warren <swarren@wwwdotorg.org>
-> Cc: Lee Jones <lee@kernel.org>
-> Cc: Eric Anholt <eric@anholt.net>
-> Cc: linux-rpi-kernel@lists.infradead.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-pm@vger.kernel.org
-> ---
-> Depends on the RPi Firmware driver submitted on linux-rpi-kernel a while =
-ago.=20
-> Can't see it in arm-soc or linux-next yet though (?). Available in branch=
-=20
-> 'rpi-firmware' of https://github.com/anholt/linux
+Some of the microcodes mentioned in this thread, particularly the revision 0x13
+microcode for the Core i5/i7-5xxxHQ and Core i5/i7 5x75C, 5x75R, *have strict
+requirements* for safe installation.
 
-Looks like the firmware driver slipped through the cracks for 4.3.  I'll
-be sending a pull request for it for 4.4.
+These microcodes disable Intel TSX-NI when loaded.  On any system where glibc
+was compiled with lock elision enabled, these microcodes *must* be installed
+through either a BIOS update, or through the early microcode loader (at least
+for the time being).
 
-With the cprman clock driver, we could set CPU frequency natively from
-Linux.  What we get from doing things through the VPU right now are that
-the MAX (overclock) setting can be set by the user in config.txt, and
-the VPU does some watching of thermals to decide when to throttle back
-to non-overclock.
+Do *not* install these microcodes to a standard initramfs.  It can render the
+system unbootable should it crash systemd or udev inside the standard
+initramfs.  You *must* use an early-initramfs to safely apply such microcode
+updates.
 
-Unless we do native thermal control from Linux (which we don't have a
-driver for) to get equivalent protection, then I think we should
-probably go ahead with the VPU-based cpufreq control.
+For safety, I strongly recommend that they should not be added to
+/lib/firmware/intel-ucode with standard names.  Debian and Ubuntu rename such
+microcode by appending ".initramfs" to their names, for example: iucode-tool
+won't care and will still install them to the early-initramfs, but the kernel
+microcode module will not find them, rendering them safe.
 
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
+If you fail install such microcode correctly in a system with a
+lock-elision-enabled glibc, it will instantly crash systemd, udev, and anything
+else linked to libpthreads when the microcode update is loaded.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Eventually, Debian, Ubuntu and Fedora are likely to blacklist lock elision for
+Broadwell processors in glibc, just like it was done for Haswell.  With that
+blacklist in place, glibc won't crash even if the update is applied at an
+inappropriate time (after the kernel booted).  But AFAIK nobody has updated the
+glibc blacklist to add broadwell processors, yet.
 
-iQIcBAEBCgAGBQJWHvNoAAoJELXWKTbR/J7oPHoP/3SGT25bFbjhxI/LnMnE3xd+
-Au1VIC8nylAqhirO8WhdsJjnumlJxWo7DbfTU6slV6ysAy/HT65T6eRadtyVkqf+
-Uif52HWweZyigJTHneK/NSRbMGUtEmekAAQ3l2Uf9CViPpdS1HlsFrSJHqr7qakm
-h5SZyJsUD4BI03R6vnWUbQsyfFAOCLklm6tyydNRNLkzt9dHqOZ1wTdqeI+BA3F3
-zweXYXgAt9xNNwmqxHlXilGdXqE0UTTRhgnEFWKoxLayFPAzVKIjUHsI6bW/U6w+
-px6EQVrKv9/txuwGHc4CBGPk2awVrhJb9Z/Tf+uZEwvuJLZTXXS/jqSzh0CAfJ3z
-v8671kRC/QPJ5qFh/4OpANzwTHwd6pRjTcdZus5l36Fm5qZMyIF/uOckpPzLm+Jo
-cC8ycPLo7tWS98CDV7aXugpksNkyZgeVnRjWqkEX8q41zHdpwYgqCo/iaKeW60gZ
-0KbpPOW9L8b6llk0DYhTT15DtFMKrhzK81s81Duub5XALwWua3qBbQMFARuXhzq/
-9MREkoJn4MY3w4ESvfwTsYvX31Tpy71Q6zgr3WDQT66G0bz9aGsfmOr4hE22oTkD
-I+XAHfclyVKLJ0YfP+NmA6PPznoZhjrVnSDqCtxIVqSWIFr8qACX/tPviMn06erg
-ocoFBKYQhStQWP8NN+Yk
-=5Jad
------END PGP SIGNATURE-----
---=-=-=--
+So, please use an early-initramfs for microcode updates, and enjoy a far more
+stable system ;-)
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
