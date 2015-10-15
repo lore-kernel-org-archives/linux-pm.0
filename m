@@ -1,40 +1,31 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / hibernate: Move pm_init/pm_disk_init to late_initcall_sync
-Date: Thu, 15 Oct 2015 02:36:51 +0200
-Message-ID: <17855483.enPLrpsYWM@vostro.rjw.lan>
-References: <1444093820-6934-1-git-send-email-wonhong.kwon@lge.com>
+Subject: Re: [PATCH] PM/hibernate: fix a comment typo
+Date: Thu, 15 Oct 2015 02:37:33 +0200
+Message-ID: <6997635.5z8yJtX2kF@vostro.rjw.lan>
+References: <4fb037c2ae2e494be58dc752483fb2f852a4cd70.1443612355.git.geliangtang@163.com> <48afe60c70d67dfb4f8f832f5c634a5f179417b5.1443612115.git.geliangtang@163.com> <20151004151627.GB12684@xo-6d-61-c0.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:51674 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:52481 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754159AbbJOAII (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Oct 2015 20:08:08 -0400
-In-Reply-To: <1444093820-6934-1-git-send-email-wonhong.kwon@lge.com>
+	with SMTP id S1753258AbbJOAIx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 14 Oct 2015 20:08:53 -0400
+In-Reply-To: <20151004151627.GB12684@xo-6d-61-c0.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wonhong Kwon <wonhongkwon@gmail.com>
-Cc: len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, gunho.lee@lge.com, Wonhong Kwon <wonhong.kwon@lge.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Geliang Tang <geliangtang@163.com>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tuesday, October 06, 2015 10:10:20 AM Wonhong Kwon wrote:
-> pm_init is being invoked by core_initcall and hibernate_image_size_init
-> calculates preferred image size (image_size) based on total pages
-> (totalram_pages). This totalram_pages can be modified during various
-> initcall-s phase and this can cause miscalculated image_size.
+On Sunday, October 04, 2015 05:16:27 PM Pavel Machek wrote:
+> On Tue 2015-09-29 20:36:58, Geliang Tang wrote:
+> > Just fix a typo in a function name in kerneldoc comments.
+> > 
+> > Signed-off-by: Geliang Tang <geliangtang@163.com>
 > 
-> For example, when CMA is being used, init_cma_reserved_pageblock tries
-> to change the totalram_pages and this job is done during core_initcall.
-> In order words, the totalram_pages doesn't take CMA reserved pages into
-> account when image_size is calculated and it can be too small.
-> 
-> Move pm_init and pm_disk_init to late_initcall_sync so that it happens
-> after all other initcall-s change the totalram_pages.
-> 
-> Reported-by: Sangseok Lee <sangseok.lee@lge.com>
-> Signed-off-by: Wonhong Kwon <wonhong.kwon@lge.com>
+> Acked-by: Pavel Machek <pavel@ucw.cz>
 
-Applied, thanks!
+Patch applied, thanks!
 
 Rafael
 
