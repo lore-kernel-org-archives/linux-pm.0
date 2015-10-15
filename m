@@ -1,69 +1,43 @@
 From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH V2 4/5] cpufreq: create cpu/cpufreq/policyX directories
-Date: Thu, 15 Oct 2015 12:25:27 -0700
-Message-ID: <561FFDA7.3080903@codeaurora.org>
-References: <cover.1444924623.git.viresh.kumar@linaro.org> <594e7c8e74ca56cef58d29327518f5223e89e208.1444924623.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH 4/5] cpufreq: create cpu/cpufreq/policyX directories
+Date: Thu, 15 Oct 2015 12:28:10 -0700
+Message-ID: <561FFE4A.5070103@codeaurora.org>
+References: <cover.1444583718.git.viresh.kumar@linaro.org> <dd7e6cab3e879e94305c0fca1ea6033e79d166ca.1444583718.git.viresh.kumar@linaro.org> <561C0A8B.5010509@codeaurora.org> <20151013033912.GN5386@linux> <561D5B85.4010103@codeaurora.org> <20151015065503.GB19018@linux>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:49604 "EHLO
+Received: from smtp.codeaurora.org ([198.145.29.96]:49793 "EHLO
 	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752419AbbJOTZ3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 Oct 2015 15:25:29 -0400
-In-Reply-To: <594e7c8e74ca56cef58d29327518f5223e89e208.1444924623.git.viresh.kumar@linaro.org>
+	with ESMTP id S1751329AbbJOT2L (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 Oct 2015 15:28:11 -0400
+In-Reply-To: <20151015065503.GB19018@linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, open list <linux-kernel@vger.kernel.org>
 
-On 10/15/2015 09:05 AM, Viresh Kumar wrote:
-> The cpufreq sysfs interface had been a bit inconsistent as one of the
-> CPUs for a policy had a real directory within its sysfs 'cpuX' directory
-> and all other CPUs had links to it. That also made the code a bit
-> complex as we need to take care of moving the sysfs directory if the CPU
-> containing the real directory is getting physically hot-unplugged.
+On 10/14/2015 11:55 PM, Viresh Kumar wrote:
+> On 13-10-15, 12:29, Saravana Kannan wrote:
+>> But we don't need to track track of "present-cpus" separately
+>> though. We could do the for_each_cpu_and() when we create the
+>> symlinks for the first time. And after that, we can just use the
+>> subsystem interface callbacks (cpufreq_add_dev() and
+>> cpufreq_remove_dev()) to keep the symlinks updated.
+>>
+>> I don't see any place where keeping track of this separately is more
+>> efficient. This would save some memory savings when the number of
+>> CPUs is large and also simplify the code because we won't have to
+>> keep another field up to date.
 >
-> Solve this by creating 'policyX' directories (per-policy) in
-> /sys/devices/system/cpu/cpufreq/ directory, where X is the CPU for which
-> the policy was first created.
+> It is still required to track when can we free the policy.
 >
-> This also removes the need of keeping kobj_cpu and we can remove it now.
->
-> Suggested-by: Saravana Kannan <skannan@codeaurora.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
+Ok, I'm not very familiar with this new field's uses. I'll take a closer 
+look later and respond if I have other thoughts.
 
-Since you've added a separate patch for making policyX more consistent:
-Reviewed-by: Saravana Kannan <skannan@codeaurora.org>
-
-Btw, does a Review-by have an implicit Acked-by?
-
-> ---
->   drivers/cpufreq/cpufreq.c | 34 ++++------------------------------
->   include/linux/cpufreq.h   |  1 -
->   2 files changed, 4 insertions(+), 31 deletions(-)
->
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 04222e7bbc73..4fa2215cc6ec 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -910,9 +910,6 @@ static int cpufreq_add_dev_symlink(struct cpufreq_policy *policy)
->
->   	/* Some related CPUs might not be present (physically hotplugged) */
->   	for_each_cpu(j, policy->real_cpus) {
-> -		if (j == policy->kobj_cpu)
-> -			continue;
-> -
->   		ret = add_cpu_dev_symlink(policy, j);
->   		if (ret)
->   			break;
-
-Kinda unrelated to this patch, but shouldn't this function undo the 
-symlinks is has created so far before returning? Otherwise, we'd be 
-leaving around broken symlinks.
-
--Saravana
+Thanks,
+Saravana
 
 -- 
 Qualcomm Innovation Center, Inc.
