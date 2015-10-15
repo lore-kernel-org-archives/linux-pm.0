@@ -1,15 +1,15 @@
 From: ahaslam@baylibre.com
-Subject: [PATCH v8 3/6] PM / Domains: make governor select deepest state
-Date: Thu, 15 Oct 2015 14:16:33 +0200
-Message-ID: <1444911396-3473-4-git-send-email-ahaslam@baylibre.com>
+Subject: [PATCH v8 4/6] ARM: imx6: pm: declare pm domain latency on power_state struct.
+Date: Thu, 15 Oct 2015 14:16:34 +0200
+Message-ID: <1444911396-3473-5-git-send-email-ahaslam@baylibre.com>
 References: <1444911396-3473-1-git-send-email-ahaslam@baylibre.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f176.google.com ([209.85.212.176]:38215 "EHLO
-	mail-wi0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753236AbbJOMQw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 Oct 2015 08:16:52 -0400
-Received: by wicll6 with SMTP id ll6so16343091wic.1
-        for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2015 05:16:51 -0700 (PDT)
+Received: from mail-wi0-f175.google.com ([209.85.212.175]:34632 "EHLO
+	mail-wi0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753236AbbJOMQy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 Oct 2015 08:16:54 -0400
+Received: by wicgb1 with SMTP id gb1so25571761wic.1
+        for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2015 05:16:53 -0700 (PDT)
 In-Reply-To: <1444911396-3473-1-git-send-email-ahaslam@baylibre.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -18,139 +18,70 @@ Cc: bcousson@baylibre.com, mturquette@baylibre.com, Axel Haslam <ahaslam+renesas
 
 From: Axel Haslam <ahaslam+renesas@baylibre.com>
 
-Now that the structures of genpd can support multiple state definitions,
-add the logic in the governor to select the deepest possible state when
-powering down.
+The generic_pm_domain structure uses an array of latencies to be able to
+declare multiple intermediate states.
 
-For this, create the new function power_down_ok_for_state which will test
-if a particular state will not violate the devices and sub-domains
-constraints.
-
-default_power_down_ok is modified to try each state starting from the
-deepest until a valid state is found or there are no more states to test.
-
-the resulting state will be valid until there are latency or constraint
-changes, thus, we can avoid looping every power_down, and use the cached
-results instead.
+Declare a single "OFF" state with the default latencies So that the
+power_off_latency_ns and power_on_latency_ns fields of generic_pm_domain
+structure can be eventualy removed.
 
 Signed-off-by: Axel Haslam <ahaslam+renesas@baylibre.com>
 ---
- drivers/base/power/domain_governor.c | 76 +++++++++++++++++++++---------------
- 1 file changed, 45 insertions(+), 31 deletions(-)
+ arch/arm/mach-imx/gpc.c | 18 +++++++++++++++---
+ 1 file changed, 15 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
-index 5e63a84..8139c01 100644
---- a/drivers/base/power/domain_governor.c
-+++ b/drivers/base/power/domain_governor.c
-@@ -97,7 +97,8 @@ static bool default_stop_ok(struct device *dev)
-  *
-  * This routine must be executed under the PM domain's lock.
-  */
--static bool default_power_down_ok(struct dev_pm_domain *pd)
-+static bool power_down_ok_for_state(struct dev_pm_domain *pd,
-+				     unsigned int state)
- {
- 	struct generic_pm_domain *genpd = pd_to_genpd(pd);
- 	struct gpd_link *link;
-@@ -105,31 +106,8 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
- 	s64 min_off_time_ns;
- 	s64 off_on_time_ns;
+diff --git a/arch/arm/mach-imx/gpc.c b/arch/arm/mach-imx/gpc.c
+index 76658f8..367a00c 100644
+--- a/arch/arm/mach-imx/gpc.c
++++ b/arch/arm/mach-imx/gpc.c
+@@ -45,9 +45,11 @@
  
--	if (genpd->max_off_time_changed) {
--		struct gpd_link *link;
--
--		/*
--		 * We have to invalidate the cached results for the masters, so
--		 * use the observation that default_power_down_ok() is not
--		 * going to be called for any master until this instance
--		 * returns.
--		 */
--		list_for_each_entry(link, &genpd->slave_links, slave_node)
--			link->master->max_off_time_changed = true;
--
--		genpd->max_off_time_changed = false;
--		genpd->cached_power_down_ok = false;
--		genpd->max_off_time_ns = -1;
--	} else {
--		return genpd->cached_power_down_ok;
--	}
--
--	/*
--	 * Use the only available state, until multiple state support is added
--	 * to the governor.
--	 */
--	off_on_time_ns = genpd->states[0].power_off_latency_ns +
--				genpd->states[0].power_on_latency_ns;
-+	off_on_time_ns = genpd->states[state].power_off_latency_ns +
-+		genpd->states[state].power_on_latency_ns;
- 	/*
- 	 * It doesn't make sense to remove power from the domain if saving
- 	 * the state of all devices in it and the power off/power on operations
-@@ -205,8 +183,6 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
- 			min_off_time_ns = constraint_ns;
- 	}
+ struct pu_domain {
+ 	struct generic_pm_domain base;
++	struct genpd_power_state *states;
+ 	struct regulator *reg;
+ 	struct clk *clk[GPC_CLK_MAX];
+ 	int num_clks;
++	unsigned int num_states;
+ };
  
--	genpd->cached_power_down_ok = true;
--
- 	/*
- 	 * If the computed minimum device off time is negative, there are no
- 	 * latency constraints, so the domain can spend arbitrary time in the
-@@ -219,14 +195,52 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
- 	 * The difference between the computed minimum subdomain or device off
- 	 * time and the time needed to turn the domain on is the maximum
- 	 * theoretical time this domain can spend in the "off" state.
--	 * Use the only available state, until multiple state support is added
--	 * to the governor.
- 	 */
- 	genpd->max_off_time_ns = min_off_time_ns -
--		genpd->states[0].power_on_latency_ns;
-+			genpd->states[state].power_on_latency_ns;
- 	return true;
- }
+ static void __iomem *gpc_base;
+@@ -369,14 +371,22 @@ static struct generic_pm_domain imx6q_arm_domain = {
+ 	.name = "ARM",
+ };
  
-+static bool default_power_down_ok(struct dev_pm_domain *pd)
-+{
-+	struct generic_pm_domain *genpd = pd_to_genpd(pd);
-+	unsigned int last_state_idx = genpd->state_count - 1;
-+	struct gpd_link *link;
-+	bool retval = false;
-+	unsigned int i;
++static struct genpd_power_state imx6q_arm_domain_states[] = {
++	{
++		.name = "OFF",
++		.power_off_latency_ns = 25000,
++		.power_on_latency_ns = 2000000,
++	},
++};
 +
-+	/*
-+	 * if there was no change on max_off_time, we can return the
-+	 * cached value and we dont need to find a new target_state
-+	 */
-+	if (!genpd->max_off_time_changed)
-+		return genpd->cached_power_down_ok;
+ static struct pu_domain imx6q_pu_domain = {
+ 	.base = {
+ 		.name = "PU",
+ 		.power_off = imx6q_pm_pu_power_off,
+ 		.power_on = imx6q_pm_pu_power_on,
+-		.power_off_latency_ns = 25000,
+-		.power_on_latency_ns = 2000000,
+ 	},
++	.states = imx6q_arm_domain_states,
++	.num_states = ARRAY_SIZE(imx6q_arm_domain_states),
+ };
+ 
+ static struct generic_pm_domain imx6sl_display_domain = {
+@@ -419,7 +429,9 @@ static int imx_gpc_genpd_init(struct device *dev, struct regulator *pu_reg)
+ 	if (!IS_ENABLED(CONFIG_PM_GENERIC_DOMAINS))
+ 		return 0;
+ 
+-	pm_genpd_init_simple(&imx6q_pu_domain.base, NULL, false);
++	pm_genpd_init(&imx6q_pu_domain.base, NULL, imx6q_pu_domain.states,
++			imx6q_pu_domain.num_states, false);
 +
-+	/*
-+	 * We have to invalidate the cached results for the masters, so
-+	 * use the observation that default_power_down_ok() is not
-+	 * going to be called for any master until this instance
-+	 * returns.
-+	 */
-+	list_for_each_entry(link, &genpd->slave_links, slave_node)
-+		link->master->max_off_time_changed = true;
-+
-+	genpd->max_off_time_ns = -1;
-+	genpd->max_off_time_changed = false;
-+
-+	/* find a state to power down to, starting from the deepest */
-+	for (i = 0; i < genpd->state_count; i++) {
-+		if (power_down_ok_for_state(pd, last_state_idx - i)) {
-+			genpd->state_idx = last_state_idx - i;
-+			retval = true;
-+			break;
-+		}
-+	}
-+
-+	genpd->cached_power_down_ok = retval;
-+	return retval;
-+}
-+
- static bool always_on_power_down_ok(struct dev_pm_domain *domain)
- {
- 	return false;
+ 	return of_genpd_add_provider_onecell(dev->of_node,
+ 					     &imx_gpc_onecell_data);
+ 
 -- 
 2.4.5
 
