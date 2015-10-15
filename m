@@ -1,130 +1,121 @@
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v3 4/5] clk: Add consumer APIs for discovering possible
- parent clocks
-Date: Thu, 15 Oct 2015 15:03:32 -0500
-Message-ID: <1444939412.5185.267.camel@freescale.com>
-References: <1442723397-26329-1-git-send-email-scottwood@freescale.com>
-	 <1442723397-26329-5-git-send-email-scottwood@freescale.com>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH 1/2] PM / Domains: Don't measure ->start|stop() latency
+ in system PM callbacks
+Date: Thu, 15 Oct 2015 14:39:45 -0600
+Message-ID: <20151015203945.GJ921@linaro.org>
+References: <1444921326-22574-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <1442723397-26329-5-git-send-email-scottwood@freescale.com>
-Sender: linux-clk-owner@vger.kernel.org
-To: Michael Turquette <mturquette@baylibre.com>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Russell King <linux@arm.linux.org.uk>, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, Tang Yuantian <Yuantian.Tang@freescale.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f42.google.com ([209.85.220.42]:34143 "EHLO
+	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751268AbbJOUjt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 Oct 2015 16:39:49 -0400
+Received: by payp3 with SMTP id p3so49625213pay.1
+        for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2015 13:39:48 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1444921326-22574-1-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
 
-On Sat, 2015-09-19 at 23:29 -0500, Scott Wood wrote:
-> Commit fc4a05d4b0eb ("clk: Remove unused provider APIs") removed
-> __clk_get_num_parents() and clk_hw_get_parent_by_index(), leaving only
-> true provider API versions that operate on struct clk_hw.
-> 
-> qoriq-cpufreq needs these functions in order to determine the options
-> it has for calling clk_set_parent() and thus populate the cpufreq
-> table, so revive them as legitimate consumer APIs.
-> 
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> ---
-> v3: new patch
-> 
->  drivers/clk/clk.c   | 19 +++++++++++++++++++
->  include/linux/clk.h | 31 +++++++++++++++++++++++++++++++
->  2 files changed, 50 insertions(+)
+On Thu, Oct 15 2015 at 09:02 -0600, Ulf Hansson wrote:
+>Measure latency does by itself contribute to an increased latency, thus we
+>should avoid it when it isn't needed.
+>
+>Genpd measures latencies in the system PM phase for the ->start|stop()
+>callbacks and is thus affecting the system PM suspend/resume time.
+>Moreover these latencies are validated only at runtime PM suspend/resume.
+>
+>To this reasoning, let's decide to leave these measurements out of the
+>system PM phase. There should be plenty of occasions during runtime PM to
+>perform these measurements anyway.
+>
+>Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-Russell, could you ACK this if there are no objections?
+Reviewed-by: Lina Iyer <lina.iyer@linaro.org>
 
 Thanks,
-Scott
+Lina
 
-> 
-> diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
-> index 43e2c3a..9436356 100644
-> --- a/drivers/clk/clk.c
-> +++ b/drivers/clk/clk.c
-> @@ -290,6 +290,12 @@ struct clk_hw *__clk_get_hw(struct clk *clk)
->  }
->  EXPORT_SYMBOL_GPL(__clk_get_hw);
->  
-> +unsigned int clk_get_num_parents(struct clk *clk)
-> +{
-> +     return !clk ? 0 : clk->core->num_parents;
-> +}
-> +EXPORT_SYMBOL_GPL(clk_get_num_parents);
-> +
->  unsigned int clk_hw_get_num_parents(const struct clk_hw *hw)
->  {
->       return hw->core->num_parents;
-> @@ -359,6 +365,19 @@ static struct clk_core 
-> *clk_core_get_parent_by_index(struct clk_core *core,
->               return core->parents[index];
->  }
->  
-> +struct clk *clk_get_parent_by_index(struct clk *clk, unsigned int index)
-> +{
-> +     struct clk_core *parent;
-> +
-> +     if (!clk)
-> +             return NULL;
-> +
-> +     parent = clk_core_get_parent_by_index(clk->core, index);
-> +
-> +     return !parent ? NULL : parent->hw->clk;
-> +}
-> +EXPORT_SYMBOL_GPL(clk_get_parent_by_index);
-> +
->  struct clk_hw *
->  clk_hw_get_parent_by_index(const struct clk_hw *hw, unsigned int index)
->  {
-> diff --git a/include/linux/clk.h b/include/linux/clk.h
-> index 0df4a51..937de0e 100644
-> --- a/include/linux/clk.h
-> +++ b/include/linux/clk.h
-> @@ -392,6 +392,26 @@ int clk_set_parent(struct clk *clk, struct clk 
-> *parent);
->  struct clk *clk_get_parent(struct clk *clk);
->  
->  /**
-> + * clk_get_parent_by_index - get a possible parent clock by index
-> + * @clk: clock source
-> + * @index: index into the array of possible parents of this clock
-> + *
-> + * Returns struct clk corresponding to the requested possible
-> + * parent clock source, or NULL.
-> + */
-> +struct clk *clk_get_parent_by_index(struct clk *clk,
-> +                                 unsigned int index);
-> +
-> +/**
-> + * clk_get_num_parents - get number of possible parents
-> + * @clk: clock source
-> + *
-> + * Returns the number of possible parents of this clock,
-> + * which can then be enumerated using clk_get_parent_by_index().
-> + */
-> +unsigned int clk_get_num_parents(struct clk *clk);
-> +
-> +/**
->   * clk_get_sys - get a clock based upon the device name
->   * @dev_id: device name
->   * @con_id: connection ID
-> @@ -461,6 +481,17 @@ static inline struct clk *clk_get_parent(struct clk 
-> *clk)
->       return NULL;
->  }
->  
-> +struct clk *clk_get_parent_by_index(struct clk *clk,
-> +                                 unsigned int index)
-> +{
-> +     return NULL;
-> +}
-> +
-> +unsigned int clk_get_num_parents(struct clk *clk)
-> +{
-> +     return 0;
-> +}
-> +
->  #endif
->  
->  /* clk_prepare_enable helps cases using clk_enable in non-atomic context. 
-> */
+>---
+> drivers/base/power/domain.c | 19 ++++++++++++-------
+> 1 file changed, 12 insertions(+), 7 deletions(-)
+>
+>diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+>index 6e1bcde..a1c3ec4 100644
+>--- a/drivers/base/power/domain.c
+>+++ b/drivers/base/power/domain.c
+>@@ -90,8 +90,12 @@ static struct generic_pm_domain *dev_to_genpd(struct device *dev)
+> 	return pd_to_genpd(dev->pm_domain);
+> }
+>
+>-static int genpd_stop_dev(struct generic_pm_domain *genpd, struct device *dev)
+>+static int genpd_stop_dev(struct generic_pm_domain *genpd, struct device *dev,
+>+			bool timed)
+> {
+>+	if (!timed)
+>+		return GENPD_DEV_CALLBACK(genpd, int, stop, dev);
+>+
+> 	return GENPD_DEV_TIMED_CALLBACK(genpd, int, stop, dev,
+> 					stop_latency_ns, "stop");
+> }
+>@@ -434,7 +438,7 @@ static int pm_genpd_runtime_suspend(struct device *dev)
+> 	if (ret)
+> 		return ret;
+>
+>-	ret = genpd_stop_dev(genpd, dev);
+>+	ret = genpd_stop_dev(genpd, dev, true);
+> 	if (ret) {
+> 		genpd_restore_dev(genpd, dev, true);
+> 		return ret;
+>@@ -779,7 +783,7 @@ static int pm_genpd_suspend_noirq(struct device *dev)
+> 	    || (dev->power.wakeup_path && genpd_dev_active_wakeup(genpd, dev)))
+> 		return 0;
+>
+>-	genpd_stop_dev(genpd, dev);
+>+	genpd_stop_dev(genpd, dev, false);
+>
+> 	/*
+> 	 * Since all of the "noirq" callbacks are executed sequentially, it is
+>@@ -820,7 +824,7 @@ static int pm_genpd_resume_noirq(struct device *dev)
+> 	pm_genpd_sync_poweron(genpd, true);
+> 	genpd->suspended_count--;
+>
+>-	return genpd_start_dev(genpd, dev, true);
+>+	return genpd_start_dev(genpd, dev, false);
+> }
+>
+> /**
+>@@ -928,7 +932,7 @@ static int pm_genpd_freeze_noirq(struct device *dev)
+> 	if (IS_ERR(genpd))
+> 		return -EINVAL;
+>
+>-	return genpd->suspend_power_off ? 0 : genpd_stop_dev(genpd, dev);
+>+	return genpd->suspend_power_off ? 0 : genpd_stop_dev(genpd, dev, false);
+> }
+>
+> /**
+>@@ -948,7 +952,8 @@ static int pm_genpd_thaw_noirq(struct device *dev)
+> 	if (IS_ERR(genpd))
+> 		return -EINVAL;
+>
+>-	return genpd->suspend_power_off ? 0 : genpd_start_dev(genpd, dev, true);
+>+	return genpd->suspend_power_off ?
+>+		0 : genpd_start_dev(genpd, dev, false);
+> }
+>
+> /**
+>@@ -1042,7 +1047,7 @@ static int pm_genpd_restore_noirq(struct device *dev)
+>
+> 	pm_genpd_sync_poweron(genpd, true);
+>
+>-	return genpd_start_dev(genpd, dev, true);
+>+	return genpd_start_dev(genpd, dev, false);
+> }
+>
+> /**
+>-- 
+>1.9.1
+>
