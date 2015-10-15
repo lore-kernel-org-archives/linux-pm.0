@@ -1,41 +1,35 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH] cpufreq: intel_pstate: divide by zero on Knights Landing (KNL)
-Date: Thu, 15 Oct 2015 11:32:48 -0700
-Message-ID: <1444933968-5431-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH V2 1/4] PM / OPP: Improve debug print messages with pr_fmt
+Date: Thu, 15 Oct 2015 12:04:21 -0700
+Message-ID: <20151015190421.GK4558@codeaurora.org>
+References: <cover.1444925400.git.viresh.kumar@linaro.org>
+ <d3072ab1f6665e63d2e26db75a3d598b241d423e.1444925400.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:34606 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751855AbbJOSde (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 15 Oct 2015 14:33:34 -0400
+Received: from smtp.codeaurora.org ([198.145.29.96]:47686 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751517AbbJOTEX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 15 Oct 2015 15:04:23 -0400
+Content-Disposition: inline
+In-Reply-To: <d3072ab1f6665e63d2e26db75a3d598b241d423e.1444925400.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: kristen.c.accardi@intel.com, rafael.j.wysocki@intel.com, len.brown@intel.com
-Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dan Carpenter <dan.carpenter@oracle.com>, Dmitry Torokhov <dtor@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 
-This is a workaround for KNL platform, where in some cases MPERF counter
-will not have updated value before next read of MSR_IA32_MPERF. In this
-case divide by zero will occur. This change ignores current sample for
-busy calculation in this case.
+On 10/15, Viresh Kumar wrote:
+> With debug options on, it is difficult to locate OPP core's debug
+> prints. Fix this by prefixing OPP debug prints with KBUILD_MODNAME.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- drivers/cpufreq/intel_pstate.c | 3 +++
- 1 file changed, 3 insertions(+)
+Why not use dynamic debug's m flag to turn on KBUILD_MODNAME when
+debugging?
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 3af9dd7..d4126e1 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -776,6 +776,9 @@ static inline void intel_pstate_sample(struct cpudata *cpu)
- 	local_irq_save(flags);
- 	rdmsrl(MSR_IA32_APERF, aperf);
- 	rdmsrl(MSR_IA32_MPERF, mperf);
-+	if (cpu->prev_mperf == mperf)
-+		return;
-+
- 	tsc = rdtsc();
- 	local_irq_restore(flags);
- 
+>From Documentation/dynamic-debug-howto.txt
+
+  m    Include module name in the printed message
 -- 
-1.9.3
-
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
