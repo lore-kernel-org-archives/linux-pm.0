@@ -1,80 +1,41 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
- SpeedStep enabled
-Date: Fri, 16 Oct 2015 21:09:35 +0000
-Message-ID: <bug-103351-137361-u7ZHe0fRno@https.bugzilla.kernel.org/>
-References: <bug-103351-137361@https.bugzilla.kernel.org/>
+From: Olof Johansson <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>
+Subject: Re: [GIT PULL] On-demand device probing
+Date: Fri, 16 Oct 2015 14:23:06 -0700
+Message-ID: <CAOesGMj44N3Xfv_D_iLEzXBrkN6LXBa-uh6m3fi_F2xDenDhMg@mail.gmail.com>
+References: <20151014092644.GO14956@sirena.org.uk>
+	<1444909328-24761-1-git-send-email-tomeu.vizoso@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:35352 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932400AbbJPVJk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 16 Oct 2015 17:09:40 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id 11D5B209BA
-	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2015 21:09:39 +0000 (UTC)
-Received: from bugzilla2.web.kernel.org (bugzilla2.web.kernel.org [172.20.200.52])
-	by mail.kernel.org (Postfix) with ESMTP id D00CC209A4
-	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2015 21:09:37 +0000 (UTC)
-In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1444909328-24761-1-git-send-email-tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Michael Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Vinod Koul <vinod.koul-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Dan Williams <dan.j.williams-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, =?UTF-8?Q?Terje_Bergstr=C3=B6m?= <tbergstrom-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kishon Vijay Abraham I <kishon-l0cyMroinI0@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie@kernel.o>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=103351
+Hi,
 
---- Comment #82 from Fredrik Atmer <fredrik+kernel@atmer.se> ---
-Finally back home again. I see others have beaten me to it. 
+I've bisected boot failures in next-20151016 down to patches in this branch:
 
-$ dmesg | grep microcode
-[    0.000000] CPU0 microcode updated early to revision 0x13, date = 2015-08-03
-[    0.080692] CPU1 microcode updated early to revision 0x13, date = 2015-08-03
-[    0.098581] CPU2 microcode updated early to revision 0x13, date = 2015-08-03
-[    0.116531] CPU3 microcode updated early to revision 0x13, date = 2015-08-03
-[    0.492240] microcode: CPU0 sig=0x40671, pf=0x2, revision=0x13
-[    0.492245] microcode: CPU1 sig=0x40671, pf=0x2, revision=0x13
-[    0.492249] microcode: CPU2 sig=0x40671, pf=0x2, revision=0x13
-[    0.492253] microcode: CPU3 sig=0x40671, pf=0x2, revision=0x13
-[    0.492282] microcode: Microcode Update Driver: v2.00
-<tigran@aivazian.fsnet.co.uk>, Peter Oruba
+On Thu, Oct 15, 2015 at 4:42 AM, Tomeu Vizoso
+<tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org> wrote:
+> Tomeu Vizoso (20):
+>       driver core: handle -EPROBE_DEFER from bus_type.match()
 
-$ cat /proc/cpuinfo
-processor    : 0
-vendor_id    : GenuineIntel
-cpu family    : 6
-model        : 71
-model name    : Intel(R) Core(TM) i5-5675C CPU @ 3.10GHz
-stepping    : 1
-microcode    : 0x13
-cpu MHz        : 3044.296
-cache size    : 4096 KB
-physical id    : 0
-siblings    : 4
-core id        : 0
-cpu cores    : 4
-apicid        : 0
-initial apicid    : 0
-fpu        : yes
-fpu_exception    : yes
-cpuid level    : 20
-wp        : yes
-flags        : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov
-pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb
-rdtscp lm constant_tsc arch_perfmon pebs bts rep_good nopl xtopology
-nonstop_tsc aperfmperf eagerfpu pni pclmulqdq dtes64 monitor ds_cpl vmx est tm2
-ssse3 fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt
-tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch ida arat
-epb pln pts dtherm tpr_shadow vnmi flexpriority ept vpid fsgsbase tsc_adjust
-bmi1 hle avx2 smep bmi2 erms invpcid rtm rdseed adx smap xsaveopt
-bugs        :
-bogomips    : 6186.17
-clflush size    : 64
-cache_alignment    : 64
-address sizes    : 39 bits physical, 48 bits virtual
-power management:
+The machine it happened on was OMAP5UEVM:
 
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+http://arm-soc.lixom.net/bootlogs/next/next-20151016/omap5uevm-arm-omap2plus_defconfig.html
+
+But I've also seen it on tegra2, that one bisected down to:
+
+>      regulator: core: Probe regulators on demand
+
+http://arm-soc.lixom.net/bootlogs/next/next-20151016/seaboard-arm-multi_v7_defconfig.html
+
+
+
+-Olof
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
