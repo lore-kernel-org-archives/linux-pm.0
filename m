@@ -1,73 +1,39 @@
-From: Rafael Wysocki <rjwysocki@gmail.com>
-Subject: [GIT PULL] Power management and ACPI fixes for v4.3-rc6
-Date: Fri, 16 Oct 2015 15:26:20 +0200
-Message-ID: <CAJZ5v0iTKevUN+-fJQFAT-eK7NAwQuCkn0r-uaYL43vRNny46Q@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Sebastian Reichel <sre@kernel.org>
+Subject: [PATCH 1/3] power: bq27xxx_battery: fix platform probe
+Date: Fri, 16 Oct 2015 15:44:10 +0200
+Message-ID: <1445003052-31373-2-git-send-email-sre@kernel.org>
+References: <1445003052-31373-1-git-send-email-sre@kernel.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f178.google.com ([209.85.217.178]:34662 "EHLO
-	mail-lb0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754272AbbJPN0W (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 Oct 2015 09:26:22 -0400
+Received: from ring0.de ([5.45.105.125]:34720 "EHLO ring0.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751509AbbJPNow (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 16 Oct 2015 09:44:52 -0400
+In-Reply-To: <1445003052-31373-1-git-send-email-sre@kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>, "Andrew F . Davis" <afd@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Linus,
+Add missing initialization of register mapping table to
+platform probe function.
 
-Please pull from
+Signed-off-by: Sebastian Reichel <sre@kernel.org>
+---
+ drivers/power/bq27xxx_battery.c | 1 +
+ 1 file changed, 1 insertion(+)
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm+acpi-4.3-rc6
+diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27xxx_battery.c
+index 994c78d9f426..69e6b371a51c 100644
+--- a/drivers/power/bq27xxx_battery.c
++++ b/drivers/power/bq27xxx_battery.c
+@@ -1292,6 +1292,7 @@ static int bq27xxx_battery_platform_probe(struct platform_device *pdev)
+ 
+ 	di->dev = &pdev->dev;
+ 	di->chip = pdata->chip;
++	di->regs = bq27xxx_regs[di->chip];
+ 
+ 	name = pdata->name ?: dev_name(&pdev->dev);
+ 	di->bus.read = &bq27xxx_battery_platform_read;
+-- 
+2.6.1
 
-to receive power management and ACPI fixes for v4.3-rc6 with
-top-most commit fa548237321c4469e80741f773c4f5935a68a998
-
- Merge branches 'acpica', 'pm-domains' and 'pm-cpufreq'
-
-on top of commit 25cb62b76430a91cc6195f902e61c2cb84ade622
-
- Linux 4.3-rc5
-
-These fix two recent regressions (ACPICA, the generic power
-domains framework) and one crash that may happen on specific
-hardware supported since 4.1 (intel_pstate).
-
-Specifics:
-
- - Fix a regression introduced by a recent ACPICA cleanup that
-   uncovered a latent bug (Lv Zheng).
-
- - Fix a recent regression in the generic power domains framework
-   that may cause it to violate PM QoS latency constraints in some
-   cases (Ulf Hansson).
-
- - Fix an intel_pstate driver crash on the Knights Landing chips
-   that do not update the MPERF counter as often as expected by the
-   driver which may result in a divide by 0 (Srinivas Pandruvada).
-
-Thanks!
-
-
----------------
-
-Lv Zheng (1):
-      ACPICA: Tables: Fix FADT dependency regression
-
-Srinivas Pandruvada (1):
-      cpufreq: intel_pstate: Fix divide by zero on Knights Landing (KNL)
-
-Ulf Hansson (1):
-      PM / Domains: Fix validation of latency constraints in genpd governor
-
----------------
-
- drivers/acpi/acpica/acglobal.h       |  1 +
- drivers/acpi/acpica/actables.h       |  4 +---
- drivers/acpi/acpica/evxfevnt.c       |  2 +-
- drivers/acpi/acpica/tbfadt.c         | 10 +++++-----
- drivers/acpi/acpica/tbutils.c        | 26 ++------------------------
- drivers/base/power/domain_governor.c | 22 ++++++----------------
- drivers/cpufreq/intel_pstate.c       |  5 +++++
- 7 files changed, 21 insertions(+), 49 deletions(-)
