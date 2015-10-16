@@ -1,44 +1,86 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH V2 1/4] PM / OPP: Improve debug print messages with pr_fmt
-Date: Fri, 16 Oct 2015 12:20:31 -0700
-Message-ID: <20151016192031.GB16437@codeaurora.org>
-References: <cover.1444925400.git.viresh.kumar@linaro.org>
- <d3072ab1f6665e63d2e26db75a3d598b241d423e.1444925400.git.viresh.kumar@linaro.org>
- <20151015190421.GK4558@codeaurora.org>
- <20151016053713.GO19018@linux>
+From: shrybman <shrybman@teksavvy.com>
+Subject: Re: [PATCH 1/2] x86 smpboot: fix cpu_init_udelay=10000
+Date: Fri, 16 Oct 2015 15:34:11 -0400
+Message-ID: <0bc26e9524533c38fdbdc95eed2b1448@teksavvy.com>
+References: <1444968869-21435-1-git-send-email-lenb@kernel.org>
+	<de363cdbbcfcca1d22569683f7eb9873e0177251.1444968087.git.len.brown@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20151016053713.GO19018@linux>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dan Carpenter <dan.carpenter@oracle.com>, Dmitry Torokhov <dtor@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from ironport2-out.teksavvy.com ([206.248.154.181]:53959 "EHLO
+	ironport2-out.teksavvy.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753504AbbJPTeN convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 16 Oct 2015 15:34:13 -0400
+In-Reply-To: <de363cdbbcfcca1d22569683f7eb9873e0177251.1444968087.git.len.brown@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dparsons@brightdsl.net, x86@kernel.org, Len Brown <lenb@kernel.org>
+Cc: Len Brown <len.brown@intel.com>
 
-On 10/16, Viresh Kumar wrote:
-> On 15-10-15, 12:04, Stephen Boyd wrote:
-> > On 10/15, Viresh Kumar wrote:
-> > > With debug options on, it is difficult to locate OPP core's debug
-> > > prints. Fix this by prefixing OPP debug prints with KBUILD_MODNAME.
-> > > 
-> > > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > 
-> > Why not use dynamic debug's m flag to turn on KBUILD_MODNAME when
-> > debugging?
-> > 
-> > >From Documentation/dynamic-debug-howto.txt
-> > 
-> >   m    Include module name in the printed message
-> 
-> It wasn't just about debug messages but pr_info and pr_err as well.
-> And so I defined pr_fmt instead.
-> 
+> From: Len Brown <len.brown@intel.com>
+>=20
+> For legacy machines cpu_init_udelay defaults to 10,000.
+> For modern machines it is set to 0.
+>=20
+> The user should be able to set cpu_init_udelay to
+> any value on the cmdline, including 10,000.
+> Before this patch, that was seen as "unchanged from default"
+> and thus on a modern machine, the user request was ignored
+> and the delay was set to 0.
+>=20
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> ---
+>  arch/x86/kernel/smpboot.c | 7 +++++--
+>  1 file changed, 5 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+> index e0c198e..32267cc 100644
+> --- a/arch/x86/kernel/smpboot.c
+> +++ b/arch/x86/kernel/smpboot.c
+> @@ -509,7 +509,7 @@ void __inquire_remote_apic(int apicid)
+>  =C2=A0*/
+>  #define UDELAY_10MS_DEFAULT 10000
+> =20
+> -static unsigned int init_udelay =3D UDELAY_10MS_DEFAULT;
+> +static unsigned int init_udelay =3D INT_MAX;
+> =20
+>  static int __init cpu_init_udelay(char *str)
+>  {
+> @@ -522,13 +522,16 @@ early_param("cpu_init_udelay", cpu_init_udelay)=
+;
+>  static void __init smp_quirk_init_udelay(void)
+>  {
+>  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0/* if cmdline changed it from default,=
+ leave it alone */
+> -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (init_udelay !=3D UDELAY_10MS_DEFAU=
+LT)
+> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (init_udelay !=3D INT_MAX)
+>  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0return;
+> =20
+>  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0/* if modern processor, use no delay *=
+/
+>  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (((boot_cpu_data.x86_vendor =3D=3D =
+X86_VENDOR_INTEL) && (boot_cpu_data.x86 =3D=3D 6)) ||
+>  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =C2=A0 =C2=A0((boot_cpu_data.x86_vend=
+or =3D=3D X86_VENDOR_AMD) && (boot_cpu_data.x86 >=3D 0xF)))
+>  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0init_ude=
+lay =3D 0;
+> +
+> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0/* else, use legacy delay */
+> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0init_udelay =3D UDELAY_10MS_DEFAULT;
 
-Ok, well the commit text exclusively mentions debug, leading me
-to believe this is all about making the debug prints (i.e.
-pr_debug) have KBUILD_MODNAME. 
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+Hi Len,
+
+
+Is this really what you intended? The else is commented out so if init_=
+udelay is quirked
+to be 0 it will always be reset to=C2=A0UDELAY_10MS_DEFAULT. Also init_=
+udelay is unsigned, so
+would UINT_MAX be a better choice?
+
+
+Shane
+
