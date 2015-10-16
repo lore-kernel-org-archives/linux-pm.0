@@ -1,67 +1,36 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 1/2] x86 smpboot: fix cpu_init_udelay=10000
-Date: Fri, 16 Oct 2015 00:14:28 -0400
-Message-ID: <de363cdbbcfcca1d22569683f7eb9873e0177251.1444968087.git.len.brown@intel.com>
-References: <1444968869-21435-1-git-send-email-lenb@kernel.org>
-Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f67.google.com ([209.85.192.67]:34384 "EHLO
-	mail-qg0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750756AbbJPEPG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 Oct 2015 00:15:06 -0400
-In-Reply-To: <1444968869-21435-1-git-send-email-lenb@kernel.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 1/4] PM / OPP: Improve debug print messages with pr_fmt
+Date: Fri, 16 Oct 2015 11:07:13 +0530
+Message-ID: <20151016053713.GO19018@linux>
+References: <cover.1444925400.git.viresh.kumar@linaro.org>
+ <d3072ab1f6665e63d2e26db75a3d598b241d423e.1444925400.git.viresh.kumar@linaro.org>
+ <20151015190421.GK4558@codeaurora.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20151015190421.GK4558@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dan Carpenter <dan.carpenter@oracle.com>, Dmitry Torokhov <dtor@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 List-Id: linux-pm@vger.kernel.org
-To: x86@kernel.org, shrybman@teksavvy.com, dparsons@brightdsl.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>
 
-From: Len Brown <len.brown@intel.com>
+On 15-10-15, 12:04, Stephen Boyd wrote:
+> On 10/15, Viresh Kumar wrote:
+> > With debug options on, it is difficult to locate OPP core's debug
+> > prints. Fix this by prefixing OPP debug prints with KBUILD_MODNAME.
+> > 
+> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+> Why not use dynamic debug's m flag to turn on KBUILD_MODNAME when
+> debugging?
+> 
+> >From Documentation/dynamic-debug-howto.txt
+> 
+>   m    Include module name in the printed message
 
-For legacy machines cpu_init_udelay defaults to 10,000.
-For modern machines it is set to 0.
+It wasn't just about debug messages but pr_info and pr_err as well.
+And so I defined pr_fmt instead.
 
-The user should be able to set cpu_init_udelay to
-any value on the cmdline, including 10,000.
-Before this patch, that was seen as "unchanged from default"
-and thus on a modern machine, the user request was ignored
-and the delay was set to 0.
-
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- arch/x86/kernel/smpboot.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index e0c198e..32267cc 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -509,7 +509,7 @@ void __inquire_remote_apic(int apicid)
-  */
- #define UDELAY_10MS_DEFAULT 10000
- 
--static unsigned int init_udelay = UDELAY_10MS_DEFAULT;
-+static unsigned int init_udelay = INT_MAX;
- 
- static int __init cpu_init_udelay(char *str)
- {
-@@ -522,13 +522,16 @@ early_param("cpu_init_udelay", cpu_init_udelay);
- static void __init smp_quirk_init_udelay(void)
- {
- 	/* if cmdline changed it from default, leave it alone */
--	if (init_udelay != UDELAY_10MS_DEFAULT)
-+	if (init_udelay != INT_MAX)
- 		return;
- 
- 	/* if modern processor, use no delay */
- 	if (((boot_cpu_data.x86_vendor == X86_VENDOR_INTEL) && (boot_cpu_data.x86 == 6)) ||
- 	    ((boot_cpu_data.x86_vendor == X86_VENDOR_AMD) && (boot_cpu_data.x86 >= 0xF)))
- 		init_udelay = 0;
-+
-+	/* else, use legacy delay */
-+	init_udelay = UDELAY_10MS_DEFAULT;
- }
- 
- /*
 -- 
-2.6.1.145.gb27dacc
-
+viresh
