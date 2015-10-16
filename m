@@ -1,41 +1,60 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
- SpeedStep enabled
-Date: Fri, 16 Oct 2015 17:43:31 +0000
-Message-ID: <bug-103351-137361-qrw88nNyE6@https.bugzilla.kernel.org/>
-References: <bug-103351-137361@https.bugzilla.kernel.org/>
+From: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH 01/16] PM / OPP: Add 'supply-names' binding
+Date: Fri, 16 Oct 2015 12:16:58 -0700
+Message-ID: <20151016191658.GA16437@codeaurora.org>
+References: <cover.1441972771.git.viresh.kumar@linaro.org>
+ <2b87b162eabd1570ae2311e1ef8655acda72f678.1441972771.git.viresh.kumar@linaro.org>
+ <55F72C97.2030306@kernel.org>
+ <20151016002243.GA23912@codeaurora.org>
+ <20151016060227.GS19018@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:52393 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752281AbbJPRnh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 16 Oct 2015 13:43:37 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id 5926320A89
-	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2015 17:43:36 +0000 (UTC)
-Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
-	by mail.kernel.org (Postfix) with ESMTP id 5646620A81
-	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2015 17:43:35 +0000 (UTC)
-In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20151016060227.GS19018@linux>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, nm-l0cyMroinI0@public.gmane.org, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rob.herring-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=103351
+On 10/16, Viresh Kumar wrote:
+> On 15-10-15, 17:22, Stephen Boyd wrote:
+> > I'm lost why we need this property at all. What happened to using
+> > 
+> >  opp-microvolt-0 = <1 2 3>;
+> >  opp-microvolt-1 = <1>;
+> >  opp-microvolt-2 = <3 4 5>;
+> >  etc.
+> 
+> Perhaps you are confusing this with the bindings we came up for
+> picking right voltage levels based on the cuts/version of the hardware
+> we are running on. The problem that Lee Jones mentioned and that can
+> be used in your case as well.
 
---- Comment #81 from Henrique de Moraes Holschuh <hmh@hmh.eng.br> ---
-Oh, and just in case a certain Skylake oddity might scare someone needlessly:
+Isn't that what this patch series is for?
 
-Skylake may report that the microcode revision running in the processor is one
-less than the version displayed by iucode-tool and any other such tool.  It
-does so when the new Intel SGX feature is enabled.
+> 
+> > That seems to avoid any problem with 3 vs. 1 element properties
+> > combined into one large array.
+> 
+> That's not the problem I was trying to solve here.
 
-That's why that, although Skylake microcode files have even revision numbers,
-some (most?) Skylake systems will report that they're running odd microcode
-revisions.
+What problem are you trying to solve then?
+
+> 
+> > Having supply-names seems too
+> > brittle and would tie us to a particular OPP user's decision to
+> > call supplies by some name.
+> 
+> No. The name has to match the <name>-supply property present in the
+> device's node, that's why we need this property :)
+
+Why does it need to match? Sorry I'm totally lost now.
 
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
