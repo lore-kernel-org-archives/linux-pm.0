@@ -1,66 +1,67 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 2/2] x86 smpboot: fix CPU #1 boot timeout
-Date: Fri, 16 Oct 2015 00:14:29 -0400
-Message-ID: <6dd554ee8945984d85aafb2ad35793174d068af0.1444968087.git.len.brown@intel.com>
+Subject: [PATCH 1/2] x86 smpboot: fix cpu_init_udelay=10000
+Date: Fri, 16 Oct 2015 00:14:28 -0400
+Message-ID: <de363cdbbcfcca1d22569683f7eb9873e0177251.1444968087.git.len.brown@intel.com>
 References: <1444968869-21435-1-git-send-email-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f67.google.com ([209.85.192.67]:34384 "EHLO
+	mail-qg0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750756AbbJPEPG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 Oct 2015 00:15:06 -0400
 In-Reply-To: <1444968869-21435-1-git-send-email-lenb@kernel.org>
-In-Reply-To: <de363cdbbcfcca1d22569683f7eb9873e0177251.1444968087.git.len.brown@intel.com>
-References: <de363cdbbcfcca1d22569683f7eb9873e0177251.1444968087.git.len.brown@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: x86@kernel.org, shrybman@teksavvy.com, dparsons@brightdsl.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Len Brown <len.brown@intel.com>
-List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-Commit a9bcaa02a5104ace6a9d9e4a9cd9192a9e7744d6
-("x86/smpboot: Remove SIPI delays from cpu_up()")
+For legacy machines cpu_init_udelay defaults to 10,000.
+For modern machines it is set to 0.
 
-Caused some Intel Core2 processors to time-out when bringing up CPU #1.
-
-That patch reduced the SIPI delays from udelay() 300, 200
-to udelay() 0, 0 on modern processors.
-
-Several Intel(R) Core(TM)2 systems
-failed to bring up CPU #1 10/10 times after that change.
-
-Increasing either of the SIPI delays to udelay(1) results in success.
-So here we increase both to udelay(10).  While this may be 20x slower
-than the absolute minimum, it is still 20x to 30x faster
-than the original code.
+The user should be able to set cpu_init_udelay to
+any value on the cmdline, including 10,000.
+Before this patch, that was seen as "unchanged from default"
+and thus on a modern machine, the user request was ignored
+and the delay was set to 0.
 
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- arch/x86/kernel/smpboot.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ arch/x86/kernel/smpboot.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
 diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index 32267cc..892ee2e5 100644
+index e0c198e..32267cc 100644
 --- a/arch/x86/kernel/smpboot.c
 +++ b/arch/x86/kernel/smpboot.c
-@@ -660,7 +660,9 @@ wakeup_secondary_cpu_via_init(int phys_apicid, unsigned long start_eip)
- 		/*
- 		 * Give the other CPU some time to accept the IPI.
- 		 */
--		if (init_udelay)
-+		if (init_udelay == 0)
-+			udelay(10);
-+		else
- 			udelay(300);
+@@ -509,7 +509,7 @@ void __inquire_remote_apic(int apicid)
+  */
+ #define UDELAY_10MS_DEFAULT 10000
  
- 		pr_debug("Startup point 1\n");
-@@ -671,7 +673,9 @@ wakeup_secondary_cpu_via_init(int phys_apicid, unsigned long start_eip)
- 		/*
- 		 * Give the other CPU some time to accept the IPI.
- 		 */
--		if (init_udelay)
-+		if (init_udelay == 0)
-+			udelay(10);
-+		else
- 			udelay(200);
+-static unsigned int init_udelay = UDELAY_10MS_DEFAULT;
++static unsigned int init_udelay = INT_MAX;
  
- 		if (maxlvt > 3)		/* Due to the Pentium erratum 3AP.  */
+ static int __init cpu_init_udelay(char *str)
+ {
+@@ -522,13 +522,16 @@ early_param("cpu_init_udelay", cpu_init_udelay);
+ static void __init smp_quirk_init_udelay(void)
+ {
+ 	/* if cmdline changed it from default, leave it alone */
+-	if (init_udelay != UDELAY_10MS_DEFAULT)
++	if (init_udelay != INT_MAX)
+ 		return;
+ 
+ 	/* if modern processor, use no delay */
+ 	if (((boot_cpu_data.x86_vendor == X86_VENDOR_INTEL) && (boot_cpu_data.x86 == 6)) ||
+ 	    ((boot_cpu_data.x86_vendor == X86_VENDOR_AMD) && (boot_cpu_data.x86 >= 0xF)))
+ 		init_udelay = 0;
++
++	/* else, use legacy delay */
++	init_udelay = UDELAY_10MS_DEFAULT;
+ }
+ 
+ /*
 -- 
 2.6.1.145.gb27dacc
+
