@@ -1,86 +1,117 @@
-From: shrybman <shrybman@teksavvy.com>
-Subject: Re: [PATCH 1/2] x86 smpboot: fix cpu_init_udelay=10000
-Date: Fri, 16 Oct 2015 15:34:11 -0400
-Message-ID: <0bc26e9524533c38fdbdc95eed2b1448@teksavvy.com>
-References: <1444968869-21435-1-git-send-email-lenb@kernel.org>
-	<de363cdbbcfcca1d22569683f7eb9873e0177251.1444968087.git.len.brown@intel.com>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH V3 5/5] cpufreq: postfix policy directory with the first
+ CPU in related_cpus
+Date: Fri, 16 Oct 2015 12:50:42 -0700
+Message-ID: <56215512.1080401@codeaurora.org>
+References: <20151016070842.GY19018@linux> <44a5b86d1df41812461630e5a7c5366d276e2855.1444979341.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ironport2-out.teksavvy.com ([206.248.154.181]:53959 "EHLO
-	ironport2-out.teksavvy.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753504AbbJPTeN convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 16 Oct 2015 15:34:13 -0400
-In-Reply-To: <de363cdbbcfcca1d22569683f7eb9873e0177251.1444968087.git.len.brown@intel.com>
+Received: from smtp.codeaurora.org ([198.145.29.96]:50758 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752426AbbJPTup (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 Oct 2015 15:50:45 -0400
+In-Reply-To: <44a5b86d1df41812461630e5a7c5366d276e2855.1444979341.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dparsons@brightdsl.net, x86@kernel.org, Len Brown <lenb@kernel.org>
-Cc: Len Brown <len.brown@intel.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, open list <linux-kernel@vger.kernel.org>
 
-> From: Len Brown <len.brown@intel.com>
->=20
-> For legacy machines cpu_init_udelay defaults to 10,000.
-> For modern machines it is set to 0.
->=20
-> The user should be able to set cpu_init_udelay to
-> any value on the cmdline, including 10,000.
-> Before this patch, that was seen as "unchanged from default"
-> and thus on a modern machine, the user request was ignored
-> and the delay was set to 0.
->=20
-> Signed-off-by: Len Brown <len.brown@intel.com>
+On 10/16/2015 12:11 AM, Viresh Kumar wrote:
+> The sysfs policy directory is postfixed currently with the CPU number
+> for which the policy was created, which isn't necessarily the first CPU
+> in related_cpus mask.
+>
+> To make it more consistent and predictable, lets postfix the policy with
+> the first cpu in related-cpus mask.
+>
+> Suggested-by: Saravana Kannan <skannan@codeaurora.org>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
->  arch/x86/kernel/smpboot.c | 7 +++++--
->  1 file changed, 5 insertions(+), 2 deletions(-)
->=20
-> diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-> index e0c198e..32267cc 100644
-> --- a/arch/x86/kernel/smpboot.c
-> +++ b/arch/x86/kernel/smpboot.c
-> @@ -509,7 +509,7 @@ void __inquire_remote_apic(int apicid)
->  =C2=A0*/
->  #define UDELAY_10MS_DEFAULT 10000
-> =20
-> -static unsigned int init_udelay =3D UDELAY_10MS_DEFAULT;
-> +static unsigned int init_udelay =3D INT_MAX;
-> =20
->  static int __init cpu_init_udelay(char *str)
->  {
-> @@ -522,13 +522,16 @@ early_param("cpu_init_udelay", cpu_init_udelay)=
-;
->  static void __init smp_quirk_init_udelay(void)
->  {
->  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0/* if cmdline changed it from default,=
- leave it alone */
-> -=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (init_udelay !=3D UDELAY_10MS_DEFAU=
-LT)
-> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (init_udelay !=3D INT_MAX)
->  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0return;
-> =20
->  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0/* if modern processor, use no delay *=
-/
->  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0if (((boot_cpu_data.x86_vendor =3D=3D =
-X86_VENDOR_INTEL) && (boot_cpu_data.x86 =3D=3D 6)) ||
->  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =C2=A0 =C2=A0((boot_cpu_data.x86_vend=
-or =3D=3D X86_VENDOR_AMD) && (boot_cpu_data.x86 >=3D 0xF)))
->  =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0init_ude=
-lay =3D 0;
+> V2->V3:
+> - Fix error path where we may try to put an uninitialized kobject.
+> - Break kobject_init_and_add() to kobject_init() and kobject_add().
+>
+>   drivers/cpufreq/cpufreq.c | 21 +++++++++++----------
+>   1 file changed, 11 insertions(+), 10 deletions(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 4fa2215cc6ec..7c48e7316d91 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1022,7 +1022,6 @@ static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
+>   {
+>   	struct device *dev = get_cpu_device(cpu);
+>   	struct cpufreq_policy *policy;
+> -	int ret;
+>
+>   	if (WARN_ON(!dev))
+>   		return NULL;
+> @@ -1040,13 +1039,7 @@ static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
+>   	if (!zalloc_cpumask_var(&policy->real_cpus, GFP_KERNEL))
+>   		goto err_free_rcpumask;
+>
+> -	ret = kobject_init_and_add(&policy->kobj, &ktype_cpufreq,
+> -				   cpufreq_global_kobject, "policy%u", cpu);
+> -	if (ret) {
+> -		pr_err("%s: failed to init policy->kobj: %d\n", __func__, ret);
+> -		goto err_free_real_cpus;
+> -	}
+> -
+> +	kobject_init(&policy->kobj, &ktype_cpufreq);
+
+Oh yeah, this works better. I forgot kobject has a separate init and add 
+fuctions.
+
+>   	INIT_LIST_HEAD(&policy->policy_list);
+>   	init_rwsem(&policy->rwsem);
+>   	spin_lock_init(&policy->transition_lock);
+> @@ -1057,8 +1050,6 @@ static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
+>   	policy->cpu = cpu;
+>   	return policy;
+>
+> -err_free_real_cpus:
+> -	free_cpumask_var(policy->real_cpus);
+>   err_free_rcpumask:
+>   	free_cpumask_var(policy->related_cpus);
+>   err_free_cpumask:
+> @@ -1163,6 +1154,16 @@ static int cpufreq_online(unsigned int cpu)
+>   		cpumask_copy(policy->related_cpus, policy->cpus);
+>   		/* Remember CPUs present at the policy creation time. */
+>   		cpumask_and(policy->real_cpus, policy->cpus, cpu_present_mask);
 > +
-> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0/* else, use legacy delay */
-> +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0init_udelay =3D UDELAY_10MS_DEFAULT;
+> +		/* Name and add the kobject */
+> +		ret = kobject_add(&policy->kobj, cpufreq_global_kobject,
+> +				  "policy%u",
+> +				  cpumask_first(policy->related_cpus));
+> +		if (ret) {
+> +			pr_err("%s: failed to add policy->kobj: %d\n", __func__,
+> +			       ret);
+> +			goto out_exit_policy;
+> +		}
 
+Another out of patch issue that I see while reviewing this patch:
 
-Hi Len,
+I think the existing error handling gotos aren't really cleaning things 
+up well.
 
+In the lines that follow this code we set the per_cpu(cpufreq_cpu_data) 
+to point to the new policy. But if the subsequent cpu->get() fails, we 
+goto out_exit_policy. But that label doesn't clean up the 
+per_cpu(cpufreq_cpu_data). So, I think we need another label to jump to 
+if ->get() fails
 
-Is this really what you intended? The else is commented out so if init_=
-udelay is quirked
-to be 0 it will always be reset to=C2=A0UDELAY_10MS_DEFAULT. Also init_=
-udelay is unsigned, so
-would UINT_MAX be a better choice?
+>   	}
+>
+>   	/*
+>
 
+Reviewed-by: Saravana Kannan <skannan@codeaurora.org>
 
-Shane
+-Saravana
 
+-- 
+Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
