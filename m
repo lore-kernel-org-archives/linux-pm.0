@@ -1,41 +1,64 @@
-From: Olof Johansson <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>
-Subject: Re: [GIT PULL] On-demand device probing
-Date: Fri, 16 Oct 2015 14:23:06 -0700
-Message-ID: <CAOesGMj44N3Xfv_D_iLEzXBrkN6LXBa-uh6m3fi_F2xDenDhMg@mail.gmail.com>
-References: <20151014092644.GO14956@sirena.org.uk>
-	<1444909328-24761-1-git-send-email-tomeu.vizoso@collabora.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1444909328-24761-1-git-send-email-tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
-Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Michael Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Vinod Koul <vinod.koul-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Dan Williams <dan.j.williams-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, =?UTF-8?Q?Terje_Bergstr=C3=B6m?= <tbergstrom-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kishon Vijay Abraham I <kishon-l0cyMroinI0@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie@kernel.o>
+From: Todd Brandt <todd.e.brandt@linux.intel.com>
+Subject: [PATCH v3] PM: check for complete cb before device lock in dpm_complete
+Date: Fri, 16 Oct 2015 15:45:10 -0700
+Message-ID: <6146fb8483239461040674927df2e71d4555c59e.1445035227.git.todd.e.brandt@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga09.intel.com ([134.134.136.24]:1757 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752475AbbJPWpR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 16 Oct 2015 18:45:17 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com
+Cc: rjw@rjwysocki.net, todd.e.brandt@intel.com, Todd Brandt <todd.e.brandt@linux.intel.com>
 
-Hi,
+If a device has no pm_ops complete callback it shouldn't have
+to be locked in order to skip it in the dpm_complete call. This causes
+problems when a device without a complete callback has already begun
+operation after its resume cb is called. It can end up holding up the
+system resume as the pm subsystem tries to get a device lock just to
+check for a callback that isn't there.
 
-I've bisected boot failures in next-20151016 down to patches in this branch:
+This is basically the original v1 patch but updated for the latest kernel.
 
-On Thu, Oct 15, 2015 at 4:42 AM, Tomeu Vizoso
-<tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org> wrote:
-> Tomeu Vizoso (20):
->       driver core: handle -EPROBE_DEFER from bus_type.match()
+Signed-off-by: Todd Brandt <todd.e.brandt@linux.intel.com>
+---
+ drivers/base/power/main.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-The machine it happened on was OMAP5UEVM:
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 1710c26..9bb8ff0 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -899,8 +899,6 @@ static void device_complete(struct device *dev, pm_message_t state)
+ 	if (dev->power.syscore)
+ 		return;
+ 
+-	device_lock(dev);
+-
+ 	if (dev->pm_domain) {
+ 		info = "completing power domain ";
+ 		callback = dev->pm_domain->ops.complete;
+@@ -920,13 +918,15 @@ static void device_complete(struct device *dev, pm_message_t state)
+ 		callback = dev->driver->pm->complete;
+ 	}
+ 
+-	if (callback) {
+-		pm_dev_dbg(dev, state, info);
+-		callback(dev);
+-	}
++	if (!callback)
++		goto Complete;
+ 
++	device_lock(dev);
++	pm_dev_dbg(dev, state, info);
++	callback(dev);
+ 	device_unlock(dev);
+ 
++Complete:
+ 	pm_runtime_put(dev);
+ }
+ 
+-- 
+2.1.4
 
-http://arm-soc.lixom.net/bootlogs/next/next-20151016/omap5uevm-arm-omap2plus_defconfig.html
-
-But I've also seen it on tegra2, that one bisected down to:
-
->      regulator: core: Probe regulators on demand
-
-http://arm-soc.lixom.net/bootlogs/next/next-20151016/seaboard-arm-multi_v7_defconfig.html
-
-
-
--Olof
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
