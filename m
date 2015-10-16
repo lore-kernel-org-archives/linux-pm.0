@@ -1,131 +1,89 @@
-From: =?ks_c_5601-1987?B?RGF2aWQgS3dvbiAosce/+MirKQ==?=
-	<wonhong.kwon@lge.com>
-Subject: RE: Runtime PM causes oops on next-20151015
-Date: Fri, 16 Oct 2015 08:35:39 +0900
-Message-ID: <021501d107a2$3351cbb0$99f56310$@lge.com>
-References: <20151015092213.GA26614@ulmo.nvidia.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH 01/16] PM / OPP: Add 'supply-names' binding
+Date: Thu, 15 Oct 2015 17:22:43 -0700
+Message-ID: <20151016002243.GA23912@codeaurora.org>
+References: <cover.1441972771.git.viresh.kumar@linaro.org>
+ <2b87b162eabd1570ae2311e1ef8655acda72f678.1441972771.git.viresh.kumar@linaro.org>
+ <55F72C97.2030306@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain;
-	charset="ks_c_5601-1987"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-next-owner@vger.kernel.org>
-In-Reply-To: <20151015092213.GA26614@ulmo.nvidia.com>
-Content-Language: ko
-Sender: linux-next-owner@vger.kernel.org
-To: 'Thierry Reding' <thierry.reding@gmail.com>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
-Cc: 'Len Brown' <len.brown@intel.com>, 'Pavel Machek' <pavel@ucw.cz>, linux-next@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, =?ks_c_5601-1987?B?J8DMsMfIoyc=?= <gunho.lee@lge.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <55F72C97.2030306@kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, rob.herring@linaro.org, lee.jones@linaro.org, Mark Brown <broonie@kernel.org>, devicetree@vger.kernel.org, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, open list <linux-kernel@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Dear Thierry, 
+On 09/14, Rob Herring wrote:
+> On 09/11/2015 07:01 AM, Viresh Kumar wrote:
+> > Regulators already have stable DT bindings, wherein the consumer (of
+> > supplies) will have following for each regulator/supply.
+> > 
+> > <name>-supply: <phandle to the regulator node>;
+> > 
+> > Current OPP bindings extend above, by transforming it into a list of
+> > phandles. But we missed the <name> string, which is used to identify the
+> > regulator.
+> > 
+> > And looking from regulators perspective, having two different ways of
+> > specifying regulators doesn't seem like a step forward, it also means we
+> > have to update every single device binding. And things will become
+> > complex.
+> > 
+> > Another way to support multiple regulators per device (in OPP V2
+> > bindings) is to leave regulator consumer bindings as is, and create a
+> > 'supply-names' property in the opp-table node, which will contain a list
+> > of strings. The names in this list shall match 'name' from the
+> > '<name>-supply' strings present in the device node.
+> > 
+> > The strings in this list also specify the order in which values must be
+> > present in 'opp-microvolt' and 'opp-microamp' properties.
+> > 
+> > Cc: Mark Brown <broonie@kernel.org>
+> > Cc: devicetree@vger.kernel.org
+> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > ---
+> >  Documentation/devicetree/bindings/opp/opp.txt | 26 +++++++++++++++++++-------
+> >  1 file changed, 19 insertions(+), 7 deletions(-)
+> > 
+> > diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+> > index 0cb44dc21f97..8759bc4783ed 100644
+> > --- a/Documentation/devicetree/bindings/opp/opp.txt
+> > +++ b/Documentation/devicetree/bindings/opp/opp.txt
+> > @@ -69,6 +69,13 @@ This describes the OPPs belonging to a device. This node can have following
+> >  - compatible: Allow OPPs to express their compatibility. It should be:
+> >    "operating-points-v2".
+> >  
+> > +- supply-names: This is a required property, only if multiple supplies are
+> > +  available for the device. Otherwise it is optional.
+> > +
+> > +  This list is used to pass names of all the device supplies. The order of names
+> > +  present here is important, as that should match the order in which values are
+> > +  present in 'opp-microvolt' and 'opp-microamp' properties.
+> > +
+> 
+> What if we have a 2nd device and supply rail? For example, what if the
+> L2$ has a separate rail from the cores but is linked to the OPPs.
 
-> -----Original Message-----
-> From: Thierry Reding [mailto:thierry.reding@gmail.com]
-> Sent: Thursday, October 15, 2015 6:22 PM
-> To: Rafael J. Wysocki; Wonhong Kwon
-> Cc: Len Brown; Pavel Machek; linux-next@vger.kernel.org; linux-
-> pm@vger.kernel.org; linux-kernel@vger.kernel.org
-> Subject: Runtime PM causes oops on next-20151015
-> 
-> Hi Rafael, Wonhong,
-> 
-> Todays linux-next breaks rather spectacularly for drivers using runtime
-PM.
-> The culprit seems to be this commit:
-> 
-> 	commit 7d24068e144adc03b805806645d732cf79488717
-> 	Author: Wonhong Kwon <wonhongkwon@gmail.com>
-> 	Date:   Tue Oct 6 10:10:20 2015 +0900
-> 
-> 	    PM / hibernate: Move pm_init/pm_disk_init to late_initcall_sync
-> 
-> 	    pm_init is being invoked by core_initcall and
-> hibernate_image_size_init
-> 	    calculates preferred image size (image_size) based on total
-> pages
-> 	    (totalram_pages). This totalram_pages can be modified during
-> various
-> 	    initcall-s phase and this can cause miscalculated image_size.
-> 
-> 	    For example, when CMA is being used, init_cma_reserved_pageblock
-> tries
-> 	    to change the totalram_pages and this job is done during
-> core_initcall.
-> 	    In order words, the totalram_pages doesn't take CMA reserved
-> pages into
-> 	    account when image_size is calculated and it can be too small.
-> 
-> 	    Move pm_init and pm_disk_init to late_initcall_sync so that it
-> happens
-> 	    after all other initcall-s change the totalram_pages.
-> 
-> 	    Reported-by: Sangseok Lee <sangseok.lee@lge.com>
-> 	    Signed-off-by: Wonhong Kwon <wonhong.kwon@lge.com>
-> 	    Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> I can't reply to it directly because I don't have it in any of my mail
-> boxes (it seems to have been sent only to the linux-pm mailing list, even
-> Google finds only a single match).
-> 
-> Here's an extract of the oops:
-> 
-> 	[    1.395928] Unable to handle kernel NULL pointer dereference at
-> virtual address 00000100
-> 	[    1.404013] pgd = ffffffc000e0e000
-> 	[    1.407417] [00000100] *pgd=000000013c007003,
-> *pud=000000013c007003, *pmd=000000013c008003, *pte=0060000050041707
-> 	[    1.417746] Internal error: Oops: 96000005 [#1] PREEMPT SMP
-> 	[    1.423316] Modules linked in:
-> 	[    1.426400] CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.3.0-rc5-
-> next-20151015+ #1338
-> 	[    1.434138] Hardware name: NVIDIA Tegra210 P2371 (P2180/P2597)
-> reference board (DT)
-> 	[    1.441789] task: ffffffc0bc0a8000 ti: ffffffc0bc084000 task.ti:
-> ffffffc0bc084000
-> 	[    1.449280] PC is at __queue_work+0x2c/0x240
-> 	[    1.453551] LR is at queue_work_on+0x60/0x78
-> 	...
-> 	[    1.836517] Call trace:
-> 	[    1.838968] [<ffffffc0000b4134>] __queue_work+0x2c/0x240
-> 	[    1.844280] [<ffffffc0000b43a4>] queue_work_on+0x5c/0x78
-> 	[    1.849599] [<ffffffc00052e508>] rpm_idle+0xc0/0x140
-> 	[    1.854565] [<ffffffc00052e5dc>] __pm_runtime_idle+0x54/0x98
-> 	[    1.860229] [<ffffffc00052414c>] driver_probe_device+0x164/0x2f8
-> 	[    1.866236] [<ffffffc000524378>] __driver_attach+0x98/0xa0
-> 	[    1.871724] [<ffffffc00052231c>] bus_for_each_dev+0x5c/0xa0
-> 	[    1.877294] [<ffffffc000523ab4>] driver_attach+0x1c/0x28
-> 	[    1.882608] [<ffffffc0005236e4>] bus_add_driver+0x1cc/0x238
-> 	[    1.888180] [<ffffffc000524b1c>] driver_register+0x5c/0xf8
-> 	[    1.893675] [<ffffffc000431800>]
-> mipi_dsi_driver_register_full+0x50/0x60
-> 	[    1.900374] [<ffffffc000ba1570>] panel_simple_init+0x2c/0x44
-> 	[    1.906035] [<ffffffc000082934>] do_one_initcall+0x8c/0x1a0
-> 	[    1.911612] [<ffffffc000b80aa8>] kernel_init_freeable+0x150/0x1f8
-> 	[    1.917711] [<ffffffc0007f78fc>] kernel_init+0xc/0xe0
-> 
-> Instrumenting the code shows that pm_wq (passed to queue_work in the
-> rpm_idle() function) is NULL at this point. This matches up with the
-> change done in the above-mentioned commit, since now pm_wq only gets
-> initialized at late_initcall time, whereas all built-in drivers will
-> already be probed at device_initcall time. So I suspect that this is going
-> to cause crashes on a whole lot of systems (essentially every system that
-> tries to use runtime PM from a built-in driver).
+I'm lost why we need this property at all. What happened to using
 
-I should've considered rumtime PM. Really sorry for bothering you.
+ opp-microvolt-0 = <1 2 3>;
+ opp-microvolt-1 = <1>;
+ opp-microvolt-2 = <3 4 5>;
+ etc.
 
-> 
-> Given the commit message I suspect that the right fix would be to split
-> pm_init() into two functions, one that initializes the hibernation image
-> and another with the PM core initialization. The pm_hibernate_init() is
-> probably going to work fine as late_initcall (I assume this was tested)
-> but the rest should probably stay at core_initcall.
+That seems to avoid any problem with 3 vs. 1 element properties
+combined into one large array. Having supply-names seems too
+brittle and would tie us to a particular OPP user's decision to
+call supplies by some name.
 
-I agree that rest of pm_init() should stay at core_initcall and only
-hibernation_image_size_init() goes to late_initcall.
+Also, I've seen devices that are split across two power domains.
+These devices aren't CPUs, but they are other devices including
+L2 caches. So we're going to need either multiple regulator
+support or multiple "power domain at a particular performance
+levels" support somehow.
 
-> 
-> I can provide a patch for the latter if everyone agrees that it's the
-> right thing, but in the meantime, can you please drop the above patch from
-> your tree to unbreak linux-next for all affected users?
-> 
-> Thanks,
-> Thierry
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
