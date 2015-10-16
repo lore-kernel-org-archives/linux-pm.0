@@ -1,91 +1,44 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 5/5] cpufreq: postfix policy directory with the first CPU in related_cpus
-Date: Fri, 16 Oct 2015 12:41:12 +0530
-Message-ID: <44a5b86d1df41812461630e5a7c5366d276e2855.1444979341.git.viresh.kumar@linaro.org>
-References: <20151016070842.GY19018@linux>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
+ SpeedStep enabled
+Date: Fri, 16 Oct 2015 10:19:44 +0000
+Message-ID: <bug-103351-137361-cq4cXs4U8n@https.bugzilla.kernel.org/>
+References: <bug-103351-137361@https.bugzilla.kernel.org/>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f42.google.com ([209.85.220.42]:33158 "EHLO
-	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752370AbbJPHLl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 16 Oct 2015 03:11:41 -0400
-Received: by pabrc13 with SMTP id rc13so112320302pab.0
-        for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2015 00:11:41 -0700 (PDT)
-In-Reply-To: <20151016070842.GY19018@linux>
+Received: from mail.kernel.org ([198.145.29.136]:40094 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752034AbbJPKTu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 16 Oct 2015 06:19:50 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+	by mail.kernel.org (Postfix) with ESMTP id 7874E20A24
+	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2015 10:19:49 +0000 (UTC)
+Received: from bugzilla2.web.kernel.org (bugzilla2.web.kernel.org [172.20.200.52])
+	by mail.kernel.org (Postfix) with ESMTP id 295C420A63
+	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2015 10:19:47 +0000 (UTC)
+In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, skannan@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>, open list <linux-kernel@vger.kernel.org>
+To: linux-pm@vger.kernel.org
 
-The sysfs policy directory is postfixed currently with the CPU number
-for which the policy was created, which isn't necessarily the first CPU
-in related_cpus mask.
+https://bugzilla.kernel.org/show_bug.cgi?id=103351
 
-To make it more consistent and predictable, lets postfix the policy with
-the first cpu in related-cpus mask.
+--- Comment #72 from Henrique de Moraes Holschuh <hmh@hmh.eng.br> ---
+Well, FWIW, the processor flags (pf) reported are _different_.
 
-Suggested-by: Saravana Kannan <skannan@codeaurora.org>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-V2->V3:
-- Fix error path where we may try to put an uninitialized kobject.
-- Break kobject_init_and_add() to kobject_init() and kobject_add().
+So now, we need a bit more data from others, to check if processors with
+pf=0x20 ends up with RTM disabled, and pf=0x2 ends up with RTM enabled, or if
+there is no such connection.
 
- drivers/cpufreq/cpufreq.c | 21 +++++++++++----------
- 1 file changed, 11 insertions(+), 10 deletions(-)
+I'd expect pf=0x20 to be the mobile processors (soldered), and pf=0x2 to be the
+desktop processors (socketed), BTW.
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 4fa2215cc6ec..7c48e7316d91 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1022,7 +1022,6 @@ static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
- {
- 	struct device *dev = get_cpu_device(cpu);
- 	struct cpufreq_policy *policy;
--	int ret;
- 
- 	if (WARN_ON(!dev))
- 		return NULL;
-@@ -1040,13 +1039,7 @@ static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
- 	if (!zalloc_cpumask_var(&policy->real_cpus, GFP_KERNEL))
- 		goto err_free_rcpumask;
- 
--	ret = kobject_init_and_add(&policy->kobj, &ktype_cpufreq,
--				   cpufreq_global_kobject, "policy%u", cpu);
--	if (ret) {
--		pr_err("%s: failed to init policy->kobj: %d\n", __func__, ret);
--		goto err_free_real_cpus;
--	}
--
-+	kobject_init(&policy->kobj, &ktype_cpufreq);
- 	INIT_LIST_HEAD(&policy->policy_list);
- 	init_rwsem(&policy->rwsem);
- 	spin_lock_init(&policy->transition_lock);
-@@ -1057,8 +1050,6 @@ static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
- 	policy->cpu = cpu;
- 	return policy;
- 
--err_free_real_cpus:
--	free_cpumask_var(policy->real_cpus);
- err_free_rcpumask:
- 	free_cpumask_var(policy->related_cpus);
- err_free_cpumask:
-@@ -1163,6 +1154,16 @@ static int cpufreq_online(unsigned int cpu)
- 		cpumask_copy(policy->related_cpus, policy->cpus);
- 		/* Remember CPUs present at the policy creation time. */
- 		cpumask_and(policy->real_cpus, policy->cpus, cpu_present_mask);
-+
-+		/* Name and add the kobject */
-+		ret = kobject_add(&policy->kobj, cpufreq_global_kobject,
-+				  "policy%u",
-+				  cpumask_first(policy->related_cpus));
-+		if (ret) {
-+			pr_err("%s: failed to add policy->kobj: %d\n", __func__,
-+			       ret);
-+			goto out_exit_policy;
-+		}
- 	}
- 
- 	/*
+The "pf" can be read from either the kernel log (microcode: CPU0 sig=... line),
+or from "cat /sys/devices/system/cpu/cpu0/microcode/processor_flags".  It
+should be analyzed together with the output of "cat /proc/cpuinfo".
+
 -- 
-2.4.0
-
+You are receiving this mail because:
+You are the assignee for the bug.
