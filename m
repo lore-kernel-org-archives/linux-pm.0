@@ -1,39 +1,105 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
- SpeedStep enabled
-Date: Fri, 16 Oct 2015 15:57:42 +0000
-Message-ID: <bug-103351-137361-TPKnHrtrzD@https.bugzilla.kernel.org/>
-References: <bug-103351-137361@https.bugzilla.kernel.org/>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: [PATCH v3 1/2] ARM: cpuidle: remove cpu parameter from the cpuidle_ops suspend hook
+Date: Fri, 16 Oct 2015 17:02:58 +0100
+Message-ID: <1445011379-8787-2-git-send-email-lorenzo.pieralisi@arm.com>
+References: <1445011379-8787-1-git-send-email-lorenzo.pieralisi@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:42854 "EHLO mail.kernel.org"
+Received: from foss.arm.com ([217.140.101.70]:42304 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932677AbbJPP5r (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 16 Oct 2015 11:57:47 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id 5CE402087D
-	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2015 15:57:46 +0000 (UTC)
-Received: from bugzilla2.web.kernel.org (bugzilla2.web.kernel.org [172.20.200.52])
-	by mail.kernel.org (Postfix) with ESMTP id DDAB820A83
-	for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2015 15:57:44 +0000 (UTC)
-In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
+	id S932449AbbJPQC0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 16 Oct 2015 12:02:26 -0400
+In-Reply-To: <1445011379-8787-1-git-send-email-lorenzo.pieralisi@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Lina Iyer <lina.iyer@linaro.org>, Russell King <linux@arm.linux.org.uk>, Daniel Lezcano <daniel.lezcano@linaro.org>, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, Jisheng Zhang <jszhang@marvell.com>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=103351
+The suspend() hook in the cpuidle_ops struct is always called on
+the cpu entering idle, which means that the cpu parameter passed
+to the suspend hook always corresponds to the local cpu, making
+it somewhat redundant.
 
---- Comment #77 from kernel@benjam.info <kernel@benjam.info> ---
-(In reply to Dimman from comment #76)
-> So HLE and RTM remains for me in 0x13. I ripped the microcode myself from a
-> msi bios file. (E16J1IMS.110.zip)
+This patch removes the logical cpu parameter from the ARM
+cpuidle_ops.suspend hook and updates all the existing kernel
+implementations to reflect this change.
 
-Awesome! Can you post the SHA-1 sum of the microcode you ripped, so people have
-an easy way to verify that the microcode I'm providing isn't malicious (though
-an unsigned or modified microcode file would do nothing anyways).
+Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Reviewed-by: Lina Iyer <lina.iyer@linaro.org>
+Tested-by: Lina Iyer <lina.iyer@linaro.org>
+Tested-by: Jisheng Zhang <jszhang@marvell.com> [psci]
+Cc: Lina Iyer <lina.iyer@linaro.org>
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ arch/arm/include/asm/cpuidle.h |  2 +-
+ arch/arm/kernel/cpuidle.c      |  2 +-
+ drivers/soc/qcom/spm.c         | 10 +++++-----
+ 3 files changed, 7 insertions(+), 7 deletions(-)
 
+diff --git a/arch/arm/include/asm/cpuidle.h b/arch/arm/include/asm/cpuidle.h
+index 0f84249..3848259 100644
+--- a/arch/arm/include/asm/cpuidle.h
++++ b/arch/arm/include/asm/cpuidle.h
+@@ -30,7 +30,7 @@ static inline int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
+ struct device_node;
+ 
+ struct cpuidle_ops {
+-	int (*suspend)(int cpu, unsigned long arg);
++	int (*suspend)(unsigned long arg);
+ 	int (*init)(struct device_node *, int cpu);
+ };
+ 
+diff --git a/arch/arm/kernel/cpuidle.c b/arch/arm/kernel/cpuidle.c
+index 318da33..703926e 100644
+--- a/arch/arm/kernel/cpuidle.c
++++ b/arch/arm/kernel/cpuidle.c
+@@ -56,7 +56,7 @@ int arm_cpuidle_suspend(int index)
+ 	int cpu = smp_processor_id();
+ 
+ 	if (cpuidle_ops[cpu].suspend)
+-		ret = cpuidle_ops[cpu].suspend(cpu, index);
++		ret = cpuidle_ops[cpu].suspend(index);
+ 
+ 	return ret;
+ }
+diff --git a/drivers/soc/qcom/spm.c b/drivers/soc/qcom/spm.c
+index b04b05a..0ad66fa 100644
+--- a/drivers/soc/qcom/spm.c
++++ b/drivers/soc/qcom/spm.c
+@@ -116,7 +116,7 @@ static const struct spm_reg_data spm_reg_8064_cpu = {
+ 
+ static DEFINE_PER_CPU(struct spm_driver_data *, cpu_spm_drv);
+ 
+-typedef int (*idle_fn)(int);
++typedef int (*idle_fn)(void);
+ static DEFINE_PER_CPU(idle_fn*, qcom_idle_ops);
+ 
+ static inline void spm_register_write(struct spm_driver_data *drv,
+@@ -179,10 +179,10 @@ static int qcom_pm_collapse(unsigned long int unused)
+ 	return -1;
+ }
+ 
+-static int qcom_cpu_spc(int cpu)
++static int qcom_cpu_spc(void)
+ {
+ 	int ret;
+-	struct spm_driver_data *drv = per_cpu(cpu_spm_drv, cpu);
++	struct spm_driver_data *drv = __this_cpu_read(cpu_spm_drv);
+ 
+ 	spm_set_low_power_mode(drv, PM_SLEEP_MODE_SPC);
+ 	ret = cpu_suspend(0, qcom_pm_collapse);
+@@ -197,9 +197,9 @@ static int qcom_cpu_spc(int cpu)
+ 	return ret;
+ }
+ 
+-static int qcom_idle_enter(int cpu, unsigned long index)
++static int qcom_idle_enter(unsigned long index)
+ {
+-	return per_cpu(qcom_idle_ops, cpu)[index](cpu);
++	return __this_cpu_read(qcom_idle_ops)[index]();
+ }
+ 
+ static const struct of_device_id qcom_idle_state_match[] __initconst = {
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+2.5.1
+
