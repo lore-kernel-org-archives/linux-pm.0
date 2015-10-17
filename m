@@ -1,49 +1,55 @@
-From: Kukjin Kim <kgene@kernel.org>
-Subject: Re: [PATCH] thermal: exynos: Fix register read in TMU
-Date: Sat, 17 Oct 2015 08:20:27 +0900
-Message-ID: <5621863B.6000603@kernel.org>
-References: <1444693909-17754-1-git-send-email-k.kozlowski@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1444693909-17754-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Kukjin Kim <kgene@kernel.org>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Lukasz Majewski <l.majewski@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Sudip Mukherjee <sudip@vectorindia.org>
+From: Alexandra Yates <alexandra.yates@linux.intel.com>
+Subject: [PATCH] fix intel_pstate to update MSR values when changing governors
+Date: Fri, 16 Oct 2015 17:51:41 -0700
+Message-ID: <1445043101-19079-1-git-send-email-alexandra.yates@linux.intel.com>
+References: <fix intel_pstate to update MSR values when changing governors>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([192.55.52.115]:56884 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751594AbbJQAtM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 16 Oct 2015 20:49:12 -0400
+In-Reply-To: <fix intel_pstate to update MSR values when changing governors>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: kristen@linux.intel.com, linux-pm@vger.kernel.org
+Cc: root <root@skl-s-fedora22.jf.intel.com>
 
-On 10/13/15 08:51, Krzysztof Kozlowski wrote:
-> From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-> 
-> The value of emul_con was getting overwritten if the selected soc is
-> SOC_ARCH_EXYNOS5260. And so as a result we were reading from the wrong
-> register in the case of SOC_ARCH_EXYNOS5260.
-> 
-> Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
-> Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-> Acked-by: Lukasz Majewski <l.majewski@samsung.com>
-> Fixes: 488c7455d74c ("thermal: exynos: Add the support for Exynos5433 TMU")
-> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> ---
->  drivers/thermal/samsung/exynos_tmu.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-> index 0bae8cc6c23a..ca920b0ecf8f 100644
-> --- a/drivers/thermal/samsung/exynos_tmu.c
-> +++ b/drivers/thermal/samsung/exynos_tmu.c
-> @@ -932,7 +932,7 @@ static void exynos4412_tmu_set_emulation(struct exynos_tmu_data *data,
->  
->  	if (data->soc == SOC_ARCH_EXYNOS5260)
->  		emul_con = EXYNOS5260_EMUL_CON;
-> -	if (data->soc == SOC_ARCH_EXYNOS5433)
-> +	else if (data->soc == SOC_ARCH_EXYNOS5433)
->  		emul_con = EXYNOS5433_TMU_EMUL_CON;
->  	else if (data->soc == SOC_ARCH_EXYNOS7)
->  		emul_con = EXYNOS7_TMU_REG_EMUL_CON;
+From: root <root@skl-s-fedora22.jf.intel.com>
 
-Applied, thanks.
+When changing from powersave to performance governors
+Intel_pstate fails to update the MSR values that reflect the
+max_perf_pct to 100%. For instance:
 
-- Kukjin
+Governor 	MSR	max_perf_pct
+=========	====	============
+Powersave 	2828	100%
+Powersave	2028	80%
+Performance	2028	100% <-
+
+The arrow shows the culprit. At this point the  MSR should
+reflect the max_perf_pct that is 100% that corresponds MSR 2828
+the maximum performance for the Performance governor.
+Instead it holds back the MSR value previously set
+by the Powersave governor 2028.
+
+Signed-off-by: root <root@skl-s-fedora22.jf.intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index cde38c8..992dbb5 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -1239,6 +1239,8 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+ 	    policy->max >= policy->cpuinfo.max_freq) {
+ 		pr_debug("intel_pstate: set performance\n");
+ 		limits = &performance_limits;
++		if (hwp_active)
++			intel_pstate_hwp_set();
+ 		return 0;
+ 	}
+ 
+-- 
+2.4.3
+
