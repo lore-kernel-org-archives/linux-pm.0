@@ -1,74 +1,91 @@
-From: Rob Herring <robh+dt@kernel.org>
-Subject: Re: [GIT PULL] On-demand device probing
-Date: Sat, 17 Oct 2015 10:04:55 -0500
-Message-ID: <CAL_Jsq+Due3CgV0Z_m4vYQsa+X30DSxgmqz_r=26OrBV7v+H2g@mail.gmail.com>
-References: <561E1378.6000906@collabora.com> <20151017065750.GA18607@kroah.com>
+From: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
+Subject: Re: [PATCH v9 4/4] USB / PM: Allow USB devices to remain runtime-suspended
+ when sleeping
+Date: Sat, 17 Oct 2015 11:12:57 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1510171107060.10498-100000@netrider.rowland.org>
+References: <20151017063824.GB13889@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <20151017065750.GA18607@kroah.com>
-Sender: linux-clk-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Russell King <linux@arm.linux.org.uk>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, =?UTF-8?Q?Terje_Bergstr=C3=B6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Frank Rowand <frowand.list@gmail.com>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Felipe Balbi <balbi@ti.com>, Jingoo
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20151017063824.GB13889-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
+Cc: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, martyn.welch-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Oct 17, 2015 at 1:57 AM, Greg Kroah-Hartman
-<gregkh@linuxfoundation.org> wrote:
-> On Wed, Oct 14, 2015 at 10:34:00AM +0200, Tomeu Vizoso wrote:
->> Hi Rob,
->>
->> here is the pull request you asked for, with no changes from the version
->> that I posted last to the list.
->>
->> The following changes since commit 6ff33f3902c3b1c5d0db6b1e2c70b6d76fba357f:
->>
->> Linux 4.3-rc1 (2015-09-12 16:35:56 -0700)
->>
->> are available in the git repository at:
->>
->> git+ssh://git.collabora.co.uk/git/user/tomeu/linux.git
->> on-demand-probes-for-next
->
-> That's not a signed tag :(
->
-> Anyway, I REALLY don't like this series (sorry for the delay in
-> reviewing them, normally I trust Rob's judgement...)
+On Fri, 16 Oct 2015, Greg Kroah-Hartman wrote:
 
-We've seen a lot of attempts here. This is really the best solution so
-far in that it is simple, uses existing data from DT, and was low risk
-for breaking platforms (at least I thought it would be). Anyway,
-getting more exposure is why I've put it into -next.
+> On Mon, Oct 05, 2015 at 04:45:32PM +0200, Tomeu Vizoso wrote:
+> > Have dev_pm_ops.prepare return 1 for USB devices and ports so that USB
+> > devices can remain runtime-suspended when the system goes to a sleep
+> > state, if their wakeup state is correct and they have runtime PM enabled.
+> > 
+> > Signed-off-by: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+> > ---
+> > 
+> > 
+> >  drivers/usb/core/port.c |  6 ++++++
+> >  drivers/usb/core/usb.c  | 11 ++++++++++-
+> >  2 files changed, 16 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/usb/core/port.c b/drivers/usb/core/port.c
+> > index 210618319f10..f49707d73b5a 100644
+> > --- a/drivers/usb/core/port.c
+> > +++ b/drivers/usb/core/port.c
+> > @@ -168,12 +168,18 @@ static int usb_port_runtime_suspend(struct device *dev)
+> >  
+> >  	return retval;
+> >  }
+> > +
+> > +static int usb_port_prepare(struct device *dev)
+> > +{
+> > +	return 1;
+> > +}
+> >  #endif
+> >  
+> >  static const struct dev_pm_ops usb_port_pm_ops = {
+> >  #ifdef CONFIG_PM
+> >  	.runtime_suspend =	usb_port_runtime_suspend,
+> >  	.runtime_resume =	usb_port_runtime_resume,
+> > +	.prepare =		usb_port_prepare,
+> >  #endif
+> >  };
+> >  
+> > diff --git a/drivers/usb/core/usb.c b/drivers/usb/core/usb.c
+> > index 8d5b2f4113cd..cf4dde11db1c 100644
+> > --- a/drivers/usb/core/usb.c
+> > +++ b/drivers/usb/core/usb.c
+> > @@ -316,7 +316,16 @@ static int usb_dev_uevent(struct device *dev, struct kobj_uevent_env *env)
+> >  
+> >  static int usb_dev_prepare(struct device *dev)
+> >  {
+> > -	return 0;		/* Implement eventually? */
+> > +	struct usb_device *udev = to_usb_device(dev);
+> > +
+> > +	if (!pm_runtime_enabled(dev))
+> > +		return 0;
+> > +
+> > +	/* Return 0 if the current wakeup setting is wrong, otherwise 1 */
+> > +	if (udev->do_remote_wakeup != device_may_wakeup(dev))
+> > +		return 0;
+> > +
+> > +	return 1;
+> >  }
+> >  
+> >  static void usb_dev_complete(struct device *dev)
+> 
+> I'll defer to Alan if this is correct or not.
+> 
+> Alan?
 
-> I can't see adding calls like this all over the tree just to solve a
-> bus-specific problem, you are adding of_* calls where they aren't
-> needed, or wanted, at all.
+It's okay with me.  However, I believe the pm_runtime_enabled() test 
+isn't really needed.  USB devices are always enabled for runtime PM 
+once they are initialized.  Furthermore, if the test really were needed 
+then it should go in the PM core, not here.
 
-I think Linus W, Mark B, and I all said a similar thing initially in
-that dependencies should be handled in the driver core. We went down
-the path of making this not firmware (aka bus) specific and an earlier
-version had just that (with fwnode_* calls). That turned out to be
-pointless as the calling locations were almost always in DT specific
-code anyway. If you notice, the calls are next to other DT specific
-calls generally (usually a "get"). So yes, I'd prefer not to have to
-touch every subsystem, but we had to do that anyway to add DT support.
+Alan Stern
 
-We've generally split the DT code into the core (in drivers/of) and
-the binding specific (in subsystems). Extracting dependency
-information the DT is going to require binding specific knowledge, so
-subsystem changes are probably unavoidable.
-
-The alternative is we put binding specific knowledge into the core DT
-code to parse dependencies.
-
-> What is the root-problem of your delay in device probing?  I read your
-> last patch series and I can't seem to figure out what the issue is that
-> this is solving in any "better" way from the existing deferred probing.
-
-It saves 2 seconds in the boot time as re-probing takes time. That
-alone seems compelling to me.
-
-Another downside to deferred probing is you have to touch every driver
-and subsystem to support it. This contains the problem to the
-subsystems.
-
-Rob
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
