@@ -1,83 +1,46 @@
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH v9 4/4] USB / PM: Allow USB devices to remain
- runtime-suspended when sleeping
-Date: Fri, 16 Oct 2015 23:38:24 -0700
-Message-ID: <20151017063824.GB13889@kroah.com>
-References: <1444056332-30246-1-git-send-email-tomeu.vizoso@collabora.com>
- <1444056332-30246-5-git-send-email-tomeu.vizoso@collabora.com>
+Subject: Re: [GIT PULL] On-demand device probing
+Date: Fri, 16 Oct 2015 23:57:50 -0700
+Message-ID: <20151017065750.GA18607@kroah.com>
+References: <561E1378.6000906@collabora.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:32861 "EHLO
-	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750914AbbJQGiY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 17 Oct 2015 02:38:24 -0400
+Return-path: <linux-i2c-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1444056332-30246-5-git-send-email-tomeu.vizoso@collabora.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <561E1378.6000906@collabora.com>
+Sender: linux-i2c-owner@vger.kernel.org
 To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, martyn.welch@collabora.co.uk, Ulf Hansson <ulf.hansson@linaro.org>, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Rob Herring <robh+dt@kernel.org>, Russell King <linux@arm.linux.org.uk>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, Terje =?iso-8859-1?Q?Bergstr=F6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Frank Rowand <frowand.list@gmail.com>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Felipe Balbi <balbi@ti.com>Jingoo Han <j>
+List-Id: linux-pm@vger.kernel.org
 
-On Mon, Oct 05, 2015 at 04:45:32PM +0200, Tomeu Vizoso wrote:
-> Have dev_pm_ops.prepare return 1 for USB devices and ports so that USB
-> devices can remain runtime-suspended when the system goes to a sleep
-> state, if their wakeup state is correct and they have runtime PM enabled.
+On Wed, Oct 14, 2015 at 10:34:00AM +0200, Tomeu Vizoso wrote:
+> Hi Rob,
 > 
-> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-> ---
+> here is the pull request you asked for, with no changes from the version
+> that I posted last to the list.
 > 
+> The following changes since commit 6ff33f3902c3b1c5d0db6b1e2c70b6d76fba357f:
 > 
->  drivers/usb/core/port.c |  6 ++++++
->  drivers/usb/core/usb.c  | 11 ++++++++++-
->  2 files changed, 16 insertions(+), 1 deletion(-)
+> Linux 4.3-rc1 (2015-09-12 16:35:56 -0700)
 > 
-> diff --git a/drivers/usb/core/port.c b/drivers/usb/core/port.c
-> index 210618319f10..f49707d73b5a 100644
-> --- a/drivers/usb/core/port.c
-> +++ b/drivers/usb/core/port.c
-> @@ -168,12 +168,18 @@ static int usb_port_runtime_suspend(struct device *dev)
->  
->  	return retval;
->  }
-> +
-> +static int usb_port_prepare(struct device *dev)
-> +{
-> +	return 1;
-> +}
->  #endif
->  
->  static const struct dev_pm_ops usb_port_pm_ops = {
->  #ifdef CONFIG_PM
->  	.runtime_suspend =	usb_port_runtime_suspend,
->  	.runtime_resume =	usb_port_runtime_resume,
-> +	.prepare =		usb_port_prepare,
->  #endif
->  };
->  
-> diff --git a/drivers/usb/core/usb.c b/drivers/usb/core/usb.c
-> index 8d5b2f4113cd..cf4dde11db1c 100644
-> --- a/drivers/usb/core/usb.c
-> +++ b/drivers/usb/core/usb.c
-> @@ -316,7 +316,16 @@ static int usb_dev_uevent(struct device *dev, struct kobj_uevent_env *env)
->  
->  static int usb_dev_prepare(struct device *dev)
->  {
-> -	return 0;		/* Implement eventually? */
-> +	struct usb_device *udev = to_usb_device(dev);
-> +
-> +	if (!pm_runtime_enabled(dev))
-> +		return 0;
-> +
-> +	/* Return 0 if the current wakeup setting is wrong, otherwise 1 */
-> +	if (udev->do_remote_wakeup != device_may_wakeup(dev))
-> +		return 0;
-> +
-> +	return 1;
->  }
->  
->  static void usb_dev_complete(struct device *dev)
+> are available in the git repository at:
+> 
+> git+ssh://git.collabora.co.uk/git/user/tomeu/linux.git
+> on-demand-probes-for-next
 
-I'll defer to Alan if this is correct or not.
+That's not a signed tag :(
 
-Alan?
+Anyway, I REALLY don't like this series (sorry for the delay in
+reviewing them, normally I trust Rob's judgement...)
+
+I can't see adding calls like this all over the tree just to solve a
+bus-specific problem, you are adding of_* calls where they aren't
+needed, or wanted, at all.
+
+What is the root-problem of your delay in device probing?  I read your
+last patch series and I can't seem to figure out what the issue is that
+this is solving in any "better" way from the existing deferred probing.
+
+thanks,
+
+greg k-h
