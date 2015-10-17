@@ -1,91 +1,45 @@
-From: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
-Subject: Re: [PATCH v9 4/4] USB / PM: Allow USB devices to remain runtime-suspended
- when sleeping
-Date: Sat, 17 Oct 2015 11:12:57 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1510171107060.10498-100000@netrider.rowland.org>
-References: <20151017063824.GB13889@kroah.com>
+From: Rob Herring <robh+dt@kernel.org>
+Subject: Re: [GIT PULL] On-demand device probing
+Date: Sat, 17 Oct 2015 10:19:27 -0500
+Message-ID: <CAL_Jsq+34sRXe0HWCKNceQfLj=WfDV4-soynumvdnH_nwuj+9g@mail.gmail.com>
+References: <20151014092644.GO14956@sirena.org.uk> <1444909328-24761-1-git-send-email-tomeu.vizoso@collabora.com>
+ <CAOesGMj44N3Xfv_D_iLEzXBrkN6LXBa-uh6m3fi_F2xDenDhMg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20151017063824.GB13889-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
-Cc: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, martyn.welch-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-Reply-To: <CAOesGMj44N3Xfv_D_iLEzXBrkN6LXBa-uh6m3fi_F2xDenDhMg@mail.gmail.com>
+Sender: linux-clk-owner@vger.kernel.org
+To: Olof Johansson <olof@lixom.net>
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Russell King <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, =?UTF-8?Q?Terje_Bergstr=C3=B6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Frank Rowand <frowand.list@gmail.com>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 16 Oct 2015, Greg Kroah-Hartman wrote:
+On Fri, Oct 16, 2015 at 4:23 PM, Olof Johansson <olof@lixom.net> wrote:
+> Hi,
+>
+> I've bisected boot failures in next-20151016 down to patches in this branch:
+>
+> On Thu, Oct 15, 2015 at 4:42 AM, Tomeu Vizoso
+> <tomeu.vizoso@collabora.com> wrote:
+>> Tomeu Vizoso (20):
+>>       driver core: handle -EPROBE_DEFER from bus_type.match()
+>
+> The machine it happened on was OMAP5UEVM:
+>
+> http://arm-soc.lixom.net/bootlogs/next/next-20151016/omap5uevm-arm-omap2plus_defconfig.html
 
-> On Mon, Oct 05, 2015 at 04:45:32PM +0200, Tomeu Vizoso wrote:
-> > Have dev_pm_ops.prepare return 1 for USB devices and ports so that USB
-> > devices can remain runtime-suspended when the system goes to a sleep
-> > state, if their wakeup state is correct and they have runtime PM enabled.
-> > 
-> > Signed-off-by: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
-> > ---
-> > 
-> > 
-> >  drivers/usb/core/port.c |  6 ++++++
-> >  drivers/usb/core/usb.c  | 11 ++++++++++-
-> >  2 files changed, 16 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/usb/core/port.c b/drivers/usb/core/port.c
-> > index 210618319f10..f49707d73b5a 100644
-> > --- a/drivers/usb/core/port.c
-> > +++ b/drivers/usb/core/port.c
-> > @@ -168,12 +168,18 @@ static int usb_port_runtime_suspend(struct device *dev)
-> >  
-> >  	return retval;
-> >  }
-> > +
-> > +static int usb_port_prepare(struct device *dev)
-> > +{
-> > +	return 1;
-> > +}
-> >  #endif
-> >  
-> >  static const struct dev_pm_ops usb_port_pm_ops = {
-> >  #ifdef CONFIG_PM
-> >  	.runtime_suspend =	usb_port_runtime_suspend,
-> >  	.runtime_resume =	usb_port_runtime_resume,
-> > +	.prepare =		usb_port_prepare,
-> >  #endif
-> >  };
-> >  
-> > diff --git a/drivers/usb/core/usb.c b/drivers/usb/core/usb.c
-> > index 8d5b2f4113cd..cf4dde11db1c 100644
-> > --- a/drivers/usb/core/usb.c
-> > +++ b/drivers/usb/core/usb.c
-> > @@ -316,7 +316,16 @@ static int usb_dev_uevent(struct device *dev, struct kobj_uevent_env *env)
-> >  
-> >  static int usb_dev_prepare(struct device *dev)
-> >  {
-> > -	return 0;		/* Implement eventually? */
-> > +	struct usb_device *udev = to_usb_device(dev);
-> > +
-> > +	if (!pm_runtime_enabled(dev))
-> > +		return 0;
-> > +
-> > +	/* Return 0 if the current wakeup setting is wrong, otherwise 1 */
-> > +	if (udev->do_remote_wakeup != device_may_wakeup(dev))
-> > +		return 0;
-> > +
-> > +	return 1;
-> >  }
-> >  
-> >  static void usb_dev_complete(struct device *dev)
-> 
-> I'll defer to Alan if this is correct or not.
-> 
-> Alan?
+So this one is because the MMC node numbering changed. I don't know
+how to fix that other than with aliases, but that doesn't solve
+backwards compatibility.
 
-It's okay with me.  However, I believe the pm_runtime_enabled() test 
-isn't really needed.  USB devices are always enabled for runtime PM 
-once they are initialized.  Furthermore, if the test really were needed 
-then it should go in the PM core, not here.
 
-Alan Stern
+> But I've also seen it on tegra2, that one bisected down to:
+>
+>>      regulator: core: Probe regulators on demand
+>
+> http://arm-soc.lixom.net/bootlogs/next/next-20151016/seaboard-arm-multi_v7_defconfig.html
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+This one you need a rootwait I think. The MMC scanning is not
+guaranteed to be done before the rootfs mounting AFAIK. There may be
+other problems, but we can't see them since it panics.
+
+Rob
