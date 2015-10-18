@@ -1,40 +1,43 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] cpufreq: imx: fix regulator_get error handling
-Date: Sun, 18 Oct 2015 22:16:03 +0530
-Message-ID: <20151018164603.GF19018@linux>
-References: <56237C1C.80109@gmail.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH V3] debugfs: Add debugfs_create_ulong()
+Date: Sun, 18 Oct 2015 10:10:18 -0700
+Message-ID: <20151018171018.GB31988@kroah.com>
+References: <6d786424835b514b92f847e6f9af21b01244de85.1445159433.git.viresh.kumar@linaro.org>
+ <20151018162140.GA30196@kroah.com>
+ <20151018164409.GE19018@linux>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f48.google.com ([209.85.220.48]:36663 "EHLO
-	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932084AbbJRQqJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 18 Oct 2015 12:46:09 -0400
-Received: by pacfv9 with SMTP id fv9so69562237pac.3
-        for <linux-pm@vger.kernel.org>; Sun, 18 Oct 2015 09:46:09 -0700 (PDT)
+Received: from mail.linuxfoundation.org ([140.211.169.12]:50346 "EHLO
+	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932103AbbJRRKV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 18 Oct 2015 13:10:21 -0400
 Content-Disposition: inline
-In-Reply-To: <56237C1C.80109@gmail.com>
+In-Reply-To: <20151018164409.GE19018@linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Heiner Kallweit <hkallweit1@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, Rafael Wysocki <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, arnd@arndb.de, sboyd@codeaurora.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, stern@rowland.harvard.edu
 
-On 18-10-15, 13:01, Heiner Kallweit wrote:
-> With CONFIG_DELAY_DEVICE_PROBES being set I get the following error:
+On Sun, Oct 18, 2015 at 10:14:09PM +0530, Viresh Kumar wrote:
+> On 18-10-15, 09:21, Greg Kroah-Hartman wrote:
+> > On Sun, Oct 18, 2015 at 02:45:27PM +0530, Viresh Kumar wrote:
+> > > Add debugfs_create_ulong() for the users of type 'unsigned long'. These
+> > > will be 32 bits long on a 32 bit machine and 64 bits long on a 64 bit
+> > > machine.
+> > 
+> > Do you really need a debugfs_create_xlong()?  You don't mention it here
+> > in your changelog comment yet the patch contains it.  I'd hold off for
+> > it for now as I doubt anyone needs it...
 > 
-> cpu cpu0: failed to get regulators
-> imx6q-cpufreq: probe of imx6q-cpufreq.0 failed with error -2
+> At least my use case doesn't need it, but I thought it will be better
+> to implement the ulong series in the same way other interfaces are
+> implemented.
 > 
-> Fix the error handling of regulator_get to properly deal
-> with -EPROBE_DEFER.
-> 
-> Signed-off-by: Heiner Kallweit <hkallweit1@gmail.com>
-> ---
->  drivers/cpufreq/imx6q-cpufreq.c | 15 ++++++++++++---
->  1 file changed, 12 insertions(+), 3 deletions(-)
+> I can drop that part if you want.
 
-For both patches.
+Please do, I don't like adding apis that no one uses.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
--- 
-viresh
+thanks,
+
+greg k-h
