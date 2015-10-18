@@ -1,63 +1,40 @@
-From: Heiner Kallweit <hkallweit1@gmail.com>
-Subject: Re: [PATCH 1/2] cpufreq: imx: fix regulator_get error handling
-Date: Sun, 18 Oct 2015 18:40:45 +0200
-Message-ID: <5623CB8D.2020405@gmail.com>
-References: <56237C1C.80109@gmail.com> <20151018155509.GD19018@linux>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V3] debugfs: Add debugfs_create_ulong()
+Date: Sun, 18 Oct 2015 22:14:09 +0530
+Message-ID: <20151018164409.GE19018@linux>
+References: <6d786424835b514b92f847e6f9af21b01244de85.1445159433.git.viresh.kumar@linaro.org>
+ <20151018162140.GA30196@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f176.google.com ([209.85.212.176]:36805 "EHLO
-	mail-wi0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752857AbbJRQkx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 18 Oct 2015 12:40:53 -0400
-Received: by wicfx6 with SMTP id fx6so20520047wic.1
-        for <linux-pm@vger.kernel.org>; Sun, 18 Oct 2015 09:40:51 -0700 (PDT)
-In-Reply-To: <20151018155509.GD19018@linux>
+Received: from mail-pa0-f43.google.com ([209.85.220.43]:33289 "EHLO
+	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932081AbbJRQoX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 18 Oct 2015 12:44:23 -0400
+Received: by pabrc13 with SMTP id rc13so166349217pab.0
+        for <linux-pm@vger.kernel.org>; Sun, 18 Oct 2015 09:44:22 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20151018162140.GA30196@kroah.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linaro-kernel@lists.linaro.org, Rafael Wysocki <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, arnd@arndb.de, sboyd@codeaurora.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, stern@rowland.harvard.edu
 
-Am 18.10.2015 um 17:55 schrieb Viresh Kumar:
-> On 18-10-15, 13:01, Heiner Kallweit wrote:
->>  	arm_reg = regulator_get(cpu_dev, "arm");
->> +	if (IS_ERR(arm_reg)) {
->> +		ret = PTR_ERR(arm_reg);
->> +		if (ret != -EPROBE_DEFER)
->> +			dev_err(cpu_dev, "failed to get regulator arm\n");
->> +		goto put_reg;
+On 18-10-15, 09:21, Greg Kroah-Hartman wrote:
+> On Sun, Oct 18, 2015 at 02:45:27PM +0530, Viresh Kumar wrote:
+> > Add debugfs_create_ulong() for the users of type 'unsigned long'. These
+> > will be 32 bits long on a 32 bit machine and 64 bits long on a 64 bit
+> > machine.
 > 
-> So you will error out even for other errors, but that wasn't the case
-> earlier. Are you sure this is what you want?
-> 
-This was the case before as well (just the error handling for
-arm-reg and soc_reg was combined).
-The only difference is that before all errors were mapped to
--ENOENT and now the actual error code is forwarded.
+> Do you really need a debugfs_create_xlong()?  You don't mention it here
+> in your changelog comment yet the patch contains it.  I'd hold off for
+> it for now as I doubt anyone needs it...
 
->> +	}
->> +
->>  	pu_reg = regulator_get_optional(cpu_dev, "pu");
-> 
-> Why don't we do error checking for this as well ?
-> 
-Please see patch 2/2. I separated it because it doeas a little bit
-more than handling -EPROBE_DEFER.
+At least my use case doesn't need it, but I thought it will be better
+to implement the ulong series in the same way other interfaces are
+implemented.
 
->> +
->>  	soc_reg = regulator_get(cpu_dev, "soc");
->> -	if (IS_ERR(arm_reg) || IS_ERR(soc_reg)) {
->> -		dev_err(cpu_dev, "failed to get regulators\n");
->> -		ret = -ENOENT;
->> +	if (IS_ERR(soc_reg)) {
->> +		ret = PTR_ERR(soc_reg);
->> +		if (ret != -EPROBE_DEFER)
->> +			dev_err(cpu_dev, "failed to get regulator soc\n");
->>  		goto put_reg;
->>  	}
->>  
->> -- 
->> 2.6.1
-> 
+I can drop that part if you want.
 
+-- 
+viresh
