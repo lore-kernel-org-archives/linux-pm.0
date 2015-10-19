@@ -1,59 +1,188 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power: bq27xxx_battery: Remove unneeded dependency in
- Kconfig
-Date: Mon, 19 Oct 2015 11:39:09 +0200
-Message-ID: <20151019093909.GB11028@earth>
-References: <1445006960-3655-1-git-send-email-afd@ti.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [RFC PATCH 1/2] PM / runtime: Add CPU runtime PM suspend/resume api
+Date: Mon, 19 Oct 2015 11:44:35 +0200
+Message-ID: <CAPDyKFp9P=uuSkGN_HD3JGn_YMi=ZnfG5ynX5y3ZfFt28fXxUg@mail.gmail.com>
+References: <1444168656-6576-1-git-send-email-lina.iyer@linaro.org>
+	<1444168656-6576-2-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="QTprm0S8XgL7H0Dt"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:47464 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752654AbbJSJjN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 19 Oct 2015 05:39:13 -0400
-Content-Disposition: inline
-In-Reply-To: <1445006960-3655-1-git-send-email-afd@ti.com>
+Received: from mail-lf0-f46.google.com ([209.85.215.46]:36771 "EHLO
+	mail-lf0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753362AbbJSJoh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 Oct 2015 05:44:37 -0400
+Received: by lffz202 with SMTP id z202so23369245lff.3
+        for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2015 02:44:35 -0700 (PDT)
+In-Reply-To: <1444168656-6576-2-git-send-email-lina.iyer@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Andrew F. Davis" <afd@ti.com>
-Cc: Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Kevin Hilman <khilman@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Geert Uytterhoeven <geert+renesas@glider.be>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Stephen Boyd <sboyd@codeaurora.org>
 
+On 6 October 2015 at 23:57, Lina Iyer <lina.iyer@linaro.org> wrote:
+> CPU devices that use runtime PM, have the followign characteristics -
+>         - Runs in a IRQs disabled context
+>         - Every CPU does its own runtime PM
+>         - CPUs do not access other CPU's runtime PM
+>         - The runtime PM state of the CPU is determined by the CPU
+>
+> These allow for some interesting optimizations -
+>         - The CPUs have a limited runtime PM states
+>         - The runtime state of CPU need not be protected by spinlocks
+>         - Options like auto-suspend/async are not relevant to CPU
+>           devices
+>
+> A simplified runtime PM would therefore provide all that is needed for
+> the CPU devices. After making a quick check for the usage count of the
+> CPU devices (to allow for the CPU to not power down the domain), the
+> runtime PM could just call the PM callbacks for the CPU devices. Locking
+> is also avoided.
 
---QTprm0S8XgL7H0Dt
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+It's an interesting idea. :-)
 
-Hi,
+While I need to give it some more thinking for how/if this could fit
+into the runtime PM API, let me start by providing some initial
+feedback on the patch as such.
 
-On Fri, Oct 16, 2015 at 09:49:20AM -0500, Andrew F. Davis wrote:
-> I2C is only required when using the config item BATTERY_BQ27XXX_I2C which
-> already depends on the I2C subsystem, remove the unneeded dependency from
-> BATTERY_BQ27XXX.
+>
+> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+> ---
+>  drivers/base/power/runtime.c | 61 ++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/pm_runtime.h   |  3 ++-
+>  2 files changed, 63 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> index e1a10a0..5f7512c 100644
+> --- a/drivers/base/power/runtime.c
+> +++ b/drivers/base/power/runtime.c
+> @@ -13,6 +13,7 @@
+>  #include <linux/pm_wakeirq.h>
+>  #include <trace/events/rpm.h>
+>  #include "power.h"
+> +#include <linux/cpu.h>
+>
+>  typedef int (*pm_callback_t)(struct device *);
+>
+> @@ -577,6 +578,66 @@ static int rpm_suspend(struct device *dev, int rpmflags)
+>         goto out;
+>  }
+>
+> +void cpu_pm_runtime_suspend(void)
 
-Thanks, queued.
+I think you want to return int instead of void.
 
--- Sebastian
+> +{
+> +       int ret;
+> +       int (*callback)(struct device *);
+> +       struct device *dev = get_cpu_device(smp_processor_id());
 
---QTprm0S8XgL7H0Dt
-Content-Type: application/pgp-signature; name="signature.asc"
+Perhaps we should follow the other runtime PM APIs and have the struct
+*device provided as an in-parameter!?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+> +
+> +       trace_rpm_suspend(dev, 0);
+> +
+> +       /**
+> +        * Use device usage_count to disallow bubbling up suspend.
+> +        * This CPU has already decided to suspend, we cannot
+> +        * prevent it here.
+> +        */
+> +       if (!atomic_dec_and_test(&dev->power.usage_count))
+> +               return 0;
+> +
+> +       ret = rpm_check_suspend_allowed(dev);
 
-iQIcBAEBCgAGBQJWJLo9AAoJENju1/PIO/qaZe8P/2HlQ4jL0lo8j7NQ2dlUSbhi
-m/Ea/kWw8lnG8gNPypFVEVLK/M1MRk+tLYq9TWNtnFsAeBaK2wqubWVVpy54b3VX
-iJAQ0rV9BNkubraFkSuOIbavdDo6gv+2nzix01PaqKukwyI+jpgwxkUQtrKr5fkR
-0HzSNehExmX8pzLy1tDytQHx4akBIFnMfQb5uElQpIH1u1PNMCEYjL6ifprddOse
-+xBpBMrQ3z6BOvSCe2OeoVCSeshBiI9pFgyKV6tZiiIjwIDfKPujyfFg12Xmse1f
-2M3WiahmqIZ5XNeHNMxBhUn9vW7LXLAy2m6C+dLgr2bWPLn0VbrdwpcsQAVuzCFo
-O5kQSo6cGeyS7flL0c/+SmN+MuZfLWalcbCermxAhWkIUaRqMUK5wbSImwY5urQs
-YVSnEWcb24SrdeI6Nhj7RHSAbBBJfmF3f2JWk39Yp6Uc+csWnVc7cG6q30NVN+Mo
-hxYFPlEapNwgKlc6sSyurs/FKhyjO78c2vxXxEIzYnrdii1hZ8oSiGsvP1BbrmMA
-m/rmyUhGGkeZ1uCWaE/RL/8tJRzEZ1LEV5HJCJINs4vCSEMIGYKbicrCEeigL5eK
-7Xeqw2WtblgzEI94DlGINg3niI/HxmsRB8DbbNUuRh2+hXjMpDpq55oJekWl9Vzy
-uXk5iYWX0sCLO7LwSfvd
-=hP3m
------END PGP SIGNATURE-----
+I don't think you can use this function. For example it calls
+__dev_pm_qos_read_value() which expects the dev->power.lock to be
+held.
 
---QTprm0S8XgL7H0Dt--
+> +       if (ret)
+> +               return ret;
+> +
+> +       __update_runtime_status(dev, RPM_SUSPENDING);
+> +
+> +       pm_runtime_cancel_pending(dev);
+
+Hmm. For the same struct device (CPU) could really calls to
+cpu_pm_runtime_suspend|resume() happen in parallel? Do we need to
+protect against that?
+I don't have such in-depth knowledge about CPU idle, so apologize if
+this may be a stupid question.
+
+If the answer to the above is *no*, I believe you don't need to care
+about the intermediate RPM_SUSPENDING state and you don't need an
+atomic counter either, right!?
+Instead you could then just update the runtime PM status to
+RPM_SUSPENDED if the RPM callback doesn't return an error.
+
+> +       callback = RPM_GET_CALLBACK(dev, runtime_suspend);
+> +
+> +       ret = callback(dev);
+> +       if (!ret)
+> +               __update_runtime_status(dev, RPM_SUSPENDED);
+> +       else
+> +               __update_runtime_status(dev, RPM_ACTIVE);
+> +
+> +       trace_rpm_return_int(dev, _THIS_IP_, ret);
+> +}
+> +
+> +void cpu_pm_runtime_resume(void)
+
+Similar comments as for the suspend function.
+
+> +{
+> +       int ret;
+> +       int (*callback)(struct device *);
+> +       struct device *dev = get_cpu_device(smp_processor_id());
+> +
+> +       trace_rpm_resume(dev, 0);
+> +
+> +       if (dev->power.runtime_status == RPM_ACTIVE)
+> +               return 1;
+> +
+> +       atomic_inc(&dev->power.usage_count);
+> +
+> +       __update_runtime_status(dev, RPM_RESUMING);
+> +
+> +       callback = RPM_GET_CALLBACK(dev, runtime_resume);
+> +
+> +       ret = callback(dev);
+> +       if (!ret)
+> +               __update_runtime_status(dev, RPM_ACTIVE);
+> +       else
+> +               __update_runtime_status(dev, RPM_SUSPENDED);
+> +
+> +       trace_rpm_return_int(dev, _THIS_IP_, ret);
+> +}
+> +
+>  /**
+>   * rpm_resume - Carry out runtime resume of given device.
+>   * @dev: Device to resume.
+> diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
+> index 3bdbb41..3655ead 100644
+> --- a/include/linux/pm_runtime.h
+> +++ b/include/linux/pm_runtime.h
+> @@ -31,6 +31,8 @@ static inline bool queue_pm_work(struct work_struct *work)
+>         return queue_work(pm_wq, work);
+>  }
+>
+> +extern void cpu_pm_runtime_suspend(void);
+> +extern void cpu_pm_runtime_resume(void);
+
+extern int ...
+
+>  extern int pm_generic_runtime_suspend(struct device *dev);
+>  extern int pm_generic_runtime_resume(struct device *dev);
+>  extern int pm_runtime_force_suspend(struct device *dev);
+> @@ -273,5 +275,4 @@ static inline void pm_runtime_dont_use_autosuspend(struct device *dev)
+>  {
+>         __pm_runtime_use_autosuspend(dev, false);
+>  }
+> -
+>  #endif
+> --
+> 2.1.4
+>
+
+Kind regards
+Uffe
