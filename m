@@ -1,408 +1,165 @@
-From: Jacob Tanenbaum <jtanenba@redhat.com>
-Subject: Re: [PATCH] Fix cpupower reporting uninitialized values for offline
- cpus
-Date: Mon, 19 Oct 2015 09:39:33 -0400
-Message-ID: <5624F295.3070101@redhat.com>
-References: <1443726584-18709-1-git-send-email-jtanenba@redhat.com>
- <5620234C.5000104@redhat.com> <9276359.hpYRDABKuX@skinner>
+From: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+Subject: Re: [GIT PULL] On-demand device probing
+Date: Mon, 19 Oct 2015 16:10:56 +0200
+Message-ID: <CAAObsKDS_+AZ26P_fHc6pvAYrQotsuoO0DEGQUWC514t3DD_jQ@mail.gmail.com>
+References: <561E1378.6000906@collabora.com> <20151017065750.GA18607@kroah.com>
+ <20151018192931.GY14956@sirena.org.uk> <20151018193757.GA9147@kroah.com>
+ <20151018195330.GB14956@sirena.org.uk> <CAAObsKB2BUZ-smid45wOdAQw6h2yNqCydk+azAFNk69ewHJtZQ@mail.gmail.com>
+ <20151019131821.GA32532@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:39152 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752969AbbJSNjf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 19 Oct 2015 09:39:35 -0400
-In-Reply-To: <9276359.hpYRDABKuX@skinner>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20151019131821.GA32532-l+eeeJia6m9vn6HldHNs0ANdhmdF6hFW@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>
+Cc: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Michael Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Vinod Koul <vinod.koul-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Dan Williams <dan.j.williams-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, =?UTF-8?Q?Terje_Bergstr=C3=B6m?= <tbergstrom-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kishon Vijay Abraham I <kishon-l0cyMroinI0@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Felipe Balbi <balbi-l0cyMroinI0@public.gmane.org>, Jingo
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Renninger <trenn@suse.de>
-Cc: prarit@redhat.com, linux-pm@vger.kernel.org
 
+On 19 October 2015 at 15:18, Russell King - ARM Linux
+<linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org> wrote:
+> On Mon, Oct 19, 2015 at 02:34:22PM +0200, Tomeu Vizoso wrote:
+>> ... If a device is available and has
+>> a compatible driver, but it cannot be probed because a dependency
+>> isn't going to be available, that's an error and is going to cause
+>> real-world problems unless the device is redundant. Currently we say
+>> nothing because with deferred probe the probe callbacks are also part
+>> of the mechanism that determines the dependency order.
+>
+> So what if device X depends on device Y, and we have a driver for
+> device Y built-in to the kernel, but the driver for device X is a
+> module?
+>
+> I don't see this being solvable in the way you describe above - it's
+> going to identify X as being unable to be satisfied, and report it as
+> an error - but it's not an error at all.
 
+It's going to probe Y at late_initcall, then probe X when its driver
+is registered. No deferred probes nor messages about it.
 
-On 10/16/2015 10:32 AM, Thomas Renninger wrote:
-> On Thursday, October 15, 2015 06:06:04 PM Jacob Tanenbaum wrote:
->> Hi Thomas,
->>
->> Have you gotten a chance to look at this patch?
-> Yes, but there are issues and I did not had time to come up with
-> a modified patch or concrete suggestions.
->
-> Ok, let's discuss things first and get to a patch everybody agrees to.
-> I have 2 orther patches, I can then pick this one as well and send
-> all to Rafael.
->
-> ...
+But if you meant to write the opposite case (X built-in and Y in a
+module), then I have to ask you in what situation that would make
+sense.
 
-your suggestions look pretty good, I just have a question on one and a 
-correction to show you here.
+>> Having a specific switch for enabling deferred probe logging sounds
+>> good, but there's going to be hundreds of spurious messages about
+>> deferred probes that were just deferrals and only one of them is going
+>> to be the actual error in which a device failed to find a dependency.
 >
->>> diff --git a/tools/power/cpupower/utils/helpers/topology.c
->>> b/tools/power/cpupower/utils/helpers/topology.c index cea398c..019a712
->>> 100644
->>> --- a/tools/power/cpupower/utils/helpers/topology.c
->>> +++ b/tools/power/cpupower/utils/helpers/topology.c
->>> @@ -73,8 +73,11 @@ int get_cpu_topology(struct cpupower_topology *cpu_top)
->>>
->>>    	for (cpu = 0; cpu < cpus; cpu++) {
->>>    	
->>>    		cpu_top->core_info[cpu].cpu = cpu;
->>>    		cpu_top->core_info[cpu].is_online = sysfs_is_cpu_online(cpu);
->>>
->>> -		if (!cpu_top->core_info[cpu].is_online)
->>> +		if (!cpu_top->core_info[cpu].is_online) {
->>> +			cpu_top->core_info[cpu].pkg = -1;
->>> +			cpu_top->core_info[cpu].core = -1;
->>>
->>>    			continue;
->>>
->>> +		}
-> But here we said, we do not want to check for (soft/real) online/offline.
-> When the CPU is soft-offlined, in future there might
-> still be sane values in the topology fields?
-> So better first do sysfs_topology_read_file() and then check for offline.
-You are right the flow here is better and allows for more sane behavior 
-when/if other sysfs changes are implemented.
+> Why would there be?  Sounds like something's very wrong there.
 
->
->>>    		if(sysfs_topology_read_file(
->>>    		
->>>    			cpu,
->>>    			"physical_package_id",
->>>
->>> @@ -95,12 +98,15 @@ int get_cpu_topology(struct cpupower_topology
->>> *cpu_top)
->>>
->>>    	   done by pkg value. */
->>>    	
->>>    	last_pkg = cpu_top->core_info[0].pkg;
->>>    	for(cpu = 1; cpu < cpus; cpu++) {
->>>
->>> -		if(cpu_top->core_info[cpu].pkg != last_pkg) {
->>> +		if (cpu_top->core_info[cpu].pkg != last_pkg &&
->>> +				cpu_top->core_info[cpu].pkg != -1) {
->>> +
->>>
->>>    			last_pkg = cpu_top->core_info[cpu].pkg;
->>>    			cpu_top->pkgs++;
->>>    		
->>>    		}
->>>    	
->>>    	}
->>>
->>> -	cpu_top->pkgs++;
->>> +	if (!cpu_top->core_info[0].is_online)
->>> +		cpu_top->pkgs++;
-> Why is that?
-> I guess we can leave this:
->>> +	if (!cpu_top->core_info[0].is_online)
->>> +		cpu_top->pkgs++;
-> out?
+Sorry about that, I have checked that only now and I "only" get 39
+deferred probe messages on exynos5250-snow.
 
-That is needed because adding an offline cpu creates an additional 
-package at the moment (we set offline CPU's physical_pakage_id= -1)
-so a machine with a single socket and an offline CPU will display as a 
-two socket machine. The logic here was slightly
-incorrect, it should be "if(cpu->core_info[0].is_online)", but I think 
-it would be better to check if cpu_top->core_info[0] == -1
-because that will do the right thing when the topology for offline CPU's 
-is a sane value.
-> Only place ->pkgs is checked is whether we have a multi socket machine.
-> If not, do not print CPU package id/core info:
-> cpupower monitor -mMperf
->      |Mperf
-> CPU | C0   | Cx   | Freq
->     0|  1.61| 98.39|  2585
->     4|  2.59| 97.41|  2443
->     1|  3.09| 96.91|  2537
->     5|  1.01| 98.99|  2517
->     2|  5.21| 94.79|  2583
->     6|  2.08| 97.92|  2528
->     3| 11.27| 88.73|  2686
->     7|  1.69| 98.31|  2387
->
-> if yes, print the package details which are very relevant for CPU powersavings:
->
->                |Mperf
-> PKG |CORE|CPU | C0   | Cx   | Freq
->     0|   0|   0|  0.01| 99.99|  1448
->     0|   0|  16|  0.00|100.00|  3134
-> ..
->     1|   0|   8|  0.00|100.00|  1199
->     1|   0|  24|  0.00|100.00|   944
-> ..
->
->>>    	/* Intel's cores count is not consecutively numbered, there may
->>>    	
->>>    	 * be a core_id of 3, but none of 2. Assume there always is 0
->>>
->>> diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
->>> b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c index
->>> c4bae92..8efc5b9 100644
->>> --- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
->>> +++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
->>> @@ -143,6 +143,8 @@ void print_results(int topology_depth, int cpu)
->>>
->>>    	/* Be careful CPUs may got resorted for pkg value do not just use cpu
->>>    	*/
->>>    	if (!bitmask_isbitset(cpus_chosen, cpu_top.core_info[cpu].cpu))
->>>    	
->>>    		return;
->>>
->>> +	if (!cpu_top.core_info[cpu].is_online)
->>> +		return;
->>>
->>>    	if (topology_depth > 2)
->>>    	
->>>    		printf("%4d|", cpu_top.core_info[cpu].pkg);
->>>
->>> @@ -191,11 +193,7 @@ void print_results(int topology_depth, int cpu)
->>>
->>>    	 * It's up to the monitor plug-in to check .is_online, this one
->>>    	 * is just for additional info.
->>>    	 */
->>>
->>> -	if (!cpu_top.core_info[cpu].is_online) {
->>> -		printf(_(" *is offline\n"));
->>> -		return;
->>> -	} else
->>> -		printf("\n");
-> Hm, again. If this is a soft-offlined core and we may get topology
-> info for this one in the future, we want to show it as offlined.
-> -> It is important that this core, in this package (should) enter(s)
->     deepest sleep states
->
-> We only want to totally remove it if it is hard-offlined.
->
-> This cannot be distinguished yet, but if we get a patch which
-> keeps topology files if soft-offlined, we can.
->
-> Please have a look at my modified one.
-> This one could automatically distinguish between:
-> - soft-offlined (as soon as a kernel patch would still show topology info)
-> - hard-offlined (nothing printed)
-I like your modifications but as a question will we need to distinguish 
-between hard-offlined
-and soft-offlined cpu's? Shouldn't the system forget about a 
-hard-offlined cpu just like it does
-when hard-drives are removed?
->
-> Thanks,
->
->          Thomas
->
->
->  From jtanenba@redhat.com Thu Oct 01 19:09:44 2015
->
-> cpupower monitor reports uninitialized values for offline cpus
->
-> [root@hp-dl980g7-02 linux]# cpupower monitor
-> ...
-> 5472|   0|   1|******|******|******|******||******|******|******|| 0.00|  0.00|  0.00|  0.00|  0.00 *is offline
-> 10567|   0| 159|******|******|******|******||******|******|******||  0.00|  0.00|  0.00|  0.00|  0.00 *is offline
-> 1661206560|859272560| 150|******|******|******|******||******|******|******|| 0.00|  0.00|  0.00|  0.00|  0.00 *is offline
-> 1661206560|943093104| 140|******|******|******|******||******|******|******|| 0.00|  0.00|  0.00|  0.00|  0.00 *is offline
->
-> because of this cpupower also holds the incorrect value for the number
-> of physical packages in the machine
->
-> Changed cpupower to initialize the values of an offline cpu's socket and
-> core to -1, warn the user that one or more cpus is/are
-> offline and not print statistics for offline cpus.
->
-> Thomas Renninger suggested fixing the issue by checking for the
-> existence of the topology files which the code already does, so I
-> decided to use a check on if the cpu was online.
->
-> Example output after the patch is applied:
-> [root@hp-dl980g7-02 ~]# cpupower monitor
-> WARNING: at least one cpu is offline
->                |Nehalem                    || Mperf              || Idle_Stats
-> PKG |CORE|CPU | C3   | C6   | PC3  | PC6  || C0   | Cx   | Freq || POLL || C1-N | C1E- | C3-N | C6-N
->     0|   0|   0|  0.00| 99.37|  0.00|  0.00||  0.35| 99.65|  1596||  0.00|  0.00|  0.00|  0.00| 99.85
->     0|   0|  80|  0.00| 99.37|  0.00|  0.00||  0.30| 99.70|  1645||  0.00|  0.00|  0.00|  0.00| 99.98
->     0|   1|  81|  0.00| 99.53|  0.00|  0.00||  0.29| 99.71|  1655||  0.00|  0.00|  0.00|  0.00| 99.33
->     0|   2|   2|  0.00| 99.47|  0.00|  0.00||  0.29| 99.71|  1660||  0.00|  0.00|  0.00|  0.00| 99.35
-> ...
->
-> Signed-off-by: Jacob Tanenbaum <jtanenba@redhat.com>
->
-> diff --git a/tools/power/cpupower/utils/helpers/topology.c b/tools/power/cpupower/utils/helpers/topology.c
-> index cea398c..385fd7c 100644
-> --- a/tools/power/cpupower/utils/helpers/topology.c
-> +++ b/tools/power/cpupower/utils/helpers/topology.c
-> @@ -73,18 +73,22 @@ int get_cpu_topology(struct cpupower_topology *cpu_top)
->   	for (cpu = 0; cpu < cpus; cpu++) {
->   		cpu_top->core_info[cpu].cpu = cpu;
->   		cpu_top->core_info[cpu].is_online = sysfs_is_cpu_online(cpu);
-> -		if (!cpu_top->core_info[cpu].is_online)
-> -			continue;
->   		if(sysfs_topology_read_file(
->   			cpu,
->   			"physical_package_id",
-> -			&(cpu_top->core_info[cpu].pkg)) < 0)
-> -			return -1;
-> +			&(cpu_top->core_info[cpu].pkg)) < 0) {
-> +			cpu_top->core_info[cpu].pkg = -1;
-> +			cpu_top->core_info[cpu].core = -1;
-> +			continue;
-> +		}
->   		if(sysfs_topology_read_file(
->   			cpu,
->   			"core_id",
-> -			&(cpu_top->core_info[cpu].core)) < 0)
-> -			return -1;
-> +			&(cpu_top->core_info[cpu].core)) < 0) {
-> +			cpu_top->core_info[cpu].pkg = -1;
-> +			cpu_top->core_info[cpu].core = -1;
-> +			continue;
-> +		}
->   	}
-Why should both the read for core_id and physical_package_id set both 
-values to -1? I think each value should
-be written as it fails the read for the specific value.
->   
->   	qsort(cpu_top->core_info, cpus, sizeof(struct cpuid_core_info),
-> @@ -95,12 +99,15 @@ int get_cpu_topology(struct cpupower_topology *cpu_top)
->   	   done by pkg value. */
->   	last_pkg = cpu_top->core_info[0].pkg;
->   	for(cpu = 1; cpu < cpus; cpu++) {
-> -		if(cpu_top->core_info[cpu].pkg != last_pkg) {
-> +		if (cpu_top->core_info[cpu].pkg != last_pkg &&
-> +				cpu_top->core_info[cpu].pkg != -1) {
-> +
->   			last_pkg = cpu_top->core_info[cpu].pkg;
->   			cpu_top->pkgs++;
->   		}
->   	}
-> -	cpu_top->pkgs++;
-> +	if (!cpu_top->core_info[0].is_online)
-> +		cpu_top->pkgs++;
->   
->   	/* Intel's cores count is not consecutively numbered, there may
->   	 * be a core_id of 3, but none of 2. Assume there always is 0
-> diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
-> index c4bae92..05f953f 100644
-> --- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
-> +++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
-> @@ -143,6 +143,9 @@ void print_results(int topology_depth, int cpu)
->   	/* Be careful CPUs may got resorted for pkg value do not just use cpu */
->   	if (!bitmask_isbitset(cpus_chosen, cpu_top.core_info[cpu].cpu))
->   		return;
-> +	if (!cpu_top.core_info[cpu].is_online &&
-> +	    cpu_top.core_info[cpu].pkg == -1)
-> +		return;
->   
->   	if (topology_depth > 2)
->   		printf("%4d|", cpu_top.core_info[cpu].pkg);
-> @@ -191,7 +194,8 @@ void print_results(int topology_depth, int cpu)
->   	 * It's up to the monitor plug-in to check .is_online, this one
->   	 * is just for additional info.
->   	 */
-> -	if (!cpu_top.core_info[cpu].is_online) {
-> +	if (!cpu_top.core_info[cpu].is_online &&
-> +	    cpu_top.core_info[cpu].pkg != -1) {
->   		printf(_(" *is offline\n"));
->   		return;
->   	} else
-> @@ -388,6 +392,9 @@ int cmd_monitor(int argc, char **argv)
->   		return EXIT_FAILURE;
->   	}
->   
-> +	if (!cpu_top.core_info[0].is_online)
-> +		printf("WARNING: at least one cpu is offline\n");
-> +
->   	/* Default is: monitor all CPUs */
->   	if (bitmask_isallclear(cpus_chosen))
->   		bitmask_setall(cpus_chosen);
->
+> You should only get deferred probes for devices which are declared to
+> be present, but their resources have not yet been satisfied.  It
+> doesn't change anything if you have a kernel with lots of device drivers
+> or just the device drivers you need - the device drivers you don't need
+> do not contribute to the deferred probing in any way.
 
-Sorry for the copy-paste but here is my revision
+I don't think that the number of registered drivers affects the number
+of probes that get deferred (but I'm not sure why you mention that).
 
-diff --git a/tools/power/cpupower/utils/helpers/topology.c 
-b/tools/power/cpupower/utils/helpers/topology.c
-index cea398c..d696c33 100644
---- a/tools/power/cpupower/utils/helpers/topology.c
-+++ b/tools/power/cpupower/utils/helpers/topology.c
-@@ -73,18 +73,16 @@ int get_cpu_topology(struct cpupower_topology *cpu_top)
-         for (cpu = 0; cpu < cpus; cpu++) {
-                 cpu_top->core_info[cpu].cpu = cpu;
-                 cpu_top->core_info[cpu].is_online = 
-sysfs_is_cpu_online(cpu);
--               if (!cpu_top->core_info[cpu].is_online)
--                       continue;
-                 if(sysfs_topology_read_file(
-                         cpu,
-                         "physical_package_id",
-&(cpu_top->core_info[cpu].pkg)) < 0)
--                       return -1;
-+                       cpu_top->core_info[cpu].pkg = -1;
-                 if(sysfs_topology_read_file(
-                         cpu,
-                         "core_id",
-&(cpu_top->core_info[cpu].core)) < 0)
--                       return -1;
-+                       cpu_top->core_info[cpu].core = -1;
-         }
+> So, really, after boot and all appropriate modules have been loaded,
+> you should end up with no deferred probes.  Are you saying that you
+> still have "hundreds" at that point?  If you do, that sounds like
+> there's something very wrong.
 
-         qsort(cpu_top->core_info, cpus, sizeof(struct cpuid_core_info),
-@@ -95,12 +93,15 @@ int get_cpu_topology(struct cpupower_topology *cpu_top)
-            done by pkg value. */
-         last_pkg = cpu_top->core_info[0].pkg;
-         for(cpu = 1; cpu < cpus; cpu++) {
--               if(cpu_top->core_info[cpu].pkg != last_pkg) {
-+               if (cpu_top->core_info[cpu].pkg != last_pkg &&
-+                               cpu_top->core_info[cpu].pkg != -1) {
-+
-                         last_pkg = cpu_top->core_info[cpu].pkg;
-                         cpu_top->pkgs++;
-                 }
-         }
--       cpu_top->pkgs++;
-+       if (!cpu_top->core_info[0].pkg == -1)
-+               cpu_top->pkgs++;
+I was talking about messages if we log each -EPROBE_DEFER, not devices
+that remain to be probed. The point being that right now we don't have
+a way to know if we are deferring because the dependency will be
+around later, or if we have a problem and the dependency isn't going
+to be there at all.
 
-         /* Intel's cores count is not consecutively numbered, there may
-          * be a core_id of 3, but none of 2. Assume there always is 0
-diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c 
-b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
-index c4bae92..05f953f 100644
---- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
-+++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
-@@ -143,6 +143,9 @@ void print_results(int topology_depth, int cpu)
-         /* Be careful CPUs may got resorted for pkg value do not just 
-use cpu */
-         if (!bitmask_isbitset(cpus_chosen, cpu_top.core_info[cpu].cpu))
-                 return;
-+       if (!cpu_top.core_info[cpu].is_online &&
-+           cpu_top.core_info[cpu].pkg == -1)
-+               return;
+If we had a way to enable printing the cause of each -EPROBE_DEFER,
+right now that would print 39 messages of this board that are only due
+to ordering. The actual issue would be printed in exactly the same way
+somewhere in the middle.
 
-         if (topology_depth > 2)
-                 printf("%4d|", cpu_top.core_info[cpu].pkg);
-@@ -191,7 +194,8 @@ void print_results(int topology_depth, int cpu)
-          * It's up to the monitor plug-in to check .is_online, this one
-          * is just for additional info.
-          */
--       if (!cpu_top.core_info[cpu].is_online) {
-+       if (!cpu_top.core_info[cpu].is_online &&
-+           cpu_top.core_info[cpu].pkg != -1) {
-                 printf(_(" *is offline\n"));
-                 return;
-         } else
-@@ -388,6 +392,9 @@ int cmd_monitor(int argc, char **argv)
-                 return EXIT_FAILURE;
-         }
+>> 3) Regarding total boot time, I don't expect this series to make much
+>> of a difference because though we would save a lot of matching and
+>> querying for resources, that's little time compared with how long we
+>> wait for hardware to react during probing. Async probing is more
+>> likely to help with drivers that take a long time to probe.
+>
+> For me, on my fastest ARM board, though running serial console:
+>
+> [    2.293468] VFS: Mounted root (ext4 filesystem) on device 179:1.
+>
+> There's a couple of delays in there, but they're not down to deferred
+> probing.  The biggest one is serial console startup (due to the time
+> it takes to write out the initial kernel messages):
+>
+> [    0.289962] f1012000.serial: ttyS0 at MMIO 0xf1012000 (irq = 23, base_baud = 15625000) is a 16550A
+> [    0.944124] console [ttyS0] enabled
+>
+> and DSA switch initialisation:
+>
+> [    1.530655] libphy: dsa slave smi: probed
+> [    2.034426] dsa dsa@0 lan6 (uninitialized): attached PHY at address 0 [Generic PHY]
+>
+> I'm not sure what causes that, but at a guess it's having to talk to the
+> DSA switch over the MDIO bus via several layers of indirect accesses.
+> Of course, serial console adds to the boot time significantly anyway,
+> especially at the "standard" kernel logging level.
 
-+       if (!cpu_top.core_info[0].is_online)
-+               printf("WARNING: at least one cpu is offline\n");
-+
-         /* Default is: monitor all CPUs */
-         if (bitmask_isallclear(cpus_chosen))
-                 bitmask_setall(cpus_chosen);
+Yes, I don't think it makes any sense to measure boot times with the
+serial console on, because it's not comparable to production and
+because printing an additional line during boot affects significantly
+the times.
 
+To be clear, I was saying that this series should NOT affect total
+boot times much.
 
+>> One more thing about the breakage we have seen so far is that it's
+>> generally caused by implicit dependencies and hunting those is
+>> probably the second biggest timesink of the linux embedded developer
+>> after failed probes.
+>
+> ... which is generally caused by the crappy code which the average
+> embedded Linux developer creates, particularly with the crappy error
+> messages they like creating.  For the most part, they _might_ as well
+> just print "Error!\n" and be done with it, for all the use they are.
+> When creating an error print, your average embedded Linux developer
+> fails to print the _reason_ why something failed, which makes debugging
+> it much harder.
+>
+> The first thing I do when I touch code that needs this kind of debugging
+> is to go through and add printing of the error code.  That normally lets
+> me quickly narrow down what's failed.
+>
+> If embedded Linux developers are struggling with this, they only have
+> themselves to blame.
+>
+> In the case of deferred probing, what _may_ help is if we got rid of the
+> core code printing that driver X requested deferred probing, instead
+> moving the responsibility to report this onto the driver or subsystem.
+> Resource claiming generally has the struct device, and can use dev_warn()
+> to report which device is being probed, along with which resource is
+> not yet available.
 
+Agreed, with the note from above on why it would be better to only
+print such a message only when the -EPROBE_DEFER is likely to be a
+problem.
 
+> This debug problem is solvable without needing to resort to complex
+> probing solutions.
 
+If you really think anything in this series is complex, you should
+look at the other ones that tried to accomplish the same!
+
+Thanks,
+
+Tomeu
+
+> --
+> FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
+> according to speedtest.net.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
