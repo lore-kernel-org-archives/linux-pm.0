@@ -1,86 +1,144 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [GIT PULL] On-demand device probing
-Date: Sun, 18 Oct 2015 20:53:30 +0100
-Message-ID: <20151018195330.GB14956@sirena.org.uk>
-References: <561E1378.6000906@collabora.com>
- <20151017065750.GA18607@kroah.com>
- <20151018192931.GY14956@sirena.org.uk>
- <20151018193757.GA9147@kroah.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [PATCH] PM / clk: Fix broken build due to non-matching code and header #ifdefs
+Date: Mon, 19 Oct 2015 10:16:07 +0200
+Message-ID: <1445242567-24032-1-git-send-email-geert@linux-m68k.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="fJz81ohldq3XijGc"
-Return-path: <linux-clk-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20151018193757.GA9147@kroah.com>
-Sender: linux-clk-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Rob Herring <robh+dt@kernel.org>, Russell King <linux@arm.linux.org.uk>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, Terje =?iso-8859-1?Q?Bergstr=F6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Frank Rowand <frowand.list@gmail.com>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Felipe Balbi <balbi@ti.com>, Jin
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from andre.telenet-ops.be ([195.130.132.53]:56511 "EHLO
+	andre.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752917AbbJSIQM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 Oct 2015 04:16:12 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Greg Ungerer <gerg@uclinux.org>
+Cc: linux-pm@vger.kernel.org, linux-m68kvger.kernel.org@ramsan.of.borg, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
 
+If an architecture's main Kconfig file doesn't include
+kernel/power/Kconfig, but CONFIG_PM=3Dy and HAVE_CLK=3Dy (e.g. m68knomm=
+u
+allmodconfig):
 
---fJz81ohldq3XijGc
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+    drivers/base/power/clock_ops.c: In function =E2=80=98__pm_clk_add=E2=
+=80=99:
+    drivers/base/power/clock_ops.c:106: error: =E2=80=98struct pm_subsy=
+s_data=E2=80=99 has no member named =E2=80=98clock_list=E2=80=99
+    drivers/base/power/clock_ops.c: At top level:
+    drivers/base/power/clock_ops.c:120: error: redefinition of =E2=80=98=
+pm_clk_add=E2=80=99
+    include/linux/pm_clock.h:64: error: previous definition of =E2=80=98=
+pm_clk_add=E2=80=99 was here
+    drivers/base/power/clock_ops.c:135: error: redefinition of =E2=80=98=
+pm_clk_add_clk=E2=80=99
+    include/linux/pm_clock.h:69: error: previous definition of =E2=80=98=
+pm_clk_add_clk=E2=80=99 was here
+    drivers/base/power/clock_ops.c:171: error: redefinition of =E2=80=98=
+pm_clk_remove=E2=80=99
+    include/linux/pm_clock.h:73: error: previous definition of =E2=80=98=
+pm_clk_remove=E2=80=99 was here
+    drivers/base/power/clock_ops.c: In function =E2=80=98pm_clk_remove=E2=
+=80=99:
+    drivers/base/power/clock_ops.c:180: error: =E2=80=98struct pm_subsy=
+s_data=E2=80=99 has no member named =E2=80=98clock_list=E2=80=99
+    drivers/base/power/clock_ops.c:180: error: =E2=80=98struct pm_subsy=
+s_data=E2=80=99 has no member named =E2=80=98clock_list=E2=80=99
+    drivers/base/power/clock_ops.c: At top level:
+    drivers/base/power/clock_ops.c:207: error: redefinition of =E2=80=98=
+pm_clk_init=E2=80=99
+    include/linux/pm_clock.h:54: error: previous definition of =E2=80=98=
+pm_clk_init=E2=80=99 was here
+    drivers/base/power/clock_ops.c: In function =E2=80=98pm_clk_init=E2=
+=80=99:
+    drivers/base/power/clock_ops.c:210: error: =E2=80=98struct pm_subsy=
+s_data=E2=80=99 has no member named =E2=80=98clock_list=E2=80=99
+    drivers/base/power/clock_ops.c: At top level:
+    drivers/base/power/clock_ops.c:221: error: redefinition of =E2=80=98=
+pm_clk_create=E2=80=99
+    include/linux/pm_clock.h:57: error: previous definition of =E2=80=98=
+pm_clk_create=E2=80=99 was here
+    drivers/base/power/clock_ops.c:234: error: redefinition of =E2=80=98=
+pm_clk_destroy=E2=80=99
+    include/linux/pm_clock.h:61: error: previous definition of =E2=80=98=
+pm_clk_destroy=E2=80=99 was here
+    drivers/base/power/clock_ops.c: In function =E2=80=98pm_clk_destroy=
+=E2=80=99:
+    drivers/base/power/clock_ops.c:246: error: =E2=80=98struct pm_subsy=
+s_data=E2=80=99 has no member named =E2=80=98clock_list=E2=80=99
+    drivers/base/power/clock_ops.c:246: error: =E2=80=98struct pm_subsy=
+s_data=E2=80=99 has no member named =E2=80=98clock_list=E2=80=99
+    drivers/base/power/clock_ops.c: At top level:
+    drivers/base/power/clock_ops.c:263: error: expected identifier or =E2=
+=80=98(=E2=80=99 before =E2=80=98void=E2=80=99
+    drivers/base/power/clock_ops.c:263: error: expected =E2=80=98)=E2=80=
+=99 before numeric constant
+    drivers/base/power/clock_ops.c:293: error: expected identifier or =E2=
+=80=98(=E2=80=99 before =E2=80=98void=E2=80=99
+    drivers/base/power/clock_ops.c:293: error: expected =E2=80=98)=E2=80=
+=99 before numeric constant
+    drivers/base/power/clock_ops.c: In function =E2=80=98pm_clk_runtime=
+_suspend=E2=80=99:
+    drivers/base/power/clock_ops.c:384: error: called object =E2=80=980=
+u=E2=80=99 is not a function
+    drivers/base/power/clock_ops.c: In function =E2=80=98pm_clk_runtime=
+_resume=E2=80=99:
+    drivers/base/power/clock_ops.c:400: error: called object =E2=80=980=
+u=E2=80=99 is not a function
 
-On Sun, Oct 18, 2015 at 12:37:57PM -0700, Greg Kroah-Hartman wrote:
-> On Sun, Oct 18, 2015 at 08:29:31PM +0100, Mark Brown wrote:
-> > On Fri, Oct 16, 2015 at 11:57:50PM -0700, Greg Kroah-Hartman wrote:
+This happens because:
+  - drivers/base/power/clock_ops.c depends on CONFIG_HAVE_CLK,
+  - the failing code inside clock_ops.c additionally depends on
+    CONFIG_PM,
+  - the forward declarations and other definitions in <linux/pm_clock.h=
+>
+    depend on CONFIG_PM_CLK,
+  - CONFIG_PM_CLK is defined as PM && HAVE_CLK in kernel/power/Kconfig,
+    but it is not included on all architectures.
 
-> > > I can't see adding calls like this all over the tree just to solve a
-> > > bus-specific problem, you are adding of_* calls where they aren't
-> > > needed, or wanted, at all.
+=46ix this by protecting the failing code inside clock_ops.c by
+CONFIG_PM_CLK instead of CONFIG_PM, so it matches <linux/pm_clock.h>.
 
-> > This isn't bus specific, I'm not sure what makes you say that?
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+Probably m68knommu should start including kernel/power/Kconfig, but
+this patch fixes an inconsistency anyway.
 
-> You are making it bus-specific by putting these calls all over the tree
-> in different bus subsystems semi-randomly for all I can determine.
+ drivers/base/power/clock_ops.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Do you mean firmware rather than bus here?  I think that's the confusion
-I have...
+diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_=
+ops.c
+index 652b5a367c1f37fd..fd0973b922a75086 100644
+--- a/drivers/base/power/clock_ops.c
++++ b/drivers/base/power/clock_ops.c
+@@ -17,7 +17,7 @@
+ #include <linux/err.h>
+ #include <linux/pm_runtime.h>
+=20
+-#ifdef CONFIG_PM
++#ifdef CONFIG_PM_CLK
+=20
+ enum pce_status {
+ 	PCE_STATUS_NONE =3D 0,
+@@ -404,7 +404,7 @@ int pm_clk_runtime_resume(struct device *dev)
+ 	return pm_generic_runtime_resume(dev);
+ }
+=20
+-#else /* !CONFIG_PM */
++#else /* !CONFIG_PM_CLK */
+=20
+ /**
+  * enable_clock - Enable a device clock.
+@@ -484,7 +484,7 @@ static int pm_clk_notify(struct notifier_block *nb,
+ 	return 0;
+ }
+=20
+-#endif /* !CONFIG_PM */
++#endif /* !CONFIG_PM_CLK */
+=20
+ /**
+  * pm_clk_add_notifier - Add bus type notifier for power management cl=
+ocks.
+--=20
+1.9.1
 
-> > One is that regardless of the actual performance of the system when
-> > deferred probe goes off it splats errors all over the console which
-> > makes it look like something is going wrong even if everything is fine
-> > in the end.  If lots of deferred probing happens then the volume gets
-> > big too.  People find this distracting, noisy and ugly - it obscures
-> > actual issues and trains people to ignore errors.  I do think this is a
-> > reasonable concern and that it's worth trying to mitigate against
-> > deferral for this reason alone.  We don't want to just ignore the errors
-> > and not print anything either since if the resource doesn't appear the
-> > user needs to know what is preventing the driver from instantiating so
-> > they can try to fix it.
-
-> This has come up many times, I have no objection to just turning that
-> message into a debug message that can be dynamically enabled for those
-> people wanting to debug their systems for boot time issues.
-
-It's not just the driver core logging, it's also all the individual
-drivers logging that they failed to get whatever resource since silently
-failing is not a great user experience.  Many, hopefully most, of the
-drivers don't actually have special handling for probe deferral since
-half the beauty of probe deferral is that the subsystem supplying the
-resource can just return -EPROBE_DEFER when it notices something is
-missing but might appear and then the drivers will do the right thing so
-long as they have error handling code that they really should have
-anyway.
-
-We'd need to have a special dev_err() that handled probe deferral
-errors for drivers to use during probe or some other smarts in the
-logging infrastructure.  Which isn't a totally horrible idea.
-
---fJz81ohldq3XijGc
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJWI/i6AAoJECTWi3JdVIfQHiAH/j87ui2ZA7zZlEigIswdU9WD
-jRpEO3ZVBH3VylDoyoCIEtgolJwSqWV1Qk6c1EVn8vyhrP1+t5HYWvqrz+49KJrX
-AwCkkEKmXiNBtIAENaSsqVTWH3WmwLWYqbaZ3tTM47zN3gVzj/qnaQNs2GMhPQTs
-Y9pCzL1LUTMdviMwoMGtq7Fz9gUu+/pXpj1lT07whQmzfHaiMkcJ35VjHeTMKWnC
-r2moRf5uUgZj7gtylYcItS6hr/6P+X/tc7zY91KEMNo+Qrhdh1eC0H35Lsw8VwGA
-IqYTYWiz802CQiBCvtAXf3UYMrHZiW3MFWE7MD4dPqcl410M8ZscSxJH9Lsiz8k=
-=Y8XH
------END PGP SIGNATURE-----
-
---fJz81ohldq3XijGc--
