@@ -1,40 +1,52 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH 14/17] media: st-rc: remove misuse of IRQF_NO_SUSPEND flag
-Date: Mon, 19 Oct 2015 18:40:52 +0100
-Message-ID: <56252B24.4000207@arm.com>
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 04/17] powerpc: mpic: use IRQCHIP_SKIP_SET_WAKE instead
+ of redundant mpic_irq_set_wake
+Date: Mon, 19 Oct 2015 12:46:09 -0500
+Message-ID: <1445276769.5185.292.camel@freescale.com>
 References: <1442850433-5903-1-git-send-email-sudeep.holla@arm.com>
- <1442850433-5903-15-git-send-email-sudeep.holla@arm.com>
+	 <1442850433-5903-5-git-send-email-sudeep.holla@arm.com>
+	 <1442981170.19102.322.camel@freescale.com> <562529EF.7050404@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:51387 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751273AbbJSRk4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 19 Oct 2015 13:40:56 -0400
-In-Reply-To: <1442850433-5903-15-git-send-email-sudeep.holla@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <562529EF.7050404@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Hongtao Jia <hongtao.jia@freescale.com>, Marc Zyngier <Marc.Zyngier@arm.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Wang Dongsheng-B40534 <Dongsheng.Wang@freescale.com>
 List-Id: linux-pm@vger.kernel.org
-To: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>
-Cc: Sudeep Holla <Sudeep.Holla@arm.com>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Srinivas Kandagatla <srinivas.kandagatla@gmail.com>, Maxime Coquelin <maxime.coquelin@st.com>, Patrice Chotard <patrice.chotard@st.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "kernel@stlinux.com" <kernel@stlinux.com>, "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
 
-Hi,
+On Mon, 2015-10-19 at 18:35 +0100, Sudeep Holla wrote:
+> Hi Ben,
+> 
+> On 23/09/15 05:06, Scott Wood wrote:
+> > On Mon, 2015-09-21 at 16:47 +0100, Sudeep Holla wrote:
+> > > mpic_irq_set_wake return -ENXIO for non FSL MPIC and sets 
+> > > IRQF_NO_SUSPEND
+> > > flag for FSL ones. enable_irq_wake already returns -ENXIO if irq_set_wak
+> > > is not implemented. Also there's no need to set the IRQF_NO_SUSPEND flag
+> > > as it doesn't guarantee wakeup for that interrupt.
+> > > 
+> > > This patch removes the redundant mpic_irq_set_wake and sets the
+> > > IRQCHIP_SKIP_SET_WAKE for only FSL MPIC.
+> > > 
+> > > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > > Cc: Paul Mackerras <paulus@samba.org>
+> > > Cc: Michael Ellerman <mpe@ellerman.id.au>
+> > > Cc: Scott Wood <scottwood@freescale.com>
+> > > Cc: Hongtao Jia <hongtao.jia@freescale.com>
+> > > Cc: Marc Zyngier <marc.zyngier@arm.com>
+> > > Cc: linuxppc-dev@lists.ozlabs.org
+> > > Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+> > > ---
+> > >   arch/powerpc/sysdev/mpic.c | 23 ++++-------------------
+> > >   1 file changed, 4 insertions(+), 19 deletions(-)
+> > 
+> > Acked-by: Scott Wood <scottwood@freescale.com>
+> > 
+> 
+> Can you pick this up via your tree ?
 
-On 21/09/15 16:47, Sudeep Holla wrote:
-> The device is set as wakeup capable using proper wakeup API but the
-> driver misuses IRQF_NO_SUSPEND to set the interrupt as wakeup source
-> which is incorrect.
->
-> This patch removes the use of IRQF_NO_SUSPEND flags replacing it with
-> enable_irq_wake instead.
->
-> Cc: Srinivas Kandagatla <srinivas.kandagatla@gmail.com>
-> Cc: Maxime Coquelin <maxime.coquelin@st.com>
-> Cc: Patrice Chotard <patrice.chotard@st.com>
-> Cc: Mauro Carvalho Chehab <mchehab@osg.samsung.com>
+OK.
 
-Can you pick couple of these media patches ?
-
--- 
-Regards,
-Sudeep
+-Scott
