@@ -1,117 +1,78 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [GIT PULL] On-demand device probing
-Date: Mon, 19 Oct 2015 23:40:39 +0200
-Message-ID: <1603415.VWFZ8V0WMC@vostro.rjw.lan>
-References: <561E1378.6000906@collabora.com> <1445268580.53393.183.camel@infradead.org> <CAL_JsqLwvc1H9kQnWs=mA8P4Mq4izmSSeFU6KRtkExBkzF9ABg@mail.gmail.com>
+Subject: Re: [PATCH v2] cpufreq, intel_pstate, Fix intel_pstate powersave min_perf_pct value
+Date: Mon, 19 Oct 2015 23:51:31 +0200
+Message-ID: <20365584.ryD5HiWE6T@vostro.rjw.lan>
+References: <1444908855-25145-1-git-send-email-prarit@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <CAL_JsqLwvc1H9kQnWs=mA8P4Mq4izmSSeFU6KRtkExBkzF9ABg@mail.gmail.com>
-Sender: linux-clk-owner@vger.kernel.org
-To: Rob Herring <robh+dt@kernel.org>
-Cc: David Woodhouse <dwmw2@infradead.org>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Russell King <linux@arm.linux.org.uk>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, Terje =?ISO-8859-1?Q?Bergstr=F6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Frank Rowand <frowand.list@gmail.com>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Liam Girdwood <lgirdw>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:43287 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750876AbbJSVWn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 Oct 2015 17:22:43 -0400
+In-Reply-To: <1444908855-25145-1-git-send-email-prarit@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Kristen Carlson Accardi <kristen@linux.intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Doug Smythies <dsmythies@telus.net>
 
-On Monday, October 19, 2015 10:58:25 AM Rob Herring wrote:
-> On Mon, Oct 19, 2015 at 10:29 AM, David Woodhouse <dwmw2@infradead.or=
-g> wrote:
-> > On Mon, 2015-10-19 at 15:50 +0100, Mark Brown wrote:
-> >> > But the point I'm making is that we are working towards *fixing*=
- that,
-> >> > and *not* using DT-specific code in places where we should be us=
-ing the
-> >> > generic APIs.
-> >>
-> >> What is the plan for fixing things here?  It's not obvious (at lea=
-st to
-> >> me) that we don't want to have the subsystems having knowledge of =
-how
-> >> they are bound to a specific firmware which is what you seem to im=
-ply
-> >> here.
-> >
-> > I don't know that there *is* a coherent plan here to address it all=
-=2E
-> >
-> > Certainly, we *will* need subsystems to have firmware-specific
-> > knowledge in some cases. Take GPIO as an example; ACPI *has* a way =
-to
-> > describe GPIO, and properties which reference GPIO pins are intende=
-d to
-> > work through that =E2=80=94 while in DT, properties which reference=
- GPIO pins
-> > will have different contents. They'll be compatible at the driver
-> > level, in the sense that there's a call to get a given GPIO given t=
-he
-> > property name, but the subsystems *will* be doing different things
-> > behind the scenes.
-> >
-> > My plan, such as it is, is to go through the leaf-node drivers whic=
-h
-> > almost definitely *should* be firmware-agnostic, and convert those.=
- And
-> > then take stock of what we have left, and work out what, if anythin=
-g,
-> > still needs to be done.
->=20
-> Many cases are already agnostic in the drivers in terms of the *_get(=
-)
-> functions. Some are DT specific, but probably because those subsystem=
-s
-> are new and DT only. In any case, I don't think these 1 line changes
-> do anything to make doing conversions here harder.
->=20
-> >> It seems like we're going to have to refactor these bits of code w=
-hen
-> >> they get generalised anyway so I'm not sure that the additional co=
-st
-> >> here is that big.
-> >
-> > That's an acceptable answer =E2=80=94 "we're adding legacy code her=
-e but we
-> > know it's going to be refactored anyway". If that's true, all it ta=
-kes
-> > is a note in the commit comment to that effect. That's different fr=
-om
-> > having not thought about it :)
->=20
-> Considering at one point we did create a fwnode based API, we did
-> think about it. Plus there was little input from ACPI folks as to
-> whether the change was even useful for ACPI case.
+On Thursday, October 15, 2015 07:34:15 AM Prarit Bhargava wrote:
+> Rafael, as requested ...
+> 
+> [v2]: rebased on
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+> 
+> ^^^ prolly doesn't need to be in the commit log
+> 
+> P.
+> 
+> ---8<---
+> 
+> On systems that initialize the intel_pstate driver with the performance
+> governor, and then switch to the powersave governor will not transition to
+> lower cpu frequencies until /sys/devices/system/cpu/intel_pstate/min_perf_pct
+> is set to a low value.
+> 
+> The behavior of governor switching changed after commit a04759924e25
+> ("[cpufreq] intel_pstate: honor user space min_perf_pct override on
+>  resume").  The commit introduced tracking of performance percentage
+> changes via sysfs in order to restore userspace changes during
+> suspend/resume.  The problem occurs because the global values of the newly
+> introduced max_sysfs_pct and min_sysfs_pct are not lowered on the governor
+> change and this causes the powersave governor to inherit the performance
+> governor's settings.
+> 
+> A simple change would have been to reset max_sysfs_pct to 100 and
+> min_sysfs_pct to 0 on a governor change, which fixes the problem with
+> governor switching.  However, since we cannot break userspace[1] the fix
+> is now to give each governor its own limits storage area so that governor
+> specific changes are tracked.
+> 
+> I successfully tested this by booting with both the performance governor
+> and the powersave governor by default, and switching between the two
+> governors (while monitoring /sys/devices/system/cpu/intel_pstate/ values,
+> and looking at the output of cpupower frequency-info).  Suspend/Resume
+> testing was performed by Doug Smythies.
+> 
+> [1] Systems which suspend/resume using the unmaintained pm-utils package
+> will always transition to the performance governor before the suspend and
+> after the resume.  This means a system using the powersave governor will
+> go from powersave to performance, then suspend/resume, performance to
+> powersave.  The simple change during governor changes would have been
+> overwritten when the governor changed before and after the suspend/resume.
+> I have submitted https://bugzilla.redhat.com/show_bug.cgi?id=1271225
+> against Fedora to remove the 94cpufreq file that causes the problem.  It
+> should be noted that pm-utils is obsoleted with newer versions of systemd.
+> 
+> Cc: Kristen Carlson Accardi <kristen@linux.intel.com>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: linux-pm@vger.kernel.org
+> Cc: Doug Smythies <dsmythies@telus.net>
+> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
 
-Well, sorry, but who was asking whom, specifically?
+Applied, thanks!
 
-The underlying problem is present in ACPI too and we don't really have =
-a good
-solution for it.  We might benefit from a common one if it existed.
-
-> In any case, we're talking about adding 1 line.
-
-But also about making the driver core slighly OF-centric.
-
-Sure, we need OF-specific code and ACPI-specific code wherever differen=
-t
-handling is required, but doing that at the driver core level seems to =
-be
-a bit of a stretch to me.
-
-Please note that we don't really have ACPI-specific calls in the driver=
- core,
-although we might have added them long ago even before the OF stuff app=
-eared
-in the kernel for the first time.  We didn't do that, (among other thin=
-gs)
-because we didn't want that particular firmware interface to appear spe=
-cial
-in any way and I'm not really sure why it is now OK to make OF look spe=
-cial
-instead.
-
-If it is trivial to avoid that (and you seem to be arguing that it is),=
- why
-do we have to do it?
-
-Thanks,
 Rafael
 
