@@ -1,184 +1,274 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: [PATCH v2] PM / sleep: prohibit devices probing during suspend/hibernation
-Date: Mon, 19 Oct 2015 23:54:24 +0300
-Message-ID: <1445288064-25299-1-git-send-email-grygorii.strashko@ti.com>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [RFC v2 0/6] Managing cluser-level c-states with generic power
+ domains
+Date: Mon, 19 Oct 2015 14:58:25 -0600
+Message-ID: <20151019205825.GA82426@linaro.org>
+References: <20151006022702.GA78570@linaro.org>
+ <1444141665-18534-1-git-send-email-mtitinger+renesas@baylibre.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bear.ext.ti.com ([192.94.94.41]:33306 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751985AbbJSUyi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 19 Oct 2015 16:54:38 -0400
+Received: from mail-pa0-f45.google.com ([209.85.220.45]:35614 "EHLO
+	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753537AbbJSU62 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 Oct 2015 16:58:28 -0400
+Received: by pasz6 with SMTP id z6so40376565pas.2
+        for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2015 13:58:28 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1444141665-18534-1-git-send-email-mtitinger+renesas@baylibre.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, stern@rowland.harvard.edu, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, Grygorii Strashko <grygorii.strashko@ti.com>, Thierry Reding <thierry.reding@gmail.com>
+To: Marc Titinger <mtitinger@baylibre.com>
+Cc: khilman@kernel.org, rjw@rjwysocki.net, ahaslam@baylibre.com, bcousson@baylibre.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Marc Titinger <mtitinger+renesas@baylibre.com>
 
-It is unsafe [1] if probing of devices will happen during suspend or
-hibernation and system behavior will be unpredictable in this case
-(for example: after successful probe the device potentially has a different
- set of PM callbacks than before [2]).
-So, let's prohibit device's probing in dpm_prepare() and defer their
-probes instead. The normal behavior will be restored in dpm_complete().
+Hi Marc,
 
-This patch introduces new DD core APIs:
- device_defer_all_probes_enable()
-   It will disable probing of devices and defer their probes.
- device_defer_all_probes_disable()
-   It will restore normal behavior and trigger re-probing of deferred
-   devices.
+I am trying to apply this on top of Axel's patches on linux-next (after
+fixing issues I saw with his v9), and running to issues applying your
+patches. Could you rebase on top of his v10 (he said he would send to
+the ML soon) ?
 
-[1] https://lkml.org/lkml/2015/9/11/554
-[2] https://lkml.org/lkml/2015/9/15/1039
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Thierry Reding <thierry.reding@gmail.com>
-Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
----
-Changes in v2:
-- DD core API device_defer_all_probes(bool enable) split on two
-  void device_defer_all_probes_enable(void);
-  void device_defer_all_probes_disable(void);
-- more comments added
+Thanks,
+Lina
 
-Link on v1:
-- https://lkml.org/lkml/2015/10/8/681
-
- drivers/base/base.h       |  2 ++
- drivers/base/dd.c         | 48 ++++++++++++++++++++++++++++++++++++++++++++++-
- drivers/base/power/main.c | 17 +++++++++++++++++
- 3 files changed, 66 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/base/base.h b/drivers/base/base.h
-index 1782f3a..c332b68 100644
---- a/drivers/base/base.h
-+++ b/drivers/base/base.h
-@@ -131,6 +131,8 @@ extern void device_remove_groups(struct device *dev,
- extern char *make_class_name(const char *name, struct kobject *kobj);
- 
- extern int devres_release_all(struct device *dev);
-+extern void device_defer_all_probes_enable(void);
-+extern void device_defer_all_probes_disable(void);
- 
- /* /sys/devices directory */
- extern struct kset *devices_kset;
-diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-index be0eb46..b8d9e70 100644
---- a/drivers/base/dd.c
-+++ b/drivers/base/dd.c
-@@ -55,6 +55,13 @@ static struct workqueue_struct *deferred_wq;
- static atomic_t deferred_trigger_count = ATOMIC_INIT(0);
- 
- /*
-+ * In some cases, like suspend to RAM or hibernation, It might be reasonable
-+ * to prohibit probing of devices as it could be unsafe.
-+ * Once defer_all_probes is true all drivers probes will be forcibly deferred.
-+ */
-+static bool defer_all_probes;
-+
-+/*
-  * deferred_probe_work_func() - Retry probing devices in the active list.
-  */
- static void deferred_probe_work_func(struct work_struct *work)
-@@ -172,6 +179,30 @@ static void driver_deferred_probe_trigger(void)
- }
- 
- /**
-+ * device_defer_all_probes_enable() - Enable deferring of device's probes
-+ *
-+ *	It will disable probing of devices and defer their probes.
-+ */
-+void device_defer_all_probes_enable(void)
-+{
-+	defer_all_probes = true;
-+	/* sync with probes to avoid races. */
-+	wait_for_device_probe();
-+}
-+
-+/**
-+ * device_defer_all_probes_disable() - Disable deferring of device's probes
-+ *
-+ *	It will restore normal behavior and trigger re-probing of deferred
-+ * devices.
-+ */
-+void device_defer_all_probes_disable(void)
-+{
-+	defer_all_probes = false;
-+	driver_deferred_probe_trigger();
-+}
-+
-+/**
-  * deferred_probe_initcall() - Enable probing of deferred devices
-  *
-  * We don't want to get in the way when the bulk of drivers are getting probed.
-@@ -277,9 +308,20 @@ static DECLARE_WAIT_QUEUE_HEAD(probe_waitqueue);
- 
- static int really_probe(struct device *dev, struct device_driver *drv)
- {
--	int ret = 0;
-+	int ret = -EPROBE_DEFER;
- 	int local_trigger_count = atomic_read(&deferred_trigger_count);
- 
-+	if (defer_all_probes) {
-+		/*
-+		 * Value of defer_all_probes can be set only by
-+		 * device_defer_all_probes_enable() which, in turn, will call
-+		 * wait_for_device_probe() right after that to avoid any races.
-+		 */
-+		dev_dbg(dev, "Driver %s force probe deferral\n", drv->name);
-+		driver_deferred_probe_add(dev);
-+		return ret;
-+	}
-+
- 	atomic_inc(&probe_count);
- 	pr_debug("bus: '%s': %s: probing driver %s with device %s\n",
- 		 drv->bus->name, __func__, drv->name, dev_name(dev));
-@@ -391,6 +433,10 @@ int driver_probe_done(void)
-  */
- void wait_for_device_probe(void)
- {
-+	/* wait for the deferred probe workqueue to finish */
-+	if (driver_deferred_probe_enable)
-+		flush_workqueue(deferred_wq);
-+
- 	/* wait for the known devices to complete their probing */
- 	wait_event(probe_waitqueue, atomic_read(&probe_count) == 0);
- 	async_synchronize_full();
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 1710c26..eeb2bb7 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -963,6 +963,9 @@ void dpm_complete(pm_message_t state)
- 	}
- 	list_splice(&list, &dpm_list);
- 	mutex_unlock(&dpm_list_mtx);
-+
-+	/* Allow device probing and trigger re-probing of deferred devices */
-+	device_defer_all_probes_disable();
- 	trace_suspend_resume(TPS("dpm_complete"), state.event, false);
- }
- 
-@@ -1624,6 +1627,20 @@ int dpm_prepare(pm_message_t state)
- 	trace_suspend_resume(TPS("dpm_prepare"), state.event, true);
- 	might_sleep();
- 
-+	/*
-+	 * Give a chance for the known devices to complete their probes, before
-+	 * disable probing of devices. This sync point is important at least
-+	 * at boot time + hibernation restore.
-+	 */
-+	wait_for_device_probe();
-+	/*
-+	 * It is unsafe if probing of devices will happen during suspend or
-+	 * hibernation and system behavior will be unpredictable in this case.
-+	 * So, let's prohibit device's probing here and defer their probes
-+	 * instead. The normal behavior will be restored in dpm_complete().
-+	 */
-+	device_defer_all_probes_enable();
-+
- 	mutex_lock(&dpm_list_mtx);
- 	while (!list_empty(&dpm_list)) {
- 		struct device *dev = to_device(dpm_list.next);
--- 
-2.5.1
-
+On Tue, Oct 06 2015 at 08:27 -0600, Marc Titinger wrote:
+>v2:
+> - rebase on Lina Iyer's latest series
+> - remove unnecessary dependency on perf-state patches from Axel Haslam
+>
+>-----------------------
+>
+>Summary
+>
+>1) DESCRIPTION
+>2) DEPENDENCIES
+>3) URL
+>------------------------
+>
+>
+>1) DESCRIPTION
+>
+>
+>	This patch set's underlying idea is that cluster-level c-states can be managed
+>by the power domain, building upon Lina Iyers recent work on CPU-domain, and Axel Haslam's
+>genpd multiple states. The power domain may contain CPU devices and non-CPU devices.
+>
+>Non-CPU Devices may expose latency constraints by registering intermediate power-states upon
+>probing, for instance shallower states than the deepest cluster-off state. The generic
+>power domain governor may chose a device retention state in place of the cluster-sleep
+>state demanded by the menu governor, and call the platform specific handling to enter/leave
+>that retention state.
+>
+>
+>power-states
+>-----------
+>
+>
+>The proposed way how cluster-level c-states are declared as manageable by the
+>power domain, rather than through the cpuidle-ops, relies on the introduction of
+>"power-states", consistent with c-states. Here is an example of the DT bindings,
+>the c-state CLUSTER_SLEEP_0 is exposed as a power-state in the compatible property:
+>
+>juno.dts:           idle-states {
+>                        entry-method = "arm,psci";
+>
+>                        CPU_SLEEP_0: cpu-sleep-0 {
+>                                compatible = "arm,idle-state";
+>                                arm,psci-suspend-param = <0x0010000>;
+>                                local-timer-stop;
+>                                entry-latency-us = <100>;
+>                                exit-latency-us = <250>;
+>                                min-residency-us = <2000>;
+>                        };
+>
+>                        CLUSTER_SLEEP_0: cluster-sleep-0 {
+>                                compatible = "arm,power-state";
+>                                arm,psci-suspend-param = <0x1010000>;
+>                                local-timer-stop;
+>                                entry-latency-us = <800>;
+>                                exit-latency-us = <700>;
+>                                min-residency-us = <2500>;
+>                        };
+>		}
+>
+>This will tell cpuidle runtime_put/get the CPU devices for this c-state. Eventually, the
+>actual platform handlers may be called from the genpd platform ops (in place of cpuidle_ops).
+>
+>"drivers/cpuidle/cpuidle-arm.c":
+>
+>static const struct of_device_id arm_idle_state_match[] __initconst = {
+>        {.compatible = "arm,idle-state",
+>         .data = arm_enter_idle_state},
+>        {.compatible = "arm,power-state",
+>         .data = arm_enter_power_state},
+>};
+>
+>
+>In case of a power-state, arm_enter_power_state will only call pm_runtime_put/get_sync
+>The power doamin will handle the power off, currently this patch set lacks the final
+>call to the psci interface to have a fully fonctionnal setup
+>(and there are some genpd_lock'ing issues if put/get actually suspend the CPU device.)
+>
+>Ultimately, we would like the Power Domain's simple governor to being able to chose
+>the cluster power-state based on the c-states defered to it (power-states) and constraints
+>added by the devices. Consequently, we need to "soak" those power-states into the
+>power-domain intermediate states from Axel. Since power-states are declared and handled
+>the same manner than c-states (idle-states in DT), these patches add a soaking used when
+>attaching to a genpd, where power-states are parsed from the DT into the genpd states:
+>
+>
+>"drivers/base/power/domain.c":
+>
+>static const struct of_device_id power_state_match[] = {
+>        {.compatible = "arm,power-state",
+>         },
+>};
+>
+>int of_genpd_device_parse_states(struct device_node *np,
+>                                 struct generic_pm_domain *genpd)
+>
+>debugfs addition
+>---------------
+>
+>To easy debug, this patch set adds a seq-file names "states" to the pm_genpd debugfs:
+>
+>    cat /sys/kernel/debug/pm_genpd/*
+>
+>      Domain             State name        Enter (ns) / Exit (ns)
+>    -------------------------------------------------------------
+>    a53_pd               cluster-sleep-0      1500000 / 800000
+>    a57_pd               cluster-sleep-0      1500000 / 800000
+>
+>And also a seq-file "timings", to help visualize the constrains of the non-CPU
+>devices in a cluster PD.
+>
+>    Domain Devices, Timings in ns
+>                       Stop/Start Save/Restore, Effective
+>----------------------------------------------------  ---
+>a57_pd
+>    /cpus/cpu@0          800   /740    1320  /1720  ,0 (cached stop)
+>    /cpus/cpu@1          800   /740    1420  /1780  ,0 (cached stop)
+>    /D1                  660   /580    16560 /6080  ,2199420 (cached stop)
+>
+>
+>Device power-states
+>-------------------
+>
+>some devices, like L2 caches, may feature a shallower retention mode, between CPU_SLEEP_0
+>and CLUSTER_SLEEP_0, in which mode the L2 memory is not powered off, leading to faster
+>resume than CLUSTER_SLEEP_0.
+>
+>One way to handle device constrains and retention features in the power-domain, is to
+>allow devices to register a new power-state (consistent with a c-state).
+>
+>idle-states:
+>
+>                        D1_RETENTION: d1-retention {
+>                                compatible = "arm,power-state";
+>                                /*leave the psci param, for demo/testing:
+>                                * the psci cpuidle driver will not currently
+>                                * understand that a c-state shall not have it's
+>                                * table entry with a firmware command.
+>                                * the actual .power_on/off would be registered
+>                                * by the DECLARE macro for a given domain*/
+>                                arm,psci-suspend-param = <0x1010000>;
+>                                local-timer-stop;
+>                                entry-latency-us = <800>;
+>                                exit-latency-us = <200>;
+>                                min-residency-us = <2500>;
+>                        };
+>
+>
+>        D1 {
+>                compatible = "fake,fake-driver";
+>                name = "D1";
+>                constraint = <30000>;
+>                power-domains = <&a53_pd>;
+>		power-states =<&D1_RETENTION>;
+>        };
+>
+>
+>The genpd simple governor can now upon suspend of the last-man CPU chose a shallower
+>retention state than CLUSTER_SLEEP_0.
+>
+>In order to achieve this, this patch set added the power-state parsing during the
+>genpd_dev_pm_attach call. Multiple genpd states are now inserted in a sorted manner
+>according to their depth: see pm_genpd_insert_state in "drivers/base/power/domain.c".
+>
+>
+>
+>2) DEPENDENCIES
+>
+>	This patch set applies over linux-4.2rc5 plus the following ordered dependencies:
+>
+> * Ulf Hansson:
+>
+>6637131 New          [V4] PM / Domains: Remove intermediate states from the power off sequence
+>
+> * Lina Iyer's patch series:
+>
+>7118981 Not Applicable [v2,1/7] PM / Domains: Allocate memory outside domain locks
+>7118991 Not Applicable [v2,2/7] PM / Domains: Support IRQ safe PM domains
+>7119001 Not Applicable [v2,3/7] drivers: cpu: Define CPU devices as IRQ safe
+>7119011 Not Applicable [v2,4/7] PM / Domains: Introduce PM domains for CPUs/clusters
+>7119021 Not Applicable [v2,5/7] ARM: cpuidle: Add runtime PM support for CPU idle
+>7119031 Not Applicable [v2,6/7] ARM64: smp: Add runtime PM support for CPU hotplug
+>7119041 Not Applicable [v2,7/7] ARM: smp: Add runtime PM support for CPU hotplug
+>
+> * John Medhurst:
+>
+>6303671 New          arm64: dts: Add idle-states for Juno
+>
+> * Axel Haslam:
+>
+>6301741 Not Applicable [v7,1/5] PM / Domains: prepare for multiple states
+>6301751 Not Applicable [v7,2/5] PM / Domains: core changes for multiple states
+>6301781 Not Applicable [v7,3/5] PM / Domains: make governor select deepest state
+>6301771 Not Applicable [v7,4/5] ARM: imx6: pm: declare pm domain latency on power_state struct.
+>6301761 Not Applicable [v7,5/5] PM / Domains: remove old power on/off latencies.
+>
+>2) URL
+>
+>playable from https://github.com/mtitinger/linux-pm.git
+>
+>by adding the "fake driver D1" and launching the test-dev-state.sh script.
+>this will show the power domain suspending to an intermediate state, based on the
+>device constraints.
+>
+>    domain                      status pstate     slaves
+>           /device                                      runtime status
+>-----------------------------------------------------------------------------------
+>a53_pd                          on
+>    /devices/system/cpu/cpu0                            active
+>    /devices/system/cpu/cpu3                            suspended
+>    /devices/system/cpu/cpu4                            suspended
+>    /devices/system/cpu/cpu5                            suspended
+>a57_pd                          d1-retention
+>    /devices/system/cpu/cpu1                            suspended
+>    /devices/system/cpu/cpu2                            suspended
+>    /devices/platform/D1
+>
+>----------------------------------------------------------------------
+>
+>Marc Titinger (6):
+>  arm64: Juno: declare generic power domains for both clusters.
+>  PM / Domains: prepare for devices that might register a power state
+>  PM / Domains: introduce power-states consistent with c-states.
+>  PM / Domains: succeed & warn when attaching non-irqsafe devices to an
+>    irq-safe domain.
+>  arm: cpuidle: let genpd handle the cluster power transition with
+>    'power-states'
+>  PM / Domains: add debugfs 'states' and 'timings' seq files
+>
+> .../devicetree/bindings/arm/idle-states.txt        |  21 +-
+> .../devicetree/bindings/power/power_domain.txt     |  29 ++
+> arch/arm64/boot/dts/arm/juno.dts                   |  25 +-
+> drivers/base/power/cpu-pd.c                        |   5 +
+> drivers/base/power/domain.c                        | 415 +++++++++++++++------
+> drivers/cpuidle/cpuidle-arm.c                      |  52 ++-
+> include/linux/pm_domain.h                          |  21 +-
+> 7 files changed, 437 insertions(+), 131 deletions(-)
+>
+>-- 
+>1.9.1
+>
