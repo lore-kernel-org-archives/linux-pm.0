@@ -1,55 +1,44 @@
-From: Olof Johansson <olof@lixom.net>
-Subject: Re: [GIT PULL] On-demand device probing
-Date: Mon, 19 Oct 2015 09:52:44 -0700
-Message-ID: <CAOesGMjzeJYVuNzrtahNxiMk-3Huq76=DVhKixMNC=3vebUc_Q@mail.gmail.com>
-References: <20151014092644.GO14956@sirena.org.uk>
-	<1444909328-24761-1-git-send-email-tomeu.vizoso@collabora.com>
-	<CAOesGMj44N3Xfv_D_iLEzXBrkN6LXBa-uh6m3fi_F2xDenDhMg@mail.gmail.com>
-	<CAL_Jsq+34sRXe0HWCKNceQfLj=WfDV4-soynumvdnH_nwuj+9g@mail.gmail.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH 03/17] input: tegra-kbc: drop use of IRQF_NO_SUSPEND flag
+Date: Mon, 19 Oct 2015 18:34:02 +0100
+Message-ID: <5625298A.9010801@arm.com>
+References: <1442850433-5903-1-git-send-email-sudeep.holla@arm.com>
+ <1442850433-5903-4-git-send-email-sudeep.holla@arm.com>
+ <56124FC1.8010202@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pwm-owner@vger.kernel.org>
-In-Reply-To: <CAL_Jsq+34sRXe0HWCKNceQfLj=WfDV4-soynumvdnH_nwuj+9g@mail.gmail.com>
-Sender: linux-pwm-owner@vger.kernel.org
-To: Rob Herring <robh+dt@kernel.org>
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Russell King <linux@arm.linux.org.uk>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, =?UTF-8?Q?Terje_Bergstr=C3=B6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Frank Rowand <frowand.list@gmail.com>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <56124FC1.8010202@nvidia.com>
+Sender: linux-input-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Laxman Dewangan <ldewangan@nvidia.com>, Sudeep Holla <sudeep.holla@arm.com>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, linux-input@vger.kernel.org, linux-tegra@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Oct 17, 2015 at 8:19 AM, Rob Herring <robh+dt@kernel.org> wrote:
-> On Fri, Oct 16, 2015 at 4:23 PM, Olof Johansson <olof@lixom.net> wrote:
->> Hi,
->>
->> I've bisected boot failures in next-20151016 down to patches in this branch:
->>
->> On Thu, Oct 15, 2015 at 4:42 AM, Tomeu Vizoso
->> <tomeu.vizoso@collabora.com> wrote:
->>> Tomeu Vizoso (20):
->>>       driver core: handle -EPROBE_DEFER from bus_type.match()
->>
->> The machine it happened on was OMAP5UEVM:
->>
->> http://arm-soc.lixom.net/bootlogs/next/next-20151016/omap5uevm-arm-omap2plus_defconfig.html
+Hi Dmitry,
+
+On 05/10/15 11:24, Laxman Dewangan wrote:
 >
-> So this one is because the MMC node numbering changed. I don't know
-> how to fix that other than with aliases, but that doesn't solve
-> backwards compatibility.
-
-Yep, aliases will take care of it in this case. This is where -next
-fills a great purpose, we can make sure we get those aliases added in
-before the patches go in.
-
->> But I've also seen it on tegra2, that one bisected down to:
+> On Monday 21 September 2015 09:16 PM, Sudeep Holla wrote:
 >>
->>>      regulator: core: Probe regulators on demand
+>> diff --git a/drivers/input/keyboard/tegra-kbc.c
+>> b/drivers/input/keyboard/tegra-kbc.c
+>> index f97c73bd14f8..5f5dbbd51991 100644
+>> --- a/drivers/input/keyboard/tegra-kbc.c
+>> +++ b/drivers/input/keyboard/tegra-kbc.c
+>> @@ -705,7 +705,7 @@ static int tegra_kbc_probe(struct platform_device
+>> *pdev)
+>>       input_set_drvdata(kbc->idev, kbc);
+>>       err = devm_request_irq(&pdev->dev, kbc->irq, tegra_kbc_isr,
+>> -              IRQF_NO_SUSPEND | IRQF_TRIGGER_HIGH, pdev->name, kbc);
+>> +                   IRQF_TRIGGER_HIGH, pdev->name, kbc);
 >>
->> http://arm-soc.lixom.net/bootlogs/next/next-20151016/seaboard-arm-multi_v7_defconfig.html
 >
-> This one you need a rootwait I think. The MMC scanning is not
-> guaranteed to be done before the rootfs mounting AFAIK. There may be
-> other problems, but we can't see them since it panics.
+> Acked-by: Laxman Dewangan <ldewangan@nvidia.com>
+>
 
-Embarrassing, I almost always do this and I'm surprised this machine
-has been this stable without it.
+Can you pick this up with all the Acks ?
 
-
--Olof
+-- 
+Regards,
+Sudeep
