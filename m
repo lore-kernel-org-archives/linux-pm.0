@@ -1,274 +1,117 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [RFC v2 0/6] Managing cluser-level c-states with generic power
- domains
-Date: Mon, 19 Oct 2015 14:58:25 -0600
-Message-ID: <20151019205825.GA82426@linaro.org>
-References: <20151006022702.GA78570@linaro.org>
- <1444141665-18534-1-git-send-email-mtitinger+renesas@baylibre.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [GIT PULL] On-demand device probing
+Date: Mon, 19 Oct 2015 23:40:39 +0200
+Message-ID: <1603415.VWFZ8V0WMC@vostro.rjw.lan>
+References: <561E1378.6000906@collabora.com> <1445268580.53393.183.camel@infradead.org> <CAL_JsqLwvc1H9kQnWs=mA8P4Mq4izmSSeFU6KRtkExBkzF9ABg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f45.google.com ([209.85.220.45]:35614 "EHLO
-	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753537AbbJSU62 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 Oct 2015 16:58:28 -0400
-Received: by pasz6 with SMTP id z6so40376565pas.2
-        for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2015 13:58:28 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1444141665-18534-1-git-send-email-mtitinger+renesas@baylibre.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-Reply-To: <CAL_JsqLwvc1H9kQnWs=mA8P4Mq4izmSSeFU6KRtkExBkzF9ABg@mail.gmail.com>
+Sender: linux-clk-owner@vger.kernel.org
+To: Rob Herring <robh+dt@kernel.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Russell King <linux@arm.linux.org.uk>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, Terje =?ISO-8859-1?Q?Bergstr=F6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Frank Rowand <frowand.list@gmail.com>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Liam Girdwood <lgirdw>
 List-Id: linux-pm@vger.kernel.org
-To: Marc Titinger <mtitinger@baylibre.com>
-Cc: khilman@kernel.org, rjw@rjwysocki.net, ahaslam@baylibre.com, bcousson@baylibre.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Marc Titinger <mtitinger+renesas@baylibre.com>
 
-Hi Marc,
+On Monday, October 19, 2015 10:58:25 AM Rob Herring wrote:
+> On Mon, Oct 19, 2015 at 10:29 AM, David Woodhouse <dwmw2@infradead.or=
+g> wrote:
+> > On Mon, 2015-10-19 at 15:50 +0100, Mark Brown wrote:
+> >> > But the point I'm making is that we are working towards *fixing*=
+ that,
+> >> > and *not* using DT-specific code in places where we should be us=
+ing the
+> >> > generic APIs.
+> >>
+> >> What is the plan for fixing things here?  It's not obvious (at lea=
+st to
+> >> me) that we don't want to have the subsystems having knowledge of =
+how
+> >> they are bound to a specific firmware which is what you seem to im=
+ply
+> >> here.
+> >
+> > I don't know that there *is* a coherent plan here to address it all=
+=2E
+> >
+> > Certainly, we *will* need subsystems to have firmware-specific
+> > knowledge in some cases. Take GPIO as an example; ACPI *has* a way =
+to
+> > describe GPIO, and properties which reference GPIO pins are intende=
+d to
+> > work through that =E2=80=94 while in DT, properties which reference=
+ GPIO pins
+> > will have different contents. They'll be compatible at the driver
+> > level, in the sense that there's a call to get a given GPIO given t=
+he
+> > property name, but the subsystems *will* be doing different things
+> > behind the scenes.
+> >
+> > My plan, such as it is, is to go through the leaf-node drivers whic=
+h
+> > almost definitely *should* be firmware-agnostic, and convert those.=
+ And
+> > then take stock of what we have left, and work out what, if anythin=
+g,
+> > still needs to be done.
+>=20
+> Many cases are already agnostic in the drivers in terms of the *_get(=
+)
+> functions. Some are DT specific, but probably because those subsystem=
+s
+> are new and DT only. In any case, I don't think these 1 line changes
+> do anything to make doing conversions here harder.
+>=20
+> >> It seems like we're going to have to refactor these bits of code w=
+hen
+> >> they get generalised anyway so I'm not sure that the additional co=
+st
+> >> here is that big.
+> >
+> > That's an acceptable answer =E2=80=94 "we're adding legacy code her=
+e but we
+> > know it's going to be refactored anyway". If that's true, all it ta=
+kes
+> > is a note in the commit comment to that effect. That's different fr=
+om
+> > having not thought about it :)
+>=20
+> Considering at one point we did create a fwnode based API, we did
+> think about it. Plus there was little input from ACPI folks as to
+> whether the change was even useful for ACPI case.
 
-I am trying to apply this on top of Axel's patches on linux-next (after
-fixing issues I saw with his v9), and running to issues applying your
-patches. Could you rebase on top of his v10 (he said he would send to
-the ML soon) ?
+Well, sorry, but who was asking whom, specifically?
+
+The underlying problem is present in ACPI too and we don't really have =
+a good
+solution for it.  We might benefit from a common one if it existed.
+
+> In any case, we're talking about adding 1 line.
+
+But also about making the driver core slighly OF-centric.
+
+Sure, we need OF-specific code and ACPI-specific code wherever differen=
+t
+handling is required, but doing that at the driver core level seems to =
+be
+a bit of a stretch to me.
+
+Please note that we don't really have ACPI-specific calls in the driver=
+ core,
+although we might have added them long ago even before the OF stuff app=
+eared
+in the kernel for the first time.  We didn't do that, (among other thin=
+gs)
+because we didn't want that particular firmware interface to appear spe=
+cial
+in any way and I'm not really sure why it is now OK to make OF look spe=
+cial
+instead.
+
+If it is trivial to avoid that (and you seem to be arguing that it is),=
+ why
+do we have to do it?
 
 Thanks,
-Lina
+Rafael
 
-On Tue, Oct 06 2015 at 08:27 -0600, Marc Titinger wrote:
->v2:
-> - rebase on Lina Iyer's latest series
-> - remove unnecessary dependency on perf-state patches from Axel Haslam
->
->-----------------------
->
->Summary
->
->1) DESCRIPTION
->2) DEPENDENCIES
->3) URL
->------------------------
->
->
->1) DESCRIPTION
->
->
->	This patch set's underlying idea is that cluster-level c-states can be managed
->by the power domain, building upon Lina Iyers recent work on CPU-domain, and Axel Haslam's
->genpd multiple states. The power domain may contain CPU devices and non-CPU devices.
->
->Non-CPU Devices may expose latency constraints by registering intermediate power-states upon
->probing, for instance shallower states than the deepest cluster-off state. The generic
->power domain governor may chose a device retention state in place of the cluster-sleep
->state demanded by the menu governor, and call the platform specific handling to enter/leave
->that retention state.
->
->
->power-states
->-----------
->
->
->The proposed way how cluster-level c-states are declared as manageable by the
->power domain, rather than through the cpuidle-ops, relies on the introduction of
->"power-states", consistent with c-states. Here is an example of the DT bindings,
->the c-state CLUSTER_SLEEP_0 is exposed as a power-state in the compatible property:
->
->juno.dts:           idle-states {
->                        entry-method = "arm,psci";
->
->                        CPU_SLEEP_0: cpu-sleep-0 {
->                                compatible = "arm,idle-state";
->                                arm,psci-suspend-param = <0x0010000>;
->                                local-timer-stop;
->                                entry-latency-us = <100>;
->                                exit-latency-us = <250>;
->                                min-residency-us = <2000>;
->                        };
->
->                        CLUSTER_SLEEP_0: cluster-sleep-0 {
->                                compatible = "arm,power-state";
->                                arm,psci-suspend-param = <0x1010000>;
->                                local-timer-stop;
->                                entry-latency-us = <800>;
->                                exit-latency-us = <700>;
->                                min-residency-us = <2500>;
->                        };
->		}
->
->This will tell cpuidle runtime_put/get the CPU devices for this c-state. Eventually, the
->actual platform handlers may be called from the genpd platform ops (in place of cpuidle_ops).
->
->"drivers/cpuidle/cpuidle-arm.c":
->
->static const struct of_device_id arm_idle_state_match[] __initconst = {
->        {.compatible = "arm,idle-state",
->         .data = arm_enter_idle_state},
->        {.compatible = "arm,power-state",
->         .data = arm_enter_power_state},
->};
->
->
->In case of a power-state, arm_enter_power_state will only call pm_runtime_put/get_sync
->The power doamin will handle the power off, currently this patch set lacks the final
->call to the psci interface to have a fully fonctionnal setup
->(and there are some genpd_lock'ing issues if put/get actually suspend the CPU device.)
->
->Ultimately, we would like the Power Domain's simple governor to being able to chose
->the cluster power-state based on the c-states defered to it (power-states) and constraints
->added by the devices. Consequently, we need to "soak" those power-states into the
->power-domain intermediate states from Axel. Since power-states are declared and handled
->the same manner than c-states (idle-states in DT), these patches add a soaking used when
->attaching to a genpd, where power-states are parsed from the DT into the genpd states:
->
->
->"drivers/base/power/domain.c":
->
->static const struct of_device_id power_state_match[] = {
->        {.compatible = "arm,power-state",
->         },
->};
->
->int of_genpd_device_parse_states(struct device_node *np,
->                                 struct generic_pm_domain *genpd)
->
->debugfs addition
->---------------
->
->To easy debug, this patch set adds a seq-file names "states" to the pm_genpd debugfs:
->
->    cat /sys/kernel/debug/pm_genpd/*
->
->      Domain             State name        Enter (ns) / Exit (ns)
->    -------------------------------------------------------------
->    a53_pd               cluster-sleep-0      1500000 / 800000
->    a57_pd               cluster-sleep-0      1500000 / 800000
->
->And also a seq-file "timings", to help visualize the constrains of the non-CPU
->devices in a cluster PD.
->
->    Domain Devices, Timings in ns
->                       Stop/Start Save/Restore, Effective
->----------------------------------------------------  ---
->a57_pd
->    /cpus/cpu@0          800   /740    1320  /1720  ,0 (cached stop)
->    /cpus/cpu@1          800   /740    1420  /1780  ,0 (cached stop)
->    /D1                  660   /580    16560 /6080  ,2199420 (cached stop)
->
->
->Device power-states
->-------------------
->
->some devices, like L2 caches, may feature a shallower retention mode, between CPU_SLEEP_0
->and CLUSTER_SLEEP_0, in which mode the L2 memory is not powered off, leading to faster
->resume than CLUSTER_SLEEP_0.
->
->One way to handle device constrains and retention features in the power-domain, is to
->allow devices to register a new power-state (consistent with a c-state).
->
->idle-states:
->
->                        D1_RETENTION: d1-retention {
->                                compatible = "arm,power-state";
->                                /*leave the psci param, for demo/testing:
->                                * the psci cpuidle driver will not currently
->                                * understand that a c-state shall not have it's
->                                * table entry with a firmware command.
->                                * the actual .power_on/off would be registered
->                                * by the DECLARE macro for a given domain*/
->                                arm,psci-suspend-param = <0x1010000>;
->                                local-timer-stop;
->                                entry-latency-us = <800>;
->                                exit-latency-us = <200>;
->                                min-residency-us = <2500>;
->                        };
->
->
->        D1 {
->                compatible = "fake,fake-driver";
->                name = "D1";
->                constraint = <30000>;
->                power-domains = <&a53_pd>;
->		power-states =<&D1_RETENTION>;
->        };
->
->
->The genpd simple governor can now upon suspend of the last-man CPU chose a shallower
->retention state than CLUSTER_SLEEP_0.
->
->In order to achieve this, this patch set added the power-state parsing during the
->genpd_dev_pm_attach call. Multiple genpd states are now inserted in a sorted manner
->according to their depth: see pm_genpd_insert_state in "drivers/base/power/domain.c".
->
->
->
->2) DEPENDENCIES
->
->	This patch set applies over linux-4.2rc5 plus the following ordered dependencies:
->
-> * Ulf Hansson:
->
->6637131 New          [V4] PM / Domains: Remove intermediate states from the power off sequence
->
-> * Lina Iyer's patch series:
->
->7118981 Not Applicable [v2,1/7] PM / Domains: Allocate memory outside domain locks
->7118991 Not Applicable [v2,2/7] PM / Domains: Support IRQ safe PM domains
->7119001 Not Applicable [v2,3/7] drivers: cpu: Define CPU devices as IRQ safe
->7119011 Not Applicable [v2,4/7] PM / Domains: Introduce PM domains for CPUs/clusters
->7119021 Not Applicable [v2,5/7] ARM: cpuidle: Add runtime PM support for CPU idle
->7119031 Not Applicable [v2,6/7] ARM64: smp: Add runtime PM support for CPU hotplug
->7119041 Not Applicable [v2,7/7] ARM: smp: Add runtime PM support for CPU hotplug
->
-> * John Medhurst:
->
->6303671 New          arm64: dts: Add idle-states for Juno
->
-> * Axel Haslam:
->
->6301741 Not Applicable [v7,1/5] PM / Domains: prepare for multiple states
->6301751 Not Applicable [v7,2/5] PM / Domains: core changes for multiple states
->6301781 Not Applicable [v7,3/5] PM / Domains: make governor select deepest state
->6301771 Not Applicable [v7,4/5] ARM: imx6: pm: declare pm domain latency on power_state struct.
->6301761 Not Applicable [v7,5/5] PM / Domains: remove old power on/off latencies.
->
->2) URL
->
->playable from https://github.com/mtitinger/linux-pm.git
->
->by adding the "fake driver D1" and launching the test-dev-state.sh script.
->this will show the power domain suspending to an intermediate state, based on the
->device constraints.
->
->    domain                      status pstate     slaves
->           /device                                      runtime status
->-----------------------------------------------------------------------------------
->a53_pd                          on
->    /devices/system/cpu/cpu0                            active
->    /devices/system/cpu/cpu3                            suspended
->    /devices/system/cpu/cpu4                            suspended
->    /devices/system/cpu/cpu5                            suspended
->a57_pd                          d1-retention
->    /devices/system/cpu/cpu1                            suspended
->    /devices/system/cpu/cpu2                            suspended
->    /devices/platform/D1
->
->----------------------------------------------------------------------
->
->Marc Titinger (6):
->  arm64: Juno: declare generic power domains for both clusters.
->  PM / Domains: prepare for devices that might register a power state
->  PM / Domains: introduce power-states consistent with c-states.
->  PM / Domains: succeed & warn when attaching non-irqsafe devices to an
->    irq-safe domain.
->  arm: cpuidle: let genpd handle the cluster power transition with
->    'power-states'
->  PM / Domains: add debugfs 'states' and 'timings' seq files
->
-> .../devicetree/bindings/arm/idle-states.txt        |  21 +-
-> .../devicetree/bindings/power/power_domain.txt     |  29 ++
-> arch/arm64/boot/dts/arm/juno.dts                   |  25 +-
-> drivers/base/power/cpu-pd.c                        |   5 +
-> drivers/base/power/domain.c                        | 415 +++++++++++++++------
-> drivers/cpuidle/cpuidle-arm.c                      |  52 ++-
-> include/linux/pm_domain.h                          |  21 +-
-> 7 files changed, 437 insertions(+), 131 deletions(-)
->
->-- 
->1.9.1
->
