@@ -1,83 +1,64 @@
-From: Michael Turquette <mturquette@baylibre.com>
-Subject: Re: [PATCH] PM / OPP: fix debugfs files for 64-bit
-Date: Mon, 19 Oct 2015 08:40:09 -0700
-Message-ID: <20151019154009.20687.41178@quantum>
-References: <5706174.BUsqiXljxZ@wuerfel> <20151007125735.GA8170@kroah.com>
- <20151007130324.GA4557@linux> <5308760.2G5KJFF9Pi@wuerfel>
- <20151008074828.GF4570@linux>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [GIT PULL] On-demand device probing
+Date: Mon, 19 Oct 2015 16:43:24 +0100
+Message-ID: <20151019154324.GN32532@n2100.arm.linux.org.uk>
+References: <561E1378.6000906@collabora.com>
+ <20151017065750.GA18607@kroah.com>
+ <20151018192931.GY14956@sirena.org.uk>
+ <20151018193757.GA9147@kroah.com>
+ <20151018195330.GB14956@sirena.org.uk>
+ <1445247881.53393.146.camel@infradead.org>
+ <CAL_JsqKehmSobpbdeXGo=-1pAbtrhCHovyyCWya_MNOhGCi8CQ@mail.gmail.com>
+ <1445258870.53393.173.camel@infradead.org>
+ <20151019145048.GI14956@sirena.org.uk>
+ <1445268580.53393.183.camel@infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f49.google.com ([209.85.220.49]:36367 "EHLO
-	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754197AbbJSPkO convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 Oct 2015 11:40:14 -0400
-Received: by pacfv9 with SMTP id fv9so98855425pac.3
-        for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2015 08:40:13 -0700 (PDT)
-In-Reply-To: <20151008074828.GF4570@linux>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-gpio-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1445268580.53393.183.camel@infradead.org>
+Sender: linux-gpio-owner@vger.kernel.org
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Mark Brown <broonie@kernel.org>, Rob Herring <robh+dt@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, Terje =?iso-8859-1?Q?Bergstr=F6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Frank Rowand <frowand.list@gmail.com>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, Felipe Balbi <balbi@ti.com>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Arnd Bergmann <arnd@arndb.de>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Nishanth Menon <nm@ti.com>, Dmitry Torokhov <dtor@chromium.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-Quoting Viresh Kumar (2015-10-08 00:48:28)
-> On 07-10-15, 21:12, Arnd Bergmann wrote:
-> > I think it clearly makes sense to have a fixed length for each of these
-> > members:
-> >
-> > either 32 bit is enough to represent all possible values, then
-> > there is no need to make them 'long' on 64-bit architectures, or 32 bit
-> > is not enough and then the code is broken on 32-bit architectures today
-> > and should be fixed.
-> 
-> I agree.
-> 
-> But I am not 100% sure why it was done this way to start with.
-> Probably this is the logic behind that:
-> - Max clock rate supported by a u32 is ~ 4.295 GHz
-> - People expected that, we will not reach this rate for 32 bit systems
->   but for 64 bit ones.
-> - If above is true, then making it u64 for all will generate not very
->   optimized code for 32bit systems, as we need to fetch two 32bit
->   values everytime then.
-> - And making it u32 for 64 bit systems wouldn't be great as well, as
->   we need to mask out half of the read value.
-> 
-> Ofcourse, Mike and Stephen can correct me here :)
+On Mon, Oct 19, 2015 at 04:29:40PM +0100, David Woodhouse wrote:
+> I don't know that there *is* a coherent plan here to address it all.
+>=20
+> Certainly, we *will* need subsystems to have firmware-specific
+> knowledge in some cases. Take GPIO as an example; ACPI *has* a way to
+> describe GPIO, and properties which reference GPIO pins are intended =
+to
+> work through that =E2=80=94 while in DT, properties which reference G=
+PIO pins
+> will have different contents. They'll be compatible at the driver
+> level, in the sense that there's a call to get a given GPIO given the
+> property name, but the subsystems *will* be doing different things
+> behind the scenes.
 
-I chose unsigned long for the common clock framework _implemenation_,
-because the long-standing clk.h _api_ returns this type for clk_get_rate
-and passes this type in for clk_set_rate and clk_round_rate.
+It's a bit ironic that you've chosen GPIO as an example there.  The
+"new" GPIO API (the gpiod_* stuff) only has a fwnode way to get the
+gpio descriptor.  There's no of_* method.
 
-> 
-> > In my patch, I assumed that if 32-bit architectures work fine today, then
-> > we don't need more range on 64-bit architectures either.
-> 
-> The problem here is that we haven't fixed it properly.
-> - clock framework expects it to be unsigned long
-> - DT is sending a 64 bit value in Hz
-> - But we are storing and exposing it in u32
+I'd like to use the gpiod_* stuff, but I feel that my options are
+rather limited: either use fwnode_get_named_gpiod() with
+&dev->of_node->fwnode, which seems like a hack by going underneath
+the covers of how fwnode is (partially) implemented with DT, or by
+using of_get_named_gpio() and the converting the gpio number to a
+descriptor via gpio_to_desc().  Both feel very hacky.
 
-Don't forget cpufreq is using unsigned int for KHz.
+If ACPI already handles GPIOs internally, then I'm left wondering
+why GPIO descriptor stuff went down the fwnode route at all - it
+seems rather pointless in this case, and it seems to make the use
+of the gpiod* interfaces where we _do_ need to use it (DT) harder
+and more hacky.
 
-> 
-> That's weird, isn't it?
-
-Yes it is.
-
-> 
-> So, either we update clock API and other similar APIs to u64 or u32
-> (which may not be the right thing to do), Or we keep it unsigned long
-> here as well and add debugfs_create_ulong().
-
-This comes up every now and then. I'm still trying to figure out if
-sub-Hertz quantities should be considered (e.g. representing freqs in
-milliHertz).
-
-Regards,
-Mike
-
-> 
-> -- 
-> viresh
+--=20
+=46TTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
+according to speedtest.net.
+--
+To unsubscribe from this list: send the line "unsubscribe linux-gpio" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
