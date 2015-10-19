@@ -1,84 +1,114 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [GIT PULL] On-demand device probing
-Date: Mon, 19 Oct 2015 15:50:48 +0100
-Message-ID: <20151019145048.GI14956@sirena.org.uk>
-References: <561E1378.6000906@collabora.com>
- <20151017065750.GA18607@kroah.com>
- <20151018192931.GY14956@sirena.org.uk>
- <20151018193757.GA9147@kroah.com>
- <20151018195330.GB14956@sirena.org.uk>
- <1445247881.53393.146.camel@infradead.org>
- <CAL_JsqKehmSobpbdeXGo=-1pAbtrhCHovyyCWya_MNOhGCi8CQ@mail.gmail.com>
- <1445258870.53393.173.camel@infradead.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="P75d7mFgfYjpUjsN"
-Return-path: <linux-i2c-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1445258870.53393.173.camel@infradead.org>
-Sender: linux-i2c-owner@vger.kernel.org
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Rob Herring <robh+dt@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Russell King <linux@arm.linux.org.uk>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, Terje =?iso-8859-1?Q?Bergstr=F6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Frank Rowand <frowand.list@gmail.com>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, Felipe Balbi <balbi@ti>
+From: ahaslam@baylibre.com
+Subject: [PATCH v9 0/6] Multiple intermediate states for genpd
+Date: Mon, 19 Oct 2015 16:51:35 +0200
+Message-ID: <1445266301-32448-1-git-send-email-ahaslam@baylibre.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f170.google.com ([209.85.212.170]:38584 "EHLO
+	mail-wi0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753349AbbJSOwU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 Oct 2015 10:52:20 -0400
+Received: by wicll6 with SMTP id ll6so9648970wic.1
+        for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2015 07:52:19 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: khilman@linaro.org, ulf.hansson@linaro.org, lina.iyer@linaro.org, geert@glider.be, k.kozlowski.k@gmail.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: bcousson@baylibre.com, mturquette@baylibre.com, Axel Haslam <ahaslam+renesas@baylibre.com>
 
+From: Axel Haslam <ahaslam+renesas@baylibre.com>
 
---P75d7mFgfYjpUjsN
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Some architectures may have intermediate power levels between on and off.
 
-On Mon, Oct 19, 2015 at 01:47:50PM +0100, David Woodhouse wrote:
-> On Mon, 2015-10-19 at 07:35 -0500, Rob Herring wrote:
+This patch set adds the ability to declare multiple states for a given
+generic power domain, the idea is that the deepest state will be entered
+which does not violate any of the device or sub-domain latency constraints.
 
-> > See version 2 of the series[1] which did that. It became obvious that
-> > was pointless because the call paths ended up looking like this:
+Changes since v8
+* rebased to linux-pm next
 
-> > Generic subsystem code -> DT look-up code -> fwnode_probe_device ->
-> > of_probe_device
+Changes since v7:
+* rebase to 4.3-rc5
 
-> You link to a thread which says that "AT LEAST CURRENTLY, the calling
-> locations [the 'DT look-up code' you mention above] are DT specific
-> functions anyway.
+* add genpd_init_simple (Lina's suggestion) for platforms that don't have
+multiple states and don't declare initial latencies. A default OFF
+state with initial 0 latencies will be used in this case.
 
-> But the point I'm making is that we are working towards *fixing* that,
-> and *not* using DT-specific code in places where we should be using the
-> generic APIs.
+* Append Mark's patch to add "states" and "timings" to the genpd
+debugfs
 
-What is the plan for fixing things here?  It's not obvious (at least to
-me) that we don't want to have the subsystems having knowledge of how
-they are bound to a specific firmware which is what you seem to imply
-here.  That seems like it's going to fall down since the different
-firmware interfaces do have quite different ideas about how things fit
-together at a system level and different compatibility needs which do
-suggest that just trying to do a direct mapping from DT into ACPI may
-well not make people happy but it sounds like that's the intention.
+Changes since v6:
+* change int to unsigned int were appropriate.
 
-When it gets to drivers the situation is much more clear since it's
-normally just simple properties, it's generally a bit more worrying if
-drivers are needing to directly interact with cross-device linkage.
-This is all subsystem level code though.
+* spelling mistakes, and fix commit message for removal of latencies.
 
-> None of that really negates that fact that we are *working* on cleaning
-> these code paths up to be firmware-agnostic, and the fact that we
-> haven't got to this one *yet* isn't necessarily a good reason to make
-> it *worse* by adding new firmware-specificity to it.
+Changes since v5:
+* rebase to 4.1-rc1
 
-It seems like we're going to have to refactor these bits of code when
-they get generalised anyway so I'm not sure that the additional cost
-here is that big.
+* Pass state array as an init argument on pm_genpd_init
 
---P75d7mFgfYjpUjsN
-Content-Type: application/pgp-signature; name="signature.asc"
+* declare a default OFF state with no latencies, that will be used if a
+null state argument is given.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+* set the deepest state when using sync_poweroff.
 
-iQEcBAEBCAAGBQJWJQNHAAoJECTWi3JdVIfQaREH/3tn5eOlLmrwOqNfDROOkFts
-y5Wy3xg5mX9QlH88z3oxHPnKqWqSKDRoi/VgRujy8dqaZ4PPBKZA2ZuWqf5BAGar
-nAYP9oLWh8/3A0s2NaN6puJYvsmm8287OePqWxHrL+3I6azzj65/LcGx4HmjsM1j
-Z/qZaDh/6LwsBtEUv94Q4nhE+OykmmE7Y9EPmd03QOPrgoJhtQ+rO8JchP9NWkVq
-W3txdv4ktdFc//r6JJG1gemaOmeGXMcGHzKq2ukrQRCDRRhntp83oLQEw2Lx3o+/
-X/gYP+LZR5EL9+mZ6dZgpU5bImqD8cKxsrD30e65xNadnmcfjoXPrUFtQ71t2QQ=
-=1a8f
------END PGP SIGNATURE-----
+* create and use name allocation function in the debug area
+instead of inline.
 
---P75d7mFgfYjpUjsN--
+Changes since v4:
+* move to power_on/off callbacks out of the state array Platforms can
+check the state_idx to know what state the power on/off corresponds to.
+
+* convert states to pointer,
+Dynamically allocate the states array to save memory on platforms
+with several power domains.
+
+* rename target_state to state_idx and remove init_state.
+
+Changes since v3:
+* remove old power on/off function at the end of the
+series so that compilation will not break in between.
+
+Changes since v2:
+* remove state argument and macros from save/restore callbacks.
+
+* added init_state for platforms to pass the initial state when the genpd
+is initially off.
+
+* convert current genpd users for the structure changes.
+
+Changes since v1:
+* split the changes so that the actual logic that selects the target state
+is a separate patch.
+
+* move the cached logic out of the state function and add
+it back to default_power_down_ok.
+
+* rename default_power_down_ok_state to power_down_ok_for_state
+
+Axel Haslam (5):
+  PM / Domains: prepare for multiple states
+  PM / Domains: core changes for multiple states
+  PM / Domains: make governor select deepest state
+  ARM: imx6: pm: declare pm domain latency on power_state struct.
+  PM / Domains: remove old power on/off latencies.
+
+Marc Titinger (1):
+  PM / Domains: add debugfs 'states' and 'timings' seq files
+
+ arch/arm/mach-exynos/pm_domains.c     |   2 +-
+ arch/arm/mach-imx/gpc.c               |  18 ++-
+ arch/arm/mach-s3c64xx/pm.c            |   4 +-
+ arch/arm/mach-shmobile/pm-r8a7779.c   |   2 +-
+ arch/arm/mach-shmobile/pm-rmobile.c   |   2 +-
+ arch/arm/mach-ux500/pm_domains.c      |   2 +-
+ arch/arm/mach-zx/zx296702-pm-domain.c |   2 +-
+ drivers/base/power/domain.c           | 258 ++++++++++++++++++++++++++++++++--
+ drivers/base/power/domain_governor.c  |  70 +++++----
+ drivers/clk/shmobile/clk-mstp.c       |   2 +-
+ drivers/soc/dove/pmu.c                |   2 +-
+ drivers/soc/mediatek/mtk-scpsys.c     |   2 +-
+ include/linux/pm_domain.h             |  33 ++++-
+ 13 files changed, 345 insertions(+), 54 deletions(-)
+
+-- 
+2.4.5
+
