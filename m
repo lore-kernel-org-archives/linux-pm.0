@@ -1,68 +1,37 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [GIT PULL] On-demand device probing
-Date: Mon, 19 Oct 2015 12:02:38 +0100
-Message-ID: <20151019110238.GE14956@sirena.org.uk>
-References: <561E1378.6000906@collabora.com>
- <20151017065750.GA18607@kroah.com>
- <20151018192931.GY14956@sirena.org.uk>
- <20151018193757.GA9147@kroah.com>
- <20151018195330.GB14956@sirena.org.uk>
- <1445247881.53393.146.camel@infradead.org>
+From: Axel Haslam <ahaslam@baylibre.com>
+Subject: Re: [PATCH v8 2/6] PM / Domains: core changes for multiple states
+Date: Mon, 19 Oct 2015 14:30:42 +0200
+Message-ID: <CAKXjFTOkv=zf8hV1uxk=DcKrqYgd9OFKP6x9AOWMjYZMYrkMyg@mail.gmail.com>
+References: <1444911396-3473-1-git-send-email-ahaslam@baylibre.com>
+	<1444911396-3473-3-git-send-email-ahaslam@baylibre.com>
+	<20151016225148.GA72832@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="KwgAcZnBnwoMp5TU"
-Return-path: <linux-clk-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1445247881.53393.146.camel@infradead.org>
-Sender: linux-clk-owner@vger.kernel.org
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Rob Herring <robh+dt@kernel.org>, Russell King <linux@arm.linux.org.uk>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, Terje =?iso-8859-1?Q?Bergstr=F6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Frank Rowand <frowand.list@gmail.com>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, Felipe Balbi <balbi@ti>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f51.google.com ([209.85.218.51]:33730 "EHLO
+	mail-oi0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750814AbbJSMam (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 Oct 2015 08:30:42 -0400
+Received: by oiad129 with SMTP id d129so34684578oia.0
+        for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2015 05:30:42 -0700 (PDT)
+In-Reply-To: <20151016225148.GA72832@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: Kevin Hilman <khilman@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, geert@glider.be, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski.k@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Benoit Cousson <bcousson@baylibre.com>, Michael Turquette <mturquette@baylibre.com>, Axel Haslam <ahaslam+renesas@baylibre.com>
+
+Hi Lina,
 
 
---KwgAcZnBnwoMp5TU
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> Could you rebase your patches on top of latest linux-next?
+>
+> genpd->cpuidle_data is gone after this commit cea3ad93.
 
-On Mon, Oct 19, 2015 at 10:44:41AM +0100, David Woodhouse wrote:
-> On Sun, 2015-10-18 at 20:53 +0100, Mark Brown wrote:
+Sure, ill rabase on top of linux-pm next and send v9.
+Regards,
+Axel
 
-> > Do you mean firmware rather than bus here?  I think that's the confusion
-> > I have...
-
-> Certainly, if it literally is adding of_* calls then that would seem to
-> be gratuitously firmware-specific. Nothing should be using those these
-> days; any new code should be using the generic device property APIs
-> (except in special cases).
-
-It's not entirely clear to me that we should be moving to fwnode_
-wholesale yet - the last advice was to hold off for a little while which
-makes sense given that the ACPI community still doesn't seem to have
-worked out what it wants to do here and how.  The x86 embedded people
-are all gung ho but it's less clear that anyone else wants to use _DSD
-in quite the same way (I know of some efforts to use _DSD separately to
-the DT compatibility stuff) and there are some vendors who definitely do
-have completely different binding schemes for ACPI and DT and therefore
-specifically care which is in use.
-
-It would really help if ACPI could get their binding review process in
-place, and if we do want to actually start converting everything to
-fwnode_ we need to start communicating that actively since otherwise
-people can't really be expected to know.
-
---KwgAcZnBnwoMp5TU
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJWJM3NAAoJECTWi3JdVIfQZWIH+wWlytIatZzb02megHs7cfkS
-XkfoBZZlTpwYYTLooWg9gc7XQ/Hx2qk/CTJwHZOudgYjrig+IWFuwOAU5Vw5YMm8
-7LN539ptj28jYJibjVxoIIX0bRAiQgrG9i3/5K5e6pmGzqnea/D2mu9sG5L2Fz//
-WLK/BYSFuVW6AzmoncTtGgYqECOFDXo8azymWx86d/NlXXMWKIvoEb0qVS+dJrgi
-6U7UQqhp46CwWEX3yk4Yf51Fi1wh6xAaLZcXeXqwvy+rYUXpBRNWKhG+0HR1d+Ep
-lOg6BbeD+4VpVvPL0yFpxmWEnjicr9mB6jVz/tkKq/tVq6aVat5SrbGTs5Tygjg=
-=TjUN
------END PGP SIGNATURE-----
-
---KwgAcZnBnwoMp5TU--
+>
+> Thanks,
+> Lina
+>
