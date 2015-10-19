@@ -1,144 +1,90 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH] PM / clk: Fix broken build due to non-matching code and header #ifdefs
-Date: Mon, 19 Oct 2015 10:16:07 +0200
-Message-ID: <1445242567-24032-1-git-send-email-geert@linux-m68k.org>
+From: "Jon Medhurst (Tixy)" <tixy@linaro.org>
+Subject: Re: [PATCH] cpufreq: arm_big_little: fix frequency check when bL
+ switcher is active
+Date: Mon, 19 Oct 2015 09:33:01 +0100
+Message-ID: <1445243581.2831.9.camel@linaro.org>
+References: <1443807532.2845.25.camel@linaro.org>
+	 <20151007173920.GG4557@linux> <1444296229.2847.9.camel@linaro.org>
+	 <561BB39A.4020400@arm.com> <1444720744.2686.10.camel@linaro.org>
+	 <561CDEA9.7020700@arm.com> <1444806720.2691.15.camel@linaro.org>
+	 <561E16E0.8030906@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from andre.telenet-ops.be ([195.130.132.53]:56511 "EHLO
-	andre.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752917AbbJSIQM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 19 Oct 2015 04:16:12 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <561E16E0.8030906@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Greg Ungerer <gerg@uclinux.org>
-Cc: linux-pm@vger.kernel.org, linux-m68kvger.kernel.org@ramsan.of.borg, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
 
-If an architecture's main Kconfig file doesn't include
-kernel/power/Kconfig, but CONFIG_PM=3Dy and HAVE_CLK=3Dy (e.g. m68knomm=
-u
-allmodconfig):
+On Wed, 2015-10-14 at 09:48 +0100, Sudeep Holla wrote:
+> 
+> On 14/10/15 08:12, Jon Medhurst (Tixy) wrote:
+> > On Tue, 2015-10-13 at 11:36 +0100, Sudeep Holla wrote:
+> >>
+> >> On 13/10/15 08:19, Jon Medhurst (Tixy) wrote:
+> > [...]
+> >>> But then we wouldn't get the WARN_ON and pr_err triggered when we detect
+> >>> the clock rate isn't set, which surely is half the reason for the check
+> >>> in the first place?
+> >>>
+> >>
+> >> Not sure if I understand what you mean or may be I was not clear, so
+> >> thought I will put the delta here. Let me know if and how its still a
+> >> problem.
+> >>
+> >> diff --git i/drivers/cpufreq/arm_big_little.c
+> >> w/drivers/cpufreq/arm_big_little.c
+> >> index f1e42f8ce0fc..05e850f80f39 100644
+> >> --- i/drivers/cpufreq/arm_big_little.c
+> >> +++ w/drivers/cpufreq/arm_big_little.c
+> >> @@ -164,6 +164,16 @@ bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32
+> >> new_cluster, u32 rate)
+> >>
+> >>           mutex_unlock(&cluster_lock[new_cluster]);
+> >>
+> >> +       /*
+> >> +        * FIXME: clk_set_rate has to handle the case where clk_change_rate
+> >> +        * can fail due to hardware or firmware issues. Until the clk core
+> >> +        * layer is fixed, we can check here. In most of the cases we will
+> >> +        * be reading only the cached value anyway. This needs to  be
+> >> removed
+> >> +        * once clk core is fixed.
+> >> +        */
+> >> +       if (bL_cpufreq_get_rate(cpu) != new_rate)
+> >> +               return -EIO;
+> >> +
+> >>           /* Recalc freq for old cluster when switching clusters */
+> >>           if (old_cluster != new_cluster) {
+> >>                   pr_debug("%s: cpu: %d, old cluster: %d, new cluster: %d\n",
+> >
+> > That's what I though you meant, and I can't see why you would want to do
+> > that and bypass the error reporting for clk_get_rate failing. After all,
+> > the code we're moving around is explicitly there to workaround the fact
+> > that clk_set_rate doesn't actually pass through all errors, so it's
+> > doing additional error checking. (At least, that's what the comment
+> > says). So this looks more logical to me.
+> >
+> 
+> OK, I understand what you mean now. I don't have a strong opinion, but
+> here is the reason why I prefer the approach I said earlier:
+> clk_set_rate doesn't return error if the h/w or f/w return error which
+> is usually the last step. So calling clk_get_rate when clk_set_rate
+> return error quite early makes no sense to me.
 
-    drivers/base/power/clock_ops.c: In function =E2=80=98__pm_clk_add=E2=
-=80=99:
-    drivers/base/power/clock_ops.c:106: error: =E2=80=98struct pm_subsy=
-s_data=E2=80=99 has no member named =E2=80=98clock_list=E2=80=99
-    drivers/base/power/clock_ops.c: At top level:
-    drivers/base/power/clock_ops.c:120: error: redefinition of =E2=80=98=
-pm_clk_add=E2=80=99
-    include/linux/pm_clock.h:64: error: previous definition of =E2=80=98=
-pm_clk_add=E2=80=99 was here
-    drivers/base/power/clock_ops.c:135: error: redefinition of =E2=80=98=
-pm_clk_add_clk=E2=80=99
-    include/linux/pm_clock.h:69: error: previous definition of =E2=80=98=
-pm_clk_add_clk=E2=80=99 was here
-    drivers/base/power/clock_ops.c:171: error: redefinition of =E2=80=98=
-pm_clk_remove=E2=80=99
-    include/linux/pm_clock.h:73: error: previous definition of =E2=80=98=
-pm_clk_remove=E2=80=99 was here
-    drivers/base/power/clock_ops.c: In function =E2=80=98pm_clk_remove=E2=
-=80=99:
-    drivers/base/power/clock_ops.c:180: error: =E2=80=98struct pm_subsy=
-s_data=E2=80=99 has no member named =E2=80=98clock_list=E2=80=99
-    drivers/base/power/clock_ops.c:180: error: =E2=80=98struct pm_subsy=
-s_data=E2=80=99 has no member named =E2=80=98clock_list=E2=80=99
-    drivers/base/power/clock_ops.c: At top level:
-    drivers/base/power/clock_ops.c:207: error: redefinition of =E2=80=98=
-pm_clk_init=E2=80=99
-    include/linux/pm_clock.h:54: error: previous definition of =E2=80=98=
-pm_clk_init=E2=80=99 was here
-    drivers/base/power/clock_ops.c: In function =E2=80=98pm_clk_init=E2=
-=80=99:
-    drivers/base/power/clock_ops.c:210: error: =E2=80=98struct pm_subsy=
-s_data=E2=80=99 has no member named =E2=80=98clock_list=E2=80=99
-    drivers/base/power/clock_ops.c: At top level:
-    drivers/base/power/clock_ops.c:221: error: redefinition of =E2=80=98=
-pm_clk_create=E2=80=99
-    include/linux/pm_clock.h:57: error: previous definition of =E2=80=98=
-pm_clk_create=E2=80=99 was here
-    drivers/base/power/clock_ops.c:234: error: redefinition of =E2=80=98=
-pm_clk_destroy=E2=80=99
-    include/linux/pm_clock.h:61: error: previous definition of =E2=80=98=
-pm_clk_destroy=E2=80=99 was here
-    drivers/base/power/clock_ops.c: In function =E2=80=98pm_clk_destroy=
-=E2=80=99:
-    drivers/base/power/clock_ops.c:246: error: =E2=80=98struct pm_subsy=
-s_data=E2=80=99 has no member named =E2=80=98clock_list=E2=80=99
-    drivers/base/power/clock_ops.c:246: error: =E2=80=98struct pm_subsy=
-s_data=E2=80=99 has no member named =E2=80=98clock_list=E2=80=99
-    drivers/base/power/clock_ops.c: At top level:
-    drivers/base/power/clock_ops.c:263: error: expected identifier or =E2=
-=80=98(=E2=80=99 before =E2=80=98void=E2=80=99
-    drivers/base/power/clock_ops.c:263: error: expected =E2=80=98)=E2=80=
-=99 before numeric constant
-    drivers/base/power/clock_ops.c:293: error: expected identifier or =E2=
-=80=98(=E2=80=99 before =E2=80=98void=E2=80=99
-    drivers/base/power/clock_ops.c:293: error: expected =E2=80=98)=E2=80=
-=99 before numeric constant
-    drivers/base/power/clock_ops.c: In function =E2=80=98pm_clk_runtime=
-_suspend=E2=80=99:
-    drivers/base/power/clock_ops.c:384: error: called object =E2=80=980=
-u=E2=80=99 is not a function
-    drivers/base/power/clock_ops.c: In function =E2=80=98pm_clk_runtime=
-_resume=E2=80=99:
-    drivers/base/power/clock_ops.c:400: error: called object =E2=80=980=
-u=E2=80=99 is not a function
+It doesn't to me either, but my suggested code doesn't do that, it only
+calls clk_get_rate if the is _no_ error from clk_set_rate, the pseudo
+code again...
 
-This happens because:
-  - drivers/base/power/clock_ops.c depends on CONFIG_HAVE_CLK,
-  - the failing code inside clock_ops.c additionally depends on
-    CONFIG_PM,
-  - the forward declarations and other definitions in <linux/pm_clock.h=
->
-    depend on CONFIG_PM_CLK,
-  - CONFIG_PM_CLK is defined as PM && HAVE_CLK in kernel/power/Kconfig,
-    but it is not included on all architectures.
+ret = clk_set_rate()
+if(!ret)                         /* if no error from clk_set_rate   */
+    if(clk_get_rate()!=correct)  /* but some additional checks fail */
+        ret = -EIO;              /* then indicate an error anyway   */
 
-=46ix this by protecting the failing code inside clock_ops.c by
-CONFIG_PM_CLK instead of CONFIG_PM, so it matches <linux/pm_clock.h>.
+!ret is ret==0 is 'no error' as the comment says. So the clock framework
+thinks the rate was set OK and we then use clk_get_rate to see if those
+unreported h/w or f/w errors mean that it actually wasn't set OK.
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
-Probably m68knommu should start including kernel/power/Kconfig, but
-this patch fixes an inconsistency anyway.
-
- drivers/base/power/clock_ops.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_=
-ops.c
-index 652b5a367c1f37fd..fd0973b922a75086 100644
---- a/drivers/base/power/clock_ops.c
-+++ b/drivers/base/power/clock_ops.c
-@@ -17,7 +17,7 @@
- #include <linux/err.h>
- #include <linux/pm_runtime.h>
-=20
--#ifdef CONFIG_PM
-+#ifdef CONFIG_PM_CLK
-=20
- enum pce_status {
- 	PCE_STATUS_NONE =3D 0,
-@@ -404,7 +404,7 @@ int pm_clk_runtime_resume(struct device *dev)
- 	return pm_generic_runtime_resume(dev);
- }
-=20
--#else /* !CONFIG_PM */
-+#else /* !CONFIG_PM_CLK */
-=20
- /**
-  * enable_clock - Enable a device clock.
-@@ -484,7 +484,7 @@ static int pm_clk_notify(struct notifier_block *nb,
- 	return 0;
- }
-=20
--#endif /* !CONFIG_PM */
-+#endif /* !CONFIG_PM_CLK */
-=20
- /**
-  * pm_clk_add_notifier - Add bus type notifier for power management cl=
-ocks.
---=20
-1.9.1
-
+-- 
+Tixy
