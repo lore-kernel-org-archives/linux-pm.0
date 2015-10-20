@@ -1,132 +1,213 @@
-From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: RE: [PATCH 3/3] Thermal: do thermal zone update after a cooling
- device registered
-Date: Tue, 20 Oct 2015 01:44:20 +0000
-Message-ID: <36DF59CE26D8EE47B0655C516E9CE6402865D45D@shsmsx102.ccr.corp.intel.com>
-References: <1443332924-14028-1-git-send-email-yu.c.chen@intel.com>
- <20150928142902.GA9175@e104805>
- <36DF59CE26D8EE47B0655C516E9CE64026F22641@SHSMSX101.ccr.corp.intel.com>
- <20150929160133.GA11588@e104805>
- <36DF59CE26D8EE47B0655C516E9CE6402865B04D@shsmsx102.ccr.corp.intel.com>
- <20151014170739.GB2998@e104805>
- <36DF59CE26D8EE47B0655C516E9CE6402865BCBE@shsmsx102.ccr.corp.intel.com>
- <20151015140517.GC2639@e104805>
+From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Subject: Re: [GIT PULL] On-demand device probing
+Date: Tue, 20 Oct 2015 09:56:14 +0200
+Message-ID: <4025469.zmyipZqCsP@vostro.rjw.lan>
+References: <561E1378.6000906@collabora.com> <1603415.VWFZ8V0WMC@vostro.rjw.lan> <CAL_JsqKa3MFJUWKV2KxPE_NmrP2g4dOD3zr+0Kyx4yBkDOg2HA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:34472 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751195AbbJTBpG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 19 Oct 2015 21:45:06 -0400
-In-Reply-To: <20151015140517.GC2639@e104805>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAL_JsqKa3MFJUWKV2KxPE_NmrP2g4dOD3zr+0Kyx4yBkDOg2HA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Michael Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Vinod Koul <vinod.koul-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Dan Williams <dan.j.williams-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Terje =?ISO-8859-1?Q?Bergstr=F6m?= <tbergstrom-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kishon Vijay Abraham I <kishon-l0cyMroinI0@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Liam Girdwood <lgirdw>
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "Zhang, Rui" <rui.zhang@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>, "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
 
-KHJlc2VuZCBmb3IgYnJva2VuIGRpc3BsYXkpDQoNCkhpLA0KPiAtLS0tLU9yaWdpbmFsIE1lc3Nh
-Z2UtLS0tLQ0KPiBGcm9tOiBKYXZpIE1lcmlubyBbbWFpbHRvOmphdmkubWVyaW5vQGFybS5jb21d
-DQo+IFNlbnQ6IFRodXJzZGF5LCBPY3RvYmVyIDE1LCAyMDE1IDEwOjA1IFBNDQo+IFRvOiBDaGVu
-LCBZdSBDDQo+IENjOiBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IGVkdWJlenZhbEBnbWFpbC5j
-b207IFpoYW5nLCBSdWk7IGxpbnV4LSANCj4ga2VybmVsQHZnZXIua2VybmVsLm9yZzsgc3RhYmxl
-QHZnZXIua2VybmVsLm9yZzsgUGFuZHJ1dmFkYSwgU3Jpbml2YXMNCj4gU3ViamVjdDogUmU6IFtQ
-QVRDSCAzLzNdIFRoZXJtYWw6IGRvIHRoZXJtYWwgem9uZSB1cGRhdGUgYWZ0ZXIgYSANCj4gY29v
-bGluZyBkZXZpY2UgcmVnaXN0ZXJlZA0KPiANCj4gT24gV2VkLCBPY3QgMTQsIDIwMTUgYXQgMDc6
-MjM6NTVQTSArMDAwMCwgQ2hlbiwgWXUgQyB3cm90ZToNCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVz
-c2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBKYXZpIE1lcmlubyBbbWFpbHRvOmphdmkubWVyaW5vQGFy
-bS5jb21dDQo+ID4gPiBTZW50OiBUaHVyc2RheSwgT2N0b2JlciAxNSwgMjAxNSAxOjA4IEFNDQo+
-ID4gPiBUbzogQ2hlbiwgWXUgQw0KPiA+ID4gQ2M6IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsg
-ZWR1YmV6dmFsQGdtYWlsLmNvbTsgWmhhbmcsIFJ1aTsNCj4gPiA+IGxpbnV4LSBrZXJuZWxAdmdl
-ci5rZXJuZWwub3JnOyBzdGFibGVAdmdlci5rZXJuZWwub3JnOyBQYW5kcnV2YWRhLCANCj4gPiA+
-IFNyaW5pdmFzDQo+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIIDMvM10gVGhlcm1hbDogZG8gdGhl
-cm1hbCB6b25lIHVwZGF0ZSBhZnRlciBhIA0KPiA+ID4gY29vbGluZyBkZXZpY2UgcmVnaXN0ZXJl
-ZA0KPiA+ID4NCj4gPiA+IE9uIE1vbiwgT2N0IDEyLCAyMDE1IGF0IDA5OjIzOjI4QU0gKzAwMDAs
-IENoZW4sIFl1IEMgd3JvdGU6DQo+ID4gPiA+IEhpLCBKYXZpDQo+ID4gPiA+IFNvcnJ5IGZvciBt
-eSBsYXRlIHJlc3BvbnNlLA0KPiA+ID4gPg0KPiA+ID4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2Fn
-ZS0tLS0tDQo+ID4gPiA+ID4gRnJvbTogSmF2aSBNZXJpbm8gW21haWx0bzpqYXZpLm1lcmlub0Bh
-cm0uY29tXQ0KPiA+ID4gPiA+IFNlbnQ6IFdlZG5lc2RheSwgU2VwdGVtYmVyIDMwLCAyMDE1IDEy
-OjAyIEFNDQo+ID4gPiA+ID4gVG86IENoZW4sIFl1IEMNCj4gPiA+ID4gPiBDYzogbGludXgtcG1A
-dmdlci5rZXJuZWwub3JnOyBlZHViZXp2YWxAZ21haWwuY29tOyBaaGFuZywgUnVpOw0KPiA+ID4g
-PiA+IGxpbnV4LSBrZXJuZWxAdmdlci5rZXJuZWwub3JnOyBzdGFibGVAdmdlci5rZXJuZWwub3Jn
-DQo+ID4gPiA+ID4gU3ViamVjdDogUmU6IFtQQVRDSCAzLzNdIFRoZXJtYWw6IGRvIHRoZXJtYWwg
-em9uZSB1cGRhdGUgYWZ0ZXIgDQo+ID4gPiA+ID4gYSBjb29saW5nIGRldmljZSByZWdpc3RlcmVk
-DQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBIaSBZdSwNCj4gPiA+ID4gPg0KPiA+ID4gPiA+IE9uIE1v
-biwgU2VwIDI4LCAyMDE1IGF0IDA2OjUyOjAwUE0gKzAxMDAsIENoZW4sIFl1IEMgd3JvdGU6DQo+
-ID4gPiA+ID4gPiBIaSwgSmF2aSwNCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+IC0tLS0tT3Jp
-Z2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiA+ID4gPiA+IEZyb206IEphdmkgTWVyaW5vIFttYWls
-dG86amF2aS5tZXJpbm9AYXJtLmNvbV0NCj4gPiA+ID4gPiA+ID4gU2VudDogTW9uZGF5LCBTZXB0
-ZW1iZXIgMjgsIDIwMTUgMTA6MjkgUE0NCj4gPiA+ID4gPiA+ID4gVG86IENoZW4sIFl1IEMNCj4g
-PiA+ID4gPiA+ID4gQ2M6IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgZWR1YmV6dmFsQGdtYWls
-LmNvbTsgWmhhbmcsIA0KPiA+ID4gPiA+ID4gPiBSdWk7DQo+ID4gPiA+ID4gPiA+IGxpbnV4LSBr
-ZXJuZWxAdmdlci5rZXJuZWwub3JnOyBzdGFibGVAdmdlci5rZXJuZWwub3JnDQo+ID4gPiA+ID4g
-PiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMy8zXSBUaGVybWFsOiBkbyB0aGVybWFsIHpvbmUgdXBk
-YXRlIA0KPiA+ID4gPiA+ID4gPiBhZnRlciBhIGNvb2xpbmcgZGV2aWNlIHJlZ2lzdGVyZWQNCj4g
-PiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gT24gU3VuLCBTZXAgMjcsIDIwMTUgYXQgMDY6NDg6
-NDRBTSArMDEwMCwgQ2hlbiBZdSB3cm90ZToNCj4gPiA+ID4gPiA+ID4gPiBGcm9tOiBaaGFuZyBS
-dWkgPHJ1aS56aGFuZ0BpbnRlbC5jb20+DQo+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4g
-Pg0KPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiBJIHRoaW5rIHlvdSBuZWVkIHRvIGhvbGQg
-Y2Rldi0+bG9jayBoZXJlLCB0byBtYWtlIHN1cmUgDQo+ID4gPiA+ID4gPiA+IHRoYXQgbm8gdGhl
-cm1hbCB6b25lIGlzIGFkZGVkIG9yIHJlbW92ZWQgZnJvbQ0KPiA+ID4gPiA+ID4gPiBjZGV2LT50
-aGVybWFsX2luc3RhbmNlcyB3aGlsZQ0KPiA+ID4gPiA+IHlvdSBhcmUgbG9vcGluZy4NCj4gPiA+
-ID4gPiA+ID4NCj4gPiA+ID4gPiA+IEFoIHJpZ2h0LCB3aWxsIGFkZC4gSWYgSSBhZGQgdGhlIGNk
-ZXYgLT5sb2NrIGhlcmUsIHdpbGwgDQo+ID4gPiA+ID4gPiB0aGVyZSBiZSBhIEFCLUJBIGxvY2sg
-d2l0aCB0aGVybWFsX3pvbmVfdW5iaW5kX2Nvb2xpbmdfZGV2aWNlPw0KPiA+ID4gPiA+DQo+ID4g
-PiA+ID4gWW91J3JlIHJpZ2h0LCBpdCBjb3VsZCBsZWFkIHRvIGEgZGVhZGxvY2suICBUaGUgbG9j
-a3MgY2FuJ3QgYmUgDQo+ID4gPiA+ID4gc3dhcHBlZCBiZWNhdXNlIHRoYXQgd29uJ3Qgd29yayBp
-biBzdGVwX3dpc2UuDQo+ID4gPiA+ID4NCj4gPiA+ID4gPiBUaGUgYmVzdCB3YXkgdGhhdCBJIGNh
-biB0aGluayBvZiBhY2Nlc3NpbmcgdGhlcm1hbF9pbnN0YW5jZXMgDQo+ID4gPiA+ID4gYXRvbWlj
-YWxseSBpcyBieSBtYWtpbmcgaXQgUkNVIHByb3RlY3RlZCBpbnN0ZWFkIG9mIHdpdGggbXV0ZXhl
-cy4NCj4gPiA+ID4gPiBXaGF0IGRvIHlvdSB0aGluaz8NCj4gPiA+ID4gPg0KPiA+ID4gPiBSQ1Ug
-d291bGQgbmVlZCBleHRyYSBzcGlubG9ja3MgdG8gcHJvdGVjdCB0aGUgbGlzdCwgYW5kIG5lZWQg
-dG8gDQo+ID4gPiA+IHN5bmNfcmN1IGFmdGVyIHdlIGRlbGV0ZSBvbmUgaW5zdGFuY2UgZnJvbSB0
-aGVybWFsX2luc3RhbmNlIA0KPiA+ID4gPiBsaXN0LCBJIHRoaW5rIGl0IGlzIHRvbyBjb21wbGlj
-YXRlZCBmb3IgbWUgdG8gcmV3cml0ZTogKCBIb3cgDQo+ID4gPiA+IGFib3V0IHVzaW5nDQo+ID4g
-PiB0aGVybWFsX2xpc3RfbG9jayBpbnN0ZWFkIG9mIGNkZXYgLT5sb2NrPw0KPiA+ID4gPiBUaGlz
-IGd1eSBzaG91bGQgYmUgYmlnIGVub3VnaCB0byBwcm90ZWN0IHRoZSANCj4gPiA+ID4gZGV2aWNl
-LnRoZXJtYWxfaW5zdGFuY2UNCj4gbGlzdC4NCj4gPiA+DQo+ID4gPiB0aGVybWFsX2xpc3RfbG9j
-ayBwcm90ZWN0cyB0aGVybWFsX3R6X2xpc3QgYW5kIHRoZXJtYWxfY2Rldl9saXN0LCANCj4gPiA+
-IGJ1dCBpdCBkb2Vzbid0IHByb3RlY3QgdGhlIHRoZXJtYWxfaW5zdGFuY2VzIGxpc3QuICBGb3Ig
-ZXhhbXBsZSwNCj4gPiA+IHRoZXJtYWxfem9uZV9iaW5kX2Nvb2xpbmdfZGV2aWNlKCkgYWRkcyBh
-IGNvb2xpbmcgZGV2aWNlIHRvIHRoZQ0KPiA+ID4gY2Rldi0+dGhlcm1hbF9pbnN0YW5jZXMgbGlz
-dCB3aXRob3V0IHRha2luZyB0aGVybWFsX3R6X2xpc3QuDQo+ID4gPg0KPiA+IEJlZm9yZSB0aGVy
-bWFsX3pvbmVfYmluZF9jb29saW5nX2RldmljZSBpcyBpbnZva2VkLCB0aGUgDQo+ID4gdGhlcm1h
-bF9saXN0X2xvY2sgd2lsbCBiZSBmaXJzdGx5IGdyaXBwZWQ6DQo+ID4NCj4gPiBzdGF0aWMgdm9p
-ZCBiaW5kX2NkZXYoc3RydWN0IHRoZXJtYWxfY29vbGluZ19kZXZpY2UgKmNkZXYpIHsgDQo+ID4g
-bXV0ZXhfbG9jaygmdGhlcm1hbF9saXN0X2xvY2spOw0KPiA+IGVpdGhlciB0ei0+b3BzLT5iaW5k
-ICAgIDogICB0aGVybWFsX3pvbmVfYmluZF9jb29saW5nX2RldmljZQ0KPiA+IG9yIF9fYmluZCgp
-ICA6ICAgdGhlcm1hbF96b25lX2JpbmRfY29vbGluZ19kZXZpY2UNCj4gPiBtdXRleF91bmxvY2so
-JnRoZXJtYWxfbGlzdF9sb2NrKTsNCj4gPiB9DQo+ID4NCj4gPiBBbmQgaXQgaXMgdGhlIHNhbWUg
-YXMgaW4gIHBhc3NpdmVfc3RvcmUuDQo+ID4gU28gd2hlbiBjb2RlIGlzIHRyeWluZyB0byBhZGQv
-ZGVsZXRlIHRoZXJtYWxfaW5zdGFuY2Ugb2YgY2RldiwgaGUgDQo+ID4gaGFzIGFscmVhZHkgaG9s
-ZCB0aGVybWFsX2xpc3RfbG9jayBJTU8uIE9yIGRvIEkgbWlzcyBhbnl0aGluZz8NCj4gDQo+IHRo
-ZXJtYWxfem9uZV9iaW5kX2Nvb2xpbmdfZGV2aWNlKCkgaXMgZXhwb3J0ZWQsIHNvIHlvdSBjYW4n
-dCByZWFsbHkgDQo+IHJlbHkgb24gdGhlIHN0YXRpYyB0aGVybWFsX2xpc3RfbG9jayBiZWluZyBh
-Y3F1aXJlZCBpbiBldmVyeSBzaW5nbGUgY2FsbC4NCj4gDQo+IHRoZXJtYWxfbGlzdF9sb2NrIGFu
-ZCBwcm90ZWN0cyB0aGUgbGlzdHMgdGhlcm1hbF90el9saXN0IGFuZCB0aGVybWFsX2NkZXZfbGlz
-dC4NCj4gTWFraW5nIGl0IGltcGxpY2l0bHkgcHJvdGVjdCB0aGUgY29vbGluZyBkZXZpY2UncyBh
-bmQgdGhlcm1hbCB6b25lIA0KPiBkZXZpY2UncyBpbnN0YW5jZXMgbGlzdCBiZWNhdXNlIG5vIHNl
-bnNpYmxlIGNvZGUgd291bGQgY2FsbA0KPiB0aGVybWFsX3pvbmVfYmluZF9jb29saW5nX2Rldmlj
-ZSgpIG91dHNpZGUgb2YgYSBiaW5kIGZ1bmN0aW9uIGlzIGp1c3QgDQo+IGFza2luZyBmb3IgdHJv
-dWJsZS4NCj4gDQpZZXMsIGZyb20gdGhpcyBwb2ludCBvZiB2aWV3LGl0IGlzIHRydWUuIA0KDQo+
-IExvY2tpbmcgaXMgaGFyZCB0byB1bmRlcnN0YW5kIGFuZCBlYXN5IHRvIGdldCB3cm9uZyBzbyBs
-ZXQncyBrZWVwIGl0IHNpbXBsZS4NCj4gDQpIb3cgYWJvdXQgdGhlIGZvbGxvd2luZyAyIG1ldGhv
-ZHM6DQoxLiBhdm9pZCBhY2Nlc3NpbmcgZGV2aWNlJ3MgdGhlcm1hbF9pbnN0YW5jZSwNCmJ1dCBh
-Y2Nlc3MgYWxsIHRoZXJtYWxfem9uZV9kZXZpY2UgZGlyZWN0bHksDQogYWx0aG91Z2ggdGhlcmUg
-bWlnaHQgYmUgc29tZSByZWR1bmRhbmN5LA0KIHNvbWUgdGhlcm1hbCB6b25lcyBkbyBub3QgbmVl
-ZCB0byBiZSB1cGRhdGVkLCANCmJ1dCB3ZSBjYW4gYXZvaWQgZ3JpcHBpbmcgZGV2LT5sb2NrOg0K
-DQoJbXV0ZXhfbG9jaygmdGhlcm1hbF9saXN0X2xvY2spOw0KCWxpc3RfZm9yX2VhY2hfZW50cnko
-cG9zLCAmdGhlcm1hbF90el9saXN0LCBub2RlKQ0KCQl0aGVybWFsX3pvbmVfZGV2aWNlX3VwZGF0
-ZSh0eik7DQoJbXV0ZXhfdW5sb2NrKCZ0aGVybWFsX2xpc3RfbG9jayk7IA0KDQpvciwNCjIuIE9u
-Y2Ugd2UgYmluZCB0aGUgbmV3IGRldmljZSB3aXRoIHRoZSB0aGVybWFsX3pvbmVfZGV2aWNlLA0K
-IHdlIGNhbiByZWNvcmQgdGhhdCB0aGVybWFsX3pvbmVfZGV2aWNlLCANCmFuZCB1cGRhdGUgdGhh
-dCB0aGVybWFsX3pvbmVfZGV2aWNlIGFsb25lLHRoZSB0aGUgY29kZSB3b3VsZCBiZToNCgkNCglt
-dXRleF9sb2NrKCZ0aGVybWFsX2xpc3RfbG9jayk7DQoJbGlzdF9mb3JfZWFjaF9lbnRyeShwb3Ms
-ICZ0aGVybWFsX3R6X2xpc3QsIG5vZGUpew0KCQlpZiAodHotPm5lZWRfdXBkYXRlKQ0KCQkJdGhl
-cm1hbF96b25lX2RldmljZV91cGRhdGUodHopOw0KCX0NCgltdXRleF91bmxvY2soJnRoZXJtYWxf
-bGlzdF9sb2NrKTsNCg0KDQpCVFcsIHNpbmNlIHRoZXJtYWxfem9uZV9kZXZpY2VfdXBkYXRlIGlz
-IG5vdCBhdG9taWMsIA0Kd2UgbWlnaHQgbmVlZCBhbm90aGVyIHBhdGNoIHRvIG1ha2UgaXQgaW50
-byBhdG9taWMgb3IgDQpzb21ldGhpbmcgbGlrZSB0aGF0LCBidXQgZm9yIG5vdywgSSB0aGluayB0
-aGVzZSB0aHJlZSBwYXRjaGVzIA0KYXJlIGp1c3QgZm9yIGZpeGluZyB0aGUgcmVncmVzc2lvbnMu
-DQoNCg0KVGhhbmtzDQoNCkJlc3QgUmVnYXJkcywNCll1DQoNCg==
+On Monday, October 19, 2015 05:58:40 PM Rob Herring wrote:
+> On Mon, Oct 19, 2015 at 4:40 PM, Rafael J. Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org=
+> wrote:
+> > On Monday, October 19, 2015 10:58:25 AM Rob Herring wrote:
+> >> On Mon, Oct 19, 2015 at 10:29 AM, David Woodhouse <dwmw2@infradead=
+=2Eorg> wrote:
+> >> > On Mon, 2015-10-19 at 15:50 +0100, Mark Brown wrote:
+> >> >> > But the point I'm making is that we are working towards *fixi=
+ng* that,
+> >> >> > and *not* using DT-specific code in places where we should be=
+ using the
+> >> >> > generic APIs.
+> >> >>
+> >> >> What is the plan for fixing things here?  It's not obvious (at =
+least to
+> >> >> me) that we don't want to have the subsystems having knowledge =
+of how
+> >> >> they are bound to a specific firmware which is what you seem to=
+ imply
+> >> >> here.
+> >> >
+> >> > I don't know that there *is* a coherent plan here to address it =
+all.
+> >> >
+> >> > Certainly, we *will* need subsystems to have firmware-specific
+> >> > knowledge in some cases. Take GPIO as an example; ACPI *has* a w=
+ay to
+> >> > describe GPIO, and properties which reference GPIO pins are inte=
+nded to
+> >> > work through that =E2=80=94 while in DT, properties which refere=
+nce GPIO pins
+> >> > will have different contents. They'll be compatible at the drive=
+r
+> >> > level, in the sense that there's a call to get a given GPIO give=
+n the
+> >> > property name, but the subsystems *will* be doing different thin=
+gs
+> >> > behind the scenes.
+> >> >
+> >> > My plan, such as it is, is to go through the leaf-node drivers w=
+hich
+> >> > almost definitely *should* be firmware-agnostic, and convert tho=
+se. And
+> >> > then take stock of what we have left, and work out what, if anyt=
+hing,
+> >> > still needs to be done.
+> >>
+> >> Many cases are already agnostic in the drivers in terms of the *_g=
+et()
+> >> functions. Some are DT specific, but probably because those subsys=
+tems
+> >> are new and DT only. In any case, I don't think these 1 line chang=
+es
+> >> do anything to make doing conversions here harder.
+> >>
+> >> >> It seems like we're going to have to refactor these bits of cod=
+e when
+> >> >> they get generalised anyway so I'm not sure that the additional=
+ cost
+> >> >> here is that big.
+> >> >
+> >> > That's an acceptable answer =E2=80=94 "we're adding legacy code =
+here but we
+> >> > know it's going to be refactored anyway". If that's true, all it=
+ takes
+> >> > is a note in the commit comment to that effect. That's different=
+ from
+> >> > having not thought about it :)
+> >>
+> >> Considering at one point we did create a fwnode based API, we did
+> >> think about it. Plus there was little input from ACPI folks as to
+> >> whether the change was even useful for ACPI case.
+> >
+> > Well, sorry, but who was asking whom, specifically?
+>=20
+> You and linux-acpi have been copied on v2 and later of the entire
+> series I think.
+
+Yes, but it wasn't like a direct request, say "We need your input, so c=
+an you
+please have a look and BTW we want this in 4.4, so please do it ASAP". =
+ In
+which case I'd prioritize that before other things I needed to take car=
+e of.
+
+> > The underlying problem is present in ACPI too and we don't really h=
+ave a good
+> > solution for it.  We might benefit from a common one if it existed.
+>=20
+> The problem for DT is we don't generically know what are the
+> dependencies at a core level. We could know some or most dependencies
+> if phandles (links to other nodes) were typed, but they are not. If
+> the core had this information, we could simply control the device
+> creation to order probing. Instead, this information is encoded into
+> the bindings and binding parsing resides in the subsystems. That
+> parsing happens during probe of the client side and is done by the
+> subsystems (for common bindings). Since we already do the parsing at
+> this point, it is a convenient place to trigger the probe of the
+> dependency. Is ACPI going to be similar in this regard?
+
+It is similar in some ways.  For example, if a device's functionality d=
+epends
+on an I2C resource (connection), the core doesn't know that at the devi=
+ce
+creation time at least in some cases.  Same for GPIO, SPI, DMA engines =
+etc.
+
+There is a _DEP object in ACPI that can be used by firmware to tell the=
+ OS
+about those dependencies, but there's no way in the driver core to use =
+that
+information anyway today.
+
+> Fundamentally, it is a question of probe devices when their
+> dependencies are present or drivers ensure their dependencies are
+> ready. IIRC, init systems went thru a similar debate for service
+> dependencies.
+
+The probe ordering is not the entire picture, though.
+
+Even if you get the probe ordering right, the problem is going to show =
+up in
+multiple other places: system suspend/resume, runtime PM, system shutdo=
+wn,
+unbinding of drivers.  In all of those cases it is necessary to handle =
+things
+in a specific order if there is a dependency.
+
+> >> In any case, we're talking about adding 1 line.
+> >
+> > But also about making the driver core slighly OF-centric.
+>=20
+> How so? The one line is in DT binding parsing code in subsystems, not
+> driver core. The driver core change is we add every device (that
+> happened to be created by DT) to the deferred probe list, so they
+> don't probe right away.
+
+The "that happened to be created by DT" part is of concern here.  What =
+is there
+that makes DT special in that respect?  Why shouldn't that be applicabl=
+e to
+devices created by the ACPI core, for example, or by a board file or so=
+mething
+else?
+
+> > Sure, we need OF-specific code and ACPI-specific code wherever diff=
+erent
+> > handling is required, but doing that at the driver core level seems=
+ to be
+> > a bit of a stretch to me.
+> >
+> > Please note that we don't really have ACPI-specific calls in the dr=
+iver core,
+> > although we might have added them long ago even before the OF stuff=
+ appeared
+> > in the kernel for the first time.  We didn't do that, (among other =
+things)
+> > because we didn't want that particular firmware interface to appear=
+ special
+> > in any way and I'm not really sure why it is now OK to make OF look=
+ special
+> > instead.
+>=20
+> I don't think DT is special and we avoid DT specific core changes as
+> much as possible. I think the difference is DT uses platform_device
+> and ACPI does not.
+
+ACPI uses platform devices too.  In fact, ACPI device objects are enume=
+rated as
+platform devices by default now.
+
+Or do you means something else here?
+
+> It used to be separate, but got merged together primarily to support =
+the
+> plethora of existing drivers. Anyway, that is all outside of anything=
+ in this
+> series.
+
+It explains the context of the series, so it is useful to talk about IM=
+O.
+
+>=20
+> > If it is trivial to avoid that (and you seem to be arguing that it =
+is), why
+> > do we have to do it?
+>=20
+> Sorry, I don't follow what "that" or "it" is.
+
+OK, so maybe I misunderstood you, sorry about that.
+
+Thanks,
+Rafael
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
