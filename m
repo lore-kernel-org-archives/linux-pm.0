@@ -1,56 +1,39 @@
-From: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Subject: [PATCH 0/4]
-Date: Tue, 20 Oct 2015 17:11:00 +0800
-Message-ID: <1445332264-6054-1-git-send-email-wxt@rock-chips.com>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
-Cc: Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>
+From: Caesar Wang <wxt@rock-chips.com>
+Subject: [PATCH 1/4] dt-bindings: Sync the dts to this document
+Date: Tue, 20 Oct 2015 17:11:01 +0800
+Message-ID: <1445332264-6054-2-git-send-email-wxt@rock-chips.com>
+References: <1445332264-6054-1-git-send-email-wxt@rock-chips.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1445332264-6054-1-git-send-email-wxt@rock-chips.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>, Heiko Stuebner <heiko@sntech.de>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, dianders@chromium.org, Caesar Wang <wxt@rock-chips.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Kumar Gala <galak@codeaurora.org>, linux-kernel@vger.kernel.org, Ian Campbell <ijc+devicetree@hellion.org.uk>, linux-rockchip@lists.infradead.org, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, Pawel Moll <pawel.moll@arm.com>, Zhang Rui <rui.zhang@intel.com>, Mark Rutland <mark.rutland@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-We need the OTP pin is gpio state before resetting the TSADC controller,
-since the tshut polarity will generate a high signal.
+Add the OTP gpio state, we need switch the pin to gpio state
+before the TSADC controller is reset.
 
-Says:
-The TSHUT temperature is setting more than 80 degree, the default
-tshut polarity is HIGH.
+Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+---
 
-If T > 80C, the OTP output the High Signal.
-If T < 80C, the OTP output the Low Signal.
+ Documentation/devicetree/bindings/thermal/rockchip-thermal.txt | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-On the moment, the TSADC controller is reset, the tshut polarity will be
-Low in a short period of time.
-
-So:
-If T < 80C, the OTP output the High Signal.
-If T > 80C, the OTP output the Low Signal.
-
-In some cases, the OTP pin is connected to the PMIC, maybe the PMIC can
-accept the reset response time to avoid this issue.
-
-In other words, the system will be always reboot if we make the OTP pin
-is connected the others IC to control the power.
-
-Tested on box board.
-
-
-
-Caesar Wang (4):
-  dt-bindings: Sync the dts to this document
-  thermal: rockchip: ensure the otp state before resetting the
-    controller
-  thermal: rockchip: change the TSHUT default state
-  ARM: dts: rockchip: Add the OTP gpio pinctrl
-
- .../bindings/thermal/rockchip-thermal.txt          |  5 ++--
- arch/arm/boot/dts/rk3288.dtsi                      |  9 ++++--
- drivers/thermal/rockchip_thermal.c                 | 34 +++++++++++++++++++++-
- 3 files changed, 43 insertions(+), 5 deletions(-)
-
+diff --git a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+index ef802de..2587f34b 100644
+--- a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+@@ -27,8 +27,9 @@ tsadc: tsadc@ff280000 {
+ 	clock-names = "tsadc", "apb_pclk";
+ 	resets = <&cru SRST_TSADC>;
+ 	reset-names = "tsadc-apb";
+-	pinctrl-names = "default";
+-	pinctrl-0 = <&otp_out>;
++	pinctrl-names = "default", "otp_out";
++	pinctrl-0 = <&otp_gpio>;
++	pinctrl-1 = <&otp_out>;
+ 	#thermal-sensor-cells = <1>;
+ 	rockchip,hw-tshut-temp = <95000>;
+ 	rockchip,hw-tshut-mode = <0>;
 -- 
 1.9.1
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
