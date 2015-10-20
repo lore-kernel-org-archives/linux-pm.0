@@ -1,224 +1,136 @@
-From: Lucas Stach <l.stach@pengutronix.de>
-Subject: Re: [PATCH] cpufreq: imx6: rework getting clocks and regulators
-Date: Tue, 20 Oct 2015 14:26:58 +0200
-Message-ID: <1445344018.3716.16.camel@pengutronix.de>
-References: <1445342218-12895-1-git-send-email-s.hauer@pengutronix.de>
+From: Michael Turquette <mturquette@baylibre.com>
+Subject: Re: [PATCH RFC RFT 2/3] clk: clk_put WARNs if user has not disabled
+ clk
+Date: Tue, 20 Oct 2015 05:40:00 -0700
+Message-ID: <20151020124000.20687.60752@quantum>
+References: <1438974570-20812-1-git-send-email-mturquette@baylibre.com>
+ <1438974570-20812-3-git-send-email-mturquette@baylibre.com>
+ <CAMuHMdX8Fq3AfxuZMLe4-CYFzrDiQcwnREQhX5fSGXzYNSkKsA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:59097 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752413AbbJTM1A (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 Oct 2015 08:27:00 -0400
-In-Reply-To: <1445342218-12895-1-git-send-email-s.hauer@pengutronix.de>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CAMuHMdX8Fq3AfxuZMLe4-CYFzrDiQcwnREQhX5fSGXzYNSkKsA@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Kevin Hilman <khilman@kernel.org>, Tony Lindgren <tony@atomide.com>, Sekhar Nori <nsekhar@ti.com>, Sascha Hauer <s.hauer@pengutronix.de>, Linux-sh list <linux-sh@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, linux-clk <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, kernel@pengutronix.de, Shawn Guo <shawnguo@kernel.org>
 
-Am Dienstag, den 20.10.2015, 13:56 +0200 schrieb Sascha Hauer:
-> Use devm_* functions for getting clocks and regulators. This simplfifies
-> the error path. Also return the error from the failing call instead of
-> collating all regulator and clock errors to -ENOENT. With this the
-> driver can properly handle -EPROBE_DEFER. Handling deferred probing
-> becomes necessary once the SoC internal regulators get supplies. While
-> the SoC internal regulators are registered early in architecture code,
-> the supplies may be regular I2C devices which may be probed after the
-> cpufreq driver.
+Hi Geert,
+
+Quoting Geert Uytterhoeven (2015-09-30 08:38:46)
+> Hi Mike,
 > 
-> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> On Fri, Aug 7, 2015 at 9:09 PM, Michael Turquette
+> <mturquette@baylibre.com> wrote:
+> > From the clk_put kerneldoc in include/linux/clk.h:
+> >
+> > """
+> > Note: drivers must ensure that all clk_enable calls made on this clock
+> > source are balanced by clk_disable calls prior to calling this function.
+> > """
+> >
+> > The common clock framework implementation of the clk.h api has per-user
+> > reference counts for calls to clk_prepare and clk_disable. As such it
+> > can enforce the requirement to properly call clk_disable and
+> > clk_unprepare before calling clk_put.
+> >
+> > Because this requirement is probably violated in many places, this patch
+> > starts with a simple warning. Once offending code has been fixed this
+> > check could additionally release the reference counts automatically.
+> >
+> > Signed-off-by: Michael Turquette <mturquette@baylibre.com>
+> > ---
+> >  drivers/clk/clk.c | 8 ++++++++
+> >  1 file changed, 8 insertions(+)
+> >
+> > diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+> > index 72feee9..6ec0f77 100644
+> > --- a/drivers/clk/clk.c
+> > +++ b/drivers/clk/clk.c
+> > @@ -2764,6 +2764,14 @@ void __clk_put(struct clk *clk)
+> >             clk->max_rate < clk->core->req_rate)
+> >                 clk_core_set_rate_nolock(clk->core, clk->core->req_rate);
+> >
+> > +       /*
+> > +        * before calling clk_put, all calls to clk_prepare and clk_enable from
+> > +        * a given user must be balanced with calls to clk_disable and
+> > +        * clk_unprepare by that same user
+> > +        */
+> > +       WARN_ON(clk->prepare_count);
+> > +       WARN_ON(clk->enable_count);
+> 
+> These two WARN_ON()s are triggered a lot when using a legacy clock domain,
+> and CONFIG_PM=n. Indeed, without Runtime PM, the idea is that the module clocks
+> get enabled unconditionally, which violates the assumptions above.
+> 
+> Cfr. the CONFIG_PM=n version of pm_clk_notify() in
+> drivers/base/power/clock_ops.c, which calls enable_clock():
+> 
+>     /**
+>      * enable_clock - Enable a device clock.
+>      * @dev: Device whose clock is to be enabled.
+>      * @con_id: Connection ID of the clock.
+>      */
+>     static void enable_clock(struct device *dev, const char *con_id)
+>     {
+>             struct clk *clk;
+> 
+>             clk = clk_get(dev, con_id);
+>             if (!IS_ERR(clk)) {
+>                     clk_prepare_enable(clk);
+>                     clk_put(clk);
 
-NACK
+This is a violation of the clkdev api as defined in include/linux/clk.h:
 
-This has come up several times before, maybe we should get a comment in
-the code.
-Using devm_ here is NOT safe. The cpu_dev is not the cpufreq device and
-will not be unbound if something return -EPROBE-DEFER in the cpufreq
-driver, so using devm will result in resource leaks. Please look at the
-git history of this file.
+	/**
+	 * clk_put|------ "free" the clock source
+	 * @clk: clock source
+	 *
+	 * Note: drivers must ensure that all clk_enable calls made on this
+	 * clock source are balanced by clk_disable calls prior to calling
+	 * this function.
+
+So the WARN is doing its job and letting us know about incorrect use of
+the API.
+
+>                     dev_info(dev, "Runtime PM disabled, clock forced on.\n");
+>             }
+>     }
+> 
+> I think this affects shmobile, keystone, davinci, omap1, and legacy sh.
+
+Why not keep the reference to the struct clk after get'ing it the first
+time?
+
+> 
+> Sorry for not noticing before, we usually build with CONFIG_PM=y.
+> One more reason for making CONFIG_PM=y mandatory on SoCs with clock domains?
+
+I don't know about that, but it seems like a reason to fix the clkdev
+usage in the clock domain code.
+
+What do you think?
 
 Regards,
-Lucas
-> ---
->  drivers/cpufreq/imx6q-cpufreq.c | 125 ++++++++++++++++++++--------------------
->  1 file changed, 63 insertions(+), 62 deletions(-)
+Mike
+
 > 
-> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-> index ef1fa81..f48f90a 100644
-> --- a/drivers/cpufreq/imx6q-cpufreq.c
-> +++ b/drivers/cpufreq/imx6q-cpufreq.c
-> @@ -176,6 +176,56 @@ static struct cpufreq_driver imx6q_cpufreq_driver = {
->  	.attr = cpufreq_generic_attr,
->  };
->  
-> +static int imx6q_cpufreq_get_clocks(struct platform_device *pdev)
-> +{
-> +	arm_clk = devm_clk_get(cpu_dev, "arm");
-> +	if (IS_ERR(arm_clk))
-> +		return PTR_ERR(arm_clk);
-> +
-> +	pll1_sys_clk = devm_clk_get(cpu_dev, "pll1_sys");
-> +	if (IS_ERR(pll1_sys_clk))
-> +		return PTR_ERR(pll1_sys_clk);
-> +
-> +	pll1_sw_clk = devm_clk_get(cpu_dev, "pll1_sw");
-> +	if (IS_ERR(pll1_sw_clk))
-> +		return PTR_ERR(pll1_sw_clk);
-> +
-> +	step_clk = devm_clk_get(cpu_dev, "step");
-> +	if (IS_ERR(step_clk))
-> +		return PTR_ERR(step_clk);
-> +
-> +	pll2_pfd2_396m_clk = devm_clk_get(cpu_dev, "pll2_pfd2_396m");
-> +	if (IS_ERR(pll2_pfd2_396m_clk))
-> +		return PTR_ERR(pll2_pfd2_396m_clk);
-> +
-> +	if (of_machine_is_compatible("fsl,imx6ul")) {
-> +		pll2_bus_clk = devm_clk_get(cpu_dev, "pll2_bus");
-> +		if (IS_ERR(pll2_bus_clk))
-> +			return PTR_ERR(pll2_bus_clk);
-> +
-> +		secondary_sel_clk = devm_clk_get(cpu_dev, "secondary_sel");
-> +		if (IS_ERR(secondary_sel_clk))
-> +			return PTR_ERR(secondary_sel_clk);
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int imx6q_cpufreq_get_regulators(struct platform_device *pdev)
-> +{
-> +	arm_reg = devm_regulator_get(cpu_dev, "arm");
-> +	if (IS_ERR(arm_reg))
-> +		return PTR_ERR(arm_reg);
-> +
-> +	pu_reg = devm_regulator_get_optional(cpu_dev, "pu");
-> +
-> +	soc_reg = devm_regulator_get(cpu_dev, "soc");
-> +	if (IS_ERR(soc_reg))
-> +		return PTR_ERR(soc_reg);
-> +
-> +	return 0;
-> +}
-> +
->  static int imx6q_cpufreq_probe(struct platform_device *pdev)
->  {
->  	struct device_node *np;
-> @@ -198,35 +248,18 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
->  		return -ENOENT;
->  	}
->  
-> -	arm_clk = clk_get(cpu_dev, "arm");
-> -	pll1_sys_clk = clk_get(cpu_dev, "pll1_sys");
-> -	pll1_sw_clk = clk_get(cpu_dev, "pll1_sw");
-> -	step_clk = clk_get(cpu_dev, "step");
-> -	pll2_pfd2_396m_clk = clk_get(cpu_dev, "pll2_pfd2_396m");
-> -	if (IS_ERR(arm_clk) || IS_ERR(pll1_sys_clk) || IS_ERR(pll1_sw_clk) ||
-> -	    IS_ERR(step_clk) || IS_ERR(pll2_pfd2_396m_clk)) {
-> -		dev_err(cpu_dev, "failed to get clocks\n");
-> -		ret = -ENOENT;
-> -		goto put_clk;
-> -	}
-> -
-> -	if (of_machine_is_compatible("fsl,imx6ul")) {
-> -		pll2_bus_clk = clk_get(cpu_dev, "pll2_bus");
-> -		secondary_sel_clk = clk_get(cpu_dev, "secondary_sel");
-> -		if (IS_ERR(pll2_bus_clk) || IS_ERR(secondary_sel_clk)) {
-> -			dev_err(cpu_dev, "failed to get clocks specific to imx6ul\n");
-> -			ret = -ENOENT;
-> -			goto put_clk;
-> -		}
-> +	ret = imx6q_cpufreq_get_clocks(pdev);
-> +	if (ret) {
-> +		dev_err(cpu_dev, "getting clocks failed with %d\n", ret);
-> +		goto put_node;
->  	}
->  
-> -	arm_reg = regulator_get(cpu_dev, "arm");
-> -	pu_reg = regulator_get_optional(cpu_dev, "pu");
-> -	soc_reg = regulator_get(cpu_dev, "soc");
-> -	if (IS_ERR(arm_reg) || IS_ERR(soc_reg)) {
-> -		dev_err(cpu_dev, "failed to get regulators\n");
-> -		ret = -ENOENT;
-> -		goto put_reg;
-> +	ret = imx6q_cpufreq_get_regulators(pdev);
-> +	if (ret) {
-> +		if (ret != -EPROBE_DEFER)
-> +			dev_err(cpu_dev, "getting regulators failed with %d\n",
-> +					ret);
-> +		goto put_node;
->  	}
->  
->  	/*
-> @@ -239,7 +272,7 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
->  		ret = dev_pm_opp_of_add_table(cpu_dev);
->  		if (ret < 0) {
->  			dev_err(cpu_dev, "failed to init OPP table: %d\n", ret);
-> -			goto put_reg;
-> +			goto put_node;
->  		}
->  
->  		/* Because we have added the OPPs here, we must free them */
-> @@ -256,7 +289,7 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
->  	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
->  	if (ret) {
->  		dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
-> -		goto put_reg;
-> +		goto out_free_opp;
->  	}
->  
->  	/* Make imx6_soc_volt array's size same as arm opp number */
-> @@ -347,28 +380,7 @@ free_freq_table:
->  out_free_opp:
->  	if (free_opp)
->  		dev_pm_opp_of_remove_table(cpu_dev);
-> -put_reg:
-> -	if (!IS_ERR(arm_reg))
-> -		regulator_put(arm_reg);
-> -	if (!IS_ERR(pu_reg))
-> -		regulator_put(pu_reg);
-> -	if (!IS_ERR(soc_reg))
-> -		regulator_put(soc_reg);
-> -put_clk:
-> -	if (!IS_ERR(arm_clk))
-> -		clk_put(arm_clk);
-> -	if (!IS_ERR(pll1_sys_clk))
-> -		clk_put(pll1_sys_clk);
-> -	if (!IS_ERR(pll1_sw_clk))
-> -		clk_put(pll1_sw_clk);
-> -	if (!IS_ERR(step_clk))
-> -		clk_put(step_clk);
-> -	if (!IS_ERR(pll2_pfd2_396m_clk))
-> -		clk_put(pll2_pfd2_396m_clk);
-> -	if (!IS_ERR(pll2_bus_clk))
-> -		clk_put(pll2_bus_clk);
-> -	if (!IS_ERR(secondary_sel_clk))
-> -		clk_put(secondary_sel_clk);
-> +put_node:
->  	of_node_put(np);
->  	return ret;
->  }
-> @@ -379,17 +391,6 @@ static int imx6q_cpufreq_remove(struct platform_device *pdev)
->  	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
->  	if (free_opp)
->  		dev_pm_opp_of_remove_table(cpu_dev);
-> -	regulator_put(arm_reg);
-> -	if (!IS_ERR(pu_reg))
-> -		regulator_put(pu_reg);
-> -	regulator_put(soc_reg);
-> -	clk_put(arm_clk);
-> -	clk_put(pll1_sys_clk);
-> -	clk_put(pll1_sw_clk);
-> -	clk_put(step_clk);
-> -	clk_put(pll2_pfd2_396m_clk);
-> -	clk_put(pll2_bus_clk);
-> -	clk_put(secondary_sel_clk);
->  
->  	return 0;
->  }
-
--- 
-Pengutronix e.K.             | Lucas Stach                 |
-Industrial Linux Solutions   | http://www.pengutronix.de/  |
-
+> Gr{oetje,eeting}s,
+> 
+>                         Geert
+> 
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> 
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                 -- Linus Torvalds
