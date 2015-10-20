@@ -1,39 +1,42 @@
 From: Caesar Wang <wxt@rock-chips.com>
-Subject: [PATCH 1/4] dt-bindings: Sync the dts to this document
-Date: Tue, 20 Oct 2015 17:11:01 +0800
-Message-ID: <1445332264-6054-2-git-send-email-wxt@rock-chips.com>
+Subject: [PATCH 3/4] thermal: rockchip: change the TSHUT default state
+Date: Tue, 20 Oct 2015 17:11:03 +0800
+Message-ID: <1445332264-6054-4-git-send-email-wxt@rock-chips.com>
 References: <1445332264-6054-1-git-send-email-wxt@rock-chips.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f42.google.com ([209.85.220.42]:34746 "EHLO
+	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751706AbbJTJLv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 Oct 2015 05:11:51 -0400
 In-Reply-To: <1445332264-6054-1-git-send-email-wxt@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Heiko Stuebner <heiko@sntech.de>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, dianders@chromium.org, Caesar Wang <wxt@rock-chips.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Kumar Gala <galak@codeaurora.org>, linux-kernel@vger.kernel.org, Ian Campbell <ijc+devicetree@hellion.org.uk>, linux-rockchip@lists.infradead.org, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, Pawel Moll <pawel.moll@arm.com>, Zhang Rui <rui.zhang@intel.com>, Mark Rutland <mark.rutland@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>, Heiko Stuebner <heiko@sntech.de>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, dianders@chromium.org, Caesar Wang <wxt@rock-chips.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
 
-Add the OTP gpio state, we need switch the pin to gpio state
-before the TSADC controller is reset.
+As the TRM says, the TSHUT default state is high active.
+In general, the TSHUT state can get from the dts. Otherwise
+it gets the state from this.
 
 Signed-off-by: Caesar Wang <wxt@rock-chips.com>
 ---
 
- Documentation/devicetree/bindings/thermal/rockchip-thermal.txt | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/thermal/rockchip_thermal.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
-index ef802de..2587f34b 100644
---- a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
-+++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
-@@ -27,8 +27,9 @@ tsadc: tsadc@ff280000 {
- 	clock-names = "tsadc", "apb_pclk";
- 	resets = <&cru SRST_TSADC>;
- 	reset-names = "tsadc-apb";
--	pinctrl-names = "default";
--	pinctrl-0 = <&otp_out>;
-+	pinctrl-names = "default", "otp_out";
-+	pinctrl-0 = <&otp_gpio>;
-+	pinctrl-1 = <&otp_out>;
- 	#thermal-sensor-cells = <1>;
- 	rockchip,hw-tshut-temp = <95000>;
- 	rockchip,hw-tshut-mode = <0>;
+diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+index c53e318..776d668 100644
+--- a/drivers/thermal/rockchip_thermal.c
++++ b/drivers/thermal/rockchip_thermal.c
+@@ -326,7 +326,7 @@ static void rk_tsadcv2_tshut_mode(int chn, void __iomem *regs,
+ 
+ static const struct rockchip_tsadc_chip rk3288_tsadc_data = {
+ 	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
+-	.tshut_polarity = TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
++	.tshut_polarity = TSHUT_HIGH_ACTIVE, /* default TSHUT HIGH ACTIVE */
+ 	.tshut_temp = 95000,
+ 
+ 	.initialize = rk_tsadcv2_initialize,
 -- 
 1.9.1
+
