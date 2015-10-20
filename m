@@ -1,204 +1,59 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH] cpufreq: imx6: rework getting clocks and regulators
-Date: Tue, 20 Oct 2015 13:56:58 +0200
-Message-ID: <1445342218-12895-1-git-send-email-s.hauer@pengutronix.de>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
+ SpeedStep enabled
+Date: Tue, 20 Oct 2015 12:11:33 +0000
+Message-ID: <bug-103351-137361-OQKXbjCURz@https.bugzilla.kernel.org/>
+References: <bug-103351-137361@https.bugzilla.kernel.org/>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:34695 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751213AbbJTL5E (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 Oct 2015 07:57:04 -0400
+Received: from mail.kernel.org ([198.145.29.136]:37817 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751964AbbJTMLj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 20 Oct 2015 08:11:39 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+	by mail.kernel.org (Postfix) with ESMTP id 6DEA0208A2
+	for <linux-pm@vger.kernel.org>; Tue, 20 Oct 2015 12:11:38 +0000 (UTC)
+Received: from bugzilla2.web.kernel.org (bugzilla2.web.kernel.org [172.20.200.52])
+	by mail.kernel.org (Postfix) with ESMTP id 7B896208A6
+	for <linux-pm@vger.kernel.org>; Tue, 20 Oct 2015 12:11:35 +0000 (UTC)
+In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Shawn Guo <shawnguo@kernel.org>, kernel@pengutronix.de, Sascha Hauer <s.hauer@pengutronix.de>
+To: linux-pm@vger.kernel.org
 
-Use devm_* functions for getting clocks and regulators. This simplfifies
-the error path. Also return the error from the failing call instead of
-collating all regulator and clock errors to -ENOENT. With this the
-driver can properly handle -EPROBE_DEFER. Handling deferred probing
-becomes necessary once the SoC internal regulators get supplies. While
-the SoC internal regulators are registered early in architecture code,
-the supplies may be regular I2C devices which may be probed after the
-cpufreq driver.
+https://bugzilla.kernel.org/show_bug.cgi?id=103351
 
-Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
----
- drivers/cpufreq/imx6q-cpufreq.c | 125 ++++++++++++++++++++--------------------
- 1 file changed, 63 insertions(+), 62 deletions(-)
+--- Comment #86 from Henrique de Moraes Holschuh <hmh@hmh.eng.br> ---
+Related information:
 
-diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-index ef1fa81..f48f90a 100644
---- a/drivers/cpufreq/imx6q-cpufreq.c
-+++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -176,6 +176,56 @@ static struct cpufreq_driver imx6q_cpufreq_driver = {
- 	.attr = cpufreq_generic_attr,
- };
- 
-+static int imx6q_cpufreq_get_clocks(struct platform_device *pdev)
-+{
-+	arm_clk = devm_clk_get(cpu_dev, "arm");
-+	if (IS_ERR(arm_clk))
-+		return PTR_ERR(arm_clk);
-+
-+	pll1_sys_clk = devm_clk_get(cpu_dev, "pll1_sys");
-+	if (IS_ERR(pll1_sys_clk))
-+		return PTR_ERR(pll1_sys_clk);
-+
-+	pll1_sw_clk = devm_clk_get(cpu_dev, "pll1_sw");
-+	if (IS_ERR(pll1_sw_clk))
-+		return PTR_ERR(pll1_sw_clk);
-+
-+	step_clk = devm_clk_get(cpu_dev, "step");
-+	if (IS_ERR(step_clk))
-+		return PTR_ERR(step_clk);
-+
-+	pll2_pfd2_396m_clk = devm_clk_get(cpu_dev, "pll2_pfd2_396m");
-+	if (IS_ERR(pll2_pfd2_396m_clk))
-+		return PTR_ERR(pll2_pfd2_396m_clk);
-+
-+	if (of_machine_is_compatible("fsl,imx6ul")) {
-+		pll2_bus_clk = devm_clk_get(cpu_dev, "pll2_bus");
-+		if (IS_ERR(pll2_bus_clk))
-+			return PTR_ERR(pll2_bus_clk);
-+
-+		secondary_sel_clk = devm_clk_get(cpu_dev, "secondary_sel");
-+		if (IS_ERR(secondary_sel_clk))
-+			return PTR_ERR(secondary_sel_clk);
-+	}
-+
-+	return 0;
-+}
-+
-+static int imx6q_cpufreq_get_regulators(struct platform_device *pdev)
-+{
-+	arm_reg = devm_regulator_get(cpu_dev, "arm");
-+	if (IS_ERR(arm_reg))
-+		return PTR_ERR(arm_reg);
-+
-+	pu_reg = devm_regulator_get_optional(cpu_dev, "pu");
-+
-+	soc_reg = devm_regulator_get(cpu_dev, "soc");
-+	if (IS_ERR(soc_reg))
-+		return PTR_ERR(soc_reg);
-+
-+	return 0;
-+}
-+
- static int imx6q_cpufreq_probe(struct platform_device *pdev)
- {
- 	struct device_node *np;
-@@ -198,35 +248,18 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
- 		return -ENOENT;
- 	}
- 
--	arm_clk = clk_get(cpu_dev, "arm");
--	pll1_sys_clk = clk_get(cpu_dev, "pll1_sys");
--	pll1_sw_clk = clk_get(cpu_dev, "pll1_sw");
--	step_clk = clk_get(cpu_dev, "step");
--	pll2_pfd2_396m_clk = clk_get(cpu_dev, "pll2_pfd2_396m");
--	if (IS_ERR(arm_clk) || IS_ERR(pll1_sys_clk) || IS_ERR(pll1_sw_clk) ||
--	    IS_ERR(step_clk) || IS_ERR(pll2_pfd2_396m_clk)) {
--		dev_err(cpu_dev, "failed to get clocks\n");
--		ret = -ENOENT;
--		goto put_clk;
--	}
--
--	if (of_machine_is_compatible("fsl,imx6ul")) {
--		pll2_bus_clk = clk_get(cpu_dev, "pll2_bus");
--		secondary_sel_clk = clk_get(cpu_dev, "secondary_sel");
--		if (IS_ERR(pll2_bus_clk) || IS_ERR(secondary_sel_clk)) {
--			dev_err(cpu_dev, "failed to get clocks specific to imx6ul\n");
--			ret = -ENOENT;
--			goto put_clk;
--		}
-+	ret = imx6q_cpufreq_get_clocks(pdev);
-+	if (ret) {
-+		dev_err(cpu_dev, "getting clocks failed with %d\n", ret);
-+		goto put_node;
- 	}
- 
--	arm_reg = regulator_get(cpu_dev, "arm");
--	pu_reg = regulator_get_optional(cpu_dev, "pu");
--	soc_reg = regulator_get(cpu_dev, "soc");
--	if (IS_ERR(arm_reg) || IS_ERR(soc_reg)) {
--		dev_err(cpu_dev, "failed to get regulators\n");
--		ret = -ENOENT;
--		goto put_reg;
-+	ret = imx6q_cpufreq_get_regulators(pdev);
-+	if (ret) {
-+		if (ret != -EPROBE_DEFER)
-+			dev_err(cpu_dev, "getting regulators failed with %d\n",
-+					ret);
-+		goto put_node;
- 	}
- 
- 	/*
-@@ -239,7 +272,7 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
- 		ret = dev_pm_opp_of_add_table(cpu_dev);
- 		if (ret < 0) {
- 			dev_err(cpu_dev, "failed to init OPP table: %d\n", ret);
--			goto put_reg;
-+			goto put_node;
- 		}
- 
- 		/* Because we have added the OPPs here, we must free them */
-@@ -256,7 +289,7 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
- 	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
- 	if (ret) {
- 		dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
--		goto put_reg;
-+		goto out_free_opp;
- 	}
- 
- 	/* Make imx6_soc_volt array's size same as arm opp number */
-@@ -347,28 +380,7 @@ free_freq_table:
- out_free_opp:
- 	if (free_opp)
- 		dev_pm_opp_of_remove_table(cpu_dev);
--put_reg:
--	if (!IS_ERR(arm_reg))
--		regulator_put(arm_reg);
--	if (!IS_ERR(pu_reg))
--		regulator_put(pu_reg);
--	if (!IS_ERR(soc_reg))
--		regulator_put(soc_reg);
--put_clk:
--	if (!IS_ERR(arm_clk))
--		clk_put(arm_clk);
--	if (!IS_ERR(pll1_sys_clk))
--		clk_put(pll1_sys_clk);
--	if (!IS_ERR(pll1_sw_clk))
--		clk_put(pll1_sw_clk);
--	if (!IS_ERR(step_clk))
--		clk_put(step_clk);
--	if (!IS_ERR(pll2_pfd2_396m_clk))
--		clk_put(pll2_pfd2_396m_clk);
--	if (!IS_ERR(pll2_bus_clk))
--		clk_put(pll2_bus_clk);
--	if (!IS_ERR(secondary_sel_clk))
--		clk_put(secondary_sel_clk);
-+put_node:
- 	of_node_put(np);
- 	return ret;
- }
-@@ -379,17 +391,6 @@ static int imx6q_cpufreq_remove(struct platform_device *pdev)
- 	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
- 	if (free_opp)
- 		dev_pm_opp_of_remove_table(cpu_dev);
--	regulator_put(arm_reg);
--	if (!IS_ERR(pu_reg))
--		regulator_put(pu_reg);
--	regulator_put(soc_reg);
--	clk_put(arm_clk);
--	clk_put(pll1_sys_clk);
--	clk_put(pll1_sw_clk);
--	clk_put(step_clk);
--	clk_put(pll2_pfd2_396m_clk);
--	clk_put(pll2_bus_clk);
--	clk_put(secondary_sel_clk);
- 
- 	return 0;
- }
+Debian will blacklist glibc lock elision (which uses Intel TSX-NI RTM, and does
+not use HLE) in Broadwell/Broadwell-H/Broadwell-DE processors.  This could
+change, but only if Intel itself decides to own up and publish correct,
+consistent information that we feel we can trust.
+
+After all, even the current editions of the Broadwell-* specification updates
+are inconsistent with reality.  This makes it impossible to trust Intel TSX-NI
+on those processors ATM.
+
+https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=800574
+
+
+Most of the SIGSEGVs observed by users in __lll_unlock_elision are software
+bugs (and the bug is NOT in glibc, either): code that attempts to unlock an
+already unlocked lock will crash when Intel TSX is being used.
+
+(typical example: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=750792)
+
+IMO, we should instrument glibc to complain loudly (or even crash) whenever
+anything attempts to unlock and unlocked mutex: it will smoke out applications
+and libraries with shoddy locking really fast, and shoddy locking is known to
+cause subtle, hard to diagnose problems.
+
+The MCE issues are not fixable by anything other than a microcode update, so it
+boils down to distros being able to ship that microcode update.
+
 -- 
-2.6.1
-
+You are receiving this mail because:
+You are the assignee for the bug.
