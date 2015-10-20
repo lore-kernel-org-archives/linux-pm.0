@@ -1,28 +1,61 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH RFC RFT 2/3] clk: clk_put WARNs if user has not disabled
- clk
-Date: Tue, 20 Oct 2015 13:52:52 +0100
-Message-ID: <20151020125251.GM32536@n2100.arm.linux.org.uk>
-References: <1438974570-20812-1-git-send-email-mturquette@baylibre.com>
- <1438974570-20812-3-git-send-email-mturquette@baylibre.com>
- <CAMuHMdX8Fq3AfxuZMLe4-CYFzrDiQcwnREQhX5fSGXzYNSkKsA@mail.gmail.com>
- <20151020124000.20687.60752@quantum>
+From: Heiner Kallweit <hkallweit1@gmail.com>
+Subject: Re: [PATCH] cpufreq: imx6: rework getting clocks and regulators
+Date: Tue, 20 Oct 2015 14:56:51 +0200
+Message-ID: <CAFSsGVtHaDkXDmnV4-X5z-2y48GM_erSWAYK-6bxR3wv4wHybg@mail.gmail.com>
+References: <1445342218-12895-1-git-send-email-s.hauer@pengutronix.de>
+	<1445344018.3716.16.camel@pengutronix.de>
+	<20151020124731.GS14476@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-clk-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20151020124000.20687.60752@quantum>
-Sender: linux-clk-owner@vger.kernel.org
-To: Michael Turquette <mturquette@baylibre.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Kevin Hilman <khilman@kernel.org>, Tony Lindgren <tony@atomide.com>, Sekhar Nori <nsekhar@ti.com>, Sascha Hauer <s.hauer@pengutronix.de>, Linux-sh list <linux-sh@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, linux-clk <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f182.google.com ([209.85.212.182]:33092 "EHLO
+	mail-wi0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751585AbbJTM4w (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 Oct 2015 08:56:52 -0400
+Received: by wijp11 with SMTP id p11so46068069wij.0
+        for <linux-pm@vger.kernel.org>; Tue, 20 Oct 2015 05:56:51 -0700 (PDT)
+In-Reply-To: <20151020124731.GS14476@pengutronix.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: Lucas Stach <l.stach@pengutronix.de>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, kernel@pengutronix.de, Shawn Guo <shawnguo@kernel.org>, linux-arm-kernel@lists.infradead.org
 
-On Tue, Oct 20, 2015 at 05:40:00AM -0700, Michael Turquette wrote:
-> Why not keep the reference to the struct clk after get'ing it the first
-> time?
+On Tue, Oct 20, 2015 at 2:47 PM, Sascha Hauer <s.hauer@pengutronix.de> wrote:
+> On Tue, Oct 20, 2015 at 02:26:58PM +0200, Lucas Stach wrote:
+>> Am Dienstag, den 20.10.2015, 13:56 +0200 schrieb Sascha Hauer:
+>> > Use devm_* functions for getting clocks and regulators. This simplfifies
+>> > the error path. Also return the error from the failing call instead of
+>> > collating all regulator and clock errors to -ENOENT. With this the
+>> > driver can properly handle -EPROBE_DEFER. Handling deferred probing
+>> > becomes necessary once the SoC internal regulators get supplies. While
+>> > the SoC internal regulators are registered early in architecture code,
+>> > the supplies may be regular I2C devices which may be probed after the
+>> > cpufreq driver.
+>> >
+>> > Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+>>
+>> NACK
+>>
+>> This has come up several times before, maybe we should get a comment in
+>> the code.
+>
+> Indeed, yes. This would help not wasting developing time.
+>
+> Anyway, the driver needs to handle -EPROBE_DEFER properly, if not with
+> devm_ then without it.
+>
+About two days ago I sent two patches fixing this. Meanwhile Viresh
+accepted them
+so they should show up in the next kernel very soon.
 
-Yes, that's exactly what you're supposed to do in this case.
-
--- 
-FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
-according to speedtest.net.
+> Sascha
+>
+> --
+> Pengutronix e.K.                           |                             |
+> Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+> Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+> Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
