@@ -1,10 +1,8 @@
 From: ahaslam@baylibre.com
-Subject: [PATCH v10 4/6] ARM: imx6: pm: declare pm domain latency on power_state struct.
-Date: Tue, 20 Oct 2015 15:26:27 +0200
-Message-ID: <1445347589-5626-5-git-send-email-ahaslam@baylibre.com>
-References: <1445347589-5626-1-git-send-email-ahaslam@baylibre.com>
+Subject: [PATCH v10 0/6]  Multiple intermediate states for genpd
+Date: Tue, 20 Oct 2015 15:26:23 +0200
+Message-ID: <1445347589-5626-1-git-send-email-ahaslam@baylibre.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1445347589-5626-1-git-send-email-ahaslam@baylibre.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: khilman@linaro.org, ulf.hansson@linaro.org, lina.iyer@linaro.org, geert@glider.be, k.kozlowski.k@gmail.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: bcousson@baylibre.com, mturquette@baylibre.com, Axel Haslam <ahaslam+renesas@baylibre.com>
@@ -12,69 +10,102 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Axel Haslam <ahaslam+renesas@baylibre.com>
 
-The generic_pm_domain structure uses an array of latencies to be able to
-declare multiple intermediate states.
+Some architectures may have intermediate power levels between on and off.
 
-Declare a single "OFF" state with the default latencies So that the
-power_off_latency_ns and power_on_latency_ns fields of generic_pm_domain
-structure can be eventualy removed.
+This patch set adds the ability to declare multiple states for a given
+generic power domain, the idea is that the deepest state will be entered
+which does not violate any of the device or sub-domain latency constraints.
 
-Signed-off-by: Axel Haslam <ahaslam+renesas@baylibre.com>
----
- arch/arm/mach-imx/gpc.c | 18 +++++++++++++++---
- 1 file changed, 15 insertions(+), 3 deletions(-)
+Changes since v9
+*rebased on linux-next
 
-diff --git a/arch/arm/mach-imx/gpc.c b/arch/arm/mach-imx/gpc.c
-index aefe92d..7b839b3 100644
---- a/arch/arm/mach-imx/gpc.c
-+++ b/arch/arm/mach-imx/gpc.c
-@@ -45,9 +45,11 @@
- 
- struct pu_domain {
- 	struct generic_pm_domain base;
-+	struct genpd_power_state *states;
- 	struct regulator *reg;
- 	struct clk *clk[GPC_CLK_MAX];
- 	int num_clks;
-+	unsigned int num_states;
- };
- 
- static void __iomem *gpc_base;
-@@ -372,14 +374,22 @@ static struct generic_pm_domain imx6q_arm_domain = {
- 	.name = "ARM",
- };
- 
-+static struct genpd_power_state imx6q_arm_domain_states[] = {
-+	{
-+		.name = "OFF",
-+		.power_off_latency_ns = 25000,
-+		.power_on_latency_ns = 2000000,
-+	},
-+};
-+
- static struct pu_domain imx6q_pu_domain = {
- 	.base = {
- 		.name = "PU",
- 		.power_off = imx6q_pm_pu_power_off,
- 		.power_on = imx6q_pm_pu_power_on,
--		.power_off_latency_ns = 25000,
--		.power_on_latency_ns = 2000000,
- 	},
-+	.states = imx6q_arm_domain_states,
-+	.num_states = ARRAY_SIZE(imx6q_arm_domain_states),
- };
- 
- static struct generic_pm_domain imx6sl_display_domain = {
-@@ -422,7 +432,9 @@ static int imx_gpc_genpd_init(struct device *dev, struct regulator *pu_reg)
- 	if (!IS_ENABLED(CONFIG_PM_GENERIC_DOMAINS))
- 		return 0;
- 
--	pm_genpd_init_simple(&imx6q_pu_domain.base, NULL, false);
-+	pm_genpd_init(&imx6q_pu_domain.base, NULL, imx6q_pu_domain.states,
-+			imx6q_pu_domain.num_states, false);
-+
- 	return of_genpd_add_provider_onecell(dev->of_node,
- 					     &imx_gpc_onecell_data);
- 
+Changes since v8
+* rebased to linux-pm next
+
+Changes since v7:
+* rebase to 4.3-rc5
+
+* add genpd_init_simple (Lina's suggestion) for platforms that don't have
+multiple states and don't declare initial latencies. A default OFF
+state with initial 0 latencies will be used in this case.
+
+* Append Mark's patch to add "states" and "timings" to the genpd
+debugfs
+
+Changes since v6:
+* change int to unsigned int were appropriate.
+
+* spelling mistakes, and fix commit message for removal of latencies.
+
+Changes since v5:
+* rebase to 4.1-rc1
+
+* Pass state array as an init argument on pm_genpd_init
+
+* declare a default OFF state with no latencies, that will be used if a
+null state argument is given.
+
+* set the deepest state when using sync_poweroff.
+
+* create and use name allocation function in the debug area
+instead of inline.
+
+Changes since v4:
+* move to power_on/off callbacks out of the state array Platforms can
+check the state_idx to know what state the power on/off corresponds to.
+
+* convert states to pointer,
+Dynamically allocate the states array to save memory on platforms
+with several power domains.
+
+* rename target_state to state_idx and remove init_state.
+
+Changes since v3:
+* remove old power on/off function at the end of the
+series so that compilation will not break in between.
+
+Changes since v2:
+* remove state argument and macros from save/restore callbacks.
+
+* added init_state for platforms to pass the initial state when the genpd
+is initially off.
+
+* convert current genpd users for the structure changes.
+
+Changes since v1:
+* split the changes so that the actual logic that selects the target state
+is a separate patch.
+
+* move the cached logic out of the state function and add
+it back to default_power_down_ok.
+
+* rename default_power_down_ok_state to power_down_ok_for_state
+
+Axel Haslam (5):
+  PM / Domains: prepare for multiple states
+  PM / Domains: core changes for multiple states
+  PM / Domains: make governor select deepest state
+  ARM: imx6: pm: declare pm domain latency on power_state struct.
+  PM / Domains: remove old power on/off latencies.
+
+Marc Titinger (1):
+  PM / Domains: add debugfs 'states' and 'timings' seq files
+
+ arch/arm/mach-exynos/pm_domains.c     |   2 +-
+ arch/arm/mach-imx/gpc.c               |  18 ++-
+ arch/arm/mach-s3c64xx/pm.c            |   4 +-
+ arch/arm/mach-shmobile/pm-rmobile.c   |   2 +-
+ arch/arm/mach-ux500/pm_domains.c      |   2 +-
+ arch/arm/mach-zx/zx296702-pm-domain.c |   2 +-
+ drivers/base/power/domain.c           | 258 ++++++++++++++++++++++++++++++++--
+ drivers/base/power/domain_governor.c  |  70 +++++----
+ drivers/clk/qcom/gdsc.c               |   2 +-
+ drivers/clk/shmobile/clk-mstp.c       |   2 +-
+ drivers/soc/dove/pmu.c                |   2 +-
+ drivers/soc/mediatek/mtk-scpsys.c     |   2 +-
+ drivers/soc/rockchip/pm_domains.c     |   2 +-
+ include/linux/pm_domain.h             |  33 ++++-
+ 14 files changed, 346 insertions(+), 55 deletions(-)
+
 -- 
 2.4.5
