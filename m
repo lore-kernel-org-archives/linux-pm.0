@@ -1,50 +1,28 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH] cpufreq: imx6: rework getting clocks and regulators
-Date: Tue, 20 Oct 2015 14:47:31 +0200
-Message-ID: <20151020124731.GS14476@pengutronix.de>
-References: <1445342218-12895-1-git-send-email-s.hauer@pengutronix.de>
- <1445344018.3716.16.camel@pengutronix.de>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH RFC RFT 2/3] clk: clk_put WARNs if user has not disabled
+ clk
+Date: Tue, 20 Oct 2015 13:52:52 +0100
+Message-ID: <20151020125251.GM32536@n2100.arm.linux.org.uk>
+References: <1438974570-20812-1-git-send-email-mturquette@baylibre.com>
+ <1438974570-20812-3-git-send-email-mturquette@baylibre.com>
+ <CAMuHMdX8Fq3AfxuZMLe4-CYFzrDiQcwnREQhX5fSGXzYNSkKsA@mail.gmail.com>
+ <20151020124000.20687.60752@quantum>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:54983 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751585AbbJTMrd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 Oct 2015 08:47:33 -0400
+Return-path: <linux-clk-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1445344018.3716.16.camel@pengutronix.de>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20151020124000.20687.60752@quantum>
+Sender: linux-clk-owner@vger.kernel.org
+To: Michael Turquette <mturquette@baylibre.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Kevin Hilman <khilman@kernel.org>, Tony Lindgren <tony@atomide.com>, Sekhar Nori <nsekhar@ti.com>, Sascha Hauer <s.hauer@pengutronix.de>, Linux-sh list <linux-sh@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, linux-clk <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Lucas Stach <l.stach@pengutronix.de>
-Cc: linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, kernel@pengutronix.de, Shawn Guo <shawnguo@kernel.org>, linux-arm-kernel@lists.infradead.org
 
-On Tue, Oct 20, 2015 at 02:26:58PM +0200, Lucas Stach wrote:
-> Am Dienstag, den 20.10.2015, 13:56 +0200 schrieb Sascha Hauer:
-> > Use devm_* functions for getting clocks and regulators. This simplfifies
-> > the error path. Also return the error from the failing call instead of
-> > collating all regulator and clock errors to -ENOENT. With this the
-> > driver can properly handle -EPROBE_DEFER. Handling deferred probing
-> > becomes necessary once the SoC internal regulators get supplies. While
-> > the SoC internal regulators are registered early in architecture code,
-> > the supplies may be regular I2C devices which may be probed after the
-> > cpufreq driver.
-> > 
-> > Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-> 
-> NACK
-> 
-> This has come up several times before, maybe we should get a comment in
-> the code.
+On Tue, Oct 20, 2015 at 05:40:00AM -0700, Michael Turquette wrote:
+> Why not keep the reference to the struct clk after get'ing it the first
+> time?
 
-Indeed, yes. This would help not wasting developing time.
-
-Anyway, the driver needs to handle -EPROBE_DEFER properly, if not with
-devm_ then without it.
-
-Sascha
+Yes, that's exactly what you're supposed to do in this case.
 
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
+according to speedtest.net.
