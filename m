@@ -1,111 +1,185 @@
 From: ahaslam@baylibre.com
-Subject: [PATCH v10 0/6]  Multiple intermediate states for genpd
-Date: Tue, 20 Oct 2015 15:26:23 +0200
-Message-ID: <1445347589-5626-1-git-send-email-ahaslam@baylibre.com>
+Subject: [PATCH v10 6/6] PM / Domains: add debugfs 'states' and 'timings' seq files
+Date: Tue, 20 Oct 2015 15:26:29 +0200
+Message-ID: <1445347589-5626-7-git-send-email-ahaslam@baylibre.com>
+References: <1445347589-5626-1-git-send-email-ahaslam@baylibre.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1445347589-5626-1-git-send-email-ahaslam@baylibre.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: khilman@linaro.org, ulf.hansson@linaro.org, lina.iyer@linaro.org, geert@glider.be, k.kozlowski.k@gmail.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: bcousson@baylibre.com, mturquette@baylibre.com, Axel Haslam <ahaslam+renesas@baylibre.com>
+Cc: bcousson@baylibre.com, mturquette@baylibre.com, Marc Titinger <mtitinger@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Axel Haslam <ahaslam+renesas@baylibre.com>
+From: Marc Titinger <mtitinger@baylibre.com>
 
-Some architectures may have intermediate power levels between on and off.
+This purpose of these debug seq-files is to help investigate
+generic power domain state transitions, based on device constraints.
+requires the "multiple states" patches from Axel Haslam.
 
-This patch set adds the ability to declare multiple states for a given
-generic power domain, the idea is that the deepest state will be entered
-which does not violate any of the device or sub-domain latency constraints.
+also rename 'summary' from 'pm_genpd_summary'
 
-Changes since v9
-*rebased on linux-next
+sample output for 'states'
+==========================
 
-Changes since v8
-* rebased to linux-pm next
+  Domain             State name        Eval = 2200nter + Exit = Min_off_on (ns)
+-----------------------------------------------------------------------
+a53_pd               cluster-sleep-0      1500000+800000=2300000
+a57_pd               d1-retention         1000000+800000=1800000
+a57_pd               cluster-sleep-0      1500000+800000=2300000
 
-Changes since v7:
-* rebase to 4.3-rc5
+sample output for 'timings'
+===========================
 
-* add genpd_init_simple (Lina's suggestion) for platforms that don't have
-multiple states and don't declare initial latencies. A default OFF
-state with initial 0 latencies will be used in this case.
+    Domain Devices, Timings in ns
+                       Stop/Start Save/Restore, Effective
+----------------------------------------------------  ---
+a53_pd
+    /cpus/cpu@100        1060  /660    1580  /1940  ,0 (cached stop)
+    /cpus/cpu@101        1060  /740    1520  /1600  ,0 (cached stop)
+    /cpus/cpu@102        880   /620    1380  /1780  ,0 (cached stop)
+    /cpus/cpu@103        1080  /640    1340  /1600  ,0 (cached stop)
+a57_pd
+    /cpus/cpu@0          1160  /740    3280  /1800  ,0 (cached stop)
+    /cpus/cpu@1          780   /1400   1440  /2080  ,0 (cached stop)
+    /D1                  600   /540    7140  /6420  ,2199460 (cached stop)
 
-* Append Mark's patch to add "states" and "timings" to the genpd
-debugfs
+Signed-off-by: Marc Titinger <mtitinger@baylibre.com>
+---
+ drivers/base/power/domain.c | 115 +++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 107 insertions(+), 8 deletions(-)
 
-Changes since v6:
-* change int to unsigned int were appropriate.
-
-* spelling mistakes, and fix commit message for removal of latencies.
-
-Changes since v5:
-* rebase to 4.1-rc1
-
-* Pass state array as an init argument on pm_genpd_init
-
-* declare a default OFF state with no latencies, that will be used if a
-null state argument is given.
-
-* set the deepest state when using sync_poweroff.
-
-* create and use name allocation function in the debug area
-instead of inline.
-
-Changes since v4:
-* move to power_on/off callbacks out of the state array Platforms can
-check the state_idx to know what state the power on/off corresponds to.
-
-* convert states to pointer,
-Dynamically allocate the states array to save memory on platforms
-with several power domains.
-
-* rename target_state to state_idx and remove init_state.
-
-Changes since v3:
-* remove old power on/off function at the end of the
-series so that compilation will not break in between.
-
-Changes since v2:
-* remove state argument and macros from save/restore callbacks.
-
-* added init_state for platforms to pass the initial state when the genpd
-is initially off.
-
-* convert current genpd users for the structure changes.
-
-Changes since v1:
-* split the changes so that the actual logic that selects the target state
-is a separate patch.
-
-* move the cached logic out of the state function and add
-it back to default_power_down_ok.
-
-* rename default_power_down_ok_state to power_down_ok_for_state
-
-Axel Haslam (5):
-  PM / Domains: prepare for multiple states
-  PM / Domains: core changes for multiple states
-  PM / Domains: make governor select deepest state
-  ARM: imx6: pm: declare pm domain latency on power_state struct.
-  PM / Domains: remove old power on/off latencies.
-
-Marc Titinger (1):
-  PM / Domains: add debugfs 'states' and 'timings' seq files
-
- arch/arm/mach-exynos/pm_domains.c     |   2 +-
- arch/arm/mach-imx/gpc.c               |  18 ++-
- arch/arm/mach-s3c64xx/pm.c            |   4 +-
- arch/arm/mach-shmobile/pm-rmobile.c   |   2 +-
- arch/arm/mach-ux500/pm_domains.c      |   2 +-
- arch/arm/mach-zx/zx296702-pm-domain.c |   2 +-
- drivers/base/power/domain.c           | 258 ++++++++++++++++++++++++++++++++--
- drivers/base/power/domain_governor.c  |  70 +++++----
- drivers/clk/qcom/gdsc.c               |   2 +-
- drivers/clk/shmobile/clk-mstp.c       |   2 +-
- drivers/soc/dove/pmu.c                |   2 +-
- drivers/soc/mediatek/mtk-scpsys.c     |   2 +-
- drivers/soc/rockchip/pm_domains.c     |   2 +-
- include/linux/pm_domain.h             |  33 ++++-
- 14 files changed, 346 insertions(+), 55 deletions(-)
-
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index dbab367..4c5be01 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -2048,21 +2048,120 @@ static const struct file_operations pm_genpd_summary_fops = {
+ 	.release = single_release,
+ };
+ 
++static int pm_genpd_states_show(struct seq_file *s, void *data)
++{
++	struct generic_pm_domain *genpd;
++
++	seq_puts(s,
++		 "\n  Domain             State name        Enter + Exit = Min_off_on (ns)\n");
++	seq_puts(s,
++		 "-----------------------------------------------------------------------\n");
++
++	list_for_each_entry(genpd, &gpd_list, gpd_list_node) {
++
++		int i;
++
++		for (i = 0; i < genpd->state_count; i++) {
++			seq_printf(s, "%-20s %-20s %lld+%lld=%lld\n",
++				   genpd->name,
++				   genpd->states[i].name,
++				   genpd->states[i].power_on_latency_ns,
++				   genpd->states[i].power_off_latency_ns,
++				   genpd->states[i].power_off_latency_ns
++				   + genpd->states[i].power_on_latency_ns);
++		}
++
++	}
++
++	seq_puts(s, "\n");
++
++	return 0;
++}
++
++static int pm_genpd_states_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, pm_genpd_states_show, NULL);
++}
++
++static const struct file_operations pm_genpd_states_fops = {
++	.open = pm_genpd_states_open,
++	.read = seq_read,
++	.llseek = seq_lseek,
++	.release = single_release,
++};
++
++static int pm_genpd_timing_show(struct seq_file *s, void *data)
++{
++	struct generic_pm_domain *genpd;
++
++	seq_puts(s, "\n    Domain Devices, Timings in ns\n");
++	seq_puts(s,
++		 "                       Stop/Start Save/Restore, Effective\n");
++	seq_puts(s,
++		 "----------------------------------------------------  ---\n");
++
++	list_for_each_entry(genpd, &gpd_list, gpd_list_node) {
++		struct pm_domain_data *pm_data;
++
++		seq_printf(s, "%-30s", genpd->name);
++
++		list_for_each_entry(pm_data, &genpd->dev_list, list_node) {
++			struct gpd_timing_data *td = &to_gpd_data(pm_data)->td;
++
++			if (!pm_data->dev->of_node)
++				continue;
++
++			seq_printf(s,
++				   "\n    %-20s %-6lld/%-6lld %-6lld/%-6lld,%lld %s%s",
++				   pm_data->dev->of_node->full_name,
++				   td->stop_latency_ns, td->start_latency_ns,
++				   td->save_state_latency_ns,
++				   td->restore_state_latency_ns,
++				   td->effective_constraint_ns,
++				   td->cached_stop_ok ? "(cached stop) " : "",
++				   td->constraint_changed ? "(changed)" : "");
++		}
++		seq_puts(s, "\n");
++	}
++	return 0;
++}
++
++static int pm_genpd_timing_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, pm_genpd_timing_show, NULL);
++}
++
++static const struct file_operations pm_genpd_timing_fops = {
++	.open = pm_genpd_timing_open,
++	.read = seq_read,
++	.llseek = seq_lseek,
++	.release = single_release,
++};
++
+ static int __init pm_genpd_debug_init(void)
+ {
+-	struct dentry *d;
++	struct dentry *d = NULL;
+ 
+ 	pm_genpd_debugfs_dir = debugfs_create_dir("pm_genpd", NULL);
+ 
+-	if (!pm_genpd_debugfs_dir)
+-		return -ENOMEM;
++	if (pm_genpd_debugfs_dir)
++		d = debugfs_create_file("summary", S_IRUGO,
++				pm_genpd_debugfs_dir, NULL,
++				&pm_genpd_summary_fops);
++	if (d)
++		d = debugfs_create_file("states", S_IRUGO,
++				pm_genpd_debugfs_dir, NULL,
++				&pm_genpd_states_fops);
++	if (d)
++		d = debugfs_create_file("timings", S_IRUGO,
++				pm_genpd_debugfs_dir, NULL,
++				&pm_genpd_timing_fops);
++	if (d)
++		return 0;
+ 
+-	d = debugfs_create_file("pm_genpd_summary", S_IRUGO,
+-			pm_genpd_debugfs_dir, NULL, &pm_genpd_summary_fops);
+-	if (!d)
+-		return -ENOMEM;
++	debugfs_remove_recursive(pm_genpd_debugfs_dir /*can be null*/);
+ 
+-	return 0;
++	return -ENOMEM;
+ }
+ late_initcall(pm_genpd_debug_init);
+ 
 -- 
 2.4.5
