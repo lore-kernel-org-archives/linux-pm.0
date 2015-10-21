@@ -1,52 +1,54 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [GIT PULL] On-demand device probing
-Date: Thu, 22 Oct 2015 01:39:42 +0200
-Message-ID: <13395371.QJ0TvhYnx8@vostro.rjw.lan>
-References: <561E1378.6000906@collabora.com> <4903022.NtioyRkmbB@vostro.rjw.lan> <CAMuHMdWoSdoT1p0e+Bc9ucrykxO7ESLKYHRzackpVjQAs_XaDg@mail.gmail.com>
+Subject: Re: [PATCH 1/2] PM / Domains: Don't measure ->start|stop() latency in system PM callbacks
+Date: Thu, 22 Oct 2015 01:47:12 +0200
+Message-ID: <3805270.x8nYq75MCT@vostro.rjw.lan>
+References: <1444921326-22574-1-git-send-email-ulf.hansson@linaro.org> <20151021103126.GA16738@amd> <CAPDyKFp=qjqOY2w8ftNLWDWEG3V1MC7G9VQDwMcsQ8P-swDdow@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdWoSdoT1p0e+Bc9ucrykxO7ESLKYHRzackpVjQAs_XaDg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Rob Herring <robh@kernel.org>, David Woodhouse <dwmw2@infradead.org>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Russell King <linux@arm.linux.org.uk>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, Terje =?ISO-8859-1?Q?Bergstr=F6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Frank Rowand <frowand.list@gmail.com>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gm>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:53568 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755522AbbJUXSU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 Oct 2015 19:18:20 -0400
+In-Reply-To: <CAPDyKFp=qjqOY2w8ftNLWDWEG3V1MC7G9VQDwMcsQ8P-swDdow@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
 
-On Wednesday, October 21, 2015 10:55:14 AM Geert Uytterhoeven wrote:
-> Hi Rafael,
-> 
-> On Wed, Oct 21, 2015 at 1:34 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > On Tuesday, October 20, 2015 09:15:01 AM Rob Herring wrote:
-> >> On Tue, Oct 20, 2015 at 2:56 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >> > ACPI uses platform devices too.  In fact, ACPI device objects are enumerated as
-> >> > platform devices by default now.
+On Wednesday, October 21, 2015 02:47:12 PM Ulf Hansson wrote:
+> On 21 October 2015 at 12:31, Pavel Machek <pavel@ucw.cz> wrote:
+> > On Thu 2015-10-15 17:02:06, Ulf Hansson wrote:
+> >> Measure latency does by itself contribute to an increased latency, thus we
+> >> should avoid it when it isn't needed.
 > >>
-> >> Okay, I should have grepped for that:
-> >> drivers/base/platform.c:                ACPI_COMPANION_SET(&pdev->dev, NULL);
-> >> drivers/base/platform.c:        len = acpi_device_modalias(dev, buf,
-> >> PAGE_SIZE -1);
-> >> drivers/base/platform.c:        rc = acpi_device_uevent_modalias(dev, env);
-> >> drivers/base/platform.c:        /* Then try ACPI style match */
-> >> drivers/base/platform.c:        if (acpi_driver_match_device(dev, drv))
+> >> Genpd measures latencies in the system PM phase for the ->start|stop()
+> >> callbacks and is thus affecting the system PM suspend/resume time.
+> >> Moreover these latencies are validated only at runtime PM suspend/resume.
 > >>
-> >> These are all cases which have DT version as well, so we're not really
-> >> all that different here. There's a few more for DT, but that probably
-> >> means you have just not hit the problems we have yet. For example,
-> >> what happens if you have an interrupt line in which the controller is
-> >> probed after the device connected to the interrupt line? That required
-> >> resolving irqs in platform_get_irq rather than using static resources
-> >> to support deferred probe.
+> >> To this reasoning, let's decide to leave these measurements out of the
+> >> system PM phase. There should be plenty of occasions during runtime PM to
+> >> perform these measurements anyway.
 > >
-> > We don't have this particular problem, because the IRQ controllers are
-> > enumerated in a special way.
+> > How much latency does the latency measure cause? Something like 0.000
+> > msec?
 > 
-> What does "in a special way" mean? Can you please be more specific?
+> Me and Lina did some measurement by hand a couple of weeks ago. If I
+> remember correctly the results where in the range of a couple of us. I
+> will check again and update you with some refreshed data.
 > 
-> Can you have interrupt controllers that depend on clocks, pin controllers,
-> and PM domains?
+> For system PM the time saved might be negligible, depending on the
+> number of devices that are attached to a genpd and on what level you
+> try to optimize things for.
+> 
+> Perhaps this change then becomes more of a policy decision, rather
+> than an a noticeable improvement. I certainly think dealing with
+> device PM QoS constraints should belong to runtime PM and I think it's
+> wrong/useless to do deal with this during system PM.
 
-Currently, there's no native way to represent those dependencies in ACPI.
+Right.  It should be used for runtime PM only.
 
 Thanks,
 Rafael
+
