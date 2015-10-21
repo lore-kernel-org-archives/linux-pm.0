@@ -1,80 +1,99 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [GIT PULL] On-demand device probing
-Date: Wed, 21 Oct 2015 17:27:58 +0100
-Message-ID: <20151021162758.GP32054@sirena.org.uk>
-References: <561E1378.6000906@collabora.com>
- <20151017065750.GA18607@kroah.com>
- <20151018192931.GY14956@sirena.org.uk>
- <20151018193757.GA9147@kroah.com>
- <20151018195330.GB14956@sirena.org.uk>
- <CAAObsKB2BUZ-smid45wOdAQw6h2yNqCydk+azAFNk69ewHJtZQ@mail.gmail.com>
- <5627B677.5090109@gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH RFC RFT 2/3] clk: clk_put WARNs if user has not disabled clk
+Date: Wed, 21 Oct 2015 18:46:35 +0200
+Message-ID: <CAMuHMdWgf8DOhaDLcQ=qJx0r7G0zK_yfWRpVOPBV--SW2Rw1kA@mail.gmail.com>
+References: <1438974570-20812-1-git-send-email-mturquette@baylibre.com>
+	<1438974570-20812-3-git-send-email-mturquette@baylibre.com>
+	<CAMuHMdX8Fq3AfxuZMLe4-CYFzrDiQcwnREQhX5fSGXzYNSkKsA@mail.gmail.com>
+	<20151020124000.20687.60752@quantum>
+	<CAMuHMdWd9LxrSWO5snriW+fb_d8FtMeXUBjp3M-Oeahh+FzJcw@mail.gmail.com>
+	<20151021105932.GP32536@n2100.arm.linux.org.uk>
+	<20151021155057.20687.14055@quantum>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="wrbiW19WTymQQzps"
-Return-path: <linux-gpio-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <5627B677.5090109@gmail.com>
-Sender: linux-gpio-owner@vger.kernel.org
-To: Frank Rowand <frowand.list@gmail.com>
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Russell King <linux@arm.linux.org.uk>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, Terje =?iso-8859-1?Q?Bergstr=F6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Felipe Balbi <balbi@ti>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f53.google.com ([209.85.218.53]:34484 "EHLO
+	mail-oi0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752215AbbJUQqg (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 Oct 2015 12:46:36 -0400
+In-Reply-To: <20151021155057.20687.14055@quantum>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Michael Turquette <mturquette@baylibre.com>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Sascha Hauer <s.hauer@pengutronix.de>, Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>, Tony Lindgren <tony@atomide.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
+Hi Mike,
 
---wrbiW19WTymQQzps
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, Oct 21, 2015 at 5:50 PM, Michael Turquette
+<mturquette@baylibre.com> wrote:
+> Quoting Russell King - ARM Linux (2015-10-21 03:59:32)
+>> On Wed, Oct 21, 2015 at 11:50:07AM +0200, Geert Uytterhoeven wrote:
+>> > On Tue, Oct 20, 2015 at 2:40 PM, Michael Turquette
+>> > <mturquette@baylibre.com> wrote:
+>> > > Why not keep the reference to the struct clk after get'ing it the first
+>> > > time?
+>> >
+>> > And store it where?
+>>
+>> Not my problem :)
+>>
+>> Users are supposed to hold on to the reference obtained via clk_get()
+>> while they're making use of the clock: in some implementations, this
+>> increments the module use count if the clock driver is a module, and
+>> may have other effects too.
+>>
+>> Dropping that while you're still requiring the clock to be enabled is
+>> unsafe: if it is provided by a module, then removing and reinserting
+>> the module may very well change the enabled state of the clock, it
+>> most certainly will disrupt the enable count.
+>>
+>> It's always been this way, right from the outset, and when I've seen
+>> people doing this bollocks, I've always pointed out that it's wrong.
+>> Generally, people will fix it once they become aware of it, so it's
+>> really that people just don't like reading and conforming to published
+>> API requirements.
+>>
+>> I think the root cause is that people just don't like reading what
+>> other people write in terms of documentation, and they prefer to go
+>> off and do their own thing, provided it works for them.
+>
+> Right, so in other words this problem must be solved by the caller of
+> clk_get, as it should be. I have never much looked at the pm clk code in
+> question, but I gave it a quick look and came up with some example code
+> that does not compile, in an effort to be as helpful as possible.
+>
+> Basically I added a flex array to struct pm_clk_notifier_block, so that
+> now there are two flex arrays which is stupid. But I am too lazy to
+> replace the nbclk->clks thing with a malloc after walking all of the
+> clk_id's to figure out the number of clocks. Or we could just add
+> .num_clk to the struct, fix up all 4 users of it and drop the NULL
+> sentinel used the .clk_id's... Hmm that would have been better.
 
-On Wed, Oct 21, 2015 at 08:59:51AM -0700, Frank Rowand wrote:
-> On 10/19/2015 5:34 AM, Tomeu Vizoso wrote:
+Thanks for trying.
 
-> > To be clear, I was saying that this series should NOT affect total
-> > boot times much.
+> index 25266c6..45e58fe 100644
+> --- a/include/linux/pm_clock.h
+> +++ b/include/linux/pm_clock.h
+> @@ -16,6 +16,7 @@ struct pm_clk_notifier_block {
+>         struct notifier_block nb;
+>         struct dev_pm_domain *pm_domain;
+>         char *con_ids[];
+> +       struct clk *clks[];
+>  };
+>
+>  struct clk;
 
-> I'm confused.  If I understood correctly, improving boot time was
-> the key justification for accepting this patch set.  For example,
-> from "[PATCH v7 0/20] On-demand device probing":
->=20
->    I have a problem with the panel on my Tegra Chromebook taking longer
->    than expected to be ready during boot (St=E9phane Marchesin reported w=
-hat
->    is basically the same issue in [0]), and have looked into ordered
->    probing as a better way of solving this than moving nodes around in the
->    DT or playing with initcall levels and linking order.
->=20
->    ...
->=20
->    With this series I get the kernel to output to the panel in 0.5s,
->    instead of 2.8s.
+Unfortunately that won't work: while the .con_ids[] array is per-platform,
+the .clks[] array should be per-device. I.e. it should be tied to the struct
+device, not to the struct pm_clk_notifier_block.
 
-Overall boot time and time to get some individual built in component up
-and running aren't the same thing - what this'll do is get things up
-more in the link order of the leaf consumers rather than deferring those
-leaf consumers when their dependencies aren't ready yet.
+Gr{oetje,eeting}s,
 
-> While not as dramatic as your results, they are somewhat supportive.
-> What has changed your assessment that the on-demand device probing
-> patches will give a big boot performance increase?  Do you have
-> new data or analysis?
+                        Geert
 
-See above, my understanding was that the performance improvements were
-more around improved control/predictability/handwave of the boot
-ordering rather than total time.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
---wrbiW19WTymQQzps
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJWJ70OAAoJECTWi3JdVIfQeWcH/j2uOXOzgx7pnrlm7I69Kibp
-atBDWslC2PLIFyM8NQMCCyylED2dqSr72HHG++eDyB9kHbaaba+ZNu8DDqcbQYSF
-MaVOWhUulhhEnyRhj3I+aYT+GVZ9QQwTzRau/cUD0Mrqf/lUvGZKUeU+gq34v4DK
-JfBU6MLZJNjAskQSSLPwzllg2hSb0VP5zy2ScbiawsUyRRNDn5tHUQ+r0K/rlWHJ
-9Zjr/q9QxHcDVhdX+bORqc7QCSlQhsrIATItLhLksSaX99iuhTltgGWjE/UonSId
-LHxDyw9zGss8voGsVVfmBf2FaD1/lEDyVMzGq0+GizxNNwaYXZ/fpGHvSbT2/Sw=
-=D7aZ
------END PGP SIGNATURE-----
-
---wrbiW19WTymQQzps--
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
