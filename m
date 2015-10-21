@@ -1,116 +1,80 @@
-From: Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+From: Mark Brown <broonie@kernel.org>
 Subject: Re: [GIT PULL] On-demand device probing
-Date: Wed, 21 Oct 2015 08:59:51 -0700
-Message-ID: <5627B677.5090109@gmail.com>
-References: <561E1378.6000906@collabora.com> <20151017065750.GA18607@kroah.com> <20151018192931.GY14956@sirena.org.uk> <20151018193757.GA9147@kroah.com> <20151018195330.GB14956@sirena.org.uk> <CAAObsKB2BUZ-smid45wOdAQw6h2yNqCydk+azAFNk69ewHJtZQ@mail.gmail.com>
-Reply-To: frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+Date: Wed, 21 Oct 2015 17:27:58 +0100
+Message-ID: <20151021162758.GP32054@sirena.org.uk>
+References: <561E1378.6000906@collabora.com>
+ <20151017065750.GA18607@kroah.com>
+ <20151018192931.GY14956@sirena.org.uk>
+ <20151018193757.GA9147@kroah.com>
+ <20151018195330.GB14956@sirena.org.uk>
+ <CAAObsKB2BUZ-smid45wOdAQw6h2yNqCydk+azAFNk69ewHJtZQ@mail.gmail.com>
+ <5627B677.5090109@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAAObsKB2BUZ-smid45wOdAQw6h2yNqCydk+azAFNk69ewHJtZQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
-Cc: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Michael Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Vinod Koul <vinod.koul-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Dan Williams <dan.j.williams-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, =?UTF-8?B?VGVyamUgQmVyZ3N0csO2bQ==?= <tbergstrom-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Grant Likely <grant.likely-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kishon Vijay Abraham I <kishon-l0cyMroinI0@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Felipe Balbi <balbi-l0cyMroinI0@public.gmane.org>J
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="wrbiW19WTymQQzps"
+Return-path: <linux-gpio-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <5627B677.5090109@gmail.com>
+Sender: linux-gpio-owner@vger.kernel.org
+To: Frank Rowand <frowand.list@gmail.com>
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Russell King <linux@arm.linux.org.uk>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, Terje =?iso-8859-1?Q?Bergstr=F6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Felipe Balbi <balbi@ti>
 List-Id: linux-pm@vger.kernel.org
 
-On 10/19/2015 5:34 AM, Tomeu Vizoso wrote:
-> On 18 October 2015 at 21:53, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
->> On Sun, Oct 18, 2015 at 12:37:57PM -0700, Greg Kroah-Hartman wrote:
->>> On Sun, Oct 18, 2015 at 08:29:31PM +0100, Mark Brown wrote:
->>>> On Fri, Oct 16, 2015 at 11:57:50PM -0700, Greg Kroah-Hartman wrote=
-:
 
-< snip >
+--wrbiW19WTymQQzps
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> hope you don't mind I summarize the points taken instead of replying
-> to the individual emails. I tried to address all the concerns that
-> have been raised again in the cover letter, but I guess I did a bad
-> job at explaining myself, so here's another (more in-depth) go at it.
+On Wed, Oct 21, 2015 at 08:59:51AM -0700, Frank Rowand wrote:
+> On 10/19/2015 5:34 AM, Tomeu Vizoso wrote:
 
-< snip >
+> > To be clear, I was saying that this series should NOT affect total
+> > boot times much.
 
-> 3) Regarding total boot time, I don't expect this series to make much
-> of a difference because though we would save a lot of matching and
-> querying for resources, that's little time compared with how long we
-> wait for hardware to react during probing. Async probing is more
-> likely to help with drivers that take a long time to probe.
+> I'm confused.  If I understood correctly, improving boot time was
+> the key justification for accepting this patch set.  For example,
+> from "[PATCH v7 0/20] On-demand device probing":
+>=20
+>    I have a problem with the panel on my Tegra Chromebook taking longer
+>    than expected to be ready during boot (St=E9phane Marchesin reported w=
+hat
+>    is basically the same issue in [0]), and have looked into ordered
+>    probing as a better way of solving this than moving nodes around in the
+>    DT or playing with initcall levels and linking order.
+>=20
+>    ...
+>=20
+>    With this series I get the kernel to output to the panel in 0.5s,
+>    instead of 2.8s.
 
-And then in your reply to Russell's reply to your email you say:
+Overall boot time and time to get some individual built in component up
+and running aren't the same thing - what this'll do is get things up
+more in the link order of the leaf consumers rather than deferring those
+leaf consumers when their dependencies aren't ready yet.
 
-> To be clear, I was saying that this series should NOT affect total
-> boot times much.
+> While not as dramatic as your results, they are somewhat supportive.
+> What has changed your assessment that the on-demand device probing
+> patches will give a big boot performance increase?  Do you have
+> new data or analysis?
 
-I'm confused.  If I understood correctly, improving boot time was
-the key justification for accepting this patch set.  For example,
-from "[PATCH v7 0/20] On-demand device probing":
+See above, my understanding was that the performance improvements were
+more around improved control/predictability/handwave of the boot
+ordering rather than total time.
 
-   I have a problem with the panel on my Tegra Chromebook taking longer
-   than expected to be ready during boot (St=C3=A9phane Marchesin repor=
-ted what
-   is basically the same issue in [0]), and have looked into ordered
-   probing as a better way of solving this than moving nodes around in =
-the
-   DT or playing with initcall levels and linking order.
+--wrbiW19WTymQQzps
+Content-Type: application/pgp-signature; name="signature.asc"
 
-   ...
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-   With this series I get the kernel to output to the panel in 0.5s,
-   instead of 2.8s.
+iQEcBAEBCAAGBQJWJ70OAAoJECTWi3JdVIfQeWcH/j2uOXOzgx7pnrlm7I69Kibp
+atBDWslC2PLIFyM8NQMCCyylED2dqSr72HHG++eDyB9kHbaaba+ZNu8DDqcbQYSF
+MaVOWhUulhhEnyRhj3I+aYT+GVZ9QQwTzRau/cUD0Mrqf/lUvGZKUeU+gq34v4DK
+JfBU6MLZJNjAskQSSLPwzllg2hSb0VP5zy2ScbiawsUyRRNDn5tHUQ+r0K/rlWHJ
+9Zjr/q9QxHcDVhdX+bORqc7QCSlQhsrIATItLhLksSaX99iuhTltgGWjE/UonSId
+LHxDyw9zGss8voGsVVfmBf2FaD1/lEDyVMzGq0+GizxNNwaYXZ/fpGHvSbT2/Sw=
+=D7aZ
+-----END PGP SIGNATURE-----
 
-Alexander Holler reported improved boot times for his patch set
-in August, which is another approach to ordering probes
-(http://article.gmane.org/gmane.linux.drivers.devicetree/133010).
-His results for 5 boards was four booted faster, one slightly
-slower:
-
-   Some numbers (5 boots on each board, without and with ordering drive=
-rs),
-   all times are seconds.
-
-   Kirkwood (dockstar, armv5):
-
-   Boot to "Freeing unused kernel memory" (includes mounting the rootfs=
-),
-   unordered:
-   4.456016 3.937801 4.114788 4.114526 3.949480 (average 4.1145222)
-   ordered:
-   3.173054 3.164045 3.141418 3.480679 3.459298 (3.2836988)
-   Time needed to sort (of_init_build_order()):
-   0.003024
-   Time needed to match drivers to the order (without calling them):
-   0.002884
-
-   Beagleboard (rev C4, armv7):
-
-   unordered:
-   6.706024 6.821746 6.696014 6.673675 6.769866 (6.733465)
-   ordered:
-   5.544860 5.514160 5.505859 5.527374 5.496795 (5.5178096)
-   sorting: 0.021209
-   matching: 0.006165
-
-   Beaglebone Black (rev A5, armv7):
-
-   unordered:
-   3.826531 3.825662 3.826648 3.825434 3.825263 (3.8259076)
-   ordered:
-   2.838554 2.838322 2.839459 2.838467 2.838421 (2.8386446)
-   sorting: 0.004769
-   matching: 0.004860
-
-   imx6q (armv7):
-
-   unordered:
-   3.451998 3.418864 3.446952 3.429974 3.440996 (3.4377568)
-   ordered:
-   3.538312 3.549019 3.538105 3.515916 3.555715 (3.5394134)
-   sorting: 0.004622
-   matching: 0.003868
-
-While not as dramatic as your results, they are somewhat supportive.
-What has changed your assessment that the on-demand device probing
-patches will give a big boot performance increase?  Do you have
-new data or analysis?
-
--Frank
+--wrbiW19WTymQQzps--
