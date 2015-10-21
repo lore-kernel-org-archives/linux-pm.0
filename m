@@ -1,87 +1,68 @@
-From: Caesar Wang <caesar.upstream@gmail.com>
-Subject: Re: [PATCH 3/4] thermal: rockchip: change the TSHUT default state
-Date: Wed, 21 Oct 2015 10:16:55 +0800
-Message-ID: <5626F597.8060601@gmail.com>
-References: <1445332264-6054-1-git-send-email-wxt@rock-chips.com>
- <1445332264-6054-4-git-send-email-wxt@rock-chips.com>
- <CAD=FV=Vo1Wf6opTc5jQjm-nXd=BCJxeggipPj4ER9Ehutxs_6w@mail.gmail.com>
- <5626EEB2.50101@gmail.com>
- <CAD=FV=UNyjJmN4TtZ+1DOeM_OYikRAUhYsN=F_f-q5MA_MVFag@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f65.google.com ([209.85.220.65]:35061 "EHLO
-	mail-pa0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752084AbbJUCRB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 Oct 2015 22:17:01 -0400
-In-Reply-To: <CAD=FV=UNyjJmN4TtZ+1DOeM_OYikRAUhYsN=F_f-q5MA_MVFag@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Caesar Wang <wxt@rock-chips.com>
+Subject: [PATCH v1 0/2] fix the TSHUT issue on rockchip thermal
+Date: Wed, 21 Oct 2015 10:42:58 +0800
+Message-ID: <1445395380-5365-1-git-send-email-wxt@rock-chips.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Heiko Stuebner <heiko@sntech.de>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, dianders@chromium.org, Eduardo Valentin <edubezval@gmail.com>, Caesar Wang <wxt@rock-chips.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Kumar Gala <galak@codeaurora.org>, linux-kernel@vger.kernel.org, Ian Campbell <ijc+devicetree@hellion.org.uk>, linux-rockchip@lists.infradead.org, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, Pawel Moll <pawel.moll@arm.com>, Zhang Rui <rui.zhang@intel.com>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@arm.linux.org.uk>
 List-Id: linux-pm@vger.kernel.org
-To: Doug Anderson <dianders@chromium.org>
-Cc: Caesar Wang <wxt@rock-chips.com>, Heiko Stuebner <heiko@sntech.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, Zhang Rui <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-Doug,
+We need the OTP pin is gpio state before resetting the TSADC controller,
+since the tshut polarity will generate a high signal.
 
-=E5=9C=A8 2015=E5=B9=B410=E6=9C=8821=E6=97=A5 10:14, Doug Anderson =E5=86=
-=99=E9=81=93:
-> Caesar,
->
-> On Tue, Oct 20, 2015 at 6:47 PM, Caesar Wang <caesar.upstream@gmail.c=
-om> wrote:
->> Doug,
->>
->> =E5=9C=A8 2015=E5=B9=B410=E6=9C=8821=E6=97=A5 00:01, Doug Anderson =E5=
-=86=99=E9=81=93:
->>
->> Caesar,
->>
->> On Tue, Oct 20, 2015 at 2:11 AM, Caesar Wang <wxt@rock-chips.com> wr=
-ote:
->>
->> As the TRM says, the TSHUT default state is high active.
->> In general, the TSHUT state can get from the dts. Otherwise
->> it gets the state from this.
->>
->> Can you point at where the TRM says that the default state is high a=
-ctive?
->>
->> With the manual I have, I look at TSADC_AUTO_CON and I look at the
->> description of "Bit 8".  It says that "tshut polarity" is 0 for low
->> active and 1 for high active.  It then said that the Reset Value is =
-0.
->>
->> ...the "Reset Value" in tables like this is notoriously unreliable, =
-so
->> I can totally believe that it's wrong.  If you can point me at the
->> part of the TRM that says that TSHUT is high active by default then =
-I
->> can confirm that for you.  ;)
->>
->>
->> Okay, I know that's my wrong, the polarity is high or low can be sel=
-ected.
->> :-(
->>
->> I remember the veyron why is the default HiGH active, since the opt =
-is
->> connected to the PMIC.(we need think about the devices)
->>
->> Why is the evb board LOW active, since the opt didn't connected to t=
-he
->> devices. TSHUT is depend on the CRU to work.
-> I think we can drop this patch then, right?  Any boards that need a
-> change from the default can just set "rockchip,hw-tshut-polarity",
-> right?
-Yep, we should drop this patch.
-I'm ready resend the patchs.
+Says:
+The TSHUT temperature is setting more than 80 degree, the default
+tshut polarity is HIGH.
+
+If T > 80C, the OTP output the High Signal.
+If T < 80C, the OTP output the Low Signal.
+
+On the moment, the TSADC controller is reset, the tshut polarity will be
+Low in a short period of time.
+
+So:
+If T < 80C, the OTP output the High Signal.
+If T > 80C, the OTP output the Low Signal.
+
+In some cases, the OTP pin is connected to the PMIC, maybe the PMIC can
+accept the reset response time to avoid this issue.
+
+In other words, the system will be always reboot if we make the OTP pin
+is connected the others IC to control the power.
+
+This series patchs are depend on Doug's patch.(https://patchwork.kernel.org/patch/7454081/)
+
+This series patchs are based on the Linus master branch.
+
+c51a571 ARM: dts: rockchip: Add the OTP gpio pinctrl
+e1ecae4 dt-bindings: Sync the dts to this document
+150426c drivers/pinctrl: Add the concept of an "init" state
+ce1fad2 Merge branch 'keys-fixes' of git://git.kernel.org/pub/scm/linux/kernel/git/dhowells/linux-fs
+1099f86 Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net
+911b79c KEYS: Don't permit request_key() to construct a new keyring
+37850e3 net: bcmgenet: Fix early link interrupt enabling
+afc050d Merge tag 'wireless-drivers-for-davem-2015-10-17' of git://git.kernel.org/pub/scm/linux/kernel/git/kvalo/wireless-drivers
+e277de5 tunnels: Don't require remote endpoint or ID during creation.
+740dbc2 openvswitch: Scrub skb between namespaces
+....
+
+Tested on box board.
 
 
-> -Doug
->
+Changes in v1:
+  - As the Doug comments, add the 'init' property to sync document.
+  - As the Doug comments, drop the thermal driver patchs since
+    we can with pinctrl changing to work.
+  - As the Doug's patch to add the 'init' property.
 
---=20
-Thanks,
-Caesar
+Caesar Wang (2):
+  dt-bindings: Sync the dts to this document
+  ARM: dts: rockchip: Add the OTP gpio pinctrl
 
+ Documentation/devicetree/bindings/thermal/rockchip-thermal.txt | 5 +++--
+ arch/arm/boot/dts/rk3288.dtsi                                  | 9 +++++++--
+ 2 files changed, 10 insertions(+), 4 deletions(-)
+
+-- 
+1.9.1
