@@ -1,76 +1,90 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v10 4/4] USB / PM: Allow USB devices to remain
- runtime-suspended when sleeping
-Date: Wed, 21 Oct 2015 12:58:23 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1510211258070.1660-100000@iolanthe.rowland.org>
-References: <1445441654-31778-5-git-send-email-tomeu.vizoso@collabora.com>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: Alternative approach to solve the deferred probe
+Date: Wed, 21 Oct 2015 18:20:42 +0100
+Message-ID: <20151021172042.GJ32532@n2100.arm.linux.org.uk>
+References: <CAAObsKDS_+AZ26P_fHc6pvAYrQotsuoO0DEGQUWC514t3DD_jQ@mail.gmail.com>
+ <20151019143045.GE32532@n2100.arm.linux.org.uk>
+ <CAAObsKDWM6A98tdKHqi4fe5DBf0BmB0JeghcZDWan_PYbyshag@mail.gmail.com>
+ <20151019153548.GM32532@n2100.arm.linux.org.uk>
+ <CAMuHMdVv=ieYM-Nehp0qV8CEggHEeJ22j-6i_N09rRA_U=2ePw@mail.gmail.com>
+ <20151020154656.GY32532@n2100.arm.linux.org.uk>
+ <56270D5B.5010902@gmail.com>
+ <20151021081847.GB32532@n2100.arm.linux.org.uk>
+ <5627B0F7.7010600@gmail.com>
+ <5627C381.60602@ti.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1445441654-31778-5-git-send-email-tomeu.vizoso@collabora.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, martyn.welch@collabora.co.uk, Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-clk-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <5627C381.60602@ti.com>
+Sender: linux-clk-owner@vger.kernel.org
+To: Grygorii Strashko <grygorii.strashko@ti.com>
+Cc: frowand.list@gmail.com, Geert Uytterhoeven <geert@linux-m68k.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rob Herring <robh+dt@kernel.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, Terje =?iso-8859-1?Q?Bergstr=F6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 21 Oct 2015, Tomeu Vizoso wrote:
+On Wed, Oct 21, 2015 at 07:55:29PM +0300, Grygorii Strashko wrote:
+> On 10/21/2015 06:36 PM, Frank Rowand wrote:
+> > The above is currently the last point for probe to succeed or defer
+> > (until possibly, as you mentioned, module loading resolves the defer).
+> > If a probe defers above, it will defer again below.  The set of defers
+> > should be exactly the same above and below.
+> > 
+> 
+> Unfortunately this is not "the last point for probe to succeed or defer".
 
-> Have dev_pm_ops.prepare return 1 for USB devices and ports so that USB
-> devices can remain runtime-suspended when the system goes to a sleep
-> state, if their wakeup state is correct and they have runtime PM enabled.
-> 
-> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
-> 
-> Changes in v10:
-> - Remove superfluous call to pm_runtime_enabled() as suggested by Alan
-> 
->  drivers/usb/core/port.c | 6 ++++++
->  drivers/usb/core/usb.c  | 8 +++++++-
->  2 files changed, 13 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/usb/core/port.c b/drivers/usb/core/port.c
-> index 210618319f10..f49707d73b5a 100644
-> --- a/drivers/usb/core/port.c
-> +++ b/drivers/usb/core/port.c
-> @@ -168,12 +168,18 @@ static int usb_port_runtime_suspend(struct device *dev)
->  
->  	return retval;
->  }
-> +
-> +static int usb_port_prepare(struct device *dev)
-> +{
-> +	return 1;
-> +}
->  #endif
->  
->  static const struct dev_pm_ops usb_port_pm_ops = {
->  #ifdef CONFIG_PM
->  	.runtime_suspend =	usb_port_runtime_suspend,
->  	.runtime_resume =	usb_port_runtime_resume,
-> +	.prepare =		usb_port_prepare,
->  #endif
->  };
->  
-> diff --git a/drivers/usb/core/usb.c b/drivers/usb/core/usb.c
-> index 8d5b2f4113cd..3a55c91b13a1 100644
-> --- a/drivers/usb/core/usb.c
-> +++ b/drivers/usb/core/usb.c
-> @@ -316,7 +316,13 @@ static int usb_dev_uevent(struct device *dev, struct kobj_uevent_env *env)
->  
->  static int usb_dev_prepare(struct device *dev)
->  {
-> -	return 0;		/* Implement eventually? */
-> +	struct usb_device *udev = to_usb_device(dev);
-> +
-> +	/* Return 0 if the current wakeup setting is wrong, otherwise 1 */
-> +	if (udev->do_remote_wakeup != device_may_wakeup(dev))
-> +		return 0;
-> +
-> +	return 1;
->  }
->  
->  static void usb_dev_complete(struct device *dev)
+Of course it isn't.  Being pedantic, there's actually no such thing,
+because the point that the kernel as finished booting can never actually
+be determined with things like modules being present.  That's something
+I've acknowledged from the start of this.
 
-Acked-by: Alan Stern <stern@rowland.harvard.edu>
+> There are still a bunch of drivers in Kernel which will be probed at late_initcall() level.
+> (like ./drivers/net/ethernet/ti/cpsw.c => late_initcall(cpsw_init);
+> Yes - they probably need to be updated to use module_init(), but that's what
+> we have now). Those drivers will re-trigger deferred device probing if their
+> probe succeeded.
+
+Maybe this particular late_initcall() which triggers off the deferred
+probing should be moved to its own really_late_initcall() which happens
+as the very last thing - I think this is intended to run after everything
+else has had a chance to probe once.
+
+> As result, it is impossible to say when will it happen the 
+> "final round of deferred device probing" :( and final list of drivers
+> which was "deferred forever" will be know only when kernel exits to
+> User space  ("deferred forever" - before loading modules).
+> 
+> May be, we also can consider adding debug_fs entry which can be used to
+> display actual state of deferred_probe_pending_list? 
+
+There are complaints in this thread about the existing deferred probing
+implementation being hard to debug - where it's known that a device
+has deferred, but it's not known why that happened.
+
+That would be solved by my proposal, as this final round of probing
+before entering userspace after _all_ normal device probes have been
+attempted once and then we've tried to satisfy the deferred probe
+(okay, that's what it's _supposed_ to be - and as it takes three lines
+to write it, you'll excuse me if I just use the abbreviated "final
+round of deferred probe" which is much shorter - but remember that
+the long version is what I actually mean) would produce a list of
+not only the devices that failed to probe, but also the cause of the
+deferred probes.
+
+My proposal would ensure that subsystems are happier to add these
+prints, because in the normal scenario where we have deferred probing,
+we're not littering the console log with lots of useless failure
+messages which make people stop and think "now did device X probe?"
+It also means scripts in our boot farms can more effectively analyse
+the log and determine whether the boot was actually successful and
+contained no errors.
+
+Merely printing the list of devices which have been deferred is next
+to useless.  The next question will always be "why did device X defer?"
+and if that can't be answered, it means people having to spend a long
+time adding lots of printks to the kernel at lots of -EPROBE_DEFER
+returning sites or in the relevant drivers, tracing through the code
+back towards the -EPROBE_DEFER sites to try and track it down.
+
+-- 
+FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
+according to speedtest.net.
