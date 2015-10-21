@@ -1,112 +1,59 @@
 From: Stephen Warren <swarren@wwwdotorg.org>
-Subject: Re: [PATCH] cpufreq: Add Broadcom BCM2835 CPU frequency control
- driver
-Date: Tue, 20 Oct 2015 20:54:23 -0600
-Message-ID: <5626FE5F.8060209@wwwdotorg.org>
-References: <1444592815-15271-1-git-send-email-lkundrak@v3.sk>
+Subject: Re: [PATCH] bcm2835: Add Raspberry Pi CPU frequency control to the
+ device tree
+Date: Tue, 20 Oct 2015 21:00:18 -0600
+Message-ID: <5626FFC2.4060102@wwwdotorg.org>
+References: <1444592795-15129-1-git-send-email-lkundrak@v3.sk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8bit
-Return-path: <cpufreq-owner@vger.kernel.org>
-In-Reply-To: <1444592815-15271-1-git-send-email-lkundrak@v3.sk>
-Sender: cpufreq-owner@vger.kernel.org
-To: Lubomir Rintel <lkundrak@v3.sk>
-Cc: linux-rpi-kernel@lists.infradead.org, Dom Cobley <popcornmix@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>, Lee Jones <lee@kernel.org>, Eric Anholt <eric@anholt.net>, cpufreq@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from avon.wwwdotorg.org ([70.85.31.133]:36578 "EHLO
+	avon.wwwdotorg.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751773AbbJUDAU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 Oct 2015 23:00:20 -0400
+In-Reply-To: <1444592795-15129-1-git-send-email-lkundrak@v3.sk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lubomir Rintel <lkundrak@v3.sk>
+Cc: linux-rpi-kernel@lists.infradead.org, Lee Jones <lee@kernel.org>, linux-pm@vger.kernel.org, Eric Anholt <eric@anholt.net>, linux-arm-kernel@lists.infradead.org
 
 On 10/11/2015 01:46 PM, Lubomir Rintel wrote:
-> This adds a device tree binding for Broadcom BCM2834 CPU frequency
-> control driven via Raspberry Pi VideoCore 4 firmware interface.
+> This adds a device tree binding for Broadcom BCM2834 CPU frequency control
+> driven via Raspberry Pi VideoCore 4 firmware interface.
 
-I don't see any DT binding here; there's a new driver and an addition to
-a DT file.
+Oh I see; that DT binding was sent as a separate patch rather than part
+of the series...
 
-This looks like it should be 3 separate patches:
+DT bindings patches need to be sent to the people/lists in the following
+MAINTAINERS entry:
 
-1) Document the DT binding for this driver.
-(This one needs to be reviewed by the DT maintainers and sent to the DT
-mailing list).
+OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS
+M:      Rob Herring <robh+dt@kernel.org>
+M:      Pawel Moll <pawel.moll@arm.com>
+M:      Mark Rutland <mark.rutland@arm.com>
+M:      Ian Campbell <ijc+devicetree@hellion.org.uk>
+M:      Kumar Gala <galak@codeaurora.org>
+L:      devicetree@vger.kernel.org
 
-2) Add the driver
-
-3) Add the relevant nodes/properties to the DT files.
-
-Patch 2 would typically be applied by the cpufreq maintainer, and patch
-3 by the RPi maintainer.
-
-> diff --git a/drivers/cpufreq/bcm2835-cpufreq.c b/drivers/cpufreq/bcm2835-cpufreq.c
+> diff --git a/Documentation/devicetree/bindings/cpufreq/raspberrypi,bcm2835-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/raspberrypi,bcm2835-cpufreq.txt
 > new file mode 100644
-> index 0000000..0fc4cb5
+> index 0000000..eb126d3
 > --- /dev/null
-> +++ b/drivers/cpufreq/bcm2835-cpufreq.c
-> @@ -0,0 +1,199 @@
-> +/*
-> + * This driver dynamically manages the CPU Frequency of the ARM processor.
-> + * Messages are sent to Videocore either setting or requesting the
-> + * frequency of the ARM in order to match an appropriate frequency to the
-> + * current usage of the processor. The policy which selects the frequency
-> + * to use is defined in the kernel .config file, but can be changed during
-> + * runtime.
-> + *
-> + * Copyright 2011 Broadcom Corporation.  All rights reserved.
-> + * Copyright 2013,2015 Lubomir Rintel
-> + *
-> + * Unless you and Broadcom execute a separate written software license
-> + * agreement governing use of this software, this software is licensed to you
-> + * under the terms of the GNU General Public License version 2, available at
-> + * http://www.broadcom.com/licenses/GPLv2.php (the "GPL").
-> + *
-> + * Notwithstanding the above, under no circumstances may you combine this
-> + * software in any way with any other Broadcom software provided under a
-> + * license other than the GPL, without Broadcom's express prior written
-> + * consent.
-> + */
-
-That license doesn't sound right for the kernel. IANAL, but it sounds
-like you (Lubomir) can choose to accept the code under GPLv2 and strip
-out all the other license text. If the last paragraph absolutely has to
-be maintained in the code, I'm not sure that this license is
-GPL-compatible since it imposes additional restrictions beyond the GPL.
-
-> +static u32 bcm2835_cpufreq_set_clock(int cur_rate, int arm_rate)
-> +{
-> +	int ret = 0;
-> +	struct prop msg = {
-> +		.dev_id = VCMSG_ID_ARM_CLOCK,
-> +		.val = arm_rate * 1000,
-> +	};
+> +++ b/Documentation/devicetree/bindings/cpufreq/raspberrypi,bcm2835-cpufreq.txt
+> @@ -0,0 +1,13 @@
+> +Raspberry Pi Broadcom BCM2835 CPU frequency control
 > +
-> +	/* send the message */
-> +	ret = rpi_firmware_property(fw, VCMSG_SET_CLOCK_RATE, &msg,
-> +							sizeof(msg));
-
-Why does this driver call the firmware directly, rather than using the
-clock API?
-
-> +static int bcm2835_cpufreq_target(struct cpufreq_policy *policy,
-> +						unsigned int target_freq,
-> +						unsigned int relation)
-> +{
-> +	unsigned int target = target_freq;
-> +	u32 cur;
+> +Required properties:
 > +
-> +	/* if we are above min and using ondemand, then just use max */
-> +	if (strcmp("ondemand", policy->governor->name) == 0 &&
-> +					target > policy->min)
-> +		target = policy->max;
+> +- compatible : should be "raspberrypi,bcm2835-cpufreq"
+> +- firmware : the Raspberry Pi firmware node
 
-This sounds like a policy decision. Shouldn't the governer implement
-policy, and this driver just do what it's told?
+It'd be best practice to mention the filename of the binding that
+defines the firmware. For example:
 
-> +static struct platform_driver bcm2835_cpufreq_driver = {
-> +	.probe = bcm2835_cpufreq_probe,
-> +	.remove = bcm2835_cpufreq_remove,
-> +	.driver = {
-> +		.name = "bcm2835-cpufreq",
-> +		.owner = THIS_MODULE,
+- firmware : phandle of the Raspberry Pi firmware node, as defined in
+  .././arm/bcm/raspberrypi,bcm2835-firmware.txt.
 
-I think you don't need that .owner line any more.
-
-> +MODULE_LICENSE("GPL v2");
-
-That doesn't match the license header in this file.
+That said, I'm not convinced cpufreq scaling should rely on the firmware
+directly, but instead should use the clock API to manipulate the clock.
