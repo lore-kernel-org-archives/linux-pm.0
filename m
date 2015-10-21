@@ -1,114 +1,211 @@
-From: Caesar Wang <caesar.upstream@gmail.com>
-Subject: Re: [PATCH 2/4] thermal: rockchip: ensure the otp state before
- resetting the controller
-Date: Wed, 21 Oct 2015 09:41:09 +0800
-Message-ID: <5626ED35.3010403@gmail.com>
-References: <1445332264-6054-1-git-send-email-wxt@rock-chips.com>
- <1445332264-6054-3-git-send-email-wxt@rock-chips.com>
- <CAD=FV=WHvwNGdRZ4Yjwk0zB00o2gFHXLfbAYHai1kM_oBAR4_g@mail.gmail.com>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [RFC PATCH 1/2] PM / runtime: Add CPU runtime PM suspend/resume
+ api
+Date: Tue, 20 Oct 2015 19:59:57 -0600
+Message-ID: <20151021015957.GA14526@linaro.org>
+References: <1444168656-6576-1-git-send-email-lina.iyer@linaro.org>
+ <1444168656-6576-2-git-send-email-lina.iyer@linaro.org>
+ <CAPDyKFp9P=uuSkGN_HD3JGn_YMi=ZnfG5ynX5y3ZfFt28fXxUg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAD=FV=WHvwNGdRZ4Yjwk0zB00o2gFHXLfbAYHai1kM_oBAR4_g@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Doug Anderson <dianders@chromium.org>
-Cc: Caesar Wang <wxt@rock-chips.com>, Heiko Stuebner <heiko@sntech.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, Zhang Rui <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f48.google.com ([209.85.218.48]:34844 "EHLO
+	mail-oi0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751042AbbJUCAA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 20 Oct 2015 22:00:00 -0400
+Received: by oiev17 with SMTP id v17so21051799oie.2
+        for <linux-pm@vger.kernel.org>; Tue, 20 Oct 2015 18:59:59 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <CAPDyKFp9P=uuSkGN_HD3JGn_YMi=ZnfG5ynX5y3ZfFt28fXxUg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Kevin Hilman <khilman@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Geert Uytterhoeven <geert+renesas@glider.be>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Stephen Boyd <sboyd@codeaurora.org>
 
-Doug,
-
-=E5=9C=A8 2015=E5=B9=B410=E6=9C=8820=E6=97=A5 23:52, Doug Anderson =E5=86=
-=99=E9=81=93:
-> Caesar,
+On Mon, Oct 19 2015 at 03:44 -0600, Ulf Hansson wrote:
+>On 6 October 2015 at 23:57, Lina Iyer <lina.iyer@linaro.org> wrote:
+>> CPU devices that use runtime PM, have the followign characteristics -
+>>         - Runs in a IRQs disabled context
+>>         - Every CPU does its own runtime PM
+>>         - CPUs do not access other CPU's runtime PM
+>>         - The runtime PM state of the CPU is determined by the CPU
+>>
+>> These allow for some interesting optimizations -
+>>         - The CPUs have a limited runtime PM states
+>>         - The runtime state of CPU need not be protected by spinlocks
+>>         - Options like auto-suspend/async are not relevant to CPU
+>>           devices
+>>
+>> A simplified runtime PM would therefore provide all that is needed for
+>> the CPU devices. After making a quick check for the usage count of the
+>> CPU devices (to allow for the CPU to not power down the domain), the
+>> runtime PM could just call the PM callbacks for the CPU devices. Locking
+>> is also avoided.
 >
-> On Tue, Oct 20, 2015 at 2:11 AM, Caesar Wang <wxt@rock-chips.com> wro=
-te:
->> We need the OTP pin is gpio state before resetting the TSADC control=
-ler,
->> since the tshut polarity will generate a high signal.
+>It's an interesting idea. :-)
+>
+>While I need to give it some more thinking for how/if this could fit
+>into the runtime PM API, let me start by providing some initial
+>feedback on the patch as such.
+>
 >>
->> Says:
->> The TSHUT temperature is setting more than 80 degree, the default ts=
-hut
->> polarity is high.
->>
->> If T > 80C, the OTP output the High Signal.
->> If T < 80C, the OTP output the Low Signal.
->>
->> On the moment, the TSADC controller is reset, the tshut polarity wil=
-l be
->> low in a short period of time.
->> So:
->>
->> If T < 80C, the OTP output the High Signal.
->> If T > 80C, the OTP output the Low Signal.
->>
->> In some cases, the OTP pin is connected to the PMIC, maybe the PMIC =
-can
->> accept the reset response time to avoid this issue.
->> In other words, the system will be always reboot if we make the OTP =
-pin
->> is connected the others IC to control the power.
->>
->> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+>> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 >> ---
+>>  drivers/base/power/runtime.c | 61 ++++++++++++++++++++++++++++++++++++++++++++
+>>  include/linux/pm_runtime.h   |  3 ++-
+>>  2 files changed, 63 insertions(+), 1 deletion(-)
 >>
->>   drivers/thermal/rockchip_thermal.c | 32 ++++++++++++++++++++++++++=
-++++++
->>   1 file changed, 32 insertions(+)
-> I think you could do this with no code changes to the thermal driver
-> if we simply convince Linus W. to apply a change that I posted up jus=
-t
-> about a year ago.  See:
+>> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+>> index e1a10a0..5f7512c 100644
+>> --- a/drivers/base/power/runtime.c
+>> +++ b/drivers/base/power/runtime.c
+>> @@ -13,6 +13,7 @@
+>>  #include <linux/pm_wakeirq.h>
+>>  #include <trace/events/rpm.h>
+>>  #include "power.h"
+>> +#include <linux/cpu.h>
+>>
+>>  typedef int (*pm_callback_t)(struct device *);
+>>
+>> @@ -577,6 +578,66 @@ static int rpm_suspend(struct device *dev, int rpmflags)
+>>         goto out;
+>>  }
+>>
+>> +void cpu_pm_runtime_suspend(void)
 >
-> https://patchwork.kernel.org/patch/5055741/
+>I think you want to return int instead of void.
 >
-> In v1 of that patch at <https://patchwork.kernel.org/patch/5049041/>
-> Linus said he liked it "A lot" and was willing to merge it with Greg
-> KH's Ack and with a small comment fix.  I obtained the Ack and fixed
-> the comment, but then the patch didn't end up being needed for me and
-> so I never bumped it and it got lost...
+The outcome of this function would not change the runtime state of the
+CPU. The void return seems appropriate.
+
+>> +{
+>> +       int ret;
+>> +       int (*callback)(struct device *);
+>> +       struct device *dev = get_cpu_device(smp_processor_id());
 >
-> Maybe you could re-test that patch?  It looks like it has a merge
-> conflict with current linuxnext but it looks trivial to resolve.  You
-> could re-post my patch or I could repost it and you could add your
-> Tested-by.
+>Perhaps we should follow the other runtime PM APIs and have the struct
+>*device provided as an in-parameter!?
 >
-> You'd still want to have a bindings change to describe "init", but at
-> least you shouldn't need any code changes.
+But that information is can be deduced by this function - the function
+is called for that CPU from *that* CPU. Also, the absence of an
+argument, ensures that the caller won't make a mistake of calling any
+other CPUs runtime PM from a CPU or worse, pass a device that is not a
+CPU.
 
-Okay, https://patchwork.kernel.org/patch/5055741/ that's working for me=
-=2E
-=46ell free add my  test tag if you resend the patch. (Tested-by: Caesa=
-r=20
-Wang <wxt@rock-chips.com>)
-
-
-1634ed8 FROMLIST: drivers/pinctrl: Add the concept of an "init" state
-15158f8 FROMLIST: ARM: dts: rockchip: Add the OTP gpio pinctrl
-e7d3b88 FROMLIST: thermal: rockchip: change the TSHUT default state
-184b154 FROMLIST: thermal: rockchip: ensure the otp state before=20
-resetting the controller
-9edbe15 FROMLIST: dt-bindings: Sync the dts to this document
-
-Meanwhile, I change the dts as follows.
-
--               pinctrl-names =3D "default", "otp_out";
-+               pinctrl-names =3D "init", "default";
-                 pinctrl-0 =3D <&otp_gpio>;
-                 pinctrl-1 =3D <&otp_out>;
-
+>> + +       trace_rpm_suspend(dev, 0);
+>> +
+>> +       /**
+>> +        * Use device usage_count to disallow bubbling up suspend.
+>> +        * This CPU has already decided to suspend, we cannot
+>> +        * prevent it here.
+>> +        */
+>> +       if (!atomic_dec_and_test(&dev->power.usage_count))
+>> +               return 0;
+>> +
+>> +       ret = rpm_check_suspend_allowed(dev);
 >
-> -Doug
+>I don't think you can use this function. For example it calls
+>__dev_pm_qos_read_value() which expects the dev->power.lock to be
+>held.
 >
-> _______________________________________________
-> Linux-rockchip mailing list
-> Linux-rockchip@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-rockchip
+Right. I realized that. Will fix.
 
+>> +       if (ret)
+>> +               return ret;
+>> +
+>> +       __update_runtime_status(dev, RPM_SUSPENDING);
+>> +
+>> +       pm_runtime_cancel_pending(dev);
+>
+>Hmm. For the same struct device (CPU) could really calls to
+>cpu_pm_runtime_suspend|resume() happen in parallel? Do we need to
+>protect against that?
+>
+That wouldnt happen, the functions are only called that CPU on that CPU.
+See the explanation above.
 
---=20
-Thanks,
-Caesar
+>I don't have such in-depth knowledge about CPU idle, so apologize if
+>this may be a stupid question.
+>
+>If the answer to the above is *no*, I believe you don't need to care
+>about the intermediate RPM_SUSPENDING state and you don't need an
+>atomic counter either, right!?
+>
+This calls into genpd framework, which expects devices to be
+RPM_SUSPENDING in pm_genpd_power_off; I wanted to keep the behavior
+between the frameworks consistent.
+
+>Instead you could then just update the runtime PM status to
+>RPM_SUSPENDED if the RPM callback doesn't return an error.
+>
+>> +       callback = RPM_GET_CALLBACK(dev, runtime_suspend);
+>> +
+>> +       ret = callback(dev);
+>> +       if (!ret)
+>> +               __update_runtime_status(dev, RPM_SUSPENDED);
+>> +       else
+>> +               __update_runtime_status(dev, RPM_ACTIVE);
+>> +
+>> +       trace_rpm_return_int(dev, _THIS_IP_, ret);
+>> +}
+>> +
+>> +void cpu_pm_runtime_resume(void)
+>
+>Similar comments as for the suspend function.
+>
+>> +{
+>> +       int ret;
+>> +       int (*callback)(struct device *);
+>> +       struct device *dev = get_cpu_device(smp_processor_id());
+>> +
+>> +       trace_rpm_resume(dev, 0);
+>> +
+>> +       if (dev->power.runtime_status == RPM_ACTIVE)
+>> +               return 1;
+>> +
+>> +       atomic_inc(&dev->power.usage_count);
+>> +
+>> +       __update_runtime_status(dev, RPM_RESUMING);
+>> +
+>> +       callback = RPM_GET_CALLBACK(dev, runtime_resume);
+>> +
+>> +       ret = callback(dev);
+>> +       if (!ret)
+>> +               __update_runtime_status(dev, RPM_ACTIVE);
+>> +       else
+>> +               __update_runtime_status(dev, RPM_SUSPENDED);
+>> +
+>> +       trace_rpm_return_int(dev, _THIS_IP_, ret);
+>> +}
+>> +
+>>  /**
+>>   * rpm_resume - Carry out runtime resume of given device.
+>>   * @dev: Device to resume.
+>> diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
+>> index 3bdbb41..3655ead 100644
+>> --- a/include/linux/pm_runtime.h
+>> +++ b/include/linux/pm_runtime.h
+>> @@ -31,6 +31,8 @@ static inline bool queue_pm_work(struct work_struct *work)
+>>         return queue_work(pm_wq, work);
+>>  }
+>>
+>> +extern void cpu_pm_runtime_suspend(void);
+>> +extern void cpu_pm_runtime_resume(void);
+>
+>extern int ...
+>
+>>  extern int pm_generic_runtime_suspend(struct device *dev);
+>>  extern int pm_generic_runtime_resume(struct device *dev);
+>>  extern int pm_runtime_force_suspend(struct device *dev);
+>> @@ -273,5 +275,4 @@ static inline void pm_runtime_dont_use_autosuspend(struct device *dev)
+>>  {
+>>         __pm_runtime_use_autosuspend(dev, false);
+>>  }
+>> -
+>>  #endif
+>> --
+>> 2.1.4
+>>
+>
+>Kind regards
+>Uffe
