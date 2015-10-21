@@ -1,53 +1,54 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 1/2] PM / Domains: Don't measure ->start|stop() latency in
- system PM callbacks
-Date: Wed, 21 Oct 2015 14:47:12 +0200
-Message-ID: <CAPDyKFp=qjqOY2w8ftNLWDWEG3V1MC7G9VQDwMcsQ8P-swDdow@mail.gmail.com>
-References: <1444921326-22574-1-git-send-email-ulf.hansson@linaro.org>
-	<20151021103126.GA16738@amd>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 01/16] PM / OPP: Add 'supply-names' binding
+Date: Wed, 21 Oct 2015 18:48:32 +0530
+Message-ID: <20151021131832.GG7784@ubuntu>
+References: <cover.1441972771.git.viresh.kumar@linaro.org>
+ <2b87b162eabd1570ae2311e1ef8655acda72f678.1441972771.git.viresh.kumar@linaro.org>
+ <55F72C97.2030306@kernel.org>
+ <20151016002243.GA23912@codeaurora.org>
+ <20151016060227.GS19018@linux>
+ <20151016191658.GA16437@codeaurora.org>
+ <20151017041055.GZ19018@linux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f180.google.com ([209.85.212.180]:36508 "EHLO
-	mail-wi0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750922AbbJUMrN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 Oct 2015 08:47:13 -0400
-Received: by wicfx6 with SMTP id fx6so89553392wic.1
-        for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2015 05:47:12 -0700 (PDT)
-In-Reply-To: <20151021103126.GA16738@amd>
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:35848 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750827AbbJUNSh (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 Oct 2015 09:18:37 -0400
+Received: by pacfv9 with SMTP id fv9so57252897pac.3
+        for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2015 06:18:36 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20151017041055.GZ19018@linux>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Rob Herring <robh@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, rob.herring@linaro.org, lee.jones@linaro.org, Mark Brown <broonie@kernel.org>, devicetree@vger.kernel.org, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, open list <linux-kernel@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-On 21 October 2015 at 12:31, Pavel Machek <pavel@ucw.cz> wrote:
-> On Thu 2015-10-15 17:02:06, Ulf Hansson wrote:
->> Measure latency does by itself contribute to an increased latency, thus we
->> should avoid it when it isn't needed.
->>
->> Genpd measures latencies in the system PM phase for the ->start|stop()
->> callbacks and is thus affecting the system PM suspend/resume time.
->> Moreover these latencies are validated only at runtime PM suspend/resume.
->>
->> To this reasoning, let's decide to leave these measurements out of the
->> system PM phase. There should be plenty of occasions during runtime PM to
->> perform these measurements anyway.
->
-> How much latency does the latency measure cause? Something like 0.000
-> msec?
+On 17-10-15, 09:40, Viresh Kumar wrote:
+> Hehe, no.
+> 
+> Okay here is the problem statement:
+> 
+> We have two supplies for a device and the device node will have
+> something like:
+> 
+> name1-supply = <&supply1>;
+> name2-supply = <&supply2>;
+> 
+> And the OPP node needs to have voltages for both of them:
+> 
+> opp-microvolt = <X1 Y1 Z1>, <X2 Y2 Z2>;
+> 
+> Where XYZ(1) are for supply1 and XYZ(2) are for supply2.
+> 
+> Now we need to identify the supplies for which the values are present
+> here and their order as well. How do we do that?
+> 
+> The way I am suggesting is to add a property in opp node which will
+> keep "name1" and "name2" in it.
 
-Me and Lina did some measurement by hand a couple of weeks ago. If I
-remember correctly the results where in the range of a couple of us. I
-will check again and update you with some refreshed data.
+Any more comments? Acks ? I want to close this series :)
 
-For system PM the time saved might be negligible, depending on the
-number of devices that are attached to a genpd and on what level you
-try to optimize things for.
-
-Perhaps this change then becomes more of a policy decision, rather
-than an a noticeable improvement. I certainly think dealing with
-device PM QoS constraints should belong to runtime PM and I think it's
-wrong/useless to do deal with this during system PM.
-
-Kind regards
-Uffe
+-- 
+viresh
