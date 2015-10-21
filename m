@@ -1,99 +1,83 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH RFC RFT 2/3] clk: clk_put WARNs if user has not disabled clk
-Date: Wed, 21 Oct 2015 18:46:35 +0200
-Message-ID: <CAMuHMdWgf8DOhaDLcQ=qJx0r7G0zK_yfWRpVOPBV--SW2Rw1kA@mail.gmail.com>
-References: <1438974570-20812-1-git-send-email-mturquette@baylibre.com>
-	<1438974570-20812-3-git-send-email-mturquette@baylibre.com>
-	<CAMuHMdX8Fq3AfxuZMLe4-CYFzrDiQcwnREQhX5fSGXzYNSkKsA@mail.gmail.com>
-	<20151020124000.20687.60752@quantum>
-	<CAMuHMdWd9LxrSWO5snriW+fb_d8FtMeXUBjp3M-Oeahh+FzJcw@mail.gmail.com>
-	<20151021105932.GP32536@n2100.arm.linux.org.uk>
-	<20151021155057.20687.14055@quantum>
+From: Rob Herring <robh+dt@kernel.org>
+Subject: Re: [PATCH v1 1/2] dt-bindings: Sync the dts to this document
+Date: Wed, 21 Oct 2015 11:48:00 -0500
+Message-ID: <CAL_JsqJcwWkMXQzo6PbO2kfv3h7hkqtq6CJW0+W4Wc3eh6RTuQ@mail.gmail.com>
+References: <1445395380-5365-1-git-send-email-wxt@rock-chips.com>
+ <1445395380-5365-2-git-send-email-wxt@rock-chips.com> <CAL_JsqJ6ZRjZbtc7dqo-g=CzO+H_FWcRqs2gBGH2HMBBM1xU3g@mail.gmail.com>
+ <5627B309.9080309@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f53.google.com ([209.85.218.53]:34484 "EHLO
-	mail-oi0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752215AbbJUQqg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 Oct 2015 12:46:36 -0400
-In-Reply-To: <20151021155057.20687.14055@quantum>
+Received: from mail.kernel.org ([198.145.29.136]:41433 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752016AbbJUQsW convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 Oct 2015 12:48:22 -0400
+In-Reply-To: <5627B309.9080309@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Michael Turquette <mturquette@baylibre.com>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Sascha Hauer <s.hauer@pengutronix.de>, Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>, Tony Lindgren <tony@atomide.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+To: Caesar Wang <caesar.upstream@gmail.com>
+Cc: Caesar Wang <wxt@rock-chips.com>, Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Heiko Stuebner <heiko@sntech.de>, Pawel Moll <pawel.moll@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Doug Anderson <dianders@chromium.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, linux-rockchip@lists.infradead.org, Kumar Gala <galak@codeaurora.org>, Zhang Rui <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-Hi Mike,
-
-On Wed, Oct 21, 2015 at 5:50 PM, Michael Turquette
-<mturquette@baylibre.com> wrote:
-> Quoting Russell King - ARM Linux (2015-10-21 03:59:32)
->> On Wed, Oct 21, 2015 at 11:50:07AM +0200, Geert Uytterhoeven wrote:
->> > On Tue, Oct 20, 2015 at 2:40 PM, Michael Turquette
->> > <mturquette@baylibre.com> wrote:
->> > > Why not keep the reference to the struct clk after get'ing it the first
->> > > time?
->> >
->> > And store it where?
->>
->> Not my problem :)
->>
->> Users are supposed to hold on to the reference obtained via clk_get()
->> while they're making use of the clock: in some implementations, this
->> increments the module use count if the clock driver is a module, and
->> may have other effects too.
->>
->> Dropping that while you're still requiring the clock to be enabled is
->> unsafe: if it is provided by a module, then removing and reinserting
->> the module may very well change the enabled state of the clock, it
->> most certainly will disrupt the enable count.
->>
->> It's always been this way, right from the outset, and when I've seen
->> people doing this bollocks, I've always pointed out that it's wrong.
->> Generally, people will fix it once they become aware of it, so it's
->> really that people just don't like reading and conforming to published
->> API requirements.
->>
->> I think the root cause is that people just don't like reading what
->> other people write in terms of documentation, and they prefer to go
->> off and do their own thing, provided it works for them.
+On Wed, Oct 21, 2015 at 10:45 AM, Caesar Wang <caesar.upstream@gmail.co=
+m> wrote:
+> Hi Rob,
 >
-> Right, so in other words this problem must be solved by the caller of
-> clk_get, as it should be. I have never much looked at the pm clk code in
-> question, but I gave it a quick look and came up with some example code
-> that does not compile, in an effort to be as helpful as possible.
+> =E5=9C=A8 2015=E5=B9=B410=E6=9C=8821=E6=97=A5 23:18, Rob Herring =E5=86=
+=99=E9=81=93:
+>>
+>> On Tue, Oct 20, 2015 at 9:42 PM, Caesar Wang <wxt@rock-chips.com> wr=
+ote:
+>>>
+>>> Add the OTP gpio state, we need switch the pin to gpio state
+>>> before the TSADC controller is reset.
+>>>
+>>> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+>>> ---
+>>>
+>>> Changes in v1:
+>>>    - As the Doug comments, add the 'init' property to sync document=
+=2E
+>>>
+>>>   Documentation/devicetree/bindings/thermal/rockchip-thermal.txt | =
+5
+>>> +++--
+>>>   1 file changed, 3 insertions(+), 2 deletions(-)
+>>>
+>>> diff --git
+>>> a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+>>> b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+>>> index ef802de..28e84f7 100644
+>>> --- a/Documentation/devicetree/bindings/thermal/rockchip-thermal.tx=
+t
+>>> +++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.tx=
+t
+>>> @@ -27,8 +27,9 @@ tsadc: tsadc@ff280000 {
+>>>          clock-names =3D "tsadc", "apb_pclk";
+>>>          resets =3D <&cru SRST_TSADC>;
+>>>          reset-names =3D "tsadc-apb";
+>>> -       pinctrl-names =3D "default";
+>>> -       pinctrl-0 =3D <&otp_out>;
+>>> +       pinctrl-names =3D "init", "default";
+>>> +       pinctrl-0 =3D <&otp_gpio>;
+>>> +       pinctrl-1 =3D <&otp_out>;
+>>
+>> Are these optional or required? They only appear in the example.
 >
-> Basically I added a flex array to struct pm_clk_notifier_block, so that
-> now there are two flex arrays which is stupid. But I am too lazy to
-> replace the nbclk->clks thing with a malloc after walking all of the
-> clk_id's to figure out the number of clocks. Or we could just add
-> .num_clk to the struct, fix up all 4 users of it and drop the NULL
-> sentinel used the .clk_id's... Hmm that would have been better.
-
-Thanks for trying.
-
-> index 25266c6..45e58fe 100644
-> --- a/include/linux/pm_clock.h
-> +++ b/include/linux/pm_clock.h
-> @@ -16,6 +16,7 @@ struct pm_clk_notifier_block {
->         struct notifier_block nb;
->         struct dev_pm_domain *pm_domain;
->         char *con_ids[];
-> +       struct clk *clks[];
->  };
 >
->  struct clk;
+> Yep,
+> These are required for TSADC.
 
-Unfortunately that won't work: while the .con_ids[] array is per-platform,
-the .clks[] array should be per-device. I.e. it should be tied to the struct
-device, not to the struct pm_clk_notifier_block.
+Then list them that way.
 
-Gr{oetje,eeting}s,
+>
+> I=E2=80=98m assumed that's right,
+> I think we don't need to introduce the pinctrl in this document.
 
-                        Geert
+You need to state that you use them and what valid names are. That is
+a contract with the driver.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+The example is extra information and should not be required to write a
+dts entry.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Rob
