@@ -1,142 +1,95 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH RFC RFT 2/3] clk: clk_put WARNs if user has not disabled clk
-Date: Wed, 21 Oct 2015 11:50:07 +0200
-Message-ID: <CAMuHMdWd9LxrSWO5snriW+fb_d8FtMeXUBjp3M-Oeahh+FzJcw@mail.gmail.com>
-References: <1438974570-20812-1-git-send-email-mturquette@baylibre.com>
-	<1438974570-20812-3-git-send-email-mturquette@baylibre.com>
-	<CAMuHMdX8Fq3AfxuZMLe4-CYFzrDiQcwnREQhX5fSGXzYNSkKsA@mail.gmail.com>
-	<20151020124000.20687.60752@quantum>
+From: "Jon Medhurst (Tixy)" <tixy@linaro.org>
+Subject: [PATCH v2] cpufreq: arm_big_little: fix frequency check when bL
+ switcher is active
+Date: Wed, 21 Oct 2015 10:55:33 +0100
+Message-ID: <1445421333.2916.13.camel@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f54.google.com ([209.85.218.54]:34371 "EHLO
-	mail-oi0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753233AbbJUJuI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 Oct 2015 05:50:08 -0400
-In-Reply-To: <20151020124000.20687.60752@quantum>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Michael Turquette <mturquette@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
-To: Michael Turquette <mturquette@baylibre.com>, Russell King <linux@arm.linux.org.uk>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Sascha Hauer <s.hauer@pengutronix.de>, Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>, Tony Lindgren <tony@atomide.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-Hi Mike, Russell,
+The check for correct frequency being set in bL_cpufreq_set_rate is
+broken when the big.LITTLE switcher is active, for two reasons.
 
-On Tue, Oct 20, 2015 at 2:40 PM, Michael Turquette
-<mturquette@baylibre.com> wrote:
-> Quoting Geert Uytterhoeven (2015-09-30 08:38:46)
->> On Fri, Aug 7, 2015 at 9:09 PM, Michael Turquette
->> <mturquette@baylibre.com> wrote:
->> > From the clk_put kerneldoc in include/linux/clk.h:
->> >
->> > """
->> > Note: drivers must ensure that all clk_enable calls made on this clock
->> > source are balanced by clk_disable calls prior to calling this function.
->> > """
->> >
->> > The common clock framework implementation of the clk.h api has per-user
->> > reference counts for calls to clk_prepare and clk_disable. As such it
->> > can enforce the requirement to properly call clk_disable and
->> > clk_unprepare before calling clk_put.
->> >
->> > Because this requirement is probably violated in many places, this patch
->> > starts with a simple warning. Once offending code has been fixed this
->> > check could additionally release the reference counts automatically.
->> >
->> > Signed-off-by: Michael Turquette <mturquette@baylibre.com>
->> > ---
->> >  drivers/clk/clk.c | 8 ++++++++
->> >  1 file changed, 8 insertions(+)
->> >
->> > diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
->> > index 72feee9..6ec0f77 100644
->> > --- a/drivers/clk/clk.c
->> > +++ b/drivers/clk/clk.c
->> > @@ -2764,6 +2764,14 @@ void __clk_put(struct clk *clk)
->> >             clk->max_rate < clk->core->req_rate)
->> >                 clk_core_set_rate_nolock(clk->core, clk->core->req_rate);
->> >
->> > +       /*
->> > +        * before calling clk_put, all calls to clk_prepare and clk_enable from
->> > +        * a given user must be balanced with calls to clk_disable and
->> > +        * clk_unprepare by that same user
->> > +        */
->> > +       WARN_ON(clk->prepare_count);
->> > +       WARN_ON(clk->enable_count);
->>
->> These two WARN_ON()s are triggered a lot when using a legacy clock domain,
->> and CONFIG_PM=n. Indeed, without Runtime PM, the idea is that the module clocks
->> get enabled unconditionally, which violates the assumptions above.
->>
->> Cfr. the CONFIG_PM=n version of pm_clk_notify() in
->> drivers/base/power/clock_ops.c, which calls enable_clock():
->>
->>     /**
->>      * enable_clock - Enable a device clock.
->>      * @dev: Device whose clock is to be enabled.
->>      * @con_id: Connection ID of the clock.
->>      */
->>     static void enable_clock(struct device *dev, const char *con_id)
->>     {
->>             struct clk *clk;
->>
->>             clk = clk_get(dev, con_id);
->>             if (!IS_ERR(clk)) {
->>                     clk_prepare_enable(clk);
->>                     clk_put(clk);
->
-> This is a violation of the clkdev api as defined in include/linux/clk.h:
->
->         /**
->          * clk_put|------ "free" the clock source
->          * @clk: clock source
->          *
->          * Note: drivers must ensure that all clk_enable calls made on this
->          * clock source are balanced by clk_disable calls prior to calling
->          * this function.
+1. The 'new_rate' variable gets overwritten before the test by the
+code calculating the frequency of the old cluster.
 
-I know.
+2. The frequency returned by bL_cpufreq_get_rate will be the virtual
+frequency, not the actual one the intended version of new_rate contains.
 
-> So the WARN is doing its job and letting us know about incorrect use of
-> the API.
->
->>                     dev_info(dev, "Runtime PM disabled, clock forced on.\n");
->>             }
->>     }
->>
->> I think this affects shmobile, keystone, davinci, omap1, and legacy sh.
->
-> Why not keep the reference to the struct clk after get'ing it the first
-> time?
+This means the function always returns an error causing an endless
+stream of: "cpufreq: __target_index: Failed to change cpu frequency: -5"
 
-And store it where?
+As the intent is to check for errors that clk_set_rate doesn't report
+lets move the check to immediately after that and directly use
+clk_get_rate, rather than the arm_big_little helpers which only confuse
+matters. Also, update the comment to be hopefully clearer about the
+purpose of the code.
 
-dev_pm_get_subsys_data() also depends on CONFIG_PM=y.
+Fixes: 0a95e630b49a ("cpufreq: arm_big_little: check if the frequency is set correctly")
 
-Note that there can be multiple clocks.
+Signed-off-by: Jon Medhurst <tixy@linaro.org>
+Acked-by: Sudeep Holla <sudeep.holla@arm.com>
+---
 
->> Sorry for not noticing before, we usually build with CONFIG_PM=y.
->> One more reason for making CONFIG_PM=y mandatory on SoCs with clock domains?
+Changes since V1:
+- Check rate using clk_get_rate rather than disabling check when bL
+  switcher active
 
-On ARM/shmobile, we only use it for the CONFIG_PM=n case, cfr.
-drivers/sh/pm_runtime.c. In the CONFIG_PM=y case, we use DT and genpd.
+Sudeep, I added your Ack from the last comment on the previous patch.
+This final patch differs from what was discussed only in the commit
+message and in source comment which is hopefully more clear and is
+also satisfactory.
 
-For keystone, davinci, omap1, and legacy sh it's different, though.
+I've also added Michael Turquette's correct email to the CC this time,
+rather than his old Linaro address which was bouncing.
 
-With the advent of hardware Power and Clock Domains, keeping support for
-CONFIG_PM=n alive is getting harder and harder...
+ drivers/cpufreq/arm_big_little.c | 22 +++++++++++++---------
+ 1 file changed, 13 insertions(+), 9 deletions(-)
 
-> I don't know about that, but it seems like a reason to fix the clkdev
-> usage in the clock domain code.
-
-This is the legacy clock domain code. The way forward is genpd ;-)
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+index f1e42f8..c5d256c 100644
+--- a/drivers/cpufreq/arm_big_little.c
++++ b/drivers/cpufreq/arm_big_little.c
+@@ -149,6 +149,19 @@ bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
+ 			__func__, cpu, old_cluster, new_cluster, new_rate);
+ 
+ 	ret = clk_set_rate(clk[new_cluster], new_rate * 1000);
++	if (!ret) {
++		/*
++		 * FIXME: clk_set_rate hasn't returned an error here however it
++		 * may be that clk_change_rate failed due to hardware or
++		 * firmware issues and wasn't able to report that due to the
++		 * current design of the clk core layer. To work around this
++		 * problem we will read back the clock rate and check it is
++		 * correct. This needs to be removed once clk core is fixed.
++		 */
++		if (clk_get_rate(clk[new_cluster]) != new_rate * 1000)
++			ret = -EIO;
++	}
++
+ 	if (WARN_ON(ret)) {
+ 		pr_err("clk_set_rate failed: %d, new cluster: %d\n", ret,
+ 				new_cluster);
+@@ -189,15 +202,6 @@ bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
+ 		mutex_unlock(&cluster_lock[old_cluster]);
+ 	}
+ 
+-	/*
+-	 * FIXME: clk_set_rate has to handle the case where clk_change_rate
+-	 * can fail due to hardware or firmware issues. Until the clk core
+-	 * layer is fixed, we can check here. In most of the cases we will
+-	 * be reading only the cached value anyway. This needs to  be removed
+-	 * once clk core is fixed.
+-	 */
+-	if (bL_cpufreq_get_rate(cpu) != new_rate)
+-		return -EIO;
+ 	return 0;
+ }
+ 
+-- 
+2.1.4
