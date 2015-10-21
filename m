@@ -1,48 +1,96 @@
-From: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v1 1/2] dt-bindings: Sync the dts to this document
-Date: Wed, 21 Oct 2015 10:18:17 -0500
-Message-ID: <CAL_JsqJ6ZRjZbtc7dqo-g=CzO+H_FWcRqs2gBGH2HMBBM1xU3g@mail.gmail.com>
-References: <1445395380-5365-1-git-send-email-wxt@rock-chips.com> <1445395380-5365-2-git-send-email-wxt@rock-chips.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1445395380-5365-2-git-send-email-wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Cc: Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Subject: [PATCH v10 0/4] Allow USB devices to remain runtime-suspended when sleeping
+Date: Wed, 21 Oct 2015 17:34:10 +0200
+Message-ID: <1445441654-31778-1-git-send-email-tomeu.vizoso@collabora.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f170.google.com ([209.85.212.170]:33045 "EHLO
+	mail-wi0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754132AbbJUPem (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 Oct 2015 11:34:42 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, martyn.welch@collabora.co.uk, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, David Airlie <airlied@linux.ie>, Tomas Winkler <tomas.winkler@intel.com>, linux-usb@vger.kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Russell King <linux@arm.linux.org.uk>, Len Brown <lenb@kernel.org>, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@kernel.org>, Tony Lindgren <tony@atomide.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-omap@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-arm-kernel@lists.infradead.org
 
-On Tue, Oct 20, 2015 at 9:42 PM, Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org> wrote:
-> Add the OTP gpio state, we need switch the pin to gpio state
-> before the TSADC controller is reset.
->
-> Signed-off-by: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-> ---
->
-> Changes in v1:
->   - As the Doug comments, add the 'init' property to sync document.
->
->  Documentation/devicetree/bindings/thermal/rockchip-thermal.txt | 5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
->
-> diff --git a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
-> index ef802de..28e84f7 100644
-> --- a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
-> +++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
-> @@ -27,8 +27,9 @@ tsadc: tsadc@ff280000 {
->         clock-names = "tsadc", "apb_pclk";
->         resets = <&cru SRST_TSADC>;
->         reset-names = "tsadc-apb";
-> -       pinctrl-names = "default";
-> -       pinctrl-0 = <&otp_out>;
-> +       pinctrl-names = "init", "default";
-> +       pinctrl-0 = <&otp_gpio>;
-> +       pinctrl-1 = <&otp_out>;
+Hi,
 
-Are these optional or required? They only appear in the example.
+this is v10 of an attempt to make it easier for devices to remain in
+runtime PM when the system goes to sleep, mainly to reduce the time
+spent resuming devices.
 
-Rob
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+For this, we interpret the absence of all PM callback implementations as
+it being safe to do direct_complete, so their ancestors aren't prevented
+from remaining runtime-suspended.
+
+Additionally, the prepare() callback of USB devices will return 1 if
+runtime PM is enabled and the current wakeup settings are correct.
+
+With these changes, a uvcvideo device (for example) stays in runtime
+suspend when the system goes to sleep and is left in that state when the
+system resumes, not delaying it unnecessarily.
+
+Thanks,
+
+Tomeu
+
+Changes in v10:
+- Remove superfluous call to pm_runtime_enabled() as suggested by Alan
+
+Changes in v9:
+- Add docs noting the need for the device lock to be held before calling
+  device_is_bound()
+- Add docs noting the need for the device lock to be held before calling
+  dev_pm_domain_set()
+- Move to CONFIG_PM_SLEEP as suggested by Rafael and Ulf.
+- Rename from device_check_pm_callbacks to device_pm_check_callbacks to
+  follow with the naming convention of existing API.
+- Re-add calling to device_pm_check_callbacks from device registration
+  and when updating the PM domain of a device.
+
+Changes in v8:
+- Add device_is_bound()
+- Add dev_pm_domain_set() and update code to use it
+- Move no_pm_callbacks field into CONFIG_PM_SLEEP
+- Call device_check_pm_callbacks only after a device is bound or unbound
+
+Changes in v7:
+- Reduce indentation by adding a label in device_prepare()
+
+Changes in v6:
+- Add stub for !CONFIG_PM.
+- Move implementation of device_check_pm_callbacks to power/main.c as it
+  doesn't belong to CONFIG_PM_SLEEP.
+- Take dev->power.lock before modifying flag.
+
+Changes in v5:
+- Check for all dev_pm_ops instances associated to a device, updating a
+  no_pm_callbacks flag at the times when that could change.
+
+Tomeu Vizoso (4):
+  device core: add device_is_bound()
+  PM / Domains: add setter for dev.pm_domain
+  PM / sleep: Go direct_complete if driver has no callbacks
+  USB / PM: Allow USB devices to remain runtime-suspended when sleeping
+
+ arch/arm/mach-omap2/omap_device.c |  7 ++++---
+ drivers/acpi/acpi_lpss.c          |  5 +++--
+ drivers/acpi/device_pm.c          |  5 +++--
+ drivers/base/dd.c                 | 21 +++++++++++++++++++--
+ drivers/base/power/clock_ops.c    |  5 +++--
+ drivers/base/power/common.c       | 24 ++++++++++++++++++++++++
+ drivers/base/power/domain.c       |  6 ++++--
+ drivers/base/power/main.c         | 35 +++++++++++++++++++++++++++++++++++
+ drivers/base/power/power.h        |  3 +++
+ drivers/gpu/vga/vga_switcheroo.c  | 10 +++++-----
+ drivers/misc/mei/pci-me.c         |  5 +++--
+ drivers/misc/mei/pci-txe.c        |  5 +++--
+ drivers/usb/core/port.c           |  6 ++++++
+ drivers/usb/core/usb.c            |  8 +++++++-
+ include/linux/device.h            |  2 ++
+ include/linux/pm.h                |  1 +
+ include/linux/pm_domain.h         |  3 +++
+ 17 files changed, 128 insertions(+), 23 deletions(-)
+
+-- 
+2.5.0
+
