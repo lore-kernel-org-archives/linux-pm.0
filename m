@@ -1,51 +1,134 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [GIT PULL] On-demand device probing
-Date: Wed, 21 Oct 2015 10:55:14 +0200
-Message-ID: <CAMuHMdWoSdoT1p0e+Bc9ucrykxO7ESLKYHRzackpVjQAs_XaDg@mail.gmail.com>
-References: <561E1378.6000906@collabora.com>
-	<4025469.zmyipZqCsP@vostro.rjw.lan>
-	<CAL_JsqJuu5_Osqi+X6M6UeRDZFQB+_8riYDF1gvsGayk5-4SFw@mail.gmail.com>
-	<4903022.NtioyRkmbB@vostro.rjw.lan>
+Subject: Re: [PATCH RFC RFT 2/3] clk: clk_put WARNs if user has not disabled clk
+Date: Wed, 21 Oct 2015 11:50:07 +0200
+Message-ID: <CAMuHMdWd9LxrSWO5snriW+fb_d8FtMeXUBjp3M-Oeahh+FzJcw@mail.gmail.com>
+References: <1438974570-20812-1-git-send-email-mturquette@baylibre.com>
+	<1438974570-20812-3-git-send-email-mturquette@baylibre.com>
+	<CAMuHMdX8Fq3AfxuZMLe4-CYFzrDiQcwnREQhX5fSGXzYNSkKsA@mail.gmail.com>
+	<20151020124000.20687.60752@quantum>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-gpio-owner@vger.kernel.org>
-In-Reply-To: <4903022.NtioyRkmbB@vostro.rjw.lan>
-Sender: linux-gpio-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Rob Herring <robh@kernel.org>, David Woodhouse <dwmw2@infradead.org>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Russell King <linux@arm.linux.org.uk>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, =?UTF-8?Q?Terje_Bergstr=C3=B6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Frank Rowand <frowand.list@gmail.com>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmai>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f54.google.com ([209.85.218.54]:34371 "EHLO
+	mail-oi0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753233AbbJUJuI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 Oct 2015 05:50:08 -0400
+In-Reply-To: <20151020124000.20687.60752@quantum>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Michael Turquette <mturquette@baylibre.com>, Russell King <linux@arm.linux.org.uk>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Sascha Hauer <s.hauer@pengutronix.de>, Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>, Tony Lindgren <tony@atomide.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-Hi Rafael,
+Hi Mike, Russell,
 
-On Wed, Oct 21, 2015 at 1:34 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Tuesday, October 20, 2015 09:15:01 AM Rob Herring wrote:
->> On Tue, Oct 20, 2015 at 2:56 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> > ACPI uses platform devices too.  In fact, ACPI device objects are enumerated as
->> > platform devices by default now.
+On Tue, Oct 20, 2015 at 2:40 PM, Michael Turquette
+<mturquette@baylibre.com> wrote:
+> Quoting Geert Uytterhoeven (2015-09-30 08:38:46)
+>> On Fri, Aug 7, 2015 at 9:09 PM, Michael Turquette
+>> <mturquette@baylibre.com> wrote:
+>> > From the clk_put kerneldoc in include/linux/clk.h:
+>> >
+>> > """
+>> > Note: drivers must ensure that all clk_enable calls made on this clock
+>> > source are balanced by clk_disable calls prior to calling this function.
+>> > """
+>> >
+>> > The common clock framework implementation of the clk.h api has per-user
+>> > reference counts for calls to clk_prepare and clk_disable. As such it
+>> > can enforce the requirement to properly call clk_disable and
+>> > clk_unprepare before calling clk_put.
+>> >
+>> > Because this requirement is probably violated in many places, this patch
+>> > starts with a simple warning. Once offending code has been fixed this
+>> > check could additionally release the reference counts automatically.
+>> >
+>> > Signed-off-by: Michael Turquette <mturquette@baylibre.com>
+>> > ---
+>> >  drivers/clk/clk.c | 8 ++++++++
+>> >  1 file changed, 8 insertions(+)
+>> >
+>> > diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+>> > index 72feee9..6ec0f77 100644
+>> > --- a/drivers/clk/clk.c
+>> > +++ b/drivers/clk/clk.c
+>> > @@ -2764,6 +2764,14 @@ void __clk_put(struct clk *clk)
+>> >             clk->max_rate < clk->core->req_rate)
+>> >                 clk_core_set_rate_nolock(clk->core, clk->core->req_rate);
+>> >
+>> > +       /*
+>> > +        * before calling clk_put, all calls to clk_prepare and clk_enable from
+>> > +        * a given user must be balanced with calls to clk_disable and
+>> > +        * clk_unprepare by that same user
+>> > +        */
+>> > +       WARN_ON(clk->prepare_count);
+>> > +       WARN_ON(clk->enable_count);
 >>
->> Okay, I should have grepped for that:
->> drivers/base/platform.c:                ACPI_COMPANION_SET(&pdev->dev, NULL);
->> drivers/base/platform.c:        len = acpi_device_modalias(dev, buf,
->> PAGE_SIZE -1);
->> drivers/base/platform.c:        rc = acpi_device_uevent_modalias(dev, env);
->> drivers/base/platform.c:        /* Then try ACPI style match */
->> drivers/base/platform.c:        if (acpi_driver_match_device(dev, drv))
+>> These two WARN_ON()s are triggered a lot when using a legacy clock domain,
+>> and CONFIG_PM=n. Indeed, without Runtime PM, the idea is that the module clocks
+>> get enabled unconditionally, which violates the assumptions above.
 >>
->> These are all cases which have DT version as well, so we're not really
->> all that different here. There's a few more for DT, but that probably
->> means you have just not hit the problems we have yet. For example,
->> what happens if you have an interrupt line in which the controller is
->> probed after the device connected to the interrupt line? That required
->> resolving irqs in platform_get_irq rather than using static resources
->> to support deferred probe.
+>> Cfr. the CONFIG_PM=n version of pm_clk_notify() in
+>> drivers/base/power/clock_ops.c, which calls enable_clock():
+>>
+>>     /**
+>>      * enable_clock - Enable a device clock.
+>>      * @dev: Device whose clock is to be enabled.
+>>      * @con_id: Connection ID of the clock.
+>>      */
+>>     static void enable_clock(struct device *dev, const char *con_id)
+>>     {
+>>             struct clk *clk;
+>>
+>>             clk = clk_get(dev, con_id);
+>>             if (!IS_ERR(clk)) {
+>>                     clk_prepare_enable(clk);
+>>                     clk_put(clk);
 >
-> We don't have this particular problem, because the IRQ controllers are
-> enumerated in a special way.
+> This is a violation of the clkdev api as defined in include/linux/clk.h:
+>
+>         /**
+>          * clk_put|------ "free" the clock source
+>          * @clk: clock source
+>          *
+>          * Note: drivers must ensure that all clk_enable calls made on this
+>          * clock source are balanced by clk_disable calls prior to calling
+>          * this function.
 
-What does "in a special way" mean? Can you please be more specific?
+I know.
 
-Can you have interrupt controllers that depend on clocks, pin controllers,
-and PM domains?
+> So the WARN is doing its job and letting us know about incorrect use of
+> the API.
+>
+>>                     dev_info(dev, "Runtime PM disabled, clock forced on.\n");
+>>             }
+>>     }
+>>
+>> I think this affects shmobile, keystone, davinci, omap1, and legacy sh.
+>
+> Why not keep the reference to the struct clk after get'ing it the first
+> time?
+
+And store it where?
+
+dev_pm_get_subsys_data() also depends on CONFIG_PM=y.
+
+Note that there can be multiple clocks.
+
+>> Sorry for not noticing before, we usually build with CONFIG_PM=y.
+>> One more reason for making CONFIG_PM=y mandatory on SoCs with clock domains?
+
+On ARM/shmobile, we only use it for the CONFIG_PM=n case, cfr.
+drivers/sh/pm_runtime.c. In the CONFIG_PM=y case, we use DT and genpd.
+
+For keystone, davinci, omap1, and legacy sh it's different, though.
+
+With the advent of hardware Power and Clock Domains, keeping support for
+CONFIG_PM=n alive is getting harder and harder...
+
+> I don't know about that, but it seems like a reason to fix the clkdev
+> usage in the clock domain code.
+
+This is the legacy clock domain code. The way forward is genpd ;-)
 
 Gr{oetje,eeting}s,
 
