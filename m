@@ -1,52 +1,51 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/4] cpufreq: imx6q: Fix wrong device in devm_kzalloc
-Date: Thu, 22 Oct 2015 18:59:01 +0530
-Message-ID: <20151022132901.GD3897@ubuntu>
+Subject: Re: [PATCH 3/4] cpufreq: imx6q: Fix regulator/clock error handling
+Date: Thu, 22 Oct 2015 19:03:15 +0530
+Message-ID: <20151022133315.GE3897@ubuntu>
 References: <1445503652-777-1-git-send-email-s.hauer@pengutronix.de>
- <1445503652-777-3-git-send-email-s.hauer@pengutronix.de>
+ <1445503652-777-4-git-send-email-s.hauer@pengutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f46.google.com ([209.85.220.46]:33800 "EHLO
-	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756642AbbJVN3G (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 22 Oct 2015 09:29:06 -0400
-Received: by padhk11 with SMTP id hk11so87175708pad.1
-        for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2015 06:29:05 -0700 (PDT)
+Received: from mail-pa0-f48.google.com ([209.85.220.48]:35464 "EHLO
+	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757680AbbJVNdT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 22 Oct 2015 09:33:19 -0400
+Received: by pasz6 with SMTP id z6so87111179pas.2
+        for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2015 06:33:19 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <1445503652-777-3-git-send-email-s.hauer@pengutronix.de>
+In-Reply-To: <1445503652-777-4-git-send-email-s.hauer@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sascha Hauer <s.hauer@pengutronix.de>
 Cc: linux-arm-kernel@lists.infradead.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Shawn Guo <shawnguo@kernel.org>, kernel@pengutronix.de, Heiner Kallweit <hkallweit1@gmail.com>
 
 On 22-10-15, 10:47, Sascha Hauer wrote:
-> devm_kzalloc must be called with the device that is actually probed,
-> not with cpu_dev which resources are not freed when probe fails.
-> 
-> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-> ---
->  drivers/cpufreq/imx6q-cpufreq.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-> index fabd144..7557d1e 100644
-> --- a/drivers/cpufreq/imx6q-cpufreq.c
-> +++ b/drivers/cpufreq/imx6q-cpufreq.c
-> @@ -260,7 +260,8 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
->  	}
->  
->  	/* Make imx6_soc_volt array's size same as arm opp number */
-> -	imx6_soc_volt = devm_kzalloc(cpu_dev, sizeof(*imx6_soc_volt) * num, GFP_KERNEL);
-> +	imx6_soc_volt = devm_kzalloc(&pdev->dev,
-> +			sizeof(*imx6_soc_volt) * num, GFP_KERNEL);
+> +	arm_reg = regulator_get(cpu_dev, "arm");
+> +	if (IS_ERR(arm_reg))
+> +		return PTR_ERR(arm_reg);
+> +
+> +	pu_reg = regulator_get_optional(cpu_dev, "pu");
 
-Please rewrite it as:
+Yes, current code doesn't care about if this failed, but if that's the
+intention please add a comment for it now.
 
-	imx6_soc_volt = devm_kzalloc(&pdev->dev,
-			             sizeof(*imx6_soc_volt) * num, GFP_KERNEL);
+> +	soc_reg = regulator_get(cpu_dev, "soc");
+> +	if (IS_ERR(soc_reg))
+> +		return PTR_ERR(soc_reg);
+> +
+> +	return 0;
+> +}
+> +
+> +
+> +static void imx6q_cpufreq_put_resources(void)
+> +{
+> +	if (!IS_ERR_OR_NULL(arm_reg))
+> +		regulator_put(arm_reg);
+> +	arm_reg = NULL;
 
-checkpatch --strict will warn against this.
+Can you please clarify (maybe again) why this is required to be set to
+NULL again?
 
 -- 
 viresh
