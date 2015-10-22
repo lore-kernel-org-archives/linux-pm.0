@@ -1,34 +1,23 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] intel_pstate, decrease number of "HWP enabled" messages
-Date: Thu, 22 Oct 2015 20:45:18 +0530
-Message-ID: <20151022151518.GH3897@ubuntu>
-References: <1445521411-28850-1-git-send-email-prarit@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1445521411-28850-1-git-send-email-prarit@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Prarit Bhargava <prarit@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Kristen Carlson Accardi <kristen@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+From: Thomas Renninger <trenn@suse.de>
+Subject: Some cpupower fixes
+Date: Thu, 22 Oct 2015 17:17:04 +0200
+Message-ID: <1445527027-2764-1-git-send-email-trenn@suse.de>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx2.suse.de ([195.135.220.15]:60384 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755661AbbJVPRP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 22 Oct 2015 11:17:15 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, prarit@redhat.com, jtanenba@redhat.com
 
-On 22-10-15, 09:43, Prarit Bhargava wrote:
-> When booting an HWP enabled system the kernel displays one "HWP enabled"
-> message for each cpu.  The messages are superfluous since HWP is globally
-> enabled across all CPUs. This patch also adds an informational message
-> when HWP is disabled via intel_pstate=no_hwp.
-> 
-> Cc: Kristen Carlson Accardi <kristen@linux.intel.com>
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
-> ---
->  drivers/cpufreq/intel_pstate.c |   10 ++++++----
->  1 file changed, 6 insertions(+), 4 deletions(-)
+Hi Rafael,
 
-Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
+can you queue up these patches in your tree/branch for kernel mainline
+inclusion, please.
 
--- 
-viresh
+Thanks!
+
+      Thomas
+
