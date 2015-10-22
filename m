@@ -1,40 +1,26 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
- SpeedStep enabled
-Date: Thu, 22 Oct 2015 11:32:55 +0000
-Message-ID: <bug-103351-137361-iblWK3Wtcs@https.bugzilla.kernel.org/>
-References: <bug-103351-137361@https.bugzilla.kernel.org/>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:48868 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757168AbbJVLdE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 22 Oct 2015 07:33:04 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id 19A0F20831
-	for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2015 11:33:02 +0000 (UTC)
-Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
-	by mail.kernel.org (Postfix) with ESMTP id BF9F72096D
-	for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2015 11:32:58 +0000 (UTC)
-In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
-Sender: linux-pm-owner@vger.kernel.org
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: [PATCH 0/3] Fix incorrect using of acpi irq
+Date: Thu, 22 Oct 2015 20:02:54 +0800
+Message-ID: <1445515374-31204-1-git-send-email-yu.c.chen@intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@rjwysocki.net, lenb@kernel.org
+Cc: rui.zhang@intel.com, lv.zheng@intel.com, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=103351
+This series of patches are trying to convert codes who use
+acpi_gbl_FADT.sci_interrupt incorrectly to use the right irq
+mapped by acpi_gsi_to_irq.
 
---- Comment #91 from Henrique de Moraes Holschuh <hmh@hmh.eng.br> ---
-Matthew,
+Chen Yu (3):
+  ACPI: Using correct irq when uninstalling acpi irq handler
+  ACPI: Using correct irq when waiting for events
+  ACPI / PM: Fix incorrect wakeup irq setting before suspend-to-idle
 
-You need to load the early initramfs *and* a standard initramfs.  If Lilo can
-only handle one, append the standard initramfs to the early initramfs (i.e. the
-early initramfs must come first), and tell LILO to load the result.
-
-It doesn't work without an initramfs.  You also need all initramfs support
-enabled in the kernel, of course.
+ drivers/acpi/osl.c   | 14 +++++++++-----
+ drivers/acpi/sleep.c |  6 ++++--
+ include/linux/acpi.h |  3 +++
+ 3 files changed, 16 insertions(+), 7 deletions(-)
 
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+1.8.4.2
