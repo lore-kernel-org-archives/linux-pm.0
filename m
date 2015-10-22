@@ -1,85 +1,58 @@
-From: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Subject: [PATCH v2 0/2] fix the TSHUT issue on rockchip thermal
-Date: Thu, 22 Oct 2015 09:25:28 +0800
-Message-ID: <1445477130-17065-1-git-send-email-wxt@rock-chips.com>
+From: Caesar Wang <caesar.upstream@gmail.com>
+Subject: Re: [PATCH v1 1/2] dt-bindings: Sync the dts to this document
+Date: Thu, 22 Oct 2015 09:27:55 +0800
+Message-ID: <56283B9B.70809@gmail.com>
+References: <1445395380-5365-1-git-send-email-wxt@rock-chips.com>
+ <1445395380-5365-2-git-send-email-wxt@rock-chips.com>
+ <CAL_JsqJ6ZRjZbtc7dqo-g=CzO+H_FWcRqs2gBGH2HMBBM1xU3g@mail.gmail.com>
+ <5627B309.9080309@gmail.com>
+ <CAL_JsqJcwWkMXQzo6PbO2kfv3h7hkqtq6CJW0+W4Wc3eh6RTuQ@mail.gmail.com>
+ <CAL_JsqJFO8u0-3BSwBrBh4m7z4iEDPYLeEM9Ef8SLvuj1FYXmg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
-List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f65.google.com ([209.85.220.65]:34167 "EHLO
+	mail-pa0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932150AbbJVB2K (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 21 Oct 2015 21:28:10 -0400
+In-Reply-To: <CAL_JsqJFO8u0-3BSwBrBh4m7z4iEDPYLeEM9Ef8SLvuj1FYXmg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-
-We need the OTP pin is gpio state before resetting the TSADC controller,
-since the tshut polarity will generate a high signal.
-
-Says:
-The TSHUT temperature is setting more than 80 degree, the default
-tshut polarity is HIGH.
-
-If T > 80C, the OTP output the High Signal.
-If T < 80C, the OTP output the Low Signal.
-
-On the moment, the TSADC controller is reset, the tshut polarity will be
-Low in a short period of time.
-
-So:
-If T < 80C, the OTP output the High Signal.
-If T > 80C, the OTP output the Low Signal.
-
-In some cases, the OTP pin is connected to the PMIC, maybe the PMIC can
-accept the reset response time to avoid this issue.
-
-In other words, the system will be always reboot if we make the OTP pin
-is connected the others IC to control the power.
-
-This series patchs are depend on Doug's patch.(https://patchwork.kernel.org/patch/7454311/)
-
-This series patchs are based on the Linus master branch.
-
-518cd44 ARM: dts: rockchip: Add the OTP gpio pinctrl
-83e0bab dt-bindings: Add the "init" pinctrl in this document
-150426c drivers/pinctrl: Add the concept of an "init" state
-ce1fad2 Merge branch 'keys-fixes' of git://git.kernel.org/pub/scm/linux/kernel/git/dhowells/linux-fs
-1099f86 Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net
-911b79c KEYS: Don't permit request_key() to construct a new keyring
-37850e3 net: bcmgenet: Fix early link interrupt enabling
-afc050d Merge tag 'wireless-drivers-for-davem-2015-10-17' of git://git.kernel.org/pub/scm/linux/kernel/git/kvalo/wireless-drivers
-e277de5 tunnels: Don't require remote endpoint or ID during creation.
-740dbc2 openvswitch: Scrub skb between namespaces
-....
-
-Tested on box board.
+To: Rob Herring <robh+dt@kernel.org>
+Cc: Caesar Wang <caesar.upstream@gmail.com>, Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Heiko Stuebner <heiko@sntech.de>, Pawel Moll <pawel.moll@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Doug Anderson <dianders@chromium.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, linux-rockchip@lists.infradead.org, Kumar Gala <galak@codeaurora.org>, Zhang Rui <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
 
-Changes in v2:
-  - As the Rob comments, add the 'init' pinctrl more decription in document.
-  - fix the subject to make more obvious in PATCH[1/2]
-Series-changes: 1
-  - As the Doug comments, add the 'init' property to sync document.
-  - Add some commits for more obvious in PATCH[2/2]
 
-Changes in v1:
-  - As the Doug comments, drop the thermal driver patchs since
-    we can with pinctrl changing to work.
-  - As the Doug's patch to add the 'init' property.
+=E5=9C=A8 2015=E5=B9=B410=E6=9C=8822=E6=97=A5 09:18, Rob Herring =E5=86=
+=99=E9=81=93:
+> On Wed, Oct 21, 2015 at 11:48 AM, Rob Herring <robh+dt@kernel.org> wr=
+ote:
+>> On Wed, Oct 21, 2015 at 10:45 AM, Caesar Wang <caesar.upstream@gmail=
+=2Ecom> wrote:
+>>> Hi Rob,
+>>>
+>>> =E5=9C=A8 2015=E5=B9=B410=E6=9C=8821=E6=97=A5 23:18, Rob Herring =E5=
+=86=99=E9=81=93:
+>>>> On Tue, Oct 20, 2015 at 9:42 PM, Caesar Wang <wxt@rock-chips.com> =
+wrote:
+>>>>> Add the OTP gpio state, we need switch the pin to gpio state
+>>>>> before the TSADC controller is reset.
+> Also, please fix the subject to be specific what binding you are chan=
+ging.
+>
+> dt-bindings: rockchip-thermal: <what the change is>
 
-Caesar Wang (2):
-  dt-bindings: Add the "init" pinctrl in this document
-  ARM: dts: rockchip: Add the OTP gpio pinctrl
+Sorry, Mr. Rob
+I just sent the patch.:-(
 
- Documentation/devicetree/bindings/thermal/rockchip-thermal.txt | 5 +++--
- arch/arm/boot/dts/rk3288.dtsi                                  | 9 +++++++--
- 2 files changed, 10 insertions(+), 4 deletions(-)
 
--- 
-1.9.1
+> Rob
+>
+>
+>
+>
+> --=20
+> Thanks,
+> Caesar
