@@ -1,135 +1,95 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: [PATCH 1/3] cpupower: cpupower monitor reports uninitialized values for offline cpus
-Date: Thu, 22 Oct 2015 17:17:05 +0200
-Message-ID: <1445527027-2764-2-git-send-email-trenn@suse.de>
-References: <1445527027-2764-1-git-send-email-trenn@suse.de>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:60383 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756446AbbJVPRP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 22 Oct 2015 11:17:15 -0400
-In-Reply-To: <1445527027-2764-1-git-send-email-trenn@suse.de>
-Sender: linux-pm-owner@vger.kernel.org
+From: Frank Rowand <frowand.list@gmail.com>
+Subject: Re: [GIT PULL] On-demand device probing
+Date: Thu, 22 Oct 2015 11:53:31 -0700
+Message-ID: <562930AB.1070203@gmail.com>
+References: <20151018192931.GY14956@sirena.org.uk> <20151018193757.GA9147@kroah.com> <20151018195330.GB14956@sirena.org.uk> <CAAObsKB2BUZ-smid45wOdAQw6h2yNqCydk+azAFNk69ewHJtZQ@mail.gmail.com> <5627B677.5090109@gmail.com> <20151021162758.GP32054@sirena.org.uk> <5627D6E0.5020708@gmail.com> <CAL_Jsq+FPtCuBnte2HTgbdpNYM=v_kLaCRcOC1kMaCQwVC=5Kw@mail.gmail.com> <562808AF.7090406@gmail.com> <CAAObsKAkyjdvNOS3+nuT0N9sudUFLsZXFtcm6Y038p+HSdsZsg@mail.gmail.com> <20151022144405.GC21861@kroah.com>
+Reply-To: frowand.list@gmail.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-Reply-To: <20151022144405.GC21861@kroah.com>
+Sender: linux-clk-owner@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Rob Herring <robh+dt@kernel.org>, Mark Brown <broonie@kernel.org>, Russell King <linux@arm.linux.org.uk>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, =?ISO-8859-1?Q?Terje_Bergstr=F6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwood@gmail.com>, Felipe Balbi <balbi@ti.com>, Jingoo
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, prarit@redhat.com, jtanenba@redhat.com, Thomas Renninger <trenn@suse.de>
 
-From: Jacob Tanenbaum <jtanenba@redhat.com>
+On 10/22/2015 7:44 AM, Greg Kroah-Hartman wrote:
+> <oops, sent too early...>
+> 
+> On Thu, Oct 22, 2015 at 11:05:11AM +0200, Tomeu Vizoso wrote:
+>> But that's moot currently because Greg believes that the time spent
+>> probing devices at boot time could be reduced enough so that the order
+>> in which devices are probed becomes irrelevant. IME that would have to
+>> be under 200ms so that the user doesn't notice and that's unicorn-far
+>> from any bootlog I have ever seen.
+> 
+> But as no one has actually produced a bootlog, how do you know that?
+> Where exactly is your time being spent?  What driver is causing long
+> delays?  Why is the long-delay-drivers not being done in their own
+> thread?  And most importantly, why are you ignoring the work that people
+> did back in 2008 to solve the issue on other hardware platforms?
+> 
+>> Given that downstreams are already carrying as many hacks as they
+>> could think of to speed total boot up, I think this is effectively
+>> telling them to go away.
+> 
+> No I'm not, I'm asking for real data, not hand-wavy-this-is-going-to
+> solve-the-random-issue-i'm-having type patch by putting random calls in
+> semi-random subsystems all over the kernel.
+> 
+> And when I ask for real data, you respond with the fact that you aren't
+> trying to speed up boot time here at all, so what am I supposed to think
 
-[root@hp-dl980g7-02 linux]# cpupower monitor
-...
-5472|   0|   1|******|******|******|******|| 0.00|  0.00|  0.00|  0.00|  0.00 *is offline
-10567|   0| 159|******|******|******|******||  0.00|  0.00|  0.00|  0.00|  0.00 *is offline
-1661206560|859272560| 150|******|******|******|******|| 0.00|  0.00|  0.00|  0.00|  0.00 *is offline
-1661206560|943093104| 140|******|******|******|******|| 0.00|  0.00|  0.00|  0.00|  0.00 *is offline
+I also had the understanding that this patch series was about improving
+boot time.  But I was kindly corrected that the behavior change was
+getting the panel displaying stuff at an earlier point in the boot sequence,
+_not_ completing the entire boot faster. 
 
-because of this cpupower also holds the incorrect value for the number
-of physical packages in the machine
+The claim for the current series, in patch 0 in v7 is:
 
-Changed cpupower to initialize the values of an offline cpu's socket and
-core to -1, warn the user that one or more cpus is/are
-offline and not print statistics for offline cpus.
+   With this series I get the kernel to output to the panel in 0.5s,
+   instead of 2.8s.
 
-This fix hides offlined cores where topology cannot be accessed.
-With a recent kernel patch suggested from Prarit Bhargava it may be possible
-that soft offlined cores' topology can still be parsed.
-This patch would then show which cores in which package/socket are offline,
-when sane toplogoy information is available.
+Just to get side-tracked, one other approach at ordering to reduce
+deferrals reported a modest boot time reduction for four boards and a
+very slight boot time increase for one other board.) The report of boot
+times with that approach was in:
 
-Signed-off-by: Jacob Tanenbaum <jtanenba@redhat.com>
-Reviewed-by: Thomas Renninger <trenn@suse.de>
-CC: Prarit Bhargava <prarit@redhat.com>
-Signed-off-by: Thomas Renninger <trenn@suse.de>
----
- tools/power/cpupower/utils/helpers/topology.c      | 23 ++++++++++++++--------
- .../cpupower/utils/idle_monitor/cpupower-monitor.c |  9 ++++++++-
- 2 files changed, 23 insertions(+), 9 deletions(-)
+  http://article.gmane.org/gmane.linux.drivers.devicetree/133010
 
-diff --git a/tools/power/cpupower/utils/helpers/topology.c b/tools/power/cpupower/utils/helpers/topology.c
-index cea398c..9cbb7fd 100644
---- a/tools/power/cpupower/utils/helpers/topology.c
-+++ b/tools/power/cpupower/utils/helpers/topology.c
-@@ -73,18 +73,22 @@ int get_cpu_topology(struct cpupower_topology *cpu_top)
- 	for (cpu = 0; cpu < cpus; cpu++) {
- 		cpu_top->core_info[cpu].cpu = cpu;
- 		cpu_top->core_info[cpu].is_online = sysfs_is_cpu_online(cpu);
--		if (!cpu_top->core_info[cpu].is_online)
--			continue;
- 		if(sysfs_topology_read_file(
- 			cpu,
- 			"physical_package_id",
--			&(cpu_top->core_info[cpu].pkg)) < 0)
--			return -1;
-+			&(cpu_top->core_info[cpu].pkg)) < 0) {
-+			cpu_top->core_info[cpu].pkg = -1;
-+			cpu_top->core_info[cpu].core = -1;
-+			continue;
-+		}
- 		if(sysfs_topology_read_file(
- 			cpu,
- 			"core_id",
--			&(cpu_top->core_info[cpu].core)) < 0)
--			return -1;
-+			&(cpu_top->core_info[cpu].core)) < 0) {
-+			cpu_top->core_info[cpu].pkg = -1;
-+			cpu_top->core_info[cpu].core = -1;
-+			continue;
-+		}
- 	}
- 
- 	qsort(cpu_top->core_info, cpus, sizeof(struct cpuid_core_info),
-@@ -95,12 +99,15 @@ int get_cpu_topology(struct cpupower_topology *cpu_top)
- 	   done by pkg value. */
- 	last_pkg = cpu_top->core_info[0].pkg;
- 	for(cpu = 1; cpu < cpus; cpu++) {
--		if(cpu_top->core_info[cpu].pkg != last_pkg) {
-+		if (cpu_top->core_info[cpu].pkg != last_pkg &&
-+				cpu_top->core_info[cpu].pkg != -1) {
-+
- 			last_pkg = cpu_top->core_info[cpu].pkg;
- 			cpu_top->pkgs++;
- 		}
- 	}
--	cpu_top->pkgs++;
-+	if (!cpu_top->core_info[0].pkg == -1)
-+		cpu_top->pkgs++;
- 
- 	/* Intel's cores count is not consecutively numbered, there may
- 	 * be a core_id of 3, but none of 2. Assume there always is 0
-diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
-index c4bae92..05f953f 100644
---- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
-+++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
-@@ -143,6 +143,9 @@ void print_results(int topology_depth, int cpu)
- 	/* Be careful CPUs may got resorted for pkg value do not just use cpu */
- 	if (!bitmask_isbitset(cpus_chosen, cpu_top.core_info[cpu].cpu))
- 		return;
-+	if (!cpu_top.core_info[cpu].is_online &&
-+	    cpu_top.core_info[cpu].pkg == -1)
-+		return;
- 
- 	if (topology_depth > 2)
- 		printf("%4d|", cpu_top.core_info[cpu].pkg);
-@@ -191,7 +194,8 @@ void print_results(int topology_depth, int cpu)
- 	 * It's up to the monitor plug-in to check .is_online, this one
- 	 * is just for additional info.
- 	 */
--	if (!cpu_top.core_info[cpu].is_online) {
-+	if (!cpu_top.core_info[cpu].is_online &&
-+	    cpu_top.core_info[cpu].pkg != -1) {
- 		printf(_(" *is offline\n"));
- 		return;
- 	} else
-@@ -388,6 +392,9 @@ int cmd_monitor(int argc, char **argv)
- 		return EXIT_FAILURE;
- 	}
- 
-+	if (!cpu_top.core_info[0].is_online)
-+		printf("WARNING: at least one cpu is offline\n");
-+
- 	/* Default is: monitor all CPUs */
- 	if (bitmask_isallclear(cpus_chosen))
- 		bitmask_setall(cpus_chosen);
--- 
-2.1.4
+from Alexander Holler.
+
+I have not searched further to see if there is more data of boot time
+reductions from any of the other attempts to change driver binding
+order to move dependencies before use of a resource.  But whether
+there is a performance improvement or not, there continues to be
+a stream of developers creatively impacting the binding order for
+their specific driver(s) or board.  So it seems that maybe there
+is an underlying problem, or we don't have adequate documentation
+explaining how to avoid a need to order bindings, or the
+documentation exists and is not being read.
+
+I have been defaulting to the position that has been asserted by
+the device tree maintainters, that probe deferrals work just fine
+for at least the majority of cases (and is the message I have been
+sharing in my conference presentations about device tree).  But I
+suspect that there is at least a small minority of cases that are not
+well served by probe deferral.  (Not to be read as an endorsement of
+this specific patch series, just a generic observation.)
+
+-Frank
+
+> other than that you don't care enough to do the real work and are trying
+> to hack the driver core up instead.
+> 
+>> Sorry for the rant,
+> 
+> No apologies needed, it's cathartic at times :)
+> 
+> thanks,
+> 
+> greg k-h
+> .
+> 
 
