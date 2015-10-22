@@ -1,84 +1,119 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: Re: [GIT PULL] On-demand device probing
-Date: Thu, 22 Oct 2015 11:14:49 +0200
-Message-ID: <CAAObsKAWS83xkptJY+2V6jYddG8S7KpM1PQoXWoEE=b7wCy7cg@mail.gmail.com>
-References: <20151020153612.GB32054@sirena.org.uk> <Pine.LNX.4.44L0.1510201159400.1855-100000@iolanthe.rowland.org>
- <CAAObsKChQN4gg91dCWJS_Co_MrYyBrB1J7gxgGo4hsPXNZRp3g@mail.gmail.com> <1757126.NgBN1ISfc9@vostro.rjw.lan>
+From: Michael Turquette <mturquette@baylibre.com>
+Subject: Re: [PATCH RFC RFT 2/3] clk: clk_put WARNs if user has not disabled
+ clk
+Date: Thu, 22 Oct 2015 02:57:01 -0700
+Message-ID: <20151022095701.20687.92456@quantum>
+References: <1438974570-20812-1-git-send-email-mturquette@baylibre.com>
+ <1438974570-20812-3-git-send-email-mturquette@baylibre.com>
+ <CAMuHMdX8Fq3AfxuZMLe4-CYFzrDiQcwnREQhX5fSGXzYNSkKsA@mail.gmail.com>
+ <20151020124000.20687.60752@quantum>
+ <CAMuHMdWd9LxrSWO5snriW+fb_d8FtMeXUBjp3M-Oeahh+FzJcw@mail.gmail.com>
+ <20151021105932.GP32536@n2100.arm.linux.org.uk>
+ <20151021155057.20687.14055@quantum>
+ <CAMuHMdWgf8DOhaDLcQ=qJx0r7G0zK_yfWRpVOPBV--SW2Rw1kA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f175.google.com ([209.85.212.175]:34098 "EHLO
-	mail-wi0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932564AbbJVJPM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 22 Oct 2015 05:15:12 -0400
-In-Reply-To: <1757126.NgBN1ISfc9@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CAMuHMdWgf8DOhaDLcQ=qJx0r7G0zK_yfWRpVOPBV--SW2Rw1kA@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, Kevin Hilman <khilman@kernel.org>, Tony Lindgren <tony@atomide.com>, Sekhar Nori <nsekhar@ti.com>, Sascha Hauer <s.hauer@pengutronix.de>, Linux-sh list <linux-sh@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, linux-clk <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>, David Woodhouse <dwmw2@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <linux@arm.linux.org.uk>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, =?UTF-8?Q?Terje_Bergstr=C3=B6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Frank Rowand <frowand.list@gmail.com>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.co>
 
-On 22 October 2015 at 02:54, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Tuesday, October 20, 2015 06:21:55 PM Tomeu Vizoso wrote:
->> On 20 October 2015 at 18:04, Alan Stern <stern@rowland.harvard.edu> wrote:
->> > On Tue, 20 Oct 2015, Mark Brown wrote:
->> >
->> >> On Tue, Oct 20, 2015 at 10:40:03AM -0400, Alan Stern wrote:
->> >>
->> >> > Furthermore, that applies only to devices that use synchronous suspend.
->> >> > Async suspend is becoming common, and there the only restrictions are
->> >> > parent-child relations plus whatever explicit requirements that drivers
->> >> > impose by calling device_pm_wait_for_dev().
->> >>
->> >> Hrm, this is the first I'd noticed that feature though I see the initial
->> >> commit dates from January.
->> >
->> > Async suspend and device_pm_wait_for_dev() were added in January 2010,
->> > not 2015!
->> >
->> >>  It looks like most of the users are PCs at
->> >> the minute but we should be using it more widely for embedded things,
->> >> there's definitely some cases I'm aware of where it will allow us to
->> >> remove some open coding.
->> >>
->> >> It does seem like we want to be feeding dependency information we
->> >> discover for probing way into the suspend dependencies...
->> >
->> > Rafael has been thinking about a way to do this systematically.
->> > Nothing concrete has emerged yet.
->>
->> This iteration of the series would make this quite easy, as
->> dependencies are calculated before probes are attempted:
->>
->> https://lkml.org/lkml/2015/6/17/311
->
-> Well, if you know how to represent "links" between devices, the mechanism
-> introduced here doesn't really add much value, because in that case the
-> core knows what the dependencies are in the first place and can only
-> defer the probes that have to be deferred.
+Quoting Geert Uytterhoeven (2015-10-21 09:46:35)
+> Hi Mike,
+> 
+> On Wed, Oct 21, 2015 at 5:50 PM, Michael Turquette
+> <mturquette@baylibre.com> wrote:
+> > Quoting Russell King - ARM Linux (2015-10-21 03:59:32)
+> >> On Wed, Oct 21, 2015 at 11:50:07AM +0200, Geert Uytterhoeven wrote:
+> >> > On Tue, Oct 20, 2015 at 2:40 PM, Michael Turquette
+> >> > <mturquette@baylibre.com> wrote:
+> >> > > Why not keep the reference to the struct clk after get'ing it the first
+> >> > > time?
+> >> >
+> >> > And store it where?
+> >>
+> >> Not my problem :)
+> >>
+> >> Users are supposed to hold on to the reference obtained via clk_get()
+> >> while they're making use of the clock: in some implementations, this
+> >> increments the module use count if the clock driver is a module, and
+> >> may have other effects too.
+> >>
+> >> Dropping that while you're still requiring the clock to be enabled is
+> >> unsafe: if it is provided by a module, then removing and reinserting
+> >> the module may very well change the enabled state of the clock, it
+> >> most certainly will disrupt the enable count.
+> >>
+> >> It's always been this way, right from the outset, and when I've seen
+> >> people doing this bollocks, I've always pointed out that it's wrong.
+> >> Generally, people will fix it once they become aware of it, so it's
+> >> really that people just don't like reading and conforming to published
+> >> API requirements.
+> >>
+> >> I think the root cause is that people just don't like reading what
+> >> other people write in terms of documentation, and they prefer to go
+> >> off and do their own thing, provided it works for them.
+> >
+> > Right, so in other words this problem must be solved by the caller of
+> > clk_get, as it should be. I have never much looked at the pm clk code in
+> > question, but I gave it a quick look and came up with some example code
+> > that does not compile, in an effort to be as helpful as possible.
+> >
+> > Basically I added a flex array to struct pm_clk_notifier_block, so that
+> > now there are two flex arrays which is stupid. But I am too lazy to
+> > replace the nbclk->clks thing with a malloc after walking all of the
+> > clk_id's to figure out the number of clocks. Or we could just add
+> > .num_clk to the struct, fix up all 4 users of it and drop the NULL
+> > sentinel used the .clk_id's... Hmm that would have been better.
+> 
+> Thanks for trying.
+> 
+> > index 25266c6..45e58fe 100644
+> > --- a/include/linux/pm_clock.h
+> > +++ b/include/linux/pm_clock.h
+> > @@ -16,6 +16,7 @@ struct pm_clk_notifier_block {
+> >         struct notifier_block nb;
+> >         struct dev_pm_domain *pm_domain;
+> >         char *con_ids[];
+> > +       struct clk *clks[];
+> >  };
+> >
+> >  struct clk;
+> 
+> Unfortunately that won't work: while the .con_ids[] array is per-platform,
+> the .clks[] array should be per-device. I.e. it should be tied to the struct
+> device, not to the struct pm_clk_notifier_block.
 
-By "here" you mean what you are proposing for ordering device
-suspends, or on-demand probing?
+Well you're right about that. But the problem needs to be solved at some
+point. There is no good technical reason for this violation to occur
+other than, "it's been this way for a while now, so let's keep it".
+Essentially it's blocking the per-user imbalance checks that I'd like to
+merge.
 
-If you meant that probing on-demand is unneeded if we already have
-dependency information, I agree with you and that's why I only pushed
-forward on-demand, as the approach linked above introduced some
-duplication when inferring the dependencies. Maybe that could be
-avoided without too much refactoring.
-
-In any case, Thierry mentioned the other day in #tegra that one could
-also collect dependency information as a follow up to the on-demand
-series by calling device_depend() or such instead of
-of_device_probe().
+Or we could accept lots of noisy warns for the CONFIG_PM=n case.
 
 Regards,
+Mike
 
-Tomeu
-
-> Thanks,
-> Rafael
->
+> 
+> Gr{oetje,eeting}s,
+> 
+>                         Geert
+> 
 > --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> 
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                 -- Linus Torvalds
