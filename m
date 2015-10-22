@@ -1,93 +1,40 @@
-From: Lucas Stach <l.stach@pengutronix.de>
-Subject: Re: [PATCH 4/4] cpufreq: imx6q: check regulator_get_optional return
- value
-Date: Thu, 22 Oct 2015 12:23:15 +0200
-Message-ID: <1445509395.3173.31.camel@pengutronix.de>
-References: <1445503652-777-1-git-send-email-s.hauer@pengutronix.de>
-	 <1445503652-777-5-git-send-email-s.hauer@pengutronix.de>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
+ SpeedStep enabled
+Date: Thu, 22 Oct 2015 11:32:55 +0000
+Message-ID: <bug-103351-137361-iblWK3Wtcs@https.bugzilla.kernel.org/>
+References: <bug-103351-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:49201 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750978AbbJVKXT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 22 Oct 2015 06:23:19 -0400
-In-Reply-To: <1445503652-777-5-git-send-email-s.hauer@pengutronix.de>
+Received: from mail.kernel.org ([198.145.29.136]:48868 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757168AbbJVLdE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 22 Oct 2015 07:33:04 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+	by mail.kernel.org (Postfix) with ESMTP id 19A0F20831
+	for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2015 11:33:02 +0000 (UTC)
+Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
+	by mail.kernel.org (Postfix) with ESMTP id BF9F72096D
+	for <linux-pm@vger.kernel.org>; Thu, 22 Oct 2015 11:32:58 +0000 (UTC)
+In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, kernel@pengutronix.de, Shawn Guo <shawnguo@kernel.org>, Heiner Kallweit <hkallweit1@gmail.com>
+To: linux-pm@vger.kernel.org
 
-Am Donnerstag, den 22.10.2015, 10:47 +0200 schrieb Sascha Hauer:
-> While pu_reg is an optional regulator we still have to check
-> the return value for -EPROBE_DEFER to properly detect the
-> case when we have a pu regulator but it is not yet present.
-> 
-> While at it, set pu_reg to NULL for an erroneous regulator
-> so that we can check for the regulator with if (pu_reg)
-> instead of the slightly less readable IS_ERR().
-> 
-> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-> ---
->  drivers/cpufreq/imx6q-cpufreq.c | 11 ++++++++---
->  1 file changed, 8 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-> index ce0c6bd..b643614 100644
-> --- a/drivers/cpufreq/imx6q-cpufreq.c
-> +++ b/drivers/cpufreq/imx6q-cpufreq.c
-> @@ -71,7 +71,7 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
->  
->  	/* scaling up?  scale voltage before frequency */
->  	if (new_freq > old_freq) {
-> -		if (!IS_ERR(pu_reg)) {
-> +		if (pu_reg) {
->  			ret = regulator_set_voltage_tol(pu_reg, imx6_soc_volt[index], 0);
->  			if (ret) {
->  				dev_err(cpu_dev, "failed to scale vddpu up: %d\n", ret);
-> @@ -148,7 +148,7 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
->  			dev_warn(cpu_dev, "failed to scale vddsoc down: %d\n", ret);
->  			ret = 0;
->  		}
-> -		if (!IS_ERR(pu_reg)) {
-> +		if (pu_reg) {
->  			ret = regulator_set_voltage_tol(pu_reg, imx6_soc_volt[index], 0);
->  			if (ret) {
->  				dev_warn(cpu_dev, "failed to scale vddpu down: %d\n", ret);
-> @@ -217,6 +217,11 @@ static int imx6q_cpufreq_get_resources(struct platform_device *pdev)
->  		return PTR_ERR(arm_reg);
->  
->  	pu_reg = regulator_get_optional(cpu_dev, "pu");
-> +	if (IS_ERR(pu_reg)) {
-> +		if (PTR_ERR(pu_reg) == -EPROBE_DEFER)
-> +			return -EPROBE_DEFER;
-> +		pu_reg = NULL;
-> +	}
+https://bugzilla.kernel.org/show_bug.cgi?id=103351
 
-The PU regulator isn't really optional for MX6 Q/DL (where it is present
-in hardware) as the datasheet clearly specifies that it needs to be set
-to the same voltage as SOC. Could you change this to request this
-regulator as non-optional for those chip derivatives and skip the
-request otherwise?
+--- Comment #91 from Henrique de Moraes Holschuh <hmh@hmh.eng.br> ---
+Matthew,
 
-Regards,
-Lucas
+You need to load the early initramfs *and* a standard initramfs.  If Lilo can
+only handle one, append the standard initramfs to the early initramfs (i.e. the
+early initramfs must come first), and tell LILO to load the result.
 
->  
->  	soc_reg = regulator_get(cpu_dev, "soc");
->  	if (IS_ERR(soc_reg))
-> @@ -377,7 +382,7 @@ soc_opp_out:
->  	ret = regulator_set_voltage_time(soc_reg, imx6_soc_volt[0], imx6_soc_volt[num - 1]);
->  	if (ret > 0)
->  		transition_latency += ret * 1000;
-> -	if (!IS_ERR(pu_reg)) {
-> +	if (pu_reg) {
->  		ret = regulator_set_voltage_time(pu_reg, imx6_soc_volt[0], imx6_soc_volt[num - 1]);
->  		if (ret > 0)
->  			transition_latency += ret * 1000;
+It doesn't work without an initramfs.  You also need all initramfs support
+enabled in the kernel, of course.
 
 -- 
-Pengutronix e.K.             | Lucas Stach                 |
-Industrial Linux Solutions   | http://www.pengutronix.de/  |
-
+You are receiving this mail because:
+You are the assignee for the bug.
