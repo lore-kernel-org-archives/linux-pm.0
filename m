@@ -1,185 +1,178 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: [PATCH] Creating a common structure initialization pattern for struct option
-Date: Fri, 23 Oct 2015 09:52:45 +0200
-Message-ID: <1445586765-20292-1-git-send-email-trenn@suse.de>
-References: <1445527027-2764-1-git-send-email-trenn@suse.de>
+From: plongepe <philippe.longepe@linux.intel.com>
+Subject: [PATCH v2 1/2] cpufreq: intel_pstate: Replace BYT by ATOM
+Date: Fri, 23 Oct 2015 11:04:23 +0200
+Message-ID: <5629F817.7050509@linux.intel.com>
+References: <5628A5D0.3030501@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:49668 "EHLO mx2.suse.de"
+Received: from mga14.intel.com ([192.55.52.115]:52588 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751789AbbJWHxG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 23 Oct 2015 03:53:06 -0400
-In-Reply-To: <1445527027-2764-1-git-send-email-trenn@suse.de>
+	id S1752095AbbJWJD3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 23 Oct 2015 05:03:29 -0400
+In-Reply-To: <5628A5D0.3030501@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, Sriram Raghunathan <sriram@marirs.net.in>, Thomas Renninger <trenn@suse.de>
+To: linux-pm@vger.kernel.org
 
-From: Sriram Raghunathan <sriram@marirs.net.in>
+From: Philippe Longepe <philippe.longepe@intel.com>
 
-This patch tries to creates a common structure initialization
-within the cpupower tool.
+The goal is to support several Atoms architectures.
 
-Previously the ``struct option`` was initialized
-using `designated initializer` technique which was
-not needed. There were conflicting initialization methods seen with
-
-bench/main.c & others.
-
-Signed-off-by: Sriram Raghunathan <sriram@marirs.net.in>
-Signed-off-by: Thomas Renninger <trenn@suse.de>
+Signed-off-by: longepe <philippe.longepe@linux.intel.com>
 ---
- tools/power/cpupower/debug/i386/dump_psb.c |  2 +-
- tools/power/cpupower/utils/cpufreq-info.c  | 30 +++++++++++++++---------------
- tools/power/cpupower/utils/cpufreq-set.c   | 10 +++++-----
- tools/power/cpupower/utils/cpuidle-info.c  |  4 ++--
- tools/power/cpupower/utils/cpuidle-set.c   | 14 +++++---------
- tools/power/cpupower/utils/cpupower-info.c |  4 ++--
- tools/power/cpupower/utils/cpupower-set.c  |  2 +-
- 7 files changed, 31 insertions(+), 35 deletions(-)
+  drivers/cpufreq/intel_pstate.c | 56 +++++++++++++++++++++---------------------
+  1 file changed, 28 insertions(+), 28 deletions(-)
 
-diff --git a/tools/power/cpupower/debug/i386/dump_psb.c b/tools/power/cpupower/debug/i386/dump_psb.c
-index 8d6a475..2c768cf 100644
---- a/tools/power/cpupower/debug/i386/dump_psb.c
-+++ b/tools/power/cpupower/debug/i386/dump_psb.c
-@@ -134,7 +134,7 @@ next_one:
- }
- 
- static struct option info_opts[] = {
--	{.name = "numpst",	.has_arg=no_argument,	.flag=NULL, .val='n'},
-+     {"numpst", no_argument, NULL, 'n'},
- };
- 
- void print_help(void)
-diff --git a/tools/power/cpupower/utils/cpufreq-info.c b/tools/power/cpupower/utils/cpufreq-info.c
-index b4b90a9..0e67643 100644
---- a/tools/power/cpupower/utils/cpufreq-info.c
-+++ b/tools/power/cpupower/utils/cpufreq-info.c
-@@ -536,21 +536,21 @@ static int get_latency(unsigned int cpu, unsigned int human)
- }
- 
- static struct option info_opts[] = {
--	{ .name = "debug",	.has_arg = no_argument,		.flag = NULL,	.val = 'e'},
--	{ .name = "boost",	.has_arg = no_argument,		.flag = NULL,	.val = 'b'},
--	{ .name = "freq",	.has_arg = no_argument,		.flag = NULL,	.val = 'f'},
--	{ .name = "hwfreq",	.has_arg = no_argument,		.flag = NULL,	.val = 'w'},
--	{ .name = "hwlimits",	.has_arg = no_argument,		.flag = NULL,	.val = 'l'},
--	{ .name = "driver",	.has_arg = no_argument,		.flag = NULL,	.val = 'd'},
--	{ .name = "policy",	.has_arg = no_argument,		.flag = NULL,	.val = 'p'},
--	{ .name = "governors",	.has_arg = no_argument,		.flag = NULL,	.val = 'g'},
--	{ .name = "related-cpus", .has_arg = no_argument,	.flag = NULL,	.val = 'r'},
--	{ .name = "affected-cpus",.has_arg = no_argument,	.flag = NULL,	.val = 'a'},
--	{ .name = "stats",	.has_arg = no_argument,		.flag = NULL,	.val = 's'},
--	{ .name = "latency",	.has_arg = no_argument,		.flag = NULL,	.val = 'y'},
--	{ .name = "proc",	.has_arg = no_argument,		.flag = NULL,	.val = 'o'},
--	{ .name = "human",	.has_arg = no_argument,		.flag = NULL,	.val = 'm'},
--	{ .name = "no-rounding", .has_arg = no_argument,	.flag = NULL,	.val = 'n'},
-+	{"debug",	 no_argument,		 NULL,	 'e'},
-+	{"boost",	 no_argument,		 NULL,	 'b'},
-+	{"freq",	 no_argument,		 NULL,	 'f'},
-+	{"hwfreq",	 no_argument,		 NULL,	 'w'},
-+	{"hwlimits",	 no_argument,		 NULL,	 'l'},
-+	{"driver",	 no_argument,		 NULL,	 'd'},
-+	{"policy",	 no_argument,		 NULL,	 'p'},
-+	{"governors",	 no_argument,		 NULL,	 'g'},
-+	{"related-cpus",  no_argument,	 NULL,	 'r'},
-+	{"affected-cpus", no_argument,	 NULL,	 'a'},
-+	{"stats",	 no_argument,		 NULL,	 's'},
-+	{"latency",	 no_argument,		 NULL,	 'y'},
-+	{"proc",	 no_argument,		 NULL,	 'o'},
-+	{"human",	 no_argument,		 NULL,	 'm'},
-+	{"no-rounding", no_argument,	 NULL,	 'n'},
- 	{ },
- };
- 
-diff --git a/tools/power/cpupower/utils/cpufreq-set.c b/tools/power/cpupower/utils/cpufreq-set.c
-index 4e21357..0fbd1a2 100644
---- a/tools/power/cpupower/utils/cpufreq-set.c
-+++ b/tools/power/cpupower/utils/cpufreq-set.c
-@@ -22,11 +22,11 @@
- #define NORM_FREQ_LEN 32
- 
- static struct option set_opts[] = {
--	{ .name = "min",	.has_arg = required_argument,	.flag = NULL,	.val = 'd'},
--	{ .name = "max",	.has_arg = required_argument,	.flag = NULL,	.val = 'u'},
--	{ .name = "governor",	.has_arg = required_argument,	.flag = NULL,	.val = 'g'},
--	{ .name = "freq",	.has_arg = required_argument,	.flag = NULL,	.val = 'f'},
--	{ .name = "related",	.has_arg = no_argument,		.flag = NULL,	.val='r'},
-+	{"min",		required_argument,	NULL, 'd'},
-+	{"max",		required_argument,	NULL, 'u'},
-+	{"governor",	required_argument,	NULL, 'g'},
-+	{"freq",	required_argument,	NULL, 'f'},
-+	{"related",	no_argument,		NULL, 'r'},
- 	{ },
- };
- 
-diff --git a/tools/power/cpupower/utils/cpuidle-info.c b/tools/power/cpupower/utils/cpuidle-info.c
-index 75e66de..750c1d8 100644
---- a/tools/power/cpupower/utils/cpuidle-info.c
-+++ b/tools/power/cpupower/utils/cpuidle-info.c
-@@ -126,8 +126,8 @@ static void proc_cpuidle_cpu_output(unsigned int cpu)
- }
- 
- static struct option info_opts[] = {
--	{ .name = "silent",	.has_arg = no_argument,	.flag = NULL,	.val = 's'},
--	{ .name = "proc",	.has_arg = no_argument,	.flag = NULL,	.val = 'o'},
-+	{"silent", no_argument, NULL, 's'},
-+	{"proc", no_argument, NULL, 'o'},
- 	{ },
- };
- 
-diff --git a/tools/power/cpupower/utils/cpuidle-set.c b/tools/power/cpupower/utils/cpuidle-set.c
-index eaea130..d6b6ae4 100644
---- a/tools/power/cpupower/utils/cpuidle-set.c
-+++ b/tools/power/cpupower/utils/cpuidle-set.c
-@@ -13,15 +13,11 @@
- #include "helpers/sysfs.h"
- 
- static struct option info_opts[] = {
--	{ .name = "disable",
--	  .has_arg = required_argument,	.flag = NULL,	.val = 'd'},
--	{ .name = "enable",
--	  .has_arg = required_argument,	.flag = NULL,	.val = 'e'},
--	{ .name = "disable-by-latency",
--	  .has_arg = required_argument,	.flag = NULL,	.val = 'D'},
--	{ .name = "enable-all",
--	  .has_arg = no_argument,	.flag = NULL,	.val = 'E'},
--	{ },
-+     {"disable",	required_argument,		NULL, 'd'},
-+     {"enable",		required_argument,		NULL, 'e'},
-+     {"disable-by-latency", required_argument,		NULL, 'D'},
-+     {"enable-all",	no_argument,			NULL, 'E'},
-+     { },
- };
- 
- 
-diff --git a/tools/power/cpupower/utils/cpupower-info.c b/tools/power/cpupower/utils/cpupower-info.c
-index 136d979..10299f2 100644
---- a/tools/power/cpupower/utils/cpupower-info.c
-+++ b/tools/power/cpupower/utils/cpupower-info.c
-@@ -17,8 +17,8 @@
- #include "helpers/sysfs.h"
- 
- static struct option set_opts[] = {
--	{ .name = "perf-bias",	.has_arg = optional_argument,	.flag = NULL,	.val = 'b'},
--	{ },
-+     {"perf-bias", optional_argument, NULL, 'b'},
-+     { },
- };
- 
- static void print_wrong_arg_exit(void)
-diff --git a/tools/power/cpupower/utils/cpupower-set.c b/tools/power/cpupower/utils/cpupower-set.c
-index 573c75f..3e6f374 100644
---- a/tools/power/cpupower/utils/cpupower-set.c
-+++ b/tools/power/cpupower/utils/cpupower-set.c
-@@ -18,7 +18,7 @@
- #include "helpers/bitmask.h"
- 
- static struct option set_opts[] = {
--	{ .name = "perf-bias",	.has_arg = required_argument,	.flag = NULL,	.val = 'b'},
-+	{"perf-bias", required_argument, NULL, 'b'},
- 	{ },
- };
- 
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 3af9dd7..8716039 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -34,10 +34,10 @@
+  #include <asm/cpu_device_id.h>
+  #include <asm/cpufeature.h>
+  
+-#define BYT_RATIOS		0x66a
+-#define BYT_VIDS		0x66b
+-#define BYT_TURBO_RATIOS	0x66c
+-#define BYT_TURBO_VIDS		0x66d
++#define ATOM_RATIOS		0x66a
++#define ATOM_VIDS		0x66b
++#define ATOM_TURBO_RATIOS	0x66c
++#define ATOM_TURBO_VIDS		0x66d
+  
+  #define FRAC_BITS 8
+  #define int_tofp(X) ((int64_t)(X) << FRAC_BITS)
+@@ -502,31 +502,31 @@ static void intel_pstate_hwp_enable(struct cpudata *cpudata)
+  	wrmsrl_on_cpu(cpudata->cpu, MSR_PM_ENABLE, 0x1);
+  }
+  
+-static int byt_get_min_pstate(void)
++static int atom_get_min_pstate(void)
+  {
+  	u64 value;
+  
+-	rdmsrl(BYT_RATIOS, value);
++	rdmsrl(ATOM_RATIOS, value);
+  	return (value >> 8) & 0x7F;
+  }
+  
+-static int byt_get_max_pstate(void)
++static int atom_get_max_pstate(void)
+  {
+  	u64 value;
+  
+-	rdmsrl(BYT_RATIOS, value);
++	rdmsrl(ATOM_RATIOS, value);
+  	return (value >> 16) & 0x7F;
+  }
+  
+-static int byt_get_turbo_pstate(void)
++static int atom_get_turbo_pstate(void)
+  {
+  	u64 value;
+  
+-	rdmsrl(BYT_TURBO_RATIOS, value);
++	rdmsrl(ATOM_TURBO_RATIOS, value);
+  	return value & 0x7F;
+  }
+  
+-static void byt_set_pstate(struct cpudata *cpudata, int pstate)
++static void atom_set_pstate(struct cpudata *cpudata, int pstate)
+  {
+  	u64 val;
+  	int32_t vid_fp;
+@@ -551,10 +551,10 @@ static void byt_set_pstate(struct cpudata *cpudata, int pstate)
+  	wrmsrl_on_cpu(cpudata->cpu, MSR_IA32_PERF_CTL, val);
+  }
+  
+-#define BYT_BCLK_FREQS 5
+-static int byt_freq_table[BYT_BCLK_FREQS] = { 833, 1000, 1333, 1167, 800};
++#define ATOM_BCLK_FREQS 5
++static int atom_freq_table[ATOM_BCLK_FREQS] = { 833, 1000, 1333, 1167, 800};
+  
+-static int byt_get_scaling(void)
++static int atom_get_scaling(void)
+  {
+  	u64 value;
+  	int i;
+@@ -562,16 +562,16 @@ static int byt_get_scaling(void)
+  	rdmsrl(MSR_FSB_FREQ, value);
+  	i = value & 0x3;
+  
+-	BUG_ON(i > BYT_BCLK_FREQS);
++	BUG_ON(i > ATOM_BCLK_FREQS);
+  
+-	return byt_freq_table[i] * 100;
++	return atom_freq_table[i] * 100;
+  }
+  
+-static void byt_get_vid(struct cpudata *cpudata)
++static void atom_get_vid(struct cpudata *cpudata)
+  {
+  	u64 value;
+  
+-	rdmsrl(BYT_VIDS, value);
++	rdmsrl(ATOM_VIDS, value);
+  	cpudata->vid.min = int_tofp((value >> 8) & 0x7f);
+  	cpudata->vid.max = int_tofp((value >> 16) & 0x7f);
+  	cpudata->vid.ratio = div_fp(
+@@ -579,7 +579,7 @@ static void byt_get_vid(struct cpudata *cpudata)
+  		int_tofp(cpudata->pstate.max_pstate -
+  			cpudata->pstate.min_pstate));
+  
+-	rdmsrl(BYT_TURBO_VIDS, value);
++	rdmsrl(ATOM_TURBO_VIDS, value);
+  	cpudata->vid.turbo = value & 0x7f;
+  }
+  
+@@ -659,7 +659,7 @@ static struct cpu_defaults core_params = {
+  	},
+  };
+  
+-static struct cpu_defaults byt_params = {
++static struct cpu_defaults atom_params = {
+  	.pid_policy = {
+  		.sample_rate_ms = 10,
+  		.deadband = 0,
+@@ -669,12 +669,12 @@ static struct cpu_defaults byt_params = {
+  		.i_gain_pct = 4,
+  	},
+  	.funcs = {
+-		.get_max = byt_get_max_pstate,
+-		.get_min = byt_get_min_pstate,
+-		.get_turbo = byt_get_turbo_pstate,
+-		.set = byt_set_pstate,
+-		.get_scaling = byt_get_scaling,
+-		.get_vid = byt_get_vid,
++		.get_max = atom_get_max_pstate,
++		.get_min = atom_get_min_pstate,
++		.get_turbo = atom_get_turbo_pstate,
++		.set = atom_set_pstate,
++		.get_scaling = atom_get_scaling,
++		.get_vid = atom_get_vid,
+  	},
+  };
+  
+@@ -907,7 +907,7 @@ static void intel_pstate_timer_func(unsigned long __data)
+  static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
+  	ICPU(0x2a, core_params),
+  	ICPU(0x2d, core_params),
+-	ICPU(0x37, byt_params),
++	ICPU(0x37, atom_params),
+  	ICPU(0x3a, core_params),
+  	ICPU(0x3c, core_params),
+  	ICPU(0x3d, core_params),
+@@ -916,7 +916,7 @@ static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
+  	ICPU(0x45, core_params),
+  	ICPU(0x46, core_params),
+  	ICPU(0x47, core_params),
+-	ICPU(0x4c, byt_params),
++	ICPU(0x4c, atom_params),
+  	ICPU(0x4e, core_params),
+  	ICPU(0x4f, core_params),
+  	ICPU(0x5e, core_params),
 -- 
-2.1.4
+1.9.1
 
