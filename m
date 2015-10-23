@@ -1,55 +1,130 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: MUSB peripheral DMA regression caused by driver core runtime PM
- change
-Date: Fri, 23 Oct 2015 13:36:21 -0700
-Message-ID: <20151023203620.GY3078@atomide.com>
-References: <20151023192044.GX3078@atomide.com>
- <Pine.LNX.4.44L0.1510231629430.1644-100000@iolanthe.rowland.org>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [RFC PATCH 1/2] PM / runtime: Add CPU runtime PM suspend/resume api
+Date: Fri, 23 Oct 2015 14:19:28 -0700
+Message-ID: <7hegglmgf3.fsf@deeprootsystems.com>
+References: <1444168656-6576-1-git-send-email-lina.iyer@linaro.org>
+	<1444168656-6576-2-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:42804 "EHLO muru.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751989AbbJWUgY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 23 Oct 2015 16:36:24 -0400
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1510231629430.1644-100000@iolanthe.rowland.org>
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:36235 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751380AbbJWVTc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 23 Oct 2015 17:19:32 -0400
+Received: by pacfv9 with SMTP id fv9so133765420pac.3
+        for <linux-pm@vger.kernel.org>; Fri, 23 Oct 2015 14:19:30 -0700 (PDT)
+In-Reply-To: <1444168656-6576-2-git-send-email-lina.iyer@linaro.org> (Lina
+	Iyer's message of "Tue, 6 Oct 2015 15:57:35 -0600")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Grygorii Strashko <grygorii.strashko@ti.com>, Felipe Balbi <balbi@ti.com>, gregkh@linuxfoundation.org, linux-omap@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Bin Liu <b-liu@ti.com>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, linux-usb@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Linux PM list <linux-pm@vger.kernel.org>
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: linux-pm@vger.kernel.org, grygorii.strashko@ti.com, ulf.hansson@linaro.org, daniel.lezcano@linaro.org, tglx@linutronix.de, geert+renesas@glider.be, lorenzo.pieralisi@arm.com, sboyd@codeaurora.org
 
-* Alan Stern <stern@rowland.harvard.edu> [151023 13:34]:
-> On Fri, 23 Oct 2015, Tony Lindgren wrote:
-> 
-> > > Thus the sequence of events should be:
-> > > 
-> > > 	Allocate the musb device;
-> > > 	Runtime-enable the omap2430 (since it is now safe to do so);
-> > > 	Runtime-enable the musb and declare it irq_safe (this will
-> > > 		automatically runtime-resume the omap2430);
-> > > 	Register the musb.
-> > > 
-> > > If things are done this way, no special action needs to be taken.
-> > 
-> > Yes good point, that requires changing the init for the whole
-> > drivers/musb though.
-> 
-> This will have to be done anyway, since the way it is now (if I 
-> understand correctly), the musb is registered and made available to 
-> userspace before its parent is operational (i.e., at full power).
+Lina Iyer <lina.iyer@linaro.org> writes:
 
-Yes I agree.
+> CPU devices that use runtime PM, have the followign characteristics -
+> 	- Runs in a IRQs disabled context
+> 	- Every CPU does its own runtime PM
+> 	- CPUs do not access other CPU's runtime PM
+> 	- The runtime PM state of the CPU is determined by the CPU
+>
+> These allow for some interesting optimizations -
+> 	- The CPUs have a limited runtime PM states
+> 	- The runtime state of CPU need not be protected by spinlocks
+> 	- Options like auto-suspend/async are not relevant to CPU
+> 	  devices
+>
+> A simplified runtime PM would therefore provide all that is needed for
+> the CPU devices. 
 
-> > Also, we should reorganize the whole musb and make
-> > the platform glue and musb core drivers completely separate using a
-> > shared interrupt where needed.
-> > 
-> > For the regression for the -rc series? Do you see any better
-> > alternatives to what I posted?
-> 
-> No.
+I like the idea of optimizing things for CPUs.  I've assumed we would
+eventually run into latency issues when using runtime PM and genpd on
+CPUs, but I guess we're already there.
 
-OK thanks,
+> After making a quick check for the usage count of the
+> CPU devices (to allow for the CPU to not power down the domain), the
+> runtime PM could just call the PM callbacks for the CPU devices. Locking
+> is also avoided.
 
-Tony
+This part is confusing (or more accurately, I am confused) more on that below...
+
+> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+> ---
+>  drivers/base/power/runtime.c | 61 ++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/pm_runtime.h   |  3 ++-
+>  2 files changed, 63 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> index e1a10a0..5f7512c 100644
+> --- a/drivers/base/power/runtime.c
+> +++ b/drivers/base/power/runtime.c
+> @@ -13,6 +13,7 @@
+>  #include <linux/pm_wakeirq.h>
+>  #include <trace/events/rpm.h>
+>  #include "power.h"
+> +#include <linux/cpu.h>
+>  
+>  typedef int (*pm_callback_t)(struct device *);
+>  
+> @@ -577,6 +578,66 @@ static int rpm_suspend(struct device *dev, int rpmflags)
+>  	goto out;
+>  }
+>  
+> +void cpu_pm_runtime_suspend(void)
+> +{
+> +	int ret;
+> +	int (*callback)(struct device *);
+> +	struct device *dev = get_cpu_device(smp_processor_id());
+> +
+> +	trace_rpm_suspend(dev, 0);
+> +
+> +	/**
+
+nit: the double '*' indicates kerneldoc, but this is just a multi-line
+comment.
+
+> +	 * Use device usage_count to disallow bubbling up suspend.
+
+I don't understand this comment.
+
+> +	 * This CPU has already decided to suspend, we cannot
+> +	 * prevent it here.
+> +	 */
+> +	if (!atomic_dec_and_test(&dev->power.usage_count))
+
+Isn't this basically a _put_noidle() ?
+
+> +		return 0;
+> +
+> +	ret = rpm_check_suspend_allowed(dev);
+> +	if (ret)
+> +		return ret;
+> +
+> +	__update_runtime_status(dev, RPM_SUSPENDING);
+> +
+> +	pm_runtime_cancel_pending(dev);
+> +	callback = RPM_GET_CALLBACK(dev, runtime_suspend);
+
+If the CPU device is part of a domain (e.g. cluster), then 'callback'
+here will be the domain callback, right?
+
+If that's true, I'm not sure I'm following the changelog description
+that talks about avoiding the calling into the domain.
+
+It seems to me that you'll still call into the domain, but patch 2/2
+optimizes that path by only doing the *real* work of the domain for the
+last man standing.  Am I understanding that correctly?
+
+Hmm, if that's the case though, where would the callbacks associated with the
+CPU (e.g. current CPU PM notifier stuff) get called?
+
+> +	ret = callback(dev);
+> +	if (!ret)
+> +		__update_runtime_status(dev, RPM_SUSPENDED);
+> +	else
+> +		__update_runtime_status(dev, RPM_ACTIVE);
+> +
+> +	trace_rpm_return_int(dev, _THIS_IP_, ret);
+> +}
+
+Kevin
