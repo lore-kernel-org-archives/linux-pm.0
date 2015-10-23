@@ -1,34 +1,100 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH 2/2] PM / Domains: Merge measurements for PM QoS device latencies
-Date: Fri, 23 Oct 2015 11:49:08 -0700
-Message-ID: <7h8u6tpgij.fsf@deeprootsystems.com>
-References: <1444921339-22614-1-git-send-email-ulf.hansson@linaro.org>
+From: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: MUSB peripheral DMA regression caused by driver core runtime PM
+ change
+Date: Fri, 23 Oct 2015 12:20:44 -0700
+Message-ID: <20151023192044.GX3078@atomide.com>
+References: <562A7549.3070400@ti.com>
+ <Pine.LNX.4.44L0.1510231406200.1644-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f45.google.com ([209.85.220.45]:32850 "EHLO
-	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751115AbbJWStK (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 23 Oct 2015 14:49:10 -0400
-Received: by pabrc13 with SMTP id rc13so124916527pab.0
-        for <linux-pm@vger.kernel.org>; Fri, 23 Oct 2015 11:49:09 -0700 (PDT)
-In-Reply-To: <1444921339-22614-1-git-send-email-ulf.hansson@linaro.org> (Ulf
-	Hansson's message of "Thu, 15 Oct 2015 17:02:19 +0200")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1510231406200.1644-100000-IYeN2dnnYyZXsRXLowluHWD2FQJk+8+b@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
+Cc: Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>, Felipe Balbi <balbi-l0cyMroinI0@public.gmane.org>, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Bin Liu <b-liu-l0cyMroinI0@public.gmane.org>, Heikki Krogerus <heikki.krogerus-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Andy Shevchenko <andriy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
 
-Ulf Hansson <ulf.hansson@linaro.org> writes:
+* Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org> [151023 11:27]:
+> On Fri, 23 Oct 2015, Grygorii Strashko wrote:
+> 
+> > Reviewed-by: Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>
+> > 
+> > It always fun when DD/PM core is updated to fix some driver/subsystem's
+> > specific PM issue :(
+> > 
+> > > 
+> > >> --- a/drivers/usb/musb/omap2430.c
+> > >> +++ b/drivers/usb/musb/omap2430.c
+> > >> @@ -391,9 +391,20 @@ static int omap2430_musb_init(struct musb *musb)
+> > >>   	}
+> > >>   	musb->isr = omap2430_musb_interrupt;
+> > >>   
+> > >> +	/*
+> > >> +	 * Enable runtime PM for musb parent (this driver). We can't
+> > >> +	 * do it earlier as struct musb is not yet allocated and we
+> > >> +	 * need to touch the musb registers for runtime PM.
+> > >> +	 */
+> > >> +	pm_runtime_enable(glue->dev);
+> > >> +	status = pm_runtime_get_sync(glue->dev);
+> > >> +	if (status < 0)
+> > >> +		goto err1;
+> > >> +
+> > >>   	status = pm_runtime_get_sync(dev);
+> > 
+> > Hm. My assumption was that *Parent* device (omap2430) will be enabled
+> > here :( But as I can see this will not happen:
 
-> Measure latency does by itself contribute to an increased latency, thus we
-> should avoid it when it isn't needed.
->
-> By merging the latency measurements for the ->save_state() and the
-> ->stop() callbacks, we get one measurement instead of two and we get one
-> value to store instead of two. Let's also apply the likewise change for
-> the ->start() and ->restore_state() callbacks.
->
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Yes the parent child stuff here is very confusing right now :)
 
-Acked-by: Kevin Hilman <khilman@linaro.org>
+> > static int rpm_resume(struct device *dev, int rpmflags)
+> > {...
+> > 	if (!parent && dev->parent) {
+> > 		/*
+> > 		 * Increment the parent's usage counter and resume it if
+> > 		 * necessary.  Not needed if dev is irq-safe; then the
+> > 		 * parent is permanently resumed.
+> > 		 */
+> > 		parent = dev->parent;
+> > 		if (dev->power.irq_safe)
+> > 			goto skip_parent;
+> > 
+> > ^^^ and musb device is irq_safe :( 
+> 
+> This way of doing things looks very strange.
+> 
+> If the omap2430 is the parent of the musb device, and
+> pm_runtime_irq_safe() has been called for the musb device, then after
+> that the omap2430 will never be runtime suspended.  Therefore it
+> doesn't matter whether you enable it for runtime PM or not.
+> 
+> It seems to me that the real problem must be that the musb device gets
+> runtime-enabled and marked irq_safe too early.  These things should 
+> happen before the musb device gets registered and exposed to userspace, 
+> but not before the omap2430 parent is runtime-enabled.
+> 
+> Thus the sequence of events should be:
+> 
+> 	Allocate the musb device;
+> 	Runtime-enable the omap2430 (since it is now safe to do so);
+> 	Runtime-enable the musb and declare it irq_safe (this will
+> 		automatically runtime-resume the omap2430);
+> 	Register the musb.
+> 
+> If things are done this way, no special action needs to be taken.
+
+Yes good point, that requires changing the init for the whole
+drivers/musb though. Also, we should reorganize the whole musb and make
+the platform glue and musb core drivers completely separate using a
+shared interrupt where needed.
+
+For the regression for the -rc series? Do you see any better
+alternatives to what I posted?
+
+Regards,
+
+Tony
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
