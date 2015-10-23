@@ -1,46 +1,49 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v2] cpufreq: intel_pstate: divide by zero on Knights Landing (KNL)
-Date: Fri, 23 Oct 2015 12:38:28 -0700
-Message-ID: <1445629108-14346-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <stable-owner@vger.kernel.org>
-Sender: stable-owner@vger.kernel.org
-To: kristen.c.accardi@intel.com, rafael.j.wysocki@intel.com, gregkh@linuxfoundation.org, stable@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: MUSB peripheral DMA regression caused by driver core runtime PM
+ change
+Date: Fri, 23 Oct 2015 16:33:54 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1510231629430.1644-100000@iolanthe.rowland.org>
+References: <20151023192044.GX3078@atomide.com>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:54497 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750765AbbJWUdz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 23 Oct 2015 16:33:55 -0400
+In-Reply-To: <20151023192044.GX3078@atomide.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: Grygorii Strashko <grygorii.strashko@ti.com>, Felipe Balbi <balbi@ti.com>, gregkh@linuxfoundation.org, linux-omap@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Bin Liu <b-liu@ti.com>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, linux-usb@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Linux PM list <linux-pm@vger.kernel.org>
 
-commit 8e601a9f97a00bab031980de34f9a81891c1f82f upstream.
+On Fri, 23 Oct 2015, Tony Lindgren wrote:
 
-Backport to 4.1-stable tree
+> > Thus the sequence of events should be:
+> > 
+> > 	Allocate the musb device;
+> > 	Runtime-enable the omap2430 (since it is now safe to do so);
+> > 	Runtime-enable the musb and declare it irq_safe (this will
+> > 		automatically runtime-resume the omap2430);
+> > 	Register the musb.
+> > 
+> > If things are done this way, no special action needs to be taken.
+> 
+> Yes good point, that requires changing the init for the whole
+> drivers/musb though.
 
-This is a workaround for KNL platform, where in some cases MPERF counter
-will not have updated value before next read of MSR_IA32_MPERF. In this
-case divide by zero will occur. This change ignores current sample for
-busy calculation in this case.
+This will have to be done anyway, since the way it is now (if I 
+understand correctly), the musb is registered and made available to 
+userspace before its parent is operational (i.e., at full power).
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
-Changes in v2:
-	commit sha style in the commit message match stable kernel rules,
-	even if checkpath doesn't like this
-	
- drivers/cpufreq/intel_pstate.c | 5 +++++
- 1 file changed, 5 insertions(+)
+> Also, we should reorganize the whole musb and make
+> the platform glue and musb core drivers completely separate using a
+> shared interrupt where needed.
+> 
+> For the regression for the -rc series? Do you see any better
+> alternatives to what I posted?
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index e8d1699..1ee2ab5 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -761,6 +761,11 @@ static inline void intel_pstate_sample(struct cpudata *cpu)
- 	local_irq_save(flags);
- 	rdmsrl(MSR_IA32_APERF, aperf);
- 	rdmsrl(MSR_IA32_MPERF, mperf);
-+	if (cpu->prev_mperf == mperf) {
-+		local_irq_restore(flags);
-+		return;
-+	}
-+
- 	local_irq_restore(flags);
- 
- 	cpu->last_sample_time = cpu->sample.time;
--- 
-1.9.3
+No.
+
+Alan Stern
+
