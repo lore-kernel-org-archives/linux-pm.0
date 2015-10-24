@@ -1,93 +1,85 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [GIT PULL] On-demand device probing
-Date: Sat, 24 Oct 2015 16:17:12 +0200
-Message-ID: <24100858.2KIS8Y2npV@vostro.rjw.lan>
-References: <20151018192931.GY14956@sirena.org.uk> <562A5602.7000208@sonymobile.com> <CAL_JsqLNSM=+j2r9HPcbSzsZrgnGEY3=kv21EXxisKwP5+57ag@mail.gmail.com>
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: RE: [PATCH 1/3] ACPI: Using correct irq when uninstalling acpi irq
+ handler
+Date: Sat, 24 Oct 2015 16:04:42 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE6402865EDF2@shsmsx102.ccr.corp.intel.com>
+References: <1445515388-31251-1-git-send-email-yu.c.chen@intel.com>
+ <2653711.REifFj4Vt2@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <CAL_JsqLNSM=+j2r9HPcbSzsZrgnGEY3=kv21EXxisKwP5+57ag@mail.gmail.com>
-Sender: linux-clk-owner@vger.kernel.org
-To: Rob Herring <robh+dt@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Tim Bird <tim.bird@sonymobile.com>, "frowand.list@gmail.com" <frowand.list@gmail.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Russell King <linux@arm.linux.org.uk>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, Terje =?ISO-8859-1?Q?Bergstr=F6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Liam Girdwood <lgirdwo>
+Content-Transfer-Encoding: base64
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <2653711.REifFj4Vt2@vostro.rjw.lan>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "lenb@kernel.org" <lenb@kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, "Zheng, Lv" <lv.zheng@intel.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, October 23, 2015 11:34:34 AM Rob Herring wrote:
-> On Fri, Oct 23, 2015 at 10:45 AM, Tim Bird <tim.bird@sonymobile.com> wrote:
-> > On 10/22/2015 11:53 AM, Frank Rowand wrote:
-> >> On 10/22/2015 7:44 AM, Greg Kroah-Hartman wrote:
-> >>> <oops, sent too early...>
-> >>>
-> >>> On Thu, Oct 22, 2015 at 11:05:11AM +0200, Tomeu Vizoso wrote:
-> >>>> But that's moot currently because Greg believes that the time spent
-> >>>> probing devices at boot time could be reduced enough so that the order
-> >>>> in which devices are probed becomes irrelevant. IME that would have to
-> >>>> be under 200ms so that the user doesn't notice and that's unicorn-far
-> >>>> from any bootlog I have ever seen.
-> >>>
-> >>> But as no one has actually produced a bootlog, how do you know that?
-> >>> Where exactly is your time being spent?  What driver is causing long
-> >>> delays?  Why is the long-delay-drivers not being done in their own
-> >>> thread?  And most importantly, why are you ignoring the work that people
-> >>> did back in 2008 to solve the issue on other hardware platforms?
-> >>>
-> >>>> Given that downstreams are already carrying as many hacks as they
-> >>>> could think of to speed total boot up, I think this is effectively
-> >>>> telling them to go away.
-> >>>
-> >>> No I'm not, I'm asking for real data, not hand-wavy-this-is-going-to
-> >>> solve-the-random-issue-i'm-having type patch by putting random calls in
-> >>> semi-random subsystems all over the kernel.
-> >>>
-> >>> And when I ask for real data, you respond with the fact that you aren't
-> >>> trying to speed up boot time here at all, so what am I supposed to think
-> >>
-> >> I also had the understanding that this patch series was about improving
-> >> boot time.  But I was kindly corrected that the behavior change was
-> >> getting the panel displaying stuff at an earlier point in the boot sequence,
-> >> _not_ completing the entire boot faster.
-> >>
-> >> The claim for the current series, in patch 0 in v7 is:
-> >>
-> >>    With this series I get the kernel to output to the panel in 0.5s,
-> >>    instead of 2.8s.
-> >
-> > It's very common to want to get the display up before the
-> > rest of the system.  So wanting to accelerate one part of the boot
-> > at the expense to the rest of the system is a valid use case.
-> > Deferred initcalls, which is out of tree primarily because it requires
-> > the type of manual tweaking that Tomeu describes, specifically
-> > addressed this issue.
-> 
-> Agreed and other folks will want other things up first. But it seems
-> we are getting lucky with link order with the speed ups in this case.
-> We need a way to specify priority of probing devices. If we have that
-> piece, then all this plumbing can be used. A simple solution would be
-> looking at stdout-path to get the console device to probe. That would
-> be trivial to add on top of this. That may work for the display too,
-> but you may not want the console on the display. That wouldn't work
-> for CAN bus either, but then I'm not sure there is a generic solution
-> for its requirements (respond within 50ms IIRC).
-
-Well, I'm not quite sure why exactly everyone is so focused on probing here.
-
-Probing is just one aspect of the fact that we need functional dependencies
-to be tracked somehow and acted on when necessary.  And this is not limited
-to probing, as I have already said for a few times.  Other cases include:
-system shutdown, system suspend/resume, runtime PM, unbinding of drivers.
-
-If there is a functional dependency between two devices (say, B requires A
-to be present and functional, meaning that the driver of A has to be present
-and working for the driver of B to be working), all of the above need to be
-done in a specific order.
-
-Today, however, the driver core only knows about structural dependencies
-and only in the specific parent-child case.
-
-So perhaps it's better to start discussing about a solution for the general
-issue?
-
-Thanks,
-Rafael
-
+SGksIFJhZmFlbA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFJhZmFl
+bCBKLiBXeXNvY2tpIFttYWlsdG86cmp3QHJqd3lzb2NraS5uZXRdDQo+IFNlbnQ6IFNhdHVyZGF5
+LCBPY3RvYmVyIDI0LCAyMDE1IDk6MzIgUE0NCj4gVG86IENoZW4sIFl1IEMNCj4gQ2M6IGxlbmJA
+a2VybmVsLm9yZzsgWmhhbmcsIFJ1aTsgWmhlbmcsIEx2OyBsaW51eC1hY3BpQHZnZXIua2VybmVs
+Lm9yZzsNCj4gbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBsaW51eC1rZXJuZWxAdmdlci5rZXJu
+ZWwub3JnOw0KPiBzdGFibGVAdmdlci5rZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0gg
+MS8zXSBBQ1BJOiBVc2luZyBjb3JyZWN0IGlycSB3aGVuIHVuaW5zdGFsbGluZyBhY3BpIGlycQ0K
+PiBoYW5kbGVyDQo+IA0KPiBPbiBUaHVyc2RheSwgT2N0b2JlciAyMiwgMjAxNSAwODowMzowOCBQ
+TSBDaGVuIFl1IHdyb3RlOg0KPiA+IEN1cnJlbnRseSB3aGVuIHN5c3RlbSBpcyB0cnlpbmcgdG8g
+dW5pbnN0YWxsIHRoZSBhY3BpIGlycSBoYW5kbGVyLCBpdA0KPiA+IHVzZXMgdGhlIGFjcGlfZ2Js
+X0ZBRFQuc2NpX2ludGVycnVwdCBkaXJlY3RseS4NCj4gPiBCdXQgYWNwaSBpcnEgaGFuZGxlciBp
+cyBhY3R1YWxseSBpbnN0YWxsZWQgYnkgbWFwcGVkIGlycSBpbg0KPiA+IGFjcGlfb3NfaW5zdGFs
+bF9pbnRlcnJ1cHRfaGFuZGxlciwgc28gdGhpcyBwYXRjaCBmaXhlcyB0aGlzIHByb2JsZW0gYnkN
+Cj4gPiB1c2luZyB0aGUgbWFwcGVkIGlycSByZXR1cm5lZCBmcm9tIGFjcGlfZ3NpX3RvX2lycS4N
+Cj4gPg0KPiA+IENjOiA8c3RhYmxlQHZnZXIua2VybmVsLm9yZz4gIyAyLjYuMzkrDQo+ID4gQWNr
+ZWQtYnk6IEx2IFpoZW5nIDxsdi56aGVuZ0BpbnRlbC5jb20+DQo+ID4gU2lnbmVkLW9mZi1ieTog
+Q2hlbiBZdSA8eXUuYy5jaGVuQGludGVsLmNvbT4NCj4gPiAtLS0NCj4gPiAgZHJpdmVycy9hY3Bp
+L29zbC5jICAgfCAxMCArKysrKysrLS0tDQo+ID4gIGluY2x1ZGUvbGludXgvYWNwaS5oIHwgIDMg
+KysrDQo+ID4gIDIgZmlsZXMgY2hhbmdlZCwgMTAgaW5zZXJ0aW9ucygrKSwgMyBkZWxldGlvbnMo
+LSkNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2FjcGkvb3NsLmMgYi9kcml2ZXJzL2Fj
+cGkvb3NsLmMgaW5kZXgNCj4gPiA3MzlhNGE2Li4yZTllY2NmIDEwMDY0NA0KPiA+IC0tLSBhL2Ry
+aXZlcnMvYWNwaS9vc2wuYw0KPiA+ICsrKyBiL2RyaXZlcnMvYWNwaS9vc2wuYw0KPiA+IEBAIC04
+MSw2ICs4MSw3IEBAIHN0YXRpYyBzdHJ1Y3Qgd29ya3F1ZXVlX3N0cnVjdCAqa2FjcGlkX3dxOyAg
+c3RhdGljDQo+ID4gc3RydWN0IHdvcmtxdWV1ZV9zdHJ1Y3QgKmthY3BpX25vdGlmeV93cTsgIHN0
+YXRpYyBzdHJ1Y3QNCj4gPiB3b3JrcXVldWVfc3RydWN0ICprYWNwaV9ob3RwbHVnX3dxOyAgc3Rh
+dGljIGJvb2wgYWNwaV9vc19pbml0aWFsaXplZDsNCj4gPiArdW5zaWduZWQgaW50IGFjcGlfc2Np
+X2lycSA9IElOVkFMSURfQUNQSV9JUlE7DQo+ID4NCj4gPiAgLyoNCj4gPiAgICogVGhpcyBsaXN0
+IG9mIHBlcm1hbmVudCBtYXBwaW5ncyBpcyBmb3IgbWVtb3J5IHRoYXQgbWF5IGJlIGFjY2Vzc2Vk
+DQo+ID4gZnJvbSBAQCAtODU2LDE3ICs4NTcsMjAgQEAgYWNwaV9vc19pbnN0YWxsX2ludGVycnVw
+dF9oYW5kbGVyKHUzMiBnc2ksDQo+IGFjcGlfb3NkX2hhbmRsZXIgaGFuZGxlciwNCj4gPiAgCQlh
+Y3BpX2lycV9oYW5kbGVyID0gTlVMTDsNCj4gPiAgCQlyZXR1cm4gQUVfTk9UX0FDUVVJUkVEOw0K
+PiA+ICAJfQ0KPiA+ICsJYWNwaV9zY2lfaXJxID0gaXJxOw0KPiA+DQo+ID4gIAlyZXR1cm4gQUVf
+T0s7DQo+ID4gIH0NCj4gPg0KPiA+IC1hY3BpX3N0YXR1cyBhY3BpX29zX3JlbW92ZV9pbnRlcnJ1
+cHRfaGFuZGxlcih1MzIgaXJxLA0KPiA+IGFjcGlfb3NkX2hhbmRsZXIgaGFuZGxlcikNCj4gPiAr
+YWNwaV9zdGF0dXMgYWNwaV9vc19yZW1vdmVfaW50ZXJydXB0X2hhbmRsZXIodTMyIGdzaSwNCj4g
+PiArYWNwaV9vc2RfaGFuZGxlciBoYW5kbGVyKQ0KPiA+ICB7DQo+ID4gLQlpZiAoaXJxICE9IGFj
+cGlfZ2JsX0ZBRFQuc2NpX2ludGVycnVwdCkNCj4gPiArCWlmICgoZ3NpICE9IGFjcGlfZ2JsX0ZB
+RFQuc2NpX2ludGVycnVwdCkgfHwNCj4gPiArCQkJSVNfSU5WQUxJRF9BQ1BJX0lSUShhY3BpX3Nj
+aV9pcnEpKQ0KPiANCj4gVGhlIHdoaXRlIHNwYWNlIGRvZXNuJ3QgZm9sbG93IHRoZSBrZXJuZWwg
+Y29kaW5nIHN0eWxlLCBzaG91bGQgYmUgc29tZXRoaW5nDQo+IGxpa2UNCj4gDQo+IAlpZiAoKGdz
+aSAhPSBhY3BpX2dibF9GQURULnNjaV9pbnRlcnJ1cHQpIHx8DQo+IAkgICAgSVNfSU5WQUxJRF9B
+Q1BJX0lSUShhY3BpX3NjaV9pcnEpKQ0KPiANCj4gKHNwYWNlcyBpbnN0ZWFkIG9mIHRoZSBzZWNv
+bmQgdGFiKS4NCj4gDQpBaCwgZ290IGl0LCB0aGFua3MuDQoNCj4gQW5vdGhlciBtaW5vciBuaXQg
+aXMgdGhhdCB0aGlzIHByb2JhYmx5IGlzIHRoZSBvbmx5IHBsYWNlIHlvdSBjaGVjayB0aGUNCj4g
+SVNfSU5WQUxJRF9BQ1BJX0lSUShhY3BpX3NjaV9pcnEpIHRoaW5nIHdpdGhvdXQgbG9naWNhbCBu
+ZWdhdGlvbiBhbmQgeW91DQo+IG9ubHkgcGFzcyBhY3BpX3NjaV9pcnEgdG8gSVNfSU5WQUxJRF9B
+Q1BJX0lSUSgpIEFGQUlDUy4NCj4gDQo+IEl0IHdvdWxkIGJlIG1vcmUgc3RyYWlnaHRmb3J3YXJk
+IHRvIGRlZmluZSBzb21ldGhpbmcgbGlrZSBhY3BpX3NjaV9pcnFfdmFsaWQoKQ0KPiBpbnN0ZWFk
+IChzZWUgYmVsb3cpIElNTy4NCj4gDQo+ID4gIAkJcmV0dXJuIEFFX0JBRF9QQVJBTUVURVI7DQo+
+ID4NCj4gPiAtCWZyZWVfaXJxKGlycSwgYWNwaV9pcnEpOw0KPiA+ICsJZnJlZV9pcnEoYWNwaV9z
+Y2lfaXJxLCBhY3BpX2lycSk7DQo+ID4gIAlhY3BpX2lycV9oYW5kbGVyID0gTlVMTDsNCj4gPiAr
+CWFjcGlfc2NpX2lycSA9IElOVkFMSURfQUNQSV9JUlE7DQo+ID4NCj4gPiAgCXJldHVybiBBRV9P
+SzsNCj4gPiAgfQ0KPiA+IGRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L2FjcGkuaCBiL2luY2x1
+ZGUvbGludXgvYWNwaS5oIGluZGV4DQo+ID4gNDM4NTZkMS4uYmFkMTU5YyAxMDA2NDQNCj4gPiAt
+LS0gYS9pbmNsdWRlL2xpbnV4L2FjcGkuaA0KPiA+ICsrKyBiL2luY2x1ZGUvbGludXgvYWNwaS5o
+DQo+ID4gQEAgLTE5Myw2ICsxOTMsOSBAQCBpbnQgYWNwaV9pb2FwaWNfcmVnaXN0ZXJlZChhY3Bp
+X2hhbmRsZSBoYW5kbGUsIHUzMg0KPiA+IGdzaV9iYXNlKTsgIHZvaWQgYWNwaV9pcnFfc3RhdHNf
+aW5pdCh2b2lkKTsgIGV4dGVybiB1MzINCj4gPiBhY3BpX2lycV9oYW5kbGVkOyAgZXh0ZXJuIHUz
+MiBhY3BpX2lycV9ub3RfaGFuZGxlZDsNCj4gPiArZXh0ZXJuIHVuc2lnbmVkIGludCBhY3BpX3Nj
+aV9pcnE7DQo+ID4gKyNkZWZpbmUgSU5WQUxJRF9BQ1BJX0lSUSAoKHVuc2lnbmVkKS0xKQ0KPiAN
+Cj4gI2RlZmluZSBJTlZBTElEX0FDUElfSVJRCSgodW5zaWduZWQgaW50KS0xKQ0KPiANCj4gPiAr
+I2RlZmluZSBJU19JTlZBTElEX0FDUElfSVJRKHgpIHVubGlrZWx5KCh4KSA9PSBJTlZBTElEX0FD
+UElfSVJRKQ0KPiANCj4gTWF5YmUgc29tZXRoaW5nIGxpa2U6DQo+IA0KPiAJc3RhdGljIGlubGlu
+ZSBib29sIGFjcGlfc2NpX2lycV92YWxpZCh2b2lkKQ0KPiAJew0KPiAJCXJldHVybiBhY3BpX3Nj
+aV9pcnEgIT0gSU5WQUxJRF9BQ1BJX0lSUTsNCj4gCX0NCj4gDQpPSywgd2lsbCBzZW5kIG91dCBh
+IHZlcnNpb24gMiB3aXRoIGJvdGggYW5vdGhlciB0d28gcGF0Y2hlcyBtb2RpZmllZC4NCg0KQmVz
+dCBSZWdhcmRzLA0KWXUNCg==
