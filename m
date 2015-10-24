@@ -1,48 +1,53 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 0/2] dmaengine: usb-dmac: Runtime PM Related Fixes
-Date: Sat, 24 Oct 2015 19:59:11 +0200
-Message-ID: <CAMuHMdW1f3h2+gxSL2ZTW13c9a_XpshN6DK_e+kj_7ydRCTXJg@mail.gmail.com>
-References: <1443684138-32252-1-git-send-email-geert+renesas@glider.be>
-	<20151007140124.GC3320@vkoul-mobl.iind.intel.com>
-	<CAMuHMdVGq19174R=+D_hrzj-XPY8PaKvif3nB=sDq62KCuM5Xg@mail.gmail.com>
-	<20151024120441.GI27370@localhost>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [GIT PULL] On-demand device probing
+Date: Sun, 25 Oct 2015 07:06:48 +0900
+Message-ID: <20151024220648.GR29919@sirena.org.uk>
+References: <20151018192931.GY14956@sirena.org.uk>
+ <562A5602.7000208@sonymobile.com>
+ <CAL_JsqLNSM=+j2r9HPcbSzsZrgnGEY3=kv21EXxisKwP5+57ag@mail.gmail.com>
+ <24100858.2KIS8Y2npV@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <20151024120441.GI27370@localhost>
-Sender: linux-sh-owner@vger.kernel.org
-To: Vinod Koul <vinod.koul@intel.com>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, dmaengine@vger.kernel.org, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="FNX2SHge3qdlDajY"
+Return-path: <linux-gpio-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <24100858.2KIS8Y2npV@vostro.rjw.lan>
+Sender: linux-gpio-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Rob Herring <robh+dt@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tim Bird <tim.bird@sonymobile.com>, "frowand.list@gmail.com" <frowand.list@gmail.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Russell King <linux@arm.linux.org.uk>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, Terje =?iso-8859-1?Q?Bergstr=F6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>David
 List-Id: linux-pm@vger.kernel.org
 
-Hi Vinod,
 
-On Sat, Oct 24, 2015 at 2:04 PM, Vinod Koul <vinod.koul@intel.com> wrote:
-> On Fri, Oct 16, 2015 at 03:10:37PM +0200, Geert Uytterhoeven wrote:
->> On Wed, Oct 7, 2015 at 4:01 PM, Vinod Koul <vinod.koul@intel.com> wrote:
->> > On Thu, Oct 01, 2015 at 09:22:16AM +0200, Geert Uytterhoeven wrote:
->> >> This series fixes a crash and an imbalance in the usb-dmac driver.
->> >
->> > Sorry this fails for me, what was this generated against
->>
->> Strange, this series still applies cleanly on top of slave-dma/next and
->> linus/master.
->
-> I think I applied this to a new topic branch off rc1. But anyway since I dont
-> have patches on usb-dma it should have been same :(
+--FNX2SHge3qdlDajY
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-So how do we proceed?
-Do you want me to resend the patches (they still apply to slave-dma/next)?
+On Sat, Oct 24, 2015 at 04:17:12PM +0200, Rafael J. Wysocki wrote:
 
-Thanks!
+> Well, I'm not quite sure why exactly everyone is so focused on probing here.
 
-Gr{oetje,eeting}s,
+Probe deferral is really noisy even if it's working fine on a given
+system so it's constantly being highlighted to people in a way that
+other issues aren't if you're not directly having problems.
 
-                        Geert
+There's also the understanding people had that the order things get
+bound changes the ordering for some of the other cases (perhaps it's a
+good idea to do that, it seems likely to be sensible?).
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+--FNX2SHge3qdlDajY
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJWLAD1AAoJECTWi3JdVIfQn9QH/1ZQrvI10PtpWUQHu6GzOxZK
+B1o63z5QhirS2YbZxYLH6hso0K0/4eVmY0VS35L/DM3hRePI1vFZHLKCFH3/jOJX
+AHnTwLpWu9w/iJ3yP7qJuInLq9IYA6Tj32SgYx98IsrN8JhUAFVvn/KM7mJK2jD3
+PdfIDQF5b6ZduAktIUkzKMaYrrxvbRarut+DadjTwJc2so5DvFuIBCBdruGcOOax
+bHfI+PL2ALE+IXn0z7MSioeBvszUB4paMpz7goBvu4OqdOUBxdGz7l0v1BlwI8SL
+X27RYEK77ZN9+DaO0a+OWtQpuYrBIFDnQrN6g+6HuEb2RP5EXZTll7aUeMJ3miw=
+=89D6
+-----END PGP SIGNATURE-----
+
+--FNX2SHge3qdlDajY--
