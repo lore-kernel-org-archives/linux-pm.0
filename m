@@ -1,33 +1,47 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH v10 1/4] device core: add device_is_bound()
-Date: Sat, 24 Oct 2015 19:50:36 -0700
-Message-ID: <20151025025036.GA25874@kroah.com>
-References: <1445441654-31778-1-git-send-email-tomeu.vizoso@collabora.com>
- <1445441654-31778-2-git-send-email-tomeu.vizoso@collabora.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [GIT PULL] On-demand device probing
+Date: Sun, 25 Oct 2015 14:54:39 +0100
+Message-ID: <CAJZ5v0hPVu7AL8zBdU4Kb7+MVfYv0mTa43RhnCyyPR+RKDbhLA@mail.gmail.com>
+References: <20151018192931.GY14956@sirena.org.uk>
+	<562A5602.7000208@sonymobile.com>
+	<CAL_JsqLNSM=+j2r9HPcbSzsZrgnGEY3=kv21EXxisKwP5+57ag@mail.gmail.com>
+	<24100858.2KIS8Y2npV@vostro.rjw.lan>
+	<20151024220648.GR29919@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:34019 "EHLO
-	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750740AbbJYIg7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 25 Oct 2015 04:36:59 -0400
-Content-Disposition: inline
-In-Reply-To: <1445441654-31778-2-git-send-email-tomeu.vizoso@collabora.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-Reply-To: <20151024220648.GR29919@sirena.org.uk>
+Sender: linux-clk-owner@vger.kernel.org
+To: Mark Brown <broonie@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tim Bird <tim.bird@sonymobile.com>, "frowand.list@gmail.com" <frowand.list@gmail.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Russell King <linux@arm.linux.org.uk>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, =?UTF-8?Q?Terje_Bergstr=C3=B6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry
 List-Id: linux-pm@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, martyn.welch@collabora.co.uk, Ulf Hansson <ulf.hansson@linaro.org>, linux-kernel@vger.kernel.org
 
-On Wed, Oct 21, 2015 at 05:34:11PM +0200, Tomeu Vizoso wrote:
-> Adds a function that tells whether a device is already bound to a
-> driver.
-> 
-> This is needed to warn when there is an attempt to change the PM domain
-> of a device that has finished probing already. The reason why we want to
-> enforce that is because in the general case that can cause problems and
-> also that we can simplify code quite a bit if we can always assume that.
-> 
-> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+On Sun, Oct 25, 2015 at 12:06 AM, Mark Brown <broonie@kernel.org> wrote:
+> On Sat, Oct 24, 2015 at 04:17:12PM +0200, Rafael J. Wysocki wrote:
+>
+>> Well, I'm not quite sure why exactly everyone is so focused on probing here.
+>
+> Probe deferral is really noisy even if it's working fine on a given
+> system so it's constantly being highlighted to people in a way that
+> other issues aren't if you're not directly having problems.
+>
+> There's also the understanding people had that the order things get
+> bound changes the ordering for some of the other cases (perhaps it's a
+> good idea to do that, it seems likely to be sensible?).
 
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+But it really doesn't do that.  Also making it do so doesn't help much
+in the cases where things can happen asynchronously (system
+suspend/resume, runtime PM).
+
+If, instead, there was a way to specify a functional dependency at the
+device registration time, it might be used to change the order of
+everything relevant, including probe.  That should help to reduce the
+noise you're referring to.
+
+If the dependency could only be discovered at the probe time, the
+order of things might be changed in response to letting the driver
+core know about it rather than "just in case", which should be more
+efficient.
+
+Thanks,
+Rafael
