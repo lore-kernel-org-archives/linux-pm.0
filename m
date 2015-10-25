@@ -1,90 +1,33 @@
-From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: RE: [PATCH 2/3][v2] ACPI: Using correct irq when waiting for events
-Date: Sun, 25 Oct 2015 02:08:29 +0000
-Message-ID: <36DF59CE26D8EE47B0655C516E9CE6402865EE80@shsmsx102.ccr.corp.intel.com>
-References: <1445706156-20203-1-git-send-email-yu.c.chen@intel.com>
- <201510250151.vYKQmll5%fengguang.wu@intel.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH v10 1/4] device core: add device_is_bound()
+Date: Sat, 24 Oct 2015 19:50:36 -0700
+Message-ID: <20151025025036.GA25874@kroah.com>
+References: <1445441654-31778-1-git-send-email-tomeu.vizoso@collabora.com>
+ <1445441654-31778-2-git-send-email-tomeu.vizoso@collabora.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <201510250151.vYKQmll5%fengguang.wu@intel.com>
-Content-Language: en-US
-Sender: linux-acpi-owner@vger.kernel.org
-Cc: "kbuild-all@01.org" <kbuild-all@01.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "lenb@kernel.org" <lenb@kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, "Zheng, Lv" <lv.zheng@intel.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>, "Wu, Fengguang" <fengguang.wu@intel.com>, "Li, Philip" <philip.li@intel.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.linuxfoundation.org ([140.211.169.12]:34019 "EHLO
+	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750740AbbJYIg7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 25 Oct 2015 04:36:59 -0400
+Content-Disposition: inline
+In-Reply-To: <1445441654-31778-2-git-send-email-tomeu.vizoso@collabora.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, martyn.welch@collabora.co.uk, Ulf Hansson <ulf.hansson@linaro.org>, linux-kernel@vger.kernel.org
 
-This should not be a valid warning IMO, 
-because PATCH 2/3 is  based on PATCH 1/3,
-and the warning of implicit declaration is defined 
-in PATCH 1/3.
+On Wed, Oct 21, 2015 at 05:34:11PM +0200, Tomeu Vizoso wrote:
+> Adds a function that tells whether a device is already bound to a
+> driver.
+> 
+> This is needed to warn when there is an attempt to change the PM domain
+> of a device that has finished probing already. The reason why we want to
+> enforce that is because in the general case that can cause problems and
+> also that we can simplify code quite a bit if we can always assume that.
+> 
+> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-
-> -----Original Message-----
-> From: lkp
-> Sent: Sunday, October 25, 2015 1:19 AM
-> To: Chen, Yu C
-> Cc: kbuild-all@01.org; rjw@rjwysocki.net; lenb@kernel.org; Zhang, Rui;
-> Zheng, Lv; linux-acpi@vger.kernel.org; linux-kernel@vger.kernel.org; linux-
-> pm@vger.kernel.org; Chen, Yu C; stable@vger.kernel.org
-> Subject: Re: [PATCH 2/3][v2] ACPI: Using correct irq when waiting for events
-> 
-> Hi Chen,
-> 
-> [auto build test ERROR on pm/linux-next -- if it's inappropriate base, please
-> suggest rules for selecting the more suitable base]
-> 
-> url:    https://github.com/0day-ci/linux/commits/Chen-Yu/ACPI-Using-
-> correct-irq-when-waiting-for-events/20151025-010210
-> config: x86_64-randconfig-x015-201543 (attached as .config)
-> reproduce:
->         # save the attached .config to linux build tree
->         make ARCH=x86_64
-> 
-> All error/warnings (new ones prefixed by >>):
-> 
->    In file included from include/uapi/linux/stddef.h:1:0,
->                     from include/linux/stddef.h:4,
->                     from include/uapi/linux/posix_types.h:4,
->                     from include/uapi/linux/types.h:13,
->                     from include/linux/types.h:5,
->                     from include/linux/list.h:4,
->                     from include/linux/module.h:9,
->                     from drivers/acpi/osl.c:26:
->    drivers/acpi/osl.c: In function 'acpi_os_wait_events_complete':
-> >> drivers/acpi/osl.c:1183:6: error: implicit declaration of function
-> 'acpi_sci_irq_valid' [-Werror=implicit-function-declaration]
->      if (acpi_sci_irq_valid())
->          ^
->    include/linux/compiler.h:147:28: note: in definition of macro '__trace_if'
->      if (__builtin_constant_p((cond)) ? !!(cond) :   \
->                                ^
-> >> drivers/acpi/osl.c:1183:2: note: in expansion of macro 'if'
->      if (acpi_sci_irq_valid())
->      ^
-> >> drivers/acpi/osl.c:1184:23: error: 'acpi_sci_irq' undeclared (first use in this
-> function)
->       synchronize_hardirq(acpi_sci_irq);
->                           ^
->    drivers/acpi/osl.c:1184:23: note: each undeclared identifier is reported only
-> once for each function it appears in
->    cc1: some warnings being treated as errors
-> 
-> vim +/acpi_sci_irq_valid +1183 drivers/acpi/osl.c
-> 
->   1177	void acpi_os_wait_events_complete(void)
->   1178	{
->   1179		/*
->   1180		 * Make sure the GPE handler or the fixed event handler is
-> not used
->   1181		 * on another CPU after removal.
->   1182		 */
-> > 1183		if (acpi_sci_irq_valid())
-> > 1184			synchronize_hardirq(acpi_sci_irq);
->   1185		flush_workqueue(kacpid_wq);
->   1186		flush_workqueue(kacpi_notify_wq);
->   1187	}
-> 
-> ---
-> 0-DAY kernel test infrastructure                Open Source Technology Center
-> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
