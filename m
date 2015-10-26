@@ -1,147 +1,103 @@
 From: Chen Yu <yu.c.chen@intel.com>
-Subject: [PATCH 2/3][v2] Thermal: handle thermal zone device properly during system sleep
-Date: Mon, 26 Oct 2015 11:14:31 +0800
-Message-ID: <263fad83855e3da9c768fec15f496a308953d05a.1445828170.git.yu.c.chen@intel.com>
+Subject: [PATCH 3/3][v2] Thermal: do thermal zone update after a cooling device registered
+Date: Mon, 26 Oct 2015 11:15:30 +0800
+Message-ID: <52fe1d3f183eccfa501c082efa2682940379bd8d.1445828170.git.yu.c.chen@intel.com>
 References: <cover.1445828170.git.yu.c.chen@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:10419 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752267AbbJZDMx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 25 Oct 2015 23:12:53 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1445828170.git.yu.c.chen@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rui.zhang@intel.com, edubezval@gmail.com, javi.merino@arm.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>, stable@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-From: Zhang Rui <rui.zhang@intel.com>
+When a new cooling device is registered, we need to update the
+thermal zone to set the new registered cooling device to a proper
+state.
 
-Current thermal code does not handle system sleep well because
-1. the cooling device cooling state may be changed during suspend
-2. the previous temperature reading becomes invalid after resumed because
-   it is got before system sleep
-3. updating thermal zone device during suspending/resuming
-   is wrong because some devices may have already been suspended
-   or may have not been resumed.
+This fixes a problem that the system is cool, while the fan devices
+are left running on full speed after boot, if fan device is registered
+after thermal zone device.
 
-Thus, the proper way to do this is to cancel all thermal zone
-device update requirements during suspend/resume, and after all
-the devices have been resumed, reset and update every registered
-thermal zone devices.
-
-This also fixes a regression introduced by:
-Commit 19593a1fb1f6 ("ACPI / fan: convert to platform driver")
-Because, with above commit applied, all the fan devices are attached
-to the acpi_general_pm_domain, and they are turned on by the pm_domain
-automatically after resume, without the awareness of thermal core.
+Here is the history of why current patch looks like this:
+https://patchwork.kernel.org/patch/7273041/
 
 CC: <stable@vger.kernel.org> #3.18+
-Reference: https://bugzilla.kernel.org/show_bug.cgi?id=78201
-Reference: https://bugzilla.kernel.org/show_bug.cgi?id=91411
+Reference:https://bugzilla.kernel.org/show_bug.cgi?id=92431
 Tested-by: Manuel Krause <manuelkrause@netscape.net>
 Tested-by: szegad <szegadlo@poczta.onet.pl>
 Tested-by: prash <prash.n.rao@gmail.com>
 Tested-by: amish <ammdispose-arch@yahoo.com>
-Tested-by: Matthias <morpheusxyz123@yahoo.de>
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 Signed-off-by: Chen Yu <yu.c.chen@intel.com>
 ---
- drivers/thermal/thermal_core.c | 45 +++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 44 insertions(+), 1 deletion(-)
+ drivers/thermal/thermal_core.c | 14 +++++++++++++-
+ include/linux/thermal.h        |  1 +
+ 2 files changed, 14 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 682bc1e..abeb995 100644
+index abeb995..f36d0bd 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -37,6 +37,7 @@
- #include <linux/of.h>
- #include <net/netlink.h>
- #include <net/genetlink.h>
-+#include <linux/suspend.h>
- 
- #define CREATE_TRACE_POINTS
- #include <trace/events/thermal.h>
-@@ -59,6 +60,8 @@ static LIST_HEAD(thermal_governor_list);
- static DEFINE_MUTEX(thermal_list_lock);
- static DEFINE_MUTEX(thermal_governor_lock);
- 
-+static atomic_t in_suspend;
-+
- static struct thermal_governor *def_governor;
- 
- static struct thermal_governor *__find_governor(const char *name)
-@@ -554,6 +557,9 @@ void thermal_zone_device_update(struct thermal_zone_device *tz)
+@@ -1341,6 +1341,7 @@ int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
+ 	if (!result) {
+ 		list_add_tail(&dev->tz_node, &tz->thermal_instances);
+ 		list_add_tail(&dev->cdev_node, &cdev->thermal_instances);
++		atomic_set(&tz->need_update, 1);
+ 	}
+ 	mutex_unlock(&cdev->lock);
+ 	mutex_unlock(&tz->lock);
+@@ -1450,6 +1451,7 @@ __thermal_cooling_device_register(struct device_node *np,
+ 				  const struct thermal_cooling_device_ops *ops)
  {
- 	int count;
+ 	struct thermal_cooling_device *cdev;
++	struct thermal_zone_device *pos = NULL;
+ 	int result;
  
-+	if (atomic_read(&in_suspend))
-+		return;
+ 	if (type && strlen(type) >= THERMAL_NAME_LENGTH)
+@@ -1494,6 +1496,12 @@ __thermal_cooling_device_register(struct device_node *np,
+ 	/* Update binding information for 'this' new cdev */
+ 	bind_cdev(cdev);
+ 
++	mutex_lock(&thermal_list_lock);
++	list_for_each_entry(pos, &thermal_tz_list, node)
++		if (atomic_cmpxchg(&pos->need_update, 1, 0))
++			thermal_zone_device_update(pos);
++	mutex_unlock(&thermal_list_lock);
 +
- 	if (!tz->ops->get_temp)
- 		return;
- 
-@@ -2155,9 +2161,39 @@ static void thermal_unregister_governors(void)
- 	thermal_gov_power_allocator_unregister();
+ 	return cdev;
  }
  
-+static int thermal_pm_notify(struct notifier_block *nb,
-+				unsigned long mode, void *_unused)
-+{
-+	struct thermal_zone_device *tz;
-+
-+	switch (mode) {
-+	case PM_HIBERNATION_PREPARE:
-+	case PM_RESTORE_PREPARE:
-+	case PM_SUSPEND_PREPARE:
-+		atomic_set(&in_suspend, 1);
-+		break;
-+	case PM_POST_HIBERNATION:
-+	case PM_POST_RESTORE:
-+	case PM_POST_SUSPEND:
-+		atomic_set(&in_suspend, 0);
-+		list_for_each_entry(tz, &thermal_tz_list, node) {
-+			thermal_zone_device_reset(tz);
-+			thermal_zone_device_update(tz);
-+		}
-+		break;
-+	default:
-+		break;
-+	}
-+	return 0;
-+}
-+
-+static struct notifier_block thermal_pm_nb = {
-+	.notifier_call = thermal_pm_notify,
-+};
-+
- static int __init thermal_init(void)
- {
--	int result;
-+	int result, notifier_result;
+@@ -1826,6 +1834,8 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+ 	tz->trips = trips;
+ 	tz->passive_delay = passive_delay;
+ 	tz->polling_delay = polling_delay;
++	/* A new thermal zone needs to be updated anyway. */
++	atomic_set(&tz->need_update, 1);
  
- 	result = thermal_register_governors();
- 	if (result)
-@@ -2175,6 +2211,12 @@ static int __init thermal_init(void)
- 	if (result)
- 		goto exit_netlink;
+ 	dev_set_name(&tz->device, "thermal_zone%d", tz->id);
+ 	result = device_register(&tz->device);
+@@ -1921,7 +1931,9 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+ 	INIT_DELAYED_WORK(&(tz->poll_queue), thermal_zone_device_check);
  
-+	notifier_result = register_pm_notifier(&thermal_pm_nb);
-+	if (notifier_result)
-+		pr_err("Thermal: Can not register suspend notifier"
-+			"for thermal framework, return %d\n",
-+			notifier_result);
-+
- 	return 0;
+ 	thermal_zone_device_reset(tz);
+-	thermal_zone_device_update(tz);
++	/* Update the new thermal zone and mark it as already updated. */
++	if (atomic_cmpxchg(&tz->need_update, 1, 0))
++		thermal_zone_device_update(tz);
  
- exit_netlink:
-@@ -2194,6 +2236,7 @@ error:
+ 	return tz;
  
- static void __exit thermal_exit(void)
- {
-+	unregister_pm_notifier(&thermal_pm_nb);
- 	of_thermal_destroy_zones();
- 	genetlink_exit();
- 	class_unregister(&thermal_class);
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 5bcabc7..4298418 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -195,6 +195,7 @@ struct thermal_zone_device {
+ 	int emul_temperature;
+ 	int passive;
+ 	unsigned int forced_passive;
++	atomic_t need_update;
+ 	struct thermal_zone_device_ops *ops;
+ 	struct thermal_zone_params *tzp;
+ 	struct thermal_governor *governor;
 -- 
 1.8.4.2
-
