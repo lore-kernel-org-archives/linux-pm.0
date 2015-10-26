@@ -1,65 +1,190 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [GIT PULL] On-demand device probing
-Date: Tue, 27 Oct 2015 00:37:28 +0100
-Message-ID: <CAJZ5v0imLPyq8nxZrqvjXopzD=aBUCp+weBPuJ7Emk9=EQBEnw@mail.gmail.com>
-References: <20151018192931.GY14956@sirena.org.uk>
-	<562A5602.7000208@sonymobile.com>
-	<CAL_JsqLNSM=+j2r9HPcbSzsZrgnGEY3=kv21EXxisKwP5+57ag@mail.gmail.com>
-	<24100858.2KIS8Y2npV@vostro.rjw.lan>
-	<20151024220648.GR29919@sirena.org.uk>
-	<CAJZ5v0hPVu7AL8zBdU4Kb7+MVfYv0mTa43RhnCyyPR+RKDbhLA@mail.gmail.com>
-	<20151026105138.20687.13546@quantum>
+Subject: Re: [PATCH v3 1/2] cpufreq: intel_pstate: Replace BYT by ATOM
+Date: Tue, 27 Oct 2015 00:42:43 +0100
+Message-ID: <CAJZ5v0g64yUkSCyJjYM+d+nJ1-tEvpE7audRCzB7pGBhTSoNpw@mail.gmail.com>
+References: <1445851821-2001-1-git-send-email-philippe.longepe@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-gpio-owner@vger.kernel.org>
-In-Reply-To: <20151026105138.20687.13546@quantum>
-Sender: linux-gpio-owner@vger.kernel.org
-To: Michael Turquette <mturquette@baylibre.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Mark Brown <broonie@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tim Bird <tim.bird@sonymobile.com>, "frowand.list@gmail.com" <frowand.list@gmail.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Russell King <linux@arm.linux.org.uk>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, =?UTF-8?Q?Terje_Bergstr=C3=B6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kern>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lb0-f182.google.com ([209.85.217.182]:34404 "EHLO
+	mail-lb0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751768AbbJZXmp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 Oct 2015 19:42:45 -0400
+Received: by lbbwb3 with SMTP id wb3so51771119lbb.1
+        for <linux-pm@vger.kernel.org>; Mon, 26 Oct 2015 16:42:43 -0700 (PDT)
+In-Reply-To: <1445851821-2001-1-git-send-email-philippe.longepe@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Philippe Longepe <philippe.longepe@linux.intel.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Philippe Longepe <philippe.longepe@intel.com>
 
-On Mon, Oct 26, 2015 at 11:51 AM, Michael Turquette
-<mturquette@baylibre.com> wrote:
-> Quoting Rafael J. Wysocki (2015-10-25 06:54:39)
->> On Sun, Oct 25, 2015 at 12:06 AM, Mark Brown <broonie@kernel.org> wrote:
->> > On Sat, Oct 24, 2015 at 04:17:12PM +0200, Rafael J. Wysocki wrote:
->> >
->> >> Well, I'm not quite sure why exactly everyone is so focused on probing here.
->> >
->> > Probe deferral is really noisy even if it's working fine on a given
->> > system so it's constantly being highlighted to people in a way that
->> > other issues aren't if you're not directly having problems.
->> >
->> > There's also the understanding people had that the order things get
->> > bound changes the ordering for some of the other cases (perhaps it's a
->> > good idea to do that, it seems likely to be sensible?).
->>
->> But it really doesn't do that.  Also making it do so doesn't help much
->> in the cases where things can happen asynchronously (system
->> suspend/resume, runtime PM).
->>
->> If, instead, there was a way to specify a functional dependency at the
->> device registration time, it might be used to change the order of
->> everything relevant, including probe.  That should help to reduce the
->> noise you're referring to.
+On Mon, Oct 26, 2015 at 10:30 AM, Philippe Longepe
+<philippe.longepe@linux.intel.com> wrote:
+> From: Philippe Longepe <philippe.longepe@intel.com>
 >
-> Taking it a step further, if functional dependencies were understood at
-> link-time then we could optimize link order as well. There are probably
-> lots of optimizations if we only made the effort to understand these
-> dependencies earlier.
+> The goal is to support several Atoms architectures.
 
-Do you mean the kernel link time or something else?
+I guess the point is that all processors from the Atom line (or at
+least the majority of them) will use the same rations etc as Baytrail,
+right?
 
-At least in some cases the dependency information won't be known at
-that time, so we need a way to record a dependency at the time it
-becomes visible to us anyway.
-
-> Constructing the device/resource dependency graph before the device ever
-> boots sounds interesting to me.
-
-That's only practical if you build the kernel for a specific device.
-If you want a generic binary that can work with multiple different
-devices, that graph may very well be different for each of them.
-
-Thanks,
-Rafael
+> Signed-off-by: Philippe Longepe <philippe.longepe@linux.intel.com>
+> ---
+>  drivers/cpufreq/intel_pstate.c | 56 +++++++++++++++++++++---------------------
+>  1 file changed, 28 insertions(+), 28 deletions(-)
+>
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index aa33b92..8618b02 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -34,10 +34,10 @@
+>  #include <asm/cpu_device_id.h>
+>  #include <asm/cpufeature.h>
+>
+> -#define BYT_RATIOS             0x66a
+> -#define BYT_VIDS               0x66b
+> -#define BYT_TURBO_RATIOS       0x66c
+> -#define BYT_TURBO_VIDS         0x66d
+> +#define ATOM_RATIOS            0x66a
+> +#define ATOM_VIDS              0x66b
+> +#define ATOM_TURBO_RATIOS      0x66c
+> +#define ATOM_TURBO_VIDS                0x66d
+>
+>  #define FRAC_BITS 8
+>  #define int_tofp(X) ((int64_t)(X) << FRAC_BITS)
+> @@ -502,31 +502,31 @@ static void intel_pstate_hwp_enable(struct cpudata *cpudata)
+>         wrmsrl_on_cpu(cpudata->cpu, MSR_PM_ENABLE, 0x1);
+>  }
+>
+> -static int byt_get_min_pstate(void)
+> +static int atom_get_min_pstate(void)
+>  {
+>         u64 value;
+>
+> -       rdmsrl(BYT_RATIOS, value);
+> +       rdmsrl(ATOM_RATIOS, value);
+>         return (value >> 8) & 0x7F;
+>  }
+>
+> -static int byt_get_max_pstate(void)
+> +static int atom_get_max_pstate(void)
+>  {
+>         u64 value;
+>
+> -       rdmsrl(BYT_RATIOS, value);
+> +       rdmsrl(ATOM_RATIOS, value);
+>         return (value >> 16) & 0x7F;
+>  }
+>
+> -static int byt_get_turbo_pstate(void)
+> +static int atom_get_turbo_pstate(void)
+>  {
+>         u64 value;
+>
+> -       rdmsrl(BYT_TURBO_RATIOS, value);
+> +       rdmsrl(ATOM_TURBO_RATIOS, value);
+>         return value & 0x7F;
+>  }
+>
+> -static void byt_set_pstate(struct cpudata *cpudata, int pstate)
+> +static void atom_set_pstate(struct cpudata *cpudata, int pstate)
+>  {
+>         u64 val;
+>         int32_t vid_fp;
+> @@ -551,10 +551,10 @@ static void byt_set_pstate(struct cpudata *cpudata, int pstate)
+>         wrmsrl_on_cpu(cpudata->cpu, MSR_IA32_PERF_CTL, val);
+>  }
+>
+> -#define BYT_BCLK_FREQS 5
+> -static int byt_freq_table[BYT_BCLK_FREQS] = { 833, 1000, 1333, 1167, 800};
+> +#define ATOM_BCLK_FREQS 5
+> +static int atom_freq_table[ATOM_BCLK_FREQS] = { 833, 1000, 1333, 1167, 800};
+>
+> -static int byt_get_scaling(void)
+> +static int atom_get_scaling(void)
+>  {
+>         u64 value;
+>         int i;
+> @@ -562,16 +562,16 @@ static int byt_get_scaling(void)
+>         rdmsrl(MSR_FSB_FREQ, value);
+>         i = value & 0x3;
+>
+> -       BUG_ON(i > BYT_BCLK_FREQS);
+> +       BUG_ON(i > ATOM_BCLK_FREQS);
+>
+> -       return byt_freq_table[i] * 100;
+> +       return atom_freq_table[i] * 100;
+>  }
+>
+> -static void byt_get_vid(struct cpudata *cpudata)
+> +static void atom_get_vid(struct cpudata *cpudata)
+>  {
+>         u64 value;
+>
+> -       rdmsrl(BYT_VIDS, value);
+> +       rdmsrl(ATOM_VIDS, value);
+>         cpudata->vid.min = int_tofp((value >> 8) & 0x7f);
+>         cpudata->vid.max = int_tofp((value >> 16) & 0x7f);
+>         cpudata->vid.ratio = div_fp(
+> @@ -579,7 +579,7 @@ static void byt_get_vid(struct cpudata *cpudata)
+>                 int_tofp(cpudata->pstate.max_pstate -
+>                         cpudata->pstate.min_pstate));
+>
+> -       rdmsrl(BYT_TURBO_VIDS, value);
+> +       rdmsrl(ATOM_TURBO_VIDS, value);
+>         cpudata->vid.turbo = value & 0x7f;
+>  }
+>
+> @@ -659,7 +659,7 @@ static struct cpu_defaults core_params = {
+>         },
+>  };
+>
+> -static struct cpu_defaults byt_params = {
+> +static struct cpu_defaults atom_params = {
+>         .pid_policy = {
+>                 .sample_rate_ms = 10,
+>                 .deadband = 0,
+> @@ -669,12 +669,12 @@ static struct cpu_defaults byt_params = {
+>                 .i_gain_pct = 4,
+>         },
+>         .funcs = {
+> -               .get_max = byt_get_max_pstate,
+> -               .get_min = byt_get_min_pstate,
+> -               .get_turbo = byt_get_turbo_pstate,
+> -               .set = byt_set_pstate,
+> -               .get_scaling = byt_get_scaling,
+> -               .get_vid = byt_get_vid,
+> +               .get_max = atom_get_max_pstate,
+> +               .get_min = atom_get_min_pstate,
+> +               .get_turbo = atom_get_turbo_pstate,
+> +               .set = atom_set_pstate,
+> +               .get_scaling = atom_get_scaling,
+> +               .get_vid = atom_get_vid,
+>         },
+>  };
+>
+> @@ -912,7 +912,7 @@ static void intel_pstate_timer_func(unsigned long __data)
+>  static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
+>         ICPU(0x2a, core_params),
+>         ICPU(0x2d, core_params),
+> -       ICPU(0x37, byt_params),
+> +       ICPU(0x37, atom_params),
+>         ICPU(0x3a, core_params),
+>         ICPU(0x3c, core_params),
+>         ICPU(0x3d, core_params),
+> @@ -921,7 +921,7 @@ static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
+>         ICPU(0x45, core_params),
+>         ICPU(0x46, core_params),
+>         ICPU(0x47, core_params),
+> -       ICPU(0x4c, byt_params),
+> +       ICPU(0x4c, atom_params),
+>         ICPU(0x4e, core_params),
+>         ICPU(0x4f, core_params),
+>         ICPU(0x5e, core_params),
+> --
+> 1.9.1
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
