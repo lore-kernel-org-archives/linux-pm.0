@@ -1,205 +1,109 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH] power: qcom_smbb: Add otg regulator for control of vbus
-Date: Mon, 26 Oct 2015 11:17:50 +0000
-Message-ID: <20151026111555.GA9740@leverpostej>
-References: <1445548337-14612-1-git-send-email-tim.bird@sonymobile.com>
+From: Michael Turquette <mturquette@baylibre.com>
+Subject: Re: [PATCH v2] cpufreq: arm_big_little: fix frequency check when bL switcher
+ is active
+Date: Mon, 26 Oct 2015 05:42:28 -0700
+Message-ID: <20151026124228.22783.64941@quantum>
+References: <1445421333.2916.13.camel@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:51456 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753394AbbJZLSM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 26 Oct 2015 07:18:12 -0400
-Content-Disposition: inline
-In-Reply-To: <1445548337-14612-1-git-send-email-tim.bird@sonymobile.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1445421333.2916.13.camel@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Jon Medhurst (Tixy)" <tixy@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tim Bird <tim.bird@sonymobile.com>
-Cc: robh+dt@kernel.org, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, sre@kernel.org, dwmw2@infradead.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, tbird20d@gmail.com, bjorn.andersson@sonymobile.com
 
-On Thu, Oct 22, 2015 at 02:12:17PM -0700, Tim Bird wrote:
-> Add a regulator to control the OTG chargepath switch.  The OTG
-> switch gets its power from pm8941_5vs1, and that should be expressed
-> as an usb_otg_in-supply property in the DT node for the charger driver.
-> The regulator name is "otg".  This is used by USB code to control VBUS
-> direction.
+Quoting Jon Medhurst (Tixy) (2015-10-21 02:55:33)
+> The check for correct frequency being set in bL_cpufreq_set_rate is
+> broken when the big.LITTLE switcher is active, for two reasons.
 > 
-> Signed-off-by: Tim Bird <tim.bird@sonymobile.com>
+> 1. The 'new_rate' variable gets overwritten before the test by the
+> code calculating the frequency of the old cluster.
+> 
+> 2. The frequency returned by bL_cpufreq_get_rate will be the virtual
+> frequency, not the actual one the intended version of new_rate contains.
+> 
+> This means the function always returns an error causing an endless
+> stream of: "cpufreq: __target_index: Failed to change cpu frequency: -5"
+> 
+> As the intent is to check for errors that clk_set_rate doesn't report
+> lets move the check to immediately after that and directly use
+> clk_get_rate, rather than the arm_big_little helpers which only confuse
+> matters. Also, update the comment to be hopefully clearer about the
+> purpose of the code.
+> 
+> Fixes: 0a95e630b49a ("cpufreq: arm_big_little: check if the frequency is set correctly")
+> 
+> Signed-off-by: Jon Medhurst <tixy@linaro.org>
+> Acked-by: Sudeep Holla <sudeep.holla@arm.com>
+
+Reviewed-by: Michael Turquette <mturquette@baylibre.com>
+
+Fixing exception paths for clk_change_rate is on the TODO list.
+
+Regards,
+Mike
+
 > ---
->  .../devicetree/bindings/power_supply/qcom_smbb.txt | 20 ++++++
->  drivers/power/qcom_smbb.c                          | 74 ++++++++++++++++++++++
->  2 files changed, 94 insertions(+)
-
-What tree is this based on? I couldn't spot this in origin/master.
-
-> diff --git a/Documentation/devicetree/bindings/power_supply/qcom_smbb.txt b/Documentation/devicetree/bindings/power_supply/qcom_smbb.txt
-> index 65b88fa..dc0f91d 100644
-> --- a/Documentation/devicetree/bindings/power_supply/qcom_smbb.txt
-> +++ b/Documentation/devicetree/bindings/power_supply/qcom_smbb.txt
-> @@ -105,6 +105,23 @@ PROPERTIES
->                 regulation must be done externally to fully comply with
->                 the JEITA safety guidelines if this flag is set.
+> 
+> Changes since V1:
+> - Check rate using clk_get_rate rather than disabling check when bL
+>   switcher active
+> 
+> Sudeep, I added your Ack from the last comment on the previous patch.
+> This final patch differs from what was discussed only in the commit
+> message and in source comment which is hopefully more clear and is
+> also satisfactory.
+> 
+> I've also added Michael Turquette's correct email to the CC this time,
+> rather than his old Linaro address which was bouncing.
+> 
+>  drivers/cpufreq/arm_big_little.c | 22 +++++++++++++---------
+>  1 file changed, 13 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+> index f1e42f8..c5d256c 100644
+> --- a/drivers/cpufreq/arm_big_little.c
+> +++ b/drivers/cpufreq/arm_big_little.c
+> @@ -149,6 +149,19 @@ bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
+>                         __func__, cpu, old_cluster, new_cluster, new_rate);
 >  
-> +- usb_otg_in-supply:
-> +  Usage: optional
-> +  Value type: <phandle>
-> +  Description: Reference to the regulator supplying power to the USB_OTG_IN
-> +               pin.
-
-s/_/-/ in property names, please.
-
+>         ret = clk_set_rate(clk[new_cluster], new_rate * 1000);
+> +       if (!ret) {
+> +               /*
+> +                * FIXME: clk_set_rate hasn't returned an error here however it
+> +                * may be that clk_change_rate failed due to hardware or
+> +                * firmware issues and wasn't able to report that due to the
+> +                * current design of the clk core layer. To work around this
+> +                * problem we will read back the clock rate and check it is
+> +                * correct. This needs to be removed once clk core is fixed.
+> +                */
+> +               if (clk_get_rate(clk[new_cluster]) != new_rate * 1000)
+> +                       ret = -EIO;
+> +       }
 > +
-> +child nodes:
-> +- otg:
-> +  Usage: optional
-> +  Description: This node is used to define a regulator which is used by
-> +               other parts of the system to control the direction of VBUS
-> +               voltage - specifically: whether to supply voltage to VBUS for
-> +               host mode operation of the OTG port. The driver registers a
-> +               regulator with this name, which can be looked up by string.
-> +               Alternatively, you can add a DT label, which can then be
-> +               referenced by phandle.
-> +
-
-We shouldn't specify the behaviours of the driver/linux here, just the
-hardware.
-
-I'm a little confused by how this is used, but I suspect that'll be
-cleared up when I see the rest of the binding that this is based on.
-
-Thanks,
-Mark.
-
->  EXAMPLE
->  charger@1000 {
->         compatible = "qcom,pm8941-charger";
-> @@ -128,4 +145,7 @@ charger@1000 {
+>         if (WARN_ON(ret)) {
+>                 pr_err("clk_set_rate failed: %d, new cluster: %d\n", ret,
+>                                 new_cluster);
+> @@ -189,15 +202,6 @@ bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
+>                 mutex_unlock(&cluster_lock[old_cluster]);
+>         }
 >  
->         qcom,fast-charge-current-limit = <1000000>;
->         qcom,dc-charge-current-limit = <1000000>;
-> +       usb_otg_in-supply = <&pm8941_5vs1>;
-> +
-> +       otg {};
->  };
-> diff --git a/drivers/power/qcom_smbb.c b/drivers/power/qcom_smbb.c
-> index 0dabfe8..fa2983a 100644
-> --- a/drivers/power/qcom_smbb.c
-> +++ b/drivers/power/qcom_smbb.c
-> @@ -34,6 +34,9 @@
->  #include <linux/power_supply.h>
->  #include <linux/regmap.h>
->  #include <linux/slab.h>
-> +#include <linux/regulator/driver.h>
-> +#include <linux/regulator/machine.h>
-> +#include <linux/regulator/of_regulator.h>
->  
->  #define SMBB_CHG_VMAX		0x040
->  #define SMBB_CHG_VSAFE		0x041
-> @@ -71,6 +74,8 @@
->  #define BTC_CTRL_HOT_EXT_N	BIT(0)
->  
->  #define SMBB_USB_IMAX		0x344
-> +#define SMBB_USB_OTG_CTL	0x348
-> +#define OTG_CTL_EN		BIT(0)
->  #define SMBB_USB_ENUM_TIMER_STOP 0x34e
->  #define ENUM_TIMER_STOP		BIT(0)
->  #define SMBB_USB_SEC_ACCESS	0x3d0
-> @@ -123,6 +128,9 @@ struct smbb_charger {
->  	struct power_supply *dc_psy;
->  	struct power_supply *bat_psy;
->  	struct regmap *regmap;
-> +
-> +	struct regulator_desc otg_rdesc;
-> +	struct regulator_dev *otg_reg;
->  };
->  
->  static int smbb_vbat_weak_fn(unsigned int index)
-> @@ -778,12 +786,56 @@ static const struct power_supply_desc dc_psy_desc = {
->  	.property_is_writeable = smbb_charger_writable_property,
->  };
->  
-> +static int smbb_chg_otg_enable(struct regulator_dev *rdev)
-> +{
-> +	struct smbb_charger *chg = rdev_get_drvdata(rdev);
-> +	int rc;
-> +
-> +	rc = regmap_update_bits(chg->regmap, chg->addr + SMBB_USB_OTG_CTL,
-> +				OTG_CTL_EN, OTG_CTL_EN);
-> +	if (rc)
-> +		dev_err(chg->dev, "failed to update OTG_CTL\n");
-> +	return rc;
-> +}
-> +
-> +static int smbb_chg_otg_disable(struct regulator_dev *rdev)
-> +{
-> +	struct smbb_charger *chg = rdev_get_drvdata(rdev);
-> +	int rc;
-> +
-> +	rc = regmap_update_bits(chg->regmap, chg->addr + SMBB_USB_OTG_CTL,
-> +				OTG_CTL_EN, 0);
-> +	if (rc)
-> +		dev_err(chg->dev, "failed to update OTG_CTL\n");
-> +	return rc;
-> +}
-> +
-> +static int smbb_chg_otg_is_enabled(struct regulator_dev *rdev)
-> +{
-> +	struct smbb_charger *chg = rdev_get_drvdata(rdev);
-> +	unsigned int value = 0;
-> +	int rc;
-> +
-> +	rc = regmap_read(chg->regmap, chg->addr + SMBB_USB_OTG_CTL, &value);
-> +	if (rc)
-> +		dev_err(chg->dev, "failed to read OTG_CTL\n");
-> +
-> +	return !!(value & OTG_CTL_EN);
-> +}
-> +
-> +static struct regulator_ops smbb_chg_otg_ops = {
-> +	.enable = smbb_chg_otg_enable,
-> +	.disable = smbb_chg_otg_disable,
-> +	.is_enabled = smbb_chg_otg_is_enabled,
-> +};
-> +
->  static int smbb_charger_probe(struct platform_device *pdev)
->  {
->  	struct power_supply_config bat_cfg = {};
->  	struct power_supply_config usb_cfg = {};
->  	struct power_supply_config dc_cfg = {};
->  	struct smbb_charger *chg;
-> +	struct regulator_config config = { };
->  	int rc, i;
->  
->  	chg = devm_kzalloc(&pdev->dev, sizeof(*chg), GFP_KERNEL);
-> @@ -884,6 +936,28 @@ static int smbb_charger_probe(struct platform_device *pdev)
->  		}
->  	}
->  
-> +	/*
-> +	 * otg regulator is used to control VBUS voltage direction
-> +	 * when USB switches between host and gadget mode
-> +	 */
-> +	chg->otg_rdesc.id = -1;
-> +	chg->otg_rdesc.name = "otg";
-> +	chg->otg_rdesc.ops = &smbb_chg_otg_ops;
-> +	chg->otg_rdesc.owner = THIS_MODULE;
-> +	chg->otg_rdesc.type = REGULATOR_VOLTAGE;
-> +	chg->otg_rdesc.supply_name = "usb_otg_in";
-> +	chg->otg_rdesc.fixed_uV = 5000000;
-> +	chg->otg_rdesc.n_voltages = 1;
-> +	chg->otg_rdesc.of_match = "otg";
-> +
-> +	config.dev = &pdev->dev;
-> +	config.driver_data = chg;
-> +
-> +	chg->otg_reg = devm_regulator_register(&pdev->dev, &chg->otg_rdesc,
-> +					       &config);
-> +	if (IS_ERR(chg->otg_reg))
-> +		return PTR_ERR(chg->otg_reg);
-> +
->  	chg->jeita_ext_temp = of_property_read_bool(pdev->dev.of_node,
->  			"qcom,jeita-extended-temp-range");
+> -       /*
+> -        * FIXME: clk_set_rate has to handle the case where clk_change_rate
+> -        * can fail due to hardware or firmware issues. Until the clk core
+> -        * layer is fixed, we can check here. In most of the cases we will
+> -        * be reading only the cached value anyway. This needs to  be removed
+> -        * once clk core is fixed.
+> -        */
+> -       if (bL_cpufreq_get_rate(cpu) != new_rate)
+> -               return -EIO;
+>         return 0;
+>  }
 >  
 > -- 
-> 1.8.2.2
+> 2.1.4
+> 
+> 
 > 
