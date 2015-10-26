@@ -1,66 +1,104 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [GIT PULL] On-demand device probing
-Date: Mon, 26 Oct 2015 10:12:24 +0900
-Message-ID: <20151026011224.GV29919@sirena.org.uk>
-References: <20151018192931.GY14956@sirena.org.uk>
- <562A5602.7000208@sonymobile.com>
- <CAL_JsqLNSM=+j2r9HPcbSzsZrgnGEY3=kv21EXxisKwP5+57ag@mail.gmail.com>
- <24100858.2KIS8Y2npV@vostro.rjw.lan>
- <20151024220648.GR29919@sirena.org.uk>
- <CAJZ5v0hPVu7AL8zBdU4Kb7+MVfYv0mTa43RhnCyyPR+RKDbhLA@mail.gmail.com>
+From: Fengguang Wu <fengguang.wu@intel.com>
+Subject: Re: [PATCH 2/3][v2] ACPI: Using correct irq when waiting for events
+Date: Mon, 26 Oct 2015 09:22:05 +0800
+Message-ID: <20151026012205.GB26877@wfg-t540p.sh.intel.com>
+References: <1445706156-20203-1-git-send-email-yu.c.chen@intel.com>
+ <201510250151.vYKQmll5%fengguang.wu@intel.com>
+ <36DF59CE26D8EE47B0655C516E9CE6402865EE80@shsmsx102.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="CSNFvL6ilyiKL/Hs"
-Return-path: <linux-clk-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0hPVu7AL8zBdU4Kb7+MVfYv0mTa43RhnCyyPR+RKDbhLA@mail.gmail.com>
-Sender: linux-clk-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tim Bird <tim.bird@sonymobile.com>, "frowand.list@gmail.com" <frowand.list@gmail.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Russell King <linux@arm.linux.org.uk>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Vinod Koul <vinod.koul@intel.com>, Dan Williams <dan.j.williams@intel.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, Terje =?iso-8859-1?Q?Bergstr=F6m?= <tbergstrom@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Wolfram Sang <wsa@the-dreams.de>, Grant Likely <grant.likely@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Dmitry
+In-Reply-To: <36DF59CE26D8EE47B0655C516E9CE6402865EE80@shsmsx102.ccr.corp.intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Chen, Yu C" <yu.c.chen@intel.com>
+Cc: "kbuild-all@01.org" <kbuild-all@01.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "lenb@kernel.org" <lenb@kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, "Zheng, Lv" <lv.zheng@intel.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>, "Li, Philip" <philip.li@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
+On Sun, Oct 25, 2015 at 10:08:29AM +0800, Chen, Yu C wrote:
+> This should not be a valid warning IMO, 
+> because PATCH 2/3 is  based on PATCH 1/3,
+> and the warning of implicit declaration is defined 
+> in PATCH 1/3.
 
---CSNFvL6ilyiKL/Hs
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Yes sorry, the robot treats the patchset as 3 independent patches:
 
-On Sun, Oct 25, 2015 at 02:54:39PM +0100, Rafael J. Wysocki wrote:
-> On Sun, Oct 25, 2015 at 12:06 AM, Mark Brown <broonie@kernel.org> wrote:
+2754 N L Oct 25 Chen Yu         (  34:0) [PATCH 2/3][v2] ACPI: Using correct irq when waiting for events                                                               
+2756 N L Oct 25 Chen Yu         (  52:0) [PATCH 3/3][v2] ACPI / PM: Fix incorrect wakeup irq setting before suspend-to-idle
+2757 N L Oct 25 Chen Yu         (  75:0) [PATCH 1/3][v2] ACPI: Using correct irq when uninstalling acpi irq handler
 
-> > There's also the understanding people had that the order things get
-> > bound changes the ordering for some of the other cases (perhaps it's a
-> > good idea to do that, it seems likely to be sensible?).
+And the root cause is, the 3 patches are likely sent one by one
+_out of order_. And there is no in-reply-to field to help reorder
+them into a logical patchset.
 
-> But it really doesn't do that.  Also making it do so doesn't help much
-> in the cases where things can happen asynchronously (system
-> suspend/resume, runtime PM).
+Thanks,
+Fengguang
 
-Yeah, people seem to have that impression though. :(
-
-> If, instead, there was a way to specify a functional dependency at the
-> device registration time, it might be used to change the order of
-> everything relevant, including probe.  That should help to reduce the
-> noise you're referring to.
-
-This links back to the idea of having generic support for pre-probe
-actions which is also generally useful (the ability to do things like
-power on regulators for devices on enumerable buses so they can be
-enumerated as standard). =20
-
---CSNFvL6ilyiKL/Hs
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJWLX34AAoJECTWi3JdVIfQxWcH/1aCaKRkQgKa9vAZbBaq2sSf
-30EqKg/SLlEPyozfvQqz8QTpxr1XYD4iJ3qT3048aeuYApT7TZVZUMpSpeLuuWcN
-Cmi76xZim7KYTRuT+iFewFse+gaKJyl1zpU+2O0R4VpWxUe2fxwJY159CgqS8/cO
-rv3tQ03svICO5hrXlW9tS/Z/hoGZe9FQiiWYvmvdcM3XEKYkKY9m8B0B64OJ/8Sp
-WmN+EQ1sevAGuMoa3EWIZDhYIbICzBSHA8WLWolALOmEmFEHiz/fjBSf5rYaD42U
-68oNScKwVepB4LeewE+syAzBFVMow0SfbpI6dfbwaiS64BNVbMzP5X5Jq04MZMY=
-=w1Sh
------END PGP SIGNATURE-----
-
---CSNFvL6ilyiKL/Hs--
+> > -----Original Message-----
+> > From: lkp
+> > Sent: Sunday, October 25, 2015 1:19 AM
+> > To: Chen, Yu C
+> > Cc: kbuild-all@01.org; rjw@rjwysocki.net; lenb@kernel.org; Zhang, Rui;
+> > Zheng, Lv; linux-acpi@vger.kernel.org; linux-kernel@vger.kernel.org; linux-
+> > pm@vger.kernel.org; Chen, Yu C; stable@vger.kernel.org
+> > Subject: Re: [PATCH 2/3][v2] ACPI: Using correct irq when waiting for events
+> > 
+> > Hi Chen,
+> > 
+> > [auto build test ERROR on pm/linux-next -- if it's inappropriate base, please
+> > suggest rules for selecting the more suitable base]
+> > 
+> > url:    https://github.com/0day-ci/linux/commits/Chen-Yu/ACPI-Using-
+> > correct-irq-when-waiting-for-events/20151025-010210
+> > config: x86_64-randconfig-x015-201543 (attached as .config)
+> > reproduce:
+> >         # save the attached .config to linux build tree
+> >         make ARCH=x86_64
+> > 
+> > All error/warnings (new ones prefixed by >>):
+> > 
+> >    In file included from include/uapi/linux/stddef.h:1:0,
+> >                     from include/linux/stddef.h:4,
+> >                     from include/uapi/linux/posix_types.h:4,
+> >                     from include/uapi/linux/types.h:13,
+> >                     from include/linux/types.h:5,
+> >                     from include/linux/list.h:4,
+> >                     from include/linux/module.h:9,
+> >                     from drivers/acpi/osl.c:26:
+> >    drivers/acpi/osl.c: In function 'acpi_os_wait_events_complete':
+> > >> drivers/acpi/osl.c:1183:6: error: implicit declaration of function
+> > 'acpi_sci_irq_valid' [-Werror=implicit-function-declaration]
+> >      if (acpi_sci_irq_valid())
+> >          ^
+> >    include/linux/compiler.h:147:28: note: in definition of macro '__trace_if'
+> >      if (__builtin_constant_p((cond)) ? !!(cond) :   \
+> >                                ^
+> > >> drivers/acpi/osl.c:1183:2: note: in expansion of macro 'if'
+> >      if (acpi_sci_irq_valid())
+> >      ^
+> > >> drivers/acpi/osl.c:1184:23: error: 'acpi_sci_irq' undeclared (first use in this
+> > function)
+> >       synchronize_hardirq(acpi_sci_irq);
+> >                           ^
+> >    drivers/acpi/osl.c:1184:23: note: each undeclared identifier is reported only
+> > once for each function it appears in
+> >    cc1: some warnings being treated as errors
+> > 
+> > vim +/acpi_sci_irq_valid +1183 drivers/acpi/osl.c
+> > 
+> >   1177	void acpi_os_wait_events_complete(void)
+> >   1178	{
+> >   1179		/*
+> >   1180		 * Make sure the GPE handler or the fixed event handler is
+> > not used
+> >   1181		 * on another CPU after removal.
+> >   1182		 */
+> > > 1183		if (acpi_sci_irq_valid())
+> > > 1184			synchronize_hardirq(acpi_sci_irq);
+> >   1185		flush_workqueue(kacpid_wq);
+> >   1186		flush_workqueue(kacpi_notify_wq);
+> >   1187	}
+> > 
+> > ---
+> > 0-DAY kernel test infrastructure                Open Source Technology Center
+> > https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
