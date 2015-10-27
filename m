@@ -1,7 +1,7 @@
 From: =?UTF-8?q?B=C3=A1lint=20Czobor?= <czoborbalint@gmail.com>
-Subject: [PATCH 31/70] cpufreq: interactive: adjust load for changes in speed
-Date: Tue, 27 Oct 2015 18:30:19 +0100
-Message-ID: <1445967059-6897-31-git-send-email-czoborbalint@gmail.com>
+Subject: [PATCH 30/70] cpufreq: interactive: remove load since last speed change
+Date: Tue, 27 Oct 2015 18:30:18 +0100
+Message-ID: <1445967059-6897-30-git-send-email-czoborbalint@gmail.com>
 References: <1445967059-6897-1-git-send-email-czoborbalint@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -15,201 +15,106 @@ List-Id: linux-pm@vger.kernel.org
 
 =46rom: Todd Poynor <toddpoynor@google.com>
 
-Add notifier for speed transitions.  Keep a count of CPU active
-microseconds times current frequency, converted to a percentage relativ=
-e
-to the current frequency when load is evaluated.
+The longer-term load since last speed change isn't terribly useful,
+may delay recognition of dropping load, and would need forthcoming
+changes to adjust load for changing CPU speeds.  Drop it.
 
-Change-Id: I5c27adb11081c50490219784ca57cc46e97fc28c
+Change-Id: Ic3cbb0542cc3484617031787e03ed9bdd632dec1
 Signed-off-by: Todd Poynor <toddpoynor@google.com>
 Signed-off-by: B=C3=A1lint Czobor <czoborbalint@gmail.com>
 ---
- drivers/cpufreq/cpufreq_interactive.c |   87 +++++++++++++++++++++++++=
-++------
- 1 file changed, 71 insertions(+), 16 deletions(-)
+ drivers/cpufreq/cpufreq_interactive.c |   34 ++++---------------------=
+--------
+ 1 file changed, 4 insertions(+), 30 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq_interactive.c b/drivers/cpufreq/cp=
 ufreq_interactive.c
-index 3d8e7b4..d0d51ee 100644
+index 6ea77a0..3d8e7b4 100644
 --- a/drivers/cpufreq/cpufreq_interactive.c
 +++ b/drivers/cpufreq/cpufreq_interactive.c
-@@ -41,8 +41,11 @@ static atomic_t active_count =3D ATOMIC_INIT(0);
- struct cpufreq_interactive_cpuinfo {
- 	struct timer_list cpu_timer;
+@@ -43,8 +43,6 @@ struct cpufreq_interactive_cpuinfo {
  	int timer_idlecancel;
-+	spinlock_t load_lock; /* protects the next 4 fields */
  	u64 time_in_idle;
  	u64 time_in_idle_timestamp;
-+	u64 cputime_speedadj;
-+	u64 cputime_speedadj_timestamp;
+-	u64 target_set_time;
+-	u64 target_set_time_in_idle;
  	struct cpufreq_policy *policy;
  	struct cpufreq_frequency_table *freq_table;
  	unsigned int target_freq;
-@@ -121,9 +124,13 @@ static void cpufreq_interactive_timer_resched(
- {
- 	mod_timer_pinned(&pcpu->cpu_timer,
- 			 jiffies + usecs_to_jiffies(timer_rate));
-+	spin_lock(&pcpu->load_lock);
- 	pcpu->time_in_idle =3D
- 		get_cpu_idle_time_us(smp_processor_id(),
- 				     &pcpu->time_in_idle_timestamp);
-+	pcpu->cputime_speedadj =3D 0;
-+	pcpu->cputime_speedadj_timestamp =3D pcpu->time_in_idle_timestamp;
-+	spin_unlock(&pcpu->load_lock);
- }
-=20
- static unsigned int freq_to_targetload(unsigned int freq)
-@@ -148,10 +155,9 @@ static unsigned int freq_to_targetload(unsigned in=
-t freq)
-  */
-=20
- static unsigned int choose_freq(
--	struct cpufreq_interactive_cpuinfo *pcpu, unsigned int curload)
-+	struct cpufreq_interactive_cpuinfo *pcpu, unsigned int loadadjfreq)
- {
- 	unsigned int freq =3D pcpu->policy->cur;
--	unsigned int loadadjfreq =3D freq * curload;
- 	unsigned int prevfreq, freqmin, freqmax;
- 	unsigned int tl;
- 	int index;
-@@ -230,16 +236,36 @@ static unsigned int choose_freq(
- 	return freq;
- }
-=20
--static void cpufreq_interactive_timer(unsigned long data)
-+static u64 update_load(int cpu)
- {
-+	struct cpufreq_interactive_cpuinfo *pcpu =3D &per_cpu(cpuinfo, cpu);
- 	u64 now;
-+	u64 now_idle;
+@@ -238,7 +236,6 @@ static void cpufreq_interactive_timer(unsigned long=
+ data)
  	unsigned int delta_idle;
  	unsigned int delta_time;
-+	u64 active_time;
-+
-+	now_idle =3D get_cpu_idle_time_us(cpu, &now);
-+	delta_idle =3D (unsigned int)(now_idle - pcpu->time_in_idle);
-+	delta_time =3D (unsigned int)(now - pcpu->time_in_idle_timestamp);
-+	active_time =3D delta_time - delta_idle;
-+	pcpu->cputime_speedadj +=3D active_time * pcpu->policy->cur;
-+
-+	pcpu->time_in_idle =3D now_idle;
-+	pcpu->time_in_idle_timestamp =3D now;
-+	return now;
-+}
-+
-+static void cpufreq_interactive_timer(unsigned long data)
-+{
-+	u64 now;
-+	unsigned int delta_time;
-+	u64 cputime_speedadj;
  	int cpu_load;
+-	int load_since_change;
  	struct cpufreq_interactive_cpuinfo *pcpu =3D
  		&per_cpu(cpuinfo, data);
--	u64 now_idle;
- 	unsigned int new_freq;
-+	unsigned int loadadjfreq;
- 	unsigned int index;
- 	unsigned long flags;
+ 	u64 now_idle;
+@@ -266,23 +263,6 @@ static void cpufreq_interactive_timer(unsigned lon=
+g data)
+ 	else
+ 		cpu_load =3D 100 * (delta_time - delta_idle) / delta_time;
 =20
-@@ -248,26 +274,24 @@ static void cpufreq_interactive_timer(unsigned lo=
-ng data)
- 	if (!pcpu->governor_enabled)
- 		goto exit;
-=20
--	now_idle =3D get_cpu_idle_time_us(data, &now);
--	delta_idle =3D (unsigned int)(now_idle - pcpu->time_in_idle);
--	delta_time =3D (unsigned int)(now - pcpu->time_in_idle_timestamp);
-+	spin_lock(&pcpu->load_lock);
-+	now =3D update_load(data);
-+	delta_time =3D (unsigned int)(now - pcpu->cputime_speedadj_timestamp)=
-;
-+	cputime_speedadj =3D pcpu->cputime_speedadj;
-+	spin_unlock(&pcpu->load_lock);
-=20
--	/*
--	 * If timer ran less than 1ms after short-term sample started, retry.
--	 */
--	if (delta_time < 1000)
-+	if (WARN_ON_ONCE(!delta_time))
- 		goto rearm;
-=20
--	if (delta_idle > delta_time)
--		cpu_load =3D 0;
+-	delta_idle =3D (unsigned int)(now_idle - pcpu->target_set_time_in_idl=
+e);
+-	delta_time =3D (unsigned int)(now - pcpu->target_set_time);
+-
+-	if ((delta_time =3D=3D 0) || (delta_idle > delta_time))
+-		load_since_change =3D 0;
 -	else
--		cpu_load =3D 100 * (delta_time - delta_idle) / delta_time;
-+	do_div(cputime_speedadj, delta_time);
-+	loadadjfreq =3D (unsigned int)cputime_speedadj * 100;
-+	cpu_load =3D loadadjfreq / pcpu->target_freq;
-=20
+-		load_since_change =3D
+-			100 * (delta_time - delta_idle) / delta_time;
+-
+-	/*
+-	 * Choose greater of short-term load (since last idle timer
+-	 * started or timer function re-armed itself) or long-term load
+-	 * (since last frequency change).
+-	 */
+-	if (load_since_change > cpu_load)
+-		cpu_load =3D load_since_change;
+-
  	if ((cpu_load >=3D go_hispeed_load || boost_val) &&
  	    pcpu->target_freq < hispeed_freq)
  		new_freq =3D hispeed_freq;
- 	else
--		new_freq =3D choose_freq(pcpu, cpu_load);
-+		new_freq =3D choose_freq(pcpu, loadadjfreq);
+@@ -335,8 +315,6 @@ static void cpufreq_interactive_timer(unsigned long=
+ data)
 =20
- 	if (pcpu->target_freq >=3D hispeed_freq &&
- 	    new_freq > pcpu->target_freq &&
-@@ -498,6 +522,32 @@ static void cpufreq_interactive_boost(void)
- 		wake_up_process(speedchange_task);
- }
+ 	trace_cpufreq_interactive_target(data, cpu_load, pcpu->target_freq,
+ 					 pcpu->policy->cur, new_freq);
+-	pcpu->target_set_time_in_idle =3D now_idle;
+-	pcpu->target_set_time =3D now;
 =20
-+static int cpufreq_interactive_notifier(
-+	struct notifier_block *nb, unsigned long val, void *data)
-+{
-+	struct cpufreq_freqs *freq =3D data;
-+	struct cpufreq_interactive_cpuinfo *pcpu;
-+	int cpu;
-+
-+	if (val =3D=3D CPUFREQ_POSTCHANGE) {
-+		pcpu =3D &per_cpu(cpuinfo, freq->cpu);
-+
-+		for_each_cpu(cpu, pcpu->policy->cpus) {
-+			struct cpufreq_interactive_cpuinfo *pjcpu =3D
-+				&per_cpu(cpuinfo, cpu);
-+			spin_lock(&pjcpu->load_lock);
-+			update_load(cpu);
-+			spin_unlock(&pjcpu->load_lock);
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static struct notifier_block cpufreq_notifier_block =3D {
-+	.notifier_call =3D cpufreq_interactive_notifier,
-+};
-+
- static ssize_t show_target_loads(
- 	struct kobject *kobj, struct attribute *attr, char *buf)
- {
-@@ -817,6 +867,8 @@ static int cpufreq_governor_interactive(struct cpuf=
-req_policy *policy,
- 			return rc;
+ 	pcpu->target_freq =3D new_freq;
+ 	spin_lock_irqsave(&speedchange_cpumask_lock, flags);
+@@ -500,9 +478,8 @@ static void cpufreq_interactive_boost(void)
+ 		if (pcpu->target_freq < hispeed_freq) {
+ 			pcpu->target_freq =3D hispeed_freq;
+ 			cpumask_set_cpu(i, &speedchange_cpumask);
+-			pcpu->target_set_time_in_idle =3D
+-				get_cpu_idle_time_us(i, &pcpu->target_set_time);
+-			pcpu->hispeed_validate_time =3D pcpu->target_set_time;
++			pcpu->hispeed_validate_time =3D
++				ktime_to_us(ktime_get());
+ 			anyboost =3D 1;
+ 		}
 =20
- 		idle_notifier_register(&cpufreq_interactive_idle_nb);
-+		cpufreq_register_notifier(
-+			&cpufreq_notifier_block, CPUFREQ_TRANSITION_NOTIFIER);
- 		break;
-=20
- 	case CPUFREQ_GOV_STOP:
-@@ -830,6 +882,8 @@ static int cpufreq_governor_interactive(struct cpuf=
-req_policy *policy,
- 		if (atomic_dec_return(&active_count) > 0)
- 			return 0;
-=20
-+		cpufreq_unregister_notifier(
-+			&cpufreq_notifier_block, CPUFREQ_TRANSITION_NOTIFIER);
- 		idle_notifier_unregister(&cpufreq_interactive_idle_nb);
- 		sysfs_remove_group(cpufreq_global_kobject,
- 				&interactive_attr_group);
-@@ -868,6 +922,7 @@ static int __init cpufreq_interactive_init(void)
- 			init_timer_deferrable(&pcpu->cpu_timer);
- 		pcpu->cpu_timer.function =3D cpufreq_interactive_timer;
- 		pcpu->cpu_timer.data =3D i;
-+		spin_lock_init(&pcpu->load_lock);
- 	}
-=20
- 	spin_lock_init(&target_loads_lock);
+@@ -815,14 +792,11 @@ static int cpufreq_governor_interactive(struct cp=
+ufreq_policy *policy,
+ 			pcpu->policy =3D policy;
+ 			pcpu->target_freq =3D policy->cur;
+ 			pcpu->freq_table =3D freq_table;
+-			pcpu->target_set_time_in_idle =3D
+-				get_cpu_idle_time_us(j,
+-					     &pcpu->target_set_time);
+ 			pcpu->floor_freq =3D pcpu->target_freq;
+ 			pcpu->floor_validate_time =3D
+-				pcpu->target_set_time;
++				ktime_to_us(ktime_get());
+ 			pcpu->hispeed_validate_time =3D
+-				pcpu->target_set_time;
++				pcpu->floor_validate_time;
+ 			pcpu->governor_enabled =3D 1;
+ 			smp_wmb();
+ 			pcpu->cpu_timer.expires =3D
 --=20
 1.7.9.5
