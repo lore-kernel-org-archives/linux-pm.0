@@ -1,116 +1,105 @@
 From: Marc Titinger <mtitinger@baylibre.com>
-Subject: [RFC v3 5/7] drivers: cpu-pd: allow calling of_cpu_pd_init from platform code.
-Date: Tue, 27 Oct 2015 18:40:54 +0100
-Message-ID: <1445967656-28292-6-git-send-email-mtitinger+renesas@baylibre.com>
+Subject: [RFC v3 3/7] arm64: dts: Add idle-states for Juno
+Date: Tue, 27 Oct 2015 18:40:52 +0100
+Message-ID: <1445967656-28292-4-git-send-email-mtitinger+renesas@baylibre.com>
 References: <1445967656-28292-1-git-send-email-mtitinger+renesas@baylibre.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f173.google.com ([209.85.212.173]:35292 "EHLO
-	mail-wi0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965777AbbJ0Rlc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Oct 2015 13:41:32 -0400
-Received: by wicll6 with SMTP id ll6so170514549wic.0
-        for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2015 10:41:31 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1445967656-28292-1-git-send-email-mtitinger+renesas@baylibre.com>
 In-Reply-To: <20151019205825.GA82426@linaro.org>
 References: <20151019205825.GA82426@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: lina.iyer@linaro.org
-Cc: rjw@rjwysocki.net, khilman@kernel.org, ahaslam@baylibre.com, bcousson@baylibre.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Marc Titinger <mtitinger@baylibre.com>, Marc Titinger <mtitinger+renesas@baylibre.com>
+Cc: rjw@rjwysocki.net, khilman@kernel.org, ahaslam@baylibre.com, bcousson@baylibre.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jon Medhurst <tixy@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-From: Marc Titinger <mtitinger@baylibre.com>
+From: Jon Medhurst <tixy@linaro.org>
 
-re-instate a two step init, first register the CPU-power domains, then
-attach the CPUs, because CPU ordering does not match cluster/PD boundaries.
-
-Signed-off-by: Marc Titinger <mtitinger+renesas@baylibre.com>
+Signed-off-by: Jon Medhurst <tixy@linaro.org>
 ---
- drivers/base/power/cpu-pd.c | 29 ++++++++++++-----------------
- include/linux/cpu-pd.h      |  2 ++
- 2 files changed, 14 insertions(+), 17 deletions(-)
+ arch/arm64/boot/dts/arm/juno.dts | 29 +++++++++++++++++++++++++++++
+ 1 file changed, 29 insertions(+)
 
-diff --git a/drivers/base/power/cpu-pd.c b/drivers/base/power/cpu-pd.c
-index eddee98..701a68f 100644
---- a/drivers/base/power/cpu-pd.c
-+++ b/drivers/base/power/cpu-pd.c
-@@ -8,8 +8,6 @@
-  * published by the Free Software Foundation.
-  */
+diff --git a/arch/arm64/boot/dts/arm/juno.dts b/arch/arm64/boot/dts/arm/juno.dts
+index 53442b5..b3fcee8 100644
+--- a/arch/arm64/boot/dts/arm/juno.dts
++++ b/arch/arm64/boot/dts/arm/juno.dts
+@@ -60,6 +60,29 @@
+ 			};
+ 		};
  
--#define DEBUG
--
- #include <linux/kernel.h>
- #include <linux/export.h>
- #include <linux/cpu.h>
-@@ -160,8 +158,6 @@ static int cpu_hotplug(struct notifier_block *nb,
- int of_register_cpu_pm_domain(struct device_node *dn,
- 		struct cpu_pm_domain *pd)
- {
--	int ret;
--
- 	if (!pd || !pd->genpd)
- 		return -EINVAL;
- 
-@@ -187,14 +183,6 @@ int of_register_cpu_pm_domain(struct device_node *dn,
- 	pm_genpd_init_simple(pd->genpd, &simple_qos_governor, false);
- 	of_genpd_add_provider_simple(dn, pd->genpd);
- 
--	/* Attach the CPUs to the CPU PM domain */
--	ret = of_pm_domain_attach_cpus();
--	if (ret) {
--		of_genpd_del_provider(dn);
--		return ret;
--	}
--
--	hotcpu_notifier(cpu_hotplug, 0)
- 	return 0;
- }
- EXPORT_SYMBOL(of_register_cpu_pm_domain);
-@@ -245,21 +233,28 @@ int of_init_cpu_pm_domain(struct device_node *dn, struct cpu_pm_ops *ops)
- EXPORT_SYMBOL(of_init_cpu_pm_domain);
- 
- 
--static int __init of_cpu_pd_init(void)
-+int __init of_cpu_pd_init(const char *compatible)
- {
- 	struct device_node *dn;
- 	int ret;
- 
--	for_each_compatible_node(dn, NULL, "cpu,pd") {
-+	if (!compatible)
-+		return -EINVAL;
++		idle-states {
 +
-+	for_each_compatible_node(dn, NULL, compatible) {
- 
- 		if (!of_device_is_available(dn))
- 			continue;
- 
- 		ret = of_init_cpu_pm_domain(dn, NULL);
--		if (!ret)
-+		if (ret)
- 			return ret;
- 
- 	}
--	return 0;
++			entry-method = "arm,psci";
 +
-+	ret = of_pm_domain_attach_cpus();
-+	if (!ret)
-+		hotcpu_notifier(cpu_hotplug, 0);
++			CPU_SLEEP_0: cpu-sleep-0 {
++				compatible = "arm,idle-state";
++				arm,psci-suspend-param = <0x0010000>;
++				local-timer-stop;
++				entry-latency-us = <100>;
++				exit-latency-us = <250>;
++				min-residency-us = <2000>;
++			};
 +
-+	return ret;
- }
--device_initcall(of_cpu_pd_init);
-diff --git a/include/linux/cpu-pd.h b/include/linux/cpu-pd.h
-index 9ae6f5b..f3066d0 100644
---- a/include/linux/cpu-pd.h
-+++ b/include/linux/cpu-pd.h
-@@ -32,4 +32,6 @@ extern int of_register_cpu_pm_domain(struct device_node *dn,
- extern int of_init_cpu_pm_domain(struct device_node *dn,
- 		struct cpu_pm_ops *ops);
++			CLUSTER_SLEEP_0: cluster-sleep-0 {
++				compatible = "arm,idle-state";
++				arm,psci-suspend-param = <0x1010000>;
++				local-timer-stop;
++				entry-latency-us = <800>;
++				exit-latency-us = <700>;
++				min-residency-us = <2500>;
++			};
++		};
++
+ 		A57_0: cpu@0 {
+ 			compatible = "arm,cortex-a57","arm,armv8";
+ 			reg = <0x0 0x0>;
+@@ -67,6 +90,7 @@
+ 			enable-method = "psci";
+ 			next-level-cache = <&A57_L2>;
+ 			clocks = <&scpi_dvfs 0>;
++			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
+ 		};
  
-+extern int __init of_cpu_pd_init(const char *compatible);
-+
- #endif /* __CPU_PD_H__ */
+ 		A57_1: cpu@1 {
+@@ -76,6 +100,7 @@
+ 			enable-method = "psci";
+ 			next-level-cache = <&A57_L2>;
+ 			clocks = <&scpi_dvfs 0>;
++			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
+ 		};
+ 
+ 		A53_0: cpu@100 {
+@@ -85,6 +110,7 @@
+ 			enable-method = "psci";
+ 			next-level-cache = <&A53_L2>;
+ 			clocks = <&scpi_dvfs 1>;
++			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
+ 		};
+ 
+ 		A53_1: cpu@101 {
+@@ -94,6 +120,7 @@
+ 			enable-method = "psci";
+ 			next-level-cache = <&A53_L2>;
+ 			clocks = <&scpi_dvfs 1>;
++			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
+ 		};
+ 
+ 		A53_2: cpu@102 {
+@@ -103,6 +130,7 @@
+ 			enable-method = "psci";
+ 			next-level-cache = <&A53_L2>;
+ 			clocks = <&scpi_dvfs 1>;
++			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
+ 		};
+ 
+ 		A53_3: cpu@103 {
+@@ -112,6 +140,7 @@
+ 			enable-method = "psci";
+ 			next-level-cache = <&A53_L2>;
+ 			clocks = <&scpi_dvfs 1>;
++			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
+ 		};
+ 
+ 		A57_L2: l2-cache0 {
 -- 
 1.9.1
-
