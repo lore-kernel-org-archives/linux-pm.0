@@ -1,7 +1,7 @@
 From: =?UTF-8?q?B=C3=A1lint=20Czobor?= <czoborbalint@gmail.com>
-Subject: [PATCH 36/70] cpufreq: interactive: fix race on timer restart on governor start
-Date: Tue, 27 Oct 2015 18:30:24 +0100
-Message-ID: <1445967059-6897-36-git-send-email-czoborbalint@gmail.com>
+Subject: [PATCH 34/70] cpufreq: interactive: fix boosting logic
+Date: Tue, 27 Oct 2015 18:30:22 +0100
+Message-ID: <1445967059-6897-34-git-send-email-czoborbalint@gmail.com>
 References: <1445967059-6897-1-git-send-email-czoborbalint@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -15,47 +15,49 @@ List-Id: linux-pm@vger.kernel.org
 
 =46rom: Todd Poynor <toddpoynor@google.com>
 
-Starting the governor, or restarting on a hotplugged-in CPU, can race
-with the timer start in idle, triggering a BUG on timer already pending=
-=2E
-Start the timer before setting the enable flag, and use enable_sem to
-protect the sequence (and ensure correct order of the update to the
-enable flag).  Delete any existing timer for safety.
+35a84de cpufreq: interactive: apply above_hispeed_delay to each step ab=
+ove hispeed
 
-Change-Id: Ife77cf9fe099e8fd8543224cbf148c6722c2ffb0
-Reported-by: Francisco Franco <francisco.franco@cloudcar.com>
+caused the speed choice logic to osciallate between boosting and not bo=
+osting.
+Add back code to ensure speed does not drop below boost frequency while
+boosting.
+
+Change-Id: Id420068480fcc7f5c4989ff523e2a8d22e2f4db2
 Signed-off-by: Todd Poynor <toddpoynor@google.com>
 Signed-off-by: B=C3=A1lint Czobor <czoborbalint@gmail.com>
 ---
- drivers/cpufreq/cpufreq_interactive.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/cpufreq/cpufreq_interactive.c |   15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq_interactive.c b/drivers/cpufreq/cp=
 ufreq_interactive.c
-index 74f5609..d22d162 100644
+index 690be16..f8e9ee9 100644
 --- a/drivers/cpufreq/cpufreq_interactive.c
 +++ b/drivers/cpufreq/cpufreq_interactive.c
-@@ -919,17 +919,17 @@ static int cpufreq_governor_interactive(struct cp=
-ufreq_policy *policy,
- 				ktime_to_us(ktime_get());
- 			pcpu->hispeed_validate_time =3D
- 				pcpu->floor_validate_time;
--			pcpu->governor_enabled =3D 1;
--			smp_wmb();
-+			down_write(&pcpu->enable_sem);
- 			expires =3D jiffies + usecs_to_jiffies(timer_rate);
- 			pcpu->cpu_timer.expires =3D expires;
- 			add_timer_on(&pcpu->cpu_timer, j);
--
- 			if (timer_slack_val >=3D 0) {
- 				expires +=3D usecs_to_jiffies(timer_slack_val);
- 				pcpu->cpu_slack_timer.expires =3D expires;
- 				add_timer_on(&pcpu->cpu_slack_timer, j);
- 			}
-+			pcpu->governor_enabled =3D 1;
-+			up_write(&pcpu->enable_sem);
- 		}
+@@ -298,11 +298,18 @@ static void cpufreq_interactive_timer(unsigned lo=
+ng data)
+ 	cpu_load =3D loadadjfreq / pcpu->target_freq;
+ 	boosted =3D boost_val || now < boostpulse_endtime;
 =20
- 		/*
+-	if ((cpu_load >=3D go_hispeed_load || boosted) &&
+-	    pcpu->target_freq < hispeed_freq)
+-		new_freq =3D hispeed_freq;
+-	else
++	if (cpu_load >=3D go_hispeed_load || boosted) {
++		if (pcpu->target_freq < hispeed_freq) {
++			new_freq =3D hispeed_freq;
++		} else {
++			new_freq =3D choose_freq(pcpu, loadadjfreq);
++
++			if (new_freq < hispeed_freq)
++				new_freq =3D hispeed_freq;
++		}
++	} else {
+ 		new_freq =3D choose_freq(pcpu, loadadjfreq);
++	}
+=20
+ 	if (pcpu->target_freq >=3D hispeed_freq &&
+ 	    new_freq > pcpu->target_freq &&
 --=20
 1.7.9.5
