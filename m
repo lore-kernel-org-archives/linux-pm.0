@@ -1,196 +1,169 @@
-From: plongepe <philippe.longepe@linux.intel.com>
-Subject: Re: [PATCH v3 1/2] cpufreq: intel_pstate: Replace BYT by ATOM
-Date: Tue, 27 Oct 2015 09:01:07 +0100
-Message-ID: <562F2F43.9060302@linux.intel.com>
-References: <1445851821-2001-1-git-send-email-philippe.longepe@linux.intel.com>
- <CAJZ5v0g64yUkSCyJjYM+d+nJ1-tEvpE7audRCzB7pGBhTSoNpw@mail.gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v4 1/5] [RFC] clk: shmobile: Add new Renesas CPG/MSSR DT bindings
+Date: Tue, 27 Oct 2015 09:14:15 +0100
+Message-ID: <CAMuHMdWg9sQAKcSSO-EJzy-BjxGbm_PsYugY62xvDeXtonTf-A@mail.gmail.com>
+References: <1444999760-15750-1-git-send-email-geert+renesas@glider.be>
+	<2183540.y4vKjWID3s@avalon>
+	<CAMuHMdVtiEokxPwTsBXhaxwHszm+Wy5CDfNzpyzAxAdWU_fdUA@mail.gmail.com>
+	<8712490.dkvmK3avmY@avalon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:45104 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750956AbbJ0IAN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 27 Oct 2015 04:00:13 -0400
-In-Reply-To: <CAJZ5v0g64yUkSCyJjYM+d+nJ1-tEvpE7audRCzB7pGBhTSoNpw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <8712490.dkvmK3avmY@avalon>
+Sender: linux-sh-owner@vger.kernel.org
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Magnus Damm <damm+renesas@opensource.se>, Simon Horman <horms+renesas@verge.net.au>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, linux-clk <linux-clk@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Philippe Longepe <philippe.longepe@intel.com>
 
+Hi Laurent,
 
+CC linux-pm
 
-On 27/10/2015 00:42, Rafael J. Wysocki wrote:
-> On Mon, Oct 26, 2015 at 10:30 AM, Philippe Longepe
-> <philippe.longepe@linux.intel.com> wrote:
->> From: Philippe Longepe <philippe.longepe@intel.com>
+On Tue, Oct 27, 2015 at 2:34 AM, Laurent Pinchart
+<laurent.pinchart@ideasonboard.com> wrote:
+> On Monday 26 October 2015 20:02:45 Geert Uytterhoeven wrote:
+>> On Fri, Oct 23, 2015 at 1:10 PM, Laurent Pinchart wrote:
+>> > On Friday 16 October 2015 14:49:16 Geert Uytterhoeven wrote:
+>> >> On Renesas ARM SoCs (SH/R-Mobile, R-Car, RZ), the CPG (Clock Pulse
+>> >> Generator) and MSSR (Module Standby and Software Reset) blocks are
+>> >> intimately connected, and share the same register block.
+>> >>
+>> >> Hence it makes sense to describe these two blocks using a
+>> >> single device node in DT, instead of using a hierarchical structure with
+>> >> multiple nodes, using a mix of generic and SoC-specific bindings.
+>> >>
+>> >> These new DT bindings are intended to replace the existing DT bindings
+>> >> for CPG core clocks ("renesas,*-cpg-clocks", "renesas,cpg-div6-clock")
+>> >> and module clocks ("renesas,*-mstp-clocks"), at least for new SoCs.
+>> >>
+>> >> This will make it easier to add module reset support later, which is
+>> >> currently not implemented, and difficult to achieve using the existing
+>> >> bindings due to the intertwined register layout.
+>> >>
+>> >> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>> >>
+>> >> --- /dev/null
+>> >> +++ b/Documentation/devicetree/bindings/clock/renesas,cpg-mssr.txt
+>> >> @@ -0,0 +1,71 @@
+>> >> +* Renesas Clock Pulse Generator / Module Standby and Software Reset
+>> >> +
+>> >> +On Renesas ARM SoCs (SH/R-Mobile, R-Car, RZ), the CPG (Clock Pulse
+>> >> Generator)
+>> >> +and MSSR (Module Standby and Software Reset) blocks are intimately
+>> >> connected,
+>> >> +and share the same register block.
+>> >> +
+>> >> +They provide the following functionalities:
+>> >> +  - The CPG block generates various core clocks,
+>> >> +  - The MSSR block provides two functions:
+>> >> +      1. Module Standby, providing a Clock Domain to control the clock
+>> >> supply
+>> >> +      to individual SoC devices,
+>> >> +      2. Reset Control, to perform a software reset of individual SoC
+>> >> devices.
 >>
->> The goal is to support several Atoms architectures.
-> I guess the point is that all processors from the Atom line (or at
-> least the majority of them) will use the same rations etc as Baytrail,
-> right?
-Yes, the goal is to support all the recent Atom line based on silvermont 
-(Baytrail), Airmont (CherryTrail) but also newest architectures based on 
-Goldmont.
+>> [...]
+>>
+>> >> +  - #power-domain-cells: Must be 0
+>> >> +      - SoC devices that are part of the CPG/MSSR Clock Domain and can
+>> >> be
+>> >> +     power-managed through Module Standby should refer to the CPG device
+>> >> +     node in their "power-domains" property, as documented by the
+>> >> generic PM +     Domain bindings in
+>> >> +     Documentation/devicetree/bindings/power/power_domain.txt.
+>> >> +
+>> >> +
+>> >> +Examples
+>> >> +--------
+>> >> +
+>> >> +  - CPG device node:
+>> >> +
+>> >> +     cpg: clock-controller@e6150000 {
+>> >> +             compatible = "renesas,r8a7795-cpg-mssr";
+>> >> +             reg = <0 0xe6150000 0 0x1000>;
+>> >> +             clocks = <&extal_clk>, <&extalr_clk>;
+>> >> +             clock-names = "extal", "extalr";
+>> >> +             #clock-cells = <2>;
+>> >> +             #power-domain-cells = <0>;
+>> >> +     };
+>> >> +
+>> >> +
+>> >
+>> >> +  - CPG/MSSR Clock Domain member device node:
+>> > Would it make sense to show two examples, one for a device whose driver
+>> > manages the MSTP clock manually, and another one for a device whose driver
+>> > delegates that to the power domain ?
+>> >
+>> > I hate using the word driver in DT bindings, but unfortunately that's
+>> > essentially what it boils down to here as the decision to specify the
+>> > power domain is really based on the driver, not on the hardware.
+>>
+>> IMHO it's not the driver, but the on-SoC module and its representation in
+>> DT. Cfr. commit 797a0626e08ca4af ("ARM: shmobile: r8a7791 dtsi: Add
+>> CPG/MSTP Clock Domain", which states:
+>>
+>> |   Add "power-domains" properties to all device nodes for devices that are
+>> |   part of the CPG/MSTP Clock Domain and can be power-managed through an
+>> |   MSTP clock.  This applies to most on-SoC devices, which have a
+>> |   one-to-one mapping from SoC device to DT device node.  Notable
+>> |   exceptions are the "display" and "sound" nodes, which represent multiple
+>> |   SoC devices, each having their own MSTP clocks.
 >
->> Signed-off-by: Philippe Longepe <philippe.longepe@linux.intel.com>
->> ---
->>   drivers/cpufreq/intel_pstate.c | 56 +++++++++++++++++++++---------------------
->>   1 file changed, 28 insertions(+), 28 deletions(-)
->>
->> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
->> index aa33b92..8618b02 100644
->> --- a/drivers/cpufreq/intel_pstate.c
->> +++ b/drivers/cpufreq/intel_pstate.c
->> @@ -34,10 +34,10 @@
->>   #include <asm/cpu_device_id.h>
->>   #include <asm/cpufeature.h>
->>
->> -#define BYT_RATIOS             0x66a
->> -#define BYT_VIDS               0x66b
->> -#define BYT_TURBO_RATIOS       0x66c
->> -#define BYT_TURBO_VIDS         0x66d
->> +#define ATOM_RATIOS            0x66a
->> +#define ATOM_VIDS              0x66b
->> +#define ATOM_TURBO_RATIOS      0x66c
->> +#define ATOM_TURBO_VIDS                0x66d
->>
->>   #define FRAC_BITS 8
->>   #define int_tofp(X) ((int64_t)(X) << FRAC_BITS)
->> @@ -502,31 +502,31 @@ static void intel_pstate_hwp_enable(struct cpudata *cpudata)
->>          wrmsrl_on_cpu(cpudata->cpu, MSR_PM_ENABLE, 0x1);
->>   }
->>
->> -static int byt_get_min_pstate(void)
->> +static int atom_get_min_pstate(void)
->>   {
->>          u64 value;
->>
->> -       rdmsrl(BYT_RATIOS, value);
->> +       rdmsrl(ATOM_RATIOS, value);
->>          return (value >> 8) & 0x7F;
->>   }
->>
->> -static int byt_get_max_pstate(void)
->> +static int atom_get_max_pstate(void)
->>   {
->>          u64 value;
->>
->> -       rdmsrl(BYT_RATIOS, value);
->> +       rdmsrl(ATOM_RATIOS, value);
->>          return (value >> 16) & 0x7F;
->>   }
->>
->> -static int byt_get_turbo_pstate(void)
->> +static int atom_get_turbo_pstate(void)
->>   {
->>          u64 value;
->>
->> -       rdmsrl(BYT_TURBO_RATIOS, value);
->> +       rdmsrl(ATOM_TURBO_RATIOS, value);
->>          return value & 0x7F;
->>   }
->>
->> -static void byt_set_pstate(struct cpudata *cpudata, int pstate)
->> +static void atom_set_pstate(struct cpudata *cpudata, int pstate)
->>   {
->>          u64 val;
->>          int32_t vid_fp;
->> @@ -551,10 +551,10 @@ static void byt_set_pstate(struct cpudata *cpudata, int pstate)
->>          wrmsrl_on_cpu(cpudata->cpu, MSR_IA32_PERF_CTL, val);
->>   }
->>
->> -#define BYT_BCLK_FREQS 5
->> -static int byt_freq_table[BYT_BCLK_FREQS] = { 833, 1000, 1333, 1167, 800};
->> +#define ATOM_BCLK_FREQS 5
->> +static int atom_freq_table[ATOM_BCLK_FREQS] = { 833, 1000, 1333, 1167, 800};
->>
->> -static int byt_get_scaling(void)
->> +static int atom_get_scaling(void)
->>   {
->>          u64 value;
->>          int i;
->> @@ -562,16 +562,16 @@ static int byt_get_scaling(void)
->>          rdmsrl(MSR_FSB_FREQ, value);
->>          i = value & 0x3;
->>
->> -       BUG_ON(i > BYT_BCLK_FREQS);
->> +       BUG_ON(i > ATOM_BCLK_FREQS);
->>
->> -       return byt_freq_table[i] * 100;
->> +       return atom_freq_table[i] * 100;
->>   }
->>
->> -static void byt_get_vid(struct cpudata *cpudata)
->> +static void atom_get_vid(struct cpudata *cpudata)
->>   {
->>          u64 value;
->>
->> -       rdmsrl(BYT_VIDS, value);
->> +       rdmsrl(ATOM_VIDS, value);
->>          cpudata->vid.min = int_tofp((value >> 8) & 0x7f);
->>          cpudata->vid.max = int_tofp((value >> 16) & 0x7f);
->>          cpudata->vid.ratio = div_fp(
->> @@ -579,7 +579,7 @@ static void byt_get_vid(struct cpudata *cpudata)
->>                  int_tofp(cpudata->pstate.max_pstate -
->>                          cpudata->pstate.min_pstate));
->>
->> -       rdmsrl(BYT_TURBO_VIDS, value);
->> +       rdmsrl(ATOM_TURBO_VIDS, value);
->>          cpudata->vid.turbo = value & 0x7f;
->>   }
->>
->> @@ -659,7 +659,7 @@ static struct cpu_defaults core_params = {
->>          },
->>   };
->>
->> -static struct cpu_defaults byt_params = {
->> +static struct cpu_defaults atom_params = {
->>          .pid_policy = {
->>                  .sample_rate_ms = 10,
->>                  .deadband = 0,
->> @@ -669,12 +669,12 @@ static struct cpu_defaults byt_params = {
->>                  .i_gain_pct = 4,
->>          },
->>          .funcs = {
->> -               .get_max = byt_get_max_pstate,
->> -               .get_min = byt_get_min_pstate,
->> -               .get_turbo = byt_get_turbo_pstate,
->> -               .set = byt_set_pstate,
->> -               .get_scaling = byt_get_scaling,
->> -               .get_vid = byt_get_vid,
->> +               .get_max = atom_get_max_pstate,
->> +               .get_min = atom_get_min_pstate,
->> +               .get_turbo = atom_get_turbo_pstate,
->> +               .set = atom_set_pstate,
->> +               .get_scaling = atom_get_scaling,
->> +               .get_vid = atom_get_vid,
->>          },
->>   };
->>
->> @@ -912,7 +912,7 @@ static void intel_pstate_timer_func(unsigned long __data)
->>   static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
->>          ICPU(0x2a, core_params),
->>          ICPU(0x2d, core_params),
->> -       ICPU(0x37, byt_params),
->> +       ICPU(0x37, atom_params),
->>          ICPU(0x3a, core_params),
->>          ICPU(0x3c, core_params),
->>          ICPU(0x3d, core_params),
->> @@ -921,7 +921,7 @@ static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
->>          ICPU(0x45, core_params),
->>          ICPU(0x46, core_params),
->>          ICPU(0x47, core_params),
->> -       ICPU(0x4c, byt_params),
->> +       ICPU(0x4c, atom_params),
->>          ICPU(0x4e, core_params),
->>          ICPU(0x4f, core_params),
->>          ICPU(0x5e, core_params),
->> --
->> 1.9.1
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> You're quoting your own documentation to support your point, that's not fair
+> :-)
 
+I quoted it because it explains what was done.
+
+> We're using power domains to gate clocks. The fact that it's not related to
+> power supplies can already be borderline, but I can buy the argument that
+> clocks relate to power consumption here. However, where the power domain
+> abstraction is really abused is that we're adding all kind of devices to a
+> single power domain while they're controlled by one clock gate each. That's a
+> software hack, and we're using DT to tell whether our core code should control
+> clock gating or not. That's not a hardware description, sorry.
+
+IMHO the "power-domains" property naming is wrong: it should have been
+"pm-domains", as it's following the spirit of the Linux PM Domain abstraction.
+
+PM Domain = Collection of devices treated similarly w.r.t. power management
+
+"similarly" here means "using module clocks". And yes the datasheet states
+that's what the module clocks do: control supply of the clock signal to the
+module.
+
+>> If a single device block (sharing the same register space), represented in
+>> DT as a single device node, actually represents multiple modules, there's no
+>> one-to-one mapping from SoC device to DT device node.
+>>
+>> Hence the device node will have multiple module clocks, and the driver will
+>> have to take care of managing them explicitly.
+>
+> There can be other reasons why the clocks need to be controlled explicitly by
+> the driver. At the end of the end it's a per-driver decision whether it wants
+> to delegate clock management to runtime PM (which will be the default cause)
+> or handle it itself.
+
+The driver can still override if it feels the need.
+
+>> The register space sharing is an SoC-specific issue.
+>> The single device node is a DT binding issue.
+>>
+>> Perhaps such devices should use subnodes, so each of them can represent a
+>> module, each with its own module clock.
+>
+> I'm not sure to see how that would help, as we'd have a single struct device
+> in that case (associated with the top-level DT node), so runtime PM couldn't
+> be used to manage clocks independently.
+
+The driver for the subnode device can still create child devices, can't it?
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
