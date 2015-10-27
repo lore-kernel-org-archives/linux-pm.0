@@ -1,7 +1,7 @@
 From: =?UTF-8?q?B=C3=A1lint=20Czobor?= <czoborbalint@gmail.com>
-Subject: [PATCH 28/70] cpufreq: interactive: apply above_hispeed_delay to each step above hispeed
-Date: Tue, 27 Oct 2015 18:30:16 +0100
-Message-ID: <1445967059-6897-28-git-send-email-czoborbalint@gmail.com>
+Subject: [PATCH 23/70] cpufreq: interactive: pin timers to associated CPU
+Date: Tue, 27 Oct 2015 18:30:11 +0100
+Message-ID: <1445967059-6897-23-git-send-email-czoborbalint@gmail.com>
 References: <1445967059-6897-1-git-send-email-czoborbalint@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -15,69 +15,271 @@ List-Id: linux-pm@vger.kernel.org
 
 =46rom: Todd Poynor <toddpoynor@google.com>
 
-Apply above_hispeed_delay whenever increasing speed to a new speed abov=
-e
-hispeed (not just the first step above hispeed).
+Helps avoid waking up other CPUs to react to activity on the local CPU.
 
-Change-Id: Ibb7add7db47f2a4306a9458c4e1ebabb60698636
+Change-Id: Ife272aaa7916894a437705d44521b1a1693fbe8e
 Signed-off-by: Todd Poynor <toddpoynor@google.com>
 Signed-off-by: B=C3=A1lint Czobor <czoborbalint@gmail.com>
 ---
- drivers/cpufreq/cpufreq_interactive.c |   36 ++++++++++++-------------=
+ drivers/cpufreq/cpufreq_interactive.c |  106 +++++++++----------------=
 --------
- 1 file changed, 13 insertions(+), 23 deletions(-)
+ 1 file changed, 27 insertions(+), 79 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq_interactive.c b/drivers/cpufreq/cp=
 ufreq_interactive.c
-index c4293c5..17c42cc 100644
+index 16bd23b..e53eae2 100644
 --- a/drivers/cpufreq/cpufreq_interactive.c
 +++ b/drivers/cpufreq/cpufreq_interactive.c
-@@ -176,32 +176,22 @@ static void cpufreq_interactive_timer(unsigned lo=
-ng data)
- 	if (load_since_change > cpu_load)
- 		cpu_load =3D load_since_change;
+@@ -42,8 +42,6 @@ struct cpufreq_interactive_cpuinfo {
+ 	int timer_idlecancel;
+ 	u64 time_in_idle;
+ 	u64 idle_exit_time;
+-	u64 timer_run_time;
+-	int idling;
+ 	u64 target_set_time;
+ 	u64 target_set_time_in_idle;
+ 	struct cpufreq_policy *policy;
+@@ -109,6 +107,7 @@ struct cpufreq_governor cpufreq_gov_interactive =3D=
+ {
 =20
--	if (cpu_load >=3D go_hispeed_load || boost_val) {
--		if (pcpu->target_freq < hispeed_freq &&
--		    hispeed_freq < pcpu->policy->max) {
--			new_freq =3D hispeed_freq;
--		} else {
--			new_freq =3D pcpu->policy->cur * cpu_load / target_load;
+ static void cpufreq_interactive_timer(unsigned long data)
+ {
++	u64 now;
+ 	unsigned int delta_idle;
+ 	unsigned int delta_time;
+ 	int cpu_load;
+@@ -127,26 +126,11 @@ static void cpufreq_interactive_timer(unsigned lo=
+ng data)
+ 	if (!pcpu->governor_enabled)
+ 		goto exit;
+=20
+-	/*
+-	 * Once pcpu->timer_run_time is updated to >=3D pcpu->idle_exit_time,
+-	 * this lets idle exit know the current idle time sample has
+-	 * been processed, and idle exit can generate a new sample and
+-	 * re-arm the timer.  This prevents a concurrent idle
+-	 * exit on that CPU from writing a new set of info at the same time
+-	 * the timer function runs (the timer function can't use that info
+-	 * until more time passes).
+-	 */
+ 	time_in_idle =3D pcpu->time_in_idle;
+ 	idle_exit_time =3D pcpu->idle_exit_time;
+-	now_idle =3D get_cpu_idle_time_us(data, &pcpu->timer_run_time);
+-	smp_wmb();
 -
--			if (new_freq < hispeed_freq)
--				new_freq =3D hispeed_freq;
+-	/* If we raced with cancelling a timer, skip. */
+-	if (!idle_exit_time)
+-		goto exit;
 -
--			if (pcpu->target_freq =3D=3D hispeed_freq &&
--			    new_freq > hispeed_freq &&
--			    now - pcpu->hispeed_validate_time
--			    < above_hispeed_delay_val) {
--				trace_cpufreq_interactive_notyet(
--					data, cpu_load, pcpu->target_freq,
--					pcpu->policy->cur, new_freq);
--				goto rearm;
--			}
--		}
--	} else {
-+	if ((cpu_load >=3D go_hispeed_load || boost_val) &&
-+	    pcpu->target_freq < hispeed_freq)
-+		new_freq =3D hispeed_freq;
-+	else
- 		new_freq =3D pcpu->policy->cur * cpu_load / target_load;
-+
-+	if (pcpu->target_freq >=3D hispeed_freq &&
-+	    new_freq > pcpu->target_freq &&
-+	    now - pcpu->hispeed_validate_time < above_hispeed_delay_val) {
-+		trace_cpufreq_interactive_notyet(
-+			data, cpu_load, pcpu->target_freq,
-+			pcpu->policy->cur, new_freq);
-+		goto rearm;
++	now_idle =3D get_cpu_idle_time_us(data, &now);
+ 	delta_idle =3D (unsigned int)(now_idle - time_in_idle);
+-	delta_time =3D (unsigned int)(pcpu->timer_run_time - idle_exit_time);
++	delta_time =3D (unsigned int)(now - idle_exit_time);
+=20
+ 	/*
+ 	 * If timer ran less than 1ms after short-term sample started, retry.
+@@ -160,8 +144,7 @@ static void cpufreq_interactive_timer(unsigned long=
+ data)
+ 		cpu_load =3D 100 * (delta_time - delta_idle) / delta_time;
+=20
+ 	delta_idle =3D (unsigned int)(now_idle - pcpu->target_set_time_in_idl=
+e);
+-	delta_time =3D (unsigned int)(pcpu->timer_run_time -
+-				    pcpu->target_set_time);
++	delta_time =3D (unsigned int)(now - pcpu->target_set_time);
+=20
+ 	if ((delta_time =3D=3D 0) || (delta_idle > delta_time))
+ 		load_since_change =3D 0;
+@@ -189,7 +172,7 @@ static void cpufreq_interactive_timer(unsigned long=
+ data)
+=20
+ 			if (pcpu->target_freq =3D=3D hispeed_freq &&
+ 			    new_freq > hispeed_freq &&
+-			    pcpu->timer_run_time - pcpu->hispeed_validate_time
++			    now - pcpu->hispeed_validate_time
+ 			    < above_hispeed_delay_val) {
+ 				trace_cpufreq_interactive_notyet(data, cpu_load,
+ 								 pcpu->target_freq,
+@@ -202,7 +185,7 @@ static void cpufreq_interactive_timer(unsigned long=
+ data)
  	}
 =20
--	if (new_freq <=3D hispeed_freq)
--		pcpu->hispeed_validate_time =3D now;
-+	pcpu->hispeed_validate_time =3D now;
+ 	if (new_freq <=3D hispeed_freq)
+-		pcpu->hispeed_validate_time =3D pcpu->timer_run_time;
++		pcpu->hispeed_validate_time =3D now;
 =20
  	if (cpufreq_frequency_table_target(pcpu->policy, pcpu->freq_table,
- 					   new_freq, CPUFREQ_RELATION_L,
+ 					   new_freq, CPUFREQ_RELATION_H,
+@@ -219,8 +202,7 @@ static void cpufreq_interactive_timer(unsigned long=
+ data)
+ 	 * floor frequency for the minimum sample time since last validated.
+ 	 */
+ 	if (new_freq < pcpu->floor_freq) {
+-		if (pcpu->timer_run_time - pcpu->floor_validate_time
+-		    < min_sample_time) {
++		if (now - pcpu->floor_validate_time < min_sample_time) {
+ 			trace_cpufreq_interactive_notyet(data, cpu_load,
+ 					 pcpu->target_freq, new_freq);
+ 			goto rearm;
+@@ -228,7 +210,7 @@ static void cpufreq_interactive_timer(unsigned long=
+ data)
+ 	}
+=20
+ 	pcpu->floor_freq =3D new_freq;
+-	pcpu->floor_validate_time =3D pcpu->timer_run_time;
++	pcpu->floor_validate_time =3D now;
+=20
+ 	if (pcpu->target_freq =3D=3D new_freq) {
+ 		trace_cpufreq_interactive_already(data, cpu_load,
+@@ -239,7 +221,7 @@ static void cpufreq_interactive_timer(unsigned long=
+ data)
+ 	trace_cpufreq_interactive_target(data, cpu_load, pcpu->target_freq,
+ 					 new_freq);
+ 	pcpu->target_set_time_in_idle =3D now_idle;
+-	pcpu->target_set_time =3D pcpu->timer_run_time;
++	pcpu->target_set_time =3D now;
+=20
+ 	pcpu->target_freq =3D new_freq;
+ 	spin_lock_irqsave(&speedchange_cpumask_lock, flags);
+@@ -258,23 +240,16 @@ rearm_if_notmax:
+ rearm:
+ 	if (!timer_pending(&pcpu->cpu_timer)) {
+ 		/*
+-		 * If already at min: if that CPU is idle, don't set timer.
+-		 * Else cancel the timer if that CPU goes idle.  We don't
+-		 * need to re-evaluate speed until the next idle exit.
++		 * If already at min, cancel the timer if that CPU goes idle.
++		 * We don't need to re-evaluate speed until the next idle exit.
+ 		 */
+-		if (pcpu->target_freq =3D=3D pcpu->policy->min) {
+-			smp_rmb();
+-
+-			if (pcpu->idling)
+-				goto exit;
+-
++		if (pcpu->target_freq =3D=3D pcpu->policy->min)
+ 			pcpu->timer_idlecancel =3D 1;
+-		}
+=20
+ 		pcpu->time_in_idle =3D get_cpu_idle_time_us(
+ 			data, &pcpu->idle_exit_time);
+-		mod_timer(&pcpu->cpu_timer,
+-			  jiffies + usecs_to_jiffies(timer_rate));
++		mod_timer_pinned(&pcpu->cpu_timer,
++				 jiffies + usecs_to_jiffies(timer_rate));
+ 	}
+=20
+ exit:
+@@ -290,8 +265,6 @@ static void cpufreq_interactive_idle_start(void)
+ 	if (!pcpu->governor_enabled)
+ 		return;
+=20
+-	pcpu->idling =3D 1;
+-	smp_wmb();
+ 	pending =3D timer_pending(&pcpu->cpu_timer);
+=20
+ 	if (pcpu->target_freq !=3D pcpu->policy->min) {
+@@ -308,8 +281,9 @@ static void cpufreq_interactive_idle_start(void)
+ 			pcpu->time_in_idle =3D get_cpu_idle_time_us(
+ 				smp_processor_id(), &pcpu->idle_exit_time);
+ 			pcpu->timer_idlecancel =3D 0;
+-			mod_timer(&pcpu->cpu_timer,
+-				  jiffies + usecs_to_jiffies(timer_rate));
++			mod_timer_pinned(
++				&pcpu->cpu_timer,
++				jiffies + usecs_to_jiffies(timer_rate));
+ 		}
+ #endif
+ 	} else {
+@@ -321,12 +295,6 @@ static void cpufreq_interactive_idle_start(void)
+ 		 */
+ 		if (pending && pcpu->timer_idlecancel) {
+ 			del_timer(&pcpu->cpu_timer);
+-			/*
+-			 * Ensure last timer run time is after current idle
+-			 * sample start time, so next idle exit will always
+-			 * start a new idle sampling period.
+-			 */
+-			pcpu->idle_exit_time =3D 0;
+ 			pcpu->timer_idlecancel =3D 0;
+ 		}
+ 	}
+@@ -341,29 +309,15 @@ static void cpufreq_interactive_idle_end(void)
+ 	if (!pcpu->governor_enabled)
+ 		return;
+=20
+-	pcpu->idling =3D 0;
+-	smp_wmb();
+-
+-	/*
+-	 * Arm the timer for 1-2 ticks later if not already, and if the timer
+-	 * function has already processed the previous load sampling
+-	 * interval.  (If the timer is not pending but has not processed
+-	 * the previous interval, it is probably racing with us on another
+-	 * CPU.  Let it compute load based on the previous sample and then
+-	 * re-arm the timer for another interval when it's done, rather
+-	 * than updating the interval start time to be "now", which doesn't
+-	 * give the timer function enough time to make a decision on this
+-	 * run.)
+-	 */
+-	if (timer_pending(&pcpu->cpu_timer) =3D=3D 0 &&
+-	    pcpu->timer_run_time >=3D pcpu->idle_exit_time &&
+-	    pcpu->governor_enabled) {
++	/* Arm the timer for 1-2 ticks later if not already. */
++	if (!timer_pending(&pcpu->cpu_timer)) {
+ 		pcpu->time_in_idle =3D
+ 			get_cpu_idle_time_us(smp_processor_id(),
+ 					     &pcpu->idle_exit_time);
+ 		pcpu->timer_idlecancel =3D 0;
+-		mod_timer(&pcpu->cpu_timer,
+-			  jiffies + usecs_to_jiffies(timer_rate));
++		mod_timer_pinned(
++			&pcpu->cpu_timer,
++			jiffies + usecs_to_jiffies(timer_rate));
+ 	}
+=20
+ }
+@@ -673,6 +627,8 @@ static int cpufreq_governor_interactive(struct cpuf=
+req_policy *policy,
+=20
+ 		freq_table =3D
+ 			cpufreq_frequency_get_table(policy->cpu);
++		if (!hispeed_freq)
++			hispeed_freq =3D policy->max;
+=20
+ 		for_each_cpu(j, policy->cpus) {
+ 			pcpu =3D &per_cpu(cpuinfo, j);
+@@ -689,11 +645,11 @@ static int cpufreq_governor_interactive(struct cp=
+ufreq_policy *policy,
+ 				pcpu->target_set_time;
+ 			pcpu->governor_enabled =3D 1;
+ 			smp_wmb();
++			pcpu->cpu_timer.expires =3D
++				jiffies + usecs_to_jiffies(timer_rate);
++			add_timer_on(&pcpu->cpu_timer, j);
+ 		}
+=20
+-		if (!hispeed_freq)
+-			hispeed_freq =3D policy->max;
+-
+ 		/*
+ 		 * Do not register the idle hook and create sysfs
+ 		 * entries if we have already done so.
+@@ -715,14 +671,6 @@ static int cpufreq_governor_interactive(struct cpu=
+freq_policy *policy,
+ 			pcpu->governor_enabled =3D 0;
+ 			smp_wmb();
+ 			del_timer_sync(&pcpu->cpu_timer);
+-
+-			/*
+-			 * Reset idle exit time since we may cancel the timer
+-			 * before it can run after the last idle exit time,
+-			 * to avoid tripping the check in idle exit for a timer
+-			 * that is trying to run.
+-			 */
+-			pcpu->idle_exit_time =3D 0;
+ 		}
+=20
+ 		if (atomic_dec_return(&active_count) > 0)
 --=20
 1.7.9.5
