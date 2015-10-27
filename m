@@ -1,77 +1,84 @@
 From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: [PATCH v11 4/4] USB / PM: Allow USB devices to remain runtime-suspended when sleeping
-Date: Tue, 27 Oct 2015 15:38:51 +0100
-Message-ID: <1445956731-6304-5-git-send-email-tomeu.vizoso@collabora.com>
-References: <1445956731-6304-1-git-send-email-tomeu.vizoso@collabora.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f181.google.com ([209.85.212.181]:32984 "EHLO
-	mail-wi0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932524AbbJ0Oj2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Oct 2015 10:39:28 -0400
-In-Reply-To: <1445956731-6304-1-git-send-email-tomeu.vizoso@collabora.com>
-Sender: linux-pm-owner@vger.kernel.org
+Subject: Re: [PATCH v10 3/4] PM / sleep: Go direct_complete if driver has no callbacks
+Date: Tue, 27 Oct 2015 15:40:50 +0100
+Message-ID: <CAAObsKBcb1-xmEtHB9xVF+_WBUQNFOvaEtzFVGSJJ18nUE-P-w@mail.gmail.com>
+References: <1445441654-31778-1-git-send-email-tomeu.vizoso@collabora.com>
+ <1445441654-31778-4-git-send-email-tomeu.vizoso@collabora.com> <CAGS+omBt56EH2z_jj4ZOaJHqtBcst=EfAyxAK0nC71Ex3Q=55g@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAGS+omBt56EH2z_jj4ZOaJHqtBcst=EfAyxAK0nC71Ex3Q=55g@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Daniel Kurtz <djkurtz@chromium.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, martyn.welch@collabora.co.uk, Ulf Hansson <ulf.hansson@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>, Derek Basehore <dbasehore@google.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, martyn.welch@collabora.co.uk, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Have dev_pm_ops.prepare return 1 for USB devices and ports so that USB
-devices can remain runtime-suspended when the system goes to a sleep
-state, if their wakeup state is correct and they have runtime PM enabled.
+On 26 October 2015 at 13:56, Daniel Kurtz <djkurtz@chromium.org> wrote:
+> Hi Tomeu,
+>
+> On Wed, Oct 21, 2015 at 11:34 PM, Tomeu Vizoso
+> <tomeu.vizoso@collabora.com> wrote:
+>> If a suitable prepare callback cannot be found for a given device and
+>> its driver has no PM callbacks at all, assume that it can go direct to
+>> complete when the system goes to sleep.
+>>
+>> The reason for this is that there's lots of devices in a system that do
+>> no PM at all and there's no reason for them to prevent their ancestors
+>> to do direct_complete if they can support it.
+>>
+>> Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+>> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> ---
+>
+> [snip...]
+>
+>> diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
+>> index a70f8a5cdfd7..763eee24cb95 100644
+>> --- a/drivers/base/power/common.c
+>> +++ b/drivers/base/power/common.c
+>> @@ -14,6 +14,8 @@
+>>  #include <linux/acpi.h>
+>>  #include <linux/pm_domain.h>
+>>
+>> +#include "power.h"
+>> +
+>>  /**
+>>   * dev_pm_get_subsys_data - Create or refcount power.subsys_data for device.
+>>   * @dev: Device to handle.
+>> @@ -147,5 +149,6 @@ void dev_pm_domain_set(struct device *dev, struct dev_pm_domain *pd)
+>>         WARN(device_is_bound(dev),
+>>              "PM domains can only be changed for unbound devices\n");
+>>         dev->pm_domain = pd;
+>> +       device_pm_check_callbacks(dev);
+>
+> device_pm_check_callbacks(dev) grabs spin_lock_irq(&dev->power.lock);
+>
+> But, one of the callers of dev_pm_domain_set() that you just added in
+> the previous patch "PM / Domains: add setter for dev.pm_domain" also
+> grabs this same spinlock:
+>
+> --------------------
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 16550c63d611..b75d02aa8d93 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -1240,7 +1240,7 @@  static struct generic_pm_domain_data
+> *genpd_alloc_dev_data(struct device *dev,
+>   }
+>
+>   dev->power.subsys_data->domain_data = &gpd_data->base;
+> - dev->pm_domain = &genpd->domain;
+> + dev_pm_domain_set(dev, &genpd->domain);
+>
+>   spin_unlock_irq(&dev->power.lock);
+> --------------------
+>
+> At least on the board I am testing, this causes a deadlock on boot.
 
-Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-Acked-by: Alan Stern <stern@rowland.harvard.edu>
----
+Thanks Daniel,
 
-Changes in v10:
-- Remove superfluous call to pm_runtime_enabled() as suggested by Alan
+have moved in v11 the calls to dev_pm_domain_set in that file out from the lock.
 
- drivers/usb/core/port.c | 6 ++++++
- drivers/usb/core/usb.c  | 8 +++++++-
- 2 files changed, 13 insertions(+), 1 deletion(-)
+Regards,
 
-diff --git a/drivers/usb/core/port.c b/drivers/usb/core/port.c
-index 210618319f10..f49707d73b5a 100644
---- a/drivers/usb/core/port.c
-+++ b/drivers/usb/core/port.c
-@@ -168,12 +168,18 @@ static int usb_port_runtime_suspend(struct device *dev)
- 
- 	return retval;
- }
-+
-+static int usb_port_prepare(struct device *dev)
-+{
-+	return 1;
-+}
- #endif
- 
- static const struct dev_pm_ops usb_port_pm_ops = {
- #ifdef CONFIG_PM
- 	.runtime_suspend =	usb_port_runtime_suspend,
- 	.runtime_resume =	usb_port_runtime_resume,
-+	.prepare =		usb_port_prepare,
- #endif
- };
- 
-diff --git a/drivers/usb/core/usb.c b/drivers/usb/core/usb.c
-index 8d5b2f4113cd..3a55c91b13a1 100644
---- a/drivers/usb/core/usb.c
-+++ b/drivers/usb/core/usb.c
-@@ -316,7 +316,13 @@ static int usb_dev_uevent(struct device *dev, struct kobj_uevent_env *env)
- 
- static int usb_dev_prepare(struct device *dev)
- {
--	return 0;		/* Implement eventually? */
-+	struct usb_device *udev = to_usb_device(dev);
-+
-+	/* Return 0 if the current wakeup setting is wrong, otherwise 1 */
-+	if (udev->do_remote_wakeup != device_may_wakeup(dev))
-+		return 0;
-+
-+	return 1;
- }
- 
- static void usb_dev_complete(struct device *dev)
--- 
-2.5.0
-
+Tomeu
