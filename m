@@ -1,7 +1,7 @@
 From: =?UTF-8?q?B=C3=A1lint=20Czobor?= <czoborbalint@gmail.com>
-Subject: [PATCH 30/70] cpufreq: interactive: remove load since last speed change
-Date: Tue, 27 Oct 2015 18:30:18 +0100
-Message-ID: <1445967059-6897-30-git-send-email-czoborbalint@gmail.com>
+Subject: [PATCH 26/70] cpufreq: interactive: trace actual speed in target speed decisions
+Date: Tue, 27 Oct 2015 18:30:14 +0100
+Message-ID: <1445967059-6897-26-git-send-email-czoborbalint@gmail.com>
 References: <1445967059-6897-1-git-send-email-czoborbalint@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -15,106 +15,140 @@ List-Id: linux-pm@vger.kernel.org
 
 =46rom: Todd Poynor <toddpoynor@google.com>
 
-The longer-term load since last speed change isn't terribly useful,
-may delay recognition of dropping load, and would need forthcoming
-changes to adjust load for changing CPU speeds.  Drop it.
+Tracing adds actual speed since this is expected to be key to the
+choice of target speed.
 
-Change-Id: Ic3cbb0542cc3484617031787e03ed9bdd632dec1
+Change-Id: Iec936102d0010c4e9dfa143c38a9fd0d551189c3
 Signed-off-by: Todd Poynor <toddpoynor@google.com>
 Signed-off-by: B=C3=A1lint Czobor <czoborbalint@gmail.com>
 ---
- drivers/cpufreq/cpufreq_interactive.c |   34 ++++---------------------=
+ drivers/cpufreq/cpufreq_interactive.c      |   18 +++++++-------
+ include/trace/events/cpufreq_interactive.h |   36 ++++++++++++++++----=
 --------
- 1 file changed, 4 insertions(+), 30 deletions(-)
+ 2 files changed, 31 insertions(+), 23 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq_interactive.c b/drivers/cpufreq/cp=
 ufreq_interactive.c
-index 6ea77a0..3d8e7b4 100644
+index 8153769..2b4aad9 100644
 --- a/drivers/cpufreq/cpufreq_interactive.c
 +++ b/drivers/cpufreq/cpufreq_interactive.c
-@@ -43,8 +43,6 @@ struct cpufreq_interactive_cpuinfo {
- 	int timer_idlecancel;
- 	u64 time_in_idle;
- 	u64 time_in_idle_timestamp;
--	u64 target_set_time;
--	u64 target_set_time_in_idle;
- 	struct cpufreq_policy *policy;
- 	struct cpufreq_frequency_table *freq_table;
- 	unsigned int target_freq;
-@@ -238,7 +236,6 @@ static void cpufreq_interactive_timer(unsigned long=
+@@ -186,9 +186,9 @@ static void cpufreq_interactive_timer(unsigned long=
  data)
- 	unsigned int delta_idle;
- 	unsigned int delta_time;
- 	int cpu_load;
--	int load_since_change;
- 	struct cpufreq_interactive_cpuinfo *pcpu =3D
- 		&per_cpu(cpuinfo, data);
- 	u64 now_idle;
-@@ -266,23 +263,6 @@ static void cpufreq_interactive_timer(unsigned lon=
-g data)
- 	else
- 		cpu_load =3D 100 * (delta_time - delta_idle) / delta_time;
+ 			    new_freq > hispeed_freq &&
+ 			    now - pcpu->hispeed_validate_time
+ 			    < above_hispeed_delay_val) {
+-				trace_cpufreq_interactive_notyet(data, cpu_load,
+-								 pcpu->target_freq,
+-								 new_freq);
++				trace_cpufreq_interactive_notyet(
++					data, cpu_load, pcpu->target_freq,
++					pcpu->policy->cur, new_freq);
+ 				goto rearm;
+ 			}
+ 		}
+@@ -215,8 +215,9 @@ static void cpufreq_interactive_timer(unsigned long=
+ data)
+ 	 */
+ 	if (new_freq < pcpu->floor_freq) {
+ 		if (now - pcpu->floor_validate_time < min_sample_time) {
+-			trace_cpufreq_interactive_notyet(data, cpu_load,
+-					 pcpu->target_freq, new_freq);
++			trace_cpufreq_interactive_notyet(
++				data, cpu_load, pcpu->target_freq,
++				pcpu->policy->cur, new_freq);
+ 			goto rearm;
+ 		}
+ 	}
+@@ -225,13 +226,14 @@ static void cpufreq_interactive_timer(unsigned lo=
+ng data)
+ 	pcpu->floor_validate_time =3D now;
 =20
--	delta_idle =3D (unsigned int)(now_idle - pcpu->target_set_time_in_idl=
-e);
--	delta_time =3D (unsigned int)(now - pcpu->target_set_time);
--
--	if ((delta_time =3D=3D 0) || (delta_idle > delta_time))
--		load_since_change =3D 0;
--	else
--		load_since_change =3D
--			100 * (delta_time - delta_idle) / delta_time;
--
--	/*
--	 * Choose greater of short-term load (since last idle timer
--	 * started or timer function re-armed itself) or long-term load
--	 * (since last frequency change).
--	 */
--	if (load_since_change > cpu_load)
--		cpu_load =3D load_since_change;
--
- 	if ((cpu_load >=3D go_hispeed_load || boost_val) &&
- 	    pcpu->target_freq < hispeed_freq)
- 		new_freq =3D hispeed_freq;
-@@ -335,8 +315,6 @@ static void cpufreq_interactive_timer(unsigned long=
- data)
+ 	if (pcpu->target_freq =3D=3D new_freq) {
+-		trace_cpufreq_interactive_already(data, cpu_load,
+-						  pcpu->target_freq, new_freq);
++		trace_cpufreq_interactive_already(
++			data, cpu_load, pcpu->target_freq,
++			pcpu->policy->cur, new_freq);
+ 		goto rearm_if_notmax;
+ 	}
 =20
  	trace_cpufreq_interactive_target(data, cpu_load, pcpu->target_freq,
- 					 pcpu->policy->cur, new_freq);
--	pcpu->target_set_time_in_idle =3D now_idle;
--	pcpu->target_set_time =3D now;
+-					 new_freq);
++					 pcpu->policy->cur, new_freq);
+ 	pcpu->target_set_time_in_idle =3D now_idle;
+ 	pcpu->target_set_time =3D now;
 =20
- 	pcpu->target_freq =3D new_freq;
- 	spin_lock_irqsave(&speedchange_cpumask_lock, flags);
-@@ -500,9 +478,8 @@ static void cpufreq_interactive_boost(void)
- 		if (pcpu->target_freq < hispeed_freq) {
- 			pcpu->target_freq =3D hispeed_freq;
- 			cpumask_set_cpu(i, &speedchange_cpumask);
--			pcpu->target_set_time_in_idle =3D
--				get_cpu_idle_time_us(i, &pcpu->target_set_time);
--			pcpu->hispeed_validate_time =3D pcpu->target_set_time;
-+			pcpu->hispeed_validate_time =3D
-+				ktime_to_us(ktime_get());
- 			anyboost =3D 1;
- 		}
+diff --git a/include/trace/events/cpufreq_interactive.h b/include/trace=
+/events/cpufreq_interactive.h
+index ba0634e..b2ce6b0 100644
+--- a/include/trace/events/cpufreq_interactive.h
++++ b/include/trace/events/cpufreq_interactive.h
+@@ -36,44 +36,50 @@ DEFINE_EVENT(set, cpufreq_interactive_setspeed,
 =20
-@@ -815,14 +792,11 @@ static int cpufreq_governor_interactive(struct cp=
-ufreq_policy *policy,
- 			pcpu->policy =3D policy;
- 			pcpu->target_freq =3D policy->cur;
- 			pcpu->freq_table =3D freq_table;
--			pcpu->target_set_time_in_idle =3D
--				get_cpu_idle_time_us(j,
--					     &pcpu->target_set_time);
- 			pcpu->floor_freq =3D pcpu->target_freq;
- 			pcpu->floor_validate_time =3D
--				pcpu->target_set_time;
-+				ktime_to_us(ktime_get());
- 			pcpu->hispeed_validate_time =3D
--				pcpu->target_set_time;
-+				pcpu->floor_validate_time;
- 			pcpu->governor_enabled =3D 1;
- 			smp_wmb();
- 			pcpu->cpu_timer.expires =3D
+ DECLARE_EVENT_CLASS(loadeval,
+ 	    TP_PROTO(unsigned long cpu_id, unsigned long load,
+-		     unsigned long curfreq, unsigned long targfreq),
+-	    TP_ARGS(cpu_id, load, curfreq, targfreq),
++		     unsigned long curtarg, unsigned long curactual,
++		     unsigned long newtarg),
++		    TP_ARGS(cpu_id, load, curtarg, curactual, newtarg),
+=20
+ 	    TP_STRUCT__entry(
+ 		    __field(unsigned long, cpu_id    )
+ 		    __field(unsigned long, load      )
+-		    __field(unsigned long, curfreq   )
+-		    __field(unsigned long, targfreq  )
++		    __field(unsigned long, curtarg   )
++		    __field(unsigned long, curactual )
++		    __field(unsigned long, newtarg   )
+ 	    ),
+=20
+ 	    TP_fast_assign(
+ 		    __entry->cpu_id =3D cpu_id;
+ 		    __entry->load =3D load;
+-		    __entry->curfreq =3D curfreq;
+-		    __entry->targfreq =3D targfreq;
++		    __entry->curtarg =3D curtarg;
++		    __entry->curactual =3D curactual;
++		    __entry->newtarg =3D newtarg;
+ 	    ),
+=20
+-	    TP_printk("cpu=3D%lu load=3D%lu cur=3D%lu targ=3D%lu",
+-		      __entry->cpu_id, __entry->load, __entry->curfreq,
+-		      __entry->targfreq)
++	    TP_printk("cpu=3D%lu load=3D%lu cur=3D%lu actual=3D%lu targ=3D%lu=
+",
++		      __entry->cpu_id, __entry->load, __entry->curtarg,
++		      __entry->curactual, __entry->newtarg)
+ );
+=20
+ DEFINE_EVENT(loadeval, cpufreq_interactive_target,
+ 	    TP_PROTO(unsigned long cpu_id, unsigned long load,
+-		     unsigned long curfreq, unsigned long targfreq),
+-	    TP_ARGS(cpu_id, load, curfreq, targfreq)
++		     unsigned long curtarg, unsigned long curactual,
++		     unsigned long newtarg),
++	    TP_ARGS(cpu_id, load, curtarg, curactual, newtarg)
+ );
+=20
+ DEFINE_EVENT(loadeval, cpufreq_interactive_already,
+ 	    TP_PROTO(unsigned long cpu_id, unsigned long load,
+-		     unsigned long curfreq, unsigned long targfreq),
+-	    TP_ARGS(cpu_id, load, curfreq, targfreq)
++		     unsigned long curtarg, unsigned long curactual,
++		     unsigned long newtarg),
++	    TP_ARGS(cpu_id, load, curtarg, curactual, newtarg)
+ );
+=20
+ DEFINE_EVENT(loadeval, cpufreq_interactive_notyet,
+ 	    TP_PROTO(unsigned long cpu_id, unsigned long load,
+-		     unsigned long curfreq, unsigned long targfreq),
+-	    TP_ARGS(cpu_id, load, curfreq, targfreq)
++		     unsigned long curtarg, unsigned long curactual,
++		     unsigned long newtarg),
++	    TP_ARGS(cpu_id, load, curtarg, curactual, newtarg)
+ );
+=20
+ TRACE_EVENT(cpufreq_interactive_boost,
 --=20
 1.7.9.5
