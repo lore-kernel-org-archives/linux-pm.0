@@ -1,57 +1,34 @@
-From: Saurabh Sengar <saurabh.truth@gmail.com>
-Subject: [PATCH v2] PM / suspend: replacing printk
-Date: Wed, 28 Oct 2015 00:51:16 +0530
-Message-ID: <1445973676-4394-1-git-send-email-saurabh.truth@gmail.com>
+From: Richard Weinberger <richard.weinberger@gmail.com>
+Subject: Re: [PATCH v2] PM / suspend: replacing printk
+Date: Tue, 27 Oct 2015 20:26:54 +0100
+Message-ID: <CAFLxGvwkk+DJ+AACoC6dG4M4jtnW=F=Qm082hFJHQSYoujc6PA@mail.gmail.com>
 References: <saurabh.truth@gmail.com>
+	<1445973676-4394-1-git-send-email-saurabh.truth@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f65.google.com ([209.85.220.65]:33944 "EHLO
-	mail-pa0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965053AbbJ0TV0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Oct 2015 15:21:26 -0400
-In-Reply-To: <saurabh.truth@gmail.com>
+Received: from mail-oi0-f54.google.com ([209.85.218.54]:34303 "EHLO
+	mail-oi0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965111AbbJ0T0z (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Oct 2015 15:26:55 -0400
+In-Reply-To: <1445973676-4394-1-git-send-email-saurabh.truth@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Saurabh Sengar <saurabh.truth@gmail.com>
+To: Saurabh Sengar <saurabh.truth@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
-replacing prink(s) with appropriate pr_info and pr_err
+On Tue, Oct 27, 2015 at 8:21 PM, Saurabh Sengar <saurabh.truth@gmail.com> wrote:
+> replacing prink(s) with appropriate pr_info and pr_err
+>
+> Signed-off-by: Saurabh Sengar <saurabh.truth@gmail.com>
+> ---
+>  kernel/power/suspend.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
 
-Signed-off-by: Saurabh Sengar <saurabh.truth@gmail.com>
----
- kernel/power/suspend.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+In which way does this patch improve the existing code?
+You describe what it does but not which problem it solves and
+why this patch is necessary.
 
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index 7e4cda4..2d8856b 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -245,7 +245,7 @@ static int suspend_test(int level)
- {
- #ifdef CONFIG_PM_DEBUG
- 	if (pm_test_level == level) {
--		printk(KERN_INFO "suspend debug: Waiting for %d second(s).\n",
-+		pr_info("suspend debug: Waiting for %d second(s).",
- 				pm_test_delay);
- 		mdelay(pm_test_delay * 1000);
- 		return 1;
-@@ -317,7 +317,7 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
- 
- 	error = dpm_suspend_late(PMSG_SUSPEND);
- 	if (error) {
--		printk(KERN_ERR "PM: late suspend of devices failed\n");
-+		pr_err("PM: late suspend of devices failed");
- 		goto Platform_finish;
- 	}
- 	error = platform_suspend_prepare_late(state);
-@@ -326,7 +326,7 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
- 
- 	error = dpm_suspend_noirq(PMSG_SUSPEND);
- 	if (error) {
--		printk(KERN_ERR "PM: noirq suspend of devices failed\n");
-+		pr_err("PM: noirq suspend of devices failed");
- 		goto Platform_early_resume;
- 	}
- 	error = platform_suspend_prepare_noirq(state);
 -- 
-1.9.1
-
+Thanks,
+//richard
