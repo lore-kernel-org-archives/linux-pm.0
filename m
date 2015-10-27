@@ -1,7 +1,7 @@
 From: =?UTF-8?q?B=C3=A1lint=20Czobor?= <czoborbalint@gmail.com>
-Subject: [PATCH 70/70] cpufreq: interactive: Round up timer_rate to match jiffy
-Date: Tue, 27 Oct 2015 18:30:58 +0100
-Message-ID: <1445967059-6897-70-git-send-email-czoborbalint@gmail.com>
+Subject: [PATCH 69/70] cpufreq: interactive: Don't set floor_validate_time during boost
+Date: Tue, 27 Oct 2015 18:30:57 +0100
+Message-ID: <1445967059-6897-69-git-send-email-czoborbalint@gmail.com>
 References: <1445967059-6897-1-git-send-email-czoborbalint@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -15,42 +15,46 @@ List-Id: linux-pm@vger.kernel.org
 
 =46rom: Junjie Wu <junjiew@codeaurora.org>
 
-Timers are scheduled in unit of jiffies. Round up timer_rate so that
-it matches the actual sampling period.
+=46requency selection algorithm guarantees its chosen frequency
+is not lower than hispeed_freq as long as boost is enabled.
 
-Change-Id: I88386a5a448e40333f9a9b9f0cf72af58cb54656
+Setting floor_freq and floor_validate_time during boost could block
+CPU frequency from going below hispeed_freq even after
+boostpulse_duration expires, if min_sample_time is higher than
+boostpulse_duration. This conflicts with the intention of commit
+de091367ead15b6e95dd1d0743a18f0da5a07ee5
+(cpufreq: interactive: specify duration of CPU speed boost pulse)
+to allow CPU to ramp down immediately after boost expires. It also
+makes boost behavior inconsistent since it depends on min_sample_time.
+
+Avoid setting floor_freq and floor_validate_time when boost starts.
+
+Change-Id: I12852998af46cfbfaf8661eb5e8d5301b6f631e7
 Signed-off-by: Junjie Wu <junjiew@codeaurora.org>
 Signed-off-by: B=C3=A1lint Czobor <czoborbalint@gmail.com>
 ---
- drivers/cpufreq/cpufreq_interactive.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ drivers/cpufreq/cpufreq_interactive.c |    8 --------
+ 1 file changed, 8 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq_interactive.c b/drivers/cpufreq/cp=
 ufreq_interactive.c
-index 95525b3..a2fc98a 100644
+index 064ab56..95525b3 100644
 --- a/drivers/cpufreq/cpufreq_interactive.c
 +++ b/drivers/cpufreq/cpufreq_interactive.c
-@@ -852,12 +852,18 @@ static ssize_t store_timer_rate(struct cpufreq_in=
-teractive_tunables *tunables,
- 		const char *buf, size_t count)
- {
- 	int ret;
--	unsigned long val;
-+	unsigned long val, val_round;
-=20
- 	ret =3D kstrtoul(buf, 0, &val);
- 	if (ret < 0)
- 		return ret;
--	tunables->timer_rate =3D val;
-+
-+	val_round =3D jiffies_to_usecs(usecs_to_jiffies(val));
-+	if (val !=3D val_round)
-+		pr_warn("timer_rate not aligned to jiffy. Rounded up to %lu\n",
-+			val_round);
-+
-+	tunables->timer_rate =3D val_round;
- 	return count;
- }
+@@ -606,14 +606,6 @@ static void cpufreq_interactive_boost(void)
+ 				ktime_to_us(ktime_get());
+ 			anyboost =3D 1;
+ 		}
+-
+-		/*
+-		 * Set floor freq and (re)start timer for when last
+-		 * validated.
+-		 */
+-
+-		pcpu->floor_freq =3D tunables->hispeed_freq;
+-		pcpu->floor_validate_time =3D ktime_to_us(ktime_get());
+ 		spin_unlock_irqrestore(&pcpu->target_freq_lock, flags[1]);
+ 	}
 =20
 --=20
 1.7.9.5
