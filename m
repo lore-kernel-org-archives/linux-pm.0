@@ -1,89 +1,77 @@
 From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: [PATCH v11 1/4] device core: add device_is_bound()
-Date: Tue, 27 Oct 2015 15:38:48 +0100
-Message-ID: <1445956731-6304-2-git-send-email-tomeu.vizoso@collabora.com>
+Subject: [PATCH v11 4/4] USB / PM: Allow USB devices to remain runtime-suspended when sleeping
+Date: Tue, 27 Oct 2015 15:38:51 +0100
+Message-ID: <1445956731-6304-5-git-send-email-tomeu.vizoso@collabora.com>
 References: <1445956731-6304-1-git-send-email-tomeu.vizoso@collabora.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wi0-f181.google.com ([209.85.212.181]:32984 "EHLO
+	mail-wi0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932524AbbJ0Oj2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Oct 2015 10:39:28 -0400
 In-Reply-To: <1445956731-6304-1-git-send-email-tomeu.vizoso@collabora.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, martyn.welch@collabora.co.uk, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, martyn.welch@collabora.co.uk, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Adds a function that tells whether a device is already bound to a
-driver.
-
-This is needed to warn when there is an attempt to change the PM domain
-of a device that has finished probing already. The reason why we want to
-enforce that is because in the general case that can cause problems and
-also that we can simplify code quite a bit if we can always assume that.
+Have dev_pm_ops.prepare return 1 for USB devices and ports so that USB
+devices can remain runtime-suspended when the system goes to a sleep
+state, if their wakeup state is correct and they have runtime PM enabled.
 
 Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
 Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Acked-by: Alan Stern <stern@rowland.harvard.edu>
 ---
 
-Changes in v9:
-- Add docs noting the need for the device lock to be held before calling
-  device_is_bound()
+Changes in v10:
+- Remove superfluous call to pm_runtime_enabled() as suggested by Alan
 
-Changes in v8:
-- Add device_is_bound()
+ drivers/usb/core/port.c | 6 ++++++
+ drivers/usb/core/usb.c  | 8 +++++++-
+ 2 files changed, 13 insertions(+), 1 deletion(-)
 
- drivers/base/dd.c      | 18 ++++++++++++++++--
- include/linux/device.h |  2 ++
- 2 files changed, 18 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-index be0eb4639128..d662ed5d08f4 100644
---- a/drivers/base/dd.c
-+++ b/drivers/base/dd.c
-@@ -192,9 +192,23 @@ static int deferred_probe_initcall(void)
+diff --git a/drivers/usb/core/port.c b/drivers/usb/core/port.c
+index 210618319f10..f49707d73b5a 100644
+--- a/drivers/usb/core/port.c
++++ b/drivers/usb/core/port.c
+@@ -168,12 +168,18 @@ static int usb_port_runtime_suspend(struct device *dev)
+ 
+ 	return retval;
  }
- late_initcall(deferred_probe_initcall);
- 
-+/**
-+ * device_is_bound() - Check if device is bound to a driver
-+ * @dev: device to check
-+ *
-+ * Returns true if passed device has already finished probing successfully
-+ * against a driver.
-+ *
-+ * This function must be called with the device lock held.
-+ */
-+bool device_is_bound(struct device *dev)
++
++static int usb_port_prepare(struct device *dev)
 +{
-+	return klist_node_attached(&dev->p->knode_driver);
++	return 1;
 +}
-+
- static void driver_bound(struct device *dev)
+ #endif
+ 
+ static const struct dev_pm_ops usb_port_pm_ops = {
+ #ifdef CONFIG_PM
+ 	.runtime_suspend =	usb_port_runtime_suspend,
+ 	.runtime_resume =	usb_port_runtime_resume,
++	.prepare =		usb_port_prepare,
+ #endif
+ };
+ 
+diff --git a/drivers/usb/core/usb.c b/drivers/usb/core/usb.c
+index 8d5b2f4113cd..3a55c91b13a1 100644
+--- a/drivers/usb/core/usb.c
++++ b/drivers/usb/core/usb.c
+@@ -316,7 +316,13 @@ static int usb_dev_uevent(struct device *dev, struct kobj_uevent_env *env)
+ 
+ static int usb_dev_prepare(struct device *dev)
  {
--	if (klist_node_attached(&dev->p->knode_driver)) {
-+	if (device_is_bound(dev)) {
- 		printk(KERN_WARNING "%s: device %s already bound\n",
- 			__func__, kobject_name(&dev->kobj));
- 		return;
-@@ -545,7 +559,7 @@ static int __device_attach(struct device *dev, bool allow_async)
- 
- 	device_lock(dev);
- 	if (dev->driver) {
--		if (klist_node_attached(&dev->p->knode_driver)) {
-+		if (device_is_bound(dev)) {
- 			ret = 1;
- 			goto out_unlock;
- 		}
-diff --git a/include/linux/device.h b/include/linux/device.h
-index 5d7bc6349930..9b41c05fb479 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -1035,6 +1035,8 @@ extern int __must_check driver_attach(struct device_driver *drv);
- extern void device_initial_probe(struct device *dev);
- extern int __must_check device_reprobe(struct device *dev);
- 
-+extern bool device_is_bound(struct device *dev);
+-	return 0;		/* Implement eventually? */
++	struct usb_device *udev = to_usb_device(dev);
 +
- /*
-  * Easy functions for dynamically creating devices on the fly
-  */
++	/* Return 0 if the current wakeup setting is wrong, otherwise 1 */
++	if (udev->do_remote_wakeup != device_may_wakeup(dev))
++		return 0;
++
++	return 1;
+ }
+ 
+ static void usb_dev_complete(struct device *dev)
 -- 
 2.5.0
+
