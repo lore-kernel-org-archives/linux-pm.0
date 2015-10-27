@@ -1,200 +1,367 @@
 From: James Morse <james.morse@arm.com>
-Subject: [PATCH v2 03/11] arm64: Convert hcalls to use HVC immediate value
-Date: Tue, 27 Oct 2015 17:29:12 +0000
-Message-ID: <1445966960-31724-4-git-send-email-james.morse@arm.com>
+Subject: [PATCH v2 06/11] arm64: kernel: Rework finisher callback out of __cpu_suspend_enter().
+Date: Tue, 27 Oct 2015 17:29:15 +0000
+Message-ID: <1445966960-31724-7-git-send-email-james.morse@arm.com>
 References: <1445966960-31724-1-git-send-email-james.morse@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:57866 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:57897 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754441AbbJ0RaV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 27 Oct 2015 13:30:21 -0400
+	id S1754619AbbJ0Rad (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 27 Oct 2015 13:30:33 -0400
 In-Reply-To: <1445966960-31724-1-git-send-email-james.morse@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org
 Cc: Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Kevin Kang <kkang@intrinsyc.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, wangfei <w.f@huawei.com>, Marc Zyngier <marc.zyngier@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, James Morse <james.morse@arm.com>
 
-From: Geoff Levand <geoff@infradead.org>
+Hibernate could make use of the cpu_suspend() code to save/restore cpu
+state, however it needs to be able to return '0' from the 'finisher'.
 
-The existing arm64 hcall implementations are limited in that they only allow
-for two distinct hcalls; with the x0 register either zero or not zero.  Also,
-the API of the hyp-stub exception vector routines and the KVM exception vector
-routines differ; hyp-stub uses a non-zero value in x0 to implement
-__hyp_set_vectors, whereas KVM uses it to implement kvm_call_hyp.
+Rework cpu_suspend() so that the finisher is called from C code,
+independently from the save/restore of cpu state. Space to save the context
+in is allocated in the caller's stack frame, and passed into
+__cpu_suspend_enter().
 
-To allow for additional hcalls to be defined and to make the arm64 hcall API
-more consistent across exception vector routines, change the hcall
-implementations to use the 16 bit immediate value of the HVC instruction to
-specify the hcall type.
+Hibernate's use of this API will look like a copy of the cpu_suspend()
+function.
 
-Define three new preprocessor macros HVC_CALL_HYP, HVC_GET_VECTORS, and
-HVC_SET_VECTORS to be used as hcall type specifiers and convert the
-existing __hyp_get_vectors(), __hyp_set_vectors() and kvm_call_hyp() routines
-to use these new macros when executing an HVC call.  Also, change the
-corresponding hyp-stub and KVM el1_sync exception vector routines to use these
-new macros.
-
-Signed-off-by: Geoff Levand <geoff@infradead.org>
 Signed-off-by: James Morse <james.morse@arm.com>
+Acked-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 ---
- arch/arm64/include/asm/virt.h | 27 +++++++++++++++++++++++++++
- arch/arm64/kernel/hyp-stub.S  | 32 +++++++++++++++++++++-----------
- arch/arm64/kvm/hyp.S          | 16 +++++++++-------
- 3 files changed, 57 insertions(+), 18 deletions(-)
+Changes since v1:
+ * Added/fixed two comments identified by Lorenzo
+ * Rebased onto Lorenzo's tcr_el1.t0sz fix.
 
-diff --git a/arch/arm64/include/asm/virt.h b/arch/arm64/include/asm/virt.h
-index 7a5df5252dd7..eb10368c329e 100644
---- a/arch/arm64/include/asm/virt.h
-+++ b/arch/arm64/include/asm/virt.h
-@@ -18,6 +18,33 @@
- #ifndef __ASM__VIRT_H
- #define __ASM__VIRT_H
+ arch/arm64/include/asm/suspend.h | 20 +++++++++
+ arch/arm64/kernel/asm-offsets.c  |  2 +
+ arch/arm64/kernel/sleep.S        | 93 ++++++++++++++--------------------------
+ arch/arm64/kernel/suspend.c      | 89 ++++++++++++++++++++++----------------
+ 4 files changed, 108 insertions(+), 96 deletions(-)
+
+diff --git a/arch/arm64/include/asm/suspend.h b/arch/arm64/include/asm/suspend.h
+index 59a5b0f1e81c..ccd26da93d03 100644
+--- a/arch/arm64/include/asm/suspend.h
++++ b/arch/arm64/include/asm/suspend.h
+@@ -2,6 +2,7 @@
+ #define __ASM_SUSPEND_H
+ 
+ #define NR_CTX_REGS 11
++#define NR_CALLEE_SAVED_REGS 12
+ 
+ /*
+  * struct cpu_suspend_ctx must be 16-byte aligned since it is allocated on
+@@ -21,6 +22,25 @@ struct sleep_save_sp {
+ 	phys_addr_t save_ptr_stash_phys;
+ };
  
 +/*
-+ * The arm64 hcall implementation uses the ISS field of the ESR_EL2 register to
-+ * specify the hcall type.  The exception handlers are allowed to use registers
-+ * x17 and x18 in their implementation.  Any routine issuing an hcall must not
-+ * expect these registers to be preserved.
-+ */
-+
-+/*
-+ * HVC_CALL_HYP - Execute a hyp routine.
-+ */
-+
-+#define HVC_CALL_HYP 0
-+
-+/*
-+ * HVC_GET_VECTORS - Return the value of the vbar_el2 register.
-+ */
-+
-+#define HVC_GET_VECTORS 1
-+
-+/*
-+ * HVC_SET_VECTORS - Set the value of the vbar_el2 register.
++ * Memory to save the cpu state is allocated on the stack by
++ * __cpu_suspend_enter()'s caller, and populated by __cpu_suspend_enter().
++ * This data must survive until cpu_resume() is called.
 + *
-+ * @x0: Physical address of the new vector table.
++ * This struct desribes the size and the layout of the saved cpu state.
++ * The layout of the callee_saved_regs is defined by the implementation
++ * of __cpu_suspend_enter(), and cpu_resume(). This struct must be passed
++ * in by the caller as __cpu_suspend_enter()'s stack-frame is gone once it
++ * returns, and the data would be subsequently corrupted by the call to the
++ * finisher.
 + */
++struct sleep_stack_data {
++	struct cpu_suspend_ctx	system_regs;
++	unsigned long		callee_saved_regs[NR_CALLEE_SAVED_REGS];
++};
 +
-+#define HVC_SET_VECTORS 2
-+
- #define BOOT_CPU_MODE_EL1	(0xe11)
- #define BOOT_CPU_MODE_EL2	(0xe12)
- 
-diff --git a/arch/arm64/kernel/hyp-stub.S b/arch/arm64/kernel/hyp-stub.S
-index a272f335c289..017ab519aaf1 100644
---- a/arch/arm64/kernel/hyp-stub.S
-+++ b/arch/arm64/kernel/hyp-stub.S
-@@ -22,6 +22,7 @@
- #include <linux/irqchip/arm-gic-v3.h>
- 
- #include <asm/assembler.h>
-+#include <asm/kvm_arm.h>
- #include <asm/ptrace.h>
- #include <asm/virt.h>
- 
-@@ -53,14 +54,22 @@ ENDPROC(__hyp_stub_vectors)
- 	.align 11
- 
- el1_sync:
--	mrs	x1, esr_el2
--	lsr	x1, x1, #26
--	cmp	x1, #0x16
-+	mrs	x18, esr_el2
-+	lsr	x17, x18, #ESR_ELx_EC_SHIFT
-+	and	x18, x18, #ESR_ELx_ISS_MASK
-+
-+	cmp	x17, #ESR_ELx_EC_HVC64
- 	b.ne	2f				// Not an HVC trap
--	cbz	x0, 1f
--	msr	vbar_el2, x0			// Set vbar_el2
-+
-+	cmp	x18, #HVC_GET_VECTORS
-+	b.ne	1f
-+	mrs	x0, vbar_el2
- 	b	2f
--1:	mrs	x0, vbar_el2			// Return vbar_el2
-+
-+1:	cmp	x18, #HVC_SET_VECTORS
-+	b.ne	2f
-+	msr	vbar_el2, x0
-+
- 2:	eret
- ENDPROC(el1_sync)
- 
-@@ -100,11 +109,12 @@ ENDPROC(\label)
-  * initialisation entry point.
-  */
- 
--ENTRY(__hyp_get_vectors)
--	mov	x0, xzr
--	// fall through
- ENTRY(__hyp_set_vectors)
--	hvc	#0
-+	hvc	#HVC_SET_VECTORS
- 	ret
--ENDPROC(__hyp_get_vectors)
- ENDPROC(__hyp_set_vectors)
-+
-+ENTRY(__hyp_get_vectors)
-+	hvc	#HVC_GET_VECTORS
-+	ret
-+ENDPROC(__hyp_get_vectors)
-diff --git a/arch/arm64/kvm/hyp.S b/arch/arm64/kvm/hyp.S
-index e5836138ec42..073b8bf3daf7 100644
---- a/arch/arm64/kvm/hyp.S
-+++ b/arch/arm64/kvm/hyp.S
-@@ -29,6 +29,7 @@
- #include <asm/kvm_asm.h>
- #include <asm/kvm_mmu.h>
- #include <asm/memory.h>
-+#include <asm/virt.h>
- 
- #define CPU_GP_REG_OFFSET(x)	(CPU_GP_REGS + x)
- #define CPU_XREG_OFFSET(x)	CPU_GP_REG_OFFSET(CPU_USER_PT_REGS + 8*x)
-@@ -924,12 +925,9 @@ __hyp_panic_str:
-  * in Hyp mode (see init_hyp_mode in arch/arm/kvm/arm.c).  Return values are
-  * passed in r0 and r1.
+ extern int cpu_suspend(unsigned long arg, int (*fn)(unsigned long));
+ extern void cpu_resume(void);
++int __cpu_suspend_enter(struct sleep_stack_data *state);
++void __cpu_suspend_exit(struct mm_struct *mm);
+ #endif
+diff --git a/arch/arm64/kernel/asm-offsets.c b/arch/arm64/kernel/asm-offsets.c
+index 8d89cf8dae55..5daa4e692932 100644
+--- a/arch/arm64/kernel/asm-offsets.c
++++ b/arch/arm64/kernel/asm-offsets.c
+@@ -160,6 +160,8 @@ int main(void)
+   DEFINE(SLEEP_SAVE_SP_SZ,	sizeof(struct sleep_save_sp));
+   DEFINE(SLEEP_SAVE_SP_PHYS,	offsetof(struct sleep_save_sp, save_ptr_stash_phys));
+   DEFINE(SLEEP_SAVE_SP_VIRT,	offsetof(struct sleep_save_sp, save_ptr_stash));
++  DEFINE(SLEEP_STACK_DATA_SYSTEM_REGS,	offsetof(struct sleep_stack_data, system_regs));
++  DEFINE(SLEEP_STACK_DATA_CALLEE_REGS,	offsetof(struct sleep_stack_data, callee_saved_regs));
+ #endif
+   return 0;
+ }
+diff --git a/arch/arm64/kernel/sleep.S b/arch/arm64/kernel/sleep.S
+index f586f7c875e2..1fa40573db13 100644
+--- a/arch/arm64/kernel/sleep.S
++++ b/arch/arm64/kernel/sleep.S
+@@ -49,37 +49,30 @@
+ 	orr	\dst, \dst, \mask		// dst|=(aff3>>rs3)
+ 	.endm
+ /*
+- * Save CPU state for a suspend and execute the suspend finisher.
+- * On success it will return 0 through cpu_resume - ie through a CPU
+- * soft/hard reboot from the reset vector.
+- * On failure it returns the suspend finisher return value or force
+- * -EOPNOTSUPP if the finisher erroneously returns 0 (the suspend finisher
+- * is not allowed to return, if it does this must be considered failure).
+- * It saves callee registers, and allocates space on the kernel stack
+- * to save the CPU specific registers + some other data for resume.
++ * Save CPU state in the provided sleep_stack_data area, and publish its
++ * location for cpu_resume()'s use in sleep_save_stash.
   *
-- * A function pointer with a value of 0 has a special meaning, and is
-- * used to implement __hyp_get_vectors in the same way as in
-- * arch/arm64/kernel/hyp_stub.S.
+- *  x0 = suspend finisher argument
+- *  x1 = suspend finisher function pointer
++ * cpu_resume() will restore this saved state, and return. Because the
++ * link-register is saved and restored, it will appear to return from this
++ * function. So that the caller can tell the suspend/resume paths apart,
++ * __cpu_suspend_enter() will always return a non-zero value, whereas the
++ * path through cpu_resume() will return 0.
++ *
++ *  x0 = struct sleep_stack_data area
   */
- ENTRY(kvm_call_hyp)
--	hvc	#0
-+	hvc	#HVC_CALL_HYP
- 	ret
- ENDPROC(kvm_call_hyp)
- 
-@@ -960,6 +958,7 @@ el1_sync:					// Guest trapped into EL2
- 
- 	mrs	x1, esr_el2
- 	lsr	x2, x1, #ESR_ELx_EC_SHIFT
-+	and	x0, x1, #ESR_ELx_ISS_MASK
- 
- 	cmp	x2, #ESR_ELx_EC_HVC64
- 	b.ne	el1_trap
-@@ -968,15 +967,18 @@ el1_sync:					// Guest trapped into EL2
- 	cbnz	x3, el1_trap			// called HVC
- 
- 	/* Here, we're pretty sure the host called HVC. */
-+	mov	x18, x0
- 	pop	x2, x3
- 	pop	x0, x1
- 
--	/* Check for __hyp_get_vectors */
--	cbnz	x0, 1f
-+	cmp	x18, #HVC_GET_VECTORS
-+	b.ne	1f
- 	mrs	x0, vbar_el2
- 	b	2f
- 
--1:	push	lr, xzr
-+1:	/* Default to HVC_CALL_HYP. */
+ ENTRY(__cpu_suspend_enter)
+-	stp	x29, lr, [sp, #-96]!
+-	stp	x19, x20, [sp,#16]
+-	stp	x21, x22, [sp,#32]
+-	stp	x23, x24, [sp,#48]
+-	stp	x25, x26, [sp,#64]
+-	stp	x27, x28, [sp,#80]
+-	/*
+-	 * Stash suspend finisher and its argument in x20 and x19
+-	 */
+-	mov	x19, x0
+-	mov	x20, x1
++	stp	x29, lr, [x0, #SLEEP_STACK_DATA_CALLEE_REGS]
++	stp	x19, x20, [x0,#SLEEP_STACK_DATA_CALLEE_REGS+16]
++	stp	x21, x22, [x0,#SLEEP_STACK_DATA_CALLEE_REGS+32]
++	stp	x23, x24, [x0,#SLEEP_STACK_DATA_CALLEE_REGS+48]
++	stp	x25, x26, [x0,#SLEEP_STACK_DATA_CALLEE_REGS+64]
++	stp	x27, x28, [x0,#SLEEP_STACK_DATA_CALLEE_REGS+80]
 +
-+	push	lr, xzr
++	/* save the sp in cpu_suspend_ctx */
+ 	mov	x2, sp
+-	sub	sp, sp, #CPU_SUSPEND_SZ	// allocate cpu_suspend_ctx
+-	mov	x0, sp
+-	/*
+-	 * x0 now points to struct cpu_suspend_ctx allocated on the stack
+-	 */
+-	str	x2, [x0, #CPU_CTX_SP]
++	str	x2, [x0, #SLEEP_STACK_DATA_SYSTEM_REGS + CPU_CTX_SP]
++
++	/* find the mpidr_hash */
+ 	ldr	x1, =sleep_save_sp
+ 	ldr	x1, [x1, #SLEEP_SAVE_SP_VIRT]
+ 	mrs	x7, mpidr_el1
+@@ -93,34 +86,11 @@ ENTRY(__cpu_suspend_enter)
+ 	ldp	w5, w6, [x9, #(MPIDR_HASH_SHIFTS + 8)]
+ 	compute_mpidr_hash x8, x3, x4, x5, x6, x7, x10
+ 	add	x1, x1, x8, lsl #3
++
++	push	x29, lr
+ 	bl	__cpu_suspend_save
+-	/*
+-	 * Grab suspend finisher in x20 and its argument in x19
+-	 */
+-	mov	x0, x19
+-	mov	x1, x20
+-	/*
+-	 * We are ready for power down, fire off the suspend finisher
+-	 * in x1, with argument in x0
+-	 */
+-	blr	x1
+-        /*
+-	 * Never gets here, unless suspend finisher fails.
+-	 * Successful cpu_suspend should return from cpu_resume, returning
+-	 * through this code path is considered an error
+-	 * If the return value is set to 0 force x0 = -EOPNOTSUPP
+-	 * to make sure a proper error condition is propagated
+-	 */
+-	cmp	x0, #0
+-	mov	x3, #-EOPNOTSUPP
+-	csel	x0, x3, x0, eq
+-	add	sp, sp, #CPU_SUSPEND_SZ	// rewind stack pointer
+-	ldp	x19, x20, [sp, #16]
+-	ldp	x21, x22, [sp, #32]
+-	ldp	x23, x24, [sp, #48]
+-	ldp	x25, x26, [sp, #64]
+-	ldp	x27, x28, [sp, #80]
+-	ldp	x29, lr, [sp], #96
++	pop	x29, lr
++	mov	x0, #1
+ 	ret
+ ENDPROC(__cpu_suspend_enter)
+ 	.ltorg
+@@ -146,12 +116,6 @@ ENDPROC(cpu_resume_mmu)
+ 	.popsection
+ cpu_resume_after_mmu:
+ 	mov	x0, #0			// return zero on success
+-	ldp	x19, x20, [sp, #16]
+-	ldp	x21, x22, [sp, #32]
+-	ldp	x23, x24, [sp, #48]
+-	ldp	x25, x26, [sp, #64]
+-	ldp	x27, x28, [sp, #80]
+-	ldp	x29, lr, [sp], #96
+ 	ret
+ ENDPROC(cpu_resume_after_mmu)
+ 
+@@ -168,6 +132,8 @@ ENTRY(cpu_resume)
+         /* x7 contains hash index, let's use it to grab context pointer */
+ 	ldr_l	x0, sleep_save_sp + SLEEP_SAVE_SP_PHYS
+ 	ldr	x0, [x0, x7, lsl #3]
++	add	x29, x0, #SLEEP_STACK_DATA_CALLEE_REGS
++	add	x0, x0, #SLEEP_STACK_DATA_SYSTEM_REGS
+ 	/* load sp from context */
+ 	ldr	x2, [x0, #CPU_CTX_SP]
+ 	/* load physical address of identity map page table in x1 */
+@@ -178,5 +144,12 @@ ENTRY(cpu_resume)
+ 	 * pointer and x1 to contain physical address of 1:1 page tables
+ 	 */
+ 	bl	cpu_do_resume		// PC relative jump, MMU off
++	/* Can't access these by physical address once the MMU is on */
++	ldp	x19, x20, [x29, #16]
++	ldp	x21, x22, [x29, #32]
++	ldp	x23, x24, [x29, #48]
++	ldp	x25, x26, [x29, #64]
++	ldp	x27, x28, [x29, #80]
++	ldp	x29, lr, [x29]
+ 	b	cpu_resume_mmu		// Resume MMU, never returns
+ ENDPROC(cpu_resume)
+diff --git a/arch/arm64/kernel/suspend.c b/arch/arm64/kernel/suspend.c
+index 44ca4143b013..eeb088d15bcb 100644
+--- a/arch/arm64/kernel/suspend.c
++++ b/arch/arm64/kernel/suspend.c
+@@ -9,22 +9,22 @@
+ #include <asm/suspend.h>
+ #include <asm/tlbflush.h>
+ 
+-extern int __cpu_suspend_enter(unsigned long arg, int (*fn)(unsigned long));
++
+ /*
+  * This is called by __cpu_suspend_enter() to save the state, and do whatever
+  * flushing is required to ensure that when the CPU goes to sleep we have
+  * the necessary data available when the caches are not searched.
+  *
+- * ptr: CPU context virtual address
++ * ptr: sleep_stack_data containing cpu state virtual address.
+  * save_ptr: address of the location where the context physical address
+  *           must be saved
+  */
+-void notrace __cpu_suspend_save(struct cpu_suspend_ctx *ptr,
++void notrace __cpu_suspend_save(struct sleep_stack_data *ptr,
+ 				phys_addr_t *save_ptr)
+ {
+ 	*save_ptr = virt_to_phys(ptr);
+ 
+-	cpu_do_suspend(ptr);
++	cpu_do_suspend(&ptr->system_regs);
+ 	/*
+ 	 * Only flush the context that must be retrieved with the MMU
+ 	 * off. VA primitives ensure the flush is applied to all
+@@ -50,6 +50,41 @@ void __init cpu_suspend_set_dbg_restorer(void (*hw_bp_restore)(void *))
+ 	hw_breakpoint_restore = hw_bp_restore;
+ }
+ 
++void notrace __cpu_suspend_exit(struct mm_struct *mm)
++{
++	/*
++	 * We are resuming from reset with TTBR0_EL1 set to the
++	 * idmap to enable the MMU; set the TTBR0 to the reserved
++	 * page tables to prevent speculative TLB allocations, flush
++	 * the local tlb and set the default tcr_el1.t0sz so that
++	 * the TTBR0 address space set-up is properly restored.
++	 * If the current active_mm != &init_mm we entered cpu_suspend
++	 * with mappings in TTBR0 that must be restored, so we switch
++	 * them back to complete the address space configuration
++	 * restoration before returning.
++	 */
++	cpu_set_reserved_ttbr0();
++	flush_tlb_all();
++	cpu_set_default_tcr_t0sz();
++
++	if (mm != &init_mm)
++		cpu_switch_mm(mm->pgd, mm);
++
++	/*
++	 * Restore per-cpu offset before any kernel
++	 * subsystem relying on it has a chance to run.
++	 */
++	set_my_cpu_offset(per_cpu_offset(smp_processor_id()));
++
++	/*
++	 * Restore HW breakpoint registers to sane values
++	 * before debug exceptions are possibly reenabled
++	 * through local_dbg_restore.
++	 */
++	if (hw_breakpoint_restore)
++		hw_breakpoint_restore(NULL);
++}
++
+ /*
+  * cpu_suspend
+  *
+@@ -60,8 +95,9 @@ void __init cpu_suspend_set_dbg_restorer(void (*hw_bp_restore)(void *))
+ int cpu_suspend(unsigned long arg, int (*fn)(unsigned long))
+ {
+ 	struct mm_struct *mm = current->active_mm;
+-	int ret;
++	int ret = 0;
+ 	unsigned long flags;
++	struct sleep_stack_data state;
  
  	/*
- 	 * Compute the function address in EL2, and shuffle the parameters.
+ 	 * From this point debug exceptions are disabled to prevent
+@@ -76,40 +112,21 @@ int cpu_suspend(unsigned long arg, int (*fn)(unsigned long))
+ 	 * page tables, so that the thread address space is properly
+ 	 * set-up on function return.
+ 	 */
+-	ret = __cpu_suspend_enter(arg, fn);
+-	if (ret == 0) {
+-		/*
+-		 * We are resuming from reset with TTBR0_EL1 set to the
+-		 * idmap to enable the MMU; set the TTBR0 to the reserved
+-		 * page tables to prevent speculative TLB allocations, flush
+-		 * the local tlb and set the default tcr_el1.t0sz so that
+-		 * the TTBR0 address space set-up is properly restored.
+-		 * If the current active_mm != &init_mm we entered cpu_suspend
+-		 * with mappings in TTBR0 that must be restored, so we switch
+-		 * them back to complete the address space configuration
+-		 * restoration before returning.
+-		 */
+-		cpu_set_reserved_ttbr0();
+-		flush_tlb_all();
+-		cpu_set_default_tcr_t0sz();
+-
+-		if (mm != &init_mm)
+-			cpu_switch_mm(mm->pgd, mm);
+-
+-		/*
+-		 * Restore per-cpu offset before any kernel
+-		 * subsystem relying on it has a chance to run.
+-		 */
+-		set_my_cpu_offset(per_cpu_offset(smp_processor_id()));
++	if (__cpu_suspend_enter(&state)) {
++		/* Call the suspend finisher */
++		ret = fn(arg);
+ 
+ 		/*
+-		 * Restore HW breakpoint registers to sane values
+-		 * before debug exceptions are possibly reenabled
+-		 * through local_dbg_restore.
++		 * Never gets here, unless suspend finisher fails.
++		 * Successful cpu_suspend should return from cpu_resume,
++		 * returning through this code path is considered an error
++		 * If the return value is set to 0 force ret = -EOPNOTSUPP
++		 * to make sure a proper error condition is propagated
+ 		 */
+-		if (hw_breakpoint_restore)
+-			hw_breakpoint_restore(NULL);
+-	}
++		if (!ret)
++			ret = -EOPNOTSUPP;
++	} else
++		__cpu_suspend_exit(mm);
+ 
+ 	/*
+ 	 * Restore pstate flags. OS lock and mdscr have been already
 -- 
 2.1.4
 
