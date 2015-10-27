@@ -1,152 +1,146 @@
 From: =?UTF-8?q?B=C3=A1lint=20Czobor?= <czoborbalint@gmail.com>
-Subject: [PATCH 37/70] cpufreq: interactive: default go_hispeed_load 99%, doc updates
-Date: Tue, 27 Oct 2015 18:30:25 +0100
-Message-ID: <1445967059-6897-37-git-send-email-czoborbalint@gmail.com>
+Subject: [PATCH 25/70] cpufreq: interactive: kick timer on idle exit past expiry
+Date: Tue, 27 Oct 2015 18:30:13 +0100
+Message-ID: <1445967059-6897-25-git-send-email-czoborbalint@gmail.com>
 References: <1445967059-6897-1-git-send-email-czoborbalint@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f42.google.com ([74.125.82.42]:37361 "EHLO
+	mail-wm0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965644AbbJ0Rk1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Oct 2015 13:40:27 -0400
 In-Reply-To: <1445967059-6897-1-git-send-email-czoborbalint@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Todd Poynor <toddpoynor@google.com>, =?UTF-8?q?B=C3=A1lint=20Czobor?= <czoborbalint@gmail.com>
-List-Id: linux-pm@vger.kernel.org
 
 =46rom: Todd Poynor <toddpoynor@google.com>
 
-Update default go_hispeed_load from 85% to 99%.  Recent changes to the
-governor now use a default target_load of 90%.  go_hispeed_load should
-not be lower than the target load for hispeed_freq, which could lead
-to oscillating speed decisions.  Other recent changes reduce the need
-to dampen speed jumps on load spikes, while input event boosts from
-userspace are the preferred method for anticipating load spikes with
-UI impacts.
+The deferrable timer list isn't checked on all idle exits, such as when
+hi-res timers expire or ISRs schedule workers.  If the idle loop is
+exited and it's past time to run the governor load polling timer,
+run it immediately.  This ensures we handle load spikes caused by actvi=
+ty
+that does not run the normal timer list.
 
-General update to the documentation to reflect recent changes.
+Rename the field that timestamps the "time_in_idle" value to be more
+accurate.
 
-Change-Id: I1b92f3091f42c04b10503cd1169a943b5dfd6faf
+Change-Id: Ied590ecbefc83c9a9ec5eb9e31903557f6fa1614
 Signed-off-by: Todd Poynor <toddpoynor@google.com>
 Signed-off-by: B=C3=A1lint Czobor <czoborbalint@gmail.com>
 ---
- Documentation/cpu-freq/governors.txt  |   64 ++++++++++++++++---------=
+ drivers/cpufreq/cpufreq_interactive.c |   43 +++++++++++++++----------=
 --------
- drivers/cpufreq/cpufreq_interactive.c |    2 +-
- 2 files changed, 33 insertions(+), 33 deletions(-)
+ 1 file changed, 20 insertions(+), 23 deletions(-)
 
-diff --git a/Documentation/cpu-freq/governors.txt b/Documentation/cpu-f=
-req/governors.txt
-index b15f6d2..4d8ae34 100644
---- a/Documentation/cpu-freq/governors.txt
-+++ b/Documentation/cpu-freq/governors.txt
-@@ -224,23 +224,8 @@ sampling rate.
-=20
- The CPUfreq governor "interactive" is designed for latency-sensitive,
- interactive workloads. This governor sets the CPU speed depending on
--usage, similar to "ondemand" and "conservative" governors.  However,
--the governor is more aggressive about scaling the CPU speed up in
--response to CPU-intensive activity.
--
--Sampling the CPU load every X ms can lead to under-powering the CPU
--for X ms, leading to dropped frames, stuttering UI, etc.  Instead of
--sampling the cpu at a specified rate, the interactive governor will
--check whether to scale the cpu frequency up soon after coming out of
--idle.  When the cpu comes out of idle, a timer is configured to fire
--within 1-2 ticks.  If the cpu is very busy between exiting idle and
--when the timer fires then we assume the cpu is underpowered and ramp
--to MAX speed.
--
--If the cpu was not sufficiently busy to immediately ramp to MAX speed,
--then governor evaluates the cpu load since the last speed adjustment,
--choosing the highest value between that longer-term load or the
--short-term load since idle exit to determine the cpu speed to ramp to.
-+usage, similar to "ondemand" and "conservative" governors, but with a
-+different set of configurable behaviors.
-=20
- The tuneable values for this governor are:
-=20
-@@ -262,36 +247,51 @@ values also usually appear in an ascending order.=
- The default is
- target load 90% for all speeds.
-=20
- min_sample_time: The minimum amount of time to spend at the current
--frequency before ramping down. This is to ensure that the governor has
--seen enough historic cpu load data to determine the appropriate
--workload.  Default is 80000 uS.
-+frequency before ramping down. Default is 80000 uS.
-=20
- hispeed_freq: An intermediate "hi speed" at which to initially ramp
- when CPU load hits the value specified in go_hispeed_load.  If load
- stays high for the amount of time specified in above_hispeed_delay,
--then speed may be bumped higher.  Default is maximum speed.
-+then speed may be bumped higher.  Default is the maximum speed
-+allowed by the policy at governor initialization time.
-=20
--go_hispeed_load: The CPU load at which to ramp to the intermediate "hi
--speed".  Default is 85%.
-+go_hispeed_load: The CPU load at which to ramp to hispeed_freq.
-+Default is 99%.
-=20
--above_hispeed_delay: Once speed is set to hispeed_freq, wait for this
--long before bumping speed higher in response to continued high load.
-+above_hispeed_delay: When speed is at or above hispeed_freq, wait for
-+this long before raising speed in response to continued high load.
- Default is 20000 uS.
-=20
--timer_rate: Sample rate for reevaluating cpu load when the system is
--not idle.  Default is 20000 uS.
--
--input_boost: If non-zero, boost speed of all CPUs to hispeed_freq on
--touchscreen activity.  Default is 0.
-+timer_rate: Sample rate for reevaluating CPU load when the CPU is not
-+idle.  A deferrable timer is used, such that the CPU will not be woken
-+from idle to service this timer until something else needs to run.
-+(The maximum time to allow deferring this timer when not running at
-+minimum speed is configurable via timer_slack.)  Default is 20000 uS.
-+
-+timer_slack: Maximum additional time to defer handling the governor
-+sampling timer beyond timer_rate when running at speeds above the
-+minimum.  For platforms that consume additional power at idle when
-+CPUs are running at speeds greater than minimum, this places an upper
-+bound on how long the timer will be deferred prior to re-evaluating
-+load and dropping speed.  For example, if timer_rate is 20000uS and
-+timer_slack is 10000uS then timers will be deferred for up to 30msec
-+when not at lowest speed.  A value of -1 means defer timers
-+indefinitely at all speeds.  Default is 80000 uS.
-=20
- boost: If non-zero, immediately boost speed of all CPUs to at least
- hispeed_freq until zero is written to this attribute.  If zero, allow
- CPU speeds to drop below hispeed_freq according to load as usual.
-+Default is zero.
-=20
--boostpulse: Immediately boost speed of all CPUs to hispeed_freq for
--min_sample_time, after which speeds are allowed to drop below
-+boostpulse: On each write, immediately boost speed of all CPUs to
-+hispeed_freq for at least the period of time specified by
-+boostpulse_duration, after which speeds are allowed to drop below
- hispeed_freq according to load as usual.
-=20
-+boostpulse_duration: Length of time to hold CPU speed at hispeed_freq
-+on a write to boostpulse, before allowing speed to drop according to
-+load as usual.  Default is 80000 uS.
-+
-=20
- 3. The Governor Interface in the CPUfreq Core
- =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
 diff --git a/drivers/cpufreq/cpufreq_interactive.c b/drivers/cpufreq/cp=
 ufreq_interactive.c
-index d22d162..fdc2a47 100644
+index 71887ca..8153769 100644
 --- a/drivers/cpufreq/cpufreq_interactive.c
 +++ b/drivers/cpufreq/cpufreq_interactive.c
-@@ -66,7 +66,7 @@ static spinlock_t speedchange_cpumask_lock;
- static unsigned int hispeed_freq;
+@@ -42,7 +42,7 @@ struct cpufreq_interactive_cpuinfo {
+ 	struct timer_list cpu_timer;
+ 	int timer_idlecancel;
+ 	u64 time_in_idle;
+-	u64 idle_exit_time;
++	u64 time_in_idle_timestamp;
+ 	u64 target_set_time;
+ 	u64 target_set_time_in_idle;
+ 	struct cpufreq_policy *policy;
+@@ -111,6 +111,16 @@ struct cpufreq_governor cpufreq_gov_interactive =3D=
+ {
+ 	.owner =3D THIS_MODULE,
+ };
 =20
- /* Go to hi speed when CPU load at or above this value. */
--#define DEFAULT_GO_HISPEED_LOAD 85
-+#define DEFAULT_GO_HISPEED_LOAD 99
- static unsigned long go_hispeed_load;
++static void cpufreq_interactive_timer_resched(
++	struct cpufreq_interactive_cpuinfo *pcpu)
++{
++	mod_timer_pinned(&pcpu->cpu_timer,
++			 jiffies + usecs_to_jiffies(timer_rate));
++	pcpu->time_in_idle =3D
++		get_cpu_idle_time_us(smp_processor_id(),
++				     &pcpu->time_in_idle_timestamp);
++}
++
+ static void cpufreq_interactive_timer(unsigned long data)
+ {
+ 	u64 now;
+@@ -118,8 +128,6 @@ static void cpufreq_interactive_timer(unsigned long=
+ data)
+ 	unsigned int delta_time;
+ 	int cpu_load;
+ 	int load_since_change;
+-	u64 time_in_idle;
+-	u64 idle_exit_time;
+ 	struct cpufreq_interactive_cpuinfo *pcpu =3D
+ 		&per_cpu(cpuinfo, data);
+ 	u64 now_idle;
+@@ -132,11 +140,9 @@ static void cpufreq_interactive_timer(unsigned lon=
+g data)
+ 	if (!pcpu->governor_enabled)
+ 		goto exit;
 =20
- /* Target load.  Lower values result in higher CPU speeds. */
+-	time_in_idle =3D pcpu->time_in_idle;
+-	idle_exit_time =3D pcpu->idle_exit_time;
+ 	now_idle =3D get_cpu_idle_time_us(data, &now);
+-	delta_idle =3D (unsigned int)(now_idle - time_in_idle);
+-	delta_time =3D (unsigned int)(now - idle_exit_time);
++	delta_idle =3D (unsigned int)(now_idle - pcpu->time_in_idle);
++	delta_time =3D (unsigned int)(now - pcpu->time_in_idle_timestamp);
+=20
+ 	/*
+ 	 * If timer ran less than 1ms after short-term sample started, retry.
+@@ -253,10 +259,7 @@ rearm:
+ 		if (governidle && pcpu->target_freq =3D=3D pcpu->policy->min)
+ 			pcpu->timer_idlecancel =3D 1;
+=20
+-		pcpu->time_in_idle =3D get_cpu_idle_time_us(
+-			data, &pcpu->idle_exit_time);
+-		mod_timer_pinned(&pcpu->cpu_timer,
+-				 jiffies + usecs_to_jiffies(timer_rate));
++		cpufreq_interactive_timer_resched(pcpu);
+ 	}
+=20
+ exit:
+@@ -284,12 +287,8 @@ static void cpufreq_interactive_idle_start(void)
+ 		 * the CPUFreq driver.
+ 		 */
+ 		if (!pending) {
+-			pcpu->time_in_idle =3D get_cpu_idle_time_us(
+-				smp_processor_id(), &pcpu->idle_exit_time);
+ 			pcpu->timer_idlecancel =3D 0;
+-			mod_timer_pinned(
+-				&pcpu->cpu_timer,
+-				jiffies + usecs_to_jiffies(timer_rate));
++			cpufreq_interactive_timer_resched(pcpu);
+ 		}
+ 	} else if (governidle) {
+ 		/*
+@@ -316,15 +315,13 @@ static void cpufreq_interactive_idle_end(void)
+=20
+ 	/* Arm the timer for 1-2 ticks later if not already. */
+ 	if (!timer_pending(&pcpu->cpu_timer)) {
+-		pcpu->time_in_idle =3D
+-			get_cpu_idle_time_us(smp_processor_id(),
+-					     &pcpu->idle_exit_time);
+ 		pcpu->timer_idlecancel =3D 0;
+-		mod_timer_pinned(
+-			&pcpu->cpu_timer,
+-			jiffies + usecs_to_jiffies(timer_rate));
++		cpufreq_interactive_timer_resched(pcpu);
++	} else if (!governidle &&
++		   time_after_eq(jiffies, pcpu->cpu_timer.expires)) {
++		del_timer(&pcpu->cpu_timer);
++		cpufreq_interactive_timer(smp_processor_id());
+ 	}
+-
+ }
+=20
+ static int cpufreq_interactive_speedchange_task(void *data)
 --=20
 1.7.9.5
+
