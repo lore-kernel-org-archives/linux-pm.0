@@ -1,7 +1,7 @@
 From: Marc Titinger <mtitinger@baylibre.com>
-Subject: [RFC v3 6/7] arm64: PM /Domains: Initialize CPU-domains from DT.
-Date: Tue, 27 Oct 2015 18:40:55 +0100
-Message-ID: <1445967656-28292-7-git-send-email-mtitinger+renesas@baylibre.com>
+Subject: [RFC v3 4/7] arm64: Juno: declare generic power domains for both clusters.
+Date: Tue, 27 Oct 2015 18:40:53 +0100
+Message-ID: <1445967656-28292-5-git-send-email-mtitinger+renesas@baylibre.com>
 References: <1445967656-28292-1-git-send-email-mtitinger+renesas@baylibre.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1445967656-28292-1-git-send-email-mtitinger+renesas@baylibre.com>
@@ -16,47 +16,80 @@ From: Marc Titinger <mtitinger@baylibre.com>
 
 Signed-off-by: Marc Titinger <mtitinger+renesas@baylibre.com>
 ---
- arch/arm64/kernel/Makefile     |  1 +
- arch/arm64/kernel/cpu_domain.c | 19 +++++++++++++++++++
- 2 files changed, 20 insertions(+)
- create mode 100644 arch/arm64/kernel/cpu_domain.c
+ arch/arm64/boot/dts/arm/juno.dts | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-diff --git a/arch/arm64/kernel/Makefile b/arch/arm64/kernel/Makefile
-index 1b6bda2..5f8b59f 100644
---- a/arch/arm64/kernel/Makefile
-+++ b/arch/arm64/kernel/Makefile
-@@ -46,6 +46,7 @@ arm64-obj-$(CONFIG_EFI)			+= efi.o $(stub-obj)
- arm64-obj-$(CONFIG_PCI)			+= pci.o
- arm64-obj-$(CONFIG_ARMV8_DEPRECATED)	+= armv8_deprecated.o
- arm64-obj-$(CONFIG_ACPI)		+= acpi.o
-+arm64-obj-$(CONFIG_PM_GENERIC_DOMAINS)	+= cpu_domain.o
+diff --git a/arch/arm64/boot/dts/arm/juno.dts b/arch/arm64/boot/dts/arm/juno.dts
+index b3fcee8..0a72c07 100644
+--- a/arch/arm64/boot/dts/arm/juno.dts
++++ b/arch/arm64/boot/dts/arm/juno.dts
+@@ -91,6 +91,7 @@
+ 			next-level-cache = <&A57_L2>;
+ 			clocks = <&scpi_dvfs 0>;
+ 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++			power-domains = <&a57_pd>;
+ 		};
  
- obj-y					+= $(arm64-obj-y) vdso/
- obj-m					+= $(arm64-obj-m)
-diff --git a/arch/arm64/kernel/cpu_domain.c b/arch/arm64/kernel/cpu_domain.c
-new file mode 100644
-index 0000000..06a3949
---- /dev/null
-+++ b/arch/arm64/kernel/cpu_domain.c
-@@ -0,0 +1,19 @@
-+/*
-+ * Copyright (c) 2015, Linaro Ltd.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 and
-+ * only version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+#include <linux/cpu-pd.h>
+ 		A57_1: cpu@1 {
+@@ -101,6 +102,7 @@
+ 			next-level-cache = <&A57_L2>;
+ 			clocks = <&scpi_dvfs 0>;
+ 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++			power-domains = <&a57_pd>;
+ 		};
+ 
+ 		A53_0: cpu@100 {
+@@ -111,6 +113,7 @@
+ 			next-level-cache = <&A53_L2>;
+ 			clocks = <&scpi_dvfs 1>;
+ 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++			power-domains = <&a53_pd>;
+ 		};
+ 
+ 		A53_1: cpu@101 {
+@@ -121,6 +124,7 @@
+ 			next-level-cache = <&A53_L2>;
+ 			clocks = <&scpi_dvfs 1>;
+ 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++			power-domains = <&a53_pd>;
+ 		};
+ 
+ 		A53_2: cpu@102 {
+@@ -131,6 +135,7 @@
+ 			next-level-cache = <&A53_L2>;
+ 			clocks = <&scpi_dvfs 1>;
+ 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++			power-domains = <&a53_pd>;
+ 		};
+ 
+ 		A53_3: cpu@103 {
+@@ -141,6 +146,7 @@
+ 			next-level-cache = <&A53_L2>;
+ 			clocks = <&scpi_dvfs 1>;
+ 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++			power-domains = <&a53_pd>;
+ 		};
+ 
+ 		A57_L2: l2-cache0 {
+@@ -152,6 +158,19 @@
+ 		};
+ 	};
+ 
++	CPU_PD: cpu-domains {
 +
-+static int __init arm64_cpu_pd_init(void)
-+{
-+	return of_cpu_pd_init("arm,cpu-pd");
-+}
-+device_initcall(arm64_cpu_pd_init);
++		a57_pd: a57_pd@ {
++			compatible = "arm,cpu-pd";
++			#power-domain-cells = <0>;
++		};
++
++		a53_pd: a53_pd@ {
++			compatible = "arm,cpu-pd";
++			#power-domain-cells = <0>;
++		};
++	};
++
+ 	pmu_a57 {
+ 		compatible = "arm,cortex-a57-pmu";
+ 		interrupts = <GIC_SPI 02 IRQ_TYPE_LEVEL_HIGH>,
 -- 
 1.9.1
