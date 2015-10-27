@@ -1,7 +1,7 @@
 From: =?UTF-8?q?B=C3=A1lint=20Czobor?= <czoborbalint@gmail.com>
-Subject: [PATCH 09/70] cpufreq: interactive: Separate speed target revalidate time and initial set time
-Date: Tue, 27 Oct 2015 18:29:57 +0100
-Message-ID: <1445967059-6897-9-git-send-email-czoborbalint@gmail.com>
+Subject: [PATCH 07/70] cpufreq: interactive: adjust code and documentation to match
+Date: Tue, 27 Oct 2015 18:29:55 +0100
+Message-ID: <1445967059-6897-7-git-send-email-czoborbalint@gmail.com>
 References: <1445967059-6897-1-git-send-email-czoborbalint@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -15,81 +15,74 @@ List-Id: linux-pm@vger.kernel.org
 
 =46rom: Todd Poynor <toddpoynor@google.com>
 
-Allow speed drop after min_sample_time elapses from last time
-the current speed was last re-validated as appropriate for
-current load / input boost.
-
-Allow speed bump after min_sample_time (or above_hispeed_delay)
-elapses from the time the current speed was originally set.
-
-Change-Id: Ic25687a7a53d25e6544c30c47d7ab6f27a47bee8
+Change-Id: If59c668d514a29febe5c35404fd9d01df8548eb1
 Signed-off-by: Todd Poynor <toddpoynor@google.com>
 Signed-off-by: B=C3=A1lint Czobor <czoborbalint@gmail.com>
 ---
- drivers/cpufreq/cpufreq_interactive.c |   16 ++++++++++++----
- 1 file changed, 12 insertions(+), 4 deletions(-)
+ Documentation/cpu-freq/governors.txt  |   16 +++++++++++++---
+ drivers/cpufreq/cpufreq_interactive.c |    6 +++---
+ 2 files changed, 16 insertions(+), 6 deletions(-)
 
+diff --git a/Documentation/cpu-freq/governors.txt b/Documentation/cpu-f=
+req/governors.txt
+index b262c53..40894da 100644
+--- a/Documentation/cpu-freq/governors.txt
++++ b/Documentation/cpu-freq/governors.txt
+@@ -249,11 +249,21 @@ frequency before ramping down. This is to ensure =
+that the governor has
+ seen enough historic cpu load data to determine the appropriate
+ workload.  Default is 80000 uS.
+=20
+-go_maxspeed_load: The CPU load at which to ramp to max speed.  Default
+-is 85.
++hispeed_freq: An intermediate "hi speed" at which to initially ramp
++when CPU load hits the value specified in go_hispeed_load.  If load
++stays high for the amount of time specified in above_hispeed_delay,
++then speed may be bumped higher.  Default is maximum speed.
++
++go_hispeed_load: The CPU load at which to ramp to the intermediate "hi
++speed".  Default is 85%.
++
++above_hispeed_delay: Once speed is set to hispeed_freq, wait for this
++long before bumping speed higher in response to continued high load.
++Default is 20000 uS.
+=20
+ timer_rate: Sample rate for reevaluating cpu load when the system is
+-not idle.  Default is 30000 uS.
++not idle.  Default is 20000 uS.
++
+=20
+ 3. The Governor Interface in the CPUfreq Core
+ =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
 diff --git a/drivers/cpufreq/cpufreq_interactive.c b/drivers/cpufreq/cp=
 ufreq_interactive.c
-index b78174f..083f790 100644
+index 154f7bd..bf8d772 100644
 --- a/drivers/cpufreq/cpufreq_interactive.c
 +++ b/drivers/cpufreq/cpufreq_interactive.c
-@@ -46,6 +46,8 @@ struct cpufreq_interactive_cpuinfo {
- 	int idling;
- 	u64 target_set_time;
- 	u64 target_set_time_in_idle;
-+	u64 target_validate_time;
-+	u64 target_validate_time_in_idle;
- 	struct cpufreq_policy *policy;
- 	struct cpufreq_frequency_table *freq_table;
- 	unsigned int target_freq;
-@@ -208,10 +210,10 @@ static void cpufreq_interactive_timer(unsigned lo=
-ng data)
+@@ -68,19 +68,19 @@ static struct mutex set_speed_lock;
+ static u64 hispeed_freq;
 =20
- 	/*
- 	 * Do not scale down unless we have been at this frequency for the
--	 * minimum sample time.
-+	 * minimum sample time since last validated.
- 	 */
- 	if (new_freq < pcpu->target_freq) {
--		if (pcpu->timer_run_time - pcpu->target_set_time
-+		if (pcpu->timer_run_time - pcpu->target_validate_time
- 		    < min_sample_time) {
- 			trace_cpufreq_interactive_notyet(data, cpu_load,
- 					 pcpu->target_freq, new_freq);
-@@ -219,8 +221,8 @@ static void cpufreq_interactive_timer(unsigned long=
- data)
- 		}
- 	}
+ /* Go to hi speed when CPU load at or above this value. */
+-#define DEFAULT_GO_HISPEED_LOAD 95
++#define DEFAULT_GO_HISPEED_LOAD 85
+ static unsigned long go_hispeed_load;
 =20
--	pcpu->target_set_time_in_idle =3D now_idle;
--	pcpu->target_set_time =3D pcpu->timer_run_time;
-+	pcpu->target_validate_time_in_idle =3D now_idle;
-+	pcpu->target_validate_time =3D pcpu->timer_run_time;
+ /*
+  * The minimum amount of time to spend at a frequency before we can ra=
+mp down.
+  */
+-#define DEFAULT_MIN_SAMPLE_TIME 20 * USEC_PER_MSEC
++#define DEFAULT_MIN_SAMPLE_TIME (80 * USEC_PER_MSEC)
+ static unsigned long min_sample_time;
 =20
- 	if (pcpu->target_freq =3D=3D new_freq) {
- 		trace_cpufreq_interactive_already(data, cpu_load,
-@@ -230,6 +232,8 @@ static void cpufreq_interactive_timer(unsigned long=
- data)
+ /*
+  * The sample rate of the timer used to increase frequency
+  */
+-#define DEFAULT_TIMER_RATE 20 * USEC_PER_MSEC
++#define DEFAULT_TIMER_RATE (20 * USEC_PER_MSEC)
+ static unsigned long timer_rate;
 =20
- 	trace_cpufreq_interactive_target(data, cpu_load, pcpu->target_freq,
- 					 new_freq);
-+	pcpu->target_set_time_in_idle =3D now_idle;
-+	pcpu->target_set_time =3D pcpu->timer_run_time;
-=20
- 	if (new_freq < pcpu->target_freq) {
- 		pcpu->target_freq =3D new_freq;
-@@ -614,6 +618,10 @@ static int cpufreq_governor_interactive(struct cpu=
-freq_policy *policy,
- 			pcpu->target_set_time_in_idle =3D
- 				get_cpu_idle_time_us(j,
- 					     &pcpu->target_set_time);
-+			pcpu->target_validate_time =3D
-+				pcpu->target_set_time;
-+			pcpu->target_validate_time_in_idle =3D
-+				pcpu->target_set_time_in_idle;
- 			pcpu->governor_enabled =3D 1;
- 			smp_wmb();
- 		}
+ /*
 --=20
 1.7.9.5
