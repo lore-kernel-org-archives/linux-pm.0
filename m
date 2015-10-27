@@ -1,27 +1,28 @@
 From: kbuild test robot <lkp@intel.com>
-Subject: Re: [PATCH 01/70] cpufreq: interactive: New 'interactive' governor
-Date: Wed, 28 Oct 2015 04:44:49 +0800
-Message-ID: <201510280431.P8oexxcv%fengguang.wu@intel.com>
-References: <1445967059-6897-1-git-send-email-czoborbalint@gmail.com>
+Subject: Re: [PATCH 17/70] cpufreq: interactive: take idle notifications only
+ when active
+Date: Wed, 28 Oct 2015 04:56:33 +0800
+Message-ID: <201510280429.JglHK9g9%fengguang.wu@intel.com>
+References: <1445967059-6897-17-git-send-email-czoborbalint@gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="EVF5PPMfhYS0aIcm"
+Content-Type: multipart/mixed; boundary="k1lZvvs/B4yU6o8G"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:37175 "EHLO mga14.intel.com"
+Received: from mga11.intel.com ([192.55.52.93]:50903 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965300AbbJ0UqN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 27 Oct 2015 16:46:13 -0400
+	id S965635AbbJ0U5Z (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 27 Oct 2015 16:57:25 -0400
 Content-Disposition: inline
-In-Reply-To: <1445967059-6897-1-git-send-email-czoborbalint@gmail.com>
+In-Reply-To: <1445967059-6897-17-git-send-email-czoborbalint@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-Cc: kbuild-all@01.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Mike Chan <mike@android.com>, Todd Poynor <toddpoynor@google.com>, =?iso-8859-1?Q?B=E1lint?= Czobor <czoborbalint@gmail.com>
+Cc: kbuild-all@01.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Sam Leffler <sleffler@chromium.org>, =?iso-8859-1?Q?B=E1lint?= Czobor <czoborbalint@gmail.com>
 
 
---EVF5PPMfhYS0aIcm
+--k1lZvvs/B4yU6o8G
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-Hi Mike,
+Hi Sam,
 
 [auto build test ERROR on pm/linux-next -- if it's inappropriate base, please suggest rules for selecting the more suitable base]
 
@@ -36,282 +37,144 @@ reproduce:
 All errors (new ones prefixed by >>):
 
    drivers/cpufreq/cpufreq_interactive.c: In function 'store_hispeed_freq':
-   drivers/cpufreq/cpufreq_interactive.c:446:2: error: implicit declaration of function 'strict_strtoull' [-Werror=implicit-function-declaration]
+   drivers/cpufreq/cpufreq_interactive.c:637:2: error: implicit declaration of function 'strict_strtoull' [-Werror=implicit-function-declaration]
      ret = strict_strtoull(buf, 0, &val);
      ^
    drivers/cpufreq/cpufreq_interactive.c: In function 'store_go_hispeed_load':
-   drivers/cpufreq/cpufreq_interactive.c:469:2: error: implicit declaration of function 'strict_strtoul' [-Werror=implicit-function-declaration]
+   drivers/cpufreq/cpufreq_interactive.c:660:2: error: implicit declaration of function 'strict_strtoul' [-Werror=implicit-function-declaration]
      ret = strict_strtoul(buf, 0, &val);
      ^
    drivers/cpufreq/cpufreq_interactive.c: In function 'cpufreq_interactive_idle_notifier':
->> drivers/cpufreq/cpufreq_interactive.c:623:7: error: 'IDLE_START' undeclared (first use in this function)
+   drivers/cpufreq/cpufreq_interactive.c:827:7: error: 'IDLE_START' undeclared (first use in this function)
      case IDLE_START:
           ^
-   drivers/cpufreq/cpufreq_interactive.c:623:7: note: each undeclared identifier is reported only once for each function it appears in
->> drivers/cpufreq/cpufreq_interactive.c:626:7: error: 'IDLE_END' undeclared (first use in this function)
+   drivers/cpufreq/cpufreq_interactive.c:827:7: note: each undeclared identifier is reported only once for each function it appears in
+   drivers/cpufreq/cpufreq_interactive.c:830:7: error: 'IDLE_END' undeclared (first use in this function)
      case IDLE_END:
           ^
-   drivers/cpufreq/cpufreq_interactive.c: In function 'cpufreq_interactive_init':
->> drivers/cpufreq/cpufreq_interactive.c:678:2: error: implicit declaration of function 'idle_notifier_register' [-Werror=implicit-function-declaration]
-     idle_notifier_register(&cpufreq_interactive_idle_nb);
-     ^
+   drivers/cpufreq/cpufreq_interactive.c: In function 'cpufreq_governor_interactive':
+   drivers/cpufreq/cpufreq_interactive.c:895:3: error: implicit declaration of function 'idle_notifier_register' [-Werror=implicit-function-declaration]
+      idle_notifier_register(&cpufreq_interactive_idle_nb);
+      ^
+>> drivers/cpufreq/cpufreq_interactive.c:918:3: error: implicit declaration of function 'idle_notifier_unregister' [-Werror=implicit-function-declaration]
+      idle_notifier_unregister(&cpufreq_interactive_idle_nb);
+      ^
    cc1: some warnings being treated as errors
 
-vim +/IDLE_START +623 drivers/cpufreq/cpufreq_interactive.c
+vim +/idle_notifier_unregister +918 drivers/cpufreq/cpufreq_interactive.c
 
-   440					  struct attribute *attr, const char *buf,
-   441					  size_t count)
-   442	{
-   443		int ret;
-   444		u64 val;
-   445	
- > 446		ret = strict_strtoull(buf, 0, &val);
-   447		if (ret < 0)
-   448			return ret;
-   449		hispeed_freq = val;
-   450		return count;
-   451	}
-   452	
-   453	static struct global_attr hispeed_freq_attr = __ATTR(hispeed_freq, 0644,
-   454			show_hispeed_freq, store_hispeed_freq);
-   455	
-   456	
-   457	static ssize_t show_go_hispeed_load(struct kobject *kobj,
-   458					     struct attribute *attr, char *buf)
-   459	{
-   460		return sprintf(buf, "%lu\n", go_hispeed_load);
-   461	}
-   462	
-   463	static ssize_t store_go_hispeed_load(struct kobject *kobj,
-   464				struct attribute *attr, const char *buf, size_t count)
-   465	{
-   466		int ret;
-   467		unsigned long val;
-   468	
- > 469		ret = strict_strtoul(buf, 0, &val);
-   470		if (ret < 0)
-   471			return ret;
-   472		go_hispeed_load = val;
-   473		return count;
-   474	}
-   475	
-   476	static struct global_attr go_hispeed_load_attr = __ATTR(go_hispeed_load, 0644,
-   477			show_go_hispeed_load, store_go_hispeed_load);
-   478	
-   479	static ssize_t show_min_sample_time(struct kobject *kobj,
-   480					struct attribute *attr, char *buf)
-   481	{
-   482		return sprintf(buf, "%lu\n", min_sample_time);
-   483	}
-   484	
-   485	static ssize_t store_min_sample_time(struct kobject *kobj,
-   486				struct attribute *attr, const char *buf, size_t count)
-   487	{
-   488		int ret;
-   489		unsigned long val;
-   490	
-   491		ret = strict_strtoul(buf, 0, &val);
-   492		if (ret < 0)
-   493			return ret;
-   494		min_sample_time = val;
-   495		return count;
-   496	}
-   497	
-   498	static struct global_attr min_sample_time_attr = __ATTR(min_sample_time, 0644,
-   499			show_min_sample_time, store_min_sample_time);
-   500	
-   501	static ssize_t show_timer_rate(struct kobject *kobj,
-   502				struct attribute *attr, char *buf)
-   503	{
-   504		return sprintf(buf, "%lu\n", timer_rate);
-   505	}
-   506	
-   507	static ssize_t store_timer_rate(struct kobject *kobj,
-   508				struct attribute *attr, const char *buf, size_t count)
-   509	{
-   510		int ret;
-   511		unsigned long val;
-   512	
-   513		ret = strict_strtoul(buf, 0, &val);
-   514		if (ret < 0)
-   515			return ret;
-   516		timer_rate = val;
-   517		return count;
-   518	}
-   519	
-   520	static struct global_attr timer_rate_attr = __ATTR(timer_rate, 0644,
-   521			show_timer_rate, store_timer_rate);
-   522	
-   523	static struct attribute *interactive_attributes[] = {
-   524		&hispeed_freq_attr.attr,
-   525		&go_hispeed_load_attr.attr,
-   526		&min_sample_time_attr.attr,
-   527		&timer_rate_attr.attr,
-   528		NULL,
-   529	};
-   530	
-   531	static struct attribute_group interactive_attr_group = {
-   532		.attrs = interactive_attributes,
-   533		.name = "interactive",
-   534	};
-   535	
-   536	static int cpufreq_governor_interactive(struct cpufreq_policy *policy,
-   537			unsigned int event)
-   538	{
-   539		int rc;
-   540		unsigned int j;
-   541		struct cpufreq_interactive_cpuinfo *pcpu;
-   542		struct cpufreq_frequency_table *freq_table;
-   543	
-   544		switch (event) {
-   545		case CPUFREQ_GOV_START:
-   546			if (!cpu_online(policy->cpu))
-   547				return -EINVAL;
-   548	
-   549			freq_table =
-   550				cpufreq_frequency_get_table(policy->cpu);
-   551	
-   552			for_each_cpu(j, policy->cpus) {
-   553				pcpu = &per_cpu(cpuinfo, j);
-   554				pcpu->policy = policy;
-   555				pcpu->target_freq = policy->cur;
-   556				pcpu->freq_table = freq_table;
-   557				pcpu->freq_change_time_in_idle =
-   558					get_cpu_idle_time_us(j,
-   559						     &pcpu->freq_change_time);
-   560				pcpu->governor_enabled = 1;
-   561				smp_wmb();
-   562			}
-   563	
-   564			if (!hispeed_freq)
-   565				hispeed_freq = policy->max;
-   566	
-   567			/*
-   568			 * Do not register the idle hook and create sysfs
-   569			 * entries if we have already done so.
-   570			 */
-   571			if (atomic_inc_return(&active_count) > 1)
-   572				return 0;
-   573	
-   574			rc = sysfs_create_group(cpufreq_global_kobject,
-   575					&interactive_attr_group);
-   576			if (rc)
-   577				return rc;
-   578	
-   579			break;
-   580	
-   581		case CPUFREQ_GOV_STOP:
-   582			for_each_cpu(j, policy->cpus) {
-   583				pcpu = &per_cpu(cpuinfo, j);
-   584				pcpu->governor_enabled = 0;
-   585				smp_wmb();
-   586				del_timer_sync(&pcpu->cpu_timer);
-   587	
-   588				/*
-   589				 * Reset idle exit time since we may cancel the timer
-   590				 * before it can run after the last idle exit time,
-   591				 * to avoid tripping the check in idle exit for a timer
-   592				 * that is trying to run.
-   593				 */
-   594				pcpu->idle_exit_time = 0;
-   595			}
-   596	
-   597			flush_work(&freq_scale_down_work);
-   598			if (atomic_dec_return(&active_count) > 0)
-   599				return 0;
-   600	
-   601			sysfs_remove_group(cpufreq_global_kobject,
-   602					&interactive_attr_group);
-   603	
-   604			break;
-   605	
-   606		case CPUFREQ_GOV_LIMITS:
-   607			if (policy->max < policy->cur)
-   608				__cpufreq_driver_target(policy,
-   609						policy->max, CPUFREQ_RELATION_H);
-   610			else if (policy->min > policy->cur)
-   611				__cpufreq_driver_target(policy,
-   612						policy->min, CPUFREQ_RELATION_L);
-   613			break;
-   614		}
-   615		return 0;
-   616	}
-   617	
-   618	static int cpufreq_interactive_idle_notifier(struct notifier_block *nb,
-   619						     unsigned long val,
-   620						     void *data)
-   621	{
-   622		switch (val) {
- > 623		case IDLE_START:
-   624			cpufreq_interactive_idle_start();
-   625			break;
- > 626		case IDLE_END:
-   627			cpufreq_interactive_idle_end();
-   628			break;
-   629		}
-   630	
-   631		return 0;
-   632	}
-   633	
-   634	static struct notifier_block cpufreq_interactive_idle_nb = {
-   635		.notifier_call = cpufreq_interactive_idle_notifier,
-   636	};
-   637	
-   638	static int __init cpufreq_interactive_init(void)
-   639	{
-   640		unsigned int i;
-   641		struct cpufreq_interactive_cpuinfo *pcpu;
-   642		struct sched_param param = { .sched_priority = MAX_RT_PRIO-1 };
-   643	
-   644		go_hispeed_load = DEFAULT_GO_HISPEED_LOAD;
-   645		min_sample_time = DEFAULT_MIN_SAMPLE_TIME;
-   646		timer_rate = DEFAULT_TIMER_RATE;
-   647	
-   648		/* Initalize per-cpu timers */
-   649		for_each_possible_cpu(i) {
-   650			pcpu = &per_cpu(cpuinfo, i);
-   651			init_timer(&pcpu->cpu_timer);
-   652			pcpu->cpu_timer.function = cpufreq_interactive_timer;
-   653			pcpu->cpu_timer.data = i;
-   654		}
-   655	
-   656		up_task = kthread_create(cpufreq_interactive_up_task, NULL,
-   657					 "kinteractiveup");
-   658		if (IS_ERR(up_task))
-   659			return PTR_ERR(up_task);
-   660	
-   661		sched_setscheduler_nocheck(up_task, SCHED_FIFO, &param);
-   662		get_task_struct(up_task);
-   663	
-   664		/* No rescuer thread, bind to CPU queuing the work for possibly
-   665		   warm cache (probably doesn't matter much). */
-   666		down_wq = alloc_workqueue("knteractive_down", 0, 1);
-   667	
-   668		if (!down_wq)
-   669			goto err_freeuptask;
-   670	
-   671		INIT_WORK(&freq_scale_down_work,
-   672			  cpufreq_interactive_freq_down);
-   673	
-   674		spin_lock_init(&up_cpumask_lock);
-   675		spin_lock_init(&down_cpumask_lock);
-   676		mutex_init(&set_speed_lock);
-   677	
- > 678		idle_notifier_register(&cpufreq_interactive_idle_nb);
-   679	
-   680		return cpufreq_register_governor(&cpufreq_gov_interactive);
-   681	
+   821	
+   822	static int cpufreq_interactive_idle_notifier(struct notifier_block *nb,
+   823						     unsigned long val,
+   824						     void *data)
+   825	{
+   826		switch (val) {
+ > 827		case IDLE_START:
+   828			cpufreq_interactive_idle_start();
+   829			break;
+   830		case IDLE_END:
+   831			cpufreq_interactive_idle_end();
+   832			break;
+   833		}
+   834	
+   835		return 0;
+   836	}
+   837	
+   838	static struct notifier_block cpufreq_interactive_idle_nb = {
+   839		.notifier_call = cpufreq_interactive_idle_notifier,
+   840	};
+   841	
+   842	static int cpufreq_governor_interactive(struct cpufreq_policy *policy,
+   843			unsigned int event)
+   844	{
+   845		int rc;
+   846		unsigned int j;
+   847		struct cpufreq_interactive_cpuinfo *pcpu;
+   848		struct cpufreq_frequency_table *freq_table;
+   849	
+   850		switch (event) {
+   851		case CPUFREQ_GOV_START:
+   852			if (!cpu_online(policy->cpu))
+   853				return -EINVAL;
+   854	
+   855			freq_table =
+   856				cpufreq_frequency_get_table(policy->cpu);
+   857	
+   858			for_each_cpu(j, policy->cpus) {
+   859				pcpu = &per_cpu(cpuinfo, j);
+   860				pcpu->policy = policy;
+   861				pcpu->target_freq = policy->cur;
+   862				pcpu->freq_table = freq_table;
+   863				pcpu->target_set_time_in_idle =
+   864					get_cpu_idle_time_us(j,
+   865						     &pcpu->target_set_time);
+   866				pcpu->floor_freq = pcpu->target_freq;
+   867				pcpu->floor_validate_time =
+   868					pcpu->target_set_time;
+   869				pcpu->hispeed_validate_time =
+   870					pcpu->target_set_time;
+   871				pcpu->governor_enabled = 1;
+   872				smp_wmb();
+   873			}
+   874	
+   875			if (!hispeed_freq)
+   876				hispeed_freq = policy->max;
+   877	
+   878			/*
+   879			 * Do not register the idle hook and create sysfs
+   880			 * entries if we have already done so.
+   881			 */
+   882			if (atomic_inc_return(&active_count) > 1)
+   883				return 0;
+   884	
+   885			rc = sysfs_create_group(cpufreq_global_kobject,
+   886					&interactive_attr_group);
+   887			if (rc)
+   888				return rc;
+   889	
+   890			rc = input_register_handler(&cpufreq_interactive_input_handler);
+   891			if (rc)
+   892				pr_warn("%s: failed to register input handler\n",
+   893					__func__);
+   894	
+   895			idle_notifier_register(&cpufreq_interactive_idle_nb);
+   896			break;
+   897	
+   898		case CPUFREQ_GOV_STOP:
+   899			for_each_cpu(j, policy->cpus) {
+   900				pcpu = &per_cpu(cpuinfo, j);
+   901				pcpu->governor_enabled = 0;
+   902				smp_wmb();
+   903				del_timer_sync(&pcpu->cpu_timer);
+   904	
+   905				/*
+   906				 * Reset idle exit time since we may cancel the timer
+   907				 * before it can run after the last idle exit time,
+   908				 * to avoid tripping the check in idle exit for a timer
+   909				 * that is trying to run.
+   910				 */
+   911				pcpu->idle_exit_time = 0;
+   912			}
+   913	
+   914			flush_work(&freq_scale_down_work);
+   915			if (atomic_dec_return(&active_count) > 0)
+   916				return 0;
+   917	
+ > 918			idle_notifier_unregister(&cpufreq_interactive_idle_nb);
+   919			input_unregister_handler(&cpufreq_interactive_input_handler);
+   920			sysfs_remove_group(cpufreq_global_kobject,
+   921					&interactive_attr_group);
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
 https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
 
---EVF5PPMfhYS0aIcm
+--k1lZvvs/B4yU6o8G
 Content-Type: application/octet-stream
 Content-Disposition: attachment; filename=".config.gz"
 Content-Transfer-Encoding: base64
 
-H4sICALhL1YAAy5jb25maWcAlFxbd9u2sn7vr9BKz8Pea502ie2q6TnLDyAJSqhIgiFA2fIL
+H4sICLDjL1YAAy5jb25maWcAlFxbd9u2sn7vr9BKz8Pea502ie2q6TnLDyAJSqhIgiFA2fIL
 l2IrrVcdK1uSe3b+/ZkBb4ML5eyHNsZ8g9tgMJgZgPrxhx9n7OW0/7I9Pd5vn56+zf7YPe8O
 29PuYfb58Wn3v7NEzgqpZzwR+mdgzh6fX/799vh1e7ifX82ufr78+d1Ph/tfZ6vd4Xn3NIv3
 z58f/3iBBh73zz/8+EMsi1QsmvlVJPT1t76oSlbFUPxxRgmXF7PH4+x5f5oddyeLdX411oXi
@@ -1123,4 +986,4 @@ dq4sbIAZfDOam2XTDiMgk/u2xr5T4LKArVM4XPM/0iKmkfr84yGfXhkt46rGOSsWeVYLXi85
 8f6xTPP3OUPwoLPQl3dyyRJAV+84asdCkM0wEQpU5hszAa+aTKjLoNPZO755wMLTi/cpkfoV
 eEAm4griu6iCUaNsJoz/ARlV05t5uQIA
 
---EVF5PPMfhYS0aIcm--
+--k1lZvvs/B4yU6o8G--
