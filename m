@@ -1,98 +1,98 @@
 From: James Morse <james.morse@arm.com>
-Subject: [PATCH v2 00/11] arm64: kernel: Add support for hibernate/suspend-to-disk
-Date: Tue, 27 Oct 2015 17:29:09 +0000
-Message-ID: <1445966960-31724-1-git-send-email-james.morse@arm.com>
+Subject: [PATCH v2 01/11] arm64: kernel: fix tcr_el1.t0sz restore on systems with extended idmap
+Date: Tue, 27 Oct 2015 17:29:10 +0000
+Message-ID: <1445966960-31724-2-git-send-email-james.morse@arm.com>
+References: <1445966960-31724-1-git-send-email-james.morse@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:57832 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:57846 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754441AbbJ0RaG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 27 Oct 2015 13:30:06 -0400
+	id S1754441AbbJ0RaO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 27 Oct 2015 13:30:14 -0400
+In-Reply-To: <1445966960-31724-1-git-send-email-james.morse@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org
-Cc: Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Kevin Kang <kkang@intrinsyc.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, wangfei <w.f@huawei.com>, Marc Zyngier <marc.zyngier@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, James Morse <james.morse@arm.com>
+Cc: Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Kevin Kang <kkang@intrinsyc.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, wangfei <w.f@huawei.com>, Marc Zyngier <marc.zyngier@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Ard Biesheuvel <ard.biesheuvel@linaro.org>, James Morse <james.morse@arm.com>
 
-Hi all,
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 
-This version of the series follows Lorenzo's option one, described at [0],
-when cleaning executable code that may be held in data caches after
-hibernate/resume. Patch ten adds the necessary hook to kernel/power/snapshot.c.
+Commit dd006da21646 ("arm64: mm: increase VA range of identity map")
+introduced a mechanism to extend the virtual memory map range
+to support arm64 systems with system RAM located at very high offset,
+where the identity mapping used to enable/disable the MMU requires
+additional translation levels to map the physical memory at an equal
+virtual offset.
 
-This allows the architecture's hibernate assembly code to clean all the
-pages that it copies, meaning the for_each_process(); for_each_vma(); version
-of this can be removed.
+The kernel detects at boot time the tcr_el1.t0sz value required by the
+identity mapping and sets-up the tcr_el1.t0sz register field accordingly,
+any time the identity map is required in the kernel (ie when enabling the
+MMU).
 
-The other changes were fixes so that this code works both before and after
-Ard Biesheuvel's 'relax Image placement rules' series [1] that moves the
-kernel text out of the linear map.
+After enabling the MMU, in the cold boot path the kernel resets the
+tcr_el1.t0sz to its default value (ie the actual configuration value for
+the system virtual address space) so that after enabling the MMU the
+memory space translated by ttbr0_el1 is restored as expected.
 
-Finally the series has picked up Lorenzo's t0sz fix [2], as it refactors
-all of those changes out, and the first four patches of kexec v10, [3].
+Commit dd006da21646 ("arm64: mm: increase VA range of identity map")
+also added code to set-up the tcr_el1.t0sz value when the kernel resumes
+from low-power states with the MMU off through cpu_resume() in order to
+effectively use the identity mapping to enable the MMU but failed to add
+the code required to restore the tcr_el1.t0sz to its default value, when
+the core returns to the kernel with the MMU enabled, so that the kernel
+might end up running with tcr_el1.t0sz value set-up for the identity
+mapping which can be lower than the value required by the actual virtual
+address space, resulting in an erroneous set-up.
 
-(Version one here: [4])
+This patchs adds code in the resume path that restores the tcr_el1.t0sz
+default value upon core resume, mirroring this way the cold boot path
+behaviour therefore fixing the issue.
 
+Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Acked-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Fixes: dd006da21646 ("arm64: mm: increase VA range of identity map")
+Signed-off-by: James Morse <james.morse@arm.com>
+---
+ arch/arm64/kernel/suspend.c | 22 +++++++++++++---------
+ 1 file changed, 13 insertions(+), 9 deletions(-)
 
-James
-
-[0] http://lists.infradead.org/pipermail/linux-arm-kernel/2015-October/380153.html
-[1] http://www.spinics.net/lists/arm-kernel/msg446929.html
-[2] http://www.spinics.net/lists/arm-kernel/msg454862.html
-[3] http://lists.infradead.org/pipermail/linux-arm-kernel/2015-October/379268.html
-[4] http://lists.infradead.org/pipermail/linux-arm-kernel/2015-October/376450.html
-
-AKASHI Takahiro (1):
-  arm64: kvm: allows kvm cpu hotplug
-
-Geoff Levand (3):
-  arm64: Fold proc-macros.S into assembler.h
-  arm64: Convert hcalls to use HVC immediate value
-  arm64: Add new hcall HVC_CALL_FUNC
-
-James Morse (6):
-  arm64: kernel: Rework finisher callback out of __cpu_suspend_enter().
-  arm64: Change cpu_resume() to enable mmu early then access sleep_sp by
-    va
-  arm64: kernel: Include _AC definition in page.h
-  arm64: Promote KERNEL_START/KERNEL_END definitions to a header file
-  PM / Hibernate: clean cached pages on architectures that require it
-  arm64: kernel: Add support for hibernate/suspend-to-disk.
-
-Lorenzo Pieralisi (1):
-  arm64: kernel: fix tcr_el1.t0sz restore on systems with extended idmap
-
- arch/arm/include/asm/kvm_host.h    |  10 +-
- arch/arm/include/asm/kvm_mmu.h     |   1 +
- arch/arm/kvm/arm.c                 |  79 ++++----
- arch/arm/kvm/mmu.c                 |   5 +
- arch/arm64/Kconfig                 |   3 +
- arch/arm64/include/asm/assembler.h |  48 ++++-
- arch/arm64/include/asm/kvm_host.h  |  16 +-
- arch/arm64/include/asm/kvm_mmu.h   |   1 +
- arch/arm64/include/asm/memory.h    |   3 +
- arch/arm64/include/asm/page.h      |   2 +
- arch/arm64/include/asm/suspend.h   |  31 +++-
- arch/arm64/include/asm/virt.h      |  49 +++++
- arch/arm64/kernel/Makefile         |   1 +
- arch/arm64/kernel/asm-offsets.c    |   9 +-
- arch/arm64/kernel/head.S           |   6 +-
- arch/arm64/kernel/hibernate-asm.S  | 118 ++++++++++++
- arch/arm64/kernel/hibernate.c      | 359 +++++++++++++++++++++++++++++++++++++
- arch/arm64/kernel/hyp-stub.S       |  43 +++--
- arch/arm64/kernel/setup.c          |   1 -
- arch/arm64/kernel/sleep.S          | 148 ++++++---------
- arch/arm64/kernel/suspend.c        |  99 ++++------
- arch/arm64/kernel/vmlinux.lds.S    |  15 ++
- arch/arm64/kvm/hyp-init.S          |  34 +++-
- arch/arm64/kvm/hyp.S               |  44 ++++-
- arch/arm64/mm/cache.S              |   2 -
- arch/arm64/mm/proc-macros.S        |  64 -------
- arch/arm64/mm/proc.S               |  30 +---
- kernel/power/snapshot.c            |   4 +
- 28 files changed, 900 insertions(+), 325 deletions(-)
- create mode 100644 arch/arm64/kernel/hibernate-asm.S
- create mode 100644 arch/arm64/kernel/hibernate.c
- delete mode 100644 arch/arm64/mm/proc-macros.S
-
+diff --git a/arch/arm64/kernel/suspend.c b/arch/arm64/kernel/suspend.c
+index 8297d502217e..44ca4143b013 100644
+--- a/arch/arm64/kernel/suspend.c
++++ b/arch/arm64/kernel/suspend.c
+@@ -80,17 +80,21 @@ int cpu_suspend(unsigned long arg, int (*fn)(unsigned long))
+ 	if (ret == 0) {
+ 		/*
+ 		 * We are resuming from reset with TTBR0_EL1 set to the
+-		 * idmap to enable the MMU; restore the active_mm mappings in
+-		 * TTBR0_EL1 unless the active_mm == &init_mm, in which case
+-		 * the thread entered cpu_suspend with TTBR0_EL1 set to
+-		 * reserved TTBR0 page tables and should be restored as such.
++		 * idmap to enable the MMU; set the TTBR0 to the reserved
++		 * page tables to prevent speculative TLB allocations, flush
++		 * the local tlb and set the default tcr_el1.t0sz so that
++		 * the TTBR0 address space set-up is properly restored.
++		 * If the current active_mm != &init_mm we entered cpu_suspend
++		 * with mappings in TTBR0 that must be restored, so we switch
++		 * them back to complete the address space configuration
++		 * restoration before returning.
+ 		 */
+-		if (mm == &init_mm)
+-			cpu_set_reserved_ttbr0();
+-		else
+-			cpu_switch_mm(mm->pgd, mm);
+-
++		cpu_set_reserved_ttbr0();
+ 		flush_tlb_all();
++		cpu_set_default_tcr_t0sz();
++
++		if (mm != &init_mm)
++			cpu_switch_mm(mm->pgd, mm);
+ 
+ 		/*
+ 		 * Restore per-cpu offset before any kernel
 -- 
 2.1.4
 
