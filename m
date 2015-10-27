@@ -1,104 +1,83 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [RFD] Functional dependencies between devices
-Date: Tue, 27 Oct 2015 16:24:14 +0100
-Message-ID: <1623682.7KVblAB3KQ@vostro.rjw.lan>
+From: Tim Harvey <tharvey@gateworks.com>
+Subject: Re: [rtc-linux] Re: where in sysfs should I put the ability to power
+ down a board for a specific time?
+Date: Tue, 27 Oct 2015 07:55:28 -0700
+Message-ID: <CAJ+vNU1vH2kr5snXiO2dCLcw=DViNLBtwxqsiAM4-xpMhu9w0w@mail.gmail.com>
+References: <CAJ+vNU3V-i2uJTpyE_swqjCvjVr+-j1+jjp+WuZLDA8Os74y=g@mail.gmail.com>
+	<20151020212127.GA25882@earth>
+	<20151024021211.GA8105@piout.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:46934 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932425AbbJ0OzT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Oct 2015 10:55:19 -0400
+Received: from mail-ob0-f177.google.com ([209.85.214.177]:35628 "EHLO
+	mail-ob0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932557AbbJ0Oz3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Oct 2015 10:55:29 -0400
+Received: by obctp1 with SMTP id tp1so144919141obc.2
+        for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2015 07:55:28 -0700 (PDT)
+In-Reply-To: <20151024021211.GA8105@piout.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Grant Likely <grant.likely@linaro.org>, Mark Brown <broonie@kernel.og>, Rob Herring <robh@kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Thierry Reding <treding@nvidia.com>, Dmitry Torokhov <dtor@google.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Michael Turquette <mturquette@baylibre.com>
+To: Sebastian Reichel <sre@kernel.org>, Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Cc: linux-pm@vger.kernel.org, rtc-linux@googlegroups.com
 
-Hi All,
+On Fri, Oct 23, 2015 at 7:12 PM, Alexandre Belloni
+<alexandre.belloni@free-electrons.com> wrote:
+> Hi,
+>
+> On 20/10/2015 at 23:21:27 +0200, Sebastian Reichel wrote :
+>> Hi,
+>>
+>> On Tue, Oct 20, 2015 at 08:12:09AM -0700, Tim Harvey wrote:
+>> > There is a system controller [1] on a set of embedded boards I support
+>> > that allows disabling the board's primary power supply. It can disable
+>> > it (until a physical pushbutton event occurs) and/or disable it for a
+>> > certain number of seconds (up to 2^16 seconds).
+>> >
+>> > I've been in the process of writing a mfd driver to fully support this
+>> > device and I'm a bit stumped on how to handle the power management
+>> > capabilities.
+>> >
+>> > What is the correct API for this type of device in sysfs? I'm thinking
+>> > it needs a power-supply class driver, but after looking over the docs
+>> > and code I'm not seeing examples of similar devices. Can anyone point
+>> > me to an example or provide some suggestions?
+>>
+>> Usually this is an RTC feature exposed as wakealarm. See for example
+>> this article for the description of the userspace interface:
+>>
+>> https://www.linux.com/learn/docs/672849-wake-up-linux-with-an-rtc-alarm-clock
 
-As discussed in the recent "On-demand device probing" thread and in a Kernel
-Summit session earlier today, there is a problem with handling cases where
-functional dependencies between devices are involved.
+Sebastian,
 
-What I mean by a "functional dependency" is when the driver of device B needs
-both device A and its driver to be present and functional to be able to work.
-This implies that the driver of A needs to be working for B to be probed
-successfully and it cannot be unbound from the device before the B's driver.
-This also has certain consequences for power management of these devices
-(suspend/resume and runtime PM ordering).
+Thanks for the pointer - this device does have an RTC so the wakealarm
+makes complete sense here.
 
-So I want to be able to represent those functional dependencies between devices
-and I'd like the driver core to track them and act on them in certain cases
-where they matter.  The argument for doing that in the driver core is that
-there are quite a few distinct use cases related to that, they are relatively
-hard to get right in a driver (if one wants to address all of them properly)
-and it only gets worse if multiplied by the number of drivers potentially
-needing to do it.  Morever, at least one case (asynchronous system suspend/resume)
-cannot be handled in a single driver at all, because it requires the driver of A
-to wait for B to suspend (during system suspend) and the driver of B to wait for
-A to resume (during system resume).
+>
+> Indeed, if you can set the time, then shutdown in two discreet steps,
+> then you can probably expose an alarm and a poweroff controller.
+> If there is only one step involved, then this will not fit well in any
+> subsystem but I guess it makes more sense to put it in the RTC
+> subsystem as it has all the utilities to handle dates and times.
+>
+>
 
-My idea is to represent a supplier-consumer dependency between devices (or
-more precisely between device+driver combos) as a "link" object containing
-pointers to the devices in question, a list node for each of them and some
-additional information related to the management of those objects, ie.
-something like:
+Alexandre,
 
-struct device_link {
-	struct device *supplier;
-	struct list_head supplier_node;
-	struct device *consumer;
-	struct list_head consumer_node;
-	<flags, status etc>
-};
+The power-off process is a discrete step from setting the wakeup time.
+By 'poweroff controller' I'm assuming you mean implement a
+pm_power_off hook which makes sense.
 
-In general, there will be two lists of those things per device, one list
-of links to consumers and one list of links to suppliers.
+While I'm at it it seems like implementing arm_pm_restart makes a lot
+of sense as well as the device can toggle board power which should be
+preferred over a chip-level reset.
 
-In that picture, links will be created by calling, say:
+I was looking for a standard userspace sysfs API in (ie
+/sys/class/power?) that will call kernel_restart or kernel_power_off
+but the only thing I've found is either the reboot syscall or sysrq (o
+or b). Have I missed something or are these the expected userspace
+API's for power-off/reset?
 
-int device_add_link(struct device *me, struct device *my_supplier, unsigned int flags);
+Thanks!
 
-and they will be deleted by the driver core when not needed any more.  The
-creation of a link should also cause dpm_list and the list used during shutdown
-to be reordered if needed.
-
-In principle, it seems usefult to consider two types of links, one created
-at device registration time (when registering the second device from the linked
-pair, whichever it is) and one created at probe time (of the consumer device).
-I'll refer to them as "permanent" and "probe-time" links, respectively.
-
-The permanent links (created at device registration time) will stay around
-until one of the linked devices is unregistered (at which time the driver
-core will drop the link along with the device going away).  The probe-time
-ones will be dropped (automatically) at the consumer device driver unbind time.
-
-There's a question about what if the supplier device is being unbound before
-the consumer one (for example, as a result of a hotplug event).  My current
-view on that is that the consumer needs to be force-unbound in that case too,
-but I guess I may be persuaded otherwise given sufficiently convincing
-arguments.  Anyway, there are reasons to do that, like for example it may
-help with the synchronization.  Namely, if there's a rule that suppliers
-cannot be unbound before any consumers linked to them, than the list of links
-to suppliers for a consumer can only change at its registration/probe or
-unbind/remove times (which simplifies things quite a bit).
-
-With that, the permanent links existing at the probe time for a consumer
-device can be used to check whether or not to defer the probing of it
-even before executing its probe callback.  In turn, system suspend
-synchronization should be a matter of calling device_pm_wait_for_dev()
-for all consumers of a supplier device, in analogy with dpm_wait_for_children(),
-and so on.
-
-Of course, the new lists have to be stable during those operations and ensuring
-that is going to be somewhat tricky (AFAICS right now at least), but apart from
-that the whole concept looks reasonably straightforward to me.
-
-So, the question to everybody is whether or not this sounds reasonable or there
-are concerns about it and if so what they are.  At this point I mostly need to
-know if I'm not overlooking anything fundamental at the general level.
-
-Thanks,
-Rafael
-
+Tim
