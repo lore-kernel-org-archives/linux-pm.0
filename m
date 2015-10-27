@@ -1,61 +1,69 @@
-From: wangfei <w.f@huawei.com>
-Subject: Re: Can arm64 plan to support =?UTF-8?B?aGliZXJuYXRpb27vvIhzdXNw?=
- =?UTF-8?B?ZW5kLXRvLWRpc2vvvIlpbiBjdXJyZW50IGtlcm5lbO+8iEFURu+8ie+8nw==?=
-Date: Tue, 27 Oct 2015 09:06:27 +0800
-Message-ID: <562ECE13.5030702@huawei.com>
-References: <562DF7B9.9030309@huawei.com> <20151026100948.GA8299@red-moon>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Saurabh Sengar <saurabh.truth@gmail.com>
+Subject: [PATCH] kernel: power: replacing printk
+Date: Tue, 27 Oct 2015 09:46:37 +0530
+Message-ID: <1445919397-6807-1-git-send-email-saurabh.truth@gmail.com>
+References: <saurabh.truth@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from szxga02-in.huawei.com ([119.145.14.65]:18150 "EHLO
-	szxga02-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750859AbbJ0BGp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 26 Oct 2015 21:06:45 -0400
-In-Reply-To: <20151026100948.GA8299@red-moon>
+Received: from mail-pa0-f50.google.com ([209.85.220.50]:33694 "EHLO
+	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750854AbbJ0EQp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Oct 2015 00:16:45 -0400
+In-Reply-To: <saurabh.truth@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, wangdedong@huawei.com, Maxiaobo <maxiaobo@huawei.com>
+To: rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Saurabh Sengar <saurabh.truth@gmail.com>
 
-On 2015/10/26 18:09, Lorenzo Pieralisi wrote:
-> On Mon, Oct 26, 2015 at 05:51:53PM +0800, wangfei wrote:
->> Hi all=EF=BC=8C
->>
->> Is any one knew=EF=BC=8Cwhether mainline kernel and psci plan to sup=
-port hibernation on arm64 architecture now=EF=BC=9F
->=20
-> Suspend-to-disk relies on PSCI SYSTEM_OFF to be implemented and does =
-not
-> require any additional calls in ATF.
->=20
-> Suspend to disk ARM64 kernel patches are under review (series below o=
-n LAKML),
-> I hope you can help us review and test them.
->=20
-> http://lists.infradead.org/pipermail/linux-arm-kernel/2015-October/37=
-6450.html
-OK=EF=BC=8C thanks Lorenzo=EF=BC=8Cwe will test on our arm64 devices an=
-d feed back result to you=E3=80=82
->=20
-> Thanks a lot,
-> Lorenzo
->=20
->>
->> Thanks
->> Best Regards
->>
->> william
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kern=
-el" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
->=20
-> .
->=20
+replacing prink(s) with appropriate pr_info and pr_err
 
+Signed-off-by: Saurabh Sengar <saurabh.truth@gmail.com>
+---
+ kernel/power/suspend.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index 7e4cda4..2597a96 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -245,7 +245,7 @@ static int suspend_test(int level)
+ {
+ #ifdef CONFIG_PM_DEBUG
+ 	if (pm_test_level == level) {
+-		printk(KERN_INFO "suspend debug: Waiting for %d second(s).\n",
++		pr_info("suspend debug: Waiting for %d second(s).\n",
+ 				pm_test_delay);
+ 		mdelay(pm_test_delay * 1000);
+ 		return 1;
+@@ -317,7 +317,7 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
+ 
+ 	error = dpm_suspend_late(PMSG_SUSPEND);
+ 	if (error) {
+-		printk(KERN_ERR "PM: late suspend of devices failed\n");
++		pr_err("PM: late suspend of devices failed\n");
+ 		goto Platform_finish;
+ 	}
+ 	error = platform_suspend_prepare_late(state);
+@@ -326,7 +326,7 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
+ 
+ 	error = dpm_suspend_noirq(PMSG_SUSPEND);
+ 	if (error) {
+-		printk(KERN_ERR "PM: noirq suspend of devices failed\n");
++		pr_err("PM: noirq suspend of devices failed\n");
+ 		goto Platform_early_resume;
+ 	}
+ 	error = platform_suspend_prepare_noirq(state);
+@@ -486,9 +486,9 @@ static int enter_state(suspend_state_t state)
+ 
+ #ifndef CONFIG_SUSPEND_SKIP_SYNC
+ 	trace_suspend_resume(TPS("sync_filesystems"), 0, true);
+-	printk(KERN_INFO "PM: Syncing filesystems ... ");
++	pr_info("PM: Syncing filesystems ... ");
+ 	sys_sync();
+-	printk("done.\n");
++	pr_info("done.\n");
+ 	trace_suspend_resume(TPS("sync_filesystems"), 0, false);
+ #endif
+ 
+-- 
+1.9.1
 
