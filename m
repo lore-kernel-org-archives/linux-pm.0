@@ -1,7 +1,7 @@
 From: =?UTF-8?q?B=C3=A1lint=20Czobor?= <czoborbalint@gmail.com>
-Subject: [PATCH 03/70] cpufreq: interactive: apply intermediate load to max speed not current
-Date: Tue, 27 Oct 2015 18:29:51 +0100
-Message-ID: <1445967059-6897-3-git-send-email-czoborbalint@gmail.com>
+Subject: [PATCH 09/70] cpufreq: interactive: Separate speed target revalidate time and initial set time
+Date: Tue, 27 Oct 2015 18:29:57 +0100
+Message-ID: <1445967059-6897-9-git-send-email-czoborbalint@gmail.com>
 References: <1445967059-6897-1-git-send-email-czoborbalint@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -15,32 +15,81 @@ List-Id: linux-pm@vger.kernel.org
 
 =46rom: Todd Poynor <toddpoynor@google.com>
 
-Evaluate spikes in load (below go_hispeed_load) against the maximum
-speed supported by the device, not the current speed (which tends to
-make it too difficult to raise speed to intermediate levels until
-very busy).
+Allow speed drop after min_sample_time elapses from last time
+the current speed was last re-validated as appropriate for
+current load / input boost.
 
-Change-Id: Ib937006abf8bedb60891a739acd733e89b732ae0
+Allow speed bump after min_sample_time (or above_hispeed_delay)
+elapses from the time the current speed was originally set.
+
+Change-Id: Ic25687a7a53d25e6544c30c47d7ab6f27a47bee8
 Signed-off-by: Todd Poynor <toddpoynor@google.com>
 Signed-off-by: B=C3=A1lint Czobor <czoborbalint@gmail.com>
 ---
- drivers/cpufreq/cpufreq_interactive.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/cpufreq/cpufreq_interactive.c |   16 ++++++++++++----
+ 1 file changed, 12 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq_interactive.c b/drivers/cpufreq/cp=
 ufreq_interactive.c
-index 62e7456..e3bbe82 100644
+index b78174f..083f790 100644
 --- a/drivers/cpufreq/cpufreq_interactive.c
 +++ b/drivers/cpufreq/cpufreq_interactive.c
-@@ -171,7 +171,7 @@ static void cpufreq_interactive_timer(unsigned long=
+@@ -46,6 +46,8 @@ struct cpufreq_interactive_cpuinfo {
+ 	int idling;
+ 	u64 target_set_time;
+ 	u64 target_set_time_in_idle;
++	u64 target_validate_time;
++	u64 target_validate_time_in_idle;
+ 	struct cpufreq_policy *policy;
+ 	struct cpufreq_frequency_table *freq_table;
+ 	unsigned int target_freq;
+@@ -208,10 +210,10 @@ static void cpufreq_interactive_timer(unsigned lo=
+ng data)
+=20
+ 	/*
+ 	 * Do not scale down unless we have been at this frequency for the
+-	 * minimum sample time.
++	 * minimum sample time since last validated.
+ 	 */
+ 	if (new_freq < pcpu->target_freq) {
+-		if (pcpu->timer_run_time - pcpu->target_set_time
++		if (pcpu->timer_run_time - pcpu->target_validate_time
+ 		    < min_sample_time) {
+ 			trace_cpufreq_interactive_notyet(data, cpu_load,
+ 					 pcpu->target_freq, new_freq);
+@@ -219,8 +221,8 @@ static void cpufreq_interactive_timer(unsigned long=
  data)
- 		else
- 			new_freq =3D pcpu->policy->max * cpu_load / 100;
- 	} else {
--		new_freq =3D pcpu->policy->cur * cpu_load / 100;
-+		new_freq =3D pcpu->policy->max * cpu_load / 100;
+ 		}
  	}
 =20
- 	if (cpufreq_frequency_table_target(pcpu->policy, pcpu->freq_table,
+-	pcpu->target_set_time_in_idle =3D now_idle;
+-	pcpu->target_set_time =3D pcpu->timer_run_time;
++	pcpu->target_validate_time_in_idle =3D now_idle;
++	pcpu->target_validate_time =3D pcpu->timer_run_time;
+=20
+ 	if (pcpu->target_freq =3D=3D new_freq) {
+ 		trace_cpufreq_interactive_already(data, cpu_load,
+@@ -230,6 +232,8 @@ static void cpufreq_interactive_timer(unsigned long=
+ data)
+=20
+ 	trace_cpufreq_interactive_target(data, cpu_load, pcpu->target_freq,
+ 					 new_freq);
++	pcpu->target_set_time_in_idle =3D now_idle;
++	pcpu->target_set_time =3D pcpu->timer_run_time;
+=20
+ 	if (new_freq < pcpu->target_freq) {
+ 		pcpu->target_freq =3D new_freq;
+@@ -614,6 +618,10 @@ static int cpufreq_governor_interactive(struct cpu=
+freq_policy *policy,
+ 			pcpu->target_set_time_in_idle =3D
+ 				get_cpu_idle_time_us(j,
+ 					     &pcpu->target_set_time);
++			pcpu->target_validate_time =3D
++				pcpu->target_set_time;
++			pcpu->target_validate_time_in_idle =3D
++				pcpu->target_set_time_in_idle;
+ 			pcpu->governor_enabled =3D 1;
+ 			smp_wmb();
+ 		}
 --=20
 1.7.9.5
