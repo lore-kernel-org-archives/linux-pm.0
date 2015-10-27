@@ -1,12 +1,12 @@
 From: Philippe Longepe <philippe.longepe@linux.intel.com>
-Subject: [PATCH v8] cpufreq: intel_pstate: Fix the FSB feq for Airmont
-Date: Tue, 27 Oct 2015 11:37:12 +0100
-Message-ID: <1445942232-29990-1-git-send-email-philippe.longepe@linux.intel.com>
+Subject: [PATCH v8 2/2] cpufreq: intel_pstate: Fix the FSB feq for Airmont
+Date: Tue, 27 Oct 2015 11:38:08 +0100
+Message-ID: <1445942288-30039-1-git-send-email-philippe.longepe@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:64647 "EHLO mga11.intel.com"
+Received: from mga02.intel.com ([134.134.136.20]:19572 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751970AbbJ0KgR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 27 Oct 2015 06:36:17 -0400
+	id S1752761AbbJ0KhO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 27 Oct 2015 06:37:14 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
@@ -14,7 +14,7 @@ Cc: srinivas.pandruvada@linux.intel.com, longepe <philippe.longepe@linux.intel.c
 
 From: longepe <philippe.longepe@linux.intel.com>
 
-Separate the Silvermont and Airmont support with 2 get_scaling functions.
+Include the Airmont support in the get_scaling function.
 
 There are two flavors of Atom cores to be supported by intel_pstate,
 Silvermont and Airmont, so make the driver distinguish between them by
