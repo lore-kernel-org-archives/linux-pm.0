@@ -1,7 +1,7 @@
 From: =?UTF-8?q?B=C3=A1lint=20Czobor?= <czoborbalint@gmail.com>
-Subject: [PATCH 66/70] cpufreq: interactive: Fix compile errors in accordance with changes from 3.14 to 3.18
-Date: Tue, 27 Oct 2015 18:30:54 +0100
-Message-ID: <1445967059-6897-66-git-send-email-czoborbalint@gmail.com>
+Subject: [PATCH 64/70] cpufreq: interactive: prevents the frequency to directly raise above the hispeed_freq from a lower frequency.
+Date: Tue, 27 Oct 2015 18:30:52 +0100
+Message-ID: <1445967059-6897-64-git-send-email-czoborbalint@gmail.com>
 References: <1445967059-6897-1-git-send-email-czoborbalint@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -10,59 +10,42 @@ Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1445967059-6897-1-git-send-email-czoborbalint@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, =?UTF-8?q?B=C3=A1lint=20Czobor?= <czoborbalint@gmail.com>, Ruchi Kandoi <kandoiruchi@google.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ruchi Kandoi <kandoiruchi@google.com>, =?UTF-8?q?B=C3=A1lint=20Czobor?= <czoborbalint@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Signed-off-by: Ruchi Kandoi<kandoiruchi@google.com>
+=46rom: Ruchi Kandoi <kandoiruchi@google.com>
+
+When the load was below go_hispeed_load, there is a possibility that
+choose_freq() would return a frequency which would be higher than the
+hispeed_freq. According to the policy we should first jump to the
+hispeed_freq, stay there for above_hispeed_delay and then be allowed to
+raise higher than that.
+
+Added a check to prevent the frequency to be directly raised to
+something higher than the hispeed_freq.
+
+Change-Id: Icda5d848dd9beadcc18835082ddf269732c75bd0
+Signed-off-by: Ruchi Kandoi <kandoiruchi@google.com>
 Signed-off-by: B=C3=A1lint Czobor <czoborbalint@gmail.com>
 ---
- drivers/cpufreq/cpufreq_interactive.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/cpufreq/cpufreq_interactive.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
 diff --git a/drivers/cpufreq/cpufreq_interactive.c b/drivers/cpufreq/cp=
 ufreq_interactive.c
-index a0a7c3a..9faa189 100644
+index 6c4b6a8..f0e6fe2 100644
 --- a/drivers/cpufreq/cpufreq_interactive.c
 +++ b/drivers/cpufreq/cpufreq_interactive.c
-@@ -805,7 +805,7 @@ static ssize_t store_hispeed_freq(struct cpufreq_in=
-teractive_tunables *tunables,
- 	int ret;
- 	long unsigned int val;
+@@ -377,6 +377,9 @@ static void cpufreq_interactive_timer(unsigned long=
+ data)
+ 		}
+ 	} else {
+ 		new_freq =3D choose_freq(pcpu, loadadjfreq);
++		if (new_freq > tunables->hispeed_freq &&
++				pcpu->target_freq < tunables->hispeed_freq)
++			new_freq =3D tunables->hispeed_freq;
+ 	}
 =20
--	ret =3D strict_strtoul(buf, 0, &val);
-+	ret =3D kstrtoul(buf, 0, &val);
- 	if (ret < 0)
- 		return ret;
- 	tunables->hispeed_freq =3D val;
-@@ -824,7 +824,7 @@ static ssize_t store_go_hispeed_load(struct cpufreq=
-_interactive_tunables
- 	int ret;
- 	unsigned long val;
-=20
--	ret =3D strict_strtoul(buf, 0, &val);
-+	ret =3D kstrtoul(buf, 0, &val);
- 	if (ret < 0)
- 		return ret;
- 	tunables->go_hispeed_load =3D val;
-@@ -843,7 +843,7 @@ static ssize_t store_min_sample_time(struct cpufreq=
-_interactive_tunables
- 	int ret;
- 	unsigned long val;
-=20
--	ret =3D strict_strtoul(buf, 0, &val);
-+	ret =3D kstrtoul(buf, 0, &val);
- 	if (ret < 0)
- 		return ret;
- 	tunables->min_sample_time =3D val;
-@@ -862,7 +862,7 @@ static ssize_t store_timer_rate(struct cpufreq_inte=
-ractive_tunables *tunables,
- 	int ret;
- 	unsigned long val;
-=20
--	ret =3D strict_strtoul(buf, 0, &val);
-+	ret =3D kstrtoul(buf, 0, &val);
- 	if (ret < 0)
- 		return ret;
- 	tunables->timer_rate =3D val;
+ 	if (pcpu->target_freq >=3D tunables->hispeed_freq &&
 --=20
 1.7.9.5
