@@ -1,45 +1,52 @@
-From: =?UTF-8?q?B=C3=A1lint=20Czobor?= <czoborbalint@gmail.com>
-Subject: [PATCH 62/70] cpufreq: interactive: turn boost_pulse off on boost off
-Date: Tue, 27 Oct 2015 18:30:50 +0100
-Message-ID: <1445967059-6897-62-git-send-email-czoborbalint@gmail.com>
-References: <1445967059-6897-1-git-send-email-czoborbalint@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Marc Titinger <mtitinger@baylibre.com>
+Subject: [RFC v3 7/7] arm64: Juno: declare idle-state cluster-sleep-0 as genpd state
+Date: Tue, 27 Oct 2015 18:40:56 +0100
+Message-ID: <1445967656-28292-8-git-send-email-mtitinger+renesas@baylibre.com>
+References: <1445967656-28292-1-git-send-email-mtitinger+renesas@baylibre.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f49.google.com ([74.125.82.49]:34961 "EHLO
-	mail-wm0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964931AbbJ0RmI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Oct 2015 13:42:08 -0400
-In-Reply-To: <1445967059-6897-1-git-send-email-czoborbalint@gmail.com>
+Received: from mail-wi0-f173.google.com ([209.85.212.173]:33987 "EHLO
+	mail-wi0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965629AbbJ0Rlf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Oct 2015 13:41:35 -0400
+Received: by wikq8 with SMTP id q8so222779668wik.1
+        for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2015 10:41:34 -0700 (PDT)
+In-Reply-To: <1445967656-28292-1-git-send-email-mtitinger+renesas@baylibre.com>
+In-Reply-To: <20151019205825.GA82426@linaro.org>
+References: <20151019205825.GA82426@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ruchi Kandoi <kandoiruchi@google.com>, =?UTF-8?q?B=C3=A1lint=20Czobor?= <czoborbalint@gmail.com>
+To: lina.iyer@linaro.org
+Cc: rjw@rjwysocki.net, khilman@kernel.org, ahaslam@baylibre.com, bcousson@baylibre.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Marc Titinger <mtitinger@baylibre.com>, Marc Titinger <mtitinger+renesas@baylibre.com>
 
-=46rom: Ruchi Kandoi <kandoiruchi@google.com>
+From: Marc Titinger <mtitinger@baylibre.com>
 
-Change-Id: I36fe217fa047d68ea90e78b12c7db4537ea8010b
-Signed-off-by: Ruchi Kandoi <kandoiruchi@google.com>
-Signed-off-by: B=C3=A1lint Czobor <czoborbalint@gmail.com>
+Using Juno to exercise the code that prepares for OS-initiated idle-state
+handling, using genpd platform callbacks. In opposition to platform-
+initiated mode as currently with pcsi/ATF.
+
+Signed-off-by: Marc Titinger <mtitinger+renesas@baylibre.com>
 ---
- drivers/cpufreq/cpufreq_interactive.c |    1 +
- 1 file changed, 1 insertion(+)
+ arch/arm64/boot/dts/arm/juno.dts | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/cpufreq/cpufreq_interactive.c b/drivers/cpufreq/cp=
-ufreq_interactive.c
-index 0e3e45e..3daca21 100644
---- a/drivers/cpufreq/cpufreq_interactive.c
-+++ b/drivers/cpufreq/cpufreq_interactive.c
-@@ -908,6 +908,7 @@ static ssize_t store_boost(struct cpufreq_interacti=
-ve_tunables *tunables,
- 		trace_cpufreq_interactive_boost("on");
- 		cpufreq_interactive_boost();
- 	} else {
-+		boostpulse_endtime =3D ktime_to_us(ktime_get());
- 		trace_cpufreq_interactive_unboost("off");
- 	}
-=20
---=20
-1.7.9.5
+diff --git a/arch/arm64/boot/dts/arm/juno.dts b/arch/arm64/boot/dts/arm/juno.dts
+index 0a72c07..f42d5f9 100644
+--- a/arch/arm64/boot/dts/arm/juno.dts
++++ b/arch/arm64/boot/dts/arm/juno.dts
+@@ -163,11 +163,13 @@
+ 		a57_pd: a57_pd@ {
+ 			compatible = "arm,cpu-pd";
+ 			#power-domain-cells = <0>;
++			domain-idle-states = <&CLUSTER_SLEEP_0>;
+ 		};
+ 
+ 		a53_pd: a53_pd@ {
+ 			compatible = "arm,cpu-pd";
+ 			#power-domain-cells = <0>;
++			domain-idle-states = <&CLUSTER_SLEEP_0>;
+ 		};
+ 	};
+ 
+-- 
+1.9.1
 
