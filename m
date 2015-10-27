@@ -1,33 +1,135 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH 2/4] thermal: rockchip: ensure the otp state before
- resetting the controller
-Date: Tue, 27 Oct 2015 11:23:22 +0100
-Message-ID: <CACRpkdaRhpmgZLUAOrHN99GwYDbXhF0Mmi7WuQPAtC4aEsZDJQ@mail.gmail.com>
-References: <1445332264-6054-1-git-send-email-wxt@rock-chips.com>
-	<1445332264-6054-3-git-send-email-wxt@rock-chips.com>
-	<CAD=FV=WHvwNGdRZ4Yjwk0zB00o2gFHXLfbAYHai1kM_oBAR4_g@mail.gmail.com>
-	<5626ED35.3010403@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5626ED35.3010403@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Caesar Wang <caesar.upstream@gmail.com>
-Cc: Doug Anderson <dianders@chromium.org>, Caesar Wang <wxt@rock-chips.com>, Heiko Stuebner <heiko@sntech.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, Zhang Rui <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+From: Philippe Longepe <philippe.longepe@linux.intel.com>
+Subject: [PATCH v8] cpufreq: intel_pstate: Fix the FSB feq for Airmont
+Date: Tue, 27 Oct 2015 11:37:12 +0100
+Message-ID: <1445942232-29990-1-git-send-email-philippe.longepe@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:64647 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751970AbbJ0KgR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 27 Oct 2015 06:36:17 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: srinivas.pandruvada@linux.intel.com, longepe <philippe.longepe@linux.intel.com>, Stephane Gasparini <stephane.gasparini@linux.intel.com>
 
-On Wed, Oct 21, 2015 at 3:41 AM, Caesar Wang <caesar.upstream@gmail.com> wrote:
->> On Tue, Oct 20, 2015 at 2:11 AM, Caesar Wang <wxt@rock-chips.com> wrote:
+From: longepe <philippe.longepe@linux.intel.com>
 
->> You'd still want to have a bindings change to describe "init", but at
->> least you shouldn't need any code changes.
->
-> Okay, https://patchwork.kernel.org/patch/5055741/ that's working for me.
-> Fell free add my  test tag if you resend the patch. (Tested-by: Caesar Wang
-> <wxt@rock-chips.com>)
+Separate the Silvermont and Airmont support with 2 get_scaling functions.
 
-Doug, can you resend this rebased version with Caesar's Test tag?
-I kinda like this more than any alternatives.
+There are two flavors of Atom cores to be supported by intel_pstate,
+Silvermont and Airmont, so make the driver distinguish between them by
+adding separate frequency tables.
+Separate the cpu defaults params for each of them and match the CPU IDs
+against them as appropriate.
 
-Yours,
-Linus Walleij
+Signed-off-by: Philippe Longepe <philippe.longepe@linux.intel.com>
+Signed-off-by: Stephane Gasparini <stephane.gasparini@linux.intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 56 +++++++++++++++++++++++++++++++++---------
+ 1 file changed, 45 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 8618b02..4cdf97a 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -551,20 +551,35 @@ static void atom_set_pstate(struct cpudata *cpudata, int pstate)
+ 	wrmsrl_on_cpu(cpudata->cpu, MSR_IA32_PERF_CTL, val);
+ }
+ 
+-#define ATOM_BCLK_FREQS 5
+-static int atom_freq_table[ATOM_BCLK_FREQS] = { 833, 1000, 1333, 1167, 800};
+-
+-static int atom_get_scaling(void)
++static int silvermont_get_scaling(void)
+ {
+ 	u64 value;
+ 	int i;
++	/* Defined in Table 35-6 from SDM (Sept 2015) */
++	static int silvermont_freq_table[] = {
++		83300, 100000, 133300, 116700, 80000};
+ 
+ 	rdmsrl(MSR_FSB_FREQ, value);
+-	i = value & 0x3;
++	i = value & 0x7;
++	BUG_ON(i > 4);
+ 
+-	BUG_ON(i > ATOM_BCLK_FREQS);
++	return silvermont_freq_table[i];
++}
+ 
+-	return atom_freq_table[i] * 100;
++static int airmont_get_scaling(void)
++{
++	u64 value;
++	int i;
++	/* Defined in Table 35-10 from SDM (Sept 2015) */
++	static int airmont_freq_table[] = {
++		83300, 100000, 133300, 116700, 80000,
++		93300, 90000, 88900, 87500};
++
++	rdmsrl(MSR_FSB_FREQ, value);
++	i = value & 0xF;
++	BUG_ON(i > 8);
++
++	return airmont_freq_table[i];
+ }
+ 
+ static void atom_get_vid(struct cpudata *cpudata)
+@@ -659,7 +674,26 @@ static struct cpu_defaults core_params = {
+ 	},
+ };
+ 
+-static struct cpu_defaults atom_params = {
++static struct cpu_defaults silvermont_params = {
++	.pid_policy = {
++		.sample_rate_ms = 10,
++		.deadband = 0,
++		.setpoint = 60,
++		.p_gain_pct = 14,
++		.d_gain_pct = 0,
++		.i_gain_pct = 4,
++	},
++	.funcs = {
++		.get_max = atom_get_max_pstate,
++		.get_min = atom_get_min_pstate,
++		.get_turbo = atom_get_turbo_pstate,
++		.set = atom_set_pstate,
++		.get_scaling = silvermont_get_scaling,
++		.get_vid = atom_get_vid,
++	},
++};
++
++static struct cpu_defaults airmont_params = {
+ 	.pid_policy = {
+ 		.sample_rate_ms = 10,
+ 		.deadband = 0,
+@@ -673,7 +707,7 @@ static struct cpu_defaults atom_params = {
+ 		.get_min = atom_get_min_pstate,
+ 		.get_turbo = atom_get_turbo_pstate,
+ 		.set = atom_set_pstate,
+-		.get_scaling = atom_get_scaling,
++		.get_scaling = airmont_get_scaling,
+ 		.get_vid = atom_get_vid,
+ 	},
+ };
+@@ -912,7 +946,7 @@ static void intel_pstate_timer_func(unsigned long __data)
+ static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
+ 	ICPU(0x2a, core_params),
+ 	ICPU(0x2d, core_params),
+-	ICPU(0x37, atom_params),
++	ICPU(0x37, silvermont_params),
+ 	ICPU(0x3a, core_params),
+ 	ICPU(0x3c, core_params),
+ 	ICPU(0x3d, core_params),
+@@ -921,7 +955,7 @@ static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
+ 	ICPU(0x45, core_params),
+ 	ICPU(0x46, core_params),
+ 	ICPU(0x47, core_params),
+-	ICPU(0x4c, atom_params),
++	ICPU(0x4c, airmont_params),
+ 	ICPU(0x4e, core_params),
+ 	ICPU(0x4f, core_params),
+ 	ICPU(0x5e, core_params),
+-- 
+1.9.1
+
