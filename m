@@ -1,644 +1,936 @@
-From: James Morse <james.morse@arm.com>
-Subject: [PATCH v2 11/11] arm64: kernel: Add support for hibernate/suspend-to-disk.
-Date: Tue, 27 Oct 2015 17:29:20 +0000
-Message-ID: <1445966960-31724-12-git-send-email-james.morse@arm.com>
-References: <1445966960-31724-1-git-send-email-james.morse@arm.com>
+From: =?UTF-8?q?B=C3=A1lint=20Czobor?= <czoborbalint@gmail.com>
+Subject: [PATCH 01/70] cpufreq: interactive: New 'interactive' governor
+Date: Tue, 27 Oct 2015 18:29:49 +0100
+Message-ID: <1445967059-6897-1-git-send-email-czoborbalint@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:57949 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932367AbbJ0RbE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 27 Oct 2015 13:31:04 -0400
-In-Reply-To: <1445966960-31724-1-git-send-email-james.morse@arm.com>
+Received: from mail-wi0-f172.google.com ([209.85.212.172]:33346 "EHLO
+	mail-wi0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932367AbbJ0Rb1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Oct 2015 13:31:27 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org
-Cc: Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Kevin Kang <kkang@intrinsyc.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, wangfei <w.f@huawei.com>, Marc Zyngier <marc.zyngier@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, James Morse <james.morse@arm.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Mike Chan <mike@android.com>, Todd Poynor <toddpoynor@google.com>, =?UTF-8?q?B=C3=A1lint=20Czobor?= <czoborbalint@gmail.com>
 
-Add support for hibernate/suspend-to-disk.
+=46rom: Mike Chan <mike@android.com>
 
-Suspend borrows code from cpu_suspend() to write cpu state onto the stack,
-before calling swsusp_save() to save the memory image.
+This governor is designed for latency-sensitive workloads, such as
+interactive user interfaces.  The interactive governor aims to be
+significantly more responsive to ramp CPU quickly up when CPU-intensive
+activity begins.
 
-Restore creates a set of temporary page tables, covering the kernel and the
-linear map, copies the restore code to a 'safe' page, then uses the copy to
-restore the memory image. It calls into cpu_resume(),
-and then follows the normal cpu_suspend() path back into the suspend code.
+Existing governors sample CPU load at a particular rate, typically
+every X ms.  This can lead to under-powering UI threads for the period =
+of
+time during which the user begins interacting with a previously-idle sy=
+stem
+until the next sample period happens.
 
-The implementation assumes that exactly the same kernel is booted on the
-same hardware, and that the kernel is loaded at the same physical address.
+The 'interactive' governor uses a different approach. Instead of sampli=
+ng
+the CPU at a specified rate, the governor will check whether to scale t=
+he
+CPU frequency up soon after coming out of idle.  When the CPU comes out=
+ of
+idle, a timer is configured to fire within 1-2 ticks.  If the CPU is ve=
+ry
+busy from exiting idle to when the timer fires then we assume the CPU i=
+s
+underpowered and ramp to MAX speed.
 
-Signed-off-by: James Morse <james.morse@arm.com>
+If the CPU was not sufficiently busy to immediately ramp to MAX speed, =
+then
+the governor evaluates the CPU load since the last speed adjustment,
+choosing the highest value between that longer-term load or the short-t=
+erm
+load since idle exit to determine the CPU speed to ramp to.
+
+A realtime thread is used for scaling up, giving the remaining tasks th=
+e
+CPU performance benefit, unlike existing governors which are more likel=
+y to
+schedule rampup work to occur after your performance starved tasks have
+completed.
+
+The tuneables for this governor are:
+/sys/devices/system/cpu/cpufreq/interactive/min_sample_time:
+	The minimum amount of time to spend at the current frequency before
+	ramping down. This is to ensure that the governor has seen enough
+	historic CPU load data to determine the appropriate workload.
+	Default is 80000 uS.
+/sys/devices/system/cpu/cpufreq/interactive/go_maxspeed_load
+	The CPU load at which to ramp to max speed.  Default is 85.
+
+Change-Id: Ib2b362607c62f7c56d35f44a9ef3280f98c17585
+Signed-off-by: Mike Chan <mike@android.com>
+Signed-off-by: Todd Poynor <toddpoynor@google.com>
+Bug: 3152864
+Signed-off-by: B=C3=A1lint Czobor <czoborbalint@gmail.com>
 ---
- arch/arm64/Kconfig                |   3 +
- arch/arm64/include/asm/suspend.h  |   8 +
- arch/arm64/kernel/Makefile        |   1 +
- arch/arm64/kernel/asm-offsets.c   |   4 +
- arch/arm64/kernel/hibernate-asm.S | 118 +++++++++++++
- arch/arm64/kernel/hibernate.c     | 359 ++++++++++++++++++++++++++++++++++++++
- arch/arm64/kernel/vmlinux.lds.S   |  15 ++
- 7 files changed, 508 insertions(+)
- create mode 100644 arch/arm64/kernel/hibernate-asm.S
- create mode 100644 arch/arm64/kernel/hibernate.c
+ Documentation/cpu-freq/governors.txt  |   37 ++
+ drivers/cpufreq/Kconfig               |   27 ++
+ drivers/cpufreq/Makefile              |    1 +
+ drivers/cpufreq/cpufreq_interactive.c |  706 +++++++++++++++++++++++++=
+++++++++
+ include/linux/cpufreq.h               |    3 +
+ 5 files changed, 774 insertions(+)
+ create mode 100644 drivers/cpufreq/cpufreq_interactive.c
 
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index 07d1811aa03f..d081dbc35335 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -707,6 +707,9 @@ menu "Power management options"
- 
- source "kernel/power/Kconfig"
- 
-+config ARCH_HIBERNATION_POSSIBLE
-+	def_bool y
+diff --git a/Documentation/cpu-freq/governors.txt b/Documentation/cpu-f=
+req/governors.txt
+index c15aa75..b262c53 100644
+--- a/Documentation/cpu-freq/governors.txt
++++ b/Documentation/cpu-freq/governors.txt
+@@ -28,6 +28,7 @@ Contents:
+ 2.3  Userspace
+ 2.4  Ondemand
+ 2.5  Conservative
++2.6  Interactive
+=20
+ 3.   The Governor Interface in the CPUfreq Core
+=20
+@@ -218,6 +219,42 @@ a decision on when to decrease the frequency while=
+ running in any
+ speed. Load for frequency increase is still evaluated every
+ sampling rate.
+=20
++2.6 Interactive
++---------------
 +
- config ARCH_SUSPEND_POSSIBLE
- 	def_bool y
- 
-diff --git a/arch/arm64/include/asm/suspend.h b/arch/arm64/include/asm/suspend.h
-index 5faa3ce1fa3a..e75ad7aa268c 100644
---- a/arch/arm64/include/asm/suspend.h
-+++ b/arch/arm64/include/asm/suspend.h
-@@ -1,3 +1,5 @@
-+#include <linux/suspend.h>
++The CPUfreq governor "interactive" is designed for latency-sensitive,
++interactive workloads. This governor sets the CPU speed depending on
++usage, similar to "ondemand" and "conservative" governors.  However,
++the governor is more aggressive about scaling the CPU speed up in
++response to CPU-intensive activity.
 +
- #ifndef __ASM_SUSPEND_H
- #define __ASM_SUSPEND_H
- 
-@@ -34,6 +36,12 @@ struct sleep_stack_data {
- 	unsigned long		callee_saved_regs[NR_CALLEE_SAVED_REGS];
- };
- 
-+extern int swsusp_arch_suspend(void);
-+extern int swsusp_arch_resume(void);
-+int swsusp_arch_suspend_enter(struct cpu_suspend_ctx *ptr);
-+void __noreturn swsusp_arch_suspend_exit(phys_addr_t tmp_pg_dir,
-+					 phys_addr_t swapper_pg_dir,
-+					 void *kernel_start, void *kernel_end);
- extern int cpu_suspend(unsigned long arg, int (*fn)(unsigned long));
- extern void cpu_resume(void);
- int __cpu_suspend_enter(struct sleep_stack_data *state);
-diff --git a/arch/arm64/kernel/Makefile b/arch/arm64/kernel/Makefile
-index 22dc9bc781be..b9151ae4a7ae 100644
---- a/arch/arm64/kernel/Makefile
-+++ b/arch/arm64/kernel/Makefile
-@@ -36,6 +36,7 @@ arm64-obj-$(CONFIG_EFI)			+= efi.o efi-stub.o efi-entry.o
- arm64-obj-$(CONFIG_PCI)			+= pci.o
- arm64-obj-$(CONFIG_ARMV8_DEPRECATED)	+= armv8_deprecated.o
- arm64-obj-$(CONFIG_ACPI)		+= acpi.o
-+arm64-obj-$(CONFIG_HIBERNATION)		+= hibernate.o hibernate-asm.o
- 
- obj-y					+= $(arm64-obj-y) vdso/
- obj-m					+= $(arm64-obj-m)
-diff --git a/arch/arm64/kernel/asm-offsets.c b/arch/arm64/kernel/asm-offsets.c
-index 3cb1383d3deb..b5d9495a94a1 100644
---- a/arch/arm64/kernel/asm-offsets.c
-+++ b/arch/arm64/kernel/asm-offsets.c
-@@ -22,6 +22,7 @@
- #include <linux/mm.h>
- #include <linux/dma-mapping.h>
- #include <linux/kvm_host.h>
-+#include <linux/suspend.h>
- #include <asm/thread_info.h>
- #include <asm/memory.h>
- #include <asm/smp_plat.h>
-@@ -160,5 +161,8 @@ int main(void)
-   DEFINE(SLEEP_STACK_DATA_SYSTEM_REGS,	offsetof(struct sleep_stack_data, system_regs));
-   DEFINE(SLEEP_STACK_DATA_CALLEE_REGS,	offsetof(struct sleep_stack_data, callee_saved_regs));
- #endif
-+  DEFINE(HIBERN_PBE_ORIG,	offsetof(struct pbe, orig_address));
-+  DEFINE(HIBERN_PBE_ADDR,	offsetof(struct pbe, address));
-+  DEFINE(HIBERN_PBE_NEXT,	offsetof(struct pbe, next));
-   return 0;
- }
-diff --git a/arch/arm64/kernel/hibernate-asm.S b/arch/arm64/kernel/hibernate-asm.S
++Sampling the CPU load every X ms can lead to under-powering the CPU
++for X ms, leading to dropped frames, stuttering UI, etc.  Instead of
++sampling the cpu at a specified rate, the interactive governor will
++check whether to scale the cpu frequency up soon after coming out of
++idle.  When the cpu comes out of idle, a timer is configured to fire
++within 1-2 ticks.  If the cpu is very busy between exiting idle and
++when the timer fires then we assume the cpu is underpowered and ramp
++to MAX speed.
++
++If the cpu was not sufficiently busy to immediately ramp to MAX speed,
++then governor evaluates the cpu load since the last speed adjustment,
++choosing the highest value between that longer-term load or the
++short-term load since idle exit to determine the cpu speed to ramp to.
++
++The tuneable values for this governor are:
++
++min_sample_time: The minimum amount of time to spend at the current
++frequency before ramping down. This is to ensure that the governor has
++seen enough historic cpu load data to determine the appropriate
++workload.  Default is 80000 uS.
++
++go_maxspeed_load: The CPU load at which to ramp to max speed.  Default
++is 85.
++
++timer_rate: Sample rate for reevaluating cpu load when the system is
++not idle.  Default is 30000 uS.
++
+ 3. The Governor Interface in the CPUfreq Core
+ =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+=20
+diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+index 659879a..6e099e5 100644
+--- a/drivers/cpufreq/Kconfig
++++ b/drivers/cpufreq/Kconfig
+@@ -102,6 +102,16 @@ config CPU_FREQ_DEFAULT_GOV_CONSERVATIVE
+ 	  Be aware that not all cpufreq drivers support the conservative
+ 	  governor. If unsure have a look at the help section of the
+ 	  driver. Fallback governor will be the performance governor.
++
++config CPU_FREQ_DEFAULT_GOV_INTERACTIVE
++	bool "interactive"
++	select CPU_FREQ_GOV_INTERACTIVE
++	help
++	  Use the CPUFreq governor 'interactive' as default. This allows
++	  you to get a full dynamic cpu frequency capable system by simply
++	  loading your cpufreq low-level hardware driver, using the
++	  'interactive' governor for latency-sensitive workloads.
++
+ endchoice
+=20
+ config CPU_FREQ_GOV_PERFORMANCE
+@@ -159,6 +169,23 @@ config CPU_FREQ_GOV_ONDEMAND
+=20
+ 	  If in doubt, say N.
+=20
++config CPU_FREQ_GOV_INTERACTIVE
++	tristate "'interactive' cpufreq policy governor"
++	help
++	  'interactive' - This driver adds a dynamic cpufreq policy governor
++	  designed for latency-sensitive workloads.
++
++	  This governor attempts to reduce the latency of clock
++	  increases so that the system is more responsive to
++	  interactive workloads.
++
++	  To compile this driver as a module, choose M here: the
++	  module will be called cpufreq_interactive.
++
++	  For details, take a look at linux/Documentation/cpu-freq.
++
++	  If in doubt, say N.
++
+ config CPU_FREQ_GOV_CONSERVATIVE
+ 	tristate "'conservative' cpufreq governor"
+ 	depends on CPU_FREQ
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 4134038..98667c8 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -11,6 +11,7 @@ obj-$(CONFIG_CPU_FREQ_GOV_POWERSAVE)	+=3D cpufreq_pow=
+ersave.o
+ obj-$(CONFIG_CPU_FREQ_GOV_USERSPACE)	+=3D cpufreq_userspace.o
+ obj-$(CONFIG_CPU_FREQ_GOV_ONDEMAND)	+=3D cpufreq_ondemand.o
+ obj-$(CONFIG_CPU_FREQ_GOV_CONSERVATIVE)	+=3D cpufreq_conservative.o
++obj-$(CONFIG_CPU_FREQ_GOV_INTERACTIVE)	+=3D cpufreq_interactive.o
+ obj-$(CONFIG_CPU_FREQ_GOV_COMMON)		+=3D cpufreq_governor.o
+=20
+ obj-$(CONFIG_CPUFREQ_DT)		+=3D cpufreq-dt.o
+diff --git a/drivers/cpufreq/cpufreq_interactive.c b/drivers/cpufreq/cp=
+ufreq_interactive.c
 new file mode 100644
-index 000000000000..2cead4779804
+index 0000000..8fc147c
 --- /dev/null
-+++ b/arch/arm64/kernel/hibernate-asm.S
-@@ -0,0 +1,118 @@
-+#include <linux/linkage.h>
-+#include <linux/errno.h>
++++ b/drivers/cpufreq/cpufreq_interactive.c
+@@ -0,0 +1,706 @@
++/*
++ * drivers/cpufreq/cpufreq_interactive.c
++ *
++ * Copyright (C) 2010 Google, Inc.
++ *
++ * This software is licensed under the terms of the GNU General Public
++ * License version 2, as published by the Free Software Foundation, an=
+d
++ * may be copied, distributed, and modified under those terms.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * Author: Mike Chan (mike@android.com)
++ *
++ */
 +
-+#include <asm/asm-offsets.h>
-+#include <asm/assembler.h>
-+#include <asm/cputype.h>
-+#include <asm/memory.h>
-+#include <asm/page.h>
++#include <linux/cpu.h>
++#include <linux/cpumask.h>
++#include <linux/cpufreq.h>
++#include <linux/module.h>
++#include <linux/mutex.h>
++#include <linux/sched.h>
++#include <linux/sched/rt.h>
++#include <linux/tick.h>
++#include <linux/time.h>
++#include <linux/timer.h>
++#include <linux/workqueue.h>
++#include <linux/kthread.h>
++#include <linux/mutex.h>
++
++#include <asm/cputime.h>
++
++static atomic_t active_count =3D ATOMIC_INIT(0);
++
++struct cpufreq_interactive_cpuinfo {
++	struct timer_list cpu_timer;
++	int timer_idlecancel;
++	u64 time_in_idle;
++	u64 idle_exit_time;
++	u64 timer_run_time;
++	int idling;
++	u64 freq_change_time;
++	u64 freq_change_time_in_idle;
++	struct cpufreq_policy *policy;
++	struct cpufreq_frequency_table *freq_table;
++	unsigned int target_freq;
++	int governor_enabled;
++};
++
++static DEFINE_PER_CPU(struct cpufreq_interactive_cpuinfo, cpuinfo);
++
++/* Workqueues handle frequency scaling */
++static struct task_struct *up_task;
++static struct workqueue_struct *down_wq;
++static struct work_struct freq_scale_down_work;
++static cpumask_t up_cpumask;
++static spinlock_t up_cpumask_lock;
++static cpumask_t down_cpumask;
++static spinlock_t down_cpumask_lock;
++static struct mutex set_speed_lock;
++
++/* Hi speed to bump to from lo speed when load burst (default max) */
++static u64 hispeed_freq;
++
++/* Go to hi speed when CPU load at or above this value. */
++#define DEFAULT_GO_HISPEED_LOAD 95
++static unsigned long go_hispeed_load;
 +
 +/*
-+ * Corrupt memory.
-+ *
-+ * Loads temporary page tables then restores the memory image.
-+ * Finally branches to cpu_resume() to restore the state saved by
-+ * swsusp_arch_suspend().
-+ *
-+ * Because this code has to be copied to a safe_page, it can't call out to
-+ * other functions by pc-relative address. Also remember that it may be
-+ * mid-way through over-writing other functions. For this reason it contains
-+ * a copy of copy_page() and code from flush_icache_range().
-+ *
-+ * All of memory gets written to, including code. We need to clean the kernel
-+ * text to the PoC before secondary cores can be booted. Because kernel modules,
-+ * and executable pages mapped to user space are also written as data, we
-+ * clean all pages we touch to the PoU.
-+ *
-+ * x0: physical address of temporary page tables
-+ * x1: physical address of swapper page tables
-+ * x2: address of kernel_start
-+ * x3: address of kernel_end
++ * The minimum amount of time to spend at a frequency before we can ra=
+mp down.
 + */
-+.pushsection    ".hibernate_exit.text", "ax"
-+ENTRY(swsusp_arch_suspend_exit)
-+	/* Temporary page tables are a copy, so no need for a trampoline here */
-+	msr	ttbr1_el1, x0
-+	isb
-+	tlbi	vmalle1is
-+	ic	ialluis
-+	isb
++#define DEFAULT_MIN_SAMPLE_TIME 20 * USEC_PER_MSEC
++static unsigned long min_sample_time;
 +
-+	mov	x21, x1
-+	mov	x22, x2
-+	mov	x23, x3
++/*
++ * The sample rate of the timer used to increase frequency
++ */
++#define DEFAULT_TIMER_RATE 20 * USEC_PER_MSEC
++static unsigned long timer_rate;
 +
-+	/* walk the restore_pblist and use copy_page() to over-write memory */
-+	ldr	x19, =restore_pblist
-+	ldr	x19, [x19]
++static int cpufreq_governor_interactive(struct cpufreq_policy *policy,
++		unsigned int event);
 +
-+2:	ldr	x10, [x19, #HIBERN_PBE_ORIG]
-+	mov	x0, x10
-+	ldr	x1, [x19, #HIBERN_PBE_ADDR]
++#ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_INTERACTIVE
++static
++#endif
++struct cpufreq_governor cpufreq_gov_interactive =3D {
++	.name =3D "interactive",
++	.governor =3D cpufreq_governor_interactive,
++	.max_transition_latency =3D 10000000,
++	.owner =3D THIS_MODULE,
++};
 +
-+	/* arch/arm64/lib/copy_page.S:copy_page() */
-+	prfm	pldl1strm, [x1, #64]
-+3:	ldp	x2, x3, [x1]
-+	ldp	x4, x5, [x1, #16]
-+	ldp	x6, x7, [x1, #32]
-+	ldp	x8, x9, [x1, #48]
-+	add	x1, x1, #64
-+	prfm	pldl1strm, [x1, #64]
-+	stnp	x2, x3, [x0]
-+	stnp	x4, x5, [x0, #16]
-+	stnp	x6, x7, [x0, #32]
-+	stnp	x8, x9, [x0, #48]
-+	add	x0, x0, #64
-+	tst	x1, #(PAGE_SIZE - 1)
-+	b.ne	3b
++static void cpufreq_interactive_timer(unsigned long data)
++{
++	unsigned int delta_idle;
++	unsigned int delta_time;
++	int cpu_load;
++	int load_since_change;
++	u64 time_in_idle;
++	u64 idle_exit_time;
++	struct cpufreq_interactive_cpuinfo *pcpu =3D
++		&per_cpu(cpuinfo, data);
++	u64 now_idle;
++	unsigned int new_freq;
++	unsigned int index;
++	unsigned long flags;
 +
-+	dsb	ish		//  memory restore must finish before cleaning
++	smp_rmb();
 +
-+	add	x1, x10, #PAGE_SIZE
-+	/* Clean the copied page to PoU - based on flush_icache_range() */
-+	dcache_line_size x2, x3
-+	sub	x3, x2, #1
-+	bic	x4, x10, x3
-+4:	dc	cvau, x4	// clean D line / unified line
-+	add	x4, x4, x2
-+	cmp	x4, x1
-+	b.lo	4b
-+
-+	ldr	x19, [x19, #HIBERN_PBE_NEXT]
-+	cbnz	x19, 2b
-+
-+	/* Clean the kernel text to PoC - based on flush_icache_range() */
-+	dcache_line_size x2, x3
-+	sub	x3, x2, #1
-+	bic	x4, x22, x3
-+5:	dc	cvac, x4
-+	add	x4, x4, x2
-+	cmp	x4, x23
-+	b.lo	5b
++	if (!pcpu->governor_enabled)
++		goto exit;
 +
 +	/*
-+	 * branch into the restored kernel - so that when we restore the page
-+	 * tables, code continues to be executable.
++	 * Once pcpu->timer_run_time is updated to >=3D pcpu->idle_exit_time,
++	 * this lets idle exit know the current idle time sample has
++	 * been processed, and idle exit can generate a new sample and
++	 * re-arm the timer.  This prevents a concurrent idle
++	 * exit on that CPU from writing a new set of info at the same time
++	 * the timer function runs (the timer function can't use that info
++	 * until more time passes).
 +	 */
-+	ldr	x1, =__hibernate_exit
-+	mov	x0, x21		// physical address of swapper page tables.
-+	br	x1
++	time_in_idle =3D pcpu->time_in_idle;
++	idle_exit_time =3D pcpu->idle_exit_time;
++	now_idle =3D get_cpu_idle_time_us(data, &pcpu->timer_run_time);
++	smp_wmb();
 +
-+	.ltorg
-+ENDPROC(swsusp_arch_suspend_exit)
-+.popsection
++	/* If we raced with cancelling a timer, skip. */
++	if (!idle_exit_time)
++		goto exit;
 +
-+/*
-+ * Reset the page tables, and wake up in cpu_resume().
-+ * Temporary page tables were a copy, so again, no trampoline here.
-+ *
-+ * x0: physical address of swapper_pg_dir
-+ */
-+ENTRY(__hibernate_exit)
-+	msr	ttbr1_el1, x0
-+	isb
-+	tlbi	vmalle1is
-+	ic	ialluis
-+	isb
-+	b	_cpu_resume
-+ENDPROC(__hibernate_exit)
-diff --git a/arch/arm64/kernel/hibernate.c b/arch/arm64/kernel/hibernate.c
-new file mode 100644
-index 000000000000..40eb55bcee15
---- /dev/null
-+++ b/arch/arm64/kernel/hibernate.c
-@@ -0,0 +1,359 @@
-+/*:
-+ * Hibernate support specific for ARM64
-+ *
-+ * Derived from work on ARM hibernation support by:
-+ *
-+ * Ubuntu project, hibernation support for mach-dove
-+ * Copyright (C) 2010 Nokia Corporation (Hiroshi Doyu)
-+ * Copyright (C) 2010 Texas Instruments, Inc. (Teerth Reddy et al.)
-+ *  https://lkml.org/lkml/2010/6/18/4
-+ *  https://lists.linux-foundation.org/pipermail/linux-pm/2010-June/027422.html
-+ *  https://patchwork.kernel.org/patch/96442/
-+ *
-+ * Copyright (C) 2006 Rafael J. Wysocki <rjw@sisk.pl>
-+ *
-+ * License terms: GNU General Public License (GPL) version 2
-+ */
-+#define pr_fmt(x) "hibernate: " x
-+#include <linux/kvm_host.h>
-+#include <linux/mm.h>
-+#include <linux/pm.h>
-+#include <linux/sched.h>
-+#include <linux/suspend.h>
-+#include <linux/version.h>
++	delta_idle =3D (unsigned int)(now_idle - time_in_idle);
++	delta_time =3D (unsigned int)(pcpu->timer_run_time - idle_exit_time);
 +
-+#include <asm/barrier.h>
-+#include <asm/cacheflush.h>
-+#include <asm/irqflags.h>
-+#include <asm/memory.h>
-+#include <asm/mmu_context.h>
-+#include <asm/pgalloc.h>
-+#include <asm/pgtable.h>
-+#include <asm/pgtable-hwdef.h>
-+#include <asm/sections.h>
-+#include <asm/suspend.h>
++	/*
++	 * If timer ran less than 1ms after short-term sample started, retry.
++	 */
++	if (delta_time < 1000)
++		goto rearm;
 +
-+/* These are necessary to build without ifdefery */
-+#ifndef pmd_index
-+#define pmd_index(x)	0
-+#endif
-+#ifndef pud_index
-+#define pud_index(x)	0
-+#endif
-+
-+/*
-+ * Start/end of the hibernate exit code, this must be copied to a 'safe'
-+ * location in memory, and executed from there.
-+ */
-+extern char __hibernate_exit_text_start[], __hibernate_exit_text_end[];
-+
-+int pfn_is_nosave(unsigned long pfn)
-+{
-+	unsigned long nosave_begin_pfn = virt_to_pfn(&__nosave_begin);
-+	unsigned long nosave_end_pfn = virt_to_pfn(&__nosave_end - 1);
-+
-+	return (pfn >= nosave_begin_pfn) && (pfn <= nosave_end_pfn);
-+}
-+
-+void notrace save_processor_state(void)
-+{
-+	WARN_ON(num_online_cpus() != 1);
-+	local_fiq_disable();
-+}
-+
-+void notrace restore_processor_state(void)
-+{
-+	local_fiq_enable();
-+}
-+
-+/*
-+ * Copies src_length bytes, starting at src_start into an new page,
-+ * perform cache maintentance, then map it at the top of memory as executable.
-+ *
-+ * This is used by hibernate to copy the code it needs to execute when
-+ * overwriting the kernel text.
-+ *
-+ * Suggested allocators are get_safe_page() or get_zeroed_page(). Your chosen
-+ * mask must cause zero'd pages to be returned.
-+ */
-+static int create_safe_exec_page(void *src_start, size_t length,
-+				 void **dst_addr,
-+				 unsigned long (*allocator)(gfp_t mask),
-+				 gfp_t mask)
-+{
-+	int rc = 0;
-+	pgd_t *pgd;
-+	pud_t *pud;
-+	pmd_t *pmd;
-+	pte_t *pte;
-+	unsigned long dst = allocator(mask);
-+	if (!dst) {
-+		rc = -ENOMEM;
-+		goto out;
-+	}
-+
-+	memcpy((void *)dst, src_start, length);
-+	flush_icache_range(dst, dst + length);
-+
-+	pgd = pgd_offset(&init_mm, (unsigned long)-1);
-+	if (!pgd_val(*pgd) && PTRS_PER_PGD > 1) {
-+		pud = (pud_t *)allocator(mask);
-+		if (!pud) {
-+			rc = -ENOMEM;
-+			goto out;
-+		}
-+		set_pgd(pgd, __pgd(virt_to_phys(pud) | PUD_TYPE_TABLE));
-+	}
-+
-+	pud = pud_offset(pgd, (unsigned long)-1);
-+	if (!pud_val(*pud) && PTRS_PER_PUD > 1) {
-+		pmd = (pmd_t *)allocator(mask);
-+		if (!pmd) {
-+			rc = -ENOMEM;
-+			goto out;
-+		}
-+		set_pud(pud, __pud(virt_to_phys(pmd) | PUD_TYPE_TABLE));
-+	}
-+
-+	pmd = pmd_offset(pud, (unsigned long)-1);
-+	if (!pmd_val(*pmd) && PTRS_PER_PMD > 1) {
-+		pte = (pte_t *)allocator(mask);
-+		if (!pte) {
-+			rc = -ENOMEM;
-+			goto out;
-+		}
-+		set_pmd(pmd, __pmd(virt_to_phys(pte) | PMD_TYPE_TABLE));
-+	}
-+
-+	pte = pte_offset_kernel(pmd, (unsigned long)-1);
-+	set_pte_at(&init_mm, dst, pte,
-+		   __pte(virt_to_phys((void *)dst) | PAGE_KERNEL_EXEC));
-+
-+	/* this is a new mapping, so no need for a tlbi */
-+
-+	*dst_addr = (void *)((unsigned long)-1 & PAGE_MASK);
-+
-+out:
-+	return rc;
-+}
-+
-+
-+int swsusp_arch_suspend(void)
-+{
-+	int ret = 0;
-+	unsigned long flags;
-+	struct sleep_stack_data state;
-+	struct mm_struct *mm = current->active_mm;
-+
-+	local_dbg_save(flags);
-+
-+	if (__cpu_suspend_enter(&state))
-+		ret = swsusp_save();
++	if (delta_idle > delta_time)
++		cpu_load =3D 0;
 +	else
-+		__cpu_suspend_exit(mm);
++		cpu_load =3D 100 * (delta_time - delta_idle) / delta_time;
 +
-+	local_dbg_restore(flags);
++	delta_idle =3D (unsigned int)(now_idle - pcpu->freq_change_time_in_id=
+le);
++	delta_time =3D (unsigned int)(pcpu->timer_run_time - pcpu->freq_chang=
+e_time);
 +
-+	return ret;
-+}
++	if ((delta_time =3D=3D 0) || (delta_idle > delta_time))
++		load_since_change =3D 0;
++	else
++		load_since_change =3D
++			100 * (delta_time - delta_idle) / delta_time;
 +
-+static int copy_pte(pmd_t *dst, pmd_t *src, unsigned long *start_addr)
-+{
-+	int i;
-+	pte_t *old_pte = pte_offset_kernel(src, *start_addr);
-+	pte_t *new_pte = pte_offset_kernel(dst, *start_addr);
++	/*
++	 * Choose greater of short-term load (since last idle timer
++	 * started or timer function re-armed itself) or long-term load
++	 * (since last frequency change).
++	 */
++	if (load_since_change > cpu_load)
++		cpu_load =3D load_since_change;
 +
-+	for (i = pte_index(*start_addr); i < PTRS_PER_PTE;
-+	     i++, old_pte++, new_pte++) {
-+		if (pte_val(*old_pte))
-+			set_pte(new_pte,
-+				__pte(pte_val(*old_pte) & ~PTE_RDONLY));
++	if (cpu_load >=3D go_hispeed_load) {
++		if (pcpu->policy->cur =3D=3D pcpu->policy->min)
++			new_freq =3D hispeed_freq;
++		else
++			new_freq =3D pcpu->policy->max * cpu_load / 100;
++	} else {
++		new_freq =3D pcpu->policy->cur * cpu_load / 100;
 +	}
 +
-+	*start_addr &= PAGE_MASK;
++	if (cpufreq_frequency_table_target(pcpu->policy, pcpu->freq_table,
++					   new_freq, CPUFREQ_RELATION_H,
++					   &index)) {
++		pr_warn_once("timer %d: cpufreq_frequency_table_target error\n",
++			     (int) data);
++		goto rearm;
++	}
++
++	new_freq =3D pcpu->freq_table[index].frequency;
++
++	if (pcpu->target_freq =3D=3D new_freq)
++		goto rearm_if_notmax;
++
++	/*
++	 * Do not scale down unless we have been at this frequency for the
++	 * minimum sample time.
++	 */
++	if (new_freq < pcpu->target_freq) {
++		if (pcpu->timer_run_time - pcpu->freq_change_time
++		    < min_sample_time)
++			goto rearm;
++	}
++
++	if (new_freq < pcpu->target_freq) {
++		pcpu->target_freq =3D new_freq;
++		spin_lock_irqsave(&down_cpumask_lock, flags);
++		cpumask_set_cpu(data, &down_cpumask);
++		spin_unlock_irqrestore(&down_cpumask_lock, flags);
++		queue_work(down_wq, &freq_scale_down_work);
++	} else {
++		pcpu->target_freq =3D new_freq;
++		spin_lock_irqsave(&up_cpumask_lock, flags);
++		cpumask_set_cpu(data, &up_cpumask);
++		spin_unlock_irqrestore(&up_cpumask_lock, flags);
++		wake_up_process(up_task);
++	}
++
++rearm_if_notmax:
++	/*
++	 * Already set max speed and don't see a need to change that,
++	 * wait until next idle to re-evaluate, don't need timer.
++	 */
++	if (pcpu->target_freq =3D=3D pcpu->policy->max)
++		goto exit;
++
++rearm:
++	if (!timer_pending(&pcpu->cpu_timer)) {
++		/*
++		 * If already at min: if that CPU is idle, don't set timer.
++		 * Else cancel the timer if that CPU goes idle.  We don't
++		 * need to re-evaluate speed until the next idle exit.
++		 */
++		if (pcpu->target_freq =3D=3D pcpu->policy->min) {
++			smp_rmb();
++
++			if (pcpu->idling)
++				goto exit;
++
++			pcpu->timer_idlecancel =3D 1;
++		}
++
++		pcpu->time_in_idle =3D get_cpu_idle_time_us(
++			data, &pcpu->idle_exit_time);
++		mod_timer(&pcpu->cpu_timer,
++			  jiffies + usecs_to_jiffies(timer_rate));
++	}
++
++exit:
++	return;
++}
++
++static void cpufreq_interactive_idle_start(void)
++{
++	struct cpufreq_interactive_cpuinfo *pcpu =3D
++		&per_cpu(cpuinfo, smp_processor_id());
++	int pending;
++
++	if (!pcpu->governor_enabled)
++		return;
++
++	pcpu->idling =3D 1;
++	smp_wmb();
++	pending =3D timer_pending(&pcpu->cpu_timer);
++
++	if (pcpu->target_freq !=3D pcpu->policy->min) {
++#ifdef CONFIG_SMP
++		/*
++		 * Entering idle while not at lowest speed.  On some
++		 * platforms this can hold the other CPU(s) at that speed
++		 * even though the CPU is idle. Set a timer to re-evaluate
++		 * speed so this idle CPU doesn't hold the other CPUs above
++		 * min indefinitely.  This should probably be a quirk of
++		 * the CPUFreq driver.
++		 */
++		if (!pending) {
++			pcpu->time_in_idle =3D get_cpu_idle_time_us(
++				smp_processor_id(), &pcpu->idle_exit_time);
++			pcpu->timer_idlecancel =3D 0;
++			mod_timer(&pcpu->cpu_timer,
++				  jiffies + usecs_to_jiffies(timer_rate));
++		}
++#endif
++	} else {
++		/*
++		 * If at min speed and entering idle after load has
++		 * already been evaluated, and a timer has been set just in
++		 * case the CPU suddenly goes busy, cancel that timer.  The
++		 * CPU didn't go busy; we'll recheck things upon idle exit.
++		 */
++		if (pending && pcpu->timer_idlecancel) {
++			del_timer(&pcpu->cpu_timer);
++			/*
++			 * Ensure last timer run time is after current idle
++			 * sample start time, so next idle exit will always
++			 * start a new idle sampling period.
++			 */
++			pcpu->idle_exit_time =3D 0;
++			pcpu->timer_idlecancel =3D 0;
++		}
++	}
++
++}
++
++static void cpufreq_interactive_idle_end(void)
++{
++	struct cpufreq_interactive_cpuinfo *pcpu =3D
++		&per_cpu(cpuinfo, smp_processor_id());
++
++	pcpu->idling =3D 0;
++	smp_wmb();
++
++	/*
++	 * Arm the timer for 1-2 ticks later if not already, and if the timer
++	 * function has already processed the previous load sampling
++	 * interval.  (If the timer is not pending but has not processed
++	 * the previous interval, it is probably racing with us on another
++	 * CPU.  Let it compute load based on the previous sample and then
++	 * re-arm the timer for another interval when it's done, rather
++	 * than updating the interval start time to be "now", which doesn't
++	 * give the timer function enough time to make a decision on this
++	 * run.)
++	 */
++	if (timer_pending(&pcpu->cpu_timer) =3D=3D 0 &&
++	    pcpu->timer_run_time >=3D pcpu->idle_exit_time &&
++	    pcpu->governor_enabled) {
++		pcpu->time_in_idle =3D
++			get_cpu_idle_time_us(smp_processor_id(),
++					     &pcpu->idle_exit_time);
++		pcpu->timer_idlecancel =3D 0;
++		mod_timer(&pcpu->cpu_timer,
++			  jiffies + usecs_to_jiffies(timer_rate));
++	}
++
++}
++
++static int cpufreq_interactive_up_task(void *data)
++{
++	unsigned int cpu;
++	cpumask_t tmp_mask;
++	unsigned long flags;
++	struct cpufreq_interactive_cpuinfo *pcpu;
++
++	while (1) {
++		set_current_state(TASK_INTERRUPTIBLE);
++		spin_lock_irqsave(&up_cpumask_lock, flags);
++
++		if (cpumask_empty(&up_cpumask)) {
++			spin_unlock_irqrestore(&up_cpumask_lock, flags);
++			schedule();
++
++			if (kthread_should_stop())
++				break;
++
++			spin_lock_irqsave(&up_cpumask_lock, flags);
++		}
++
++		set_current_state(TASK_RUNNING);
++		tmp_mask =3D up_cpumask;
++		cpumask_clear(&up_cpumask);
++		spin_unlock_irqrestore(&up_cpumask_lock, flags);
++
++		for_each_cpu(cpu, &tmp_mask) {
++			unsigned int j;
++			unsigned int max_freq =3D 0;
++
++			pcpu =3D &per_cpu(cpuinfo, cpu);
++			smp_rmb();
++
++			if (!pcpu->governor_enabled)
++				continue;
++
++			mutex_lock(&set_speed_lock);
++
++			for_each_cpu(j, pcpu->policy->cpus) {
++				struct cpufreq_interactive_cpuinfo *pjcpu =3D
++					&per_cpu(cpuinfo, j);
++
++				if (pjcpu->target_freq > max_freq)
++					max_freq =3D pjcpu->target_freq;
++			}
++
++			if (max_freq !=3D pcpu->policy->cur)
++				__cpufreq_driver_target(pcpu->policy,
++							max_freq,
++							CPUFREQ_RELATION_H);
++			mutex_unlock(&set_speed_lock);
++
++			pcpu->freq_change_time_in_idle =3D
++				get_cpu_idle_time_us(cpu,
++						     &pcpu->freq_change_time);
++		}
++	}
 +
 +	return 0;
 +}
 +
-+static int copy_pmd(pud_t *dst, pud_t *src, unsigned long *start_addr)
++static void cpufreq_interactive_freq_down(struct work_struct *work)
 +{
-+	int i;
-+	int rc = 0;
-+	pte_t *new_pte;
-+	pmd_t *old_pmd = pmd_offset(src, *start_addr);
-+	pmd_t *new_pmd = pmd_offset(dst, *start_addr);
++	unsigned int cpu;
++	cpumask_t tmp_mask;
++	unsigned long flags;
++	struct cpufreq_interactive_cpuinfo *pcpu;
 +
-+	for (i = pmd_index(*start_addr); i < PTRS_PER_PMD;
-+	     i++, *start_addr += PMD_SIZE, old_pmd++, new_pmd++) {
-+		if (!pmd_val(*old_pmd))
++	spin_lock_irqsave(&down_cpumask_lock, flags);
++	tmp_mask =3D down_cpumask;
++	cpumask_clear(&down_cpumask);
++	spin_unlock_irqrestore(&down_cpumask_lock, flags);
++
++	for_each_cpu(cpu, &tmp_mask) {
++		unsigned int j;
++		unsigned int max_freq =3D 0;
++
++		pcpu =3D &per_cpu(cpuinfo, cpu);
++		smp_rmb();
++
++		if (!pcpu->governor_enabled)
 +			continue;
 +
-+		if (pmd_table(*(old_pmd))) {
-+			new_pte = (pte_t *)get_safe_page(GFP_ATOMIC);
-+			if (!new_pte) {
-+				rc = -ENOMEM;
-+				break;
-+			}
++		mutex_lock(&set_speed_lock);
 +
-+			set_pmd(new_pmd, __pmd(virt_to_phys(new_pte)
-+					       | PMD_TYPE_TABLE));
++		for_each_cpu(j, pcpu->policy->cpus) {
++			struct cpufreq_interactive_cpuinfo *pjcpu =3D
++				&per_cpu(cpuinfo, j);
 +
-+			rc = copy_pte(new_pmd, old_pmd, start_addr);
-+			if (rc)
-+				break;
-+		} else
-+			set_pmd(new_pmd,
-+				__pmd(pmd_val(*old_pmd) & ~PMD_SECT_RDONLY));
-+
-+		*start_addr &= PMD_MASK;
-+	}
-+
-+	return rc;
-+}
-+
-+static int copy_pud(pgd_t *dst, pgd_t *src, unsigned long *start_addr)
-+{
-+	int i;
-+	int rc = 0;
-+	pmd_t *new_pmd;
-+	pud_t *old_pud = pud_offset(src, *start_addr);
-+	pud_t *new_pud = pud_offset(dst, *start_addr);
-+
-+	for (i = pud_index(*start_addr); i < PTRS_PER_PUD;
-+	     i++, *start_addr += PUD_SIZE, old_pud++, new_pud++) {
-+		if (!pud_val(*old_pud))
-+			continue;
-+
-+		if (pud_table(*(old_pud))) {
-+			if (PTRS_PER_PMD != 1) {
-+				new_pmd = (pmd_t *)get_safe_page(GFP_ATOMIC);
-+				if (!new_pmd) {
-+					rc = -ENOMEM;
-+					break;
-+				}
-+
-+				set_pud(new_pud, __pud(virt_to_phys(new_pmd)
-+						       | PUD_TYPE_TABLE));
-+			}
-+
-+			rc = copy_pmd(new_pud, old_pud, start_addr);
-+			if (rc)
-+				break;
-+		} else
-+			set_pud(new_pud,
-+				__pud(pud_val(*old_pud) & ~PMD_SECT_RDONLY));
-+
-+		*start_addr &= PUD_MASK;
-+	}
-+
-+	return rc;
-+}
-+
-+static int copy_page_tables(pgd_t *new_pgd, unsigned long start_addr)
-+{
-+	int i;
-+	int rc = 0;
-+	pud_t *new_pud;
-+	pgd_t *old_pgd = pgd_offset_k(start_addr);
-+
-+	new_pgd += pgd_index(start_addr);
-+
-+	for (i = pgd_index(start_addr); i < PTRS_PER_PGD;
-+	     i++, start_addr += PGDIR_SIZE, old_pgd++, new_pgd++) {
-+		if (!pgd_val(*old_pgd))
-+			continue;
-+
-+		if (PTRS_PER_PUD != 1) {
-+			new_pud = (pud_t *)get_safe_page(GFP_ATOMIC);
-+			if (!new_pud) {
-+				rc = -ENOMEM;
-+				break;
-+			}
-+
-+			set_pgd(new_pgd, __pgd(virt_to_phys(new_pud)
-+					       | PUD_TYPE_TABLE));
++			if (pjcpu->target_freq > max_freq)
++				max_freq =3D pjcpu->target_freq;
 +		}
 +
-+		rc = copy_pud(new_pgd, old_pgd, &start_addr);
-+		if (rc)
-+			break;
++		if (max_freq !=3D pcpu->policy->cur)
++			__cpufreq_driver_target(pcpu->policy, max_freq,
++						CPUFREQ_RELATION_H);
 +
-+		start_addr &= PGDIR_MASK;
++		mutex_unlock(&set_speed_lock);
++		pcpu->freq_change_time_in_idle =3D
++			get_cpu_idle_time_us(cpu,
++					     &pcpu->freq_change_time);
 +	}
-+
-+	return rc;
 +}
 +
-+/*
-+ * Setup then Resume from the hibernate image using swsusp_arch_suspend_exit().
-+ *
-+ * Memory allocated by get_safe_page() will be dealt with by the hibernate code,
-+ * we don't need to free it here.
-+ *
-+ * Allocate a safe zero page to use as ttbr0, as all existing page tables, and
-+ * even the empty_zero_page will be overwritten.
-+ */
-+int swsusp_arch_resume(void)
++static ssize_t show_hispeed_freq(struct kobject *kobj,
++				 struct attribute *attr, char *buf)
 +{
-+	int rc = 0;
-+	size_t exit_size;
-+	pgd_t *tmp_pg_dir;
-+	void *safe_zero_page_mem;
-+	unsigned long tmp_pg_start;
-+	void __noreturn (*hibernate_exit)(phys_addr_t, phys_addr_t, void *, void *);
-+
-+	/* Copy swsusp_arch_suspend_exit() to a safe page. */
-+	exit_size = __hibernate_exit_text_end - __hibernate_exit_text_start;
-+	rc = create_safe_exec_page(__hibernate_exit_text_start, exit_size,
-+			(void **)&hibernate_exit, get_safe_page, GFP_ATOMIC);
-+	if (rc) {
-+		pr_err("Failed to create safe executable page for"
-+		       " hibernate_exit code.");
-+		goto out;
-+	}
-+
-+	/*
-+	 * Even the zero page may get overwritten during restore.
-+	 * get_safe_page() only returns zero'd pages.
-+	 */
-+	safe_zero_page_mem = (void *)get_safe_page(GFP_ATOMIC);
-+	if (!safe_zero_page_mem) {
-+		pr_err("Failed to allocate memory for zero page.");
-+		rc = -ENOMEM;
-+		goto out;
-+	}
-+	empty_zero_page = virt_to_page(safe_zero_page_mem);
-+	cpu_set_reserved_ttbr0();
-+
-+	/*
-+	 * Restoring the memory image will overwrite the ttbr1 page tables.
-+	 * Create a second copy, of the kernel and linear map, and use this
-+	 * when restoring.
-+	 */
-+	tmp_pg_dir = (pgd_t *)get_safe_page(GFP_ATOMIC);
-+	if (!tmp_pg_dir) {
-+		pr_err("Failed to allocate memory for temporary page tables.");
-+		rc = -ENOMEM;
-+		goto out;
-+	}
-+	tmp_pg_start = min((unsigned long)KERNEL_START,
-+			   (unsigned long)PAGE_OFFSET);
-+	rc = copy_page_tables(tmp_pg_dir, tmp_pg_start);
-+	if (rc)
-+		goto out;
-+
-+	/*
-+	 * EL2 may get upset if we overwrite its page-tables/stack.
-+	 * kvm_arch_hardware_disable() returns EL2 to the hyp stub. This
-+	 * isn't needed on normal suspend/resume as PSCI prevents us from
-+	 * ruining EL2.
-+	 */
-+	if (IS_ENABLED(CONFIG_KVM_ARM_HOST))
-+		kvm_arch_hardware_disable();
-+
-+	hibernate_exit(virt_to_phys(tmp_pg_dir), virt_to_phys(swapper_pg_dir),
-+		       KERNEL_START, KERNEL_END);
-+
-+out:
-+	return rc;
++	return sprintf(buf, "%llu\n", hispeed_freq);
 +}
-diff --git a/arch/arm64/kernel/vmlinux.lds.S b/arch/arm64/kernel/vmlinux.lds.S
-index 98073332e2d0..3d8284d91f4c 100644
---- a/arch/arm64/kernel/vmlinux.lds.S
-+++ b/arch/arm64/kernel/vmlinux.lds.S
-@@ -44,6 +44,16 @@ jiffies = jiffies_64;
- 	*(.idmap.text)					\
- 	VMLINUX_SYMBOL(__idmap_text_end) = .;
- 
-+#ifdef CONFIG_HIBERNATION
-+#define HIBERNATE_TEXT					\
-+	. = ALIGN(SZ_4K);				\
-+	VMLINUX_SYMBOL(__hibernate_exit_text_start) = .;\
-+	*(.hibernate_exit.text)				\
-+	VMLINUX_SYMBOL(__hibernate_exit_text_end) = .;
++
++static ssize_t store_hispeed_freq(struct kobject *kobj,
++				  struct attribute *attr, const char *buf,
++				  size_t count)
++{
++	int ret;
++	u64 val;
++
++	ret =3D strict_strtoull(buf, 0, &val);
++	if (ret < 0)
++		return ret;
++	hispeed_freq =3D val;
++	return count;
++}
++
++static struct global_attr hispeed_freq_attr =3D __ATTR(hispeed_freq, 0=
+644,
++		show_hispeed_freq, store_hispeed_freq);
++
++
++static ssize_t show_go_hispeed_load(struct kobject *kobj,
++				     struct attribute *attr, char *buf)
++{
++	return sprintf(buf, "%lu\n", go_hispeed_load);
++}
++
++static ssize_t store_go_hispeed_load(struct kobject *kobj,
++			struct attribute *attr, const char *buf, size_t count)
++{
++	int ret;
++	unsigned long val;
++
++	ret =3D strict_strtoul(buf, 0, &val);
++	if (ret < 0)
++		return ret;
++	go_hispeed_load =3D val;
++	return count;
++}
++
++static struct global_attr go_hispeed_load_attr =3D __ATTR(go_hispeed_l=
+oad, 0644,
++		show_go_hispeed_load, store_go_hispeed_load);
++
++static ssize_t show_min_sample_time(struct kobject *kobj,
++				struct attribute *attr, char *buf)
++{
++	return sprintf(buf, "%lu\n", min_sample_time);
++}
++
++static ssize_t store_min_sample_time(struct kobject *kobj,
++			struct attribute *attr, const char *buf, size_t count)
++{
++	int ret;
++	unsigned long val;
++
++	ret =3D strict_strtoul(buf, 0, &val);
++	if (ret < 0)
++		return ret;
++	min_sample_time =3D val;
++	return count;
++}
++
++static struct global_attr min_sample_time_attr =3D __ATTR(min_sample_t=
+ime, 0644,
++		show_min_sample_time, store_min_sample_time);
++
++static ssize_t show_timer_rate(struct kobject *kobj,
++			struct attribute *attr, char *buf)
++{
++	return sprintf(buf, "%lu\n", timer_rate);
++}
++
++static ssize_t store_timer_rate(struct kobject *kobj,
++			struct attribute *attr, const char *buf, size_t count)
++{
++	int ret;
++	unsigned long val;
++
++	ret =3D strict_strtoul(buf, 0, &val);
++	if (ret < 0)
++		return ret;
++	timer_rate =3D val;
++	return count;
++}
++
++static struct global_attr timer_rate_attr =3D __ATTR(timer_rate, 0644,
++		show_timer_rate, store_timer_rate);
++
++static struct attribute *interactive_attributes[] =3D {
++	&hispeed_freq_attr.attr,
++	&go_hispeed_load_attr.attr,
++	&min_sample_time_attr.attr,
++	&timer_rate_attr.attr,
++	NULL,
++};
++
++static struct attribute_group interactive_attr_group =3D {
++	.attrs =3D interactive_attributes,
++	.name =3D "interactive",
++};
++
++static int cpufreq_governor_interactive(struct cpufreq_policy *policy,
++		unsigned int event)
++{
++	int rc;
++	unsigned int j;
++	struct cpufreq_interactive_cpuinfo *pcpu;
++	struct cpufreq_frequency_table *freq_table;
++
++	switch (event) {
++	case CPUFREQ_GOV_START:
++		if (!cpu_online(policy->cpu))
++			return -EINVAL;
++
++		freq_table =3D
++			cpufreq_frequency_get_table(policy->cpu);
++
++		for_each_cpu(j, policy->cpus) {
++			pcpu =3D &per_cpu(cpuinfo, j);
++			pcpu->policy =3D policy;
++			pcpu->target_freq =3D policy->cur;
++			pcpu->freq_table =3D freq_table;
++			pcpu->freq_change_time_in_idle =3D
++				get_cpu_idle_time_us(j,
++					     &pcpu->freq_change_time);
++			pcpu->governor_enabled =3D 1;
++			smp_wmb();
++		}
++
++		if (!hispeed_freq)
++			hispeed_freq =3D policy->max;
++
++		/*
++		 * Do not register the idle hook and create sysfs
++		 * entries if we have already done so.
++		 */
++		if (atomic_inc_return(&active_count) > 1)
++			return 0;
++
++		rc =3D sysfs_create_group(cpufreq_global_kobject,
++				&interactive_attr_group);
++		if (rc)
++			return rc;
++
++		break;
++
++	case CPUFREQ_GOV_STOP:
++		for_each_cpu(j, policy->cpus) {
++			pcpu =3D &per_cpu(cpuinfo, j);
++			pcpu->governor_enabled =3D 0;
++			smp_wmb();
++			del_timer_sync(&pcpu->cpu_timer);
++
++			/*
++			 * Reset idle exit time since we may cancel the timer
++			 * before it can run after the last idle exit time,
++			 * to avoid tripping the check in idle exit for a timer
++			 * that is trying to run.
++			 */
++			pcpu->idle_exit_time =3D 0;
++		}
++
++		flush_work(&freq_scale_down_work);
++		if (atomic_dec_return(&active_count) > 0)
++			return 0;
++
++		sysfs_remove_group(cpufreq_global_kobject,
++				&interactive_attr_group);
++
++		break;
++
++	case CPUFREQ_GOV_LIMITS:
++		if (policy->max < policy->cur)
++			__cpufreq_driver_target(policy,
++					policy->max, CPUFREQ_RELATION_H);
++		else if (policy->min > policy->cur)
++			__cpufreq_driver_target(policy,
++					policy->min, CPUFREQ_RELATION_L);
++		break;
++	}
++	return 0;
++}
++
++static int cpufreq_interactive_idle_notifier(struct notifier_block *nb=
+,
++					     unsigned long val,
++					     void *data)
++{
++	switch (val) {
++	case IDLE_START:
++		cpufreq_interactive_idle_start();
++		break;
++	case IDLE_END:
++		cpufreq_interactive_idle_end();
++		break;
++	}
++
++	return 0;
++}
++
++static struct notifier_block cpufreq_interactive_idle_nb =3D {
++	.notifier_call =3D cpufreq_interactive_idle_notifier,
++};
++
++static int __init cpufreq_interactive_init(void)
++{
++	unsigned int i;
++	struct cpufreq_interactive_cpuinfo *pcpu;
++	struct sched_param param =3D { .sched_priority =3D MAX_RT_PRIO-1 };
++
++	go_hispeed_load =3D DEFAULT_GO_HISPEED_LOAD;
++	min_sample_time =3D DEFAULT_MIN_SAMPLE_TIME;
++	timer_rate =3D DEFAULT_TIMER_RATE;
++
++	/* Initalize per-cpu timers */
++	for_each_possible_cpu(i) {
++		pcpu =3D &per_cpu(cpuinfo, i);
++		init_timer(&pcpu->cpu_timer);
++		pcpu->cpu_timer.function =3D cpufreq_interactive_timer;
++		pcpu->cpu_timer.data =3D i;
++	}
++
++	up_task =3D kthread_create(cpufreq_interactive_up_task, NULL,
++				 "kinteractiveup");
++	if (IS_ERR(up_task))
++		return PTR_ERR(up_task);
++
++	sched_setscheduler_nocheck(up_task, SCHED_FIFO, &param);
++	get_task_struct(up_task);
++
++	/* No rescuer thread, bind to CPU queuing the work for possibly
++	   warm cache (probably doesn't matter much). */
++	down_wq =3D alloc_workqueue("knteractive_down", 0, 1);
++
++	if (!down_wq)
++		goto err_freeuptask;
++
++	INIT_WORK(&freq_scale_down_work,
++		  cpufreq_interactive_freq_down);
++
++	spin_lock_init(&up_cpumask_lock);
++	spin_lock_init(&down_cpumask_lock);
++	mutex_init(&set_speed_lock);
++
++	idle_notifier_register(&cpufreq_interactive_idle_nb);
++
++	return cpufreq_register_governor(&cpufreq_gov_interactive);
++
++err_freeuptask:
++	put_task_struct(up_task);
++	return -ENOMEM;
++}
++
++#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_INTERACTIVE
++fs_initcall(cpufreq_interactive_init);
 +#else
-+#define HIBERNATE_TEXT
++module_init(cpufreq_interactive_init);
 +#endif
 +
- /*
-  * The size of the PE/COFF section that covers the kernel image, which
-  * runs from stext to _edata, must be a round multiple of the PE/COFF
-@@ -102,6 +112,7 @@ SECTIONS
- 			LOCK_TEXT
- 			HYPERVISOR_TEXT
- 			IDMAP_TEXT
-+			HIBERNATE_TEXT
- 			*(.fixup)
- 			*(.gnu.warning)
- 		. = ALIGN(16);
-@@ -181,6 +192,10 @@ ASSERT(__hyp_idmap_text_end - (__hyp_idmap_text_start & ~(SZ_4K - 1)) <= SZ_4K,
- 	"HYP init code too big or misaligned")
- ASSERT(__idmap_text_end - (__idmap_text_start & ~(SZ_4K - 1)) <= SZ_4K,
- 	"ID map text too big or misaligned")
-+#ifdef CONFIG_HIBERNATION
-+ASSERT(__hibernate_exit_text_end - (__hibernate_exit_text_start & ~(SZ_4K - 1))
-+	<= SZ_4K, "Hibernate exit text too big or misaligned")
-+#endif
- 
- /*
-  * If padding is applied before .head.text, virt<->phys conversions will fail.
--- 
-2.1.4
++static void __exit cpufreq_interactive_exit(void)
++{
++	cpufreq_unregister_governor(&cpufreq_gov_interactive);
++	kthread_stop(up_task);
++	put_task_struct(up_task);
++	destroy_workqueue(down_wq);
++}
++
++module_exit(cpufreq_interactive_exit);
++
++MODULE_AUTHOR("Mike Chan <mike@android.com>");
++MODULE_DESCRIPTION("'cpufreq_interactive' - A cpufreq governor for "
++	"Latency sensitive workloads");
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index dca22de..2ea8ab5 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -491,6 +491,9 @@ extern struct cpufreq_governor cpufreq_gov_ondemand=
+;
+ #elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE)
+ extern struct cpufreq_governor cpufreq_gov_conservative;
+ #define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_conservative)
++#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_INTERACTIVE)
++extern struct cpufreq_governor cpufreq_gov_interactive;
++#define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_interactive)
+ #endif
+=20
+ /*********************************************************************
+--=20
+1.7.9.5
 
