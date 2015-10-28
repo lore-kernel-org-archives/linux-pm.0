@@ -1,62 +1,34 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PULL] cpuidle for 4.4
-Date: Wed, 28 Oct 2015 04:05:41 +0100
-Message-ID: <8456769.2RKeY76Px5@vostro.rjw.lan>
-References: <562A1FE0.1060302@linaro.org>
+Subject: Re: [PATCH 0/3][v2] Fix incorrect using of acpi irq
+Date: Wed, 28 Oct 2015 04:19:49 +0100
+Message-ID: <3737060.CpjVzmXRgF@vostro.rjw.lan>
+References: <1445706127-20110-1-git-send-email-yu.c.chen@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:44089 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751402AbbJ1Cgo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Oct 2015 22:36:44 -0400
-In-Reply-To: <562A1FE0.1060302@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1445706127-20110-1-git-send-email-yu.c.chen@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: lenb@kernel.org, rui.zhang@intel.com, lv.zheng@intel.com, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Linux PM mailing list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Friday, October 23, 2015 01:54:08 PM Daniel Lezcano wrote:
+On Sunday, October 25, 2015 01:02:07 AM Chen Yu wrote:
+> This series of patches are trying to convert codes who use
+> acpi_gbl_FADT.sci_interrupt incorrectly to use the right irq
+> mapped by acpi_gsi_to_irq.
 > 
-> Hi Rafael,
+> Chen Yu (3):
+>   ACPI: Using correct irq when uninstalling acpi irq handler
+>   ACPI: Using correct irq when waiting for events
+>   ACPI / PM: Fix incorrect wakeup irq setting before suspend-to-idle
 > 
-> this pull request contains a couple of changes from Russel King.
-> 
->   - Disable bind/unbind attribute and use builtin_platform_driver for 
-> mvebu (Russell King)
-> 
->   - Clean up the code by removing the multiple platform drivers and use 
-> the platform ID instead (Russell King)
-> 
-> Thanks !
-> 
->    -- Daniel
-> 
-> The following changes since commit 7379047d5585187d1288486d4627873170d0005a:
-> 
->    Linux 4.3-rc6 (2015-10-18 16:08:42 -0700)
-> 
-> are available in the git repository at:
-> 
->    http://git.linaro.org/people/daniel.lezcano/linux.git cpuidle/4.4
-> 
-> for you to fetch changes up to ab319939a58678c19a68ff10c8a08cef462a3ba6:
-> 
->    cpuidle: mvebu: disable the bind/unbind attributes and use 
-> builtin_platform_driver (2015-10-23 12:40:48 +0200)
-> 
-> ----------------------------------------------------------------
-> Russell King (2):
->        cpuidle: mvebu: clean up multiple platform drivers
->        cpuidle: mvebu: disable the bind/unbind attributes and use 
-> builtin_platform_driver
-> 
->   drivers/cpuidle/cpuidle-mvebu-v7.c | 46 
-> +++++++++++++++++++++-------------------------
->   1 file changed, 21 insertions(+), 25 deletions(-)
+>  drivers/acpi/osl.c   | 14 +++++++++-----
+>  drivers/acpi/sleep.c |  6 ++++--
+>  include/linux/acpi.h |  6 ++++++
+>  3 files changed, 19 insertions(+), 7 deletions(-)
 
-Pulled, thanks!
+Series applied (with some minor changes to patch subjects and changelogs).
 
+Thanks,
 Rafael
-
