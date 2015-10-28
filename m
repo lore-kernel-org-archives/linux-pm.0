@@ -1,35 +1,34 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V3 2/5] cpufreq: ondemand: update sampling rate immediately
-Date: Wed, 28 Oct 2015 17:13:19 +0100
-Message-ID: <3949153.K5IjKZhpbI@vostro.rjw.lan>
-References: <cover.1444723240.git.viresh.kumar@linaro.org> <3215277.8YKq8PWCpx@vostro.rjw.lan> <20151028152811.GE3716@ubuntu>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH V2 3/4] PM / OPP: Parse all power-supply related bindings
+ together
+Date: Wed, 28 Oct 2015 11:48:03 -0700
+Message-ID: <20151028184803.GW19782@codeaurora.org>
+References: <cover.1444925400.git.viresh.kumar@linaro.org>
+ <10b3f112bb2863098a0ab21bcb9e951f0a8da51c.1444925400.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20151028152811.GE3716@ubuntu>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, open list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:41392 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752467AbbJ1SsF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2015 14:48:05 -0400
+Content-Disposition: inline
+In-Reply-To: <10b3f112bb2863098a0ab21bcb9e951f0a8da51c.1444925400.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dmitry Torokhov <dtor@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 
-On Wednesday, October 28, 2015 08:58:11 PM Viresh Kumar wrote:
-> On 28-10-15, 16:31, Rafael J. Wysocki wrote:
-> > Is the current code really problematic?
+On 10/15, Viresh Kumar wrote:
+> Move all DT parsing for the power supplies to a single function, rather
+> than keeping them at separate places. This will help manage things
+> properly.
 > 
-> Its not problematic, but just that I didn't like special code written
-> here.
-> 
-> Also, its a blocker for the next patch which tries to schedule work on
-> all the policy->cpus together.
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
 
-Well, the second statement above sort of contradicts the first one. :-)
+Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 
-I guess the answer is "it is problematic, because I can't do the other
-optimization then".
-
-To that I'd really suggest trying to rework the code to use timer
-functions directly in the first place.
-
-Thanks,
-Rafael
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
