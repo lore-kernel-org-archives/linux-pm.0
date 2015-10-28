@@ -1,36 +1,68 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 2/5] cpufreq: ondemand: update sampling rate
- immediately
-Date: Wed, 28 Oct 2015 20:58:11 +0530
-Message-ID: <20151028152811.GE3716@ubuntu>
-References: <cover.1444723240.git.viresh.kumar@linaro.org>
- <2498053.EX0k8RstLZ@vostro.rjw.lan>
- <20151028093109.GJ30039@ubuntu>
- <3215277.8YKq8PWCpx@vostro.rjw.lan>
+Subject: Re: [PATCH v3 2/2] arm64: dts: mt8173: Add thermal zone node for
+ mt8173.
+Date: Wed, 28 Oct 2015 21:09:44 +0530
+Message-ID: <20151028153944.GG3716@ubuntu>
+References: <1445515359-8587-1-git-send-email-dawei.chien@mediatek.com>
+ <1445515359-8587-3-git-send-email-dawei.chien@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f43.google.com ([209.85.220.43]:35796 "EHLO
-	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755234AbbJ1P2Q (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2015 11:28:16 -0400
-Received: by pasz6 with SMTP id z6so10129654pas.2
-        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2015 08:28:16 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <3215277.8YKq8PWCpx@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1445515359-8587-3-git-send-email-dawei.chien@mediatek.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dawei Chien <dawei.chien@mediatek.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Matthias Brugger <matthias.bgg@gmail.com>, Daniel Kurtz <djkurtz@chromium.org>, Sascha Hauer <s.hauer@pengutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, Sascha Hauer <kernel@pengutronix.de>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, open list <linux-kernel@vger.kernel.org>
 
-On 28-10-15, 16:31, Rafael J. Wysocki wrote:
-> Is the current code really problematic?
+On 22-10-15, 20:02, Dawei Chien wrote:
+> Add thermal zone node to mt8173.dtsi.
+> 
+> Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
+> ---
+> This patch is base on
+> https://patchwork.kernel.org/patch/7249821/
+> https://patchwork.kernel.org/patch/7249861/
+> https://patchwork.kernel.org/patch/7249891/
+> ---
+>  arch/arm64/boot/dts/mediatek/mt8173.dtsi |   90 ++++++++++++++++++++++++++++++
+>  1 file changed, 90 insertions(+)
+> 
+> diff --git a/arch/arm64/boot/dts/mediatek/mt8173.dtsi b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+> index 3b18f37..eaf12bf 100644
+> --- a/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+> +++ b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+> @@ -16,6 +16,7 @@
+>  #include <dt-bindings/interrupt-controller/arm-gic.h>
+>  #include <dt-bindings/power/mt8173-power.h>
+>  #include <dt-bindings/reset-controller/mt8173-resets.h>
+> +#include <dt-bindings/thermal/mt8173.h>
+>  #include "mt8173-pinfunc.h"
+>  
+>  / {
+> @@ -54,6 +55,18 @@
+>  			reg = <0x000>;
+>  			enable-method = "psci";
+>  			cpu-idle-states = <&CPU_SLEEP_0>;
+> +			static-power-points = <
+> +				859000  43
+> +				908000  52
+> +				983000  86
+> +				1009000 123
+> +				1028000 138
+> +				1083000 172
+> +				1110900 180
+> +				1125000 192
 
-Its not problematic, but just that I didn't like special code written
-here.
+What's the unit of power here? Is this power accurate? Or just a
+number representing the power ?
 
-Also, its a blocker for the next patch which tries to schedule work on
-all the policy->cpus together.
+> +			>;
+> +			dynamic-power-coefficient = <263>;
+> +			#cooling-cells = <2>;
+>  		};
+
+@Rob: Looks like another good candidate for the OPP-v2 table? Power.
 
 -- 
 viresh
