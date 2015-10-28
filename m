@@ -1,34 +1,34 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/3][v2] Fix incorrect using of acpi irq
-Date: Wed, 28 Oct 2015 04:19:49 +0100
-Message-ID: <3737060.CpjVzmXRgF@vostro.rjw.lan>
-References: <1445706127-20110-1-git-send-email-yu.c.chen@intel.com>
+Subject: Re: cpufreq: i.MX6: -EPROBE_DEFER fixes
+Date: Wed, 28 Oct 2015 04:27 +0100
+Message-ID: <1625342.QihRV1d1Kl@vostro.rjw.lan>
+References: <1445503652-777-1-git-send-email-s.hauer@pengutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1445706127-20110-1-git-send-email-yu.c.chen@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: lenb@kernel.org, rui.zhang@intel.com, lv.zheng@intel.com, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:50840 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754077AbbJ1C6D (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Oct 2015 22:58:03 -0400
+In-Reply-To: <1445503652-777-1-git-send-email-s.hauer@pengutronix.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Shawn Guo <shawnguo@kernel.org>, kernel@pengutronix.de, Heiner Kallweit <hkallweit1@gmail.com>
 
-On Sunday, October 25, 2015 01:02:07 AM Chen Yu wrote:
-> This series of patches are trying to convert codes who use
-> acpi_gbl_FADT.sci_interrupt incorrectly to use the right irq
-> mapped by acpi_gsi_to_irq.
+On Thursday, October 22, 2015 10:47:28 AM Sascha Hauer wrote:
+> The i.MX6 cpufreq driver can't cope with -EPROBE_DEFER returned from
+> regulator_get/clk_get. This series fix that and some other small issues.
 > 
-> Chen Yu (3):
->   ACPI: Using correct irq when uninstalling acpi irq handler
->   ACPI: Using correct irq when waiting for events
->   ACPI / PM: Fix incorrect wakeup irq setting before suspend-to-idle
-> 
->  drivers/acpi/osl.c   | 14 +++++++++-----
->  drivers/acpi/sleep.c |  6 ++++--
->  include/linux/acpi.h |  6 ++++++
->  3 files changed, 19 insertions(+), 7 deletions(-)
+> This series supersedes
+> [PATCH 1/2] cpufreq: imx: fix regulator_get error handling
+> [PATCH 2/2] cpufreq: imx: fix regulator_get_optional error handling
+> from Heiner Kallweit.
 
-Series applied (with some minor changes to patch subjects and changelogs).
+I'm expecting a new version of this addressing the review comments to be
+submitted.
 
 Thanks,
 Rafael
+
