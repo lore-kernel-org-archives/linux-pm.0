@@ -1,263 +1,78 @@
-From: Lucas Stach <l.stach@pengutronix.de>
-Subject: Re: [PATCH 3/5] cpufreq: imx6q: Fix regulator/clock error handling
-Date: Wed, 28 Oct 2015 09:51:28 +0100
-Message-ID: <1446022288.3138.6.camel@pengutronix.de>
-References: <1446019154-16384-1-git-send-email-s.hauer@pengutronix.de>
-	 <1446019154-16384-4-git-send-email-s.hauer@pengutronix.de>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V3 1/5] cpufreq: ondemand: Drop unnecessary locks from
+ update_sampling_rate()
+Date: Wed, 28 Oct 2015 14:26:22 +0530
+Message-ID: <20151028085622.GI30039@ubuntu>
+References: <cover.1444723240.git.viresh.kumar@linaro.org>
+ <4304226.RJrgDykfyW@vostro.rjw.lan>
+ <20151028064317.GB30039@ubuntu>
+ <1614479.PJ5OqJLPyG@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:33697 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965240AbbJ1Iv3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2015 04:51:29 -0400
-In-Reply-To: <1446019154-16384-4-git-send-email-s.hauer@pengutronix.de>
+Received: from mail-pa0-f54.google.com ([209.85.220.54]:35354 "EHLO
+	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932565AbbJ1I41 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2015 04:56:27 -0400
+Received: by pasz6 with SMTP id z6so980659pas.2
+        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2015 01:56:26 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1614479.PJ5OqJLPyG@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, kernel@pengutronix.de, Shawn Guo <shawnguo@kernel.org>, Heiner Kallweit <hkallweit1@gmail.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Preeti U Murthy <preeti@linux.vnet.ibm.com>, open list <linux-kernel@vger.kernel.org>
 
-Am Mittwoch, den 28.10.2015, 08:59 +0100 schrieb Sascha Hauer:
-> When one of the regulator_get/clk_get calls fails the driver just
-> returns -ENOENT. To properly handle the -EPROBE_DEFER case we have
-> to forward the actual error value instead. This patch fixes that.
-> 
-> Since all clocks/regulators are global static variables the IS_ERR()
-> check in the error path in probe() may erroneously work on the values
-> assigned in the previous probe run. This means we have to reinitialize
-> the variables between two probe runs().
-> 
-> The probe function already is quite overloaded, so this patch moves
-> the regulator and clock allocation into a separate function and the
-> dropping of these resourced into a corresponding cleanup function.
-> This is easier to review for correctness than the current mix of
-> reverse-cleanup and !IS_ERR checks at the end of probe().
-> 
-> While at it leave a comment that these resource allocations can't use
-> devm_* to prevent people from trying to convert it.
-> 
-> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+On 28-10-15, 08:46, Rafael J. Wysocki wrote:
+> On Wednesday, October 28, 2015 12:13:17 PM Viresh Kumar wrote:
+> > Actually yeah, but then the fourth patch of this series uses the
+> > timer_mutex to fix a long standing problem (which was fixed by hacking
+> > the code earlier). And so we need to take the lock for the entire
+> > dbs_timer() routine.
 
-Looks good to me now,
+Well, there is another reason why the lock is taken for the complete
+dbs_timer() routine. There are two parts of that routine:
+- Checking if load evaluation is required or not + updating the
+  last-update time.
+- The second is the load evaluation + freq change thing.
 
-Reviewed-by: Lucas Stach <l.stach@pengutronix.de>
+Lock around the first check makes sure that timer handlers of other
+CPUs don't do load evaluation in parallel and that they don't do it
+before the sampling period.
 
-> ---
->  drivers/cpufreq/imx6q-cpufreq.c | 170 +++++++++++++++++++++++++---------------
->  1 file changed, 106 insertions(+), 64 deletions(-)
+Lock around the second part makes sure there is only one thread which
+is doing load evaluation + freq update. The other thread being
+cpufreq_governor_limits(). And so the same lock taken across that part
+as well.
+
+> I don't actually think that that patch is correct and even if it is,
+> we'll only need to do that *after* that patch, so at least it would be
+> fair to say a word about it in the changelog, wouldn't it?
+
+Hmm, If you agree about the above reasoning, then we may not require
+an update to the changelog, otherwise I will mention that in the
+changelog of this patch.
+
+> > Yeah, we are calling dbs_check_cpu(dbs_data, cpu) from that path,
+> > which will reevaluate the load.
 > 
-> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-> index 6fefd19..f81cf8e 100644
-> --- a/drivers/cpufreq/imx6q-cpufreq.c
-> +++ b/drivers/cpufreq/imx6q-cpufreq.c
-> @@ -176,6 +176,103 @@ static struct cpufreq_driver imx6q_cpufreq_driver = {
->  	.attr = cpufreq_generic_attr,
->  };
->  
-> +static int imx6q_cpufreq_get_resources(void)
-> +{
-> +	/*
-> +	 * Do not use devm_* here. The resources are bound to the
-> +	 * cpu_dev and not to this drivers platform_device.
-> +	 */
-> +	arm_clk = clk_get(cpu_dev, "arm");
-> +	if (IS_ERR(arm_clk))
-> +		return PTR_ERR(arm_clk);
-> +
-> +	pll1_sys_clk = clk_get(cpu_dev, "pll1_sys");
-> +	if (IS_ERR(pll1_sys_clk))
-> +		return PTR_ERR(pll1_sys_clk);
-> +
-> +	pll1_sw_clk = clk_get(cpu_dev, "pll1_sw");
-> +	if (IS_ERR(pll1_sw_clk))
-> +		return PTR_ERR(pll1_sw_clk);
-> +
-> +	step_clk = clk_get(cpu_dev, "step");
-> +	if (IS_ERR(step_clk))
-> +		return PTR_ERR(step_clk);
-> +
-> +	pll2_pfd2_396m_clk = clk_get(cpu_dev, "pll2_pfd2_396m");
-> +	if (IS_ERR(pll2_pfd2_396m_clk))
-> +		return PTR_ERR(pll2_pfd2_396m_clk);
-> +
-> +	if (of_machine_is_compatible("fsl,imx6ul")) {
-> +		pll2_bus_clk = clk_get(cpu_dev, "pll2_bus");
-> +		if (IS_ERR(pll2_bus_clk))
-> +			return PTR_ERR(pll2_bus_clk);
-> +
-> +		secondary_sel_clk = clk_get(cpu_dev, "secondary_sel");
-> +		if (IS_ERR(secondary_sel_clk))
-> +			return PTR_ERR(secondary_sel_clk);
-> +	}
-> +
-> +	arm_reg = regulator_get(cpu_dev, "arm");
-> +	if (IS_ERR(arm_reg))
-> +		return PTR_ERR(arm_reg);
-> +
-> +	pu_reg = regulator_get_optional(cpu_dev, "pu");
-> +
-> +	soc_reg = regulator_get(cpu_dev, "soc");
-> +	if (IS_ERR(soc_reg))
-> +		return PTR_ERR(soc_reg);
-> +
-> +	return 0;
-> +}
-> +
-> +
-> +static void imx6q_cpufreq_put_resources(void)
-> +{
-> +	/*
-> +	 * Set all resources to NULL here so that they are correctly
-> +	 * initialized next time we enter probe()
-> +	 */
-> +	if (!IS_ERR_OR_NULL(arm_reg))
-> +		regulator_put(arm_reg);
-> +	arm_reg = NULL;
-> +
-> +	if (!IS_ERR_OR_NULL(pu_reg))
-> +		regulator_put(pu_reg);
-> +	pu_reg = NULL;
-> +
-> +	if (!IS_ERR_OR_NULL(soc_reg))
-> +		regulator_put(soc_reg);
-> +	soc_reg = NULL;
-> +
-> +	if (!IS_ERR_OR_NULL(arm_clk))
-> +		clk_put(arm_clk);
-> +	arm_clk = NULL;
-> +
-> +	if (!IS_ERR_OR_NULL(pll1_sys_clk))
-> +		clk_put(pll1_sys_clk);
-> +	pll1_sys_clk = NULL;
-> +
-> +	if (!IS_ERR_OR_NULL(pll1_sw_clk))
-> +		clk_put(pll1_sw_clk);
-> +	pll1_sw_clk = NULL;
-> +
-> +	if (!IS_ERR_OR_NULL(step_clk))
-> +		clk_put(step_clk);
-> +	step_clk = NULL;
-> +
-> +	if (!IS_ERR_OR_NULL(pll2_pfd2_396m_clk))
-> +		clk_put(pll2_pfd2_396m_clk);
-> +	pll2_pfd2_396m_clk = NULL;
-> +
-> +	if (!IS_ERR_OR_NULL(pll2_bus_clk))
-> +		clk_put(pll2_bus_clk);
-> +	pll2_bus_clk = NULL;
-> +
-> +	if (!IS_ERR_OR_NULL(secondary_sel_clk))
-> +		clk_put(secondary_sel_clk);
-> +	secondary_sel_clk = NULL;
-> +}
-> +
->  static int imx6q_cpufreq_probe(struct platform_device *pdev)
->  {
->  	struct device_node *np;
-> @@ -198,36 +295,9 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
->  		return -ENOENT;
->  	}
->  
-> -	arm_clk = clk_get(cpu_dev, "arm");
-> -	pll1_sys_clk = clk_get(cpu_dev, "pll1_sys");
-> -	pll1_sw_clk = clk_get(cpu_dev, "pll1_sw");
-> -	step_clk = clk_get(cpu_dev, "step");
-> -	pll2_pfd2_396m_clk = clk_get(cpu_dev, "pll2_pfd2_396m");
-> -	if (IS_ERR(arm_clk) || IS_ERR(pll1_sys_clk) || IS_ERR(pll1_sw_clk) ||
-> -	    IS_ERR(step_clk) || IS_ERR(pll2_pfd2_396m_clk)) {
-> -		dev_err(cpu_dev, "failed to get clocks\n");
-> -		ret = -ENOENT;
-> -		goto put_clk;
-> -	}
-> -
-> -	if (of_machine_is_compatible("fsl,imx6ul")) {
-> -		pll2_bus_clk = clk_get(cpu_dev, "pll2_bus");
-> -		secondary_sel_clk = clk_get(cpu_dev, "secondary_sel");
-> -		if (IS_ERR(pll2_bus_clk) || IS_ERR(secondary_sel_clk)) {
-> -			dev_err(cpu_dev, "failed to get clocks specific to imx6ul\n");
-> -			ret = -ENOENT;
-> -			goto put_clk;
-> -		}
-> -	}
-> -
-> -	arm_reg = regulator_get(cpu_dev, "arm");
-> -	pu_reg = regulator_get_optional(cpu_dev, "pu");
-> -	soc_reg = regulator_get(cpu_dev, "soc");
-> -	if (IS_ERR(arm_reg) || IS_ERR(soc_reg)) {
-> -		dev_err(cpu_dev, "failed to get regulators\n");
-> -		ret = -ENOENT;
-> -		goto put_reg;
-> -	}
-> +	ret = imx6q_cpufreq_get_resources();
-> +	if (ret)
-> +		goto drop_resources;
->  
->  	/*
->  	 * We expect an OPP table supplied by platform.
-> @@ -239,7 +309,7 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
->  		ret = dev_pm_opp_of_add_table(cpu_dev);
->  		if (ret < 0) {
->  			dev_err(cpu_dev, "failed to init OPP table: %d\n", ret);
-> -			goto put_reg;
-> +			goto drop_resources;
->  		}
->  
->  		/* Because we have added the OPPs here, we must free them */
-> @@ -348,28 +418,9 @@ free_freq_table:
->  out_free_opp:
->  	if (free_opp)
->  		dev_pm_opp_of_remove_table(cpu_dev);
-> -put_reg:
-> -	if (!IS_ERR(arm_reg))
-> -		regulator_put(arm_reg);
-> -	if (!IS_ERR(pu_reg))
-> -		regulator_put(pu_reg);
-> -	if (!IS_ERR(soc_reg))
-> -		regulator_put(soc_reg);
-> -put_clk:
-> -	if (!IS_ERR(arm_clk))
-> -		clk_put(arm_clk);
-> -	if (!IS_ERR(pll1_sys_clk))
-> -		clk_put(pll1_sys_clk);
-> -	if (!IS_ERR(pll1_sw_clk))
-> -		clk_put(pll1_sw_clk);
-> -	if (!IS_ERR(step_clk))
-> -		clk_put(step_clk);
-> -	if (!IS_ERR(pll2_pfd2_396m_clk))
-> -		clk_put(pll2_pfd2_396m_clk);
-> -	if (!IS_ERR(pll2_bus_clk))
-> -		clk_put(pll2_bus_clk);
-> -	if (!IS_ERR(secondary_sel_clk))
-> -		clk_put(secondary_sel_clk);
-> +drop_resources:
-> +	imx6q_cpufreq_put_resources();
-> +
->  	of_node_put(np);
->  	return ret;
->  }
-> @@ -380,17 +431,8 @@ static int imx6q_cpufreq_remove(struct platform_device *pdev)
->  	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
->  	if (free_opp)
->  		dev_pm_opp_of_remove_table(cpu_dev);
-> -	regulator_put(arm_reg);
-> -	if (!IS_ERR(pu_reg))
-> -		regulator_put(pu_reg);
-> -	regulator_put(soc_reg);
-> -	clk_put(arm_clk);
-> -	clk_put(pll1_sys_clk);
-> -	clk_put(pll1_sw_clk);
-> -	clk_put(step_clk);
-> -	clk_put(pll2_pfd2_396m_clk);
-> -	clk_put(pll2_bus_clk);
-> -	clk_put(secondary_sel_clk);
-> +
-> +	imx6q_cpufreq_put_resources();
->  
->  	return 0;
->  }
+> Which means that we should take the lock around dbs_check_cpu() everywhere
+> in a consistent way.
+
+We already do this from everywhere.
+
+> Which in turn means that the lock actually does more
+> than you said.
+
+What I described towards the top is probably a better answer to the
+earlier query.
+
+> My point is basically that we seem to have a vague idea about what the lock
+> is used for, while we need to know exactly why we need it.
+
+I am totally with you on this, we have surely screwed up on locking
+for a long time in cpufreq. And we should know exactly why we want to
+change it now.
 
 -- 
-Pengutronix e.K.             | Lucas Stach                 |
-Industrial Linux Solutions   | http://www.pengutronix.de/  |
-
+viresh
