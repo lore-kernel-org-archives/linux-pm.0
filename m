@@ -1,56 +1,53 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 0/4] OPP: Some cleanups
-Date: Wed, 28 Oct 2015 14:10:07 +0530
-Message-ID: <20151028084007.GH30039@ubuntu>
-References: <cover.1444925400.git.viresh.kumar@linaro.org>
- <4505357.GlHGRX62zQ@vostro.rjw.lan>
+From: Lucas Stach <l.stach@pengutronix.de>
+Subject: Re: [PATCH 2/5] cpufreq: imx6q: Fix wrong device in devm_kzalloc
+Date: Wed, 28 Oct 2015 09:49:09 +0100
+Message-ID: <1446022149.3138.5.camel@pengutronix.de>
+References: <1446019154-16384-1-git-send-email-s.hauer@pengutronix.de>
+	 <1446019154-16384-3-git-send-email-s.hauer@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f42.google.com ([209.85.220.42]:33674 "EHLO
-	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755159AbbJ1IkL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2015 04:40:11 -0400
-Received: by pabla5 with SMTP id la5so680737pab.0
-        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2015 01:40:11 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <4505357.GlHGRX62zQ@vostro.rjw.lan>
+Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:53502 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964813AbbJ1ItM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2015 04:49:12 -0400
+In-Reply-To: <1446019154-16384-3-git-send-email-s.hauer@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sboyd@codeaurora.org, nm@ti.com
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, kernel@pengutronix.de, Shawn Guo <shawnguo@kernel.org>, Heiner Kallweit <hkallweit1@gmail.com>
 
-On 28-10-15, 09:25, Rafael J. Wysocki wrote:
-> On Thursday, October 15, 2015 09:42:42 PM Viresh Kumar wrote:
-> > Rafael,
-> > 
-> > These are some random cleanups, which were part of the multi-regulator
-> > series earlier. Sending them separately to make that series a bit light
-> > weight.
-> > 
-> > V1->V2:
-> > - Just sending them separately.
-> > 
-> > Viresh Kumar (4):
-> >   PM / OPP: Improve debug print messages with pr_fmt
-> >   PM / OPP: Rename routines specific to old bindings with _v1
-> >   PM / OPP: Parse all power-supply related bindings together
-> >   PM / OPP: Create separate structure for regulator/supplies
-> > 
-> >  drivers/base/power/opp/core.c | 78 +++++++++++++++++++++++++++----------------
-> >  drivers/base/power/opp/cpu.c  |  3 ++
-> >  drivers/base/power/opp/opp.h  | 29 +++++++++++-----
-> >  3 files changed, 73 insertions(+), 37 deletions(-)
+Am Mittwoch, den 28.10.2015, 08:59 +0100 schrieb Sascha Hauer:
+> devm_kzalloc must be called with the device that is actually probed,
+> not with cpu_dev which resources are not freed when probe fails.
 > 
-> I'd like to receive an ACK from someone like Stephen on this one.
+> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 
-He isn't around probably, I couldn't find him on IRC for last few
-days. I have just asked you (in another reply) to drop the fourth
-patch for now.
+I think I've said this already on the last round,
 
-Apart from that things are really trivial, renaming/moving code
-around. Please see if those can be included without waiting for
-Stephen to return.
+Reviewed-by: Lucas Stach <l.stach@pengutronix.de>
+
+> ---
+>  drivers/cpufreq/imx6q-cpufreq.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+> index fabd144..6fefd19 100644
+> --- a/drivers/cpufreq/imx6q-cpufreq.c
+> +++ b/drivers/cpufreq/imx6q-cpufreq.c
+> @@ -260,7 +260,8 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
+>  	}
+>  
+>  	/* Make imx6_soc_volt array's size same as arm opp number */
+> -	imx6_soc_volt = devm_kzalloc(cpu_dev, sizeof(*imx6_soc_volt) * num, GFP_KERNEL);
+> +	imx6_soc_volt = devm_kzalloc(&pdev->dev,
+> +				     sizeof(*imx6_soc_volt) * num, GFP_KERNEL);
+>  	if (imx6_soc_volt == NULL) {
+>  		ret = -ENOMEM;
+>  		goto free_freq_table;
 
 -- 
-viresh
+Pengutronix e.K.             | Lucas Stach                 |
+Industrial Linux Solutions   | http://www.pengutronix.de/  |
+
