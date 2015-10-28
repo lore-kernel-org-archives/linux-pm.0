@@ -1,157 +1,58 @@
-From: Lucas Stach <l.stach@pengutronix.de>
-Subject: Re: [PATCH 4/5] cpufreq: imx6q: Use id_table to distinguish between
- SoCs
-Date: Wed, 28 Oct 2015 10:00:32 +0100
-Message-ID: <1446022832.3138.10.camel@pengutronix.de>
-References: <1446019154-16384-1-git-send-email-s.hauer@pengutronix.de>
-	 <1446019154-16384-5-git-send-email-s.hauer@pengutronix.de>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V3 2/5] cpufreq: ondemand: update sampling rate
+ immediately
+Date: Wed, 28 Oct 2015 15:01:09 +0530
+Message-ID: <20151028093109.GJ30039@ubuntu>
+References: <cover.1444723240.git.viresh.kumar@linaro.org>
+ <1746c301a8f0a94578f550026cf41e532e6e0f41.1444723240.git.viresh.kumar@linaro.org>
+ <2498053.EX0k8RstLZ@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:38463 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754826AbbJ1JAe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2015 05:00:34 -0400
-In-Reply-To: <1446019154-16384-5-git-send-email-s.hauer@pengutronix.de>
+Received: from mail-pa0-f43.google.com ([209.85.220.43]:34922 "EHLO
+	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754588AbbJ1JbO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2015 05:31:14 -0400
+Received: by pasz6 with SMTP id z6so1952296pas.2
+        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2015 02:31:13 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <2498053.EX0k8RstLZ@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, kernel@pengutronix.de, Shawn Guo <shawnguo@kernel.org>, Heiner Kallweit <hkallweit1@gmail.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, open list <linux-kernel@vger.kernel.org>
 
-Am Mittwoch, den 28.10.2015, 08:59 +0100 schrieb Sascha Hauer:
-> The i.MX6 cpufreq driver is instantiated from a static device in
-> architecture code and not from the device tree. These devices offer the
-> id_table mechanism to distinguish between different types of devices.
-> Use this mechanism rather than of_machine_is_compatible() as it scales
-> better with increasing number of SoCs to check against.
+On 28-10-15, 07:28, Rafael J. Wysocki wrote:
+> Your argument seems to be that it should be OK to do the
+> cancel_delayed_work_sync()/gov_queue_work() combo in all cases, because
+> even if the new rate is greater than the old one, the user may actually
+> want it to take effect immediately and it shouldn't hurt to skip the next
+> sample anyway in that case.
 > 
-> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-> ---
->  arch/arm/mach-imx/mach-imx6sl.c |  2 +-
->  arch/arm/mach-imx/mach-imx6sx.c |  2 +-
->  arch/arm/mach-imx/mach-imx6ul.c |  2 +-
->  drivers/cpufreq/imx6q-cpufreq.c | 30 +++++++++++++++++++++++++++---
->  4 files changed, 30 insertions(+), 6 deletions(-)
+> Is this really the case, though?  What about the old rate is 1s, the new one
+> is 2s and the timer is just about to expire?  Won't the canceling effectively
+> move the next sample 3s away from the previous one which may not be desirable?
 > 
-> diff --git a/arch/arm/mach-imx/mach-imx6sl.c b/arch/arm/mach-imx/mach-imx6sl.c
-> index 3003263..c93cf69 100644
-> --- a/arch/arm/mach-imx/mach-imx6sl.c
-> +++ b/arch/arm/mach-imx/mach-imx6sl.c
-> @@ -39,7 +39,7 @@ static void __init imx6sl_init_late(void)
->  {
->  	/* imx6sl reuses imx6q cpufreq driver */
+> The current code just allows the timer to expire, unless that would prevent
+> the new rate from taking effect for too long, which seems perfectly reasonable
+> to me.
 
-This comment seems a little confusing now.
+Okay, what about this case: old rate is 1s, new rate it 5s and we have
+just serviced the timer. With the current code we will receive
+evaluate again after 1 second instead of 5. Is that desirable ?
 
->  	if (IS_ENABLED(CONFIG_ARM_IMX6Q_CPUFREQ))
-> -		platform_device_register_simple("imx6q-cpufreq", -1, NULL, 0);
-> +		platform_device_register_simple("imx6sl-cpufreq", -1, NULL, 0);
->  
->  	imx6sl_cpuidle_init();
->  }
-> diff --git a/arch/arm/mach-imx/mach-imx6sx.c b/arch/arm/mach-imx/mach-imx6sx.c
-> index 6a0b061..ca86a25 100644
-> --- a/arch/arm/mach-imx/mach-imx6sx.c
-> +++ b/arch/arm/mach-imx/mach-imx6sx.c
-> @@ -94,7 +94,7 @@ static void __init imx6sx_init_late(void)
->  	imx6sx_cpuidle_init();
->  
->  	if (IS_ENABLED(CONFIG_ARM_IMX6Q_CPUFREQ))
-> -		platform_device_register_simple("imx6q-cpufreq", -1, NULL, 0);
-> +		platform_device_register_simple("imx6sx-cpufreq", -1, NULL, 0);
->  }
->  
->  static const char * const imx6sx_dt_compat[] __initconst = {
-> diff --git a/arch/arm/mach-imx/mach-imx6ul.c b/arch/arm/mach-imx/mach-imx6ul.c
-> index acaf705..159ec4e 100644
-> --- a/arch/arm/mach-imx/mach-imx6ul.c
-> +++ b/arch/arm/mach-imx/mach-imx6ul.c
-> @@ -81,7 +81,7 @@ static void __init imx6ul_init_irq(void)
->  static void __init imx6ul_init_late(void)
->  {
->  	if (IS_ENABLED(CONFIG_ARM_IMX6Q_CPUFREQ))
-> -		platform_device_register_simple("imx6q-cpufreq", -1, NULL, 0);
-> +		platform_device_register_simple("imx6ul-cpufreq", -1, NULL, 0);
->  }
->  
->  static const char *imx6ul_dt_compat[] __initconst = {
-> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-> index f81cf8e..f3729f9 100644
-> --- a/drivers/cpufreq/imx6q-cpufreq.c
-> +++ b/drivers/cpufreq/imx6q-cpufreq.c
-> @@ -42,6 +42,27 @@ static unsigned int transition_latency;
->  static u32 *imx6_soc_volt;
->  static u32 soc_opp_count;
->  
-> +static unsigned long imx6_cpufreq_flags;
-> +
-> +#define IMX6_CPUFREQ_NEED_PU_REG		(1 << 0)
-> +#define IMX6_CPUFREQ_NEED_SECONDARY_SEL		(1 << 1)
-> +
-> +static const struct platform_device_id imx6_cpufreq_devtype[] = {
-> +	{
-> +		.name = "imx6q-cpufreq",
-> +		.driver_data = IMX6_CPUFREQ_NEED_PU_REG,
-> +	}, {
-> +		.name = "imx6ul-cpufreq",
-> +		.driver_data = IMX6_CPUFREQ_NEED_SECONDARY_SEL,
-> +	}, {
-> +		.name = "imx6sl-cpufreq",
-> +		.driver_data = IMX6_CPUFREQ_NEED_PU_REG,
-> +	}, {
-> +		.name = "imx6sx-cpufreq",
-> +		.driver_data = IMX6_CPUFREQ_NEED_PU_REG,
+I didn't wanted to keep special code for such corner cases. And then
+how many times are we going to update sampling rates ?
 
-This is wrong. SX doesn't have a PU LDO. Also I would have expected this
-flag to be added in the next patch.
+But if we want to do something special, then we may schedule the work
+for following delay:
 
-> +	},
-> +};
-> +
->  static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
->  {
->  	struct dev_pm_opp *opp;
-> @@ -102,7 +123,7 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
->  	 *  - Reprogram pll1_sys_clk and reparent pll1_sw_clk back to it
->  	 *  - Disable pll2_pfd2_396m_clk
->  	 */
-> -	if (of_machine_is_compatible("fsl,imx6ul")) {
-> +	if (imx6_cpufreq_flags & IMX6_CPUFREQ_NEED_SECONDARY_SEL) {
->  		/*
->  		 * When changing pll1_sw_clk's parent to pll1_sys_clk,
->  		 * CPU may run at higher than 528MHz, this will lead to
-> @@ -202,7 +223,7 @@ static int imx6q_cpufreq_get_resources(void)
->  	if (IS_ERR(pll2_pfd2_396m_clk))
->  		return PTR_ERR(pll2_pfd2_396m_clk);
->  
-> -	if (of_machine_is_compatible("fsl,imx6ul")) {
-> +	if (imx6_cpufreq_flags & IMX6_CPUFREQ_NEED_SECONDARY_SEL) {
->  		pll2_bus_clk = clk_get(cpu_dev, "pll2_bus");
->  		if (IS_ERR(pll2_bus_clk))
->  			return PTR_ERR(pll2_bus_clk);
-> @@ -283,6 +304,8 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
->  	const __be32 *val;
->  	u32 nr, i, j;
->  
-> +	imx6_cpufreq_flags = platform_get_device_id(pdev)->driver_data;
-> +
->  	cpu_dev = get_cpu_device(0);
->  	if (!cpu_dev) {
->  		pr_err("failed to get cpu0 device\n");
-> @@ -439,8 +462,9 @@ static int imx6q_cpufreq_remove(struct platform_device *pdev)
->  
->  static struct platform_driver imx6q_cpufreq_platdrv = {
->  	.driver = {
-> -		.name	= "imx6q-cpufreq",
-> +		.name	= "imx6-cpufreq",
->  	},
-> +	.id_table	= imx6_cpufreq_devtype,
->  	.probe		= imx6q_cpufreq_probe,
->  	.remove		= imx6q_cpufreq_remove,
->  };
+delay = shared->time_stamp + new_sampling_rate.
+
+shared->time_stamp is the last time we evaluated the load.
+
+With this, we will be at shoot at the exact requested time, relative
+to the last time we evaluated the loads.
 
 -- 
-Pengutronix e.K.             | Lucas Stach                 |
-Industrial Linux Solutions   | http://www.pengutronix.de/  |
-
+viresh
