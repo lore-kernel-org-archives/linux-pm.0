@@ -1,68 +1,74 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH 01/16] PM / OPP: Add 'supply-names' binding
-Date: Wed, 28 Oct 2015 17:17:42 +0900
-Message-ID: <20151028081742.GC28319@sirena.org.uk>
-References: <cover.1441972771.git.viresh.kumar@linaro.org>
- <2b87b162eabd1570ae2311e1ef8655acda72f678.1441972771.git.viresh.kumar@linaro.org>
- <55F72C97.2030306@kernel.org>
- <20151016002243.GA23912@codeaurora.org>
- <20151016060227.GS19018@linux>
- <20151016191658.GA16437@codeaurora.org>
- <20151017041055.GZ19018@linux>
- <20151022163942.GX8232@sirena.org.uk>
- <20151027081917.GD5505@ubuntu>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V3 4/5] cpufreq: governor: Quit work-handlers early if
+ governor is stopped
+Date: Wed, 28 Oct 2015 13:55:59 +0530
+Message-ID: <20151028082559.GD30039@ubuntu>
+References: <cover.1444723240.git.viresh.kumar@linaro.org>
+ <1e579d2bf8dbee09295725cda37bd92222fe61fb.1444723240.git.viresh.kumar@linaro.org>
+ <11662041.x9fsKCWszL@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="S96ff6o5osL9bGCL"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:38604 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752457AbbJ1ISI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2015 04:18:08 -0400
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:36577 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932551AbbJ1I0F (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2015 04:26:05 -0400
+Received: by pacfv9 with SMTP id fv9so138228pac.3
+        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2015 01:26:02 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <20151027081917.GD5505@ubuntu>
+In-Reply-To: <11662041.x9fsKCWszL@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, Rob Herring <robh@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, rob.herring@linaro.org, lee.jones@linaro.org, devicetree@vger.kernel.org, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, open list <linux-kernel@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, open list <linux-kernel@vger.kernel.org>
 
+On 28-10-15, 08:10, Rafael J. Wysocki wrote:
+> I have a hard time figuring out what the patch is supposed to achieve from
+> the above.
 
---S96ff6o5osL9bGCL
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+We had a problem earlier, where even after stopping the governor for a
+policy, the work was still queued for some of its CPUs.
 
-On Tue, Oct 27, 2015 at 01:49:17PM +0530, Viresh Kumar wrote:
-> On 23-10-15, 01:39, Mark Brown wrote:
+We failed to understand the real problem then, and so abused the wider
+cpufreq_governor_lock.
 
-> > I'm not sure that's
-> > a place we want to end up just yet, I think it's safer to just have a
-> > little bit of code in the kernel that glues things together in the cases
-> > where this is needed. =20
+I understood the problem much better now, and got a straight forward,
+and precise solution for that.
 
-> So you are effectively saying that we shouldn't go ahead with multi
-> regulator support in OPP library, right?
+> Do we eventually want to get rid of cpufreq_governor_lock and that's why we're
+> doing this?
 
-Well, I think things like libraries for getting the data tables out of
-DT are fine but I'm not convinced that trying to avoid having any device
-specific code at all is sufficiently clear yet - as far as I know we're
-mostly looking at a fairly small subset of devices still and with things
-like sequencing in the mix it's a bit worrying to me to be putting it
-all into an ABI intended to be used with no knowledge of the platform.
+That's another benefit we get out of this change.
 
---S96ff6o5osL9bGCL
-Content-Type: application/pgp-signature; name="signature.asc"
+> > +	mutex_lock(&shared->timer_mutex);
+> > +	shared->policy = NULL;
+> > +	mutex_unlock(&shared->timer_mutex);
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Right.
 
-iQEcBAEBCAAGBQJWMISiAAoJECTWi3JdVIfQYcgH/24LlU6dseeEMz1AU74SyTd0
-QH5nNaaFyOv6MnH7NErBywc30bX4GhrfeG1H9QdDpKzm39f/wzOS+lsQmGLI0eYp
-R3RMeyg8ejtuMbz9KWAv0hZnXJWYm+dytYxyCobBXeQUeNFg/DeCXsIiW1jXzt2n
-0iQzL6XDzWFEnHk33ITwuQDCcDDYMprrI/RF5lV8ay0Cp9pXu1wQNr1xYvOKs68i
-ZlZEn3cAvMAIO2O19wf80HyUpjWAi6BhkQjKwKfhb+RejytPIMZZavvHKdq8ipb3
-f10eBRlo+AOc+mh6OtrGo6kypQ1WNPVlxrF7sDbXjJO2ygcW2l8ypeqnRnGQ9b4=
-=/J5O
------END PGP SIGNATURE-----
+> So this assumes that dbs_timer() will acquire the mutex and see that
+> shared->policy is now NULL, so it will bail out immediately, but ->
+> 
+> > +
+> >  	gov_cancel_work(dbs_data, policy);
+> >  
+> > -	shared->policy = NULL;
+> >  	mutex_destroy(&shared->timer_mutex);
+> 
+> -> the mutex is destroyed here, so what the guarantee that the mutex will
+> still be around when dbs_timer() runs?
 
---S96ff6o5osL9bGCL--
+You really got me worried for few minutes :)
+
+The earlier update of shared->policy = NULL, makes sure that no
+work-handler can start real work. After the unlock the work handlers
+will start executing but will return early.
+
+We also have gov_cancel_work(), which will until the time all the
+current handlers have finished executing and no work is queued.
+
+And so we are sure that there are no users of the mutex when it is
+destroyed.
+
+-- 
+viresh
