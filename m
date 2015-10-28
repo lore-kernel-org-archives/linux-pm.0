@@ -1,41 +1,42 @@
 From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH 2/5] cpufreq: imx6q: Fix wrong device in devm_kzalloc
-Date: Wed, 28 Oct 2015 08:59:11 +0100
-Message-ID: <1446019154-16384-3-git-send-email-s.hauer@pengutronix.de>
-References: <1446019154-16384-1-git-send-email-s.hauer@pengutronix.de>
+Subject: Re: cpufreq: i.MX6: -EPROBE_DEFER fixes
+Date: Wed, 28 Oct 2015 08:59:56 +0100
+Message-ID: <20151028075956.GU25308@pengutronix.de>
+References: <1445503652-777-1-git-send-email-s.hauer@pengutronix.de>
+ <1625342.QihRV1d1Kl@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:52092 "EHLO
+Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:49823 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932449AbbJ1H7q (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2015 03:59:46 -0400
-In-Reply-To: <1446019154-16384-1-git-send-email-s.hauer@pengutronix.de>
+	with ESMTP id S964855AbbJ1H77 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2015 03:59:59 -0400
+Content-Disposition: inline
+In-Reply-To: <1625342.QihRV1d1Kl@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Shawn Guo <shawnguo@kernel.org>, kernel@pengutronix.de, Heiner Kallweit <hkallweit1@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-arm-kernel@lists.infradead.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Shawn Guo <shawnguo@kernel.org>, kernel@pengutronix.de, Heiner Kallweit <hkallweit1@gmail.com>
 
-devm_kzalloc must be called with the device that is actually probed,
-not with cpu_dev which resources are not freed when probe fails.
+On Wed, Oct 28, 2015 at 04:27:00AM +0100, Rafael J. Wysocki wrote:
+> On Thursday, October 22, 2015 10:47:28 AM Sascha Hauer wrote:
+> > The i.MX6 cpufreq driver can't cope with -EPROBE_DEFER returned from
+> > regulator_get/clk_get. This series fix that and some other small issues.
+> > 
+> > This series supersedes
+> > [PATCH 1/2] cpufreq: imx: fix regulator_get error handling
+> > [PATCH 2/2] cpufreq: imx: fix regulator_get_optional error handling
+> > from Heiner Kallweit.
+> 
+> I'm expecting a new version of this addressing the review comments to be
+> submitted.
 
-Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
----
- drivers/cpufreq/imx6q-cpufreq.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Sure, the new series is out.
 
-diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-index fabd144..6fefd19 100644
---- a/drivers/cpufreq/imx6q-cpufreq.c
-+++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -260,7 +260,8 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
- 	}
- 
- 	/* Make imx6_soc_volt array's size same as arm opp number */
--	imx6_soc_volt = devm_kzalloc(cpu_dev, sizeof(*imx6_soc_volt) * num, GFP_KERNEL);
-+	imx6_soc_volt = devm_kzalloc(&pdev->dev,
-+				     sizeof(*imx6_soc_volt) * num, GFP_KERNEL);
- 	if (imx6_soc_volt == NULL) {
- 		ret = -ENOMEM;
- 		goto free_freq_table;
+Sascha
+
 -- 
-2.6.1
-
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
