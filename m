@@ -1,58 +1,40 @@
-From: Saurabh Sengar <saurabh.truth@gmail.com>
-Subject: [PATCH v3] PM / suspend: replacing printk
-Date: Wed, 28 Oct 2015 08:54:01 +0530
-Message-ID: <1446002641-3052-1-git-send-email-saurabh.truth@gmail.com>
-References: <saurabh.truth@gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V3 1/5] cpufreq: ondemand: Drop unnecessary locks from update_sampling_rate()
+Date: Wed, 28 Oct 2015 05:05:06 +0100
+Message-ID: <9152551.Va141R8GGE@vostro.rjw.lan>
+References: <cover.1444723240.git.viresh.kumar@linaro.org> <56084623b2c27372a4c2c598151dd47176c3e26f.1444723240.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f43.google.com ([209.85.220.43]:36411 "EHLO
-	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751976AbbJ1DYL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Oct 2015 23:24:11 -0400
-In-Reply-To: <saurabh.truth@gmail.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:48015 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751976AbbJ1DgK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Oct 2015 23:36:10 -0400
+In-Reply-To: <56084623b2c27372a4c2c598151dd47176c3e26f.1444723240.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Saurabh Sengar <saurabh.truth@gmail.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Preeti U Murthy <preeti@linux.vnet.ibm.com>, open list <linux-kernel@vger.kernel.org>
 
-replacing printk(s) with appropriate pr_info and pr_err
-in order to fix checkpatch.pl warnings
+On Tuesday, October 13, 2015 01:39:01 PM Viresh Kumar wrote:
+> 'timer_mutex' is required to sync work-handlers of policy->cpus.
+> update_sampling_rate() is just canceling the works and queuing them
+> again. This isn't protecting anything at all in update_sampling_rate()
+> and is not gonna be of any use.
+> 
+> Even if a work-handler is already running for a CPU,
+> cancel_delayed_work_sync() will wait for it to finish.
+> 
+> Drop these unnecessary locks.
+> 
+> Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Signed-off-by: Saurabh Sengar <saurabh.truth@gmail.com>
----
- kernel/power/suspend.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+I'm queuing this up for 4.4, although I think that the changelog is not right.
 
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index 7e4cda4..7fec885 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -245,7 +245,7 @@ static int suspend_test(int level)
- {
- #ifdef CONFIG_PM_DEBUG
- 	if (pm_test_level == level) {
--		printk(KERN_INFO "suspend debug: Waiting for %d second(s).\n",
-+		pr_info("suspend debug: Waiting for %d second(s).\n",
- 				pm_test_delay);
- 		mdelay(pm_test_delay * 1000);
- 		return 1;
-@@ -317,7 +317,7 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
- 
- 	error = dpm_suspend_late(PMSG_SUSPEND);
- 	if (error) {
--		printk(KERN_ERR "PM: late suspend of devices failed\n");
-+		pr_err("PM: late suspend of devices failed\n");
- 		goto Platform_finish;
- 	}
- 	error = platform_suspend_prepare_late(state);
-@@ -326,7 +326,7 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
- 
- 	error = dpm_suspend_noirq(PMSG_SUSPEND);
- 	if (error) {
--		printk(KERN_ERR "PM: noirq suspend of devices failed\n");
-+		pr_err("PM: noirq suspend of devices failed\n");
- 		goto Platform_early_resume;
- 	}
- 	error = platform_suspend_prepare_noirq(state);
--- 
-1.9.1
+While at it, what are the race conditions the lock is protecting against?
+
+Thanks,
+Rafael
 
