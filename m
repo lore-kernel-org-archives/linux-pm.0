@@ -1,60 +1,31 @@
 From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH V2 0/4] OPP: Some cleanups
-Date: Wed, 28 Oct 2015 11:48:54 -0700
-Message-ID: <20151028184854.GY19782@codeaurora.org>
-References: <cover.1444925400.git.viresh.kumar@linaro.org>
- <4505357.GlHGRX62zQ@vostro.rjw.lan>
- <20151028084007.GH30039@ubuntu>
+Subject: Re: [PATCH V3 1/4] PM / OPP: Improve print messages with pr_fmt
+Date: Wed, 28 Oct 2015 11:49:50 -0700
+Message-ID: <20151028184950.GZ19782@codeaurora.org>
+References: <20151016192031.GB16437@codeaurora.org>
+ <d3072ab1f6665e63d2e26db75a3d598b241d423e.1445055113.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:41552 "EHLO
+Received: from smtp.codeaurora.org ([198.145.29.96]:41626 "EHLO
 	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755493AbbJ1Ssz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2015 14:48:55 -0400
+	with ESMTP id S1751397AbbJ1Stv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2015 14:49:51 -0400
 Content-Disposition: inline
-In-Reply-To: <20151028084007.GH30039@ubuntu>
+In-Reply-To: <d3072ab1f6665e63d2e26db75a3d598b241d423e.1445055113.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dan Carpenter <dan.carpenter@oracle.com>, Dmitry Torokhov <dtor@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 
-On 10/28, Viresh Kumar wrote:
-> On 28-10-15, 09:25, Rafael J. Wysocki wrote:
-> > On Thursday, October 15, 2015 09:42:42 PM Viresh Kumar wrote:
-> > > Rafael,
-> > > 
-> > > These are some random cleanups, which were part of the multi-regulator
-> > > series earlier. Sending them separately to make that series a bit light
-> > > weight.
-> > > 
-> > > V1->V2:
-> > > - Just sending them separately.
-> > > 
-> > > Viresh Kumar (4):
-> > >   PM / OPP: Improve debug print messages with pr_fmt
-> > >   PM / OPP: Rename routines specific to old bindings with _v1
-> > >   PM / OPP: Parse all power-supply related bindings together
-> > >   PM / OPP: Create separate structure for regulator/supplies
-> > > 
-> > >  drivers/base/power/opp/core.c | 78 +++++++++++++++++++++++++++----------------
-> > >  drivers/base/power/opp/cpu.c  |  3 ++
-> > >  drivers/base/power/opp/opp.h  | 29 +++++++++++-----
-> > >  3 files changed, 73 insertions(+), 37 deletions(-)
-> > 
-> > I'd like to receive an ACK from someone like Stephen on this one.
+On 10/17, Viresh Kumar wrote:
+> To identify OPP core's print messages easily, prefix them with
+> KBUILD_MODNAME.
 > 
-> He isn't around probably, I couldn't find him on IRC for last few
-> days. I have just asked you (in another reply) to drop the fourth
-> patch for now.
-> 
-> Apart from that things are really trivial, renaming/moving code
-> around. Please see if those can be included without waiting for
-> Stephen to return.
-> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
 
-Sorry it seems I got booted from freenode and didn't notice. I've
-sent Reviewed-by for the three patches.
+Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 
 -- 
 Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
