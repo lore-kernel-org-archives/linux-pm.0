@@ -1,28 +1,24 @@
 From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH V2 3/4] PM / OPP: Parse all power-supply related bindings
- together
-Date: Wed, 28 Oct 2015 11:48:03 -0700
-Message-ID: <20151028184803.GW19782@codeaurora.org>
+Subject: Re: [PATCH V2 2/4] PM / OPP: Rename routines specific to old
+ bindings with _v1
+Date: Wed, 28 Oct 2015 11:48:11 -0700
+Message-ID: <20151028184811.GX19782@codeaurora.org>
 References: <cover.1444925400.git.viresh.kumar@linaro.org>
- <10b3f112bb2863098a0ab21bcb9e951f0a8da51c.1444925400.git.viresh.kumar@linaro.org>
+ <3d59c93aa8107f96b659dd5e774596c5a396a9d8.1444925400.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:41392 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752467AbbJ1SsF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2015 14:48:05 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <10b3f112bb2863098a0ab21bcb9e951f0a8da51c.1444925400.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <3d59c93aa8107f96b659dd5e774596c5a396a9d8.1444925400.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dmitry Torokhov <dtor@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+List-Id: linux-pm@vger.kernel.org
 
 On 10/15, Viresh Kumar wrote:
-> Move all DT parsing for the power supplies to a single function, rather
-> than keeping them at separate places. This will help manage things
-> properly.
+> Clearly distinguish routines based on what version of bindings they
+> parse. We have already postfixed routines properly with _v2 for new
+> bindings. Postfix the older ones now with _v1.
 > 
 > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
