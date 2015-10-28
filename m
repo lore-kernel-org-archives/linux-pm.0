@@ -1,13 +1,13 @@
 From: Saurabh Sengar <saurabh.truth@gmail.com>
 Subject: [PATCH v3] PM / suspend: replacing printk
-Date: Wed, 28 Oct 2015 08:51:45 +0530
-Message-ID: <1446002505-3002-1-git-send-email-saurabh.truth@gmail.com>
+Date: Wed, 28 Oct 2015 08:54:01 +0530
+Message-ID: <1446002641-3052-1-git-send-email-saurabh.truth@gmail.com>
 References: <saurabh.truth@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f53.google.com ([209.85.220.53]:34628 "EHLO
-	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751874AbbJ1DVz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Oct 2015 23:21:55 -0400
+Received: from mail-pa0-f43.google.com ([209.85.220.43]:36411 "EHLO
+	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751976AbbJ1DYL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 27 Oct 2015 23:24:11 -0400
 In-Reply-To: <saurabh.truth@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -15,7 +15,7 @@ To: rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-pm@vger.kernel.o
 Cc: Saurabh Sengar <saurabh.truth@gmail.com>
 
 replacing printk(s) with appropriate pr_info and pr_err
-in order to fix checkpatch.pl warnings.
+in order to fix checkpatch.pl warnings
 
 Signed-off-by: Saurabh Sengar <saurabh.truth@gmail.com>
 ---
