@@ -1,101 +1,77 @@
-From: Saurabh Sengar <saurabh.truth@gmail.com>
-Subject: [PATCH] drivers: power: always set IRQF_ONESHOT if no primary handler is specified
-Date: Wed, 28 Oct 2015 10:34:35 +0530
-Message-ID: <1446008675-12737-1-git-send-email-saurabh.truth@gmail.com>
-References: <saurabh.truth@gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V3 1/5] cpufreq: ondemand: Drop unnecessary locks from update_sampling_rate()
+Date: Wed, 28 Oct 2015 06:54:27 +0100
+Message-ID: <4304226.RJrgDykfyW@vostro.rjw.lan>
+References: <cover.1444723240.git.viresh.kumar@linaro.org> <9152551.Va141R8GGE@vostro.rjw.lan> <20151028044451.GA30039@ubuntu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f67.google.com ([209.85.220.67]:32845 "EHLO
-	mail-pa0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751055AbbJ1FEn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2015 01:04:43 -0400
-In-Reply-To: <saurabh.truth@gmail.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:53337 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751945AbbJ1FZb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2015 01:25:31 -0400
+In-Reply-To: <20151028044451.GA30039@ubuntu>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Saurabh Sengar <saurabh.truth@gmail.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Preeti U Murthy <preeti@linux.vnet.ibm.com>, open list <linux-kernel@vger.kernel.org>
 
-If no primary handler is specified then a default one is assigned which
-always returns IRQ_WAKE_THREAD. This handler requires the IRQF_ONESHOT,
-because the source of interrupt is not disabled.
+On Wednesday, October 28, 2015 10:14:51 AM Viresh Kumar wrote:
+> On 28-10-15, 05:05, Rafael J. Wysocki wrote:
+> > On Tuesday, October 13, 2015 01:39:01 PM Viresh Kumar wrote:
+> > > 'timer_mutex' is required to sync work-handlers of policy->cpus.
+> > > update_sampling_rate() is just canceling the works and queuing them
+> > > again. This isn't protecting anything at all in update_sampling_rate()
+> > > and is not gonna be of any use.
+> > > 
+> > > Even if a work-handler is already running for a CPU,
+> > > cancel_delayed_work_sync() will wait for it to finish.
+> > > 
+> > > Drop these unnecessary locks.
+> > > 
+> > > Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> > > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > 
+> > I'm queuing this up for 4.4, although I think that the changelog is not right.
+> > 
+> > While at it, what are the race conditions the lock is protecting against?
+> 
+> In cases where a single policy controls multiple CPUs, a timer is
+> queued for every cpu present in policy->cpus. When we reach the timer
+> handler (which can be on multiple CPUs together) on any CPU, we trace
+> CPU load for all policy->cpus and update the frequency accordingly.
 
-Signed-off-by: Saurabh Sengar <saurabh.truth@gmail.com>
----
- drivers/power/max8903_charger.c |  9 ++++++---
- drivers/power/wm831x_power.c    | 13 ++++++-------
- 2 files changed, 12 insertions(+), 10 deletions(-)
+That would be in dbs_timer(), right?
 
-diff --git a/drivers/power/max8903_charger.c b/drivers/power/max8903_charger.c
-index bf2b4b3..0488e74 100644
---- a/drivers/power/max8903_charger.c
-+++ b/drivers/power/max8903_charger.c
-@@ -301,7 +301,8 @@ static int max8903_probe(struct platform_device *pdev)
- 	if (pdata->dc_valid) {
- 		ret = request_threaded_irq(gpio_to_irq(pdata->dok),
- 				NULL, max8903_dcin,
--				IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING,
-+				IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING
-+				| IRQF_ONESHOT,
- 				"MAX8903 DC IN", data);
- 		if (ret) {
- 			dev_err(dev, "Cannot request irq %d for DC (%d)\n",
-@@ -313,7 +314,8 @@ static int max8903_probe(struct platform_device *pdev)
- 	if (pdata->usb_valid) {
- 		ret = request_threaded_irq(gpio_to_irq(pdata->uok),
- 				NULL, max8903_usbin,
--				IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING,
-+				IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING
-+				| IRQF_ONESHOT,
- 				"MAX8903 USB IN", data);
- 		if (ret) {
- 			dev_err(dev, "Cannot request irq %d for USB (%d)\n",
-@@ -325,7 +327,8 @@ static int max8903_probe(struct platform_device *pdev)
- 	if (pdata->flt) {
- 		ret = request_threaded_irq(gpio_to_irq(pdata->flt),
- 				NULL, max8903_fault,
--				IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING,
-+				IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING
-+				| IRQF_ONESHOT,
- 				"MAX8903 Fault", data);
- 		if (ret) {
- 			dev_err(dev, "Cannot request irq %d for Fault (%d)\n",
-diff --git a/drivers/power/wm831x_power.c b/drivers/power/wm831x_power.c
-index db11ae6..f2f5bae 100644
---- a/drivers/power/wm831x_power.c
-+++ b/drivers/power/wm831x_power.c
-@@ -572,8 +572,8 @@ static int wm831x_power_probe(struct platform_device *pdev)
- 
- 	irq = wm831x_irq(wm831x, platform_get_irq_byname(pdev, "SYSLO"));
- 	ret = request_threaded_irq(irq, NULL, wm831x_syslo_irq,
--				   IRQF_TRIGGER_RISING, "System power low",
--				   power);
-+				   IRQF_TRIGGER_RISING | IRQF_ONESHOT,
-+				   "System power low", power);
- 	if (ret != 0) {
- 		dev_err(&pdev->dev, "Failed to request SYSLO IRQ %d: %d\n",
- 			irq, ret);
-@@ -582,8 +582,8 @@ static int wm831x_power_probe(struct platform_device *pdev)
- 
- 	irq = wm831x_irq(wm831x, platform_get_irq_byname(pdev, "PWR SRC"));
- 	ret = request_threaded_irq(irq, NULL, wm831x_pwr_src_irq,
--				   IRQF_TRIGGER_RISING, "Power source",
--				   power);
-+				   IRQF_TRIGGER_RISING | IRQF_ONESHOT,
-+				   "Power source", power);
- 	if (ret != 0) {
- 		dev_err(&pdev->dev, "Failed to request PWR SRC IRQ %d: %d\n",
- 			irq, ret);
-@@ -595,9 +595,8 @@ static int wm831x_power_probe(struct platform_device *pdev)
- 				 platform_get_irq_byname(pdev,
- 							 wm831x_bat_irqs[i]));
- 		ret = request_threaded_irq(irq, NULL, wm831x_bat_irq,
--					   IRQF_TRIGGER_RISING,
--					   wm831x_bat_irqs[i],
--					   power);
-+					   IRQF_TRIGGER_RISING | IRQF_ONESHOT,
-+					   wm831x_bat_irqs[i], power);
- 		if (ret != 0) {
- 			dev_err(&pdev->dev,
- 				"Failed to request %s IRQ %d: %d\n",
--- 
-1.9.1
+> The lock is for protecting multiple CPUs to do the same thing
+> together, as only its required to be done by a single CPU. Once any
+> CPUs handler has completed, it updates the last update time and drops
+> the mutex. At that point of time, other blocked handler (if any) check
+> the last update time and return early.
+
+Well, that would mean we only needed to hold the lock around the
+need_load_eval() evaluation in dbs_timer() if I'm not mistaken.
+
+We also should acquire it around updates of the sampling rate, which
+essentially is set_sampling_rate().
+
+Is there any reason to acquire it in cpufreq_governor_limits(), then,
+for example?
+
+> And then there are enough minute things that can go wrong if multiple
+> CPUs do the load evaluation and freq-update at the same time, apart
+> from it being an time wasting effort.
+> 
+> And so I still think that the commit log isn't that bad. The
+> timer_mutex lock isn't required in other parts of the governor, they
+> are just for synchronizing the work-handlers of CPUs belonging to the
+> same policy.
+
+I agree that it doesn't serve any purpose in the piece of code you're
+removing it from (which is why I agree with the patch), but the changelog
+is incomplete and confusing.
+
+Thanks,
+Rafael
 
