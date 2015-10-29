@@ -1,66 +1,80 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 4/6] cpufreq: governor: initialize/destroy timer_mutex with 'shared'
-Date: Thu, 29 Oct 2015 17:57:23 +0530
-Message-ID: <f773d1e27b2221afb76dcfcfef2f0c5e6ae28c79.1446121217.git.viresh.kumar@linaro.org>
+Subject: [PATCH 6/6] cpufreq: ondemand: update update_sampling_rate() to make it more efficient
+Date: Thu, 29 Oct 2015 17:57:25 +0530
+Message-ID: <a15399b18a06bbe3e22e9e7b01e8e4a7a61a044f.1446121217.git.viresh.kumar@linaro.org>
 References: <cover.1446121217.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f49.google.com ([209.85.220.49]:35706 "EHLO
+	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756895AbbJ2M1x (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Oct 2015 08:27:53 -0400
+Received: by pasz6 with SMTP id z6so39966537pas.2
+        for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2015 05:27:52 -0700 (PDT)
 In-Reply-To: <cover.1446121217.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1446121217.git.viresh.kumar@linaro.org>
 References: <cover.1446121217.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, open list <linux-kernel@vger.kernel.org>
-List-Id: linux-pm@vger.kernel.org
 
-timer_mutex is required to be initialized only while memory for 'shared'
-is allocated and in a similar way it is required to be destroyed only
-when memory for 'shared' is freed.
+Currently update_sampling_rate() runs over each online CPU and
+cancels/queues timers on all policy->cpus every time. This should be
+done just once for any cpu belonging to a policy.
 
-There is no need to do the same every time we start/stop the governor.
-Move code to initialize/destroy timer_mutex to the relevant places.
+Create a cpumask and keep on clearing it as and when we process
+policies, so that we don't have to traverse through all CPUs of the same
+policy.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq_governor.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/cpufreq/cpufreq_ondemand.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index cdcb56a49b28..999e1f6addf9 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -287,6 +287,7 @@ static int alloc_common_dbs_info(struct cpufreq_policy *policy,
- 	for_each_cpu(j, policy->related_cpus)
- 		cdata->get_cpu_cdbs(j)->shared = shared;
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index 9e0293c23285..6eac39124894 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -251,6 +251,7 @@ static void update_sampling_rate(struct dbs_data *dbs_data,
+ 	struct cpufreq_policy *policy;
+ 	struct cpu_common_dbs_info *shared;
+ 	unsigned long next_sampling, appointed_at;
++	struct cpumask cpumask;
+ 	int cpu;
  
-+	mutex_init(&shared->timer_mutex);
- 	return 0;
- }
+ 	od_tuners->sampling_rate = new_rate = max(new_rate,
+@@ -261,7 +262,9 @@ static void update_sampling_rate(struct dbs_data *dbs_data,
+ 	 */
+ 	mutex_lock(&od_dbs_cdata.mutex);
  
-@@ -297,6 +298,8 @@ static void free_common_dbs_info(struct cpufreq_policy *policy,
- 	struct cpu_common_dbs_info *shared = cdbs->shared;
- 	int j;
- 
-+	mutex_destroy(&shared->timer_mutex);
+-	for_each_online_cpu(cpu) {
++	cpumask_copy(&cpumask, cpu_online_mask);
 +
- 	for_each_cpu(j, policy->cpus)
- 		cdata->get_cpu_cdbs(j)->shared = NULL;
++	for_each_cpu(cpu, &cpumask) {
+ 		dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
+ 		cdbs = &dbs_info->cdbs;
+ 		shared = cdbs->shared;
+@@ -275,6 +278,9 @@ static void update_sampling_rate(struct dbs_data *dbs_data,
  
-@@ -433,7 +436,6 @@ static int cpufreq_governor_start(struct cpufreq_policy *policy,
+ 		policy = shared->policy;
  
- 	shared->policy = policy;
- 	shared->time_stamp = ktime_get();
--	mutex_init(&shared->timer_mutex);
++		/* clear all CPUs of this policy */
++		cpumask_andnot(&cpumask, &cpumask, policy->cpus);
++
+ 		/*
+ 		 * Update sampling rate for CPUs whose policy is governed by
+ 		 * dbs_data. In case of governor_per_policy, only a single
+@@ -284,6 +290,10 @@ static void update_sampling_rate(struct dbs_data *dbs_data,
+ 		if (dbs_data != policy->governor_data)
+ 			continue;
  
- 	for_each_cpu(j, policy->cpus) {
- 		struct cpu_dbs_info *j_cdbs = cdata->get_cpu_cdbs(j);
-@@ -493,8 +495,6 @@ static int cpufreq_governor_stop(struct cpufreq_policy *policy,
- 	mutex_unlock(&shared->timer_mutex);
- 
- 	gov_cancel_work(dbs_data, policy);
--
--	mutex_destroy(&shared->timer_mutex);
- 	return 0;
- }
++		/*
++		 * Checking this for any CPU should be fine, timers for all of
++		 * them are scheduled together.
++		 */
+ 		next_sampling = jiffies + usecs_to_jiffies(new_rate);
+ 		appointed_at = dbs_info->cdbs.timer.expires;
  
 -- 
 2.6.2.198.g614a2ac
+
