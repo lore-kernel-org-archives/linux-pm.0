@@ -1,10 +1,10 @@
 From: Ramakrishna Pallala <ramakrishna.pallala@intel.com>
 Subject: [PATCH 2/2] power: Add support for TI BQ24261 charger
-Date: Thu, 29 Oct 2015 22:04:15 +0530
-Message-ID: <1446136455-20752-3-git-send-email-ramakrishna.pallala@intel.com>
-References: <1446136455-20752-1-git-send-email-ramakrishna.pallala@intel.com>
+Date: Thu, 29 Oct 2015 22:07:05 +0530
+Message-ID: <1446136625-20845-3-git-send-email-ramakrishna.pallala@intel.com>
+References: <1446136625-20845-1-git-send-email-ramakrishna.pallala@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1446136455-20752-1-git-send-email-ramakrishna.pallala@intel.com>
+In-Reply-To: <1446136625-20845-1-git-send-email-ramakrishna.pallala@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Sebastian Reichel <sre@kernel.org>
 Cc: Pallala Ramakrishna <ramakrishna.pallala@intel.com>, Jenny Tc <jenny.tc@intel.com>, Andreas Dannenberg <dannenberg@ti.com>
@@ -16,7 +16,7 @@ TI BQ24261 charger driver relies on extcon notifications to get the
 charger cable type and based on that it will set the charging parameters.
 
 Signed-off-by: Ramakrishna Pallala <ramakrishna.pallala@intel.com>
-Signed-off-by: Jennt TC <jenny.tc@intel.com>
+Signed-off-by: Jenny TC <jenny.tc@intel.com>
 ---
  drivers/power/Kconfig                 |    6 +
  drivers/power/Makefile                |    1 +
