@@ -1,122 +1,225 @@
 From: Caesar Wang <wxt@rock-chips.com>
-Subject: [PATCH v1 0/6] Support the thermal for RK3368 SoCs
-Date: Thu, 29 Oct 2015 15:14:12 +0800
-Message-ID: <1446102858-10116-1-git-send-email-wxt@rock-chips.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f65.google.com ([209.85.220.65]:33546 "EHLO
-	mail-pa0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756733AbbJ2HOo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Oct 2015 03:14:44 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH v1 2/6] thermal: rockchip: better to compatible the driver for different SoCs
+Date: Thu, 29 Oct 2015 15:14:14 +0800
+Message-ID: <1446102858-10116-3-git-send-email-wxt@rock-chips.com>
+References: <1446102858-10116-1-git-send-email-wxt@rock-chips.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1446102858-10116-1-git-send-email-wxt@rock-chips.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Heiko Stuebner <heiko@sntech.de>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-rockchip@lists.infradead.org, Caesar Wang <wxt@rock-chips.com>, devicetree@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-pm@vger.kernel.org, Olof Johansson <olof@lixom.net>, Kumar Gala <galak@codeaurora.org>, linux-kernel@vger.kernel.org, Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Herring <robh+dt@kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-arm-kernel@lists.infradead.org, Pawel Moll <pawel.moll@arm.com>, Zhang Rui <rui.zhang@intel.com>, Mark Rutland <mark.rutland@arm.com>, Catalin Marinas <catalin.marinas@arm.com>
+Cc: linux-rockchip@lists.infradead.org, Caesar Wang <wxt@rock-chips.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
+List-Id: linux-pm@vger.kernel.org
 
-This series patchs are working for RK3368 on Rockchip platform.
+The current driver is default to register the two thermal sensors
+in probe since some SoCs maybe only have one sensor for thermal.
 
-@Heiko,
-    The PATCH [5/6] is working based on big/littel cluster cpufreq
-    added. Anyway, the PATCH [5/6] also work for next kernel.
+In some cases, the channel 0 is not always the cpu or gpu sensor.
+So add the channel can be configured for sensors.
 
-@Eduardo,
-This patchset are based on linus master branch.
-Note: Need add the following thermal patchs for thermal driver before apply
-this series patchs.
+Signed-off-by: Caesar Wang <wxt@rock-chips.com>
 
-1) thermal: rockchip: fix handling of invalid readings
-(https://patchwork.kernel.org/patch/6973101/)
-
-2) thermal: rockhip: fix setting thermal shutdown polarity
-(https://patchwork.kernel.org/patch/6973131/)
-
-3) dt-bindings: rockchip-thermal: Add the pinctrl states in this document
-(https://patchwork.kernel.org/patch/7472021/)
-
-4) thermal: rockchip: support the sleep pinctrl state to avoid glitches in s2r
-(https://patchwork.kernel.org/patch/7472051/)
-
-the git log oneline my local branch as follows:
-
-8132956 arm64: dts: Enable the Thermal on R88 board
-ba3fd05 arm64: dts: Add main Thermal info to rk3368.dtsi
-66adecc arm64: dts: Add the thermal data found on RK3368
-acc9cb6 thermal: rockchip: Support the RK3368 SoCs in thermal driver
-8c65003 thermal: rockchip: better to compatible the driver for different SoCs
-ea9f28a dt-bindings: rockchip-thermal: Support the RK3368 SoCs compatible
-29eb0c7 thermal: rockchip: support the sleep pinctrl state to avoid glitches in s2r
-cf2100b dt-bindings: rockchip-thermal: Add the pinctrl states in this document
-38e287b0 thermal: rockhip: fix setting thermal shutdown polarity
-ddee4a2 thermal: rockchip: fix handling of invalid readings
-8a28d67 Merge tag 'powerpc-4.3-6' of
-git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux
-977bf06 powerpc/dma: dma_set_coherent_mask() should not be GPL only
-a22c4d7 block: re-add discard_granularity and alignment checks
-23d8827 Merge branch 'fixes' of git://ftp.arm.linux.org.uk/~rmk/linux-arm
-3d0aa36 Merge branch 'for-linus' of git://git.kernel.dk/linux-block
-dc5bc3f Merge branch 'linus' of git://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6
-9e17f90 Merge tag 'fixes-for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/rusty/linux
-174fd8d blkcg: fix incorrect read/write sync/async stat accounting
-858e904 Merge tag 'iommu-fixes-v4.3-rc7' of
-......
-
-----
-This series are tested on RK3368 board.
-
-while true;do ls >/dev/null; done&
-
-while true; do grep "" /sys/class/thermal/thermal_zone[0-1]/temp; sleep .5; done &
-
-You can get the temperature form sensors.
-/sys/class/thermal/thermal_zone0/temp:27500
-/sys/class/thermal/thermal_zone1/temp:30000
-/sys/class/thermal/thermal_zone0/temp:30000
-/sys/class/thermal/thermal_zone1/temp:30000
-/sys/class/thermal/thermal_zone0/temp:27500
-/sys/class/thermal/thermal_zone1/temp:30000
-/sys/class/thermal/thermal_zone0/temp:30000
-/sys/class/thermal/thermal_zone1/temp:30000
-/sys/class/thermal/thermal_zone0/temp:25000
-/sys/class/thermal/thermal_zone1/temp:30000
-/sys/class/thermal/thermal_zone0/temp:32500
-/sys/class/thermal/thermal_zone1/temp:30000
-/sys/class/thermal/thermal_zone0/temp:30000
-/sys/class/thermal/thermal_zone1/temp:30000
-/sys/class/thermal/thermal_zone0/temp:22500
-/sys/class/thermal/thermal_zone1/temp:32500
-/sys/class/thermal/thermal_zone0/temp:25000
-/sys/class/thermal/thermal_zone1/temp:30000
-/sys/class/thermal/thermal_zone0/temp:25000
-/sys/class/thermal/thermal_zone1/temp:30000
-/sys/class/thermal/thermal_zone0/temp:22500
-/sys/class/thermal/thermal_zone1/temp:30000
-/sys/class/thermal/thermal_zone0/temp:30000
-/sys/class/thermal/thermal_zone1/temp:32500
-/sys/class/thermal/thermal_zone1/temp:32500
-/sys/class/thermal/thermal_zone0/temp:32500
-
+---
 
 Changes in v1:
-- %s/thermal/rockchip-thermal in subject.
 - add a new patch for thermal driver to support more SoCs.
-- As Dmitry comment, make the conversion table in as a parameter.
-- support the opt gpio pinctrl state
 
-Caesar Wang (6):
-  dt-bindings: rockchip-thermal: Support the RK3368 SoCs compatible
-  thermal: rockchip: better to compatible the driver for different SoCs
-  thermal: rockchip: Support the RK3368 SoCs in thermal driver
-  arm64: dts: Add the thermal data found on RK3368
-  arm64: dts: Add main Thermal info to rk3368.dtsi
-  arm64: dts: Enable the Thermal on R88 board
+ drivers/thermal/rockchip_thermal.c | 84 +++++++++++++++++++++-----------------
+ 1 file changed, 47 insertions(+), 37 deletions(-)
 
- .../bindings/thermal/rockchip-thermal.txt          |   4 +-
- arch/arm64/boot/dts/rockchip/rk3368-r88.dts        |   6 +
- arch/arm64/boot/dts/rockchip/rk3368-thermal.dtsi   | 112 +++++++++
- arch/arm64/boot/dts/rockchip/rk3368.dtsi           |  36 +++
- drivers/thermal/rockchip_thermal.c                 | 267 ++++++++++++++++-----
- 5 files changed, 362 insertions(+), 63 deletions(-)
- create mode 100644 arch/arm64/boot/dts/rockchip/rk3368-thermal.dtsi
-
+diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+index 2b58870..f96c151 100644
+--- a/drivers/thermal/rockchip_thermal.c
++++ b/drivers/thermal/rockchip_thermal.c
+@@ -44,15 +44,25 @@ enum tshut_polarity {
+ };
+ 
+ /**
+- * The system has three Temperature Sensors.  channel 0 is reserved,
+- * channel 1 is for CPU, and channel 2 is for GPU.
++ * The system has two Temperature Sensors.
++ * sensor0 is for CPU, and sensor1 is for GPU.
+  */
+ enum sensor_id {
+-	SENSOR_CPU = 1,
++	SENSOR_CPU = 0,
+ 	SENSOR_GPU,
+ };
+ 
++/**
++ * The max sensors is two in rockchip SoCs.
++ * Two sensors: CPU and GPU sensor.
++ */
++#define SOC_MAX_SENSORS	2
++
+ struct rockchip_tsadc_chip {
++	/* The sensor id of chip correspond to the ADC channel */
++	int chn_id[SOC_MAX_SENSORS];
++	int chn_num;
++
+ 	/* The hardware-controlled tshut property */
+ 	long tshut_temp;
+ 	enum tshut_mode tshut_mode;
+@@ -72,17 +82,15 @@ struct rockchip_tsadc_chip {
+ struct rockchip_thermal_sensor {
+ 	struct rockchip_thermal_data *thermal;
+ 	struct thermal_zone_device *tzd;
+-	enum sensor_id id;
++	int id;
+ };
+ 
+-#define NUM_SENSORS	2 /* Ignore unused sensor 0 */
+-
+ struct rockchip_thermal_data {
+ 	const struct rockchip_tsadc_chip *chip;
+ 	struct platform_device *pdev;
+ 	struct reset_control *reset;
+ 
+-	struct rockchip_thermal_sensor sensors[NUM_SENSORS];
++	struct rockchip_thermal_sensor sensors[SOC_MAX_SENSORS];
+ 
+ 	struct clk *clk;
+ 	struct clk *pclk;
+@@ -317,6 +325,10 @@ static void rk_tsadcv2_tshut_mode(int chn, void __iomem *regs,
+ }
+ 
+ static const struct rockchip_tsadc_chip rk3288_tsadc_data = {
++	.chn_id[SENSOR_CPU] = 1, /* cpu sensor is channel 1 */
++	.chn_id[SENSOR_GPU] = 2, /* gpu sensor is channel 2 */
++	.chn_num = 2, /* two channels for tsadc */
++
+ 	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
+ 	.tshut_polarity = TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
+ 	.tshut_temp = 95000,
+@@ -356,7 +368,7 @@ static irqreturn_t rockchip_thermal_alarm_irq_thread(int irq, void *dev)
+ 
+ 	thermal->chip->irq_ack(thermal->regs);
+ 
+-	for (i = 0; i < ARRAY_SIZE(thermal->sensors); i++)
++	for (i = 0; i < thermal->chip->chn_num; i++)
+ 		thermal_zone_device_update(thermal->sensors[i].tzd);
+ 
+ 	return IRQ_HANDLED;
+@@ -441,7 +453,7 @@ static int
+ rockchip_thermal_register_sensor(struct platform_device *pdev,
+ 				 struct rockchip_thermal_data *thermal,
+ 				 struct rockchip_thermal_sensor *sensor,
+-				 enum sensor_id id)
++				 int id)
+ {
+ 	const struct rockchip_tsadc_chip *tsadc = thermal->chip;
+ 	int error;
+@@ -480,7 +492,7 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
+ 	const struct of_device_id *match;
+ 	struct resource *res;
+ 	int irq;
+-	int i;
++	int i, j;
+ 	int error;
+ 
+ 	match = of_match_node(of_rockchip_thermal_match, np);
+@@ -555,22 +567,19 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
+ 
+ 	thermal->chip->initialize(thermal->regs, thermal->tshut_polarity);
+ 
+-	error = rockchip_thermal_register_sensor(pdev, thermal,
+-						 &thermal->sensors[0],
+-						 SENSOR_CPU);
+-	if (error) {
+-		dev_err(&pdev->dev,
+-			"failed to register CPU thermal sensor: %d\n", error);
+-		goto err_disable_pclk;
+-	}
+-
+-	error = rockchip_thermal_register_sensor(pdev, thermal,
+-						 &thermal->sensors[1],
+-						 SENSOR_GPU);
+-	if (error) {
+-		dev_err(&pdev->dev,
+-			"failed to register GPU thermal sensor: %d\n", error);
+-		goto err_unregister_cpu_sensor;
++	for (i = 0; i < thermal->chip->chn_num; i++) {
++		error = rockchip_thermal_register_sensor(pdev, thermal,
++						&thermal->sensors[i],
++						thermal->chip->chn_id[i]);
++		if (error) {
++			dev_err(&pdev->dev,
++				"failed to register sensor[%d] : error = %d\n",
++				i, error);
++			for (j = 0; j < i; j++)
++				thermal_zone_of_sensor_unregister(&pdev->dev,
++						thermal->sensors[j].tzd);
++			goto err_disable_pclk;
++		}
+ 	}
+ 
+ 	error = devm_request_threaded_irq(&pdev->dev, irq, NULL,
+@@ -580,22 +589,23 @@ static int rockchip_thermal_probe(struct platform_device *pdev)
+ 	if (error) {
+ 		dev_err(&pdev->dev,
+ 			"failed to request tsadc irq: %d\n", error);
+-		goto err_unregister_gpu_sensor;
++		goto err_unregister_sensor;
+ 	}
+ 
+ 	thermal->chip->control(thermal->regs, true);
+ 
+-	for (i = 0; i < ARRAY_SIZE(thermal->sensors); i++)
++	for (i = 0; i < thermal->chip->chn_num; i++)
+ 		rockchip_thermal_toggle_sensor(&thermal->sensors[i], true);
+ 
+ 	platform_set_drvdata(pdev, thermal);
+ 
+ 	return 0;
+ 
+-err_unregister_gpu_sensor:
+-	thermal_zone_of_sensor_unregister(&pdev->dev, thermal->sensors[1].tzd);
+-err_unregister_cpu_sensor:
+-	thermal_zone_of_sensor_unregister(&pdev->dev, thermal->sensors[0].tzd);
++err_unregister_sensor:
++	while (i--)
++		thermal_zone_of_sensor_unregister(&pdev->dev,
++						  thermal->sensors[i].tzd);
++
+ err_disable_pclk:
+ 	clk_disable_unprepare(thermal->pclk);
+ err_disable_clk:
+@@ -609,7 +619,7 @@ static int rockchip_thermal_remove(struct platform_device *pdev)
+ 	struct rockchip_thermal_data *thermal = platform_get_drvdata(pdev);
+ 	int i;
+ 
+-	for (i = 0; i < ARRAY_SIZE(thermal->sensors); i++) {
++	for (i = 0; i < thermal->chip->chn_num; i++) {
+ 		struct rockchip_thermal_sensor *sensor = &thermal->sensors[i];
+ 
+ 		rockchip_thermal_toggle_sensor(sensor, false);
+@@ -630,7 +640,7 @@ static int __maybe_unused rockchip_thermal_suspend(struct device *dev)
+ 	struct rockchip_thermal_data *thermal = platform_get_drvdata(pdev);
+ 	int i;
+ 
+-	for (i = 0; i < ARRAY_SIZE(thermal->sensors); i++)
++	for (i = 0; i < thermal->chip->chn_num; i++)
+ 		rockchip_thermal_toggle_sensor(&thermal->sensors[i], false);
+ 
+ 	thermal->chip->control(thermal->regs, false);
+@@ -662,8 +672,8 @@ static int __maybe_unused rockchip_thermal_resume(struct device *dev)
+ 
+ 	thermal->chip->initialize(thermal->regs, thermal->tshut_polarity);
+ 
+-	for (i = 0; i < ARRAY_SIZE(thermal->sensors); i++) {
+-		enum sensor_id id = thermal->sensors[i].id;
++	for (i = 0; i < thermal->chip->chn_num; i++) {
++		int id = thermal->sensors[i].id;
+ 
+ 		thermal->chip->set_tshut_mode(id, thermal->regs,
+ 					      thermal->tshut_mode);
+@@ -673,7 +683,7 @@ static int __maybe_unused rockchip_thermal_resume(struct device *dev)
+ 
+ 	thermal->chip->control(thermal->regs, true);
+ 
+-	for (i = 0; i < ARRAY_SIZE(thermal->sensors); i++)
++	for (i = 0; i < thermal->chip->chn_num; i++)
+ 		rockchip_thermal_toggle_sensor(&thermal->sensors[i], true);
+ 
+ 	pinctrl_pm_select_default_state(dev);
 -- 
 1.9.1
-
