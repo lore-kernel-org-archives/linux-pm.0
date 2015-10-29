@@ -1,53 +1,174 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFD] Functional dependencies between devices
-Date: Thu, 29 Oct 2015 10:31:08 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1510291024190.1647-100000@iolanthe.rowland.org>
-References: <CAAObsKARL=mG8bsvdU7AJSosDd3aw7CuH+OiLsi0Umc2B-L+nQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAAObsKARL=mG8bsvdU7AJSosDd3aw7CuH+OiLsi0Umc2B-L+nQ@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@linaro.org>, Mark Brown <broonie@kernel.og>, Rob Herring <robh@kernel.org>, Thierry Reding <treding@nvidia.com>, Dmitry Torokhov <dtor@google.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Michael Turquette <mturquette@baylibre.com>
+From: Philippe Longepe <philippe.longepe@linux.intel.com>
+Subject: [PATCH v8 1/2] cpufreq: intel_pstate: Replace BYT by ATOM
+Date: Thu, 29 Oct 2015 17:31:32 +0100
+Message-ID: <1446136293-12978-1-git-send-email-philippe.longepe@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:20189 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756132AbbJ2Qai (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 29 Oct 2015 12:30:38 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: srinivas.pandruvada@linux.intel.com, Philippe Longepe <philippe.longepe@intel.com>
 
-Good grief, don't you guys ever trim unwanted material from your 
-emails?  I had to erase more than 4 screens worth of useless stuff 
-before getting to the relevant portions.
+From: Philippe Longepe <philippe.longepe@intel.com>
 
-On Thu, 29 Oct 2015, Tomeu Vizoso wrote:
+The goal is to support several Atoms architectures.
 
-> >> Also, have you considered that not only drivers request resources? For
-> >> example, the on-demand probing series would probe a device that is
-> >> needed by an initcall, simplifying synchronization.
+Signed-off-by: Philippe Longepe <philippe.longepe@linux.intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 56 +++++++++++++++++++++---------------------
+ 1 file changed, 28 insertions(+), 28 deletions(-)
 
-Did Rafael ever say that only drivers could create these functional
-dependencies?  I don't recall seeing that anywhere.  Presumably any
-part of the kernel will be allowed to do it.
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index aa33b92..8618b02 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -34,10 +34,10 @@
+ #include <asm/cpu_device_id.h>
+ #include <asm/cpufeature.h>
+ 
+-#define BYT_RATIOS		0x66a
+-#define BYT_VIDS		0x66b
+-#define BYT_TURBO_RATIOS	0x66c
+-#define BYT_TURBO_VIDS		0x66d
++#define ATOM_RATIOS		0x66a
++#define ATOM_VIDS		0x66b
++#define ATOM_TURBO_RATIOS	0x66c
++#define ATOM_TURBO_VIDS		0x66d
+ 
+ #define FRAC_BITS 8
+ #define int_tofp(X) ((int64_t)(X) << FRAC_BITS)
+@@ -502,31 +502,31 @@ static void intel_pstate_hwp_enable(struct cpudata *cpudata)
+ 	wrmsrl_on_cpu(cpudata->cpu, MSR_PM_ENABLE, 0x1);
+ }
+ 
+-static int byt_get_min_pstate(void)
++static int atom_get_min_pstate(void)
+ {
+ 	u64 value;
+ 
+-	rdmsrl(BYT_RATIOS, value);
++	rdmsrl(ATOM_RATIOS, value);
+ 	return (value >> 8) & 0x7F;
+ }
+ 
+-static int byt_get_max_pstate(void)
++static int atom_get_max_pstate(void)
+ {
+ 	u64 value;
+ 
+-	rdmsrl(BYT_RATIOS, value);
++	rdmsrl(ATOM_RATIOS, value);
+ 	return (value >> 16) & 0x7F;
+ }
+ 
+-static int byt_get_turbo_pstate(void)
++static int atom_get_turbo_pstate(void)
+ {
+ 	u64 value;
+ 
+-	rdmsrl(BYT_TURBO_RATIOS, value);
++	rdmsrl(ATOM_TURBO_RATIOS, value);
+ 	return value & 0x7F;
+ }
+ 
+-static void byt_set_pstate(struct cpudata *cpudata, int pstate)
++static void atom_set_pstate(struct cpudata *cpudata, int pstate)
+ {
+ 	u64 val;
+ 	int32_t vid_fp;
+@@ -551,10 +551,10 @@ static void byt_set_pstate(struct cpudata *cpudata, int pstate)
+ 	wrmsrl_on_cpu(cpudata->cpu, MSR_IA32_PERF_CTL, val);
+ }
+ 
+-#define BYT_BCLK_FREQS 5
+-static int byt_freq_table[BYT_BCLK_FREQS] = { 833, 1000, 1333, 1167, 800};
++#define ATOM_BCLK_FREQS 5
++static int atom_freq_table[ATOM_BCLK_FREQS] = { 833, 1000, 1333, 1167, 800};
+ 
+-static int byt_get_scaling(void)
++static int atom_get_scaling(void)
+ {
+ 	u64 value;
+ 	int i;
+@@ -562,16 +562,16 @@ static int byt_get_scaling(void)
+ 	rdmsrl(MSR_FSB_FREQ, value);
+ 	i = value & 0x3;
+ 
+-	BUG_ON(i > BYT_BCLK_FREQS);
++	BUG_ON(i > ATOM_BCLK_FREQS);
+ 
+-	return byt_freq_table[i] * 100;
++	return atom_freq_table[i] * 100;
+ }
+ 
+-static void byt_get_vid(struct cpudata *cpudata)
++static void atom_get_vid(struct cpudata *cpudata)
+ {
+ 	u64 value;
+ 
+-	rdmsrl(BYT_VIDS, value);
++	rdmsrl(ATOM_VIDS, value);
+ 	cpudata->vid.min = int_tofp((value >> 8) & 0x7f);
+ 	cpudata->vid.max = int_tofp((value >> 16) & 0x7f);
+ 	cpudata->vid.ratio = div_fp(
+@@ -579,7 +579,7 @@ static void byt_get_vid(struct cpudata *cpudata)
+ 		int_tofp(cpudata->pstate.max_pstate -
+ 			cpudata->pstate.min_pstate));
+ 
+-	rdmsrl(BYT_TURBO_VIDS, value);
++	rdmsrl(ATOM_TURBO_VIDS, value);
+ 	cpudata->vid.turbo = value & 0x7f;
+ }
+ 
+@@ -659,7 +659,7 @@ static struct cpu_defaults core_params = {
+ 	},
+ };
+ 
+-static struct cpu_defaults byt_params = {
++static struct cpu_defaults atom_params = {
+ 	.pid_policy = {
+ 		.sample_rate_ms = 10,
+ 		.deadband = 0,
+@@ -669,12 +669,12 @@ static struct cpu_defaults byt_params = {
+ 		.i_gain_pct = 4,
+ 	},
+ 	.funcs = {
+-		.get_max = byt_get_max_pstate,
+-		.get_min = byt_get_min_pstate,
+-		.get_turbo = byt_get_turbo_pstate,
+-		.set = byt_set_pstate,
+-		.get_scaling = byt_get_scaling,
+-		.get_vid = byt_get_vid,
++		.get_max = atom_get_max_pstate,
++		.get_min = atom_get_min_pstate,
++		.get_turbo = atom_get_turbo_pstate,
++		.set = atom_set_pstate,
++		.get_scaling = atom_get_scaling,
++		.get_vid = atom_get_vid,
+ 	},
+ };
+ 
+@@ -912,7 +912,7 @@ static void intel_pstate_timer_func(unsigned long __data)
+ static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
+ 	ICPU(0x2a, core_params),
+ 	ICPU(0x2d, core_params),
+-	ICPU(0x37, byt_params),
++	ICPU(0x37, atom_params),
+ 	ICPU(0x3a, core_params),
+ 	ICPU(0x3c, core_params),
+ 	ICPU(0x3d, core_params),
+@@ -921,7 +921,7 @@ static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
+ 	ICPU(0x45, core_params),
+ 	ICPU(0x46, core_params),
+ 	ICPU(0x47, core_params),
+-	ICPU(0x4c, byt_params),
++	ICPU(0x4c, atom_params),
+ 	ICPU(0x4e, core_params),
+ 	ICPU(0x4f, core_params),
+ 	ICPU(0x5e, core_params),
+-- 
+1.9.1
 
-> > You really need to explain what you mean here or maybe give an example.
-> 
-> There are initcalls that assume that a given resource is available.
-> Because of async probes, or because the resource's driver being built
-> as a module, or because the resource's driver gained a dependency
-> (direct or not), those initcalls break unexpectedly at times.
-> 
-> If resource getters could probe dependencies on-demand, those
-> initcalls would be more robust to changes in other parts of the
-> codebase.
-> 
-> AFAIUI, your proposal would help with a device's dependencies being
-> there when it's probed, but initcalls could still run into unfulfilled
-> dependencies.
-
-One possible approach is to have a "wait_for_driver" flag, along with a
-timeout value (or perhaps using a fixed timeout value).  When a
-dependency gets registered with this flag set, the function call
-wouldn't return until the target device is bound to a driver or the
-timeout has elapsed.
-
-This would make it easy to insert dependencies at probe time without 
-relying on deferred probing.
-
-Alan Stern
