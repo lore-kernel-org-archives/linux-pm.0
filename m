@@ -1,66 +1,58 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH/RFC] drivers: sh: Handle PM_GENERIC_DOMAINS_OF=n with new r8a7795 CPG/MSSR driver
-Date: Thu, 29 Oct 2015 12:25:14 +0100
-Message-ID: <1446117914-6392-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-clk-owner@vger.kernel.org>
-Sender: linux-clk-owner@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>, Magnus Damm <damm+renesas@opensource.se>
-Cc: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 0/6] cpufreq: governor: replace per-cpu delayed work with timers
+Date: Thu, 29 Oct 2015 17:57:19 +0530
+Message-ID: <cover.1446121217.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f44.google.com ([209.85.220.44]:33097 "EHLO
+	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751144AbbJ2M1a (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Oct 2015 08:27:30 -0400
+Received: by padhy1 with SMTP id hy1so34016096pad.0
+        for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2015 05:27:29 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-If CONFIG_PM=n (and thus PM_GENERIC_DOMAINS_OF=n), the CPG/MSSR driver
-doesn't install its Clock Domain. Make sure the needed module clocks are
-still enabled by using the Legacy Clock Domain.
+Hi Rafael,
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
-I'd be happy to make CONFIG_PM=y mandatory for new SoCs/DTS, so we can
-drop this patch.
+As suggested by you yesterday, I have updated the governor core to keep
+per-cpu timers and a shared work for the entire policy.
 
-Thoughts?
+More details are present in the changelogs, hope they are somewhat
+better this time.
 
-For your convenience, I have push this patch to the
-topic/r8a7795-drivers-sh-v1 branch of my renesas-drivers repository.  A
-full integration for R-Car Gen3 is available in the topic/gen3-latest
-branch.
----
- drivers/sh/pm_runtime.c | 15 ++++++++++++---
- 1 file changed, 12 insertions(+), 3 deletions(-)
+I have tested it with the test-suite, that I created sometime back while
+fixing locking issues in governors.. Tried all kind of stuff in parallel
+that could have broken it (those are the testcases that separate people
+reported over time, around governors). It works fine.
 
-diff --git a/drivers/sh/pm_runtime.c b/drivers/sh/pm_runtime.c
-index 91a003011acfacb2..5eeed1db1bb3f9d8 100644
---- a/drivers/sh/pm_runtime.c
-+++ b/drivers/sh/pm_runtime.c
-@@ -32,17 +32,26 @@ static struct pm_clk_notifier_block platform_bus_notifier = {
- 	.con_ids = { NULL, },
- };
- 
-+static const struct of_device_id clk_domain_matches[] = {
-+	{ .compatible = "renesas,cpg-mstp-clocks", },
-+	{ .compatible = "renesas,r8a7795-cpg-mssr", },
-+	{ /* sentinel */ }
-+};
-+
- static int __init sh_pm_runtime_init(void)
- {
- 	if (IS_ENABLED(CONFIG_ARCH_SHMOBILE)) {
--		if (!of_find_compatible_node(NULL, NULL,
--					     "renesas,cpg-mstp-clocks"))
-+		if (!of_find_matching_node(NULL, clk_domain_matches))
- 			return 0;
-+
- 		if (IS_ENABLED(CONFIG_PM_GENERIC_DOMAINS_OF) &&
--		    of_find_node_with_property(NULL, "#power-domain-cells"))
-+		    of_find_node_with_property(NULL, "#power-domain-cells")) {
-+			pr_debug("Using DT Clock Domain\n");
- 			return 0;
-+		}
- 	}
- 
-+	pr_debug("Using Legacy Clock Domain\n");
- 	pm_clk_add_notifier(&platform_bus_type, &platform_bus_notifier);
- 	return 0;
- }
+The first one is a bug fix really, which I noticed today only :), next
+three are minor cleanups to prepare for the big change. Fourth one is
+the main patch that does the conversion and the final one is
+cherry-picked from the last series as that was still relevant.
+
+This is rebased over: pm/bleeding-edge + "[PATCH V4] cpufreq: governor:
+Quit work-handlers early if governor is stopped", which I sent
+separately this morning with the changelog you suggested.
+
+Please see if this meets your expectations or not :)
+
+Viresh Kumar (6):
+  cpufreq: ondemand: Update sampling rate only for concerned policies
+  cpufreq: ondemand: Work is guaranteed to be pending
+  cpufreq: governor: Pass policy as argument to ->gov_dbs_timer()
+  cpufreq: governor: initialize/destroy timer_mutex with 'shared'
+  cpufreq: governor: replace per-cpu delayed work with timers
+  cpufreq: ondemand: update update_sampling_rate() to make it more
+    efficient
+
+ drivers/cpufreq/cpufreq_conservative.c |   6 +-
+ drivers/cpufreq/cpufreq_governor.c     | 145 +++++++++++++++++++--------------
+ drivers/cpufreq/cpufreq_governor.h     |  23 ++++--
+ drivers/cpufreq/cpufreq_ondemand.c     |  66 ++++++++++-----
+ 4 files changed, 147 insertions(+), 93 deletions(-)
+
 -- 
-1.9.1
+2.6.2.198.g614a2ac
 
