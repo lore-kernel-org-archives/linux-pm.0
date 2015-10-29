@@ -1,56 +1,35 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [RFD] Functional dependencies between devices
-Date: Thu, 29 Oct 2015 09:18:02 +0900
-Message-ID: <20151029001802.GK28319@sirena.org.uk>
-References: <1623682.7KVblAB3KQ@vostro.rjw.lan>
- <2204663.4WkHk8MHL7@vostro.rjw.lan>
- <CAAObsKBDTLA2VWfxN2gKjuqWt2Z6r59_vdSHLG43nOQtorBKeA@mail.gmail.com>
- <1486032.sTaAs3EPXc@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 01/70] cpufreq: interactive: New 'interactive' governor
+Date: Thu, 29 Oct 2015 07:12:37 +0530
+Message-ID: <20151029014237.GK3716@ubuntu>
+References: <1445967059-6897-1-git-send-email-czoborbalint@gmail.com>
+ <4534884.dsz2GVUDrG@vostro.rjw.lan>
+ <20151028030042.GD13324@ubuntu>
+ <CAL6DFdfsDTtkkpLJ7kg9L9rFh+Ho6DC7x9a+F3x9DydvXHfbPQ@mail.gmail.com>
+ <CAL6DFdeSbzM5go==i8Z_CJ19VrAMWVVWF5NuD+VNMONaPK5zLA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="fyA1p1RlO9nWxe3v"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:39872 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751526AbbJ2ASN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2015 20:18:13 -0400
+Received: from mail-pa0-f49.google.com ([209.85.220.49]:34402 "EHLO
+	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753696AbbJ2Bmn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2015 21:42:43 -0400
+Received: by padhk11 with SMTP id hk11so23620021pad.1
+        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2015 18:42:42 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <1486032.sTaAs3EPXc@vostro.rjw.lan>
+In-Reply-To: <CAL6DFdeSbzM5go==i8Z_CJ19VrAMWVVWF5NuD+VNMONaPK5zLA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh@kernel.org>, Thierry Reding <treding@nvidia.com>, Dmitry Torokhov <dtor@google.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Michael Turquette <mturquette@baylibre.com>
+To: =?iso-8859-1?Q?B=E1lint?= Czobor <czoborbalint@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Mike Chan <mike@android.com>, Todd Poynor <toddpoynor@google.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>
 
+On 28-10-15, 23:01, B=E1lint Czobor wrote:
+> Please ignore that single patch, doesn't even build. I'll submit it a=
+gain soon.
 
---fyA1p1RlO9nWxe3v
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Can you please reply to the queries I posted to you first, before
+sending any new updates ?
 
-On Wed, Oct 28, 2015 at 04:54:04PM +0100, Rafael J. Wysocki wrote:
-
-> Information that is already available at the device registration time should
-> be used at that time or it makes things harder to follow.
-
-> But that really is a tradeoff.  If collecting that information requires too
-> much effort, it may not be worth it.
-
-For DT it's going to be a lot eaiser to reliably collect everything in
-driver specific code, the property names to look at do follow
-conventions but are driver defined.
-
---fyA1p1RlO9nWxe3v
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJWMWW5AAoJECTWi3JdVIfQkJcH/2QDrdlRAHAlbzumxIn+zWCn
-s63KhAngajvcDIQyN7iz0c7CciGg77TzwYv0vgozI1q2BfA8bfcXaXze6kWbr3vT
-T9Qt23v2LBFLJCbZyixpmHdArMDfmeCyw93//7k59fi6PfzVdqfKbjF/EBA4PuS8
-HeF0jKH3H5ykwyaPGP7D5aqGS4iyY139Dv145GxTHjgoMNAAFKlgHlRnSNOiMDum
-eRZoQ1LDf+CeXQ4dJFUMlvLvFbeCYaiCAfMk8q3A5WqA76hlCOh9cM+JnWOGGapq
-a+dGIPvVYjDBs65Q14EFdTebtzTDH2GQq3GZghBfB3Hm9g4Sa8zteeTAwpvDJjQ=
-=BKxb
------END PGP SIGNATURE-----
-
---fyA1p1RlO9nWxe3v--
+--=20
+viresh
