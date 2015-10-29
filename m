@@ -1,58 +1,39 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 0/6] cpufreq: governor: replace per-cpu delayed work with timers
-Date: Thu, 29 Oct 2015 17:57:19 +0530
-Message-ID: <cover.1446121217.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f44.google.com ([209.85.220.44]:33097 "EHLO
-	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751144AbbJ2M1a (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Oct 2015 08:27:30 -0400
-Received: by padhy1 with SMTP id hy1so34016096pad.0
-        for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2015 05:27:29 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH 2/6] cpufreq: ondemand: Work is guaranteed to be pending
+Date: Thu, 29 Oct 2015 17:57:21 +0530
+Message-ID: <a030626f2fdf853cd06c50a87b9da667ff7154b8.1446121217.git.viresh.kumar@linaro.org>
+References: <cover.1446121217.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1446121217.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1446121217.git.viresh.kumar@linaro.org>
+References: <cover.1446121217.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, open list <linux-kernel@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-Hi Rafael,
+We are guaranteed to have works scheduled for policy->cpus, as the
+policy isn't stopped yet. And so there is no need to check that again.
+Drop it.
 
-As suggested by you yesterday, I have updated the governor core to keep
-per-cpu timers and a shared work for the entire policy.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq_ondemand.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
-More details are present in the changelogs, hope they are somewhat
-better this time.
-
-I have tested it with the test-suite, that I created sometime back while
-fixing locking issues in governors.. Tried all kind of stuff in parallel
-that could have broken it (those are the testcases that separate people
-reported over time, around governors). It works fine.
-
-The first one is a bug fix really, which I noticed today only :), next
-three are minor cleanups to prepare for the big change. Fourth one is
-the main patch that does the conversion and the final one is
-cherry-picked from the last series as that was still relevant.
-
-This is rebased over: pm/bleeding-edge + "[PATCH V4] cpufreq: governor:
-Quit work-handlers early if governor is stopped", which I sent
-separately this morning with the changelog you suggested.
-
-Please see if this meets your expectations or not :)
-
-Viresh Kumar (6):
-  cpufreq: ondemand: Update sampling rate only for concerned policies
-  cpufreq: ondemand: Work is guaranteed to be pending
-  cpufreq: governor: Pass policy as argument to ->gov_dbs_timer()
-  cpufreq: governor: initialize/destroy timer_mutex with 'shared'
-  cpufreq: governor: replace per-cpu delayed work with timers
-  cpufreq: ondemand: update update_sampling_rate() to make it more
-    efficient
-
- drivers/cpufreq/cpufreq_conservative.c |   6 +-
- drivers/cpufreq/cpufreq_governor.c     | 145 +++++++++++++++++++--------------
- drivers/cpufreq/cpufreq_governor.h     |  23 ++++--
- drivers/cpufreq/cpufreq_ondemand.c     |  66 ++++++++++-----
- 4 files changed, 147 insertions(+), 93 deletions(-)
-
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index 0800a937607b..edab71528b8b 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -285,9 +285,6 @@ static void update_sampling_rate(struct dbs_data *dbs_data,
+ 		if (dbs_data != policy->governor_data)
+ 			continue;
+ 
+-		if (!delayed_work_pending(&dbs_info->cdbs.dwork))
+-			continue;
+-
+ 		next_sampling = jiffies + usecs_to_jiffies(new_rate);
+ 		appointed_at = dbs_info->cdbs.dwork.timer.expires;
+ 
 -- 
 2.6.2.198.g614a2ac
-
