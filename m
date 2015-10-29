@@ -1,31 +1,66 @@
-From: Ramakrishna Pallala <ramakrishna.pallala@intel.com>
-Subject: [PATCH 0/2] power: Add support for TI BQ24261 charger
-Date: Thu, 29 Oct 2015 22:07:03 +0530
-Message-ID: <1446136625-20845-1-git-send-email-ramakrishna.pallala@intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Sebastian Reichel <sre@kernel.org>
-Cc: Pallala Ramakrishna <ramakrishna.pallala@intel.com>, Jenny Tc <jenny.tc@intel.com>, Andreas Dannenberg <dannenberg@ti.com>
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH/RFC] drivers: sh: Handle PM_GENERIC_DOMAINS_OF=n with new r8a7795 CPG/MSSR driver
+Date: Thu, 29 Oct 2015 12:25:14 +0100
+Message-ID: <1446117914-6392-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-clk-owner@vger.kernel.org>
+Sender: linux-clk-owner@vger.kernel.org
+To: Simon Horman <horms@verge.net.au>, Magnus Damm <damm+renesas@opensource.se>
+Cc: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-This patch series adds the support for TI BQ24261 charger driver.
+If CONFIG_PM=n (and thus PM_GENERIC_DOMAINS_OF=n), the CPG/MSSR driver
+doesn't install its Clock Domain. Make sure the needed module clocks are
+still enabled by using the Legacy Clock Domain.
 
-TI BQ24261 charger driver relies on extcon notifications to get the
-charger cable type and based on that it will set the charging parameters.
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+I'd be happy to make CONFIG_PM=y mandatory for new SoCs/DTS, so we can
+drop this patch.
 
-Ramakrishna Pallala (2):
-  dt: power: Add support for BQ24261 charger
-  power: Add support for TI BQ24261 charger
+Thoughts?
 
- .../devicetree/bindings/power/bq24261.txt          |   34 +
- drivers/power/Kconfig                              |    6 +
- drivers/power/Makefile                             |    1 +
- drivers/power/bq24261_charger.c                    | 1195 ++++++++++++++++++++
- include/linux/power/bq24261_charger.h              |   26 +
- 5 files changed, 1262 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/bq24261.txt
- create mode 100644 drivers/power/bq24261_charger.c
- create mode 100644 include/linux/power/bq24261_charger.h
+For your convenience, I have push this patch to the
+topic/r8a7795-drivers-sh-v1 branch of my renesas-drivers repository.  A
+full integration for R-Car Gen3 is available in the topic/gen3-latest
+branch.
+---
+ drivers/sh/pm_runtime.c | 15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
 
+diff --git a/drivers/sh/pm_runtime.c b/drivers/sh/pm_runtime.c
+index 91a003011acfacb2..5eeed1db1bb3f9d8 100644
+--- a/drivers/sh/pm_runtime.c
++++ b/drivers/sh/pm_runtime.c
+@@ -32,17 +32,26 @@ static struct pm_clk_notifier_block platform_bus_notifier = {
+ 	.con_ids = { NULL, },
+ };
+ 
++static const struct of_device_id clk_domain_matches[] = {
++	{ .compatible = "renesas,cpg-mstp-clocks", },
++	{ .compatible = "renesas,r8a7795-cpg-mssr", },
++	{ /* sentinel */ }
++};
++
+ static int __init sh_pm_runtime_init(void)
+ {
+ 	if (IS_ENABLED(CONFIG_ARCH_SHMOBILE)) {
+-		if (!of_find_compatible_node(NULL, NULL,
+-					     "renesas,cpg-mstp-clocks"))
++		if (!of_find_matching_node(NULL, clk_domain_matches))
+ 			return 0;
++
+ 		if (IS_ENABLED(CONFIG_PM_GENERIC_DOMAINS_OF) &&
+-		    of_find_node_with_property(NULL, "#power-domain-cells"))
++		    of_find_node_with_property(NULL, "#power-domain-cells")) {
++			pr_debug("Using DT Clock Domain\n");
+ 			return 0;
++		}
+ 	}
+ 
++	pr_debug("Using Legacy Clock Domain\n");
+ 	pm_clk_add_notifier(&platform_bus_type, &platform_bus_notifier);
+ 	return 0;
+ }
 -- 
-1.7.9.5
+1.9.1
+
