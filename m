@@ -1,12 +1,12 @@
 From: "H. Nikolaus Schaller" <hns@goldelico.com>
-Subject: [PATCH 1/2] drivers:power:twl4030-charger: fix problem with EPROBE_DEFER
-Date: Thu, 29 Oct 2015 18:01:27 +0100
-Message-ID: <cfc5db66692e0415c86a08e2a3d37c2b299bf170.1446138086.git.hns@goldelico.com>
+Subject: [PATCH 2/2] drivers:power:twl4030-charger: don't check if battery is present
+Date: Thu, 29 Oct 2015 18:01:28 +0100
+Message-ID: <72eab67d8ae1e25803a78a4636c8da78b7a0d32f.1446138086.git.hns@goldelico.com>
 References: <cover.1446138086.git.hns@goldelico.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mo4-p00-ob.smtp.rzone.de ([81.169.146.217]:48036 "EHLO
+Received: from mo4-p00-ob.smtp.rzone.de ([81.169.146.162]:15039 "EHLO
 	mo4-p00-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757056AbbJ2RBi (ORCPT
+	with ESMTP id S1757048AbbJ2RBi (ORCPT
 	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Oct 2015 13:01:38 -0400
 In-Reply-To: <cover.1446138086.git.hns@goldelico.com>
 In-Reply-To: <cover.1446138086.git.hns@goldelico.com>
@@ -16,34 +16,33 @@ List-Id: linux-pm@vger.kernel.org
 To: =?UTF-8?q?Gra=C5=BEvydas=20Ignotas?= <notasas@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
 Cc: linux-pm@vger.kernel.org, gta04-owner@goldelico.com, "H. Nikolaus Schaller" <hns@goldelico.com>
 
-devm_usb_get_phy_by_node() may return -EPROBE_DEFER in which
-case we should also defer probing of the twl4030 charger
-instead of turing USB charging off (forever).
+We can't assume that the battery is present after probing (it can
+usually be removed while device is operated through external AC
+or USB power). So it makes no sense to check for it during probe.
 
 Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
 ---
- drivers/power/twl4030_charger.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ drivers/power/twl4030_charger.c | 7 -------
+ 1 file changed, 7 deletions(-)
 
 diff --git a/drivers/power/twl4030_charger.c b/drivers/power/twl4030_charger.c
-index 423e886..859991f 100644
+index 859991f..e232453 100644
 --- a/drivers/power/twl4030_charger.c
 +++ b/drivers/power/twl4030_charger.c
-@@ -1059,9 +1059,13 @@ static int twl4030_bci_probe(struct platform_device *pdev)
+@@ -1008,13 +1008,6 @@ static int twl4030_bci_probe(struct platform_device *pdev)
+ 	bci->irq_chg = platform_get_irq(pdev, 0);
+ 	bci->irq_bci = platform_get_irq(pdev, 1);
  
- 		phynode = of_find_compatible_node(bci->dev->of_node->parent,
- 						  NULL, "ti,twl4030-usb");
--		if (phynode)
-+		if (phynode) {
- 			bci->transceiver = devm_usb_get_phy_by_node(
- 				bci->dev, phynode, &bci->usb_nb);
-+			if (IS_ERR(bci->transceiver) &&
-+				PTR_ERR(bci->transceiver) == -EPROBE_DEFER)
-+				return -EPROBE_DEFER;	/* PHY not ready */
-+		}
- 	}
+-	/* Only proceed further *IF* battery is physically present */
+-	ret = twl4030_is_battery_present(bci);
+-	if  (ret) {
+-		dev_crit(&pdev->dev, "Battery was not detected:%d\n", ret);
+-		return ret;
+-	}
+-
+ 	platform_set_drvdata(pdev, bci);
  
- 	/* Enable interrupts now. */
+ 	bci->ac = devm_power_supply_register(&pdev->dev, &twl4030_bci_ac_desc,
 -- 
 2.5.1
 
