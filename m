@@ -1,62 +1,47 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH 1/3] PM / OPP: Add "opp-supported-hw" binding
-Date: Fri, 30 Oct 2015 15:18:26 -0700
-Message-ID: <20151030221826.GM19782@codeaurora.org>
-References: <cover.1446167359.git.viresh.kumar@linaro.org>
- <2d52388bd7d3cc546ac3ab5afeb47bfcb3012213.1446167359.git.viresh.kumar@linaro.org>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [RFD] Functional dependencies between devices
+Date: Fri, 30 Oct 2015 15:52:42 -0700
+Message-ID: <20151030225242.GA2480@kroah.com>
+References: <1623682.7KVblAB3KQ@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:51050 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030387AbbJ3WS2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 30 Oct 2015 18:18:28 -0400
+Received: from mail.linuxfoundation.org ([140.211.169.12]:43248 "EHLO
+	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965292AbbJ3Wwn (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 30 Oct 2015 18:52:43 -0400
 Content-Disposition: inline
-In-Reply-To: <2d52388bd7d3cc546ac3ab5afeb47bfcb3012213.1446167359.git.viresh.kumar@linaro.org>
+In-Reply-To: <1623682.7KVblAB3KQ@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, robh+dt@kernel.org, lee.jones@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, mark.rutland@arm.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, nm@ti.com, devicetree@vger.kernel.org, open list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Grant Likely <grant.likely@linaro.org>, Mark Brown <broonie@kernel.og>, Rob Herring <robh@kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Thierry Reding <treding@nvidia.com>, Dmitry Torokhov <dtor@google.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Michael Turquette <mturquette@baylibre.com>
 
-On 10/30, Viresh Kumar wrote:
-> +	opp_table {
-> +		compatible = "operating-points-v2";
-> +		status = "okay";
-> +		opp-shared;
-> +
-> +		opp00 {
+On Tue, Oct 27, 2015 at 04:24:14PM +0100, Rafael J. Wysocki wrote:
+> My idea is to represent a supplier-consumer dependency between devices (or
+> more precisely between device+driver combos) as a "link" object containing
+> pointers to the devices in question, a list node for each of them and some
+> additional information related to the management of those objects, ie.
+> something like:
+> 
+> struct device_link {
+> 	struct device *supplier;
+> 	struct list_head supplier_node;
+> 	struct device *consumer;
+> 	struct list_head consumer_node;
+> 	<flags, status etc>
+> };
+> 
+> In general, there will be two lists of those things per device, one list
+> of links to consumers and one list of links to suppliers.
+> 
+> In that picture, links will be created by calling, say:
+> 
+> int device_add_link(struct device *me, struct device *my_supplier, unsigned int flags);
 
-A side-note. I wonder if it would be better style to have the
-node name be:
+At first glance, I like this, nice.  Now to see how well it can be
+implemented :)
 
-		opp@600000000 {
+Again, nice job.
 
-At least it seems that the assumption is we can store all the
-possible combinations of OPP values for a particular frequency in
-the same node. Following this style would make dt compilation
-fail if two nodes have the same frequency.
-
-Also, this makes it sound like opp-supported-hw is really just
-telling us if this is a supported frequency or not for the
-particular device we're running on. The current wording makes it
-sound like we could have two OPP nodes with the same frequency
-but different voltages inside them, which we're trying to
-discourage by compressing the tables into less nodes.
-
-I think in Lee's case we're only going to use the cuts parameter
-to figure out if the OPP is supported or not. On qcom platforms
-we will only use one parameter for this property as well, the
-speed bin. The slow/fast and version stuff will be handled by
-named opp properties.
-
-> +			/*
-> +			 * Supports all substrate and process versions for 0xF
-> +			 * cuts, i.e. only first four cuts.
-> +			 */
-> +			opp-supported-hw = <0xF 0xFFFFFFFF 0xFFFFFFFF>
-> +			opp-hz = /bits/ 64 <600000000>;
-> +			opp-microvolt = <900000 915000 925000>;
-
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+greg k-h
