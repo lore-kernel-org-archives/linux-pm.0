@@ -1,73 +1,34 @@
-From: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH 1/2] dt: power: Add support for TI BQ24261 charger
-Date: Fri, 30 Oct 2015 10:52:53 +0900
-Message-ID: <CAJKOXPcDea5vjX+-tDg=7Z2kPrtsEABybA0+nEPGJDVwaYvb1Q@mail.gmail.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH 0/2] power: Add support for TI BQ24261 charger
+Date: Fri, 30 Oct 2015 10:55:31 +0900
+Message-ID: <CAJKOXPeA=-+xiF4aFpMs3EQ+fvvmzqs+Q19GFuL9t7Ntgwbnpg@mail.gmail.com>
 References: <1446136625-20845-1-git-send-email-ramakrishna.pallala@intel.com>
-	<1446136625-20845-2-git-send-email-ramakrishna.pallala@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1446136625-20845-2-git-send-email-ramakrishna.pallala-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Ramakrishna Pallala <ramakrishna.pallala-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jenny Tc <jenny.tc-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f45.google.com ([209.85.192.45]:32992 "EHLO
+	mail-qg0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757844AbbJ3Bzc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Oct 2015 21:55:32 -0400
+In-Reply-To: <1446136625-20845-1-git-send-email-ramakrishna.pallala@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ramakrishna Pallala <ramakrishna.pallala@intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Jenny Tc <jenny.tc@intel.com>, Andreas Dannenberg <dannenberg@ti.com>
 
-2015-10-30 1:37 GMT+09:00 Ramakrishna Pallala <ramakrishna.pallala-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>:
-> This patch adds the device tree documentation for TI BQ24261 charger.
+2015-10-30 1:37 GMT+09:00 Ramakrishna Pallala <ramakrishna.pallala@intel.com>:
+> This patch series adds the support for TI BQ24261 charger driver.
 >
-> Signed-off-by: Ramakrishna Pallala <ramakrishna.pallala-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-> Signed-off-by: Jenny TC <jenny.tc-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-> ---
->  .../devicetree/bindings/power/bq24261.txt          |   34 ++++++++++++++++++++
->  1 file changed, 34 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/bq24261.txt
+> TI BQ24261 charger driver relies on extcon notifications to get the
+> charger cable type and based on that it will set the charging parameters.
 >
-> diff --git a/Documentation/devicetree/bindings/power/bq24261.txt b/Documentation/devicetree/bindings/power/bq24261.txt
-> new file mode 100644
-> index 0000000..e18f6dc
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/bq24261.txt
-> @@ -0,0 +1,34 @@
-> +Binding for TI bq24261 Li-Ion Charger
-> +
-> +Required properties:
-> +- compatible: Should contain one of the following:
-> +    * "ti,bq24261"
+> Ramakrishna Pallala (2):
+>   dt: power: Add support for BQ24261 charger
+>   power: Add support for TI BQ24261 charger
 
-Just: 'should be "ti,bq24261"'.
-
-> +- reg: integer, i2c address of the device.
-> +- ti,battery-regulation-voltage: integer, maximum charging voltage in uV.
-> +- ti,charge-current: integer, maximum charging current in uA.
-> +- ti,termination-current: integer, charge will be terminated when current in
-> +    constant-voltage phase drops below this value (in uA).
-
-Same as proposed extension of bq24257.txt. I like it.
-
-> +
-> +Optional properties:
-> +- ti,max-charge-current: integer, maximum charging current (in uA);
-
-I did not look at the code yet but description of property is exactly
-the same as "ti,charge-current"... Two different properties with same
-description?
-
-> +- ti,max-charge-voltage: integer, maximum charging voltage (in uV);
-
-Ditto.
-
-> +- ti,min-charge-temperature: integer, minimum charging temperature (in DegC);
-> +- ti,max-charge-temperature: integer, maximum charging temperature (in DegC).
-> +- ti,thermal-sensing: integer, enable(1) or disable(0) JEITA thermal control.
-
-You made it integer instead of boolean, so just to be sure - you
-expect the possibility of overriding this property or extending it in
-further devices?
+I think I saw these patches before. Like one or two months ago. Now
+you sent these two times. There is no changelog, no versioning. This
+is confusing. What the background? History?
 
 Best regards,
 Krzysztof
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
