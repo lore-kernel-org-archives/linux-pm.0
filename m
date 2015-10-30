@@ -1,100 +1,58 @@
-From: "H. Nikolaus Schaller" <hns@goldelico.com>
-Subject: Re: [PATCH 2/2] drivers:power:twl4030-charger: don't check if battery is present
-Date: Fri, 30 Oct 2015 07:14:25 +0100
-Message-ID: <F5CC5DDB-A65F-4B9E-8CC4-8F55823D2D4E@goldelico.com>
-References: <cover.1446138086.git.hns@goldelico.com> <72eab67d8ae1e25803a78a4636c8da78b7a0d32f.1446138086.git.hns@goldelico.com> <56327882.2030205@ti.com>
-Mime-Version: 1.0 (Mac OS X Mail 7.3 \(1878.6\))
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8BIT
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: RE: [PATCH 3/3][v2] Thermal: do thermal zone update after a cooling
+ device registered
+Date: Fri, 30 Oct 2015 08:21:40 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE6402866099C@shsmsx102.ccr.corp.intel.com>
+References: <cover.1445828170.git.yu.c.chen@intel.com>
+ <52fe1d3f183eccfa501c082efa2682940379bd8d.1445828170.git.yu.c.chen@intel.com>
+ <20151028103946.GB2686@e104805>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mo4-p00-ob.smtp.rzone.de ([81.169.146.216]:22069 "EHLO
-	mo4-p00-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757976AbbJ3GOd convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 30 Oct 2015 02:14:33 -0400
-In-Reply-To: <56327882.2030205@ti.com>
+Received: from mga02.intel.com ([134.134.136.20]:45946 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965674AbbJ3IWS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 30 Oct 2015 04:22:18 -0400
+In-Reply-To: <20151028103946.GB2686@e104805>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Nishanth Menon <nm@ti.com>
-Cc: =?windows-1252?Q?Gra=9Evydas_Ignotas?= <notasas@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, gta04-owner@goldelico.com
+To: Javi Merino <javi.merino@arm.com>
+Cc: "Zhang, Rui" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>
 
-
-Am 29.10.2015 um 20:50 schrieb Nishanth Menon <nm@ti.com>:
-
-> On 10/29/2015 12:01 PM, H. Nikolaus Schaller wrote:
->> We can't assume that the battery is present after probing (it can
->> usually be removed while device is operated through external AC
->> or USB power). So it makes no sense to check for it during probe.
-> 
-> 
-> Do you mean hot plug battery?
-
-Yes.
-
-> you sure twl4030 is capable of dealing
-> with that :) ?
-
-I am not sure about the twl4030 but with the tps65950 used in the GTA04,
-it worked always in the past years with the old drivers (before 4.3-rc1 because
-we have not tested the new ones well enough).
-
-> we ran into all kinds of issues with LDP3430 trying to
-> make that logic work, finally came to the conclusion that the TWL4030
-> as it stands on LDP cannot just do that.
-
-One issue is of course that AC or USB must provide enough current to
-operate the board stand-alone. I.e. charging with high enough max_current
-must be enabled.
-
-A typical scenario I was using is to enable e.g. 800 mA max_current for
-USB, connect the device to some laptop or USB wall charger and then
-replace the battery.
-
-This works with full and empty replacement batteries. Well, it should not
-be too empty so that the inrush-current is not too much for the USB supply.
-
-What we can't do is to boot from power-off without battery. In that case
-the BCI isn't enabled for high enough current to operate the OMAP. But
-as soon as the BCI enables enough current, it worked.
-
-My main observation is that you can't make sure by software that the
-user is not trying to hot-swap the battery. I.e. it can still happen after
-probe time. This is why I think this check doesn't solve a problem.
-
-So if there are problems with battery removed, we must find a solution
-in the driver to handle that situation. And not only check once at boot time.
-
-BR,
-NIkolaus Schaller
-
-> 
->> 
->> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
->> ---
->> drivers/power/twl4030_charger.c | 7 -------
->> 1 file changed, 7 deletions(-)
->> 
->> diff --git a/drivers/power/twl4030_charger.c b/drivers/power/twl4030_charger.c
->> index 859991f..e232453 100644
->> --- a/drivers/power/twl4030_charger.c
->> +++ b/drivers/power/twl4030_charger.c
->> @@ -1008,13 +1008,6 @@ static int twl4030_bci_probe(struct platform_device *pdev)
->> 	bci->irq_chg = platform_get_irq(pdev, 0);
->> 	bci->irq_bci = platform_get_irq(pdev, 1);
->> 
->> -	/* Only proceed further *IF* battery is physically present */
->> -	ret = twl4030_is_battery_present(bci);
->> -	if  (ret) {
->> -		dev_crit(&pdev->dev, "Battery was not detected:%d\n", ret);
->> -		return ret;
->> -	}
->> -
->> 	platform_set_drvdata(pdev, bci);
->> 
->> 	bci->ac = devm_power_supply_register(&pdev->dev, &twl4030_bci_ac_desc,
->> 
-> 
-> 
-> -- 
-> Regards,
-> Nishanth Menon
-
+SGksIEphdmksDQp0aGFua3MgZm9yIHlvdXIgcmV2aWV3LA0Kd2lsbCBzZW5kIGEgdmVyc2lvbiAz
+IG91dCBzb29uLg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IEphdmkg
+TWVyaW5vIFttYWlsdG86amF2aS5tZXJpbm9AYXJtLmNvbV0NCj4gU2VudDogV2VkbmVzZGF5LCBP
+Y3RvYmVyIDI4LCAyMDE1IDY6NDAgUE0NCj4gVG86IENoZW4sIFl1IEMNCj4gQ2M6IFpoYW5nLCBS
+dWk7IGVkdWJlenZhbEBnbWFpbC5jb207IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgbGludXgt
+DQo+IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IHN0YWJsZUB2Z2VyLmtlcm5lbC5vcmcNCj4gU3Vi
+amVjdDogUmU6IFtQQVRDSCAzLzNdW3YyXSBUaGVybWFsOiBkbyB0aGVybWFsIHpvbmUgdXBkYXRl
+IGFmdGVyIGEgY29vbGluZw0KPiBkZXZpY2UgcmVnaXN0ZXJlZA0KPiANCj4gSGkgWXUsDQo+IA0K
+PiBPbmUgbWlub3Igbml0IGJlbG93LiAgT3RoZXIgdGhhbiB0aGF0IHlvdSBjYW4gYWRkIG15DQo+
+IA0KPiBSZXZpZXdlZC1ieTogSmF2aSBNZXJpbm8gPGphdmkubWVyaW5vQGFybS5jb20+DQo+IA0K
+PiBPbiBNb24sIE9jdCAyNiwgMjAxNSBhdCAxMToxNTozMEFNICswODAwLCBDaGVuIFl1IHdyb3Rl
+Og0KPiA+IFdoZW4gYSBuZXcgY29vbGluZyBkZXZpY2UgaXMgcmVnaXN0ZXJlZCwgd2UgbmVlZCB0
+byB1cGRhdGUgdGhlIHRoZXJtYWwNCj4gPiB6b25lIHRvIHNldCB0aGUgbmV3IHJlZ2lzdGVyZWQg
+Y29vbGluZyBkZXZpY2UgdG8gYSBwcm9wZXIgc3RhdGUuDQo+ID4NCj4gPiBUaGlzIGZpeGVzIGEg
+cHJvYmxlbSB0aGF0IHRoZSBzeXN0ZW0gaXMgY29vbCwgd2hpbGUgdGhlIGZhbiBkZXZpY2VzDQo+
+ID4gYXJlIGxlZnQgcnVubmluZyBvbiBmdWxsIHNwZWVkIGFmdGVyIGJvb3QsIGlmIGZhbiBkZXZp
+Y2UgaXMgcmVnaXN0ZXJlZA0KPiA+IGFmdGVyIHRoZXJtYWwgem9uZSBkZXZpY2UuDQo+ID4NCj4g
+PiBIZXJlIGlzIHRoZSBoaXN0b3J5IG9mIHdoeSBjdXJyZW50IHBhdGNoIGxvb2tzIGxpa2UgdGhp
+czoNCj4gPiBodHRwczovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzcyNzMwNDEvDQo+ID4N
+Cj4gPiBDQzogPHN0YWJsZUB2Z2VyLmtlcm5lbC5vcmc+ICMzLjE4Kw0KPiA+IFJlZmVyZW5jZTpo
+dHRwczovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTkyNDMxDQo+ID4gVGVz
+dGVkLWJ5OiBNYW51ZWwgS3JhdXNlIDxtYW51ZWxrcmF1c2VAbmV0c2NhcGUubmV0Pg0KPiA+IFRl
+c3RlZC1ieTogc3plZ2FkIDxzemVnYWRsb0Bwb2N6dGEub25ldC5wbD4NCj4gPiBUZXN0ZWQtYnk6
+IHByYXNoIDxwcmFzaC5uLnJhb0BnbWFpbC5jb20+DQo+ID4gVGVzdGVkLWJ5OiBhbWlzaCA8YW1t
+ZGlzcG9zZS1hcmNoQHlhaG9vLmNvbT4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBaaGFuZyBSdWkgPHJ1
+aS56aGFuZ0BpbnRlbC5jb20+DQo+ID4gU2lnbmVkLW9mZi1ieTogQ2hlbiBZdSA8eXUuYy5jaGVu
+QGludGVsLmNvbT4NCj4gPiAtLS0NCj4gPiBkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC90aGVy
+bWFsLmggYi9pbmNsdWRlL2xpbnV4L3RoZXJtYWwuaCBpbmRleA0KPiA+IDViY2FiYzcuLjQyOTg0
+MTggMTAwNjQ0DQo+ID4gLS0tIGEvaW5jbHVkZS9saW51eC90aGVybWFsLmgNCj4gPiArKysgYi9p
+bmNsdWRlL2xpbnV4L3RoZXJtYWwuaA0KPiA+IEBAIC0xOTUsNiArMTk1LDcgQEAgc3RydWN0IHRo
+ZXJtYWxfem9uZV9kZXZpY2Ugew0KPiA+ICAJaW50IGVtdWxfdGVtcGVyYXR1cmU7DQo+ID4gIAlp
+bnQgcGFzc2l2ZTsNCj4gPiAgCXVuc2lnbmVkIGludCBmb3JjZWRfcGFzc2l2ZTsNCj4gPiArCWF0
+b21pY190IG5lZWRfdXBkYXRlOw0KPiANCj4gUGxlYXNlIGRvY3VtZW50IHRoaXMgZmllbGQgaW4g
+dGhlIGtlcm5lbC1kb2MgY29tbWVudCBmb3Igc3RydWN0DQo+IHRoZXJtYWxfem9uZV9kZXZpY2Uu
+DQo+IA0KDQpCZXN0IFJlZ2FyZHMsDQpZdQ0KDQo=
