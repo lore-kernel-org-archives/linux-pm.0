@@ -1,34 +1,68 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH] PM / OPP: Propagate error properly from
- dev_pm_opp_set_sharing_cpus()
-Date: Fri, 30 Oct 2015 13:59:16 -0700
-Message-ID: <20151030205916.GF19782@codeaurora.org>
-References: <20151030120450.GH7289@mwanda>
- <e936a7f240750777c8eee41f3eed6b948ef4de70.1446208794.git.viresh.kumar@linaro.org>
+From: Jiri Kosina <jikos@kernel.org>
+Subject: Re: [PATCH 0/3] PM, vfs: use filesystem freezing instead of kthread
+ freezer
+Date: Fri, 30 Oct 2015 22:17:54 +0100 (CET)
+Message-ID: <alpine.LNX.2.00.1510302204280.17538@pobox.suse.cz>
+References: <Pine.LNX.4.44L0.1510301637310.1659-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:47103 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750835AbbJ3U7S (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 30 Oct 2015 16:59:18 -0400
-Content-Disposition: inline
-In-Reply-To: <e936a7f240750777c8eee41f3eed6b948ef4de70.1446208794.git.viresh.kumar@linaro.org>
+Received: from mx2.suse.de ([195.135.220.15]:39774 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760560AbbJ3VR4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 30 Oct 2015 17:17:56 -0400
+In-Reply-To: <Pine.LNX.4.44L0.1510301637310.1659-100000@iolanthe.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Dan Carpenter <dan.carpenter@oracle.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Dave Chinner <david@fromorbit.com>, Jan Kara <jack@suse.cz>, Christoph Hellwig <hch@lst.de>, Linus Torvalds <torvalds@linux-foundation.org>, Al Viro <viro@ZenIV.linux.org.uk>, Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 10/30, Viresh Kumar wrote:
-> We are returning 0 even in case of errors, fix it.
+On Fri, 30 Oct 2015, Alan Stern wrote:
+
+> > > > I would say instead "no I/O is allowed from now on".  Maybe that's an 
+> > > > overstatement, but I think it comes closer to the truth.
+> > 
+> > But that's what PM callbacks are for.
 > 
-> Fixes: 8d4d4e98acd6 ("PM / OPP: Add helpers for initializing CPU OPPs")
-> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
+> Why are PM callbacks any more suitable than the freezer?  
 
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+Once the PM callback triggers, you know that you are really actually 
+undergoing suspend and have to do whatever is necessary.
+
+OTOH, try_to_freeze() is a kind of "are we there yet?" polling, and the 
+whole state needs to be prepared pro-actively for suspend already when you 
+call it, each and every time, even if you are not going through suspend at 
+all.
+
+That's sub-optimal, and very easy to get wrong over gradual code changes.
+
+> The most natural implementation would be for the callback routine to set 
+> a flag; at various strategic points the kthread would check the flag and 
+> if it was set, call a routine that sits around and waits for the suspend 
+> to be over.  
+
+Could you name at least some existing kthreads that would actually *need* 
+such complex handling, instead of just waiting in schedule() until 
+suspend-resume cycle is over, given that PM callbacks do all the necessary 
+cleanup (putting HW to sleep, cancelling timers, etc) anyway?
+
+PM callback can always explicitly do kthread_stop() on a particular 
+kthread if really necessary.
+
+> Also, you never replied to my question about suspend vs. hibernation.
+
+The main point of freezer is to reach quiescent state wrt. filesystems 
+(metadata in memory need to be absolutely in sync with what's on disk). 
+That's no different between hibernation and s2ram, is it?
+
+BTW, a quite some of this has been already "pre-discussed" in 
+Documentation/power/freezing-of-tasks.txt (which has BTW been written 
+before we've had the possibility to freeze filesystems, and this fact is 
+even point there out).
+
+Thanks,
 
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+Jiri Kosina
+SUSE Labs
+
