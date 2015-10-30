@@ -1,58 +1,32 @@
-From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: RE: [PATCH 3/3][v2] Thermal: do thermal zone update after a cooling
- device registered
-Date: Fri, 30 Oct 2015 08:21:40 +0000
-Message-ID: <36DF59CE26D8EE47B0655C516E9CE6402866099C@shsmsx102.ccr.corp.intel.com>
-References: <cover.1445828170.git.yu.c.chen@intel.com>
- <52fe1d3f183eccfa501c082efa2682940379bd8d.1445828170.git.yu.c.chen@intel.com>
- <20151028103946.GB2686@e104805>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:45946 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965674AbbJ3IWS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 30 Oct 2015 04:22:18 -0400
-In-Reply-To: <20151028103946.GB2686@e104805>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: [PATCH 0/3][v3] Fix thermal problems during suspend/bootup
+Date: Fri, 30 Oct 2015 16:31:31 +0800
+Message-ID: <cover.1446192980.git.yu.c.chen@intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: javi.merino@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: "Zhang, Rui" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>
 
-SGksIEphdmksDQp0aGFua3MgZm9yIHlvdXIgcmV2aWV3LA0Kd2lsbCBzZW5kIGEgdmVyc2lvbiAz
-IG91dCBzb29uLg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IEphdmkg
-TWVyaW5vIFttYWlsdG86amF2aS5tZXJpbm9AYXJtLmNvbV0NCj4gU2VudDogV2VkbmVzZGF5LCBP
-Y3RvYmVyIDI4LCAyMDE1IDY6NDAgUE0NCj4gVG86IENoZW4sIFl1IEMNCj4gQ2M6IFpoYW5nLCBS
-dWk7IGVkdWJlenZhbEBnbWFpbC5jb207IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgbGludXgt
-DQo+IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IHN0YWJsZUB2Z2VyLmtlcm5lbC5vcmcNCj4gU3Vi
-amVjdDogUmU6IFtQQVRDSCAzLzNdW3YyXSBUaGVybWFsOiBkbyB0aGVybWFsIHpvbmUgdXBkYXRl
-IGFmdGVyIGEgY29vbGluZw0KPiBkZXZpY2UgcmVnaXN0ZXJlZA0KPiANCj4gSGkgWXUsDQo+IA0K
-PiBPbmUgbWlub3Igbml0IGJlbG93LiAgT3RoZXIgdGhhbiB0aGF0IHlvdSBjYW4gYWRkIG15DQo+
-IA0KPiBSZXZpZXdlZC1ieTogSmF2aSBNZXJpbm8gPGphdmkubWVyaW5vQGFybS5jb20+DQo+IA0K
-PiBPbiBNb24sIE9jdCAyNiwgMjAxNSBhdCAxMToxNTozMEFNICswODAwLCBDaGVuIFl1IHdyb3Rl
-Og0KPiA+IFdoZW4gYSBuZXcgY29vbGluZyBkZXZpY2UgaXMgcmVnaXN0ZXJlZCwgd2UgbmVlZCB0
-byB1cGRhdGUgdGhlIHRoZXJtYWwNCj4gPiB6b25lIHRvIHNldCB0aGUgbmV3IHJlZ2lzdGVyZWQg
-Y29vbGluZyBkZXZpY2UgdG8gYSBwcm9wZXIgc3RhdGUuDQo+ID4NCj4gPiBUaGlzIGZpeGVzIGEg
-cHJvYmxlbSB0aGF0IHRoZSBzeXN0ZW0gaXMgY29vbCwgd2hpbGUgdGhlIGZhbiBkZXZpY2VzDQo+
-ID4gYXJlIGxlZnQgcnVubmluZyBvbiBmdWxsIHNwZWVkIGFmdGVyIGJvb3QsIGlmIGZhbiBkZXZp
-Y2UgaXMgcmVnaXN0ZXJlZA0KPiA+IGFmdGVyIHRoZXJtYWwgem9uZSBkZXZpY2UuDQo+ID4NCj4g
-PiBIZXJlIGlzIHRoZSBoaXN0b3J5IG9mIHdoeSBjdXJyZW50IHBhdGNoIGxvb2tzIGxpa2UgdGhp
-czoNCj4gPiBodHRwczovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzcyNzMwNDEvDQo+ID4N
-Cj4gPiBDQzogPHN0YWJsZUB2Z2VyLmtlcm5lbC5vcmc+ICMzLjE4Kw0KPiA+IFJlZmVyZW5jZTpo
-dHRwczovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTkyNDMxDQo+ID4gVGVz
-dGVkLWJ5OiBNYW51ZWwgS3JhdXNlIDxtYW51ZWxrcmF1c2VAbmV0c2NhcGUubmV0Pg0KPiA+IFRl
-c3RlZC1ieTogc3plZ2FkIDxzemVnYWRsb0Bwb2N6dGEub25ldC5wbD4NCj4gPiBUZXN0ZWQtYnk6
-IHByYXNoIDxwcmFzaC5uLnJhb0BnbWFpbC5jb20+DQo+ID4gVGVzdGVkLWJ5OiBhbWlzaCA8YW1t
-ZGlzcG9zZS1hcmNoQHlhaG9vLmNvbT4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBaaGFuZyBSdWkgPHJ1
-aS56aGFuZ0BpbnRlbC5jb20+DQo+ID4gU2lnbmVkLW9mZi1ieTogQ2hlbiBZdSA8eXUuYy5jaGVu
-QGludGVsLmNvbT4NCj4gPiAtLS0NCj4gPiBkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC90aGVy
-bWFsLmggYi9pbmNsdWRlL2xpbnV4L3RoZXJtYWwuaCBpbmRleA0KPiA+IDViY2FiYzcuLjQyOTg0
-MTggMTAwNjQ0DQo+ID4gLS0tIGEvaW5jbHVkZS9saW51eC90aGVybWFsLmgNCj4gPiArKysgYi9p
-bmNsdWRlL2xpbnV4L3RoZXJtYWwuaA0KPiA+IEBAIC0xOTUsNiArMTk1LDcgQEAgc3RydWN0IHRo
-ZXJtYWxfem9uZV9kZXZpY2Ugew0KPiA+ICAJaW50IGVtdWxfdGVtcGVyYXR1cmU7DQo+ID4gIAlp
-bnQgcGFzc2l2ZTsNCj4gPiAgCXVuc2lnbmVkIGludCBmb3JjZWRfcGFzc2l2ZTsNCj4gPiArCWF0
-b21pY190IG5lZWRfdXBkYXRlOw0KPiANCj4gUGxlYXNlIGRvY3VtZW50IHRoaXMgZmllbGQgaW4g
-dGhlIGtlcm5lbC1kb2MgY29tbWVudCBmb3Igc3RydWN0DQo+IHRoZXJtYWxfem9uZV9kZXZpY2Uu
-DQo+IA0KDQpCZXN0IFJlZ2FyZHMsDQpZdQ0KDQo=
+This patch set fixes two problems when system is trying to
+suspend and boot up:
+1.After system is woken up from suspend, the thermal framework uses
+  the dirty 'cached' thermal variables before suspend, which might
+  cause expected behavior.
+2.If a cooling device is registered after the thermal zone's registration,
+  current thermal framework forgets to update the thermal_zone's status,
+  which might bring expected behavior under special cases.
+
+Chen Yu (3):
+  Thermal: initialize thermal zone device correctly
+  Thermal: handle thermal zone device properly during system sleep
+  Thermal: do thermal zone update after a cooling device registered
+
+ drivers/thermal/step_wise.c    | 17 ++++++++--
+ drivers/thermal/thermal_core.c | 75 ++++++++++++++++++++++++++++++++++++++++--
+ drivers/thermal/thermal_core.h |  1 +
+ include/linux/thermal.h        |  5 +++
+ 4 files changed, 93 insertions(+), 5 deletions(-)
+
+-- 
+1.8.4.2
