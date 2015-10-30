@@ -1,68 +1,65 @@
-From: Rob Herring <robh+dt@kernel.org>
-Subject: Re: [PATCH 0/3] PM / OPP: opp-supported-hw and <prop>-name bindings
-Date: Fri, 30 Oct 2015 12:26:22 -0500
-Message-ID: <CAL_JsqLpGhvE44du+_oGb+3S9DvbxwOd47FdmXnhwNoiq3V3Cg@mail.gmail.com>
-References: <cover.1446167359.git.viresh.kumar@linaro.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 0/3] PM, vfs: use filesystem freezing instead of kthread
+ freezer
+Date: Fri, 30 Oct 2015 18:44:17 +0100
+Message-ID: <20151030174417.GA16781@amd>
+References: <alpine.LNX.2.00.1510301424360.17538@pobox.suse.cz>
+ <Pine.LNX.4.44L0.1510301121340.1659-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:48689 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751704AbbJ3R0r (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 30 Oct 2015 13:26:47 -0400
-In-Reply-To: <cover.1446167359.git.viresh.kumar@linaro.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39712 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751842AbbJ3RoU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 30 Oct 2015 13:44:20 -0400
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1510301121340.1659-100000@iolanthe.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Stephen Boyd <sboyd@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Nishanth Menon <nm@ti.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Jiri Kosina <jikos@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Dave Chinner <david@fromorbit.com>, Jan Kara <jack@suse.cz>, Christoph Hellwig <hch@lst.de>, Linus Torvalds <torvalds@linux-foundation.org>, Al Viro <viro@ZenIV.linux.org.uk>, Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Thu, Oct 29, 2015 at 8:25 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Hi Rob/Stephen/Rafael,
->
-> These bindings are discussed in detail earlier:
-> http://marc.info/?l=linux-kernel&m=144237804923159&w=2
->
-> and I was waiting for the multi-regulator series to get applied first,
-> to post these patches.
->
-> But that series is not moving at fast pace and probably its time to get
-> other things going at least.
->
-> These are already kind of approved by Rob and Stephen (these are the
-> bindings we came up with for solving the issues reported by Lee Jones),
-> but a formal Ack is still required to get them merged.
->
-> The first patch enables us to select only a subset of OPPs from the
-> bigger table, based on what version of the hardware we are running on.
->
-> The second one enables us to select slightly different values for
-> multiple properties, based on what kind of hardware they are running on.
->
-> And the last one removes an (unused) binding, which is replaced by the
-> second patch with a better solution.
->
-> @Stephen/Rob: I already have working code for these bindings, which I
-> shared with Lee earlier. Just that I need to rebase that without the
-> multi-regulator series, will do that in coming days. But please see if
-> we can get these Acked/merged before that :)
+On Fri 2015-10-30 11:29:08, Alan Stern wrote:
+> On Fri, 30 Oct 2015, Jiri Kosina wrote:
+> 
+> > This series is a followup to my proposal I brought up on Kernel Summit in 
+> > Seoul. Noone seemed to had any principal objections, so let's have wider 
+> > audience look into it.
+> > 
+> > In a nuthsell: freezing of kernel threads is horrible interface with 
+> > unclear semantics and guarantees, and I am surprised it ever worked 
+> > properly. Plus there are a lot of places that simply use it in a 
+> > completely wrong way (which is not suprising, given the lack of defined 
+> > semantics and requirements).
+> > 
+> > I've tested this over a series of suspend/resume cycles on several 
+> > machines with at least ext4, btrfs and xfs, and it survived the testing 
+> > without any harm.
+> > 
+> > Patch 1/3 	implements the actual change, and has a more detailed 
+> > 		explanation on "why?" and "how?" questions in the changelog
+> 
+> This patch talks about freezing in relation to hibernation.  What about 
+> other forms of suspend?
+> 
+> Also, it replaces kthread freezing with filesystem freezing.  What 
+> about kthreads performing I/O that doesn't go through a filesystem?  
+> You write:
+> 
+> > the only facility that is needed during suspend: "no persistent fs
+> > changes are allowed from now on"
+> 
+> I would say instead "no I/O is allowed from now on".  Maybe that's an 
+> overstatement, but I think it comes closer to the truth.
 
-It looks okay to me, but I'll defer to Stephen and Lee as they are the users.
+Exactly. And I'm pretty sure hardware drivers do use kernel threads,
+and do I/O from them.
 
-I'd imagine Rafael will tell you the same thing, but it is too late
-for 4.4 anyway.
+LEDs are just one example
 
-Rob
+Best regards,
+								Pavel
 
->
-> Viresh Kumar (3):
->   PM / OPP: Add "opp-supported-hw" binding
->   PM / OPP: Add
->     {opp-microvolt|opp-microamp|turbo-mode|opp-suspend}-<name> binding
->   PM / OPP: Remove 'operating-points-names' binding
->
->  Documentation/devicetree/bindings/opp/opp.txt | 101 ++++++++++++++++++++------
->  1 file changed, 79 insertions(+), 22 deletions(-)
->
-> --
-> 2.6.2.198.g614a2ac
->
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
