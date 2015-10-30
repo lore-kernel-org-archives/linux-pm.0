@@ -1,57 +1,108 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 0/3] PM / OPP: opp-supported-hw and <prop>-name bindings
-Date: Fri, 30 Oct 2015 06:55:04 +0530
-Message-ID: <cover.1446167359.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f47.google.com ([209.85.220.47]:36374 "EHLO
-	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758053AbbJ3BZZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Oct 2015 21:25:25 -0400
-Received: by pacfv9 with SMTP id fv9so59187149pac.3
-        for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2015 18:25:25 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH 1/3] PM / OPP: Add "opp-supported-hw" binding
+Date: Fri, 30 Oct 2015 06:55:05 +0530
+Message-ID: <2d52388bd7d3cc546ac3ab5afeb47bfcb3012213.1446167359.git.viresh.kumar@linaro.org>
+References: <cover.1446167359.git.viresh.kumar@linaro.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <cover.1446167359.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+In-Reply-To: <cover.1446167359.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+References: <cover.1446167359.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+Cc: linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, robh+dt@kernel.org, sboyd@codeaurora.org, lee.jones@linaro.org
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, mark.rutland@arm.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, nm@ti.com, devicetree@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-Hi Rob/Stephen/Rafael,
+We may want to enable only a subset of OPPs, from the bigger list of
+OPPs, based on what version of the hardware we are running on. This
+would enable us to not duplicate OPP tables for every version of the
+hardware we support.
 
-These bindings are discussed in detail earlier:
-http://marc.info/?l=linux-kernel&m=144237804923159&w=2
+To enable that, this patch defines a new property 'opp-supported-hw'. It
+can support any number of hierarchy levels of the versions the hardware
+follows. And based on the selected hardware versions, we can pick only
+the relevant OPPs at runtime.
 
-and I was waiting for the multi-regulator series to get applied first,
-to post these patches.
+Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+---
+ Documentation/devicetree/bindings/opp/opp.txt | 57 +++++++++++++++++++++++++++
+ 1 file changed, 57 insertions(+)
 
-But that series is not moving at fast pace and probably its time to get
-other things going at least.
-
-These are already kind of approved by Rob and Stephen (these are the
-bindings we came up with for solving the issues reported by Lee Jones),
-but a formal Ack is still required to get them merged.
-
-The first patch enables us to select only a subset of OPPs from the
-bigger table, based on what version of the hardware we are running on.
-
-The second one enables us to select slightly different values for
-multiple properties, based on what kind of hardware they are running on.
-
-And the last one removes an (unused) binding, which is replaced by the
-second patch with a better solution.
-
-@Stephen/Rob: I already have working code for these bindings, which I
-shared with Lee earlier. Just that I need to rebase that without the
-multi-regulator series, will do that in coming days. But please see if
-we can get these Acked/merged before that :)
-
-Viresh Kumar (3):
-  PM / OPP: Add "opp-supported-hw" binding
-  PM / OPP: Add
-    {opp-microvolt|opp-microamp|turbo-mode|opp-suspend}-<name> binding
-  PM / OPP: Remove 'operating-points-names' binding
-
- Documentation/devicetree/bindings/opp/opp.txt | 101 ++++++++++++++++++++------
- 1 file changed, 79 insertions(+), 22 deletions(-)
-
+diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+index 0cb44dc21f97..96892057586a 100644
+--- a/Documentation/devicetree/bindings/opp/opp.txt
++++ b/Documentation/devicetree/bindings/opp/opp.txt
+@@ -123,6 +123,18 @@ properties.
+ - opp-suspend: Marks the OPP to be used during device suspend. Only one OPP in
+   the table should have this.
+ 
++- opp-supported-hw: User defined array containing a hierarchy of hardware
++  version numbers, supported by the OPP. For example: a platform with hierarchy
++  of three levels of versions (A, B and C), this field should be like <X Y Z>,
++  where X corresponds to Version hierarchy A, Y corresponds to version hierarchy
++  B and Z corresponds to version hierarchy C.
++
++  Each level of hierarchy is represented by a 32 bit value, and so there can be
++  only 32 different supported version per hierarchy. i.e. 1 bit per version. A
++  value of 0xFFFFFFFF will enable the OPP for all versions for that hierarchy
++  level. And a value of 0x00000000 will disable the OPP completely, and so we
++  never want that to happen.
++
+ - status: Marks the node enabled/disabled.
+ 
+ Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
+@@ -463,3 +475,48 @@ Example 5: Multiple OPP tables
+ 		};
+ 	};
+ };
++
++Example 6: opp-supported-hw
++(example: three level hierarchy of versions: cuts, substrate and process)
++
++/ {
++	cpus {
++		cpu@0 {
++			compatible = "arm,cortex-a7";
++			...
++
++			cpu-supply = <&cpu_supply>
++			operating-points-v2 = <&cpu0_opp_table_slow>;
++		};
++	};
++
++	opp_table {
++		compatible = "operating-points-v2";
++		status = "okay";
++		opp-shared;
++
++		opp00 {
++			/*
++			 * Supports all substrate and process versions for 0xF
++			 * cuts, i.e. only first four cuts.
++			 */
++			opp-supported-hw = <0xF 0xFFFFFFFF 0xFFFFFFFF>
++			opp-hz = /bits/ 64 <600000000>;
++			opp-microvolt = <900000 915000 925000>;
++			...
++		};
++
++		opp01 {
++			/*
++			 * Supports:
++			 * - cuts: only one, 6th cut (represented by 6th bit).
++			 * - substrate: supports 16 different substrate versions
++			 * - process: supports 9 different process versions
++			 */
++			opp-supported-hw = <0x20 0xff0000ff 0x0000f4f0>
++			opp-hz = /bits/ 64 <800000000>;
++			opp-microvolt = <900000 915000 925000>;
++			...
++		};
++	};
++};
 -- 
 2.6.2.198.g614a2ac
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
