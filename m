@@ -1,133 +1,125 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 2/3] PM / OPP: Add {opp-microvolt|opp-microamp|turbo-mode|opp-suspend}-<name> binding
-Date: Fri, 30 Oct 2015 06:55:06 +0530
-Message-ID: <980cdb9820db31e869c91b3dce8e71b89c216706.1446167359.git.viresh.kumar@linaro.org>
+Subject: [PATCH 3/3] PM / OPP: Remove 'operating-points-names' binding
+Date: Fri, 30 Oct 2015 06:55:07 +0530
+Message-ID: <0290b40c1cb5062335b74ad7e845a1f1d3111f13.1446167359.git.viresh.kumar@linaro.org>
 References: <cover.1446167359.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:32901 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758170AbbJ3BZk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 29 Oct 2015 21:25:40 -0400
+Received: by padhy1 with SMTP id hy1so50886032pad.0
+        for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2015 18:25:39 -0700 (PDT)
 In-Reply-To: <cover.1446167359.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1446167359.git.viresh.kumar@linaro.org>
 References: <cover.1446167359.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>, robh+dt@kernel.org, sboyd@codeaurora.org, lee.jones@linaro.org
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, mark.rutland@arm.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, nm@ti.com, devicetree@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, open list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-List-Id: linux-pm@vger.kernel.org
 
-Depending on the version of hardware or its properties, which are only
-known at runtime, various properties of the OPP can change. For example,
-an OPP with frequency 1.2 GHz, may have different voltage/current
-requirements based on the version of the hardware it is running on.
-Similarly, it may or may not be a turbo or suspend OPP on those
-circumstances.
+These aren't used until now by any DT files and wouldn't be used now as
+we have a better scheme in place now, i.e. opp-property-<name>
+properties.
 
-In order to not replicate the same OPP tables for varying values of all
-such fields, this commit introduces the concept of opp-property-<name>.
-The <name> can be chosen by the platform at runtime, and OPPs will be
-initialized depending on that name string. Currently support is extended
-for the following properties:
-- opp-microvolt-<name>
-- opp-microamp-<name>
-- turbo-mode-<name>
-- opp-suspend-<name>
-
-If the name string isn't provided by the platform, or if it is provided
-but doesn't match the properties present in the OPP node, we will fall
-back to the original properties without the -<name> string, if they are
-available.
+Remove the (useless) binding without breaking ABI.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- Documentation/devicetree/bindings/opp/opp.txt | 58 +++++++++++++++++++++++++++
- 1 file changed, 58 insertions(+)
+ Documentation/devicetree/bindings/opp/opp.txt | 62 +--------------------------
+ 1 file changed, 2 insertions(+), 60 deletions(-)
 
 diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
-index 96892057586a..6e0dd8db3b86 100644
+index 6e0dd8db3b86..9d2e08f488b5 100644
 --- a/Documentation/devicetree/bindings/opp/opp.txt
 +++ b/Documentation/devicetree/bindings/opp/opp.txt
-@@ -100,6 +100,14 @@ properties.
-   Entries for multiple regulators must be present in the same order as
-   regulators are specified in device's DT node.
+@@ -45,21 +45,10 @@ Devices supporting OPPs must set their "operating-points-v2" property with
+ phandle to a OPP table in their DT node. The OPP core will use this phandle to
+ find the operating points for the device.
  
-+- opp-microvolt-<name>: Named opp-microvolt property. This is exactly similar to
-+  the above opp-microvolt property, but allows multiple voltage ranges to be
-+  provided for the same OPP. At runtime, the platform can pick a <name> and
-+  matching opp-microvolt-<name> property will be enabled for all OPPs. If the
-+  platform doesn't pick a specific <name> or the <name> doesn't match with any
-+  opp-microvolt-<name> properties, then opp-microvolt property shall be used, if
-+  present.
-+
- - opp-microamp: The maximum current drawn by the device in microamperes
-   considering system specific parameters (such as transients, process, aging,
-   maximum operating temperature range etc.) as necessary. This may be used to
-@@ -112,6 +120,9 @@ properties.
-   for few regulators, then this should be marked as zero for them. If it isn't
-   required for any regulator, then this property need not be present.
+-Devices may want to choose OPP tables at runtime and so can provide a list of
+-phandles here. But only *one* of them should be chosen at runtime. This must be
+-accompanied by a corresponding "operating-points-names" property, to uniquely
+-identify the OPP tables.
+-
+ If required, this can be extended for SoC vendor specfic bindings. Such bindings
+ should be documented as Documentation/devicetree/bindings/power/<vendor>-opp.txt
+ and should have a compatible description like: "operating-points-v2-<vendor>".
  
-+- opp-microamp-<name>: Named opp-microamp property. Similar to
-+  opp-microvolt-<name> property, but for microamp instead.
-+
- - clock-latency-ns: Specifies the maximum possible transition latency (in
-   nanoseconds) for switching to this OPP from any other OPP.
+-Optional properties:
+-- operating-points-names: Names of OPP tables (required if multiple OPP
+-  tables are present), to uniquely identify them. The same list must be present
+-  for all the CPUs which are sharing clock/voltage rails and hence the OPP
+-  tables.
+-
+ * OPP Table Node
  
-@@ -120,9 +131,15 @@ properties.
-   frequency for a short duration of time limited by the device's power, current
-   and thermal limits.
- 
-+- turbo-mode-<name>: Named turbo-mode property. Similar to opp-microvolt-<name>
-+  property, but for turbo mode instead.
-+
- - opp-suspend: Marks the OPP to be used during device suspend. Only one OPP in
-   the table should have this.
- 
-+- opp-suspend-<name>: Named opp-suspend property. Similar to
-+  opp-microvolt-<name> property, but for suspend opp instead.
-+
- - opp-supported-hw: User defined array containing a hierarchy of hardware
-   version numbers, supported by the OPP. For example: a platform with hierarchy
-   of three levels of versions (A, B and C), this field should be like <X Y Z>,
-@@ -520,3 +537,44 @@ Example 6: opp-supported-hw
- 		};
+ This describes the OPPs belonging to a device. This node can have following
+@@ -446,54 +435,7 @@ Example 4: Handling multiple regulators
  	};
  };
-+
-+Example 7: opp-microvolt-<name>, opp-microamp-<name>, turbo-mode-<name>,
-+opp-suspend-<name>:
-+(example: device with two possible microvolt ranges: slow and fast)
-+
-+/ {
-+	cpus {
-+		cpu@0 {
-+			compatible = "arm,cortex-a7";
-+			...
-+
-+			operating-points-v2 = <&cpu0_opp_table>;
-+		};
-+	};
-+
-+	cpu0_opp_table: opp_table0 {
-+		compatible = "operating-points-v2";
-+		opp-shared;
-+
-+		opp00 {
-+			opp-hz = /bits/ 64 <1000000000>;
-+			opp-microvolt-slow = <900000 915000 925000>;
-+			opp-microvolt-fast = <970000 975000 985000>;
-+			opp-microamp-slow =  <70000>;
-+			opp-microamp-fast =  <71000>;
-+			turbo-mode-slow; /* Will be used as turbo only if 'slow' is chosen */
-+			opp-suspend-slow; /* Will be used as suspend-opp only if 'slow' is chosen */
-+		};
-+
-+		opp01 {
-+			opp-hz = /bits/ 64 <1200000000>;
-+			opp-microvolt-slow = <900000 915000 925000>, /* Supply vcc0 */
-+					      <910000 925000 935000>; /* Supply vcc1 */
-+			opp-microvolt-fast = <970000 975000 985000>, /* Supply vcc0 */
-+					     <960000 965000 975000>; /* Supply vcc1 */
-+			opp-microamp =  <70000>; /* Will be used for both slow/fast */
-+			turbo-mode; /* Always used as turbo */
-+			opp-suspend-fast; /* Will be used as suspend opp only if 'fast' is chosen */
-+		};
-+	};
-+};
+ 
+-Example 5: Multiple OPP tables
+-
+-/ {
+-	cpus {
+-		cpu@0 {
+-			compatible = "arm,cortex-a7";
+-			...
+-
+-			cpu-supply = <&cpu_supply>
+-			operating-points-v2 = <&cpu0_opp_table_slow>, <&cpu0_opp_table_fast>;
+-			operating-points-names = "slow", "fast";
+-		};
+-	};
+-
+-	cpu0_opp_table_slow: opp_table_slow {
+-		compatible = "operating-points-v2";
+-		status = "okay";
+-		opp-shared;
+-
+-		opp00 {
+-			opp-hz = /bits/ 64 <600000000>;
+-			...
+-		};
+-
+-		opp01 {
+-			opp-hz = /bits/ 64 <800000000>;
+-			...
+-		};
+-	};
+-
+-	cpu0_opp_table_fast: opp_table_fast {
+-		compatible = "operating-points-v2";
+-		status = "okay";
+-		opp-shared;
+-
+-		opp10 {
+-			opp-hz = /bits/ 64 <1000000000>;
+-			...
+-		};
+-
+-		opp11 {
+-			opp-hz = /bits/ 64 <1100000000>;
+-			...
+-		};
+-	};
+-};
+-
+-Example 6: opp-supported-hw
++Example 5: opp-supported-hw
+ (example: three level hierarchy of versions: cuts, substrate and process)
+ 
+ / {
+@@ -538,7 +480,7 @@ Example 6: opp-supported-hw
+ 	};
+ };
+ 
+-Example 7: opp-microvolt-<name>, opp-microamp-<name>, turbo-mode-<name>,
++Example 6: opp-microvolt-<name>, opp-microamp-<name>, turbo-mode-<name>,
+ opp-suspend-<name>:
+ (example: device with two possible microvolt ranges: slow and fast)
+ 
 -- 
 2.6.2.198.g614a2ac
+
