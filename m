@@ -1,7 +1,7 @@
 From: Chen Yu <yu.c.chen@intel.com>
-Subject: [PATCH 1/3][v3] Thermal: initialize thermal zone device correctly
-Date: Fri, 30 Oct 2015 16:31:47 +0800
-Message-ID: <3e6dafce0f659ca2510750f1e03dbba4bc5767c9.1446192980.git.yu.c.chen@intel.com>
+Subject: [PATCH 2/3][v3] Thermal: handle thermal zone device properly during system sleep
+Date: Fri, 30 Oct 2015 16:31:58 +0800
+Message-ID: <1993b0ae972a5000a70f600fa16bc08969a65639.1446192980.git.yu.c.chen@intel.com>
 References: <cover.1446192980.git.yu.c.chen@intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1446192980.git.yu.c.chen@intel.com>
@@ -12,18 +12,28 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Zhang Rui <rui.zhang@intel.com>
 
-After thermal zone device registered, as we have not read any
-temperature before, thus tz->temperature should not be 0,
-which actually means 0C, and thermal trend is not available.
-In this case, we need specially handling for the first
-thermal_zone_device_update().
+Current thermal code does not handle system sleep well because
+1. the cooling device cooling state may be changed during suspend
+2. the previous temperature reading becomes invalid after resumed because
+   it is got before system sleep
+3. updating thermal zone device during suspending/resuming
+   is wrong because some devices may have already been suspended
+   or may have not been resumed.
 
-Both thermal core framework and step_wise governor is
-enhanced to handle this. And since the step_wise governor
-is the only one that uses trends, so it's the only thermal
-governor that needs to be updated.
+Thus, the proper way to do this is to cancel all thermal zone
+device update requirements during suspend/resume, and after all
+the devices have been resumed, reset and update every registered
+thermal zone devices.
+
+This also fixes a regression introduced by:
+Commit 19593a1fb1f6 ("ACPI / fan: convert to platform driver")
+Because, with above commit applied, all the fan devices are attached
+to the acpi_general_pm_domain, and they are turned on by the pm_domain
+automatically after resume, without the awareness of thermal core.
 
 CC: <stable@vger.kernel.org> #3.18+
+Reference: https://bugzilla.kernel.org/show_bug.cgi?id=78201
+Reference: https://bugzilla.kernel.org/show_bug.cgi?id=91411
 Tested-by: Manuel Krause <manuelkrause@netscape.net>
 Tested-by: szegad <szegadlo@poczta.onet.pl>
 Tested-by: prash <prash.n.rao@gmail.com>
@@ -33,116 +43,96 @@ Reviewed-by: Javi Merino <javi.merino@arm.com>
 Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 Signed-off-by: Chen Yu <yu.c.chen@intel.com>
 ---
- drivers/thermal/step_wise.c    | 17 +++++++++++++++--
- drivers/thermal/thermal_core.c | 19 +++++++++++++++++--
- drivers/thermal/thermal_core.h |  1 +
- include/linux/thermal.h        |  3 +++
- 4 files changed, 36 insertions(+), 4 deletions(-)
+ drivers/thermal/thermal_core.c | 42 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 42 insertions(+)
 
-diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
-index 2f9f708..ea9366a 100644
---- a/drivers/thermal/step_wise.c
-+++ b/drivers/thermal/step_wise.c
-@@ -63,6 +63,19 @@ static unsigned long get_target_state(struct thermal_instance *instance,
- 	next_target = instance->target;
- 	dev_dbg(&cdev->device, "cur_state=%ld\n", cur_state);
- 
-+	if (!instance->initialized) {
-+		if (throttle) {
-+			next_target = (cur_state + 1) >= instance->upper ?
-+					instance->upper :
-+					((cur_state + 1) < instance->lower ?
-+					instance->lower : (cur_state + 1));
-+		} else {
-+			next_target = THERMAL_NO_TARGET;
-+		}
-+
-+		return next_target;
-+	}
-+
- 	switch (trend) {
- 	case THERMAL_TREND_RAISING:
- 		if (throttle) {
-@@ -149,7 +162,7 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
- 		dev_dbg(&instance->cdev->device, "old_target=%d, target=%d\n",
- 					old_target, (int)instance->target);
- 
--		if (old_target == instance->target)
-+		if (instance->initialized && old_target == instance->target)
- 			continue;
- 
- 		/* Activate a passive thermal instance */
-@@ -161,7 +174,7 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
- 			instance->target == THERMAL_NO_TARGET)
- 			update_passive_instance(tz, trip_type, -1);
- 
--
-+		instance->initialized = true;
- 		instance->cdev->updated = false; /* cdev needs update */
- 	}
- 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index d9e525c..682bc1e 100644
+index 682bc1e..9aae767 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -532,8 +532,22 @@ static void update_temperature(struct thermal_zone_device *tz)
- 	mutex_unlock(&tz->lock);
+@@ -37,6 +37,7 @@
+ #include <linux/of.h>
+ #include <net/netlink.h>
+ #include <net/genetlink.h>
++#include <linux/suspend.h>
  
- 	trace_thermal_temperature(tz);
--	dev_dbg(&tz->device, "last_temperature=%d, current_temperature=%d\n",
--				tz->last_temperature, tz->temperature);
-+	if (tz->last_temperature == THERMAL_TEMP_INVALID)
-+		dev_dbg(&tz->device, "last_temperature N/A, current_temperature=%d\n",
-+			tz->temperature);
-+	else
-+		dev_dbg(&tz->device, "last_temperature=%d, current_temperature=%d\n",
-+			tz->last_temperature, tz->temperature);
-+}
+ #define CREATE_TRACE_POINTS
+ #include <trace/events/thermal.h>
+@@ -59,6 +60,8 @@ static LIST_HEAD(thermal_governor_list);
+ static DEFINE_MUTEX(thermal_list_lock);
+ static DEFINE_MUTEX(thermal_governor_lock);
+ 
++static atomic_t in_suspend;
 +
-+static void thermal_zone_device_reset(struct thermal_zone_device *tz)
-+{
-+	struct thermal_instance *pos;
+ static struct thermal_governor *def_governor;
+ 
+ static struct thermal_governor *__find_governor(const char *name)
+@@ -554,6 +557,9 @@ void thermal_zone_device_update(struct thermal_zone_device *tz)
+ {
+ 	int count;
+ 
++	if (atomic_read(&in_suspend))
++		return;
 +
-+	tz->temperature = THERMAL_TEMP_INVALID;
-+	tz->passive = 0;
-+	list_for_each_entry(pos, &tz->thermal_instances, tz_node)
-+		pos->initialized = false;
+ 	if (!tz->ops->get_temp)
+ 		return;
+ 
+@@ -2155,6 +2161,36 @@ static void thermal_unregister_governors(void)
+ 	thermal_gov_power_allocator_unregister();
  }
  
- void thermal_zone_device_update(struct thermal_zone_device *tz)
-@@ -1900,6 +1914,7 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
- 
- 	INIT_DELAYED_WORK(&(tz->poll_queue), thermal_zone_device_check);
- 
-+	thermal_zone_device_reset(tz);
- 	thermal_zone_device_update(tz);
- 
- 	return tz;
-diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
-index d7ac1fc..749d41a 100644
---- a/drivers/thermal/thermal_core.h
-+++ b/drivers/thermal/thermal_core.h
-@@ -41,6 +41,7 @@ struct thermal_instance {
- 	struct thermal_zone_device *tz;
- 	struct thermal_cooling_device *cdev;
- 	int trip;
-+	bool initialized;
- 	unsigned long upper;	/* Highest cooling state for this trip point */
- 	unsigned long lower;	/* Lowest cooling state for this trip point */
- 	unsigned long target;	/* expected cooling state */
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 157d366..5bcabc7 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -43,6 +43,9 @@
- /* Default weight of a bound cooling device */
- #define THERMAL_WEIGHT_DEFAULT 0
- 
-+/* use value, which < 0K, to indicate an invalid/uninitialized temperature */
-+#define THERMAL_TEMP_INVALID	-274000
++static int thermal_pm_notify(struct notifier_block *nb,
++				unsigned long mode, void *_unused)
++{
++	struct thermal_zone_device *tz;
 +
- /* Unit conversion macros */
- #define KELVIN_TO_CELSIUS(t)	(long)(((long)t-2732 >= 0) ?	\
- 				((long)t-2732+5)/10 : ((long)t-2732-5)/10)
++	switch (mode) {
++	case PM_HIBERNATION_PREPARE:
++	case PM_RESTORE_PREPARE:
++	case PM_SUSPEND_PREPARE:
++		atomic_set(&in_suspend, 1);
++		break;
++	case PM_POST_HIBERNATION:
++	case PM_POST_RESTORE:
++	case PM_POST_SUSPEND:
++		atomic_set(&in_suspend, 0);
++		list_for_each_entry(tz, &thermal_tz_list, node) {
++			thermal_zone_device_reset(tz);
++			thermal_zone_device_update(tz);
++		}
++		break;
++	default:
++		break;
++	}
++	return 0;
++}
++
++static struct notifier_block thermal_pm_nb = {
++	.notifier_call = thermal_pm_notify,
++};
++
+ static int __init thermal_init(void)
+ {
+ 	int result;
+@@ -2175,6 +2211,11 @@ static int __init thermal_init(void)
+ 	if (result)
+ 		goto exit_netlink;
+ 
++	result = register_pm_notifier(&thermal_pm_nb);
++	if (result)
++		pr_warn("Thermal: Can not register suspend notifier, return %d\n",
++			result);
++
+ 	return 0;
+ 
+ exit_netlink:
+@@ -2194,6 +2235,7 @@ error:
+ 
+ static void __exit thermal_exit(void)
+ {
++	unregister_pm_notifier(&thermal_pm_nb);
+ 	of_thermal_destroy_zones();
+ 	genetlink_exit();
+ 	class_unregister(&thermal_class);
 -- 
 1.8.4.2
