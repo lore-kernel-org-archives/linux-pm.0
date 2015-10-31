@@ -1,57 +1,115 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 1/3] PM / OPP: Add "opp-supported-hw" binding
-Date: Sat, 31 Oct 2015 07:50:03 +0530
-Message-ID: <20151031022003.GV3716@ubuntu>
-References: <cover.1446167359.git.viresh.kumar@linaro.org>
- <2d52388bd7d3cc546ac3ab5afeb47bfcb3012213.1446167359.git.viresh.kumar@linaro.org>
- <20151030221826.GM19782@codeaurora.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 5/6] cpufreq: governor: replace per-cpu delayed work with
+ timers
+Date: Sat, 31 Oct 2015 08:06:15 +0530
+Message-ID: <20151031023615.GX3716@ubuntu>
+References: <cover.1446121217.git.viresh.kumar@linaro.org>
+ <e83291bcb6fcb69280f265194801510cf2e02c41.1446121217.git.viresh.kumar@linaro.org>
+ <CAJ5Y-ebyMg1KUSCJ9+5UVN=6TNAMufGP9S4PqQWS0vnfX6XXOg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20151030221826.GM19782-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Cc: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+In-Reply-To: <CAJ5Y-ebyMg1KUSCJ9+5UVN=6TNAMufGP9S4PqQWS0vnfX6XXOg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 30-10-15, 15:18, Stephen Boyd wrote:
-> A side-note. I wonder if it would be better style to have the
-> node name be:
+Hi Ashwin,
+
+On 30-10-15, 16:46, Ashwin Chaugule wrote:
+> On 29 October 2015 at 08:27, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > This could be made lightweight by keeping per-cpu deferred timers with a
+> > single work item, which is scheduled by the first timer that expires.
 > 
-> 		opp@600000000 {
+> Single shared work item - would perhaps make it a bit more clear.
 
-I thought the @... had a special meaning and we might end up creating
-some device for the node then? Perhaps I am mistaken.
+Okay, in case that I need to repost this, I will reword it.
 
-But then, yeah it will make it more readable as you mentioned.
+> > +void gov_cancel_work(struct cpu_common_dbs_info *shared)
+> > +{
+> > +       unsigned long flags;
+> > +
+> > +       /*
+> > +        * No work will be queued from timer handlers after skip_work is
+> > +        * updated. And so we can safely cancel the work first and then the
+> > +        * timers.
+> > +        */
+> > +       spin_lock_irqsave(&shared->timer_lock, flags);
+> > +       shared->skip_work++;
+> > +       spin_unlock_irqrestore(&shared->timer_lock, flags);
+> > +
+> > +       cancel_work_sync(&shared->work);
+> > +
+> > +       gov_cancel_timers(shared->policy);
+> > +
+> > +       shared->skip_work = 0;
+> 
+> Why doesnt this require the spin_lock protection?
 
-> At least it seems that the assumption is we can store all the
-> possible combinations of OPP values for a particular frequency in
-> the same node. Following this style would make dt compilation
-> fail if two nodes have the same frequency.
+Because there is no race here. We have already removed all
+queued-timers and the shared work.
 
-Right.
+> > -static void dbs_timer(struct work_struct *work)
+> > +static void dbs_work_handler(struct work_struct *work)
+> >  {
 
-> Also, this makes it sound like opp-supported-hw is really just
-> telling us if this is a supported frequency or not for the
-> particular device we're running on.
+> > +       mutex_lock(&shared->timer_mutex);
+> > +       delay = dbs_data->cdata->gov_dbs_timer(policy, eval_load);
+> > +       mutex_unlock(&shared->timer_mutex);
+> > +
+> > +       shared->skip_work--;
+> 
+> Ditto.
 
-That's right.
+Again, there is no race here. We have already removed the
+queued-timers for the entire policy. The only other user is the
+gov_cancel_work() thread (which is called while stopping the governor
+or updating the sampling rate), which doesn't depend on this being
+decremented as that will wait for the work to finish.
 
-> The current wording makes it
+> > +       gov_add_timers(policy, delay);
+> > +}
+> > +
+> > +static void dbs_timer_handler(unsigned long data)
+> > +{
+> > +       struct cpu_dbs_info *cdbs = (struct cpu_dbs_info *)data;
+> > +       struct cpu_common_dbs_info *shared = cdbs->shared;
+> > +       struct cpufreq_policy *policy;
+> > +       unsigned long flags;
+> > +
+> > +       spin_lock_irqsave(&shared->timer_lock, flags);
+> > +       policy = shared->policy;
+> > +
+> > +       /*
+> > +        * Timer handler isn't allowed to queue work at the moment, because:
+> > +        * - Another timer handler has done that
+> > +        * - We are stopping the governor
+> > +        * - Or we are updating the sampling rate of ondemand governor
+> > +        */
+> > +       if (shared->skip_work)
+> > +               goto unlock;
+> > +
+> > +       shared->skip_work++;
+> > +       queue_work(system_wq, &shared->work);
+> >
+> 
+> So, IIUC, in the event that this function gets called back to back and
+> the first Work hasn't dequeued yet, then this queue_work() will not
+> really enqueue, since queue_work_on() will return False?
 
-Of the commit log ? Or the way the nodes are written?
+In that case we wouldn't reach queue_work() in the first place as
+skip_work will be incremented on the first call and the second call
+will simply return early.
 
-> sound like we could have two OPP nodes with the same frequency
-> but different voltages inside them, which we're trying to
-> discourage by compressing the tables into less nodes.
+> If so, then
+> does it mean we're skipping more recent CPU freq requests? Should we
+> cancel past Work if it hasn't been serviced?
 
-No no, we can't have two nodes with same frequency.
+It doesn't matter. Its only the work handler that is going to do some
+useful work, and there is no difference in the first or the second
+request.
 
 -- 
 viresh
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
