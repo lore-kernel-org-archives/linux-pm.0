@@ -1,54 +1,69 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] cpufreq: arm_big_little: fix frequency check when bL switcher is active
-Date: Sat, 31 Oct 2015 03:34:05 +0100
-Message-ID: <11584056.2Z0CdQiHeS@vostro.rjw.lan>
-References: <1445421333.2916.13.camel@linaro.org> <20151021095725.GA7784@ubuntu> <1446202098.2815.8.camel@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] PM / OPP: Protect updates to list_dev with mutex
+Date: Sat, 31 Oct 2015 07:44:09 +0530
+Message-ID: <20151031021409.GT3716@ubuntu>
+References: <5f8fac4ad84716ef68fc50ab0b78e11ad2837524.1446205160.git.viresh.kumar@linaro.org>
+ <20151030170604.GD19782@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1446202098.2815.8.camel@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Jon Medhurst (Tixy)" <tixy@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Michael Turquette <mturquette@baylibre.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f42.google.com ([209.85.220.42]:35571 "EHLO
+	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751343AbbJaCOP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 30 Oct 2015 22:14:15 -0400
+Received: by pasz6 with SMTP id z6so89819916pas.2
+        for <linux-pm@vger.kernel.org>; Fri, 30 Oct 2015 19:14:14 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20151030170604.GD19782@codeaurora.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, mturquette@baylibre.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dan Carpenter <dan.carpenter@oracle.com>, Dmitry Torokhov <dtor@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Pavel Machek <pavel@ucw.cz>
 
-On Friday, October 30, 2015 10:48:18 AM Jon Medhurst wrote:
-> On Wed, 2015-10-21 at 15:27 +0530, Viresh Kumar wrote:
-> > On 21-10-15, 10:55, Jon Medhurst (Tixy) wrote:
-> > > The check for correct frequency being set in bL_cpufreq_set_rate is
-> > > broken when the big.LITTLE switcher is active, for two reasons.
-> > > 
-> > > 1. The 'new_rate' variable gets overwritten before the test by the
-> > > code calculating the frequency of the old cluster.
-> > > 
-> > > 2. The frequency returned by bL_cpufreq_get_rate will be the virtual
-> > > frequency, not the actual one the intended version of new_rate contains.
-> > > 
-> > > This means the function always returns an error causing an endless
-> > > stream of: "cpufreq: __target_index: Failed to change cpu frequency: -5"
-> > > 
-> > > As the intent is to check for errors that clk_set_rate doesn't report
-> > > lets move the check to immediately after that and directly use
-> > > clk_get_rate, rather than the arm_big_little helpers which only confuse
-> > > matters. Also, update the comment to be hopefully clearer about the
-> > > purpose of the code.
-> > > 
-> > > Fixes: 0a95e630b49a ("cpufreq: arm_big_little: check if the frequency is set correctly")
-> > > 
-> > > Signed-off-by: Jon Medhurst <tixy@linaro.org>
-> > > Acked-by: Sudeep Holla <sudeep.holla@arm.com>
-> > > ---
-> > > 
-> [...]
+On 30-10-15, 10:06, Stephen Boyd wrote:
+> On 10/30, Viresh Kumar wrote:
+> > dev_opp_list_lock is used everywhere to protect device and OPP lists,
+> > but dev_pm_opp_set_sharing_cpus() is missed somehow. And instead we used
+> > rcu-lock, which wouldn't help here as we are adding a new list_dev.
 > > 
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > 
+> > This also fixes a problem where we have called kzalloc(..., GFP_KERNEL)
+> > from within rcu-lock, which isn't allowed as kzalloc can sleep when
+> > called with GFP_KERNEL.
 > 
-> Do I need to send this again with that Ack and Michael's Reviewed-by
-> added?
+> Care to share the splat here?
 
-Nope, it's on my to-do list.
+I don't know what is wrong (or right) with my exynos 5250 board, but I
+didn't got any splat here even with the right config options (yes I
+should have mentioned that earlier). I have seen this at other times
+as well, while we were running after some cpufreq traces..
 
-Thanks,
-Rafael
+But, the case in hand is pretty straight forward and Mike T. did get a
+splat as that's what he told me. We are calling a sleep-able function
+from rcu_lock and that's obviously wrong.
+
+> > diff --git a/drivers/base/power/opp/cpu.c b/drivers/base/power/opp/cpu.c
+> > index 7654c5606307..91f15b2e25ee 100644
+> > --- a/drivers/base/power/opp/cpu.c
+> > +++ b/drivers/base/power/opp/cpu.c
+> > @@ -124,12 +124,12 @@ int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask)
+> >  	struct device *dev;
+> >  	int cpu, ret = 0;
+> >  
+> > -	rcu_read_lock();
+> > +	mutex_lock(&dev_opp_list_lock);
+> >  
+> >  	dev_opp = _find_device_opp(cpu_dev);
+> 
+> So does _find_device_opp() need to be called with rcu_read_lock()
+> held or not? The comment above the function makes it sound like
+> we need RCU, but we don't do that here anymore.
+
+That is more for the readers, as this function is going to return a
+pointer to the device OPP, and to make sure it isn't freed behind
+their back, they need to take the RCU lock.
+
+There are other writer code paths as well, like add-opp, where we just
+take the mutex as there can't be anything stronger than that :)
+
+-- 
+viresh
