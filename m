@@ -1,83 +1,68 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: [RFD] Functional dependencies between devices
-Date: Sat, 31 Oct 2015 03:13:09 +0100
-Message-ID: <5035713.rI4RnBEDVM@vostro.rjw.lan>
-References: <1623682.7KVblAB3KQ@vostro.rjw.lan> <20151029001509.GJ28319@sirena.org.uk>
+Date: Sat, 31 Oct 2015 03:23:50 +0100
+Message-ID: <3097692.FmXPBhB5oa@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1510291024190.1647-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart1670638.4s65Cm8fSG"; micalg="pgp-sha256"; protocol="application/pgp-signature"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:63635 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:47446 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751054AbbJaBoR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 30 Oct 2015 21:44:17 -0400
-In-Reply-To: <20151029001509.GJ28319@sirena.org.uk>
+	with SMTP id S1754167AbbJaByq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 30 Oct 2015 21:54:46 -0400
+In-Reply-To: <Pine.LNX.4.44L0.1510291024190.1647-100000@iolanthe.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh@kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Thierry Reding <treding@nvidia.com>, Dmitry Torokhov <dtor@google.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Michael Turquette <mturquette@baylibre.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@linaro.org>, Mark Brown <broonie@kernel.og>, Rob Herring <robh@kernel.org>, Thierry Reding <treding@nvidia.com>, Dmitry Torokhov <dtor@google.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Michael Turquette <mturquette@baylibre.com>
 
-
---nextPart1670638.4s65Cm8fSG
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="utf-8"
-
-On Thursday, October 29, 2015 09:15:09 AM Mark Brown wrote:
-> On Tue, Oct 27, 2015 at 04:24:14PM +0100, Rafael J. Wysocki wrote:
+On Thursday, October 29, 2015 10:31:08 AM Alan Stern wrote:
+> Good grief, don't you guys ever trim unwanted material from your 
+> emails?  I had to erase more than 4 screens worth of useless stuff 
+> before getting to the relevant portions.
 > 
-> > So, the question to everybody is whether or not this sounds reasonable or there
-> > are concerns about it and if so what they are.  At this point I mostly need to
-> > know if I'm not overlooking anything fundamental at the general level.
+> On Thu, 29 Oct 2015, Tomeu Vizoso wrote:
 > 
-> This seems like a good plan to me however I am concerned that only
-> allowing links to be created at device registration time will prove
-> restrictive - it means we're going to ignore anything we figure out
-> later on in the boot sequence.
+> > >> Also, have you considered that not only drivers request resources? For
+> > >> example, the on-demand probing series would probe a device that is
+> > >> needed by an initcall, simplifying synchronization.
+> 
+> Did Rafael ever say that only drivers could create these functional
+> dependencies?  I don't recall seeing that anywhere.  Presumably any
+> part of the kernel will be allowed to do it.
 
-That's not the plan, though. :-)
+Right.
 
-I'm talking about device registration time or device probe time (for
-dependencies that aren't known at the registration time).
+> > > You really need to explain what you mean here or maybe give an example.
+> > 
+> > There are initcalls that assume that a given resource is available.
+> > Because of async probes, or because the resource's driver being built
+> > as a module, or because the resource's driver gained a dependency
+> > (direct or not), those initcalls break unexpectedly at times.
 
-> I would be very surprised if we didn't
-> need that, either from things that get missed or from things that get
-> allocated dynamically at runtime on systems with flexible hardware, and
-> it'd also mean that systems can start to benefit from this for suspend
-> and resume without needing the updates to the firmware parsing support.
+Well, I'm still unsure what initcalls are in question here.
 
-The reason why I think it should be restricted to the probe/remove and
-registration/unregistration times is because of PM.  More specifically,
-adding a link to a "supplier" causes additional actions to be taken during
-PM operations (eg. if the supplier device is suspended at the consumer device
-resume time, it needs to be resumed in the runtime PM case or waited for in
-the system resume case) which may be regarded as a change in a way PM is
-handled.  Such changes are only expected to happen at the points I mentioned
-and may lead to rather undesirable outcomes if made elsewhere.
+> > If resource getters could probe dependencies on-demand, those
+> > initcalls would be more robust to changes in other parts of the
+> > codebase.
+> > 
+> > AFAIUI, your proposal would help with a device's dependencies being
+> > there when it's probed, but initcalls could still run into unfulfilled
+> > dependencies.
+> 
+> One possible approach is to have a "wait_for_driver" flag, along with a
+> timeout value (or perhaps using a fixed timeout value).  When a
+> dependency gets registered with this flag set, the function call
+> wouldn't return until the target device is bound to a driver or the
+> timeout has elapsed.
+> 
+> This would make it easy to insert dependencies at probe time without 
+> relying on deferred probing.
+
+I'm not sure about this to be honest.  It seems like implementing it might
+be sort of tricky.
 
 Thanks,
 Rafael
-
---nextPart1670638.4s65Cm8fSG
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
-Content-Transfer-Encoding: 7Bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAABCAAGBQJWNCPAAAoJEILEb/54YlRx/9EP/RoL2UWZINaGrkDNrjV3ugvq
-PHgS6z9wpzvy5jhSJ2aj4O/y1BeB0qZw6xszgMRNqhjluZJA/Cy54fSGUYRg2SQ1
-Yp7ojrMjW+KBsLRqN5uHxcwH0srIb0nSLBeDVM27KeTe6Ax9gfCC3HO4RWata08R
-nVXbDc4l/+khyxOzvXLGVQHRx9LYGt4zkFjJ/ace81SmYHORqMyf/K7izcL8neYO
-h8g8u4qgaPSDBG/9PnJbkFGnE0eFtsw3945YLSvsitHGuWjIY+Bi9AfuP7aunaSb
-Qx4ut53pNCtVQmFNHxLGpKdcDhA8obWTlW8pyHjnNJuo2Pl7ampX3FDS+g9mvruE
-eFbHe0bkSrYMeNeo6qT9YJeq9qrAmxDt6JgAWvy1dqLPnsynZVF99Atimz3yJfVu
-fMrTUYRMowBpJztaWVMOhLFrJUgyx/LEAuaeuwlysVh2nUFAY8l6V68ZAyvTT9Zl
-YPSGYbQkvC5QVE3tltVkPeM4per7YINLFndHP6+zHWSReDybxWaumwhllXxP5kZd
-w3BK7HP6OFkSZ/FDBXXx7rjAhV4Cp6Ph3if21aCkYiHdIftJR2XOX4KJJ7LAyO2x
-d84KGlyA7bown+wn8SatIj/TTjepd6Pb5QM4F4Ue4WnvKGu52x4Q9+l9ke5wbVzp
-u/E+UrNifeanSNZAu6ZU
-=cvz2
------END PGP SIGNATURE-----
-
---nextPart1670638.4s65Cm8fSG--
 
