@@ -1,68 +1,54 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFD] Functional dependencies between devices
-Date: Sat, 31 Oct 2015 03:23:50 +0100
-Message-ID: <3097692.FmXPBhB5oa@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1510291024190.1647-100000@iolanthe.rowland.org>
+Subject: Re: [PATCH v2] cpufreq: arm_big_little: fix frequency check when bL switcher is active
+Date: Sat, 31 Oct 2015 03:34:05 +0100
+Message-ID: <11584056.2Z0CdQiHeS@vostro.rjw.lan>
+References: <1445421333.2916.13.camel@linaro.org> <20151021095725.GA7784@ubuntu> <1446202098.2815.8.camel@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:47446 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754167AbbJaByq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 30 Oct 2015 21:54:46 -0400
-In-Reply-To: <Pine.LNX.4.44L0.1510291024190.1647-100000@iolanthe.rowland.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1446202098.2815.8.camel@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Jon Medhurst (Tixy)" <tixy@linaro.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Michael Turquette <mturquette@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@linaro.org>, Mark Brown <broonie@kernel.og>, Rob Herring <robh@kernel.org>, Thierry Reding <treding@nvidia.com>, Dmitry Torokhov <dtor@google.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Michael Turquette <mturquette@baylibre.com>
 
-On Thursday, October 29, 2015 10:31:08 AM Alan Stern wrote:
-> Good grief, don't you guys ever trim unwanted material from your 
-> emails?  I had to erase more than 4 screens worth of useless stuff 
-> before getting to the relevant portions.
-> 
-> On Thu, 29 Oct 2015, Tomeu Vizoso wrote:
-> 
-> > >> Also, have you considered that not only drivers request resources? For
-> > >> example, the on-demand probing series would probe a device that is
-> > >> needed by an initcall, simplifying synchronization.
-> 
-> Did Rafael ever say that only drivers could create these functional
-> dependencies?  I don't recall seeing that anywhere.  Presumably any
-> part of the kernel will be allowed to do it.
-
-Right.
-
-> > > You really need to explain what you mean here or maybe give an example.
+On Friday, October 30, 2015 10:48:18 AM Jon Medhurst wrote:
+> On Wed, 2015-10-21 at 15:27 +0530, Viresh Kumar wrote:
+> > On 21-10-15, 10:55, Jon Medhurst (Tixy) wrote:
+> > > The check for correct frequency being set in bL_cpufreq_set_rate is
+> > > broken when the big.LITTLE switcher is active, for two reasons.
+> > > 
+> > > 1. The 'new_rate' variable gets overwritten before the test by the
+> > > code calculating the frequency of the old cluster.
+> > > 
+> > > 2. The frequency returned by bL_cpufreq_get_rate will be the virtual
+> > > frequency, not the actual one the intended version of new_rate contains.
+> > > 
+> > > This means the function always returns an error causing an endless
+> > > stream of: "cpufreq: __target_index: Failed to change cpu frequency: -5"
+> > > 
+> > > As the intent is to check for errors that clk_set_rate doesn't report
+> > > lets move the check to immediately after that and directly use
+> > > clk_get_rate, rather than the arm_big_little helpers which only confuse
+> > > matters. Also, update the comment to be hopefully clearer about the
+> > > purpose of the code.
+> > > 
+> > > Fixes: 0a95e630b49a ("cpufreq: arm_big_little: check if the frequency is set correctly")
+> > > 
+> > > Signed-off-by: Jon Medhurst <tixy@linaro.org>
+> > > Acked-by: Sudeep Holla <sudeep.holla@arm.com>
+> > > ---
+> > > 
+> [...]
 > > 
-> > There are initcalls that assume that a given resource is available.
-> > Because of async probes, or because the resource's driver being built
-> > as a module, or because the resource's driver gained a dependency
-> > (direct or not), those initcalls break unexpectedly at times.
-
-Well, I'm still unsure what initcalls are in question here.
-
-> > If resource getters could probe dependencies on-demand, those
-> > initcalls would be more robust to changes in other parts of the
-> > codebase.
+> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 > > 
-> > AFAIUI, your proposal would help with a device's dependencies being
-> > there when it's probed, but initcalls could still run into unfulfilled
-> > dependencies.
 > 
-> One possible approach is to have a "wait_for_driver" flag, along with a
-> timeout value (or perhaps using a fixed timeout value).  When a
-> dependency gets registered with this flag set, the function call
-> wouldn't return until the target device is bound to a driver or the
-> timeout has elapsed.
-> 
-> This would make it easy to insert dependencies at probe time without 
-> relying on deferred probing.
+> Do I need to send this again with that Ack and Michael's Reviewed-by
+> added?
 
-I'm not sure about this to be honest.  It seems like implementing it might
-be sort of tricky.
+Nope, it's on my to-do list.
 
 Thanks,
 Rafael
-
