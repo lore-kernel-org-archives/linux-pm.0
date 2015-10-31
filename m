@@ -1,35 +1,34 @@
-From: Oliver Neukum <oneukum@suse.com>
-Subject: Re: [PATCH 1/3] power, vfs: move away from PF_KTHREAD freezing in
- favor of fs freezing
-Date: Sat, 31 Oct 2015 09:55:56 +0100
-Message-ID: <1446281756.21651.7.camel@suse.com>
-References: <alpine.LNX.2.00.1510301424360.17538@pobox.suse.cz>
-	 <alpine.LNX.2.00.1510301439080.17538@pobox.suse.cz>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFD] Functional dependencies between devices
+Date: Sat, 31 Oct 2015 11:22:53 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1510311118550.9118-100000@netrider.rowland.org>
+References: <3097692.FmXPBhB5oa@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:57664 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752501AbbJaI5h (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 31 Oct 2015 04:57:37 -0400
-In-Reply-To: <alpine.LNX.2.00.1510301439080.17538@pobox.suse.cz>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <3097692.FmXPBhB5oa@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Grant Likely <grant.likely@linaro.org>, Mark Brown <broonie@kernel.og>, Rob Herring <robh@kernel.org>, Thierry Reding <treding@nvidia.com>, Dmitry Torokhov <dtor@google.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Michael Turquette <mturquette@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
-To: Jiri Kosina <jikos@kernel.org>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Dave Chinner <david@fromorbit.com>, Jan Kara <jack@suse.cz>, Christoph Hellwig <hch@lst.de>, Linus Torvalds <torvalds@linux-foundation.org>, Al Viro <viro@ZenIV.linux.org.uk>, Tejun Heo <tj@kernel.org>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Fri, 2015-10-30 at 14:47 +0100, Jiri Kosina wrote:
-> Basically the main argument why kthread freezer is not needed boils
-> down to
-> this: the only facility that is needed during suspend: "no persistent
-> fs
-> changes are allowed from now on".
+On Sat, 31 Oct 2015, Rafael J. Wysocki wrote:
 
-Is that true? Drivers of character devices also may assume
-that IO and suspend() wouldn't race (except in fairly clear exceptions)
+> > One possible approach is to have a "wait_for_driver" flag, along with a
+> > timeout value (or perhaps using a fixed timeout value).  When a
+> > dependency gets registered with this flag set, the function call
+> > wouldn't return until the target device is bound to a driver or the
+> > timeout has elapsed.
+> > 
+> > This would make it easy to insert dependencies at probe time without 
+> > relying on deferred probing.
+> 
+> I'm not sure about this to be honest.  It seems like implementing it might
+> be sort of tricky.
 
-	Regards
-		Oliver
+Well, clearly it wouldn't work if probes were serialized and one driver
+was dependent on another that was going to be probed later.  But if
+probes are asynchronous then it ought to be okay (unless there is a
+dependency cycle, in which case the situation is hopeless anyway).
 
-
+Alan Stern
