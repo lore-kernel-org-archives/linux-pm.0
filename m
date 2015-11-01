@@ -1,90 +1,116 @@
-From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: RE: [PATCH] [v4] x86, suspend: Save/restore extra MSR registers for
- suspend
-Date: Sun, 1 Nov 2015 16:49:40 +0000
-Message-ID: <36DF59CE26D8EE47B0655C516E9CE64028662059@shsmsx102.ccr.corp.intel.com>
-References: <1440645507-17768-1-git-send-email-yu.c.chen@intel.com>
- <20150917053004.GB6665@amd>
- <36DF59CE26D8EE47B0655C516E9CE6402865A403@shsmsx102.ccr.corp.intel.com>
- <001701d102c4$1ac2bab0$50483010$@net>
- <36DF59CE26D8EE47B0655C516E9CE6402865AA02@shsmsx102.ccr.corp.intel.com>
- <002c01d1043c$133ba580$39b2f080$@net>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [GIT PULL] Thermal-SoC management updates for v4.4-rc1 #1
+Date: Sun, 1 Nov 2015 12:30:37 -0800
+Message-ID: <20151101203036.GA9793@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:39982 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751123AbbKAQtp convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 1 Nov 2015 11:49:45 -0500
-In-Reply-To: <002c01d1043c$133ba580$39b2f080$@net>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-acpi-owner@vger.kernel.org
+To: Rui Zhang <rui.zhang@intel.com>
+Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "tglx@linutronix.de" <tglx@linutronix.de>, "hpa@zytor.com" <hpa@zytor.com>, "bp@alien8.de" <bp@alien8.de>, "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, 'Ingo Molnar' <mingo@kernel.org>, 'Pavel Machek' <pavel@ucw.cz>, 'Kristen Carlson Accardi' <kristen@linux.intel.com>, "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
 
-Hi, Doug,
-Sorry for my late response, and thanks for your information:
+Hello Rui,
 
-> -----Original Message-----
-> From: Doug Smythies [mailto:dsmythies@telus.net]
-> Sent: Sunday, October 11, 2015 11:47 PM
-> To: Chen, Yu C
-> Cc: Wysocki, Rafael J; tglx@linutronix.de; hpa@zytor.com; bp@alien8.de;
-> Zhang, Rui; linux-pm@vger.kernel.org; x86@kernel.org; linux-
-> kernel@vger.kernel.org; Brown, Len; 'Ingo Molnar'; 'Pavel Machek'; 'Kristen
-> Carlson Accardi'; Doug Smythies
-> Subject: RE: [PATCH] [v4] x86, suspend: Save/restore extra MSR registers for
-> suspend
-> 
-> Hi Yu, thanks for your reply.
-> 
-> On 2015.10.10 19:27 Chen, Yu C wrote:
-> > On 2105.10.10 02:56 Doug Smythies wrote:
-> >
-> >>> The current version of the intel_pstate driver is incompatible with
-> >>> any use of Clock Modulation, always resulting in driving the target
-> >>> pstate to the minimum, regardless of load. The result is the
-> >>> apparent CPU frequency stuck at minimum * modulation percent.
-> >>
-> >>> The acpi-cpufreq driver works fine with Clock Modulation, resulting
-> >>> in desired frequency * modulation percent.
-> >>
-> 
-> > [Yu] Why intel_pstate driver is incompatible with Clock Modulation?
-> 
-> It is simply how the current control algorithm responds to the scenario.
-> 
-> The problem is in intel_pstate_get_scaled_busy, here:
-> 
->         /*
->          * core_busy is the ratio of actual performance to max
->          * max_pstate is the max non turbo pstate available
->          * current_pstate was the pstate that was requested during
->          *      the last sample period.
->          *
->          * We normalize core_busy, which was our actual percent
->          * performance to what we requested during the last sample
->          * period. The result will be a percentage of busy at a
->          * specified pstate.
->          */
->         core_busy = cpu->sample.core_pct_busy;
->         max_pstate = int_tofp(cpu->pstate.max_pstate);
->         current_pstate = int_tofp(cpu->pstate.current_pstate);
->         core_busy = mul_fp(core_busy, div_fp(max_pstate, current_pstate));
-> 
-> With Clock Modulation enabled, the actual performance percent will always
-> be less than what was asked for, basically meaning current_pstate is much
-> less than what was asked for. Thus the algorithm will drive down the target
-> pstate regardless of load.
-> 
-[Yu] Do you mean, there is some problem with the normalization,and we should use 
-the actual pstate rather than the theoretical current_pstate, for example, 
-the pseudocode might looked like:
+Please pull from
 
--  current_pstate = int_tofp(cpu->pstate.current_pstate);
-+ current_pstate = int_tofp(cpu->pstate.current_pstat)*0.85;
+  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-ther=
+mal linus
 
-Best Regards,
-Yu
+to receive Thermal-SoC Management updates for v4.4-rc1 with top-most
+
+8fb2b9ac2aadd6d87f89071c2c85f8c12b41c943:
+
+  thermal: underflow bug in imx_set_trip_temp() (2015-10-30 11:35:50 -0=
+700)
+
+on top of commit 3225031fbeb1e32b269a82eccd815128267a4bfe:
+
+  Merge branch 'stable' of git://git.kernel.org/pub/scm/linux/kernel/gi=
+t/cmetcalf/linux-tile (2015-09-28 12:27:18 -0400)
+
+Specifics:
+- OMAP3 support on TI SoC thermal driver.
+- Devfreq cooling device. This comes with a change in OPP layer Acked b=
+y Viresh K.
+- Fixes on IMX, Armada, and Rockchip thermal drivers.
+- This branch has been compiled tested and boot tested by Linaro bot [1=
+,2].
+
+Apologize for the silent in the past weeks. I had two trips in a row an=
+d had
+limited Internet access. Please let me know if I missed your patch. I t=
+ried
+checking those that were idling in the mailing list and cleaning the pa=
+tchwork,
+but I might have missed some. So, still catching up.
+
+There are still new drivers to be reviewed and merged which is on my ra=
+dar. I
+will be sending updates still to see if they can make this merge window=
+=2E For
+now I would say they will be scheduled for the next one.
+
+[1] - http://kernelci.org/build/evalenti/kernel/v4.3-rc3-52-g8fb2b9ac2a=
+ad/
+[2] - http://kernelci.org/boot/all/job/evalenti/kernel/v4.3-rc3-52-g8fb=
+2b9ac2aad/
+
+BR,
+
+Eduardo Valentin
+----------------------------------------------------------------
+Bai Ping (1):
+      thermal: imx: register irq handler later in probe
+
+Dan Carpenter (1):
+      thermal: underflow bug in imx_set_trip_temp()
+
+Dmitry Torokhov (2):
+      thermal: rockchip: fix handling of invalid readings
+      thermal: rockhip: fix setting thermal shutdown polarity
+
+Eduardo Valentin (1):
+      thermal: ti-soc-thermal: add OMAP36xx support
+
+Javi Merino (2):
+      PM / OPP: get the voltage for all OPPs
+      devfreq_cooling: add trace information
+
+Nadav Haklai (1):
+      thermal: armada: Fix possible overflow in the Armada 380 thermal =
+sensor formula
+
+Pavel Machek (1):
+      ti-soc-thermal: implement omap3 support
+
+=D8rjan Eide (1):
+      thermal: Add devfreq cooling
+
+ .../devicetree/bindings/thermal/ti_soc_thermal.txt |  14 +
+ drivers/base/power/opp.c                           |   4 +-
+ drivers/thermal/Kconfig                            |  14 +
+ drivers/thermal/Makefile                           |   3 +
+ drivers/thermal/armada_thermal.c                   |   6 +-
+ drivers/thermal/devfreq_cooling.c                  | 569 +++++++++++++=
+++++++++
+ drivers/thermal/imx_thermal.c                      |  21 +-
+ drivers/thermal/rockchip_thermal.c                 |  38 +-
+ drivers/thermal/ti-soc-thermal/Kconfig             |  15 +
+ drivers/thermal/ti-soc-thermal/Makefile            |   1 +
+ .../thermal/ti-soc-thermal/omap3-thermal-data.c    | 176 +++++++
+ drivers/thermal/ti-soc-thermal/ti-bandgap.c        |  14 +
+ drivers/thermal/ti-soc-thermal/ti-bandgap.h        |  11 +
+ include/linux/devfreq_cooling.h                    |  81 +++
+ include/trace/events/thermal.h                     |  53 ++
+ 15 files changed, 985 insertions(+), 35 deletions(-)
+ create mode 100644 drivers/thermal/devfreq_cooling.c
+ create mode 100644 drivers/thermal/ti-soc-thermal/omap3-thermal-data.c
+ create mode 100644 include/linux/devfreq_cooling.h
+--
+To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
+n
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
