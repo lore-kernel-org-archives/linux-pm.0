@@ -1,116 +1,193 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [GIT PULL] Thermal-SoC management updates for v4.4-rc1 #1
-Date: Sun, 1 Nov 2015 12:30:37 -0800
-Message-ID: <20151101203036.GA9793@localhost.localdomain>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2] PM / sleep: prohibit devices probing during suspend/hibernation
+Date: Mon, 02 Nov 2015 02:25 +0100
+Message-ID: <5148641.xH2horsriG@vostro.rjw.lan>
+References: <1445288064-25299-1-git-send-email-grygorii.strashko@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-Sender: linux-acpi-owner@vger.kernel.org
-To: Rui Zhang <rui.zhang@intel.com>
-Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:56142 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750701AbbKBAzz (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 1 Nov 2015 19:55:55 -0500
+In-Reply-To: <1445288064-25299-1-git-send-email-grygorii.strashko@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Grygorii Strashko <grygorii.strashko@ti.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: stern@rowland.harvard.edu, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>
 
-Hello Rui,
+On Monday, October 19, 2015 11:54:24 PM Grygorii Strashko wrote:
+> It is unsafe [1] if probing of devices will happen during suspend or
+> hibernation and system behavior will be unpredictable in this case
+> (for example: after successful probe the device potentially has a different
+>  set of PM callbacks than before [2]).
+> So, let's prohibit device's probing in dpm_prepare() and defer their
+> probes instead. The normal behavior will be restored in dpm_complete().
+> 
+> This patch introduces new DD core APIs:
+>  device_defer_all_probes_enable()
+>    It will disable probing of devices and defer their probes.
+>  device_defer_all_probes_disable()
+>    It will restore normal behavior and trigger re-probing of deferred
+>    devices.
+> 
+> [1] https://lkml.org/lkml/2015/9/11/554
+> [2] https://lkml.org/lkml/2015/9/15/1039
+> Cc: Alan Stern <stern@rowland.harvard.edu>
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: Thierry Reding <thierry.reding@gmail.com>
+> Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
 
-Please pull from
+Greg, any objections against this one?
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-ther=
-mal linus
+> ---
+> Changes in v2:
+> - DD core API device_defer_all_probes(bool enable) split on two
+>   void device_defer_all_probes_enable(void);
+>   void device_defer_all_probes_disable(void);
+> - more comments added
+> 
+> Link on v1:
+> - https://lkml.org/lkml/2015/10/8/681
+> 
+>  drivers/base/base.h       |  2 ++
+>  drivers/base/dd.c         | 48 ++++++++++++++++++++++++++++++++++++++++++++++-
+>  drivers/base/power/main.c | 17 +++++++++++++++++
+>  3 files changed, 66 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/base/base.h b/drivers/base/base.h
+> index 1782f3a..c332b68 100644
+> --- a/drivers/base/base.h
+> +++ b/drivers/base/base.h
+> @@ -131,6 +131,8 @@ extern void device_remove_groups(struct device *dev,
+>  extern char *make_class_name(const char *name, struct kobject *kobj);
+>  
+>  extern int devres_release_all(struct device *dev);
+> +extern void device_defer_all_probes_enable(void);
+> +extern void device_defer_all_probes_disable(void);
+>  
+>  /* /sys/devices directory */
+>  extern struct kset *devices_kset;
+> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+> index be0eb46..b8d9e70 100644
+> --- a/drivers/base/dd.c
+> +++ b/drivers/base/dd.c
+> @@ -55,6 +55,13 @@ static struct workqueue_struct *deferred_wq;
+>  static atomic_t deferred_trigger_count = ATOMIC_INIT(0);
+>  
+>  /*
+> + * In some cases, like suspend to RAM or hibernation, It might be reasonable
+> + * to prohibit probing of devices as it could be unsafe.
+> + * Once defer_all_probes is true all drivers probes will be forcibly deferred.
+> + */
+> +static bool defer_all_probes;
+> +
+> +/*
+>   * deferred_probe_work_func() - Retry probing devices in the active list.
+>   */
+>  static void deferred_probe_work_func(struct work_struct *work)
+> @@ -172,6 +179,30 @@ static void driver_deferred_probe_trigger(void)
+>  }
+>  
+>  /**
+> + * device_defer_all_probes_enable() - Enable deferring of device's probes
+> + *
+> + *	It will disable probing of devices and defer their probes.
+> + */
+> +void device_defer_all_probes_enable(void)
+> +{
+> +	defer_all_probes = true;
+> +	/* sync with probes to avoid races. */
+> +	wait_for_device_probe();
+> +}
+> +
+> +/**
+> + * device_defer_all_probes_disable() - Disable deferring of device's probes
+> + *
+> + *	It will restore normal behavior and trigger re-probing of deferred
+> + * devices.
+> + */
+> +void device_defer_all_probes_disable(void)
+> +{
+> +	defer_all_probes = false;
+> +	driver_deferred_probe_trigger();
+> +}
+> +
+> +/**
+>   * deferred_probe_initcall() - Enable probing of deferred devices
+>   *
+>   * We don't want to get in the way when the bulk of drivers are getting probed.
+> @@ -277,9 +308,20 @@ static DECLARE_WAIT_QUEUE_HEAD(probe_waitqueue);
+>  
+>  static int really_probe(struct device *dev, struct device_driver *drv)
+>  {
+> -	int ret = 0;
+> +	int ret = -EPROBE_DEFER;
+>  	int local_trigger_count = atomic_read(&deferred_trigger_count);
+>  
+> +	if (defer_all_probes) {
+> +		/*
+> +		 * Value of defer_all_probes can be set only by
+> +		 * device_defer_all_probes_enable() which, in turn, will call
+> +		 * wait_for_device_probe() right after that to avoid any races.
+> +		 */
+> +		dev_dbg(dev, "Driver %s force probe deferral\n", drv->name);
+> +		driver_deferred_probe_add(dev);
+> +		return ret;
+> +	}
+> +
+>  	atomic_inc(&probe_count);
+>  	pr_debug("bus: '%s': %s: probing driver %s with device %s\n",
+>  		 drv->bus->name, __func__, drv->name, dev_name(dev));
+> @@ -391,6 +433,10 @@ int driver_probe_done(void)
+>   */
+>  void wait_for_device_probe(void)
+>  {
+> +	/* wait for the deferred probe workqueue to finish */
+> +	if (driver_deferred_probe_enable)
+> +		flush_workqueue(deferred_wq);
+> +
+>  	/* wait for the known devices to complete their probing */
+>  	wait_event(probe_waitqueue, atomic_read(&probe_count) == 0);
+>  	async_synchronize_full();
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index 1710c26..eeb2bb7 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -963,6 +963,9 @@ void dpm_complete(pm_message_t state)
+>  	}
+>  	list_splice(&list, &dpm_list);
+>  	mutex_unlock(&dpm_list_mtx);
+> +
+> +	/* Allow device probing and trigger re-probing of deferred devices */
+> +	device_defer_all_probes_disable();
+>  	trace_suspend_resume(TPS("dpm_complete"), state.event, false);
+>  }
+>  
+> @@ -1624,6 +1627,20 @@ int dpm_prepare(pm_message_t state)
+>  	trace_suspend_resume(TPS("dpm_prepare"), state.event, true);
+>  	might_sleep();
+>  
+> +	/*
+> +	 * Give a chance for the known devices to complete their probes, before
+> +	 * disable probing of devices. This sync point is important at least
+> +	 * at boot time + hibernation restore.
+> +	 */
+> +	wait_for_device_probe();
+> +	/*
+> +	 * It is unsafe if probing of devices will happen during suspend or
+> +	 * hibernation and system behavior will be unpredictable in this case.
+> +	 * So, let's prohibit device's probing here and defer their probes
+> +	 * instead. The normal behavior will be restored in dpm_complete().
+> +	 */
+> +	device_defer_all_probes_enable();
+> +
+>  	mutex_lock(&dpm_list_mtx);
+>  	while (!list_empty(&dpm_list)) {
+>  		struct device *dev = to_device(dpm_list.next);
+> 
 
-to receive Thermal-SoC Management updates for v4.4-rc1 with top-most
+Thanks,
+Rafael
 
-8fb2b9ac2aadd6d87f89071c2c85f8c12b41c943:
-
-  thermal: underflow bug in imx_set_trip_temp() (2015-10-30 11:35:50 -0=
-700)
-
-on top of commit 3225031fbeb1e32b269a82eccd815128267a4bfe:
-
-  Merge branch 'stable' of git://git.kernel.org/pub/scm/linux/kernel/gi=
-t/cmetcalf/linux-tile (2015-09-28 12:27:18 -0400)
-
-Specifics:
-- OMAP3 support on TI SoC thermal driver.
-- Devfreq cooling device. This comes with a change in OPP layer Acked b=
-y Viresh K.
-- Fixes on IMX, Armada, and Rockchip thermal drivers.
-- This branch has been compiled tested and boot tested by Linaro bot [1=
-,2].
-
-Apologize for the silent in the past weeks. I had two trips in a row an=
-d had
-limited Internet access. Please let me know if I missed your patch. I t=
-ried
-checking those that were idling in the mailing list and cleaning the pa=
-tchwork,
-but I might have missed some. So, still catching up.
-
-There are still new drivers to be reviewed and merged which is on my ra=
-dar. I
-will be sending updates still to see if they can make this merge window=
-=2E For
-now I would say they will be scheduled for the next one.
-
-[1] - http://kernelci.org/build/evalenti/kernel/v4.3-rc3-52-g8fb2b9ac2a=
-ad/
-[2] - http://kernelci.org/boot/all/job/evalenti/kernel/v4.3-rc3-52-g8fb=
-2b9ac2aad/
-
-BR,
-
-Eduardo Valentin
-----------------------------------------------------------------
-Bai Ping (1):
-      thermal: imx: register irq handler later in probe
-
-Dan Carpenter (1):
-      thermal: underflow bug in imx_set_trip_temp()
-
-Dmitry Torokhov (2):
-      thermal: rockchip: fix handling of invalid readings
-      thermal: rockhip: fix setting thermal shutdown polarity
-
-Eduardo Valentin (1):
-      thermal: ti-soc-thermal: add OMAP36xx support
-
-Javi Merino (2):
-      PM / OPP: get the voltage for all OPPs
-      devfreq_cooling: add trace information
-
-Nadav Haklai (1):
-      thermal: armada: Fix possible overflow in the Armada 380 thermal =
-sensor formula
-
-Pavel Machek (1):
-      ti-soc-thermal: implement omap3 support
-
-=D8rjan Eide (1):
-      thermal: Add devfreq cooling
-
- .../devicetree/bindings/thermal/ti_soc_thermal.txt |  14 +
- drivers/base/power/opp.c                           |   4 +-
- drivers/thermal/Kconfig                            |  14 +
- drivers/thermal/Makefile                           |   3 +
- drivers/thermal/armada_thermal.c                   |   6 +-
- drivers/thermal/devfreq_cooling.c                  | 569 +++++++++++++=
-++++++++
- drivers/thermal/imx_thermal.c                      |  21 +-
- drivers/thermal/rockchip_thermal.c                 |  38 +-
- drivers/thermal/ti-soc-thermal/Kconfig             |  15 +
- drivers/thermal/ti-soc-thermal/Makefile            |   1 +
- .../thermal/ti-soc-thermal/omap3-thermal-data.c    | 176 +++++++
- drivers/thermal/ti-soc-thermal/ti-bandgap.c        |  14 +
- drivers/thermal/ti-soc-thermal/ti-bandgap.h        |  11 +
- include/linux/devfreq_cooling.h                    |  81 +++
- include/trace/events/thermal.h                     |  53 ++
- 15 files changed, 985 insertions(+), 35 deletions(-)
- create mode 100644 drivers/thermal/devfreq_cooling.c
- create mode 100644 drivers/thermal/ti-soc-thermal/omap3-thermal-data.c
- create mode 100644 include/linux/devfreq_cooling.h
---
-To unsubscribe from this list: send the line "unsubscribe linux-acpi" i=
-n
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
