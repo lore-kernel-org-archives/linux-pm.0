@@ -1,192 +1,107 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] PM / sleep: prohibit devices probing during suspend/hibernation
-Date: Mon, 02 Nov 2015 02:25 +0100
-Message-ID: <5148641.xH2horsriG@vostro.rjw.lan>
-References: <1445288064-25299-1-git-send-email-grygorii.strashko@ti.com>
+Subject: Re: [PATCH v11 0/4] Allow USB devices to remain runtime-suspended when sleeping
+Date: Mon, 02 Nov 2015 02:50:40 +0100
+Message-ID: <2496228.i2Z9PmMBtz@vostro.rjw.lan>
+References: <1445956731-6304-1-git-send-email-tomeu.vizoso@collabora.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:56142 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:44053 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750701AbbKBAzz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 1 Nov 2015 19:55:55 -0500
-In-Reply-To: <1445288064-25299-1-git-send-email-grygorii.strashko@ti.com>
+	with SMTP id S1751361AbbKBBVf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 1 Nov 2015 20:21:35 -0500
+In-Reply-To: <1445956731-6304-1-git-send-email-tomeu.vizoso@collabora.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: stern@rowland.harvard.edu, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, martyn.welch@collabora.co.uk, Ulf Hansson <ulf.hansson@linaro.org>, David Airlie <airlied@linux.ie>, Tomas Winkler <tomas.winkler@intel.com>, linux-usb@vger.kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Russell King <linux@arm.linux.org.uk>, Len Brown <lenb@kernel.org>, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@kernel.org>, Tony Lindgren <tony@atomide.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-omap@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-arm-kernel@lists.infradead.org
 
-On Monday, October 19, 2015 11:54:24 PM Grygorii Strashko wrote:
-> It is unsafe [1] if probing of devices will happen during suspend or
-> hibernation and system behavior will be unpredictable in this case
-> (for example: after successful probe the device potentially has a different
->  set of PM callbacks than before [2]).
-> So, let's prohibit device's probing in dpm_prepare() and defer their
-> probes instead. The normal behavior will be restored in dpm_complete().
+On Tuesday, October 27, 2015 03:38:47 PM Tomeu Vizoso wrote:
+> Hi,
 > 
-> This patch introduces new DD core APIs:
->  device_defer_all_probes_enable()
->    It will disable probing of devices and defer their probes.
->  device_defer_all_probes_disable()
->    It will restore normal behavior and trigger re-probing of deferred
->    devices.
+> this is v11 of an attempt to make it easier for devices to remain in
+> runtime PM when the system goes to sleep, mainly to reduce the time
+> spent resuming devices.
 > 
-> [1] https://lkml.org/lkml/2015/9/11/554
-> [2] https://lkml.org/lkml/2015/9/15/1039
-> Cc: Alan Stern <stern@rowland.harvard.edu>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Thierry Reding <thierry.reding@gmail.com>
-> Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
+> For this, we interpret the absence of all PM callback implementations as
+> it being safe to do direct_complete, so their ancestors aren't prevented
+> from remaining runtime-suspended.
+> 
+> Additionally, the prepare() callback of USB devices will return 1 if
+> runtime PM is enabled and the current wakeup settings are correct.
+> 
+> With these changes, a uvcvideo device (for example) stays in runtime
+> suspend when the system goes to sleep and is left in that state when the
+> system resumes, not delaying it unnecessarily.
+> 
+> Thanks,
+> 
+> Tomeu
+> 
+> Changes in v11:
+> - Move calls to dev_pm_domain_set() out from &dev->power.lock as that
+>   isn't needed for dev->pm_domain.
+> 
+> Changes in v10:
+> - Remove superfluous call to pm_runtime_enabled() as suggested by Alan
+> 
+> Changes in v9:
+> - Add docs noting the need for the device lock to be held before calling
+>   device_is_bound()
+> - Add docs noting the need for the device lock to be held before calling
+>   dev_pm_domain_set()
+> - Move to CONFIG_PM_SLEEP as suggested by Rafael and Ulf.
+> - Rename from device_check_pm_callbacks to device_pm_check_callbacks to
+>   follow with the naming convention of existing API.
+> - Re-add calling to device_pm_check_callbacks from device registration
+>   and when updating the PM domain of a device.
+> 
+> Changes in v8:
+> - Add device_is_bound()
+> - Add dev_pm_domain_set() and update code to use it
+> - Move no_pm_callbacks field into CONFIG_PM_SLEEP
+> - Call device_check_pm_callbacks only after a device is bound or unbound
+> 
+> Changes in v7:
+> - Reduce indentation by adding a label in device_prepare()
+> 
+> Changes in v6:
+> - Add stub for !CONFIG_PM.
+> - Move implementation of device_check_pm_callbacks to power/main.c as it
+>   doesn't belong to CONFIG_PM_SLEEP.
+> - Take dev->power.lock before modifying flag.
+> 
+> Changes in v5:
+> - Check for all dev_pm_ops instances associated to a device, updating a
+>   no_pm_callbacks flag at the times when that could change.
+> 
+> Tomeu Vizoso (4):
+>   device core: add device_is_bound()
+>   PM / Domains: add setter for dev.pm_domain
+>   PM / sleep: Go direct_complete if driver has no callbacks
+>   USB / PM: Allow USB devices to remain runtime-suspended when sleeping
+> 
+>  arch/arm/mach-omap2/omap_device.c |  7 ++++---
+>  drivers/acpi/acpi_lpss.c          |  5 +++--
+>  drivers/acpi/device_pm.c          |  5 +++--
+>  drivers/base/dd.c                 | 21 +++++++++++++++++++--
+>  drivers/base/power/clock_ops.c    |  5 +++--
+>  drivers/base/power/common.c       | 24 ++++++++++++++++++++++++
+>  drivers/base/power/domain.c       |  8 ++++++--
+>  drivers/base/power/main.c         | 35 +++++++++++++++++++++++++++++++++++
+>  drivers/base/power/power.h        |  3 +++
+>  drivers/gpu/vga/vga_switcheroo.c  | 10 +++++-----
+>  drivers/misc/mei/pci-me.c         |  5 +++--
+>  drivers/misc/mei/pci-txe.c        |  5 +++--
+>  drivers/usb/core/port.c           |  6 ++++++
+>  drivers/usb/core/usb.c            |  8 +++++++-
+>  include/linux/device.h            |  2 ++
+>  include/linux/pm.h                |  1 +
+>  include/linux/pm_domain.h         |  3 +++
+>  17 files changed, 130 insertions(+), 23 deletions(-)
 
-Greg, any objections against this one?
-
-> ---
-> Changes in v2:
-> - DD core API device_defer_all_probes(bool enable) split on two
->   void device_defer_all_probes_enable(void);
->   void device_defer_all_probes_disable(void);
-> - more comments added
-> 
-> Link on v1:
-> - https://lkml.org/lkml/2015/10/8/681
-> 
->  drivers/base/base.h       |  2 ++
->  drivers/base/dd.c         | 48 ++++++++++++++++++++++++++++++++++++++++++++++-
->  drivers/base/power/main.c | 17 +++++++++++++++++
->  3 files changed, 66 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/base/base.h b/drivers/base/base.h
-> index 1782f3a..c332b68 100644
-> --- a/drivers/base/base.h
-> +++ b/drivers/base/base.h
-> @@ -131,6 +131,8 @@ extern void device_remove_groups(struct device *dev,
->  extern char *make_class_name(const char *name, struct kobject *kobj);
->  
->  extern int devres_release_all(struct device *dev);
-> +extern void device_defer_all_probes_enable(void);
-> +extern void device_defer_all_probes_disable(void);
->  
->  /* /sys/devices directory */
->  extern struct kset *devices_kset;
-> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-> index be0eb46..b8d9e70 100644
-> --- a/drivers/base/dd.c
-> +++ b/drivers/base/dd.c
-> @@ -55,6 +55,13 @@ static struct workqueue_struct *deferred_wq;
->  static atomic_t deferred_trigger_count = ATOMIC_INIT(0);
->  
->  /*
-> + * In some cases, like suspend to RAM or hibernation, It might be reasonable
-> + * to prohibit probing of devices as it could be unsafe.
-> + * Once defer_all_probes is true all drivers probes will be forcibly deferred.
-> + */
-> +static bool defer_all_probes;
-> +
-> +/*
->   * deferred_probe_work_func() - Retry probing devices in the active list.
->   */
->  static void deferred_probe_work_func(struct work_struct *work)
-> @@ -172,6 +179,30 @@ static void driver_deferred_probe_trigger(void)
->  }
->  
->  /**
-> + * device_defer_all_probes_enable() - Enable deferring of device's probes
-> + *
-> + *	It will disable probing of devices and defer their probes.
-> + */
-> +void device_defer_all_probes_enable(void)
-> +{
-> +	defer_all_probes = true;
-> +	/* sync with probes to avoid races. */
-> +	wait_for_device_probe();
-> +}
-> +
-> +/**
-> + * device_defer_all_probes_disable() - Disable deferring of device's probes
-> + *
-> + *	It will restore normal behavior and trigger re-probing of deferred
-> + * devices.
-> + */
-> +void device_defer_all_probes_disable(void)
-> +{
-> +	defer_all_probes = false;
-> +	driver_deferred_probe_trigger();
-> +}
-> +
-> +/**
->   * deferred_probe_initcall() - Enable probing of deferred devices
->   *
->   * We don't want to get in the way when the bulk of drivers are getting probed.
-> @@ -277,9 +308,20 @@ static DECLARE_WAIT_QUEUE_HEAD(probe_waitqueue);
->  
->  static int really_probe(struct device *dev, struct device_driver *drv)
->  {
-> -	int ret = 0;
-> +	int ret = -EPROBE_DEFER;
->  	int local_trigger_count = atomic_read(&deferred_trigger_count);
->  
-> +	if (defer_all_probes) {
-> +		/*
-> +		 * Value of defer_all_probes can be set only by
-> +		 * device_defer_all_probes_enable() which, in turn, will call
-> +		 * wait_for_device_probe() right after that to avoid any races.
-> +		 */
-> +		dev_dbg(dev, "Driver %s force probe deferral\n", drv->name);
-> +		driver_deferred_probe_add(dev);
-> +		return ret;
-> +	}
-> +
->  	atomic_inc(&probe_count);
->  	pr_debug("bus: '%s': %s: probing driver %s with device %s\n",
->  		 drv->bus->name, __func__, drv->name, dev_name(dev));
-> @@ -391,6 +433,10 @@ int driver_probe_done(void)
->   */
->  void wait_for_device_probe(void)
->  {
-> +	/* wait for the deferred probe workqueue to finish */
-> +	if (driver_deferred_probe_enable)
-> +		flush_workqueue(deferred_wq);
-> +
->  	/* wait for the known devices to complete their probing */
->  	wait_event(probe_waitqueue, atomic_read(&probe_count) == 0);
->  	async_synchronize_full();
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index 1710c26..eeb2bb7 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -963,6 +963,9 @@ void dpm_complete(pm_message_t state)
->  	}
->  	list_splice(&list, &dpm_list);
->  	mutex_unlock(&dpm_list_mtx);
-> +
-> +	/* Allow device probing and trigger re-probing of deferred devices */
-> +	device_defer_all_probes_disable();
->  	trace_suspend_resume(TPS("dpm_complete"), state.event, false);
->  }
->  
-> @@ -1624,6 +1627,20 @@ int dpm_prepare(pm_message_t state)
->  	trace_suspend_resume(TPS("dpm_prepare"), state.event, true);
->  	might_sleep();
->  
-> +	/*
-> +	 * Give a chance for the known devices to complete their probes, before
-> +	 * disable probing of devices. This sync point is important at least
-> +	 * at boot time + hibernation restore.
-> +	 */
-> +	wait_for_device_probe();
-> +	/*
-> +	 * It is unsafe if probing of devices will happen during suspend or
-> +	 * hibernation and system behavior will be unpredictable in this case.
-> +	 * So, let's prohibit device's probing here and defer their probes
-> +	 * instead. The normal behavior will be restored in dpm_complete().
-> +	 */
-> +	device_defer_all_probes_enable();
-> +
->  	mutex_lock(&dpm_list_mtx);
->  	while (!list_empty(&dpm_list)) {
->  		struct device *dev = to_device(dpm_list.next);
-> 
+I've queued up this series for the second half of the v4.4 merge window.
 
 Thanks,
 Rafael
