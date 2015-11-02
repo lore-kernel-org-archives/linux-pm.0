@@ -1,40 +1,37 @@
-From: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+From: Stephen Boyd <sboyd@codeaurora.org>
 Subject: Re: [PATCH 1/3] PM / OPP: Add "opp-supported-hw" binding
-Date: Mon, 2 Nov 2015 11:20:37 -0800
-Message-ID: <20151102192037.GP19782@codeaurora.org>
+Date: Mon, 2 Nov 2015 11:21:44 -0800
+Message-ID: <20151102192144.GQ19782@codeaurora.org>
 References: <cover.1446167359.git.viresh.kumar@linaro.org>
  <2d52388bd7d3cc546ac3ab5afeb47bfcb3012213.1446167359.git.viresh.kumar@linaro.org>
- <20151030221826.GM19782@codeaurora.org>
- <20151031022003.GV3716@ubuntu>
+ <20151030214907.GJ19782@codeaurora.org>
+ <20151031021612.GU3716@ubuntu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20151031022003.GV3716@ubuntu>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+In-Reply-To: <20151031021612.GU3716@ubuntu>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, robh+dt@kernel.org, lee.jones@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, mark.rutland@arm.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, nm@ti.com, devicetree@vger.kernel.org, open list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
 On 10/31, Viresh Kumar wrote:
-> On 30-10-15, 15:18, Stephen Boyd wrote:
+> On 30-10-15, 14:49, Stephen Boyd wrote:
+> > I suppose if you wanted to have 64 possible combinations of some
+> > attribute you would just extend it to two 32 bit numbers in
+> > sequence? I don't see the limitation here, and hopefully there
+> > isn't a limitation so that we can specify sufficiently large
+> > numbers with more bits if we need to.
 > 
-> > Also, this makes it sound like opp-supported-hw is really just
-> > telling us if this is a supported frequency or not for the
-> > particular device we're running on.
+> Yeah, we discussed this earlier when Lee had the same query and I
+> suggested the exact same thing to him then.
 > 
-> That's right.
-> 
-> > The current wording makes it
-> 
-> Of the commit log ? Or the way the nodes are written?
 
-The way the documentation is written.
+Ah I see that after looking at the previous thread. Perhaps we
+can add such information into the documentation so that people
+aren't misled into thinking they're limited to 32 bits?
 
 -- 
 Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
 a Linux Foundation Collaborative Project
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
