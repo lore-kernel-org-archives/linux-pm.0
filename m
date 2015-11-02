@@ -1,37 +1,135 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 0/2] thermal: mediatek: Add cpu power cooling model
-Date: Mon, 2 Nov 2015 21:40:07 +0530
-Message-ID: <20151102161007.GI3639@ubuntu>
-References: <1445515359-8587-1-git-send-email-dawei.chien@mediatek.com>
- <20151028154449.GH3716@ubuntu>
- <9hh4mh4bdoi.fsf@e105922-lin.cambridge.arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Philippe Longepe <philippe.longepe@linux.intel.com>
+Subject: [PATCH 2/2] cpufreq: intel_pstate: Fix the FSB feq for Airmont
+Date: Mon,  2 Nov 2015 18:34:33 +0100
+Message-ID: <1446485673-12985-2-git-send-email-philippe.longepe@linux.intel.com>
+References: <1446485673-12985-1-git-send-email-philippe.longepe@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f50.google.com ([209.85.220.50]:33849 "EHLO
-	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751771AbbKBQKM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 2 Nov 2015 11:10:12 -0500
-Received: by padec8 with SMTP id ec8so43502908pad.1
-        for <linux-pm@vger.kernel.org>; Mon, 02 Nov 2015 08:10:12 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <9hh4mh4bdoi.fsf@e105922-lin.cambridge.arm.com>
+Received: from mga03.intel.com ([134.134.136.65]:28520 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752134AbbKBRdj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 2 Nov 2015 12:33:39 -0500
+In-Reply-To: <1446485673-12985-1-git-send-email-philippe.longepe@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Punit Agrawal <punit.agrawal@arm.com>
-Cc: Dawei Chien <dawei.chien@mediatek.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Matthias Brugger <matthias.bgg@gmail.com>, Daniel Kurtz <djkurtz@chromium.org>, Sascha Hauer <s.hauer@pengutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, Sascha Hauer <kernel@pengutronix.de>
+To: linux-pm@vger.kernel.org
+Cc: srinivas.pandruvada@linux.intel.com, Stephane Gasparini <stephane.gasparini@linux.intel.com>
 
-On 02-11-15, 15:53, Punit Agrawal wrote:
-> For dynamic power, I had posted some patches[0][1][2] introducing the
-> binding as well as updating cooling device registration via cpufreq
-> driver. Now that the SCPI hwmon driver is merged, I should re-send the
-> remaining patches.
-> 
-> [0] http://lkml.iu.edu/hypermail/linux/kernel/1508.0/01020.html
-> [1] http://lkml.iu.edu/hypermail/linux/kernel/1508.0/01022.html
-> [3] http://lkml.iu.edu/hypermail/linux/kernel/1508.0/01031.html
+Include the Airmont support in the get_scaling function.
 
-Sure. Just that whatever can be merged with opp-v2 should be merged.
+There are two flavors of Atom cores to be supported by intel_pstate,
+Silvermont and Airmont, so make the driver distinguish between them by
+adding separate frequency tables.
+Separate the cpu defaults params for each of them and match the CPU IDs
+against them as appropriate.
 
+Signed-off-by: Philippe Longepe <philippe.longepe@linux.intel.com>
+Signed-off-by: Stephane Gasparini <stephane.gasparini@linux.intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 56 +++++++++++++++++++++++++++++++++---------
+ 1 file changed, 45 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 13cd8a9..6d06639 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -738,20 +738,35 @@ static void atom_set_pstate(struct cpudata *cpudata, int pstate)
+ 	wrmsrl_on_cpu(cpudata->cpu, MSR_IA32_PERF_CTL, val);
+ }
+ 
+-#define ATOM_BCLK_FREQS 5
+-static int atom_freq_table[ATOM_BCLK_FREQS] = { 833, 1000, 1333, 1167, 800};
+-
+-static int atom_get_scaling(void)
++static int silvermont_get_scaling(void)
+ {
+ 	u64 value;
+ 	int i;
++	/* Defined in Table 35-6 from SDM (Sept 2015) */
++	static int silvermont_freq_table[] = {
++		83300, 100000, 133300, 116700, 80000};
+ 
+ 	rdmsrl(MSR_FSB_FREQ, value);
+-	i = value & 0x3;
++	i = value & 0x7;
++	BUG_ON(i > 4);
+ 
+-	BUG_ON(i > ATOM_BCLK_FREQS);
++	return silvermont_freq_table[i];
++}
+ 
+-	return atom_freq_table[i] * 100;
++static int airmont_get_scaling(void)
++{
++	u64 value;
++	int i;
++	/* Defined in Table 35-10 from SDM (Sept 2015) */
++	static int airmont_freq_table[] = {
++		83300, 100000, 133300, 116700, 80000,
++		93300, 90000, 88900, 87500};
++
++	rdmsrl(MSR_FSB_FREQ, value);
++	i = value & 0xF;
++	BUG_ON(i > 8);
++
++	return airmont_freq_table[i];
+ }
+ 
+ static void atom_get_vid(struct cpudata *cpudata)
+@@ -887,7 +902,26 @@ static struct cpu_defaults core_params = {
+ 	},
+ };
+ 
+-static struct cpu_defaults atom_params = {
++static struct cpu_defaults silvermont_params = {
++	.pid_policy = {
++		.sample_rate_ms = 10,
++		.deadband = 0,
++		.setpoint = 60,
++		.p_gain_pct = 14,
++		.d_gain_pct = 0,
++		.i_gain_pct = 4,
++	},
++	.funcs = {
++		.get_max = atom_get_max_pstate,
++		.get_min = atom_get_min_pstate,
++		.get_turbo = atom_get_turbo_pstate,
++		.set = atom_set_pstate,
++		.get_scaling = silvermont_get_scaling,
++		.get_vid = atom_get_vid,
++	},
++};
++
++static struct cpu_defaults airmont_params = {
+ 	.pid_policy = {
+ 		.sample_rate_ms = 10,
+ 		.deadband = 0,
+@@ -902,7 +936,7 @@ static struct cpu_defaults atom_params = {
+ 		.get_min = atom_get_min_pstate,
+ 		.get_turbo = atom_get_turbo_pstate,
+ 		.set = atom_set_pstate,
+-		.get_scaling = atom_get_scaling,
++		.get_scaling = airmont_get_scaling,
+ 		.get_vid = atom_get_vid,
+ 	},
+ };
+@@ -1155,7 +1189,7 @@ static void intel_pstate_timer_func(unsigned long __data)
+ static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
+ 	ICPU(0x2a, core_params),
+ 	ICPU(0x2d, core_params),
+-	ICPU(0x37, atom_params),
++	ICPU(0x37, silvermont_params),
+ 	ICPU(0x3a, core_params),
+ 	ICPU(0x3c, core_params),
+ 	ICPU(0x3d, core_params),
+@@ -1164,7 +1198,7 @@ static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
+ 	ICPU(0x45, core_params),
+ 	ICPU(0x46, core_params),
+ 	ICPU(0x47, core_params),
+-	ICPU(0x4c, atom_params),
++	ICPU(0x4c, airmont_params),
+ 	ICPU(0x4e, core_params),
+ 	ICPU(0x4f, core_params),
+ 	ICPU(0x5e, core_params),
 -- 
-viresh
+1.9.1
+
