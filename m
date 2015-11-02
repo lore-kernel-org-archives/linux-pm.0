@@ -1,134 +1,52 @@
 From: Javi Merino <javi.merino@arm.com>
-Subject: [PATCH 1/2] thermal: devfreq_cooling: use a thermal_cooling_device for register and unregister
-Date: Mon,  2 Nov 2015 19:03:03 +0000
-Message-ID: <1446490984-18438-2-git-send-email-javi.merino@arm.com>
+Subject: [PATCH 2/2] thermal: devfreq_cooling: Make power a u64
+Date: Mon,  2 Nov 2015 19:03:04 +0000
+Message-ID: <1446490984-18438-3-git-send-email-javi.merino@arm.com>
 References: <1446490984-18438-1-git-send-email-javi.merino@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:52385 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753888AbbKBTEV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 2 Nov 2015 14:04:21 -0500
 In-Reply-To: <1446490984-18438-1-git-send-email-javi.merino@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, orjan.eide@arm.com, edubezval@gmail.com, Javi Merino <javi.merino@arm.com>, Zhang Rui <rui.zhang@intel.com>
-List-Id: linux-pm@vger.kernel.org
 
-Be consistent with what other cooling devices do and return a struct
-thermal_cooling_device * on register.  Also, for the unregister, accept
-a struct thermal_cooling_device * as parameter.
+The prototype of do_div() is:
 
-Cc: Zhang Rui <rui.zhang@intel.com>
+uint32_t do_div(uint64_t *n, uint32_t base);
+
+Make power u64 to avoid the following warning:
+
+   drivers/thermal/devfreq_cooling.c: In function 'get_dynamic_power':
+   drivers/thermal/devfreq_cooling.c:267:2: warning: comparison of distinct pointer types lacks a cast [enabled by default]
+   drivers/thermal/devfreq_cooling.c:267:2: warning: right shift count >= width of type [enabled by default]
+   drivers/thermal/devfreq_cooling.c:267:2: warning: passing argument 1 of '__div64_32' from incompatible pointer type [enabled by default]
+   include/asm-generic/div64.h:35:17: note: expected 'uint64_t *' but argument is of type 'long unsigned int *'
+
+Reported-by: kbuild test robot <fengguang.wu@intel.com>
 Cc: Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>
 Signed-off-by: Javi Merino <javi.merino@arm.com>
 ---
- drivers/thermal/devfreq_cooling.c | 16 ++++++++++------
- include/linux/devfreq_cooling.h   | 16 ++++++++--------
- 2 files changed, 18 insertions(+), 14 deletions(-)
+ drivers/thermal/devfreq_cooling.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
-index a27206815066..31e40a9a9fd0 100644
+index 31e40a9a9fd0..d1b7c32e7406 100644
 --- a/drivers/thermal/devfreq_cooling.c
 +++ b/drivers/thermal/devfreq_cooling.c
-@@ -467,7 +467,7 @@ free_power_table:
-  * devfreq should use the simple_ondemand governor, other governors
-  * are not currently supported.
-  */
--struct devfreq_cooling_device *
-+struct thermal_cooling_device *
- of_devfreq_cooling_register_power(struct device_node *np, struct devfreq *df,
- 				  struct devfreq_cooling_power *dfc_power)
+@@ -257,7 +257,7 @@ static unsigned long
+ get_dynamic_power(struct devfreq_cooling_device *dfc, unsigned long freq,
+ 		  unsigned long voltage)
  {
-@@ -513,7 +513,7 @@ of_devfreq_cooling_register_power(struct device_node *np, struct devfreq *df,
- 
- 	dfc->cdev = cdev;
- 
--	return dfc;
-+	return cdev;
- 
- release_idr:
- 	release_idr(&devfreq_idr, dfc->id);
-@@ -533,7 +533,7 @@ EXPORT_SYMBOL_GPL(of_devfreq_cooling_register_power);
-  * @np: Pointer to OF device_node.
-  * @df: Pointer to devfreq device.
-  */
--struct devfreq_cooling_device *
-+struct thermal_cooling_device *
- of_devfreq_cooling_register(struct device_node *np, struct devfreq *df)
- {
- 	return of_devfreq_cooling_register_power(np, df, NULL);
-@@ -544,7 +544,7 @@ EXPORT_SYMBOL_GPL(of_devfreq_cooling_register);
-  * devfreq_cooling_register() - Register devfreq cooling device.
-  * @df: Pointer to devfreq device.
-  */
--struct devfreq_cooling_device *devfreq_cooling_register(struct devfreq *df)
-+struct thermal_cooling_device *devfreq_cooling_register(struct devfreq *df)
- {
- 	return of_devfreq_cooling_register(NULL, df);
- }
-@@ -554,11 +554,15 @@ EXPORT_SYMBOL_GPL(devfreq_cooling_register);
-  * devfreq_cooling_unregister() - Unregister devfreq cooling device.
-  * @dfc: Pointer to devfreq cooling device to unregister.
-  */
--void devfreq_cooling_unregister(struct devfreq_cooling_device *dfc)
-+void devfreq_cooling_unregister(struct thermal_cooling_device *cdev)
- {
--	if (!dfc)
-+	struct devfreq_cooling_device *dfc;
-+
-+	if (!cdev)
- 		return;
- 
-+	dfc = cdev->devdata;
-+
- 	thermal_cooling_device_unregister(dfc->cdev);
- 	release_idr(&devfreq_idr, dfc->id);
- 	kfree(dfc->power_table);
-diff --git a/include/linux/devfreq_cooling.h b/include/linux/devfreq_cooling.h
-index ee5f0ec9290b..7adf6cc4b305 100644
---- a/include/linux/devfreq_cooling.h
-+++ b/include/linux/devfreq_cooling.h
-@@ -43,37 +43,37 @@ struct devfreq_cooling_power {
- 	unsigned long dyn_power_coeff;
- };
- 
--struct devfreq_cooling_device *
-+struct thermal_cooling_device *
- of_devfreq_cooling_register_power(struct device_node *np, struct devfreq *df,
- 				  struct devfreq_cooling_power *dfc_power);
--struct devfreq_cooling_device *
-+struct thermal_cooling_device *
- of_devfreq_cooling_register(struct device_node *np, struct devfreq *df);
--struct devfreq_cooling_device *devfreq_cooling_register(struct devfreq *df);
--void devfreq_cooling_unregister(struct devfreq_cooling_device *dfc);
-+struct thermal_cooling_device *devfreq_cooling_register(struct devfreq *df);
-+void devfreq_cooling_unregister(struct thermal_cooling_device *dfc);
- 
- #else /* !CONFIG_DEVFREQ_THERMAL */
- 
--struct devfreq_cooling_device *
-+struct thermal_cooling_device *
- of_devfreq_cooling_register_power(struct device_node *np, struct devfreq *df,
- 				  struct devfreq_cooling_power *dfc_power)
- {
- 	return ERR_PTR(-EINVAL);
- }
- 
--static inline struct devfreq_cooling_device *
-+static inline struct thermal_cooling_device *
- of_devfreq_cooling_register(struct device_node *np, struct devfreq *df)
- {
- 	return ERR_PTR(-EINVAL);
- }
- 
--static inline struct devfreq_cooling_device *
-+static inline struct thermal_cooling_device *
- devfreq_cooling_register(struct devfreq *df)
- {
- 	return ERR_PTR(-EINVAL);
- }
- 
- static inline void
--devfreq_cooling_unregister(struct devfreq_cooling_device *dfc)
-+devfreq_cooling_unregister(struct thermal_cooling_device *dfc)
- {
- }
+-	unsigned long power;
++	u64 power;
+ 	u32 freq_mhz;
+ 	struct devfreq_cooling_power *dfc_power = dfc->power_ops;
  
 -- 
 1.9.1
+
