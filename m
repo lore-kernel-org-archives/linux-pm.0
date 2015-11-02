@@ -1,119 +1,69 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/3] PM, vfs: use filesystem freezing instead of kthread freezer
-Date: Mon, 02 Nov 2015 03:43:07 +0100
-Message-ID: <2258525.D9qdTJBeTN@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1510301637310.1659-100000@iolanthe.rowland.org> <6015070.Gclh0s3EvS@vostro.rjw.lan> <alpine.LNX.2.00.1510310844360.17538@pobox.suse.cz>
+From: Neil Brown <nfbrown@novell.com>
+Subject: Re: [PATCH 1/3] power, vfs: move away from PF_KTHREAD freezing in favor of fs freezing
+Date: Mon, 02 Nov 2015 14:01:06 +1100
+Message-ID: <878u6hjea5.fsf@notabene.neil.brown.name>
+References: <alpine.LNX.2.00.1510301424360.17538@pobox.suse.cz> <alpine.LNX.2.00.1510301439080.17538@pobox.suse.cz> <1446281756.21651.7.camel@suse.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.LNX.2.00.1510310844360.17538@pobox.suse.cz>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jiri Kosina <jikos@kernel.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Dave Chinner <david@fromorbit.com>, Jan Kara <jack@suse.cz>, Christoph Hellwig <hch@lst.de>, Linus Torvalds <torvalds@linux-foundation.org>, Al Viro <viro@zeniv.linux.org.uk>, Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: multipart/signed; boundary="=-=-=";
+	micalg=pgp-sha256; protocol="application/pgp-signature"
+Return-path: <linux-fsdevel-owner@vger.kernel.org>
+In-Reply-To: <1446281756.21651.7.camel@suse.com>
+Sender: linux-fsdevel-owner@vger.kernel.org
+To: Oliver Neukum <oneukum@suse.com>, Jiri Kosina <jikos@kernel.org>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Dave Chinner <david@fromorbit.com>, Jan Kara <jack@suse.cz>, Christoph Hellwig <hch@lst.de>, Linus Torvalds <torvalds@linux-foundation.org>, Al Viro <viro@ZenIV.linux.org.uk>, Tejun Heo <tj@kernel.org>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, October 31, 2015 09:19:33 AM Jiri Kosina wrote:
-> On Sat, 31 Oct 2015, Rafael J. Wysocki wrote:
-> 
-> > > > > > > I would say instead "no I/O is allowed from now on".  Maybe that's an 
-> > > > > > > overstatement, but I think it comes closer to the truth.
-> > > > > 
-> > > > > But that's what PM callbacks are for.
-> > 
-> > Not really.  In fact, PM callbacks may not be suitable for some use cases even
-> > in theory (that's if you want something to stop running before any PM callbacks
-> > are executed during suspend).
-> 
-> If that's the case, wouldn't then it be better to have .pre_suspend 
-> callback as well, instead of having to do this kind of polling?
+--=-=-=
+Content-Type: text/plain
 
-If that's an individual driver's kthread, I guess it should be sufficient to
-stop it from the .prepare callback.  If it is something more generic, creating
-a device for it just in order to be able to execute a PM callback from there
-may be slightly overkill.
+On Sat, Oct 31 2015, Oliver Neukum wrote:
 
-But again, I'm not aware of any real cases like that, so it may not be an issue
-in practice.
+> On Fri, 2015-10-30 at 14:47 +0100, Jiri Kosina wrote:
+>> Basically the main argument why kthread freezer is not needed boils
+>> down to
+>> this: the only facility that is needed during suspend: "no persistent
+>> fs
+>> changes are allowed from now on".
+>
+> Is that true? Drivers of character devices also may assume
+> that IO and suspend() wouldn't race (except in fairly clear exceptions)
 
-> > > > The most natural implementation would be for the callback routine to set 
-> > > > a flag; at various strategic points the kthread would check the flag and 
-> > > > if it was set, call a routine that sits around and waits for the suspend 
-> > > > to be over.  
-> > > 
-> > > Could you name at least some existing kthreads that would actually *need* 
-> > > such complex handling, instead of just waiting in schedule() until 
-> > > suspend-resume cycle is over, given that PM callbacks do all the necessary 
-> > > cleanup (putting HW to sleep, cancelling timers, etc) anyway?
-> > > 
-> > > PM callback can always explicitly do kthread_stop() on a particular 
-> > > kthread if really necessary.
-> > 
-> > Runtime PM uses a freezable workqueue, allocated in pm_start_workqueue().
-> 
-> Yeah, agreed, as I said in the original mail, freezable workqueues I am 
-> not covering for the moment, there might be a additional issues with them 
-> compared to kthreads. That needs to be further looked into.
+Anything that is a device can hook in to the suspend using the standard
+call back and make sure no problematic races happen.
 
-OK
+Filesystems are different partly because the "know" in memory some
+details of what is persisting on storage, and partly because they aren't
+devices.
 
-> > > The main point of freezer is to reach quiescent state wrt. filesystems 
-> > > (metadata in memory need to be absolutely in sync with what's on disk). 
-> > > That's no different between hibernation and s2ram, is it?
-> > > 
-> > > BTW, a quite some of this has been already "pre-discussed" in 
-> > > Documentation/power/freezing-of-tasks.txt (which has BTW been written 
-> > > before we've had the possibility to freeze filesystems, and this fact is 
-> > > even point there out).
-> > 
-> > That is somewhat outdated in my view.  At least my list of reasons for using
-> > the freezer is now somewhat different from the one given in that file.
-> 
-> Well, so what is the list then, and how do you know that kthread_run() 
-> users are behaving according to that list? That's basically exactly what 
-> this effort is about -- making some sense out of current situation.
+Maybe filesystems should be devices .... though that probably wouldn't
+help much.
 
-Currently, the #1 reason for using the freezer is to prevent user space
-from interacting with devices during system suspend/resume.  BTW, that also
-covers devices with runtime PM support, because the handling of user space
-access to them in the runtime PM case may be different.
 
-For example, if user space does a "read" or "write" on a character device
-which is runtime-suspended at that point, the driver may want to resume the
-device temporarily, carry out the operation and suspend it again, but that
-generally won't work for the system suspend case.
+I would suggest that "the only facility that is needed during suspend"
+is really "well defined states and well defined transitions".
+Filesystems need them as well as devices, and frozen kthreads might have
+been a kludge to try to provide them.
 
-Note that this applies to both system suspend (all variants of it for that
-matter) and hibernation.
+NeilBrown
 
-The #2 reason in my view is that essentially the freezer is what makes a
-difference between runtime idle and system suspend on platforms without
-firmware/hardware suspend support (or the lightweight variants of suspend
-in general).  Namely, it effectively prevents user space from setting up
-timers in the future and helps to reduce interrupt noise causing the CPUs
-to leave deep low-power states too often (at least in some cases).
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
 
-The #3 reason is to provide a way for things that might touch persistent
-storage after a hibernation image had been created to prevent themselves from
-running during that time.  Note that it also is a good idea to prevent such
-things from running during system suspend/resume in general so they don't
-try to access devices at wrong times.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-BTW, the freezing of filesystems during system suspend (not hibernation) makes
-sense too, because it will help to address the long-standing issue with storage
-devices that go away while the system is suspended.
-
-I guess it may also helps to address the case when a device is removed from a
-suspended system, written to on another system in the meantime and inserted
-back into the (still suspended) original system which then is resumed.  Today
-this is an almost guaranteed data corruption scenario, but if the filesystem in
-question is properly frozen during suspend, the driver should be able to detect
-superblock changes during unfreeze.
-
-So the approach I'd suggest would be to add the freezing of filesystems to the
-suspend/resume code paths just for the above reasons and drop the kthreads
-freezing from the filesystems that support the proper freezing.  The rest
-should be easier to deal with then.
-
-Thanks,
-Rafael
+iQIcBAEBCAAGBQJWNtHyAAoJEDnsnt1WYoG5F6IP/2Z7BlgpWuOm/npy0r13P+9F
+X9wz7ElSYuN80mORzEyPef6tFyJ6auLi7RVcoVuuL7YSvUyKsGqXRMDMWoYBFQ4L
+S2DTLhl8F2tbKG2zDf6NEQqOZ+F5m01OxeuSutdbhmGSMPoI+lc3MI1nuZqQVC0h
+VWRt1sUQPqoJiguWaEs7wwQiGRIneYpKVlzsz3tEg9Il6soy79QYdcAYJhmW9BXL
+FmMlpydwxyd/vJmaF1pxebE7hNhBqtmZb750hyRmpCiAYoi9eZ/r+vpx4QXjyB2b
+vJ7warNwPy+4edflowUI8UPVbZVbmmnD+lpFS9E2LYNRlQ7Cz0ggT30lkcUkcoza
+/BOUbeX0E9O+Kj1J5FDokWvfvF2Os9BoeSKC7Y7Qg17T5dZvJ1hN3q6NfZgh7NqF
+NtxDSKD3gh0NQU64PM4cYpcVwVAdlLnhLMhbaeW1KlaAJmr4gqV591bXyM2yFKDn
+w+PVbXg+Ew1sG3qMU/QUApM6QTNsvzpiwCMQPlG54HLOUosPwj1dOlMNa0vJaFGy
+ouuqPOKphHZRq+g76NVaPy3XdWMKieLQ/+ier+95VEaiJS0gU8UGdCUIMuMn5rXQ
+KccrpwtCxIRDvnUOcd+/S1c+0i+bhlhf0fImiT7lnbuDsn5LIt3M3jO1zKBPfstk
+nlApnQMxqBWynj9PA3HZ
+=VHSc
+-----END PGP SIGNATURE-----
+--=-=-=--
