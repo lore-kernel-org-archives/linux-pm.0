@@ -1,77 +1,48 @@
-From: dawei chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Subject: Re: [PATCH v3 2/2] arm64: dts: mt8173: Add thermal zone node for
- mt8173.
-Date: Mon, 2 Nov 2015 18:51:27 +0800
-Message-ID: <1446461487.10039.33.camel@mtksdaap41>
-References: <1445515359-8587-1-git-send-email-dawei.chien@mediatek.com>
-	 <1445515359-8587-3-git-send-email-dawei.chien@mediatek.com>
-	 <20151028153944.GG3716@ubuntu>
+From: Oliver Neukum <oneukum@suse.com>
+Subject: Re: [PATCH 0/3] PM, vfs: use filesystem freezing instead of kthread
+ freezer
+Date: Mon, 02 Nov 2015 12:00:31 +0100
+Message-ID: <1446462031.25345.15.camel@suse.com>
+References: <Pine.LNX.4.44L0.1510301637310.1659-100000@iolanthe.rowland.org>
+	 <6015070.Gclh0s3EvS@vostro.rjw.lan>
+	 <alpine.LNX.2.00.1510310844360.17538@pobox.suse.cz>
+	 <2258525.D9qdTJBeTN@vostro.rjw.lan>
+	 <alpine.LNX.2.00.1511021137310.22567@pobox.suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20151028153944.GG3716@ubuntu>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Daniel Kurtz <djkurtz-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, srv_heupstream-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx2.suse.de ([195.135.220.15]:41857 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751834AbbKBLCN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 2 Nov 2015 06:02:13 -0500
+In-Reply-To: <alpine.LNX.2.00.1511021137310.22567@pobox.suse.cz>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jiri Kosina <jikos@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alan Stern <stern@rowland.harvard.edu>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Dave Chinner <david@fromorbit.com>, Jan Kara <jack@suse.cz>, Christoph Hellwig <hch@lst.de>, Linus Torvalds <torvalds@linux-foundation.org>, Al Viro <viro@zeniv.linux.org.uk>, Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Wed, 2015-10-28 at 21:09 +0530, Viresh Kumar wrote:
-> On 22-10-15, 20:02, Dawei Chien wrote:
-> > Add thermal zone node to mt8173.dtsi.
-> > 
-> > Signed-off-by: Dawei Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-> > ---
-> > This patch is base on
-> > https://patchwork.kernel.org/patch/7249821/
-> > https://patchwork.kernel.org/patch/7249861/
-> > https://patchwork.kernel.org/patch/7249891/
-> > ---
-> >  arch/arm64/boot/dts/mediatek/mt8173.dtsi |   90 ++++++++++++++++++++++++++++++
-> >  1 file changed, 90 insertions(+)
-> > 
-> > diff --git a/arch/arm64/boot/dts/mediatek/mt8173.dtsi b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-> > index 3b18f37..eaf12bf 100644
-> > --- a/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-> > +++ b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-> > @@ -16,6 +16,7 @@
-> >  #include <dt-bindings/interrupt-controller/arm-gic.h>
-> >  #include <dt-bindings/power/mt8173-power.h>
-> >  #include <dt-bindings/reset-controller/mt8173-resets.h>
-> > +#include <dt-bindings/thermal/mt8173.h>
-> >  #include "mt8173-pinfunc.h"
-> >  
-> >  / {
-> > @@ -54,6 +55,18 @@
-> >  			reg = <0x000>;
-> >  			enable-method = "psci";
-> >  			cpu-idle-states = <&CPU_SLEEP_0>;
-> > +			static-power-points = <
-> > +				859000  43
-> > +				908000  52
-> > +				983000  86
-> > +				1009000 123
-> > +				1028000 138
-> > +				1083000 172
-> > +				1110900 180
-> > +				1125000 192
+On Mon, 2015-11-02 at 11:45 +0100, Jiri Kosina wrote:
+> > For example, if user space does a "read" or "write" on a character
+> device
+> > which is runtime-suspended at that point, the driver may want to
+> resume the
+> > device temporarily, carry out the operation and suspend it again,
+> but that
+> > generally won't work for the system suspend case.
 > 
-> What's the unit of power here? Is this power accurate? Or just a
-> number representing the power ?
+> But why would this even be relevant in this discussion, given that at
+> the 
+> point we are talking about, the whole userspace has been frozen
+> already?
 
-The unit is mW. This power was measured by tools, but it may be not
-accurate enough since this tool has a error range.
+It really doesn't matter whether the thread in question is a kernel
+thread or user space. Device detection is even worse.
+Kernel threads that do either of these things must stop at
+defined points. You can use the freezer or go to another mechanism.
+I just doubt they'd act much different in the end.
 
-> > +			>;
-> > +			dynamic-power-coefficient = <263>;
-> > +			#cooling-cells = <2>;
-> >  		};
-> 
-> @Rob: Looks like another good candidate for the OPP-v2 table? Power.
-> 
+	Regards
+		Oliver
 
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
