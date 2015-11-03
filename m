@@ -1,479 +1,89 @@
-From: Alexander Aring <alex.aring@gmail.com>
-Subject: [RFCv2 2/2] rpi: add support to enable usb power domain
-Date: Tue,  3 Nov 2015 23:45:11 +0100
-Message-ID: <1446590711-18928-3-git-send-email-alex.aring@gmail.com>
+From: Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: [RFCv2 1/2] power: domain: add pm_genpd_uninit
+Date: Tue,  3 Nov 2015 23:45:10 +0100
+Message-ID: <1446590711-18928-2-git-send-email-alex.aring@gmail.com>
 References: <1446590711-18928-1-git-send-email-alex.aring@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wi0-f175.google.com ([209.85.212.175]:35719 "EHLO
-	mail-wi0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932171AbbKCWpb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Nov 2015 17:45:31 -0500
-In-Reply-To: <1446590711-18928-1-git-send-email-alex.aring@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1446590711-18928-1-git-send-email-alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Cc: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, lee-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjui-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, sbranden-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-rpi-kernel@lists.infradead.org
-Cc: robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, swarren@wwwdotorg.org, lee@kernel.org, eric@anholt.net, linux@arm.linux.org.uk, f.fainelli@gmail.com, rjui@broadcom.com, sbranden@broadcom.com, rjw@rjwysocki.net, khilman@kernel.org, ulf.hansson@linaro.org, len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, bcm-kernel-feedback-list@broadcom.com, kernel@pengutronix.de, Alexander Aring <alex.aring@gmail.com>
 
-This patch adds support for RPi several Power Domains and enable suppor=
-t
-to enable the USB Power Domain when it's not enabled before.
+This patch adds function pm_genpd_uninit for undo a pm_genpd_init. This
+is useful for multiple power domains while probing. If the probing fails
+after one pm_genpd_init was called we need to undo all previous
+registrations of generic pm domains inside the gpd_list list.
 
-This patch based on Eric Anholt's patch to support Power Domains. He ha=
-d
-an issue about -EPROBE_DEFER inside the power domain subsystem, this
-issue was solved by commit <311fa6a> ("PM / Domains: Return -EPROBE_DEF=
-ER
-if we fail to init or turn-on domain").
+There is a check on IS_ERR_OR_NULL(genpd) which is useful to check again
+registered power domains and not registered domains, the driver can use
+this mechanism to have an array with registered and non-registered power
+domains, where non-registered power domains are NULL.
 
-It was tested with barebox and the following scripts before booting
-linux:
-
-/env/a_off:
-
- # cat /env/a_off
- #turn off which are enabled by default
- regulator -n bcm2835_mci0 -s disable
- regulator -n uart0-pl0110 -s disable
-
-/env/a_on:
-
- # cat /env/a_on
- #turn off which are enabled by default
- regulator -n bcm2835_mci0 -s disable
- regulator -n uart0-pl0110 -s disable
-
- regulator -n bcm2835_mci0 -s enable
- regulator -n uart0-pl0110 -s enable
- regulator -n uart0-pl0111 -s enable
- regulator -n bcm2835_usb -s enable
- regulator -n bcm2835_i2c0 -s enable
- regulator -n bcm2835_i2c1 -s enable
- regulator -n bcm2835_i2c2 -s enable
- regulator -n bcm2835_spi -s enable
- regulator -n bcm2835_ccp2tx -s enable
- regulator -n bcm2835_dsi -s enable
-
-/env/b:
-
- # cat /env/b
- sh /env/a_on
-
- regulator -n bcm2835_mci0 -s disable
- regulator -n uart0-pl0110 -s disable
- regulator -n uart0-pl0111 -s disable
- regulator -n bcm2835_usb -s disable
- regulator -n bcm2835_i2c0 -s disable
- regulator -n bcm2835_i2c1 -s disable
- regulator -n bcm2835_i2c2 -s disable
- regulator -n bcm2835_spi -s disable
- regulator -n bcm2835_ccp2tx -s disable
- regulator -n bcm2835_dsi -s disable
-
-/env/c:
-
- # cat /env/c
- sh ./env/b
-
- regulator -n bcm2835_mci0 -s enable
- regulator -n uart0-pl0110 -s enable
- regulator -n uart0-pl0111 -s enable
- regulator -n bcm2835_usb -s enable
- regulator -n bcm2835_i2c0 -s enable
- regulator -n bcm2835_i2c1 -s enable
- regulator -n bcm2835_i2c2 -s enable
- regulator -n bcm2835_spi -s enable
- regulator -n bcm2835_ccp2tx -s enable
- regulator -n bcm2835_dsi -s enable
-
-These scripts enables/disable all regulators inside the bootloader. It
-was running with a "hard" and "soft" reset without any issues. These
-testcases should fit to Stephen Warren suggestions:
-
-"(a) before having explicitly turned the power domain on or off at all =
-(b)
-after having turned it on (c) after having turned it off, and for all
-power domains."
-
-Cc: Stephen Warren <swarren@wwwdotorg.org>
-Cc: Lee Jones <lee@kernel.org>
-Cc: Eric Anholt <eric@anholt.net>
-Signed-off-by: Alexander Aring <alex.aring@gmail.com>
+Cc: Rafael J. Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Cc: Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
+Cc: Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Cc: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
+Signed-off-by: Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 ---
-changes since v2:
- - add pm_genpd_uninit to handle probing failure.
- - move power domain drive to his own driver in arch/arm/mach-bcm/
-   Also add own devicetree node for this driver, "raspberrypi,bcm2835-p=
-ower".
- - Removing all power domains which might exists for the firmware API b=
-ut
-   we currently have no use-case for it. I tried to keep the same domai=
-n
-   numbering in generic power domains subsystem like they are offered f=
-rom
-   the firmware API. This works, all power_domains which are NULL insid=
-e
-   the array of genpd_onecell_data.domains[#] will be ignored.
- - Adding Eric Anholt and me to the authors.
- - Creating devicetree documentation for the power domain driver.
- - fix error handling in raspberrypi_firmware_set_power.
- - Remove comment about mapping between power domains array, this is no=
-t
-   necessary anymore. I add a "enabled" attribute to raspberrypi_power_=
-domain
-   which indicates if a domain should be registered or not (zeroed valu=
-es
-   does not indicate such handling, but enabled is false then).
- - remove "goto mbox" not necessary anymore because an own driver
-   implementation.
- - Update devicetrees for changes in v2.
+ drivers/base/power/domain.c | 15 +++++++++++++++
+ include/linux/pm_domain.h   |  4 ++++
+ 2 files changed, 19 insertions(+)
 
- .../bindings/arm/bcm/raspberrypi,bcm2835-power.txt |  25 +++
- arch/arm/boot/dts/bcm2835-rpi.dtsi                 |  11 ++
- arch/arm/boot/dts/bcm2835.dtsi                     |   2 +-
- arch/arm/mach-bcm/Kconfig                          |  10 ++
- arch/arm/mach-bcm/Makefile                         |   1 +
- arch/arm/mach-bcm/raspberrypi-power.c              | 180 +++++++++++++=
-++++++++
- include/dt-bindings/arm/raspberrypi-power.h        |  14 ++
- 7 files changed, 242 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/devicetree/bindings/arm/bcm/raspberry=
-pi,bcm2835-power.txt
- create mode 100644 arch/arm/mach-bcm/raspberrypi-power.c
- create mode 100644 include/dt-bindings/arm/raspberrypi-power.h
-
-diff --git a/Documentation/devicetree/bindings/arm/bcm/raspberrypi,bcm2=
-835-power.txt b/Documentation/devicetree/bindings/arm/bcm/raspberrypi,b=
-cm2835-power.txt
-new file mode 100644
-index 0000000..c3abc24
---- /dev/null
-+++ b/Documentation/devicetree/bindings/arm/bcm/raspberrypi,bcm2835-pow=
-er.txt
-@@ -0,0 +1,25 @@
-+Raspberry Pi power domain driver
-+
-+Required properties:
-+
-+- compatible:		Should be "raspberrypi,bcm2835-power".
-+- firmware:		Reference to the RPi firmware device node.
-+- #power-domain-cells:	Should be <1>, we providing multiple power doma=
-ins.
-+
-+The valid defines for power domain are:
-+
-+ RPI_POWER_DOMAIN_USB
-+
-+Example:
-+
-+power: power {
-+	compatible =3D "raspberrypi,bcm2835-power";
-+	firmware =3D <&firmware>;
-+	#power-domain-cells =3D <1>;
-+};
-+
-+Example for using power domain:
-+
-+&usb {
-+       power-domains =3D <&power RPI_POWER_DOMAIN_USB>;
-+};
-diff --git a/arch/arm/boot/dts/bcm2835-rpi.dtsi b/arch/arm/boot/dts/bcm=
-2835-rpi.dtsi
-index ab5474e..d9b16d1 100644
---- a/arch/arm/boot/dts/bcm2835-rpi.dtsi
-+++ b/arch/arm/boot/dts/bcm2835-rpi.dtsi
-@@ -1,3 +1,4 @@
-+#include <dt-bindings/arm/raspberrypi-power.h>
- #include "bcm2835.dtsi"
-=20
- / {
-@@ -20,6 +21,12 @@
- 			compatible =3D "raspberrypi,bcm2835-firmware";
- 			mboxes =3D <&mailbox>;
- 		};
-+
-+		power: power {
-+			compatible =3D "raspberrypi,bcm2835-power";
-+			firmware =3D <&firmware>;
-+			#power-domain-cells =3D <1>;
-+		};
- 	};
- };
-=20
-@@ -56,3 +63,7 @@
- 	status =3D "okay";
- 	bus-width =3D <4>;
- };
-+
-+&usb {
-+	power-domains =3D <&power RPI_POWER_DOMAIN_USB>;
-+};
-diff --git a/arch/arm/boot/dts/bcm2835.dtsi b/arch/arm/boot/dts/bcm2835=
-=2Edtsi
-index 301c73f..3c899b3 100644
---- a/arch/arm/boot/dts/bcm2835.dtsi
-+++ b/arch/arm/boot/dts/bcm2835.dtsi
-@@ -149,7 +149,7 @@
- 			status =3D "disabled";
- 		};
-=20
--		usb@7e980000 {
-+		usb: usb@7e980000 {
- 			compatible =3D "brcm,bcm2835-usb";
- 			reg =3D <0x7e980000 0x10000>;
- 			interrupts =3D <1 9>;
-diff --git a/arch/arm/mach-bcm/Kconfig b/arch/arm/mach-bcm/Kconfig
-index 1319c3c..244475e5 100644
---- a/arch/arm/mach-bcm/Kconfig
-+++ b/arch/arm/mach-bcm/Kconfig
-@@ -120,6 +120,16 @@ config ARCH_BCM2835
- 	  This enables support for the Broadcom BCM2835 SoC. This SoC is
- 	  used in the Raspberry Pi and Roku 2 devices.
-=20
-+config RASPBERRY_POWER
-+	bool "Raspberry Pi power domain driver"
-+	depends on ARCH_BCM2835
-+	depends on RASPBERRYPI_FIRMWARE
-+	select PM_GENERIC_DOMAINS if PM
-+	select PM_GENERIC_DOMAINS_OF if PM
-+	help
-+	  This enables support for the RPi power domains which can be enabled
-+	  or disabled via the RPi firmware.
-+
- config ARCH_BCM_63XX
- 	bool "Broadcom BCM63xx DSL SoC" if ARCH_MULTI_V7
- 	depends on MMU
-diff --git a/arch/arm/mach-bcm/Makefile b/arch/arm/mach-bcm/Makefile
-index 1780a3f..283295e 100644
---- a/arch/arm/mach-bcm/Makefile
-+++ b/arch/arm/mach-bcm/Makefile
-@@ -33,6 +33,7 @@ endif
-=20
- # BCM2835
- obj-$(CONFIG_ARCH_BCM2835)	+=3D board_bcm2835.o
-+obj-$(CONFIG_RASPBERRY_POWER)	+=3D raspberrypi-power.o
-=20
- # BCM5301X
- obj-$(CONFIG_ARCH_BCM_5301X)	+=3D bcm_5301x.o
-diff --git a/arch/arm/mach-bcm/raspberrypi-power.c b/arch/arm/mach-bcm/=
-raspberrypi-power.c
-new file mode 100644
-index 0000000..531300f
---- /dev/null
-+++ b/arch/arm/mach-bcm/raspberrypi-power.c
-@@ -0,0 +1,180 @@
-+/*
-+ * This program is free software; you can redistribute it and/or modif=
-y
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * Authors:
-+ * (C) 2015 Pengutronix, Alexander Aring <aar@pengutronix.de>
-+ * Eric Anholt <eric@anholt.net>
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 16550c6..65b9d1a 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -1730,6 +1730,21 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
+ }
+ EXPORT_SYMBOL_GPL(pm_genpd_init);
+ 
++/**
++ * pm_genpd_uninit - Uninitialize a generic I/O PM domain object.
++ * @genpd: PM domain object to initialize.
 + */
-+
-+#include <linux/module.h>
-+#include <linux/pm_domain.h>
-+#include <linux/of_platform.h>
-+#include <linux/platform_device.h>
-+#include <dt-bindings/arm/raspberrypi-power.h>
-+#include <soc/bcm2835/raspberrypi-firmware.h>
-+
-+#define RPI_POWER_DOMAIN(_domain, _name)			\
-+	[_domain] =3D {						\
-+		.domain =3D _domain,				\
-+		.enabled =3D true,				\
-+		.base =3D {					\
-+			.name =3D _name,				\
-+			.power_off =3D raspberrypi_domain_off,	\
-+			.power_on =3D raspberrypi_domain_on,	\
-+		},						\
-+	}
-+
-+struct raspberrypi_power_domain {
-+	u32 domain;
-+	bool enabled;
-+	struct generic_pm_domain base;
-+};
-+
-+struct rpi_power_domain_packet {
-+	u32 domain;
-+	u32 on;
-+} __packet;
-+
-+static struct rpi_firmware *fw;
-+static struct genpd_onecell_data rpi_genpd_xlate;
-+
-+/*
-+ * Asks the firmware to enable or disable power on a specific power
-+ * domain.
-+ */
-+static int raspberrypi_firmware_set_power(u32 domain, bool on)
++void pm_genpd_uninit(struct generic_pm_domain *genpd)
 +{
-+	struct rpi_power_domain_packet packet;
++	if (IS_ERR_OR_NULL(genpd))
++		return;
 +
-+	packet.domain =3D domain;
-+	packet.on =3D on;
-+	return rpi_firmware_property(fw, RPI_FIRMWARE_SET_POWER_STATE, &packe=
-t,
-+				     sizeof(packet));
++	mutex_lock(&gpd_list_lock);
++	list_del(&genpd->gpd_list_node);
++	mutex_unlock(&gpd_list_lock);
 +}
++EXPORT_SYMBOL_GPL(pm_genpd_uninit);
 +
-+/* Asks the firmware to if power is on for a specific power domain. */
-+static int raspberrypi_firmware_power_is_on(u32 domain)
+ #ifdef CONFIG_PM_GENERIC_DOMAINS_OF
+ /*
+  * Device Tree based PM domain providers.
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index b1cf7e7..45d4f7a 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -143,6 +143,7 @@ extern int pm_genpd_detach_cpuidle(struct generic_pm_domain *genpd);
+ extern int pm_genpd_name_detach_cpuidle(const char *name);
+ extern void pm_genpd_init(struct generic_pm_domain *genpd,
+ 			  struct dev_power_governor *gov, bool is_off);
++extern void pm_genpd_uninit(struct generic_pm_domain *genpd);
+ 
+ extern int pm_genpd_poweron(struct generic_pm_domain *genpd);
+ extern int pm_genpd_name_poweron(const char *domain_name);
+@@ -212,6 +213,9 @@ static inline void pm_genpd_init(struct generic_pm_domain *genpd,
+ 				 struct dev_power_governor *gov, bool is_off)
+ {
+ }
++static inline void pm_genpd_uninit(struct generic_pm_domain *genpd)
 +{
-+	struct rpi_power_domain_packet packet;
-+	int ret;
-+
-+	packet.domain =3D domain;
-+	ret =3D rpi_firmware_property(fw, RPI_FIRMWARE_GET_POWER_STATE, &pack=
-et,
-+				    sizeof(packet));
-+	if (ret < 0)
-+		return ret;
-+
-+	return packet.on & BIT(0);
 +}
-+
-+static int raspberrypi_domain_off(struct generic_pm_domain *domain)
-+{
-+	struct raspberrypi_power_domain *raspberrpi_domain =3D
-+		container_of(domain, struct raspberrypi_power_domain, base);
-+
-+	return raspberrypi_firmware_set_power(raspberrpi_domain->domain, fals=
-e);
-+}
-+
-+static int raspberrypi_domain_on(struct generic_pm_domain *domain)
-+{
-+	struct raspberrypi_power_domain *raspberrpi_domain =3D
-+		container_of(domain, struct raspberrypi_power_domain, base);
-+
-+	return raspberrypi_firmware_set_power(raspberrpi_domain->domain, true=
-);
-+}
-+
-+static struct raspberrypi_power_domain rpi_power_domains[] =3D {
-+	RPI_POWER_DOMAIN(RPI_POWER_DOMAIN_USB, "USB"),
-+};
-+
-+static int rpi_power_probe(struct platform_device *pdev)
-+{
-+	struct device_node *fw_np;
-+	struct device *dev =3D &pdev->dev;
-+	struct generic_pm_domain **power_domains;
-+	int i, ret, num_domains =3D ARRAY_SIZE(rpi_power_domains);
-+
-+	fw_np =3D of_parse_phandle(pdev->dev.of_node, "firmware", 0);
-+	if (!fw_np) {
-+		dev_err(&pdev->dev, "no firmware node\n");
-+		return -ENODEV;
-+	}
-+
-+	fw =3D rpi_firmware_get(fw_np);
-+	if (!fw)
-+		return -EPROBE_DEFER;
-+
-+	power_domains =3D devm_kzalloc(dev, sizeof(*power_domains) * num_doma=
-ins,
-+				     GFP_KERNEL);
-+	if (!power_domains)
-+		return -ENOMEM;
-+
-+	rpi_genpd_xlate.domains =3D power_domains;
-+	rpi_genpd_xlate.num_domains =3D num_domains;
-+
-+	for (i =3D 0; i < num_domains; i++) {
-+		bool is_off;
-+
-+		if (!rpi_power_domains[i].enabled)
-+			continue;
-+
-+		/* get the initial state */
-+		ret =3D raspberrypi_firmware_power_is_on(rpi_power_domains[i].domain=
-);
-+		if (ret < 0)
-+			goto uninit_pm;
-+
-+		/* pm_genpd_init needs is_off, invert the logic here */
-+		is_off =3D !ret;
-+		pm_genpd_init(&rpi_power_domains[i].base, NULL, is_off);
-+		/* let power_domains array know about the registered pm */
-+		power_domains[i] =3D &rpi_power_domains[i].base;
-+	}
-+
-+	ret =3D of_genpd_add_provider_onecell(dev->of_node, &rpi_genpd_xlate)=
-;
-+	if (ret < 0)
-+		goto uninit_pm;
-+
-+	return 0;
-+
-+uninit_pm:
-+	for (i =3D 0; i < num_domains; i++)
-+		pm_genpd_uninit(power_domains[i]);
-+
-+	return ret;
-+}
-+
-+static int rpi_power_remove(struct platform_device *pdev)
-+{
-+	struct device *dev =3D &pdev->dev;
-+	int i;
-+
-+	for (i =3D 0; i < rpi_genpd_xlate.num_domains; i++)
-+		pm_genpd_uninit(rpi_genpd_xlate.domains[i]);
-+
-+	of_genpd_del_provider(dev->of_node);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id rpi_power_of_match[] =3D {
-+	{ .compatible =3D "raspberrypi,bcm2835-power", },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, rpi_power_of_match);
-+
-+static struct platform_driver rpi_power_driver =3D {
-+	.driver =3D {
-+		.name =3D "raspberrypi-power",
-+		.of_match_table =3D rpi_power_of_match,
-+	},
-+	.probe		=3D rpi_power_probe,
-+	.remove		=3D rpi_power_remove,
-+};
-+module_platform_driver(rpi_power_driver);
-+
-+MODULE_AUTHOR("Alexander Aring <aar@pengutronix.de>");
-+MODULE_AUTHOR("Eric Anholt <eric@anholt.net>");
-+MODULE_DESCRIPTION("Raspberry Pi power domain driver");
-+MODULE_LICENSE("GPL v2");
-diff --git a/include/dt-bindings/arm/raspberrypi-power.h b/include/dt-b=
-indings/arm/raspberrypi-power.h
-new file mode 100644
-index 0000000..51f0772
---- /dev/null
-+++ b/include/dt-bindings/arm/raspberrypi-power.h
-@@ -0,0 +1,14 @@
-+/*
-+ *  Copyright =C2=A9 2015 Broadcom
-+ *
-+ * This program is free software; you can redistribute it and/or modif=
-y
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#ifndef _DT_BINDINGS_ARM_BCM2835_MBOX_POWER_H
-+#define _DT_BINDINGS_ARM_BCM2835_MBOX_POWER_H
-+
-+#define RPI_POWER_DOMAIN_USB	3
-+
-+#endif /* _DT_BINDINGS_ARM_BCM2835_MBOX_POWER_H */
---=20
+ static inline int pm_genpd_poweron(struct generic_pm_domain *genpd)
+ {
+ 	return -ENOSYS;
+-- 
 2.6.1
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
