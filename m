@@ -1,41 +1,53 @@
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: [PATCH] s5pv210-cpufreq: fix wrong do_div() usage
-Date: Tue, 3 Nov 2015 17:13:57 -0500 (EST)
-Message-ID: <alpine.LFD.2.20.1511031706460.630@knanqh.ubzr>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Subject: [patch] thermal: underflow in trip_point_temp_store()
+Date: Wed, 4 Nov 2015 01:14:34 +0300
+Message-ID: <20151103221434.GB19280@mwanda>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f47.google.com ([209.85.192.47]:33523 "EHLO
-	mail-qg0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755837AbbKCWOA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Nov 2015 17:14:00 -0500
-Received: by qgeo38 with SMTP id o38so26408612qge.0
-        for <linux-pm@vger.kernel.org>; Tue, 03 Nov 2015 14:13:59 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <kernel-janitors-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: kernel-janitors-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org
 
-It is wrong to use do_div() with 32-bit dividends (unsigned long is
-32 bits on 32-bit architectures).
+This is to address a static checker warning about an underflow in
+imx_set_trip_temp().  The checker is complaining that we have a user
+supplied value for "temp" from kstrtoul() where we treat it as signed,
+we cap the upper but we accept negative values.
 
-Signed-off-by: Nicolas Pitre <nico@linaro.org>
+This looks unintentional since the caller is using unsigned longs to
+represent the temperature.  Let's change it to int and reject negatives
+in the caller.
 
-diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
-index 9e231f5215..051a8a8224 100644
---- a/drivers/cpufreq/s5pv210-cpufreq.c
-+++ b/drivers/cpufreq/s5pv210-cpufreq.c
-@@ -212,11 +212,11 @@ static void s5pv210_set_refresh(enum s5pv210_dmc_port ch, unsigned long freq)
- 	/* Find current DRAM frequency */
- 	tmp = s5pv210_dram_conf[ch].freq;
+Also I changed it to reject negative "trip" values as well.
+
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+---
+Someday we will use super cooled CPUs and we will need to rethink this
+code.  :)
+
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index d9e525c..151a630 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -664,7 +664,7 @@ trip_point_temp_store(struct device *dev, struct device_attribute *attr,
+ {
+ 	struct thermal_zone_device *tz = to_thermal_zone(dev);
+ 	int trip, ret;
+-	unsigned long temperature;
++	int temperature;
  
--	do_div(tmp, freq);
-+	tmp /= freq;
+ 	if (!tz->ops->set_trip_temp)
+ 		return -EPERM;
+@@ -672,7 +672,9 @@ trip_point_temp_store(struct device *dev, struct device_attribute *attr,
+ 	if (!sscanf(attr->attr.name, "trip_point_%d_temp", &trip))
+ 		return -EINVAL;
  
- 	tmp1 = s5pv210_dram_conf[ch].refresh;
+-	if (kstrtoul(buf, 10, &temperature))
++	if (kstrtoint(buf, 10, &temperature))
++		return -EINVAL;
++	if (trip < 0 || temperature < 0)
+ 		return -EINVAL;
  
--	do_div(tmp1, tmp);
-+	tmp1 /= tmp;
- 
- 	__raw_writel(tmp1, reg);
- }
+ 	ret = tz->ops->set_trip_temp(tz, trip, temperature);
