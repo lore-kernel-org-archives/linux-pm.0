@@ -1,52 +1,52 @@
-From: Philippe Longepe <philippe.longepe@linux.intel.com>
-Subject: [PATCH v1 2/2] intel_pstate: Change the setpoint for the cores
-Date: Tue,  3 Nov 2015 10:27:20 +0100
-Message-ID: <1446542840-14982-2-git-send-email-philippe.longepe@linux.intel.com>
-References: <1446542840-14982-1-git-send-email-philippe.longepe@linux.intel.com>
+From: Jan Kara <jack@suse.cz>
+Subject: Re: [PATCH 0/3] PM, vfs: use filesystem freezing instead of kthread
+ freezer
+Date: Tue, 3 Nov 2015 10:31:33 +0100
+Message-ID: <20151103093133.GB4063@quack.suse.cz>
+References: <Pine.LNX.4.44L0.1510301637310.1659-100000@iolanthe.rowland.org>
+ <6015070.Gclh0s3EvS@vostro.rjw.lan>
+ <alpine.LNX.2.00.1510310844360.17538@pobox.suse.cz>
+ <2258525.D9qdTJBeTN@vostro.rjw.lan>
+ <20151103001053.GL10656@dastard>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:49435 "EHLO mga02.intel.com"
+Received: from mx2.suse.de ([195.135.220.15]:41546 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751568AbbKCJ00 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 3 Nov 2015 04:26:26 -0500
-In-Reply-To: <1446542840-14982-1-git-send-email-philippe.longepe@linux.intel.com>
+	id S1751016AbbKCJbi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 3 Nov 2015 04:31:38 -0500
+Content-Disposition: inline
+In-Reply-To: <20151103001053.GL10656@dastard>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: srinivas.pandruvada@linux.intel.com, Stephane Gasparini <stephane.gasparini@linux.intel.com>
+To: Dave Chinner <david@fromorbit.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jiri Kosina <jikos@kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Jan Kara <jack@suse.cz>, Christoph Hellwig <hch@lst.de>, Linus Torvalds <torvalds@linux-foundation.org>, Al Viro <viro@zeniv.linux.org.uk>, Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Change the setpoint to 60 accordingly to the new core busy scaled formula.
-The new formaula is based on the number of cycles per seconds
-(average frequency) divided by the requested frequency. So, we need to
-chose a setpoint more aggressive to improve performance.
+On Tue 03-11-15 11:10:53, Dave Chinner wrote:
+> On Mon, Nov 02, 2015 at 03:43:07AM +0100, Rafael J. Wysocki wrote:
+> > I guess it may also helps to address the case when a device is removed from a
+> > suspended system, written to on another system in the meantime and inserted
+> > back into the (still suspended) original system which then is resumed.  Today
+> > this is an almost guaranteed data corruption scenario, but if the filesystem in
+> > question is properly frozen during suspend, the driver should be able to detect
+> > superblock changes during unfreeze.
+> 
+> Never going to work. There is no guarantee that a write to a
+> filesystem by a third party device is going to change the superblock
+> (or any metadata in the rest of the filesystem) in any detectable
+> way.  Hence freezing filesystems will not prevent Bad Things
+> Happening if you do this while your system is suspended.
 
-Measured with this parameter, we noticed an improvement in Browsermark
-for power and perf compared to the old formula:
+Agreed, we should never advertise something like this works. OTOH the truth
+is that e.g. in ext4 case a simple check in ext4_unfreeze() could catch 90%
+of cases where user shot himself in the foot like this (i.e., ext4 driver
+will update write time in superblock if it gets mounted somewhere else and
+we can check whether that didn't change in ext4_unfreeze()) and refuse to
+touch the filesystem... It is not 100% reliable since user could have used
+e.g. debuge2fs to arbitrarily modify the filesystem but in such cases they
+have to know what they are doing anyway.
 
-Score without the patch: 3517
-Power without the patch: 6856 mW
-
-Score with the patch: 3719
-Power with the patch: 6265 mW
-
-Signed-off-by: Philippe Longepe <philippe.longepe@linux.intel.com>
-Signed-off-by: Stephane Gasparini <stephane.gasparini@linux.intel.com>
----
- drivers/cpufreq/intel_pstate.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 421903f..43f0067 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -872,7 +872,7 @@ static struct cpu_defaults core_params = {
- 	.pid_policy = {
- 		.sample_rate_ms = 10,
- 		.deadband = 0,
--		.setpoint = 97,
-+		.setpoint = 60,
- 		.p_gain_pct = 20,
- 		.d_gain_pct = 0,
- 		.i_gain_pct = 0,
+								Honza
 -- 
-1.9.1
-
+Jan Kara <jack@suse.com>
+SUSE Labs, CR
