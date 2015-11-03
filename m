@@ -1,53 +1,61 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Subject: [patch] thermal: underflow in trip_point_temp_store()
-Date: Wed, 4 Nov 2015 01:14:34 +0300
-Message-ID: <20151103221434.GB19280@mwanda>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <kernel-janitors-owner@vger.kernel.org>
-Content-Disposition: inline
-Sender: kernel-janitors-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org
+From: riel@redhat.com
+Subject: [PATCH 3/3] cpuidle,menu: smooth out measured_us calculation
+Date: Tue,  3 Nov 2015 17:34:19 -0500
+Message-ID: <1446590059-18897-4-git-send-email-riel@redhat.com>
+References: <1446590059-18897-1-git-send-email-riel@redhat.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1446590059-18897-1-git-send-email-riel@redhat.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, rafael.j.wysocki@intel.com, arjan@linux.intel.com, len.brown@intel.com, daniel.lezcano@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-This is to address a static checker warning about an underflow in
-imx_set_trip_temp().  The checker is complaining that we have a user
-supplied value for "temp" from kstrtoul() where we treat it as signed,
-we cap the upper but we accept negative values.
+From: Rik van Riel <riel@redhat.com>
 
-This looks unintentional since the caller is using unsigned longs to
-represent the temperature.  Let's change it to int and reject negatives
-in the caller.
+The cpuidle state tables contain the maximum exit latency for each
+cpuidle state. On x86, that is the exit latency for when the entire
+package goes into that same idle state.
 
-Also I changed it to reject negative "trip" values as well.
+However, a lot of the time we only go into the core idle state,
+not the package idle state. This means we see a much smaller exit
+latency.
 
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+We have no way to detect whether we went into the core or package
+idle state while idle, and that is ok.
+
+However, the current menu_update logic does have the potential to
+trip up the repeating pattern detection in get_typical_interval.
+If the system is experiencing an exit latency near the idle state's
+exit latency, some of the samples will have exit_us subtracted,
+while others will not. This turns a repeating pattern into mush,
+potentially breaking get_typical_interval.
+
+Furthermore, for smaller sleep intervals, we know the chance that
+all the cores in the package went to the same idle state are fairly
+small. Dividing the measured_us by two, instead of subtracting the
+full exit latency when hitting a small measured_us, will reduce the
+error.
+
+Signed-off-by: Rik van Riel <riel@redhat.com>
 ---
-Someday we will use super cooled CPUs and we will need to rethink this
-code.  :)
+ drivers/cpuidle/governors/menu.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index d9e525c..151a630 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -664,7 +664,7 @@ trip_point_temp_store(struct device *dev, struct device_attribute *attr,
- {
- 	struct thermal_zone_device *tz = to_thermal_zone(dev);
- 	int trip, ret;
--	unsigned long temperature;
-+	int temperature;
+diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+index b1a55731f921..7b0971d97cc3 100644
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -404,8 +404,10 @@ static void menu_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ 	measured_us = cpuidle_get_last_residency(dev);
  
- 	if (!tz->ops->set_trip_temp)
- 		return -EPERM;
-@@ -672,7 +672,9 @@ trip_point_temp_store(struct device *dev, struct device_attribute *attr,
- 	if (!sscanf(attr->attr.name, "trip_point_%d_temp", &trip))
- 		return -EINVAL;
+ 	/* Deduct exit latency */
+-	if (measured_us > target->exit_latency)
++	if (measured_us > 2 * target->exit_latency)
+ 		measured_us -= target->exit_latency;
++	else
++		measured_us /= 2;
  
--	if (kstrtoul(buf, 10, &temperature))
-+	if (kstrtoint(buf, 10, &temperature))
-+		return -EINVAL;
-+	if (trip < 0 || temperature < 0)
- 		return -EINVAL;
- 
- 	ret = tz->ops->set_trip_temp(tz, trip, temperature);
+ 	/* Make sure our coefficients do not exceed unity */
+ 	if (measured_us > data->next_timer_us)
+-- 
+2.1.0
