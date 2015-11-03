@@ -1,49 +1,43 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [GIT PULL] Thermal-SoC management updates for v4.4-rc1 #1
-Date: Tue, 3 Nov 2015 22:14:06 +0100
-Message-ID: <CAJZ5v0h_TekGs1rNcYRsnmDT8Hca5nZVssFDs993frUYzEYbLw@mail.gmail.com>
-References: <20151101203036.GA9793@localhost.localdomain>
-	<744357E9AAD1214791ACBA4B0B9092633A909D91@SHSMSX101.ccr.corp.intel.com>
-	<20151103171341.GA4277@localhost.localdomain>
+From: Yan Pashkovsky <yanpaso@gmail.com>
+Subject: API for querying the resume cause [2]
+Date: Wed, 4 Nov 2015 00:29:39 +0300
+Message-ID: <56392743.6080206@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f41.google.com ([209.85.218.41]:35085 "EHLO
-	mail-oi0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755019AbbKCVOH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Nov 2015 16:14:07 -0500
-In-Reply-To: <20151103171341.GA4277@localhost.localdomain>
+Received: from mail-lb0-f170.google.com ([209.85.217.170]:35022 "EHLO
+	mail-lb0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964899AbbKCV3m (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 3 Nov 2015 16:29:42 -0500
+Received: by lbbes7 with SMTP id es7so2081155lbb.2
+        for <linux-pm@vger.kernel.org>; Tue, 03 Nov 2015 13:29:40 -0800 (PST)
+Received: from ?IPv6:2a02:2168:d01:e000:44a4:6843:2dc:a1ed? ([2a02:2168:d01:e000:44a4:6843:2dc:a1ed])
+        by smtp.googlemail.com with ESMTPSA id e63sm5179696lfi.1.2015.11.03.13.29.39
+        for <linux-pm@vger.kernel.org>
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Tue, 03 Nov 2015 13:29:39 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: "Zhang, Rui" <rui.zhang@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: linux-pm@vger.kernel.org
 
-HI,
+Hi everyone!
 
-On Tue, Nov 3, 2015 at 6:13 PM, Eduardo Valentin <edubezval@gmail.com> wrote:
-> Rui, Rafael,
->
-> On Tue, Nov 03, 2015 at 03:10:28AM +0000, Zhang, Rui wrote:
->>
->> > Javi Merino (2):
->> >       PM / OPP: get the voltage for all OPPs
->>
->> I think this patch should be took by Rafael, right?
->>
->> Thanks,
->> Rui
->>
->> >  drivers/base/power/opp.c                           |   4 +-
->
-> Well, yes. I included it here because the devfreq support has a
-> (functional) dependency on this change. As it is a small change, and
-> I did not notice any break in linux-next, I included it in my pull
-> request.
->
-> Rafael, I think it is your call. Do you want collect this one and send
-> it via your tree, or are you fine having it going through Ruis?
+I was writing you on 21 of August 
+(http://marc.info/?t=144007145600001&r=1&w=2)  about API for querying 
+the resume cause. I was looking at the releases of linux kernel and 
+discovered this:
 
-It can go in through the Rui's tree as far as I'm concerned.
+"Finally, the PM core gets a new mechanism that can be used by
+device drivers to distinguish between suspend-to-RAM (based on
+platform firmware support) and suspend-to-idle (or other variants
+of system suspend the platform firmware is not involved in) and
+possibly optimize their device suspend/resume handling accordingly"
+         http://lkml.iu.edu/hypermail/linux/kernel/1511.0/01164.html
 
-Thanks,
-Rafael
+Is it what we were discussing? If yes - that's fine, I'll contact 
+systemd team. If no - is this API exists in someone's todo list or smth 
+like this? Are there any plans for this?
+
+Kind regards,
+Yan
