@@ -1,172 +1,443 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v2 2/3] thermal: of: parse stacked thermal zones from
- device tree
-Date: Wed, 4 Nov 2015 10:56:34 -0800
-Message-ID: <20151104185633.GC12825@localhost.localdomain>
-References: <1446658662-19582-1-git-send-email-javi.merino@arm.com>
- <1446658662-19582-3-git-send-email-javi.merino@arm.com>
+Subject: Re: [PATCH V3] thermal: qoriq: Add thermal management support
+Date: Wed, 4 Nov 2015 11:24:46 -0800
+Message-ID: <20151104192444.GA14127@localhost.localdomain>
+References: <1442996938-47147-1-git-send-email-hongtao.jia@freescale.com>
+ <1443132592.32298.56.camel@freescale.com>
+ <BLUPR03MB14997B46CC6AFC247EDC340E1420@BLUPR03MB149.namprd03.prod.outlook.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f41.google.com ([209.85.220.41]:33264 "EHLO
-	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030659AbbKDS4i (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Nov 2015 13:56:38 -0500
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:36289 "EHLO
+	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751522AbbKDTYt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Nov 2015 14:24:49 -0500
+Received: by pacdm15 with SMTP id dm15so36994262pac.3
+        for <linux-pm@vger.kernel.org>; Wed, 04 Nov 2015 11:24:48 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <1446658662-19582-3-git-send-email-javi.merino@arm.com>
+In-Reply-To: <BLUPR03MB14997B46CC6AFC247EDC340E1420@BLUPR03MB149.namprd03.prod.outlook.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rui.zang@intel.com, Zhang Rui <rui.zhang@intel.com>
+To: Hongtao Jia <hongtao.jia@freescale.com>
+Cc: Scott Wood <scottwood@freescale.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 
-On Wed, Nov 04, 2015 at 05:37:41PM +0000, Javi Merino wrote:
-> Let device tree set thermal zones in the thermal-sensors list of
-> phandles and set up the thermal zone hierarchy based on the information
-> present there.
+On Fri, Sep 25, 2015 at 03:09:42AM +0000, Hongtao Jia wrote:
 > 
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Eduardo Valentin <edubezval@gmail.com>
-> Signed-off-by: Javi Merino <javi.merino@arm.com>
-> ---
->  .../devicetree/bindings/thermal/thermal.txt        | 154 ++++++++++++++++++++-
->  drivers/thermal/of-thermal.c                       |  99 +++++++++++++
-
-Please split this patch.
-
->  2 files changed, 250 insertions(+), 3 deletions(-)
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Friday, September 25, 2015 6:10 AM
+> > To: Jia Hongtao-B38951
+> > Cc: edubezval@gmail.com; linux-pm@vger.kernel.org; linuxppc-
+> > dev@lists.ozlabs.org
+> > Subject: Re: [PATCH V3] thermal: qoriq: Add thermal management support
+> > 
+> > On Wed, 2015-09-23 at 16:28 +0800, Jia Hongtao wrote:
+> > > This driver add thermal management support by enabling TMU (Thermal
+> > > Monitoring Unit) on QorIQ platform.
+> > >
+> > > It's based on thermal of framework:
+> > > - Trip points defined in device tree.
+> > > - Cpufreq as cooling device registered in qoriq cpufreq driver.
+> > 
+> > I don't see any cooling device registered in the qoriq cpufreq driver.
+> > Is this dependent on some other patch?
 > 
-> diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/Documentation/devicetree/bindings/thermal/thermal.txt
-> index 41b817f7b670..52b7e9ae3b4d 100644
-> --- a/Documentation/devicetree/bindings/thermal/thermal.txt
-> +++ b/Documentation/devicetree/bindings/thermal/thermal.txt
-> @@ -145,9 +145,12 @@ Required properties:
->    Size: one cell
->  
->  - thermal-sensors:	A list of thermal sensor phandles and sensor specifier
-> -  Type: list of 	used while monitoring the thermal zone.
-> -  phandles + sensor
-> -  specifier
-> +  Type: list of 	used while monitoring the thermal zone. The phandles
-> +  phandles + sensor	can point to thermal sensors or other thermal zone
-> +  specifier		nodes. If it points to other thermal zone
-> +			nodes you should omit the sensor specifier
-> +			and set #thermal-sensor-cells to 0 for the
-> +			thermal zone.
->  
->  - trips:		A sub-node which is a container of only trip point nodes
->    Type: sub-node	required to describe the thermal zone.
-> @@ -603,3 +606,148 @@ thermal-zones {
->  The above example is a mix of previous examples, a sensor IP with several internal
->  sensors used to monitor different zones, one of them is composed by several sensors and
->  with different cooling devices.
-> +
-> +(e) Board thermal with stacked thermal zones
-> +
-> +Instead of setting up one thermal zone combining multiple thermal
-> +zones and multiple trip points for each cooling device, we can create
-> +a hierarchy of thermal zones.
-> +
-> +#include <dt-bindings/thermal/thermal.h>
-> +
-> +&i2c1 {
-> +	...
-> +	/*
-> +	 * An IC with several temperature sensor.
-> +	 */
-> +	adc_dummy: sensor@0x50 {
-> +		...
-> +		#thermal-sensor-cells = <1>; /* sensor internal ID */
-> +	};
-> +};
-> +
-> +thermal-zones {
-> +
-> +        cpu_thermal: cpu_thermal {
-> +		polling-delay-passive = <1000>; /* milliseconds */
-> +		polling-delay = <2500>; /* milliseconds */
-> +
-> +		sustainable-power = <2500>;
-> +
-> +		thermal-sensors = <&adc_dummy 0>
-> +
-> +		trips {
-> +			cpu_trip: cpu-trip {
-> +				temperature = <60000>; /* millicelsius */
-> +				hysteresis = <2000>; /* millicelsius */
-> +				type = "passive";
-> +			};
-> +                };
-> +
-> +		cooling-maps {
-> +			map0 {
-> +				trip = <&cpu_trip>;
-> +				cooling-device = <&cpu0 0 2>;
-> +			};
-> +                };
-> +        };
-> +
-> +        gpu_thermal: gpu_thermal {
-> +		polling-delay-passive = <1000>; /* milliseconds */
-> +		polling-delay = <2500>; /* milliseconds */
-> +
-> +		sustainable-power = <2500>;
-> +
-> +		thermal-sensors = <&adc_dummy 2>
-> +
-> +		trips {
-> +			gpu_trip: gpu-trip {
-> +				temperature = <55000>; /* millicelsius */
-> +				hysteresis = <2000>; /* millicelsius */
-> +				type = "passive";
-> +			}
-> +                };
-> +
-> +		cooling-maps {
-> +			map0 {
-> +				trip = <&gpu_trip>;
-> +				cooling-device = <&gpu0 0 2>;
-> +			};
-> +                };
-> +        };
-> +
-> +        lcd_thermal: lcd_thermal {
-> +		polling-delay-passive = <1000>; /* milliseconds */
-> +		polling-delay = <2500>; /* milliseconds */
-> +
-> +		sustainable-power = <2500>;
-> +
-> +		thermal-sensors = <&adc_dummy 1>
-> +
-> +		trips {
-> +			lcd_trip: lcp-trip {
-> +				temperature = <53000>; /* millicelsius */
-> +				hysteresis = <2000>; /* millicelsius */
-> +				type = "passive";
-> +			};
-> +                };
-> +
-> +		cooling-maps {
-> +			map0 {
-> +				trip = <&lcd_trip>;
-> +				cooling-device = <&lcd0 5 10>;
-> +			};
-> +                };
-> +        };
-> +
-> +	board_thermal: board-thermal {
-> +		polling-delay-passive = <1000>; /* milliseconds */
-> +		polling-delay = <2500>; /* milliseconds */
-> +
-> +		thermal-sensors = <&cpu_thermal &gpu_thermal &lcd_thermal>
-> +
+> It's not depend on any patch. But I saw your patch below:
+> [PATCH v3 5/5] cpufreq: qoriq: Don't look at clock implementation details
+> So I hold my patch waiting for your patch merged or there will be conflict.
+> 
+> I could send it out too if you are fine with it.
 
-(no, I have not grepped the device tree)
-Was there any other occurrence of such construction ?
+Would you guys benefit of cpufreq-cpu0?
 
-It just looks awkward that one property holds two types of data. Is DT
-strongly typed?
 
-I would say, following the DT pattern, one would expect to have the
-binding to allow one thermal zone to be written inside another thermal
-zone, no?
 
+
+> 
+> > 
+> > >
+> > > Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+> > > ---
+> > > V3: Using thermal of framework.
+> > >
+> > >  drivers/thermal/Kconfig         |  11 ++
+> > >  drivers/thermal/Makefile        |   1 +
+> > >  drivers/thermal/qoriq_thermal.c | 267
+
+Please include a binding description in your next version. Also,
+remember to include an example of your binding.
+
+
+
+> > > ++++++++++++++++++++++++++++++++++++++++
+> > >  3 files changed, 279 insertions(+)
+> > >  create mode 100644 drivers/thermal/qoriq_thermal.c
+> > >
+> > > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig index
+> > > 0390044..c91041b 100644
+> > > --- a/drivers/thermal/Kconfig
+> > > +++ b/drivers/thermal/Kconfig
+> > > @@ -180,6 +180,17 @@ config IMX_THERMAL
+> > >         cpufreq is used as the cooling device to throttle CPUs when the
+> > >         passive trip is crossed.
+> > >
+> > > +config QORIQ_THERMAL
+
+
+It would be really great if you could consolidate this driver with
+IMX_THERMAL. Do you think it is doable?
+
+> > > +     tristate "Freescale QorIQ Thermal Monitoring Unit"
+> > > +     depends on CPU_THERMAL
+> > > +     depends on THERMAL_OF
+> > > +     default n
+> > > +     help
+> > > +       Enable thermal management based on Freescale QorIQ Thermal
+> > Monitoring
+> > > +       Unit (TMU). It supports one critical trip point and one passive
+> > trip
+> > > +       point. The cpufreq is used as the cooling device to throttle
+> > CPUs when
+> > > +       the passive trip is crossed.
+> > 
+> > "default n" is unnecessary -- n is already the default.
+> 
+> Right.
+> 
+> > 
+> > Where is the interaction between this driver and cpufreq?
+> 
+> It's all in cpufreq patch I mentioned above.
+> 
+> > 
+> > > config SPEAR_THERMAL
+> > >       bool "SPEAr thermal sensor driver"
+> > >       depends on PLAT_SPEAR
+> > > diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile index
+> > > 26f1608..e55d703 100644
+> > > --- a/drivers/thermal/Makefile
+> > > +++ b/drivers/thermal/Makefile
+> > > @@ -33,6 +33,7 @@ obj-$(CONFIG_DOVE_THERMAL)          += dove_thermal.o
+> > >  obj-$(CONFIG_DB8500_THERMAL) += db8500_thermal.o
+> > >  obj-$(CONFIG_ARMADA_THERMAL) += armada_thermal.o
+> > >  obj-$(CONFIG_IMX_THERMAL)    += imx_thermal.o
+> > > +obj-$(CONFIG_QORIQ_THERMAL)  += qoriq_thermal.o
+> > >  obj-$(CONFIG_DB8500_CPUFREQ_COOLING) += db8500_cpufreq_cooling.o
+> > >  obj-$(CONFIG_INTEL_POWERCLAMP)       += intel_powerclamp.o
+> > >  obj-$(CONFIG_X86_PKG_TEMP_THERMAL)   += x86_pkg_temp_thermal.o
+> > > diff --git a/drivers/thermal/qoriq_thermal.c
+> > > b/drivers/thermal/qoriq_thermal.c new file mode 100644 index
+> > > 0000000..7c2a3261
+> > > --- /dev/null
+> > > +++ b/drivers/thermal/qoriq_thermal.c
+> > > @@ -0,0 +1,267 @@
+> > > +/*
+> > > + * Copyright 2015 Freescale Semiconductor, Inc.
+> > > + *
+> > > + * This program is free software; you can redistribute it and/or
+> > > +modify it
+> > > + * under the terms and conditions of the GNU General Public License,
+> > > + * version 2, as published by the Free Software Foundation.
+> > > + *
+> > > + * This program is distributed in the hope it will be useful, but
+> > > +WITHOUT
+> > > + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+> > > +or
+> > > + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+> > > +License
+> > > for
+> > > + * more details.
+> > > + *
+> > > + */
+> > > +
+> > > +/*
+> > > + * Based on Freescale QorIQ Thermal Monitoring Unit (TMU)  */
+> > 
+> > What does this comment mean?  This *is* the "Freescale QorIQ Thermal
+> > Monitoring Unit" driver.
+> 
+> I mean thermal management based on the monitor TMU.
+> I could remove this comment though.
+> 
+> > 
+> > > +#include <linux/cpufreq.h>
+> > 
+> > What do you use from this header?
+> 
+> Sorry, forget to remove it from last version in which cooling devices are
+> registered in thermal driver instead of cpufreq driver.
+> 
+> > 
+> > > +#include <linux/module.h>
+> > > +#include <linux/platform_device.h>
+> > > +#include <linux/err.h>
+> > > +#include <linux/io.h>
+> > > +#include <linux/of.h>
+> > > +#include <linux/of_address.h>
+> > > +#include <linux/thermal.h>
+> > > +
+> > > +#include "thermal_core.h"
+> > > +
+> > > +#define SITES_MAX    16
+> > > +
+> > > +/*
+> > > + * QorIQ TMU Registers
+> > > + */
+> > > +struct qoriq_tmu_site_regs {
+> > > +     __be32 tritsr;          /* Immediate Temperature Site Register */
+> > > +     __be32 tratsr;          /* Average Temperature Site Register */
+> > > +     u8 res0[0x8];
+> > > +} __packed;
+> > > +
+> > > +struct qoriq_tmu_regs {
+> > > +     __be32 tmr;             /* Mode Register */
+> > > +#define TMR_DISABLE  0x0
+> > > +#define TMR_ME               0x80000000
+> > > +#define TMR_ALPF     0x0c000000
+> > > +#define TMR_MSITE    0x00008000      /* Core temperature site */
+> > > +#define TMR_ALL              (TMR_ME | TMR_ALPF | TMR_MSITE)
+> > > +     __be32 tsr;             /* Status Register */
+> > > +     __be32 tmtmir;          /* Temperature measurement interval
+> > Register */
+> > > +#define TMTMIR_DEFAULT       0x00000007
+> > > +     u8 res0[0x14];
+> > > +     __be32 tier;            /* Interrupt Enable Register */
+> > > +#define TIER_DISABLE 0x0
+> > > +     __be32 tidr;            /* Interrupt Detect Register */
+> > > +     __be32 tiscr;           /* Interrupt Site Capture Register */
+> > > +     __be32 ticscr;          /* Interrupt Critical Site Capture
+> > Register */
+> > > +     u8 res1[0x10];
+> > > +     __be32 tmhtcrh;         /* High Temperature Capture Register */
+> > > +     __be32 tmhtcrl;         /* Low Temperature Capture Register */
+> > > +     u8 res2[0x8];
+> > > +     __be32 tmhtitr;         /* High Temperature Immediate Threshold
+> > */
+> > > +     __be32 tmhtatr;         /* High Temperature Average Threshold */
+> > > +     __be32 tmhtactr;        /* High Temperature Average Crit
+> > Threshold */
+> > > +     u8 res3[0x24];
+> > > +     __be32 ttcfgr;          /* Temperature Configuration Register */
+> > > +     __be32 tscfgr;          /* Sensor Configuration Register */
+> > > +     u8 res4[0x78];
+> > > +     struct qoriq_tmu_site_regs site[SITES_MAX];
+> > > +     u8 res5[0x9f8];
+> > > +     __be32 ipbrr0;          /* IP Block Revision Register 0 */
+> > > +     __be32 ipbrr1;          /* IP Block Revision Register 1 */
+> > > +     u8 res6[0x310];
+> > > +     __be32 ttr0cr;          /* Temperature Range 0 Control Register
+> > */
+> > > +     __be32 ttr1cr;          /* Temperature Range 1 Control Register
+> > */
+> > > +     __be32 ttr2cr;          /* Temperature Range 2 Control Register
+> > */
+> > > +     __be32 ttr3cr;          /* Temperature Range 3 Control Register
+> > */
+> > > +};
+> > > +
+> > > +/*
+> > > + * Thermal zone data
+> > > + */
+> > > +struct qoriq_tmu_data {
+> > > +     struct thermal_zone_device *tz;
+> > > +     struct qoriq_tmu_regs __iomem *regs; };
+> > > +
+> > 
+> > > +static int tmu_get_temp(void *p, int *temp) {
+> > > +     u8 val;
+> > > +     struct qoriq_tmu_data *data = p;
+> > > +
+> > > +     val = ioread32be(&data->regs->site[0].tritsr);
+> > > +     *temp = (int)val * 1000;
+> > 
+> > Why don't you declare val as int in the first place?
+> 
+> It's a 32bit register.
+> Only the least significant 8 bits represent the temperature.
+> The most significant bit shows the validness of the value.
+> I use u8 type to remove the rest 24bits influence.
+> 
+> > 
+> > > +     for (i = 0; i < len; i += 8, calibration += 2) {
+> > > +             val = (int)of_read_number(calibration, 1);
+> > > +             iowrite32be(val, &data->regs->ttcfgr);
+> > > +             val = (int)of_read_number(calibration + 1, 1);
+> > > +             iowrite32be(val, &data->regs->tscfgr);
+> > 
+> > Unnecessary casts.
+> 
+> Ok.
+> 
+> > 
+> > > +     }
+> > > +
+> > > +     return 0;
+> > > +}
+> > > +
+> > > +static void qoriq_tmu_init_device(struct qoriq_tmu_data *data) {
+> > > +     /* Disable interrupt, using polling instead */
+> > > +     iowrite32be(TIER_DISABLE, &data->regs->tier);
+> > > +
+> > > +     /* Set update_interval */
+> > > +     iowrite32be(TMTMIR_DEFAULT, &data->regs->tmtmir);
+> > > +
+> > > +     /* Enable monitoring */
+> > > +     iowrite32be(TMR_ALL, &data->regs->tmr); }
+> > > +
+> > > +static struct thermal_zone_of_device_ops tmu_tz_ops = {
+> > > +     .get_temp = tmu_get_temp,
+> > > +};
+> > > +
+> > > +static int qoriq_tmu_probe(struct platform_device *pdev) {
+> > > +     int ret;
+> > > +     const struct thermal_trip *trip;
+> > > +     struct qoriq_tmu_data *data;
+> > > +
+> > > +     if (!pdev->dev.of_node) {
+> > > +             dev_err(&pdev->dev, "Device OF-Node is NULL");
+> > > +             return -EFAULT;
+> > > +     }
+> > 
+> > EFAULT is for bad user addresses and is not appropriate here.
+> 
+> I will change it to ENODEV.
+> 
+> > 
+> > > +
+> > > +     data = devm_kzalloc(&pdev->dev, sizeof(struct qoriq_tmu_data),
+> > > +                         GFP_KERNEL);
+> > > +     if (!data)
+> > > +             return -ENOMEM;
+> > > +
+> > > +     platform_set_drvdata(pdev, data);
+> > > +     data->regs = of_iomap(pdev->dev.of_node, 0);
+> > > +
+> > > +     if (!data->regs) {
+> > > +             dev_err(&pdev->dev, "Failed to get memory region\n");
+> > > +             ret = -ENODEV;
+> > > +             goto err_iomap;
+> > > +     }
+> > > +
+> > > +     ret = qoriq_tmu_calibration(pdev);      /* TMU calibration */
+> > > +     if (ret < 0) {
+> > > +             dev_err(&pdev->dev, "TMU calibration failed.\n");
+> > > +             ret = -ENODEV;
+> > > +             goto err_iomap;
+> > > +     }
+> > 
+> > That function returns negative when device tree properties are missing,
+> > not when a calibration procedure fails.
+> 
+> What's your suggestion here to return then?
+> 
+> > 
+> > > +
+> > > +     qoriq_tmu_init_device(data);    /* TMU initialization */
+> > > +
+> > > +     data->tz = thermal_zone_of_sensor_register(&pdev->dev, 0,
+> > > +                             data, &tmu_tz_ops);
+> > > +     if (IS_ERR(data->tz)) {
+> > > +             ret = PTR_ERR(data->tz);
+> > > +             dev_err(&pdev->dev,
+> > > +                     "Failed to register thermal zone device %d\n",
+> > ret);
+> > > +             goto err_thermal;
+> > > +     }
+> > > +
+> > > +     trip = of_thermal_get_trip_points(data->tz);
+> > > +
+> > > +     data->tz->ops->set_mode(data->tz, THERMAL_DEVICE_ENABLED);
+> > 
+> > Doesn't thermal_zone_of_sensor_register() already call ops->set_mode with
+> > TERMAL_DEVICE_ENABLED?
+> 
+> You are right.
+> I referenced the code from other platform and did not notice this.
+> Thanks.
+> 
+> > 
+> > > +
+> > > +     return 0;
+> > > +
+> > > +err_thermal:
+> > > +     iounmap(data->regs);
+> > > +
+> > > +err_iomap:
+> > > +     platform_set_drvdata(pdev, NULL);
+> > > +     devm_kfree(&pdev->dev, data);
+> > > +
+> > > +     return ret;
+> > > +}
+> > > +
+> > > +static int qoriq_tmu_remove(struct platform_device *pdev) {
+> > > +     struct qoriq_tmu_data *data = platform_get_drvdata(pdev);
+> > > +
+> > > +     /* Disable monitoring */
+> > > +     iowrite32be(TMR_DISABLE, &data->regs->tmr);
+> > > +
+> > > +     thermal_zone_of_sensor_unregister(&pdev->dev, data->tz);
+> > > +     iounmap(data->regs);
+> > > +
+> > > +     platform_set_drvdata(pdev, NULL);
+> > > +     devm_kfree(&pdev->dev, data);
+> > > +
+> > > +     return 0;
+> > > +}
+> > > +
+> > > +#ifdef CONFIG_PM_SLEEP
+> > > +static int qoriq_tmu_suspend(struct device *dev) {
+> > > +     struct qoriq_tmu_data *data = dev_get_drvdata(dev);
+> > > +
+> > > +     /* Disable monitoring */
+> > > +     iowrite32be(TMR_DISABLE, &data->regs->tmr);
+> > > +     data->tz->ops->set_mode(data->tz, THERMAL_DEVICE_DISABLED);
+> > > +
+> > > +     return 0;
+> > > +}
+> > > +
+> > > +static int qoriq_tmu_resume(struct device *dev) {
+> > > +     struct qoriq_tmu_data *data = dev_get_drvdata(dev);
+> > > +
+> > > +     /* Enable monitoring */
+> > > +     iowrite32be(TMR_ALL, &data->regs->tmr);
+> > > +     data->tz->ops->set_mode(data->tz, THERMAL_DEVICE_ENABLED);
+> > > +
+> > > +     return 0;
+> > > +}
+> > > +#endif
+> > > +
+> > > +static SIMPLE_DEV_PM_OPS(qoriq_tmu_pm_ops,
+> > > +                      qoriq_tmu_suspend, qoriq_tmu_resume);
+> > > +
+> > 
+> > 
+> > > +static const struct of_device_id qoriq_tmu_match[] = {
+> > > +     { .compatible = "fsl,qoriq-tmu", },
+> > > +     {},
+> > > +};
+> > 
+> > Binding?
+> 
+> Not send out yet.
+> I planned to send the patch with device tree patchset including
+> adding TMU node to T1040/T1024/LS1021A platform.
+> 
+> It's depending on the device tree files moving patch I sent out
+> not long ago.
+> 
+> > 
+> > > +
+> > > +static struct platform_driver qoriq_tmu = {
+> > > +     .driver = {
+> > > +             .name           = "qoriq_thermal",
+> > > +             .pm = &qoriq_tmu_pm_ops,
+> > > +             .of_match_table = qoriq_tmu_match,
+> > > +     },
+> > 
+> > Why the tabs after ".name"?
+> 
+> Will indent the other two.
+> 
+> > 
+> > -Scott
+> 
