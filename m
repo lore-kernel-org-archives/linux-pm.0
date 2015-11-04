@@ -1,244 +1,183 @@
-From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH v3 1/2] thermal: mediatek: Add cpu power cooling model.
-Date: Wed, 4 Nov 2015 11:40:00 -0800
-Message-ID: <20151104193958.GC14127@localhost.localdomain>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH v3 2/2] arm64: dts: mt8173: Add thermal zone node for
+ mt8173.
+Date: Wed, 4 Nov 2015 11:41:12 -0800
+Message-ID: <20151104194111.GD14127@localhost.localdomain>
 References: <1445515359-8587-1-git-send-email-dawei.chien@mediatek.com>
- <1445515359-8587-2-git-send-email-dawei.chien@mediatek.com>
+ <1445515359-8587-3-git-send-email-dawei.chien@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f42.google.com ([209.85.220.42]:33973 "EHLO
+	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030750AbbKDTlQ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Nov 2015 14:41:16 -0500
 Content-Disposition: inline
-In-Reply-To: <1445515359-8587-2-git-send-email-dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Dawei Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Daniel Kurtz <djkurtz-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, srv_heupstream-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+In-Reply-To: <1445515359-8587-3-git-send-email-dawei.chien@mediatek.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dawei Chien <dawei.chien@mediatek.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Matthias Brugger <matthias.bgg@gmail.com>, Daniel Kurtz <djkurtz@chromium.org>, Sascha Hauer <s.hauer@pengutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, Sascha Hauer <kernel@pengutronix.de>
 
-On Thu, Oct 22, 2015 at 08:02:38PM +0800, Dawei Chien wrote:
-> This power model is base on Intelligent Power Allocation (IPA)
-> technical, requires that the operating-points of the CPUs are
-> registered using the kernel's opp library and the
-> `cpufreq_frequency_table` is assigned to the `struct device`
-> of the cpu MT8173.
+On Thu, Oct 22, 2015 at 08:02:39PM +0800, Dawei Chien wrote:
+> Add thermal zone node to mt8173.dtsi.
 > 
-> Signed-off-by: Dawei.Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+> Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
 > ---
 > This patch is base on
-> https://patchwork.kernel.org/patch/7034601/
+> https://patchwork.kernel.org/patch/7249821/
+> https://patchwork.kernel.org/patch/7249861/
+> https://patchwork.kernel.org/patch/7249891/
 > ---
->  drivers/cpufreq/mt8173-cpufreq.c |  152 ++++++++++++++++++++++++++++++++++++--
+>  arch/arm64/boot/dts/mediatek/mt8173.dtsi |   90 ++++++++++++++++++++++++++++++
 
-Given that you are proposing this on top a DT binding, why reading a
-table of static power model applicable only to mt8173 cpufreq driver?
+This patch adds also the static / dynamic power models too. Can you
+please split this patch in two: one for the thermal zones, one for the
+models.
 
-I have not seen anything specific (formula etc) that prevents this code
-to be generalized to other CPUs.
-
-Can you please help me to understand?
-
-BR,
-
->  1 file changed, 144 insertions(+), 8 deletions(-)
+>  1 file changed, 90 insertions(+)
 > 
-> diff --git a/drivers/cpufreq/mt8173-cpufreq.c b/drivers/cpufreq/mt8173-cpufreq.c
-> index 49caed2..23c19c5 100644
-> --- a/drivers/cpufreq/mt8173-cpufreq.c
-> +++ b/drivers/cpufreq/mt8173-cpufreq.c
-> @@ -29,6 +29,16 @@
->  #define MAX_VOLT_LIMIT		(1150000)
->  #define VOLT_TOL		(10000)
+> diff --git a/arch/arm64/boot/dts/mediatek/mt8173.dtsi b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+> index 3b18f37..eaf12bf 100644
+> --- a/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+> +++ b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+> @@ -16,6 +16,7 @@
+>  #include <dt-bindings/interrupt-controller/arm-gic.h>
+>  #include <dt-bindings/power/mt8173-power.h>
+>  #include <dt-bindings/reset-controller/mt8173-resets.h>
+> +#include <dt-bindings/thermal/mt8173.h>
+>  #include "mt8173-pinfunc.h"
 >  
-> +struct mtk_cpu_static_power {
-> +	unsigned long voltage;
-> +	unsigned int power;
-> +};
-> +
-> +static struct mtk_cpu_static_power *mtk_ca53_static_power_table;
-> +static struct mtk_cpu_static_power *mtk_ca57_static_power_table;
-> +static int mtk_ca53_static_table_length;
-> +static int mtk_ca57_static_table_length;
-> +
->  /*
->   * The struct mtk_cpu_dvfs_info holds necessary information for doing CPU DVFS
->   * on each CPU power/clock domain of Mediatek SoCs. Each CPU cluster in
-> @@ -51,6 +61,110 @@ struct mtk_cpu_dvfs_info {
->  	bool need_voltage_tracking;
->  };
+>  / {
+> @@ -54,6 +55,18 @@
+>  			reg = <0x000>;
+>  			enable-method = "psci";
+>  			cpu-idle-states = <&CPU_SLEEP_0>;
+> +			static-power-points = <
+> +				859000  43
+> +				908000  52
+> +				983000  86
+> +				1009000 123
+> +				1028000 138
+> +				1083000 172
+> +				1110900 180
+> +				1125000 192
+> +			>;
+> +			dynamic-power-coefficient = <263>;
+> +			#cooling-cells = <2>;
+>  		};
 >  
-> +unsigned int mtk_cpufreq_lookup_power(const struct mtk_cpu_static_power *table,
-> +		unsigned int count, unsigned long voltage)
-> +{
-> +	int i;
-> +
-> +	for (i = 0; i < count; i++) {
-> +		if (voltage <= table[i].voltage)
-> +			return table[i].power;
-> +	}
-> +
-> +	return table[count - 1].power;
-> +}
-> +
-> +int mtk_cpufreq_get_static(cpumask_t *cpumask, int interval,
-> +		unsigned long voltage, u32 *power)
-> +{
-> +	int nr_cpus = cpumask_weight(cpumask);
-> +
-> +	*power = 0;
-> +
-> +	if (nr_cpus) {
-> +		if (cpumask_test_cpu(0, cpumask))
-> +			*power += mtk_cpufreq_lookup_power(
-> +					mtk_ca53_static_power_table,
-> +					mtk_ca53_static_table_length,
-> +					voltage);
-> +
-> +		if (cpumask_test_cpu(2, cpumask))
-> +			*power += mtk_cpufreq_lookup_power(
-> +					mtk_ca57_static_power_table,
-> +					mtk_ca57_static_table_length,
-> +					voltage);
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +unsigned int mtk_get_power_table_info(struct cpufreq_policy *policy,
-> +		struct device_node *np, const char *node_name)
-> +{
-> +	int mtk_static_table_length;
-> +	const struct property *prop;
-> +	struct mtk_cpu_dvfs_info *info = policy->driver_data;
-> +	struct device *cpu_dev = info->cpu_dev;
-> +	const __be32 *val;
-> +	int nr, i;
-> +
-> +	prop = of_find_property(np, node_name, NULL);
-> +
-> +	if (!prop) {
-> +		pr_err("failed to get static-power-points\n");
-> +		return -ENODEV;
-> +	}
-> +
-> +	if (!prop->value) {
-> +		pr_err("failed to get static power array data\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	nr = prop->length / sizeof(u32);
-> +
-> +	if (nr % 2) {
-> +		pr_err("Invalid OPP list\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	mtk_static_table_length = nr / 2;
-> +
-> +	if (cpumask_test_cpu(0, policy->related_cpus)) {
-> +		mtk_ca53_static_table_length = mtk_static_table_length;
-> +		mtk_ca53_static_power_table = devm_kcalloc(cpu_dev,
-> +					mtk_static_table_length,
-> +					sizeof(*mtk_ca53_static_power_table),
-> +					GFP_KERNEL);
-> +
-> +		val = prop->value;
-> +		for (i = 0; i < mtk_static_table_length; ++i) {
-> +			unsigned long voltage = be32_to_cpup(val++);
-> +			unsigned int power = be32_to_cpup(val++);
-> +
-> +			mtk_ca53_static_power_table[i].voltage = voltage;
-> +			mtk_ca53_static_power_table[i].power = power;
-> +			pr_info("volt:%ld uv, power:%d mW\n", voltage, power);
-> +		}
-> +	} else {
-> +                mtk_ca57_static_table_length = mtk_static_table_length;
-> +		mtk_ca57_static_power_table = devm_kcalloc(cpu_dev,
-> +					mtk_static_table_length,
-> +					sizeof(*mtk_ca57_static_power_table),
-> +					GFP_KERNEL);
-> +		val = prop->value;
-> +		for (i = 0; i < mtk_static_table_length; ++i) {
-> +			unsigned long voltage = be32_to_cpup(val++);
-> +			unsigned int power = be32_to_cpup(val++);
-> +
-> +			mtk_ca57_static_power_table[i].voltage = voltage;
-> +			mtk_ca57_static_power_table[i].power = power;
-> +			pr_info("volt:%ld uv, power:%d mW\n", voltage, power);
-> +		}
-> +	}
-> +
-> +	return	0;
-> +}
-> +
->  static int mtk_cpufreq_voltage_tracking(struct mtk_cpu_dvfs_info *info,
->  					int new_vproc)
->  {
-> @@ -267,20 +381,40 @@ static void mtk_cpufreq_ready(struct cpufreq_policy *policy)
->  {
->  	struct mtk_cpu_dvfs_info *info = policy->driver_data;
->  	struct device_node *np = of_node_get(info->cpu_dev->of_node);
-> +	u32 capacitance;
-> +	int ret;
+>  		cpu1: cpu@1 {
+> @@ -62,6 +75,17 @@
+>  			reg = <0x001>;
+>  			enable-method = "psci";
+>  			cpu-idle-states = <&CPU_SLEEP_0>;
+> +			static-power-points = <
+> +				859000  43
+> +				908000  52
+> +				983000  86
+> +				1009000 123
+> +				1028000 138
+> +				1083000 172
+> +				1110900 180
+> +				1125000 192
+> +			>;
+> +			dynamic-power-coefficient = <263>;
+>  		};
 >  
->  	if (WARN_ON(!np))
->  		return;
+>  		cpu2: cpu@100 {
+> @@ -70,6 +94,18 @@
+>  			reg = <0x100>;
+>  			enable-method = "psci";
+>  			cpu-idle-states = <&CPU_SLEEP_0>;
+> +			static-power-points = <
+> +				828000  72
+> +				867000  90
+> +				927000  156
+> +				968000  181
+> +				1007000 298
+> +				1049000 435
+> +				1089900 533
+> +				1125000 533
+> +			>;
+> +			dynamic-power-coefficient = <530>;
+> +			#cooling-cells = <2>;
+>  		};
 >  
->  	if (of_find_property(np, "#cooling-cells", NULL)) {
-> -		info->cdev = of_cpufreq_cooling_register(np,
-> -							 policy->related_cpus);
+>  		cpu3: cpu@101 {
+> @@ -78,6 +114,17 @@
+>  			reg = <0x101>;
+>  			enable-method = "psci";
+>  			cpu-idle-states = <&CPU_SLEEP_0>;
+> +			static-power-points = <
+> +				828000  72
+> +				867000  90
+> +				927000  156
+> +				968000  181
+> +				1007000 298
+> +				1049000 435
+> +				1089900 533
+> +				1125000 533
+> +			>;
+> +			dynamic-power-coefficient = <530>;
+>  		};
 >  
-> -		if (IS_ERR(info->cdev)) {
-> -			dev_err(info->cpu_dev,
-> -				"running cpufreq without cooling device: %ld\n",
-> -				PTR_ERR(info->cdev));
-> +		if (!info->cdev) {
-> +
-> +			of_property_read_u32(np,
-> +					"dynamic-power-coefficient",
-> +					&capacitance);
-> +
-> +			ret = mtk_get_power_table_info(policy, np,
-> +						"static-power-points");
-> +			if (ret) {
-> +                                dev_err(info->cpu_dev,
-> +                                        "cpufreq without static-points: %d\n",
-> +                                        ret);
-> +			}
-> +
-> +			info->cdev = of_cpufreq_power_cooling_register(np,
-> +				policy->related_cpus,
-> +				capacitance,
-> +				mtk_cpufreq_get_static);
-> +
-> +			if (IS_ERR(info->cdev)) {
-> +				dev_err(info->cpu_dev,
-> +					"cpufreq without cdev: %ld\n",
-> +					PTR_ERR(info->cdev));
-> +					info->cdev = NULL;
-> +			}
+>  		idle-states {
+> @@ -116,6 +163,49 @@
+>  		clock-output-names = "clk32k";
+>  	};
 >  
-> -			info->cdev = NULL;
->  		}
->  	}
->  
-> @@ -460,7 +594,9 @@ static int mtk_cpufreq_exit(struct cpufreq_policy *policy)
->  {
->  	struct mtk_cpu_dvfs_info *info = policy->driver_data;
->  
-> -	cpufreq_cooling_unregister(info->cdev);
-> +	if (info->cdev)
-> +		cpufreq_cooling_unregister(info->cdev);
+> +	thermal-zones {
+> +		cpu_thermal: cpu_thermal {
+> +			polling-delay-passive = <1000>; /* milliseconds */
+> +			polling-delay = <1000>; /* milliseconds */
 > +
->  	dev_pm_opp_free_cpufreq_table(info->cpu_dev, &policy->freq_table);
->  	mtk_cpu_dvfs_info_release(info);
->  	kfree(info);
+> +			thermal-sensors = <&thermal MT8173_THERMAL_ZONE_CA57>;
+> +			sustainable-power = <1500>;
+> +
+> +			trips {
+> +				threshold: trip-point@0 {
+> +					temperature = <68000>;
+> +					hysteresis = <2000>;
+> +					type = "passive";
+> +				};
+> +
+> +				target: trip-point@1 {
+> +					temperature = <85000>;
+> +					hysteresis = <2000>;
+> +					type = "passive";
+> +				};
+> +
+> +				cpu_crit: cpu_crit@0 {
+> +					temperature = <115000>;
+> +					hysteresis = <2000>;
+> +					type = "critical";
+> +				};
+> +			};
+> +
+> +			cooling-maps {
+> +				map@0 {
+> +					trip = <&target>;
+> +					cooling-device = <&cpu0 0 0>;
+> +					contribution = <1024>;
+> +				};
+> +				map@1 {
+> +					trip = <&target>;
+> +					cooling-device = <&cpu2 0 0>;
+> +					contribution = <2048>;
+> +				};
+> +			};
+> +		};
+> +	};
+> +
+>  	timer {
+>  		compatible = "arm,armv8-timer";
+>  		interrupt-parent = <&gic>;
 > -- 
 > 1.7.9.5
 > 
 > --
 > To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> the body of a message to majordomo@vger.kernel.org
 > More majordomo info at  http://vger.kernel.org/majordomo-info.html
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
