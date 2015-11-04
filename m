@@ -1,26 +1,87 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] PM / OPP: Protect updates to list_dev with mutex
-Date: Wed, 4 Nov 2015 15:55:04 +0530
-Message-ID: <20151104102504.GC2116@ubuntu>
-References: <5f8fac4ad84716ef68fc50ab0b78e11ad2837524.1446205160.git.viresh.kumar@linaro.org>
- <20151030170604.GD19782@codeaurora.org>
- <20151031021409.GT3716@ubuntu>
- <20151104102213.22783.81575@quantum>
+From: Lukasz Majewski <l.majewski@samsung.com>
+Subject: Re: [PATCH 5/5] thermal: exynos: Directly return 0 instead of using
+ local ret variable
+Date: Wed, 04 Nov 2015 11:51:50 +0100
+Message-ID: <20151104115150.641d453e@amdc2363>
+References: <1444282446-6419-1-git-send-email-k.kozlowski@samsung.com>
+ <1444282446-6419-5-git-send-email-k.kozlowski@samsung.com>
+ <CAGOxZ52iP98Dh4tsFmmkOC8CszUYwGmSWf7QXBWWJeyEnnDGYw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20151104102213.22783.81575@quantum>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Michael Turquette <mturquette@baylibre.com>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dan Carpenter <dan.carpenter@oracle.com>, Dmitry Torokhov <dtor@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Pavel Machek <pavel@ucw.cz>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.samsung.com ([203.254.224.25]:37483 "EHLO
+	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932467AbbKDKwA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Nov 2015 05:52:00 -0500
+In-reply-to: <CAGOxZ52iP98Dh4tsFmmkOC8CszUYwGmSWf7QXBWWJeyEnnDGYw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alim Akhtar <alim.akhtar@gmail.com>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, linux-pm@vger.kernel.org, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On 04-11-15, 02:22, Michael Turquette wrote:
-> Splat:
+Hi Alim,
+
+> Hello,
+> 
+> On Thu, Oct 8, 2015 at 11:04 AM, Krzysztof Kozlowski
+> <k.kozlowski@samsung.com> wrote:
+> > The 'ret' variable in exynos5440_tmu_initialize() is initialized to
+> > 0 and returned as is. Replace it with direct return statement. This
+> > also fixes coccinelle warning:
+> > drivers/thermal/samsung/exynos_tmu.c:611:5-8: Unneeded variable:
+> > "ret". Return "0" on line 654
+> >
+> > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> > ---
+> Reviewed-by: Alim Akhtar <alim.akhtar@samsung.com>
+> 
+> >  drivers/thermal/samsung/exynos_tmu.c | 5 +++--
+> >  1 file changed, 3 insertions(+), 2 deletions(-)
+> >
+> > diff --git a/drivers/thermal/samsung/exynos_tmu.c
+> > b/drivers/thermal/samsung/exynos_tmu.c index
+> > 1af7ea8dda71..f340e6edcb49 100644 ---
+> > a/drivers/thermal/samsung/exynos_tmu.c +++
+> > b/drivers/thermal/samsung/exynos_tmu.c @@ -608,7 +608,7 @@ static
+> > int exynos5440_tmu_initialize(struct platform_device *pdev) {
+> >         struct exynos_tmu_data *data = platform_get_drvdata(pdev);
+> >         unsigned int trim_info = 0, con, rising_threshold;
+> > -       int ret = 0, threshold_code;
+> > +       int threshold_code;
+> >         int crit_temp = 0;
+> >
+> >         /*
+> > @@ -651,7 +651,8 @@ static int exynos5440_tmu_initialize(struct
+> > platform_device *pdev) /* Clear the PMIN in the common TMU register
+> > */ if (!data->id)
+> >                 writel(0, data->base_second + EXYNOS5440_TMU_PMIN);
+> > -       return ret;
+> > +
+> > +       return 0;
+> >  }
+> >
+> >  static int exynos7_tmu_initialize(struct platform_device *pdev)
+> > --
+> > 1.9.1
+> >
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe
+> > linux-samsung-soc" in the body of a message to
+> > majordomo@vger.kernel.org More majordomo info at
+> > http://vger.kernel.org/majordomo-info.html
+> 
+> 
 > 
 
-Thanks, but I also need your Tested-by :)
+Acked-by: Lukasz Majewski <l.majewski@samsung.com>
+Tested-by: Lukasz Majewski <l.majewski@samsung.com>
+
+Test HW: Odroid XU3 - Exynos5433
 
 -- 
-viresh
+Best regards,
+
+Lukasz Majewski
+
+Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
