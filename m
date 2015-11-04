@@ -1,81 +1,43 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] PM / OPP: Protect updates to list_dev with mutex
-Date: Wed, 4 Nov 2015 07:49:16 +0530
-Message-ID: <20151104021916.GA11738@ubuntu>
-References: <5f8fac4ad84716ef68fc50ab0b78e11ad2837524.1446205160.git.viresh.kumar@linaro.org>
- <20151030170604.GD19782@codeaurora.org>
- <20151031021409.GT3716@ubuntu>
- <20151102191435.GN19782@codeaurora.org>
+From: "Zhang, Rui" <rui.zhang@intel.com>
+Subject: RE: [GIT PULL] Thermal-SoC management updates for v4.4-rc1 #1
+Date: Wed, 4 Nov 2015 02:35:41 +0000
+Message-ID: <744357E9AAD1214791ACBA4B0B9092633A90B792@SHSMSX101.ccr.corp.intel.com>
+References: <20151101203036.GA9793@localhost.localdomain>
+	<744357E9AAD1214791ACBA4B0B9092633A909D91@SHSMSX101.ccr.corp.intel.com>
+	<20151103171341.GA4277@localhost.localdomain>
+ <CAJZ5v0h_TekGs1rNcYRsnmDT8Hca5nZVssFDs993frUYzEYbLw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20151102191435.GN19782@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, mturquette@baylibre.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dan Carpenter <dan.carpenter@oracle.com>, Dmitry Torokhov <dtor@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Pavel Machek <pavel@ucw.cz>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0h_TekGs1rNcYRsnmDT8Hca5nZVssFDs993frUYzEYbLw@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Eduardo Valentin <edubezval@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 02-11-15, 11:14, Stephen Boyd wrote:
-> On 10/31, Viresh Kumar wrote:
-> > On 30-10-15, 10:06, Stephen Boyd wrote:
-> > > On 10/30, Viresh Kumar wrote:
-> > > > dev_opp_list_lock is used everywhere to protect device and OPP lists,
-> > > > but dev_pm_opp_set_sharing_cpus() is missed somehow. And instead we used
-> > > > rcu-lock, which wouldn't help here as we are adding a new list_dev.
-> > > > 
-> > > > This also fixes a problem where we have called kzalloc(..., GFP_KERNEL)
-> > > > from within rcu-lock, which isn't allowed as kzalloc can sleep when
-> > > > called with GFP_KERNEL.
-> > > 
-> > > Care to share the splat here?
-> > 
-> > I don't know what is wrong (or right) with my exynos 5250 board, but I
-> > didn't got any splat here even with the right config options (yes I
-> > should have mentioned that earlier). I have seen this at other times
-> > as well, while we were running after some cpufreq traces..
-> > 
-> > But, the case in hand is pretty straight forward and Mike T. did get a
-> > splat as that's what he told me. We are calling a sleep-able function
-> > from rcu_lock and that's obviously wrong.
-> 
-> That's slightly concerning. Given that the bug is so straight
-> forward but we can't reproduce it doesn't instill a lot of
-> confidence that the patch is correct.
-
-I have asked Mike to provide the splat he got and test the new patch
-to see if it is fixed or not.
-
-> > > > diff --git a/drivers/base/power/opp/cpu.c b/drivers/base/power/opp/cpu.c
-> > > > index 7654c5606307..91f15b2e25ee 100644
-> > > > --- a/drivers/base/power/opp/cpu.c
-> > > > +++ b/drivers/base/power/opp/cpu.c
-> > > > @@ -124,12 +124,12 @@ int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask)
-> > > >  	struct device *dev;
-> > > >  	int cpu, ret = 0;
-> > > >  
-> > > > -	rcu_read_lock();
-> > > > +	mutex_lock(&dev_opp_list_lock);
-> > > >  
-> > > >  	dev_opp = _find_device_opp(cpu_dev);
-> > > 
-> > > So does _find_device_opp() need to be called with rcu_read_lock()
-> > > held or not? The comment above the function makes it sound like
-> > > we need RCU, but we don't do that here anymore.
-> > 
-> > That is more for the readers, as this function is going to return a
-> > pointer to the device OPP, and to make sure it isn't freed behind
-> > their back, they need to take the RCU lock.
-> > 
-> > There are other writer code paths as well, like add-opp, where we just
-> > take the mutex as there can't be anything stronger than that :)
-> > 
-> 
-> Agreed, but the comment above the function is misleading. We
-> should correct that comment and/or add the lockdep checks to the
-> function like we have elsewhere in this file.
-
-Will do.
-
--- 
-viresh
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogbGludXgtYWNwaS1vd25l
+ckB2Z2VyLmtlcm5lbC5vcmcgW21haWx0bzpsaW51eC1hY3BpLQ0KPiBvd25lckB2Z2VyLmtlcm5l
+bC5vcmddIE9uIEJlaGFsZiBPZiBSYWZhZWwgSi4gV3lzb2NraQ0KPiBTZW50OiBXZWRuZXNkYXks
+IE5vdmVtYmVyIDA0LCAyMDE1IDU6MTQgQU0NCj4gVG86IEVkdWFyZG8gVmFsZW50aW4NCj4gQ2M6
+IFpoYW5nLCBSdWk7IFJhZmFlbCBKLiBXeXNvY2tpOyBMaW51eCBBQ1BJOyBMaW51eCBQTTsgTEtN
+TA0KPiBTdWJqZWN0OiBSZTogW0dJVCBQVUxMXSBUaGVybWFsLVNvQyBtYW5hZ2VtZW50IHVwZGF0
+ZXMgZm9yIHY0LjQtcmMxICMxDQo+IEltcG9ydGFuY2U6IEhpZ2gNCj4gDQo+IEhJLA0KPiANCj4g
+T24gVHVlLCBOb3YgMywgMjAxNSBhdCA2OjEzIFBNLCBFZHVhcmRvIFZhbGVudGluIDxlZHViZXp2
+YWxAZ21haWwuY29tPg0KPiB3cm90ZToNCj4gPiBSdWksIFJhZmFlbCwNCj4gPg0KPiA+IE9uIFR1
+ZSwgTm92IDAzLCAyMDE1IGF0IDAzOjEwOjI4QU0gKzAwMDAsIFpoYW5nLCBSdWkgd3JvdGU6DQo+
+ID4+DQo+ID4+ID4gSmF2aSBNZXJpbm8gKDIpOg0KPiA+PiA+ICAgICAgIFBNIC8gT1BQOiBnZXQg
+dGhlIHZvbHRhZ2UgZm9yIGFsbCBPUFBzDQo+ID4+DQo+ID4+IEkgdGhpbmsgdGhpcyBwYXRjaCBz
+aG91bGQgYmUgdG9vayBieSBSYWZhZWwsIHJpZ2h0Pw0KPiA+Pg0KPiA+PiBUaGFua3MsDQo+ID4+
+IFJ1aQ0KPiA+Pg0KPiA+PiA+ICBkcml2ZXJzL2Jhc2UvcG93ZXIvb3BwLmMgICAgICAgICAgICAg
+ICAgICAgICAgICAgICB8ICAgNCArLQ0KPiA+DQo+ID4gV2VsbCwgeWVzLiBJIGluY2x1ZGVkIGl0
+IGhlcmUgYmVjYXVzZSB0aGUgZGV2ZnJlcSBzdXBwb3J0IGhhcyBhDQo+ID4gKGZ1bmN0aW9uYWwp
+IGRlcGVuZGVuY3kgb24gdGhpcyBjaGFuZ2UuIEFzIGl0IGlzIGEgc21hbGwgY2hhbmdlLCBhbmQg
+SQ0KPiA+IGRpZCBub3Qgbm90aWNlIGFueSBicmVhayBpbiBsaW51eC1uZXh0LCBJIGluY2x1ZGVk
+IGl0IGluIG15IHB1bGwNCj4gPiByZXF1ZXN0Lg0KPiA+DQo+ID4gUmFmYWVsLCBJIHRoaW5rIGl0
+IGlzIHlvdXIgY2FsbC4gRG8geW91IHdhbnQgY29sbGVjdCB0aGlzIG9uZSBhbmQgc2VuZA0KPiA+
+IGl0IHZpYSB5b3VyIHRyZWUsIG9yIGFyZSB5b3UgZmluZSBoYXZpbmcgaXQgZ29pbmcgdGhyb3Vn
+aCBSdWlzPw0KPiANCj4gSXQgY2FuIGdvIGluIHRocm91Z2ggdGhlIFJ1aSdzIHRyZWUgYXMgZmFy
+IGFzIEknbSBjb25jZXJuZWQuDQo+IA0KDQpHb29kLCBJIHdpbGwgdGFrZSB0aGlzIHBhdGNoLiBU
+aGFua3MhDQoNCi1SdWkgDQoNCg==
