@@ -1,61 +1,77 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [GIT PULL] Thermal-SoC management updates for v4.4-rc1 #2
-Date: Tue, 3 Nov 2015 21:44:56 -0800
-Message-ID: <20151104054454.GA8850@localhost.localdomain>
+Subject: Re: [patch] thermal: underflow in trip_point_temp_store()
+Date: Tue, 3 Nov 2015 21:57:00 -0800
+Message-ID: <20151104055659.GB8850@localhost.localdomain>
+References: <20151103221434.GB19280@mwanda>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <kernel-janitors-owner@vger.kernel.org>
 Content-Disposition: inline
-Sender: linux-acpi-owner@vger.kernel.org
-To: Rui Zhang <rui.zhang@intel.com>
-Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20151103221434.GB19280@mwanda>
+Sender: kernel-janitors-owner@vger.kernel.org
+To: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hello Rui,
+Hello Dan,
 
-Please pull from
+On Wed, Nov 04, 2015 at 01:14:34AM +0300, Dan Carpenter wrote:
+> This is to address a static checker warning about an underflow in
+> imx_set_trip_temp().  The checker is complaining that we have a user
+> supplied value for "temp" from kstrtoul() where we treat it as signed,
+> we cap the upper but we accept negative values.
+> 
+> This looks unintentional since the caller is using unsigned longs to
+> represent the temperature.  Let's change it to int and reject negatives
+> in the caller.
+> 
+> Also I changed it to reject negative "trip" values as well.
+> 
+> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> ---
+> Someday we will use super cooled CPUs and we will need to rethink this
+> code.  :)
+> 
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal linus
+I wish cpus would be the only type of devices covered here :-)
 
-to receive second Thermal-SoC Management updates for v4.4-rc1 with top-most
 
-7e38a5b1daa12cbaace3c76402999a84460df3e2:
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> index d9e525c..151a630 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -664,7 +664,7 @@ trip_point_temp_store(struct device *dev, struct device_attribute *attr,
+>  {
+>  	struct thermal_zone_device *tz = to_thermal_zone(dev);
+>  	int trip, ret;
+> -	unsigned long temperature;
+> +	int temperature;
+>  
+>  	if (!tz->ops->set_trip_temp)
+>  		return -EPERM;
+> @@ -672,7 +672,9 @@ trip_point_temp_store(struct device *dev, struct device_attribute *attr,
+>  	if (!sscanf(attr->attr.name, "trip_point_%d_temp", &trip))
+>  		return -EINVAL;
+>  
+> -	if (kstrtoul(buf, 10, &temperature))
+> +	if (kstrtoint(buf, 10, &temperature))
+> +		return -EINVAL;
+> +	if (trip < 0 || temperature < 0)
 
-  thermal: rockchip: support the sleep pinctrl state to avoid glitches in s2r (2015-11-03 09:57:42 -0800)
+While this maintains the original code semantics, I would prefer we
+could accept negative values here. Main reason is to maintain the range
+accepted by the current type in use for temperature. Second reason is
+that I heard reports of people willing to use this code to control
+thermal zones that would be at temperatures below 0.
 
-on top of commit 8fb2b9ac2aadd6d87f89071c2c85f8c12b41c943:
+Also, while here, could you please help cleaning emul_temp_store?
 
-  thermal: underflow bug in imx_set_trip_temp() (2015-10-30 11:35:50 -0700)
-
-Specifics:
-- Rockchip thermal driver now has pinctrl support  
-- First round of fixes on devfreq cooling device.
-- This branch has been compiled tested and boot tested by Linaro kernelci bot [1,2].
-
-This is a second round of pull after going through the pending patches
-on patchwork. Still trying to reduce the patchwork counts. The rockchip
-support has already been reviewed. And there is no point in waiting
-for the devfreq fixes.
-
-Still checking what is pending. If I missed your patch, ping me.
-
-[1] - http://kernelci.org/boot/all/job/evalenti/kernel/v4.3-rc3-56-g7e38a5b1daa1/
-[2] - http://kernelci.org/build/evalenti/kernel/v4.3-rc3-56-g7e38a5b1daa1/
+Thanks for sending this patch.
 
 BR,
 
-Eduardo Valentin
-----------------------------------------------------------------
-Caesar Wang (2):
-      dt-bindings: rockchip-thermal: Add the pinctrl states in this document
-      thermal: rockchip: support the sleep pinctrl state to avoid glitches in s2r
+Eduardo
 
-Javi Merino (2):
-      thermal: devfreq_cooling: use a thermal_cooling_device for register and unregister
-      thermal: devfreq_cooling: Make power a u64
-
- .../devicetree/bindings/thermal/rockchip-thermal.txt   | 11 +++++++++--
- drivers/thermal/devfreq_cooling.c                      | 18 +++++++++++-------
- drivers/thermal/rockchip_thermal.c                     |  4 ++++
- include/linux/devfreq_cooling.h                        | 16 ++++++++--------
- 4 files changed, 32 insertions(+), 17 deletions(-)
+>  		return -EINVAL;
+>  
+>  	ret = tz->ops->set_trip_temp(tz, trip, temperature);
