@@ -1,65 +1,82 @@
-From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: [GIT PULL] Samsung Thermal for v4.4-rc1
-Date: Wed, 04 Nov 2015 12:54:20 +0100
-Message-ID: <20151104125420.6d733c3e@amdc2363>
+From: walter harms <wharms@bfs.de>
+Subject: Re: [patch] thermal: underflow in trip_point_temp_store()
+Date: Wed, 04 Nov 2015 13:26:47 +0100
+Message-ID: <5639F987.4070402@bfs.de>
+References: <20151103221434.GB19280@mwanda>
+Reply-To: wharms@bfs.de
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:45253 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751819AbbKDLye (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Nov 2015 06:54:34 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <kernel-janitors-owner@vger.kernel.org>
+In-Reply-To: <20151103221434.GB19280@mwanda>
+Sender: kernel-janitors-owner@vger.kernel.org
+To: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Rui Zhang <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Lukasz Majewski <l.majewski@majess.pl>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Alim Akhtar <alim.akhtar@samsung.com>
-
-Dear Eduardo,
-
-Please find my pull request for Samsung Thermal development code
-(v4.4-rc1):
-
-The following changes since commit
-8fb2b9ac2aadd6d87f89071c2c85f8c12b41c943:
-
-  thermal: underflow bug in imx_set_trip_temp() (2015-10-30 11:35:50
-  -0700)
-
-are available in the git repository at:
-
-  https://github.com/lmajewski/linux-samsung-thermal.git/next 
-  git@github.com:lmajewski/linux-samsung-thermal.git/next
-
-for you to fetch changes up to 2cbe45bee4df3cac65fdefde4756fb949bc8278c:
-
-  thermal: exynos: Directly return 0 instead of using local ret
-  variable (2015-11-04 12:21:58 +0100)
-
-----------------------------------------------------------------
-Krzysztof Kozlowski (5):
-      thermal: exynos: Fix unbalanced regulator disable on probe failure
-      thermal: exynos: Fix first temperature read after registering
-      sensor thermal: exynos: Use IS_ERR() because regulator cannot be
-                      NULL 
-      thermal: exynos: Remove unneeded semicolon
-      thermal: exynos: Directly return 0 instead of using local ret
-                       variable
-
- drivers/thermal/samsung/exynos_tmu.c | 68
- ++++++++++++++++++++++++++++++++++++++------------------------------ 
- 1 file changed, 38 insertions(+), 30 deletions(-)
-
-Test HW: Exynos5433 - Odroid XU3 board.
-Build GCC: 4.9.2
-SHA1: 2cbe45b
-[I've rebased on top of kernel_linux-soc-thermal/next branch at your
-repository]
 
 
--- 
-Best regards,
 
-Lukasz Majewski
+Am 03.11.2015 23:14, schrieb Dan Carpenter:
+> This is to address a static checker warning about an underflow in
+> imx_set_trip_temp().  The checker is complaining that we have a user
+> supplied value for "temp" from kstrtoul() where we treat it as signed,
+> we cap the upper but we accept negative values.
+> 
+> This looks unintentional since the caller is using unsigned longs to
+> represent the temperature.  Let's change it to int and reject negatives
+> in the caller.
+> 
+> Also I changed it to reject negative "trip" values as well.
+> 
+> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> ---
+> Someday we will use super cooled CPUs and we will need to rethink this
+> code.  :)
+> 
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> index d9e525c..151a630 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -664,7 +664,7 @@ trip_point_temp_store(struct device *dev, struct device_attribute *attr,
+>  {
+>  	struct thermal_zone_device *tz = to_thermal_zone(dev);
+>  	int trip, ret;
+> -	unsigned long temperature;
+> +	int temperature;
+>  
+>  	if (!tz->ops->set_trip_temp)
+>  		return -EPERM;
+> @@ -672,7 +672,9 @@ trip_point_temp_store(struct device *dev, struct device_attribute *attr,
+>  	if (!sscanf(attr->attr.name, "trip_point_%d_temp", &trip))
+>  		return -EINVAL;
+>  
+> -	if (kstrtoul(buf, 10, &temperature))
+> +	if (kstrtoint(buf, 10, &temperature))
+> +		return -EINVAL;
+> +	if (trip < 0 || temperature < 0)
+>  		return -EINVAL;
+>  
+>  	ret = tz->ops->set_trip_temp(tz, trip, temperature);
 
-Samsung R&D Institute Poland (SRPOL) | Linux Platform Group
+
+IMHO the test should be near the point where the value is generated.
+
+
+if (!sscanf(attr->attr.name, "trip_point_%d_temp", &trip))
+  		return -EINVAL;
+if (trip < 0)
+  		return -EINVAL;
+
+if (kstrtoint(buf, 10, &temperature))
+		return -EINVAL;
+
+if (temperature < 0)
+		return -EINVAL;
+
+
+That way it is easily visible under what condition -EINVAL is generated (to many).
+
+hope that helps,
+re,
+ wh
+
