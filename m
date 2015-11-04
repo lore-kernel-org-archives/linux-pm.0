@@ -1,102 +1,38 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>
-Subject: Re: [PATCH] intel_idle: Don't use on Lenovo Ideapad S10-3t
-Date: Wed, 4 Nov 2015 18:21:00 +0200
-Message-ID: <20151104162100.GT4437@intel.com>
-References: <1446499360-31984-1-git-send-email-ville.syrjala@linux.intel.com>
- <1A7043D5F58CCB44A599DFD55ED4C9484693D228@fmsmsx115.amr.corp.intel.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [patch] thermal: underflow in trip_point_temp_store()
+Date: Wed, 4 Nov 2015 08:32:38 -0800
+Message-ID: <20151104163236.GD8850@localhost.localdomain>
+References: <20151103221434.GB19280@mwanda>
+ <20151104055659.GB8850@localhost.localdomain>
+ <20151104113231.GI7289@mwanda>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <kernel-janitors-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1A7043D5F58CCB44A599DFD55ED4C9484693D228@fmsmsx115.amr.corp.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Brown, Len" <len.brown@intel.com>
-Cc: "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20151104113231.GI7289@mwanda>
+Sender: kernel-janitors-owner@vger.kernel.org
+To: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Nov 03, 2015 at 03:04:21AM +0000, Brown, Len wrote:
-> > Lenovo Ideapad S10-3t hangs coming out of S3 with intel_idle.
-> > The two workaround that seem to help are "intel_idle.max_cstate=3D0=
-"
-> > or "nohz=3Doff highres=3Doff".
-> >=20
-> > At a first glance quirk_tigerpoint_bm_sts() seemed promising, but
-> > even when moved to early_resume it didn't do anything.
-> >=20
-> > I have no idea what's wrong here, so let's just disable intel_idle
-> > for these machines using a DMI match.
->=20
-> Ville,=20
->=20
-> It is great that several workarounds have been discovered.
->=20
-> But it would be better to get a good idea of the root-cause
-> before permanently ignoring the problem via a new
-> black-list in the upstream kernel.
->=20
-> Is it possible for you to file a bug at bugzilla.kernel.org
-> against Product: power-management; component: intel_idle?
+On Wed, Nov 04, 2015 at 02:32:32PM +0300, Dan Carpenter wrote:
+> Oh...  Hm.  I actually sent a totally different patch to fix this
+> warning and you just merged it.  I had forgotten about that.  As far as
+> I am concerned this issue is solved.  :)  Sorry for sending duplicates.
 
-https://bugzilla.kernel.org/show_bug.cgi?id=3D107151
+Ok. Thanks :-). I guess this one took more attention for being touching
+the thermal core. On IMX driver, it might still make sense to remove the
+negative values as we are dealing with CPU temperature over there.
 
->=20
-> In it, please put the following information.
->=20
-> If this is a regression, the oldest kernel that broke.
+But it is good as it brings to the radar the point of reviewing again
+the possibility of supporting negative temperatures. 
 
-I'll repeat the details here just in case people are too lazy to look a=
-t
-the bug:
 
-It seems intel_idle has always been flaky with this hardware. It used t=
-o
-work a little better in the past, but not perfectly.
+BR
 
-I tried to bisect the total breakage starting from v3.11, and found the
-following commit to be at fault:
-commit a8d46b9e4e487301affe84fa53de40b890898604
-Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Date:   Tue Sep 30 02:29:01 2014 +0200
+Eduardo
 
-    ACPI / sleep: Rework the handling of ACPI GPE wakeup from
-    suspend-to-idle
-
-Before that I observed three different behaviours for S3 resume:
-a) sometimes it resumed OK
-b) sometimes it resumed part way, but kbd/network etc. were still
-   dead, but then pressing the power button made it finish the resume
-   somehow
-c) same as the previous, except the power button press also made it
-   all the way to userspace and initiated a normal shutdown
-The same kernel could exhibit both a) and b), or both a) and c).
-
-After a8d46b9e4e48 it never resumes, no matter if I press the power
-button or not.
-
-> When booted with intel_idle, and then without:
->=20
-> dmesg | grep idle
-> grep . /sys/devices/system/cpu/cpu0/cpuidle/*/*
-> # turbostat --debug sleep 10 2> turbostat.out
->=20
-> # cd /sys/devices/system/clocksource/clocksource0
-> grep . available_clocksource current_clocksource
->=20
->=20
-> Other boot options to test:
->=20
-> maxcpus=3D1
-> nohpet
->=20
-> intel_idle.max_cstate=3D3
-> and if that fails
-> intel_idle.max_cstate=3D2
-> and if that fails
-> intel_idle.max_cstate=3D1
-
-None of these help.
-
---=20
-Ville Syrj=E4l=E4
-Intel OTC
+> 
+> regards,
+> dan carpenter
+> 
