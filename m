@@ -1,43 +1,61 @@
-From: "Zhang, Rui" <rui.zhang@intel.com>
-Subject: RE: [GIT PULL] Thermal-SoC management updates for v4.4-rc1 #1
-Date: Wed, 4 Nov 2015 02:35:41 +0000
-Message-ID: <744357E9AAD1214791ACBA4B0B9092633A90B792@SHSMSX101.ccr.corp.intel.com>
-References: <20151101203036.GA9793@localhost.localdomain>
-	<744357E9AAD1214791ACBA4B0B9092633A909D91@SHSMSX101.ccr.corp.intel.com>
-	<20151103171341.GA4277@localhost.localdomain>
- <CAJZ5v0h_TekGs1rNcYRsnmDT8Hca5nZVssFDs993frUYzEYbLw@mail.gmail.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [GIT PULL] Thermal-SoC management updates for v4.4-rc1 #2
+Date: Tue, 3 Nov 2015 21:44:56 -0800
+Message-ID: <20151104054454.GA8850@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0h_TekGs1rNcYRsnmDT8Hca5nZVssFDs993frUYzEYbLw@mail.gmail.com>
-Content-Language: en-US
+Content-Disposition: inline
 Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Eduardo Valentin <edubezval@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Rui Zhang <rui.zhang@intel.com>
+Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogbGludXgtYWNwaS1vd25l
-ckB2Z2VyLmtlcm5lbC5vcmcgW21haWx0bzpsaW51eC1hY3BpLQ0KPiBvd25lckB2Z2VyLmtlcm5l
-bC5vcmddIE9uIEJlaGFsZiBPZiBSYWZhZWwgSi4gV3lzb2NraQ0KPiBTZW50OiBXZWRuZXNkYXks
-IE5vdmVtYmVyIDA0LCAyMDE1IDU6MTQgQU0NCj4gVG86IEVkdWFyZG8gVmFsZW50aW4NCj4gQ2M6
-IFpoYW5nLCBSdWk7IFJhZmFlbCBKLiBXeXNvY2tpOyBMaW51eCBBQ1BJOyBMaW51eCBQTTsgTEtN
-TA0KPiBTdWJqZWN0OiBSZTogW0dJVCBQVUxMXSBUaGVybWFsLVNvQyBtYW5hZ2VtZW50IHVwZGF0
-ZXMgZm9yIHY0LjQtcmMxICMxDQo+IEltcG9ydGFuY2U6IEhpZ2gNCj4gDQo+IEhJLA0KPiANCj4g
-T24gVHVlLCBOb3YgMywgMjAxNSBhdCA2OjEzIFBNLCBFZHVhcmRvIFZhbGVudGluIDxlZHViZXp2
-YWxAZ21haWwuY29tPg0KPiB3cm90ZToNCj4gPiBSdWksIFJhZmFlbCwNCj4gPg0KPiA+IE9uIFR1
-ZSwgTm92IDAzLCAyMDE1IGF0IDAzOjEwOjI4QU0gKzAwMDAsIFpoYW5nLCBSdWkgd3JvdGU6DQo+
-ID4+DQo+ID4+ID4gSmF2aSBNZXJpbm8gKDIpOg0KPiA+PiA+ICAgICAgIFBNIC8gT1BQOiBnZXQg
-dGhlIHZvbHRhZ2UgZm9yIGFsbCBPUFBzDQo+ID4+DQo+ID4+IEkgdGhpbmsgdGhpcyBwYXRjaCBz
-aG91bGQgYmUgdG9vayBieSBSYWZhZWwsIHJpZ2h0Pw0KPiA+Pg0KPiA+PiBUaGFua3MsDQo+ID4+
-IFJ1aQ0KPiA+Pg0KPiA+PiA+ICBkcml2ZXJzL2Jhc2UvcG93ZXIvb3BwLmMgICAgICAgICAgICAg
-ICAgICAgICAgICAgICB8ICAgNCArLQ0KPiA+DQo+ID4gV2VsbCwgeWVzLiBJIGluY2x1ZGVkIGl0
-IGhlcmUgYmVjYXVzZSB0aGUgZGV2ZnJlcSBzdXBwb3J0IGhhcyBhDQo+ID4gKGZ1bmN0aW9uYWwp
-IGRlcGVuZGVuY3kgb24gdGhpcyBjaGFuZ2UuIEFzIGl0IGlzIGEgc21hbGwgY2hhbmdlLCBhbmQg
-SQ0KPiA+IGRpZCBub3Qgbm90aWNlIGFueSBicmVhayBpbiBsaW51eC1uZXh0LCBJIGluY2x1ZGVk
-IGl0IGluIG15IHB1bGwNCj4gPiByZXF1ZXN0Lg0KPiA+DQo+ID4gUmFmYWVsLCBJIHRoaW5rIGl0
-IGlzIHlvdXIgY2FsbC4gRG8geW91IHdhbnQgY29sbGVjdCB0aGlzIG9uZSBhbmQgc2VuZA0KPiA+
-IGl0IHZpYSB5b3VyIHRyZWUsIG9yIGFyZSB5b3UgZmluZSBoYXZpbmcgaXQgZ29pbmcgdGhyb3Vn
-aCBSdWlzPw0KPiANCj4gSXQgY2FuIGdvIGluIHRocm91Z2ggdGhlIFJ1aSdzIHRyZWUgYXMgZmFy
-IGFzIEknbSBjb25jZXJuZWQuDQo+IA0KDQpHb29kLCBJIHdpbGwgdGFrZSB0aGlzIHBhdGNoLiBU
-aGFua3MhDQoNCi1SdWkgDQoNCg==
+Hello Rui,
+
+Please pull from
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal linus
+
+to receive second Thermal-SoC Management updates for v4.4-rc1 with top-most
+
+7e38a5b1daa12cbaace3c76402999a84460df3e2:
+
+  thermal: rockchip: support the sleep pinctrl state to avoid glitches in s2r (2015-11-03 09:57:42 -0800)
+
+on top of commit 8fb2b9ac2aadd6d87f89071c2c85f8c12b41c943:
+
+  thermal: underflow bug in imx_set_trip_temp() (2015-10-30 11:35:50 -0700)
+
+Specifics:
+- Rockchip thermal driver now has pinctrl support  
+- First round of fixes on devfreq cooling device.
+- This branch has been compiled tested and boot tested by Linaro kernelci bot [1,2].
+
+This is a second round of pull after going through the pending patches
+on patchwork. Still trying to reduce the patchwork counts. The rockchip
+support has already been reviewed. And there is no point in waiting
+for the devfreq fixes.
+
+Still checking what is pending. If I missed your patch, ping me.
+
+[1] - http://kernelci.org/boot/all/job/evalenti/kernel/v4.3-rc3-56-g7e38a5b1daa1/
+[2] - http://kernelci.org/build/evalenti/kernel/v4.3-rc3-56-g7e38a5b1daa1/
+
+BR,
+
+Eduardo Valentin
+----------------------------------------------------------------
+Caesar Wang (2):
+      dt-bindings: rockchip-thermal: Add the pinctrl states in this document
+      thermal: rockchip: support the sleep pinctrl state to avoid glitches in s2r
+
+Javi Merino (2):
+      thermal: devfreq_cooling: use a thermal_cooling_device for register and unregister
+      thermal: devfreq_cooling: Make power a u64
+
+ .../devicetree/bindings/thermal/rockchip-thermal.txt   | 11 +++++++++--
+ drivers/thermal/devfreq_cooling.c                      | 18 +++++++++++-------
+ drivers/thermal/rockchip_thermal.c                     |  4 ++++
+ include/linux/devfreq_cooling.h                        | 16 ++++++++--------
+ 4 files changed, 32 insertions(+), 17 deletions(-)
