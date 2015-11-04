@@ -1,83 +1,149 @@
 From: Lukasz Majewski <l.majewski@samsung.com>
-Subject: Re: [PATCH 5/5] thermal: exynos: Directly return 0 instead of using
- local ret variable
-Date: Wed, 04 Nov 2015 11:51:50 +0100
-Message-ID: <20151104115150.641d453e@amdc2363>
+Subject: Re: [PATCH 1/5] thermal: exynos: Fix unbalanced regulator disable on
+ probe failure
+Date: Wed, 04 Nov 2015 11:52:02 +0100
+Message-ID: <20151104115202.1321c996@amdc2363>
 References: <1444282446-6419-1-git-send-email-k.kozlowski@samsung.com>
- <1444282446-6419-5-git-send-email-k.kozlowski@samsung.com>
- <CAGOxZ52iP98Dh4tsFmmkOC8CszUYwGmSWf7QXBWWJeyEnnDGYw@mail.gmail.com>
+ <CAGOxZ52DE42YA3b5z-16H7fxs58f6Mv+AjMcaaaJEM6bftEmnA@mail.gmail.com>
+ <56179DC0.1040003@samsung.com>
+ <CAGOxZ53KA3bB6F4Ucc8r7rLZFfYiATPsQjKs2BOeWV2BdK=nvA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:37483 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932467AbbKDKwA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Nov 2015 05:52:00 -0500
-In-reply-to: <CAGOxZ52iP98Dh4tsFmmkOC8CszUYwGmSWf7QXBWWJeyEnnDGYw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <CAGOxZ53KA3bB6F4Ucc8r7rLZFfYiATPsQjKs2BOeWV2BdK=nvA@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Alim Akhtar <alim.akhtar@gmail.com>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, linux-pm@vger.kernel.org, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-pm@vger.kernel.org, k.kozlowski.k@gmail.com, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, stable@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, Zhang Rui <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+List-Id: linux-pm@vger.kernel.org
 
 Hi Alim,
 
 > Hello,
 > 
-> On Thu, Oct 8, 2015 at 11:04 AM, Krzysztof Kozlowski
+> On Fri, Oct 9, 2015 at 4:28 PM, Krzysztof Kozlowski
 > <k.kozlowski@samsung.com> wrote:
-> > The 'ret' variable in exynos5440_tmu_initialize() is initialized to
-> > 0 and returned as is. Replace it with direct return statement. This
-> > also fixes coccinelle warning:
-> > drivers/thermal/samsung/exynos_tmu.c:611:5-8: Unneeded variable:
-> > "ret". Return "0" on line 654
+> > W dniu 09.10.2015 o 01:45, Alim Akhtar pisze:
+> >> Hello,
+> >>
+> >> On Thu, Oct 8, 2015 at 11:04 AM, Krzysztof Kozlowski
+> >> <k.kozlowski@samsung.com> wrote:
+> >>> During probe if the regulator could not be enabled, the error
+> >>> exit path would still disable it. This could lead to unbalanced
+> >>> counter of regulator enable/disable.
+> >>>
+> >> Do you see a regulator unbalanced reported here during boot? You
+> >> may want to add that to commit message.
 > >
-> > Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-> > ---
+> > I did not see the warning/error message about unbalanced disable. It
+> > would happen in certain condition only - no other enables of
+> > regulator and count going below 0.
+> >
+> > I would have to simulate this error to get the warning message. I
+> > don't think it is worth the effort.
+> >
+> Ok, looking at code, it does looks to be calling regulator disable in
+> case regulator enable fails.
+> Feel free to add
 > Reviewed-by: Alim Akhtar <alim.akhtar@samsung.com>
+> Thanks!!
 > 
-> >  drivers/thermal/samsung/exynos_tmu.c | 5 +++--
-> >  1 file changed, 3 insertions(+), 2 deletions(-)
+> > Best regards,
+> > Krzysztof
 > >
-> > diff --git a/drivers/thermal/samsung/exynos_tmu.c
-> > b/drivers/thermal/samsung/exynos_tmu.c index
-> > 1af7ea8dda71..f340e6edcb49 100644 ---
-> > a/drivers/thermal/samsung/exynos_tmu.c +++
-> > b/drivers/thermal/samsung/exynos_tmu.c @@ -608,7 +608,7 @@ static
-> > int exynos5440_tmu_initialize(struct platform_device *pdev) {
-> >         struct exynos_tmu_data *data = platform_get_drvdata(pdev);
-> >         unsigned int trim_info = 0, con, rising_threshold;
-> > -       int ret = 0, threshold_code;
-> > +       int threshold_code;
-> >         int crit_temp = 0;
+> >>
+> >>> The patch moves code for getting and enabling the regulator from
+> >>> exynos_map_dt_data() to probe function because it is really not a
+> >>> part of getting Device Tree properties.
+> >>>
+> >>> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> >>> Fixes: 5f09a5cbd14a ("thermal: exynos: Disable the regulator on
+> >>> probe failure") Cc: <stable@vger.kernel.org>
+> >>> ---
+> >>>  drivers/thermal/samsung/exynos_tmu.c | 34
+> >>> +++++++++++++++++----------------- 1 file changed, 17
+> >>> insertions(+), 17 deletions(-)
+> >>>
+> >>> diff --git a/drivers/thermal/samsung/exynos_tmu.c
+> >>> b/drivers/thermal/samsung/exynos_tmu.c index
+> >>> 0bae8cc6c23a..23f4320f8ef7 100644 ---
+> >>> a/drivers/thermal/samsung/exynos_tmu.c +++
+> >>> b/drivers/thermal/samsung/exynos_tmu.c @@ -1168,27 +1168,10 @@
+> >>> static int exynos_map_dt_data(struct platform_device *pdev)
+> >>> struct exynos_tmu_data *data = platform_get_drvdata(pdev); struct
+> >>> exynos_tmu_platform_data *pdata; struct resource res;
+> >>> -       int ret;
+> >>>
+> >>>         if (!data || !pdev->dev.of_node)
+> >>>                 return -ENODEV;
+> >>>
+> >>> -       /*
+> >>> -        * Try enabling the regulator if found
+> >>> -        * TODO: Add regulator as an SOC feature, so that
+> >>> regulator enable
+> >>> -        * is a compulsory call.
+> >>> -        */
+> >>> -       data->regulator = devm_regulator_get(&pdev->dev, "vtmu");
+> >>> -       if (!IS_ERR(data->regulator)) {
+> >>> -               ret = regulator_enable(data->regulator);
+> >>> -               if (ret) {
+> >>> -                       dev_err(&pdev->dev, "failed to enable
+> >>> vtmu\n");
+> >>> -                       return ret;
+> >>> -               }
+> >>> -       } else {
+> >>> -               dev_info(&pdev->dev, "Regulator node (vtmu) not
+> >>> found\n");
+> >>> -       }
+> >>> -
+> >>>         data->id = of_alias_get_id(pdev->dev.of_node, "tmuctrl");
+> >>>         if (data->id < 0)
+> >>>                 data->id = 0;
+> >>> @@ -1312,6 +1295,23 @@ static int exynos_tmu_probe(struct
+> >>> platform_device *pdev) pr_err("thermal: tz: %p ERROR\n",
+> >>> data->tzd); return PTR_ERR(data->tzd);
+> >>>         }
+> >>> +
+> >>> +       /*
+> >>> +        * Try enabling the regulator if found
+> >>> +        * TODO: Add regulator as an SOC feature, so that
+> >>> regulator enable
+> >>> +        * is a compulsory call.
+> >>> +        */
+> >>> +       data->regulator = devm_regulator_get(&pdev->dev, "vtmu");
+> >>> +       if (!IS_ERR(data->regulator)) {
+> >>> +               ret = regulator_enable(data->regulator);
+> >>> +               if (ret) {
+> >>> +                       dev_err(&pdev->dev, "failed to enable
+> >>> vtmu\n");
+> >>> +                       return ret;
+> >>> +               }
+> >>> +       } else {
+> >>> +               dev_info(&pdev->dev, "Regulator node (vtmu) not
+> >>> found\n");
+> >>> +       }
+> >>> +
+> >>>         ret = exynos_map_dt_data(pdev);
+> >>>         if (ret)
+> >>>                 goto err_sensor;
+> >>> --
+> >>> 1.9.1
+> >>>
+> >>>
+> >>> _______________________________________________
+> >>> linux-arm-kernel mailing list
+> >>> linux-arm-kernel@lists.infradead.org
+> >>> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+> >>
+> >>
+> >>
 > >
-> >         /*
-> > @@ -651,7 +651,8 @@ static int exynos5440_tmu_initialize(struct
-> > platform_device *pdev) /* Clear the PMIN in the common TMU register
-> > */ if (!data->id)
-> >                 writel(0, data->base_second + EXYNOS5440_TMU_PMIN);
-> > -       return ret;
-> > +
-> > +       return 0;
-> >  }
-> >
-> >  static int exynos7_tmu_initialize(struct platform_device *pdev)
-> > --
-> > 1.9.1
-> >
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe
-> > linux-samsung-soc" in the body of a message to
-> > majordomo@vger.kernel.org More majordomo info at
-> > http://vger.kernel.org/majordomo-info.html
 > 
 > 
 > 
 
 Acked-by: Lukasz Majewski <l.majewski@samsung.com>
 Tested-by: Lukasz Majewski <l.majewski@samsung.com>
-
-Test HW: Odroid XU3 - Exynos5433
 
 -- 
 Best regards,
