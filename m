@@ -1,54 +1,49 @@
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH V3] thermal: qoriq: Add thermal management support
-Date: Wed, 4 Nov 2015 16:45:15 -0600
-Message-ID: <1446677115.12676.26.camel@freescale.com>
-References: <1442996938-47147-1-git-send-email-hongtao.jia@freescale.com>
- <1443132592.32298.56.camel@freescale.com>
- <BLUPR03MB14997B46CC6AFC247EDC340E1420@BLUPR03MB149.namprd03.prod.outlook.com>
- <20151104192444.GA14127@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <20151104192444.GA14127@localhost.localdomain>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Hongtao Jia <hongtao.jia@freescale.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V2 0/5] PM / OPP: opp-supported-hw and <prop>-name bindings
+Date: Thu,  5 Nov 2015 07:11:51 +0530
+Message-ID: <cover.1446687367.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:33963 "EHLO
+	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932797AbbKEBmH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Nov 2015 20:42:07 -0500
+Received: by padhx2 with SMTP id hx2so62043354pad.1
+        for <linux-pm@vger.kernel.org>; Wed, 04 Nov 2015 17:42:07 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, robh+dt@kernel.org, sboyd@codeaurora.org, lee.jones@linaro.org
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, mark.rutland@arm.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, nm@ti.com, devicetree@vger.kernel.org, b.zolnierkie@samsung.com, m.szyprowski@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-T24gV2VkLCAyMDE1LTExLTA0IGF0IDExOjI0IC0wODAwLCBFZHVhcmRvIFZhbGVudGluIHdyb3Rl
-Ogo+IE9uIEZyaSwgU2VwIDI1LCAyMDE1IGF0IDAzOjA5OjQyQU0gKzAwMDAsIEhvbmd0YW8gSmlh
-IHdyb3RlOgo+ID4gCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tCj4gPiA+IEZyb206
-IFdvb2QgU2NvdHQtQjA3NDIxCj4gPiA+IFNlbnQ6IEZyaWRheSwgU2VwdGVtYmVyIDI1LCAyMDE1
-IDY6MTAgQU0KPiA+ID4gVG86IEppYSBIb25ndGFvLUIzODk1MQo+ID4gPiBDYzogZWR1YmV6dmFs
-QGdtYWlsLmNvbTsgbGludXgtcG1Admdlci5rZXJuZWwub3JnOyBsaW51eHBwYy0KPiA+ID4gZGV2
-QGxpc3RzLm96bGFicy5vcmcKPiA+ID4gU3ViamVjdDogUmU6IFtQQVRDSCBWM10gdGhlcm1hbDog
-cW9yaXE6IEFkZCB0aGVybWFsIG1hbmFnZW1lbnQgc3VwcG9ydAo+ID4gPiAKPiA+ID4gT24gV2Vk
-LCAyMDE1LTA5LTIzIGF0IDE2OjI4ICswODAwLCBKaWEgSG9uZ3RhbyB3cm90ZToKPiA+ID4gPiBU
-aGlzIGRyaXZlciBhZGQgdGhlcm1hbCBtYW5hZ2VtZW50IHN1cHBvcnQgYnkgZW5hYmxpbmcgVE1V
-IChUaGVybWFsCj4gPiA+ID4gTW9uaXRvcmluZyBVbml0KSBvbiBRb3JJUSBwbGF0Zm9ybS4KPiA+
-ID4gPiAKPiA+ID4gPiBJdCdzIGJhc2VkIG9uIHRoZXJtYWwgb2YgZnJhbWV3b3JrOgo+ID4gPiA+
-IC0gVHJpcCBwb2ludHMgZGVmaW5lZCBpbiBkZXZpY2UgdHJlZS4KPiA+ID4gPiAtIENwdWZyZXEg
-YXMgY29vbGluZyBkZXZpY2UgcmVnaXN0ZXJlZCBpbiBxb3JpcSBjcHVmcmVxIGRyaXZlci4KPiA+
-ID4gCj4gPiA+IEkgZG9uJ3Qgc2VlIGFueSBjb29saW5nIGRldmljZSByZWdpc3RlcmVkIGluIHRo
-ZSBxb3JpcSBjcHVmcmVxIGRyaXZlci4KPiA+ID4gSXMgdGhpcyBkZXBlbmRlbnQgb24gc29tZSBv
-dGhlciBwYXRjaD8KPiA+IAo+ID4gSXQncyBub3QgZGVwZW5kIG9uIGFueSBwYXRjaC4gQnV0IEkg
-c2F3IHlvdXIgcGF0Y2ggYmVsb3c6Cj4gPiBbUEFUQ0ggdjMgNS81XSBjcHVmcmVxOiBxb3JpcTog
-RG9uJ3QgbG9vayBhdCBjbG9jayBpbXBsZW1lbnRhdGlvbiBkZXRhaWxzCj4gPiBTbyBJIGhvbGQg
-bXkgcGF0Y2ggd2FpdGluZyBmb3IgeW91ciBwYXRjaCBtZXJnZWQgb3IgdGhlcmUgd2lsbCBiZSAK
-PiA+IGNvbmZsaWN0Lgo+ID4gCj4gPiBJIGNvdWxkIHNlbmQgaXQgb3V0IHRvbyBpZiB5b3UgYXJl
-IGZpbmUgd2l0aCBpdC4KPiAKPiBXb3VsZCB5b3UgZ3V5cyBiZW5lZml0IG9mIGNwdWZyZXEtY3B1
-MD8KCklmIHlvdSBtZWFuIGNwdWZyZXEtZHQsIG5vLCBhcyBJIGV4cGxhaW5lZCBpbiAKaHR0cHM6
-Ly9sa21sLm9yZy9sa21sLzIwMTUvOS8xOC82OTkKCi1TY290dAoKX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX18KTGludXhwcGMtZGV2IG1haWxpbmcgbGlzdApM
-aW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZwpodHRwczovL2xpc3RzLm96bGFicy5vcmcvbGlz
-dGluZm8vbGludXhwcGMtZGV2
+Hi Rafael,
+
+All the bindings are Reviewed by Stephen now and Rob didn't had a
+problem with them (though he didn't Ack them separately yet) :)
+
+The first patch enables us to select only a subset of OPPs from the
+bigger table, based on what version of the hardware we are running on.
+
+The second one enables us to select slightly different values for
+multiple properties, based on what kind of hardware they are running on.
+
+The third one removes an (unused) binding, which is replaced by the
+second patch with a better solution.
+
+The fourth patch is based on what Stephen suggested (and then reviewed)
+in the earlier series, and the 5th one updates the existing users of
+these bindings for it.
+
+Viresh Kumar (5):
+  PM / OPP: Add "opp-supported-hw" binding
+  PM / OPP: Add
+    {opp-microvolt|opp-microamp|turbo-mode|opp-suspend}-<name> binding
+  PM / OPP: Remove 'operating-points-names' binding
+  PM / OPP: Rename OPP nodes as opp@<opp-hz>
+  ARM: dts: exynos4412: Rename OPP nodes as opp@<opp-hz>
+
+ Documentation/devicetree/bindings/opp/opp.txt | 143 +++++++++++++++++++-------
+ arch/arm/boot/dts/exynos4412.dtsi             |  28 ++---
+ 2 files changed, 118 insertions(+), 53 deletions(-)
+
+-- 
+2.6.2.198.g614a2ac
+
