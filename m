@@ -1,58 +1,128 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] PM / OPP: Protect updates to list_dev with mutex
-Date: Thu, 5 Nov 2015 14:12:14 +0530
-Message-ID: <20151105084214.GC3773@ubuntu>
-References: <5f8fac4ad84716ef68fc50ab0b78e11ad2837524.1446205160.git.viresh.kumar@linaro.org>
- <20151030170604.GD19782@codeaurora.org>
- <20151031021409.GT3716@ubuntu>
- <20151102191435.GN19782@codeaurora.org>
+From: Srinidhi Kasagar <srinidhi.kasagar@intel.com>
+Subject: [PATCH] intel_idle: Add support for Goldmont core in the Broxton Socs
+Date: Thu, 5 Nov 2015 22:13:37 +0530
+Message-ID: <20151105164316.GA24063@intel-desktop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:31155 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030329AbbKEIu2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 5 Nov 2015 03:50:28 -0500
 Content-Disposition: inline
-In-Reply-To: <20151102191435.GN19782@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, mturquette@baylibre.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dan Carpenter <dan.carpenter@oracle.com>, Dmitry Torokhov <dtor@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Pavel Machek <pavel@ucw.cz>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: lenb@kernel.org, len.brown@intel.com
+Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, srinidhi.kasagar@intel.com
 
-On 02-11-15, 11:14, Stephen Boyd wrote:
-> On 10/31, Viresh Kumar wrote:
-> > I don't know what is wrong (or right) with my exynos 5250 board, but I
-> > didn't got any splat here even with the right config options (yes I
-> > should have mentioned that earlier). I have seen this at other times
-> > as well, while we were running after some cpufreq traces..
-> > 
-> > But, the case in hand is pretty straight forward and Mike T. did get a
-> > splat as that's what he told me. We are calling a sleep-able function
-> > from rcu_lock and that's obviously wrong.
-> 
-> That's slightly concerning. Given that the bug is so straight
-> forward but we can't reproduce it doesn't instill a lot of
-> confidence that the patch is correct.
+Broxton SoC uses similar Haswell like C states. Add a dedicated
+table for this Soc.
 
-Good that I spent some time debugging why I wasn't able to hit the
-lockdep. And that's because by default CONFIG_PREEMPT_RCU was
-selected on exynos and so the dummy function was getting enabled, and
-so no WARN.
+Signed-off-by: Srinidhi Kasagar <srinidhi.kasagar@intel.com>
+---
+ drivers/idle/intel_idle.c |   76 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 76 insertions(+)
 
-#if defined(CONFIG_PROVE_RCU) && !defined(CONFIG_PREEMPT_RCU)
-static inline void rcu_preempt_sleep_check(void)
-{
-	RCU_LOCKDEP_WARN(lock_is_held(&rcu_lock_map),
-			 "Illegal context switch in RCU read-side critical section");
-}
-#else /* #ifdef CONFIG_PROVE_RCU */
-static inline void rcu_preempt_sleep_check(void)
-{
-}
-#endif /* #else #ifdef CONFIG_PROVE_RCU */
-
-Whereas for omap, that's not the case :)
-
-So, with some config changes, I was able to hit the lockdep :)
-
-And just to confirm, they got fixed by the $Subject patch :)
-
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index 3a3738fe016b..beb950838cda 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -522,6 +522,76 @@ static struct cpuidle_state hsw_cstates[] = {
+ 	{
+ 		.enter = NULL }
+ };
++
++static struct cpuidle_state bxt_cstates[] = {
++	{
++		.name = "C1-BXT",
++		.desc = "MWAIT 0x00",
++		.flags = MWAIT2flg(0x00),
++		.exit_latency = 2,
++		.target_residency = 2,
++		.enter = &intel_idle,
++		.enter_freeze = intel_idle_freeze, },
++	{
++		.name = "C1E-BXT",
++		.desc = "MWAIT 0x01",
++		.flags = MWAIT2flg(0x01),
++		.exit_latency = 10,
++		.target_residency = 20,
++		.enter = &intel_idle,
++		.enter_freeze = intel_idle_freeze, },
++	{
++		.name = "C3-BXT",
++		.desc = "MWAIT 0x10",
++		.flags = MWAIT2flg(0x10) | CPUIDLE_FLAG_TLB_FLUSHED,
++		.exit_latency = 33,
++		.target_residency = 100,
++		.enter = &intel_idle,
++		.enter_freeze = intel_idle_freeze, },
++	{
++		.name = "C6-BXT",
++		.desc = "MWAIT 0x20",
++		.flags = MWAIT2flg(0x20) | CPUIDLE_FLAG_TLB_FLUSHED,
++		.exit_latency = 133,
++		.target_residency = 400,
++		.enter = &intel_idle,
++		.enter_freeze = intel_idle_freeze, },
++	{
++		.name = "C7s-BXT",
++		.desc = "MWAIT 0x32",
++		.flags = MWAIT2flg(0x32) | CPUIDLE_FLAG_TLB_FLUSHED,
++		.exit_latency = 166,
++		.target_residency = 500,
++		.enter = &intel_idle,
++		.enter_freeze = intel_idle_freeze, },
++	{
++		.name = "C8-BXT",
++		.desc = "MWAIT 0x40",
++		.flags = MWAIT2flg(0x40) | CPUIDLE_FLAG_TLB_FLUSHED,
++		.exit_latency = 300,
++		.target_residency = 900,
++		.enter = &intel_idle,
++		.enter_freeze = intel_idle_freeze, },
++	{
++		.name = "C9-BXT",
++		.desc = "MWAIT 0x50",
++		.flags = MWAIT2flg(0x50) | CPUIDLE_FLAG_TLB_FLUSHED,
++		.exit_latency = 600,
++		.target_residency = 1800,
++		.enter = &intel_idle,
++		.enter_freeze = intel_idle_freeze, },
++	{
++		.name = "C10-BXT",
++		.desc = "MWAIT 0x60",
++		.flags = MWAIT2flg(0x60) | CPUIDLE_FLAG_TLB_FLUSHED,
++		.exit_latency = 2600,
++		.target_residency = 7700,
++		.enter = &intel_idle,
++		.enter_freeze = intel_idle_freeze, },
++	{
++		.enter = NULL }
++};
++
+ static struct cpuidle_state bdw_cstates[] = {
+ 	{
+ 		.name = "C1-BDW",
+@@ -882,6 +952,11 @@ static const struct idle_cpu idle_cpu_avn = {
+ 	.disable_promotion_to_c1e = true,
+ };
+ 
++static const struct idle_cpu idle_cpu_bxt = {
++	.state_table = bxt_cstates,
++	.disable_promotion_to_c1e = true,
++};
++
+ #define ICPU(model, cpu) \
+ 	{ X86_VENDOR_INTEL, 6, model, X86_FEATURE_MWAIT, (unsigned long)&cpu }
+ 
+@@ -911,6 +986,7 @@ static const struct x86_cpu_id intel_idle_ids[] __initconst = {
+ 	ICPU(0x47, idle_cpu_bdw),
+ 	ICPU(0x4f, idle_cpu_bdw),
+ 	ICPU(0x56, idle_cpu_bdw),
++	ICPU(0x5c, idle_cpu_bxt),
+ 	ICPU(0x4e, idle_cpu_skl),
+ 	ICPU(0x5e, idle_cpu_skl),
+ 	{}
 -- 
-viresh
+1.7.9.5
