@@ -1,56 +1,117 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] cpufreq: arm_big_little: fix frequency check when bL switcher is active
-Date: Thu, 05 Nov 2015 23:46:21 +0100
-Message-ID: <1780931.75Jjd57heP@vostro.rjw.lan>
-References: <1445421333.2916.13.camel@linaro.org> <1446202098.2815.8.camel@linaro.org> <11584056.2Z0CdQiHeS@vostro.rjw.lan>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v2] PM / sleep: prohibit devices probing during
+ suspend/hibernation
+Date: Thu, 5 Nov 2015 23:19:03 +0100
+Message-ID: <20151105221903.GA4919@amd>
+References: <1445288064-25299-1-git-send-email-grygorii.strashko@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <11584056.2Z0CdQiHeS@vostro.rjw.lan>
+Content-Disposition: inline
+In-Reply-To: <1445288064-25299-1-git-send-email-grygorii.strashko@ti.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Jon Medhurst (Tixy)" <tixy@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Michael Turquette <mturquette@baylibre.com>
+To: Grygorii Strashko <grygorii.strashko@ti.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, stern@rowland.harvard.edu, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, October 31, 2015 03:34:05 AM Rafael J. Wysocki wrote:
-> On Friday, October 30, 2015 10:48:18 AM Jon Medhurst wrote:
-> > On Wed, 2015-10-21 at 15:27 +0530, Viresh Kumar wrote:
-> > > On 21-10-15, 10:55, Jon Medhurst (Tixy) wrote:
-> > > > The check for correct frequency being set in bL_cpufreq_set_rate is
-> > > > broken when the big.LITTLE switcher is active, for two reasons.
-> > > > 
-> > > > 1. The 'new_rate' variable gets overwritten before the test by the
-> > > > code calculating the frequency of the old cluster.
-> > > > 
-> > > > 2. The frequency returned by bL_cpufreq_get_rate will be the virtual
-> > > > frequency, not the actual one the intended version of new_rate contains.
-> > > > 
-> > > > This means the function always returns an error causing an endless
-> > > > stream of: "cpufreq: __target_index: Failed to change cpu frequency: -5"
-> > > > 
-> > > > As the intent is to check for errors that clk_set_rate doesn't report
-> > > > lets move the check to immediately after that and directly use
-> > > > clk_get_rate, rather than the arm_big_little helpers which only confuse
-> > > > matters. Also, update the comment to be hopefully clearer about the
-> > > > purpose of the code.
-> > > > 
-> > > > Fixes: 0a95e630b49a ("cpufreq: arm_big_little: check if the frequency is set correctly")
-> > > > 
-> > > > Signed-off-by: Jon Medhurst <tixy@linaro.org>
-> > > > Acked-by: Sudeep Holla <sudeep.holla@arm.com>
-> > > > ---
-> > > > 
-> > [...]
-> > > 
-> > > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > > 
-> > 
-> > Do I need to send this again with that Ack and Michael's Reviewed-by
-> > added?
+On Mon 2015-10-19 23:54:24, Grygorii Strashko wrote:
+> It is unsafe [1] if probing of devices will happen during suspend or
+> hibernation and system behavior will be unpredictable in this case
+> (for example: after successful probe the device potentially has a different
+>  set of PM callbacks than before [2]).
+> So, let's prohibit device's probing in dpm_prepare() and defer their
+> probes instead. The normal behavior will be restored in dpm_complete().
 > 
-> Nope, it's on my to-do list.
+> This patch introduces new DD core APIs:
+>  device_defer_all_probes_enable()
+>    It will disable probing of devices and defer their probes.
+>  device_defer_all_probes_disable()
+>    It will restore normal behavior and trigger re-probing of deferred
+>    devices.
+> 
+> [1] https://lkml.org/lkml/2015/9/11/554
+> [2] https://lkml.org/lkml/2015/9/15/1039
+> Cc: Alan Stern <stern@rowland.harvard.edu>
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: Thierry Reding <thierry.reding@gmail.com>
+> Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
+> ---
+> Changes in v2:
+> - DD core API device_defer_all_probes(bool enable) split on two
+>   void device_defer_all_probes_enable(void);
+>   void device_defer_all_probes_disable(void);
+> - more comments added
+> 
+> Link on v1:
+> - https://lkml.org/lkml/2015/10/8/681
+> 
+>  drivers/base/base.h       |  2 ++
+>  drivers/base/dd.c         | 48 ++++++++++++++++++++++++++++++++++++++++++++++-
+>  drivers/base/power/main.c | 17 +++++++++++++++++
+>  3 files changed, 66 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/base/base.h b/drivers/base/base.h
+> index 1782f3a..c332b68 100644
+> --- a/drivers/base/base.h
+> +++ b/drivers/base/base.h
+> @@ -131,6 +131,8 @@ extern void device_remove_groups(struct device *dev,
+>  extern char *make_class_name(const char *name, struct kobject *kobj);
+>  
+>  extern int devres_release_all(struct device *dev);
+> +extern void device_defer_all_probes_enable(void);
+> +extern void device_defer_all_probes_disable(void);
+>  
+>  /* /sys/devices directory */
+>  extern struct kset *devices_kset;
+> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+> index be0eb46..b8d9e70 100644
+> --- a/drivers/base/dd.c
+> +++ b/drivers/base/dd.c
+> @@ -55,6 +55,13 @@ static struct workqueue_struct *deferred_wq;
+>  static atomic_t deferred_trigger_count = ATOMIC_INIT(0);
+>  
+>  /*
+> + * In some cases, like suspend to RAM or hibernation, It might be reasonable
+> + * to prohibit probing of devices as it could be unsafe.
+> + * Once defer_all_probes is true all drivers probes will be forcibly deferred.
+> + */
+> +static bool defer_all_probes;
+> +
+> +/*
+>   * deferred_probe_work_func() - Retry probing devices in the active list.
+>   */
+>  static void deferred_probe_work_func(struct work_struct *work)
+> @@ -172,6 +179,30 @@ static void driver_deferred_probe_trigger(void)
+>  }
+>  
+>  /**
+> + * device_defer_all_probes_enable() - Enable deferring of device's probes
+> + *
+> + *	It will disable probing of devices and defer their probes.
+> + */
+> +void device_defer_all_probes_enable(void)
+> +{
+> +	defer_all_probes = true;
+> +	/* sync with probes to avoid races. */
+> +	wait_for_device_probe();
+> +}
 
-Applied now, thanks!
+device_pause_probing()?
 
-Rafael
+> +/**
+> + * device_defer_all_probes_disable() - Disable deferring of device's probes
+> + *
+> + *	It will restore normal behavior and trigger re-probing of deferred
+> + * devices.
+> + */
+
+Hmm. This is not quite a double negative... but it sounds like one.
+
+device_restart_probing()?
+
+Thanks,
+									Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
