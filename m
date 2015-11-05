@@ -1,14 +1,15 @@
 From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: Re: [PATCH v4 0/8] qcom: Add support for TSENS driver
-Date: Thu, 05 Nov 2015 12:21:48 +0530
-Message-ID: <563AFC84.3070807@codeaurora.org>
+Subject: Re: [PATCH v4 1/8] thermal: qcom: tsens: Add a skeletal TSENS drivers
+Date: Thu, 05 Nov 2015 12:23:29 +0530
+Message-ID: <563AFCE9.8020000@codeaurora.org>
 References: <1444383670-32693-1-git-send-email-rnayak@codeaurora.org>
- <20151102201345.GA4238@localhost.localdomain>
+ <1444383670-32693-2-git-send-email-rnayak@codeaurora.org>
+ <20151102203021.GB4469@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20151102201345.GA4238@localhost.localdomain>
+In-Reply-To: <20151102203021.GB4469@localhost.localdomain>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -22,25 +23,453 @@ To: Eduardo Valentin <edubezval@gmail.com>
 Cc: linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, punit.agrawal@arm.com, sboyd@codeaurora.org, srinivas.kandagatla@linaro.org, lina.iyer@linaro.org, nrajan@codeaurora.org, agross@codeaurora.org, rui.zhang@intel.com, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Eduardo,
 
-On 11/03/2015 01:43 AM, Eduardo Valentin wrote:
-> Rajendra,
+On 11/03/2015 02:00 AM, Eduardo Valentin wrote:
+> Hello Rajendra,
 > 
-> On Fri, Oct 09, 2015 at 03:11:02PM +0530, Rajendra Nayak wrote:
->> Patches 1/8 to 4/8 will need to go via the thermal tree/Eduardo.
->> Patches 5/8 to 8/8 will need to go via qcom-msm tree/Andy.
->>
->> Eduardo, can you please take a look at the patches and let me
->> know if you see any issues.
->>
+> On Fri, Oct 09, 2015 at 03:11:03PM +0530, Rajendra Nayak wrote:
 > 
-> Thanks for your taking this over. I am assuming this superseeds the
-> work by Narendran.
+> <cut>
+> 
+>> +- #thermal-sensor-cells : Should be 1. See ./thermal.txt for a description.
+>> +- Refer to Documentation/devicetree/bindings/nvmem/nvmem.txt to know how to specify
+>> +nvmem cells
+>> +
+>> +Optional properties:
+>> +- qcom,sensor-id: List of sensor instances used in a given SoC. A TSENS IP can
+>> +		  have a fixed number of sensors (like 11) but a given SoC can
+>> +		  use only 5 of these and they might not always the first 5. They
+>> +		  could be sensors 0, 1, 4, 8 and 9. This property is used to
+>> +		  describe the subset of the sensors used. If this property is
+>> +		  missing they are assumed to be the first 'n' sensors numbered
+>> +		  sequentially in which case the number of sensors defaults to
+>> +		  the number of slope values.
+> 
+> Can you please elaborate a bit more on why you could not solve this
+> using the thermal sensor descriptor id?
+> 
+>> +
+>> +Example:
+>> +tsens: thermal-sensor@900000 {
+>> +		compatible = "qcom,msm8916-tsens";
+>> +		nvmem-cells = <&tsens_caldata>, <&tsens_calsel>;
+>> +		nvmem-cell-names = "caldata", "calsel";
+>> +		qcom,tsens-slopes = <3200 3200 3200 3200 3200>;
+> 
+> This property is not documented. Please, also consider my comment on
+> Narendran's work: use the already existing thermal zone properties.
+> 
+> Have a look on the binding documentation:
+> Documentation/devicetree/bindings/thermal/thermal.txt
+> 
+> <quote>
+> Optional property:
+> - coefficients:         An array of integers (one signed cell) containing
+>   Type: array           coefficients to compose a linear relation between
+>   Elem size: one cell   the sensors listed in the thermal-sensors property.
+>   Elem type: signed     Coefficients defaults to 1, in case this property
+>                         is not specified. A simple linear polynomial is used:
+>                         Z = c0 * x0 + c1 + x1 + ... + c(n-1) * x(n-1) + cn.
+> 
+>                         The coefficients are ordered and they match with sensors
+>                         by means of sensor ID. Additional coefficients are
+>                         interpreted as constant offset.
+> </quote>
+> 
+> Today the code supports only slope + offset linear coefficients. Which I am
+> assuming you could reuse in your case.
 
-Yes, thats correct. I took Naren's work to add support for msm8960
-family and created a single driver to work across msm8960 and
-msm8974/8916/8084 SoCs.
+Sure, I'll take a look at these and see if I can reuse these bindings instead
+of creating new ones.
 
 regards,
 Rajendra
+
+> 
+> 
+> 
+>> +		qcom,sensor-id = <0 1 2 4 5>;
+>> +		#thermal-sensor-cells = <1>;
+> 
+> How about if you simply make the sensor driver expose all sensors, then in the
+> thermal zone descriptor, you pick which sensor to use using the thermal sensor
+> descriptor (quoting the binding again):
+> 
+> ocp {
+>         ...
+>         /*
+>          * A simple IC with several bandgap temperature sensors.
+>          */
+>         bandgap0: bandgap@0x0000ED00 {
+>                 ...
+>                 #thermal-sensor-cells = <1>;
+>         };
+> };
+> 
+> thermal-zones {
+>         cpu_thermal: cpu-thermal {
+>                 polling-delay-passive = <250>; /* milliseconds */
+>                 polling-delay = <1000>; /* milliseconds */
+> 
+>                                 /* sensor       ID */
+>                 thermal-sensors = <&bandgap0     0>;
+> 	};
+> 	gpu_thermal: gpu-thermal {
+>                 polling-delay-passive = <120>; /* milliseconds */
+>                 polling-delay = <1000>; /* milliseconds */
+> 
+>                                 /* sensor       ID */
+>                 thermal-sensors = <&bandgap0     1>;
+> 
+> 	};
+> 
+> };
+> 
+> Would that simplify ?
+> 
+> BR,
+> 
+> Eduardo Valentin
+> 
+>> +	};
+>> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+>> index 5aabc4b..d49f2bd 100644
+>> --- a/drivers/thermal/Kconfig
+>> +++ b/drivers/thermal/Kconfig
+>> @@ -374,4 +374,9 @@ config QCOM_SPMI_TEMP_ALARM
+>>  	  real time die temperature if an ADC is present or an estimate of the
+>>  	  temperature based upon the over temperature stage value.
+>>  
+>> +menu "Qualcomm thermal drivers"
+>> +depends on ARCH_QCOM && OF
+> 
+> Please add compile test too.
+> 
+>> +source "drivers/thermal/qcom/Kconfig"
+>> +endmenu
+>> +
+>>  endif
+>> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+>> index 26f1608..cdaa55f 100644
+>> --- a/drivers/thermal/Makefile
+>> +++ b/drivers/thermal/Makefile
+>> @@ -43,5 +43,6 @@ obj-$(CONFIG_TI_SOC_THERMAL)	+= ti-soc-thermal/
+>>  obj-$(CONFIG_INT340X_THERMAL)  += int340x_thermal/
+>>  obj-$(CONFIG_INTEL_PCH_THERMAL)	+= intel_pch_thermal.o
+>>  obj-$(CONFIG_ST_THERMAL)	+= st/
+>> +obj-$(CONFIG_QCOM_TSENS)	+= qcom/
+>>  obj-$(CONFIG_TEGRA_SOCTHERM)	+= tegra_soctherm.o
+>>  obj-$(CONFIG_HISI_THERMAL)     += hisi_thermal.o
+>> diff --git a/drivers/thermal/qcom/Kconfig b/drivers/thermal/qcom/Kconfig
+>> new file mode 100644
+>> index 0000000..f7e8e40
+>> --- /dev/null
+>> +++ b/drivers/thermal/qcom/Kconfig
+>> @@ -0,0 +1,10 @@
+>> +config QCOM_TSENS
+>> +	tristate "Qualcomm TSENS Temperature Alarm"
+>> +	depends on THERMAL
+>> +	depends on QCOM_QFPROM
+> 
+> Compile test..
+> 
+>> +	help
+>> +	  This enables the thermal sysfs driver for the TSENS device. It shows
+>> +	  up in Sysfs as a thermal zone with multiple trip points. Disabling the
+>> +	  thermal zone device via the mode file results in disabling the sensor.
+>> +	  Also able to set threshold temperature for both hot and cold and update
+>> +	  when a threshold is reached.
+>> diff --git a/drivers/thermal/qcom/Makefile b/drivers/thermal/qcom/Makefile
+>> new file mode 100644
+>> index 0000000..401069b
+>> --- /dev/null
+>> +++ b/drivers/thermal/qcom/Makefile
+>> @@ -0,0 +1,2 @@
+>> +obj-$(CONFIG_QCOM_TSENS)	+= qcom_tsens.o
+>> +qcom_tsens-y			+= tsens.o
+>> diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+>> new file mode 100644
+>> index 0000000..87f5215
+>> --- /dev/null
+>> +++ b/drivers/thermal/qcom/tsens.c
+>> @@ -0,0 +1,199 @@
+>> +/*
+>> + * Copyright (c) 2015, The Linux Foundation. All rights reserved.
+>> + *
+>> + * This program is free software; you can redistribute it and/or modify
+>> + * it under the terms of the GNU General Public License version 2 and
+>> + * only version 2 as published by the Free Software Foundation.
+>> + *
+>> + * This program is distributed in the hope that it will be useful,
+>> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+>> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+>> + * GNU General Public License for more details.
+>> + *
+>> + */
+>> +
+>> +#include <linux/err.h>
+>> +#include <linux/module.h>
+>> +#include <linux/of.h>
+>> +#include <linux/platform_device.h>
+>> +#include <linux/pm.h>
+>> +#include <linux/slab.h>
+>> +#include <linux/thermal.h>
+>> +#include "tsens.h"
+>> +
+>> +static int tsens_get_temp(void *data, int *temp)
+>> +{
+>> +	const struct tsens_sensor *s = data;
+>> +	struct tsens_device *tmdev = s->tmdev;
+>> +
+>> +	return tmdev->ops->get_temp(tmdev, s->id, temp);
+>> +}
+>> +
+>> +static int tsens_get_trend(void *data, long *temp)
+>> +{
+>> +	const struct tsens_sensor *s = data;
+>> +	struct tsens_device *tmdev = s->tmdev;
+>> +
+>> +	if (tmdev->ops->get_trend)
+>> +		return tmdev->ops->get_trend(tmdev, s->id, temp);
+>> +
+>> +	return -ENOSYS;
+>> +}
+>> +
+>> +static int tsens_suspend(struct device *dev)
+>> +{
+>> +	struct tsens_device *tmdev = dev_get_drvdata(dev);
+>> +
+>> +	if (tmdev->ops && tmdev->ops->suspend)
+>> +		return tmdev->ops->suspend(tmdev);
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static int tsens_resume(struct device *dev)
+>> +{
+>> +	struct tsens_device *tmdev = dev_get_drvdata(dev);
+>> +
+>> +	if (tmdev->ops && tmdev->ops->resume)
+>> +		return tmdev->ops->resume(tmdev);
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static SIMPLE_DEV_PM_OPS(tsens_pm_ops, tsens_suspend, tsens_resume);
+>> +
+>> +static const struct of_device_id tsens_table[] = {
+>> +	{
+>> +		.compatible = "qcom,msm8916-tsens",
+>> +	}, {
+>> +		.compatible = "qcom,msm8974-tsens",
+>> +	},
+>> +	{}
+>> +};
+>> +MODULE_DEVICE_TABLE(of, tsens_table);
+>> +
+>> +static const struct thermal_zone_of_device_ops tsens_of_ops = {
+>> +	.get_temp = tsens_get_temp,
+>> +	.get_trend = tsens_get_trend,
+>> +};
+>> +
+>> +static int tsens_register(struct tsens_device *tmdev)
+>> +{
+>> +	int i, ret;
+>> +	struct thermal_zone_device *tzd;
+>> +	u32 *hw_id, n = tmdev->num_sensors;
+>> +	struct device_node *np = tmdev->dev->of_node;
+>> +
+>> +	hw_id = devm_kcalloc(tmdev->dev, n, sizeof(u32), GFP_KERNEL);
+>> +	if (!hw_id)
+>> +		return -ENOMEM;
+>> +
+>> +	ret = of_property_read_u32_array(np, "qcom,sensor-id", hw_id, n);
+>> +	for (i = 0;  i < tmdev->num_sensors; i++) {
+>> +		if (ret)
+>> +			tmdev->sensor[i].hw_id = i;
+>> +		else
+>> +			tmdev->sensor[i].hw_id = hw_id[i];
+>> +		tmdev->sensor[i].tmdev = tmdev;
+>> +		tmdev->sensor[i].id = i;
+>> +		tzd = thermal_zone_of_sensor_register(tmdev->dev, i,
+>> +						      &tmdev->sensor[i],
+>> +						      &tsens_of_ops);
+>> +		if (IS_ERR(tzd))
+>> +			continue;
+>> +		tmdev->sensor[i].tzd = tzd;
+>> +		if (tmdev->ops->enable)
+>> +			tmdev->ops->enable(tmdev, i);
+>> +	}
+>> +	return 0;
+>> +}
+>> +
+>> +static int tsens_probe(struct platform_device *pdev)
+>> +{
+>> +	int ret, i, num;
+>> +	struct device *dev;
+>> +	struct device_node *np;
+>> +	struct tsens_sensor *s;
+>> +	struct tsens_device *tmdev;
+>> +	const struct of_device_id *id;
+>> +
+>> +	dev = &pdev->dev;
+>> +	np = dev->of_node;
+>> +
+>> +	num = of_property_count_u32_elems(np, "qcom,tsens-slopes");
+>> +	if (num <= 0) {
+>> +		dev_err(dev, "invalid tsens slopes\n");
+>> +		return -EINVAL;
+>> +	}
+>> +
+>> +	tmdev = devm_kzalloc(dev, sizeof(*tmdev) +
+>> +			     num * sizeof(*s), GFP_KERNEL);
+>> +	if (!tmdev)
+>> +		return -ENOMEM;
+>> +
+>> +	tmdev->dev = dev;
+>> +	tmdev->num_sensors = num;
+>> +
+>> +	for (i = 0, s = tmdev->sensor; i < tmdev->num_sensors; i++, s++)
+>> +		of_property_read_u32_index(np, "qcom,tsens-slopes", i,
+>> +					   &s->slope);
+>> +
+>> +	id = of_match_node(tsens_table, np);
+>> +	if (!id)
+>> +		return -ENODEV;
+>> +
+>> +	tmdev->ops = id->data;
+>> +	if (!tmdev->ops || !tmdev->ops->init || !tmdev->ops->calibrate ||
+>> +	    !tmdev->ops->get_temp)
+>> +		return -EINVAL;
+>> +
+>> +	ret = tmdev->ops->init(tmdev);
+>> +	if (ret < 0) {
+>> +		dev_err(dev, "tsens init failed\n");
+>> +		return ret;
+>> +	}
+>> +
+>> +	ret = tmdev->ops->calibrate(tmdev);
+>> +	if (ret < 0) {
+>> +		dev_err(dev, "tsens calibration failed\n");
+>> +		return ret;
+>> +	}
+>> +
+>> +	ret = tsens_register(tmdev);
+>> +
+>> +	platform_set_drvdata(pdev, tmdev);
+>> +
+>> +	return ret;
+>> +}
+>> +
+>> +static int tsens_remove(struct platform_device *pdev)
+>> +{
+>> +	int i;
+>> +	struct tsens_device *tmdev = platform_get_drvdata(pdev);
+>> +	struct thermal_zone_device *tzd;
+>> +
+>> +	if (tmdev->ops->disable)
+>> +		tmdev->ops->disable(tmdev);
+>> +
+>> +	for (i = 0; i < tmdev->num_sensors; i++) {
+>> +		tzd = tmdev->sensor[i].tzd;
+>> +		thermal_zone_of_sensor_unregister(&pdev->dev, tzd);
+>> +	}
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static struct platform_driver tsens_driver = {
+>> +	.probe = tsens_probe,
+>> +	.remove = tsens_remove,
+>> +	.driver = {
+>> +		.name = "qcom-tsens",
+>> +		.pm	= &tsens_pm_ops,
+>> +		.of_match_table = tsens_table,
+>> +	},
+>> +};
+>> +module_platform_driver(tsens_driver);
+>> +
+>> +MODULE_LICENSE("GPL v2");
+>> +MODULE_DESCRIPTION("QCOM Temperature Sensor driver");
+>> +MODULE_ALIAS("platform:qcom-tsens");
+>> diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
+>> new file mode 100644
+>> index 0000000..f0fc353
+>> --- /dev/null
+>> +++ b/drivers/thermal/qcom/tsens.h
+>> @@ -0,0 +1,58 @@
+>> +/*
+>> + * Copyright (c) 2015, The Linux Foundation. All rights reserved.
+>> + *
+>> + * This software is licensed under the terms of the GNU General Public
+>> + * License version 2, as published by the Free Software Foundation, and
+>> + * may be copied, distributed, and modified under those terms.
+>> + *
+>> + * This program is distributed in the hope that it will be useful,
+>> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+>> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+>> + * GNU General Public License for more details.
+>> + */
+>> +#ifndef __QCOM_TSENS_H__
+>> +#define __QCOM_TSENS_H__
+>> +
+>> +struct tsens_device;
+>> +
+>> +struct tsens_sensor {
+>> +	struct tsens_device		*tmdev;
+>> +	struct thermal_zone_device	*tzd;
+>> +	int				offset;
+>> +	int				id;
+>> +	int				hw_id;
+>> +	u32				slope;
+>> +	u32				status;
+>> +};
+>> +
+> 
+> 
+>> +struct tsens_ops {
+>> +	/* mandatory callbacks */
+>> +	int (*init)(struct tsens_device *);
+>> +	int (*calibrate)(struct tsens_device *);
+>> +	int (*get_temp)(struct tsens_device *, int, int *);
+>> +	/* optional callbacks */
+>> +	int (*enable)(struct tsens_device *, int);
+>> +	void (*disable)(struct tsens_device *);
+>> +	int (*suspend)(struct tsens_device *);
+>> +	int (*resume)(struct tsens_device *);
+>> +	int (*get_trend)(struct tsens_device *, int, long *);
+>> +};
+> 
+> I know this is a set of internal data structures. But, given that you
+> are creating a driver that supports a family of chips, and that I
+> assume will be having additions on it in the future, it would
+> be nice if you add kernel doc entries on these, so people know
+> what to expect from them.
+> 
+>> +
+>> +/* Registers to be saved/restored across a context loss */
+>> +struct tsens_context {
+>> +	int	threshold;
+>> +	int	control;
+>> +};
+>> +
+>> +struct tsens_device {
+>> +	struct device			*dev;
+>> +	u32				num_sensors;
+>> +	struct regmap			*map;
+>> +	struct regmap_field		*status_field;
+>> +	struct tsens_context		ctx;
+>> +	bool				trdy;
+>> +	const struct tsens_ops		*ops;
+>> +	struct tsens_sensor		sensor[0];
+>> +};
+>> +
+>> +#endif /* __QCOM_TSENS_H__ */
+>> -- 
+>> QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+>> of Code Aurora Forum, hosted by The Linux Foundation
+>>
+
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
