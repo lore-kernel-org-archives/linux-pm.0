@@ -1,119 +1,47 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH V2 1/5] PM / OPP: Add "opp-supported-hw" binding
-Date: Wed, 4 Nov 2015 20:57:29 -0600
-Message-ID: <20151105025729.GA13149@rob-hp-laptop>
-References: <cover.1446687367.git.viresh.kumar@linaro.org>
- <4e574912e52fb87fc17f4d19d965ae05c888bd29.1446687367.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <4e574912e52fb87fc17f4d19d965ae05c888bd29.1446687367.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, robh+dt@kernel.org, sboyd@codeaurora.org, lee.jones@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, mark.rutland@arm.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, nm@ti.com, devicetree@vger.kernel.org, b.zolnierkie@samsung.com, m.szyprowski@samsung.com, open list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCH] MAINTAINERS: Add devfreq-event entry
+Date: Thu, 05 Nov 2015 12:00:07 +0900
+Message-ID: <1446692407-18247-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:36824 "EHLO
+	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031632AbbKEDAY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Nov 2015 22:00:24 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: myungjoo.ham@samsung.com, rafael.j.wysocki@intel.com
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
 
-On Thu, Nov 05, 2015 at 07:11:52AM +0530, Viresh Kumar wrote:
-> We may want to enable only a subset of OPPs, from the bigger list of
-> OPPs, based on what version of the hardware we are running on. This
-> would enable us to not duplicate OPP tables for every version of the
-> hardware we support.
-> 
-> To enable that, this patch defines a new property 'opp-supported-hw'. It
-> can support any number of hierarchy levels of the versions the hardware
-> follows. And based on the selected hardware versions, we can pick only
-> the relevant OPPs at runtime.
-> 
-> Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+This patch adds the devfreq-event[1] entry to review the patches
+as just supporter. Patches will be picked up by Myungjoo Ham on
+devfreq git repository.
+[1] https://lkml.org/lkml/2015/1/25/573
 
-Acked-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+---
+ MAINTAINERS | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-> ---
->  Documentation/devicetree/bindings/opp/opp.txt | 65 +++++++++++++++++++++++++++
->  1 file changed, 65 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
-> index 0cb44dc21f97..d072fa0ffbd4 100644
-> --- a/Documentation/devicetree/bindings/opp/opp.txt
-> +++ b/Documentation/devicetree/bindings/opp/opp.txt
-> @@ -123,6 +123,26 @@ properties.
->  - opp-suspend: Marks the OPP to be used during device suspend. Only one OPP in
->    the table should have this.
->  
-> +- opp-supported-hw: This enables us to select only a subset of OPPs from the
-> +  larger OPP table, based on what version of the hardware we are running on. We
-> +  still can't have multiple nodes with the same opp-hz value in OPP table.
-> +
-> +  It's an user defined array containing a hierarchy of hardware version numbers,
-> +  supported by the OPP. For example: a platform with hierarchy of three levels
-> +  of versions (A, B and C), this field should be like <X Y Z>, where X
-> +  corresponds to Version hierarchy A, Y corresponds to version hierarchy B and Z
-> +  corresponds to version hierarchy C.
-> +
-> +  Each level of hierarchy is represented by a 32 bit value, and so there can be
-> +  only 32 different supported version per hierarchy. i.e. 1 bit per version. A
-> +  value of 0xFFFFFFFF will enable the OPP for all versions for that hierarchy
-> +  level. And a value of 0x00000000 will disable the OPP completely, and so we
-> +  never want that to happen.
-> +
-> +  If 32 values aren't sufficient for a version hierarchy, than that version
-> +  hierarchy can be contained in multiple 32 bit values. i.e. <X Y Z1 Z2> in the
-> +  above example, Z1 & Z2 refer to the version hierarchy Z.
-> +
->  - status: Marks the node enabled/disabled.
->  
->  Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
-> @@ -463,3 +483,48 @@ Example 5: Multiple OPP tables
->  		};
->  	};
->  };
-> +
-> +Example 6: opp-supported-hw
-> +(example: three level hierarchy of versions: cuts, substrate and process)
-> +
-> +/ {
-> +	cpus {
-> +		cpu@0 {
-> +			compatible = "arm,cortex-a7";
-> +			...
-> +
-> +			cpu-supply = <&cpu_supply>
-> +			operating-points-v2 = <&cpu0_opp_table_slow>;
-> +		};
-> +	};
-> +
-> +	opp_table {
-> +		compatible = "operating-points-v2";
-> +		status = "okay";
-> +		opp-shared;
-> +
-> +		opp00 {
-> +			/*
-> +			 * Supports all substrate and process versions for 0xF
-> +			 * cuts, i.e. only first four cuts.
-> +			 */
-> +			opp-supported-hw = <0xF 0xFFFFFFFF 0xFFFFFFFF>
-> +			opp-hz = /bits/ 64 <600000000>;
-> +			opp-microvolt = <900000 915000 925000>;
-> +			...
-> +		};
-> +
-> +		opp01 {
-> +			/*
-> +			 * Supports:
-> +			 * - cuts: only one, 6th cut (represented by 6th bit).
-> +			 * - substrate: supports 16 different substrate versions
-> +			 * - process: supports 9 different process versions
-> +			 */
-> +			opp-supported-hw = <0x20 0xff0000ff 0x0000f4f0>
-> +			opp-hz = /bits/ 64 <800000000>;
-> +			opp-microvolt = <900000 915000 925000>;
-> +			...
-> +		};
-> +	};
-> +};
-> -- 
-> 2.6.2.198.g614a2ac
-> 
+diff --git a/MAINTAINERS b/MAINTAINERS
+index bd18978d5ad3..07f2dfaa9236 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3340,6 +3340,15 @@ L:	linux-pm@vger.kernel.org
+ S:	Maintained
+ F:	drivers/devfreq/
+ 
++DEVICE FREQUENCY EVENT (DEVFREQ-EVENT)
++M:	Chanwoo Choi <cw00.choi@samsung.com>
++L:	linux-pm@vger.kernel.org
++S:	Supported
++F:	drivers/devfreq/event
++F:	drivers/devfreq/devfreq-event.c
++F:	include/linux/devfreq-event.h
++F:	Documentation/devicetree/bindings/devfreq/event
++
+ DEVICE NUMBER REGISTRY
+ M:	Torben Mathiasen <device@lanana.org>
+ W:	http://lanana.org/docs/device-list/index.html
+-- 
+1.9.1
+
