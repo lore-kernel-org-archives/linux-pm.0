@@ -1,48 +1,46 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH v2 1/2] MAINTAINERS: Add missing git repository and
- directory for devfreq
-Date: Thu, 05 Nov 2015 06:37:30 +0000 (GMT)
-Message-ID: <1666439884.102391446705448713.JavaMail.weblogic@ep2mlwas07d>
-Reply-To: myungjoo.ham@samsung.com
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: Re: [PATCH v4 0/8] qcom: Add support for TSENS driver
+Date: Thu, 05 Nov 2015 12:21:48 +0530
+Message-ID: <563AFC84.3070807@codeaurora.org>
+References: <1444383670-32693-1-git-send-email-rnayak@codeaurora.org>
+ <20151102201345.GA4238@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:59661 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1032020AbbKEGho (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Nov 2015 01:37:44 -0500
-Received: from epcpsbgr5.samsung.com
- (u145.gpu120.samsung.co.kr [203.254.230.145])
- by mailout4.samsung.com (Oracle Communications Messaging Server 7.0.5.31.0
- 64bit (built May  5 2014))
- with ESMTP id <0NXB005HBX2I5R80@mailout4.samsung.com> for
- linux-pm@vger.kernel.org; Thu, 05 Nov 2015 15:37:30 +0900 (KST)
-MIME-version: 1.0
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20151102201345.GA4238@localhost.localdomain>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, punit.agrawal@arm.com, sboyd@codeaurora.org, srinivas.kandagatla@linaro.org, lina.iyer@linaro.org, nrajan@codeaurora.org, agross@codeaurora.org, rui.zhang@intel.com, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, "joe@perches.com" <joe@perches.com>
-Cc: =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-PiAgIA0KPiAgVGhpcyBwYXRjaCBhZGRzIHRoZSBtaXNzaW5nIGdpdCByZXBvc2l0b3J5IGluZm9t
-YXRpb24gYW5kIGRpcmVjdG9yeSBmb3INCj4gZGV2ZnJlcS4gV2hlbiB1c2luZyBnZXRfbWFpbnRh
-aW5lci5wbCwgdGhlIHJlc3VsdCBzaG91bGQgaW5jbHVkZSB0aGUNCj4gY29ycmVjdCBtYWludGFp
-bmVyIGluZm9ybWF0aW9uLg0KPiANCj4gU3VnZ2VzdGVkLWJ5OiBKb2UgUGVyY2hlcyA8am9lQHBl
-cmNoZXMuY29tPg0KPiBbY3cwMC5jaGlvOiBBZGQgbWlzc2luZyBkaXJlY3RvcnkgZm9yIGRldmZy
-ZXFdDQo+IFNpZ25lZC1vZmYtYnk6IENoYW53b28gQ2hvaSA8Y3cwMC5jaG9pQHNhbXN1bmcuY29t
-Pg0KPiAtLS0NCj4gIE1BSU5UQUlORVJTIHwgMyArKysNCj4gIDEgZmlsZSBjaGFuZ2VkLCAzIGlu
-c2VydGlvbnMoKykNCg0KVGhhbmtzLg0KDQoNClNpZ25lZC1vZmYtYnk6IE15dW5nSm9vIEhhbSA8
-bXl1bmdqb28uaGFtQHNhbXN1bmcuY29tPg0KDQoNCj4gDQo+IGRpZmYgLS1naXQgYS9NQUlOVEFJ
-TkVSUyBiL01BSU5UQUlORVJTDQo+IGluZGV4IGJkMTg5NzhkNWFkMy4uN2RlMzFmNDRhNDhkIDEw
-MDY0NA0KPiAtLS0gYS9NQUlOVEFJTkVSUw0KPiArKysgYi9NQUlOVEFJTkVSUw0KPiBAQCAtMzMz
-Nyw4ICszMzM3LDExIEBAIERFVklDRSBGUkVRVUVOQ1kgKERFVkZSRVEpDQo+ICBNOglNeXVuZ0pv
-byBIYW0gPG15dW5nam9vLmhhbUBzYW1zdW5nLmNvbT4NCj4gIE06CUt5dW5nbWluIFBhcmsgPGt5
-dW5nbWluLnBhcmtAc2Ftc3VuZy5jb20+DQo+ICBMOglsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmcN
-Cj4gK1Q6CWdpdCBnaXQ6Ly9naXQua2VybmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQv
-bXp4L2RldmZyZXEuZ2l0DQo+ICBTOglNYWludGFpbmVkDQo+ICBGOglkcml2ZXJzL2RldmZyZXEv
-DQo+ICtGOglpbmNsdWRlL2xpbnV4L2RldmZyZXEuaA0KPiArRjoJRG9jdW1lbnRhdGlvbi9kZXZp
-Y2V0cmVlL2JpbmRpbmdzL2RldmZyZXEvDQo+ICANCj4gIERFVklDRSBOVU1CRVIgUkVHSVNUUlkN
-Cj4gIE06CVRvcmJlbiBNYXRoaWFzZW4gPGRldmljZUBsYW5hbmEub3JnPg0KPiAtLSANCj4gMS45
-LjENCg==
+Hi Eduardo,
 
+On 11/03/2015 01:43 AM, Eduardo Valentin wrote:
+> Rajendra,
+> 
+> On Fri, Oct 09, 2015 at 03:11:02PM +0530, Rajendra Nayak wrote:
+>> Patches 1/8 to 4/8 will need to go via the thermal tree/Eduardo.
+>> Patches 5/8 to 8/8 will need to go via qcom-msm tree/Andy.
+>>
+>> Eduardo, can you please take a look at the patches and let me
+>> know if you see any issues.
+>>
+> 
+> Thanks for your taking this over. I am assuming this superseeds the
+> work by Narendran.
 
+Yes, thats correct. I took Naren's work to add support for msm8960
+family and created a single driver to work across msm8960 and
+msm8974/8916/8084 SoCs.
+
+regards,
+Rajendra
