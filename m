@@ -1,119 +1,201 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 3/5] PM / OPP: Remove 'operating-points-names' binding
-Date: Thu,  5 Nov 2015 07:11:54 +0530
-Message-ID: <c4070eeceb0fdf6a6ab56fcaef1769d01dd01c7e.1446687367.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 4/5] PM / OPP: Rename OPP nodes as opp@<opp-hz>
+Date: Thu,  5 Nov 2015 07:11:55 +0530
+Message-ID: <5d5f139d334d5e503932c06694b47f0c3477caed.1446687367.git.viresh.kumar@linaro.org>
 References: <cover.1446687367.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:36379 "EHLO
+	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031633AbbKEBma (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 4 Nov 2015 20:42:30 -0500
+Received: by pacdm15 with SMTP id dm15so45821919pac.3
+        for <linux-pm@vger.kernel.org>; Wed, 04 Nov 2015 17:42:29 -0800 (PST)
 In-Reply-To: <cover.1446687367.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1446687367.git.viresh.kumar@linaro.org>
 References: <cover.1446687367.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>, robh+dt@kernel.org, sboyd@codeaurora.org, lee.jones@linaro.org
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, mark.rutland@arm.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, nm@ti.com, devicetree@vger.kernel.org, b.zolnierkie@samsung.com, m.szyprowski@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>, open list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-List-Id: linux-pm@vger.kernel.org
 
-These aren't used until now by any DT files and wouldn't be used now as
-we have a better scheme in place now, i.e. opp-property-<name>
-properties.
+It would be better to name OPP nodes as opp@<opp-hz> as that will ensure
+that multiple DT nodes don't contain the same frequency. Of course we
+expect the writer to name the node with its opp-hz frequency and not any
+other frequency.
 
-Remove the (useless) binding without breaking ABI.
+And that will let the compile error out if multiple nodes are using the
+same opp-hz frequency.
 
+Suggested-by: Stephen Boyd <sboyd@codeaurora.org>
 Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- Documentation/devicetree/bindings/opp/opp.txt | 62 +--------------------------
- 1 file changed, 2 insertions(+), 60 deletions(-)
+ Documentation/devicetree/bindings/opp/opp.txt | 38 +++++++++++++--------------
+ 1 file changed, 19 insertions(+), 19 deletions(-)
 
 diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
-index 61c6f25cf8e2..30c4bb3718bc 100644
+index 30c4bb3718bc..10ef08dc1b4c 100644
 --- a/Documentation/devicetree/bindings/opp/opp.txt
 +++ b/Documentation/devicetree/bindings/opp/opp.txt
-@@ -45,21 +45,10 @@ Devices supporting OPPs must set their "operating-points-v2" property with
- phandle to a OPP table in their DT node. The OPP core will use this phandle to
- find the operating points for the device.
+@@ -183,20 +183,20 @@ Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
  
--Devices may want to choose OPP tables at runtime and so can provide a list of
--phandles here. But only *one* of them should be chosen at runtime. This must be
--accompanied by a corresponding "operating-points-names" property, to uniquely
--identify the OPP tables.
--
- If required, this can be extended for SoC vendor specfic bindings. Such bindings
- should be documented as Documentation/devicetree/bindings/power/<vendor>-opp.txt
- and should have a compatible description like: "operating-points-v2-<vendor>".
- 
--Optional properties:
--- operating-points-names: Names of OPP tables (required if multiple OPP
--  tables are present), to uniquely identify them. The same list must be present
--  for all the CPUs which are sharing clock/voltage rails and hence the OPP
--  tables.
--
- * OPP Table Node
- 
- This describes the OPPs belonging to a device. This node can have following
-@@ -454,54 +443,7 @@ Example 4: Handling multiple regulators
- 	};
- };
- 
--Example 5: Multiple OPP tables
--
--/ {
--	cpus {
--		cpu@0 {
--			compatible = "arm,cortex-a7";
--			...
--
--			cpu-supply = <&cpu_supply>
--			operating-points-v2 = <&cpu0_opp_table_slow>, <&cpu0_opp_table_fast>;
--			operating-points-names = "slow", "fast";
--		};
--	};
--
--	cpu0_opp_table_slow: opp_table_slow {
--		compatible = "operating-points-v2";
--		status = "okay";
--		opp-shared;
--
 -		opp00 {
--			opp-hz = /bits/ 64 <600000000>;
--			...
--		};
--
++		opp@1000000000 {
+ 			opp-hz = /bits/ 64 <1000000000>;
+ 			opp-microvolt = <970000 975000 985000>;
+ 			opp-microamp = <70000>;
+ 			clock-latency-ns = <300000>;
+ 			opp-suspend;
+ 		};
 -		opp01 {
--			opp-hz = /bits/ 64 <800000000>;
--			...
--		};
--	};
--
--	cpu0_opp_table_fast: opp_table_fast {
--		compatible = "operating-points-v2";
--		status = "okay";
--		opp-shared;
--
++		opp@1100000000 {
+ 			opp-hz = /bits/ 64 <1100000000>;
+ 			opp-microvolt = <980000 1000000 1010000>;
+ 			opp-microamp = <80000>;
+ 			clock-latency-ns = <310000>;
+ 		};
+-		opp02 {
++		opp@1200000000 {
+ 			opp-hz = /bits/ 64 <1200000000>;
+ 			opp-microvolt = <1025000>;
+ 			clock-latency-ns = <290000>;
+@@ -262,20 +262,20 @@ independently.
+ 		 * independently.
+ 		 */
+ 
+-		opp00 {
++		opp@1000000000 {
+ 			opp-hz = /bits/ 64 <1000000000>;
+ 			opp-microvolt = <970000 975000 985000>;
+ 			opp-microamp = <70000>;
+ 			clock-latency-ns = <300000>;
+ 			opp-suspend;
+ 		};
+-		opp01 {
++		opp@1100000000 {
+ 			opp-hz = /bits/ 64 <1100000000>;
+ 			opp-microvolt = <980000 1000000 1010000>;
+ 			opp-microamp = <80000>;
+ 			clock-latency-ns = <310000>;
+ 		};
+-		opp02 {
++		opp@1200000000 {
+ 			opp-hz = /bits/ 64 <1200000000>;
+ 			opp-microvolt = <1025000>;
+ 			opp-microamp = <90000;
+@@ -338,20 +338,20 @@ DVFS state together.
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp00 {
++		opp@1000000000 {
+ 			opp-hz = /bits/ 64 <1000000000>;
+ 			opp-microvolt = <970000 975000 985000>;
+ 			opp-microamp = <70000>;
+ 			clock-latency-ns = <300000>;
+ 			opp-suspend;
+ 		};
+-		opp01 {
++		opp@1100000000 {
+ 			opp-hz = /bits/ 64 <1100000000>;
+ 			opp-microvolt = <980000 1000000 1010000>;
+ 			opp-microamp = <80000>;
+ 			clock-latency-ns = <310000>;
+ 		};
+-		opp02 {
++		opp@1200000000 {
+ 			opp-hz = /bits/ 64 <1200000000>;
+ 			opp-microvolt = <1025000>;
+ 			opp-microamp = <90000>;
+@@ -364,20 +364,20 @@ DVFS state together.
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
 -		opp10 {
--			opp-hz = /bits/ 64 <1000000000>;
--			...
--		};
--
++		opp@1300000000 {
+ 			opp-hz = /bits/ 64 <1300000000>;
+ 			opp-microvolt = <1045000 1050000 1055000>;
+ 			opp-microamp = <95000>;
+ 			clock-latency-ns = <400000>;
+ 			opp-suspend;
+ 		};
 -		opp11 {
--			opp-hz = /bits/ 64 <1100000000>;
--			...
--		};
--	};
--};
--
--Example 6: opp-supported-hw
-+Example 5: opp-supported-hw
- (example: three level hierarchy of versions: cuts, substrate and process)
++		opp@1400000000 {
+ 			opp-hz = /bits/ 64 <1400000000>;
+ 			opp-microvolt = <1075000>;
+ 			opp-microamp = <100000>;
+ 			clock-latency-ns = <400000>;
+ 		};
+-		opp12 {
++		opp@1500000000 {
+ 			opp-hz = /bits/ 64 <1500000000>;
+ 			opp-microvolt = <1010000 1100000 1110000>;
+ 			opp-microamp = <95000>;
+@@ -404,7 +404,7 @@ Example 4: Handling multiple regulators
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
  
- / {
-@@ -546,7 +488,7 @@ Example 6: opp-supported-hw
- 	};
- };
+-		opp00 {
++		opp@1000000000 {
+ 			opp-hz = /bits/ 64 <1000000000>;
+ 			opp-microvolt = <970000>, /* Supply 0 */
+ 					<960000>, /* Supply 1 */
+@@ -417,7 +417,7 @@ Example 4: Handling multiple regulators
  
--Example 7: opp-microvolt-<name>, opp-microamp-<name>, turbo-mode-<name>,
-+Example 6: opp-microvolt-<name>, opp-microamp-<name>, turbo-mode-<name>,
- opp-suspend-<name>:
- (example: device with two possible microvolt ranges: slow and fast)
+ 		/* OR */
  
+-		opp00 {
++		opp@1000000000 {
+ 			opp-hz = /bits/ 64 <1000000000>;
+ 			opp-microvolt = <970000 975000 985000>, /* Supply 0 */
+ 					<960000 965000 975000>, /* Supply 1 */
+@@ -430,7 +430,7 @@ Example 4: Handling multiple regulators
+ 
+ 		/* OR */
+ 
+-		opp00 {
++		opp@1000000000 {
+ 			opp-hz = /bits/ 64 <1000000000>;
+ 			opp-microvolt = <970000 975000 985000>, /* Supply 0 */
+ 					<960000 965000 975000>, /* Supply 1 */
+@@ -462,7 +462,7 @@ Example 5: opp-supported-hw
+ 		status = "okay";
+ 		opp-shared;
+ 
+-		opp00 {
++		opp@600000000 {
+ 			/*
+ 			 * Supports all substrate and process versions for 0xF
+ 			 * cuts, i.e. only first four cuts.
+@@ -473,7 +473,7 @@ Example 5: opp-supported-hw
+ 			...
+ 		};
+ 
+-		opp01 {
++		opp@800000000 {
+ 			/*
+ 			 * Supports:
+ 			 * - cuts: only one, 6th cut (represented by 6th bit).
+@@ -506,7 +506,7 @@ Example 6: opp-microvolt-<name>, opp-microamp-<name>, turbo-mode-<name>,
+ 		compatible = "operating-points-v2";
+ 		opp-shared;
+ 
+-		opp00 {
++		opp@1000000000 {
+ 			opp-hz = /bits/ 64 <1000000000>;
+ 			opp-microvolt-slow = <900000 915000 925000>;
+ 			opp-microvolt-fast = <970000 975000 985000>;
+@@ -516,7 +516,7 @@ Example 6: opp-microvolt-<name>, opp-microamp-<name>, turbo-mode-<name>,
+ 			opp-suspend-slow; /* Will be used as suspend-opp only if 'slow' is chosen */
+ 		};
+ 
+-		opp01 {
++		opp@1200000000 {
+ 			opp-hz = /bits/ 64 <1200000000>;
+ 			opp-microvolt-slow = <900000 915000 925000>, /* Supply vcc0 */
+ 					      <910000 925000 935000>; /* Supply vcc1 */
 -- 
 2.6.2.198.g614a2ac
+
