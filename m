@@ -1,77 +1,57 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 2/2] mmc: core: Remove MMC_CAP_RUNTIME_RESUME as it's redundant
-Date: Thu,  5 Nov 2015 16:01:33 +0100
-Message-ID: <1446735693-11542-2-git-send-email-ulf.hansson@linaro.org>
-References: <1446735693-11542-1-git-send-email-ulf.hansson@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f51.google.com ([209.85.215.51]:36704 "EHLO
-	mail-lf0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161906AbbKEPBz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Nov 2015 10:01:55 -0500
-Received: by lfs39 with SMTP id 39so28870646lfs.3
-        for <linux-pm@vger.kernel.org>; Thu, 05 Nov 2015 07:01:54 -0800 (PST)
-In-Reply-To: <1446735693-11542-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [GIT PULL] Thermal-SoC management updates for v4.4-rc1 #3
+Date: Thu, 5 Nov 2015 09:34:09 -0800
+Message-ID: <20151105173408.GA15781@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-acpi-owner@vger.kernel.org
+To: Rui Zhang <rui.zhang@intel.com>
+Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-mmc@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Chaotian Jing <chaotian.jing@mediatek.com>, addy ke <addy.ke@rock-chips.com>, Jaehoon Chung <jh80.chung@samsung.com>, linux-pm@vger.kernel.org, Android Kernel Team <kernel-team@android.com>
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/mmc/host/dw_mmc-rockchip.c | 8 --------
- drivers/mmc/host/mtk-sd.c          | 1 -
- include/linux/mmc/host.h           | 1 -
- 3 files changed, 10 deletions(-)
+Hello Rui,
 
-diff --git a/drivers/mmc/host/dw_mmc-rockchip.c b/drivers/mmc/host/dw_mmc-rockchip.c
-index 9becebe..d9c92f3 100644
---- a/drivers/mmc/host/dw_mmc-rockchip.c
-+++ b/drivers/mmc/host/dw_mmc-rockchip.c
-@@ -239,20 +239,12 @@ static int dw_mci_rockchip_init(struct dw_mci *host)
- 	return 0;
- }
- 
--/* Common capabilities of RK3288 SoC */
--static unsigned long dw_mci_rk3288_dwmmc_caps[4] = {
--	MMC_CAP_RUNTIME_RESUME, /* emmc */
--	MMC_CAP_RUNTIME_RESUME, /* sdmmc */
--	MMC_CAP_RUNTIME_RESUME, /* sdio0 */
--	MMC_CAP_RUNTIME_RESUME, /* sdio1 */
--};
- static const struct dw_mci_drv_data rk2928_drv_data = {
- 	.prepare_command        = dw_mci_rockchip_prepare_command,
- 	.init			= dw_mci_rockchip_init,
- };
- 
- static const struct dw_mci_drv_data rk3288_drv_data = {
--	.caps			= dw_mci_rk3288_dwmmc_caps,
- 	.prepare_command        = dw_mci_rockchip_prepare_command,
- 	.set_ios		= dw_mci_rk3288_set_ios,
- 	.execute_tuning		= dw_mci_rk3288_execute_tuning,
-diff --git a/drivers/mmc/host/mtk-sd.c b/drivers/mmc/host/mtk-sd.c
-index 39568cc..15fcf2d 100644
---- a/drivers/mmc/host/mtk-sd.c
-+++ b/drivers/mmc/host/mtk-sd.c
-@@ -1543,7 +1543,6 @@ static int msdc_drv_probe(struct platform_device *pdev)
- 	mmc->f_min = host->src_clk_freq / (4 * 255);
- 
- 	mmc->caps |= MMC_CAP_ERASE | MMC_CAP_CMD23;
--	mmc->caps |= MMC_CAP_RUNTIME_RESUME;
- 	/* MMC core transfer sizes tunable parameters */
- 	mmc->max_segs = MAX_BD_NUM;
- 	mmc->max_seg_size = BDMA_DESC_BUFLEN;
-diff --git a/include/linux/mmc/host.h b/include/linux/mmc/host.h
-index 8673ffe..9b04e71 100644
---- a/include/linux/mmc/host.h
-+++ b/include/linux/mmc/host.h
-@@ -259,7 +259,6 @@ struct mmc_host {
- #define MMC_CAP_UHS_SDR50	(1 << 17)	/* Host supports UHS SDR50 mode */
- #define MMC_CAP_UHS_SDR104	(1 << 18)	/* Host supports UHS SDR104 mode */
- #define MMC_CAP_UHS_DDR50	(1 << 19)	/* Host supports UHS DDR50 mode */
--#define MMC_CAP_RUNTIME_RESUME	(1 << 20)	/* Resume at runtime_resume. */
- #define MMC_CAP_DRIVER_TYPE_A	(1 << 23)	/* Host supports Driver Type A */
- #define MMC_CAP_DRIVER_TYPE_C	(1 << 24)	/* Host supports Driver Type C */
- #define MMC_CAP_DRIVER_TYPE_D	(1 << 25)	/* Host supports Driver Type D */
--- 
-1.9.1
+This is the third and last pull for 4.4-rc1. Please pull from
 
+  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal linus
+  
+to receive third Thermal-SoC Management updates for v4.4-rc1 with top-most
+
+e35dbb4d4b4499e8a013564f0753dabc1c49e9d9:
+
+  thermal: exynos: Directly return 0 instead of using local ret variable (2015-11-04 11:10:39 -0800)
+
+on top of commit 7e38a5b1daa12cbaace3c76402999a84460df3e2:
+
+  thermal: rockchip: support the sleep pinctrl state to avoid glitches in s2r (2015-11-03 09:57:42 -0800)
+
+Specifics:
+- Fixes on devfreq cooling device
+- Fixes on exynos thermal driver
+- This branch has been compiled tested and boot tested by Linaro kernelci bot [1,2].
+
+Still checking what is pending. But what comes now should go via next
+rcs or next merge window. If I missed your patch, ping me.
+
+[1] - http://kernelci.org/boot/all/job/evalenti/kernel/v4.3-rc3-62-ge35dbb4d4b44/ 
+[2] - http://kernelci.org/build/evalenti/kernel/v4.3-rc3-62-ge35dbb4d4b44/ 
+
+BR,
+
+----------------------------------------------------------------
+Dan Carpenter (1):
+      devfreq_cooling: return on allocation failure
+
+Krzysztof Kozlowski (5):
+      thermal: exynos: Fix unbalanced regulator disable on probe failure
+      thermal: exynos: Fix first temperature read after registering sensor
+      thermal: exynos: Use IS_ERR() because regulator cannot be NULL
+      thermal: exynos: Remove unneeded semicolon
+      thermal: exynos: Directly return 0 instead of using local ret variable
+
+ drivers/thermal/devfreq_cooling.c    |  2 +-
+ drivers/thermal/samsung/exynos_tmu.c | 68 ++++++++++++++++++++----------------
+ 2 files changed, 39 insertions(+), 31 deletions(-)
