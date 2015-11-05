@@ -1,379 +1,248 @@
-From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: Re: [PATCH v4 2/8] thermal: qcom: tsens-8916: Add support for 8916
- family of SoCs
-Date: Thu, 05 Nov 2015 12:40:18 +0530
-Message-ID: <563B00DA.9040702@codeaurora.org>
-References: <1444383670-32693-1-git-send-email-rnayak@codeaurora.org>
- <1444383670-32693-3-git-send-email-rnayak@codeaurora.org>
- <20151102204239.GC4469@localhost.localdomain>
+From: Stefan Wahren <info-saaNCTdWVBT7BZbvpMY5sg@public.gmane.org>
+Subject: Re: [RFCv2 2/2] rpi: add support to enable usb power domain
+Date: Thu, 5 Nov 2015 08:15:35 +0100
+Message-ID: <563B0217.4030307@lategoodbye.de>
+References: <1446590711-18928-1-git-send-email-alex.aring@gmail.com>
+ <1446590711-18928-3-git-send-email-alex.aring@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20151102204239.GC4469@localhost.localdomain>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, punit.agrawal@arm.com, sboyd@codeaurora.org, srinivas.kandagatla@linaro.org, lina.iyer@linaro.org, nrajan@codeaurora.org, agross@codeaurora.org, rui.zhang@intel.com, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1446590711-18928-3-git-send-email-alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org, f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, rjui-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, sbranden-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi Alexander,
 
-On 11/03/2015 02:12 AM, Eduardo Valentin wrote:
-> On Fri, Oct 09, 2015 at 03:11:04PM +0530, Rajendra Nayak wrote:
->> Add support to calibrate sensors on 8916 family and also add common
->> functions to read temperature from sensors (This can be reused on
->> other SoCs having similar TSENS device)
->> The calibration data is read from eeprom using the generic nvmem
->> framework apis.
->>
->> Based on the original code by Siddartha Mohanadoss and Stephen Boyd.
->>
->> Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
->> ---
->>  drivers/thermal/qcom/Makefile       |   2 +-
->>  drivers/thermal/qcom/tsens-8916.c   | 107 +++++++++++++++++++++++++++++
->>  drivers/thermal/qcom/tsens-common.c | 130 ++++++++++++++++++++++++++++++++++++
-> 
-> Just a small comment on organization, does it make sense to move tsens-common
-> addition to the first patch, and then leave this patch only with the
-> support for 8916 (like you did for the other chips)?
+i think this subject should better start with "ARM:".
 
-So the common code gets used for 8916 and hence I added it here as part of this patch.
-I can as well move it to the first patch in the series, should not be an issue.
+Am 03.11.2015 um 23:45 schrieb Alexander Aring:
+> This patch adds support for RPi several Power Domains and enable supp=
+ort
+> to enable the USB Power Domain when it's not enabled before.
+>
+> This patch based on Eric Anholt's patch to support Power Domains. He =
+had
+> an issue about -EPROBE_DEFER inside the power domain subsystem, this
+> issue was solved by commit <311fa6a> ("PM / Domains: Return -EPROBE_D=
+EFER
+> if we fail to init or turn-on domain").
+>
+>[...]
+> diff --git a/Documentation/devicetree/bindings/arm/bcm/raspberrypi,bc=
+m2835-power.txt b/Documentation/devicetree/bindings/arm/bcm/raspberrypi=
+,bcm2835-power.txt
+> new file mode 100644
+> index 0000000..c3abc24
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/arm/bcm/raspberrypi,bcm2835-p=
+ower.txt
+> @@ -0,0 +1,25 @@
+> +Raspberry Pi power domain driver
+> +
+> +Required properties:
+> +
+> +- compatible:		Should be "raspberrypi,bcm2835-power".
+> +- firmware:		Reference to the RPi firmware device node.
+> +- #power-domain-cells:	Should be <1>, we providing multiple power do=
+mains.
+> +
+> +The valid defines for power domain are:
+> +
+> + RPI_POWER_DOMAIN_USB
+> +
+> +Example:
+> +
+> +power: power {
+> +	compatible =3D "raspberrypi,bcm2835-power";
+> +	firmware =3D <&firmware>;
+> +	#power-domain-cells =3D <1>;
+> +};
+> +
+> +Example for using power domain:
+> +
+> +&usb {
+> +       power-domains =3D <&power RPI_POWER_DOMAIN_USB>;
+> +};
 
-> 
->>  drivers/thermal/qcom/tsens.c        |   1 +
->>  drivers/thermal/qcom/tsens.h        |  11 +++
->>  5 files changed, 250 insertions(+), 1 deletion(-)
->>  create mode 100644 drivers/thermal/qcom/tsens-8916.c
->>  create mode 100644 drivers/thermal/qcom/tsens-common.c
->>
->> diff --git a/drivers/thermal/qcom/Makefile b/drivers/thermal/qcom/Makefile
->> index 401069b..05c98e4 100644
->> --- a/drivers/thermal/qcom/Makefile
->> +++ b/drivers/thermal/qcom/Makefile
->> @@ -1,2 +1,2 @@
->>  obj-$(CONFIG_QCOM_TSENS)	+= qcom_tsens.o
->> -qcom_tsens-y			+= tsens.o
->> +qcom_tsens-y			+= tsens.o tsens-common.o tsens-8916.o
->> diff --git a/drivers/thermal/qcom/tsens-8916.c b/drivers/thermal/qcom/tsens-8916.c
->> new file mode 100644
->> index 0000000..a69aea3
->> --- /dev/null
->> +++ b/drivers/thermal/qcom/tsens-8916.c
->> @@ -0,0 +1,107 @@
->> +/*
->> + * Copyright (c) 2015, The Linux Foundation. All rights reserved.
->> + *
->> + * This program is free software; you can redistribute it and/or modify
->> + * it under the terms of the GNU General Public License version 2 and
->> + * only version 2 as published by the Free Software Foundation.
->> + *
->> + * This program is distributed in the hope that it will be useful,
->> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
->> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
->> + * GNU General Public License for more details.
->> + *
->> + */
->> +
->> +#include <linux/platform_device.h>
->> +#include "tsens.h"
->> +
->> +/* eeprom layout data for 8916 */
->> +#define BASE0_MASK	0x0000007f
->> +#define BASE1_MASK	0xfe000000
->> +#define BASE0_SHIFT	0
->> +#define BASE1_SHIFT	25
->> +
->> +#define S0_P1_MASK	0x00000f80
->> +#define S1_P1_MASK	0x003e0000
->> +#define S2_P1_MASK	0xf8000000
->> +#define S3_P1_MASK	0x000003e0
->> +#define S4_P1_MASK	0x000f8000
->> +
->> +#define S0_P2_MASK	0x0001f000
->> +#define S1_P2_MASK	0x07c00000
->> +#define S2_P2_MASK	0x0000001f
->> +#define S3_P2_MASK	0x00007c00
->> +#define S4_P2_MASK	0x01f00000
->> +
->> +#define S0_P1_SHIFT	7
->> +#define S1_P1_SHIFT	17
->> +#define S2_P1_SHIFT	27
->> +#define S3_P1_SHIFT	5
->> +#define S4_P1_SHIFT	15
->> +
->> +#define S0_P2_SHIFT	12
->> +#define S1_P2_SHIFT	22
->> +#define S2_P2_SHIFT	0
->> +#define S3_P2_SHIFT	10
->> +#define S4_P2_SHIFT	20
->> +
->> +#define CAL_SEL_MASK	0xe0000000
->> +#define CAL_SEL_SHIFT	29
->> +
->> +static int calibrate_8916(struct tsens_device *tmdev)
->> +{
->> +	int base0 = 0, base1 = 0, i;
->> +	u32 p1[5], p2[5];
->> +	int mode = 0;
->> +	u32 *qfprom_cdata, *qfprom_csel;
->> +
->> +	qfprom_cdata = (u32 *)qfprom_read(tmdev->dev, "calib");
->> +	if (IS_ERR(qfprom_cdata))
->> +		return PTR_ERR(qfprom_cdata);
->> +
->> +	qfprom_csel = (u32 *)qfprom_read(tmdev->dev, "calib_sel");
->> +	if (IS_ERR(qfprom_csel))
->> +		return PTR_ERR(qfprom_csel);
->> +
->> +	mode = (qfprom_csel[0] & CAL_SEL_MASK) >> CAL_SEL_SHIFT;
->> +	dev_dbg(tmdev->dev, "calibration mode is %d\n", mode);
->> +
->> +	switch (mode) {
->> +	case TWO_PT_CALIB:
->> +		base1 = (qfprom_cdata[1] & BASE1_MASK) >> BASE1_SHIFT;
->> +		p2[0] = (qfprom_cdata[0] & S0_P2_MASK) >> S0_P2_SHIFT;
->> +		p2[1] = (qfprom_cdata[0] & S1_P2_MASK) >> S1_P2_SHIFT;
->> +		p2[2] = (qfprom_cdata[1] & S2_P2_MASK) >> S2_P2_SHIFT;
->> +		p2[3] = (qfprom_cdata[1] & S3_P2_MASK) >> S3_P2_SHIFT;
->> +		p2[4] = (qfprom_cdata[1] & S4_P2_MASK) >> S4_P2_SHIFT;
->> +		for (i = 0; i < tmdev->num_sensors; i++)
->> +			p2[i] = ((base1 + p2[i]) << 3);
->> +		/* Fall through */
->> +	case ONE_PT_CALIB2:
->> +		base0 = (qfprom_cdata[0] & BASE0_MASK);
->> +		p1[0] = (qfprom_cdata[0] & S0_P1_MASK) >> S0_P1_SHIFT;
->> +		p1[1] = (qfprom_cdata[0] & S1_P1_MASK) >> S1_P1_SHIFT;
->> +		p1[2] = (qfprom_cdata[0] & S2_P1_MASK) >> S2_P1_SHIFT;
->> +		p1[3] = (qfprom_cdata[1] & S3_P1_MASK) >> S3_P1_SHIFT;
->> +		p1[4] = (qfprom_cdata[1] & S4_P1_MASK) >> S4_P1_SHIFT;
->> +		for (i = 0; i < tmdev->num_sensors; i++)
->> +			p1[i] = (((base0) + p1[i]) << 3);
->> +		break;
->> +	default:
->> +		for (i = 0; i < tmdev->num_sensors; i++) {
->> +			p1[i] = 500;
->> +			p2[i] = 780;
->> +		}
->> +		break;
->> +	}
->> +
->> +	compute_intercept_slope(tmdev, p1, p2, mode);
->> +
->> +	return 0;
-> 
-> Can calibration fail ? In which cases?
+Refering to Documentation/devicetree/bindings/submitting-patches.txt=20
+binding doc should be a separate patch.
 
-yes, it can if the eeprom reads fail for instance.
+> diff --git a/arch/arm/boot/dts/bcm2835-rpi.dtsi b/arch/arm/boot/dts/b=
+cm2835-rpi.dtsi
+> index ab5474e..d9b16d1 100644
+> --- a/arch/arm/boot/dts/bcm2835-rpi.dtsi
+> +++ b/arch/arm/boot/dts/bcm2835-rpi.dtsi
+> @@ -1,3 +1,4 @@
+> +#include <dt-bindings/arm/raspberrypi-power.h>
+>   #include "bcm2835.dtsi"
+>
+>   / {
+> @@ -20,6 +21,12 @@
+>   			compatible =3D "raspberrypi,bcm2835-firmware";
+>   			mboxes =3D <&mailbox>;
+>   		};
+> +
+> +		power: power {
+> +			compatible =3D "raspberrypi,bcm2835-power";
+> +			firmware =3D <&firmware>;
+> +			#power-domain-cells =3D <1>;
+> +		};
+>   	};
+>   };
+>
+> @@ -56,3 +63,7 @@
+>   	status =3D "okay";
+>   	bus-width =3D <4>;
+>   };
+> +
+> +&usb {
+> +	power-domains =3D <&power RPI_POWER_DOMAIN_USB>;
+> +};
+> diff --git a/arch/arm/boot/dts/bcm2835.dtsi b/arch/arm/boot/dts/bcm28=
+35.dtsi
+> index 301c73f..3c899b3 100644
+> --- a/arch/arm/boot/dts/bcm2835.dtsi
+> +++ b/arch/arm/boot/dts/bcm2835.dtsi
+> @@ -149,7 +149,7 @@
+>   			status =3D "disabled";
+>   		};
+>
+> -		usb@7e980000 {
+> +		usb: usb@7e980000 {
+>   			compatible =3D "brcm,bcm2835-usb";
+>   			reg =3D <0x7e980000 0x10000>;
+>   			interrupts =3D <1 9>;
+> diff --git a/arch/arm/mach-bcm/Kconfig b/arch/arm/mach-bcm/Kconfig
+> index 1319c3c..244475e5 100644
+> --- a/arch/arm/mach-bcm/Kconfig
+> +++ b/arch/arm/mach-bcm/Kconfig
+> @@ -120,6 +120,16 @@ config ARCH_BCM2835
+>   	  This enables support for the Broadcom BCM2835 SoC. This SoC is
+>   	  used in the Raspberry Pi and Roku 2 devices.
+>
+> +config RASPBERRY_POWER
 
-> 
->> +}
->> +
->> +const struct tsens_ops ops_8916 = {
->> +	.init		= init_common,
->> +	.calibrate	= calibrate_8916,
->> +	.get_temp	= get_temp_common,
->> +};
->> diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
->> new file mode 100644
->> index 0000000..4acf52c
->> --- /dev/null
->> +++ b/drivers/thermal/qcom/tsens-common.c
->> @@ -0,0 +1,130 @@
->> +/*
->> + * Copyright (c) 2015, The Linux Foundation. All rights reserved.
->> + *
->> + * This program is free software; you can redistribute it and/or modify
->> + * it under the terms of the GNU General Public License version 2 and
->> + * only version 2 as published by the Free Software Foundation.
->> + *
->> + * This program is distributed in the hope that it will be useful,
->> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
->> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
->> + * GNU General Public License for more details.
->> + *
->> + */
->> +
->> +#include <linux/platform_device.h>
->> +#include <linux/nvmem-consumer.h>
->> +#include <linux/err.h>
->> +#include <linux/io.h>
->> +#include <linux/of_address.h>
->> +#include <linux/regmap.h>
->> +#include "tsens.h"
->> +
->> +#define S0_ST_ADDR		0x1030
->> +#define SN_ADDR_OFFSET		0x4
->> +#define SN_ST_TEMP_MASK		0x3ff
->> +#define CAL_DEGC_PT1		30
->> +#define CAL_DEGC_PT2		120
->> +#define SLOPE_FACTOR		1000
->> +
->> +char *qfprom_read(struct device *dev, const char *cname)
->> +{
->> +	struct nvmem_cell *cell;
->> +	ssize_t data;
->> +	char *ret;
->> +
->> +	cell = nvmem_cell_get(dev, cname);
->> +	if (IS_ERR(cell))
->> +		return ERR_CAST(cell);
->> +
->> +	ret = nvmem_cell_read(cell, &data);
->> +	nvmem_cell_put(cell);
-> nip: add a blank line here.
->> +	return ret;
->> +}
->> +
->> +void compute_intercept_slope(struct tsens_device *tmdev, u32 *p1,
->> +			     u32 *p2, u32 mode)
->> +{
->> +	int i;
->> +	int num, den;
->> +
->> +	for (i = 0; i < tmdev->num_sensors; i++) {
->> +		dev_dbg(tmdev->dev,
->> +			"sensor%d - data_point1:%#x data_point2:%#x\n",
->> +			i, p1[i], p2[i]);
->> +
->> +		if (mode == TWO_PT_CALIB) {
->> +			/*
->> +			 * slope (m) = adc_code2 - adc_code1 (y2 - y1)/
->> +			 *	temp_120_degc - temp_30_degc (x2 - x1)
->> +			 */
->> +			num = p2[i] - p1[i];
->> +			num *= SLOPE_FACTOR;
->> +			den = CAL_DEGC_PT2 - CAL_DEGC_PT1;
->> +			tmdev->sensor[i].slope = num / den;
->> +		}
->> +
->> +		tmdev->sensor[i].offset = (p1[i] * SLOPE_FACTOR) -
->> +				(CAL_DEGC_PT1 *
->> +				tmdev->sensor[i].slope);
->> +		dev_dbg(tmdev->dev, "offset:%d\n", tmdev->sensor[i].offset);
->> +	}
->> +}
->> +
->> +static inline int code_to_degc(u32 adc_code, const struct tsens_sensor *s)
->> +{
->> +	int degc, num, den;
->> +
->> +	num = (adc_code * SLOPE_FACTOR) - s->offset;
->> +	den = s->slope;
->> +
->> +	if (num > 0)
->> +		degc = num + (den / 2);
->> +	else if (num < 0)
->> +		degc = num - (den / 2);
->> +	else
->> +		degc = num;
->> +
->> +	degc /= den;
->> +
->> +	return degc;
->> +}
->> +
->> +int get_temp_common(struct tsens_device *tmdev, int id, int *temp)
->> +{
->> +	struct tsens_sensor *s = &tmdev->sensor[id];
->> +	u32 code;
->> +	unsigned int sensor_addr;
->> +	int last_temp = 0, ret;
->> +
->> +	sensor_addr = S0_ST_ADDR + s->hw_id * SN_ADDR_OFFSET;
->> +	ret = regmap_read(tmdev->map, sensor_addr, &code);
->> +	if (ret)
->> +		return ret;
->> +	last_temp = code & SN_ST_TEMP_MASK;
->> +
->> +	*temp = code_to_degc(last_temp, s) * 1000;
->> +
->> +	return 0;
->> +}
->> +
->> +static const struct regmap_config tsens_config = {
->> +	.reg_bits	= 32,
->> +	.val_bits	= 32,
->> +	.reg_stride	= 4,
->> +};
->> +
->> +int init_common(struct tsens_device *tmdev)
->> +{
->> +	void __iomem *base;
->> +
->> +	base = of_iomap(tmdev->dev->of_node, 0);
->> +	if (IS_ERR(base))
->> +		return -EINVAL;
->> +
->> +	tmdev->map = devm_regmap_init_mmio(tmdev->dev, base, &tsens_config);
-> 
-> Should this function be marked as __init so devm_* works?
-> 
->> +	if (!tmdev->map)
->> +		return -ENODEV;
-> 
-> Should you do iounmap?
+RASPBERRYPI_POWER?
 
-yes, will fix these.
-thanks,
-Rajendra
+> +	bool "Raspberry Pi power domain driver"
+> +	depends on ARCH_BCM2835
+> +	depends on RASPBERRYPI_FIRMWARE
+> +	select PM_GENERIC_DOMAINS if PM
 
-> 
->> +
->> +	return 0;
->> +}
->> diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
->> index 87f5215..3d49293 100644
->> --- a/drivers/thermal/qcom/tsens.c
->> +++ b/drivers/thermal/qcom/tsens.c
->> @@ -65,6 +65,7 @@ static SIMPLE_DEV_PM_OPS(tsens_pm_ops, tsens_suspend, tsens_resume);
->>  static const struct of_device_id tsens_table[] = {
->>  	{
->>  		.compatible = "qcom,msm8916-tsens",
->> +		.data = &ops_8916,
->>  	}, {
->>  		.compatible = "qcom,msm8974-tsens",
->>  	},
->> diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
->> index f0fc353..0923822 100644
->> --- a/drivers/thermal/qcom/tsens.h
->> +++ b/drivers/thermal/qcom/tsens.h
->> @@ -13,6 +13,10 @@
->>  #ifndef __QCOM_TSENS_H__
->>  #define __QCOM_TSENS_H__
->>  
->> +#define ONE_PT_CALIB		0x1
->> +#define ONE_PT_CALIB2		0x2
->> +#define TWO_PT_CALIB		0x3
->> +
->>  struct tsens_device;
->>  
->>  struct tsens_sensor {
->> @@ -55,4 +59,11 @@ struct tsens_device {
->>  	struct tsens_sensor		sensor[0];
->>  };
->>  
->> +char *qfprom_read(struct device *, const char *);
->> +void compute_intercept_slope(struct tsens_device *, u32 *, u32 *, u32);
->> +int init_common(struct tsens_device *);
->> +int get_temp_common(struct tsens_device *, int, int *);
->> +
->> +extern const struct tsens_ops ops_8916;
->> +
->>  #endif /* __QCOM_TSENS_H__ */
->> -- 
->> QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
->> of Code Aurora Forum, hosted by The Linux Foundation
->>
+Since PM_GENERIC_DOMAINS_OF depends on PM_GENERIC_DOMAINS this line=20
+should be redundant.
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-hosted by The Linux Foundation
+> +	select PM_GENERIC_DOMAINS_OF if PM
+> +	help
+> +	  This enables support for the RPi power domains which can be enabl=
+ed
+> +	  or disabled via the RPi firmware.
+> +
+>   config ARCH_BCM_63XX
+>   	bool "Broadcom BCM63xx DSL SoC" if ARCH_MULTI_V7
+>   	depends on MMU
+> diff --git a/arch/arm/mach-bcm/Makefile b/arch/arm/mach-bcm/Makefile
+> index 1780a3f..283295e 100644
+> --- a/arch/arm/mach-bcm/Makefile
+> +++ b/arch/arm/mach-bcm/Makefile
+> @@ -33,6 +33,7 @@ endif
+>
+>   # BCM2835
+>   obj-$(CONFIG_ARCH_BCM2835)	+=3D board_bcm2835.o
+> +obj-$(CONFIG_RASPBERRY_POWER)	+=3D raspberrypi-power.o
+>
+>   # BCM5301X
+>   obj-$(CONFIG_ARCH_BCM_5301X)	+=3D bcm_5301x.o
+> diff --git a/arch/arm/mach-bcm/raspberrypi-power.c b/arch/arm/mach-bc=
+m/raspberrypi-power.c
+> new file mode 100644
+> index 0000000..531300f
+> --- /dev/null
+> +++ b/arch/arm/mach-bcm/raspberrypi-power.c
+> @@ -0,0 +1,180 @@
+> +/*
+> + * This program is free software; you can redistribute it and/or mod=
+ify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + *
+> + * Authors:
+> + * (C) 2015 Pengutronix, Alexander Aring <aar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+> + * Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>
+> + */
+> +
+> +#include <linux/module.h>
+> +#include <linux/pm_domain.h>
+> +#include <linux/of_platform.h>
+> +#include <linux/platform_device.h>
+
+Please sort alphabetical.
+
+> +#include <dt-bindings/arm/raspberrypi-power.h>
+> +#include <soc/bcm2835/raspberrypi-firmware.h>
+> +
+> +#define RPI_POWER_DOMAIN(_domain, _name)			\
+> +	[_domain] =3D {						\
+> +		.domain =3D _domain,				\
+> +		.enabled =3D true,				\
+> +		.base =3D {					\
+> +			.name =3D _name,				\
+> +			.power_off =3D raspberrypi_domain_off,	\
+> +			.power_on =3D raspberrypi_domain_on,	\
+> +		},						\
+> +	}
+> +
+> +struct raspberrypi_power_domain {
+> +	u32 domain;
+> +	bool enabled;
+> +	struct generic_pm_domain base;
+> +};
+> +
+> +struct rpi_power_domain_packet {
+> +	u32 domain;
+> +	u32 on;
+> +} __packet;
+
+It would be nice to use consequently rpi_ as prefix instead of=20
+raspberrypi_ .
+
+>  [...]
+> diff --git a/include/dt-bindings/arm/raspberrypi-power.h b/include/dt=
+-bindings/arm/raspberrypi-power.h
+> new file mode 100644
+> index 0000000..51f0772
+> --- /dev/null
+> +++ b/include/dt-bindings/arm/raspberrypi-power.h
+> @@ -0,0 +1,14 @@
+> +/*
+> + *  Copyright =C2=A9 2015 Broadcom
+> + *
+> + * This program is free software; you can redistribute it and/or mod=
+ify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + */
+> +
+> +#ifndef _DT_BINDINGS_ARM_BCM2835_MBOX_POWER_H
+> +#define _DT_BINDINGS_ARM_BCM2835_MBOX_POWER_H
+
+This needs renaming.
+
+Thanks
+Stefan
+
+> +
+> +#define RPI_POWER_DOMAIN_USB	3
+> +
+> +#endif /* _DT_BINDINGS_ARM_BCM2835_MBOX_POWER_H */
+>
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" i=
+n
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
