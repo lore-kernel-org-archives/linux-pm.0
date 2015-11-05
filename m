@@ -1,62 +1,56 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Subject: [PATCH] CPPC-CPUFreq: Delete an unnecessary check before the function
- call "kfree"
-Date: Thu, 5 Nov 2015 21:15:27 +0100
-Message-ID: <563BB8DF.7020908@users.sourceforge.net>
-References: <5307CAA2.8060406@users.sourceforge.net>
- <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6>
- <530A086E.8010901@users.sourceforge.net>
- <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6>
- <530A72AA.3000601@users.sourceforge.net>
- <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6>
- <530B5FB6.6010207@users.sourceforge.net>
- <alpine.DEB.2.10.1402241710370.2074@hadrien>
- <530C5E18.1020800@users.sourceforge.net>
- <alpine.DEB.2.10.1402251014170.2080@hadrien>
- <530CD2C4.4050903@users.sourceforge.net>
- <alpine.DEB.2.10.1402251840450.7035@hadrien>
- <530CF8FF.8080600@users.sourceforge.net>
- <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6>
- <530DD06F.4090703@users.sourceforge.net>
- <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6>
- <5317A59D.4@users.sourceforge.net>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V2 0/5] PM / OPP: opp-supported-hw and <prop>-name bindings
+Date: Thu, 05 Nov 2015 23:31:16 +0100
+Message-ID: <3673640.WbFJib59uF@vostro.rjw.lan>
+References: <cover.1446687367.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <kernel-janitors-owner@vger.kernel.org>
-In-Reply-To: <5317A59D.4@users.sourceforge.net>
-Sender: kernel-janitors-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:63919 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755475AbbKEWCG (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Nov 2015 17:02:06 -0500
+In-Reply-To: <cover.1446687367.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: robh+dt@kernel.org, sboyd@codeaurora.org, lee.jones@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, mark.rutland@arm.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, nm@ti.com, devicetree@vger.kernel.org, b.zolnierkie@samsung.com, m.szyprowski@samsung.com
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Thu, 5 Nov 2015 21:10:29 +0100
+On Thursday, November 05, 2015 07:11:51 AM Viresh Kumar wrote:
+> Hi Rafael,
+> 
+> All the bindings are Reviewed by Stephen now and Rob didn't had a
+> problem with them (though he didn't Ack them separately yet) :)
+> 
+> The first patch enables us to select only a subset of OPPs from the
+> bigger table, based on what version of the hardware we are running on.
+> 
+> The second one enables us to select slightly different values for
+> multiple properties, based on what kind of hardware they are running on.
+> 
+> The third one removes an (unused) binding, which is replaced by the
+> second patch with a better solution.
+> 
+> The fourth patch is based on what Stephen suggested (and then reviewed)
+> in the earlier series, and the 5th one updates the existing users of
+> these bindings for it.
+> 
+> Viresh Kumar (5):
+>   PM / OPP: Add "opp-supported-hw" binding
+>   PM / OPP: Add
+>     {opp-microvolt|opp-microamp|turbo-mode|opp-suspend}-<name> binding
+>   PM / OPP: Remove 'operating-points-names' binding
+>   PM / OPP: Rename OPP nodes as opp@<opp-hz>
+>   ARM: dts: exynos4412: Rename OPP nodes as opp@<opp-hz>
+> 
+>  Documentation/devicetree/bindings/opp/opp.txt | 143 +++++++++++++++++++-------
+>  arch/arm/boot/dts/exynos4412.dtsi             |  28 ++---
+>  2 files changed, 118 insertions(+), 53 deletions(-)
 
-The kfree() function tests whether its argument is NULL and then
-returns immediately. Thus the test around the call is not needed.
+So this clearly is a new feature and it clearly missed the merge window boundary
+for v4.4.  I can queue it up for v4.5.
 
-This issue was detected by using the Coccinelle software.
-
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
----
- drivers/cpufreq/cppc_cpufreq.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index 93c219f..e8cb334 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -166,8 +166,7 @@ static int __init cppc_cpufreq_init(void)
- 
- out:
- 	for_each_possible_cpu(i)
--		if (all_cpu_data[i])
--			kfree(all_cpu_data[i]);
-+		kfree(all_cpu_data[i]);
- 
- 	kfree(all_cpu_data);
- 	return -ENODEV;
--- 
-2.6.2
+Thanks,
+Rafael
 
