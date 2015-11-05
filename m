@@ -1,36 +1,379 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH v2 2/2] MAINTAINERS: Add devfreq-event entry
-Date: Thu, 05 Nov 2015 06:53:13 +0000 (GMT)
-Message-ID: <1997125810.103671446706392612.JavaMail.weblogic@ep2mlwas07d>
-Reply-To: myungjoo.ham@samsung.com
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: Re: [PATCH v4 2/8] thermal: qcom: tsens-8916: Add support for 8916
+ family of SoCs
+Date: Thu, 05 Nov 2015 12:40:18 +0530
+Message-ID: <563B00DA.9040702@codeaurora.org>
+References: <1444383670-32693-1-git-send-email-rnayak@codeaurora.org>
+ <1444383670-32693-3-git-send-email-rnayak@codeaurora.org>
+ <20151102204239.GC4469@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-MIME-version: 1.0
-Sender: linux-kernel-owner@vger.kernel.org
-To: =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, "joe@perches.com" <joe@perches.com>
-Cc: =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20151102204239.GC4469@localhost.localdomain>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, punit.agrawal@arm.com, sboyd@codeaurora.org, srinivas.kandagatla@linaro.org, lina.iyer@linaro.org, nrajan@codeaurora.org, agross@codeaurora.org, rui.zhang@intel.com, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-PiAgIA0KPiAgVGhpcyBwYXRjaCBhZGRzIHRoZSBkZXZmcmVxLWV2ZW50WzFdIGVudHJ5IHRvIHJl
-dmlldyB0aGUgcGF0Y2hlcw0KPiBhcyBqdXN0IHN1cHBvcnRlci4gUGF0Y2hlcyB3aWxsIGJlIHBp
-Y2tlZCB1cCBieSBNeXVuZ2pvbyBIYW0gb24NCj4gZGV2ZnJlcSBnaXQgcmVwb3NpdG9yeS4NCj4g
-WzFdIGh0dHBzOi8vbGttbC5vcmcvbGttbC8yMDE1LzEvMjUvNTczDQo+IA0KPiBTaWduZWQtb2Zm
-LWJ5OiBDaGFud29vIENob2kgPGN3MDAuY2hvaUBzYW1zdW5nLmNvbT4NCg0KDQoNClNpZ25lZC1v
-ZmYtYnk6IE15dW5nSm9vIEhhbSA8bXl1bmdqb28uaGFtQHNhbXN1bmcuY29tPg0KDQo+IC0tLQ0K
-PiAgTUFJTlRBSU5FUlMgfCAxMCArKysrKysrKysrDQo+ICAxIGZpbGUgY2hhbmdlZCwgMTAgaW5z
-ZXJ0aW9ucygrKQ0KPiANCj4gZGlmZiAtLWdpdCBhL01BSU5UQUlORVJTIGIvTUFJTlRBSU5FUlMN
-Cj4gaW5kZXggN2RlMzFmNDRhNDhkLi4zZDdlNDA3NzU2N2IgMTAwNjQ0DQo+IC0tLSBhL01BSU5U
-QUlORVJTDQo+ICsrKyBiL01BSU5UQUlORVJTDQo+IEBAIC0zMzQzLDYgKzMzNDMsMTYgQEAgRjoJ
-ZHJpdmVycy9kZXZmcmVxLw0KPiAgRjoJaW5jbHVkZS9saW51eC9kZXZmcmVxLmgNCj4gIEY6CURv
-Y3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9kZXZmcmVxLw0KPiAgDQo+ICtERVZJQ0Ug
-RlJFUVVFTkNZIEVWRU5UIChERVZGUkVRLUVWRU5UKQ0KPiArTToJQ2hhbndvbyBDaG9pIDxjdzAw
-LmNob2lAc2Ftc3VuZy5jb20+DQo+ICtMOglsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmcNCj4gK1Q6
-CWdpdCBnaXQ6Ly9naXQua2VybmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvbXp4L2Rl
-dmZyZXEuZ2l0DQo+ICtTOglTdXBwb3J0ZWQNCj4gK0Y6CWRyaXZlcnMvZGV2ZnJlcS9ldmVudC8N
-Cj4gK0Y6CWRyaXZlcnMvZGV2ZnJlcS9kZXZmcmVxLWV2ZW50LmMNCj4gK0Y6CWluY2x1ZGUvbGlu
-dXgvZGV2ZnJlcS1ldmVudC5oDQo+ICtGOglEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGlu
-Z3MvZGV2ZnJlcS9ldmVudC8NCj4gKw0KPiAgREVWSUNFIE5VTUJFUiBSRUdJU1RSWQ0KPiAgTToJ
-VG9yYmVuIE1hdGhpYXNlbiA8ZGV2aWNlQGxhbmFuYS5vcmc+DQo+ICBXOglodHRwOi8vbGFuYW5h
-Lm9yZy9kb2NzL2RldmljZS1saXN0L2luZGV4Lmh0bWwNCj4gLS0gDQo+IDEuOS4xDQo=
+
+On 11/03/2015 02:12 AM, Eduardo Valentin wrote:
+> On Fri, Oct 09, 2015 at 03:11:04PM +0530, Rajendra Nayak wrote:
+>> Add support to calibrate sensors on 8916 family and also add common
+>> functions to read temperature from sensors (This can be reused on
+>> other SoCs having similar TSENS device)
+>> The calibration data is read from eeprom using the generic nvmem
+>> framework apis.
+>>
+>> Based on the original code by Siddartha Mohanadoss and Stephen Boyd.
+>>
+>> Signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
+>> ---
+>>  drivers/thermal/qcom/Makefile       |   2 +-
+>>  drivers/thermal/qcom/tsens-8916.c   | 107 +++++++++++++++++++++++++++++
+>>  drivers/thermal/qcom/tsens-common.c | 130 ++++++++++++++++++++++++++++++++++++
+> 
+> Just a small comment on organization, does it make sense to move tsens-common
+> addition to the first patch, and then leave this patch only with the
+> support for 8916 (like you did for the other chips)?
+
+So the common code gets used for 8916 and hence I added it here as part of this patch.
+I can as well move it to the first patch in the series, should not be an issue.
+
+> 
+>>  drivers/thermal/qcom/tsens.c        |   1 +
+>>  drivers/thermal/qcom/tsens.h        |  11 +++
+>>  5 files changed, 250 insertions(+), 1 deletion(-)
+>>  create mode 100644 drivers/thermal/qcom/tsens-8916.c
+>>  create mode 100644 drivers/thermal/qcom/tsens-common.c
+>>
+>> diff --git a/drivers/thermal/qcom/Makefile b/drivers/thermal/qcom/Makefile
+>> index 401069b..05c98e4 100644
+>> --- a/drivers/thermal/qcom/Makefile
+>> +++ b/drivers/thermal/qcom/Makefile
+>> @@ -1,2 +1,2 @@
+>>  obj-$(CONFIG_QCOM_TSENS)	+= qcom_tsens.o
+>> -qcom_tsens-y			+= tsens.o
+>> +qcom_tsens-y			+= tsens.o tsens-common.o tsens-8916.o
+>> diff --git a/drivers/thermal/qcom/tsens-8916.c b/drivers/thermal/qcom/tsens-8916.c
+>> new file mode 100644
+>> index 0000000..a69aea3
+>> --- /dev/null
+>> +++ b/drivers/thermal/qcom/tsens-8916.c
+>> @@ -0,0 +1,107 @@
+>> +/*
+>> + * Copyright (c) 2015, The Linux Foundation. All rights reserved.
+>> + *
+>> + * This program is free software; you can redistribute it and/or modify
+>> + * it under the terms of the GNU General Public License version 2 and
+>> + * only version 2 as published by the Free Software Foundation.
+>> + *
+>> + * This program is distributed in the hope that it will be useful,
+>> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+>> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+>> + * GNU General Public License for more details.
+>> + *
+>> + */
+>> +
+>> +#include <linux/platform_device.h>
+>> +#include "tsens.h"
+>> +
+>> +/* eeprom layout data for 8916 */
+>> +#define BASE0_MASK	0x0000007f
+>> +#define BASE1_MASK	0xfe000000
+>> +#define BASE0_SHIFT	0
+>> +#define BASE1_SHIFT	25
+>> +
+>> +#define S0_P1_MASK	0x00000f80
+>> +#define S1_P1_MASK	0x003e0000
+>> +#define S2_P1_MASK	0xf8000000
+>> +#define S3_P1_MASK	0x000003e0
+>> +#define S4_P1_MASK	0x000f8000
+>> +
+>> +#define S0_P2_MASK	0x0001f000
+>> +#define S1_P2_MASK	0x07c00000
+>> +#define S2_P2_MASK	0x0000001f
+>> +#define S3_P2_MASK	0x00007c00
+>> +#define S4_P2_MASK	0x01f00000
+>> +
+>> +#define S0_P1_SHIFT	7
+>> +#define S1_P1_SHIFT	17
+>> +#define S2_P1_SHIFT	27
+>> +#define S3_P1_SHIFT	5
+>> +#define S4_P1_SHIFT	15
+>> +
+>> +#define S0_P2_SHIFT	12
+>> +#define S1_P2_SHIFT	22
+>> +#define S2_P2_SHIFT	0
+>> +#define S3_P2_SHIFT	10
+>> +#define S4_P2_SHIFT	20
+>> +
+>> +#define CAL_SEL_MASK	0xe0000000
+>> +#define CAL_SEL_SHIFT	29
+>> +
+>> +static int calibrate_8916(struct tsens_device *tmdev)
+>> +{
+>> +	int base0 = 0, base1 = 0, i;
+>> +	u32 p1[5], p2[5];
+>> +	int mode = 0;
+>> +	u32 *qfprom_cdata, *qfprom_csel;
+>> +
+>> +	qfprom_cdata = (u32 *)qfprom_read(tmdev->dev, "calib");
+>> +	if (IS_ERR(qfprom_cdata))
+>> +		return PTR_ERR(qfprom_cdata);
+>> +
+>> +	qfprom_csel = (u32 *)qfprom_read(tmdev->dev, "calib_sel");
+>> +	if (IS_ERR(qfprom_csel))
+>> +		return PTR_ERR(qfprom_csel);
+>> +
+>> +	mode = (qfprom_csel[0] & CAL_SEL_MASK) >> CAL_SEL_SHIFT;
+>> +	dev_dbg(tmdev->dev, "calibration mode is %d\n", mode);
+>> +
+>> +	switch (mode) {
+>> +	case TWO_PT_CALIB:
+>> +		base1 = (qfprom_cdata[1] & BASE1_MASK) >> BASE1_SHIFT;
+>> +		p2[0] = (qfprom_cdata[0] & S0_P2_MASK) >> S0_P2_SHIFT;
+>> +		p2[1] = (qfprom_cdata[0] & S1_P2_MASK) >> S1_P2_SHIFT;
+>> +		p2[2] = (qfprom_cdata[1] & S2_P2_MASK) >> S2_P2_SHIFT;
+>> +		p2[3] = (qfprom_cdata[1] & S3_P2_MASK) >> S3_P2_SHIFT;
+>> +		p2[4] = (qfprom_cdata[1] & S4_P2_MASK) >> S4_P2_SHIFT;
+>> +		for (i = 0; i < tmdev->num_sensors; i++)
+>> +			p2[i] = ((base1 + p2[i]) << 3);
+>> +		/* Fall through */
+>> +	case ONE_PT_CALIB2:
+>> +		base0 = (qfprom_cdata[0] & BASE0_MASK);
+>> +		p1[0] = (qfprom_cdata[0] & S0_P1_MASK) >> S0_P1_SHIFT;
+>> +		p1[1] = (qfprom_cdata[0] & S1_P1_MASK) >> S1_P1_SHIFT;
+>> +		p1[2] = (qfprom_cdata[0] & S2_P1_MASK) >> S2_P1_SHIFT;
+>> +		p1[3] = (qfprom_cdata[1] & S3_P1_MASK) >> S3_P1_SHIFT;
+>> +		p1[4] = (qfprom_cdata[1] & S4_P1_MASK) >> S4_P1_SHIFT;
+>> +		for (i = 0; i < tmdev->num_sensors; i++)
+>> +			p1[i] = (((base0) + p1[i]) << 3);
+>> +		break;
+>> +	default:
+>> +		for (i = 0; i < tmdev->num_sensors; i++) {
+>> +			p1[i] = 500;
+>> +			p2[i] = 780;
+>> +		}
+>> +		break;
+>> +	}
+>> +
+>> +	compute_intercept_slope(tmdev, p1, p2, mode);
+>> +
+>> +	return 0;
+> 
+> Can calibration fail ? In which cases?
+
+yes, it can if the eeprom reads fail for instance.
+
+> 
+>> +}
+>> +
+>> +const struct tsens_ops ops_8916 = {
+>> +	.init		= init_common,
+>> +	.calibrate	= calibrate_8916,
+>> +	.get_temp	= get_temp_common,
+>> +};
+>> diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
+>> new file mode 100644
+>> index 0000000..4acf52c
+>> --- /dev/null
+>> +++ b/drivers/thermal/qcom/tsens-common.c
+>> @@ -0,0 +1,130 @@
+>> +/*
+>> + * Copyright (c) 2015, The Linux Foundation. All rights reserved.
+>> + *
+>> + * This program is free software; you can redistribute it and/or modify
+>> + * it under the terms of the GNU General Public License version 2 and
+>> + * only version 2 as published by the Free Software Foundation.
+>> + *
+>> + * This program is distributed in the hope that it will be useful,
+>> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+>> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+>> + * GNU General Public License for more details.
+>> + *
+>> + */
+>> +
+>> +#include <linux/platform_device.h>
+>> +#include <linux/nvmem-consumer.h>
+>> +#include <linux/err.h>
+>> +#include <linux/io.h>
+>> +#include <linux/of_address.h>
+>> +#include <linux/regmap.h>
+>> +#include "tsens.h"
+>> +
+>> +#define S0_ST_ADDR		0x1030
+>> +#define SN_ADDR_OFFSET		0x4
+>> +#define SN_ST_TEMP_MASK		0x3ff
+>> +#define CAL_DEGC_PT1		30
+>> +#define CAL_DEGC_PT2		120
+>> +#define SLOPE_FACTOR		1000
+>> +
+>> +char *qfprom_read(struct device *dev, const char *cname)
+>> +{
+>> +	struct nvmem_cell *cell;
+>> +	ssize_t data;
+>> +	char *ret;
+>> +
+>> +	cell = nvmem_cell_get(dev, cname);
+>> +	if (IS_ERR(cell))
+>> +		return ERR_CAST(cell);
+>> +
+>> +	ret = nvmem_cell_read(cell, &data);
+>> +	nvmem_cell_put(cell);
+> nip: add a blank line here.
+>> +	return ret;
+>> +}
+>> +
+>> +void compute_intercept_slope(struct tsens_device *tmdev, u32 *p1,
+>> +			     u32 *p2, u32 mode)
+>> +{
+>> +	int i;
+>> +	int num, den;
+>> +
+>> +	for (i = 0; i < tmdev->num_sensors; i++) {
+>> +		dev_dbg(tmdev->dev,
+>> +			"sensor%d - data_point1:%#x data_point2:%#x\n",
+>> +			i, p1[i], p2[i]);
+>> +
+>> +		if (mode == TWO_PT_CALIB) {
+>> +			/*
+>> +			 * slope (m) = adc_code2 - adc_code1 (y2 - y1)/
+>> +			 *	temp_120_degc - temp_30_degc (x2 - x1)
+>> +			 */
+>> +			num = p2[i] - p1[i];
+>> +			num *= SLOPE_FACTOR;
+>> +			den = CAL_DEGC_PT2 - CAL_DEGC_PT1;
+>> +			tmdev->sensor[i].slope = num / den;
+>> +		}
+>> +
+>> +		tmdev->sensor[i].offset = (p1[i] * SLOPE_FACTOR) -
+>> +				(CAL_DEGC_PT1 *
+>> +				tmdev->sensor[i].slope);
+>> +		dev_dbg(tmdev->dev, "offset:%d\n", tmdev->sensor[i].offset);
+>> +	}
+>> +}
+>> +
+>> +static inline int code_to_degc(u32 adc_code, const struct tsens_sensor *s)
+>> +{
+>> +	int degc, num, den;
+>> +
+>> +	num = (adc_code * SLOPE_FACTOR) - s->offset;
+>> +	den = s->slope;
+>> +
+>> +	if (num > 0)
+>> +		degc = num + (den / 2);
+>> +	else if (num < 0)
+>> +		degc = num - (den / 2);
+>> +	else
+>> +		degc = num;
+>> +
+>> +	degc /= den;
+>> +
+>> +	return degc;
+>> +}
+>> +
+>> +int get_temp_common(struct tsens_device *tmdev, int id, int *temp)
+>> +{
+>> +	struct tsens_sensor *s = &tmdev->sensor[id];
+>> +	u32 code;
+>> +	unsigned int sensor_addr;
+>> +	int last_temp = 0, ret;
+>> +
+>> +	sensor_addr = S0_ST_ADDR + s->hw_id * SN_ADDR_OFFSET;
+>> +	ret = regmap_read(tmdev->map, sensor_addr, &code);
+>> +	if (ret)
+>> +		return ret;
+>> +	last_temp = code & SN_ST_TEMP_MASK;
+>> +
+>> +	*temp = code_to_degc(last_temp, s) * 1000;
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static const struct regmap_config tsens_config = {
+>> +	.reg_bits	= 32,
+>> +	.val_bits	= 32,
+>> +	.reg_stride	= 4,
+>> +};
+>> +
+>> +int init_common(struct tsens_device *tmdev)
+>> +{
+>> +	void __iomem *base;
+>> +
+>> +	base = of_iomap(tmdev->dev->of_node, 0);
+>> +	if (IS_ERR(base))
+>> +		return -EINVAL;
+>> +
+>> +	tmdev->map = devm_regmap_init_mmio(tmdev->dev, base, &tsens_config);
+> 
+> Should this function be marked as __init so devm_* works?
+> 
+>> +	if (!tmdev->map)
+>> +		return -ENODEV;
+> 
+> Should you do iounmap?
+
+yes, will fix these.
+thanks,
+Rajendra
+
+> 
+>> +
+>> +	return 0;
+>> +}
+>> diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+>> index 87f5215..3d49293 100644
+>> --- a/drivers/thermal/qcom/tsens.c
+>> +++ b/drivers/thermal/qcom/tsens.c
+>> @@ -65,6 +65,7 @@ static SIMPLE_DEV_PM_OPS(tsens_pm_ops, tsens_suspend, tsens_resume);
+>>  static const struct of_device_id tsens_table[] = {
+>>  	{
+>>  		.compatible = "qcom,msm8916-tsens",
+>> +		.data = &ops_8916,
+>>  	}, {
+>>  		.compatible = "qcom,msm8974-tsens",
+>>  	},
+>> diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
+>> index f0fc353..0923822 100644
+>> --- a/drivers/thermal/qcom/tsens.h
+>> +++ b/drivers/thermal/qcom/tsens.h
+>> @@ -13,6 +13,10 @@
+>>  #ifndef __QCOM_TSENS_H__
+>>  #define __QCOM_TSENS_H__
+>>  
+>> +#define ONE_PT_CALIB		0x1
+>> +#define ONE_PT_CALIB2		0x2
+>> +#define TWO_PT_CALIB		0x3
+>> +
+>>  struct tsens_device;
+>>  
+>>  struct tsens_sensor {
+>> @@ -55,4 +59,11 @@ struct tsens_device {
+>>  	struct tsens_sensor		sensor[0];
+>>  };
+>>  
+>> +char *qfprom_read(struct device *, const char *);
+>> +void compute_intercept_slope(struct tsens_device *, u32 *, u32 *, u32);
+>> +int init_common(struct tsens_device *);
+>> +int get_temp_common(struct tsens_device *, int, int *);
+>> +
+>> +extern const struct tsens_ops ops_8916;
+>> +
+>>  #endif /* __QCOM_TSENS_H__ */
+>> -- 
+>> QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+>> of Code Aurora Forum, hosted by The Linux Foundation
+>>
+
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
