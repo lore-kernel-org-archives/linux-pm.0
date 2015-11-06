@@ -1,73 +1,152 @@
-From: Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
-Subject: Re: [PATCH v2 0/9] Better compatible for the rockchip thermal and support RK3368 SoCs
-Date: Fri, 06 Nov 2015 20:03:24 +0100
-Message-ID: <1509087.903MXQEqfv@phil>
-References: <1446700685-18017-1-git-send-email-wxt@rock-chips.com> <20151106184739.GA8202@localhost.localdomain>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH v2 5/9] thermal: rockchip: Add the flag for adc value
+ increment or decrement
+Date: Fri, 6 Nov 2015 11:11:27 -0800
+Message-ID: <20151106191126.GC8202@localhost.localdomain>
+References: <1446700685-18017-1-git-send-email-wxt@rock-chips.com>
+ <1446700685-18017-6-git-send-email-wxt@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20151106184739.GA8202-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jiri Kosina <trivial-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Olof Johansson <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1446700685-18017-6-git-send-email-wxt@rock-chips.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Caesar Wang <wxt@rock-chips.com>
+Cc: Heiko Stuebner <heiko@sntech.de>, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Eduardo, Caesar,
-
-Am Freitag, 6. November 2015, 10:47:40 schrieb Eduardo Valentin:
-> On Thu, Nov 05, 2015 at 01:17:56PM +0800, Caesar Wang wrote:
-> > This series patchs are working for RK3368 on Rockchip platform.
-> > 
+On Thu, Nov 05, 2015 at 01:18:01PM +0800, Caesar Wang wrote:
+> The conversion table has the adc value and temperature.
+> In fact, the adc value only has the increment or decrement mode in
+> conversion table.
 > 
-> Good to see the perseverance! :-)
+> Moment, we can add the flag to be better support the *code_to_temp*
+> for differenr SoCs.
 > 
-> > @Heiko,
-> >     The PATCH [5/6] is working based on big/littel cluster cpufreq
-> >     added. Anyway, the PATCH [5/6] also work for next kernel.
-> > 
-> > @Eduardo,
-> > This patchset are based on linus master branch.
-> > Note: Need add the following thermal patchs for thermal driver before 
-apply
-> > this series patchs.
-> > 
-> > 1) thermal: rockchip: fix handling of invalid readings
-> > (https://patchwork.kernel.org/patch/6973101/)
-> > 
-> > 2) thermal: rockhip: fix setting thermal shutdown polarity
-> > (https://patchwork.kernel.org/patch/6973131/)
-> > 
-> > 3) dt-bindings: rockchip-thermal: Add the pinctrl states in this document
-> > (https://patchwork.kernel.org/patch/7472021/)
-> > 
-> > 4) thermal: rockchip: support the sleep pinctrl state to avoid glitches in 
-s2r
-> > (https://patchwork.kernel.org/patch/7472051/)
-> > 
-> > I'm glad these patchs have merged in thermal-soc git tree which can be 
-found at
-> > git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-
-thermal.git
+> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+> ---
 > 
-> Yeah, apologize the delay on giving you a feedback on your code. As I
-> mentioned before, I had a couple of other things in past weeks that
-> consumed my time. 
+> Changes in v2: None
+> Changes in v1: None
 > 
-> Anyways, this specific patch series looks way better now that you have
-> split it further. I will have a better look on it again and let you
-> know when it will land.
+>  drivers/thermal/rockchip_thermal.c | 64 ++++++++++++++++++++++++++++++--------
+>  1 file changed, 51 insertions(+), 13 deletions(-)
+> 
+> diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+> index e828f18..9df027f 100644
+> --- a/drivers/thermal/rockchip_thermal.c
+> +++ b/drivers/thermal/rockchip_thermal.c
+> @@ -53,6 +53,16 @@ enum sensor_id {
+>  };
+>  
+>  /**
+> +* The conversion table has the adc value and temperature.
+> +* ADC_DECREMENT is the adc value decremnet.(e.g. v2_code_table)
+> +* ADC_INCREMNET is the adc value incremnet.(e.g. v3_code_table)
+> +*/
+> +enum adc_flag {
+> +	ADC_DECREMENT = 0,
+> +	ADC_INCREMENT,
+> +};
+> +
+> +/**
+>   * The max sensors is two in rockchip SoCs.
+>   * Two sensors: CPU and GPU sensor.
+>   */
+> @@ -66,6 +76,9 @@ struct chip_tsadc_table {
+>  
+>  	/* that analogic mask data */
+>  	unsigned long data_mask;
+> +
+> +	/* adc value is increment or decrement */
+> +	unsigned int flag;
 
-I call dibs on the devicetree patches :-) .
 
-Code and dt parts are very much separate, so I'd like to take the dt parts 
-though my tree and arm-soc to keep further dts changes together.
-Of course only once you are ok with the code parts :-)
+Maybe bool? And rename to something more meaningful?
 
-Devicetree parts themselfs look ok to me.
+Or do you plan to have more conditions to test in your flag?
 
-Heiko
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>  };
+>  
+>  struct rockchip_tsadc_chip {
+> @@ -223,19 +236,43 @@ static int rk_tsadcv2_code_to_temp(struct chip_tsadc_table table, u32 code,
+>  
+>  	WARN_ON(table.length < 2);
+>  
+> -	code &= table.data_mask;
+> -	if (code < table.id[high].code)
+> +	switch (table.flag) {
+> +	case ADC_DECREMENT:
+> +		code &= table.data_mask;
+> +		if (code < table.id[high].code)
+>  		return -EAGAIN;		/* Incorrect reading */
+
+Add an indentation.
+>  
+> -	while (low <= high) {
+> -		if (code >= table.id[mid].code &&
+> -		    code < table.id[mid - 1].code)
+> -			break;
+> -		else if (code < table.id[mid].code)
+> -			low = mid + 1;
+> -		else
+> -			high = mid - 1;
+> -		mid = (low + high) / 2;
+> +		while (low <= high) {
+> +			if (code >= table.id[mid].code &&
+> +			    code < table.id[mid - 1].code)
+> +				break;
+> +			else if (code < table.id[mid].code)
+> +				low = mid + 1;
+> +			else
+> +				high = mid - 1;
+> +
+> +			mid = (low + high) / 2;
+> +		}
+> +		break;
+> +	case ADC_INCREMENT:
+> +		code &= table.data_mask;
+> +		if (code < table.id[low].code)
+> +		return -EAGAIN;		/* Incorrect reading */
+> +
+add an indentation.
+
+> +		while (low <= high) {
+> +			if (code >= table.id[mid - 1].code &&
+> +			    code < table.id[mid].code)
+> +				break;
+> +			else if (code > table.id[mid].code)
+> +				low = mid + 1;
+> +			else
+> +				high = mid - 1;
+> +
+> +			mid = (low + high) / 2;
+> +		}
+> +		break;
+> +	default:
+> +		pr_err("Invalid the table conversion\n");
+>  	}
+>  
+>  	/*
+> @@ -245,8 +282,8 @@ static int rk_tsadcv2_code_to_temp(struct chip_tsadc_table table, u32 code,
+>  	 * to produce less granular result.
+>  	 */
+>  	num = table.id[mid].temp - v2_code_table[mid - 1].temp;
+> -	num *= table.id[mid - 1].code - code;
+> -	denom = table.id[mid - 1].code - table.id[mid].code;
+> +	num *= abs(table.id[mid - 1].code - code);
+> +	denom = abs(table.id[mid - 1].code - table.id[mid].code);
+>  	*temp = table.id[mid - 1].temp + (num / denom);
+>  
+>  	return 0;
+> @@ -367,6 +404,7 @@ static const struct rockchip_tsadc_chip rk3288_tsadc_data = {
+>  		.id = v2_code_table,
+>  		.length = ARRAY_SIZE(v2_code_table),
+>  		.data_mask = TSADCV2_DATA_MASK,
+> +		.flag = ADC_DECREMENT,
+>  	},
+>  };
+>  
+> -- 
+> 1.9.1
+> 
