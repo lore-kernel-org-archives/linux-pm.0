@@ -1,28 +1,48 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: Re: [PATCH v2 2/2] MAINTAINERS: Add devfreq-event entry
-Date: Thu, 05 Nov 2015 23:37:59 +0000 (GMT)
-Message-ID: <1195576343.121421446766678358.JavaMail.weblogic@ep2mlwas05c>
-Reply-To: myungjoo.ham@samsung.com
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2 2/2] MAINTAINERS: Add devfreq-event entry
+Date: Fri, 06 Nov 2015 01:11:33 +0100
+Message-ID: <1780937.ShnX4TOkOt@vostro.rjw.lan>
+References: <1195576343.121421446766678358.JavaMail.weblogic@ep2mlwas05c>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-MIME-version: 1.0
+In-Reply-To: <1195576343.121421446766678358.JavaMail.weblogic@ep2mlwas05c>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, "joe@perches.com" <joe@perches.com>, =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: myungjoo.ham@samsung.com
+Cc: =?utf-8?B?7LWc7LCs7Jqw?= <cw00.choi@samsung.com>, "joe@perches.com" <joe@perches.com>, =?utf-8?B?67CV6rK966+8?= <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Pk9uIFRodXJzZGF5LCBOb3ZlbWJlciAwNSwgMjAxNSAwNjo1MzoxMyBBTSBNeXVuZ0pvbyBIYW0g
-d3JvdGU6DQo+PiA+ICAgDQo+PiA+ICBUaGlzIHBhdGNoIGFkZHMgdGhlIGRldmZyZXEtZXZlbnRb
-MV0gZW50cnkgdG8gcmV2aWV3IHRoZSBwYXRjaGVzDQo+PiA+IGFzIGp1c3Qgc3VwcG9ydGVyLiBQ
-YXRjaGVzIHdpbGwgYmUgcGlja2VkIHVwIGJ5IE15dW5nam9vIEhhbSBvbg0KPj4gPiBkZXZmcmVx
-IGdpdCByZXBvc2l0b3J5Lg0KPj4gPiBbMV0gaHR0cHM6Ly9sa21sLm9yZy9sa21sLzIwMTUvMS8y
-NS81NzMNCj4+ID4gDQo+PiA+IFNpZ25lZC1vZmYtYnk6IENoYW53b28gQ2hvaSA8Y3cwMC5jaG9p
-QHNhbXN1bmcuY29tPg0KPj4gDQo+PiANCj4+IA0KPj4gU2lnbmVkLW9mZi1ieTogTXl1bmdKb28g
-SGFtIDxteXVuZ2pvby5oYW1Ac2Ftc3VuZy5jb20+DQo+DQo+V2VsbCwgZG9lcyB0aGlzIG1lYW4g
-SSdtIHN1cHBvc2VkIHRvIGFwcGx5IHRoZSBwYXRjaCBkaXJlY3RseT8NCj4NCj5PciBjYW4geW91
-IHBsZWFzZSBkbyB0aGF0Pw0KPg0KPlJhZmFlbA0KDQpUaGF0IG1lYW5zIHRoYXQgSSdsbCBiZSBn
-ZXR0aW5nIHBhdGNoZXMgZnJvbSBDaGFud29vIGFuZA0KbWVyZ2Ugd2l0aCB0aGUgcmVzdCBvZiBk
-ZXZmcmVxIGluIG15IHJlcG8gZmlyc3QgYmVmb3JlDQpnb2luZyBvdXQuDQoNCg0KQ2hlZXJzLA0K
-TXl1bmdKb28NCg0K
+On Thursday, November 05, 2015 11:37:59 PM MyungJoo Ham wrote:
+> >On Thursday, November 05, 2015 06:53:13 AM MyungJoo Ham wrote:
+> >> >   
+> >> >  This patch adds the devfreq-event[1] entry to review the patches
+> >> > as just supporter. Patches will be picked up by Myungjoo Ham on
+> >> > devfreq git repository.
+> >> > [1] https://lkml.org/lkml/2015/1/25/573
+> >> > 
+> >> > Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+> >> 
+> >> 
+> >> 
+> >> Signed-off-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+> >
+> >Well, does this mean I'm supposed to apply the patch directly?
+> >
+> >Or can you please do that?
+> >
+> >Rafael
+> 
+> That means that I'll be getting patches from Chanwoo and
+> merge with the rest of devfreq in my repo first before
+> going out.
+
+Cool, thanks!
+
+I'll be waiting for a pull request from you, then.
+
+But can you please send it to me early next week (preferably on Monday),
+so I can include it into my next pull request for Linus?
+
+Thanks,
+Rafael
