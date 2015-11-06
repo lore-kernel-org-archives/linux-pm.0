@@ -1,233 +1,258 @@
-From: sriram@marirs.net.in
-Subject: Re: [PATCH 1/1] Moving error logs under stderr like most of unix tools
- like ls & rm
-Date: Fri, 06 Nov 2015 12:01:26 +0530
-Message-ID: <1446791486.3675655.430755377.0CF29AA3@webmail.messagingengine.com>
-References: <1445621366-13341-1-git-send-email-sriram@marirs.net.in>
-Mime-Version: 1.0
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from out4-smtp.messagingengine.com ([66.111.4.28]:39846 "EHLO
-	out4-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757238AbbKFGb1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Nov 2015 01:31:27 -0500
-Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
-	by mailout.nyi.internal (Postfix) with ESMTP id B06C520365
-	for <linux-pm@vger.kernel.org>; Fri,  6 Nov 2015 01:31:26 -0500 (EST)
-In-Reply-To: <1445621366-13341-1-git-send-email-sriram@marirs.net.in>
-Sender: linux-pm-owner@vger.kernel.org
+From: yalin wang <yalin.wang2010@gmail.com>
+Subject: [PATCH V2] goldfish: add goldfish match node for dt driver probe
+Date: Fri,  6 Nov 2015 15:12:40 +0800
+Message-ID: <1446793960-31946-1-git-send-email-yalin.wang2010@gmail.com>
+Return-path: <linux-input-owner@vger.kernel.org>
+Sender: linux-input-owner@vger.kernel.org
+To: dmitry.torokhov@gmail.com, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, gregkh@linuxfoundation.org, jslaby@suse.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, yalin.wang2010@gmail.com, peter.senna@gmail.com, dan.carpenter@oracle.com, joe@perches.com, alan@linux.intel.com, somyaanand214@gmail.com, ricardo.ribalda@gmail.com, mahfouz.saif.elyazal@gmail.com, ravi2j@gmail.com, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sriram Raghunathan <sriram@marirs.net.in>, trenn@suse.com, rafael.j.wysocki@intel.com, shilpa.bhat@linux.vnet.ibm.com, prarit@redhat.com, ego@linux.vnet.ibm.com
-Cc: linux-pm@vger.kernel.org
 
-Typo in email-id. Changed. 
+qemu use device tree to bootup linux kernel,
+we need add device node match table to plaftorm driver,
+so that can probe the goldfish driver correctly.
+test by this qemu:
+git clone https://android.googlesource.com/platform/external/qemu
 
+Signed-off-by: yalin wang <yalin.wang2010@gmail.com>
+---
+ drivers/input/keyboard/goldfish_events.c  |  9 +++++++++
+ drivers/platform/goldfish/goldfish_pipe.c | 11 ++++++++++-
+ drivers/power/goldfish_battery.c          | 11 ++++++++++-
+ drivers/staging/goldfish/goldfish_audio.c | 11 ++++++++++-
+ drivers/staging/goldfish/goldfish_nand.c  | 11 ++++++++++-
+ drivers/tty/goldfish.c                    | 11 ++++++++++-
+ drivers/video/fbdev/goldfishfb.c          | 10 +++++++++-
+ 7 files changed, 68 insertions(+), 6 deletions(-)
 
-On Fri, Oct 23, 2015, at 10:59 PM, Sriram Raghunathan wrote:
-> The patch below, aligns cpupower tool with that of most 
-> unix tools like ls, rm in redireting errors to 'STDERR'. 
-> 
-> Previously within the below committed files, there were difference
-> in redirecting the errors to stdout & to stderr. Created a common
-> error log redirection to stderr always. This when followed in future 
-> would be really helpful to users of the tool. 
-> 
-> Signed-off-by: Sriram Raghunathan <sriram@marirs.net.in>
-> ---
->  tools/power/cpupower/utils/cpufreq-info.c  |  6 +++---
->  tools/power/cpupower/utils/cpufreq-set.c   | 10 +++++-----
->  tools/power/cpupower/utils/cpuidle-info.c  |  2 +-
->  tools/power/cpupower/utils/cpuidle-set.c   |  6 +++---
->  tools/power/cpupower/utils/cpupower-info.c |  6 +++---
->  tools/power/cpupower/utils/cpupower-set.c  |  4 ++--
->  6 files changed, 17 insertions(+), 17 deletions(-)
-> 
-> diff --git a/tools/power/cpupower/utils/cpufreq-info.c
-> b/tools/power/cpupower/utils/cpufreq-info.c
-> index 0e67643..12672dc 100644
-> --- a/tools/power/cpupower/utils/cpufreq-info.c
-> +++ b/tools/power/cpupower/utils/cpufreq-info.c
-> @@ -28,7 +28,7 @@ static unsigned int count_cpus(void)
->  
->  	fp = fopen("/proc/stat", "r");
->  	if (!fp) {
-> -               printf(_("Couldn't count the number of CPUs (%s: %s),
-> assuming 1\n"), "/proc/stat", strerror(errno));
-> +               fprintf(stderr,_("Couldn't count the number of CPUs (%s:
-> %s), assuming 1\n"), "/proc/stat", strerror(errno));
->  		return 1;
->  	}
->  
-> @@ -175,7 +175,7 @@ static int get_boost_mode(unsigned int cpu)
->  
->  	ret = cpufreq_has_boost_support(cpu, &support, &active, &b_states);
->  	if (ret) {
-> -               printf(_("Error while evaluating Boost Capabilities"
-> +               fprintf(stderr,_("Error while evaluating Boost
-> Capabilities"
->  				" on CPU %d -- are you root?\n"), cpu);
->  		return ret;
->  	}
-> @@ -264,7 +264,7 @@ static void debug_output_one(unsigned int cpu)
->  
->  	driver = cpufreq_get_driver(cpu);
->  	if (!driver) {
-> -               printf(_("  no or unknown cpufreq driver is active on
-> this CPU\n"));
-> +              fprintf(stderr,_("  no or unknown cpufreq driver is active
-> on this CPU\n"));
->  	} else {
->  		printf(_("  driver: %s\n"), driver);
->  		cpufreq_put_driver(driver);
-> diff --git a/tools/power/cpupower/utils/cpufreq-set.c
-> b/tools/power/cpupower/utils/cpufreq-set.c
-> index 276919d..bcf74cc 100644
-> --- a/tools/power/cpupower/utils/cpufreq-set.c
-> +++ b/tools/power/cpupower/utils/cpufreq-set.c
-> @@ -57,7 +57,7 @@ const struct freq_units def_units[] = {
->  
->  static void print_unknown_arg(void)
->  {
-> -       printf(_("invalid or unknown argument\n"));
-> +        fprintf(stderr,_("invalid or unknown argument\n"));
->  }
->  
->  static unsigned long string_to_frequency(const char *str)
-> @@ -144,7 +144,7 @@ static int do_new_policy(unsigned int cpu, struct
-> cpufreq_policy *new_pol)
->  	int ret;
->  
->  	if (!cur_pol) {
-> -               printf(_("wrong, unknown or unhandled CPU?\n"));
-> +               fprintf(stderr,_("wrong, unknown or unhandled CPU?\n"));
->  		return -EINVAL;
->  	}
->  
-> @@ -269,18 +269,18 @@ int cmd_freq_set(int argc, char **argv)
->  
->  	/* parameter checking */
->  	if (double_parm) {
-> -               printf("the same parameter was passed more than once\n");
-> +               fprintf(stderr,"the same parameter was passed more than
-> once\n");
->  		return -EINVAL;
->  	}
->  
->  	if (freq && policychange) {
-> -               printf(_("the -f/--freq parameter cannot be combined with
-> -d/--min, -u/--max or\n"
-> +               fprintf(stderr,_("the -f/--freq parameter cannot be
-> combined with -d/--min, -u/--max or\n"
->  				"-g/--governor parameters\n"));
->  		return -EINVAL;
->  	}
->  
->  	if (!freq && !policychange) {
-> -               printf(_("At least one parameter out of -f/--freq,
-> -d/--min, -u/--max, and\n"
-> +               fprintf(stderr,_("At least one parameter out of
-> -f/--freq, -d/--min, -u/--max, and\n"
->  				"-g/--governor must be passed\n"));
->  		return -EINVAL;
->  	}
-> diff --git a/tools/power/cpupower/utils/cpuidle-info.c
-> b/tools/power/cpupower/utils/cpuidle-info.c
-> index 750c1d8..47716ff 100644
-> --- a/tools/power/cpupower/utils/cpuidle-info.c
-> +++ b/tools/power/cpupower/utils/cpuidle-info.c
-> @@ -175,7 +175,7 @@ int cmd_idle_info(int argc, char **argv)
->  			 "output-specific argument\n"));
->  		cpuidle_exit(EXIT_FAILURE);
->  	case '?':
-> -               printf(_("invalid or unknown argument\n"));
-> +               fprintf(stderr,_("invalid or unknown argument\n"));
->  		cpuidle_exit(EXIT_FAILURE);
->  	}
->  
-> diff --git a/tools/power/cpupower/utils/cpuidle-set.c
-> b/tools/power/cpupower/utils/cpuidle-set.c
-> index 5c44d5b..2057609 100644
-> --- a/tools/power/cpupower/utils/cpuidle-set.c
-> +++ b/tools/power/cpupower/utils/cpuidle-set.c
-> @@ -66,7 +66,7 @@ int cmd_idle_set(int argc, char **argv)
->  			param = ret;
->  			latency = strtoull(optarg, &endptr, 10);
->  			if (*endptr != '\0') {
-> -                               printf(_("Bad latency value: %s\n"),
-> optarg);
-> +                               fprintf(stderr,_("Bad latency value:
-> %s\n"), optarg);
->  				exit(EXIT_FAILURE);
->  			}
->  			break;
-> @@ -86,11 +86,11 @@ int cmd_idle_set(int argc, char **argv)
->  
->  	switch (param) {
->  	case -1:
-> -               printf(_("You can't specify more than one "
-> +               fprintf(stderr,_("You can't specify more than one "
->  			 "output-specific argument\n"));
->  		exit(EXIT_FAILURE);
->  	case '?':
-> -               printf(_("invalid or unknown argument\n"));
-> +               fprintf(stderr,_("invalid or unknown argument\n"));
->  		exit(EXIT_FAILURE);
->  	}
->  
-> diff --git a/tools/power/cpupower/utils/cpupower-info.c
-> b/tools/power/cpupower/utils/cpupower-info.c
-> index 10299f2..1c0c594 100644
-> --- a/tools/power/cpupower/utils/cpupower-info.c
-> +++ b/tools/power/cpupower/utils/cpupower-info.c
-> @@ -23,7 +23,7 @@ static struct option set_opts[] = {
->  
->  static void print_wrong_arg_exit(void)
->  {
-> -       printf(_("invalid or unknown argument\n"));
-> +        fprintf(stderr,_("invalid or unknown argument\n"));
->  	exit(EXIT_FAILURE);
->  }
->  
-> @@ -71,9 +71,9 @@ int cmd_info(int argc, char **argv)
->  	if (params.perf_bias) {
->  		if (!run_as_root) {
->  			params.perf_bias = 0;
-> -                       printf(_("Intel's performance bias setting needs
-> root privileges\n"));
-> +                       fprintf(stderr,_("Intel's performance bias
-> setting needs root privileges\n"));
->  		} else if (!(cpupower_cpu_info.caps & CPUPOWER_CAP_PERF_BIAS)) {
-> -                       printf(_("System does not support Intel's
-> performance"
-> +                       fprintf(stderr,_("System does not support Intel's
-> performance"
->  				 " bias setting\n"));
->  			params.perf_bias = 0;
->  		}
-> diff --git a/tools/power/cpupower/utils/cpupower-set.c
-> b/tools/power/cpupower/utils/cpupower-set.c
-> index 3e6f374..7bdaa08 100644
-> --- a/tools/power/cpupower/utils/cpupower-set.c
-> +++ b/tools/power/cpupower/utils/cpupower-set.c
-> @@ -24,7 +24,7 @@ static struct option set_opts[] = {
->  
->  static void print_wrong_arg_exit(void)
->  {
-> -       printf(_("invalid or unknown argument\n"));
-> +        fprintf(stderr,_("invalid or unknown argument\n"));
->  	exit(EXIT_FAILURE);
->  }
->  
-> @@ -56,7 +56,7 @@ int cmd_set(int argc, char **argv)
->  				print_wrong_arg_exit();
->  			perf_bias = atoi(optarg);
->  			if (perf_bias < 0 || perf_bias > 15) {
-> -                               printf(_("--perf-bias param out "
-> +                               fprintf(stderr,_("--perf-bias param out "
->  					 "of range [0-%d]\n"), 15);
->  				print_wrong_arg_exit();
->  			}
-> -- 
-> 2.6.1
-> 
+diff --git a/drivers/input/keyboard/goldfish_events.c b/drivers/input/keyboard/goldfish_events.c
+index 907e4e2..7b99ab8 100644
+--- a/drivers/input/keyboard/goldfish_events.c
++++ b/drivers/input/keyboard/goldfish_events.c
+@@ -18,6 +18,7 @@
+ #include <linux/types.h>
+ #include <linux/input.h>
+ #include <linux/kernel.h>
++#include <linux/of.h>
+ #include <linux/platform_device.h>
+ #include <linux/slab.h>
+ #include <linux/irq.h>
+@@ -178,10 +179,18 @@ static int events_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_OF
++static const struct of_device_id goldfish_events_match[] = {
++	{ .compatible = "generic,goldfish-events-keypad" },
++	{ },
++};
++#endif
++
+ static struct platform_driver events_driver = {
+ 	.probe	= events_probe,
+ 	.driver	= {
+ 		.name	= "goldfish_events",
++		.of_match_table	= of_match_ptr(goldfish_events_match),
+ 	},
+ };
+ 
+diff --git a/drivers/platform/goldfish/goldfish_pipe.c b/drivers/platform/goldfish/goldfish_pipe.c
+index e7a29e2..55b6d7c 100644
+--- a/drivers/platform/goldfish/goldfish_pipe.c
++++ b/drivers/platform/goldfish/goldfish_pipe.c
+@@ -50,6 +50,7 @@
+ #include <linux/kernel.h>
+ #include <linux/spinlock.h>
+ #include <linux/miscdevice.h>
++#include <linux/of.h>
+ #include <linux/platform_device.h>
+ #include <linux/poll.h>
+ #include <linux/sched.h>
+@@ -615,11 +616,19 @@ static int goldfish_pipe_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_OF
++static const struct of_device_id goldfish_pipe_match[] = {
++	{ .compatible = "generic,android-pipe" },
++	{ },
++};
++#endif
++
+ static struct platform_driver goldfish_pipe = {
+ 	.probe = goldfish_pipe_probe,
+ 	.remove = goldfish_pipe_remove,
+ 	.driver = {
+-		.name = "goldfish_pipe"
++		.name = "goldfish_pipe",
++		.of_match_table	= of_match_ptr(goldfish_pipe_match),
+ 	}
+ };
+ 
+diff --git a/drivers/power/goldfish_battery.c b/drivers/power/goldfish_battery.c
+index a50bb98..48b057d 100644
+--- a/drivers/power/goldfish_battery.c
++++ b/drivers/power/goldfish_battery.c
+@@ -18,6 +18,7 @@
+ 
+ #include <linux/module.h>
+ #include <linux/err.h>
++#include <linux/of.h>
+ #include <linux/platform_device.h>
+ #include <linux/power_supply.h>
+ #include <linux/types.h>
+@@ -227,11 +228,19 @@ static int goldfish_battery_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_OF
++static const struct of_device_id goldfish_battery_match[] = {
++	{ .compatible = "generic,goldfish-battery" },
++	{ },
++};
++#endif
++
+ static struct platform_driver goldfish_battery_device = {
+ 	.probe		= goldfish_battery_probe,
+ 	.remove		= goldfish_battery_remove,
+ 	.driver = {
+-		.name = "goldfish-battery"
++		.name = "goldfish-battery",
++		.of_match_table	= of_match_ptr(goldfish_battery_match),
+ 	}
+ };
+ module_platform_driver(goldfish_battery_device);
+diff --git a/drivers/staging/goldfish/goldfish_audio.c b/drivers/staging/goldfish/goldfish_audio.c
+index b0927e4..f0c5118 100644
+--- a/drivers/staging/goldfish/goldfish_audio.c
++++ b/drivers/staging/goldfish/goldfish_audio.c
+@@ -18,6 +18,7 @@
+ #include <linux/module.h>
+ #include <linux/miscdevice.h>
+ #include <linux/fs.h>
++#include <linux/of.h>
+ #include <linux/platform_device.h>
+ #include <linux/types.h>
+ #include <linux/pci.h>
+@@ -344,11 +345,19 @@ static int goldfish_audio_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_OF
++static const struct of_device_id goldfish_audio_match[] = {
++	{ .compatible = "generic,goldfish-audio" },
++	{ },
++};
++#endif
++
+ static struct platform_driver goldfish_audio_driver = {
+ 	.probe		= goldfish_audio_probe,
+ 	.remove		= goldfish_audio_remove,
+ 	.driver = {
+-		.name = "goldfish_audio"
++		.name = "goldfish_audio",
++		.of_match_table	= of_match_ptr(goldfish_audio_match),
+ 	}
+ };
+ 
+diff --git a/drivers/staging/goldfish/goldfish_nand.c b/drivers/staging/goldfish/goldfish_nand.c
+index 623353db5..d4c4285 100644
+--- a/drivers/staging/goldfish/goldfish_nand.c
++++ b/drivers/staging/goldfish/goldfish_nand.c
+@@ -23,6 +23,7 @@
+ #include <linux/ioport.h>
+ #include <linux/vmalloc.h>
+ #include <linux/mtd/mtd.h>
++#include <linux/of.h>
+ #include <linux/platform_device.h>
+ #include <linux/mutex.h>
+ #include <linux/goldfish.h>
+@@ -430,11 +431,19 @@ static int goldfish_nand_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_OF
++static const struct of_device_id goldfish_nand_match[] = {
++	{ .compatible = "generic,goldfish-nand" },
++	{ },
++};
++#endif
++
+ static struct platform_driver goldfish_nand_driver = {
+ 	.probe		= goldfish_nand_probe,
+ 	.remove		= goldfish_nand_remove,
+ 	.driver = {
+-		.name = "goldfish_nand"
++		.name = "goldfish_nand",
++		.of_match_table	= of_match_ptr(goldfish_nand_match),
+ 	}
+ };
+ 
+diff --git a/drivers/tty/goldfish.c b/drivers/tty/goldfish.c
+index 0f82c0b..a49f4a2 100644
+--- a/drivers/tty/goldfish.c
++++ b/drivers/tty/goldfish.c
+@@ -15,6 +15,7 @@
+ 
+ #include <linux/console.h>
+ #include <linux/interrupt.h>
++#include <linux/of.h>
+ #include <linux/platform_device.h>
+ #include <linux/tty.h>
+ #include <linux/tty_flip.h>
+@@ -324,11 +325,19 @@ static int goldfish_tty_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_OF
++static const struct of_device_id goldfish_tty_match[] = {
++	{ .compatible = "generic,goldfish-tty" },
++	{ },
++};
++#endif
++
+ static struct platform_driver goldfish_tty_platform_driver = {
+ 	.probe = goldfish_tty_probe,
+ 	.remove = goldfish_tty_remove,
+ 	.driver = {
+-		.name = "goldfish_tty"
++		.name = "goldfish_tty",
++		.of_match_table = of_match_ptr(goldfish_tty_match),
+ 	}
+ };
+ 
+diff --git a/drivers/video/fbdev/goldfishfb.c b/drivers/video/fbdev/goldfishfb.c
+index 7f6c9e6..809c502 100644
+--- a/drivers/video/fbdev/goldfishfb.c
++++ b/drivers/video/fbdev/goldfishfb.c
+@@ -25,6 +25,7 @@
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+ #include <linux/ioport.h>
++#include <linux/of.h>
+ #include <linux/platform_device.h>
+ 
+ enum {
+@@ -304,12 +305,19 @@ static int goldfish_fb_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_OF
++static const struct of_device_id goldfish_fb_match[] = {
++	{ .compatible = "generic,goldfish-fb" },
++	{ },
++};
++#endif
+ 
+ static struct platform_driver goldfish_fb_driver = {
+ 	.probe		= goldfish_fb_probe,
+ 	.remove		= goldfish_fb_remove,
+ 	.driver = {
+-		.name = "goldfish_fb"
++		.name = "goldfish_fb",
++		.of_match_table = of_match_ptr(goldfish_fb_match),
+ 	}
+ };
+ 
+-- 
+1.9.1
+
