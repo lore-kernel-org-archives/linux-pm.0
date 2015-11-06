@@ -1,65 +1,53 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH v2] PM / sleep: prohibit devices probing during
- suspend/hibernation
-Date: Thu, 5 Nov 2015 18:07:45 -0800
-Message-ID: <20151106020745.GA24550@kroah.com>
-References: <1445288064-25299-1-git-send-email-grygorii.strashko@ti.com>
- <19065758.fKD2xM4Ypl@vostro.rjw.lan>
- <20151106000957.GB10347@kroah.com>
- <5530449.00gvFOj9K4@vostro.rjw.lan>
+From: Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH 0/3] cpuidle: small improvements & fixes for menu governor
+ (resend)
+Date: Thu, 05 Nov 2015 21:26:48 -0500
+Message-ID: <563C0FE8.8070301@redhat.com>
+References: <1446590059-18897-1-git-send-email-riel@redhat.com> <1547516.IzrSrfmAQk@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:51976 "EHLO
-	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965402AbbKFCHq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Nov 2015 21:07:46 -0500
-Content-Disposition: inline
-In-Reply-To: <5530449.00gvFOj9K4@vostro.rjw.lan>
+Received: from mx1.redhat.com ([209.132.183.28]:52950 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031154AbbKFC0v (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 5 Nov 2015 21:26:51 -0500
+In-Reply-To: <1547516.IzrSrfmAQk@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Grygorii Strashko <grygorii.strashko@ti.com>, stern@rowland.harvard.edu, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rafael.j.wysocki@intel.com, arjan@linux.intel.com, len.brown@intel.com, daniel.lezcano@linaro.org
 
-On Fri, Nov 06, 2015 at 03:04:10AM +0100, Rafael J. Wysocki wrote:
-> On Thursday, November 05, 2015 04:09:57 PM Greg Kroah-Hartman wrote:
-> > On Thu, Nov 05, 2015 at 11:38:23PM +0100, Rafael J. Wysocki wrote:
-> > > On Monday, November 02, 2015 02:25:00 AM Rafael J. Wysocki wrote:
-> > > > On Monday, October 19, 2015 11:54:24 PM Grygorii Strashko wrote:
-> > > > > It is unsafe [1] if probing of devices will happen during suspend or
-> > > > > hibernation and system behavior will be unpredictable in this case
-> > > > > (for example: after successful probe the device potentially has a different
-> > > > >  set of PM callbacks than before [2]).
-> > > > > So, let's prohibit device's probing in dpm_prepare() and defer their
-> > > > > probes instead. The normal behavior will be restored in dpm_complete().
-> > > > > 
-> > > > > This patch introduces new DD core APIs:
-> > > > >  device_defer_all_probes_enable()
-> > > > >    It will disable probing of devices and defer their probes.
-> > > > >  device_defer_all_probes_disable()
-> > > > >    It will restore normal behavior and trigger re-probing of deferred
-> > > > >    devices.
-> > > > > 
-> > > > > [1] https://lkml.org/lkml/2015/9/11/554
-> > > > > [2] https://lkml.org/lkml/2015/9/15/1039
-> > > > > Cc: Alan Stern <stern@rowland.harvard.edu>
-> > > > > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> > > > > Cc: Thierry Reding <thierry.reding@gmail.com>
-> > > > > Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
-> > > > 
-> > > > Greg, any objections against this one?
-> > > 
-> > > Greg, if this isn't problematic, I'd still like to take it for v4.4.
-> > 
-> > What?  The merge window for new stuff closed a few weeks ago, how can
-> > you add this for 4.4 when it needs to be in linux-next for a while
-> > first?
+On 11/05/2015 05:34 PM, Rafael J. Wysocki wrote:
+> On Tuesday, November 03, 2015 05:34:16 PM riel@redhat.com wrote:
+>> While working on a paravirt cpuidle driver for KVM guests, I
+>> noticed a number of small logic errors in the menu governor
+>> code.
+>>
+>> These patches should get rid of some artifacts that can break
+>> the logic in the menu governor under certain corner cases, and
+>> make idle state selection work better on CPUs with long C1 exit
+>> latencies.
+>>
+>> I have not seen any adverse effects with them in my (quick)
+>> tests. As expected, they do not seem to do much on systems with
+>> many power states and very low C1 exit latencies and target residencies. 
 > 
-> Well, it's not really scary and it was posted way before the merge window,
-> but no one has had the time to look at it since then, apparently.
+> Thanks!
 > 
-> Of course, I can queue it up for the next release too.
+> The patches look good to me.
+> 
+> I might apply [1-2/3] right away, but I'm a bit hesitant about the [3/3] (I'd
+> like it to spend some time in linux-next before it goes to Linus).  Also, we've
+> lived without these changes for quite some time and I don't want to stretch the
+> process too much, so I'll queue them up for v4.5 if that's not a problem.
 
-That would be best, thanks.
+Not a problem at all. I am all for taking these changes carefully,
+and seeing what happens.
 
-greg k-h
+I did some basic testing with it, but the permutations of what
+can happen with cpuidle management are just too many to predict
+in advance everything that could happen.
+
+-- 
+All rights reversed
