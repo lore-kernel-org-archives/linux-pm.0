@@ -1,54 +1,136 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH v5 1/5] gadget: Introduce the notifier functions
-Date: Fri, 6 Nov 2015 21:24:39 +0000
-Message-ID: <20151106212439.GM18409@sirena.org.uk>
-References: <cover.1446807915.git.baolin.wang@linaro.org>
- <acd08255d6535082973a5e432c40433429544dbc.1446807915.git.baolin.wang@linaro.org>
- <20151106165644.GA23834@kroah.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2] PM / sleep: prohibit devices probing during suspend/hibernation
+Date: Fri, 06 Nov 2015 23:44:48 +0100
+Message-ID: <10640882.SNLuMz25JY@vostro.rjw.lan>
+References: <1445288064-25299-1-git-send-email-grygorii.strashko@ti.com> <3237315.NCBdGinISd@vostro.rjw.lan> <563C79D0.7020602@ti.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="8RJ6MkOGpKElHlfH"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:50390 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030323AbbKFVZL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Nov 2015 16:25:11 -0500
-Content-Disposition: inline
-In-Reply-To: <20151106165644.GA23834@kroah.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <563C79D0.7020602@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Grygorii Strashko <grygorii.strashko@ti.com>
+Cc: Pavel Machek <pavel@ucw.cz>, stern@rowland.harvard.edu, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: Baolin Wang <baolin.wang@linaro.org>, balbi@ti.com, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, linux-kernel@vger.kernel.org, peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, sameo@linux.intel.com, lee.jones@linaro.org, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org
 
+On Friday, November 06, 2015 11:58:40 AM Grygorii Strashko wrote:
+> On 11/06/2015 02:13 AM, Rafael J. Wysocki wrote:
+> > On Thursday, November 05, 2015 11:19:03 PM Pavel Machek wrote:
+> >> On Mon 2015-10-19 23:54:24, Grygorii Strashko wrote:
+> >>> It is unsafe [1] if probing of devices will happen during suspend or
+> >>> hibernation and system behavior will be unpredictable in this case
+> >>> (for example: after successful probe the device potentially has a different
+> >>>   set of PM callbacks than before [2]).
+> >>> So, let's prohibit device's probing in dpm_prepare() and defer their
+> >>> probes instead. The normal behavior will be restored in dpm_complete().
+> >>>
+> >>> This patch introduces new DD core APIs:
+> >>>   device_defer_all_probes_enable()
+> >>>     It will disable probing of devices and defer their probes.
+> >>>   device_defer_all_probes_disable()
+> >>>     It will restore normal behavior and trigger re-probing of deferred
+> >>>     devices.
+> >>>
+> >>> [1] https://lkml.org/lkml/2015/9/11/554
+> >>> [2] https://lkml.org/lkml/2015/9/15/1039
+> >>> Cc: Alan Stern <stern@rowland.harvard.edu>
+> >>> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> >>> Cc: Thierry Reding <thierry.reding@gmail.com>
+> >>> Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
+> >>> ---
+> >>> Changes in v2:
+> >>> - DD core API device_defer_all_probes(bool enable) split on two
+> >>>    void device_defer_all_probes_enable(void);
+> >>>    void device_defer_all_probes_disable(void);
+> >>> - more comments added
+> >>>
+> >>> Link on v1:
+> >>> - https://lkml.org/lkml/2015/10/8/681
+> >>>
+> >>>   drivers/base/base.h       |  2 ++
+> >>>   drivers/base/dd.c         | 48 ++++++++++++++++++++++++++++++++++++++++++++++-
+> >>>   drivers/base/power/main.c | 17 +++++++++++++++++
+> >>>   3 files changed, 66 insertions(+), 1 deletion(-)
+> >>>
+> >>> diff --git a/drivers/base/base.h b/drivers/base/base.h
+> >>> index 1782f3a..c332b68 100644
+> >>> --- a/drivers/base/base.h
+> >>> +++ b/drivers/base/base.h
+> >>> @@ -131,6 +131,8 @@ extern void device_remove_groups(struct device *dev,
+> >>>   extern char *make_class_name(const char *name, struct kobject *kobj);
+> >>>
+> >>>   extern int devres_release_all(struct device *dev);
+> >>> +extern void device_defer_all_probes_enable(void);
+> >>> +extern void device_defer_all_probes_disable(void);
+> >>>
+> >>>   /* /sys/devices directory */
+> >>>   extern struct kset *devices_kset;
+> >>> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+> >>> index be0eb46..b8d9e70 100644
+> >>> --- a/drivers/base/dd.c
+> >>> +++ b/drivers/base/dd.c
+> >>> @@ -55,6 +55,13 @@ static struct workqueue_struct *deferred_wq;
+> >>>   static atomic_t deferred_trigger_count = ATOMIC_INIT(0);
+> >>>
+> >>>   /*
+> >>> + * In some cases, like suspend to RAM or hibernation, It might be reasonable
+> >>> + * to prohibit probing of devices as it could be unsafe.
+> >>> + * Once defer_all_probes is true all drivers probes will be forcibly deferred.
+> >>> + */
+> >>> +static bool defer_all_probes;
+> >>> +
+> >>> +/*
+> >>>    * deferred_probe_work_func() - Retry probing devices in the active list.
+> >>>    */
+> >>>   static void deferred_probe_work_func(struct work_struct *work)
+> >>> @@ -172,6 +179,30 @@ static void driver_deferred_probe_trigger(void)
+> >>>   }
+> >>>
+> >>>   /**
+> >>> + * device_defer_all_probes_enable() - Enable deferring of device's probes
+> >>> + *
+> >>> + *	It will disable probing of devices and defer their probes.
+> >>> + */
+> >>> +void device_defer_all_probes_enable(void)
+> >>> +{
+> >>> +	defer_all_probes = true;
+> >>> +	/* sync with probes to avoid races. */
+> >>> +	wait_for_device_probe();
+> >>> +}
+> >>
+> >> device_pause_probing()?
+> 
+> device_stop_probing(). Right?
 
---8RJ6MkOGpKElHlfH
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Or device_block_probing()
 
-On Fri, Nov 06, 2015 at 08:56:44AM -0800, Greg KH wrote:
-> On Fri, Nov 06, 2015 at 07:35:10PM +0800, Baolin Wang wrote:
+> >>
+> >>> +/**
+> >>> + * device_defer_all_probes_disable() - Disable deferring of device's probes
+> >>> + *
+> >>> + *	It will restore normal behavior and trigger re-probing of deferred
+> >>> + * devices.
+> >>> + */
+> 
+> device_start_probing(). Right?
 
-> > Thus this patch adds a notifier mechanism for usb gadget to report a
-> > event to usb charger when the usb gadget state is changed.
+and device_unblock_probing()
 
-> I thought we said we did not want another notifier chain in the previous
-> versions of this patch?
+> 
+> >>
+> >> Hmm. This is not quite a double negative... but it sounds like one.
+> >>
+> >> device_restart_probing()?
+> >
+> > I _start/_stop would be fine by me too.
+> 
+> Ok. So do I need rename/resend it again?
 
-Did we come up with anything better?
+Yes, please.
 
---8RJ6MkOGpKElHlfH
-Content-Type: application/pgp-signature; name="signature.asc"
+> Probably, I'll need to wait for -rc1 before resending.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+No, you don't.  Please resend when you're ready.
 
-iQEcBAEBCAAGBQJWPRqWAAoJECTWi3JdVIfQf6wH/0/li7EOjjHEHO+toJJyxzsm
-fqE558gfG/WDmQ9nxcF671jdlDZ5xjpz8E+6YbP4x5QVyfinJbTxBQkCaNEwy/Me
-H0keIO8xD6uHDucYZO5AGwzUOsLVJf8WhUEueYNt3YBVv0kA8qqeIT0gwKjDxO3x
-NvShUnAPI0LygXOpY8lCiSLpRk1H+EhXomFwAX1GQwgsEonaJgQT0EKqHdl0k404
-ObqBFRYcthqToTaYWlzL5st9BoJkSxliuG2h1R+NKxSzlb781fQQR3d2bNKVYvJS
-J0Tp63mV5n2J8iMRNbPxKS/unCmgDTqA1zmmnktuetW28+FWKXmP52uM6NQdMOc=
-=7QgH
------END PGP SIGNATURE-----
-
---8RJ6MkOGpKElHlfH--
+Thanks,
+Rafael
