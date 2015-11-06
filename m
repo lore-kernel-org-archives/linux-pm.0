@@ -1,258 +1,128 @@
-From: yalin wang <yalin.wang2010@gmail.com>
-Subject: [PATCH V2] goldfish: add goldfish match node for dt driver probe
-Date: Fri,  6 Nov 2015 15:12:40 +0800
-Message-ID: <1446793960-31946-1-git-send-email-yalin.wang2010@gmail.com>
-Return-path: <linux-input-owner@vger.kernel.org>
-Sender: linux-input-owner@vger.kernel.org
-To: dmitry.torokhov@gmail.com, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, gregkh@linuxfoundation.org, jslaby@suse.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, yalin.wang2010@gmail.com, peter.senna@gmail.com, dan.carpenter@oracle.com, joe@perches.com, alan@linux.intel.com, somyaanand214@gmail.com, ricardo.ribalda@gmail.com, mahfouz.saif.elyazal@gmail.com, ravi2j@gmail.com, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org
+From: Grygorii Strashko <grygorii.strashko@ti.com>
+Subject: Re: [PATCH v2] PM / sleep: prohibit devices probing during
+ suspend/hibernation
+Date: Fri, 6 Nov 2015 11:58:40 +0200
+Message-ID: <563C79D0.7020602@ti.com>
+References: <1445288064-25299-1-git-send-email-grygorii.strashko@ti.com>
+ <20151105221903.GA4919@amd> <3237315.NCBdGinISd@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <3237315.NCBdGinISd@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>
+Cc: stern@rowland.harvard.edu, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-qemu use device tree to bootup linux kernel,
-we need add device node match table to plaftorm driver,
-so that can probe the goldfish driver correctly.
-test by this qemu:
-git clone https://android.googlesource.com/platform/external/qemu
+On 11/06/2015 02:13 AM, Rafael J. Wysocki wrote:
+> On Thursday, November 05, 2015 11:19:03 PM Pavel Machek wrote:
+>> On Mon 2015-10-19 23:54:24, Grygorii Strashko wrote:
+>>> It is unsafe [1] if probing of devices will happen during suspend or
+>>> hibernation and system behavior will be unpredictable in this case
+>>> (for example: after successful probe the device potentially has a different
+>>>   set of PM callbacks than before [2]).
+>>> So, let's prohibit device's probing in dpm_prepare() and defer their
+>>> probes instead. The normal behavior will be restored in dpm_complete().
+>>>
+>>> This patch introduces new DD core APIs:
+>>>   device_defer_all_probes_enable()
+>>>     It will disable probing of devices and defer their probes.
+>>>   device_defer_all_probes_disable()
+>>>     It will restore normal behavior and trigger re-probing of deferred
+>>>     devices.
+>>>
+>>> [1] https://lkml.org/lkml/2015/9/11/554
+>>> [2] https://lkml.org/lkml/2015/9/15/1039
+>>> Cc: Alan Stern <stern@rowland.harvard.edu>
+>>> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+>>> Cc: Thierry Reding <thierry.reding@gmail.com>
+>>> Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
+>>> ---
+>>> Changes in v2:
+>>> - DD core API device_defer_all_probes(bool enable) split on two
+>>>    void device_defer_all_probes_enable(void);
+>>>    void device_defer_all_probes_disable(void);
+>>> - more comments added
+>>>
+>>> Link on v1:
+>>> - https://lkml.org/lkml/2015/10/8/681
+>>>
+>>>   drivers/base/base.h       |  2 ++
+>>>   drivers/base/dd.c         | 48 ++++++++++++++++++++++++++++++++++++++++++++++-
+>>>   drivers/base/power/main.c | 17 +++++++++++++++++
+>>>   3 files changed, 66 insertions(+), 1 deletion(-)
+>>>
+>>> diff --git a/drivers/base/base.h b/drivers/base/base.h
+>>> index 1782f3a..c332b68 100644
+>>> --- a/drivers/base/base.h
+>>> +++ b/drivers/base/base.h
+>>> @@ -131,6 +131,8 @@ extern void device_remove_groups(struct device *dev,
+>>>   extern char *make_class_name(const char *name, struct kobject *kobj);
+>>>
+>>>   extern int devres_release_all(struct device *dev);
+>>> +extern void device_defer_all_probes_enable(void);
+>>> +extern void device_defer_all_probes_disable(void);
+>>>
+>>>   /* /sys/devices directory */
+>>>   extern struct kset *devices_kset;
+>>> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+>>> index be0eb46..b8d9e70 100644
+>>> --- a/drivers/base/dd.c
+>>> +++ b/drivers/base/dd.c
+>>> @@ -55,6 +55,13 @@ static struct workqueue_struct *deferred_wq;
+>>>   static atomic_t deferred_trigger_count = ATOMIC_INIT(0);
+>>>
+>>>   /*
+>>> + * In some cases, like suspend to RAM or hibernation, It might be reasonable
+>>> + * to prohibit probing of devices as it could be unsafe.
+>>> + * Once defer_all_probes is true all drivers probes will be forcibly deferred.
+>>> + */
+>>> +static bool defer_all_probes;
+>>> +
+>>> +/*
+>>>    * deferred_probe_work_func() - Retry probing devices in the active list.
+>>>    */
+>>>   static void deferred_probe_work_func(struct work_struct *work)
+>>> @@ -172,6 +179,30 @@ static void driver_deferred_probe_trigger(void)
+>>>   }
+>>>
+>>>   /**
+>>> + * device_defer_all_probes_enable() - Enable deferring of device's probes
+>>> + *
+>>> + *	It will disable probing of devices and defer their probes.
+>>> + */
+>>> +void device_defer_all_probes_enable(void)
+>>> +{
+>>> +	defer_all_probes = true;
+>>> +	/* sync with probes to avoid races. */
+>>> +	wait_for_device_probe();
+>>> +}
+>>
+>> device_pause_probing()?
 
-Signed-off-by: yalin wang <yalin.wang2010@gmail.com>
----
- drivers/input/keyboard/goldfish_events.c  |  9 +++++++++
- drivers/platform/goldfish/goldfish_pipe.c | 11 ++++++++++-
- drivers/power/goldfish_battery.c          | 11 ++++++++++-
- drivers/staging/goldfish/goldfish_audio.c | 11 ++++++++++-
- drivers/staging/goldfish/goldfish_nand.c  | 11 ++++++++++-
- drivers/tty/goldfish.c                    | 11 ++++++++++-
- drivers/video/fbdev/goldfishfb.c          | 10 +++++++++-
- 7 files changed, 68 insertions(+), 6 deletions(-)
+device_stop_probing(). Right?
 
-diff --git a/drivers/input/keyboard/goldfish_events.c b/drivers/input/keyboard/goldfish_events.c
-index 907e4e2..7b99ab8 100644
---- a/drivers/input/keyboard/goldfish_events.c
-+++ b/drivers/input/keyboard/goldfish_events.c
-@@ -18,6 +18,7 @@
- #include <linux/types.h>
- #include <linux/input.h>
- #include <linux/kernel.h>
-+#include <linux/of.h>
- #include <linux/platform_device.h>
- #include <linux/slab.h>
- #include <linux/irq.h>
-@@ -178,10 +179,18 @@ static int events_probe(struct platform_device *pdev)
- 	return 0;
- }
- 
-+#ifdef CONFIG_OF
-+static const struct of_device_id goldfish_events_match[] = {
-+	{ .compatible = "generic,goldfish-events-keypad" },
-+	{ },
-+};
-+#endif
-+
- static struct platform_driver events_driver = {
- 	.probe	= events_probe,
- 	.driver	= {
- 		.name	= "goldfish_events",
-+		.of_match_table	= of_match_ptr(goldfish_events_match),
- 	},
- };
- 
-diff --git a/drivers/platform/goldfish/goldfish_pipe.c b/drivers/platform/goldfish/goldfish_pipe.c
-index e7a29e2..55b6d7c 100644
---- a/drivers/platform/goldfish/goldfish_pipe.c
-+++ b/drivers/platform/goldfish/goldfish_pipe.c
-@@ -50,6 +50,7 @@
- #include <linux/kernel.h>
- #include <linux/spinlock.h>
- #include <linux/miscdevice.h>
-+#include <linux/of.h>
- #include <linux/platform_device.h>
- #include <linux/poll.h>
- #include <linux/sched.h>
-@@ -615,11 +616,19 @@ static int goldfish_pipe_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+#ifdef CONFIG_OF
-+static const struct of_device_id goldfish_pipe_match[] = {
-+	{ .compatible = "generic,android-pipe" },
-+	{ },
-+};
-+#endif
-+
- static struct platform_driver goldfish_pipe = {
- 	.probe = goldfish_pipe_probe,
- 	.remove = goldfish_pipe_remove,
- 	.driver = {
--		.name = "goldfish_pipe"
-+		.name = "goldfish_pipe",
-+		.of_match_table	= of_match_ptr(goldfish_pipe_match),
- 	}
- };
- 
-diff --git a/drivers/power/goldfish_battery.c b/drivers/power/goldfish_battery.c
-index a50bb98..48b057d 100644
---- a/drivers/power/goldfish_battery.c
-+++ b/drivers/power/goldfish_battery.c
-@@ -18,6 +18,7 @@
- 
- #include <linux/module.h>
- #include <linux/err.h>
-+#include <linux/of.h>
- #include <linux/platform_device.h>
- #include <linux/power_supply.h>
- #include <linux/types.h>
-@@ -227,11 +228,19 @@ static int goldfish_battery_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+#ifdef CONFIG_OF
-+static const struct of_device_id goldfish_battery_match[] = {
-+	{ .compatible = "generic,goldfish-battery" },
-+	{ },
-+};
-+#endif
-+
- static struct platform_driver goldfish_battery_device = {
- 	.probe		= goldfish_battery_probe,
- 	.remove		= goldfish_battery_remove,
- 	.driver = {
--		.name = "goldfish-battery"
-+		.name = "goldfish-battery",
-+		.of_match_table	= of_match_ptr(goldfish_battery_match),
- 	}
- };
- module_platform_driver(goldfish_battery_device);
-diff --git a/drivers/staging/goldfish/goldfish_audio.c b/drivers/staging/goldfish/goldfish_audio.c
-index b0927e4..f0c5118 100644
---- a/drivers/staging/goldfish/goldfish_audio.c
-+++ b/drivers/staging/goldfish/goldfish_audio.c
-@@ -18,6 +18,7 @@
- #include <linux/module.h>
- #include <linux/miscdevice.h>
- #include <linux/fs.h>
-+#include <linux/of.h>
- #include <linux/platform_device.h>
- #include <linux/types.h>
- #include <linux/pci.h>
-@@ -344,11 +345,19 @@ static int goldfish_audio_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+#ifdef CONFIG_OF
-+static const struct of_device_id goldfish_audio_match[] = {
-+	{ .compatible = "generic,goldfish-audio" },
-+	{ },
-+};
-+#endif
-+
- static struct platform_driver goldfish_audio_driver = {
- 	.probe		= goldfish_audio_probe,
- 	.remove		= goldfish_audio_remove,
- 	.driver = {
--		.name = "goldfish_audio"
-+		.name = "goldfish_audio",
-+		.of_match_table	= of_match_ptr(goldfish_audio_match),
- 	}
- };
- 
-diff --git a/drivers/staging/goldfish/goldfish_nand.c b/drivers/staging/goldfish/goldfish_nand.c
-index 623353db5..d4c4285 100644
---- a/drivers/staging/goldfish/goldfish_nand.c
-+++ b/drivers/staging/goldfish/goldfish_nand.c
-@@ -23,6 +23,7 @@
- #include <linux/ioport.h>
- #include <linux/vmalloc.h>
- #include <linux/mtd/mtd.h>
-+#include <linux/of.h>
- #include <linux/platform_device.h>
- #include <linux/mutex.h>
- #include <linux/goldfish.h>
-@@ -430,11 +431,19 @@ static int goldfish_nand_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+#ifdef CONFIG_OF
-+static const struct of_device_id goldfish_nand_match[] = {
-+	{ .compatible = "generic,goldfish-nand" },
-+	{ },
-+};
-+#endif
-+
- static struct platform_driver goldfish_nand_driver = {
- 	.probe		= goldfish_nand_probe,
- 	.remove		= goldfish_nand_remove,
- 	.driver = {
--		.name = "goldfish_nand"
-+		.name = "goldfish_nand",
-+		.of_match_table	= of_match_ptr(goldfish_nand_match),
- 	}
- };
- 
-diff --git a/drivers/tty/goldfish.c b/drivers/tty/goldfish.c
-index 0f82c0b..a49f4a2 100644
---- a/drivers/tty/goldfish.c
-+++ b/drivers/tty/goldfish.c
-@@ -15,6 +15,7 @@
- 
- #include <linux/console.h>
- #include <linux/interrupt.h>
-+#include <linux/of.h>
- #include <linux/platform_device.h>
- #include <linux/tty.h>
- #include <linux/tty_flip.h>
-@@ -324,11 +325,19 @@ static int goldfish_tty_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+#ifdef CONFIG_OF
-+static const struct of_device_id goldfish_tty_match[] = {
-+	{ .compatible = "generic,goldfish-tty" },
-+	{ },
-+};
-+#endif
-+
- static struct platform_driver goldfish_tty_platform_driver = {
- 	.probe = goldfish_tty_probe,
- 	.remove = goldfish_tty_remove,
- 	.driver = {
--		.name = "goldfish_tty"
-+		.name = "goldfish_tty",
-+		.of_match_table = of_match_ptr(goldfish_tty_match),
- 	}
- };
- 
-diff --git a/drivers/video/fbdev/goldfishfb.c b/drivers/video/fbdev/goldfishfb.c
-index 7f6c9e6..809c502 100644
---- a/drivers/video/fbdev/goldfishfb.c
-+++ b/drivers/video/fbdev/goldfishfb.c
-@@ -25,6 +25,7 @@
- #include <linux/init.h>
- #include <linux/interrupt.h>
- #include <linux/ioport.h>
-+#include <linux/of.h>
- #include <linux/platform_device.h>
- 
- enum {
-@@ -304,12 +305,19 @@ static int goldfish_fb_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+#ifdef CONFIG_OF
-+static const struct of_device_id goldfish_fb_match[] = {
-+	{ .compatible = "generic,goldfish-fb" },
-+	{ },
-+};
-+#endif
- 
- static struct platform_driver goldfish_fb_driver = {
- 	.probe		= goldfish_fb_probe,
- 	.remove		= goldfish_fb_remove,
- 	.driver = {
--		.name = "goldfish_fb"
-+		.name = "goldfish_fb",
-+		.of_match_table = of_match_ptr(goldfish_fb_match),
- 	}
- };
- 
+>>
+>>> +/**
+>>> + * device_defer_all_probes_disable() - Disable deferring of device's probes
+>>> + *
+>>> + *	It will restore normal behavior and trigger re-probing of deferred
+>>> + * devices.
+>>> + */
+
+device_start_probing(). Right?
+
+>>
+>> Hmm. This is not quite a double negative... but it sounds like one.
+>>
+>> device_restart_probing()?
+>
+> I _start/_stop would be fine by me too.
+
+Ok. So do I need rename/resend it again?
+Probably, I'll need to wait for -rc1 before resending.
+
 -- 
-1.9.1
-
+regards,
+-grygorii
