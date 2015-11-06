@@ -1,73 +1,65 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 2/5] PM / OPP: Add
- {opp-microvolt|opp-microamp|turbo-mode|opp-suspend}-<name> binding
-Date: Fri, 6 Nov 2015 07:23:21 +0530
-Message-ID: <20151106015321.GF3773@ubuntu>
-References: <cover.1446687367.git.viresh.kumar@linaro.org>
- <17a4388be606f21fe1d31b23180d41f6cabdd4b5.1446687367.git.viresh.kumar@linaro.org>
- <20151105030245.GA20613@rob-hp-laptop>
- <20151105031913.GA29491@ubuntu>
- <CAL_Jsq+sKbn9Jsp6LjfwO59Ceps3zrL8eABXw74m3A25M8bjJg@mail.gmail.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH v2] PM / sleep: prohibit devices probing during
+ suspend/hibernation
+Date: Thu, 5 Nov 2015 18:07:45 -0800
+Message-ID: <20151106020745.GA24550@kroah.com>
+References: <1445288064-25299-1-git-send-email-grygorii.strashko@ti.com>
+ <19065758.fKD2xM4Ypl@vostro.rjw.lan>
+ <20151106000957.GB10347@kroah.com>
+ <5530449.00gvFOj9K4@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f46.google.com ([209.85.220.46]:36050 "EHLO
-	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965402AbbKFBx1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Nov 2015 20:53:27 -0500
-Received: by pacdm15 with SMTP id dm15so80906112pac.3
-        for <linux-pm@vger.kernel.org>; Thu, 05 Nov 2015 17:53:27 -0800 (PST)
+Received: from mail.linuxfoundation.org ([140.211.169.12]:51976 "EHLO
+	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965402AbbKFCHq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 5 Nov 2015 21:07:46 -0500
 Content-Disposition: inline
-In-Reply-To: <CAL_Jsq+sKbn9Jsp6LjfwO59Ceps3zrL8eABXw74m3A25M8bjJg@mail.gmail.com>
+In-Reply-To: <5530449.00gvFOj9K4@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Stephen Boyd <sboyd@codeaurora.org>, Lee Jones <lee.jones@linaro.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Nishanth Menon <nm@ti.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, open list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Grygorii Strashko <grygorii.strashko@ti.com>, stern@rowland.harvard.edu, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>
 
-On 05-11-15, 17:33, Rob Herring wrote:
-> On Wed, Nov 4, 2015 at 9:19 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > On 04-11-15, 21:02, Rob Herring wrote:
-> >> > +- turbo-mode-<name>: Named turbo-mode property. Similar to opp-microvolt-<name>
-> >> > +  property, but for turbo mode instead.
-> >> > +
-> >> >  - opp-suspend: Marks the OPP to be used during device suspend. Only one OPP in
-> >> >    the table should have this.
-> >> >
-> >> > +- opp-suspend-<name>: Named opp-suspend property. Similar to
-> >> > +  opp-microvolt-<name> property, but for suspend opp instead.
-> >> > +
-> >>
-> >> I don't think these last 2 make sense. turbo-mode is a flag that the
-> >> mode has restrictions such as other cores have to be idle or something.
-> >> Similarly, opp-suspend should not vary by <name>.
-> >
-> > Based on what version of the hardware you are running, via
-> > opp-supported-hw property, the platform can enable a different set of
-> > OPPs. And in that case we may want to select different OPPs marked as
-> > turbo or suspend freq. That's what I thought at least.
-> >
-> > For example, on version A of the hardware we have following available
-> > frequencies: 800, 1000, 1100, 1200 MHz. Where 800 MHz is the suspend
-> > freq and 1200 is the turbo one.
-> >
-> > But on a slightly different version of hardware B, we have two more
-> > OPPs available: 700 and 1400 MHz. And in that case we want the suspend
-> > freq to be 700 and turbo OPP to be only 1400 MHz.
+On Fri, Nov 06, 2015 at 03:04:10AM +0100, Rafael J. Wysocki wrote:
+> On Thursday, November 05, 2015 04:09:57 PM Greg Kroah-Hartman wrote:
+> > On Thu, Nov 05, 2015 at 11:38:23PM +0100, Rafael J. Wysocki wrote:
+> > > On Monday, November 02, 2015 02:25:00 AM Rafael J. Wysocki wrote:
+> > > > On Monday, October 19, 2015 11:54:24 PM Grygorii Strashko wrote:
+> > > > > It is unsafe [1] if probing of devices will happen during suspend or
+> > > > > hibernation and system behavior will be unpredictable in this case
+> > > > > (for example: after successful probe the device potentially has a different
+> > > > >  set of PM callbacks than before [2]).
+> > > > > So, let's prohibit device's probing in dpm_prepare() and defer their
+> > > > > probes instead. The normal behavior will be restored in dpm_complete().
+> > > > > 
+> > > > > This patch introduces new DD core APIs:
+> > > > >  device_defer_all_probes_enable()
+> > > > >    It will disable probing of devices and defer their probes.
+> > > > >  device_defer_all_probes_disable()
+> > > > >    It will restore normal behavior and trigger re-probing of deferred
+> > > > >    devices.
+> > > > > 
+> > > > > [1] https://lkml.org/lkml/2015/9/11/554
+> > > > > [2] https://lkml.org/lkml/2015/9/15/1039
+> > > > > Cc: Alan Stern <stern@rowland.harvard.edu>
+> > > > > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> > > > > Cc: Thierry Reding <thierry.reding@gmail.com>
+> > > > > Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
+> > > > 
+> > > > Greg, any objections against this one?
+> > > 
+> > > Greg, if this isn't problematic, I'd still like to take it for v4.4.
+> > 
+> > What?  The merge window for new stuff closed a few weeks ago, how can
+> > you add this for 4.4 when it needs to be in linux-next for a while
+> > first?
 > 
-> But different frequencies are different OPP nodes (since that is the
-> unit address now), so it is not going to hurt to set turbo-mode on
-> both 1200 and 1400.
+> Well, it's not really scary and it was posted way before the merge window,
+> but no one has had the time to look at it since then, apparently.
+> 
+> Of course, I can queue it up for the next release too.
 
-Yeah, but in that case 1200 *may* not be a turbo frequency anymore, as
-the voltage constraints might have changed.
+That would be best, thanks.
 
-So turbo frequency is something that should be used only in small
-bursts, as they are consume lot of power. They aren't available to be
-used freely. They may also have thermal side effects..
-
-In a similar way, for suspend-freq, we may or may not want the lowest
-frequency to be used during suspend and so that can change as well.
-And we shouldn't have suspend-freq set for two OPP nodes.
-
--- 
-viresh
+greg k-h
