@@ -1,23 +1,19 @@
 From: kbuild test robot <lkp@intel.com>
-Subject: Re: [PATCH v5 1/5] gadget: Introduce the notifier functions
-Date: Fri, 6 Nov 2015 20:33:19 +0800
-Message-ID: <201511062023.SE2RpVbQ%fengguang.wu@intel.com>
-References: <acd08255d6535082973a5e432c40433429544dbc.1446807915.git.baolin.wang@linaro.org>
+Subject: Re: [PATCH v5 3/5] gadget: Support for the usb charger framework
+Date: Fri, 6 Nov 2015 21:10:28 +0800
+Message-ID: <201511062114.i0URSpCO%fengguang.wu@intel.com>
+References: <ff4410e184539254039ffa8c7547995841029a67.1446807916.git.baolin.wang@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="fUYQa+Pmc3FrFX/N"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:8692 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752424AbbKFMeb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 6 Nov 2015 07:34:31 -0500
+Content-Type: multipart/mixed; boundary="oyUTqETQ0mS9luUI"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <acd08255d6535082973a5e432c40433429544dbc.1446807915.git.baolin.wang@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <ff4410e184539254039ffa8c7547995841029a67.1446807916.git.baolin.wang@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
 Cc: kbuild-all@01.org, balbi@ti.com, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, broonie@kernel.org, linux-kernel@vger.kernel.org, baolin.wang@linaro.org, gregkh@linuxfoundation.org, peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, sameo@linux.intel.com, lee.jones@linaro.org, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 
---fUYQa+Pmc3FrFX/N
+--oyUTqETQ0mS9luUI
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
@@ -31,14 +27,15 @@ reproduce: make htmldocs
 
 All warnings (new ones prefixed by >>):
 
-   include/linux/usb/gadget.h:226: warning: No description found for parameter 'claimed'
->> include/linux/usb/gadget.h:628: warning: No description found for parameter 'nh'
->> include/linux/usb/gadget.h:628: warning: No description found for parameter 'lock'
-   include/linux/usb/gadget.h:628: warning: No description found for parameter 'quirk_altset_not_supp'
-   include/linux/usb/gadget.h:628: warning: No description found for parameter 'quirk_stall_not_supp'
-   include/linux/usb/gadget.h:628: warning: No description found for parameter 'quirk_zlp_not_supp'
->> include/linux/usb/gadget.h:1193: warning: No description found for parameter 'gadget'
->> include/linux/usb/gadget.h:1193: warning: No description found for parameter 'nb'
+   include/linux/usb/gadget.h:227: warning: No description found for parameter 'claimed'
+   include/linux/usb/gadget.h:631: warning: No description found for parameter 'nh'
+   include/linux/usb/gadget.h:631: warning: No description found for parameter 'lock'
+>> include/linux/usb/gadget.h:631: warning: No description found for parameter 'charger'
+   include/linux/usb/gadget.h:631: warning: No description found for parameter 'quirk_altset_not_supp'
+   include/linux/usb/gadget.h:631: warning: No description found for parameter 'quirk_stall_not_supp'
+   include/linux/usb/gadget.h:631: warning: No description found for parameter 'quirk_zlp_not_supp'
+   include/linux/usb/gadget.h:1202: warning: No description found for parameter 'gadget'
+   include/linux/usb/gadget.h:1202: warning: No description found for parameter 'nb'
    include/linux/usb/composite.h:501: warning: Excess struct/union/enum/typedef member 'setup_pending' description in 'usb_composite_dev'
    include/linux/usb/composite.h:501: warning: Excess struct/union/enum/typedef member 'os_desc_pending' description in 'usb_composite_dev'
    drivers/usb/gadget/function/f_acm.c:1: warning: no structured comments found
@@ -47,35 +44,35 @@ All warnings (new ones prefixed by >>):
    drivers/usb/gadget/function/f_obex.c:1: warning: no structured comments found
    drivers/usb/gadget/function/f_serial.c:1: warning: no structured comments found
 
-vim +/nh +628 include/linux/usb/gadget.h
+vim +/charger +631 include/linux/usb/gadget.h
 
-a64cbb7e92 include/linux/usb/gadget.h Baolin Wang     2015-11-06  612  	struct raw_notifier_head	nh;
-a64cbb7e92 include/linux/usb/gadget.h Baolin Wang     2015-11-06  613  	struct mutex			lock;
-d8318d7f6b include/linux/usb/gadget.h David Cohen     2013-12-09  614  
-898c608678 include/linux/usb/gadget.h Felipe Balbi    2011-11-22  615  	unsigned			sg_supported:1;
-^1da177e4c include/linux/usb_gadget.h Linus Torvalds  2005-04-16  616  	unsigned			is_otg:1;
-^1da177e4c include/linux/usb_gadget.h Linus Torvalds  2005-04-16  617  	unsigned			is_a_peripheral:1;
-^1da177e4c include/linux/usb_gadget.h Linus Torvalds  2005-04-16  618  	unsigned			b_hnp_enable:1;
-^1da177e4c include/linux/usb_gadget.h Linus Torvalds  2005-04-16  619  	unsigned			a_hnp_support:1;
-^1da177e4c include/linux/usb_gadget.h Linus Torvalds  2005-04-16  620  	unsigned			a_alt_hnp_support:1;
-0b2d2bbade include/linux/usb/gadget.h David Cohen     2013-12-09  621  	unsigned			quirk_ep_out_aligned_size:1;
-ffd9a0fcbb include/linux/usb/gadget.h Robert Baldyga  2015-07-28  622  	unsigned			quirk_altset_not_supp:1;
-02ded1b0d8 include/linux/usb/gadget.h Robert Baldyga  2015-07-28  623  	unsigned			quirk_stall_not_supp:1;
-ca1023c81d include/linux/usb/gadget.h Robert Baldyga  2015-07-28  624  	unsigned			quirk_zlp_not_supp:1;
-80b2502cea include/linux/usb/gadget.h Peter Chen      2015-01-28  625  	unsigned			is_selfpowered:1;
-ccdf138fe3 include/linux/usb/gadget.h Robert Baldyga  2015-05-04  626  	unsigned			deactivated:1;
-ccdf138fe3 include/linux/usb/gadget.h Robert Baldyga  2015-05-04  627  	unsigned			connected:1;
-^1da177e4c include/linux/usb_gadget.h Linus Torvalds  2005-04-16 @628  };
-5702f75375 include/linux/usb/gadget.h Felipe Balbi    2013-07-17  629  #define work_to_gadget(w)	(container_of((w), struct usb_gadget, work))
-^1da177e4c include/linux/usb_gadget.h Linus Torvalds  2005-04-16  630  
-^1da177e4c include/linux/usb_gadget.h Linus Torvalds  2005-04-16  631  static inline void set_gadget_data(struct usb_gadget *gadget, void *data)
-^1da177e4c include/linux/usb_gadget.h Linus Torvalds  2005-04-16  632  	{ dev_set_drvdata(&gadget->dev, data); }
-^1da177e4c include/linux/usb_gadget.h Linus Torvalds  2005-04-16  633  static inline void *get_gadget_data(struct usb_gadget *gadget)
-^1da177e4c include/linux/usb_gadget.h Linus Torvalds  2005-04-16  634  	{ return dev_get_drvdata(&gadget->dev); }
-f48cf80f93 include/linux/usb/gadget.h Fabien Chouteau 2010-04-23  635  static inline struct usb_gadget *dev_to_usb_gadget(struct device *dev)
-f48cf80f93 include/linux/usb/gadget.h Fabien Chouteau 2010-04-23  636  {
+a64cbb7e92 include/linux/usb/gadget.h Baolin Wang     2015-11-06  615  	struct mutex			lock;
+a8d202b50d include/linux/usb/gadget.h Baolin Wang     2015-11-06  616  	struct usb_charger		*charger;
+d8318d7f6b include/linux/usb/gadget.h David Cohen     2013-12-09  617  
+898c608678 include/linux/usb/gadget.h Felipe Balbi    2011-11-22  618  	unsigned			sg_supported:1;
+^1da177e4c include/linux/usb_gadget.h Linus Torvalds  2005-04-16  619  	unsigned			is_otg:1;
+^1da177e4c include/linux/usb_gadget.h Linus Torvalds  2005-04-16  620  	unsigned			is_a_peripheral:1;
+^1da177e4c include/linux/usb_gadget.h Linus Torvalds  2005-04-16  621  	unsigned			b_hnp_enable:1;
+^1da177e4c include/linux/usb_gadget.h Linus Torvalds  2005-04-16  622  	unsigned			a_hnp_support:1;
+^1da177e4c include/linux/usb_gadget.h Linus Torvalds  2005-04-16  623  	unsigned			a_alt_hnp_support:1;
+0b2d2bbade include/linux/usb/gadget.h David Cohen     2013-12-09  624  	unsigned			quirk_ep_out_aligned_size:1;
+ffd9a0fcbb include/linux/usb/gadget.h Robert Baldyga  2015-07-28  625  	unsigned			quirk_altset_not_supp:1;
+02ded1b0d8 include/linux/usb/gadget.h Robert Baldyga  2015-07-28  626  	unsigned			quirk_stall_not_supp:1;
+ca1023c81d include/linux/usb/gadget.h Robert Baldyga  2015-07-28  627  	unsigned			quirk_zlp_not_supp:1;
+80b2502cea include/linux/usb/gadget.h Peter Chen      2015-01-28  628  	unsigned			is_selfpowered:1;
+ccdf138fe3 include/linux/usb/gadget.h Robert Baldyga  2015-05-04  629  	unsigned			deactivated:1;
+ccdf138fe3 include/linux/usb/gadget.h Robert Baldyga  2015-05-04  630  	unsigned			connected:1;
+^1da177e4c include/linux/usb_gadget.h Linus Torvalds  2005-04-16 @631  };
+5702f75375 include/linux/usb/gadget.h Felipe Balbi    2013-07-17  632  #define work_to_gadget(w)	(container_of((w), struct usb_gadget, work))
+^1da177e4c include/linux/usb_gadget.h Linus Torvalds  2005-04-16  633  
+^1da177e4c include/linux/usb_gadget.h Linus Torvalds  2005-04-16  634  static inline void set_gadget_data(struct usb_gadget *gadget, void *data)
+^1da177e4c include/linux/usb_gadget.h Linus Torvalds  2005-04-16  635  	{ dev_set_drvdata(&gadget->dev, data); }
+^1da177e4c include/linux/usb_gadget.h Linus Torvalds  2005-04-16  636  static inline void *get_gadget_data(struct usb_gadget *gadget)
+^1da177e4c include/linux/usb_gadget.h Linus Torvalds  2005-04-16  637  	{ return dev_get_drvdata(&gadget->dev); }
+f48cf80f93 include/linux/usb/gadget.h Fabien Chouteau 2010-04-23  638  static inline struct usb_gadget *dev_to_usb_gadget(struct device *dev)
+f48cf80f93 include/linux/usb/gadget.h Fabien Chouteau 2010-04-23  639  {
 
-:::::: The code at line 628 was first introduced by commit
+:::::: The code at line 631 was first introduced by commit
 :::::: 1da177e4c3f41524e886b7f1b8a0c1fc7321cac2 Linux-2.6.12-rc2
 
 :::::: TO: Linus Torvalds <torvalds@ppc970.osdl.org>
@@ -85,12 +82,12 @@ f48cf80f93 include/linux/usb/gadget.h Fabien Chouteau 2010-04-23  636  {
 0-DAY kernel test infrastructure                Open Source Technology Center
 https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
 
---fUYQa+Pmc3FrFX/N
+--oyUTqETQ0mS9luUI
 Content-Type: application/octet-stream
 Content-Disposition: attachment; filename=".config.gz"
 Content-Transfer-Encoding: base64
 
-H4sICKOaPFYAAy5jb25maWcAjDxbc9s2s+/9FZz0PPSbOUkc23HTOeMHCARFVLyFACXZLxxF
+H4sICJ2iPFYAAy5jb25maWcAjDxbc9s2s+/9FZz0PPSbOUkc23HTOeMHCARFVLyFACXZLxxF
 phNNbcmfJLfJvz+7ACneFko7k6mFXdwWe8eCv/7yq8dej7vn1XGzXj09/fC+VttqvzpWD97j
 5qn6P89PvSTVnvClfgfI0Wb7+v395urTjXf97urdxdv9+ndvVu231ZPHd9vHzddX6L3ZbX/5
 FbB5mgRyWt5cT6T2Ngdvuzt6h+r4S92+/HRTXl3e/uj8bn/IROm84FqmSekLnvoib4FpobNC
@@ -204,4 +201,4 @@ OHTiQmgih9YRka/1S8i4VSgHXckET5YYG4W7hkxxgZX4s9+cdJTs4vb53JICZwS6ZGovLtKa
 Zm3JyBmK6B/ss2fY11yK2c1TObsQ9B7QHM12cPI1B9BlCnxhnodEhwYuTcz5relmMgUj9IpM
 yoWtEoJf4tH760ZVAAA=
 
---fUYQa+Pmc3FrFX/N--
+--oyUTqETQ0mS9luUI--
