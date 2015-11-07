@@ -1,51 +1,40 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v1 1/2] intel_pstate: Use the cpu load to determine the PercentPerformance
-Date: Sat, 07 Nov 2015 02:09:31 +0100
-Message-ID: <1546343.Y03T7q8XC6@vostro.rjw.lan>
-References: <1446542840-14982-1-git-send-email-philippe.longepe@linux.intel.com>
+Subject: Re: [PATCH] CPPC-CPUFreq: Delete an unnecessary check before the function call "kfree"
+Date: Sat, 07 Nov 2015 02:10:09 +0100
+Message-ID: <2429041.ODHvPqId6J@vostro.rjw.lan>
+References: <530C5E18.1020800@users.sourceforge.net> <563BB8DF.7020908@users.sourceforge.net> <20151106014228.GD3773@ubuntu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:46100 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:50154 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753326AbbKGAkS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Nov 2015 19:40:18 -0500
-In-Reply-To: <1446542840-14982-1-git-send-email-philippe.longepe@linux.intel.com>
+	with SMTP id S1757955AbbKGAk4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 6 Nov 2015 19:40:56 -0500
+In-Reply-To: <20151106014228.GD3773@ubuntu>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Philippe Longepe <philippe.longepe@linux.intel.com>, srinivas.pandruvada@linux.intel.com
-Cc: linux-pm@vger.kernel.org, Stephane Gasparini <stephane.gasparini@linux.intel.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: SF Markus Elfring <elfring@users.sourceforge.net>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
 
-On Tuesday, November 03, 2015 10:27:19 AM Philippe Longepe wrote:
-> Aperf and Mperf counter are not enough to determine the Target P-state
-> because they measure performance only when the targeted processor is
-> in the C0 state (active state).
-> Because of that, we were computing the average P-state during the last
-> period which can be very different from the average frequency
-> (or percentage of performance).
+On Friday, November 06, 2015 07:12:28 AM Viresh Kumar wrote:
+> On 05-11-15, 21:15, SF Markus Elfring wrote:
+> > From: Markus Elfring <elfring@users.sourceforge.net>
+> > Date: Thu, 5 Nov 2015 21:10:29 +0100
+> > 
+> > The kfree() function tests whether its argument is NULL and then
+> > returns immediately. Thus the test around the call is not needed.
+> > 
+> > This issue was detected by using the Coccinelle software.
+> > 
+> > Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+> > ---
+> >  drivers/cpufreq/cppc_cpufreq.c | 3 +--
+> >  1 file changed, 1 insertion(+), 2 deletions(-)
 > 
-> As defined in the SDM (section 14.2), the PercentPerformance is defined by:
-> 
-> PercentPerformance = PercentBusy * (delta_aperf / delta_mperf);
-> 
-> The PercentBusy (or load) can be estimated as the ratio of the mperf
-> counter running at a constant frequency only during active periods (C0)
-> and the time stamp counter running at the same frequency but also
-> during idle.
-> 
-> So, PercentBusy = 100 * (delta_mperf / delta_tsc)
-> 
-> and, PercentPerformance = 100 * (delta_mperf / delta_tsc) *
-> 				(delta_aperf / delta_mperf)
-> That can be simplified with:
-> PercentPerformance = 100 * (delta_aperf / delta_tsc)
-> 
-> Signed-off-by: Philippe Longepe <philippe.longepe@linux.intel.com>
-> Signed-off-by: Stephane Gasparini <stephane.gasparini@linux.intel.com>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Srinivas, I need your ACK here and for the [2/2].
+Applied, thanks!
 
-Thanks,
 Rafael
 
