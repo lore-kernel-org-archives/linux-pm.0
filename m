@@ -1,185 +1,64 @@
-From: Caesar Wang <caesar.upstream@gmail.com>
-Subject: Re: [PATCH v2 5/9] thermal: rockchip: Add the flag for adc value
- increment or decrement
-Date: Sat, 07 Nov 2015 23:38:47 +0800
-Message-ID: <563E1B07.4060108@gmail.com>
-References: <1446700685-18017-1-git-send-email-wxt@rock-chips.com> <1446700685-18017-6-git-send-email-wxt@rock-chips.com> <20151106191126.GC8202@localhost.localdomain>
+From: Caesar Wang <caesar.upstream-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v2 0/9] Better compatible for the rockchip thermal and
+ support RK3368 SoCs
+Date: Sat, 07 Nov 2015 23:47:45 +0800
+Message-ID: <563E1D21.8030502@gmail.com>
+References: <1446700685-18017-1-git-send-email-wxt@rock-chips.com>
+ <20151106184739.GA8202@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f46.google.com ([209.85.220.46]:33564 "EHLO
-	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753608AbbKGPjO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 7 Nov 2015 10:39:14 -0500
-In-Reply-To: <20151106191126.GC8202@localhost.localdomain>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <20151106184739.GA8202-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Jiri Kosina <trivial-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Olof Johansson <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Caesar Wang <wxt@rock-chips.com>, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
 
-Hello Eduardo,
-
-=E5=9C=A8 2015=E5=B9=B411=E6=9C=8807=E6=97=A5 03:11, Eduardo Valentin =E5=
-=86=99=E9=81=93:
-> On Thu, Nov 05, 2015 at 01:18:01PM +0800, Caesar Wang wrote:
->> The conversion table has the adc value and temperature.
->> In fact, the adc value only has the increment or decrement mode in
->> conversion table.
->>
->> Moment, we can add the flag to be better support the *code_to_temp*
->> for differenr SoCs.
->>
->> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
->> ---
->>
->> Changes in v2: None
->> Changes in v1: None
->>
->>   drivers/thermal/rockchip_thermal.c | 64 ++++++++++++++++++++++++++=
-++++--------
->>   1 file changed, 51 insertions(+), 13 deletions(-)
->>
->> diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/ro=
-ckchip_thermal.c
->> index e828f18..9df027f 100644
->> --- a/drivers/thermal/rockchip_thermal.c
->> +++ b/drivers/thermal/rockchip_thermal.c
->> @@ -53,6 +53,16 @@ enum sensor_id {
->>   };
->>  =20
->>   /**
->> +* The conversion table has the adc value and temperature.
->> +* ADC_DECREMENT is the adc value decremnet.(e.g. v2_code_table)
->> +* ADC_INCREMNET is the adc value incremnet.(e.g. v3_code_table)
->> +*/
->> +enum adc_flag {
->> +	ADC_DECREMENT =3D 0,
->> +	ADC_INCREMENT,
->> +};
->> +
->> +/**
->>    * The max sensors is two in rockchip SoCs.
->>    * Two sensors: CPU and GPU sensor.
->>    */
->> @@ -66,6 +76,9 @@ struct chip_tsadc_table {
->>  =20
->>   	/* that analogic mask data */
->>   	unsigned long data_mask;
->> +
->> +	/* adc value is increment or decrement */
->> +	unsigned int flag;
->
-> Maybe bool? And rename to something more meaningful?
-
-Sure, that should be a bool type.
-I guess the rename in sort_flag......(maybe will have a better name)
-
-
->
-> Or do you plan to have more conditions to test in your flag?
-
-Moment, the flag (increment or decrement) can support all the rockchip=20
-series SoCs have thermal function.
-
->>   };
->>  =20
->>   struct rockchip_tsadc_chip {
->> @@ -223,19 +236,43 @@ static int rk_tsadcv2_code_to_temp(struct chip=
-_tsadc_table table, u32 code,
->>  =20
->>   	WARN_ON(table.length < 2);
->>  =20
->> -	code &=3D table.data_mask;
->> -	if (code < table.id[high].code)
->> +	switch (table.flag) {
->> +	case ADC_DECREMENT:
->> +		code &=3D table.data_mask;
->> +		if (code < table.id[high].code)
->>   		return -EAGAIN;		/* Incorrect reading */
-> Add an indentation.
-
-Thanks, will be fixed in next patch.
-
-
->>  =20
->> -	while (low <=3D high) {
->> -		if (code >=3D table.id[mid].code &&
->> -		    code < table.id[mid - 1].code)
->> -			break;
->> -		else if (code < table.id[mid].code)
->> -			low =3D mid + 1;
->> -		else
->> -			high =3D mid - 1;
->> -		mid =3D (low + high) / 2;
->> +		while (low <=3D high) {
->> +			if (code >=3D table.id[mid].code &&
->> +			    code < table.id[mid - 1].code)
->> +				break;
->> +			else if (code < table.id[mid].code)
->> +				low =3D mid + 1;
->> +			else
->> +				high =3D mid - 1;
->> +
->> +			mid =3D (low + high) / 2;
->> +		}
->> +		break;
->> +	case ADC_INCREMENT:
->> +		code &=3D table.data_mask;
->> +		if (code < table.id[low].code)
->> +		return -EAGAIN;		/* Incorrect reading */
->> +
-> add an indentation.
-
-Ditto.
-
-Thanks,
-Caesar
->
->> +		while (low <=3D high) {
->> +			if (code >=3D table.id[mid - 1].code &&
->> +			    code < table.id[mid].code)
->> +				break;
->> +			else if (code > table.id[mid].code)
->> +				low =3D mid + 1;
->> +			else
->> +				high =3D mid - 1;
->> +
->> +			mid =3D (low + high) / 2;
->> +		}
->> +		break;
->> +	default:
->> +		pr_err("Invalid the table conversion\n");
->>   	}
->>  =20
->>   	/*
->> @@ -245,8 +282,8 @@ static int rk_tsadcv2_code_to_temp(struct chip_t=
-sadc_table table, u32 code,
->>   	 * to produce less granular result.
->>   	 */
->>   	num =3D table.id[mid].temp - v2_code_table[mid - 1].temp;
->> -	num *=3D table.id[mid - 1].code - code;
->> -	denom =3D table.id[mid - 1].code - table.id[mid].code;
->> +	num *=3D abs(table.id[mid - 1].code - code);
->> +	denom =3D abs(table.id[mid - 1].code - table.id[mid].code);
->>   	*temp =3D table.id[mid - 1].temp + (num / denom);
->>  =20
->>   	return 0;
->> @@ -367,6 +404,7 @@ static const struct rockchip_tsadc_chip rk3288_t=
-sadc_data =3D {
->>   		.id =3D v2_code_table,
->>   		.length =3D ARRAY_SIZE(v2_code_table),
->>   		.data_mask =3D TSADCV2_DATA_MASK,
->> +		.flag =3D ADC_DECREMENT,
->>   	},
->>   };
->>  =20
->> --=20
->> 1.9.1
->>
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-
+SGkgRWR1YXJkbywKCuWcqCAyMDE15bm0MTHmnIgwN+aXpSAwMjo0NywgRWR1YXJkbyBWYWxlbnRp
+biDlhpnpgZM6Cj4gQ2Flc2FyLAo+Cj4gT24gVGh1LCBOb3YgMDUsIDIwMTUgYXQgMDE6MTc6NTZQ
+TSArMDgwMCwgQ2Flc2FyIFdhbmcgd3JvdGU6Cj4+IFRoaXMgc2VyaWVzIHBhdGNocyBhcmUgd29y
+a2luZyBmb3IgUkszMzY4IG9uIFJvY2tjaGlwIHBsYXRmb3JtLgo+Pgo+IEdvb2QgdG8gc2VlIHRo
+ZSBwZXJzZXZlcmFuY2UhIDotKQoKSSB3aWxsIHNlbmQgdGggcGF0Y2ggWzQtNl0gIG5leHQgdmVy
+c2lvbiBhbmQgYW5vdGhlciBwYWN0aChmaXggdGhlIGxvbmcgCnRlbXAtPmludCB0ZW1wKSBvbiB0
+b21vcnJvdy4KTmVlZCB0aGUgdmVyaWZ5IGl0IG9uIG15IGJvYXJkIGZpcnN0bHkuOi1QCgoKPgo+
+PiBASGVpa28sCj4+ICAgICAgVGhlIFBBVENIIFs1LzZdIGlzIHdvcmtpbmcgYmFzZWQgb24gYmln
+L2xpdHRlbCBjbHVzdGVyIGNwdWZyZXEKPj4gICAgICBhZGRlZC4gQW55d2F5LCB0aGUgUEFUQ0gg
+WzUvNl0gYWxzbyB3b3JrIGZvciBuZXh0IGtlcm5lbC4KPj4KPj4gQEVkdWFyZG8sCj4+IFRoaXMg
+cGF0Y2hzZXQgYXJlIGJhc2VkIG9uIGxpbnVzIG1hc3RlciBicmFuY2guCj4+IE5vdGU6IE5lZWQg
+YWRkIHRoZSBmb2xsb3dpbmcgdGhlcm1hbCBwYXRjaHMgZm9yIHRoZXJtYWwgZHJpdmVyIGJlZm9y
+ZSBhcHBseQo+PiB0aGlzIHNlcmllcyBwYXRjaHMuCj4+Cj4+IDEpIHRoZXJtYWw6IHJvY2tjaGlw
+OiBmaXggaGFuZGxpbmcgb2YgaW52YWxpZCByZWFkaW5ncwo+PiAoaHR0cHM6Ly9wYXRjaHdvcmsu
+a2VybmVsLm9yZy9wYXRjaC82OTczMTAxLykKPj4KPj4gMikgdGhlcm1hbDogcm9ja2hpcDogZml4
+IHNldHRpbmcgdGhlcm1hbCBzaHV0ZG93biBwb2xhcml0eQo+PiAoaHR0cHM6Ly9wYXRjaHdvcmsu
+a2VybmVsLm9yZy9wYXRjaC82OTczMTMxLykKPj4KPj4gMykgZHQtYmluZGluZ3M6IHJvY2tjaGlw
+LXRoZXJtYWw6IEFkZCB0aGUgcGluY3RybCBzdGF0ZXMgaW4gdGhpcyBkb2N1bWVudAo+PiAoaHR0
+cHM6Ly9wYXRjaHdvcmsua2VybmVsLm9yZy9wYXRjaC83NDcyMDIxLykKPj4KPj4gNCkgdGhlcm1h
+bDogcm9ja2NoaXA6IHN1cHBvcnQgdGhlIHNsZWVwIHBpbmN0cmwgc3RhdGUgdG8gYXZvaWQgZ2xp
+dGNoZXMgaW4gczJyCj4+IChodHRwczovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzc0NzIw
+NTEvKQo+Pgo+PiBJJ20gZ2xhZCB0aGVzZSBwYXRjaHMgaGF2ZSBtZXJnZWQgaW4gdGhlcm1hbC1z
+b2MgZ2l0IHRyZWUgd2hpY2ggY2FuIGJlIGZvdW5kIGF0Cj4+IGdpdDovL2dpdC5rZXJuZWwub3Jn
+L3B1Yi9zY20vbGludXgva2VybmVsL2dpdC9ldmFsZW50aS9saW51eC1zb2MtdGhlcm1hbC5naXQK
+PiBZZWFoLCBhcG9sb2dpemUgdGhlIGRlbGF5IG9uIGdpdmluZyB5b3UgYSBmZWVkYmFjayBvbiB5
+b3VyIGNvZGUuIEFzIEkKPiBtZW50aW9uZWQgYmVmb3JlLCBJIGhhZCBhIGNvdXBsZSBvZiBvdGhl
+ciB0aGluZ3MgaW4gcGFzdCB3ZWVrcyB0aGF0Cj4gY29uc3VtZWQgbXkgdGltZS4KCkkgc2VlLCB0
+aGF0IGhhdmUgYmVlbiBhIHZlcnkgcmVzcG9uc2UgZnJvbSB5b3UuClRoYW5rIHlvdSB0YWtpbmcg
+eW91ciB0aW1lIHRvIHJldmlldyB0aGlzIHNlcmllcyBwYXRjaHMuOi0pCgoKPiBBbnl3YXlzLCB0
+aGlzIHNwZWNpZmljIHBhdGNoIHNlcmllcyBsb29rcyB3YXkgYmV0dGVyIG5vdyB0aGF0IHlvdSBo
+YXZlCj4gc3BsaXQgaXQgZnVydGhlci4gSSB3aWxsIGhhdmUgYSBiZXR0ZXIgbG9vayBvbiBpdCBh
+Z2FpbiBhbmQgbGV0IHlvdQo+IGtub3cgd2hlbiBpdCB3aWxsIGxhbmQuCgpNYW55IHRoYW5rIGFn
+YWluLgoKPiBCUiwKPgo+IEVkdWFyZG8gVmFsZW50aW4KPgo+Cj4gX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX18KPiBsaW51eC1hcm0ta2VybmVsIG1haWxpbmcg
+bGlzdAo+IGxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwo+IGh0dHA6Ly9saXN0
+cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtYXJtLWtlcm5lbAoKCl9fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4LXJvY2tjaGlw
+IG1haWxpbmcgbGlzdApMaW51eC1yb2NrY2hpcEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9s
+aXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcm9ja2NoaXAK
