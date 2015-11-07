@@ -1,186 +1,141 @@
-From: Caesar Wang <caesar.upstream@gmail.com>
-Subject: Re: [PATCH v2 6/9] thermal: rockchip: Support the RK3368 SoCs in
- thermal drivers
-Date: Sat, 07 Nov 2015 22:25:36 +0800
-Message-ID: <563E09E0.8070105@gmail.com>
-References: <1446700685-18017-1-git-send-email-wxt@rock-chips.com>	<1446700685-18017-7-git-send-email-wxt@rock-chips.com> <CAHp75Vd+UnqOigOV9aDrpdczFD2R+gm1iFhUe-C6vc5U-x3e1g@mail.gmail.com>
+From: Caesar Wang <caesar.upstream-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v2 4/9] thermal: rockchip: improve the conversion function
+Date: Sat, 07 Nov 2015 22:41:58 +0800
+Message-ID: <563E0DB6.3010704@gmail.com>
+References: <1446700685-18017-1-git-send-email-wxt@rock-chips.com>
+ <1446700685-18017-5-git-send-email-wxt@rock-chips.com>
+ <20151106190006.GB8202@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f42.google.com ([209.85.220.42]:35226 "EHLO
-	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753056AbbKGOZx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 7 Nov 2015 09:25:53 -0500
-In-Reply-To: <CAHp75Vd+UnqOigOV9aDrpdczFD2R+gm1iFhUe-C6vc5U-x3e1g@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <20151106190006.GB8202-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc: Caesar Wang <wxt@rock-chips.com>, Heiko Stuebner <heiko@sntech.de>, Eduardo Valentin <edubezval@gmail.com>, linux-rockchip@lists.infradead.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>
 
-
-
-=E5=9C=A8 2015=E5=B9=B411=E6=9C=8807=E6=97=A5 03:39, Andy Shevchenko =E5=
-=86=99=E9=81=93:
-> On Thu, Nov 5, 2015 at 7:18 AM, Caesar Wang <wxt@rock-chips.com> wrot=
-e:
->> The RK3368 SoCs support to 2 channel TS-ADC, the temperature criteri=
-a
->> of each channel can be configurable.
->>
->> The system has two Temperature Sensors, channel 0 is for CPU,
->> and channel 1 is for GPU.
->>
->> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
->> ---
->>
->> Changes in v2:
->> - remove some unused, completed on other patchs.
->>
->> Changes in v1: None
->>
->>   drivers/thermal/rockchip_thermal.c | 72 ++++++++++++++++++++++++++=
-++++++++++++
->>   1 file changed, 72 insertions(+)
->>
->> diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/ro=
-ckchip_thermal.c
->> index 9df027f..47a8873 100644
->> --- a/drivers/thermal/rockchip_thermal.c
->> +++ b/drivers/thermal/rockchip_thermal.c
->> @@ -1,6 +1,9 @@
->>   /*
->>    * Copyright (c) 2014, Fuzhou Rockchip Electronics Co., Ltd
->>    *
->> + * Copyright (c) 2015, Fuzhou Rockchip Electronics Co., Ltd
->> + * Caesar Wang <wxt@rock-chips.com>
->> + *
->>    * This program is free software; you can redistribute it and/or m=
-odify it
->>    * under the terms and conditions of the GNU General Public Licens=
-e,
->>    * version 2, as published by the Free Software Foundation.
->> @@ -152,6 +155,8 @@ struct rockchip_thermal_data {
->>   #define TSADCV2_INT_PD_CLEAR_MASK              ~BIT(8)
->>
->>   #define TSADCV2_DATA_MASK                      0xfff
->> +#define TSADCV3_DATA_MASK                      0x3ff
->> +
->>   #define TSADCV2_HIGHT_INT_DEBOUNCE_COUNT       4
->>   #define TSADCV2_HIGHT_TSHUT_DEBOUNCE_COUNT     4
->>   #define TSADCV2_AUTO_PERIOD_TIME               250 /* msec */
->> @@ -200,6 +205,45 @@ static const struct tsadc_table v2_code_table[]=
- =3D {
->>          {3421, 125000},
->>   };
->>
->> +static const struct tsadc_table v3_code_table[] =3D {
->> +       {0, -40000},
->> +       {106, -40000},
->> +       {108, -35000},
->> +       {110, -30000},
->> +       {112, -25000},
->> +       {114, -20000},
->> +       {116, -15000},
->> +       {118, -10000},
->> +       {120, -5000},
->> +       {122, 0},
->> +       {124, 5000},
->> +       {126, 10000},
->> +       {128, 15000},
->> +       {130, 20000},
->> +       {132, 25000},
->> +       {134, 30000},
->> +       {136, 35000},
->> +       {138, 40000},
->> +       {140, 45000},
->> +       {142, 50000},
->> +       {144, 55000},
->> +       {146, 60000},
->> +       {148, 65000},
->> +       {150, 70000},
->> +       {152, 75000},
->> +       {154, 80000},
->> +       {156, 85000},
->> +       {158, 90000},
->> +       {160, 95000},
->> +       {162, 100000},
->> +       {163, 105000},
->> +       {165, 110000},
->> +       {167, 115000},
->> +       {169, 120000},
->> +       {171, 125000},
->> +       {TSADCV3_DATA_MASK, 125000},
-> Why not function which returns one value based on the other?
->
-> x < 106:   -40000
-> 161 >=3D x >=3D 106: -40000 + 5000 * (x - 106) / 2
-> 171 >=3D x >=3D 162: 100000 + 5000 * (x - 162)
-> x > 171 =3D 125000
-
-1) Every SoCs conversion table come from the TRM.
-2) Barrier for using with other SoCs
-
-the rockchip-thermal driver  is compatible for series SoCs for rockchip=
-=2E
-
->> +};
->> +
->>   static u32 rk_tsadcv2_temp_to_code(struct chip_tsadc_table table,
->>                                     long temp)
->>   {
->> @@ -408,11 +452,39 @@ static const struct rockchip_tsadc_chip rk3288=
-_tsadc_data =3D {
->>          },
->>   };
->>
->> +static const struct rockchip_tsadc_chip rk3368_tsadc_data =3D {
->> +       .chn_id[SENSOR_CPU] =3D 0, /* cpu sensor is channel 0 */
->> +       .chn_id[SENSOR_GPU] =3D 1, /* gpu sensor is channel 1 */
->> +       .chn_num =3D 2, /* two channels for tsadc */
->> +
->> +       .tshut_mode =3D TSHUT_MODE_GPIO, /* default TSHUT via GPIO g=
-ive PMIC */
->> +       .tshut_polarity =3D TSHUT_LOW_ACTIVE, /* default TSHUT LOW A=
-CTIVE */
->> +       .tshut_temp =3D 95000,
->> +
->> +       .initialize =3D rk_tsadcv2_initialize,
->> +       .irq_ack =3D rk_tsadcv2_irq_ack,
->> +       .control =3D rk_tsadcv2_control,
->> +       .get_temp =3D rk_tsadcv2_get_temp,
->> +       .set_tshut_temp =3D rk_tsadcv2_tshut_temp,
->> +       .set_tshut_mode =3D rk_tsadcv2_tshut_mode,
->> +
->> +       .table =3D {
->> +               .id =3D v3_code_table,
->> +               .length =3D ARRAY_SIZE(v3_code_table),
->> +               .data_mask =3D TSADCV3_DATA_MASK,
->> +               .flag =3D ADC_DECREMENT,
->> +       },
->> +};
->> +
->>   static const struct of_device_id of_rockchip_thermal_match[] =3D {
->>          {
->>                  .compatible =3D "rockchip,rk3288-tsadc",
->>                  .data =3D (void *)&rk3288_tsadc_data,
->>          },
->> +       {
->> +               .compatible =3D "rockchip,rk3368-tsadc",
->> +               .data =3D (void *)&rk3368_tsadc_data,
->> +       },
->>          { /* end */ },
->>   };
->>   MODULE_DEVICE_TABLE(of, of_rockchip_thermal_match);
->> --
->> 1.9.1
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kern=
-el" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->
->
+SGVsbG8gRWR1YXJkbywKCuWcqCAyMDE15bm0MTHmnIgwN+aXpSAwMzowMCwgRWR1YXJkbyBWYWxl
+bnRpbiDlhpnpgZM6Cj4gSGVsbG8gQ2Flc2FyLAo+Cj4gT24gVGh1LCBOb3YgMDUsIDIwMTUgYXQg
+MDE6MTg6MDBQTSArMDgwMCwgQ2Flc2FyIFdhbmcgd3JvdGU6Cj4+IFdlIHNob3VsZCBtYWtlIHRo
+ZSBjb252ZXJzaW9uIHRhYmxlIGluIGFzIGEgcGFyYW1ldGVyIHNpbmNlIHRoZSBkaWZmZXJlbnQK
+Pj4gU29DcyBoYXZlIHRoZSBkaWZmZXJlbnQgY29udmVyc2lvbmlvbiB0YWJsZS4KPj4KPj4gU2ln
+bmVkLW9mZi1ieTogQ2Flc2FyIFdhbmcgPHd4dEByb2NrLWNoaXBzLmNvbT4KPj4gLS0tCj4+Cj4+
+IENoYW5nZXMgaW4gdjI6Cj4+IC0gbWFrZSB0aGUgY29udmVyc2lvbiB0YWJsZSBpbiBhcyBhIHBh
+cmFtZXRlciBib3RoIGNvZGVfdG9fdGVtcAo+PiAgICBhbmQgdGVtcF90b19jb2RlIGZ1bmN0aW9u
+Lgo+Cj4gTm93IGl0IGxvb2tzIGNsZWFuZXIuIFRoYW5rcy4KPgo+IFRoZSBjb21tZW50cyBiZWxv
+dyBhcmUgcHJvYmFibHkgbm90IGRpcmVjdGx5IG9uIHRoaXMgY2hhbmdlLiBZb3UgbWF5Cj4gd2Fu
+dCB0byBhZGQgYSBkaWZmZXJlbnQgcGF0Y2ggdGhhdCB0YWtlcyBjYXJlIG9mIHRoZSBzdWdnZXN0
+aW9ucyB0aGF0Cj4gZm9sbG93cy4KCk9rYXksIEkgd2lsbCBzZW5kIGEgYW5vdGhlciBwYXRjaCB0
+byBmaXggaXQuClRoYW5rcyB5b3VyIHJldmlld2luZyB0aGlzIHBhdGNoLgoKCgoKPj4gU2VyaWVz
+LWNoYW5nZXM6IDEKPj4gLSBBcyBEbWl0cnkgY29tbWVudCwgbWFrZSB0aGUgY29udmVyc2lvbiB0
+YWJsZSBpbiBhcyBhIHBhcmFtZXRlci4KPj4KPj4gQ2hhbmdlcyBpbiB2MTogTm9uZQo+Pgo+PiAg
+IGRyaXZlcnMvdGhlcm1hbC9yb2NrY2hpcF90aGVybWFsLmMgfCA4MiArKysrKysrKysrKysrKysr
+KysrKysrKysrLS0tLS0tLS0tLS0tLQo+PiAgIDEgZmlsZSBjaGFuZ2VkLCA1NSBpbnNlcnRpb25z
+KCspLCAyNyBkZWxldGlvbnMoLSkKPj4KPj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGhlcm1hbC9y
+b2NrY2hpcF90aGVybWFsLmMgYi9kcml2ZXJzL3RoZXJtYWwvcm9ja2NoaXBfdGhlcm1hbC5jCj4+
+IGluZGV4IGJkZjcwNjMuLmU4MjhmMTggMTAwNjQ0Cj4+IC0tLSBhL2RyaXZlcnMvdGhlcm1hbC9y
+b2NrY2hpcF90aGVybWFsLmMKPj4gKysrIGIvZHJpdmVycy90aGVybWFsL3JvY2tjaGlwX3RoZXJt
+YWwuYwo+PiBAQCAtNTgsNiArNTgsMTYgQEAgZW51bSBzZW5zb3JfaWQgewo+PiAgICAqLwo+PiAg
+ICNkZWZpbmUgU09DX01BWF9TRU5TT1JTCTIKPj4gICAKPj4gK3N0cnVjdCBjaGlwX3RzYWRjX3Rh
+YmxlIHsKPj4gKwljb25zdCBzdHJ1Y3QgdHNhZGNfdGFibGUgKmlkOwo+PiArCj4+ICsJLyogdGhl
+IGFycmF5IHRhYmxlIHNpemUqLwo+PiArCXVuc2lnbmVkIGludCBsZW5ndGg7Cj4+ICsKPj4gKwkv
+KiB0aGF0IGFuYWxvZ2ljIG1hc2sgZGF0YSAqLwo+PiArCXVuc2lnbmVkIGxvbmcgZGF0YV9tYXNr
+Owo+IEFyZSB5b3Ugc3VyZSB0aGlzIG5lZWQgdG8gYmUgbG9uZz8KClNlZW0uLi4uLndlIHNob3Vs
+ZCBtYXJrIHRoZSAndW5zaWduZWQgaW50ICBvciB1MzInLgoKCj4+ICt9Owo+PiArCj4+ICAgc3Ry
+dWN0IHJvY2tjaGlwX3RzYWRjX2NoaXAgewo+PiAgIAkvKiBUaGUgc2Vuc29yIGlkIG9mIGNoaXAg
+Y29ycmVzcG9uZCB0byB0aGUgQURDIGNoYW5uZWwgKi8KPj4gICAJaW50IGNobl9pZFtTT0NfTUFY
+X1NFTlNPUlNdOwo+PiBAQCAtNzQsOSArODQsMTQgQEAgc3RydWN0IHJvY2tjaGlwX3RzYWRjX2No
+aXAgewo+PiAgIAl2b2lkICgqY29udHJvbCkodm9pZCBfX2lvbWVtICpyZWcsIGJvb2wgb24pOwo+
+PiAgIAo+PiAgIAkvKiBQZXItc2Vuc29yIG1ldGhvZHMgKi8KPj4gLQlpbnQgKCpnZXRfdGVtcCko
+aW50IGNobiwgdm9pZCBfX2lvbWVtICpyZWcsIGludCAqdGVtcCk7Cj4+IC0Jdm9pZCAoKnNldF90
+c2h1dF90ZW1wKShpbnQgY2huLCB2b2lkIF9faW9tZW0gKnJlZywgbG9uZyB0ZW1wKTsKPj4gKwlp
+bnQgKCpnZXRfdGVtcCkoc3RydWN0IGNoaXBfdHNhZGNfdGFibGUgdGFibGUsCj4+ICsJCQlpbnQg
+Y2huLCB2b2lkIF9faW9tZW0gKnJlZywgaW50ICp0ZW1wKTsKPj4gKwl2b2lkICgqc2V0X3RzaHV0
+X3RlbXApKHN0cnVjdCBjaGlwX3RzYWRjX3RhYmxlIHRhYmxlLAo+PiArCQkJICAgICAgIGludCBj
+aG4sIHZvaWQgX19pb21lbSAqcmVnLCBsb25nIHRlbXApOwo+IFRlbXBlcmF0dXJlIGlzIGN1cnJl
+bnRseSByZXByZXNlbnRlZCBhcyBpbnQgbm90IGxvbmcgaW4gdGhlIHRoZXJtYWwKPiBmcmFtZXdv
+cmsuIFlvdSBtYXkgd2FudCB0byBzZW5kIGEgZGlmZmVyZW50IHBhdGNoIHRoYXQgbm9ybWFsaXpl
+IHRoZQo+IHRlbXBlcmF0dXJlIHJlcHJlc2VudGF0aW9uIGluIHlvdXIgZHJpdmVyIChsb25nIC0+
+IGludCkuCgpPa2F5Cgo+PiAgIAl2b2lkICgqc2V0X3RzaHV0X21vZGUpKGludCBjaG4sIHZvaWQg
+X19pb21lbSAqcmVnLCBlbnVtIHRzaHV0X21vZGUgbSk7Cj4+ICsKPj4gKwkvKiBQZXItdGFibGUg
+bWV0aG9kcyAqLwo+PiArCXN0cnVjdCBjaGlwX3RzYWRjX3RhYmxlIHRhYmxlOwo+PiAgIH07Cj4+
+ICAgCj4+ICAgc3RydWN0IHJvY2tjaGlwX3RoZXJtYWxfc2Vuc29yIHsKPj4gQEAgLTE3MiwyMSAr
+MTg3LDIyIEBAIHN0YXRpYyBjb25zdCBzdHJ1Y3QgdHNhZGNfdGFibGUgdjJfY29kZV90YWJsZVtd
+ID0gewo+PiAgIAl7MzQyMSwgMTI1MDAwfSwKPj4gICB9Owo+PiAgIAo+PiAtc3RhdGljIHUzMiBy
+a190c2FkY3YyX3RlbXBfdG9fY29kZShsb25nIHRlbXApCj4+ICtzdGF0aWMgdTMyIHJrX3RzYWRj
+djJfdGVtcF90b19jb2RlKHN0cnVjdCBjaGlwX3RzYWRjX3RhYmxlIHRhYmxlLAo+PiArCQkJCSAg
+IGxvbmcgdGVtcCkKPiBTYW1lIGNvbW1lbnQgaGVyZS4KCk9rYXkKPj4gICB7Cj4+ICAgCWludCBo
+aWdoLCBsb3csIG1pZDsKPj4gICAKPj4gICAJbG93ID0gMDsKPj4gLQloaWdoID0gQVJSQVlfU0la
+RSh2Ml9jb2RlX3RhYmxlKSAtIDE7Cj4+ICsJaGlnaCA9IHRhYmxlLmxlbmd0aCAtIDE7Cj4+ICAg
+CW1pZCA9IChoaWdoICsgbG93KSAvIDI7Cj4+ICAgCj4+IC0JaWYgKHRlbXAgPCB2Ml9jb2RlX3Rh
+YmxlW2xvd10udGVtcCB8fCB0ZW1wID4gdjJfY29kZV90YWJsZVtoaWdoXS50ZW1wKQo+PiArCWlm
+ICh0ZW1wIDwgdGFibGUuaWRbbG93XS50ZW1wIHx8IHRlbXAgPiB0YWJsZS5pZFtoaWdoXS50ZW1w
+KQo+PiAgIAkJcmV0dXJuIDA7Cj4+ICAgCj4+ICAgCXdoaWxlIChsb3cgPD0gaGlnaCkgewo+PiAt
+CQlpZiAodGVtcCA9PSB2Ml9jb2RlX3RhYmxlW21pZF0udGVtcCkKPj4gLQkJCXJldHVybiB2Ml9j
+b2RlX3RhYmxlW21pZF0uY29kZTsKPj4gLQkJZWxzZSBpZiAodGVtcCA8IHYyX2NvZGVfdGFibGVb
+bWlkXS50ZW1wKQo+PiArCQlpZiAodGVtcCA9PSB0YWJsZS5pZFttaWRdLnRlbXApCj4+ICsJCQly
+ZXR1cm4gdGFibGUuaWRbbWlkXS5jb2RlOwo+PiArCQllbHNlIGlmICh0ZW1wIDwgdGFibGUuaWRb
+bWlkXS50ZW1wKQo+PiAgIAkJCWhpZ2ggPSBtaWQgLSAxOwo+PiAgIAkJZWxzZQo+PiAgIAkJCWxv
+dyA9IG1pZCArIDE7Cj4+IEBAIC0xOTYsMjUgKzIxMiwyNiBAQCBzdGF0aWMgdTMyIHJrX3RzYWRj
+djJfdGVtcF90b19jb2RlKGxvbmcgdGVtcCkKPj4gICAJcmV0dXJuIDA7Cj4+ICAgfQo+PiAgIAo+
+PiAtc3RhdGljIGludCBya190c2FkY3YyX2NvZGVfdG9fdGVtcCh1MzIgY29kZSwgaW50ICp0ZW1w
+KQo+PiArc3RhdGljIGludCBya190c2FkY3YyX2NvZGVfdG9fdGVtcChzdHJ1Y3QgY2hpcF90c2Fk
+Y190YWJsZSB0YWJsZSwgdTMyIGNvZGUsCj4+ICsJCQkJICAgaW50ICp0ZW1wKQo+IEhlcmUgeW91
+IGFyZSBvayBhbHJlYWR5Lgo+Cj4+ICAgewo+PiAgIAl1bnNpZ25lZCBpbnQgbG93ID0gMTsKPj4g
+LQl1bnNpZ25lZCBpbnQgaGlnaCA9IEFSUkFZX1NJWkUodjJfY29kZV90YWJsZSkgLSAxOwo+PiAr
+CXVuc2lnbmVkIGludCBoaWdoID0gdGFibGUubGVuZ3RoIC0gMTsKPj4gICAJdW5zaWduZWQgaW50
+IG1pZCA9IChsb3cgKyBoaWdoKSAvIDI7Cj4+ICAgCXVuc2lnbmVkIGludCBudW07Cj4+ICAgCXVu
+c2lnbmVkIGxvbmcgZGVub207Cj4+ICAgCj4+IC0JQlVJTERfQlVHX09OKEFSUkFZX1NJWkUodjJf
+Y29kZV90YWJsZSkgPCAyKTsKPj4gKwlXQVJOX09OKHRhYmxlLmxlbmd0aCA8IDIpOwo+PiAgIAo+
+PiAtCWNvZGUgJj0gVFNBRENWMl9EQVRBX01BU0s7Cj4+IC0JaWYgKGNvZGUgPCB2Ml9jb2RlX3Rh
+YmxlW2hpZ2hdLmNvZGUpCj4+ICsJY29kZSAmPSB0YWJsZS5kYXRhX21hc2s7Cj4+ICsJaWYgKGNv
+ZGUgPCB0YWJsZS5pZFtoaWdoXS5jb2RlKQo+PiAgIAkJcmV0dXJuIC1FQUdBSU47CQkvKiBJbmNv
+cnJlY3QgcmVhZGluZyAqLwo+PiAgIAo+PiAgIAl3aGlsZSAobG93IDw9IGhpZ2gpIHsKPj4gLQkJ
+aWYgKGNvZGUgPj0gdjJfY29kZV90YWJsZVttaWRdLmNvZGUgJiYKPj4gLQkJICAgIGNvZGUgPCB2
+Ml9jb2RlX3RhYmxlW21pZCAtIDFdLmNvZGUpCj4+ICsJCWlmIChjb2RlID49IHRhYmxlLmlkW21p
+ZF0uY29kZSAmJgo+PiArCQkgICAgY29kZSA8IHRhYmxlLmlkW21pZCAtIDFdLmNvZGUpCj4+ICAg
+CQkJYnJlYWs7Cj4+IC0JCWVsc2UgaWYgKGNvZGUgPCB2Ml9jb2RlX3RhYmxlW21pZF0uY29kZSkK
+Pj4gKwkJZWxzZSBpZiAoY29kZSA8IHRhYmxlLmlkW21pZF0uY29kZSkKPj4gICAJCQlsb3cgPSBt
+aWQgKyAxOwo+PiAgIAkJZWxzZQo+PiAgIAkJCWhpZ2ggPSBtaWQgLSAxOwo+PiBAQCAtMjI3LDEw
+ICsyNDQsMTAgQEAgc3RhdGljIGludCBya190c2FkY3YyX2NvZGVfdG9fdGVtcCh1MzIgY29kZSwg
+aW50ICp0ZW1wKQo+PiAgIAkgKiB0ZW1wZXJhdHVyZSBiZXR3ZWVuIDIgdGFibGUgZW50cmllcyBp
+cyBsaW5lYXIgYW5kIGludGVycG9sYXRlCj4+ICAgCSAqIHRvIHByb2R1Y2UgbGVzcyBncmFudWxh
+ciByZXN1bHQuCj4+ICAgCSAqLwo+PiAtCW51bSA9IHYyX2NvZGVfdGFibGVbbWlkXS50ZW1wIC0g
+djJfY29kZV90YWJsZVttaWQgLSAxXS50ZW1wOwo+PiAtCW51bSAqPSB2Ml9jb2RlX3RhYmxlW21p
+ZCAtIDFdLmNvZGUgLSBjb2RlOwo+PiAtCWRlbm9tID0gdjJfY29kZV90YWJsZVttaWQgLSAxXS5j
+b2RlIC0gdjJfY29kZV90YWJsZVttaWRdLmNvZGU7Cj4+IC0JKnRlbXAgPSB2Ml9jb2RlX3RhYmxl
+W21pZCAtIDFdLnRlbXAgKyAobnVtIC8gZGVub20pOwo+PiArCW51bSA9IHRhYmxlLmlkW21pZF0u
+dGVtcCAtIHYyX2NvZGVfdGFibGVbbWlkIC0gMV0udGVtcDsKPj4gKwludW0gKj0gdGFibGUuaWRb
+bWlkIC0gMV0uY29kZSAtIGNvZGU7Cj4+ICsJZGVub20gPSB0YWJsZS5pZFttaWQgLSAxXS5jb2Rl
+IC0gdGFibGUuaWRbbWlkXS5jb2RlOwo+PiArCSp0ZW1wID0gdGFibGUuaWRbbWlkIC0gMV0udGVt
+cCArIChudW0gLyBkZW5vbSk7Cj4+ICAgCj4+ICAgCXJldHVybiAwOwo+PiAgIH0KPj4gQEAgLTI5
+MCwyMCArMzA3LDIyIEBAIHN0YXRpYyB2b2lkIHJrX3RzYWRjdjJfY29udHJvbCh2b2lkIF9faW9t
+ZW0gKnJlZ3MsIGJvb2wgZW5hYmxlKQo+PiAgIAl3cml0ZWxfcmVsYXhlZCh2YWwsIHJlZ3MgKyBU
+U0FEQ1YyX0FVVE9fQ09OKTsKPj4gICB9Cj4+ICAgCj4+IC1zdGF0aWMgaW50IHJrX3RzYWRjdjJf
+Z2V0X3RlbXAoaW50IGNobiwgdm9pZCBfX2lvbWVtICpyZWdzLCBpbnQgKnRlbXApCj4+ICtzdGF0
+aWMgaW50IHJrX3RzYWRjdjJfZ2V0X3RlbXAoc3RydWN0IGNoaXBfdHNhZGNfdGFibGUgdGFibGUs
+Cj4+ICsJCQkgICAgICAgaW50IGNobiwgdm9pZCBfX2lvbWVtICpyZWdzLCBpbnQgKnRlbXApCj4+
+ICAgewo+PiAgIAl1MzIgdmFsOwo+PiAgIAo+PiAgIAl2YWwgPSByZWFkbF9yZWxheGVkKHJlZ3Mg
+KyBUU0FEQ1YyX0RBVEEoY2huKSk7Cj4+ICAgCj4+IC0JcmV0dXJuIHJrX3RzYWRjdjJfY29kZV90
+b190ZW1wKHZhbCwgdGVtcCk7Cj4+ICsJcmV0dXJuIHJrX3RzYWRjdjJfY29kZV90b190ZW1wKHRh
+YmxlLCB2YWwsIHRlbXApOwo+PiAgIH0KPj4gICAKPj4gLXN0YXRpYyB2b2lkIHJrX3RzYWRjdjJf
+dHNodXRfdGVtcChpbnQgY2huLCB2b2lkIF9faW9tZW0gKnJlZ3MsIGxvbmcgdGVtcCkKPj4gK3N0
+YXRpYyB2b2lkIHJrX3RzYWRjdjJfdHNodXRfdGVtcChzdHJ1Y3QgY2hpcF90c2FkY190YWJsZSB0
+YWJsZSwKPj4gKwkJCQkgIGludCBjaG4sIHZvaWQgX19pb21lbSAqcmVncywgbG9uZyB0ZW1wKQo+
+IEhlcmUgbmVlZHMgZml4aW5nLgoKT2theS4KCj4KPiBCUiwKPgo+IEVkdWFyZG8gVmFsZW50aW4K
+Pgo+IF9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCj4gTGlu
+dXgtcm9ja2NoaXAgbWFpbGluZyBsaXN0Cj4gTGludXgtcm9ja2NoaXBAbGlzdHMuaW5mcmFkZWFk
+Lm9yZwo+IGh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgt
+cm9ja2NoaXAKCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+XwpMaW51eC1yb2NrY2hpcCBtYWlsaW5nIGxpc3QKTGludXgtcm9ja2NoaXBAbGlzdHMuaW5mcmFk
+ZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4
+LXJvY2tjaGlwCg==
