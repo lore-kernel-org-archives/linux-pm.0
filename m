@@ -1,145 +1,61 @@
-From: Caesar Wang <wxt@rock-chips.com>
-Subject: [PATCH v3 07/10] thermal: rockchip: Support the RK3368 SoCs in thermal drivers
-Date: Sun,  8 Nov 2015 17:26:05 +0800
-Message-ID: <1446974768-25795-8-git-send-email-wxt@rock-chips.com>
-References: <1446974768-25795-1-git-send-email-wxt@rock-chips.com>
+From: Caesar Wang <caesar.upstream@gmail.com>
+Subject: Re: [PATCH v2 0/9] Better compatible for the rockchip thermal and
+ support RK3368 SoCs
+Date: Sun, 8 Nov 2015 17:39:13 +0800
+Message-ID: <563F1841.9060400@gmail.com>
+References: <1446700685-18017-1-git-send-email-wxt@rock-chips.com>
+ <1509087.903MXQEqfv@phil> <563E1E7A.6010503@gmail.com>
+ <4207814.5j47hyHv2C@phil>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1446974768-25795-1-git-send-email-wxt@rock-chips.com>
+In-Reply-To: <4207814.5j47hyHv2C@phil>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Heiko Stuebner <heiko@sntech.de>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-rockchip@lists.infradead.org, Caesar Wang <wxt@rock-chips.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
+To: Heiko Stuebner <heiko@sntech.de>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Jiri Kosina <trivial@kernel.org>, Pawel Moll <pawel.moll@arm.com>, linux-pm@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, Rob Herring <robh+dt@kernel.org>, Kumar Gala <galak@codeaurora.org>, Olof Johansson <olof@lixom.net>, Zhang Rui <rui.zhang@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-arm-kernel@lists.infradead.org, Caesar Wang <wxt@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
 
-The RK3368 SoCs support to 2 channel TS-ADC, the temperature criteria
-of each channel can be configurable.
+Hi Heiko,
 
-The system has two Temperature Sensors, channel 0 is for CPU,
-and channel 1 is for GPU.
+=E5=9C=A8 2015=E5=B9=B411=E6=9C=8808=E6=97=A5 07:13, Heiko Stuebner =E5=
+=86=99=E9=81=93:
+> Hi Caesar,
+>
+> Am Samstag, 7. November 2015, 23:53:30 schrieb Caesar Wang:
+>> =E5=9C=A8 2015=E5=B9=B411=E6=9C=8807=E6=97=A5 03:03, Heiko Stuebner =
+=E5=86=99=E9=81=93:[]
+>>
+>> [....]
+>>
+>>> I call dibs on the devicetree patches :-) .
+>>>
+>>> Code and dt parts are very much separate, so I'd like to take the d=
+t parts
+>>> though my tree and arm-soc to keep further dts changes together.
+>>> Of course only once you are ok with the code parts :-)
+>>>
+>>> Devicetree parts themselfs look ok to me.
+>> Many thanks, I guess that I don't need send the dts patch again.;-)
+>> the Code is still a bit change for thermal driver.
+> I think you should still send the dts patches with next revisions. I =
+can
+> only take the patches, once Eduardo is satisfied with the code change=
+s
+> that include the new binding, and while I hope that this will be in v=
+3, it
+> will be hard if we get to v5 or so, to grep through the older revisio=
+ns,
+> trying to find the dts changes :-).
 
-Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+Okay, I send the v3 patchs.
 
----
 
-Changes in v3:
-- :%s/flag/sort_flag
-- fix the rk3368 sort_flag as increment mode.
-Series-changes: 2
-- remove some unused, completed on other patchs.
+>
+> Heiko
+>
 
-Changes in v2: None
-Changes in v1: None
-
- drivers/thermal/rockchip_thermal.c | 72 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 72 insertions(+)
-
-diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index 067ecdd..df28049 100644
---- a/drivers/thermal/rockchip_thermal.c
-+++ b/drivers/thermal/rockchip_thermal.c
-@@ -1,6 +1,9 @@
- /*
-  * Copyright (c) 2014, Fuzhou Rockchip Electronics Co., Ltd
-  *
-+ * Copyright (c) 2015, Fuzhou Rockchip Electronics Co., Ltd
-+ * Caesar Wang <wxt@rock-chips.com>
-+ *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-  * version 2, as published by the Free Software Foundation.
-@@ -152,6 +155,8 @@ struct rockchip_thermal_data {
- #define TSADCV2_INT_PD_CLEAR_MASK		~BIT(8)
- 
- #define TSADCV2_DATA_MASK			0xfff
-+#define TSADCV3_DATA_MASK			0x3ff
-+
- #define TSADCV2_HIGHT_INT_DEBOUNCE_COUNT	4
- #define TSADCV2_HIGHT_TSHUT_DEBOUNCE_COUNT	4
- #define TSADCV2_AUTO_PERIOD_TIME		250 /* msec */
-@@ -200,6 +205,45 @@ static const struct tsadc_table v2_code_table[] = {
- 	{3421, 125000},
- };
- 
-+static const struct tsadc_table v3_code_table[] = {
-+	{0, -40000},
-+	{106, -40000},
-+	{108, -35000},
-+	{110, -30000},
-+	{112, -25000},
-+	{114, -20000},
-+	{116, -15000},
-+	{118, -10000},
-+	{120, -5000},
-+	{122, 0},
-+	{124, 5000},
-+	{126, 10000},
-+	{128, 15000},
-+	{130, 20000},
-+	{132, 25000},
-+	{134, 30000},
-+	{136, 35000},
-+	{138, 40000},
-+	{140, 45000},
-+	{142, 50000},
-+	{144, 55000},
-+	{146, 60000},
-+	{148, 65000},
-+	{150, 70000},
-+	{152, 75000},
-+	{154, 80000},
-+	{156, 85000},
-+	{158, 90000},
-+	{160, 95000},
-+	{162, 100000},
-+	{163, 105000},
-+	{165, 110000},
-+	{167, 115000},
-+	{169, 120000},
-+	{171, 125000},
-+	{TSADCV3_DATA_MASK, 125000},
-+};
-+
- static u32 rk_tsadcv2_temp_to_code(struct chip_tsadc_table table,
- 				   int temp)
- {
-@@ -408,11 +452,39 @@ static const struct rockchip_tsadc_chip rk3288_tsadc_data = {
- 	},
- };
- 
-+static const struct rockchip_tsadc_chip rk3368_tsadc_data = {
-+	.chn_id[SENSOR_CPU] = 0, /* cpu sensor is channel 0 */
-+	.chn_id[SENSOR_GPU] = 1, /* gpu sensor is channel 1 */
-+	.chn_num = 2, /* two channels for tsadc */
-+
-+	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
-+	.tshut_polarity = TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
-+	.tshut_temp = 95000,
-+
-+	.initialize = rk_tsadcv2_initialize,
-+	.irq_ack = rk_tsadcv2_irq_ack,
-+	.control = rk_tsadcv2_control,
-+	.get_temp = rk_tsadcv2_get_temp,
-+	.set_tshut_temp = rk_tsadcv2_tshut_temp,
-+	.set_tshut_mode = rk_tsadcv2_tshut_mode,
-+
-+	.table = {
-+		.id = v3_code_table,
-+		.length = ARRAY_SIZE(v3_code_table),
-+		.data_mask = TSADCV3_DATA_MASK,
-+		.sort_flag = ADC_INCREMENT,
-+	},
-+};
-+
- static const struct of_device_id of_rockchip_thermal_match[] = {
- 	{
- 		.compatible = "rockchip,rk3288-tsadc",
- 		.data = (void *)&rk3288_tsadc_data,
- 	},
-+	{
-+		.compatible = "rockchip,rk3368-tsadc",
-+		.data = (void *)&rk3368_tsadc_data,
-+	},
- 	{ /* end */ },
- };
- MODULE_DEVICE_TABLE(of, of_rockchip_thermal_match);
--- 
-1.9.1
+--=20
+Thanks,
+Caesar
