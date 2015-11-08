@@ -1,78 +1,147 @@
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: [PATCH] intel_idle: Don't use on Lenovo Ideapad S10-3t
-Date: Sun, 8 Nov 2015 17:20:16 -0200
-Message-ID: <20151108192016.GA7063@khazad-dum.debian.net>
-References: <1446499360-31984-1-git-send-email-ville.syrjala@linux.intel.com>
- <1A7043D5F58CCB44A599DFD55ED4C9484693D228@fmsmsx115.amr.corp.intel.com>
- <20151104162100.GT4437@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20151104162100.GT4437@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>
-Cc: "Brown, Len" <len.brown@intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+From: Matt Ranostay <mranostay-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: [PATCH v4 1/1] iio: pulsedlight-lidar-lite: add runtime PM
+Date: Sun,  8 Nov 2015 12:26:58 -0800
+Message-ID: <1447014418-27849-2-git-send-email-mranostay@gmail.com>
+References: <1447014418-27849-1-git-send-email-mranostay@gmail.com>
+Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1447014418-27849-1-git-send-email-mranostay-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+Cc: linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, Matt Ranostay <mranostay-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 04 Nov 2015, Ville Syrj=E4l=E4 wrote:
-> On Tue, Nov 03, 2015 at 03:04:21AM +0000, Brown, Len wrote:
-> > > Lenovo Ideapad S10-3t hangs coming out of S3 with intel_idle.
-> > > The two workaround that seem to help are "intel_idle.max_cstate=3D=
-0"
-> > > or "nohz=3Doff highres=3Doff".
-> > >=20
-> > > At a first glance quirk_tigerpoint_bm_sts() seemed promising, but
-> > > even when moved to early_resume it didn't do anything.
-> > >=20
-> > > I have no idea what's wrong here, so let's just disable intel_idl=
-e
-> > > for these machines using a DMI match.
-> >=20
-> > Ville,=20
-> >=20
-> > It is great that several workarounds have been discovered.
-> >=20
-> > But it would be better to get a good idea of the root-cause
-> > before permanently ignoring the problem via a new
-> > black-list in the upstream kernel.
-> >=20
-> > Is it possible for you to file a bug at bugzilla.kernel.org
-> > against Product: power-management; component: intel_idle?
->=20
-> https://bugzilla.kernel.org/show_bug.cgi?id=3D107151
+Add runtime PM support for the lidar-lite module to enable low power
+mode when last device requested reading is over a second.
 
-This is a shot in the dark, but...
+Signed-off-by: Matt Ranostay <mranostay-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+---
+ drivers/iio/proximity/pulsedlight-lidar-lite-v2.c | 54 ++++++++++++++++++++++-
+ 1 file changed, 53 insertions(+), 1 deletion(-)
 
-The Atom N450 public errata sheet is nightmare fuel, and Ville's Ideapa=
-d is
-running that hellish processor on outdated microcode.
-
-http://www.intel.com/content/dam/www/public/us/en/documents/specificati=
-on-updates/atom-processor-n400-specification-update.pdf
-
-Ville, you might want to insure you're at the latest BIOS for the S10-3=
-t:
-http://support.lenovo.com/us/en/products/laptops-and-netbooks/ideapad-s=
--series-netbooks/ideapad-s10-3t/downloads/DS010786
-
-(don't bother with changelogs to make any sort of update-or-not decisio=
-ns:
-Lenovo changelogs are known to often be incomplete).
-
-I also strongly recommend that you should install your distro's microco=
-de
-update package: your microcode should have been revision 0x107 or highe=
-r, it
-has been in the public microcode distribution since Q2/Q3-2010...
-
-Now, as I said, this is all a shot in the dark, and it might not help a=
-t all
-with the hangs.  But it looks like something worth trying...
-
---=20
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+diff --git a/drivers/iio/proximity/pulsedlight-lidar-lite-v2.c b/drivers/iio/proximity/pulsedlight-lidar-lite-v2.c
+index 961f9f99..1a5481f 100644
+--- a/drivers/iio/proximity/pulsedlight-lidar-lite-v2.c
++++ b/drivers/iio/proximity/pulsedlight-lidar-lite-v2.c
+@@ -13,7 +13,7 @@
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  * GNU General Public License for more details.
+  *
+- * TODO: runtime pm, interrupt mode, and signal strength reporting
++ * TODO: interrupt mode, and signal strength reporting
+  */
+ 
+ #include <linux/err.h>
+@@ -21,6 +21,7 @@
+ #include <linux/i2c.h>
+ #include <linux/delay.h>
+ #include <linux/module.h>
++#include <linux/pm_runtime.h>
+ #include <linux/iio/iio.h>
+ #include <linux/iio/sysfs.h>
+ #include <linux/iio/buffer.h>
+@@ -37,6 +38,7 @@
+ 
+ #define LIDAR_REG_DATA_HBYTE	0x0f
+ #define LIDAR_REG_DATA_LBYTE	0x10
++#define LIDAR_REG_PWR_CONTROL	0x65
+ 
+ #define LIDAR_DRV_NAME "lidar"
+ 
+@@ -90,6 +92,12 @@ static inline int lidar_write_control(struct lidar_data *data, int val)
+ 	return i2c_smbus_write_byte_data(data->client, LIDAR_REG_CONTROL, val);
+ }
+ 
++static inline int lidar_write_power(struct lidar_data *data, int val)
++{
++	return i2c_smbus_write_byte_data(data->client,
++					 LIDAR_REG_PWR_CONTROL, val);
++}
++
+ static int lidar_read_measurement(struct lidar_data *data, u16 *reg)
+ {
+ 	int ret;
+@@ -116,6 +124,8 @@ static int lidar_get_measurement(struct lidar_data *data, u16 *reg)
+ 	int tries = 10;
+ 	int ret;
+ 
++	pm_runtime_get_sync(&client->dev);
++
+ 	/* start sample */
+ 	ret = lidar_write_control(data, LIDAR_REG_CONTROL_ACQUIRE);
+ 	if (ret < 0) {
+@@ -144,6 +154,8 @@ static int lidar_get_measurement(struct lidar_data *data, u16 *reg)
+ 		}
+ 		ret = -EIO;
+ 	}
++	pm_runtime_mark_last_busy(&client->dev);
++	pm_runtime_put_autosuspend(&client->dev);
+ 
+ 	return ret;
+ }
+@@ -243,6 +255,15 @@ static int lidar_probe(struct i2c_client *client,
+ 	if (ret)
+ 		goto error_unreg_buffer;
+ 
++	pm_runtime_set_autosuspend_delay(&client->dev, 1000);
++	pm_runtime_use_autosuspend(&client->dev);
++
++	pm_runtime_set_active(&client->dev);
++	pm_runtime_enable(&client->dev);
++
++	pm_runtime_mark_last_busy(&client->dev);
++	pm_runtime_idle(&client->dev);
++
+ 	return 0;
+ 
+ error_unreg_buffer:
+@@ -258,6 +279,9 @@ static int lidar_remove(struct i2c_client *client)
+ 	iio_device_unregister(indio_dev);
+ 	iio_triggered_buffer_cleanup(indio_dev);
+ 
++	pm_runtime_disable(&client->dev);
++	pm_runtime_set_suspended(&client->dev);
++
+ 	return 0;
+ }
+ 
+@@ -273,10 +297,38 @@ static const struct of_device_id lidar_dt_ids[] = {
+ };
+ MODULE_DEVICE_TABLE(of, lidar_dt_ids);
+ 
++#ifdef CONFIG_PM
++static int lidar_pm_runtime_suspend(struct device *dev)
++{
++	struct iio_dev *indio_dev = i2c_get_clientdata(to_i2c_client(dev));
++	struct lidar_data *data = iio_priv(indio_dev);
++
++	return lidar_write_power(data, 0x0f);
++}
++
++static int lidar_pm_runtime_resume(struct device *dev)
++{
++	struct iio_dev *indio_dev = i2c_get_clientdata(to_i2c_client(dev));
++	struct lidar_data *data = iio_priv(indio_dev);
++	int ret = lidar_write_power(data, 0);
++
++	/* regulator and FPGA needs settling time */
++	usleep_range(15000, 20000);
++
++	return ret;
++}
++#endif
++
++static const struct dev_pm_ops lidar_pm_ops = {
++	SET_RUNTIME_PM_OPS(lidar_pm_runtime_suspend,
++			   lidar_pm_runtime_resume, NULL)
++};
++
+ static struct i2c_driver lidar_driver = {
+ 	.driver = {
+ 		.name	= LIDAR_DRV_NAME,
+ 		.of_match_table	= of_match_ptr(lidar_dt_ids),
++		.pm	= &lidar_pm_ops,
+ 	},
+ 	.probe		= lidar_probe,
+ 	.remove		= lidar_remove,
+-- 
+1.9.1
