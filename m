@@ -1,83 +1,72 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 1/3] dt-bindings: thermal: Add binding document for
- Mediatek thermal controller
-Date: Mon, 9 Nov 2015 09:59:59 -0600
-Message-ID: <20151109155959.GA23855@rob-hp-laptop>
-References: <1447064013-13026-1-git-send-email-s.hauer@pengutronix.de>
- <1447064013-13026-2-git-send-email-s.hauer@pengutronix.de>
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: Re: [PATCH] power: bq27xxx_battery: Revert "Remove unneeded
+ dependency in Kconfig"
+Date: Mon, 9 Nov 2015 10:56:13 -0600
+Message-ID: <5640D02D.6040601@ti.com>
+References: <3819790.E2ziFviWmU@wuerfel>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1447064013-13026-2-git-send-email-s.hauer@pengutronix.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Matthias Brugger <matthias.bgg@gmail.com>, devicetree@vger.kernel.org, mark.rutland@arm.com
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <3819790.E2ziFviWmU@wuerfel>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
+Cc: Pali Rohar <pali.rohar@gmail.com>, Xiong Zhou <jencce.kernel@gmail.com>, linux-i2c@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Nov 09, 2015 at 11:13:31AM +0100, Sascha Hauer wrote:
-> This adds the device tree binding documentation for the mediatek thermal
-> controller found on Mediatek MT8173 and other SoCs.
-> 
-> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-> Reviewed-by: Daniel Kurtz <djkurtz@chromium.org>
-
-Acked-by: Rob Herring <robh@kernel.org>
-
+On 11/09/2015 07:50 AM, Arnd Bergmann wrote:
+> The dependency was clearly needed, without it it is possible to
+> build the core i2c driver as a loadable module and the bq27xxx
+> driver built-in, which results in link errors:
+>
+> drivers/built-in.o: In function `bq27xxx_battery_i2c_read':
+> binder.c:(.text+0x360bf0): undefined reference to `i2c_transfer'
+> binder.c:(.text+0x360c10): undefined reference to `i2c_transfer'
+> drivers/built-in.o: In function `bq27xxx_battery_init':
+> binder.c:(.init.text+0xe668): undefined reference to `i2c_register_driver'
+> drivers/built-in.o: In function `bq27xxx_battery_exit':
+> binder.c:(.exit.text+0x1a0c): undefined reference to `i2c_del_driver'
+>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> Fixes: 6bd03ce3c12a ("power: bq27xxx_battery: Remove unneeded dependency in Kconfig")
 > ---
->  .../bindings/thermal/mediatek-thermal.txt          | 43 ++++++++++++++++++++++
->  1 file changed, 43 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-> new file mode 100644
-> index 0000000..81f9a51
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-> @@ -0,0 +1,43 @@
-> +* Mediatek Thermal
-> +
-> +This describes the device tree binding for the Mediatek thermal controller
-> +which measures the on-SoC temperatures. This device does not have its own ADC,
-> +instead it directly controls the AUXADC via AHB bus accesses. For this reason
-> +this device needs phandles to the AUXADC. Also it controls a mux in the
-> +apmixedsys register space via AHB bus accesses, so a phandle to the APMIXEDSYS
-> +is also needed.
-> +
-> +Required properties:
-> +- compatible: "mediatek,mt8173-thermal"
-> +- reg: Address range of the thermal controller
-> +- interrupts: IRQ for the thermal controller
-> +- clocks, clock-names: Clocks needed for the thermal controller. required
-> +                       clocks are:
-> +		       "therm":	 Main clock needed for register access
-> +		       "auxadc": The AUXADC clock
-> +- resets: Reference to the reset controller controlling the thermal controller.
-> +- mediatek,auxadc: A phandle to the AUXADC which the thermal controller uses
-> +- mediatek,apmixedsys: A phandle to the APMIXEDSYS controller.
-> +- #thermal-sensor-cells : Should be 0. See ./thermal.txt for a description.
-> +
-> +Optional properties:
-> +- nvmem-cells: A phandle to the calibration data provided by a nvmem device. If
-> +               unspecified default values shall be used.
-> +- nvmem-cell-names: Should be "calibration-data"
-> +
-> +Example:
-> +
-> +	thermal: thermal@1100b000 {
-> +		#thermal-sensor-cells = <1>;
-> +		compatible = "mediatek,mt8173-thermal";
-> +		reg = <0 0x1100b000 0 0x1000>;
-> +		interrupts = <0 70 IRQ_TYPE_LEVEL_LOW>;
-> +		clocks = <&pericfg CLK_PERI_THERM>, <&pericfg CLK_PERI_AUXADC>;
-> +		clock-names = "therm", "auxadc";
-> +		resets = <&pericfg MT8173_PERI_THERM_SW_RST>;
-> +		reset-names = "therm";
-> +		mediatek,auxadc = <&auxadc>;
-> +		mediatek,apmixedsys = <&apmixedsys>;
-> +		nvmem-cells = <&thermal_calibration_data>;
-> +		nvmem-cell-names = "calibration-data";
-> +	};
-> -- 
-> 2.6.1
-> 
+> The bug was originally found and fixed by Xiong Zhou, but Andrew Davis
+> broke it again by reverting the fix.
+>
+> I found it today on my ARM randconfig builds.
+>
+> diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
+> index 237d7aa73e8c..9f53fb74ae6f 100644
+> --- a/drivers/power/Kconfig
+> +++ b/drivers/power/Kconfig
+> @@ -159,6 +159,7 @@ config BATTERY_SBS
+>
+>   config BATTERY_BQ27XXX
+>   	tristate "BQ27xxx battery driver"
+> +	depends on I2C || I2C=n
+>   	help
+>   	  Say Y here to enable support for batteries with BQ27xxx (I2C/HDQ) chips.
+>
+>
+
+Nothing enabled by BATTERY_BQ27XXX depends on I2C, this workaround is not
+correct as it prevents BATTERY_BQ27XXX from being built-in when I2C is a
+module, there is no reason for this limitation.
+
+The undefined references are caused by BATTERY_BQ27XXX being built-in AND
+its I2C functionality being enabled (BATTERY_BQ27XXX_I2C) while I2C is a
+module. Reorganizing this driver is being discussed anyway, but in the
+meantime a more correct fix would be along the lines of:
+
+diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
+index 6de6ec2..d1d32f9 100644
+--- a/drivers/power/Kconfig
++++ b/drivers/power/Kconfig
+@@ -167,6 +167,7 @@ config BATTERY_BQ27XXX_I2C
+         bool "BQ27xxx I2C support"
+         depends on BATTERY_BQ27XXX
+         depends on I2C
++       depends on !(I2C=m && BATTERY_BQ27XXX=y)
+         default y
+         help
+           Say Y here to enable support for batteries with BQ27xxx (I2C) chips.
