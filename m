@@ -1,101 +1,57 @@
-From: Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH v3 1/3] devicetree: bindings: Add optional dynamic-power-coefficient property
-Date: Mon, 09 Nov 2015 18:39:35 +0000
-Message-ID: <9hhvb9b6mqg.fsf@e105922-lin.cambridge.arm.com>
-References: <1447090163-13700-1-git-send-email-punit.agrawal@arm.com>
-	<1447090163-13700-2-git-send-email-punit.agrawal@arm.com>
-	<20151109174542.GA19016@rob-hp-laptop>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
+ SpeedStep enabled
+Date: Mon, 09 Nov 2015 19:05:29 +0000
+Message-ID: <bug-103351-137361-aUl5UDtGld@https.bugzilla.kernel.org/>
+References: <bug-103351-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20151109174542.GA19016@rob-hp-laptop> (Rob Herring's message of
-	"Mon, 9 Nov 2015 11:45:42 -0600")
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:58717 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751353AbbKITFj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 9 Nov 2015 14:05:39 -0500
+Received: from mail.kernel.org (localhost [127.0.0.1])
+	by mail.kernel.org (Postfix) with ESMTP id D3FBA205FF
+	for <linux-pm@vger.kernel.org>; Mon,  9 Nov 2015 19:05:37 +0000 (UTC)
+Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
+	by mail.kernel.org (Postfix) with ESMTP id 9C17D20802
+	for <linux-pm@vger.kernel.org>; Mon,  9 Nov 2015 19:05:32 +0000 (UTC)
+In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> writes:
+https://bugzilla.kernel.org/show_bug.cgi?id=103351
 
-> On Mon, Nov 09, 2015 at 05:29:21PM +0000, Punit Agrawal wrote:
->> The dynamic power consumption of a device is proportional to the
->> square of voltage (V) and the clock frequency (f). It can be expressed as
->> 
->> Pdyn = dynamic-power-coefficient * V^2 * f.
->> 
->> The coefficient represents the running time dynamic power consumption in
->> units of mw/MHz/uVolt^2 and can be used in the above formula to
->> calculate the dynamic power in mW.
->
-> I have no issue with the binding, but I wonder if a single value is 
-> really sufficient to model this. Don't you also need a static
-> component?
+--- Comment #99 from Henrique de Moraes Holschuh <hmh@hmh.eng.br> ---
+Intel has issued a new public microcode update datafile, which should address
+the broadwell MCE errata.
 
-In general, power consumption does consist of the static and dynamic
-power. Here we are only modelling the dynamic component.
+I will update and upload the Debian "intel-microcode" package in Debian
+unstable tonight, Canonical will either use that for Ubuntu, or update
+directly.  Eventually, these updates will be backported to our stable branches.
 
-For CPUs, we found that a single-coefficient model using frequency and
-voltages gives a reasonable estimation of dynamic power consumption. For
-thermal management, because of using closed loop control providing the
-dynamic consumption is good enough as long as static power for your
-platform is not significant.
+The new Intel microcode update package modifies these microcodes (compared to
+the update package from 2015-01-21):
 
-On the other hand, there isn't a generally applicable model for static
-power - it has complex relationships with temperature, voltages, etc
-which make it hard to express as a simple formula. For platforms where
-static power is significant, providing it via platform code is the only
-option for now.
++ sig 0x000306a9, pf mask 0x12, 2015-02-26, rev 0x001c, size 12288
++ sig 0x000306c3, pf mask 0x32, 2015-08-13, rev 0x001e, size 21504
++ sig 0x000306d4, pf mask 0xc0, 2015-09-11, rev 0x0022, size 16384
++ sig 0x000306f2, pf mask 0x6f, 2015-08-10, rev 0x0036, size 30720
++ sig 0x000306f4, pf mask 0x80, 2015-07-17, rev 0x0009, size 14336
++ sig 0x00040651, pf mask 0x72, 2015-08-13, rev 0x001d, size 20480
++ sig 0x00040671, pf mask 0x22, 2015-08-03, rev 0x0013, size 11264
 
-This patchset enables platforms where dynamic power works well to setup
-their power model for thermal management via device tree.
+If anyone has any sort of problems with these microcode updates, it would be
+really helpful if you report it to the distro's bugtracker (or even here,
+although really, this is way off-topic for the kernel bugzilla :-p).
 
->
-> Rob
->
->> 
->> Signed-off-by: Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
->> Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
->> Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
->> ---
->>  Documentation/devicetree/bindings/arm/cpus.txt | 17 +++++++++++++++++
->>  1 file changed, 17 insertions(+)
->> 
->> diff --git a/Documentation/devicetree/bindings/arm/cpus.txt b/Documentation/devicetree/bindings/arm/cpus.txt
->> index 91e6e5c..c33362d 100644
->> --- a/Documentation/devicetree/bindings/arm/cpus.txt
->> +++ b/Documentation/devicetree/bindings/arm/cpus.txt
->> @@ -240,6 +240,23 @@ nodes to be present and contain the properties described below.
->>  		Definition: Specifies the syscon node controlling the cpu core
->>  			    power domains.
->>  
->> +	- dynamic-power-coefficient
->> +		Usage: optional
->> +		Value type: <prop-encoded-array>
->> +		Definition: A u32 value that represents the running time dynamic
->> +			    power coefficient in units of mW/MHz/uVolt^2. The
->> +			    coefficient can either be calculated from power
->> +			    measurements or derived by analysis.
->> +
->> +			    The dynamic power consumption of the CPU  is
->> +			    proportional to the square of the Voltage (V) and
->> +			    the clock frequency (f). The coefficient is used to
->> +			    calculate the dynamic power as below -
->> +
->> +			    Pdyn = dynamic-power-coefficient * V^2 * f
->> +
->> +			    where voltage is in uV, frequency is in MHz.
->> +
->>  Example 1 (dual-cluster big.LITTLE system 32-bit):
->>  
->>  	cpus {
->> -- 
->> 2.5.3
->> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe devicetree" in
-> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+BTW: it looks like Skylake users need to get up-to-date BIOSes from their
+vendors: they're still not covered by the public microcode update
+distribution...
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
