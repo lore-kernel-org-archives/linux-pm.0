@@ -1,184 +1,162 @@
 From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH v2 2/3] thermal: of: parse stacked thermal zones from
- device tree
-Date: Mon, 9 Nov 2015 14:52:51 +0000
-Message-ID: <20151109145250.GA3120@e104805>
+Subject: Re: [PATCH v2 1/3] thermal: Add support for hierarchical thermal
+ zones
+Date: Mon, 9 Nov 2015 15:20:35 +0000
+Message-ID: <20151109152034.GB3120@e104805>
 References: <1446658662-19582-1-git-send-email-javi.merino@arm.com>
- <1446658662-19582-3-git-send-email-javi.merino@arm.com>
- <20151104185633.GC12825@localhost.localdomain>
+ <1446658662-19582-2-git-send-email-javi.merino@arm.com>
+ <20151104185101.GB12825@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:50971 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:51110 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750788AbbKIOwy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 9 Nov 2015 09:52:54 -0500
+	id S1751302AbbKIPUi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 9 Nov 2015 10:20:38 -0500
 Content-Disposition: inline
-In-Reply-To: <20151104185633.GC12825@localhost.localdomain>
+In-Reply-To: <20151104185101.GB12825@localhost.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Eduardo Valentin <edubezval@gmail.com>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rui.zang@intel.com, Zhang Rui <rui.zhang@intel.com>
 
-On Wed, Nov 04, 2015 at 10:56:34AM -0800, Eduardo Valentin wrote:
-> On Wed, Nov 04, 2015 at 05:37:41PM +0000, Javi Merino wrote:
-> > Let device tree set thermal zones in the thermal-sensors list of
-> > phandles and set up the thermal zone hierarchy based on the information
-> > present there.
+On Wed, Nov 04, 2015 at 10:51:02AM -0800, Eduardo Valentin wrote:
+> Javi,
+> 
+> First of all, thanks for taking the lead on implementing this.
+> 
+> It follows comments.
+> 
+> On Wed, Nov 04, 2015 at 05:37:40PM +0000, Javi Merino wrote:
+> > Add the ability to stack thermal zones on top of each other, creating a
+> > hierarchy of thermal zones.
 > > 
 > > Cc: Zhang Rui <rui.zhang@intel.com>
 > > Cc: Eduardo Valentin <edubezval@gmail.com>
 > > Signed-off-by: Javi Merino <javi.merino@arm.com>
 > > ---
-> >  .../devicetree/bindings/thermal/thermal.txt        | 154 ++++++++++++++++++++-
-> >  drivers/thermal/of-thermal.c                       |  99 +++++++++++++
-> 
-> Please split this patch.
-
-Into documentation and code?  I prefer it when the documentation is
-updated with the code but I can split it if that's what you prefer.
-
-> >  2 files changed, 250 insertions(+), 3 deletions(-)
+> >  Documentation/thermal/sysfs-api.txt |  35 +++++++++
+> >  drivers/thermal/thermal_core.c      | 151 ++++++++++++++++++++++++++++++++++--
+> >  include/linux/thermal.h             |  14 ++++
+> >  3 files changed, 195 insertions(+), 5 deletions(-)
 > > 
-> > diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/Documentation/devicetree/bindings/thermal/thermal.txt
-> > index 41b817f7b670..52b7e9ae3b4d 100644
-> > --- a/Documentation/devicetree/bindings/thermal/thermal.txt
-> > +++ b/Documentation/devicetree/bindings/thermal/thermal.txt
-> > @@ -145,9 +145,12 @@ Required properties:
-> >    Size: one cell
+> > diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
+> > index 10f062ea6bc2..5650b7eaaf7e 100644
+> > --- a/Documentation/thermal/sysfs-api.txt
+> > +++ b/Documentation/thermal/sysfs-api.txt
+> > @@ -72,6 +72,41 @@ temperature) and throttle appropriate devices.
+> >      It deletes the corresponding entry form /sys/class/thermal folder and
+> >      unbind all the thermal cooling devices it uses.
 > >  
-> >  - thermal-sensors:	A list of thermal sensor phandles and sensor specifier
-> > -  Type: list of 	used while monitoring the thermal zone.
-> > -  phandles + sensor
-> > -  specifier
-> > +  Type: list of 	used while monitoring the thermal zone. The phandles
-> > +  phandles + sensor	can point to thermal sensors or other thermal zone
-> > +  specifier		nodes. If it points to other thermal zone
-> > +			nodes you should omit the sensor specifier
-> > +			and set #thermal-sensor-cells to 0 for the
-> > +			thermal zone.
+> > +
+> > +1.1.3 int thermal_zone_add_subtz(struct thermal_zone_device *tz,
+> > +                                 struct thermal_zone_device *subtz)
+> > +
+> > +    Add subtz to the list of slaves of tz.  When calculating the
+> > +    temperature of thermal zone tz, report the maximum of the slave
+> > +    thermal zones.  This lets you create a hierarchy of thermal zones.
+> > +    The hierarchy must be a Direct Acyclic Graph (DAG).  If a loop is
+> > +    detected, thermal_zone_get_temp() will return -EDEADLK to prevent
+> > +    the deadlock.  thermal_zone_add_subtz() does not affect subtz.
+> > +
+> > +    For example, if you have an SoC with a thermal sensor in each cpu
+> > +    of the two cpus you could have a thermal zone to monitor each
+> > +    sensor, let's call them cpu0_tz and cpu1_tz.  You could then have a
+> > +    a SoC thermal zone (soc_tz) without a get_temp() op which can be
+> > +    configured like this:
+> > +
+> > +    thermal_zone_add_subtz(soc_tz, cpu0_tz);
+> > +    thermal_zone_add_subtz(soc_tz, cpu1_tz);
+> > +
+> > +    Now soc_tz's temperature is the maximum of cpu0_tz and cpu1_tz.
+> > +    Furthermore, soc_tz could be combined with other thermal zones to
+> > +    create a "device" thermal zone.
+> > +
+> > +
+> > +1.1.4 int thermal_zone_del_subtz(struct thermal_zone_device *tz,
+> > +                                 struct thermal_zone_device *subtz)
+> > +
+> > +    Delete subtz from the slave thermal zones of tz.  This basically
+> > +    reverses what thermal_zone_add_subtz() does.  If tz still has
+> > +    other slave thermal zones, its temperature would be the maximum of
+> > +    the remaining slave thermal zones.  If tz no longer has slave
+> > +    thermal zones, thermal_zone_get_temp() will return -EINVAL.
+> > +
+> > +
+> >  1.2 thermal cooling device interface
+> >  1.2.1 struct thermal_cooling_device *thermal_cooling_device_register(char *name,
+> >  		void *devdata, struct thermal_cooling_device_ops *)
+> > diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> > index d9e525cc9c1c..a2ab482337f3 100644
+> > --- a/drivers/thermal/thermal_core.c
+> > +++ b/drivers/thermal/thermal_core.c
+> > @@ -61,6 +61,11 @@ static DEFINE_MUTEX(thermal_governor_lock);
 > >  
-> >  - trips:		A sub-node which is a container of only trip point nodes
-> >    Type: sub-node	required to describe the thermal zone.
-> > @@ -603,3 +606,148 @@ thermal-zones {
-> >  The above example is a mix of previous examples, a sensor IP with several internal
-> >  sensors used to monitor different zones, one of them is composed by several sensors and
-> >  with different cooling devices.
-> > +
-> > +(e) Board thermal with stacked thermal zones
-> > +
-> > +Instead of setting up one thermal zone combining multiple thermal
-> > +zones and multiple trip points for each cooling device, we can create
-> > +a hierarchy of thermal zones.
-> > +
-> > +#include <dt-bindings/thermal/thermal.h>
-> > +
-> > +&i2c1 {
-> > +	...
-> > +	/*
-> > +	 * An IC with several temperature sensor.
-> > +	 */
-> > +	adc_dummy: sensor@0x50 {
-> > +		...
-> > +		#thermal-sensor-cells = <1>; /* sensor internal ID */
-> > +	};
+> >  static struct thermal_governor *def_governor;
+> >  
+> > +struct thermal_zone_link {
+> > +	struct thermal_zone_device *slave;
+> > +	struct list_head node;
 > > +};
 > > +
-> > +thermal-zones {
+> >  static struct thermal_governor *__find_governor(const char *name)
+> >  {
+> >  	struct thermal_governor *pos;
+> > @@ -465,6 +470,42 @@ static void handle_thermal_trip(struct thermal_zone_device *tz, int trip)
+> >  }
+> >  
+> >  /**
+> > + * get_subtz_temp() - get the maximum temperature of all the sub thermal zones
+> > + * @tz:	thermal zone pointer
+> > + * @temp: pointer in which to store the result
+> > + *
+> > + * Go through all the thermal zones listed in @tz slave_tzs and
+> > + * calculate the maximum temperature of all of them.  The maximum
+> > + * temperature is stored in @temp.
+> > + *
+> > + * Return: 0 on success, -EINVAL if there are no slave thermal zones,
+> > + * -E* if thermal_zone_get_temp() fails for any of the slave thermal
+> > + * zones.
+> > + */
+> > +static int get_subtz_temp(struct thermal_zone_device *tz, int *temp)
+> > +{
+> > +	struct thermal_zone_link *link;
+> > +	int max_temp = INT_MIN;
 > > +
-> > +        cpu_thermal: cpu_thermal {
-> > +		polling-delay-passive = <1000>; /* milliseconds */
-> > +		polling-delay = <2500>; /* milliseconds */
+> > +	if (list_empty(&tz->slave_tzs))
+> > +		return -EINVAL;
 > > +
-> > +		sustainable-power = <2500>;
+> > +	list_for_each_entry(link, &tz->slave_tzs, node) {
+> > +		int this_temp, ret;
 > > +
-> > +		thermal-sensors = <&adc_dummy 0>
+> > +		ret = thermal_zone_get_temp(link->slave, &this_temp);
+> > +		if (ret)
+> > +			return ret;
 > > +
-> > +		trips {
-> > +			cpu_trip: cpu-trip {
-> > +				temperature = <60000>; /* millicelsius */
-> > +				hysteresis = <2000>; /* millicelsius */
-> > +				type = "passive";
-> > +			};
-> > +                };
-> > +
-> > +		cooling-maps {
-> > +			map0 {
-> > +				trip = <&cpu_trip>;
-> > +				cooling-device = <&cpu0 0 2>;
-> > +			};
-> > +                };
-> > +        };
-> > +
-> > +        gpu_thermal: gpu_thermal {
-> > +		polling-delay-passive = <1000>; /* milliseconds */
-> > +		polling-delay = <2500>; /* milliseconds */
-> > +
-> > +		sustainable-power = <2500>;
-> > +
-> > +		thermal-sensors = <&adc_dummy 2>
-> > +
-> > +		trips {
-> > +			gpu_trip: gpu-trip {
-> > +				temperature = <55000>; /* millicelsius */
-> > +				hysteresis = <2000>; /* millicelsius */
-> > +				type = "passive";
-> > +			}
-> > +                };
-> > +
-> > +		cooling-maps {
-> > +			map0 {
-> > +				trip = <&gpu_trip>;
-> > +				cooling-device = <&gpu0 0 2>;
-> > +			};
-> > +                };
-> > +        };
-> > +
-> > +        lcd_thermal: lcd_thermal {
-> > +		polling-delay-passive = <1000>; /* milliseconds */
-> > +		polling-delay = <2500>; /* milliseconds */
-> > +
-> > +		sustainable-power = <2500>;
-> > +
-> > +		thermal-sensors = <&adc_dummy 1>
-> > +
-> > +		trips {
-> > +			lcd_trip: lcp-trip {
-> > +				temperature = <53000>; /* millicelsius */
-> > +				hysteresis = <2000>; /* millicelsius */
-> > +				type = "passive";
-> > +			};
-> > +                };
-> > +
-> > +		cooling-maps {
-> > +			map0 {
-> > +				trip = <&lcd_trip>;
-> > +				cooling-device = <&lcd0 5 10>;
-> > +			};
-> > +                };
-> > +        };
-> > +
-> > +	board_thermal: board-thermal {
-> > +		polling-delay-passive = <1000>; /* milliseconds */
-> > +		polling-delay = <2500>; /* milliseconds */
-> > +
-> > +		thermal-sensors = <&cpu_thermal &gpu_thermal &lcd_thermal>
-> > +
+> > +		if (this_temp > max_temp)
+> > +			max_temp = this_temp;
 > 
-> (no, I have not grepped the device tree)
-> Was there any other occurrence of such construction ?
-> 
-> It just looks awkward that one property holds two types of data. Is DT
-> strongly typed?
->
-> I would say, following the DT pattern, one would expect to have the
-> binding to allow one thermal zone to be written inside another thermal
-> zone, no?
+> I think we need a better design here. I do not like the fact that we are
+> limited to max temp operation. Remember the LPC discussion? I believe
+> the agreement was to have a set of aggregation functions. max temp is
+> definetly one of them. Also the aggregation functions would be sysfs
+> configurable.
 
-That would not allow us to have a thermal zone be a child of multiple
-thermal zones.  For example, a thermal sensor could be half-way
-through a GPU and a core and you would want to use that sensor's
-thermal zone as input for both the GPU and the core thermal zones.
+I wasn't sure how to do this from device tree.  There's a coefficients
+property but it's not really usable as it's defined as:
+
+Z = c0 * x0 + c1 * x1 + ... + c(n-1) * x(n-1) + cn
+
+Where all the c are integers.  As the x are temperatures, the result
+can't be a temperature.  It could work if we said that we divide the
+result byt the sum of the coefficients, making it a weighted sum.
+something like:
+
+Z = (c0 * x0 + c1 * x1 + ... + c(n-1) * x(n-1)) / (c0 + c1 + ... + c(n-1)) + cn
+
+I guess we can skip the device tree specification for now and just let
+userspace configure it using sysfs.  I'll add "weighted sum" as an
+additional aggregation function for v3.
 
 Cheers,
 Javi
