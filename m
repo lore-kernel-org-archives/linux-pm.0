@@ -1,647 +1,184 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH 2/3] thermal: Add Mediatek thermal controller support
-Date: Mon, 9 Nov 2015 16:39:37 +0200
-Message-ID: <CAHp75VcSvoUt46tobRrWJ_etbLEasA1cyoJVnhjdzMegtGTugA@mail.gmail.com>
-References: <1447064013-13026-1-git-send-email-s.hauer@pengutronix.de>
-	<1447064013-13026-3-git-send-email-s.hauer@pengutronix.de>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: [PATCH v2 2/3] thermal: of: parse stacked thermal zones from
+ device tree
+Date: Mon, 9 Nov 2015 14:52:51 +0000
+Message-ID: <20151109145250.GA3120@e104805>
+References: <1446658662-19582-1-git-send-email-javi.merino@arm.com>
+ <1446658662-19582-3-git-send-email-javi.merino@arm.com>
+ <20151104185633.GC12825@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f177.google.com ([209.85.160.177]:35409 "EHLO
-	mail-yk0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751684AbbKIOji (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Nov 2015 09:39:38 -0500
-In-Reply-To: <1447064013-13026-3-git-send-email-s.hauer@pengutronix.de>
+Received: from foss.arm.com ([217.140.101.70]:50971 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750788AbbKIOwy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 9 Nov 2015 09:52:54 -0500
+Content-Disposition: inline
+In-Reply-To: <20151104185633.GC12825@localhost.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Sascha Hauer <kernel@pengutronix.de>, linux-mediatek@lists.infradead.org, linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>, Matthias Brugger <matthias.bgg@gmail.com>, devicetree <devicetree@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rui.zang@intel.com, Zhang Rui <rui.zhang@intel.com>
 
-On Mon, Nov 9, 2015 at 12:13 PM, Sascha Hauer <s.hauer@pengutronix.de> wrote:
-> This adds support for the Mediatek thermal controller found on MT8173
-> and likely other SoCs.
-> The controller is a bit special. It does not have its own ADC, instead
-> it controls the on-SoC AUXADC via AHB bus accesses. For this reason
-> we need the physical address of the AUXADC. Also it controls a mux
-> using AHB bus accesses, so we need the APMIXEDSYS physical address aswell.
+On Wed, Nov 04, 2015 at 10:56:34AM -0800, Eduardo Valentin wrote:
+> On Wed, Nov 04, 2015 at 05:37:41PM +0000, Javi Merino wrote:
+> > Let device tree set thermal zones in the thermal-sensors list of
+> > phandles and set up the thermal zone hierarchy based on the information
+> > present there.
+> > 
+> > Cc: Zhang Rui <rui.zhang@intel.com>
+> > Cc: Eduardo Valentin <edubezval@gmail.com>
+> > Signed-off-by: Javi Merino <javi.merino@arm.com>
+> > ---
+> >  .../devicetree/bindings/thermal/thermal.txt        | 154 ++++++++++++++++++++-
+> >  drivers/thermal/of-thermal.c                       |  99 +++++++++++++
+> 
+> Please split this patch.
 
-Few style nitpicks.
+Into documentation and code?  I prefer it when the documentation is
+updated with the code but I can split it if that's what you prefer.
 
+> >  2 files changed, 250 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/Documentation/devicetree/bindings/thermal/thermal.txt
+> > index 41b817f7b670..52b7e9ae3b4d 100644
+> > --- a/Documentation/devicetree/bindings/thermal/thermal.txt
+> > +++ b/Documentation/devicetree/bindings/thermal/thermal.txt
+> > @@ -145,9 +145,12 @@ Required properties:
+> >    Size: one cell
+> >  
+> >  - thermal-sensors:	A list of thermal sensor phandles and sensor specifier
+> > -  Type: list of 	used while monitoring the thermal zone.
+> > -  phandles + sensor
+> > -  specifier
+> > +  Type: list of 	used while monitoring the thermal zone. The phandles
+> > +  phandles + sensor	can point to thermal sensors or other thermal zone
+> > +  specifier		nodes. If it points to other thermal zone
+> > +			nodes you should omit the sensor specifier
+> > +			and set #thermal-sensor-cells to 0 for the
+> > +			thermal zone.
+> >  
+> >  - trips:		A sub-node which is a container of only trip point nodes
+> >    Type: sub-node	required to describe the thermal zone.
+> > @@ -603,3 +606,148 @@ thermal-zones {
+> >  The above example is a mix of previous examples, a sensor IP with several internal
+> >  sensors used to monitor different zones, one of them is composed by several sensors and
+> >  with different cooling devices.
+> > +
+> > +(e) Board thermal with stacked thermal zones
+> > +
+> > +Instead of setting up one thermal zone combining multiple thermal
+> > +zones and multiple trip points for each cooling device, we can create
+> > +a hierarchy of thermal zones.
+> > +
+> > +#include <dt-bindings/thermal/thermal.h>
+> > +
+> > +&i2c1 {
+> > +	...
+> > +	/*
+> > +	 * An IC with several temperature sensor.
+> > +	 */
+> > +	adc_dummy: sensor@0x50 {
+> > +		...
+> > +		#thermal-sensor-cells = <1>; /* sensor internal ID */
+> > +	};
+> > +};
+> > +
+> > +thermal-zones {
+> > +
+> > +        cpu_thermal: cpu_thermal {
+> > +		polling-delay-passive = <1000>; /* milliseconds */
+> > +		polling-delay = <2500>; /* milliseconds */
+> > +
+> > +		sustainable-power = <2500>;
+> > +
+> > +		thermal-sensors = <&adc_dummy 0>
+> > +
+> > +		trips {
+> > +			cpu_trip: cpu-trip {
+> > +				temperature = <60000>; /* millicelsius */
+> > +				hysteresis = <2000>; /* millicelsius */
+> > +				type = "passive";
+> > +			};
+> > +                };
+> > +
+> > +		cooling-maps {
+> > +			map0 {
+> > +				trip = <&cpu_trip>;
+> > +				cooling-device = <&cpu0 0 2>;
+> > +			};
+> > +                };
+> > +        };
+> > +
+> > +        gpu_thermal: gpu_thermal {
+> > +		polling-delay-passive = <1000>; /* milliseconds */
+> > +		polling-delay = <2500>; /* milliseconds */
+> > +
+> > +		sustainable-power = <2500>;
+> > +
+> > +		thermal-sensors = <&adc_dummy 2>
+> > +
+> > +		trips {
+> > +			gpu_trip: gpu-trip {
+> > +				temperature = <55000>; /* millicelsius */
+> > +				hysteresis = <2000>; /* millicelsius */
+> > +				type = "passive";
+> > +			}
+> > +                };
+> > +
+> > +		cooling-maps {
+> > +			map0 {
+> > +				trip = <&gpu_trip>;
+> > +				cooling-device = <&gpu0 0 2>;
+> > +			};
+> > +                };
+> > +        };
+> > +
+> > +        lcd_thermal: lcd_thermal {
+> > +		polling-delay-passive = <1000>; /* milliseconds */
+> > +		polling-delay = <2500>; /* milliseconds */
+> > +
+> > +		sustainable-power = <2500>;
+> > +
+> > +		thermal-sensors = <&adc_dummy 1>
+> > +
+> > +		trips {
+> > +			lcd_trip: lcp-trip {
+> > +				temperature = <53000>; /* millicelsius */
+> > +				hysteresis = <2000>; /* millicelsius */
+> > +				type = "passive";
+> > +			};
+> > +                };
+> > +
+> > +		cooling-maps {
+> > +			map0 {
+> > +				trip = <&lcd_trip>;
+> > +				cooling-device = <&lcd0 5 10>;
+> > +			};
+> > +                };
+> > +        };
+> > +
+> > +	board_thermal: board-thermal {
+> > +		polling-delay-passive = <1000>; /* milliseconds */
+> > +		polling-delay = <2500>; /* milliseconds */
+> > +
+> > +		thermal-sensors = <&cpu_thermal &gpu_thermal &lcd_thermal>
+> > +
+> 
+> (no, I have not grepped the device tree)
+> Was there any other occurrence of such construction ?
+> 
+> It just looks awkward that one property holds two types of data. Is DT
+> strongly typed?
+>
+> I would say, following the DT pattern, one would expect to have the
+> binding to allow one thermal zone to be written inside another thermal
+> zone, no?
 
-> +#include <linux/clk.h>
-> +#include <linux/delay.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/kernel.h>
-> +#include <linux/module.h>
-> +#include <linux/nvmem-consumer.h>
-> +#include <linux/of.h>
-> +#include <linux/of_address.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/slab.h>
-> +#include <linux/io.h>
-> +#include <linux/thermal.h>
-> +#include <linux/reset.h>
-> +#include <linux/types.h>
-> +#include <linux/nvmem-consumer.h>
-> +
-> +/* AUXADC Registers */
-> +#define AUXADC_CON0_V          0x000
-> +#define AUXADC_CON1_V          0x004
-> +#define AUXADC_CON1_SET_V      0x008
-> +#define AUXADC_CON1_CLR_V      0x00c
-> +#define AUXADC_CON2_V          0x010
-> +#define AUXADC_DATA(channel)   (0x14 + (channel) * 4)
-> +#define AUXADC_MISC_V          0x094
-> +
-> +#define AUXADC_CON1_CHANNEL(x) BIT(x)
-> +
-> +#define APMIXED_SYS_TS_CON1    0x604
-> +
-> +/* Thermal Controller Registers */
-> +#define TEMP_MONCTL0           0x000
-> +#define TEMP_MONCTL1           0x004
-> +#define TEMP_MONCTL2           0x008
-> +#define TEMP_MONIDET0          0x014
-> +#define TEMP_MONIDET1          0x018
-> +#define TEMP_MSRCTL0           0x038
-> +#define TEMP_AHBPOLL           0x040
-> +#define TEMP_AHBTO             0x044
-> +#define TEMP_ADCPNP0           0x048
-> +#define TEMP_ADCPNP1           0x04c
-> +#define TEMP_ADCPNP2           0x050
-> +#define TEMP_ADCPNP3           0x0b4
-> +
-> +#define TEMP_ADCMUX            0x054
-> +#define TEMP_ADCEN             0x060
-> +#define TEMP_PNPMUXADDR                0x064
-> +#define TEMP_ADCMUXADDR                0x068
-> +#define TEMP_ADCENADDR         0x074
-> +#define TEMP_ADCVALIDADDR      0x078
-> +#define TEMP_ADCVOLTADDR       0x07c
-> +#define TEMP_RDCTRL            0x080
-> +#define TEMP_ADCVALIDMASK      0x084
-> +#define TEMP_ADCVOLTAGESHIFT   0x088
-> +#define TEMP_ADCWRITECTRL      0x08c
-> +#define TEMP_MSR0              0x090
-> +#define TEMP_MSR1              0x094
-> +#define TEMP_MSR2              0x098
-> +#define TEMP_MSR3              0x0B8
-> +
-> +#define TEMP_SPARE0            0x0f0
-> +
-> +#define PTPCORESEL             0x400
-> +
-> +#define TEMP_MONCTL1_PERIOD_UNIT(x)    ((x) & 0x3ff)
-> +
-> +#define TEMP_MONCTL2_FILTER_INTERVAL(x)        (((x) & 0x3ff)) << 16
-> +#define TEMP_MONCTL2_SENSOR_INTERVAL(x)        ((x) & 0x3ff)
-> +
-> +#define TEMP_AHBPOLL_ADC_POLL_INTERVAL(x)      (x)
-> +
-> +#define TEMP_ADCWRITECTRL_ADC_PNP_WRITE                BIT(0)
-> +#define TEMP_ADCWRITECTRL_ADC_MUX_WRITE                BIT(1)
-> +
-> +#define TEMP_ADCVALIDMASK_VALID_HIGH           BIT(5)
-> +#define TEMP_ADCVALIDMASK_VALID_POS(bit)       (bit)
-> +
-> +#define MT8173_TS1     0
-> +#define MT8173_TS2     1
-> +#define MT8173_TS3     2
-> +#define MT8173_TS4     3
-> +#define MT8173_TSABB   4
-> +
-> +/* AUXADC channel 11 is used for the temperature sensors */
-> +#define MT8173_TEMP_AUXADC_CHANNEL     11
-> +
-> +/* The total number of temperature sensors in the MT8173 */
-> +#define MT8173_NUM_SENSORS             5
-> +
-> +/* The number of banks in the MT8173 */
-> +#define MT8173_NUM_ZONES               4
-> +
-> +/* The number of sensing points per bank */
-> +#define MT8173_NUM_SENSORS_PER_ZONE    4
-> +
-> +/* Layout of the fuses providing the calibration data */
-> +#define MT8173_CALIB_BUF0_VALID                (1 << 0)
-> +#define MT8173_CALIB_BUF1_ADC_GE(x)    (((x) >> 22 ) & 0x3ff)
-> +#define MT8173_CALIB_BUF0_VTS_TS1(x)   (((x) >> 17 ) & 0x1ff)
-> +#define MT8173_CALIB_BUF0_VTS_TS2(x)   (((x) >> 8 ) & 0x1ff)
-> +#define MT8173_CALIB_BUF1_VTS_TS3(x)   (((x) >> 0 ) & 0x1ff)
-> +#define MT8173_CALIB_BUF2_VTS_TS4(x)   (((x) >> 23 ) & 0x1ff)
-> +#define MT8173_CALIB_BUF2_VTS_TSABB(x) (((x) >> 14 ) & 0x1ff)
-> +#define MT8173_CALIB_BUF0_DEGC_CALI(x) (((x) >> 1 ) & 0x3f)
-> +#define MT8173_CALIB_BUF0_O_SLOPE(x)   (((x) >> 26 ) & 0x3f)
-> +
-> +#define THERMAL_NAME    "mtk-thermal"
-> +
-> +struct mtk_thermal;
-> +
-> +struct mtk_thermal_bank {
-> +       struct mtk_thermal *mt;
-> +       int id;
-> +};
-> +
-> +struct mtk_thermal {
-> +       struct device *dev;
-> +       void __iomem *thermal_base;
-> +
-> +       struct clk *clk_peri_therm;
-> +       struct clk *clk_auxadc;
-> +
-> +       struct mtk_thermal_bank banks[MT8173_NUM_ZONES];
-> +
-> +       struct mutex lock;
-> +
-> +       /* Calibration values */
-> +       s32 adc_ge;
-> +       s32 degc_cali;
-> +       s32 o_slope;
-> +       s32 vts[MT8173_NUM_SENSORS];
-> +
-> +       struct thermal_zone_device *tzd;
-> +};
-> +
-> +struct mtk_thermal_bank_cfg {
-> +       unsigned int num_sensors;
-> +       unsigned int sensors[MT8173_NUM_SENSORS_PER_ZONE];
-> +};
-> +
-> +static const int sensor_mux_values[MT8173_NUM_SENSORS] = { 0, 1, 2, 3, 16 };
-> +
-> +/*
-> + * The MT8173 thermal controller has four banks. Each bank can read up to
-> + * four temperature sensors simultaneously. The MT8173 has a total of 5
-> + * temperature sensors. We use each bank to measure a certain area of the
-> + * SoC. Since TS2 is located centrally in the SoC it is influenced by multiple
-> + * areas, hence is used in different banks.
-> + */
-> +static const struct mtk_thermal_bank_cfg bank_data[] = {
-> +       {
-> +               .num_sensors = 2,
-> +               .sensors = { MT8173_TS2, MT8173_TS3 },
-> +       }, {
-> +               .num_sensors = 2,
-> +               .sensors = { MT8173_TS2, MT8173_TS4 },
-> +       }, {
-> +               .num_sensors = 3,
-> +               .sensors = { MT8173_TS1, MT8173_TS2, MT8173_TSABB },
-> +       }, {
-> +               .num_sensors = 1,
-> +               .sensors = { MT8173_TS2 },
-> +       },
-> +};
-> +
-> +struct mtk_thermal_sense_point {
-> +       int msr;
-> +       int adcpnp;
-> +};
-> +
-> +static const struct mtk_thermal_sense_point
-> +               sensing_points[MT8173_NUM_SENSORS_PER_ZONE] = {
-> +       {
-> +               .msr = TEMP_MSR0,
-> +               .adcpnp = TEMP_ADCPNP0,
-> +       }, {
-> +               .msr = TEMP_MSR1,
-> +               .adcpnp = TEMP_ADCPNP1,
-> +       }, {
-> +               .msr = TEMP_MSR2,
-> +               .adcpnp = TEMP_ADCPNP2,
-> +       }, {
-> +               .msr = TEMP_MSR3,
-> +               .adcpnp = TEMP_ADCPNP3,
-> +       },
-> +};
-> +
-> +/**
-> + * raw_to_mcelsius - convert a raw ADC value to mcelsius
-> + * @mt:                The thermal controller
-> + * @raw:       raw ADC value
-> + *
-> + * This converts the raw ADC value to mcelsius using the SoC specific
-> + * calibration constants
-> + */
-> +static int raw_to_mcelsius(struct mtk_thermal *mt, int sensno, s32 raw)
-> +{
-> +       s32 tmp;
-> +
-> +       raw &= 0xfff;
-> +
-> +       tmp = 203450520 << 3;
-> +       tmp /= 165 + mt->o_slope;
-> +       tmp /= 10000 + mt->adc_ge;
-> +       tmp *= raw - mt->vts[sensno] - 3350;
-> +       tmp >>= 3;
-> +
-> +       return mt->degc_cali * 500 - tmp;
-> +}
-> +
-> +/**
-> + * mtk_thermal_get_bank - get bank
-> + * @bank:      The bank
-> + *
-> + * The bank registers are banked, we have to select a bank in the
-> + * PTPCORESEL register to access it.
-> + */
-> +static void mtk_thermal_get_bank(struct mtk_thermal_bank *bank)
-> +{
-> +       struct mtk_thermal *mt = bank->mt;
-> +       u32 val;
-> +
-> +       mutex_lock(&mt->lock);
-> +
-> +       val = readl(mt->thermal_base + PTPCORESEL);
-> +       val &= ~0xf;
-> +       val |= bank->id;
-> +       writel(val, mt->thermal_base + PTPCORESEL);
-> +}
-> +
-> +/**
-> + * mtk_thermal_put_bank - release bank
-> + * @bank:      The bank
-> + *
-> + * release a bank previously taken with mtk_thermal_get_bank,
-> + */
-> +static void mtk_thermal_put_bank(struct mtk_thermal_bank *bank)
-> +{
-> +       struct mtk_thermal *mt = bank->mt;
-> +
-> +       mutex_unlock(&mt->lock);
-> +}
-> +
-> +/**
-> + * mtk_thermal_bank_temperature - get the temperature of a bank
-> + * @bank:      The bank
-> + *
-> + * The temperature of a bank is considered the maximum temperature of
-> + * the sensors associated to the bank.
-> + */
-> +static int mtk_thermal_bank_temperature(struct mtk_thermal_bank *bank)
-> +{
-> +       struct mtk_thermal *mt = bank->mt;
-> +       int temp, i, max;
-> +       u32 raw;
-> +
-> +       temp = max = INT_MIN;
-> +
-> +       for (i = 0; i < bank_data[bank->id].num_sensors; i++) {
-> +               raw = readl(mt->thermal_base + sensing_points[i].msr);
-> +
-> +               temp = raw_to_mcelsius(mt, bank_data[bank->id].sensors[i], raw);
-> +
-> +               /*
-> +                * The first read of a sensor often contains very high bogus
-> +                * temperature value. Filter these out so that the system does
-> +                * not immediately shut down.
-> +                */
-> +               if (temp > 200000)
-> +                       temp = 0;
-> +
-> +               if (temp > max)
-> +                       max = temp;
-> +       }
-> +
-> +       return max;
-> +}
-> +
-> +static int mtk_read_temp(void *data, int *temperature)
-> +{
-> +       struct mtk_thermal *mt = data;
-> +       int i;
-> +       int tempmax = INT_MIN;
-> +
-> +       for (i = 0; i < MT8173_NUM_ZONES; i++) {
-> +               struct mtk_thermal_bank *bank = &mt->banks[i];
-> +               int t;
-> +
-> +               mtk_thermal_get_bank(bank);
-> +
-> +               t = mtk_thermal_bank_temperature(bank);
-> +
-> +               mtk_thermal_put_bank(bank);
-> +
-> +               if (t > tempmax)
-> +                       tempmax = t;
+That would not allow us to have a thermal zone be a child of multiple
+thermal zones.  For example, a thermal sensor could be half-way
+through a GPU and a core and you would want to use that sensor's
+thermal zone as input for both the GPU and the core thermal zones.
 
-Would it be
-tempmax = max_t(int, tempmax, mtk_thermal_bank_temperature(bank));
-?
-
-> +       }
-> +
-> +       *temperature = tempmax;
-> +
-> +       return 0;
-> +}
-> +
-> +static const struct thermal_zone_of_device_ops mtk_thermal_ops = {
-> +       .get_temp = mtk_read_temp,
-> +};
-> +
-> +static void mtk_thermal_init_bank(struct mtk_thermal *mt, int num,
-> +               u32 apmixed_phys_base, u32 auxadc_phys_base)
-> +{
-> +       struct mtk_thermal_bank *bank = &mt->banks[num];
-> +       const struct mtk_thermal_bank_cfg *cfg = &bank_data[num];
-> +       int i;
-> +
-> +       bank->id = num;
-> +       bank->mt = mt;
-> +
-> +       mtk_thermal_get_bank(bank);
-> +
-> +       /* bus clock 66M counting unit is 12 * 15.15ns * 256 = 46.540us */
-> +       writel(TEMP_MONCTL1_PERIOD_UNIT(12), mt->thermal_base + TEMP_MONCTL1);
-> +
-> +       /*
-> +        * filt interval is 1 * 46.540us = 46.54us,
-> +        * sen interval is 429 * 46.540us = 19.96ms
-> +        */
-> +       writel(TEMP_MONCTL2_FILTER_INTERVAL(1) |
-> +                       TEMP_MONCTL2_SENSOR_INTERVAL(429),
-> +                       mt->thermal_base + TEMP_MONCTL2);
-> +
-> +       /* poll is set to 10u */
-> +       writel(TEMP_AHBPOLL_ADC_POLL_INTERVAL(768),
-> +                       mt->thermal_base + TEMP_AHBPOLL);
-> +
-> +       /* temperature sampling control, 1 sample */
-> +       writel(0x00000000, mt->thermal_base + TEMP_MSRCTL0);
-
-0x0 like below ?
-
-> +
-> +       /* exceed this polling time, IRQ would be inserted */
-> +       writel(0xffffffff, mt->thermal_base + TEMP_AHBTO);
-> +
-> +       /* number of interrupts per event, 1 is enough */
-> +       writel(0x0, mt->thermal_base + TEMP_MONIDET0);
-> +       writel(0x0, mt->thermal_base + TEMP_MONIDET1);
-> +
-> +       /*
-> +        * The MT8173 thermal controller does not have its own ADC. Instead it
-> +        * uses AHB bus accesses to control the AUXADC. To do this the thermal
-> +        * controller has to be programmed with the physical addresses of the
-> +        * AUXADC registers and with the various bit positions in the AUXADC.
-> +        * Also the thermal controller controls a mux in the APMIXEDSYS register
-> +        * space.
-> +        */
-> +
-> +       /*
-> +        * this value will be stored to TEMP_PNPMUXADDR (TEMP_SPARE0)
-> +        * automatically by hw
-> +        */
-> +       writel(BIT(MT8173_TEMP_AUXADC_CHANNEL), mt->thermal_base + TEMP_ADCMUX);
-> +
-> +       /* AHB address for auxadc mux selection */
-> +       writel(auxadc_phys_base + AUXADC_CON1_CLR_V,
-> +                       mt->thermal_base + TEMP_ADCMUXADDR);
-> +
-> +       /* AHB address for pnp sensor mux selection */
-> +       writel(apmixed_phys_base + APMIXED_SYS_TS_CON1,
-> +                       mt->thermal_base + TEMP_PNPMUXADDR);
-> +
-> +       /* AHB value for auxadc enable */
-> +       writel(BIT(MT8173_TEMP_AUXADC_CHANNEL), mt->thermal_base + TEMP_ADCEN);
-> +
-> +       /* AHB address for auxadc enable (channel 0 immediate mode selected) */
-> +       writel(auxadc_phys_base + AUXADC_CON1_SET_V,
-> +                       mt->thermal_base + TEMP_ADCENADDR);
-> +
-> +       /* AHB address for auxadc valid bit */
-> +       writel(auxadc_phys_base + AUXADC_DATA(MT8173_TEMP_AUXADC_CHANNEL),
-> +                       mt->thermal_base + TEMP_ADCVALIDADDR);
-> +
-> +       /* AHB address for auxadc voltage output */
-> +       writel(auxadc_phys_base + AUXADC_DATA(MT8173_TEMP_AUXADC_CHANNEL),
-> +                       mt->thermal_base + TEMP_ADCVOLTADDR);
-> +
-> +       /* read valid & voltage are at the same register */
-> +       writel(0x0, mt->thermal_base + TEMP_RDCTRL);
-> +
-> +       /* indicate where the valid bit is */
-> +       writel(TEMP_ADCVALIDMASK_VALID_HIGH | TEMP_ADCVALIDMASK_VALID_POS(12),
-> +                       mt->thermal_base + TEMP_ADCVALIDMASK);
-> +
-> +       /* no shift */
-> +       writel(0x0, mt->thermal_base + TEMP_ADCVOLTAGESHIFT);
-> +
-> +       /* enable auxadc mux write transaction */
-> +       writel(TEMP_ADCWRITECTRL_ADC_MUX_WRITE,
-> +                       mt->thermal_base + TEMP_ADCWRITECTRL);
-> +
-> +       for (i = 0; i < cfg->num_sensors; i++)
-> +               writel(sensor_mux_values[cfg->sensors[i]],
-> +                               mt->thermal_base + sensing_points[i].adcpnp);
-> +
-> +       writel((1 << cfg->num_sensors) - 1, mt->thermal_base + TEMP_MONCTL0);
-> +
-> +       writel(TEMP_ADCWRITECTRL_ADC_PNP_WRITE | TEMP_ADCWRITECTRL_ADC_MUX_WRITE,
-> +                       mt->thermal_base + TEMP_ADCWRITECTRL);
-> +
-> +       mtk_thermal_put_bank(bank);
-> +}
-> +
-> +static u64 of_get_phys_base(struct device_node *np)
-> +{
-> +       u64 size64;
-> +       const __be32 *regaddr_p;
-> +
-> +       regaddr_p = of_get_address(np, 0, &size64, NULL);
-> +       if (!regaddr_p)
-> +               return OF_BAD_ADDR;
-> +
-> +       return of_translate_address(np, regaddr_p);
-> +}
-> +
-> +static int mtk_thermal_get_calibration_data(struct device *dev, struct mtk_thermal *mt)
-> +{
-> +       struct nvmem_cell *cell;
-> +       u32 *buf;
-> +       size_t len;
-> +       int i, ret;
-> +
-> +       /* Start with default values */
-> +       mt->adc_ge = 512;
-> +       for (i = 0; i < MT8173_NUM_SENSORS; i++)
-> +               mt->vts[i] = 260;
-> +       mt->degc_cali = 40;
-> +       mt->o_slope = 0;
-> +
-> +       cell = nvmem_cell_get(dev, "calibration-data");
-> +       if (IS_ERR(cell)) {
-> +               if (PTR_ERR(cell) == -EPROBE_DEFER)
-> +                       return PTR_ERR(cell);
-> +               return 0;
-> +       }
-> +
-> +       buf = (u32 *)nvmem_cell_read(cell, &len);
-> +
-> +       nvmem_cell_put(cell);
-> +
-> +       if (IS_ERR(buf))
-> +               return PTR_ERR(buf);
-> +
-> +       if (len < 3 * sizeof(u32)) {
-> +               dev_warn(dev, "invalid calibration data\n");
-> +               ret = -EINVAL;
-> +               goto out;
-> +       }
-> +
-> +       if (buf[0] & MT8173_CALIB_BUF0_VALID) {
-> +               mt->adc_ge = MT8173_CALIB_BUF1_ADC_GE(buf[1]);
-> +               mt->vts[MT8173_TS1] = MT8173_CALIB_BUF0_VTS_TS1(buf[0]);
-> +               mt->vts[MT8173_TS2] = MT8173_CALIB_BUF0_VTS_TS2(buf[0]);
-> +               mt->vts[MT8173_TS3] = MT8173_CALIB_BUF1_VTS_TS3(buf[1]);
-> +               mt->vts[MT8173_TS4] = MT8173_CALIB_BUF2_VTS_TS4(buf[2]);
-> +               mt->vts[MT8173_TSABB] = MT8173_CALIB_BUF2_VTS_TSABB(buf[2]);
-> +               mt->degc_cali = MT8173_CALIB_BUF0_DEGC_CALI(buf[0]);
-> +               mt->o_slope = MT8173_CALIB_BUF0_O_SLOPE(buf[0]);
-> +       } else {
-> +               dev_info(dev, "Device not calibrated, using default calibration values\n");
-> +       }
-> +
-> +out:
-> +       kfree(buf);
-> +
-> +       return ret;
-> +}
-> +
-> +static int mtk_thermal_probe(struct platform_device *pdev)
-> +{
-> +       int ret, i;
-> +       struct device_node *auxadc, *apmixedsys, *np = pdev->dev.of_node;
-> +       struct mtk_thermal *mt;
-> +       struct resource *res;
-> +       u64 auxadc_phys_base, apmixed_phys_base;
-> +
-> +       mt = devm_kzalloc(&pdev->dev, sizeof(*mt), GFP_KERNEL);
-> +       if (!mt)
-> +               return -ENOMEM;
-> +
-> +       mt->clk_peri_therm = devm_clk_get(&pdev->dev, "therm");
-> +       if (IS_ERR(mt->clk_peri_therm))
-> +               return PTR_ERR(mt->clk_peri_therm);
-> +
-> +       mt->clk_auxadc = devm_clk_get(&pdev->dev, "auxadc");
-> +       if (IS_ERR(mt->clk_auxadc))
-> +               return PTR_ERR(mt->clk_auxadc);
-> +
-> +       res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +       mt->thermal_base = devm_ioremap_resource(&pdev->dev, res);
-> +       if (IS_ERR(mt->thermal_base))
-> +               return PTR_ERR(mt->thermal_base);
-> +
-> +       ret = mtk_thermal_get_calibration_data(&pdev->dev, mt);
-> +       if (ret)
-> +               return ret;
-> +
-> +       mutex_init(&mt->lock);
-> +
-> +       mt->dev = &pdev->dev;
-> +
-> +       auxadc = of_parse_phandle(np, "mediatek,auxadc", 0);
-> +       if (!auxadc) {
-> +               dev_err(&pdev->dev, "missing auxadc node\n");
-> +               return -ENODEV;
-> +       }
-> +
-> +       auxadc_phys_base = of_get_phys_base(auxadc);
-> +
-> +       of_node_put(auxadc);
-> +
-> +       if (auxadc_phys_base == OF_BAD_ADDR) {
-> +               dev_err(&pdev->dev, "Can't get auxadc phys address\n");
-> +               return -EINVAL;
-> +       }
-> +
-> +       apmixedsys = of_parse_phandle(np, "mediatek,apmixedsys", 0);
-> +       if (!apmixedsys) {
-> +               dev_err(&pdev->dev, "missing apmixedsys node\n");
-> +               return -ENODEV;
-> +       }
-> +
-> +       apmixed_phys_base = of_get_phys_base(apmixedsys);
-> +
-> +       of_node_put(apmixedsys);
-> +
-> +       if (apmixed_phys_base == OF_BAD_ADDR) {
-> +               dev_err(&pdev->dev, "Can't get auxadc phys address\n");
-> +               return -EINVAL;
-> +       }
-> +
-> +       ret = clk_prepare_enable(mt->clk_auxadc);
-> +       if (ret) {
-> +               dev_err(&pdev->dev, "Can't enable auxadc clk: %d\n", ret);
-> +               return ret;
-> +       }
-> +
-> +       ret = device_reset(&pdev->dev);
-> +       if (ret)
-> +               goto err_disable_clk_auxadc;
-> +
-> +       ret = clk_prepare_enable(mt->clk_peri_therm);
-> +       if (ret) {
-> +               dev_err(&pdev->dev, "Can't enable peri clk: %d\n", ret);
-> +               goto err_disable_clk_auxadc;
-> +       }
-> +
-> +       for (i = 0; i < MT8173_NUM_ZONES; i++)
-> +               mtk_thermal_init_bank(mt, i, apmixed_phys_base, auxadc_phys_base);
-> +
-> +       platform_set_drvdata(pdev, mt);
-> +
-> +       mt->tzd = thermal_zone_of_sensor_register(&pdev->dev, 0, mt,
-> +                               &mtk_thermal_ops);
-> +       if (IS_ERR(mt->tzd))
-> +               goto err_register;
-> +
-> +       return 0;
-> +
-> +err_register:
-> +       clk_disable_unprepare(mt->clk_peri_therm);
-> +
-> +err_disable_clk_auxadc:
-> +       clk_disable_unprepare(mt->clk_auxadc);
-> +
-> +       return ret;
-> +}
-> +
-> +static int mtk_thermal_remove(struct platform_device *pdev)
-> +{
-> +       struct mtk_thermal *mt = platform_get_drvdata(pdev);
-> +
-> +       thermal_zone_of_sensor_unregister(&pdev->dev, mt->tzd);
-> +
-> +       clk_disable_unprepare(mt->clk_peri_therm);
-> +       clk_disable_unprepare(mt->clk_auxadc);
-> +
-> +       return 0;
-> +}
-> +
-> +static const struct of_device_id mtk_thermal_of_match[] = {
-> +       {
-> +               .compatible = "mediatek,mt8173-thermal",
-> +       }, {
-> +       },
-> +};
-> +
-> +static struct platform_driver mtk_thermal_driver = {
-> +       .probe = mtk_thermal_probe,
-> +       .remove = mtk_thermal_remove,
-> +       .driver = {
-> +               .name = THERMAL_NAME,
-> +               .of_match_table = mtk_thermal_of_match,
-> +       },
-> +};
-> +
-> +module_platform_driver(mtk_thermal_driver);
-> +
-> +MODULE_AUTHOR("Sascha Hauer <s.hauer@pengutronix.de");
-
-And Author in the head?
-
--- 
-With Best Regards,
-Andy Shevchenko
+Cheers,
+Javi
