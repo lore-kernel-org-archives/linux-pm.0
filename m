@@ -1,69 +1,66 @@
-From: Jacob Tanenbaum <jtanenba@redhat.com>
-Subject: [PATCH 2/2] fix how "cpupower frequency-info" interprets latency
-Date: Mon,  9 Nov 2015 14:26:59 -0500
-Message-ID: <1447097219-31370-3-git-send-email-jtanenba@redhat.com>
-References: <1447097219-31370-1-git-send-email-jtanenba@redhat.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:46967 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751614AbbKIT1F (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 9 Nov 2015 14:27:05 -0500
-In-Reply-To: <1447097219-31370-1-git-send-email-jtanenba@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH] thermal: rockchip: fix compile error
+Date: Mon, 9 Nov 2015 11:36:39 -0800
+Message-ID: <20151109193638.GB10824@localhost.localdomain>
+References: <1446990043-8096-1-git-send-email-wxt@rock-chips.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1446990043-8096-1-git-send-email-wxt@rock-chips.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Caesar Wang <wxt@rock-chips.com>
+Cc: rui.zhang@intel.com, heiko@sntech.de, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, sfr@canb.auug.org.au, lkp@intel.com
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: trenn@suse.com, prarit@redhat.com, Jacob Tanenbaum <jtanenba@redhat.com>
 
-the intel-pstate driver does not support the ondemand governor and does not
-have a valid value in
-/sys/devices/system/cpu/cpu[x]/cpufreq/cpuinfo_transition_latency. The
-intel-pstate driver sets cpuinfo_transition_latency to CPUFREQ_ETERNAL (-1),
-the value written into cpuinfo_transition_latency is defind as an unsigned
-int so checking the read value against max unsigned int will determine if the
-value is valid.
+On Sun, Nov 08, 2015 at 09:40:43PM +0800, Caesar Wang wrote:
+> Missing a include file caused compile error.
+> 
+> drivers/thermal/rockchip_thermal.c:
+> In function 'rockchip_thermal_suspend':
+> drivers/thermal/rockchip_thermal.c:720:2: error: implicit
+> declaration of function 'pinctrl_pm_select_sleep_state'
+> [-Werror=implicit-function-declaration]
+> pinctrl_pm_select_sleep_state(dev);
+>                  ^
+> drivers/thermal/rockchip_thermal.c:
+> In function 'rockchip_thermal_resume':
+> drivers/thermal/rockchip_thermal.c:759:2: error: implicit
+> declaration of function 'pinctrl_pm_select_default_state'
+> [-Werror=implicit-function-declaration]
+> ^pinctrl_pm_select_default_state(dev);
+> cc1: some warnings being treated as errors
+> 
+> Fixes: 7e38a5b1daa1 ("thermal: rockchip: support the sleep pinctrl state
+> to avoid glitches")
 
-output before the patch set is applied
-[jtanenba@dhcp-17-90 cpupower]$ ./cpupower frequency-info -d
-analyzing CPU 0:
-intel_pstate
-[jtanenba@dhcp-17-90 cpupower]$ ./cpupower frequency-info -y
-analyzing CPU 0:
-4294967295
-[jtanenba@dhcp-17-90 cpupower]$ ./cpupower frequency-info -y -m
-analyzing CPU 0:
-0.97 ms
 
-output after patch set is applied
-[jtanenba@dhcp-17-90 cpupower]$ ./cpupower frequency-info -d
-analyzing CPU 0:
-  driver: intel_pstate
-[jtanenba@dhcp-17-90 cpupower]$ ./cpupower frequency-info -y
-analyzing CPU 0:
-  maximum transition latency:  Cannot determine or is not supported.
-[jtanenba@dhcp-17-90 cpupower]$ ./cpupower frequency-info -y -m
-analyzing CPU 0:
-  maximum transition latency:  Cannot determine or is not supported.
+Adding this to my tree and sending to ruis too.
 
-Signed-off-by: Jacob Tanenbaum <jtanenba@redhat.com>
----
- tools/power/cpupower/utils/cpufreq-info.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/tools/power/cpupower/utils/cpufreq-info.c b/tools/power/cpupower/utils/cpufreq-info.c
-index 8f40b79..a6efb6a 100644
---- a/tools/power/cpupower/utils/cpufreq-info.c
-+++ b/tools/power/cpupower/utils/cpufreq-info.c
-@@ -433,8 +433,8 @@ static int get_latency(unsigned int cpu, unsigned int human)
- 	unsigned long latency = cpufreq_get_transition_latency(cpu);
- 
- 	printf(_("  maximum transition latency: "));
--	if (!latency) {
--		printf(_(" Cannot determine latency.\n"));
-+	if (!latency || latency == UINT_MAX) {
-+		printf(_(" Cannot determine or is not supported.\n"));
- 		return -EINVAL;
- 	}
- 
--- 
-2.4.3
+Thanks
 
+> 
+> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> Reported-by: kbuild test robot <lkp@intel.com>
+> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+> ---
+> 
+>  drivers/thermal/rockchip_thermal.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+> index df28049..8928d67 100644
+> --- a/drivers/thermal/rockchip_thermal.c
+> +++ b/drivers/thermal/rockchip_thermal.c
+> @@ -25,6 +25,7 @@
+>  #include <linux/platform_device.h>
+>  #include <linux/reset.h>
+>  #include <linux/thermal.h>
+> +#include <linux/pinctrl/consumer.h>
+>  
+>  /**
+>   * If the temperature over a period of time High,
+> -- 
+> 1.9.1
+> 
