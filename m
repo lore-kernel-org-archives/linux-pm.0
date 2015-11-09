@@ -1,58 +1,105 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] power: bq27xxx_battery: Revert "Remove unneeded
- dependency in Kconfig"
-Date: Mon, 09 Nov 2015 21:51:12 +0100
-Message-ID: <10870776.N30IekZOBt@wuerfel>
-References: <3819790.E2ziFviWmU@wuerfel> <5640D02D.6040601@ti.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFD] Functional dependencies between devices
+Date: Mon, 09 Nov 2015 22:42:04 +0100
+Message-ID: <2017403.WqCaz90jK6@vostro.rjw.lan>
+References: <1623682.7KVblAB3KQ@vostro.rjw.lan> <20151109123202.GC23941@ulmo.nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <5640D02D.6040601@ti.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "Andrew F. Davis" <afd@ti.com>
-Cc: Xiong Zhou <jencce.kernel@gmail.com>, linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Sebastian Reichel <sre@kernel.org>, linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org, Pali Rohar <pali.rohar@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org
+Content-Type: multipart/signed; boundary="nextPart2963599.pLnXJai3Fn"; micalg="pgp-sha256"; protocol="application/pgp-signature"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20151109123202.GC23941@ulmo.nvidia.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Thierry Reding <treding@nvidia.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Grant Likely <grant.likely@linaro.org>, Mark Brown <broonie@kernel.og>, Rob Herring <robh@kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Dmitry Torokhov <dtor@google.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Michael Turquette <mturquette@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday 09 November 2015 10:56:13 Andrew F. Davis wrote:
-> On 11/09/2015 07:50 AM, Arnd Bergmann wrote:
-> Nothing enabled by BATTERY_BQ27XXX depends on I2C, this workaround is not
-> correct as it prevents BATTERY_BQ27XXX from being built-in when I2C is a
-> module, there is no reason for this limitation.
+
+--nextPart2963599.pLnXJai3Fn
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="utf-8"
+
+On Monday, November 09, 2015 01:32:04 PM Thierry Reding wrote:
+> On Tue, Oct 27, 2015 at 04:24:14PM +0100, Rafael J. Wysocki wrote:
+> [...]
+> > There's a question about what if the supplier device is being unbound before
+> > the consumer one (for example, as a result of a hotplug event).  My current
+> > view on that is that the consumer needs to be force-unbound in that case too,
+> > but I guess I may be persuaded otherwise given sufficiently convincing
+> > arguments.
 > 
-> The undefined references are caused by BATTERY_BQ27XXX being built-in AND
-> its I2C functionality being enabled (BATTERY_BQ27XXX_I2C) while I2C is a
-> module. Reorganizing this driver is being discussed anyway, but in the
-> meantime a more correct fix would be along the lines of:
+> I think this would be a huge step towards making the kernel more robust
+> with little driver or subsystem code having to be duplicated. Currently
+> most provider/consumer subsystems are fragile in that there isn't proper
+> reference counting. Many subsystems will happily allow you to remove any
+> of the provider, regardless of whether or not it has consumers. Most of
+> the subsystems will make sure that modules can't be unloaded, but beyond
+> that won't be able to prevent drivers from being unbound (either when a
+> device is unplugged or unbound via sysfs). Even with proper reference
+> counting there is no easy way to deal with devices going away (you'd
+> need some sort of revoke semantics implemented for all providers, and
+> consumers must be able to handle that situation gracefully).
 > 
-> diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-> index 6de6ec2..d1d32f9 100644
-> --- a/drivers/power/Kconfig
-> +++ b/drivers/power/Kconfig
-> @@ -167,6 +167,7 @@ config BATTERY_BQ27XXX_I2C
->          bool "BQ27xxx I2C support"
->          depends on BATTERY_BQ27XXX
->          depends on I2C
-> +       depends on !(I2C=m && BATTERY_BQ27XXX=y)
->          default y
->          help
->            Say Y here to enable support for batteries with BQ27xxx (I2C) chips.
+> Implementing a force-unbind policy would make this a whole lot easier.
+> Dangling resources will automatically become a thing of the past. The
+> downside of course is that force-unbinding consumers may not always be
+> the most user-friendly course of action. Consider an SD/MMC slot that
+> uses a GPIO as card-detect pin. Unbinding the provider of the GPIO
+> would cause the SD/ MMC controller to be unbound, hence unmounting the
+> filesystem that it provided. That filesystem might have been the root
+> filesystem.
 
-That works too, there is just very little difference in the end here,
-and it's easier to revert an patch that only introduces a regression
-than to do a different hack, especially if it's going to be reworked
-soon anyway.
+Well, the problem is that device_release_driver() cannot fail, so it
+pretty much has to unbind everything that is not going to work after the
+driver is unbound from the device.
 
-Do you want to submit the above as a fixup to your other patch or
-should we just do the revert? It would be good to get one of the two
-into -rc1.
+> We discussed similar use-cases a while back and you proposed making the
+> force-unbind policy be two-staged: reject unbind (-EBUSY) if there are
+> any consumers, and force-unbind consumers if the provider was forcibly
+> unbound (or caused by hot-unplug of the backing device). That sounds
+> like a good compromise to me.
 
-	Arnd
+That can be done for bus types having device_offline/online() support,
+but the number of these is quite limited at this point.
+
+The "offline" operation, as opposed to device_release_driver(), can return
+an error code to indicate that the device cannot be taken offline at this
+time.  So, if offlining a supplier would require offlining all consumers
+of it, that may be made fail in certain situation.  However, that would
+require quite a bit of additional structure (and complexity) in pretty
+much all bus types, so I wouldn't start with it at least. 
+
+> That said I can also imagine subsystems where a reliable mechanism is in
+> place to properly hotplug and -unplug providers. The good thing about
+> the functional dependencies mechanism you propose here is that it's an
+> optional mechanism that drivers use from ->probe(). Subsystems where a
+> better mechanism exists can simply choose to do without functional
+> dependencies.
+
+I actually think that those things are at least partly orthogonal.
+
+Thanks,
+Rafael
+
+--nextPart2963599.pLnXJai3Fn
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAABCAAGBQJWQRMxAAoJEILEb/54YlRxVR8QAKDf+JKLCot/doeXNZ3R6VBN
+1q8g6dlWzBmVfU/gXda75JMTEhWijbqIPBE/dRTk7DPG3s9VUQXyTPFtBNV5OzZd
+XKyAovSB0FthBROcAa2yUXlFhXg7qFzUwBKT8Q1vFq1DkB4t2ddEls6slSip/7Uh
+FF2QMB2BhW/D6NiqJCKlxWDJgLbL8DWici+eVY96c2N3WfML4ldfDgazFhAadC1F
+BpcI4K/K+x/SUaimNHX6nTRSSJExrLB2mqoa9RUFAFSEU/FoSyI97oD/MF7ZrsQT
+Y6NolgCoa5KL0qyohkFOEcrzjXZ9ng0OqkQnHg+P2KJu04dQ5eRm7DbYP20EVcjc
+tLpxNv8nIysQ9FBpYgP9Hw01ARKS+R+R/BM5H2i78lesBtRbF224MHAHbh9FDl61
+0ZBh4OwGfYb0XNzZLMeGLXOgE8HirIadCp8dMJ28//1R+ntiHI5N2rbFnVCOEAws
+EtVPFLLb8vJ5lms6dZ/bjhqWmaZ9vON1F2xFAYBk8tISWUEYzsZwAWKVWZVVPacV
+fnvAQLHEloDa7GLwi680P8kLA+ndEH74gF2vL0Q0mHy6PUfRKs3OuH7JAAQ50mdb
+8Hk/ABkbJ7HQy3KWhuetab6tSMl3pnYcHFDo4RAe+abr1PDP614ndmiYZQ1QQfhs
+K1ktgejVDo33WT8yo+OF
+=ejBx
+-----END PGP SIGNATURE-----
+
+--nextPart2963599.pLnXJai3Fn--
