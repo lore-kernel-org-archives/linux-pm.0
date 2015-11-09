@@ -1,53 +1,59 @@
 From: Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
-Subject: [PATCH v3 0/3] Dynamic power model from device tree
-Date: Mon,  9 Nov 2015 17:29:20 +0000
-Message-ID: <1447090163-13700-1-git-send-email-punit.agrawal@arm.com>
+Subject: [PATCH v3 1/3] devicetree: bindings: Add optional dynamic-power-coefficient property
+Date: Mon,  9 Nov 2015 17:29:21 +0000
+Message-ID: <1447090163-13700-2-git-send-email-punit.agrawal@arm.com>
+References: <1447090163-13700-1-git-send-email-punit.agrawal@arm.com>
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1447090163-13700-1-git-send-email-punit.agrawal-5wv7dgnIgG8@public.gmane.org>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 To: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org
+Cc: viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+The dynamic power consumption of a device is proportional to the
+square of voltage (V) and the clock frequency (f). It can be expressed as
 
-This patchset adds support to build a single-coefficient dynamic power
-model for a CPU. The model is used by the CPU cooling device to
-provide an estimate of power consumption and also translate allocated
-power to performance cap.
+Pdyn = dynamic-power-coefficient * V^2 * f.
 
-Patch 1 extends the CPU nodes binding to provide an optional dynamic
-power coefficient which can be used to create a dynamic power model
-for the CPUs. This model is used to constrain device power consumption
-(using power_allocator governor) when the system is thermally
-constrained.
+The coefficient represents the running time dynamic power consumption in
+units of mw/MHz/uVolt^2 and can be used in the above formula to
+calculate the dynamic power in mW.
 
-Patches 2-3 extends the cpufreq-dt and arm_big_little driver to
-register cpu cooling devices with the dynamic coefficient when
-provided.
+Signed-off-by: Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
+Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+---
+ Documentation/devicetree/bindings/arm/cpus.txt | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
-The patches were previously posted as part of [0][1]. Since the last
-posting Mediatek platform 8173 is also building on these bindings to
-build the power model.
-
-Feedback on the bindings would be particularly appreciated.
-
-Thanks,
-Punit
-
-[0] http://thread.gmane.org/gmane.linux.kernel/2002152
-[1] http://thread.gmane.org/gmane.linux.kernel/2011466
-
-Punit Agrawal (3):
-  devicetree: bindings: Add optional dynamic-power-coefficient property
-  cpufreq-dt: Supply power coefficient when registering cooling devices
-  cpufreq: arm_big_little: Add support to register a cpufreq cooling
-    device
-
- Documentation/devicetree/bindings/arm/cpus.txt | 17 +++++++++
- drivers/cpufreq/arm_big_little.c               | 52 +++++++++++++++++++++++++-
- drivers/cpufreq/cpufreq-dt.c                   |  9 ++++-
- 3 files changed, 74 insertions(+), 4 deletions(-)
-
+diff --git a/Documentation/devicetree/bindings/arm/cpus.txt b/Documentation/devicetree/bindings/arm/cpus.txt
+index 91e6e5c..c33362d 100644
+--- a/Documentation/devicetree/bindings/arm/cpus.txt
++++ b/Documentation/devicetree/bindings/arm/cpus.txt
+@@ -240,6 +240,23 @@ nodes to be present and contain the properties described below.
+ 		Definition: Specifies the syscon node controlling the cpu core
+ 			    power domains.
+ 
++	- dynamic-power-coefficient
++		Usage: optional
++		Value type: <prop-encoded-array>
++		Definition: A u32 value that represents the running time dynamic
++			    power coefficient in units of mW/MHz/uVolt^2. The
++			    coefficient can either be calculated from power
++			    measurements or derived by analysis.
++
++			    The dynamic power consumption of the CPU  is
++			    proportional to the square of the Voltage (V) and
++			    the clock frequency (f). The coefficient is used to
++			    calculate the dynamic power as below -
++
++			    Pdyn = dynamic-power-coefficient * V^2 * f
++
++			    where voltage is in uV, frequency is in MHz.
++
+ Example 1 (dual-cluster big.LITTLE system 32-bit):
+ 
+ 	cpus {
 -- 
 2.5.3
 
