@@ -1,72 +1,57 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: Re: [PATCH] power: bq27xxx_battery: Revert "Remove unneeded
- dependency in Kconfig"
-Date: Mon, 9 Nov 2015 10:56:13 -0600
-Message-ID: <5640D02D.6040601@ti.com>
-References: <3819790.E2ziFviWmU@wuerfel>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <3819790.E2ziFviWmU@wuerfel>
-Sender: linux-i2c-owner@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
-Cc: Pali Rohar <pali.rohar@gmail.com>, Xiong Zhou <jencce.kernel@gmail.com>, linux-i2c@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+From: Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
+Subject: [PATCH v3 0/3] Dynamic power model from device tree
+Date: Mon,  9 Nov 2015 17:29:20 +0000
+Message-ID: <1447090163-13700-1-git-send-email-punit.agrawal@arm.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 11/09/2015 07:50 AM, Arnd Bergmann wrote:
-> The dependency was clearly needed, without it it is possible to
-> build the core i2c driver as a loadable module and the bq27xxx
-> driver built-in, which results in link errors:
->
-> drivers/built-in.o: In function `bq27xxx_battery_i2c_read':
-> binder.c:(.text+0x360bf0): undefined reference to `i2c_transfer'
-> binder.c:(.text+0x360c10): undefined reference to `i2c_transfer'
-> drivers/built-in.o: In function `bq27xxx_battery_init':
-> binder.c:(.init.text+0xe668): undefined reference to `i2c_register_driver'
-> drivers/built-in.o: In function `bq27xxx_battery_exit':
-> binder.c:(.exit.text+0x1a0c): undefined reference to `i2c_del_driver'
->
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> Fixes: 6bd03ce3c12a ("power: bq27xxx_battery: Remove unneeded dependency in Kconfig")
-> ---
-> The bug was originally found and fixed by Xiong Zhou, but Andrew Davis
-> broke it again by reverting the fix.
->
-> I found it today on my ARM randconfig builds.
->
-> diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-> index 237d7aa73e8c..9f53fb74ae6f 100644
-> --- a/drivers/power/Kconfig
-> +++ b/drivers/power/Kconfig
-> @@ -159,6 +159,7 @@ config BATTERY_SBS
->
->   config BATTERY_BQ27XXX
->   	tristate "BQ27xxx battery driver"
-> +	depends on I2C || I2C=n
->   	help
->   	  Say Y here to enable support for batteries with BQ27xxx (I2C/HDQ) chips.
->
->
+Hi,
 
-Nothing enabled by BATTERY_BQ27XXX depends on I2C, this workaround is not
-correct as it prevents BATTERY_BQ27XXX from being built-in when I2C is a
-module, there is no reason for this limitation.
+This patchset adds support to build a single-coefficient dynamic power
+model for a CPU. The model is used by the CPU cooling device to
+provide an estimate of power consumption and also translate allocated
+power to performance cap.
 
-The undefined references are caused by BATTERY_BQ27XXX being built-in AND
-its I2C functionality being enabled (BATTERY_BQ27XXX_I2C) while I2C is a
-module. Reorganizing this driver is being discussed anyway, but in the
-meantime a more correct fix would be along the lines of:
+Patch 1 extends the CPU nodes binding to provide an optional dynamic
+power coefficient which can be used to create a dynamic power model
+for the CPUs. This model is used to constrain device power consumption
+(using power_allocator governor) when the system is thermally
+constrained.
 
-diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-index 6de6ec2..d1d32f9 100644
---- a/drivers/power/Kconfig
-+++ b/drivers/power/Kconfig
-@@ -167,6 +167,7 @@ config BATTERY_BQ27XXX_I2C
-         bool "BQ27xxx I2C support"
-         depends on BATTERY_BQ27XXX
-         depends on I2C
-+       depends on !(I2C=m && BATTERY_BQ27XXX=y)
-         default y
-         help
-           Say Y here to enable support for batteries with BQ27xxx (I2C) chips.
+Patches 2-3 extends the cpufreq-dt and arm_big_little driver to
+register cpu cooling devices with the dynamic coefficient when
+provided.
+
+The patches were previously posted as part of [0][1]. Since the last
+posting Mediatek platform 8173 is also building on these bindings to
+build the power model.
+
+Feedback on the bindings would be particularly appreciated.
+
+Thanks,
+Punit
+
+[0] http://thread.gmane.org/gmane.linux.kernel/2002152
+[1] http://thread.gmane.org/gmane.linux.kernel/2011466
+
+Punit Agrawal (3):
+  devicetree: bindings: Add optional dynamic-power-coefficient property
+  cpufreq-dt: Supply power coefficient when registering cooling devices
+  cpufreq: arm_big_little: Add support to register a cpufreq cooling
+    device
+
+ Documentation/devicetree/bindings/arm/cpus.txt | 17 +++++++++
+ drivers/cpufreq/arm_big_little.c               | 52 +++++++++++++++++++++++++-
+ drivers/cpufreq/cpufreq-dt.c                   |  9 ++++-
+ 3 files changed, 74 insertions(+), 4 deletions(-)
+
+-- 
+2.5.3
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
