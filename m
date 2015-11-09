@@ -1,90 +1,77 @@
-From: Thierry Reding <treding@nvidia.com>
-Subject: Re: [RFD] Functional dependencies between devices
-Date: Mon, 9 Nov 2015 13:32:04 +0100
-Message-ID: <20151109123202.GC23941@ulmo.nvidia.com>
-References: <1623682.7KVblAB3KQ@vostro.rjw.lan>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
+ SpeedStep enabled
+Date: Mon, 09 Nov 2015 12:39:39 +0000
+Message-ID: <bug-103351-137361-wqdOGuvTtk@https.bugzilla.kernel.org/>
+References: <bug-103351-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="bKyqfOwhbdpXa4YI"
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:12557 "EHLO
-	hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751163AbbKIMcO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 9 Nov 2015 07:32:14 -0500
-In-Reply-To: <1623682.7KVblAB3KQ@vostro.rjw.lan>
-Content-Disposition: inline
+Received: from mail.kernel.org ([198.145.29.136]:56034 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751329AbbKIMjr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 9 Nov 2015 07:39:47 -0500
+Received: from mail.kernel.org (localhost [127.0.0.1])
+	by mail.kernel.org (Postfix) with ESMTP id 273CA2070B
+	for <linux-pm@vger.kernel.org>; Mon,  9 Nov 2015 12:39:46 +0000 (UTC)
+Received: from bugzilla2.web.kernel.org (bugzilla2.web.kernel.org [172.20.200.52])
+	by mail.kernel.org (Postfix) with ESMTP id 9CC392078A
+	for <linux-pm@vger.kernel.org>; Mon,  9 Nov 2015 12:39:42 +0000 (UTC)
+In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Grant Likely <grant.likely@linaro.org>, Mark Brown <broonie@kernel.og>, Rob Herring <robh@kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Dmitry Torokhov <dtor@google.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Michael Turquette <mturquette@baylibre.com>
+To: linux-pm@vger.kernel.org
 
---bKyqfOwhbdpXa4YI
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+https://bugzilla.kernel.org/show_bug.cgi?id=103351
 
-On Tue, Oct 27, 2015 at 04:24:14PM +0100, Rafael J. Wysocki wrote:
-[...]
-> There's a question about what if the supplier device is being unbound before
-> the consumer one (for example, as a result of a hotplug event).  My current
-> view on that is that the consumer needs to be force-unbound in that case too,
-> but I guess I may be persuaded otherwise given sufficiently convincing
-> arguments.
+--- Comment #98 from Carlos Alberto Lopez Perez <clopez@igalia.com> ---
+(In reply to okjwukwh from comment #97)
+> Using a Broadwell i7-5600U on OpenSuse Leap 42.1 may also provoke the lock
+> elision error.
+> 
+> At the moment I cannot tell how libc is built; from the contents of the rpms
+> I would guess that --enable-lock-elision is used.
+> 
+> Crashes so far only happen, when using a NVIDIA proprietary driver (tried
+> version 352* and 349* - same result). So it may be a problem with the
+> driver. But as of the [1] it should be ok when using a version < 352* which
+> it's not in my case.
+> 
 
-I think this would be a huge step towards making the kernel more robust
-with little driver or subsystem code having to be duplicated. Currently
-most provider/consumer subsystems are fragile in that there isn't proper
-reference counting. Many subsystems will happily allow you to remove any
-of the provider, regardless of whether or not it has consumers. Most of
-the subsystems will make sure that modules can't be unloaded, but beyond
-that won't be able to prevent drivers from being unbound (either when a
-device is unplugged or unbound via sysfs). Even with proper reference
-counting there is no easy way to deal with devices going away (you'd
-need some sort of revoke semantics implemented for all providers, and
-consumers must be able to handle that situation gracefully).
+I'm inclined to believe this is a bug on the proprietary driver.
+You probably can workaround it, by building libc without HLE support.
 
-Implementing a force-unbind policy would make this a whole lot easier.
-Dangling resources will automatically become a thing of the past. The
-downside of course is that force-unbinding consumers may not always be
-the most user-friendly course of action. Consider an SD/MMC slot that
-uses a GPIO as card-detect pin. Unbinding the provider of the GPIO
-would cause the SD/ MMC controller to be unbound, hence unmounting the
-filesystem that it provided. That filesystem might have been the root
-filesystem.
+I reported this to NVIDIA two weeks ago after the discussion at:
+https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=800574#77
 
-We discussed similar use-cases a while back and you proposed making the
-force-unbind policy be two-staged: reject unbind (-EBUSY) if there are
-any consumers, and force-unbind consumers if the provider was forcibly
-unbound (or caused by hot-unplug of the backing device). That sounds
-like a good compromise to me.
+No reply from NVIDIA so far.
 
-That said I can also imagine subsystems where a reliable mechanism is in
-place to properly hotplug and -unplug providers. The good thing about
-the functional dependencies mechanism you propose here is that it's an
-optional mechanism that drivers use from ->probe(). Subsystems where a
-better mechanism exists can simply choose to do without functional
-dependencies.
+Question Reference #151027-000203
+---------------------------------------------------------------
+  Product Level 1: GeForce graphics
+     Date Created: 10/27/2015 09:29 AM
+     Last Updated: 10/27/2015 09:29 AM
+           Status: New
+        Choose OS: Linux/Other Unix
+     Product Name: NVIDIA Driver Linux x64
+   Driver Version: 352.55
+             Rank: 1
+         Escalate: 
+---------------------------------------------------------------
+The driver crashed on EGL programs when glibc is built with support for RLE and
+a CPU with TSX-NI enabled instructions is used (for example: i7-5775C).
 
-Thierry
+The crash seems to be caused because the driver is trying to unlock an already
+unlocked lock. This is undefined behavior and a bug on the driver.
+When TSX-NI is enabled on glibc it leads to a crash.
 
---bKyqfOwhbdpXa4YI
-Content-Type: application/pgp-signature; name="signature.asc"
+How to reproduce it?
+Try to run an EGL program, for example: es2_info from mesa-demos (debian/ubuntu
+package: mesa-utils-extra:) on a Linux system (ADM64) with a glibc that enables
+the usage of HLE (Hardware Lock Elision) by default for libpthread when the CPU
+supports that (for example  i7-5775C).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCAAGBQJWQJI4AAoJEN0jrNd/PrOhBswP/iBrNEri0doqa2JHW0LQuQ8j
-JvDUgL8PcamaS0UX9vzrGHd1+6+Zy+p/gbpjTlbk2kNVU3oKRJArCS7SJTjRWiAS
-ykTbYjMkewBrtBNpIpw2uVj+4Gqgt4jA0oar03Np2xKMWTiuOxWMZ/9qVxwAy4oa
-dbEclL0fJ7Op8bEY2NKW+sLE6HJ75Hf0ci7qHUYPrbK1Z1P4FMQlewXj2U75ED54
-9pTLK7PKBHHwNAQ+f80p4tNjZq3qzwGWZfmaIY0IZL0Ca5H0dpHlr90Y2u0zn/D9
-sGhHE7Pfl282o5M4hb6E8H/fc1XFnttJ4MtnjBLqEsPaQwn+jC+34a0s5vNQ3D0O
-q+gcPhV6OXca/65rvqcJen9MGyavyNvcZmXRnhnied1EwAlAdjdT7XEwJZqBwVhE
-QxxUNMTxsuRX428L8cLnsZfGGtmbSwyIP6Yunc6kB3qimSv1vl5FZTUPfs2Jl9Nj
-9gbIZZbeR1ZsYSLyWTmA7PDzWO6K3bzT3gn1PX1XoBafQIY54qRCfs/wjzimBl/T
-xZT63/OP/G7WtbGQPgJc3tgII+IZGnTuxl+YbmN95MNlOKwXEmf6LBqeMPpKkak/
-3nuBUFdCmLotsMpvdBa5p0ScYcoC4uAVjapeKl8mqIGaxK7JIZaKc0DGu8/0+evS
-HGa4dk9MHErl9ifLcuCf
-=GNRM
------END PGP SIGNATURE-----
-
---bKyqfOwhbdpXa4YI--
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
