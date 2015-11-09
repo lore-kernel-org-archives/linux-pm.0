@@ -1,85 +1,106 @@
-From: Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Subject: [PATCH 1/3] dt-bindings: thermal: Add binding document for Mediatek
- thermal controller
-Date: Mon,  9 Nov 2015 11:13:31 +0100
-Message-ID: <1447064013-13026-2-git-send-email-s.hauer@pengutronix.de>
-References: <1447064013-13026-1-git-send-email-s.hauer@pengutronix.de>
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>
+Subject: Re: [PATCH] intel_idle: Don't use on Lenovo Ideapad S10-3t
+Date: Mon, 9 Nov 2015 12:28:43 +0200
+Message-ID: <20151109102843.GU4437@intel.com>
+References: <1446499360-31984-1-git-send-email-ville.syrjala@linux.intel.com>
+ <1A7043D5F58CCB44A599DFD55ED4C9484693D228@fmsmsx115.amr.corp.intel.com>
+ <20151104162100.GT4437@intel.com>
+ <20151108192016.GA7063@khazad-dum.debian.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <1447064013-13026-1-git-send-email-s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
-List-Post: <mailto:linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([134.134.136.65]:23292 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751211AbbKIK2r (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 9 Nov 2015 05:28:47 -0500
+Content-Disposition: inline
+In-Reply-To: <20151108192016.GA7063@khazad-dum.debian.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: "Brown, Len" <len.brown@intel.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-This adds the device tree binding documentation for the mediatek thermal
-controller found on Mediatek MT8173 and other SoCs.
+On Sun, Nov 08, 2015 at 05:20:16PM -0200, Henrique de Moraes Holschuh w=
+rote:
+> On Wed, 04 Nov 2015, Ville Syrj=E4l=E4 wrote:
+> > On Tue, Nov 03, 2015 at 03:04:21AM +0000, Brown, Len wrote:
+> > > > Lenovo Ideapad S10-3t hangs coming out of S3 with intel_idle.
+> > > > The two workaround that seem to help are "intel_idle.max_cstate=
+=3D0"
+> > > > or "nohz=3Doff highres=3Doff".
+> > > >=20
+> > > > At a first glance quirk_tigerpoint_bm_sts() seemed promising, b=
+ut
+> > > > even when moved to early_resume it didn't do anything.
+> > > >=20
+> > > > I have no idea what's wrong here, so let's just disable intel_i=
+dle
+> > > > for these machines using a DMI match.
+> > >=20
+> > > Ville,=20
+> > >=20
+> > > It is great that several workarounds have been discovered.
+> > >=20
+> > > But it would be better to get a good idea of the root-cause
+> > > before permanently ignoring the problem via a new
+> > > black-list in the upstream kernel.
+> > >=20
+> > > Is it possible for you to file a bug at bugzilla.kernel.org
+> > > against Product: power-management; component: intel_idle?
+> >=20
+> > https://bugzilla.kernel.org/show_bug.cgi?id=3D107151
+>=20
+> This is a shot in the dark, but...
+>=20
+> The Atom N450 public errata sheet is nightmare fuel, and Ville's Idea=
+pad is
+> running that hellish processor on outdated microcode.
+>=20
+> http://www.intel.com/content/dam/www/public/us/en/documents/specifica=
+tion-updates/atom-processor-n400-specification-update.pdf
+>=20
+> Ville, you might want to insure you're at the latest BIOS for the S10=
+-3t:
+> http://support.lenovo.com/us/en/products/laptops-and-netbooks/ideapad=
+-s-series-netbooks/ideapad-s10-3t/downloads/DS010786
 
-Signed-off-by: Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Reviewed-by: Daniel Kurtz <djkurtz-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
----
- .../bindings/thermal/mediatek-thermal.txt          | 43 ++++++++++++++++++++++
- 1 file changed, 43 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
+Seems to require Windows, so no can do without major pain.
 
-diff --git a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-new file mode 100644
-index 0000000..81f9a51
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-@@ -0,0 +1,43 @@
-+* Mediatek Thermal
-+
-+This describes the device tree binding for the Mediatek thermal controller
-+which measures the on-SoC temperatures. This device does not have its own ADC,
-+instead it directly controls the AUXADC via AHB bus accesses. For this reason
-+this device needs phandles to the AUXADC. Also it controls a mux in the
-+apmixedsys register space via AHB bus accesses, so a phandle to the APMIXEDSYS
-+is also needed.
-+
-+Required properties:
-+- compatible: "mediatek,mt8173-thermal"
-+- reg: Address range of the thermal controller
-+- interrupts: IRQ for the thermal controller
-+- clocks, clock-names: Clocks needed for the thermal controller. required
-+                       clocks are:
-+		       "therm":	 Main clock needed for register access
-+		       "auxadc": The AUXADC clock
-+- resets: Reference to the reset controller controlling the thermal controller.
-+- mediatek,auxadc: A phandle to the AUXADC which the thermal controller uses
-+- mediatek,apmixedsys: A phandle to the APMIXEDSYS controller.
-+- #thermal-sensor-cells : Should be 0. See ./thermal.txt for a description.
-+
-+Optional properties:
-+- nvmem-cells: A phandle to the calibration data provided by a nvmem device. If
-+               unspecified default values shall be used.
-+- nvmem-cell-names: Should be "calibration-data"
-+
-+Example:
-+
-+	thermal: thermal@1100b000 {
-+		#thermal-sensor-cells = <1>;
-+		compatible = "mediatek,mt8173-thermal";
-+		reg = <0 0x1100b000 0 0x1000>;
-+		interrupts = <0 70 IRQ_TYPE_LEVEL_LOW>;
-+		clocks = <&pericfg CLK_PERI_THERM>, <&pericfg CLK_PERI_AUXADC>;
-+		clock-names = "therm", "auxadc";
-+		resets = <&pericfg MT8173_PERI_THERM_SW_RST>;
-+		reset-names = "therm";
-+		mediatek,auxadc = <&auxadc>;
-+		mediatek,apmixedsys = <&apmixedsys>;
-+		nvmem-cells = <&thermal_calibration_data>;
-+		nvmem-cell-names = "calibration-data";
-+	};
--- 
-2.6.1
+Considering acpi_idle works just fine, I doubt a new BIOS version would
+have anything to fix this, except maybe by accident.
+
+> (don't bother with changelogs to make any sort of update-or-not decis=
+ions:
+> Lenovo changelogs are known to often be incomplete).
+>=20
+> I also strongly recommend that you should install your distro's micro=
+code
+> update package: your microcode should have been revision 0x107 or hig=
+her, it
+> has been in the public microcode distribution since Q2/Q3-2010...
+
+[    0.000000] microcode: CPU0 microcode updated early to revision 0x10=
+7, date =3D 2009-08-25
+[    0.990876] microcode: CPU0 sig=3D0x106ca, pf=3D0x4, revision=3D0x10=
+7
+[    0.990972] microcode: CPU1 sig=3D0x106ca, pf=3D0x4, revision=3D0x10=
+7
+
+No help unfortunately.
+
+>=20
+> Now, as I said, this is all a shot in the dark, and it might not help=
+ at all
+> with the hangs.  But it looks like something worth trying...
+>=20
+> --=20
+>   "One disk to rule them all, One disk to find them. One disk to brin=
+g
+>   them all and in the darkness grind them. In the Land of Redmond
+>   where the shadows lie." -- The Silicon Valley Tarot
+>   Henrique Holschuh
+
+--=20
+Ville Syrj=E4l=E4
+Intel OTC
