@@ -1,72 +1,147 @@
-From: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Subject: [PATCH v4 03/10] thermal: rockchip: trivial: fix typo in commit
-Date: Mon,  9 Nov 2015 12:48:55 +0800
-Message-ID: <1447044542-30859-4-git-send-email-wxt@rock-chips.com>
+From: Caesar Wang <wxt@rock-chips.com>
+Subject: [PATCH v4 05/10] thermal: rockchip: Add the sort mode for adc value increment or decrement
+Date: Mon,  9 Nov 2015 12:48:57 +0800
+Message-ID: <1447044542-30859-6-git-send-email-wxt@rock-chips.com>
 References: <1447044542-30859-1-git-send-email-wxt@rock-chips.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <1447044542-30859-1-git-send-email-wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
-List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Jiri Kosina <trivial-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, lkp-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1447044542-30859-1-git-send-email-wxt@rock-chips.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Heiko Stuebner <heiko@sntech.de>, Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-rockchip@lists.infradead.org, lkp@intel.com, Caesar Wang <wxt@rock-chips.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Signed-off-by: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+The conversion table has the adc value and temperature.
+In fact, the adc value only has the increment or decrement mode in
+conversion table.
+
+Moment, we can add the sort mode to be better support the *code_to_temp*
+for differenr SoCs.
+
+Signed-off-by: Caesar Wang <wxt@rock-chips.com>
 
 ---
 
-Changes in v4: None
-Changes in v3: None
-Changes in v2:
-- As Eduardo comments on patch v1, split in smaller changes.
+Changes in v4:
+- rename the flag as mode.
+- with enum type instead of bool type.
 
+Changes in v3:
+- rename the flag-> sort_flag.
+- fix the indentation.
+- change the pr_err information.
+
+Changes in v2: None
 Changes in v1: None
 
- drivers/thermal/rockchip_thermal.c | 22 +++++++++++++---------
- 1 file changed, 13 insertions(+), 9 deletions(-)
+ drivers/thermal/rockchip_thermal.c | 68 +++++++++++++++++++++++++++++---------
+ 1 file changed, 53 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index e72a69d..907a317 100644
+index bbf082c..7c5b784 100644
 --- a/drivers/thermal/rockchip_thermal.c
 +++ b/drivers/thermal/rockchip_thermal.c
-@@ -237,15 +237,19 @@ static int rk_tsadcv2_code_to_temp(u32 code, int *temp)
- }
+@@ -54,6 +54,16 @@ enum sensor_id {
+ };
  
  /**
-- * rk_tsadcv2_initialize - initialize TASDC Controller
-- * (1) Set TSADCV2_AUTO_PERIOD, configure the interleave between
-- * every two accessing of TSADC in normal operation.
-- * (2) Set TSADCV2_AUTO_PERIOD_HT, configure the interleave between
-- * every two accessing of TSADC after the temperature is higher
-- * than COM_SHUT or COM_INT.
-- * (3) Set TSADCV2_HIGH_INT_DEBOUNCE and TSADC_HIGHT_TSHUT_DEBOUNCE,
-- * if the temperature is higher than COMP_INT or COMP_SHUT for
-- * "debounce" times, TSADC controller will generate interrupt or TSHUT.
-+ * rk_tsadcv2_initialize - initialize TASDC Controller.
-+ *
-+ * (1) Set TSADC_V2_AUTO_PERIOD:
-+ *     Configure the interleave between every two accessing of
-+ *     TSADC in normal operation.
-+ *
-+ * (2) Set TSADCV2_AUTO_PERIOD_HT:
-+ *     Configure the interleave between every two accessing of
-+ *     TSADC after the temperature is higher than COM_SHUT or COM_INT.
-+ *
-+ * (3) Set TSADCV2_HIGH_INT_DEBOUNCE and TSADC_HIGHT_TSHUT_DEBOUNCE:
-+ *     If the temperature is higher than COMP_INT or COMP_SHUT for
-+ *     "debounce" times, TSADC controller will generate interrupt or TSHUT.
++* The conversion table has the adc value and temperature.
++* ADC_DECREMENT is the adc value decremnet.(e.g. v2_code_table)
++* ADC_INCREMNET is the adc value incremnet.(e.g. v3_code_table)
++*/
++enum adc_sort_mode {
++	ADC_DECREMENT = 0,
++	ADC_INCREMENT,
++};
++
++/**
+  * The max sensors is two in rockchip SoCs.
+  * Two sensors: CPU and GPU sensor.
   */
- static void rk_tsadcv2_initialize(void __iomem *regs,
- 				  enum tshut_polarity tshut_polarity)
+@@ -67,6 +77,9 @@ struct chip_tsadc_table {
+ 
+ 	/* that analogic mask data */
+ 	u32 data_mask;
++
++	/* the sort mode is adc value that increment or decrement in table */
++	enum adc_sort_mode mode;
+ };
+ 
+ struct rockchip_tsadc_chip {
+@@ -224,19 +237,43 @@ static int rk_tsadcv2_code_to_temp(struct chip_tsadc_table table, u32 code,
+ 
+ 	WARN_ON(table.length < 2);
+ 
+-	code &= table.data_mask;
+-	if (code < table.id[high].code)
+-		return -EAGAIN;		/* Incorrect reading */
+-
+-	while (low <= high) {
+-		if (code >= table.id[mid].code &&
+-		    code < table.id[mid - 1].code)
+-			break;
+-		else if (code < table.id[mid].code)
+-			low = mid + 1;
+-		else
+-			high = mid - 1;
+-		mid = (low + high) / 2;
++	switch (table.mode) {
++	case ADC_DECREMENT:
++		code &= table.data_mask;
++		if (code < table.id[high].code)
++			return -EAGAIN;		/* Incorrect reading */
++
++		while (low <= high) {
++			if (code >= table.id[mid].code &&
++			    code < table.id[mid - 1].code)
++				break;
++			else if (code < table.id[mid].code)
++				low = mid + 1;
++			else
++				high = mid - 1;
++
++			mid = (low + high) / 2;
++		}
++		break;
++	case ADC_INCREMENT:
++		code &= table.data_mask;
++		if (code < table.id[low].code)
++			return -EAGAIN;		/* Incorrect reading */
++
++		while (low <= high) {
++			if (code >= table.id[mid - 1].code &&
++			    code < table.id[mid].code)
++				break;
++			else if (code > table.id[mid].code)
++				low = mid + 1;
++			else
++				high = mid - 1;
++
++			mid = (low + high) / 2;
++		}
++		break;
++	default:
++		pr_err("Invalid the conversion table\n");
+ 	}
+ 
+ 	/*
+@@ -246,8 +283,8 @@ static int rk_tsadcv2_code_to_temp(struct chip_tsadc_table table, u32 code,
+ 	 * to produce less granular result.
+ 	 */
+ 	num = table.id[mid].temp - v2_code_table[mid - 1].temp;
+-	num *= table.id[mid - 1].code - code;
+-	denom = table.id[mid - 1].code - table.id[mid].code;
++	num *= abs(table.id[mid - 1].code - code);
++	denom = abs(table.id[mid - 1].code - table.id[mid].code);
+ 	*temp = table.id[mid - 1].temp + (num / denom);
+ 
+ 	return 0;
+@@ -368,6 +405,7 @@ static const struct rockchip_tsadc_chip rk3288_tsadc_data = {
+ 		.id = v2_code_table,
+ 		.length = ARRAY_SIZE(v2_code_table),
+ 		.data_mask = TSADCV2_DATA_MASK,
++		.mode = ADC_DECREMENT,
+ 	},
+ };
+ 
 -- 
 1.9.1
