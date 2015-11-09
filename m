@@ -1,149 +1,120 @@
-From: Caesar Wang <wxt@rock-chips.com>
-Subject: [PATCH v4 07/10] thermal: rockchip: Support the RK3368 SoCs in thermal driver
-Date: Mon,  9 Nov 2015 12:48:59 +0800
-Message-ID: <1447044542-30859-8-git-send-email-wxt@rock-chips.com>
-References: <1447044542-30859-1-git-send-email-wxt@rock-chips.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1447044542-30859-1-git-send-email-wxt@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Heiko Stuebner <heiko@sntech.de>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-rockchip@lists.infradead.org, lkp@intel.com, Caesar Wang <wxt@rock-chips.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
+From: Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+Subject: [PATCH v10] Add Mediatek thermal support
+Date: Mon,  9 Nov 2015 11:13:30 +0100
+Message-ID: <1447064013-13026-1-git-send-email-s.hauer@pengutronix.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
+ <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
+List-Post: <mailto:linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
+ <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-The RK3368 SoCs support to 2 channel TS-ADC, the temperature criteria
-of each channel can be configurable.
 
-The system has two Temperature Sensors, channel 0 is for CPU,
-and channel 1 is for GPU.
+This series adds support for the thermal sensors included in the
+MT8173 SoC. Currently only basic temperature reading is supported
+without any interrupt support.
 
-Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+The cpufreq driver for MT8173 is currently under review, so there's no
+real cooling device available in mainline. Until this is available the
+thermal driver can be tested with the following dts snippet. It creates
+a fake gpio fan and a fake trip point which is so low that it can easily
+be reached with a "cat /dev/zero > /dev/null" on the command line.
 
----
+Sascha
 
-Changes in v4:
-- :%s/sort_flag/mode.
-- rename the 'drivers' to 'driver' in subject.
+changes since v9:
+- rebase on v4.3
+- Add support for reading the calibration values from nvmem fuses
+- Only register a single thermal zone instead of four as it seems
+  that's everything needed
 
-Changes in v3:
-- :%s/flag/sort_flag
-- fix the rk3368 sort_flag as increment mode.
+changes since v8:
+- Add commit description to binding patch
+- rebase on v4.3-rc2
 
-Changes in v2:
-- remove some unused, completed on other patchs.
+changes since v7:
+- re-add some used defines removed in v5
+- Use MT8173_THERMAL_ZONE_* defines as array indices in static initializers
 
-Changes in v1: None
+changes since v6:
+- remove dot in Hanyi Wus name
 
- drivers/thermal/rockchip_thermal.c | 72 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 72 insertions(+)
+changes since v5:
+- update copyright
+- remove unused defines
 
-diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index 73d47f8..e845841 100644
---- a/drivers/thermal/rockchip_thermal.c
-+++ b/drivers/thermal/rockchip_thermal.c
-@@ -1,6 +1,9 @@
- /*
-  * Copyright (c) 2014, Fuzhou Rockchip Electronics Co., Ltd
-  *
-+ * Copyright (c) 2015, Fuzhou Rockchip Electronics Co., Ltd
-+ * Caesar Wang <wxt@rock-chips.com>
-+ *
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms and conditions of the GNU General Public License,
-  * version 2, as published by the Free Software Foundation.
-@@ -153,6 +156,8 @@ struct rockchip_thermal_data {
- #define TSADCV2_INT_PD_CLEAR_MASK		~BIT(8)
- 
- #define TSADCV2_DATA_MASK			0xfff
-+#define TSADCV3_DATA_MASK			0x3ff
-+
- #define TSADCV2_HIGHT_INT_DEBOUNCE_COUNT	4
- #define TSADCV2_HIGHT_TSHUT_DEBOUNCE_COUNT	4
- #define TSADCV2_AUTO_PERIOD_TIME		250 /* msec */
-@@ -201,6 +206,45 @@ static const struct tsadc_table v2_code_table[] = {
- 	{3421, 125000},
- };
- 
-+static const struct tsadc_table v3_code_table[] = {
-+	{0, -40000},
-+	{106, -40000},
-+	{108, -35000},
-+	{110, -30000},
-+	{112, -25000},
-+	{114, -20000},
-+	{116, -15000},
-+	{118, -10000},
-+	{120, -5000},
-+	{122, 0},
-+	{124, 5000},
-+	{126, 10000},
-+	{128, 15000},
-+	{130, 20000},
-+	{132, 25000},
-+	{134, 30000},
-+	{136, 35000},
-+	{138, 40000},
-+	{140, 45000},
-+	{142, 50000},
-+	{144, 55000},
-+	{146, 60000},
-+	{148, 65000},
-+	{150, 70000},
-+	{152, 75000},
-+	{154, 80000},
-+	{156, 85000},
-+	{158, 90000},
-+	{160, 95000},
-+	{162, 100000},
-+	{163, 105000},
-+	{165, 110000},
-+	{167, 115000},
-+	{169, 120000},
-+	{171, 125000},
-+	{TSADCV3_DATA_MASK, 125000},
-+};
-+
- static u32 rk_tsadcv2_temp_to_code(struct chip_tsadc_table table,
- 				   int temp)
- {
-@@ -409,11 +453,39 @@ static const struct rockchip_tsadc_chip rk3288_tsadc_data = {
- 	},
- };
- 
-+static const struct rockchip_tsadc_chip rk3368_tsadc_data = {
-+	.chn_id[SENSOR_CPU] = 0, /* cpu sensor is channel 0 */
-+	.chn_id[SENSOR_GPU] = 1, /* gpu sensor is channel 1 */
-+	.chn_num = 2, /* two channels for tsadc */
-+
-+	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
-+	.tshut_polarity = TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
-+	.tshut_temp = 95000,
-+
-+	.initialize = rk_tsadcv2_initialize,
-+	.irq_ack = rk_tsadcv2_irq_ack,
-+	.control = rk_tsadcv2_control,
-+	.get_temp = rk_tsadcv2_get_temp,
-+	.set_tshut_temp = rk_tsadcv2_tshut_temp,
-+	.set_tshut_mode = rk_tsadcv2_tshut_mode,
-+
-+	.table = {
-+		.id = v3_code_table,
-+		.length = ARRAY_SIZE(v3_code_table),
-+		.data_mask = TSADCV3_DATA_MASK,
-+		.mode = ADC_INCREMENT,
-+	},
-+};
-+
- static const struct of_device_id of_rockchip_thermal_match[] = {
- 	{
- 		.compatible = "rockchip,rk3288-tsadc",
- 		.data = (void *)&rk3288_tsadc_data,
- 	},
-+	{
-+		.compatible = "rockchip,rk3368-tsadc",
-+		.data = (void *)&rk3368_tsadc_data,
-+	},
- 	{ /* end */ },
- };
- MODULE_DEVICE_TABLE(of, of_rockchip_thermal_match);
--- 
-1.9.1
+Changes since v4:
+- give calibration constants more meaningful names (offset, slope)
+- Use define instead of 0x00c for register access.
+
+Changes since v3:
+- add include/dt-bindings/thermal/mt8173.h for to be able to use sensor names
+  in dts files
+- fix disabling wrong clock in error path
+- remove now unused reset-names property from binding document
+- rename MT8173_NUM_BANKS -> MT8173_NUM_ZONES
+- rename MT8173_NUM_SENSING_POINTS -> MT8173_NUM_SENSORS_PER_ZONE
+- rename struct thermal_zone_device *tz -> struct thermal_zone_device *tzd
+
+Changes since v2:
+- sort #includes alphabetically
+- Add prefix to register defines
+- drop some members from struct mtk_thermal
+- simplify raw_to_mcelsius()
+- add and use more register bit defines
+- use device_reset() instead of devm_reset_control_get()/reset_control_reset()
+- misc other stuff
+
+Changes since v1:
+- Use "mediatek," prefix for custom properties
+- Drop "thermal: consistently use int for temperatures" dependency
+
+-------------
+
+	fan: gpio_fan {
+		compatible = "gpio-fan";
+		gpios = <&pio 24 0>;
+		gpio-fan,speed-map = <0    0
+				      4500 1>;
+		#cooling-cells = <2>;
+	};
+
+	thermal-zones {
+			cpu_thermal: cpu_thermal {
+			polling-delay-passive = <1000>; /* milliseconds */
+			polling-delay = <1000>; /* milliseconds */
+
+			thermal-sensors = <&thermal>;
+
+			trips {
+				cpu_passive: cpu_passive {
+					temperature = <47000>; /* millicelsius */
+					hysteresis = <2000>; /* millicelsius */
+					type = "passive";
+				};
+
+				cpu_crit {
+					temperature = <90000>; /* millicelsius */
+					hysteresis = <2000>; /* millicelsius */
+					type = "critical";
+				};
+			};
+
+			cooling-maps {
+				map0 {
+					trip = <&cpu_passive>;
+					cooling-device = <&fan THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+				};
+			};
+		};
+	};
