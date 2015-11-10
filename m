@@ -1,54 +1,68 @@
-From: Axel Haslam <ahaslam@baylibre.com>
-Subject: Re: [PATCH v10 2/6] PM / Domains: core changes for multiple states
-Date: Tue, 10 Nov 2015 12:02:28 +0100
-Message-ID: <5641CEC4.3080800@baylibre.com>
-References: <1445347589-5626-1-git-send-email-ahaslam@baylibre.com>	<1445347589-5626-3-git-send-email-ahaslam@baylibre.com> <CAN2waFuQ+72zstgdD7GbxOr=d1T1wkqRvRePfL8KJbTceEGdzA@mail.gmail.com>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: [PATCH v3 1/2] thermal: mediatek: Add cpu power cooling model.
+Date: Tue, 10 Nov 2015 11:20:18 +0000
+Message-ID: <20151110112017.GA3551@e104805>
+References: <1445515359-8587-1-git-send-email-dawei.chien@mediatek.com>
+ <1445515359-8587-2-git-send-email-dawei.chien@mediatek.com>
+ <20151104193958.GC14127@localhost.localdomain>
+ <1446721837.4016.57.camel@mtksdaap41>
+ <20151106032433.GL3773@ubuntu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f50.google.com ([74.125.82.50]:36834 "EHLO
-	mail-wm0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752173AbbKJLCb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Nov 2015 06:02:31 -0500
-Received: by wmww144 with SMTP id w144so112327849wmw.1
-        for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2015 03:02:30 -0800 (PST)
-In-Reply-To: <CAN2waFuQ+72zstgdD7GbxOr=d1T1wkqRvRePfL8KJbTceEGdzA@mail.gmail.com>
+Received: from foss.arm.com ([217.140.101.70]:55298 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752245AbbKJLUX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 10 Nov 2015 06:20:23 -0500
+Content-Disposition: inline
+In-Reply-To: <20151106032433.GL3773@ubuntu>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhaoyang Huang <zhaoyang.huang@linaro.org>
-Cc: Kevin Hilman <khilman@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, geert@glider.be, k.kozlowski.k@gmail.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, bcousson@baylibre.com, mturquette@baylibre.com, Axel Haslam <ahaslam+renesas@baylibre.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: dawei chien <dawei.chien@mediatek.com>, Eduardo Valentin <edubezval@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Matthias Brugger <matthias.bgg@gmail.com>, Daniel Kurtz <djkurtz@chromium.org>, Sascha Hauer <s.hauer@pengutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, Sascha Hauer <kernel@pengutronix.de>
 
-Hi Zhaoyang,
+On Fri, Nov 06, 2015 at 08:54:33AM +0530, Viresh Kumar wrote:
+> Cc'ing Javi (which you should have as he wrote the power-thing for
+> cpu-cooling).
+> 
+> On 05-11-15, 19:10, dawei chien wrote:
+> > This is because our platform currently only support mt8173_cpufreq.c, so
+> > that I only add static power model for our owner IC.
+> 
+> Bindings are (normally) supposed to be general than a platform
+> specific.
+> 
+> > Please understanding that I wouldn't give a DT binding document since I
+> > will remove static power table on next version, but I can try to explain
+> > it.
+> 
+> Then just don't add things in the first place.
+> 
+> > As far as I know, static power is somewhat leakage of CPU clusters, so
+> > that we hardly to find a formula, which can suitable all kinds of CPUs
+> > since leakage is different. In ARM IPA framework, static power only need
+> > to be defined by who register cpufreq_power_cooling_register. The
+> > voltage/power table is just one way to present leakage power of CPUs.
+> 
+> The bindings don't fix the values for static power, but just provides
+> a field for platforms to use. Everyone can then send its own power
+> figures. Why do you thing it can't be generalized?
 
->     @@ -576,6 +584,8 @@ static void pm_genpd_sync_poweroff(struct
->     generic_pm_domain *genpd,
->                  || atomic_read(&genpd->sd_count) > 0)
->                      return;
->
->     +       /* Choose the deepest state when suspending */
->     +       genpd->state_idx = genpd->state_count - 1;
->
-> if there is no governor configured, does it mean that we just try the
-> deepest one here?
->
+The way they are described here is useful only for this platform, but
+it's not generic.  It only takes into account voltage as (I assume)
+it's the only variable that affects it in this implementation.  A
+generalized version of the static power should take into account the
+temperature and the idle state.
 
-If a governor is not configured, there is no way to choose between the 
-states, and the state_idx will not change. so it will remain the one set 
-at the genpd init function wich is the same as here: the deepest state. 
-(state_count -1). In other words, if there is no governor, there
-is only one state: the deepest.
+> > Actually, static power is optional since dynamic power is much more than
+> > static power.
+> 
+> Maybe, we should still capture it.
+> 
+> @Javi ?
 
-About setting the deepest state in this particular place, My 
-understanding is that this code will be called in suspend path,
-and in this case genpd_poweroff is not called, hence the genpd governor 
-is not called either. Because there are many other things happening 
-during suspend/resume, i think that suspend/resume is a slow procedure 
-that will most likely not honor the device qos constraints, so i set the 
-genpd to its deepest state.
+It really depends on the platform.  If dawei says that for their
+platform static power is negligible then it is ok to not capture it.
 
-Regards
-Axel
->              genpd_power_off(genpd, timed);
->
->              genpd->status = GPD_STATE_POWER_OFF;
+Cheers,
+Javi
