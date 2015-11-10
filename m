@@ -1,68 +1,75 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v3 1/2] thermal: mediatek: Add cpu power cooling model.
-Date: Tue, 10 Nov 2015 10:41:22 -0800
-Message-ID: <20151110184121.GC5240@localhost.localdomain>
-References: <1445515359-8587-1-git-send-email-dawei.chien@mediatek.com>
- <1445515359-8587-2-git-send-email-dawei.chien@mediatek.com>
- <20151104193958.GC14127@localhost.localdomain>
- <1446721837.4016.57.camel@mtksdaap41>
- <20151106032433.GL3773@ubuntu>
- <20151110112017.GA3551@e104805>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH V4] PM / OPP: Add debugfs support
+Date: Tue, 10 Nov 2015 11:36:03 -0800
+Message-ID: <20151110193603.GA24116@codeaurora.org>
+References: <6775c5c7c2e87b68f999870bdd70de3f77e8a660.1446715747.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f66.google.com ([209.85.220.66]:34500 "EHLO
-	mail-pa0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751154AbbKJSl0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Nov 2015 13:41:26 -0500
+Received: from smtp.codeaurora.org ([198.145.29.96]:46631 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751031AbbKJTgF (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Nov 2015 14:36:05 -0500
 Content-Disposition: inline
-In-Reply-To: <20151110112017.GA3551@e104805>
+In-Reply-To: <6775c5c7c2e87b68f999870bdd70de3f77e8a660.1446715747.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, dawei chien <dawei.chien@mediatek.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Matthias Brugger <matthias.bgg@gmail.com>, Daniel Kurtz <djkurtz@chromium.org>, Sascha Hauer <s.hauer@pengutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, Sascha Hauer <kernel@pengutronix.de>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dmitry Torokhov <dtor@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Pavel Machek <pavel@ucw.cz>
 
-On Tue, Nov 10, 2015 at 11:20:18AM +0000, Javi Merino wrote:
-> On Fri, Nov 06, 2015 at 08:54:33AM +0530, Viresh Kumar wrote:
-> > Cc'ing Javi (which you should have as he wrote the power-thing for
-> > cpu-cooling).
-> > 
-> > On 05-11-15, 19:10, dawei chien wrote:
-> > > This is because our platform currently only support mt8173_cpufreq.c, so
-> > > that I only add static power model for our owner IC.
-> > 
-> > Bindings are (normally) supposed to be general than a platform
-> > specific.
-> > 
-> > > Please understanding that I wouldn't give a DT binding document since I
-> > > will remove static power table on next version, but I can try to explain
-> > > it.
-> > 
-> > Then just don't add things in the first place.
-> > 
-> > > As far as I know, static power is somewhat leakage of CPU clusters, so
-> > > that we hardly to find a formula, which can suitable all kinds of CPUs
-> > > since leakage is different. In ARM IPA framework, static power only need
-> > > to be defined by who register cpufreq_power_cooling_register. The
-> > > voltage/power table is just one way to present leakage power of CPUs.
-> > 
-> > The bindings don't fix the values for static power, but just provides
-> > a field for platforms to use. Everyone can then send its own power
-> > figures. Why do you thing it can't be generalized?
-> 
-> The way they are described here is useful only for this platform, but
-> it's not generic.  It only takes into account voltage as (I assume)
-> it's the only variable that affects it in this implementation.  A
-> generalized version of the static power should take into account the
-> temperature and the idle state.
+Minor nitpicks. Looks mostly fine.
 
-Still, why would we have one binding to describe static power per platform?
+On 11/05, Viresh Kumar wrote:
+> diff --git a/drivers/base/power/opp/debugfs.c b/drivers/base/power/opp/debugfs.c
+> new file mode 100644
+> index 000000000000..b512a76ef0df
+> --- /dev/null
+> +++ b/drivers/base/power/opp/debugfs.c
+> @@ -0,0 +1,216 @@
+> +/*
+> + * Generic OPP debugfs interface
+> + *
+> + * Copyright (C) 2015-2016 Viresh Kumar <viresh.kumar@linaro.org>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + */
+> +
+> +#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+> +
+> +#include <linux/debugfs.h>
+> +#include <linux/err.h>
 
-I would prefer we go towards a generalized binding description.
+#include <linux/init.h>
+#include <linux/limits.h>
+#include <linux/device.h>
 
-If temperature is not needed on all platforms, make it an optional
-property.
+> +
+> +#include "opp.h"
+> +
+[..]
+> @@ -69,6 +71,7 @@ struct dev_pm_opp {
+>  	bool available;
+>  	bool dynamic;
+>  	bool turbo;
+> +	bool suspend;
 
-BR,
+This should be documented as well.
 
-Eduardo Valentin
+>  	unsigned long rate;
+>  
+>  	unsigned long u_volt;
+> @@ -81,6 +84,11 @@ struct dev_pm_opp {
+>  	struct rcu_head rcu_head;
+>  
+>  	struct device_node *np;
+> +
+> +#ifdef CONFIG_DEBUG_FS
+> +	/* debugfs */
+
+This comment is pretty useless (for all three instances).
+
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
