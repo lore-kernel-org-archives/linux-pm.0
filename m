@@ -1,41 +1,48 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH 3/3] cpufreq: intel_pstate: Fix the scaling of _PSS entry[0]
-Date: Mon,  9 Nov 2015 18:58:11 -0800
-Message-ID: <1447124291-14059-4-git-send-email-srinivas.pandruvada@linux.intel.com>
-References: <1447124291-14059-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:43581 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751841AbbKJC7F (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 9 Nov 2015 21:59:05 -0500
-In-Reply-To: <1447124291-14059-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Nguyen Viet Dung <nv-dung@jinso.co.jp>
+Subject: Re: [PATCH 0/2] thermal: rcar_thermal: tidyup rebind issue
+Date: Tue, 10 Nov 2015 11:27:08 +0900
+Message-ID: <564155FC.3030900@jinso.co.jp>
+References: <87h9kulkfg.wl%kuninori.morimoto.gx@renesas.com>
+ <87fv0elibh.wl%kuninori.morimoto.gx@renesas.com>
+ <87bnb2lhzv.wl%kuninori.morimoto.gx@renesas.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <87bnb2lhzv.wl%kuninori.morimoto.gx@renesas.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Linux-SH <linux-sh@vger.kernel.org>, Linux-Kernel <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, cm-hiep@jinso.co.jp
 List-Id: linux-pm@vger.kernel.org
-To: rafael.j.wysocki@intel.com, lenlenb@kernel.org
-Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Since even non core platforms like Atom SoC has _PSS table, we can't
-hardcode scaling. Instead we can use cpu->pstate.scaling. We need to
-convert to MHz as the scaling values are in KHz.
+Dear Mr Morimoto
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- drivers/cpufreq/intel_pstate.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+we go to test rcar_thermal funstion with this patchs.
+If result is good I will send Tested-by nv-dung
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 69dc9b5..50d3cff 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -312,7 +312,7 @@ static int intel_pstate_init_perf_limits(struct cpufreq_policy *policy)
- 		 * Also need to convert to MHz as _PSS freq is in MHz.
- 		 */
- 		cpu->acpi_perf_data.states[0].core_frequency =
--						turbo_pss_ctl * 100;
-+				turbo_pss_ctl * cpu->pstate.scaling / 1000;
- 	}
- 
- 	pr_debug("intel_pstate: Updated limits using _PSS 0x%x 0x%x 0x%x\n",
--- 
-1.9.3
+best regard
+Nguyen Viet Dung
 
+On 2015=E5=B9=B411=E6=9C=8810=E6=97=A5 11:18, Kuninori Morimoto wrote:
+> Hi
+>
+> Actually, these issue are reported by Dung Hiep,
+> but I didn't add their name on these patches.
+> Thus, Dung, Hiep, can you please send Tested-by for these ?
+>
+>> rcar_thermal doesn't work after unbind/re-bind today.
+>> These patches are cosmetic, and tidyup it
+>>
+>> Kuninori Morimoto (2):
+>>        thermal: rcar_thermal: remove redundant operation
+>>        thermal: rcar_thermal: use pm_runtime_put_sync()
+>>
+>>   drivers/thermal/rcar_thermal.c | 49 +++++++++++++++++++++---------=
+-------------------
+>>   1 file changed, 21 insertions(+), 28 deletions(-)
+>>
+>>
+>> Best regards
+>> ---
+>> Kuninori Morimoto
