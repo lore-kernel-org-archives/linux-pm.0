@@ -1,164 +1,102 @@
-From: Zhaoyang Huang <zhaoyang.huang@linaro.org>
-Subject: Re: [PATCH v10 3/6] PM / Domains: make governor select deepest state
-Date: Tue, 10 Nov 2015 17:42:25 +0800
-Message-ID: <CAN2waFvS9sphJTi2_8H2_amnRspgQ_pO1-OJCN0XXcJq03OxAw@mail.gmail.com>
-References: <1445347589-5626-1-git-send-email-ahaslam@baylibre.com>
-	<1445347589-5626-4-git-send-email-ahaslam@baylibre.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 2/2] thermal: rcar_thermal: use pm_runtime_put_sync()
+Date: Tue, 10 Nov 2015 10:57:26 +0100
+Message-ID: <CAPDyKFqW=PEiijHN8cPaLK8oPRn9WdAYsLug1dbMpitKmNNKjw@mail.gmail.com>
+References: <87h9kulkfg.wl%kuninori.morimoto.gx@renesas.com>
+	<87fv0elibh.wl%kuninori.morimoto.gx@renesas.com>
+	<87d1vili9c.wl%kuninori.morimoto.gx@renesas.com>
+	<CAMuHMdWSMsVZYF2jswCoRB217n_3OR8uikNtBYOfQHkQs3oWSA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1445347589-5626-4-git-send-email-ahaslam@baylibre.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: ahaslam@baylibre.com
-Cc: Kevin Hilman <khilman@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, geert@glider.be, k.kozlowski.k@gmail.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, bcousson@baylibre.com, mturquette@baylibre.com, Axel Haslam <ahaslam+renesas@baylibre.com>
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdWSMsVZYF2jswCoRB217n_3OR8uikNtBYOfQHkQs3oWSA@mail.gmail.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Linux-SH <linux-sh@vger.kernel.org>, Linux-Kernel <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Cao Minh Hiep <cm-hiep@jinso.co.jp>, =?UTF-8?B?RHVuZ++8muS6uuOCvQ==?= <nv-dung@jinso.co.jp>
 List-Id: linux-pm@vger.kernel.org
 
-On 20 October 2015 at 21:26,  <ahaslam@baylibre.com> wrote:
-> From: Axel Haslam <ahaslam+renesas@baylibre.com>
+On 10 November 2015 at 09:18, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> Hi Morimoto-san, Ulf,
 >
-> Now that the structures of genpd can support multiple state definitions,
-> add the logic in the governor to select the deepest possible state when
-> powering down.
+> On Tue, Nov 10, 2015 at 3:12 AM, Kuninori Morimoto
+> <kuninori.morimoto.gx@renesas.com> wrote:
+>> From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+>>
+>> It is using pm_runtime_get_sync() on probe(). Let's use
+>> pm_runtime_put_sync() instead of pm_runtime_put(). Otherwise thermal
+>> sensor doesn't work after unbind/re-bind
+>>
+>> Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+>> ---
+>>  drivers/thermal/rcar_thermal.c | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
+>> index 13d01ed..f7cf2d7 100644
+>> --- a/drivers/thermal/rcar_thermal.c
+>> +++ b/drivers/thermal/rcar_thermal.c
+>> @@ -373,7 +373,7 @@ static int rcar_thermal_remove(struct platform_device *pdev)
+>>                 thermal_zone_device_unregister(priv->zone);
+>>         }
+>>
+>> -       pm_runtime_put(dev);
+>> +       pm_runtime_put_sync(dev);
+>>         pm_runtime_disable(dev);
+
+For the reasons explained by Geert, this is to me also a "workaround".
+
+I would replace pm_runtime_put() and pm_runtime_disable() with a call
+to pm_runtime_force_suspend().
+
+In that way, you will make sure you device get runtime suspended
+(clock domain will gate the clock). Additionally, the runtime PM
+status will properly reflect the status of the device.
+
+>>
+>>         return 0;
 >
-> For this, create the new function power_down_ok_for_state which will test
-> if a particular state will not violate the devices and sub-domains
-> constraints.
+> While I can confirm this fixes the issue, I think this is a bug in the PM
+> core, and thus your patch is merely a workaround.
 >
-> default_power_down_ok is modified to try each state starting from the
-> deepest until a valid state is found or there are no more states to test.
+> Morimoto-san: I assume this is a recent regression. Have you tried to bisect?
 >
-> the resulting state will be valid until there are latency or constraint
-> changes, thus, we can avoid looping every power_down, and use the cached
-> results instead.
+> With a bit more debugging info, this is the difference between the failing
+> and the "fixed" cases:
 >
-> Signed-off-by: Axel Haslam <ahaslam+renesas@baylibre.com>
-> ---
->  drivers/base/power/domain_governor.c | 75 +++++++++++++++++++++---------------
->  1 file changed, 45 insertions(+), 30 deletions(-)
+>  unbind:
 >
-> diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
-> index bf3ac68..aab2b32 100644
-> --- a/drivers/base/power/domain_governor.c
-> +++ b/drivers/base/power/domain_governor.c
-> @@ -100,7 +100,8 @@ static bool default_stop_ok(struct device *dev)
->   *
->   * This routine must be executed under the PM domain's lock.
->   */
-> -static bool default_power_down_ok(struct dev_pm_domain *pd)
-> +static bool power_down_ok_for_state(struct dev_pm_domain *pd,
-> +                                    unsigned int state)
->  {
->         struct generic_pm_domain *genpd = pd_to_genpd(pd);
->         struct gpd_link *link;
-> @@ -108,31 +109,9 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
->         s64 min_off_time_ns;
->         s64 off_on_time_ns;
+> +rcar_thermal e61f0000.thermal: pm_clk_suspend()
+> +renesas-cpg-mssr e6150000.clock-controller: MSTP 522/thermal OFF
+>  rcar_thermal e61f0000.thermal: removing from PM domain clock-controller
+>  pm_genpd_remove_device: Remove e61f0000.thermal from clock-controller
+> -renesas-cpg-mssr e6150000.clock-controller: MSTP 522/thermal OFF
 >
-> -       if (genpd->max_off_time_changed) {
-> -               struct gpd_link *link;
-> +       off_on_time_ns = genpd->states[state].power_off_latency_ns +
-> +               genpd->states[state].power_on_latency_ns;
+>  bind:
 >
-> -               /*
-> -                * We have to invalidate the cached results for the masters, so
-> -                * use the observation that default_power_down_ok() is not
-> -                * going to be called for any master until this instance
-> -                * returns.
-> -                */
-> -               list_for_each_entry(link, &genpd->slave_links, slave_node)
-> -                       link->master->max_off_time_changed = true;
-> -
-> -               genpd->max_off_time_changed = false;
-> -               genpd->cached_power_down_ok = false;
-> -               genpd->max_off_time_ns = -1;
-> -       } else {
-> -               return genpd->cached_power_down_ok;
-> -       }
-> -
-> -       /*
-> -        * Use the only available state, until multiple state support is added
-> -        * to the governor.
-> -        */
-> -       off_on_time_ns = genpd->states[0].power_off_latency_ns +
-> -                               genpd->states[0].power_on_latency_ns;
+>  rcar_thermal e61f0000.thermal: adding to PM domain clock-controller
+>  __pm_genpd_add_device: Add e61f0000.thermal to clock-controller
+>  rcar_thermal e61f0000.thermal: Clock thermal con_id (null) managed by
+> runtime PM.
+> -rcar_thermal e61f0000.thermal: thermal sensor was broken
+> +rcar_thermal e61f0000.thermal: pm_clk_resume()
+> +renesas-cpg-mssr e6150000.clock-controller: MSTP 522/thermal ON
+>  rcar_thermal e61f0000.thermal: 1 sensor probed
 >
->         min_off_time_ns = -1;
->         /*
-> @@ -195,8 +174,6 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
->                         min_off_time_ns = constraint_ns;
->         }
+> In the failing case, pm_clk_suspend() is not called, and turning off the
+> module clock is thus delayed until removal of the device from the clock
+> domain.
+> But as pm_clk_suspend() wasn't called, the device isn't correctly resumed on
+> rebind, and the module clock is never re-enabled, leading to a failure.
 >
-> -       genpd->cached_power_down_ok = true;
-> -
->         /*
->          * If the computed minimum device off time is negative, there are no
->          * latency constraints, so the domain can spend arbitrary time in the
-> @@ -209,14 +186,52 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
->          * The difference between the computed minimum subdomain or device off
->          * time and the time needed to turn the domain on is the maximum
->          * theoretical time this domain can spend in the "off" state.
-> -        * Use the only available state, until multiple state support is added
-> -        * to the governor.
->          */
->         genpd->max_off_time_ns = min_off_time_ns -
-> -               genpd->states[0].power_on_latency_ns;
-> +                       genpd->states[state].power_on_latency_ns;
->         return true;
->  }
-[question]: Does it mean that the sleep level is just decided by
-comparing the pre-configure on_off time with the gpd_timing_data? How
-about the next timer event which affect the sleep depth on cpuidle
-framework?
->
-> +static bool default_power_down_ok(struct dev_pm_domain *pd)
-> +{
-> +       struct generic_pm_domain *genpd = pd_to_genpd(pd);
-> +       unsigned int last_state_idx = genpd->state_count - 1;
-> +       struct gpd_link *link;
-> +       bool retval = false;
-> +       unsigned int i;
-> +
-> +       /*
-> +        * if there was no change on max_off_time, we can return the
-> +        * cached value and we dont need to find a new target_state
-> +        */
-> +       if (!genpd->max_off_time_changed)
-> +               return genpd->cached_power_down_ok;
-> +
-> +       /*
-> +        * We have to invalidate the cached results for the masters, so
-> +        * use the observation that default_power_down_ok() is not
-> +        * going to be called for any master until this instance
-> +        * returns.
-> +        */
-> +       list_for_each_entry(link, &genpd->slave_links, slave_node)
-> +               link->master->max_off_time_changed = true;
-> +
-> +       genpd->max_off_time_ns = -1;
-> +       genpd->max_off_time_changed = false;
-> +
-> +       /* find a state to power down to, starting from the deepest */
-> +       for (i = 0; i < genpd->state_count; i++) {
-> +               if (power_down_ok_for_state(pd, last_state_idx - i)) {
-> +                       genpd->state_idx = last_state_idx - i;
-> +                       retval = true;
-> +                       break;
-> +               }
-> +       }
-> +
-> +       genpd->cached_power_down_ok = retval;
-> +       return retval;
-> +}
-> +
->  static bool always_on_power_down_ok(struct dev_pm_domain *domain)
->  {
->         return false;
-[question]How the TICK_NOHZ treated if we substitute cpuidle framework
-with this one?
-> --
-> 2.4.5
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Ulf, what do you think?
+
+I totally agree on your analyse.
+
+The problem is that the runtime PM status of the device isn't
+correctly updated at ->remove(). The effect is that the the
+pm_runtime_get_sync() in ->probe() at re-bind will *not* trigger the
+->runtime_resume() callbacks to be invoked, as the runtime PM core
+believes the device is already runtime resumed.
+
+Kind regards
+Uffe
