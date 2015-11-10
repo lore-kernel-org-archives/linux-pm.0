@@ -1,113 +1,54 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 2/2] thermal: rcar_thermal: use pm_runtime_put_sync()
-Date: Tue, 10 Nov 2015 11:10:55 +0100
-Message-ID: <CAMuHMdX_mAd1PVv5_UCJJZ2U5EjYUbqQ36zaEgP5KdUuZiGQMQ@mail.gmail.com>
-References: <87h9kulkfg.wl%kuninori.morimoto.gx@renesas.com>
-	<87fv0elibh.wl%kuninori.morimoto.gx@renesas.com>
-	<87d1vili9c.wl%kuninori.morimoto.gx@renesas.com>
-	<CAMuHMdWSMsVZYF2jswCoRB217n_3OR8uikNtBYOfQHkQs3oWSA@mail.gmail.com>
-	<CAPDyKFqW=PEiijHN8cPaLK8oPRn9WdAYsLug1dbMpitKmNNKjw@mail.gmail.com>
+From: Axel Haslam <ahaslam@baylibre.com>
+Subject: Re: [PATCH v10 2/6] PM / Domains: core changes for multiple states
+Date: Tue, 10 Nov 2015 12:02:28 +0100
+Message-ID: <5641CEC4.3080800@baylibre.com>
+References: <1445347589-5626-1-git-send-email-ahaslam@baylibre.com>	<1445347589-5626-3-git-send-email-ahaslam@baylibre.com> <CAN2waFuQ+72zstgdD7GbxOr=d1T1wkqRvRePfL8KJbTceEGdzA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f42.google.com ([209.85.218.42]:33397 "EHLO
-	mail-oi0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751847AbbKJKK4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Nov 2015 05:10:56 -0500
-In-Reply-To: <CAPDyKFqW=PEiijHN8cPaLK8oPRn9WdAYsLug1dbMpitKmNNKjw@mail.gmail.com>
+Received: from mail-wm0-f50.google.com ([74.125.82.50]:36834 "EHLO
+	mail-wm0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752173AbbKJLCb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Nov 2015 06:02:31 -0500
+Received: by wmww144 with SMTP id w144so112327849wmw.1
+        for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2015 03:02:30 -0800 (PST)
+In-Reply-To: <CAN2waFuQ+72zstgdD7GbxOr=d1T1wkqRvRePfL8KJbTceEGdzA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Linux-SH <linux-sh@vger.kernel.org>, Linux-Kernel <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Cao Minh Hiep <cm-hiep@jinso.co.jp>, =?UTF-8?B?RHVuZ++8muS6uuOCvQ==?= <nv-dung@jinso.co.jp>
+To: Zhaoyang Huang <zhaoyang.huang@linaro.org>
+Cc: Kevin Hilman <khilman@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, geert@glider.be, k.kozlowski.k@gmail.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, bcousson@baylibre.com, mturquette@baylibre.com, Axel Haslam <ahaslam+renesas@baylibre.com>
 
-Hi Ulf,
+Hi Zhaoyang,
 
-On Tue, Nov 10, 2015 at 10:57 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 10 November 2015 at 09:18, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->> On Tue, Nov 10, 2015 at 3:12 AM, Kuninori Morimoto
->> <kuninori.morimoto.gx@renesas.com> wrote:
->>> From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
->>>
->>> It is using pm_runtime_get_sync() on probe(). Let's use
->>> pm_runtime_put_sync() instead of pm_runtime_put(). Otherwise thermal
->>> sensor doesn't work after unbind/re-bind
->>>
->>> Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
->>> ---
->>>  drivers/thermal/rcar_thermal.c | 2 +-
->>>  1 file changed, 1 insertion(+), 1 deletion(-)
->>>
->>> diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
->>> index 13d01ed..f7cf2d7 100644
->>> --- a/drivers/thermal/rcar_thermal.c
->>> +++ b/drivers/thermal/rcar_thermal.c
->>> @@ -373,7 +373,7 @@ static int rcar_thermal_remove(struct platform_device *pdev)
->>>                 thermal_zone_device_unregister(priv->zone);
->>>         }
->>>
->>> -       pm_runtime_put(dev);
->>> +       pm_runtime_put_sync(dev);
->>>         pm_runtime_disable(dev);
+>     @@ -576,6 +584,8 @@ static void pm_genpd_sync_poweroff(struct
+>     generic_pm_domain *genpd,
+>                  || atomic_read(&genpd->sd_count) > 0)
+>                      return;
 >
-> For the reasons explained by Geert, this is to me also a "workaround".
+>     +       /* Choose the deepest state when suspending */
+>     +       genpd->state_idx = genpd->state_count - 1;
 >
-> I would replace pm_runtime_put() and pm_runtime_disable() with a call
-> to pm_runtime_force_suspend().
+> if there is no governor configured, does it mean that we just try the
+> deepest one here?
 >
-> In that way, you will make sure you device get runtime suspended
-> (clock domain will gate the clock). Additionally, the runtime PM
-> status will properly reflect the status of the device.
 
-That still sounds like a workaround to me, which we have to apply to all
-drivers relying on Runtime PM?
+If a governor is not configured, there is no way to choose between the 
+states, and the state_idx will not change. so it will remain the one set 
+at the genpd init function wich is the same as here: the deepest state. 
+(state_count -1). In other words, if there is no governor, there
+is only one state: the deepest.
 
->> With a bit more debugging info, this is the difference between the failing
->> and the "fixed" cases:
->>
->>  unbind:
->>
->> +rcar_thermal e61f0000.thermal: pm_clk_suspend()
->> +renesas-cpg-mssr e6150000.clock-controller: MSTP 522/thermal OFF
->>  rcar_thermal e61f0000.thermal: removing from PM domain clock-controller
->>  pm_genpd_remove_device: Remove e61f0000.thermal from clock-controller
->> -renesas-cpg-mssr e6150000.clock-controller: MSTP 522/thermal OFF
->>
->>  bind:
->>
->>  rcar_thermal e61f0000.thermal: adding to PM domain clock-controller
->>  __pm_genpd_add_device: Add e61f0000.thermal to clock-controller
->>  rcar_thermal e61f0000.thermal: Clock thermal con_id (null) managed by
->> runtime PM.
->> -rcar_thermal e61f0000.thermal: thermal sensor was broken
->> +rcar_thermal e61f0000.thermal: pm_clk_resume()
->> +renesas-cpg-mssr e6150000.clock-controller: MSTP 522/thermal ON
->>  rcar_thermal e61f0000.thermal: 1 sensor probed
->>
->> In the failing case, pm_clk_suspend() is not called, and turning off the
->> module clock is thus delayed until removal of the device from the clock
->> domain.
->> But as pm_clk_suspend() wasn't called, the device isn't correctly resumed on
->> rebind, and the module clock is never re-enabled, leading to a failure.
->>
->> Ulf, what do you think?
+About setting the deepest state in this particular place, My 
+understanding is that this code will be called in suspend path,
+and in this case genpd_poweroff is not called, hence the genpd governor 
+is not called either. Because there are many other things happening 
+during suspend/resume, i think that suspend/resume is a slow procedure 
+that will most likely not honor the device qos constraints, so i set the 
+genpd to its deepest state.
+
+Regards
+Axel
+>              genpd_power_off(genpd, timed);
 >
-> I totally agree on your analyse.
->
-> The problem is that the runtime PM status of the device isn't
-> correctly updated at ->remove(). The effect is that the the
-> pm_runtime_get_sync() in ->probe() at re-bind will *not* trigger the
-> ->runtime_resume() callbacks to be invoked, as the runtime PM core
-> believes the device is already runtime resumed.
-
-So that's where it should be fixed?
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+>              genpd->status = GPD_STATE_POWER_OFF;
