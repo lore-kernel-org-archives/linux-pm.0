@@ -1,180 +1,32 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH 1/2] cpufreq: intel_pstate: Replace BYT by ATOM
-Date: Mon,  9 Nov 2015 17:30:56 -0800
-Message-ID: <1447119057-10759-2-git-send-email-srinivas.pandruvada@linux.intel.com>
-References: <1447119057-10759-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 0/2] Atom SoC fixes for Airmont
+Date: Mon,  9 Nov 2015 17:30:55 -0800
+Message-ID: <1447119057-10759-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
 Received: from mga14.intel.com ([192.55.52.115]:6421 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751840AbbKJBbv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 9 Nov 2015 20:31:51 -0500
-In-Reply-To: <1447119057-10759-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	id S1752249AbbKJBbw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 9 Nov 2015 20:31:52 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: rafael.j.wysocki@intel.com
-Cc: linux-pm@vger.kernel.org, Philippe Longepe <philippe.longepe@linux.intel.com>, Stephane Gasparini <stephane.gasparini@linux.intel.com>
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-From: Philippe Longepe <philippe.longepe@linux.intel.com>
+These are patches from Philippe Longepe, I did some minor changes
+- get_max_physical callback for Airmont
+- Fix checkpatch issues, for BUG_ON. 
 
-The goal is to support several Atoms architectures.
+Added my ACK.
 
-Signed-off-by: Philippe Longepe <philippe.longepe@linux.intel.com>
-Signed-off-by: Stephane Gasparini <stephane.gasparini@linux.intel.com>
-Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- drivers/cpufreq/intel_pstate.c | 58 +++++++++++++++++++++---------------------
- 1 file changed, 29 insertions(+), 29 deletions(-)
+Philippe Longepe (1):
+  cpufreq: intel_pstate: Replace BYT by ATOM
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 50d3cff..f4d7427 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -38,10 +38,10 @@
- #include <acpi/processor.h>
- #endif
- 
--#define BYT_RATIOS		0x66a
--#define BYT_VIDS		0x66b
--#define BYT_TURBO_RATIOS	0x66c
--#define BYT_TURBO_VIDS		0x66d
-+#define ATOM_RATIOS		0x66a
-+#define ATOM_VIDS		0x66b
-+#define ATOM_TURBO_RATIOS	0x66c
-+#define ATOM_TURBO_VIDS		0x66d
- 
- #define FRAC_BITS 8
- #define int_tofp(X) ((int64_t)(X) << FRAC_BITS)
-@@ -689,31 +689,31 @@ static void intel_pstate_hwp_enable(struct cpudata *cpudata)
- 	wrmsrl_on_cpu(cpudata->cpu, MSR_PM_ENABLE, 0x1);
- }
- 
--static int byt_get_min_pstate(void)
-+static int atom_get_min_pstate(void)
- {
- 	u64 value;
- 
--	rdmsrl(BYT_RATIOS, value);
-+	rdmsrl(ATOM_RATIOS, value);
- 	return (value >> 8) & 0x7F;
- }
- 
--static int byt_get_max_pstate(void)
-+static int atom_get_max_pstate(void)
- {
- 	u64 value;
- 
--	rdmsrl(BYT_RATIOS, value);
-+	rdmsrl(ATOM_RATIOS, value);
- 	return (value >> 16) & 0x7F;
- }
- 
--static int byt_get_turbo_pstate(void)
-+static int atom_get_turbo_pstate(void)
- {
- 	u64 value;
- 
--	rdmsrl(BYT_TURBO_RATIOS, value);
-+	rdmsrl(ATOM_TURBO_RATIOS, value);
- 	return value & 0x7F;
- }
- 
--static void byt_set_pstate(struct cpudata *cpudata, int pstate)
-+static void atom_set_pstate(struct cpudata *cpudata, int pstate)
- {
- 	u64 val;
- 	int32_t vid_fp;
-@@ -738,10 +738,10 @@ static void byt_set_pstate(struct cpudata *cpudata, int pstate)
- 	wrmsrl_on_cpu(cpudata->cpu, MSR_IA32_PERF_CTL, val);
- }
- 
--#define BYT_BCLK_FREQS 5
--static int byt_freq_table[BYT_BCLK_FREQS] = { 833, 1000, 1333, 1167, 800};
-+#define ATOM_BCLK_FREQS 5
-+static int atom_freq_table[ATOM_BCLK_FREQS] = { 833, 1000, 1333, 1167, 800};
- 
--static int byt_get_scaling(void)
-+static int atom_get_scaling(void)
- {
- 	u64 value;
- 	int i;
-@@ -749,16 +749,16 @@ static int byt_get_scaling(void)
- 	rdmsrl(MSR_FSB_FREQ, value);
- 	i = value & 0x3;
- 
--	BUG_ON(i > BYT_BCLK_FREQS);
-+	WARN_ON(i > ATOM_BCLK_FREQS);
- 
--	return byt_freq_table[i] * 100;
-+	return atom_freq_table[i] * 100;
- }
- 
--static void byt_get_vid(struct cpudata *cpudata)
-+static void atom_get_vid(struct cpudata *cpudata)
- {
- 	u64 value;
- 
--	rdmsrl(BYT_VIDS, value);
-+	rdmsrl(ATOM_VIDS, value);
- 	cpudata->vid.min = int_tofp((value >> 8) & 0x7f);
- 	cpudata->vid.max = int_tofp((value >> 16) & 0x7f);
- 	cpudata->vid.ratio = div_fp(
-@@ -766,7 +766,7 @@ static void byt_get_vid(struct cpudata *cpudata)
- 		int_tofp(cpudata->pstate.max_pstate -
- 			cpudata->pstate.min_pstate));
- 
--	rdmsrl(BYT_TURBO_VIDS, value);
-+	rdmsrl(ATOM_TURBO_VIDS, value);
- 	cpudata->vid.turbo = value & 0x7f;
- }
- 
-@@ -887,7 +887,7 @@ static struct cpu_defaults core_params = {
- 	},
- };
- 
--static struct cpu_defaults byt_params = {
-+static struct cpu_defaults atom_params = {
- 	.pid_policy = {
- 		.sample_rate_ms = 10,
- 		.deadband = 0,
-@@ -897,13 +897,13 @@ static struct cpu_defaults byt_params = {
- 		.i_gain_pct = 4,
- 	},
- 	.funcs = {
--		.get_max = byt_get_max_pstate,
--		.get_max_physical = byt_get_max_pstate,
--		.get_min = byt_get_min_pstate,
--		.get_turbo = byt_get_turbo_pstate,
--		.set = byt_set_pstate,
--		.get_scaling = byt_get_scaling,
--		.get_vid = byt_get_vid,
-+		.get_max = atom_get_max_pstate,
-+		.get_max_physical = atom_get_max_pstate,
-+		.get_min = atom_get_min_pstate,
-+		.get_turbo = atom_get_turbo_pstate,
-+		.set = atom_set_pstate,
-+		.get_scaling = atom_get_scaling,
-+		.get_vid = atom_get_vid,
- 	},
- };
- 
-@@ -1155,7 +1155,7 @@ static void intel_pstate_timer_func(unsigned long __data)
- static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
- 	ICPU(0x2a, core_params),
- 	ICPU(0x2d, core_params),
--	ICPU(0x37, byt_params),
-+	ICPU(0x37, atom_params),
- 	ICPU(0x3a, core_params),
- 	ICPU(0x3c, core_params),
- 	ICPU(0x3d, core_params),
-@@ -1164,7 +1164,7 @@ static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
- 	ICPU(0x45, core_params),
- 	ICPU(0x46, core_params),
- 	ICPU(0x47, core_params),
--	ICPU(0x4c, byt_params),
-+	ICPU(0x4c, atom_params),
- 	ICPU(0x4e, core_params),
- 	ICPU(0x4f, core_params),
- 	ICPU(0x5e, core_params),
+Srinivas Pandruvada (1):
+  cpufreq: intel_pstate: Fix the FSB feq for Airmont
+
+ drivers/cpufreq/intel_pstate.c | 97 ++++++++++++++++++++++++++++--------------
+ 1 file changed, 66 insertions(+), 31 deletions(-)
+
 -- 
 1.9.3
 
