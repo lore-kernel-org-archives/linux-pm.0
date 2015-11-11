@@ -1,81 +1,77 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 2/2] thermal: rcar_thermal: use pm_runtime_put_sync()
-Date: Wed, 11 Nov 2015 12:03:52 +0100
-Message-ID: <CAPDyKFpzHjHfJjxupaSDabmSQzCD8M9enAFQDe0NnMn6-9g0pg@mail.gmail.com>
-References: <87h9kulkfg.wl%kuninori.morimoto.gx@renesas.com>
-	<CAMuHMdX_mAd1PVv5_UCJJZ2U5EjYUbqQ36zaEgP5KdUuZiGQMQ@mail.gmail.com>
-	<CAPDyKFrDKXRui3onqCp0tH1E4MFN4AchaBrRcfdYi63hNLU63Q@mail.gmail.com>
-	<2060819.A5Wq9BbBOH@vostro.rjw.lan>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v2 10/11] PM / Hibernate: clean cached pages on
+ architectures that require it
+Date: Wed, 11 Nov 2015 11:40:39 +0000
+Message-ID: <20151111114039.GA8375@red-moon>
+References: <1445966960-31724-1-git-send-email-james.morse@arm.com>
+ <1445966960-31724-11-git-send-email-james.morse@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f176.google.com ([209.85.160.176]:36566 "EHLO
-	mail-yk0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751621AbbKKLDx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Nov 2015 06:03:53 -0500
-Received: by ykdr82 with SMTP id r82so42439600ykd.3
-        for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2015 03:03:52 -0800 (PST)
-In-Reply-To: <2060819.A5Wq9BbBOH@vostro.rjw.lan>
+Received: from foss.arm.com ([217.140.101.70]:59611 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752133AbbKKLjs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 11 Nov 2015 06:39:48 -0500
+Content-Disposition: inline
+In-Reply-To: <1445966960-31724-11-git-send-email-james.morse@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Linux-SH <linux-sh@vger.kernel.org>, Linux-Kernel <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Cao Minh Hiep <cm-hiep@jinso.co.jp>, =?UTF-8?B?RHVuZ++8muS6uuOCvQ==?= <nv-dung@jinso.co.jp>, Alan Stern <stern@rowland.harvard.edu>
+To: James Morse <james.morse@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>
+Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Kevin Kang <kkang@intrinsyc.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, wangfei <w.f@huawei.com>, Marc Zyngier <marc.zyngier@arm.com>
 
-On 11 November 2015 at 00:57, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Tuesday, November 10, 2015 02:00:38 PM Ulf Hansson wrote:
->> +Rafael, Alan
->>
->> On 10 November 2015 at 11:10, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->> > Hi Ulf,
->> >
->
-> [cut]
->
->> >>
->> >> The problem is that the runtime PM status of the device isn't
->> >> correctly updated at ->remove(). The effect is that the the
->> >> pm_runtime_get_sync() in ->probe() at re-bind will *not* trigger the
->> >> ->runtime_resume() callbacks to be invoked, as the runtime PM core
->> >> believes the device is already runtime resumed.
->> >
->> > So that's where it should be fixed?
->>
->> That would be a more generic approach, although I am not sure how the
->> driver/PM core should be able to take the correct decision in this
->> phase. Devices may be runtime PM managed also without a driver bound.
->>
->> Perhaps when __device_release_driver() finds a bounded driver for the
->> device, it could after all actions been performed to unbind the
->> driver, check if runtime PM is enabled. If it isn't, it could set the
->> runtime PM status to suspended!?
->>
->> I have no idea if that would introduce other issues as it would kind
->> of force the runtime PM status of the device to suspend, without
->> actually knowing if it's the correct thing to do.
->
-> IMO, that needs to depend on the bus type.  If the bus type has a way
-> to manage PM for devices without drivers, it should be allowed to do so.
+Hi Pavel, Rafael,
 
-By following my suggestion above, we would allow the bus/driver's
-->remove() to manage whether runtime PM should be enabled/disabled for
-the device, before __device_release_driver() checks that.
-Don't you think that the driver core could rely on that information?
+Do you have any feedback on this patch ?
 
-I realize that it would be a kind of policy decision for runtime PM,
-but it's quite similar as when register/unregister devices when we set
-the runtime PM status to suspended.
+It is fundamental to this series and affects Hibernate core code so if you
+have any feedback that would be much appreciated.
 
-If you don't think this is a good idea, I guess we need to deal with
-this from subsystem level code somehow instead.
+Thanks a lot,
+Lorenzo
 
->
-> Of course, the platform bus type is somewhat special in that respect,
-> but it looks like we simply need some sort of a convention in there too
-> (the expectations should be the same for everybody).
->
-> Thanks,
-> Rafael
->
-
-Kind regards
-Uffe
+On Tue, Oct 27, 2015 at 05:29:19PM +0000, James Morse wrote:
+> Some architectures require code written to memory as if it were data to be
+> 'cleaned' from any data caches so that the processor can fetch them as new
+> instructions.
+> 
+> During resume from hibernate, the snapshot code copies some pages directly,
+> meaning these architectures do not get a chance to perform their cache
+> maintenance. Add a call to flush_icache_range(), which is provided by
+> architectures that require it, to perform the maintenance.
+> 
+> This mirrors the kernel's behaviour when loading kernel modules and when
+> mapping executable pages to user space.
+> 
+> Signed-off-by: James Morse <james.morse@arm.com>
+> ---
+>  kernel/power/snapshot.c | 4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+> index 5235dd4e1e2f..139fc449ad75 100644
+> --- a/kernel/power/snapshot.c
+> +++ b/kernel/power/snapshot.c
+> @@ -31,6 +31,7 @@
+>  #include <linux/ktime.h>
+>  
+>  #include <asm/uaccess.h>
+> +#include <asm/cacheflush.h>
+>  #include <asm/mmu_context.h>
+>  #include <asm/pgtable.h>
+>  #include <asm/tlbflush.h>
+> @@ -1196,9 +1197,12 @@ static unsigned int count_data_pages(void)
+>  static inline void do_copy_page(long *dst, long *src)
+>  {
+>  	int n;
+> +	unsigned long __maybe_unused start = (unsigned long)dst;
+>  
+>  	for (n = PAGE_SIZE / sizeof(long); n; n--)
+>  		*dst++ = *src++;
+> +
+> +	flush_icache_range(start, start+PAGE_SIZE);
+>  }
+>  
+>  
+> -- 
+> 2.1.4
+> 
