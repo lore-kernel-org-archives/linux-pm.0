@@ -1,174 +1,150 @@
-From: Matt Ranostay <mranostay@gmail.com>
-Subject: Re: [PATCH v4 1/1] iio: pulsedlight-lidar-lite: add runtime PM
-Date: Wed, 11 Nov 2015 00:51:36 -0800
-Message-ID: <CAKzfze_Zozt4N13jJdAi2C03T57BqNRox3+tANK_hz4d1oiuyw@mail.gmail.com>
-References: <1447014418-27849-1-git-send-email-mranostay@gmail.com>
-	<1447014418-27849-2-git-send-email-mranostay@gmail.com>
-	<5641E267.6010204@intel.com>
+From: Zhaoyang Huang <zhaoyang.huang@linaro.org>
+Subject: Re: [RFC v2 5/6] arm: cpuidle: let genpd handle the cluster power
+ transition with 'power-states'
+Date: Wed, 11 Nov 2015 17:10:40 +0800
+Message-ID: <CAN2waFvgQUO4Mda3bHEwRDEPO2T36DWXXWKuW6G9+o7mQ854VQ@mail.gmail.com>
+References: <20151006022702.GA78570@linaro.org>
+	<1444141665-18534-1-git-send-email-mtitinger+renesas@baylibre.com>
+	<1444141665-18534-6-git-send-email-mtitinger+renesas@baylibre.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f41.google.com ([209.85.215.41]:36322 "EHLO
-	mail-lf0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751908AbbKKIvi (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Nov 2015 03:51:38 -0500
-In-Reply-To: <5641E267.6010204@intel.com>
+Received: from mail-yk0-f178.google.com ([209.85.160.178]:34503 "EHLO
+	mail-yk0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750915AbbKKJKl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Nov 2015 04:10:41 -0500
+Received: by ykfs79 with SMTP id s79so39320696ykf.1
+        for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2015 01:10:40 -0800 (PST)
+In-Reply-To: <1444141665-18534-6-git-send-email-mtitinger+renesas@baylibre.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Adriana Reus <adriana.reus@intel.com>
-Cc: Jonathan Cameron <jic23@kernel.org>, "linux-iio@vger.kernel.org" <linux-iio@vger.kernel.org>, linux-pm@vger.kernel.org, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>
+To: Marc Titinger <mtitinger@baylibre.com>
+Cc: khilman@kernel.org, rjw@rjwysocki.net, Lina Iyer <lina.iyer@linaro.org>, Axel Haslam <ahaslam@baylibre.com>, Benoit Cousson <bcousson@baylibre.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tue, Nov 10, 2015 at 4:26 AM, Adriana Reus <adriana.reus@intel.com> wrote:
+On 6 October 2015 at 22:27, Marc Titinger <mtitinger@baylibre.com> wrote:
+> From: Marc Titinger <mtitinger@baylibre.com>
 >
+> Cpuidle now handles c-states and power-states differently. c-states do not decrement
+>  the reference count for the CPUs in the cluster, while power-states i.e.
+> cluster level states like 'CLUSTER_SLEEP_0' in the case of juno, will.
 >
-> On 08.11.2015 22:26, Matt Ranostay wrote:
->>
->> Add runtime PM support for the lidar-lite module to enable low power
->> mode when last device requested reading is over a second.
->>
->> Signed-off-by: Matt Ranostay <mranostay@gmail.com>
->> ---
->>   drivers/iio/proximity/pulsedlight-lidar-lite-v2.c | 54
->> ++++++++++++++++++++++-
->>   1 file changed, 53 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/iio/proximity/pulsedlight-lidar-lite-v2.c
->> b/drivers/iio/proximity/pulsedlight-lidar-lite-v2.c
->> index 961f9f99..1a5481f 100644
->> --- a/drivers/iio/proximity/pulsedlight-lidar-lite-v2.c
->> +++ b/drivers/iio/proximity/pulsedlight-lidar-lite-v2.c
->> @@ -13,7 +13,7 @@
->>    * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
->>    * GNU General Public License for more details.
->>    *
->> - * TODO: runtime pm, interrupt mode, and signal strength reporting
->> + * TODO: interrupt mode, and signal strength reporting
->>    */
->>
->>   #include <linux/err.h>
->> @@ -21,6 +21,7 @@
->>   #include <linux/i2c.h>
->>   #include <linux/delay.h>
->>   #include <linux/module.h>
->> +#include <linux/pm_runtime.h>
->>   #include <linux/iio/iio.h>
->>   #include <linux/iio/sysfs.h>
->>   #include <linux/iio/buffer.h>
->> @@ -37,6 +38,7 @@
->>
->>   #define LIDAR_REG_DATA_HBYTE  0x0f
->>   #define LIDAR_REG_DATA_LBYTE  0x10
->> +#define LIDAR_REG_PWR_CONTROL  0x65
->>
->>   #define LIDAR_DRV_NAME "lidar"
->>
->> @@ -90,6 +92,12 @@ static inline int lidar_write_control(struct lidar_data
->> *data, int val)
->>         return i2c_smbus_write_byte_data(data->client, LIDAR_REG_CONTROL,
->> val);
->>   }
->>
->> +static inline int lidar_write_power(struct lidar_data *data, int val)
->> +{
->> +       return i2c_smbus_write_byte_data(data->client,
->> +                                        LIDAR_REG_PWR_CONTROL, val);
->> +}
->> +
->>   static int lidar_read_measurement(struct lidar_data *data, u16 *reg)
->>   {
->>         int ret;
->> @@ -116,6 +124,8 @@ static int lidar_get_measurement(struct lidar_data
->> *data, u16 *reg)
->>         int tries = 10;
->>         int ret;
->>
->> +       pm_runtime_get_sync(&client->dev);
->> +
->>         /* start sample */
->>         ret = lidar_write_control(data, LIDAR_REG_CONTROL_ACQUIRE);
->>         if (ret < 0) {
->> @@ -144,6 +154,8 @@ static int lidar_get_measurement(struct lidar_data
->> *data, u16 *reg)
->>                 }
->>                 ret = -EIO;
->>         }
->> +       pm_runtime_mark_last_busy(&client->dev);
->> +       pm_runtime_put_autosuspend(&client->dev);
->>
->>         return ret;
->>   }
->> @@ -243,6 +255,15 @@ static int lidar_probe(struct i2c_client *client,
->>         if (ret)
->>                 goto error_unreg_buffer;
->>
->> +       pm_runtime_set_autosuspend_delay(&client->dev, 1000);
->> +       pm_runtime_use_autosuspend(&client->dev);
->> +
->> +       pm_runtime_set_active(&client->dev);
+> The 'D1' fake device also registers intermediate power-state,
+> for experimentation.
 >
-> pm_runtime_set_active ^ may return an error code.
-
-Ah true. But is the return value really needed in this case?
-
+> Signed-off-by: Marc Titinger <mtitinger@baylibre.com>
+> ---
+>  arch/arm64/boot/dts/arm/juno.dts |  2 +-
+>  drivers/cpuidle/cpuidle-arm.c    | 52 ++++++++++++++++++++++++++++++++--------
+>  2 files changed, 43 insertions(+), 11 deletions(-)
 >
->> +       pm_runtime_enable(&client->dev);
->> +
->> +       pm_runtime_mark_last_busy(&client->dev);
->> +       pm_runtime_idle(&client->dev);
->> +
->>         return 0;
->>
->>   error_unreg_buffer:
->> @@ -258,6 +279,9 @@ static int lidar_remove(struct i2c_client *client)
->>         iio_device_unregister(indio_dev);
->>         iio_triggered_buffer_cleanup(indio_dev);
->>
->> +       pm_runtime_disable(&client->dev);
->> +       pm_runtime_set_suspended(&client->dev);
->> +
->>         return 0;
->>   }
->>
->> @@ -273,10 +297,38 @@ static const struct of_device_id lidar_dt_ids[] = {
->>   };
->>   MODULE_DEVICE_TABLE(of, lidar_dt_ids);
->>
->> +#ifdef CONFIG_PM
->> +static int lidar_pm_runtime_suspend(struct device *dev)
->> +{
->> +       struct iio_dev *indio_dev =
->> i2c_get_clientdata(to_i2c_client(dev));
->> +       struct lidar_data *data = iio_priv(indio_dev);
->> +
->> +       return lidar_write_power(data, 0x0f);
->> +}
->> +
->> +static int lidar_pm_runtime_resume(struct device *dev)
->> +{
->> +       struct iio_dev *indio_dev =
->> i2c_get_clientdata(to_i2c_client(dev));
->> +       struct lidar_data *data = iio_priv(indio_dev);
->> +       int ret = lidar_write_power(data, 0);
->> +
->> +       /* regulator and FPGA needs settling time */
->> +       usleep_range(15000, 20000);
->> +
->> +       return ret;
->> +}
->> +#endif
->> +
->> +static const struct dev_pm_ops lidar_pm_ops = {
->> +       SET_RUNTIME_PM_OPS(lidar_pm_runtime_suspend,
->> +                          lidar_pm_runtime_resume, NULL)
->> +};
->> +
->>   static struct i2c_driver lidar_driver = {
->>         .driver = {
->>                 .name   = LIDAR_DRV_NAME,
->>                 .of_match_table = of_match_ptr(lidar_dt_ids),
->> +               .pm     = &lidar_pm_ops,
->>         },
->>         .probe          = lidar_probe,
->>         .remove         = lidar_remove,
->>
+> diff --git a/arch/arm64/boot/dts/arm/juno.dts b/arch/arm64/boot/dts/arm/juno.dts
+> index cadc5de..0bb0dd7 100644
+> --- a/arch/arm64/boot/dts/arm/juno.dts
+> +++ b/arch/arm64/boot/dts/arm/juno.dts
+> @@ -47,7 +47,7 @@
+>                         };
 >
+>                         CLUSTER_SLEEP_0: cluster-sleep-0 {
+> -                               compatible = "arm,idle-state","arm,power-state";
+> +                               compatible = "arm,power-state";
+>                                 arm,psci-suspend-param = <0x1010000>;
+>                                 local-timer-stop;
+>                                 entry-latency-us = <800>;
+> diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
+> index 7c791f9..8dd5dc3 100644
+> --- a/drivers/cpuidle/cpuidle-arm.c
+> +++ b/drivers/cpuidle/cpuidle-arm.c
+> @@ -40,7 +40,6 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
+>                                 struct cpuidle_driver *drv, int idx)
+>  {
+>         int ret;
+> -       struct device *cpu_dev = get_cpu_device(dev->cpu);
+>
+>         if (!idx) {
+>                 cpu_do_idle();
+> @@ -50,18 +49,49 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
+>         ret = cpu_pm_enter();
+>         if (!ret) {
+>                 /*
+> -                * Notify runtime PM as well of this cpu powering down
+> -                * TODO: Merge CPU_PM and runtime PM.
+> -                */
+> -               RCU_NONIDLE(pm_runtime_put_sync(cpu_dev));
+> -
+> -               /*
+>                  * Pass idle state index to cpu_suspend which in turn will
+>                  * call the CPU ops suspend protocol with idle index as a
+>                  * parameter.
+>                  */
+>                 arm_cpuidle_suspend(idx);
+>
+> +               cpu_pm_exit();
+> +       }
+> +
+> +       return ret ? -1 : idx;
+> +}
+> +
+> +/*
+> + * arm_enter_power_state - delegate state trasition to genpd
+> + *
+> + * dev: cpuidle device
+> + * drv: cpuidle driver
+> + * idx: state index
+> + *
+> + * Called from the CPUidle framework to delegate a state transition
+> + * to the generic domain. This will be a cluster poweroff state
+> + * the Domain will chose to actually turn off the cluster based on
+> + * the status of other CPUs, and devices and subdomains in the Cluster
+> + * domain.
+> +*/
+> +static int arm_enter_power_state(struct cpuidle_device *dev,
+> +               struct cpuidle_driver *drv, int idx)
+> +{
+> +       int ret;
+> +       struct device *cpu_dev = get_cpu_device(dev->cpu);
+> +
+> +       BUG_ON(idx == 0);
+> +
+> +       ret = cpu_pm_enter();
+> +       if (!ret) {
+> +               /*
+> +               * Notify runtime PM as well of this cpu powering down
+> +               * TODO: Merge CPU_PM and runtime PM.
+> +               */
+> +               RCU_NONIDLE(pm_runtime_put_sync(cpu_dev));
+[question]: Does it mean that above function will use the gpd->rpm->idle?
+> +
+> +               arm_cpuidle_suspend(idx);
+> +
+>                 RCU_NONIDLE(pm_runtime_get_sync(cpu_dev));
+>                 cpu_pm_exit();
+>         }
+> @@ -69,6 +99,7 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
+>         return ret ? -1 : idx;
+>  }
+>
+> +
+>  static struct cpuidle_driver arm_idle_driver = {
+>         .name = "arm_idle",
+>         .owner = THIS_MODULE,
+> @@ -90,9 +121,10 @@ static struct cpuidle_driver arm_idle_driver = {
+>  };
+>
+>  static const struct of_device_id arm_idle_state_match[] __initconst = {
+> -       { .compatible = "arm,idle-state",
+> -         .data = arm_enter_idle_state },
+> -       { },
+> +       {.compatible = "arm,idle-state",
+> +        .data = arm_enter_idle_state},
+> +       {.compatible = "arm,power-state",
+> +        .data = arm_enter_power_state},
+>  };
+>
+>  /*
+> --
+> 1.9.1
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
