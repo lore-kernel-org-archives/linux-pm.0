@@ -1,528 +1,154 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v1 1/1] x86/platform/iosf_mbi: Remove duplicate definitions
-Date: Wed, 11 Nov 2015 18:20:24 +0200
-Message-ID: <1447258824-131840-1-git-send-email-andriy.shevchenko@linux.intel.com>
-Return-path: <linux-i2c-owner@vger.kernel.org>
-Sender: linux-i2c-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Peter Anvin <hpa@zytor.com>, Wolfram Sang <wsa@the-dreams.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [RFC v2 5/6] arm: cpuidle: let genpd handle the cluster power
+ transition with 'power-states'
+Date: Wed, 11 Nov 2015 10:27:03 -0700
+Message-ID: <20151111172703.GD691@linaro.org>
+References: <20151006022702.GA78570@linaro.org>
+ <1444141665-18534-1-git-send-email-mtitinger+renesas@baylibre.com>
+ <1444141665-18534-6-git-send-email-mtitinger+renesas@baylibre.com>
+ <CAN2waFvgQUO4Mda3bHEwRDEPO2T36DWXXWKuW6G9+o7mQ854VQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAN2waFvgQUO4Mda3bHEwRDEPO2T36DWXXWKuW6G9+o7mQ854VQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Zhaoyang Huang <zhaoyang.huang@linaro.org>
+Cc: Marc Titinger <mtitinger@baylibre.com>, khilman@kernel.org, rjw@rjwysocki.net, Axel Haslam <ahaslam@baylibre.com>, Benoit Cousson <bcousson@baylibre.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The read and write opcodes are global for all units on SoC and even across
-Intel SoCs. Remove duplication of corresponding constants. At the same time
-convert all current users.
+On Wed, Nov 11 2015 at 02:10 -0700, Zhaoyang Huang wrote:
+>On 6 October 2015 at 22:27, Marc Titinger <mtitinger@baylibre.com> wrote:
+>> From: Marc Titinger <mtitinger@baylibre.com>
+>>
+>> Cpuidle now handles c-states and power-states differently. c-states do not decrement
+>>  the reference count for the CPUs in the cluster, while power-states i.e.
+>> cluster level states like 'CLUSTER_SLEEP_0' in the case of juno, will.
+>>
+>> The 'D1' fake device also registers intermediate power-state,
+>> for experimentation.
+>>
+>> Signed-off-by: Marc Titinger <mtitinger@baylibre.com>
+>> ---
+>>  arch/arm64/boot/dts/arm/juno.dts |  2 +-
+>>  drivers/cpuidle/cpuidle-arm.c    | 52 ++++++++++++++++++++++++++++++++--------
+>>  2 files changed, 43 insertions(+), 11 deletions(-)
+>>
+>> diff --git a/arch/arm64/boot/dts/arm/juno.dts b/arch/arm64/boot/dts/arm/juno.dts
+>> index cadc5de..0bb0dd7 100644
+>> --- a/arch/arm64/boot/dts/arm/juno.dts
+>> +++ b/arch/arm64/boot/dts/arm/juno.dts
+>> @@ -47,7 +47,7 @@
+>>                         };
+>>
+>>                         CLUSTER_SLEEP_0: cluster-sleep-0 {
+>> -                               compatible = "arm,idle-state","arm,power-state";
+>> +                               compatible = "arm,power-state";
+>>                                 arm,psci-suspend-param = <0x1010000>;
+>>                                 local-timer-stop;
+>>                                 entry-latency-us = <800>;
+>> diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
+>> index 7c791f9..8dd5dc3 100644
+>> --- a/drivers/cpuidle/cpuidle-arm.c
+>> +++ b/drivers/cpuidle/cpuidle-arm.c
+>> @@ -40,7 +40,6 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
+>>                                 struct cpuidle_driver *drv, int idx)
+>>  {
+>>         int ret;
+>> -       struct device *cpu_dev = get_cpu_device(dev->cpu);
+>>
+>>         if (!idx) {
+>>                 cpu_do_idle();
+>> @@ -50,18 +49,49 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
+>>         ret = cpu_pm_enter();
+>>         if (!ret) {
+>>                 /*
+>> -                * Notify runtime PM as well of this cpu powering down
+>> -                * TODO: Merge CPU_PM and runtime PM.
+>> -                */
+>> -               RCU_NONIDLE(pm_runtime_put_sync(cpu_dev));
+>> -
+>> -               /*
+>>                  * Pass idle state index to cpu_suspend which in turn will
+>>                  * call the CPU ops suspend protocol with idle index as a
+>>                  * parameter.
+>>                  */
+>>                 arm_cpuidle_suspend(idx);
+>>
+>> +               cpu_pm_exit();
+>> +       }
+>> +
+>> +       return ret ? -1 : idx;
+>> +}
+>> +
+>> +/*
+>> + * arm_enter_power_state - delegate state trasition to genpd
+>> + *
+>> + * dev: cpuidle device
+>> + * drv: cpuidle driver
+>> + * idx: state index
+>> + *
+>> + * Called from the CPUidle framework to delegate a state transition
+>> + * to the generic domain. This will be a cluster poweroff state
+>> + * the Domain will chose to actually turn off the cluster based on
+>> + * the status of other CPUs, and devices and subdomains in the Cluster
+>> + * domain.
+>> +*/
+>> +static int arm_enter_power_state(struct cpuidle_device *dev,
+>> +               struct cpuidle_driver *drv, int idx)
+>> +{
+>> +       int ret;
+>> +       struct device *cpu_dev = get_cpu_device(dev->cpu);
+>> +
+>> +       BUG_ON(idx == 0);
+>> +
+>> +       ret = cpu_pm_enter();
+>> +       if (!ret) {
+>> +               /*
+>> +               * Notify runtime PM as well of this cpu powering down
+>> +               * TODO: Merge CPU_PM and runtime PM.
+>> +               */
+>> +               RCU_NONIDLE(pm_runtime_put_sync(cpu_dev));
+>[question]: Does it mean that above function will use the gpd->rpm->idle?
 
-No functional change.
+Will end up at rpm_suspend() in runtime.c which will callinto genpd. Its
+not a direct call to genpd.
 
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Peter Anvin <hpa@zytor.com>
-Cc: Wolfram Sang <wsa@the-dreams.de>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
+Thanks,
+Lina
 
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
- arch/x86/include/asm/iosf_mbi.h              | 49 +++++-----------------
- arch/x86/platform/atom/punit_atom_debug.c    |  7 +---
- drivers/i2c/busses/i2c-designware-baytrail.c | 17 +++-----
- drivers/powercap/intel_rapl.c                | 10 ++---
- drivers/thermal/intel_quark_dts_thermal.c    | 61 ++++++++++++++--------------
- drivers/thermal/intel_soc_dts_iosf.c         | 43 ++++++++++----------
- 6 files changed, 75 insertions(+), 112 deletions(-)
-
-diff --git a/arch/x86/include/asm/iosf_mbi.h b/arch/x86/include/asm/iosf_mbi.h
-index b72ad0f..cdc5f63 100644
---- a/arch/x86/include/asm/iosf_mbi.h
-+++ b/arch/x86/include/asm/iosf_mbi.h
-@@ -1,5 +1,5 @@
- /*
-- * iosf_mbi.h: Intel OnChip System Fabric MailBox access support
-+ * Intel OnChip System Fabric MailBox access support
-  */
- 
- #ifndef IOSF_MBI_SYMS_H
-@@ -16,6 +16,16 @@
- #define MBI_MASK_LO		0x000000FF
- #define MBI_ENABLE		0xF0
- 
-+/* IOSF SB read/write opcodes */
-+#define MBI_MMIO_READ		0x00
-+#define MBI_MMIO_WRITE		0x01
-+#define MBI_CR_READ		0x06
-+#define MBI_CR_WRITE		0x07
-+#define MBI_REG_READ		0x10
-+#define MBI_REG_WRITE		0x11
-+#define MBI_ESRAM_READ		0x12
-+#define MBI_ESRAM_WRITE		0x13
-+
- /* Baytrail available units */
- #define BT_MBI_UNIT_AUNIT	0x00
- #define BT_MBI_UNIT_SMC		0x01
-@@ -28,50 +38,13 @@
- #define BT_MBI_UNIT_SATA	0xA3
- #define BT_MBI_UNIT_PCIE	0xA6
- 
--/* Baytrail read/write opcodes */
--#define BT_MBI_AUNIT_READ	0x10
--#define BT_MBI_AUNIT_WRITE	0x11
--#define BT_MBI_SMC_READ		0x10
--#define BT_MBI_SMC_WRITE	0x11
--#define BT_MBI_CPU_READ		0x10
--#define BT_MBI_CPU_WRITE	0x11
--#define BT_MBI_BUNIT_READ	0x10
--#define BT_MBI_BUNIT_WRITE	0x11
--#define BT_MBI_PMC_READ		0x06
--#define BT_MBI_PMC_WRITE	0x07
--#define BT_MBI_GFX_READ		0x00
--#define BT_MBI_GFX_WRITE	0x01
--#define BT_MBI_SMIO_READ	0x06
--#define BT_MBI_SMIO_WRITE	0x07
--#define BT_MBI_USB_READ		0x06
--#define BT_MBI_USB_WRITE	0x07
--#define BT_MBI_SATA_READ	0x00
--#define BT_MBI_SATA_WRITE	0x01
--#define BT_MBI_PCIE_READ	0x00
--#define BT_MBI_PCIE_WRITE	0x01
--
- /* Quark available units */
- #define QRK_MBI_UNIT_HBA	0x00
- #define QRK_MBI_UNIT_HB		0x03
- #define QRK_MBI_UNIT_RMU	0x04
- #define QRK_MBI_UNIT_MM		0x05
--#define QRK_MBI_UNIT_MMESRAM	0x05
- #define QRK_MBI_UNIT_SOC	0x31
- 
--/* Quark read/write opcodes */
--#define QRK_MBI_HBA_READ	0x10
--#define QRK_MBI_HBA_WRITE	0x11
--#define QRK_MBI_HB_READ		0x10
--#define QRK_MBI_HB_WRITE	0x11
--#define QRK_MBI_RMU_READ	0x10
--#define QRK_MBI_RMU_WRITE	0x11
--#define QRK_MBI_MM_READ		0x10
--#define QRK_MBI_MM_WRITE	0x11
--#define QRK_MBI_MMESRAM_READ	0x12
--#define QRK_MBI_MMESRAM_WRITE	0x13
--#define QRK_MBI_SOC_READ	0x06
--#define QRK_MBI_SOC_WRITE	0x07
--
- #if IS_ENABLED(CONFIG_IOSF_MBI)
- 
- bool iosf_mbi_available(void);
-diff --git a/arch/x86/platform/atom/punit_atom_debug.c b/arch/x86/platform/atom/punit_atom_debug.c
-index 5ca8ead..81c769e 100644
---- a/arch/x86/platform/atom/punit_atom_debug.c
-+++ b/arch/x86/platform/atom/punit_atom_debug.c
-@@ -25,8 +25,6 @@
- #include <asm/cpu_device_id.h>
- #include <asm/iosf_mbi.h>
- 
--/* Side band Interface port */
--#define PUNIT_PORT		0x04
- /* Power gate status reg */
- #define PWRGT_STATUS		0x61
- /* Subsystem config/status Video processor */
-@@ -85,9 +83,8 @@ static int punit_dev_state_show(struct seq_file *seq_file, void *unused)
- 
- 	seq_puts(seq_file, "\n\nPUNIT NORTH COMPLEX DEVICES :\n");
- 	while (punit_devp->name) {
--		status = iosf_mbi_read(PUNIT_PORT, BT_MBI_PMC_READ,
--				       punit_devp->reg,
--				       &punit_pwr_status);
-+		status = iosf_mbi_read(BT_MBI_UNIT_PMC, MBI_REG_READ,
-+				       punit_devp->reg, &punit_pwr_status);
- 		if (status) {
- 			seq_printf(seq_file, "%9s : Read Failed\n",
- 				   punit_devp->name);
-diff --git a/drivers/i2c/busses/i2c-designware-baytrail.c b/drivers/i2c/busses/i2c-designware-baytrail.c
-index 7d7ae97..e38c2bb 100644
---- a/drivers/i2c/busses/i2c-designware-baytrail.c
-+++ b/drivers/i2c/busses/i2c-designware-baytrail.c
-@@ -34,8 +34,7 @@ static int get_sem(struct device *dev, u32 *sem)
- 	u32 data;
- 	int ret;
- 
--	ret = iosf_mbi_read(BT_MBI_UNIT_PMC, BT_MBI_BUNIT_READ, PUNIT_SEMAPHORE,
--				&data);
-+	ret = iosf_mbi_read(BT_MBI_UNIT_PMC, MBI_REG_READ, PUNIT_SEMAPHORE, &data);
- 	if (ret) {
- 		dev_err(dev, "iosf failed to read punit semaphore\n");
- 		return ret;
-@@ -50,21 +49,19 @@ static void reset_semaphore(struct device *dev)
- {
- 	u32 data;
- 
--	if (iosf_mbi_read(BT_MBI_UNIT_PMC, BT_MBI_BUNIT_READ,
--				PUNIT_SEMAPHORE, &data)) {
-+	if (iosf_mbi_read(BT_MBI_UNIT_PMC, MBI_REG_READ, PUNIT_SEMAPHORE, &data)) {
- 		dev_err(dev, "iosf failed to reset punit semaphore during read\n");
- 		return;
- 	}
- 
- 	data &= ~PUNIT_SEMAPHORE_BIT;
--	if (iosf_mbi_write(BT_MBI_UNIT_PMC, BT_MBI_BUNIT_WRITE,
--				PUNIT_SEMAPHORE, data))
-+	if (iosf_mbi_write(BT_MBI_UNIT_PMC, MBI_REG_WRITE, PUNIT_SEMAPHORE, data))
- 		dev_err(dev, "iosf failed to reset punit semaphore during write\n");
- }
- 
- static int baytrail_i2c_acquire(struct dw_i2c_dev *dev)
- {
--	u32 sem;
-+	u32 sem = PUNIT_SEMAPHORE_ACQUIRE;
- 	int ret;
- 	unsigned long start, end;
- 
-@@ -77,8 +74,7 @@ static int baytrail_i2c_acquire(struct dw_i2c_dev *dev)
- 		return 0;
- 
- 	/* host driver writes to side band semaphore register */
--	ret = iosf_mbi_write(BT_MBI_UNIT_PMC, BT_MBI_BUNIT_WRITE,
--				PUNIT_SEMAPHORE, PUNIT_SEMAPHORE_ACQUIRE);
-+	ret = iosf_mbi_write(BT_MBI_UNIT_PMC, MBI_REG_WRITE, PUNIT_SEMAPHORE, sem);
- 	if (ret) {
- 		dev_err(dev->dev, "iosf punit semaphore request failed\n");
- 		return ret;
-@@ -102,8 +98,7 @@ static int baytrail_i2c_acquire(struct dw_i2c_dev *dev)
- 	dev_err(dev->dev, "punit semaphore timed out, resetting\n");
- 	reset_semaphore(dev->dev);
- 
--	ret = iosf_mbi_read(BT_MBI_UNIT_PMC, BT_MBI_BUNIT_READ,
--				PUNIT_SEMAPHORE, &sem);
-+	ret = iosf_mbi_read(BT_MBI_UNIT_PMC, MBI_REG_READ, PUNIT_SEMAPHORE, &sem);
- 	if (ret)
- 		dev_err(dev->dev, "iosf failed to read punit semaphore\n");
- 	else
-diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-index cc97f08..fa07809 100644
---- a/drivers/powercap/intel_rapl.c
-+++ b/drivers/powercap/intel_rapl.c
-@@ -988,16 +988,16 @@ static void set_floor_freq_atom(struct rapl_domain *rd, bool enable)
- 	}
- 
- 	if (!power_ctrl_orig_val)
--		iosf_mbi_read(BT_MBI_UNIT_PMC, BT_MBI_PMC_READ,
--			rapl_defaults->floor_freq_reg_addr,
--				&power_ctrl_orig_val);
-+		iosf_mbi_read(BT_MBI_UNIT_PMC, MBI_CR_READ,
-+			      rapl_defaults->floor_freq_reg_addr,
-+			      &power_ctrl_orig_val);
- 	mdata = power_ctrl_orig_val;
- 	if (enable) {
- 		mdata &= ~(0x7f << 8);
- 		mdata |= 1 << 8;
- 	}
--	iosf_mbi_write(BT_MBI_UNIT_PMC, BT_MBI_PMC_WRITE,
--		rapl_defaults->floor_freq_reg_addr, mdata);
-+	iosf_mbi_write(BT_MBI_UNIT_PMC, MBI_CR_WRITE,
-+		       rapl_defaults->floor_freq_reg_addr, mdata);
- }
- 
- static u64 rapl_compute_time_window_core(struct rapl_package *rp, u64 value,
-diff --git a/drivers/thermal/intel_quark_dts_thermal.c b/drivers/thermal/intel_quark_dts_thermal.c
-index 5ed90e6..5d33b35 100644
---- a/drivers/thermal/intel_quark_dts_thermal.c
-+++ b/drivers/thermal/intel_quark_dts_thermal.c
-@@ -125,8 +125,8 @@ static int soc_dts_enable(struct thermal_zone_device *tzd)
- 	struct soc_sensor_entry *aux_entry = tzd->devdata;
- 	int ret;
- 
--	ret = iosf_mbi_read(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_READ,
--					QRK_DTS_REG_OFFSET_ENABLE, &out);
-+	ret = iosf_mbi_read(QRK_MBI_UNIT_RMU, MBI_REG_READ,
-+			    QRK_DTS_REG_OFFSET_ENABLE, &out);
- 	if (ret)
- 		return ret;
- 
-@@ -137,8 +137,8 @@ static int soc_dts_enable(struct thermal_zone_device *tzd)
- 
- 	if (!aux_entry->locked) {
- 		out |= QRK_DTS_ENABLE_BIT;
--		ret = iosf_mbi_write(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_WRITE,
--					QRK_DTS_REG_OFFSET_ENABLE, out);
-+		ret = iosf_mbi_write(QRK_MBI_UNIT_RMU, MBI_REG_WRITE,
-+				     QRK_DTS_REG_OFFSET_ENABLE, out);
- 		if (ret)
- 			return ret;
- 
-@@ -158,8 +158,8 @@ static int soc_dts_disable(struct thermal_zone_device *tzd)
- 	struct soc_sensor_entry *aux_entry = tzd->devdata;
- 	int ret;
- 
--	ret = iosf_mbi_read(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_READ,
--					QRK_DTS_REG_OFFSET_ENABLE, &out);
-+	ret = iosf_mbi_read(QRK_MBI_UNIT_RMU, MBI_REG_READ,
-+			    QRK_DTS_REG_OFFSET_ENABLE, &out);
- 	if (ret)
- 		return ret;
- 
-@@ -170,8 +170,8 @@ static int soc_dts_disable(struct thermal_zone_device *tzd)
- 
- 	if (!aux_entry->locked) {
- 		out &= ~QRK_DTS_ENABLE_BIT;
--		ret = iosf_mbi_write(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_WRITE,
--					QRK_DTS_REG_OFFSET_ENABLE, out);
-+		ret = iosf_mbi_write(QRK_MBI_UNIT_RMU, MBI_REG_WRITE,
-+				     QRK_DTS_REG_OFFSET_ENABLE, out);
- 
- 		if (ret)
- 			return ret;
-@@ -192,8 +192,8 @@ static int _get_trip_temp(int trip, int *temp)
- 	u32 out;
- 
- 	mutex_lock(&dts_update_mutex);
--	status = iosf_mbi_read(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_READ,
--				QRK_DTS_REG_OFFSET_PTPS, &out);
-+	status = iosf_mbi_read(QRK_MBI_UNIT_RMU, MBI_REG_READ,
-+			       QRK_DTS_REG_OFFSET_PTPS, &out);
- 	mutex_unlock(&dts_update_mutex);
- 
- 	if (status)
-@@ -236,8 +236,8 @@ static int update_trip_temp(struct soc_sensor_entry *aux_entry,
- 		goto failed;
- 	}
- 
--	ret = iosf_mbi_read(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_READ,
--				QRK_DTS_REG_OFFSET_PTPS, &store_ptps);
-+	ret = iosf_mbi_read(QRK_MBI_UNIT_RMU, MBI_REG_READ,
-+			    QRK_DTS_REG_OFFSET_PTPS, &store_ptps);
- 	if (ret)
- 		goto failed;
- 
-@@ -262,8 +262,8 @@ static int update_trip_temp(struct soc_sensor_entry *aux_entry,
- 	out |= (temp_out & QRK_DTS_MASK_TP_THRES) <<
- 		(trip * QRK_DTS_SHIFT_TP);
- 
--	ret = iosf_mbi_write(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_WRITE,
--				QRK_DTS_REG_OFFSET_PTPS, out);
-+	ret = iosf_mbi_write(QRK_MBI_UNIT_RMU, MBI_REG_WRITE,
-+			     QRK_DTS_REG_OFFSET_PTPS, out);
- 
- failed:
- 	mutex_unlock(&dts_update_mutex);
-@@ -294,8 +294,8 @@ static int sys_get_curr_temp(struct thermal_zone_device *tzd,
- 	int ret;
- 
- 	mutex_lock(&dts_update_mutex);
--	ret = iosf_mbi_read(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_READ,
--					QRK_DTS_REG_OFFSET_TEMP, &out);
-+	ret = iosf_mbi_read(QRK_MBI_UNIT_RMU, MBI_REG_READ,
-+			    QRK_DTS_REG_OFFSET_TEMP, &out);
- 	mutex_unlock(&dts_update_mutex);
- 
- 	if (ret)
-@@ -350,13 +350,13 @@ static void free_soc_dts(struct soc_sensor_entry *aux_entry)
- 	if (aux_entry) {
- 		if (!aux_entry->locked) {
- 			mutex_lock(&dts_update_mutex);
--			iosf_mbi_write(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_WRITE,
--					QRK_DTS_REG_OFFSET_ENABLE,
--					aux_entry->store_dts_enable);
-+			iosf_mbi_write(QRK_MBI_UNIT_RMU, MBI_REG_WRITE,
-+				       QRK_DTS_REG_OFFSET_ENABLE,
-+				       aux_entry->store_dts_enable);
- 
--			iosf_mbi_write(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_WRITE,
--					QRK_DTS_REG_OFFSET_PTPS,
--					aux_entry->store_ptps);
-+			iosf_mbi_write(QRK_MBI_UNIT_RMU, MBI_REG_WRITE,
-+				       QRK_DTS_REG_OFFSET_PTPS,
-+				       aux_entry->store_ptps);
- 			mutex_unlock(&dts_update_mutex);
- 		}
- 		thermal_zone_device_unregister(aux_entry->tzone);
-@@ -378,9 +378,8 @@ static struct soc_sensor_entry *alloc_soc_dts(void)
- 	}
- 
- 	/* Check if DTS register is locked */
--	err = iosf_mbi_read(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_READ,
--					QRK_DTS_REG_OFFSET_LOCK,
--					&out);
-+	err = iosf_mbi_read(QRK_MBI_UNIT_RMU, MBI_REG_READ,
-+			    QRK_DTS_REG_OFFSET_LOCK, &out);
- 	if (err)
- 		goto err_ret;
- 
-@@ -395,16 +394,16 @@ static struct soc_sensor_entry *alloc_soc_dts(void)
- 	/* Store DTS default state if DTS registers are not locked */
- 	if (!aux_entry->locked) {
- 		/* Store DTS default enable for restore on exit */
--		err = iosf_mbi_read(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_READ,
--					QRK_DTS_REG_OFFSET_ENABLE,
--					&aux_entry->store_dts_enable);
-+		err = iosf_mbi_read(QRK_MBI_UNIT_RMU, MBI_REG_READ,
-+				    QRK_DTS_REG_OFFSET_ENABLE,
-+				    &aux_entry->store_dts_enable);
- 		if (err)
- 			goto err_ret;
- 
- 		/* Store DTS default PTPS register for restore on exit */
--		err = iosf_mbi_read(QRK_MBI_UNIT_RMU, QRK_MBI_RMU_READ,
--					QRK_DTS_REG_OFFSET_PTPS,
--					&aux_entry->store_ptps);
-+		err = iosf_mbi_read(QRK_MBI_UNIT_RMU, MBI_REG_READ,
-+				    QRK_DTS_REG_OFFSET_PTPS,
-+				    &aux_entry->store_ptps);
- 		if (err)
- 			goto err_ret;
- 	}
-diff --git a/drivers/thermal/intel_soc_dts_iosf.c b/drivers/thermal/intel_soc_dts_iosf.c
-index 5841d1d..f72e1db 100644
---- a/drivers/thermal/intel_soc_dts_iosf.c
-+++ b/drivers/thermal/intel_soc_dts_iosf.c
-@@ -90,7 +90,7 @@ static int sys_get_trip_temp(struct thermal_zone_device *tzd, int trip,
- 	dts = tzd->devdata;
- 	sensors = dts->sensors;
- 	mutex_lock(&sensors->dts_update_lock);
--	status = iosf_mbi_read(BT_MBI_UNIT_PMC, BT_MBI_BUNIT_READ,
-+	status = iosf_mbi_read(BT_MBI_UNIT_PMC, MBI_REG_READ,
- 			       SOC_DTS_OFFSET_PTPS, &out);
- 	mutex_unlock(&sensors->dts_update_lock);
- 	if (status)
-@@ -124,27 +124,27 @@ static int update_trip_temp(struct intel_soc_dts_sensor_entry *dts,
- 
- 	temp_out = (sensors->tj_max - temp) / 1000;
- 
--	status = iosf_mbi_read(BT_MBI_UNIT_PMC, BT_MBI_BUNIT_READ,
-+	status = iosf_mbi_read(BT_MBI_UNIT_PMC, MBI_REG_READ,
- 			       SOC_DTS_OFFSET_PTPS, &store_ptps);
- 	if (status)
- 		return status;
- 
- 	out = (store_ptps & ~(0xFF << (thres_index * 8)));
- 	out |= (temp_out & 0xFF) << (thres_index * 8);
--	status = iosf_mbi_write(BT_MBI_UNIT_PMC, BT_MBI_BUNIT_WRITE,
-+	status = iosf_mbi_write(BT_MBI_UNIT_PMC, MBI_REG_WRITE,
- 				SOC_DTS_OFFSET_PTPS, out);
- 	if (status)
- 		return status;
- 
- 	pr_debug("update_trip_temp PTPS = %x\n", out);
--	status = iosf_mbi_read(BT_MBI_UNIT_PMC, BT_MBI_BUNIT_READ,
-+	status = iosf_mbi_read(BT_MBI_UNIT_PMC, MBI_REG_READ,
- 			       SOC_DTS_OFFSET_PTMC, &out);
- 	if (status)
- 		goto err_restore_ptps;
- 
- 	store_ptmc = out;
- 
--	status = iosf_mbi_read(BT_MBI_UNIT_PMC, BT_MBI_BUNIT_READ,
-+	status = iosf_mbi_read(BT_MBI_UNIT_PMC, MBI_REG_READ,
- 			       SOC_DTS_TE_AUX0 + thres_index,
- 			       &te_out);
- 	if (status)
-@@ -167,12 +167,12 @@ static int update_trip_temp(struct intel_soc_dts_sensor_entry *dts,
- 			out &= ~SOC_DTS_AUX0_ENABLE_BIT;
- 		te_out &= ~int_enable_bit;
- 	}
--	status = iosf_mbi_write(BT_MBI_UNIT_PMC, BT_MBI_BUNIT_WRITE,
-+	status = iosf_mbi_write(BT_MBI_UNIT_PMC, MBI_REG_WRITE,
- 				SOC_DTS_OFFSET_PTMC, out);
- 	if (status)
- 		goto err_restore_te_out;
- 
--	status = iosf_mbi_write(BT_MBI_UNIT_PMC, BT_MBI_BUNIT_WRITE,
-+	status = iosf_mbi_write(BT_MBI_UNIT_PMC, MBI_REG_WRITE,
- 				SOC_DTS_TE_AUX0 + thres_index,
- 				te_out);
- 	if (status)
-@@ -182,13 +182,13 @@ static int update_trip_temp(struct intel_soc_dts_sensor_entry *dts,
- 
- 	return 0;
- err_restore_te_out:
--	iosf_mbi_write(BT_MBI_UNIT_PMC, BT_MBI_BUNIT_WRITE,
-+	iosf_mbi_write(BT_MBI_UNIT_PMC, MBI_REG_WRITE,
- 		       SOC_DTS_OFFSET_PTMC, store_te_out);
- err_restore_ptmc:
--	iosf_mbi_write(BT_MBI_UNIT_PMC, BT_MBI_BUNIT_WRITE,
-+	iosf_mbi_write(BT_MBI_UNIT_PMC, MBI_REG_WRITE,
- 		       SOC_DTS_OFFSET_PTMC, store_ptmc);
- err_restore_ptps:
--	iosf_mbi_write(BT_MBI_UNIT_PMC, BT_MBI_BUNIT_WRITE,
-+	iosf_mbi_write(BT_MBI_UNIT_PMC, MBI_REG_WRITE,
- 		       SOC_DTS_OFFSET_PTPS, store_ptps);
- 	/* Nothing we can do if restore fails */
- 
-@@ -235,7 +235,7 @@ static int sys_get_curr_temp(struct thermal_zone_device *tzd,
- 
- 	dts = tzd->devdata;
- 	sensors = dts->sensors;
--	status = iosf_mbi_read(BT_MBI_UNIT_PMC, BT_MBI_BUNIT_READ,
-+	status = iosf_mbi_read(BT_MBI_UNIT_PMC, MBI_REG_READ,
- 			       SOC_DTS_OFFSET_TEMP, &out);
- 	if (status)
- 		return status;
-@@ -259,14 +259,14 @@ static int soc_dts_enable(int id)
- 	u32 out;
- 	int ret;
- 
--	ret = iosf_mbi_read(BT_MBI_UNIT_PMC, BT_MBI_BUNIT_READ,
-+	ret = iosf_mbi_read(BT_MBI_UNIT_PMC, MBI_REG_READ,
- 			    SOC_DTS_OFFSET_ENABLE, &out);
- 	if (ret)
- 		return ret;
- 
- 	if (!(out & BIT(id))) {
- 		out |= BIT(id);
--		ret = iosf_mbi_write(BT_MBI_UNIT_PMC, BT_MBI_BUNIT_WRITE,
-+		ret = iosf_mbi_write(BT_MBI_UNIT_PMC, MBI_REG_WRITE,
- 				     SOC_DTS_OFFSET_ENABLE, out);
- 		if (ret)
- 			return ret;
-@@ -278,7 +278,7 @@ static int soc_dts_enable(int id)
- static void remove_dts_thermal_zone(struct intel_soc_dts_sensor_entry *dts)
- {
- 	if (dts) {
--		iosf_mbi_write(BT_MBI_UNIT_PMC, BT_MBI_BUNIT_WRITE,
-+		iosf_mbi_write(BT_MBI_UNIT_PMC, MBI_REG_WRITE,
- 			       SOC_DTS_OFFSET_ENABLE, dts->store_status);
- 		thermal_zone_device_unregister(dts->tzone);
- 	}
-@@ -296,9 +296,8 @@ static int add_dts_thermal_zone(int id, struct intel_soc_dts_sensor_entry *dts,
- 	int i;
- 
- 	/* Store status to restor on exit */
--	ret = iosf_mbi_read(BT_MBI_UNIT_PMC, BT_MBI_BUNIT_READ,
--			    SOC_DTS_OFFSET_ENABLE,
--			    &dts->store_status);
-+	ret = iosf_mbi_read(BT_MBI_UNIT_PMC, MBI_REG_READ,
-+			    SOC_DTS_OFFSET_ENABLE, &dts->store_status);
- 	if (ret)
- 		goto err_ret;
- 
-@@ -311,7 +310,7 @@ static int add_dts_thermal_zone(int id, struct intel_soc_dts_sensor_entry *dts,
- 	}
- 
- 	/* Check if the writable trip we provide is not used by BIOS */
--	ret = iosf_mbi_read(BT_MBI_UNIT_PMC, BT_MBI_BUNIT_READ,
-+	ret = iosf_mbi_read(BT_MBI_UNIT_PMC, MBI_REG_READ,
- 			    SOC_DTS_OFFSET_PTPS, &store_ptps);
- 	if (ret)
- 		trip_mask = 0;
-@@ -374,19 +373,19 @@ void intel_soc_dts_iosf_interrupt_handler(struct intel_soc_dts_sensors *sensors)
- 
- 	spin_lock_irqsave(&sensors->intr_notify_lock, flags);
- 
--	status = iosf_mbi_read(BT_MBI_UNIT_PMC, BT_MBI_BUNIT_READ,
-+	status = iosf_mbi_read(BT_MBI_UNIT_PMC, MBI_REG_READ,
- 			       SOC_DTS_OFFSET_PTMC, &ptmc_out);
- 	ptmc_out |= SOC_DTS_PTMC_APIC_DEASSERT_BIT;
--	status = iosf_mbi_write(BT_MBI_UNIT_PMC, BT_MBI_BUNIT_WRITE,
-+	status = iosf_mbi_write(BT_MBI_UNIT_PMC, MBI_REG_WRITE,
- 				SOC_DTS_OFFSET_PTMC, ptmc_out);
- 
--	status = iosf_mbi_read(BT_MBI_UNIT_PMC, BT_MBI_BUNIT_READ,
-+	status = iosf_mbi_read(BT_MBI_UNIT_PMC, MBI_REG_READ,
- 			       SOC_DTS_OFFSET_PTTSS, &sticky_out);
- 	pr_debug("status %d PTTSS %x\n", status, sticky_out);
- 	if (sticky_out & SOC_DTS_TRIP_MASK) {
- 		int i;
- 		/* reset sticky bit */
--		status = iosf_mbi_write(BT_MBI_UNIT_PMC, BT_MBI_BUNIT_WRITE,
-+		status = iosf_mbi_write(BT_MBI_UNIT_PMC, MBI_REG_WRITE,
- 					SOC_DTS_OFFSET_PTTSS, sticky_out);
- 		spin_unlock_irqrestore(&sensors->intr_notify_lock, flags);
- 
--- 
-2.6.2
+>> +
+>> +               arm_cpuidle_suspend(idx);
+>> +
+>>                 RCU_NONIDLE(pm_runtime_get_sync(cpu_dev));
+>>                 cpu_pm_exit();
+>>         }
+>> @@ -69,6 +99,7 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
+>>         return ret ? -1 : idx;
+>>  }
+>>
+>> +
+>>  static struct cpuidle_driver arm_idle_driver = {
+>>         .name = "arm_idle",
+>>         .owner = THIS_MODULE,
+>> @@ -90,9 +121,10 @@ static struct cpuidle_driver arm_idle_driver = {
+>>  };
+>>
+>>  static const struct of_device_id arm_idle_state_match[] __initconst = {
+>> -       { .compatible = "arm,idle-state",
+>> -         .data = arm_enter_idle_state },
+>> -       { },
+>> +       {.compatible = "arm,idle-state",
+>> +        .data = arm_enter_idle_state},
+>> +       {.compatible = "arm,power-state",
+>> +        .data = arm_enter_power_state},
+>>  };
+>>
+>>  /*
+>> --
+>> 1.9.1
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
