@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 1/5] PM / OPP: Add "opp-supported-hw" binding
-Date: Wed, 11 Nov 2015 08:10:54 +0530
-Message-ID: <edf547c73ec9f09c3b3c8d6c34d12f0f3eb22e0c.1447209519.git.viresh.kumar@linaro.org>
+Subject: [PATCH V3 3/5] PM / OPP: Remove 'operating-points-names' binding
+Date: Wed, 11 Nov 2015 08:10:56 +0530
+Message-ID: <f5ea7a412979ef7dfd9654905e81470d578d241f.1447209519.git.viresh.kumar@linaro.org>
 References: <cover.1447209519.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1447209519.git.viresh.kumar@linaro.org>
@@ -12,102 +12,109 @@ To: Rafael Wysocki <rjw@rjwysocki.net>, robh+dt@kernel.org, sboyd@codeaurora.org
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, mark.rutland@arm.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, nm@ti.com, devicetree@vger.kernel.org, b.zolnierkie@samsung.com, m.szyprowski@samsung.com, Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh@kernel.org>, open list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-We may want to enable only a subset of OPPs, from the bigger list of
-OPPs, based on what version of the hardware we are running on. This
-would enable us to not duplicate OPP tables for every version of the
-hardware we support.
+These aren't used until now by any DT files and wouldn't be used now as
+we have a better scheme in place now, i.e. opp-property-<name>
+properties.
 
-To enable that, this patch defines a new property 'opp-supported-hw'. It
-can support any number of hierarchy levels of the versions the hardware
-follows. And based on the selected hardware versions, we can pick only
-the relevant OPPs at runtime.
+Remove the (useless) binding without breaking ABI.
 
 Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 Acked-by: Rob Herring <robh@kernel.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- Documentation/devicetree/bindings/opp/opp.txt | 65 +++++++++++++++++++++++++++
- 1 file changed, 65 insertions(+)
+ Documentation/devicetree/bindings/opp/opp.txt | 62 +--------------------------
+ 1 file changed, 2 insertions(+), 60 deletions(-)
 
 diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
-index 0cb44dc21f97..d072fa0ffbd4 100644
+index a3e7f0d5e1fb..24eac9a97749 100644
 --- a/Documentation/devicetree/bindings/opp/opp.txt
 +++ b/Documentation/devicetree/bindings/opp/opp.txt
-@@ -123,6 +123,26 @@ properties.
- - opp-suspend: Marks the OPP to be used during device suspend. Only one OPP in
-   the table should have this.
+@@ -45,21 +45,10 @@ Devices supporting OPPs must set their "operating-points-v2" property with
+ phandle to a OPP table in their DT node. The OPP core will use this phandle to
+ find the operating points for the device.
  
-+- opp-supported-hw: This enables us to select only a subset of OPPs from the
-+  larger OPP table, based on what version of the hardware we are running on. We
-+  still can't have multiple nodes with the same opp-hz value in OPP table.
-+
-+  It's an user defined array containing a hierarchy of hardware version numbers,
-+  supported by the OPP. For example: a platform with hierarchy of three levels
-+  of versions (A, B and C), this field should be like <X Y Z>, where X
-+  corresponds to Version hierarchy A, Y corresponds to version hierarchy B and Z
-+  corresponds to version hierarchy C.
-+
-+  Each level of hierarchy is represented by a 32 bit value, and so there can be
-+  only 32 different supported version per hierarchy. i.e. 1 bit per version. A
-+  value of 0xFFFFFFFF will enable the OPP for all versions for that hierarchy
-+  level. And a value of 0x00000000 will disable the OPP completely, and so we
-+  never want that to happen.
-+
-+  If 32 values aren't sufficient for a version hierarchy, than that version
-+  hierarchy can be contained in multiple 32 bit values. i.e. <X Y Z1 Z2> in the
-+  above example, Z1 & Z2 refer to the version hierarchy Z.
-+
- - status: Marks the node enabled/disabled.
+-Devices may want to choose OPP tables at runtime and so can provide a list of
+-phandles here. But only *one* of them should be chosen at runtime. This must be
+-accompanied by a corresponding "operating-points-names" property, to uniquely
+-identify the OPP tables.
+-
+ If required, this can be extended for SoC vendor specfic bindings. Such bindings
+ should be documented as Documentation/devicetree/bindings/power/<vendor>-opp.txt
+ and should have a compatible description like: "operating-points-v2-<vendor>".
  
- Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
-@@ -463,3 +483,48 @@ Example 5: Multiple OPP tables
- 		};
+-Optional properties:
+-- operating-points-names: Names of OPP tables (required if multiple OPP
+-  tables are present), to uniquely identify them. The same list must be present
+-  for all the CPUs which are sharing clock/voltage rails and hence the OPP
+-  tables.
+-
+ * OPP Table Node
+ 
+ This describes the OPPs belonging to a device. This node can have following
+@@ -448,54 +437,7 @@ Example 4: Handling multiple regulators
  	};
  };
-+
-+Example 6: opp-supported-hw
-+(example: three level hierarchy of versions: cuts, substrate and process)
-+
-+/ {
-+	cpus {
-+		cpu@0 {
-+			compatible = "arm,cortex-a7";
-+			...
-+
-+			cpu-supply = <&cpu_supply>
-+			operating-points-v2 = <&cpu0_opp_table_slow>;
-+		};
-+	};
-+
-+	opp_table {
-+		compatible = "operating-points-v2";
-+		status = "okay";
-+		opp-shared;
-+
-+		opp00 {
-+			/*
-+			 * Supports all substrate and process versions for 0xF
-+			 * cuts, i.e. only first four cuts.
-+			 */
-+			opp-supported-hw = <0xF 0xFFFFFFFF 0xFFFFFFFF>
-+			opp-hz = /bits/ 64 <600000000>;
-+			opp-microvolt = <900000 915000 925000>;
-+			...
-+		};
-+
-+		opp01 {
-+			/*
-+			 * Supports:
-+			 * - cuts: only one, 6th cut (represented by 6th bit).
-+			 * - substrate: supports 16 different substrate versions
-+			 * - process: supports 9 different process versions
-+			 */
-+			opp-supported-hw = <0x20 0xff0000ff 0x0000f4f0>
-+			opp-hz = /bits/ 64 <800000000>;
-+			opp-microvolt = <900000 915000 925000>;
-+			...
-+		};
-+	};
-+};
+ 
+-Example 5: Multiple OPP tables
+-
+-/ {
+-	cpus {
+-		cpu@0 {
+-			compatible = "arm,cortex-a7";
+-			...
+-
+-			cpu-supply = <&cpu_supply>
+-			operating-points-v2 = <&cpu0_opp_table_slow>, <&cpu0_opp_table_fast>;
+-			operating-points-names = "slow", "fast";
+-		};
+-	};
+-
+-	cpu0_opp_table_slow: opp_table_slow {
+-		compatible = "operating-points-v2";
+-		status = "okay";
+-		opp-shared;
+-
+-		opp00 {
+-			opp-hz = /bits/ 64 <600000000>;
+-			...
+-		};
+-
+-		opp01 {
+-			opp-hz = /bits/ 64 <800000000>;
+-			...
+-		};
+-	};
+-
+-	cpu0_opp_table_fast: opp_table_fast {
+-		compatible = "operating-points-v2";
+-		status = "okay";
+-		opp-shared;
+-
+-		opp10 {
+-			opp-hz = /bits/ 64 <1000000000>;
+-			...
+-		};
+-
+-		opp11 {
+-			opp-hz = /bits/ 64 <1100000000>;
+-			...
+-		};
+-	};
+-};
+-
+-Example 6: opp-supported-hw
++Example 5: opp-supported-hw
+ (example: three level hierarchy of versions: cuts, substrate and process)
+ 
+ / {
+@@ -540,7 +482,7 @@ Example 6: opp-supported-hw
+ 	};
+ };
+ 
+-Example 7: opp-microvolt-<name>, opp-microamp-<name>:
++Example 6: opp-microvolt-<name>, opp-microamp-<name>:
+ (example: device with two possible microvolt ranges: slow and fast)
+ 
+ / {
 -- 
 2.6.2.198.g614a2ac
