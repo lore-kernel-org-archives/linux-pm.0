@@ -1,100 +1,121 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [RFCv2 1/2] power: domain: add pm_genpd_uninit
-Date: Wed, 11 Nov 2015 21:29:26 +0100
-Message-ID: <CAPDyKFqKExt0CdF6hccnm4Z1Q_r3N3+HoCnAH6rj904ARTzhpQ@mail.gmail.com>
-References: <1446590711-18928-1-git-send-email-alex.aring@gmail.com>
-	<1446590711-18928-2-git-send-email-alex.aring@gmail.com>
-	<CAPDyKFrkzMZZjFRM7EbqDqmW8EXzV22O_tp8a45LVGQYSn6b3g@mail.gmail.com>
-	<20151105143445.GC599@omega>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH V3 2/5] PM / OPP: Add {opp-microvolt|opp-microamp}-<name>
+ binding
+Date: Wed, 11 Nov 2015 14:31:00 -0600
+Message-ID: <20151111203100.GA10702@rob-hp-laptop>
+References: <cover.1447209519.git.viresh.kumar@linaro.org>
+ <1f1d9dd73ff629504f3c730e4100dba800c6132a.1447209519.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f174.google.com ([209.85.160.174]:36179 "EHLO
-	mail-yk0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752856AbbKKU31 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Nov 2015 15:29:27 -0500
-Received: by ykdr82 with SMTP id r82so68862564ykd.3
-        for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2015 12:29:26 -0800 (PST)
-In-Reply-To: <20151105143445.GC599@omega>
+Received: from mail.kernel.org ([198.145.29.136]:53461 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752468AbbKKUbG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 11 Nov 2015 15:31:06 -0500
+Content-Disposition: inline
+In-Reply-To: <1f1d9dd73ff629504f3c730e4100dba800c6132a.1447209519.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alexander Aring <alex.aring@gmail.com>
-Cc: linux-rpi-kernel@lists.infradead.org, Rob Herring <robh+dt@kernel.org>, =?UTF-8?Q?Pawe=C5=82_Moll?= <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Stephen Warren <swarren@wwwdotorg.org>, Lee Jones <lee@kernel.org>, Eric Anholt <eric@anholt.net>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Florian Fainelli <f.fainelli@gmail.com>, Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, sboyd@codeaurora.org, lee.jones@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, mark.rutland@arm.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, nm@ti.com, devicetree@vger.kernel.org, b.zolnierkie@samsung.com, m.szyprowski@samsung.com, open list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-[...]
+On Wed, Nov 11, 2015 at 08:10:55AM +0530, Viresh Kumar wrote:
+> Depending on the version of hardware or its properties, which are only
+> known at runtime, various properties of the OPP can change. For example,
+> an OPP with frequency 1.2 GHz, may have different voltage/current
+> requirements based on the version of the hardware it is running on.
+> 
+> In order to not replicate the same OPP tables for varying values of all
+> such fields, this commit introduces the concept of opp-property-<name>.
+> The <name> can be chosen by the platform at runtime, and OPPs will be
+> initialized depending on that name string. Currently support is extended
+> for the following properties:
+> - opp-microvolt-<name>
+> - opp-microamp-<name>
+> 
+> If the name string isn't provided by the platform, or if it is provided
+> but doesn't match the properties present in the OPP node, we will fall
+> back to the original properties without the -<name> string, if they are
+> available.
+> 
+> Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  Documentation/devicetree/bindings/opp/opp.txt | 47 +++++++++++++++++++++++++++
+>  1 file changed, 47 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+> index d072fa0ffbd4..a3e7f0d5e1fb 100644
+> --- a/Documentation/devicetree/bindings/opp/opp.txt
+> +++ b/Documentation/devicetree/bindings/opp/opp.txt
+> @@ -100,6 +100,14 @@ properties.
+>    Entries for multiple regulators must be present in the same order as
+>    regulators are specified in device's DT node.
+>  
+> +- opp-microvolt-<name>: Named opp-microvolt property. This is exactly similar to
+> +  the above opp-microvolt property, but allows multiple voltage ranges to be
+> +  provided for the same OPP. At runtime, the platform can pick a <name> and
+> +  matching opp-microvolt-<name> property will be enabled for all OPPs. If the
+> +  platform doesn't pick a specific <name> or the <name> doesn't match with any
+> +  opp-microvolt-<name> properties, then opp-microvolt property shall be used, if
+> +  present.
+> +
+>  - opp-microamp: The maximum current drawn by the device in microamperes
+>    considering system specific parameters (such as transients, process, aging,
+>    maximum operating temperature range etc.) as necessary. This may be used to
+> @@ -112,6 +120,9 @@ properties.
+>    for few regulators, then this should be marked as zero for them. If it isn't
+>    required for any regulator, then this property need not be present.
+>  
+> +- opp-microamp-<name>: Named opp-microamp property. Similar to
+> +  opp-microvolt-<name> property, but for microamp instead.
+> +
+>  - clock-latency-ns: Specifies the maximum possible transition latency (in
+>    nanoseconds) for switching to this OPP from any other OPP.
+>  
+> @@ -528,3 +539,39 @@ Example 6: opp-supported-hw
+>  		};
+>  	};
+>  };
+> +
+> +Example 7: opp-microvolt-<name>, opp-microamp-<name>:
+> +(example: device with two possible microvolt ranges: slow and fast)
+> +
+ > +/ {
+> +	cpus {
+> +		cpu@0 {
+> +			compatible = "arm,cortex-a7";
+> +			...
+> +
+> +			operating-points-v2 = <&cpu0_opp_table>;
+> +		};
+> +	};
+> +
+> +	cpu0_opp_table: opp_table0 {
+> +		compatible = "operating-points-v2";
+> +		opp-shared;
+> +
+> +		opp00 {
 
->> >
->> > +/**
->> > + * pm_genpd_uninit - Uninitialize a generic I/O PM domain object.
->> > + * @genpd: PM domain object to initialize.
->> > + */
->> > +void pm_genpd_uninit(struct generic_pm_domain *genpd)
->> > +{
->> > +       if (IS_ERR_OR_NULL(genpd))
->> > +               return;
->> > +
->> > +       mutex_lock(&gpd_list_lock);
->> > +       list_del(&genpd->gpd_list_node);
->> > +       mutex_unlock(&gpd_list_lock);
->>
->> This is too fragile. You don't protect from the cases below.
->>
->> 1. The genpd may have devices attached to it.
->> 2. The genpd may have subdomains.
->>
->> To deal with these case, that's when it becomes more complex which I
->> guess is the reason to why nobody really cared until now.
->>
->
-> Can we not just undo the things which pm_genpd_init does, then let the
-> driver to deal with all other uninitialize of e.g. "subdomains" which might
-> the driver has initialize before? We know there are no slaves or something
-> else which is empty because pm_genpd_init runs INIT_LIST_HEAD, or not?
->
-> To make such handling above I would add some:
->
-> "pm_genpd_uninit_recursive" function, which cleanup everything from a
-> power domain, e.g. subdomains, etc and other lists.
->
-> What do you suggest to me for e.g. the raspberrypi power domain driver,
-> also simple ignore such error handling?
+Thought we are doing frequency for unit address here.
 
-No, let's give it try so see if can improve the situation.
-
->
->
-> For my current use-case I can remove the failure between pm_genpd_init by
-> simple getting all "power states" (the bool is_off for pm_genpd_init),
-> before calling pm_genpd_init. In this case I don't have any failure between
-> calling pm_genpd_init when another pm_genpd_init was before.
->
-> Looks like this:
->
-> 1. get all states from firmware to get parameter "is_off", which can fail.
->    We should get here the states for the power domains which we want to
->    register only.
->
-> 2. Then call pm_genpd_init, which cannot be fail between another
->    pm_genpd_init. (There are only void functions in the middle, which cannot
->    fail). If I call pm_genpd_init, I use "is_off" variable from the step
->    of "1.".
->
->
-> But then I have still the call of "of_genpd_add_provider_onecell" at the end
-> of probing which can fail. So this is also not a valid solution, because
-> I need to undo everything before.
-
-Okay, got it.
-
->
->> Moreover, I think there are some more structures to "uninitialize"
->> besides just unlinking the genpd struct from the gpd list. For example
->> a mutex_destroy() should be done.
->>
->
-> yes, of course.
->
-> - Alex
-
-Kind regards
-Uffe
+> +			opp-hz = /bits/ 64 <1000000000>;
+> +			opp-microvolt-slow = <900000 915000 925000>;
+> +			opp-microvolt-fast = <970000 975000 985000>;
+> +			opp-microamp-slow =  <70000>;
+> +			opp-microamp-fast =  <71000>;
+> +		};
+> +
+> +		opp01 {
+> +			opp-hz = /bits/ 64 <1200000000>;
+> +			opp-microvolt-slow = <900000 915000 925000>, /* Supply vcc0 */
+> +					      <910000 925000 935000>; /* Supply vcc1 */
+> +			opp-microvolt-fast = <970000 975000 985000>, /* Supply vcc0 */
+> +					     <960000 965000 975000>; /* Supply vcc1 */
+> +			opp-microamp =  <70000>; /* Will be used for both slow/fast */
+> +		};
+> +	};
+> +};
+> -- 
+> 2.6.2.198.g614a2ac
+> 
