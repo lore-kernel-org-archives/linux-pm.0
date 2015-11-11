@@ -1,150 +1,69 @@
-From: Zhaoyang Huang <zhaoyang.huang@linaro.org>
-Subject: Re: [RFC v2 5/6] arm: cpuidle: let genpd handle the cluster power
- transition with 'power-states'
-Date: Wed, 11 Nov 2015 17:10:40 +0800
-Message-ID: <CAN2waFvgQUO4Mda3bHEwRDEPO2T36DWXXWKuW6G9+o7mQ854VQ@mail.gmail.com>
-References: <20151006022702.GA78570@linaro.org>
-	<1444141665-18534-1-git-send-email-mtitinger+renesas@baylibre.com>
-	<1444141665-18534-6-git-send-email-mtitinger+renesas@baylibre.com>
+From: Javi Merino <javi.merino-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH v3 1/2] thermal: mediatek: Add cpu power cooling model.
+Date: Wed, 11 Nov 2015 09:36:57 +0000
+Message-ID: <20151111093656.GA2781@e104805>
+References: <1445515359-8587-1-git-send-email-dawei.chien@mediatek.com>
+ <1445515359-8587-2-git-send-email-dawei.chien@mediatek.com>
+ <20151104193958.GC14127@localhost.localdomain>
+ <1446721837.4016.57.camel@mtksdaap41>
+ <20151106032433.GL3773@ubuntu>
+ <20151110112017.GA3551@e104805>
+ <20151110184121.GC5240@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f178.google.com ([209.85.160.178]:34503 "EHLO
-	mail-yk0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750915AbbKKJKl (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Nov 2015 04:10:41 -0500
-Received: by ykfs79 with SMTP id s79so39320696ykf.1
-        for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2015 01:10:40 -0800 (PST)
-In-Reply-To: <1444141665-18534-6-git-send-email-mtitinger+renesas@baylibre.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20151110184121.GC5240-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, dawei chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Daniel Kurtz <djkurtz-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, srv_heupstream-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Marc Titinger <mtitinger@baylibre.com>
-Cc: khilman@kernel.org, rjw@rjwysocki.net, Lina Iyer <lina.iyer@linaro.org>, Axel Haslam <ahaslam@baylibre.com>, Benoit Cousson <bcousson@baylibre.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 6 October 2015 at 22:27, Marc Titinger <mtitinger@baylibre.com> wrote:
-> From: Marc Titinger <mtitinger@baylibre.com>
->
-> Cpuidle now handles c-states and power-states differently. c-states do not decrement
->  the reference count for the CPUs in the cluster, while power-states i.e.
-> cluster level states like 'CLUSTER_SLEEP_0' in the case of juno, will.
->
-> The 'D1' fake device also registers intermediate power-state,
-> for experimentation.
->
-> Signed-off-by: Marc Titinger <mtitinger@baylibre.com>
-> ---
->  arch/arm64/boot/dts/arm/juno.dts |  2 +-
->  drivers/cpuidle/cpuidle-arm.c    | 52 ++++++++++++++++++++++++++++++++--------
->  2 files changed, 43 insertions(+), 11 deletions(-)
->
-> diff --git a/arch/arm64/boot/dts/arm/juno.dts b/arch/arm64/boot/dts/arm/juno.dts
-> index cadc5de..0bb0dd7 100644
-> --- a/arch/arm64/boot/dts/arm/juno.dts
-> +++ b/arch/arm64/boot/dts/arm/juno.dts
-> @@ -47,7 +47,7 @@
->                         };
->
->                         CLUSTER_SLEEP_0: cluster-sleep-0 {
-> -                               compatible = "arm,idle-state","arm,power-state";
-> +                               compatible = "arm,power-state";
->                                 arm,psci-suspend-param = <0x1010000>;
->                                 local-timer-stop;
->                                 entry-latency-us = <800>;
-> diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
-> index 7c791f9..8dd5dc3 100644
-> --- a/drivers/cpuidle/cpuidle-arm.c
-> +++ b/drivers/cpuidle/cpuidle-arm.c
-> @@ -40,7 +40,6 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
->                                 struct cpuidle_driver *drv, int idx)
->  {
->         int ret;
-> -       struct device *cpu_dev = get_cpu_device(dev->cpu);
->
->         if (!idx) {
->                 cpu_do_idle();
-> @@ -50,18 +49,49 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
->         ret = cpu_pm_enter();
->         if (!ret) {
->                 /*
-> -                * Notify runtime PM as well of this cpu powering down
-> -                * TODO: Merge CPU_PM and runtime PM.
-> -                */
-> -               RCU_NONIDLE(pm_runtime_put_sync(cpu_dev));
-> -
-> -               /*
->                  * Pass idle state index to cpu_suspend which in turn will
->                  * call the CPU ops suspend protocol with idle index as a
->                  * parameter.
->                  */
->                 arm_cpuidle_suspend(idx);
->
-> +               cpu_pm_exit();
-> +       }
-> +
-> +       return ret ? -1 : idx;
-> +}
-> +
-> +/*
-> + * arm_enter_power_state - delegate state trasition to genpd
-> + *
-> + * dev: cpuidle device
-> + * drv: cpuidle driver
-> + * idx: state index
-> + *
-> + * Called from the CPUidle framework to delegate a state transition
-> + * to the generic domain. This will be a cluster poweroff state
-> + * the Domain will chose to actually turn off the cluster based on
-> + * the status of other CPUs, and devices and subdomains in the Cluster
-> + * domain.
-> +*/
-> +static int arm_enter_power_state(struct cpuidle_device *dev,
-> +               struct cpuidle_driver *drv, int idx)
-> +{
-> +       int ret;
-> +       struct device *cpu_dev = get_cpu_device(dev->cpu);
-> +
-> +       BUG_ON(idx == 0);
-> +
-> +       ret = cpu_pm_enter();
-> +       if (!ret) {
-> +               /*
-> +               * Notify runtime PM as well of this cpu powering down
-> +               * TODO: Merge CPU_PM and runtime PM.
-> +               */
-> +               RCU_NONIDLE(pm_runtime_put_sync(cpu_dev));
-[question]: Does it mean that above function will use the gpd->rpm->idle?
-> +
-> +               arm_cpuidle_suspend(idx);
-> +
->                 RCU_NONIDLE(pm_runtime_get_sync(cpu_dev));
->                 cpu_pm_exit();
->         }
-> @@ -69,6 +99,7 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
->         return ret ? -1 : idx;
->  }
->
-> +
->  static struct cpuidle_driver arm_idle_driver = {
->         .name = "arm_idle",
->         .owner = THIS_MODULE,
-> @@ -90,9 +121,10 @@ static struct cpuidle_driver arm_idle_driver = {
->  };
->
->  static const struct of_device_id arm_idle_state_match[] __initconst = {
-> -       { .compatible = "arm,idle-state",
-> -         .data = arm_enter_idle_state },
-> -       { },
-> +       {.compatible = "arm,idle-state",
-> +        .data = arm_enter_idle_state},
-> +       {.compatible = "arm,power-state",
-> +        .data = arm_enter_power_state},
->  };
->
->  /*
-> --
-> 1.9.1
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+On Tue, Nov 10, 2015 at 10:41:22AM -0800, Eduardo Valentin wrote:
+> On Tue, Nov 10, 2015 at 11:20:18AM +0000, Javi Merino wrote:
+> > On Fri, Nov 06, 2015 at 08:54:33AM +0530, Viresh Kumar wrote:
+> > > Cc'ing Javi (which you should have as he wrote the power-thing for
+> > > cpu-cooling).
+> > > 
+> > > On 05-11-15, 19:10, dawei chien wrote:
+> > > > This is because our platform currently only support mt8173_cpufreq.c, so
+> > > > that I only add static power model for our owner IC.
+> > > 
+> > > Bindings are (normally) supposed to be general than a platform
+> > > specific.
+> > > 
+> > > > Please understanding that I wouldn't give a DT binding document since I
+> > > > will remove static power table on next version, but I can try to explain
+> > > > it.
+> > > 
+> > > Then just don't add things in the first place.
+> > > 
+> > > > As far as I know, static power is somewhat leakage of CPU clusters, so
+> > > > that we hardly to find a formula, which can suitable all kinds of CPUs
+> > > > since leakage is different. In ARM IPA framework, static power only need
+> > > > to be defined by who register cpufreq_power_cooling_register. The
+> > > > voltage/power table is just one way to present leakage power of CPUs.
+> > > 
+> > > The bindings don't fix the values for static power, but just provides
+> > > a field for platforms to use. Everyone can then send its own power
+> > > figures. Why do you thing it can't be generalized?
+> > 
+> > The way they are described here is useful only for this platform, but
+> > it's not generic.  It only takes into account voltage as (I assume)
+> > it's the only variable that affects it in this implementation.  A
+> > generalized version of the static power should take into account the
+> > temperature and the idle state.
+> 
+> Still, why would we have one binding to describe static power per platform?
+> 
+> I would prefer we go towards a generalized binding description.
+
+Sure, I wasn't saying that we want one binding per platform.  I was
+just saying that this binding can't be made generic because it's not.
+
+Cheers,
+Javi
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
