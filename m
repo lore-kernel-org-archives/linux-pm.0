@@ -1,114 +1,81 @@
-From: Javi Merino <javi.merino-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH 2/3] thermal: Add Mediatek thermal controller support
-Date: Wed, 11 Nov 2015 09:40:36 +0000
-Message-ID: <20151111094036.GB2781@e104805>
-References: <1447064013-13026-1-git-send-email-s.hauer@pengutronix.de>
- <1447064013-13026-3-git-send-email-s.hauer@pengutronix.de>
- <20151110120554.GB3551@e104805>
- <20151110182629.GA5240@localhost.localdomain>
- <20151111072747.GI8526@pengutronix.de>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 2/2] thermal: rcar_thermal: use pm_runtime_put_sync()
+Date: Wed, 11 Nov 2015 12:03:52 +0100
+Message-ID: <CAPDyKFpzHjHfJjxupaSDabmSQzCD8M9enAFQDe0NnMn6-9g0pg@mail.gmail.com>
+References: <87h9kulkfg.wl%kuninori.morimoto.gx@renesas.com>
+	<CAMuHMdX_mAd1PVv5_UCJJZ2U5EjYUbqQ36zaEgP5KdUuZiGQMQ@mail.gmail.com>
+	<CAPDyKFrDKXRui3onqCp0tH1E4MFN4AchaBrRcfdYi63hNLU63Q@mail.gmail.com>
+	<2060819.A5Wq9BbBOH@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20151111072747.GI8526-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-Cc: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, mark.rutland-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yk0-f176.google.com ([209.85.160.176]:36566 "EHLO
+	mail-yk0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751621AbbKKLDx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Nov 2015 06:03:53 -0500
+Received: by ykdr82 with SMTP id r82so42439600ykd.3
+        for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2015 03:03:52 -0800 (PST)
+In-Reply-To: <2060819.A5Wq9BbBOH@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Linux-SH <linux-sh@vger.kernel.org>, Linux-Kernel <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Cao Minh Hiep <cm-hiep@jinso.co.jp>, =?UTF-8?B?RHVuZ++8muS6uuOCvQ==?= <nv-dung@jinso.co.jp>, Alan Stern <stern@rowland.harvard.edu>
 
-On Wed, Nov 11, 2015 at 08:27:47AM +0100, Sascha Hauer wrote:
-> On Tue, Nov 10, 2015 at 10:26:30AM -0800, Eduardo Valentin wrote:
-> > On Tue, Nov 10, 2015 at 12:05:54PM +0000, Javi Merino wrote:
-> > > On Mon, Nov 09, 2015 at 11:13:32AM +0100, Sascha Hauer wrote:
-> > 
-> > <cut>
-> > 
-> > > > +
-> > > > +/*
-> > > > + * The MT8173 thermal controller has four banks. Each bank can read up to
-> > > > + * four temperature sensors simultaneously. The MT8173 has a total of 5
-> > > > + * temperature sensors. We use each bank to measure a certain area of the
-> > > > + * SoC. Since TS2 is located centrally in the SoC it is influenced by multiple
-> > > > + * areas, hence is used in different banks.
-> > > > + */
-> > > > +static const struct mtk_thermal_bank_cfg bank_data[] = {
-> > > > +	{
-> > > > +		.num_sensors = 2,
-> > > > +		.sensors = { MT8173_TS2, MT8173_TS3 },
-> > > > +	}, {
-> > > > +		.num_sensors = 2,
-> > > > +		.sensors = { MT8173_TS2, MT8173_TS4 },
-> > > > +	}, {
-> > > > +		.num_sensors = 3,
-> > > > +		.sensors = { MT8173_TS1, MT8173_TS2, MT8173_TSABB },
-> > > > +	}, {
-> > > > +		.num_sensors = 1,
-> > > > +		.sensors = { MT8173_TS2 },
-> > > > +	},
-> > > > +};
-> > 
-> > Would it make sense to simply expose all sensors and let the
-> > configuration of their aggregation be done by DT?
-> 
-> This particular layout has been chosen because there's also the Smart
-> Voltage Scaler (SVS) in the SoC. The SVS uses the same banks for
-> measuring temperatures. I don't know the details yet, I just asked the
-> Mediatek guys.
-> 
-> > 
-> > There is already ongoing effort to get aggregation functions
-> > generalized.
-> 
-> Do you have any pointers? I haven't seen these efforts yet.
+On 11 November 2015 at 00:57, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Tuesday, November 10, 2015 02:00:38 PM Ulf Hansson wrote:
+>> +Rafael, Alan
+>>
+>> On 10 November 2015 at 11:10, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+>> > Hi Ulf,
+>> >
+>
+> [cut]
+>
+>> >>
+>> >> The problem is that the runtime PM status of the device isn't
+>> >> correctly updated at ->remove(). The effect is that the the
+>> >> pm_runtime_get_sync() in ->probe() at re-bind will *not* trigger the
+>> >> ->runtime_resume() callbacks to be invoked, as the runtime PM core
+>> >> believes the device is already runtime resumed.
+>> >
+>> > So that's where it should be fixed?
+>>
+>> That would be a more generic approach, although I am not sure how the
+>> driver/PM core should be able to take the correct decision in this
+>> phase. Devices may be runtime PM managed also without a driver bound.
+>>
+>> Perhaps when __device_release_driver() finds a bounded driver for the
+>> device, it could after all actions been performed to unbind the
+>> driver, check if runtime PM is enabled. If it isn't, it could set the
+>> runtime PM status to suspended!?
+>>
+>> I have no idea if that would introduce other issues as it would kind
+>> of force the runtime PM status of the device to suspend, without
+>> actually knowing if it's the correct thing to do.
+>
+> IMO, that needs to depend on the bus type.  If the bus type has a way
+> to manage PM for devices without drivers, it should be allowed to do so.
 
-Hierarchical thermal zones
-http://thread.gmane.org/gmane.linux.power-management.general/67785
+By following my suggestion above, we would allow the bus/driver's
+->remove() to manage whether runtime PM should be enabled/disabled for
+the device, before __device_release_driver() checks that.
+Don't you think that the driver core could rely on that information?
 
-You could keep your thermal zones per bank and then use the
-hierarchical thermal zone to create a thermal zone that calculates the
-maximum of all banks.  You can put the trip points in this thermal
-zone.
+I realize that it would be a kind of policy decision for runtime PM,
+but it's quite similar as when register/unregister devices when we set
+the runtime PM status to suspended.
 
-> > > > +static int mtk_read_temp(void *data, int *temperature)
-> > > > +{
-> > > > +	struct mtk_thermal *mt = data;
-> > > > +	int i;
-> > > > +	int tempmax = INT_MIN;
-> > > > +
-> > > > +	for (i = 0; i < MT8173_NUM_ZONES; i++) {
-> > > > +		struct mtk_thermal_bank *bank = &mt->banks[i];
-> > > > +		int t;
-> > > > +
-> > > > +		mtk_thermal_get_bank(bank);
-> > > > +
-> > > > +		t = mtk_thermal_bank_temperature(bank);
-> > > 
-> > > IIUIC, when you had multiple thermal zones
-> > > mtk_thermal_bank_temperature() made sense, but now it looks like
-> > > you're just doing the maximum of all sensors.  Why bother with the
-> > > banks any more?  Aren't you just calculating the maximum of all
-> > > sensors?  As TS2 is present in all banks, there's no point in reading
-> > > it four times just to get the maximum of all sensors.
-> > > 
-> > 
-> > Yeah, agreed here. If that is your intention, maybe read each sensor one
-> > time, then compute the max of each subset from memory instead.
-> 
-> I would have done that if there wasn't this SVS engine. I'll ask
-> internally what the constraint of this SVS engine actually are and let
-> you know.
-> 
-> Sascha
-> 
-> 
-> -- 
-> Pengutronix e.K.                           |                             |
-> Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-> Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-> Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
-> 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+If you don't think this is a good idea, I guess we need to deal with
+this from subsystem level code somehow instead.
+
+>
+> Of course, the platform bus type is somewhat special in that respect,
+> but it looks like we simply need some sort of a convention in there too
+> (the expectations should be the same for everybody).
+>
+> Thanks,
+> Rafael
+>
+
+Kind regards
+Uffe
