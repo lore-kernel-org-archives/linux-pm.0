@@ -1,103 +1,149 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/2] thermal: rcar_thermal: use pm_runtime_put_sync()
-Date: Wed, 11 Nov 2015 01:11:33 +0100
-Message-ID: <2630860.ogDBScTvgp@vostro.rjw.lan>
-References: <87h9kulkfg.wl%kuninori.morimoto.gx@renesas.com> <CAPDyKFrDKXRui3onqCp0tH1E4MFN4AchaBrRcfdYi63hNLU63Q@mail.gmail.com> <20151110183049.GB5240@localhost.localdomain>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: [GIT PULL] Thermal management updates for v4.4-rc1
+Date: Wed, 11 Nov 2015 10:18:35 +0800
+Message-ID: <1447208315.2770.15.camel@rzhang1-mobl4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:63882 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750950AbbKJXmP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 10 Nov 2015 18:42:15 -0500
-In-Reply-To: <20151110183049.GB5240@localhost.localdomain>
+Received: from mga11.intel.com ([192.55.52.93]:55452 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751393AbbKKCSj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 10 Nov 2015 21:18:39 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Zhang Rui <rui.zhang@intel.com>, Linux-SH <linux-sh@vger.kernel.org>, Linux-Kernel <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Cao Minh Hiep <cm-hiep@jinso.co.jp>, =?utf-8?B?RHVuZ++8muS6uuOCvQ==?= <nv-dung@jinso.co.jp>, Alan Stern <stern@rowland.harvard.edu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 
-On Tuesday, November 10, 2015 10:30:51 AM Eduardo Valentin wrote:
-> Hi,
-> 
-> On Tue, Nov 10, 2015 at 02:00:38PM +0100, Ulf Hansson wrote:
-> > +Rafael, Alan
-> > 
-> > On 10 November 2015 at 11:10, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > > Hi Ulf,
-> > >
-> > > On Tue, Nov 10, 2015 at 10:57 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> > >> On 10 November 2015 at 09:18, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > >>> On Tue, Nov 10, 2015 at 3:12 AM, Kuninori Morimoto
-> > >>> <kuninori.morimoto.gx@renesas.com> wrote:
-> > >>>> From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-> > >>>>
-> > >>>> It is using pm_runtime_get_sync() on probe(). Let's use
-> > >>>> pm_runtime_put_sync() instead of pm_runtime_put(). Otherwise thermal
-> > >>>> sensor doesn't work after unbind/re-bind
-> > >>>>
-> > >>>> Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-> > >>>> ---
-> > >>>>  drivers/thermal/rcar_thermal.c | 2 +-
-> > >>>>  1 file changed, 1 insertion(+), 1 deletion(-)
-> > >>>>
-> > >>>> diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
-> > >>>> index 13d01ed..f7cf2d7 100644
-> > >>>> --- a/drivers/thermal/rcar_thermal.c
-> > >>>> +++ b/drivers/thermal/rcar_thermal.c
-> > >>>> @@ -373,7 +373,7 @@ static int rcar_thermal_remove(struct platform_device *pdev)
-> > >>>>                 thermal_zone_device_unregister(priv->zone);
-> > >>>>         }
-> > >>>>
-> > >>>> -       pm_runtime_put(dev);
-> > >>>> +       pm_runtime_put_sync(dev);
-> > >>>>         pm_runtime_disable(dev);
-> > >>
-> > >> For the reasons explained by Geert, this is to me also a "workaround".
-> > >>
-> > >> I would replace pm_runtime_put() and pm_runtime_disable() with a call
-> > >> to pm_runtime_force_suspend().
-> > >>
-> > >> In that way, you will make sure you device get runtime suspended
-> > >> (clock domain will gate the clock). Additionally, the runtime PM
-> > >> status will properly reflect the status of the device.
-> > >
-> > > That still sounds like a workaround to me, which we have to apply to all
-> > > drivers relying on Runtime PM?
-> > 
-> > Definitely not all drivers, but those that runs pm_runtime_get_sync()
-> > during ->probe() and expects the ->runtime_resume() callback to always
-> > be invoked because of that. I guess we need to check upon which
-> > drivers that may suffer from this.
+Hi, Linus,
 
-Generally, calling pm_runtime_get_sync() in ->probe() and expecting the
-driver's ->runtime_resume() to be always be invoked is a mistake.  I know
-nothing about any guarantees that this will always happen.
+Please pull from
+  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
 
-If you want your ->runtime_resume() to be invoked no matter what, you really
-need to figure out what the current state of things is, change it to your
-expectations with runtime PM disabled and enable runtime PM after that. 
+to receive the latest Thermal Management updates for 4.4-rc1 with
+top-most commit 7c5b2759bf8c2cbc60e5560c72cf51a2628f6d30:
 
-Still, that also needs to be done with care as the bus type/PM domain may be
-affected by it.
+  Merge branches 'thermal-core', 'thermal-intel' and 'thermal-soc' into
+next (2015-11-06 09:32:10 +0800)
 
-> > 
-> > I wouldn't be surprised if at least a subset of those cases we find,
-> > are poorly designed from PM point of view and won't even probe
-> > successfully unless CONFIG_PM is set. Whatever that means...
-> 
-> 
-> Yeah, if it is the case this is a bug in runtime pm core, I would prefer
-> this to be properly fixed, and not only this driver benefits of it.
-> 
-> Rafael? Any thoughts?
+on top of commit 049e6dde7e57f0054fdc49102e7ef4830c698b46:
 
-First off, it's not a bug in the runtime PM core, as that code is agnostic
-to what should or should not happen to devices during ->probe, ->remove etc.
+  Linux 4.3-rc4 (2015-10-04 16:57:17 +0100)
 
-Second, as I said above (and elsewhere), the driver is just a piece of the
-puzzle in many cases.
 
-Thanks,
-Rafael
+Specifics:
+
+- Implement generic devfreq cooling mechanism through frequency
+reduction for devices using devfreq. From: =C3=98rjan Eide and Javi Mer=
+ino.
+
+- Introduce OMAP3 support on TI SoC thermal driver. From: Pavel Mack an=
+d
+Eduardo Valentin.
+
+- A bounch of small fixes on devfreq_cooling, Exynos, IMX, Armada, and
+Rockchip thermal drivers.
+
+thanks,
+rui
+
+----------------------------------------------------------------
+
+Bai Ping (1):
+      thermal: imx: register irq handler later in probe
+
+Caesar Wang (2):
+      dt-bindings: rockchip-thermal: Add the pinctrl states in this
+document
+      thermal: rockchip: support the sleep pinctrl state to avoid
+glitches in s2r
+
+Dan Carpenter (2):
+      thermal: underflow bug in imx_set_trip_temp()
+      devfreq_cooling: return on allocation failure
+
+Dmitry Torokhov (2):
+      thermal: rockchip: fix handling of invalid readings
+      thermal: rockhip: fix setting thermal shutdown polarity
+
+Eduardo Valentin (1):
+      thermal: ti-soc-thermal: add OMAP36xx support
+
+Javi Merino (4):
+      PM / OPP: get the voltage for all OPPs
+      devfreq_cooling: add trace information
+      thermal: devfreq_cooling: use a thermal_cooling_device for
+register and unregister
+      thermal: devfreq_cooling: Make power a u64
+
+Krzysztof Kozlowski (5):
+      thermal: exynos: Fix unbalanced regulator disable on probe failur=
+e
+      thermal: exynos: Fix first temperature read after registering
+sensor
+      thermal: exynos: Use IS_ERR() because regulator cannot be NULL
+      thermal: exynos: Remove unneeded semicolon
+      thermal: exynos: Directly return 0 instead of using local ret
+variable
+
+Nadav Haklai (1):
+      thermal: armada: Fix possible overflow in the Armada 380 thermal
+sensor formula
+
+Olaf Hering (1):
+      tools/thermal: tmon: use pkg-config also for CFLAGS
+
+Pavel Machek (1):
+      ti-soc-thermal: implement omap3 support
+
+Rasmus Villemoes (1):
+      linux/thermal.h: rename KELVIN_TO_CELSIUS to
+DECI_KELVIN_TO_CELSIUS
+
+Srinivas Pandruvada (1):
+      thermal: kconfig: select THERMAL_WRITABLE_TRIPS for x86 thermal
+
+Vaishali Thakkar (1):
+      thermal: cpu_cooling: Remove usage of devm functions
+
+Zhang Rui (3):
+      Merge branch 'linus' of
+git://git.kernel.org/.../evalenti/linux-soc-thermal into thermal-soc
+      Merge branch 'linus' of
+git://git.kernel.org/.../evalenti/linux-soc-thermal into thermal-soc
+      Merge branches 'thermal-core', 'thermal-intel' and 'thermal-soc'
+into next
+
+=C3=98rjan Eide (1):
+      thermal: Add devfreq cooling
+
+ .../bindings/thermal/rockchip-thermal.txt          |  11 +-
+ .../devicetree/bindings/thermal/ti_soc_thermal.txt |  14 +
+ drivers/acpi/thermal.c                             |  12 +-
+ drivers/base/power/opp.c                           |   4 +-
+ drivers/platform/x86/asus-wmi.c                    |   2 +-
+ drivers/platform/x86/intel_menlow.c                |   8 +-
+ drivers/thermal/Kconfig                            |  17 +
+ drivers/thermal/Makefile                           |   3 +
+ drivers/thermal/armada_thermal.c                   |   6 +-
+ drivers/thermal/cpu_cooling.c                      |   8 +-
+ drivers/thermal/devfreq_cooling.c                  | 573
++++++++++++++++++++++
+ drivers/thermal/imx_thermal.c                      |  21 +-
+ drivers/thermal/rockchip_thermal.c                 |  42 +-
+ drivers/thermal/samsung/exynos_tmu.c               |  68 +--
+ drivers/thermal/ti-soc-thermal/Kconfig             |  15 +
+ drivers/thermal/ti-soc-thermal/Makefile            |   1 +
+ .../thermal/ti-soc-thermal/omap3-thermal-data.c    | 176 +++++++
+ drivers/thermal/ti-soc-thermal/ti-bandgap.c        |  14 +
+ drivers/thermal/ti-soc-thermal/ti-bandgap.h        |  11 +
+ include/linux/devfreq_cooling.h                    |  81 +++
+ include/linux/thermal.h                            |   8 +-
+ include/trace/events/thermal.h                     |  53 ++
+ tools/thermal/tmon/Makefile                        |   3 +
+ 23 files changed, 1065 insertions(+), 86 deletions(-)
+ create mode 100644 drivers/thermal/devfreq_cooling.c
+ create mode 100644 drivers/thermal/ti-soc-thermal/omap3-thermal-data.c
+ create mode 100644 include/linux/devfreq_cooling.h
+
 
