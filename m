@@ -1,125 +1,104 @@
-From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: RE: [PATCH] [v4] x86, suspend: Save/restore extra MSR registers for
- suspend
-Date: Thu, 12 Nov 2015 09:42:16 +0000
-Message-ID: <36DF59CE26D8EE47B0655C516E9CE6402867326B@shsmsx102.ccr.corp.intel.com>
-References: <1440645507-17768-1-git-send-email-yu.c.chen@intel.com>
- <20150917053004.GB6665@amd>
- <36DF59CE26D8EE47B0655C516E9CE6402865A403@shsmsx102.ccr.corp.intel.com>
- <001701d102c4$1ac2bab0$50483010$@net>
- <36DF59CE26D8EE47B0655C516E9CE6402865AA02@shsmsx102.ccr.corp.intel.com>
- <002c01d1043c$133ba580$39b2f080$@net>
- <36DF59CE26D8EE47B0655C516E9CE64028662059@shsmsx102.ccr.corp.intel.com>
- <000901d118a8$8fda8450$af8f8cf0$@net>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v2 10/11] PM / Hibernate: clean cached pages on
+ architectures that require it
+Date: Thu, 12 Nov 2015 11:47:05 +0000
+Message-ID: <20151112114705.GA2657@red-moon>
+References: <1445966960-31724-1-git-send-email-james.morse@arm.com>
+ <1445966960-31724-11-git-send-email-james.morse@arm.com>
+ <20151111114039.GA8375@red-moon>
+ <2039611.PJaFlk1sMi@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <000901d118a8$8fda8450$af8f8cf0$@net>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "tglx@linutronix.de" <tglx@linutronix.de>, "hpa@zytor.com" <hpa@zytor.com>, "bp@alien8.de" <bp@alien8.de>, "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, 'Ingo Molnar' <mingo@kernel.org>, 'Pavel Machek' <pavel@ucw.cz>, 'Kristen Carlson Accardi' <kristen@linux.intel.com>, "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:35701 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932180AbbKLLqN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 12 Nov 2015 06:46:13 -0500
+Content-Disposition: inline
+In-Reply-To: <2039611.PJaFlk1sMi@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: James Morse <james.morse@arm.com>, Pavel Machek <pavel@ucw.cz>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Kevin Kang <kkang@intrinsyc.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, wangfei <w.f@huawei.com>, Marc Zyngier <marc.zyngier@arm.com>
 
-Hi, 
-> -----Original Message-----
-> From: Doug Smythies [mailto:dsmythies@telus.net]
-> Sent: Friday, November 06, 2015 11:34 PM
-> To: Chen, Yu C
-> Cc: Wysocki, Rafael J; tglx@linutronix.de; hpa@zytor.com; bp@alien8.de;
-> Zhang, Rui; linux-pm@vger.kernel.org; x86@kernel.org; linux-
-> kernel@vger.kernel.org; Brown, Len; 'Ingo Molnar'; 'Pavel Machek'; 'Kristen
-> Carlson Accardi'; Pandruvada, Srinivas
-> Subject: RE: [PATCH] [v4] x86, suspend: Save/restore extra MSR registers for
-> suspend
+On Thu, Nov 12, 2015 at 01:48:32AM +0100, Rafael J. Wysocki wrote:
+> On Wednesday, November 11, 2015 11:40:39 AM Lorenzo Pieralisi wrote:
+> > Hi Pavel, Rafael,
+> > 
+> > Do you have any feedback on this patch ?
+> > 
+> > It is fundamental to this series and affects Hibernate core code so if you
+> > have any feedback that would be much appreciated.
 > 
+> I'm really not familiar with the flush_icache_range() interface.
 > 
-> On 2015.11.01 08:50 Chen, Yu C wrote:
-> >> On 2015.10.10 19:27 Chen, Yu C wrote:
-> >>> On 2105.10.10 02:56 Doug Smythies wrote:
-> >>>
-> >>>>> The current version of the intel_pstate driver is incompatible
-> >>>>> with any use of Clock Modulation, always resulting in driving the
-> >>>>> target pstate to the minimum, regardless of load. The result is
-> >>>>> the apparent CPU frequency stuck at minimum * modulation percent.
-> >>>>
-> >>>>> The acpi-cpufreq driver works fine with Clock Modulation,
-> >>>>> resulting in desired frequency * modulation percent.
-> >>>>
-> >>
-> >>> [Yu] Why intel_pstate driver is incompatible with Clock Modulation?
-> >>
-> >> It is simply how the current control algorithm responds to the scenario.
-> >>
-> >> The problem is in intel_pstate_get_scaled_busy, here:
-> >>
-> >>         /*
-> >>          * core_busy is the ratio of actual performance to max
-> >>          * max_pstate is the max non turbo pstate available
-> >>          * current_pstate was the pstate that was requested during
-> >>          *      the last sample period.
-> >>          *
-> >>          * We normalize core_busy, which was our actual percent
-> >>          * performance to what we requested during the last sample
-> >>          * period. The result will be a percentage of busy at a
-> >>          * specified pstate.
-> >>          */
-> >>         core_busy = cpu->sample.core_pct_busy;
-> >>         max_pstate = int_tofp(cpu->pstate.max_pstate);
-> >>         current_pstate = int_tofp(cpu->pstate.current_pstate);
-> >>         core_busy = mul_fp(core_busy, div_fp(max_pstate,
-> >> current_pstate));
-> >>
-> >> With Clock Modulation enabled, the actual performance percent will
-> >> always be less than what was asked for, basically meaning
-> >> current_pstate is much less than what was asked for. Thus the
-> >> algorithm will drive down the target pstate regardless of load.
-> >>
-> > [Yu] Do you mean, there is some problem with the normalization,and we
-> > should use the actual pstate rather than the theoretical
-> > current_pstate, for example, the pseudocode might looked like:
-> >
-> > -  current_pstate = int_tofp(cpu->pstate.current_pstate);
-> > + current_pstate = int_tofp(cpu->pstate.current_pstat)*0.85;
-> 
-> I did not think of normalizing / compensating at this point.
-> That is a good idea.
-> Just for a test, I tried it and it seems to work well.
-> Before normalizing / compensating core_busy can be quite a small for lesser
-> clock modulation duty cycles, and so becomes a little noisy afterwards.
-> 
-> For my test, on an otherwise unaltered kernel v4.3 I did this:
-> 
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index aa33b92..97a90e1 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -821,6 +821,7 @@ static inline int32_t
-> intel_pstate_get_scaled_busy(struct cpudata *cpu)
->         int32_t core_busy, max_pstate, current_pstate, sample_ratio;
->         s64 duration_us;
->         u32 sample_time;
-> +       u64 clock_modulation;
-> 
->         /*
->          * core_busy is the ratio of actual performance to max @@ -836,6
-> +837,17 @@ static inline int32_t intel_pstate_get_scaled_busy(struct
-> cpudata *cpu)
->         core_busy = cpu->sample.core_pct_busy;
->         max_pstate = int_tofp(cpu->pstate.max_pstate);
->         current_pstate = int_tofp(cpu->pstate.current_pstate);
-> +
-> +//     rdmsrl(MSR_IA32_CLOCK_MODULATION, clock_modulation);
-> +       rdmsrl(MSR_IA32_THERM_CONTROL, clock_modulation);
-> +       if(clock_modulation && 0X10) {
-> +               clock_modulation = clock_modulation & 0x0F;
-> +               if(clock_modulation == 0) clock_modulation = 8;
-> +               core_busy = mul_fp(core_busy, int_tofp(0x10));
-> +               core_busy = div_fp(core_busy, int_tofp(clock_modulation));
-> +       }
-> +
-rdmsr_safe  might be better, you can refer to acpi_throttling_rdmsr ,
-and I'm OK with this code, are you planning to send a formal patch? 
+> What exactly does it do?
 
-Yu
+It is used to sync a memory range that is written into (eg loading
+modules, copying from snapshot is basically the same thing, reads from
+storage and restore pages that might well be executable code), in particular
+to sync the I-cache and the D-cache, eg on arm64 the page that the snapshot
+code is copying might be executable code that has to be cleaned from the
+D-cache so that it is made visible to the I-cache.
+
+On x86 it is a NOP AFAIK.
+
+Thanks,
+Lorenzo
+
+> 
+> Rafael
+> 
+> 
+> > On Tue, Oct 27, 2015 at 05:29:19PM +0000, James Morse wrote:
+> > > Some architectures require code written to memory as if it were data to be
+> > > 'cleaned' from any data caches so that the processor can fetch them as new
+> > > instructions.
+> > > 
+> > > During resume from hibernate, the snapshot code copies some pages directly,
+> > > meaning these architectures do not get a chance to perform their cache
+> > > maintenance. Add a call to flush_icache_range(), which is provided by
+> > > architectures that require it, to perform the maintenance.
+> > > 
+> > > This mirrors the kernel's behaviour when loading kernel modules and when
+> > > mapping executable pages to user space.
+> > > 
+> > > Signed-off-by: James Morse <james.morse@arm.com>
+> > > ---
+> > >  kernel/power/snapshot.c | 4 ++++
+> > >  1 file changed, 4 insertions(+)
+> > > 
+> > > diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+> > > index 5235dd4e1e2f..139fc449ad75 100644
+> > > --- a/kernel/power/snapshot.c
+> > > +++ b/kernel/power/snapshot.c
+> > > @@ -31,6 +31,7 @@
+> > >  #include <linux/ktime.h>
+> > >  
+> > >  #include <asm/uaccess.h>
+> > > +#include <asm/cacheflush.h>
+> > >  #include <asm/mmu_context.h>
+> > >  #include <asm/pgtable.h>
+> > >  #include <asm/tlbflush.h>
+> > > @@ -1196,9 +1197,12 @@ static unsigned int count_data_pages(void)
+> > >  static inline void do_copy_page(long *dst, long *src)
+> > >  {
+> > >  	int n;
+> > > +	unsigned long __maybe_unused start = (unsigned long)dst;
+> > >  
+> > >  	for (n = PAGE_SIZE / sizeof(long); n; n--)
+> > >  		*dst++ = *src++;
+> > > +
+> > > +	flush_icache_range(start, start+PAGE_SIZE);
+> > >  }
+> > >  
+> > >  
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> -- 
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
+> 
