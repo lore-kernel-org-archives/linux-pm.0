@@ -1,53 +1,39 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v2 10/11] PM / Hibernate: clean cached pages on
- architectures that require it
-Date: Thu, 12 Nov 2015 11:52:33 +0000
-Message-ID: <20151112115233.GB2657@red-moon>
-References: <1445966960-31724-1-git-send-email-james.morse@arm.com>
- <1445966960-31724-11-git-send-email-james.morse@arm.com>
- <20151111114039.GA8375@red-moon>
- <36DF59CE26D8EE47B0655C516E9CE64028672FF5@shsmsx102.ccr.corp.intel.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH] thermal: power_allocator: Use temperature reading from tz
+Date: Thu, 12 Nov 2015 10:08:05 -0800
+Message-ID: <20151112180803.GA4361@localhost.localdomain>
+References: <1444735801-18267-1-git-send-email-kapileshwar.singh@arm.com>
+ <36DF59CE26D8EE47B0655C516E9CE6402865B959@shsmsx102.ccr.corp.intel.com>
+ <20151015105812.GB2639@e104805>
+ <564087EF.70501@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:35741 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754339AbbKLLvk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 12 Nov 2015 06:51:40 -0500
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:33620 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751816AbbKLSII (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Nov 2015 13:08:08 -0500
+Received: by pabfh17 with SMTP id fh17so71876804pab.0
+        for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2015 10:08:08 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <36DF59CE26D8EE47B0655C516E9CE64028672FF5@shsmsx102.ccr.corp.intel.com>
+In-Reply-To: <564087EF.70501@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Chen, Yu C" <yu.c.chen@intel.com>
-Cc: James Morse <james.morse@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Kevin Kang <kkang@intrinsyc.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, wangfei <w.f@huawei.com>, Marc Zyngier <marc.zyngier@arm.com>
+To: Kapileshwar Singh <kapileshwar.singh@arm.com>
+Cc: Javi Merino <javi.merino@arm.com>, "Chen, Yu C" <yu.c.chen@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Daniel Kurtz <djkurtz@chromium.org>, "Zhang, Rui" <rui.zhang@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>, Andrea Arcangeli <aarcange@redhat.com>
 
-On Thu, Nov 12, 2015 at 02:53:35AM +0000, Chen, Yu C wrote:
+On Mon, Nov 09, 2015 at 11:47:59AM +0000, Kapileshwar Singh wrote:
+> If there are no objections to this patch, can this be picked up for
+> the next RC?
 
-[...]
+So far no objections. I am adding this to my review list. It might go
+for coming 4.4 rc cycles.
 
-> > > static inline void do_copy_page(long *dst, long *src)  {
-> > >  	int n;
-> > > +	unsigned long __maybe_unused start = (unsigned long)dst;
-> > >
-> > >  	for (n = PAGE_SIZE / sizeof(long); n; n--)
-> > >  		*dst++ = *src++;
-> > > +
-> > > +	flush_icache_range(start, start+PAGE_SIZE);
-> > >  }
-> How about invalid all icache lines before doing do_copy_page, since
-> do_copy_page might deal with both data pages and execute pages, that might be
-> redundant to do it for every page?
+Thanks
 
-The point here is to make sure I-cache and D-cache are in sync, because
-the page we are copying can be executable code, so flush_icache_range is
-there to make sure that the code is cleaned from the D-cache to a cache
-level that is visible to the I-cache (yes, the I-cache range is
-invalidate too in the process).
+Eduardo Valentin
 
-I agree it is redundant for data pages, the point is, you do not really
-know what you are copying at this stage, we can extend the snapshot
-code to flag the pages accordingly, but it might well be overkill, so
-we posted this patch to get consensus before proceeding.
-
-Thanks,
-Lorenzo
+> 
+> Regards,
+> KP
+> 
