@@ -1,91 +1,49 @@
-From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: RE: [PATCH v2 10/11] PM / Hibernate: clean cached pages on
- architectures that require it
-Date: Thu, 12 Nov 2015 02:53:35 +0000
-Message-ID: <36DF59CE26D8EE47B0655C516E9CE64028672FF5@shsmsx102.ccr.corp.intel.com>
-References: <1445966960-31724-1-git-send-email-james.morse@arm.com>
- <1445966960-31724-11-git-send-email-james.morse@arm.com>
- <20151111114039.GA8375@red-moon>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH] thermal: rockchip: fix compile error
+Date: Wed, 11 Nov 2015 19:32:22 -0800
+Message-ID: <20151112033221.GA9142@localhost.localdomain>
+References: <1446990043-8096-1-git-send-email-wxt@rock-chips.com>
+ <20151109193638.GB10824@localhost.localdomain>
+ <20151112090658.619c3b7c@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:1853 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752598AbbKLCxj convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Nov 2015 21:53:39 -0500
-In-Reply-To: <20151111114039.GA8375@red-moon>
-Content-Language: en-US
+Received: from mail-pa0-f52.google.com ([209.85.220.52]:33314 "EHLO
+	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752741AbbKLDc1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Nov 2015 22:32:27 -0500
+Content-Disposition: inline
+In-Reply-To: <20151112090658.619c3b7c@canb.auug.org.au>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, James Morse <james.morse@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Kevin Kang <kkang@intrinsyc.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, wangfei <w.f@huawei.com>, Marc Zyngier <marc.zyngier@arm.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Caesar Wang <wxt@rock-chips.com>, rui.zhang@intel.com, heiko@sntech.de, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, lkp@intel.com
 
-Hi,
+Hello Stephen,
 
-> -----Original Message-----
-> From: linux-pm-owner@vger.kernel.org [mailto:linux-pm-
-> owner@vger.kernel.org] On Behalf Of Lorenzo Pieralisi
-> Sent: Wednesday, November 11, 2015 7:41 PM
-> To: James Morse; Rafael J. Wysocki; Pavel Machek
-> Cc: linux-arm-kernel@lists.infradead.org; linux-pm@vger.kernel.org; Will
-> Deacon; Sudeep Holla; Kevin Kang; Geoff Levand; Catalin Marinas; Mark
-> Rutland; AKASHI Takahiro; wangfei; Marc Zyngier
-> Subject: Re: [PATCH v2 10/11] PM / Hibernate: clean cached pages on
-> architectures that require it
+On Thu, Nov 12, 2015 at 09:06:58AM +1100, Stephen Rothwell wrote:
+> Hi Eduardo,
 > 
-> Hi Pavel, Rafael,
-> 
-> Do you have any feedback on this patch ?
-> 
-> It is fundamental to this series and affects Hibernate core code so if you have
-> any feedback that would be much appreciated.
-> 
-> Thanks a lot,
-> Lorenzo
-> 
-> On Tue, Oct 27, 2015 at 05:29:19PM +0000, James Morse wrote:
-> > Some architectures require code written to memory as if it were data
-> > to be 'cleaned' from any data caches so that the processor can fetch
-> > them as new instructions.
+> On Mon, 9 Nov 2015 11:36:39 -0800 Eduardo Valentin <edubezval@gmail.com> wrote:
 > >
-> > During resume from hibernate, the snapshot code copies some pages
-> > directly, meaning these architectures do not get a chance to perform
-> > their cache maintenance. Add a call to flush_icache_range(), which is
-> > provided by architectures that require it, to perform the maintenance.
-> >
-> > This mirrors the kernel's behaviour when loading kernel modules and
-> > when mapping executable pages to user space.
-> >
-> > Signed-off-by: James Morse <james.morse@arm.com>
-> > ---
-> >  kernel/power/snapshot.c | 4 ++++
-> >  1 file changed, 4 insertions(+)
-> >
-> > diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c index
-> > 5235dd4e1e2f..139fc449ad75 100644
-> > --- a/kernel/power/snapshot.c
-> > +++ b/kernel/power/snapshot.c
-> > @@ -31,6 +31,7 @@
-> >  #include <linux/ktime.h>
-> >
-> >  #include <asm/uaccess.h>
-> > +#include <asm/cacheflush.h>
-> >  #include <asm/mmu_context.h>
-> >  #include <asm/pgtable.h>
-> >  #include <asm/tlbflush.h>
-> > @@ -1196,9 +1197,12 @@ static unsigned int count_data_pages(void)
-> > static inline void do_copy_page(long *dst, long *src)  {
-> >  	int n;
-> > +	unsigned long __maybe_unused start = (unsigned long)dst;
-> >
-> >  	for (n = PAGE_SIZE / sizeof(long); n; n--)
-> >  		*dst++ = *src++;
-> > +
-> > +	flush_icache_range(start, start+PAGE_SIZE);
-> >  }
-How about invalid all icache lines before doing do_copy_page, since
-do_copy_page might deal with both data pages and execute pages, that might be
-redundant to do it for every page?
+> > On Sun, Nov 08, 2015 at 09:40:43PM +0800, Caesar Wang wrote:
+> > > Missing a include file caused compile error.
+> > > 
 
-Yu
+<cut>
+
+> > 
+> > 
+> > Adding this to my tree and sending to ruis too.
+> 
+> This missed the merge of the thermal tree into Linus' tree and so is
+> now needed in Linus' tree ASAP (several builds are failing).
+
+Sure. I will send the patch directly to Linus.
+
+Thanks for the heads up.
+
+> 
+> -- 
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
