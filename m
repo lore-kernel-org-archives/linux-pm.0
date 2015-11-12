@@ -1,39 +1,62 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] thermal: power_allocator: Use temperature reading from tz
-Date: Thu, 12 Nov 2015 10:08:05 -0800
-Message-ID: <20151112180803.GA4361@localhost.localdomain>
-References: <1444735801-18267-1-git-send-email-kapileshwar.singh@arm.com>
- <36DF59CE26D8EE47B0655C516E9CE6402865B959@shsmsx102.ccr.corp.intel.com>
- <20151015105812.GB2639@e104805>
- <564087EF.70501@arm.com>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: [PATCH] PM / wakeirq: check that wake IRQ is valid before accepting
+ it
+Date: Thu, 12 Nov 2015 10:26:57 -0800
+Message-ID: <20151112182657.GA19785@dtor-ws>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f47.google.com ([209.85.220.47]:33620 "EHLO
-	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751816AbbKLSII (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Nov 2015 13:08:08 -0500
-Received: by pabfh17 with SMTP id fh17so71876804pab.0
-        for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2015 10:08:08 -0800 (PST)
+Received: from mail-pa0-f49.google.com ([209.85.220.49]:35556 "EHLO
+	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751769AbbKLS1A (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Nov 2015 13:27:00 -0500
 Content-Disposition: inline
-In-Reply-To: <564087EF.70501@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kapileshwar Singh <kapileshwar.singh@arm.com>
-Cc: Javi Merino <javi.merino@arm.com>, "Chen, Yu C" <yu.c.chen@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Daniel Kurtz <djkurtz@chromium.org>, "Zhang, Rui" <rui.zhang@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>, Andrea Arcangeli <aarcange@redhat.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tony Lindgren <tony@atomide.com>, Grygorii Strashko <grygorii.strashko@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, Nov 09, 2015 at 11:47:59AM +0000, Kapileshwar Singh wrote:
-> If there are no objections to this patch, can this be picked up for
-> the next RC?
+Check that IRQ number passed to dev_pm_set_wake_irq and
+dev_pm_set_dedicated_wake_irq is valid (not negative) before accepting it.
 
-So far no objections. I am adding this to my review list. It might go
-for coming 4.4 rc cycles.
+Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+---
 
-Thanks
+My recent change to i2c core introduced a code path that led to calling
+dev_pm_set_wake_irq(&client->dev, -ENOENT), which succeeded but
+obviously did the wrong thing. Checking the IRQ and bailing out early
+would have helped noticing this issue earlier.
 
-Eduardo Valentin
+ drivers/base/power/wakeirq.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-> 
-> Regards,
-> KP
-> 
+diff --git a/drivers/base/power/wakeirq.c b/drivers/base/power/wakeirq.c
+index eb6e674..0d77cd6 100644
+--- a/drivers/base/power/wakeirq.c
++++ b/drivers/base/power/wakeirq.c
+@@ -68,6 +68,9 @@ int dev_pm_set_wake_irq(struct device *dev, int irq)
+ 	struct wake_irq *wirq;
+ 	int err;
+ 
++	if (irq < 0)
++		return -EINVAL;
++
+ 	wirq = kzalloc(sizeof(*wirq), GFP_KERNEL);
+ 	if (!wirq)
+ 		return -ENOMEM;
+@@ -167,6 +170,9 @@ int dev_pm_set_dedicated_wake_irq(struct device *dev, int irq)
+ 	struct wake_irq *wirq;
+ 	int err;
+ 
++	if (irq < 0)
++		return -EINVAL;
++
+ 	wirq = kzalloc(sizeof(*wirq), GFP_KERNEL);
+ 	if (!wirq)
+ 		return -ENOMEM;
+-- 
+2.6.0.rc2.230.g3dd15c0
+
+
+-- 
+Dmitry
