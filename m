@@ -1,76 +1,36 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH] PM / wakeirq: check that wake IRQ is valid before
- accepting it
-Date: Thu, 12 Nov 2015 10:52:11 -0800
-Message-ID: <20151112185211.GB8494@dtor-ws>
-References: <20151112182657.GA19785@dtor-ws>
- <5644DD73.2090904@ti.com>
+From: Heiko Stuebner <heiko@sntech.de>
+Subject: Re: [PATCH v4 00/10] Better compatible for the rockchip thermal and support RK3368 SoCs
+Date: Thu, 12 Nov 2015 23:14 +0100
+Message-ID: <3751572.i2tVkgaN1o@phil>
+References: <1447044542-30859-1-git-send-email-wxt@rock-chips.com> <20151112182950.GB4361@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f51.google.com ([209.85.220.51]:36766 "EHLO
-	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753078AbbKLSwO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 12 Nov 2015 13:52:14 -0500
-Content-Disposition: inline
-In-Reply-To: <5644DD73.2090904@ti.com>
+Received: from gloria.sntech.de ([95.129.55.99]:51441 "EHLO gloria.sntech.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752917AbbKLWOO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 12 Nov 2015 17:14:14 -0500
+In-Reply-To: <20151112182950.GB4361@localhost.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Caesar Wang <wxt@rock-chips.com>, linux-rockchip@lists.infradead.org, lkp@intel.com, devicetree@vger.kernel.org, Jiri Kosina <trivial@kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-pm@vger.kernel.org, Olof Johansson <olof@lixom.net>, Kumar Gala <galak@codeaurora.org>, linux-kernel@vger.kernel.org, Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Herring <robh+dt@kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-arm-kernel@lists.infradead.org, Pawel Moll <pawel.moll@arm.com>, Zhang Rui <rui.zhang@intel.com>, Mark Rutland <mark.rutland@arm.com>, Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>
 
-On Thu, Nov 12, 2015 at 08:41:55PM +0200, Grygorii Strashko wrote:
-> On 11/12/2015 08:26 PM, Dmitry Torokhov wrote:
-> >Check that IRQ number passed to dev_pm_set_wake_irq and
-> >dev_pm_set_dedicated_wake_irq is valid (not negative) before accepting it.
-> >
-> >Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> >---
-> >
-> >My recent change to i2c core introduced a code path that led to calling
-> >dev_pm_set_wake_irq(&client->dev, -ENOENT), which succeeded but
-> >obviously did the wrong thing. Checking the IRQ and bailing out early
-> >would have helped noticing this issue earlier.
-> >
-> >  drivers/base/power/wakeirq.c | 6 ++++++
-> >  1 file changed, 6 insertions(+)
-> >
-> >diff --git a/drivers/base/power/wakeirq.c b/drivers/base/power/wakeirq.c
-> >index eb6e674..0d77cd6 100644
-> >--- a/drivers/base/power/wakeirq.c
-> >+++ b/drivers/base/power/wakeirq.c
-> >@@ -68,6 +68,9 @@ int dev_pm_set_wake_irq(struct device *dev, int irq)
-> >  	struct wake_irq *wirq;
-> >  	int err;
-> >
-> >+	if (irq < 0)
-> 
-> <= 0 ?
+Hi Eduardo,
 
-Maybe. I am still confused whether we treat 0 as invalid or not.
+Am Donnerstag, 12. November 2015, 10:29:52 schrieb Eduardo Valentin:
+> On Mon, Nov 09, 2015 at 12:48:52PM +0800, Caesar Wang wrote:
+> > Thank you all for providing inputs and comments on previous versions of
+> > this patchset.
+> > Especially thanks to the (Eduardo, Dmitry, Heiko,....).
+> > 
+> > This series patchs are working for RK3368 on Rockchip platform.
+> 
+> Do you have any results on existing support? Is the driver still in one
+> piece for rk3288?
 
-> 
-> >+		return -EINVAL;
-> >+
-> >  	wirq = kzalloc(sizeof(*wirq), GFP_KERNEL);
-> >  	if (!wirq)
-> >  		return -ENOMEM;
-> >@@ -167,6 +170,9 @@ int dev_pm_set_dedicated_wake_irq(struct device *dev, int irq)
-> >  	struct wake_irq *wirq;
-> >  	int err;
-> >
-> >+	if (irq < 0)
-> >+		return -EINVAL;
-> >+
-> >  	wirq = kzalloc(sizeof(*wirq), GFP_KERNEL);
-> >  	if (!wirq)
-> >  		return -ENOMEM;
-> >
-> 
-> 
-> -- 
-> regards,
-> -grygorii
+I've tested this series on a rk3288-veyron-jerry and everything still
+runs just fine, so
 
--- 
-Dmitry
+Tested-by: Heiko Stuebner <heiko@sntech.de>
