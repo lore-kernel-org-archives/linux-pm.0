@@ -1,49 +1,35 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] thermal: rockchip: fix compile error
-Date: Wed, 11 Nov 2015 19:32:22 -0800
-Message-ID: <20151112033221.GA9142@localhost.localdomain>
-References: <1446990043-8096-1-git-send-email-wxt@rock-chips.com>
- <20151109193638.GB10824@localhost.localdomain>
- <20151112090658.619c3b7c@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: [PATCH 0/1] last minute thermal build fix for v4.4-rc1
+Date: Wed, 11 Nov 2015 19:43:10 -0800
+Message-ID: <1447299791-9419-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f52.google.com ([209.85.220.52]:33314 "EHLO
-	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752741AbbKLDc1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Nov 2015 22:32:27 -0500
-Content-Disposition: inline
-In-Reply-To: <20151112090658.619c3b7c@canb.auug.org.au>
+Received: from mail-pa0-f49.google.com ([209.85.220.49]:36521 "EHLO
+	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752741AbbKLDnU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Nov 2015 22:43:20 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Caesar Wang <wxt@rock-chips.com>, rui.zhang@intel.com, heiko@sntech.de, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, lkp@intel.com
+To: Linus Torvalds <torvalds@linux-foundation.org>, Stephen Rothwell <sfr@canb.auug.org.au>, Rui Zhang <rui.zhang@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 
-Hello Stephen,
+Hello Linus,
 
-On Thu, Nov 12, 2015 at 09:06:58AM +1100, Stephen Rothwell wrote:
-> Hi Eduardo,
-> 
-> On Mon, 9 Nov 2015 11:36:39 -0800 Eduardo Valentin <edubezval@gmail.com> wrote:
-> >
-> > On Sun, Nov 08, 2015 at 09:40:43PM +0800, Caesar Wang wrote:
-> > > Missing a include file caused compile error.
-> > > 
+This is build fix on Rockchip driver for v4.4-rc1 that missed the
+thermal pull request sent by Rui on Nov 10th.
 
-<cut>
+Please consider picking the patch for fixing the build failure
+on v4.4-rc1.
 
-> > 
-> > 
-> > Adding this to my tree and sending to ruis too.
-> 
-> This missed the merge of the thermal tree into Linus' tree and so is
-> now needed in Linus' tree ASAP (several builds are failing).
+BR,
 
-Sure. I will send the patch directly to Linus.
+Eduardo Valentin
 
-Thanks for the heads up.
+Caesar Wang (1):
+  thermal: rockchip: fix compile error
 
-> 
-> -- 
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
+ drivers/thermal/rockchip_thermal.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+-- 
+2.5.0
+
