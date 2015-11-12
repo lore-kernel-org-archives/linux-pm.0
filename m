@@ -1,35 +1,56 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCH 0/1] last minute thermal build fix for v4.4-rc1
-Date: Wed, 11 Nov 2015 19:43:10 -0800
-Message-ID: <1447299791-9419-1-git-send-email-edubezval@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f49.google.com ([209.85.220.49]:36521 "EHLO
-	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752741AbbKLDnU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 11 Nov 2015 22:43:20 -0500
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH 1/1] thermal: rockchip: fix compile error
+Date: Wed, 11 Nov 2015 19:43:11 -0800
+Message-ID: <1447299791-9419-2-git-send-email-edubezval@gmail.com>
+References: <1447299791-9419-1-git-send-email-edubezval@gmail.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1447299791-9419-1-git-send-email-edubezval@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Linus Torvalds <torvalds@linux-foundation.org>, Stephen Rothwell <sfr@canb.auug.org.au>, Rui Zhang <rui.zhang@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Caesar Wang <wxt@rock-chips.com>, Eduardo Valentin <edubezval@gmail.com>
+List-Id: linux-pm@vger.kernel.org
 
-Hello Linus,
+From: Caesar Wang <wxt@rock-chips.com>
 
-This is build fix on Rockchip driver for v4.4-rc1 that missed the
-thermal pull request sent by Rui on Nov 10th.
+Missing a include file caused compile error.
 
-Please consider picking the patch for fixing the build failure
-on v4.4-rc1.
+drivers/thermal/rockchip_thermal.c:
+In function 'rockchip_thermal_suspend':
+drivers/thermal/rockchip_thermal.c:720:2: error: implicit
+declaration of function 'pinctrl_pm_select_sleep_state'
+[-Werror=implicit-function-declaration]
+pinctrl_pm_select_sleep_state(dev);
+                 ^
+drivers/thermal/rockchip_thermal.c:
+In function 'rockchip_thermal_resume':
+drivers/thermal/rockchip_thermal.c:759:2: error: implicit
+declaration of function 'pinctrl_pm_select_default_state'
+[-Werror=implicit-function-declaration]
+^pinctrl_pm_select_default_state(dev);
+cc1: some warnings being treated as errors
 
-BR,
+Fixes: 7e38a5b1daa1 ("thermal: rockchip: support the sleep pinctrl state
+to avoid glitches")
 
-Eduardo Valentin
-
-Caesar Wang (1):
-  thermal: rockchip: fix compile error
-
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Reported-by: kbuild test robot <lkp@intel.com>
+Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+---
  drivers/thermal/rockchip_thermal.c | 1 +
  1 file changed, 1 insertion(+)
 
+diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+index 2b58870..9787e8a 100644
+--- a/drivers/thermal/rockchip_thermal.c
++++ b/drivers/thermal/rockchip_thermal.c
+@@ -22,6 +22,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/reset.h>
+ #include <linux/thermal.h>
++#include <linux/pinctrl/consumer.h>
+ 
+ /**
+  * If the temperature over a period of time High,
 -- 
 2.5.0
-
