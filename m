@@ -1,89 +1,295 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH 2/3] thermal: Add Mediatek thermal controller support
-Date: Fri, 13 Nov 2015 11:09:12 +0100
-Message-ID: <20151113100912.GE8526@pengutronix.de>
-References: <1447064013-13026-1-git-send-email-s.hauer@pengutronix.de>
- <1447064013-13026-3-git-send-email-s.hauer@pengutronix.de>
- <20151110120554.GB3551@e104805>
- <20151110182629.GA5240@localhost.localdomain>
- <20151111072747.GI8526@pengutronix.de>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v5 5/9] ARM: EXYNOS: split up exynos4 SoC specific PMU data
+Date: Fri, 13 Nov 2015 19:16:44 +0900
+Message-ID: <5645B88C.1020104@samsung.com>
+References: <1447406983-27835-1-git-send-email-pankaj.dubey@samsung.com>
+ <1447406983-27835-6-git-send-email-pankaj.dubey@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:50926 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932330AbbKMKJT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Nov 2015 05:09:19 -0500
-Content-Disposition: inline
-In-Reply-To: <20151111072747.GI8526@pengutronix.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1447406983-27835-6-git-send-email-pankaj.dubey@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pankaj Dubey <pankaj.dubey@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Cc: kgene.kim@samsung.com, thomas.ab@samsung.com, amitdanielk@gmail.com, olof@lixom.net, khilman@linaro.org, arnd@arndb.de
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, Javi Merino <javi.merino@arm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robh+dt@kernel.org, linux-mediatek@lists.infradead.org, kernel@pengutronix.de, Matthias Brugger <matthias.bgg@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
 
-On Wed, Nov 11, 2015 at 08:27:47AM +0100, Sascha Hauer wrote:
-> On Tue, Nov 10, 2015 at 10:26:30AM -0800, Eduardo Valentin wrote:
-> > On Tue, Nov 10, 2015 at 12:05:54PM +0000, Javi Merino wrote:
-> > > On Mon, Nov 09, 2015 at 11:13:32AM +0100, Sascha Hauer wrote:
-> > 
-> > <cut>
-> > 
-> > > > +
-> > > > +/*
-> > > > + * The MT8173 thermal controller has four banks. Each bank can read up to
-> > > > + * four temperature sensors simultaneously. The MT8173 has a total of 5
-> > > > + * temperature sensors. We use each bank to measure a certain area of the
-> > > > + * SoC. Since TS2 is located centrally in the SoC it is influenced by multiple
-> > > > + * areas, hence is used in different banks.
-> > > > + */
-> > > > +static const struct mtk_thermal_bank_cfg bank_data[] = {
-> > > > +	{
-> > > > +		.num_sensors = 2,
-> > > > +		.sensors = { MT8173_TS2, MT8173_TS3 },
-> > > > +	}, {
-> > > > +		.num_sensors = 2,
-> > > > +		.sensors = { MT8173_TS2, MT8173_TS4 },
-> > > > +	}, {
-> > > > +		.num_sensors = 3,
-> > > > +		.sensors = { MT8173_TS1, MT8173_TS2, MT8173_TSABB },
-> > > > +	}, {
-> > > > +		.num_sensors = 1,
-> > > > +		.sensors = { MT8173_TS2 },
-> > > > +	},
-> > > > +};
-> > 
-> > Would it make sense to simply expose all sensors and let the
-> > configuration of their aggregation be done by DT?
+On 13.11.2015 18:29, Pankaj Dubey wrote:
+> This patch splits up mach-exynos/pmu.c file, and moves exynos4210,
+> exynos4412 and exynos4212 PMU configuration data and functions handing
+> data into a common exynos4 SoC specific PMU file mach-exynos/exynos4-pmu.c.
 > 
-> This particular layout has been chosen because there's also the Smart
-> Voltage Scaler (SVS) in the SoC. The SVS uses the same banks for
-> measuring temperatures. I don't know the details yet, I just asked the
-> Mediatek guys.
+> Signed-off-by: Pankaj Dubey <pankaj.dubey@samsung.com>
+> Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> ---
+>  arch/arm/mach-exynos/Makefile      |   2 +-
+>  arch/arm/mach-exynos/exynos-pmu.h  |   3 +
+>  arch/arm/mach-exynos/exynos4-pmu.c | 223 +++++++++++++++++++++++++++++++++++++
+>  arch/arm/mach-exynos/pmu.c         | 207 ----------------------------------
+>  4 files changed, 227 insertions(+), 208 deletions(-)
+>  create mode 100644 arch/arm/mach-exynos/exynos4-pmu.c
+> 
+> diff --git a/arch/arm/mach-exynos/Makefile b/arch/arm/mach-exynos/Makefile
+> index e869f86..8969683 100644
+> --- a/arch/arm/mach-exynos/Makefile
+> +++ b/arch/arm/mach-exynos/Makefile
+> @@ -9,7 +9,7 @@ ccflags-$(CONFIG_ARCH_MULTIPLATFORM) += -I$(srctree)/$(src)/include -I$(srctree)
+>  
+>  # Core
+>  
+> -obj-$(CONFIG_ARCH_EXYNOS)	+= exynos.o pmu.o exynos-smc.o firmware.o exynos3250-pmu.o
+> +obj-$(CONFIG_ARCH_EXYNOS)	+= exynos.o pmu.o exynos-smc.o firmware.o exynos3250-pmu.o exynos4-pmu.o
+>  
+>  obj-$(CONFIG_EXYNOS_CPU_SUSPEND) += pm.o sleep.o
+>  obj-$(CONFIG_PM_SLEEP)		+= suspend.o
+> diff --git a/arch/arm/mach-exynos/exynos-pmu.h b/arch/arm/mach-exynos/exynos-pmu.h
+> index 5d09fa3..3d21aad 100644
+> --- a/arch/arm/mach-exynos/exynos-pmu.h
+> +++ b/arch/arm/mach-exynos/exynos-pmu.h
+> @@ -33,6 +33,9 @@ struct exynos_pmu_data {
+>  extern void __iomem *pmu_base_addr;
+>  /* list of all exported SoC specific data */
+>  extern const struct exynos_pmu_data exynos3250_pmu_data;
+> +extern const struct exynos_pmu_data exynos4210_pmu_data;
+> +extern const struct exynos_pmu_data exynos4212_pmu_data;
+> +extern const struct exynos_pmu_data exynos4412_pmu_data;
+>  
+>  extern void pmu_raw_writel(u32 val, u32 offset);
+>  extern u32 pmu_raw_readl(u32 offset);
+> diff --git a/arch/arm/mach-exynos/exynos4-pmu.c b/arch/arm/mach-exynos/exynos4-pmu.c
+> new file mode 100644
+> index 0000000..4b0a79e
+> --- /dev/null
+> +++ b/arch/arm/mach-exynos/exynos4-pmu.c
+> @@ -0,0 +1,223 @@
+> +/*
+> + * Copyright (c) 2011-2015 Samsung Electronics Co., Ltd.
+> + *		http://www.samsung.com/
+> + *
+> + * EXYNOS4 - CPU PMU(Power Management Unit) support
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + */
+> +
+> +#include <linux/soc/samsung/exynos-regs-pmu.h>
+> +#include <linux/soc/samsung/exynos-pmu.h>
+> +
+> +#include "exynos-pmu.h"
+> +
+> +static const struct exynos_pmu_conf exynos4210_pmu_config[] = {
+> +	/* { .offset = offset, .val = { AFTR, LPA, SLEEP } */
+> +	{ S5P_ARM_CORE0_LOWPWR,			{ 0x0, 0x0, 0x2 } },
+> +	{ S5P_DIS_IRQ_CORE0,			{ 0x0, 0x0, 0x0 } },
+> +	{ S5P_DIS_IRQ_CENTRAL0,			{ 0x0, 0x0, 0x0 } },
+> +	{ S5P_ARM_CORE1_LOWPWR,			{ 0x0, 0x0, 0x2 } },
+> +	{ S5P_DIS_IRQ_CORE1,			{ 0x0, 0x0, 0x0 } },
+> +	{ S5P_DIS_IRQ_CENTRAL1,			{ 0x0, 0x0, 0x0 } },
+> +	{ S5P_ARM_COMMON_LOWPWR,		{ 0x0, 0x0, 0x2 } },
+> +	{ S5P_L2_0_LOWPWR,			{ 0x2, 0x2, 0x3 } },
+> +	{ S5P_L2_1_LOWPWR,			{ 0x2, 0x2, 0x3 } },
+> +	{ S5P_CMU_ACLKSTOP_LOWPWR,		{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_CMU_SCLKSTOP_LOWPWR,		{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_CMU_RESET_LOWPWR,			{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_APLL_SYSCLK_LOWPWR,		{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_MPLL_SYSCLK_LOWPWR,		{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_VPLL_SYSCLK_LOWPWR,		{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_EPLL_SYSCLK_LOWPWR,		{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_CMU_CLKSTOP_GPS_ALIVE_LOWPWR,	{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_CMU_RESET_GPSALIVE_LOWPWR,	{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_CMU_CLKSTOP_CAM_LOWPWR,		{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_CMU_CLKSTOP_TV_LOWPWR,		{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_CMU_CLKSTOP_MFC_LOWPWR,		{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_CMU_CLKSTOP_G3D_LOWPWR,		{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_CMU_CLKSTOP_LCD0_LOWPWR,		{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_CMU_CLKSTOP_LCD1_LOWPWR,		{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_CMU_CLKSTOP_MAUDIO_LOWPWR,	{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_CMU_CLKSTOP_GPS_LOWPWR,		{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_CMU_RESET_CAM_LOWPWR,		{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_CMU_RESET_TV_LOWPWR,		{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_CMU_RESET_MFC_LOWPWR,		{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_CMU_RESET_G3D_LOWPWR,		{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_CMU_RESET_LCD0_LOWPWR,		{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_CMU_RESET_LCD1_LOWPWR,		{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_CMU_RESET_MAUDIO_LOWPWR,		{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_CMU_RESET_GPS_LOWPWR,		{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_TOP_BUS_LOWPWR,			{ 0x3, 0x0, 0x0 } },
+> +	{ S5P_TOP_RETENTION_LOWPWR,		{ 0x1, 0x0, 0x1 } },
+> +	{ S5P_TOP_PWR_LOWPWR,			{ 0x3, 0x0, 0x3 } },
+> +	{ S5P_LOGIC_RESET_LOWPWR,		{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_ONENAND_MEM_LOWPWR,		{ 0x3, 0x0, 0x0 } },
+> +	{ S5P_MODIMIF_MEM_LOWPWR,		{ 0x3, 0x0, 0x0 } },
+> +	{ S5P_G2D_ACP_MEM_LOWPWR,		{ 0x3, 0x0, 0x0 } },
+> +	{ S5P_USBOTG_MEM_LOWPWR,		{ 0x3, 0x0, 0x0 } },
+> +	{ S5P_HSMMC_MEM_LOWPWR,			{ 0x3, 0x0, 0x0 } },
+> +	{ S5P_CSSYS_MEM_LOWPWR,			{ 0x3, 0x0, 0x0 } },
+> +	{ S5P_SECSS_MEM_LOWPWR,			{ 0x3, 0x0, 0x0 } },
+> +	{ S5P_PCIE_MEM_LOWPWR,			{ 0x3, 0x0, 0x0 } },
+> +	{ S5P_SATA_MEM_LOWPWR,			{ 0x3, 0x0, 0x0 } },
+> +	{ S5P_PAD_RETENTION_DRAM_LOWPWR,	{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_PAD_RETENTION_MAUDIO_LOWPWR,	{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_PAD_RETENTION_GPIO_LOWPWR,	{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_PAD_RETENTION_UART_LOWPWR,	{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_PAD_RETENTION_MMCA_LOWPWR,	{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_PAD_RETENTION_MMCB_LOWPWR,	{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_PAD_RETENTION_EBIA_LOWPWR,	{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_PAD_RETENTION_EBIB_LOWPWR,	{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_PAD_RETENTION_ISOLATION_LOWPWR,	{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_PAD_RETENTION_ALV_SEL_LOWPWR,	{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_XUSBXTI_LOWPWR,			{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_XXTI_LOWPWR,			{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_EXT_REGULATOR_LOWPWR,		{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_GPIO_MODE_LOWPWR,			{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_GPIO_MODE_MAUDIO_LOWPWR,		{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_CAM_LOWPWR,			{ 0x7, 0x0, 0x0 } },
+> +	{ S5P_TV_LOWPWR,			{ 0x7, 0x0, 0x0 } },
+> +	{ S5P_MFC_LOWPWR,			{ 0x7, 0x0, 0x0 } },
+> +	{ S5P_G3D_LOWPWR,			{ 0x7, 0x0, 0x0 } },
+> +	{ S5P_LCD0_LOWPWR,			{ 0x7, 0x0, 0x0 } },
+> +	{ S5P_LCD1_LOWPWR,			{ 0x7, 0x0, 0x0 } },
+> +	{ S5P_MAUDIO_LOWPWR,			{ 0x7, 0x7, 0x0 } },
+> +	{ S5P_GPS_LOWPWR,			{ 0x7, 0x0, 0x0 } },
+> +	{ S5P_GPS_ALIVE_LOWPWR,			{ 0x7, 0x0, 0x0 } },
+> +	{ PMU_TABLE_END,},
+> +};
+> +
+> +static const struct exynos_pmu_conf exynos4x12_pmu_config[] = {
+> +	{ S5P_ARM_CORE0_LOWPWR,			{ 0x0, 0x0, 0x2 } },
+> +	{ S5P_DIS_IRQ_CORE0,			{ 0x0, 0x0, 0x0 } },
+> +	{ S5P_DIS_IRQ_CENTRAL0,			{ 0x0, 0x0, 0x0 } },
+> +	{ S5P_ARM_CORE1_LOWPWR,			{ 0x0, 0x0, 0x2 } },
+> +	{ S5P_DIS_IRQ_CORE1,			{ 0x0, 0x0, 0x0 } },
+> +	{ S5P_DIS_IRQ_CENTRAL1,			{ 0x0, 0x0, 0x0 } },
+> +	{ S5P_ISP_ARM_LOWPWR,			{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_DIS_IRQ_ISP_ARM_LOCAL_LOWPWR,	{ 0x0, 0x0, 0x0 } },
+> +	{ S5P_DIS_IRQ_ISP_ARM_CENTRAL_LOWPWR,	{ 0x0, 0x0, 0x0 } },
+> +	{ S5P_ARM_COMMON_LOWPWR,		{ 0x0, 0x0, 0x2 } },
+> +	{ S5P_L2_0_LOWPWR,			{ 0x0, 0x0, 0x3 } },
+> +	/* XXX_OPTION register should be set other field */
+> +	{ S5P_ARM_L2_0_OPTION,			{ 0x10, 0x10, 0x0 } },
+> +	{ S5P_L2_1_LOWPWR,			{ 0x0, 0x0, 0x3 } },
+> +	{ S5P_ARM_L2_1_OPTION,			{ 0x10, 0x10, 0x0 } },
+> +	{ S5P_CMU_ACLKSTOP_LOWPWR,		{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_CMU_SCLKSTOP_LOWPWR,		{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_CMU_RESET_LOWPWR,			{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_DRAM_FREQ_DOWN_LOWPWR,		{ 0x1, 0x1, 0x1 } },
+> +	{ S5P_DDRPHY_DLLOFF_LOWPWR,		{ 0x1, 0x1, 0x1 } },
+> +	{ S5P_LPDDR_PHY_DLL_LOCK_LOWPWR,	{ 0x1, 0x1, 0x1 } },
+> +	{ S5P_CMU_ACLKSTOP_COREBLK_LOWPWR,	{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_CMU_SCLKSTOP_COREBLK_LOWPWR,	{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_CMU_RESET_COREBLK_LOWPWR,		{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_APLL_SYSCLK_LOWPWR,		{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_MPLL_SYSCLK_LOWPWR,		{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_VPLL_SYSCLK_LOWPWR,		{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_EPLL_SYSCLK_LOWPWR,		{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_MPLLUSER_SYSCLK_LOWPWR,		{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_CMU_CLKSTOP_GPS_ALIVE_LOWPWR,	{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_CMU_RESET_GPSALIVE_LOWPWR,	{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_CMU_CLKSTOP_CAM_LOWPWR,		{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_CMU_CLKSTOP_TV_LOWPWR,		{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_CMU_CLKSTOP_MFC_LOWPWR,		{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_CMU_CLKSTOP_G3D_LOWPWR,		{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_CMU_CLKSTOP_LCD0_LOWPWR,		{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_CMU_CLKSTOP_ISP_LOWPWR,		{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_CMU_CLKSTOP_MAUDIO_LOWPWR,	{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_CMU_CLKSTOP_GPS_LOWPWR,		{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_CMU_RESET_CAM_LOWPWR,		{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_CMU_RESET_TV_LOWPWR,		{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_CMU_RESET_MFC_LOWPWR,		{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_CMU_RESET_G3D_LOWPWR,		{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_CMU_RESET_LCD0_LOWPWR,		{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_CMU_RESET_ISP_LOWPWR,		{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_CMU_RESET_MAUDIO_LOWPWR,		{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_CMU_RESET_GPS_LOWPWR,		{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_TOP_BUS_LOWPWR,			{ 0x3, 0x0, 0x0 } },
+> +	{ S5P_TOP_RETENTION_LOWPWR,		{ 0x1, 0x0, 0x1 } },
+> +	{ S5P_TOP_PWR_LOWPWR,			{ 0x3, 0x0, 0x3 } },
+> +	{ S5P_TOP_BUS_COREBLK_LOWPWR,		{ 0x3, 0x0, 0x0 } },
+> +	{ S5P_TOP_RETENTION_COREBLK_LOWPWR,	{ 0x1, 0x0, 0x1 } },
+> +	{ S5P_TOP_PWR_COREBLK_LOWPWR,		{ 0x3, 0x0, 0x3 } },
+> +	{ S5P_LOGIC_RESET_LOWPWR,		{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_OSCCLK_GATE_LOWPWR,		{ 0x1, 0x0, 0x1 } },
+> +	{ S5P_LOGIC_RESET_COREBLK_LOWPWR,	{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_OSCCLK_GATE_COREBLK_LOWPWR,	{ 0x1, 0x0, 0x1 } },
+> +	{ S5P_ONENAND_MEM_LOWPWR,		{ 0x3, 0x0, 0x0 } },
+> +	{ S5P_ONENAND_MEM_OPTION,		{ 0x10, 0x10, 0x0 } },
+> +	{ S5P_HSI_MEM_LOWPWR,			{ 0x3, 0x0, 0x0 } },
+> +	{ S5P_HSI_MEM_OPTION,			{ 0x10, 0x10, 0x0 } },
+> +	{ S5P_G2D_ACP_MEM_LOWPWR,		{ 0x3, 0x0, 0x0 } },
+> +	{ S5P_G2D_ACP_MEM_OPTION,		{ 0x10, 0x10, 0x0 } },
+> +	{ S5P_USBOTG_MEM_LOWPWR,		{ 0x3, 0x0, 0x0 } },
+> +	{ S5P_USBOTG_MEM_OPTION,		{ 0x10, 0x10, 0x0 } },
+> +	{ S5P_HSMMC_MEM_LOWPWR,			{ 0x3, 0x0, 0x0 } },
+> +	{ S5P_HSMMC_MEM_OPTION,			{ 0x10, 0x10, 0x0 } },
+> +	{ S5P_CSSYS_MEM_LOWPWR,			{ 0x3, 0x0, 0x0 } },
+> +	{ S5P_CSSYS_MEM_OPTION,			{ 0x10, 0x10, 0x0 } },
+> +	{ S5P_SECSS_MEM_LOWPWR,			{ 0x3, 0x0, 0x0 } },
+> +	{ S5P_SECSS_MEM_OPTION,			{ 0x10, 0x10, 0x0 } },
+> +	{ S5P_ROTATOR_MEM_LOWPWR,		{ 0x3, 0x0, 0x0 } },
+> +	{ S5P_ROTATOR_MEM_OPTION,		{ 0x10, 0x10, 0x0 } },
+> +	{ S5P_PAD_RETENTION_DRAM_LOWPWR,	{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_PAD_RETENTION_MAUDIO_LOWPWR,	{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_PAD_RETENTION_GPIO_LOWPWR,	{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_PAD_RETENTION_UART_LOWPWR,	{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_PAD_RETENTION_MMCA_LOWPWR,	{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_PAD_RETENTION_MMCB_LOWPWR,	{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_PAD_RETENTION_EBIA_LOWPWR,	{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_PAD_RETENTION_EBIB_LOWPWR,	{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_PAD_RETENTION_GPIO_COREBLK_LOWPWR, { 0x1, 0x0, 0x0 } },
+> +	{ S5P_PAD_RETENTION_ISOLATION_LOWPWR,	{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_PAD_ISOLATION_COREBLK_LOWPWR,	{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_PAD_RETENTION_ALV_SEL_LOWPWR,	{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_XUSBXTI_LOWPWR,			{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_XXTI_LOWPWR,			{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_EXT_REGULATOR_LOWPWR,		{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_GPIO_MODE_LOWPWR,			{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_GPIO_MODE_COREBLK_LOWPWR,		{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_GPIO_MODE_MAUDIO_LOWPWR,		{ 0x1, 0x1, 0x0 } },
+> +	{ S5P_TOP_ASB_RESET_LOWPWR,		{ 0x1, 0x1, 0x1 } },
+> +	{ S5P_TOP_ASB_ISOLATION_LOWPWR,		{ 0x1, 0x0, 0x1 } },
+> +	{ S5P_CAM_LOWPWR,			{ 0x7, 0x0, 0x0 } },
+> +	{ S5P_TV_LOWPWR,			{ 0x7, 0x0, 0x0 } },
+> +	{ S5P_MFC_LOWPWR,			{ 0x7, 0x0, 0x0 } },
+> +	{ S5P_G3D_LOWPWR,			{ 0x7, 0x0, 0x0 } },
+> +	{ S5P_LCD0_LOWPWR,			{ 0x7, 0x0, 0x0 } },
+> +	{ S5P_ISP_LOWPWR,			{ 0x7, 0x0, 0x0 } },
+> +	{ S5P_MAUDIO_LOWPWR,			{ 0x7, 0x7, 0x0 } },
+> +	{ S5P_GPS_LOWPWR,			{ 0x7, 0x0, 0x0 } },
+> +	{ S5P_GPS_ALIVE_LOWPWR,			{ 0x7, 0x0, 0x0 } },
+> +	{ S5P_CMU_SYSCLK_ISP_LOWPWR,		{ 0x1, 0x0, 0x0 } },
+> +	{ S5P_CMU_SYSCLK_GPS_LOWPWR,		{ 0x1, 0x0, 0x0 } },
+> +	{ PMU_TABLE_END,},
+> +};
+> +
+> +static const struct exynos_pmu_conf exynos4412_pmu_config[] = {
+> +	{ S5P_ARM_CORE2_LOWPWR,			{ 0x0, 0x0, 0x2 } },
+> +	{ S5P_DIS_IRQ_CORE2,			{ 0x0, 0x0, 0x0 } },
+> +	{ S5P_DIS_IRQ_CENTRAL2,			{ 0x0, 0x0, 0x0 } },
+> +	{ S5P_ARM_CORE3_LOWPWR,			{ 0x0, 0x0, 0x2 } },
+> +	{ S5P_DIS_IRQ_CORE3,			{ 0x0, 0x0, 0x0 } },
+> +	{ S5P_DIS_IRQ_CENTRAL3,			{ 0x0, 0x0, 0x0 } },
+> +	{ PMU_TABLE_END,},
+> +};
+> +
+> +const struct exynos_pmu_data exynos4210_pmu_data = {
+> +	.pmu_config	= exynos4210_pmu_config,
+> +};
+> +
+> +const struct exynos_pmu_data exynos4212_pmu_data = {
+> +	.pmu_config	= exynos4x12_pmu_config,
+> +};
+> +
+> +const struct exynos_pmu_data exynos4412_pmu_data = {
+> +	.pmu_config		= exynos4x12_pmu_config,
+> +	.pmu_config_extra	= exynos4412_pmu_config,
+> +};
+> +
 
-Ok, the job of the SVS is to always pick the best voltage for a given
-CPU frequency based on the temperature of the CPU cluster. How I
-understand it the SVS engine automatically reads temperatures from bank0
-for the first CPU cluster and from bank1 for the second CPU cluster. For
-this to work we are not free to assign the sensors to the banks
-arbitrarily.
+Unnecessary new line at EOF.
 
-I was told that controlling the CPU frequency the performance is better
-if we use the maximum temperature of the whole die rather than the
-temperature of individual clusters.
+No need to fix (I can fix it while applying), unless you will re-spin
+the patchset (for v6).
 
-I would prefer to keep the sensor/bank association like it currently is
-as it allows for easy SVS engine integration. Also I would prefer to
-expose a single thermal zone for now, it will be easier to add
-additional zones later than it is to remove them later once we have
-exposed them to the device tree.
-
-Is that ok with you?
-
-Sascha
-
-
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+Best regards,
+Krzysztof
