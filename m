@@ -1,83 +1,47 @@
-From: Pankaj Dubey <pankaj.dubey@samsung.com>
-Subject: [PATCH v5 8/9] ARM: EXYNOS: rearrange static and non-static functions
- of PMU driver
-Date: Fri, 13 Nov 2015 14:59:42 +0530
-Message-ID: <1447406983-27835-9-git-send-email-pankaj.dubey@samsung.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v5 3/9] ARM: EXYNOS: Move pmu specific headers under
+ "linux/soc/samsung"
+Date: Fri, 13 Nov 2015 19:06:26 +0900
+Message-ID: <5645B622.2000808@samsung.com>
 References: <1447406983-27835-1-git-send-email-pankaj.dubey@samsung.com>
+ <1447406983-27835-4-git-send-email-pankaj.dubey@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:40423 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754816AbbKMJdW (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Nov 2015 04:33:22 -0500
-In-reply-to: <1447406983-27835-1-git-send-email-pankaj.dubey@samsung.com>
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:24415 "EHLO
+	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754624AbbKMKGa (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Nov 2015 05:06:30 -0500
+In-reply-to: <1447406983-27835-4-git-send-email-pankaj.dubey@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: kgene.kim@samsung.com, k.kozlowski@samsung.com, thomas.ab@samsung.com, amitdanielk@gmail.com, olof@lixom.net, khilman@linaro.org, arnd@arndb.de, Pankaj Dubey <pankaj.dubey@samsung.com>
+To: Pankaj Dubey <pankaj.dubey@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Cc: kgene.kim@samsung.com, thomas.ab@samsung.com, amitdanielk@gmail.com, olof@lixom.net, khilman@linaro.org, arnd@arndb.de
 
-This patch moves exynos_sys_powerdown_conf function above all
-static functions, to avoid confusion causing due to mixing of
-static-nonstatic-static functions and to improve readability of this
-driver.
+On 13.11.2015 18:29, Pankaj Dubey wrote:
+> Moving Exynos PMU specific header file into "include/linux/soc/samsung"
+> thus updated affected files under "mach-exynos" to use new location of
+> these header files.
+> 
+> Signed-off-by: Amit Daniel Kachhap <amitdanielk@gmail.com>
+> Signed-off-by: Pankaj Dubey <pankaj.dubey@samsung.com>
+> ---
+>  arch/arm/mach-exynos/exynos.c                                       | 2 +-
+>  arch/arm/mach-exynos/mcpm-exynos.c                                  | 2 +-
+>  arch/arm/mach-exynos/platsmp.c                                      | 2 +-
+>  arch/arm/mach-exynos/pm.c                                           | 4 ++--
+>  arch/arm/mach-exynos/pmu.c                                          | 6 +++---
+>  arch/arm/mach-exynos/suspend.c                                      | 4 ++--
+>  {arch/arm/mach-exynos => include/linux/soc/samsung}/exynos-pmu.h    | 6 +++---
+>  .../regs-pmu.h => include/linux/soc/samsung/exynos-regs-pmu.h       | 6 +++---
+>  8 files changed, 16 insertions(+), 16 deletions(-)
+>  rename {arch/arm/mach-exynos => include/linux/soc/samsung}/exynos-pmu.h (81%)
+>  rename arch/arm/mach-exynos/regs-pmu.h => include/linux/soc/samsung/exynos-regs-pmu.h (99%)
+> 
 
-Signed-off-by: Pankaj Dubey <pankaj.dubey@samsung.com>
-Suggested-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
----
- arch/arm/mach-exynos/pmu.c | 34 +++++++++++++++++-----------------
- 1 file changed, 17 insertions(+), 17 deletions(-)
+Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-diff --git a/arch/arm/mach-exynos/pmu.c b/arch/arm/mach-exynos/pmu.c
-index 01cb649..a7741d4 100644
---- a/arch/arm/mach-exynos/pmu.c
-+++ b/arch/arm/mach-exynos/pmu.c
-@@ -39,23 +39,6 @@ u32 pmu_raw_readl(u32 offset)
- 	return readl_relaxed(pmu_base_addr + offset);
- }
- 
--static void exynos_power_off(void)
--{
--	unsigned int tmp;
--
--	pr_info("Power down.\n");
--	tmp = pmu_raw_readl(EXYNOS_PS_HOLD_CONTROL);
--	tmp ^= (1 << 8);
--	pmu_raw_writel(tmp, EXYNOS_PS_HOLD_CONTROL);
--
--	/* Wait a little so we don't give a false warning below */
--	mdelay(100);
--
--	pr_err("Power down failed, please power off system manually.\n");
--	while (1)
--		;
--}
--
- void exynos_sys_powerdown_conf(enum sys_powerdown mode)
- {
- 	unsigned int i;
-@@ -85,6 +68,23 @@ void exynos_sys_powerdown_conf(enum sys_powerdown mode)
- 	}
- }
- 
-+static void exynos_power_off(void)
-+{
-+	unsigned int tmp;
-+
-+	pr_info("Power down.\n");
-+	tmp = pmu_raw_readl(EXYNOS_PS_HOLD_CONTROL);
-+	tmp ^= (1 << 8);
-+	pmu_raw_writel(tmp, EXYNOS_PS_HOLD_CONTROL);
-+
-+	/* Wait a little so we don't give a false warning below */
-+	mdelay(100);
-+
-+	pr_err("Power down failed, please power off system manually.\n");
-+	while (1)
-+		;
-+}
-+
- static int pmu_restart_notify(struct notifier_block *this,
- 		unsigned long code, void *unused)
- {
--- 
-2.4.5
+Best regards,
+Krzysztof
 
