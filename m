@@ -1,42 +1,48 @@
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-Subject: [PATCH] ds2782_battery: constify ds278x_battery_ops structure
-Date: Fri, 13 Nov 2015 19:41:34 +0100
-Message-ID: <1447440094-10105-1-git-send-email-Julia.Lawall@lip6.fr>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: kernel-janitors@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2 10/11] PM / Hibernate: clean cached pages on architectures that require it
+Date: Sat, 14 Nov 2015 00:38:50 +0100
+Message-ID: <3180507.pKM8OzKjXO@vostro.rjw.lan>
+References: <1445966960-31724-1-git-send-email-james.morse@arm.com> <2039611.PJaFlk1sMi@vostro.rjw.lan> <20151112114705.GA2657@red-moon>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:54829 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751071AbbKMXJ1 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 13 Nov 2015 18:09:27 -0500
+In-Reply-To: <20151112114705.GA2657@red-moon>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: James Morse <james.morse@arm.com>, Pavel Machek <pavel@ucw.cz>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Kevin Kang <kkang@intrinsyc.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, wangfei <w.f@huawei.com>, Marc Zyngier <marc.zyngier@arm.com>
 
-The ds278x_battery_ops structure is never modified, so declare it as const.
+On Thursday, November 12, 2015 11:47:05 AM Lorenzo Pieralisi wrote:
+> On Thu, Nov 12, 2015 at 01:48:32AM +0100, Rafael J. Wysocki wrote:
+> > On Wednesday, November 11, 2015 11:40:39 AM Lorenzo Pieralisi wrote:
+> > > Hi Pavel, Rafael,
+> > > 
+> > > Do you have any feedback on this patch ?
+> > > 
+> > > It is fundamental to this series and affects Hibernate core code so if you
+> > > have any feedback that would be much appreciated.
+> > 
+> > I'm really not familiar with the flush_icache_range() interface.
+> > 
+> > What exactly does it do?
+> 
+> It is used to sync a memory range that is written into (eg loading
+> modules, copying from snapshot is basically the same thing, reads from
+> storage and restore pages that might well be executable code), in particular
+> to sync the I-cache and the D-cache, eg on arm64 the page that the snapshot
+> code is copying might be executable code that has to be cleaned from the
+> D-cache so that it is made visible to the I-cache.
+> 
+> On x86 it is a NOP AFAIK.
 
-Done with the help of Coccinelle.
+If that's the case, I have no problems with this change as long as the code
+works on architectures with non-trivial flush_icache_range().
 
-Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+Thanks,
+Rafael
 
----
- drivers/power/ds2782_battery.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/power/ds2782_battery.c b/drivers/power/ds2782_battery.c
-index ed4d756..a1b7e05 100644
---- a/drivers/power/ds2782_battery.c
-+++ b/drivers/power/ds2782_battery.c
-@@ -59,7 +59,7 @@ struct ds278x_info {
- 	struct i2c_client	*client;
- 	struct power_supply	*battery;
- 	struct power_supply_desc	battery_desc;
--	struct ds278x_battery_ops  *ops;
-+	const struct ds278x_battery_ops *ops;
- 	struct delayed_work	bat_work;
- 	int			id;
- 	int                     rsns;
-@@ -361,7 +361,7 @@ enum ds278x_num_id {
- 	DS2786,
- };
- 
--static struct ds278x_battery_ops ds278x_ops[] = {
-+static const struct ds278x_battery_ops ds278x_ops[] = {
- 	[DS2782] = {
- 		.get_battery_current  = ds2782_get_current,
- 		.get_battery_voltage  = ds2782_get_voltage,
