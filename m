@@ -1,528 +1,640 @@
 From: Pankaj Dubey <pankaj.dubey@samsung.com>
-Subject: [PATCH v5 4/9] ARM: EXYNOS: split up exynos3250 SoC specific PMU data
-Date: Fri, 13 Nov 2015 14:59:38 +0530
-Message-ID: <1447406983-27835-5-git-send-email-pankaj.dubey@samsung.com>
+Subject: [PATCH v5 7/9] ARM: EXYNOS: split up exynos5420 SoC specific PMU data
+Date: Fri, 13 Nov 2015 14:59:41 +0530
+Message-ID: <1447406983-27835-8-git-send-email-pankaj.dubey@samsung.com>
 References: <1447406983-27835-1-git-send-email-pankaj.dubey@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 In-reply-to: <1447406983-27835-1-git-send-email-pankaj.dubey@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-samsung-soc-owner@vger.kernel.org
 To: linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 Cc: kgene.kim@samsung.com, k.kozlowski@samsung.com, thomas.ab@samsung.com, amitdanielk@gmail.com, olof@lixom.net, khilman@linaro.org, arnd@arndb.de, Pankaj Dubey <pankaj.dubey@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch splits up mach-exynos/pmu.c file, and moves exynos3250 PMU
-configuration data and functions handing those data into exynos3250
-SoC specific PMU file mach-exynos/exynos3250-pmu.c.
+This patch splits up mach-exynos/pmu.c file, and moves exynos5420,
+PMU configuration data and functions handing data into exynos5420
+SoC specific PMU file mach-exynos/exynos5420-pmu.c.
 
 Signed-off-by: Pankaj Dubey <pankaj.dubey@samsung.com>
-Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
  arch/arm/mach-exynos/Makefile         |   2 +-
- arch/arm/mach-exynos/exynos-pmu.h     |  39 +++++++
- arch/arm/mach-exynos/exynos.c         |   2 -
- arch/arm/mach-exynos/exynos3250-pmu.c | 175 ++++++++++++++++++++++++++++++++
- arch/arm/mach-exynos/pmu.c            | 184 +---------------------------------
- 5 files changed, 219 insertions(+), 183 deletions(-)
- create mode 100644 arch/arm/mach-exynos/exynos-pmu.h
- create mode 100644 arch/arm/mach-exynos/exynos3250-pmu.c
+ arch/arm/mach-exynos/exynos-pmu.h     |   1 +
+ arch/arm/mach-exynos/exynos5420-pmu.c | 280 ++++++++++++++++++++++++++++++++++
+ arch/arm/mach-exynos/pmu.c            | 263 -------------------------------
+ 4 files changed, 282 insertions(+), 264 deletions(-)
+ create mode 100644 arch/arm/mach-exynos/exynos5420-pmu.c
 
 diff --git a/arch/arm/mach-exynos/Makefile b/arch/arm/mach-exynos/Makefile
-index 2f30676..e869f86 100644
+index bfb23a5..2d58063 100644
 --- a/arch/arm/mach-exynos/Makefile
 +++ b/arch/arm/mach-exynos/Makefile
-@@ -9,7 +9,7 @@ ccflags-$(CONFIG_ARCH_MULTIPLATFORM) += -I$(srctree)/$(src)/include -I$(srctree)
+@@ -11,7 +11,7 @@ ccflags-$(CONFIG_ARCH_MULTIPLATFORM) += -I$(srctree)/$(src)/include -I$(srctree)
  
- # Core
- 
--obj-$(CONFIG_ARCH_EXYNOS)	+= exynos.o pmu.o exynos-smc.o firmware.o
-+obj-$(CONFIG_ARCH_EXYNOS)	+= exynos.o pmu.o exynos-smc.o firmware.o exynos3250-pmu.o
+ obj-$(CONFIG_ARCH_EXYNOS)	+= exynos.o pmu.o exynos-smc.o firmware.o \
+ 					exynos3250-pmu.o exynos4-pmu.o \
+-					exynos5250-pmu.o
++					exynos5250-pmu.o exynos5420-pmu.o
  
  obj-$(CONFIG_EXYNOS_CPU_SUSPEND) += pm.o sleep.o
  obj-$(CONFIG_PM_SLEEP)		+= suspend.o
 diff --git a/arch/arm/mach-exynos/exynos-pmu.h b/arch/arm/mach-exynos/exynos-pmu.h
-new file mode 100644
-index 0000000..5d09fa3
---- /dev/null
+index 85c858d..a469e36 100644
+--- a/arch/arm/mach-exynos/exynos-pmu.h
 +++ b/arch/arm/mach-exynos/exynos-pmu.h
-@@ -0,0 +1,39 @@
-+/*
-+ * Copyright (c) 2015 Samsung Electronics Co., Ltd.
-+ *		http://www.samsung.com
-+ *
-+ * Header for EXYNOS PMU Driver support
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#ifndef __EXYNOS_PMU_H
-+#define __EXYNOS_PMU_H
-+
-+#include <linux/io.h>
-+
-+#define PMU_TABLE_END	(-1U)
-+
-+struct exynos_pmu_conf {
-+	unsigned int offset;
-+	u8 val[NUM_SYS_POWERDOWN];
-+};
-+
-+struct exynos_pmu_data {
-+	const struct exynos_pmu_conf *pmu_config;
-+	const struct exynos_pmu_conf *pmu_config_extra;
-+
-+	void (*pmu_init)(void);
-+	void (*powerdown_conf)(enum sys_powerdown);
-+	void (*powerdown_conf_extra)(enum sys_powerdown);
-+};
-+
-+extern void __iomem *pmu_base_addr;
-+/* list of all exported SoC specific data */
-+extern const struct exynos_pmu_data exynos3250_pmu_data;
-+
-+extern void pmu_raw_writel(u32 val, u32 offset);
-+extern u32 pmu_raw_readl(u32 offset);
-+#endif /* __EXYNOS_PMU_H */
-diff --git a/arch/arm/mach-exynos/exynos.c b/arch/arm/mach-exynos/exynos.c
-index 5d68ce8..ce368c8 100644
---- a/arch/arm/mach-exynos/exynos.c
-+++ b/arch/arm/mach-exynos/exynos.c
-@@ -33,8 +33,6 @@
- #include "common.h"
- #include "mfc.h"
+@@ -37,6 +37,7 @@ extern const struct exynos_pmu_data exynos4210_pmu_data;
+ extern const struct exynos_pmu_data exynos4212_pmu_data;
+ extern const struct exynos_pmu_data exynos4412_pmu_data;
+ extern const struct exynos_pmu_data exynos5250_pmu_data;
++extern const struct exynos_pmu_data exynos5420_pmu_data;
  
--void __iomem *pmu_base_addr;
--
- static struct map_desc exynos4_iodesc[] __initdata = {
- 	{
- 		.virtual	= (unsigned long)S5P_VA_CMU,
-diff --git a/arch/arm/mach-exynos/exynos3250-pmu.c b/arch/arm/mach-exynos/exynos3250-pmu.c
+ extern void pmu_raw_writel(u32 val, u32 offset);
+ extern u32 pmu_raw_readl(u32 offset);
+diff --git a/arch/arm/mach-exynos/exynos5420-pmu.c b/arch/arm/mach-exynos/exynos5420-pmu.c
 new file mode 100644
-index 0000000..20b3ab8
+index 0000000..b962fb6
 --- /dev/null
-+++ b/arch/arm/mach-exynos/exynos3250-pmu.c
-@@ -0,0 +1,175 @@
++++ b/arch/arm/mach-exynos/exynos5420-pmu.c
+@@ -0,0 +1,280 @@
 +/*
 + * Copyright (c) 2011-2015 Samsung Electronics Co., Ltd.
 + *		http://www.samsung.com/
 + *
-+ * EXYNOS3250 - CPU PMU (Power Management Unit) support
++ * EXYNOS5420 - CPU PMU (Power Management Unit) support
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License version 2 as
 + * published by the Free Software Foundation.
 + */
 +
++#include <linux/pm.h>
 +#include <linux/soc/samsung/exynos-regs-pmu.h>
 +#include <linux/soc/samsung/exynos-pmu.h>
 +
++#include <asm/cputype.h>
++
 +#include "exynos-pmu.h"
 +
-+static struct exynos_pmu_conf exynos3250_pmu_config[] = {
-+	/* { .offset = offset, .val = { AFTR, W-AFTR, SLEEP } */
-+	{ EXYNOS3_ARM_CORE0_SYS_PWR_REG,		{ 0x0, 0x0, 0x2} },
-+	{ EXYNOS3_DIS_IRQ_ARM_CORE0_LOCAL_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
-+	{ EXYNOS3_DIS_IRQ_ARM_CORE0_CENTRAL_SYS_PWR_REG, { 0x0, 0x0, 0x0} },
-+	{ EXYNOS3_ARM_CORE1_SYS_PWR_REG,		{ 0x0, 0x0, 0x2} },
-+	{ EXYNOS3_DIS_IRQ_ARM_CORE1_LOCAL_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
-+	{ EXYNOS3_DIS_IRQ_ARM_CORE1_CENTRAL_SYS_PWR_REG, { 0x0, 0x0, 0x0} },
-+	{ EXYNOS3_ISP_ARM_SYS_PWR_REG,			{ 0x1, 0x0, 0x0} },
-+	{ EXYNOS3_DIS_IRQ_ISP_ARM_LOCAL_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
-+	{ EXYNOS3_DIS_IRQ_ISP_ARM_CENTRAL_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
-+	{ EXYNOS3_ARM_COMMON_SYS_PWR_REG,		{ 0x0, 0x0, 0x2} },
-+	{ EXYNOS3_ARM_L2_SYS_PWR_REG,			{ 0x0, 0x0, 0x3} },
-+	{ EXYNOS3_CMU_ACLKSTOP_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
-+	{ EXYNOS3_CMU_SCLKSTOP_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
-+	{ EXYNOS3_CMU_RESET_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
-+	{ EXYNOS3_DRAM_FREQ_DOWN_SYS_PWR_REG,		{ 0x1, 0x1, 0x1} },
-+	{ EXYNOS3_DDRPHY_DLLOFF_SYS_PWR_REG,		{ 0x1, 0x1, 0x1} },
-+	{ EXYNOS3_LPDDR_PHY_DLL_LOCK_SYS_PWR_REG,	{ 0x1, 0x1, 0x1} },
-+	{ EXYNOS3_CMU_ACLKSTOP_COREBLK_SYS_PWR_REG,	{ 0x1, 0x0, 0x0} },
-+	{ EXYNOS3_CMU_SCLKSTOP_COREBLK_SYS_PWR_REG,	{ 0x1, 0x0, 0x0} },
-+	{ EXYNOS3_CMU_RESET_COREBLK_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
-+	{ EXYNOS3_APLL_SYSCLK_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
-+	{ EXYNOS3_MPLL_SYSCLK_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
-+	{ EXYNOS3_BPLL_SYSCLK_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
-+	{ EXYNOS3_VPLL_SYSCLK_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
-+	{ EXYNOS3_EPLL_SYSCLK_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
-+	{ EXYNOS3_UPLL_SYSCLK_SYS_PWR_REG,		{ 0x1, 0x1, 0x1} },
-+	{ EXYNOS3_EPLLUSER_SYSCLK_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
-+	{ EXYNOS3_MPLLUSER_SYSCLK_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
-+	{ EXYNOS3_BPLLUSER_SYSCLK_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
-+	{ EXYNOS3_CMU_CLKSTOP_CAM_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
-+	{ EXYNOS3_CMU_CLKSTOP_MFC_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
-+	{ EXYNOS3_CMU_CLKSTOP_G3D_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
-+	{ EXYNOS3_CMU_CLKSTOP_LCD0_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
-+	{ EXYNOS3_CMU_CLKSTOP_ISP_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
-+	{ EXYNOS3_CMU_CLKSTOP_MAUDIO_SYS_PWR_REG,	{ 0x1, 0x0, 0x0} },
-+	{ EXYNOS3_CMU_RESET_CAM_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
-+	{ EXYNOS3_CMU_RESET_MFC_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
-+	{ EXYNOS3_CMU_RESET_G3D_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
-+	{ EXYNOS3_CMU_RESET_LCD0_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
-+	{ EXYNOS3_CMU_RESET_ISP_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
-+	{ EXYNOS3_CMU_RESET_MAUDIO_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
-+	{ EXYNOS3_TOP_BUS_SYS_PWR_REG,			{ 0x3, 0x0, 0x0} },
-+	{ EXYNOS3_TOP_RETENTION_SYS_PWR_REG,		{ 0x1, 0x1, 0x1} },
-+	{ EXYNOS3_TOP_PWR_SYS_PWR_REG,			{ 0x3, 0x3, 0x3} },
-+	{ EXYNOS3_TOP_BUS_COREBLK_SYS_PWR_REG,		{ 0x3, 0x0, 0x0} },
-+	{ EXYNOS3_TOP_RETENTION_COREBLK_SYS_PWR_REG,	{ 0x1, 0x1, 0x1} },
-+	{ EXYNOS3_TOP_PWR_COREBLK_SYS_PWR_REG,		{ 0x3, 0x3, 0x3} },
-+	{ EXYNOS3_LOGIC_RESET_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
-+	{ EXYNOS3_OSCCLK_GATE_SYS_PWR_REG,		{ 0x1, 0x1, 0x1} },
-+	{ EXYNOS3_LOGIC_RESET_COREBLK_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
-+	{ EXYNOS3_OSCCLK_GATE_COREBLK_SYS_PWR_REG,	{ 0x1, 0x0, 0x1} },
-+	{ EXYNOS3_PAD_RETENTION_DRAM_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
-+	{ EXYNOS3_PAD_RETENTION_MAUDIO_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
-+	{ EXYNOS3_PAD_RETENTION_GPIO_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
-+	{ EXYNOS3_PAD_RETENTION_UART_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
-+	{ EXYNOS3_PAD_RETENTION_MMC0_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
-+	{ EXYNOS3_PAD_RETENTION_MMC1_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
-+	{ EXYNOS3_PAD_RETENTION_MMC2_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
-+	{ EXYNOS3_PAD_RETENTION_SPI_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
-+	{ EXYNOS3_PAD_RETENTION_EBIA_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
-+	{ EXYNOS3_PAD_RETENTION_EBIB_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
-+	{ EXYNOS3_PAD_RETENTION_JTAG_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
-+	{ EXYNOS3_PAD_ISOLATION_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
-+	{ EXYNOS3_PAD_ALV_SEL_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
-+	{ EXYNOS3_XUSBXTI_SYS_PWR_REG,			{ 0x1, 0x1, 0x0} },
-+	{ EXYNOS3_XXTI_SYS_PWR_REG,			{ 0x1, 0x1, 0x0} },
-+	{ EXYNOS3_EXT_REGULATOR_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
-+	{ EXYNOS3_EXT_REGULATOR_COREBLK_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
-+	{ EXYNOS3_GPIO_MODE_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
-+	{ EXYNOS3_GPIO_MODE_MAUDIO_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
-+	{ EXYNOS3_TOP_ASB_RESET_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
-+	{ EXYNOS3_TOP_ASB_ISOLATION_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
-+	{ EXYNOS3_TOP_ASB_RESET_COREBLK_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
-+	{ EXYNOS3_TOP_ASB_ISOLATION_COREBLK_SYS_PWR_REG, { 0x1, 0x1, 0x0} },
-+	{ EXYNOS3_CAM_SYS_PWR_REG,			{ 0x7, 0x0, 0x0} },
-+	{ EXYNOS3_MFC_SYS_PWR_REG,			{ 0x7, 0x0, 0x0} },
-+	{ EXYNOS3_G3D_SYS_PWR_REG,			{ 0x7, 0x0, 0x0} },
-+	{ EXYNOS3_LCD0_SYS_PWR_REG,			{ 0x7, 0x0, 0x0} },
-+	{ EXYNOS3_ISP_SYS_PWR_REG,			{ 0x7, 0x0, 0x0} },
-+	{ EXYNOS3_MAUDIO_SYS_PWR_REG,			{ 0x7, 0x0, 0x0} },
-+	{ EXYNOS3_CMU_SYSCLK_ISP_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
++static struct exynos_pmu_conf exynos5420_pmu_config[] = {
++	/* { .offset = offset, .val = { AFTR, LPA, SLEEP } */
++	{ EXYNOS5_ARM_CORE0_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5_DIS_IRQ_ARM_CORE0_LOCAL_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5_DIS_IRQ_ARM_CORE0_CENTRAL_SYS_PWR_REG, { 0x0, 0x0, 0x0} },
++	{ EXYNOS5_ARM_CORE1_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5_DIS_IRQ_ARM_CORE1_LOCAL_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5_DIS_IRQ_ARM_CORE1_CENTRAL_SYS_PWR_REG, { 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_ARM_CORE2_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_DIS_IRQ_ARM_CORE2_LOCAL_SYS_PWR_REG, { 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_DIS_IRQ_ARM_CORE2_CENTRAL_SYS_PWR_REG, { 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_ARM_CORE3_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_DIS_IRQ_ARM_CORE3_LOCAL_SYS_PWR_REG, { 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_DIS_IRQ_ARM_CORE3_CENTRAL_SYS_PWR_REG, { 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_KFC_CORE0_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_DIS_IRQ_KFC_CORE0_LOCAL_SYS_PWR_REG, { 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_DIS_IRQ_KFC_CORE0_CENTRAL_SYS_PWR_REG, { 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_KFC_CORE1_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_DIS_IRQ_KFC_CORE1_LOCAL_SYS_PWR_REG, { 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_DIS_IRQ_KFC_CORE1_CENTRAL_SYS_PWR_REG, { 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_KFC_CORE2_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_DIS_IRQ_KFC_CORE2_LOCAL_SYS_PWR_REG, { 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_DIS_IRQ_KFC_CORE2_CENTRAL_SYS_PWR_REG, { 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_KFC_CORE3_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_DIS_IRQ_KFC_CORE3_LOCAL_SYS_PWR_REG, { 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_DIS_IRQ_KFC_CORE3_CENTRAL_SYS_PWR_REG, { 0x0, 0x0, 0x0} },
++	{ EXYNOS5_ISP_ARM_SYS_PWR_REG,			{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5_DIS_IRQ_ISP_ARM_LOCAL_SYS_PWR_REG,	{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5_DIS_IRQ_ISP_ARM_CENTRAL_SYS_PWR_REG,	{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5420_ARM_COMMON_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_KFC_COMMON_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5_ARM_L2_SYS_PWR_REG,			{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_KFC_L2_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5_CMU_ACLKSTOP_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5_CMU_SCLKSTOP_SYS_PWR_REG,		{ 0x1, 0x0, 0x1} },
++	{ EXYNOS5_CMU_RESET_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
++	{ EXYNOS5_CMU_ACLKSTOP_SYSMEM_SYS_PWR_REG,	{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5_CMU_SCLKSTOP_SYSMEM_SYS_PWR_REG,	{ 0x1, 0x0, 0x1} },
++	{ EXYNOS5_CMU_RESET_SYSMEM_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
++	{ EXYNOS5_DRAM_FREQ_DOWN_SYS_PWR_REG,		{ 0x1, 0x0, 0x1} },
++	{ EXYNOS5_DDRPHY_DLLOFF_SYS_PWR_REG,		{ 0x1, 0x1, 0x1} },
++	{ EXYNOS5_DDRPHY_DLLLOCK_SYS_PWR_REG,		{ 0x1, 0x0, 0x1} },
++	{ EXYNOS5_APLL_SYSCLK_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5_MPLL_SYSCLK_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5_VPLL_SYSCLK_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5_EPLL_SYSCLK_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
++	{ EXYNOS5_BPLL_SYSCLK_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5_CPLL_SYSCLK_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5420_DPLL_SYSCLK_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5420_IPLL_SYSCLK_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5420_KPLL_SYSCLK_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5_MPLLUSER_SYSCLK_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5_BPLLUSER_SYSCLK_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5420_RPLL_SYSCLK_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5420_SPLL_SYSCLK_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5_TOP_BUS_SYS_PWR_REG,			{ 0x3, 0x0, 0x0} },
++	{ EXYNOS5_TOP_RETENTION_SYS_PWR_REG,		{ 0x1, 0x1, 0x1} },
++	{ EXYNOS5_TOP_PWR_SYS_PWR_REG,			{ 0x3, 0x3, 0x0} },
++	{ EXYNOS5_TOP_BUS_SYSMEM_SYS_PWR_REG,		{ 0x3, 0x0, 0x0} },
++	{ EXYNOS5_TOP_RETENTION_SYSMEM_SYS_PWR_REG,	{ 0x1, 0x0, 0x1} },
++	{ EXYNOS5_TOP_PWR_SYSMEM_SYS_PWR_REG,		{ 0x3, 0x0, 0x0} },
++	{ EXYNOS5_LOGIC_RESET_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
++	{ EXYNOS5_OSCCLK_GATE_SYS_PWR_REG,		{ 0x1, 0x0, 0x1} },
++	{ EXYNOS5_LOGIC_RESET_SYSMEM_SYS_PWR_REG,	{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5_OSCCLK_GATE_SYSMEM_SYS_PWR_REG,	{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5420_INTRAM_MEM_SYS_PWR_REG,		{ 0x3, 0x0, 0x3} },
++	{ EXYNOS5420_INTROM_MEM_SYS_PWR_REG,		{ 0x3, 0x0, 0x3} },
++	{ EXYNOS5_PAD_RETENTION_DRAM_SYS_PWR_REG,	{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5_PAD_RETENTION_MAU_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
++	{ EXYNOS5420_PAD_RETENTION_JTAG_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
++	{ EXYNOS5420_PAD_RETENTION_DRAM_SYS_PWR_REG,	{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5420_PAD_RETENTION_UART_SYS_PWR_REG,	{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5420_PAD_RETENTION_MMC0_SYS_PWR_REG,	{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5420_PAD_RETENTION_MMC1_SYS_PWR_REG,	{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5420_PAD_RETENTION_MMC2_SYS_PWR_REG,	{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5420_PAD_RETENTION_HSI_SYS_PWR_REG,	{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5420_PAD_RETENTION_EBIA_SYS_PWR_REG,	{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5420_PAD_RETENTION_EBIB_SYS_PWR_REG,	{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5420_PAD_RETENTION_SPI_SYS_PWR_REG,	{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5420_PAD_RETENTION_DRAM_COREBLK_SYS_PWR_REG, { 0x1, 0x0, 0x0} },
++	{ EXYNOS5_PAD_ISOLATION_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
++	{ EXYNOS5_PAD_ISOLATION_SYSMEM_SYS_PWR_REG,	{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5_PAD_ALV_SEL_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5_XUSBXTI_SYS_PWR_REG,			{ 0x1, 0x1, 0x0} },
++	{ EXYNOS5_XXTI_SYS_PWR_REG,			{ 0x1, 0x1, 0x0} },
++	{ EXYNOS5_EXT_REGULATOR_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
++	{ EXYNOS5_GPIO_MODE_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5_GPIO_MODE_SYSMEM_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
++	{ EXYNOS5_GPIO_MODE_MAU_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
++	{ EXYNOS5_TOP_ASB_RESET_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
++	{ EXYNOS5_TOP_ASB_ISOLATION_SYS_PWR_REG,	{ 0x1, 0x0, 0x0} },
++	{ EXYNOS5_GSCL_SYS_PWR_REG,			{ 0x7, 0x0, 0x0} },
++	{ EXYNOS5_ISP_SYS_PWR_REG,			{ 0x7, 0x0, 0x0} },
++	{ EXYNOS5_MFC_SYS_PWR_REG,			{ 0x7, 0x0, 0x0} },
++	{ EXYNOS5_G3D_SYS_PWR_REG,			{ 0x7, 0x0, 0x0} },
++	{ EXYNOS5420_DISP1_SYS_PWR_REG,			{ 0x7, 0x0, 0x0} },
++	{ EXYNOS5420_MAU_SYS_PWR_REG,			{ 0x7, 0x7, 0x0} },
++	{ EXYNOS5420_G2D_SYS_PWR_REG,			{ 0x7, 0x0, 0x0} },
++	{ EXYNOS5420_MSC_SYS_PWR_REG,			{ 0x7, 0x0, 0x0} },
++	{ EXYNOS5420_FSYS_SYS_PWR_REG,			{ 0x7, 0x0, 0x0} },
++	{ EXYNOS5420_FSYS2_SYS_PWR_REG,			{ 0x7, 0x0, 0x0} },
++	{ EXYNOS5420_PSGEN_SYS_PWR_REG,			{ 0x7, 0x0, 0x0} },
++	{ EXYNOS5420_PERIC_SYS_PWR_REG,			{ 0x7, 0x0, 0x0} },
++	{ EXYNOS5420_WCORE_SYS_PWR_REG,			{ 0x7, 0x0, 0x0} },
++	{ EXYNOS5_CMU_CLKSTOP_GSCL_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5_CMU_CLKSTOP_ISP_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5_CMU_CLKSTOP_MFC_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5_CMU_CLKSTOP_G3D_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_CMU_CLKSTOP_DISP1_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_CMU_CLKSTOP_MAU_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_CMU_CLKSTOP_G2D_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_CMU_CLKSTOP_MSC_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_CMU_CLKSTOP_FSYS_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_CMU_CLKSTOP_PSGEN_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_CMU_CLKSTOP_PERIC_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_CMU_CLKSTOP_WCORE_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5_CMU_SYSCLK_GSCL_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5_CMU_SYSCLK_ISP_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5_CMU_SYSCLK_MFC_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5_CMU_SYSCLK_G3D_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_CMU_SYSCLK_DISP1_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_CMU_SYSCLK_MAU_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_CMU_SYSCLK_G2D_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_CMU_SYSCLK_MSC_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_CMU_SYSCLK_FSYS_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_CMU_SYSCLK_FSYS2_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_CMU_SYSCLK_PSGEN_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_CMU_SYSCLK_PERIC_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_CMU_SYSCLK_WCORE_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_CMU_RESET_FSYS2_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_CMU_RESET_PSGEN_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_CMU_RESET_PERIC_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_CMU_RESET_WCORE_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5_CMU_RESET_GSCL_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5_CMU_RESET_ISP_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5_CMU_RESET_MFC_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5_CMU_RESET_G3D_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_CMU_RESET_DISP1_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_CMU_RESET_MAU_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_CMU_RESET_G2D_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_CMU_RESET_MSC_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
++	{ EXYNOS5420_CMU_RESET_FSYS_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
 +	{ PMU_TABLE_END,},
 +};
 +
-+static unsigned int const exynos3250_list_feed[] = {
-+	EXYNOS3_ARM_CORE_OPTION(0),
-+	EXYNOS3_ARM_CORE_OPTION(1),
-+	EXYNOS3_ARM_CORE_OPTION(2),
-+	EXYNOS3_ARM_CORE_OPTION(3),
-+	EXYNOS3_ARM_COMMON_OPTION,
-+	EXYNOS3_TOP_PWR_OPTION,
-+	EXYNOS3_CORE_TOP_PWR_OPTION,
-+	S5P_CAM_OPTION,
-+	S5P_MFC_OPTION,
-+	S5P_G3D_OPTION,
-+	S5P_LCD0_OPTION,
-+	S5P_ISP_OPTION,
++static unsigned int const exynos5420_list_disable_pmu_reg[] = {
++	EXYNOS5_CMU_CLKSTOP_GSCL_SYS_PWR_REG,
++	EXYNOS5_CMU_CLKSTOP_ISP_SYS_PWR_REG,
++	EXYNOS5_CMU_CLKSTOP_G3D_SYS_PWR_REG,
++	EXYNOS5420_CMU_CLKSTOP_DISP1_SYS_PWR_REG,
++	EXYNOS5420_CMU_CLKSTOP_MAU_SYS_PWR_REG,
++	EXYNOS5420_CMU_CLKSTOP_G2D_SYS_PWR_REG,
++	EXYNOS5420_CMU_CLKSTOP_MSC_SYS_PWR_REG,
++	EXYNOS5420_CMU_CLKSTOP_FSYS_SYS_PWR_REG,
++	EXYNOS5420_CMU_CLKSTOP_PSGEN_SYS_PWR_REG,
++	EXYNOS5420_CMU_CLKSTOP_PERIC_SYS_PWR_REG,
++	EXYNOS5420_CMU_CLKSTOP_WCORE_SYS_PWR_REG,
++	EXYNOS5_CMU_SYSCLK_GSCL_SYS_PWR_REG,
++	EXYNOS5_CMU_SYSCLK_ISP_SYS_PWR_REG,
++	EXYNOS5_CMU_SYSCLK_G3D_SYS_PWR_REG,
++	EXYNOS5420_CMU_SYSCLK_DISP1_SYS_PWR_REG,
++	EXYNOS5420_CMU_SYSCLK_MAU_SYS_PWR_REG,
++	EXYNOS5420_CMU_SYSCLK_G2D_SYS_PWR_REG,
++	EXYNOS5420_CMU_SYSCLK_MSC_SYS_PWR_REG,
++	EXYNOS5420_CMU_SYSCLK_FSYS_SYS_PWR_REG,
++	EXYNOS5420_CMU_SYSCLK_FSYS2_SYS_PWR_REG,
++	EXYNOS5420_CMU_SYSCLK_PSGEN_SYS_PWR_REG,
++	EXYNOS5420_CMU_SYSCLK_PERIC_SYS_PWR_REG,
++	EXYNOS5420_CMU_SYSCLK_WCORE_SYS_PWR_REG,
++	EXYNOS5420_CMU_RESET_FSYS2_SYS_PWR_REG,
++	EXYNOS5420_CMU_RESET_PSGEN_SYS_PWR_REG,
++	EXYNOS5420_CMU_RESET_PERIC_SYS_PWR_REG,
++	EXYNOS5420_CMU_RESET_WCORE_SYS_PWR_REG,
++	EXYNOS5_CMU_RESET_GSCL_SYS_PWR_REG,
++	EXYNOS5_CMU_RESET_ISP_SYS_PWR_REG,
++	EXYNOS5_CMU_RESET_G3D_SYS_PWR_REG,
++	EXYNOS5420_CMU_RESET_DISP1_SYS_PWR_REG,
++	EXYNOS5420_CMU_RESET_MAU_SYS_PWR_REG,
++	EXYNOS5420_CMU_RESET_G2D_SYS_PWR_REG,
++	EXYNOS5420_CMU_RESET_MSC_SYS_PWR_REG,
++	EXYNOS5420_CMU_RESET_FSYS_SYS_PWR_REG,
 +};
 +
-+static void exynos3250_powerdown_conf_extra(enum sys_powerdown mode)
++static void exynos5420_powerdown_conf(enum sys_powerdown mode)
 +{
-+	unsigned int i;
-+	unsigned int tmp;
++	u32 this_cluster;
 +
-+	/* Enable only SC_FEEDBACK */
-+	for (i = 0; i < ARRAY_SIZE(exynos3250_list_feed); i++) {
-+		tmp = pmu_raw_readl(exynos3250_list_feed[i]);
-+		tmp &= ~(EXYNOS3_OPTION_USE_SC_COUNTER);
-+		tmp |= EXYNOS3_OPTION_USE_SC_FEEDBACK;
-+		pmu_raw_writel(tmp, exynos3250_list_feed[i]);
-+	}
++	this_cluster = MPIDR_AFFINITY_LEVEL(read_cpuid_mpidr(), 1);
 +
-+	if (mode != SYS_SLEEP)
-+		return;
-+
-+	pmu_raw_writel(XUSBXTI_DURATION, EXYNOS3_XUSBXTI_DURATION);
-+	pmu_raw_writel(XXTI_DURATION, EXYNOS3_XXTI_DURATION);
-+	pmu_raw_writel(EXT_REGULATOR_DURATION, EXYNOS3_EXT_REGULATOR_DURATION);
-+	pmu_raw_writel(EXT_REGULATOR_COREBLK_DURATION,
-+		       EXYNOS3_EXT_REGULATOR_COREBLK_DURATION);
++	/*
++	 * set the cluster id to IROM register to ensure that we wake
++	 * up with the current cluster.
++	 */
++	pmu_raw_writel(this_cluster, EXYNOS_IROM_DATA2);
 +}
 +
-+static void exynos3250_pmu_init(void)
++static void exynos5420_pmu_init(void)
 +{
 +	unsigned int value;
++	int i;
 +
 +	/*
-+	 * To prevent from issuing new bus request form L2 memory system
-+	 * If core status is power down, should be set '1' to L2 power down
++	 * Set the CMU_RESET, CMU_SYSCLK and CMU_CLKSTOP registers
++	 * for local power blocks to Low initially as per Table 8-4:
++	 * "System-Level Power-Down Configuration Registers".
 +	 */
-+	value = pmu_raw_readl(EXYNOS3_ARM_COMMON_OPTION);
-+	value |= EXYNOS3_OPTION_SKIP_DEACTIVATE_ACEACP_IN_PWDN;
-+	pmu_raw_writel(value, EXYNOS3_ARM_COMMON_OPTION);
++	for (i = 0; i < ARRAY_SIZE(exynos5420_list_disable_pmu_reg); i++)
++		pmu_raw_writel(0, exynos5420_list_disable_pmu_reg[i]);
 +
 +	/* Enable USE_STANDBY_WFI for all CORE */
-+	pmu_raw_writel(S5P_USE_STANDBY_WFI_ALL, S5P_CENTRAL_SEQ_OPTION);
++	pmu_raw_writel(EXYNOS5420_USE_STANDBY_WFI_ALL, S5P_CENTRAL_SEQ_OPTION);
++
++	value  = pmu_raw_readl(EXYNOS_L2_OPTION(0));
++	value &= ~EXYNOS5_USE_RETENTION;
++	pmu_raw_writel(value, EXYNOS_L2_OPTION(0));
++
++	value = pmu_raw_readl(EXYNOS_L2_OPTION(1));
++	value &= ~EXYNOS5_USE_RETENTION;
++	pmu_raw_writel(value, EXYNOS_L2_OPTION(1));
 +
 +	/*
-+	 * Set PSHOLD port for output high
++	 * If L2_COMMON is turned off, clocks related to ATB async
++	 * bridge are gated. Thus, when ISP power is gated, LPI
++	 * may get stuck.
 +	 */
-+	value = pmu_raw_readl(S5P_PS_HOLD_CONTROL);
-+	value |= S5P_PS_HOLD_OUTPUT_HIGH;
-+	pmu_raw_writel(value, S5P_PS_HOLD_CONTROL);
++	value = pmu_raw_readl(EXYNOS5420_LPI_MASK);
++	value |= EXYNOS5420_ATB_ISP_ARM;
++	pmu_raw_writel(value, EXYNOS5420_LPI_MASK);
 +
-+	/*
-+	 * Enable signal for PSHOLD port
-+	 */
-+	value = pmu_raw_readl(S5P_PS_HOLD_CONTROL);
-+	value |= S5P_PS_HOLD_EN;
-+	pmu_raw_writel(value, S5P_PS_HOLD_CONTROL);
++	value  = pmu_raw_readl(EXYNOS5420_LPI_MASK1);
++	value |= EXYNOS5420_ATB_KFC;
++	pmu_raw_writel(value, EXYNOS5420_LPI_MASK1);
++
++	/* Prevent issue of new bus request from L2 memory */
++	value = pmu_raw_readl(EXYNOS5420_ARM_COMMON_OPTION);
++	value |= EXYNOS5_SKIP_DEACTIVATE_ACEACP_IN_PWDN;
++	pmu_raw_writel(value, EXYNOS5420_ARM_COMMON_OPTION);
++
++	value = pmu_raw_readl(EXYNOS5420_KFC_COMMON_OPTION);
++	value |= EXYNOS5_SKIP_DEACTIVATE_ACEACP_IN_PWDN;
++	pmu_raw_writel(value, EXYNOS5420_KFC_COMMON_OPTION);
++
++	/* This setting is to reduce suspend/resume time */
++	pmu_raw_writel(DUR_WAIT_RESET, EXYNOS5420_LOGIC_RESET_DURATION3);
++
++	/* Serialized CPU wakeup of Eagle */
++	pmu_raw_writel(SPREAD_ENABLE, EXYNOS5420_ARM_INTR_SPREAD_ENABLE);
++
++	pmu_raw_writel(SPREAD_USE_STANDWFI,
++			EXYNOS5420_ARM_INTR_SPREAD_USE_STANDBYWFI);
++
++	pmu_raw_writel(0x1, EXYNOS5420_UP_SCHEDULER);
++
++	pr_info("EXYNOS5420 PMU initialized\n");
 +}
 +
-+const struct exynos_pmu_data exynos3250_pmu_data = {
-+	.pmu_config	= exynos3250_pmu_config,
-+	.pmu_init	= exynos3250_pmu_init,
-+	.powerdown_conf_extra	= exynos3250_powerdown_conf_extra,
++const struct exynos_pmu_data exynos5420_pmu_data = {
++	.pmu_config	= exynos5420_pmu_config,
++	.pmu_init	= exynos5420_pmu_init,
++	.powerdown_conf	= exynos5420_powerdown_conf,
 +};
 diff --git a/arch/arm/mach-exynos/pmu.c b/arch/arm/mach-exynos/pmu.c
-index 3974f52..c594804 100644
+index a80249d..01cb649 100644
 --- a/arch/arm/mach-exynos/pmu.c
 +++ b/arch/arm/mach-exynos/pmu.c
-@@ -9,7 +9,6 @@
-  * published by the Free Software Foundation.
-  */
+@@ -19,8 +19,6 @@
+ #include <linux/soc/samsung/exynos-regs-pmu.h>
+ #include <linux/soc/samsung/exynos-pmu.h>
  
--#include <linux/io.h>
- #include <linux/of.h>
- #include <linux/of_address.h>
- #include <linux/platform_device.h>
-@@ -22,126 +21,26 @@
- 
- #include <asm/cputype.h>
- 
--#define PMU_TABLE_END	(-1U)
+-#include <asm/cputype.h>
 -
--struct exynos_pmu_conf {
--	unsigned int offset;
--	u8 val[NUM_SYS_POWERDOWN];
--};
--
--struct exynos_pmu_data {
--	const struct exynos_pmu_conf *pmu_config;
--	const struct exynos_pmu_conf *pmu_config_extra;
--
--	void (*pmu_init)(void);
--	void (*powerdown_conf)(enum sys_powerdown);
--	void (*powerdown_conf_extra)(enum sys_powerdown);
--};
-+#include "exynos-pmu.h"
+ #include "exynos-pmu.h"
  
  struct exynos_pmu_context {
- 	struct device *dev;
- 	const struct exynos_pmu_data *pmu_data;
- };
- 
--static void __iomem *pmu_base_addr;
-+void __iomem *pmu_base_addr;
- static struct exynos_pmu_context *pmu_context;
- 
--static inline void pmu_raw_writel(u32 val, u32 offset)
-+void pmu_raw_writel(u32 val, u32 offset)
- {
- 	writel_relaxed(val, pmu_base_addr + offset);
- }
- 
--static inline u32 pmu_raw_readl(u32 offset)
-+u32 pmu_raw_readl(u32 offset)
- {
+@@ -41,189 +39,6 @@ u32 pmu_raw_readl(u32 offset)
  	return readl_relaxed(pmu_base_addr + offset);
  }
  
--static struct exynos_pmu_conf exynos3250_pmu_config[] = {
--	/* { .offset = offset, .val = { AFTR, W-AFTR, SLEEP } */
--	{ EXYNOS3_ARM_CORE0_SYS_PWR_REG,		{ 0x0, 0x0, 0x2} },
--	{ EXYNOS3_DIS_IRQ_ARM_CORE0_LOCAL_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
--	{ EXYNOS3_DIS_IRQ_ARM_CORE0_CENTRAL_SYS_PWR_REG, { 0x0, 0x0, 0x0} },
--	{ EXYNOS3_ARM_CORE1_SYS_PWR_REG,		{ 0x0, 0x0, 0x2} },
--	{ EXYNOS3_DIS_IRQ_ARM_CORE1_LOCAL_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
--	{ EXYNOS3_DIS_IRQ_ARM_CORE1_CENTRAL_SYS_PWR_REG, { 0x0, 0x0, 0x0} },
--	{ EXYNOS3_ISP_ARM_SYS_PWR_REG,			{ 0x1, 0x0, 0x0} },
--	{ EXYNOS3_DIS_IRQ_ISP_ARM_LOCAL_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
--	{ EXYNOS3_DIS_IRQ_ISP_ARM_CENTRAL_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
--	{ EXYNOS3_ARM_COMMON_SYS_PWR_REG,		{ 0x0, 0x0, 0x2} },
--	{ EXYNOS3_ARM_L2_SYS_PWR_REG,			{ 0x0, 0x0, 0x3} },
--	{ EXYNOS3_CMU_ACLKSTOP_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
--	{ EXYNOS3_CMU_SCLKSTOP_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
--	{ EXYNOS3_CMU_RESET_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
--	{ EXYNOS3_DRAM_FREQ_DOWN_SYS_PWR_REG,		{ 0x1, 0x1, 0x1} },
--	{ EXYNOS3_DDRPHY_DLLOFF_SYS_PWR_REG,		{ 0x1, 0x1, 0x1} },
--	{ EXYNOS3_LPDDR_PHY_DLL_LOCK_SYS_PWR_REG,	{ 0x1, 0x1, 0x1} },
--	{ EXYNOS3_CMU_ACLKSTOP_COREBLK_SYS_PWR_REG,	{ 0x1, 0x0, 0x0} },
--	{ EXYNOS3_CMU_SCLKSTOP_COREBLK_SYS_PWR_REG,	{ 0x1, 0x0, 0x0} },
--	{ EXYNOS3_CMU_RESET_COREBLK_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
--	{ EXYNOS3_APLL_SYSCLK_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
--	{ EXYNOS3_MPLL_SYSCLK_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
--	{ EXYNOS3_BPLL_SYSCLK_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
--	{ EXYNOS3_VPLL_SYSCLK_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
--	{ EXYNOS3_EPLL_SYSCLK_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
--	{ EXYNOS3_UPLL_SYSCLK_SYS_PWR_REG,		{ 0x1, 0x1, 0x1} },
--	{ EXYNOS3_EPLLUSER_SYSCLK_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
--	{ EXYNOS3_MPLLUSER_SYSCLK_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
--	{ EXYNOS3_BPLLUSER_SYSCLK_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
--	{ EXYNOS3_CMU_CLKSTOP_CAM_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
--	{ EXYNOS3_CMU_CLKSTOP_MFC_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
--	{ EXYNOS3_CMU_CLKSTOP_G3D_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
--	{ EXYNOS3_CMU_CLKSTOP_LCD0_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
--	{ EXYNOS3_CMU_CLKSTOP_ISP_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
--	{ EXYNOS3_CMU_CLKSTOP_MAUDIO_SYS_PWR_REG,	{ 0x1, 0x0, 0x0} },
--	{ EXYNOS3_CMU_RESET_CAM_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
--	{ EXYNOS3_CMU_RESET_MFC_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
--	{ EXYNOS3_CMU_RESET_G3D_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
--	{ EXYNOS3_CMU_RESET_LCD0_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
--	{ EXYNOS3_CMU_RESET_ISP_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
--	{ EXYNOS3_CMU_RESET_MAUDIO_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
--	{ EXYNOS3_TOP_BUS_SYS_PWR_REG,			{ 0x3, 0x0, 0x0} },
--	{ EXYNOS3_TOP_RETENTION_SYS_PWR_REG,		{ 0x1, 0x1, 0x1} },
--	{ EXYNOS3_TOP_PWR_SYS_PWR_REG,			{ 0x3, 0x3, 0x3} },
--	{ EXYNOS3_TOP_BUS_COREBLK_SYS_PWR_REG,		{ 0x3, 0x0, 0x0} },
--	{ EXYNOS3_TOP_RETENTION_COREBLK_SYS_PWR_REG,	{ 0x1, 0x1, 0x1} },
--	{ EXYNOS3_TOP_PWR_COREBLK_SYS_PWR_REG,		{ 0x3, 0x3, 0x3} },
--	{ EXYNOS3_LOGIC_RESET_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
--	{ EXYNOS3_OSCCLK_GATE_SYS_PWR_REG,		{ 0x1, 0x1, 0x1} },
--	{ EXYNOS3_LOGIC_RESET_COREBLK_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
--	{ EXYNOS3_OSCCLK_GATE_COREBLK_SYS_PWR_REG,	{ 0x1, 0x0, 0x1} },
--	{ EXYNOS3_PAD_RETENTION_DRAM_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
--	{ EXYNOS3_PAD_RETENTION_MAUDIO_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
--	{ EXYNOS3_PAD_RETENTION_GPIO_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
--	{ EXYNOS3_PAD_RETENTION_UART_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
--	{ EXYNOS3_PAD_RETENTION_MMC0_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
--	{ EXYNOS3_PAD_RETENTION_MMC1_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
--	{ EXYNOS3_PAD_RETENTION_MMC2_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
--	{ EXYNOS3_PAD_RETENTION_SPI_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
--	{ EXYNOS3_PAD_RETENTION_EBIA_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
--	{ EXYNOS3_PAD_RETENTION_EBIB_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
--	{ EXYNOS3_PAD_RETENTION_JTAG_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
--	{ EXYNOS3_PAD_ISOLATION_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
--	{ EXYNOS3_PAD_ALV_SEL_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
--	{ EXYNOS3_XUSBXTI_SYS_PWR_REG,			{ 0x1, 0x1, 0x0} },
--	{ EXYNOS3_XXTI_SYS_PWR_REG,			{ 0x1, 0x1, 0x0} },
--	{ EXYNOS3_EXT_REGULATOR_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
--	{ EXYNOS3_EXT_REGULATOR_COREBLK_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
--	{ EXYNOS3_GPIO_MODE_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
--	{ EXYNOS3_GPIO_MODE_MAUDIO_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
--	{ EXYNOS3_TOP_ASB_RESET_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
--	{ EXYNOS3_TOP_ASB_ISOLATION_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
--	{ EXYNOS3_TOP_ASB_RESET_COREBLK_SYS_PWR_REG,	{ 0x1, 0x1, 0x0} },
--	{ EXYNOS3_TOP_ASB_ISOLATION_COREBLK_SYS_PWR_REG, { 0x1, 0x1, 0x0} },
--	{ EXYNOS3_CAM_SYS_PWR_REG,			{ 0x7, 0x0, 0x0} },
--	{ EXYNOS3_MFC_SYS_PWR_REG,			{ 0x7, 0x0, 0x0} },
--	{ EXYNOS3_G3D_SYS_PWR_REG,			{ 0x7, 0x0, 0x0} },
--	{ EXYNOS3_LCD0_SYS_PWR_REG,			{ 0x7, 0x0, 0x0} },
--	{ EXYNOS3_ISP_SYS_PWR_REG,			{ 0x7, 0x0, 0x0} },
--	{ EXYNOS3_MAUDIO_SYS_PWR_REG,			{ 0x7, 0x0, 0x0} },
--	{ EXYNOS3_CMU_SYSCLK_ISP_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
+-static struct exynos_pmu_conf exynos5420_pmu_config[] = {
+-	/* { .offset = offset, .val = { AFTR, LPA, SLEEP } */
+-	{ EXYNOS5_ARM_CORE0_SYS_PWR_REG,			{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5_DIS_IRQ_ARM_CORE0_LOCAL_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5_DIS_IRQ_ARM_CORE0_CENTRAL_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5_ARM_CORE1_SYS_PWR_REG,			{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5_DIS_IRQ_ARM_CORE1_LOCAL_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5_DIS_IRQ_ARM_CORE1_CENTRAL_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_ARM_CORE2_SYS_PWR_REG,			{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_DIS_IRQ_ARM_CORE2_LOCAL_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_DIS_IRQ_ARM_CORE2_CENTRAL_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_ARM_CORE3_SYS_PWR_REG,			{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_DIS_IRQ_ARM_CORE3_LOCAL_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_DIS_IRQ_ARM_CORE3_CENTRAL_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_KFC_CORE0_SYS_PWR_REG,			{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_DIS_IRQ_KFC_CORE0_LOCAL_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_DIS_IRQ_KFC_CORE0_CENTRAL_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_KFC_CORE1_SYS_PWR_REG,			{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_DIS_IRQ_KFC_CORE1_LOCAL_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_DIS_IRQ_KFC_CORE1_CENTRAL_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_KFC_CORE2_SYS_PWR_REG,			{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_DIS_IRQ_KFC_CORE2_LOCAL_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_DIS_IRQ_KFC_CORE2_CENTRAL_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_KFC_CORE3_SYS_PWR_REG,			{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_DIS_IRQ_KFC_CORE3_LOCAL_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_DIS_IRQ_KFC_CORE3_CENTRAL_SYS_PWR_REG,	{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5_ISP_ARM_SYS_PWR_REG,				{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5_DIS_IRQ_ISP_ARM_LOCAL_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5_DIS_IRQ_ISP_ARM_CENTRAL_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5420_ARM_COMMON_SYS_PWR_REG,			{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_KFC_COMMON_SYS_PWR_REG,			{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5_ARM_L2_SYS_PWR_REG,				{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_KFC_L2_SYS_PWR_REG,			{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5_CMU_ACLKSTOP_SYS_PWR_REG,			{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5_CMU_SCLKSTOP_SYS_PWR_REG,			{ 0x1, 0x0, 0x1} },
+-	{ EXYNOS5_CMU_RESET_SYS_PWR_REG,			{ 0x1, 0x1, 0x0} },
+-	{ EXYNOS5_CMU_ACLKSTOP_SYSMEM_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5_CMU_SCLKSTOP_SYSMEM_SYS_PWR_REG,		{ 0x1, 0x0, 0x1} },
+-	{ EXYNOS5_CMU_RESET_SYSMEM_SYS_PWR_REG,			{ 0x1, 0x1, 0x0} },
+-	{ EXYNOS5_DRAM_FREQ_DOWN_SYS_PWR_REG,			{ 0x1, 0x0, 0x1} },
+-	{ EXYNOS5_DDRPHY_DLLOFF_SYS_PWR_REG,			{ 0x1, 0x1, 0x1} },
+-	{ EXYNOS5_DDRPHY_DLLLOCK_SYS_PWR_REG,			{ 0x1, 0x0, 0x1} },
+-	{ EXYNOS5_APLL_SYSCLK_SYS_PWR_REG,			{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5_MPLL_SYSCLK_SYS_PWR_REG,			{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5_VPLL_SYSCLK_SYS_PWR_REG,			{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5_EPLL_SYSCLK_SYS_PWR_REG,			{ 0x1, 0x1, 0x0} },
+-	{ EXYNOS5_BPLL_SYSCLK_SYS_PWR_REG,			{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5_CPLL_SYSCLK_SYS_PWR_REG,			{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5420_DPLL_SYSCLK_SYS_PWR_REG,			{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5420_IPLL_SYSCLK_SYS_PWR_REG,			{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5420_KPLL_SYSCLK_SYS_PWR_REG,			{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5_MPLLUSER_SYSCLK_SYS_PWR_REG,			{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5_BPLLUSER_SYSCLK_SYS_PWR_REG,			{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5420_RPLL_SYSCLK_SYS_PWR_REG,			{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5420_SPLL_SYSCLK_SYS_PWR_REG,			{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5_TOP_BUS_SYS_PWR_REG,				{ 0x3, 0x0, 0x0} },
+-	{ EXYNOS5_TOP_RETENTION_SYS_PWR_REG,			{ 0x1, 0x1, 0x1} },
+-	{ EXYNOS5_TOP_PWR_SYS_PWR_REG,				{ 0x3, 0x3, 0x0} },
+-	{ EXYNOS5_TOP_BUS_SYSMEM_SYS_PWR_REG,			{ 0x3, 0x0, 0x0} },
+-	{ EXYNOS5_TOP_RETENTION_SYSMEM_SYS_PWR_REG,		{ 0x1, 0x0, 0x1} },
+-	{ EXYNOS5_TOP_PWR_SYSMEM_SYS_PWR_REG,			{ 0x3, 0x0, 0x0} },
+-	{ EXYNOS5_LOGIC_RESET_SYS_PWR_REG,			{ 0x1, 0x1, 0x0} },
+-	{ EXYNOS5_OSCCLK_GATE_SYS_PWR_REG,			{ 0x1, 0x0, 0x1} },
+-	{ EXYNOS5_LOGIC_RESET_SYSMEM_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5_OSCCLK_GATE_SYSMEM_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5420_INTRAM_MEM_SYS_PWR_REG,			{ 0x3, 0x0, 0x3} },
+-	{ EXYNOS5420_INTROM_MEM_SYS_PWR_REG,			{ 0x3, 0x0, 0x3} },
+-	{ EXYNOS5_PAD_RETENTION_DRAM_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5_PAD_RETENTION_MAU_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
+-	{ EXYNOS5420_PAD_RETENTION_JTAG_SYS_PWR_REG,		{ 0x1, 0x1, 0x0} },
+-	{ EXYNOS5420_PAD_RETENTION_DRAM_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5420_PAD_RETENTION_UART_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5420_PAD_RETENTION_MMC0_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5420_PAD_RETENTION_MMC1_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5420_PAD_RETENTION_MMC2_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5420_PAD_RETENTION_HSI_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5420_PAD_RETENTION_EBIA_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5420_PAD_RETENTION_EBIB_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5420_PAD_RETENTION_SPI_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5420_PAD_RETENTION_DRAM_COREBLK_SYS_PWR_REG,	{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5_PAD_ISOLATION_SYS_PWR_REG,			{ 0x1, 0x1, 0x0} },
+-	{ EXYNOS5_PAD_ISOLATION_SYSMEM_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5_PAD_ALV_SEL_SYS_PWR_REG,			{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5_XUSBXTI_SYS_PWR_REG,				{ 0x1, 0x1, 0x0} },
+-	{ EXYNOS5_XXTI_SYS_PWR_REG,				{ 0x1, 0x1, 0x0} },
+-	{ EXYNOS5_EXT_REGULATOR_SYS_PWR_REG,			{ 0x1, 0x1, 0x0} },
+-	{ EXYNOS5_GPIO_MODE_SYS_PWR_REG,			{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5_GPIO_MODE_SYSMEM_SYS_PWR_REG,			{ 0x1, 0x1, 0x0} },
+-	{ EXYNOS5_GPIO_MODE_MAU_SYS_PWR_REG,			{ 0x1, 0x1, 0x0} },
+-	{ EXYNOS5_TOP_ASB_RESET_SYS_PWR_REG,			{ 0x1, 0x1, 0x0} },
+-	{ EXYNOS5_TOP_ASB_ISOLATION_SYS_PWR_REG,		{ 0x1, 0x0, 0x0} },
+-	{ EXYNOS5_GSCL_SYS_PWR_REG,				{ 0x7, 0x0, 0x0} },
+-	{ EXYNOS5_ISP_SYS_PWR_REG,				{ 0x7, 0x0, 0x0} },
+-	{ EXYNOS5_MFC_SYS_PWR_REG,				{ 0x7, 0x0, 0x0} },
+-	{ EXYNOS5_G3D_SYS_PWR_REG,				{ 0x7, 0x0, 0x0} },
+-	{ EXYNOS5420_DISP1_SYS_PWR_REG,				{ 0x7, 0x0, 0x0} },
+-	{ EXYNOS5420_MAU_SYS_PWR_REG,				{ 0x7, 0x7, 0x0} },
+-	{ EXYNOS5420_G2D_SYS_PWR_REG,				{ 0x7, 0x0, 0x0} },
+-	{ EXYNOS5420_MSC_SYS_PWR_REG,				{ 0x7, 0x0, 0x0} },
+-	{ EXYNOS5420_FSYS_SYS_PWR_REG,				{ 0x7, 0x0, 0x0} },
+-	{ EXYNOS5420_FSYS2_SYS_PWR_REG,				{ 0x7, 0x0, 0x0} },
+-	{ EXYNOS5420_PSGEN_SYS_PWR_REG,				{ 0x7, 0x0, 0x0} },
+-	{ EXYNOS5420_PERIC_SYS_PWR_REG,				{ 0x7, 0x0, 0x0} },
+-	{ EXYNOS5420_WCORE_SYS_PWR_REG,				{ 0x7, 0x0, 0x0} },
+-	{ EXYNOS5_CMU_CLKSTOP_GSCL_SYS_PWR_REG,			{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5_CMU_CLKSTOP_ISP_SYS_PWR_REG,			{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5_CMU_CLKSTOP_MFC_SYS_PWR_REG,			{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5_CMU_CLKSTOP_G3D_SYS_PWR_REG,			{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_CMU_CLKSTOP_DISP1_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_CMU_CLKSTOP_MAU_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_CMU_CLKSTOP_G2D_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_CMU_CLKSTOP_MSC_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_CMU_CLKSTOP_FSYS_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_CMU_CLKSTOP_PSGEN_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_CMU_CLKSTOP_PERIC_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_CMU_CLKSTOP_WCORE_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5_CMU_SYSCLK_GSCL_SYS_PWR_REG,			{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5_CMU_SYSCLK_ISP_SYS_PWR_REG,			{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5_CMU_SYSCLK_MFC_SYS_PWR_REG,			{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5_CMU_SYSCLK_G3D_SYS_PWR_REG,			{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_CMU_SYSCLK_DISP1_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_CMU_SYSCLK_MAU_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_CMU_SYSCLK_G2D_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_CMU_SYSCLK_MSC_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_CMU_SYSCLK_FSYS_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_CMU_SYSCLK_FSYS2_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_CMU_SYSCLK_PSGEN_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_CMU_SYSCLK_PERIC_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_CMU_SYSCLK_WCORE_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_CMU_RESET_FSYS2_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_CMU_RESET_PSGEN_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_CMU_RESET_PERIC_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_CMU_RESET_WCORE_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5_CMU_RESET_GSCL_SYS_PWR_REG,			{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5_CMU_RESET_ISP_SYS_PWR_REG,			{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5_CMU_RESET_MFC_SYS_PWR_REG,			{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5_CMU_RESET_G3D_SYS_PWR_REG,			{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_CMU_RESET_DISP1_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_CMU_RESET_MAU_SYS_PWR_REG,			{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_CMU_RESET_G2D_SYS_PWR_REG,			{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_CMU_RESET_MSC_SYS_PWR_REG,			{ 0x0, 0x0, 0x0} },
+-	{ EXYNOS5420_CMU_RESET_FSYS_SYS_PWR_REG,		{ 0x0, 0x0, 0x0} },
 -	{ PMU_TABLE_END,},
 -};
 -
- static const struct exynos_pmu_conf exynos4210_pmu_config[] = {
- 	/* { .offset = offset, .val = { AFTR, LPA, SLEEP } */
- 	{ S5P_ARM_CORE0_LOWPWR,			{ 0x0, 0x0, 0x2 } },
-@@ -586,44 +485,6 @@ static struct exynos_pmu_conf exynos5420_pmu_config[] = {
- 	{ PMU_TABLE_END,},
- };
- 
--static unsigned int const exynos3250_list_feed[] = {
--	EXYNOS3_ARM_CORE_OPTION(0),
--	EXYNOS3_ARM_CORE_OPTION(1),
--	EXYNOS3_ARM_CORE_OPTION(2),
--	EXYNOS3_ARM_CORE_OPTION(3),
--	EXYNOS3_ARM_COMMON_OPTION,
--	EXYNOS3_TOP_PWR_OPTION,
--	EXYNOS3_CORE_TOP_PWR_OPTION,
--	S5P_CAM_OPTION,
--	S5P_MFC_OPTION,
--	S5P_G3D_OPTION,
--	S5P_LCD0_OPTION,
--	S5P_ISP_OPTION,
+-static unsigned int const exynos5420_list_disable_pmu_reg[] = {
+-	EXYNOS5_CMU_CLKSTOP_GSCL_SYS_PWR_REG,
+-	EXYNOS5_CMU_CLKSTOP_ISP_SYS_PWR_REG,
+-	EXYNOS5_CMU_CLKSTOP_G3D_SYS_PWR_REG,
+-	EXYNOS5420_CMU_CLKSTOP_DISP1_SYS_PWR_REG,
+-	EXYNOS5420_CMU_CLKSTOP_MAU_SYS_PWR_REG,
+-	EXYNOS5420_CMU_CLKSTOP_G2D_SYS_PWR_REG,
+-	EXYNOS5420_CMU_CLKSTOP_MSC_SYS_PWR_REG,
+-	EXYNOS5420_CMU_CLKSTOP_FSYS_SYS_PWR_REG,
+-	EXYNOS5420_CMU_CLKSTOP_PSGEN_SYS_PWR_REG,
+-	EXYNOS5420_CMU_CLKSTOP_PERIC_SYS_PWR_REG,
+-	EXYNOS5420_CMU_CLKSTOP_WCORE_SYS_PWR_REG,
+-	EXYNOS5_CMU_SYSCLK_GSCL_SYS_PWR_REG,
+-	EXYNOS5_CMU_SYSCLK_ISP_SYS_PWR_REG,
+-	EXYNOS5_CMU_SYSCLK_G3D_SYS_PWR_REG,
+-	EXYNOS5420_CMU_SYSCLK_DISP1_SYS_PWR_REG,
+-	EXYNOS5420_CMU_SYSCLK_MAU_SYS_PWR_REG,
+-	EXYNOS5420_CMU_SYSCLK_G2D_SYS_PWR_REG,
+-	EXYNOS5420_CMU_SYSCLK_MSC_SYS_PWR_REG,
+-	EXYNOS5420_CMU_SYSCLK_FSYS_SYS_PWR_REG,
+-	EXYNOS5420_CMU_SYSCLK_FSYS2_SYS_PWR_REG,
+-	EXYNOS5420_CMU_SYSCLK_PSGEN_SYS_PWR_REG,
+-	EXYNOS5420_CMU_SYSCLK_PERIC_SYS_PWR_REG,
+-	EXYNOS5420_CMU_SYSCLK_WCORE_SYS_PWR_REG,
+-	EXYNOS5420_CMU_RESET_FSYS2_SYS_PWR_REG,
+-	EXYNOS5420_CMU_RESET_PSGEN_SYS_PWR_REG,
+-	EXYNOS5420_CMU_RESET_PERIC_SYS_PWR_REG,
+-	EXYNOS5420_CMU_RESET_WCORE_SYS_PWR_REG,
+-	EXYNOS5_CMU_RESET_GSCL_SYS_PWR_REG,
+-	EXYNOS5_CMU_RESET_ISP_SYS_PWR_REG,
+-	EXYNOS5_CMU_RESET_G3D_SYS_PWR_REG,
+-	EXYNOS5420_CMU_RESET_DISP1_SYS_PWR_REG,
+-	EXYNOS5420_CMU_RESET_MAU_SYS_PWR_REG,
+-	EXYNOS5420_CMU_RESET_G2D_SYS_PWR_REG,
+-	EXYNOS5420_CMU_RESET_MSC_SYS_PWR_REG,
+-	EXYNOS5420_CMU_RESET_FSYS_SYS_PWR_REG,
 -};
 -
--static void exynos3250_powerdown_conf_extra(enum sys_powerdown mode)
--{
--	unsigned int i;
--	unsigned int tmp;
--
--	/* Enable only SC_FEEDBACK */
--	for (i = 0; i < ARRAY_SIZE(exynos3250_list_feed); i++) {
--		tmp = pmu_raw_readl(exynos3250_list_feed[i]);
--		tmp &= ~(EXYNOS3_OPTION_USE_SC_COUNTER);
--		tmp |= EXYNOS3_OPTION_USE_SC_FEEDBACK;
--		pmu_raw_writel(tmp, exynos3250_list_feed[i]);
--	}
--
--	if (mode != SYS_SLEEP)
--		return;
--
--	pmu_raw_writel(XUSBXTI_DURATION, EXYNOS3_XUSBXTI_DURATION);
--	pmu_raw_writel(XXTI_DURATION, EXYNOS3_XXTI_DURATION);
--	pmu_raw_writel(EXT_REGULATOR_DURATION, EXYNOS3_EXT_REGULATOR_DURATION);
--	pmu_raw_writel(EXT_REGULATOR_COREBLK_DURATION,
--		       EXYNOS3_EXT_REGULATOR_COREBLK_DURATION);
--}
--
- static unsigned int const exynos5_list_both_cnt_feed[] = {
- 	EXYNOS5_ARM_CORE0_OPTION,
- 	EXYNOS5_ARM_CORE1_OPTION,
-@@ -712,7 +573,6 @@ static void exynos5420_powerdown_conf(enum sys_powerdown mode)
- 	pmu_raw_writel(this_cluster, EXYNOS_IROM_DATA2);
+ static void exynos_power_off(void)
+ {
+ 	unsigned int tmp;
+@@ -241,19 +56,6 @@ static void exynos_power_off(void)
+ 		;
  }
  
+-static void exynos5420_powerdown_conf(enum sys_powerdown mode)
+-{
+-	u32 this_cluster;
 -
- static void exynos5_powerdown_conf(enum sys_powerdown mode)
+-	this_cluster = MPIDR_AFFINITY_LEVEL(read_cpuid_mpidr(), 1);
+-
+-	/*
+-	 * set the cluster id to IROM register to ensure that we wake
+-	 * up with the current cluster.
+-	 */
+-	pmu_raw_writel(this_cluster, EXYNOS_IROM_DATA2);
+-}
+-
+ void exynos_sys_powerdown_conf(enum sys_powerdown mode)
  {
  	unsigned int i;
-@@ -775,36 +635,6 @@ void exynos_sys_powerdown_conf(enum sys_powerdown mode)
+@@ -283,65 +85,6 @@ void exynos_sys_powerdown_conf(enum sys_powerdown mode)
  	}
  }
  
--static void exynos3250_pmu_init(void)
+-static void exynos5420_pmu_init(void)
 -{
 -	unsigned int value;
+-	int i;
 -
 -	/*
--	 * To prevent from issuing new bus request form L2 memory system
--	 * If core status is power down, should be set '1' to L2 power down
+-	 * Set the CMU_RESET, CMU_SYSCLK and CMU_CLKSTOP registers
+-	 * for local power blocks to Low initially as per Table 8-4:
+-	 * "System-Level Power-Down Configuration Registers".
 -	 */
--	value = pmu_raw_readl(EXYNOS3_ARM_COMMON_OPTION);
--	value |= EXYNOS3_OPTION_SKIP_DEACTIVATE_ACEACP_IN_PWDN;
--	pmu_raw_writel(value, EXYNOS3_ARM_COMMON_OPTION);
+-	for (i = 0; i < ARRAY_SIZE(exynos5420_list_disable_pmu_reg); i++)
+-		pmu_raw_writel(0, exynos5420_list_disable_pmu_reg[i]);
 -
 -	/* Enable USE_STANDBY_WFI for all CORE */
--	pmu_raw_writel(S5P_USE_STANDBY_WFI_ALL, S5P_CENTRAL_SEQ_OPTION);
+-	pmu_raw_writel(EXYNOS5420_USE_STANDBY_WFI_ALL, S5P_CENTRAL_SEQ_OPTION);
+-
+-	value  = pmu_raw_readl(EXYNOS_L2_OPTION(0));
+-	value &= ~EXYNOS5_USE_RETENTION;
+-	pmu_raw_writel(value, EXYNOS_L2_OPTION(0));
+-
+-	value = pmu_raw_readl(EXYNOS_L2_OPTION(1));
+-	value &= ~EXYNOS5_USE_RETENTION;
+-	pmu_raw_writel(value, EXYNOS_L2_OPTION(1));
 -
 -	/*
--	 * Set PSHOLD port for output high
+-	 * If L2_COMMON is turned off, clocks related to ATB async
+-	 * bridge are gated. Thus, when ISP power is gated, LPI
+-	 * may get stuck.
 -	 */
--	value = pmu_raw_readl(S5P_PS_HOLD_CONTROL);
--	value |= S5P_PS_HOLD_OUTPUT_HIGH;
--	pmu_raw_writel(value, S5P_PS_HOLD_CONTROL);
+-	value = pmu_raw_readl(EXYNOS5420_LPI_MASK);
+-	value |= EXYNOS5420_ATB_ISP_ARM;
+-	pmu_raw_writel(value, EXYNOS5420_LPI_MASK);
 -
--	/*
--	 * Enable signal for PSHOLD port
--	 */
--	value = pmu_raw_readl(S5P_PS_HOLD_CONTROL);
--	value |= S5P_PS_HOLD_EN;
--	pmu_raw_writel(value, S5P_PS_HOLD_CONTROL);
+-	value  = pmu_raw_readl(EXYNOS5420_LPI_MASK1);
+-	value |= EXYNOS5420_ATB_KFC;
+-	pmu_raw_writel(value, EXYNOS5420_LPI_MASK1);
+-
+-	/* Prevent issue of new bus request from L2 memory */
+-	value = pmu_raw_readl(EXYNOS5420_ARM_COMMON_OPTION);
+-	value |= EXYNOS5_SKIP_DEACTIVATE_ACEACP_IN_PWDN;
+-	pmu_raw_writel(value, EXYNOS5420_ARM_COMMON_OPTION);
+-
+-	value = pmu_raw_readl(EXYNOS5420_KFC_COMMON_OPTION);
+-	value |= EXYNOS5_SKIP_DEACTIVATE_ACEACP_IN_PWDN;
+-	pmu_raw_writel(value, EXYNOS5420_KFC_COMMON_OPTION);
+-
+-	/* This setting is to reduce suspend/resume time */
+-	pmu_raw_writel(DUR_WAIT_RESET, EXYNOS5420_LOGIC_RESET_DURATION3);
+-
+-	/* Serialized CPU wakeup of Eagle */
+-	pmu_raw_writel(SPREAD_ENABLE, EXYNOS5420_ARM_INTR_SPREAD_ENABLE);
+-
+-	pmu_raw_writel(SPREAD_USE_STANDWFI,
+-			EXYNOS5420_ARM_INTR_SPREAD_USE_STANDBYWFI);
+-
+-	pmu_raw_writel(0x1, EXYNOS5420_UP_SCHEDULER);
+-	pr_info("EXYNOS5420 PMU initialized\n");
 -}
 -
- static void exynos5250_pmu_init(void)
+ static int pmu_restart_notify(struct notifier_block *this,
+ 		unsigned long code, void *unused)
  {
- 	unsigned int value;
-@@ -888,12 +718,6 @@ static int pmu_restart_notify(struct notifier_block *this,
+@@ -350,12 +93,6 @@ static int pmu_restart_notify(struct notifier_block *this,
  	return NOTIFY_DONE;
  }
  
--static const struct exynos_pmu_data exynos3250_pmu_data = {
--	.pmu_config	= exynos3250_pmu_config,
--	.pmu_init	= exynos3250_pmu_init,
--	.powerdown_conf_extra	= exynos3250_powerdown_conf_extra,
+-static const struct exynos_pmu_data exynos5420_pmu_data = {
+-	.pmu_config	= exynos5420_pmu_config,
+-	.pmu_init	= exynos5420_pmu_init,
+-	.powerdown_conf	= exynos5420_powerdown_conf,
 -};
 -
- static const struct exynos_pmu_data exynos4210_pmu_data = {
- 	.pmu_config	= exynos4210_pmu_config,
- };
+ /*
+  * PMU platform driver and devicetree bindings.
+  */
 -- 
 2.4.5
