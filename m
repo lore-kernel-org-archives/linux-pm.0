@@ -1,62 +1,34 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 3/3] cpufreq: arm_big_little: Add support to register
- a cpufreq cooling device
-Date: Fri, 13 Nov 2015 10:26:10 +0530
-Message-ID: <20151113045610.GC3576@ubuntu>
-References: <1447090163-13700-1-git-send-email-punit.agrawal@arm.com>
- <1447090163-13700-4-git-send-email-punit.agrawal@arm.com>
+Subject: Re: [PATCH v3 1/2] thermal: mediatek: Add cpu power cooling model.
+Date: Fri, 13 Nov 2015 10:32:45 +0530
+Message-ID: <20151113050245.GD3576@ubuntu>
+References: <1445515359-8587-1-git-send-email-dawei.chien@mediatek.com>
+ <1445515359-8587-2-git-send-email-dawei.chien@mediatek.com>
+ <20151104193958.GC14127@localhost.localdomain>
+ <1446721837.4016.57.camel@mtksdaap41>
+ <20151106032433.GL3773@ubuntu>
+ <20151110112017.GA3551@e104805>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1447090163-13700-4-git-send-email-punit.agrawal@arm.com>
+In-Reply-To: <20151110112017.GA3551@e104805>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Punit Agrawal <punit.agrawal@arm.com>
-Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, edubezval@gmail.com, dawei.chien@mediatek.com, Sudeep Holla <sudeep.holla@arm.com>
+To: Javi Merino <javi.merino@arm.com>
+Cc: dawei chien <dawei.chien@mediatek.com>, Eduardo Valentin <edubezval@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Matthias Brugger <matthias.bgg@gmail.com>, Daniel Kurtz <djkurtz@chromium.org>, Sascha Hauer <s.hauer@pengutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, Sascha Hauer <kernel@pengutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On 09-11-15, 17:29, Punit Agrawal wrote:
-> Register passive cooling devices when initialising cpufreq on
-> big.LITTLE systems. If the device tree provides a dynamic power
-> coefficient for the CPUs then the bound cooling device will support
-> the extensions that allow it to be used with all the existing thermal
-> governors including the power allocator governor.
-> 
-> A cooling device will be created per individual frequency domain and
-> can be bound to thermal zones via the thermal DT bindings.
-> 
-> Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Sudeep Holla <sudeep.holla@arm.com>
-> Cc: Eduardo Valentin <edubezval@gmail.com>
-> ---
->  drivers/cpufreq/arm_big_little.c | 52 ++++++++++++++++++++++++++++++++++++++--
->  1 file changed, 50 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-> index f1e42f8..72a2777 100644
-> --- a/drivers/cpufreq/arm_big_little.c
-> +++ b/drivers/cpufreq/arm_big_little.c
-> @@ -23,6 +23,7 @@
->  #include <linux/cpu.h>
->  #include <linux/cpufreq.h>
->  #include <linux/cpumask.h>
-> +#include <linux/cpu_cooling.h>
->  #include <linux/export.h>
->  #include <linux/module.h>
->  #include <linux/mutex.h>
-> @@ -55,6 +56,10 @@ static bool bL_switching_enabled;
->  #define ACTUAL_FREQ(cluster, freq)  ((cluster == A7_CLUSTER) ? freq << 1 : freq)
->  #define VIRT_FREQ(cluster, freq)    ((cluster == A7_CLUSTER) ? freq >> 1 : freq)
->  
-> +struct private_data {
-> +	struct thermal_cooling_device *cdev;
-> +};
+On 10-11-15, 11:20, Javi Merino wrote:
+> The way they are described here is useful only for this platform, but
+> it's not generic.  It only takes into account voltage as (I assume)
+> it's the only variable that affects it in this implementation.  A
+> generalized version of the static power should take into account the
+> temperature and the idle state.
 
-I think we need to be consistent within the driver, and so this must
-be stored in a similar way to what we do for other structures. We have
-static arrays for them, please do it that way only OR first change all
-of them to be part of a bigger private_data structure.
+yeah, but I thought we are talking about the final static power being
+present in the DT. How the platform gets it, doesn't matter at all.
+They may consider just the voltage or temperature and idle state as
+well.
 
 -- 
 viresh
