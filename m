@@ -1,141 +1,88 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v5 9/9] drivers: soc: Add support for Exynos PMU driver
-Date: Fri, 13 Nov 2015 19:28:55 +0900
-Message-ID: <5645BB67.8050102@samsung.com>
-References: <1447406983-27835-1-git-send-email-pankaj.dubey@samsung.com>
- <1447406983-27835-10-git-send-email-pankaj.dubey@samsung.com>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: [PATCH 2/3] thermal: Add Mediatek thermal controller support
+Date: Fri, 13 Nov 2015 11:26:37 +0000
+Message-ID: <20151113112636.GA12760@e104805>
+References: <1447064013-13026-1-git-send-email-s.hauer@pengutronix.de>
+ <1447064013-13026-3-git-send-email-s.hauer@pengutronix.de>
+ <20151110120554.GB3551@e104805>
+ <20151110182629.GA5240@localhost.localdomain>
+ <20151111072747.GI8526@pengutronix.de>
+ <20151113100912.GE8526@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-reply-to: <1447406983-27835-10-git-send-email-pankaj.dubey@samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Pankaj Dubey <pankaj.dubey@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: amitdanielk@gmail.com, kgene.kim@samsung.com, arnd@arndb.de, thomas.ab@samsung.com, olof@lixom.net, khilman@linaro.org
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:40924 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751939AbbKML0l (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 13 Nov 2015 06:26:41 -0500
+Content-Disposition: inline
+In-Reply-To: <20151113100912.GE8526@pengutronix.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: Eduardo Valentin <edubezval@gmail.com>, mark.rutland@arm.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robh+dt@kernel.org, linux-mediatek@lists.infradead.org, kernel@pengutronix.de, Matthias Brugger <matthias.bgg@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
 
-On 13.11.2015 18:29, Pankaj Dubey wrote:
-> This patch moves Exynos PMU driver implementation from "arm/mach-exynos"
-> to "drivers/soc/samsung". This driver is mainly used for setting misc
-> bits of register from PMU IP of Exynos SoC which will be required to
-> configure before Suspend/Resume. Currently all these settings are done
-> in "arch/arm/mach-exynos/pmu.c" but moving ahead for ARM64 based SoC
-> support, there is a need of this PMU driver in driver/* folder.
+On Fri, Nov 13, 2015 at 11:09:12AM +0100, Sascha Hauer wrote:
+> On Wed, Nov 11, 2015 at 08:27:47AM +0100, Sascha Hauer wrote:
+> > On Tue, Nov 10, 2015 at 10:26:30AM -0800, Eduardo Valentin wrote:
+> > > On Tue, Nov 10, 2015 at 12:05:54PM +0000, Javi Merino wrote:
+> > > > On Mon, Nov 09, 2015 at 11:13:32AM +0100, Sascha Hauer wrote:
+> > > 
+> > > <cut>
+> > > 
+> > > > > +
+> > > > > +/*
+> > > > > + * The MT8173 thermal controller has four banks. Each bank can read up to
+> > > > > + * four temperature sensors simultaneously. The MT8173 has a total of 5
+> > > > > + * temperature sensors. We use each bank to measure a certain area of the
+> > > > > + * SoC. Since TS2 is located centrally in the SoC it is influenced by multiple
+> > > > > + * areas, hence is used in different banks.
+> > > > > + */
+> > > > > +static const struct mtk_thermal_bank_cfg bank_data[] = {
+> > > > > +	{
+> > > > > +		.num_sensors = 2,
+> > > > > +		.sensors = { MT8173_TS2, MT8173_TS3 },
+> > > > > +	}, {
+> > > > > +		.num_sensors = 2,
+> > > > > +		.sensors = { MT8173_TS2, MT8173_TS4 },
+> > > > > +	}, {
+> > > > > +		.num_sensors = 3,
+> > > > > +		.sensors = { MT8173_TS1, MT8173_TS2, MT8173_TSABB },
+> > > > > +	}, {
+> > > > > +		.num_sensors = 1,
+> > > > > +		.sensors = { MT8173_TS2 },
+> > > > > +	},
+> > > > > +};
+> > > 
+> > > Would it make sense to simply expose all sensors and let the
+> > > configuration of their aggregation be done by DT?
+> > 
+> > This particular layout has been chosen because there's also the Smart
+> > Voltage Scaler (SVS) in the SoC. The SVS uses the same banks for
+> > measuring temperatures. I don't know the details yet, I just asked the
+> > Mediatek guys.
 > 
-> This driver uses existing DT binding information and there should
-> be no functionality change in the supported platforms.
+> Ok, the job of the SVS is to always pick the best voltage for a given
+> CPU frequency based on the temperature of the CPU cluster. How I
+> understand it the SVS engine automatically reads temperatures from bank0
+> for the first CPU cluster and from bank1 for the second CPU cluster. For
+> this to work we are not free to assign the sensors to the banks
+> arbitrarily.
 > 
-> Signed-off-by: Amit Daniel Kachhap <amitdanielk@gmail.com>
-> Signed-off-by: Pankaj Dubey <pankaj.dubey@samsung.com>
-> ---
->  arch/arm/mach-exynos/Kconfig                                   | 1 +
->  arch/arm/mach-exynos/Makefile                                  | 4 +---
->  drivers/soc/samsung/Kconfig                                    | 4 ++++
->  drivers/soc/samsung/Makefile                                   | 4 ++++
->  arch/arm/mach-exynos/pmu.c => drivers/soc/samsung/exynos-pmu.c | 0
->  {arch/arm/mach-exynos => drivers/soc/samsung}/exynos-pmu.h     | 0
->  {arch/arm/mach-exynos => drivers/soc/samsung}/exynos3250-pmu.c | 0
->  {arch/arm/mach-exynos => drivers/soc/samsung}/exynos4-pmu.c    | 0
->  {arch/arm/mach-exynos => drivers/soc/samsung}/exynos5250-pmu.c | 0
->  {arch/arm/mach-exynos => drivers/soc/samsung}/exynos5420-pmu.c | 0
->  10 files changed, 10 insertions(+), 3 deletions(-)
->  rename arch/arm/mach-exynos/pmu.c => drivers/soc/samsung/exynos-pmu.c (100%)
->  rename {arch/arm/mach-exynos => drivers/soc/samsung}/exynos-pmu.h (100%)
->  rename {arch/arm/mach-exynos => drivers/soc/samsung}/exynos3250-pmu.c (100%)
->  rename {arch/arm/mach-exynos => drivers/soc/samsung}/exynos4-pmu.c (100%)
->  rename {arch/arm/mach-exynos => drivers/soc/samsung}/exynos5250-pmu.c (100%)
->  rename {arch/arm/mach-exynos => drivers/soc/samsung}/exynos5420-pmu.c (100%)
+> I was told that controlling the CPU frequency the performance is better
+> if we use the maximum temperature of the whole die rather than the
+> temperature of individual clusters.
 > 
-> diff --git a/arch/arm/mach-exynos/Kconfig b/arch/arm/mach-exynos/Kconfig
-> index 83c85f5..874cb38 100644
-> --- a/arch/arm/mach-exynos/Kconfig
-> +++ b/arch/arm/mach-exynos/Kconfig
-> @@ -16,6 +16,7 @@ menuconfig ARCH_EXYNOS
->  	select ARM_GIC
->  	select COMMON_CLK_SAMSUNG
->  	select EXYNOS_THERMAL
-> +	select EXYNOS_PMU
->  	select EXYNOS_SROM if PM
->  	select HAVE_ARM_SCU if SMP
->  	select HAVE_S3C2410_I2C if I2C
-> diff --git a/arch/arm/mach-exynos/Makefile b/arch/arm/mach-exynos/Makefile
-> index 2d58063..34d29df 100644
-> --- a/arch/arm/mach-exynos/Makefile
-> +++ b/arch/arm/mach-exynos/Makefile
-> @@ -9,9 +9,7 @@ ccflags-$(CONFIG_ARCH_MULTIPLATFORM) += -I$(srctree)/$(src)/include -I$(srctree)
->  
->  # Core
->  
-> -obj-$(CONFIG_ARCH_EXYNOS)	+= exynos.o pmu.o exynos-smc.o firmware.o \
-> -					exynos3250-pmu.o exynos4-pmu.o \
-> -					exynos5250-pmu.o exynos5420-pmu.o
-> +obj-$(CONFIG_ARCH_EXYNOS)	+= exynos.o exynos-smc.o firmware.o
->  
->  obj-$(CONFIG_EXYNOS_CPU_SUSPEND) += pm.o sleep.o
->  obj-$(CONFIG_PM_SLEEP)		+= suspend.o
-> diff --git a/drivers/soc/samsung/Kconfig b/drivers/soc/samsung/Kconfig
-> index 2833b5b..f545d6c 100644
-> --- a/drivers/soc/samsung/Kconfig
-> +++ b/drivers/soc/samsung/Kconfig
-> @@ -10,4 +10,8 @@ config EXYNOS_SROM
->  	bool
->  	depends on ARM && ARCH_EXYNOS && PM
->  
-> +config EXYNOS_PMU
-> +	bool
-> +	depends on ARCH_EXYNOS
-> +
->  endmenu
-> diff --git a/drivers/soc/samsung/Makefile b/drivers/soc/samsung/Makefile
-> index 9c554d5..26fb489 100644
-> --- a/drivers/soc/samsung/Makefile
-> +++ b/drivers/soc/samsung/Makefile
-> @@ -1 +1,5 @@
->  obj-$(CONFIG_EXYNOS_SROM)	+= exynos-srom.o
-> +ifdef CONFIG_ARM
-> +obj-$(CONFIG_EXYNOS_PMU)	+= exynos-pmu.o exynos3250-pmu.o exynos4-pmu.o \
-> +					exynos5250-pmu.o exynos5420-pmu.o
-> +endif
-
-Why ifdef CONFIG_ARM? This already depends on ARCH_EXYNOS. If you want
-to limit to ARMv7 then add the dependency to Kconfig (just like
-EXYNOS_SROM).
-
-Rest looks ok - nice renames.
-
-Best regards,
-Krzysztof
-
-> diff --git a/arch/arm/mach-exynos/pmu.c b/drivers/soc/samsung/exynos-pmu.c
-> similarity index 100%
-> rename from arch/arm/mach-exynos/pmu.c
-> rename to drivers/soc/samsung/exynos-pmu.c
-> diff --git a/arch/arm/mach-exynos/exynos-pmu.h b/drivers/soc/samsung/exynos-pmu.h
-> similarity index 100%
-> rename from arch/arm/mach-exynos/exynos-pmu.h
-> rename to drivers/soc/samsung/exynos-pmu.h
-> diff --git a/arch/arm/mach-exynos/exynos3250-pmu.c b/drivers/soc/samsung/exynos3250-pmu.c
-> similarity index 100%
-> rename from arch/arm/mach-exynos/exynos3250-pmu.c
-> rename to drivers/soc/samsung/exynos3250-pmu.c
-> diff --git a/arch/arm/mach-exynos/exynos4-pmu.c b/drivers/soc/samsung/exynos4-pmu.c
-> similarity index 100%
-> rename from arch/arm/mach-exynos/exynos4-pmu.c
-> rename to drivers/soc/samsung/exynos4-pmu.c
-> diff --git a/arch/arm/mach-exynos/exynos5250-pmu.c b/drivers/soc/samsung/exynos5250-pmu.c
-> similarity index 100%
-> rename from arch/arm/mach-exynos/exynos5250-pmu.c
-> rename to drivers/soc/samsung/exynos5250-pmu.c
-> diff --git a/arch/arm/mach-exynos/exynos5420-pmu.c b/drivers/soc/samsung/exynos5420-pmu.c
-> similarity index 100%
-> rename from arch/arm/mach-exynos/exynos5420-pmu.c
-> rename to drivers/soc/samsung/exynos5420-pmu.c
+> I would prefer to keep the sensor/bank association like it currently is
+> as it allows for easy SVS engine integration. Also I would prefer to
+> expose a single thermal zone for now, it will be easier to add
+> additional zones later than it is to remove them later once we have
+> exposed them to the device tree.
 > 
+> Is that ok with you?
+
+Fair enough.  I agree that it's easier to add thermal zones in the
+future than to remove it.  Thanks for the explanation.
+
+Cheers,
+Javi
