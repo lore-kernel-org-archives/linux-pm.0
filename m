@@ -1,88 +1,51 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH 2/3] thermal: Add Mediatek thermal controller support
-Date: Fri, 13 Nov 2015 11:26:37 +0000
-Message-ID: <20151113112636.GA12760@e104805>
-References: <1447064013-13026-1-git-send-email-s.hauer@pengutronix.de>
- <1447064013-13026-3-git-send-email-s.hauer@pengutronix.de>
- <20151110120554.GB3551@e104805>
- <20151110182629.GA5240@localhost.localdomain>
- <20151111072747.GI8526@pengutronix.de>
- <20151113100912.GE8526@pengutronix.de>
+From: Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [RFCv2 2/2] rpi: add support to enable usb power domain
+Date: Fri, 13 Nov 2015 13:22:37 +0100
+Message-ID: <20151113122231.GA2959@omega>
+References: <1446590711-18928-1-git-send-email-alex.aring@gmail.com>
+ <1446590711-18928-3-git-send-email-alex.aring@gmail.com>
+ <563B0217.4030307@lategoodbye.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:40924 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751939AbbKML0l (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 13 Nov 2015 06:26:41 -0500
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20151113100912.GE8526@pengutronix.de>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <563B0217.4030307-saaNCTdWVBT7BZbvpMY5sg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Stefan Wahren <info-saaNCTdWVBT7BZbvpMY5sg@public.gmane.org>
+Cc: linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org, f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, rjui-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, sbranden-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: Eduardo Valentin <edubezval@gmail.com>, mark.rutland@arm.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, robh+dt@kernel.org, linux-mediatek@lists.infradead.org, kernel@pengutronix.de, Matthias Brugger <matthias.bgg@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
 
-On Fri, Nov 13, 2015 at 11:09:12AM +0100, Sascha Hauer wrote:
-> On Wed, Nov 11, 2015 at 08:27:47AM +0100, Sascha Hauer wrote:
-> > On Tue, Nov 10, 2015 at 10:26:30AM -0800, Eduardo Valentin wrote:
-> > > On Tue, Nov 10, 2015 at 12:05:54PM +0000, Javi Merino wrote:
-> > > > On Mon, Nov 09, 2015 at 11:13:32AM +0100, Sascha Hauer wrote:
-> > > 
-> > > <cut>
-> > > 
-> > > > > +
-> > > > > +/*
-> > > > > + * The MT8173 thermal controller has four banks. Each bank can read up to
-> > > > > + * four temperature sensors simultaneously. The MT8173 has a total of 5
-> > > > > + * temperature sensors. We use each bank to measure a certain area of the
-> > > > > + * SoC. Since TS2 is located centrally in the SoC it is influenced by multiple
-> > > > > + * areas, hence is used in different banks.
-> > > > > + */
-> > > > > +static const struct mtk_thermal_bank_cfg bank_data[] = {
-> > > > > +	{
-> > > > > +		.num_sensors = 2,
-> > > > > +		.sensors = { MT8173_TS2, MT8173_TS3 },
-> > > > > +	}, {
-> > > > > +		.num_sensors = 2,
-> > > > > +		.sensors = { MT8173_TS2, MT8173_TS4 },
-> > > > > +	}, {
-> > > > > +		.num_sensors = 3,
-> > > > > +		.sensors = { MT8173_TS1, MT8173_TS2, MT8173_TSABB },
-> > > > > +	}, {
-> > > > > +		.num_sensors = 1,
-> > > > > +		.sensors = { MT8173_TS2 },
-> > > > > +	},
-> > > > > +};
-> > > 
-> > > Would it make sense to simply expose all sensors and let the
-> > > configuration of their aggregation be done by DT?
-> > 
-> > This particular layout has been chosen because there's also the Smart
-> > Voltage Scaler (SVS) in the SoC. The SVS uses the same banks for
-> > measuring temperatures. I don't know the details yet, I just asked the
-> > Mediatek guys.
+On Thu, Nov 05, 2015 at 08:15:35AM +0100, Stefan Wahren wrote:
+...
+> >+	bool "Raspberry Pi power domain driver"
+> >+	depends on ARCH_BCM2835
+> >+	depends on RASPBERRYPI_FIRMWARE
+> >+	select PM_GENERIC_DOMAINS if PM
 > 
-> Ok, the job of the SVS is to always pick the best voltage for a given
-> CPU frequency based on the temperature of the CPU cluster. How I
-> understand it the SVS engine automatically reads temperatures from bank0
-> for the first CPU cluster and from bank1 for the second CPU cluster. For
-> this to work we are not free to assign the sensors to the banks
-> arbitrarily.
+> Since PM_GENERIC_DOMAINS_OF depends on PM_GENERIC_DOMAINS this line should
+> be redundant.
 > 
-> I was told that controlling the CPU frequency the performance is better
-> if we use the maximum temperature of the whole die rather than the
-> temperature of individual clusters.
-> 
-> I would prefer to keep the sensor/bank association like it currently is
-> as it allows for easy SVS engine integration. Also I would prefer to
-> expose a single thermal zone for now, it will be easier to add
-> additional zones later than it is to remove them later once we have
-> exposed them to the device tree.
-> 
-> Is that ok with you?
 
-Fair enough.  I agree that it's easier to add thermal zones in the
-future than to remove it.  Thanks for the explanation.
+I can't remove the line:
 
-Cheers,
-Javi
+select PM_GENERIC_DOMAINS if PM
+
+here. It's true that "PM_GENERIC_DOMAINS_OF depends on PM_GENERIC_DOMAINS",
+but Kconfig can't handle the dependency here with select. That's why
+sometimes people teaches me "select is evil".
+
+I will get:
+
+warning: (RASPBERRYPI_POWER) selects PM_GENERIC_DOMAINS_OF which has
+unmet direct dependencies (PM_GENERIC_DOMAINS && OF)
+
+otherwise.
+
+Nevertheless we can't also use "depends on PM_GENERIC_DOMAINS if PM"
+because, PM_GENERIC_DOMAINS is a hidden entry (has no Kconfig prompt).
+
+- Alex
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
