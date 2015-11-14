@@ -1,51 +1,50 @@
-From: Caesar Wang <wxt@rock-chips.com>
-Subject: Re: [PATCH v4 00/10] Better compatible for the rockchip thermal and
- support RK3368 SoCs
-Date: Sat, 14 Nov 2015 14:31:50 +0800
-Message-ID: <5646D556.1010803@rock-chips.com>
-References: <1447044542-30859-1-git-send-email-wxt@rock-chips.com>
- <20151112182950.GB4361@localhost.localdomain> <3751572.i2tVkgaN1o@phil>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v5 0/9] samsung: pmu: split up SoC specific PMU data
+Date: Sat, 14 Nov 2015 20:24:20 +0900
+Message-ID: <564719E4.1030104@samsung.com>
+References: <1447406983-27835-1-git-send-email-pankaj.dubey@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3751572.i2tVkgaN1o@phil>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Heiko Stuebner <heiko@sntech.de>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Jiri Kosina <trivial@kernel.org>, lkp@intel.com, Pawel Moll <pawel.moll@arm.com>, linux-pm@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, Rob Herring <robh+dt@kernel.org>, Kumar Gala <galak@codeaurora.org>, Olof Johansson <olof@lixom.net>, Zhang Rui <rui.zhang@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-arm-kernel@lists.infradead.org, Caesar Wang <wxt@rock-chips.com>
+Content-Type: text/plain; charset=iso-8859-2
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1447406983-27835-1-git-send-email-pankaj.dubey@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Pankaj Dubey <pankaj.dubey@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Cc: k.kozlowski.k@gmail.com, kgene.kim@samsung.com, thomas.ab@samsung.com, amitdanielk@gmail.com, olof@lixom.net, khilman@linaro.org, arnd@arndb.de
 List-Id: linux-pm@vger.kernel.org
 
+W dniu 13.11.2015 o 18:29, Pankaj Dubey pisze:
+> This patch series is a part of continuation work from following series
+> [1], [2], [3] and [4]
+> 
+> 1: exynos: Move pmu driver to driver/soc folder and add exynos7 support
+>    http://www.spinics.net/lists/linux-samsung-soc/msg39797.html from Amit Daniel Kacchap
+> 2: soc: samsung: pmu: split up SoC specific PMU data
+>    https://lkml.org/lkml/2015/1/7/12 from me
+> 3: https://lkml.org/lkml/2015/10/26/245
+> 4: https://lkml.org/lkml/2015/11/10/180
+> 
+> In this series I am splitting up SoC specific PMU configuration data into
+> mach-exynos folder itself, before moving all of them under
+> drivers/soc/samsung/. Also instead of making all changes in single patch it
+> has been broken into SoC specific patches to avoid large size of patch.
+> With this approach there will not be unwanted big churns just after
+> adding exynos-pmu under drivers/soc/samsung.
+> 
+> All these patches are just refactoring to keep minimal changes while moving
+> exynos-pmu driver under drivers/soc/samsung/. Support for exynos7 PMU can
+> be added on top of it, in such a manner that for ARM64 build, ARM related
+> SoC's PMU will not get compiled and thus unnecessary increasing kernel image size.
+> 
+> I have tested on Peach-Pi (Exynos5880) based chromebook for boot
+> and S2R functionality.
+> 
 
 
-=E5=9C=A8 2015=E5=B9=B411=E6=9C=8813=E6=97=A5 06:14, Heiko Stuebner =E5=
-=86=99=E9=81=93:
-> Hi Eduardo,
->
-> Am Donnerstag, 12. November 2015, 10:29:52 schrieb Eduardo Valentin:
->> On Mon, Nov 09, 2015 at 12:48:52PM +0800, Caesar Wang wrote:
->>> Thank you all for providing inputs and comments on previous version=
-s of
->>> this patchset.
->>> Especially thanks to the (Eduardo, Dmitry, Heiko,....).
->>>
->>> This series patchs are working for RK3368 on Rockchip platform.
->> Do you have any results on existing support? Is the driver still in =
-one
->> piece for rk3288?
-> I've tested this series on a rk3288-veyron-jerry and everything still
-> runs just fine, so
->
-> Tested-by: Heiko Stuebner <heiko@sntech.de>
+Entire patchset tested on Trats2 (Exynos4412, S2R, reboot, poweroff) and
+Odroid XU3 (Exynos5422, reboot, poweroff).
 
-Thanks Heiko for testing.:-)
+Tested-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
->
-> _______________________________________________
-> Linux-rockchip mailing list
-> Linux-rockchip@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-rockchip
-
-
---=20
-caesar wang | software engineer | wxt@rock-chip.com
+Best regards,
+Krzysztof
