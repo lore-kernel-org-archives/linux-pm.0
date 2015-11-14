@@ -1,50 +1,141 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v5 0/9] samsung: pmu: split up SoC specific PMU data
-Date: Sat, 14 Nov 2015 20:24:20 +0900
-Message-ID: <564719E4.1030104@samsung.com>
+Subject: Re: [PATCH v5 9/9] drivers: soc: Add support for Exynos PMU driver
+Date: Sat, 14 Nov 2015 20:30:07 +0900
+Message-ID: <56471B3F.5060201@samsung.com>
 References: <1447406983-27835-1-git-send-email-pankaj.dubey@samsung.com>
+ <1447406983-27835-10-git-send-email-pankaj.dubey@samsung.com>
+ <5645BB67.8050102@samsung.com>
+ <CAGcde9HMDNgu2YHXE7=KqhxdXwyNwqCZn0BLsoHtaOvpYjjSqw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1447406983-27835-1-git-send-email-pankaj.dubey@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Pankaj Dubey <pankaj.dubey@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: k.kozlowski.k@gmail.com, kgene.kim@samsung.com, thomas.ab@samsung.com, amitdanielk@gmail.com, olof@lixom.net, khilman@linaro.org, arnd@arndb.de
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f54.google.com ([209.85.220.54]:34898 "EHLO
+	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751277AbbKNLaO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 14 Nov 2015 06:30:14 -0500
+In-Reply-To: <CAGcde9HMDNgu2YHXE7=KqhxdXwyNwqCZn0BLsoHtaOvpYjjSqw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pankaj Dubey <pankaj.dubey@samsung.com>
+Cc: k.kozlowski.k@gmail.com, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-kernel@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, Amit Daniel <amitdanielk@gmail.com>, Kukjin Kim <kgene.kim@samsung.com>, Arnd Bergmann <arnd@arndb.de>, "thomas.ab@samsung.com" <thomas.ab@samsung.com>, olof@lixom.net, khilman@linaro.org
 
-W dniu 13.11.2015 o 18:29, Pankaj Dubey pisze:
-> This patch series is a part of continuation work from following series
-> [1], [2], [3] and [4]
+W dniu 14.11.2015 o 00:36, Pankaj Dubey pisze:
+> On 13 November 2015 at 15:58, Krzysztof Kozlowski
+> <k.kozlowski@samsung.com> wrote:
+>>
+>> On 13.11.2015 18:29, Pankaj Dubey wrote:
+>>> This patch moves Exynos PMU driver implementation from "arm/mach-exynos"
+>>> to "drivers/soc/samsung". This driver is mainly used for setting misc
+>>> bits of register from PMU IP of Exynos SoC which will be required to
+>>> configure before Suspend/Resume. Currently all these settings are done
+>>> in "arch/arm/mach-exynos/pmu.c" but moving ahead for ARM64 based SoC
+>>> support, there is a need of this PMU driver in driver/* folder.
+>>>
+>>> This driver uses existing DT binding information and there should
+>>> be no functionality change in the supported platforms.
+>>>
+>>> Signed-off-by: Amit Daniel Kachhap <amitdanielk@gmail.com>
+>>> Signed-off-by: Pankaj Dubey <pankaj.dubey@samsung.com>
+>>> ---
+>>>  arch/arm/mach-exynos/Kconfig                                   | 1 +
+>>>  arch/arm/mach-exynos/Makefile                                  | 4 +---
+>>>  drivers/soc/samsung/Kconfig                                    | 4 ++++
+>>>  drivers/soc/samsung/Makefile                                   | 4 ++++
+>>>  arch/arm/mach-exynos/pmu.c => drivers/soc/samsung/exynos-pmu.c | 0
+>>>  {arch/arm/mach-exynos => drivers/soc/samsung}/exynos-pmu.h     | 0
+>>>  {arch/arm/mach-exynos => drivers/soc/samsung}/exynos3250-pmu.c | 0
+>>>  {arch/arm/mach-exynos => drivers/soc/samsung}/exynos4-pmu.c    | 0
+>>>  {arch/arm/mach-exynos => drivers/soc/samsung}/exynos5250-pmu.c | 0
+>>>  {arch/arm/mach-exynos => drivers/soc/samsung}/exynos5420-pmu.c | 0
+>>>  10 files changed, 10 insertions(+), 3 deletions(-)
+>>>  rename arch/arm/mach-exynos/pmu.c => drivers/soc/samsung/exynos-pmu.c (100%)
+>>>  rename {arch/arm/mach-exynos => drivers/soc/samsung}/exynos-pmu.h (100%)
+>>>  rename {arch/arm/mach-exynos => drivers/soc/samsung}/exynos3250-pmu.c (100%)
+>>>  rename {arch/arm/mach-exynos => drivers/soc/samsung}/exynos4-pmu.c (100%)
+>>>  rename {arch/arm/mach-exynos => drivers/soc/samsung}/exynos5250-pmu.c (100%)
+>>>  rename {arch/arm/mach-exynos => drivers/soc/samsung}/exynos5420-pmu.c (100%)
+>>>
+>>> diff --git a/arch/arm/mach-exynos/Kconfig b/arch/arm/mach-exynos/Kconfig
+>>> index 83c85f5..874cb38 100644
+>>> --- a/arch/arm/mach-exynos/Kconfig
+>>> +++ b/arch/arm/mach-exynos/Kconfig
+>>> @@ -16,6 +16,7 @@ menuconfig ARCH_EXYNOS
+>>>       select ARM_GIC
+>>>       select COMMON_CLK_SAMSUNG
+>>>       select EXYNOS_THERMAL
+>>> +     select EXYNOS_PMU
+>>>       select EXYNOS_SROM if PM
+>>>       select HAVE_ARM_SCU if SMP
+>>>       select HAVE_S3C2410_I2C if I2C
+>>> diff --git a/arch/arm/mach-exynos/Makefile b/arch/arm/mach-exynos/Makefile
+>>> index 2d58063..34d29df 100644
+>>> --- a/arch/arm/mach-exynos/Makefile
+>>> +++ b/arch/arm/mach-exynos/Makefile
+>>> @@ -9,9 +9,7 @@ ccflags-$(CONFIG_ARCH_MULTIPLATFORM) += -I$(srctree)/$(src)/include -I$(srctree)
+>>>
+>>>  # Core
+>>>
+>>> -obj-$(CONFIG_ARCH_EXYNOS)    += exynos.o pmu.o exynos-smc.o firmware.o \
+>>> -                                     exynos3250-pmu.o exynos4-pmu.o \
+>>> -                                     exynos5250-pmu.o exynos5420-pmu.o
+>>> +obj-$(CONFIG_ARCH_EXYNOS)    += exynos.o exynos-smc.o firmware.o
+>>>
+>>>  obj-$(CONFIG_EXYNOS_CPU_SUSPEND) += pm.o sleep.o
+>>>  obj-$(CONFIG_PM_SLEEP)               += suspend.o
+>>> diff --git a/drivers/soc/samsung/Kconfig b/drivers/soc/samsung/Kconfig
+>>> index 2833b5b..f545d6c 100644
+>>> --- a/drivers/soc/samsung/Kconfig
+>>> +++ b/drivers/soc/samsung/Kconfig
+>>> @@ -10,4 +10,8 @@ config EXYNOS_SROM
+>>>       bool
+>>>       depends on ARM && ARCH_EXYNOS && PM
+>>>
+>>> +config EXYNOS_PMU
+>>> +     bool
+>>> +     depends on ARCH_EXYNOS
+>>> +
+>>>  endmenu
+>>> diff --git a/drivers/soc/samsung/Makefile b/drivers/soc/samsung/Makefile
+>>> index 9c554d5..26fb489 100644
+>>> --- a/drivers/soc/samsung/Makefile
+>>> +++ b/drivers/soc/samsung/Makefile
+>>> @@ -1 +1,5 @@
+>>>  obj-$(CONFIG_EXYNOS_SROM)    += exynos-srom.o
+>>> +ifdef CONFIG_ARM
+>>> +obj-$(CONFIG_EXYNOS_PMU)     += exynos-pmu.o exynos3250-pmu.o exynos4-pmu.o \
+>>> +                                     exynos5250-pmu.o exynos5420-pmu.o
+>>> +endif
+>>
+>> Why ifdef CONFIG_ARM? This already depends on ARCH_EXYNOS. If you want
+>> to limit to ARMv7 then add the dependency to Kconfig (just like
+>> EXYNOS_SROM).
+>>
 > 
-> 1: exynos: Move pmu driver to driver/soc folder and add exynos7 support
->    http://www.spinics.net/lists/linux-samsung-soc/msg39797.html from Amit Daniel Kacchap
-> 2: soc: samsung: pmu: split up SoC specific PMU data
->    https://lkml.org/lkml/2015/1/7/12 from me
-> 3: https://lkml.org/lkml/2015/10/26/245
-> 4: https://lkml.org/lkml/2015/11/10/180
+> This is required, so that 32-bit based Exynos SoC's PMU should not get
+> compiled when we are compiling for ARM64 and vice-versa.
 > 
-> In this series I am splitting up SoC specific PMU configuration data into
-> mach-exynos folder itself, before moving all of them under
-> drivers/soc/samsung/. Also instead of making all changes in single patch it
-> has been broken into SoC specific patches to avoid large size of patch.
-> With this approach there will not be unwanted big churns just after
-> adding exynos-pmu under drivers/soc/samsung.
+> For example: In future, I have plan to add exynos7 PMU support as -
 > 
-> All these patches are just refactoring to keep minimal changes while moving
-> exynos-pmu driver under drivers/soc/samsung/. Support for exynos7 PMU can
-> be added on top of it, in such a manner that for ARM64 build, ARM related
-> SoC's PMU will not get compiled and thus unnecessary increasing kernel image size.
+> ifdef CONFIG_ARM64
+> obj-$(CONFIG_EXYNOS_PMU) += exynos-pmu.o exynos7-pmu.o
+> endif
 > 
-> I have tested on Peach-Pi (Exynos5880) based chromebook for boot
-> and S2R functionality.
+> Thus preventing compilation of ARM64 based SoCs PMU data files when we
+> are compiling for ARM.
 > 
+> Only exynos-pmu.c will be shared and compiled in both cases.
 
+But this actually spreads Kconfig configuration over different places:
+Kconfig and Makefile. It confuses and makes it more difficult in the
+future to maintain and extend.
 
-Entire patchset tested on Trats2 (Exynos4412, S2R, reboot, poweroff) and
-Odroid XU3 (Exynos5422, reboot, poweroff).
-
-Tested-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+This should be in Kconfig. If you want to limit this per architecture
+(is it really needed?) then maybe define different EXYNOS_PMU config
+symbols?
 
 Best regards,
 Krzysztof
+
+
+
