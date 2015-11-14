@@ -1,47 +1,84 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
- SpeedStep enabled
-Date: Sat, 14 Nov 2015 13:43:51 +0000
-Message-ID: <bug-103351-137361-hmzz8OqeFl@https.bugzilla.kernel.org/>
-References: <bug-103351-137361@https.bugzilla.kernel.org/>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [Gta04-owner] [PATCH 10/13] twl4030_charger: add software
+ controlled linear charging mode.
+Date: Sat, 14 Nov 2015 19:12:16 +0100
+Message-ID: <20151114181216.GB20429@amd>
+References: <20150730001113.4012.18086.stgit@noble>
+ <20150730001124.4012.27784.stgit@noble>
+ <20150915112825.GA10704@amd>
+ <87bncjjesu.fsf@notabene.neil.brown.name>
+ <20151006143407.GA24518@xo-6d-61-c0.localdomain>
+ <20151029172041.2a9cd266@kemnade.info>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:40883 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751067AbbKNNn5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 14 Nov 2015 08:43:57 -0500
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id BA5FF2064B
-	for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2015 13:43:56 +0000 (UTC)
-Received: from bugzilla2.web.kernel.org (bugzilla2.web.kernel.org [172.20.200.52])
-	by mail.kernel.org (Postfix) with ESMTP id C83AA206A0
-	for <linux-pm@vger.kernel.org>; Sat, 14 Nov 2015 13:43:54 +0000 (UTC)
-In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20151029172041.2a9cd266@kemnade.info>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Andreas Kemnade <andreas@kemnade.info>
+Cc: List for communicating with real GTA04 owners <gta04-owner@goldelico.com>, Neil Brown <neil@brown.name>, Samuel Ortiz <sameo@linux.intel.com>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Lee Jones <lee.jones@linaro.org>, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-omap@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=103351
+Hi!
 
-tcl_de@gmx.net changed:
+> > > Pavel Machek <pavel@ucw.cz> writes:
+> > > > On Thu 2015-07-30 10:11:24, NeilBrown wrote:
+> > > >> 
+> > > >> Add a 'continuous' option for usb charging which enables
+> > > >> the "linear" charging mode of the twl4030.
+> > > >> 
+> > > >> Linear charging does a good job with not-so-reliable power sources.
+> > > >> Auto mode does not work well as it switches off when voltage drops
+> > > >> momentarily.  Care must be taken not to over-charge.
+> > > >
+> > > > Can you explain how the user can "care not to over-charge"?
+> > > 
+> > > The following text reads:
+> > > 
+> > >     It was used with a bike hub dynamo since a year or so. In that case
+> > >     there are automatically charging stops when the cyclist needs a break.
+> > > 
+> > > so: take a break from cycling occasionally.
+> > 
+> > If the charger does not exceed 4.2V, I'd not call it overcharge. (Yes, some clever
+> > chargers actually let the battery drop below 4.2V when charge is done, but...)
+> > 
+> Yes, that is the case. Perhaps it is not to be called overcharge but
+> it is said that lithium battery charging has to stop if in CV mode the
+> current drops too low.  In automatic mode the charger does exactly
+> that.
+> I would not let a battery for days at 4.2V CV.mode although a lot
+> of cheap chargers
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |tcl_de@gmx.net
+Well, I agree that keeping battery at 4.2V constant voltage mode is
+bad, but I'd not call it overcharge. If someone can fix the comment,
+that would be nice.
 
---- Comment #100 from tcl_de@gmx.net ---
-(In reply to sac from comment #54)
-> Unfortunately not even the mainboard vendor BIOS changelogs are reliable. My
-> Asrock H97 Performance lists an BIOS update with 2.40 "Update Microcode 19."
-> (0x13h), however if you extract the microcode update with MMTool you get
-> Microcode 16. (0x10h). Exactly the same that was already included in BIOS
-> 2.30.
+> > If the charger _does_ exceed 4.2V, then the battery will explode. Don't do that. Don't
+> > offer that to the user.
+> > 
+> > On a related note... I've just killed USB charger by overloading it. They are not protected.
+> > 
+> > I believe your automatically-pull-max-power really should stick to the well-known charging
+> > currents (.5A, 1A, 1.7A), at the very minimum.
+> > 
+> The main reason for the patch was to prevent switching off charging
+> when Vbus drops low. The reason was not to get out extremely much
+> current out of the charger.
+> The electrical characteristics of a  bicycle as a power source are.
+> - the amount of current available changes
+>    - 500mA at around 17km/h
+> - you cannot destroy it by electrically overloading
+> 
+> If the current is set to e.g. 500mA and that linear charging mode is
+> enabled, the battery gets the maximum current available (upto
+> 500mA) regardless of the speed which is often changing.
 
-Just a quick remark: 19 in Update Microcode 19 is already hexadecimal and
-refers to the Haswell Microcode revision
+Yes... I guess that makes sense for you, but I wonder if we should be
+doing this by default. It seems a lot of cheap chargers can be easily
+destroyed if you overload them.
 
+									Pavel
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
