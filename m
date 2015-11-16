@@ -1,88 +1,104 @@
 From: James Morse <james.morse@arm.com>
-Subject: Re: [PATCH v2 10/11] PM / Hibernate: clean cached pages on architectures
- that require it
-Date: Mon, 16 Nov 2015 12:27:07 +0000
-Message-ID: <5649CB9B.30102@arm.com>
-References: <1445966960-31724-1-git-send-email-james.morse@arm.com> <1445966960-31724-11-git-send-email-james.morse@arm.com> <20151114202623.GC20429@amd>
+Subject: Re: [PATCH v2 11/11] arm64: kernel: Add support for hibernate/suspend-to-disk.
+Date: Mon, 16 Nov 2015 12:29:52 +0000
+Message-ID: <5649CC40.9010805@arm.com>
+References: <1445966960-31724-1-git-send-email-james.morse@arm.com> <1445966960-31724-12-git-send-email-james.morse@arm.com> <20151114213415.GG20429@amd>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:49042 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:49068 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751465AbbKPM1y (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 16 Nov 2015 07:27:54 -0500
-In-Reply-To: <20151114202623.GC20429@amd>
+	id S1751363AbbKPMaj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 16 Nov 2015 07:30:39 -0500
+In-Reply-To: <20151114213415.GG20429@amd>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Kevin Kang <kkang@intrinsyc.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, wangfei <w.f@huawei.com>, Marc Zyngier <marc.zyngier@arm.com>
+Cc: linux-arm-kernel@lists.infradead.org, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Kevin Kang <kkang@intrinsyc.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, wangfei <w.f@huawei.com>, Marc Zyngier <marc.zyngier@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 
-On 14/11/15 20:26, Pavel Machek wrote:
-> On Tue 2015-10-27 17:29:19, James Morse wrote:
->> Some architectures require code written to memory as if it were data=
- to be
->> 'cleaned' from any data caches so that the processor can fetch them =
-as new
->> instructions.
->>
->> During resume from hibernate, the snapshot code copies some pages di=
-rectly,
->> meaning these architectures do not get a chance to perform their cac=
-he
->> maintenance. Add a call to flush_icache_range(), which is provided b=
-y
->> architectures that require it, to perform the maintenance.
->>
->> This mirrors the kernel's behaviour when loading kernel modules and =
-when
->> mapping executable pages to user space.
->>
+Hi!
+
+On 14/11/15 21:34, Pavel Machek wrote:
+>> The implementation assumes that exactly the same kernel is booted on the
+>> same hardware, and that the kernel is loaded at the same physical address.
+> 
+> BTW... on newer implementations (and I have patch for x86, too), we
+> try to make it so that resume kernel does not have to be same as
+> suspend one. It would be nice to move there with arm64, too. 
+
+Yes, that is a neat trick, can I leave it as future work?
+
+
 >> Signed-off-by: James Morse <james.morse@arm.com>
->=20
-> Looks reasonable.
->=20
+> 
 > Acked-by: Pavel Machek <pavel@ucw.cz>
 
 Thanks!
 
->=20
->> ---
->>  kernel/power/snapshot.c | 4 ++++
->>  1 file changed, 4 insertions(+)
->>
->> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
->> index 5235dd4e1e2f..139fc449ad75 100644
->> --- a/kernel/power/snapshot.c
->> +++ b/kernel/power/snapshot.c
->> @@ -1196,9 +1197,12 @@ static unsigned int count_data_pages(void)
->>  static inline void do_copy_page(long *dst, long *src)
->>  {
->>  	int n;
->> +	unsigned long __maybe_unused start =3D (unsigned long)dst;
->=20
-> Why the "maybe unused"?
-
-To avoid a build warning on x86_64, and any other architectures that do=
-n't
-use the arguments in their flush_icache_range() implementation.
-
-Without __maybe_unused, gcc 4.9.2, building for x86_64:
-> ../kernel/power/snapshot.c: In function =91do_copy_page=92:
-> ../kernel/power/snapshot.c:1200:16: warning: unused variable =91start=
-=92
-> [-Wunused-variable]
->  unsigned long start =3D (unsigned long)dst;
+(I have a fixup for this patch to add a missing __pgprot() in the page
+ table copy code.)
 
 
->>  	for (n =3D PAGE_SIZE / sizeof(long); n; n--)
->>  		*dst++ =3D *src++;
->> +
->> +	flush_icache_range(start, start+PAGE_SIZE);
->>  }
+>> +/*
+>> + * Corrupt memory.
+>> + *
+> 
+> Umm. Really?
+
+Effectively. Until it finishes copying, you have to assume all memory is
+corrupt, code, page-tables etc. It was more a tounge-in-cheek reminder to
+myself to be careful.
 
 
-Thanks,
+>> + * Because this code has to be copied to a safe_page, it can't call out to
+>> + * other functions by pc-relative address. Also remember that it
+> 
+> PC-relative?
+
+The linker may (often!) use program-counter relative addresses for loads
+and stores. This code gets copied, so the linker doesn't know where the
+code will be executed from, so any instructions using pc-relative addresses
+will get the wrong result, (if they reference something outside the function).
+
+
+>> + * mid-way through over-writing other functions. For this reason it contains
+>> + * a copy of copy_page() and code from flush_icache_range().
+>> + *
+>> + * All of memory gets written to, including code. We need to clean the kernel
+>> + * text to the PoC before secondary cores can be booted. Because kernel modules,
+> 
+> "the kernel modules" and no ","?
+
+Sure.
+
+
+>> + * and executable pages mapped to user space are also written as data, we
+>> + * clean all pages we touch to the PoU.
+> 
+> What is PoC and PoU?
+
+They are points in the CPU's cache hierarchy:
+
+ARM processors are of a 'modified Harvard' architecture, their paths to
+read instructions and data are different. The 'Point of Unification' is the
+first point in the cache hierarchy that is the same for both. On ARM,
+flush_icache_range() makes sure code written as data is pushed through any
+data caches to this point, and then evicts any stale copies in the
+instruction caches.
+
+PoC is the 'Point of Coherency', it is the first point that is the same for
+all devices, (e.g. a cpu with caches turned on, and one with them off), it
+is normally main memory. The kernel text has to be pushed to this point, so
+that secondary cores, while running early-boot code with their MMU and
+caches turned off, don't get incorrect code/data from before resume.
+
+I have resisted the urge to draw some ascii-art!
+
+
+
+Thanks for your comments,
 
 James
+
 
