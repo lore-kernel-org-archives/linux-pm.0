@@ -1,125 +1,37 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 1/2] thermal: rcar_thermal: remove redundant operation
-Date: Mon, 16 Nov 2015 10:42:44 -0800
-Message-ID: <20151116184242.GA6349@localhost.localdomain>
-References: <87h9kulkfg.wl%kuninori.morimoto.gx@renesas.com>
- <87fv0elibh.wl%kuninori.morimoto.gx@renesas.com>
- <87egfylia4.wl%kuninori.morimoto.gx@renesas.com>
+From: Geoff Levand <geoff@infradead.org>
+Subject: Re: [PATCH v2 02/11] arm64: Fold proc-macros.S into assembler.h
+Date: Mon, 16 Nov 2015 10:44:52 -0800
+Message-ID: <1447699492.31339.2.camel@infradead.org>
+References: <1445966960-31724-1-git-send-email-james.morse@arm.com>
+	 <1445966960-31724-3-git-send-email-james.morse@arm.com>
+	 <20151114212515.GF20429@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f53.google.com ([209.85.220.53]:34421 "EHLO
-	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753150AbbKPSmr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Nov 2015 13:42:47 -0500
-Content-Disposition: inline
-In-Reply-To: <87egfylia4.wl%kuninori.morimoto.gx@renesas.com>
+Received: from casper.infradead.org ([85.118.1.10]:39854 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751301AbbKPSpD (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Nov 2015 13:45:03 -0500
+In-Reply-To: <20151114212515.GF20429@amd>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Linux-SH <linux-sh@vger.kernel.org>, Linux-Kernel <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, cm-hiep@jinso.co.jp, nv-dung@jinso.co.jp
+To: Pavel Machek <pavel@ucw.cz>, James Morse <james.morse@arm.com>
+Cc: linux-arm-kernel@lists.infradead.org, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Kevin Kang <kkang@intrinsyc.com>, Catalin Marinas <catalin.marinas@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, wangfei <w.f@huawei.com>, Marc Zyngier <marc.zyngier@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 
-On Tue, Nov 10, 2015 at 02:12:06AM +0000, Kuninori Morimoto wrote:
-> From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-> 
-> Probe error operation and remove operation are same.
-> Let's use same function.
+Hi,
 
-I am picking this one and sending for next rc cycle. The second  patch
-is still under discussion and the issue may be solved differently,
-so for now I wont get that. 
+On Sat, 2015-11-14 at 22:25 +0100, Pavel Machek wrote:
+> On Tue 2015-10-27 17:29:11, James Morse wrote:
 
-BR,
+> > From: Geoff Levand <geoff@infradead.org>
+> Why the two stars?
 
-> 
-> Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-> ---
->  drivers/thermal/rcar_thermal.c | 49 ++++++++++++++++++------------------------
->  1 file changed, 21 insertions(+), 28 deletions(-)
-> 
-> diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
-> index 5d4ae7d..13d01ed 100644
-> --- a/drivers/thermal/rcar_thermal.c
-> +++ b/drivers/thermal/rcar_thermal.c
-> @@ -361,6 +361,24 @@ static irqreturn_t rcar_thermal_irq(int irq, void *data)
->  /*
->   *		platform functions
->   */
-> +static int rcar_thermal_remove(struct platform_device *pdev)
-> +{
-> +	struct rcar_thermal_common *common = platform_get_drvdata(pdev);
-> +	struct device *dev = &pdev->dev;
-> +	struct rcar_thermal_priv *priv;
-> +
-> +	rcar_thermal_for_each_priv(priv, common) {
-> +		if (rcar_has_irq_support(priv))
-> +			rcar_thermal_irq_disable(priv);
-> +		thermal_zone_device_unregister(priv->zone);
-> +	}
-> +
-> +	pm_runtime_put(dev);
-> +	pm_runtime_disable(dev);
-> +
-> +	return 0;
-> +}
-> +
->  static int rcar_thermal_probe(struct platform_device *pdev)
->  {
->  	struct rcar_thermal_common *common;
-> @@ -377,6 +395,8 @@ static int rcar_thermal_probe(struct platform_device *pdev)
->  	if (!common)
->  		return -ENOMEM;
->  
-> +	platform_set_drvdata(pdev, common);
-> +
->  	INIT_LIST_HEAD(&common->head);
->  	spin_lock_init(&common->lock);
->  	common->dev = dev;
-> @@ -454,43 +474,16 @@ static int rcar_thermal_probe(struct platform_device *pdev)
->  		rcar_thermal_common_write(common, ENR, enr_bits);
->  	}
->  
-> -	platform_set_drvdata(pdev, common);
-> -
->  	dev_info(dev, "%d sensor probed\n", i);
->  
->  	return 0;
->  
->  error_unregister:
-> -	rcar_thermal_for_each_priv(priv, common) {
-> -		if (rcar_has_irq_support(priv))
-> -			rcar_thermal_irq_disable(priv);
-> -		thermal_zone_device_unregister(priv->zone);
-> -	}
-> -
-> -	pm_runtime_put(dev);
-> -	pm_runtime_disable(dev);
-> +	rcar_thermal_remove(pdev);
->  
->  	return ret;
->  }
->  
-> -static int rcar_thermal_remove(struct platform_device *pdev)
-> -{
-> -	struct rcar_thermal_common *common = platform_get_drvdata(pdev);
-> -	struct device *dev = &pdev->dev;
-> -	struct rcar_thermal_priv *priv;
-> -
-> -	rcar_thermal_for_each_priv(priv, common) {
-> -		if (rcar_has_irq_support(priv))
-> -			rcar_thermal_irq_disable(priv);
-> -		thermal_zone_device_unregister(priv->zone);
-> -	}
-> -
-> -	pm_runtime_put(dev);
-> -	pm_runtime_disable(dev);
-> -
-> -	return 0;
-> -}
-> -
->  static const struct of_device_id rcar_thermal_dt_ids[] = {
->  	{ .compatible = "renesas,rcar-thermal", },
->  	{},
-> -- 
-> 1.9.1
-> 
+I have a newer version that fixed that typo in
+my kexec-v11 branch:
+
+http://git.kernel.org/cgit/linux/kernel/git/geoff/linux-kexec.git/commit/?h=kexec-v11&id=afbeea6ab2e1aa3ea8c4683521ac155667f86ca1
+
+-Geoff
+
+
