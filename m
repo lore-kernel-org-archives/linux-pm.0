@@ -1,42 +1,55 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
- SpeedStep enabled
-Date: Sun, 15 Nov 2015 15:52:54 +0000
-Message-ID: <bug-103351-137361-hwMl3O4qXt@https.bugzilla.kernel.org/>
-References: <bug-103351-137361@https.bugzilla.kernel.org/>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: [PATCH v6 0/4] Introduce usb charger framework to deal with the usb gadget power negotation
+Date: Mon, 16 Nov 2015 14:33:30 +0800
+Message-ID: <cover.1447654605.git.baolin.wang@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:44488 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751428AbbKOPw7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 15 Nov 2015 10:52:59 -0500
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id 726BA206B0
-	for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2015 15:52:58 +0000 (UTC)
-Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
-	by mail.kernel.org (Postfix) with ESMTP id 1018F20635
-	for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2015 15:52:57 +0000 (UTC)
-In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
+Received: from mail-pa0-f44.google.com ([209.85.220.44]:34720 "EHLO
+	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751070AbbKPGd5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Nov 2015 01:33:57 -0500
+Received: by padhx2 with SMTP id hx2so165050886pad.1
+        for <linux-pm@vger.kernel.org>; Sun, 15 Nov 2015 22:33:57 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: balbi@ti.com, gregkh@linuxfoundation.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
+Cc: peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, lee.jones@linaro.org, broonie@kernel.org, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, baolin.wang@linaro.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, linux-kernel@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=103351
+Currently the Linux kernel does not provide any standard integration of this
+feature that integrates the USB subsystem with the system power regulation
+provided by PMICs meaning that either vendors must add this in their kernels
+or USB gadget devices based on Linux (such as mobile phones) may not behave
+as they should. Thus provide a standard framework for doing this in kernel.
 
---- Comment #102 from tcl_de@gmx.net ---
-(In reply to sac from comment #101)
-> Thanks, but for 1150 Asrock H97 Performance users it would be great to get
-> an Microcode update as well (and not to be stuck with 0671/10 from
-> 2015/05/07 that suffers not only from these MCE but also elision lock
-> crashes).
+Now introduce one user with wm831x_power to support and test the usb charger,
+which is pending testing. Moreover there may be other potential users will use
+it in future.
 
-I fully agree and suggest that you contact Asrock Support about it. My
-experience with them has been quite good.
-BTW: I'm not affiliated with Asrock, I just happen to own an Asrock H97 Haswell
-system.
+Changes since v5:
+ - Remove the notifier chain things from the gadget and introduce one callback
+ function to report to the usb charger when the gadget state is changed.
+ - Flesh out the port type detection which combines the USB negotiation and
+ PMICs detection.
+ - Supply the notification mechanism to userspace when charger state is changed.
+ - Integrate with the vbus staff in the gadget API.
+
+Baolin Wang (4):
+  gadget: Introduce the usb charger framework
+  gadget: Support for the usb charger framework
+  gadget: Integrate with the usb gadget supporting for usb charger
+  power: wm831x_power: Support USB charger current limit management
+
+ drivers/power/wm831x_power.c      |   69 +++++
+ drivers/usb/gadget/Kconfig        |    7 +
+ drivers/usb/gadget/Makefile       |    1 +
+ drivers/usb/gadget/charger.c      |  613 +++++++++++++++++++++++++++++++++++++
+ drivers/usb/gadget/udc/udc-core.c |   11 +
+ include/linux/mfd/wm831x/pdata.h  |    3 +
+ include/linux/usb/gadget.h        |   10 +
+ include/linux/usb/usb_charger.h   |  162 ++++++++++
+ 8 files changed, 876 insertions(+)
+ create mode 100644 drivers/usb/gadget/charger.c
+ create mode 100644 include/linux/usb/usb_charger.h
 
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+1.7.9.5
+
