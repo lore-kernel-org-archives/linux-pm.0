@@ -1,60 +1,56 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH v2 11/11] arm64: kernel: Add support for
- hibernate/suspend-to-disk.
-Date: Mon, 16 Nov 2015 14:23:10 +0000
-Message-ID: <20151116142309.GI20696@leverpostej>
-References: <1445966960-31724-1-git-send-email-james.morse@arm.com>
- <1445966960-31724-12-git-send-email-james.morse@arm.com>
- <20151114213415.GG20429@amd>
- <5649CC40.9010805@arm.com>
- <20151116124116.GC9125@amd>
- <5649E1A0.7020001@arm.com>
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: RE: [PATCH][v5] x86, suspend: Save/restore extra MSR registers for
+ suspend
+Date: Mon, 16 Nov 2015 15:20:00 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE6402867431B@shsmsx102.ccr.corp.intel.com>
+References: <1444533601-12330-1-git-send-email-yu.c.chen@intel.com>
+ <20151012163750.GA4539@pd.tnic>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:50149 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751223AbbKPOXR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 16 Nov 2015 09:23:17 -0500
-Content-Disposition: inline
-In-Reply-To: <5649E1A0.7020001@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20151012163750.GA4539@pd.tnic>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Borislav Petkov <bp@suse.de>
+Cc: "mingo@redhat.com" <mingo@redhat.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "pavel@ucw.cz" <pavel@ucw.cz>, "tglx@linutronix.de" <tglx@linutronix.de>, "hpa@zytor.com" <hpa@zytor.com>, "Zhang, Rui" <rui.zhang@intel.com>, "luto@kernel.org" <luto@kernel.org>, "linux@horizon.com" <linux@horizon.com>, "dsmythies@telus.net" <dsmythies@telus.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Kaszewski, Marcin" <marcin.kaszewski@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: James Morse <james.morse@arm.com>
-Cc: Pavel Machek <pavel@ucw.cz>, linux-arm-kernel@lists.infradead.org, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Kevin Kang <kkang@intrinsyc.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, wangfei <w.f@huawei.com>, Marc Zyngier <marc.zyngier@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 
-> >>> What is PoC and PoU?
-> >>
-> >> They are points in the CPU's cache hierarchy:
-> >>
-> >> ARM processors are of a 'modified Harvard' architecture, their paths to
-> >> read instructions and data are different. The 'Point of Unification' is the
-> >> first point in the cache hierarchy that is the same for both. On ARM,
-> >> flush_icache_range() makes sure code written as data is pushed through any
-> >> data caches to this point, and then evicts any stale copies in the
-> >> instruction caches.
-> >>
-> >> PoC is the 'Point of Coherency', it is the first point that is the same for
-> >> all devices, (e.g. a cpu with caches turned on, and one with them off), it
-> >> is normally main memory. The kernel text has to be pushed to this point, so
-> >> that secondary cores, while running early-boot code with their MMU and
-> >> caches turned off, don't get incorrect code/data from before resume.
-> >>
-> >> I have resisted the urge to draw some ascii-art!
-> > 
-> > That's ok, you just might want to replace PoI -> 'Point of
-> > Unification' and PoC -> 'Point of Coherency' in the comments. That
-> > should make googling easier for people not familiar with arm
-> > terminology.
-> 
-> There aren't any other points under arch/arm64 that use the full expansion,
-> but it can't hurt to include both.
-
-I would prefer to keep PoC/PoU as they are for consistency.
-
-The abbreviations are provided by the architecture, and much like
-register names that we do not expand, to reason about them you need to
-read the architecture documentation anyway. So the short forms alone are
-fine.
-
-Mark.
+SGksIEJvcmlzLA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IEJvcmlz
+bGF2IFBldGtvdiBbbWFpbHRvOmJwQHN1c2UuZGVdDQo+IFNlbnQ6IFR1ZXNkYXksIE9jdG9iZXIg
+MTMsIDIwMTUgMTI6MzggQU0NCj4gVG86IENoZW4sIFl1IEMNCj4gQ2M6IG1pbmdvQHJlZGhhdC5j
+b207IHJqd0Byand5c29ja2kubmV0OyBwYXZlbEB1Y3cuY3o7DQo+IHRnbHhAbGludXRyb25peC5k
+ZTsgaHBhQHp5dG9yLmNvbTsgWmhhbmcsIFJ1aTsgbHV0b0BrZXJuZWwub3JnOw0KPiBsaW51eEBo
+b3Jpem9uLmNvbTsgZHNteXRoaWVzQHRlbHVzLm5ldDsgbGludXgtcG1Admdlci5rZXJuZWwub3Jn
+Ow0KPiB4ODZAa2VybmVsLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgS2FzemV3
+c2tpLCBNYXJjaW4NCj4gU3ViamVjdDogUmU6IFtQQVRDSF1bdjVdIHg4Niwgc3VzcGVuZDogU2F2
+ZS9yZXN0b3JlIGV4dHJhIE1TUiByZWdpc3RlcnMgZm9yDQo+IHN1c3BlbmQNCj4gDQo+IE9uIFN1
+biwgT2N0IDExLCAyMDE1IGF0IDExOjIwOjAxQU0gKzA4MDAsIENoZW4gWXUgd3JvdGU6DQo+ID4g
+QSBidWcgaXMgcmVwb3J0ZWQoaHR0cHM6Ly9idWd6aWxsYS5yZWRoYXQuY29tL3Nob3dfYnVnLmNn
+aT9pZD0xMjI3MjA4KQ0KPiANCj4gSSBnZXQ6DQo+IA0KPiAiWW91IGFyZSBub3QgYXV0aG9yaXpl
+ZCB0byBhY2Nlc3MgYnVnICMxMjI3MjA4Lg0KPiANCj4gTW9zdCBsaWtlbHkgdGhlIGJ1ZyBoYXMg
+YmVlbiByZXN0cmljdGVkIGZvciBpbnRlcm5hbCBkZXZlbG9wbWVudCBwcm9jZXNzZXMNCj4gYW5k
+IHdlIGNhbm5vdCBncmFudCBhY2Nlc3MuIg0KPiANCj4gPiB0aGF0LCBhZnRlciByZXN1bWVkIGZy
+b20gUzMsIENQVSBpcyBydW5uaW5nIGF0IGEgbG93IHNwZWVkLg0KPiA+IEFmdGVyIGludmVzdGln
+YXRpb24sIGl0IGlzIGZvdW5kIHRoYXQsIEJJT1MgaGFzIG1vZGlmaWVkIHRoZSB2YWx1ZSBvZg0K
+PiA+IFRIRVJNX0NPTlRST0wgcmVnaXN0ZXIgZHVyaW5nIFMzLCBhbmQgY2hhbmdlcyBpdCBmcm9t
+IDAgdG8gMHgxMCAodGh1cw0KPiA+IGNoYW5nZXMgdGhlIGNsb2NrIG1vZHVsYXRpb24gZnJvbSBy
+ZXNlcnZlZCB0byBlbmFibGVkKSwgc2luY2UgdmFsdWUgb2YNCj4gPiAweDEwIG1lYW5zIENQVSBj
+YW4gb25seSBnZXQgMjUlIG9mIHRoZSBEdXR5IEN5Y2xlLCB0aGlzIHRyaWdnZXJzIHRoZQ0KPiA+
+IHByb2JsZW0uDQo+IA0KPiBJcyB0aGlzIHdoYXQgdGhlIGJ1ZyBkZXNjcmliZWQgYWJvdmUgaXM/
+IEluIGFueSBjYXNlLCBwbGVhc2UgcmVtb3ZlIHRoZQ0KPiBwcml2YXRlIGJ1Z3ppbGxhIGxpbmsg
+YW5kIGRlc2NyaWJlIHRoZSBidWcgaW4gdGV4dCBoZXJlLg0KWWVzLCB0aGlzIGJ1ZyBpcyBkZXNj
+cmliZWQgaW4gdGhlIGNoYW5nZWxvZywgSSdsbCByZW1vdmUgdGhlIGxpbmsuDQo+IA0KPiBBbHNv
+LCBmcm9tIHJlYWRpbmcgdGhlIG90aGVyIHRocmVhZCBhYm91dCB0aGUgdjQgcGF0Y2gsIGl0IHNv
+dW5kcyBsaWtlDQo+IGludGVsX3BzdGF0ZSBjYW4ndCBoYW5kbGUgdGhlIGNsb2NrIG1vZHVsYXRp
+b24gcHJvcGVybHksIGFjY29yZGluZyB0byB3aGF0DQo+IERvdWcgc2F5cy4NCkFzIGRpc2N1c3Nl
+ZCB3aXRoIERvdWcgaW4gdGhlIHY0IHBhdGNoLCB0aGUgcHJvYmxlbSBicm91Z2h0IGJ5IGNsb2Nr
+IG1vZHVsYXRpb24NCmlzIGJlY2F1c2UgaW50ZWxfcHN0YXRlIHVzZSBhIHRoZW9yZXRpY2FsIHBz
+dGF0ZSB0byBjYWxjdWxhdGUgdGhlIGNwdSBidXN5IHJhdGlvLA0KYW5kICBEb3VnIGhhcyBwcm9w
+b3NlZCBhIHBhdGNoIHRvIHVzZSBjb21wZW5zYXRvcnkgYWxnb3JpdGhtIGluIGludGVsX3BzdGF0
+ZSwNCnRvIHByZWRpY3QgdGhlIHBzdGF0ZSBiYXNlZCBvbiBhY3R1YWwgY3B1IGZyZXEodGFrZSBj
+bG9jayBtb2R1bGF0aW9uIGludG8gYWNjb3VudCksDQp3aGljaCBjYW4gZml4IGhpcyBwcm9ibGVt
+IG5vdy4NClNvIEknbGwgcmVzZW5kIGEgdmVyc2lvbiA2IG9mIGN1cnJlbnQgcGF0Y2gsIGJlY2F1
+c2Ugc29tZSBzZXJ2ZXIgaW4gcHJvZHVjdGlvbiANCmVudmlyb25tZW50IGhhcyBzdWZmZXJlZCBm
+cm9tIHRoaXMgcHJvYmxlbSBmb3Igc29tZSB0aW1lLi4gdGhhbmtzLiANCiANCkJlc3QgcmVnYXJk
+cywNCll1DQo=
