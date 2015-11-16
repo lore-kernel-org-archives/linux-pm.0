@@ -1,83 +1,58 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM / Domains: export pm_genpd_add_device symbol
-Date: Mon, 16 Nov 2015 12:08:17 +0100
-Message-ID: <CAPDyKFrd-kdgJNioPc7KcUpF+VV+-MDOG7BobMJ+V9aq1Lo=fw@mail.gmail.com>
-References: <1447664848-11372-1-git-send-email-Maruthi.Bayyavarapu@amd.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v3] cpufreq: intel_pstate: wrong call to acpi_processor_unregister_performance
+Date: Mon, 16 Nov 2015 13:09:19 +0100
+Message-ID: <1976139.BTAbAQ7onH@vostro.rjw.lan>
+References: <1447463821-14595-1-git-send-email-srinivas.pandruvada@linux.intel.com> <1447463821-14595-2-git-send-email-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1447664848-11372-1-git-send-email-Maruthi.Bayyavarapu@amd.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Maruthi Srinivas Bayyavarapu <Maruthi.Bayyavarapu@amd.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:54758 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751223AbbKPLjw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Nov 2015 06:39:52 -0500
+In-Reply-To: <1447463821-14595-2-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: linux-pm@vger.kernel.org
 
-On 16 November 2015 at 10:07, Maruthi Srinivas Bayyavarapu
-<Maruthi.Bayyavarapu@amd.com> wrote:
-> Drivers which can be built as loadable module needs
-> symbol - pm_genpd_add_device to be exported. Those drivers
-> create platform devices which comes under a powerdomain.
+On Friday, November 13, 2015 05:17:01 PM Srinivas Pandruvada wrote:
+> When the no_acpi_perf is set to 1, that means that we haven't called
+> acpi_processor_register_performance(), so we shouldn't also call
+> acpi_processor_unregister_performance in intel_pstate_exit_perf_limits().
+> 
+> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Currently this API is used by a few SoCs that haven't yet been
-converted to device tree.
+OK, but this is my patch. :-)
 
-Can you tell me more about what driver/SoC you intend to use it for?
+I'll apply it with the right From: line.
 
-Kind regards
-Uffe
-
->
-> Signed-off-by: Maruthi Bayyavarapu <maruthi.bayyavarapu@amd.com>
 > ---
->  drivers/base/power/domain.c | 7 +++++++
->  include/linux/pm_domain.h   | 9 ++-------
->  2 files changed, 9 insertions(+), 7 deletions(-)
->
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index f932058..72998f8 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -1253,6 +1253,13 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
->         return ret;
->  }
->
-> +int pm_genpd_add_device(struct generic_pm_domain *genpd,
-> +                                     struct device *dev)
-> +{
-> +       return __pm_genpd_add_device(genpd, dev, NULL);
-> +}
-> +EXPORT_SYMBOL_GPL(pm_genpd_add_device);
-> +
->  /**
->   * pm_genpd_remove_device - Remove a device from an I/O PM domain.
->   * @genpd: PM domain to remove the device from.
-> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> index ba4ced3..f9e2f7e 100644
-> --- a/include/linux/pm_domain.h
-> +++ b/include/linux/pm_domain.h
-> @@ -114,7 +114,8 @@ extern struct generic_pm_domain *pm_genpd_lookup_dev(struct device *dev);
->  extern int __pm_genpd_add_device(struct generic_pm_domain *genpd,
->                                  struct device *dev,
->                                  struct gpd_timing_data *td);
+>  drivers/cpufreq/intel_pstate.c | 6 +-----
+>  1 file changed, 1 insertion(+), 5 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 6ec39ef..bad1ee3 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -326,13 +326,9 @@ static int intel_pstate_init_perf_limits(struct cpufreq_policy *policy)
+>  
+>  static int intel_pstate_exit_perf_limits(struct cpufreq_policy *policy)
+>  {
+> -	struct cpudata *cpu;
 > -
-> +extern int pm_genpd_add_device(struct generic_pm_domain *genpd,
-> +                                     struct device *dev);
->  extern int pm_genpd_remove_device(struct generic_pm_domain *genpd,
->                                   struct device *dev);
->  extern int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
-> @@ -163,12 +164,6 @@ static inline void pm_genpd_init(struct generic_pm_domain *genpd,
+>  	if (!no_acpi_perf)
+> -		return 0;
+> +		acpi_processor_unregister_performance(policy->cpu);
+>  
+> -	cpu = all_cpu_data[policy->cpu];
+> -	acpi_processor_unregister_performance(policy->cpu);
+>  	return 0;
 >  }
->  #endif
->
-> -static inline int pm_genpd_add_device(struct generic_pm_domain *genpd,
-> -                                     struct device *dev)
-> -{
-> -       return __pm_genpd_add_device(genpd, dev, NULL);
-> -}
-> -
->  #ifdef CONFIG_PM_GENERIC_DOMAINS_SLEEP
->  extern void pm_genpd_syscore_poweroff(struct device *dev);
->  extern void pm_genpd_syscore_poweron(struct device *dev);
-> --
-> 1.9.1
->
+>  
+> 
+
+Thanks,
+Rafael
+
