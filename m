@@ -1,58 +1,86 @@
-From: "Zhang, Lin-Bao (Linux Kernel R&D)" <linbao.zhang@hpe.com>
-Subject: [PATCH v1 2/2] retry 2 times when getting cpu frequency is zero
-Date: Mon, 16 Nov 2015 10:42:52 +0000
-Message-ID: <92645B27BF79D04FBD2B0F8494FFD0F9199B5FCA@G2W2527.americas.hpqcorp.net>
+From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
+Subject: Re: [RFC PATCH 1/2] genirq: Add runtime resume/suspend support for
+ IRQ chips
+Date: Mon, 16 Nov 2015 11:48:42 +0100
+Message-ID: <CAMuHMdW2L1gYO7cNjeeaBTcQQdEXc9q45E1sZj-=TPwokkGx2g@mail.gmail.com>
+References: <1447166377-19707-1-git-send-email-jonathanh@nvidia.com>
+	<1447166377-19707-2-git-send-email-jonathanh@nvidia.com>
+	<7hio56dctz.fsf@deeprootsystems.com>
+	<5645A6F6.6020202@nvidia.com>
+	<alpine.DEB.2.11.1511131456440.3987@nanos>
+	<5649A603.6020308@nvidia.com>
+	<CAMuHMdXazgRcw=+O-w+PsZpwiW8iCwZ8MmhNSjcOoZGRP45Y6Q@mail.gmail.com>
+	<5649B135.8050800@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from g1t5425.austin.hp.com ([15.216.225.55]:47236 "EHLO
-	g1t5425.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751732AbbKPKnZ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Nov 2015 05:43:25 -0500
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <5649B135.8050800-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Marc Zyngier <marc.zyngier-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
+Hi Jon,
 
-when getting cpu frequency failures, it will retry 2 times at most.
+On Mon, Nov 16, 2015 at 11:34 AM, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+> On 16/11/15 09:49, Geert Uytterhoeven wrote:
+>> On Mon, Nov 16, 2015 at 10:46 AM, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+>>> On 13/11/15 20:01, Thomas Gleixner wrote:
+>>>> On Fri, 13 Nov 2015, Jon Hunter wrote:
+>>>>> On 12/11/15 23:20, Kevin Hilman wrote:
+>>>>>> If all the RPM devices in the domain go idle, it will be powered off
+>>>>>> independently of the status of the irqchip because the irqchip isn't
+>>>>>> using RPM.
+>>>>>
+>>>>> That's dependent on how the irqchip uses these helpers. If these helpers
+>>>>> invoke RPM then that will not be the case.
+>>>>
+>>>> You need a very proper description of how that domain is working. If
+>>>> all devices are idle, it's not necessary correct to power down the
+>>>> irqchip as is might serve other devices as well.
+>>>
+>>> Agreed. The irqchip should only be powered down if there are no
+>>> interrupts in-use/requested. Runtime-pm will keep a reference count for
+>>> all requested IRQs.
+>>
+>> That means the irqchip won't be powered down automatically when the
+>> last user is powered down, unless all users release their irqs during
+>> suspend.
+>
+> Right.
+>
+>> Handling it automatically needs more bookkeeping than a simple reference
+>> count.
+>
+> So what would you suggest? Adding a pm_runtime_register_irq() API that
+> would register an IRQ with the device that you want RPM to handle? Not
+> sure if there is a better/easier way to handle this.
 
-Signed-off-by: Pearson, Greg <greg.pearson@hpe.com>
-Signed-off-by: Zhang, Lin-Bao <linbao.zhang@hpe.com>
----
- drivers/cpufreq/pcc-cpufreq.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+The irqchip needs to keep track how many times request_irq() has been
+called, cfr. your suggestion above.
 
-diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
-index c8f1616..159dede 100644
---- a/drivers/cpufreq/pcc-cpufreq.c
-+++ b/drivers/cpufreq/pcc-cpufreq.c
-@@ -108,6 +108,7 @@ struct pcc_cpu {
-        u32 input_offset;
-        u32 output_offset;
-        u64 prev_time;
-+       u32 get_freq_retry;
- };
+On the other side, the system needs to keep track how many times request_irq()
+has been called for each irqchip, so it can subtract those numbers from the
+irqchip's counters during suspend of the device, and re-add them during resume.
+So we need at least a "struct device *" parameter for request_irq().
+devm_request_irq() already has that, but not all drivers use that.
 
- static u32 max_time_between_cmds = 0;
-@@ -225,6 +226,17 @@ static unsigned int pcc_get_freq(unsigned int cpu)
+However, I think this should be looked at into the context of "[RFD]
+Functional dependencies between devices".
+https://lwn.net/Articles/662205/
+https://lkml.org/lkml/2015/10/27/388
 
-        curr_freq = real_pcc_get_freq(cpu);
+There can be other dependencies than interrupts between devices.
+All functions using dependencies need a "struct device *" parameter to
+record information.
 
-+       spin_lock(&pcc_lock);
-+       if (curr_freq == 0 && pcc_cpu_data->get_freq_retry < 2) {
-+               pcc_cpu_data->get_freq_retry++;
-+               spin_unlock(&pcc_lock);
-+               curr_freq = pcc_get_freq(cpu);
-+               return curr_freq;
-+       }
-+
-+       pcc_cpu_data->get_freq_retry = 0;
-+       spin_unlock(&pcc_lock);
-+
-        return curr_freq;
- }
+Gr{oetje,eeting}s,
+
+                        Geert
 
 --
-1.8.5.2
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
