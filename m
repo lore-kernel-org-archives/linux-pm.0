@@ -1,86 +1,83 @@
-From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Subject: Re: [RFC PATCH 1/2] genirq: Add runtime resume/suspend support for
- IRQ chips
-Date: Mon, 16 Nov 2015 11:48:42 +0100
-Message-ID: <CAMuHMdW2L1gYO7cNjeeaBTcQQdEXc9q45E1sZj-=TPwokkGx2g@mail.gmail.com>
-References: <1447166377-19707-1-git-send-email-jonathanh@nvidia.com>
-	<1447166377-19707-2-git-send-email-jonathanh@nvidia.com>
-	<7hio56dctz.fsf@deeprootsystems.com>
-	<5645A6F6.6020202@nvidia.com>
-	<alpine.DEB.2.11.1511131456440.3987@nanos>
-	<5649A603.6020308@nvidia.com>
-	<CAMuHMdXazgRcw=+O-w+PsZpwiW8iCwZ8MmhNSjcOoZGRP45Y6Q@mail.gmail.com>
-	<5649B135.8050800@nvidia.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] PM / Domains: export pm_genpd_add_device symbol
+Date: Mon, 16 Nov 2015 12:08:17 +0100
+Message-ID: <CAPDyKFrd-kdgJNioPc7KcUpF+VV+-MDOG7BobMJ+V9aq1Lo=fw@mail.gmail.com>
+References: <1447664848-11372-1-git-send-email-Maruthi.Bayyavarapu@amd.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <5649B135.8050800-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Marc Zyngier <marc.zyngier-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1447664848-11372-1-git-send-email-Maruthi.Bayyavarapu@amd.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Maruthi Srinivas Bayyavarapu <Maruthi.Bayyavarapu@amd.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Jon,
+On 16 November 2015 at 10:07, Maruthi Srinivas Bayyavarapu
+<Maruthi.Bayyavarapu@amd.com> wrote:
+> Drivers which can be built as loadable module needs
+> symbol - pm_genpd_add_device to be exported. Those drivers
+> create platform devices which comes under a powerdomain.
 
-On Mon, Nov 16, 2015 at 11:34 AM, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
-> On 16/11/15 09:49, Geert Uytterhoeven wrote:
->> On Mon, Nov 16, 2015 at 10:46 AM, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
->>> On 13/11/15 20:01, Thomas Gleixner wrote:
->>>> On Fri, 13 Nov 2015, Jon Hunter wrote:
->>>>> On 12/11/15 23:20, Kevin Hilman wrote:
->>>>>> If all the RPM devices in the domain go idle, it will be powered off
->>>>>> independently of the status of the irqchip because the irqchip isn't
->>>>>> using RPM.
->>>>>
->>>>> That's dependent on how the irqchip uses these helpers. If these helpers
->>>>> invoke RPM then that will not be the case.
->>>>
->>>> You need a very proper description of how that domain is working. If
->>>> all devices are idle, it's not necessary correct to power down the
->>>> irqchip as is might serve other devices as well.
->>>
->>> Agreed. The irqchip should only be powered down if there are no
->>> interrupts in-use/requested. Runtime-pm will keep a reference count for
->>> all requested IRQs.
->>
->> That means the irqchip won't be powered down automatically when the
->> last user is powered down, unless all users release their irqs during
->> suspend.
+Currently this API is used by a few SoCs that haven't yet been
+converted to device tree.
+
+Can you tell me more about what driver/SoC you intend to use it for?
+
+Kind regards
+Uffe
+
 >
-> Right.
+> Signed-off-by: Maruthi Bayyavarapu <maruthi.bayyavarapu@amd.com>
+> ---
+>  drivers/base/power/domain.c | 7 +++++++
+>  include/linux/pm_domain.h   | 9 ++-------
+>  2 files changed, 9 insertions(+), 7 deletions(-)
 >
->> Handling it automatically needs more bookkeeping than a simple reference
->> count.
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index f932058..72998f8 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -1253,6 +1253,13 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+>         return ret;
+>  }
 >
-> So what would you suggest? Adding a pm_runtime_register_irq() API that
-> would register an IRQ with the device that you want RPM to handle? Not
-> sure if there is a better/easier way to handle this.
-
-The irqchip needs to keep track how many times request_irq() has been
-called, cfr. your suggestion above.
-
-On the other side, the system needs to keep track how many times request_irq()
-has been called for each irqchip, so it can subtract those numbers from the
-irqchip's counters during suspend of the device, and re-add them during resume.
-So we need at least a "struct device *" parameter for request_irq().
-devm_request_irq() already has that, but not all drivers use that.
-
-However, I think this should be looked at into the context of "[RFD]
-Functional dependencies between devices".
-https://lwn.net/Articles/662205/
-https://lkml.org/lkml/2015/10/27/388
-
-There can be other dependencies than interrupts between devices.
-All functions using dependencies need a "struct device *" parameter to
-record information.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+> +int pm_genpd_add_device(struct generic_pm_domain *genpd,
+> +                                     struct device *dev)
+> +{
+> +       return __pm_genpd_add_device(genpd, dev, NULL);
+> +}
+> +EXPORT_SYMBOL_GPL(pm_genpd_add_device);
+> +
+>  /**
+>   * pm_genpd_remove_device - Remove a device from an I/O PM domain.
+>   * @genpd: PM domain to remove the device from.
+> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+> index ba4ced3..f9e2f7e 100644
+> --- a/include/linux/pm_domain.h
+> +++ b/include/linux/pm_domain.h
+> @@ -114,7 +114,8 @@ extern struct generic_pm_domain *pm_genpd_lookup_dev(struct device *dev);
+>  extern int __pm_genpd_add_device(struct generic_pm_domain *genpd,
+>                                  struct device *dev,
+>                                  struct gpd_timing_data *td);
+> -
+> +extern int pm_genpd_add_device(struct generic_pm_domain *genpd,
+> +                                     struct device *dev);
+>  extern int pm_genpd_remove_device(struct generic_pm_domain *genpd,
+>                                   struct device *dev);
+>  extern int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
+> @@ -163,12 +164,6 @@ static inline void pm_genpd_init(struct generic_pm_domain *genpd,
+>  }
+>  #endif
+>
+> -static inline int pm_genpd_add_device(struct generic_pm_domain *genpd,
+> -                                     struct device *dev)
+> -{
+> -       return __pm_genpd_add_device(genpd, dev, NULL);
+> -}
+> -
+>  #ifdef CONFIG_PM_GENERIC_DOMAINS_SLEEP
+>  extern void pm_genpd_syscore_poweroff(struct device *dev);
+>  extern void pm_genpd_syscore_poweron(struct device *dev);
+> --
+> 1.9.1
+>
