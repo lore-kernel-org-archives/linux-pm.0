@@ -1,56 +1,69 @@
-From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: RE: [PATCH][v5] x86, suspend: Save/restore extra MSR registers for
- suspend
-Date: Mon, 16 Nov 2015 15:20:00 +0000
-Message-ID: <36DF59CE26D8EE47B0655C516E9CE6402867431B@shsmsx102.ccr.corp.intel.com>
-References: <1444533601-12330-1-git-send-email-yu.c.chen@intel.com>
- <20151012163750.GA4539@pd.tnic>
+From: Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH v3 3/3] cpufreq: arm_big_little: Add support to register a cpufreq cooling device
+Date: Mon, 16 Nov 2015 15:29:09 +0000
+Message-ID: <9hha8qeq7y2.fsf@e105922-lin.cambridge.arm.com>
+References: <1447090163-13700-1-git-send-email-punit.agrawal@arm.com>
+	<1447090163-13700-4-git-send-email-punit.agrawal@arm.com>
+	<20151113045610.GC3576@ubuntu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20151012163750.GA4539@pd.tnic>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Borislav Petkov <bp@suse.de>
-Cc: "mingo@redhat.com" <mingo@redhat.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "pavel@ucw.cz" <pavel@ucw.cz>, "tglx@linutronix.de" <tglx@linutronix.de>, "hpa@zytor.com" <hpa@zytor.com>, "Zhang, Rui" <rui.zhang@intel.com>, "luto@kernel.org" <luto@kernel.org>, "linux@horizon.com" <linux@horizon.com>, "dsmythies@telus.net" <dsmythies@telus.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Kaszewski, Marcin" <marcin.kaszewski@intel.com>
+Content-Type: text/plain
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20151113045610.GC3576@ubuntu> (Viresh Kumar's message of "Fri,
+	13 Nov 2015 10:26:10 +0530")
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-SGksIEJvcmlzLA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IEJvcmlz
-bGF2IFBldGtvdiBbbWFpbHRvOmJwQHN1c2UuZGVdDQo+IFNlbnQ6IFR1ZXNkYXksIE9jdG9iZXIg
-MTMsIDIwMTUgMTI6MzggQU0NCj4gVG86IENoZW4sIFl1IEMNCj4gQ2M6IG1pbmdvQHJlZGhhdC5j
-b207IHJqd0Byand5c29ja2kubmV0OyBwYXZlbEB1Y3cuY3o7DQo+IHRnbHhAbGludXRyb25peC5k
-ZTsgaHBhQHp5dG9yLmNvbTsgWmhhbmcsIFJ1aTsgbHV0b0BrZXJuZWwub3JnOw0KPiBsaW51eEBo
-b3Jpem9uLmNvbTsgZHNteXRoaWVzQHRlbHVzLm5ldDsgbGludXgtcG1Admdlci5rZXJuZWwub3Jn
-Ow0KPiB4ODZAa2VybmVsLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgS2FzemV3
-c2tpLCBNYXJjaW4NCj4gU3ViamVjdDogUmU6IFtQQVRDSF1bdjVdIHg4Niwgc3VzcGVuZDogU2F2
-ZS9yZXN0b3JlIGV4dHJhIE1TUiByZWdpc3RlcnMgZm9yDQo+IHN1c3BlbmQNCj4gDQo+IE9uIFN1
-biwgT2N0IDExLCAyMDE1IGF0IDExOjIwOjAxQU0gKzA4MDAsIENoZW4gWXUgd3JvdGU6DQo+ID4g
-QSBidWcgaXMgcmVwb3J0ZWQoaHR0cHM6Ly9idWd6aWxsYS5yZWRoYXQuY29tL3Nob3dfYnVnLmNn
-aT9pZD0xMjI3MjA4KQ0KPiANCj4gSSBnZXQ6DQo+IA0KPiAiWW91IGFyZSBub3QgYXV0aG9yaXpl
-ZCB0byBhY2Nlc3MgYnVnICMxMjI3MjA4Lg0KPiANCj4gTW9zdCBsaWtlbHkgdGhlIGJ1ZyBoYXMg
-YmVlbiByZXN0cmljdGVkIGZvciBpbnRlcm5hbCBkZXZlbG9wbWVudCBwcm9jZXNzZXMNCj4gYW5k
-IHdlIGNhbm5vdCBncmFudCBhY2Nlc3MuIg0KPiANCj4gPiB0aGF0LCBhZnRlciByZXN1bWVkIGZy
-b20gUzMsIENQVSBpcyBydW5uaW5nIGF0IGEgbG93IHNwZWVkLg0KPiA+IEFmdGVyIGludmVzdGln
-YXRpb24sIGl0IGlzIGZvdW5kIHRoYXQsIEJJT1MgaGFzIG1vZGlmaWVkIHRoZSB2YWx1ZSBvZg0K
-PiA+IFRIRVJNX0NPTlRST0wgcmVnaXN0ZXIgZHVyaW5nIFMzLCBhbmQgY2hhbmdlcyBpdCBmcm9t
-IDAgdG8gMHgxMCAodGh1cw0KPiA+IGNoYW5nZXMgdGhlIGNsb2NrIG1vZHVsYXRpb24gZnJvbSBy
-ZXNlcnZlZCB0byBlbmFibGVkKSwgc2luY2UgdmFsdWUgb2YNCj4gPiAweDEwIG1lYW5zIENQVSBj
-YW4gb25seSBnZXQgMjUlIG9mIHRoZSBEdXR5IEN5Y2xlLCB0aGlzIHRyaWdnZXJzIHRoZQ0KPiA+
-IHByb2JsZW0uDQo+IA0KPiBJcyB0aGlzIHdoYXQgdGhlIGJ1ZyBkZXNjcmliZWQgYWJvdmUgaXM/
-IEluIGFueSBjYXNlLCBwbGVhc2UgcmVtb3ZlIHRoZQ0KPiBwcml2YXRlIGJ1Z3ppbGxhIGxpbmsg
-YW5kIGRlc2NyaWJlIHRoZSBidWcgaW4gdGV4dCBoZXJlLg0KWWVzLCB0aGlzIGJ1ZyBpcyBkZXNj
-cmliZWQgaW4gdGhlIGNoYW5nZWxvZywgSSdsbCByZW1vdmUgdGhlIGxpbmsuDQo+IA0KPiBBbHNv
-LCBmcm9tIHJlYWRpbmcgdGhlIG90aGVyIHRocmVhZCBhYm91dCB0aGUgdjQgcGF0Y2gsIGl0IHNv
-dW5kcyBsaWtlDQo+IGludGVsX3BzdGF0ZSBjYW4ndCBoYW5kbGUgdGhlIGNsb2NrIG1vZHVsYXRp
-b24gcHJvcGVybHksIGFjY29yZGluZyB0byB3aGF0DQo+IERvdWcgc2F5cy4NCkFzIGRpc2N1c3Nl
-ZCB3aXRoIERvdWcgaW4gdGhlIHY0IHBhdGNoLCB0aGUgcHJvYmxlbSBicm91Z2h0IGJ5IGNsb2Nr
-IG1vZHVsYXRpb24NCmlzIGJlY2F1c2UgaW50ZWxfcHN0YXRlIHVzZSBhIHRoZW9yZXRpY2FsIHBz
-dGF0ZSB0byBjYWxjdWxhdGUgdGhlIGNwdSBidXN5IHJhdGlvLA0KYW5kICBEb3VnIGhhcyBwcm9w
-b3NlZCBhIHBhdGNoIHRvIHVzZSBjb21wZW5zYXRvcnkgYWxnb3JpdGhtIGluIGludGVsX3BzdGF0
-ZSwNCnRvIHByZWRpY3QgdGhlIHBzdGF0ZSBiYXNlZCBvbiBhY3R1YWwgY3B1IGZyZXEodGFrZSBj
-bG9jayBtb2R1bGF0aW9uIGludG8gYWNjb3VudCksDQp3aGljaCBjYW4gZml4IGhpcyBwcm9ibGVt
-IG5vdy4NClNvIEknbGwgcmVzZW5kIGEgdmVyc2lvbiA2IG9mIGN1cnJlbnQgcGF0Y2gsIGJlY2F1
-c2Ugc29tZSBzZXJ2ZXIgaW4gcHJvZHVjdGlvbiANCmVudmlyb25tZW50IGhhcyBzdWZmZXJlZCBm
-cm9tIHRoaXMgcHJvYmxlbSBmb3Igc29tZSB0aW1lLi4gdGhhbmtzLiANCiANCkJlc3QgcmVnYXJk
-cywNCll1DQo=
+Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> writes:
+
+> On 09-11-15, 17:29, Punit Agrawal wrote:
+>> Register passive cooling devices when initialising cpufreq on
+>> big.LITTLE systems. If the device tree provides a dynamic power
+>> coefficient for the CPUs then the bound cooling device will support
+>> the extensions that allow it to be used with all the existing thermal
+>> governors including the power allocator governor.
+>> 
+>> A cooling device will be created per individual frequency domain and
+>> can be bound to thermal zones via the thermal DT bindings.
+>> 
+>> Signed-off-by: Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
+>> Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+>> Cc: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>
+>> Cc: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+>> ---
+>>  drivers/cpufreq/arm_big_little.c | 52 ++++++++++++++++++++++++++++++++++++++--
+>>  1 file changed, 50 insertions(+), 2 deletions(-)
+>> 
+>> diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+>> index f1e42f8..72a2777 100644
+>> --- a/drivers/cpufreq/arm_big_little.c
+>> +++ b/drivers/cpufreq/arm_big_little.c
+>> @@ -23,6 +23,7 @@
+>>  #include <linux/cpu.h>
+>>  #include <linux/cpufreq.h>
+>>  #include <linux/cpumask.h>
+>> +#include <linux/cpu_cooling.h>
+>>  #include <linux/export.h>
+>>  #include <linux/module.h>
+>>  #include <linux/mutex.h>
+>> @@ -55,6 +56,10 @@ static bool bL_switching_enabled;
+>>  #define ACTUAL_FREQ(cluster, freq)  ((cluster == A7_CLUSTER) ? freq << 1 : freq)
+>>  #define VIRT_FREQ(cluster, freq)    ((cluster == A7_CLUSTER) ? freq >> 1 : freq)
+>>  
+>> +struct private_data {
+>> +	struct thermal_cooling_device *cdev;
+>> +};
+>
+> I think we need to be consistent within the driver, and so this must
+> be stored in a similar way to what we do for other structures. We have
+> static arrays for them, please do it that way only OR first change all
+> of them to be part of a bigger private_data structure.
+
+Sure, I'll switch to using static arrays. There seem to be a lot of
+assumptions that might be easily broken in moving all the data into a
+single structure. I'll leave that as a later change.
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
