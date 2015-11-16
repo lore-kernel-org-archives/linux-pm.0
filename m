@@ -1,59 +1,125 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v2 11/11] arm64: kernel: Add support for
- hibernate/suspend-to-disk.
-Date: Mon, 16 Nov 2015 19:01:03 +0100
-Message-ID: <20151116180103.GA27405@amd>
-References: <1445966960-31724-1-git-send-email-james.morse@arm.com>
- <1445966960-31724-12-git-send-email-james.morse@arm.com>
- <20151114213415.GG20429@amd>
- <5649CC40.9010805@arm.com>
- <20151116124116.GC9125@amd>
- <5649E1A0.7020001@arm.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH 1/2] thermal: rcar_thermal: remove redundant operation
+Date: Mon, 16 Nov 2015 10:42:44 -0800
+Message-ID: <20151116184242.GA6349@localhost.localdomain>
+References: <87h9kulkfg.wl%kuninori.morimoto.gx@renesas.com>
+ <87fv0elibh.wl%kuninori.morimoto.gx@renesas.com>
+ <87egfylia4.wl%kuninori.morimoto.gx@renesas.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38175 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752541AbbKPSBF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Nov 2015 13:01:05 -0500
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:34421 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753150AbbKPSmr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Nov 2015 13:42:47 -0500
 Content-Disposition: inline
-In-Reply-To: <5649E1A0.7020001@arm.com>
+In-Reply-To: <87egfylia4.wl%kuninori.morimoto.gx@renesas.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: James Morse <james.morse@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Kevin Kang <kkang@intrinsyc.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, wangfei <w.f@huawei.com>, Marc Zyngier <marc.zyngier@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Linux-SH <linux-sh@vger.kernel.org>, Linux-Kernel <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, cm-hiep@jinso.co.jp, nv-dung@jinso.co.jp
 
-On Mon 2015-11-16 14:01:04, James Morse wrote:
-> Hi,
+On Tue, Nov 10, 2015 at 02:12:06AM +0000, Kuninori Morimoto wrote:
+> From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 > 
-> On 16/11/15 12:41, Pavel Machek wrote:
-> >> On 14/11/15 21:34, Pavel Machek wrote:
-> >>>> The implementation assumes that exactly the same kernel is booted on the
-> >>>> same hardware, and that the kernel is loaded at the same physical address.
-> >>>
-> >>> BTW... on newer implementations (and I have patch for x86, too), we
-> >>> try to make it so that resume kernel does not have to be same as
-> >>> suspend one. It would be nice to move there with arm64, too. 
-> >>
-> >> Yes, that is a neat trick, can I leave it as future work?
-> > 
-> > Yes. But it is really not hard.
+> Probe error operation and remove operation are same.
+> Let's use same function.
+
+I am picking this one and sending for next rc cycle. The second  patch
+is still under discussion and the issue may be solved differently,
+so for now I wont get that. 
+
+BR,
+
 > 
-> I think its harder than it looks:
-> It means the MMU has to be turned off, as two different kernels may not
-> have used the same configuration for the MMU - and I don't think its safe
-> to change while the MMU is running. There are also going to be
-> complications with resetting the hypervisor/el2 configuration, which I need
-> to spend more time thinking about (and probably ask for advice!).
-
-Well, you can simplify it here: If MMU configuration is stable between
-4.3, 4.4 and 4.5 kernels, you just use suspend signature for 4.3-like
-kernels. If you need to change it in future, you change the signature.
-
-(If it changes too often, this might not work).
-
-Best regards,
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+> ---
+>  drivers/thermal/rcar_thermal.c | 49 ++++++++++++++++++------------------------
+>  1 file changed, 21 insertions(+), 28 deletions(-)
+> 
+> diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
+> index 5d4ae7d..13d01ed 100644
+> --- a/drivers/thermal/rcar_thermal.c
+> +++ b/drivers/thermal/rcar_thermal.c
+> @@ -361,6 +361,24 @@ static irqreturn_t rcar_thermal_irq(int irq, void *data)
+>  /*
+>   *		platform functions
+>   */
+> +static int rcar_thermal_remove(struct platform_device *pdev)
+> +{
+> +	struct rcar_thermal_common *common = platform_get_drvdata(pdev);
+> +	struct device *dev = &pdev->dev;
+> +	struct rcar_thermal_priv *priv;
+> +
+> +	rcar_thermal_for_each_priv(priv, common) {
+> +		if (rcar_has_irq_support(priv))
+> +			rcar_thermal_irq_disable(priv);
+> +		thermal_zone_device_unregister(priv->zone);
+> +	}
+> +
+> +	pm_runtime_put(dev);
+> +	pm_runtime_disable(dev);
+> +
+> +	return 0;
+> +}
+> +
+>  static int rcar_thermal_probe(struct platform_device *pdev)
+>  {
+>  	struct rcar_thermal_common *common;
+> @@ -377,6 +395,8 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+>  	if (!common)
+>  		return -ENOMEM;
+>  
+> +	platform_set_drvdata(pdev, common);
+> +
+>  	INIT_LIST_HEAD(&common->head);
+>  	spin_lock_init(&common->lock);
+>  	common->dev = dev;
+> @@ -454,43 +474,16 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+>  		rcar_thermal_common_write(common, ENR, enr_bits);
+>  	}
+>  
+> -	platform_set_drvdata(pdev, common);
+> -
+>  	dev_info(dev, "%d sensor probed\n", i);
+>  
+>  	return 0;
+>  
+>  error_unregister:
+> -	rcar_thermal_for_each_priv(priv, common) {
+> -		if (rcar_has_irq_support(priv))
+> -			rcar_thermal_irq_disable(priv);
+> -		thermal_zone_device_unregister(priv->zone);
+> -	}
+> -
+> -	pm_runtime_put(dev);
+> -	pm_runtime_disable(dev);
+> +	rcar_thermal_remove(pdev);
+>  
+>  	return ret;
+>  }
+>  
+> -static int rcar_thermal_remove(struct platform_device *pdev)
+> -{
+> -	struct rcar_thermal_common *common = platform_get_drvdata(pdev);
+> -	struct device *dev = &pdev->dev;
+> -	struct rcar_thermal_priv *priv;
+> -
+> -	rcar_thermal_for_each_priv(priv, common) {
+> -		if (rcar_has_irq_support(priv))
+> -			rcar_thermal_irq_disable(priv);
+> -		thermal_zone_device_unregister(priv->zone);
+> -	}
+> -
+> -	pm_runtime_put(dev);
+> -	pm_runtime_disable(dev);
+> -
+> -	return 0;
+> -}
+> -
+>  static const struct of_device_id rcar_thermal_dt_ids[] = {
+>  	{ .compatible = "renesas,rcar-thermal", },
+>  	{},
+> -- 
+> 1.9.1
+> 
