@@ -1,42 +1,75 @@
-From: Jiada Wang <jiada_wang@mentor.com>
-Subject: [PATCH] thermal: of-thermal: Reduce log level for message when can't fine thermal zone
-Date: Mon, 16 Nov 2015 17:10:05 +0900
-Message-ID: <1447661405-28903-1-git-send-email-jiada_wang@mentor.com>
+From: Maruthi Srinivas Bayyavarapu <Maruthi.Bayyavarapu@amd.com>
+Subject: [PATCH] PM / Domains: export pm_genpd_add_device symbol
+Date: Mon, 16 Nov 2015 14:37:28 +0530
+Message-ID: <1447664848-11372-1-git-send-email-Maruthi.Bayyavarapu@amd.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from relay1.mentorg.com ([192.94.38.131]:63590 "EHLO
-	relay1.mentorg.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751397AbbKPILZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Nov 2015 03:11:25 -0500
+Received: from mail-bl2on0075.outbound.protection.outlook.com ([65.55.169.75]:17890
+	"EHLO na01-bl2-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751628AbbKPJwe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 16 Nov 2015 04:52:34 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, jiada_wang@mentor.com
+To: rjw@rjwysocki.net, khilman@kernel.org, ulf.hansson@linaro.org, pavel@ucw.cz, len.brown@intel.com, gregkh@linuxfoundation.org
+Cc: broonie@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Maruthi Srinivas Bayyavarapu <Maruthi.Bayyavarapu@amd.com>, Maruthi Bayyavarapu <maruthi.bayyavarapu@amd.com>
 
-Some systems register thermal zone by themself and don't need to
-have thermal zones node in DT. Therefore reduce the log level from
-ERROR to DEBUG when thermal zone node can't be find in
-of_thermal_destroy_zones().
+Drivers which can be built as loadable module needs
+symbol - pm_genpd_add_device to be exported. Those drivers
+create platform devices which comes under a powerdomain.
 
-Signed-off-by: Jiada Wang <jiada_wang@mentor.com>
+Signed-off-by: Maruthi Bayyavarapu <maruthi.bayyavarapu@amd.com>
 ---
- drivers/thermal/of-thermal.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/base/power/domain.c | 7 +++++++
+ include/linux/pm_domain.h   | 9 ++-------
+ 2 files changed, 9 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-index 42b7d42..be4eedc 100644
---- a/drivers/thermal/of-thermal.c
-+++ b/drivers/thermal/of-thermal.c
-@@ -964,7 +964,7 @@ void of_thermal_destroy_zones(void)
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index f932058..72998f8 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -1253,6 +1253,13 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+ 	return ret;
+ }
  
- 	np = of_find_node_by_name(NULL, "thermal-zones");
- 	if (!np) {
--		pr_err("unable to find thermal zones\n");
-+		pr_debug("unable to find thermal zones\n");
- 		return;
- 	}
++int pm_genpd_add_device(struct generic_pm_domain *genpd,
++				      struct device *dev)
++{
++	return __pm_genpd_add_device(genpd, dev, NULL);
++}
++EXPORT_SYMBOL_GPL(pm_genpd_add_device);
++
+ /**
+  * pm_genpd_remove_device - Remove a device from an I/O PM domain.
+  * @genpd: PM domain to remove the device from.
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index ba4ced3..f9e2f7e 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -114,7 +114,8 @@ extern struct generic_pm_domain *pm_genpd_lookup_dev(struct device *dev);
+ extern int __pm_genpd_add_device(struct generic_pm_domain *genpd,
+ 				 struct device *dev,
+ 				 struct gpd_timing_data *td);
+-
++extern int pm_genpd_add_device(struct generic_pm_domain *genpd,
++				      struct device *dev);
+ extern int pm_genpd_remove_device(struct generic_pm_domain *genpd,
+ 				  struct device *dev);
+ extern int pm_genpd_add_subdomain(struct generic_pm_domain *genpd,
+@@ -163,12 +164,6 @@ static inline void pm_genpd_init(struct generic_pm_domain *genpd,
+ }
+ #endif
  
+-static inline int pm_genpd_add_device(struct generic_pm_domain *genpd,
+-				      struct device *dev)
+-{
+-	return __pm_genpd_add_device(genpd, dev, NULL);
+-}
+-
+ #ifdef CONFIG_PM_GENERIC_DOMAINS_SLEEP
+ extern void pm_genpd_syscore_poweroff(struct device *dev);
+ extern void pm_genpd_syscore_poweron(struct device *dev);
 -- 
-2.4.5
+1.9.1
 
