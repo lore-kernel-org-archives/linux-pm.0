@@ -1,115 +1,47 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH] PM / Domains: Allow runtime PM callbacks to be re-used during system PM
-Date: Tue, 17 Nov 2015 17:42:41 +0100
-Message-ID: <1447778561-9767-1-git-send-email-ulf.hansson@linaro.org>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH] thermal: fix thermal_zone_bind_cooling_device prototype
+Date: Tue, 17 Nov 2015 17:48:52 +0100
+Message-ID: <5439003.qQElgLSp5g@wuerfel>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f173.google.com ([209.85.217.173]:34458 "EHLO
-	mail-lb0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754484AbbKQQmx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Nov 2015 11:42:53 -0500
-Received: by lbbcs9 with SMTP id cs9so9110367lbb.1
-        for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2015 08:42:52 -0800 (PST)
+Received: from mout.kundenserver.de ([212.227.17.13]:62560 "EHLO
+	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932322AbbKQQto (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Nov 2015 11:49:44 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Cao Minh Hiep <cm-hiep@jinso.co.jp>, Harunaga <nx-truong@jinso.co.jp>
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Kapileshwar Singh <kapileshwar.singh@arm.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-Runtime PM centric subsystems/drivers may re-use their runtime PM
-callbacks for system PM. Typically that's done via using the runtime PM
-helpers, pm_runtime_force_suspend|resume().
+When the prototype for thermal_zone_bind_cooling_device
+changed, the static inline wrapper function was left alone,
+which in theory can cause build warnings:
 
-To genpd, this means its runtime PM callbacks may be invoked even when
-runtime PM has been disabled for the device. By checking this condition,
-it allows genpd to skip latency validation and measurement in the system
-PM path. That's needed to enable drivers/subsystems to re-use the runtime
-PM callbacks for system PM.
+I have seen this error in the past:
+drivers/thermal/db8500_thermal.c: In function 'db8500_cdev_bind':
+drivers/thermal/db8500_thermal.c:78:9: error: too many arguments to function 'thermal_zone_bind_cooling_device'
+   ret = thermal_zone_bind_cooling_device(thermal, i, cdev,
 
-Fixes: ba2bbfbf6307 ("PM / Domains: Remove intermediate states from the
-power off sequence")
-Reported-by: Cao Minh Hiep <cm-hiep@jinso.co.jp>
-Reported-by: Harunaga <nx-truong@jinso.co.jp>
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
+while this one no longer shows up, there is no doubt that
+the prototype is still wrong, so let's just fix it anyway.
 
-This patch has only been quick tested on ux500, so further tests are
-welcome and needed. It was reported [1] to point out a certain commit
-causing the regression, but further analyze actually tells that the
-problem been there longer.
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Fixes: 6cd9e9f629f1 ("thermal: of: fix cooling device weights in device tree")
 
-So, I decided to point the fixes tag to a commit from where it actually
-becomes quite simple to address the problem. Earlier than that, is just
-not worth the effort.
-
-[1]
-https://lkml.org/lkml/2015/11/16/748
-
----
- drivers/base/power/domain.c | 20 ++++++++++++++++----
- 1 file changed, 16 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index e03b1ad..8f0c2a3 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -390,6 +390,7 @@ static int pm_genpd_runtime_suspend(struct device *dev)
- 	struct generic_pm_domain *genpd;
- 	bool (*stop_ok)(struct device *__dev);
- 	struct gpd_timing_data *td = &dev_gpd_data(dev)->td;
-+	bool system_pm = !pm_runtime_enabled(dev);
- 	ktime_t time_start;
- 	s64 elapsed_ns;
- 	int ret;
-@@ -400,12 +401,18 @@ static int pm_genpd_runtime_suspend(struct device *dev)
- 	if (IS_ERR(genpd))
- 		return -EINVAL;
- 
-+	/*
-+	 * A runtime PM centric subsystem/driver may re-use the runtime PM
-+	 * callbacks for system PM. In these cases, don't validate or measure
-+	 * latencies.
-+	 */
- 	stop_ok = genpd->gov ? genpd->gov->stop_ok : NULL;
--	if (stop_ok && !stop_ok(dev))
-+	if (!system_pm && stop_ok && !stop_ok(dev))
- 		return -EBUSY;
- 
- 	/* Measure suspend latency. */
--	time_start = ktime_get();
-+	if (!system_pm)
-+		time_start = ktime_get();
- 
- 	ret = genpd_save_dev(genpd, dev);
- 	if (ret)
-@@ -417,6 +424,10 @@ static int pm_genpd_runtime_suspend(struct device *dev)
- 		return ret;
- 	}
- 
-+	/* Don't try poweroff in system PM as it's prevented anyway. */
-+	if (system_pm)
-+		return 0;
-+
- 	/* Update suspend latency value if the measured time exceeds it. */
- 	elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
- 	if (elapsed_ns > td->suspend_latency_ns) {
-@@ -453,6 +464,7 @@ static int pm_genpd_runtime_resume(struct device *dev)
- {
- 	struct generic_pm_domain *genpd;
- 	struct gpd_timing_data *td = &dev_gpd_data(dev)->td;
-+	bool system_pm = !pm_runtime_enabled(dev);
- 	ktime_t time_start;
- 	s64 elapsed_ns;
- 	int ret;
-@@ -464,8 +476,8 @@ static int pm_genpd_runtime_resume(struct device *dev)
- 	if (IS_ERR(genpd))
- 		return -EINVAL;
- 
--	/* If power.irq_safe, the PM domain is never powered off. */
--	if (dev->power.irq_safe) {
-+	/* If power.irq_safe or system PM, the PM domain remains powered. */
-+	if (dev->power.irq_safe || system_pm) {
- 		timed = false;
- 		goto out;
- 	}
--- 
-1.9.1
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 4014a59828fc..613c29bd6baf 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -438,7 +438,8 @@ static inline void thermal_zone_device_unregister(
+ static inline int thermal_zone_bind_cooling_device(
+ 	struct thermal_zone_device *tz, int trip,
+ 	struct thermal_cooling_device *cdev,
+-	unsigned long upper, unsigned long lower)
++	unsigned long upper, unsigned long lower,
++	unsigned int weight)
+ { return -ENODEV; }
+ static inline int thermal_zone_unbind_cooling_device(
+ 	struct thermal_zone_device *tz, int trip,
 
