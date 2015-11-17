@@ -1,51 +1,53 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH v2] PM / Domains: export __pm_genpd_add_device symbol
-Date: Tue, 17 Nov 2015 16:56:46 +0000
-Message-ID: <20151117165646.GU31303@sirena.org.uk>
-References: <1447775249-26252-1-git-send-email-Maruthi.Bayyavarapu@amd.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: 37afb0003242 ("cpufreq: intel_pstate: Use ACPI perf
+ configuration") makes intel_pstate kaputt
+Date: Tue, 17 Nov 2015 09:06:30 -0800
+Message-ID: <1447779990.2778.47.camel@spandruv-desk3.jf.intel.com>
+References: <20151117090947.GC8819@pd.tnic>
+	 <7244050.99ueqT3SFL@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="XSEVMyPRvc8xgDhM"
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1447775249-26252-1-git-send-email-Maruthi.Bayyavarapu@amd.com>
+In-Reply-To: <7244050.99ueqT3SFL@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Maruthi Srinivas Bayyavarapu <Maruthi.Bayyavarapu@amd.com>
-Cc: rjw@rjwysocki.net, khilman@kernel.org, ulf.hansson@linaro.org, len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Borislav Petkov <bp@alien8.de>, Kristen Carlson Accardi <kristen@linux.intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, lkml <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Tue, 2015-11-17 at 15:38 +0100, Rafael J. Wysocki wrote:
+> On Tuesday, November 17, 2015 10:09:47 AM Borislav Petkov wrote:
+> > Hi,
+> > 
 
---XSEVMyPRvc8xgDhM
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+[...]
+> > during boot.
 
-On Tue, Nov 17, 2015 at 09:17:29PM +0530, Maruthi Srinivas Bayyavarapu wrot=
-e:
-> Drivers which can be built as loadable module needs symbol
-> - pm_genpd_add_device to add devices to genpd.
-> Those drivers create platform devices, which comes under a powerdomain.
+Also can you try with processor.ignore_ppc=1 in kernel command line.
 
-> +EXPORT_SYMBOL_GPL(__pm_genpd_add_device);
-> =20
->  /**
->   * pm_genpd_remove_device - Remove a device from an I/O PM domain.
-
-Don't we also need to export _remove_device()?
-
---XSEVMyPRvc8xgDhM
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJWS1xOAAoJECTWi3JdVIfQQlMH+wccfE0yq/NjOSP0/7EEP7/U
-SyBcoC+hqITtB6YyvGbG4Sf23zGuNIrkLfvfn/FKjxrp668LAh542HVNK6klGtbg
-22eiXaTr8y7KCwDOMCJDs/hN4hd1bvxUFZqlcMWrJEm9bjQDS9GnJxZYrB5jccE2
-2y4gLdXc4kjZkTQJNoerHRMnn1rsnkLFOpNToFlL3qRwBNfcPehx9cfewxi7x3AK
-0t3wTxKfeZAmMUh0QByZ9tyWDyB/EWRHs65laYJOpyVBYbNZL3BGuaGzzjkchj55
-vaQ5lsqniunxqVTttqaIz2lDN11GmHZBViY9TT//ZJZNB7quOakGsTaFOu8KX74=
-=7Jr4
------END PGP SIGNATURE-----
-
---XSEVMyPRvc8xgDhM--
+Thanks,
+Srinivas
+> > 
+> > When I boot with "intel_pstate=no_acpi" it boosts normally to 3.4GHz and
+> > above and turbostat says:
+> > 
+> >      CPU Avg_MHz   %Busy Bzy_MHz TSC_MHz
+> >        -    3392   99.92    3400    2895
+> >        0    3395   99.96    3400    2897
+> >        1    3390   99.88    3400    2895
+> >        2    3391   99.89    3400    2895
+> >        3    3391   99.95    3400    2893
+> > 
+> > which is what it should be saying. :)
+> 
+> Well, sorry for the breakage.
+> 
+> acpidump output would help to diagnose this I suppose.
+> 
+> Thanks,
+> Rafael
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
