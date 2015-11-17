@@ -1,47 +1,51 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH] thermal: fix thermal_zone_bind_cooling_device prototype
-Date: Tue, 17 Nov 2015 17:48:52 +0100
-Message-ID: <5439003.qQElgLSp5g@wuerfel>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v2] PM / Domains: export __pm_genpd_add_device symbol
+Date: Tue, 17 Nov 2015 16:56:46 +0000
+Message-ID: <20151117165646.GU31303@sirena.org.uk>
+References: <1447775249-26252-1-git-send-email-Maruthi.Bayyavarapu@amd.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([212.227.17.13]:62560 "EHLO
-	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932322AbbKQQto (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Nov 2015 11:49:44 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="XSEVMyPRvc8xgDhM"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1447775249-26252-1-git-send-email-Maruthi.Bayyavarapu@amd.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Maruthi Srinivas Bayyavarapu <Maruthi.Bayyavarapu@amd.com>
+Cc: rjw@rjwysocki.net, khilman@kernel.org, ulf.hansson@linaro.org, len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Kapileshwar Singh <kapileshwar.singh@arm.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-When the prototype for thermal_zone_bind_cooling_device
-changed, the static inline wrapper function was left alone,
-which in theory can cause build warnings:
 
-I have seen this error in the past:
-drivers/thermal/db8500_thermal.c: In function 'db8500_cdev_bind':
-drivers/thermal/db8500_thermal.c:78:9: error: too many arguments to function 'thermal_zone_bind_cooling_device'
-   ret = thermal_zone_bind_cooling_device(thermal, i, cdev,
+--XSEVMyPRvc8xgDhM
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-while this one no longer shows up, there is no doubt that
-the prototype is still wrong, so let's just fix it anyway.
+On Tue, Nov 17, 2015 at 09:17:29PM +0530, Maruthi Srinivas Bayyavarapu wrot=
+e:
+> Drivers which can be built as loadable module needs symbol
+> - pm_genpd_add_device to add devices to genpd.
+> Those drivers create platform devices, which comes under a powerdomain.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Fixes: 6cd9e9f629f1 ("thermal: of: fix cooling device weights in device tree")
+> +EXPORT_SYMBOL_GPL(__pm_genpd_add_device);
+> =20
+>  /**
+>   * pm_genpd_remove_device - Remove a device from an I/O PM domain.
 
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 4014a59828fc..613c29bd6baf 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -438,7 +438,8 @@ static inline void thermal_zone_device_unregister(
- static inline int thermal_zone_bind_cooling_device(
- 	struct thermal_zone_device *tz, int trip,
- 	struct thermal_cooling_device *cdev,
--	unsigned long upper, unsigned long lower)
-+	unsigned long upper, unsigned long lower,
-+	unsigned int weight)
- { return -ENODEV; }
- static inline int thermal_zone_unbind_cooling_device(
- 	struct thermal_zone_device *tz, int trip,
+Don't we also need to export _remove_device()?
 
+--XSEVMyPRvc8xgDhM
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJWS1xOAAoJECTWi3JdVIfQQlMH+wccfE0yq/NjOSP0/7EEP7/U
+SyBcoC+hqITtB6YyvGbG4Sf23zGuNIrkLfvfn/FKjxrp668LAh542HVNK6klGtbg
+22eiXaTr8y7KCwDOMCJDs/hN4hd1bvxUFZqlcMWrJEm9bjQDS9GnJxZYrB5jccE2
+2y4gLdXc4kjZkTQJNoerHRMnn1rsnkLFOpNToFlL3qRwBNfcPehx9cfewxi7x3AK
+0t3wTxKfeZAmMUh0QByZ9tyWDyB/EWRHs65laYJOpyVBYbNZL3BGuaGzzjkchj55
+vaQ5lsqniunxqVTttqaIz2lDN11GmHZBViY9TT//ZJZNB7quOakGsTaFOu8KX74=
+=7Jr4
+-----END PGP SIGNATURE-----
+
+--XSEVMyPRvc8xgDhM--
