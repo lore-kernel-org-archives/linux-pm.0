@@ -1,53 +1,32 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+From: Borislav Petkov <bp@alien8.de>
 Subject: Re: 37afb0003242 ("cpufreq: intel_pstate: Use ACPI perf
  configuration") makes intel_pstate kaputt
-Date: Tue, 17 Nov 2015 09:06:30 -0800
-Message-ID: <1447779990.2778.47.camel@spandruv-desk3.jf.intel.com>
+Date: Tue, 17 Nov 2015 19:14:27 +0100
+Message-ID: <20151117181427.GH8819@pd.tnic>
 References: <20151117090947.GC8819@pd.tnic>
-	 <7244050.99ueqT3SFL@vostro.rjw.lan>
+ <7244050.99ueqT3SFL@vostro.rjw.lan>
+ <1447779990.2778.47.camel@spandruv-desk3.jf.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <7244050.99ueqT3SFL@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Borislav Petkov <bp@alien8.de>, Kristen Carlson Accardi <kristen@linux.intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, lkml <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.skyhub.de ([78.46.96.112]:34514 "EHLO mail.skyhub.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751768AbbKQSOh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 17 Nov 2015 13:14:37 -0500
+Content-Disposition: inline
+In-Reply-To: <1447779990.2778.47.camel@spandruv-desk3.jf.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kristen Carlson Accardi <kristen@linux.intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, lkml <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Tue, 2015-11-17 at 15:38 +0100, Rafael J. Wysocki wrote:
-> On Tuesday, November 17, 2015 10:09:47 AM Borislav Petkov wrote:
-> > Hi,
-> > 
+On Tue, Nov 17, 2015 at 09:06:30AM -0800, Srinivas Pandruvada wrote:
+> Also can you try with processor.ignore_ppc=1 in kernel command line.
 
-[...]
-> > during boot.
+Doesn't change anything.
 
-Also can you try with processor.ignore_ppc=1 in kernel command line.
+-- 
+Regards/Gruss,
+    Boris.
 
-Thanks,
-Srinivas
-> > 
-> > When I boot with "intel_pstate=no_acpi" it boosts normally to 3.4GHz and
-> > above and turbostat says:
-> > 
-> >      CPU Avg_MHz   %Busy Bzy_MHz TSC_MHz
-> >        -    3392   99.92    3400    2895
-> >        0    3395   99.96    3400    2897
-> >        1    3390   99.88    3400    2895
-> >        2    3391   99.89    3400    2895
-> >        3    3391   99.95    3400    2893
-> > 
-> > which is what it should be saying. :)
-> 
-> Well, sorry for the breakage.
-> 
-> acpidump output would help to diagnose this I suppose.
-> 
-> Thanks,
-> Rafael
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+ECO tip #101: Trim your mails when you reply.
