@@ -1,92 +1,72 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v2 10/11] PM / Hibernate: clean cached pages on
- architectures that require it
-Date: Tue, 17 Nov 2015 13:43:48 +0000
-Message-ID: <20151117134348.GB22216@red-moon>
-References: <1445966960-31724-1-git-send-email-james.morse@arm.com>
- <2039611.PJaFlk1sMi@vostro.rjw.lan>
- <20151112114705.GA2657@red-moon>
- <3180507.pKM8OzKjXO@vostro.rjw.lan>
- <20151117123807.GA22216@red-moon>
- <20151117131345.GA11870@amd>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [RFD] Functional dependencies between devices
+Date: Tue, 17 Nov 2015 13:55:49 +0000
+Message-ID: <20151117135549.GR31303@sirena.org.uk>
+References: <1623682.7KVblAB3KQ@vostro.rjw.lan>
+ <564B224D.3050904@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="Hw0FrjWlp+qkNlJP"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:56936 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752825AbbKQNmy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 17 Nov 2015 08:42:54 -0500
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:35981 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752811AbbKQN4K (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Nov 2015 08:56:10 -0500
 Content-Disposition: inline
-In-Reply-To: <20151117131345.GA11870@amd>
+In-Reply-To: <564B224D.3050904@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, James Morse <james.morse@arm.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Kevin Kang <kkang@intrinsyc.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, wangfei <w.f@huawei.com>, Marc Zyngier <marc.zyngier@arm.com>, Russell King <linux@arm.linux.org.uk>, "David S. Miller" <davem@davemloft.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Guan Xuetao <gxt@mprc.pku.edu.cn>, Ralf Baechle <ralf@linux-mips.org>, Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Andrzej Hajda <a.hajda@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh@kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Thierry Reding <treding@nvidia.com>, Dmitry Torokhov <dtor@google.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Michael Turquette <mturquette@baylibre.com>
 
-On Tue, Nov 17, 2015 at 02:13:45PM +0100, Pavel Machek wrote:
-> On Tue 2015-11-17 12:38:07, Lorenzo Pieralisi wrote:
-> > [Cc'ed maintainers of affected arches]
-> > 
-> > On Sat, Nov 14, 2015 at 12:38:50AM +0100, Rafael J. Wysocki wrote:
-> > > On Thursday, November 12, 2015 11:47:05 AM Lorenzo Pieralisi wrote:
-> > > > On Thu, Nov 12, 2015 at 01:48:32AM +0100, Rafael J. Wysocki wrote:
-> > > > > On Wednesday, November 11, 2015 11:40:39 AM Lorenzo Pieralisi wrote:
-> > > > > > Hi Pavel, Rafael,
-> > > > > > 
-> > > > > > Do you have any feedback on this patch ?
-> > > > > > 
-> > > > > > It is fundamental to this series and affects Hibernate core code so if you
-> > > > > > have any feedback that would be much appreciated.
-> > > > > 
-> > > > > I'm really not familiar with the flush_icache_range() interface.
-> > > > > 
-> > > > > What exactly does it do?
-> > > > 
-> > > > It is used to sync a memory range that is written into (eg loading
-> > > > modules, copying from snapshot is basically the same thing, reads from
-> > > > storage and restore pages that might well be executable code), in particular
-> > > > to sync the I-cache and the D-cache, eg on arm64 the page that the snapshot
-> > > > code is copying might be executable code that has to be cleaned from the
-> > > > D-cache so that it is made visible to the I-cache.
-> > > > 
-> > > > On x86 it is a NOP AFAIK.
-> > > 
-> > > If that's the case, I have no problems with this change as long as the code
-> > > works on architectures with non-trivial flush_icache_range().
-> > 
-> > I Cc'ed the respective arches maintainers, it should work (it may
-> > make resuming a bit slower, owing to the cache syncing), problem is
-> > that we have no way of testing it on platforms other than arm/arm64.
-> 
-> Sure you can find x86 and x86-64 machine near you?
 
-Yes but on x86 this patch is a NOP so testing on it does not really
-add much.
+--Hw0FrjWlp+qkNlJP
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> And as hibernation is only supported on x86 and arm, that should be
-> ok.
+On Tue, Nov 17, 2015 at 01:49:17PM +0100, Andrzej Hajda wrote:
 
-And what are the other arches swsusp_arch_{suspend/resume} there for
-then ?
+Please fix your mail client to word wrap within paragraphs at something
+substantially less than 80 columns.  Doing this makes your messages much
+easier to read and reply to.
 
-I just had a look at arch code implementing swsusp_arch_{suspend/resume},
-if it has to work only on x86 and arm we will give it a spin on arm (32-bit)
-platforms (I really doubt it is going to be even noticeable) and we
-are done.
+> On 10/27/2015 04:24 PM, Rafael J. Wysocki wrote:
 
-> Or just merge it to the next and let the world do testing for you...
+> this scenario:
+> - many clock providers, irq domains are not provided by devices,
 
-I wanted to ask before because I am not sure that's something people
-regularly test and I do not want to end up with regressions that might
-have been prevented by just enquiring, I am not sure that's something
--next will help detect either.
+That seems like something we can and possibly should change if we want.
 
-> > How do you want us to go on about this ? Should we add a config option
-> > to prevent calling flush_icache_range() on all platforms (where it
-> > is not a nop) ?
-> 
-> Config option is definitely not an option ;-).
+> - there are also dependencies between clock providers, ie. some clock provider
+> requires clocks provided by another clock provider, so the entity is also not a
+> device driver,
 
-Ok, thanks.
+This is going to be really common but I'm not sure I see a problem with
+it in terms of what Raphael is proposing - could you go into more detail
+on the problem you see here?
 
-Lorenzo
+> - another case are requests for some additional/optional resources after device
+> driver probe, for example phone usually does not require HDMI related resources
+> until user attach HDMI cable,
+
+Normally the drivers we need would all be loaded based on the hardware
+we have in the system, it would be very unusual to dynamically request
+new resources at runtime to deal with a reconfiguration.  Doing so seems
+likely to result in fragility.
+
+--Hw0FrjWlp+qkNlJP
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJWSzHlAAoJECTWi3JdVIfQG98H/AlBGek2liCuZXCrV1V8bOGO
+ZgOJdaj7BBmXIfWl9Y69RdTw6Z/UgrIzXQZRy9GnnoX3maxom6CCNNLvBcv7d0oP
+6pjGz7Y4hv0QikCaQebb3aFukx+BfYf5uPXV98LX3PsCclNgvcQYB8MkaFOswciY
+oI3ReDJcDIUmOhICGqqzaXy+NI0fQSgJ3AxBFSRNRTh5UgKgFNrgt32v3uNrI2kT
+jkJngbdp8r9X/3azUJJvEVTKgTWacOubVXpZeNDDD82vjTmJrt5yLCcW4YIxFftg
+dv3nz/Jat/B0FJlStiQk3PyP/TLq79t6I6in7oi5Y/+g3X7FueCHzvtzbpTtcz4=
+=ZIg9
+-----END PGP SIGNATURE-----
+
+--Hw0FrjWlp+qkNlJP--
