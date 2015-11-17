@@ -1,205 +1,82 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH RFC 17/27] drivers: cpu-pd: Record CPUs that are part of the domain
-Date: Tue, 17 Nov 2015 15:37:41 -0700
-Message-ID: <1447799871-56374-18-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH RFC 26/27] ARM64: dts: Add PSCI cpuidle support for MSM8916
+Date: Tue, 17 Nov 2015 15:37:50 -0700
+Message-ID: <1447799871-56374-27-git-send-email-lina.iyer@linaro.org>
 References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:34582 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932643AbbKQWjQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Nov 2015 17:39:16 -0500
+Received: by padhx2 with SMTP id hx2so22149864pad.1
+        for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2015 14:39:15 -0800 (PST)
 In-Reply-To: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: ulf.hansson@linaro.org, khilman@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Lina Iyer <lina.iyer@linaro.org>
-List-Id: linux-pm@vger.kernel.org
 
-In order to power down the heirarchy of the CPU domain, the domain needs
-information about the CPUs in that domain hierarchy . A domain that has
-sub-domains containing CPU devices, will need information about all the
-CPUs in the sub-domains as well.
-
-Introduce of_attach_cpu_pm_domain() to allow CPU domains to be attached
-to its parent domain and the information on CPUs attached directly or
-indirectly be bubbled up the hierarchy.
+Add device bindings for CPUs to suspend using PSCI as the enable-method.
 
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- drivers/base/power/cpu-pd.c | 96 ++++++++++++++++++++++++++++++++++++++++++++-
- include/linux/cpu-pd.h      |  3 ++
- 2 files changed, 97 insertions(+), 2 deletions(-)
+ arch/arm64/boot/dts/qcom/msm8916.dtsi | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
-diff --git a/drivers/base/power/cpu-pd.c b/drivers/base/power/cpu-pd.c
-index 9758b8d..617ce54 100644
---- a/drivers/base/power/cpu-pd.c
-+++ b/drivers/base/power/cpu-pd.c
-@@ -18,6 +18,7 @@
- #include <linux/device.h>
- #include <linux/pm_runtime.h>
- #include <linux/platform_device.h>
-+#include <linux/pm_qos.h>
- #include <linux/rculist.h>
- #include <linux/slab.h>
+diff --git a/arch/arm64/boot/dts/qcom/msm8916.dtsi b/arch/arm64/boot/dts/qcom/msm8916.dtsi
+index 7be7c23..5806438 100644
+--- a/arch/arm64/boot/dts/qcom/msm8916.dtsi
++++ b/arch/arm64/boot/dts/qcom/msm8916.dtsi
+@@ -51,25 +51,49 @@
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a53", "arm,armv8";
+ 			reg = <0x0>;
++			enable-method = "psci";
++			cpu-idle-states = <&CPU_SPC>;
+ 		};
  
-@@ -44,6 +45,27 @@ struct cpu_pm_domain *to_cpu_pd(struct generic_pm_domain *d)
- 	return res;
- }
+ 		CPU1: cpu@1 {
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a53", "arm,armv8";
+ 			reg = <0x1>;
++			enable-method = "psci";
++			cpu-idle-states = <&CPU_SPC>;
+ 		};
  
-+/**
-+ * get_cpus_in_domain() - Recursively parse CPUs in a domain.
-+ */
-+static void get_cpus_in_domain(struct generic_pm_domain *genpd,
-+		struct cpumask *mask)
-+{
-+	struct gpd_link *link;
-+	struct cpu_pm_domain *pd = to_cpu_pd(genpd);
-+	struct generic_pm_domain *sd;
-+
-+	if (!cpumask_empty(pd->cpus) && mask != pd->cpus) {
-+		cpumask_or(mask, pd->cpus, mask);
-+		return;
-+	}
-+
-+	list_for_each_entry(link, &genpd->master_links, master_node) {
-+		sd = link->slave;
-+		get_cpus_in_domain(sd, mask);
-+	}
-+}
-+
- static int cpu_pd_power_off(struct generic_pm_domain *genpd)
- {
- 	struct cpu_pm_domain *pd = to_cpu_pd(genpd);
-@@ -81,7 +103,8 @@ static void run_cpu(void *unused)
- 	pm_runtime_get_noresume(cpu_dev);
- }
+ 		CPU2: cpu@2 {
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a53", "arm,armv8";
+ 			reg = <0x2>;
++			enable-method = "psci";
++			cpu-idle-states = <&CPU_SPC>;
+ 		};
  
--static int of_pm_domain_attach_cpus(struct device_node *dn)
-+static int of_pm_domain_attach_cpus(struct device_node *dn,
-+		struct cpu_pm_domain *pd)
- {
- 	int cpuid, ret;
+ 		CPU3: cpu@3 {
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a53", "arm,armv8";
+ 			reg = <0x3>;
++			enable-method = "psci";
++			cpu-idle-states = <&CPU_SPC>;
+ 		};
++
++		idle-states {
++			CPU_SPC: spc {
++				compatible = "qcom,idle-state-spc",
++						"arm,idle-state";
++				arm,psci-suspend-param = <0x40000002>;
++				entry-latency-us = <130>;
++				exit-latency-us = <150>;
++				min-residency-us = <2000>;
++			};
++		};
++	};
++	
++	psci {
++		compatible = "arm,psci-1.0";
++		method = "smc";
+ 	};
  
-@@ -126,6 +149,7 @@ static int of_pm_domain_attach_cpus(struct device_node *dn)
- 		} else {
- 			pm_runtime_enable(cpu_dev);
- 			dev_dbg(cpu_dev, "Attached CPU%d to domain\n", cpuid);
-+			cpumask_set_cpu(cpuid, pd->cpus);
- 		}
- 	}
- 
-@@ -171,7 +195,7 @@ int of_register_cpu_pm_domain(struct device_node *dn,
- 				pd->genpd->name);
- 
- 	/* Attach the CPUs to the CPU PM domain */
--	ret = of_pm_domain_attach_cpus(dn);
-+	ret = of_pm_domain_attach_cpus(dn, pd);
- 	if (ret)
- 		of_genpd_del_provider(dn);
- 
-@@ -213,6 +237,13 @@ struct generic_pm_domain *of_init_cpu_pm_domain(struct device_node *dn,
- 		return ERR_PTR(-ENOMEM);
- 	}
- 
-+	if (!zalloc_cpumask_var(&pd->cpus, GFP_KERNEL)) {
-+		kfree(pd->genpd->name);
-+		kfree(pd->genpd);
-+		kfree(pd);
-+		return ERR_PTR(-ENOMEM);
-+	}
-+
- 	if (ops) {
- 		pd->plat_ops.power_off = ops->power_off;
- 		pd->plat_ops.power_on = ops->power_on;
-@@ -222,6 +253,7 @@ struct generic_pm_domain *of_init_cpu_pm_domain(struct device_node *dn,
- 	if (ret) {
- 		kfree(pd->genpd->name);
- 		kfree(pd->genpd);
-+		kfree(pd->cpus);
- 		kfree(pd);
- 		return ERR_PTR(ret);
- 	}
-@@ -229,3 +261,63 @@ struct generic_pm_domain *of_init_cpu_pm_domain(struct device_node *dn,
- 	return pd->genpd;
- }
- EXPORT_SYMBOL(of_init_cpu_pm_domain);
-+
-+/**
-+ * of_attach_cpu_pm_domain() - Attach a CPU PM domain to its parent
-+ * @dn: The device node of the CPU PM domain that needs to be attached
-+ *
-+ * The platform code can use this simplfied function to parse the domain
-+ * provider of this device node and attach the genpd associated with @dn
-+ * to it parents.
-+ *
-+ * Note: Both @dn and its domain provider must be initialized using
-+ * of_init_cpu_pm_domain.
-+ */
-+int of_attach_cpu_pm_domain(struct device_node *dn)
-+{
-+	struct of_phandle_args args;
-+	struct generic_pm_domain *genpd, *parent;
-+	struct cpu_pm_domain *pd;
-+	int ret;
-+
-+	args.np = dn;
-+	args.args_count = 0;
-+
-+	genpd = of_genpd_get_from_provider(&args);
-+	if (IS_ERR(genpd))
-+		return -EINVAL;
-+
-+	if (!to_cpu_pd(genpd)) {
-+		pr_warn("%s: domain %s is not a CPU domain\n",
-+				__func__, genpd->name);
-+		return -EINVAL;
-+	}
-+
-+	ret = of_parse_phandle_with_args(dn, "power-domains",
-+			"#power-domain-cells", 0, &args);
-+	if (ret < 0)
-+		return ret;
-+
-+	parent = of_genpd_get_from_provider(&args);
-+	if (IS_ERR(parent))
-+		return -EINVAL;
-+
-+	pd = to_cpu_pd(parent);
-+	if (!pd) {
-+		pr_warn("%s: domain (%s) parent (%s) is non-CPU domain\n",
-+				__func__, genpd->name, parent->name);
-+		return -EINVAL;
-+	}
-+
-+	ret = pm_genpd_add_subdomain(genpd, parent);
-+	if (ret) {
-+		pr_err("%s: Unable to add sub-domain (%s) to parent (%s)\n",
-+				__func__, genpd->name, parent->name);
-+		return ret;
-+	}
-+
-+	get_cpus_in_domain(parent, pd->cpus);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(of_attach_cpu_pm_domain);
-diff --git a/include/linux/cpu-pd.h b/include/linux/cpu-pd.h
-index a2a217d..489ee2f 100644
---- a/include/linux/cpu-pd.h
-+++ b/include/linux/cpu-pd.h
-@@ -11,6 +11,7 @@
- #ifndef __CPU_PD_H__
- #define __CPU_PD_H__
- 
-+#include <linux/cpumask.h>
- #include <linux/list.h>
- #include <linux/of.h>
- #include <linux/pm_domain.h>
-@@ -25,8 +26,10 @@ struct cpu_pm_domain {
- 	struct generic_pm_domain *genpd;
- 	struct device_node *dn;
- 	struct cpu_pd_ops plat_ops;
-+	cpumask_var_t cpus;
- };
- 
- struct generic_pm_domain *of_init_cpu_pm_domain(struct device_node *dn,
- 		const struct cpu_pd_ops *ops);
-+int of_attach_cpu_pm_domain(struct device_node *dn);
- #endif /* __CPU_PD_H__ */
+ 	timer {
 -- 
 2.1.4
+
