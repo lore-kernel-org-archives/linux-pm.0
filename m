@@ -1,72 +1,32 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [GIT PULL] Thermal-SoC management updates for v4.4-rc2 #1
-Date: Mon, 16 Nov 2015 19:32:41 -0800
-Message-ID: <20151117033239.GA27415@localhost.localdomain>
+Subject: Re: [PATCH v2] thermal: of-thermal: Reduce log level for message
+ when can't find thermal zone
+Date: Mon, 16 Nov 2015 19:37:02 -0800
+Message-ID: <20151117033701.GB27415@localhost.localdomain>
+References: <1447728214-31097-1-git-send-email-jiada_wang@mentor.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f44.google.com ([209.85.220.44]:36421 "EHLO
-	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751543AbbKQDcp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Nov 2015 22:32:45 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1447728214-31097-1-git-send-email-jiada_wang@mentor.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jiada Wang <jiada_wang@mentor.com>
+Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rui Zhang <rui.zhang@intel.com>
 
-Hello Rui,
+On Tue, Nov 17, 2015 at 11:43:34AM +0900, Jiada Wang wrote:
+> Some systems register thermal zone by themself and don't need to
+> have thermal zones node in DT. Therefore reduce the log level from
+> ERROR to DEBUG when thermal zone node can't be found in
+> of_thermal_destroy_zones().
 
-Please pull from
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal fixes
+This is already applied [1]. I applied V1 though.
+What is the difference from v1?
 
-to receive Thermal-SoC Management updates for v4.4-rc2 with top-most
-
-84f0e490bee0684bd00c8ee02b15487d58bcea9f:
-
-  thermal: rcar_thermal: remove redundant operation (2015-11-16 10:53:08 -0800)
-
-on top of commit 5d50ac70fe98518dbf620bfba8184254663125eb:
-
-  Merge tag 'xfs-for-linus-4.4' of git://git.kernel.org/pub/scm/linux/kernel/git/dgc/linux-xfs (2015-11-11 20:18:48 -0800)
-
-Specifics in this pull request:
-- Several fixes and cleanups on Rockchip thermal drivers.
-- On top of fixes, Rockchip driver also learned how to handle RK3368.
-- Small fixes on: of-thermal, power_allocator, and rcar driver.
-- Build/boot tests powered by KernelCI [1,2] \o/
-
-There are still pending fixes that need to go through my testing cycle.
-But I might send them either in another pull request, or for rc3.
-
-[1] - http://kernelci.org/boot/all/job/evalenti/kernel/v4.3-11636-g84f0e490bee0/
-[2] - http://kernelci.org/build/evalenti/kernel/v4.3-11636-g84f0e490bee0/
+[1] -
+https://git.kernel.org/cgit/linux/kernel/git/evalenti/linux-soc-thermal.git/commit/?h=fixes&id=285249884ec19480f99c011d223760bb1fc865a2
 
 BR,
 
 Eduardo Valentin
-----------------------------------------------------------------
-Caesar Wang (7):
-      dt-bindings: rockchip-thermal: Support the RK3368 SoCs compatible
-      thermal: rockchip: better to compatible the driver for different SoCs
-      thermal: rockchip: trivial: fix typo in commit
-      thermal: rockchip: improve the conversion function
-      thermal: rockchip: Add the sort mode for adc value increment or decrement
-      thermal: rockchip: consistently use int for temperatures
-      thermal: rockchip: Support the RK3368 SoCs in thermal driver
-
-Jiada Wang (1):
-      thermal: of-thermal: Reduce log level for message when can't fine thermal zone
-
-Kapileshwar Singh (1):
-      thermal: power_allocator: Use temperature reading from tz
-
-Kuninori Morimoto (1):
-      thermal: rcar_thermal: remove redundant operation
-
- .../bindings/thermal/rockchip-thermal.txt          |   4 +-
- drivers/thermal/of-thermal.c                       |   2 +-
- drivers/thermal/power_allocator.c                  |  24 +-
- drivers/thermal/rcar_thermal.c                     |  49 ++-
- drivers/thermal/rockchip_thermal.c                 | 328 +++++++++++++++------
- 5 files changed, 272 insertions(+), 135 deletions(-)
