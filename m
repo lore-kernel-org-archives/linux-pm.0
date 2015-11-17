@@ -1,123 +1,139 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH RFC 21/27] drivers: cpu-pd: Parse topology to setup CPU PM domains
-Date: Tue, 17 Nov 2015 15:37:45 -0700
-Message-ID: <1447799871-56374-22-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH RFC 25/27] devicetree: bindings: Document qcom,msm-id and qcom,board-id
+Date: Tue, 17 Nov 2015 15:37:49 -0700
+Message-ID: <1447799871-56374-26-git-send-email-lina.iyer@linaro.org>
 References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
 Sender: linux-arm-msm-owner@vger.kernel.org
 To: ulf.hansson@linaro.org, khilman@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Lina Iyer <lina.iyer@linaro.org>, Rob Herring <robherring2@gmail.com>
+Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Kumar Gala <galak@codeaurora.org>, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Architectures that support CPU domain control in the firmware specify
-the domain heirarchy as part of the topology nodes. Parse and initialize
-domains from the topology node for such architectures.
+From: Kumar Gala <galak@codeaurora.org>
 
-Cc: Rob Herring <robherring2@gmail.com>
-Cc: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Kevin Hilman <khilman@linaro.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+The top level qcom,msm-id and qcom,board-id are utilized by bootloaders
+on Qualcomm MSM platforms to determine which device tree should be
+utilized and passed to the kernel.
+
+Cc: <devicetree@vger.kernel.org>
+Signed-off-by: Kumar Gala <galak@codeaurora.org>
 ---
- drivers/base/power/cpu-pd.c | 76 +++++++++++++++++++++++++++++++++++++++++++++
- include/linux/cpu-pd.h      |  1 +
- 2 files changed, 77 insertions(+)
+ Documentation/devicetree/bindings/arm/msm/ids.txt | 65 +++++++++++++++++++++++
+ include/dt-bindings/arm/qcom-ids.h                | 33 ++++++++++++
+ 2 files changed, 98 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/arm/msm/ids.txt
+ create mode 100644 include/dt-bindings/arm/qcom-ids.h
 
-diff --git a/drivers/base/power/cpu-pd.c b/drivers/base/power/cpu-pd.c
-index e331ae6..2872c18 100644
---- a/drivers/base/power/cpu-pd.c
-+++ b/drivers/base/power/cpu-pd.c
-@@ -429,3 +429,79 @@ int of_attach_cpu_pm_domain(struct device_node *dn)
- 	return 0;
- }
- EXPORT_SYMBOL(of_attach_cpu_pm_domain);
+diff --git a/Documentation/devicetree/bindings/arm/msm/ids.txt b/Documentation/devicetree/bindings/arm/msm/ids.txt
+new file mode 100644
+index 0000000..9ee8428
+--- /dev/null
++++ b/Documentation/devicetree/bindings/arm/msm/ids.txt
+@@ -0,0 +1,65 @@
++* MSM-ID
 +
-+static int of_parse_cpu_pd(struct device_node *cluster,
-+		const struct cpu_pd_ops *ops)
-+{
-+	struct device_node *domain_node;
-+	struct generic_pm_domain *genpd;
-+	char name[10];
-+	struct device_node *c;
-+	int i, ret;
++The qcom,msm-id entry specifies the MSM chipset and hardware revision.  It can
++optionally be an array of these to indicate multiple hardware that use the same
++device tree.  It is expected that the bootloader will use this information at
++boot-up to decide which device tree to use when given multiple device trees,
++some of which may not be compatible with the actual hardware.  It is the
++bootloader's responsibility to pass the correct device tree to the kernel.
 +
-+	for (i = 0; ; i++) {
-+		snprintf(name, sizeof(name), "cluster%d", i);
-+		c = of_get_child_by_name(cluster, name);
-+		if (!c)
-+			break;
++PROPERTIES
 +
-+		domain_node = of_parse_phandle(c, "cluster", 0);
-+		if (!domain_node)
-+			return -1;
++- qcom,msm-id:
++	Usage: required
++	Value type: <prop-encoded-array> (<chipset_id, rev_id> [, <c2, r2> ..])
++	Definition:
++		The "chipset_id" consists of three fields as below:
 +
-+		/* Initialize CPU PM domain domain at this level */
-+		genpd = of_init_cpu_pm_domain(domain_node, ops);
-+		if (IS_ERR(genpd))
-+			return -1;
++		bits 0-15  = The unique MSM chipset id.
++		bits 16-31 = Reserved.  Should be 0
 +
-+		/* Initialize and attach child domains */
-+		ret = of_parse_cpu_pd(c, ops);
++		chipset_id is an exact match value
 +
-+		/*
-+		 * Attach the domain to its parent after reading
-+		 * the children, so the mask of CPUs in this domain
-+		 * are setup correctly.
-+		 */
-+		if (!ret)
-+			of_attach_cpu_pm_domain(domain_node);
++		The "rev_id" is a chipset specific 32-bit id that represents
++		the version of the chipset.
 +
-+		of_node_put(c);
-+		if (ret != 0)
-+			return ret;
-+	}
++		The rev_id is a best match id.  The bootloader will look for
++		the closest possible patch.
 +
-+	return 0;
-+}
++* BOARD-ID
 +
-+/**
-+ * of_setup_cpu_domain_topology() - Setup the CPU domains from the CPU
-+ * topology node in DT.
++The qcom,board-id entry specifies the board type and revision information.  It
++can optionally be an array of these to indicate multiple boards that use the
++same device tree.  It is expected that the bootloader will use this information
++at boot-up to decide which device tree to use when given multiple device trees,
++some of which may not be compatible with the actual hardware.  It is the
++bootloader's responsibility to pass the correct device tree to the kernel.
++
++PROPERTIES
++
++- qcom,board-id:
++	Usage: required
++	Value type: <prop-encoded-array> (<board_id, subtype_id> [, <b2, s2> ..])
++	Definition:
++		The "board_id" consists of three fields as below:
++
++		bits 31-24 = Unusued.
++		bits 23-16 = Platform Version Major
++		bits 15-8  = Platfrom Version Minor
++		bits 7-0   = Platform Type
++
++		Platform Type field is an exact match value.  The Platform
++		Major/Minor field is a best match.  The bootloader will look
++		for the closest possible match.
++
++		The "subtype_id" is unique to a Platform Type/Chipset ID.  For
++		a given Platform Type, there will typically only be a single
++		board and the subtype_id will be 0.  However in some cases board
++		variants may need to be distinquished by different subtype_id
++		values.
++
++		subtype_id is an exact match value.
++
++EXAMPLE:
++	qcom,board-id = <15 2>;
++	qcom,msm-id = <0x1007e 0>;
+diff --git a/include/dt-bindings/arm/qcom-ids.h b/include/dt-bindings/arm/qcom-ids.h
+new file mode 100644
+index 0000000..a18f34e
+--- /dev/null
++++ b/include/dt-bindings/arm/qcom-ids.h
+@@ -0,0 +1,33 @@
++/* Copyright (c) 2015, The Linux Foundation. All rights reserved.
 + *
-+ * @ops: The PM domain suspend/resume ops for all the domains in the topology
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 and
++ * only version 2 as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
 + */
-+int of_setup_cpu_domain_topology(const struct cpu_pd_ops *ops)
-+{
-+	struct device_node *cn, *map;
-+	int ret = 0;
++#ifndef __DT_BINDINGS_QCOM_IDS_H
++#define __DT_BINDINGS_QCOM_IDS_H
 +
-+	cn = of_find_node_by_path("/cpus");
-+	if (!cn) {
-+		pr_err("No CPU information found in DT\n");
-+		return 0;
-+	}
++/* qcom,msm-id */
++#define QCOM_ID_MSM8916		206
++#define QCOM_ID_APQ8016		247
++#define QCOM_ID_MSM8216		248
++#define QCOM_ID_MSM8116		249
++#define QCOM_ID_MSM8616		250
 +
-+	map = of_get_child_by_name(cn, "cpu-map");
-+	if (!map)
-+		goto out;
++/* qcom,board-id */
++#define QCOM_BRD_ID(a, major, minor) \
++	(((major & 0xff) << 16) | ((minor & 0xff) << 8) | QCOM_BRD_ID_##a)
 +
-+	ret = of_parse_cpu_pd(map, ops);
-+	if (ret != 0)
-+		goto out_map;
++#define QCOM_BRD_ID_MTP		8
++#define QCOM_BRD_ID_DRAGONBRD	10
++#define QCOM_BRD_ID_SBC		24
 +
-+out_map:
-+	of_node_put(map);
-+out:
-+	of_node_put(cn);
-+	return ret;
-+}
-+EXPORT_SYMBOL(of_setup_cpu_domain_topology);
-diff --git a/include/linux/cpu-pd.h b/include/linux/cpu-pd.h
-index 489ee2f..e8290db 100644
---- a/include/linux/cpu-pd.h
-+++ b/include/linux/cpu-pd.h
-@@ -32,4 +32,5 @@ struct cpu_pm_domain {
- struct generic_pm_domain *of_init_cpu_pm_domain(struct device_node *dn,
- 		const struct cpu_pd_ops *ops);
- int of_attach_cpu_pm_domain(struct device_node *dn);
-+int of_setup_cpu_domain_topology(const struct cpu_pd_ops *ops);
- #endif /* __CPU_PD_H__ */
++#define QCOM_BRD_SUBTYPE_DEFAULT		0
++#define QCOM_BRD_SUBTYPE_MTP8916_SMB1360	1
++
++#endif
 -- 
 2.1.4
