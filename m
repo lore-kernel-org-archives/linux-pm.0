@@ -1,65 +1,50 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH RFC 05/27] PM / Domains: remove old power on/off latencies.
-Date: Tue, 17 Nov 2015 15:37:29 -0700
-Message-ID: <1447799871-56374-6-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH RFC 11/27] drivers: cpu: Define CPU devices as IRQ safe
+Date: Tue, 17 Nov 2015 15:37:35 -0700
+Message-ID: <1447799871-56374-12-git-send-email-lina.iyer@linaro.org>
 References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
 Sender: linux-arm-msm-owner@vger.kernel.org
 To: ulf.hansson@linaro.org, khilman@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Axel Haslam <ahaslam+renesas@baylibre.com>
+Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Lina Iyer <lina.iyer@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Axel Haslam <ahaslam+renesas@baylibre.com>
+CPUs may be powered off from CPUIdle or hotplug and are called with
+IRQ's disabled. Define CPU devices as IRQ safe, so they may be runtime
+suspended/resumed.
 
-Now that all known users have been converted to use state latencies,
-we can remove the latency field in the generic_pm_domain structure.
-
-Signed-off-by: Axel Haslam <ahaslam+renesas@baylibre.com>
+Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- drivers/base/power/domain.c | 15 ---------------
- include/linux/pm_domain.h   |  2 --
- 2 files changed, 17 deletions(-)
+ drivers/base/cpu.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 3fb4c93..c300293 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -1248,21 +1248,6 @@ static int genpd_alloc_states_data(struct generic_pm_domain *genpd,
- 		genpd->states[i].param = st[i].param;
- 	}
+diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
+index 91bbb19..6633210 100644
+--- a/drivers/base/cpu.c
++++ b/drivers/base/cpu.c
+@@ -17,6 +17,7 @@
+ #include <linux/of.h>
+ #include <linux/cpufeature.h>
+ #include <linux/tick.h>
++#include <linux/pm_runtime.h>
  
--	/*
--	 * Copy the latency values To keep compatibility with
--	 * platforms that are not converted to use the multiple states.
--	 * This will be removed once all platforms are converted to use
--	 * multiple states. note that non converted platforms will use the
--	 * default single off state.
--	 */
--	if (genpd->power_on_latency_ns != 0)
--		genpd->states[0].power_on_latency_ns =
--				genpd->power_on_latency_ns;
--
--	if (genpd->power_off_latency_ns != 0)
--		genpd->states[0].power_off_latency_ns =
--				genpd->power_off_latency_ns;
--
- 	genpd->state_count = st_count;
+ #include "base.h"
  
- 	/* to save memory, Name allocation will happen if debug is enabled */
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 15df24c..108a4b3 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -61,9 +61,7 @@ struct generic_pm_domain {
- 	unsigned int prepared_count;	/* Suspend counter of prepared devices */
- 	bool suspend_power_off;	/* Power status before system suspend */
- 	int (*power_off)(struct generic_pm_domain *domain);
--	s64 power_off_latency_ns;
- 	int (*power_on)(struct generic_pm_domain *domain);
--	s64 power_on_latency_ns;
- 	struct gpd_dev_ops dev_ops;
- 	s64 max_off_time_ns;	/* Maximum allowed "suspended" time. */
- 	bool max_off_time_changed;
+@@ -371,10 +372,11 @@ int register_cpu(struct cpu *cpu, int num)
+ 	if (cpu->hotpluggable)
+ 		cpu->dev.groups = hotplugable_cpu_attr_groups;
+ 	error = device_register(&cpu->dev);
+-	if (!error)
++	if (!error) {
++		pm_runtime_irq_safe(&cpu->dev);
+ 		per_cpu(cpu_sys_devices, num) = &cpu->dev;
+-	if (!error)
+ 		register_cpu_under_node(num, cpu_to_node(num));
++	}
+ 
+ 	return error;
+ }
 -- 
 2.1.4
