@@ -1,106 +1,92 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH RFC 12/27] ARM: cpuidle: remove cpu parameter from the cpuidle_ops suspend hook
-Date: Tue, 17 Nov 2015 15:37:36 -0700
-Message-ID: <1447799871-56374-13-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH RFC 07/27] PM / Domains: Read domain residency from DT
+Date: Tue, 17 Nov 2015 15:37:31 -0700
+Message-ID: <1447799871-56374-8-git-send-email-lina.iyer@linaro.org>
 References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f53.google.com ([209.85.220.53]:34079 "EHLO
-	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932543AbbKQWil (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Nov 2015 17:38:41 -0500
-Received: by padhx2 with SMTP id hx2so22135966pad.1
-        for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2015 14:38:40 -0800 (PST)
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-arm-msm-owner@vger.kernel.org
 To: ulf.hansson@linaro.org, khilman@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Lina Iyer <lina.iyer@linaro.org>, Russell King <linux@arm.linux.org.uk>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Lina Iyer <lina.iyer@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Domains that have expensive suspend resume operations, may require a
+certain amount of time be spent in an idle state to reap the power
+saving benefit. Such domains, may provide the residency requirement for
+a domain state.
 
-The suspend() hook in the cpuidle_ops struct is always called on
-the cpu entering idle, which means that the cpu parameter passed
-to the suspend hook always corresponds to the local cpu, making
-it somewhat redundant.
+Read the residency for a domain state from the DT. A domain governor may
+use this information in determining the state for the domain.
 
-This patch removes the logical cpu parameter from the ARM
-cpuidle_ops.suspend hook and updates all the existing kernel
-implementations to reflect this change.
-
-Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Lina Iyer <lina.iyer@linaro.org>
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Axel Haslam <ahaslam@baylibre.com>
+Cc: Marc Titinger <mtitinger@baylibre.com>
+Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- arch/arm/include/asm/cpuidle.h |  2 +-
- arch/arm/kernel/cpuidle.c      |  2 +-
- drivers/soc/qcom/spm.c         | 10 +++++-----
- 3 files changed, 7 insertions(+), 7 deletions(-)
+ Documentation/devicetree/bindings/power/power_domain.txt | 7 +++++++
+ drivers/base/power/domain.c                              | 6 ++++++
+ include/linux/pm_domain.h                                | 1 +
+ 3 files changed, 14 insertions(+)
 
-diff --git a/arch/arm/include/asm/cpuidle.h b/arch/arm/include/asm/cpuidle.h
-index 0f84249..3848259 100644
---- a/arch/arm/include/asm/cpuidle.h
-+++ b/arch/arm/include/asm/cpuidle.h
-@@ -30,7 +30,7 @@ static inline int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
- struct device_node;
+diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+index ecfaf44..d71da29 100644
+--- a/Documentation/devicetree/bindings/power/power_domain.txt
++++ b/Documentation/devicetree/bindings/power/power_domain.txt
+@@ -67,6 +67,13 @@ have the following properties -
+ 		If omitted, this is assumed to be equal to:
+ 			entry-latency-us + exit-latency-us
  
- struct cpuidle_ops {
--	int (*suspend)(int cpu, unsigned long arg);
-+	int (*suspend)(unsigned long arg);
- 	int (*init)(struct device_node *, int cpu);
++	- residency-us:
++		Usage: Optional
++		Value type: <prop-encoded-array>
++		Definition: A u32 value representing the time for which a
++		domain must be idle in the state to reap power saving benefits
++		of entering the state.
++
+ 	- state-param:
+ 		Usage: Optional
+ 		Value type: <prop-encoded-array>
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 9a0df09..abc81bd 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -1245,6 +1245,7 @@ static int genpd_alloc_states_data(struct generic_pm_domain *genpd,
+ 			st[i].power_on_latency_ns;
+ 		genpd->states[i].power_off_latency_ns =
+ 			st[i].power_off_latency_ns;
++		genpd->states[i].residency_ns = st[i].residency_ns;
+ 		genpd->states[i].param = st[i].param;
+ 	}
+ 
+@@ -1513,6 +1514,7 @@ static int of_get_genpd_power_state(struct genpd_power_state *genpd_state,
+ 	const struct of_device_id *match_id;
+ 	int err = 0;
+ 	u32 latency;
++	u32 residency;
+ 	u32 param;
+ 
+ 	match_id = of_match_node(power_state_match, state_node);
+@@ -1554,6 +1556,10 @@ static int of_get_genpd_power_state(struct genpd_power_state *genpd_state,
+ 		return -EINVAL;
+ 	}
+ 
++	err = of_property_read_u32(state_node, "residency-us", &residency);
++	if (!err)
++		genpd_state->residency_ns = 1000 * residency;
++
+ 	err = of_property_read_u32(state_node, "state-param", &param);
+ 	if (!err)
+ 		genpd_state->param = param;
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 108a4b3..fed024a 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -41,6 +41,7 @@ struct genpd_power_state {
+ 	char *name;
+ 	s64 power_off_latency_ns;
+ 	s64 power_on_latency_ns;
++	s64 residency_ns;
+ 	u32 param;
  };
  
-diff --git a/arch/arm/kernel/cpuidle.c b/arch/arm/kernel/cpuidle.c
-index 318da33..703926e 100644
---- a/arch/arm/kernel/cpuidle.c
-+++ b/arch/arm/kernel/cpuidle.c
-@@ -56,7 +56,7 @@ int arm_cpuidle_suspend(int index)
- 	int cpu = smp_processor_id();
- 
- 	if (cpuidle_ops[cpu].suspend)
--		ret = cpuidle_ops[cpu].suspend(cpu, index);
-+		ret = cpuidle_ops[cpu].suspend(index);
- 
- 	return ret;
- }
-diff --git a/drivers/soc/qcom/spm.c b/drivers/soc/qcom/spm.c
-index b04b05a..0ad66fa 100644
---- a/drivers/soc/qcom/spm.c
-+++ b/drivers/soc/qcom/spm.c
-@@ -116,7 +116,7 @@ static const struct spm_reg_data spm_reg_8064_cpu = {
- 
- static DEFINE_PER_CPU(struct spm_driver_data *, cpu_spm_drv);
- 
--typedef int (*idle_fn)(int);
-+typedef int (*idle_fn)(void);
- static DEFINE_PER_CPU(idle_fn*, qcom_idle_ops);
- 
- static inline void spm_register_write(struct spm_driver_data *drv,
-@@ -179,10 +179,10 @@ static int qcom_pm_collapse(unsigned long int unused)
- 	return -1;
- }
- 
--static int qcom_cpu_spc(int cpu)
-+static int qcom_cpu_spc(void)
- {
- 	int ret;
--	struct spm_driver_data *drv = per_cpu(cpu_spm_drv, cpu);
-+	struct spm_driver_data *drv = __this_cpu_read(cpu_spm_drv);
- 
- 	spm_set_low_power_mode(drv, PM_SLEEP_MODE_SPC);
- 	ret = cpu_suspend(0, qcom_pm_collapse);
-@@ -197,9 +197,9 @@ static int qcom_cpu_spc(int cpu)
- 	return ret;
- }
- 
--static int qcom_idle_enter(int cpu, unsigned long index)
-+static int qcom_idle_enter(unsigned long index)
- {
--	return per_cpu(qcom_idle_ops, cpu)[index](cpu);
-+	return __this_cpu_read(qcom_idle_ops)[index]();
- }
- 
- static const struct of_device_id qcom_idle_state_match[] __initconst = {
 -- 
 2.1.4
-
