@@ -1,38 +1,74 @@
-From: Catalin Crenguta <catalin.crenguta@gmail.com>
-Subject: Re: Freescale IMX6 active cooling
-Date: Tue, 17 Nov 2015 14:49:26 +0200
-Message-ID: <CABH3fy-QPV1bv-WaO3mWVq2RN5=f-AnBHMgFTmmU-Ve3xgyUrw@mail.gmail.com>
-References: <CABH3fy-He02iVU7FzqcPApPemeoqQP15+gr9+Hx87-OEBuHvCg@mail.gmail.com>
- <CAOMZO5AX9owvovpdmdr=rKNApbuNrkp9pKexJk_mMyMdH1=1qg@mail.gmail.com>
- <CALHpu37MNnzW=3YNKUq-aOHgF12EhjyN7g1juTwuMad_Xv891w@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v2 10/11] PM / Hibernate: clean cached pages on
+ architectures that require it
+Date: Tue, 17 Nov 2015 14:13:45 +0100
+Message-ID: <20151117131345.GA11870@amd>
+References: <1445966960-31724-1-git-send-email-james.morse@arm.com>
+ <2039611.PJaFlk1sMi@vostro.rjw.lan>
+ <20151112114705.GA2657@red-moon>
+ <3180507.pKM8OzKjXO@vostro.rjw.lan>
+ <20151117123807.GA22216@red-moon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CALHpu37MNnzW=3YNKUq-aOHgF12EhjyN7g1juTwuMad_Xv891w@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Jon Nettleton <jon.nettleton@gmail.com>, Sean Cross <xobs@kosagi.com>
-Cc: Fabio Estevam <fabio.estevam@freescale.com>, Fabio Estevam <festevam@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35849 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751350AbbKQNNv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Nov 2015 08:13:51 -0500
+Content-Disposition: inline
+In-Reply-To: <20151117123807.GA22216@red-moon>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, James Morse <james.morse@arm.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Kevin Kang <kkang@intrinsyc.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, wangfei <w.f@huawei.com>, Marc Zyngier <marc.zyngier@arm.com>, Russell King <linux@arm.linux.org.uk>, "David S. Miller" <davem@davemloft.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Guan Xuetao <gxt@mprc.pku.edu.cn>, Ralf Baechle <ralf@linux-mips.org>, Heiko Carstens <heiko.carstens@de.ibm.com>
 
-On Tue, Nov 17, 2015 at 11:38 AM, Jon Nettleton <jon.nettleton@gmail.com> wrote:
-> I would recommend you take a look at the work that xobs did for the
-> Novena Heirloom.  If you look at this branch starting around Aug 3 you
-> can see where he has converted iMX6 to use generic thermal zones and
-> adds support for for an active cooling device/fan.
-> https://github.com/xobs/novena-linux/commits/v3.19-novena-etnadrm-r3?page=3
->
-> -Jon
-Thank you!
-I have patched my 4.3 kernel (they don't apply cleanly but they are
-straight forward to modify), added a gpio-fan and the corresponding
-thermal-zone in my DTB and it works!
-Sean Cross, are you interested in bringing this to mainline?
+On Tue 2015-11-17 12:38:07, Lorenzo Pieralisi wrote:
+> [Cc'ed maintainers of affected arches]
+> 
+> On Sat, Nov 14, 2015 at 12:38:50AM +0100, Rafael J. Wysocki wrote:
+> > On Thursday, November 12, 2015 11:47:05 AM Lorenzo Pieralisi wrote:
+> > > On Thu, Nov 12, 2015 at 01:48:32AM +0100, Rafael J. Wysocki wrote:
+> > > > On Wednesday, November 11, 2015 11:40:39 AM Lorenzo Pieralisi wrote:
+> > > > > Hi Pavel, Rafael,
+> > > > > 
+> > > > > Do you have any feedback on this patch ?
+> > > > > 
+> > > > > It is fundamental to this series and affects Hibernate core code so if you
+> > > > > have any feedback that would be much appreciated.
+> > > > 
+> > > > I'm really not familiar with the flush_icache_range() interface.
+> > > > 
+> > > > What exactly does it do?
+> > > 
+> > > It is used to sync a memory range that is written into (eg loading
+> > > modules, copying from snapshot is basically the same thing, reads from
+> > > storage and restore pages that might well be executable code), in particular
+> > > to sync the I-cache and the D-cache, eg on arm64 the page that the snapshot
+> > > code is copying might be executable code that has to be cleaned from the
+> > > D-cache so that it is made visible to the I-cache.
+> > > 
+> > > On x86 it is a NOP AFAIK.
+> > 
+> > If that's the case, I have no problems with this change as long as the code
+> > works on architectures with non-trivial flush_icache_range().
+> 
+> I Cc'ed the respective arches maintainers, it should work (it may
+> make resuming a bit slower, owing to the cache syncing), problem is
+> that we have no way of testing it on platforms other than arm/arm64.
+
+Sure you can find x86 and x86-64 machine near you?
+
+And as hibernation is only supported on x86 and arm, that should be
+ok.
+
+Or just merge it to the next and let the world do testing for you...
+
+> How do you want us to go on about this ? Should we add a config option
+> to prevent calling flush_icache_range() on all platforms (where it
+> is not a nop) ?
+
+Config option is definitely not an option ;-).
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
