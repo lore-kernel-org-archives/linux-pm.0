@@ -1,176 +1,151 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v5 9/9] drivers: soc: Add support for Exynos PMU driver
-Date: Tue, 17 Nov 2015 13:28:20 +0900
-Message-ID: <564AACE4.8060701@samsung.com>
-References: <1447406983-27835-1-git-send-email-pankaj.dubey@samsung.com>
- <1447406983-27835-10-git-send-email-pankaj.dubey@samsung.com>
- <5645BB67.8050102@samsung.com>
- <CAGcde9HMDNgu2YHXE7=KqhxdXwyNwqCZn0BLsoHtaOvpYjjSqw@mail.gmail.com>
- <56471B3F.5060201@samsung.com> <564AA2A7.7010007@samsung.com>
+From: "Kasagar, Srinidhi" <srinidhi.kasagar@intel.com>
+Subject: Re: [PATCH] intel_idle: Add support for Goldmont core in the Broxton
+ Socs
+Date: Tue, 17 Nov 2015 17:58:37 +0530
+Message-ID: <20151117122837.GA24880@intel-desktop>
+References: <20151105164316.GA24063@intel-desktop>
+ <2354289.b50G4ZXWXq@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <564AA2A7.7010007@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: "pankaj.dubey" <pankaj.dubey@samsung.com>
-Cc: k.kozlowski.k@gmail.com, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, linux-kernel@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, Amit Daniel <amitdanielk@gmail.com>, Kukjin Kim <kgene.kim@samsung.com>, Arnd Bergmann <arnd@arndb.de>, "thomas.ab@samsung.com" <thomas.ab@samsung.com>, olof@lixom.net, khilman@linaro.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([134.134.136.65]:61407 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751607AbbKQEfK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 16 Nov 2015 23:35:10 -0500
+Content-Disposition: inline
+In-Reply-To: <2354289.b50G4ZXWXq@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: lenb@kernel.org, len.brown@intel.com, linux-pm@vger.kernel.org
 
-On 17.11.2015 12:44, pankaj.dubey wrote:
+On Sat, Nov 07, 2015 at 02:08:19AM +0100, Rafael J. Wysocki wrote:
+> On Thursday, November 05, 2015 10:13:37 PM Srinidhi Kasagar wrote:
+> > Broxton SoC uses similar Haswell like C states. Add a dedicated
+> > table for this Soc.
+> > 
+> > Signed-off-by: Srinidhi Kasagar <srinidhi.kasagar@intel.com>
 > 
-> 
-> On Saturday 14 November 2015 05:00 PM, Krzysztof Kozlowski wrote:
->> W dniu 14.11.2015 o 00:36, Pankaj Dubey pisze:
->>> On 13 November 2015 at 15:58, Krzysztof Kozlowski
->>> <k.kozlowski@samsung.com> wrote:
->>>>
->>>> On 13.11.2015 18:29, Pankaj Dubey wrote:
->>>>> This patch moves Exynos PMU driver implementation from
->>>>> "arm/mach-exynos"
->>>>> to "drivers/soc/samsung". This driver is mainly used for setting misc
->>>>> bits of register from PMU IP of Exynos SoC which will be required to
->>>>> configure before Suspend/Resume. Currently all these settings are done
->>>>> in "arch/arm/mach-exynos/pmu.c" but moving ahead for ARM64 based SoC
->>>>> support, there is a need of this PMU driver in driver/* folder.
->>>>>
->>>>> This driver uses existing DT binding information and there should
->>>>> be no functionality change in the supported platforms.
->>>>>
->>>>> Signed-off-by: Amit Daniel Kachhap <amitdanielk@gmail.com>
->>>>> Signed-off-by: Pankaj Dubey <pankaj.dubey@samsung.com>
->>>>> ---
->>>>>   arch/arm/mach-exynos/Kconfig                                   | 1 +
->>>>>   arch/arm/mach-exynos/Makefile                                  |
->>>>> 4 +---
->>>>>   drivers/soc/samsung/Kconfig                                    |
->>>>> 4 ++++
->>>>>   drivers/soc/samsung/Makefile                                   |
->>>>> 4 ++++
->>>>>   arch/arm/mach-exynos/pmu.c => drivers/soc/samsung/exynos-pmu.c | 0
->>>>>   {arch/arm/mach-exynos => drivers/soc/samsung}/exynos-pmu.h     | 0
->>>>>   {arch/arm/mach-exynos => drivers/soc/samsung}/exynos3250-pmu.c | 0
->>>>>   {arch/arm/mach-exynos => drivers/soc/samsung}/exynos4-pmu.c    | 0
->>>>>   {arch/arm/mach-exynos => drivers/soc/samsung}/exynos5250-pmu.c | 0
->>>>>   {arch/arm/mach-exynos => drivers/soc/samsung}/exynos5420-pmu.c | 0
->>>>>   10 files changed, 10 insertions(+), 3 deletions(-)
->>>>>   rename arch/arm/mach-exynos/pmu.c =>
->>>>> drivers/soc/samsung/exynos-pmu.c (100%)
->>>>>   rename {arch/arm/mach-exynos => drivers/soc/samsung}/exynos-pmu.h
->>>>> (100%)
->>>>>   rename {arch/arm/mach-exynos =>
->>>>> drivers/soc/samsung}/exynos3250-pmu.c (100%)
->>>>>   rename {arch/arm/mach-exynos =>
->>>>> drivers/soc/samsung}/exynos4-pmu.c (100%)
->>>>>   rename {arch/arm/mach-exynos =>
->>>>> drivers/soc/samsung}/exynos5250-pmu.c (100%)
->>>>>   rename {arch/arm/mach-exynos =>
->>>>> drivers/soc/samsung}/exynos5420-pmu.c (100%)
->>>>>
->>>>> diff --git a/arch/arm/mach-exynos/Kconfig
->>>>> b/arch/arm/mach-exynos/Kconfig
->>>>> index 83c85f5..874cb38 100644
->>>>> --- a/arch/arm/mach-exynos/Kconfig
->>>>> +++ b/arch/arm/mach-exynos/Kconfig
->>>>> @@ -16,6 +16,7 @@ menuconfig ARCH_EXYNOS
->>>>>        select ARM_GIC
->>>>>        select COMMON_CLK_SAMSUNG
->>>>>        select EXYNOS_THERMAL
->>>>> +     select EXYNOS_PMU
->>>>>        select EXYNOS_SROM if PM
->>>>>        select HAVE_ARM_SCU if SMP
->>>>>        select HAVE_S3C2410_I2C if I2C
->>>>> diff --git a/arch/arm/mach-exynos/Makefile
->>>>> b/arch/arm/mach-exynos/Makefile
->>>>> index 2d58063..34d29df 100644
->>>>> --- a/arch/arm/mach-exynos/Makefile
->>>>> +++ b/arch/arm/mach-exynos/Makefile
->>>>> @@ -9,9 +9,7 @@ ccflags-$(CONFIG_ARCH_MULTIPLATFORM) +=
->>>>> -I$(srctree)/$(src)/include -I$(srctree)
->>>>>
->>>>>   # Core
->>>>>
->>>>> -obj-$(CONFIG_ARCH_EXYNOS)    += exynos.o pmu.o exynos-smc.o
->>>>> firmware.o \
->>>>> -                                     exynos3250-pmu.o exynos4-pmu.o \
->>>>> -                                     exynos5250-pmu.o
->>>>> exynos5420-pmu.o
->>>>> +obj-$(CONFIG_ARCH_EXYNOS)    += exynos.o exynos-smc.o firmware.o
->>>>>
->>>>>   obj-$(CONFIG_EXYNOS_CPU_SUSPEND) += pm.o sleep.o
->>>>>   obj-$(CONFIG_PM_SLEEP)               += suspend.o
->>>>> diff --git a/drivers/soc/samsung/Kconfig b/drivers/soc/samsung/Kconfig
->>>>> index 2833b5b..f545d6c 100644
->>>>> --- a/drivers/soc/samsung/Kconfig
->>>>> +++ b/drivers/soc/samsung/Kconfig
->>>>> @@ -10,4 +10,8 @@ config EXYNOS_SROM
->>>>>        bool
->>>>>        depends on ARM && ARCH_EXYNOS && PM
->>>>>
->>>>> +config EXYNOS_PMU
->>>>> +     bool
->>>>> +     depends on ARCH_EXYNOS
->>>>> +
->>>>>   endmenu
->>>>> diff --git a/drivers/soc/samsung/Makefile
->>>>> b/drivers/soc/samsung/Makefile
->>>>> index 9c554d5..26fb489 100644
->>>>> --- a/drivers/soc/samsung/Makefile
->>>>> +++ b/drivers/soc/samsung/Makefile
->>>>> @@ -1 +1,5 @@
->>>>>   obj-$(CONFIG_EXYNOS_SROM)    += exynos-srom.o
->>>>> +ifdef CONFIG_ARM
->>>>> +obj-$(CONFIG_EXYNOS_PMU)     += exynos-pmu.o exynos3250-pmu.o
->>>>> exynos4-pmu.o \
->>>>> +                                     exynos5250-pmu.o
->>>>> exynos5420-pmu.o
->>>>> +endif
->>>>
->>>> Why ifdef CONFIG_ARM? This already depends on ARCH_EXYNOS. If you want
->>>> to limit to ARMv7 then add the dependency to Kconfig (just like
->>>> EXYNOS_SROM).
->>>>
->>>
->>> This is required, so that 32-bit based Exynos SoC's PMU should not get
->>> compiled when we are compiling for ARM64 and vice-versa.
->>>
->>> For example: In future, I have plan to add exynos7 PMU support as -
->>>
->>> ifdef CONFIG_ARM64
->>> obj-$(CONFIG_EXYNOS_PMU) += exynos-pmu.o exynos7-pmu.o
->>> endif
->>>
->>> Thus preventing compilation of ARM64 based SoCs PMU data files when we
->>> are compiling for ARM.
->>>
->>> Only exynos-pmu.c will be shared and compiled in both cases.
->>
->> But this actually spreads Kconfig configuration over different places:
->> Kconfig and Makefile. It confuses and makes it more difficult in the
->> future to maintain and extend.
->>
-> 
-> I could not understand your point here. Will you please explain what
-> issue you can see in this approach?
+> I need an ACK from Len to apply this one.
 
-You are spreading Kconfig symbols over different places. These should be
-put only in one - in Kconfig.
+Len, did you get a time to look at this?
 
-Some time later someone will add COMPILE_TEST to Kconfig and wonder why
-it does not work... oh yeah, because dependency was put not only in
-Kconfig but also in Makefile. One place for dependency: Kconfig.
+Srinidhi
 
 > 
->> This should be in Kconfig. If you want to limit this per architecture
->> (is it really needed?) then maybe define different EXYNOS_PMU config
->> symbols?
->>
+> Thanks,
+> Rafael
 > 
-> Do you mean we need to have separate configs for enabling PMU on ARM and
-> ARM64 based Exynos SoCs?
+> 
+> > ---
+> >  drivers/idle/intel_idle.c |   76 +++++++++++++++++++++++++++++++++++++++++++++
+> >  1 file changed, 76 insertions(+)
+> > 
+> > diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+> > index 3a3738fe016b..beb950838cda 100644
+> > --- a/drivers/idle/intel_idle.c
+> > +++ b/drivers/idle/intel_idle.c
+> > @@ -522,6 +522,76 @@ static struct cpuidle_state hsw_cstates[] = {
+> >  	{
+> >  		.enter = NULL }
+> >  };
+> > +
+> > +static struct cpuidle_state bxt_cstates[] = {
+> > +	{
+> > +		.name = "C1-BXT",
+> > +		.desc = "MWAIT 0x00",
+> > +		.flags = MWAIT2flg(0x00),
+> > +		.exit_latency = 2,
+> > +		.target_residency = 2,
+> > +		.enter = &intel_idle,
+> > +		.enter_freeze = intel_idle_freeze, },
+> > +	{
+> > +		.name = "C1E-BXT",
+> > +		.desc = "MWAIT 0x01",
+> > +		.flags = MWAIT2flg(0x01),
+> > +		.exit_latency = 10,
+> > +		.target_residency = 20,
+> > +		.enter = &intel_idle,
+> > +		.enter_freeze = intel_idle_freeze, },
+> > +	{
+> > +		.name = "C3-BXT",
+> > +		.desc = "MWAIT 0x10",
+> > +		.flags = MWAIT2flg(0x10) | CPUIDLE_FLAG_TLB_FLUSHED,
+> > +		.exit_latency = 33,
+> > +		.target_residency = 100,
+> > +		.enter = &intel_idle,
+> > +		.enter_freeze = intel_idle_freeze, },
+> > +	{
+> > +		.name = "C6-BXT",
+> > +		.desc = "MWAIT 0x20",
+> > +		.flags = MWAIT2flg(0x20) | CPUIDLE_FLAG_TLB_FLUSHED,
+> > +		.exit_latency = 133,
+> > +		.target_residency = 400,
+> > +		.enter = &intel_idle,
+> > +		.enter_freeze = intel_idle_freeze, },
+> > +	{
+> > +		.name = "C7s-BXT",
+> > +		.desc = "MWAIT 0x32",
+> > +		.flags = MWAIT2flg(0x32) | CPUIDLE_FLAG_TLB_FLUSHED,
+> > +		.exit_latency = 166,
+> > +		.target_residency = 500,
+> > +		.enter = &intel_idle,
+> > +		.enter_freeze = intel_idle_freeze, },
+> > +	{
+> > +		.name = "C8-BXT",
+> > +		.desc = "MWAIT 0x40",
+> > +		.flags = MWAIT2flg(0x40) | CPUIDLE_FLAG_TLB_FLUSHED,
+> > +		.exit_latency = 300,
+> > +		.target_residency = 900,
+> > +		.enter = &intel_idle,
+> > +		.enter_freeze = intel_idle_freeze, },
+> > +	{
+> > +		.name = "C9-BXT",
+> > +		.desc = "MWAIT 0x50",
+> > +		.flags = MWAIT2flg(0x50) | CPUIDLE_FLAG_TLB_FLUSHED,
+> > +		.exit_latency = 600,
+> > +		.target_residency = 1800,
+> > +		.enter = &intel_idle,
+> > +		.enter_freeze = intel_idle_freeze, },
+> > +	{
+> > +		.name = "C10-BXT",
+> > +		.desc = "MWAIT 0x60",
+> > +		.flags = MWAIT2flg(0x60) | CPUIDLE_FLAG_TLB_FLUSHED,
+> > +		.exit_latency = 2600,
+> > +		.target_residency = 7700,
+> > +		.enter = &intel_idle,
+> > +		.enter_freeze = intel_idle_freeze, },
+> > +	{
+> > +		.enter = NULL }
+> > +};
+> > +
+> >  static struct cpuidle_state bdw_cstates[] = {
+> >  	{
+> >  		.name = "C1-BDW",
+> > @@ -882,6 +952,11 @@ static const struct idle_cpu idle_cpu_avn = {
+> >  	.disable_promotion_to_c1e = true,
+> >  };
+> >  
+> > +static const struct idle_cpu idle_cpu_bxt = {
+> > +	.state_table = bxt_cstates,
+> > +	.disable_promotion_to_c1e = true,
+> > +};
+> > +
+> >  #define ICPU(model, cpu) \
+> >  	{ X86_VENDOR_INTEL, 6, model, X86_FEATURE_MWAIT, (unsigned long)&cpu }
+> >  
+> > @@ -911,6 +986,7 @@ static const struct x86_cpu_id intel_idle_ids[] __initconst = {
+> >  	ICPU(0x47, idle_cpu_bdw),
+> >  	ICPU(0x4f, idle_cpu_bdw),
+> >  	ICPU(0x56, idle_cpu_bdw),
+> > +	ICPU(0x5c, idle_cpu_bxt),
+> >  	ICPU(0x4e, idle_cpu_skl),
+> >  	ICPU(0x5e, idle_cpu_skl),
+> >  	{}
+> > 
+> 
+> -- 
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
 
-Yes. If you want to separate ARMv7 from ARMv8 then yes. Just like we
-have for other drivers - usually per SoC but this can be per architecture.
-
-Best regards,
-Krzysztof
+-- 
