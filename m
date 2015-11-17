@@ -1,139 +1,82 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH RFC 25/27] devicetree: bindings: Document qcom,msm-id and qcom,board-id
-Date: Tue, 17 Nov 2015 15:37:49 -0700
-Message-ID: <1447799871-56374-26-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH RFC 19/27] drivers: cpu-pd: Invoke CPU PM runtime on hotplug
+Date: Tue, 17 Nov 2015 15:37:43 -0700
+Message-ID: <1447799871-56374-20-git-send-email-lina.iyer@linaro.org>
 References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f49.google.com ([209.85.220.49]:36841 "EHLO
+	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932595AbbKQWi5 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Nov 2015 17:38:57 -0500
+Received: by pacdm15 with SMTP id dm15so22085012pac.3
+        for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2015 14:38:56 -0800 (PST)
 In-Reply-To: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: ulf.hansson@linaro.org, khilman@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Kumar Gala <galak@codeaurora.org>, devicetree@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: ulf.hansson@linaro.org, khilman@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Lina Iyer <lina.iyer@linaro.org>
 
-From: Kumar Gala <galak@codeaurora.org>
+When a CPU is hotplugged off invoke CPU runtime suspend to notify
+runtime PM of the CPU being powered down and opportunistically power
+down the domain as well. Do that independent of the architecture using
+hotplug notifiers.
 
-The top level qcom,msm-id and qcom,board-id are utilized by bootloaders
-on Qualcomm MSM platforms to determine which device tree should be
-utilized and passed to the kernel.
-
-Cc: <devicetree@vger.kernel.org>
-Signed-off-by: Kumar Gala <galak@codeaurora.org>
+Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- Documentation/devicetree/bindings/arm/msm/ids.txt | 65 +++++++++++++++++++++++
- include/dt-bindings/arm/qcom-ids.h                | 33 ++++++++++++
- 2 files changed, 98 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/arm/msm/ids.txt
- create mode 100644 include/dt-bindings/arm/qcom-ids.h
+ drivers/base/power/cpu-pd.c | 31 +++++++++++++++++++++++++++++--
+ 1 file changed, 29 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/arm/msm/ids.txt b/Documentation/devicetree/bindings/arm/msm/ids.txt
-new file mode 100644
-index 0000000..9ee8428
---- /dev/null
-+++ b/Documentation/devicetree/bindings/arm/msm/ids.txt
-@@ -0,0 +1,65 @@
-+* MSM-ID
+diff --git a/drivers/base/power/cpu-pd.c b/drivers/base/power/cpu-pd.c
+index a00abc1..e331ae6 100644
+--- a/drivers/base/power/cpu-pd.c
++++ b/drivers/base/power/cpu-pd.c
+@@ -237,6 +237,30 @@ static int of_pm_domain_attach_cpus(struct device_node *dn,
+ 	return 0;
+ }
+ 
++static int cpu_hotplug(struct notifier_block *nb,
++			unsigned long action, void *data)
++{
++	struct device *dev = get_cpu_device(smp_processor_id());
 +
-+The qcom,msm-id entry specifies the MSM chipset and hardware revision.  It can
-+optionally be an array of these to indicate multiple hardware that use the same
-+device tree.  It is expected that the bootloader will use this information at
-+boot-up to decide which device tree to use when given multiple device trees,
-+some of which may not be compatible with the actual hardware.  It is the
-+bootloader's responsibility to pass the correct device tree to the kernel.
++	/* Execute CPU runtime PM on that CPU */
++	switch (action) {
++	case CPU_DYING:
++	case CPU_DYING_FROZEN:
++		pm_runtime_put_sync_suspend(dev);
++		pm_runtime_disable(dev);
++		break;
++	case CPU_STARTING:
++	case CPU_STARTING_FROZEN:
++		pm_runtime_enable(dev);
++		pm_runtime_get_sync(dev);
++		break;
++	default:
++		break;
++	}
 +
-+PROPERTIES
++	return NOTIFY_OK;
++}
 +
-+- qcom,msm-id:
-+	Usage: required
-+	Value type: <prop-encoded-array> (<chipset_id, rev_id> [, <c2, r2> ..])
-+	Definition:
-+		The "chipset_id" consists of three fields as below:
-+
-+		bits 0-15  = The unique MSM chipset id.
-+		bits 16-31 = Reserved.  Should be 0
-+
-+		chipset_id is an exact match value
-+
-+		The "rev_id" is a chipset specific 32-bit id that represents
-+		the version of the chipset.
-+
-+		The rev_id is a best match id.  The bootloader will look for
-+		the closest possible patch.
-+
-+* BOARD-ID
-+
-+The qcom,board-id entry specifies the board type and revision information.  It
-+can optionally be an array of these to indicate multiple boards that use the
-+same device tree.  It is expected that the bootloader will use this information
-+at boot-up to decide which device tree to use when given multiple device trees,
-+some of which may not be compatible with the actual hardware.  It is the
-+bootloader's responsibility to pass the correct device tree to the kernel.
-+
-+PROPERTIES
-+
-+- qcom,board-id:
-+	Usage: required
-+	Value type: <prop-encoded-array> (<board_id, subtype_id> [, <b2, s2> ..])
-+	Definition:
-+		The "board_id" consists of three fields as below:
-+
-+		bits 31-24 = Unusued.
-+		bits 23-16 = Platform Version Major
-+		bits 15-8  = Platfrom Version Minor
-+		bits 7-0   = Platform Type
-+
-+		Platform Type field is an exact match value.  The Platform
-+		Major/Minor field is a best match.  The bootloader will look
-+		for the closest possible match.
-+
-+		The "subtype_id" is unique to a Platform Type/Chipset ID.  For
-+		a given Platform Type, there will typically only be a single
-+		board and the subtype_id will be 0.  However in some cases board
-+		variants may need to be distinquished by different subtype_id
-+		values.
-+
-+		subtype_id is an exact match value.
-+
-+EXAMPLE:
-+	qcom,board-id = <15 2>;
-+	qcom,msm-id = <0x1007e 0>;
-diff --git a/include/dt-bindings/arm/qcom-ids.h b/include/dt-bindings/arm/qcom-ids.h
-new file mode 100644
-index 0000000..a18f34e
---- /dev/null
-+++ b/include/dt-bindings/arm/qcom-ids.h
-@@ -0,0 +1,33 @@
-+/* Copyright (c) 2015, The Linux Foundation. All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 and
-+ * only version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+#ifndef __DT_BINDINGS_QCOM_IDS_H
-+#define __DT_BINDINGS_QCOM_IDS_H
-+
-+/* qcom,msm-id */
-+#define QCOM_ID_MSM8916		206
-+#define QCOM_ID_APQ8016		247
-+#define QCOM_ID_MSM8216		248
-+#define QCOM_ID_MSM8116		249
-+#define QCOM_ID_MSM8616		250
-+
-+/* qcom,board-id */
-+#define QCOM_BRD_ID(a, major, minor) \
-+	(((major & 0xff) << 16) | ((minor & 0xff) << 8) | QCOM_BRD_ID_##a)
-+
-+#define QCOM_BRD_ID_MTP		8
-+#define QCOM_BRD_ID_DRAGONBRD	10
-+#define QCOM_BRD_ID_SBC		24
-+
-+#define QCOM_BRD_SUBTYPE_DEFAULT		0
-+#define QCOM_BRD_SUBTYPE_MTP8916_SMB1360	1
-+
-+#endif
+ int of_register_cpu_pm_domain(struct device_node *dn,
+ 		struct cpu_pm_domain *pd)
+ {
+@@ -277,10 +301,13 @@ int of_register_cpu_pm_domain(struct device_node *dn,
+ 
+ 	/* Attach the CPUs to the CPU PM domain */
+ 	ret = of_pm_domain_attach_cpus(dn, pd);
+-	if (ret)
++	if (ret) {
+ 		of_genpd_del_provider(dn);
++		return ret;
++	}
+ 
+-	return ret;
++	hotcpu_notifier(cpu_hotplug, 0)
++	return 0;
+ }
+ 
+ /**
 -- 
 2.1.4
+
