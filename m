@@ -1,67 +1,66 @@
-From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [RFC PATCH 1/2] genirq: Add runtime resume/suspend support for
- IRQ chips
-Date: Tue, 17 Nov 2015 11:57:12 +0000
-Message-ID: <564B1618.10806@nvidia.com>
-References: <1447166377-19707-1-git-send-email-jonathanh@nvidia.com>
- <1447166377-19707-2-git-send-email-jonathanh@nvidia.com>
- <7hio56dctz.fsf@deeprootsystems.com> <5645A6F6.6020202@nvidia.com>
- <alpine.DEB.2.11.1511131456440.3987@nanos> <5649A603.6020308@nvidia.com>
- <CAMuHMdXazgRcw=+O-w+PsZpwiW8iCwZ8MmhNSjcOoZGRP45Y6Q@mail.gmail.com>
- <5649B135.8050800@nvidia.com>
- <CAMuHMdW2L1gYO7cNjeeaBTcQQdEXc9q45E1sZj-=TPwokkGx2g@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAMuHMdW2L1gYO7cNjeeaBTcQQdEXc9q45E1sZj-=TPwokkGx2g-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Cc: Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Marc Zyngier <marc.zyngier-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+From: Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
+Subject: [PATCH v5 0/3] Dynamic power model from device tree
+Date: Tue, 17 Nov 2015 12:06:20 +0000
+Message-ID: <1447761983-12415-1-git-send-email-punit.agrawal@arm.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, javi.merino-5wv7dgnIgG8@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Geert,
+Hi,
 
-On 16/11/15 10:48, Geert Uytterhoeven wrote:
-> On Mon, Nov 16, 2015 at 11:34 AM, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+This patchset adds support to build a single-coefficient dynamic power
+model for a CPU. The model is used by the CPU cooling device to
+provide an estimate of power consumption and also translate allocated
+power to performance cap.
 
-[snip]
+Changes from previous posting -
+v4 -> v5
+Updated tags across the patches
+arm_big_little: Do not register cooling devices when in IKS
 
->>> Handling it automatically needs more bookkeeping than a simple reference
->>> count.
->>
->> So what would you suggest? Adding a pm_runtime_register_irq() API that
->> would register an IRQ with the device that you want RPM to handle? Not
->> sure if there is a better/easier way to handle this.
-> 
-> The irqchip needs to keep track how many times request_irq() has been
-> called, cfr. your suggestion above.
-> 
-> On the other side, the system needs to keep track how many times request_irq()
-> has been called for each irqchip, so it can subtract those numbers from the
-> irqchip's counters during suspend of the device, and re-add them during resume.
-> So we need at least a "struct device *" parameter for request_irq().
-> devm_request_irq() already has that, but not all drivers use that.
+v3 -> v4:
+arm_big_little: Migrated to using static arrays
+arm_big_little: Updated Kconfig to support building thermal as module
 
-Yes that would make sense. However, I am wondering if the
-syscore suspend/resume operators could be used here to do something
-like ...
+Patch 1 extends the CPU nodes binding to provide an optional dynamic
+power coefficient which can be used to create a dynamic power model
+for the CPUs. This model is used to constrain device power consumption
+(using power_allocator governor) when the system is thermally
+constrained.
 
-	pm_runtime_disable(dev);
-	if (!pm_runtime_status_suspended(dev))
-		chip->irq_runtime_suspend(data);
+Patches 2-3 extends the cpufreq-dt and arm_big_little driver to
+register cpu cooling devices with the dynamic coefficient when
+provided.
 
-> However, I think this should be looked at into the context of "[RFD]
-> Functional dependencies between devices".
-> https://lwn.net/Articles/662205/
-> https://lkml.org/lkml/2015/10/27/388
-> 
-> There can be other dependencies than interrupts between devices.
-> All functions using dependencies need a "struct device *" parameter to
-> record information.
+The patches were previously posted at [0][1][2][3]. Mediatek platform
+8173 builds on these bindings to build a power model.
 
-Yes I like the sound of that. That would be ideal. However, I am
-guessing that that is a way off at the moment ...
+Thanks,
+Punit
 
-Cheers
-Jon
+[0] http://thread.gmane.org/gmane.linux.kernel/2002152
+[1] http://thread.gmane.org/gmane.linux.kernel/2011466
+[2] http://marc.info/?l=linux-kernel&m=144709020014884&w=2
+[3] http://marc.info/?l=linux-pm&m=144770224915315&w=2
+
+Punit Agrawal (3):
+  devicetree: bindings: Add optional dynamic-power-coefficient property
+  cpufreq-dt: Supply power coefficient when registering cooling devices
+  cpufreq: arm_big_little: Add support to register a cpufreq cooling
+    device
+
+ Documentation/devicetree/bindings/arm/cpus.txt | 17 +++++++++++
+ drivers/cpufreq/Kconfig.arm                    |  2 ++
+ drivers/cpufreq/arm_big_little.c               | 41 ++++++++++++++++++++++++++
+ drivers/cpufreq/cpufreq-dt.c                   |  9 ++++--
+ 4 files changed, 67 insertions(+), 2 deletions(-)
+
+-- 
+2.6.2
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
