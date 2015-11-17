@@ -1,50 +1,67 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v4 0/3] Dynamic power model from device tree
-Date: Tue, 17 Nov 2015 10:05:53 +0530
-Message-ID: <CAOh2x=nRf-gf56ws_HFh-gvd9rLAYu+_f9oQ1CJ-A_-8-LZ=Wg@mail.gmail.com>
+Subject: Re: [PATCH v4 1/3] devicetree: bindings: Add optional
+ dynamic-power-coefficient property
+Date: Tue, 17 Nov 2015 10:06:32 +0530
+Message-ID: <CAOh2x==3i-ksVOArpGJFVBH9jQspB4gN5u-uVi2XbT0HK5AoAQ@mail.gmail.com>
 References: <1447702225-13323-1-git-send-email-punit.agrawal@arm.com>
+	<1447702225-13323-2-git-send-email-punit.agrawal@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f175.google.com ([209.85.160.175]:35499 "EHLO
-	mail-yk0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752022AbbKQEfy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Nov 2015 23:35:54 -0500
-In-Reply-To: <1447702225-13323-1-git-send-email-punit.agrawal@arm.com>
+Received: from mail-yk0-f196.google.com ([209.85.160.196]:36821 "EHLO
+	mail-yk0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751877AbbKQEgd (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Nov 2015 23:36:33 -0500
+In-Reply-To: <1447702225-13323-2-git-send-email-punit.agrawal@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Punit Agrawal <punit.agrawal@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, dawei.chien@mediatek.com, Javi Merino <javi.merino@arm.com>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, dawei.chien@mediatek.com, Javi Merino <javi.merino@arm.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
 
 On Tue, Nov 17, 2015 at 1:00 AM, Punit Agrawal <punit.agrawal@arm.com> wrote:
-> Hi,
+> The dynamic power consumption of a device is proportional to the
+> square of voltage (V) and the clock frequency (f). It can be expressed as
 >
-> This patchset adds support to build a single-coefficient dynamic power
-> model for a CPU. The model is used by the CPU cooling device to
-> provide an estimate of power consumption and also translate allocated
-> power to performance cap.
+> Pdyn = dynamic-power-coefficient * V^2 * f.
 >
-> Changes from previous posting -
+> The coefficient represents the running time dynamic power consumption in
+> units of mw/MHz/uVolt^2 and can be used in the above formula to
+> calculate the dynamic power in mW.
 >
-> v3 -> v4:
-> arm_big_little: Migrated to using static arrays
-> arm_big_little: Updated Kconfig to support building thermal as module
+> Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
+> Cc: Rob Herring <robh+dt@kernel.org>
+> Cc: Mark Rutland <mark.rutland@arm.com>
+> ---
+>  Documentation/devicetree/bindings/arm/cpus.txt | 17 +++++++++++++++++
+>  1 file changed, 17 insertions(+)
 >
-> Patch 1 extends the CPU nodes binding to provide an optional dynamic
-> power coefficient which can be used to create a dynamic power model
-> for the CPUs. This model is used to constrain device power consumption
-> (using power_allocator governor) when the system is thermally
-> constrained.
+> diff --git a/Documentation/devicetree/bindings/arm/cpus.txt b/Documentation/devicetree/bindings/arm/cpus.txt
+> index 3a07a87..6aca64f 100644
+> --- a/Documentation/devicetree/bindings/arm/cpus.txt
+> +++ b/Documentation/devicetree/bindings/arm/cpus.txt
+> @@ -242,6 +242,23 @@ nodes to be present and contain the properties described below.
+>                 Definition: Specifies the syscon node controlling the cpu core
+>                             power domains.
 >
-> Patches 2-3 extends the cpufreq-dt and arm_big_little driver to
-> register cpu cooling devices with the dynamic coefficient when
-> provided.
+> +       - dynamic-power-coefficient
+> +               Usage: optional
+> +               Value type: <prop-encoded-array>
+> +               Definition: A u32 value that represents the running time dynamic
+> +                           power coefficient in units of mW/MHz/uVolt^2. The
+> +                           coefficient can either be calculated from power
+> +                           measurements or derived by analysis.
+> +
+> +                           The dynamic power consumption of the CPU  is
+> +                           proportional to the square of the Voltage (V) and
+> +                           the clock frequency (f). The coefficient is used to
+> +                           calculate the dynamic power as below -
+> +
+> +                           Pdyn = dynamic-power-coefficient * V^2 * f
+> +
+> +                           where voltage is in uV, frequency is in MHz.
+> +
+>  Example 1 (dual-cluster big.LITTLE system 32-bit):
 >
-> The patches were previously posted at [0][1][2]. Mediatek platform
-> 8173 builds on these bindings to build the power model.
->
-> If there are no objections, I'd appreciate Acks from device tree
-> bindings maintainers.
+>         cpus {
 
-You forgot to cc cpufreq maintainers for this and there are good chances
-that I may completely miss the series some times..
+Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
