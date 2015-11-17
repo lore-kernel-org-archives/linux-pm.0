@@ -1,127 +1,56 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 2/2] Driver core: Set initial runtime PM states at probe err and driver unbind
-Date: Tue, 17 Nov 2015 15:35:29 +0100
-Message-ID: <1447770929-16652-3-git-send-email-ulf.hansson@linaro.org>
-References: <1447770929-16652-1-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH 0/2] Driver core: Fix driver re-bind/probe-defer for runtime PM cases
+Date: Tue, 17 Nov 2015 15:35:27 +0100
+Message-ID: <1447770929-16652-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f50.google.com ([209.85.215.50]:32915 "EHLO
-	mail-lf0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751649AbbKQOfv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Nov 2015 09:35:51 -0500
-Received: by lfaz4 with SMTP id z4so6658081lfa.0
-        for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2015 06:35:50 -0800 (PST)
-In-Reply-To: <1447770929-16652-1-git-send-email-ulf.hansson@linaro.org>
+Received: from mail-lb0-f172.google.com ([209.85.217.172]:34421 "EHLO
+	mail-lb0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751649AbbKQOft (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Nov 2015 09:35:49 -0500
+Received: by lbbcs9 with SMTP id cs9so6655221lbb.1
+        for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2015 06:35:47 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org
 Cc: Alan Stern <stern@rowland.harvard.edu>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert@linux-m68k.org>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Eduardo Valentin <edubezval@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>
 
-There are two common expectations among several subsystems/drivers that
-deploys runtime PM support, but which isn't met by the driver core.
+Because of how some subsystems/drivers deploys runtime PM, it may set certain
+requirements on the behaviour of the driver core, but which currently aren't
+being full-filled. One may argue that these subsystem/drivers should be fixed,
+but from a quick analyze it turned out to be quite a significant amount of code
+to change.
 
-Expectation 1)
-At ->probe() the subsystem/driver expects the runtime PM status of the
-device to be RPM_SUSPENDED, which is the initial status being assigned at
-device registration.
+Moreover, while considering how the driver core behaves around assigning the
+initial states for runtime PM during device registration/unregistration, it
+seems reasonable to apply a similar policy when dealing with driver unbind and
+probe failures.
 
-This expectation is especially common among some of those subsystems/
-drivers that manages devices with an attached PM domain, as those requires
-the ->runtime_resume() callback at the PM domain level to be invoked
-during ->probe().
+These change were initially discussed [1] when Kuninori Morimoto, tried to fix a
+regression for re-bind of RCAR's thermal driver.
 
-Moreover these subsystems/drivers entirely relies on runtime PM resources
-being managed at the PM domain level, thus don't implement their own set
-of runtime PM callbacks.
+At that point we looked past two other related issues, during probe defer and
+for pm_runtime_irq_safe() devices. This patchset tries to address all the
+related problems.
 
-These are two scenarios that suffers from this unmet expectation.
+As these issues are generic and have been existing long way back, perhaps we not
+only need to consider them for the 4.4 rcs, but also for other stable releases.
+At this first version I have decided to not include any fix or stable tag, as I
+what like to request your input for this.
 
-i) A failed ->probe() sequence requests probe deferral:
+[1]
+https://lkml.org/lkml/2015/11/9/849
 
-->probe()
-  ...
-  pm_runtime_enable()
-  pm_runtime_get_sync()
-  ...
+Ulf Hansson (2):
+  PM / Runtime: Extend the scope for pm_runtime_remove()
+  Driver core: Set initial runtime PM states at probe err and driver
+    unbind
 
-err:
-  pm_runtime_put()
-  pm_runtime_disable()
-  ...
+ drivers/base/dd.c            |  2 ++
+ drivers/base/power/main.c    |  2 +-
+ drivers/base/power/power.h   |  6 +++---
+ drivers/base/power/runtime.c | 21 +++++++++++++--------
+ 4 files changed, 19 insertions(+), 12 deletions(-)
 
-As there are no guarantees that such sequence turns the runtime PM status
-of the device into RPM_SUSPENDED, the re-trying ->probe() may start with
-the status in RPM_ACTIVE.
-
-In such case the runtime PM core won't invoke the ->runtime_resume()
-callback because of a pm_runtime_get_sync(), as it considers the device to
-be already runtime resumed.
-
-ii) A driver re-bind sequence:
-
-At driver unbind, the subsystem/driver's >remove() callback invokes a
-sequence of runtime PM APIs, to undo actions during ->probe() and to put
-the device into low power state.
-
-->remove()
-  ...
-  pm_runtime_put()
-  pm_runtime_disable()
-  ...
-
-Similar as in the failing ->probe() case, this sequence don't guarantee
-the runtime PM status of the device to turn into RPM_SUSPENDED.
-
-Trying to re-bind the driver thus causes the same issue as when re-trying
-->probe(), in the probe deferral scenario.
-
-Expectation 2)
-Drivers that invokes the pm_runtime_irq_safe() API during ->probe(),
-triggers the runtime PM core to increase the usage count for the device's
-parent and permanently make it runtime resumed.
-
-The usage count is only dropped at device removal, which also allows it to
-be runtime suspended again.
-
-A re-trying ->probe() repeats the call to pm_runtime_irq_safe() and thus
-once more triggers the usage count of the device's parent to be increased.
-
-This leads to not only an imbalance issue of the usage count of the
-device's parent, but also to keep it runtime resumed permanently even if
-->probe() fails.
-
-To address these issues, let's change the policy of the driver core to
-meet these expectations. More precisely, at ->probe() failures and driver
-unbind, restore the initial states of runtime PM.
-
-Although to still allow subsystem's to control PM for devices that doesn't
-->probe() successfully, don't restore the initial states unless runtime PM
-is disabled.
-
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/base/dd.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-index a641cf3..8402e45 100644
---- a/drivers/base/dd.c
-+++ b/drivers/base/dd.c
-@@ -340,6 +340,7 @@ probe_failed:
- 	dev_set_drvdata(dev, NULL);
- 	if (dev->pm_domain && dev->pm_domain->dismiss)
- 		dev->pm_domain->dismiss(dev);
-+	pm_runtime_remove(dev, false);
- 
- 	switch (ret) {
- 	case -EPROBE_DEFER:
-@@ -695,6 +696,7 @@ static void __device_release_driver(struct device *dev)
- 		dev_set_drvdata(dev, NULL);
- 		if (dev->pm_domain && dev->pm_domain->dismiss)
- 			dev->pm_domain->dismiss(dev);
-+		pm_runtime_remove(dev, false);
- 
- 		klist_remove(&dev->p->knode_driver);
- 		if (dev->bus)
 -- 
 1.9.1
 
