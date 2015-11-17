@@ -1,151 +1,50 @@
-From: "Kasagar, Srinidhi" <srinidhi.kasagar@intel.com>
-Subject: Re: [PATCH] intel_idle: Add support for Goldmont core in the Broxton
- Socs
-Date: Tue, 17 Nov 2015 17:58:37 +0530
-Message-ID: <20151117122837.GA24880@intel-desktop>
-References: <20151105164316.GA24063@intel-desktop>
- <2354289.b50G4ZXWXq@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v4 0/3] Dynamic power model from device tree
+Date: Tue, 17 Nov 2015 10:05:53 +0530
+Message-ID: <CAOh2x=nRf-gf56ws_HFh-gvd9rLAYu+_f9oQ1CJ-A_-8-LZ=Wg@mail.gmail.com>
+References: <1447702225-13323-1-git-send-email-punit.agrawal@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:61407 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751607AbbKQEfK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 16 Nov 2015 23:35:10 -0500
-Content-Disposition: inline
-In-Reply-To: <2354289.b50G4ZXWXq@vostro.rjw.lan>
+Received: from mail-yk0-f175.google.com ([209.85.160.175]:35499 "EHLO
+	mail-yk0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752022AbbKQEfy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 16 Nov 2015 23:35:54 -0500
+In-Reply-To: <1447702225-13323-1-git-send-email-punit.agrawal@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: lenb@kernel.org, len.brown@intel.com, linux-pm@vger.kernel.org
+To: Punit Agrawal <punit.agrawal@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, dawei.chien@mediatek.com, Javi Merino <javi.merino@arm.com>
 
-On Sat, Nov 07, 2015 at 02:08:19AM +0100, Rafael J. Wysocki wrote:
-> On Thursday, November 05, 2015 10:13:37 PM Srinidhi Kasagar wrote:
-> > Broxton SoC uses similar Haswell like C states. Add a dedicated
-> > table for this Soc.
-> > 
-> > Signed-off-by: Srinidhi Kasagar <srinidhi.kasagar@intel.com>
-> 
-> I need an ACK from Len to apply this one.
+On Tue, Nov 17, 2015 at 1:00 AM, Punit Agrawal <punit.agrawal@arm.com> wrote:
+> Hi,
+>
+> This patchset adds support to build a single-coefficient dynamic power
+> model for a CPU. The model is used by the CPU cooling device to
+> provide an estimate of power consumption and also translate allocated
+> power to performance cap.
+>
+> Changes from previous posting -
+>
+> v3 -> v4:
+> arm_big_little: Migrated to using static arrays
+> arm_big_little: Updated Kconfig to support building thermal as module
+>
+> Patch 1 extends the CPU nodes binding to provide an optional dynamic
+> power coefficient which can be used to create a dynamic power model
+> for the CPUs. This model is used to constrain device power consumption
+> (using power_allocator governor) when the system is thermally
+> constrained.
+>
+> Patches 2-3 extends the cpufreq-dt and arm_big_little driver to
+> register cpu cooling devices with the dynamic coefficient when
+> provided.
+>
+> The patches were previously posted at [0][1][2]. Mediatek platform
+> 8173 builds on these bindings to build the power model.
+>
+> If there are no objections, I'd appreciate Acks from device tree
+> bindings maintainers.
 
-Len, did you get a time to look at this?
-
-Srinidhi
-
-> 
-> Thanks,
-> Rafael
-> 
-> 
-> > ---
-> >  drivers/idle/intel_idle.c |   76 +++++++++++++++++++++++++++++++++++++++++++++
-> >  1 file changed, 76 insertions(+)
-> > 
-> > diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-> > index 3a3738fe016b..beb950838cda 100644
-> > --- a/drivers/idle/intel_idle.c
-> > +++ b/drivers/idle/intel_idle.c
-> > @@ -522,6 +522,76 @@ static struct cpuidle_state hsw_cstates[] = {
-> >  	{
-> >  		.enter = NULL }
-> >  };
-> > +
-> > +static struct cpuidle_state bxt_cstates[] = {
-> > +	{
-> > +		.name = "C1-BXT",
-> > +		.desc = "MWAIT 0x00",
-> > +		.flags = MWAIT2flg(0x00),
-> > +		.exit_latency = 2,
-> > +		.target_residency = 2,
-> > +		.enter = &intel_idle,
-> > +		.enter_freeze = intel_idle_freeze, },
-> > +	{
-> > +		.name = "C1E-BXT",
-> > +		.desc = "MWAIT 0x01",
-> > +		.flags = MWAIT2flg(0x01),
-> > +		.exit_latency = 10,
-> > +		.target_residency = 20,
-> > +		.enter = &intel_idle,
-> > +		.enter_freeze = intel_idle_freeze, },
-> > +	{
-> > +		.name = "C3-BXT",
-> > +		.desc = "MWAIT 0x10",
-> > +		.flags = MWAIT2flg(0x10) | CPUIDLE_FLAG_TLB_FLUSHED,
-> > +		.exit_latency = 33,
-> > +		.target_residency = 100,
-> > +		.enter = &intel_idle,
-> > +		.enter_freeze = intel_idle_freeze, },
-> > +	{
-> > +		.name = "C6-BXT",
-> > +		.desc = "MWAIT 0x20",
-> > +		.flags = MWAIT2flg(0x20) | CPUIDLE_FLAG_TLB_FLUSHED,
-> > +		.exit_latency = 133,
-> > +		.target_residency = 400,
-> > +		.enter = &intel_idle,
-> > +		.enter_freeze = intel_idle_freeze, },
-> > +	{
-> > +		.name = "C7s-BXT",
-> > +		.desc = "MWAIT 0x32",
-> > +		.flags = MWAIT2flg(0x32) | CPUIDLE_FLAG_TLB_FLUSHED,
-> > +		.exit_latency = 166,
-> > +		.target_residency = 500,
-> > +		.enter = &intel_idle,
-> > +		.enter_freeze = intel_idle_freeze, },
-> > +	{
-> > +		.name = "C8-BXT",
-> > +		.desc = "MWAIT 0x40",
-> > +		.flags = MWAIT2flg(0x40) | CPUIDLE_FLAG_TLB_FLUSHED,
-> > +		.exit_latency = 300,
-> > +		.target_residency = 900,
-> > +		.enter = &intel_idle,
-> > +		.enter_freeze = intel_idle_freeze, },
-> > +	{
-> > +		.name = "C9-BXT",
-> > +		.desc = "MWAIT 0x50",
-> > +		.flags = MWAIT2flg(0x50) | CPUIDLE_FLAG_TLB_FLUSHED,
-> > +		.exit_latency = 600,
-> > +		.target_residency = 1800,
-> > +		.enter = &intel_idle,
-> > +		.enter_freeze = intel_idle_freeze, },
-> > +	{
-> > +		.name = "C10-BXT",
-> > +		.desc = "MWAIT 0x60",
-> > +		.flags = MWAIT2flg(0x60) | CPUIDLE_FLAG_TLB_FLUSHED,
-> > +		.exit_latency = 2600,
-> > +		.target_residency = 7700,
-> > +		.enter = &intel_idle,
-> > +		.enter_freeze = intel_idle_freeze, },
-> > +	{
-> > +		.enter = NULL }
-> > +};
-> > +
-> >  static struct cpuidle_state bdw_cstates[] = {
-> >  	{
-> >  		.name = "C1-BDW",
-> > @@ -882,6 +952,11 @@ static const struct idle_cpu idle_cpu_avn = {
-> >  	.disable_promotion_to_c1e = true,
-> >  };
-> >  
-> > +static const struct idle_cpu idle_cpu_bxt = {
-> > +	.state_table = bxt_cstates,
-> > +	.disable_promotion_to_c1e = true,
-> > +};
-> > +
-> >  #define ICPU(model, cpu) \
-> >  	{ X86_VENDOR_INTEL, 6, model, X86_FEATURE_MWAIT, (unsigned long)&cpu }
-> >  
-> > @@ -911,6 +986,7 @@ static const struct x86_cpu_id intel_idle_ids[] __initconst = {
-> >  	ICPU(0x47, idle_cpu_bdw),
-> >  	ICPU(0x4f, idle_cpu_bdw),
-> >  	ICPU(0x56, idle_cpu_bdw),
-> > +	ICPU(0x5c, idle_cpu_bxt),
-> >  	ICPU(0x4e, idle_cpu_skl),
-> >  	ICPU(0x5e, idle_cpu_skl),
-> >  	{}
-> > 
-> 
-> -- 
-> I speak only for myself.
-> Rafael J. Wysocki, Intel Open Source Technology Center.
-
--- 
+You forgot to cc cpufreq maintainers for this and there are good chances
+that I may completely miss the series some times..
