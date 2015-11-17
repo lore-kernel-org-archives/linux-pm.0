@@ -1,43 +1,44 @@
-From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: [PATCH] cpufreq: scpi: Add dependency on SCPI clk driver
-Date: Tue, 17 Nov 2015 18:14:19 +0000
-Message-ID: <1447784059-22769-1-git-send-email-punit.agrawal@arm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:57039 "EHLO
-	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753236AbbKQSYe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Nov 2015 13:24:34 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Maruthi Srinivas Bayyavarapu <Maruthi.Bayyavarapu@amd.com>
+Subject: [PATCH v3] PM / Domains: export symbols to add/remove devices from genpd
+Date: Wed, 18 Nov 2015 01:12:00 +0530
+Message-ID: <1447789320-2742-1-git-send-email-Maruthi.Bayyavarapu@amd.com>
+Mime-Version: 1.0
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rjw@rjwysocki.net, khilman@kernel.org, ulf.hansson@linaro.org, pavel@ucw.cz, len.brown@intel.com, gregkh@linuxfoundation.org
+Cc: broonie@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Maruthi Srinivas Bayyavarapu <Maruthi.Bayyavarapu@amd.com>, Maruthi Bayyavarapu <maruthi.bayyavarapu@amd.com>
 List-Id: linux-pm@vger.kernel.org
-To: sudeep.holla@arm.com
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, arnd@arndb.de, Punit Agrawal <punit.agrawal@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
 
-The SCPI clk driver registers the virtual cpufreq device that kicks off
-initialisation of the SCPI cpufreq driver. Make the dependendency
-explicit in Kconfig.
+Drivers which can be built as loadable module needs symbols
+- pm_genpd_add_device/pm_genpd_remove_device to add/remove devices
+to/from genpd. Those drivers create platform devices, which comes
+under a powerdomain.
 
-Fixes: 8def31034d03 ("cpufreq: arm_big_little: add SCPI interface driver")
-Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
-Cc: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Maruthi Bayyavarapu <maruthi.bayyavarapu@amd.com>
 ---
- drivers/cpufreq/Kconfig.arm | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/base/power/domain.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 1582c1c..dadfdd4 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -201,7 +201,7 @@ config ARM_SA1110_CPUFREQ
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index f932058..0c62451 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -1252,6 +1252,7 @@ int __pm_genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
  
- config ARM_SCPI_CPUFREQ
-         tristate "SCPI based CPUfreq driver"
--	depends on ARM_BIG_LITTLE_CPUFREQ && ARM_SCPI_PROTOCOL
-+	depends on ARM_BIG_LITTLE_CPUFREQ && ARM_SCPI_PROTOCOL && COMMON_CLK_SCPI
-         help
- 	  This adds the CPUfreq driver support for ARM big.LITTLE platforms
- 	  using SCPI protocol for CPU power management.
+ 	return ret;
+ }
++EXPORT_SYMBOL_GPL(__pm_genpd_add_device);
+ 
+ /**
+  * pm_genpd_remove_device - Remove a device from an I/O PM domain.
+@@ -1302,6 +1303,7 @@ int pm_genpd_remove_device(struct generic_pm_domain *genpd,
+ 
+ 	return ret;
+ }
++EXPORT_SYMBOL_GPL(pm_genpd_remove_device);
+ 
+ /**
+  * pm_genpd_add_subdomain - Add a subdomain to an I/O PM domain.
 -- 
-2.6.2
-
+1.9.1
