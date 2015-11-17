@@ -1,59 +1,62 @@
-From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: [PATCH v5 1/3] devicetree: bindings: Add optional dynamic-power-coefficient property
-Date: Tue, 17 Nov 2015 12:06:21 +0000
-Message-ID: <1447761983-12415-2-git-send-email-punit.agrawal@arm.com>
-References: <1447761983-12415-1-git-send-email-punit.agrawal@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1447761983-12415-1-git-send-email-punit.agrawal@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Punit Agrawal <punit.agrawal@arm.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, edubezval@gmail.com, dawei.chien@mediatek.com, javi.merino@arm.com, viresh.kumar@linaro.org, rjw@rjwysocki.net, Mark Rutland <mark.rutland@arm.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v2 10/11] PM / Hibernate: clean cached pages on
+ architectures that require it
+Date: Tue, 17 Nov 2015 12:38:07 +0000
+Message-ID: <20151117123807.GA22216@red-moon>
+References: <1445966960-31724-1-git-send-email-james.morse@arm.com>
+ <2039611.PJaFlk1sMi@vostro.rjw.lan>
+ <20151112114705.GA2657@red-moon>
+ <3180507.pKM8OzKjXO@vostro.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:56504 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752838AbbKQMhN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 17 Nov 2015 07:37:13 -0500
+Content-Disposition: inline
+In-Reply-To: <3180507.pKM8OzKjXO@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: James Morse <james.morse@arm.com>, Pavel Machek <pavel@ucw.cz>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Kevin Kang <kkang@intrinsyc.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, wangfei <w.f@huawei.com>, Marc Zyngier <marc.zyngier@arm.com>, Russell King <linux@arm.linux.org.uk>, "David S. Miller" <davem@davemloft.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Guan Xuetao <gxt@mprc.pku.edu.cn>, Ralf Baechle <ralf@linux-mips.org>, Heiko Carstens <heiko.carstens@de.ibm.com>
 
-The dynamic power consumption of a device is proportional to the
-square of voltage (V) and the clock frequency (f). It can be expressed as
+[Cc'ed maintainers of affected arches]
 
-Pdyn = dynamic-power-coefficient * V^2 * f.
+On Sat, Nov 14, 2015 at 12:38:50AM +0100, Rafael J. Wysocki wrote:
+> On Thursday, November 12, 2015 11:47:05 AM Lorenzo Pieralisi wrote:
+> > On Thu, Nov 12, 2015 at 01:48:32AM +0100, Rafael J. Wysocki wrote:
+> > > On Wednesday, November 11, 2015 11:40:39 AM Lorenzo Pieralisi wrote:
+> > > > Hi Pavel, Rafael,
+> > > > 
+> > > > Do you have any feedback on this patch ?
+> > > > 
+> > > > It is fundamental to this series and affects Hibernate core code so if you
+> > > > have any feedback that would be much appreciated.
+> > > 
+> > > I'm really not familiar with the flush_icache_range() interface.
+> > > 
+> > > What exactly does it do?
+> > 
+> > It is used to sync a memory range that is written into (eg loading
+> > modules, copying from snapshot is basically the same thing, reads from
+> > storage and restore pages that might well be executable code), in particular
+> > to sync the I-cache and the D-cache, eg on arm64 the page that the snapshot
+> > code is copying might be executable code that has to be cleaned from the
+> > D-cache so that it is made visible to the I-cache.
+> > 
+> > On x86 it is a NOP AFAIK.
+> 
+> If that's the case, I have no problems with this change as long as the code
+> works on architectures with non-trivial flush_icache_range().
 
-The coefficient represents the running time dynamic power consumption in
-units of mw/MHz/uVolt^2 and can be used in the above formula to
-calculate the dynamic power in mW.
+I Cc'ed the respective arches maintainers, it should work (it may
+make resuming a bit slower, owing to the cache syncing), problem is
+that we have no way of testing it on platforms other than arm/arm64.
 
-Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
-Acked-by: Rob Herring <robh@kernel.org>
-Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Mark Rutland <mark.rutland@arm.com>
----
- Documentation/devicetree/bindings/arm/cpus.txt | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+How do you want us to go on about this ? Should we add a config option
+to prevent calling flush_icache_range() on all platforms (where it
+is not a nop) ?
 
-diff --git a/Documentation/devicetree/bindings/arm/cpus.txt b/Documentation/devicetree/bindings/arm/cpus.txt
-index 3a07a87..6aca64f 100644
---- a/Documentation/devicetree/bindings/arm/cpus.txt
-+++ b/Documentation/devicetree/bindings/arm/cpus.txt
-@@ -242,6 +242,23 @@ nodes to be present and contain the properties described below.
- 		Definition: Specifies the syscon node controlling the cpu core
- 			    power domains.
- 
-+	- dynamic-power-coefficient
-+		Usage: optional
-+		Value type: <prop-encoded-array>
-+		Definition: A u32 value that represents the running time dynamic
-+			    power coefficient in units of mW/MHz/uVolt^2. The
-+			    coefficient can either be calculated from power
-+			    measurements or derived by analysis.
-+
-+			    The dynamic power consumption of the CPU  is
-+			    proportional to the square of the Voltage (V) and
-+			    the clock frequency (f). The coefficient is used to
-+			    calculate the dynamic power as below -
-+
-+			    Pdyn = dynamic-power-coefficient * V^2 * f
-+
-+			    where voltage is in uV, frequency is in MHz.
-+
- Example 1 (dual-cluster big.LITTLE system 32-bit):
- 
- 	cpus {
--- 
-2.6.2
+Thanks a lot !
+Lorenzo
