@@ -1,159 +1,140 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH RFC 23/27] ARM64: psci: Support cluster idle states for OS-Initated
-Date: Tue, 17 Nov 2015 15:37:47 -0700
-Message-ID: <1447799871-56374-24-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH RFC 18/27] drivers: cpu-pd: Add PM Domain governor for CPUs
+Date: Tue, 17 Nov 2015 15:37:42 -0700
+Message-ID: <1447799871-56374-19-git-send-email-lina.iyer@linaro.org>
 References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f53.google.com ([209.85.220.53]:34415 "EHLO
-	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932641AbbKQWjF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Nov 2015 17:39:05 -0500
-Received: by padhx2 with SMTP id hx2so22145339pad.1
-        for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2015 14:39:04 -0800 (PST)
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-arm-msm-owner@vger.kernel.org
 To: ulf.hansson@linaro.org, khilman@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Lina Iyer <lina.iyer@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Mark Rutland <mark.rutland@arm.com>
+Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Lina Iyer <lina.iyer@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-ARMv8 PSCI firmware may allow Linux to determine the state of the CPU
-cluster and the cluster at coherency level to enter idle states when
-there are no active CPUs. Since Linux has a better idea of the QoS and
-the wakeup pattern of the CPUs, the cluster idle states may be better
-determined by the OS instead of the firmware.
+A PM domain comprising of CPUs may be powered off when all the CPUs in
+the domain are powered down. Powering down a CPU domain is generally a
+expensive operation and therefore the power performance trade offs
+should be considered. The time between the last CPU powering down and
+the first CPU powering up in a domain, is the time available for the
+domain to sleep. Ideally, the sleep time of the domain should fulfill
+the residency requirement of the domains' idle state.
 
-The last CPU entering idle in a cluster, holds the responsibility of
-selecting the state of the cluster. Only one CPU in a cluster may
-provide the cluster idle state to the firmware. Similarly, the last CPU
-in the cluster of clusters may provide the state of the coherency
-domain.
+To do this effectively, read the time before the wakeup of the cluster's
+CPUs and ensure that the domain's idle state sleep time guarantees the
+QoS requirements of each of the CPU, the PM QoS CPU_DMA_LATENCY and the
+state's residency.
 
-The CPU PM domain framework facilitates registration of CPU PM domains
-and reference counting for the last man down and the first man up. But
-the organzation of CPUs into clusters must be provided. The cpu-map
-topology node provides the information. Call into the CPU PM framework
-to parse the CPU topology node and setup the PM domains. The state id
-for the cluster ids is available with the domain idle state.
-
-The last CPU PSCI state id of the entire system would therefore be -
-Coherency State ID + Cluster State ID + CPU idle state ID, that is
-passed into the PSCI firmware when the CPU makes the PSCI enable-method.
-
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- arch/arm64/kernel/psci.c | 54 +++++++++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 51 insertions(+), 3 deletions(-)
+ drivers/base/power/cpu-pd.c | 83 ++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 82 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm64/kernel/psci.c b/arch/arm64/kernel/psci.c
-index f67f35b..6618d33 100644
---- a/arch/arm64/kernel/psci.c
-+++ b/arch/arm64/kernel/psci.c
-@@ -15,10 +15,12 @@
- 
- #define pr_fmt(fmt) "psci: " fmt
- 
-+#include <linux/cpu-pd.h>
- #include <linux/init.h>
- #include <linux/of.h>
- #include <linux/smp.h>
- #include <linux/delay.h>
-+#include <linux/pm_domain.h>
- #include <linux/psci.h>
+diff --git a/drivers/base/power/cpu-pd.c b/drivers/base/power/cpu-pd.c
+index 617ce54..a00abc1 100644
+--- a/drivers/base/power/cpu-pd.c
++++ b/drivers/base/power/cpu-pd.c
+@@ -21,6 +21,7 @@
+ #include <linux/pm_qos.h>
+ #include <linux/rculist.h>
  #include <linux/slab.h>
++#include <linux/tick.h>
  
-@@ -31,6 +33,44 @@
- #include <asm/suspend.h>
+ #define CPU_PD_NAME_MAX 36
  
- static DEFINE_PER_CPU_READ_MOSTLY(u32 *, psci_power_state);
-+static DEFINE_PER_CPU(u32, cluster_state_id);
-+
-+static inline u32 psci_get_composite_state_id(u32 cpu_state)
+@@ -66,6 +67,86 @@ static void get_cpus_in_domain(struct generic_pm_domain *genpd,
+ 	}
+ }
+ 
++static bool cpu_pd_down_ok(struct dev_pm_domain *pd)
 +{
-+	u32 val = cpu_state;
++	struct generic_pm_domain *genpd = pd_to_genpd(pd);
++	struct cpu_pm_domain *cpu_pd = to_cpu_pd(genpd);
++	int qos = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
++	u64 sleep_ns = ~0;
++	ktime_t earliest;
++	int cpu;
++	int i;
 +
-+	if (psci_has_ext_power_state())
-+		val += this_cpu_read(cluster_state_id);
++	/* Reset the last set genpd state, default to index 0 */
++	genpd->state_idx = 0;
 +
-+	return val;
++	/* We dont want to power down, if QoS is 0 */
++	if (!qos)
++		return false;
++
++	/*
++	 * Find the sleep time for the cluster.
++	 * The time between now and the first wake up of any CPU that
++	 * are in this domain hierarchy is the time available for the
++	 * domain to be idle.
++	 */
++	earliest.tv64 = KTIME_MAX;
++	for_each_cpu_and(cpu, cpu_pd->cpus, cpu_online_mask) {
++		struct device *cpu_dev = get_cpu_device(cpu);
++		struct gpd_timing_data *td;
++
++		td = &dev_gpd_data(cpu_dev)->td;
++
++		if (earliest.tv64 < td->next_wakeup.tv64)
++			earliest = td->next_wakeup;
++	}
++
++	sleep_ns = ktime_to_ns(ktime_sub(earliest, ktime_get()));
++	if (sleep_ns <= 0)
++		return false;
++
++	/*
++	 * Find the deepest sleep state that satisfies the residency
++	 * requirement and the QoS constraint
++	 */
++	for (i = genpd->state_count - 1; i > 0; i--) {
++		u64 state_sleep_ns;
++
++		state_sleep_ns = genpd->states[i].power_off_latency_ns +
++			genpd->states[i].power_on_latency_ns +
++			genpd->states[i].residency_ns;
++
++		/*
++		 * If we cant sleep to save power in the state, move on
++		 * to the next lower idle state.
++		 */
++		if (state_sleep_ns > sleep_ns)
++		       continue;
++
++		/*
++		 * We also dont want to sleep more than we should to
++		 * gaurantee QoS.
++		 */
++		if (state_sleep_ns < (qos * NSEC_PER_USEC))
++			break;
++	}
++
++	if (i >= 0)
++		genpd->state_idx = i;
++
++	return  (i >= 0) ? true : false;
 +}
 +
-+static inline void psci_reset_composite_state_id(void)
++static bool cpu_stop_ok(struct device *dev)
 +{
-+	this_cpu_write(cluster_state_id, 0);
++	return true;
 +}
 +
-+static int psci_pd_power_on(struct generic_pm_domain *genpd)
-+{
-+	return 0;
-+}
-+
-+static int psci_pd_power_off(struct generic_pm_domain *genpd)
-+{
-+	__this_cpu_add(cluster_state_id, genpd->states[genpd->state_idx].param);
-+	return 0;
-+}
-+
-+static const struct cpu_pd_ops psci_pd_ops = {
-+	.power_on = psci_pd_power_on,
-+	.power_off = psci_pd_power_off,
++struct dev_power_governor cpu_pd_gov = {
++	.power_down_ok = cpu_pd_down_ok,
++	.stop_ok = cpu_stop_ok,
 +};
 +
-+static int __init psci_setup_cpu_domains(void)
-+{
-+	return of_setup_cpu_domain_topology(&psci_pd_ops);
-+}
-+subsys_initcall(psci_setup_cpu_domains);
- 
- static int __maybe_unused cpu_psci_cpu_init_idle(unsigned int cpu)
+ static int cpu_pd_power_off(struct generic_pm_domain *genpd)
  {
-@@ -117,6 +157,8 @@ static int cpu_psci_cpu_boot(unsigned int cpu)
- 	if (err)
- 		pr_err("failed to boot CPU%d (%d)\n", cpu, err);
+ 	struct cpu_pm_domain *pd = to_cpu_pd(genpd);
+@@ -183,7 +264,7 @@ int of_register_cpu_pm_domain(struct device_node *dn,
  
-+	/* Reset CPU cluster states */
-+	psci_reset_composite_state_id();
- 	return err;
- }
- 
-@@ -181,15 +223,16 @@ static int cpu_psci_cpu_kill(unsigned int cpu)
- static int psci_suspend_finisher(unsigned long index)
- {
- 	u32 *state = __this_cpu_read(psci_power_state);
-+	u32 ext_state = psci_get_composite_state_id(state[index - 1]);
- 
--	return psci_ops.cpu_suspend(state[index - 1],
--				    virt_to_phys(cpu_resume));
-+	return psci_ops.cpu_suspend(ext_state, virt_to_phys(cpu_resume));
- }
- 
- static int __maybe_unused cpu_psci_cpu_suspend(unsigned long index)
- {
- 	int ret;
- 	u32 *state = __this_cpu_read(psci_power_state);
-+	u32 ext_state = psci_get_composite_state_id(state[index - 1]);
- 	/*
- 	 * idle state index 0 corresponds to wfi, should never be called
- 	 * from the cpu_suspend operations
-@@ -198,10 +241,15 @@ static int __maybe_unused cpu_psci_cpu_suspend(unsigned long index)
- 		return -EINVAL;
- 
- 	if (!psci_power_state_loses_context(state[index - 1]))
--		ret = psci_ops.cpu_suspend(state[index - 1], 0);
-+		ret = psci_ops.cpu_suspend(ext_state, 0);
- 	else
- 		ret = cpu_suspend(index, psci_suspend_finisher);
- 
-+	/*
-+	 * Clear the CPU's cluster states, we start afresh after coming
-+	 * out of idle.
-+	 */
-+	psci_reset_composite_state_id();
- 	return ret;
- }
- 
+ 	/* Register the CPU genpd */
+ 	pr_debug("adding %s as CPU PM domain.\n", pd->genpd->name);
+-	ret = of_pm_genpd_init(dn, pd->genpd, &simple_qos_governor, false);
++	ret = of_pm_genpd_init(dn, pd->genpd, &cpu_pd_gov, false);
+ 	if (ret) {
+ 		pr_err("Unable to initialize domain %s\n", dn->full_name);
+ 		return ret;
 -- 
 2.1.4
-
