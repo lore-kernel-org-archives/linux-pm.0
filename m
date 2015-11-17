@@ -1,49 +1,60 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] PM / OPP: Add entry in MAINTAINERS
-Date: Tue, 17 Nov 2015 14:36:06 +0530
-Message-ID: <391a7a0b860973b772894ac53de41ad5f361128a.1447750994.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Stephen Boyd <sboyd@codeaurora.org>, nm@ti.com
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Andrew Morton <akpm@linux-foundation.org>, "David S. Miller" <davem@davemloft.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, Joe Perches <joe@perches.com>, open list <linux-kernel@vger.kernel.org>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: Fwd: Freescale IMX6 active cooling
+Date: Tue, 17 Nov 2015 09:56:50 +0000
+Message-ID: <20151117095649.GA2880@e104805>
+References: <CABH3fy-He02iVU7FzqcPApPemeoqQP15+gr9+Hx87-OEBuHvCg@mail.gmail.com>
+ <CABH3fy_KHmOWRDdLYO8_4vpXpD_dJTamDa4GVPY8nSbddgw+Jw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:55205 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753527AbbKQJ4y (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 17 Nov 2015 04:56:54 -0500
+Content-Disposition: inline
+In-Reply-To: <CABH3fy_KHmOWRDdLYO8_4vpXpD_dJTamDa4GVPY8nSbddgw+Jw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Catalin Crenguta <catalin.crenguta@gmail.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Rui Zhang <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Fabio Estevam <fabio.estevam@freescale.com>, Bai Ping <b51503@freescale.com>
 
-Add entry for operating performance points into MAINTAINERS file. This
-will also allow get_maintainers to list OPP stakeholders properly.
+On Tue, Nov 17, 2015 at 08:12:56AM +0200, Catalin Crenguta wrote:
+> +CC Maintainers
+> 
+> ---------- Forwarded message ----------
+> From: Catalin Crenguta <catalin.crenguta@gmail.com>
+> Date: Mon, Nov 16, 2015 at 11:43 AM
+> Subject: Freescale IMX6 active cooling
+> To: "linux-arm-kernel@lists.infradead.org"
+> <linux-arm-kernel@lists.infradead.org>
+> Cc: fabio.estevam@freescale.com, Fabio Estevam <festevam@gmail.com>
+> 
+> 
+> Hello,
+> 
+> I'm trying to use a GPIO Fan to cool down a Riotboard (I.MX6 Solo).
+> I've read [0], investigated the driver which provides the on-die
+> temperature ( fsl,imx6q-tempmon [1]) but it seems to provide the
+> temperature by creating a thermal zone (relevant dts: [2][3][4]).
+> I don't know how I should proceed:
+> 1) Should I research how can I attach a cooling device to this already
+> existing thermal zone? (I believe it involves modifying the existing
+> driver by adding new device tree handles)
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-Hi Rafael,
+Maybe you can use the gpio-fan driver in the kernel.  See
+Documentation/devicetree/bindings/gpio/gpio-fan.txt and
+drivers/hwmon/gpio-fan.c .  
 
-As discussed separately, I have pointed the tree to my (new) repository,
-where I have created two new branches opp/next and opp/fixes for
-applying OPP changes.
+> 2) Should I create another thermal zone, use the existing driver to
+> get the temperature and bind to a cooling device?
 
- MAINTAINERS | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+No, you don't need another thermal zone.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index e9caa4b28828..bcd7cf801f0a 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -7901,6 +7901,18 @@ S:	Maintained
- F:	net/openvswitch/
- F:	include/uapi/linux/openvswitch.h
- 
-+OPERATING PERFORMANCE POINTS (OPP)
-+M:	Viresh Kumar <vireshk@kernel.org>
-+M:	Nishanth Menon <nm@ti.com>
-+M:	Stephen Boyd <sboyd@codeaurora.org>
-+L:	linux-pm@vger.kernel.org
-+S:	Maintained
-+T:	git git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git
-+F:	drivers/base/power/opp/
-+F:	include/linux/pm_opp.h
-+F:	Documentation/power/opp.txt
-+F:	Documentation/devicetree/bindings/opp/
-+
- OPL4 DRIVER
- M:	Clemens Ladisch <clemens@ladisch.de>
- L:	alsa-devel@alsa-project.org (moderated for non-subscribers)
--- 
-2.6.2.198.g614a2ac
+> 3) Should I modify the existing driver to not create a thermal zone
+> and move the creation in the device tree using the of-thermal driver ?
+
+Converting the driver to device tree is the best option if all
+existing users can be converted as well.
+
+Cheers,
+Javi
