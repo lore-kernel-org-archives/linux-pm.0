@@ -1,60 +1,62 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: Fwd: Freescale IMX6 active cooling
-Date: Tue, 17 Nov 2015 09:56:50 +0000
-Message-ID: <20151117095649.GA2880@e104805>
-References: <CABH3fy-He02iVU7FzqcPApPemeoqQP15+gr9+Hx87-OEBuHvCg@mail.gmail.com>
- <CABH3fy_KHmOWRDdLYO8_4vpXpD_dJTamDa4GVPY8nSbddgw+Jw@mail.gmail.com>
+From: Punit Agrawal <punit.agrawal@arm.com>
+Subject: Re: [PATCH v4 0/3] Dynamic power model from device tree
+Date: Tue, 17 Nov 2015 10:05:53 +0000
+Message-ID: <9hhwpthos8u.fsf@e105922-lin.cambridge.arm.com>
+References: <1447702225-13323-1-git-send-email-punit.agrawal@arm.com>
+	<CAOh2x=nRf-gf56ws_HFh-gvd9rLAYu+_f9oQ1CJ-A_-8-LZ=Wg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:55205 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753527AbbKQJ4y (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 17 Nov 2015 04:56:54 -0500
-Content-Disposition: inline
-In-Reply-To: <CABH3fy_KHmOWRDdLYO8_4vpXpD_dJTamDa4GVPY8nSbddgw+Jw@mail.gmail.com>
+Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:56399 "EHLO
+	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751884AbbKQKGM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Nov 2015 05:06:12 -0500
+In-Reply-To: <CAOh2x=nRf-gf56ws_HFh-gvd9rLAYu+_f9oQ1CJ-A_-8-LZ=Wg@mail.gmail.com>
+	(Viresh Kumar's message of "Tue, 17 Nov 2015 10:05:53 +0530")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Catalin Crenguta <catalin.crenguta@gmail.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, Rui Zhang <rui.zhang@intel.com>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Fabio Estevam <fabio.estevam@freescale.com>, Bai Ping <b51503@freescale.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, dawei.chien@mediatek.com, Javi Merino <javi.merino@arm.com>
 
-On Tue, Nov 17, 2015 at 08:12:56AM +0200, Catalin Crenguta wrote:
-> +CC Maintainers
-> 
-> ---------- Forwarded message ----------
-> From: Catalin Crenguta <catalin.crenguta@gmail.com>
-> Date: Mon, Nov 16, 2015 at 11:43 AM
-> Subject: Freescale IMX6 active cooling
-> To: "linux-arm-kernel@lists.infradead.org"
-> <linux-arm-kernel@lists.infradead.org>
-> Cc: fabio.estevam@freescale.com, Fabio Estevam <festevam@gmail.com>
-> 
-> 
-> Hello,
-> 
-> I'm trying to use a GPIO Fan to cool down a Riotboard (I.MX6 Solo).
-> I've read [0], investigated the driver which provides the on-die
-> temperature ( fsl,imx6q-tempmon [1]) but it seems to provide the
-> temperature by creating a thermal zone (relevant dts: [2][3][4]).
-> I don't know how I should proceed:
-> 1) Should I research how can I attach a cooling device to this already
-> existing thermal zone? (I believe it involves modifying the existing
-> driver by adding new device tree handles)
+Viresh Kumar <viresh.kumar@linaro.org> writes:
 
-Maybe you can use the gpio-fan driver in the kernel.  See
-Documentation/devicetree/bindings/gpio/gpio-fan.txt and
-drivers/hwmon/gpio-fan.c .  
+> On Tue, Nov 17, 2015 at 1:00 AM, Punit Agrawal <punit.agrawal@arm.com> wrote:
+>> Hi,
+>>
+>> This patchset adds support to build a single-coefficient dynamic power
+>> model for a CPU. The model is used by the CPU cooling device to
+>> provide an estimate of power consumption and also translate allocated
+>> power to performance cap.
+>>
+>> Changes from previous posting -
+>>
+>> v3 -> v4:
+>> arm_big_little: Migrated to using static arrays
+>> arm_big_little: Updated Kconfig to support building thermal as module
+>>
+>> Patch 1 extends the CPU nodes binding to provide an optional dynamic
+>> power coefficient which can be used to create a dynamic power model
+>> for the CPUs. This model is used to constrain device power consumption
+>> (using power_allocator governor) when the system is thermally
+>> constrained.
+>>
+>> Patches 2-3 extends the cpufreq-dt and arm_big_little driver to
+>> register cpu cooling devices with the dynamic coefficient when
+>> provided.
+>>
+>> The patches were previously posted at [0][1][2]. Mediatek platform
+>> 8173 builds on these bindings to build the power model.
+>>
+>> If there are no objections, I'd appreciate Acks from device tree
+>> bindings maintainers.
+>
+> You forgot to cc cpufreq maintainers for this and there are good chances
+> that I may completely miss the series some times..
 
-> 2) Should I create another thermal zone, use the existing driver to
-> get the temperature and bind to a cooling device?
+Yikes! I'll make sure to include both Rafael and you for future
+postings.
 
-No, you don't need another thermal zone.
-
-> 3) Should I modify the existing driver to not create a thermal zone
-> and move the creation in the device tree using the of-thermal driver ?
-
-Converting the driver to device tree is the best option if all
-existing users can be converted as well.
-
-Cheers,
-Javi
+> --
+> To unsubscribe from this list: send the line "unsubscribe devicetree" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
