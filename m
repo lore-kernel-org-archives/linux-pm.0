@@ -1,156 +1,75 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH RFC 04/27] PM / Domains: make governor select deepest state
-Date: Tue, 17 Nov 2015 15:37:28 -0700
-Message-ID: <1447799871-56374-5-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH RFC 09/27] PM / Domains: Attempt runtime suspend of IRQ safe parent domain
+Date: Tue, 17 Nov 2015 15:37:33 -0700
+Message-ID: <1447799871-56374-10-git-send-email-lina.iyer@linaro.org>
 References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f47.google.com ([209.85.220.47]:35754 "EHLO
-	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932482AbbKQWiY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Nov 2015 17:38:24 -0500
-Received: by pacej9 with SMTP id ej9so22066252pac.2
-        for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2015 14:38:24 -0800 (PST)
+Received: from mail-pa0-f49.google.com ([209.85.220.49]:33679 "EHLO
+	mail-pa0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932542AbbKQWie (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Nov 2015 17:38:34 -0500
+Received: by pabfh17 with SMTP id fh17so22927696pab.0
+        for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2015 14:38:34 -0800 (PST)
 In-Reply-To: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: ulf.hansson@linaro.org, khilman@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Axel Haslam <ahaslam+renesas@baylibre.com>
+Cc: geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Lina Iyer <lina.iyer@linaro.org>
 
-From: Axel Haslam <ahaslam+renesas@baylibre.com>
+When a sub-domain is powered off, attempt powering off the parent
+domains to maximize power savings. A sub-domain that is IRQ safe may
+however have a parent that is not IRQ safe and therefore cannot be
+powered down in atomic context that the sub-domain may be powered off.
 
-Now that the structures of genpd can support multiple state definitions,
-add the logic in the governor to select the deepest possible state when
-powering down.
+An IRQ safe sub-domain may attempt to power down the parent domain in a
+synchronous call, if the parent is also IRQ safe.
 
-For this, create the new function power_down_ok_for_state which will test
-if a particular state will not violate the devices and sub-domains
-constraints.
-
-default_power_down_ok is modified to try each state starting from the
-deepest until a valid state is found or there are no more states to test.
-
-the resulting state will be valid until there are latency or constraint
-changes, thus, we can avoid looping every power_down, and use the cached
-results instead.
-
-Signed-off-by: Axel Haslam <ahaslam+renesas@baylibre.com>
+Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- drivers/base/power/domain_governor.c | 75 +++++++++++++++++++++---------------
- 1 file changed, 45 insertions(+), 30 deletions(-)
+ drivers/base/power/domain.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
-diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
-index b4984f5..ad69dc0 100644
---- a/drivers/base/power/domain_governor.c
-+++ b/drivers/base/power/domain_governor.c
-@@ -98,7 +98,8 @@ static bool default_stop_ok(struct device *dev)
-  *
-  * This routine must be executed under the PM domain's lock.
-  */
--static bool default_power_down_ok(struct dev_pm_domain *pd)
-+static bool power_down_ok_for_state(struct dev_pm_domain *pd,
-+				     unsigned int state)
- {
- 	struct generic_pm_domain *genpd = pd_to_genpd(pd);
- 	struct gpd_link *link;
-@@ -106,31 +107,9 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
- 	s64 min_off_time_ns;
- 	s64 off_on_time_ns;
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 8df43f8..0310e2b 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -44,6 +44,8 @@ static int pm_genpd_alloc_states_names(struct generic_pm_domain *genpd,
+ static LIST_HEAD(gpd_list);
+ static DEFINE_MUTEX(gpd_list_lock);
  
--	if (genpd->max_off_time_changed) {
--		struct gpd_link *link;
-+	off_on_time_ns = genpd->states[state].power_off_latency_ns +
-+		genpd->states[state].power_on_latency_ns;
- 
--		/*
--		 * We have to invalidate the cached results for the masters, so
--		 * use the observation that default_power_down_ok() is not
--		 * going to be called for any master until this instance
--		 * returns.
--		 */
--		list_for_each_entry(link, &genpd->slave_links, slave_node)
--			link->master->max_off_time_changed = true;
--
--		genpd->max_off_time_changed = false;
--		genpd->cached_power_down_ok = false;
--		genpd->max_off_time_ns = -1;
--	} else {
--		return genpd->cached_power_down_ok;
--	}
--
--	/*
--	 * Use the only available state, until multiple state support is added
--	 * to the governor.
--	 */
--	off_on_time_ns = genpd->states[0].power_off_latency_ns +
--				genpd->states[0].power_on_latency_ns;
- 
- 	min_off_time_ns = -1;
- 	/*
-@@ -193,8 +172,6 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
- 			min_off_time_ns = constraint_ns;
++static int genpd_poweroff(struct generic_pm_domain *genpd, bool is_async);
++
+ static inline int genpd_lock_nosleep(struct generic_pm_domain *genpd,
+ 					unsigned int subclass)
+ 	__acquires(&genpd->slock)
+@@ -298,6 +300,13 @@ static int __genpd_poweron(struct generic_pm_domain *genpd)
+ 					&genpd->slave_links,
+ 					slave_node) {
+ 		genpd_sd_counter_dec(link->master);
++
++		/* Assume masters that are non-irq safe are always-on */
++		if (genpd->irq_safe && link->master->irq_safe) {
++			genpd_poweroff(link->master, false);
++			continue;
++		}
++
+ 		genpd_queue_power_off_work(link->master);
  	}
  
--	genpd->cached_power_down_ok = true;
--
- 	/*
- 	 * If the computed minimum device off time is negative, there are no
- 	 * latency constraints, so the domain can spend arbitrary time in the
-@@ -207,14 +184,52 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
- 	 * The difference between the computed minimum subdomain or device off
- 	 * time and the time needed to turn the domain on is the maximum
- 	 * theoretical time this domain can spend in the "off" state.
--	 * Use the only available state, until multiple state support is added
--	 * to the governor.
- 	 */
- 	genpd->max_off_time_ns = min_off_time_ns -
--		genpd->states[0].power_on_latency_ns;
-+			genpd->states[state].power_on_latency_ns;
- 	return true;
- }
+@@ -448,6 +457,13 @@ static int genpd_poweroff(struct generic_pm_domain *genpd, bool is_async)
  
-+static bool default_power_down_ok(struct dev_pm_domain *pd)
-+{
-+	struct generic_pm_domain *genpd = pd_to_genpd(pd);
-+	unsigned int last_state_idx = genpd->state_count - 1;
-+	struct gpd_link *link;
-+	bool retval = false;
-+	unsigned int i;
+ 	list_for_each_entry(link, &genpd->slave_links, slave_node) {
+ 		genpd_sd_counter_dec(link->master);
 +
-+	/*
-+	 * if there was no change on max_off_time, we can return the
-+	 * cached value and we dont need to find a new target_state
-+	 */
-+	if (!genpd->max_off_time_changed)
-+		return genpd->cached_power_down_ok;
-+
-+	/*
-+	 * We have to invalidate the cached results for the masters, so
-+	 * use the observation that default_power_down_ok() is not
-+	 * going to be called for any master until this instance
-+	 * returns.
-+	 */
-+	list_for_each_entry(link, &genpd->slave_links, slave_node)
-+		link->master->max_off_time_changed = true;
-+
-+	genpd->max_off_time_ns = -1;
-+	genpd->max_off_time_changed = false;
-+
-+	/* find a state to power down to, starting from the deepest */
-+	for (i = 0; i < genpd->state_count; i++) {
-+		if (power_down_ok_for_state(pd, last_state_idx - i)) {
-+			genpd->state_idx = last_state_idx - i;
-+			retval = true;
-+			break;
++		/* Assume masters that are non-irq safe are always-on */
++		if (genpd->irq_safe && link->master->irq_safe) {
++			genpd_poweroff(link->master, false);
++			continue;
 +		}
-+	}
 +
-+	genpd->cached_power_down_ok = retval;
-+	return retval;
-+}
-+
- static bool always_on_power_down_ok(struct dev_pm_domain *domain)
- {
- 	return false;
+ 		genpd_queue_power_off_work(link->master);
+ 	}
+ 
 -- 
 2.1.4
 
