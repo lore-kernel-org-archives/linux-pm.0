@@ -1,46 +1,35 @@
-From: Punit Agrawal <punit.agrawal@arm.com>
-Subject: [PATCH v2] cpufreq: scpi: Depend on SCPI clk driver
-Date: Wed, 18 Nov 2015 13:52:44 +0000
-Message-ID: <1447854764-9865-1-git-send-email-punit.agrawal@arm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v5 3/3] cpufreq: arm_big_little: Add support to register
+ a cpufreq cooling device
+Date: Wed, 18 Nov 2015 19:34:39 +0530
+Message-ID: <20151118140439.GH7336@ubuntu>
+References: <1447761983-12415-1-git-send-email-punit.agrawal@arm.com>
+ <1447761983-12415-4-git-send-email-punit.agrawal@arm.com>
+ <20151118054216.GE7336@ubuntu>
+ <9hh8u5vph46.fsf@e105922-lin.cambridge.arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:56504 "EHLO
-	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754824AbbKRNxV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Nov 2015 08:53:21 -0500
+Received: from mail-pa0-f46.google.com ([209.85.220.46]:34268 "EHLO
+	mail-pa0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932719AbbKROEo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Nov 2015 09:04:44 -0500
+Received: by padhx2 with SMTP id hx2so45993265pad.1
+        for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2015 06:04:43 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <9hh8u5vph46.fsf@e105922-lin.cambridge.arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, arnd@arndb.de, Punit Agrawal <punit.agrawal@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+To: Punit Agrawal <punit.agrawal@arm.com>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, edubezval@gmail.com, dawei.chien@mediatek.com, javi.merino@arm.com, rjw@rjwysocki.net, Sudeep Holla <sudeep.holla@arm.com>
 
-The SCPI clk driver registers the virtual cpufreq device that kicks off
-initialisation of the SCPI cpufreq driver. Also, clk_get() will fail for
-the cpufreq driver if the scpi clk driver is missing.
+On 18-11-15, 13:33, Punit Agrawal wrote:
+> Thanks for the Ack.
+> 
+> Will you or Rafael be picking up the series or do they need to go via
+> arm-soc?
 
-Fix this by making the scpi cpufreq driver explicitly depend on the scpi
-clk driver.
+Rafael will pick this up, it should go via PM tree.
 
-Fixes: 8def31034d03 ("cpufreq: arm_big_little: add SCPI interface driver")
-Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
-Cc: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/Kconfig.arm | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 1582c1c..dadfdd4 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -201,7 +201,7 @@ config ARM_SA1110_CPUFREQ
- 
- config ARM_SCPI_CPUFREQ
-         tristate "SCPI based CPUfreq driver"
--	depends on ARM_BIG_LITTLE_CPUFREQ && ARM_SCPI_PROTOCOL
-+	depends on ARM_BIG_LITTLE_CPUFREQ && ARM_SCPI_PROTOCOL && COMMON_CLK_SCPI
-         help
- 	  This adds the CPUfreq driver support for ARM big.LITTLE platforms
- 	  using SCPI protocol for CPU power management.
 -- 
-2.6.2
-
+viresh
