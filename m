@@ -1,197 +1,91 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v2] Driver core: Re-init runtime PM states at probe error and driver unbind
-Date: Wed, 18 Nov 2015 11:48:39 +0100
-Message-ID: <1447843719-9501-1-git-send-email-ulf.hansson@linaro.org>
+Subject: Re: [PATCH] PM / Domains: Allow runtime PM callbacks to be re-used
+ during system PM
+Date: Wed, 18 Nov 2015 13:28:14 +0100
+Message-ID: <CAPDyKFp-pHoPP4iW2CxC=L9x03fu2VXZ6LUC4i+CeQW_PjN2+Q@mail.gmail.com>
+References: <1447778561-9767-1-git-send-email-ulf.hansson@linaro.org>
+	<7h4mgk1fd5.fsf@deeprootsystems.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f53.google.com ([209.85.215.53]:34553 "EHLO
-	mail-lf0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751349AbbKRKs6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Nov 2015 05:48:58 -0500
-Received: by lffu14 with SMTP id u14so23620789lff.1
-        for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2015 02:48:56 -0800 (PST)
+Received: from mail-yk0-f172.google.com ([209.85.160.172]:32908 "EHLO
+	mail-yk0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755771AbbKRM2P (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Nov 2015 07:28:15 -0500
+Received: by ykdv3 with SMTP id v3so59789683ykd.0
+        for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2015 04:28:15 -0800 (PST)
+In-Reply-To: <7h4mgk1fd5.fsf@deeprootsystems.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, linux-pm@vger.kernel.org
-Cc: Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert@linux-m68k.org>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Eduardo Valentin <edubezval@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Kevin Hilman <khilman@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Cao Minh Hiep <cm-hiep@jinso.co.jp>, Harunaga <nx-truong@jinso.co.jp>
 
-There are two common expectations among several subsystems/drivers that
-deploys runtime PM support, but which isn't met by the driver core.
+On 17 November 2015 at 22:32, Kevin Hilman <khilman@kernel.org> wrote:
+> Ulf Hansson <ulf.hansson@linaro.org> writes:
+>
+>> Runtime PM centric subsystems/drivers may re-use their runtime PM
+>> callbacks for system PM. Typically that's done via using the runtime PM
+>> helpers, pm_runtime_force_suspend|resume().
+>>
+>> To genpd, this means its runtime PM callbacks may be invoked even when
+>> runtime PM has been disabled for the device. By checking this condition,
+>> it allows genpd to skip latency validation and measurement in the system
+>> PM path. That's needed to enable drivers/subsystems to re-use the runtime
+>> PM callbacks for system PM.
+>>
+>> Fixes: ba2bbfbf6307 ("PM / Domains: Remove intermediate states from the
+>> power off sequence")
+>> Reported-by: Cao Minh Hiep <cm-hiep@jinso.co.jp>
+>> Reported-by: Harunaga <nx-truong@jinso.co.jp>
+>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> ---
+>>
+>> This patch has only been quick tested on ux500, so further tests are
+>> welcome and needed. It was reported [1] to point out a certain commit
+>> causing the regression, but further analyze actually tells that the
+>> problem been there longer.
+>>
+>> So, I decided to point the fixes tag to a commit from where it actually
+>> becomes quite simple to address the problem. Earlier than that, is just
+>> not worth the effort.
+>>
+>> [1]
+>> https://lkml.org/lkml/2015/11/16/748
+>>
+>> ---
+>>  drivers/base/power/domain.c | 20 ++++++++++++++++----
+>>  1 file changed, 16 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+>> index e03b1ad..8f0c2a3 100644
+>> --- a/drivers/base/power/domain.c
+>> +++ b/drivers/base/power/domain.c
+>> @@ -390,6 +390,7 @@ static int pm_genpd_runtime_suspend(struct device *dev)
+>>       struct generic_pm_domain *genpd;
+>>       bool (*stop_ok)(struct device *__dev);
+>>       struct gpd_timing_data *td = &dev_gpd_data(dev)->td;
+>> +     bool system_pm = !pm_runtime_enabled(dev);
+>
+> nit: I think this 'system_pm' variable name is confusing, especaly
+> because it just means runtime PM *not* enabled.
 
-Expectation 1)
-At ->probe() the subsystem/driver expects the runtime PM status of the
-device to be RPM_SUSPENDED, which is the initial status being assigned at
-device registration.
+Okay! Perhaps "runtime_pm" would be better?
 
-This expectation is especially common among some of those subsystems/
-drivers that manages devices with an attached PM domain, as those requires
-the ->runtime_resume() callback at the PM domain level to be invoked
-during ->probe().
+>
+> Is !pm_runtime_enabled() really sufficient to determine if these are
+> being called in the context of system PM?
 
-Moreover these subsystems/drivers entirely relies on runtime PM resources
-being managed at the PM domain level, thus don't implement their own set
-of runtime PM callbacks.
+I guess pm_runtime_force_suspend() could be used from other places but
+a system PM callback, such as a ->remove() callback for example. So,
+indeed you have point!
 
-These are two scenarios that suffers from this unmet expectation.
+Nevertheless, I still think we can rely on the condition from
+pm_runtime_enabled(dev), as it's only relevant to validate/measure dev
+PM QOS latencies when runtime PM is enabled.
 
-i) A failed ->probe() sequence requests probe deferral:
+With this in mind, let me cook a new version.
 
-->probe()
-  ...
-  pm_runtime_enable()
-  pm_runtime_get_sync()
-  ...
+Thanks for reviewing!
 
-err:
-  pm_runtime_put()
-  pm_runtime_disable()
-  ...
-
-As there are no guarantees that such sequence turns the runtime PM status
-of the device into RPM_SUSPENDED, the re-trying ->probe() may start with
-the status in RPM_ACTIVE.
-
-In such case the runtime PM core won't invoke the ->runtime_resume()
-callback because of a pm_runtime_get_sync(), as it considers the device to
-be already runtime resumed.
-
-ii) A driver re-bind sequence:
-
-At driver unbind, the subsystem/driver's >remove() callback invokes a
-sequence of runtime PM APIs, to undo actions during ->probe() and to put
-the device into low power state.
-
-->remove()
-  ...
-  pm_runtime_put()
-  pm_runtime_disable()
-  ...
-
-Similar as in the failing ->probe() case, this sequence don't guarantee
-the runtime PM status of the device to turn into RPM_SUSPENDED.
-
-Trying to re-bind the driver thus causes the same issue as when re-trying
-->probe(), in the probe deferral scenario.
-
-Expectation 2)
-Drivers that invokes the pm_runtime_irq_safe() API during ->probe(),
-triggers the runtime PM core to increase the usage count for the device's
-parent and permanently make it runtime resumed.
-
-The usage count is only dropped at device removal, which also allows it to
-be runtime suspended again.
-
-A re-trying ->probe() repeats the call to pm_runtime_irq_safe() and thus
-once more triggers the usage count of the device's parent to be increased.
-
-This leads to not only an imbalance issue of the usage count of the
-device's parent, but also to keep it runtime resumed permanently even if
-->probe() fails.
-
-To address these issues, let's change the policy of the driver core to
-meet these expectations. More precisely, at ->probe() failures and driver
-unbind, restore the initial states of runtime PM.
-
-Although to still allow subsystem's to control PM for devices that doesn't
-->probe() successfully, don't restore the initial states unless runtime PM
-is disabled.
-
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
-
-Changes in v2:
-	- Folded patches into one patch, according to Rafael's request.
-	- Add pm_runtime_reinit() and updated code from review by Alan.
-	- Updated commit message header.
-
----
- drivers/base/dd.c            |  2 ++
- drivers/base/power/power.h   |  2 ++
- drivers/base/power/runtime.c | 26 ++++++++++++++++++++------
- 3 files changed, 24 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-index a641cf3..cd2d79b 100644
---- a/drivers/base/dd.c
-+++ b/drivers/base/dd.c
-@@ -340,6 +340,7 @@ probe_failed:
- 	dev_set_drvdata(dev, NULL);
- 	if (dev->pm_domain && dev->pm_domain->dismiss)
- 		dev->pm_domain->dismiss(dev);
-+	pm_runtime_reinit(dev);
- 
- 	switch (ret) {
- 	case -EPROBE_DEFER:
-@@ -695,6 +696,7 @@ static void __device_release_driver(struct device *dev)
- 		dev_set_drvdata(dev, NULL);
- 		if (dev->pm_domain && dev->pm_domain->dismiss)
- 			dev->pm_domain->dismiss(dev);
-+		pm_runtime_reinit(dev);
- 
- 		klist_remove(&dev->p->knode_driver);
- 		if (dev->bus)
-diff --git a/drivers/base/power/power.h b/drivers/base/power/power.h
-index 998fa6b..8b06193 100644
---- a/drivers/base/power/power.h
-+++ b/drivers/base/power/power.h
-@@ -18,6 +18,7 @@ static inline void pm_runtime_early_init(struct device *dev)
- }
- 
- extern void pm_runtime_init(struct device *dev);
-+extern void pm_runtime_reinit(struct device *dev);
- extern void pm_runtime_remove(struct device *dev);
- 
- struct wake_irq {
-@@ -84,6 +85,7 @@ static inline void pm_runtime_early_init(struct device *dev)
- }
- 
- static inline void pm_runtime_init(struct device *dev) {}
-+static inline void pm_runtime_reinit(struct device *dev) {}
- static inline void pm_runtime_remove(struct device *dev) {}
- 
- static inline int dpm_sysfs_add(struct device *dev) { return 0; }
-diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index e1a10a0..ab3fcd9 100644
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -1390,18 +1390,32 @@ void pm_runtime_init(struct device *dev)
- }
- 
- /**
-+ * pm_runtime_reinit - Re-initialize runtime PM fields in given device object.
-+ * @dev: Device object to re-initialize.
-+ */
-+void pm_runtime_reinit(struct device *dev)
-+{
-+	if (!pm_runtime_enabled(dev)) {
-+		if (dev->power.runtime_status == RPM_ACTIVE)
-+			pm_runtime_set_suspended(dev);
-+		if (dev->power.irq_safe) {
-+			spin_lock_irq(&dev->power.lock);
-+			dev->power.irq_safe = 0;
-+			spin_unlock_irq(&dev->power.lock);
-+			if (dev->parent)
-+				pm_runtime_put(dev->parent);
-+		}
-+	}
-+}
-+
-+/**
-  * pm_runtime_remove - Prepare for removing a device from device hierarchy.
-  * @dev: Device object being removed from device hierarchy.
-  */
- void pm_runtime_remove(struct device *dev)
- {
- 	__pm_runtime_disable(dev, false);
--
--	/* Change the status back to 'suspended' to match the initial status. */
--	if (dev->power.runtime_status == RPM_ACTIVE)
--		pm_runtime_set_suspended(dev);
--	if (dev->power.irq_safe && dev->parent)
--		pm_runtime_put(dev->parent);
-+	pm_runtime_reinit(dev);
- }
- 
- /**
--- 
-1.9.1
-
+Kind regards
+Uffe
