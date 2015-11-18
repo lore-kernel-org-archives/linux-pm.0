@@ -1,142 +1,155 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: [PATCH] cpufreq, intel_pstate.c, Fix rounding errors
-Date: Wed, 18 Nov 2015 10:55:44 -0500
-Message-ID: <1447862144-7188-1-git-send-email-prarit@redhat.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Prarit Bhargava <prarit@redhat.com>, Srinivas Pandruvada <srinivas.pandruvada@intel.com>, Len Brown <len.brown@intel.com>, Alexandra Yates <alexandra.yates@intel.com>, Kristen Carlson Accardi <kristen@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [TEST PATCH] cpufreq: intel_pstate: Workaround to for wrong ACPI
+ perf table entry
+Date: Wed, 18 Nov 2015 08:32:58 -0800
+Message-ID: <564CA83A.6080304@linux.intel.com>
+References: <1447801252-3626-1-git-send-email-srinivas.pandruvada@linux.intel.com>	<8524647.rknTxxgTfO@vostro.rjw.lan>	<1447812635.2778.90.camel@spandruv-desk3.jf.intel.com> <CAJZ5v0ideLEQB9m-s6ApL6ub-6sdPFunf4_vspF_HR6DVzxOag@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([192.55.52.115]:40294 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933230AbbKRQdm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 18 Nov 2015 11:33:42 -0500
+In-Reply-To: <CAJZ5v0ideLEQB9m-s6ApL6ub-6sdPFunf4_vspF_HR6DVzxOag@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Borislav Petkov <bp@alien8.de>, Rafael Wysocki <rafael.j.wysocki@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-I have a Intel (6,63) processor with a "marketing" frequency (from
-/proc/cpuinfo) of 2100MHz, and a max turbo frequency of 2600MHz.  I
-can execute
 
-cpupower frequency-set -g powersave --min 1200MHz --max 2100MHz
 
-and the max_freq_pct is set to 80.  When adding load to the system I noticed
-that the cpu frequency only reached 2000MHZ and not 2100MHz as expected.
+On 11/17/2015 07:19 PM, Rafael J. Wysocki wrote:
+> On Wed, Nov 18, 2015 at 3:10 AM, Srinivas Pandruvada
+> <srinivas.pandruvada@linux.intel.com> wrote:
+>> On Wed, 2015-11-18 at 02:33 +0100, Rafael J. Wysocki wrote:
+>>> On Tuesday, November 17, 2015 03:00:52 PM Srinivas Pandruvada wrote:
+>>>> With the implementation of ACPI _PSS and _PPC processing in the Intel P
+>>>> state driver, a bad ACPI configuration can impact max/min states. For
+>>>> example as reported by Borislav Petkov <bp@alien8.de>, the log shows:
+>>>>
+>>>> [    0.826119] intel_pstate: default limits 0xc 0x1d 0x24
+>>>> [    0.827000] intel_pstate: CPU0 - ACPI _PSS perf data
+>>>> [    0.827020]      *P0: 2901 MHz, 35000 mW, 0xff00
+>>>> The above control value of 0xff00, is invalid. The first entry sets the
+>>>> max control value for turbo with a max non turbo frequency + 1 MHz. Here
+>>>> the control values should be 0x1d00.
+> [cut]
+>
+>>>> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+>>>> index d3159f0..fc99e97 100644
+>>>> --- a/drivers/cpufreq/intel_pstate.c
+>>>> +++ b/drivers/cpufreq/intel_pstate.c
+>>>> @@ -311,6 +311,13 @@ static int intel_pstate_init_perf_limits(struct cpufreq_policy *policy)
+>>>>               * correct max turbo frequency based on the turbo ratio.
+>>>>               * Also need to convert to MHz as _PSS freq is in MHz.
+>>>>               */
+>>>> +           if (turbo_pss_ctl > cpu->pstate.turbo_pstate) {
+>>>> +                   /* We hava an invalid control value here */
+>>>> +                   turbo_pss_ctl = cpu->pstate.turbo_pstate;
+>>>> +                   cpu->acpi_perf_data.states[0].control =
+>>>> +                                                   turbo_pss_ctl << 8;
+>>>> +           }
+>>> Should we update pstate.turbo_pstate otherwise?
+>> It will happen as the policy will reduce the frequency based on the
+>> _PSS[PPC_INDEX] frequency. So if turbo_pstate is less then the
+>> intel_pstate_set_policy will be called with reduced max->policy.
+>>
+> Well, OK, but here we're leaving policy->cpuinfo.max_freq and
+> acpi_perf_data.states[0].core_frequency somewhat inconsistent which at
+> least looks confusing.
+OK I will do what you want here.
+>>>> +
+>>>>              cpu->acpi_perf_data.states[0].core_frequency =
+>>>>                              turbo_pss_ctl * cpu->pstate.scaling / 1000;
+>>>>      }
+>>> We seem to have one more bug in this function, but it doesn't affect the case
+>>> at hand.  Namely, if the turbo range is not present in the _PSS, we should
+>>> set pstate.turbo_pstate to pstate.max_pstate after we've updated the latter
+>>> and not before updating it.
+>> Doing it before we have good known reference for max_sysf_pct. which is
+>> either physical max turbo or physical max non turbo as 100%. The policy
+>> will limit to actual pss max pstate frequency. which will be reflected
+>> in reduced max_perf_pct.
+>>
+> So say we have the "non-turbo" situation, so we set the
+> pstate.turbo_pstate to pstate.max_pstate and then we update
+> pstate.max_pstate.  policy->cpuinfo.max_freq is updated to reflect the
+> new max_pstate and turbo_pstate points to physical max non turbo which
+> is above max_pstate.  Why is this correct?  What about
+> update_turbo_state(), for example?
+>
+> And now we're claiming "no turbo", but we're presenting the "non-PSS
+> max_pstate" as an "effective turbo" and the max_pstate from _PSS is
+> the new limit.  How is this not confusing?
+OK I will do what you wanted here.
+>>> I'm also wondering if turbo should be enabled when turbo_pass_ctl is less than
+>>> pstate.min_state.  Perhaps not?
+>>>
+>> This is too bad entry in that case. But we can disable the turbo.
+>>>> @@ -1272,6 +1279,8 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+>>>>
+>>>>   #if IS_ENABLED(CONFIG_ACPI)
+>>>>      cpu = all_cpu_data[policy->cpu];
+>>>> +   limits->min_perf_ctl = 0;
+>>>> +   limits->max_perf_ctl = 0;
+>>> Wouldn't this re-introduce the problem fixed by commit 4ef451487019
+>>> (cpufreq: intel_pstate: Avoid calculation for max/min) in corner cases?
+>> If there is a match in _PSS, it will be correctly set in loop below.
+> Sure, but what if there isn't?  We'll end up with 0 and that may not
+> work (or the commit mentioned above was not necessary).
+No, 0 is fine. If 0 then the old limit based on the max_perf calculation 
+will work.
+Since there will be no match in _PSS we have no other way. Setting not 
+to 0, causes the old
+limits->max_perf_ctl to get used.
+Let's see what happened in the case now:
 
-I wrote a little test program to set the frequencies in decrements of
-100MHz and compared the targeted frequency (the frequency set through
-the cpupower command) and the actual frequency (from /proc/cpuinfo), as
-well as dumping out the value of the MSR_IA32_PERF_CTL.
+Here we tried to match 0xff in the _PSS and failed. From Borslov's log
 
-Target     Achieved     Difference     MSR(0x199)
- 3300        2900          -400          0x1e00
- 3200        2900          -300          0x1e00
- 3100        2900          -200          0x1e00
- 3000        2900          -100          0x1d00
- 2900        2800          -100          0x1c00
- 2800        2700          -100          0x1b00
- 2700        2600          -100          0x1a00
- 2600        2500          -100          0x1900
- 2500        2400          -100          0x1800
- 2400        2300          -100          0x1700
- 2300        2200          -100          0x1600
- 2200        2100          -100          0x1500
- 2100        2000          -100          0x1400
- 2000        1900          -100          0x1300
- 1900        1800          -100          0x1200
- 1800        1700          -100          0x1100
- 1700        1600          -100          0x1000
- 1600        1500          -100          0xf00
- 1500        1400          -100          0xe00
- 1400        1300          -100          0xd00
- 1300        1200          -100          0xc00
- 1200        1200             0          0xc00
+[   28.587413] intel_pstate: intel_pstate_set_policy max 3600000 policy->max 3600000
+[   28.587417] intel_pstate: set powersave
+[   28.587419] intel_pstate: max 3600000 policy_max 3600000 perf_ctl match [min 0xc- max 0x0] [EDITED to add min/max tag]
 
-As can be seen the frequencies are consistently off by 100MHz.  After
-some examination I found a rounding error in intel_pstate_set_policy() for the
-calculation of limits->max_policy_pct which needs to be rounded up to the
-nearest percentage point.  For example, setting a frequency of 2100MHz on this
-system results in limits->max_policy_pct = ((2100 * 100) / 2600) = 80.
-However, ((2100 * 100) / 2600) is actually 80.7, or 81.   This is fixed
-by expanding the calculation an extra decimal point and rounding to the
-nearest percentage point.
+Looks like now some thermal event happened, setting to Pn
 
-A second rounding error was found in the calculation of limits->max_perf
-in intel_pstate_set_policy(), which is used to calculate the max and min
-pstate values in intel_pstate_get_min_max().  In this case, limits->max_perf
-is truncated to 2 hex digits such that, for example, 0x169 was incorrectly
-truncated to 0x16 instead of 0x17.  This resulted in the pstate being set
-one level too low.
+[   28.589573] intel_pstate: intel_pstate_set_policy max 3600000 policy->max 1200000
+[   28.589574] intel_pstate: set powersave
+[   28.589575] intel_pstate: max 3600000 policy_max 1200000 perf_ctl match  [min 0xc- max 0xc] [EDITED to add min/max tag]
+We matched 1.2GHz and we correctly identified min and max ctl value from _PSS.
 
-After applying these two fixes we consistently reach the targeted
-frequency.
+Now we back to normal.
+[   28.589599] intel_pstate: intel_pstate_set_policy max 3600000 policy->max 3600000
+[   28.589600] intel_pstate: set powersave
+[   28.589601] intel_pstate: max 3600000 policy_max 3600000 perf_ctl [0xc-0xc]
+We still carried the old value, so we were stuck in 1.2GHz.
 
-Target     Achieved     Difference     MSR(0x199)
- 3300        2900          -400          0x1e00
- 3200        2900          -300          0x1e00
- 3100        2900          -200          0x1e00
- 3000        2900          -100          0x1d00
- 2900        2900             0          0x1d00
- 2800        2800             0          0x1c00
- 2700        2700             0          0x1b00
- 2600        2600             0          0x1a00
- 2500        2500             0          0x1900
- 2400        2400             0          0x1800
- 2300        2300             0          0x1700
- 2200        2200             0          0x1600
- 2100        2100             0          0x1500
- 2000        2000             0          0x1400
- 1900        1900             0          0x1300
- 1800        1800             0          0x1200
- 1700        1700             0          0x1100
- 1600        1600             0          0x1000
- 1500        1500             0          0xf00
- 1400        1400             0          0xe00
- 1300        1300             0          0xd00
- 1200        1200             0          0xc00
 
-Additional tests were run on a (6,78) with HWP enabled and a (6,79)
-system.  Testing on both systems showed that the problem was resolved.
+So resetting 0 would have caused no match again
+[   28.587419] intel_pstate: max 3600000 policy_max 3600000 perf_ctl match [min 0xc- max 0x0] [EDITED]
+and would have worked with logic.
 
-Cc: Srinivas Pandruvada <srinivas.pandruvada@intel.com>
-Cc: Len Brown <len.brown@intel.com>
-Cc: Alexandra Yates <alexandra.yates@intel.com>
-Cc: Kristen Carlson Accardi <kristen@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org
+The commit only helps when there is match in the _PSS table to get max control value. If there is no match we have to live with rounding error in some corner cases. Prareet from Redhat  is submitted a patch which reduces this rounding error.
+With Intel P state cpufreq, we allow any frequencies to set (we don't have available_scaling.. attribute). So it is possible not to match _PSS in all the cases. For Borislov's system there is no 2100 entry in _PSS, but user can still request 2100.
 
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
----
- drivers/cpufreq/intel_pstate.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+>> In the current problem case we failed to match the _PSS for policy->max so
+>> we were relying on the max_perf calculation. But later some thermal
+>> issue happened, which reduced the policy to minimum. We stuck in that
+>> because limits->max_perf_ctl was not reset even after when policy
+>> changed to turbo max. With reset we should have used max pstate
+>> calculated value, which will not be as bad as last value.
+>>>>      for (i = 0; i < cpu->acpi_perf_data.state_count; i++) {
+>>>>              int control;
+>>> That whole loop is fragile.
+>> Could you suggest or submit a change for this?  Trying to do get max and
+>> min in one for-loop assuming not sorted.
+> I'll try to cut a patch for that tomorrow.
+Sure.
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 2e31d09..686f024 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -1233,6 +1233,8 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
- 	struct cpudata *cpu;
- 	int i;
- #endif
-+	int max_policy_calc;
-+
- 	pr_debug("intel_pstate: %s max %u policy->max %u\n", __func__,
- 		 policy->cpuinfo.max_freq, policy->max);
- 	if (!policy->cpuinfo.max_freq)
-@@ -1249,7 +1251,10 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
- 	limits = &powersave_limits;
- 	limits->min_policy_pct = (policy->min * 100) / policy->cpuinfo.max_freq;
- 	limits->min_policy_pct = clamp_t(int, limits->min_policy_pct, 0 , 100);
--	limits->max_policy_pct = (policy->max * 100) / policy->cpuinfo.max_freq;
-+
-+	max_policy_calc = (policy->max * 1000) / policy->cpuinfo.max_freq;
-+	limits->max_policy_pct = DIV_ROUND_UP(max_policy_calc, 10);
-+
- 	limits->max_policy_pct = clamp_t(int, limits->max_policy_pct, 0 , 100);
- 
- 	/* Normalize user input to [min_policy_pct, max_policy_pct] */
-@@ -1269,6 +1274,7 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
- 				  int_tofp(100));
- 	limits->max_perf = div_fp(int_tofp(limits->max_perf_pct),
- 				  int_tofp(100));
-+	limits->max_perf = round_up(limits->max_perf, 8);
- 
- #if IS_ENABLED(CONFIG_ACPI)
- 	cpu = all_cpu_data[policy->cpu];
--- 
-1.7.9.3
+Thanks,
+Srinivas
+> Thanks,
+> Rafael
+>
+
