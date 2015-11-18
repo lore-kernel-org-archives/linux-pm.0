@@ -1,294 +1,391 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [PATCH][v6] x86, suspend: Save/restore extra MSR registers for
- suspend
-Date: Wed, 18 Nov 2015 08:52:53 +0100
-Message-ID: <20151118075252.GA21676@gmail.com>
-References: <6c37c06b6496431d6d82e6d59215eb04edfd9333.1447730578.git.yu.c.chen@intel.com>
+From: Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+Subject: Re: [PATCH 2/3] thermal: Add Mediatek thermal controller support
+Date: Wed, 18 Nov 2015 09:11:37 +0100
+Message-ID: <20151118081137.GV14356@pengutronix.de>
+References: <1447064013-13026-1-git-send-email-s.hauer@pengutronix.de>
+ <1447064013-13026-3-git-send-email-s.hauer@pengutronix.de>
+ <CAHp75VcSvoUt46tobRrWJ_etbLEasA1cyoJVnhjdzMegtGTugA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f47.google.com ([74.125.82.47]:38643 "EHLO
-	mail-wm0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752542AbbKRHw6 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Nov 2015 02:52:58 -0500
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <6c37c06b6496431d6d82e6d59215eb04edfd9333.1447730578.git.yu.c.chen@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <CAHp75VcSvoUt46tobRrWJ_etbLEasA1cyoJVnhjdzMegtGTugA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
+ <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
+List-Post: <mailto:linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
+ <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: Andy Shevchenko <andy.shevchenko-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-arm Mailing List <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, rjw@rjwysocki.net, pavel@ucw.cz, bp@suse.de, luto@kernel.org, linux@horizon.com, rui.zhang@intel.com, len.brown@intel.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-
-* Chen Yu <yu.c.chen@intel.com> wrote:
-
-Btw., you say a bug was reported - but there's no Reported-by line. Do you know 
-who reported it, can the reporter be credited?
-
-Also, I improved the changelog to be readable, please pick this new text up for 
-the next submission:
-
-> A bug was reported that on certain Broadwell platforms, after resuming from S3, 
-> the CPU is running at an anomalously low speed.
->
-> It turns out that the BIOS has modified the value of the THERM_CONTROL register 
-> during S3, and changed it from 0 to 0x10, thus enabled clock modulation(bit4), 
-> but with undefined CPU Duty Cycle(bit1:3) - which causes the problem.
+On Mon, Nov 09, 2015 at 04:39:37PM +0200, Andy Shevchenko wrote:
+> On Mon, Nov 9, 2015 at 12:13 PM, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org> wrote:
+> > This adds support for the Mediatek thermal controller found on MT8173
+> > and likely other SoCs.
+> > The controller is a bit special. It does not have its own ADC, instead
+> > it controls the on-SoC AUXADC via AHB bus accesses. For this reason
+> > we need the physical address of the AUXADC. Also it controls a mux
+> > using AHB bus accesses, so we need the APMIXEDSYS physical address aswell.
 > 
-> Here is a simple scenario to reproduce the issue:
->
->  1. Boot up the system
->  2. Get MSR 0x19a, it should be 0
->  3. Put the system into sleep, then wake it up
->  4. Get MSR 0x19a, it shows 0x10, while it should be 0
+> Few style nitpicks.
 > 
-> Although some BIOSen want to change the CPU Duty Cycle during S3, in our case we 
-> don't want the BIOS to do any modification.
->
-> Fix this issue by introducing a more generic x86 framework to save/restore 
-> specified MSR registers(THERM_CONTROL in this case) for suspend/resume. This 
-> allows us to fix similar bugs in a much simpler way in the future.
 > 
-> When the kernel wants to protect certain MSRs during suspending, we simply add a 
-> quirk entry in msr_save_dmi_table, and customize the MSR registers inside the 
-> quirk callback, for example:
+> > +#include <linux/clk.h>
+> > +#include <linux/delay.h>
+> > +#include <linux/interrupt.h>
+> > +#include <linux/kernel.h>
+> > +#include <linux/module.h>
+> > +#include <linux/nvmem-consumer.h>
+> > +#include <linux/of.h>
+> > +#include <linux/of_address.h>
+> > +#include <linux/platform_device.h>
+> > +#include <linux/slab.h>
+> > +#include <linux/io.h>
+> > +#include <linux/thermal.h>
+> > +#include <linux/reset.h>
+> > +#include <linux/types.h>
+> > +#include <linux/nvmem-consumer.h>
+> > +
+> > +/* AUXADC Registers */
+> > +#define AUXADC_CON0_V          0x000
+> > +#define AUXADC_CON1_V          0x004
+> > +#define AUXADC_CON1_SET_V      0x008
+> > +#define AUXADC_CON1_CLR_V      0x00c
+> > +#define AUXADC_CON2_V          0x010
+> > +#define AUXADC_DATA(channel)   (0x14 + (channel) * 4)
+> > +#define AUXADC_MISC_V          0x094
+> > +
+> > +#define AUXADC_CON1_CHANNEL(x) BIT(x)
+> > +
+> > +#define APMIXED_SYS_TS_CON1    0x604
+> > +
+> > +/* Thermal Controller Registers */
+> > +#define TEMP_MONCTL0           0x000
+> > +#define TEMP_MONCTL1           0x004
+> > +#define TEMP_MONCTL2           0x008
+> > +#define TEMP_MONIDET0          0x014
+> > +#define TEMP_MONIDET1          0x018
+> > +#define TEMP_MSRCTL0           0x038
+> > +#define TEMP_AHBPOLL           0x040
+> > +#define TEMP_AHBTO             0x044
+> > +#define TEMP_ADCPNP0           0x048
+> > +#define TEMP_ADCPNP1           0x04c
+> > +#define TEMP_ADCPNP2           0x050
+> > +#define TEMP_ADCPNP3           0x0b4
+> > +
+> > +#define TEMP_ADCMUX            0x054
+> > +#define TEMP_ADCEN             0x060
+> > +#define TEMP_PNPMUXADDR                0x064
+> > +#define TEMP_ADCMUXADDR                0x068
+> > +#define TEMP_ADCENADDR         0x074
+> > +#define TEMP_ADCVALIDADDR      0x078
+> > +#define TEMP_ADCVOLTADDR       0x07c
+> > +#define TEMP_RDCTRL            0x080
+> > +#define TEMP_ADCVALIDMASK      0x084
+> > +#define TEMP_ADCVOLTAGESHIFT   0x088
+> > +#define TEMP_ADCWRITECTRL      0x08c
+> > +#define TEMP_MSR0              0x090
+> > +#define TEMP_MSR1              0x094
+> > +#define TEMP_MSR2              0x098
+> > +#define TEMP_MSR3              0x0B8
+> > +
+> > +#define TEMP_SPARE0            0x0f0
+> > +
+> > +#define PTPCORESEL             0x400
+> > +
+> > +#define TEMP_MONCTL1_PERIOD_UNIT(x)    ((x) & 0x3ff)
+> > +
+> > +#define TEMP_MONCTL2_FILTER_INTERVAL(x)        (((x) & 0x3ff)) << 16
+> > +#define TEMP_MONCTL2_SENSOR_INTERVAL(x)        ((x) & 0x3ff)
+> > +
+> > +#define TEMP_AHBPOLL_ADC_POLL_INTERVAL(x)      (x)
+> > +
+> > +#define TEMP_ADCWRITECTRL_ADC_PNP_WRITE                BIT(0)
+> > +#define TEMP_ADCWRITECTRL_ADC_MUX_WRITE                BIT(1)
+> > +
+> > +#define TEMP_ADCVALIDMASK_VALID_HIGH           BIT(5)
+> > +#define TEMP_ADCVALIDMASK_VALID_POS(bit)       (bit)
+> > +
+> > +#define MT8173_TS1     0
+> > +#define MT8173_TS2     1
+> > +#define MT8173_TS3     2
+> > +#define MT8173_TS4     3
+> > +#define MT8173_TSABB   4
+> > +
+> > +/* AUXADC channel 11 is used for the temperature sensors */
+> > +#define MT8173_TEMP_AUXADC_CHANNEL     11
+> > +
+> > +/* The total number of temperature sensors in the MT8173 */
+> > +#define MT8173_NUM_SENSORS             5
+> > +
+> > +/* The number of banks in the MT8173 */
+> > +#define MT8173_NUM_ZONES               4
+> > +
+> > +/* The number of sensing points per bank */
+> > +#define MT8173_NUM_SENSORS_PER_ZONE    4
+> > +
+> > +/* Layout of the fuses providing the calibration data */
+> > +#define MT8173_CALIB_BUF0_VALID                (1 << 0)
+> > +#define MT8173_CALIB_BUF1_ADC_GE(x)    (((x) >> 22 ) & 0x3ff)
+> > +#define MT8173_CALIB_BUF0_VTS_TS1(x)   (((x) >> 17 ) & 0x1ff)
+> > +#define MT8173_CALIB_BUF0_VTS_TS2(x)   (((x) >> 8 ) & 0x1ff)
+> > +#define MT8173_CALIB_BUF1_VTS_TS3(x)   (((x) >> 0 ) & 0x1ff)
+> > +#define MT8173_CALIB_BUF2_VTS_TS4(x)   (((x) >> 23 ) & 0x1ff)
+> > +#define MT8173_CALIB_BUF2_VTS_TSABB(x) (((x) >> 14 ) & 0x1ff)
+> > +#define MT8173_CALIB_BUF0_DEGC_CALI(x) (((x) >> 1 ) & 0x3f)
+> > +#define MT8173_CALIB_BUF0_O_SLOPE(x)   (((x) >> 26 ) & 0x3f)
+> > +
+> > +#define THERMAL_NAME    "mtk-thermal"
+> > +
+> > +struct mtk_thermal;
+> > +
+> > +struct mtk_thermal_bank {
+> > +       struct mtk_thermal *mt;
+> > +       int id;
+> > +};
+> > +
+> > +struct mtk_thermal {
+> > +       struct device *dev;
+> > +       void __iomem *thermal_base;
+> > +
+> > +       struct clk *clk_peri_therm;
+> > +       struct clk *clk_auxadc;
+> > +
+> > +       struct mtk_thermal_bank banks[MT8173_NUM_ZONES];
+> > +
+> > +       struct mutex lock;
+> > +
+> > +       /* Calibration values */
+> > +       s32 adc_ge;
+> > +       s32 degc_cali;
+> > +       s32 o_slope;
+> > +       s32 vts[MT8173_NUM_SENSORS];
+> > +
+> > +       struct thermal_zone_device *tzd;
+> > +};
+> > +
+> > +struct mtk_thermal_bank_cfg {
+> > +       unsigned int num_sensors;
+> > +       unsigned int sensors[MT8173_NUM_SENSORS_PER_ZONE];
+> > +};
+> > +
+> > +static const int sensor_mux_values[MT8173_NUM_SENSORS] = { 0, 1, 2, 3, 16 };
+> > +
+> > +/*
+> > + * The MT8173 thermal controller has four banks. Each bank can read up to
+> > + * four temperature sensors simultaneously. The MT8173 has a total of 5
+> > + * temperature sensors. We use each bank to measure a certain area of the
+> > + * SoC. Since TS2 is located centrally in the SoC it is influenced by multiple
+> > + * areas, hence is used in different banks.
+> > + */
+> > +static const struct mtk_thermal_bank_cfg bank_data[] = {
+> > +       {
+> > +               .num_sensors = 2,
+> > +               .sensors = { MT8173_TS2, MT8173_TS3 },
+> > +       }, {
+> > +               .num_sensors = 2,
+> > +               .sensors = { MT8173_TS2, MT8173_TS4 },
+> > +       }, {
+> > +               .num_sensors = 3,
+> > +               .sensors = { MT8173_TS1, MT8173_TS2, MT8173_TSABB },
+> > +       }, {
+> > +               .num_sensors = 1,
+> > +               .sensors = { MT8173_TS2 },
+> > +       },
+> > +};
+> > +
+> > +struct mtk_thermal_sense_point {
+> > +       int msr;
+> > +       int adcpnp;
+> > +};
+> > +
+> > +static const struct mtk_thermal_sense_point
+> > +               sensing_points[MT8173_NUM_SENSORS_PER_ZONE] = {
+> > +       {
+> > +               .msr = TEMP_MSR0,
+> > +               .adcpnp = TEMP_ADCPNP0,
+> > +       }, {
+> > +               .msr = TEMP_MSR1,
+> > +               .adcpnp = TEMP_ADCPNP1,
+> > +       }, {
+> > +               .msr = TEMP_MSR2,
+> > +               .adcpnp = TEMP_ADCPNP2,
+> > +       }, {
+> > +               .msr = TEMP_MSR3,
+> > +               .adcpnp = TEMP_ADCPNP3,
+> > +       },
+> > +};
+> > +
+> > +/**
+> > + * raw_to_mcelsius - convert a raw ADC value to mcelsius
+> > + * @mt:                The thermal controller
+> > + * @raw:       raw ADC value
+> > + *
+> > + * This converts the raw ADC value to mcelsius using the SoC specific
+> > + * calibration constants
+> > + */
+> > +static int raw_to_mcelsius(struct mtk_thermal *mt, int sensno, s32 raw)
+> > +{
+> > +       s32 tmp;
+> > +
+> > +       raw &= 0xfff;
+> > +
+> > +       tmp = 203450520 << 3;
+> > +       tmp /= 165 + mt->o_slope;
+> > +       tmp /= 10000 + mt->adc_ge;
+> > +       tmp *= raw - mt->vts[sensno] - 3350;
+> > +       tmp >>= 3;
+> > +
+> > +       return mt->degc_cali * 500 - tmp;
+> > +}
+> > +
+> > +/**
+> > + * mtk_thermal_get_bank - get bank
+> > + * @bank:      The bank
+> > + *
+> > + * The bank registers are banked, we have to select a bank in the
+> > + * PTPCORESEL register to access it.
+> > + */
+> > +static void mtk_thermal_get_bank(struct mtk_thermal_bank *bank)
+> > +{
+> > +       struct mtk_thermal *mt = bank->mt;
+> > +       u32 val;
+> > +
+> > +       mutex_lock(&mt->lock);
+> > +
+> > +       val = readl(mt->thermal_base + PTPCORESEL);
+> > +       val &= ~0xf;
+> > +       val |= bank->id;
+> > +       writel(val, mt->thermal_base + PTPCORESEL);
+> > +}
+> > +
+> > +/**
+> > + * mtk_thermal_put_bank - release bank
+> > + * @bank:      The bank
+> > + *
+> > + * release a bank previously taken with mtk_thermal_get_bank,
+> > + */
+> > +static void mtk_thermal_put_bank(struct mtk_thermal_bank *bank)
+> > +{
+> > +       struct mtk_thermal *mt = bank->mt;
+> > +
+> > +       mutex_unlock(&mt->lock);
+> > +}
+> > +
+> > +/**
+> > + * mtk_thermal_bank_temperature - get the temperature of a bank
+> > + * @bank:      The bank
+> > + *
+> > + * The temperature of a bank is considered the maximum temperature of
+> > + * the sensors associated to the bank.
+> > + */
+> > +static int mtk_thermal_bank_temperature(struct mtk_thermal_bank *bank)
+> > +{
+> > +       struct mtk_thermal *mt = bank->mt;
+> > +       int temp, i, max;
+> > +       u32 raw;
+> > +
+> > +       temp = max = INT_MIN;
+> > +
+> > +       for (i = 0; i < bank_data[bank->id].num_sensors; i++) {
+> > +               raw = readl(mt->thermal_base + sensing_points[i].msr);
+> > +
+> > +               temp = raw_to_mcelsius(mt, bank_data[bank->id].sensors[i], raw);
+> > +
+> > +               /*
+> > +                * The first read of a sensor often contains very high bogus
+> > +                * temperature value. Filter these out so that the system does
+> > +                * not immediately shut down.
+> > +                */
+> > +               if (temp > 200000)
+> > +                       temp = 0;
+> > +
+> > +               if (temp > max)
+> > +                       max = temp;
+> > +       }
+> > +
+> > +       return max;
+> > +}
+> > +
+> > +static int mtk_read_temp(void *data, int *temperature)
+> > +{
+> > +       struct mtk_thermal *mt = data;
+> > +       int i;
+> > +       int tempmax = INT_MIN;
+> > +
+> > +       for (i = 0; i < MT8173_NUM_ZONES; i++) {
+> > +               struct mtk_thermal_bank *bank = &mt->banks[i];
+> > +               int t;
+> > +
+> > +               mtk_thermal_get_bank(bank);
+> > +
+> > +               t = mtk_thermal_bank_temperature(bank);
+> > +
+> > +               mtk_thermal_put_bank(bank);
+> > +
+> > +               if (t > tempmax)
+> > +                       tempmax = t;
 > 
->   u32 msr_id_need_to_save[] = {MSR_ID0, MSR_ID1, MSR_ID2...};
+> Would it be
+> tempmax = max_t(int, tempmax, mtk_thermal_bank_temperature(bank));
+> ?
+
+Yes, even max() works here. Fixed.
+
+> > +
+> > +       mtk_thermal_get_bank(bank);
+> > +
+> > +       /* bus clock 66M counting unit is 12 * 15.15ns * 256 = 46.540us */
+> > +       writel(TEMP_MONCTL1_PERIOD_UNIT(12), mt->thermal_base + TEMP_MONCTL1);
+> > +
+> > +       /*
+> > +        * filt interval is 1 * 46.540us = 46.54us,
+> > +        * sen interval is 429 * 46.540us = 19.96ms
+> > +        */
+> > +       writel(TEMP_MONCTL2_FILTER_INTERVAL(1) |
+> > +                       TEMP_MONCTL2_SENSOR_INTERVAL(429),
+> > +                       mt->thermal_base + TEMP_MONCTL2);
+> > +
+> > +       /* poll is set to 10u */
+> > +       writel(TEMP_AHBPOLL_ADC_POLL_INTERVAL(768),
+> > +                       mt->thermal_base + TEMP_AHBPOLL);
+> > +
+> > +       /* temperature sampling control, 1 sample */
+> > +       writel(0x00000000, mt->thermal_base + TEMP_MSRCTL0);
 > 
-> and the quirk mechanism ensures that, once resumed from suspend, the MSRs 
-> indicated by these IDs will be restored to their original, pre-suspend values.
+> 0x0 like below ?
+
+Ok.
+
+> > +static struct platform_driver mtk_thermal_driver = {
+> > +       .probe = mtk_thermal_probe,
+> > +       .remove = mtk_thermal_remove,
+> > +       .driver = {
+> > +               .name = THERMAL_NAME,
+> > +               .of_match_table = mtk_thermal_of_match,
+> > +       },
+> > +};
+> > +
+> > +module_platform_driver(mtk_thermal_driver);
+> > +
+> > +MODULE_AUTHOR("Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org");
 > 
-> Since both 64-bit and 32-bit kernels are affected, this patch covers the common 
-> 64/32-bit suspend/resume code path. And because the MSRs specified by the user 
-> might not be available or readable in any situation, we use rdmsrl_safe() to 
-> safely save these MSRs.
+> And Author in the head?
 
-The patch looks good to me, but there are a few stylistic nits I have:
+Added.
 
-> +struct msr_save_data {
-> +	bool msr_saved;
-> +	struct msr_info rv;
+Thanks for reviewing.
 
-s/msr_save_data/saved_msr
+Sascha
 
-> +};
-> +
-> +struct msr_context {
-> +	unsigned short num;
-
-Please don't use short in the kernel, the compiler will align it anyway. Use 
-unsigned int instead.
-
-> +	struct msr_save_data *msr_array;
-> +};
-
-s/msr_context/saved_msrs
-
-> +
->  static inline unsigned long long native_read_tscp(unsigned int *aux)
->  {
->  	unsigned long low, high;
-> diff --git a/arch/x86/include/asm/suspend_32.h b/arch/x86/include/asm/suspend_32.h
-> index d1793f0..5057f65 100644
-> --- a/arch/x86/include/asm/suspend_32.h
-> +++ b/arch/x86/include/asm/suspend_32.h
-> @@ -15,6 +15,7 @@ struct saved_context {
->  	unsigned long cr0, cr2, cr3, cr4;
->  	u64 misc_enable;
->  	bool misc_enable_saved;
-> +	struct msr_context msr_to_save;
-
-s/msr_to_save/saved_msrs
-
->  	struct desc_ptr gdt_desc;
->  	struct desc_ptr idt;
->  	u16 ldt;
-> diff --git a/arch/x86/include/asm/suspend_64.h b/arch/x86/include/asm/suspend_64.h
-> index 7ebf0eb..60941de 100644
-> --- a/arch/x86/include/asm/suspend_64.h
-> +++ b/arch/x86/include/asm/suspend_64.h
-> @@ -24,6 +24,7 @@ struct saved_context {
->  	unsigned long cr0, cr2, cr3, cr4, cr8;
->  	u64 misc_enable;
->  	bool misc_enable_saved;
-> +	struct msr_context msr_to_save;
->  	unsigned long efer;
->  	u16 gdt_pad; /* Unused */
->  	struct desc_ptr gdt_desc;
-> diff --git a/arch/x86/power/cpu.c b/arch/x86/power/cpu.c
-> index 9ab5279..0906290 100644
-> --- a/arch/x86/power/cpu.c
-> +++ b/arch/x86/power/cpu.c
-> @@ -23,6 +23,7 @@
->  #include <asm/debugreg.h>
->  #include <asm/cpu.h>
->  #include <asm/mmu_context.h>
-> +#include <linux/dmi.h>
->  
->  #ifdef CONFIG_X86_32
->  __visible unsigned long saved_context_ebx;
-> @@ -32,6 +33,29 @@ __visible unsigned long saved_context_eflags;
->  #endif
->  struct saved_context saved_context;
->  
-> +static void msr_save_context(struct saved_context *ctxt)
-> +{
-> +	struct msr_save_data *msr = ctxt->msr_to_save.msr_array;
-> +	struct msr_save_data *end = msr + ctxt->msr_to_save.num;
-> +
-> +	while (msr < end) {
-> +		msr->msr_saved = !rdmsrl_safe(msr->rv.msr_no, &msr->rv.reg.q);
-> +		msr++;
-> +	}
-> +}
-> +
-> +static void msr_restore_context(struct saved_context *ctxt)
-> +{
-> +	struct msr_save_data *msr = ctxt->msr_to_save.msr_array;
-> +	struct msr_save_data *end = msr + ctxt->msr_to_save.num;
-> +
-> +	while (msr < end) {
-> +		if (msr->msr_saved)
-> +			wrmsrl(msr->rv.msr_no, msr->rv.reg.q);
-> +		msr++;
-> +	}
-> +}
-> +
->  /**
->   *	__save_processor_state - save CPU registers before creating a
->   *		hibernation image and before restoring the memory state from it
-> @@ -111,6 +135,7 @@ static void __save_processor_state(struct saved_context *ctxt)
->  #endif
->  	ctxt->misc_enable_saved = !rdmsrl_safe(MSR_IA32_MISC_ENABLE,
->  					       &ctxt->misc_enable);
-> +	msr_save_context(ctxt);
->  }
->  
->  /* Needed by apm.c */
-> @@ -229,6 +254,7 @@ static void notrace __restore_processor_state(struct saved_context *ctxt)
->  	x86_platform.restore_sched_clock_state();
->  	mtrr_bp_restore();
->  	perf_restore_debug_store();
-> +	msr_restore_context(ctxt);
->  }
->  
->  /* Needed by apm.c */
-> @@ -320,3 +346,71 @@ static int __init bsp_pm_check_init(void)
->  }
->  
->  core_initcall(bsp_pm_check_init);
-> +
-> +static int msr_init_context(const u32 *msr_id, const int total_num)
-> +{
-> +	int i = 0;
-> +	struct msr_save_data *msr_data = NULL;
-
-No need to initialize to NULL AFAICS.
-
-Also, please use consistent variable names for 'struct saved_msr *' variables: 
-here you call it 'msr_data', elsewhere it's 'msr'. Using 'msr' consistently would 
-be fine.
-
-> +
-> +	if (saved_context.msr_to_save.msr_array ||
-> +			saved_context.msr_to_save.num > 0) {
-> +		pr_err("PM: quirk already applied, please check your dmi match table.\n");
-> +		return -EINVAL;
-
-s/"x86/pm: Quirk already applied, ...
-
-> +	}
-> +
-> +	msr_data = kmalloc_array(total_num,
-> +			sizeof(struct msr_save_data), GFP_KERNEL);
-> +	if (!msr_data) {
-> +		pr_err("PM: can not allocate memory to save/restore MSRs during suspend.\n");
-
-ditto. Please propagate this across the other messages as well.
-
-> +		return -ENOMEM;
-> +	}
-> +
-> +	for (i = 0; i < total_num; i++) {
-> +		msr_data[i].rv.msr_no = msr_id[i];
-> +		msr_data[i].msr_saved = false;
-> +		msr_data[i].rv.reg.q = 0;
-> +	}
-> +	saved_context.msr_to_save.num = total_num;
-> +	saved_context.msr_to_save.msr_array = msr_data;
-> +	return 0;
-
-Please put an empty line before the return.
-
-> +}
-> +
-> +/*
-> + * The following section is a quirk framework for problematic BIOS:
-
-s/BIOSen
-
-> + * Sometimes MSRs are modified by BIOS after suspended to
-
-s/by the BIOS/
-
-> + * RAM, this might cause unexpected behavior after wakeup.
-> + * Thus we save/restore these specified MSRs during suspending
-
-s/across suspend/resume
-
-> + * in order to work around it.
-> + *
-> + * For any further problematic BIOS/platforms,
-
-s/BIOSen
-
-> + * please add your own function similar to msr_initialize_bdw.
-> + */
-> +static int msr_initialize_bdw(const struct dmi_system_id *d)
-> +{
-> +	/* Add any extra MSR ids into this array. */
-> +	u32 bdw_msr_id[] = {MSR_IA32_THERM_CONTROL};
-
-I'm quite sure checkpatch warns about the whitespaces in this initialization 
-sequence.
-
-> +
-> +	pr_info("PM: %s detected, MSR saving is needed during suspending.\n",
-> +		d->ident);
-
-Please don't break the line for pr_info() arguments.
-
-> +	return msr_init_context(bdw_msr_id, ARRAY_SIZE(bdw_msr_id));
-> +}
-> +
-> +static struct dmi_system_id msr_save_dmi_table[] = {
-> +	{
-> +	 .callback = msr_initialize_bdw,
-> +	 .ident = "BROADWELL BDX_EP",
-> +	 .matches = {
-> +		DMI_MATCH(DMI_PRODUCT_NAME, "GRANTLEY"),
-> +		DMI_MATCH(DMI_PRODUCT_VERSION, "E63448-400"),
-
-are you sure it's only this specific product version that is affected? Shouldn't 
-we filter for all 'GRANTLEY' products? We can do no harm by saving/restoring on 
-platforms that don't need it, right?
-
-> +		},
-> +	},
-> +	{}
-> +};
-> +
-> +static int pm_check_save_msr(void)
-> +{
-> +	dmi_check_system(msr_save_dmi_table);
-> +	return 0;
-> +}
-> +
-> +late_initcall(pm_check_save_msr);
-
-Please double check that the suspend/resume test facility (CONFIG_PM_TEST_SUSPEND) 
-is run _after_ this callback is called. Is there any reason why this is a late 
-initcall?
-
-Thanks,
-
-	Ingo
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
