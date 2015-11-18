@@ -1,132 +1,64 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [TEST PATCH] cpufreq: intel_pstate: Workaround to for wrong ACPI
- perf table entry
-Date: Wed, 18 Nov 2015 04:19:40 +0100
-Message-ID: <CAJZ5v0ideLEQB9m-s6ApL6ub-6sdPFunf4_vspF_HR6DVzxOag@mail.gmail.com>
-References: <1447801252-3626-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-	<8524647.rknTxxgTfO@vostro.rjw.lan>
-	<1447812635.2778.90.camel@spandruv-desk3.jf.intel.com>
+From: Sean Cross <xobs@kosagi.com>
+Subject: Re: Freescale IMX6 active cooling
+Date: Wed, 18 Nov 2015 12:53:39 +0800
+Message-ID: <564C0453.6020400@kosagi.com>
+References: <CABH3fy-He02iVU7FzqcPApPemeoqQP15+gr9+Hx87-OEBuHvCg@mail.gmail.com>
+ <CAOMZO5AX9owvovpdmdr=rKNApbuNrkp9pKexJk_mMyMdH1=1qg@mail.gmail.com>
+ <CALHpu37MNnzW=3YNKUq-aOHgF12EhjyN7g1juTwuMad_Xv891w@mail.gmail.com>
+ <CABH3fy-QPV1bv-WaO3mWVq2RN5=f-AnBHMgFTmmU-Ve3xgyUrw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f173.google.com ([209.85.217.173]:35400 "EHLO
-	mail-lb0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751746AbbKRDTm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Nov 2015 22:19:42 -0500
-Received: by lbbsy6 with SMTP id sy6so16997026lbb.2
-        for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2015 19:19:40 -0800 (PST)
-In-Reply-To: <1447812635.2778.90.camel@spandruv-desk3.jf.intel.com>
+Received: from out5-smtp.messagingengine.com ([66.111.4.29]:40076 "EHLO
+	out5-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751870AbbKRExp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Nov 2015 23:53:45 -0500
+Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
+	by mailout.nyi.internal (Postfix) with ESMTP id 7EECB20435
+	for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2015 23:53:44 -0500 (EST)
+In-Reply-To: <CABH3fy-QPV1bv-WaO3mWVq2RN5=f-AnBHMgFTmmU-Ve3xgyUrw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Borislav Petkov <bp@alien8.de>, Rafael Wysocki <rafael.j.wysocki@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Catalin Crenguta <catalin.crenguta@gmail.com>, Jon Nettleton <jon.nettleton@gmail.com>
+Cc: Fabio Estevam <festevam@gmail.com>, Fabio Estevam <fabio.estevam@freescale.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org
 
-On Wed, Nov 18, 2015 at 3:10 AM, Srinivas Pandruvada
-<srinivas.pandruvada@linux.intel.com> wrote:
-> On Wed, 2015-11-18 at 02:33 +0100, Rafael J. Wysocki wrote:
->> On Tuesday, November 17, 2015 03:00:52 PM Srinivas Pandruvada wrote:
->> > With the implementation of ACPI _PSS and _PPC processing in the Intel P
->> > state driver, a bad ACPI configuration can impact max/min states. For
->> > example as reported by Borislav Petkov <bp@alien8.de>, the log shows:
->> >
->> > [    0.826119] intel_pstate: default limits 0xc 0x1d 0x24
->> > [    0.827000] intel_pstate: CPU0 - ACPI _PSS perf data
->> > [    0.827020]      *P0: 2901 MHz, 35000 mW, 0xff00
->> > The above control value of 0xff00, is invalid. The first entry sets the
->> > max control value for turbo with a max non turbo frequency + 1 MHz. Here
->> > the control values should be 0x1d00.
-
-[cut]
-
->> > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
->> > index d3159f0..fc99e97 100644
->> > --- a/drivers/cpufreq/intel_pstate.c
->> > +++ b/drivers/cpufreq/intel_pstate.c
->> > @@ -311,6 +311,13 @@ static int intel_pstate_init_perf_limits(struct cpufreq_policy *policy)
->> >              * correct max turbo frequency based on the turbo ratio.
->> >              * Also need to convert to MHz as _PSS freq is in MHz.
->> >              */
->> > +           if (turbo_pss_ctl > cpu->pstate.turbo_pstate) {
->> > +                   /* We hava an invalid control value here */
->> > +                   turbo_pss_ctl = cpu->pstate.turbo_pstate;
->> > +                   cpu->acpi_perf_data.states[0].control =
->> > +                                                   turbo_pss_ctl << 8;
->> > +           }
+On 17/11/2015 8:49 PM, Catalin Crenguta wrote:
+> On Tue, Nov 17, 2015 at 11:38 AM, Jon Nettleton <jon.nettleton@gmail.com> wrote:
+>> I would recommend you take a look at the work that xobs did for the
+>> Novena Heirloom.  If you look at this branch starting around Aug 3 you
+>> can see where he has converted iMX6 to use generic thermal zones and
+>> adds support for for an active cooling device/fan.
+>> https://github.com/xobs/novena-linux/commits/v3.19-novena-etnadrm-r3?page=3
 >>
->> Should we update pstate.turbo_pstate otherwise?
->
-> It will happen as the policy will reduce the frequency based on the
-> _PSS[PPC_INDEX] frequency. So if turbo_pstate is less then the
-> intel_pstate_set_policy will be called with reduced max->policy.
->
+>> -Jon
+> Thank you!
+> I have patched my 4.3 kernel (they don't apply cleanly but they are
+> straight forward to modify), added a gpio-fan and the corresponding
+> thermal-zone in my DTB and it works!
+> Sean Cross, are you interested in bringing this to mainline?
+Yes, this does seem like the sort of thing that should make it into 
+mainline.
 
-Well, OK, but here we're leaving policy->cpuinfo.max_freq and
-acpi_perf_data.states[0].core_frequency somewhat inconsistent which at
-least looks confusing.
+Would you like me to submit it as a patch against 4.3?  I'm unclear how 
+much should be added.
 
->>
->> > +
->> >             cpu->acpi_perf_data.states[0].core_frequency =
->> >                             turbo_pss_ctl * cpu->pstate.scaling / 1000;
->> >     }
->>
->> We seem to have one more bug in this function, but it doesn't affect the case
->> at hand.  Namely, if the turbo range is not present in the _PSS, we should
->> set pstate.turbo_pstate to pstate.max_pstate after we've updated the latter
->> and not before updating it.
->
-> Doing it before we have good known reference for max_sysf_pct. which is
-> either physical max turbo or physical max non turbo as 100%. The policy
-> will limit to actual pss max pstate frequency. which will be reflected
-> in reduced max_perf_pct.
->
+For example, the current code talks directly to the cpufreq cooling 
+system, but that becomes unnecessary if using generic thermal zones, 
+since the zones will bind cpufreq to the thermal sensor.  Then again, 
+with such a patch, boards that do not explicitly update their device 
+tree to support generic thermal zones will need to have their entries 
+updated.
 
-So say we have the "non-turbo" situation, so we set the
-pstate.turbo_pstate to pstate.max_pstate and then we update
-pstate.max_pstate.  policy->cpuinfo.max_freq is updated to reflect the
-new max_pstate and turbo_pstate points to physical max non turbo which
-is above max_pstate.  Why is this correct?  What about
-update_turbo_state(), for example?
+Perhaps the correct order of patches is:
 
-And now we're claiming "no turbo", but we're presenting the "non-PSS
-max_pstate" as an "effective turbo" and the max_pstate from _PSS is
-the new limit.  How is this not confusing?
+1) Add generic thermal zone support
+2) Remove zone and cdev from imx_thermal
+3) Add cpufreq-cooling to imx6
+4) Add cpufreq-cooling to all other SoCs that support imx_thermal
+5) Add default generic thermal zone support to imx6qdl.dtsi
 
->>
->> I'm also wondering if turbo should be enabled when turbo_pass_ctl is less than
->> pstate.min_state.  Perhaps not?
->>
-> This is too bad entry in that case. But we can disable the turbo.
->> > @@ -1272,6 +1279,8 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
->> >
->> >  #if IS_ENABLED(CONFIG_ACPI)
->> >     cpu = all_cpu_data[policy->cpu];
->> > +   limits->min_perf_ctl = 0;
->> > +   limits->max_perf_ctl = 0;
->>
->> Wouldn't this re-introduce the problem fixed by commit 4ef451487019
->> (cpufreq: intel_pstate: Avoid calculation for max/min) in corner cases?
->
-> If there is a match in _PSS, it will be correctly set in loop below.
+Comments on how it should be handled?
 
-Sure, but what if there isn't?  We'll end up with 0 and that may not
-work (or the commit mentioned above was not necessary).
 
-> In the current problem case we failed to match the _PSS for policy->max so
-> we were relying on the max_perf calculation. But later some thermal
-> issue happened, which reduced the policy to minimum. We stuck in that
-> because limits->max_perf_ctl was not reset even after when policy
-> changed to turbo max. With reset we should have used max pstate
-> calculated value, which will not be as bad as last value.
->>
->> >     for (i = 0; i < cpu->acpi_perf_data.state_count; i++) {
->> >             int control;
->>
->> That whole loop is fragile.
-> Could you suggest or submit a change for this?  Trying to do get max and
-> min in one for-loop assuming not sorted.
-
-I'll try to cut a patch for that tomorrow.
-
-Thanks,
-Rafael
+Sean
