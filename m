@@ -1,135 +1,55 @@
 From: Julia Lawall <Julia.Lawall@lip6.fr>
-Subject: [PATCH 0/4] add missing of_node_put
-Date: Wed, 18 Nov 2015 23:04:10 +0100
-Message-ID: <1447884254-26336-1-git-send-email-Julia.Lawall@lip6.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-iio@vger.kernel.org
-Cc: Lars-Peter Clausen <lars@metafoo.de>, linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, bcm-kernel-feedback-list@broadcom.com, Peter Meerwald <pmeerw@pmeerw.net>, Hartmut Knaack <knaack.h@gmx.de>, linux-mtd@lists.infradead.org, linux-arm-kernel@lists.infradead.org
+Subject: [PATCH 4/4] power/reset: at91-reset: add missing of_node_put
+Date: Wed, 18 Nov 2015 23:04:14 +0100
+Message-ID: <1447884254-26336-5-git-send-email-Julia.Lawall@lip6.fr>
+References: <1447884254-26336-1-git-send-email-Julia.Lawall@lip6.fr>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1447884254-26336-1-git-send-email-Julia.Lawall@lip6.fr>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: kernel-janitors@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Andrew Lunn <andrew@lunn.ch>, Bjorn Helgaas <bhelgaas@google.com>, Jason Cooper <jason@lakedaemon.net>
 List-Id: linux-pm@vger.kernel.org
 
-The various for_each device_node iterators performs an of_node_get on each
-iteration, so a break out of the loop requires an of_node_put.
+for_each_matching_node performs an of_node_get on each iteration, so
+a break out of the loop requires an of_node_put.
 
-The complete semantic patch that fixes this problem is
-(http://coccinelle.lip6.fr):
+A simplified version of the semantic patch that fixes this problem is as
+follows (http://coccinelle.lip6.fr):
 
 // <smpl>
-@r@
-local idexpression n;
-expression e1,e2;
-iterator name for_each_node_by_name, for_each_node_by_type,
-for_each_compatible_node, for_each_matching_node,
-for_each_matching_node_and_match, for_each_child_of_node,
-for_each_available_child_of_node, for_each_node_with_property;
-iterator i;
-statement S;
-expression list [n1] es;
+@@
+expression e,e1;
+local idexpression np;
 @@
 
+ for_each_matching_node(np, e1) {
+   ... when != of_node_put(np)
+       when != e = np
 (
-(
-for_each_node_by_name(n,e1) S
+   return np;
 |
-for_each_node_by_type(n,e1) S
-|
-for_each_compatible_node(n,e1,e2) S
-|
-for_each_matching_node(n,e1) S
-|
-for_each_matching_node_and_match(n,e1,e2) S
-|
-for_each_child_of_node(e1,n) S
-|
-for_each_available_child_of_node(e1,n) S
-|
-for_each_node_with_property(n,e1) S
-)
-&
-i(es,n,...) S
-)
-
-@@
-local idexpression r.n;
-iterator r.i;
-expression e;
-expression list [r.n1] es;
-@@
-
- i(es,n,...) {
-   ...
-(
-   of_node_put(n);
-|
-   e = n
-|
-   return n;
-|
-+  of_node_put(n);
++  of_node_put(np);
 ?  return ...;
 )
    ...
  }
+// </smpl>
 
-@@
-local idexpression r.n;
-iterator r.i;
-expression e;
-expression list [r.n1] es;
-@@
-
- i(es,n,...) {
-   ...
-(
-   of_node_put(n);
-|
-   e = n
-|
-+  of_node_put(n);
-?  break;
-)
-   ...
- }
-... when != n
-
-@@
-local idexpression r.n;
-iterator r.i;
-expression e;
-identifier l;
-expression list [r.n1] es;
-@@
-
- i(es,n,...) {
-   ...
-(
-   of_node_put(n);
-|
-   e = n
-|
-+  of_node_put(n);
-?  goto l;
-)
-   ...
- }
-...
-l: ... when != n// </smpl>
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 
 ---
+ drivers/power/reset/at91-reset.c |    1 +
+ 1 file changed, 1 insertion(+)
 
- drivers/iio/adc/qcom-spmi-vadc.c     |    4 +++-
- drivers/mtd/nand/brcmnand/brcmnand.c |   14 ++++++++++----
- drivers/mtd/nand/sunxi_nand.c        |    4 +++-
- drivers/power/reset/at91-reset.c     |    1 +
- 4 files changed, 17 insertions(+), 6 deletions(-)
+diff --git a/drivers/power/reset/at91-reset.c b/drivers/power/reset/at91-reset.c
+index 3f6b5dd..1b5d450 100644
+--- a/drivers/power/reset/at91-reset.c
++++ b/drivers/power/reset/at91-reset.c
+@@ -198,6 +198,7 @@ static int __init at91_reset_probe(struct platform_device *pdev)
+ 			at91_ramc_base[idx] = of_iomap(np, 0);
+ 			if (!at91_ramc_base[idx]) {
+ 				dev_err(&pdev->dev, "Could not map ram controller address\n");
++				of_node_put(np);
+ 				return -ENODEV;
+ 			}
+ 			idx++;
