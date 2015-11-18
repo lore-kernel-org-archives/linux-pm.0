@@ -1,36 +1,35 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [TEST PATCH] cpufreq: intel_pstate: Workaround to for wrong ACPI
- perf table entry
-Date: Wed, 18 Nov 2015 10:16:13 +0100
-Message-ID: <20151118091613.GA4138@pd.tnic>
-References: <1447801252-3626-1-git-send-email-srinivas.pandruvada@linux.intel.com>
- <8524647.rknTxxgTfO@vostro.rjw.lan>
- <1447812635.2778.90.camel@spandruv-desk3.jf.intel.com>
- <CAJZ5v0ideLEQB9m-s6ApL6ub-6sdPFunf4_vspF_HR6DVzxOag@mail.gmail.com>
+From: Catalin Crenguta <catalin.crenguta@gmail.com>
+Subject: Re: Freescale IMX6 active cooling
+Date: Wed, 18 Nov 2015 12:00:05 +0200
+Message-ID: <CABH3fy-UY7YdbaaZxymfcaxnhsNkozeRD9uUU5DOQH2S50sEXQ@mail.gmail.com>
+References: <CABH3fy-He02iVU7FzqcPApPemeoqQP15+gr9+Hx87-OEBuHvCg@mail.gmail.com>
+	<CAOMZO5AX9owvovpdmdr=rKNApbuNrkp9pKexJk_mMyMdH1=1qg@mail.gmail.com>
+	<CALHpu37MNnzW=3YNKUq-aOHgF12EhjyN7g1juTwuMad_Xv891w@mail.gmail.com>
+	<CABH3fy-QPV1bv-WaO3mWVq2RN5=f-AnBHMgFTmmU-Ve3xgyUrw@mail.gmail.com>
+	<564C0453.6020400@kosagi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.skyhub.de ([78.46.96.112]:34256 "EHLO mail.skyhub.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753373AbbKRJQY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 18 Nov 2015 04:16:24 -0500
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0ideLEQB9m-s6ApL6ub-6sdPFunf4_vspF_HR6DVzxOag@mail.gmail.com>
+Received: from mail-wm0-f66.google.com ([74.125.82.66]:32815 "EHLO
+	mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753412AbbKRKAI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Nov 2015 05:00:08 -0500
+Received: by wmuu63 with SMTP id u63so11496671wmu.0
+        for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2015 02:00:06 -0800 (PST)
+In-Reply-To: <564C0453.6020400@kosagi.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rafael Wysocki <rafael.j.wysocki@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Sean Cross <xobs@kosagi.com>
+Cc: Jon Nettleton <jon.nettleton@gmail.com>, Fabio Estevam <festevam@gmail.com>, Fabio Estevam <fabio.estevam@freescale.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org
 
-On Wed, Nov 18, 2015 at 04:19:40AM +0100, Rafael J. Wysocki wrote:
-> I'll try to cut a patch for that tomorrow.
+On Wed, Nov 18, 2015 at 6:53 AM, Sean Cross <xobs@kosagi.com> wrote:
+> Perhaps the correct order of patches is:
+>
+> 1) Add generic thermal zone support
+> 2) Remove zone and cdev from imx_thermal
+> 3) Add cpufreq-cooling to imx6
+> 4) Add cpufreq-cooling to all other SoCs that support imx_thermal
+> 5) Add default generic thermal zone support to imx6qdl.dtsi
+In my opinion, I guess a patch series containing this would be good.
 
-And I'm going to wait out a bit before testing, after you guys have
-agreed on the final version.
-
-Thanks.
-
--- 
-Regards/Gruss,
-    Boris.
-
-ECO tip #101: Trim your mails when you reply.
+Thanks again!
