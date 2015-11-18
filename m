@@ -1,105 +1,102 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [TEST PATCH] cpufreq: intel_pstate: Workaround to for wrong ACPI perf table entry
-Date: Wed, 18 Nov 2015 02:33:36 +0100
-Message-ID: <8524647.rknTxxgTfO@vostro.rjw.lan>
-References: <1447801252-3626-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH 1/2] PM / Runtime: Extend the scope for pm_runtime_remove()
+Date: Wed, 18 Nov 2015 02:41:30 +0100
+Message-ID: <1519400.QM4uvr4iEX@vostro.rjw.lan>
+References: <Pine.LNX.4.44L0.1511171455390.1680-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:54439 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:48020 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751218AbbKRBEH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Nov 2015 20:04:07 -0500
-In-Reply-To: <1447801252-3626-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+	with SMTP id S1752736AbbKRBMA (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Nov 2015 20:12:00 -0500
+In-Reply-To: <Pine.LNX.4.44L0.1511171455390.1680-100000@iolanthe.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: bp@alien8.de, rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert@linux-m68k.org>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Eduardo Valentin <edubezval@gmail.com>
 
-On Tuesday, November 17, 2015 03:00:52 PM Srinivas Pandruvada wrote:
-> With the implementation of ACPI _PSS and _PPC processing in the Intel P
-> state driver, a bad ACPI configuration can impact max/min states. For
-> example as reported by Borislav Petkov <bp@alien8.de>, the log shows:
+On Tuesday, November 17, 2015 02:58:26 PM Alan Stern wrote:
+> On Tue, 17 Nov 2015, Ulf Hansson wrote:
 > 
-> [    0.826119] intel_pstate: default limits 0xc 0x1d 0x24
-> [    0.827000] intel_pstate: CPU0 - ACPI _PSS perf data
-> [    0.827020]      *P0: 2901 MHz, 35000 mW, 0xff00
-> The above control value of 0xff00, is invalid. The first entry sets the
-> max control value for turbo with a max non turbo frequency + 1 MHz. Here
-> the control values should be 0x1d00.
-
-I guess "the control value should not be greater than the one reported by the
-CPU itself".
-
-> intel_pstate_set_policy() depends on this control value in setting correct
-> max pstate.
-
-This looks sort of fragile to me.
-
-> Two fixes have been done here:
-> - If the control value is invalid then use the physical max turbo as the
-> max. Here 0xff00 will be changed to 0x1d00
-
-It will be changed to whatever is reported by the CPU I suppose.
-
-> - Always reset the limits->min_perf_ctl and limits->max_perf_ctl, so that
-> we will not use last value. In this case even if entry is not found the
-> _PSS it will fallback to limits->max_perf and limits-> limits->max_perf.
+> > There are additional execution paths besides the device removal, which
+> > needs to be able to restore initial states of runtime PM.
+> > 
+> > To prepare for these changes, provide a parameter to pm_runtime_remove()
+> > to allow optional disabling of runtime PM and reset the irq_safe flag.
+> > 
+> > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> > ---
+> >  drivers/base/power/main.c    |  2 +-
+> >  drivers/base/power/power.h   |  6 +++---
+> >  drivers/base/power/runtime.c | 21 +++++++++++++--------
+> >  3 files changed, 17 insertions(+), 12 deletions(-)
+> > 
+> > diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> > index 1710c26..6b6c79b 100644
+> > --- a/drivers/base/power/main.c
+> > +++ b/drivers/base/power/main.c
+> > @@ -146,7 +146,7 @@ void device_pm_remove(struct device *dev)
+> >  	list_del_init(&dev->power.entry);
+> >  	mutex_unlock(&dpm_list_mtx);
+> >  	device_wakeup_disable(dev);
+> > -	pm_runtime_remove(dev);
+> > +	pm_runtime_remove(dev, true);
+> >  }
+> >  
+> >  /**
+> > diff --git a/drivers/base/power/power.h b/drivers/base/power/power.h
+> > index 998fa6b..5057a21 100644
+> > --- a/drivers/base/power/power.h
+> > +++ b/drivers/base/power/power.h
+> > @@ -18,7 +18,7 @@ static inline void pm_runtime_early_init(struct device *dev)
+> >  }
+> >  
+> >  extern void pm_runtime_init(struct device *dev);
+> > -extern void pm_runtime_remove(struct device *dev);
+> > +extern void pm_runtime_remove(struct device *dev, bool disable);
 > 
-> Reported-by: Borislav Petkov <bp@alien8.de>
-> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> ---
->  drivers/cpufreq/intel_pstate.c | 9 +++++++++
->  1 file changed, 9 insertions(+)
+> Instead of adding a flag, how about adding a new routine?
+> pm_runtime_reinit(), for example?  I think that would be a little
+> clearer.
 > 
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index d3159f0..fc99e97 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -311,6 +311,13 @@ static int intel_pstate_init_perf_limits(struct cpufreq_policy *policy)
->  		 * correct max turbo frequency based on the turbo ratio.
->  		 * Also need to convert to MHz as _PSS freq is in MHz.
->  		 */
-> +		if (turbo_pss_ctl > cpu->pstate.turbo_pstate) {
-> +			/* We hava an invalid control value here */
-> +			turbo_pss_ctl = cpu->pstate.turbo_pstate;
-> +			cpu->acpi_perf_data.states[0].control =
-> +							turbo_pss_ctl << 8;
-> +		}
+> Then pm_runtime_remove could be refactored to do its disable and call
+> pm_runtime_reinit.
 
-Should we update pstate.turbo_pstate otherwise?
+Agreed.
 
-> +
->  		cpu->acpi_perf_data.states[0].core_frequency =
->  				turbo_pss_ctl * cpu->pstate.scaling / 1000;
->  	}
+> > --- a/drivers/base/power/runtime.c
+> > +++ b/drivers/base/power/runtime.c
+> > @@ -1393,15 +1393,20 @@ void pm_runtime_init(struct device *dev)
+> >   * pm_runtime_remove - Prepare for removing a device from device hierarchy.
+> >   * @dev: Device object being removed from device hierarchy.
+> >   */
+> > -void pm_runtime_remove(struct device *dev)
+> > +void pm_runtime_remove(struct device *dev, bool disable)
+> >  {
+> > -	__pm_runtime_disable(dev, false);
+> > -
+> > -	/* Change the status back to 'suspended' to match the initial status. */
+> > -	if (dev->power.runtime_status == RPM_ACTIVE)
+> > -		pm_runtime_set_suspended(dev);
+> > -	if (dev->power.irq_safe && dev->parent)
+> > -		pm_runtime_put(dev->parent);
+> > +	if (disable)
+> > +		__pm_runtime_disable(dev, false);
+> > +
+> > +	if (!pm_runtime_enabled(dev)) {
+> > +		/* Restore initial runtime PM states. */
+> > +		if (dev->power.runtime_status == RPM_ACTIVE)
+> > +			pm_runtime_set_suspended(dev);
+> > +		if (dev->power.irq_safe && dev->parent) {
+> > +			pm_runtime_put(dev->parent);
+> > +			dev->power.irq_safe = 0;
+> 
+> This flag should be protected by the dev->power.lock spinlock, just 
+> like in pm_runtime_irq_safe().
 
-We seem to have one more bug in this function, but it doesn't affect the case
-at hand.  Namely, if the turbo range is not present in the _PSS, we should
-set pstate.turbo_pstate to pstate.max_pstate after we've updated the latter
-and not before updating it.
-
-I'm also wondering if turbo should be enabled when turbo_pass_ctl is less than
-pstate.min_state.  Perhaps not?
-
-> @@ -1272,6 +1279,8 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
->  
->  #if IS_ENABLED(CONFIG_ACPI)
->  	cpu = all_cpu_data[policy->cpu];
-> +	limits->min_perf_ctl = 0;
-> +	limits->max_perf_ctl = 0;
-
-Wouldn't this re-introduce the problem fixed by commit 4ef451487019
-(cpufreq: intel_pstate: Avoid calculation for max/min) in corner cases?
-
->  	for (i = 0; i < cpu->acpi_perf_data.state_count; i++) {
->  		int control;
-
-That whole loop is fragile.
-
-To me, it should just pick the first state that is not greater than policy->max
-and the last one that is not less than policy->min.
+Right.
 
 Thanks,
 Rafael
