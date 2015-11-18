@@ -1,64 +1,57 @@
-From: Sean Cross <xobs@kosagi.com>
-Subject: Re: Freescale IMX6 active cooling
-Date: Wed, 18 Nov 2015 12:53:39 +0800
-Message-ID: <564C0453.6020400@kosagi.com>
-References: <CABH3fy-He02iVU7FzqcPApPemeoqQP15+gr9+Hx87-OEBuHvCg@mail.gmail.com>
- <CAOMZO5AX9owvovpdmdr=rKNApbuNrkp9pKexJk_mMyMdH1=1qg@mail.gmail.com>
- <CALHpu37MNnzW=3YNKUq-aOHgF12EhjyN7g1juTwuMad_Xv891w@mail.gmail.com>
- <CABH3fy-QPV1bv-WaO3mWVq2RN5=f-AnBHMgFTmmU-Ve3xgyUrw@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: scpi: Add dependency on SCPI clk driver
+Date: Wed, 18 Nov 2015 10:49:53 +0530
+Message-ID: <20151118051953.GB7336@ubuntu>
+References: <1447784059-22769-1-git-send-email-punit.agrawal@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from out5-smtp.messagingengine.com ([66.111.4.29]:40076 "EHLO
-	out5-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751870AbbKRExp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 17 Nov 2015 23:53:45 -0500
-Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
-	by mailout.nyi.internal (Postfix) with ESMTP id 7EECB20435
-	for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2015 23:53:44 -0500 (EST)
-In-Reply-To: <CABH3fy-QPV1bv-WaO3mWVq2RN5=f-AnBHMgFTmmU-Ve3xgyUrw@mail.gmail.com>
+Received: from mail-pa0-f41.google.com ([209.85.220.41]:33205 "EHLO
+	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750883AbbKRFUM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Nov 2015 00:20:12 -0500
+Received: by pabfh17 with SMTP id fh17so33839429pab.0
+        for <linux-pm@vger.kernel.org>; Tue, 17 Nov 2015 21:20:11 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <1447784059-22769-1-git-send-email-punit.agrawal@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Catalin Crenguta <catalin.crenguta@gmail.com>, Jon Nettleton <jon.nettleton@gmail.com>
-Cc: Fabio Estevam <festevam@gmail.com>, Fabio Estevam <fabio.estevam@freescale.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org
+To: Punit Agrawal <punit.agrawal@arm.com>
+Cc: sudeep.holla@arm.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, arnd@arndb.de, "Rafael J . Wysocki" <rjw@rjwysocki.net>
 
-On 17/11/2015 8:49 PM, Catalin Crenguta wrote:
-> On Tue, Nov 17, 2015 at 11:38 AM, Jon Nettleton <jon.nettleton@gmail.com> wrote:
->> I would recommend you take a look at the work that xobs did for the
->> Novena Heirloom.  If you look at this branch starting around Aug 3 you
->> can see where he has converted iMX6 to use generic thermal zones and
->> adds support for for an active cooling device/fan.
->> https://github.com/xobs/novena-linux/commits/v3.19-novena-etnadrm-r3?page=3
->>
->> -Jon
-> Thank you!
-> I have patched my 4.3 kernel (they don't apply cleanly but they are
-> straight forward to modify), added a gpio-fan and the corresponding
-> thermal-zone in my DTB and it works!
-> Sean Cross, are you interested in bringing this to mainline?
-Yes, this does seem like the sort of thing that should make it into 
-mainline.
+On 17-11-15, 18:14, Punit Agrawal wrote:
+> The SCPI clk driver registers the virtual cpufreq device that kicks off
+> initialisation of the SCPI cpufreq driver. Make the dependendency
+> explicit in Kconfig.
 
-Would you like me to submit it as a patch against 4.3?  I'm unclear how 
-much should be added.
+That's not a dependency. Any other part of the kernel can add this
+*virtual* cpufreq device to get it going.
 
-For example, the current code talks directly to the cpufreq cooling 
-system, but that becomes unnecessary if using generic thermal zones, 
-since the zones will bind cpufreq to the thermal sensor.  Then again, 
-with such a patch, boards that do not explicitly update their device 
-tree to support generic thermal zones will need to have their entries 
-updated.
+But, we do have dependency the other way round. clk_get() will fail
+for the cpufreq driver if SCPI-clk driver is missing and perhaps
+that's what you need to mention in the changelog.
 
-Perhaps the correct order of patches is:
+> Fixes: 8def31034d03 ("cpufreq: arm_big_little: add SCPI interface driver")
+> Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
+> Cc: Sudeep Holla <sudeep.holla@arm.com>
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/Kconfig.arm | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index 1582c1c..dadfdd4 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -201,7 +201,7 @@ config ARM_SA1110_CPUFREQ
+>  
+>  config ARM_SCPI_CPUFREQ
+>          tristate "SCPI based CPUfreq driver"
+> -	depends on ARM_BIG_LITTLE_CPUFREQ && ARM_SCPI_PROTOCOL
+> +	depends on ARM_BIG_LITTLE_CPUFREQ && ARM_SCPI_PROTOCOL && COMMON_CLK_SCPI
 
-1) Add generic thermal zone support
-2) Remove zone and cdev from imx_thermal
-3) Add cpufreq-cooling to imx6
-4) Add cpufreq-cooling to all other SoCs that support imx_thermal
-5) Add default generic thermal zone support to imx6qdl.dtsi
+This looks fine.
 
-Comments on how it should be handled?
-
-
-Sean
+-- 
+viresh
