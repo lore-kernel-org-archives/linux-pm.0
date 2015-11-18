@@ -1,91 +1,62 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM / Domains: Allow runtime PM callbacks to be re-used
- during system PM
-Date: Wed, 18 Nov 2015 13:28:14 +0100
-Message-ID: <CAPDyKFp-pHoPP4iW2CxC=L9x03fu2VXZ6LUC4i+CeQW_PjN2+Q@mail.gmail.com>
-References: <1447778561-9767-1-git-send-email-ulf.hansson@linaro.org>
-	<7h4mgk1fd5.fsf@deeprootsystems.com>
+From: Punit Agrawal <punit.agrawal@arm.com>
+Subject: Re: [PATCH] cpufreq: scpi: Add dependency on SCPI clk driver
+Date: Wed, 18 Nov 2015 13:06:13 +0000
+Message-ID: <9hhk2pfpid6.fsf@e105922-lin.cambridge.arm.com>
+References: <1447784059-22769-1-git-send-email-punit.agrawal@arm.com>
+	<20151118051953.GB7336@ubuntu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f172.google.com ([209.85.160.172]:32908 "EHLO
-	mail-yk0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755771AbbKRM2P (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Nov 2015 07:28:15 -0500
-Received: by ykdv3 with SMTP id v3so59789683ykd.0
-        for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2015 04:28:15 -0800 (PST)
-In-Reply-To: <7h4mgk1fd5.fsf@deeprootsystems.com>
+Received: from fw-tnat.cambridge.arm.com ([217.140.96.140]:59189 "EHLO
+	cam-smtp0.cambridge.arm.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755226AbbKRNGt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Nov 2015 08:06:49 -0500
+In-Reply-To: <20151118051953.GB7336@ubuntu> (Viresh Kumar's message of "Wed,
+	18 Nov 2015 10:49:53 +0530")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Cao Minh Hiep <cm-hiep@jinso.co.jp>, Harunaga <nx-truong@jinso.co.jp>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: sudeep.holla@arm.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, arnd@arndb.de, "Rafael J . Wysocki" <rjw@rjwysocki.net>
 
-On 17 November 2015 at 22:32, Kevin Hilman <khilman@kernel.org> wrote:
-> Ulf Hansson <ulf.hansson@linaro.org> writes:
+Viresh Kumar <viresh.kumar@linaro.org> writes:
+
+> On 17-11-15, 18:14, Punit Agrawal wrote:
+>> The SCPI clk driver registers the virtual cpufreq device that kicks off
+>> initialisation of the SCPI cpufreq driver. Make the dependendency
+>> explicit in Kconfig.
 >
->> Runtime PM centric subsystems/drivers may re-use their runtime PM
->> callbacks for system PM. Typically that's done via using the runtime PM
->> helpers, pm_runtime_force_suspend|resume().
->>
->> To genpd, this means its runtime PM callbacks may be invoked even when
->> runtime PM has been disabled for the device. By checking this condition,
->> it allows genpd to skip latency validation and measurement in the system
->> PM path. That's needed to enable drivers/subsystems to re-use the runtime
->> PM callbacks for system PM.
->>
->> Fixes: ba2bbfbf6307 ("PM / Domains: Remove intermediate states from the
->> power off sequence")
->> Reported-by: Cao Minh Hiep <cm-hiep@jinso.co.jp>
->> Reported-by: Harunaga <nx-truong@jinso.co.jp>
->> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> That's not a dependency. Any other part of the kernel can add this
+> *virtual* cpufreq device to get it going.
+
+Any part can add the virtual cpufreq device but for scpi-cpufreq it is
+done by clk-scpi. I can re-word it for clarity.
+>
+> But, we do have dependency the other way round. clk_get() will fail
+> for the cpufreq driver if SCPI-clk driver is missing and perhaps
+> that's what you need to mention in the changelog.
+>
+>> Fixes: 8def31034d03 ("cpufreq: arm_big_little: add SCPI interface driver")
+>> Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
+>> Cc: Sudeep Holla <sudeep.holla@arm.com>
+>> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+>> Cc: Viresh Kumar <viresh.kumar@linaro.org>
 >> ---
->>
->> This patch has only been quick tested on ux500, so further tests are
->> welcome and needed. It was reported [1] to point out a certain commit
->> causing the regression, but further analyze actually tells that the
->> problem been there longer.
->>
->> So, I decided to point the fixes tag to a commit from where it actually
->> becomes quite simple to address the problem. Earlier than that, is just
->> not worth the effort.
->>
->> [1]
->> https://lkml.org/lkml/2015/11/16/748
->>
->> ---
->>  drivers/base/power/domain.c | 20 ++++++++++++++++----
->>  1 file changed, 16 insertions(+), 4 deletions(-)
->>
->> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->> index e03b1ad..8f0c2a3 100644
->> --- a/drivers/base/power/domain.c
->> +++ b/drivers/base/power/domain.c
->> @@ -390,6 +390,7 @@ static int pm_genpd_runtime_suspend(struct device *dev)
->>       struct generic_pm_domain *genpd;
->>       bool (*stop_ok)(struct device *__dev);
->>       struct gpd_timing_data *td = &dev_gpd_data(dev)->td;
->> +     bool system_pm = !pm_runtime_enabled(dev);
+>>  drivers/cpufreq/Kconfig.arm | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>> 
+>> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+>> index 1582c1c..dadfdd4 100644
+>> --- a/drivers/cpufreq/Kconfig.arm
+>> +++ b/drivers/cpufreq/Kconfig.arm
+>> @@ -201,7 +201,7 @@ config ARM_SA1110_CPUFREQ
+>>  
+>>  config ARM_SCPI_CPUFREQ
+>>          tristate "SCPI based CPUfreq driver"
+>> -	depends on ARM_BIG_LITTLE_CPUFREQ && ARM_SCPI_PROTOCOL
+>> +	depends on ARM_BIG_LITTLE_CPUFREQ && ARM_SCPI_PROTOCOL && COMMON_CLK_SCPI
 >
-> nit: I think this 'system_pm' variable name is confusing, especaly
-> because it just means runtime PM *not* enabled.
+> This looks fine.
 
-Okay! Perhaps "runtime_pm" would be better?
+I'll send an updated version to be picked up.
 
->
-> Is !pm_runtime_enabled() really sufficient to determine if these are
-> being called in the context of system PM?
-
-I guess pm_runtime_force_suspend() could be used from other places but
-a system PM callback, such as a ->remove() callback for example. So,
-indeed you have point!
-
-Nevertheless, I still think we can rely on the condition from
-pm_runtime_enabled(dev), as it's only relevant to validate/measure dev
-PM QOS latencies when runtime PM is enabled.
-
-With this in mind, let me cook a new version.
-
-Thanks for reviewing!
-
-Kind regards
-Uffe
+Thanks for taking a look.
