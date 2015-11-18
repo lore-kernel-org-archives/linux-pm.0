@@ -1,56 +1,96 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: scpi: Depend on SCPI clk driver
-Date: Wed, 18 Nov 2015 19:35:04 +0530
-Message-ID: <20151118140504.GI7336@ubuntu>
-References: <1447854764-9865-1-git-send-email-punit.agrawal@arm.com>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH RFC 13/27] ARM: cpuidle: Add runtime PM support for CPU
+ idle
+Date: Wed, 18 Nov 2015 07:17:49 -0700
+Message-ID: <20151118141749.GA893@linaro.org>
+References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
+ <1447799871-56374-14-git-send-email-lina.iyer@linaro.org>
+ <CAN2waFuepGZW8DdA3HqkddCH4oBo1Lpoyn7kQXh0wiKTj3xTXg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f47.google.com ([209.85.220.47]:35548 "EHLO
-	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752859AbbKROFJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Nov 2015 09:05:09 -0500
-Received: by pacej9 with SMTP id ej9so46004857pac.2
-        for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2015 06:05:09 -0800 (PST)
+Received: from mail-pa0-f45.google.com ([209.85.220.45]:36699 "EHLO
+	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755252AbbKRORx (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Nov 2015 09:17:53 -0500
+Received: by pacdm15 with SMTP id dm15so46322046pac.3
+        for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2015 06:17:52 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <1447854764-9865-1-git-send-email-punit.agrawal@arm.com>
+In-Reply-To: <CAN2waFuepGZW8DdA3HqkddCH4oBo1Lpoyn7kQXh0wiKTj3xTXg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Punit Agrawal <punit.agrawal@arm.com>
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, arnd@arndb.de, Sudeep Holla <sudeep.holla@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>
+To: Zhaoyang Huang <zhaoyang.huang@linaro.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, geert@linux-m68k.org, Krzysztof =?utf-8?Q?Koz=C5=82owski?= <k.kozlowski@samsung.com>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Axel Haslam <ahaslam@baylibre.com>, Marc Titinger <mtitinger@baylibre.com>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On 18-11-15, 13:52, Punit Agrawal wrote:
-> The SCPI clk driver registers the virtual cpufreq device that kicks off
-> initialisation of the SCPI cpufreq driver. Also, clk_get() will fail for
-> the cpufreq driver if the scpi clk driver is missing.
-> 
-> Fix this by making the scpi cpufreq driver explicitly depend on the scpi
-> clk driver.
-> 
-> Fixes: 8def31034d03 ("cpufreq: arm_big_little: add SCPI interface driver")
-> Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
-> Cc: Sudeep Holla <sudeep.holla@arm.com>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/Kconfig.arm | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index 1582c1c..dadfdd4 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -201,7 +201,7 @@ config ARM_SA1110_CPUFREQ
->  
->  config ARM_SCPI_CPUFREQ
->          tristate "SCPI based CPUfreq driver"
-> -	depends on ARM_BIG_LITTLE_CPUFREQ && ARM_SCPI_PROTOCOL
-> +	depends on ARM_BIG_LITTLE_CPUFREQ && ARM_SCPI_PROTOCOL && COMMON_CLK_SCPI
->          help
->  	  This adds the CPUfreq driver support for ARM big.LITTLE platforms
->  	  using SCPI protocol for CPU power management.
+On Wed, Nov 18 2015 at 01:50 -0700, Zhaoyang Huang wrote:
+>On 18 November 2015 at 06:37, Lina Iyer <lina.iyer@linaro.org> wrote:
+>> Notify runtime PM when the CPU is going to be powered off in the idle
+>> state. This allows for runtime PM suspend/resume of the CPU as well as
+>> its PM domain.
+>>
+>> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+>> Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+>> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+>> ---
+>>  drivers/cpuidle/cpuidle-arm.c | 8 ++++++++
+>>  1 file changed, 8 insertions(+)
+>>
+>> diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
+>> index 545069d..8e72a23 100644
+>> --- a/drivers/cpuidle/cpuidle-arm.c
+>> +++ b/drivers/cpuidle/cpuidle-arm.c
+>> @@ -11,13 +11,16 @@
+>>
+>>  #define pr_fmt(fmt) "CPUidle arm: " fmt
+>>
+>> +#include <linux/cpu.h>
+>>  #include <linux/cpuidle.h>
+>>  #include <linux/cpumask.h>
+>>  #include <linux/cpu_pm.h>
+>>  #include <linux/kernel.h>
+>>  #include <linux/module.h>
+>>  #include <linux/of.h>
+>> +#include <linux/pm_runtime.h>
+>>  #include <linux/slab.h>
+>> +#include <linux/rcupdate.h>
+>>
+>>  #include <asm/cpuidle.h>
+>>
+>> @@ -45,6 +48,10 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
+>>
+>>         ret = cpu_pm_enter();
+>>         if (!ret) {
+>> +               struct device *cpu_dev = get_cpu_device(dev->cpu);
+>> +
+>> +               RCU_NONIDLE(pm_runtime_put_sync_suspend(cpu_dev));
+>By my test, it seems that the usage_count of cpu device will be
+>decrease to -1 and the code never runs here. If it need a runtime_put
+>somewhere?
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+You shouldn't have to. Pls make sure all the patches are pulled in and
+compiles successfully.
 
--- 
-viresh
+Let me know if you still run into issues.
+
+Thanks,
+Lina
+
+>> +
+>>                 /*
+>>                  * Pass idle state index to cpu_suspend which in turn will
+>>                  * call the CPU ops suspend protocol with idle index as a
+>> @@ -52,6 +59,7 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
+>>                  */
+>>                 arm_cpuidle_suspend(idx);
+>>
+>> +               RCU_NONIDLE(pm_runtime_get_sync(cpu_dev));
+>>                 cpu_pm_exit();
+>>         }
+>>
+>> --
+>> 2.1.4
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
