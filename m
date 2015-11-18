@@ -1,61 +1,67 @@
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 00/22] kthread: Use kthread worker API more widely
-Date: Wed, 18 Nov 2015 06:25:45 -0800
-Message-ID: <20151118142545.GD5184@linux.vnet.ibm.com>
-References: <1447853127-3461-1-git-send-email-pmladek@suse.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <owner-linux-mm@kvack.org>
-Content-Disposition: inline
-In-Reply-To: <1447853127-3461-1-git-send-email-pmladek@suse.com>
-Sender: owner-linux-mm@kvack.org
-To: Petr Mladek <pmladek@suse.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Steven Rostedt <rostedt@goodmis.org>, Josh Triplett <josh@joshtriplett.org>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Jiri Kosina <jkosina@suse.cz>, Borislav Petkov <bp@suse.de>, Michal Hocko <mhocko@suse.cz>, linux-mm@kvack.org, Vlastimil Babka <vbabka@suse.cz>, linux-api@vger.kernel.org, linux-kernel@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, linux-watchdog@vger.kernel.org, Corey Minyard <minyard@acm.org>, openipmi-developer@lists.sourceforge.net, Doug Ledford <dledford@redhat.com>, Sean Hefty <sean.hefty@intel.com>, Hal
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: [PATCH] ARM: imx6: pm: declare pm domain latency on power_state struct.
+Date: Wed, 18 Nov 2015 07:57:36 -0700
+Message-ID: <1447858656-62464-1-git-send-email-lina.iyer@linaro.org>
+References: <1447799871-56374-6-git-send-email-lina.iyer@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f50.google.com ([209.85.220.50]:34967 "EHLO
+	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933042AbbKRO5o (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Nov 2015 09:57:44 -0500
+Received: by pacej9 with SMTP id ej9so47214401pac.2
+        for <linux-pm@vger.kernel.org>; Wed, 18 Nov 2015 06:57:43 -0800 (PST)
+In-Reply-To: <1447799871-56374-6-git-send-email-lina.iyer@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Cc: linux-arm-msm@vger.kernel.org, Axel Haslam <ahaslam+renesas@baylibre.com>, Lina Iyer <lina.iyer@linaro.org>
 
-On Wed, Nov 18, 2015 at 02:25:05PM +0100, Petr Mladek wrote:
-> My intention is to make it easier to manipulate and maintain kthreads.
-> Especially, I want to replace all the custom main cycles with a
-> generic one. Also I want to make the kthreads sleep in a consistent
-> state in a common place when there is no work.
-> 
-> My first attempt was with a brand new API (iterant kthread), see
-> http://thread.gmane.org/gmane.linux.kernel.api/11892 . But I was
-> directed to improve the existing kthread worker API. This is
-> the 3rd iteration of the new direction.
-> 
-> 
-> 1st patch: add support to check if a timer callback is being called
-> 
-> 2nd..12th patches: improve the existing kthread worker API
-> 
-> 13th..18th, 20th, 22nd patches: convert several kthreads into
->       the kthread worker API, namely: khugepaged, ring buffer
->       benchmark, hung_task, kmemleak, ipmi, IB/fmr_pool,
->       memstick/r592, intel_powerclamp
->       
-> 21st, 23rd patches: do some preparation steps; they usually do
->       some clean up that makes sense even without the conversion.
-> 
->   
-> Changes against v2:
-> 
->   + used worker->lock to synchronize the operations with the work
->     instead of the PENDING bit as suggested by Tejun Heo; it simplified
->     the implementation in several ways
-> 
->   + added timer_active(); used it together with del_timer_sync()
->     to cancel the work a less tricky way
-> 
->   + removed the controversial conversion of the RCU kthreads
+From: Axel Haslam <ahaslam+renesas@baylibre.com>
 
-Thank you!  ;-)
+The generic_pm_domain structure uses an array of latencies to be able to
+declare multiple intermediate states.
 
-							Thanx, Paul
+Declare a single "OFF" state with the default latencies So that the
+power_off_latency_ns and power_on_latency_ns fields of generic_pm_domain
+structure can be eventualy removed.
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Signed-off-by: Axel Haslam <ahaslam+renesas@baylibre.com>
+Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+[Lina: pm_genpd_init() argument change]
+---
+ arch/arm/mach-imx/gpc.c | 14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm/mach-imx/gpc.c b/arch/arm/mach-imx/gpc.c
+index 8e7976a..b070e06 100644
+--- a/arch/arm/mach-imx/gpc.c
++++ b/arch/arm/mach-imx/gpc.c
+@@ -368,13 +368,23 @@ static struct generic_pm_domain imx6q_arm_domain = {
+ 	.name = "ARM",
+ };
+ 
++static struct genpd_power_state imx6q_arm_domain_states[] = {
++	{
++		.name = "OFF",
++		.power_off_latency_ns = 25000,
++		.power_on_latency_ns = 2000000,
++	},
++};
++
+ static struct pu_domain imx6q_pu_domain = {
+ 	.base = {
+ 		.name = "PU",
+ 		.power_off = imx6q_pm_pu_power_off,
+ 		.power_on = imx6q_pm_pu_power_on,
+-		.power_off_latency_ns = 25000,
+-		.power_on_latency_ns = 2000000,
++		.gov = NULL,
++		.status = GPD_STATE_POWER_OFF,
++		.states = imx6q_arm_domain_states,
++		.state_count = ARRAY_SIZE(imx6q_arm_domain_states),
+ 	},
+ };
+ 
+-- 
+2.1.4
+
