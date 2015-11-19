@@ -1,64 +1,62 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH RFC 16/27] ARM: cpuidle: Record the next wakeup event of the CPU
-Date: Thu, 19 Nov 2015 15:35:47 -0800
-Message-ID: <7hwptdsgto.fsf@deeprootsystems.com>
-References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
-	<1447799871-56374-17-git-send-email-lina.iyer@linaro.org>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: turbostat patches for 4.3
+Date: Thu, 19 Nov 2015 18:46:18 -0500
+Message-ID: <CAJvTdKkSKpL=Wpkwrs1CY_Y4kE=hHDVrVOaa7G3ceWJ5CJBLtg@mail.gmail.com>
+References: <1447314152-2145-1-git-send-email-lenb@kernel.org>
+	<2635043.0vdY80h9bq@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f50.google.com ([209.85.220.50]:35301 "EHLO
-	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934665AbbKSXft (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Nov 2015 18:35:49 -0500
-Received: by pacej9 with SMTP id ej9so95772862pac.2
-        for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2015 15:35:49 -0800 (PST)
-In-Reply-To: <1447799871-56374-17-git-send-email-lina.iyer@linaro.org> (Lina
-	Iyer's message of "Tue, 17 Nov 2015 15:37:40 -0700")
+Received: from mail-lf0-f46.google.com ([209.85.215.46]:35312 "EHLO
+	mail-lf0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161416AbbKSXqU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Nov 2015 18:46:20 -0500
+Received: by lfdo63 with SMTP id o63so58683074lfd.2
+        for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2015 15:46:18 -0800 (PST)
+In-Reply-To: <2635043.0vdY80h9bq@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: ulf.hansson@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>
 
-Lina Iyer <lina.iyer@linaro.org> writes:
+linux-next looks fine, go ahead and push it.
 
-> Reading the next wakeup of the CPU can only be realiably done only from
-> that CPU. In the idle enter path record the next wake up of the CPU. The
-> information is useful to determine the sleep time left for the CPU.
+all you missed in the refresh was some 80-column formatting
+for checkpatch and a version number bump.
+
+thanks,
+-Len
+
+
+On Fri, Nov 13, 2015 at 7:43 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Thursday, November 12, 2015 02:42:28 AM Len Brown wrote:
+>> Hello Rafael,
 >
-> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-> ---
->  drivers/cpuidle/cpuidle-arm.c | 5 +++++
->  1 file changed, 5 insertions(+)
+> Hi,
 >
-> diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
-> index 8e72a23..b3133ef 100644
-> --- a/drivers/cpuidle/cpuidle-arm.c
-> +++ b/drivers/cpuidle/cpuidle-arm.c
-> @@ -18,9 +18,11 @@
->  #include <linux/kernel.h>
->  #include <linux/module.h>
->  #include <linux/of.h>
-> +#include <linux/pm_domain.h>
->  #include <linux/pm_runtime.h>
->  #include <linux/slab.h>
->  #include <linux/rcupdate.h>
-> +#include <linux/tick.h>
->  
->  #include <asm/cpuidle.h>
->  
-> @@ -49,7 +51,9 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
->  	ret = cpu_pm_enter();
->  	if (!ret) {
->  		struct device *cpu_dev = get_cpu_device(dev->cpu);
-> +		struct generic_pm_domain_data *gpd = dev_gpd_data(cpu_dev);
->  
-> +		gpd->td.next_wakeup = tick_nohz_get_next_wakeup();
->  		RCU_NONIDLE(pm_runtime_put_sync_suspend(cpu_dev));
+>> Please pick up this small batch of turbostat patches.
+>> As usual, they are available on my turbostat branch.
+>>
+>> thanks!
+>> -Len
+>>
+>> [PATCH 1/4] tools/power turbostat: simplify Bzy_MHz calculation
+>> [PATCH 2/4] tools/power turbostat: bugfix: print MAX_NON_TURBO_RATIO
+>> [PATCH 3/4] tools/power turbostat: use new name for MSR_PLATFORM_INFO
+>> [PATCH 4/4] x86: remove unused definition of MSR_NHM_PLATFORM_INFO
+>
+> I pulled from your branch on Wednesday and there were only [1-2/4] on it then.
+> That's what went to Linus on that day.
+>
+> Today, I've noticed that you rebased the branch and it's generating conflicts
+> for me when pulled, so instead of pulling from it I've applied [3-4/4] directly
+> and I'm going to push them to Linus for -rc2.
+>
+> Thanks,
+> Rafael
+>
 
-Maybe set this back to zero atomicaly, after wakeup?
 
-Checking for non-zero that might be another way for the domain goveror that there
-haven't been any CPU wakeups since the CPUs have gone idle.
 
-Kevin
+-- 
+Len Brown, Intel Open Source Technology Center
