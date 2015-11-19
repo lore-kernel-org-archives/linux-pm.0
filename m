@@ -1,41 +1,76 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
 Subject: Re: [PATCH 6/6] PM / devfreq: Set the min_freq and max_freq of devfreq
  device
-Date: Thu, 19 Nov 2015 10:10:58 +0000 (GMT)
-Message-ID: <932082455.1194101447927858604.JavaMail.weblogic@ep2mlwas06b>
-Reply-To: myungjoo.ham@samsung.com
+Date: Thu, 19 Nov 2015 19:37:22 +0900
+Message-ID: <564DA662.5060207@samsung.com>
+References: <932082455.1194101447927858604.JavaMail.weblogic@ep2mlwas06b>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-MIME-version: 1.0
-Sender: linux-kernel-owner@vger.kernel.org
-To: =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:54378 "EHLO
+	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932355AbbKSKhY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Nov 2015 05:37:24 -0500
+In-reply-to: <932082455.1194101447927858604.JavaMail.weblogic@ep2mlwas06b>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: myungjoo.ham@samsung.com, =?UTF-8?B?67CV6rK966+8?= <kyungmin.park@samsung.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-PiBBZnRlciBwcm9iaW5nIHRoZSBkZXZmcmVxIGRldmljZSBkcml2ZXIsIHRoZSB2YWx1ZSBvZiBi
-b3RoIG1pbl9mcmVxIGFuZAo+IG1heF9mcmVxIGFyZSB6ZXJvKDApLiBTbywgdGhpcyBwYXRjaCBp
-bml0aWFsaXplcyB0aGUgJ21pbl9mcmVxJyBhbmQgJ21heF9mcmVxJwo+IGZpZWxkIG9mIGRldmZy
-ZXEgZGV2aWNlIGJ5IHVzaW5nIHRoZSBmcmVxX3RhYmxlIGFycmF5Lgo+IAo+IFNpZ25lZC1vZmYt
-Ynk6IENoYW53b28gQ2hvaSA8Y3cwMC5jaG9pQHNhbXN1bmcuY29tPgo+IC0tLQo+ICBkcml2ZXJz
-L2RldmZyZXEvZGV2ZnJlcS5jIHwgNSArKysrKwo+ICAxIGZpbGUgY2hhbmdlZCwgNSBpbnNlcnRp
-b25zKCspCj4gCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvZGV2ZnJlcS9kZXZmcmVxLmMgYi9kcml2
-ZXJzL2RldmZyZXEvZGV2ZnJlcS5jCj4gaW5kZXggYzI5MmNlYjdmZjE5Li4wYjI0YWU3YjdhNDgg
-MTAwNjQ0Cj4gLS0tIGEvZHJpdmVycy9kZXZmcmVxL2RldmZyZXEuYwo+ICsrKyBiL2RyaXZlcnMv
-ZGV2ZnJlcS9kZXZmcmVxLmMKPiBAQCAtMTIxLDYgKzEyMSwxMSBAQCBzdGF0aWMgdm9pZCBkZXZm
-cmVxX3NldF9mcmVxX3RhYmxlKHN0cnVjdCBkZXZmcmVxICpkZXZmcmVxKQo+ICAJCXByb2ZpbGUt
-PmZyZXFfdGFibGVbaV0gPSBmcmVxOwo+ICAJfQo+ICAJcmN1X3JlYWRfdW5sb2NrKCk7Cj4gKwo+
-ICsJbXV0ZXhfbG9jaygmZGV2ZnJlcS0+bG9jayk7Cj4gKwlkZXZmcmVxLT5taW5fZnJlcSA9IHBy
-b2ZpbGUtPmZyZXFfdGFibGVbMF07Cj4gKwlkZXZmcmVxLT5tYXhfZnJlcSA9IHByb2ZpbGUtPmZy
-ZXFfdGFibGVbcHJvZmlsZS0+bWF4X3N0YXRlIC0gMV07Cj4gKwltdXRleF91bmxvY2soJmRldmZy
-ZXEtPmxvY2spOwo+ICB9CgpObywgeW91IHNob3VsZCBub3QgZG8gdGhpcy4KCkl0IGlzIGFsbG93
-ZWQgdG8gdXNlIGRldmZyZXEgd2l0aG91dCBib3RoIE9QUCBhbmQgZnJlcV90YWJsZQphc3N1bWlu
-ZyB0aGF0IHRoZSBkZXZmcmVxIGRldmljZSBtYXkgb3BlcmF0ZSB3aXRoIHZlcnkgbWFueQpmcmVx
-dWVuY2llcyBzbyB0aGF0IHByYWN0aWNhbGx5LCB3ZSBjYW4gdmlydHVhbGx5IGdpdmUgaXQKYW55
-IGZyZXF1ZW5jeSBudW1iZXJzIGluIGEgZ2l2ZW4gcmFuZ2UuCihjYXNlcyB3aGVyZSBwcm9maWxl
-LT5tYXhfc3RhdGUgaXMgMCBhbmQgaXQgaXMgbm90IGFuIGVycm9yKQoKVGhlIHZhbHVlIDAgaXMg
-dXNlZCBmb3IgbWluL21heF9mcmVxIHRvIGRlY2xhcmUKdGhhdCBtaW4vbWF4X2ZyZXEgaXMgZGVh
-Y3RpdmF0ZWQuIFRoZXJlZm9yZSwgaXQgaXMgbm90CnJlcXVpcmVkIHRvIGRvIHNvOyB0aGV5IGFy
-ZSBub3QgaW50ZW5kZWQgdG8gc2hvdyB0aGUgaGFyZHdhcmUKY29uZmlndXJhdGlvbiBhcyB3ZWxs
-LgoKQ2hlZXJzLApNeXVuZ0pvbwo=
+On 2015=EB=85=84 11=EC=9B=94 19=EC=9D=BC 19:10, MyungJoo Ham wrote:
+>> After probing the devfreq device driver, the value of both min_freq =
+and
+>> max_freq are zero(0). So, this patch initializes the 'min_freq' and =
+'max_freq'
+>> field of devfreq device by using the freq_table array.
+>>
+>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+>> ---
+>>  drivers/devfreq/devfreq.c | 5 +++++
+>>  1 file changed, 5 insertions(+)
+>>
+>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+>> index c292ceb7ff19..0b24ae7b7a48 100644
+>> --- a/drivers/devfreq/devfreq.c
+>> +++ b/drivers/devfreq/devfreq.c
+>> @@ -121,6 +121,11 @@ static void devfreq_set_freq_table(struct devfr=
+eq *devfreq)
+>>  		profile->freq_table[i] =3D freq;
+>>  	}
+>>  	rcu_read_unlock();
+>> +
+>> +	mutex_lock(&devfreq->lock);
+>> +	devfreq->min_freq =3D profile->freq_table[0];
+>> +	devfreq->max_freq =3D profile->freq_table[profile->max_state - 1];
+>> +	mutex_unlock(&devfreq->lock);
+>>  }
+>=20
+> No, you should not do this.
+>=20
+> It is allowed to use devfreq without both OPP and freq_table
+> assuming that the devfreq device may operate with very many
+> frequencies so that practically, we can virtually give it
+> any frequency numbers in a given range.
+> (cases where profile->max_state is 0 and it is not an error)
+>=20
+> The value 0 is used for min/max_freq to declare
+> that min/max_freq is deactivated. Therefore, it is not
+> required to do so; they are not intended to show the hardware
+> configuration as well.
+
+This case consider the devfreq device using OPP because devfreq_set_fre=
+q_table()
+get the number of OPP entry in OPP list before setting the min_freq/max=
+_freq.
+If the devfreq device don't use the OPP entry, devfreq_set_freq_table()
+will return without any operation.
+
+IMHO, when devfreq device uses the OPP table including the frequency,
+min_freq/max_freq should show the correct value as CPUFREQ framework.
+
+Regards,
+Chanwoo CHoi
+
+
+
