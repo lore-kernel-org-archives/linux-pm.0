@@ -1,62 +1,42 @@
-From: Jacob Tanenbaum <jtanenba@redhat.com>
-Subject: [PATCH] pcc-cpufreq driver update default value of cpuinfo_transition_latency
-Date: Thu, 19 Nov 2015 10:29:01 -0500
-Message-ID: <1447946941-14923-1-git-send-email-jtanenba@redhat.com>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH RFC 25/27] devicetree: bindings: Document qcom,msm-id and
+ qcom,board-id
+Date: Thu, 19 Nov 2015 08:36:40 -0700
+Message-ID: <20151119153640.GC893@linaro.org>
+References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
+ <1447799871-56374-26-git-send-email-lina.iyer@linaro.org>
+ <CAL_JsqJAOEvs08Jydn9wWtM7-Oxd=MmmDER48VRF7z3Gkzt0CQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:37220 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757091AbbKSP3c (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 19 Nov 2015 10:29:32 -0500
+Received: from mail-pa0-f51.google.com ([209.85.220.51]:36051 "EHLO
+	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758601AbbKSPgo (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Nov 2015 10:36:44 -0500
+Received: by pacdm15 with SMTP id dm15so84365359pac.3
+        for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2015 07:36:43 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <CAL_JsqJAOEvs08Jydn9wWtM7-Oxd=MmmDER48VRF7z3Gkzt0CQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: corbet@lwn.net, rjw@rjwysocki.net, viresh.kumar@linaro.org, prarit@redhat.com, Jacob Tanenbaum <jtanenba@redhat.com>
+To: Rob Herring <robh@kernel.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Krzysztof =?utf-8?Q?Koz=C5=82owski?= <k.kozlowski@samsung.com>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, ahaslam@baylibre.com, mtitinger@baylibre.com, Kumar Gala <galak@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-The cpufreq documentation specifies
+On Thu, Nov 19 2015 at 07:37 -0700, Rob Herring wrote:
+>On Tue, Nov 17, 2015 at 4:37 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
+>> From: Kumar Gala <galak@codeaurora.org>
+>>
+>> The top level qcom,msm-id and qcom,board-id are utilized by bootloaders
+>> on Qualcomm MSM platforms to determine which device tree should be
+>> utilized and passed to the kernel.
+>
+>See [1] and the link there to the prior version which is like this one.
+>
+Thanks Rob. Andy Gross sent me that link and I am waiting on the changes
+along with the dtb tool to make it. These patches will go away after
+Stephen's changes. I just put it in here for completeness.
 
-policy->cpuinfo.transition_latency   the time it takes on this CPU to
-                                switch between two frequencies in
-                                nanoseconds (if appropriate, else
-                                specify CPUFREQ_ETERNAL)
+Thanks,
+Lina
 
-currently pcc-cpufreq does not expose the value and sets it to zero. I
-changed the pcc-cpufreq driver and it's documentation to conform to the
-default value specified in Documentation/cpu-freq/cpu-drivers.txt
-
-Signed-off-by: Jacob Tanenbaum <jtanenba@redhat.com>
----
- Documentation/cpu-freq/pcc-cpufreq.txt | 4 ++--
- drivers/cpufreq/pcc-cpufreq.c          | 2 ++
- 2 files changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/Documentation/cpu-freq/pcc-cpufreq.txt b/Documentation/cpu-freq/pcc-cpufreq.txt
-index 9e3c3b3..0a94224 100644
---- a/Documentation/cpu-freq/pcc-cpufreq.txt
-+++ b/Documentation/cpu-freq/pcc-cpufreq.txt
-@@ -159,8 +159,8 @@ to be strictly associated with a P-state.
- 
- 2.2 cpuinfo_transition_latency:
- -------------------------------
--The cpuinfo_transition_latency field is 0. The PCC specification does
--not include a field to expose this value currently.
-+The cpuinfo_transition_latency field is CPUFREQ_ETERNAL. The PCC specification
-+does not include a field to expose this value currently.
- 
- 2.3 cpuinfo_cur_freq:
- ---------------------
-diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
-index 2a0d589..808a320 100644
---- a/drivers/cpufreq/pcc-cpufreq.c
-+++ b/drivers/cpufreq/pcc-cpufreq.c
-@@ -555,6 +555,8 @@ static int pcc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	policy->min = policy->cpuinfo.min_freq =
- 		ioread32(&pcch_hdr->minimum_frequency) * 1000;
- 
-+	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
-+
- 	pr_debug("init: policy->max is %d, policy->min is %d\n",
- 		policy->max, policy->min);
- out:
--- 
-2.4.3
-
+>[1] https://lkml.org/lkml/2015/10/26/651
