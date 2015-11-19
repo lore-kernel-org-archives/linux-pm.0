@@ -1,76 +1,78 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH 6/6] PM / devfreq: Set the min_freq and max_freq of devfreq
- device
-Date: Thu, 19 Nov 2015 19:37:22 +0900
-Message-ID: <564DA662.5060207@samsung.com>
-References: <932082455.1194101447927858604.JavaMail.weblogic@ep2mlwas06b>
+From: Thierry Reding <treding@nvidia.com>
+Subject: Re: [RFD] Functional dependencies between devices
+Date: Thu, 19 Nov 2015 14:18:59 +0100
+Message-ID: <20151119131857.GF21862@ulmo.nvidia.com>
+References: <1623682.7KVblAB3KQ@vostro.rjw.lan>
+ <564B224D.3050904@samsung.com>
+ <20151117135549.GR31303@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="osDK9TLjxFScVI/L"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:54378 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932355AbbKSKhY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Nov 2015 05:37:24 -0500
-In-reply-to: <932082455.1194101447927858604.JavaMail.weblogic@ep2mlwas06b>
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:10342 "EHLO
+	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752185AbbKSNTJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Nov 2015 08:19:09 -0500
+In-Reply-To: <20151117135549.GR31303@sirena.org.uk>
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: myungjoo.ham@samsung.com, =?UTF-8?B?67CV6rK966+8?= <kyungmin.park@samsung.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Mark Brown <broonie@kernel.org>
+Cc: Andrzej Hajda <a.hajda@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh@kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Dmitry Torokhov <dtor@google.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Michael Turquette <mturquette@baylibre.com>
 
-On 2015=EB=85=84 11=EC=9B=94 19=EC=9D=BC 19:10, MyungJoo Ham wrote:
->> After probing the devfreq device driver, the value of both min_freq =
-and
->> max_freq are zero(0). So, this patch initializes the 'min_freq' and =
-'max_freq'
->> field of devfreq device by using the freq_table array.
->>
->> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->> ---
->>  drivers/devfreq/devfreq.c | 5 +++++
->>  1 file changed, 5 insertions(+)
->>
->> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
->> index c292ceb7ff19..0b24ae7b7a48 100644
->> --- a/drivers/devfreq/devfreq.c
->> +++ b/drivers/devfreq/devfreq.c
->> @@ -121,6 +121,11 @@ static void devfreq_set_freq_table(struct devfr=
-eq *devfreq)
->>  		profile->freq_table[i] =3D freq;
->>  	}
->>  	rcu_read_unlock();
->> +
->> +	mutex_lock(&devfreq->lock);
->> +	devfreq->min_freq =3D profile->freq_table[0];
->> +	devfreq->max_freq =3D profile->freq_table[profile->max_state - 1];
->> +	mutex_unlock(&devfreq->lock);
->>  }
+--osDK9TLjxFScVI/L
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Tue, Nov 17, 2015 at 01:55:49PM +0000, Mark Brown wrote:
+> On Tue, Nov 17, 2015 at 01:49:17PM +0100, Andrzej Hajda wrote:
+> > On 10/27/2015 04:24 PM, Rafael J. Wysocki wrote:
 >=20
-> No, you should not do this.
+> > this scenario:
+> > - many clock providers, irq domains are not provided by devices,
 >=20
-> It is allowed to use devfreq without both OPP and freq_table
-> assuming that the devfreq device may operate with very many
-> frequencies so that practically, we can virtually give it
-> any frequency numbers in a given range.
-> (cases where profile->max_state is 0 and it is not an error)
->=20
-> The value 0 is used for min/max_freq to declare
-> that min/max_freq is deactivated. Therefore, it is not
-> required to do so; they are not intended to show the hardware
-> configuration as well.
+> That seems like something we can and possibly should change if we want.
 
-This case consider the devfreq device using OPP because devfreq_set_fre=
-q_table()
-get the number of OPP entry in OPP list before setting the min_freq/max=
-_freq.
-If the devfreq device don't use the OPP entry, devfreq_set_freq_table()
-will return without any operation.
+It's not very trivial, unfortunately. I had a crack at that a long time
+ago, but the problem is that these devices all need to be available very
+early during boot, at which point devices aren't registered yet. With
+all the progress on probe deferral and the on-demand probing work this
+might be less of an issue nowadays, I haven't looked at it for quite a
+while.
 
-IMHO, when devfreq device uses the OPP table including the frequency,
-min_freq/max_freq should show the correct value as CPUFREQ framework.
+But I fully agree that the current state of setting up providers without
+a device structure is suboptimal precisely because it prevents generic
+infrastructure like the one Rafael proposed from just working.
 
-Regards,
-Chanwoo CHoi
+That said, one technique I've occasionally resorted to is to have some
+early code, be it one of the OF table things or an initcall, set up a
+basic environment, typically using global variables (yuck!), but then
+provide a proper driver that knows how to take these things over when
+its time comes. That's not a perfect solution, but at least it gives you
+a proper struct device to work with.
 
+Thierry
 
+--osDK9TLjxFScVI/L
+Content-Type: application/pgp-signature; name="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCAAGBQJWTcw+AAoJEN0jrNd/PrOhIgoP/2NxmIthdW4gSz/3/zR0SRWb
+PMOBzWAAf5Glwg1N2SuhdOUKrTjXDJMAru/imfCIFHq+hyKfCzP5JoTFCahdKZXs
+d6qW0SN64HFu99fGb4qo71nda3hpJXqY8TNhM+1RZP349OJWardkMSYvLTEXv6hL
+iAdyjILr9C7kiYvbrTSnlEk5MGxEI0BAdaMtC4OlU+UtWNOpAnHW6TLKwrEQngFQ
+Yc4vooMyJK5zXa+NaySjcjRHbPNK1n6dRBSUCmCITPl/xOZE1nv27JK8/JyWiaKI
++OqO5QJgn5Wy8hyfx1WkjE8NQ7h1c73soWy3X1s3EyOGeqyM9KQ5Od/1H2eOUrdV
+E01RoO+mCqVs8EnlRpwFLGcYlbAy09EPGl3XDJq1jVLjYvQxPSLu3rjK3mY41pD6
+9s/xlGNry95svNyP9HfhblOE9wPLIYDjObcMji8DpscfuvhiTtviY+O+A7JmkmsG
+9TgSaS7eR/lJUl1QpeHsUPGqHSLWOefoRi/rKnl4OkBSVs0ALYwcUvEapmBQqcCa
+p2d5UfO2cKYa1f2cTv1KEHvWrQE/lZh5b4RJpKPBNHsi1v02CcZ8zC3qqsQr+IvG
+tzr7cjRW3rJAV36G+B0OeQLAf8qFHSplaixhNnIe+RVq8f7rEnvYmNJuffy+g1Ak
+LzUyQedKb1MKD2oTu+te
+=Atr2
+-----END PGP SIGNATURE-----
+
+--osDK9TLjxFScVI/L--
