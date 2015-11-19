@@ -1,246 +1,35 @@
-From: Andrzej Hajda <a.hajda@samsung.com>
-Subject: Re: [RFD] Functional dependencies between devices
-Date: Thu, 19 Nov 2015 10:08:43 +0100
-Message-ID: <564D919B.4030107@samsung.com>
-References: <1623682.7KVblAB3KQ@vostro.rjw.lan> <564B214B.8030602@samsung.com>
- <12277717.3uaUoj5Hzc@vostro.rjw.lan>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH 0/6] PM / devfreq: Clean code and add set the freq_table
+ array
+Date: Thu, 19 Nov 2015 18:38:28 +0900
+Message-ID: <564D9894.7070203@samsung.com>
+References: <1678444918.1189481447922768056.JavaMail.weblogic@ep2mlwas06b>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:30573 "EHLO
-	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757222AbbKSJJT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Nov 2015 04:09:19 -0500
-In-reply-to: <12277717.3uaUoj5Hzc@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1678444918.1189481447922768056.JavaMail.weblogic@ep2mlwas06b>
+Sender: linux-kernel-owner@vger.kernel.org
+To: myungjoo.ham@samsung.com, =?UTF-8?B?67CV6rK966+8?= <kyungmin.park@samsung.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Grant Likely <grant.likely@linaro.org>, Mark Brown <broonie@kernel.og>, Rob Herring <robh@kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Thierry Reding <treding@nvidia.com>, Dmitry Torokhov <dtor@google.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Michael Turquette <mturquette@baylibre.com>
 
-On 11/18/2015 03:17 AM, Rafael J. Wysocki wrote:
-> On Tuesday, November 17, 2015 01:44:59 PM Andrzej Hajda wrote:
->> Hi Rafael,
->>
->> Please forgive me late reply, but I have missed this thread before.
->>
->> On 10/27/2015 04:24 PM, Rafael J. Wysocki wrote:
->>> Hi All,
->>>
->>> As discussed in the recent "On-demand device probing" thread and in a Kernel
->>> Summit session earlier today, there is a problem with handling cases where
->>> functional dependencies between devices are involved.
->>>
->>> What I mean by a "functional dependency" is when the driver of device B needs
->>> both device A and its driver to be present and functional to be able to work.
->>> This implies that the driver of A needs to be working for B to be probed
->>> successfully and it cannot be unbound from the device before the B's driver.
->>> This also has certain consequences for power management of these devices
->>> (suspend/resume and runtime PM ordering).
->> I think the real dependency is when some entity asks for some resource (irq,
->> clock, gpio,...).
-> Well, a dependency is when one entity uses a resource provided by another one,
-> not only when it explicitly asks for that resource.  But that's a very high
-> level of abstraction IMO.
->
->> Usually the entity is some device driver during probing and
->> the resource is provided by some bound device but there are many exceptions for
->> this scenario:
->> - many clock providers, irq domains are not provided by devices,
->> - there are also dependencies between clock providers, ie. some clock provider
->> requires clocks provided by another clock provider, so the entity is also not a
->> device driver,
->> - there are resources which can be requested after probe - case of componentized
->> devices (DRM for example), more precisely they can be requested during probe of
->> random component or master of componentized device,
->> - another case are requests for some additional/optional resources after device
->> driver probe, for example phone usually does not require HDMI related resources
->> until user attach HDMI cable,
->> - (semi-)circular dependencies - 1st device provides clock used by other devices
->> which provides other resources used by the 1st device, scenario present in some
->> video pipelines, like camera subsystem + sensors.
->>
->> These examples shows that dependencies between bound device drivers are just
->> subset of bigger issue, maybe it is worth to look for more general solution.
-> That really depends on the goal.
->
-> The goal here is to add a mechanism allowing the driver core to carry out
-> certain operations in the right order.  The operations in question are carried
-> out on devices using drivers (and perhaps bus types, PM domains etc), so using
-> a representation of links between devices seems adequate to me.
->
->>> So I want to be able to represent those functional dependencies between devices
->>> and I'd like the driver core to track them and act on them in certain cases
->>> where they matter.  The argument for doing that in the driver core is that
->>> there are quite a few distinct use cases related to that, they are relatively
->>> hard to get right in a driver (if one wants to address all of them properly)
->>> and it only gets worse if multiplied by the number of drivers potentially
->>> needing to do it.  Morever, at least one case (asynchronous system suspend/resume)
->>> cannot be handled in a single driver at all, because it requires the driver of A
->>> to wait for B to suspend (during system suspend) and the driver of B to wait for
->>> A to resume (during system resume).
->> Could you elaborate these distinct use cases. I am curious because I have
->> proposed resource tracking framework [1] which should solve most of the issues
->> described here. It was not designed to solve suspend/resume issues, but it could
->> be easily extended to support it, I suppose.
->>
->> [1]: https://lkml.org/lkml/2014/12/10/342
-> So the operations that need to be taken care of are:
-> - Probe (suppliers need to be probed before consumers if the dependencies are
->   known beforehand).
-> - System suspend/resume (suppliers need to be suspended after consumers and
->   resumed before them) which may be asynchronous (so simple re-ordering doesn't
->   help).
-> - Runtime PM (suppliers should not be suspended if the consumers are not
->   suspended).
-I though provider's frameworks are taking care of it already. For example
-clock provider cannot suspend until there are prepared/enabled clocks.
-Similar enabled regulators, phys should block provider from runtime pm
-suspending.
-Are there situations/frameworks which requires additional care?
-> - System shutdown (shutdown callbacks should be executed for consumers first).
-> - Driver unbind (a supplier driver cannot be unbound before any of its consumer
->   drivers).
->
-> In principle you can use resource tracking to figure out all of the involved
-> dependencies, but that would require walking complicated data structures unless
-> you add an intermediate "device dependency" layer which is going to be analogous
-> to the one discussed here.
+Hi Myungjoo,
 
-It should be enough if provider notifies consumers that the resource
-will be unavailable.
+On 2015=EB=85=84 11=EC=9B=94 19=EC=9D=BC 17:46, MyungJoo Ham wrote:
+>> This patch-set clean the code for both devfreq and devfreq-event fra=
+mework
+>> and add the 'freq_table' for devfreq device. After initializing the
+>> 'freq_table', the 'trans_stat' sysfs provide the appropriate informa=
+tion.
+>=20
+> Chanwoo,
+>=20
+> Are these the same patches in your git, https://git.kernel.org/cgit/l=
+inux/kernel/git/chanwoo/linux.git/log/?h=3Ddevfreq-next ?
 
->
->>> My idea is to represent a supplier-consumer dependency between devices (or
->>> more precisely between device+driver combos) as a "link" object containing
->>> pointers to the devices in question, a list node for each of them and some
->>> additional information related to the management of those objects, ie.
->>> something like:
->>>
->>> struct device_link {
->>> 	struct device *supplier;
->>> 	struct list_head supplier_node;
->>> 	struct device *consumer;
->>> 	struct list_head consumer_node;
->>> 	<flags, status etc>
->>> };
->>>
->>> In general, there will be two lists of those things per device, one list
->>> of links to consumers and one list of links to suppliers.
->>>
->>> In that picture, links will be created by calling, say:
->>>
->>> int device_add_link(struct device *me, struct device *my_supplier, unsigned int flags);
->>>
->>> and they will be deleted by the driver core when not needed any more.  The
->>> creation of a link should also cause dpm_list and the list used during shutdown
->>> to be reordered if needed.
->>>
->>> In principle, it seems usefult to consider two types of links, one created
->>> at device registration time (when registering the second device from the linked
->>> pair, whichever it is) and one created at probe time (of the consumer device).
->>> I'll refer to them as "permanent" and "probe-time" links, respectively.
->>>
->>> The permanent links (created at device registration time) will stay around
->>> until one of the linked devices is unregistered (at which time the driver
->>> core will drop the link along with the device going away).  The probe-time
->>> ones will be dropped (automatically) at the consumer device driver unbind time.
->> What about permanent links in case provider is unregistered? Should they
->> disappear? It will not make consumers happy. What if the provider will be
->> re-registered.
-> If the device object is gone, it cannot be pointed to by any links (on any end)
-> any more.  That's just physically impossible. :-)
+You don't need to consider this branch. Just this git repository
+is just workplace for only me. It it not any official git repository.
 
-So the link will disappear and the 'consumer' will have dependencies
-fulfilled.
-It will be then probed? Is it OK? Or am I missing something?
-
-
->
->>> There's a question about what if the supplier device is being unbound before
->>> the consumer one (for example, as a result of a hotplug event).  My current
->>> view on that is that the consumer needs to be force-unbound in that case too,
->>> but I guess I may be persuaded otherwise given sufficiently convincing
->>> arguments.
->> Some devices can have 'weak' dependencies - they will be still functional
->> without some resources.
-> Right.  That's on my radar.
->
->> In fact two last examples from my 1st paragraph are
->> counter-examples for this. I suspect there should be some kind of notification
->> for them about removal of the resource.
->>
->>> Anyway, there are reasons to do that, like for example it may
->>> help with the synchronization.  Namely, if there's a rule that suppliers
->>> cannot be unbound before any consumers linked to them, than the list of links
->>> to suppliers for a consumer can only change at its registration/probe or
->>> unbind/remove times (which simplifies things quite a bit).
->>>
->>> With that, the permanent links existing at the probe time for a consumer
->>> device can be used to check whether or not to defer the probing of it
->>> even before executing its probe callback.  In turn, system suspend
->>> synchronization should be a matter of calling device_pm_wait_for_dev()
->>> for all consumers of a supplier device, in analogy with dpm_wait_for_children(),
->>> and so on.
->>>
->>> Of course, the new lists have to be stable during those operations and ensuring
->>> that is going to be somewhat tricky (AFAICS right now at least), but apart from
->>> that the whole concept looks reasonably straightforward to me.
->>>
->>> So, the question to everybody is whether or not this sounds reasonable or there
->>> are concerns about it and if so what they are.  At this point I mostly need to
->>> know if I'm not overlooking anything fundamental at the general level.
->> Regarding fundamental things, maybe it is just my impression but parsing private
->> DT device nodes by kernel core assumes that convention about using resource
->> specifiers in DT is a strict rule, it should not be true.
-> I really am not sure what you mean here, sorry.
-
-Device tree bindings are defined per device so theoretically only device
-driver
-should parse them(except few basic properties). This is of course only my
-impression, but even in this thread Mark made similar statement [1].
-Assuming this, permanent links should not be used with device tree, as a
-result
-deferred probing will be still a problem.
-
-[1]: http://permalink.gmane.org/gmane.linux.power-management.general/67593
-
->  
->> As I wrote before I have send some early RFC with framework which solves most of
->> the problems described here[1], the missing part is suspend/resume support which
->> should be quite easy to add, I suspect. Moreover it solves problem of device
->> driver hot bind/unbind.
->> Could you take a look at it, I will be glad to know it is worth to continue work
->> on it?
->>
->> [1]: https://lkml.org/lkml/2014/12/10/342
-> I'm not sure to be honest.
->
-> I'm not a big fan of notification-based mechanisms in general, because they
-> depend on everyone registering those notifiers to implement them correctly and
-> it gets additionally complicated if the ordering matters etc.  So I personally
-> wouldn't take that route.
->
-> I guess some way of resource tracking will be necessary at one point, but what
-> shape it should take is a good question.
-
-Any callback provided by a driver including probe/remove are in fact
-notification mechanisms :) And they should be also correctly implemented.
-Ordering in case of resource tracking is enforced by the framework, so I do
-not see complication here.
-
-Anyway if we take two assumptions which are already true:
-- device bound to driver can provide resources,
-- device driver can be unloaded/unbound at any time.
-Then notifications/callbacks seems to me the only solution.
-
-Regards
-Andrzej
-
->
-> Thanks,
-> Rafael
->
->
->
-
+Regards,
+Chanwoo Choi.
