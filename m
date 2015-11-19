@@ -1,35 +1,41 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH 0/6] PM / devfreq: Clean code and add set the freq_table
- array
-Date: Thu, 19 Nov 2015 18:38:28 +0900
-Message-ID: <564D9894.7070203@samsung.com>
-References: <1678444918.1189481447922768056.JavaMail.weblogic@ep2mlwas06b>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PATCH 6/6] PM / devfreq: Set the min_freq and max_freq of devfreq
+ device
+Date: Thu, 19 Nov 2015 10:10:58 +0000 (GMT)
+Message-ID: <932082455.1194101447927858604.JavaMail.weblogic@ep2mlwas06b>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1678444918.1189481447922768056.JavaMail.weblogic@ep2mlwas06b>
+MIME-version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com, =?UTF-8?B?67CV6rK966+8?= <kyungmin.park@samsung.com>
+To: =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>
 Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Myungjoo,
-
-On 2015=EB=85=84 11=EC=9B=94 19=EC=9D=BC 17:46, MyungJoo Ham wrote:
->> This patch-set clean the code for both devfreq and devfreq-event fra=
-mework
->> and add the 'freq_table' for devfreq device. After initializing the
->> 'freq_table', the 'trans_stat' sysfs provide the appropriate informa=
-tion.
->=20
-> Chanwoo,
->=20
-> Are these the same patches in your git, https://git.kernel.org/cgit/l=
-inux/kernel/git/chanwoo/linux.git/log/?h=3Ddevfreq-next ?
-
-You don't need to consider this branch. Just this git repository
-is just workplace for only me. It it not any official git repository.
-
-Regards,
-Chanwoo Choi.
+PiBBZnRlciBwcm9iaW5nIHRoZSBkZXZmcmVxIGRldmljZSBkcml2ZXIsIHRoZSB2YWx1ZSBvZiBi
+b3RoIG1pbl9mcmVxIGFuZAo+IG1heF9mcmVxIGFyZSB6ZXJvKDApLiBTbywgdGhpcyBwYXRjaCBp
+bml0aWFsaXplcyB0aGUgJ21pbl9mcmVxJyBhbmQgJ21heF9mcmVxJwo+IGZpZWxkIG9mIGRldmZy
+ZXEgZGV2aWNlIGJ5IHVzaW5nIHRoZSBmcmVxX3RhYmxlIGFycmF5Lgo+IAo+IFNpZ25lZC1vZmYt
+Ynk6IENoYW53b28gQ2hvaSA8Y3cwMC5jaG9pQHNhbXN1bmcuY29tPgo+IC0tLQo+ICBkcml2ZXJz
+L2RldmZyZXEvZGV2ZnJlcS5jIHwgNSArKysrKwo+ICAxIGZpbGUgY2hhbmdlZCwgNSBpbnNlcnRp
+b25zKCspCj4gCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvZGV2ZnJlcS9kZXZmcmVxLmMgYi9kcml2
+ZXJzL2RldmZyZXEvZGV2ZnJlcS5jCj4gaW5kZXggYzI5MmNlYjdmZjE5Li4wYjI0YWU3YjdhNDgg
+MTAwNjQ0Cj4gLS0tIGEvZHJpdmVycy9kZXZmcmVxL2RldmZyZXEuYwo+ICsrKyBiL2RyaXZlcnMv
+ZGV2ZnJlcS9kZXZmcmVxLmMKPiBAQCAtMTIxLDYgKzEyMSwxMSBAQCBzdGF0aWMgdm9pZCBkZXZm
+cmVxX3NldF9mcmVxX3RhYmxlKHN0cnVjdCBkZXZmcmVxICpkZXZmcmVxKQo+ICAJCXByb2ZpbGUt
+PmZyZXFfdGFibGVbaV0gPSBmcmVxOwo+ICAJfQo+ICAJcmN1X3JlYWRfdW5sb2NrKCk7Cj4gKwo+
+ICsJbXV0ZXhfbG9jaygmZGV2ZnJlcS0+bG9jayk7Cj4gKwlkZXZmcmVxLT5taW5fZnJlcSA9IHBy
+b2ZpbGUtPmZyZXFfdGFibGVbMF07Cj4gKwlkZXZmcmVxLT5tYXhfZnJlcSA9IHByb2ZpbGUtPmZy
+ZXFfdGFibGVbcHJvZmlsZS0+bWF4X3N0YXRlIC0gMV07Cj4gKwltdXRleF91bmxvY2soJmRldmZy
+ZXEtPmxvY2spOwo+ICB9CgpObywgeW91IHNob3VsZCBub3QgZG8gdGhpcy4KCkl0IGlzIGFsbG93
+ZWQgdG8gdXNlIGRldmZyZXEgd2l0aG91dCBib3RoIE9QUCBhbmQgZnJlcV90YWJsZQphc3N1bWlu
+ZyB0aGF0IHRoZSBkZXZmcmVxIGRldmljZSBtYXkgb3BlcmF0ZSB3aXRoIHZlcnkgbWFueQpmcmVx
+dWVuY2llcyBzbyB0aGF0IHByYWN0aWNhbGx5LCB3ZSBjYW4gdmlydHVhbGx5IGdpdmUgaXQKYW55
+IGZyZXF1ZW5jeSBudW1iZXJzIGluIGEgZ2l2ZW4gcmFuZ2UuCihjYXNlcyB3aGVyZSBwcm9maWxl
+LT5tYXhfc3RhdGUgaXMgMCBhbmQgaXQgaXMgbm90IGFuIGVycm9yKQoKVGhlIHZhbHVlIDAgaXMg
+dXNlZCBmb3IgbWluL21heF9mcmVxIHRvIGRlY2xhcmUKdGhhdCBtaW4vbWF4X2ZyZXEgaXMgZGVh
+Y3RpdmF0ZWQuIFRoZXJlZm9yZSwgaXQgaXMgbm90CnJlcXVpcmVkIHRvIGRvIHNvOyB0aGV5IGFy
+ZSBub3QgaW50ZW5kZWQgdG8gc2hvdyB0aGUgaGFyZHdhcmUKY29uZmlndXJhdGlvbiBhcyB3ZWxs
+LgoKQ2hlZXJzLApNeXVuZ0pvbwo=
