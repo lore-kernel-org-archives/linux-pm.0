@@ -1,182 +1,246 @@
-From: Marc Titinger <mtitinger@baylibre.com>
-Subject: Re: [PATCH RFC 18/27] drivers: cpu-pd: Add PM Domain governor for
- CPUs
-Date: Thu, 19 Nov 2015 09:50:30 +0100
-Message-ID: <564D8D56.1080206@baylibre.com>
-References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
- <1447799871-56374-19-git-send-email-lina.iyer@linaro.org>
- <20151118184245.GA28755@red-moon>
+From: Andrzej Hajda <a.hajda@samsung.com>
+Subject: Re: [RFD] Functional dependencies between devices
+Date: Thu, 19 Nov 2015 10:08:43 +0100
+Message-ID: <564D919B.4030107@samsung.com>
+References: <1623682.7KVblAB3KQ@vostro.rjw.lan> <564B214B.8030602@samsung.com>
+ <12277717.3uaUoj5Hzc@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <20151118184245.GA28755@red-moon>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Lina Iyer <lina.iyer@linaro.org>
-Cc: ulf.hansson@linaro.org, khilman@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, ahaslam@baylibre.com
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:30573 "EHLO
+	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757222AbbKSJJT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Nov 2015 04:09:19 -0500
+In-reply-to: <12277717.3uaUoj5Hzc@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Grant Likely <grant.likely@linaro.org>, Mark Brown <broonie@kernel.og>, Rob Herring <robh@kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Thierry Reding <treding@nvidia.com>, Dmitry Torokhov <dtor@google.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Michael Turquette <mturquette@baylibre.com>
 
-On 18/11/2015 19:42, Lorenzo Pieralisi wrote:
-> On Tue, Nov 17, 2015 at 03:37:42PM -0700, Lina Iyer wrote:
->> A PM domain comprising of CPUs may be powered off when all the CPUs in
->> the domain are powered down. Powering down a CPU domain is generally a
->> expensive operation and therefore the power performance trade offs
->> should be considered. The time between the last CPU powering down and
->> the first CPU powering up in a domain, is the time available for the
->> domain to sleep. Ideally, the sleep time of the domain should fulfill
->> the residency requirement of the domains' idle state.
+On 11/18/2015 03:17 AM, Rafael J. Wysocki wrote:
+> On Tuesday, November 17, 2015 01:44:59 PM Andrzej Hajda wrote:
+>> Hi Rafael,
 >>
->> To do this effectively, read the time before the wakeup of the cluster's
->> CPUs and ensure that the domain's idle state sleep time guarantees the
->> QoS requirements of each of the CPU, the PM QoS CPU_DMA_LATENCY and the
->> state's residency.
+>> Please forgive me late reply, but I have missed this thread before.
+>>
+>> On 10/27/2015 04:24 PM, Rafael J. Wysocki wrote:
+>>> Hi All,
+>>>
+>>> As discussed in the recent "On-demand device probing" thread and in a Kernel
+>>> Summit session earlier today, there is a problem with handling cases where
+>>> functional dependencies between devices are involved.
+>>>
+>>> What I mean by a "functional dependency" is when the driver of device B needs
+>>> both device A and its driver to be present and functional to be able to work.
+>>> This implies that the driver of A needs to be working for B to be probed
+>>> successfully and it cannot be unbound from the device before the B's driver.
+>>> This also has certain consequences for power management of these devices
+>>> (suspend/resume and runtime PM ordering).
+>> I think the real dependency is when some entity asks for some resource (irq,
+>> clock, gpio,...).
+> Well, a dependency is when one entity uses a resource provided by another one,
+> not only when it explicitly asks for that resource.  But that's a very high
+> level of abstraction IMO.
 >
-> To me this information should be part of the CPUidle governor (it is
-> already there), we should not split the decision into multiple layers.
+>> Usually the entity is some device driver during probing and
+>> the resource is provided by some bound device but there are many exceptions for
+>> this scenario:
+>> - many clock providers, irq domains are not provided by devices,
+>> - there are also dependencies between clock providers, ie. some clock provider
+>> requires clocks provided by another clock provider, so the entity is also not a
+>> device driver,
+>> - there are resources which can be requested after probe - case of componentized
+>> devices (DRM for example), more precisely they can be requested during probe of
+>> random component or master of componentized device,
+>> - another case are requests for some additional/optional resources after device
+>> driver probe, for example phone usually does not require HDMI related resources
+>> until user attach HDMI cable,
+>> - (semi-)circular dependencies - 1st device provides clock used by other devices
+>> which provides other resources used by the 1st device, scenario present in some
+>> video pipelines, like camera subsystem + sensors.
+>>
+>> These examples shows that dependencies between bound device drivers are just
+>> subset of bigger issue, maybe it is worth to look for more general solution.
+> That really depends on the goal.
 >
-> The problem you are facing is that the CPUidle governor(s) do not take
-> cross cpus relationship into account, I do not think that adding another
-> decision layer in the power domain subsystem helps, you are doing that
-> just because adding it to the existing CPUidle governor(s) is invasive.
+> The goal here is to add a mechanism allowing the driver core to carry out
+> certain operations in the right order.  The operations in question are carried
+> out on devices using drivers (and perhaps bus types, PM domains etc), so using
+> a representation of links between devices seems adequate to me.
 >
-> Why can't we use the power domain work you put together to eg disable
-> idle states that share multiple cpus and make them "visible" only
-> when the power domain that encompass them is actually going down ?
+>>> So I want to be able to represent those functional dependencies between devices
+>>> and I'd like the driver core to track them and act on them in certain cases
+>>> where they matter.  The argument for doing that in the driver core is that
+>>> there are quite a few distinct use cases related to that, they are relatively
+>>> hard to get right in a driver (if one wants to address all of them properly)
+>>> and it only gets worse if multiplied by the number of drivers potentially
+>>> needing to do it.  Morever, at least one case (asynchronous system suspend/resume)
+>>> cannot be handled in a single driver at all, because it requires the driver of A
+>>> to wait for B to suspend (during system suspend) and the driver of B to wait for
+>>> A to resume (during system resume).
+>> Could you elaborate these distinct use cases. I am curious because I have
+>> proposed resource tracking framework [1] which should solve most of the issues
+>> described here. It was not designed to solve suspend/resume issues, but it could
+>> be easily extended to support it, I suppose.
+>>
+>> [1]: https://lkml.org/lkml/2014/12/10/342
+> So the operations that need to be taken care of are:
+> - Probe (suppliers need to be probed before consumers if the dependencies are
+>   known beforehand).
+> - System suspend/resume (suppliers need to be suspended after consumers and
+>   resumed before them) which may be asynchronous (so simple re-ordering doesn't
+>   help).
+> - Runtime PM (suppliers should not be suspended if the consumers are not
+>   suspended).
+I though provider's frameworks are taking care of it already. For example
+clock provider cannot suspend until there are prepared/enabled clocks.
+Similar enabled regulators, phys should block provider from runtime pm
+suspending.
+Are there situations/frameworks which requires additional care?
+> - System shutdown (shutdown callbacks should be executed for consumers first).
+> - Driver unbind (a supplier driver cannot be unbound before any of its consumer
+>   drivers).
 >
-> You could use the power domains information to detect states that
-> are shared between cpus.
->
-> It is just an idea, what I am saying is that having another governor in
-> the power domain subsytem does not make much sense, you split the
-> decision in two layers while there is actually one, the existing
-> CPUidle governor and that's where the decision should be taken.
->
-> Thoughts appreciated.
+> In principle you can use resource tracking to figure out all of the involved
+> dependencies, but that would require walking complicated data structures unless
+> you add an intermediate "device dependency" layer which is going to be analogous
+> to the one discussed here.
 
-Maybe this is silly and not thought-through, but I wonder if the 
-responsibilities could be split or instance with an outer control loop 
-that has the heuristic to compute the next tick time, and the required 
-cpu-power needed during that time slot, and an inner control loop 
-(genpd) that has a per-domain QoS and can optimize power consumption.
-
-Marc.
+It should be enough if provider notifies consumers that the resource
+will be unavailable.
 
 >
-> Lorenzo
+>>> My idea is to represent a supplier-consumer dependency between devices (or
+>>> more precisely between device+driver combos) as a "link" object containing
+>>> pointers to the devices in question, a list node for each of them and some
+>>> additional information related to the management of those objects, ie.
+>>> something like:
+>>>
+>>> struct device_link {
+>>> 	struct device *supplier;
+>>> 	struct list_head supplier_node;
+>>> 	struct device *consumer;
+>>> 	struct list_head consumer_node;
+>>> 	<flags, status etc>
+>>> };
+>>>
+>>> In general, there will be two lists of those things per device, one list
+>>> of links to consumers and one list of links to suppliers.
+>>>
+>>> In that picture, links will be created by calling, say:
+>>>
+>>> int device_add_link(struct device *me, struct device *my_supplier, unsigned int flags);
+>>>
+>>> and they will be deleted by the driver core when not needed any more.  The
+>>> creation of a link should also cause dpm_list and the list used during shutdown
+>>> to be reordered if needed.
+>>>
+>>> In principle, it seems usefult to consider two types of links, one created
+>>> at device registration time (when registering the second device from the linked
+>>> pair, whichever it is) and one created at probe time (of the consumer device).
+>>> I'll refer to them as "permanent" and "probe-time" links, respectively.
+>>>
+>>> The permanent links (created at device registration time) will stay around
+>>> until one of the linked devices is unregistered (at which time the driver
+>>> core will drop the link along with the device going away).  The probe-time
+>>> ones will be dropped (automatically) at the consumer device driver unbind time.
+>> What about permanent links in case provider is unregistered? Should they
+>> disappear? It will not make consumers happy. What if the provider will be
+>> re-registered.
+> If the device object is gone, it cannot be pointed to by any links (on any end)
+> any more.  That's just physically impossible. :-)
+
+So the link will disappear and the 'consumer' will have dependencies
+fulfilled.
+It will be then probed? Is it OK? Or am I missing something?
+
+
 >
->> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
->> ---
->>   drivers/base/power/cpu-pd.c | 83 ++++++++++++++++++++++++++++++++++++++++++++-
->>   1 file changed, 82 insertions(+), 1 deletion(-)
+>>> There's a question about what if the supplier device is being unbound before
+>>> the consumer one (for example, as a result of a hotplug event).  My current
+>>> view on that is that the consumer needs to be force-unbound in that case too,
+>>> but I guess I may be persuaded otherwise given sufficiently convincing
+>>> arguments.
+>> Some devices can have 'weak' dependencies - they will be still functional
+>> without some resources.
+> Right.  That's on my radar.
+>
+>> In fact two last examples from my 1st paragraph are
+>> counter-examples for this. I suspect there should be some kind of notification
+>> for them about removal of the resource.
 >>
->> diff --git a/drivers/base/power/cpu-pd.c b/drivers/base/power/cpu-pd.c
->> index 617ce54..a00abc1 100644
->> --- a/drivers/base/power/cpu-pd.c
->> +++ b/drivers/base/power/cpu-pd.c
->> @@ -21,6 +21,7 @@
->>   #include <linux/pm_qos.h>
->>   #include <linux/rculist.h>
->>   #include <linux/slab.h>
->> +#include <linux/tick.h>
+>>> Anyway, there are reasons to do that, like for example it may
+>>> help with the synchronization.  Namely, if there's a rule that suppliers
+>>> cannot be unbound before any consumers linked to them, than the list of links
+>>> to suppliers for a consumer can only change at its registration/probe or
+>>> unbind/remove times (which simplifies things quite a bit).
+>>>
+>>> With that, the permanent links existing at the probe time for a consumer
+>>> device can be used to check whether or not to defer the probing of it
+>>> even before executing its probe callback.  In turn, system suspend
+>>> synchronization should be a matter of calling device_pm_wait_for_dev()
+>>> for all consumers of a supplier device, in analogy with dpm_wait_for_children(),
+>>> and so on.
+>>>
+>>> Of course, the new lists have to be stable during those operations and ensuring
+>>> that is going to be somewhat tricky (AFAICS right now at least), but apart from
+>>> that the whole concept looks reasonably straightforward to me.
+>>>
+>>> So, the question to everybody is whether or not this sounds reasonable or there
+>>> are concerns about it and if so what they are.  At this point I mostly need to
+>>> know if I'm not overlooking anything fundamental at the general level.
+>> Regarding fundamental things, maybe it is just my impression but parsing private
+>> DT device nodes by kernel core assumes that convention about using resource
+>> specifiers in DT is a strict rule, it should not be true.
+> I really am not sure what you mean here, sorry.
+
+Device tree bindings are defined per device so theoretically only device
+driver
+should parse them(except few basic properties). This is of course only my
+impression, but even in this thread Mark made similar statement [1].
+Assuming this, permanent links should not be used with device tree, as a
+result
+deferred probing will be still a problem.
+
+[1]: http://permalink.gmane.org/gmane.linux.power-management.general/67593
+
+>  
+>> As I wrote before I have send some early RFC with framework which solves most of
+>> the problems described here[1], the missing part is suspend/resume support which
+>> should be quite easy to add, I suspect. Moreover it solves problem of device
+>> driver hot bind/unbind.
+>> Could you take a look at it, I will be glad to know it is worth to continue work
+>> on it?
 >>
->>   #define CPU_PD_NAME_MAX 36
->>
->> @@ -66,6 +67,86 @@ static void get_cpus_in_domain(struct generic_pm_domain *genpd,
->>   	}
->>   }
->>
->> +static bool cpu_pd_down_ok(struct dev_pm_domain *pd)
->> +{
->> +	struct generic_pm_domain *genpd = pd_to_genpd(pd);
->> +	struct cpu_pm_domain *cpu_pd = to_cpu_pd(genpd);
->> +	int qos = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
->> +	u64 sleep_ns = ~0;
->> +	ktime_t earliest;
->> +	int cpu;
->> +	int i;
->> +
->> +	/* Reset the last set genpd state, default to index 0 */
->> +	genpd->state_idx = 0;
->> +
->> +	/* We dont want to power down, if QoS is 0 */
->> +	if (!qos)
->> +		return false;
->> +
->> +	/*
->> +	 * Find the sleep time for the cluster.
->> +	 * The time between now and the first wake up of any CPU that
->> +	 * are in this domain hierarchy is the time available for the
->> +	 * domain to be idle.
->> +	 */
->> +	earliest.tv64 = KTIME_MAX;
->> +	for_each_cpu_and(cpu, cpu_pd->cpus, cpu_online_mask) {
->> +		struct device *cpu_dev = get_cpu_device(cpu);
->> +		struct gpd_timing_data *td;
->> +
->> +		td = &dev_gpd_data(cpu_dev)->td;
->> +
->> +		if (earliest.tv64 < td->next_wakeup.tv64)
->> +			earliest = td->next_wakeup;
->> +	}
->> +
->> +	sleep_ns = ktime_to_ns(ktime_sub(earliest, ktime_get()));
->> +	if (sleep_ns <= 0)
->> +		return false;
->> +
->> +	/*
->> +	 * Find the deepest sleep state that satisfies the residency
->> +	 * requirement and the QoS constraint
->> +	 */
->> +	for (i = genpd->state_count - 1; i > 0; i--) {
->> +		u64 state_sleep_ns;
->> +
->> +		state_sleep_ns = genpd->states[i].power_off_latency_ns +
->> +			genpd->states[i].power_on_latency_ns +
->> +			genpd->states[i].residency_ns;
->> +
->> +		/*
->> +		 * If we cant sleep to save power in the state, move on
->> +		 * to the next lower idle state.
->> +		 */
->> +		if (state_sleep_ns > sleep_ns)
->> +		       continue;
->> +
->> +		/*
->> +		 * We also dont want to sleep more than we should to
->> +		 * gaurantee QoS.
->> +		 */
->> +		if (state_sleep_ns < (qos * NSEC_PER_USEC))
->> +			break;
->> +	}
->> +
->> +	if (i >= 0)
->> +		genpd->state_idx = i;
->> +
->> +	return  (i >= 0) ? true : false;
->> +}
->> +
->> +static bool cpu_stop_ok(struct device *dev)
->> +{
->> +	return true;
->> +}
->> +
->> +struct dev_power_governor cpu_pd_gov = {
->> +	.power_down_ok = cpu_pd_down_ok,
->> +	.stop_ok = cpu_stop_ok,
->> +};
->> +
->>   static int cpu_pd_power_off(struct generic_pm_domain *genpd)
->>   {
->>   	struct cpu_pm_domain *pd = to_cpu_pd(genpd);
->> @@ -183,7 +264,7 @@ int of_register_cpu_pm_domain(struct device_node *dn,
->>
->>   	/* Register the CPU genpd */
->>   	pr_debug("adding %s as CPU PM domain.\n", pd->genpd->name);
->> -	ret = of_pm_genpd_init(dn, pd->genpd, &simple_qos_governor, false);
->> +	ret = of_pm_genpd_init(dn, pd->genpd, &cpu_pd_gov, false);
->>   	if (ret) {
->>   		pr_err("Unable to initialize domain %s\n", dn->full_name);
->>   		return ret;
->> --
->> 2.1.4
->>
+>> [1]: https://lkml.org/lkml/2014/12/10/342
+> I'm not sure to be honest.
+>
+> I'm not a big fan of notification-based mechanisms in general, because they
+> depend on everyone registering those notifiers to implement them correctly and
+> it gets additionally complicated if the ordering matters etc.  So I personally
+> wouldn't take that route.
+>
+> I guess some way of resource tracking will be necessary at one point, but what
+> shape it should take is a good question.
+
+Any callback provided by a driver including probe/remove are in fact
+notification mechanisms :) And they should be also correctly implemented.
+Ordering in case of resource tracking is enforced by the framework, so I do
+not see complication here.
+
+Anyway if we take two assumptions which are already true:
+- device bound to driver can provide resources,
+- device driver can be unloaded/unbound at any time.
+Then notifications/callbacks seems to me the only solution.
+
+Regards
+Andrzej
+
+>
+> Thanks,
+> Rafael
+>
+>
+>
+
