@@ -1,63 +1,51 @@
 From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH RFC 13/27] ARM: cpuidle: Add runtime PM support for CPU idle
-Date: Thu, 19 Nov 2015 14:10:50 -0800
-Message-ID: <7hlh9ttzbp.fsf@deeprootsystems.com>
+Subject: Re: [PATCH RFC 15/27] PM / Domains: Add next_wakeup to device's timing data
+Date: Thu, 19 Nov 2015 14:19:57 -0800
+Message-ID: <7h8u5ttywi.fsf@deeprootsystems.com>
 References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
-	<1447799871-56374-14-git-send-email-lina.iyer@linaro.org>
+	<1447799871-56374-16-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1447799871-56374-14-git-send-email-lina.iyer@linaro.org> (Lina
-	Iyer's message of "Tue, 17 Nov 2015 15:37:37 -0700")
+In-Reply-To: <1447799871-56374-16-git-send-email-lina.iyer@linaro.org> (Lina
+	Iyer's message of "Tue, 17 Nov 2015 15:37:39 -0700")
 Sender: linux-arm-msm-owner@vger.kernel.org
 To: Lina Iyer <lina.iyer@linaro.org>
-Cc: ulf.hansson@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: ulf.hansson@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com
 List-Id: linux-pm@vger.kernel.org
 
 Lina Iyer <lina.iyer@linaro.org> writes:
 
-> Notify runtime PM when the CPU is going to be powered off in the idle
-> state. This allows for runtime PM suspend/resume of the CPU as well as
-> its PM domain.
+> Allow devices that know when their next wakeup event is, to record save
+> it as part of timing data. A genpd governor may use this data to
+> determine if suspending the domain is going to affect the QoS of its
+> devices.
 >
-> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 > Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 > ---
->  drivers/cpuidle/cpuidle-arm.c | 8 ++++++++
->  1 file changed, 8 insertions(+)
+>  include/linux/pm_domain.h | 2 ++
+>  1 file changed, 2 insertions(+)
 >
-> diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
-> index 545069d..8e72a23 100644
-> --- a/drivers/cpuidle/cpuidle-arm.c
-> +++ b/drivers/cpuidle/cpuidle-arm.c
-> @@ -11,13 +11,16 @@
->  
->  #define pr_fmt(fmt) "CPUidle arm: " fmt
->  
-> +#include <linux/cpu.h>
->  #include <linux/cpuidle.h>
->  #include <linux/cpumask.h>
->  #include <linux/cpu_pm.h>
->  #include <linux/kernel.h>
->  #include <linux/module.h>
+> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+> index f1329ea..9ac089d 100644
+> --- a/include/linux/pm_domain.h
+> +++ b/include/linux/pm_domain.h
+> @@ -16,6 +16,7 @@
 >  #include <linux/of.h>
-> +#include <linux/pm_runtime.h>
->  #include <linux/slab.h>
-> +#include <linux/rcupdate.h>
+>  #include <linux/notifier.h>
+>  #include <linux/spinlock.h>
+> +#include <linux/ktime.h>
 >  
->  #include <asm/cpuidle.h>
->  
-> @@ -45,6 +48,10 @@ static int arm_enter_idle_state(struct cpuidle_device *dev,
->  
->  	ret = cpu_pm_enter();
->  	if (!ret) {
-> +		struct device *cpu_dev = get_cpu_device(dev->cpu);
-> +
-> +		RCU_NONIDLE(pm_runtime_put_sync_suspend(cpu_dev));
-> +
+>  /* Defines used for the flags field in the struct generic_pm_domain */
+>  #define GENPD_FLAG_PM_CLK	(1U << 0) /* PM domain uses PM clk */
+> @@ -104,6 +105,7 @@ struct gpd_timing_data {
+>  	s64 effective_constraint_ns;
+>  	bool constraint_changed;
+>  	bool cached_stop_ok;
+> +	ktime_t next_wakeup;
+>  };
 
-A comment in the changelog about the use of _put_sync_suspend() instead
-of a normal _put_sync() would be helpful for this patch.
+The addition of a new field should be combined with the patch that uses
+it (e.g. PATCH 16/27)
 
 Kevin
