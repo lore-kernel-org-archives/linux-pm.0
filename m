@@ -1,42 +1,77 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH RFC 25/27] devicetree: bindings: Document qcom,msm-id and
- qcom,board-id
-Date: Thu, 19 Nov 2015 08:36:40 -0700
-Message-ID: <20151119153640.GC893@linaro.org>
-References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
- <1447799871-56374-26-git-send-email-lina.iyer@linaro.org>
- <CAL_JsqJAOEvs08Jydn9wWtM7-Oxd=MmmDER48VRF7z3Gkzt0CQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f51.google.com ([209.85.220.51]:36051 "EHLO
-	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758601AbbKSPgo (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Nov 2015 10:36:44 -0500
-Received: by pacdm15 with SMTP id dm15so84365359pac.3
-        for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2015 07:36:43 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <CAL_JsqJAOEvs08Jydn9wWtM7-Oxd=MmmDER48VRF7z3Gkzt0CQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: [PATCH 0/3] ARM: bcm2835: add support for rpi power domain driver
+Date: Thu, 19 Nov 2015 19:08:07 +0100
+Message-ID: <1447956490-22930-1-git-send-email-alex.aring@gmail.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Cc: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, lee-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjui-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, sbranden-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Krzysztof =?utf-8?Q?Koz=C5=82owski?= <k.kozlowski@samsung.com>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, ahaslam@baylibre.com, mtitinger@baylibre.com, Kumar Gala <galak@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-On Thu, Nov 19 2015 at 07:37 -0700, Rob Herring wrote:
->On Tue, Nov 17, 2015 at 4:37 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
->> From: Kumar Gala <galak@codeaurora.org>
->>
->> The top level qcom,msm-id and qcom,board-id are utilized by bootloaders
->> on Qualcomm MSM platforms to determine which device tree should be
->> utilized and passed to the kernel.
->
->See [1] and the link there to the prior version which is like this one.
->
-Thanks Rob. Andy Gross sent me that link and I am waiting on the changes
-along with the dtb tool to make it. These patches will go away after
-Stephen's changes. I just put it in here for completeness.
+Hi,
 
-Thanks,
-Lina
+this patch series contains at first a patch for the power domain subsystem
+which offers to uninit generic power domains when init was called before.
 
->[1] https://lkml.org/lkml/2015/10/26/651
+The RPi Power-Domains need to be enabled/disabled by interacting with the
+RPi firmware which can fail. To cleanup the probing we need to undo the
+power domains again which was registered before.
+
+- Alex
+
+changes since PATCH (was RFCv2 before):
+ - add WARN_ON_ONCE if there are still references from generic power domain
+   inside the power domain subsystem when running pm_genpd_uninit.
+ - add mutex_destroy when running pm_genpd_uninit.
+ - split devicetree binding for rpi power domain driver into a separate patch.
+ - rename config RASPBERRY_POWER to RASPBERRYPI_POWER
+ - order list of <linux/...> includes alphabetical.
+ - use rpi_ prefix than raspberrypi_ prefix.
+ - rename _DT_BINDINGS_ARM_BCM2835_MBOX_POWER_H to _DT_BINDINGS_ARM_BCM2835_RPI_POWER_H
+
+changes since RFCv2:
+ - add pm_genpd_uninit to handle probing failure.
+ - move power domain drive to his own driver in arch/arm/mach-bcm/
+   Also add own devicetree node for this driver, "raspberrypi,bcm2835-power".
+ - Removing all power domains which might exists for the firmware API but
+   we currently have no use-case for it. I tried to keep the same domain
+   numbering in generic power domains subsystem like they are offered from
+   the firmware API. This works, all power_domains which are NULL inside
+   the array of genpd_onecell_data.domains[#] will be ignored.
+ - Adding Eric Anholt and me to the authors.
+ - Creating devicetree documentation for the power domain driver.
+ - fix error handling in raspberrypi_firmware_set_power.
+ - Remove comment about mapping between power domains array, this is not
+   necessary anymore. I add a "enabled" attribute to raspberrypi_power_domain
+   which indicates if a domain should be registered or not (zeroed values
+   does not indicate such handling, but enabled is false then).
+ - remove "goto mbox" not necessary anymore because an own driver
+   implementation.
+ - Update devicetrees for changes in v2.
+
+Alexander Aring (3):
+  power: domain: add pm_genpd_uninit
+  ARM: bcm2835: add rpi power domain driver
+  devicetree: add rpi power domain driver bindings
+
+ .../bindings/arm/bcm/raspberrypi,bcm2835-power.txt |  25 +++
+ arch/arm/boot/dts/bcm2835-rpi.dtsi                 |  11 ++
+ arch/arm/boot/dts/bcm2835.dtsi                     |   2 +-
+ arch/arm/mach-bcm/Kconfig                          |  10 ++
+ arch/arm/mach-bcm/Makefile                         |   1 +
+ arch/arm/mach-bcm/raspberrypi-power.c              | 180 +++++++++++++++++++++
+ drivers/base/power/domain.c                        |  22 +++
+ include/dt-bindings/arm/raspberrypi-power.h        |  14 ++
+ include/linux/pm_domain.h                          |   4 +
+ 9 files changed, 268 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/arm/bcm/raspberrypi,bcm2835-power.txt
+ create mode 100644 arch/arm/mach-bcm/raspberrypi-power.c
+ create mode 100644 include/dt-bindings/arm/raspberrypi-power.h
+
+-- 
+2.6.1
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
