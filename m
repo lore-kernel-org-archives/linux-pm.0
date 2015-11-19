@@ -1,52 +1,76 @@
-From: Andrzej Hajda <a.hajda@samsung.com>
-Subject: Re: [RFD] Functional dependencies between devices
-Date: Thu, 19 Nov 2015 07:50:45 +0100
-Message-ID: <564D7145.40300@samsung.com>
-References: <1623682.7KVblAB3KQ@vostro.rjw.lan> <564B224D.3050904@samsung.com>
- <20151117135549.GR31303@sirena.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+From: Saurabh Sengar <saurabh.truth@gmail.com>
+Subject: [PATCH] drivers: power: set IRQF_ONESHOT if no primary handler is specified
+Date: Thu, 19 Nov 2015 12:42:59 +0530
+Message-ID: <1447917179-9333-1-git-send-email-saurabh.truth@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:22655 "EHLO
-	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757729AbbKSGvU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Nov 2015 01:51:20 -0500
-In-reply-to: <20151117135549.GR31303@sirena.org.uk>
+Received: from mail-pa0-f45.google.com ([209.85.220.45]:34389 "EHLO
+	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757691AbbKSHNJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Nov 2015 02:13:09 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh@kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Thierry Reding <treding@nvidia.com>, Dmitry Torokhov <dtor@google.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Michael Turquette <mturquette@baylibre.com>
+To: sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Saurabh Sengar <saurabh.truth@gmail.com>
 
-On 11/17/2015 02:55 PM, Mark Brown wrote:
-> On Tue, Nov 17, 2015 at 01:49:17PM +0100, Andrzej Hajda wrote:
->
-> Please fix your mail client to word wrap within paragraphs at something
-> substantially less than 80 columns.  Doing this makes your messages much
-> easier to read and reply to.
->
->> On 10/27/2015 04:24 PM, Rafael J. Wysocki wrote:
->> this scenario:
->> - many clock providers, irq domains are not provided by devices,
-> That seems like something we can and possibly should change if we want.
->
->> - there are also dependencies between clock providers, ie. some clock provider
->> requires clocks provided by another clock provider, so the entity is also not a
->> device driver,
-> This is going to be really common but I'm not sure I see a problem with
-> it in terms of what Raphael is proposing - could you go into more detail
-> on the problem you see here?
+If no primary handler is specified for threaded_irq then a
+default one is assigned which always returns IRQ_WAKE_THREAD.
+This handler requires the IRQF_ONESHOT, because the source of
+interrupt is not disabled.
 
-If clock provider is not a device driver and it depends on clocks of
-another clock
-provider you cannot 'translate' this dependency as dependency between
-devices,
-so this RFD does not cover them.
-Additionally if you look into kernel there are many calls in form
-'clk_get(NULL, name)',
-it suggests that not only clock providers are consumers without
-underlying device driver.
+Signed-off-by: Saurabh Sengar <saurabh.truth@gmail.com>
+---
+ drivers/power/max8903_charger.c | 24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
 
-Regards
-Andrzej
+diff --git a/drivers/power/max8903_charger.c b/drivers/power/max8903_charger.c
+index 6d39d52..17876ca 100644
+--- a/drivers/power/max8903_charger.c
++++ b/drivers/power/max8903_charger.c
+@@ -291,10 +291,10 @@ static int max8903_probe(struct platform_device *pdev)
+ 
+ 	if (pdata->dc_valid) {
+ 		ret = devm_request_threaded_irq(dev, gpio_to_irq(pdata->dok),
+-						NULL, max8903_dcin,
+-						IRQF_TRIGGER_FALLING |
+-						IRQF_TRIGGER_RISING,
+-						"MAX8903 DC IN", data);
++					NULL, max8903_dcin,
++					IRQF_TRIGGER_FALLING |
++					IRQF_TRIGGER_RISING | IRQF_ONESHOT,
++					"MAX8903 DC IN", data);
+ 		if (ret) {
+ 			dev_err(dev, "Cannot request irq %d for DC (%d)\n",
+ 					gpio_to_irq(pdata->dok), ret);
+@@ -304,10 +304,10 @@ static int max8903_probe(struct platform_device *pdev)
+ 
+ 	if (pdata->usb_valid) {
+ 		ret = devm_request_threaded_irq(dev, gpio_to_irq(pdata->uok),
+-						NULL, max8903_usbin,
+-						IRQF_TRIGGER_FALLING |
+-						IRQF_TRIGGER_RISING,
+-						"MAX8903 USB IN", data);
++					NULL, max8903_usbin,
++					IRQF_TRIGGER_FALLING |
++					IRQF_TRIGGER_RISING | IRQF_ONESHOT,
++					"MAX8903 USB IN", data);
+ 		if (ret) {
+ 			dev_err(dev, "Cannot request irq %d for USB (%d)\n",
+ 					gpio_to_irq(pdata->uok), ret);
+@@ -317,10 +317,10 @@ static int max8903_probe(struct platform_device *pdev)
+ 
+ 	if (pdata->flt) {
+ 		ret = devm_request_threaded_irq(dev, gpio_to_irq(pdata->flt),
+-						NULL, max8903_fault,
+-						IRQF_TRIGGER_FALLING |
+-						IRQF_TRIGGER_RISING,
+-						"MAX8903 Fault", data);
++					NULL, max8903_fault,
++					IRQF_TRIGGER_FALLING |
++					IRQF_TRIGGER_RISING | IRQF_ONESHOT,
++					"MAX8903 Fault", data);
+ 		if (ret) {
+ 			dev_err(dev, "Cannot request irq %d for Fault (%d)\n",
+ 					gpio_to_irq(pdata->flt), ret);
+-- 
+1.9.1
 
