@@ -1,68 +1,53 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH 3/6] PM / devfreq: Add show_one macro to delete the duplicate
- code
-Date: Thu, 19 Nov 2015 17:17:47 +0900
-Message-ID: <1447921070-6045-4-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH 2/6] PM / devfreq: event: Fix the error and warning from
+ script/checkpatch.pl
+Date: Thu, 19 Nov 2015 17:17:46 +0900
+Message-ID: <1447921070-6045-3-git-send-email-cw00.choi@samsung.com>
 References: <1447921070-6045-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:39728 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756094AbbKSIR7 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Nov 2015 03:17:59 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1447921070-6045-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
+List-Id: linux-pm@vger.kernel.org
 
-This patch adds the 'show_one' macro to simplify the duplicate code
-of both max_freq_show() and min_freq_show().
+This patch just fixes following error and warning by using
+scripts/checkpatch.pl.
+
+- Follwoing issue from checkpatch.pl:
+ERROR: space prohibited before that close parenthesis ')'
++	if (count < 0 ) {
+
+WARNING: line over 80 characters
++	ptr = devres_alloc(devm_devfreq_event_release, sizeof(*ptr), GFP_KERNEL);
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 ---
- drivers/devfreq/devfreq.c | 20 +++++++++-----------
- 1 file changed, 9 insertions(+), 11 deletions(-)
+ drivers/devfreq/devfreq-event.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index ca848cc6a8fd..49fc7dcf664c 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -921,12 +921,6 @@ unlock:
- 	return ret;
- }
+diff --git a/drivers/devfreq/devfreq-event.c b/drivers/devfreq/devfreq-event.c
+index f51de879b2be..38bf144ca147 100644
+--- a/drivers/devfreq/devfreq-event.c
++++ b/drivers/devfreq/devfreq-event.c
+@@ -270,7 +270,7 @@ int devfreq_event_get_edev_count(struct device *dev)
  
--static ssize_t min_freq_show(struct device *dev, struct device_attribute *attr,
--			     char *buf)
--{
--	return sprintf(buf, "%lu\n", to_devfreq(dev)->min_freq);
--}
--
- static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
- 			      const char *buf, size_t count)
+ 	count = of_property_count_elems_of_size(dev->of_node, "devfreq-events",
+ 						sizeof(u32));
+-	if (count < 0 ) {
++	if (count < 0) {
+ 		dev_err(dev,
+ 			"failed to get the count of devfreq-event in %s node\n",
+ 			dev->of_node->full_name);
+@@ -395,7 +395,8 @@ struct devfreq_event_dev *devm_devfreq_event_add_edev(struct device *dev,
  {
-@@ -953,13 +947,17 @@ unlock:
- 	mutex_unlock(&df->lock);
- 	return ret;
- }
--static DEVICE_ATTR_RW(min_freq);
+ 	struct devfreq_event_dev **ptr, *edev;
  
--static ssize_t max_freq_show(struct device *dev, struct device_attribute *attr,
--			     char *buf)
--{
--	return sprintf(buf, "%lu\n", to_devfreq(dev)->max_freq);
-+#define show_one(name)						\
-+static ssize_t name##_show					\
-+(struct device *dev, struct device_attribute *attr, char *buf)	\
-+{								\
-+	return sprintf(buf, "%lu\n", to_devfreq(dev)->name);	\
- }
-+show_one(min_freq);
-+show_one(max_freq);
-+
-+static DEVICE_ATTR_RW(min_freq);
- static DEVICE_ATTR_RW(max_freq);
+-	ptr = devres_alloc(devm_devfreq_event_release, sizeof(*ptr), GFP_KERNEL);
++	ptr = devres_alloc(devm_devfreq_event_release, sizeof(*ptr),
++				GFP_KERNEL);
+ 	if (!ptr)
+ 		return ERR_PTR(-ENOMEM);
  
- static ssize_t available_frequencies_show(struct device *d,
 -- 
 1.9.1
-
