@@ -1,294 +1,555 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 3/3] PM / OPP: Parse 'opp-<prop>-<name>' bindings
-Date: Thu, 19 Nov 2015 09:13:58 +0530
-Message-ID: <c38be511cdbe8e91972edf50a5ea867a3720471d.1447904566.git.viresh.kumar@linaro.org>
-References: <cover.1447904566.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1447904566.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1447904566.git.viresh.kumar@linaro.org>
-References: <cover.1447904566.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Stephen Boyd <sboyd@codeaurora.org>, nm@ti.com
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dmitry Torokhov <dtor@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Shawn Guo <shawnguo@kernel.org>
+From: Chen-Yu Tsai <wens@csie.org>
+Subject: Re: [PATCH] thermal: Add support for Sunxi THS on the Allwinner H3
+Date: Thu, 19 Nov 2015 11:44:44 +0800
+Message-ID: <CAGb2v67+Pi-snhUCH3UxFvLZ+ppR1kgiz_Whj4sYhAkfuBK1yg@mail.gmail.com>
+References: <20151118205147.GA19779@maud.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.csie.ntu.edu.tw ([140.112.30.61]:57896 "EHLO
+	smtp.csie.ntu.edu.tw" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933724AbbKSDpI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 18 Nov 2015 22:45:08 -0500
+In-Reply-To: <20151118205147.GA19779@maud.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Josef Gajdusek <atx@atx.name>
+Cc: linux-sunxi <linux-sunxi@googlegroups.com>, linux-clk <linux-clk@vger.kernel.org>, linux-pm@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, devicetree <devicetree@vger.kernel.org>, gpatchesrdh@mveas.com, Mike Turquette <mturquette@linaro.org>, Hans De Goede <hdegoede@redhat.com>, Stephen Boyd <sboyd@codeaurora.org>, Michael Turquette <mturquette@baylibre.com>, Emilio Lopez <emilio@elopez.com.ar>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Chen-Yu Tsai <wens@csie.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>, Rob Herring <robh+dt@kernel.org>
 
-OPP bindings (for few properties) allow a platform to choose a
-value/range among a set of available options. The options are present as
-opp-<prop>-<name>, where the platform needs to supply the <name> string.
+On Thu, Nov 19, 2015 at 4:51 AM, Josef Gajdusek <atx@atx.name> wrote:
+> This patch adds support for the Sunxi thermal sensor on the Allwinner H3.
+> Also adds declaration of the H3 THS clock to clk-sunxi.c ignoring the
+> dividers as they are not continuous (clk-divider.c cannot be used as it
+> does not support setting an enable bit).
 
-The OPP properties which allow such an option are: opp-microvolt and
-opp-microamp.
+That is not right. See below.
 
-Add support to the OPP-core to parse these bindings, by introducing
-dev_pm_opp_{set|put}_prop_name() APIs.
+> Should be easily extendable for the A33/A83T/... as they have similar but
+> not completely identical sensors.
+>
+> Signed-off-by: Josef Gajdusek <atx@atx.name>
+> ---
+>  Documentation/devicetree/bindings/clock/sunxi.txt  |   1 +
+>  .../devicetree/bindings/thermal/sunxi-ths.txt      |  24 ++
+>  arch/arm/boot/dts/sun8i-h3.dtsi                    |  27 +++
+>  drivers/clk/sunxi/clk-sunxi.c                      |  16 ++
+>  drivers/thermal/Kconfig                            |   7 +
+>  drivers/thermal/Makefile                           |   1 +
+>  drivers/thermal/sunxi_ths.c                        | 263 +++++++++++++++++++++
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/base/power/opp/core.c | 159 ++++++++++++++++++++++++++++++++++++++----
- drivers/base/power/opp/opp.h  |   2 +
- include/linux/pm_opp.h        |   9 +++
- 3 files changed, 155 insertions(+), 15 deletions(-)
+Thanks for working on this.
 
-diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index 5449bae74a44..18152e032b19 100644
---- a/drivers/base/power/opp/core.c
-+++ b/drivers/base/power/opp/core.c
-@@ -562,6 +562,9 @@ static void _remove_device_opp(struct device_opp *dev_opp)
- 	if (dev_opp->supported_hw)
- 		return;
- 
-+	if (dev_opp->prop_name)
-+		return;
-+
- 	list_dev = list_first_entry(&dev_opp->dev_list, struct device_list_opp,
- 				    node);
- 
-@@ -794,35 +797,48 @@ static int _opp_add_v1(struct device *dev, unsigned long freq, long u_volt,
- }
- 
- /* TODO: Support multiple regulators */
--static int opp_parse_supplies(struct dev_pm_opp *opp, struct device *dev)
-+static int opp_parse_supplies(struct dev_pm_opp *opp, struct device *dev,
-+			      struct device_opp *dev_opp)
- {
- 	u32 microvolt[3] = {0};
- 	u32 val;
- 	int count, ret;
-+	struct property *prop = NULL;
-+	char name[NAME_MAX];
-+
-+	/* Search for "opp-microvolt-<name>" */
-+	if (dev_opp->prop_name) {
-+		sprintf(name, "opp-microvolt-%s", dev_opp->prop_name);
-+		prop = of_find_property(opp->np, name, NULL);
-+	}
-+
-+	if (!prop) {
-+		/* Search for "opp-microvolt" */
-+		name[13] = '\0';
-+		prop = of_find_property(opp->np, name, NULL);
- 
--	/* Missing property isn't a problem, but an invalid entry is */
--	if (!of_find_property(opp->np, "opp-microvolt", NULL))
--		return 0;
-+		/* Missing property isn't a problem, but an invalid entry is */
-+		if (!prop)
-+			return 0;
-+	}
- 
--	count = of_property_count_u32_elems(opp->np, "opp-microvolt");
-+	count = of_property_count_u32_elems(opp->np, name);
- 	if (count < 0) {
--		dev_err(dev, "%s: Invalid opp-microvolt property (%d)\n",
--			__func__, count);
-+		dev_err(dev, "%s: Invalid %s property (%d)\n",
-+			__func__, name, count);
- 		return count;
- 	}
- 
- 	/* There can be one or three elements here */
- 	if (count != 1 && count != 3) {
--		dev_err(dev, "%s: Invalid number of elements in opp-microvolt property (%d)\n",
--			__func__, count);
-+		dev_err(dev, "%s: Invalid number of elements in %s property (%d)\n",
-+			__func__, name, count);
- 		return -EINVAL;
- 	}
- 
--	ret = of_property_read_u32_array(opp->np, "opp-microvolt", microvolt,
--					 count);
-+	ret = of_property_read_u32_array(opp->np, name, microvolt, count);
- 	if (ret) {
--		dev_err(dev, "%s: error parsing opp-microvolt: %d\n", __func__,
--			ret);
-+		dev_err(dev, "%s: error parsing %s: %d\n", __func__, name, ret);
- 		return -EINVAL;
- 	}
- 
-@@ -830,7 +846,20 @@ static int opp_parse_supplies(struct dev_pm_opp *opp, struct device *dev)
- 	opp->u_volt_min = microvolt[1];
- 	opp->u_volt_max = microvolt[2];
- 
--	if (!of_property_read_u32(opp->np, "opp-microamp", &val))
-+	/* Search for "opp-microamp-<name>" */
-+	prop = NULL;
-+	if (dev_opp->prop_name) {
-+		sprintf(name, "opp-microamp-%s", dev_opp->prop_name);
-+		prop = of_find_property(opp->np, name, NULL);
-+	}
-+
-+	if (!prop) {
-+		/* Search for "opp-microamp" */
-+		name[12] = '\0';
-+		prop = of_find_property(opp->np, name, NULL);
-+	}
-+
-+	if (prop && !of_property_read_u32(opp->np, name, &val))
- 		opp->u_amp = val;
- 
- 	return 0;
-@@ -942,6 +971,106 @@ void dev_pm_opp_put_supported_hw(struct device *dev)
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_put_supported_hw);
- 
-+/**
-+ * dev_pm_opp_set_prop_name() - Set prop-extn name
-+ * @dev: Device for which the regulator has to be set.
-+ * @name: name to postfix to properties.
-+ *
-+ * This is required only for the V2 bindings, and it enables a platform to
-+ * specify the extn to be used for certain property names. The properties to
-+ * which the extension will apply are opp-microvolt and opp-microamp. OPP core
-+ * should postfix the property name with -<name> while looking for them.
-+ *
-+ * Locking: The internal device_opp and opp structures are RCU protected.
-+ * Hence this function internally uses RCU updater strategy with mutex locks
-+ * to keep the integrity of the internal data structures. Callers should ensure
-+ * that this function is *NOT* called under RCU protection or in contexts where
-+ * mutex cannot be locked.
-+ */
-+int dev_pm_opp_set_prop_name(struct device *dev, const char *name)
-+{
-+	struct device_opp *dev_opp;
-+	int ret = 0;
-+
-+	/* Hold our list modification lock here */
-+	mutex_lock(&dev_opp_list_lock);
-+
-+	dev_opp = _add_device_opp(dev);
-+	if (!dev_opp) {
-+		ret = -ENOMEM;
-+		goto unlock;
-+	}
-+
-+	/* Do we already have a prop-name associated with dev_opp? */
-+	if (dev_opp->prop_name) {
-+		dev_err(dev, "%s: Already have prop-name %s\n", __func__,
-+			dev_opp->prop_name);
-+		ret = -EBUSY;
-+		goto err;
-+	}
-+
-+	dev_opp->prop_name = kstrdup(name, GFP_KERNEL);
-+	if (!dev_opp->prop_name) {
-+		ret = -ENOMEM;
-+		goto err;
-+	}
-+
-+	mutex_unlock(&dev_opp_list_lock);
-+	return 0;
-+
-+err:
-+	_remove_device_opp(dev_opp);
-+unlock:
-+	mutex_unlock(&dev_opp_list_lock);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_opp_set_prop_name);
-+
-+/**
-+ * dev_pm_opp_put_prop_name() - Releases resources blocked for prop-name
-+ * @dev: Device for which the regulator has to be set.
-+ *
-+ * This is required only for the V2 bindings, and is called for a matching
-+ * dev_pm_opp_set_prop_name(). Until this is called, the device_opp structure
-+ * will not be freed.
-+ *
-+ * Locking: The internal device_opp and opp structures are RCU protected.
-+ * Hence this function internally uses RCU updater strategy with mutex locks
-+ * to keep the integrity of the internal data structures. Callers should ensure
-+ * that this function is *NOT* called under RCU protection or in contexts where
-+ * mutex cannot be locked.
-+ */
-+void dev_pm_opp_put_prop_name(struct device *dev)
-+{
-+	struct device_opp *dev_opp;
-+
-+	/* Hold our list modification lock here */
-+	mutex_lock(&dev_opp_list_lock);
-+
-+	/* Check for existing list for 'dev' first */
-+	dev_opp = _find_device_opp(dev);
-+	if (IS_ERR(dev_opp)) {
-+		dev_err(dev, "Failed to find dev_opp: %ld\n", PTR_ERR(dev_opp));
-+		goto unlock;
-+	}
-+
-+	if (!dev_opp->prop_name) {
-+		dev_err(dev, "%s: Doesn't have a prop-name\n", __func__);
-+		goto unlock;
-+	}
-+
-+	kfree(dev_opp->prop_name);
-+	dev_opp->prop_name = NULL;
-+
-+	/* Try freeing device_opp if this was the last blocking resource */
-+	_remove_device_opp(dev_opp);
-+
-+unlock:
-+	mutex_unlock(&dev_opp_list_lock);
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_opp_put_prop_name);
-+
- static bool _opp_is_supported(struct device *dev, struct device_opp *dev_opp,
- 			      struct device_node *np)
- {
-@@ -1036,7 +1165,7 @@ static int _opp_add_static_v2(struct device *dev, struct device_node *np)
- 	if (!of_property_read_u32(np, "clock-latency-ns", &val))
- 		new_opp->clock_latency_ns = val;
- 
--	ret = opp_parse_supplies(new_opp, dev);
-+	ret = opp_parse_supplies(new_opp, dev, dev_opp);
- 	if (ret)
- 		goto free_opp;
- 
-diff --git a/drivers/base/power/opp/opp.h b/drivers/base/power/opp/opp.h
-index 70f4564a6ab9..690638ef36ee 100644
---- a/drivers/base/power/opp/opp.h
-+++ b/drivers/base/power/opp/opp.h
-@@ -131,6 +131,7 @@ struct device_list_opp {
-  * @suspend_opp: Pointer to OPP to be used during device suspend.
-  * @supported_hw: Array of version number to support.
-  * @supported_hw_count: Number of elements in supported_hw array.
-+ * @prop_name: A name to postfix to many DT properties, while parsing them.
-  * @dentry:	debugfs dentry pointer of the real device directory (not links).
-  * @dentry_name: Name of the real dentry.
-  *
-@@ -157,6 +158,7 @@ struct device_opp {
- 
- 	unsigned int *supported_hw;
- 	unsigned int supported_hw_count;
-+	const char *prop_name;
- 
- #ifdef CONFIG_DEBUG_FS
- 	struct dentry *dentry;
-diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index 3a85110242f0..95403d2ccaf5 100644
---- a/include/linux/pm_opp.h
-+++ b/include/linux/pm_opp.h
-@@ -58,6 +58,8 @@ struct srcu_notifier_head *dev_pm_opp_get_notifier(struct device *dev);
- int dev_pm_opp_set_supported_hw(struct device *dev, const u32 *versions,
- 				unsigned int count);
- void dev_pm_opp_put_supported_hw(struct device *dev);
-+int dev_pm_opp_set_prop_name(struct device *dev, const char *name);
-+void dev_pm_opp_put_prop_name(struct device *dev);
- #else
- static inline unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
- {
-@@ -142,6 +144,13 @@ static inline int dev_pm_opp_set_supported_hw(struct device *dev,
- 
- static inline void dev_pm_opp_put_supported_hw(struct device *dev) {}
- 
-+static inline int dev_pm_opp_set_prop_name(struct device *dev, const char *name)
-+{
-+	return -EINVAL;
-+}
-+
-+static inline void dev_pm_opp_put_prop_name(struct device *dev) {}
-+
- #endif		/* CONFIG_PM_OPP */
- 
- #if defined(CONFIG_PM_OPP) && defined(CONFIG_OF)
--- 
-2.6.2.198.g614a2ac
+This patch should be split into 5 patches: clock binding, clock driver,
+THS binding, THS driver, and DTS updates.
+
+>  7 files changed, 339 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/sunxi-ths.txt
+>  create mode 100644 drivers/thermal/sunxi_ths.c
+>
+> diff --git a/Documentation/devicetree/bindings/clock/sunxi.txt b/Documentation/devicetree/bindings/clock/sunxi.txt
+> index 23e7bce..6d63b35 100644
+> --- a/Documentation/devicetree/bindings/clock/sunxi.txt
+> +++ b/Documentation/devicetree/bindings/clock/sunxi.txt
+> @@ -73,6 +73,7 @@ Required properties:
+>         "allwinner,sun8i-h3-usb-clk" - for usb gates + resets on H3
+>         "allwinner,sun9i-a80-usb-mod-clk" - for usb gates + resets on A80
+>         "allwinner,sun9i-a80-usb-phy-clk" - for usb phy gates + resets on A80
+> +       "allwinner,sun8i-h3-ths-clk" - for THS on H3
+>
+>  Required properties for all clocks:
+>  - reg : shall be the control register address for the clock.
+> diff --git a/Documentation/devicetree/bindings/thermal/sunxi-ths.txt b/Documentation/devicetree/bindings/thermal/sunxi-ths.txt
+> new file mode 100644
+> index 0000000..75c9211
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/thermal/sunxi-ths.txt
+> @@ -0,0 +1,24 @@
+> +* sunxi THS
+> +
+> +Required properties:
+> +- compatible : "allwinner,sun8i-h3-ths"
+> +- reg : Address range of the thermal registers and location of the calibration
+> +        value
+
+The latter is part of the Security ID (efuses) block, for which we have
+Documentation/devicetree/bindings/nvmem/allwinner,sunxi-sid.txt.
+Please use a phandle to the security id block instead.
+
+See Documentation/devicetree/bindings/nvmem/nvmem.txt for the generic
+nvmem bindings.
+
+> +- resets : Must contain an entry for each entry in reset-names.
+> +           see ../reset/reset.txt for details
+> +- reset-names : Must include the name "ahb"
+> +- clocks : Must contain an entry for each entry in clock-names.
+> +- clock-names : Must contain "ahb" for the bus gate and "ths" for the THS
+> +  clock
+> +
+> +Example:
+> +ths: ths@01c25000 {
+> +       #thermal-sensor-cells = <0>;
+> +       compatible = "allwinner,sun8i-h3-ths";
+> +       reg = <0x01c25000 0x88>, <0x01c14234 0x4>;
+> +       interrupts = <GIC_SPI 63 IRQ_TYPE_LEVEL_HIGH>;
+> +       resets = <&bus_rst 136>;
+> +       reset-names = "ahb";
+> +       clocks = <&bus_gates 72>, <&ths_clk>;
+> +       clock-names = "ahb", "ths";
+> +};
+> diff --git a/arch/arm/boot/dts/sun8i-h3.dtsi b/arch/arm/boot/dts/sun8i-h3.dtsi
+> index 0faa38a..b82881d 100644
+> --- a/arch/arm/boot/dts/sun8i-h3.dtsi
+> +++ b/arch/arm/boot/dts/sun8i-h3.dtsi
+> @@ -77,6 +77,14 @@
+>                 };
+>         };
+>
+> +       thermal-zones {
+> +               cpu_thermal: cpu_thermal {
+> +                       polling-delay-passive = <1000>;
+> +                       polling-delay = <5000>;
+> +                       thermal-sensors = <&ths 0>;
+> +               };
+> +       };
+> +
+>         timer {
+>                 compatible = "arm,armv7-timer";
+>                 interrupts = <GIC_PPI 13 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
+> @@ -236,6 +244,14 @@
+>                                         "ahb1_ephy", "ahb1_dbg";
+>                 };
+>
+> +               ths_clk: clk@01c20074 {
+> +                       #clock-cells = <0>;
+> +                       compatible = "allwinner,sun8i-h3-ths-clk";
+> +                       reg = <0x01c20074 0x4>;
+> +                       clocks = <&osc24M>;
+> +                       clock-output-names = "ths";
+> +               };
+> +
+>                 mmc0_clk: clk@01c20088 {
+>                         #clock-cells = <1>;
+>                         compatible = "allwinner,sun4i-a10-mmc-clk";
+> @@ -522,6 +538,17 @@
+>                         interrupts = <GIC_SPI 25 IRQ_TYPE_LEVEL_HIGH>;
+>                 };
+>
+> +               ths: ths@01c25000 {
+> +                       #thermal-sensor-cells = <0>;
+> +                       compatible = "allwinner,sun8i-h3-ths";
+> +                       reg = <0x01c25000 0x88>, <0x01c14234 0x4>;
+> +                       interrupts = <GIC_SPI 63 IRQ_TYPE_LEVEL_HIGH>;
+> +                       resets = <&bus_rst 104>;
+> +                       reset-names = "ahb";
+> +                       clocks = <&bus_gates 72>, <&ths_clk>;
+> +                       clock-names = "ahb", "ths";
+> +               };
+> +
+>                 uart0: serial@01c28000 {
+>                         compatible = "snps,dw-apb-uart";
+>                         reg = <0x01c28000 0x400>;
+> diff --git a/drivers/clk/sunxi/clk-sunxi.c b/drivers/clk/sunxi/clk-sunxi.c
+> index 6293c65..637401a 100644
+> --- a/drivers/clk/sunxi/clk-sunxi.c
+> +++ b/drivers/clk/sunxi/clk-sunxi.c
+> @@ -604,6 +604,13 @@ static void sun7i_a20_get_out_factors(u32 *freq, u32 parent_rate,
+>         *p = calcp;
+>  }
+>
+> +static void sun8i_h3_get_ths_factors(u32 *freq, u32 parent_rate,
+> +                                     u8 *n, u8 *k, u8 *m, u8 *p)
+> +{
+> +       /* Ignore the dividers as they are not continuous */
+> +       *freq = parent_rate;
+> +}
+> +
+>  /**
+>   * sunxi_factors_clk_setup() - Setup function for factor clocks
+>   */
+> @@ -668,6 +675,8 @@ static struct clk_factors_config sun4i_apb1_config = {
+>         .pwidth = 2,
+>  };
+>
+> +static struct clk_factors_config sun8i_h3_ths_config = {};
+> +
+>  /* user manual says "n" but it's really "p" */
+>  static struct clk_factors_config sun7i_a20_out_config = {
+>         .mshift = 8,
+> @@ -734,6 +743,12 @@ static const struct factors_data sun7i_a20_out_data __initconst = {
+>         .getter = sun7i_a20_get_out_factors,
+>  };
+>
+> +static const struct factors_data sun8i_h3_ths_data __initconst = {
+> +       .enable = 31,
+> +       .table = &sun8i_h3_ths_config,
+> +       .getter = sun8i_h3_get_ths_factors,
+> +};
+> +
+>  static struct clk * __init sunxi_factors_clk_setup(struct device_node *node,
+>                                                    const struct factors_data *data)
+>  {
+> @@ -1127,6 +1142,7 @@ static const struct of_device_id clk_factors_match[] __initconst = {
+>         {.compatible = "allwinner,sun5i-a13-ahb-clk", .data = &sun5i_a13_ahb_data,},
+>         {.compatible = "allwinner,sun4i-a10-apb1-clk", .data = &sun4i_apb1_data,},
+>         {.compatible = "allwinner,sun7i-a20-out-clk", .data = &sun7i_a20_out_data,},
+> +       {.compatible = "allwinner,sun8i-h3-ths-clk", .data = &sun8i_h3_ths_data,},
+
+Please don't add clocks to this list. We are breaking them out into individual
+CLK_OF_DECLARE statements so they work better with the CCF's clock dependency
+probe ordering stuff.
+
+Instead, do a standalone driver under drivers/clk/sunxi, like
+
+    drivers/clk/sunxi/clk-a23-ths.c
+
+Note we normally name a module/driver/compatible based on the first
+SoC it appeared
+in. Since the dividers aren't contiguous, you should use a divider table. And it
+also has a clock gate, so you should probably use composite clk to
+bring together
+the gate and divider into a single clk.
+
+See https://github.com/wens/linux/blob/sun4i-ve-clocks/drivers/clk/sunxi/clk-a10-ve.c
+for a similar driver. You can ignore the reset control bits. This
+driver hasn't been
+submitted.
+
+>         {}
+>  };
+>
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index c463c89..0111d4d 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -365,6 +365,13 @@ config INTEL_PCH_THERMAL
+>           Thermal reporting device will provide temperature reading,
+>           programmable trip points and other information.
+>
+> +config SUNXI_THS
+> +       tristate "Sunxi THS driver"
+> +       depends on ARCH_SUNXI
+> +       depends on OF
+> +       help
+> +         Enable this to support thermal reporting on some newer Allwinner SoC.
+
+Nit: SoCs, plural.
+
+> +
+>  menu "Texas Instruments thermal drivers"
+>  depends on ARCH_HAS_BANDGAP || COMPILE_TEST
+>  source "drivers/thermal/ti-soc-thermal/Kconfig"
+> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+> index cfae6a6..3a25e3c 100644
+> --- a/drivers/thermal/Makefile
+> +++ b/drivers/thermal/Makefile
+> @@ -48,3 +48,4 @@ obj-$(CONFIG_INTEL_PCH_THERMAL)       += intel_pch_thermal.o
+>  obj-$(CONFIG_ST_THERMAL)       += st/
+>  obj-$(CONFIG_TEGRA_SOCTHERM)   += tegra_soctherm.o
+>  obj-$(CONFIG_HISI_THERMAL)     += hisi_thermal.o
+> +obj-$(CONFIG_SUNXI_THS)                += sunxi_ths.o
+
+Hmm, is there supposed to be some sort of ordering here?
+
+> diff --git a/drivers/thermal/sunxi_ths.c b/drivers/thermal/sunxi_ths.c
+> new file mode 100644
+> index 0000000..650cd39
+> --- /dev/null
+> +++ b/drivers/thermal/sunxi_ths.c
+> @@ -0,0 +1,263 @@
+> +/*
+> + * Sunxi THS driver
+> + *
+> + * Copyright (C) 2015 Josef Gajdusek
+> + *
+> + * This software is licensed under the terms of the GNU General Public
+> + * License version 2, as published by the Free Software Foundation, and
+> + * may be copied, distributed, and modified under those terms.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+> + * GNU General Public License for more details.
+> + *
+> + */
+> +
+> +#include <linux/clk-provider.h>
+> +#include <linux/clk.h>
+> +#include <linux/delay.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/io.h>
+> +#include <linux/irq.h>
+> +#include <linux/module.h>
+> +#include <linux/of_device.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/printk.h>
+> +#include <linux/reset.h>
+> +#include <linux/thermal.h>
+> +
+> +#define THS_H3_CTRL0                   0x00
+> +#define THS_H3_CTRL1                   0x04
+> +#define THS_H3_CDAT                            0x14
+> +#define THS_H3_CTRL2                   0x40
+> +#define THS_H3_INT_CTRL                        0x44
+> +#define THS_H3_STAT                            0x48
+> +#define THS_H3_ALARM_CTRL              0x50
+> +#define THS_H3_SHUTDOWN_CTRL   0x60
+> +#define THS_H3_FILTER                  0x70
+> +#define THS_H3_CDATA                   0x74
+> +#define THS_H3_DATA                            0x80
+> +
+> +#define THS_H3_CTRL0_SENSOR_ACQ0               0
+> +
+> +#define THS_H3_CTRL1_ADC_CALI_EN               17
+> +#define THS_H3_CTRL1_OP_BIAS                   20
+> +
+> +#define THS_H3_CTRL2_SENSE_EN                  0
+> +#define THS_H3_CTRL2_SENSOR_ACQ1               16
+> +
+> +#define THS_H3_INT_CTRL_ALARM_INT_EN   0
+> +#define THS_H3_INT_CTRL_SHUT_INT_EN            4
+> +#define THS_H3_INT_CTRL_DATA_IRQ_EN            8
+> +#define THS_H3_INT_CTRL_THERMAL_PER            12
+> +
+> +#define THS_H3_STAT_ALARM_INT_STS              0
+> +#define THS_H3_STAT_SHUT_INT_STS               4
+> +#define THS_H3_STAT_DATA_IRQ_STS               8
+> +#define THS_H3_STAT_ALARM_OFF_STS              12
+> +
+> +#define THS_H3_ALARM_CTRL_ALARM0_T_HYST                0
+> +#define THS_H3_ALARM_CTRL_ALARM0_T_HOT         16
+> +
+> +#define THS_H3_SHUTDOWN_CTRL_SHUT0_T_HOT       16
+> +
+> +#define THS_H3_FILTER_TYPE                             0
+> +#define THS_H3_FILTER_EN                               2
+> +
+> +struct sunxi_ths_data {
+> +       struct sunxi_ths_type *type;
+> +       struct reset_control *reset;
+> +       struct clk *clk;
+> +       struct clk *busclk;
+> +       void __iomem *regs;
+> +       void __iomem *calreg;
+> +       struct platform_device *pdev;
+> +       struct thermal_zone_device *tzd;
+> +       int irq;
+> +};
+> +
+> +struct sunxi_ths_type {
+> +       int (*init)(struct sunxi_ths_data *);
+> +       int (*get_temp)(struct sunxi_ths_data *, int *out);
+> +};
+
+Move this before struct sunxi_ths_data.
+
+> +
+> +static int sunxi_ths_reg_to_temperature(int32_t reg, int divisor, int minus)
+> +{
+> +       return minus - (reg * 1000000) / divisor;
+> +}
+> +
+> +static int sunxi_ths_get_temp(void *_data, int *out)
+> +{
+> +       struct sunxi_ths_data *data = _data;
+> +
+> +       return data->type->get_temp(data, out);
+> +}
+> +
+> +static int sunxi_ths_h3_init(struct sunxi_ths_data *data)
+> +{
+> +       if (data->calreg)
+> +               writel(readl(data->calreg) & 0xfff, data->regs + THS_H3_CDATA);
+
+Again, use the nvmem API to read out the data.
+
+> +       /* Magical constants mostly taken from Allwinner 3.4 kernel.
+> +        * Seem to work fine, though this could be configurable in DT/sysft
+
+                                                                        sysfs
+
+Please check the user manual for the meaning of these constants. They are
+not magic. ACQ0, ACQ1, and THERMAL_PER control the time each step of
+acquiring the temperature takes. The programming guideline requires
+"THERMAL_PER > ACQ1 + ACQ0 + conversion time"
+
+The hardware also has an interrupt line, which can be used to signal there's
+data worth reading, or a warning threshold was exceeded.
+
+You can also look at drivers/input/touchscreen/sun4i-ts.c, which includes
+the older thermal sensor.
+
+> +        */
+> +       writel(0xff << THS_H3_CTRL0_SENSOR_ACQ0,
+> +                       data->regs + THS_H3_CTRL0);
+> +       writel((0x3f << THS_H3_CTRL2_SENSOR_ACQ1) | BIT(THS_H3_CTRL2_SENSE_EN),
+> +                       data->regs + THS_H3_CTRL2);
+> +       writel((0x390 << THS_H3_INT_CTRL_THERMAL_PER) | BIT(THS_H3_INT_CTRL_DATA_IRQ_EN),
+> +                       data->regs + THS_H3_INT_CTRL);
+> +       writel(BIT(THS_H3_FILTER_EN) | (0x2 << THS_H3_FILTER_TYPE),
+> +                       data->regs + THS_H3_FILTER);
+> +       return 0;
+> +}
+> +
+> +static int sunxi_ths_h3_get_temp(struct sunxi_ths_data *data, int *out)
+> +{
+> +       *out = sunxi_ths_reg_to_temperature(readl(data->regs + THS_H3_DATA),
+> +                       8253, 217000);
+> +       return 0;
+> +}
+> +
+> +static const struct thermal_zone_of_device_ops sunxi_ths_thermal_ops = {
+> +       .get_temp = sunxi_ths_get_temp,
+> +};
+> +
+> +static const struct sunxi_ths_type sunxi_ths_device_h3 = {
+> +       .init = sunxi_ths_h3_init,
+> +       .get_temp = sunxi_ths_h3_get_temp,
+> +};
+> +
+> +static const struct of_device_id sunxi_ths_id_table[] = {
+> +       {
+> +               .compatible = "allwinner,sun8i-h3-ths",
+> +               .data = &sunxi_ths_device_h3,
+> +       },
+> +       {
+> +               /* sentinel */
+> +       },
+> +};
+> +MODULE_DEVICE_TABLE(of, sunxi_ths_id_table);
+> +
+> +static int sunxi_ths_probe(struct platform_device *pdev)
+> +{
+> +       struct device_node *np = pdev->dev.of_node;
+> +       const struct of_device_id *match;
+> +       struct sunxi_ths_data *data;
+> +       struct resource *res;
+> +       int ret;
+> +
+> +       match = of_match_node(sunxi_ths_id_table, np);
+> +       if (!match)
+> +               return -ENXIO;
+> +
+> +       data =
+> +               devm_kzalloc(&pdev->dev, sizeof(struct sunxi_ths_data), GFP_KERNEL);
+> +       if (!data)
+> +               return -ENOMEM;
+> +
+> +       data->type = (struct sunxi_ths_type *) match->data;
+> +       data->pdev = pdev;
+> +
+> +       res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> +       data->regs = devm_ioremap_resource(&pdev->dev, res);
+> +       if (IS_ERR(data->regs)) {
+> +               ret = PTR_ERR(data->regs);
+> +               dev_err(&pdev->dev, "failed to ioremap THS registers: %d\n", ret);
+> +               return ret;
+> +       }
+> +
+> +       res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
+> +       data->calreg = devm_ioremap_resource(&pdev->dev, res);
+> +       if (IS_ERR(data->calreg))
+> +               data->calreg = NULL; /* No calibration register */
+
+The calibration data is part of the Security ID efuse module, for which
+we have an nvmem driver. Please use the nvmem API for this.
+
+> +
+> +       data->busclk = devm_clk_get(&pdev->dev, "ahb");
+> +       if (IS_ERR(data->busclk)) {
+> +               ret = PTR_ERR(data->busclk);
+> +               dev_err(&pdev->dev, "failed to get ahb clk: %d\n", ret);
+> +               return ret;
+> +       }
+> +
+> +       data->clk = devm_clk_get(&pdev->dev, "ths");
+> +       if (IS_ERR(data->clk)) {
+> +               ret = PTR_ERR(data->clk);
+> +               dev_err(&pdev->dev, "failed to get ths clk: %d\n", ret);
+> +               return ret;
+> +       }
+> +
+> +       data->reset = devm_reset_control_get_optional(&pdev->dev, "ahb");
+
+Why is this optional?
+
+
+Regards
+ChenYu
+
+> +       if (IS_ERR(data->reset)) {
+> +               ret = PTR_ERR(data->reset);
+> +               dev_err(&pdev->dev, "failed to get reset: %d\n", ret);
+> +               return ret;
+> +       }
+> +
+> +       ret = clk_prepare_enable(data->busclk);
+> +       if (ret) {
+> +               dev_err(&pdev->dev, "failed to enable bus clk: %d\n", ret);
+> +               return ret;
+> +       }
+> +
+> +       ret = clk_prepare_enable(data->clk);
+> +       if (ret) {
+> +               dev_err(&pdev->dev, "failed to enable ths clk: %d\n", ret);
+> +               goto err_disable_bus;
+> +       }
+> +
+> +       ret = reset_control_deassert(data->reset);
+> +       if (ret) {
+> +               dev_err(&pdev->dev, "reset deassert failed: %d\n", ret);
+> +               goto err_disable_ths;
+> +       }
+> +
+> +       ret = data->type->init(data);
+> +       if (ret)
+> +               goto err_reset_assert;
+> +
+> +       data->tzd = thermal_zone_of_sensor_register(&pdev->dev, 0, data,
+> +                                                                       &sunxi_ths_thermal_ops);
+> +       if (IS_ERR(data->tzd)) {
+> +               ret = PTR_ERR(data->tzd);
+> +               dev_err(&pdev->dev, "failed to register thermal zone: %d\n",
+> +                               ret);
+> +               goto err_reset_assert;
+> +       }
+> +
+> +       platform_set_drvdata(pdev, data);
+> +       return 0;
+> +
+> +err_reset_assert:
+> +       reset_control_assert(data->reset);
+> +err_disable_ths:
+> +       clk_disable_unprepare(data->clk);
+> +err_disable_bus:
+> +       clk_disable_unprepare(data->busclk);
+> +       return ret;
+> +}
+> +
+> +static int sunxi_ths_remove(struct platform_device *pdev)
+> +{
+> +       struct sunxi_ths_data *data = platform_get_drvdata(pdev);
+> +
+> +       thermal_zone_of_sensor_unregister(&pdev->dev, data->tzd);
+> +       reset_control_assert(data->reset);
+> +       clk_disable_unprepare(data->clk);
+> +       clk_disable_unprepare(data->busclk);
+> +       return 0;
+> +}
+> +
+> +static struct platform_driver sunxi_ths_driver = {
+> +       .probe = sunxi_ths_probe,
+> +       .remove = sunxi_ths_remove,
+> +       .driver = {
+> +               .name = "sunxi_ths",
+> +               .of_match_table = sunxi_ths_id_table,
+> +       },
+> +};
+> +
+> +module_platform_driver(sunxi_ths_driver);
+> +
+> +MODULE_AUTHOR("Josef Gajdusek <atx@atx.name>");
+> +MODULE_DESCRIPTION("Sunxi THS driver");
+> +MODULE_LICENSE("GPL v2");
+> --
+> 2.4.10
+>
