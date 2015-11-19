@@ -1,53 +1,35 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH 2/6] PM / devfreq: event: Fix the error and warning from
- script/checkpatch.pl
-Date: Thu, 19 Nov 2015 17:17:46 +0900
-Message-ID: <1447921070-6045-3-git-send-email-cw00.choi@samsung.com>
-References: <1447921070-6045-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1447921070-6045-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PATCH 0/6] PM / devfreq: Clean code and add set the freq_table
+ array
+Date: Thu, 19 Nov 2015 08:46:08 +0000 (GMT)
+Message-ID: <1678444918.1189481447922768056.JavaMail.weblogic@ep2mlwas06b>
+Reply-To: myungjoo.ham@samsung.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:34667 "EHLO
+	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758010AbbKSIqK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Nov 2015 03:46:10 -0500
+Received: from epcpsbgr3.samsung.com
+ (u143.gpu120.samsung.co.kr [203.254.230.143])
+ by mailout3.samsung.com (Oracle Communications Messaging Server 7.0.5.31.0
+ 64bit (built May  5 2014))
+ with ESMTP id <0NY200ZF10CW9P50@mailout3.samsung.com> for
+ linux-pm@vger.kernel.org; Thu, 19 Nov 2015 17:46:08 +0900 (KST)
+MIME-version: 1.0
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-This patch just fixes following error and warning by using
-scripts/checkpatch.pl.
+PiBUaGlzIHBhdGNoLXNldCBjbGVhbiB0aGUgY29kZSBmb3IgYm90aCBkZXZmcmVxIGFuZCBkZXZm
+cmVxLWV2ZW50IGZyYW1ld29yawo+IGFuZCBhZGQgdGhlICdmcmVxX3RhYmxlJyBmb3IgZGV2ZnJl
+cSBkZXZpY2UuIEFmdGVyIGluaXRpYWxpemluZyB0aGUKPiAnZnJlcV90YWJsZScsIHRoZSAndHJh
+bnNfc3RhdCcgc3lzZnMgcHJvdmlkZSB0aGUgYXBwcm9wcmlhdGUgaW5mb3JtYXRpb24uCgpDaGFu
+d29vLAoKQXJlIHRoZXNlIHRoZSBzYW1lIHBhdGNoZXMgaW4geW91ciBnaXQswqBodHRwczovL2dp
+dC5rZXJuZWwub3JnL2NnaXQvbGludXgva2VybmVsL2dpdC9jaGFud29vL2xpbnV4LmdpdC9sb2cv
+P2g9ZGV2ZnJlcS1uZXh0ID8KCkNoZWVycywKTXl1bmdKb28uCgo=
 
-- Follwoing issue from checkpatch.pl:
-ERROR: space prohibited before that close parenthesis ')'
-+	if (count < 0 ) {
 
-WARNING: line over 80 characters
-+	ptr = devres_alloc(devm_devfreq_event_release, sizeof(*ptr), GFP_KERNEL);
-
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
----
- drivers/devfreq/devfreq-event.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/devfreq/devfreq-event.c b/drivers/devfreq/devfreq-event.c
-index f51de879b2be..38bf144ca147 100644
---- a/drivers/devfreq/devfreq-event.c
-+++ b/drivers/devfreq/devfreq-event.c
-@@ -270,7 +270,7 @@ int devfreq_event_get_edev_count(struct device *dev)
- 
- 	count = of_property_count_elems_of_size(dev->of_node, "devfreq-events",
- 						sizeof(u32));
--	if (count < 0 ) {
-+	if (count < 0) {
- 		dev_err(dev,
- 			"failed to get the count of devfreq-event in %s node\n",
- 			dev->of_node->full_name);
-@@ -395,7 +395,8 @@ struct devfreq_event_dev *devm_devfreq_event_add_edev(struct device *dev,
- {
- 	struct devfreq_event_dev **ptr, *edev;
- 
--	ptr = devres_alloc(devm_devfreq_event_release, sizeof(*ptr), GFP_KERNEL);
-+	ptr = devres_alloc(devm_devfreq_event_release, sizeof(*ptr),
-+				GFP_KERNEL);
- 	if (!ptr)
- 		return ERR_PTR(-ENOMEM);
- 
--- 
-1.9.1
