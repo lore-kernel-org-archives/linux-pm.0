@@ -1,196 +1,70 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH RFC 18/27] drivers: cpu-pd: Add PM Domain governor for
- CPUs
-Date: Fri, 20 Nov 2015 10:39:04 -0700
-Message-ID: <20151120173904.GE30342@linaro.org>
-References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
- <1447799871-56374-19-git-send-email-lina.iyer@linaro.org>
- <20151118184245.GA28755@red-moon>
- <564D8D56.1080206@baylibre.com>
+From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
+Subject: Re: [PATCH 1/2] cpufreq, intel_pstate, Fix limits->max_policy_pct
+ rounding error
+Date: Fri, 20 Nov 2015 20:02:37 +0000
+Message-ID: <1448049757.4914.3.camel@intel.com>
+References: <1448022757-7856-1-git-send-email-prarit@redhat.com>
+	 <1448022757-7856-2-git-send-email-prarit@redhat.com>
+	 <20151120131833.GD3957@ubuntu> <564F37C8.60307@redhat.com>
+	 <20151120151944.GE3957@ubuntu> <564F3FBA.6030806@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <564D8D56.1080206@baylibre.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Marc Titinger <mtitinger@baylibre.com>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, ulf.hansson@linaro.org, khilman@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, ahaslam@baylibre.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <564F3FBA.6030806@redhat.com>
+Content-Language: en-US
+Content-ID: <CCE1EE7F20436D48A891516E33BB6985@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "prarit@redhat.com" <prarit@redhat.com>
+Cc: "Brown, Len" <len.brown@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "kristen@linux.intel.com" <kristen@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "Yates, Alexandra" <alexandra.yates@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Nov 19 2015 at 01:50 -0700, Marc Titinger wrote:
->On 18/11/2015 19:42, Lorenzo Pieralisi wrote:
->>On Tue, Nov 17, 2015 at 03:37:42PM -0700, Lina Iyer wrote:
->>>A PM domain comprising of CPUs may be powered off when all the CPUs in
->>>the domain are powered down. Powering down a CPU domain is generally a
->>>expensive operation and therefore the power performance trade offs
->>>should be considered. The time between the last CPU powering down and
->>>the first CPU powering up in a domain, is the time available for the
->>>domain to sleep. Ideally, the sleep time of the domain should fulfill
->>>the residency requirement of the domains' idle state.
->>>
->>>To do this effectively, read the time before the wakeup of the cluster's
->>>CPUs and ensure that the domain's idle state sleep time guarantees the
->>>QoS requirements of each of the CPU, the PM QoS CPU_DMA_LATENCY and the
->>>state's residency.
->>
->>To me this information should be part of the CPUidle governor (it is
->>already there), we should not split the decision into multiple layers.
->>
->>The problem you are facing is that the CPUidle governor(s) do not take
->>cross cpus relationship into account, I do not think that adding another
->>decision layer in the power domain subsystem helps, you are doing that
->>just because adding it to the existing CPUidle governor(s) is invasive.
->>
->>Why can't we use the power domain work you put together to eg disable
->>idle states that share multiple cpus and make them "visible" only
->>when the power domain that encompass them is actually going down ?
->>
->>You could use the power domains information to detect states that
->>are shared between cpus.
->>
->>It is just an idea, what I am saying is that having another governor in
->>the power domain subsytem does not make much sense, you split the
->>decision in two layers while there is actually one, the existing
->>CPUidle governor and that's where the decision should be taken.
->>
->>Thoughts appreciated.
->
->Maybe this is silly and not thought-through, but I wonder if the 
->responsibilities could be split or instance with an outer control loop 
->that has the heuristic to compute the next tick time, and the required 
->cpu-power needed during that time slot, and an inner control loop 
->(genpd) that has a per-domain QoS and can optimize power consumption.
->
-Not sure I understand everything you said, but the heuristics across a
-bunch of CPUs can be very erratic. Its hard enough for menu governor to
-determine heuristics on a per-cpu basis.
-
-I governor in this patch already takes care of PM QoS, but does not do a
-per-cpu QoS.
-
-We should discuss this more.
-
--- Lina
-
->Marc.
->
->>
->>Lorenzo
->>
->>>Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
->>>---
->>>  drivers/base/power/cpu-pd.c | 83 ++++++++++++++++++++++++++++++++++++++++++++-
->>>  1 file changed, 82 insertions(+), 1 deletion(-)
->>>
->>>diff --git a/drivers/base/power/cpu-pd.c b/drivers/base/power/cpu-pd.c
->>>index 617ce54..a00abc1 100644
->>>--- a/drivers/base/power/cpu-pd.c
->>>+++ b/drivers/base/power/cpu-pd.c
->>>@@ -21,6 +21,7 @@
->>>  #include <linux/pm_qos.h>
->>>  #include <linux/rculist.h>
->>>  #include <linux/slab.h>
->>>+#include <linux/tick.h>
->>>
->>>  #define CPU_PD_NAME_MAX 36
->>>
->>>@@ -66,6 +67,86 @@ static void get_cpus_in_domain(struct generic_pm_domain *genpd,
->>>  	}
->>>  }
->>>
->>>+static bool cpu_pd_down_ok(struct dev_pm_domain *pd)
->>>+{
->>>+	struct generic_pm_domain *genpd = pd_to_genpd(pd);
->>>+	struct cpu_pm_domain *cpu_pd = to_cpu_pd(genpd);
->>>+	int qos = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
->>>+	u64 sleep_ns = ~0;
->>>+	ktime_t earliest;
->>>+	int cpu;
->>>+	int i;
->>>+
->>>+	/* Reset the last set genpd state, default to index 0 */
->>>+	genpd->state_idx = 0;
->>>+
->>>+	/* We dont want to power down, if QoS is 0 */
->>>+	if (!qos)
->>>+		return false;
->>>+
->>>+	/*
->>>+	 * Find the sleep time for the cluster.
->>>+	 * The time between now and the first wake up of any CPU that
->>>+	 * are in this domain hierarchy is the time available for the
->>>+	 * domain to be idle.
->>>+	 */
->>>+	earliest.tv64 = KTIME_MAX;
->>>+	for_each_cpu_and(cpu, cpu_pd->cpus, cpu_online_mask) {
->>>+		struct device *cpu_dev = get_cpu_device(cpu);
->>>+		struct gpd_timing_data *td;
->>>+
->>>+		td = &dev_gpd_data(cpu_dev)->td;
->>>+
->>>+		if (earliest.tv64 < td->next_wakeup.tv64)
->>>+			earliest = td->next_wakeup;
->>>+	}
->>>+
->>>+	sleep_ns = ktime_to_ns(ktime_sub(earliest, ktime_get()));
->>>+	if (sleep_ns <= 0)
->>>+		return false;
->>>+
->>>+	/*
->>>+	 * Find the deepest sleep state that satisfies the residency
->>>+	 * requirement and the QoS constraint
->>>+	 */
->>>+	for (i = genpd->state_count - 1; i > 0; i--) {
->>>+		u64 state_sleep_ns;
->>>+
->>>+		state_sleep_ns = genpd->states[i].power_off_latency_ns +
->>>+			genpd->states[i].power_on_latency_ns +
->>>+			genpd->states[i].residency_ns;
->>>+
->>>+		/*
->>>+		 * If we cant sleep to save power in the state, move on
->>>+		 * to the next lower idle state.
->>>+		 */
->>>+		if (state_sleep_ns > sleep_ns)
->>>+		       continue;
->>>+
->>>+		/*
->>>+		 * We also dont want to sleep more than we should to
->>>+		 * gaurantee QoS.
->>>+		 */
->>>+		if (state_sleep_ns < (qos * NSEC_PER_USEC))
->>>+			break;
->>>+	}
->>>+
->>>+	if (i >= 0)
->>>+		genpd->state_idx = i;
->>>+
->>>+	return  (i >= 0) ? true : false;
->>>+}
->>>+
->>>+static bool cpu_stop_ok(struct device *dev)
->>>+{
->>>+	return true;
->>>+}
->>>+
->>>+struct dev_power_governor cpu_pd_gov = {
->>>+	.power_down_ok = cpu_pd_down_ok,
->>>+	.stop_ok = cpu_stop_ok,
->>>+};
->>>+
->>>  static int cpu_pd_power_off(struct generic_pm_domain *genpd)
->>>  {
->>>  	struct cpu_pm_domain *pd = to_cpu_pd(genpd);
->>>@@ -183,7 +264,7 @@ int of_register_cpu_pm_domain(struct device_node *dn,
->>>
->>>  	/* Register the CPU genpd */
->>>  	pr_debug("adding %s as CPU PM domain.\n", pd->genpd->name);
->>>-	ret = of_pm_genpd_init(dn, pd->genpd, &simple_qos_governor, false);
->>>+	ret = of_pm_genpd_init(dn, pd->genpd, &cpu_pd_gov, false);
->>>  	if (ret) {
->>>  		pr_err("Unable to initialize domain %s\n", dn->full_name);
->>>  		return ret;
->>>--
->>>2.1.4
->>>
->
+T24gRnJpLCAyMDE1LTExLTIwIGF0IDEwOjQzIC0wNTAwLCBQcmFyaXQgQmhhcmdhdmEgd3JvdGU6
+DQo+IA0KPiBPbiAxMS8yMC8yMDE1IDEwOjE5IEFNLCBWaXJlc2ggS3VtYXIgd3JvdGU6DQo+ID4g
+T24gMjAtMTEtMTUsIDEwOjEwLCBQcmFyaXQgQmhhcmdhdmEgd3JvdGU6DQo+ID4+Pj4gIAlsaW1p
+dHMtPm1heF9wb2xpY3lfcGN0ID0gY2xhbXBfdChpbnQsIGxpbWl0cy0+bWF4X3BvbGljeV9wY3Qs
+IDAgLCAxMDApOw0KPiA+Pj4NCj4gPj4+IEFuZCBwdXQgdGhpcyBhZnRlciB0aGUgbGF0ZXIgb25l
+ID8NCj4gPj4+DQo+ID4+Pj4gKwlsaW1pdHMtPm1heF9wb2xpY3lfcGN0ID0gRElWX1JPVU5EX1VQ
+KHBvbGljeS0+bWF4ICogMTAwLA0KPiA+Pj4+ICsJCQkJCSAgICAgIHBvbGljeS0+Y3B1aW5mby5t
+YXhfZnJlcSk7DQo+ID4+Pj4gIA0KPiA+Pj4+ICAJLyogTm9ybWFsaXplIHVzZXIgaW5wdXQgdG8g
+W21pbl9wb2xpY3lfcGN0LCBtYXhfcG9saWN5X3BjdF0gKi8NCj4gPj4+PiAgCWxpbWl0cy0+bWlu
+X3BlcmZfcGN0ID0gbWF4KGxpbWl0cy0+bWluX3BvbGljeV9wY3QsDQo+ID4+Pg0KPiA+Pj4gU3Vy
+ZSB5b3UgdGVzdGVkIGl0ICA/IDopDQo+ID4+DQo+ID4+IE9vcHMgLS0gYW5kIHllYWgsIHRlc3Rl
+ZC4gIEl0IHdvcmtzIGJlY2F1c2UgSSByZXdyaXRlIHRoZSB2YWx1ZSBvZg0KPiA+PiBtYXhfcG9s
+aWN5X3BjdCA6KS4gIEknbGwgcmVwb3N0IHNob3J0bHkuDQo+ID4gDQo+ID4gQnV0IHdlIGFyZW4n
+dCBkb2luZyBiZWxvdyBhbnltb3JlLCBkb2Vzbid0IHRoaXMgY2hhbmdlIHRoZQ0KPiA+IGNhbGN1
+bGF0aW9ucyBhdCBhbGw/DQo+ID4gDQo+ID4gICAJbGltaXRzLT5tYXhfcG9saWN5X3BjdCA9IGNs
+YW1wX3QoaW50LCBsaW1pdHMtPm1heF9wb2xpY3lfcGN0LCAwICwgMTAwKTsNCj4gDQo+IFRoZSBj
+bGFtcCBvbmx5IGNvbmZpbmVzIHRoZSBtYXhfcG9saWN5IGJldHdlZW4gMCBhbmQgMTAwLiAgQUZB
+SUsgaXQgZG9lc24ndCBtYWtlDQo+IGFueSBjaGFuZ2UgdG90aGUgdmFsdWUgb2YgbGltaXRzLT5t
+YXhfcG9saWN5X3BjdCB1bmxlc3MgaXQgd2FzIG91dHNpZGUgb2YgdGhhdA0KPiByYW5nZS4NCj4g
+DQo+IFAuDQo+ID4gDQoNCldpdGggdGhlIGNoYW5nZXMgYmVsb3cgKGFzIHN1Z2dlc3RlZCBhYm92
+ZSksIEkgZGlkIHRlc3RzLiBFeGNlcHQgdHdvDQpjYXNlcywgaXQgZGlkIGNvcnJlY3QuIFRob3Nl
+IHR3byBhcmUgaW4gdHVyYm8gcmFuZ2UsIHNvIEkgYW0gT0sgd2l0aA0KdGhhdC4gDQoNCg0KZGlm
+ZiAtLWdpdCBhL2RyaXZlcnMvY3B1ZnJlcS9pbnRlbF9wc3RhdGUuYw0KYi9kcml2ZXJzL2NwdWZy
+ZXEvaW50ZWxfcHN0YXRlLmMNCmluZGV4IGI3OGFiZTkuLmMzYmNjYTQgMTAwNjQ0DQotLS0gYS9k
+cml2ZXJzL2NwdWZyZXEvaW50ZWxfcHN0YXRlLmMNCisrKyBiL2RyaXZlcnMvY3B1ZnJlcS9pbnRl
+bF9wc3RhdGUuYw0KQEAgLTExMTEsOSArMTExMSw5IEBAIHN0YXRpYyBpbnQgaW50ZWxfcHN0YXRl
+X3NldF9wb2xpY3koc3RydWN0DQpjcHVmcmVxX3BvbGljeSAqcG9saWN5KQ0KIAlsaW1pdHMgPSAm
+cG93ZXJzYXZlX2xpbWl0czsNCiAJbGltaXRzLT5taW5fcG9saWN5X3BjdCA9IChwb2xpY3ktPm1p
+biAqIDEwMCkgLw0KcG9saWN5LT5jcHVpbmZvLm1heF9mcmVxOw0KIAlsaW1pdHMtPm1pbl9wb2xp
+Y3lfcGN0ID0gY2xhbXBfdChpbnQsIGxpbWl0cy0+bWluX3BvbGljeV9wY3QsIDAgLA0KMTAwKTsN
+Ci0JbGltaXRzLT5tYXhfcG9saWN5X3BjdCA9IChwb2xpY3ktPm1heCAqIDEwMCkgLw0KcG9saWN5
+LT5jcHVpbmZvLm1heF9mcmVxOw0KKwlsaW1pdHMtPm1heF9wb2xpY3lfcGN0ID0gRElWX1JPVU5E
+X1VQKHBvbGljeS0+bWF4ICogMTAwLA0KKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgIHBvbGljeS0+Y3B1aW5mby5tYXhfZnJlcSk7DQogCWxpbWl0cy0+bWF4X3Bv
+bGljeV9wY3QgPSBjbGFtcF90KGludCwgbGltaXRzLT5tYXhfcG9saWN5X3BjdCwgMCAsDQoxMDAp
+Ow0KLQ0KIAkvKiBOb3JtYWxpemUgdXNlciBpbnB1dCB0byBbbWluX3BvbGljeV9wY3QsIG1heF9w
+b2xpY3lfcGN0XSAqLw0KIAlsaW1pdHMtPm1pbl9wZXJmX3BjdCA9IG1heChsaW1pdHMtPm1pbl9w
+b2xpY3lfcGN0LA0KIAkJCQkgICBsaW1pdHMtPm1pbl9zeXNmc19wY3QpOw0KQEAgLTExMzEsNyAr
+MTEzMSw3IEBAIHN0YXRpYyBpbnQgaW50ZWxfcHN0YXRlX3NldF9wb2xpY3koc3RydWN0DQpjcHVm
+cmVxX3BvbGljeSAqcG9saWN5KQ0KIAkJCQkgIGludF90b2ZwKDEwMCkpOw0KIAlsaW1pdHMtPm1h
+eF9wZXJmID0gZGl2X2ZwKGludF90b2ZwKGxpbWl0cy0+bWF4X3BlcmZfcGN0KSwNCiAJCQkJICBp
+bnRfdG9mcCgxMDApKTsNCi0NCisJbGltaXRzLT5tYXhfcGVyZiA9IHJvdW5kX3VwKGxpbWl0cy0+
+bWF4X3BlcmYsIDgpOw0KIAlpZiAoaHdwX2FjdGl2ZSkNCiAJCWludGVsX3BzdGF0ZV9od3Bfc2V0
+KCk7DQoNCg0KMzMwMCA6IE9LDQozMjAwIDogMSBsZXNzDQozMTAwIDogMSBsZXNzDQozMDAwIDog
+MSBsZXNzDQoyOTAwIDogT0sNCjI4MDAgOiBPSw0KMjcwMCA6IE9LDQoyNjAwIDogT0sNCjI1MDAg
+OiBPSw0KMjQwMCA6IE9LDQoyMzAwIDogT0sNCjIyMDAgOiBPSw0KMjEwMCA6IE9LDQoyMDAwIDog
+T0sNCjE5MDAgOiBPSw0KMTgwMCA6IE9LDQoxNzAwIDogT0sNCjE2MDAgOiBPSw0KMTUwMCA6IE9L
+DQoxNDAwIDogT0sNCjEzMDAgOiBPSw0KMTIwMCA6IE9LDQoxMTAwIDogT0sNCjEwMDAgOiBPSw0K
+OTAwICA6IE9LDQo4MDAgOiBPSw0KDQpUaGFua3MsDQpTcmluaXZhcw0K
