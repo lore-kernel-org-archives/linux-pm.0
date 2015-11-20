@@ -1,73 +1,90 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] pcc-cpufreq driver update default value of
- cpuinfo_transition_latency
-Date: Fri, 20 Nov 2015 07:28:20 +0530
-Message-ID: <20151120015820.GK3737@ubuntu>
-References: <1447946941-14923-1-git-send-email-jtanenba@redhat.com>
+From: Manish Badarkhe <badarkhe.manish@gmail.com>
+Subject: Re: [PATCH v6 8/9] ARM: EXYNOS: rearrange static and non-static
+ functions of PMU driver
+Date: Fri, 20 Nov 2015 10:16:38 +0530
+Message-ID: <CAKDJKT5etUJFqZe1Xzhfnepu7VUWZptBr=DwvhX4gtNftE51Wg@mail.gmail.com>
+References: <1447740351-14246-1-git-send-email-pankaj.dubey@samsung.com>
+	<1447740351-14246-9-git-send-email-pankaj.dubey@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f53.google.com ([209.85.220.53]:34738 "EHLO
-	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755244AbbKTB6Z (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Nov 2015 20:58:25 -0500
-Received: by padhx2 with SMTP id hx2so99524519pad.1
-        for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2015 17:58:24 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <1447946941-14923-1-git-send-email-jtanenba@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1447740351-14246-9-git-send-email-pankaj.dubey@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Pankaj Dubey <pankaj.dubey@samsung.com>
+Cc: "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, k.kozlowski@samsung.com, thomas.ab@samsung.com, amitdanielk@gmail.com, olof@lixom.net, khilman@linaro.org, arnd@arndb.de
 List-Id: linux-pm@vger.kernel.org
-To: Jacob Tanenbaum <jtanenba@redhat.com>
-Cc: linux-pm@vger.kernel.org, corbet@lwn.net, rjw@rjwysocki.net, prarit@redhat.com
 
-On 19-11-15, 10:29, Jacob Tanenbaum wrote:
-> The cpufreq documentation specifies
-> 
-> policy->cpuinfo.transition_latency   the time it takes on this CPU to
->                                 switch between two frequencies in
->                                 nanoseconds (if appropriate, else
->                                 specify CPUFREQ_ETERNAL)
-> 
-> currently pcc-cpufreq does not expose the value and sets it to zero. I
-> changed the pcc-cpufreq driver and it's documentation to conform to the
-> default value specified in Documentation/cpu-freq/cpu-drivers.txt
-> 
-> Signed-off-by: Jacob Tanenbaum <jtanenba@redhat.com>
+On Tue, Nov 17, 2015 at 11:35 AM, Pankaj Dubey <pankaj.dubey@samsung.com> wrote:
+> This patch moves exynos_sys_powerdown_conf function above all
+> static functions, to avoid confusion causing due to mixing of
+> static-nonstatic-static functions and to improve readability of this
+> driver.
+>
+> Signed-off-by: Pankaj Dubey <pankaj.dubey@samsung.com>
+> Suggested-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 > ---
->  Documentation/cpu-freq/pcc-cpufreq.txt | 4 ++--
->  drivers/cpufreq/pcc-cpufreq.c          | 2 ++
->  2 files changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/Documentation/cpu-freq/pcc-cpufreq.txt b/Documentation/cpu-freq/pcc-cpufreq.txt
-> index 9e3c3b3..0a94224 100644
-> --- a/Documentation/cpu-freq/pcc-cpufreq.txt
-> +++ b/Documentation/cpu-freq/pcc-cpufreq.txt
-> @@ -159,8 +159,8 @@ to be strictly associated with a P-state.
->  
->  2.2 cpuinfo_transition_latency:
->  -------------------------------
-> -The cpuinfo_transition_latency field is 0. The PCC specification does
-> -not include a field to expose this value currently.
-> +The cpuinfo_transition_latency field is CPUFREQ_ETERNAL. The PCC specification
-> +does not include a field to expose this value currently.
->  
->  2.3 cpuinfo_cur_freq:
->  ---------------------
-> diff --git a/drivers/cpufreq/pcc-cpufreq.c b/drivers/cpufreq/pcc-cpufreq.c
-> index 2a0d589..808a320 100644
-> --- a/drivers/cpufreq/pcc-cpufreq.c
-> +++ b/drivers/cpufreq/pcc-cpufreq.c
-> @@ -555,6 +555,8 @@ static int pcc_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  	policy->min = policy->cpuinfo.min_freq =
->  		ioread32(&pcch_hdr->minimum_frequency) * 1000;
->  
-> +	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+>  arch/arm/mach-exynos/pmu.c | 34 +++++++++++++++++-----------------
+>  1 file changed, 17 insertions(+), 17 deletions(-)
+>
+> diff --git a/arch/arm/mach-exynos/pmu.c b/arch/arm/mach-exynos/pmu.c
+> index 01cb649..a7741d4 100644
+> --- a/arch/arm/mach-exynos/pmu.c
+> +++ b/arch/arm/mach-exynos/pmu.c
+> @@ -39,23 +39,6 @@ u32 pmu_raw_readl(u32 offset)
+>         return readl_relaxed(pmu_base_addr + offset);
+>  }
+>
+> -static void exynos_power_off(void)
+> -{
+> -       unsigned int tmp;
+> -
+> -       pr_info("Power down.\n");
+> -       tmp = pmu_raw_readl(EXYNOS_PS_HOLD_CONTROL);
+> -       tmp ^= (1 << 8);
+> -       pmu_raw_writel(tmp, EXYNOS_PS_HOLD_CONTROL);
+> -
+> -       /* Wait a little so we don't give a false warning below */
+> -       mdelay(100);
+> -
+> -       pr_err("Power down failed, please power off system manually.\n");
+> -       while (1)
+> -               ;
+> -}
+> -
+>  void exynos_sys_powerdown_conf(enum sys_powerdown mode)
+>  {
+>         unsigned int i;
+> @@ -85,6 +68,23 @@ void exynos_sys_powerdown_conf(enum sys_powerdown mode)
+>         }
+>  }
+>
+> +static void exynos_power_off(void)
+> +{
+> +       unsigned int tmp;
 > +
->  	pr_debug("init: policy->max is %d, policy->min is %d\n",
->  		policy->max, policy->min);
->  out:
+> +       pr_info("Power down.\n");
+> +       tmp = pmu_raw_readl(EXYNOS_PS_HOLD_CONTROL);
+> +       tmp ^= (1 << 8);
+Can we have some define over here? to operate this bit.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
--- 
-viresh
+> +       pmu_raw_writel(tmp, EXYNOS_PS_HOLD_CONTROL);
+> +
+> +       /* Wait a little so we don't give a false warning below */
+> +       mdelay(100);
+> +
+> +       pr_err("Power down failed, please power off system manually.\n");
+> +       while (1)
+> +               ;
+> +}
+> +
+>  static int pmu_restart_notify(struct notifier_block *this,
+>                 unsigned long code, void *unused)
+>  {
+> --
+> 2.4.5
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
