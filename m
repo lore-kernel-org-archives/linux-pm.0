@@ -1,56 +1,28 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH RFC 18/27] drivers: cpu-pd: Add PM Domain governor for CPUs
-Date: Thu, 19 Nov 2015 16:03:58 -0800
-Message-ID: <7hbnapsfip.fsf@deeprootsystems.com>
-References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
-	<1447799871-56374-19-git-send-email-lina.iyer@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: turbostat patches for 4.3
+Date: Fri, 20 Nov 2015 01:23:53 +0100
+Message-ID: <CAJZ5v0hdwTQ-NR_NQjes0b9ZJb-_ixHwtwNrexQh599DZm-tuA@mail.gmail.com>
+References: <1447314152-2145-1-git-send-email-lenb@kernel.org>
+	<2635043.0vdY80h9bq@vostro.rjw.lan>
+	<CAJvTdKkSKpL=Wpkwrs1CY_Y4kE=hHDVrVOaa7G3ceWJ5CJBLtg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f43.google.com ([209.85.220.43]:34846 "EHLO
-	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757083AbbKTAEA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Nov 2015 19:04:00 -0500
-Received: by pacej9 with SMTP id ej9so96455931pac.2
-        for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2015 16:04:00 -0800 (PST)
-In-Reply-To: <1447799871-56374-19-git-send-email-lina.iyer@linaro.org> (Lina
-	Iyer's message of "Tue, 17 Nov 2015 15:37:42 -0700")
+Received: from mail-lb0-f182.google.com ([209.85.217.182]:36405 "EHLO
+	mail-lb0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934043AbbKTAXy (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 19 Nov 2015 19:23:54 -0500
+Received: by lbblt2 with SMTP id lt2so53455811lbb.3
+        for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2015 16:23:53 -0800 (PST)
+In-Reply-To: <CAJvTdKkSKpL=Wpkwrs1CY_Y4kE=hHDVrVOaa7G3ceWJ5CJBLtg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: ulf.hansson@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com
+To: Len Brown <lenb@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>
 
-Lina Iyer <lina.iyer@linaro.org> writes:
+On Fri, Nov 20, 2015 at 12:46 AM, Len Brown <lenb@kernel.org> wrote:
+> linux-next looks fine, go ahead and push it.
 
-> A PM domain comprising of CPUs may be powered off when all the CPUs in
-> the domain are powered down. Powering down a CPU domain is generally a
-> expensive operation and therefore the power performance trade offs
-> should be considered. The time between the last CPU powering down and
-> the first CPU powering up in a domain, is the time available for the
-> domain to sleep. Ideally, the sleep time of the domain should fulfill
-> the residency requirement of the domains' idle state.
->
-> To do this effectively, read the time before the wakeup of the cluster's
-> CPUs and ensure that the domain's idle state sleep time guarantees the
-> QoS requirements of each of the CPU, the PM QoS CPU_DMA_LATENCY and the
-> state's residency.
->
-> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+I will, thanks!
 
-[...]
-
-> +static bool cpu_stop_ok(struct device *dev)
-> +{
-> +	return true;
-> +}
-> +
-> +struct dev_power_governor cpu_pd_gov = {
-> +	.power_down_ok = cpu_pd_down_ok,
-> +	.stop_ok = cpu_stop_ok,
-> +};
-
-If stop_ok is unconditionally true, it should probably just be removed
-(IOW cpu_pd_gov->stop_ok == NULL), and that will avoid an unnecessary
-function call.
-
-Kevin
+Rafael
