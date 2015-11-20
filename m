@@ -1,87 +1,37 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v6 8/9] ARM: EXYNOS: rearrange static and non-static
- functions of PMU driver
-Date: Fri, 20 Nov 2015 14:10:44 +0900
-Message-ID: <564EAB54.6020904@samsung.com>
-References: <1447740351-14246-1-git-send-email-pankaj.dubey@samsung.com>
- <1447740351-14246-9-git-send-email-pankaj.dubey@samsung.com>
- <CAKDJKT5etUJFqZe1Xzhfnepu7VUWZptBr=DwvhX4gtNftE51Wg@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V3 2/5] PM / OPP: Add {opp-microvolt|opp-microamp}-<name>
+ binding
+Date: Fri, 20 Nov 2015 10:41:36 +0530
+Message-ID: <20151120051136.GA3957@ubuntu>
+References: <cover.1447209519.git.viresh.kumar@linaro.org>
+ <1f1d9dd73ff629504f3c730e4100dba800c6132a.1447209519.git.viresh.kumar@linaro.org>
+ <20151111203100.GA10702@rob-hp-laptop>
+ <20151112050814.GC5408@ubuntu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.w1.samsung.com ([210.118.77.13]:29859 "EHLO
-	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751038AbbKTFKt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Nov 2015 00:10:49 -0500
-In-reply-to: <CAKDJKT5etUJFqZe1Xzhfnepu7VUWZptBr=DwvhX4gtNftE51Wg@mail.gmail.com>
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:32921 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751119AbbKTFMT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 20 Nov 2015 00:12:19 -0500
+Received: by pabfh17 with SMTP id fh17so107988127pab.0
+        for <linux-pm@vger.kernel.org>; Thu, 19 Nov 2015 21:12:18 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <20151112050814.GC5408@ubuntu>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Manish Badarkhe <badarkhe.manish@gmail.com>, Pankaj Dubey <pankaj.dubey@samsung.com>
-Cc: "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, "kgene.kim@samsung.com" <kgene.kim@samsung.com>, thomas.ab@samsung.com, amitdanielk@gmail.com, olof@lixom.net, khilman@linaro.org, arnd@arndb.de
+To: Rob Herring <robh@kernel.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, sboyd@codeaurora.org, lee.jones@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, mark.rutland@arm.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, nm@ti.com, devicetree@vger.kernel.org, b.zolnierkie@samsung.com, m.szyprowski@samsung.com, open list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-On 20.11.2015 13:46, Manish Badarkhe wrote:
-> On Tue, Nov 17, 2015 at 11:35 AM, Pankaj Dubey <pankaj.dubey@samsung.com> wrote:
->> This patch moves exynos_sys_powerdown_conf function above all
->> static functions, to avoid confusion causing due to mixing of
->> static-nonstatic-static functions and to improve readability of this
->> driver.
->>
->> Signed-off-by: Pankaj Dubey <pankaj.dubey@samsung.com>
->> Suggested-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
->> Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
->> ---
->>  arch/arm/mach-exynos/pmu.c | 34 +++++++++++++++++-----------------
->>  1 file changed, 17 insertions(+), 17 deletions(-)
->>
->> diff --git a/arch/arm/mach-exynos/pmu.c b/arch/arm/mach-exynos/pmu.c
->> index 01cb649..a7741d4 100644
->> --- a/arch/arm/mach-exynos/pmu.c
->> +++ b/arch/arm/mach-exynos/pmu.c
->> @@ -39,23 +39,6 @@ u32 pmu_raw_readl(u32 offset)
->>         return readl_relaxed(pmu_base_addr + offset);
->>  }
->>
->> -static void exynos_power_off(void)
->> -{
->> -       unsigned int tmp;
->> -
->> -       pr_info("Power down.\n");
->> -       tmp = pmu_raw_readl(EXYNOS_PS_HOLD_CONTROL);
->> -       tmp ^= (1 << 8);
->> -       pmu_raw_writel(tmp, EXYNOS_PS_HOLD_CONTROL);
->> -
->> -       /* Wait a little so we don't give a false warning below */
->> -       mdelay(100);
->> -
->> -       pr_err("Power down failed, please power off system manually.\n");
->> -       while (1)
->> -               ;
->> -}
->> -
->>  void exynos_sys_powerdown_conf(enum sys_powerdown mode)
->>  {
->>         unsigned int i;
->> @@ -85,6 +68,23 @@ void exynos_sys_powerdown_conf(enum sys_powerdown mode)
->>         }
->>  }
->>
->> +static void exynos_power_off(void)
->> +{
->> +       unsigned int tmp;
->> +
->> +       pr_info("Power down.\n");
->> +       tmp = pmu_raw_readl(EXYNOS_PS_HOLD_CONTROL);
->> +       tmp ^= (1 << 8);
-> Can we have some define over here? to operate this bit.
+On 12-11-15, 10:38, Viresh Kumar wrote:
+> On 11-11-15, 14:31, Rob Herring wrote:
+> > > +		opp00 {
+> > 
+> > Thought we are doing frequency for unit address here.
 > 
+> That's done by the (Already reviewed) 4th patch..
 
-1. This will be removed by syscon-reboot/poweroff patches [0].
-2. This patch is only rename/move. Fixing stuff should go to separate
-patches. But IMHO fixing is not needed because of 1.
+Ping for the pending Ack :)
 
-[0] http://www.spinics.net/lists/devicetree/msg98858.html
-
-Best regards,
-Krzysztof
-
+-- 
+viresh
