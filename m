@@ -1,49 +1,59 @@
 From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
 Subject: Re: [PATCH 1/2] cpufreq, intel_pstate, Fix limits->max_policy_pct
  rounding error
-Date: Fri, 20 Nov 2015 23:57:56 +0000
-Message-ID: <1448063875.9857.6.camel@intel.com>
-References: <1448022757-7856-1-git-send-email-prarit@redhat.com>
-		 <1448022757-7856-2-git-send-email-prarit@redhat.com>
-		 <20151120131833.GD3957@ubuntu> <564F37C8.60307@redhat.com>
-		 <20151120151944.GE3957@ubuntu> <564F3FBA.6030806@redhat.com>
-	 <1448049757.4914.3.camel@intel.com> <564FB111.5050403@redhat.com>
+Date: Sat, 21 Nov 2015 00:04:37 +0000
+Message-ID: <1448064276.9857.7.camel@intel.com>
+References: <1448063277-12446-1-git-send-email-prarit@redhat.com>
+	 <1448063277-12446-2-git-send-email-prarit@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:14494 "EHLO mga11.intel.com"
+Received: from mga11.intel.com ([192.55.52.93]:18518 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759681AbbKTX56 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 20 Nov 2015 18:57:58 -0500
-In-Reply-To: <564FB111.5050403@redhat.com>
+	id S1752121AbbKUAEi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 20 Nov 2015 19:04:38 -0500
+In-Reply-To: <1448063277-12446-2-git-send-email-prarit@redhat.com>
 Content-Language: en-US
-Content-ID: <9206B1231F401C40B394C65E209C5399@intel.com>
+Content-ID: <3EB8D49287912D4E84B2806990375D70@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "prarit@redhat.com" <prarit@redhat.com>
-Cc: "Brown, Len" <len.brown@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "kristen@linux.intel.com" <kristen@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "Yates, Alexandra" <alexandra.yates@intel.com>
+Cc: "Brown, Len" <len.brown@intel.com>, "kristen@linux.intel.com" <kristen@linux.intel.com>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "Yates, Alexandra" <alexandra.yates@intel.com>
 
 T24gRnJpLCAyMDE1LTExLTIwIGF0IDE4OjQ3IC0wNTAwLCBQcmFyaXQgQmhhcmdhdmEgd3JvdGU6
-DQo+IA0KW2N1dF0NCj4gVGhlIC0xIGRpZmZlcmVuY2UgaGVyZSBpcyBub3QgdW5leHBlY3RlZCBn
-aXZlbiB0aGUgb3RoZXIgcHJvYmFibGUgcm91bmRpbmcNCj4gZXJyb3JzIGluIHRoZSBmcmVxdWVu
-Y3kgY29kZS4NClllcy4gSW50ZWwgUCBzdGF0ZSBjcHVmcmVxIGludGVyZmFjZSBpcyBub3Qgb3B0
-aW1hbC4gV2UgZXZlbiBkZWJhdGUNCndoZXRoZXIgd2Ugc2hvdWxkIGhhdmUgdGhpcyBpbnRlcmZh
-Y2UgYXQgYWxsLg0KDQo+ICAgSSBoYXZlIGEgZmVlbGluZyB0aGF0IG5vIG9uZSByZWFsbHkgaGFz
-IGRvbmUgYW4NCj4gaW4gZGVwdGggcmV2aWV3IHRvIGZpbmQgdGhlIGVycm9ycy4gIEknbSBub3Qg
-Z29pbmcgdG8gYmVjYXVzZSBJJ20gcHJldHR5IHN1cmUNCj4gSS93ZSBjYW4gY29udmluY2UgdXNl
-cnMgdGhhdCAzMjAwID09IDMxOTkuOTggOykuICBGV0lXLCBJJ3ZlIGFsc28gd29uZGVyZWQgaWYN
-Cj4gdGhlIGRpZmZlcmVuY2UgYmV0d2VlbiB0aGUgbWFya2V0aW5nIGZyZXF1ZW5jeSBhbmQgdGhl
-IFRTQyBmcmVxdWVuY3kgKHdoaWNoIGluDQo+IHRoZW9yeSBlcXVhbHMgdGhlIG1hcmtldGluZyBm
-cmVxdWVuY3kpIGNhbiBjYXVzZSB0aGlzIHNvcnQgb2YgZXJyb3IuDQpXZSBkb24ndCBldmVuIHJl
-cXVlc3QgY29ycmVjdCBwc3RhdGUgaGVyZSwgc28gd2Ugd2lsbCBub3QgZ2V0IHRoYXQuIEJ1dA0K
-aW4gdGhpcyBjYXNlIGluIHR1cmJvIHJlZ2lvbiBpcyBub3QgY29udHJvbGxhYmxlIChhZnRlciBT
-YW5keWJyaWRnZSApDQphYm92ZSBzb21ldGhpbmcgY2FsbGVkIHR1cmJvIGFjdGl2YXRpb24gcmF0
-aW8uIFNvIG5vdCBhIGJpZyBkZWFsLg0KQXMgbG9uZyBhcyB3ZSBjYW4gc2V0IGF0IGxvd2VyIGVu
-ZCB3ZSBhcmUgZmluZS4NCj4gDQoNClRoYW5rcywNClNyaW5pdmFzDQoNCj4gT09DIGRpZCB5b3Ug
-dHJ5IGxvYWRpbmcgdGhlIHN5c3RlbSBkb3duICh3aXRoIGEga2VybmVsIGJ1aWxkKSBhbmQgc3dp
-dGNoaW5nDQo+IGJldHdlZW4gZnJlcXVlbmNpZXM/ICBUaGF0J3MgYSBnb29kIHdheSB0byBzZWUg
-dGhlIGVmZmVjdCBvZiB0aGUgdHVyYm8gc3RhdGVzLg0KPiBJIHdvdWxkIGV4cGVjdCB0aGF0IHRo
-ZSB0dXJibyBzdGF0ZSBoaXRzIGEgbWF4aW11bSBvZiBhYm91dCA3NSUgb2YgdGhlIG1heCB0dXJi
-bw0KPiBzdGF0ZSB2YWx1ZSAoYmFzZWQgb24gZXhwZXJpbWVudCkgc28gdGhlIGRpZmZlcmVuY2Vz
-IHNob3VsZCBiZSBsYXJnZXIgYXQgdGhlDQo+IGhpZ2ggZW5kLg0KPiANCj4gUC4NCg0K
+DQo+IEkgaGF2ZSBhIEludGVsICg2LDYzKSBwcm9jZXNzb3Igd2l0aCBhICJtYXJrZXRpbmciIGZy
+ZXF1ZW5jeSAoZnJvbQ0KPiAvcHJvYy9jcHVpbmZvKSBvZiAyMTAwTUh6LCBhbmQgYSBtYXggdHVy
+Ym8gZnJlcXVlbmN5IG9mIDI2MDBNSHouICBJDQo+IGNhbiBleGVjdXRlDQo+IA0KPiBjcHVwb3dl
+ciBmcmVxdWVuY3ktc2V0IC1nIHBvd2Vyc2F2ZSAtLW1pbiAxMjAwTUh6IC0tbWF4IDIxMDBNSHoN
+Cj4gDQo+IGFuZCB0aGUgbWF4X2ZyZXFfcGN0IGlzIHNldCB0byA4MC4gIFdoZW4gYWRkaW5nIGxv
+YWQgdG8gdGhlIHN5c3RlbSBJIG5vdGljZWQNCj4gdGhhdCB0aGUgY3B1IGZyZXF1ZW5jeSBvbmx5
+IHJlYWNoZWQgMjAwME1IWiBhbmQgbm90IDIxMDBNSHogYXMgZXhwZWN0ZWQuDQo+IA0KPiBUaGlz
+IGlzIGJlY2F1c2UgbGltaXRzLT5tYXhfcG9saWN5X3BjdCBpcyBjYWxjdWxhdGVkIGFzIDIxMDAg
+KiAxMDAgLzI2MDAgPSA4MC43DQo+IGFuZCBpcyByb3VuZGVkIGRvd24gdG8gODAgd2hlbiBpdCBz
+aG91bGQgYmUgcm91bmRlZCB1cCB0byA4MS4gIFRoaXMgcGF0Y2gNCj4gYWRkcyBhIERJVl9ST1VO
+RF9VUCgpIHdoaWNoIHdpbGwgcmV0dXJuIHRoZSBjb3JyZWN0IHZhbHVlLg0KPiANCj4gQ2M6IFNy
+aW5pdmFzIFBhbmRydXZhZGEgPHNyaW5pdmFzLnBhbmRydXZhZGFAaW50ZWwuY29tPg0KPiBDYzog
+TGVuIEJyb3duIDxsZW4uYnJvd25AaW50ZWwuY29tPg0KPiBDYzogQWxleGFuZHJhIFlhdGVzIDxh
+bGV4YW5kcmEueWF0ZXNAaW50ZWwuY29tPg0KPiBDYzogS3Jpc3RlbiBDYXJsc29uIEFjY2FyZGkg
+PGtyaXN0ZW5AbGludXguaW50ZWwuY29tPg0KPiBDYzogIlJhZmFlbCBKLiBXeXNvY2tpIiA8cmp3
+QHJqd3lzb2NraS5uZXQ+DQo+IENjOiBWaXJlc2ggS3VtYXIgPHZpcmVzaC5rdW1hckBsaW5hcm8u
+b3JnPg0KPiBDYzogbGludXgtcG1Admdlci5rZXJuZWwub3JnDQo+IFNpZ25lZC1vZmYtYnk6IFBy
+YXJpdCBCaGFyZ2F2YSA8cHJhcml0QHJlZGhhdC5jb20+DQpBY2tlZC1ieTogU3Jpbml2YXMgUGFu
+ZHJ1dmFkYSA8c3Jpbml2YXMucGFuZHJ1dmFkYUBsaW51eC5pbnRlbC5jb20+DQo+IC0tLQ0KPiAg
+ZHJpdmVycy9jcHVmcmVxL2ludGVsX3BzdGF0ZS5jIHwgMyArKy0NCj4gIDEgZmlsZSBjaGFuZ2Vk
+LCAyIGluc2VydGlvbnMoKyksIDEgZGVsZXRpb24oLSkNCj4gDQo+IGRpZmYgLS1naXQgYS9kcml2
+ZXJzL2NwdWZyZXEvaW50ZWxfcHN0YXRlLmMgYi9kcml2ZXJzL2NwdWZyZXEvaW50ZWxfcHN0YXRl
+LmMNCj4gaW5kZXggMDAxYTUzMi4uZWI3NTA1MyAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy9jcHVm
+cmVxL2ludGVsX3BzdGF0ZS5jDQo+ICsrKyBiL2RyaXZlcnMvY3B1ZnJlcS9pbnRlbF9wc3RhdGUu
+Yw0KPiBAQCAtMTEwOCw3ICsxMTA4LDggQEAgc3RhdGljIGludCBpbnRlbF9wc3RhdGVfc2V0X3Bv
+bGljeShzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKnBvbGljeSkNCj4gIAlsaW1pdHMgPSAmcG93ZXJz
+YXZlX2xpbWl0czsNCj4gIAlsaW1pdHMtPm1pbl9wb2xpY3lfcGN0ID0gKHBvbGljeS0+bWluICog
+MTAwKSAvIHBvbGljeS0+Y3B1aW5mby5tYXhfZnJlcTsNCj4gIAlsaW1pdHMtPm1pbl9wb2xpY3lf
+cGN0ID0gY2xhbXBfdChpbnQsIGxpbWl0cy0+bWluX3BvbGljeV9wY3QsIDAgLCAxMDApOw0KPiAt
+CWxpbWl0cy0+bWF4X3BvbGljeV9wY3QgPSAocG9saWN5LT5tYXggKiAxMDApIC8gcG9saWN5LT5j
+cHVpbmZvLm1heF9mcmVxOw0KPiArCWxpbWl0cy0+bWF4X3BvbGljeV9wY3QgPSBESVZfUk9VTkRf
+VVAocG9saWN5LT5tYXggKiAxMDAsDQo+ICsJCQkJCSAgICAgIHBvbGljeS0+Y3B1aW5mby5tYXhf
+ZnJlcSk7DQo+ICAJbGltaXRzLT5tYXhfcG9saWN5X3BjdCA9IGNsYW1wX3QoaW50LCBsaW1pdHMt
+Pm1heF9wb2xpY3lfcGN0LCAwICwgMTAwKTsNCj4gIA0KPiAgCS8qIE5vcm1hbGl6ZSB1c2VyIGlu
+cHV0IHRvIFttaW5fcG9saWN5X3BjdCwgbWF4X3BvbGljeV9wY3RdICovDQoNCg==
