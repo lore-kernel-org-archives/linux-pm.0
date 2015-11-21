@@ -1,54 +1,66 @@
-From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
-Subject: Re: [PATCH 2/2] cpufreq, intel_pstate, fix limits->max_perf
- rounding error
-Date: Sat, 21 Nov 2015 00:04:59 +0000
-Message-ID: <1448064298.9857.8.camel@intel.com>
-References: <1448063277-12446-1-git-send-email-prarit@redhat.com>
-	 <1448063277-12446-3-git-send-email-prarit@redhat.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH V3] SKL intel_pstate update MSR values when changing governors
+Date: Fri, 20 Nov 2015 16:16:46 -0800
+Message-ID: <564FB7EE.6030507@linux.intel.com>
+References: <SKL intel_pstate update MSR values when changing governors> <1447887520-10399-1-git-send-email-alexandra.yates@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:62141 "EHLO mga01.intel.com"
+Received: from mga01.intel.com ([192.55.52.88]:2220 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752380AbbKUAFL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 20 Nov 2015 19:05:11 -0500
-In-Reply-To: <1448063277-12446-3-git-send-email-prarit@redhat.com>
-Content-Language: en-US
-Content-ID: <3E4ACD7DCC788C4CA693A774317A3163@intel.com>
+	id S1759225AbbKUAQu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 20 Nov 2015 19:16:50 -0500
+In-Reply-To: <1447887520-10399-1-git-send-email-alexandra.yates@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "prarit@redhat.com" <prarit@redhat.com>
-Cc: "Brown, Len" <len.brown@intel.com>, "kristen@linux.intel.com" <kristen@linux.intel.com>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "Yates, Alexandra" <alexandra.yates@intel.com>
+To: Alexandra Yates <alexandra.yates@linux.intel.com>, lenb@kernel.org, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net
 
-T24gRnJpLCAyMDE1LTExLTIwIGF0IDE4OjQ3IC0wNTAwLCBQcmFyaXQgQmhhcmdhdmEgd3JvdGU6
-DQo+IEEgcm91bmRpbmcgZXJyb3Igd2FzIGZvdW5kIGluIHRoZSBjYWxjdWxhdGlvbiBvZiBsaW1p
-dHMtPm1heF9wZXJmDQo+IGluIGludGVsX3BzdGF0ZV9zZXRfcG9saWN5KCksIHdoaWNoIGlzIHVz
-ZWQgdG8gY2FsY3VsYXRlIHRoZSBtYXggYW5kIG1pbg0KPiBwc3RhdGUgdmFsdWVzIGluIGludGVs
-X3BzdGF0ZV9nZXRfbWluX21heCgpLiAgSW4gdGhhdCBjb2RlLA0KPiBsaW1pdHMtPm1heF9wZXJm
-IGlzIHRydW5jYXRlZCB0byAyIGhleCBkaWdpdHMgc3VjaCB0aGF0LCBmb3IgZXhhbXBsZSwNCj4g
-MHgxNjkgd2FzIGluY29ycmVjdGx5IGNhbGN1bGF0ZWQgdG8gMHgxNiBpbnN0ZWFkIG9mIDB4MTcu
-ICBUaGlzIHJlc3VsdGVkIGluDQo+IHRoZSBwc3RhdGUgYmVpbmcgc2V0IG9uZSBsZXZlbCB0b28g
-bG93LiAgVGhpcyBwYXRjaCByb3VuZHMgdGhlIHZhbHVlIG9mDQo+IGxpbWl0cy0+bWF4X3BlcmYg
-dXAgaW5zdGVhZCBvZiBkb3duIHNvIHRoYXQgdGhlIGNvcnJlY3QgbWF4IHBzdGF0ZSBjYW4NCj4g
-YmUgcmVhY2hlZC4NCj4gDQo+IENjOiBTcmluaXZhcyBQYW5kcnV2YWRhIDxzcmluaXZhcy5wYW5k
-cnV2YWRhQGludGVsLmNvbT4NCj4gQ2M6IExlbiBCcm93biA8bGVuLmJyb3duQGludGVsLmNvbT4N
-Cj4gQ2M6IEFsZXhhbmRyYSBZYXRlcyA8YWxleGFuZHJhLnlhdGVzQGludGVsLmNvbT4NCj4gQ2M6
-IEtyaXN0ZW4gQ2FybHNvbiBBY2NhcmRpIDxrcmlzdGVuQGxpbnV4LmludGVsLmNvbT4NCj4gQ2M6
-ICJSYWZhZWwgSi4gV3lzb2NraSIgPHJqd0Byand5c29ja2kubmV0Pg0KPiBDYzogVmlyZXNoIEt1
-bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4NCj4gQ2M6IGxpbnV4LXBtQHZnZXIua2VybmVs
-Lm9yZw0KPiBTaWduZWQtb2ZmLWJ5OiBQcmFyaXQgQmhhcmdhdmEgPHByYXJpdEByZWRoYXQuY29t
-Pg0KQWNrZWQtYnk6IFNyaW5pdmFzIFBhbmRydXZhZGEgPHNyaW5pdmFzLnBhbmRydXZhZGFAbGlu
-dXguaW50ZWwuY29tPg0KPiAtLS0NCj4gIGRyaXZlcnMvY3B1ZnJlcS9pbnRlbF9wc3RhdGUuYyB8
-IDEgKw0KPiAgMSBmaWxlIGNoYW5nZWQsIDEgaW5zZXJ0aW9uKCspDQo+IA0KPiBkaWZmIC0tZ2l0
-IGEvZHJpdmVycy9jcHVmcmVxL2ludGVsX3BzdGF0ZS5jIGIvZHJpdmVycy9jcHVmcmVxL2ludGVs
-X3BzdGF0ZS5jDQo+IGluZGV4IGViNzUwNTMuLjhhZDFmOTUgMTAwNjQ0DQo+IC0tLSBhL2RyaXZl
-cnMvY3B1ZnJlcS9pbnRlbF9wc3RhdGUuYw0KPiArKysgYi9kcml2ZXJzL2NwdWZyZXEvaW50ZWxf
-cHN0YXRlLmMNCj4gQEAgLTExMjEsNiArMTEyMSw3IEBAIHN0YXRpYyBpbnQgaW50ZWxfcHN0YXRl
-X3NldF9wb2xpY3koc3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xpY3kpDQo+ICAJCQkJICAgbGlt
-aXRzLT5tYXhfc3lzZnNfcGN0KTsNCj4gIAlsaW1pdHMtPm1heF9wZXJmX3BjdCA9IG1heChsaW1p
-dHMtPm1pbl9wb2xpY3lfcGN0LA0KPiAgCQkJCSAgIGxpbWl0cy0+bWF4X3BlcmZfcGN0KTsNCj4g
-KwlsaW1pdHMtPm1heF9wZXJmID0gcm91bmRfdXAobGltaXRzLT5tYXhfcGVyZiwgOCk7DQo+ICAN
-Cj4gIAkvKiBNYWtlIHN1cmUgbWluX3BlcmZfcGN0IDw9IG1heF9wZXJmX3BjdCAqLw0KPiAgCWxp
-bWl0cy0+bWluX3BlcmZfcGN0ID0gbWluKGxpbWl0cy0+bWF4X3BlcmZfcGN0LCBsaW1pdHMtPm1p
-bl9wZXJmX3BjdCk7DQoNCg==
+
+
+On 11/18/2015 02:58 PM, Alexandra Yates wrote:
+> When changing from powersave to performance governors
+> Intel_pstate fails to update the MSR values that reflect the
+> max_perf_pct to 100%. For instance in SKL reading rdmsr 0x774:
+>
+> Governor 	MSR			max_perf_pct
+> =========	========		============
+> Powersave 	80002808		100%
+> Powersave	80002008		80%
+> Performance	80002028 [error]	100%
+> Performance	80002828 [expected]	100%
+>
+> The line label [error] shows the culprit. At this point the MSR
+> should reflect the max_perf_pct that is 100%, that corresponds
+> to MSR 80002828 as shown on the next line of the example. Which
+> is the maximum performance for the Performance governor.
+> Instead it holds back the MSR value previously set by the
+> Powersave, in this case 80002028.
+>
+> This patch allows the system to print the correct MSR value
+> 80002828 that corresponds to the 100% max_perf_pct when changing
+> from powersave to performance governors.
+>
+> For more information on the MSR values for SKL please visit
+> ISDM under Managing HWP.
+>
+> Signed-off-by: Alexandra Yates <alexandra.yates@linux.intel.com>
+Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> ---
+>   drivers/cpufreq/intel_pstate.c | 2 ++
+>   1 file changed, 2 insertions(+)
+>
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 2e31d09..0eeb7da 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -1242,6 +1242,8 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+>   	    policy->max >= policy->cpuinfo.max_freq) {
+>   		pr_debug("intel_pstate: set performance\n");
+>   		limits = &performance_limits;
+> +		if (hwp_active)
+> +			intel_pstate_hwp_set();
+>   		return 0;
+>   	}
+>
+>
