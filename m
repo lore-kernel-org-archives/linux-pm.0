@@ -1,63 +1,76 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Subject: re: thermal: introduce the Power Allocator governor
-Date: Sat, 21 Nov 2015 13:42:54 +0300
-Message-ID: <20151121104254.GA10268@mwanda>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [RFD] Functional dependencies between devices
+Date: Sat, 21 Nov 2015 13:26:12 +0000
+Message-ID: <20151121132612.GF26072@sirena.org.uk>
+References: <1623682.7KVblAB3KQ@vostro.rjw.lan>
+ <564B224D.3050904@samsung.com>
+ <20151117135549.GR31303@sirena.org.uk>
+ <20151119131857.GF21862@ulmo.nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="udcq9yAoWb9A4FsZ"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from userp1040.oracle.com ([156.151.31.81]:47307 "EHLO
-	userp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750882AbbKUKnG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 21 Nov 2015 05:43:06 -0500
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:42026 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751709AbbKUN1i (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 21 Nov 2015 08:27:38 -0500
 Content-Disposition: inline
+In-Reply-To: <20151119131857.GF21862@ulmo.nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: javi.merino@arm.com
-Cc: linux-pm@vger.kernel.org
+To: Thierry Reding <treding@nvidia.com>
+Cc: Andrzej Hajda <a.hajda@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh@kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Dmitry Torokhov <dtor@google.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Michael Turquette <mturquette@baylibre.com>
 
-Hello Javi Merino,
 
-The patch 6b775e870c56: "thermal: introduce the Power Allocator
-governor" from Mar 2, 2015, leads to the following static checker
-warning:
+--udcq9yAoWb9A4FsZ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-	drivers/thermal/power_allocator.c:304 divvy_up_power()
-	warn: should 'req_power[i] * power_range' be a 64 bit type?
+On Thu, Nov 19, 2015 at 02:18:59PM +0100, Thierry Reding wrote:
+> On Tue, Nov 17, 2015 at 01:55:49PM +0000, Mark Brown wrote:
+> > On Tue, Nov 17, 2015 at 01:49:17PM +0100, Andrzej Hajda wrote:
+> > > On 10/27/2015 04:24 PM, Rafael J. Wysocki wrote:
 
-drivers/thermal/power_allocator.c
-   288  static void divvy_up_power(u32 *req_power, u32 *max_power, int num_actors,
-   289                             u32 total_req_power, u32 power_range,
-   290                             u32 *granted_power, u32 *extra_actor_power)
-   291  {
-   292          u32 extra_power, capped_extra_power;
-   293          int i;
-   294  
-   295          /*
-   296           * Prevent division by 0 if none of the actors request power.
-   297           */
-   298          if (!total_req_power)
-   299                  total_req_power = 1;
-   300  
-   301          capped_extra_power = 0;
-   302          extra_power = 0;
-   303          for (i = 0; i < num_actors; i++) {
-   304                  u64 req_range = req_power[i] * power_range;
+> > > this scenario:
+> > > - many clock providers, irq domains are not provided by devices,
 
-Both req_power[i] and power_range are u32 so the high bits of req_range
-are not used.
+> > That seems like something we can and possibly should change if we want.
 
-   305  
-   306                  granted_power[i] = DIV_ROUND_CLOSEST_ULL(req_range,
-   307                                                           total_req_power);
-   308  
-   309                  if (granted_power[i] > max_power[i]) {
-   310                          extra_power += granted_power[i] - max_power[i];
-   311                          granted_power[i] = max_power[i];
-   312                  }
-   313  
-   314                  extra_actor_power[i] = max_power[i] - granted_power[i];
-   315                  capped_extra_power += extra_actor_power[i];
-   316          }
+> It's not very trivial, unfortunately. I had a crack at that a long time
+> ago, but the problem is that these devices all need to be available very
+> early during boot, at which point devices aren't registered yet. With
+> all the progress on probe deferral and the on-demand probing work this
+> might be less of an issue nowadays, I haven't looked at it for quite a
+> while.
 
-regards,
-dan carpenter
+I believe it's a lot easier to do that now but ICBW.  We've started
+needing to put these things into firmware so that we can refer to them
+=66rom clients so we pretty much have to deal with it.  I've not had to
+worry about it too much directly myself recently though.
+
+> That said, one technique I've occasionally resorted to is to have some
+> early code, be it one of the OF table things or an initcall, set up a
+> basic environment, typically using global variables (yuck!), but then
+> provide a proper driver that knows how to take these things over when
+> its time comes. That's not a perfect solution, but at least it gives you
+> a proper struct device to work with.
+
+Indeed, that's also how things like the console work.
+
+--udcq9yAoWb9A4FsZ
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJWUHD0AAoJECTWi3JdVIfQA0gH/2h3yF+16l/YvIODQoiHkt1V
+PdtUR71rzy+EnxCDEkhSqmsb+kcDxSm0vdHBakTR3kRAhqI5F5Lj6aHH7tNbPfFT
+amhiJsrSE/ZZQFhokxUe/fUdWJgAtqUS9kv2egCI/55SBHSNbuF5kBe+0jta7kc0
+FyN1XrFHjO8mfnKzk3mXpL/nF2DNWFHOuAtywkpKJ8XGg5LPnL8E6vb2UVr/REPB
+0ad5lPwTlEuaCcOfmUPkmREICKwoSH8OXYbu/Peirf6nBVz2XMvs+VIrTdJJjeAD
+OYeDYq+ZYymwb618BAguV6RuBVdd3eYnWjTsYEX8Fu1Uukvtj0ADUYl+l/l+XdI=
+=xZdj
+-----END PGP SIGNATURE-----
+
+--udcq9yAoWb9A4FsZ--
