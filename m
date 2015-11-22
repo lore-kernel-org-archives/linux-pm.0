@@ -1,70 +1,51 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 1/1] x86 smpboot: re-enable init_udelay=0 by default on modern CPUs
-Date: Sun, 22 Nov 2015 18:16:15 -0500
-Message-ID: <9082eb809ef40dad02db714759c7aaf618c518d4.1448232494.git.len.brown@intel.com>
-Reply-To: Len Brown <lenb@kernel.org>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
+ SpeedStep enabled
+Date: Sun, 22 Nov 2015 23:34:39 +0000
+Message-ID: <bug-103351-137361-Xyw9bnAAlu@https.bugzilla.kernel.org/>
+References: <bug-103351-137361@https.bugzilla.kernel.org/>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f196.google.com ([209.85.160.196]:35617 "EHLO
-	mail-yk0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752842AbbKVXQv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 22 Nov 2015 18:16:51 -0500
+Received: from mail.kernel.org ([198.145.29.136]:41958 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752790AbbKVXeo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 22 Nov 2015 18:34:44 -0500
+Received: from mail.kernel.org (localhost [127.0.0.1])
+	by mail.kernel.org (Postfix) with ESMTP id 989DC2063D
+	for <linux-pm@vger.kernel.org>; Sun, 22 Nov 2015 23:34:43 +0000 (UTC)
+Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
+	by mail.kernel.org (Postfix) with ESMTP id 1990220611
+	for <linux-pm@vger.kernel.org>; Sun, 22 Nov 2015 23:34:42 +0000 (UTC)
+In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: x86@kernel.org, shrybman@teksavvy.com, dparsons@brightdsl.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>
+To: linux-pm@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
+https://bugzilla.kernel.org/show_bug.cgi?id=103351
 
-Fix a Linux-4.3 performance regression:
+--- Comment #104 from kernel@benjam.info <kernel@benjam.info> ---
+(In reply to Alessandro Belloni from comment #103)
+> have an i7-5775c with an asrock z97 pro4 with latest bios 2.20, i'm unable
+> to make it work with any linux except fedora 22 that works and with Windows
+> 10.
+> 
+> Would like to use my preferred distro that is Ubuntu 15.10 but it seems
+> impossible, does anyone has any suggestion? i did tried the FIX OC Core
+> shared by Phoronix but won't work.
 
-commit f1ccd249319e ("x86/smpboot: Fix cpu_init_udelay=10000 corner case
-boot parameter misbehavior")
-allowed the cmdline  "cpu_init_udelay=" to work
-with all values, including the default of 10000.
+Assuming you can at least get it to boot, I'd recommend either:
 
-But in setting the default of 10000, it over-rode
-the code stat sets the delay 0 on modern processors.
+a) Manually download and install the version of intel-microcode from Ubuntu
+16.04: http://packages.ubuntu.com/xenial/intel-microcode
+b) Follow the Linux instructions here:
+https://github.com/bgw/bdw-ucode-update-tool
 
-Also, tidy up use of INT/UINT.
+Normally, I wouldn't recommend installing Ubuntu 16.04 packages on Ubuntu
+15.10, but intel-microcode is just some firmware, shell scripts, and
+configuration files, so it should be pretty safe.
 
-Reported-by: Shane <shrybman@teksavvy.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- arch/x86/kernel/smpboot.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
-
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index 892ee2e5..fbabe4f 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -509,7 +509,7 @@ void __inquire_remote_apic(int apicid)
-  */
- #define UDELAY_10MS_DEFAULT 10000
- 
--static unsigned int init_udelay = INT_MAX;
-+static unsigned int init_udelay = UINT_MAX;
- 
- static int __init cpu_init_udelay(char *str)
- {
-@@ -522,14 +522,15 @@ early_param("cpu_init_udelay", cpu_init_udelay);
- static void __init smp_quirk_init_udelay(void)
- {
- 	/* if cmdline changed it from default, leave it alone */
--	if (init_udelay != INT_MAX)
-+	if (init_udelay != UINT_MAX)
- 		return;
- 
- 	/* if modern processor, use no delay */
- 	if (((boot_cpu_data.x86_vendor == X86_VENDOR_INTEL) && (boot_cpu_data.x86 == 6)) ||
--	    ((boot_cpu_data.x86_vendor == X86_VENDOR_AMD) && (boot_cpu_data.x86 >= 0xF)))
-+	    ((boot_cpu_data.x86_vendor == X86_VENDOR_AMD) && (boot_cpu_data.x86 >= 0xF))) {
- 		init_udelay = 0;
--
-+		return;
-+	}
- 	/* else, use legacy delay */
- 	init_udelay = UDELAY_10MS_DEFAULT;
- }
 -- 
-2.6.3.368.gf34be46
-
+You are receiving this mail because:
+You are the assignee for the bug.
