@@ -1,34 +1,95 @@
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-Subject: [PATCH] thermal: constify pch_dev_ops structure
-Date: Sun, 22 Nov 2015 10:03:49 +0100
-Message-ID: <1448183029-28929-1-git-send-email-Julia.Lawall@lip6.fr>
-Return-path: <kernel-janitors-owner@vger.kernel.org>
-Sender: kernel-janitors-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: kernel-janitors@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Ran Shalit <ranshalit@gmail.com>
+Subject: power states transitions
+Date: Sun, 22 Nov 2015 17:58:40 +0200
+Message-ID: <CAJ2oMhLmViYf=27nVh_=DBFyQLCcBT+985RTkMiwJZyav7Uiyg@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ig0-f169.google.com ([209.85.213.169]:38445 "EHLO
+	mail-ig0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752229AbbKVP6k (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 22 Nov 2015 10:58:40 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux OMAP Mailing List <linux-omap@vger.kernel.org>, linux-pm@vger.kernel.org
 
-The pch_dev_ops structure is never modified, so declare it as const.
+Hello,
 
-Done with the help of Coccinelle.
+I have stranhe behaviour in which even when there is no activity in
+serial port, the retention counter is keep incremented all these time,
+as if the cpu gets in and out of retention periodically.
+I would expect the cpu to get into retention mode, when there is no
+activity and stay in that state.
+What can cause such behaviour ? Is it because some background process ?
+These are the processes I see using ps command :
 
-Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+~ # ps
+  PID USER       VSZ STAT COMMAND
+    1 root      2088 S    init
+    2 root         0 SW   [kthreadd]
+    3 root         0 SW   [ksoftirqd/0]
+    4 root         0 SW   [kworker/0:0]
+    5 root         0 SW   [kworker/u:0]
+    6 root         0 SW<  [khelper]
+    7 root         0 SW   [irq/72-serial i]
+    8 root         0 SW   [irq/73-serial i]
+    9 root         0 SW   [irq/74-serial i]
+   10 root         0 SW   [sync_supers]
+   11 root         0 SW   [bdi-default]
+   12 root         0 SW<  [kblockd]
+   13 root         0 SW   [khubd]
+   14 root         0 SW   [kseriod]
+   15 root         0 SW<  [twl4030-irqchip]
+   16 root         0 SW   [twl4030-irq]
+   17 root         0 SW   [irq/378-twl4030]
+   18 root         0 SW   [kworker/u:1]
+   19 root         0 SW<  [musb-hdrc.0]
+   20 root         0 SW<  [kconservative]
+   21 root         0 SW   [kswapd0]
+   22 root         0 SW<  [aio]
+   23 root         0 SW<  [crypto]
+   29 root         0 SW   [mtdblock0]
+   30 root         0 SW   [mtdblock1]
+   31 root         0 SW   [mtdblock2]
+   32 root         0 SW   [mtdblock3]
+   33 root         0 SW   [mtdblock4]
+   34 root         0 SW   [mtdblock5]
+   35 root         0 SW   [mtdblock6]
+   36 root         0 SW   [mtdblock7]
+   37 root         0 SW   [mtdblock8]
+   38 root         0 SW   [mtdblock9]
+   41 root         0 SW   [kworker/0:1]
+   42 root         0 SW<  [kondemand]
+   43 root         0 SWN  [jffs2_gcd_mtd5]
+   46 root         0 SWN  [jffs2_gcd_mtd6]
+   47 root         0 SWN  [jffs2_gcd_mtd8]
+   48 root         0 SWN  [jffs2_gcd_mtd7]
+   71 root      2364 S    /usr/sbin/inetd
+   74 root      2092 S    -/bin/sh
+   93 root      2092 R    ps
+~ #
 
----
- drivers/thermal/intel_pch_thermal.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+My original problem is that the ethernet performance is very low with
+small windows. I thought that I can control this value by changing
+sleep_latency parameter in
+the following array. Yet, it did not help me. I don't know why.
 
-diff --git a/drivers/thermal/intel_pch_thermal.c b/drivers/thermal/intel_pch_thermal.c
-index 50c7da7..00d81af 100644
---- a/drivers/thermal/intel_pch_thermal.c
-+++ b/drivers/thermal/intel_pch_thermal.c
-@@ -136,7 +136,7 @@ struct pch_dev_ops {
- 
- 
- /* dev ops for Wildcat Point */
--static struct pch_dev_ops pch_dev_ops_wpt = {
-+static const struct pch_dev_ops pch_dev_ops_wpt = {
- 	.hw_init = pch_wpt_init,
- 	.get_temp = pch_wpt_get_temp,
- };
 
+static struct cpuidle_params cpuidle_params_table[] = {
+/* C1 */
+    {0, 2, 2, 5},        <-- changed valid to 0 (I am interested in
+getting into deepest state)
+/* C2 */
+    {0, 10, 10, 30},     <-- changed valid to 0 (I am interested in
+getting into deepest state)
+/* C3 */
+    {0, 50 , 50, 300},     <-- changed valid to 0 (I am interested in
+getting into deepest state)
+    /* C4 */
+    {1, 1500000 , 1800, 4000},     <-- changed sleep_latency to 1500000
+....
+}
+
+
+Best Regards,
+Ran
