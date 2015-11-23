@@ -1,69 +1,46 @@
 From: Chanwoo Choi <cwchoi00@gmail.com>
-Subject: Re: [PATCH 4/6] PM / devfreq: Set the freq_table of devfreq device
-Date: Mon, 23 Nov 2015 17:51:27 +0900
-Message-ID: <CAGTfZH2BmZ1_sev87Z7BYRHnVBkAKB3yyOWmsryx+yg36Tu7NA@mail.gmail.com>
-References: <106136506.126661448263783195.JavaMail.weblogic@epmlwas06a>
+Subject: Re: Re: [PATCH 6/6] PM / devfreq: Set the min_freq and max_freq of
+ devfreq device
+Date: Mon, 23 Nov 2015 17:53:33 +0900
+Message-ID: <CAGTfZH2N-yspxAKCR_sOPz0nSNixADzSFwEe0rhkwHOPFKYyPQ@mail.gmail.com>
+References: <1427563269.125721448263260488.JavaMail.weblogic@epmlwas06a>
 Reply-To: cw00.choi@samsung.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f170.google.com ([209.85.213.170]:34363 "EHLO
-	mail-ig0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750724AbbKWIv2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Nov 2015 03:51:28 -0500
-In-Reply-To: <106136506.126661448263783195.JavaMail.weblogic@epmlwas06a>
+Received: from mail-io0-f178.google.com ([209.85.223.178]:33225 "EHLO
+	mail-io0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752012AbbKWIxe (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Nov 2015 03:53:34 -0500
+In-Reply-To: <1427563269.125721448263260488.JavaMail.weblogic@epmlwas06a>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>
 Cc: =?UTF-8?B?67CV6rK966+8?= <kyungmin.park@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Mon, Nov 23, 2015 at 4:29 PM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
->>
->>  This patch initialize the freq_table array of each devfreq device by using
->> the devfreq_set_freq_table(). If freq_table is NULL, the devfreq framework
->> is not able to support the frequency transtion information through sysfs.
->>
->> The OPP core uses the integer type for the number of opps in the opp list
->> and uses the 'unsigned long' type for each frequency. So, this patch modifies
->> the type of some variable as following:
->> - the type of freq_table : unsigned int -> unsigned long
->> - the type of max_state  : unsigned int -> int
->>
->> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+On Mon, Nov 23, 2015 at 4:21 PM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
 > []
->> +/**
->>   * devfreq_update_status() - Update statistics of devfreq behavior
->>   * @devfreq: the devfreq instance
->>   * @freq:    the update target frequency
->> @@ -477,7 +516,12 @@ struct devfreq *devfreq_add_device(struct device *dev,
->>       devfreq->previous_freq = profile->initial_freq;
->>       devfreq->data = data;
->>       devfreq->nb.notifier_call = devfreq_notifier_call;
->> +     mutex_unlock(&devfreq->lock);
+>> >
+>> > The value 0 is used for min/max_freq to declare
+>> > that min/max_freq is deactivated. Therefore, it is not
+>> > required to do so; they are not intended to show the hardware
+>> > configuration as well.
 >>
->> +     if (devfreq->profile->max_state <= 0 && !devfreq->profile->freq_table)
->> +             devfreq_set_freq_table(devfreq);
->> +
->> +     mutex_lock(&devfreq->lock);
+>> This case consider the devfreq device using OPP because devfreq_set_freq_table()
+>> get the number of OPP entry in OPP list before setting the min_freq/max_freq.
+>> If the devfreq device don't use the OPP entry, devfreq_set_freq_table()
+>> will return without any operation.
+>>
+>> IMHO, when devfreq device uses the OPP table including the frequency,
+>> min_freq/max_freq should show the correct value as CPUFREQ framework.
+>>
 >
-> Anyway, what about modifying the block above as:
->
-> +       if (!devfreq->profile->max_state && !devfreq->profile->freq_table) {
-> +               mutex_unlock(&devfreq->lock);
->                 devfreq_set_freq_table(devfreq);
-> +               mutex_lock(&devfreq->lock);
-> +       }
->
->>       devfreq->trans_table =  devm_kzalloc(dev, sizeof(unsigned int) *
->>                                               devfreq->profile->max_state *
->>                                               devfreq->profile->max_state,
-> []
->
-> If that's not a problem, I'll squash
-> https://git.kernel.org/cgit/linux/kernel/git/mzx/devfreq.git/commit/?h=for-rafael&id=55df2b43cdb5ac82d26b64d739f3d758c9b7486c
-> with the given patch.
+> The side effect of this patch shows up when opp_disable() and opp_enable()
+> are used.
 
-I agree. Thanks for fixing this.
+Ah. You're right.
+I was not considering the the case of using opp_disable() and opp_enable().
+I'll consider it again including the usage case of opp_diable/opp_enable.
 
 Regards,
 Chanwoo Choi
