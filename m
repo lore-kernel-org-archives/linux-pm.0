@@ -1,51 +1,25 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
- SpeedStep enabled
-Date: Sun, 22 Nov 2015 23:34:39 +0000
-Message-ID: <bug-103351-137361-Xyw9bnAAlu@https.bugzilla.kernel.org/>
-References: <bug-103351-137361@https.bugzilla.kernel.org/>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PATCH 1/6] PM / devfreq: event: Remove the error log of
+ devfreq_event_get_edev_by_phandle()
+Date: Mon, 23 Nov 2015 04:30:27 +0000 (GMT)
+Message-ID: <1994280084.108991448253027473.JavaMail.weblogic@epmlwas06a>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:41958 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752790AbbKVXeo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 22 Nov 2015 18:34:44 -0500
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id 989DC2063D
-	for <linux-pm@vger.kernel.org>; Sun, 22 Nov 2015 23:34:43 +0000 (UTC)
-Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
-	by mail.kernel.org (Postfix) with ESMTP id 1990220611
-	for <linux-pm@vger.kernel.org>; Sun, 22 Nov 2015 23:34:42 +0000 (UTC)
-In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+MIME-version: 1.0
+Sender: linux-kernel-owner@vger.kernel.org
+To: =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=103351
-
---- Comment #104 from kernel@benjam.info <kernel@benjam.info> ---
-(In reply to Alessandro Belloni from comment #103)
-> have an i7-5775c with an asrock z97 pro4 with latest bios 2.20, i'm unable
-> to make it work with any linux except fedora 22 that works and with Windows
-> 10.
-> 
-> Would like to use my preferred distro that is Ubuntu 15.10 but it seems
-> impossible, does anyone has any suggestion? i did tried the FIX OC Core
-> shared by Phoronix but won't work.
-
-Assuming you can at least get it to boot, I'd recommend either:
-
-a) Manually download and install the version of intel-microcode from Ubuntu
-16.04: http://packages.ubuntu.com/xenial/intel-microcode
-b) Follow the Linux instructions here:
-https://github.com/bgw/bdw-ucode-update-tool
-
-Normally, I wouldn't recommend installing Ubuntu 16.04 packages on Ubuntu
-15.10, but intel-microcode is just some firmware, shell scripts, and
-configuration files, so it should be pretty safe.
-
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+PiAgIA0KPiAgVGhpcyBwYXRjaCBqdXN0IHJlbW92ZXMgdGhlIGVycm9yIGxvZyB3aGVuIGRldmZy
+ZXFfZXZlbnRfZ2V0X2VkZXZfYnlfcGhhbmRsZSgpDQo+IGZhaWwgdG8gZ2V0IHRoZSBpbnN0YW5j
+ZSBvZiBkZXZmcmVxLWV2ZW50IGRldmljZS4gSXQgaXMgcmVsYXRlZCB0byBzZXF1ZW5jZSBvZg0K
+PiB0aGUgcHJvYmUoKSBvZiBlYWNoIGRyaXZlci4gU28sIHRoaXMgZXJyb3IgbG9nIG1pZ2h0IHNo
+b3cgdGhlIGFsd2F5cyBkdXJpbmcNCj4ga2VybmVsIGJvb3RpbmcuIEluc3RlYWQsIGVhY2ggZHJp
+dmVyIHVzaW5nIHRoaXMgZnVuY3Rpb24gY2FuIHNob3cgdGhlDQo+IGFwcHJvcHJpYXRlIGVycm9y
+IGxvZy4NCj4gDQo+IFNpZ25lZC1vZmYtYnk6IENoYW53b28gQ2hvaSA8Y3cwMC5jaG9pQHNhbXN1
+bmcuY29tPg0KDQpTaWduZWQtb2ZmLWJ5OiBNeXVuZ0pvbyBIYW0gPG15dW5nam9vLmhhbUBzYW1z
+dW5nLmNvbT4NCg0KQXBwbGllZC4NCg0KVGhhbmtzLg0KDQoNCg==
