@@ -1,111 +1,37 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: [RFC PATCH 8/8] arm64: add sysfs cpu_capacity attribute
-Date: Mon, 23 Nov 2015 14:28:41 +0000
-Message-ID: <1448288921-30307-9-git-send-email-juri.lelli@arm.com>
-References: <1448288921-30307-1-git-send-email-juri.lelli@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1448288921-30307-1-git-send-email-juri.lelli@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, juri.lelli@arm.com, Mark Brown <broonie@linaro.org>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [PATCH v1 5/5] cpufreq: intel_pstate: try load instead of busy_scaled
+Date: Mon, 23 Nov 2015 08:10:19 -0800
+Message-ID: <001101d12609$73987ef0$5ac97cd0$@net>
+References: <1448284006-13596-1-git-send-email-philippe.longepe@linux.intel.com> <1448284006-13596-11-git-send-email-philippe.longepe@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cmta11.telus.net ([209.171.16.84]:36114 "EHLO cmta11.telus.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751318AbbKWQKW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 23 Nov 2015 11:10:22 -0500
+In-Reply-To: <1448284006-13596-11-git-send-email-philippe.longepe@linux.intel.com>
+Content-Language: en-ca
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: 'Philippe Longepe' <philippe.longepe@linux.intel.com>
+Cc: srinivas.pandruvada@linux.intel.com, 'Stephane Gasparini' <stephane.gasparini@intel.com>, linux-pm@vger.kernel.org
 
-Add a sysfs cpu_capacity attribute with which it is possible to read and
-write (thus over-writing default values) CPUs capacity. This might be
-useful in situation where there is no way to get proper default values
-at boot time.
+On 2015.11.23 05:47 Philippe Longepe wrote:
 
-The new attribute shows up as:
+> static inline int32_t intel_pstate_calc_scaled_busy(struct cpudata *cpu)
+>  {
+> +	u64 cummulative_iowait, delta_iowait_us;
+> +	u64 delta_iowait_mperf;
+> +	u64 mperf, now;
+>  	struct sample *sample = &cpu->sample;
+>  	struct pstate_data *pstate = &cpu->pstate;
 
- /sys/devices/system/cpu/cpu*/cpu_capacity
+To prevent a build "unused variable 'pstate'" warning, suggest deleting that last line.
+As of this patch 5 of 5 it is no longer used. i.e.:
 
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Will Deacon <will.deacon@arm.com>
-Cc: Mark Brown <broonie@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>
-Signed-off-by: Juri Lelli <juri.lelli@arm.com>
----
- arch/arm64/kernel/topology.c | 68 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 68 insertions(+)
+-  	struct pstate_data *pstate = &cpu->pstate;
 
-diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
-index 4423cc5..5c9e477 100644
---- a/arch/arm64/kernel/topology.c
-+++ b/arch/arm64/kernel/topology.c
-@@ -35,6 +35,74 @@ static void set_capacity_scale(unsigned int cpu, unsigned long capacity)
- 	per_cpu(cpu_scale, cpu) = capacity;
- }
- 
-+#ifdef CONFIG_PROC_SYSCTL
-+#include <asm/cpu.h>
-+#include <linux/string.h>
-+static ssize_t show_cpu_capacity(struct device *dev,
-+				 struct device_attribute *attr,
-+				 char *buf)
-+{
-+	struct cpu *cpu = container_of(dev, struct cpu, dev);
-+	ssize_t rc;
-+	int cpunum = cpu->dev.id;
-+	unsigned long capacity = arch_scale_cpu_capacity(NULL, cpunum);
-+
-+	rc = sprintf(buf, "%lu\n", capacity);
-+
-+	return rc;
-+}
-+
-+static ssize_t store_cpu_capacity(struct device *dev,
-+				  struct device_attribute *attr,
-+				  const char *buf,
-+				  size_t count)
-+{
-+	struct cpu *cpu = container_of(dev, struct cpu, dev);
-+	int this_cpu = cpu->dev.id, i;
-+	unsigned long new_capacity;
-+	ssize_t ret;
-+
-+	if (count) {
-+		char *p = (char *) buf;
-+
-+		ret = kstrtoul(p, 0, &new_capacity);
-+		if (ret)
-+			return ret;
-+		if (new_capacity > SCHED_CAPACITY_SCALE)
-+			return -EINVAL;
-+
-+		for_each_cpu(i, &cpu_topology[this_cpu].core_sibling)
-+			set_capacity_scale(i, new_capacity);
-+	}
-+
-+	return count;
-+}
-+
-+static DEVICE_ATTR(cpu_capacity,
-+		   0644,
-+		   show_cpu_capacity,
-+		   store_cpu_capacity);
-+
-+static int register_cpu_capacity_sysctl(void)
-+{
-+	int i;
-+	struct device *cpu;
-+
-+	for_each_possible_cpu(i) {
-+		cpu = get_cpu_device(i);
-+		if (!cpu) {
-+			pr_err("%s: too early to get CPU%d device!\n",
-+			       __func__, i);
-+			continue;
-+		}
-+		device_create_file(cpu, &dev_attr_cpu_capacity);
-+	}
-+
-+	return 0;
-+}
-+late_initcall(register_cpu_capacity_sysctl);
-+#endif
-+
- static u32 capacity_scale = SCHED_CAPACITY_SCALE;
- 
- static void __init parse_cpu_capacity(struct device_node *cpu_node, int cpu)
--- 
-2.2.2
+
