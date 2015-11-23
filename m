@@ -1,43 +1,34 @@
 From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: [PATCH] PM / devfreq: Do not show statistics if it's not ready.
-Date: Mon, 23 Nov 2015 06:53:21 +0000 (GMT)
-Message-ID: <670532133.123321448261601649.JavaMail.weblogic@epmlwas06a>
+Subject: Re: Re: [PATCH 6/6] PM / devfreq: Set the min_freq and max_freq of
+ devfreq device
+Date: Mon, 23 Nov 2015 07:21:00 +0000 (GMT)
+Message-ID: <1427563269.125721448263260488.JavaMail.weblogic@epmlwas06a>
 Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:32879 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751417AbbKWGxX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Nov 2015 01:53:23 -0500
-Received: from epcpsbgr2.samsung.com
- (u142.gpu120.samsung.co.kr [203.254.230.142])
- by mailout4.samsung.com (Oracle Communications Messaging Server 7.0.5.31.0
- 64bit (built May  5 2014))
- with ESMTP id <0NY901RX29SX1Q80@mailout4.samsung.com> for
- linux-pm@vger.kernel.org; Mon, 23 Nov 2015 15:53:21 +0900 (KST)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 MIME-version: 1.0
-Sender: linux-pm-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
+To: =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-DQpCZWZvcmUgdGhpcyBwYXRjaCBmb3IgYSBkZXZpY2Ugd2l0aG91dCBzdGF0aXN0aWNzIHN1cHBv
-cnQsDQoNCiQgY2F0IHRyYW5zX3N0YXQNCiAgICBGcm9tICA6ICAgVG8NCiAgICAgICAgICA6ICAg
-dGltZShtcykNClRvdGFsIHRyYW5zaXRpb25zIDogMA0KJA0KDQpBZnRlciB0aGlzIHBhdGNoIGFw
-cGxpZWQgZm9yIHN1Y2ggYSBkZXZpY2UsDQoNCiQgY2F0IHRyYW5zX3N0YXQNCk5vdCBTdXBwb3J0
-ZWQuDQokDQoNClNpZ25lZC1vZmYtYnk6IE15dW5nSm9vIEhhbSA8bXl1bmdqb28uaGFtQHNhbXN1
-bmcuY29tPg0KLS0tDQogZHJpdmVycy9kZXZmcmVxL2RldmZyZXEuYyB8IDIgKysNCiAxIGZpbGUg
-Y2hhbmdlZCwgMiBpbnNlcnRpb25zKCspDQoNCmRpZmYgLS1naXQgYS9kcml2ZXJzL2RldmZyZXEv
-ZGV2ZnJlcS5jIGIvZHJpdmVycy9kZXZmcmVxL2RldmZyZXEuYw0KaW5kZXggZmUzZTNkMS4uMWJh
-YTU1MCAxMDA2NDQNCi0tLSBhL2RyaXZlcnMvZGV2ZnJlcS9kZXZmcmVxLmMNCisrKyBiL2RyaXZl
-cnMvZGV2ZnJlcS9kZXZmcmVxLmMNCkBAIC0xMDQ4LDYgKzEwNDgsOCBAQCBzdGF0aWMgc3NpemVf
-dCB0cmFuc19zdGF0X3Nob3coc3RydWN0IGRldmljZSAqZGV2LA0KIAlpZiAoIWRldmZyZXEtPnN0
-b3BfcG9sbGluZyAmJg0KIAkJCWRldmZyZXFfdXBkYXRlX3N0YXR1cyhkZXZmcmVxLCBkZXZmcmVx
-LT5wcmV2aW91c19mcmVxKSkNCiAJCXJldHVybiAwOw0KKwlpZiAobWF4X3N0YXRlID09IDApDQor
-CQlyZXR1cm4gc3ByaW50ZihidWYsICJOb3QgU3VwcG9ydGVkLlxuIik7DQogDQogCWxlbiA9IHNw
-cmludGYoYnVmLCAiICAgICBGcm9tICA6ICAgVG9cbiIpOw0KIAlsZW4gKz0gc3ByaW50ZihidWYg
-KyBsZW4sICIgICAgICAgICAgIDoiKTsNCi0tIA0KMS45LjENCg0K
-
-
+W10NCj4gPiANCj4gPiBUaGUgdmFsdWUgMCBpcyB1c2VkIGZvciBtaW4vbWF4X2ZyZXEgdG8gZGVj
+bGFyZQ0KPiA+IHRoYXQgbWluL21heF9mcmVxIGlzIGRlYWN0aXZhdGVkLiBUaGVyZWZvcmUsIGl0
+IGlzIG5vdA0KPiA+IHJlcXVpcmVkIHRvIGRvIHNvOyB0aGV5IGFyZSBub3QgaW50ZW5kZWQgdG8g
+c2hvdyB0aGUgaGFyZHdhcmUNCj4gPiBjb25maWd1cmF0aW9uIGFzIHdlbGwuDQo+IA0KPiBUaGlz
+IGNhc2UgY29uc2lkZXIgdGhlIGRldmZyZXEgZGV2aWNlIHVzaW5nIE9QUCBiZWNhdXNlIGRldmZy
+ZXFfc2V0X2ZyZXFfdGFibGUoKQ0KPiBnZXQgdGhlIG51bWJlciBvZiBPUFAgZW50cnkgaW4gT1BQ
+IGxpc3QgYmVmb3JlIHNldHRpbmcgdGhlIG1pbl9mcmVxL21heF9mcmVxLg0KPiBJZiB0aGUgZGV2
+ZnJlcSBkZXZpY2UgZG9uJ3QgdXNlIHRoZSBPUFAgZW50cnksIGRldmZyZXFfc2V0X2ZyZXFfdGFi
+bGUoKQ0KPiB3aWxsIHJldHVybiB3aXRob3V0IGFueSBvcGVyYXRpb24uDQo+IA0KPiBJTUhPLCB3
+aGVuIGRldmZyZXEgZGV2aWNlIHVzZXMgdGhlIE9QUCB0YWJsZSBpbmNsdWRpbmcgdGhlIGZyZXF1
+ZW5jeSwNCj4gbWluX2ZyZXEvbWF4X2ZyZXEgc2hvdWxkIHNob3cgdGhlIGNvcnJlY3QgdmFsdWUg
+YXMgQ1BVRlJFUSBmcmFtZXdvcmsuDQo+IA0KDQpUaGUgc2lkZSBlZmZlY3Qgb2YgdGhpcyBwYXRj
+aCBzaG93cyB1cCB3aGVuIG9wcF9kaXNhYmxlKCkgYW5kIG9wcF9lbmFibGUoKQ0KYXJlIHVzZWQu
+DQoNCkZvciBleGFtcGxlLA0KMS4gZGV2LT5vcHBfZGlzYWJsZSgyR0h6KTsgLyogMkdIeiBpcyB0
+aGUgZmFzdGVzdCBhbmQgMS42IGlzIHRoZSBzZWNvbmQgKi8NCjIuIGluaXQgZGV2ZnJlcSBvZiBk
+ZXY7IC8qIHNldHRpbmcgbWF4X2ZyZXEgQCAxLjZHIGJ5IHRoaXMgcGF0Y2ggKi8NCjMuIGRldi0+
+b3BwX2VuYWJsZSgyR0h6KTsNCjQuIDJHSHogaXMgc3RpbGwgbm90IGFjdGl2ZSBiZWNhdXNlIG1h
+eF9mcmVxIGlzIG5vdyAxLjZHSHouDQoNCkNoZWVycywNCk15dW5nSm9vLg0KDQoNCg==
