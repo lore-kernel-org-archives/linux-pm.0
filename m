@@ -1,46 +1,40 @@
-From: Chanwoo Choi <cwchoi00@gmail.com>
-Subject: Re: Re: [PATCH 6/6] PM / devfreq: Set the min_freq and max_freq of
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: Re: Re: [PATCH 6/6] PM / devfreq: Set the min_freq and max_freq of
  devfreq device
-Date: Mon, 23 Nov 2015 17:53:33 +0900
-Message-ID: <CAGTfZH2N-yspxAKCR_sOPz0nSNixADzSFwEe0rhkwHOPFKYyPQ@mail.gmail.com>
-References: <1427563269.125721448263260488.JavaMail.weblogic@epmlwas06a>
-Reply-To: cw00.choi@samsung.com
+Date: Mon, 23 Nov 2015 09:13:34 +0000 (GMT)
+Message-ID: <1970403923.135851448270013777.JavaMail.weblogic@epmlwas06a>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f178.google.com ([209.85.223.178]:33225 "EHLO
-	mail-io0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752012AbbKWIxe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Nov 2015 03:53:34 -0500
-In-Reply-To: <1427563269.125721448263260488.JavaMail.weblogic@epmlwas06a>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+MIME-version: 1.0
+Sender: linux-kernel-owner@vger.kernel.org
+To: Chanwoo Choi <cwchoi00@gmail.com>
+Cc: =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>
-Cc: =?UTF-8?B?67CV6rK966+8?= <kyungmin.park@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Mon, Nov 23, 2015 at 4:21 PM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
-> []
->> >
->> > The value 0 is used for min/max_freq to declare
->> > that min/max_freq is deactivated. Therefore, it is not
->> > required to do so; they are not intended to show the hardware
->> > configuration as well.
->>
->> This case consider the devfreq device using OPP because devfreq_set_freq_table()
->> get the number of OPP entry in OPP list before setting the min_freq/max_freq.
->> If the devfreq device don't use the OPP entry, devfreq_set_freq_table()
->> will return without any operation.
->>
->> IMHO, when devfreq device uses the OPP table including the frequency,
->> min_freq/max_freq should show the correct value as CPUFREQ framework.
->>
->
-> The side effect of this patch shows up when opp_disable() and opp_enable()
-> are used.
-
-Ah. You're right.
-I was not considering the the case of using opp_disable() and opp_enable().
-I'll consider it again including the usage case of opp_diable/opp_enable.
-
-Regards,
-Chanwoo Choi
+PiBPbiBNb24sIE5vdiAyMywgMjAxNSBhdCA0OjIxIFBNLCBNeXVuZ0pvbyBIYW0gPG15dW5nam9v
+LmhhbUBzYW1zdW5nLmNvbT4gd3JvdGU6DQo+ID4gW10NCj4gPj4gPg0KPiA+PiA+IFRoZSB2YWx1
+ZSAwIGlzIHVzZWQgZm9yIG1pbi9tYXhfZnJlcSB0byBkZWNsYXJlDQo+ID4+ID4gdGhhdCBtaW4v
+bWF4X2ZyZXEgaXMgZGVhY3RpdmF0ZWQuIFRoZXJlZm9yZSwgaXQgaXMgbm90DQo+ID4+ID4gcmVx
+dWlyZWQgdG8gZG8gc287IHRoZXkgYXJlIG5vdCBpbnRlbmRlZCB0byBzaG93IHRoZSBoYXJkd2Fy
+ZQ0KPiA+PiA+IGNvbmZpZ3VyYXRpb24gYXMgd2VsbC4NCj4gPj4NCj4gPj4gVGhpcyBjYXNlIGNv
+bnNpZGVyIHRoZSBkZXZmcmVxIGRldmljZSB1c2luZyBPUFAgYmVjYXVzZSBkZXZmcmVxX3NldF9m
+cmVxX3RhYmxlKCkNCj4gPj4gZ2V0IHRoZSBudW1iZXIgb2YgT1BQIGVudHJ5IGluIE9QUCBsaXN0
+IGJlZm9yZSBzZXR0aW5nIHRoZSBtaW5fZnJlcS9tYXhfZnJlcS4NCj4gPj4gSWYgdGhlIGRldmZy
+ZXEgZGV2aWNlIGRvbid0IHVzZSB0aGUgT1BQIGVudHJ5LCBkZXZmcmVxX3NldF9mcmVxX3RhYmxl
+KCkNCj4gPj4gd2lsbCByZXR1cm4gd2l0aG91dCBhbnkgb3BlcmF0aW9uLg0KPiA+Pg0KPiA+PiBJ
+TUhPLCB3aGVuIGRldmZyZXEgZGV2aWNlIHVzZXMgdGhlIE9QUCB0YWJsZSBpbmNsdWRpbmcgdGhl
+IGZyZXF1ZW5jeSwNCj4gPj4gbWluX2ZyZXEvbWF4X2ZyZXEgc2hvdWxkIHNob3cgdGhlIGNvcnJl
+Y3QgdmFsdWUgYXMgQ1BVRlJFUSBmcmFtZXdvcmsuDQo+ID4+DQo+ID4NCj4gPiBUaGUgc2lkZSBl
+ZmZlY3Qgb2YgdGhpcyBwYXRjaCBzaG93cyB1cCB3aGVuIG9wcF9kaXNhYmxlKCkgYW5kIG9wcF9l
+bmFibGUoKQ0KPiA+IGFyZSB1c2VkLg0KPiANCj4gQWguIFlvdSdyZSByaWdodC4NCj4gSSB3YXMg
+bm90IGNvbnNpZGVyaW5nIHRoZSB0aGUgY2FzZSBvZiB1c2luZyBvcHBfZGlzYWJsZSgpIGFuZCBv
+cHBfZW5hYmxlKCkuDQo+IEknbGwgY29uc2lkZXIgaXQgYWdhaW4gaW5jbHVkaW5nIHRoZSB1c2Fn
+ZSBjYXNlIG9mIG9wcF9kaWFibGUvb3BwX2VuYWJsZS4NCj4gDQoNCkV2ZW4gd2l0aG91dCB0aGUg
+c2lkZSBlZmZlY3QsIHdoYXQgd291bGQgYmUgdGhlIG1lYW5pbmcgb2YgaW5pdGlhbGl6aW5nDQpt
+aW4vbWF4LWZyZXEgdG8gdGhlIGRldmljZSBtaW4vbWF4IGNhcGFiaWxpdGllcyB3aGVuIHRoZSB1
+c2VycyBtYXkNCm92ZXJyaWRlIGl0IHdpdGggYXJiaXRyYXJ5IGxvd2VyL2hpZ2hlciB2YWx1ZXM/
+DQoNCg0KQ2hlZXJzLA0KTXl1bmdKb28NCg0KcHMuIHlvdSB3aWxsIGJlIG9uZSBvciB0d28gZmxv
+b3JzIGF3YXkgZnJvbSBteSBvZmZpY2UgbmV4dCB3ZWVrLiA6KQ0K
