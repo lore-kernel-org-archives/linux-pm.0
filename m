@@ -1,98 +1,83 @@
 From: Juri Lelli <juri.lelli@arm.com>
-Subject: [RFC PATCH 5/8] arm64: parse cpu capacity from DT
-Date: Mon, 23 Nov 2015 14:28:38 +0000
-Message-ID: <1448288921-30307-6-git-send-email-juri.lelli@arm.com>
+Subject: [RFC PATCH 4/8] arm, dts: add TC2 cpu capacity information
+Date: Mon, 23 Nov 2015 14:28:37 +0000
+Message-ID: <1448288921-30307-5-git-send-email-juri.lelli@arm.com>
 References: <1448288921-30307-1-git-send-email-juri.lelli@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1448288921-30307-1-git-send-email-juri.lelli@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, juri.lelli@arm.com, Mark Brown <broonie@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, juri.lelli@arm.com, Liviu Dudau <liviu.dudau@arm.com>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-With the introduction of cpu capacity bindings, CPU capacities can now be
-extracted from DT. Add parsing of such information at boot time. Also,
-store such information using per CPU variables, as we do for arm.
+Add TC2 cpu capacity binding information.
 
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Will Deacon <will.deacon@arm.com>
-Cc: Mark Brown <broonie@linaro.org>
+Cc: Liviu Dudau <liviu.dudau@arm.com>
 Cc: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: Pawel Moll <pawel.moll@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
+Cc: Kumar Gala <galak@codeaurora.org>
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: devicetree@vger.kernel.org
 Signed-off-by: Juri Lelli <juri.lelli@arm.com>
 ---
- arch/arm64/kernel/topology.c | 46 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 46 insertions(+)
+ arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
-index 694f6de..4423cc5 100644
---- a/arch/arm64/kernel/topology.c
-+++ b/arch/arm64/kernel/topology.c
-@@ -23,6 +23,45 @@
- #include <asm/cputype.h>
- #include <asm/topology.h>
+diff --git a/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts b/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts
+index 17f63f7..4596481 100644
+--- a/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts
++++ b/arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts
+@@ -32,6 +32,7 @@
+ 	cpus {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
++		capacity-scale = <1024>;
  
-+static DEFINE_PER_CPU(unsigned long, cpu_scale) = SCHED_CAPACITY_SCALE;
-+
-+unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
-+{
-+	return per_cpu(cpu_scale, cpu);
-+}
-+
-+static void set_capacity_scale(unsigned int cpu, unsigned long capacity)
-+{
-+	per_cpu(cpu_scale, cpu) = capacity;
-+}
-+
-+static u32 capacity_scale = SCHED_CAPACITY_SCALE;
-+
-+static void __init parse_cpu_capacity(struct device_node *cpu_node, int cpu)
-+{
-+	int ret;
-+	u32 cpu_capacity;
-+
-+	ret = of_property_read_u32(cpu_node,
-+				   "capacity",
-+				   &cpu_capacity);
-+	if (!ret) {
-+		u64 capacity;
-+
-+		/*
-+		 * Enforce capacity <= capacity-scale.
-+		 */
-+		cpu_capacity = cpu_capacity <= capacity_scale ? cpu_capacity :
-+			capacity_scale;
-+		capacity = (cpu_capacity << SCHED_CAPACITY_SHIFT) /
-+			capacity_scale;
-+
-+		set_capacity_scale(cpu, capacity);
-+		pr_info("CPU%d: DT cpu_capacity %lu\n",
-+			cpu, arch_scale_cpu_capacity(NULL, cpu));
-+	}
-+}
-+
- static int __init get_cpu_for_node(struct device_node *node)
- {
- 	struct device_node *cpu_node;
-@@ -34,6 +73,7 @@ static int __init get_cpu_for_node(struct device_node *node)
+ 		cpu0: cpu@0 {
+ 			device_type = "cpu";
+@@ -39,6 +40,7 @@
+ 			reg = <0>;
+ 			cci-control-port = <&cci_control1>;
+ 			cpu-idle-states = <&CLUSTER_SLEEP_BIG>;
++			capacity = <1024>;
+ 		};
  
- 	for_each_possible_cpu(cpu) {
- 		if (of_get_cpu_node(cpu, NULL) == cpu_node) {
-+			parse_cpu_capacity(cpu_node, cpu);
- 			of_node_put(cpu_node);
- 			return cpu;
- 		}
-@@ -173,6 +213,12 @@ static int __init parse_dt_topology(void)
- 		return 0;
- 	}
+ 		cpu1: cpu@1 {
+@@ -47,6 +49,7 @@
+ 			reg = <1>;
+ 			cci-control-port = <&cci_control1>;
+ 			cpu-idle-states = <&CLUSTER_SLEEP_BIG>;
++			capacity = <1024>;
+ 		};
  
-+	if (!of_property_read_u32(cn, "capacity-scale", &capacity_scale))
-+		pr_info("DT cpus capacity-scale %u\n", capacity_scale);
-+	else
-+		pr_debug("DT cpus capacity-scale not found: assuming %u\n",
-+			capacity_scale);
-+
- 	/*
- 	 * When topology is provided cpu-map is essentially a root
- 	 * cluster with restricted subnodes.
+ 		cpu2: cpu@2 {
+@@ -55,6 +58,7 @@
+ 			reg = <0x100>;
+ 			cci-control-port = <&cci_control2>;
+ 			cpu-idle-states = <&CLUSTER_SLEEP_LITTLE>;
++			capacity = <430>;
+ 		};
+ 
+ 		cpu3: cpu@3 {
+@@ -63,6 +67,7 @@
+ 			reg = <0x101>;
+ 			cci-control-port = <&cci_control2>;
+ 			cpu-idle-states = <&CLUSTER_SLEEP_LITTLE>;
++			capacity = <430>;
+ 		};
+ 
+ 		cpu4: cpu@4 {
+@@ -71,6 +76,7 @@
+ 			reg = <0x102>;
+ 			cci-control-port = <&cci_control2>;
+ 			cpu-idle-states = <&CLUSTER_SLEEP_LITTLE>;
++			capacity = <430>;
+ 		};
+ 
+ 		idle-states {
 -- 
 2.2.2
