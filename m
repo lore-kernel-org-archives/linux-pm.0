@@ -1,57 +1,52 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] cpufreq: scpi: Depend on SCPI clk driver
-Date: Tue, 24 Nov 2015 00:21:37 +0100
-Message-ID: <6612767.ybC73pWovO@vostro.rjw.lan>
-References: <1447854764-9865-1-git-send-email-punit.agrawal@arm.com> <20151118140504.GI7336@ubuntu>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH] thermal: ti-soc-thermal: fix error check
+Date: Mon, 23 Nov 2015 15:25:43 -0800
+Message-ID: <20151123232542.GA6815@localhost.localdomain>
+References: <1448283281-21402-1-git-send-email-sudipm.mukherjee@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:64293 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755280AbbKWWwA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Nov 2015 17:52:00 -0500
-In-Reply-To: <20151118140504.GI7336@ubuntu>
+Received: from mail-pa0-f43.google.com ([209.85.220.43]:34218 "EHLO
+	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753085AbbKWXZw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Nov 2015 18:25:52 -0500
+Content-Disposition: inline
+In-Reply-To: <1448283281-21402-1-git-send-email-sudipm.mukherjee@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Punit Agrawal <punit.agrawal@arm.com>
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, arnd@arndb.de, Sudeep Holla <sudeep.holla@arm.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Wednesday, November 18, 2015 07:35:04 PM Viresh Kumar wrote:
-> On 18-11-15, 13:52, Punit Agrawal wrote:
-> > The SCPI clk driver registers the virtual cpufreq device that kicks off
-> > initialisation of the SCPI cpufreq driver. Also, clk_get() will fail for
-> > the cpufreq driver if the scpi clk driver is missing.
-> > 
-> > Fix this by making the scpi cpufreq driver explicitly depend on the scpi
-> > clk driver.
-> > 
-> > Fixes: 8def31034d03 ("cpufreq: arm_big_little: add SCPI interface driver")
-> > Signed-off-by: Punit Agrawal <punit.agrawal@arm.com>
-> > Cc: Sudeep Holla <sudeep.holla@arm.com>
-> > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> > Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> > ---
-> >  drivers/cpufreq/Kconfig.arm | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> > index 1582c1c..dadfdd4 100644
-> > --- a/drivers/cpufreq/Kconfig.arm
-> > +++ b/drivers/cpufreq/Kconfig.arm
-> > @@ -201,7 +201,7 @@ config ARM_SA1110_CPUFREQ
-> >  
-> >  config ARM_SCPI_CPUFREQ
-> >          tristate "SCPI based CPUfreq driver"
-> > -	depends on ARM_BIG_LITTLE_CPUFREQ && ARM_SCPI_PROTOCOL
-> > +	depends on ARM_BIG_LITTLE_CPUFREQ && ARM_SCPI_PROTOCOL && COMMON_CLK_SCPI
-> >          help
-> >  	  This adds the CPUfreq driver support for ARM big.LITTLE platforms
-> >  	  using SCPI protocol for CPU power management.
+On Mon, Nov 23, 2015 at 06:24:41PM +0530, Sudip Mukherjee wrote:
+> We were only checking if data is not NULL but
+> ti_bandgap_get_sensor_data() can return NULL or ERR_PTR.
+
+Do you have a fail case? Can you please send the logs too?
+
 > 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+> ---
+>  drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> index b213a12..d76bb7c 100644
+> --- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> +++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> @@ -365,7 +365,7 @@ int ti_thermal_remove_sensor(struct ti_bandgap *bgp, int id)
+>  
+>  	data = ti_bandgap_get_sensor_data(bgp, id);
+>  
+> -	if (data && data->ti_thermal) {
+> +	if (!IS_ERR_OR_NULL(data) && data->ti_thermal) {
 
-Applied, thanks!
+I don t really see the need for this as we always
+ti_bandgap_set_sensor_data with a valid pointer, never with a ERR PTR.
+So, it would be either valid or NULL.
 
-Rafael
-
+>  		if (data->our_zone)
+>  			thermal_zone_device_unregister(data->ti_thermal);
+>  		else
+> -- 
+> 1.9.1
+> 
