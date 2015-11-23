@@ -1,108 +1,328 @@
 From: Juri Lelli <juri.lelli@arm.com>
-Subject: [RFC PATCH 7/8] arm: add sysfs cpu_capacity attribute
-Date: Mon, 23 Nov 2015 14:28:40 +0000
-Message-ID: <1448288921-30307-8-git-send-email-juri.lelli@arm.com>
+Subject: [RFC PATCH 2/8] Documentation: arm: define DT cpu capacity bindings
+Date: Mon, 23 Nov 2015 14:28:35 +0000
+Message-ID: <1448288921-30307-3-git-send-email-juri.lelli@arm.com>
 References: <1448288921-30307-1-git-send-email-juri.lelli@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1448288921-30307-1-git-send-email-juri.lelli@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, juri.lelli@arm.com
+Cc: mark.rutland@arm.com, peterz@infradead.org, catalin.marinas@arm.com, Linus Walleij <linus.walleij@linaro.org>, will.deacon@arm.com, morten.rasmussen@arm.com, lorenzo.pieralisi@arm.com, vincent.guittot@linaro.org, juri.lelli@arm.com, Ian Campbell <ijc+devicetree@hellion.org.uk>, Chen-Yu Tsai <wens@csie.org>, devicetree@vger.kernel.org, Pawel Moll <pawel.moll@arm.com>, linux-pm@vger.kernel.org, Kumar Gala <galak@codeaurora.org>, robh+dt@kernel.org, Gregory CLEMENT <gregory.clement@free-electrons.com>, linux@arm.linux.org.uk, dietmar.eggemann@arm.com, linux-arm-kernel@lists.infradead.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Paul Walmsley <paul@pwsan.com>, sudeep.holla@arm.com, Olof Johansson <olof@lixom.net>, Maxime Ripard <maxime.ripard@free-electrons.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add a sysfs cpu_capacity attribute with which it is possible to read and
-write (thus over-writing default values) CPUs capacity. This might be
-useful in situation where there is no way to get proper default values
-at boot time.
+ARM systems may be configured to have cpus with different power/performance
+characteristics within the same chip. In this case, additional information
+has to be made available to the kernel (the scheduler in particular) for it
+to be aware of such differences and take decisions accordingly.
 
-The new attribute shows up as:
+Therefore, this patch aims at standardizing cpu capacities device tree
+bindings for ARM platforms. Bindings define cpu capacity parameter, to
+allow operating systems to retrieve such information from the device tree
+and initialize related kernel structures, paving the way for common code in
+the kernel to deal with heterogeneity.
 
- /sys/devices/system/cpu/cpu*/cpu_capacity
-
-Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: Pawel Moll <pawel.moll@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
+Cc: Kumar Gala <galak@codeaurora.org>
+Cc: Maxime Ripard <maxime.ripard@free-electrons.com>
+Cc: Olof Johansson <olof@lixom.net>
+Cc: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: Paul Walmsley <paul@pwsan.com>
+Cc: Linus Walleij <linus.walleij@linaro.org>
+Cc: Chen-Yu Tsai <wens@csie.org>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Cc: devicetree@vger.kernel.org
 Signed-off-by: Juri Lelli <juri.lelli@arm.com>
 ---
- arch/arm/kernel/topology.c | 68 ++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 68 insertions(+)
+ .../devicetree/bindings/arm/cpu-capacity.txt       | 227 +++++++++++++++++++++
+ Documentation/devicetree/bindings/arm/cpus.txt     |  17 ++
+ 2 files changed, 244 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/arm/cpu-capacity.txt
 
-diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
-index ecbff03..a226761 100644
---- a/arch/arm/kernel/topology.c
-+++ b/arch/arm/kernel/topology.c
-@@ -52,6 +52,74 @@ static void set_capacity_scale(unsigned int cpu, unsigned long capacity)
- 	per_cpu(cpu_scale, cpu) = capacity;
- }
+diff --git a/Documentation/devicetree/bindings/arm/cpu-capacity.txt b/Documentation/devicetree/bindings/arm/cpu-capacity.txt
+new file mode 100644
+index 0000000..2a00af0
+--- /dev/null
++++ b/Documentation/devicetree/bindings/arm/cpu-capacity.txt
+@@ -0,0 +1,227 @@
++==========================================
++ARM CPUs capacity bindings
++==========================================
++
++==========================================
++1 - Introduction
++==========================================
++
++ARM systems may be configured to have cpus with different power/performance
++characteristics within the same chip. In this case, additional information
++has to be made available to the kernel (the scheduler in particular) for
++it to be aware of such differences and take decisions accordingly.
++
++==========================================
++2 - CPU capacity definition
++==========================================
++
++CPU capacity is a number that provides the scheduler information about CPUs
++heterogeneity. Such heterogeneity can come from micro-architectural differences
++(e.g., ARM big.LITTLE systems) or maximum frequency at which CPUs can run
++(e.g., SMP systems with multiple frequency domains). Heterogeneity in this
++context is about differing performance characteristics; this binding tries to
++capture a first-order approximation of the relative performance of CPUs.
++
++One simple way to estimate CPU capacities is to iteratively run a well-known
++CPU user space benchmark (e.g, sysbench, dhrystone, etc.) on each CPU at
++maximum frequency and then normalize values w.r.t.  the best performing CPU.
++One can also do a statistically significant study of a wide collection of
++benchmarks, but pros of such an approach are not really evident at the time of
++writing.
++
++==========================================
++3 - capacity-scale
++==========================================
++
++CPUs capacities are defined with respect to capacity-scale property in the cpus
++node [1]. The property is optional; if not defined a 1024 capacity-scale is
++assumed. This property defines both the highest CPU capacity present in the
++system and granularity of CPU capacity values.
++
++==========================================
++4 - capacity
++==========================================
++
++capacity is an optional cpu node [1] property: u32 value representing CPU
++capacity, relative to capacity-scale. It is required and enforced that capacity
++<= capacity-scale.
++
++===========================================
++5 - Examples
++===========================================
++
++Example 1 (ARM 64-bit, 6-cpu system, two clusters):
++capacity-scale is not defined, so it is assumed to be 1024
++
++cpus {
++	#address-cells = <2>;
++	#size-cells = <0>;
++
++	cpu-map {
++		cluster0 {
++			core0 {
++				cpu = <&A57_0>;
++			};
++			core1 {
++				cpu = <&A57_1>;
++			};
++		};
++
++		cluster1 {
++			core0 {
++				cpu = <&A53_0>;
++			};
++			core1 {
++				cpu = <&A53_1>;
++			};
++			core2 {
++				cpu = <&A53_2>;
++			};
++			core3 {
++				cpu = <&A53_3>;
++			};
++		};
++	};
++
++	idle-states {
++		entry-method = "arm,psci";
++
++		CPU_SLEEP_0: cpu-sleep-0 {
++			compatible = "arm,idle-state";
++			arm,psci-suspend-param = <0x0010000>;
++			local-timer-stop;
++			entry-latency-us = <100>;
++			exit-latency-us = <250>;
++			min-residency-us = <150>;
++		};
++
++		CLUSTER_SLEEP_0: cluster-sleep-0 {
++			compatible = "arm,idle-state";
++			arm,psci-suspend-param = <0x1010000>;
++			local-timer-stop;
++			entry-latency-us = <800>;
++			exit-latency-us = <700>;
++			min-residency-us = <2500>;
++		};
++	};
++
++	A57_0: cpu@0 {
++		compatible = "arm,cortex-a57","arm,armv8";
++		reg = <0x0 0x0>;
++		device_type = "cpu";
++		enable-method = "psci";
++		next-level-cache = <&A57_L2>;
++		clocks = <&scpi_dvfs 0>;
++		cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++		capacity = <1024>;
++	};
++
++	A57_1: cpu@1 {
++		compatible = "arm,cortex-a57","arm,armv8";
++		reg = <0x0 0x1>;
++		device_type = "cpu";
++		enable-method = "psci";
++		next-level-cache = <&A57_L2>;
++		clocks = <&scpi_dvfs 0>;
++		cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++		capacity = <1024>;
++	};
++
++	A53_0: cpu@100 {
++		compatible = "arm,cortex-a53","arm,armv8";
++		reg = <0x0 0x100>;
++		device_type = "cpu";
++		enable-method = "psci";
++		next-level-cache = <&A53_L2>;
++		clocks = <&scpi_dvfs 1>;
++		cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++		capacity = <447>;
++	};
++
++	A53_1: cpu@101 {
++		compatible = "arm,cortex-a53","arm,armv8";
++		reg = <0x0 0x101>;
++		device_type = "cpu";
++		enable-method = "psci";
++		next-level-cache = <&A53_L2>;
++		clocks = <&scpi_dvfs 1>;
++		cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++		capacity = <447>;
++	};
++
++	A53_2: cpu@102 {
++		compatible = "arm,cortex-a53","arm,armv8";
++		reg = <0x0 0x102>;
++		device_type = "cpu";
++		enable-method = "psci";
++		next-level-cache = <&A53_L2>;
++		clocks = <&scpi_dvfs 1>;
++		cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++		capacity = <447>;
++	};
++
++	A53_3: cpu@103 {
++		compatible = "arm,cortex-a53","arm,armv8";
++		reg = <0x0 0x103>;
++		device_type = "cpu";
++		enable-method = "psci";
++		next-level-cache = <&A53_L2>;
++		clocks = <&scpi_dvfs 1>;
++		cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++		capacity = <447>;
++	};
++
++	A57_L2: l2-cache0 {
++		compatible = "cache";
++	};
++
++	A53_L2: l2-cache1 {
++		compatible = "cache";
++	};
++};
++
++Example 2 (ARM 32-bit, 4-cpu system, two clusters,
++	   cpus 0,1@1GHz, cpus 2,3@500MHz):
++capacity-scale is equal to 2, so first cluster is twice faster than second
++cluster (which matches with clock frequencies)
++
++cpus {
++	#address-cells = <1>;
++	#size-cells = <0>;
++	capacity-scale = <2>;
++
++	cpu0: cpu@0 {
++		device_type = "cpu";
++		compatible = "arm,cortex-a15";
++		reg = <0>;
++		capacity = <2>;
++	};
++
++	cpu1: cpu@1 {
++		device_type = "cpu";
++		compatible = "arm,cortex-a15";
++		reg = <1>;
++		capacity = <2>;
++	};
++
++	cpu2: cpu@2 {
++		device_type = "cpu";
++		compatible = "arm,cortex-a15";
++		reg = <0x100>;
++		capacity = <1>;
++	};
++
++	cpu3: cpu@3 {
++		device_type = "cpu";
++		compatible = "arm,cortex-a15";
++		reg = <0x101>;
++		capacity = <1>;
++	};
++};
++
++===========================================
++6 - References
++===========================================
++
++[1] ARM Linux Kernel documentation - CPUs bindings
++    Documentation/devicetree/bindings/arm/cpus.txt
+diff --git a/Documentation/devicetree/bindings/arm/cpus.txt b/Documentation/devicetree/bindings/arm/cpus.txt
+index 91e6e5c..7593584 100644
+--- a/Documentation/devicetree/bindings/arm/cpus.txt
++++ b/Documentation/devicetree/bindings/arm/cpus.txt
+@@ -62,6 +62,14 @@ nodes to be present and contain the properties described below.
+ 		Value type: <u32>
+ 		Definition: must be set to 0
  
-+#ifdef CONFIG_PROC_SYSCTL
-+#include <asm/cpu.h>
-+#include <linux/string.h>
-+static ssize_t show_cpu_capacity(struct device *dev,
-+				 struct device_attribute *attr,
-+				 char *buf)
-+{
-+	struct cpu *cpu = container_of(dev, struct cpu, dev);
-+	ssize_t rc;
-+	int cpunum = cpu->dev.id;
-+	unsigned long capacity = arch_scale_cpu_capacity(NULL, cpunum);
++	A cpus node may also define the following optional property:
 +
-+	rc = sprintf(buf, "%lu\n", capacity);
++	- capacity-scale
++		Usage: optional
++		Value type: <u32>
++		Definition: value used as a reference for CPU capacity [3]
++			    (see below).
 +
-+	return rc;
-+}
+ - cpu node
+ 
+ 	Description: Describes a CPU in an ARM based system
+@@ -231,6 +239,13 @@ nodes to be present and contain the properties described below.
+ 			# List of phandles to idle state nodes supported
+ 			  by this cpu [3].
+ 
++	- capacity
++		Usage: Optional
++		Value type: <u32>
++		Definition:
++			# u32 value representing CPU capacity [3], relative to
++			  capacity-scale (see above).
 +
-+static ssize_t store_cpu_capacity(struct device *dev,
-+				  struct device_attribute *attr,
-+				  const char *buf,
-+				  size_t count)
-+{
-+	struct cpu *cpu = container_of(dev, struct cpu, dev);
-+	int this_cpu = cpu->dev.id, i;
-+	unsigned long new_capacity;
-+	ssize_t ret;
-+
-+	if (count) {
-+		char *p = (char *) buf;
-+
-+		ret = kstrtoul(p, 0, &new_capacity);
-+		if (ret)
-+			return ret;
-+		if (new_capacity > SCHED_CAPACITY_SCALE)
-+			return -EINVAL;
-+
-+		for_each_cpu(i, &cpu_topology[this_cpu].core_sibling)
-+			set_capacity_scale(i, new_capacity);
-+	}
-+
-+	return count;
-+}
-+
-+static DEVICE_ATTR(cpu_capacity,
-+		   0644,
-+		   show_cpu_capacity,
-+		   store_cpu_capacity);
-+
-+static int register_cpu_capacity_sysctl(void)
-+{
-+	int i;
-+	struct device *cpu;
-+
-+	for_each_possible_cpu(i) {
-+		cpu = get_cpu_device(i);
-+		if (!cpu) {
-+			pr_err("%s: too early to get CPU%d device!\n",
-+			       __func__, i);
-+			continue;
-+		}
-+		device_create_file(cpu, &dev_attr_cpu_capacity);
-+	}
-+
-+	return 0;
-+}
-+late_initcall(register_cpu_capacity_sysctl);
-+#endif
-+
- #ifdef CONFIG_OF
- struct cpu_efficiency {
- 	const char *compatible;
+ 	- rockchip,pmu
+ 		Usage: optional for systems that have an "enable-method"
+ 		       property value of "rockchip,rk3066-smp"
+@@ -437,3 +452,5 @@ cpus {
+ [2] arm/msm/qcom,kpss-acc.txt
+ [3] ARM Linux kernel documentation - idle states bindings
+     Documentation/devicetree/bindings/arm/idle-states.txt
++[3] ARM Linux kernel documentation - cpu capacity bindings
++    Documentation/devicetree/bindings/arm/cpu-capacity.txt
 -- 
 2.2.2
