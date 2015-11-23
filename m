@@ -1,14 +1,12 @@
 From: Philippe Longepe <philippe.longepe@linux.intel.com>
 Subject: [PATCH v1 0/5] intel_pstate: Use the cpu load first on Atom only
-Date: Mon, 23 Nov 2015 14:06:36 +0100
-Message-ID: <1448284006-13596-2-git-send-email-philippe.longepe@linux.intel.com>
-References: <1448284006-13596-1-git-send-email-philippe.longepe@linux.intel.com>
+Date: Mon, 23 Nov 2015 14:06:35 +0100
+Message-ID: <1448284006-13596-1-git-send-email-philippe.longepe@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
 Received: from mga09.intel.com ([134.134.136.24]:40543 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753891AbbKWNGI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 23 Nov 2015 08:06:08 -0500
-In-Reply-To: <1448284006-13596-1-git-send-email-philippe.longepe@linux.intel.com>
+	id S1753215AbbKWNGH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 23 Nov 2015 08:06:07 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
