@@ -1,95 +1,118 @@
 From: Juri Lelli <juri.lelli@arm.com>
-Subject: [RFC PATCH 6/8] arm64, dts: add Juno cpu capacity information
-Date: Mon, 23 Nov 2015 14:28:39 +0000
-Message-ID: <1448288921-30307-7-git-send-email-juri.lelli@arm.com>
+Subject: [RFC PATCH 3/8] arm: parse cpu capacity from DT
+Date: Mon, 23 Nov 2015 14:28:36 +0000
+Message-ID: <1448288921-30307-4-git-send-email-juri.lelli@arm.com>
 References: <1448288921-30307-1-git-send-email-juri.lelli@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1448288921-30307-1-git-send-email-juri.lelli@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, juri.lelli@arm.com, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Liviu Dudau <Liviu.Dudau@arm.com>, Arnd Bergmann <arnd@arndb.de>, Jon Medhurst <tixy@linaro.org>, Olof Johansson <olof@lixom.net>, Robin Murphy <robin.murphy@arm.com>
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, lorenzo.pieralisi@arm.com, vincent.guittot@linaro.org, juri.lelli@arm.com, linux-pm@vger.kernel.org, peterz@infradead.org, catalin.marinas@arm.com, will.deacon@arm.com, dietmar.eggemann@arm.com, robh+dt@kernel.org, sudeep.holla@arm.com, linux@arm.linux.org.uk, morten.rasmussen@arm.com, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Add Juno cpu capacity bindings information.
+With the introduction of cpu capacity bindings, CPU capacities can now be
+extracted from DT. Add parsing of such information at boot time. We keep
+code that can produce same information, based on different DT properties
+and hard-coded values, as fall-back for backward compatibility.
 
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: Pawel Moll <pawel.moll@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
-Cc: Kumar Gala <galak@codeaurora.org>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Will Deacon <will.deacon@arm.com>
-Cc: Liviu Dudau <Liviu.Dudau@arm.com>
-Cc: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Jon Medhurst <tixy@linaro.org>
-Cc: Olof Johansson <olof@lixom.net>
-Cc: Robin Murphy <robin.murphy@arm.com>
-Cc: devicetree@vger.kernel.org
+Cc: Russell King <linux@arm.linux.org.uk>
 Signed-off-by: Juri Lelli <juri.lelli@arm.com>
 ---
- arch/arm64/boot/dts/arm/juno.dts | 7 +++++++
- 1 file changed, 7 insertions(+)
+ arch/arm/kernel/topology.c | 50 +++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 49 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm64/boot/dts/arm/juno.dts b/arch/arm64/boot/dts/arm/juno.dts
-index d7cbdd4..06f6d2b 100644
---- a/arch/arm64/boot/dts/arm/juno.dts
-+++ b/arch/arm64/boot/dts/arm/juno.dts
-@@ -33,6 +33,7 @@
- 	cpus {
- 		#address-cells = <2>;
- 		#size-cells = <0>;
-+		capacity-scale = <1024>;
+diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
+index ec279d1..ecbff03 100644
+--- a/arch/arm/kernel/topology.c
++++ b/arch/arm/kernel/topology.c
+@@ -78,6 +78,35 @@ static unsigned long *__cpu_capacity;
+ #define cpu_capacity(cpu)	__cpu_capacity[cpu]
  
- 		A57_0: cpu@0 {
- 			compatible = "arm,cortex-a57","arm,armv8";
-@@ -40,6 +41,7 @@
- 			device_type = "cpu";
- 			enable-method = "psci";
- 			next-level-cache = <&A57_L2>;
-+			capacity = <1024>;
- 		};
+ static unsigned long middle_capacity = 1;
++static bool capacity_from_dt = true;
++static u32 capacity_scale = SCHED_CAPACITY_SCALE;
++
++static int __init parse_cpu_capacity(struct device_node *cpu_node, int cpu)
++{
++	int ret = 1;
++	u32 cpu_capacity;
++
++	ret = of_property_read_u32(cpu_node,
++				   "capacity",
++				   &cpu_capacity);
++	if (!ret) {
++		u64 capacity;
++
++		/*
++		 * Enforce capacity <= capacity-scale.
++		 */
++		cpu_capacity = cpu_capacity <= capacity_scale ? cpu_capacity :
++			capacity_scale;
++		capacity = (cpu_capacity << SCHED_CAPACITY_SHIFT) /
++			capacity_scale;
++
++		set_capacity_scale(cpu, capacity);
++		pr_info("CPU%d: DT cpu capacity %lu\n",
++			cpu, arch_scale_cpu_capacity(NULL, cpu));
++	}
++
++	return !ret;
++}
  
- 		A57_1: cpu@1 {
-@@ -48,6 +50,7 @@
- 			device_type = "cpu";
- 			enable-method = "psci";
- 			next-level-cache = <&A57_L2>;
-+			capacity = <1024>;
- 		};
+ /*
+  * Iterate all CPUs' descriptor in DT and compute the efficiency
+@@ -99,6 +128,18 @@ static void __init parse_dt_topology(void)
+ 	__cpu_capacity = kcalloc(nr_cpu_ids, sizeof(*__cpu_capacity),
+ 				 GFP_NOWAIT);
  
- 		A53_0: cpu@100 {
-@@ -56,6 +59,7 @@
- 			device_type = "cpu";
- 			enable-method = "psci";
- 			next-level-cache = <&A53_L2>;
-+			capacity = <447>;
- 		};
++	cn = of_find_node_by_path("/cpus");
++	if (!cn) {
++		pr_err("No CPU information found in DT\n");
++		return;
++	}
++
++	if (!of_property_read_u32(cn, "capacity-scale", &capacity_scale))
++		pr_info("DT cpus capacity-scale %u\n", capacity_scale);
++	else
++		pr_debug("DT cpus capacity-scale not found: assuming %u\n",
++			capacity_scale);
++
+ 	for_each_possible_cpu(cpu) {
+ 		const u32 *rate;
+ 		int len;
+@@ -110,6 +151,13 @@ static void __init parse_dt_topology(void)
+ 			continue;
+ 		}
  
- 		A53_1: cpu@101 {
-@@ -64,6 +68,7 @@
- 			device_type = "cpu";
- 			enable-method = "psci";
- 			next-level-cache = <&A53_L2>;
-+			capacity = <447>;
- 		};
++		if (parse_cpu_capacity(cn, cpu)) {
++			of_node_put(cn);
++			continue;
++		}
++
++		capacity_from_dt = false;
++
+ 		for (cpu_eff = table_efficiency; cpu_eff->compatible; cpu_eff++)
+ 			if (of_device_is_compatible(cn, cpu_eff->compatible))
+ 				break;
+@@ -160,7 +208,7 @@ static void __init parse_dt_topology(void)
+  */
+ static void update_cpu_capacity(unsigned int cpu)
+ {
+-	if (!cpu_capacity(cpu))
++	if (!cpu_capacity(cpu) || capacity_from_dt)
+ 		return;
  
- 		A53_2: cpu@102 {
-@@ -72,6 +77,7 @@
- 			device_type = "cpu";
- 			enable-method = "psci";
- 			next-level-cache = <&A53_L2>;
-+			capacity = <447>;
- 		};
- 
- 		A53_3: cpu@103 {
-@@ -80,6 +86,7 @@
- 			device_type = "cpu";
- 			enable-method = "psci";
- 			next-level-cache = <&A53_L2>;
-+			capacity = <447>;
- 		};
- 
- 		A57_L2: l2-cache0 {
+ 	set_capacity_scale(cpu, cpu_capacity(cpu) / middle_capacity);
 -- 
 2.2.2
