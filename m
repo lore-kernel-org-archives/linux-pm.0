@@ -1,39 +1,37 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: Re: [PATCH] power: bq27xxx_battery: Reorganize I2C into a module
-Date: Mon, 23 Nov 2015 11:09:50 -0600
-Message-ID: <5653485E.70005@ti.com>
-References: <1448297631-8916-1-git-send-email-afd@ti.com>
- <3809374.hKy9fQ2ldj@wuerfel>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3809374.hKy9fQ2ldj@wuerfel>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Andreas Dannenberg <dannenberg@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: [PATCH] powercap/rapl: add cpu id for broxton
+Date: Mon, 23 Nov 2015 10:46:57 -0800
+Message-ID: <1448304417-11023-1-git-send-email-jacob.jun.pan@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:50214 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752947AbbKWSry (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 23 Nov 2015 13:47:54 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-On 11/23/2015 10:57 AM, Arnd Bergmann wrote:
-> On Monday 23 November 2015 10:53:51 Andrew F. Davis wrote:
->> Separate out I2C functionality into a module. This fixes several small
->> issues and simplifies the driver initialization.
->>
->> Signed-off-by: Andrew F. Davis <afd@ti.com>
->
-> That looks good to me overall, it should help with the randconfig
-> warnings I've been seeing and makes the driver structured more logically.
->
-> The one part I wonder about is whether the platform_driver portion
-> should also be split out into a separate module in the same way.
->
-> 	Arnd
->
+Broxton is Atom based SoC which supports RAPL interface
+that is compatible with Core.
 
-I think it should, I'm just waiting until I can find some time to
-bring up regmap for 1wire, then I can really clean things up and
-move the platform stuff (which is really the 1wire interface) out
-more cleanly, all I'll need to do then is just pass a regmap handle
-to the core from the interface modules.
+Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+---
+ drivers/powercap/intel_rapl.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-But that's all a project for another day :)
+diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+index 5efacd0..bfc353b 100644
+--- a/drivers/powercap/intel_rapl.c
++++ b/drivers/powercap/intel_rapl.c
+@@ -1104,6 +1104,7 @@ static const struct x86_cpu_id rapl_ids[] __initconst = {
+ 	RAPL_CPU(0x5A, rapl_defaults_ann),/* Annidale */
+ 	RAPL_CPU(0x5E, rapl_defaults_core),/* Skylake-H/S */
+ 	RAPL_CPU(0x57, rapl_defaults_hsw_server),/* Knights Landing */
++	RAPL_CPU(0x5C, rapl_defaults_core),/* Broxton */
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(x86cpu, rapl_ids);
+-- 
+1.9.1
+
