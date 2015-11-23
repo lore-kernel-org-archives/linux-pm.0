@@ -1,92 +1,98 @@
 From: Juri Lelli <juri.lelli@arm.com>
-Subject: [RFC PATCH 0/8] CPUs capacity information for heterogeneous systems
-Date: Mon, 23 Nov 2015 14:28:33 +0000
-Message-ID: <1448288921-30307-1-git-send-email-juri.lelli@arm.com>
+Subject: [RFC PATCH 5/8] arm64: parse cpu capacity from DT
+Date: Mon, 23 Nov 2015 14:28:38 +0000
+Message-ID: <1448288921-30307-6-git-send-email-juri.lelli@arm.com>
+References: <1448288921-30307-1-git-send-email-juri.lelli@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1448288921-30307-1-git-send-email-juri.lelli@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, juri.lelli@arm.com
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, juri.lelli@arm.com, Mark Brown <broonie@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi all,
+With the introduction of cpu capacity bindings, CPU capacities can now be
+extracted from DT. Add parsing of such information at boot time. Also,
+store such information using per CPU variables, as we do for arm.
 
-ARM systems may be configured to have CPUs with different power/performance
-characteristics within the same chip. In this case, additional information has
-to be made available to the kernel (the scheduler in particular) for it to be
-aware of such differences and take decisions accordingly. This posting stems
-from the ongoing discussion about introducing a simple platform energy cost
-model to guide scheduling decisions (a.k.a Energy Aware Scheduling [1]), but
-also aims to be an independent track aimed to standardise the way we make the
-scheduler aware of heterogenous CPU systems. With these patches and in addition
-patches from [1] (that make the scheduler wakeup paths aware of heterogenous
-CPU systems) we enable the scheduler to have good default performance on such
-systems. In addition, we get a clearly defined way of providing the scheduler
-with needed information about CPU capacity on such systems.
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: Mark Brown <broonie@linaro.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>
+Signed-off-by: Juri Lelli <juri.lelli@arm.com>
+---
+ arch/arm64/kernel/topology.c | 46 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 46 insertions(+)
 
-CPU capacity is defined in this context as a number that provides the scheduler
-information about CPUs heterogeneity. Such heterogeneity can come from
-micro-architectural differences (e.g., ARM big.LITTLE systems) or maximum
-frequency at which CPUs can run (e.g., SMP systems with multiple frequency
-domains and different max frequencies). Heterogeneity in this context is about
-differing performance characteristics; in practice, the binding that we propose
-in this RFC tries to capture a first-order approximation of the relative
-performance of CPUs.
-
-This RFC proposes a solution to the problem of how do we init CPUs original
-capacity. The way it works today, and for arm A15/A7 systems only, is that we
-rely on cpu_efficiency magic numbers from arch/arm/kernel/topology.c and the
-existence of clock-frequency dtb properties; having those values available, we
-then do some math to come up with capacities we know from measurement (e.g.,
-EAS energy model), e.g. for TC2 they are 430 for A7 and 1024 for A15.
-Currently, arm64 doesn't have such a feature at all.
-
-With this patchset we provide CPUs capacity information either from DT or from
-sysfs interface. Such information is standardized for both arm and arm64.
-
-Patches high level description:
-
- o 01/08 cleans up how cpu_scale is initialized in arm
- o 02/08 introduces documentation for the new optional DT binding
- o [03-06]/08 add cpu-capacity attribute to TC2 and Juno DTs and provide
-   parsing of such information at boot time
- o [07-08]/08 introduce sysfs attribute
-
-The patchset is based on top of tip/sched/core as of today.
-
-In case you would like to test this out, I pushed a branch here:
-
- git://linux-arm.org/linux-jl.git upstream/default_caps_dt
-
-This branch contains additional patches, useful to better understand how CPU
-capacity information is actually used by the scheduler. Discussion regarding
-these additional patches will be started with a different posting in the
-future. We just didn't want to make discussion too broad, as we realize that
-this set can be controversial already on its own.
-
-Comments, concerns and rants are more than welcome!
-
-Best,
-
-- Juri
-
-Juri Lelli (8):
-  ARM: initialize cpu_scale to its default
-  Documentation: arm: define DT cpu capacity bindings
-  arm: parse cpu capacity from DT
-  arm, dts: add TC2 cpu capacity information
-  arm64: parse cpu capacity from DT
-  arm64, dts: add Juno cpu capacity information
-  arm: add sysfs cpu_capacity attribute
-  arm64: add sysfs cpu_capacity attribute
-
- .../devicetree/bindings/arm/cpu-capacity.txt       | 227 +++++++++++++++++++++
- Documentation/devicetree/bindings/arm/cpus.txt     |  17 ++
- arch/arm/boot/dts/vexpress-v2p-ca15_a7.dts         |   6 +
- arch/arm/kernel/topology.c                         | 122 ++++++++++-
- arch/arm64/boot/dts/arm/juno.dts                   |   7 +
- arch/arm64/kernel/topology.c                       | 114 +++++++++++
- 6 files changed, 489 insertions(+), 4 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/arm/cpu-capacity.txt
-
+diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
+index 694f6de..4423cc5 100644
+--- a/arch/arm64/kernel/topology.c
++++ b/arch/arm64/kernel/topology.c
+@@ -23,6 +23,45 @@
+ #include <asm/cputype.h>
+ #include <asm/topology.h>
+ 
++static DEFINE_PER_CPU(unsigned long, cpu_scale) = SCHED_CAPACITY_SCALE;
++
++unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
++{
++	return per_cpu(cpu_scale, cpu);
++}
++
++static void set_capacity_scale(unsigned int cpu, unsigned long capacity)
++{
++	per_cpu(cpu_scale, cpu) = capacity;
++}
++
++static u32 capacity_scale = SCHED_CAPACITY_SCALE;
++
++static void __init parse_cpu_capacity(struct device_node *cpu_node, int cpu)
++{
++	int ret;
++	u32 cpu_capacity;
++
++	ret = of_property_read_u32(cpu_node,
++				   "capacity",
++				   &cpu_capacity);
++	if (!ret) {
++		u64 capacity;
++
++		/*
++		 * Enforce capacity <= capacity-scale.
++		 */
++		cpu_capacity = cpu_capacity <= capacity_scale ? cpu_capacity :
++			capacity_scale;
++		capacity = (cpu_capacity << SCHED_CAPACITY_SHIFT) /
++			capacity_scale;
++
++		set_capacity_scale(cpu, capacity);
++		pr_info("CPU%d: DT cpu_capacity %lu\n",
++			cpu, arch_scale_cpu_capacity(NULL, cpu));
++	}
++}
++
+ static int __init get_cpu_for_node(struct device_node *node)
+ {
+ 	struct device_node *cpu_node;
+@@ -34,6 +73,7 @@ static int __init get_cpu_for_node(struct device_node *node)
+ 
+ 	for_each_possible_cpu(cpu) {
+ 		if (of_get_cpu_node(cpu, NULL) == cpu_node) {
++			parse_cpu_capacity(cpu_node, cpu);
+ 			of_node_put(cpu_node);
+ 			return cpu;
+ 		}
+@@ -173,6 +213,12 @@ static int __init parse_dt_topology(void)
+ 		return 0;
+ 	}
+ 
++	if (!of_property_read_u32(cn, "capacity-scale", &capacity_scale))
++		pr_info("DT cpus capacity-scale %u\n", capacity_scale);
++	else
++		pr_debug("DT cpus capacity-scale not found: assuming %u\n",
++			capacity_scale);
++
+ 	/*
+ 	 * When topology is provided cpu-map is essentially a root
+ 	 * cluster with restricted subnodes.
 -- 
 2.2.2
