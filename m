@@ -1,58 +1,51 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH 4/6] PM / devfreq: Set the freq_table of devfreq device
-Date: Mon, 23 Nov 2015 07:29:43 +0000 (GMT)
-Message-ID: <106136506.126661448263783195.JavaMail.weblogic@epmlwas06a>
-Reply-To: myungjoo.ham@samsung.com
+From: Josef Gajdusek <atx-MwjtXicnQwU@public.gmane.org>
+Subject: [PATCH v2 1/5] ARM: dts: sun8i: Add SID node
+Date: Mon, 23 Nov 2015 09:02:48 +0100
+Message-ID: <b897b1c8741c8a871163b84d01b480f99329536d.1448263428.git.atx@atx.name>
+References: <cover.1448263428.git.atx@atx.name>
+Reply-To: atx-MwjtXicnQwU@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:38271 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752413AbbKWH3p (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Nov 2015 02:29:45 -0500
-Received: from epcpsbgr5.samsung.com
- (u145.gpu120.samsung.co.kr [203.254.230.145])
- by mailout4.samsung.com (Oracle Communications Messaging Server 7.0.5.31.0
- 64bit (built May  5 2014))
- with ESMTP id <0NY9034A8BHJM620@mailout4.samsung.com> for
- linux-pm@vger.kernel.org; Mon, 23 Nov 2015 16:29:43 +0900 (KST)
-MIME-version: 1.0
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sunxi+bncBCYM5N4ES4IRBOMQZOZAKGQEKVIYW6I-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+In-Reply-To: <cover.1448263428.git.atx-MwjtXicnQwU@public.gmane.org>
+In-Reply-To: <cover.1448263428.git.atx-MwjtXicnQwU@public.gmane.org>
+References: <cover.1448263428.git.atx-MwjtXicnQwU@public.gmane.org>
+List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <http://groups.google.com/group/linux-sunxi
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+List-Subscribe: <http://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <http://groups.google.com/group/linux-sunxi/subscribe>
+To: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Cc: Josef Gajdusek <atx-MwjtXicnQwU@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gpatchesrdh-I1/eAgTnXDYAvxtiuMwx3w@public.gmane.org, mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, emilio-0Z03zUJReD5OxF6Tv1QG9Q@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-PiAgIA0KPiAgVGhpcyBwYXRjaCBpbml0aWFsaXplIHRoZSBmcmVxX3RhYmxlIGFycmF5IG9mIGVh
-Y2ggZGV2ZnJlcSBkZXZpY2UgYnkgdXNpbmcNCj4gdGhlIGRldmZyZXFfc2V0X2ZyZXFfdGFibGUo
-KS4gSWYgZnJlcV90YWJsZSBpcyBOVUxMLCB0aGUgZGV2ZnJlcSBmcmFtZXdvcmsNCj4gaXMgbm90
-IGFibGUgdG8gc3VwcG9ydCB0aGUgZnJlcXVlbmN5IHRyYW5zdGlvbiBpbmZvcm1hdGlvbiB0aHJv
-dWdoIHN5c2ZzLg0KPiANCj4gVGhlIE9QUCBjb3JlIHVzZXMgdGhlIGludGVnZXIgdHlwZSBmb3Ig
-dGhlIG51bWJlciBvZiBvcHBzIGluIHRoZSBvcHAgbGlzdA0KPiBhbmQgdXNlcyB0aGUgJ3Vuc2ln
-bmVkIGxvbmcnIHR5cGUgZm9yIGVhY2ggZnJlcXVlbmN5LiBTbywgdGhpcyBwYXRjaCBtb2RpZmll
-cw0KPiB0aGUgdHlwZSBvZiBzb21lIHZhcmlhYmxlIGFzIGZvbGxvd2luZzoNCj4gLSB0aGUgdHlw
-ZSBvZiBmcmVxX3RhYmxlIDogdW5zaWduZWQgaW50IC0+IHVuc2lnbmVkIGxvbmcNCj4gLSB0aGUg
-dHlwZSBvZiBtYXhfc3RhdGUgIDogdW5zaWduZWQgaW50IC0+IGludA0KPiANCj4gU2lnbmVkLW9m
-Zi1ieTogQ2hhbndvbyBDaG9pIDxjdzAwLmNob2lAc2Ftc3VuZy5jb20+DQpbXQ0KPiArLyoqDQo+
-ICAgKiBkZXZmcmVxX3VwZGF0ZV9zdGF0dXMoKSAtIFVwZGF0ZSBzdGF0aXN0aWNzIG9mIGRldmZy
-ZXEgYmVoYXZpb3INCj4gICAqIEBkZXZmcmVxOgl0aGUgZGV2ZnJlcSBpbnN0YW5jZQ0KPiAgICog
-QGZyZXE6CXRoZSB1cGRhdGUgdGFyZ2V0IGZyZXF1ZW5jeQ0KPiBAQCAtNDc3LDcgKzUxNiwxMiBA
-QCBzdHJ1Y3QgZGV2ZnJlcSAqZGV2ZnJlcV9hZGRfZGV2aWNlKHN0cnVjdCBkZXZpY2UgKmRldiwN
-Cj4gIAlkZXZmcmVxLT5wcmV2aW91c19mcmVxID0gcHJvZmlsZS0+aW5pdGlhbF9mcmVxOw0KPiAg
-CWRldmZyZXEtPmRhdGEgPSBkYXRhOw0KPiAgCWRldmZyZXEtPm5iLm5vdGlmaWVyX2NhbGwgPSBk
-ZXZmcmVxX25vdGlmaWVyX2NhbGw7DQo+ICsJbXV0ZXhfdW5sb2NrKCZkZXZmcmVxLT5sb2NrKTsN
-Cj4gIA0KPiArCWlmIChkZXZmcmVxLT5wcm9maWxlLT5tYXhfc3RhdGUgPD0gMCAmJiAhZGV2ZnJl
-cS0+cHJvZmlsZS0+ZnJlcV90YWJsZSkNCj4gKwkJZGV2ZnJlcV9zZXRfZnJlcV90YWJsZShkZXZm
-cmVxKTsNCj4gKw0KPiArCW11dGV4X2xvY2soJmRldmZyZXEtPmxvY2spOw0KDQpBbnl3YXksIHdo
-YXQgYWJvdXQgbW9kaWZ5aW5nIHRoZSBibG9jayBhYm92ZSBhczoNCg0KKwlpZiAoIWRldmZyZXEt
-PnByb2ZpbGUtPm1heF9zdGF0ZSAmJiAhZGV2ZnJlcS0+cHJvZmlsZS0+ZnJlcV90YWJsZSkgew0K
-KwkJbXV0ZXhfdW5sb2NrKCZkZXZmcmVxLT5sb2NrKTsNCiAJCWRldmZyZXFfc2V0X2ZyZXFfdGFi
-bGUoZGV2ZnJlcSk7DQorCQltdXRleF9sb2NrKCZkZXZmcmVxLT5sb2NrKTsNCisJfQ0KDQo+ICAJ
-ZGV2ZnJlcS0+dHJhbnNfdGFibGUgPQlkZXZtX2t6YWxsb2MoZGV2LCBzaXplb2YodW5zaWduZWQg
-aW50KSAqDQo+ICAJCQkJCQlkZXZmcmVxLT5wcm9maWxlLT5tYXhfc3RhdGUgKg0KPiAgCQkJCQkJ
-ZGV2ZnJlcS0+cHJvZmlsZS0+bWF4X3N0YXRlLA0KW10NCg0KSWYgdGhhdCdzIG5vdCBhIHByb2Js
-ZW0sIEknbGwgc3F1YXNoDQpodHRwczovL2dpdC5rZXJuZWwub3JnL2NnaXQvbGludXgva2VybmVs
-L2dpdC9tengvZGV2ZnJlcS5naXQvY29tbWl0Lz9oPWZvci1yYWZhZWwmaWQ9NTVkZjJiNDNjZGI1
-YWM4MmQyNmI2NGQ3MzlmM2Q3NThjOWI3NDg2Yw0Kd2l0aCB0aGUgZ2l2ZW4gcGF0Y2guDQo=
+Add a node describing the Security ID memory to the
+Allwinner H3 .dtsi file.
 
+Signed-off-by: Josef Gajdusek <atx-MwjtXicnQwU@public.gmane.org>
+---
+ arch/arm/boot/dts/sun8i-h3.dtsi | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
+diff --git a/arch/arm/boot/dts/sun8i-h3.dtsi b/arch/arm/boot/dts/sun8i-h3.dtsi
+index 0faa38a..58de718 100644
+--- a/arch/arm/boot/dts/sun8i-h3.dtsi
++++ b/arch/arm/boot/dts/sun8i-h3.dtsi
+@@ -359,6 +359,13 @@
+ 			#size-cells = <0>;
+ 		};
+ 
++		sid: eeprom@01c14000 {
++			compatible = "allwinner,sun4i-a10-sid";
++			reg = <0x01c14000 0x400>;
++			#address-cells = <1>;
++			#size-cells = <1>;
++		};
++
+ 		usbphy: phy@01c19400 {
+ 			compatible = "allwinner,sun8i-h3-usb-phy";
+ 			reg = <0x01c19400 0x2c>,
+-- 
+2.4.10
