@@ -1,59 +1,129 @@
-From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
-Subject: Re: [PATCH V3 0/5] PM / OPP: opp-supported-hw and <prop>-name bindings
-Date: Tue, 24 Nov 2015 00:02:08 +0100
-Message-ID: <18133487.DZlYslOPCi@vostro.rjw.lan>
-References: <cover.1447209519.git.viresh.kumar@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V3 5/5] ARM: dts: exynos4412: Rename OPP nodes as opp@<opp-hz>
+Date: Tue, 24 Nov 2015 00:04 +0100
+Message-ID: <2407684.GgMbGa6LFq@vostro.rjw.lan>
+References: <cover.1447209519.git.viresh.kumar@linaro.org> <af18ab62fc9c52e082380ce5989ea287304c9bde.1447209519.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <cover.1447209519.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, nm-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:62382 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753085AbbKWWeW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 23 Nov 2015 17:34:22 -0500
+In-Reply-To: <af18ab62fc9c52e082380ce5989ea287304c9bde.1447209519.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: robh+dt@kernel.org, sboyd@codeaurora.org, lee.jones@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, mark.rutland@arm.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, nm@ti.com, devicetree@vger.kernel.org, b.zolnierkie@samsung.com, m.szyprowski@samsung.com, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, "moderated list:ARM PORT" <linux-arm-kernel@lists.infradead.org>, open list <linux-kernel@vger.kernel.org>, "moderated list:ARM/SAMSUNG EXYNOS ARM ARCHITECTURES" <linux-samsung-soc@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>
 
-On Wednesday, November 11, 2015 08:10:53 AM Viresh Kumar wrote:
-> Hi Rafael,
+On Wednesday, November 11, 2015 08:10:58 AM Viresh Kumar wrote:
+> OPP bindings got updated to name OPP nodes this way, make changes
+> according to that.
 > 
-> Rob only needs to Ack the modified 2/5 patch and then you can safely
-> apply this series.
+> Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  arch/arm/boot/dts/exynos4412.dtsi | 28 ++++++++++++++--------------
+>  1 file changed, 14 insertions(+), 14 deletions(-)
 > 
-> The first patch enables us to select only a subset of OPPs from the
-> bigger table, based on what version of the hardware we are running on.
+> diff --git a/arch/arm/boot/dts/exynos4412.dtsi b/arch/arm/boot/dts/exynos4412.dtsi
+> index 294cfe40388d..40beede46e55 100644
+> --- a/arch/arm/boot/dts/exynos4412.dtsi
+> +++ b/arch/arm/boot/dts/exynos4412.dtsi
+> @@ -64,73 +64,73 @@
+>  		compatible = "operating-points-v2";
+>  		opp-shared;
+>  
+> -		opp00 {
+> +		opp@200000000 {
+>  			opp-hz = /bits/ 64 <200000000>;
+>  			opp-microvolt = <900000>;
+>  			clock-latency-ns = <200000>;
+>  		};
+> -		opp01 {
+> +		opp@300000000 {
+>  			opp-hz = /bits/ 64 <300000000>;
+>  			opp-microvolt = <900000>;
+>  			clock-latency-ns = <200000>;
+>  		};
+> -		opp02 {
+> +		opp@400000000 {
+>  			opp-hz = /bits/ 64 <400000000>;
+>  			opp-microvolt = <925000>;
+>  			clock-latency-ns = <200000>;
+>  		};
+> -		opp03 {
+> +		opp@500000000 {
+>  			opp-hz = /bits/ 64 <500000000>;
+>  			opp-microvolt = <950000>;
+>  			clock-latency-ns = <200000>;
+>  		};
+> -		opp04 {
+> +		opp@600000000 {
+>  			opp-hz = /bits/ 64 <600000000>;
+>  			opp-microvolt = <975000>;
+>  			clock-latency-ns = <200000>;
+>  		};
+> -		opp05 {
+> +		opp@700000000 {
+>  			opp-hz = /bits/ 64 <700000000>;
+>  			opp-microvolt = <987500>;
+>  			clock-latency-ns = <200000>;
+>  		};
+> -		opp06 {
+> +		opp@800000000 {
+>  			opp-hz = /bits/ 64 <800000000>;
+>  			opp-microvolt = <1000000>;
+>  			clock-latency-ns = <200000>;
+>  			opp-suspend;
+>  		};
+> -		opp07 {
+> +		opp@900000000 {
+>  			opp-hz = /bits/ 64 <900000000>;
+>  			opp-microvolt = <1037500>;
+>  			clock-latency-ns = <200000>;
+>  		};
+> -		opp08 {
+> +		opp@1000000000 {
+>  			opp-hz = /bits/ 64 <1000000000>;
+>  			opp-microvolt = <1087500>;
+>  			clock-latency-ns = <200000>;
+>  		};
+> -		opp09 {
+> +		opp@1100000000 {
+>  			opp-hz = /bits/ 64 <1100000000>;
+>  			opp-microvolt = <1137500>;
+>  			clock-latency-ns = <200000>;
+>  		};
+> -		opp10 {
+> +		opp@1200000000 {
+>  			opp-hz = /bits/ 64 <1200000000>;
+>  			opp-microvolt = <1187500>;
+>  			clock-latency-ns = <200000>;
+>  		};
+> -		opp11 {
+> +		opp@1300000000 {
+>  			opp-hz = /bits/ 64 <1300000000>;
+>  			opp-microvolt = <1250000>;
+>  			clock-latency-ns = <200000>;
+>  		};
+> -		opp12 {
+> +		opp@1400000000 {
+>  			opp-hz = /bits/ 64 <1400000000>;
+>  			opp-microvolt = <1287500>;
+>  			clock-latency-ns = <200000>;
+>  		};
+> -		opp13 {
+> +		opp@1500000000 {
+>  			opp-hz = /bits/ 64 <1500000000>;
+>  			opp-microvolt = <1350000>;
+>  			clock-latency-ns = <200000>;
 > 
-> The second one enables us to select slightly different values for
-> multiple properties, based on what kind of hardware they are running on.
-> 
-> The third one removes an (unused) binding, which is replaced by the
-> second patch with a better solution.
-> 
-> The fourth patch is based on what Stephen suggested (and then reviewed)
-> in the earlier series, and the 5th one updates the existing users of
-> these bindings for it.
-> 
-> V2->V3:
-> - dropped turbo/suspend named properties
-> - Applied all the Acks
-> 
-> Viresh Kumar (5):
->   PM / OPP: Add "opp-supported-hw" binding
->   PM / OPP: Add {opp-microvolt|opp-microamp}-<name> binding
->   PM / OPP: Remove 'operating-points-names' binding
->   PM / OPP: Rename OPP nodes as opp@<opp-hz>
->   ARM: dts: exynos4412: Rename OPP nodes as opp@<opp-hz>
-> 
->  Documentation/devicetree/bindings/opp/opp.txt | 132 ++++++++++++++++++--------
->  arch/arm/boot/dts/exynos4412.dtsi             |  28 +++---
->  2 files changed, 107 insertions(+), 53 deletions(-)
 
-I'm tentatively queuing this series up for 4.5, but ACKs from Rob are
-still missing for patches [2,5/5] AFAICS.
+This one doesn't apply for me on top of the current Linus' tree, so please
+update.
 
 Thanks,
 Rafael
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
