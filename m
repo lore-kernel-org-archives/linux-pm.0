@@ -1,106 +1,78 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH V3] SKL intel_pstate update MSR values when changing
- governors
-Date: Mon, 23 Nov 2015 17:17:36 -0800
-Message-ID: <1448327856.24744.6.camel@spandruv-desk3.jf.intel.com>
-References: <1447887520-10399-1-git-send-email-alexandra.yates@linux.intel.com>
-	 <564FB7EE.6030507@linux.intel.com>
-	 <CAJZ5v0ic4PvuvXdNvr=2O4qGLP7kHvaAFjyLPT3goZTEo=LpHQ@mail.gmail.com>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [PATCH v1 1/2] intel_pstate: Use the cpu load to determine the PercentPerformance
+Date: Mon, 23 Nov 2015 17:33:39 -0800
+Message-ID: <001c01d12658$266277e0$732767a0$@net>
+References: <1446542840-14982-1-git-send-email-philippe.longepe@linux.intel.com> <1546343.Y03T7q8XC6@vostro.rjw.lan> <1446858868.5023.6.camel@linux.intel.com> <001701d12478$a65886b0$f3099410$@net> <5653149B.5090100@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain;
+	charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:4987 "EHLO mga03.intel.com"
+Received: from cmta15.telus.net ([209.171.16.88]:39628 "EHLO cmta15.telus.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752453AbbKXBSd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 23 Nov 2015 20:18:33 -0500
-In-Reply-To: <CAJZ5v0ic4PvuvXdNvr=2O4qGLP7kHvaAFjyLPT3goZTEo=LpHQ@mail.gmail.com>
+	id S1752211AbbKXBdn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 23 Nov 2015 20:33:43 -0500
+In-Reply-To: <5653149B.5090100@linux.intel.com>
+Content-Language: en-ca
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Alexandra Yates <alexandra.yates@linux.intel.com>, Len Brown <lenb@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: 'plongepe' <philippe.longepe@linux.intel.com>
+Cc: linux-pm@vger.kernel.org, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Stephane Gasparini' <stephane.gasparini@linux.intel.com>
 
-On Tue, 2015-11-24 at 02:09 +0100, Rafael J. Wysocki wrote:
-> Hi,
-> 
-> On Sat, Nov 21, 2015 at 1:16 AM, Srinivas Pandruvada
-> <srinivas.pandruvada@linux.intel.com> wrote:
-> >
-> >
-> > On 11/18/2015 02:58 PM, Alexandra Yates wrote:
-> >>
-> >> When changing from powersave to performance governors
-> >> Intel_pstate fails to update the MSR values that reflect the
-> >> max_perf_pct to 100%. For instance in SKL reading rdmsr 0x774:
-> >>
-> >> Governor        MSR                     max_perf_pct
-> >> =========       ========                ============
-> >> Powersave       80002808                100%
-> >> Powersave       80002008                80%
-> >> Performance     80002028 [error]        100%
-> >> Performance     80002828 [expected]     100%
-> >>
-> >> The line label [error] shows the culprit. At this point the MSR
-> >> should reflect the max_perf_pct that is 100%, that corresponds
-> >> to MSR 80002828 as shown on the next line of the example. Which
-> >> is the maximum performance for the Performance governor.
-> >> Instead it holds back the MSR value previously set by the
-> >> Powersave, in this case 80002028.
-> >>
-> >> This patch allows the system to print the correct MSR value
-> >> 80002828 that corresponds to the 100% max_perf_pct when changing
-> >> from powersave to performance governors.
-> 
-> Is this only about what is printed or does it mean that the driver
-> actually uses an incorrect MSR value?
-Driver was not configuring correct value in HWP MSR, which sets min and
-max limits, so the HWP is not using correct limits. In HWP case driver
-doesn't do anything other than setting this MSR.
-When she means print correct MSR, is that when changing the mode from
-powersave to peformance, when she prints MSRs (rdmsr 0x774), this
-doesn't have correct max limit.
-> 
-> >> For more information on the MSR values for SKL please visit
-> >> ISDM under Managing HWP.
-> >>
-> >> Signed-off-by: Alexandra Yates <alexandra.yates@linux.intel.com>
-> >
-> > Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> >>
-> >> ---
-> >>   drivers/cpufreq/intel_pstate.c | 2 ++
-> >>   1 file changed, 2 insertions(+)
-> >>
-> >> diff --git a/drivers/cpufreq/intel_pstate.c
-> >> b/drivers/cpufreq/intel_pstate.c
-> >> index 2e31d09..0eeb7da 100644
-> >> --- a/drivers/cpufreq/intel_pstate.c
-> >> +++ b/drivers/cpufreq/intel_pstate.c
-> >> @@ -1242,6 +1242,8 @@ static int intel_pstate_set_policy(struct
-> >> cpufreq_policy *policy)
-> >>             policy->max >= policy->cpuinfo.max_freq) {
-> >>                 pr_debug("intel_pstate: set performance\n");
-> >>                 limits = &performance_limits;
-> >> +               if (hwp_active)
-> >> +                       intel_pstate_hwp_set();
-> 
-> Honestly, I'm not really sure how this is matching the changelog.
-> 
-> What it does is to ensure that the correct limits are used when in the
-> HWP mode too as far as I can say.  Is my understanding correct here?
-Yes.
-> 
-> >>                 return 0;
-> >>         }
-> >>
-> >>
-> > --
-> 
-> Thanks,
-> Rafael
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+On 2015.11.23 05:29 plongepe wrote:
+> On 21/11/2015 17:21, Doug Smythies wrote:
+>> On 2015.11.06 17:14 Srinivas Pandruvada wrote:
+>> On Sat, 2015-11-07 at 02:09 +0100, Rafael J. Wysocki wrote:
+>>> On Tuesday, November 03, 2015 10:27:19 AM Philippe Longepe wrote:
+>>>> Aperf and Mperf counter are not enough to determine the Target P
+>>>> -state
+>>>> because they measure performance only when the targeted processor
+>>>> is
+>>>> in the C0 state (active state).
+>>>> Because of that, we were computing the average P-state during the
+>>>> last
+>>>> period which can be very different from the average frequency
+>>>> (or percentage of performance).
+>>>>
+>>>> As defined in the SDM (section 14.2), the PercentPerformance is
+>>>> defined by:
+>>>>
+>>>> PercentPerformance = PercentBusy * (delta_aperf / delta_mperf);
+>>>>
+>>>> The PercentBusy (or load) can be estimated as the ratio of the
+>>>> mperf
+>>>> counter running at a constant frequency only during active periods
+>>>> (C0)
+>>>> and the time stamp counter running at the same frequency but also
+>>>> during idle.
+>>>>
+>>>> So, PercentBusy = 100 * (delta_mperf / delta_tsc)
+>>>>
+>>>> and, PercentPerformance = 100 * (delta_mperf / delta_tsc) *
+>>>> 				(delta_aperf / delta_mperf)
+>>>> That can be simplified with:
+>>>> PercentPerformance = 100 * (delta_aperf / delta_tsc)
+>>
+>> Yes, but the last time I tried to bring back actual load calculations
+>> In a similar way it was pointed out that one should not do it this way.
+>> [1] SDM also states:
+>>
+>> "Only the IA32_APERF/IA32_MPERF ratio is architecturally defined;
+>> software should not attach meaning to the content of the individual of IA32_APERF or IA32_MPERF MSRs."
+>
+> Individual counters are not architecturally defined but their ratio is 
+> defined.
+> MERF and TSC counters are both counting at the same frequency (max non 
+> turbo freq)
+> but MPERF is counting only in active state (C0) and TSC is counting all 
+> the time.
+> So, delta_mperf/delta_tsc is representing the load.
+
+I agree.
+However, Intel should decide once and for all if mperf / tsc is allowed or not.
+It was used one time, then it was deleted, then I tried to bring it back,
+then I was told it wasn't allowed, now you are trying to bring it back.
+
+... Doug
 
 
