@@ -1,52 +1,68 @@
-From: Andrzej Hajda <a.hajda@samsung.com>
-Subject: Re: [RFD] Functional dependencies between devices
-Date: Tue, 24 Nov 2015 14:56:45 +0100
-Message-ID: <56546C9D.3090206@samsung.com>
-References: <1623682.7KVblAB3KQ@vostro.rjw.lan> <564B224D.3050904@samsung.com>
- <20151117135549.GR31303@sirena.org.uk> <564D7145.40300@samsung.com>
- <20151121140428.GJ26072@sirena.org.uk>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V3] SKL intel_pstate update MSR values when changing governors
+Date: Tue, 24 Nov 2015 15:28:40 +0100
+Message-ID: <8282537.nh6Mqkv7tq@vostro.rjw.lan>
+References: <1447887520-10399-1-git-send-email-alexandra.yates@linux.intel.com> <CAJZ5v0ic4PvuvXdNvr=2O4qGLP7kHvaAFjyLPT3goZTEo=LpHQ@mail.gmail.com> <1448327856.24744.6.camel@spandruv-desk3.jf.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20151121140428.GJ26072@sirena.org.uk>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Grant Likely <grant.likely@linaro.org>, Rob Herring <robh@kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Thierry Reding <treding@nvidia.com>, Dmitry Torokhov <dtor@google.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Michael Turquette <mturquette@baylibre.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:47528 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751946AbbKXN7B (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 Nov 2015 08:59:01 -0500
+In-Reply-To: <1448327856.24744.6.camel@spandruv-desk3.jf.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Alexandra Yates <alexandra.yates@linux.intel.com>, Len Brown <lenb@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 11/21/2015 03:04 PM, Mark Brown wrote:
-> On Thu, Nov 19, 2015 at 07:50:45AM +0100, Andrzej Hajda wrote:
->> On 11/17/2015 02:55 PM, Mark Brown wrote:
->>> This is going to be really common but I'm not sure I see a problem with
->>> it in terms of what Raphael is proposing - could you go into more detail
->>> on the problem you see here?
->> If clock provider is not a device driver and it depends on clocks of
->> another clock
->> provider you cannot 'translate' this dependency as dependency between
->> devices,
-> What makes you say that this is the case?  There should be nothing
-> stopping us having dependencies between two devices of the same type.
+On Monday, November 23, 2015 05:17:36 PM Srinivas Pandruvada wrote:
+> On Tue, 2015-11-24 at 02:09 +0100, Rafael J. Wysocki wrote:
+> > Hi,
+> > 
+> > On Sat, Nov 21, 2015 at 1:16 AM, Srinivas Pandruvada
+> > <srinivas.pandruvada@linux.intel.com> wrote:
+> > >
 
-To be clear I described situation that one clock provider uses clock
-of another clock provider and consumer is not modeled as device.
+[cut]
 
+> > 
+> > >> For more information on the MSR values for SKL please visit
+> > >> ISDM under Managing HWP.
+> > >>
+> > >> Signed-off-by: Alexandra Yates <alexandra.yates@linux.intel.com>
+> > >
+> > > Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> > >>
+> > >> ---
+> > >>   drivers/cpufreq/intel_pstate.c | 2 ++
+> > >>   1 file changed, 2 insertions(+)
+> > >>
+> > >> diff --git a/drivers/cpufreq/intel_pstate.c
+> > >> b/drivers/cpufreq/intel_pstate.c
+> > >> index 2e31d09..0eeb7da 100644
+> > >> --- a/drivers/cpufreq/intel_pstate.c
+> > >> +++ b/drivers/cpufreq/intel_pstate.c
+> > >> @@ -1242,6 +1242,8 @@ static int intel_pstate_set_policy(struct
+> > >> cpufreq_policy *policy)
+> > >>             policy->max >= policy->cpuinfo.max_freq) {
+> > >>                 pr_debug("intel_pstate: set performance\n");
+> > >>                 limits = &performance_limits;
+> > >> +               if (hwp_active)
+> > >> +                       intel_pstate_hwp_set();
+> > 
+> > Honestly, I'm not really sure how this is matching the changelog.
+> > 
+> > What it does is to ensure that the correct limits are used when in the
+> > HWP mode too as far as I can say.  Is my understanding correct here?
+> Yes.
 
->
->> so this RFD does not cover them.
->> Additionally if you look into kernel there are many calls in form
->> 'clk_get(NULL, name)',
->> it suggests that not only clock providers are consumers without
->> underlying device driver.
-> Like I said in my earlier reply:
->
-> | > - many clock providers, irq domains are not provided by devices,
->
-> | That seems like something we can and possibly should change if we want.
->
-> This applies just as much to consumers as to providers.
+OK
 
-OK, then it is just something to do :)
+But if we make the "performance" limits take effect here, it will effectively
+make HWP use min = max = 100%, right?  Is that what we want to happen here?
 
-Regards
-Andrzej
+Thanks,
+Rafael
+
