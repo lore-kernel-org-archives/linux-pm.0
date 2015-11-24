@@ -1,203 +1,145 @@
 From: Jia Hongtao <hongtao.jia@freescale.com>
-Subject: [PATCH V4 4/5] powerpc/mpc85xx: Add TMU device tree support for T1023/T1024
-Date: Tue, 24 Nov 2015 14:52:47 +0800
-Message-ID: <1448347968-37766-5-git-send-email-hongtao.jia@freescale.com>
+Subject: [PATCH V4 5/5] arm/ls1021a: Add TMU device tree support for LS1021A
+Date: Tue, 24 Nov 2015 14:52:48 +0800
+Message-ID: <1448347968-37766-6-git-send-email-hongtao.jia@freescale.com>
 References: <1448347968-37766-1-git-send-email-hongtao.jia@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bn1on0143.outbound.protection.outlook.com ([157.56.110.143]:35528
+Received: from mail-bn1on0136.outbound.protection.outlook.com ([157.56.110.136]:27904
 	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752161AbbKXHAQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 24 Nov 2015 02:00:16 -0500
+	id S1752119AbbKXHAR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 24 Nov 2015 02:00:17 -0500
 In-Reply-To: <1448347968-37766-1-git-send-email-hongtao.jia@freescale.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: edubezval@gmail.com
 Cc: linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, scottwood@freescale.com, hongtao.jia@freescale.com
 
-Also add nodes and properties for thermal management support. Meanwhile
-preprocessor support is needed using thermal of framework.
+Also add nodes and properties for thermal management support.
 
 Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
 Reviewed-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/boot/dts/fsl/t1023rdb.dts      |  2 +-
- arch/powerpc/boot/dts/fsl/t1023si-post.dtsi | 86 +++++++++++++++++++++++++++++
- arch/powerpc/boot/dts/fsl/t1024qds.dts      |  2 +-
- arch/powerpc/boot/dts/fsl/t1024rdb.dts      |  2 +-
- arch/powerpc/boot/dts/fsl/t1024si-post.dtsi |  2 +-
- arch/powerpc/boot/dts/fsl/t102xsi-pre.dtsi  |  2 +
- 6 files changed, 92 insertions(+), 4 deletions(-)
+ arch/arm/boot/dts/ls1021a.dtsi | 84 +++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 82 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/fsl/t1023rdb.dts b/arch/powerpc/boot/dts/fsl/t1023rdb.dts
-index 2b2fff4..6bd842b 100644
---- a/arch/powerpc/boot/dts/fsl/t1023rdb.dts
-+++ b/arch/powerpc/boot/dts/fsl/t1023rdb.dts
-@@ -159,4 +159,4 @@
- 	};
- };
+diff --git a/arch/arm/boot/dts/ls1021a.dtsi b/arch/arm/boot/dts/ls1021a.dtsi
+index 9430a99..d31a811 100644
+--- a/arch/arm/boot/dts/ls1021a.dtsi
++++ b/arch/arm/boot/dts/ls1021a.dtsi
+@@ -47,6 +47,7 @@
  
--/include/ "t1023si-post.dtsi"
-+#include "t1023si-post.dtsi"
-diff --git a/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
-index 518ddaa..99e421d 100644
---- a/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
-@@ -32,6 +32,8 @@
-  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-  */
- 
+ #include "skeleton64.dtsi"
+ #include <dt-bindings/interrupt-controller/arm-gic.h>
 +#include <dt-bindings/thermal/thermal.h>
-+
- &ifc {
- 	#address-cells = <2>;
- 	#size-cells = <1>;
-@@ -275,6 +277,90 @@
- 		reg = <0xea000 0x4000>;
- 	};
  
-+	tmu: tmu@f0000 {
-+		compatible = "fsl,qoriq-tmu";
-+		reg = <0xf0000 0x1000>;
-+		interrupts = <18 2 0 0>;
-+		fsl,tmu-range = <0xb0000 0xa0026 0x80048 0x30061>;
-+		fsl,tmu-calibration = <0x00000000 0x0000000f
-+				       0x00000001 0x00000017
-+				       0x00000002 0x0000001e
-+				       0x00000003 0x00000026
-+				       0x00000004 0x0000002e
-+				       0x00000005 0x00000035
-+				       0x00000006 0x0000003d
-+				       0x00000007 0x00000044
-+				       0x00000008 0x0000004c
-+				       0x00000009 0x00000053
-+				       0x0000000a 0x0000005b
-+				       0x0000000b 0x00000064
+ / {
+ 	compatible = "fsl,ls1021a";
+@@ -70,14 +71,15 @@
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+ 
+-		cpu@f00 {
++		cpu0: cpu@f00 {
+ 			compatible = "arm,cortex-a7";
+ 			device_type = "cpu";
+ 			reg = <0xf00>;
+ 			clocks = <&cluster1_clk>;
++			#cooling-cells = <2>;
+ 		};
+ 
+-		cpu@f01 {
++		cpu1: cpu@f01 {
+ 			compatible = "arm,cortex-a7";
+ 			device_type = "cpu";
+ 			reg = <0xf01>;
+@@ -226,6 +228,84 @@
+ 			};
+ 		};
+ 
++		tmu: tmu@1f00000 {
++			compatible = "fsl,qoriq-tmu";
++			reg = <0x0 0x1f00000 0x0 0x10000>;
++			interrupts = <GIC_SPI 61 IRQ_TYPE_LEVEL_HIGH>;
++			fsl,tmu-range = <0xb0000 0xa0026 0x80048 0x30061>;
++			fsl,tmu-calibration = <0x00000000 0x0000000f
++					       0x00000001 0x00000017
++					       0x00000002 0x0000001e
++					       0x00000003 0x00000026
++					       0x00000004 0x0000002e
++					       0x00000005 0x00000035
++					       0x00000006 0x0000003d
++					       0x00000007 0x00000044
++					       0x00000008 0x0000004c
++					       0x00000009 0x00000053
++					       0x0000000a 0x0000005b
++					       0x0000000b 0x00000064
 +
-+				       0x00010000 0x00000011
-+				       0x00010001 0x0000001c
-+				       0x00010002 0x00000024
-+				       0x00010003 0x0000002b
-+				       0x00010004 0x00000034
-+				       0x00010005 0x00000039
-+				       0x00010006 0x00000042
-+				       0x00010007 0x0000004c
-+				       0x00010008 0x00000051
-+				       0x00010009 0x0000005a
-+				       0x0001000a 0x00000063
++					       0x00010000 0x00000011
++					       0x00010001 0x0000001c
++					       0x00010002 0x00000024
++					       0x00010003 0x0000002b
++					       0x00010004 0x00000034
++					       0x00010005 0x00000039
++					       0x00010006 0x00000042
++					       0x00010007 0x0000004c
++					       0x00010008 0x00000051
++					       0x00010009 0x0000005a
++					       0x0001000a 0x00000063
 +
-+				       0x00020000 0x00000013
-+				       0x00020001 0x00000019
-+				       0x00020002 0x00000024
-+				       0x00020003 0x0000002c
-+				       0x00020004 0x00000035
-+				       0x00020005 0x0000003d
-+				       0x00020006 0x00000046
-+				       0x00020007 0x00000050
-+				       0x00020008 0x00000059
++					       0x00020000 0x00000013
++					       0x00020001 0x00000019
++					       0x00020002 0x00000024
++					       0x00020003 0x0000002c
++					       0x00020004 0x00000035
++					       0x00020005 0x0000003d
++					       0x00020006 0x00000046
++					       0x00020007 0x00000050
++					       0x00020008 0x00000059
 +
-+				       0x00030000 0x00000002
-+				       0x00030001 0x0000000d
-+				       0x00030002 0x00000019
-+				       0x00030003 0x00000024>;
-+		#thermal-sensor-cells = <0>;
-+	};
++					       0x00030000 0x00000002
++					       0x00030001 0x0000000d
++					       0x00030002 0x00000019
++					       0x00030003 0x00000024>;
++			#thermal-sensor-cells = <0>;
++		};
 +
-+	thermal-zones {
-+		cpu_thermal: cpu-thermal {
-+			polling-delay-passive = <1000>;
-+			polling-delay = <5000>;
++		thermal-zones {
++			cpu_thermal: cpu-thermal {
++				polling-delay-passive = <1000>;
++				polling-delay = <5000>;
 +
-+			thermal-sensors = <&tmu>;
++				thermal-sensors = <&tmu>;
 +
-+			trips {
-+				cpu_alert: cpu-alert {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "passive";
++				trips {
++					cpu_alert: cpu-alert {
++						temperature = <85000>;
++						hysteresis = <2000>;
++						type = "passive";
++					};
++					cpu_crit: cpu-crit {
++						temperature = <95000>;
++						hysteresis = <2000>;
++						type = "critical";
++					};
 +				};
-+				cpu_crit: cpu-crit {
-+					temperature = <95000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
 +
-+			cooling-maps {
-+				map0 {
-+					trip = <&cpu_alert>;
-+					cooling-device =
-+						<&cpu0 THERMAL_NO_LIMIT
++				cooling-maps {
++					map0 {
++						trip = <&cpu_alert>;
++						cooling-device =
++							<&cpu0 THERMAL_NO_LIMIT
 +							THERMAL_NO_LIMIT>;
-+				};
-+				map1 {
-+					trip = <&cpu_alert>;
-+					cooling-device =
-+						<&cpu1 THERMAL_NO_LIMIT
-+							THERMAL_NO_LIMIT>;
++					};
 +				};
 +			};
 +		};
-+	};
 +
- 	scfg: global-utilities@fc000 {
- 		compatible = "fsl,t1023-scfg";
- 		reg = <0xfc000 0x1000>;
-diff --git a/arch/powerpc/boot/dts/fsl/t1024qds.dts b/arch/powerpc/boot/dts/fsl/t1024qds.dts
-index 43cd5b5..6a3581b 100644
---- a/arch/powerpc/boot/dts/fsl/t1024qds.dts
-+++ b/arch/powerpc/boot/dts/fsl/t1024qds.dts
-@@ -248,4 +248,4 @@
- 	};
- };
- 
--/include/ "t1024si-post.dtsi"
-+#include "t1024si-post.dtsi"
-diff --git a/arch/powerpc/boot/dts/fsl/t1024rdb.dts b/arch/powerpc/boot/dts/fsl/t1024rdb.dts
-index 429d8c7..0ccc7d0 100644
---- a/arch/powerpc/boot/dts/fsl/t1024rdb.dts
-+++ b/arch/powerpc/boot/dts/fsl/t1024rdb.dts
-@@ -188,4 +188,4 @@
- 	};
- };
- 
--/include/ "t1024si-post.dtsi"
-+#include "t1024si-post.dtsi"
-diff --git a/arch/powerpc/boot/dts/fsl/t1024si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1024si-post.dtsi
-index 95e3af8..bb48034 100644
---- a/arch/powerpc/boot/dts/fsl/t1024si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t1024si-post.dtsi
-@@ -32,7 +32,7 @@
-  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-  */
- 
--/include/ "t1023si-post.dtsi"
-+#include "t1023si-post.dtsi"
- 
- / {
- 	aliases {
-diff --git a/arch/powerpc/boot/dts/fsl/t102xsi-pre.dtsi b/arch/powerpc/boot/dts/fsl/t102xsi-pre.dtsi
-index 3e1528a..9d08a36 100644
---- a/arch/powerpc/boot/dts/fsl/t102xsi-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t102xsi-pre.dtsi
-@@ -76,6 +76,7 @@
- 			reg = <0>;
- 			clocks = <&mux0>;
- 			next-level-cache = <&L2_1>;
-+			#cooling-cells = <2>;
- 			L2_1: l2-cache {
- 				next-level-cache = <&cpc>;
- 			};
-@@ -85,6 +86,7 @@
- 			reg = <1>;
- 			clocks = <&mux1>;
- 			next-level-cache = <&L2_2>;
-+			#cooling-cells = <2>;
- 			L2_2: l2-cache {
- 				next-level-cache = <&cpc>;
- 			};
+ 		dspi0: dspi@2100000 {
+ 			compatible = "fsl,ls1021a-v1.0-dspi";
+ 			#address-cells = <1>;
 -- 
 2.1.0.27.g96db324
 
