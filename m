@@ -1,70 +1,87 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH 2/3] thermal: Add Mediatek thermal controller support
-Date: Tue, 24 Nov 2015 08:53:07 +0100
-Message-ID: <20151124075307.GZ11966@pengutronix.de>
-References: <1447835066-10482-1-git-send-email-s.hauer@pengutronix.de>
- <1447835066-10482-3-git-send-email-s.hauer@pengutronix.de>
- <1448345169.2421.20.camel@mtksdaap41>
+From: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: Re: [PATCH v2 1/5] ARM: dts: sun8i: Add SID node
+Date: Tue, 24 Nov 2015 08:26:13 +0100
+Message-ID: <20151124072613.GF32142@lukather>
+References: <cover.1448263428.git.atx@atx.name>
+ <b897b1c8741c8a871163b84d01b480f99329536d.1448263428.git.atx@atx.name>
+ <20151123124356.GW32142@lukather>
+ <CAGb2v65qfaTdQqXHD=-FHz1M1sHCTro97QETZUH=vA2BbRS+7A@mail.gmail.com>
+ <20151124063808.GB32142@lukather>
+ <CAGb2v67aS+2vM8CLB=4ynFOvb14t+kiWjJvAa60U2nq22S8ZEw@mail.gmail.com>
+Reply-To: maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:36766 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751616AbbKXHxO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 Nov 2015 02:53:14 -0500
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="h6w+13shfCQ8v2Yw"
+Return-path: <linux-sunxi+bncBD2ZNBF5VYJRBCFS2CZAKGQEHLD7VOA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1448345169.2421.20.camel@mtksdaap41>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <CAGb2v67aS+2vM8CLB=4ynFOvb14t+kiWjJvAa60U2nq22S8ZEw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <http://groups.google.com/group/linux-sunxi
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+List-Subscribe: <http://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <http://groups.google.com/group/linux-sunxi/subscribe>
+To: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+Cc: Josef Gajdusek <atx-MwjtXicnQwU@public.gmane.org>, linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>, linux-clk <linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, gpatchesrdh-I1/eAgTnXDYAvxtiuMwx3w@public.gmane.org, Mike Turquette <mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Hans De Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Michael Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Emilio Lopez <emilio-0Z03zUJReD5OxF6Tv1QG9Q@public.gmane.org>, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: dawei chien <dawei.chien@mediatek.com>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, linux-mediatek@lists.infradead.org, kernel@pengutronix.de, Matthias Brugger <matthias.bgg@gmail.com>, linux-arm-kernel@lists.infradead.org
 
-On Tue, Nov 24, 2015 at 02:06:09PM +0800, dawei chien wrote:
-> Hi Sascha,
+--h6w+13shfCQ8v2Yw
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+
+On Tue, Nov 24, 2015 at 02:42:26PM +0800, Chen-Yu Tsai wrote:
+> On Tue, Nov 24, 2015 at 2:38 PM, Maxime Ripard
+> <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
+> > On Tue, Nov 24, 2015 at 11:13:13AM +0800, Chen-Yu Tsai wrote:
+> >> Hi,
+> >>
+> >> On Mon, Nov 23, 2015 at 8:43 PM, Maxime Ripard
+> >> <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
+> >> > Hi,
+> >> >
+> >> > On Mon, Nov 23, 2015 at 09:02:48AM +0100, Josef Gajdusek wrote:
+> >> >> Add a node describing the Security ID memory to the
+> >> >> Allwinner H3 .dtsi file.
+> >> >>
+> >> >> Signed-off-by: Josef Gajdusek <atx-MwjtXicnQwU@public.gmane.org>
+> >> >> ---
+> >> >>  arch/arm/boot/dts/sun8i-h3.dtsi | 7 +++++++
+> >> >>  1 file changed, 7 insertions(+)
+> >> >>
+> >> >> diff --git a/arch/arm/boot/dts/sun8i-h3.dtsi b/arch/arm/boot/dts/sun8i-h3.dtsi
+> >> >> index 0faa38a..58de718 100644
+> >> >> --- a/arch/arm/boot/dts/sun8i-h3.dtsi
+> >> >> +++ b/arch/arm/boot/dts/sun8i-h3.dtsi
+> >> >> @@ -359,6 +359,13 @@
+> >> >>                       #size-cells = <0>;
+> >> >>               };
+> >> >>
+> >> >> +             sid: eeprom@01c14000 {
+> >> >> +                     compatible = "allwinner,sun4i-a10-sid";
+> >> >> +                     reg = <0x01c14000 0x400>;
+> >> >
+> >> > The datasheet says it's 256 bytes wide, while the size here is of 1kB,
+> >> > is it intentional?
+> >>
+> >> My H3 datasheet (v1.1) says its 1 kB wide.
+> >
+> > Is it? in the Security ID section, it is said to be 2kb == 256B wide.
 > 
-> > +static int mtk_thermal_get_calibration_data(struct device *dev, struct mtk_thermal *mt)
-> > +{
-> > +	struct nvmem_cell *cell;
-> > +	u32 *buf;
-> > +	size_t len;
-> > +	int i, ret;
-> > +	/* Start with default values */
-> > +	mt->adc_ge = 512;
-> > +	for (i = 0; i < MT8173_NUM_SENSORS; i++)
-> > +		mt->vts[i] = 260;
-> > +	mt->degc_cali = 40;
-> > +	mt->o_slope = 0;
-> > +
-> > +	cell = nvmem_cell_get(dev, "calibration-data");
-> > +	if (IS_ERR(cell)) {
-> > +		if (PTR_ERR(cell) == -EPROBE_DEFER)
-> > +			return PTR_ERR(cell);
-> > +		return 0;
-> > +	}
-> > +
-> > +	buf = (u32 *)nvmem_cell_read(cell, &len);
-> > +
-> > +	nvmem_cell_put(cell);
-> > +
-> > +	if (IS_ERR(buf))
-> > +		return PTR_ERR(buf);
-> > +
-> > +	if (len < 3 * sizeof(u32)) {
-> > +		dev_warn(dev, "invalid calibration data\n");
-> > +		ret = -EINVAL;
-> > +		goto out;
-> > +	}
-> 
-> ret would not be assigned if the length of calibration data is correct.
-> Otherwise,
+> Right. I was looking at the memory map. Maybe it's sparsely mapped?
+> I guess we'll know soon.
 
-gcc does a increasingly bad job when it comes to warn about
-uninitialized variables :(
+If it is just like the A20, I think there's a few registers at the end
+to control the writes (that we don't use).
 
-Sascha
+Which means that the size of the fuses is smaller than the size of the
+mapped area (which also measn that our driver is broken making that
+assumption).
+
+Maxime
 
 -- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+Maxime Ripard, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
+--h6w+13shfCQ8v2Yw--
