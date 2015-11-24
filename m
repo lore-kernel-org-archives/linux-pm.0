@@ -1,348 +1,157 @@
-From: Jia Hongtao <hongtao.jia-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
-Subject: [PATCH V4 2/5] thermal: qoriq: Add thermal management support
-Date: Tue, 24 Nov 2015 14:52:45 +0800
-Message-ID: <1448347968-37766-3-git-send-email-hongtao.jia@freescale.com>
+From: Jia Hongtao <hongtao.jia@freescale.com>
+Subject: [PATCH V4 3/5] powerpc/mpc85xx: Add TMU device tree support for
+ T1040/T1042
+Date: Tue, 24 Nov 2015 14:52:46 +0800
+Message-ID: <1448347968-37766-4-git-send-email-hongtao.jia@freescale.com>
 References: <1448347968-37766-1-git-send-email-hongtao.jia@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1448347968-37766-1-git-send-email-hongtao.jia-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, scottwood-KZfg59tc24xl57MIdRCFDg@public.gmane.org, hongtao.jia-KZfg59tc24xl57MIdRCFDg@public.gmane.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+In-Reply-To: <1448347968-37766-1-git-send-email-hongtao.jia@freescale.com>
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+To: edubezval@gmail.com
+Cc: scottwood@freescale.com, devicetree@vger.kernel.org, hongtao.jia@freescale.com, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This driver add thermal management support by enabling TMU (Thermal
-Monitoring Unit) on QorIQ platform.
-
-It's based on thermal of framework:
-- Trip points defined in device tree.
-- Cpufreq as cooling device registered in qoriq cpufreq driver.
-
-Signed-off-by: Jia Hongtao <hongtao.jia-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
-Reviewed-by: Scott Wood <scottwood-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
----
-V4 changes:
-- Code cleanup:
-    * Remove unnecessary comments.
-    * Remove unnecessary cpufreq.h inclusion.
-    * Remove unnecessary ENABLE mode setting in probe function.
-    * Redefine tmu_get_temp function.
-
-V3 changes:
-- Using thermal of framework.
-
- drivers/thermal/Kconfig         |  10 ++
- drivers/thermal/Makefile        |   1 +
- drivers/thermal/qoriq_thermal.c | 262 ++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 273 insertions(+)
- create mode 100644 drivers/thermal/qoriq_thermal.c
-
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index c463c89..43a925c 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -194,6 +194,16 @@ config IMX_THERMAL
- 	  cpufreq is used as the cooling device to throttle CPUs when the
- 	  passive trip is crossed.
- 
-+config QORIQ_THERMAL
-+	tristate "Freescale QorIQ Thermal Monitoring Unit"
-+	depends on CPU_THERMAL
-+	depends on THERMAL_OF
-+	help
-+	  Enable thermal management based on Freescale QorIQ Thermal Monitoring
-+	  Unit (TMU). It supports one critical trip point and one passive trip
-+	  point. The cpufreq is used as the cooling device to throttle CPUs when
-+	  the passive trip is crossed.
-+
- config SPEAR_THERMAL
- 	bool "SPEAr thermal sensor driver"
- 	depends on PLAT_SPEAR || COMPILE_TEST
-diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index cfae6a6..e269979 100644
---- a/drivers/thermal/Makefile
-+++ b/drivers/thermal/Makefile
-@@ -36,6 +36,7 @@ obj-$(CONFIG_DOVE_THERMAL)  	+= dove_thermal.o
- obj-$(CONFIG_DB8500_THERMAL)	+= db8500_thermal.o
- obj-$(CONFIG_ARMADA_THERMAL)	+= armada_thermal.o
- obj-$(CONFIG_IMX_THERMAL)	+= imx_thermal.o
-+obj-$(CONFIG_QORIQ_THERMAL)	+= qoriq_thermal.o
- obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+= db8500_cpufreq_cooling.o
- obj-$(CONFIG_INTEL_POWERCLAMP)	+= intel_powerclamp.o
- obj-$(CONFIG_X86_PKG_TEMP_THERMAL)	+= x86_pkg_temp_thermal.o
-diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
-new file mode 100644
-index 0000000..2a563f9
---- /dev/null
-+++ b/drivers/thermal/qoriq_thermal.c
-@@ -0,0 +1,262 @@
-+/*
-+ * Copyright 2015 Freescale Semiconductor, Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/err.h>
-+#include <linux/io.h>
-+#include <linux/of.h>
-+#include <linux/of_address.h>
-+#include <linux/thermal.h>
-+
-+#include "thermal_core.h"
-+
-+#define SITES_MAX	16
-+
-+/*
-+ * QorIQ TMU Registers
-+ */
-+struct qoriq_tmu_site_regs {
-+	__be32 tritsr;		/* Immediate Temperature Site Register */
-+	__be32 tratsr;		/* Average Temperature Site Register */
-+	u8 res0[0x8];
-+} __packed;
-+
-+struct qoriq_tmu_regs {
-+	__be32 tmr;		/* Mode Register */
-+#define TMR_DISABLE	0x0
-+#define TMR_ME		0x80000000
-+#define TMR_ALPF	0x0c000000
-+#define TMR_MSITE	0x00008000	/* Core temperature site */
-+#define TMR_ALL		(TMR_ME | TMR_ALPF | TMR_MSITE)
-+	__be32 tsr;		/* Status Register */
-+	__be32 tmtmir;		/* Temperature measurement interval Register */
-+#define TMTMIR_DEFAULT	0x0000000f
-+	u8 res0[0x14];
-+	__be32 tier;		/* Interrupt Enable Register */
-+#define TIER_DISABLE	0x0
-+	__be32 tidr;		/* Interrupt Detect Register */
-+	__be32 tiscr;		/* Interrupt Site Capture Register */
-+	__be32 ticscr;		/* Interrupt Critical Site Capture Register */
-+	u8 res1[0x10];
-+	__be32 tmhtcrh;		/* High Temperature Capture Register */
-+	__be32 tmhtcrl;		/* Low Temperature Capture Register */
-+	u8 res2[0x8];
-+	__be32 tmhtitr;		/* High Temperature Immediate Threshold */
-+	__be32 tmhtatr;		/* High Temperature Average Threshold */
-+	__be32 tmhtactr;	/* High Temperature Average Crit Threshold */
-+	u8 res3[0x24];
-+	__be32 ttcfgr;		/* Temperature Configuration Register */
-+	__be32 tscfgr;		/* Sensor Configuration Register */
-+	u8 res4[0x78];
-+	struct qoriq_tmu_site_regs site[SITES_MAX];
-+	u8 res5[0x9f8];
-+	__be32 ipbrr0;		/* IP Block Revision Register 0 */
-+	__be32 ipbrr1;		/* IP Block Revision Register 1 */
-+	u8 res6[0x310];
-+	__be32 ttr0cr;		/* Temperature Range 0 Control Register */
-+	__be32 ttr1cr;		/* Temperature Range 1 Control Register */
-+	__be32 ttr2cr;		/* Temperature Range 2 Control Register */
-+	__be32 ttr3cr;		/* Temperature Range 3 Control Register */
-+};
-+
-+/*
-+ * Thermal zone data
-+ */
-+struct qoriq_tmu_data {
-+	struct thermal_zone_device *tz;
-+	struct qoriq_tmu_regs __iomem *regs;
-+};
-+
-+static int tmu_get_temp(void *p, int *temp)
-+{
-+	u32 val;
-+	struct qoriq_tmu_data *data = p;
-+
-+	val = ioread32be(&data->regs->site[0].tritsr);
-+	*temp = (val & 0xff) * 1000;
-+
-+	return 0;
-+}
-+
-+static int qoriq_tmu_calibration(struct platform_device *pdev)
-+{
-+	int i, val, len;
-+	u32 range[4];
-+	const __be32 *calibration;
-+	struct device_node *node = pdev->dev.of_node;
-+	struct qoriq_tmu_data *data = platform_get_drvdata(pdev);
-+
-+	/* Disable monitoring before calibration */
-+	iowrite32be(TMR_DISABLE, &data->regs->tmr);
-+
-+	if (of_property_read_u32_array(node, "fsl,tmu-range", range, 4)) {
-+		dev_err(&pdev->dev, "TMU: missing calibration range.\n");
-+		return -ENODEV;
-+	}
-+
-+	/* Init temperature range registers */
-+	iowrite32be(range[0], &data->regs->ttr0cr);
-+	iowrite32be(range[1], &data->regs->ttr1cr);
-+	iowrite32be(range[2], &data->regs->ttr2cr);
-+	iowrite32be(range[3], &data->regs->ttr3cr);
-+
-+	calibration = of_get_property(node, "fsl,tmu-calibration", &len);
-+	if (calibration == NULL) {
-+		dev_err(&pdev->dev, "TMU: missing calibration data.\n");
-+		return -ENODEV;
-+	}
-+
-+	for (i = 0; i < len; i += 8, calibration += 2) {
-+		val = of_read_number(calibration, 1);
-+		iowrite32be(val, &data->regs->ttcfgr);
-+		val = of_read_number(calibration + 1, 1);
-+		iowrite32be(val, &data->regs->tscfgr);
-+	}
-+
-+	return 0;
-+}
-+
-+static void qoriq_tmu_init_device(struct qoriq_tmu_data *data)
-+{
-+	/* Disable interrupt, using polling instead */
-+	iowrite32be(TIER_DISABLE, &data->regs->tier);
-+
-+	/* Set update_interval */
-+	iowrite32be(TMTMIR_DEFAULT, &data->regs->tmtmir);
-+
-+	/* Enable monitoring */
-+	iowrite32be(TMR_ALL, &data->regs->tmr);
-+}
-+
-+static struct thermal_zone_of_device_ops tmu_tz_ops = {
-+	.get_temp = tmu_get_temp,
-+};
-+
-+static int qoriq_tmu_probe(struct platform_device *pdev)
-+{
-+	int ret;
-+	const struct thermal_trip *trip;
-+	struct qoriq_tmu_data *data;
-+
-+	if (!pdev->dev.of_node) {
-+		dev_err(&pdev->dev, "Device OF-Node is NULL");
-+		return -ENODEV;
-+	}
-+
-+	data = devm_kzalloc(&pdev->dev, sizeof(struct qoriq_tmu_data),
-+			    GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+
-+	platform_set_drvdata(pdev, data);
-+	data->regs = of_iomap(pdev->dev.of_node, 0);
-+
-+	if (!data->regs) {
-+		dev_err(&pdev->dev, "Failed to get memory region\n");
-+		ret = -ENODEV;
-+		goto err_iomap;
-+	}
-+
-+	ret = qoriq_tmu_calibration(pdev);	/* TMU calibration */
-+	if (ret < 0)
-+		goto err_tmu;
-+
-+	qoriq_tmu_init_device(data);	/* TMU initialization */
-+
-+	data->tz = thermal_zone_of_sensor_register(&pdev->dev, 0,
-+				data, &tmu_tz_ops);
-+	if (IS_ERR(data->tz)) {
-+		ret = PTR_ERR(data->tz);
-+		dev_err(&pdev->dev,
-+			"Failed to register thermal zone device %d\n", ret);
-+		goto err_tmu;
-+	}
-+
-+	trip = of_thermal_get_trip_points(data->tz);
-+
-+	return 0;
-+
-+err_tmu:
-+	iounmap(data->regs);
-+
-+err_iomap:
-+	platform_set_drvdata(pdev, NULL);
-+	devm_kfree(&pdev->dev, data);
-+
-+	return ret;
-+}
-+
-+static int qoriq_tmu_remove(struct platform_device *pdev)
-+{
-+	struct qoriq_tmu_data *data = platform_get_drvdata(pdev);
-+
-+	/* Disable monitoring */
-+	iowrite32be(TMR_DISABLE, &data->regs->tmr);
-+
-+	thermal_zone_of_sensor_unregister(&pdev->dev, data->tz);
-+	iounmap(data->regs);
-+
-+	platform_set_drvdata(pdev, NULL);
-+	devm_kfree(&pdev->dev, data);
-+
-+	return 0;
-+}
-+
-+#ifdef CONFIG_PM_SLEEP
-+static int qoriq_tmu_suspend(struct device *dev)
-+{
-+	struct qoriq_tmu_data *data = dev_get_drvdata(dev);
-+
-+	/* Disable monitoring */
-+	iowrite32be(TMR_DISABLE, &data->regs->tmr);
-+	data->tz->ops->set_mode(data->tz, THERMAL_DEVICE_DISABLED);
-+
-+	return 0;
-+}
-+
-+static int qoriq_tmu_resume(struct device *dev)
-+{
-+	struct qoriq_tmu_data *data = dev_get_drvdata(dev);
-+
-+	/* Enable monitoring */
-+	iowrite32be(TMR_ALL, &data->regs->tmr);
-+	data->tz->ops->set_mode(data->tz, THERMAL_DEVICE_ENABLED);
-+
-+	return 0;
-+}
-+#endif
-+
-+static SIMPLE_DEV_PM_OPS(qoriq_tmu_pm_ops,
-+			 qoriq_tmu_suspend, qoriq_tmu_resume);
-+
-+static const struct of_device_id qoriq_tmu_match[] = {
-+	{ .compatible = "fsl,qoriq-tmu", },
-+	{},
-+};
-+
-+static struct platform_driver qoriq_tmu = {
-+	.driver	= {
-+		.name		= "qoriq_thermal",
-+		.pm		= &qoriq_tmu_pm_ops,
-+		.of_match_table	= qoriq_tmu_match,
-+	},
-+	.probe	= qoriq_tmu_probe,
-+	.remove	= qoriq_tmu_remove,
-+};
-+module_platform_driver(qoriq_tmu);
-+
-+MODULE_AUTHOR("Jia Hongtao <hongtao.jia-KZfg59tc24xl57MIdRCFDg@public.gmane.org>");
-+MODULE_DESCRIPTION("Freescale QorIQ Thermal Monitoring Unit driver");
-+MODULE_LICENSE("GPL v2");
--- 
-2.1.0.27.g96db324
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+QWxzbyBhZGQgbm9kZXMgYW5kIHByb3BlcnRpZXMgZm9yIHRoZXJtYWwgbWFuYWdlbWVudCBzdXBw
+b3J0LiBNZWFud2hpbGUKcHJlcHJvY2Vzc29yIHN1cHBvcnQgaXMgbmVlZGVkIHVzaW5nIHRoZXJt
+YWwgb2YgZnJhbWV3b3JrLgoKU2lnbmVkLW9mZi1ieTogSmlhIEhvbmd0YW8gPGhvbmd0YW8uamlh
+QGZyZWVzY2FsZS5jb20+ClJldmlld2VkLWJ5OiBTY290dCBXb29kIDxzY290dHdvb2RAZnJlZXNj
+YWxlLmNvbT4KLS0tCiBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QxMDQwZDRyZGIuZHRzICAg
+IHwgIDIgKy0KIGFyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvdDEwNDBxZHMuZHRzICAgICAgfCAg
+MiArLQogYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90MTA0MHJkYi5kdHMgICAgICB8ICAyICst
+CiBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QxMDQwc2ktcG9zdC5kdHNpIHwgOTQgKysrKysr
+KysrKysrKysrKysrKysrKysrKysrKysKIGFyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvdDEwNDJk
+NHJkYi5kdHMgICAgfCAgMiArLQogYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90MTA0MnFkcy5k
+dHMgICAgICB8ICAyICstCiBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QxMDQycmRiLmR0cyAg
+ICAgIHwgIDIgKy0KIGFyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvdDEwNDJyZGJfcGkuZHRzICAg
+fCAgMiArLQogYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90MTA0MnNpLXBvc3QuZHRzaSB8ICAy
+ICstCiBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QxMDR4c2ktcHJlLmR0c2kgIHwgIDQgKysK
+IDEwIGZpbGVzIGNoYW5nZWQsIDEwNiBpbnNlcnRpb25zKCspLCA4IGRlbGV0aW9ucygtKQoKZGlm
+ZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvdDEwNDBkNHJkYi5kdHMgYi9hcmNo
+L3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QxMDQwZDRyZGIuZHRzCmluZGV4IDY4MTc0NmUuLmZiNmJj
+MDIgMTAwNjQ0Ci0tLSBhL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvdDEwNDBkNHJkYi5kdHMK
+KysrIGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90MTA0MGQ0cmRiLmR0cwpAQCAtNDMsNCAr
+NDMsNCBAQAogCWludGVycnVwdC1wYXJlbnQgPSA8Jm1waWM+OwogfTsKIAotL2luY2x1ZGUvICJ0
+MTA0MHNpLXBvc3QuZHRzaSIKKyNpbmNsdWRlICJ0MTA0MHNpLXBvc3QuZHRzaSIKZGlmZiAtLWdp
+dCBhL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvdDEwNDBxZHMuZHRzIGIvYXJjaC9wb3dlcnBj
+L2Jvb3QvZHRzL2ZzbC90MTA0MHFkcy5kdHMKaW5kZXggNGQyOTg2NS4uNWY3NmVkYyAxMDA2NDQK
+LS0tIGEvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90MTA0MHFkcy5kdHMKKysrIGIvYXJjaC9w
+b3dlcnBjL2Jvb3QvZHRzL2ZzbC90MTA0MHFkcy5kdHMKQEAgLTQzLDQgKzQzLDQgQEAKIAlpbnRl
+cnJ1cHQtcGFyZW50ID0gPCZtcGljPjsKIH07CiAKLS9pbmNsdWRlLyAidDEwNDBzaS1wb3N0LmR0
+c2kiCisjaW5jbHVkZSAidDEwNDBzaS1wb3N0LmR0c2kiCmRpZmYgLS1naXQgYS9hcmNoL3Bvd2Vy
+cGMvYm9vdC9kdHMvZnNsL3QxMDQwcmRiLmR0cyBiL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wv
+dDEwNDByZGIuZHRzCmluZGV4IDhmOWU2NWIuLmNmMTk0MTUgMTAwNjQ0Ci0tLSBhL2FyY2gvcG93
+ZXJwYy9ib290L2R0cy9mc2wvdDEwNDByZGIuZHRzCisrKyBiL2FyY2gvcG93ZXJwYy9ib290L2R0
+cy9mc2wvdDEwNDByZGIuZHRzCkBAIC00NSw0ICs0NSw0IEBACiAJfTsKIH07CiAKLS9pbmNsdWRl
+LyAidDEwNDBzaS1wb3N0LmR0c2kiCisjaW5jbHVkZSAidDEwNDBzaS1wb3N0LmR0c2kiCmRpZmYg
+LS1naXQgYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QxMDQwc2ktcG9zdC5kdHNpIGIvYXJj
+aC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90MTA0MHNpLXBvc3QuZHRzaQppbmRleCBkMzBiM2RlLi5l
+MGY0ZGE1IDEwMDY0NAotLS0gYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QxMDQwc2ktcG9z
+dC5kdHNpCisrKyBiL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvdDEwNDBzaS1wb3N0LmR0c2kK
+QEAgLTMyLDYgKzMyLDggQEAKICAqIFNPRlRXQVJFLCBFVkVOIElGIEFEVklTRUQgT0YgVEhFIFBP
+U1NJQklMSVRZIE9GIFNVQ0ggREFNQUdFLgogICovCiAKKyNpbmNsdWRlIDxkdC1iaW5kaW5ncy90
+aGVybWFsL3RoZXJtYWwuaD4KKwogJmJtYW5fZmJwciB7CiAJY29tcGF0aWJsZSA9ICJmc2wsYm1h
+bi1mYnByIjsKIAlhbGxvYy1yYW5nZXMgPSA8MCAwIDB4MTAwMDAgMD47CkBAIC00ODQsNiArNDg2
+LDk4IEBACiAJCXJlZwkgICA9IDwweGVhMDAwIDB4NDAwMD47CiAJfTsKIAorCXRtdTogdG11QGYw
+MDAwIHsKKwkJY29tcGF0aWJsZSA9ICJmc2wscW9yaXEtdG11IjsKKwkJcmVnID0gPDB4ZjAwMDAg
+MHgxMDAwPjsKKwkJaW50ZXJydXB0cyA9IDwxOCAyIDAgMD47CisJCWZzbCx0bXUtcmFuZ2UgPSA8
+MHhhMDAwMCAweDkwMDI2IDB4ODAwNGEgMHgxMDA2YT47CisJCWZzbCx0bXUtY2FsaWJyYXRpb24g
+PSA8MHgwMDAwMDAwMCAweDAwMDAwMDI1CisJCQkJICAgICAgIDB4MDAwMDAwMDEgMHgwMDAwMDAy
+OAorCQkJCSAgICAgICAweDAwMDAwMDAyIDB4MDAwMDAwMmQKKwkJCQkgICAgICAgMHgwMDAwMDAw
+MyAweDAwMDAwMDMxCisJCQkJICAgICAgIDB4MDAwMDAwMDQgMHgwMDAwMDAzNgorCQkJCSAgICAg
+ICAweDAwMDAwMDA1IDB4MDAwMDAwM2EKKwkJCQkgICAgICAgMHgwMDAwMDAwNiAweDAwMDAwMDQw
+CisJCQkJICAgICAgIDB4MDAwMDAwMDcgMHgwMDAwMDA0NAorCQkJCSAgICAgICAweDAwMDAwMDA4
+IDB4MDAwMDAwNGEKKwkJCQkgICAgICAgMHgwMDAwMDAwOSAweDAwMDAwMDRmCisJCQkJICAgICAg
+IDB4MDAwMDAwMGEgMHgwMDAwMDA1NAorCisJCQkJICAgICAgIDB4MDAwMTAwMDAgMHgwMDAwMDAw
+ZAorCQkJCSAgICAgICAweDAwMDEwMDAxIDB4MDAwMDAwMTMKKwkJCQkgICAgICAgMHgwMDAxMDAw
+MiAweDAwMDAwMDE5CisJCQkJICAgICAgIDB4MDAwMTAwMDMgMHgwMDAwMDAxZgorCQkJCSAgICAg
+ICAweDAwMDEwMDA0IDB4MDAwMDAwMjUKKwkJCQkgICAgICAgMHgwMDAxMDAwNSAweDAwMDAwMDJk
+CisJCQkJICAgICAgIDB4MDAwMTAwMDYgMHgwMDAwMDAzMworCQkJCSAgICAgICAweDAwMDEwMDA3
+IDB4MDAwMDAwNDMKKwkJCQkgICAgICAgMHgwMDAxMDAwOCAweDAwMDAwMDRiCisJCQkJICAgICAg
+IDB4MDAwMTAwMDkgMHgwMDAwMDA1MworCisJCQkJICAgICAgIDB4MDAwMjAwMDAgMHgwMDAwMDAx
+MAorCQkJCSAgICAgICAweDAwMDIwMDAxIDB4MDAwMDAwMTcKKwkJCQkgICAgICAgMHgwMDAyMDAw
+MiAweDAwMDAwMDFmCisJCQkJICAgICAgIDB4MDAwMjAwMDMgMHgwMDAwMDAyOQorCQkJCSAgICAg
+ICAweDAwMDIwMDA0IDB4MDAwMDAwMzEKKwkJCQkgICAgICAgMHgwMDAyMDAwNSAweDAwMDAwMDNj
+CisJCQkJICAgICAgIDB4MDAwMjAwMDYgMHgwMDAwMDA0MgorCQkJCSAgICAgICAweDAwMDIwMDA3
+IDB4MDAwMDAwNGQKKwkJCQkgICAgICAgMHgwMDAyMDAwOCAweDAwMDAwMDU2CisKKwkJCQkgICAg
+ICAgMHgwMDAzMDAwMCAweDAwMDAwMDEyCisJCQkJICAgICAgIDB4MDAwMzAwMDEgMHgwMDAwMDAx
+ZD47CisJCSN0aGVybWFsLXNlbnNvci1jZWxscyA9IDwwPjsKKwl9OworCisJdGhlcm1hbC16b25l
+cyB7CisJCWNwdV90aGVybWFsOiBjcHUtdGhlcm1hbCB7CisJCQlwb2xsaW5nLWRlbGF5LXBhc3Np
+dmUgPSA8MTAwMD47CisJCQlwb2xsaW5nLWRlbGF5ID0gPDUwMDA+OworCisJCQl0aGVybWFsLXNl
+bnNvcnMgPSA8JnRtdT47CisKKwkJCXRyaXBzIHsKKwkJCQljcHVfYWxlcnQ6IGNwdS1hbGVydCB7
+CisJCQkJCXRlbXBlcmF0dXJlID0gPDg1MDAwPjsKKwkJCQkJaHlzdGVyZXNpcyA9IDwyMDAwPjsK
+KwkJCQkJdHlwZSA9ICJwYXNzaXZlIjsKKwkJCQl9OworCQkJCWNwdV9jcml0OiBjcHUtY3JpdCB7
+CisJCQkJCXRlbXBlcmF0dXJlID0gPDk1MDAwPjsKKwkJCQkJaHlzdGVyZXNpcyA9IDwyMDAwPjsK
+KwkJCQkJdHlwZSA9ICJjcml0aWNhbCI7CisJCQkJfTsKKwkJCX07CisKKwkJCWNvb2xpbmctbWFw
+cyB7CisJCQkJbWFwMCB7CisJCQkJCXRyaXAgPSA8JmNwdV9hbGVydD47CisJCQkJCWNvb2xpbmct
+ZGV2aWNlID0KKwkJCQkJCTwmY3B1MCBUSEVSTUFMX05PX0xJTUlUCisJCQkJCQkJVEhFUk1BTF9O
+T19MSU1JVD47CisJCQkJfTsKKwkJCQltYXAxIHsKKwkJCQkJdHJpcCA9IDwmY3B1X2FsZXJ0PjsK
+KwkJCQkJY29vbGluZy1kZXZpY2UgPQorCQkJCQkJPCZjcHUxIFRIRVJNQUxfTk9fTElNSVQKKwkJ
+CQkJCQlUSEVSTUFMX05PX0xJTUlUPjsKKwkJCQl9OworCQkJCW1hcDIgeworCQkJCQl0cmlwID0g
+PCZjcHVfYWxlcnQ+OworCQkJCQljb29saW5nLWRldmljZSA9CisJCQkJCQk8JmNwdTIgVEhFUk1B
+TF9OT19MSU1JVAorCQkJCQkJCVRIRVJNQUxfTk9fTElNSVQ+OworCQkJCX07CisJCQkJbWFwMyB7
+CisJCQkJCXRyaXAgPSA8JmNwdV9hbGVydD47CisJCQkJCWNvb2xpbmctZGV2aWNlID0KKwkJCQkJ
+CTwmY3B1MyBUSEVSTUFMX05PX0xJTUlUCisJCQkJCQkJVEhFUk1BTF9OT19MSU1JVD47CisJCQkJ
+fTsKKwkJCX07CisJCX07CisJfTsKKwogCXNjZmc6IGdsb2JhbC11dGlsaXRpZXNAZmMwMDAgewog
+CQljb21wYXRpYmxlID0gImZzbCx0MTA0MC1zY2ZnIjsKIAkJcmVnID0gPDB4ZmMwMDAgMHgxMDAw
+PjsKZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvdDEwNDJkNHJkYi5kdHMg
+Yi9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QxMDQyZDRyZGIuZHRzCmluZGV4IGIyNDViMzEu
+LjJhNWE5MGQgMTAwNjQ0Ci0tLSBhL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvdDEwNDJkNHJk
+Yi5kdHMKKysrIGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90MTA0MmQ0cmRiLmR0cwpAQCAt
+NTAsNCArNTAsNCBAQAogCX07CiB9OwogCi0vaW5jbHVkZS8gInQxMDQwc2ktcG9zdC5kdHNpIgor
+I2luY2x1ZGUgInQxMDQyc2ktcG9zdC5kdHNpIgpkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2Jv
+b3QvZHRzL2ZzbC90MTA0MnFkcy5kdHMgYi9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QxMDQy
+cWRzLmR0cwppbmRleCA0YWI5YmJlLi45MGE0YTczIDEwMDY0NAotLS0gYS9hcmNoL3Bvd2VycGMv
+Ym9vdC9kdHMvZnNsL3QxMDQycWRzLmR0cworKysgYi9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNs
+L3QxMDQycWRzLmR0cwpAQCAtNDMsNCArNDMsNCBAQAogCWludGVycnVwdC1wYXJlbnQgPSA8Jm1w
+aWM+OwogfTsKIAotL2luY2x1ZGUvICJ0MTA0MnNpLXBvc3QuZHRzaSIKKyNpbmNsdWRlICJ0MTA0
+MnNpLXBvc3QuZHRzaSIKZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvdDEw
+NDJyZGIuZHRzIGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90MTA0MnJkYi5kdHMKaW5kZXgg
+NjdhZjU2Yi4uOGQ5MDhlNyAxMDA2NDQKLS0tIGEvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90
+MTA0MnJkYi5kdHMKKysrIGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90MTA0MnJkYi5kdHMK
+QEAgLTQ1LDQgKzQ1LDQgQEAKIAl9OwogfTsKIAotL2luY2x1ZGUvICJ0MTA0MnNpLXBvc3QuZHRz
+aSIKKyNpbmNsdWRlICJ0MTA0MnNpLXBvc3QuZHRzaSIKZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJw
+Yy9ib290L2R0cy9mc2wvdDEwNDJyZGJfcGkuZHRzIGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2Zz
+bC90MTA0MnJkYl9waS5kdHMKaW5kZXggMmY2NzY3Ny4uOThjMDAxMCAxMDA2NDQKLS0tIGEvYXJj
+aC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90MTA0MnJkYl9waS5kdHMKKysrIGIvYXJjaC9wb3dlcnBj
+L2Jvb3QvZHRzL2ZzbC90MTA0MnJkYl9waS5kdHMKQEAgLTU0LDQgKzU0LDQgQEAKIAl9OwogfTsK
+IAotL2luY2x1ZGUvICJ0MTA0MnNpLXBvc3QuZHRzaSIKKyNpbmNsdWRlICJ0MTA0MnNpLXBvc3Qu
+ZHRzaSIKZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvdDEwNDJzaS1wb3N0
+LmR0c2kgYi9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QxMDQyc2ktcG9zdC5kdHNpCmluZGV4
+IDMxOWI3NGYuLmE1NTQ0ZjkgMTAwNjQ0Ci0tLSBhL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wv
+dDEwNDJzaS1wb3N0LmR0c2kKKysrIGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90MTA0MnNp
+LXBvc3QuZHRzaQpAQCAtMzIsNiArMzIsNiBAQAogICogU09GVFdBUkUsIEVWRU4gSUYgQURWSVNF
+RCBPRiBUSEUgUE9TU0lCSUxJVFkgT0YgU1VDSCBEQU1BR0UuCiAgKi8KIAotL2luY2x1ZGUvICJ0
+MTA0MHNpLXBvc3QuZHRzaSIKKyNpbmNsdWRlICJ0MTA0MHNpLXBvc3QuZHRzaSIKIAogLyogUGxh
+Y2UgaG9sZGVyIGZvciBldGhlcm5ldCByZWxhdGVkIGRldmljZSB0cmVlIG5vZGVzICovCmRpZmYg
+LS1naXQgYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QxMDR4c2ktcHJlLmR0c2kgYi9hcmNo
+L3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QxMDR4c2ktcHJlLmR0c2kKaW5kZXggZmNmYTM4YS4uNmRi
+MGVlOCAxMDA2NDQKLS0tIGEvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90MTA0eHNpLXByZS5k
+dHNpCisrKyBiL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvdDEwNHhzaS1wcmUuZHRzaQpAQCAt
+NzYsNiArNzYsNyBAQAogCQkJcmVnID0gPDA+OwogCQkJY2xvY2tzID0gPCZtdXgwPjsKIAkJCW5l
+eHQtbGV2ZWwtY2FjaGUgPSA8JkwyXzE+OworCQkJI2Nvb2xpbmctY2VsbHMgPSA8Mj47CiAJCQlM
+Ml8xOiBsMi1jYWNoZSB7CiAJCQkJbmV4dC1sZXZlbC1jYWNoZSA9IDwmY3BjPjsKIAkJCX07CkBA
+IC04NSw2ICs4Niw3IEBACiAJCQlyZWcgPSA8MT47CiAJCQljbG9ja3MgPSA8Jm11eDE+OwogCQkJ
+bmV4dC1sZXZlbC1jYWNoZSA9IDwmTDJfMj47CisJCQkjY29vbGluZy1jZWxscyA9IDwyPjsKIAkJ
+CUwyXzI6IGwyLWNhY2hlIHsKIAkJCQluZXh0LWxldmVsLWNhY2hlID0gPCZjcGM+OwogCQkJfTsK
+QEAgLTk0LDYgKzk2LDcgQEAKIAkJCXJlZyA9IDwyPjsKIAkJCWNsb2NrcyA9IDwmbXV4Mj47CiAJ
+CQluZXh0LWxldmVsLWNhY2hlID0gPCZMMl8zPjsKKwkJCSNjb29saW5nLWNlbGxzID0gPDI+Owog
+CQkJTDJfMzogbDItY2FjaGUgewogCQkJCW5leHQtbGV2ZWwtY2FjaGUgPSA8JmNwYz47CiAJCQl9
+OwpAQCAtMTAzLDYgKzEwNiw3IEBACiAJCQlyZWcgPSA8Mz47CiAJCQljbG9ja3MgPSA8Jm11eDM+
+OwogCQkJbmV4dC1sZXZlbC1jYWNoZSA9IDwmTDJfND47CisJCQkjY29vbGluZy1jZWxscyA9IDwy
+PjsKIAkJCUwyXzQ6IGwyLWNhY2hlIHsKIAkJCQluZXh0LWxldmVsLWNhY2hlID0gPCZjcGM+Owog
+CQkJfTsKLS0gCjIuMS4wLjI3Lmc5NmRiMzI0CgpfX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fXwpMaW51eHBwYy1kZXYgbWFpbGluZyBsaXN0CkxpbnV4cHBjLWRl
+dkBsaXN0cy5vemxhYnMub3JnCmh0dHBzOi8vbGlzdHMub3psYWJzLm9yZy9saXN0aW5mby9saW51
+eHBwYy1kZXY=
