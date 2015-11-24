@@ -1,159 +1,203 @@
-From: Sugar Wu <shugelinux-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH v2 1/5] ARM: dts: sun8i: Add SID node
-Date: Mon, 23 Nov 2015 22:51:15 -0800 (PST)
-Message-ID: <a7d4e538-db64-476d-b5de-5222419229a2@googlegroups.com>
-References: <cover.1448263428.git.atx@atx.name>
- <b897b1c8741c8a871163b84d01b480f99329536d.1448263428.git.atx@atx.name>
- <20151123124356.GW32142@lukather>
-Reply-To: shugelinux-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+From: Jia Hongtao <hongtao.jia@freescale.com>
+Subject: [PATCH V4 4/5] powerpc/mpc85xx: Add TMU device tree support for T1023/T1024
+Date: Tue, 24 Nov 2015 14:52:47 +0800
+Message-ID: <1448347968-37766-5-git-send-email-hongtao.jia@freescale.com>
+References: <1448347968-37766-1-git-send-email-hongtao.jia@freescale.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_Part_7799_1307141804.1448347875675"
-Return-path: <linux-sunxi+bncBCYY37UO6AHRBZER2CZAKGQET2JJELA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-In-Reply-To: <20151123124356.GW32142@lukather>
-List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <http://groups.google.com/group/linux-sunxi
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-List-Subscribe: <http://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <http://groups.google.com/group/linux-sunxi/subscribe>
-To: linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Cc: atx-MwjtXicnQwU@public.gmane.org, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gpatchesrdh-I1/eAgTnXDYAvxtiuMwx3w@public.gmane.org, mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, emilio-0Z03zUJReD5OxF6Tv1QG9Q@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bn1on0143.outbound.protection.outlook.com ([157.56.110.143]:35528
+	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752161AbbKXHAQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 24 Nov 2015 02:00:16 -0500
+In-Reply-To: <1448347968-37766-1-git-send-email-hongtao.jia@freescale.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, scottwood@freescale.com, hongtao.jia@freescale.com
 
-------=_Part_7799_1307141804.1448347875675
-Content-Type: multipart/alternative;
-	boundary="----=_Part_7800_1893462329.1448347875675"
+Also add nodes and properties for thermal management support. Meanwhile
+preprocessor support is needed using thermal of framework.
 
-------=_Part_7800_1893462329.1448347875675
-Content-Type: text/plain; charset=UTF-8
+Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+Reviewed-by: Scott Wood <scottwood@freescale.com>
+---
+ arch/powerpc/boot/dts/fsl/t1023rdb.dts      |  2 +-
+ arch/powerpc/boot/dts/fsl/t1023si-post.dtsi | 86 +++++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/t1024qds.dts      |  2 +-
+ arch/powerpc/boot/dts/fsl/t1024rdb.dts      |  2 +-
+ arch/powerpc/boot/dts/fsl/t1024si-post.dtsi |  2 +-
+ arch/powerpc/boot/dts/fsl/t102xsi-pre.dtsi  |  2 +
+ 6 files changed, 92 insertions(+), 4 deletions(-)
 
-
-
-On Monday, November 23, 2015 at 8:43:59 PM UTC+8, Maxime Ripard wrote:
->
-> Hi, 
->
-> On Mon, Nov 23, 2015 at 09:02:48AM +0100, Josef Gajdusek wrote: 
-> > Add a node describing the Security ID memory to the 
-> > Allwinner H3 .dtsi file. 
-> > 
-> > Signed-off-by: Josef Gajdusek <a...-MwjtXicnQwU@public.gmane.org <javascript:>> 
-> > --- 
-> >  arch/arm/boot/dts/sun8i-h3.dtsi | 7 +++++++ 
-> >  1 file changed, 7 insertions(+) 
-> > 
-> > diff --git a/arch/arm/boot/dts/sun8i-h3.dtsi 
-> b/arch/arm/boot/dts/sun8i-h3.dtsi 
-> > index 0faa38a..58de718 100644 
-> > --- a/arch/arm/boot/dts/sun8i-h3.dtsi 
-> > +++ b/arch/arm/boot/dts/sun8i-h3.dtsi 
-> > @@ -359,6 +359,13 @@ 
-> >                          #size-cells = <0>; 
-> >                  }; 
-> >   
-> > +                sid: eeprom@01c14000 { 
-> > +                        compatible = "allwinner,sun4i-a10-sid"; 
-> > +                        reg = <0x01c14000 0x400>; 
->
-> The datasheet says it's 256 bytes wide, while the size here is of 1kB, 
-> is it intentional? 
-
-SID memory map is 0x01c14000 ~ 0x01c143FF, include 2048bits efuse space.
-H3 efuse space is SID_SRAM, its range is  0x01c14200 ~ +0x100.
-
->  
->
-Thanks, 
-> Maxime 
->
-> -- 
-> Maxime Ripard, Free Electrons 
-> Embedded Linux, Kernel and Android engineering 
-> http://free-electrons.com 
->
-
+diff --git a/arch/powerpc/boot/dts/fsl/t1023rdb.dts b/arch/powerpc/boot/dts/fsl/t1023rdb.dts
+index 2b2fff4..6bd842b 100644
+--- a/arch/powerpc/boot/dts/fsl/t1023rdb.dts
++++ b/arch/powerpc/boot/dts/fsl/t1023rdb.dts
+@@ -159,4 +159,4 @@
+ 	};
+ };
+ 
+-/include/ "t1023si-post.dtsi"
++#include "t1023si-post.dtsi"
+diff --git a/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
+index 518ddaa..99e421d 100644
+--- a/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
+@@ -32,6 +32,8 @@
+  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ 
++#include <dt-bindings/thermal/thermal.h>
++
+ &ifc {
+ 	#address-cells = <2>;
+ 	#size-cells = <1>;
+@@ -275,6 +277,90 @@
+ 		reg = <0xea000 0x4000>;
+ 	};
+ 
++	tmu: tmu@f0000 {
++		compatible = "fsl,qoriq-tmu";
++		reg = <0xf0000 0x1000>;
++		interrupts = <18 2 0 0>;
++		fsl,tmu-range = <0xb0000 0xa0026 0x80048 0x30061>;
++		fsl,tmu-calibration = <0x00000000 0x0000000f
++				       0x00000001 0x00000017
++				       0x00000002 0x0000001e
++				       0x00000003 0x00000026
++				       0x00000004 0x0000002e
++				       0x00000005 0x00000035
++				       0x00000006 0x0000003d
++				       0x00000007 0x00000044
++				       0x00000008 0x0000004c
++				       0x00000009 0x00000053
++				       0x0000000a 0x0000005b
++				       0x0000000b 0x00000064
++
++				       0x00010000 0x00000011
++				       0x00010001 0x0000001c
++				       0x00010002 0x00000024
++				       0x00010003 0x0000002b
++				       0x00010004 0x00000034
++				       0x00010005 0x00000039
++				       0x00010006 0x00000042
++				       0x00010007 0x0000004c
++				       0x00010008 0x00000051
++				       0x00010009 0x0000005a
++				       0x0001000a 0x00000063
++
++				       0x00020000 0x00000013
++				       0x00020001 0x00000019
++				       0x00020002 0x00000024
++				       0x00020003 0x0000002c
++				       0x00020004 0x00000035
++				       0x00020005 0x0000003d
++				       0x00020006 0x00000046
++				       0x00020007 0x00000050
++				       0x00020008 0x00000059
++
++				       0x00030000 0x00000002
++				       0x00030001 0x0000000d
++				       0x00030002 0x00000019
++				       0x00030003 0x00000024>;
++		#thermal-sensor-cells = <0>;
++	};
++
++	thermal-zones {
++		cpu_thermal: cpu-thermal {
++			polling-delay-passive = <1000>;
++			polling-delay = <5000>;
++
++			thermal-sensors = <&tmu>;
++
++			trips {
++				cpu_alert: cpu-alert {
++					temperature = <85000>;
++					hysteresis = <2000>;
++					type = "passive";
++				};
++				cpu_crit: cpu-crit {
++					temperature = <95000>;
++					hysteresis = <2000>;
++					type = "critical";
++				};
++			};
++
++			cooling-maps {
++				map0 {
++					trip = <&cpu_alert>;
++					cooling-device =
++						<&cpu0 THERMAL_NO_LIMIT
++							THERMAL_NO_LIMIT>;
++				};
++				map1 {
++					trip = <&cpu_alert>;
++					cooling-device =
++						<&cpu1 THERMAL_NO_LIMIT
++							THERMAL_NO_LIMIT>;
++				};
++			};
++		};
++	};
++
+ 	scfg: global-utilities@fc000 {
+ 		compatible = "fsl,t1023-scfg";
+ 		reg = <0xfc000 0x1000>;
+diff --git a/arch/powerpc/boot/dts/fsl/t1024qds.dts b/arch/powerpc/boot/dts/fsl/t1024qds.dts
+index 43cd5b5..6a3581b 100644
+--- a/arch/powerpc/boot/dts/fsl/t1024qds.dts
++++ b/arch/powerpc/boot/dts/fsl/t1024qds.dts
+@@ -248,4 +248,4 @@
+ 	};
+ };
+ 
+-/include/ "t1024si-post.dtsi"
++#include "t1024si-post.dtsi"
+diff --git a/arch/powerpc/boot/dts/fsl/t1024rdb.dts b/arch/powerpc/boot/dts/fsl/t1024rdb.dts
+index 429d8c7..0ccc7d0 100644
+--- a/arch/powerpc/boot/dts/fsl/t1024rdb.dts
++++ b/arch/powerpc/boot/dts/fsl/t1024rdb.dts
+@@ -188,4 +188,4 @@
+ 	};
+ };
+ 
+-/include/ "t1024si-post.dtsi"
++#include "t1024si-post.dtsi"
+diff --git a/arch/powerpc/boot/dts/fsl/t1024si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1024si-post.dtsi
+index 95e3af8..bb48034 100644
+--- a/arch/powerpc/boot/dts/fsl/t1024si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t1024si-post.dtsi
+@@ -32,7 +32,7 @@
+  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ 
+-/include/ "t1023si-post.dtsi"
++#include "t1023si-post.dtsi"
+ 
+ / {
+ 	aliases {
+diff --git a/arch/powerpc/boot/dts/fsl/t102xsi-pre.dtsi b/arch/powerpc/boot/dts/fsl/t102xsi-pre.dtsi
+index 3e1528a..9d08a36 100644
+--- a/arch/powerpc/boot/dts/fsl/t102xsi-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/t102xsi-pre.dtsi
+@@ -76,6 +76,7 @@
+ 			reg = <0>;
+ 			clocks = <&mux0>;
+ 			next-level-cache = <&L2_1>;
++			#cooling-cells = <2>;
+ 			L2_1: l2-cache {
+ 				next-level-cache = <&cpc>;
+ 			};
+@@ -85,6 +86,7 @@
+ 			reg = <1>;
+ 			clocks = <&mux1>;
+ 			next-level-cache = <&L2_2>;
++			#cooling-cells = <2>;
+ 			L2_2: l2-cache {
+ 				next-level-cache = <&cpc>;
+ 			};
 -- 
-You received this message because you are subscribed to the Google Groups "linux-sunxi" group.
-To unsubscribe from this group and stop receiving emails from it, send an email to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
+2.1.0.27.g96db324
 
-------=_Part_7800_1893462329.1448347875675
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-<br><br>On Monday, November 23, 2015 at 8:43:59 PM UTC+8, Maxime Ripard wro=
-te:<blockquote class=3D"gmail_quote" style=3D"margin: 0;margin-left: 0.8ex;=
-border-left: 1px #ccc solid;padding-left: 1ex;">Hi,
-<br>
-<br>On Mon, Nov 23, 2015 at 09:02:48AM +0100, Josef Gajdusek wrote:
-<br>&gt; Add a node describing the Security ID memory to the
-<br>&gt; Allwinner H3 .dtsi file.
-<br>&gt;=20
-<br>&gt; Signed-off-by: Josef Gajdusek &lt;<a href=3D"javascript:" target=
-=3D"_blank" gdf-obfuscated-mailto=3D"C2JONr6XCAAJ" rel=3D"nofollow" onmouse=
-down=3D"this.href=3D&#39;javascript:&#39;;return true;" onclick=3D"this.hre=
-f=3D&#39;javascript:&#39;;return true;">a...-MwjtXicnQwU@public.gmane.org</a>&gt;
-<br>&gt; ---
-<br>&gt; =C2=A0arch/arm/boot/dts/sun8i-h3.<wbr>dtsi | 7 +++++++
-<br>&gt; =C2=A01 file changed, 7 insertions(+)
-<br>&gt;=20
-<br>&gt; diff --git a/arch/arm/boot/dts/sun8i-h3.<wbr>dtsi b/arch/arm/boot/=
-dts/sun8i-h3.<wbr>dtsi
-<br>&gt; index 0faa38a..58de718 100644
-<br>&gt; --- a/arch/arm/boot/dts/sun8i-h3.<wbr>dtsi
-<br>&gt; +++ b/arch/arm/boot/dts/sun8i-h3.<wbr>dtsi
-<br>&gt; @@ -359,6 +359,13 @@
-<br>&gt; =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0#<wbr>size-cells =3D &lt;0&gt;;
-<br>&gt; =C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0};
-<br>&gt; =C2=A0
-<br>&gt; +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0sid: eeprom@01c14000 {
-<br>&gt; +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0<wbr>compatible =3D &quot;allwinner,sun4i-a10-sid&quot;;
-<br>&gt; +=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=
-=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
-=C2=A0reg =3D &lt;0x01c14000 0x400&gt;;
-<br>
-<br>The datasheet says it&#39;s 256 bytes wide, while the size here is of 1=
-kB,
-<br>is it intentional? </blockquote><div>SID memory map is 0x01c14000 ~ 0x0=
-1c143FF, include 2048bits efuse space.</div><div>H3 efuse space is SID_SRAM=
-, its range is =C2=A00x01c14200 ~ +0x100.</div><blockquote class=3D"gmail_q=
-uote" style=3D"margin: 0;margin-left: 0.8ex;border-left: 1px #ccc solid;pad=
-ding-left: 1ex;">=C2=A0<br></blockquote><blockquote class=3D"gmail_quote" s=
-tyle=3D"margin: 0;margin-left: 0.8ex;border-left: 1px #ccc solid;padding-le=
-ft: 1ex;">Thanks,
-<br>Maxime
-<br>
-<br>--=20
-<br>Maxime Ripard, Free Electrons
-<br>Embedded Linux, Kernel and Android engineering
-<br><a href=3D"http://free-electrons.com" target=3D"_blank" rel=3D"nofollow=
-" onmousedown=3D"this.href=3D&#39;http://www.google.com/url?q\75http%3A%2F%=
-2Ffree-electrons.com\46sa\75D\46sntz\0751\46usg\75AFQjCNGC8C9pT7xKJEabITLGL=
-5cqtolifQ&#39;;return true;" onclick=3D"this.href=3D&#39;http://www.google.=
-com/url?q\75http%3A%2F%2Ffree-electrons.com\46sa\75D\46sntz\0751\46usg\75AF=
-QjCNGC8C9pT7xKJEabITLGL5cqtolifQ&#39;;return true;">http://free-electrons.c=
-om</a>
-<br></blockquote>
-
-<p></p>
-
--- <br />
-You received this message because you are subscribed to the Google Groups &=
-quot;linux-sunxi&quot; group.<br />
-To unsubscribe from this group and stop receiving emails from it, send an e=
-mail to <a href=3D"mailto:linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org">linux-s=
-unxi+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org</a>.<br />
-For more options, visit <a href=3D"https://groups.google.com/d/optout">http=
-s://groups.google.com/d/optout</a>.<br />
-
-------=_Part_7800_1893462329.1448347875675--
-
-------=_Part_7799_1307141804.1448347875675--
