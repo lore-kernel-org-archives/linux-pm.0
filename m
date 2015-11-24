@@ -1,77 +1,74 @@
 From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [PATCH v1 1/2] intel_pstate: Use the cpu load to determine the PercentPerformance
-Date: Mon, 23 Nov 2015 17:33:39 -0800
-Message-ID: <001c01d12658$266277e0$732767a0$@net>
-References: <1446542840-14982-1-git-send-email-philippe.longepe@linux.intel.com> <1546343.Y03T7q8XC6@vostro.rjw.lan> <1446858868.5023.6.camel@linux.intel.com> <001701d12478$a65886b0$f3099410$@net> <5653149B.5090100@linux.intel.com>
+Subject: RE: [PATCH v1 5/5] cpufreq: intel_pstate: try load instead of busy_scaled
+Date: Mon, 23 Nov 2015 17:33:55 -0800
+Message-ID: <001d01d12658$2f9e5c20$8edb1460$@net>
+References: <1448284006-13596-1-git-send-email-philippe.longepe@linux.intel.com> <1448284006-13596-11-git-send-email-philippe.longepe@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain;
-	charset="UTF-8"
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cmta15.telus.net ([209.171.16.88]:39628 "EHLO cmta15.telus.net"
+Received: from cmta14.telus.net ([209.171.16.87]:49874 "EHLO cmta14.telus.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752211AbbKXBdn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 23 Nov 2015 20:33:43 -0500
-In-Reply-To: <5653149B.5090100@linux.intel.com>
+	id S1752211AbbKXBd6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 23 Nov 2015 20:33:58 -0500
+In-Reply-To: <1448284006-13596-11-git-send-email-philippe.longepe@linux.intel.com>
 Content-Language: en-ca
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: 'plongepe' <philippe.longepe@linux.intel.com>
-Cc: linux-pm@vger.kernel.org, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Stephane Gasparini' <stephane.gasparini@linux.intel.com>
+To: 'Philippe Longepe' <philippe.longepe@linux.intel.com>
+Cc: srinivas.pandruvada@linux.intel.com, 'Philippe Longepe' <philippe.longepe@intel.com>, 'Stephane Gasparini' <stephane.gasparini@intel.com>, linux-pm@vger.kernel.org
 
-On 2015.11.23 05:29 plongepe wrote:
-> On 21/11/2015 17:21, Doug Smythies wrote:
->> On 2015.11.06 17:14 Srinivas Pandruvada wrote:
->> On Sat, 2015-11-07 at 02:09 +0100, Rafael J. Wysocki wrote:
->>> On Tuesday, November 03, 2015 10:27:19 AM Philippe Longepe wrote:
->>>> Aperf and Mperf counter are not enough to determine the Target P
->>>> -state
->>>> because they measure performance only when the targeted processor
->>>> is
->>>> in the C0 state (active state).
->>>> Because of that, we were computing the average P-state during the
->>>> last
->>>> period which can be very different from the average frequency
->>>> (or percentage of performance).
->>>>
->>>> As defined in the SDM (section 14.2), the PercentPerformance is
->>>> defined by:
->>>>
->>>> PercentPerformance = PercentBusy * (delta_aperf / delta_mperf);
->>>>
->>>> The PercentBusy (or load) can be estimated as the ratio of the
->>>> mperf
->>>> counter running at a constant frequency only during active periods
->>>> (C0)
->>>> and the time stamp counter running at the same frequency but also
->>>> during idle.
->>>>
->>>> So, PercentBusy = 100 * (delta_mperf / delta_tsc)
->>>>
->>>> and, PercentPerformance = 100 * (delta_mperf / delta_tsc) *
->>>> 				(delta_aperf / delta_mperf)
->>>> That can be simplified with:
->>>> PercentPerformance = 100 * (delta_aperf / delta_tsc)
->>
->> Yes, but the last time I tried to bring back actual load calculations
->> In a similar way it was pointed out that one should not do it this way.
->> [1] SDM also states:
->>
->> "Only the IA32_APERF/IA32_MPERF ratio is architecturally defined;
->> software should not attach meaning to the content of the individual of IA32_APERF or IA32_MPERF MSRs."
->
-> Individual counters are not architecturally defined but their ratio is 
-> defined.
-> MERF and TSC counters are both counting at the same frequency (max non 
-> turbo freq)
-> but MPERF is counting only in active state (C0) and TSC is counting all 
-> the time.
-> So, delta_mperf/delta_tsc is representing the load.
+On 2015.11.23 05:07 Philippe Longepe wrote:
 
-I agree.
-However, Intel should decide once and for all if mperf / tsc is allowed or not.
-It was used one time, then it was deleted, then I tried to bring it back,
-then I was told it wasn't allowed, now you are trying to bring it back.
+> The time spent in iowait is converted into cycles at max freq,
+> so it increases the load during IOs.
+...
+> +	cummulative_iowait = get_cpu_iowait_time_us(cpu->cpu, &now);
+...
+
+Did you consider to use get_cpu_idle_time_us(cpu_num, NULL) instead?
+Why? Because it doesn't include iowait time, and thus just subtract
+it from the kernel time to get the load, including iowait.
+
+Crudely, below is what I have been trying for a month now (which also
+makes the is mpref / tsc allowed or not discussion moot, because it
+isn't used). Note, it can include iowait or not, you can observe by the
+commented out lines (I have been testing both methods):
+
+@@ -726,21 +737,32 @@ static inline void intel_pstate_sample(struct cpudata *cpu)
+ 
+ 	tsc = rdtsc();
+ 	local_irq_restore(flags);
++	time = ktime_get();
++	idle_us = get_cpu_idle_time_us(cpu_num, NULL);
++//	io_wait_us = get_cpu_iowait_time_us(cpu_num, NULL);
++	if (idle_us == -1ULL) {
++		/* !NO_HZ so we can rely on cpustat.idle */
++		idle = kcpustat_cpu(cpu_num).cpustat[CPUTIME_IDLE];
++//		io_wait = kcpustat_cpu(cpu_num).cpustat[CPUTIME_IOWAIT];
++		idle_us = cputime_to_usecs(idle);
++//		io_wait_us = cputime_to_usecs(io_wait);
++	}
+...
++	cpu->sample.duration_us = ktime_us_delta(time, cpu->prev_time);
++	cpu->sample.idle_us = idle_us - cpu->prev_idle_us;
++//	cpu->sample.io_wait_us = io_wait_us - cpu->prev_io_wait_us;
+
+And then the load calculation becomes (I use units of tenths of a percent in my stuff):
+
+-	core_pct = int_tofp(sample->mperf) * int_tofp(1000);
+-	core_pct = div64_u64(core_pct, int_tofp(sample->tsc));
++//	core_pct = sample->duration_us - sample->idle_us - sample->io_wait_us;
++	core_pct = sample->duration_us - sample->idle_us;
++	if (core_pct < 0) core_pct = 0;
++	core_pct = int_tofp(core_pct) * int_tofp(1000);
++	core_pct = div64_u64(core_pct, int_tofp(sample->duration_us));
+
+In the above notice the special NO_HZ case. I don't this area well,
+but I was of the understanding that the NO_HZ case requires special code.
+(see also: fs/proc/stat.c, which is where I stole this stuff.) Note
+that I haven't actually tested NO_HZ mode yet.
 
 ... Doug
 
