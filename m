@@ -1,186 +1,157 @@
-From: Eric Anholt <eric@anholt.net>
-Subject: Re: [PATCH 2/3] ARM: bcm2835: add rpi power domain driver
-Date: Tue, 24 Nov 2015 13:43:56 -0800
-Message-ID: <87bnajrs2r.fsf@eliezer.anholt.net>
-References: <1447956490-22930-1-git-send-email-alex.aring@gmail.com> <1447956490-22930-3-git-send-email-alex.aring@gmail.com>
+From: Andreas Kemnade <andreas@kemnade.info>
+Subject: Re: [Gta04-owner] [PATCH 10/13] twl4030_charger: add software
+ controlled linear charging mode.
+Date: Tue, 24 Nov 2015 23:31:38 +0100
+Message-ID: <20151124233138.077e1dba@kemnade.info>
+References: <20150730001113.4012.18086.stgit@noble>
+	<20150730001124.4012.27784.stgit@noble>
+	<20150915112825.GA10704@amd>
+	<87bncjjesu.fsf@notabene.neil.brown.name>
+	<20151006143407.GA24518@xo-6d-61-c0.localdomain>
+	<20151029172041.2a9cd266@kemnade.info>
+	<20151114181216.GB20429@amd>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-	micalg=pgp-sha512; protocol="application/pgp-signature"
+Content-Type: multipart/signed; micalg=PGP-SHA1;
+ boundary="Sig_/LmjN=weoj7YwIaLDFBW9PMh"; protocol="application/pgp-signature"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gabe.freedesktop.org ([131.252.210.177]:47796 "EHLO
-	gabe.freedesktop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752006AbbKXVoA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 Nov 2015 16:44:00 -0500
-In-Reply-To: <1447956490-22930-3-git-send-email-alex.aring@gmail.com>
+Received: from glaubenleben.de ([85.214.105.140]:43312 "EHLO glaubenleben.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753948AbbKXWcB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 24 Nov 2015 17:32:01 -0500
+In-Reply-To: <20151114181216.GB20429@amd>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-rpi-kernel@lists.infradead.org
-Cc: robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, swarren@wwwdotorg.org, lee@kernel.org, linux@arm.linux.org.uk, f.fainelli@gmail.com, rjui@broadcom.com, sbranden@broadcom.com, rjw@rjwysocki.net, khilman@kernel.org, ulf.hansson@linaro.org, len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, bcm-kernel-feedback-list@broadcom.com, linux-pm@vger.kernel.org, kernel@pengutronix.de, Alexander Aring <alex.aring@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: List for communicating with real GTA04 owners <gta04-owner@goldelico.com>, Neil Brown <neil@brown.name>, Samuel Ortiz <sameo@linux.intel.com>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Lee Jones <lee.jones@linaro.org>, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-omap@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
 
---=-=-=
-Content-Type: text/plain
+--Sig_/LmjN=weoj7YwIaLDFBW9PMh
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: quoted-printable
 
-Alexander Aring <alex.aring@gmail.com> writes:
+On Sat, 14 Nov 2015 19:12:16 +0100
+Pavel Machek <pavel@ucw.cz> wrote:
 
-> This patch adds support for RPi several Power Domains and enable support
-> to enable the USB Power Domain when it's not enabled before.
+> Hi!
+>=20
+> > > > Pavel Machek <pavel@ucw.cz> writes:
+> > > > > On Thu 2015-07-30 10:11:24, NeilBrown wrote:
+> > > > >>=20
+> > > > >> Add a 'continuous' option for usb charging which enables
+> > > > >> the "linear" charging mode of the twl4030.
+> > > > >>=20
+> > > > >> Linear charging does a good job with not-so-reliable power sourc=
+es.
+> > > > >> Auto mode does not work well as it switches off when voltage dro=
+ps
+> > > > >> momentarily.  Care must be taken not to over-charge.
+> > > > >
+> > > > > Can you explain how the user can "care not to over-charge"?
+> > > >=20
+> > > > The following text reads:
+> > > >=20
+> > > >     It was used with a bike hub dynamo since a year or so. In that =
+case
+> > > >     there are automatically charging stops when the cyclist needs a=
+ break.
+> > > >=20
+> > > > so: take a break from cycling occasionally.
+> > >=20
+> > > If the charger does not exceed 4.2V, I'd not call it overcharge. (Yes=
+, some clever
+> > > chargers actually let the battery drop below 4.2V when charge is done=
+, but...)
+> > >=20
+> > Yes, that is the case. Perhaps it is not to be called overcharge but
+> > it is said that lithium battery charging has to stop if in CV mode the
+> > current drops too low.  In automatic mode the charger does exactly
+> > that.
+> > I would not let a battery for days at 4.2V CV.mode although a lot
+> > of cheap chargers
+>=20
+> Well, I agree that keeping battery at 4.2V constant voltage mode is
+> bad, but I'd not call it overcharge. If someone can fix the comment,
+> that would be nice.
 >
-> This patch based on Eric Anholt's patch to support Power Domains. He had
-> an issue about -EPROBE_DEFER inside the power domain subsystem, this
-> issue was solved by commit <311fa6a> ("PM / Domains: Return -EPROBE_DEFER
-> if we fail to init or turn-on domain").
+here is my original comment ("on" was replaced by continuous "now"):
 
-Glad to see you pick this up!
+    twl4030_charger: add software controlled linear charging mode.
+   =20
+       adds a sysfs control node to achieve that.
+       It can be set to
+       auto: normal automatic charging is enabled (default)
+       off: charging is off
+       on: charing is on (software controlled)
+           CC/CV mode is still automatically done,
+           but end of charge due to low current not.
+   =20
+    Note: If linear charging mode is used there should be some method of
+    stopping charging automatically. It is not a so time-critical, but
+    it is the wrong setting for leaving a charger connected for several
+days since Lithium batteries should not be kept at 100% for longer
+periods. Linear charging does a good job with not so reliable power
+sources, since several voltage controlling is then often too
+intelligent. It was used with a bike hub dynamo since a year or so. In
+that case there are automatically charging stops when the cyclist needs
+a break. Signed-off-by: Andreas Kemnade <andreas@kemnade.info>
 
-> It was tested with barebox and the following scripts before booting
-> linux:
->
-> /env/a_off:
->
->  # cat /env/a_off
->  #turn off which are enabled by default
->  regulator -n bcm2835_mci0 -s disable
->  regulator -n uart0-pl0110 -s disable
->
-> /env/a_on:
->
->  # cat /env/a_on
->  #turn off which are enabled by default
->  regulator -n bcm2835_mci0 -s disable
->  regulator -n uart0-pl0110 -s disable
->
->  regulator -n bcm2835_mci0 -s enable
->  regulator -n uart0-pl0110 -s enable
->  regulator -n uart0-pl0111 -s enable
->  regulator -n bcm2835_usb -s enable
->  regulator -n bcm2835_i2c0 -s enable
->  regulator -n bcm2835_i2c1 -s enable
->  regulator -n bcm2835_i2c2 -s enable
->  regulator -n bcm2835_spi -s enable
->  regulator -n bcm2835_ccp2tx -s enable
->  regulator -n bcm2835_dsi -s enable
->
-> /env/b:
->
->  # cat /env/b
->  sh /env/a_on
->
->  regulator -n bcm2835_mci0 -s disable
->  regulator -n uart0-pl0110 -s disable
->  regulator -n uart0-pl0111 -s disable
->  regulator -n bcm2835_usb -s disable
->  regulator -n bcm2835_i2c0 -s disable
->  regulator -n bcm2835_i2c1 -s disable
->  regulator -n bcm2835_i2c2 -s disable
->  regulator -n bcm2835_spi -s disable
->  regulator -n bcm2835_ccp2tx -s disable
->  regulator -n bcm2835_dsi -s disable
->
-> /env/c:
->
->  # cat /env/c
->  sh ./env/b
->
->  regulator -n bcm2835_mci0 -s enable
->  regulator -n uart0-pl0110 -s enable
->  regulator -n uart0-pl0111 -s enable
->  regulator -n bcm2835_usb -s enable
->  regulator -n bcm2835_i2c0 -s enable
->  regulator -n bcm2835_i2c1 -s enable
->  regulator -n bcm2835_i2c2 -s enable
->  regulator -n bcm2835_spi -s enable
->  regulator -n bcm2835_ccp2tx -s enable
->  regulator -n bcm2835_dsi -s enable
->
-> These scripts enables/disable all regulators inside the bootloader. It
-> was running with a "hard" and "soft" reset without any issues. These
-> testcases should fit to Stephen Warren suggestions:
->
-> "(a) before having explicitly turned the power domain on or off at all (b)
-> after having turned it on (c) after having turned it off, and for all
-> power domains."
 
-I would drop this whole block from the commit message.  It doesn't seem
-worth keeping associated with this code (though thanks for testing it!).
+> > > If the charger _does_ exceed 4.2V, then the battery will explode. Don=
+'t do that. Don't
+> > > offer that to the user.
+> > >=20
+> > > On a related note... I've just killed USB charger by overloading it. =
+They are not protected.
+> > >=20
+> > > I believe your automatically-pull-max-power really should stick to th=
+e well-known charging
+> > > currents (.5A, 1A, 1.7A), at the very minimum.
+> > >=20
+> > The main reason for the patch was to prevent switching off charging
+> > when Vbus drops low. The reason was not to get out extremely much
+> > current out of the charger.
+> > The electrical characteristics of a  bicycle as a power source are.
+> > - the amount of current available changes
+> >    - 500mA at around 17km/h
+> > - you cannot destroy it by electrically overloading
+> >=20
+> > If the current is set to e.g. 500mA and that linear charging mode is
+> > enabled, the battery gets the maximum current available (upto
+> > 500mA) regardless of the speed which is often changing.
+>=20
+> Yes... I guess that makes sense for you, but I wonder if we should be
+> doing this by default. It seems a lot of cheap chargers can be easily
+> destroyed if you overload them.
+>=20
+Hmm, I guess the twl4030_charger would not be the only one destroying
+such chargers. I have seen such hub dynamo-friendly behaviour on every
+device I had connected to it before (an ipaq h2200, openmoko gta02).
+I have checked all usb wall plug chargers I have seen and I found none
+which has a lower current then 500mA. Only one has 500mA. The rest has
+1A or even 2A.
 
-> Cc: Stephen Warren <swarren@wwwdotorg.org>
-> Cc: Lee Jones <lee@kernel.org>
-> Cc: Eric Anholt <eric@anholt.net>
-> Signed-off-by: Alexander Aring <alex.aring@gmail.com>
+But I think the non-ending cv stuff is a reason enough so that it is not
+the default charge method. I use it only at bootup when battery is low
+to have some time to fix charging issues manually and when cycling.
+Cycling is detected by acceleration values and I get some feedback if
+that charge mode is enabled or disabled.
 
-If I'm going to be credited as an author, we should probably keep my:
+Regards.
+Andreas Kemnade
 
-Signed-off-by: Eric Anholt <eric@anholt.net>
-
-It looks like you've mostly rewritten things, and there's not a whole
-lot of meat to this driver so I don't care about getting credit myself,
-but best not to give people reasons to be suspicious.
-
-> ---
->  arch/arm/boot/dts/bcm2835-rpi.dtsi          |  11 ++
->  arch/arm/boot/dts/bcm2835.dtsi              |   2 +-
->  arch/arm/mach-bcm/Kconfig                   |  10 ++
->  arch/arm/mach-bcm/Makefile                  |   1 +
->  arch/arm/mach-bcm/raspberrypi-power.c       | 180 ++++++++++++++++++++++=
-++++++
->  include/dt-bindings/arm/raspberrypi-power.h |  14 +++
->  6 files changed, 217 insertions(+), 1 deletion(-)
->  create mode 100644 arch/arm/mach-bcm/raspberrypi-power.c
->  create mode 100644 include/dt-bindings/arm/raspberrypi-power.h
-
-To merge the patch, the .dtsi changes need to be in a separate commit
-which I would pick up in the dt branch.  I'm hoping Ulf or another PM
-domains maintainer would be able to pick up the Kconfig/Makefile/.c
-patch in their tree, so it can be queued after the uninit function
-change.  If they won't, then it would go through my tree, but still on a
-different branch from DT changes.
-
-This is the only thing I see needing to change before I can Ack.
-
-> diff --git a/arch/arm/mach-bcm/Kconfig b/arch/arm/mach-bcm/Kconfig
-> index 8c53c55..20479d7 100644
-> --- a/arch/arm/mach-bcm/Kconfig
-> +++ b/arch/arm/mach-bcm/Kconfig
-> @@ -134,6 +134,16 @@ config ARCH_BCM2835
->  	  This enables support for the Broadcom BCM2835 SoC. This SoC is
->  	  used in the Raspberry Pi and Roku 2 devices.
->=20=20
-> +config RASPBERRYPI_POWER
-> +	bool "Raspberry Pi power domain driver"
-> +	depends on ARCH_BCM2835
-> +	depends on RASPBERRYPI_FIRMWARE
-> +	select PM_GENERIC_DOMAINS if PM
-> +	select PM_GENERIC_DOMAINS_OF if PM
-> +	help
-> +	  This enables support for the RPi power domains which can be enabled
-> +	  or disabled via the RPi firmware.
-> +
->  config ARCH_BCM_63XX
->  	bool "Broadcom BCM63xx DSL SoC" if ARCH_MULTI_V7
->  	depends on MMU
-
-I'd love to have this be "depends on ARCH_BCM2835 || COMPILE_TEST" --
-that gets us better coverage from automated builders in -next.
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
+--Sig_/LmjN=weoj7YwIaLDFBW9PMh
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAEBCgAGBQJWVNocAAoJELXWKTbR/J7ots8P/i3h/1KYeHe4fosHcD5LDGe3
-/+AzggB2PXmdfXULMSg+GU2ZIpySNzcnpTUiQUf5f6DokI3rZv0mgMt4AkHVm32F
-DD27vPuVmJpJOh/idxDL5Chz4LLxU5vT/D9S/TixBGqbG/8SjMEJFlT3+amsKIMK
-pVlGvdbYvzk1fWKq8TMFAo/NyZRKaJApT+3W3lqdP6Kl1p50lm8u+n6LLgVqsUl9
-GERWfwjFuJ2PJplZJO51wdqKVhZX9PRqz+jyJ0E8ujzJbR0qcDFezITmmPSxGgEH
-xuwIRuAOs7xS6zippJ2mrX1WRAKE3oaPUEWhDaApz/MeUq+nxh/Jy8oobaGUy8q8
-qypIiNPdG2NAHXe7rp9hf9zjN/3h2J0rT5Qj7+hKhoiG+UGMO8iR1mwlXq4XoPVO
-IkaIoK74WlCAzkj/cT/fHkfEqiM0mRT+aM8ZDMs1ZY5gHAvgYX4VRXAvdD0Ay6gZ
-cH5nz+96MlZ8HItmYPBFvBkE0Z0JIcesujQdni9LsIrowS2bXO8WdcXk3k1Ny3mE
-n00NyELTpalFEUZC9/ha45L/zx6f1hzifUZ1JYu+aCcr4g7RQnYex8zEds5SCVey
-e5iFcfA6Ysw8AkJQAWhpNKavvXdVjRXVFsZBYl4l9YCNxjVmDO3nV7Wr31U5lRcH
-FhCfmDNGlasJMsKdC8K3
-=cI6Y
+iQEcBAEBAgAGBQJWVOVLAAoJEGGrpYhZ30HuC/4H/3Q7ry7ccUBKEgHNpwMoaRSN
++ZDojNgztiV+o7vM28ktBQaAJV7bIIEHGMWlYWD1+gF4Fs5QCAPLgvcWGwIoAofD
+Hs6DvW87hXTuahVNEZwsvA8iGDtARIYkBOFD+drEvGs68NJxGWbzGzgboOpOsQYr
+GMja31Wid88azVSpl+rfhC7AsFVwfnaDDoQQ5KUj1oHXLKy68MSPnKtUlXgE2Jj7
+HPwib3WnTNe5ojfoVYS3peNUy3enlJ9nqmbzzj/n3y5x18L42hsy9Fr2+I10lTzv
+eQatHRFrotHT5giLrixNbzznv5OdSRB4LBSJvER1SJIxTFSiChJGoX87g7PKV9o=
+=E1Pc
 -----END PGP SIGNATURE-----
---=-=-=--
+
+--Sig_/LmjN=weoj7YwIaLDFBW9PMh--
