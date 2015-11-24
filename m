@@ -1,100 +1,51 @@
-From: Jia Hongtao <hongtao.jia-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
-Subject: [PATCH V4 1/5] dt-bindings: Add QorIQ TMU thermal bindings
-Date: Tue, 24 Nov 2015 14:52:44 +0800
-Message-ID: <1448347968-37766-2-git-send-email-hongtao.jia@freescale.com>
-References: <1448347968-37766-1-git-send-email-hongtao.jia@freescale.com>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Subject: Re: [PATCH] thermal: ti-soc-thermal: fix error check
+Date: Tue, 24 Nov 2015 13:12:12 +0530
+Message-ID: <20151124074211.GB18880@sudip-pc>
+References: <1448283281-21402-1-git-send-email-sudipm.mukherjee@gmail.com>
+ <20151123232542.GA6815@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1448347968-37766-1-git-send-email-hongtao.jia-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, scottwood-KZfg59tc24xl57MIdRCFDg@public.gmane.org, hongtao.jia-KZfg59tc24xl57MIdRCFDg@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20151123232542.GA6815@localhost.localdomain>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Add bindings documentation for TMU (Thermal Monitoring Unit) on QorIQ
-platform.
+On Mon, Nov 23, 2015 at 03:25:43PM -0800, Eduardo Valentin wrote:
+> On Mon, Nov 23, 2015 at 06:24:41PM +0530, Sudip Mukherjee wrote:
+> > We were only checking if data is not NULL but
+> > ti_bandgap_get_sensor_data() can return NULL or ERR_PTR.
+> 
+> Do you have a fail case? Can you please send the logs too?
+> 
+> > 
+> > Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+> > ---
+> >  drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> > index b213a12..d76bb7c 100644
+> > --- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> > +++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> > @@ -365,7 +365,7 @@ int ti_thermal_remove_sensor(struct ti_bandgap *bgp, int id)
+> >  
+> >  	data = ti_bandgap_get_sensor_data(bgp, id);
+> >  
+> > -	if (data && data->ti_thermal) {
+> > +	if (!IS_ERR_OR_NULL(data) && data->ti_thermal) {
+> 
+> I don t really see the need for this as we always
+> ti_bandgap_set_sensor_data with a valid pointer, never with a ERR PTR.
+> So, it would be either valid or NULL.
 
-Signed-off-by: Jia Hongtao <hongtao.jia-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
-Reviewed-by: Scott Wood <scottwood-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
----
- .../devicetree/bindings/thermal/qoriq-thermal.txt  | 63 ++++++++++++++++++++++
- 1 file changed, 63 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
+ERR_PTR is not coming from ti_bandgap_set_sensor_data(). In
+ti_bandgap_get_sensor_data() if ti_bandgap_validate() fails then it
+returns ERR_PTR(ret). So just by checking for NULL we are not checking
+for any error return from ti_bandgap_validate().
 
-diff --git a/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt b/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
-new file mode 100644
-index 0000000..66223d5
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
-@@ -0,0 +1,63 @@
-+* Thermal Monitoring Unit (TMU) on Freescale QorIQ SoCs
-+
-+Required properties:
-+- compatible : Must include "fsl,qoriq-tmu". The version of the device is
-+	determined by the TMU IP Block Revision Register (IPBRR0) at
-+	offset 0x0BF8.
-+	Table of correspondences between IPBRR0 values and example  chips:
-+		Value           Device
-+		----------      -----
-+		0x01900102      T1040
-+- reg : Address range of TMU registers.
-+- interrupts : Contains the interrupt for TMU.
-+- fsl,tmu-range : The values to be programmed into TTRnCR, as specified by
-+	the SoC reference manual. The first cell is TTR0CR, the second is
-+	TTR1CR, etc.
-+- fsl,tmu-calibration : A list of cell pairs containing temperature
-+	calibration data, as specified by the SoC reference manual.
-+	The first cell of each pair is the value to be written to TTCFGR,
-+	and the second is the value to be written to TSCFGR.
-+
-+Example:
-+
-+tmu@f0000 {
-+	compatible = "fsl,qoriq-tmu";
-+	reg = <0xf0000 0x1000>;
-+	interrupts = <18 2 0 0>;
-+	fsl,tmu-range = <0x000a0000 0x00090026 0x0008004a 0x0001006a>;
-+	fsl,tmu-calibration = <0x00000000 0x00000025
-+			       0x00000001 0x00000028
-+			       0x00000002 0x0000002d
-+			       0x00000003 0x00000031
-+			       0x00000004 0x00000036
-+			       0x00000005 0x0000003a
-+			       0x00000006 0x00000040
-+			       0x00000007 0x00000044
-+			       0x00000008 0x0000004a
-+			       0x00000009 0x0000004f
-+			       0x0000000a 0x00000054
-+
-+			       0x00010000 0x0000000d
-+			       0x00010001 0x00000013
-+			       0x00010002 0x00000019
-+			       0x00010003 0x0000001f
-+			       0x00010004 0x00000025
-+			       0x00010005 0x0000002d
-+			       0x00010006 0x00000033
-+			       0x00010007 0x00000043
-+			       0x00010008 0x0000004b
-+			       0x00010009 0x00000053
-+
-+			       0x00020000 0x00000010
-+			       0x00020001 0x00000017
-+			       0x00020002 0x0000001f
-+			       0x00020003 0x00000029
-+			       0x00020004 0x00000031
-+			       0x00020005 0x0000003c
-+			       0x00020006 0x00000042
-+			       0x00020007 0x0000004d
-+			       0x00020008 0x00000056
-+
-+			       0x00030000 0x00000012
-+			       0x00030001 0x0000001d>;
-+};
--- 
-2.1.0.27.g96db324
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+regards
+sudip	
