@@ -1,60 +1,73 @@
-From: Lucas Stach <l.stach@pengutronix.de>
-Subject: Re: [PATCH] cpufreq: imx: Add cpufreq driver for imx7D/Solo SOC
-Date: Tue, 24 Nov 2015 10:08:17 +0100
-Message-ID: <1448356097.3689.19.camel@pengutronix.de>
-References: <1448287669-3600-1-git-send-email-b51503@freescale.com>
-	 <1448271626.3689.7.camel@pengutronix.de> <5654133A.6010506@freescale.com>
+From: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: Re: Re: [PATCH v2 1/5] ARM: dts: sun8i: Add SID node
+Date: Tue, 24 Nov 2015 10:32:02 +0100
+Message-ID: <20151124093202.GL32142@lukather>
+References: <cover.1448263428.git.atx@atx.name>
+ <b897b1c8741c8a871163b84d01b480f99329536d.1448263428.git.atx@atx.name>
+ <20151123124356.GW32142@lukather>
+ <a7d4e538-db64-476d-b5de-5222419229a2@googlegroups.com>
+Reply-To: maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5654133A.6010506@freescale.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Bai Ping <b51503@freescale.com>
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="9RXjJcDGNuBviZqz"
+Return-path: <linux-sunxi+bncBD2ZNBF5VYJRBM652CZAKGQEM2XQ73A-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <a7d4e538-db64-476d-b5de-5222419229a2-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <http://groups.google.com/group/linux-sunxi
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+List-Subscribe: <http://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <http://groups.google.com/group/linux-sunxi/subscribe>
+To: Sugar Wu <shugelinux-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>, atx-MwjtXicnQwU@public.gmane.org, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gpatchesrdh-I1/eAgTnXDYAvxtiuMwx3w@public.gmane.org, mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, emilio-0Z03zUJReD5OxF6Tv1QG9Q@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Am Dienstag, den 24.11.2015, 15:35 +0800 schrieb Bai Ping:
+--9RXjJcDGNuBviZqz
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+
+On Mon, Nov 23, 2015 at 10:51:15PM -0800, Sugar Wu wrote:
+> On Monday, November 23, 2015 at 8:43:59 PM UTC+8, Maxime Ripard wrote:
+> >
+> > Hi, 
+> >
+> > On Mon, Nov 23, 2015 at 09:02:48AM +0100, Josef Gajdusek wrote: 
+> > > Add a node describing the Security ID memory to the 
+> > > Allwinner H3 .dtsi file. 
+> > > 
+> > > Signed-off-by: Josef Gajdusek <a...-MwjtXicnQwU@public.gmane.org <javascript:>> 
+> > > --- 
+> > >  arch/arm/boot/dts/sun8i-h3.dtsi | 7 +++++++ 
+> > >  1 file changed, 7 insertions(+) 
+> > > 
+> > > diff --git a/arch/arm/boot/dts/sun8i-h3.dtsi 
+> > b/arch/arm/boot/dts/sun8i-h3.dtsi 
+> > > index 0faa38a..58de718 100644 
+> > > --- a/arch/arm/boot/dts/sun8i-h3.dtsi 
+> > > +++ b/arch/arm/boot/dts/sun8i-h3.dtsi 
+> > > @@ -359,6 +359,13 @@ 
+> > >                          #size-cells = <0>; 
+> > >                  }; 
+> > >   
+> > > +                sid: eeprom@01c14000 { 
+> > > +                        compatible = "allwinner,sun4i-a10-sid"; 
+> > > +                        reg = <0x01c14000 0x400>; 
+> >
+> > The datasheet says it's 256 bytes wide, while the size here is of 1kB, 
+> > is it intentional? 
 > 
-> On 2015/11/23 17:40, Lucas Stach wrote:
-> > Am Montag, den 23.11.2015, 22:07 +0800 schrieb Bai Ping:
-> >> The i.MX7Dual/Solo is a new series of the i.MX SOC family.
-> >> The existing cpufreq driver for 'i.MX6' or 'cpufreq-dt' can
-> >> NOT match the requirement of this new SOC. This patch adds the
-> >> cpufreq driver for i.MX7Dual/Solo.
-> >>
-> > So, what are those requirements, which could not be matched with
-> > cpufreq-dt? We should really try to not add another cpufreq driver.
-> the requirement is the PLL1 used to source the CPU core clock can NOT 
-> change frequency on the fly,
-> during the PLL1 frequency change, not clock output from this PLL1 in a 
-> short time. this will lead to glitch
-> to the core clock. so before we change the PLL1's frequency, we must 
-> switch the CPU core clock to another
-> clock source,  after the PLL1 frequency has been changed, we switch back 
-> core clock to PLL1.
-> > I don't see anything special in here. A single regulator and some clocks
-> > needing to be controlled in the right way. That's already handled for
-> > i.MX5 with cpufreq-dt. Please look up how it is done there and try to do
-> > it the same way for MX7, or provide substantial information why it
-> > couldn't be done.
-> I have checked the i.MX5 cpufreq, As on i.MX5, no need to take care of 
-> the PLL's frequency change flow,
-> so the cpufreq-dt is the best one to support cpufreq. But on i.MX7, the 
-> PLL design is not the same as on i.MX5,
-> additional steps needed in CPU frequency changing flow. the issue that 
-> can NOT be tackled by cpufreq-dt is
-> additional step used by PLL frequency change.
+> SID memory map is 0x01c14000 ~ 0x01c143FF, include 2048bits efuse space.
+> H3 efuse space is SID_SRAM, its range is  0x01c14200 ~ +0x100.
 
-This is wrong, we have the step clock requirement on MX5 as well, that's
-why I asked you to look into this. The MX5 clock controller provides a
-virtual ARM clock, that implements the proper clock switch flow. This
-allows to reuse cpufreq-dt, thus reducing code duplication in the
-cpufreq drivers greatly.
+Interesting, what is below the 0x200 registers?
 
-Regards,
-Lucas
+Thanks!
+Maxime
 
 -- 
-Pengutronix e.K.             | Lucas Stach                 |
-Industrial Linux Solutions   | http://www.pengutronix.de/  |
+Maxime Ripard, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
+--9RXjJcDGNuBviZqz--
