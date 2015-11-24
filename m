@@ -1,157 +1,64 @@
 From: Jia Hongtao <hongtao.jia@freescale.com>
-Subject: [PATCH V4 3/5] powerpc/mpc85xx: Add TMU device tree support for
- T1040/T1042
-Date: Tue, 24 Nov 2015 14:52:46 +0800
-Message-ID: <1448347968-37766-4-git-send-email-hongtao.jia@freescale.com>
-References: <1448347968-37766-1-git-send-email-hongtao.jia@freescale.com>
+Subject: [PATCH V4 0/5] TMU support for QorIQ platform
+Date: Tue, 24 Nov 2015 14:52:43 +0800
+Message-ID: <1448347968-37766-1-git-send-email-hongtao.jia@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <1448347968-37766-1-git-send-email-hongtao.jia@freescale.com>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: edubezval@gmail.com
-Cc: scottwood@freescale.com, devicetree@vger.kernel.org, hongtao.jia@freescale.com, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bn1bon0131.outbound.protection.outlook.com ([157.56.111.131]:46734
+	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752132AbbKXHP0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 24 Nov 2015 02:15:26 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, scottwood@freescale.com, hongtao.jia@freescale.com
 
-QWxzbyBhZGQgbm9kZXMgYW5kIHByb3BlcnRpZXMgZm9yIHRoZXJtYWwgbWFuYWdlbWVudCBzdXBw
-b3J0LiBNZWFud2hpbGUKcHJlcHJvY2Vzc29yIHN1cHBvcnQgaXMgbmVlZGVkIHVzaW5nIHRoZXJt
-YWwgb2YgZnJhbWV3b3JrLgoKU2lnbmVkLW9mZi1ieTogSmlhIEhvbmd0YW8gPGhvbmd0YW8uamlh
-QGZyZWVzY2FsZS5jb20+ClJldmlld2VkLWJ5OiBTY290dCBXb29kIDxzY290dHdvb2RAZnJlZXNj
-YWxlLmNvbT4KLS0tCiBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QxMDQwZDRyZGIuZHRzICAg
-IHwgIDIgKy0KIGFyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvdDEwNDBxZHMuZHRzICAgICAgfCAg
-MiArLQogYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90MTA0MHJkYi5kdHMgICAgICB8ICAyICst
-CiBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QxMDQwc2ktcG9zdC5kdHNpIHwgOTQgKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysKIGFyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvdDEwNDJk
-NHJkYi5kdHMgICAgfCAgMiArLQogYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90MTA0MnFkcy5k
-dHMgICAgICB8ICAyICstCiBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QxMDQycmRiLmR0cyAg
-ICAgIHwgIDIgKy0KIGFyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvdDEwNDJyZGJfcGkuZHRzICAg
-fCAgMiArLQogYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90MTA0MnNpLXBvc3QuZHRzaSB8ICAy
-ICstCiBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QxMDR4c2ktcHJlLmR0c2kgIHwgIDQgKysK
-IDEwIGZpbGVzIGNoYW5nZWQsIDEwNiBpbnNlcnRpb25zKCspLCA4IGRlbGV0aW9ucygtKQoKZGlm
-ZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvdDEwNDBkNHJkYi5kdHMgYi9hcmNo
-L3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QxMDQwZDRyZGIuZHRzCmluZGV4IDY4MTc0NmUuLmZiNmJj
-MDIgMTAwNjQ0Ci0tLSBhL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvdDEwNDBkNHJkYi5kdHMK
-KysrIGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90MTA0MGQ0cmRiLmR0cwpAQCAtNDMsNCAr
-NDMsNCBAQAogCWludGVycnVwdC1wYXJlbnQgPSA8Jm1waWM+OwogfTsKIAotL2luY2x1ZGUvICJ0
-MTA0MHNpLXBvc3QuZHRzaSIKKyNpbmNsdWRlICJ0MTA0MHNpLXBvc3QuZHRzaSIKZGlmZiAtLWdp
-dCBhL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvdDEwNDBxZHMuZHRzIGIvYXJjaC9wb3dlcnBj
-L2Jvb3QvZHRzL2ZzbC90MTA0MHFkcy5kdHMKaW5kZXggNGQyOTg2NS4uNWY3NmVkYyAxMDA2NDQK
-LS0tIGEvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90MTA0MHFkcy5kdHMKKysrIGIvYXJjaC9w
-b3dlcnBjL2Jvb3QvZHRzL2ZzbC90MTA0MHFkcy5kdHMKQEAgLTQzLDQgKzQzLDQgQEAKIAlpbnRl
-cnJ1cHQtcGFyZW50ID0gPCZtcGljPjsKIH07CiAKLS9pbmNsdWRlLyAidDEwNDBzaS1wb3N0LmR0
-c2kiCisjaW5jbHVkZSAidDEwNDBzaS1wb3N0LmR0c2kiCmRpZmYgLS1naXQgYS9hcmNoL3Bvd2Vy
-cGMvYm9vdC9kdHMvZnNsL3QxMDQwcmRiLmR0cyBiL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wv
-dDEwNDByZGIuZHRzCmluZGV4IDhmOWU2NWIuLmNmMTk0MTUgMTAwNjQ0Ci0tLSBhL2FyY2gvcG93
-ZXJwYy9ib290L2R0cy9mc2wvdDEwNDByZGIuZHRzCisrKyBiL2FyY2gvcG93ZXJwYy9ib290L2R0
-cy9mc2wvdDEwNDByZGIuZHRzCkBAIC00NSw0ICs0NSw0IEBACiAJfTsKIH07CiAKLS9pbmNsdWRl
-LyAidDEwNDBzaS1wb3N0LmR0c2kiCisjaW5jbHVkZSAidDEwNDBzaS1wb3N0LmR0c2kiCmRpZmYg
-LS1naXQgYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QxMDQwc2ktcG9zdC5kdHNpIGIvYXJj
-aC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90MTA0MHNpLXBvc3QuZHRzaQppbmRleCBkMzBiM2RlLi5l
-MGY0ZGE1IDEwMDY0NAotLS0gYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QxMDQwc2ktcG9z
-dC5kdHNpCisrKyBiL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvdDEwNDBzaS1wb3N0LmR0c2kK
-QEAgLTMyLDYgKzMyLDggQEAKICAqIFNPRlRXQVJFLCBFVkVOIElGIEFEVklTRUQgT0YgVEhFIFBP
-U1NJQklMSVRZIE9GIFNVQ0ggREFNQUdFLgogICovCiAKKyNpbmNsdWRlIDxkdC1iaW5kaW5ncy90
-aGVybWFsL3RoZXJtYWwuaD4KKwogJmJtYW5fZmJwciB7CiAJY29tcGF0aWJsZSA9ICJmc2wsYm1h
-bi1mYnByIjsKIAlhbGxvYy1yYW5nZXMgPSA8MCAwIDB4MTAwMDAgMD47CkBAIC00ODQsNiArNDg2
-LDk4IEBACiAJCXJlZwkgICA9IDwweGVhMDAwIDB4NDAwMD47CiAJfTsKIAorCXRtdTogdG11QGYw
-MDAwIHsKKwkJY29tcGF0aWJsZSA9ICJmc2wscW9yaXEtdG11IjsKKwkJcmVnID0gPDB4ZjAwMDAg
-MHgxMDAwPjsKKwkJaW50ZXJydXB0cyA9IDwxOCAyIDAgMD47CisJCWZzbCx0bXUtcmFuZ2UgPSA8
-MHhhMDAwMCAweDkwMDI2IDB4ODAwNGEgMHgxMDA2YT47CisJCWZzbCx0bXUtY2FsaWJyYXRpb24g
-PSA8MHgwMDAwMDAwMCAweDAwMDAwMDI1CisJCQkJICAgICAgIDB4MDAwMDAwMDEgMHgwMDAwMDAy
-OAorCQkJCSAgICAgICAweDAwMDAwMDAyIDB4MDAwMDAwMmQKKwkJCQkgICAgICAgMHgwMDAwMDAw
-MyAweDAwMDAwMDMxCisJCQkJICAgICAgIDB4MDAwMDAwMDQgMHgwMDAwMDAzNgorCQkJCSAgICAg
-ICAweDAwMDAwMDA1IDB4MDAwMDAwM2EKKwkJCQkgICAgICAgMHgwMDAwMDAwNiAweDAwMDAwMDQw
-CisJCQkJICAgICAgIDB4MDAwMDAwMDcgMHgwMDAwMDA0NAorCQkJCSAgICAgICAweDAwMDAwMDA4
-IDB4MDAwMDAwNGEKKwkJCQkgICAgICAgMHgwMDAwMDAwOSAweDAwMDAwMDRmCisJCQkJICAgICAg
-IDB4MDAwMDAwMGEgMHgwMDAwMDA1NAorCisJCQkJICAgICAgIDB4MDAwMTAwMDAgMHgwMDAwMDAw
-ZAorCQkJCSAgICAgICAweDAwMDEwMDAxIDB4MDAwMDAwMTMKKwkJCQkgICAgICAgMHgwMDAxMDAw
-MiAweDAwMDAwMDE5CisJCQkJICAgICAgIDB4MDAwMTAwMDMgMHgwMDAwMDAxZgorCQkJCSAgICAg
-ICAweDAwMDEwMDA0IDB4MDAwMDAwMjUKKwkJCQkgICAgICAgMHgwMDAxMDAwNSAweDAwMDAwMDJk
-CisJCQkJICAgICAgIDB4MDAwMTAwMDYgMHgwMDAwMDAzMworCQkJCSAgICAgICAweDAwMDEwMDA3
-IDB4MDAwMDAwNDMKKwkJCQkgICAgICAgMHgwMDAxMDAwOCAweDAwMDAwMDRiCisJCQkJICAgICAg
-IDB4MDAwMTAwMDkgMHgwMDAwMDA1MworCisJCQkJICAgICAgIDB4MDAwMjAwMDAgMHgwMDAwMDAx
-MAorCQkJCSAgICAgICAweDAwMDIwMDAxIDB4MDAwMDAwMTcKKwkJCQkgICAgICAgMHgwMDAyMDAw
-MiAweDAwMDAwMDFmCisJCQkJICAgICAgIDB4MDAwMjAwMDMgMHgwMDAwMDAyOQorCQkJCSAgICAg
-ICAweDAwMDIwMDA0IDB4MDAwMDAwMzEKKwkJCQkgICAgICAgMHgwMDAyMDAwNSAweDAwMDAwMDNj
-CisJCQkJICAgICAgIDB4MDAwMjAwMDYgMHgwMDAwMDA0MgorCQkJCSAgICAgICAweDAwMDIwMDA3
-IDB4MDAwMDAwNGQKKwkJCQkgICAgICAgMHgwMDAyMDAwOCAweDAwMDAwMDU2CisKKwkJCQkgICAg
-ICAgMHgwMDAzMDAwMCAweDAwMDAwMDEyCisJCQkJICAgICAgIDB4MDAwMzAwMDEgMHgwMDAwMDAx
-ZD47CisJCSN0aGVybWFsLXNlbnNvci1jZWxscyA9IDwwPjsKKwl9OworCisJdGhlcm1hbC16b25l
-cyB7CisJCWNwdV90aGVybWFsOiBjcHUtdGhlcm1hbCB7CisJCQlwb2xsaW5nLWRlbGF5LXBhc3Np
-dmUgPSA8MTAwMD47CisJCQlwb2xsaW5nLWRlbGF5ID0gPDUwMDA+OworCisJCQl0aGVybWFsLXNl
-bnNvcnMgPSA8JnRtdT47CisKKwkJCXRyaXBzIHsKKwkJCQljcHVfYWxlcnQ6IGNwdS1hbGVydCB7
-CisJCQkJCXRlbXBlcmF0dXJlID0gPDg1MDAwPjsKKwkJCQkJaHlzdGVyZXNpcyA9IDwyMDAwPjsK
-KwkJCQkJdHlwZSA9ICJwYXNzaXZlIjsKKwkJCQl9OworCQkJCWNwdV9jcml0OiBjcHUtY3JpdCB7
-CisJCQkJCXRlbXBlcmF0dXJlID0gPDk1MDAwPjsKKwkJCQkJaHlzdGVyZXNpcyA9IDwyMDAwPjsK
-KwkJCQkJdHlwZSA9ICJjcml0aWNhbCI7CisJCQkJfTsKKwkJCX07CisKKwkJCWNvb2xpbmctbWFw
-cyB7CisJCQkJbWFwMCB7CisJCQkJCXRyaXAgPSA8JmNwdV9hbGVydD47CisJCQkJCWNvb2xpbmct
-ZGV2aWNlID0KKwkJCQkJCTwmY3B1MCBUSEVSTUFMX05PX0xJTUlUCisJCQkJCQkJVEhFUk1BTF9O
-T19MSU1JVD47CisJCQkJfTsKKwkJCQltYXAxIHsKKwkJCQkJdHJpcCA9IDwmY3B1X2FsZXJ0PjsK
-KwkJCQkJY29vbGluZy1kZXZpY2UgPQorCQkJCQkJPCZjcHUxIFRIRVJNQUxfTk9fTElNSVQKKwkJ
-CQkJCQlUSEVSTUFMX05PX0xJTUlUPjsKKwkJCQl9OworCQkJCW1hcDIgeworCQkJCQl0cmlwID0g
-PCZjcHVfYWxlcnQ+OworCQkJCQljb29saW5nLWRldmljZSA9CisJCQkJCQk8JmNwdTIgVEhFUk1B
-TF9OT19MSU1JVAorCQkJCQkJCVRIRVJNQUxfTk9fTElNSVQ+OworCQkJCX07CisJCQkJbWFwMyB7
-CisJCQkJCXRyaXAgPSA8JmNwdV9hbGVydD47CisJCQkJCWNvb2xpbmctZGV2aWNlID0KKwkJCQkJ
-CTwmY3B1MyBUSEVSTUFMX05PX0xJTUlUCisJCQkJCQkJVEhFUk1BTF9OT19MSU1JVD47CisJCQkJ
-fTsKKwkJCX07CisJCX07CisJfTsKKwogCXNjZmc6IGdsb2JhbC11dGlsaXRpZXNAZmMwMDAgewog
-CQljb21wYXRpYmxlID0gImZzbCx0MTA0MC1zY2ZnIjsKIAkJcmVnID0gPDB4ZmMwMDAgMHgxMDAw
-PjsKZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvdDEwNDJkNHJkYi5kdHMg
-Yi9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QxMDQyZDRyZGIuZHRzCmluZGV4IGIyNDViMzEu
-LjJhNWE5MGQgMTAwNjQ0Ci0tLSBhL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvdDEwNDJkNHJk
-Yi5kdHMKKysrIGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90MTA0MmQ0cmRiLmR0cwpAQCAt
-NTAsNCArNTAsNCBAQAogCX07CiB9OwogCi0vaW5jbHVkZS8gInQxMDQwc2ktcG9zdC5kdHNpIgor
-I2luY2x1ZGUgInQxMDQyc2ktcG9zdC5kdHNpIgpkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2Jv
-b3QvZHRzL2ZzbC90MTA0MnFkcy5kdHMgYi9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QxMDQy
-cWRzLmR0cwppbmRleCA0YWI5YmJlLi45MGE0YTczIDEwMDY0NAotLS0gYS9hcmNoL3Bvd2VycGMv
-Ym9vdC9kdHMvZnNsL3QxMDQycWRzLmR0cworKysgYi9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNs
-L3QxMDQycWRzLmR0cwpAQCAtNDMsNCArNDMsNCBAQAogCWludGVycnVwdC1wYXJlbnQgPSA8Jm1w
-aWM+OwogfTsKIAotL2luY2x1ZGUvICJ0MTA0MnNpLXBvc3QuZHRzaSIKKyNpbmNsdWRlICJ0MTA0
-MnNpLXBvc3QuZHRzaSIKZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvdDEw
-NDJyZGIuZHRzIGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90MTA0MnJkYi5kdHMKaW5kZXgg
-NjdhZjU2Yi4uOGQ5MDhlNyAxMDA2NDQKLS0tIGEvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90
-MTA0MnJkYi5kdHMKKysrIGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90MTA0MnJkYi5kdHMK
-QEAgLTQ1LDQgKzQ1LDQgQEAKIAl9OwogfTsKIAotL2luY2x1ZGUvICJ0MTA0MnNpLXBvc3QuZHRz
-aSIKKyNpbmNsdWRlICJ0MTA0MnNpLXBvc3QuZHRzaSIKZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJw
-Yy9ib290L2R0cy9mc2wvdDEwNDJyZGJfcGkuZHRzIGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2Zz
-bC90MTA0MnJkYl9waS5kdHMKaW5kZXggMmY2NzY3Ny4uOThjMDAxMCAxMDA2NDQKLS0tIGEvYXJj
-aC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90MTA0MnJkYl9waS5kdHMKKysrIGIvYXJjaC9wb3dlcnBj
-L2Jvb3QvZHRzL2ZzbC90MTA0MnJkYl9waS5kdHMKQEAgLTU0LDQgKzU0LDQgQEAKIAl9OwogfTsK
-IAotL2luY2x1ZGUvICJ0MTA0MnNpLXBvc3QuZHRzaSIKKyNpbmNsdWRlICJ0MTA0MnNpLXBvc3Qu
-ZHRzaSIKZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvdDEwNDJzaS1wb3N0
-LmR0c2kgYi9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QxMDQyc2ktcG9zdC5kdHNpCmluZGV4
-IDMxOWI3NGYuLmE1NTQ0ZjkgMTAwNjQ0Ci0tLSBhL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wv
-dDEwNDJzaS1wb3N0LmR0c2kKKysrIGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90MTA0MnNp
-LXBvc3QuZHRzaQpAQCAtMzIsNiArMzIsNiBAQAogICogU09GVFdBUkUsIEVWRU4gSUYgQURWSVNF
-RCBPRiBUSEUgUE9TU0lCSUxJVFkgT0YgU1VDSCBEQU1BR0UuCiAgKi8KIAotL2luY2x1ZGUvICJ0
-MTA0MHNpLXBvc3QuZHRzaSIKKyNpbmNsdWRlICJ0MTA0MHNpLXBvc3QuZHRzaSIKIAogLyogUGxh
-Y2UgaG9sZGVyIGZvciBldGhlcm5ldCByZWxhdGVkIGRldmljZSB0cmVlIG5vZGVzICovCmRpZmYg
-LS1naXQgYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QxMDR4c2ktcHJlLmR0c2kgYi9hcmNo
-L3Bvd2VycGMvYm9vdC9kdHMvZnNsL3QxMDR4c2ktcHJlLmR0c2kKaW5kZXggZmNmYTM4YS4uNmRi
-MGVlOCAxMDA2NDQKLS0tIGEvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90MTA0eHNpLXByZS5k
-dHNpCisrKyBiL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvdDEwNHhzaS1wcmUuZHRzaQpAQCAt
-NzYsNiArNzYsNyBAQAogCQkJcmVnID0gPDA+OwogCQkJY2xvY2tzID0gPCZtdXgwPjsKIAkJCW5l
-eHQtbGV2ZWwtY2FjaGUgPSA8JkwyXzE+OworCQkJI2Nvb2xpbmctY2VsbHMgPSA8Mj47CiAJCQlM
-Ml8xOiBsMi1jYWNoZSB7CiAJCQkJbmV4dC1sZXZlbC1jYWNoZSA9IDwmY3BjPjsKIAkJCX07CkBA
-IC04NSw2ICs4Niw3IEBACiAJCQlyZWcgPSA8MT47CiAJCQljbG9ja3MgPSA8Jm11eDE+OwogCQkJ
-bmV4dC1sZXZlbC1jYWNoZSA9IDwmTDJfMj47CisJCQkjY29vbGluZy1jZWxscyA9IDwyPjsKIAkJ
-CUwyXzI6IGwyLWNhY2hlIHsKIAkJCQluZXh0LWxldmVsLWNhY2hlID0gPCZjcGM+OwogCQkJfTsK
-QEAgLTk0LDYgKzk2LDcgQEAKIAkJCXJlZyA9IDwyPjsKIAkJCWNsb2NrcyA9IDwmbXV4Mj47CiAJ
-CQluZXh0LWxldmVsLWNhY2hlID0gPCZMMl8zPjsKKwkJCSNjb29saW5nLWNlbGxzID0gPDI+Owog
-CQkJTDJfMzogbDItY2FjaGUgewogCQkJCW5leHQtbGV2ZWwtY2FjaGUgPSA8JmNwYz47CiAJCQl9
-OwpAQCAtMTAzLDYgKzEwNiw3IEBACiAJCQlyZWcgPSA8Mz47CiAJCQljbG9ja3MgPSA8Jm11eDM+
-OwogCQkJbmV4dC1sZXZlbC1jYWNoZSA9IDwmTDJfND47CisJCQkjY29vbGluZy1jZWxscyA9IDwy
-PjsKIAkJCUwyXzQ6IGwyLWNhY2hlIHsKIAkJCQluZXh0LWxldmVsLWNhY2hlID0gPCZjcGM+Owog
-CQkJfTsKLS0gCjIuMS4wLjI3Lmc5NmRiMzI0CgpfX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fXwpMaW51eHBwYy1kZXYgbWFpbGluZyBsaXN0CkxpbnV4cHBjLWRl
-dkBsaXN0cy5vemxhYnMub3JnCmh0dHBzOi8vbGlzdHMub3psYWJzLm9yZy9saXN0aW5mby9saW51
-eHBwYy1kZXY=
+This patchset add thermal management support to QorIQ platform including:
+- T1040/T1042.
+- T1023/T1024.
+- LS1021A.
+
+The thermal driver is updated to V4 based on Linux v4.4-rc2.
+
+CPU Cooling device registration is done by another patch which will send
+to both thermal and cpufreq maintainers.
+
+The patchset is reviewed by Scott Wood <scottwood@freescale.com>.
+
+Jia Hongtao (5):
+  dt-bindings: Add QorIQ TMU thermal bindings
+  thermal: qoriq: Add thermal management support
+  powerpc/mpc85xx: Add TMU device tree support for T1040/T1042
+  powerpc/mpc85xx: Add TMU device tree support for T1023/T1024
+  arm/ls1021a: Add TMU device tree support for LS1021A
+
+ .../devicetree/bindings/thermal/qoriq-thermal.txt  |  63 +++++
+ arch/arm/boot/dts/ls1021a.dtsi                     |  84 ++++++-
+ arch/powerpc/boot/dts/fsl/t1023rdb.dts             |   2 +-
+ arch/powerpc/boot/dts/fsl/t1023si-post.dtsi        |  86 +++++++
+ arch/powerpc/boot/dts/fsl/t1024qds.dts             |   2 +-
+ arch/powerpc/boot/dts/fsl/t1024rdb.dts             |   2 +-
+ arch/powerpc/boot/dts/fsl/t1024si-post.dtsi        |   2 +-
+ arch/powerpc/boot/dts/fsl/t102xsi-pre.dtsi         |   2 +
+ arch/powerpc/boot/dts/fsl/t1040d4rdb.dts           |   2 +-
+ arch/powerpc/boot/dts/fsl/t1040qds.dts             |   2 +-
+ arch/powerpc/boot/dts/fsl/t1040rdb.dts             |   2 +-
+ arch/powerpc/boot/dts/fsl/t1040si-post.dtsi        |  94 ++++++++
+ arch/powerpc/boot/dts/fsl/t1042d4rdb.dts           |   2 +-
+ arch/powerpc/boot/dts/fsl/t1042qds.dts             |   2 +-
+ arch/powerpc/boot/dts/fsl/t1042rdb.dts             |   2 +-
+ arch/powerpc/boot/dts/fsl/t1042rdb_pi.dts          |   2 +-
+ arch/powerpc/boot/dts/fsl/t1042si-post.dtsi        |   2 +-
+ arch/powerpc/boot/dts/fsl/t104xsi-pre.dtsi         |   4 +
+ drivers/thermal/Kconfig                            |  10 +
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/qoriq_thermal.c                    | 262 +++++++++++++++++++++
+ 21 files changed, 616 insertions(+), 14 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
+ create mode 100644 drivers/thermal/qoriq_thermal.c
+
+-- 
+2.1.0.27.g96db324
+
