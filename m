@@ -1,157 +1,110 @@
-From: Andreas Kemnade <andreas@kemnade.info>
-Subject: Re: [Gta04-owner] [PATCH 10/13] twl4030_charger: add software
- controlled linear charging mode.
-Date: Tue, 24 Nov 2015 23:31:38 +0100
-Message-ID: <20151124233138.077e1dba@kemnade.info>
-References: <20150730001113.4012.18086.stgit@noble>
-	<20150730001124.4012.27784.stgit@noble>
-	<20150915112825.GA10704@amd>
-	<87bncjjesu.fsf@notabene.neil.brown.name>
-	<20151006143407.GA24518@xo-6d-61-c0.localdomain>
-	<20151029172041.2a9cd266@kemnade.info>
-	<20151114181216.GB20429@amd>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH V4 1/5] dt-bindings: Add QorIQ TMU thermal bindings
+Date: Tue, 24 Nov 2015 17:20:01 -0600
+Message-ID: <20151124232001.GA2958@rob-hp-laptop>
+References: <1448347968-37766-1-git-send-email-hongtao.jia@freescale.com>
+ <1448347968-37766-2-git-send-email-hongtao.jia@freescale.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
- boundary="Sig_/LmjN=weoj7YwIaLDFBW9PMh"; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from glaubenleben.de ([85.214.105.140]:43312 "EHLO glaubenleben.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753948AbbKXWcB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 24 Nov 2015 17:32:01 -0500
-In-Reply-To: <20151114181216.GB20429@amd>
+Received: from mail-ob0-f182.google.com ([209.85.214.182]:36667 "EHLO
+	mail-ob0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754208AbbKXXUJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 Nov 2015 18:20:09 -0500
+Content-Disposition: inline
+In-Reply-To: <1448347968-37766-2-git-send-email-hongtao.jia@freescale.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: List for communicating with real GTA04 owners <gta04-owner@goldelico.com>, Neil Brown <neil@brown.name>, Samuel Ortiz <sameo@linux.intel.com>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Lee Jones <lee.jones@linaro.org>, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-omap@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
+To: Jia Hongtao <hongtao.jia@freescale.com>
+Cc: edubezval@gmail.com, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, scottwood@freescale.com
 
---Sig_/LmjN=weoj7YwIaLDFBW9PMh
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Tue, Nov 24, 2015 at 02:52:44PM +0800, Jia Hongtao wrote:
+> Add bindings documentation for TMU (Thermal Monitoring Unit) on QorIQ
+> platform.
+> 
+> Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+> Reviewed-by: Scott Wood <scottwood@freescale.com>
 
-On Sat, 14 Nov 2015 19:12:16 +0100
-Pavel Machek <pavel@ucw.cz> wrote:
+Acked-by: Rob Herring <robh@kernel.org>
 
-> Hi!
->=20
-> > > > Pavel Machek <pavel@ucw.cz> writes:
-> > > > > On Thu 2015-07-30 10:11:24, NeilBrown wrote:
-> > > > >>=20
-> > > > >> Add a 'continuous' option for usb charging which enables
-> > > > >> the "linear" charging mode of the twl4030.
-> > > > >>=20
-> > > > >> Linear charging does a good job with not-so-reliable power sourc=
-es.
-> > > > >> Auto mode does not work well as it switches off when voltage dro=
-ps
-> > > > >> momentarily.  Care must be taken not to over-charge.
-> > > > >
-> > > > > Can you explain how the user can "care not to over-charge"?
-> > > >=20
-> > > > The following text reads:
-> > > >=20
-> > > >     It was used with a bike hub dynamo since a year or so. In that =
-case
-> > > >     there are automatically charging stops when the cyclist needs a=
- break.
-> > > >=20
-> > > > so: take a break from cycling occasionally.
-> > >=20
-> > > If the charger does not exceed 4.2V, I'd not call it overcharge. (Yes=
-, some clever
-> > > chargers actually let the battery drop below 4.2V when charge is done=
-, but...)
-> > >=20
-> > Yes, that is the case. Perhaps it is not to be called overcharge but
-> > it is said that lithium battery charging has to stop if in CV mode the
-> > current drops too low.  In automatic mode the charger does exactly
-> > that.
-> > I would not let a battery for days at 4.2V CV.mode although a lot
-> > of cheap chargers
->=20
-> Well, I agree that keeping battery at 4.2V constant voltage mode is
-> bad, but I'd not call it overcharge. If someone can fix the comment,
-> that would be nice.
->
-here is my original comment ("on" was replaced by continuous "now"):
-
-    twl4030_charger: add software controlled linear charging mode.
-   =20
-       adds a sysfs control node to achieve that.
-       It can be set to
-       auto: normal automatic charging is enabled (default)
-       off: charging is off
-       on: charing is on (software controlled)
-           CC/CV mode is still automatically done,
-           but end of charge due to low current not.
-   =20
-    Note: If linear charging mode is used there should be some method of
-    stopping charging automatically. It is not a so time-critical, but
-    it is the wrong setting for leaving a charger connected for several
-days since Lithium batteries should not be kept at 100% for longer
-periods. Linear charging does a good job with not so reliable power
-sources, since several voltage controlling is then often too
-intelligent. It was used with a bike hub dynamo since a year or so. In
-that case there are automatically charging stops when the cyclist needs
-a break. Signed-off-by: Andreas Kemnade <andreas@kemnade.info>
-
-
-> > > If the charger _does_ exceed 4.2V, then the battery will explode. Don=
-'t do that. Don't
-> > > offer that to the user.
-> > >=20
-> > > On a related note... I've just killed USB charger by overloading it. =
-They are not protected.
-> > >=20
-> > > I believe your automatically-pull-max-power really should stick to th=
-e well-known charging
-> > > currents (.5A, 1A, 1.7A), at the very minimum.
-> > >=20
-> > The main reason for the patch was to prevent switching off charging
-> > when Vbus drops low. The reason was not to get out extremely much
-> > current out of the charger.
-> > The electrical characteristics of a  bicycle as a power source are.
-> > - the amount of current available changes
-> >    - 500mA at around 17km/h
-> > - you cannot destroy it by electrically overloading
-> >=20
-> > If the current is set to e.g. 500mA and that linear charging mode is
-> > enabled, the battery gets the maximum current available (upto
-> > 500mA) regardless of the speed which is often changing.
->=20
-> Yes... I guess that makes sense for you, but I wonder if we should be
-> doing this by default. It seems a lot of cheap chargers can be easily
-> destroyed if you overload them.
->=20
-Hmm, I guess the twl4030_charger would not be the only one destroying
-such chargers. I have seen such hub dynamo-friendly behaviour on every
-device I had connected to it before (an ipaq h2200, openmoko gta02).
-I have checked all usb wall plug chargers I have seen and I found none
-which has a lower current then 500mA. Only one has 500mA. The rest has
-1A or even 2A.
-
-But I think the non-ending cv stuff is a reason enough so that it is not
-the default charge method. I use it only at bootup when battery is low
-to have some time to fix charging issues manually and when cycling.
-Cycling is detected by acceleration values and I get some feedback if
-that charge mode is enabled or disabled.
-
-Regards.
-Andreas Kemnade
-
---Sig_/LmjN=weoj7YwIaLDFBW9PMh
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQEcBAEBAgAGBQJWVOVLAAoJEGGrpYhZ30HuC/4H/3Q7ry7ccUBKEgHNpwMoaRSN
-+ZDojNgztiV+o7vM28ktBQaAJV7bIIEHGMWlYWD1+gF4Fs5QCAPLgvcWGwIoAofD
-Hs6DvW87hXTuahVNEZwsvA8iGDtARIYkBOFD+drEvGs68NJxGWbzGzgboOpOsQYr
-GMja31Wid88azVSpl+rfhC7AsFVwfnaDDoQQ5KUj1oHXLKy68MSPnKtUlXgE2Jj7
-HPwib3WnTNe5ojfoVYS3peNUy3enlJ9nqmbzzj/n3y5x18L42hsy9Fr2+I10lTzv
-eQatHRFrotHT5giLrixNbzznv5OdSRB4LBSJvER1SJIxTFSiChJGoX87g7PKV9o=
-=E1Pc
------END PGP SIGNATURE-----
-
---Sig_/LmjN=weoj7YwIaLDFBW9PMh--
+> ---
+>  .../devicetree/bindings/thermal/qoriq-thermal.txt  | 63 ++++++++++++++++++++++
+>  1 file changed, 63 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt b/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
+> new file mode 100644
+> index 0000000..66223d5
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
+> @@ -0,0 +1,63 @@
+> +* Thermal Monitoring Unit (TMU) on Freescale QorIQ SoCs
+> +
+> +Required properties:
+> +- compatible : Must include "fsl,qoriq-tmu". The version of the device is
+> +	determined by the TMU IP Block Revision Register (IPBRR0) at
+> +	offset 0x0BF8.
+> +	Table of correspondences between IPBRR0 values and example  chips:
+> +		Value           Device
+> +		----------      -----
+> +		0x01900102      T1040
+> +- reg : Address range of TMU registers.
+> +- interrupts : Contains the interrupt for TMU.
+> +- fsl,tmu-range : The values to be programmed into TTRnCR, as specified by
+> +	the SoC reference manual. The first cell is TTR0CR, the second is
+> +	TTR1CR, etc.
+> +- fsl,tmu-calibration : A list of cell pairs containing temperature
+> +	calibration data, as specified by the SoC reference manual.
+> +	The first cell of each pair is the value to be written to TTCFGR,
+> +	and the second is the value to be written to TSCFGR.
+> +
+> +Example:
+> +
+> +tmu@f0000 {
+> +	compatible = "fsl,qoriq-tmu";
+> +	reg = <0xf0000 0x1000>;
+> +	interrupts = <18 2 0 0>;
+> +	fsl,tmu-range = <0x000a0000 0x00090026 0x0008004a 0x0001006a>;
+> +	fsl,tmu-calibration = <0x00000000 0x00000025
+> +			       0x00000001 0x00000028
+> +			       0x00000002 0x0000002d
+> +			       0x00000003 0x00000031
+> +			       0x00000004 0x00000036
+> +			       0x00000005 0x0000003a
+> +			       0x00000006 0x00000040
+> +			       0x00000007 0x00000044
+> +			       0x00000008 0x0000004a
+> +			       0x00000009 0x0000004f
+> +			       0x0000000a 0x00000054
+> +
+> +			       0x00010000 0x0000000d
+> +			       0x00010001 0x00000013
+> +			       0x00010002 0x00000019
+> +			       0x00010003 0x0000001f
+> +			       0x00010004 0x00000025
+> +			       0x00010005 0x0000002d
+> +			       0x00010006 0x00000033
+> +			       0x00010007 0x00000043
+> +			       0x00010008 0x0000004b
+> +			       0x00010009 0x00000053
+> +
+> +			       0x00020000 0x00000010
+> +			       0x00020001 0x00000017
+> +			       0x00020002 0x0000001f
+> +			       0x00020003 0x00000029
+> +			       0x00020004 0x00000031
+> +			       0x00020005 0x0000003c
+> +			       0x00020006 0x00000042
+> +			       0x00020007 0x0000004d
+> +			       0x00020008 0x00000056
+> +
+> +			       0x00030000 0x00000012
+> +			       0x00030001 0x0000001d>;
+> +};
+> -- 
+> 2.1.0.27.g96db324
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe devicetree" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
