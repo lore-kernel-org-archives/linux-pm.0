@@ -1,49 +1,57 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH RFC 17/27] drivers: cpu-pd: Record CPUs that are part of
- the domain
-Date: Wed, 25 Nov 2015 07:13:38 -0700
-Message-ID: <20151125141338.GH30342@linaro.org>
-References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
- <1447799871-56374-18-git-send-email-lina.iyer@linaro.org>
- <20151124210043.GD25963@codeaurora.org>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH v2 1/1] x86/platform/iosf_mbi: Remove duplicate
+ definitions
+Date: Wed, 25 Nov 2015 15:20:18 +0100 (CET)
+Message-ID: <alpine.DEB.2.11.1511251514580.12555@nanos>
+References: <1447264769-21981-1-git-send-email-andriy.shevchenko@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f44.google.com ([209.85.220.44]:35863 "EHLO
-	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751432AbbKYONk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Nov 2015 09:13:40 -0500
-Received: by pacdm15 with SMTP id dm15so58852524pac.3
-        for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2015 06:13:39 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <20151124210043.GD25963@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <1447264769-21981-1-git-send-email-andriy.shevchenko@linux.intel.com>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Anvin <hpa@zytor.com>, Wolfram Sang <wsa@the-dreams.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Hock Leong Kweh <hock.leong.kweh@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: ulf.hansson@linaro.org, khilman@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com
 
-On Tue, Nov 24 2015 at 14:00 -0700, Stephen Boyd wrote:
->On 11/17, Lina Iyer wrote:
->> diff --git a/drivers/base/power/cpu-pd.c b/drivers/base/power/cpu-pd.c
->> index 9758b8d..617ce54 100644
->> --- a/drivers/base/power/cpu-pd.c
->> +++ b/drivers/base/power/cpu-pd.c
->> @@ -18,6 +18,7 @@
->>  #include <linux/device.h>
->>  #include <linux/pm_runtime.h>
->>  #include <linux/platform_device.h>
->> +#include <linux/pm_qos.h>
->
->What's this added for?
->
-pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
-Getting the PM QoS for the CPUs.
+On Wed, 11 Nov 2015, Andy Shevchenko wrote:
 
--- Lina
+> The read and write opcodes are global for all units on SoC and even across
+> Intel SoCs. Remove duplication of corresponding constants. At the same time
+> convert all current users.
+> 
+> No functional change.
+> 
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: Peter Anvin <hpa@zytor.com>
+> Cc: Wolfram Sang <wsa@the-dreams.de>
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: Eduardo Valentin <edubezval@gmail.com>
+> Cc: Hock Leong Kweh <hock.leong.kweh@intel.com>
+> 
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> ---
+> Since v1:
+> - satisfy kbuild robot
+> 
+>  arch/x86/include/asm/iosf_mbi.h              | 49 +++++-----------------
+>  arch/x86/platform/atom/punit_atom_debug.c    |  7 +---
+>  arch/x86/platform/intel-quark/imr.c          | 28 +++++--------
+>  drivers/i2c/busses/i2c-designware-baytrail.c | 17 +++-----
+>  drivers/powercap/intel_rapl.c                | 10 ++---
+>  drivers/thermal/intel_quark_dts_thermal.c    | 61 ++++++++++++++--------------
+>  drivers/thermal/intel_soc_dts_iosf.c         | 43 ++++++++++----------
 
->>  #include <linux/rculist.h>
->>  #include <linux/slab.h>
->
->-- 
->Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
->a Linux Foundation Collaborative Project
+Hmm. Either we get acks of all maintainers and merge it through
+tip/x86/... or we do the following:
+
+Add the new constants w/o using them in a seperate patch and ship that
+linuswards now. Then the subsystem maintainers can pick the individual
+patches up and after the merge window closes we remove the old
+constants in one go.
+
+Either way works for me.
+
+Thanks,
+
+	tglx
