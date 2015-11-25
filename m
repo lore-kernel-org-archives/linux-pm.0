@@ -1,83 +1,84 @@
-From: Eric Anholt <eric@anholt.net>
-Subject: Re: [PATCH 2/3] ARM: bcm2835: add rpi power domain driver
-Date: Wed, 25 Nov 2015 11:33:26 -0800
-Message-ID: <8737vt27sp.fsf@eliezer.anholt.net>
-References: <1447956490-22930-1-git-send-email-alex.aring@gmail.com> <1447956490-22930-3-git-send-email-alex.aring@gmail.com> <CAPDyKFqiGe+E6WRELduZJoKwFRkgnFxBvPjEa3jX04EAC3vXrA@mail.gmail.com> <20151124210249.GA4270@omega>
+From: Ran Shalit <ranshalit@gmail.com>
+Subject: Re: power states transitions
+Date: Wed, 25 Nov 2015 21:48:30 +0200
+Message-ID: <CAJ2oMhKayCodLD_M+K07A3EvaGb=rAmcNWNcmYUeq=eRbcP-vQ@mail.gmail.com>
+References: <CAJ2oMhLmViYf=27nVh_=DBFyQLCcBT+985RTkMiwJZyav7Uiyg@mail.gmail.com>
+	<20151125185014.GN2517@atomide.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-	micalg=pgp-sha512; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gabe.freedesktop.org ([131.252.210.177]:45224 "EHLO
-	gabe.freedesktop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752159AbbKYTdb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Nov 2015 14:33:31 -0500
-In-Reply-To: <20151124210249.GA4270@omega>
+Received: from mail-io0-f171.google.com ([209.85.223.171]:33817 "EHLO
+	mail-io0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752369AbbKYTsb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Nov 2015 14:48:31 -0500
+In-Reply-To: <20151125185014.GN2517@atomide.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alexander Aring <alex.aring@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: linux-rpi-kernel@lists.infradead.org, Rob Herring <robh+dt@kernel.org>, =?utf-8?Q?Pawe=C5=82?= Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Stephen Warren <swarren@wwwdotorg.org>, Lee Jones <lee@kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Florian Fainelli <f.fainelli@gmail.com>, Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, bcm-kernel-feedback-list@broadcom.com, "linux-pm@vger.kernel.org" <linux-pm@vge>
+To: Tony Lindgren <tony@atomide.com>
+Cc: Linux OMAP Mailing List <linux-omap@vger.kernel.org>, linux-pm@vger.kernel.org
 
---=-=-=
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-Alexander Aring <alex.aring@gmail.com> writes:
-
-> Hi,
+On Wed, Nov 25, 2015 at 8:50 PM, Tony Lindgren <tony@atomide.com> wrote:
+> * Ran Shalit <ranshalit@gmail.com> [151122 07:59]:
+>> Hello,
+>>
+>> I have stranhe behaviour in which even when there is no activity in
+>> serial port, the retention counter is keep incremented all these time,
+>> as if the cpu gets in and out of retention periodically.
+>> I would expect the cpu to get into retention mode, when there is no
+>> activity and stay in that state.
+>> What can cause such behaviour ? Is it because some background process ?
 >
-> On Tue, Nov 24, 2015 at 09:44:59PM +0100, Ulf Hansson wrote:
->> [...]
->>=20
->> > diff --git a/arch/arm/mach-bcm/Kconfig b/arch/arm/mach-bcm/Kconfig
->> > index 8c53c55..20479d7 100644
->> > --- a/arch/arm/mach-bcm/Kconfig
->> > +++ b/arch/arm/mach-bcm/Kconfig
->> > @@ -134,6 +134,16 @@ config ARCH_BCM2835
->> >           This enables support for the Broadcom BCM2835 SoC. This SoC =
-is
->> >           used in the Raspberry Pi and Roku 2 devices.
->> >
->> > +config RASPBERRYPI_POWER
->>=20
->> You don't need a new Kconfig option I think. If you fold in the below
->> "select" under ARCH_BCM2835, that should work as well, right?
->>=20
->> select PM_GENERIC_DOMAINS if (RASPBERRYPI_FIRMWARE && PM && OF)
->>=20
+> Sounds like your device is hitting deper idle states during idle. If
+> you want to disable that, set the UART autosuspend_delay_ms to -1:
 >
-> I think this depends on what the maintainers like to have here.
+> #/bin/bash
+> uarts=$(find /sys/class/tty/tty[SO]*/device/power/ -type d)
+> for uart in $uarts; do
+>         echo -1 > $uart/autosuspend_delay_ms 2>&1
+> done
 >
-> The raspberrypi firmware isn't BCM2835 specific, when some SoC which is
-> BCM2835 and enabled the RASPBERRYPI_FIRMWARE (for what reason ever) it wi=
-ll
-> enable also the power domain driver for the RPi.
+> The above will keep the UARTs active blocking any deeper idle
+> states. I believe the value has to be -1 instead of 0 to disable
+> autoidle.. but please verify yourself.
 >
-> When some BCM2835 enable it, then it will do nothing because the
-> devicetree entries should not match then.
+>> My original problem is that the ethernet performance is very low with
+>> small windows. I thought that I can control this value by changing
+>> sleep_latency parameter in
+>> the following array. Yet, it did not help me. I don't know why.
+>
+> Maybe test if the above script helps with the Ethernet too. If the
+> Ethernet controller is on GPMC, it's not blocking deeper idle states
+> automatically in hardware. Adding DMA support to the Ethernet driver
+> would be a good way to block deeper idle states automatically by
+> the Ethernet hardware.
+>
 
-As far as I'm concerned, using the firmware is a stopgap to get other
-drivers working, until we can get a native power domain driver written.
-I think it makes sense for this code to be under its own menu entry, so
-it can be flipped back off when we get the real thing in place.
+Hi Tony,
 
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
+We actually want the deeper state, but not in the price of performance...
+So I thought of these possibilities:
+1. configure the sleep state to check activity for a longer time than
+micro seconds (several seconds). If there is non activity in that long
+period, only than will move to retention. I am not sure if there is
+such configuration parameter . Maybe one of the following parameters
+can be configured for this option ?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+46 struct cpuidle_params {
+ 47         u32 exit_latency;       /* exit_latency = sleep + wake-up
+latencies */
+ 48         u32 target_residency;
+ 49         u8 valid;               /* validates the C-state */
+ 50 };
 
-iQIcBAEBCgAGBQJWVg0GAAoJELXWKTbR/J7oDN0P/0CdHpZSd1npNgjJkMM7IBVs
-rf7J1nmfoShoZfkRb/v0t9PwWSlonfEWMLg4uN37JP9mEgHqVi+vmVO0lyZGh43k
-rtyfjJQMFXa4U3cS6N2ATiTl+dpaPgbAET5wH8ZMyNyaSKjItfPSbyrUBQtLgZ1P
-KoSFl9/96xiuyeMuHBNxZsYDLaTkJjgdn0kcSrfbYHUy4RlX8a/GSb8CystHZ4Vc
-42JMj/rXU/sPGU9L6LtBcfdWWmnk0eSSW5i+Imz+nK1Q6t5OaKDLa17ib/J9Ky6f
-5U1JQHjbA4fa4XYHfUm9hZvY6VzST5GGNCVQ80FaoBbjWrcUYLJO99nryRbrMrpt
-NUP5LuMELsFkeGqohtLg/wfFNDsPkbFevYhUHpoLf0fJIyICf+Ep+dVBHk36dDA5
-FFF0xTrvNOYKH7wX7rgK7ZMmly6wa0OlLP7WA6qGp1Ib1h8YJUuBdP1Nl7d6pWbW
-3ZX9mB4hDjZkFhxkrtiX7L2xHIlr6sal5bBHcLh3yWPv/kXbWjiu52xo78tXZqra
-Ct/DtOxPEZ8VjnOFDNEWClU6fG4EEtZrLmkEgXF+rQosUVBb4cMnTIZB91HwIXQM
-ZLOLf3K8RGBOLl7J0bR+0QAW+mgwrTOs6+pKNDUSxg6CZuT/NETIqQUl5wq0vofa
-rwbbdCK7+O072QTgg69b
-=kgnB
------END PGP SIGNATURE-----
---=-=-=--
+2. Another option can be to write a kernel module which check if there
+is ethernet activity for X seconds, if there is none - it will enable
+power management , otherwise - it will disable the power management.
+
+These maybe can solve the ethernet issue, but I still not sure why
+there is constantly incrementation in the retention state, as if it
+enter and leave the state all periodically. Is it becuase some
+task/thread/process in the system (I guess it can be a kernel process
+actually) ?
+
+Regards,
+Ran
