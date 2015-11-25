@@ -1,84 +1,48 @@
-From: Ran Shalit <ranshalit@gmail.com>
-Subject: Re: power states transitions
-Date: Wed, 25 Nov 2015 21:48:30 +0200
-Message-ID: <CAJ2oMhKayCodLD_M+K07A3EvaGb=rAmcNWNcmYUeq=eRbcP-vQ@mail.gmail.com>
-References: <CAJ2oMhLmViYf=27nVh_=DBFyQLCcBT+985RTkMiwJZyav7Uiyg@mail.gmail.com>
-	<20151125185014.GN2517@atomide.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH 3/5] dt-bindings: rockchip-thermal: Support the
+ RK3228/RK3399 SoCs compatible
+Date: Wed, 25 Nov 2015 14:05:39 -0600
+Message-ID: <20151125200539.GC30473@rob-hp-laptop>
+References: <1448438377-29203-1-git-send-email-wxt@rock-chips.com>
+ <1448438377-29203-4-git-send-email-wxt@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f171.google.com ([209.85.223.171]:33817 "EHLO
-	mail-io0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752369AbbKYTsb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Nov 2015 14:48:31 -0500
-In-Reply-To: <20151125185014.GN2517@atomide.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1448438377-29203-4-git-send-email-wxt@rock-chips.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Caesar Wang <wxt@rock-chips.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, linux-rockchip@lists.infradead.org, Heiko Stuebner <heiko@sntech.de>, Dan Carpenter <dan.carpenter@oracle.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Kumar Gala <galak@codeaurora.org>, linux-kernel@vger.kernel.org, Ian Campbell <ijc+devicetree@hellion.org.uk>, linux-arm-kernel@lists.infradead.org, Pawel Moll <pawel.moll@arm.com>, Zhang Rui <rui.zhang@intel.com>, Mark Rutland <mark.rutland@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Linux OMAP Mailing List <linux-omap@vger.kernel.org>, linux-pm@vger.kernel.org
 
-On Wed, Nov 25, 2015 at 8:50 PM, Tony Lindgren <tony@atomide.com> wrote:
-> * Ran Shalit <ranshalit@gmail.com> [151122 07:59]:
->> Hello,
->>
->> I have stranhe behaviour in which even when there is no activity in
->> serial port, the retention counter is keep incremented all these time,
->> as if the cpu gets in and out of retention periodically.
->> I would expect the cpu to get into retention mode, when there is no
->> activity and stay in that state.
->> What can cause such behaviour ? Is it because some background process ?
->
-> Sounds like your device is hitting deper idle states during idle. If
-> you want to disable that, set the UART autosuspend_delay_ms to -1:
->
-> #/bin/bash
-> uarts=$(find /sys/class/tty/tty[SO]*/device/power/ -type d)
-> for uart in $uarts; do
->         echo -1 > $uart/autosuspend_delay_ms 2>&1
-> done
->
-> The above will keep the UARTs active blocking any deeper idle
-> states. I believe the value has to be -1 instead of 0 to disable
-> autoidle.. but please verify yourself.
->
->> My original problem is that the ethernet performance is very low with
->> small windows. I thought that I can control this value by changing
->> sleep_latency parameter in
->> the following array. Yet, it did not help me. I don't know why.
->
-> Maybe test if the above script helps with the Ethernet too. If the
-> Ethernet controller is on GPMC, it's not blocking deeper idle states
-> automatically in hardware. Adding DMA support to the Ethernet driver
-> would be a good way to block deeper idle states automatically by
-> the Ethernet hardware.
->
+On Wed, Nov 25, 2015 at 03:59:35PM +0800, Caesar Wang wrote:
+> This patchset attempts to new compatible for thermal founding
+> on RK3228/RK3399 SoCs.
+> 
+> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
 
-Hi Tony,
+Acked-by: Rob Herring <robh@kernel.org>
 
-We actually want the deeper state, but not in the price of performance...
-So I thought of these possibilities:
-1. configure the sleep state to check activity for a longer time than
-micro seconds (several seconds). If there is non activity in that long
-period, only than will move to retention. I am not sure if there is
-such configuration parameter . Maybe one of the following parameters
-can be configured for this option ?
-
-46 struct cpuidle_params {
- 47         u32 exit_latency;       /* exit_latency = sleep + wake-up
-latencies */
- 48         u32 target_residency;
- 49         u8 valid;               /* validates the C-state */
- 50 };
-
-2. Another option can be to write a kernel module which check if there
-is ethernet activity for X seconds, if there is none - it will enable
-power management , otherwise - it will disable the power management.
-
-These maybe can solve the ethernet issue, but I still not sure why
-there is constantly incrementation in the retention state, as if it
-enter and leave the state all periodically. Is it becuase some
-task/thread/process in the system (I guess it can be a kernel process
-actually) ?
-
-Regards,
-Ran
+> ---
+> 
+>  Documentation/devicetree/bindings/thermal/rockchip-thermal.txt | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+> index 0dfa60d..af5f802 100644
+> --- a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+> +++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+> @@ -2,8 +2,10 @@
+>  
+>  Required properties:
+>  - compatible : should be "rockchip,<name>-tsadc"
+> +   "rockchip,rk3228-tsadc": found on RK3228 SoCs
+>     "rockchip,rk3288-tsadc": found on RK3288 SoCs
+>     "rockchip,rk3368-tsadc": found on RK3368 SoCs
+> +   "rockchip,rk3368-tsadc": found on RK3399 SoCs
+>  - reg : physical base address of the controller and length of memory mapped
+>  	region.
+>  - interrupts : The interrupt number to the cpu. The interrupt specifier format
+> -- 
+> 1.9.1
+> 
