@@ -1,46 +1,58 @@
-From: "Chen, Yu C" <yu.c.chen@intel.com>
-Subject: Re: [PATCH 1/1] thermal: setup monitor only once after handling
- trips
-Date: Wed, 25 Nov 2015 07:16:08 +0000
-Message-ID: <1448435910.15712.22.camel@localhost>
-References: <1448424468-18736-1-git-send-email-edubezval@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1448424468-18736-1-git-send-email-edubezval@gmail.com>
-Content-Language: en-US
-Content-ID: <2C1456D83D585F41AB728841003DDE10@intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "edubezval@gmail.com" <edubezval@gmail.com>
-Cc: "Zhang, Rui" <rui.zhang@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+From: Caesar Wang <wxt@rock-chips.com>
+Subject: [PATCH 0/5] Fix a trivial typo and support rk3228/rk3399 SoCs for thermal driver.
+Date: Wed, 25 Nov 2015 15:59:32 +0800
+Message-ID: <1448438377-29203-1-git-send-email-wxt@rock-chips.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f66.google.com ([209.85.220.66]:34584 "EHLO
+	mail-pa0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752770AbbKYIAO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Nov 2015 03:00:14 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-rockchip@lists.infradead.org, Heiko Stuebner <heiko@sntech.de>, Dan Carpenter <dan.carpenter@oracle.com>, Caesar Wang <wxt@rock-chips.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Jiri Kosina <trivial@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Zhang Rui <rui.zhang@intel.com>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org
 
-SGksDQpPbiBUdWUsIDIwMTUtMTEtMjQgYXQgMjA6MDcgLTA4MDAsIEVkdWFyZG8gVmFsZW50aW4g
-d3JvdGU6DQo+IEluc3RlYWQgb2YgY2hhbmdpbmcgdGhlIG1vbml0b3Jpbmcgc2V0dXAgZXZlcnkg
-dGltZSBhZnRlcg0KPiBoYW5kbGluZyBlYWNoIHRyaXAsIHRoaXMgcGF0Y2ggc2ltcGxpZmllcyB0
-aGUgbW9uaXRvcmluZw0KPiBzZXR1cCBieSBtb3ZpbmcgdGhlIHNldHVwIGNhbGwgdG8gYSBwbGFj
-ZSB3aGVyZSBhbGwNCj4gdHJpcHMgaGF2ZSBiZWVuIHRyZWF0ZWQgYWxyZWFkeS4NCj4gDQo+IENj
-OiBaaGFuZyBSdWkgPHJ1aS56aGFuZ0BpbnRlbC5jb20+DQo+IENjOiBsaW51eC1wbUB2Z2VyLmtl
-cm5lbC5vcmcNCj4gQ2M6IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcNCj4gU2lnbmVkLW9m
-Zi1ieTogRWR1YXJkbyBWYWxlbnRpbiA8ZWR1YmV6dmFsQGdtYWlsLmNvbT4NCj4gLS0tDQo+ICBk
-cml2ZXJzL3RoZXJtYWwvdGhlcm1hbF9jb3JlLmMgfCAxMSArKysrKystLS0tLQ0KPiAgMSBmaWxl
-IGNoYW5nZWQsIDYgaW5zZXJ0aW9ucygrKSwgNSBkZWxldGlvbnMoLSkNCj4gDQo+IGRpZmYgLS1n
-aXQgYS9kcml2ZXJzL3RoZXJtYWwvdGhlcm1hbF9jb3JlLmMgYi9kcml2ZXJzL3RoZXJtYWwvdGhl
-cm1hbF9jb3JlLmMNCj4gaW5kZXggZDllNTI1Yy4uNmRlYmI1NCAxMDA2NDQNCj4gLS0tIGEvZHJp
-dmVycy90aGVybWFsL3RoZXJtYWxfY29yZS5jDQo+ICsrKyBiL2RyaXZlcnMvdGhlcm1hbC90aGVy
-bWFsX2NvcmUuYw0KPiBAQCAtNDU3LDExICs0NTcsNiBAQCBzdGF0aWMgdm9pZCBoYW5kbGVfdGhl
-cm1hbF90cmlwKHN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlICp0eiwgaW50IHRyaXApDQo+ICAJ
-CWhhbmRsZV9jcml0aWNhbF90cmlwcyh0eiwgdHJpcCwgdHlwZSk7DQo+ICAJZWxzZQ0KPiAgCQlo
-YW5kbGVfbm9uX2NyaXRpY2FsX3RyaXBzKHR6LCB0cmlwLCB0eXBlKTsNCj4gLQkvKg0KPiAtCSAq
-IEFscmlnaHQsIHdlIGhhbmRsZWQgdGhpcyB0cmlwIHN1Y2Nlc3NmdWxseS4NCj4gLQkgKiBTbywg
-c3RhcnQgbW9uaXRvcmluZyBhZ2Fpbi4NCj4gLQkgKi8NCj4gLQltb25pdG9yX3RoZXJtYWxfem9u
-ZSh0eik7DQo+ICB9DQo+ICANCj4gIC8qKg0KPiBAQCAtNTQ3LDYgKzU0MiwxMiBAQCB2b2lkIHRo
-ZXJtYWxfem9uZV9kZXZpY2VfdXBkYXRlKHN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlICp0eikN
-Cj4gIA0KPiAgCWZvciAoY291bnQgPSAwOyBjb3VudCA8IHR6LT50cmlwczsgY291bnQrKykNCj4g
-IAkJaGFuZGxlX3RoZXJtYWxfdHJpcCh0eiwgY291bnQpOw0KPiArDQo+ICsJLyoNCj4gKwkgKiBB
-bHJpZ2h0LCB3ZSBoYW5kbGVkIHRoaXMgdHJpcCBzdWNjZXNzZnVsbHkuDQpzL3RoZXNlIHRyaXBz
-ID8NCj4gKwkgKiBTbywgc3RhcnQgbW9uaXRvcmluZyBhZ2Fpbi4NCj4gKwkgKi8NCj4gKwltb25p
-dG9yX3RoZXJtYWxfem9uZSh0eik7DQo+ICB9DQo+ICBFWFBPUlRfU1lNQk9MX0dQTCh0aGVybWFs
-X3pvbmVfZGV2aWNlX3VwZGF0ZSk7DQo+ICANCkJUVywgdGhlcm1hbF9ub3RpZnlfZnJhbWV3b3Jr
-IG1pZ2h0IG5lZWQgYmUgYWZmZWN0ZWQ/IA0KDQp0aGFua3MsDQpZdQ0K
+This series pacthes to support the next soc for this thermal driver.
+I don't have add the dts thermal data since these SoCs have *_not_* land
+in this mailline. I believe these SoCs dts will land in this mainline,
+then add the thermal data for Heiko.
+
+This series patches can apply into Eduardo branch.
+git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git
+
+Also, this series pacthes have build on github branch.
+https://github.com/rockchip-linux/kernel/commits/develop4.4
+
+PATCH[1/5]:
+That's bit ugly typo, sorry for sending again :(.
+
+PATCH[2/5]:
+To fix a build warning came from Dan Carpenter report smatch check,
+Thanks. :)
+
+PATCH[3/5]:
+Add the rk3228/rk339 SoCs compatible for dt-bindings.
+
+PATCH[4/5]:
+Add the rk3228 SoCs for thermal driver.
+
+PATCH[5/5]:
+Add the rk3399 SoCs for thermal driver.
+
+
+
+Caesar Wang (5):
+  thermal: rockchip: fix a trivial typo
+  thermal: rockchip: fix a impossible condition caused by the warning
+  dt-bindings: rockchip-thermal: Support the RK3228/RK3399 SoCs
+    compatible
+  thermal: rockchip: Support the RK3228 SoCs in thermal driver
+  thermal: rockchip: Support the RK3399 SoCs in thermal driver
+
+ .../bindings/thermal/rockchip-thermal.txt          |   2 +
+ drivers/thermal/rockchip_thermal.c                 | 159 ++++++++++++++++++++-
+ 2 files changed, 155 insertions(+), 6 deletions(-)
+
+-- 
+1.9.1
+
