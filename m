@@ -1,48 +1,48 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 3/5] dt-bindings: rockchip-thermal: Support the
- RK3228/RK3399 SoCs compatible
-Date: Wed, 25 Nov 2015 14:05:39 -0600
-Message-ID: <20151125200539.GC30473@rob-hp-laptop>
-References: <1448438377-29203-1-git-send-email-wxt@rock-chips.com>
- <1448438377-29203-4-git-send-email-wxt@rock-chips.com>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH RFC 17/27] drivers: cpu-pd: Record CPUs that are part of
+ the domain
+Date: Wed, 25 Nov 2015 13:20:33 -0700
+Message-ID: <20151125202033.GI30342@linaro.org>
+References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
+ <1447799871-56374-18-git-send-email-lina.iyer@linaro.org>
+ <20151124210043.GD25963@codeaurora.org>
+ <20151125141338.GH30342@linaro.org>
+ <56560801.8000908@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1448438377-29203-4-git-send-email-wxt@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Caesar Wang <wxt@rock-chips.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, linux-rockchip@lists.infradead.org, Heiko Stuebner <heiko@sntech.de>, Dan Carpenter <dan.carpenter@oracle.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Kumar Gala <galak@codeaurora.org>, linux-kernel@vger.kernel.org, Ian Campbell <ijc+devicetree@hellion.org.uk>, linux-arm-kernel@lists.infradead.org, Pawel Moll <pawel.moll@arm.com>, Zhang Rui <rui.zhang@intel.com>, Mark Rutland <mark.rutland@arm.com>
+In-Reply-To: <56560801.8000908@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: ulf.hansson@linaro.org, khilman@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Nov 25, 2015 at 03:59:35PM +0800, Caesar Wang wrote:
-> This patchset attempts to new compatible for thermal founding
-> on RK3228/RK3399 SoCs.
-> 
-> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+On Wed, Nov 25 2015 at 12:12 -0700, Stephen Boyd wrote:
+>On 11/25/15 06:13, Lina Iyer wrote:
+>> On Tue, Nov 24 2015 at 14:00 -0700, Stephen Boyd wrote:
+>>> On 11/17, Lina Iyer wrote:
+>>>> diff --git a/drivers/base/power/cpu-pd.c b/drivers/base/power/cpu-pd.c
+>>>> index 9758b8d..617ce54 100644
+>>>> --- a/drivers/base/power/cpu-pd.c
+>>>> +++ b/drivers/base/power/cpu-pd.c
+>>>> @@ -18,6 +18,7 @@
+>>>>  #include <linux/device.h>
+>>>>  #include <linux/pm_runtime.h>
+>>>>  #include <linux/platform_device.h>
+>>>> +#include <linux/pm_qos.h>
+>>>
+>>> What's this added for?
+>>>
+>> pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+>> Getting the PM QoS for the CPUs.
+>>
+>
+>Ok. That function call is not added in this patch though.
+>
+Ah, right. Will fix.
 
-Acked-by: Rob Herring <robh@kernel.org>
-
-> ---
-> 
->  Documentation/devicetree/bindings/thermal/rockchip-thermal.txt | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
-> index 0dfa60d..af5f802 100644
-> --- a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
-> +++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
-> @@ -2,8 +2,10 @@
->  
->  Required properties:
->  - compatible : should be "rockchip,<name>-tsadc"
-> +   "rockchip,rk3228-tsadc": found on RK3228 SoCs
->     "rockchip,rk3288-tsadc": found on RK3288 SoCs
->     "rockchip,rk3368-tsadc": found on RK3368 SoCs
-> +   "rockchip,rk3368-tsadc": found on RK3399 SoCs
->  - reg : physical base address of the controller and length of memory mapped
->  	region.
->  - interrupts : The interrupt number to the cpu. The interrupt specifier format
-> -- 
-> 1.9.1
-> 
+>-- 
+>Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+>a Linux Foundation Collaborative Project
+>
