@@ -1,59 +1,75 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 2/5] Documentation: devicetree: Add property for
- controlling power saving mode for the us5182 als sensor
-Date: Tue, 24 Nov 2015 18:01:30 -0600
-Message-ID: <20151125000130.GA21418@rob-hp-laptop>
-References: <1448362792-5181-1-git-send-email-adriana.reus@intel.com>
- <1448362792-5181-3-git-send-email-adriana.reus@intel.com>
+From: Shuge <shugelinux-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: Re: [PATCH v2 1/5] ARM: dts: sun8i: Add SID node
+Date: Wed, 25 Nov 2015 09:22:56 +0800
+Message-ID: <56550D70.6060109@gmail.com>
+References: <cover.1448263428.git.atx@atx.name>
+ <b897b1c8741c8a871163b84d01b480f99329536d.1448263428.git.atx@atx.name>
+ <20151123124356.GW32142@lukather>
+ <a7d4e538-db64-476d-b5de-5222419229a2@googlegroups.com>
+ <20151124093202.GL32142@lukather>
+Reply-To: shugelinux-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1448362792-5181-3-git-send-email-adriana.reus-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Adriana Reus <adriana.reus-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sunxi+bncBCYY37UO6AHRBL432SZAKGQECWMZU6A-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+In-Reply-To: <20151124093202.GL32142@lukather>
+List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <http://groups.google.com/group/linux-sunxi
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+List-Subscribe: <http://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <http://groups.google.com/group/linux-sunxi/subscribe>
+To: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>, atx-MwjtXicnQwU@public.gmane.org, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gpatchesrdh-I1/eAgTnXDYAvxtiuMwx3w@public.gmane.org, mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, emilio-0Z03zUJReD5OxF6Tv1QG9Q@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Nov 24, 2015 at 12:59:49PM +0200, Adriana Reus wrote:
-> Add a property to allow changing the default power-saving mode.
-> By default, at read raw the chip will activate and provide
-> one measurent, then it will shut itself down. However, the
-> chip can also work in "continuous" mode which may be more reliable
-> but is also more power consuming.
+On Monday, November 23, 2015 at 17:32 UTC+8, Maxime Ripard wrote:
+> On Mon, Nov 23, 2015 at 10:51:15PM -0800, Sugar Wu wrote:
+>> On Monday, November 23, 2015 at 8:43:59 PM UTC+8, Maxime Ripard wrote:
+>>>
+>>> Hi, 
+>>>
+>>> On Mon, Nov 23, 2015 at 09:02:48AM +0100, Josef Gajdusek wrote: 
+>>>> Add a node describing the Security ID memory to the 
+>>>> Allwinner H3 .dtsi file. 
+>>>>
+>>>> Signed-off-by: Josef Gajdusek <a...-MwjtXicnQwU@public.gmane.org <javascript:>> 
+>>>> --- 
+>>>>  arch/arm/boot/dts/sun8i-h3.dtsi | 7 +++++++ 
+>>>>  1 file changed, 7 insertions(+) 
+>>>>
+>>>> diff --git a/arch/arm/boot/dts/sun8i-h3.dtsi 
+>>> b/arch/arm/boot/dts/sun8i-h3.dtsi 
+>>>> index 0faa38a..58de718 100644 
+>>>> --- a/arch/arm/boot/dts/sun8i-h3.dtsi 
+>>>> +++ b/arch/arm/boot/dts/sun8i-h3.dtsi 
+>>>> @@ -359,6 +359,13 @@ 
+>>>>                          #size-cells = <0>; 
+>>>>                  }; 
+>>>>   
+>>>> +                sid: eeprom@01c14000 { 
+>>>> +                        compatible = "allwinner,sun4i-a10-sid"; 
+>>>> +                        reg = <0x01c14000 0x400>; 
+>>>
+>>> The datasheet says it's 256 bytes wide, while the size here is of 1kB, 
+>>> is it intentional? 
+>>
+>> SID memory map is 0x01c14000 ~ 0x01c143FF, include 2048bits efuse space.
+>> H3 efuse space is SID_SRAM, its range is  0x01c14200 ~ +0x100.
 > 
-> Signed-off-by: Adriana Reus <adriana.reus-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-> ---
->  Documentation/devicetree/bindings/iio/light/us5182d.txt | 11 +++++++++++
->  1 file changed, 11 insertions(+)
+> Interesting, what is below the 0x200 registers?
+>
+Some control register about SID.
+offset: 0x40  SID Program/Read Control Register
+offset: 0x50  SID Program Key Value Register
+offset: 0x60  SID Read Key Value Register
+offset: 0x70  \
+offset: 0x80  SJTAG Attribute 0 Register
+offset: 0x84  SJTAG Attribute 1 Register
+offset: 0x88  SJTAG Select Register
+offset: 0x90  SID Program Ctrol register for burned timing
+
+>
+> Thanks!
+> Maxime
 > 
-> diff --git a/Documentation/devicetree/bindings/iio/light/us5182d.txt b/Documentation/devicetree/bindings/iio/light/us5182d.txt
-> index 6f0a530..a619799 100644
-> --- a/Documentation/devicetree/bindings/iio/light/us5182d.txt
-> +++ b/Documentation/devicetree/bindings/iio/light/us5182d.txt
-> @@ -7,13 +7,24 @@ Required properties:
->  Optional properties:
->  - upisemi,glass-coef: glass attenuation factor - compensation factor of
->                        resolution 1000 for material transmittance.
-> +
->  - upisemi,dark-ths: array of 8 elements containing 16-bit thresholds (adc
->                      counts) corresponding to every scale.
-> +
->  - upisemi,upper-dark-gain: 8-bit dark gain compensation factor(4 int and 4
->                             fractional bits - Q4.4) applied when light > threshold
-> +
->  - upisemi,lower-dark-gain: 8-bit dark gain compensation factor(4 int and 4
->                             fractional bits - Q4.4) applied when light < threshold
->  
-> +- upisemi,continuous: This chip has two power modes: one-shot (chip takes one
-> +                      measurement and then shuts itself down) and continuous (
-> +                      chip takes continuous measurements). The one-shot mode is
-> +                      more power-friendly but the continuous mode may be more
-> +                      reliable. If this property is specified the continuous
-> +                      mode will be used instead of the default one-shot one for
-> +                      raw reads.
-
-I could imagine an OS may want to decide this on its own or use a 
-mixture of the modes.
-
-Rob
