@@ -1,56 +1,42 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: power states transitions
-Date: Wed, 25 Nov 2015 10:50:15 -0800
-Message-ID: <20151125185014.GN2517@atomide.com>
-References: <CAJ2oMhLmViYf=27nVh_=DBFyQLCcBT+985RTkMiwJZyav7Uiyg@mail.gmail.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH RFC 17/27] drivers: cpu-pd: Record CPUs that are part of
+ the domain
+Date: Wed, 25 Nov 2015 11:12:01 -0800
+Message-ID: <56560801.8000908@codeaurora.org>
+References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
+ <1447799871-56374-18-git-send-email-lina.iyer@linaro.org>
+ <20151124210043.GD25963@codeaurora.org> <20151125141338.GH30342@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:48544 "EHLO muru.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750967AbbKYSuU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 25 Nov 2015 13:50:20 -0500
-Content-Disposition: inline
-In-Reply-To: <CAJ2oMhLmViYf=27nVh_=DBFyQLCcBT+985RTkMiwJZyav7Uiyg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <20151125141338.GH30342@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: ulf.hansson@linaro.org, khilman@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, ahaslam@baylibre.com, mtitinger@baylibre.com
 List-Id: linux-pm@vger.kernel.org
-To: Ran Shalit <ranshalit@gmail.com>
-Cc: Linux OMAP Mailing List <linux-omap@vger.kernel.org>, linux-pm@vger.kernel.org
 
-* Ran Shalit <ranshalit@gmail.com> [151122 07:59]:
-> Hello,
-> 
-> I have stranhe behaviour in which even when there is no activity in
-> serial port, the retention counter is keep incremented all these time,
-> as if the cpu gets in and out of retention periodically.
-> I would expect the cpu to get into retention mode, when there is no
-> activity and stay in that state.
-> What can cause such behaviour ? Is it because some background process ?
+On 11/25/15 06:13, Lina Iyer wrote:
+> On Tue, Nov 24 2015 at 14:00 -0700, Stephen Boyd wrote:
+>> On 11/17, Lina Iyer wrote:
+>>> diff --git a/drivers/base/power/cpu-pd.c b/drivers/base/power/cpu-pd.c
+>>> index 9758b8d..617ce54 100644
+>>> --- a/drivers/base/power/cpu-pd.c
+>>> +++ b/drivers/base/power/cpu-pd.c
+>>> @@ -18,6 +18,7 @@
+>>>  #include <linux/device.h>
+>>>  #include <linux/pm_runtime.h>
+>>>  #include <linux/platform_device.h>
+>>> +#include <linux/pm_qos.h>
+>>
+>> What's this added for?
+>>
+> pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+> Getting the PM QoS for the CPUs.
+>
 
-Sounds like your device is hitting deper idle states during idle. If
-you want to disable that, set the UART autosuspend_delay_ms to -1:
+Ok. That function call is not added in this patch though.
 
-#/bin/bash
-uarts=$(find /sys/class/tty/tty[SO]*/device/power/ -type d)
-for uart in $uarts; do
-        echo -1 > $uart/autosuspend_delay_ms 2>&1
-done
-
-The above will keep the UARTs active blocking any deeper idle
-states. I believe the value has to be -1 instead of 0 to disable
-autoidle.. but please verify yourself.
-
-> My original problem is that the ethernet performance is very low with
-> small windows. I thought that I can control this value by changing
-> sleep_latency parameter in
-> the following array. Yet, it did not help me. I don't know why.
-
-Maybe test if the above script helps with the Ethernet too. If the
-Ethernet controller is on GPMC, it's not blocking deeper idle states
-automatically in hardware. Adding DMA support to the Ethernet driver
-would be a good way to block deeper idle states automatically by
-the Ethernet hardware.
-
-Regards,
-
-Tony
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
