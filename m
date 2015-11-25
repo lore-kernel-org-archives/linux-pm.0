@@ -1,115 +1,85 @@
-From: Caesar Wang <wxt@rock-chips.com>
-Subject: [PATCH 5/5] thermal: rockchip: Support the RK3399 SoCs in thermal driver
-Date: Wed, 25 Nov 2015 15:59:37 +0800
-Message-ID: <1448438377-29203-6-git-send-email-wxt@rock-chips.com>
-References: <1448438377-29203-1-git-send-email-wxt@rock-chips.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1448438377-29203-1-git-send-email-wxt@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-rockchip@lists.infradead.org, Heiko Stuebner <heiko@sntech.de>, Dan Carpenter <dan.carpenter@oracle.com>, Caesar Wang <wxt@rock-chips.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
+From: Adriana Reus <adriana.reus@intel.com>
+Subject: Re: [PATCH 2/5] Documentation: devicetree: Add property for
+ controlling power saving mode for the us5182 als sensor
+Date: Wed, 25 Nov 2015 11:50:30 +0200
+Message-ID: <56558466.9000001@intel.com>
+References: <1448362792-5181-1-git-send-email-adriana.reus@intel.com>
+ <1448362792-5181-3-git-send-email-adriana.reus@intel.com>
+ <20151125000130.GA21418@rob-hp-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([134.134.136.65]:63339 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751730AbbKYJu5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 25 Nov 2015 04:50:57 -0500
+In-Reply-To: <20151125000130.GA21418@rob-hp-laptop>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: jic23@kernel.org, linux-iio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, pawel.moll@arm.com, pmeerw@pmeerw.net, lars@metafoo.de
 
-The RK3399 SoCs have two Temperature Sensors, channel 0 is for CPU.
-channel 1 is for GPU.
 
-Signed-off-by: Caesar Wang <wxt@rock-chips.com>
 
----
+On 25.11.2015 02:01, Rob Herring wrote:
+> On Tue, Nov 24, 2015 at 12:59:49PM +0200, Adriana Reus wrote:
+>> Add a property to allow changing the default power-saving mode.
+>> By default, at read raw the chip will activate and provide
+>> one measurent, then it will shut itself down. However, the
+>> chip can also work in "continuous" mode which may be more reliable
+>> but is also more power consuming.
+>>
+>> Signed-off-by: Adriana Reus <adriana.reus@intel.com>
+>> ---
+>>   Documentation/devicetree/bindings/iio/light/us5182d.txt | 11 +++++++++++
+>>   1 file changed, 11 insertions(+)
+>>
+>> diff --git a/Documentation/devicetree/bindings/iio/light/us5182d.txt b/Documentation/devicetree/bindings/iio/light/us5182d.txt
+>> index 6f0a530..a619799 100644
+>> --- a/Documentation/devicetree/bindings/iio/light/us5182d.txt
+>> +++ b/Documentation/devicetree/bindings/iio/light/us5182d.txt
+>> @@ -7,13 +7,24 @@ Required properties:
+>>   Optional properties:
+>>   - upisemi,glass-coef: glass attenuation factor - compensation factor of
+>>                         resolution 1000 for material transmittance.
+>> +
+>>   - upisemi,dark-ths: array of 8 elements containing 16-bit thresholds (adc
+>>                       counts) corresponding to every scale.
+>> +
+>>   - upisemi,upper-dark-gain: 8-bit dark gain compensation factor(4 int and 4
+>>                              fractional bits - Q4.4) applied when light > threshold
+>> +
+>>   - upisemi,lower-dark-gain: 8-bit dark gain compensation factor(4 int and 4
+>>                              fractional bits - Q4.4) applied when light < threshold
+>>
+>> +- upisemi,continuous: This chip has two power modes: one-shot (chip takes one
+>> +                      measurement and then shuts itself down) and continuous (
+>> +                      chip takes continuous measurements). The one-shot mode is
+>> +                      more power-friendly but the continuous mode may be more
+>> +                      reliable. If this property is specified the continuous
+>> +                      mode will be used instead of the default one-shot one for
+>> +                      raw reads.
+>
+> I could imagine an OS may want to decide this on its own or use a
+> mixture of the modes.
+>
+> Rob
+>
 
- drivers/thermal/rockchip_thermal.c | 66 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 66 insertions(+)
+There is no possibility of mixing them up (at the same time), so for 
+example proximity cannot work in one mode and als the other.
 
-diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index c5079f9..f863956 100644
---- a/drivers/thermal/rockchip_thermal.c
-+++ b/drivers/thermal/rockchip_thermal.c
-@@ -291,6 +291,44 @@ static const struct tsadc_table v3_code_table[] = {
- 	{TSADCV3_DATA_MASK, 125000},
- };
- 
-+static const struct tsadc_table v4_code_table[] = {
-+	{TSADCV3_DATA_MASK, -40000},
-+	{431, -40000},
-+	{426, -35000},
-+	{421, -30000},
-+	{415, -25000},
-+	{410, -20000},
-+	{405, -15000},
-+	{399, -10000},
-+	{394, -5000},
-+	{389, 0},
-+	{383, 5000},
-+	{378, 10000},
-+	{373, 15000},
-+	{367, 20000},
-+	{362, 25000},
-+	{357, 30000},
-+	{351, 35000},
-+	{346, 40000},
-+	{340, 45000},
-+	{335, 50000},
-+	{330, 55000},
-+	{324, 60000},
-+	{319, 65000},
-+	{313, 70000},
-+	{308, 75000},
-+	{302, 80000},
-+	{297, 85000},
-+	{291, 90000},
-+	{286, 95000},
-+	{281, 100000},
-+	{275, 105000},
-+	{270, 110000},
-+	{264, 115000},
-+	{259, 120000},
-+	{253, 125000},
-+};
-+
- static u32 rk_tsadcv2_temp_to_code(struct chip_tsadc_table table,
- 				   int temp)
- {
-@@ -554,6 +592,30 @@ static const struct rockchip_tsadc_chip rk3368_tsadc_data = {
- 	},
- };
- 
-+static const struct rockchip_tsadc_chip rk3399_tsadc_data = {
-+	.chn_id[SENSOR_CPU] = 0, /* cpu sensor is channel 0 */
-+	.chn_id[SENSOR_GPU] = 1, /* gpu sensor is channel 1 */
-+	.chn_num = 2, /* two channels for tsadc */
-+
-+	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
-+	.tshut_polarity = TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
-+	.tshut_temp = 95000,
-+
-+	.initialize = rk_tsadcv2_initialize,
-+	.irq_ack = rk_tsadcv2_irq_ack,
-+	.control = rk_tsadcv2_control,
-+	.get_temp = rk_tsadcv2_get_temp,
-+	.set_tshut_temp = rk_tsadcv2_tshut_temp,
-+	.set_tshut_mode = rk_tsadcv2_tshut_mode,
-+
-+	.table = {
-+		.id = v4_code_table,
-+		.length = ARRAY_SIZE(v4_code_table),
-+		.data_mask = TSADCV3_DATA_MASK,
-+		.mode = ADC_DECREMENT,
-+	},
-+};
-+
- static const struct of_device_id of_rockchip_thermal_match[] = {
- 	{
- 		.compatible = "rockchip,rk3228-tsadc",
-@@ -567,6 +629,10 @@ static const struct of_device_id of_rockchip_thermal_match[] = {
- 		.compatible = "rockchip,rk3368-tsadc",
- 		.data = (void *)&rk3368_tsadc_data,
- 	},
-+	{
-+		.compatible = "rockchip,rk3399-tsadc",
-+		.data = (void *)&rk3399_tsadc_data,
-+	},
- 	{ /* end */ },
- };
- MODULE_DEVICE_TABLE(of, of_rockchip_thermal_match);
--- 
-1.9.1
+The one-shot mode can only be used for raw reads (for example when 
+user-space polls in_[proximity|light]_raw). If user-space wants to 
+enable events (activate interrupts when certain thresholds are met - 
+patch 5 of the series), then the chip has to switch to continuous 
+nonetheless because it needs to be active all the time. So one work-flow 
+scenario would be:
+
+Consumer1 starts polling the raw interface - default_mode
+Consumer2 activates events - continuous mode
+Consumer2 deactivates events - back to default_mode
+
+The only choice here is the default mode for raw reads, it currently is
+one-shot, this patch allows for continuous to be used if preferred.
