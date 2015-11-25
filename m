@@ -1,36 +1,56 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 103351] Machine check exception on Broadwell quad-core with
- SpeedStep enabled
-Date: Wed, 25 Nov 2015 18:49:49 +0000
-Message-ID: <bug-103351-137361-X8lyj53zLp@https.bugzilla.kernel.org/>
-References: <bug-103351-137361@https.bugzilla.kernel.org/>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: power states transitions
+Date: Wed, 25 Nov 2015 10:50:15 -0800
+Message-ID: <20151125185014.GN2517@atomide.com>
+References: <CAJ2oMhLmViYf=27nVh_=DBFyQLCcBT+985RTkMiwJZyav7Uiyg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:34419 "EHLO mail.kernel.org"
+Received: from muru.com ([72.249.23.125]:48544 "EHLO muru.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750840AbbKYStz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 25 Nov 2015 13:49:55 -0500
-Received: from mail.kernel.org (localhost [127.0.0.1])
-	by mail.kernel.org (Postfix) with ESMTP id 73F612088E
-	for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2015 18:49:53 +0000 (UTC)
-Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
-	by mail.kernel.org (Postfix) with ESMTP id 73263208B4
-	for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2015 18:49:52 +0000 (UTC)
-In-Reply-To: <bug-103351-137361@https.bugzilla.kernel.org/>
+	id S1750967AbbKYSuU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 25 Nov 2015 13:50:20 -0500
+Content-Disposition: inline
+In-Reply-To: <CAJ2oMhLmViYf=27nVh_=DBFyQLCcBT+985RTkMiwJZyav7Uiyg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Ran Shalit <ranshalit@gmail.com>
+Cc: Linux OMAP Mailing List <linux-omap@vger.kernel.org>, linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=103351
+* Ran Shalit <ranshalit@gmail.com> [151122 07:59]:
+> Hello,
+> 
+> I have stranhe behaviour in which even when there is no activity in
+> serial port, the retention counter is keep incremented all these time,
+> as if the cpu gets in and out of retention periodically.
+> I would expect the cpu to get into retention mode, when there is no
+> activity and stay in that state.
+> What can cause such behaviour ? Is it because some background process ?
 
---- Comment #105 from Alessandro Belloni <spupuz@gmail.com> ---
-after some email to asrock support they provided me the 2.40 version, and i was
-able to disable intel speedstep an turbo technology and to enable oc fixed
-mode, then i will test ubuntu, i was able to to see it working at least in usb
-key
+Sounds like your device is hitting deper idle states during idle. If
+you want to disable that, set the UART autosuspend_delay_ms to -1:
 
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+#/bin/bash
+uarts=$(find /sys/class/tty/tty[SO]*/device/power/ -type d)
+for uart in $uarts; do
+        echo -1 > $uart/autosuspend_delay_ms 2>&1
+done
+
+The above will keep the UARTs active blocking any deeper idle
+states. I believe the value has to be -1 instead of 0 to disable
+autoidle.. but please verify yourself.
+
+> My original problem is that the ethernet performance is very low with
+> small windows. I thought that I can control this value by changing
+> sleep_latency parameter in
+> the following array. Yet, it did not help me. I don't know why.
+
+Maybe test if the above script helps with the Ethernet too. If the
+Ethernet controller is on GPMC, it's not blocking deeper idle states
+automatically in hardware. Adding DMA support to the Ethernet driver
+would be a good way to block deeper idle states automatically by
+the Ethernet hardware.
+
+Regards,
+
+Tony
