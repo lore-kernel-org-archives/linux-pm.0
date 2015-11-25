@@ -1,110 +1,59 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH V4 1/5] dt-bindings: Add QorIQ TMU thermal bindings
-Date: Tue, 24 Nov 2015 17:20:01 -0600
-Message-ID: <20151124232001.GA2958@rob-hp-laptop>
-References: <1448347968-37766-1-git-send-email-hongtao.jia@freescale.com>
- <1448347968-37766-2-git-send-email-hongtao.jia@freescale.com>
+From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 2/5] Documentation: devicetree: Add property for
+ controlling power saving mode for the us5182 als sensor
+Date: Tue, 24 Nov 2015 18:01:30 -0600
+Message-ID: <20151125000130.GA21418@rob-hp-laptop>
+References: <1448362792-5181-1-git-send-email-adriana.reus@intel.com>
+ <1448362792-5181-3-git-send-email-adriana.reus@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ob0-f182.google.com ([209.85.214.182]:36667 "EHLO
-	mail-ob0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754208AbbKXXUJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 24 Nov 2015 18:20:09 -0500
+Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1448347968-37766-2-git-send-email-hongtao.jia@freescale.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1448362792-5181-3-git-send-email-adriana.reus-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Adriana Reus <adriana.reus-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Cc: jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Jia Hongtao <hongtao.jia@freescale.com>
-Cc: edubezval@gmail.com, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, scottwood@freescale.com
 
-On Tue, Nov 24, 2015 at 02:52:44PM +0800, Jia Hongtao wrote:
-> Add bindings documentation for TMU (Thermal Monitoring Unit) on QorIQ
-> platform.
+On Tue, Nov 24, 2015 at 12:59:49PM +0200, Adriana Reus wrote:
+> Add a property to allow changing the default power-saving mode.
+> By default, at read raw the chip will activate and provide
+> one measurent, then it will shut itself down. However, the
+> chip can also work in "continuous" mode which may be more reliable
+> but is also more power consuming.
 > 
-> Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
-> Reviewed-by: Scott Wood <scottwood@freescale.com>
-
-Acked-by: Rob Herring <robh@kernel.org>
-
+> Signed-off-by: Adriana Reus <adriana.reus-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 > ---
->  .../devicetree/bindings/thermal/qoriq-thermal.txt  | 63 ++++++++++++++++++++++
->  1 file changed, 63 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
+>  Documentation/devicetree/bindings/iio/light/us5182d.txt | 11 +++++++++++
+>  1 file changed, 11 insertions(+)
 > 
-> diff --git a/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt b/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
-> new file mode 100644
-> index 0000000..66223d5
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
-> @@ -0,0 +1,63 @@
-> +* Thermal Monitoring Unit (TMU) on Freescale QorIQ SoCs
+> diff --git a/Documentation/devicetree/bindings/iio/light/us5182d.txt b/Documentation/devicetree/bindings/iio/light/us5182d.txt
+> index 6f0a530..a619799 100644
+> --- a/Documentation/devicetree/bindings/iio/light/us5182d.txt
+> +++ b/Documentation/devicetree/bindings/iio/light/us5182d.txt
+> @@ -7,13 +7,24 @@ Required properties:
+>  Optional properties:
+>  - upisemi,glass-coef: glass attenuation factor - compensation factor of
+>                        resolution 1000 for material transmittance.
 > +
-> +Required properties:
-> +- compatible : Must include "fsl,qoriq-tmu". The version of the device is
-> +	determined by the TMU IP Block Revision Register (IPBRR0) at
-> +	offset 0x0BF8.
-> +	Table of correspondences between IPBRR0 values and example  chips:
-> +		Value           Device
-> +		----------      -----
-> +		0x01900102      T1040
-> +- reg : Address range of TMU registers.
-> +- interrupts : Contains the interrupt for TMU.
-> +- fsl,tmu-range : The values to be programmed into TTRnCR, as specified by
-> +	the SoC reference manual. The first cell is TTR0CR, the second is
-> +	TTR1CR, etc.
-> +- fsl,tmu-calibration : A list of cell pairs containing temperature
-> +	calibration data, as specified by the SoC reference manual.
-> +	The first cell of each pair is the value to be written to TTCFGR,
-> +	and the second is the value to be written to TSCFGR.
+>  - upisemi,dark-ths: array of 8 elements containing 16-bit thresholds (adc
+>                      counts) corresponding to every scale.
 > +
-> +Example:
+>  - upisemi,upper-dark-gain: 8-bit dark gain compensation factor(4 int and 4
+>                             fractional bits - Q4.4) applied when light > threshold
 > +
-> +tmu@f0000 {
-> +	compatible = "fsl,qoriq-tmu";
-> +	reg = <0xf0000 0x1000>;
-> +	interrupts = <18 2 0 0>;
-> +	fsl,tmu-range = <0x000a0000 0x00090026 0x0008004a 0x0001006a>;
-> +	fsl,tmu-calibration = <0x00000000 0x00000025
-> +			       0x00000001 0x00000028
-> +			       0x00000002 0x0000002d
-> +			       0x00000003 0x00000031
-> +			       0x00000004 0x00000036
-> +			       0x00000005 0x0000003a
-> +			       0x00000006 0x00000040
-> +			       0x00000007 0x00000044
-> +			       0x00000008 0x0000004a
-> +			       0x00000009 0x0000004f
-> +			       0x0000000a 0x00000054
-> +
-> +			       0x00010000 0x0000000d
-> +			       0x00010001 0x00000013
-> +			       0x00010002 0x00000019
-> +			       0x00010003 0x0000001f
-> +			       0x00010004 0x00000025
-> +			       0x00010005 0x0000002d
-> +			       0x00010006 0x00000033
-> +			       0x00010007 0x00000043
-> +			       0x00010008 0x0000004b
-> +			       0x00010009 0x00000053
-> +
-> +			       0x00020000 0x00000010
-> +			       0x00020001 0x00000017
-> +			       0x00020002 0x0000001f
-> +			       0x00020003 0x00000029
-> +			       0x00020004 0x00000031
-> +			       0x00020005 0x0000003c
-> +			       0x00020006 0x00000042
-> +			       0x00020007 0x0000004d
-> +			       0x00020008 0x00000056
-> +
-> +			       0x00030000 0x00000012
-> +			       0x00030001 0x0000001d>;
-> +};
-> -- 
-> 2.1.0.27.g96db324
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe devicetree" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>  - upisemi,lower-dark-gain: 8-bit dark gain compensation factor(4 int and 4
+>                             fractional bits - Q4.4) applied when light < threshold
+>  
+> +- upisemi,continuous: This chip has two power modes: one-shot (chip takes one
+> +                      measurement and then shuts itself down) and continuous (
+> +                      chip takes continuous measurements). The one-shot mode is
+> +                      more power-friendly but the continuous mode may be more
+> +                      reliable. If this property is specified the continuous
+> +                      mode will be used instead of the default one-shot one for
+> +                      raw reads.
+
+I could imagine an OS may want to decide this on its own or use a 
+mixture of the modes.
+
+Rob
