@@ -1,65 +1,91 @@
-From: Caesar Wang <wxt@rock-chips.com>
-Subject: Re: [PATCH 3/5] dt-bindings: rockchip-thermal: Support the
- RK3228/RK3399 SoCs compatible
-Date: Thu, 26 Nov 2015 10:57:49 +0800
-Message-ID: <5656752D.2010707@rock-chips.com>
-References: <1448438377-29203-1-git-send-email-wxt@rock-chips.com>
- <1448438377-29203-4-git-send-email-wxt@rock-chips.com>
- <11146001.lIrLtFf7Xg@diego>
+From: Jia Hongtao <hongtao.jia@freescale.com>
+Subject: [PATCH V2] cpufreq: qoriq: Register cooling device based on device tree
+Date: Thu, 26 Nov 2015 14:27:29 +0800
+Message-ID: <1448519249-11449-1-git-send-email-hongtao.jia@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <11146001.lIrLtFf7Xg@diego>
-Sender: linux-kernel-owner@vger.kernel.org
-To: =?UTF-8?Q?Heiko_St=c3=bcbner?= <heiko@sntech.de>
-Cc: Eduardo Valentin <edubezval@gmail.com>, linux-rockchip@lists.infradead.org, Dan Carpenter <dan.carpenter@oracle.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Kumar Gala <galak@codeaurora.org>, linux-kernel@vger.kernel.org, Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, Pawel Moll <pawel.moll@arm.com>, Zhang Rui <rui.zhang@intel.com>, Mark Rutland <mark.rutland@arm.com>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bn1bon0137.outbound.protection.outlook.com ([157.56.111.137]:11765
+	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750718AbbKZGel (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 26 Nov 2015 01:34:41 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: edubezval@gmail.com, viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, devicetree@vger.kernel.org, scottwood@freescale.com, hongtao.jia@freescale.com
 
+Register the qoriq cpufreq driver as a cooling device, based on the
+thermal device tree framework. When temperature crosses the passive trip
+point cpufreq is used to throttle CPUs.
 
+Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+---
+Changes for V2:
+* Using ->ready callback for cpu cooling device registering.
 
-=E5=9C=A8 2015=E5=B9=B411=E6=9C=8825=E6=97=A5 22:56, Heiko St=C3=BCbner=
- =E5=86=99=E9=81=93:
-> Am Mittwoch, 25. November 2015, 15:59:35 schrieb Caesar Wang:
->> This patchset attempts to new compatible for thermal founding
->> on RK3228/RK3399 SoCs.
->>
->> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
->> ---
->>
->>   Documentation/devicetree/bindings/thermal/rockchip-thermal.txt | 2=
- ++
->>   1 file changed, 2 insertions(+)
->>
->> diff --git a/Documentation/devicetree/bindings/thermal/rockchip-ther=
-mal.txt
->> b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt ind=
-ex
->> 0dfa60d..af5f802 100644
->> --- a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
->> +++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
->> @@ -2,8 +2,10 @@
->>
->>   Required properties:
->>   - compatible : should be "rockchip,<name>-tsadc"
->> +   "rockchip,rk3228-tsadc": found on RK3228 SoCs
->>      "rockchip,rk3288-tsadc": found on RK3288 SoCs
->>      "rockchip,rk3368-tsadc": found on RK3368 SoCs
->> +   "rockchip,rk3368-tsadc": found on RK3399 SoCs
-> copy'n'paste error, should proably be
->   "rockchip,rk3399-tsadc": found on RK3399 SoCs
+ drivers/cpufreq/qoriq-cpufreq.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
 
-=46ixed in next version, thanks!
->>   - reg : physical base address of the controller and length of memo=
-ry mapped
->> region.
->>   - interrupts : The interrupt number to the cpu. The interrupt spec=
-ifier
->> format
->
->
->
+diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
+index 4f53fa2..a39f868 100644
+--- a/drivers/cpufreq/qoriq-cpufreq.c
++++ b/drivers/cpufreq/qoriq-cpufreq.c
+@@ -12,6 +12,7 @@
+ 
+ #include <linux/clk.h>
+ #include <linux/cpufreq.h>
++#include <linux/cpu_cooling.h>
+ #include <linux/errno.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+@@ -33,6 +34,7 @@
+ struct cpu_data {
+ 	struct clk **pclk;
+ 	struct cpufreq_frequency_table *table;
++	struct thermal_cooling_device *cdev;
+ };
+ 
+ /*
+@@ -260,6 +262,30 @@ static int qoriq_cpufreq_target(struct cpufreq_policy *policy,
+ 	return clk_set_parent(policy->clk, parent);
+ }
+ 
++
++static void qoriq_cpufreq_ready(struct cpufreq_policy *policy)
++{
++	struct cpu_data *cpud = policy->driver_data;
++	struct device_node *np = of_get_cpu_node(policy->cpu, NULL);
++
++	if (WARN_ON(!np))
++		return;
++
++	if (of_find_property(np, "#cooling-cells", NULL)) {
++		cpud->cdev = of_cpufreq_cooling_register(np,
++							 policy->related_cpus);
++
++		if (IS_ERR(cpud->cdev)) {
++			pr_err("Failed to register cooling device cpu%d: %ld\n",
++					policy->cpu, PTR_ERR(cpud->cdev));
++
++			cpud->cdev = NULL;
++		}
++	}
++
++	of_node_put(np);
++}
++
+ static struct cpufreq_driver qoriq_cpufreq_driver = {
+ 	.name		= "qoriq_cpufreq",
+ 	.flags		= CPUFREQ_CONST_LOOPS,
+@@ -268,6 +294,7 @@ static struct cpufreq_driver qoriq_cpufreq_driver = {
+ 	.verify		= cpufreq_generic_frequency_table_verify,
+ 	.target_index	= qoriq_cpufreq_target,
+ 	.get		= cpufreq_generic_get,
++	.ready		= qoriq_cpufreq_ready,
+ 	.attr		= cpufreq_generic_attr,
+ };
+ 
+-- 
+2.1.0.27.g96db324
 
---=20
-caesar wang | software engineer | wxt@rock-chip.com
