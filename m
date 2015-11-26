@@ -1,112 +1,201 @@
 From: James Morse <james.morse@arm.com>
-Subject: [PATCH v3 00/10] arm64: kernel: Add support for hibernate/suspend-to-disk
-Date: Thu, 26 Nov 2015 17:32:38 +0000
-Message-ID: <1448559168-8363-1-git-send-email-james.morse@arm.com>
+Subject: [PATCH v3 02/10] arm64: Convert hcalls to use HVC immediate value
+Date: Thu, 26 Nov 2015 17:32:40 +0000
+Message-ID: <1448559168-8363-3-git-send-email-james.morse@arm.com>
+References: <1448559168-8363-1-git-send-email-james.morse@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:46212 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:46236 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750964AbbKZRdr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 26 Nov 2015 12:33:47 -0500
+	id S1751274AbbKZRdz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 26 Nov 2015 12:33:55 -0500
+In-Reply-To: <1448559168-8363-1-git-send-email-james.morse@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org
 Cc: Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Kevin Kang <kkang@intrinsyc.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, wangfei <w.f@huawei.com>, Marc Zyngier <marc.zyngier@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, James Morse <james.morse@arm.com>
 
-Hi all,
+From: Geoff Levand <geoff@infradead.org>
 
-v2's "clean cached pages on architectures that require it" is wrong.
-do_copy_page() isn't used on the resume path for pages restored 'in place'.
-There is nowhere we can add the call to flush_icache_range(), instead
-patch 9 of this series adds a new 'pbe' list of pages restored in place.
-Architectures that need to clean these before they can be executed can walk
-this list. This preserves the status-quo a little better, as existing
-architectures won't get flush_icache_range() called on these pages.
+The existing arm64 hcall implementations are limited in that they only allow
+for two distinct hcalls; with the x0 register either zero or not zero.  Also,
+the API of the hyp-stub exception vector routines and the KVM exception vector
+routines differ; hyp-stub uses a non-zero value in x0 to implement
+__hyp_set_vectors, whereas KVM uses it to implement kvm_call_hyp.
 
-The first four patches are borrowed from kexec v12, and are used to return
-el2 to the hyp stub, as its stack/vectors may be overwritten.
+To allow for additional hcalls to be defined and to make the arm64 hcall API
+more consistent across exception vector routines, change the hcall
+implementations to use the 16 bit immediate value of the HVC instruction to
+specify the hcall type.
 
-Patches 5 and 6 provide some cleanup to the cpu_suspend() API:
-* allowing it to be used with a 'finisher' that needs to return success,
-* and turn the MMU on early to allow sleep_save_sp to be accessed by VA.
+Define three new preprocessor macros HVC_CALL_HYP, HVC_GET_VECTORS, and
+HVC_SET_VECTORS to be used as hcall type specifiers and convert the
+existing __hyp_get_vectors(), __hyp_set_vectors() and kvm_call_hyp() routines
+to use these new macros when executing an HVC call.  Also, change the
+corresponding hyp-stub and KVM el1_sync exception vector routines to use these
+new macros.
 
-The last patch adds hibernate support, following the x86 approach, it creates
-a temporary set of page tables and copies the hibernate_exit code. The
-implementation requires that exactly the same kernel is booted on the
-same hardware, and that the kernel is loaded at the same physical address.
+Signed-off-by: Geoff Levand <geoff@infradead.org>
+Signed-off-by: James Morse <james.morse@arm.com>
 
-This series is based on v4.4-rc2, and can be pulled from:
-git://linux-arm.org/linux-jm.git -b hibernate/v3
+---
+ arch/arm64/include/asm/virt.h | 27 +++++++++++++++++++++++++++
+ arch/arm64/kernel/hyp-stub.S  | 32 +++++++++++++++++++++-----------
+ arch/arm64/kvm/hyp.S          | 16 +++++++++-------
+ 3 files changed, 57 insertions(+), 18 deletions(-)
 
-Changes from v2:
- * Rewrote patch 9 - we can't clean pages in copy_page(), we need to publish
-   a list for the architecture to clean
- * Updated patch 10 following rewritten patch 9
- * Added missing pgprot_val() in hibernate.c, spotted by STRICT_MM_TYPECHECKS
- * Removed 'tcr_set_idmap_t0sz' from proc.S - I missed this when rebase-ing
- * Re-imported the first four patches from kexec v12
- * Rebased onto v4.4-rc2
- * Changes from Pavel Machek's comments
-
-Changes from v1:
- * Removed for_each_process(){ for_each_vma() { } }; cache cleaning, replaced
-   with icache_flush_range() call in core hibernate code
- * Rebased onto conflicting tcr_ek1.t0sz bug-fix patch
-
-[v2] http://lists.infradead.org/pipermail/linux-arm-kernel/2015-October/376450.html
-[v1] http://lists.infradead.org/pipermail/linux-arm-kernel/2015-October/376450.html
-
-
-AKASHI Takahiro (1):
-  arm64: kvm: allows kvm cpu hotplug
-
-Geoff Levand (3):
-  arm64: Fold proc-macros.S into assembler.h
-  arm64: Convert hcalls to use HVC immediate value
-  arm64: Add new hcall HVC_CALL_FUNC
-
-James Morse (6):
-  arm64: kernel: Rework finisher callback out of __cpu_suspend_enter().
-  arm64: Change cpu_resume() to enable mmu early then access sleep_sp by
-    va
-  arm64: kernel: Include _AC definition in page.h
-  arm64: Promote KERNEL_START/KERNEL_END definitions to a header file
-  PM / Hibernate: Publish pages restored in-place to arch code
-  arm64: kernel: Add support for hibernate/suspend-to-disk.
-
- arch/arm/include/asm/kvm_host.h    |  10 +-
- arch/arm/include/asm/kvm_mmu.h     |   1 +
- arch/arm/kvm/arm.c                 |  79 ++++----
- arch/arm/kvm/mmu.c                 |   5 +
- arch/arm64/Kconfig                 |   3 +
- arch/arm64/include/asm/assembler.h |  48 ++++-
- arch/arm64/include/asm/kvm_host.h  |  16 +-
- arch/arm64/include/asm/kvm_mmu.h   |   1 +
- arch/arm64/include/asm/memory.h    |   3 +
- arch/arm64/include/asm/page.h      |   2 +
- arch/arm64/include/asm/suspend.h   |  31 ++-
- arch/arm64/include/asm/virt.h      |  49 +++++
- arch/arm64/kernel/Makefile         |   1 +
- arch/arm64/kernel/asm-offsets.c    |   9 +-
- arch/arm64/kernel/head.S           |   5 +-
- arch/arm64/kernel/hibernate-asm.S  | 119 ++++++++++++
- arch/arm64/kernel/hibernate.c      | 376 +++++++++++++++++++++++++++++++++++++
- arch/arm64/kernel/hyp-stub.S       |  43 +++--
- arch/arm64/kernel/setup.c          |   1 -
- arch/arm64/kernel/sleep.S          | 148 +++++----------
- arch/arm64/kernel/suspend.c        | 103 ++++------
- arch/arm64/kernel/vmlinux.lds.S    |  15 ++
- arch/arm64/kvm/hyp-init.S          |  34 +++-
- arch/arm64/kvm/hyp.S               |  44 ++++-
- arch/arm64/mm/cache.S              |   2 -
- arch/arm64/mm/proc-macros.S        |  64 -------
- arch/arm64/mm/proc.S               |  31 +--
- include/linux/suspend.h            |   1 +
- kernel/power/snapshot.c            |  42 +++--
- 29 files changed, 943 insertions(+), 343 deletions(-)
- create mode 100644 arch/arm64/kernel/hibernate-asm.S
- create mode 100644 arch/arm64/kernel/hibernate.c
- delete mode 100644 arch/arm64/mm/proc-macros.S
-
+diff --git a/arch/arm64/include/asm/virt.h b/arch/arm64/include/asm/virt.h
+index 7a5df5252dd7..eb10368c329e 100644
+--- a/arch/arm64/include/asm/virt.h
++++ b/arch/arm64/include/asm/virt.h
+@@ -18,6 +18,33 @@
+ #ifndef __ASM__VIRT_H
+ #define __ASM__VIRT_H
+ 
++/*
++ * The arm64 hcall implementation uses the ISS field of the ESR_EL2 register to
++ * specify the hcall type.  The exception handlers are allowed to use registers
++ * x17 and x18 in their implementation.  Any routine issuing an hcall must not
++ * expect these registers to be preserved.
++ */
++
++/*
++ * HVC_CALL_HYP - Execute a hyp routine.
++ */
++
++#define HVC_CALL_HYP 0
++
++/*
++ * HVC_GET_VECTORS - Return the value of the vbar_el2 register.
++ */
++
++#define HVC_GET_VECTORS 1
++
++/*
++ * HVC_SET_VECTORS - Set the value of the vbar_el2 register.
++ *
++ * @x0: Physical address of the new vector table.
++ */
++
++#define HVC_SET_VECTORS 2
++
+ #define BOOT_CPU_MODE_EL1	(0xe11)
+ #define BOOT_CPU_MODE_EL2	(0xe12)
+ 
+diff --git a/arch/arm64/kernel/hyp-stub.S b/arch/arm64/kernel/hyp-stub.S
+index a272f335c289..017ab519aaf1 100644
+--- a/arch/arm64/kernel/hyp-stub.S
++++ b/arch/arm64/kernel/hyp-stub.S
+@@ -22,6 +22,7 @@
+ #include <linux/irqchip/arm-gic-v3.h>
+ 
+ #include <asm/assembler.h>
++#include <asm/kvm_arm.h>
+ #include <asm/ptrace.h>
+ #include <asm/virt.h>
+ 
+@@ -53,14 +54,22 @@ ENDPROC(__hyp_stub_vectors)
+ 	.align 11
+ 
+ el1_sync:
+-	mrs	x1, esr_el2
+-	lsr	x1, x1, #26
+-	cmp	x1, #0x16
++	mrs	x18, esr_el2
++	lsr	x17, x18, #ESR_ELx_EC_SHIFT
++	and	x18, x18, #ESR_ELx_ISS_MASK
++
++	cmp	x17, #ESR_ELx_EC_HVC64
+ 	b.ne	2f				// Not an HVC trap
+-	cbz	x0, 1f
+-	msr	vbar_el2, x0			// Set vbar_el2
++
++	cmp	x18, #HVC_GET_VECTORS
++	b.ne	1f
++	mrs	x0, vbar_el2
+ 	b	2f
+-1:	mrs	x0, vbar_el2			// Return vbar_el2
++
++1:	cmp	x18, #HVC_SET_VECTORS
++	b.ne	2f
++	msr	vbar_el2, x0
++
+ 2:	eret
+ ENDPROC(el1_sync)
+ 
+@@ -100,11 +109,12 @@ ENDPROC(\label)
+  * initialisation entry point.
+  */
+ 
+-ENTRY(__hyp_get_vectors)
+-	mov	x0, xzr
+-	// fall through
+ ENTRY(__hyp_set_vectors)
+-	hvc	#0
++	hvc	#HVC_SET_VECTORS
+ 	ret
+-ENDPROC(__hyp_get_vectors)
+ ENDPROC(__hyp_set_vectors)
++
++ENTRY(__hyp_get_vectors)
++	hvc	#HVC_GET_VECTORS
++	ret
++ENDPROC(__hyp_get_vectors)
+diff --git a/arch/arm64/kvm/hyp.S b/arch/arm64/kvm/hyp.S
+index 1599701ef044..1bef8db4a13d 100644
+--- a/arch/arm64/kvm/hyp.S
++++ b/arch/arm64/kvm/hyp.S
+@@ -29,6 +29,7 @@
+ #include <asm/kvm_asm.h>
+ #include <asm/kvm_mmu.h>
+ #include <asm/memory.h>
++#include <asm/virt.h>
+ 
+ #define CPU_GP_REG_OFFSET(x)	(CPU_GP_REGS + x)
+ #define CPU_XREG_OFFSET(x)	CPU_GP_REG_OFFSET(CPU_USER_PT_REGS + 8*x)
+@@ -932,12 +933,9 @@ __hyp_panic_str:
+  * in Hyp mode (see init_hyp_mode in arch/arm/kvm/arm.c).  Return values are
+  * passed in r0 and r1.
+  *
+- * A function pointer with a value of 0 has a special meaning, and is
+- * used to implement __hyp_get_vectors in the same way as in
+- * arch/arm64/kernel/hyp_stub.S.
+  */
+ ENTRY(kvm_call_hyp)
+-	hvc	#0
++	hvc	#HVC_CALL_HYP
+ 	ret
+ ENDPROC(kvm_call_hyp)
+ 
+@@ -968,6 +966,7 @@ el1_sync:					// Guest trapped into EL2
+ 
+ 	mrs	x1, esr_el2
+ 	lsr	x2, x1, #ESR_ELx_EC_SHIFT
++	and	x0, x1, #ESR_ELx_ISS_MASK
+ 
+ 	cmp	x2, #ESR_ELx_EC_HVC64
+ 	b.ne	el1_trap
+@@ -976,15 +975,18 @@ el1_sync:					// Guest trapped into EL2
+ 	cbnz	x3, el1_trap			// called HVC
+ 
+ 	/* Here, we're pretty sure the host called HVC. */
++	mov	x18, x0
+ 	pop	x2, x3
+ 	pop	x0, x1
+ 
+-	/* Check for __hyp_get_vectors */
+-	cbnz	x0, 1f
++	cmp	x18, #HVC_GET_VECTORS
++	b.ne	1f
+ 	mrs	x0, vbar_el2
+ 	b	2f
+ 
+-1:	push	lr, xzr
++1:	/* Default to HVC_CALL_HYP. */
++
++	push	lr, xzr
+ 
+ 	/*
+ 	 * Compute the function address in EL2, and shuffle the parameters.
 -- 
 2.6.2
 
