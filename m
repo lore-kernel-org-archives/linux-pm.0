@@ -1,117 +1,200 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [RFC PATCH 06/15] PM / devfreq: Add devfreq_get_devfreq_by_phandle()
-Date: Thu, 26 Nov 2015 22:47:30 +0900
-Message-ID: <1448545659-32287-7-git-send-email-cw00.choi@samsung.com>
+From: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: [RFC PATCH 11/15] ARM: dts: Add bus nodes using VDD_INT for Exynos3250
+Date: Thu, 26 Nov 2015 22:47:35 +0900
+Message-ID: <1448545659-32287-12-git-send-email-cw00.choi@samsung.com>
 References: <1448545659-32287-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:40834 "EHLO
-	mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752095AbbKZNru (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Nov 2015 08:47:50 -0500
-In-reply-to: <1448545659-32287-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-reply-to: <1448545659-32287-1-git-send-email-cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+Cc: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org, cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, kgene@kernel.org, k.kozlowski@samsung.com
-Cc: robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, tjakobi@math.uni-bielefeld.de, cw00.choi@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org
 
-This patch adds the new devfreq_get_devfreq_by_phandle() OF helper function
-which can find the instance of devfreq device by using phandle ("devfreq").
+This patch adds the bus nodes using VDD_INT for Exynos3250 SoC.
+Exynos3250 has following AXI buses to translate data between
+DRAM and sub-blocks.
 
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+Following list specifies the detailed relation between DRAM and sub-blocks:
+- ACLK400 clock for MCUISP
+- ACLK266 clock for ISP
+- ACLK200 clock for FSYS
+- ACLK160 clock for LCD0
+- ACLK100 clock for PERIL
+- GDL clock for LEFTBUS
+- GDR clock for RIGHTBUS
+
+Signed-off-by: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 ---
- drivers/devfreq/devfreq.c | 44 ++++++++++++++++++++++++++++++++++++++++++++
- include/linux/devfreq.h   |  9 +++++++++
- 2 files changed, 53 insertions(+)
+ arch/arm/boot/dts/exynos3250.dtsi | 152 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 152 insertions(+)
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 15e58779e4c0..78ea4cdaa82c 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -25,6 +25,7 @@
- #include <linux/list.h>
- #include <linux/printk.h>
- #include <linux/hrtimer.h>
-+#include <linux/of.h>
- #include "governor.h"
+diff --git a/arch/arm/boot/dts/exynos3250.dtsi b/arch/arm/boot/dts/exynos3250.dtsi
+index 45809f83c628..2e5d60c24004 100644
+--- a/arch/arm/boot/dts/exynos3250.dtsi
++++ b/arch/arm/boot/dts/exynos3250.dtsi
+@@ -734,6 +734,158 @@
+ 				opp-microvolt = <875000>;
+ 			};
+ 		};
++
++		bus_leftbus: bus_leftbus {
++			compatible = "samsung,exynos-bus";
++			clocks = <&cmu CLK_DIV_GDL>;
++			clock-names = "bus";
++			operating-points-v2 = <&bus_leftbus_opp_table>;
++			status = "disabled";
++		};
++
++		bus_rightbus: bus_rightbus {
++			compatible = "samsung,exynos-bus";
++			clocks = <&cmu CLK_DIV_GDR>;
++			clock-names = "bus";
++			operating-points-v2 = <&bus_leftbus_opp_table>;
++			status = "disabled";
++		};
++
++		bus_lcd0: bus_lcd0 {
++			compatible = "samsung,exynos-bus";
++			clocks = <&cmu CLK_DIV_ACLK_160>;
++			clock-names = "bus";
++			operating-points-v2 = <&bus_leftbus_opp_table>;
++			status = "disabled";
++		};
++
++		bus_fsys: bus_fsys {
++			compatible = "samsung,exynos-bus";
++			clocks = <&cmu CLK_DIV_ACLK_200>;
++			clock-names = "bus";
++			operating-points-v2 = <&bus_leftbus_opp_table>;
++			status = "disabled";
++		};
++
++		bus_mcuisp: bus_mcuisp {
++			compatible = "samsung,exynos-bus";
++			clocks = <&cmu CLK_DIV_ACLK_400_MCUISP>;
++			clock-names = "bus";
++			operating-points-v2 = <&bus_mcuisp_opp_table>;
++			status = "disabled";
++		};
++
++		bus_isp: bus_isp {
++			compatible = "samsung,exynos-bus";
++			clocks = <&cmu CLK_DIV_ACLK_266>;
++			clock-names = "bus";
++			operating-points-v2 = <&bus_isp_opp_table>;
++			status = "disabled";
++		};
++
++		bus_peril: bus_peril {
++			compatible = "samsung,exynos-bus";
++			clocks = <&cmu CLK_DIV_ACLK_100>;
++			clock-names = "bus";
++			operating-points-v2 = <&bus_peril_opp_table>;
++			status = "disabled";
++		};
++
++		bus_leftbus_opp_table: opp_table1 {
++			compatible = "operating-points-v2";
++			opp-shared;
++
++			opp00 {
++				opp-hz = /bits/ 64 <50000000>;
++				opp-microvolt = <900000>;
++			};
++			opp01 {
++				opp-hz = /bits/ 64 <80000000>;
++				opp-microvolt = <900000>;
++			};
++			opp02 {
++				opp-hz = /bits/ 64 <100000000>;
++				opp-microvolt = <1000000>;
++			};
++			opp03 {
++				opp-hz = /bits/ 64 <133000000>;
++				opp-microvolt = <1000000>;
++			};
++			opp04 {
++				opp-hz = /bits/ 64 <200000000>;
++				opp-microvolt = <1000000>;
++			};
++		};
++
++		bus_mcuisp_opp_table: opp_table2 {
++			compatible = "operating-points-v2";
++			opp-shared;
++
++			opp00 {
++				opp-hz = /bits/ 64 <50000000>;
++				opp-microvolt = <900000>;
++			};
++			opp01 {
++				opp-hz = /bits/ 64 <80000000>;
++				opp-microvolt = <900000>;
++			};
++			opp02 {
++				opp-hz = /bits/ 64 <100000000>;
++				opp-microvolt = <1000000>;
++			};
++			opp03 {
++				opp-hz = /bits/ 64 <200000000>;
++				opp-microvolt = <1000000>;
++			};
++			opp04 {
++				opp-hz = /bits/ 64 <400000000>;
++				opp-microvolt = <1000000>;
++			};
++		};
++
++		bus_isp_opp_table: opp_table3 {
++			compatible = "operating-points-v2";
++			opp-shared;
++
++			opp00 {
++				opp-hz = /bits/ 64 <50000000>;
++				opp-microvolt = <900000>;
++			};
++			opp01 {
++				opp-hz = /bits/ 64 <80000000>;
++				opp-microvolt = <900000>;
++			};
++			opp02 {
++				opp-hz = /bits/ 64 <100000000>;
++				opp-microvolt = <1000000>;
++			};
++			opp03 {
++				opp-hz = /bits/ 64 <200000000>;
++				opp-microvolt = <1000000>;
++			};
++			opp04 {
++				opp-hz = /bits/ 64 <300000000>;
++				opp-microvolt = <1000000>;
++			};
++		};
++
++		bus_peril_opp_table: opp_table4 {
++			compatible = "operating-points-v2";
++			opp-shared;
++
++			opp00 {
++				opp-hz = /bits/ 64 <50000000>;
++				opp-microvolt = <900000>;
++			};
++			opp01 {
++				opp-hz = /bits/ 64 <80000000>;
++				opp-microvolt = <900000>;
++			};
++			opp02 {
++				opp-hz = /bits/ 64 <100000000>;
++				opp-microvolt = <1000000>;
++			};
++		};
+ 	};
+ };
  
- static struct class *devfreq_class;
-@@ -686,6 +687,49 @@ struct devfreq *devm_devfreq_add_device(struct device *dev,
- }
- EXPORT_SYMBOL(devm_devfreq_add_device);
- 
-+#ifdef CONFIG_OF
-+/*
-+ * devfreq_get_devfreq_by_phandle - Get the devfreq device from devicetree
-+ * @dev - instance to the given device
-+ * @index - index into list of devfreq
-+ *
-+ * return the instance of devfreq device
-+ */
-+struct devfreq *devfreq_get_devfreq_by_phandle(struct device *dev, int index)
-+{
-+	struct device_node *node;
-+	struct devfreq *devfreq;
-+
-+	if (!dev)
-+		return ERR_PTR(-EINVAL);
-+
-+	if (!dev->of_node)
-+		return ERR_PTR(-EINVAL);
-+
-+	node = of_parse_phandle(dev->of_node, "devfreq", index);
-+	if (!node)
-+		return ERR_PTR(-ENODEV);
-+
-+	mutex_lock(&devfreq_list_lock);
-+	list_for_each_entry(devfreq, &devfreq_list, node) {
-+		if (devfreq->dev.parent
-+			&& devfreq->dev.parent->of_node == node) {
-+			mutex_unlock(&devfreq_list_lock);
-+			return devfreq;
-+		}
-+	}
-+	mutex_unlock(&devfreq_list_lock);
-+
-+	return ERR_PTR(-EPROBE_DEFER);
-+}
-+#else
-+struct devfreq *devfreq_get_devfreq_by_phandle(struct device *dev, int index)
-+{
-+	return ERR_PTR(-ENODEV);
-+}
-+#endif /* CONFIG_OF */
-+EXPORT_SYMBOL_GPL(devfreq_get_devfreq_by_phandle);
-+
- /**
-  * devm_devfreq_remove_device() - Resource-managed devfreq_remove_device()
-  * @dev:	the device to add devfreq feature.
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index f7a6e6bd716e..d648041145ba 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -211,6 +211,9 @@ extern int devm_devfreq_register_opp_notifier(struct device *dev,
- extern void devm_devfreq_unregister_opp_notifier(struct device *dev,
- 						struct devfreq *devfreq);
- 
-+extern struct devfreq *devfreq_get_devfreq_by_phandle(struct device *dev,
-+						int index);
-+
- /**
-  * devfreq_update_stats() - update the last_status pointer in struct devfreq
-  * @df:		the devfreq instance whose status needs updating
-@@ -324,6 +327,12 @@ static inline void devm_devfreq_unregister_opp_notifier(struct device *dev,
- {
- }
- 
-+static inline struct devfreq *devfreq_get_devfreq_by_phandle(struct device *dev,
-+							int index)
-+{
-+	return ERR_PTR(-ENODEV);
-+}
-+
- static inline int devfreq_update_stats(struct devfreq *df)
- {
- 	return -EINVAL;
 -- 
 1.9.1
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
