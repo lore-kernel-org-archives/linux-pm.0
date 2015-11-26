@@ -1,70 +1,65 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: [GIT PULL] devfreq for next-RC
-Date: Thu, 26 Nov 2015 02:14:39 +0000 (GMT)
-Message-ID: <1633234957.280321448504078990.JavaMail.weblogic@epmlwas08a>
-Reply-To: myungjoo.ham@samsung.com
+From: Caesar Wang <wxt@rock-chips.com>
+Subject: Re: [PATCH 3/5] dt-bindings: rockchip-thermal: Support the
+ RK3228/RK3399 SoCs compatible
+Date: Thu, 26 Nov 2015 10:57:49 +0800
+Message-ID: <5656752D.2010707@rock-chips.com>
+References: <1448438377-29203-1-git-send-email-wxt@rock-chips.com>
+ <1448438377-29203-4-git-send-email-wxt@rock-chips.com>
+ <11146001.lIrLtFf7Xg@diego>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:38167 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751038AbbKZCOm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 25 Nov 2015 21:14:42 -0500
-Received: from epcpsbgr4.samsung.com
- (u144.gpu120.samsung.co.kr [203.254.230.144])
- by mailout2.samsung.com (Oracle Communications Messaging Server 7.0.5.31.0
- 64bit (built May  5 2014))
- with ESMTP id <0NYE02SGFGWFCC20@mailout2.samsung.com> for
- linux-pm@vger.kernel.org; Thu, 26 Nov 2015 11:14:39 +0900 (KST)
-MIME-version: 1.0
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <11146001.lIrLtFf7Xg@diego>
+Sender: linux-kernel-owner@vger.kernel.org
+To: =?UTF-8?Q?Heiko_St=c3=bcbner?= <heiko@sntech.de>
+Cc: Eduardo Valentin <edubezval@gmail.com>, linux-rockchip@lists.infradead.org, Dan Carpenter <dan.carpenter@oracle.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Kumar Gala <galak@codeaurora.org>, linux-kernel@vger.kernel.org, Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, Pawel Moll <pawel.moll@arm.com>, Zhang Rui <rui.zhang@intel.com>, Mark Rutland <mark.rutland@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com
-Cc: cw00.choi@samsung.com, myungjoo.ham@gmail.com, rjw@rjwysocki.net
-
-RGVhciBSYWZhZWwsDQoNCkhlcmUgZ29lcyB0aGUgcHVsbCByZXFlc3QgZm9yIG5leHQgNC40IFJD
-eC4NCg0KDQpDaGVlcnMsDQpNeXVuZ0pvbw0KDQotLS0tLUJFR0lOIFBHUCBTSUdORUQgTUVTU0FH
-RS0tLS0tDQpIYXNoOiBTSEExDQoNClRoZSBmb2xsb3dpbmcgY2hhbmdlcyBzaW5jZSBjb21taXQg
-MWVjMjE4MzczYjhlYmRhODIxYWVjMDBiYjE1NmE5Yzk0ZmFkOWNkNDoNCg0KICBMaW51eCA0LjQt
-cmMyICgyMDE1LTExLTIyIDE2OjQ1OjU5IC0wODAwKQ0KDQphcmUgYXZhaWxhYmxlIGluIHRoZSBn
-aXQgcmVwb3NpdG9yeSBhdDoNCg0KICBodHRwczovL2dpdC5rZXJuZWwub3JnL3B1Yi9zY20vbGlu
-dXgva2VybmVsL2dpdC9tengvZGV2ZnJlcS5naXQgdGFncy9wdWxsX3JlcV8yMDE1MTEyNg0KDQpm
-b3IgeW91IHRvIGZldGNoIGNoYW5nZXMgdXAgdG8gMzhiYjg1MzU5NTQwNGNkZDIyMTAyNjhkZDUw
-OGNlMzAzYWI4MzZlNToNCg0KICBNQUlOVEFJTkVSUzogQWRkIGRldmZyZXEtZXZlbnQgZW50cnkg
-KDIwMTUtMTEtMjYgMTA6NTQ6MTggKzA5MDApDQoNCi0gLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KUHVsbCByZXF1ZXN0IGZv
-ciBSYWZhZWwgb24gMjAxNS0xMS0yNi4gQmFzZWQgb24gNC40LXJjMg0KDQotIC0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCkNo
-YW53b28gQ2hvaSAoNyk6DQogICAgICBQTSAvIGRldmZyZXE6IGV2ZW50OiBSZW1vdmUgdGhlIGVy
-cm9yIGxvZyBvZiBkZXZmcmVxX2V2ZW50X2dldF9lZGV2X2J5X3BoYW5kbGUoKQ0KICAgICAgUE0g
-LyBkZXZmcmVxOiBldmVudDogRml4IHRoZSBlcnJvciBhbmQgd2FybmluZyBmcm9tIHNjcmlwdC9j
-aGVja3BhdGNoLnBsDQogICAgICBQTSAvIGRldmZyZXE6IEFkZCBzaG93X29uZSBtYWNybyB0byBk
-ZWxldGUgdGhlIGR1cGxpY2F0ZSBjb2RlDQogICAgICBQTSAvIGRldmZyZXE6IFNldCB0aGUgZnJl
-cV90YWJsZSBvZiBkZXZmcmVxIGRldmljZQ0KICAgICAgUE0gLyBkZXZmcmVxOiBNb2RpZnkgdGhl
-IGluZGVudGF0aW9uIG9mIHRyYW5zX3N0YXQgc3lzZnMgZm9yIHJlYWRhYmlsaXR5DQogICAgICBN
-QUlOVEFJTkVSUzogQWRkIG1pc3NpbmcgZ2l0IHJlcG9zaXRvcnkgYW5kIGRpcmVjdG9yeSBmb3Ig
-ZGV2ZnJlcQ0KICAgICAgTUFJTlRBSU5FUlM6IEFkZCBkZXZmcmVxLWV2ZW50IGVudHJ5DQoNCk15
-dW5nSm9vIEhhbSAoMSk6DQogICAgICBQTSAvIGRldmZyZXE6IERvIG5vdCBzaG93IHN0YXRpc3Rp
-Y3MgaWYgaXQncyBub3QgcmVhZHkuDQoNCiBNQUlOVEFJTkVSUyAgICAgICAgICAgICAgICAgICAg
-IHwgMTMgKysrKysrKw0KIGRyaXZlcnMvZGV2ZnJlcS9kZXZmcmVxLWV2ZW50LmMgfCAxNiArKyst
-LS0tLS0NCiBkcml2ZXJzL2RldmZyZXEvZGV2ZnJlcS5jICAgICAgIHwgNzggKysrKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKystLS0tLS0tLS0NCiBpbmNsdWRlL2xpbnV4L2RldmZyZXEuaCAg
-ICAgICAgIHwgIDIgKy0NCiA0IGZpbGVzIGNoYW5nZWQsIDgxIGluc2VydGlvbnMoKyksIDI4IGRl
-bGV0aW9ucygtKQ0KLS0tLS1CRUdJTiBQR1AgU0lHTkFUVVJFLS0tLS0NClZlcnNpb246IEdudVBH
-IHYxDQoNCmlRSWNCQUVCQWdBR0JRSldWbW5OQUFvSkVCT2h1cnZXQm9DS1VmVVAvMWVNZTMwWTlN
-RHBTbWJQTFdZSXN6OHoNCmM0QjBxSEJsS2ZaZEcyTEM4b3p4aDVRRS9SMDR1Qmw1Q1dRVVU5QVpx
-OTdYUnJJREZDcGt3RXZGb3kzT0Y2OFENCllQbUUrTFhxaGZNR0hRTU0rTFJhdVQ3Qmw0YVQwQlZt
-UEx5aUc4c29lNy9wM3h3WnNJSVBjajkxM0hXdDVHcFgNCmF2MjZwNDJDcHo3QStHeHRpZVg3OGF0
-Q2tnNFcreDBqN2U3U3V0ZzJrUFQ5UnFJN3dXUDR1eTBjR2YyY1FuSmwNCkd2N1ZnbDJDdTJnY0hz
-eDZCWXhlMGk4MXZlbjJXN3VLaWJEWHZ3cmk5R3JUTXg3RmFqTzlBSlI1SVZzUnVWc3oNCjIrL2Vw
-SEJTWnNHOGt5emZ5VmdadWVRN0ovNW54b3VTdlRaS0FhcHFmS0ZtdHN5VWw3NHh1RHNQVUR1RUVH
-d20NCk1LK2Zud05uWTl6UC8xbEIwWFNXQ2lZL1FaaHBxUVIrcXV4VWFlL3FtWUlCNzNOcXVOUDBo
-SlRNNDIzTmFpNFYNCkhsTHVNM1R5SnZ2bk1LNDBveGtuYkc0QUlrbUM2TDc0RWRTS2x3YkZVSUNw
-cU8wOHdYVy9RdGdZMjRKdWZibDINCjBMdW42RXZOMGJjZ1g0aVRYMjhqcFJrc2U1c1RtNVZlak5w
-aWt6QThuaEM2Ynp5dzNwVGxiTmRiOWErQmtPbG0NCnNIenk4Vkx5TnVra3JEdndYajROdEptZURm
-SkVwSkRKU3grTFptenEvYWNBaTlKdEcyVzZBUytsSnhFZE9POFUNCmU5TE1YY3gvbEU4bkN3T2FW
-MHJEVGZ6Mjc3eVljWGZrSmxESTVnR1B5Wm9FSzcxUnVpNnYrTmR5NDBRQm4zQ08NCjZ3UzhReWpp
-SU4yU0xjMUxJY3VzDQo9bk02bQ0KLS0tLS1FTkQgUEdQIFNJR05BVFVSRS0tLS0tDQo=
 
 
+
+=E5=9C=A8 2015=E5=B9=B411=E6=9C=8825=E6=97=A5 22:56, Heiko St=C3=BCbner=
+ =E5=86=99=E9=81=93:
+> Am Mittwoch, 25. November 2015, 15:59:35 schrieb Caesar Wang:
+>> This patchset attempts to new compatible for thermal founding
+>> on RK3228/RK3399 SoCs.
+>>
+>> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+>> ---
+>>
+>>   Documentation/devicetree/bindings/thermal/rockchip-thermal.txt | 2=
+ ++
+>>   1 file changed, 2 insertions(+)
+>>
+>> diff --git a/Documentation/devicetree/bindings/thermal/rockchip-ther=
+mal.txt
+>> b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt ind=
+ex
+>> 0dfa60d..af5f802 100644
+>> --- a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+>> +++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+>> @@ -2,8 +2,10 @@
+>>
+>>   Required properties:
+>>   - compatible : should be "rockchip,<name>-tsadc"
+>> +   "rockchip,rk3228-tsadc": found on RK3228 SoCs
+>>      "rockchip,rk3288-tsadc": found on RK3288 SoCs
+>>      "rockchip,rk3368-tsadc": found on RK3368 SoCs
+>> +   "rockchip,rk3368-tsadc": found on RK3399 SoCs
+> copy'n'paste error, should proably be
+>   "rockchip,rk3399-tsadc": found on RK3399 SoCs
+
+=46ixed in next version, thanks!
+>>   - reg : physical base address of the controller and length of memo=
+ry mapped
+>> region.
+>>   - interrupts : The interrupt number to the cpu. The interrupt spec=
+ifier
+>> format
+>
+>
+>
+
+--=20
+caesar wang | software engineer | wxt@rock-chip.com
