@@ -1,102 +1,80 @@
-From: Denis Kirjanov <kda-u1c8ncikuMvVAZt0uhVF+Ni2O/JbrIOy@public.gmane.org>
-Subject: Re: [PATCH V2] cpufreq: qoriq: Register cooling device based on
+From: Hongtao Jia <hongtao.jia@freescale.com>
+Subject: RE: [PATCH V2] cpufreq: qoriq: Register cooling device based on
  device tree
-Date: Thu, 26 Nov 2015 11:32:17 +0300
-Message-ID: <CAOJe8K3g_B=Pa7U9zFY6RjqrKOPY2a3mqMAw6uSqQBVz9qW7Zg@mail.gmail.com>
+Date: Thu, 26 Nov 2015 08:46:34 +0000
+Message-ID: <BLUPR03MB149853ECC20D6ECC0CA49E5E1040@BLUPR03MB149.namprd03.prod.outlook.com>
 References: <1448519249-11449-1-git-send-email-hongtao.jia@freescale.com>
+ <CAOJe8K3g_B=Pa7U9zFY6RjqrKOPY2a3mqMAw6uSqQBVz9qW7Zg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1448519249-11449-1-git-send-email-hongtao.jia-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jia Hongtao <hongtao.jia-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
-Cc: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, scottwood-KZfg59tc24xl57MIdRCFDg@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bn1bon0118.outbound.protection.outlook.com ([157.56.111.118]:35424
+	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753209AbbKZIqg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 26 Nov 2015 03:46:36 -0500
+In-Reply-To: <CAOJe8K3g_B=Pa7U9zFY6RjqrKOPY2a3mqMAw6uSqQBVz9qW7Zg@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Denis Kirjanov <kda@linux-powerpc.org>
+Cc: "edubezval@gmail.com" <edubezval@gmail.com>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, Scott Wood <scottwood@freescale.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 11/26/15, Jia Hongtao <hongtao.jia-KZfg59tc24xl57MIdRCFDg@public.gmane.org> wrote:
-> Register the qoriq cpufreq driver as a cooling device, based on the
-> thermal device tree framework. When temperature crosses the passive trip
-> point cpufreq is used to throttle CPUs.
->
-> Signed-off-by: Jia Hongtao <hongtao.jia-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
-> ---
-> Changes for V2:
-> * Using ->ready callback for cpu cooling device registering.
->
->  drivers/cpufreq/qoriq-cpufreq.c | 27 +++++++++++++++++++++++++++
->  1 file changed, 27 insertions(+)
->
-> diff --git a/drivers/cpufreq/qoriq-cpufreq.c
-> b/drivers/cpufreq/qoriq-cpufreq.c
-> index 4f53fa2..a39f868 100644
-> --- a/drivers/cpufreq/qoriq-cpufreq.c
-> +++ b/drivers/cpufreq/qoriq-cpufreq.c
-> @@ -12,6 +12,7 @@
->
->  #include <linux/clk.h>
->  #include <linux/cpufreq.h>
-> +#include <linux/cpu_cooling.h>
->  #include <linux/errno.h>
->  #include <linux/init.h>
->  #include <linux/kernel.h>
-> @@ -33,6 +34,7 @@
->  struct cpu_data {
->  	struct clk **pclk;
->  	struct cpufreq_frequency_table *table;
-> +	struct thermal_cooling_device *cdev;
->  };
->
->  /*
-> @@ -260,6 +262,30 @@ static int qoriq_cpufreq_target(struct cpufreq_policy
-> *policy,
->  	return clk_set_parent(policy->clk, parent);
->  }
->
-> +
-> +static void qoriq_cpufreq_ready(struct cpufreq_policy *policy)
-> +{
-> +	struct cpu_data *cpud = policy->driver_data;
-> +	struct device_node *np = of_get_cpu_node(policy->cpu, NULL);
-> +
-> +	if (WARN_ON(!np))
-> +		return;
-I doubt that WARN_ON is necessary here. Do you know the exact case
-where the np is NULL?
-> +
-> +	if (of_find_property(np, "#cooling-cells", NULL)) {
-> +		cpud->cdev = of_cpufreq_cooling_register(np,
-> +							 policy->related_cpus);
-> +
-> +		if (IS_ERR(cpud->cdev)) {
-> +			pr_err("Failed to register cooling device cpu%d: %ld\n",
-> +					policy->cpu, PTR_ERR(cpud->cdev));
-> +
-> +			cpud->cdev = NULL;
-> +		}
-> +	}
-> +
-> +	of_node_put(np);
-> +}
-> +
->  static struct cpufreq_driver qoriq_cpufreq_driver = {
->  	.name		= "qoriq_cpufreq",
->  	.flags		= CPUFREQ_CONST_LOOPS,
-> @@ -268,6 +294,7 @@ static struct cpufreq_driver qoriq_cpufreq_driver = {
->  	.verify		= cpufreq_generic_frequency_table_verify,
->  	.target_index	= qoriq_cpufreq_target,
->  	.get		= cpufreq_generic_get,
-> +	.ready		= qoriq_cpufreq_ready,
->  	.attr		= cpufreq_generic_attr,
->  };
->
-> --
-> 2.1.0.27.g96db324
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogRGVuaXMgS2lyamFub3Yg
+W21haWx0bzprZGFAbGludXgtcG93ZXJwYy5vcmddDQo+IFNlbnQ6IFRodXJzZGF5LCBOb3ZlbWJl
+ciAyNiwgMjAxNSA0OjMyIFBNDQo+IFRvOiBKaWEgSG9uZ3Rhby1CMzg5NTENCj4gQ2M6IGVkdWJl
+enZhbEBnbWFpbC5jb207IHZpcmVzaC5rdW1hckBsaW5hcm8ub3JnOyBXb29kIFNjb3R0LUIwNzQy
+MTsNCj4gZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxh
+YnMub3JnOyBsaW51eC0NCj4gcG1Admdlci5rZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFU
+Q0ggVjJdIGNwdWZyZXE6IHFvcmlxOiBSZWdpc3RlciBjb29saW5nIGRldmljZSBiYXNlZCBvbg0K
+PiBkZXZpY2UgdHJlZQ0KPiANCj4gT24gMTEvMjYvMTUsIEppYSBIb25ndGFvIDxob25ndGFvLmpp
+YUBmcmVlc2NhbGUuY29tPiB3cm90ZToNCj4gPiBSZWdpc3RlciB0aGUgcW9yaXEgY3B1ZnJlcSBk
+cml2ZXIgYXMgYSBjb29saW5nIGRldmljZSwgYmFzZWQgb24gdGhlDQo+ID4gdGhlcm1hbCBkZXZp
+Y2UgdHJlZSBmcmFtZXdvcmsuIFdoZW4gdGVtcGVyYXR1cmUgY3Jvc3NlcyB0aGUgcGFzc2l2ZQ0K
+PiA+IHRyaXAgcG9pbnQgY3B1ZnJlcSBpcyB1c2VkIHRvIHRocm90dGxlIENQVXMuDQo+ID4NCj4g
+PiBTaWduZWQtb2ZmLWJ5OiBKaWEgSG9uZ3RhbyA8aG9uZ3Rhby5qaWFAZnJlZXNjYWxlLmNvbT4N
+Cj4gPiAtLS0NCj4gPiBDaGFuZ2VzIGZvciBWMjoNCj4gPiAqIFVzaW5nIC0+cmVhZHkgY2FsbGJh
+Y2sgZm9yIGNwdSBjb29saW5nIGRldmljZSByZWdpc3RlcmluZy4NCj4gPg0KPiA+ICBkcml2ZXJz
+L2NwdWZyZXEvcW9yaXEtY3B1ZnJlcS5jIHwgMjcgKysrKysrKysrKysrKysrKysrKysrKysrKysr
+DQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCAyNyBpbnNlcnRpb25zKCspDQo+ID4NCj4gPiBkaWZmIC0t
+Z2l0IGEvZHJpdmVycy9jcHVmcmVxL3FvcmlxLWNwdWZyZXEuYw0KPiA+IGIvZHJpdmVycy9jcHVm
+cmVxL3FvcmlxLWNwdWZyZXEuYyBpbmRleCA0ZjUzZmEyLi5hMzlmODY4IDEwMDY0NA0KPiA+IC0t
+LSBhL2RyaXZlcnMvY3B1ZnJlcS9xb3JpcS1jcHVmcmVxLmMNCj4gPiArKysgYi9kcml2ZXJzL2Nw
+dWZyZXEvcW9yaXEtY3B1ZnJlcS5jDQo+ID4gQEAgLTEyLDYgKzEyLDcgQEANCj4gPg0KPiA+ICAj
+aW5jbHVkZSA8bGludXgvY2xrLmg+DQo+ID4gICNpbmNsdWRlIDxsaW51eC9jcHVmcmVxLmg+DQo+
+ID4gKyNpbmNsdWRlIDxsaW51eC9jcHVfY29vbGluZy5oPg0KPiA+ICAjaW5jbHVkZSA8bGludXgv
+ZXJybm8uaD4NCj4gPiAgI2luY2x1ZGUgPGxpbnV4L2luaXQuaD4NCj4gPiAgI2luY2x1ZGUgPGxp
+bnV4L2tlcm5lbC5oPg0KPiA+IEBAIC0zMyw2ICszNCw3IEBADQo+ID4gIHN0cnVjdCBjcHVfZGF0
+YSB7DQo+ID4gIAlzdHJ1Y3QgY2xrICoqcGNsazsNCj4gPiAgCXN0cnVjdCBjcHVmcmVxX2ZyZXF1
+ZW5jeV90YWJsZSAqdGFibGU7DQo+ID4gKwlzdHJ1Y3QgdGhlcm1hbF9jb29saW5nX2RldmljZSAq
+Y2RldjsNCj4gPiAgfTsNCj4gPg0KPiA+ICAvKg0KPiA+IEBAIC0yNjAsNiArMjYyLDMwIEBAIHN0
+YXRpYyBpbnQgcW9yaXFfY3B1ZnJlcV90YXJnZXQoc3RydWN0DQo+ID4gY3B1ZnJlcV9wb2xpY3kg
+KnBvbGljeSwNCj4gPiAgCXJldHVybiBjbGtfc2V0X3BhcmVudChwb2xpY3ktPmNsaywgcGFyZW50
+KTsgIH0NCj4gPg0KPiA+ICsNCj4gPiArc3RhdGljIHZvaWQgcW9yaXFfY3B1ZnJlcV9yZWFkeShz
+dHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKnBvbGljeSkgew0KPiA+ICsJc3RydWN0IGNwdV9kYXRhICpj
+cHVkID0gcG9saWN5LT5kcml2ZXJfZGF0YTsNCj4gPiArCXN0cnVjdCBkZXZpY2Vfbm9kZSAqbnAg
+PSBvZl9nZXRfY3B1X25vZGUocG9saWN5LT5jcHUsIE5VTEwpOw0KPiA+ICsNCj4gPiArCWlmIChX
+QVJOX09OKCFucCkpDQo+ID4gKwkJcmV0dXJuOw0KPiBJIGRvdWJ0IHRoYXQgV0FSTl9PTiBpcyBu
+ZWNlc3NhcnkgaGVyZS4gRG8geW91IGtub3cgdGhlIGV4YWN0IGNhc2Ugd2hlcmUNCj4gdGhlIG5w
+IGlzIE5VTEw/DQoNClRoaXMgc2VlbXMgbm90IG5lY2Vzc2FyeSBhcyB5b3Ugc2FpZC4NCklmIG5v
+IG9uZSBlbHNlIGhhcyB0aGUgb3Bwb3NpdGUgb3BpbmlvbiBJIHdpbGwgcmVtb3ZlIGl0Lg0KDQpU
+aGFua3MuDQoNCj4gPiArDQo+ID4gKwlpZiAob2ZfZmluZF9wcm9wZXJ0eShucCwgIiNjb29saW5n
+LWNlbGxzIiwgTlVMTCkpIHsNCj4gPiArCQljcHVkLT5jZGV2ID0gb2ZfY3B1ZnJlcV9jb29saW5n
+X3JlZ2lzdGVyKG5wLA0KPiA+ICsJCQkJCQkJIHBvbGljeS0+cmVsYXRlZF9jcHVzKTsNCj4gPiAr
+DQo+ID4gKwkJaWYgKElTX0VSUihjcHVkLT5jZGV2KSkgew0KPiA+ICsJCQlwcl9lcnIoIkZhaWxl
+ZCB0byByZWdpc3RlciBjb29saW5nIGRldmljZSBjcHUlZDogJWxkXG4iLA0KPiA+ICsJCQkJCXBv
+bGljeS0+Y3B1LCBQVFJfRVJSKGNwdWQtPmNkZXYpKTsNCj4gPiArDQo+ID4gKwkJCWNwdWQtPmNk
+ZXYgPSBOVUxMOw0KPiA+ICsJCX0NCj4gPiArCX0NCj4gPiArDQo+ID4gKwlvZl9ub2RlX3B1dChu
+cCk7DQo+ID4gK30NCj4gPiArDQo+ID4gIHN0YXRpYyBzdHJ1Y3QgY3B1ZnJlcV9kcml2ZXIgcW9y
+aXFfY3B1ZnJlcV9kcml2ZXIgPSB7DQo+ID4gIAkubmFtZQkJPSAicW9yaXFfY3B1ZnJlcSIsDQo+
+ID4gIAkuZmxhZ3MJCT0gQ1BVRlJFUV9DT05TVF9MT09QUywNCj4gPiBAQCAtMjY4LDYgKzI5NCw3
+IEBAIHN0YXRpYyBzdHJ1Y3QgY3B1ZnJlcV9kcml2ZXIgcW9yaXFfY3B1ZnJlcV9kcml2ZXIgPQ0K
+PiB7DQo+ID4gIAkudmVyaWZ5CQk9IGNwdWZyZXFfZ2VuZXJpY19mcmVxdWVuY3lfdGFibGVfdmVy
+aWZ5LA0KPiA+ICAJLnRhcmdldF9pbmRleAk9IHFvcmlxX2NwdWZyZXFfdGFyZ2V0LA0KPiA+ICAJ
+LmdldAkJPSBjcHVmcmVxX2dlbmVyaWNfZ2V0LA0KPiA+ICsJLnJlYWR5CQk9IHFvcmlxX2NwdWZy
+ZXFfcmVhZHksDQo+ID4gIAkuYXR0cgkJPSBjcHVmcmVxX2dlbmVyaWNfYXR0ciwNCj4gPiAgfTsN
+Cj4gPg0KPiA+IC0tDQo+ID4gMi4xLjAuMjcuZzk2ZGIzMjQNCj4gPg0KPiA+IF9fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fDQo+ID4gTGludXhwcGMtZGV2IG1h
+aWxpbmcgbGlzdA0KPiA+IExpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+ID4gaHR0cHM6
+Ly9saXN0cy5vemxhYnMub3JnL2xpc3RpbmZvL2xpbnV4cHBjLWRldg0K
