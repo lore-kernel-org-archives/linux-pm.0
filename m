@@ -1,89 +1,101 @@
-From: Dawei Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Subject: [PATCH v4 1/3] arm64: dts: mt8173: Add thermal zone node.
-Date: Fri, 27 Nov 2015 17:32:05 +0800
-Message-ID: <1448616727-29367-2-git-send-email-dawei.chien@mediatek.com>
-References: <1448616727-29367-1-git-send-email-dawei.chien@mediatek.com>
+From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
+Subject: Re: [PATCH v1 1/5] thermal: rockchip: fix a trivial typo
+Date: Fri, 27 Nov 2015 10:49:23 +0100
+Message-ID: <5259912.5mmETGszQg@diego>
+References: <1448592746-2129-1-git-send-email-wxt@rock-chips.com> <1448592746-2129-2-git-send-email-wxt@rock-chips.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <1448616727-29367-1-git-send-email-dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
-List-Post: <mailto:linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>, srv_heupstream-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Dawei Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from gloria.sntech.de ([95.129.55.99]:49713 "EHLO gloria.sntech.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752914AbbK0Jtb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 27 Nov 2015 04:49:31 -0500
+In-Reply-To: <1448592746-2129-2-git-send-email-wxt@rock-chips.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Caesar Wang <wxt@rock-chips.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, linux-rockchip@lists.infradead.org, Dan Carpenter <dan.carpenter@oracle.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jiri Kosina <trivial@kernel.org>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
 
-This adds thermal zone node to Mediatek MT8173 dtsi file.
+Hi Caesar,
 
-Signed-off-by: Dawei Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
----
-This patch is based on patchset:
-https://lkml.org/lkml/2015/11/18/84
----
- arch/arm64/boot/dts/mediatek/mt8173.dtsi |   43 ++++++++++++++++++++++++++++++
- 1 file changed, 43 insertions(+)
+Am Freitag, 27. November 2015, 10:52:22 schrieb Caesar Wang:
+> This patchset trys to dictate unified format for driver.
+> 
+> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+> 
+> ---
+> 
+> Changes in v1:
+> - Search more trivial typo for me.
+> 
+>  drivers/thermal/rockchip_thermal.c | 18 +++++++++---------
+>  1 file changed, 9 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/thermal/rockchip_thermal.c
+> b/drivers/thermal/rockchip_thermal.c index e845841..5a8840b 100644
+> --- a/drivers/thermal/rockchip_thermal.c
+> +++ b/drivers/thermal/rockchip_thermal.c
+> @@ -38,7 +38,7 @@ enum tshut_mode {
+>  };
+> 
+>  /**
+> - * the system Temperature Sensors tshut(tshut) polarity
+> + * The system Temperature Sensors tshut(tshut) polarity
+>   * the bit 8 is tshut polarity.
+>   * 0: low active, 1: high active
+>   */
+> @@ -57,10 +57,10 @@ enum sensor_id {
+>  };
+> 
+>  /**
+> -* The conversion table has the adc value and temperature.
+> -* ADC_DECREMENT is the adc value decremnet.(e.g. v2_code_table)
+> -* ADC_INCREMNET is the adc value incremnet.(e.g. v3_code_table)
+> -*/
+> + * The conversion table has the adc value and temperature.
+> + * ADC_DECREMENT: the adc value is of diminishing.(e.g. v2_code_table)
+> + * ADC_INCREMENT: the adc value is incremental.(e.g. v3_code_table)
+> + */
+>  enum adc_sort_mode {
+>  	ADC_DECREMENT = 0,
+>  	ADC_INCREMENT,
+> @@ -75,13 +75,13 @@ enum adc_sort_mode {
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt8173.dtsi b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-index fda805d..4114cee 100644
---- a/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-@@ -188,6 +188,49 @@
- 		clock-output-names = "cpum_ck";
- 	};
- 
-+	thermal-zones {
-+		cpu_thermal: cpu_thermal {
-+			polling-delay-passive = <1000>; /* milliseconds */
-+			polling-delay = <1000>; /* milliseconds */
-+
-+			thermal-sensors = <&thermal 0>;
-+			sustainable-power = <1500>; /* milliwatts */
-+
-+			trips {
-+				threshold: trip-point@0 {
-+					temperature = <68000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				target: trip-point@1 {
-+					temperature = <85000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+
-+				cpu_crit: cpu_crit@0 {
-+					temperature = <115000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+				map@0 {
-+					trip = <&target>;
-+					cooling-device = <&cpu0 0 0>;
-+					contribution = <1024>;
-+				};
-+				map@1 {
-+					trip = <&target>;
-+					cooling-device = <&cpu2 0 0>;
-+					contribution = <2048>;
-+				};
-+			};
-+		};
-+	};
-+
- 	timer {
- 		compatible = "arm,armv8-timer";
- 		interrupt-parent = <&gic>;
--- 
-1.7.9.5
+You could simply move to documenting the fields in the header (like 
+exynos_tmu.c for example) instead of inside the table. I think there are even 
+tools that create documention from these comments, so I'd suggest:
+
+/*
+ * struct chip_tsadc_table: hold information about chip-specific differences
+ * @id: conversion table
+ * @length: size of conversion table
+ * @data_mask: mask to apply on data inputs
+ * @mode: sort mode of this adc variant (incrementing or decrementing)
+ */
+>  struct chip_tsadc_table {
+>  	const struct tsadc_table *id;
+> 
+> -	/* the array table size*/
+> +	/* The array table size */
+>  	unsigned int length;
+> 
+> -	/* that analogic mask data */
+> +	/* That analogic mask data */
+>  	u32 data_mask;
+> 
+> -	/* the sort mode is adc value that increment or decrement in table */
+> +	/* The sort mode is adc value that increment or decrement in table */
+>  	enum adc_sort_mode mode;
+>  };
+> 
+> @@ -617,7 +617,7 @@ rockchip_thermal_register_sensor(struct platform_device
+> *pdev, return 0;
+>  }
+> 
+> -/*
+> +/**
+>   * Reset TSADC Controller, reset all tsadc registers.
+>   */
+>  static void rockchip_thermal_reset_controller(struct reset_control *reset)
+
