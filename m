@@ -1,79 +1,85 @@
-From: Yu Chen <yu.c.chen@intel.com>
-Subject: Re: [PATCH] [v4] x86, suspend: Save/restore extra MSR registers for
- suspend
-Date: Fri, 27 Nov 2015 14:01:39 +0800
-Message-ID: <5657F1C3.8020308@intel.com>
-References: <1440645507-17768-1-git-send-email-yu.c.chen@intel.com> <20150917053004.GB6665@amd> <36DF59CE26D8EE47B0655C516E9CE6402865A403@shsmsx102.ccr.corp.intel.com> <001701d102c4$1ac2bab0$50483010$@net> <36DF59CE26D8EE47B0655C516E9CE6402865AA02@shsmsx102.ccr.corp.intel.com> <002c01d1043c$133ba580$39b2f080$@net> <36DF59CE26D8EE47B0655C516E9CE64028662059@shsmsx102.ccr.corp.intel.com> <000901d118a8$8fda8450$af8f8cf0$@net> <36DF59CE26D8EE47B0655C516E9CE6402867326B@shsmsx102.ccr.corp.intel.com> <001901d1247c$043f3190$0cbd94b0$@net> <001801d128c3$b72f7710$258e6530$@net>
+From: "Rajendra Nayak" <rnayak@codeaurora.org>
+Subject: Re: [PATCH v8 11/13] clk: qcom: gdsc: Use PM clocks to control gdsc
+ clocks
+Date: Fri, 27 Nov 2015 08:29:40 -0000
+Message-ID: <f45f0e47a6917b8bd4a223bea46c93c1.squirrel@www.codeaurora.org>
+References: <1438857474-20262-1-git-send-email-rnayak@codeaurora.org>
+    <1438857474-20262-12-git-send-email-rnayak@codeaurora.org>
+    <20150811065224.GA2839@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:57030 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750770AbbK0F45 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 27 Nov 2015 00:56:57 -0500
-In-Reply-To: <001801d128c3$b72f7710$258e6530$@net>
+Received: from smtp.codeaurora.org ([198.145.29.96]:32854 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751302AbbK0I3l (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Nov 2015 03:29:41 -0500
+In-Reply-To: <20150811065224.GA2839@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: "'Wysocki, Rafael J'" <rafael.j.wysocki@intel.com>, tglx@linutronix.de, hpa@zytor.com, bp@alien8.de, "'Zhang, Rui'" <rui.zhang@intel.com>, linux-pm@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, "'Brown, Len'" <len.brown@intel.com>, 'Ingo Molnar' <mingo@kernel.org>, 'Pavel Machek' <pavel@ucw.cz>, "'Pandruvada, Srinivas'" <srinivas.pandruvada@intel.com>
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Rajendra Nayak <rnayak@codeaurora.org>, mturquette@baylibre.com, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, georgi.djakov@linaro.org, svarbanov@mm-sol.com, srinivas.kandagatla@linaro.org, sviau@codeaurora.org
 
-Hi,
-On 11/27/2015 11:28 AM, Doug Smythies wrote:
-> On 2015.11.21 08:45 Doug Smythies wrote:
->> On 2015.11.12 01:42 Chen, Yu C wrote:
->>> On 2015.11.06 11:34 Doug Smythies wrote:
+Hi Stephen,
+
+>> +static int gdsc_attach(struct generic_pm_domain *domain, struct device
+>> *dev)
+>> +{
+>> +	int ret, i = 0, j = 0;
+>> +	struct gdsc *sc = domain_to_gdsc(domain);
+>> +	struct of_phandle_args clkspec;
+>> +	struct device_node *np = dev->of_node;
+>> +
+>> +	if (!sc->clock_count)
+>> +		return 0;
+>> +
+>> +	ret = pm_clk_create(dev);
+>> +	if (ret) {
+>> +		dev_dbg(dev, "pm_clk_create failed %d\n", ret);
+>> +		return ret;
+>> +	}
+>> +
+>> +	sc->clks = devm_kcalloc(dev, sc->clock_count, sizeof(sc->clks),
+>> +				       GFP_KERNEL);
+>> +	if (!sc->clks)
+>> +		return -ENOMEM;
+>> +
+>> +	while (!of_parse_phandle_with_args(np, "clocks", "#clock-cells", i,
+>> +					   &clkspec)) {
+>> +		if (match(clkspec.args[0], sc->clocks, sc->clock_count)) {
 >
-> [cut]
+> I'm lost. I was hoping we could just make up a clkspec on the
+> stack and pass it over to of_clk_get_from_provider() without
+> having to go through the np of the client device. The point being
+> to avoid forcing this code from knowing about the consumer
+> binding or connection name choice for each device. Instead, it
+> assumes that it's a #clock-cells=<1> binding and gets the clocks
+> by passing the 1 cell data without calling
+> of_parse_phandle_with_args().
 >
->>> rdmsr_safe  might be better,
->
->> I'll look into it, thanks.
->
->>> you can refer to acpi_throttling_rdmsr
->
->> I don't understand.
->
->>> and I'm OK with this code, are you planning to send a formal patch?
->
->> The delay here is because I have always thought that some actual load
->> content needs to be brought back to the intel_pstate driver, which would
->> (or at least should) eliminate the need for this patch.
->
->> Anyway, and at least for the interim, I'll try to make and submit a formal version.
->
-> I made a mistake in my initial testing. I put a 100% load on CPU 7 and then
-> cycled through all the clock modulation values to show that my test version of
-> a possible patch compensated / normalized the Clock Modulation. Indeed, if the
-> system is already asking for the maximum pstate, it will stay there. However,
-> whenever the load drops, the target pstate will drop to minimum and it will
-> never kick back up again, regardless of load.
->
-  Do you mean even with your
-  patch applied, the cpufreq policy would choose a smaller target?
-  I looked up the SDM, it says in 14.7.3: on Hyper-Threading Technology
-  enabled processors, the clock modulation might behave differently:
-"if the programmed duty cycle is not identical for all logical
-processors in the same core, the
-processor core will modulate at the lowest programmed duty cycle "
-I dont know if this is related to the problem.
-> I am returning to my initial assertion copied below:
->
->>>>>>>> The current version of the intel_pstate driver is incompatible
->>>>>>>> with any use of Clock Modulation, always resulting in driving the
->>>>>>>> target pstate to the minimum, regardless of load. The result is
->>>>>>>> the apparent CPU frequency stuck at minimum * modulation percent.
->>>>>>>
->>>>>>>> The acpi-cpufreq driver works fine with Clock Modulation,
->>>>>>>> resulting in desired frequency * modulation percent.
->
-> Chen,
->
-> Thanks though for the suggestion to try normalizing.
->
-I'll try to reproduce your problem, and let's discuss this offline.
-> ... Doug
->
-thanks,
-Yu
+> Now, one downside of that approach is that it's DT centric (also
+> of_clk_get_from_provider() is not an exported symbol yet). So I'm
+> really starting to lean towards exposing __clk_create_clk() (or
+> some better named "provider" function) that will allow clk
+> providers to turn their clk_hw structure into a struct clk
+> pointer. That avoids the DT centric design, and avoids binding
+> the provider to the connection ids too.
+
+Stephen, I started to relook at these patches, avoiding the DT centric
+design and implementing a clk helper API as you suggested above.
+
+While this would work for GDSCs with just one device, its hard to scale
+if we ever run into GDSCs with multiple devices (In which case you
+need to know which device within the GDSC needs which clocks)
+
+Do you think its a fair limitation (one device per gdsc) to live with?
+because I can't seem to figure how a non DT centric design would otherwise
+work.
+
+regards,
+Rajendra
+
+-- 
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation
 
