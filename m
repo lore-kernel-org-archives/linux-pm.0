@@ -1,85 +1,50 @@
-From: "Rajendra Nayak" <rnayak@codeaurora.org>
-Subject: Re: [PATCH v8 11/13] clk: qcom: gdsc: Use PM clocks to control gdsc
- clocks
-Date: Fri, 27 Nov 2015 08:29:40 -0000
-Message-ID: <f45f0e47a6917b8bd4a223bea46c93c1.squirrel@www.codeaurora.org>
-References: <1438857474-20262-1-git-send-email-rnayak@codeaurora.org>
-    <1438857474-20262-12-git-send-email-rnayak@codeaurora.org>
-    <20150811065224.GA2839@codeaurora.org>
+From: Dawei Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Subject: [PATCH v4 0/3] thermal: mediatek: Add cpu power cooling model
+Date: Fri, 27 Nov 2015 17:32:04 +0800
+Message-ID: <1448616727-29367-1-git-send-email-dawei.chien@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:32854 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751302AbbK0I3l (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Nov 2015 03:29:41 -0500
-In-Reply-To: <20150811065224.GA2839@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Daniel Kurtz <djkurtz-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Dawei Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, srv_heupstream-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Rajendra Nayak <rnayak@codeaurora.org>, mturquette@baylibre.com, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, georgi.djakov@linaro.org, svarbanov@mm-sol.com, srinivas.kandagatla@linaro.org, sviau@codeaurora.org
 
-Hi Stephen,
+Use Intelligent Power Allocation (IPA) technical to add dynamic power model
+for binding CPU thermal zone. The power allocator governor allocates power
+budget to control CPU temperature.
 
->> +static int gdsc_attach(struct generic_pm_domain *domain, struct device
->> *dev)
->> +{
->> +	int ret, i = 0, j = 0;
->> +	struct gdsc *sc = domain_to_gdsc(domain);
->> +	struct of_phandle_args clkspec;
->> +	struct device_node *np = dev->of_node;
->> +
->> +	if (!sc->clock_count)
->> +		return 0;
->> +
->> +	ret = pm_clk_create(dev);
->> +	if (ret) {
->> +		dev_dbg(dev, "pm_clk_create failed %d\n", ret);
->> +		return ret;
->> +	}
->> +
->> +	sc->clks = devm_kcalloc(dev, sc->clock_count, sizeof(sc->clks),
->> +				       GFP_KERNEL);
->> +	if (!sc->clks)
->> +		return -ENOMEM;
->> +
->> +	while (!of_parse_phandle_with_args(np, "clocks", "#clock-cells", i,
->> +					   &clkspec)) {
->> +		if (match(clkspec.args[0], sc->clocks, sc->clock_count)) {
->
-> I'm lost. I was hoping we could just make up a clkspec on the
-> stack and pass it over to of_clk_get_from_provider() without
-> having to go through the np of the client device. The point being
-> to avoid forcing this code from knowing about the consumer
-> binding or connection name choice for each device. Instead, it
-> assumes that it's a #clock-cells=<1> binding and gets the clocks
-> by passing the 1 cell data without calling
-> of_parse_phandle_with_args().
->
-> Now, one downside of that approach is that it's DT centric (also
-> of_clk_get_from_provider() is not an exported symbol yet). So I'm
-> really starting to lean towards exposing __clk_create_clk() (or
-> some better named "provider" function) that will allow clk
-> providers to turn their clk_hw structure into a struct clk
-> pointer. That avoids the DT centric design, and avoids binding
-> the provider to the connection ids too.
+Power Allocator governor is able to keep SOC temperature within a defined
+temperature range to avoid SOC overheat and keep it's performance.
+mt8173-cpufreq.c need to register its' own power model with power allocator
+thermal governor, so that power allocator governor can allocates suitable
+power budget to control CPU temperature.
 
-Stephen, I started to relook at these patches, avoiding the DT centric
-design and implementing a clk helper API as you suggested above.
+Binging document is refer to this patchset
+https://lkml.org/lkml/2015/11/17/251
 
-While this would work for GDSCs with just one device, its hard to scale
-if we ever run into GDSCs with multiple devices (In which case you
-need to know which device within the GDSC needs which clocks)
+Change since V1:
+1. Include mt8171.h and sort header file for mt8173.dtsi
 
-Do you think its a fair limitation (one device per gdsc) to live with?
-because I can't seem to figure how a non DT centric design would otherwise
-work.
+Change since V2:
+1. Move dynamic/static power model in device tree
 
-regards,
-Rajendra
+Change since V3:
+1. Remove static power model.
+2. Split V3's device tree in two for thermal zones and dynamic power models respectively.
 
--- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation
+Dawei Chien (3):
+  arm64: dts: mt8173: Add thermal zone node for mt8173 platform.
+  arm64: dts: mt8173: Add dynamic power node for mt8173 platform.
+  thermal: mediatek: Add cpu dynamic power cooling model.
 
+ arch/arm64/boot/dts/mediatek/mt8173.dtsi |   47 ++++++++++++++++++++++++++++++
+ drivers/cpufreq/mt8173-cpufreq.c         |   28 +++++++++++++-----
+ 2 files changed, 67 insertions(+), 8 deletions(-)
+
+--
+1.7.9.5
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
