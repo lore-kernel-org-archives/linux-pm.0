@@ -1,69 +1,88 @@
-From: Dawei Chien <dawei.chien@mediatek.com>
-Subject: [PATCH v4 2/3] arm64: dts: mt8173: Add dynamic power node.
-Date: Fri, 27 Nov 2015 17:32:06 +0800
-Message-ID: <1448616727-29367-3-git-send-email-dawei.chien@mediatek.com>
+From: Dawei Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Subject: [PATCH v4 3/3] thermal: mediatek: Add cpu dynamic power cooling model.
+Date: Fri, 27 Nov 2015 17:32:07 +0800
+Message-ID: <1448616727-29367-4-git-send-email-dawei.chien@mediatek.com>
 References: <1448616727-29367-1-git-send-email-dawei.chien@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailgw02.mediatek.com ([210.61.82.184]:58592 "EHLO
-	mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754509AbbK0Jc0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Nov 2015 04:32:26 -0500
-In-Reply-To: <1448616727-29367-1-git-send-email-dawei.chien@mediatek.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1448616727-29367-1-git-send-email-dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Daniel Kurtz <djkurtz-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Dawei Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, srv_heupstream-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Matthias Brugger <matthias.bgg@gmail.com>, Daniel Kurtz <djkurtz@chromium.org>, Sascha Hauer <s.hauer@pengutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, Dawei Chien <dawei.chien@mediatek.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, Sascha Hauer <kernel@pengutronix.de>, Punit Agrawal <punit.agrawal@arm.com>
 
-This device node is for calculating dynamic power in mW.
-Since mt8173 has two clusters, there are two dynamic power
-coefficient as well.
+MT8173 cpufreq driver use of_cpufreq_power_cooling_register registering
+cooling devices with dynamic power coefficient.
 
-Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
+Signed-off-by: Dawei Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
 ---
 This patch is base on patchset:
 https://lkml.org/lkml/2015/11/17/251
 ---
- arch/arm64/boot/dts/mediatek/mt8173.dtsi |    4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/cpufreq/mt8173-cpufreq.c |   28 ++++++++++++++++++++--------
+ 1 file changed, 20 insertions(+), 8 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt8173.dtsi b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-index 4114cee..33fabe4 100644
---- a/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-@@ -71,6 +71,7 @@
- 			#cooling-cells = <2>;
- 			#cooling-min-level = <0>;
- 			#cooling-max-level = <7>;
-+			dynamic-power-coefficient = <263>;
- 		};
+diff --git a/drivers/cpufreq/mt8173-cpufreq.c b/drivers/cpufreq/mt8173-cpufreq.c
+index 83001dc..4d39468 100644
+--- a/drivers/cpufreq/mt8173-cpufreq.c
++++ b/drivers/cpufreq/mt8173-cpufreq.c
+@@ -263,24 +263,34 @@ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
+ 	return 0;
+ }
  
- 		cpu1: cpu@1 {
-@@ -95,6 +96,7 @@
- 			#cooling-cells = <2>;
- 			#cooling-min-level = <0>;
- 			#cooling-max-level = <7>;
-+			dynamic-power-coefficient = <263>;
- 		};
++#define DYNAMIC_POWER "dynamic-power-coefficient"
++
+ static void mtk_cpufreq_ready(struct cpufreq_policy *policy)
+ {
+ 	struct mtk_cpu_dvfs_info *info = policy->driver_data;
+ 	struct device_node *np = of_node_get(info->cpu_dev->of_node);
++	u32 capacitance;
  
- 		cpu2: cpu@100 {
-@@ -119,6 +121,7 @@
- 			#cooling-cells = <2>;
- 			#cooling-min-level = <0>;
- 			#cooling-max-level = <7>;
-+			dynamic-power-coefficient = <530>;
- 		};
+ 	if (WARN_ON(!np))
+ 		return;
  
- 		cpu3: cpu@101 {
-@@ -143,6 +146,7 @@
- 			#cooling-cells = <2>;
- 			#cooling-min-level = <0>;
- 			#cooling-max-level = <7>;
-+			dynamic-power-coefficient = <530>;
- 		};
+ 	if (of_find_property(np, "#cooling-cells", NULL)) {
+-		info->cdev = of_cpufreq_cooling_register(np,
+-							 policy->related_cpus);
++		if (!info->cdev) {
++			of_property_read_u32(np, DYNAMIC_POWER, &capacitance);
++
++			info->cdev = of_cpufreq_power_cooling_register(np,
++							policy->related_cpus,
++							capacitance,
++							NULL);
  
- 		idle-states {
+-		if (IS_ERR(info->cdev)) {
+-			dev_err(info->cpu_dev,
+-				"running cpufreq without cooling device: %ld\n",
+-				PTR_ERR(info->cdev));
++			if (IS_ERR(info->cdev)) {
++				dev_err(info->cpu_dev,
++					"running cpufreq without cooling device: %ld\n",
++					PTR_ERR(info->cdev));
+ 
+-			info->cdev = NULL;
++				info->cdev = NULL;
++			}
+ 		}
+ 	}
+ 
+@@ -460,7 +470,9 @@ static int mtk_cpufreq_exit(struct cpufreq_policy *policy)
+ {
+ 	struct mtk_cpu_dvfs_info *info = policy->driver_data;
+ 
+-	cpufreq_cooling_unregister(info->cdev);
++	if (info->cdev)
++		cpufreq_cooling_unregister(info->cdev);
++
+ 	dev_pm_opp_free_cpufreq_table(info->cpu_dev, &policy->freq_table);
+ 	mtk_cpu_dvfs_info_release(info);
+ 	kfree(info);
 -- 
 1.7.9.5
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
