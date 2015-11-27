@@ -1,91 +1,53 @@
-From: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Subject: [PATCH v1 1/5] thermal: rockchip: fix a trivial typo
-Date: Fri, 27 Nov 2015 10:52:22 +0800
-Message-ID: <1448592746-2129-2-git-send-email-wxt@rock-chips.com>
+From: Caesar Wang <wxt@rock-chips.com>
+Subject: [PATCH v1 2/5] thermal: rockchip: fix a impossible condition caused by the warning
+Date: Fri, 27 Nov 2015 10:52:23 +0800
+Message-ID: <1448592746-2129-3-git-send-email-wxt@rock-chips.com>
 References: <1448592746-2129-1-git-send-email-wxt@rock-chips.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <1448592746-2129-1-git-send-email-wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
-List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Jiri Kosina <trivial-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Dan Carpenter <dan.carpenter-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>, Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f65.google.com ([209.85.220.65]:34076 "EHLO
+	mail-pa0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753857AbbK0Cxs (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 26 Nov 2015 21:53:48 -0500
+In-Reply-To: <1448592746-2129-1-git-send-email-wxt@rock-chips.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-rockchip@lists.infradead.org, Heiko Stuebner <heiko@sntech.de>, Dan Carpenter <dan.carpenter@oracle.com>, Caesar Wang <wxt@rock-chips.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
 
-This patchset trys to dictate unified format for driver.
+As the Dan report the smatch check the thermal driver warning:
+drivers/thermal/rockchip_thermal.c:551 rockchip_configure_from_dt()
+warn: impossible condition '(thermal->tshut_temp > ((~0 >> 1))) =>
+(s32min-s32max > s32max)'
 
-Signed-off-by: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Since the Temperature is currently represented as int not long in
+the thermal driver.
+
+Fixes: commit 437df2172e8d
+("thermal: rockchip: consistently use int for temperatures")
+
+Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+Signed-off-by: Caesar Wang <wxt@rock-chips.com>
 
 ---
 
-Changes in v1:
-- Search more trivial typo for me.
+Changes in v1: None
 
- drivers/thermal/rockchip_thermal.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+ drivers/thermal/rockchip_thermal.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index e845841..5a8840b 100644
+index 5a8840b..d00765f 100644
 --- a/drivers/thermal/rockchip_thermal.c
 +++ b/drivers/thermal/rockchip_thermal.c
-@@ -38,7 +38,7 @@ enum tshut_mode {
- };
+@@ -548,7 +548,7 @@ static int rockchip_configure_from_dt(struct device *dev,
+ 		thermal->tshut_temp = shut_temp;
+ 	}
  
- /**
-- * the system Temperature Sensors tshut(tshut) polarity
-+ * The system Temperature Sensors tshut(tshut) polarity
-  * the bit 8 is tshut polarity.
-  * 0: low active, 1: high active
-  */
-@@ -57,10 +57,10 @@ enum sensor_id {
- };
- 
- /**
--* The conversion table has the adc value and temperature.
--* ADC_DECREMENT is the adc value decremnet.(e.g. v2_code_table)
--* ADC_INCREMNET is the adc value incremnet.(e.g. v3_code_table)
--*/
-+ * The conversion table has the adc value and temperature.
-+ * ADC_DECREMENT: the adc value is of diminishing.(e.g. v2_code_table)
-+ * ADC_INCREMENT: the adc value is incremental.(e.g. v3_code_table)
-+ */
- enum adc_sort_mode {
- 	ADC_DECREMENT = 0,
- 	ADC_INCREMENT,
-@@ -75,13 +75,13 @@ enum adc_sort_mode {
- struct chip_tsadc_table {
- 	const struct tsadc_table *id;
- 
--	/* the array table size*/
-+	/* The array table size */
- 	unsigned int length;
- 
--	/* that analogic mask data */
-+	/* That analogic mask data */
- 	u32 data_mask;
- 
--	/* the sort mode is adc value that increment or decrement in table */
-+	/* The sort mode is adc value that increment or decrement in table */
- 	enum adc_sort_mode mode;
- };
- 
-@@ -617,7 +617,7 @@ rockchip_thermal_register_sensor(struct platform_device *pdev,
- 	return 0;
- }
- 
--/*
-+/**
-  * Reset TSADC Controller, reset all tsadc registers.
-  */
- static void rockchip_thermal_reset_controller(struct reset_control *reset)
+-	if (thermal->tshut_temp > INT_MAX) {
++	if (!(thermal->tshut_temp < INT_MAX)) {
+ 		dev_err(dev, "Invalid tshut temperature specified: %d\n",
+ 			thermal->tshut_temp);
+ 		return -ERANGE;
 -- 
 1.9.1
+
