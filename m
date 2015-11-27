@@ -1,499 +1,115 @@
-From: Lucas Stach <l.stach@pengutronix.de>
-Subject: Re: [PATCH V2 06/10] cpufreq: governor: Keep single copy of
- information common to policy->cpus
-Date: Fri, 27 Nov 2015 12:56:40 +0100
-Message-ID: <1448625400.3689.103.camel@pengutronix.de>
-References: <cover.1434713657.git.viresh.kumar@linaro.org>
-	 <efd892126475600e751c0e1206553270ebba5c00.1434713657.git.viresh.kumar@linaro.org>
+From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Subject: Re: [PATCH v2] PCI / PM: tune down RPM suspend error
+ message with EBUSY and EAGAIN retval
+Date: Fri, 27 Nov 2015 15:44:48 +0100
+Message-ID: <56586C60.5050104@intel.com>
+References: <1447838178-15308-1-git-send-email-imre.deak@intel.com>
+ <1447844188-21999-1-git-send-email-imre.deak@intel.com>
+ <1447853318.14073.2.camel@intel.com>
+ <20151118141943.GU20799@phenom.ffwll.local> <878u5j7jt9.fsf@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:42882 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753045AbbK0L4x (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Nov 2015 06:56:53 -0500
-In-Reply-To: <efd892126475600e751c0e1206553270ebba5c00.1434713657.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <intel-gfx-bounces@lists.freedesktop.org>
+In-Reply-To: <878u5j7jt9.fsf@intel.com>
+List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <http://lists.freedesktop.org/archives/intel-gfx>
+List-Post: <mailto:intel-gfx@lists.freedesktop.org>
+List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: intel-gfx-bounces@lists.freedesktop.org
+Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+To: Jani Nikula <jani.nikula@linux.intel.com>, Daniel Vetter <daniel@ffwll.ch>, Imre Deak <imre.deak@intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, intel-gfx@lists.freedesktop.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Vetter <daniel.vetter@ffwll.ch>, Bjorn Helgaas <bhelgaas@google.com>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, ke.wang@spreadtrum.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, ego@linux.vnet.ibm.com, paulus@samba.org, shilpa.bhat@linux.vnet.ibm.com, prarit@redhat.com, robert.schoene@tu-dresden.de, skannan@codeaurora.org
 
-Am Freitag, den 19.06.2015, 17:18 +0530 schrieb Viresh Kumar:
-> Some information is common to all CPUs belonging to a policy, but are
-> kept on per-cpu basis. Lets keep that in another structure common to all
-> policy->cpus. That will make updates/reads to that less complex and less
-> error prone.
-> 
-> The memory for ccdbs is allocated/freed at INIT/EXIT, so that it we
-> don't reallocate it for STOP/START sequence. It will be also be used (in
-> next patch) while the governor is stopped and so must not be freed that
-> early.
-> 
-> Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-
-Sorry for being late to the party, as this has long been applied, but I
-stumbled upon this while looking at other stuff and wanted to express my
-finding.
-
->From a short look this change is totally bogus.
-The *_dbs_timer functions are called from a workqueue on each CPU.
-Moving the time_stamp and the timer_mutex to a shared structure now
-causes a thundering herd issue on multicore systems. All workqueues wake
-up at the same time with all but one of the worker bouncing on the
-contended mutex.
-
-Also sharing the time_stamp causes all but the first worker to acquire
-the mutex to not properly update their sampling information, I guess. I
-didn't look to deeply into this.
-
-Regards,
-Lucas
-
-> ---
->  drivers/cpufreq/cpufreq_conservative.c | 18 ++++---
->  drivers/cpufreq/cpufreq_governor.c     | 92 +++++++++++++++++++++++++---------
->  drivers/cpufreq/cpufreq_governor.h     | 24 +++++----
->  drivers/cpufreq/cpufreq_ondemand.c     | 38 +++++++-------
->  4 files changed, 114 insertions(+), 58 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-> index af47d322679e..5b5c01ca556c 100644
-> --- a/drivers/cpufreq/cpufreq_conservative.c
-> +++ b/drivers/cpufreq/cpufreq_conservative.c
-> @@ -47,7 +47,7 @@ static inline unsigned int get_freq_target(struct cs_dbs_tuners *cs_tuners,
->  static void cs_check_cpu(int cpu, unsigned int load)
->  {
->  	struct cs_cpu_dbs_info_s *dbs_info = &per_cpu(cs_cpu_dbs_info, cpu);
-> -	struct cpufreq_policy *policy = dbs_info->cdbs.policy;
-> +	struct cpufreq_policy *policy = dbs_info->cdbs.ccdbs->policy;
->  	struct dbs_data *dbs_data = policy->governor_data;
->  	struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
->  
-> @@ -106,22 +106,24 @@ static void cs_dbs_timer(struct work_struct *work)
->  {
->  	struct cs_cpu_dbs_info_s *dbs_info = container_of(work,
->  			struct cs_cpu_dbs_info_s, cdbs.dwork.work);
-> -	unsigned int cpu = dbs_info->cdbs.policy->cpu;
-> +	struct cpufreq_policy *policy = dbs_info->cdbs.ccdbs->policy;
-> +	unsigned int cpu = policy->cpu;
->  	struct cs_cpu_dbs_info_s *core_dbs_info = &per_cpu(cs_cpu_dbs_info,
->  			cpu);
-> -	struct dbs_data *dbs_data = dbs_info->cdbs.policy->governor_data;
-> +	struct dbs_data *dbs_data = policy->governor_data;
->  	struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
->  	int delay = delay_for_sampling_rate(cs_tuners->sampling_rate);
->  	bool modify_all = true;
->  
-> -	mutex_lock(&core_dbs_info->cdbs.timer_mutex);
-> -	if (!need_load_eval(&core_dbs_info->cdbs, cs_tuners->sampling_rate))
-> +	mutex_lock(&core_dbs_info->cdbs.ccdbs->timer_mutex);
-> +	if (!need_load_eval(core_dbs_info->cdbs.ccdbs,
-> +			    cs_tuners->sampling_rate))
->  		modify_all = false;
->  	else
->  		dbs_check_cpu(dbs_data, cpu);
->  
-> -	gov_queue_work(dbs_data, dbs_info->cdbs.policy, delay, modify_all);
-> -	mutex_unlock(&core_dbs_info->cdbs.timer_mutex);
-> +	gov_queue_work(dbs_data, policy, delay, modify_all);
-> +	mutex_unlock(&core_dbs_info->cdbs.ccdbs->timer_mutex);
->  }
->  
->  static int dbs_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
-> @@ -135,7 +137,7 @@ static int dbs_cpufreq_notifier(struct notifier_block *nb, unsigned long val,
->  	if (!dbs_info->enable)
->  		return 0;
->  
-> -	policy = dbs_info->cdbs.policy;
-> +	policy = dbs_info->cdbs.ccdbs->policy;
->  
->  	/*
->  	 * we only care if our internally tracked freq moves outside the 'valid'
-> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-> index c0566f86caed..72a92fa71ba5 100644
-> --- a/drivers/cpufreq/cpufreq_governor.c
-> +++ b/drivers/cpufreq/cpufreq_governor.c
-> @@ -35,7 +35,7 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
->  	struct cpu_dbs_info *cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
->  	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
->  	struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
-> -	struct cpufreq_policy *policy;
-> +	struct cpufreq_policy *policy = cdbs->ccdbs->policy;
->  	unsigned int sampling_rate;
->  	unsigned int max_load = 0;
->  	unsigned int ignore_nice;
-> @@ -60,8 +60,6 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
->  		ignore_nice = cs_tuners->ignore_nice_load;
->  	}
->  
-> -	policy = cdbs->policy;
-> -
->  	/* Get Absolute Load */
->  	for_each_cpu(j, policy->cpus) {
->  		struct cpu_dbs_info *j_cdbs;
-> @@ -209,17 +207,18 @@ static inline void gov_cancel_work(struct dbs_data *dbs_data,
->  }
->  
->  /* Will return if we need to evaluate cpu load again or not */
-> -bool need_load_eval(struct cpu_dbs_info *cdbs, unsigned int sampling_rate)
-> +bool need_load_eval(struct cpu_common_dbs_info *ccdbs,
-> +		    unsigned int sampling_rate)
->  {
-> -	if (policy_is_shared(cdbs->policy)) {
-> +	if (policy_is_shared(ccdbs->policy)) {
->  		ktime_t time_now = ktime_get();
-> -		s64 delta_us = ktime_us_delta(time_now, cdbs->time_stamp);
-> +		s64 delta_us = ktime_us_delta(time_now, ccdbs->time_stamp);
->  
->  		/* Do nothing if we recently have sampled */
->  		if (delta_us < (s64)(sampling_rate / 2))
->  			return false;
->  		else
-> -			cdbs->time_stamp = time_now;
-> +			ccdbs->time_stamp = time_now;
->  	}
->  
->  	return true;
-> @@ -238,6 +237,37 @@ static void set_sampling_rate(struct dbs_data *dbs_data,
->  	}
->  }
->  
-> +static int alloc_ccdbs(struct cpufreq_policy *policy,
-> +		       struct common_dbs_data *cdata)
-> +{
-> +	struct cpu_common_dbs_info *ccdbs;
-> +	int j;
-> +
-> +	/* Allocate memory for the common information for policy->cpus */
-> +	ccdbs = kzalloc(sizeof(*ccdbs), GFP_KERNEL);
-> +	if (!ccdbs)
-> +		return -ENOMEM;
-> +
-> +	/* Set ccdbs for all CPUs, online+offline */
-> +	for_each_cpu(j, policy->related_cpus)
-> +		cdata->get_cpu_cdbs(j)->ccdbs = ccdbs;
-> +
-> +	return 0;
-> +}
-> +
-> +static void free_ccdbs(struct cpufreq_policy *policy,
-> +		       struct common_dbs_data *cdata)
-> +{
-> +	struct cpu_dbs_info *cdbs = cdata->get_cpu_cdbs(policy->cpu);
-> +	struct cpu_common_dbs_info *ccdbs = cdbs->ccdbs;
-> +	int j;
-> +
-> +	for_each_cpu(j, policy->cpus)
-> +		cdata->get_cpu_cdbs(j)->ccdbs = NULL;
-> +
-> +	kfree(ccdbs);
-> +}
-> +
->  static int cpufreq_governor_init(struct cpufreq_policy *policy,
->  				 struct dbs_data *dbs_data,
->  				 struct common_dbs_data *cdata)
-> @@ -248,6 +278,11 @@ static int cpufreq_governor_init(struct cpufreq_policy *policy,
->  	if (dbs_data) {
->  		if (WARN_ON(have_governor_per_policy()))
->  			return -EINVAL;
-> +
-> +		ret = alloc_ccdbs(policy, cdata);
-> +		if (ret)
-> +			return ret;
-> +
->  		dbs_data->usage_count++;
->  		policy->governor_data = dbs_data;
->  		return 0;
-> @@ -257,12 +292,16 @@ static int cpufreq_governor_init(struct cpufreq_policy *policy,
->  	if (!dbs_data)
->  		return -ENOMEM;
->  
-> +	ret = alloc_ccdbs(policy, cdata);
-> +	if (ret)
-> +		goto free_dbs_data;
-> +
->  	dbs_data->cdata = cdata;
->  	dbs_data->usage_count = 1;
->  
->  	ret = cdata->init(dbs_data, !policy->governor->initialized);
->  	if (ret)
-> -		goto free_dbs_data;
-> +		goto free_ccdbs;
->  
->  	/* policy latency is in ns. Convert it to us first */
->  	latency = policy->cpuinfo.transition_latency / 1000;
-> @@ -299,6 +338,8 @@ static int cpufreq_governor_init(struct cpufreq_policy *policy,
->  	}
->  cdata_exit:
->  	cdata->exit(dbs_data, !policy->governor->initialized);
-> +free_ccdbs:
-> +	free_ccdbs(policy, cdata);
->  free_dbs_data:
->  	kfree(dbs_data);
->  	return ret;
-> @@ -322,6 +363,8 @@ static void cpufreq_governor_exit(struct cpufreq_policy *policy,
->  		cdata->exit(dbs_data, policy->governor->initialized == 1);
->  		kfree(dbs_data);
->  	}
-> +
-> +	free_ccdbs(policy, cdata);
->  }
->  
->  static int cpufreq_governor_start(struct cpufreq_policy *policy,
-> @@ -330,6 +373,7 @@ static int cpufreq_governor_start(struct cpufreq_policy *policy,
->  	struct common_dbs_data *cdata = dbs_data->cdata;
->  	unsigned int sampling_rate, ignore_nice, j, cpu = policy->cpu;
->  	struct cpu_dbs_info *cdbs = cdata->get_cpu_cdbs(cpu);
-> +	struct cpu_common_dbs_info *ccdbs = cdbs->ccdbs;
->  	int io_busy = 0;
->  
->  	if (!policy->cur)
-> @@ -348,11 +392,14 @@ static int cpufreq_governor_start(struct cpufreq_policy *policy,
->  		io_busy = od_tuners->io_is_busy;
->  	}
->  
-> +	ccdbs->policy = policy;
-> +	ccdbs->time_stamp = ktime_get();
-> +	mutex_init(&ccdbs->timer_mutex);
-> +
->  	for_each_cpu(j, policy->cpus) {
->  		struct cpu_dbs_info *j_cdbs = cdata->get_cpu_cdbs(j);
->  		unsigned int prev_load;
->  
-> -		j_cdbs->policy = policy;
->  		j_cdbs->prev_cpu_idle =
->  			get_cpu_idle_time(j, &j_cdbs->prev_cpu_wall, io_busy);
->  
-> @@ -364,7 +411,6 @@ static int cpufreq_governor_start(struct cpufreq_policy *policy,
->  		if (ignore_nice)
->  			j_cdbs->prev_cpu_nice = kcpustat_cpu(j).cpustat[CPUTIME_NICE];
->  
-> -		mutex_init(&j_cdbs->timer_mutex);
->  		INIT_DEFERRABLE_WORK(&j_cdbs->dwork, cdata->gov_dbs_timer);
->  	}
->  
-> @@ -384,9 +430,6 @@ static int cpufreq_governor_start(struct cpufreq_policy *policy,
->  		od_ops->powersave_bias_init_cpu(cpu);
->  	}
->  
-> -	/* Initiate timer time stamp */
-> -	cdbs->time_stamp = ktime_get();
-> -
->  	gov_queue_work(dbs_data, policy, delay_for_sampling_rate(sampling_rate),
->  		       true);
->  	return 0;
-> @@ -398,6 +441,9 @@ static void cpufreq_governor_stop(struct cpufreq_policy *policy,
->  	struct common_dbs_data *cdata = dbs_data->cdata;
->  	unsigned int cpu = policy->cpu;
->  	struct cpu_dbs_info *cdbs = cdata->get_cpu_cdbs(cpu);
-> +	struct cpu_common_dbs_info *ccdbs = cdbs->ccdbs;
-> +
-> +	gov_cancel_work(dbs_data, policy);
->  
->  	if (cdata->governor == GOV_CONSERVATIVE) {
->  		struct cs_cpu_dbs_info_s *cs_dbs_info =
-> @@ -406,10 +452,8 @@ static void cpufreq_governor_stop(struct cpufreq_policy *policy,
->  		cs_dbs_info->enable = 0;
->  	}
->  
-> -	gov_cancel_work(dbs_data, policy);
-> -
-> -	mutex_destroy(&cdbs->timer_mutex);
-> -	cdbs->policy = NULL;
-> +	ccdbs->policy = NULL;
-> +	mutex_destroy(&ccdbs->timer_mutex);
->  }
->  
->  static void cpufreq_governor_limits(struct cpufreq_policy *policy,
-> @@ -419,18 +463,18 @@ static void cpufreq_governor_limits(struct cpufreq_policy *policy,
->  	unsigned int cpu = policy->cpu;
->  	struct cpu_dbs_info *cdbs = cdata->get_cpu_cdbs(cpu);
->  
-> -	if (!cdbs->policy)
-> +	if (!cdbs->ccdbs || !cdbs->ccdbs->policy)
->  		return;
->  
-> -	mutex_lock(&cdbs->timer_mutex);
-> -	if (policy->max < cdbs->policy->cur)
-> -		__cpufreq_driver_target(cdbs->policy, policy->max,
-> +	mutex_lock(&cdbs->ccdbs->timer_mutex);
-> +	if (policy->max < cdbs->ccdbs->policy->cur)
-> +		__cpufreq_driver_target(cdbs->ccdbs->policy, policy->max,
->  					CPUFREQ_RELATION_H);
-> -	else if (policy->min > cdbs->policy->cur)
-> -		__cpufreq_driver_target(cdbs->policy, policy->min,
-> +	else if (policy->min > cdbs->ccdbs->policy->cur)
-> +		__cpufreq_driver_target(cdbs->ccdbs->policy, policy->min,
->  					CPUFREQ_RELATION_L);
->  	dbs_check_cpu(dbs_data, cpu);
-> -	mutex_unlock(&cdbs->timer_mutex);
-> +	mutex_unlock(&cdbs->ccdbs->timer_mutex);
->  }
->  
->  int cpufreq_governor_dbs(struct cpufreq_policy *policy,
-> diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-> index a0f8eb79ee6d..153412cafb05 100644
-> --- a/drivers/cpufreq/cpufreq_governor.h
-> +++ b/drivers/cpufreq/cpufreq_governor.h
-> @@ -128,6 +128,18 @@ static void *get_cpu_dbs_info_s(int cpu)				\
->   * cs_*: Conservative governor
->   */
->  
-> +/* Common to all CPUs of a policy */
-> +struct cpu_common_dbs_info {
-> +	struct cpufreq_policy *policy;
-> +	/*
-> +	 * percpu mutex that serializes governor limit change with gov_dbs_timer
-> +	 * invocation. We do not want gov_dbs_timer to run when user is changing
-> +	 * the governor or limits.
-> +	 */
-> +	struct mutex timer_mutex;
-> +	ktime_t time_stamp;
-> +};
-> +
->  /* Per cpu structures */
->  struct cpu_dbs_info {
->  	u64 prev_cpu_idle;
-> @@ -140,15 +152,8 @@ struct cpu_dbs_info {
->  	 * wake-up from idle.
->  	 */
->  	unsigned int prev_load;
-> -	struct cpufreq_policy *policy;
->  	struct delayed_work dwork;
-> -	/*
-> -	 * percpu mutex that serializes governor limit change with gov_dbs_timer
-> -	 * invocation. We do not want gov_dbs_timer to run when user is changing
-> -	 * the governor or limits.
-> -	 */
-> -	struct mutex timer_mutex;
-> -	ktime_t time_stamp;
-> +	struct cpu_common_dbs_info *ccdbs;
->  };
->  
->  struct od_cpu_dbs_info_s {
-> @@ -264,7 +269,8 @@ static ssize_t show_sampling_rate_min_gov_pol				\
->  extern struct mutex cpufreq_governor_lock;
->  
->  void dbs_check_cpu(struct dbs_data *dbs_data, int cpu);
-> -bool need_load_eval(struct cpu_dbs_info *cdbs, unsigned int sampling_rate);
-> +bool need_load_eval(struct cpu_common_dbs_info *ccdbs,
-> +		    unsigned int sampling_rate);
->  int cpufreq_governor_dbs(struct cpufreq_policy *policy,
->  		struct common_dbs_data *cdata, unsigned int event);
->  void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
-> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-> index d29c6f9c6e3e..651677cfa581 100644
-> --- a/drivers/cpufreq/cpufreq_ondemand.c
-> +++ b/drivers/cpufreq/cpufreq_ondemand.c
-> @@ -155,7 +155,7 @@ static void dbs_freq_increase(struct cpufreq_policy *policy, unsigned int freq)
->  static void od_check_cpu(int cpu, unsigned int load)
->  {
->  	struct od_cpu_dbs_info_s *dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
-> -	struct cpufreq_policy *policy = dbs_info->cdbs.policy;
-> +	struct cpufreq_policy *policy = dbs_info->cdbs.ccdbs->policy;
->  	struct dbs_data *dbs_data = policy->governor_data;
->  	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
->  
-> @@ -195,16 +195,18 @@ static void od_dbs_timer(struct work_struct *work)
->  {
->  	struct od_cpu_dbs_info_s *dbs_info =
->  		container_of(work, struct od_cpu_dbs_info_s, cdbs.dwork.work);
-> -	unsigned int cpu = dbs_info->cdbs.policy->cpu;
-> +	struct cpufreq_policy *policy = dbs_info->cdbs.ccdbs->policy;
-> +	unsigned int cpu = policy->cpu;
->  	struct od_cpu_dbs_info_s *core_dbs_info = &per_cpu(od_cpu_dbs_info,
->  			cpu);
-> -	struct dbs_data *dbs_data = dbs_info->cdbs.policy->governor_data;
-> +	struct dbs_data *dbs_data = policy->governor_data;
->  	struct od_dbs_tuners *od_tuners = dbs_data->tuners;
->  	int delay = 0, sample_type = core_dbs_info->sample_type;
->  	bool modify_all = true;
->  
-> -	mutex_lock(&core_dbs_info->cdbs.timer_mutex);
-> -	if (!need_load_eval(&core_dbs_info->cdbs, od_tuners->sampling_rate)) {
-> +	mutex_lock(&core_dbs_info->cdbs.ccdbs->timer_mutex);
-> +	if (!need_load_eval(core_dbs_info->cdbs.ccdbs,
-> +			    od_tuners->sampling_rate)) {
->  		modify_all = false;
->  		goto max_delay;
->  	}
-> @@ -213,8 +215,7 @@ static void od_dbs_timer(struct work_struct *work)
->  	core_dbs_info->sample_type = OD_NORMAL_SAMPLE;
->  	if (sample_type == OD_SUB_SAMPLE) {
->  		delay = core_dbs_info->freq_lo_jiffies;
-> -		__cpufreq_driver_target(core_dbs_info->cdbs.policy,
-> -					core_dbs_info->freq_lo,
-> +		__cpufreq_driver_target(policy, core_dbs_info->freq_lo,
->  					CPUFREQ_RELATION_H);
->  	} else {
->  		dbs_check_cpu(dbs_data, cpu);
-> @@ -230,8 +231,8 @@ static void od_dbs_timer(struct work_struct *work)
->  		delay = delay_for_sampling_rate(od_tuners->sampling_rate
->  				* core_dbs_info->rate_mult);
->  
-> -	gov_queue_work(dbs_data, dbs_info->cdbs.policy, delay, modify_all);
-> -	mutex_unlock(&core_dbs_info->cdbs.timer_mutex);
-> +	gov_queue_work(dbs_data, policy, delay, modify_all);
-> +	mutex_unlock(&core_dbs_info->cdbs.ccdbs->timer_mutex);
->  }
->  
->  /************************** sysfs interface ************************/
-> @@ -274,10 +275,10 @@ static void update_sampling_rate(struct dbs_data *dbs_data,
->  		dbs_info = &per_cpu(od_cpu_dbs_info, cpu);
->  		cpufreq_cpu_put(policy);
->  
-> -		mutex_lock(&dbs_info->cdbs.timer_mutex);
-> +		mutex_lock(&dbs_info->cdbs.ccdbs->timer_mutex);
->  
->  		if (!delayed_work_pending(&dbs_info->cdbs.dwork)) {
-> -			mutex_unlock(&dbs_info->cdbs.timer_mutex);
-> +			mutex_unlock(&dbs_info->cdbs.ccdbs->timer_mutex);
->  			continue;
->  		}
->  
-> @@ -286,15 +287,15 @@ static void update_sampling_rate(struct dbs_data *dbs_data,
->  
->  		if (time_before(next_sampling, appointed_at)) {
->  
-> -			mutex_unlock(&dbs_info->cdbs.timer_mutex);
-> +			mutex_unlock(&dbs_info->cdbs.ccdbs->timer_mutex);
->  			cancel_delayed_work_sync(&dbs_info->cdbs.dwork);
-> -			mutex_lock(&dbs_info->cdbs.timer_mutex);
-> +			mutex_lock(&dbs_info->cdbs.ccdbs->timer_mutex);
->  
-> -			gov_queue_work(dbs_data, dbs_info->cdbs.policy,
-> +			gov_queue_work(dbs_data, policy,
->  				       usecs_to_jiffies(new_rate), true);
->  
->  		}
-> -		mutex_unlock(&dbs_info->cdbs.timer_mutex);
-> +		mutex_unlock(&dbs_info->cdbs.ccdbs->timer_mutex);
->  	}
->  }
->  
-> @@ -557,13 +558,16 @@ static void od_set_powersave_bias(unsigned int powersave_bias)
->  
->  	get_online_cpus();
->  	for_each_online_cpu(cpu) {
-> +		struct cpu_common_dbs_info *ccdbs;
-> +
->  		if (cpumask_test_cpu(cpu, &done))
->  			continue;
->  
-> -		policy = per_cpu(od_cpu_dbs_info, cpu).cdbs.policy;
-> -		if (!policy)
-> +		ccdbs = per_cpu(od_cpu_dbs_info, cpu).cdbs.ccdbs;
-> +		if (!ccdbs)
->  			continue;
->  
-> +		policy = ccdbs->policy;
->  		cpumask_or(&done, &done, policy->cpus);
->  
->  		if (policy->governor != &cpufreq_gov_ondemand)
-
--- 
-Pengutronix e.K.             | Lucas Stach                 |
-Industrial Linux Solutions   | http://www.pengutronix.de/  |
-
+T24gMTEvMjcvMjAxNSAxMjozOSBQTSwgSmFuaSBOaWt1bGEgd3JvdGU6Cj4gT24gV2VkLCAxOCBO
+b3YgMjAxNSwgRGFuaWVsIFZldHRlciA8ZGFuaWVsQGZmd2xsLmNoPiB3cm90ZToKPj4gT24gV2Vk
+LCBOb3YgMTgsIDIwMTUgYXQgMDM6Mjg6MzhQTSArMDIwMCwgSW1yZSBEZWFrIHdyb3RlOgo+Pj4g
+T24ga2UsIDIwMTUtMTEtMTggYXQgMTI6NTYgKzAyMDAsIEltcmUgRGVhayB3cm90ZToKPj4+PiBU
+aGUgcnVudGltZSBQTSBjb3JlIGRvZXNuJ3QgdHJlYXQgRUJVU1kgYW5kIEVBR0FJTiByZXR2YWxz
+IGZyb20gdGhlIGRyaXZlcgo+Pj4+IHN1c3BlbmQgaG9va3MgYXMgZXJyb3JzLCBidXQgdGhleSBz
+dGlsbCBzaG93IHVwIGFzIGVycm9ycyBpbiBkbWVzZy4gVHVuZQo+Pj4+IHRoZW0gZG93bi4KPj4+
+Pgo+Pj4+IE9uZSBwcm9ibGVtIGNhdXNlZCBieSB0aGlzIHdhcyBub3RpY2VkIGJ5IERhbmllbDog
+dGhlIGk5MTUgZHJpdmVyCj4+Pj4gcmV0dXJucyBFQUdBSU4gdG8gc2lnbmFsIGEgdGVtcG9yYXJ5
+IGZhaWx1cmUgdG8gc3VzcGVuZCBhbmQgYXMgYSByZXF1ZXN0Cj4+Pj4gdG93YXJkcyB0aGUgUlBN
+IGNvcmUgZm9yIHNjaGVkdWxpbmcgYSBzdXNwZW5kIGFnYWluLiBUaGlzIGlzIGEgbm9ybWFsCj4+
+Pj4gZXZlbnQsIGJ1dCB0aGUgcmVzdWx0aW5nIGVycm9yIG1lc3NhZ2UgZmxhZ3MgYSBicmVha2Fn
+ZSBkdXJpbmcgdGhlCj4+Pj4gZHJpdmVyJ3MgYXV0b21hdGVkIHRlc3Rpbmcgd2hpY2ggcGFyc2Vz
+IGRtZXNnIGFuZCBwaWNrcyB1cCB0aGUgZXJyb3IuCj4+Pj4KPj4+PiB2MjoKPj4+PiAtIGZpeCBj
+b21waWxlIGJyZWFrZSB3aGVuIENPTkZJR19QTV9TTEVFUD1uICgwLWRheSBidWlsZGVyKQo+Pj4+
+Cj4+Pj4gUmVwb3J0ZWQtYnk6IERhbmllbCBWZXR0ZXIgPGRhbmllbC52ZXR0ZXJAaW50ZWwuY29t
+Pgo+Pj4+IFNpZ25lZC1vZmYtYnk6IEltcmUgRGVhayA8aW1yZS5kZWFrQGludGVsLmNvbT4KPj4+
+IEJ1Z3ppbGxhOiBodHRwczovL2J1Z3MuZnJlZWRlc2t0b3Aub3JnL3Nob3dfYnVnLmNnaT9pZD05
+Mjk5Mgo+PiBSZXZpZXdlZC1ieTogRGFuaWVsIFZldHRlciA8ZGFuaWVsLnZldHRlckBmZndsbC5j
+aD4KPj4KPj4gUmFmYWVsLCBjYW4geW91IHBsZWFzZSBwaWNrIHRoaXMgdXAgZm9yIDQuND8gVGhl
+IHNwdXJpb3VzIEtFUk5fRVJSIG5vaXNlCj4+IGluIGRtZXNnIGlzIGNhdXNpbmcgYSBsb3QgZm8g
+c3B1cmlvdXMgZmFpbCBpbiBvdXIgKHZlcnkgcmVjZW50bHkgcHV0IGludG8KPj4gcGxhY2UpIGk5
+MTUgQ0kgc3lzdGVtLgo+IFJhZmFlbCwgcGluZy4KCldlbGwsIHNvIEknbSBub3Qgc3VyZSBhYm91
+dCB0aGlzIG9uZS4KCkFuZCB0aGUgcXVlc3Rpb24gaXMgLT4KCj4+Pj4gLS0tCj4+Pj4gICBkcml2
+ZXJzL2Jhc2UvcG93ZXIvbWFpbi5jIHwgIDcgKysrKystLQo+Pj4+ICAgZHJpdmVycy9wY2kvcGNp
+LWRyaXZlci5jICB8ICAyICstCj4+Pj4gICBpbmNsdWRlL2xpbnV4L3BtLmggICAgICAgIHwgMTEg
+KysrKysrKysrLS0KPj4+PiAgIDMgZmlsZXMgY2hhbmdlZCwgMTUgaW5zZXJ0aW9ucygrKSwgNSBk
+ZWxldGlvbnMoLSkKPj4+Pgo+Pj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2Jhc2UvcG93ZXIvbWFp
+bi5jIGIvZHJpdmVycy9iYXNlL3Bvd2VyL21haW4uYwo+Pj4+IGluZGV4IDE3MTBjMjYuLjM5ZDIw
+OTAgMTAwNjQ0Cj4+Pj4gLS0tIGEvZHJpdmVycy9iYXNlL3Bvd2VyL21haW4uYwo+Pj4+ICsrKyBi
+L2RyaXZlcnMvYmFzZS9wb3dlci9tYWluLmMKPj4+PiBAQCAtMTY3OSw5ICsxNjc5LDEyIEBAIGlu
+dCBkcG1fc3VzcGVuZF9zdGFydChwbV9tZXNzYWdlX3Qgc3RhdGUpCj4+Pj4gICB9Cj4+Pj4gICBF
+WFBPUlRfU1lNQk9MX0dQTChkcG1fc3VzcGVuZF9zdGFydCk7Cj4+Pj4gICAKPj4+PiAtdm9pZCBf
+X3N1c3BlbmRfcmVwb3J0X3Jlc3VsdChjb25zdCBjaGFyICpmdW5jdGlvbiwgdm9pZCAqZm4sIGlu
+dCByZXQpCj4+Pj4gK3ZvaWQgX19zdXNwZW5kX3JlcG9ydF9yZXN1bHQoY29uc3QgY2hhciAqZnVu
+Y3Rpb24sIHZvaWQgKmZuLCBpbnQgcmV0LAo+Pj4+ICsJCQkgICAgIGJvb2wgcnVudGltZV9wbSkK
+Pj4+PiAgIHsKPj4+PiAtCWlmIChyZXQpCj4+Pj4gKwlpZiAocnVudGltZV9wbSAmJiAocmV0ID09
+IC1FQlVTWSB8fCByZXQgPT0gLUVBR0FJTikpCj4+Pj4gKwkJcHJpbnRrKEtFUk5fREVCVUcgIiVz
+KCk6ICVwRiByZXR1cm5zICVkXG4iLCBmdW5jdGlvbiwgZm4sIHJldCk7Cj4+Pj4gKwllbHNlIGlm
+IChyZXQpCj4+Pj4gICAJCXByaW50ayhLRVJOX0VSUiAiJXMoKTogJXBGIHJldHVybnMgJWRcbiIs
+IGZ1bmN0aW9uLCBmbiwgcmV0KTsKPj4+PiAgIH0KCi0+IHdoeSB5b3UgYXJlIGFkZGluZyBvdmVy
+aGVhZCB0byB0aGlzIGZ1bmN0aW9uLCBpbnN0ZWFkIG9mIC0tPgoKPj4+PiAgIEVYUE9SVF9TWU1C
+T0xfR1BMKF9fc3VzcGVuZF9yZXBvcnRfcmVzdWx0KTsKPj4+PiBkaWZmIC0tZ2l0IGEvZHJpdmVy
+cy9wY2kvcGNpLWRyaXZlci5jIGIvZHJpdmVycy9wY2kvcGNpLWRyaXZlci5jCj4+Pj4gaW5kZXgg
+MTA4YTMxMS4uOTU2OTU3MiAxMDA2NDQKPj4+PiAtLS0gYS9kcml2ZXJzL3BjaS9wY2ktZHJpdmVy
+LmMKPj4+PiArKysgYi9kcml2ZXJzL3BjaS9wY2ktZHJpdmVyLmMKPj4+PiBAQCAtMTE0Miw3ICsx
+MTQyLDcgQEAgc3RhdGljIGludCBwY2lfcG1fcnVudGltZV9zdXNwZW5kKHN0cnVjdCBkZXZpY2Ug
+KmRldikKPj4+PiAgIAlwY2lfZGV2LT5zdGF0ZV9zYXZlZCA9IGZhbHNlOwo+Pj4+ICAgCXBjaV9k
+ZXYtPm5vX2QzY29sZCA9IGZhbHNlOwo+Pj4+ICAgCWVycm9yID0gcG0tPnJ1bnRpbWVfc3VzcGVu
+ZChkZXYpOwo+Pj4+IC0Jc3VzcGVuZF9yZXBvcnRfcmVzdWx0KHBtLT5ydW50aW1lX3N1c3BlbmQs
+IGVycm9yKTsKPj4+PiArCXJwbV9zdXNwZW5kX3JlcG9ydF9yZXN1bHQocG0tPnJ1bnRpbWVfc3Vz
+cGVuZCwgZXJyb3IpOwoKLS0+IHJlcGxhY2luZyB0aGUgc3VzcGVuZF9yZXBvcnRfcmVzdWx0KCkg
+YWJvdmUgd2l0aCBhIGRpcmVjdCBwcmludGsoKSAKaW4gdGhlIGlmIChlcnJvcikgYmxvY2sgYmVs
+b3cuCgpTdXJlbHksIHN1c3BlbmRfcmVwb3J0X3Jlc3VsdCgpIHdhcyBub3QgZGVzaWduZWQgd2l0
+aCBydW50aW1lIFBNIGluIG1pbmQgCmFuZCBpdCB3YXMgYSBtaXN0YWtlIHRvIHVzZSBpdCBoZXJl
+LiAgSXQganVzdCBzZWVtZWQgdG8gZG8gdGhlIHJpZ2h0IAp0aGluZywgYnV0IGl0IGNsZWFybHkg
+ZG9lc24ndC4KCj4+Pj4gICAJaWYgKGVycm9yKQo+Pj4+ICAgCQlyZXR1cm4gZXJyb3I7Cj4+Pj4g
+ICAJaWYgKCFwY2lfZGV2LT5kM2NvbGRfYWxsb3dlZCkKPj4+PiBkaWZmIC0tZ2l0IGEvaW5jbHVk
+ZS9saW51eC9wbS5oIGIvaW5jbHVkZS9saW51eC9wbS5oCj4+Pj4gaW5kZXggMzVkNTk5ZS4uNTRm
+MzdlMyAxMDA2NDQKPj4+PiAtLS0gYS9pbmNsdWRlL2xpbnV4L3BtLmgKPj4+PiArKysgYi9pbmNs
+dWRlL2xpbnV4L3BtLmgKPj4+PiBAQCAtNzAyLDExICs3MDIsMTcgQEAgZXh0ZXJuIGludCBkcG1f
+c3VzcGVuZF9sYXRlKHBtX21lc3NhZ2VfdCBzdGF0ZSk7Cj4+Pj4gICBleHRlcm4gaW50IGRwbV9z
+dXNwZW5kKHBtX21lc3NhZ2VfdCBzdGF0ZSk7Cj4+Pj4gICBleHRlcm4gaW50IGRwbV9wcmVwYXJl
+KHBtX21lc3NhZ2VfdCBzdGF0ZSk7Cj4+Pj4gICAKPj4+PiAtZXh0ZXJuIHZvaWQgX19zdXNwZW5k
+X3JlcG9ydF9yZXN1bHQoY29uc3QgY2hhciAqZnVuY3Rpb24sIHZvaWQgKmZuLCBpbnQgcmV0KTsK
+Pj4+PiArZXh0ZXJuIHZvaWQgX19zdXNwZW5kX3JlcG9ydF9yZXN1bHQoY29uc3QgY2hhciAqZnVu
+Y3Rpb24sIHZvaWQgKmZuLCBpbnQgcmV0LAo+Pj4+ICsJCQkJICAgIGJvb2wgcnVudGltZV9wbSk7
+Cj4+Pj4gICAKPj4+PiAgICNkZWZpbmUgc3VzcGVuZF9yZXBvcnRfcmVzdWx0KGZuLCByZXQpCQkJ
+CQlcCj4+Pj4gICAJZG8gewkJCQkJCQkJXAo+Pj4+IC0JCV9fc3VzcGVuZF9yZXBvcnRfcmVzdWx0
+KF9fZnVuY19fLCBmbiwgcmV0KTsJCVwKPj4+PiArCQlfX3N1c3BlbmRfcmVwb3J0X3Jlc3VsdChf
+X2Z1bmNfXywgZm4sIHJldCwgZmFsc2UpOwlcCj4+Pj4gKwl9IHdoaWxlICgwKQo+Pj4+ICsKPj4+
+PiArI2RlZmluZSBycG1fc3VzcGVuZF9yZXBvcnRfcmVzdWx0KGZuLCByZXQpCQkJCVwKPj4+PiAr
+CWRvIHsJCQkJCQkJCVwKPj4+PiArCQlfX3N1c3BlbmRfcmVwb3J0X3Jlc3VsdChfX2Z1bmNfXywg
+Zm4sIHJldCwgdHJ1ZSk7CVwKPj4+PiAgIAl9IHdoaWxlICgwKQo+Pj4+ICAgCj4+Pj4gICBleHRl
+cm4gaW50IGRldmljZV9wbV93YWl0X2Zvcl9kZXYoc3RydWN0IGRldmljZSAqc3ViLCBzdHJ1Y3Qg
+ZGV2aWNlICpkZXYpOwo+Pj4+IEBAIC03NDQsNiArNzUwLDcgQEAgc3RhdGljIGlubGluZSBpbnQg
+ZHBtX3N1c3BlbmRfc3RhcnQocG1fbWVzc2FnZV90IHN0YXRlKQo+Pj4+ICAgfQo+Pj4+ICAgCj4+
+Pj4gICAjZGVmaW5lIHN1c3BlbmRfcmVwb3J0X3Jlc3VsdChmbiwgcmV0KQkJZG8ge30gd2hpbGUg
+KDApCj4+Pj4gKyNkZWZpbmUgcnBtX3N1c3BlbmRfcmVwb3J0X3Jlc3VsdChmbiwgcmV0KQlkbyB7
+fSB3aGlsZSAoMCkKPj4+PiAgIAo+Pj4+ICAgc3RhdGljIGlubGluZSBpbnQgZGV2aWNlX3BtX3dh
+aXRfZm9yX2RldihzdHJ1Y3QgZGV2aWNlICphLCBzdHJ1Y3QgZGV2aWNlICpiKQo+Pj4+ICAgewoK
+QlRXLCBpZiB5b3UncmUgY2hhbmdpbmcgUE0gY29kZSwgaXQgaXMgZ29vZCB0byBDQyBsaW51eC1w
+bSB0b28gKG5vdyAKZG9uZSkgYW5kIGlmIHlvdSdyZSBjaGFuZ2luZyBQQ0kgY29kZSwgaXQgaXMg
+bWFuZGF0b3J5IHRvIENDIGxpbnV4LXBjaSAKYW5kIHRoZSBQQ0kgbWFpbnRhaW5lciAobm93IGRv
+bmUgdG9vKS4KClRoYW5rcywKUmFmYWVsCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fXwpJbnRlbC1nZnggbWFpbGluZyBsaXN0CkludGVsLWdmeEBsaXN0cy5m
+cmVlZGVza3RvcC5vcmcKaHR0cDovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3Rp
+bmZvL2ludGVsLWdmeAo=
