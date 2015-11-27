@@ -1,118 +1,67 @@
-From: Caesar Wang <wxt@rock-chips.com>
-Subject: [PATCH v1 5/5] thermal: rockchip: Support the RK3399 SoCs in thermal driver
-Date: Fri, 27 Nov 2015 10:52:26 +0800
-Message-ID: <1448592746-2129-6-git-send-email-wxt@rock-chips.com>
-References: <1448592746-2129-1-git-send-email-wxt@rock-chips.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1448592746-2129-1-git-send-email-wxt@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-rockchip@lists.infradead.org, Heiko Stuebner <heiko@sntech.de>, Dan Carpenter <dan.carpenter@oracle.com>, Caesar Wang <wxt@rock-chips.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [PATCH] [v4] x86, suspend: Save/restore extra MSR registers for suspend
+Date: Thu, 26 Nov 2015 19:28:38 -0800
+Message-ID: <001801d128c3$b72f7710$258e6530$@net>
+References: <1440645507-17768-1-git-send-email-yu.c.chen@intel.com> <20150917053004.GB6665@amd> <36DF59CE26D8EE47B0655C516E9CE6402865A403@shsmsx102.ccr.corp.intel.com> <001701d102c4$1ac2bab0$50483010$@net> <36DF59CE26D8EE47B0655C516E9CE6402865AA02@shsmsx102.ccr.corp.intel.com> <002c01d1043c$133ba580$39b2f080$@net> <36DF59CE26D8EE47B0655C516E9CE64028662059@shsmsx102.ccr.corp.intel.com> <000901d118a8$8fda8450$af8f8cf0$@net> <36DF59CE26D8EE47B0655C516E9CE6402867326B@shsmsx102.ccr.corp.intel.com> <001901d1247c$043f3190$0cbd94b0$@net>
+Mime-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cmta9.telus.net ([209.171.16.82]:54964 "EHLO cmta9.telus.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753767AbbK0D2p (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 26 Nov 2015 22:28:45 -0500
+In-Reply-To: <001901d1247c$043f3190$0cbd94b0$@net>
+Content-Language: en-ca
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "'Chen, Yu C'" <yu.c.chen@intel.com>
+Cc: "'Wysocki, Rafael J'" <rafael.j.wysocki@intel.com>, tglx@linutronix.de, hpa@zytor.com, bp@alien8.de, "'Zhang, Rui'" <rui.zhang@intel.com>, linux-pm@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, "'Brown, Len'" <len.brown@intel.com>, 'Ingo Molnar' <mingo@kernel.org>, 'Pavel Machek' <pavel@ucw.cz>, "'Pandruvada, Srinivas'" <srinivas.pandruvada@intel.com>, 'Doug Smythies' <dsmythies@telus.net>
 
-The RK3399 SoCs have two Temperature Sensors, channel 0 is for CPU.
-channel 1 is for GPU.
+On 2015.11.21 08:45 Doug Smythies wrote:
+>On 2015.11.12 01:42 Chen, Yu C wrote:
+>> On 2015.11.06 11:34 Doug Smythies wrote: 
 
-Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+[cut]
 
----
+>> rdmsr_safe  might be better,
 
-Changes in v1:
-- fix a irq ack is similar with RK3228 SoCs.
+> I'll look into it, thanks.
 
- drivers/thermal/rockchip_thermal.c | 66 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 66 insertions(+)
+>> you can refer to acpi_throttling_rdmsr
 
-diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index 37772dd..8e02b86 100644
---- a/drivers/thermal/rockchip_thermal.c
-+++ b/drivers/thermal/rockchip_thermal.c
-@@ -291,6 +291,44 @@ static const struct tsadc_table v3_code_table[] = {
- 	{TSADCV3_DATA_MASK, 125000},
- };
- 
-+static const struct tsadc_table v4_code_table[] = {
-+	{TSADCV3_DATA_MASK, -40000},
-+	{431, -40000},
-+	{426, -35000},
-+	{421, -30000},
-+	{415, -25000},
-+	{410, -20000},
-+	{405, -15000},
-+	{399, -10000},
-+	{394, -5000},
-+	{389, 0},
-+	{383, 5000},
-+	{378, 10000},
-+	{373, 15000},
-+	{367, 20000},
-+	{362, 25000},
-+	{357, 30000},
-+	{351, 35000},
-+	{346, 40000},
-+	{340, 45000},
-+	{335, 50000},
-+	{330, 55000},
-+	{324, 60000},
-+	{319, 65000},
-+	{313, 70000},
-+	{308, 75000},
-+	{302, 80000},
-+	{297, 85000},
-+	{291, 90000},
-+	{286, 95000},
-+	{281, 100000},
-+	{275, 105000},
-+	{270, 110000},
-+	{264, 115000},
-+	{259, 120000},
-+	{253, 125000},
-+};
-+
- static u32 rk_tsadcv2_temp_to_code(struct chip_tsadc_table table,
- 				   int temp)
- {
-@@ -554,6 +592,30 @@ static const struct rockchip_tsadc_chip rk3368_tsadc_data = {
- 	},
- };
- 
-+static const struct rockchip_tsadc_chip rk3399_tsadc_data = {
-+	.chn_id[SENSOR_CPU] = 0, /* cpu sensor is channel 0 */
-+	.chn_id[SENSOR_GPU] = 1, /* gpu sensor is channel 1 */
-+	.chn_num = 2, /* two channels for tsadc */
-+
-+	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
-+	.tshut_polarity = TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
-+	.tshut_temp = 95000,
-+
-+	.initialize = rk_tsadcv2_initialize,
-+	.irq_ack = rk_tsadcv1_irq_ack,
-+	.control = rk_tsadcv2_control,
-+	.get_temp = rk_tsadcv2_get_temp,
-+	.set_tshut_temp = rk_tsadcv2_tshut_temp,
-+	.set_tshut_mode = rk_tsadcv2_tshut_mode,
-+
-+	.table = {
-+		.id = v4_code_table,
-+		.length = ARRAY_SIZE(v4_code_table),
-+		.data_mask = TSADCV3_DATA_MASK,
-+		.mode = ADC_DECREMENT,
-+	},
-+};
-+
- static const struct of_device_id of_rockchip_thermal_match[] = {
- 	{
- 		.compatible = "rockchip,rk3228-tsadc",
-@@ -567,6 +629,10 @@ static const struct of_device_id of_rockchip_thermal_match[] = {
- 		.compatible = "rockchip,rk3368-tsadc",
- 		.data = (void *)&rk3368_tsadc_data,
- 	},
-+	{
-+		.compatible = "rockchip,rk3399-tsadc",
-+		.data = (void *)&rk3399_tsadc_data,
-+	},
- 	{ /* end */ },
- };
- MODULE_DEVICE_TABLE(of, of_rockchip_thermal_match);
--- 
-1.9.1
+> I don't understand.
+
+>> and I'm OK with this code, are you planning to send a formal patch? 
+
+> The delay here is because I have always thought that some actual load
+> content needs to be brought back to the intel_pstate driver, which would
+> (or at least should) eliminate the need for this patch.
+
+> Anyway, and at least for the interim, I'll try to make and submit a formal version.
+
+I made a mistake in my initial testing. I put a 100% load on CPU 7 and then
+cycled through all the clock modulation values to show that my test version of
+a possible patch compensated / normalized the Clock Modulation. Indeed, if the
+system is already asking for the maximum pstate, it will stay there. However,
+whenever the load drops, the target pstate will drop to minimum and it will
+never kick back up again, regardless of load.
+
+I am returning to my initial assertion copied below:
+
+>>>>>>> The current version of the intel_pstate driver is incompatible
+>>>>>>> with any use of Clock Modulation, always resulting in driving the
+>>>>>>> target pstate to the minimum, regardless of load. The result is
+>>>>>>> the apparent CPU frequency stuck at minimum * modulation percent.
+>>>>>>
+>>>>>>> The acpi-cpufreq driver works fine with Clock Modulation,
+>>>>>>> resulting in desired frequency * modulation percent.
+
+Chen,
+
+Thanks though for the suggestion to try normalizing.
+
+... Doug
+
+
