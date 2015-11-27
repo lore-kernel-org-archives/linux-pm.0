@@ -1,115 +1,193 @@
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Subject: Re: [PATCH v2] PCI / PM: tune down RPM suspend error
+From: Imre Deak <imre.deak@intel.com>
+Subject: Re: [Intel-gfx] [PATCH v2] PCI / PM: tune down RPM suspend error
  message with EBUSY and EAGAIN retval
-Date: Fri, 27 Nov 2015 15:44:48 +0100
-Message-ID: <56586C60.5050104@intel.com>
+Date: Fri, 27 Nov 2015 16:56:02 +0200
+Message-ID: <1448636162.29201.6.camel@intel.com>
 References: <1447838178-15308-1-git-send-email-imre.deak@intel.com>
- <1447844188-21999-1-git-send-email-imre.deak@intel.com>
- <1447853318.14073.2.camel@intel.com>
- <20151118141943.GU20799@phenom.ffwll.local> <878u5j7jt9.fsf@intel.com>
+	 <1447844188-21999-1-git-send-email-imre.deak@intel.com>
+	 <1447853318.14073.2.camel@intel.com>
+	 <20151118141943.GU20799@phenom.ffwll.local> <878u5j7jt9.fsf@intel.com>
+	 <56586C60.5050104@intel.com>
+Reply-To: imre.deak@intel.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-In-Reply-To: <878u5j7jt9.fsf@intel.com>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: Jani Nikula <jani.nikula@linux.intel.com>, Daniel Vetter <daniel@ffwll.ch>, Imre Deak <imre.deak@intel.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, intel-gfx@lists.freedesktop.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Vetter <daniel.vetter@ffwll.ch>, Bjorn Helgaas <bhelgaas@google.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([192.55.52.115]:64927 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753608AbbK0O4a (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 27 Nov 2015 09:56:30 -0500
+In-Reply-To: <56586C60.5050104@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Jani Nikula <jani.nikula@linux.intel.com>, Daniel Vetter <daniel@ffwll.ch>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx@lists.freedesktop.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>
 
-T24gMTEvMjcvMjAxNSAxMjozOSBQTSwgSmFuaSBOaWt1bGEgd3JvdGU6Cj4gT24gV2VkLCAxOCBO
-b3YgMjAxNSwgRGFuaWVsIFZldHRlciA8ZGFuaWVsQGZmd2xsLmNoPiB3cm90ZToKPj4gT24gV2Vk
-LCBOb3YgMTgsIDIwMTUgYXQgMDM6Mjg6MzhQTSArMDIwMCwgSW1yZSBEZWFrIHdyb3RlOgo+Pj4g
-T24ga2UsIDIwMTUtMTEtMTggYXQgMTI6NTYgKzAyMDAsIEltcmUgRGVhayB3cm90ZToKPj4+PiBU
-aGUgcnVudGltZSBQTSBjb3JlIGRvZXNuJ3QgdHJlYXQgRUJVU1kgYW5kIEVBR0FJTiByZXR2YWxz
-IGZyb20gdGhlIGRyaXZlcgo+Pj4+IHN1c3BlbmQgaG9va3MgYXMgZXJyb3JzLCBidXQgdGhleSBz
-dGlsbCBzaG93IHVwIGFzIGVycm9ycyBpbiBkbWVzZy4gVHVuZQo+Pj4+IHRoZW0gZG93bi4KPj4+
-Pgo+Pj4+IE9uZSBwcm9ibGVtIGNhdXNlZCBieSB0aGlzIHdhcyBub3RpY2VkIGJ5IERhbmllbDog
-dGhlIGk5MTUgZHJpdmVyCj4+Pj4gcmV0dXJucyBFQUdBSU4gdG8gc2lnbmFsIGEgdGVtcG9yYXJ5
-IGZhaWx1cmUgdG8gc3VzcGVuZCBhbmQgYXMgYSByZXF1ZXN0Cj4+Pj4gdG93YXJkcyB0aGUgUlBN
-IGNvcmUgZm9yIHNjaGVkdWxpbmcgYSBzdXNwZW5kIGFnYWluLiBUaGlzIGlzIGEgbm9ybWFsCj4+
-Pj4gZXZlbnQsIGJ1dCB0aGUgcmVzdWx0aW5nIGVycm9yIG1lc3NhZ2UgZmxhZ3MgYSBicmVha2Fn
-ZSBkdXJpbmcgdGhlCj4+Pj4gZHJpdmVyJ3MgYXV0b21hdGVkIHRlc3Rpbmcgd2hpY2ggcGFyc2Vz
-IGRtZXNnIGFuZCBwaWNrcyB1cCB0aGUgZXJyb3IuCj4+Pj4KPj4+PiB2MjoKPj4+PiAtIGZpeCBj
-b21waWxlIGJyZWFrZSB3aGVuIENPTkZJR19QTV9TTEVFUD1uICgwLWRheSBidWlsZGVyKQo+Pj4+
-Cj4+Pj4gUmVwb3J0ZWQtYnk6IERhbmllbCBWZXR0ZXIgPGRhbmllbC52ZXR0ZXJAaW50ZWwuY29t
-Pgo+Pj4+IFNpZ25lZC1vZmYtYnk6IEltcmUgRGVhayA8aW1yZS5kZWFrQGludGVsLmNvbT4KPj4+
-IEJ1Z3ppbGxhOiBodHRwczovL2J1Z3MuZnJlZWRlc2t0b3Aub3JnL3Nob3dfYnVnLmNnaT9pZD05
-Mjk5Mgo+PiBSZXZpZXdlZC1ieTogRGFuaWVsIFZldHRlciA8ZGFuaWVsLnZldHRlckBmZndsbC5j
-aD4KPj4KPj4gUmFmYWVsLCBjYW4geW91IHBsZWFzZSBwaWNrIHRoaXMgdXAgZm9yIDQuND8gVGhl
-IHNwdXJpb3VzIEtFUk5fRVJSIG5vaXNlCj4+IGluIGRtZXNnIGlzIGNhdXNpbmcgYSBsb3QgZm8g
-c3B1cmlvdXMgZmFpbCBpbiBvdXIgKHZlcnkgcmVjZW50bHkgcHV0IGludG8KPj4gcGxhY2UpIGk5
-MTUgQ0kgc3lzdGVtLgo+IFJhZmFlbCwgcGluZy4KCldlbGwsIHNvIEknbSBub3Qgc3VyZSBhYm91
-dCB0aGlzIG9uZS4KCkFuZCB0aGUgcXVlc3Rpb24gaXMgLT4KCj4+Pj4gLS0tCj4+Pj4gICBkcml2
-ZXJzL2Jhc2UvcG93ZXIvbWFpbi5jIHwgIDcgKysrKystLQo+Pj4+ICAgZHJpdmVycy9wY2kvcGNp
-LWRyaXZlci5jICB8ICAyICstCj4+Pj4gICBpbmNsdWRlL2xpbnV4L3BtLmggICAgICAgIHwgMTEg
-KysrKysrKysrLS0KPj4+PiAgIDMgZmlsZXMgY2hhbmdlZCwgMTUgaW5zZXJ0aW9ucygrKSwgNSBk
-ZWxldGlvbnMoLSkKPj4+Pgo+Pj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2Jhc2UvcG93ZXIvbWFp
-bi5jIGIvZHJpdmVycy9iYXNlL3Bvd2VyL21haW4uYwo+Pj4+IGluZGV4IDE3MTBjMjYuLjM5ZDIw
-OTAgMTAwNjQ0Cj4+Pj4gLS0tIGEvZHJpdmVycy9iYXNlL3Bvd2VyL21haW4uYwo+Pj4+ICsrKyBi
-L2RyaXZlcnMvYmFzZS9wb3dlci9tYWluLmMKPj4+PiBAQCAtMTY3OSw5ICsxNjc5LDEyIEBAIGlu
-dCBkcG1fc3VzcGVuZF9zdGFydChwbV9tZXNzYWdlX3Qgc3RhdGUpCj4+Pj4gICB9Cj4+Pj4gICBF
-WFBPUlRfU1lNQk9MX0dQTChkcG1fc3VzcGVuZF9zdGFydCk7Cj4+Pj4gICAKPj4+PiAtdm9pZCBf
-X3N1c3BlbmRfcmVwb3J0X3Jlc3VsdChjb25zdCBjaGFyICpmdW5jdGlvbiwgdm9pZCAqZm4sIGlu
-dCByZXQpCj4+Pj4gK3ZvaWQgX19zdXNwZW5kX3JlcG9ydF9yZXN1bHQoY29uc3QgY2hhciAqZnVu
-Y3Rpb24sIHZvaWQgKmZuLCBpbnQgcmV0LAo+Pj4+ICsJCQkgICAgIGJvb2wgcnVudGltZV9wbSkK
-Pj4+PiAgIHsKPj4+PiAtCWlmIChyZXQpCj4+Pj4gKwlpZiAocnVudGltZV9wbSAmJiAocmV0ID09
-IC1FQlVTWSB8fCByZXQgPT0gLUVBR0FJTikpCj4+Pj4gKwkJcHJpbnRrKEtFUk5fREVCVUcgIiVz
-KCk6ICVwRiByZXR1cm5zICVkXG4iLCBmdW5jdGlvbiwgZm4sIHJldCk7Cj4+Pj4gKwllbHNlIGlm
-IChyZXQpCj4+Pj4gICAJCXByaW50ayhLRVJOX0VSUiAiJXMoKTogJXBGIHJldHVybnMgJWRcbiIs
-IGZ1bmN0aW9uLCBmbiwgcmV0KTsKPj4+PiAgIH0KCi0+IHdoeSB5b3UgYXJlIGFkZGluZyBvdmVy
-aGVhZCB0byB0aGlzIGZ1bmN0aW9uLCBpbnN0ZWFkIG9mIC0tPgoKPj4+PiAgIEVYUE9SVF9TWU1C
-T0xfR1BMKF9fc3VzcGVuZF9yZXBvcnRfcmVzdWx0KTsKPj4+PiBkaWZmIC0tZ2l0IGEvZHJpdmVy
-cy9wY2kvcGNpLWRyaXZlci5jIGIvZHJpdmVycy9wY2kvcGNpLWRyaXZlci5jCj4+Pj4gaW5kZXgg
-MTA4YTMxMS4uOTU2OTU3MiAxMDA2NDQKPj4+PiAtLS0gYS9kcml2ZXJzL3BjaS9wY2ktZHJpdmVy
-LmMKPj4+PiArKysgYi9kcml2ZXJzL3BjaS9wY2ktZHJpdmVyLmMKPj4+PiBAQCAtMTE0Miw3ICsx
-MTQyLDcgQEAgc3RhdGljIGludCBwY2lfcG1fcnVudGltZV9zdXNwZW5kKHN0cnVjdCBkZXZpY2Ug
-KmRldikKPj4+PiAgIAlwY2lfZGV2LT5zdGF0ZV9zYXZlZCA9IGZhbHNlOwo+Pj4+ICAgCXBjaV9k
-ZXYtPm5vX2QzY29sZCA9IGZhbHNlOwo+Pj4+ICAgCWVycm9yID0gcG0tPnJ1bnRpbWVfc3VzcGVu
-ZChkZXYpOwo+Pj4+IC0Jc3VzcGVuZF9yZXBvcnRfcmVzdWx0KHBtLT5ydW50aW1lX3N1c3BlbmQs
-IGVycm9yKTsKPj4+PiArCXJwbV9zdXNwZW5kX3JlcG9ydF9yZXN1bHQocG0tPnJ1bnRpbWVfc3Vz
-cGVuZCwgZXJyb3IpOwoKLS0+IHJlcGxhY2luZyB0aGUgc3VzcGVuZF9yZXBvcnRfcmVzdWx0KCkg
-YWJvdmUgd2l0aCBhIGRpcmVjdCBwcmludGsoKSAKaW4gdGhlIGlmIChlcnJvcikgYmxvY2sgYmVs
-b3cuCgpTdXJlbHksIHN1c3BlbmRfcmVwb3J0X3Jlc3VsdCgpIHdhcyBub3QgZGVzaWduZWQgd2l0
-aCBydW50aW1lIFBNIGluIG1pbmQgCmFuZCBpdCB3YXMgYSBtaXN0YWtlIHRvIHVzZSBpdCBoZXJl
-LiAgSXQganVzdCBzZWVtZWQgdG8gZG8gdGhlIHJpZ2h0IAp0aGluZywgYnV0IGl0IGNsZWFybHkg
-ZG9lc24ndC4KCj4+Pj4gICAJaWYgKGVycm9yKQo+Pj4+ICAgCQlyZXR1cm4gZXJyb3I7Cj4+Pj4g
-ICAJaWYgKCFwY2lfZGV2LT5kM2NvbGRfYWxsb3dlZCkKPj4+PiBkaWZmIC0tZ2l0IGEvaW5jbHVk
-ZS9saW51eC9wbS5oIGIvaW5jbHVkZS9saW51eC9wbS5oCj4+Pj4gaW5kZXggMzVkNTk5ZS4uNTRm
-MzdlMyAxMDA2NDQKPj4+PiAtLS0gYS9pbmNsdWRlL2xpbnV4L3BtLmgKPj4+PiArKysgYi9pbmNs
-dWRlL2xpbnV4L3BtLmgKPj4+PiBAQCAtNzAyLDExICs3MDIsMTcgQEAgZXh0ZXJuIGludCBkcG1f
-c3VzcGVuZF9sYXRlKHBtX21lc3NhZ2VfdCBzdGF0ZSk7Cj4+Pj4gICBleHRlcm4gaW50IGRwbV9z
-dXNwZW5kKHBtX21lc3NhZ2VfdCBzdGF0ZSk7Cj4+Pj4gICBleHRlcm4gaW50IGRwbV9wcmVwYXJl
-KHBtX21lc3NhZ2VfdCBzdGF0ZSk7Cj4+Pj4gICAKPj4+PiAtZXh0ZXJuIHZvaWQgX19zdXNwZW5k
-X3JlcG9ydF9yZXN1bHQoY29uc3QgY2hhciAqZnVuY3Rpb24sIHZvaWQgKmZuLCBpbnQgcmV0KTsK
-Pj4+PiArZXh0ZXJuIHZvaWQgX19zdXNwZW5kX3JlcG9ydF9yZXN1bHQoY29uc3QgY2hhciAqZnVu
-Y3Rpb24sIHZvaWQgKmZuLCBpbnQgcmV0LAo+Pj4+ICsJCQkJICAgIGJvb2wgcnVudGltZV9wbSk7
-Cj4+Pj4gICAKPj4+PiAgICNkZWZpbmUgc3VzcGVuZF9yZXBvcnRfcmVzdWx0KGZuLCByZXQpCQkJ
-CQlcCj4+Pj4gICAJZG8gewkJCQkJCQkJXAo+Pj4+IC0JCV9fc3VzcGVuZF9yZXBvcnRfcmVzdWx0
-KF9fZnVuY19fLCBmbiwgcmV0KTsJCVwKPj4+PiArCQlfX3N1c3BlbmRfcmVwb3J0X3Jlc3VsdChf
-X2Z1bmNfXywgZm4sIHJldCwgZmFsc2UpOwlcCj4+Pj4gKwl9IHdoaWxlICgwKQo+Pj4+ICsKPj4+
-PiArI2RlZmluZSBycG1fc3VzcGVuZF9yZXBvcnRfcmVzdWx0KGZuLCByZXQpCQkJCVwKPj4+PiAr
-CWRvIHsJCQkJCQkJCVwKPj4+PiArCQlfX3N1c3BlbmRfcmVwb3J0X3Jlc3VsdChfX2Z1bmNfXywg
-Zm4sIHJldCwgdHJ1ZSk7CVwKPj4+PiAgIAl9IHdoaWxlICgwKQo+Pj4+ICAgCj4+Pj4gICBleHRl
-cm4gaW50IGRldmljZV9wbV93YWl0X2Zvcl9kZXYoc3RydWN0IGRldmljZSAqc3ViLCBzdHJ1Y3Qg
-ZGV2aWNlICpkZXYpOwo+Pj4+IEBAIC03NDQsNiArNzUwLDcgQEAgc3RhdGljIGlubGluZSBpbnQg
-ZHBtX3N1c3BlbmRfc3RhcnQocG1fbWVzc2FnZV90IHN0YXRlKQo+Pj4+ICAgfQo+Pj4+ICAgCj4+
-Pj4gICAjZGVmaW5lIHN1c3BlbmRfcmVwb3J0X3Jlc3VsdChmbiwgcmV0KQkJZG8ge30gd2hpbGUg
-KDApCj4+Pj4gKyNkZWZpbmUgcnBtX3N1c3BlbmRfcmVwb3J0X3Jlc3VsdChmbiwgcmV0KQlkbyB7
-fSB3aGlsZSAoMCkKPj4+PiAgIAo+Pj4+ICAgc3RhdGljIGlubGluZSBpbnQgZGV2aWNlX3BtX3dh
-aXRfZm9yX2RldihzdHJ1Y3QgZGV2aWNlICphLCBzdHJ1Y3QgZGV2aWNlICpiKQo+Pj4+ICAgewoK
-QlRXLCBpZiB5b3UncmUgY2hhbmdpbmcgUE0gY29kZSwgaXQgaXMgZ29vZCB0byBDQyBsaW51eC1w
-bSB0b28gKG5vdyAKZG9uZSkgYW5kIGlmIHlvdSdyZSBjaGFuZ2luZyBQQ0kgY29kZSwgaXQgaXMg
-bWFuZGF0b3J5IHRvIENDIGxpbnV4LXBjaSAKYW5kIHRoZSBQQ0kgbWFpbnRhaW5lciAobm93IGRv
-bmUgdG9vKS4KClRoYW5rcywKUmFmYWVsCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fXwpJbnRlbC1nZnggbWFpbGluZyBsaXN0CkludGVsLWdmeEBsaXN0cy5m
-cmVlZGVza3RvcC5vcmcKaHR0cDovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3Rp
-bmZvL2ludGVsLWdmeAo=
+On pe, 2015-11-27 at 15:44 +0100, Rafael J. Wysocki wrote:
+> On 11/27/2015 12:39 PM, Jani Nikula wrote:
+> > On Wed, 18 Nov 2015, Daniel Vetter <daniel@ffwll.ch> wrote:
+> > > On Wed, Nov 18, 2015 at 03:28:38PM +0200, Imre Deak wrote:
+> > > > On ke, 2015-11-18 at 12:56 +0200, Imre Deak wrote:
+> > > > > The runtime PM core doesn't treat EBUSY and EAGAIN retvals
+> > > > > from the driver
+> > > > > suspend hooks as errors, but they still show up as errors in
+> > > > > dmesg. Tune
+> > > > > them down.
+> > > > >=20
+> > > > > One problem caused by this was noticed by Daniel: the i915
+> > > > > driver
+> > > > > returns EAGAIN to signal a temporary failure to suspend and
+> > > > > as a request
+> > > > > towards the RPM core for scheduling a suspend again. This is
+> > > > > a normal
+> > > > > event, but the resulting error message flags a breakage
+> > > > > during the
+> > > > > driver's automated testing which parses dmesg and picks up
+> > > > > the error.
+> > > > >=20
+> > > > > v2:
+> > > > > - fix compile breake when CONFIG_PM_SLEEP=3Dn (0-day builder)
+> > > > >=20
+> > > > > Reported-by: Daniel Vetter <daniel.vetter@intel.com>
+> > > > > Signed-off-by: Imre Deak <imre.deak@intel.com>
+> > > > Bugzilla: https://bugs.freedesktop.org/show_bug.cgi?id=3D92992
+> > > Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+> > >=20
+> > > Rafael, can you please pick this up for 4.4? The spurious
+> > > KERN_ERR noise
+> > > in dmesg is causing a lot fo spurious fail in our (very recently
+> > > put into
+> > > place) i915 CI system.
+> > Rafael, ping.
+>=20
+> Well, so I'm not sure about this one.
+>=20
+> And the question is ->
+>=20
+> > > > > ---
+> > > > > =C2=A0 drivers/base/power/main.c |=C2=A0=C2=A07 +++++--
+> > > > > =C2=A0 drivers/pci/pci-driver.c=C2=A0=C2=A0|=C2=A0=C2=A02 +-
+> > > > > =C2=A0 include/linux/pm.h=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0=C2=A0| 11 +++++++++--
+> > > > > =C2=A0 3 files changed, 15 insertions(+), 5 deletions(-)
+> > > > >=20
+> > > > > diff --git a/drivers/base/power/main.c
+> > > > > b/drivers/base/power/main.c
+> > > > > index 1710c26..39d2090 100644
+> > > > > --- a/drivers/base/power/main.c
+> > > > > +++ b/drivers/base/power/main.c
+> > > > > @@ -1679,9 +1679,12 @@ int dpm_suspend_start(pm_message_t
+> > > > > state)
+> > > > > =C2=A0 }
+> > > > > =C2=A0 EXPORT_SYMBOL_GPL(dpm_suspend_start);
+> > > > > =C2=A0=20
+> > > > > -void __suspend_report_result(const char *function, void *fn,
+> > > > > int ret)
+> > > > > +void __suspend_report_result(const char *function, void *fn,
+> > > > > int ret,
+> > > > > +			=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0bool runtime_pm)
+> > > > > =C2=A0 {
+> > > > > -	if (ret)
+> > > > > +	if (runtime_pm && (ret =3D=3D -EBUSY || ret =3D=3D -EAGAIN)=
+)
+> > > > > +		printk(KERN_DEBUG "%s(): %pF returns %d\n",
+> > > > > function, fn, ret);
+> > > > > +	else if (ret)
+> > > > > =C2=A0=C2=A0		printk(KERN_ERR "%s(): %pF returns %d\n",
+> > > > > function, fn, ret);
+> > > > > =C2=A0 }
+>=20
+> -> why you are adding overhead to this function, instead of -->
+>=20
+> > > > > =C2=A0 EXPORT_SYMBOL_GPL(__suspend_report_result);
+> > > > > diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-
+> > > > > driver.c
+> > > > > index 108a311..9569572 100644
+> > > > > --- a/drivers/pci/pci-driver.c
+> > > > > +++ b/drivers/pci/pci-driver.c
+> > > > > @@ -1142,7 +1142,7 @@ static int
+> > > > > pci_pm_runtime_suspend(struct device *dev)
+> > > > > =C2=A0=C2=A0	pci_dev->state_saved =3D false;
+> > > > > =C2=A0=C2=A0	pci_dev->no_d3cold =3D false;
+> > > > > =C2=A0=C2=A0	error =3D pm->runtime_suspend(dev);
+> > > > > -	suspend_report_result(pm->runtime_suspend, error);
+> > > > > +	rpm_suspend_report_result(pm->runtime_suspend,
+> > > > > error);
+>=20
+> --> replacing the suspend_report_result() above with a direct
+> printk()=20
+> in the if (error) block below.
+>=20
+> Surely, suspend_report_result() was not designed with runtime PM in
+> mind=20
+> and it was a mistake to use it here.=C2=A0=C2=A0It just seemed to do =
+the right=20
+> thing, but it clearly doesn't.
+
+Ok, a helper like rpm_suspend_report_result() seemed like a good idea,
+since handling -EBUSY and -EAGAIN error reporting will be the same for
+callers of the pm->runtime_suspend hooks not just the PCI drivers. But
+since the only user of this is the PCI core atm we can just add a
+printk locally as you suggested. I'll follow up with v2.
+
+> > > > > =C2=A0=C2=A0	if (error)
+> > > > > =C2=A0=C2=A0		return error;
+> > > > > =C2=A0=C2=A0	if (!pci_dev->d3cold_allowed)
+> > > > > diff --git a/include/linux/pm.h b/include/linux/pm.h
+> > > > > index 35d599e..54f37e3 100644
+> > > > > --- a/include/linux/pm.h
+> > > > > +++ b/include/linux/pm.h
+> > > > > @@ -702,11 +702,17 @@ extern int
+> > > > > dpm_suspend_late(pm_message_t state);
+> > > > > =C2=A0 extern int dpm_suspend(pm_message_t state);
+> > > > > =C2=A0 extern int dpm_prepare(pm_message_t state);
+> > > > > =C2=A0=20
+> > > > > -extern void __suspend_report_result(const char *function,
+> > > > > void *fn, int ret);
+> > > > > +extern void __suspend_report_result(const char *function,
+> > > > > void *fn, int ret,
+> > > > > +				=C2=A0=C2=A0=C2=A0=C2=A0bool runtime_pm);
+> > > > > =C2=A0=20
+> > > > > =C2=A0 #define suspend_report_result(fn, ret)		=09
+> > > > > 		\
+> > > > > =C2=A0=C2=A0	do {					=09
+> > > > > 		\
+> > > > > -		__suspend_report_result(__func__, fn, ret);=09
+> > > > > 	\
+> > > > > +		__suspend_report_result(__func__, fn, ret,
+> > > > > false);	\
+> > > > > +	} while (0)
+> > > > > +
+> > > > > +#define rpm_suspend_report_result(fn, ret)		=09
+> > > > > 	\
+> > > > > +	do {						=09
+> > > > > 	\
+> > > > > +		__suspend_report_result(__func__, fn, ret,
+> > > > > true);	\
+> > > > > =C2=A0=C2=A0	} while (0)
+> > > > > =C2=A0=20
+> > > > > =C2=A0 extern int device_pm_wait_for_dev(struct device *sub,
+> > > > > struct device *dev);
+> > > > > @@ -744,6 +750,7 @@ static inline int
+> > > > > dpm_suspend_start(pm_message_t state)
+> > > > > =C2=A0 }
+> > > > > =C2=A0=20
+> > > > > =C2=A0 #define suspend_report_result(fn, ret)		do {}
+> > > > > while (0)
+> > > > > +#define rpm_suspend_report_result(fn, ret)	do {}
+> > > > > while (0)
+> > > > > =C2=A0=20
+> > > > > =C2=A0 static inline int device_pm_wait_for_dev(struct device=
+ *a,
+> > > > > struct device *b)
+> > > > > =C2=A0 {
+>=20
+> BTW, if you're changing PM code, it is good to CC linux-pm too (now=20
+> done) and if you're changing PCI code, it is mandatory to CC linux-
+> pci=20
+> and the PCI maintainer (now done too).
+
+Sorry, I thought about it too after sending it. Will do so in the
+future.
+
+--Imre
