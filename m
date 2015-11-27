@@ -1,50 +1,69 @@
-From: Dawei Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Subject: [PATCH v4 0/3] thermal: mediatek: Add cpu power cooling model
-Date: Fri, 27 Nov 2015 17:32:04 +0800
-Message-ID: <1448616727-29367-1-git-send-email-dawei.chien@mediatek.com>
+From: Dawei Chien <dawei.chien@mediatek.com>
+Subject: [PATCH v4 2/3] arm64: dts: mt8173: Add dynamic power node.
+Date: Fri, 27 Nov 2015 17:32:06 +0800
+Message-ID: <1448616727-29367-3-git-send-email-dawei.chien@mediatek.com>
+References: <1448616727-29367-1-git-send-email-dawei.chien@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Daniel Kurtz <djkurtz-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Dawei Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, srv_heupstream-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailgw02.mediatek.com ([210.61.82.184]:58592 "EHLO
+	mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754509AbbK0Jc0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Nov 2015 04:32:26 -0500
+In-Reply-To: <1448616727-29367-1-git-send-email-dawei.chien@mediatek.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Matthias Brugger <matthias.bgg@gmail.com>, Daniel Kurtz <djkurtz@chromium.org>, Sascha Hauer <s.hauer@pengutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, Dawei Chien <dawei.chien@mediatek.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, Sascha Hauer <kernel@pengutronix.de>, Punit Agrawal <punit.agrawal@arm.com>
 
-Use Intelligent Power Allocation (IPA) technical to add dynamic power model
-for binding CPU thermal zone. The power allocator governor allocates power
-budget to control CPU temperature.
+This device node is for calculating dynamic power in mW.
+Since mt8173 has two clusters, there are two dynamic power
+coefficient as well.
 
-Power Allocator governor is able to keep SOC temperature within a defined
-temperature range to avoid SOC overheat and keep it's performance.
-mt8173-cpufreq.c need to register its' own power model with power allocator
-thermal governor, so that power allocator governor can allocates suitable
-power budget to control CPU temperature.
-
-Binging document is refer to this patchset
+Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
+---
+This patch is base on patchset:
 https://lkml.org/lkml/2015/11/17/251
+---
+ arch/arm64/boot/dts/mediatek/mt8173.dtsi |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-Change since V1:
-1. Include mt8171.h and sort header file for mt8173.dtsi
-
-Change since V2:
-1. Move dynamic/static power model in device tree
-
-Change since V3:
-1. Remove static power model.
-2. Split V3's device tree in two for thermal zones and dynamic power models respectively.
-
-Dawei Chien (3):
-  arm64: dts: mt8173: Add thermal zone node for mt8173 platform.
-  arm64: dts: mt8173: Add dynamic power node for mt8173 platform.
-  thermal: mediatek: Add cpu dynamic power cooling model.
-
- arch/arm64/boot/dts/mediatek/mt8173.dtsi |   47 ++++++++++++++++++++++++++++++
- drivers/cpufreq/mt8173-cpufreq.c         |   28 +++++++++++++-----
- 2 files changed, 67 insertions(+), 8 deletions(-)
-
---
+diff --git a/arch/arm64/boot/dts/mediatek/mt8173.dtsi b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+index 4114cee..33fabe4 100644
+--- a/arch/arm64/boot/dts/mediatek/mt8173.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+@@ -71,6 +71,7 @@
+ 			#cooling-cells = <2>;
+ 			#cooling-min-level = <0>;
+ 			#cooling-max-level = <7>;
++			dynamic-power-coefficient = <263>;
+ 		};
+ 
+ 		cpu1: cpu@1 {
+@@ -95,6 +96,7 @@
+ 			#cooling-cells = <2>;
+ 			#cooling-min-level = <0>;
+ 			#cooling-max-level = <7>;
++			dynamic-power-coefficient = <263>;
+ 		};
+ 
+ 		cpu2: cpu@100 {
+@@ -119,6 +121,7 @@
+ 			#cooling-cells = <2>;
+ 			#cooling-min-level = <0>;
+ 			#cooling-max-level = <7>;
++			dynamic-power-coefficient = <530>;
+ 		};
+ 
+ 		cpu3: cpu@101 {
+@@ -143,6 +146,7 @@
+ 			#cooling-cells = <2>;
+ 			#cooling-min-level = <0>;
+ 			#cooling-max-level = <7>;
++			dynamic-power-coefficient = <530>;
+ 		};
+ 
+ 		idle-states {
+-- 
 1.7.9.5
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
