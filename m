@@ -1,101 +1,127 @@
-From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
-Subject: Re: [PATCH v1 1/5] thermal: rockchip: fix a trivial typo
-Date: Fri, 27 Nov 2015 10:49:23 +0100
-Message-ID: <5259912.5mmETGszQg@diego>
-References: <1448592746-2129-1-git-send-email-wxt@rock-chips.com> <1448592746-2129-2-git-send-email-wxt@rock-chips.com>
+From: MyungJoo Ham <myungjoo.ham@gmail.com>
+Subject: Re: [GIT PULL] devfreq for next-RC
+Date: Fri, 27 Nov 2015 19:47:30 +0900
+Message-ID: <CAJ0PZbSG5DYSm9MOW0_SKPetEz7LSceryedTxsmG-2hs0401AA@mail.gmail.com>
+References: <1633234957.280321448504078990.JavaMail.weblogic@epmlwas08a>
+ <12501801.eCeCJmHOSo@vostro.rjw.lan> <CAJ0PZbQ2Wh6kEjRjGfHhLLsnTcLcxb_iBn9p9auC2V+WTjgcQw@mail.gmail.com>
+ <7258636.bTrShIYD0P@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gloria.sntech.de ([95.129.55.99]:49713 "EHLO gloria.sntech.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752914AbbK0Jtb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 27 Nov 2015 04:49:31 -0500
-In-Reply-To: <1448592746-2129-2-git-send-email-wxt@rock-chips.com>
+Received: from mail-ob0-f172.google.com ([209.85.214.172]:33719 "EHLO
+	mail-ob0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754212AbbK0Krp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 27 Nov 2015 05:47:45 -0500
+Received: by obbww6 with SMTP id ww6so80087580obb.0
+        for <linux-pm@vger.kernel.org>; Fri, 27 Nov 2015 02:47:45 -0800 (PST)
+In-Reply-To: <7258636.bTrShIYD0P@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Caesar Wang <wxt@rock-chips.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, linux-rockchip@lists.infradead.org, Dan Carpenter <dan.carpenter@oracle.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jiri Kosina <trivial@kernel.org>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, rafael.j.wysocki@intel.com, Chanwoo Choi <cw00.choi@samsung.com>
 
-Hi Caesar,
+On Fri, Nov 27, 2015 at 7:48 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Thursday, November 26, 2015 10:51:18 PM MyungJoo Ham wrote:
+>> 6 of the 8 patches are fixes or style-updates.
+>
+> Style updates are not fixes, are they?
+>
+>> Other 2 of 8 (PM / devfreq: Set the freq_table of devfreq device,
+>> MAINTAINERS: Add devfreq-event entry)
+>> are small updates (the first of the two may be seen as a fix to follow
+>> the given API semantics though)
+>>
+>> Do you want to pull the 6 clearly-fixes only for the RC?
+>
+> The only type of material I want to push for -rc4 or later is fixes.  No style
+> updates now in particular, please.
+>
+> And generally, if there's anything that can wait for the next merge window,
+> there's no reason to push it today.
+>
+> So please let me know which of the commits in your branch are urgent in
+> your opinion and I'll put them into a separate branch and queue them up
+> for -rc4.
+>
+> The rest will wait.
 
-Am Freitag, 27. November 2015, 10:52:22 schrieb Caesar Wang:
-> This patchset trys to dictate unified format for driver.
-> 
-> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
-> 
-> ---
-> 
-> Changes in v1:
-> - Search more trivial typo for me.
-> 
->  drivers/thermal/rockchip_thermal.c | 18 +++++++++---------
->  1 file changed, 9 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/thermal/rockchip_thermal.c
-> b/drivers/thermal/rockchip_thermal.c index e845841..5a8840b 100644
-> --- a/drivers/thermal/rockchip_thermal.c
-> +++ b/drivers/thermal/rockchip_thermal.c
-> @@ -38,7 +38,7 @@ enum tshut_mode {
->  };
-> 
->  /**
-> - * the system Temperature Sensors tshut(tshut) polarity
-> + * The system Temperature Sensors tshut(tshut) polarity
->   * the bit 8 is tshut polarity.
->   * 0: low active, 1: high active
->   */
-> @@ -57,10 +57,10 @@ enum sensor_id {
->  };
-> 
->  /**
-> -* The conversion table has the adc value and temperature.
-> -* ADC_DECREMENT is the adc value decremnet.(e.g. v2_code_table)
-> -* ADC_INCREMNET is the adc value incremnet.(e.g. v3_code_table)
-> -*/
-> + * The conversion table has the adc value and temperature.
-> + * ADC_DECREMENT: the adc value is of diminishing.(e.g. v2_code_table)
-> + * ADC_INCREMENT: the adc value is incremental.(e.g. v3_code_table)
-> + */
->  enum adc_sort_mode {
->  	ADC_DECREMENT = 0,
->  	ADC_INCREMENT,
-> @@ -75,13 +75,13 @@ enum adc_sort_mode {
+The fixes are not urgent. They can wait for next version in that sense.
 
-You could simply move to documenting the fields in the header (like 
-exynos_tmu.c for example) instead of inside the table. I think there are even 
-tools that create documention from these comments, so I'd suggest:
 
-/*
- * struct chip_tsadc_table: hold information about chip-specific differences
- * @id: conversion table
- * @length: size of conversion table
- * @data_mask: mask to apply on data inputs
- * @mode: sort mode of this adc variant (incrementing or decrementing)
- */
->  struct chip_tsadc_table {
->  	const struct tsadc_table *id;
-> 
-> -	/* the array table size*/
-> +	/* The array table size */
->  	unsigned int length;
-> 
-> -	/* that analogic mask data */
-> +	/* That analogic mask data */
->  	u32 data_mask;
-> 
-> -	/* the sort mode is adc value that increment or decrement in table */
-> +	/* The sort mode is adc value that increment or decrement in table */
->  	enum adc_sort_mode mode;
->  };
-> 
-> @@ -617,7 +617,7 @@ rockchip_thermal_register_sensor(struct platform_device
-> *pdev, return 0;
->  }
-> 
-> -/*
-> +/**
->   * Reset TSADC Controller, reset all tsadc registers.
->   */
->  static void rockchip_thermal_reset_controller(struct reset_control *reset)
 
+Cheers,
+MyungJoo
+
+>
+> Thanks,
+> Rafael
+>
+>
+>> On Thu, Nov 26, 2015 at 10:58 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> > On Thursday, November 26, 2015 02:14:40 AM MyungJoo Ham wrote:
+>> >> Dear Rafael,
+>> >>
+>> >> Here goes the pull reqest for next 4.4 RCx.
+>> >>
+>> >>
+>> >> Cheers,
+>> >> MyungJoo
+>> >>
+>> >> The following changes since commit 1ec218373b8ebda821aec00bb156a9c94fad9cd4:
+>> >>
+>> >>   Linux 4.4-rc2 (2015-11-22 16:45:59 -0800)
+>> >>
+>> >> are available in the git repository at:
+>> >>
+>> >>   https://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git tags/pull_req_20151126
+>> >>
+>> >> for you to fetch changes up to 38bb853595404cdd2210268dd508ce303ab836e5:
+>> >>
+>> >>   MAINTAINERS: Add devfreq-event entry (2015-11-26 10:54:18 +0900)
+>> >>
+>> >> ----------------------------------------------------------------
+>> >> Pull request for Rafael on 2015-11-26. Based on 4.4-rc2
+>> >>
+>> >> ----------------------------------------------------------------
+>> >> Chanwoo Choi (7):
+>> >>       PM / devfreq: event: Remove the error log of devfreq_event_get_edev_by_phandle()
+>> >>       PM / devfreq: event: Fix the error and warning from script/checkpatch.pl
+>> >>       PM / devfreq: Add show_one macro to delete the duplicate code
+>> >>       PM / devfreq: Set the freq_table of devfreq device
+>> >>       PM / devfreq: Modify the indentation of trans_stat sysfs for readability
+>> >>       MAINTAINERS: Add missing git repository and directory for devfreq
+>> >>       MAINTAINERS: Add devfreq-event entry
+>> >>
+>> >> MyungJoo Ham (1):
+>> >>       PM / devfreq: Do not show statistics if it's not ready.
+>> >>
+>> >>  MAINTAINERS                     | 13 +++++++
+>> >>  drivers/devfreq/devfreq-event.c | 16 +++------
+>> >>  drivers/devfreq/devfreq.c       | 78 ++++++++++++++++++++++++++++++++---------
+>> >>  include/linux/devfreq.h         |  2 +-
+>> >>  4 files changed, 81 insertions(+), 28 deletions(-)
+>> >
+>> > Is this really 4.4-rc material?
+>> >
+>> > We're quite late in the cycle and I'm not willing to push anything more than
+>> > fixes to Linus at this point.
+>> >
+>> > I can pull this and queue it up for v4.5 if that works for you, though.
+>> >
+>> > Thanks,
+>> > Rafael
+>> >
+>>
+>>
+>>
+>>
+>
+> --
+> I speak only for myself.
+> Rafael J. Wysocki, Intel Open Source Technology Center.
+
+
+
+-- 
+MyungJoo Ham, Ph.D.
+Frontier CS Lab, S/W Center, Samsung Electronics
