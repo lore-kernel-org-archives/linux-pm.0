@@ -1,76 +1,87 @@
-From: Imre Deak <imre.deak@intel.com>
-Subject: [PATCH v4] PCI / PM: tune down RPM suspend error message with EBUSY and EAGAIN retval
-Date: Sat, 28 Nov 2015 10:34:24 +0200
-Message-ID: <1448699664-4178-1-git-send-email-imre.deak@intel.com>
-References: <1448648254-12639-1-git-send-email-imre.deak@intel.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: [GIT PULL] Thermal Management fixes for v4.4-rc3
+Date: Sun, 29 Nov 2015 09:37:19 +0800
+Message-ID: <1448761039.15355.6.camel@rzhang1-mobl4>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:37364 "EHLO mga14.intel.com"
+Received: from mga01.intel.com ([192.55.52.88]:12628 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750840AbbK1Ie1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 28 Nov 2015 03:34:27 -0500
-In-Reply-To: <1448648254-12639-1-git-send-email-imre.deak@intel.com>
+	id S1752788AbbK2Bh2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 28 Nov 2015 20:37:28 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Jani Nikula <jani.nikula@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx@lists.freedesktop.org, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 
-The runtime PM core doesn't treat EBUSY and EAGAIN retvals from the driver
-suspend hooks as errors, but they still show up as errors in dmesg. Tune
-them down.
+Hi, Linus,
 
-One problem caused by this was noticed by Daniel: the i915 driver
-returns EAGAIN to signal a temporary failure to suspend and as a request
-towards the RPM core for scheduling a suspend again. This is a normal
-event, but the resulting error message flags a breakage during the
-driver's automated testing which parses dmesg and picks up the error.
+Please pull from
+  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
 
-v2:
-- fix compile breake when CONFIG_PM_SLEEP=n (0-day builder)
-v3:
-- instead of modifying the suspend_report_result() helper to disinguish
-  between the runtime and system suspend case, inline the error
-  printing, it's not used anywhere else (Rafael)
-v4:
-- don't refer to log levels as flags in code comment (Rafael)
-- use pr_debug(), pr_err() instead of the corresponding printk() (Rafael)
+to receive the latest Thermal Management updates for 4.4-rc3 with
+top-most commit a2291badc355d58ead5c19ae0609468947416040:
 
-Reported-by: Daniel Vetter <daniel.vetter@intel.com>
-Bugzilla: https://bugs.freedesktop.org/show_bug.cgi?id=92992
-CC: Bjorn Helgaas <bhelgaas@google.com>
-CC: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Signed-off-by: Imre Deak <imre.deak@intel.com>
----
- drivers/pci/pci-driver.c | 16 ++++++++++++++--
- 1 file changed, 14 insertions(+), 2 deletions(-)
+  imx: thermal: use CPU temperature grade info for thresholds
+(2015-11-23 16:38:40 -0800)
 
-diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-index 4446fcb..32a9947 100644
---- a/drivers/pci/pci-driver.c
-+++ b/drivers/pci/pci-driver.c
-@@ -1146,9 +1146,21 @@ static int pci_pm_runtime_suspend(struct device *dev)
- 	pci_dev->state_saved = false;
- 	pci_dev->no_d3cold = false;
- 	error = pm->runtime_suspend(dev);
--	suspend_report_result(pm->runtime_suspend, error);
--	if (error)
-+	if (error) {
-+		/*
-+		 * -EBUSY and -EAGAIN is used to request the runtime PM core
-+		 * to schedule a new suspend, so log the event only with debug
-+		 * log level.
-+		 */
-+		if (error == -EBUSY || error == -EAGAIN)
-+			pr_debug("%s(): %pF returns %d\n", __func__,
-+				 pm->runtime_suspend, error);
-+		else
-+			pr_err("%s(): %pF returns %d\n", __func__,
-+			       pm->runtime_suspend, error);
-+
- 		return error;
-+	}
- 	if (!pci_dev->d3cold_allowed)
- 		pci_dev->no_d3cold = true;
- 
--- 
-2.5.0
+on top of commit 5d50ac70fe98518dbf620bfba8184254663125eb:
+
+  Merge tag 'xfs-for-linus-4.4' of
+git://git.kernel.org/pub/scm/linux/kernel/git/dgc/linux-xfs (2015-11-11
+20:18:48 -0800)
+
+
+Specifics:
+
+- Several fixes and cleanups on Rockchip thermal drivers.
+- Add the missing support of RK3368 SoCs in Rockchip driver.
+- Small fixes on of-thermal, power_allocator, rcar driver, IMX, and QCOM
+drivers, and also compilation fixes, on thermal.h, when thermal is not
+selected.
+
+thanks,
+rui
+
+----------------------------------------------------------------
+Arnd Bergmann (2):
+      Revert "thermal: qcom_spmi: allow compile test"
+      thermal: fix thermal_zone_bind_cooling_device prototype
+
+Caesar Wang (7):
+      dt-bindings: rockchip-thermal: Support the RK3368 SoCs compatible
+      thermal: rockchip: better to compatible the driver for different
+SoCs
+      thermal: rockchip: trivial: fix typo in commit
+      thermal: rockchip: improve the conversion function
+      thermal: rockchip: Add the sort mode for adc value increment or
+decrement
+      thermal: rockchip: consistently use int for temperatures
+      thermal: rockchip: Support the RK3368 SoCs in thermal driver
+
+Jiada Wang (1):
+      thermal: of-thermal: Reduce log level for message when can't fine
+thermal zone
+
+Kapileshwar Singh (1):
+      thermal: power_allocator: Use temperature reading from tz
+
+Kuninori Morimoto (1):
+      thermal: rcar_thermal: remove redundant operation
+
+Tim Harvey (1):
+      imx: thermal: use CPU temperature grade info for thresholds
+
+ .../bindings/thermal/rockchip-thermal.txt          |   4 +-
+ drivers/thermal/Kconfig                            |   2 +-
+ drivers/thermal/imx_thermal.c                      |  56 +++-
+ drivers/thermal/of-thermal.c                       |   2 +-
+ drivers/thermal/power_allocator.c                  |  24 +-
+ drivers/thermal/rcar_thermal.c                     |  49 ++-
+ drivers/thermal/rockchip_thermal.c                 | 328
++++++++++++++++------
+ include/linux/thermal.h                            |   3 +-
+ 8 files changed, 316 insertions(+), 152 deletions(-)
+
 
