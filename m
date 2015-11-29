@@ -1,87 +1,86 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: [GIT PULL] Thermal Management fixes for v4.4-rc3
-Date: Sun, 29 Nov 2015 09:37:19 +0800
-Message-ID: <1448761039.15355.6.camel@rzhang1-mobl4>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH v3] PM: check for complete cb before device lock in dpm_complete
+Date: Sat, 28 Nov 2015 21:33:20 -0800
+Message-ID: <CAKdAkRQ3nUtOFfxKBembnzZZi-Kq1N0hRon39AY8XkTy7i4Ftw@mail.gmail.com>
+References: <6146fb8483239461040674927df2e71d4555c59e.1445035227.git.todd.e.brandt@linux.intel.com>
+	<CAJZ5v0gqUFWfUHRR3Y7t2bnrQjam3m_CHC0aHOSbJNLJZ5ctbQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:12628 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752788AbbK2Bh2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 28 Nov 2015 20:37:28 -0500
+Received: from mail-oi0-f54.google.com ([209.85.218.54]:35631 "EHLO
+	mail-oi0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750725AbbK2FdU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 29 Nov 2015 00:33:20 -0500
+Received: by oige206 with SMTP id e206so79210908oig.2
+        for <linux-pm@vger.kernel.org>; Sat, 28 Nov 2015 21:33:20 -0800 (PST)
+In-Reply-To: <CAJZ5v0gqUFWfUHRR3Y7t2bnrQjam3m_CHC0aHOSbJNLJZ5ctbQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Todd Brandt <todd.e.brandt@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, todd.e.brandt@intel.com
 
-Hi, Linus,
+On Fri, Oct 16, 2015 at 3:49 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> Hi,
+>
+> On Sat, Oct 17, 2015 at 12:45 AM, Todd Brandt
+> <todd.e.brandt@linux.intel.com> wrote:
+>> If a device has no pm_ops complete callback it shouldn't have
+>> to be locked in order to skip it in the dpm_complete call. This causes
+>> problems when a device without a complete callback has already begun
+>> operation after its resume cb is called. It can end up holding up the
+>> system resume as the pm subsystem tries to get a device lock just to
+>> check for a callback that isn't there.
+>>
+>> This is basically the original v1 patch but updated for the latest kernel.
+>>
+>> Signed-off-by: Todd Brandt <todd.e.brandt@linux.intel.com>
+>> ---
+>>  drivers/base/power/main.c | 12 ++++++------
+>>  1 file changed, 6 insertions(+), 6 deletions(-)
+>>
+>> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+>> index 1710c26..9bb8ff0 100644
+>> --- a/drivers/base/power/main.c
+>> +++ b/drivers/base/power/main.c
+>> @@ -899,8 +899,6 @@ static void device_complete(struct device *dev, pm_message_t state)
+>>         if (dev->power.syscore)
+>>                 return;
+>>
+>> -       device_lock(dev);
+>> -
+>>         if (dev->pm_domain) {
+>>                 info = "completing power domain ";
+>>                 callback = dev->pm_domain->ops.complete;
+>> @@ -920,13 +918,15 @@ static void device_complete(struct device *dev, pm_message_t state)
+>>                 callback = dev->driver->pm->complete;
+>>         }
+>>
+>> -       if (callback) {
+>> -               pm_dev_dbg(dev, state, info);
+>> -               callback(dev);
+>> -       }
+>> +       if (!callback)
+>> +               goto Complete;
+>>
+>
+> Suppose that the devices is unregistered at this point and callback
+> was pointing to the driver callback.
+>
+>> +       device_lock(dev);
+>> +       pm_dev_dbg(dev, state, info);
+>> +       callback(dev);
+>
+> I don't think it is correct to execute that callback here in that case, is it?
 
-Please pull from
-  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
+Continuing this line of thought: what if driver was unbound and
+rebound again before we got to executing device_complete()? In that
+case we should not be calling ->complete() even if it is present,
+since it is as if prepare() was not called, and there is nothing for
+->complete() to undo.
 
-to receive the latest Thermal Management updates for 4.4-rc3 with
-top-most commit a2291badc355d58ead5c19ae0609468947416040:
+It seems to me we should not be allowing bind/unbind transitions here.
 
-  imx: thermal: use CPU temperature grade info for thresholds
-(2015-11-23 16:38:40 -0800)
+Thanks.
 
-on top of commit 5d50ac70fe98518dbf620bfba8184254663125eb:
-
-  Merge tag 'xfs-for-linus-4.4' of
-git://git.kernel.org/pub/scm/linux/kernel/git/dgc/linux-xfs (2015-11-11
-20:18:48 -0800)
-
-
-Specifics:
-
-- Several fixes and cleanups on Rockchip thermal drivers.
-- Add the missing support of RK3368 SoCs in Rockchip driver.
-- Small fixes on of-thermal, power_allocator, rcar driver, IMX, and QCOM
-drivers, and also compilation fixes, on thermal.h, when thermal is not
-selected.
-
-thanks,
-rui
-
-----------------------------------------------------------------
-Arnd Bergmann (2):
-      Revert "thermal: qcom_spmi: allow compile test"
-      thermal: fix thermal_zone_bind_cooling_device prototype
-
-Caesar Wang (7):
-      dt-bindings: rockchip-thermal: Support the RK3368 SoCs compatible
-      thermal: rockchip: better to compatible the driver for different
-SoCs
-      thermal: rockchip: trivial: fix typo in commit
-      thermal: rockchip: improve the conversion function
-      thermal: rockchip: Add the sort mode for adc value increment or
-decrement
-      thermal: rockchip: consistently use int for temperatures
-      thermal: rockchip: Support the RK3368 SoCs in thermal driver
-
-Jiada Wang (1):
-      thermal: of-thermal: Reduce log level for message when can't fine
-thermal zone
-
-Kapileshwar Singh (1):
-      thermal: power_allocator: Use temperature reading from tz
-
-Kuninori Morimoto (1):
-      thermal: rcar_thermal: remove redundant operation
-
-Tim Harvey (1):
-      imx: thermal: use CPU temperature grade info for thresholds
-
- .../bindings/thermal/rockchip-thermal.txt          |   4 +-
- drivers/thermal/Kconfig                            |   2 +-
- drivers/thermal/imx_thermal.c                      |  56 +++-
- drivers/thermal/of-thermal.c                       |   2 +-
- drivers/thermal/power_allocator.c                  |  24 +-
- drivers/thermal/rcar_thermal.c                     |  49 ++-
- drivers/thermal/rockchip_thermal.c                 | 328
-+++++++++++++++------
- include/linux/thermal.h                            |   3 +-
- 8 files changed, 316 insertions(+), 152 deletions(-)
-
-
+-- 
+Dmitry
