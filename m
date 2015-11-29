@@ -1,243 +1,102 @@
 From: Jonathan Cameron <jic23@kernel.org>
-Subject: Re: [PATCH 1/5] iio: light: us5182d: Add property for choosing
- default power mode
-Date: Sun, 29 Nov 2015 14:35:09 +0000
-Message-ID: <565B0D1D.1070006@kernel.org>
+Subject: Re: [PATCH 2/5] Documentation: devicetree: Add property for
+ controlling power saving mode for the us5182 als sensor
+Date: Sun, 29 Nov 2015 14:36:40 +0000
+Message-ID: <565B0D78.6010707@kernel.org>
 References: <1448362792-5181-1-git-send-email-adriana.reus@intel.com>
- <1448362792-5181-2-git-send-email-adriana.reus@intel.com>
+ <1448362792-5181-3-git-send-email-adriana.reus@intel.com>
+ <20151125000130.GA21418@rob-hp-laptop> <56558466.9000001@intel.com>
+ <20151125235526.GA21218@rob-hp-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1448362792-5181-2-git-send-email-adriana.reus@intel.com>
+In-Reply-To: <20151125235526.GA21218@rob-hp-laptop>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Adriana Reus <adriana.reus@intel.com>
-Cc: linux-iio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, robh+dt@kernel.org, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, pawel.moll@arm.com, pmeerw@pmeerw.net, lars@metafoo.de
+To: Rob Herring <robh@kernel.org>, Adriana Reus <adriana.reus@intel.com>
+Cc: linux-iio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, pawel.moll@arm.com, pmeerw@pmeerw.net, lars@metafoo.de
 List-Id: linux-pm@vger.kernel.org
 
-On 24/11/15 10:59, Adriana Reus wrote:
-> This chip supports two power modes.
-> 1. "one-shot" mode - the chip activates and executes one complete
-> conversion loop and then shuts itself down. This is the default mode
-> chosen for raw reads.
-> 2. "continuous" mode - the chip takes continuous measurements.
+On 25/11/15 23:55, Rob Herring wrote:
+> On Wed, Nov 25, 2015 at 11:50:30AM +0200, Adriana Reus wrote:
+>>
+>>
+>> On 25.11.2015 02:01, Rob Herring wrote:
+>>> On Tue, Nov 24, 2015 at 12:59:49PM +0200, Adriana Reus wrote:
+>>>> Add a property to allow changing the default power-saving mode.
+>>>> By default, at read raw the chip will activate and provide
+>>>> one measurent, then it will shut itself down. However, the
+>>>> chip can also work in "continuous" mode which may be more reliable
+>>>> but is also more power consuming.
+>>>>
+>>>> Signed-off-by: Adriana Reus <adriana.reus@intel.com>
+>>>> ---
+>>>>  Documentation/devicetree/bindings/iio/light/us5182d.txt | 11 +++++++++++
+>>>>  1 file changed, 11 insertions(+)
+>>>>
+>>>> diff --git a/Documentation/devicetree/bindings/iio/light/us5182d.txt b/Documentation/devicetree/bindings/iio/light/us5182d.txt
+>>>> index 6f0a530..a619799 100644
+>>>> --- a/Documentation/devicetree/bindings/iio/light/us5182d.txt
+>>>> +++ b/Documentation/devicetree/bindings/iio/light/us5182d.txt
+>>>> @@ -7,13 +7,24 @@ Required properties:
+>>>>  Optional properties:
+>>>>  - upisemi,glass-coef: glass attenuation factor - compensation factor of
+>>>>                        resolution 1000 for material transmittance.
+>>>> +
+>>>>  - upisemi,dark-ths: array of 8 elements containing 16-bit thresholds (adc
+>>>>                      counts) corresponding to every scale.
+>>>> +
+>>>>  - upisemi,upper-dark-gain: 8-bit dark gain compensation factor(4 int and 4
+>>>>                             fractional bits - Q4.4) applied when light > threshold
+>>>> +
+>>>>  - upisemi,lower-dark-gain: 8-bit dark gain compensation factor(4 int and 4
+>>>>                             fractional bits - Q4.4) applied when light < threshold
+>>>>
+>>>> +- upisemi,continuous: This chip has two power modes: one-shot (chip takes one
+>>>> +                      measurement and then shuts itself down) and continuous (
+>>>> +                      chip takes continuous measurements). The one-shot mode is
+>>>> +                      more power-friendly but the continuous mode may be more
+>>>> +                      reliable. If this property is specified the continuous
+>>>> +                      mode will be used instead of the default one-shot one for
+>>>> +                      raw reads.
+>>>
+>>> I could imagine an OS may want to decide this on its own or use a
+>>> mixture of the modes.
+>>>
+>>> Rob
+>>>
+>>
+>> There is no possibility of mixing them up (at the same time), so for example
+>> proximity cannot work in one mode and als the other.
+>>
+>> The one-shot mode can only be used for raw reads (for example when
+>> user-space polls in_[proximity|light]_raw). If user-space wants to enable
+>> events (activate interrupts when certain thresholds are met - patch 5 of the
+>> series), then the chip has to switch to continuous nonetheless because it
+>> needs to be active all the time. So one work-flow scenario would be:
+>>
+>> Consumer1 starts polling the raw interface - default_mode
+>> Consumer2 activates events - continuous mode
+>> Consumer2 deactivates events - back to default_mode
+>>
+>> The only choice here is the default mode for raw reads, it currently is
+>> one-shot, this patch allows for continuous to be used if preferred.
 > 
-> Continuous mode is more expensive power-wise but may be more reliable.
-> Add a property so that if preferred, the default power mode for raw
-> reads can be set to continuous.
-> Separate one-shot enabling in a separate function that will be used
-> depending on the chosen power mode. Also create a function for
-> powering the chip on and off.
+> Okay, then:
 > 
-> Signed-off-by: Adriana Reus <adriana.reus@intel.com>
-A couple of nitpicks inline...  I've fixed them up when applying to the
-togreg branch of iio.git - initially pushed out as testing for the autobuilders
-to play with them.
+> Acked-by: Rob Herring <robh@kernel.org>
+Applied to the togreg branch of iio.git - initially pushed out as testing.
 
 Thanks,
 
 Jonathan
-> ---
->  drivers/iio/light/us5182d.c | 90 +++++++++++++++++++++++++++++++++++++++------
->  1 file changed, 78 insertions(+), 12 deletions(-)
 > 
-> diff --git a/drivers/iio/light/us5182d.c b/drivers/iio/light/us5182d.c
-> index 49dab3c..7993014 100644
-> --- a/drivers/iio/light/us5182d.c
-> +++ b/drivers/iio/light/us5182d.c
-> @@ -99,6 +99,11 @@ enum mode {
->  	US5182D_PX_ONLY
->  };
->  
-> +enum pmode {
-> +	US5182D_CONTINUOUS,
-> +	US5182D_ONESHOT
-> +};
-> +
->  struct us5182d_data {
->  	struct i2c_client *client;
->  	struct mutex lock;
-> @@ -112,6 +117,9 @@ struct us5182d_data {
->  	u16 *us5182d_dark_ths;
->  
->  	u8 opmode;
-> +	u8 power_mode;
-> +
-> +	bool default_continuous;
->  };
->  
->  static IIO_CONST_ATTR(in_illuminance_scale_available,
-> @@ -130,13 +138,11 @@ static const struct {
->  	u8 reg;
->  	u8 val;
->  } us5182d_regvals[] = {
-> -	{US5182D_REG_CFG0, (US5182D_CFG0_SHUTDOWN_EN |
-> -			    US5182D_CFG0_WORD_ENABLE)},
-> +	{US5182D_REG_CFG0, US5182D_CFG0_WORD_ENABLE},
->  	{US5182D_REG_CFG1, US5182D_CFG1_ALS_RES16},
->  	{US5182D_REG_CFG2, (US5182D_CFG2_PX_RES16 |
->  			    US5182D_CFG2_PXGAIN_DEFAULT)},
->  	{US5182D_REG_CFG3, US5182D_CFG3_LED_CURRENT100},
-> -	{US5182D_REG_MODE_STORE, US5182D_STORE_MODE},
->  	{US5182D_REG_CFG4, 0x00},
->  };
->  
-> @@ -169,7 +175,7 @@ static int us5182d_get_als(struct us5182d_data *data)
->  	return result;
->  }
->  
-> -static int us5182d_set_opmode(struct us5182d_data *data, u8 mode)
-> +static int us5182d_oneshot_en(struct us5182d_data *data)
->  {
->  	int ret;
->  
-> @@ -182,6 +188,20 @@ static int us5182d_set_opmode(struct us5182d_data *data, u8 mode)
->  	 * required measurement.
->  	 */
->  	ret = ret | US5182D_CFG0_ONESHOT_EN;
-> +	return i2c_smbus_write_byte_data(data->client, US5182D_REG_CFG0, ret);
-Unwanted extra blank line here...
-> +
-> +}
-> +
-> +static int us5182d_set_opmode(struct us5182d_data *data, u8 mode)
-> +{
-> +	int ret;
-> +
-> +	if (mode == data->opmode)
-> +		return 0;
-> +
-> +	ret = i2c_smbus_read_byte_data(data->client, US5182D_REG_CFG0);
-> +	if (ret < 0)
-> +		return ret;
->  
->  	/* update mode */
->  	ret = ret & ~US5182D_OPMODE_MASK;
-> @@ -196,9 +216,6 @@ static int us5182d_set_opmode(struct us5182d_data *data, u8 mode)
->  	if (ret < 0)
->  		return ret;
->  
-> -	if (mode == data->opmode)
-> -		return 0;
-> -
->  	ret = i2c_smbus_write_byte_data(data->client, US5182D_REG_MODE_STORE,
->  					US5182D_STORE_MODE);
->  	if (ret < 0)
-> @@ -210,6 +227,23 @@ static int us5182d_set_opmode(struct us5182d_data *data, u8 mode)
->  	return 0;
->  }
->  
-> +static int us5182d_shutdown_en (struct us5182d_data *data, u8 state)
-Stray space above.. Checkpatch would have highlighted this for you, please
-do run it as a sanity check before you send a series out.
-
-> +{
-> +	int ret;
-> +
-> +	if (data->power_mode == US5182D_ONESHOT)
-> +		return 0;
-> +
-> +	ret = i2c_smbus_read_byte_data(data->client, US5182D_REG_CFG0);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	ret = ret & ~US5182D_CFG0_SHUTDOWN_EN;
-> +	ret = ret | state;
-> +
-> +	return i2c_smbus_write_byte_data(data->client, US5182D_REG_CFG0, ret);
-> +}
-> +
->  static int us5182d_read_raw(struct iio_dev *indio_dev,
->  			    struct iio_chan_spec const *chan, int *val,
->  			    int *val2, long mask)
-> @@ -222,6 +256,11 @@ static int us5182d_read_raw(struct iio_dev *indio_dev,
->  		switch (chan->type) {
->  		case IIO_LIGHT:
->  			mutex_lock(&data->lock);
-> +			if (data->power_mode == US5182D_ONESHOT) {
-> +				ret = us5182d_oneshot_en(data);
-> +				if (ret < 0)
-> +					goto out_err;
-> +			}
->  			ret = us5182d_set_opmode(data, US5182D_OPMODE_ALS);
->  			if (ret < 0)
->  				goto out_err;
-> @@ -234,6 +273,11 @@ static int us5182d_read_raw(struct iio_dev *indio_dev,
->  			return IIO_VAL_INT;
->  		case IIO_PROXIMITY:
->  			mutex_lock(&data->lock);
-> +			if (data->power_mode == US5182D_ONESHOT) {
-> +				ret = us5182d_oneshot_en(data);
-> +				if (ret < 0)
-> +					goto out_err;
-> +			}
->  			ret = us5182d_set_opmode(data, US5182D_OPMODE_PX);
->  			if (ret < 0)
->  				goto out_err;
-> @@ -368,6 +412,7 @@ static int us5182d_init(struct iio_dev *indio_dev)
->  		return ret;
->  
->  	data->opmode = 0;
-> +	data->power_mode = US5182D_CONTINUOUS;
->  	for (i = 0; i < ARRAY_SIZE(us5182d_regvals); i++) {
->  		ret = i2c_smbus_write_byte_data(data->client,
->  						us5182d_regvals[i].reg,
-> @@ -376,7 +421,15 @@ static int us5182d_init(struct iio_dev *indio_dev)
->  			return ret;
->  	}
->  
-> -	return 0;
-> +	if (!data->default_continuous) {
-> +		ret = us5182d_shutdown_en(data, US5182D_CFG0_SHUTDOWN_EN);
-> +		if (ret < 0)
-> +			return ret;
-> +		data->power_mode = US5182D_ONESHOT;
-> +	}
-> +
-> +
-> +	return ret;
->  }
->  
->  static void us5182d_get_platform_data(struct iio_dev *indio_dev)
-> @@ -399,6 +452,8 @@ static void us5182d_get_platform_data(struct iio_dev *indio_dev)
->  				    "upisemi,lower-dark-gain",
->  				    &data->lower_dark_gain))
->  		data->lower_dark_gain = US5182D_REG_AUTO_LDARK_GAIN_DEFAULT;
-> +	data->default_continuous = device_property_read_bool(&data->client->dev,
-> +							     "upisemi,continuous");
->  }
->  
->  static int  us5182d_dark_gain_config(struct iio_dev *indio_dev)
-> @@ -464,16 +519,27 @@ static int us5182d_probe(struct i2c_client *client,
->  
->  	ret = us5182d_dark_gain_config(indio_dev);
->  	if (ret < 0)
-> -		return ret;
-> +		goto out_err;
-> +
-> +	ret = iio_device_register(indio_dev);
-> +	if (ret < 0)
-> +		goto out_err;
-> +
-> +	return 0;
-> +
-> +out_err:
-> +	us5182d_shutdown_en(data, US5182D_CFG0_SHUTDOWN_EN);
-> +	return ret;
->  
-> -	return iio_device_register(indio_dev);
->  }
->  
->  static int us5182d_remove(struct i2c_client *client)
->  {
-> +	struct us5182d_data *data = iio_priv(i2c_get_clientdata(client));
-> +
->  	iio_device_unregister(i2c_get_clientdata(client));
-> -	return i2c_smbus_write_byte_data(client, US5182D_REG_CFG0,
-> -					 US5182D_CFG0_SHUTDOWN_EN);
-> +
-> +	return us5182d_shutdown_en(data, US5182D_CFG0_SHUTDOWN_EN);
->  }
->  
->  static const struct acpi_device_id us5182d_acpi_match[] = {
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe devicetree" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-iio" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > 
