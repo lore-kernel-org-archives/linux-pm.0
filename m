@@ -1,44 +1,65 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFD] PM_GENERIC_DOMAINS && !PM
-Date: Mon, 30 Nov 2015 23:42:20 +0100
-Message-ID: <1517697.Xq8gZV3Xnd@vostro.rjw.lan>
-References: <565C7C86.7030801@nvidia.com>
+From: Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>
+Subject: Re: [PATCHv2 2/4] ARM: bcm2835: add rpi power domain driver
+Date: Mon, 30 Nov 2015 14:12:39 -0800
+Message-ID: <87vb8jgmqw.fsf@eliezer.anholt.net>
+References: <1448816373-18235-1-git-send-email-alex.aring@gmail.com> <1448816373-18235-3-git-send-email-alex.aring@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:64946 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755133AbbK3WMd (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Nov 2015 17:12:33 -0500
-In-Reply-To: <565C7C86.7030801@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; boundary="=-=-=";
+	micalg=pgp-sha512; protocol="application/pgp-signature"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1448816373-18235-3-git-send-email-alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Cc: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, lee-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjui-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, sbranden-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>
-Cc: Kevin Hilman <khilman@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
 
-On Monday, November 30, 2015 04:42:46 PM Jon Hunter wrote:
-> Currently, if PM is disabled in the kernel then so is
-> PM_GENERIC_DOMAINS. Although this makes sense, I can see a scenario
-> where having minimal genpd support could be advantageous.
-> 
-> I am looking at enabling genpd for Tegra and ideally we would populate
-> the power domains when the platform device is probed for the power
-> management controller (PMC) as this device contains the registers for
-> enabling the power domains.
-> 
-> This works fine for the case where PM is enabled, but I am concerned
-> about the case where we don't have PM enabled in the kernel. In this
-> case, because domains are not populated early during the boot process, I
-> am concerned that there is a chance for a device dependent on a power
-> domain to be probed before the PMC device has been probed and had chance
-> to turn on any power domains.
+--=-=-=
+Content-Type: text/plain
 
-So make the !PM case invalid for that platform.
+Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> writes:
 
-Seriously, either PM is mandatory, or it isn't.  If it is mandatory, make it so
-instead of pretending that you can live without it.
+> This patch adds support for RPi several Power Domains and enable support
+> to enable the USB Power Domain when it's not enabled before.
+>
+> This patch based on Eric Anholt's patch to support Power Domains. He had
+> an issue about -EPROBE_DEFER inside the power domain subsystem, this
+> issue was solved by commit <311fa6a> ("PM / Domains: Return -EPROBE_DEFER
+> if we fail to init or turn-on domain").
+>
+> Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
+> Cc: Lee Jones <lee-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> Cc: Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>
+> Signed-off-by: Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+> Signed-off-by: Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>
 
-Thanks,
-Rafael
+Acked-by: Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>
 
+I'm still hoping Ulf will pull this patch along with the genpd change,
+to reduce synchronization between trees.  (That just leaves the DT
+change's dependency on the header in this one).
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJWXMnXAAoJELXWKTbR/J7o0wIQALH9gywWendv2eDXhgKoqobh
+NbjV6CoycPpRdeBk3ZJCeetaBuh3AJRx8854ZgiuxQH46C96odXepoQjIRulznAv
+I5Qxeg7yD4zSNm25OR8DBOZgyovPbOo4s5WmHaxmyGOInbYOUHq2yC0x+u+3wLLy
+mqGb/eO6CY2K3VJr7UT6YWElrd1eKWIBhqp1zGx3aLCj+s9MiBj8LDF1C0rX52UD
+wXLo+hdp6xdH6exlUnf9yXVVy5Mj5a7pomjPtV5IWP3D0rHhA9GXq5El7MQfGX4g
+GSS6UXLWXzyO7Rjejt9gSBfSYKE7Gm99eI3ndkYk9Njr8kzVCw0dhLoBL3mgSbnU
+DcPLgP2hc5a+hINxJn76a17Oi66y7ThiM43S3j50aJg4713u0lEcvaOIjZq0kt7Q
+oK4KgjtLnaYm4OctE4fzq2DZ8PYVSkMSjT+qdF5HPZVBlG3Osdgh3PBWwhEBoiWE
+b1wMfLgN8X5dEtsRTe6WRNCUpmIA+UQ2LWWpoXtRAA5ppDs7MXGVmPnLys3UgVX6
+CGltfOroLMZ5HWgsiN3cuyZsn79JQhAH1fg5GVd8YJvCqBjhIRlNsZ/Kty19lLm3
+84kGjY0osdzIPerKMMbcjXTOVy3q1+76ZysTFAgaLSSdY+KQmHYJ/O9DTC6qqxbD
+J0PcXnIHXdgU48QL3ihJ
+=AeB0
+-----END PGP SIGNATURE-----
+--=-=-=--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
