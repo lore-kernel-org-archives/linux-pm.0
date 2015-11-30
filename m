@@ -1,51 +1,87 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] thermal: rcar: add .set_trip_temp support
-Date: Mon, 30 Nov 2015 10:51:00 -0800
-Message-ID: <20151130185058.GA5900@localhost.localdomain>
-References: <87a8q28wsv.wl%kuninori.morimoto.gx@renesas.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Imre Deak <imre.deak@intel.com>
+Subject: [PATCH v5] PCI / PM: Tune down retryable runtime suspend error messages
+Date: Mon, 30 Nov 2015 21:02:55 +0200
+Message-ID: <1448910175-5904-1-git-send-email-imre.deak@intel.com>
+References: <1448699664-4178-1-git-send-email-imre.deak@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f45.google.com ([209.85.220.45]:34606 "EHLO
-	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751989AbbK3SvE (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Nov 2015 13:51:04 -0500
-Content-Disposition: inline
-In-Reply-To: <87a8q28wsv.wl%kuninori.morimoto.gx@renesas.com>
+Received: from mga14.intel.com ([192.55.52.115]:31815 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753719AbbK3TD1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 30 Nov 2015 14:03:27 -0500
+In-Reply-To: <1448699664-4178-1-git-send-email-imre.deak@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, devicetree@vger.kernel.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, Ryusuke Sakato <ryusuke.sakato.bx@renesas.com>, linux-kernel@vger.kernel.org, "osd2@lm.renesas.com" <osd2@lm.renesas.com>
+To: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Jani Nikula <jani.nikula@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Linux PM <linux-pm@vger.kernel.org>, intel-gfx@lists.freedesktop.org, Linux PCI <linux-pci@vger.kernel.org>
 
-On Wed, Nov 25, 2015 at 05:42:27AM +0000, Kuninori Morimoto wrote:
-> 
-> From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-> 
-> You can set trip temp if your kernel has CONFIG_THERMAL_WRITABLE_TRIPS
-> 
-> echo $temp > /sys/class/thermal/thermal_zone0/trip_point_0_temp
-> 
-> -45000 < $temp < 125000 is supported
-> Default is 90000
-> 
-> Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-> ---
->   This patch is v2 of "[PATCH] thermal: rcar: enable to set tripN-temp via DT"
->   I think it will be full-DT feature if it uses of-thermal, but this driver is used
->   from non-DT SoC too. We would like to keep non-DT support.
->   And we would like to do is only exchange trip temp.
->   .set_trip_temp is very enouth for it at this point.
->   But, it can use of-thermal feature in the future.
+The runtime PM core doesn't treat EBUSY and EAGAIN retvals from the driver
+suspend hooks as errors, but they still show up as errors in dmesg. Tune
+them down. See rpm_suspend() for details of handling these return values.
 
-Kuninori,
+Note that we use dev_dbg() for the retryable retvals, so after this
+change you'll need either CONFIG_DYNAMIC_DEBUG or CONFIG_PCI_DEBUG
+for them to show up in the log.
 
+One problem caused by this was noticed by Daniel: the i915 driver
+returns EAGAIN to signal a temporary failure to suspend and as a request
+towards the RPM core for scheduling a suspend again. This is a normal
+event, but the resulting error message flags a breakage during the
+driver's automated testing which parses dmesg and picks up the error.
 
-According to discussion on your first version [1], this patch is not needed
-anymore, right?
+Reported-by: Daniel Vetter <daniel.vetter@intel.com>
+Bugzilla: https://bugs.freedesktop.org/show_bug.cgi?id=92992
+CC: Bjorn Helgaas <bhelgaas@google.com>
+CC: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Imre Deak <imre.deak@intel.com>
 
-If you want to add the support for writable trip points, please, add the
-support to of-thermal, as this driver supports only DT booting boards.
+---
 
+v2:
+- fix compile breake when CONFIG_PM_SLEEP=n (0-day builder)
+v3:
+- instead of modifying the suspend_report_result() helper to disinguish
+  between the runtime and system suspend case, inline the error
+  printing, it's not used anywhere else (Rafael)
+v4:
+- don't refer to log levels as flags in code comment (Rafael)
+- use pr_debug(), pr_err() instead of the corresponding printk() (Rafael)
+v5:
+- clarify commit message (Bjorn)
+- use dev_dbg, dev_err instead of pr_debug, pr_err (Bjorn)
+- use %pf in printk format instead of %pF (Bjorn)
+- make the debug/error messages more meaningful (Bjorn)
+---
+ drivers/pci/pci-driver.c | 16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
 
-[1] - https://lkml.org/lkml/2015/11/25/888
-> 
+diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
+index 4446fcb..d7ffd66 100644
+--- a/drivers/pci/pci-driver.c
++++ b/drivers/pci/pci-driver.c
+@@ -1146,9 +1146,21 @@ static int pci_pm_runtime_suspend(struct device *dev)
+ 	pci_dev->state_saved = false;
+ 	pci_dev->no_d3cold = false;
+ 	error = pm->runtime_suspend(dev);
+-	suspend_report_result(pm->runtime_suspend, error);
+-	if (error)
++	if (error) {
++		/*
++		 * -EBUSY and -EAGAIN is used to request the runtime PM core
++		 * to schedule a new suspend, so log the event only with debug
++		 * log level.
++		 */
++		if (error == -EBUSY || error == -EAGAIN)
++			dev_dbg(dev, "can't suspend now (%pf returned %d)\n",
++				pm->runtime_suspend, error);
++		else
++			dev_err(dev, "can't suspend (%pf returned %d)\n",
++				pm->runtime_suspend, error);
++
+ 		return error;
++	}
+ 	if (!pci_dev->d3cold_allowed)
+ 		pci_dev->no_d3cold = true;
+ 
+-- 
+2.5.0
+
