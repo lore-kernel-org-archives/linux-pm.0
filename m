@@ -1,99 +1,100 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v4 3/3] thermal: mediatek: Add cpu dynamic power cooling
- model.
-Date: Mon, 30 Nov 2015 11:08:45 +0530
-Message-ID: <20151130053845.GM3373@ubuntu>
-References: <1448616727-29367-1-git-send-email-dawei.chien@mediatek.com>
- <1448616727-29367-4-git-send-email-dawei.chien@mediatek.com>
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: Re: [PATCH v4 1/8] thermal: qcom: tsens: Add a skeletal TSENS drivers
+Date: Mon, 30 Nov 2015 12:39:39 +0530
+Message-ID: <565BF633.7070701@codeaurora.org>
+References: <1444383670-32693-1-git-send-email-rnayak@codeaurora.org> <1444383670-32693-2-git-send-email-rnayak@codeaurora.org> <20151102203021.GB4469@localhost.localdomain> <563AFCE9.8020000@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1448616727-29367-4-git-send-email-dawei.chien@mediatek.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dawei Chien <dawei.chien@mediatek.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Matthias Brugger <matthias.bgg@gmail.com>, Daniel Kurtz <djkurtz@chromium.org>, Sascha Hauer <s.hauer@pengutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, Sascha Hauer <kernel@pengutronix.de>, Punit Agrawal <punit.agrawal@arm.com>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <563AFCE9.8020000@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: agross@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rui.zhang@intel.com, sboyd@codeaurora.org, srinivas.kandagatla@linaro.org, nrajan@codeaurora.org, lina.iyer@linaro.org, punit.agrawal@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On 27-11-15, 17:32, Dawei Chien wrote:
-> MT8173 cpufreq driver use of_cpufreq_power_cooling_register registering
-> cooling devices with dynamic power coefficient.
-> 
-> Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
-> ---
-> This patch is base on patchset:
-> https://lkml.org/lkml/2015/11/17/251
-> ---
->  drivers/cpufreq/mt8173-cpufreq.c |   28 ++++++++++++++++++++--------
->  1 file changed, 20 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/mt8173-cpufreq.c b/drivers/cpufreq/mt8173-cpufreq.c
-> index 83001dc..4d39468 100644
-> --- a/drivers/cpufreq/mt8173-cpufreq.c
-> +++ b/drivers/cpufreq/mt8173-cpufreq.c
-> @@ -263,24 +263,34 @@ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
->  	return 0;
->  }
->  
-> +#define DYNAMIC_POWER "dynamic-power-coefficient"
-> +
->  static void mtk_cpufreq_ready(struct cpufreq_policy *policy)
->  {
->  	struct mtk_cpu_dvfs_info *info = policy->driver_data;
->  	struct device_node *np = of_node_get(info->cpu_dev->of_node);
-> +	u32 capacitance;
->  
->  	if (WARN_ON(!np))
->  		return;
->  
->  	if (of_find_property(np, "#cooling-cells", NULL)) {
-> -		info->cdev = of_cpufreq_cooling_register(np,
-> -							 policy->related_cpus);
-> +		if (!info->cdev) {
+[]..
 
-Why will info->cdev be non-NULL here ?
+>>> +Optional properties:
+>>> +- qcom,sensor-id: List of sensor instances used in a given SoC. A TSENS IP can
+>>> +		  have a fixed number of sensors (like 11) but a given SoC can
+>>> +		  use only 5 of these and they might not always the first 5. They
+>>> +		  could be sensors 0, 1, 4, 8 and 9. This property is used to
+>>> +		  describe the subset of the sensors used. If this property is
+>>> +		  missing they are assumed to be the first 'n' sensors numbered
+>>> +		  sequentially in which case the number of sensors defaults to
+>>> +		  the number of slope values.
+>>
+>> Can you please elaborate a bit more on why you could not solve this
+>> using the thermal sensor descriptor id?
+>>
+>>> +
+>>> +Example:
+>>> +tsens: thermal-sensor@900000 {
+>>> +		compatible = "qcom,msm8916-tsens";
+>>> +		nvmem-cells = <&tsens_caldata>, <&tsens_calsel>;
+>>> +		nvmem-cell-names = "caldata", "calsel";
+>>> +		qcom,tsens-slopes = <3200 3200 3200 3200 3200>;
+>>
 
-> +			of_property_read_u32(np, DYNAMIC_POWER, &capacitance);
 
-This can fail, in which case capacitance will be used uninitialized.
-Fix that by initializing it with 0 at the beginning of this routine.
+>>> +		qcom,sensor-id = <0 1 2 4 5>;
+>>> +		#thermal-sensor-cells = <1>;
+>>
+>> How about if you simply make the sensor driver expose all sensors, then in the
+>> thermal zone descriptor, you pick which sensor to use using the thermal sensor
+>> descriptor (quoting the binding again):
 
-> +			info->cdev = of_cpufreq_power_cooling_register(np,
-> +							policy->related_cpus,
-> +							capacitance,
-> +							NULL);
->  
-> -		if (IS_ERR(info->cdev)) {
-> -			dev_err(info->cpu_dev,
-> -				"running cpufreq without cooling device: %ld\n",
-> -				PTR_ERR(info->cdev));
-> +			if (IS_ERR(info->cdev)) {
-> +				dev_err(info->cpu_dev,
-> +					"running cpufreq without cooling device: %ld\n",
-> +					PTR_ERR(info->cdev));
->  
-> -			info->cdev = NULL;
-> +				info->cdev = NULL;
-> +			}
->  		}
->  	}
->  
-> @@ -460,7 +470,9 @@ static int mtk_cpufreq_exit(struct cpufreq_policy *policy)
->  {
->  	struct mtk_cpu_dvfs_info *info = policy->driver_data;
->  
-> -	cpufreq_cooling_unregister(info->cdev);
-> +	if (info->cdev)
-> +		cpufreq_cooling_unregister(info->cdev);
-> +
+Hi Eduardo,
 
-Why do you need to update this?
+What you suggested would work, except for that the calibration data in eeprom would
+be available for only the _subset_ of sensors on the SoC. So the driver in some way would
+need to know which exact sensors the eeprom data corresponds to.
 
->  	dev_pm_opp_free_cpufreq_table(info->cpu_dev, &policy->freq_table);
->  	mtk_cpu_dvfs_info_release(info);
->  	kfree(info);
-> -- 
-> 1.7.9.5
+If this does not seem like something which needs to be described in DT, I can have the 
+data embedded into the driver so it gets picked based on the right compatibles.
+
+regards,
+Rajendra
+
+>>
+>> ocp {
+>>         ...
+>>         /*
+>>          * A simple IC with several bandgap temperature sensors.
+>>          */
+>>         bandgap0: bandgap@0x0000ED00 {
+>>                 ...
+>>                 #thermal-sensor-cells = <1>;
+>>         };
+>> };
+>>
+>> thermal-zones {
+>>         cpu_thermal: cpu-thermal {
+>>                 polling-delay-passive = <250>; /* milliseconds */
+>>                 polling-delay = <1000>; /* milliseconds */
+>>
+>>                                 /* sensor       ID */
+>>                 thermal-sensors = <&bandgap0     0>;
+>> 	};
+>> 	gpu_thermal: gpu-thermal {
+>>                 polling-delay-passive = <120>; /* milliseconds */
+>>                 polling-delay = <1000>; /* milliseconds */
+>>
+>>                                 /* sensor       ID */
+>>                 thermal-sensors = <&bandgap0     1>;
+>>
+>> 	};
+>>
+>> };
+>>
+>> Would that simplify ?
+>>
+>> BR,
+>>
+>> Eduardo Valentin
+
 
 -- 
-viresh
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
