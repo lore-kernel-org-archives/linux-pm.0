@@ -1,45 +1,102 @@
-From: Caesar Wang <wxt@rock-chips.com>
-Subject: [PATCH v2 3/5] dt-bindings: rockchip-thermal: Support the RK3228/RK3399 SoCs compatible
-Date: Mon, 30 Nov 2015 10:28:06 +0800
-Message-ID: <1448850488-16325-4-git-send-email-wxt@rock-chips.com>
-References: <1448850488-16325-1-git-send-email-wxt@rock-chips.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1448850488-16325-1-git-send-email-wxt@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-rockchip@lists.infradead.org, Heiko Stuebner <heiko@sntech.de>, Dan Carpenter <dan.carpenter@oracle.com>, Caesar Wang <wxt@rock-chips.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Kumar Gala <galak@codeaurora.org>, linux-kernel@vger.kernel.org, Ian Campbell <ijc+devicetree@hellion.org.uk>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, Pawel Moll <pawel.moll@arm.com>, Zhang Rui <rui.zhang@intel.com>, Mark Rutland <mark.rutland@arm.com>
+From: Caesar Wang <caesar.upstream@gmail.com>
+Subject: Re: [PATCH v1 1/5] thermal: rockchip: fix a trivial typo
+Date: Mon, 30 Nov 2015 10:32:18 +0800
+Message-ID: <565BB532.4010804@gmail.com>
+References: <1448592746-2129-1-git-send-email-wxt@rock-chips.com>
+ <1448592746-2129-2-git-send-email-wxt@rock-chips.com>
+ <5259912.5mmETGszQg@diego>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f41.google.com ([209.85.220.41]:36833 "EHLO
+	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751767AbbK3CcY (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 29 Nov 2015 21:32:24 -0500
+In-Reply-To: <5259912.5mmETGszQg@diego>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: =?UTF-8?Q?Heiko_St=c3=bcbner?= <heiko@sntech.de>
+Cc: Eduardo Valentin <edubezval@gmail.com>, linux-rockchip@lists.infradead.org, Dan Carpenter <dan.carpenter@oracle.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jiri Kosina <trivial@kernel.org>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
 
-This patchset attempts to new compatible for thermal founding
-on RK3228/RK3399 SoCs.
+Hi Heiko,
 
-Signed-off-by: Caesar Wang <wxt@rock-chips.com>
-Acked-by: Rob Herring <robh@kernel.org>
+Thanks to take your time to review that.
 
----
+=E5=9C=A8 2015=E5=B9=B411=E6=9C=8827=E6=97=A5 17:49, Heiko St=C3=BCbner=
+ =E5=86=99=E9=81=93:
+> Hi Caesar,
+>
+> Am Freitag, 27. November 2015, 10:52:22 schrieb Caesar Wang:
 
-Changes in v2: None
-Changes in v1:
-- As Heiko comments, fix a copy incorrect name.
-- Add a Acked from Rob.
+[...]
+>
+>   /**
+> -* The conversion table has the adc value and temperature.
+> -* ADC_DECREMENT is the adc value decremnet.(e.g. v2_code_table)
+> -* ADC_INCREMNET is the adc value incremnet.(e.g. v3_code_table)
+> -*/
+> + * The conversion table has the adc value and temperature.
+> + * ADC_DECREMENT: the adc value is of diminishing.(e.g. v2_code_tabl=
+e)
+> + * ADC_INCREMENT: the adc value is incremental.(e.g. v3_code_table)
+> + */
+>   enum adc_sort_mode {
+>   	ADC_DECREMENT =3D 0,
+>   	ADC_INCREMENT,
+> @@ -75,13 +75,13 @@ enum adc_sort_mode {
+> You could simply move to documenting the fields in the header (like
+> exynos_tmu.c for example) instead of inside the table. I think there =
+are even
+> tools that create documention from these comments, so I'd suggest:
+>
+> /*
+>   * struct chip_tsadc_table: hold information about chip-specific dif=
+ferences
+>   * @id: conversion table
+>   * @length: size of conversion table
+>   * @data_mask: mask to apply on data inputs
+>   * @mode: sort mode of this adc variant (incrementing or decrementin=
+g)
+>   */
 
- Documentation/devicetree/bindings/thermal/rockchip-thermal.txt | 2 ++
- 1 file changed, 2 insertions(+)
+That's a good idea for this.
+=46ixed in next patch v2.
 
-diff --git a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
-index 0dfa60d..08efe6b 100644
---- a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
-+++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
-@@ -2,8 +2,10 @@
- 
- Required properties:
- - compatible : should be "rockchip,<name>-tsadc"
-+   "rockchip,rk3228-tsadc": found on RK3228 SoCs
-    "rockchip,rk3288-tsadc": found on RK3288 SoCs
-    "rockchip,rk3368-tsadc": found on RK3368 SoCs
-+   "rockchip,rk3399-tsadc": found on RK3399 SoCs
- - reg : physical base address of the controller and length of memory mapped
- 	region.
- - interrupts : The interrupt number to the cpu. The interrupt specifier format
--- 
-1.9.1
+>>   struct chip_tsadc_table {
+>>   	const struct tsadc_table *id;
+>>
+>> -	/* the array table size*/
+>> +	/* The array table size */
+>>   	unsigned int length;
+>>
+>> -	/* that analogic mask data */
+>> +	/* That analogic mask data */
+>>   	u32 data_mask;
+>>
+>> -	/* the sort mode is adc value that increment or decrement in table=
+ */
+>> +	/* The sort mode is adc value that increment or decrement in table=
+ */
+>>   	enum adc_sort_mode mode;
+>>   };
+>>
+>> @@ -617,7 +617,7 @@ rockchip_thermal_register_sensor(struct platform=
+_device
+>> *pdev, return 0;
+>>   }
+>>
+>> -/*
+>> +/**
+>>    * Reset TSADC Controller, reset all tsadc registers.
+>>    */
+>>   static void rockchip_thermal_reset_controller(struct reset_control=
+ *reset)
+>
+>
+>
+>
+> --=20
+> Thanks,
+> Caesar
