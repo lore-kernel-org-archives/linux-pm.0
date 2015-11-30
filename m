@@ -1,87 +1,80 @@
-From: Imre Deak <imre.deak@intel.com>
-Subject: [PATCH v5] PCI / PM: Tune down retryable runtime suspend error messages
-Date: Mon, 30 Nov 2015 21:02:55 +0200
-Message-ID: <1448910175-5904-1-git-send-email-imre.deak@intel.com>
-References: <1448699664-4178-1-git-send-email-imre.deak@intel.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH 1/1] thermal: setup monitor only once after handling trips
+Date: Mon, 30 Nov 2015 11:10:42 -0800
+Message-ID: <20151130191041.GB5900@localhost.localdomain>
+References: <1448424468-18736-1-git-send-email-edubezval@gmail.com>
+ <1448435910.15712.22.camel@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:31815 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753719AbbK3TD1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 30 Nov 2015 14:03:27 -0500
-In-Reply-To: <1448699664-4178-1-git-send-email-imre.deak@intel.com>
+Received: from mail-pa0-f44.google.com ([209.85.220.44]:32836 "EHLO
+	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751237AbbK3TKp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Nov 2015 14:10:45 -0500
+Content-Disposition: inline
+In-Reply-To: <1448435910.15712.22.camel@localhost>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Jani Nikula <jani.nikula@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Linux PM <linux-pm@vger.kernel.org>, intel-gfx@lists.freedesktop.org, Linux PCI <linux-pci@vger.kernel.org>
+To: "Chen, Yu C" <yu.c.chen@intel.com>
+Cc: "Zhang, Rui" <rui.zhang@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
 
-The runtime PM core doesn't treat EBUSY and EAGAIN retvals from the driver
-suspend hooks as errors, but they still show up as errors in dmesg. Tune
-them down. See rpm_suspend() for details of handling these return values.
+On Wed, Nov 25, 2015 at 07:16:08AM +0000, Chen, Yu C wrote:
+> Hi,
+> On Tue, 2015-11-24 at 20:07 -0800, Eduardo Valentin wrote:
+> > Instead of changing the monitoring setup every time after
+> > handling each trip, this patch simplifies the monitoring
+> > setup by moving the setup call to a place where all
+> > trips have been treated already.
+> > 
+> > Cc: Zhang Rui <rui.zhang@intel.com>
+> > Cc: linux-pm@vger.kernel.org
+> > Cc: linux-kernel@vger.kernel.org
+> > Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+> > ---
+> >  drivers/thermal/thermal_core.c | 11 ++++++-----
+> >  1 file changed, 6 insertions(+), 5 deletions(-)
+> > 
+> > diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> > index d9e525c..6debb54 100644
+> > --- a/drivers/thermal/thermal_core.c
+> > +++ b/drivers/thermal/thermal_core.c
+> > @@ -457,11 +457,6 @@ static void handle_thermal_trip(struct thermal_zone_device *tz, int trip)
+> >  		handle_critical_trips(tz, trip, type);
+> >  	else
+> >  		handle_non_critical_trips(tz, trip, type);
+> > -	/*
+> > -	 * Alright, we handled this trip successfully.
+> > -	 * So, start monitoring again.
+> > -	 */
+> > -	monitor_thermal_zone(tz);
+> >  }
+> >  
+> >  /**
+> > @@ -547,6 +542,12 @@ void thermal_zone_device_update(struct thermal_zone_device *tz)
+> >  
+> >  	for (count = 0; count < tz->trips; count++)
+> >  		handle_thermal_trip(tz, count);
+> > +
+> > +	/*
+> > +	 * Alright, we handled this trip successfully.
+> s/these trips ?
 
-Note that we use dev_dbg() for the retryable retvals, so after this
-change you'll need either CONFIG_DYNAMIC_DEBUG or CONFIG_PCI_DEBUG
-for them to show up in the log.
+Yeah, I can amend this.
 
-One problem caused by this was noticed by Daniel: the i915 driver
-returns EAGAIN to signal a temporary failure to suspend and as a request
-towards the RPM core for scheduling a suspend again. This is a normal
-event, but the resulting error message flags a breakage during the
-driver's automated testing which parses dmesg and picks up the error.
+> > +	 * So, start monitoring again.
+> > +	 */
+> > +	monitor_thermal_zone(tz);
+> >  }
+> >  EXPORT_SYMBOL_GPL(thermal_zone_device_update);
+> >  
+> BTW, thermal_notify_framework might need be affected? 
 
-Reported-by: Daniel Vetter <daniel.vetter@intel.com>
-Bugzilla: https://bugs.freedesktop.org/show_bug.cgi?id=92992
-CC: Bjorn Helgaas <bhelgaas@google.com>
-CC: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Signed-off-by: Imre Deak <imre.deak@intel.com>
+Well, the original code does not call thermal_notify_framework. Calling
+it would require a different patch. This one is just to simplify the
+monitoring setup.
 
----
+BR,
 
-v2:
-- fix compile breake when CONFIG_PM_SLEEP=n (0-day builder)
-v3:
-- instead of modifying the suspend_report_result() helper to disinguish
-  between the runtime and system suspend case, inline the error
-  printing, it's not used anywhere else (Rafael)
-v4:
-- don't refer to log levels as flags in code comment (Rafael)
-- use pr_debug(), pr_err() instead of the corresponding printk() (Rafael)
-v5:
-- clarify commit message (Bjorn)
-- use dev_dbg, dev_err instead of pr_debug, pr_err (Bjorn)
-- use %pf in printk format instead of %pF (Bjorn)
-- make the debug/error messages more meaningful (Bjorn)
----
- drivers/pci/pci-driver.c | 16 ++++++++++++++--
- 1 file changed, 14 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-index 4446fcb..d7ffd66 100644
---- a/drivers/pci/pci-driver.c
-+++ b/drivers/pci/pci-driver.c
-@@ -1146,9 +1146,21 @@ static int pci_pm_runtime_suspend(struct device *dev)
- 	pci_dev->state_saved = false;
- 	pci_dev->no_d3cold = false;
- 	error = pm->runtime_suspend(dev);
--	suspend_report_result(pm->runtime_suspend, error);
--	if (error)
-+	if (error) {
-+		/*
-+		 * -EBUSY and -EAGAIN is used to request the runtime PM core
-+		 * to schedule a new suspend, so log the event only with debug
-+		 * log level.
-+		 */
-+		if (error == -EBUSY || error == -EAGAIN)
-+			dev_dbg(dev, "can't suspend now (%pf returned %d)\n",
-+				pm->runtime_suspend, error);
-+		else
-+			dev_err(dev, "can't suspend (%pf returned %d)\n",
-+				pm->runtime_suspend, error);
-+
- 		return error;
-+	}
- 	if (!pci_dev->d3cold_allowed)
- 		pci_dev->no_d3cold = true;
- 
--- 
-2.5.0
-
+> 
+> thanks,
+> Yu
