@@ -1,93 +1,68 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3] PM: check for complete cb before device lock in dpm_complete
-Date: Mon, 30 Nov 2015 03:15:03 +0100
-Message-ID: <1815101.hkTcZ3M1YO@vostro.rjw.lan>
-References: <6146fb8483239461040674927df2e71d4555c59e.1445035227.git.todd.e.brandt@linux.intel.com> <CAJZ5v0gqUFWfUHRR3Y7t2bnrQjam3m_CHC0aHOSbJNLJZ5ctbQ@mail.gmail.com> <CAKdAkRQ3nUtOFfxKBembnzZZi-Kq1N0hRon39AY8XkTy7i4Ftw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: Caesar Wang <wxt@rock-chips.com>
+Subject: [PATCH v2 0/5] Fix a trivial typo and support rk3228/rk3399 SoCs for thermal driver.
+Date: Mon, 30 Nov 2015 10:28:03 +0800
+Message-ID: <1448850488-16325-1-git-send-email-wxt@rock-chips.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:60727 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752698AbbK3BpQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 29 Nov 2015 20:45:16 -0500
-In-Reply-To: <CAKdAkRQ3nUtOFfxKBembnzZZi-Kq1N0hRon39AY8XkTy7i4Ftw@mail.gmail.com>
+Received: from mail-pa0-f65.google.com ([209.85.220.65]:33857 "EHLO
+	mail-pa0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751660AbbK3C23 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 29 Nov 2015 21:28:29 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Todd Brandt <todd.e.brandt@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, todd.e.brandt@intel.com
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-rockchip@lists.infradead.org, Heiko Stuebner <heiko@sntech.de>, Dan Carpenter <dan.carpenter@oracle.com>, Caesar Wang <wxt@rock-chips.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Jiri Kosina <trivial@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Zhang Rui <rui.zhang@intel.com>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org
 
-On Saturday, November 28, 2015 09:33:20 PM Dmitry Torokhov wrote:
-> On Fri, Oct 16, 2015 at 3:49 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > Hi,
-> >
-> > On Sat, Oct 17, 2015 at 12:45 AM, Todd Brandt
-> > <todd.e.brandt@linux.intel.com> wrote:
-> >> If a device has no pm_ops complete callback it shouldn't have
-> >> to be locked in order to skip it in the dpm_complete call. This causes
-> >> problems when a device without a complete callback has already begun
-> >> operation after its resume cb is called. It can end up holding up the
-> >> system resume as the pm subsystem tries to get a device lock just to
-> >> check for a callback that isn't there.
-> >>
-> >> This is basically the original v1 patch but updated for the latest kernel.
-> >>
-> >> Signed-off-by: Todd Brandt <todd.e.brandt@linux.intel.com>
-> >> ---
-> >>  drivers/base/power/main.c | 12 ++++++------
-> >>  1 file changed, 6 insertions(+), 6 deletions(-)
-> >>
-> >> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> >> index 1710c26..9bb8ff0 100644
-> >> --- a/drivers/base/power/main.c
-> >> +++ b/drivers/base/power/main.c
-> >> @@ -899,8 +899,6 @@ static void device_complete(struct device *dev, pm_message_t state)
-> >>         if (dev->power.syscore)
-> >>                 return;
-> >>
-> >> -       device_lock(dev);
-> >> -
-> >>         if (dev->pm_domain) {
-> >>                 info = "completing power domain ";
-> >>                 callback = dev->pm_domain->ops.complete;
-> >> @@ -920,13 +918,15 @@ static void device_complete(struct device *dev, pm_message_t state)
-> >>                 callback = dev->driver->pm->complete;
-> >>         }
-> >>
-> >> -       if (callback) {
-> >> -               pm_dev_dbg(dev, state, info);
-> >> -               callback(dev);
-> >> -       }
-> >> +       if (!callback)
-> >> +               goto Complete;
-> >>
-> >
-> > Suppose that the devices is unregistered at this point and callback
-> > was pointing to the driver callback.
-> >
-> >> +       device_lock(dev);
-> >> +       pm_dev_dbg(dev, state, info);
-> >> +       callback(dev);
-> >
-> > I don't think it is correct to execute that callback here in that case, is it?
-> 
-> Continuing this line of thought: what if driver was unbound and
-> rebound again before we got to executing device_complete()? In that
-> case we should not be calling ->complete() even if it is present,
-> since it is as if prepare() was not called, and there is nothing for
-> ->complete() to undo.
-> 
-> It seems to me we should not be allowing bind/unbind transitions here.
+This series pacthes to support the next soc for this thermal driver.
+I don't add the dts thermal data since these SoCs have *_not_* land
+in this mainline. I believe these SoCs dts will land in this mainline
+lately,
+then I will add the thermal data for Heiko.
 
-Probes will be avoided after this patch:
+This series patches can apply into Eduardo branch.
+https://git.kernel.org/cgit/linux/kernel/git/evalenti/linux-soc-thermal.git
 
-https://patchwork.kernel.org/patch/7589121/
+Also, this series pacthes have built on github branch.
+https://github.com/rockchip-linux/kernel/commits/develop4.4
 
-which I'm going to queue up for 4.5.
+PATCH[1/5]:
+That's bit ugly typo, sorry for sending again :(.
 
-I'm not sure about unbinds, though.  Some parts of the kernel seem to want
-to be able to remove devices during system suspend/resume.
+PATCH[2/5]:
+To fix a build warning came from Dan Carpenter report smatch check,
+Thanks. :)
 
-Thanks,
-Rafael
+PATCH[3/5]:
+Add the rk3228/rk3399 SoCs compatible for dt-bindings.
+
+PATCH[4/5]:
+Add the rk3228 SoCs for thermal driver.
+
+PATCH[5/5]:
+Add the rk3399 SoCs for thermal driver based on PATCH[4/5].
+
+
+Changes in v2:
+- As Heiko comments, move to documenting the fields in the header
+  instead of inside the table.
+
+Changes in v1:
+- Search more trivial typo for me.
+- As Heiko comments, fix a copy incorrect name.
+- Add a Acked from Rob.
+- fix a irq ack is similar with RK3228 SoCs.
+
+Caesar Wang (5):
+  thermal: rockchip: fix a trivial typo
+  thermal: rockchip: fix a impossible condition caused by the warning
+  dt-bindings: rockchip-thermal: Support the RK3228/RK3399 SoCs
+    compatible
+  thermal: rockchip: Support the RK3228 SoCs in thermal driver
+  thermal: rockchip: Support the RK3399 SoCs in thermal driver
+
+ .../bindings/thermal/rockchip-thermal.txt          |   2 +
+ drivers/thermal/rockchip_thermal.c                 | 174 +++++++++++++++++++--
+ 2 files changed, 163 insertions(+), 13 deletions(-)
+
+-- 
+1.9.1
 
