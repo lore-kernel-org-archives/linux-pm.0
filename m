@@ -1,85 +1,62 @@
-From: Anup Limbu <anuplimbu14@gmail.com>
-Subject: Re: [PATCH] tools/thermal: tmon: cleanup function init_thermal_controller
-Date: Mon, 30 Nov 2015 16:27:37 +0530
-Message-ID: <CABYr-okNuXLcygWR5szmNgz8KowtQWuQampATqwgMNB8KL87_g@mail.gmail.com>
-References: <1448625407-12791-1-git-send-email-anuplimbu14@gmail.com>
-	<CANAwSgSd1G=x2zahEX1i8U-HRchyfR+4Zf46JKghFJp4Ee1KgQ@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 06/10] cpufreq: governor: Keep single copy of
+ information common to policy->cpus
+Date: Mon, 30 Nov 2015 16:33:27 +0530
+Message-ID: <20151130110327.GC4899@ubuntu>
+References: <cover.1434713657.git.viresh.kumar@linaro.org>
+ <efd892126475600e751c0e1206553270ebba5c00.1434713657.git.viresh.kumar@linaro.org>
+ <1448625400.3689.103.camel@pengutronix.de>
+ <20151130051915.GH3373@ubuntu>
+ <1448879672.8275.15.camel@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f177.google.com ([209.85.160.177]:35224 "EHLO
-	mail-yk0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750983AbbK3K5i (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Nov 2015 05:57:38 -0500
-In-Reply-To: <CANAwSgSd1G=x2zahEX1i8U-HRchyfR+4Zf46JKghFJp4Ee1KgQ@mail.gmail.com>
+Received: from mail-pa0-f52.google.com ([209.85.220.52]:36481 "EHLO
+	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751018AbbK3LDb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Nov 2015 06:03:31 -0500
+Received: by pacdm15 with SMTP id dm15so181971420pac.3
+        for <linux-pm@vger.kernel.org>; Mon, 30 Nov 2015 03:03:30 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <1448879672.8275.15.camel@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Anand Moon <linux.amoon@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Florian Fainelli <f.fainelli@gmail.com>, Brian Norris <computersforpeace@gmail.com>, acme@redhat.com, olaf@aepfle.de, Arjun Sreedharan <arjun024@gmail.com>, linux-pm@vger.kernel.org, Linux-kernel@vger.kernel.org
+To: Lucas Stach <l.stach@pengutronix.de>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, ke.wang@spreadtrum.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, ego@linux.vnet.ibm.com, paulus@samba.org, shilpa.bhat@linux.vnet.ibm.com, prarit@redhat.com, robert.schoene@tu-dresden.de, skannan@codeaurora.org
 
- +Linux-kernel@vger.kernel.org +linux-pm@vger.kernel.org
+On 30-11-15, 11:34, Lucas Stach wrote:
+> The timer_mutex is one of the top contended locks already on a quad core
+> system.
 
-On Sun, Nov 29, 2015 at 9:08 PM, Anand Moon <linux.amoon@gmail.com> wrote:
-> Hi Anup,
->
-> On 27 November 2015 at 17:26, Anup Limbu <anuplimbu14@gmail.com> wrote:
->> Replacing return type of function as void from int and removing
->> unused variable ret.
->>
->> Signed-off-by: Anup Limbu <anuplimbu14@gmail.com>
->> ---
->>  tools/thermal/tmon/pid.c  | 5 +----
->>  tools/thermal/tmon/tmon.h | 2 +-
->>  2 files changed, 2 insertions(+), 5 deletions(-)
->>
->> diff --git a/tools/thermal/tmon/pid.c b/tools/thermal/tmon/pid.c
->> index fd7e9e9..c034bf3 100644
->> --- a/tools/thermal/tmon/pid.c
->> +++ b/tools/thermal/tmon/pid.c
->> @@ -63,10 +63,8 @@ static double xk_1, xk_2; /* input temperature x[k-#] */
->>   *
->>   * add a flag for tuning PID
->>   */
->> -int init_thermal_controller(void)
->> +void init_thermal_controller(void)
->>  {
->> -       int ret = 0;
->> -
->>         /* init pid params */
->>         p_param.ts = ticktime;
->>         /* TODO: get it from TUI tuning tab */
->> @@ -76,7 +74,6 @@ int init_thermal_controller(void)
->>
->>         p_param.t_target = target_temp_user;
->>
->> -       return ret;
->>  }
->>
->>  void controller_reset(void)
->> diff --git a/tools/thermal/tmon/tmon.h b/tools/thermal/tmon/tmon.h
->> index 9e3c49c..016569d 100644
->> --- a/tools/thermal/tmon/tmon.h
->> +++ b/tools/thermal/tmon/tmon.h
->> @@ -139,7 +139,7 @@ struct pid_params {
->>         double y_k;
->>  };
->>
->> -extern int init_thermal_controller(void);
->> +extern void init_thermal_controller(void);
->>  extern void controller_handler(const double xk, double *yk);
->>
->>  extern struct tmon_platform_data ptdata;
->> --
->> 1.9.1
->>
->
-> BTW, next time when sending a thermal related change, please cc
-> linux-pm@vger.kernel.org, or else the change may got because we usually
-> rely on https://patchwork.kernel.org/project/linux-pm/list/ to review
-> and scrub the patches. :)
->
-> ---Zhang Rui <rui.zhang@intel.com>
->
-> Tested-by: Anand Moon <linux.amoon@gmail.com>
->
-> -Anand Moon
+My new series (un-committed) should fix that to some level hopefully:
+
+http://marc.info/?l=linux-pm&m=144612165211091&w=2
+
+> That really doesn't look right, as the timer is quite low
+> frequency. It's causing excessive wake ups, as all 4 CPUs wake up to
+> handle the WQ, 3 of them directly go back to sleep waiting for the mutex
+> to be released, then same thing happens for CPUs-1 until we rippled down
+> to a single CPU.
+
+There is a reason why we need to do this on all CPUs today. The timers
+are deferrable by nature, as we shouldn't wake up a CPU to change it
+frequency. Now group of CPUs that change their DVFS state together, or
+that change their voltage/clock rails are part of the same
+cpufreq-policy. We need to take load of all the CPUs, that are part of
+the policy, while update the frequency of the group.
+
+If we queue the timer on any one CPU, then that CPU can go into idle
+and the deferred timer will not fire. But the other CPUs of the policy
+can still be active and the frequency of the group wouldn't change
+with load.
+
+Hope that answers the query related to timers on all CPUs.
+
+> I would say it's still worth fixing. Perhaps by not waking all the
+> workqueues at the same time, but spreading the wake times out over a
+> jiffy.
+
+Maybe.
+
+-- 
+viresh
