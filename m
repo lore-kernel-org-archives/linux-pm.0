@@ -1,87 +1,92 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v4] PCI / PM: tune down RPM suspend error message with EBUSY and EAGAIN retval
-Date: Mon, 30 Nov 2015 03:07:26 +0100
-Message-ID: <5110079.njQQ6VzEqu@vostro.rjw.lan>
-References: <1448648254-12639-1-git-send-email-imre.deak@intel.com> <1448699664-4178-1-git-send-email-imre.deak@intel.com>
+Subject: Re: [PATCH v3] PM: check for complete cb before device lock in dpm_complete
+Date: Mon, 30 Nov 2015 03:15:03 +0100
+Message-ID: <1815101.hkTcZ3M1YO@vostro.rjw.lan>
+References: <6146fb8483239461040674927df2e71d4555c59e.1445035227.git.todd.e.brandt@linux.intel.com> <CAJZ5v0gqUFWfUHRR3Y7t2bnrQjam3m_CHC0aHOSbJNLJZ5ctbQ@mail.gmail.com> <CAKdAkRQ3nUtOFfxKBembnzZZi-Kq1N0hRon39AY8XkTy7i4Ftw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:45565 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:60727 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751340AbbK3Bhk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 29 Nov 2015 20:37:40 -0500
-In-Reply-To: <1448699664-4178-1-git-send-email-imre.deak@intel.com>
+	with SMTP id S1752698AbbK3BpQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 29 Nov 2015 20:45:16 -0500
+In-Reply-To: <CAKdAkRQ3nUtOFfxKBembnzZZi-Kq1N0hRon39AY8XkTy7i4Ftw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Imre Deak <imre.deak@intel.com>, Bjorn Helgaas <bhelgaas@google.com>
-Cc: Jani Nikula <jani.nikula@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx@lists.freedesktop.org, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Todd Brandt <todd.e.brandt@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, todd.e.brandt@intel.com
 
-On Saturday, November 28, 2015 10:34:24 AM Imre Deak wrote:
-> The runtime PM core doesn't treat EBUSY and EAGAIN retvals from the driver
-> suspend hooks as errors, but they still show up as errors in dmesg. Tune
-> them down.
+On Saturday, November 28, 2015 09:33:20 PM Dmitry Torokhov wrote:
+> On Fri, Oct 16, 2015 at 3:49 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > Hi,
+> >
+> > On Sat, Oct 17, 2015 at 12:45 AM, Todd Brandt
+> > <todd.e.brandt@linux.intel.com> wrote:
+> >> If a device has no pm_ops complete callback it shouldn't have
+> >> to be locked in order to skip it in the dpm_complete call. This causes
+> >> problems when a device without a complete callback has already begun
+> >> operation after its resume cb is called. It can end up holding up the
+> >> system resume as the pm subsystem tries to get a device lock just to
+> >> check for a callback that isn't there.
+> >>
+> >> This is basically the original v1 patch but updated for the latest kernel.
+> >>
+> >> Signed-off-by: Todd Brandt <todd.e.brandt@linux.intel.com>
+> >> ---
+> >>  drivers/base/power/main.c | 12 ++++++------
+> >>  1 file changed, 6 insertions(+), 6 deletions(-)
+> >>
+> >> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> >> index 1710c26..9bb8ff0 100644
+> >> --- a/drivers/base/power/main.c
+> >> +++ b/drivers/base/power/main.c
+> >> @@ -899,8 +899,6 @@ static void device_complete(struct device *dev, pm_message_t state)
+> >>         if (dev->power.syscore)
+> >>                 return;
+> >>
+> >> -       device_lock(dev);
+> >> -
+> >>         if (dev->pm_domain) {
+> >>                 info = "completing power domain ";
+> >>                 callback = dev->pm_domain->ops.complete;
+> >> @@ -920,13 +918,15 @@ static void device_complete(struct device *dev, pm_message_t state)
+> >>                 callback = dev->driver->pm->complete;
+> >>         }
+> >>
+> >> -       if (callback) {
+> >> -               pm_dev_dbg(dev, state, info);
+> >> -               callback(dev);
+> >> -       }
+> >> +       if (!callback)
+> >> +               goto Complete;
+> >>
+> >
+> > Suppose that the devices is unregistered at this point and callback
+> > was pointing to the driver callback.
+> >
+> >> +       device_lock(dev);
+> >> +       pm_dev_dbg(dev, state, info);
+> >> +       callback(dev);
+> >
+> > I don't think it is correct to execute that callback here in that case, is it?
 > 
-> One problem caused by this was noticed by Daniel: the i915 driver
-> returns EAGAIN to signal a temporary failure to suspend and as a request
-> towards the RPM core for scheduling a suspend again. This is a normal
-> event, but the resulting error message flags a breakage during the
-> driver's automated testing which parses dmesg and picks up the error.
+> Continuing this line of thought: what if driver was unbound and
+> rebound again before we got to executing device_complete()? In that
+> case we should not be calling ->complete() even if it is present,
+> since it is as if prepare() was not called, and there is nothing for
+> ->complete() to undo.
 > 
-> v2:
-> - fix compile breake when CONFIG_PM_SLEEP=n (0-day builder)
-> v3:
-> - instead of modifying the suspend_report_result() helper to disinguish
->   between the runtime and system suspend case, inline the error
->   printing, it's not used anywhere else (Rafael)
-> v4:
-> - don't refer to log levels as flags in code comment (Rafael)
-> - use pr_debug(), pr_err() instead of the corresponding printk() (Rafael)
-> 
-> Reported-by: Daniel Vetter <daniel.vetter@intel.com>
-> Bugzilla: https://bugs.freedesktop.org/show_bug.cgi?id=92992
-> CC: Bjorn Helgaas <bhelgaas@google.com>
-> CC: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Signed-off-by: Imre Deak <imre.deak@intel.com>
+> It seems to me we should not be allowing bind/unbind transitions here.
 
-This is fine by me.
+Probes will be avoided after this patch:
 
-Bjorn, any objections against applying it?  It reduces log noise quite
-a bit for i915.
+https://patchwork.kernel.org/patch/7589121/
 
-> ---
->  drivers/pci/pci-driver.c | 16 ++++++++++++++--
->  1 file changed, 14 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-> index 4446fcb..32a9947 100644
-> --- a/drivers/pci/pci-driver.c
-> +++ b/drivers/pci/pci-driver.c
-> @@ -1146,9 +1146,21 @@ static int pci_pm_runtime_suspend(struct device *dev)
->  	pci_dev->state_saved = false;
->  	pci_dev->no_d3cold = false;
->  	error = pm->runtime_suspend(dev);
-> -	suspend_report_result(pm->runtime_suspend, error);
-> -	if (error)
-> +	if (error) {
-> +		/*
-> +		 * -EBUSY and -EAGAIN is used to request the runtime PM core
-> +		 * to schedule a new suspend, so log the event only with debug
-> +		 * log level.
-> +		 */
-> +		if (error == -EBUSY || error == -EAGAIN)
-> +			pr_debug("%s(): %pF returns %d\n", __func__,
-> +				 pm->runtime_suspend, error);
-> +		else
-> +			pr_err("%s(): %pF returns %d\n", __func__,
-> +			       pm->runtime_suspend, error);
-> +
->  		return error;
-> +	}
->  	if (!pci_dev->d3cold_allowed)
->  		pci_dev->no_d3cold = true;
->  
-> 
+which I'm going to queue up for 4.5.
+
+I'm not sure about unbinds, though.  Some parts of the kernel seem to want
+to be able to remove devices during system suspend/resume.
 
 Thanks,
 Rafael
