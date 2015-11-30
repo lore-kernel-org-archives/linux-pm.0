@@ -1,121 +1,79 @@
 From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH v12] Add Mediatek thermal support
-Date: Mon, 30 Nov 2015 12:42:30 +0100
-Message-ID: <1448883753-19068-1-git-send-email-s.hauer@pengutronix.de>
+Subject: [PATCH 1/3] dt-bindings: thermal: Add binding document for Mediatek thermal controller
+Date: Mon, 30 Nov 2015 12:42:31 +0100
+Message-ID: <1448883753-19068-2-git-send-email-s.hauer@pengutronix.de>
+References: <1448883753-19068-1-git-send-email-s.hauer@pengutronix.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:39693 "EHLO
+Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:58380 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751018AbbK3Lm3 (ORCPT
+	with ESMTP id S1751116AbbK3Lm3 (ORCPT
 	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Nov 2015 06:42:29 -0500
+In-Reply-To: <1448883753-19068-1-git-send-email-s.hauer@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-kernel@vger.kernel.org, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Matthias Brugger <matthias.bgg@gmail.com>
+Cc: linux-kernel@vger.kernel.org, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Matthias Brugger <matthias.bgg@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>
 
-This series adds support for the thermal sensors included in the
-MT8173 SoC. Currently only basic temperature reading is supported
-without any interrupt support.
+This adds the device tree binding documentation for the mediatek thermal
+controller found on Mediatek MT8173 and other SoCs.
 
-The cpufreq driver for MT8173 is currently under review, so there's no
-real cooling device available in mainline. Until this is available the
-thermal driver can be tested with the following dts snippet. It creates
-a fake gpio fan and a fake trip point which is so low that it can easily
-be reached with a "cat /dev/zero > /dev/null" on the command line.
+Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+Reviewed-by: Daniel Kurtz <djkurtz@chromium.org>
+Acked-by: Rob Herring <robh@kernel.org>
+---
+ .../bindings/thermal/mediatek-thermal.txt          | 43 ++++++++++++++++++++++
+ 1 file changed, 43 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
 
-Sascha
-
-Changes since v11:
-- Fix usage of uninitialized variable gcc didn't warn about
-
-changes since v10:
-- Some style cleanup
-- Add comment to make clear why we use the sensors in banks even if we
-  currently only use the maximum of all banks
-
-changes since v9:
-- rebase on v4.3
-- Add support for reading the calibration values from nvmem fuses
-- Only register a single thermal zone instead of four as it seems
-  that's everything needed
-
-changes since v8:
-- Add commit description to binding patch
-- rebase on v4.3-rc2
-
-changes since v7:
-- re-add some used defines removed in v5
-- Use MT8173_THERMAL_ZONE_* defines as array indices in static initializers
-
-changes since v6:
-- remove dot in Hanyi Wus name
-
-changes since v5:
-- update copyright
-- remove unused defines
-
-Changes since v4:
-- give calibration constants more meaningful names (offset, slope)
-- Use define instead of 0x00c for register access.
-
-Changes since v3:
-- add include/dt-bindings/thermal/mt8173.h for to be able to use sensor names
-  in dts files
-- fix disabling wrong clock in error path
-- remove now unused reset-names property from binding document
-- rename MT8173_NUM_BANKS -> MT8173_NUM_ZONES
-- rename MT8173_NUM_SENSING_POINTS -> MT8173_NUM_SENSORS_PER_ZONE
-- rename struct thermal_zone_device *tz -> struct thermal_zone_device *tzd
-
-Changes since v2:
-- sort #includes alphabetically
-- Add prefix to register defines
-- drop some members from struct mtk_thermal
-- simplify raw_to_mcelsius()
-- add and use more register bit defines
-- use device_reset() instead of devm_reset_control_get()/reset_control_reset()
-- misc other stuff
-
-Changes since v1:
-- Use "mediatek," prefix for custom properties
-- Drop "thermal: consistently use int for temperatures" dependency
-
--------------
-
-	fan: gpio_fan {
-		compatible = "gpio-fan";
-		gpios = <&pio 24 0>;
-		gpio-fan,speed-map = <0    0
-				      4500 1>;
-		#cooling-cells = <2>;
-	};
-
-	thermal-zones {
-			cpu_thermal: cpu_thermal {
-			polling-delay-passive = <1000>; /* milliseconds */
-			polling-delay = <1000>; /* milliseconds */
-
-			thermal-sensors = <&thermal>;
-
-			trips {
-				cpu_passive: cpu_passive {
-					temperature = <47000>; /* millicelsius */
-					hysteresis = <2000>; /* millicelsius */
-					type = "passive";
-				};
-
-				cpu_crit {
-					temperature = <90000>; /* millicelsius */
-					hysteresis = <2000>; /* millicelsius */
-					type = "critical";
-				};
-			};
-
-			cooling-maps {
-				map0 {
-					trip = <&cpu_passive>;
-					cooling-device = <&fan THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-				};
-			};
-		};
-	};
+diff --git a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
+new file mode 100644
+index 0000000..81f9a51
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
+@@ -0,0 +1,43 @@
++* Mediatek Thermal
++
++This describes the device tree binding for the Mediatek thermal controller
++which measures the on-SoC temperatures. This device does not have its own ADC,
++instead it directly controls the AUXADC via AHB bus accesses. For this reason
++this device needs phandles to the AUXADC. Also it controls a mux in the
++apmixedsys register space via AHB bus accesses, so a phandle to the APMIXEDSYS
++is also needed.
++
++Required properties:
++- compatible: "mediatek,mt8173-thermal"
++- reg: Address range of the thermal controller
++- interrupts: IRQ for the thermal controller
++- clocks, clock-names: Clocks needed for the thermal controller. required
++                       clocks are:
++		       "therm":	 Main clock needed for register access
++		       "auxadc": The AUXADC clock
++- resets: Reference to the reset controller controlling the thermal controller.
++- mediatek,auxadc: A phandle to the AUXADC which the thermal controller uses
++- mediatek,apmixedsys: A phandle to the APMIXEDSYS controller.
++- #thermal-sensor-cells : Should be 0. See ./thermal.txt for a description.
++
++Optional properties:
++- nvmem-cells: A phandle to the calibration data provided by a nvmem device. If
++               unspecified default values shall be used.
++- nvmem-cell-names: Should be "calibration-data"
++
++Example:
++
++	thermal: thermal@1100b000 {
++		#thermal-sensor-cells = <1>;
++		compatible = "mediatek,mt8173-thermal";
++		reg = <0 0x1100b000 0 0x1000>;
++		interrupts = <0 70 IRQ_TYPE_LEVEL_LOW>;
++		clocks = <&pericfg CLK_PERI_THERM>, <&pericfg CLK_PERI_AUXADC>;
++		clock-names = "therm", "auxadc";
++		resets = <&pericfg MT8173_PERI_THERM_SW_RST>;
++		reset-names = "therm";
++		mediatek,auxadc = <&auxadc>;
++		mediatek,apmixedsys = <&apmixedsys>;
++		nvmem-cells = <&thermal_calibration_data>;
++		nvmem-cell-names = "calibration-data";
++	};
+-- 
+2.6.2
 
