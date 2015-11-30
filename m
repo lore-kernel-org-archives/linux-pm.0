@@ -1,366 +1,70 @@
-From: Lucas Stach <l.stach@pengutronix.de>
-Subject: Re: [PATCH 5/6] cpufreq: governor: replace per-cpu delayed work
- with timers
-Date: Mon, 30 Nov 2015 13:05:03 +0100
-Message-ID: <1448885103.8275.31.camel@pengutronix.de>
-References: <cover.1446121217.git.viresh.kumar@linaro.org>
-	 <e83291bcb6fcb69280f265194801510cf2e02c41.1446121217.git.viresh.kumar@linaro.org>
+From: dawei chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Subject: Re: [PATCH v4 3/3] thermal: mediatek: Add cpu dynamic power cooling
+ model.
+Date: Mon, 30 Nov 2015 20:16:34 +0800
+Message-ID: <1448885794.29031.78.camel@mtksdaap41>
+References: <1448616727-29367-1-git-send-email-dawei.chien@mediatek.com>
+	 <1448616727-29367-4-git-send-email-dawei.chien@mediatek.com>
+	 <20151130053845.GM3373@ubuntu> <1448875581.29031.14.camel@mtksdaap41>
+	 <20151130093042.GA8556@ubuntu> <1448878884.29031.49.camel@mtksdaap41>
+	 <20151130103422.GA4899@ubuntu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:34729 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753150AbbK3MFH (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Nov 2015 07:05:07 -0500
-In-Reply-To: <e83291bcb6fcb69280f265194801510cf2e02c41.1446121217.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20151130103422.GA4899@ubuntu>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Daniel Kurtz <djkurtz-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, srv_heupstream-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, open list <linux-kernel@vger.kernel.org>
 
-Am Donnerstag, den 29.10.2015, 17:57 +0530 schrieb Viresh Kumar:
-> cpufreq governors evaluate load at sampling rate and based on that they
-> update frequency for a group of CPUs belonging to the same cpufreq
-> policy.
+On Mon, 2015-11-30 at 16:04 +0530, Viresh Kumar wrote:
+> On 30-11-15, 18:21, dawei chien wrote:
+> > As far as I know, user or shell script has the right for using command online/offline cpu.
 > 
-> This is required to be done in a single thread for all policy->cpus, but
-> because we don't want to wakeup idle CPUs to do just that, we use
-> deferrable work for this. If we would have used a single delayed
-> deferrable work for the entire policy, there were chances that the CPU
-> required to run the handler can be in idle and we might end up not
-> changing the frequency for the entire group with load variations.
+> Right.
 > 
-> And so we were forced to keep per-cpu works, and only the one that
-> expires first need to do the real work and others are rescheduled for
-> next sampling time.
+> > Either user by console or shell script could make cpu2 online even cpu2 already onlined.
 > 
-> We have been using the more complex solution until now, where we used a
-> delayed deferrable work for this, which is a combination of a timer and
-> a work.
+> Hey, no. You can't online that is already online. You can write '1' to
+> the file /sys/devices/system/cpu/cpuX/online, but it wouldn't have any
+> affect.
 > 
-> This could be made lightweight by keeping per-cpu deferred timers with a
-> single work item, which is scheduled by the first timer that expires.
+> > That could cause of_cpufreq_cooling_register execute many times for the
+> > same cooling device.
 > 
-> This patch does just that and here are important changes:
-> - The timer handler will run in irq context and so we need to use a
->   spin_lock instead of the timer_mutex. And so a separate timer_lock is
->   created. This also makes the use of the mutex and lock quite clear, as
->   we know what exactly they are protecting.
-> - A new field 'skip_work' is added to track when the timer handlers can
->   queue a work. More comments present in code.
-> 
+> No.
+You are right. certainly no, it's my misunderstand.
 
-I don't want to block this patch on that, but maybe as a thought for
-further consideration: Wouldn't it make sense to use a single unbound
-deferrable work item for this? There was some work to make this possible
-already: "timer: make deferrable cpu unbound timers really not bound to
-a cpu"
-
-Regards,
-Lucas
-
-> Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/cpufreq_governor.c | 139 +++++++++++++++++++++----------------
->  drivers/cpufreq/cpufreq_governor.h |  20 ++++--
->  drivers/cpufreq/cpufreq_ondemand.c |   8 +--
->  3 files changed, 98 insertions(+), 69 deletions(-)
+> > "echo 1 > /sys/devices/system/cpu/cpu2/online"
+> > 
+> > With above hotplug command, mtk_cpufreq_ready will register cooling
+> > device again as well, but fail since the cooling device already created,
+> > so we might need not register cooling device again on this case.
 > 
-> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-> index 999e1f6addf9..a3f9bc9b98e9 100644
-> --- a/drivers/cpufreq/cpufreq_governor.c
-> +++ b/drivers/cpufreq/cpufreq_governor.c
-> @@ -158,47 +158,52 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
->  }
->  EXPORT_SYMBOL_GPL(dbs_check_cpu);
->  
-> -static inline void __gov_queue_work(int cpu, struct dbs_data *dbs_data,
-> -		unsigned int delay)
-> +void gov_add_timers(struct cpufreq_policy *policy, unsigned int delay)
->  {
-> -	struct cpu_dbs_info *cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
-> -
-> -	mod_delayed_work_on(cpu, system_wq, &cdbs->dwork, delay);
-> -}
-> -
-> -void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
-> -		unsigned int delay, bool all_cpus)
-> -{
-> -	int i;
-> +	struct dbs_data *dbs_data = policy->governor_data;
-> +	struct cpu_dbs_info *cdbs;
-> +	int cpu;
->  
-> -	if (!all_cpus) {
-> -		/*
-> -		 * Use raw_smp_processor_id() to avoid preemptible warnings.
-> -		 * We know that this is only called with all_cpus == false from
-> -		 * works that have been queued with *_work_on() functions and
-> -		 * those works are canceled during CPU_DOWN_PREPARE so they
-> -		 * can't possibly run on any other CPU.
-> -		 */
-> -		__gov_queue_work(raw_smp_processor_id(), dbs_data, delay);
-> -	} else {
-> -		for_each_cpu(i, policy->cpus)
-> -			__gov_queue_work(i, dbs_data, delay);
-> +	for_each_cpu(cpu, policy->cpus) {
-> +		cdbs = dbs_data->cdata->get_cpu_cdbs(cpu);
-> +		cdbs->timer.expires = jiffies + delay;
-> +		add_timer_on(&cdbs->timer, cpu);
->  	}
->  }
-> -EXPORT_SYMBOL_GPL(gov_queue_work);
-> +EXPORT_SYMBOL_GPL(gov_add_timers);
->  
-> -static inline void gov_cancel_work(struct dbs_data *dbs_data,
-> -		struct cpufreq_policy *policy)
-> +static inline void gov_cancel_timers(struct cpufreq_policy *policy)
->  {
-> +	struct dbs_data *dbs_data = policy->governor_data;
->  	struct cpu_dbs_info *cdbs;
->  	int i;
->  
->  	for_each_cpu(i, policy->cpus) {
->  		cdbs = dbs_data->cdata->get_cpu_cdbs(i);
-> -		cancel_delayed_work_sync(&cdbs->dwork);
-> +		del_timer_sync(&cdbs->timer);
->  	}
->  }
->  
-> +void gov_cancel_work(struct cpu_common_dbs_info *shared)
-> +{
-> +	unsigned long flags;
-> +
-> +	/*
-> +	 * No work will be queued from timer handlers after skip_work is
-> +	 * updated. And so we can safely cancel the work first and then the
-> +	 * timers.
-> +	 */
-> +	spin_lock_irqsave(&shared->timer_lock, flags);
-> +	shared->skip_work++;
-> +	spin_unlock_irqrestore(&shared->timer_lock, flags);
-> +
-> +	cancel_work_sync(&shared->work);
-> +
-> +	gov_cancel_timers(shared->policy);
-> +
-> +	shared->skip_work = 0;
-> +}
-> +
->  /* Will return if we need to evaluate cpu load again or not */
->  static bool need_load_eval(struct cpu_common_dbs_info *shared,
->  			   unsigned int sampling_rate)
-> @@ -217,29 +222,21 @@ static bool need_load_eval(struct cpu_common_dbs_info *shared,
->  	return true;
->  }
->  
-> -static void dbs_timer(struct work_struct *work)
-> +static void dbs_work_handler(struct work_struct *work)
->  {
-> -	struct cpu_dbs_info *cdbs = container_of(work, struct cpu_dbs_info,
-> -						 dwork.work);
-> -	struct cpu_common_dbs_info *shared = cdbs->shared;
-> +	struct cpu_common_dbs_info *shared = container_of(work, struct
-> +					cpu_common_dbs_info, work);
->  	struct cpufreq_policy *policy;
->  	struct dbs_data *dbs_data;
->  	unsigned int sampling_rate, delay;
-> -	bool modify_all = true;
-> -
-> -	mutex_lock(&shared->timer_mutex);
-> +	bool eval_load;
->  
->  	policy = shared->policy;
-> -
-> -	/*
-> -	 * Governor might already be disabled and there is no point continuing
-> -	 * with the work-handler.
-> -	 */
-> -	if (!policy)
-> -		goto unlock;
-> -
->  	dbs_data = policy->governor_data;
->  
-> +	/* Kill all timers */
-> +	gov_cancel_timers(policy);
-> +
->  	if (dbs_data->cdata->governor == GOV_CONSERVATIVE) {
->  		struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
->  
-> @@ -250,14 +247,44 @@ static void dbs_timer(struct work_struct *work)
->  		sampling_rate = od_tuners->sampling_rate;
->  	}
->  
-> -	if (!need_load_eval(cdbs->shared, sampling_rate))
-> -		modify_all = false;
-> +	eval_load = need_load_eval(shared, sampling_rate);
->  
-> -	delay = dbs_data->cdata->gov_dbs_timer(policy, modify_all);
-> -	gov_queue_work(dbs_data, policy, delay, modify_all);
-> +	/*
-> +	 * Make sure cpufreq_governor_limits() isn't evaluating load in
-> +	 * parallel.
-> +	 */
-> +	mutex_lock(&shared->timer_mutex);
-> +	delay = dbs_data->cdata->gov_dbs_timer(policy, eval_load);
-> +	mutex_unlock(&shared->timer_mutex);
-> +
-> +	shared->skip_work--;
-> +	gov_add_timers(policy, delay);
-> +}
-> +
-> +static void dbs_timer_handler(unsigned long data)
-> +{
-> +	struct cpu_dbs_info *cdbs = (struct cpu_dbs_info *)data;
-> +	struct cpu_common_dbs_info *shared = cdbs->shared;
-> +	struct cpufreq_policy *policy;
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&shared->timer_lock, flags);
-> +	policy = shared->policy;
-> +
-> +	/*
-> +	 * Timer handler isn't allowed to queue work at the moment, because:
-> +	 * - Another timer handler has done that
-> +	 * - We are stopping the governor
-> +	 * - Or we are updating the sampling rate of ondemand governor
-> +	 */
-> +	if (shared->skip_work)
-> +		goto unlock;
-> +
-> +	shared->skip_work++;
-> +	queue_work(system_wq, &shared->work);
->  
->  unlock:
-> -	mutex_unlock(&shared->timer_mutex);
-> +	spin_unlock_irqrestore(&shared->timer_lock, flags);
->  }
->  
->  static void set_sampling_rate(struct dbs_data *dbs_data,
-> @@ -288,6 +315,8 @@ static int alloc_common_dbs_info(struct cpufreq_policy *policy,
->  		cdata->get_cpu_cdbs(j)->shared = shared;
->  
->  	mutex_init(&shared->timer_mutex);
-> +	spin_lock_init(&shared->timer_lock);
-> +	INIT_WORK(&shared->work, dbs_work_handler);
->  	return 0;
->  }
->  
-> @@ -452,7 +481,9 @@ static int cpufreq_governor_start(struct cpufreq_policy *policy,
->  		if (ignore_nice)
->  			j_cdbs->prev_cpu_nice = kcpustat_cpu(j).cpustat[CPUTIME_NICE];
->  
-> -		INIT_DEFERRABLE_WORK(&j_cdbs->dwork, dbs_timer);
-> +		__setup_timer(&j_cdbs->timer, dbs_timer_handler,
-> +			      (unsigned long)j_cdbs,
-> +			      TIMER_DEFERRABLE | TIMER_IRQSAFE);
->  	}
->  
->  	if (cdata->governor == GOV_CONSERVATIVE) {
-> @@ -470,8 +501,7 @@ static int cpufreq_governor_start(struct cpufreq_policy *policy,
->  		od_ops->powersave_bias_init_cpu(cpu);
->  	}
->  
-> -	gov_queue_work(dbs_data, policy, delay_for_sampling_rate(sampling_rate),
-> -		       true);
-> +	gov_add_timers(policy, delay_for_sampling_rate(sampling_rate));
->  	return 0;
->  }
->  
-> @@ -485,16 +515,9 @@ static int cpufreq_governor_stop(struct cpufreq_policy *policy,
->  	if (!shared || !shared->policy)
->  		return -EBUSY;
->  
-> -	/*
-> -	 * Work-handler must see this updated, as it should not proceed any
-> -	 * further after governor is disabled. And so timer_mutex is taken while
-> -	 * updating this value.
-> -	 */
-> -	mutex_lock(&shared->timer_mutex);
-> +	gov_cancel_work(shared);
->  	shared->policy = NULL;
-> -	mutex_unlock(&shared->timer_mutex);
->  
-> -	gov_cancel_work(dbs_data, policy);
->  	return 0;
->  }
->  
-> diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-> index 0c7589016b6c..76742902491e 100644
-> --- a/drivers/cpufreq/cpufreq_governor.h
-> +++ b/drivers/cpufreq/cpufreq_governor.h
-> @@ -132,12 +132,20 @@ static void *get_cpu_dbs_info_s(int cpu)				\
->  struct cpu_common_dbs_info {
->  	struct cpufreq_policy *policy;
->  	/*
-> -	 * percpu mutex that serializes governor limit change with dbs_timer
-> -	 * invocation. We do not want dbs_timer to run when user is changing
-> -	 * the governor or limits.
-> +	 * Per policy mutex that serializes load evaluation from limit-change
-> +	 * and work-handler.
->  	 */
->  	struct mutex timer_mutex;
-> +
-> +	/*
-> +	 * Per policy lock that serializes access to queuing work from timer
-> +	 * handlers.
-> +	 */
-> +	spinlock_t timer_lock;
-> +
->  	ktime_t time_stamp;
-> +	unsigned int skip_work;
-> +	struct work_struct work;
->  };
->  
->  /* Per cpu structures */
-> @@ -152,7 +160,7 @@ struct cpu_dbs_info {
->  	 * wake-up from idle.
->  	 */
->  	unsigned int prev_load;
-> -	struct delayed_work dwork;
-> +	struct timer_list timer;
->  	struct cpu_common_dbs_info *shared;
->  };
->  
-> @@ -268,11 +276,11 @@ static ssize_t show_sampling_rate_min_gov_pol				\
->  
->  extern struct mutex cpufreq_governor_lock;
->  
-> +void gov_add_timers(struct cpufreq_policy *policy, unsigned int delay);
-> +void gov_cancel_work(struct cpu_common_dbs_info *shared);
->  void dbs_check_cpu(struct dbs_data *dbs_data, int cpu);
->  int cpufreq_governor_dbs(struct cpufreq_policy *policy,
->  		struct common_dbs_data *cdata, unsigned int event);
-> -void gov_queue_work(struct dbs_data *dbs_data, struct cpufreq_policy *policy,
-> -		unsigned int delay, bool all_cpus);
->  void od_register_powersave_bias_handler(unsigned int (*f)
->  		(struct cpufreq_policy *, unsigned int, unsigned int),
->  		unsigned int powersave_bias);
-> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-> index 0848c8ac6847..9e0293c23285 100644
-> --- a/drivers/cpufreq/cpufreq_ondemand.c
-> +++ b/drivers/cpufreq/cpufreq_ondemand.c
-> @@ -285,13 +285,11 @@ static void update_sampling_rate(struct dbs_data *dbs_data,
->  			continue;
->  
->  		next_sampling = jiffies + usecs_to_jiffies(new_rate);
-> -		appointed_at = dbs_info->cdbs.dwork.timer.expires;
-> +		appointed_at = dbs_info->cdbs.timer.expires;
->  
->  		if (time_before(next_sampling, appointed_at)) {
-> -			cancel_delayed_work_sync(&dbs_info->cdbs.dwork);
-> -
-> -			gov_queue_work(dbs_data, policy,
-> -				       usecs_to_jiffies(new_rate), true);
-> +			gov_cancel_work(shared);
-> +			gov_add_timers(policy, usecs_to_jiffies(new_rate));
->  
->  		}
->  	}
+> Have you tested this yourself ?
 
--- 
-Pengutronix e.K.             | Lucas Stach                 |
-Industrial Linux Solutions   | http://www.pengutronix.de/  |
+Truly sorry for misunderstanding, so we don't need to add error checking
+code there.
 
+(It seems whole of cluster offline, the cooling device unregister as
+well. If just one cpu online, cooling device register as well)
+
+Three months ago, Once I used following command, cooling device can't
+create any more. err message will show once I echo online command.
+However, this bug already fixed in mainline by you. 
+
+echo 0 > /sys/devices/system/cpu/cpu2/online
+echo 0 > /sys/devices/system/cpu/cpu3/online
+echo 1 > /sys/devices/system/cpu/cpu2/online
+
+commit 528464eaa46ae1bd319882e4dd3495802e55b8c4
+Author: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Date:   Thu Jul 23 14:32:32 2015 +0530
+
+    thermal: remove dangling 'weight_attr' device file
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
