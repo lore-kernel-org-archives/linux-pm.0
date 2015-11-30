@@ -1,135 +1,110 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [RFC PATCH 2/8] Documentation: arm: define DT cpu capacity bindings
-Date: Mon, 30 Nov 2015 10:59:04 +0100
-Message-ID: <CAKfTPtAww=r6H2Jrgu+8jDsYohPj7HD=_sdAP2utEEH-YLVsaA@mail.gmail.com>
-References: <1448288921-30307-1-git-send-email-juri.lelli@arm.com>
- <1448288921-30307-3-git-send-email-juri.lelli@arm.com> <20151124020631.GA15165@rob-hp-laptop>
- <20151124105423.GM26372@e106622-lin>
+From: dawei chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Subject: Re: [PATCH v4 3/3] thermal: mediatek: Add cpu dynamic power cooling
+ model.
+Date: Mon, 30 Nov 2015 18:21:24 +0800
+Message-ID: <1448878884.29031.49.camel@mtksdaap41>
+References: <1448616727-29367-1-git-send-email-dawei.chien@mediatek.com>
+	 <1448616727-29367-4-git-send-email-dawei.chien@mediatek.com>
+	 <20151130053845.GM3373@ubuntu> <1448875581.29031.14.camel@mtksdaap41>
+	 <20151130093042.GA8556@ubuntu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f43.google.com ([209.85.215.43]:33432 "EHLO
-	mail-lf0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752481AbbK3J70 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Nov 2015 04:59:26 -0500
-Received: by lfaz4 with SMTP id z4so189435468lfa.0
-        for <linux-pm@vger.kernel.org>; Mon, 30 Nov 2015 01:59:24 -0800 (PST)
-In-Reply-To: <20151124105423.GM26372@e106622-lin>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20151130093042.GA8556@ubuntu>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Daniel Kurtz <djkurtz-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, srv_heupstream-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: Rob Herring <robh@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Mark Rutland <mark.rutland@arm.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Olof Johansson <olof@lixom.net>, Gregory CLEMENT <gregory.clement@free-electrons.com>, Paul
 
-Hi Juri,
+On Mon, 2015-11-30 at 15:00 +0530, Viresh Kumar wrote:
+> On 30-11-15, 17:26, dawei chien wrote:
+> > On Mon, 2015-11-30 at 11:08 +0530, Viresh Kumar wrote:
+> > > On 27-11-15, 17:32, Dawei Chien wrote:
+> > > > MT8173 cpufreq driver use of_cpufreq_power_cooling_register registering
+> > > > cooling devices with dynamic power coefficient.
+> > > > 
+> > > > Signed-off-by: Dawei Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+> > > > ---
+> > > > This patch is base on patchset:
+> > > > https://lkml.org/lkml/2015/11/17/251
+> > > > ---
+> > > >  drivers/cpufreq/mt8173-cpufreq.c |   28 ++++++++++++++++++++--------
+> > > >  1 file changed, 20 insertions(+), 8 deletions(-)
+> > > > 
+> > > > diff --git a/drivers/cpufreq/mt8173-cpufreq.c b/drivers/cpufreq/mt8173-cpufreq.c
+> > > > index 83001dc..4d39468 100644
+> > > > --- a/drivers/cpufreq/mt8173-cpufreq.c
+> > > > +++ b/drivers/cpufreq/mt8173-cpufreq.c
+> > > > @@ -263,24 +263,34 @@ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
+> > > >  	return 0;
+> > > >  }
+> > > >  
+> > > > +#define DYNAMIC_POWER "dynamic-power-coefficient"
+> > > > +
+> > > >  static void mtk_cpufreq_ready(struct cpufreq_policy *policy)
+> > > >  {
+> > > >  	struct mtk_cpu_dvfs_info *info = policy->driver_data;
+> > > >  	struct device_node *np = of_node_get(info->cpu_dev->of_node);
+> > > > +	u32 capacitance;
+> > > >  
+> > > >  	if (WARN_ON(!np))
+> > > >  		return;
+> > > >  
+> > > >  	if (of_find_property(np, "#cooling-cells", NULL)) {
+> > > > -		info->cdev = of_cpufreq_cooling_register(np,
+> > > > -							 policy->related_cpus);
+> > > > +		if (!info->cdev) {
+> > > 
+> > > Why will info->cdev be non-NULL here ?
+> > 
+> > This is a error-checking to avoid user or any script by command line hotplug CPU
+> > more than two times, we don't need to register cooling device on this case.
+> 
+> Why?
+As far as I know, user or shell script has the right for using command online/offline cpu.
+Either user by console or shell script could make cpu2 online even cpu2 already onlined.
+That could cause of_cpufreq_cooling_register execute many times for the
+same cooling device.
 
-On 24 November 2015 at 11:54, Juri Lelli <juri.lelli@arm.com> wrote:
-> Hi,
->
-> On 23/11/15 20:06, Rob Herring wrote:
->> On Mon, Nov 23, 2015 at 02:28:35PM +0000, Juri Lelli wrote:
->> > ARM systems may be configured to have cpus with different power/performance
->> > characteristics within the same chip. In this case, additional information
->> > has to be made available to the kernel (the scheduler in particular) for it
->> > to be aware of such differences and take decisions accordingly.
->> >
+"echo 1 > /sys/devices/system/cpu/cpu2/online"
 
-[snip]
+With above hotplug command, mtk_cpufreq_ready will register cooling
+device again as well, but fail since the cooling device already created,
+so we might need not register cooling device again on this case.
 
->> > +==========================================
->> > +2 - CPU capacity definition
->> > +==========================================
->> > +
->> > +CPU capacity is a number that provides the scheduler information about CPUs
->> > +heterogeneity. Such heterogeneity can come from micro-architectural differences
->> > +(e.g., ARM big.LITTLE systems) or maximum frequency at which CPUs can run
->> > +(e.g., SMP systems with multiple frequency domains). Heterogeneity in this
->> > +context is about differing performance characteristics; this binding tries to
->> > +capture a first-order approximation of the relative performance of CPUs.
->> > +
->> > +One simple way to estimate CPU capacities is to iteratively run a well-known
->> > +CPU user space benchmark (e.g, sysbench, dhrystone, etc.) on each CPU at
->> > +maximum frequency and then normalize values w.r.t.  the best performing CPU.
->> > +One can also do a statistically significant study of a wide collection of
->> > +benchmarks, but pros of such an approach are not really evident at the time of
->> > +writing.
->> > +
->> > +==========================================
->> > +3 - capacity-scale
->> > +==========================================
->> > +
->> > +CPUs capacities are defined with respect to capacity-scale property in the cpus
->> > +node [1]. The property is optional; if not defined a 1024 capacity-scale is
->> > +assumed. This property defines both the highest CPU capacity present in the
->> > +system and granularity of CPU capacity values.
->>
->> I don't really see the point of this vs. having an absolute scale.
->>
->
-> IMHO, we need this for several reasons, one being to address one of your
-> concerns below: vendors are free to choose their scale without being
-> forced to publish absolute data. Another reason is that it might make
-> life easier in certain cases; for example, someone could implement a
-> system with a few clusters of, say, A57s, but some run at half the clock
-> of the others (e.g., you have a 1.2GHz cluster and a 600MHz cluster); in
-> this case I think it is just easier to define capacity-scale as 1200 and
-> capacities as 1200 and 600. Last reason that I can think of right now is
-> that we don't probably want to bound ourself to some particular range
-> from the beginning, as that range might be enough now, but it could
-> change in the future (as in, right now [1-1024] looks fine for
-> scheduling purposes, but that might change).
+> > I will remove it if you don't agree it.
+> 
+> No, my agreeing or not doesn't matter. If what you are doing is useful
+> (and I am not able to understand it), then you should make me
+> understand that and don't change your code.
+> 
+> But, I really do not get the reasoning behind the logic. Please
+> elaborate that step by step.
 
-Like Rob, i don't really see the benefit of this optional
-capacity-scale property. Parsing the capacity of all cpu nodes should
-give you a range as well.
-IMHO, this property looks like an optimization of the code that will
-parse the dt more than a HW description
+Please refer to above explaining, thank you.
 
->
->> > +
->> > +==========================================
->> > +4 - capacity
->> > +==========================================
->> > +
->> > +capacity is an optional cpu node [1] property: u32 value representing CPU
->> > +capacity, relative to capacity-scale. It is required and enforced that capacity
->> > +<= capacity-scale.
->>
->> I think you need something absolute and probably per MHz (like
->> dynamic-power-coefficient property). Perhaps the IPC (instructions per
->> clock) value?
->>
->> In other words, I want to see these numbers have a defined method
->> of determining them and don't want to see random values from every
->> vendor. ARM, Ltd. says core X has a value of Y would be good enough for
->> me. Vendor X's A57 having a value of 2 and Vendor Y's A57 having a
->> value of 1024 is not what I want to see. Of course things like cache
->> sizes can vary the performance, but is a baseline value good enough?
->>
->
-> A standard reference baseline is what we advocate with this set, but
-> making this baseline work for every vendor's implementation is hardly
-> achievable, IMHO. I don't think we can come up with any number that
-> applies to each and every implementation; you can have different
-> revisions of the same core and vendors might make implementation choices
-> that end up with different peak performance.
->
->> However, no vendor will want to publish their values if these are
->> absolute values relative to other vendors.
->>
->
-> Right. That is why I think we need to abstract numbers, as we do with
-> capacity-scale.
->
->> If you expect these to need frequent tuning, then don't put them in DT.
->>
->
-> I expect that it is possible to come up with a sensible baseline number
-> for a specific platform implementation, so there is value in
-> standardizing how we specify this value and how it is then consumed.
-> Finer grained tuning might then happen both offline (with changes to the
-> mainline DT) and online (using the sysfs interface), but that should
-> only apply to a narrow set of use cases.
->
-> Thanks,
->
-> - Juri
+> > > > @@ -460,7 +470,9 @@ static int mtk_cpufreq_exit(struct cpufreq_policy *policy)
+> > > >  {
+> > > >  	struct mtk_cpu_dvfs_info *info = policy->driver_data;
+> > > >  
+> > > > -	cpufreq_cooling_unregister(info->cdev);
+> > > > +	if (info->cdev)
+> > > > +		cpufreq_cooling_unregister(info->cdev);
+> > > > +
+> > > 
+> > > Why do you need to update this?
+> > 
+> > This is a error-checking to avoid user or any script by command line
+> > unplug CPU more than two times, we don't need to unregister cooling
+> > device on this case.
+> > 
+> > I will remove it if you don't agree it.
+> 
+> Same here.
+Please refer to the same reason as above. thank you.
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
