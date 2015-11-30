@@ -1,45 +1,20 @@
 From: Caesar Wang <wxt@rock-chips.com>
-Subject: [PATCH v2 0/5] Fix a trivial typo and support rk3228/rk3399 SoCs for thermal driver.
-Date: Mon, 30 Nov 2015 10:28:03 +0800
-Message-ID: <1448850488-16325-1-git-send-email-wxt@rock-chips.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f65.google.com ([209.85.220.65]:33857 "EHLO
-	mail-pa0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751660AbbK3C23 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 29 Nov 2015 21:28:29 -0500
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH v2 1/5] thermal: rockchip: fix a trivial typo
+Date: Mon, 30 Nov 2015 10:28:04 +0800
+Message-ID: <1448850488-16325-2-git-send-email-wxt@rock-chips.com>
+References: <1448850488-16325-1-git-send-email-wxt@rock-chips.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1448850488-16325-1-git-send-email-wxt@rock-chips.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-rockchip@lists.infradead.org, Heiko Stuebner <heiko@sntech.de>, Dan Carpenter <dan.carpenter@oracle.com>, Caesar Wang <wxt@rock-chips.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Jiri Kosina <trivial@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Zhang Rui <rui.zhang@intel.com>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org
+Cc: linux-rockchip@lists.infradead.org, Heiko Stuebner <heiko@sntech.de>, Dan Carpenter <dan.carpenter@oracle.com>, Caesar Wang <wxt@rock-chips.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jiri Kosina <trivial@kernel.org>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
+List-Id: linux-pm@vger.kernel.org
 
-This series pacthes to support the next soc for this thermal driver.
-I don't add the dts thermal data since these SoCs have *_not_* land
-in this mainline. I believe these SoCs dts will land in this mainline
-lately,
-then I will add the thermal data for Heiko.
+This patchset trys to dictate unified format for driver.
 
-This series patches can apply into Eduardo branch.
-https://git.kernel.org/cgit/linux/kernel/git/evalenti/linux-soc-thermal.git
+Signed-off-by: Caesar Wang <wxt@rock-chips.com>
 
-Also, this series pacthes have built on github branch.
-https://github.com/rockchip-linux/kernel/commits/develop4.4
-
-PATCH[1/5]:
-That's bit ugly typo, sorry for sending again :(.
-
-PATCH[2/5]:
-To fix a build warning came from Dan Carpenter report smatch check,
-Thanks. :)
-
-PATCH[3/5]:
-Add the rk3228/rk3399 SoCs compatible for dt-bindings.
-
-PATCH[4/5]:
-Add the rk3228 SoCs for thermal driver.
-
-PATCH[5/5]:
-Add the rk3399 SoCs for thermal driver based on PATCH[4/5].
-
+---
 
 Changes in v2:
 - As Heiko comments, move to documenting the fields in the header
@@ -47,22 +22,70 @@ Changes in v2:
 
 Changes in v1:
 - Search more trivial typo for me.
-- As Heiko comments, fix a copy incorrect name.
-- Add a Acked from Rob.
-- fix a irq ack is similar with RK3228 SoCs.
 
-Caesar Wang (5):
-  thermal: rockchip: fix a trivial typo
-  thermal: rockchip: fix a impossible condition caused by the warning
-  dt-bindings: rockchip-thermal: Support the RK3228/RK3399 SoCs
-    compatible
-  thermal: rockchip: Support the RK3228 SoCs in thermal driver
-  thermal: rockchip: Support the RK3399 SoCs in thermal driver
+ drivers/thermal/rockchip_thermal.c | 25 +++++++++++++------------
+ 1 file changed, 13 insertions(+), 12 deletions(-)
 
- .../bindings/thermal/rockchip-thermal.txt          |   2 +
- drivers/thermal/rockchip_thermal.c                 | 174 +++++++++++++++++++--
- 2 files changed, 163 insertions(+), 13 deletions(-)
-
+diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+index e845841..ae796ec 100644
+--- a/drivers/thermal/rockchip_thermal.c
++++ b/drivers/thermal/rockchip_thermal.c
+@@ -38,7 +38,7 @@ enum tshut_mode {
+ };
+ 
+ /**
+- * the system Temperature Sensors tshut(tshut) polarity
++ * The system Temperature Sensors tshut(tshut) polarity
+  * the bit 8 is tshut polarity.
+  * 0: low active, 1: high active
+  */
+@@ -57,10 +57,10 @@ enum sensor_id {
+ };
+ 
+ /**
+-* The conversion table has the adc value and temperature.
+-* ADC_DECREMENT is the adc value decremnet.(e.g. v2_code_table)
+-* ADC_INCREMNET is the adc value incremnet.(e.g. v3_code_table)
+-*/
++ * The conversion table has the adc value and temperature.
++ * ADC_DECREMENT: the adc value is of diminishing.(e.g. v2_code_table)
++ * ADC_INCREMENT: the adc value is incremental.(e.g. v3_code_table)
++ */
+ enum adc_sort_mode {
+ 	ADC_DECREMENT = 0,
+ 	ADC_INCREMENT,
+@@ -72,16 +72,17 @@ enum adc_sort_mode {
+  */
+ #define SOC_MAX_SENSORS	2
+ 
++/**
++ * struct chip_tsadc_table: hold information about chip-specific differences
++ * @id: conversion table
++ * @length: size of conversion table
++ * @data_mask: mask to apply on data inputs
++ * @mode: sort mode of this adc variant (incrementing or decrementing)
++ */
+ struct chip_tsadc_table {
+ 	const struct tsadc_table *id;
+-
+-	/* the array table size*/
+ 	unsigned int length;
+-
+-	/* that analogic mask data */
+ 	u32 data_mask;
+-
+-	/* the sort mode is adc value that increment or decrement in table */
+ 	enum adc_sort_mode mode;
+ };
+ 
+@@ -617,7 +618,7 @@ rockchip_thermal_register_sensor(struct platform_device *pdev,
+ 	return 0;
+ }
+ 
+-/*
++/**
+  * Reset TSADC Controller, reset all tsadc registers.
+  */
+ static void rockchip_thermal_reset_controller(struct reset_control *reset)
 -- 
 1.9.1
-
