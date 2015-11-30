@@ -1,103 +1,52 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [RFC PATCH 09/15] PM / devfreq: exynos: Update documentation for
- bus devices using passive governor
-Date: Mon, 30 Nov 2015 15:14:53 -0600
-Message-ID: <20151130211453.GA29423@rob-hp-laptop>
-References: <1448545659-32287-1-git-send-email-cw00.choi@samsung.com>
- <1448545659-32287-10-git-send-email-cw00.choi@samsung.com>
+From: Eric Anholt <eric@anholt.net>
+Subject: Re: [PATCHv2 4/4] ARM: bcm2835: update rpi devicetree entries
+Date: Mon, 30 Nov 2015 14:09:22 -0800
+Message-ID: <871tb7i1gt.fsf@eliezer.anholt.net>
+References: <1448816373-18235-1-git-send-email-alex.aring@gmail.com> <1448816373-18235-5-git-send-email-alex.aring@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1448545659-32287-10-git-send-email-cw00.choi@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, kgene@kernel.org, k.kozlowski@samsung.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, tjakobi@math.uni-bielefeld.de, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org
+Content-Type: multipart/signed; boundary="=-=-=";
+	micalg=pgp-sha512; protocol="application/pgp-signature"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from gabe.freedesktop.org ([131.252.210.177]:58919 "EHLO
+	gabe.freedesktop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753860AbbK3WJ0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Nov 2015 17:09:26 -0500
+In-Reply-To: <1448816373-18235-5-git-send-email-alex.aring@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-rpi-kernel@lists.infradead.org
+Cc: robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, swarren@wwwdotorg.org, lee@kernel.org, linux@arm.linux.org.uk, f.fainelli@gmail.com, rjui@broadcom.com, sbranden@broadcom.com, rjw@rjwysocki.net, khilman@kernel.org, ulf.hansson@linaro.org, len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, bcm-kernel-feedback-list@broadcom.com, linux-pm@vger.kernel.org, kernel@pengutronix.de, Alexander Aring <alex.aring@gmail.com>
 
-On Thu, Nov 26, 2015 at 10:47:33PM +0900, Chanwoo Choi wrote:
-> This patch updates the documentation for passive bus devices and adds the
-> detailed example of Exynos3250.
-> 
-> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-> ---
->  .../devicetree/bindings/devfreq/exynos-bus.txt     | 226 ++++++++++++++++++++-
->  1 file changed, 223 insertions(+), 3 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/devfreq/exynos-bus.txt b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
-> index 5d90623bd173..c4a6fe30075e 100644
-> --- a/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
-> +++ b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
-> @@ -12,18 +12,23 @@ SoC has the different sub-blocks. So, this difference should be specified
->  in devicetree file instead of each device driver. In result, this driver
->  is able to support the bus frequency for all Exynos SoCs.
->  
-> -Required properties for bus device:
-> +Required properties for all bus devices:
->  - compatible: Should be "samsung,exynos-bus".
->  - clock-names : the name of clock used by the bus, "bus".
->  - clocks : phandles for clock specified in "clock-names" property.
->  - #clock-cells: should be 1.
->  - operating-points-v2: the OPP table including frequency/voltage information
->    to support DVFS (Dynamic Voltage/Frequency Scaling) feature.
-> +
-> +Required properties for only parent bus device:
->  - vdd-supply: the regulator to provide the buses with the voltage.
->  - devfreq-events: the devfreq-event device to monitor the curret utilization
->    of buses.
->  
-> -Optional properties for bus device:
-> +Required properties for only passive bus device:
-> +- devfreq: the parent bus device.
-> +
-> +Optional properties for only parent bus device:
->  - exynos,saturation-ratio: the percentage value which is used to calibrate
->                     the performance count againt total cycle count.
->  
-> @@ -32,7 +37,19 @@ Example1:
->  	power line (regulator). The MIF (Memory Interface) AXI bus is used to
->  	transfer data between DRAM and CPU and uses the VDD_MIF regualtor.
->  
-> -	- power line(VDD_MIF) --> bus for DMC block (dmc clock)
-> +	- MIF (Memory Interface) block
-> +	: VDD_MIF |--- DMC
-> +
-> +	- INT (Internal) block
-> +	: VDD_INT |--- LEFTBUS  |--- PERIL
-> +		  |    (parent) |--- MFC
-> +		  |             |--- G3D
-> +		  |
-> +		  |--- RIGHTBUS |--- FSYS
-> +				|--- LCD0
-> +				|--- PERIR
-> +				|--- ISP
-> +				|--- CAM
+--=-=-=
+Content-Type: text/plain
 
-I would expect the DT to mirror this topology which doesn't seem to be 
-the case in the example.
+Alexander Aring <alex.aring@gmail.com> writes:
 
+> This patch updates the Raspberry Pi devicetree bindings to support the
+> power domain driver and enable the USB power domain.
+>
+> Signed-off-by: Alexander Aring <alex.aring@gmail.com>
 
->  	- MIF bus's frequency/voltage table
->  	-----------------------
-> @@ -45,6 +62,20 @@ Example1:
->  	|L5| 400000 |875000   |
->  	-----------------------
->  
-> +	- INT bus's frequency/voltage table
-> +	-----------------------------------------------------------------------
-> +	|Lv| Freq                                                   | Voltage |
-> +	-----------------------------------------------------------------------
-> +	|  |LEFTBUS|RIGHTBUS|LCD0   |FSYS   |MCUISP |ISP    |PERIL  |VDD_INT  |
-> +	|  |*parent|passive |passive|passive|passive|passive|passive|         |
-> +	-----------------------------------------------------------------------
-> +	|L1|50000  |50000   |50000  |50000  |50000  |50000  |50000  |900000   |
-> +	|L2|80000  |80000   |80000  |80000  |80000  |80000  |80000  |900000   |
-> +	|L3|100000 |100000  |100000 |100000 |100000 |100000 |100000 |1000000  |
-> +	|L4|133000 |133000  |133000 |133000 |200000 |200000 |       |1000000  |
-> +	|L5|200000 |200000  |200000 |200000 |400000 |300000 |       |1000000  |
-> +	-----------------------------------------------------------------------
+Acked-by: Eric Anholt <eric@anholt.net>
 
-Do you really have 5 states? It look like there are 2 to me because the 
-OPP tables only really need to have the max freq at each voltage point. 
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
 
-Rob
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJWXMkTAAoJELXWKTbR/J7o1bIQAKCJlqvhSkIQ0OSIDKCGQ8Ik
+0wRYQ6RTCNqhSg5T1rMiULXRM99NZ1QXLd6/Chcc20eqZ4aS5xotJw5GPVb2H8Cy
+GJCjBv+LD+WBrgMDJx4q+5Y3tNzrqM1zoNqo9x1BknbNsBfv+WGSx86PbugI4gl2
+1rFY0ZJU9RR8bCOD1b7DTUxUCykdHNI8xE6pDWRyOWI/wRnkIuzepo/t+IUAZ8E6
+YrXOpApgizpFCVFOwZJM5A5lXDbgUymdh3VDMJ93yctkZVoRcso/r492ctBi2JhH
+6P57EkOksLQRT75yZFYDMvA3GUQffSvLC/aIh8ULg9SxYRNNoXdst6yEa1wWW5Pz
+i21b752As0tZuk8XcapiYaZzZWjhGKOiEt/GAGTgyeXl4tC/wMFVuYPmpE/m7ZdD
+7qTqc4DKI5grVCyku1qFugEN/0VnrpqN5aq3MA5rQKUREWQbcjMAAKjDBYcqH7a5
+Mm/U2Fd43hZRUdeNe9aS+Xh9Raos8zW11xHEKAGs6rT5gUK7LpMa0GIebK0uT9ss
+9VCVKt5iB/DHPATf/o2VvbaNjxD9YCZv4Bux0gdZ1ipFSUTv1t4XniRHruSwysli
+CaDuxC4zJRhC/DV04I3gYH+M+M22xTKCDcIsDBo953uaJmVdJT1fj1ZT5btJ9MbC
+8AMDLxHRJjBj2UyAZ3nO
+=JCLW
+-----END PGP SIGNATURE-----
+--=-=-=--
