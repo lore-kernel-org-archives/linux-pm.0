@@ -1,76 +1,112 @@
-From: "Zhang, Lin-Bao (Linux Kernel R&D)" <linbao.zhang@hpe.com>
-Subject: RE: [PATCH v1 0/2] fix the defect that pcc-cpufreq's pcc_get_freq()
- sometimes can't get correct CPU frequency
-Date: Mon, 30 Nov 2015 08:04:37 +0000
-Message-ID: <92645B27BF79D04FBD2B0F8494FFD0F9199D5C3D@G2W2527.americas.hpqcorp.net>
+From: dawei chien <dawei.chien@mediatek.com>
+Subject: Re: [PATCH v4 3/3] thermal: mediatek: Add cpu dynamic power cooling
+ model.
+Date: Mon, 30 Nov 2015 17:26:21 +0800
+Message-ID: <1448875581.29031.14.camel@mtksdaap41>
+References: <1448616727-29367-1-git-send-email-dawei.chien@mediatek.com>
+	 <1448616727-29367-4-git-send-email-dawei.chien@mediatek.com>
+	 <20151130053845.GM3373@ubuntu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Language: en-US
+In-Reply-To: <20151130053845.GM3373@ubuntu>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: "Knippers, Linda" <linda.knippers@hpe.com>, "Pearson, Greg" <greg.pearson@hpe.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Matthias Brugger <matthias.bgg@gmail.com>, Daniel Kurtz <djkurtz@chromium.org>, Sascha Hauer <s.hauer@pengutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, Sascha Hauer <kernel@pengutronix.de>, Punit Agrawal <punit.agrawal@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-DQpIaSBhbGwsIA0KDQpBYm91dCB0aGlzIHBhdGNoICwgZG8geW91IGhhdmUgYW55IGNvbW1lbnRz
-ID8gIA0KVGhhbmtzIGZvciB5b3VyIGFueSBjb21tZW50cyAsIGNvcnJlY3Rpb25zIGFuZCBldGMu
-IA0KDQpUaGFua3MgdmVyeSBtdWNoIQ0KDQpGb2xsb3dpbmdzIGFyZSBsYXN0IGVtYWlscyA6DQpo
-dHRwczovL2xrbWwub3JnL2xrbWwvMjAxNS8xMS8xNi8xMzIgDQpodHRwczovL2xrbWwub3JnL2xr
-bWwvMjAxNS8xMS8xNi8xMzMgDQpodHRwczovL2xrbWwub3JnL2xrbWwvMjAxNS8xMS8xNi8xNDAN
-Cg0KDQotQm9iDQoNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBaaGFu
-ZywgTGluLUJhbyAoTGludXggS2VybmVsIFImRCkNCj4gU2VudDogMjAxNcTqMTHUwjE2yNUgMTg6
-MzYNCj4gVG86ICdyandAcmp3eXNvY2tpLm5ldCc7ICd2aXJlc2gua3VtYXJAbGluYXJvLm9yZyc7
-ICdsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmcnOw0KPiAnbGludXgta2VybmVsQHZnZXIua2VybmVs
-Lm9yZycNCj4gU3ViamVjdDogW1BBVENIIHYxIDAvMl0gZml4IHRoZSBkZWZlY3QgdGhhdCBwY2Mt
-Y3B1ZnJlcSdzIHBjY19nZXRfZnJlcSgpDQo+IHNvbWV0aW1lcyBjYW4ndCBnZXQgY29ycmVjdCBD
-UFUgZnJlcXVlbmN5DQo+IA0KPiANCj4gU3VtbWFyeSA6DQo+IA0KPiBUaGVzZSAyIHBhdGNoZXMg
-YXJlIGRldmVsb3BlZCBmb3IgZHJpdmVycy9jcHVmcmVxL3BjYy1jcHVmcmVxLmMncw0KPiBwY2Nf
-Z2V0X2ZyZXEoKSBmdW5jdGlvbi4NCj4gVGhlIHBjYy1jcHVmcmVxIGRyaXZlcidzIGZ1bmN0aW9u
-IHBjY19nZXRfZnJlcSgpIHNvbWV0aW1lcyByZXR1cm5zIGludmFsaWQNCj4gZnJlcXVlbmN5IGlu
-Zm9ybWF0aW9uLg0KPiBXaXRob3V0IHRoZSB0aGVzZSAyIHBhdGNoZXMgLCBpdCBjYW4gYmUgcmVw
-cm9kdWNlZCBvbiBib290aW5nIExpbnV4IEtlcm5lbCB3aXRoDQo+IGxvYWRpbmcgcGNjLWNwdWZy
-ZXEua28gYW5kIGxvb3AgdW5sb2FkaW5nL2xvYWRpbmcgcGNjLWNwdWZyZXEua28uDQo+IFRoaXMg
-cHJvYmxlbSBoYXMgYmVlbiByZXBvcnRlZCBvbiBQcm9MaWFudCBzeXN0ZW1zLCBwcmltYXJpbHkg
-NC1zb2NrZXQgc3lzdGVtcywNCj4gZm9yIGV4YW1wbGUgREw1ODBHZW44Lg0KPiANCj4gR2VuZXJh
-bGx5IHNwZWFraW5nLCBhcyBQQ0Mgc3BlYyxwYXRjaCAxIGNhbiBpZGVhbGx5IGVuc3VyZSB0byBn
-ZXQgY29ycmVjdCBjcHUNCj4gZnJlcWVuY3kgaWYgRlcgd29ya3Mgd2VsbC4NCj4gaWYgaXQgZmFp
-bHMsIHBhdGNoIDIgY2FuIGJlIHJ1biB0byByZXRyeSAyIHRpbWVzIHRvIGdldCBjcHUgZnJlcSBh
-cyB3b3JrYXJvdW5kLg0KPiANCj4gVGhlc2UgMiBwYXRjaGVzIGFyZSB3cml0dGVuIGJ5IEhQJ3Mg
-Z3JlZy5wZWFyc29uQGhwZS5jb20gLCBlbmhhbmNlZC92ZXJpZmllZA0KPiBieSBMaW5iYW8uemhh
-bmdAaHBlLmNvbQ0KPiANCj4gUEFUQ0ggMS8yOg0KPiBpbiBQcm9jZXNzb3IgQ2xvY2tpbmcgQ29u
-dHJvbCBzcGVjaWZpY2F0aW9uIHYxLjAgLHRoZXJlIGFyZSAyIGxpbWl0YXRpb25zIDoNCj4gMi4x
-LjggTWluaW11bSBUaW1lIEJldHdlZW4gQ29tbWFuZHMNCj4gMi4xLjkgTWF4aW11bSBUaW1lIEJl
-dHdlZW4gQ29tbWFuZHMNCj4gdGhhdCBtZWFucyAyIGNvbW1hbmRzJyBpbnRlcnZhbCBzaG91bGQg
-YmUgbG9jYXRlZCBiZXR3ZWVuIE1pbmltdW0gVGltZQ0KPiBCZXR3ZWVuIENvbW1hbmRzIGFuZCBN
-YXhpbXVtDQo+IA0KPiBUaW1lIEJldHdlZW4gQ29tbWFuZHMuDQo+IHRoaXMgcGF0Y2ggaW1wbGVt
-ZW50cyB0aGlzIGZlYXR1cmUsd2hpbGUgb2xkIHBjYy1jcHVmcmVxLmMgZGlkbid0IHN0cmljdGx5
-IGZvbGxvdw0KPiB0aGUgc3BlYy4NCj4gaWRlYWxseSAsIHRoaXMgcGF0Y2ggZW5zdXJlIHBjY19n
-ZXRfZnJlcSgpIHJldHVybiB2YWxpZCBmcmVxIGJhc2VkIG9uIHRoZSBmYWN0IEZXDQo+IGlzIHdv
-cmtpbmcgd2VsbC4NCj4gDQo+IFBBVENIIDIvMjoNCj4gaWYgcGNjX2dldF9mcmVxKCkgcmV0dXJu
-cyAwLCB3ZSB3aWxsIHJldHJ5IDIgdGltZXMgYXQgbW9zdC4gVGhpcyBpcyBhIHdvcmthcm91bmQN
-Cj4gcGF0Y2gsIGFsdGhvdWdoIGl0IGlzIDEwMCUgcGVyZmVjdC5UaGlzIHdvcmtzIGFyb3VuZCBh
-IGZpcm13YXJlL3RpbWluZyBpc3N1ZS4gSW4NCj4gdmVyeSByYXJlIGNhc2UgLCBpdCBhbHNvIHdp
-bGwgZmFpbCBhZnRlciByZXRyeWluZyAyIHRpbWVzIGR1ZSB0byBmaXJtd2FyZSBpc3N1ZS4gQmFz
-ZWQNCj4gb24gY3VycmVudCBwY2MgY3B1ZnJlcSBkZXNpZ24gLCB0aGlzIHdvcmthcm91bmQgd291
-bGQgYmUgdGhlIGJlc3Qgc29sdXRpb24gYnkNCj4gY29uZmlybWF0aW9uIHdpdGggRlcgZ3V5cy4g
-cGF0Y2ggMiBoYXMgYmVlbiBhZG90ZWQgYnkgc2xlczExc3A0Lg0KPiANCj4gRGV0YWlsZWQgdGVz
-dGluZyBkYXRhIGNhbiBiZSBmb3VuZCBhcyBmb2xsb3dpbmcgOg0KPiANCj4gb3VyIHRlc3Rpbmcg
-cmVzdWx0IG9uIERMNTgwR2VuOCB3aXRoIHVwc3RyZWFtIGtlcm5lbDoNCj4gYSkgbG9vcCB1bmxv
-YWRpbmcvbG9hZGluZyBwY2MgZHJpdmVyIHdpdGhpbiAxNCBob3VycyAsIHBjY19nZXRfZnJlcSgp
-IGFsd2F5cw0KPiBzdWNjZWVkICwgdGhlIHBhdGNoIGFsd2F5cyBzdWNjZWVkZWQsIGRvbid0IG5l
-ZWQgdGhlIHNlY29uZCBwYXRjaCB0bw0KPiB3b3JrYXJvdW5kDQo+IGIpIGxvb3AgcmVib290aW5n
-IERMNTgwR2VuOCB3aXRoIGdpdCBrZXJuZWw6IGJ5IHdyaXR0aW5nIGEgc2hlbGwgc2NyaXB0LCBm
-b3VuZA0KPiBhYm91dCByZWJvb3RpbmcgMjAwKyB0aW1lcywgcGF0Y2ggMSBhbmQgcGF0Y2ggMiBt
-YXkgYm90aCBmYWlsZWQgb25jZSwgbWVhbnMNCj4gcGNjX2dldF9mcmVxKCkgcmV0dXJucyAwIGZy
-ZXF1ZW5jeSxhbHRob3VnaCBpdHMgcG9zc2liaWxpdHkgaXMgdmVyeSB2ZXJ5IGxvdy4NCj4gcGNj
-X2dldF9mcmVxKCkgZG9lc24ndCBhZmZlY3QgcGNjLWNwdWZyZXEgZHJpdmVyIGxvYWRpbmcgLGJl
-Y2F1c2UgdGhleSBhcmUNCj4gcnVubmluZyBkaWZmZXJlbnQgcGF0aC4NCj4gaW4gdGhpcyBsb29w
-IHJlYm9vdGluZyB0ZXN0ICwgcGNjLWNwdWZyZXEgY2FuIGFsd2F5cyBiZSBsb2FkZWQgc3VjY2Vz
-c2Z1bGx5Lg0KPiANCj4gV2UgY2FuIHNheSAscGF0Y2ggMSBhbmQgcGF0Y2ggMiB3b3VsZCBiZSB0
-aGUgYmVzdCBzb2x1dGlvbiBmb3IgdGhpcyBpc3N1ZS4NCj4gDQo+IFpoYW5nIExpbi1CYW8gKDIp
-Og0KPiAgIGVuZm9yY2UgbWF4L21pbiB0aW1lIGJldHdlZW4gY29tbWFuZHMNCj4gICByZXRyeSAy
-IHRpbWVzIHdoZW4gZ2V0dGluZyBjcHUgZnJlcXVlbmN5IGlzIHplcm8NCj4gDQo+ICBkcml2ZXJz
-L2NwdWZyZXEvcGNjLWNwdWZyZXEuYyB8IDUxDQo+ICsrKysrKysrKysrKysrKysrKysrKysrKysr
-KysrKysrKysrKysrKysrKy0NCj4gIDEgZmlsZSBjaGFuZ2VkLCA1MCBpbnNlcnRpb25zKCspLCAx
-IGRlbGV0aW9uKC0pDQo+IA0KPiAtLQ0KPiAxLjguNS4yDQo+IA0KDQo=
+On Mon, 2015-11-30 at 11:08 +0530, Viresh Kumar wrote:
+> On 27-11-15, 17:32, Dawei Chien wrote:
+> > MT8173 cpufreq driver use of_cpufreq_power_cooling_register registering
+> > cooling devices with dynamic power coefficient.
+> > 
+> > Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
+> > ---
+> > This patch is base on patchset:
+> > https://lkml.org/lkml/2015/11/17/251
+> > ---
+> >  drivers/cpufreq/mt8173-cpufreq.c |   28 ++++++++++++++++++++--------
+> >  1 file changed, 20 insertions(+), 8 deletions(-)
+> > 
+> > diff --git a/drivers/cpufreq/mt8173-cpufreq.c b/drivers/cpufreq/mt8173-cpufreq.c
+> > index 83001dc..4d39468 100644
+> > --- a/drivers/cpufreq/mt8173-cpufreq.c
+> > +++ b/drivers/cpufreq/mt8173-cpufreq.c
+> > @@ -263,24 +263,34 @@ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
+> >  	return 0;
+> >  }
+> >  
+> > +#define DYNAMIC_POWER "dynamic-power-coefficient"
+> > +
+> >  static void mtk_cpufreq_ready(struct cpufreq_policy *policy)
+> >  {
+> >  	struct mtk_cpu_dvfs_info *info = policy->driver_data;
+> >  	struct device_node *np = of_node_get(info->cpu_dev->of_node);
+> > +	u32 capacitance;
+> >  
+> >  	if (WARN_ON(!np))
+> >  		return;
+> >  
+> >  	if (of_find_property(np, "#cooling-cells", NULL)) {
+> > -		info->cdev = of_cpufreq_cooling_register(np,
+> > -							 policy->related_cpus);
+> > +		if (!info->cdev) {
+> 
+> Why will info->cdev be non-NULL here ?
+
+This is a error-checking to avoid user or any script by command line hotplug CPU
+more than two times, we don't need to register cooling device on this case.
+
+I will remove it if you don't agree it.
+
+> > +			of_property_read_u32(np, DYNAMIC_POWER, &capacitance);
+> 
+> This can fail, in which case capacitance will be used uninitialized.
+> Fix that by initializing it with 0 at the beginning of this routine.
+
+Thank you, I will follow your comment to fix it on next version.
+
+> > +			info->cdev = of_cpufreq_power_cooling_register(np,
+> > +							policy->related_cpus,
+> > +							capacitance,
+> > +							NULL);
+> >  
+> > -		if (IS_ERR(info->cdev)) {
+> > -			dev_err(info->cpu_dev,
+> > -				"running cpufreq without cooling device: %ld\n",
+> > -				PTR_ERR(info->cdev));
+> > +			if (IS_ERR(info->cdev)) {
+> > +				dev_err(info->cpu_dev,
+> > +					"running cpufreq without cooling device: %ld\n",
+> > +					PTR_ERR(info->cdev));
+> >  
+> > -			info->cdev = NULL;
+> > +				info->cdev = NULL;
+> > +			}
+> >  		}
+> >  	}
+> >  
+> > @@ -460,7 +470,9 @@ static int mtk_cpufreq_exit(struct cpufreq_policy *policy)
+> >  {
+> >  	struct mtk_cpu_dvfs_info *info = policy->driver_data;
+> >  
+> > -	cpufreq_cooling_unregister(info->cdev);
+> > +	if (info->cdev)
+> > +		cpufreq_cooling_unregister(info->cdev);
+> > +
+> 
+> Why do you need to update this?
+
+This is a error-checking to avoid user or any script by command line
+unplug CPU more than two times, we don't need to unregister cooling
+device on this case.
+
+I will remove it if you don't agree it.
+
+> >  	dev_pm_opp_free_cpufreq_table(info->cpu_dev, &policy->freq_table);
+> >  	mtk_cpu_dvfs_info_release(info);
+> >  	kfree(info);
+> > -- 
+> > 1.7.9.5
+> 
