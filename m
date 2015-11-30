@@ -1,108 +1,135 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCHv2 1/4] power: domain: add pm_genpd_exit
-Date: Mon, 30 Nov 2015 10:38:14 +0100
-Message-ID: <CAPDyKFqG5XT8dQrLB+dbXydWSejgoQaVmDVCAj2B-B+5c3X-xw@mail.gmail.com>
-References: <1448816373-18235-1-git-send-email-alex.aring@gmail.com>
-	<1448816373-18235-2-git-send-email-alex.aring@gmail.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [RFC PATCH 2/8] Documentation: arm: define DT cpu capacity bindings
+Date: Mon, 30 Nov 2015 10:59:04 +0100
+Message-ID: <CAKfTPtAww=r6H2Jrgu+8jDsYohPj7HD=_sdAP2utEEH-YLVsaA@mail.gmail.com>
+References: <1448288921-30307-1-git-send-email-juri.lelli@arm.com>
+ <1448288921-30307-3-git-send-email-juri.lelli@arm.com> <20151124020631.GA15165@rob-hp-laptop>
+ <20151124105423.GM26372@e106622-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f174.google.com ([209.85.160.174]:33508 "EHLO
-	mail-yk0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752419AbbK3JiP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Nov 2015 04:38:15 -0500
-Received: by ykdv3 with SMTP id v3so176758833ykd.0
-        for <linux-pm@vger.kernel.org>; Mon, 30 Nov 2015 01:38:15 -0800 (PST)
-In-Reply-To: <1448816373-18235-2-git-send-email-alex.aring@gmail.com>
+Received: from mail-lf0-f43.google.com ([209.85.215.43]:33432 "EHLO
+	mail-lf0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752481AbbK3J70 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Nov 2015 04:59:26 -0500
+Received: by lfaz4 with SMTP id z4so189435468lfa.0
+        for <linux-pm@vger.kernel.org>; Mon, 30 Nov 2015 01:59:24 -0800 (PST)
+In-Reply-To: <20151124105423.GM26372@e106622-lin>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alexander Aring <alex.aring@gmail.com>
-Cc: linux-rpi-kernel@lists.infradead.org, Rob Herring <robh+dt@kernel.org>, =?UTF-8?Q?Pawe=C5=82_Moll?= <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Stephen Warren <swarren@wwwdotorg.org>, Lee Jones <lee@kernel.org>, Eric Anholt <eric@anholt.net>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Florian Fainelli <f.fainelli@gmail.com>, Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, bcm-kernel-feedback-list@broadcom.com, linux-pm@vg
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: Rob Herring <robh@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Mark Rutland <mark.rutland@arm.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Olof Johansson <olof@lixom.net>, Gregory CLEMENT <gregory.clement@free-electrons.com>, Paul
 
-On 29 November 2015 at 17:59, Alexander Aring <alex.aring@gmail.com> wrote:
-> This patch adds function pm_genpd_exit for undo a pm_genpd_init. This
-> is useful for multiple power domains while probing. If the probing fails
-> after one pm_genpd_init was called we need to undo all previous
-> registrations of generic pm domains inside the gpd_list list.
->
-> There is a check on IS_ERR_OR_NULL(genpd) which is useful to check again
-> registered power domains and not registered domains, the driver can use
-> this mechanism to have an array with registered and non-registered power
-> domains, where non-registered power domains are NULL.
->
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Kevin Hilman <khilman@kernel.org>
-> Cc: Ulf Hansson <ulf.hansson@linaro.org>
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Cc: Len Brown <len.brown@intel.com>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Signed-off-by: Alexander Aring <alex.aring@gmail.com>
+Hi Juri,
 
-Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+On 24 November 2015 at 11:54, Juri Lelli <juri.lelli@arm.com> wrote:
+> Hi,
+>
+> On 23/11/15 20:06, Rob Herring wrote:
+>> On Mon, Nov 23, 2015 at 02:28:35PM +0000, Juri Lelli wrote:
+>> > ARM systems may be configured to have cpus with different power/performance
+>> > characteristics within the same chip. In this case, additional information
+>> > has to be made available to the kernel (the scheduler in particular) for it
+>> > to be aware of such differences and take decisions accordingly.
+>> >
 
-Kind regards
-Uffe
+[snip]
 
-> ---
->  drivers/base/power/domain.c | 22 ++++++++++++++++++++++
->  include/linux/pm_domain.h   |  4 ++++
->  2 files changed, 26 insertions(+)
+>> > +==========================================
+>> > +2 - CPU capacity definition
+>> > +==========================================
+>> > +
+>> > +CPU capacity is a number that provides the scheduler information about CPUs
+>> > +heterogeneity. Such heterogeneity can come from micro-architectural differences
+>> > +(e.g., ARM big.LITTLE systems) or maximum frequency at which CPUs can run
+>> > +(e.g., SMP systems with multiple frequency domains). Heterogeneity in this
+>> > +context is about differing performance characteristics; this binding tries to
+>> > +capture a first-order approximation of the relative performance of CPUs.
+>> > +
+>> > +One simple way to estimate CPU capacities is to iteratively run a well-known
+>> > +CPU user space benchmark (e.g, sysbench, dhrystone, etc.) on each CPU at
+>> > +maximum frequency and then normalize values w.r.t.  the best performing CPU.
+>> > +One can also do a statistically significant study of a wide collection of
+>> > +benchmarks, but pros of such an approach are not really evident at the time of
+>> > +writing.
+>> > +
+>> > +==========================================
+>> > +3 - capacity-scale
+>> > +==========================================
+>> > +
+>> > +CPUs capacities are defined with respect to capacity-scale property in the cpus
+>> > +node [1]. The property is optional; if not defined a 1024 capacity-scale is
+>> > +assumed. This property defines both the highest CPU capacity present in the
+>> > +system and granularity of CPU capacity values.
+>>
+>> I don't really see the point of this vs. having an absolute scale.
+>>
 >
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index e03b1ad..311cb0e 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -1509,6 +1509,28 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
->  }
->  EXPORT_SYMBOL_GPL(pm_genpd_init);
+> IMHO, we need this for several reasons, one being to address one of your
+> concerns below: vendors are free to choose their scale without being
+> forced to publish absolute data. Another reason is that it might make
+> life easier in certain cases; for example, someone could implement a
+> system with a few clusters of, say, A57s, but some run at half the clock
+> of the others (e.g., you have a 1.2GHz cluster and a 600MHz cluster); in
+> this case I think it is just easier to define capacity-scale as 1200 and
+> capacities as 1200 and 600. Last reason that I can think of right now is
+> that we don't probably want to bound ourself to some particular range
+> from the beginning, as that range might be enough now, but it could
+> change in the future (as in, right now [1-1024] looks fine for
+> scheduling purposes, but that might change).
+
+Like Rob, i don't really see the benefit of this optional
+capacity-scale property. Parsing the capacity of all cpu nodes should
+give you a range as well.
+IMHO, this property looks like an optimization of the code that will
+parse the dt more than a HW description
+
 >
-> +/**
-> + * pm_genpd_exit - Uninitialize a generic I/O PM domain object.
-> + * @genpd: PM domain object to uninitialize.
-> + */
-> +void pm_genpd_exit(struct generic_pm_domain *genpd)
-> +{
-> +       if (IS_ERR_OR_NULL(genpd))
-> +               return;
-> +
-> +       /* check if domain is still in registered inside the pm subsystem */
-> +       WARN_ON_ONCE(!list_empty(&genpd->master_links) ||
-> +                    !list_empty(&genpd->slave_links) ||
-> +                    !list_empty(&genpd->dev_list));
-> +
-> +       mutex_lock(&gpd_list_lock);
-> +       list_del(&genpd->gpd_list_node);
-> +       mutex_unlock(&gpd_list_lock);
-> +
-> +       mutex_destroy(&genpd->lock);
-> +}
-> +EXPORT_SYMBOL_GPL(pm_genpd_exit);
-> +
->  #ifdef CONFIG_PM_GENERIC_DOMAINS_OF
->  /*
->   * Device Tree based PM domain providers.
-> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> index ba4ced3..5020b36 100644
-> --- a/include/linux/pm_domain.h
-> +++ b/include/linux/pm_domain.h
-> @@ -123,6 +123,7 @@ extern int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
->                                      struct generic_pm_domain *target);
->  extern void pm_genpd_init(struct generic_pm_domain *genpd,
->                           struct dev_power_governor *gov, bool is_off);
-> +extern void pm_genpd_exit(struct generic_pm_domain *genpd);
+>> > +
+>> > +==========================================
+>> > +4 - capacity
+>> > +==========================================
+>> > +
+>> > +capacity is an optional cpu node [1] property: u32 value representing CPU
+>> > +capacity, relative to capacity-scale. It is required and enforced that capacity
+>> > +<= capacity-scale.
+>>
+>> I think you need something absolute and probably per MHz (like
+>> dynamic-power-coefficient property). Perhaps the IPC (instructions per
+>> clock) value?
+>>
+>> In other words, I want to see these numbers have a defined method
+>> of determining them and don't want to see random values from every
+>> vendor. ARM, Ltd. says core X has a value of Y would be good enough for
+>> me. Vendor X's A57 having a value of 2 and Vendor Y's A57 having a
+>> value of 1024 is not what I want to see. Of course things like cache
+>> sizes can vary the performance, but is a baseline value good enough?
+>>
 >
->  extern struct dev_power_governor simple_qos_governor;
->  extern struct dev_power_governor pm_domain_always_on_gov;
-> @@ -161,6 +162,9 @@ static inline void pm_genpd_init(struct generic_pm_domain *genpd,
->                                  struct dev_power_governor *gov, bool is_off)
->  {
->  }
-> +static inline void pm_genpd_exit(struct generic_pm_domain *genpd)
-> +{
-> +}
->  #endif
+> A standard reference baseline is what we advocate with this set, but
+> making this baseline work for every vendor's implementation is hardly
+> achievable, IMHO. I don't think we can come up with any number that
+> applies to each and every implementation; you can have different
+> revisions of the same core and vendors might make implementation choices
+> that end up with different peak performance.
 >
->  static inline int pm_genpd_add_device(struct generic_pm_domain *genpd,
-> --
-> 2.6.1
+>> However, no vendor will want to publish their values if these are
+>> absolute values relative to other vendors.
+>>
 >
+> Right. That is why I think we need to abstract numbers, as we do with
+> capacity-scale.
+>
+>> If you expect these to need frequent tuning, then don't put them in DT.
+>>
+>
+> I expect that it is possible to come up with a sensible baseline number
+> for a specific platform implementation, so there is value in
+> standardizing how we specify this value and how it is then consumed.
+> Finer grained tuning might then happen both offline (with changes to the
+> mainline DT) and online (using the sysfs interface), but that should
+> only apply to a narrow set of use cases.
+>
+> Thanks,
+>
+> - Juri
