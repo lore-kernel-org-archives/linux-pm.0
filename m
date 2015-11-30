@@ -1,65 +1,84 @@
-From: Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>
-Subject: Re: [PATCHv2 2/4] ARM: bcm2835: add rpi power domain driver
-Date: Mon, 30 Nov 2015 14:12:39 -0800
-Message-ID: <87vb8jgmqw.fsf@eliezer.anholt.net>
-References: <1448816373-18235-1-git-send-email-alex.aring@gmail.com> <1448816373-18235-3-git-send-email-alex.aring@gmail.com>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH 1/3] power: domain: add pm_genpd_uninit
+Date: Mon, 30 Nov 2015 15:19:09 -0800
+Message-ID: <7h7fkz9itu.fsf@deeprootsystems.com>
+References: <1447956490-22930-1-git-send-email-alex.aring@gmail.com>
+	<1447956490-22930-2-git-send-email-alex.aring@gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-	micalg=pgp-sha512; protocol="application/pgp-signature"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1448816373-18235-3-git-send-email-alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-Cc: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org, lee-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjui-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, sbranden-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-List-Id: linux-pm@vger.kernel.org
-
---=-=-=
 Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f47.google.com ([209.85.220.47]:35484 "EHLO
+	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751710AbbK3XTL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 30 Nov 2015 18:19:11 -0500
+Received: by pacej9 with SMTP id ej9so199474881pac.2
+        for <linux-pm@vger.kernel.org>; Mon, 30 Nov 2015 15:19:11 -0800 (PST)
+In-Reply-To: <1447956490-22930-2-git-send-email-alex.aring@gmail.com>
+	(Alexander Aring's message of "Thu, 19 Nov 2015 19:08:08 +0100")
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
+To: Alexander Aring <alex.aring@gmail.com>
+Cc: linux-rpi-kernel@lists.infradead.org, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, swarren@wwwdotorg.org, lee@kernel.org, eric@anholt.net, linux@arm.linux.org.uk, f.fainelli@gmail.com, rjui@broadcom.com, sbranden@broadcom.com, rjw@rjwysocki.net, ulf.hansson@linaro.org, len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, bcm-kernel-feedback-list@broadcom.com, linux-pm@vger.kernel.org, kernel@pengutronix.de
 
-Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> writes:
+Alexander Aring <alex.aring@gmail.com> writes:
 
-> This patch adds support for RPi several Power Domains and enable support
-> to enable the USB Power Domain when it's not enabled before.
+> This patch adds function pm_genpd_uninit for undo a pm_genpd_init. This
+> is useful for multiple power domains while probing. If the probing fails
+> after one pm_genpd_init was called we need to undo all previous
+> registrations of generic pm domains inside the gpd_list list.
 >
-> This patch based on Eric Anholt's patch to support Power Domains. He had
-> an issue about -EPROBE_DEFER inside the power domain subsystem, this
-> issue was solved by commit <311fa6a> ("PM / Domains: Return -EPROBE_DEFER
-> if we fail to init or turn-on domain").
+> There is a check on IS_ERR_OR_NULL(genpd) which is useful to check again
+> registered power domains and not registered domains, the driver can use
+> this mechanism to have an array with registered and non-registered power
+> domains, where non-registered power domains are NULL.
 >
-> Cc: Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>
-> Cc: Lee Jones <lee-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> Cc: Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>
-> Signed-off-by: Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-> Signed-off-by: Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: Kevin Hilman <khilman@kernel.org>
+> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Signed-off-by: Alexander Aring <alex.aring@gmail.com>
+> ---
+>  drivers/base/power/domain.c | 22 ++++++++++++++++++++++
+>  include/linux/pm_domain.h   |  4 ++++
+>  2 files changed, 26 insertions(+)
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index e03b1ad..24f54b8 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -1509,6 +1509,28 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
+>  }
+>  EXPORT_SYMBOL_GPL(pm_genpd_init);
+>  
+> +/**
+> + * pm_genpd_uninit - Uninitialize a generic I/O PM domain object.
+> + * @genpd: PM domain object to initialize.
+> + */
+> +void pm_genpd_uninit(struct generic_pm_domain *genpd)
+> +{
+> +	if (IS_ERR_OR_NULL(genpd))
+> +		return;
+> +
+> +	/* check if domain is still in registered inside the pm subsystem */
+> +	WARN_ON_ONCE(!list_empty(&genpd->master_links) ||
+> +		     !list_empty(&genpd->slave_links) ||
+> +		     !list_empty(&genpd->dev_list));
 
-Acked-by: Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>
+So we WARN if there are parents/children/devices, but shouldn't this
+return an error instead of continuing to remove/uninit the genpd?
 
-I'm still hoping Ulf will pull this patch along with the genpd change,
-to reduce synchronization between trees.  (That just leaves the DT
-change's dependency on the header in this one).
+The caller of _uninit should probably also be removing any
+parents/children and removing devices before calling _uninit, no?
 
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
+> +	mutex_lock(&gpd_list_lock);
+> +	list_del(&genpd->gpd_list_node);
+> +	mutex_unlock(&gpd_list_lock);
+> +
+> +	mutex_destroy(&genpd->lock);
+> +}
+> +EXPORT_SYMBOL_GPL(pm_genpd_uninit);
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Kevin
 
-iQIcBAEBCgAGBQJWXMnXAAoJELXWKTbR/J7o0wIQALH9gywWendv2eDXhgKoqobh
-NbjV6CoycPpRdeBk3ZJCeetaBuh3AJRx8854ZgiuxQH46C96odXepoQjIRulznAv
-I5Qxeg7yD4zSNm25OR8DBOZgyovPbOo4s5WmHaxmyGOInbYOUHq2yC0x+u+3wLLy
-mqGb/eO6CY2K3VJr7UT6YWElrd1eKWIBhqp1zGx3aLCj+s9MiBj8LDF1C0rX52UD
-wXLo+hdp6xdH6exlUnf9yXVVy5Mj5a7pomjPtV5IWP3D0rHhA9GXq5El7MQfGX4g
-GSS6UXLWXzyO7Rjejt9gSBfSYKE7Gm99eI3ndkYk9Njr8kzVCw0dhLoBL3mgSbnU
-DcPLgP2hc5a+hINxJn76a17Oi66y7ThiM43S3j50aJg4713u0lEcvaOIjZq0kt7Q
-oK4KgjtLnaYm4OctE4fzq2DZ8PYVSkMSjT+qdF5HPZVBlG3Osdgh3PBWwhEBoiWE
-b1wMfLgN8X5dEtsRTe6WRNCUpmIA+UQ2LWWpoXtRAA5ppDs7MXGVmPnLys3UgVX6
-CGltfOroLMZ5HWgsiN3cuyZsn79JQhAH1fg5GVd8YJvCqBjhIRlNsZ/Kty19lLm3
-84kGjY0osdzIPerKMMbcjXTOVy3q1+76ZysTFAgaLSSdY+KQmHYJ/O9DTC6qqxbD
-J0PcXnIHXdgU48QL3ihJ
-=AeB0
------END PGP SIGNATURE-----
---=-=-=--
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
