@@ -1,91 +1,145 @@
 From: Caesar Wang <wxt@rock-chips.com>
-Subject: [PATCH v2 1/5] thermal: rockchip: fix a trivial typo
-Date: Mon, 30 Nov 2015 10:28:04 +0800
-Message-ID: <1448850488-16325-2-git-send-email-wxt@rock-chips.com>
+Subject: [PATCH v2 4/5] thermal: rockchip: Support the RK3228 SoCs in thermal driver
+Date: Mon, 30 Nov 2015 10:28:07 +0800
+Message-ID: <1448850488-16325-5-git-send-email-wxt@rock-chips.com>
 References: <1448850488-16325-1-git-send-email-wxt@rock-chips.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1448850488-16325-1-git-send-email-wxt@rock-chips.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-rockchip@lists.infradead.org, Heiko Stuebner <heiko@sntech.de>, Dan Carpenter <dan.carpenter@oracle.com>, Caesar Wang <wxt@rock-chips.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jiri Kosina <trivial@kernel.org>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
+Cc: linux-rockchip@lists.infradead.org, Heiko Stuebner <heiko@sntech.de>, Dan Carpenter <dan.carpenter@oracle.com>, Caesar Wang <wxt@rock-chips.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-This patchset trys to dictate unified format for driver.
+The RK3228 SoCs has one Temperature Sensor, channel 0 is for CPU.
 
 Signed-off-by: Caesar Wang <wxt@rock-chips.com>
-
 ---
 
-Changes in v2:
-- As Heiko comments, move to documenting the fields in the header
-  instead of inside the table.
+Changes in v2: None
+Changes in v1: None
 
-Changes in v1:
-- Search more trivial typo for me.
-
- drivers/thermal/rockchip_thermal.c | 25 +++++++++++++------------
- 1 file changed, 13 insertions(+), 12 deletions(-)
+ drivers/thermal/rockchip_thermal.c | 81 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 81 insertions(+)
 
 diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index e845841..ae796ec 100644
+index 6b0f00d..5cb4a8f 100644
 --- a/drivers/thermal/rockchip_thermal.c
 +++ b/drivers/thermal/rockchip_thermal.c
-@@ -38,7 +38,7 @@ enum tshut_mode {
- };
+@@ -154,6 +154,7 @@ struct rockchip_thermal_data {
+ #define TSADCV2_SHUT_2GPIO_SRC_EN(chn)		BIT(4 + (chn))
+ #define TSADCV2_SHUT_2CRU_SRC_EN(chn)		BIT(8 + (chn))
  
- /**
-- * the system Temperature Sensors tshut(tshut) polarity
-+ * The system Temperature Sensors tshut(tshut) polarity
-  * the bit 8 is tshut polarity.
-  * 0: low active, 1: high active
-  */
-@@ -57,10 +57,10 @@ enum sensor_id {
- };
++#define TSADCV1_INT_PD_CLEAR_MASK		~BIT(16)
+ #define TSADCV2_INT_PD_CLEAR_MASK		~BIT(8)
  
- /**
--* The conversion table has the adc value and temperature.
--* ADC_DECREMENT is the adc value decremnet.(e.g. v2_code_table)
--* ADC_INCREMNET is the adc value incremnet.(e.g. v3_code_table)
--*/
-+ * The conversion table has the adc value and temperature.
-+ * ADC_DECREMENT: the adc value is of diminishing.(e.g. v2_code_table)
-+ * ADC_INCREMENT: the adc value is incremental.(e.g. v3_code_table)
-+ */
- enum adc_sort_mode {
- 	ADC_DECREMENT = 0,
- 	ADC_INCREMENT,
-@@ -72,16 +72,17 @@ enum adc_sort_mode {
-  */
- #define SOC_MAX_SENSORS	2
+ #define TSADCV2_DATA_MASK			0xfff
+@@ -169,6 +170,51 @@ struct tsadc_table {
+ 	int temp;
+ };
  
 +/**
-+ * struct chip_tsadc_table: hold information about chip-specific differences
-+ * @id: conversion table
-+ * @length: size of conversion table
-+ * @data_mask: mask to apply on data inputs
-+ * @mode: sort mode of this adc variant (incrementing or decrementing)
++ * Note:
++ * Code to Temperature mapping of the Temperature sensor is a piece wise linear
++ * curve.Any temperature, code faling between to 2 give temperatures can be
++ * linearly interpolated.
++ * Code to Temperature mapping should be updated based on sillcon results.
 + */
- struct chip_tsadc_table {
- 	const struct tsadc_table *id;
--
--	/* the array table size*/
- 	unsigned int length;
--
--	/* that analogic mask data */
- 	u32 data_mask;
--
--	/* the sort mode is adc value that increment or decrement in table */
- 	enum adc_sort_mode mode;
- };
- 
-@@ -617,7 +618,7 @@ rockchip_thermal_register_sensor(struct platform_device *pdev,
- 	return 0;
++static const struct tsadc_table v1_code_table[] = {
++	{TSADCV3_DATA_MASK, -40000},
++	{436, -40000},
++	{431, -35000},
++	{426, -30000},
++	{421, -25000},
++	{416, -20000},
++	{411, -15000},
++	{406, -10000},
++	{401, -5000},
++	{395, 0},
++	{390, 5000},
++	{385, 10000},
++	{380, 15000},
++	{375, 20000},
++	{370, 25000},
++	{364, 30000},
++	{359, 35000},
++	{354, 40000},
++	{349, 45000},
++	{343, 50000},
++	{338, 55000},
++	{333, 60000},
++	{328, 65000},
++	{322, 70000},
++	{317, 75000},
++	{312, 80000},
++	{307, 85000},
++	{301, 90000},
++	{296, 95000},
++	{291, 100000},
++	{286, 105000},
++	{280, 110000},
++	{275, 115000},
++	{270, 120000},
++	{264, 125000},
++};
++
+ static const struct tsadc_table v2_code_table[] = {
+ 	{TSADCV2_DATA_MASK, -40000},
+ 	{3800, -40000},
+@@ -369,6 +415,14 @@ static void rk_tsadcv2_initialize(void __iomem *regs,
+ 		       regs + TSADCV2_HIGHT_TSHUT_DEBOUNCE);
  }
  
--/*
-+/**
-  * Reset TSADC Controller, reset all tsadc registers.
-  */
- static void rockchip_thermal_reset_controller(struct reset_control *reset)
++static void rk_tsadcv1_irq_ack(void __iomem *regs)
++{
++	u32 val;
++
++	val = readl_relaxed(regs + TSADCV2_INT_PD);
++	writel_relaxed(val & TSADCV1_INT_PD_CLEAR_MASK, regs + TSADCV2_INT_PD);
++}
++
+ static void rk_tsadcv2_irq_ack(void __iomem *regs)
+ {
+ 	u32 val;
+@@ -430,6 +484,29 @@ static void rk_tsadcv2_tshut_mode(int chn, void __iomem *regs,
+ 	writel_relaxed(val, regs + TSADCV2_INT_EN);
+ }
+ 
++static const struct rockchip_tsadc_chip rk3228_tsadc_data = {
++	.chn_id[SENSOR_CPU] = 0, /* cpu sensor is channel 0 */
++	.chn_num = 1, /* one channel for tsadc */
++
++	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
++	.tshut_polarity = TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
++	.tshut_temp = 95000,
++
++	.initialize = rk_tsadcv2_initialize,
++	.irq_ack = rk_tsadcv1_irq_ack,
++	.control = rk_tsadcv2_control,
++	.get_temp = rk_tsadcv2_get_temp,
++	.set_tshut_temp = rk_tsadcv2_tshut_temp,
++	.set_tshut_mode = rk_tsadcv2_tshut_mode,
++
++	.table = {
++		.id = v1_code_table,
++		.length = ARRAY_SIZE(v1_code_table),
++		.data_mask = TSADCV3_DATA_MASK,
++		.mode = ADC_DECREMENT,
++	},
++};
++
+ static const struct rockchip_tsadc_chip rk3288_tsadc_data = {
+ 	.chn_id[SENSOR_CPU] = 1, /* cpu sensor is channel 1 */
+ 	.chn_id[SENSOR_GPU] = 2, /* gpu sensor is channel 2 */
+@@ -480,6 +557,10 @@ static const struct rockchip_tsadc_chip rk3368_tsadc_data = {
+ 
+ static const struct of_device_id of_rockchip_thermal_match[] = {
+ 	{
++		.compatible = "rockchip,rk3228-tsadc",
++		.data = (void *)&rk3228_tsadc_data,
++	},
++	{
+ 		.compatible = "rockchip,rk3288-tsadc",
+ 		.data = (void *)&rk3288_tsadc_data,
+ 	},
 -- 
 1.9.1
