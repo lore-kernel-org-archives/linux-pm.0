@@ -1,94 +1,96 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 2/3] PM / OPP: Parse 'opp-supported-hw' binding
-Date: Tue, 1 Dec 2015 12:22:52 +0530
-Message-ID: <20151201065252.GD4459@ubuntu>
-References: <cover.1447904566.git.viresh.kumar@linaro.org>
- <4341a83dc6591364cd9deb3dfa8343961b8605d6.1447904566.git.viresh.kumar@linaro.org>
- <20151125205147.GE11298@codeaurora.org>
- <20151127044517.GU3869@ubuntu>
+From: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: Re: Re: [PATCH v2 1/5] ARM: dts: sun8i: Add SID node
+Date: Tue, 1 Dec 2015 09:41:17 +0100
+Message-ID: <20151201084117.GB29263@lukather>
+References: <cover.1448263428.git.atx@atx.name>
+ <b897b1c8741c8a871163b84d01b480f99329536d.1448263428.git.atx@atx.name>
+ <20151123124356.GW32142@lukather>
+ <a7d4e538-db64-476d-b5de-5222419229a2@googlegroups.com>
+ <20151124093202.GL32142@lukather>
+ <56550D70.6060109@gmail.com>
+Reply-To: maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f52.google.com ([209.85.220.52]:33553 "EHLO
-	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750795AbbLAGxD (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Dec 2015 01:53:03 -0500
-Received: by pabfh17 with SMTP id fh17so218287724pab.0
-        for <linux-pm@vger.kernel.org>; Mon, 30 Nov 2015 22:53:01 -0800 (PST)
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="PmA2V3Z32TCmWXqI"
+Return-path: <linux-sunxi+bncBD2ZNBF5VYJRBLV26WZAKGQE55JI2RQ-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20151127044517.GU3869@ubuntu>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <56550D70.6060109-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <http://groups.google.com/group/linux-sunxi
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+List-Subscribe: <http://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <http://groups.google.com/group/linux-sunxi/subscribe>
+To: Shuge <shugelinux-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>, atx-MwjtXicnQwU@public.gmane.org, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gpatchesrdh-I1/eAgTnXDYAvxtiuMwx3w@public.gmane.org, mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, emilio-0Z03zUJReD5OxF6Tv1QG9Q@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dmitry Torokhov <dtor@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Shawn Guo <shawnguo@kernel.org>
 
-On 27-11-15, 10:15, Viresh Kumar wrote:
-> > > +	dev_opp->supported_hw = kmemdup(versions, count * sizeof(*versions),
-> > > +					GFP_KERNEL);
+--PmA2V3Z32TCmWXqI
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+
+Hi,
+
+On Wed, Nov 25, 2015 at 09:22:56AM +0800, Shuge wrote:
+> On Monday, November 23, 2015 at 17:32 UTC+8, Maxime Ripard wrote:
+> > On Mon, Nov 23, 2015 at 10:51:15PM -0800, Sugar Wu wrote:
+> >> On Monday, November 23, 2015 at 8:43:59 PM UTC+8, Maxime Ripard wrote:
+> >>>
+> >>> Hi, 
+> >>>
+> >>> On Mon, Nov 23, 2015 at 09:02:48AM +0100, Josef Gajdusek wrote: 
+> >>>> Add a node describing the Security ID memory to the 
+> >>>> Allwinner H3 .dtsi file. 
+> >>>>
+> >>>> Signed-off-by: Josef Gajdusek <a...-MwjtXicnQwU@public.gmane.org <javascript:>> 
+> >>>> --- 
+> >>>>  arch/arm/boot/dts/sun8i-h3.dtsi | 7 +++++++ 
+> >>>>  1 file changed, 7 insertions(+) 
+> >>>>
+> >>>> diff --git a/arch/arm/boot/dts/sun8i-h3.dtsi 
+> >>> b/arch/arm/boot/dts/sun8i-h3.dtsi 
+> >>>> index 0faa38a..58de718 100644 
+> >>>> --- a/arch/arm/boot/dts/sun8i-h3.dtsi 
+> >>>> +++ b/arch/arm/boot/dts/sun8i-h3.dtsi 
+> >>>> @@ -359,6 +359,13 @@ 
+> >>>>                          #size-cells = <0>; 
+> >>>>                  }; 
+> >>>>   
+> >>>> +                sid: eeprom@01c14000 { 
+> >>>> +                        compatible = "allwinner,sun4i-a10-sid"; 
+> >>>> +                        reg = <0x01c14000 0x400>; 
+> >>>
+> >>> The datasheet says it's 256 bytes wide, while the size here is of 1kB, 
+> >>> is it intentional? 
+> >>
+> >> SID memory map is 0x01c14000 ~ 0x01c143FF, include 2048bits efuse space.
+> >> H3 efuse space is SID_SRAM, its range is  0x01c14200 ~ +0x100.
 > > 
-> > And then we're going to modify said opp here under the mutex
-> > lock.
-> 
-> opp-dev ..
-> 
-> > > +	if (!dev_opp->supported_hw) {
-> > > +		ret = -ENOMEM;
-> > > +		goto err;
-> > > +	}
-> > > +
-> > > +	dev_opp->supported_hw_count = count;
-> > 
-> > So we've properly handled the concurrent writer case (which is
-> > probably not even real), but we have improperly handled the case
-> > where a reader is running in parallel to the writer. We should
-> > only list_add_rcu the pointer once we're done modifying the
-> > pointer we created. Otherwise a reader can come along and see the
-> > half initialized structure, which is not good.
-> 
-> This function will be called, from some platform code, before the OPP
-> table is initialized. It isn't useful to call it after the OPPs are
-> added for the device. So there wouldn't be any concurrent reader.
+> > Interesting, what is below the 0x200 registers?
+> >
+> Some control register about SID.
+> offset: 0x40  SID Program/Read Control Register
+> offset: 0x50  SID Program Key Value Register
+> offset: 0x60  SID Read Key Value Register
+> offset: 0x70  \
+> offset: 0x80  SJTAG Attribute 0 Register
+> offset: 0x84  SJTAG Attribute 1 Register
+> offset: 0x88  SJTAG Select Register
+> offset: 0x90  SID Program Ctrol register for burned timing
 
-Since these functions are *only* going to be called before any OPPs
-are added for the device, and hence ruling out any concurrent readers,
-maybe we can guarantee that with this:
+Thanks!
 
-diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index 5449bae74a44..ec74d98afe75 100644
---- a/drivers/base/power/opp/core.c
-+++ b/drivers/base/power/opp/core.c
-@@ -876,6 +876,9 @@ int dev_pm_opp_set_supported_hw(struct device *dev, const u32 *versions,
-                goto err;
-        }
- 
-+       /* Make sure there are no concurrent readers while updating dev_opp */
-+       WARN_ON(!list_empty(&dev_opp->opp_list));
-+
-        dev_opp->supported_hw = kmemdup(versions, count * sizeof(*versions),
-                                        GFP_KERNEL);
-        if (!dev_opp->supported_hw) {
-@@ -924,6 +927,9 @@ void dev_pm_opp_put_supported_hw(struct device *dev)
-                goto unlock;
-        }
- 
-+       /* Make sure there are no concurrent readers while updating dev_opp */
-+       WARN_ON(!list_empty(&dev_opp->opp_list));
-+
-        if (!dev_opp->supported_hw) {
-                dev_err(dev, "%s: Doesn't have supported hardware list\n",
-                        __func__);
+I guess the layout changed a bit from the A10 and alikes then.
 
+Anyway, we should expose only to the nvmem framework the actual eeprom
+space, so from 0x200 to 0x300 from what you're saying (just like we
+should only expose the first 4 bytes in the A10 / A20)
 
-I don't really want to create a duplicate dev_opp here and then
-replace that in the list, because we know that we have just created
-it.
-
-Over that, if a reference to dev_opp is used somewhere else, lets say
-within the pm_opp structure, then updating all OPPs at such times
-would be really hard.
-
-Lets close this before you go for vacations. I will get whatever
-solution you feel is right.
+Maxime
 
 -- 
-viresh
+Maxime Ripard, Free Electrons
+Embedded Linux, Kernel and Android engineering
+http://free-electrons.com
+--PmA2V3Z32TCmWXqI--
