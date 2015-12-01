@@ -1,188 +1,118 @@
-From: Thomas Renninger <trenn@suse.com>
-Subject: [PATCH 3/5] cpupower: Do not analyse offlined cpus
-Date: Tue,  1 Dec 2015 17:14:15 +0100
-Message-ID: <1448986457-12844-4-git-send-email-trenn@suse.com>
-References: <1448986457-12844-1-git-send-email-trenn@suse.com>
+From: Thierry Reding <thierry.reding@gmail.com>
+Subject: Re: [RFD] PM_GENERIC_DOMAINS && !PM
+Date: Tue, 1 Dec 2015 17:18:09 +0100
+Message-ID: <20151201161809.GA20561@ulmo>
+References: <565C7C86.7030801@nvidia.com>
+ <1517697.Xq8gZV3Xnd@vostro.rjw.lan>
+ <565DBEE6.5030704@nvidia.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="EVF5PPMfhYS0aIcm"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:49847 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755546AbbLAQOV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 1 Dec 2015 11:14:21 -0500
-In-Reply-To: <1448986457-12844-1-git-send-email-trenn@suse.com>
+Received: from mail-wm0-f47.google.com ([74.125.82.47]:37770 "EHLO
+	mail-wm0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755278AbbLAQSN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Dec 2015 11:18:13 -0500
+Content-Disposition: inline
+In-Reply-To: <565DBEE6.5030704@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, Thomas Renninger <trenn@suse.com>
+To: Jon Hunter <jonathanh@nvidia.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
 
-Use sysfs_is_cpu_online(cpu) instead of cpufreq_cpu_exists(cpu) to detect offlined cpus.
 
-Re-arrange printfs slightly to have a consistent output even if you have multiple CPUs
-as output and even if offlined cores are in between.
+--EVF5PPMfhYS0aIcm
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Thomas Renninger <trenn@suse.com>
----
- tools/power/cpupower/utils/cpufreq-info.c  | 11 ++++++++---
- tools/power/cpupower/utils/cpuidle-info.c  | 16 ++++++++++------
- tools/power/cpupower/utils/cpupower-info.c |  9 ++++++---
- tools/power/cpupower/utils/cpupower-set.c  | 10 +++++++---
- 4 files changed, 31 insertions(+), 15 deletions(-)
+On Tue, Dec 01, 2015 at 03:38:14PM +0000, Jon Hunter wrote:
+>=20
+> On 30/11/15 22:42, Rafael J. Wysocki wrote:
+> > On Monday, November 30, 2015 04:42:46 PM Jon Hunter wrote:
+> >> Currently, if PM is disabled in the kernel then so is
+> >> PM_GENERIC_DOMAINS. Although this makes sense, I can see a scenario
+> >> where having minimal genpd support could be advantageous.
+> >>
+> >> I am looking at enabling genpd for Tegra and ideally we would populate
+> >> the power domains when the platform device is probed for the power
+> >> management controller (PMC) as this device contains the registers for
+> >> enabling the power domains.
+> >>
+> >> This works fine for the case where PM is enabled, but I am concerned
+> >> about the case where we don't have PM enabled in the kernel. In this
+> >> case, because domains are not populated early during the boot process,=
+ I
+> >> am concerned that there is a chance for a device dependent on a power
+> >> domain to be probed before the PMC device has been probed and had chan=
+ce
+> >> to turn on any power domains.
+> >=20
+> > So make the !PM case invalid for that platform.
+>=20
+> Thierry, I know that we have not reviewed GPD for tegra recently, but
+> what are your thoughts on the above in principle? At least for Tegra 64-b=
+it?
+>=20
+> > Seriously, either PM is mandatory, or it isn't.  If it is mandatory, ma=
+ke it so
+> > instead of pretending that you can live without it.
+>=20
+> I understand your point and I do agree, however, this means that for any
+> device with power-domains that PM is already mandatory (unless they
+> don't use genpd at all).
+>=20
+> I see some platforms getting around this by enabling all the
+> power-domains early during the platform code and if PM is not enabled
+> then they won't be turned off and so all is ok (d438462c20a3 "ARM: imx6:
+> gpc: always enable PU domain if CONFIG_PM is not set"). However, this
+> assumes that power-domains will never fail to power on and this seems a
+> little fragile to me.
+>=20
+> One thought I had was to make the PM_GENERIC_DOMAINS_OF code independent
+> of PM (ie. moved to domain_of.c) and with a little tweaking of the
+> genpd_dev_pm_attach() function it could be made to work whether PM is
+> enable or not. In other words, if PM is not enabled, then
+> genpd_dev_pm_attach() would only return success if:
+> 1. The device is not dependent on a power domain or
+> 2. The device is dependent on a power domain and it is present and
+>    already powered on.
+>=20
+> Alternatively, may be genpd_dev_pm_attach() should always return
+> -EPROBE_DEFER (to prevent probing a device) if !PM and the device has a
+> "power-domains" node defined.
 
-diff --git a/tools/power/cpupower/utils/cpufreq-info.c b/tools/power/cpupower/utils/cpufreq-info.c
-index 0e67643..522b357 100644
---- a/tools/power/cpupower/utils/cpufreq-info.c
-+++ b/tools/power/cpupower/utils/cpufreq-info.c
-@@ -14,6 +14,7 @@
- #include <getopt.h>
- 
- #include "cpufreq.h"
-+#include "helpers/sysfs.h"
- #include "helpers/helpers.h"
- #include "helpers/bitmask.h"
- 
-@@ -647,11 +648,14 @@ int cmd_freq_info(int argc, char **argv)
- 
- 		if (!bitmask_isbitset(cpus_chosen, cpu))
- 			continue;
--		if (cpufreq_cpu_exists(cpu)) {
--			printf(_("couldn't analyze CPU %d as it doesn't seem to be present\n"), cpu);
-+
-+		printf(_("analyzing CPU %d:\n"), cpu);
-+
-+		if (sysfs_is_cpu_online(cpu) != 1) {
-+			printf(_(" *is offline\n"));
-+			printf("\n");
- 			continue;
- 		}
--		printf(_("analyzing CPU %d:\n"), cpu);
- 
- 		switch (output_param) {
- 		case 'b':
-@@ -693,6 +697,7 @@ int cmd_freq_info(int argc, char **argv)
- 		}
- 		if (ret)
- 			return ret;
-+		printf("\n");
- 	}
- 	return ret;
- }
-diff --git a/tools/power/cpupower/utils/cpuidle-info.c b/tools/power/cpupower/utils/cpuidle-info.c
-index 750c1d8..8bf8ab5 100644
---- a/tools/power/cpupower/utils/cpuidle-info.c
-+++ b/tools/power/cpupower/utils/cpuidle-info.c
-@@ -12,7 +12,6 @@
- #include <stdlib.h>
- #include <string.h>
- #include <getopt.h>
--#include <cpufreq.h>
- 
- #include "helpers/helpers.h"
- #include "helpers/sysfs.h"
-@@ -25,8 +24,6 @@ static void cpuidle_cpu_output(unsigned int cpu, int verbose)
- 	unsigned int idlestates, idlestate;
- 	char *tmp;
- 
--	printf(_ ("Analyzing CPU %d:\n"), cpu);
--
- 	idlestates = sysfs_get_idlestate_count(cpu);
- 	if (idlestates == 0) {
- 		printf(_("CPU %u: No idle states\n"), cpu);
-@@ -71,7 +68,6 @@ static void cpuidle_cpu_output(unsigned int cpu, int verbose)
- 		printf(_("Duration: %llu\n"),
- 		       sysfs_get_idlestate_time(cpu, idlestate));
- 	}
--	printf("\n");
- }
- 
- static void cpuidle_general_output(void)
-@@ -189,10 +185,17 @@ int cmd_idle_info(int argc, char **argv)
- 	for (cpu = bitmask_first(cpus_chosen);
- 	     cpu <= bitmask_last(cpus_chosen); cpu++) {
- 
--		if (!bitmask_isbitset(cpus_chosen, cpu) ||
--		    cpufreq_cpu_exists(cpu))
-+		if (!bitmask_isbitset(cpus_chosen, cpu))
- 			continue;
- 
-+		printf(_("analyzing CPU %d:\n"), cpu);
-+
-+		if (sysfs_is_cpu_online(cpu) != 1) {
-+			printf(_(" *is offline\n"));
-+			printf("\n");
-+			continue;
-+		}
-+
- 		switch (output_param) {
- 
- 		case 'o':
-@@ -203,6 +206,7 @@ int cmd_idle_info(int argc, char **argv)
- 			cpuidle_cpu_output(cpu, verbose);
- 			break;
- 		}
-+		printf("\n");
- 	}
- 	return EXIT_SUCCESS;
- }
-diff --git a/tools/power/cpupower/utils/cpupower-info.c b/tools/power/cpupower/utils/cpupower-info.c
-index 10299f2..c7caa8e 100644
---- a/tools/power/cpupower/utils/cpupower-info.c
-+++ b/tools/power/cpupower/utils/cpupower-info.c
-@@ -12,7 +12,6 @@
- #include <string.h>
- #include <getopt.h>
- 
--#include <cpufreq.h>
- #include "helpers/helpers.h"
- #include "helpers/sysfs.h"
- 
-@@ -83,12 +82,16 @@ int cmd_info(int argc, char **argv)
- 	for (cpu = bitmask_first(cpus_chosen);
- 	     cpu <= bitmask_last(cpus_chosen); cpu++) {
- 
--		if (!bitmask_isbitset(cpus_chosen, cpu) ||
--		    cpufreq_cpu_exists(cpu))
-+		if (!bitmask_isbitset(cpus_chosen, cpu))
- 			continue;
- 
- 		printf(_("analyzing CPU %d:\n"), cpu);
- 
-+		if (sysfs_is_cpu_online(cpu) != 1){
-+			printf(_(" *is offline\n"));
-+			continue;
-+		}
-+
- 		if (params.perf_bias) {
- 			ret = msr_intel_get_perf_bias(cpu);
- 			if (ret < 0) {
-diff --git a/tools/power/cpupower/utils/cpupower-set.c b/tools/power/cpupower/utils/cpupower-set.c
-index 3e6f374..532f46b 100644
---- a/tools/power/cpupower/utils/cpupower-set.c
-+++ b/tools/power/cpupower/utils/cpupower-set.c
-@@ -12,7 +12,6 @@
- #include <string.h>
- #include <getopt.h>
- 
--#include <cpufreq.h>
- #include "helpers/helpers.h"
- #include "helpers/sysfs.h"
- #include "helpers/bitmask.h"
-@@ -78,10 +77,15 @@ int cmd_set(int argc, char **argv)
- 	for (cpu = bitmask_first(cpus_chosen);
- 	     cpu <= bitmask_last(cpus_chosen); cpu++) {
- 
--		if (!bitmask_isbitset(cpus_chosen, cpu) ||
--		    cpufreq_cpu_exists(cpu))
-+		if (!bitmask_isbitset(cpus_chosen, cpu))
- 			continue;
- 
-+		if (sysfs_is_cpu_online(cpu) != 1){
-+			fprintf(stderr, _("Cannot set values on CPU %d:"), cpu);
-+			fprintf(stderr, _(" *is offline\n"));
-+			continue;
-+		}
-+
- 		if (params.perf_bias) {
- 			ret = msr_intel_set_perf_bias(cpu, perf_bias);
- 			if (ret) {
--- 
-2.1.4
+That all sounds very complicated for little gain. Disabling PM doesn't
+make much sense these days, so I'd personally be fine to unconditonally
+enable PM on Tegra. I'm not sure what the correct way would be. Since
+the PM symbol is user-visible, selecting it doesn't sound like a very
+good solution, though a quick grep shows that some architectures do
+this.
 
+Rafael, do you know what the canonical way is to make !PM invalid for a
+platform?
+
+Thierry
+
+--EVF5PPMfhYS0aIcm
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCAAGBQJWXcg+AAoJEN0jrNd/PrOhEnsQAKDMkP3/araAUdYMa9ogNWkf
+dalQzsF/FEgjFxGddKifFIDvmjAv24pjrUOLERM83vy9kyIaS/eT9RUaQUNWFgZl
+CiXszzus0zmMqWBgSW0Qmm1+MbVDhPFJ+fjZpjnEClBk1x5YQR0CoU82BL/0IVh/
+bRBa4UTnzUJ616TKHU/THEquHfNS5MCDOCE3707P1vvQ24BG3LXUpf6XzbAd/zFm
+zoAk8gAU2gEYWz2YxsycPrtNRVQnejgBUAZk96JWLHpwmylQFWt74hs6UijAZehd
+4Gdkz0b22ndBZsgLkYJgb8e4/UCwps9IWsdKSsUjIPcLILSFXDjOsvbFjM72k17W
+L6a5f+mGfQzYeQMfPuwgsM9qaC/tWnr0+rTI5L31K9ZnmpdIzoeBnLTHdHTi+d+7
+o2Ex6T6YUxbnwmOyn0ONfwEiYgTAxulEdjVkp4wSMgzuMSIQ+urpb8l0w9lWh4c6
+2oHkBkOMsb/9ZK5HKpAZJ9BeIZC0V9PCqW0B0IfJRSdctHMCx35AoZOiVOJImdKr
+x7LrU1yYMXEexIxFnp1vY0Gj33x11jqXfqTULeaAfBloavafr1sOg7OvyuE6q4mB
+7svQlJJMSmMGrPeWLzpWoaqCITPYw0UOjOXUOh4Tc3hdvQW8LKSHvyFU77LhPp2M
+ff1KgonqMTDMtmNnQrIo
+=K8Nt
+-----END PGP SIGNATURE-----
+
+--EVF5PPMfhYS0aIcm--
