@@ -1,96 +1,89 @@
-From: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: Re: Re: [PATCH v2 1/5] ARM: dts: sun8i: Add SID node
-Date: Tue, 1 Dec 2015 09:41:17 +0100
-Message-ID: <20151201084117.GB29263@lukather>
-References: <cover.1448263428.git.atx@atx.name>
- <b897b1c8741c8a871163b84d01b480f99329536d.1448263428.git.atx@atx.name>
- <20151123124356.GW32142@lukather>
- <a7d4e538-db64-476d-b5de-5222419229a2@googlegroups.com>
- <20151124093202.GL32142@lukather>
- <56550D70.6060109@gmail.com>
-Reply-To: maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH v8 11/13] clk: qcom: gdsc: Use PM clocks to control gdsc
+ clocks
+Date: Tue, 1 Dec 2015 00:59:09 -0800
+Message-ID: <20151201085909.GA4139@codeaurora.org>
+References: <1438857474-20262-1-git-send-email-rnayak@codeaurora.org>
+ <1438857474-20262-12-git-send-email-rnayak@codeaurora.org>
+ <20150811065224.GA2839@codeaurora.org>
+ <f45f0e47a6917b8bd4a223bea46c93c1.squirrel@www.codeaurora.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="PmA2V3Z32TCmWXqI"
-Return-path: <linux-sunxi+bncBD2ZNBF5VYJRBLV26WZAKGQE55JI2RQ-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:57231 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754010AbbLAI7L (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Dec 2015 03:59:11 -0500
 Content-Disposition: inline
-In-Reply-To: <56550D70.6060109-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-List-Post: <http://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <http://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <http://groups.google.com/group/linux-sunxi
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-List-Subscribe: <http://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <http://groups.google.com/group/linux-sunxi/subscribe>
-To: Shuge <shugelinux-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>, atx-MwjtXicnQwU@public.gmane.org, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, gpatchesrdh-I1/eAgTnXDYAvxtiuMwx3w@public.gmane.org, mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, emilio-0Z03zUJReD5OxF6Tv1QG9Q@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+In-Reply-To: <f45f0e47a6917b8bd4a223bea46c93c1.squirrel@www.codeaurora.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rajendra Nayak <rnayak@codeaurora.org>
+Cc: mturquette@baylibre.com, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, georgi.djakov@linaro.org, svarbanov@mm-sol.com, srinivas.kandagatla@linaro.org, sviau@codeaurora.org
 
---PmA2V3Z32TCmWXqI
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-
-Hi,
-
-On Wed, Nov 25, 2015 at 09:22:56AM +0800, Shuge wrote:
-> On Monday, November 23, 2015 at 17:32 UTC+8, Maxime Ripard wrote:
-> > On Mon, Nov 23, 2015 at 10:51:15PM -0800, Sugar Wu wrote:
-> >> On Monday, November 23, 2015 at 8:43:59 PM UTC+8, Maxime Ripard wrote:
-> >>>
-> >>> Hi, 
-> >>>
-> >>> On Mon, Nov 23, 2015 at 09:02:48AM +0100, Josef Gajdusek wrote: 
-> >>>> Add a node describing the Security ID memory to the 
-> >>>> Allwinner H3 .dtsi file. 
-> >>>>
-> >>>> Signed-off-by: Josef Gajdusek <a...-MwjtXicnQwU@public.gmane.org <javascript:>> 
-> >>>> --- 
-> >>>>  arch/arm/boot/dts/sun8i-h3.dtsi | 7 +++++++ 
-> >>>>  1 file changed, 7 insertions(+) 
-> >>>>
-> >>>> diff --git a/arch/arm/boot/dts/sun8i-h3.dtsi 
-> >>> b/arch/arm/boot/dts/sun8i-h3.dtsi 
-> >>>> index 0faa38a..58de718 100644 
-> >>>> --- a/arch/arm/boot/dts/sun8i-h3.dtsi 
-> >>>> +++ b/arch/arm/boot/dts/sun8i-h3.dtsi 
-> >>>> @@ -359,6 +359,13 @@ 
-> >>>>                          #size-cells = <0>; 
-> >>>>                  }; 
-> >>>>   
-> >>>> +                sid: eeprom@01c14000 { 
-> >>>> +                        compatible = "allwinner,sun4i-a10-sid"; 
-> >>>> +                        reg = <0x01c14000 0x400>; 
-> >>>
-> >>> The datasheet says it's 256 bytes wide, while the size here is of 1kB, 
-> >>> is it intentional? 
-> >>
-> >> SID memory map is 0x01c14000 ~ 0x01c143FF, include 2048bits efuse space.
-> >> H3 efuse space is SID_SRAM, its range is  0x01c14200 ~ +0x100.
-> > 
-> > Interesting, what is below the 0x200 registers?
+On 11/27, Rajendra Nayak wrote:
 > >
-> Some control register about SID.
-> offset: 0x40  SID Program/Read Control Register
-> offset: 0x50  SID Program Key Value Register
-> offset: 0x60  SID Read Key Value Register
-> offset: 0x70  \
-> offset: 0x80  SJTAG Attribute 0 Register
-> offset: 0x84  SJTAG Attribute 1 Register
-> offset: 0x88  SJTAG Select Register
-> offset: 0x90  SID Program Ctrol register for burned timing
+> > I'm lost. I was hoping we could just make up a clkspec on the
+> > stack and pass it over to of_clk_get_from_provider() without
+> > having to go through the np of the client device. The point being
+> > to avoid forcing this code from knowing about the consumer
+> > binding or connection name choice for each device. Instead, it
+> > assumes that it's a #clock-cells=<1> binding and gets the clocks
+> > by passing the 1 cell data without calling
+> > of_parse_phandle_with_args().
+> >
+> > Now, one downside of that approach is that it's DT centric (also
+> > of_clk_get_from_provider() is not an exported symbol yet). So I'm
+> > really starting to lean towards exposing __clk_create_clk() (or
+> > some better named "provider" function) that will allow clk
+> > providers to turn their clk_hw structure into a struct clk
+> > pointer. That avoids the DT centric design, and avoids binding
+> > the provider to the connection ids too.
+> 
+> Stephen, I started to relook at these patches, avoiding the DT centric
+> design and implementing a clk helper API as you suggested above.
+> 
+> While this would work for GDSCs with just one device, its hard to scale
+> if we ever run into GDSCs with multiple devices (In which case you
+> need to know which device within the GDSC needs which clocks)
 
-Thanks!
+Why? The GDSC should know which clocks it's forcing on and off
+and it shouldn't need to care which devices are consuming those
+clocks. The GDSC structure would have a bunch of clk_hw pointers
+that it could convert into struct clk pointer to do clk consumer
+API things as needed.
 
-I guess the layout changed a bit from the A10 and alikes then.
+Maybe I'm missing something? If we're trying to take away clock
+control from our device drivers and hide that in SoC glue code
+(something we almost have to do so that the ordering of clocks
+vs. GDSC enable isn't wrong), then that isn't a GDSC, but some
+linux genpd concept. I imagine it would be a genpd per hw block
+(or device driver really) and then those genpds would be children
+of a larger GDSC genpd. For example, two hw blocks could have
+separate genpds for their clock control so that we can hide the
+clock on/off from the drivers, and then those are children of a
+single GDSC backed genpd for the physical domain they both reside
+in. If the GDSC domain and the sw domain need to control the same
+clocks, everything will work because we reference count
+appropriately.
 
-Anyway, we should expose only to the nvmem framework the actual eeprom
-space, so from 0x200 to 0x300 from what you're saying (just like we
-should only expose the first 4 bytes in the A10 / A20)
+The downside of this all is that we're putting a bunch of
+knowledge about which drivers are using which clocks into the SoC
+clock driver. But I don't know where else we would put this if we
+want to hide these details from the driver authors. The only
+other option is to do it with DT, and the whole DT ABI there
+scares me enough to want to try and make it work in the SoC clock
+driver for now.
 
-Maxime
+> 
+> Do you think its a fair limitation (one device per gdsc) to live with?
+> because I can't seem to figure how a non DT centric design would otherwise
+> work.
+
+No. The SMMU use case on a-family has SMMU and the hw block
+(video, gpu, display) that uses it within the same GDSC power
+domain.
 
 -- 
-Maxime Ripard, Free Electrons
-Embedded Linux, Kernel and Android engineering
-http://free-electrons.com
---PmA2V3Z32TCmWXqI--
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
