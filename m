@@ -1,95 +1,77 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH 2/3] ARM: bcm2835: add rpi power domain driver
-Date: Tue, 01 Dec 2015 15:27:57 -0800
-Message-ID: <7hr3j5696q.fsf@deeprootsystems.com>
-References: <1447956490-22930-1-git-send-email-alex.aring@gmail.com>
-	<1447956490-22930-3-git-send-email-alex.aring@gmail.com>
-	<7hr3j782qr.fsf@deeprootsystems.com> <20151201210037.GB2074@omega>
-Mime-Version: 1.0
-Content-Type: text/plain
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] cpufreq: use last policy after online
+Date: Tue,  1 Dec 2015 16:52:14 -0800
+Message-ID: <1449017534-6127-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f45.google.com ([209.85.220.45]:34807 "EHLO
-	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932239AbbLAX2A (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Dec 2015 18:28:00 -0500
-Received: by padhx2 with SMTP id hx2so20010673pad.1
-        for <linux-pm@vger.kernel.org>; Tue, 01 Dec 2015 15:27:59 -0800 (PST)
-In-Reply-To: <20151201210037.GB2074@omega> (Alexander Aring's message of "Tue,
-	1 Dec 2015 22:00:42 +0100")
+Received: from mga02.intel.com ([134.134.136.20]:19607 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932196AbbLBAxY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 1 Dec 2015 19:53:24 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alexander Aring <alex.aring@gmail.com>
-Cc: linux-rpi-kernel@lists.infradead.org, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, swarren@wwwdotorg.org, lee@kernel.org, eric@anholt.net, linux@arm.linux.org.uk, f.fainelli@gmail.com, rjui@broadcom.com, sbranden@broadcom.com, rjw@rjwysocki.net, ulf.hansson@linaro.org, len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, bcm-kernel-feedback-list@broadcom.com, linux-pm@vger.kernel.org, kernel@pengutronix.de
+To: rafael.j.wysocki@intel.com, viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Alexander Aring <alex.aring@gmail.com> writes:
+For cpufreq drivers which use setpolicy interface, after offline->online
+the policy is set to default. This can be reproduced by setting the
+default policy of intel_pstate or longrun to ondemand and then change to
+"performance". After offline and online, the setpolicy will be called with
+the policy=ondemand.
+For drivers using governors this condition is handled by storing
+last_governor, during offline and restoring during online. The same should
+be done for drivers using setpolicy interface. Storing last_policy during
+offline and restoring during online.
 
-> Hi,
->
-> On Mon, Nov 30, 2015 at 03:51:56PM -0800, Kevin Hilman wrote:
->> Alexander Aring <alex.aring@gmail.com> writes:
->> 
->> > This patch adds support for RPi several Power Domains and enable support
->> > to enable the USB Power Domain when it's not enabled before.
->> >
->> > This patch based on Eric Anholt's patch to support Power Domains. He had
->> > an issue about -EPROBE_DEFER inside the power domain subsystem, this
->> > issue was solved by commit <311fa6a> ("PM / Domains: Return -EPROBE_DEFER
->> > if we fail to init or turn-on domain").
->> 
->> [...]
->> 
->> > +#define RPI_POWER_DOMAIN(_domain, _name)			\
->> > +	[_domain] = {						\
->> 
->> Using _domain as the array index is going to create a sparsely filled
->> array here, wasting memory.   I'm not sure what the other domain numbers
->> are for other domains to know if this is a big waste or not, but it's
->> still a bit wasteful.
->> 
->> In any case, AFAICT, it doesn't look like you need to have the array
->> index match the domain number anyways since you're using container_of().
->> 
->> So I suggest just removing this array index part, and just creating them
->> in arrary order.  Then your _probe function isn't going to try to setup
->> 3 non-enabled domains before it finally hits the USB domain.
->> 
->
-> The idea is here to keeping the _same_ power domains indexes for
-> device-tree power domain API like the RPi firmware provides it.
->
-> If somebody dumps the devicetree and see the power domain index, if
-> he/she does then a firmware API power domain index mapping it is wrong.
-> Because we need then a separate mapping:
->
-> $ARRAY_DEFINED_INDEX <-> $RPI_FIRMWARE_POWER_DOMAIN_API_INDEX
->
-> With the current solution to make a 1:1 mapping it there is no
-> confusing anymore, because:
->
-> $ARRAY_DEFINED_INDEX == $RPI_FIRMWARE_POWER_DOMAIN_API_INDEX
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/cpufreq/cpufreq.c | 14 ++++++++++----
+ include/linux/cpufreq.h   |  1 +
+ 2 files changed, 11 insertions(+), 4 deletions(-)
 
-I'm not proposing to change the DT numbers or the firmware numbers.  All
-I'm proposing is that those numbers don't need to be mapped to the array
-index.  IOW, in your structure definition macro:
-
-+#define RPI_POWER_DOMAIN(_domain, _name)			\
-+	[_domain] = {						\
-+		.domain = _domain,				\
-[...]
-
-just drop the " [_domain] = { " line.
-
-> Also there exists power domains 1-10 (so far I know), 1-2 are currently
-> not used (and dummy-calls inside the rpi firmware implementation). So
-> later they should be provided anyway.
-
-They could then be added in any order in the struture.
-
-> There exists a little improvement to let the for (i = 0; i < num_domains
-> ...) start at "i = 1", the entry with index "0" will be a waste of memory
-> then and it's not provided by the firmware API as a power domain.
-
-Even index 0 will not be wasted with the above approach.
-
-Kevin
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index a83c995..8412ce5 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -976,10 +976,14 @@ static int cpufreq_init_policy(struct cpufreq_policy *policy)
+ 
+ 	new_policy.governor = gov;
+ 
+-	/* Use the default policy if its valid. */
+-	if (cpufreq_driver->setpolicy)
+-		cpufreq_parse_governor(gov->name, &new_policy.policy, NULL);
+-
++	/* Use the default policy if there is no last_policy. */
++	if (cpufreq_driver->setpolicy) {
++		if (policy->last_policy)
++			new_policy.policy = policy->last_policy;
++		else
++			cpufreq_parse_governor(gov->name, &new_policy.policy,
++					       NULL);
++	}
+ 	/* set default policy */
+ 	return cpufreq_set_policy(policy, &new_policy);
+ }
+@@ -1330,6 +1334,8 @@ static void cpufreq_offline_prepare(unsigned int cpu)
+ 		if (has_target())
+ 			strncpy(policy->last_governor, policy->governor->name,
+ 				CPUFREQ_NAME_LEN);
++		else
++			policy->last_policy = policy->policy;
+ 	} else if (cpu == policy->cpu) {
+ 		/* Nominate new CPU */
+ 		policy->cpu = cpumask_any(policy->cpus);
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index ef4c5b1..177c768 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -77,6 +77,7 @@ struct cpufreq_policy {
+ 	unsigned int		suspend_freq; /* freq to set during suspend */
+ 
+ 	unsigned int		policy; /* see above */
++	unsigned int		last_policy; /* policy before unplug */
+ 	struct cpufreq_governor	*governor; /* see below */
+ 	void			*governor_data;
+ 	bool			governor_enabled; /* governor start/stop flag */
+-- 
+1.9.3
 
