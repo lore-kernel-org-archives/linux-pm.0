@@ -1,96 +1,90 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v5] PCI / PM: Tune down retryable runtime suspend error messages
-Date: Wed, 02 Dec 2015 02:54:45 +0100
-Message-ID: <4357316.BsOyM9M4tL@vostro.rjw.lan>
-References: <1448699664-4178-1-git-send-email-imre.deak@intel.com> <1448910175-5904-1-git-send-email-imre.deak@intel.com>
+Subject: Re: [PATCH] cpufreq: use last policy after online
+Date: Wed, 02 Dec 2015 03:05:36 +0100
+Message-ID: <3188790.ma3TNFyjuZ@vostro.rjw.lan>
+References: <1449017534-6127-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <1448910175-5904-1-git-send-email-imre.deak@intel.com>
-Sender: linux-pci-owner@vger.kernel.org
-To: Imre Deak <imre.deak@intel.com>, Bjorn Helgaas <bhelgaas@google.com>
-Cc: Jani Nikula <jani.nikula@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Linux PM <linux-pm@vger.kernel.org>, intel-gfx@lists.freedesktop.org, Linux PCI <linux-pci@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:43085 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753637AbbLBBfq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Dec 2015 20:35:46 -0500
+In-Reply-To: <1449017534-6127-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: rafael.j.wysocki@intel.com, viresh.kumar@linaro.org, linux-pm@vger.kernel.org
 
-On Monday, November 30, 2015 09:02:55 PM Imre Deak wrote:
-> The runtime PM core doesn't treat EBUSY and EAGAIN retvals from the driver
-> suspend hooks as errors, but they still show up as errors in dmesg. Tune
-> them down. See rpm_suspend() for details of handling these return values.
+On Tuesday, December 01, 2015 04:52:14 PM Srinivas Pandruvada wrote:
+> For cpufreq drivers which use setpolicy interface, after offline->online
+> the policy is set to default. This can be reproduced by setting the
+> default policy of intel_pstate or longrun to ondemand and then change to
+> "performance". After offline and online, the setpolicy will be called with
+> the policy=ondemand.
+> For drivers using governors this condition is handled by storing
+> last_governor, during offline and restoring during online. The same should
+> be done for drivers using setpolicy interface. Storing last_policy during
+> offline and restoring during online.
 > 
-> Note that we use dev_dbg() for the retryable retvals, so after this
-> change you'll need either CONFIG_DYNAMIC_DEBUG or CONFIG_PCI_DEBUG
-> for them to show up in the log.
+> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+
+I guess this is urgent, right?
+
+Is it a regression fix or has it just never worked?
+
+> ---
+>  drivers/cpufreq/cpufreq.c | 14 ++++++++++----
+>  include/linux/cpufreq.h   |  1 +
+>  2 files changed, 11 insertions(+), 4 deletions(-)
 > 
-> One problem caused by this was noticed by Daniel: the i915 driver
-> returns EAGAIN to signal a temporary failure to suspend and as a request
-> towards the RPM core for scheduling a suspend again. This is a normal
-> event, but the resulting error message flags a breakage during the
-> driver's automated testing which parses dmesg and picks up the error.
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index a83c995..8412ce5 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -976,10 +976,14 @@ static int cpufreq_init_policy(struct cpufreq_policy *policy)
+>  
+>  	new_policy.governor = gov;
+>  
+> -	/* Use the default policy if its valid. */
+> -	if (cpufreq_driver->setpolicy)
+> -		cpufreq_parse_governor(gov->name, &new_policy.policy, NULL);
+> -
+> +	/* Use the default policy if there is no last_policy. */
+> +	if (cpufreq_driver->setpolicy) {
+> +		if (policy->last_policy)
+> +			new_policy.policy = policy->last_policy;
+> +		else
+> +			cpufreq_parse_governor(gov->name, &new_policy.policy,
+> +					       NULL);
+> +	}
+>  	/* set default policy */
+>  	return cpufreq_set_policy(policy, &new_policy);
+>  }
+> @@ -1330,6 +1334,8 @@ static void cpufreq_offline_prepare(unsigned int cpu)
+>  		if (has_target())
+>  			strncpy(policy->last_governor, policy->governor->name,
+>  				CPUFREQ_NAME_LEN);
+> +		else
+> +			policy->last_policy = policy->policy;
+>  	} else if (cpu == policy->cpu) {
+>  		/* Nominate new CPU */
+>  		policy->cpu = cpumask_any(policy->cpus);
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index ef4c5b1..177c768 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -77,6 +77,7 @@ struct cpufreq_policy {
+>  	unsigned int		suspend_freq; /* freq to set during suspend */
+>  
+>  	unsigned int		policy; /* see above */
+> +	unsigned int		last_policy; /* policy before unplug */
+>  	struct cpufreq_governor	*governor; /* see below */
+>  	void			*governor_data;
+>  	bool			governor_enabled; /* governor start/stop flag */
 > 
-> Reported-by: Daniel Vetter <daniel.vetter@intel.com>
-> Bugzilla: https://bugs.freedesktop.org/show_bug.cgi?id=92992
-> CC: Bjorn Helgaas <bhelgaas@google.com>
-> CC: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Signed-off-by: Imre Deak <imre.deak@intel.com>
 
-Hi Bjorn,
-
-Are you going to handle this one or should I take care of it?
-
+Thanks,
 Rafael
 
-
-> ---
-> 
-> v2:
-> - fix compile breake when CONFIG_PM_SLEEP=n (0-day builder)
-> v3:
-> - instead of modifying the suspend_report_result() helper to disinguish
->   between the runtime and system suspend case, inline the error
->   printing, it's not used anywhere else (Rafael)
-> v4:
-> - don't refer to log levels as flags in code comment (Rafael)
-> - use pr_debug(), pr_err() instead of the corresponding printk() (Rafael)
-> v5:
-> - clarify commit message (Bjorn)
-> - use dev_dbg, dev_err instead of pr_debug, pr_err (Bjorn)
-> - use %pf in printk format instead of %pF (Bjorn)
-> - make the debug/error messages more meaningful (Bjorn)
-> ---
->  drivers/pci/pci-driver.c | 16 ++++++++++++++--
->  1 file changed, 14 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-> index 4446fcb..d7ffd66 100644
-> --- a/drivers/pci/pci-driver.c
-> +++ b/drivers/pci/pci-driver.c
-> @@ -1146,9 +1146,21 @@ static int pci_pm_runtime_suspend(struct device *dev)
->  	pci_dev->state_saved = false;
->  	pci_dev->no_d3cold = false;
->  	error = pm->runtime_suspend(dev);
-> -	suspend_report_result(pm->runtime_suspend, error);
-> -	if (error)
-> +	if (error) {
-> +		/*
-> +		 * -EBUSY and -EAGAIN is used to request the runtime PM core
-> +		 * to schedule a new suspend, so log the event only with debug
-> +		 * log level.
-> +		 */
-> +		if (error == -EBUSY || error == -EAGAIN)
-> +			dev_dbg(dev, "can't suspend now (%pf returned %d)\n",
-> +				pm->runtime_suspend, error);
-> +		else
-> +			dev_err(dev, "can't suspend (%pf returned %d)\n",
-> +				pm->runtime_suspend, error);
-> +
->  		return error;
-> +	}
->  	if (!pci_dev->d3cold_allowed)
->  		pci_dev->no_d3cold = true;
->  
-> 
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
