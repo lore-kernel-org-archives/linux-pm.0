@@ -1,34 +1,73 @@
-From: Ben Gamari <ben@smart-cactus.org>
-Subject: [PATCH 12/12] cpufreq: arm-big-little: warn on invalid regulator
-Date: Wed,  2 Dec 2015 22:19:27 +0100
-Message-ID: <1449091167-20758-13-git-send-email-ben@smart-cactus.org>
-References: <1449091167-20758-1-git-send-email-ben@smart-cactus.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1449091167-20758-1-git-send-email-ben@smart-cactus.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com, Ben Gamari <ben@smart-cactus.org>, Javier Martinez Canillas <javier@osg.samsung.com>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH V2 06/10] cpufreq: governor: Keep single copy of information
+ common to policy->cpus
+Date: Wed, 02 Dec 2015 13:43:59 -0800
+Message-ID: <565F661F.1020204@codeaurora.org>
+References: <cover.1434713657.git.viresh.kumar@linaro.org> <efd892126475600e751c0e1206553270ebba5c00.1434713657.git.viresh.kumar@linaro.org> <1448625400.3689.103.camel@pengutronix.de> <20151130051915.GH3373@ubuntu> <1448879672.8275.15.camel@pengutronix.de> <20151130110327.GC4899@ubuntu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:55200 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751196AbbLBVoC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Dec 2015 16:44:02 -0500
+In-Reply-To: <20151130110327.GC4899@ubuntu>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Lucas Stach <l.stach@pengutronix.de>, Rafael Wysocki <rjw@rjwysocki.net>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, ke.wang@spreadtrum.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, ego@linux.vnet.ibm.com, paulus@samba.org, shilpa.bhat@linux.vnet.ibm.com, prarit@redhat.com, robert.schoene@tu-dresden.de
 
-Cc: Javier Martinez Canillas <javier@osg.samsung.com>
-Signed-off-by: Ben Gamari <ben@smart-cactus.org>
----
- drivers/cpufreq/arm_big_little.c | 3 +++
- 1 file changed, 3 insertions(+)
+On 11/30/2015 03:03 AM, Viresh Kumar wrote:
+> On 30-11-15, 11:34, Lucas Stach wrote:
+>> The timer_mutex is one of the top contended locks already on a quad core
+>> system.
+>
+> My new series (un-committed) should fix that to some level hopefully:
+>
+> http://marc.info/?l=linux-pm&m=144612165211091&w=2
+>
+>> That really doesn't look right, as the timer is quite low
+>> frequency. It's causing excessive wake ups, as all 4 CPUs wake up to
+>> handle the WQ, 3 of them directly go back to sleep waiting for the mutex
+>> to be released, then same thing happens for CPUs-1 until we rippled down
+>> to a single CPU.
+>
+> There is a reason why we need to do this on all CPUs today. The timers
+> are deferrable by nature, as we shouldn't wake up a CPU to change it
+> frequency. Now group of CPUs that change their DVFS state together, or
+> that change their voltage/clock rails are part of the same
+> cpufreq-policy. We need to take load of all the CPUs, that are part of
+> the policy, while update the frequency of the group.
+>
+> If we queue the timer on any one CPU, then that CPU can go into idle
+> and the deferred timer will not fire. But the other CPUs of the policy
+> can still be active and the frequency of the group wouldn't change
+> with load.
+>
+> Hope that answers the query related to timers on all CPUs.
+>
+>> I would say it's still worth fixing. Perhaps by not waking all the
+>> workqueues at the same time, but spreading the wake times out over a
+>> jiffy.
+>
+> Maybe.
+>
 
-diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-index 2d5761c..5d30c26 100644
---- a/drivers/cpufreq/arm_big_little.c
-+++ b/drivers/cpufreq/arm_big_little.c
-@@ -158,6 +158,9 @@ bL_cpufreq_set_rate_cluster(u32 cpu, u32 cluster, u32 new_rate_kHz)
- 		volt_old = regulator_get_voltage(reg[cluster]);
- 		pr_debug("%s: cpu %d, cluster: %d, Found OPP: %ld kHz, %ld uV\n",
- 			__func__, cpu, cluster, opp_freq / 1000, volt);
-+	} else {
-+		pr_err("%s: cpu %d, cluster: %d, Have no regulator\n",
-+					 __func__, cpu, cluster);
- 	}
- 
- 	pr_debug("%s: cpu %d, cluster: %d, %u MHz, %ld mV --> %u MHz, %ld mV\n",
+There's a separate thread where we proposed a fix to deferrable timers 
+that are stored globally if they are not CPU bound. That way, even if 
+one CPU is up, they get handled. But TGLX had some valid concerns with 
+cache thrashing and impact on some network code. So, last I heard, he 
+was going to rewrite and fixed the deferrable timer problem by having 
+the "orphaned" (because CPU has gone idle) deferrable timers being 
+adopted by other CPUs while the original CPU is idle.
+
+Once that's fixed, we just need one timer per policy. Long story short, 
+CPU freq is working around a poor API semantic of deferrable timers.
+
+-Saravana
+
 -- 
-2.6.2
+Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
