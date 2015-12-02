@@ -1,8 +1,7 @@
 From: Ben Gamari <ben@smart-cactus.org>
-Subject: [PATCH 09/12] ARM: dts: Exynos5420/5800: add cluster regulator supply
- properties
-Date: Wed,  2 Dec 2015 22:19:24 +0100
-Message-ID: <1449091167-20758-10-git-send-email-ben@smart-cactus.org>
+Subject: [PATCH 11/12] cpufreq: arm-big-little: clarify frequency units
+Date: Wed,  2 Dec 2015 22:19:26 +0100
+Message-ID: <1449091167-20758-12-git-send-email-ben@smart-cactus.org>
 References: <1449091167-20758-1-git-send-email-ben@smart-cactus.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -19,148 +18,103 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Doug Anderson <dianders@chromium.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Kevin Hilman <khilman@linaro.org>, Heiko Stuebner <heiko@sntech.de>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, Ben Gamari <ben@smart-cactus.org>, linux-pm@vger.kernel.org, Tomasz Figa <tomasz.figa@gmail.com>, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, b.zolnierkie@samsung.com, linux-samsung-soc@vger.kernel.org, Andreas Faerber <afaerber@suse.de>, Javier Martinez Canillas <javier@dowhile0.org>, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Sachin Kamat <sachin.kamat@linaro.org>
+Cc: Ben Gamari <ben@smart-cactus.org>, Lukasz Majewski <l.majewski@samsung.com>, Kevin Hilman <khilman@linaro.org>, Heiko Stuebner <heiko@sntech.de>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, Javier Martinez Canillas <javier@osg.samsung.com>, linux-pm@vger.kernel.org, Tomasz Figa <tomasz.figa@gmail.com>, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, b.zolnierkie@samsung.com, linux-samsung-soc@vger.kernel.org, Javier Martinez Canillas <javier@dowhile0.org>, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+The frequency units are very confusing in this area as OPPs use Hz
+whereas cpufreq uses kHz. Be explicit about this in variable naming.
 
-Add cluster regulator supply properties as a preparation to adding
-generic arm_big_little_dt cpufreq driver support for Exynos5420 and
-Exynos5800 based boards.
-
-Changes by Ben Gamari:
-- Add regulators to odroidxu4
-
-Cc: Kukjin Kim <kgene.kim@samsung.com>
-Cc: Doug Anderson <dianders@chromium.org>
 Cc: Javier Martinez Canillas <javier@osg.samsung.com>
-Cc: Andreas Faerber <afaerber@suse.de>
-Cc: Sachin Kamat <sachin.kamat@linaro.org>
-Cc: Thomas Abraham <thomas.ab@samsung.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Signed-off-by: Ben Gamari <ben@smart-cactus.org>
 ---
- arch/arm/boot/dts/exynos5420-arndale-octa.dts |  9 +++++++++
- arch/arm/boot/dts/exynos5420-peach-pit.dts    |  8 ++++++++
- arch/arm/boot/dts/exynos5420-smdk5420.dts     |  8 ++++++++
- arch/arm/boot/dts/exynos5422-odroidxu3.dts    |  8 ++++++++
- arch/arm/boot/dts/exynos5422-odroidxu4.dts    | 10 ++++++++++
- arch/arm/boot/dts/exynos5800-peach-pi.dts     |  8 ++++++++
- 6 files changed, 51 insertions(+)
+ drivers/cpufreq/arm_big_little.c | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/arch/arm/boot/dts/exynos5420-arndale-octa.dts b/arch/arm/boot/dts/exynos5420-arndale-octa.dts
-index 4ecef69..a044da7 100644
---- a/arch/arm/boot/dts/exynos5420-arndale-octa.dts
-+++ b/arch/arm/boot/dts/exynos5420-arndale-octa.dts
-@@ -52,6 +52,15 @@
- 	};
- };
+diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+index 855599b..2d5761c 100644
+--- a/drivers/cpufreq/arm_big_little.c
++++ b/drivers/cpufreq/arm_big_little.c
+@@ -130,14 +130,14 @@ static unsigned int bL_cpufreq_get_rate(unsigned int cpu)
+ }
  
-+&cpu0 {
-+  cpu-cluster.0-supply = <&buck2_reg>;
-+};
-+
-+&cpu4 {
-+  cpu-cluster.1-supply = <&buck6_reg>;
-+};
-+
-+
- &usbdrd_dwc3_1 {
- 	dr_mode = "host";
- };
-diff --git a/arch/arm/boot/dts/exynos5420-peach-pit.dts b/arch/arm/boot/dts/exynos5420-peach-pit.dts
-index 72ba6f0..eea0aa6 100644
---- a/arch/arm/boot/dts/exynos5420-peach-pit.dts
-+++ b/arch/arm/boot/dts/exynos5420-peach-pit.dts
-@@ -676,6 +676,14 @@
- 	};
- };
+ static int
+-bL_cpufreq_set_rate_cluster(u32 cpu, u32 cluster, u32 new_rate)
++bL_cpufreq_set_rate_cluster(u32 cpu, u32 cluster, u32 new_rate_kHz)
+ {
+ 	unsigned long volt = 0, volt_old = 0;
+ 	long freq_Hz;
+ 	u32 old_rate;
+ 	int ret;
  
-+&cpu0 {
-+  cpu-cluster.0-supply = <&buck2_reg>;
-+};
-+
-+&cpu4 {
-+  cpu-cluster.1-supply = <&buck6_reg>;
-+};
-+
- &i2c_2 {
- 	status = "okay";
- 	samsung,i2c-sda-delay = <100>;
-diff --git a/arch/arm/boot/dts/exynos5420-smdk5420.dts b/arch/arm/boot/dts/exynos5420-smdk5420.dts
-index ac35aef..d44a280 100644
---- a/arch/arm/boot/dts/exynos5420-smdk5420.dts
-+++ b/arch/arm/boot/dts/exynos5420-smdk5420.dts
-@@ -423,3 +423,11 @@
- &usbdrd_phy1 {
- 	vbus-supply = <&usb301_vbus_reg>;
- };
-+
-+&cpu0 {
-+  cpu-cluster.0-supply = <&buck2_reg>;
-+};
-+
-+&cpu4 {
-+  cpu-cluster.1-supply = <&buck6_reg>;
-+};
-diff --git a/arch/arm/boot/dts/exynos5422-odroidxu3.dts b/arch/arm/boot/dts/exynos5422-odroidxu3.dts
-index 0c0bbdb..d6650a1 100644
---- a/arch/arm/boot/dts/exynos5422-odroidxu3.dts
-+++ b/arch/arm/boot/dts/exynos5422-odroidxu3.dts
-@@ -53,6 +53,14 @@
- 	};
- };
+-	freq_Hz = new_rate * 1000;
++	freq_Hz = new_rate_kHz * 1000;
+ 	old_rate = clk_get_rate(clk[cluster]) / 1000;
  
-+&cpu0 {
-+  cpu-cluster.0-supply = <&buck2_reg>;
-+};
-+
-+&cpu4 {
-+  cpu-cluster.1-supply = <&buck6_reg>;
-+};
-+
- &i2c_0 {
- 	status = "okay";
+ 	if (!IS_ERR(reg[cluster])) {
+@@ -163,10 +163,10 @@ bL_cpufreq_set_rate_cluster(u32 cpu, u32 cluster, u32 new_rate)
+ 	pr_debug("%s: cpu %d, cluster: %d, %u MHz, %ld mV --> %u MHz, %ld mV\n",
+ 		__func__, cpu, cluster,
+ 		old_rate / 1000, (volt_old > 0) ? volt_old / 1000 : -1,
+-		new_rate / 1000, volt ? volt / 1000 : -1);
++		new_rate_kHz / 1000, volt ? volt / 1000 : -1);
  
-diff --git a/arch/arm/boot/dts/exynos5422-odroidxu4.dts b/arch/arm/boot/dts/exynos5422-odroidxu4.dts
-index 2faf886..9f88c34 100644
---- a/arch/arm/boot/dts/exynos5422-odroidxu4.dts
-+++ b/arch/arm/boot/dts/exynos5422-odroidxu4.dts
-@@ -32,6 +32,16 @@
- 	};
- };
+ 	/* scaling up? scale voltage before frequency */
+-	if (!IS_ERR(reg[cluster]) && new_rate > old_rate) {
++	if (!IS_ERR(reg[cluster]) && new_rate_kHz > old_rate) {
+ 		ret = regulator_set_voltage_tol(reg[cluster], volt, 0);
+ 		if (ret) {
+ 			pr_err("%s: cpu: %d, cluster: %d, failed to scale voltage up: %d\n",
+@@ -175,7 +175,7 @@ bL_cpufreq_set_rate_cluster(u32 cpu, u32 cluster, u32 new_rate)
+ 		}
+ 	}
  
-+&cpu0 {
-+	cpu-cluster.0-supply = <&buck2_reg>;
-+	cpu-cluster.1-supply = <&buck6_reg>;
-+};
-+
-+&cpu4 {
-+	cpu-cluster.0-supply = <&buck2_reg>;
-+	cpu-cluster.1-supply = <&buck6_reg>;
-+};
-+
- &pwm {
- 	/*
- 	 * PWM 0 -- fan
-diff --git a/arch/arm/boot/dts/exynos5800-peach-pi.dts b/arch/arm/boot/dts/exynos5800-peach-pi.dts
-index 49a4f43..a06587b 100644
---- a/arch/arm/boot/dts/exynos5800-peach-pi.dts
-+++ b/arch/arm/boot/dts/exynos5800-peach-pi.dts
-@@ -638,6 +638,14 @@
- 	};
- };
+-	ret = clk_set_rate(clk[cluster], new_rate * 1000);
++	ret = clk_set_rate(clk[cluster], new_rate_kHz * 1000);
+ 	if (WARN_ON(ret)) {
+ 		pr_err("%s: clk_set_rate failed: %d, cluster: %d\n",
+ 			__func__, cluster, ret);
+@@ -185,7 +185,7 @@ bL_cpufreq_set_rate_cluster(u32 cpu, u32 cluster, u32 new_rate)
+ 	}
  
-+&cpu0 {
-+  cpu-cluster.0-supply = <&buck2_reg>;
-+};
-+
-+&cpu4 {
-+  cpu-cluster.1-supply = <&buck6_reg>;
-+};
-+
- &i2c_2 {
- 	status = "okay";
- 	samsung,i2c-sda-delay = <100>;
+ 	/* scaling down? scale voltage after frequency */
+-	if (!IS_ERR(reg[cluster]) && new_rate < old_rate) {
++	if (!IS_ERR(reg[cluster]) && new_rate_kHz < old_rate) {
+ 		ret = regulator_set_voltage_tol(reg[cluster], volt, 0);
+ 		if (ret) {
+ 			pr_err("%s: cpu: %d, cluster: %d, failed to scale voltage down: %d\n",
+@@ -199,7 +199,7 @@ bL_cpufreq_set_rate_cluster(u32 cpu, u32 cluster, u32 new_rate)
+ }
+ 
+ static unsigned int
+-bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
++bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate_kHz)
+ {
+ 	u32 new_rate, prev_rate;
+ 	int ret;
+@@ -209,13 +209,13 @@ bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
+ 
+ 	if (bLs) {
+ 		prev_rate = per_cpu(cpu_last_req_freq, cpu);
+-		per_cpu(cpu_last_req_freq, cpu) = rate;
++		per_cpu(cpu_last_req_freq, cpu) = rate_kHz;
+ 		per_cpu(physical_cluster, cpu) = new_cluster;
+ 
+ 		new_rate = find_cluster_maxfreq(new_cluster);
+ 		new_rate = ACTUAL_FREQ(new_cluster, new_rate);
+ 	} else {
+-		new_rate = rate;
++		new_rate = rate_kHz;
+ 	}
+ 
+ 	pr_debug("%s: cpu: %d, old cluster: %d, new cluster: %d, freq: %d\n",
+@@ -236,7 +236,7 @@ bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
+ 	} else if (ret && bLs) {
+ 		per_cpu(cpu_last_req_freq, cpu) = prev_rate;
+ 		per_cpu(physical_cluster, cpu) = old_cluster;
+-	} 
++	}
+ 
+ 	mutex_unlock(&cluster_lock[new_cluster]);
+ 
 -- 
 2.6.2
