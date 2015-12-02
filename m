@@ -1,34 +1,38 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: cpupower fixes
-Date: Wed, 02 Dec 2015 02:30:36 +0100
-Message-ID: <1852256.57vndbioe0@vostro.rjw.lan>
-References: <1448986457-12844-1-git-send-email-trenn@suse.com>
+From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Subject: Re: [RFD] PM_GENERIC_DOMAINS && !PM
+Date: Wed, 02 Dec 2015 02:35:20 +0100
+Message-ID: <1995321.JkVMSghsar@vostro.rjw.lan>
+References: <565C7C86.7030801@nvidia.com> <565DBEE6.5030704@nvidia.com> <20151201161809.GA20561@ulmo>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:58202 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751915AbbLBBAp (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 1 Dec 2015 20:00:45 -0500
-In-Reply-To: <1448986457-12844-1-git-send-email-trenn@suse.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20151201161809.GA20561@ulmo>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Renninger <trenn@suse.com>
-Cc: linux-pm@vger.kernel.org
 
-On Tuesday, December 01, 2015 05:14:12 PM Thomas Renninger wrote:
+On Tuesday, December 01, 2015 05:18:09 PM Thierry Reding wrote:
 > 
-> Hi Rafael,
 
-Hi,
- 
-> it would be great if you can queue these up.
+[cut]
 
-I can queue them up for v4.5.
+> 
+> That all sounds very complicated for little gain. Disabling PM doesn't
+> make much sense these days, so I'd personally be fine to unconditonally
+> enable PM on Tegra. I'm not sure what the correct way would be. Since
+> the PM symbol is user-visible, selecting it doesn't sound like a very
+> good solution, though a quick grep shows that some architectures do
+> this.
+> 
+> Rafael, do you know what the canonical way is to make !PM invalid for a
+> platform?
 
-Or are any of them urgent?
+Well, good question.
+
+I can't really suggest anything cleaner than selecting it from the top-level
+Kconfig at the moment.
 
 Thanks,
 Rafael
-
