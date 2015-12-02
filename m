@@ -1,7 +1,8 @@
 From: Ben Gamari <ben@smart-cactus.org>
-Subject: [PATCH 04/12] ARM: Exynos: use generic cpufreq driver for Exynos5420
-Date: Wed,  2 Dec 2015 22:19:19 +0100
-Message-ID: <1449091167-20758-5-git-send-email-ben@smart-cactus.org>
+Subject: [PATCH 05/12] clk: samsung: exynos5800: fix cpu clock configuration
+ data
+Date: Wed,  2 Dec 2015 22:19:20 +0100
+Message-ID: <1449091167-20758-6-git-send-email-ben@smart-cactus.org>
 References: <1449091167-20758-1-git-send-email-ben@smart-cactus.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,47 +22,81 @@ To: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsu
 Cc: Javier Martinez Canillas <javier@osg.samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Kevin Hilman <khilman@linaro.org>, Mike Turquette <mturquette@linaro.org>, Heiko Stuebner <heiko@sntech.de>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, Ben Gamari <ben@smart-cactus.org>, linux-pm@vger.kernel.org, Tomasz Figa <tomasz.figa@gmail.com>, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, b.zolnierkie@samsung.com, linux-samsung-soc@vger.kernel.org, Javier Martinez Canillas <javier@dowhile0.org>, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Thomas Abraham <thomas.ab@samsung.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-The new CPU clock type allows the use of generic arm_big_little_dt
-cpufreq driver for Exynos5420.
+Fix cpu clock configuration data for Exynos5800 (it uses
+higher PCLK_DBG divider values than Exynos5420 and supports
+additional frequencies).
 
-Changes by Bartlomiej:
-- split Exynos5420 support from the original patch
-- disable cpufreq if big.LITTLE switcher support is enabled
-
-Changes by Ben Gamari:
-- rebase
+Based on Hardkernel's kernel for ODROID-XU3 board.
 
 Cc: Tomasz Figa <tomasz.figa@gmail.com>
 Cc: Mike Turquette <mturquette@linaro.org>
+Cc: Javier Martinez Canillas <javier@osg.samsung.com>
 Cc: Thomas Abraham <thomas.ab@samsung.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Javier Martinez Canillas <javier@osg.samsung.com> (Mon. 15:01)
-Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Signed-off-by: Ben Gamari <ben@smart-cactus.org>
 ---
- arch/arm/mach-exynos/exynos.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/clk/samsung/clk-exynos5420.c | 36 +++++++++++++++++++++++++++++++++---
+ 1 file changed, 33 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm/mach-exynos/exynos.c b/arch/arm/mach-exynos/exynos.c
-index 1c47aee..818e6a0 100644
---- a/arch/arm/mach-exynos/exynos.c
-+++ b/arch/arm/mach-exynos/exynos.c
-@@ -230,6 +230,13 @@ static const struct of_device_id exynos_cpufreq_matches[] = {
- 	{ .compatible = "samsung,exynos4212", .data = "cpufreq-dt" },
- 	{ .compatible = "samsung,exynos4412", .data = "cpufreq-dt" },
- 	{ .compatible = "samsung,exynos5250", .data = "cpufreq-dt" },
-+	/*
-+	 * FIXME: When big.LITTLE switcher is enabled system lockups during
-+	 * ondemand governor stress testing (observed on ODROID-XU3 board).
-+	 */
-+#ifndef CONFIG_BL_SWITCHER
-+	{ .compatible = "samsung,exynos5420", .data = "arm-bL-cpufreq-dt" },
-+#endif
- 	{ /* sentinel */ }
+diff --git a/drivers/clk/samsung/clk-exynos5420.c b/drivers/clk/samsung/clk-exynos5420.c
+index 2288052..aa44bb7 100644
+--- a/drivers/clk/samsung/clk-exynos5420.c
++++ b/drivers/clk/samsung/clk-exynos5420.c
+@@ -1274,10 +1274,34 @@ static const struct exynos_cpuclk_cfg_data exynos5420_eglclk_d[] __initconst = {
+ 	{  0 },
  };
  
++static const struct exynos_cpuclk_cfg_data exynos5800_eglclk_d[] __initconst = {
++	{ 2000000, E5420_EGL_DIV0(3, 7, 7, 4), },
++	{ 1900000, E5420_EGL_DIV0(3, 7, 7, 4), },
++	{ 1800000, E5420_EGL_DIV0(3, 7, 7, 4), },
++	{ 1700000, E5420_EGL_DIV0(3, 7, 7, 3), },
++	{ 1600000, E5420_EGL_DIV0(3, 7, 7, 3), },
++	{ 1500000, E5420_EGL_DIV0(3, 7, 7, 3), },
++	{ 1400000, E5420_EGL_DIV0(3, 7, 7, 3), },
++	{ 1300000, E5420_EGL_DIV0(3, 7, 7, 2), },
++	{ 1200000, E5420_EGL_DIV0(3, 7, 7, 2), },
++	{ 1100000, E5420_EGL_DIV0(3, 7, 7, 2), },
++	{ 1000000, E5420_EGL_DIV0(3, 7, 6, 2), },
++	{  900000, E5420_EGL_DIV0(3, 7, 6, 2), },
++	{  800000, E5420_EGL_DIV0(3, 7, 5, 2), },
++	{  700000, E5420_EGL_DIV0(3, 7, 5, 2), },
++	{  600000, E5420_EGL_DIV0(3, 7, 4, 2), },
++	{  500000, E5420_EGL_DIV0(3, 7, 3, 2), },
++	{  400000, E5420_EGL_DIV0(3, 7, 3, 2), },
++	{  300000, E5420_EGL_DIV0(3, 7, 3, 2), },
++	{  200000, E5420_EGL_DIV0(3, 7, 3, 2), },
++	{  0 },
++};
++
+ #define E5420_KFC_DIV(kpll, pclk, aclk)					\
+ 		((((kpll) << 24) | ((pclk) << 20) | ((aclk) << 4)))
+ 
+ static const struct exynos_cpuclk_cfg_data exynos5420_kfcclk_d[] __initconst = {
++	{ 1400000, E5420_KFC_DIV(3, 5, 3), }, /* for Exynos5800 */
+ 	{ 1300000, E5420_KFC_DIV(3, 5, 2), },
+ 	{ 1200000, E5420_KFC_DIV(3, 5, 2), },
+ 	{ 1100000, E5420_KFC_DIV(3, 5, 2), },
+@@ -1357,9 +1381,15 @@ static void __init exynos5x_clk_init(struct device_node *np,
+ 				ARRAY_SIZE(exynos5800_gate_clks));
+ 	}
+ 
+-	exynos_register_cpu_clock(ctx, CLK_ARM_CLK, "armclk",
+-		mout_cpu_p[0], mout_cpu_p[1], 0x200,
+-		exynos5420_eglclk_d, ARRAY_SIZE(exynos5420_eglclk_d), 0);
++	if (soc == EXYNOS5420) {
++		exynos_register_cpu_clock(ctx, CLK_ARM_CLK, "armclk",
++			mout_cpu_p[0], mout_cpu_p[1], 0x200,
++			exynos5420_eglclk_d, ARRAY_SIZE(exynos5420_eglclk_d), 0);
++	} else {
++		exynos_register_cpu_clock(ctx, CLK_ARM_CLK, "armclk",
++			mout_cpu_p[0], mout_cpu_p[1], 0x200,
++			exynos5800_eglclk_d, ARRAY_SIZE(exynos5800_eglclk_d), 0);
++	}
+ 	exynos_register_cpu_clock(ctx, CLK_KFC_CLK, "kfcclk",
+ 		mout_kfc_p[0], mout_kfc_p[1], 0x28200,
+ 		exynos5420_kfcclk_d, ARRAY_SIZE(exynos5420_kfcclk_d), 0);
 -- 
 2.6.2
