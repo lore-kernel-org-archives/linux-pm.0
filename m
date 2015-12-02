@@ -1,92 +1,72 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH v5] PCI / PM: Tune down retryable runtime
- suspend error messages
-Date: Tue, 1 Dec 2015 22:43:48 -0600
-Message-ID: <20151202044348.GA11971@localhost>
-References: <1448699664-4178-1-git-send-email-imre.deak@intel.com>
- <1448910175-5904-1-git-send-email-imre.deak@intel.com>
- <4357316.BsOyM9M4tL@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-Content-Disposition: inline
-In-Reply-To: <4357316.BsOyM9M4tL@vostro.rjw.lan>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Jani Nikula <jani.nikula@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Linux PCI <linux-pci@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, intel-gfx@lists.freedesktop.org
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: [PATCH 1/2] power: Fix unmet dependency on POWER_SUPPLY by POWER_RESET
+ by uncoupling them
+Date: Wed, 02 Dec 2015 14:59:06 +0900
+Message-ID: <1449035947-16758-1-git-send-email-k.kozlowski@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.w1.samsung.com ([210.118.77.14]:8257 "EHLO
+	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750884AbbLBF7Q (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Dec 2015 00:59:16 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Cc: Pavel Fedin <p.fedin@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-T24gV2VkLCBEZWMgMDIsIDIwMTUgYXQgMDI6NTQ6NDVBTSArMDEwMCwgUmFmYWVsIEouIFd5c29j
-a2kgd3JvdGU6Cj4gT24gTW9uZGF5LCBOb3ZlbWJlciAzMCwgMjAxNSAwOTowMjo1NSBQTSBJbXJl
-IERlYWsgd3JvdGU6Cj4gPiBUaGUgcnVudGltZSBQTSBjb3JlIGRvZXNuJ3QgdHJlYXQgRUJVU1kg
-YW5kIEVBR0FJTiByZXR2YWxzIGZyb20gdGhlIGRyaXZlcgo+ID4gc3VzcGVuZCBob29rcyBhcyBl
-cnJvcnMsIGJ1dCB0aGV5IHN0aWxsIHNob3cgdXAgYXMgZXJyb3JzIGluIGRtZXNnLiBUdW5lCj4g
-PiB0aGVtIGRvd24uIFNlZSBycG1fc3VzcGVuZCgpIGZvciBkZXRhaWxzIG9mIGhhbmRsaW5nIHRo
-ZXNlIHJldHVybiB2YWx1ZXMuCj4gPiAKPiA+IE5vdGUgdGhhdCB3ZSB1c2UgZGV2X2RiZygpIGZv
-ciB0aGUgcmV0cnlhYmxlIHJldHZhbHMsIHNvIGFmdGVyIHRoaXMKPiA+IGNoYW5nZSB5b3UnbGwg
-bmVlZCBlaXRoZXIgQ09ORklHX0RZTkFNSUNfREVCVUcgb3IgQ09ORklHX1BDSV9ERUJVRwo+ID4g
-Zm9yIHRoZW0gdG8gc2hvdyB1cCBpbiB0aGUgbG9nLgo+ID4gCj4gPiBPbmUgcHJvYmxlbSBjYXVz
-ZWQgYnkgdGhpcyB3YXMgbm90aWNlZCBieSBEYW5pZWw6IHRoZSBpOTE1IGRyaXZlcgo+ID4gcmV0
-dXJucyBFQUdBSU4gdG8gc2lnbmFsIGEgdGVtcG9yYXJ5IGZhaWx1cmUgdG8gc3VzcGVuZCBhbmQg
-YXMgYSByZXF1ZXN0Cj4gPiB0b3dhcmRzIHRoZSBSUE0gY29yZSBmb3Igc2NoZWR1bGluZyBhIHN1
-c3BlbmQgYWdhaW4uIFRoaXMgaXMgYSBub3JtYWwKPiA+IGV2ZW50LCBidXQgdGhlIHJlc3VsdGlu
-ZyBlcnJvciBtZXNzYWdlIGZsYWdzIGEgYnJlYWthZ2UgZHVyaW5nIHRoZQo+ID4gZHJpdmVyJ3Mg
-YXV0b21hdGVkIHRlc3Rpbmcgd2hpY2ggcGFyc2VzIGRtZXNnIGFuZCBwaWNrcyB1cCB0aGUgZXJy
-b3IuCj4gPiAKPiA+IFJlcG9ydGVkLWJ5OiBEYW5pZWwgVmV0dGVyIDxkYW5pZWwudmV0dGVyQGlu
-dGVsLmNvbT4KPiA+IEJ1Z3ppbGxhOiBodHRwczovL2J1Z3MuZnJlZWRlc2t0b3Aub3JnL3Nob3df
-YnVnLmNnaT9pZD05Mjk5Mgo+ID4gQ0M6IEJqb3JuIEhlbGdhYXMgPGJoZWxnYWFzQGdvb2dsZS5j
-b20+Cj4gPiBDQzogUmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbC5qLnd5c29ja2lAaW50ZWwuY29t
-Pgo+ID4gU2lnbmVkLW9mZi1ieTogSW1yZSBEZWFrIDxpbXJlLmRlYWtAaW50ZWwuY29tPgo+IAo+
-IEhpIEJqb3JuLAo+IAo+IEFyZSB5b3UgZ29pbmcgdG8gaGFuZGxlIHRoaXMgb25lIG9yIHNob3Vs
-ZCBJIHRha2UgY2FyZSBvZiBpdD8KCldoeSBkb24ndCB5b3UgdGFrZSBpdCwgc2luY2UgeW91J3Jl
-IHRoZSBQTSBndXJ1IDopCgpBY2tlZC1ieTogQmpvcm4gSGVsZ2FhcyA8YmhlbGdhYXNAZ29vZ2xl
-LmNvbT4KClRoYW5rcyBmb3IgYWxsIHlvdXIgd29yaywgSW1yZSEKCj4gPiAtLS0KPiA+IAo+ID4g
-djI6Cj4gPiAtIGZpeCBjb21waWxlIGJyZWFrZSB3aGVuIENPTkZJR19QTV9TTEVFUD1uICgwLWRh
-eSBidWlsZGVyKQo+ID4gdjM6Cj4gPiAtIGluc3RlYWQgb2YgbW9kaWZ5aW5nIHRoZSBzdXNwZW5k
-X3JlcG9ydF9yZXN1bHQoKSBoZWxwZXIgdG8gZGlzaW5ndWlzaAo+ID4gICBiZXR3ZWVuIHRoZSBy
-dW50aW1lIGFuZCBzeXN0ZW0gc3VzcGVuZCBjYXNlLCBpbmxpbmUgdGhlIGVycm9yCj4gPiAgIHBy
-aW50aW5nLCBpdCdzIG5vdCB1c2VkIGFueXdoZXJlIGVsc2UgKFJhZmFlbCkKPiA+IHY0Ogo+ID4g
-LSBkb24ndCByZWZlciB0byBsb2cgbGV2ZWxzIGFzIGZsYWdzIGluIGNvZGUgY29tbWVudCAoUmFm
-YWVsKQo+ID4gLSB1c2UgcHJfZGVidWcoKSwgcHJfZXJyKCkgaW5zdGVhZCBvZiB0aGUgY29ycmVz
-cG9uZGluZyBwcmludGsoKSAoUmFmYWVsKQo+ID4gdjU6Cj4gPiAtIGNsYXJpZnkgY29tbWl0IG1l
-c3NhZ2UgKEJqb3JuKQo+ID4gLSB1c2UgZGV2X2RiZywgZGV2X2VyciBpbnN0ZWFkIG9mIHByX2Rl
-YnVnLCBwcl9lcnIgKEJqb3JuKQo+ID4gLSB1c2UgJXBmIGluIHByaW50ayBmb3JtYXQgaW5zdGVh
-ZCBvZiAlcEYgKEJqb3JuKQo+ID4gLSBtYWtlIHRoZSBkZWJ1Zy9lcnJvciBtZXNzYWdlcyBtb3Jl
-IG1lYW5pbmdmdWwgKEJqb3JuKQo+ID4gLS0tCj4gPiAgZHJpdmVycy9wY2kvcGNpLWRyaXZlci5j
-IHwgMTYgKysrKysrKysrKysrKystLQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCAxNCBpbnNlcnRpb25z
-KCspLCAyIGRlbGV0aW9ucygtKQo+ID4gCj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9wY2kvcGNp
-LWRyaXZlci5jIGIvZHJpdmVycy9wY2kvcGNpLWRyaXZlci5jCj4gPiBpbmRleCA0NDQ2ZmNiLi5k
-N2ZmZDY2IDEwMDY0NAo+ID4gLS0tIGEvZHJpdmVycy9wY2kvcGNpLWRyaXZlci5jCj4gPiArKysg
-Yi9kcml2ZXJzL3BjaS9wY2ktZHJpdmVyLmMKPiA+IEBAIC0xMTQ2LDkgKzExNDYsMjEgQEAgc3Rh
-dGljIGludCBwY2lfcG1fcnVudGltZV9zdXNwZW5kKHN0cnVjdCBkZXZpY2UgKmRldikKPiA+ICAJ
-cGNpX2Rldi0+c3RhdGVfc2F2ZWQgPSBmYWxzZTsKPiA+ICAJcGNpX2Rldi0+bm9fZDNjb2xkID0g
-ZmFsc2U7Cj4gPiAgCWVycm9yID0gcG0tPnJ1bnRpbWVfc3VzcGVuZChkZXYpOwo+ID4gLQlzdXNw
-ZW5kX3JlcG9ydF9yZXN1bHQocG0tPnJ1bnRpbWVfc3VzcGVuZCwgZXJyb3IpOwo+ID4gLQlpZiAo
-ZXJyb3IpCj4gPiArCWlmIChlcnJvcikgewo+ID4gKwkJLyoKPiA+ICsJCSAqIC1FQlVTWSBhbmQg
-LUVBR0FJTiBpcyB1c2VkIHRvIHJlcXVlc3QgdGhlIHJ1bnRpbWUgUE0gY29yZQo+ID4gKwkJICog
-dG8gc2NoZWR1bGUgYSBuZXcgc3VzcGVuZCwgc28gbG9nIHRoZSBldmVudCBvbmx5IHdpdGggZGVi
-dWcKPiA+ICsJCSAqIGxvZyBsZXZlbC4KPiA+ICsJCSAqLwo+ID4gKwkJaWYgKGVycm9yID09IC1F
-QlVTWSB8fCBlcnJvciA9PSAtRUFHQUlOKQo+ID4gKwkJCWRldl9kYmcoZGV2LCAiY2FuJ3Qgc3Vz
-cGVuZCBub3cgKCVwZiByZXR1cm5lZCAlZClcbiIsCj4gPiArCQkJCXBtLT5ydW50aW1lX3N1c3Bl
-bmQsIGVycm9yKTsKPiA+ICsJCWVsc2UKPiA+ICsJCQlkZXZfZXJyKGRldiwgImNhbid0IHN1c3Bl
-bmQgKCVwZiByZXR1cm5lZCAlZClcbiIsCj4gPiArCQkJCXBtLT5ydW50aW1lX3N1c3BlbmQsIGVy
-cm9yKTsKPiA+ICsKPiA+ICAJCXJldHVybiBlcnJvcjsKPiA+ICsJfQo+ID4gIAlpZiAoIXBjaV9k
-ZXYtPmQzY29sZF9hbGxvd2VkKQo+ID4gIAkJcGNpX2Rldi0+bm9fZDNjb2xkID0gdHJ1ZTsKPiA+
-ICAKPiA+IAo+IAo+IC0tIAo+IEkgc3BlYWsgb25seSBmb3IgbXlzZWxmLgo+IFJhZmFlbCBKLiBX
-eXNvY2tpLCBJbnRlbCBPcGVuIFNvdXJjZSBUZWNobm9sb2d5IENlbnRlci4KPiAtLQo+IFRvIHVu
-c3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51
-eC1wY2kiIGluCj4gdGhlIGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5l
-bC5vcmcKPiBNb3JlIG1ham9yZG9tbyBpbmZvIGF0ICBodHRwOi8vdmdlci5rZXJuZWwub3JnL21h
-am9yZG9tby1pbmZvLmh0bWwKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX18KSW50ZWwtZ2Z4IG1haWxpbmcgbGlzdApJbnRlbC1nZnhAbGlzdHMuZnJlZWRlc2t0
-b3Aub3JnCmh0dHA6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9pbnRl
-bC1nZngK
+Actually reset/power off handlers do not really depend on power supply.
+Move the power reset out of power supply block so it will appear in main
+drivers section. This fixes following build warning (encountered on ARM
+exynos defconfig when POWER_SUPPLY is disabled manually):
+
+warning: (ARCH_HISI && ARCH_INTEGRATOR && ARCH_EXYNOS && ARCH_VEXPRESS && REALVIEW_DT) selects POWER_RESET which has unmet direct dependencies (POWER_SUPPLY)
+warning: (ARCH_EXYNOS) selects POWER_RESET_SYSCON which has unmet direct dependencies (POWER_SUPPLY && POWER_RESET && OF)
+warning: (ARCH_EXYNOS) selects POWER_RESET_SYSCON_POWEROFF which has unmet direct dependencies (POWER_SUPPLY && POWER_RESET && OF)
+
+Reported-by: Pavel Fedin <p.fedin@samsung.com>
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+---
+ drivers/Makefile       | 1 +
+ drivers/power/Kconfig  | 3 +--
+ drivers/power/Makefile | 1 -
+ 3 files changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/Makefile b/drivers/Makefile
+index 795d0ca714bf..0ebb49d0e57e 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -106,6 +106,7 @@ obj-y				+= i2c/ media/
+ obj-$(CONFIG_PPS)		+= pps/
+ obj-$(CONFIG_PTP_1588_CLOCK)	+= ptp/
+ obj-$(CONFIG_W1)		+= w1/
++obj-$(CONFIG_POWER_RESET)	+= power/reset/
+ obj-$(CONFIG_POWER_SUPPLY)	+= power/
+ obj-$(CONFIG_HWMON)		+= hwmon/
+ obj-$(CONFIG_THERMAL)		+= thermal/
+diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
+index 2f944d742ed4..c031f901b497 100644
+--- a/drivers/power/Kconfig
++++ b/drivers/power/Kconfig
+@@ -509,8 +509,7 @@ config AXP20X_POWER
+ 	  This driver provides support for the power supply features of
+ 	  AXP20x PMIC.
+ 
+-source "drivers/power/reset/Kconfig"
+-
+ endif # POWER_SUPPLY
+ 
++source "drivers/power/reset/Kconfig"
+ source "drivers/power/avs/Kconfig"
+diff --git a/drivers/power/Makefile b/drivers/power/Makefile
+index b656638f8b39..ac430b373f84 100644
+--- a/drivers/power/Makefile
++++ b/drivers/power/Makefile
+@@ -69,6 +69,5 @@ obj-$(CONFIG_POWER_AVS)		+= avs/
+ obj-$(CONFIG_CHARGER_SMB347)	+= smb347-charger.o
+ obj-$(CONFIG_CHARGER_TPS65090)	+= tps65090-charger.o
+ obj-$(CONFIG_CHARGER_TPS65217)	+= tps65217_charger.o
+-obj-$(CONFIG_POWER_RESET)	+= reset/
+ obj-$(CONFIG_AXP288_FUEL_GAUGE) += axp288_fuel_gauge.o
+ obj-$(CONFIG_AXP288_CHARGER)	+= axp288_charger.o
+-- 
+1.9.1
+
