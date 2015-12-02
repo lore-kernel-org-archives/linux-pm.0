@@ -1,38 +1,96 @@
-From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
-Subject: Re: [RFD] PM_GENERIC_DOMAINS && !PM
-Date: Wed, 02 Dec 2015 02:35:20 +0100
-Message-ID: <1995321.JkVMSghsar@vostro.rjw.lan>
-References: <565C7C86.7030801@nvidia.com> <565DBEE6.5030704@nvidia.com> <20151201161809.GA20561@ulmo>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v5] PCI / PM: Tune down retryable runtime suspend error messages
+Date: Wed, 02 Dec 2015 02:54:45 +0100
+Message-ID: <4357316.BsOyM9M4tL@vostro.rjw.lan>
+References: <1448699664-4178-1-git-send-email-imre.deak@intel.com> <1448910175-5904-1-git-send-email-imre.deak@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20151201161809.GA20561@ulmo>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <1448910175-5904-1-git-send-email-imre.deak@intel.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: Imre Deak <imre.deak@intel.com>, Bjorn Helgaas <bhelgaas@google.com>
+Cc: Jani Nikula <jani.nikula@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Linux PM <linux-pm@vger.kernel.org>, intel-gfx@lists.freedesktop.org, Linux PCI <linux-pci@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, December 01, 2015 05:18:09 PM Thierry Reding wrote:
+On Monday, November 30, 2015 09:02:55 PM Imre Deak wrote:
+> The runtime PM core doesn't treat EBUSY and EAGAIN retvals from the driver
+> suspend hooks as errors, but they still show up as errors in dmesg. Tune
+> them down. See rpm_suspend() for details of handling these return values.
 > 
-
-[cut]
-
+> Note that we use dev_dbg() for the retryable retvals, so after this
+> change you'll need either CONFIG_DYNAMIC_DEBUG or CONFIG_PCI_DEBUG
+> for them to show up in the log.
 > 
-> That all sounds very complicated for little gain. Disabling PM doesn't
-> make much sense these days, so I'd personally be fine to unconditonally
-> enable PM on Tegra. I'm not sure what the correct way would be. Since
-> the PM symbol is user-visible, selecting it doesn't sound like a very
-> good solution, though a quick grep shows that some architectures do
-> this.
+> One problem caused by this was noticed by Daniel: the i915 driver
+> returns EAGAIN to signal a temporary failure to suspend and as a request
+> towards the RPM core for scheduling a suspend again. This is a normal
+> event, but the resulting error message flags a breakage during the
+> driver's automated testing which parses dmesg and picks up the error.
 > 
-> Rafael, do you know what the canonical way is to make !PM invalid for a
-> platform?
+> Reported-by: Daniel Vetter <daniel.vetter@intel.com>
+> Bugzilla: https://bugs.freedesktop.org/show_bug.cgi?id=92992
+> CC: Bjorn Helgaas <bhelgaas@google.com>
+> CC: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Signed-off-by: Imre Deak <imre.deak@intel.com>
 
-Well, good question.
+Hi Bjorn,
 
-I can't really suggest anything cleaner than selecting it from the top-level
-Kconfig at the moment.
+Are you going to handle this one or should I take care of it?
 
-Thanks,
 Rafael
+
+
+> ---
+> 
+> v2:
+> - fix compile breake when CONFIG_PM_SLEEP=n (0-day builder)
+> v3:
+> - instead of modifying the suspend_report_result() helper to disinguish
+>   between the runtime and system suspend case, inline the error
+>   printing, it's not used anywhere else (Rafael)
+> v4:
+> - don't refer to log levels as flags in code comment (Rafael)
+> - use pr_debug(), pr_err() instead of the corresponding printk() (Rafael)
+> v5:
+> - clarify commit message (Bjorn)
+> - use dev_dbg, dev_err instead of pr_debug, pr_err (Bjorn)
+> - use %pf in printk format instead of %pF (Bjorn)
+> - make the debug/error messages more meaningful (Bjorn)
+> ---
+>  drivers/pci/pci-driver.c | 16 ++++++++++++++--
+>  1 file changed, 14 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
+> index 4446fcb..d7ffd66 100644
+> --- a/drivers/pci/pci-driver.c
+> +++ b/drivers/pci/pci-driver.c
+> @@ -1146,9 +1146,21 @@ static int pci_pm_runtime_suspend(struct device *dev)
+>  	pci_dev->state_saved = false;
+>  	pci_dev->no_d3cold = false;
+>  	error = pm->runtime_suspend(dev);
+> -	suspend_report_result(pm->runtime_suspend, error);
+> -	if (error)
+> +	if (error) {
+> +		/*
+> +		 * -EBUSY and -EAGAIN is used to request the runtime PM core
+> +		 * to schedule a new suspend, so log the event only with debug
+> +		 * log level.
+> +		 */
+> +		if (error == -EBUSY || error == -EAGAIN)
+> +			dev_dbg(dev, "can't suspend now (%pf returned %d)\n",
+> +				pm->runtime_suspend, error);
+> +		else
+> +			dev_err(dev, "can't suspend (%pf returned %d)\n",
+> +				pm->runtime_suspend, error);
+> +
+>  		return error;
+> +	}
+>  	if (!pci_dev->d3cold_allowed)
+>  		pci_dev->no_d3cold = true;
+>  
+> 
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
