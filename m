@@ -1,158 +1,69 @@
-From: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Subject: [PATCH v3 4/5] thermal: rockchip: Support the RK3228 SoCs in thermal
- driver
-Date: Thu,  3 Dec 2015 16:48:42 +0800
-Message-ID: <1449132523-18817-5-git-send-email-wxt@rock-chips.com>
-References: <1449132523-18817-1-git-send-email-wxt@rock-chips.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] PM / Domains: Fix bad of_node_put() in failure paths of genpd_dev_pm_attach()
+Date: Thu, 3 Dec 2015 11:17:27 +0100
+Message-ID: <CAPDyKFqj8bXjhyAgC=Qc4YW+Vz3bu0LacJymp11wbbMiuW+VyA@mail.gmail.com>
+References: <1448991571-20301-1-git-send-email-eric@anholt.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <1449132523-18817-1-git-send-email-wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
-List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: huangtao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, computersforpeace-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, Dan Carpenter <dan.carpenter-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>, Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1448991571-20301-1-git-send-email-eric@anholt.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eric Anholt <eric@anholt.net>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-The RK3228 SoCs has one Temperature Sensor, channel 0 is for CPU.
+On 1 December 2015 at 18:39, Eric Anholt <eric@anholt.net> wrote:
+> It looks like these meant to be unreffing the
+> of_parse_phandle_with_args() node, since the error paths above it
+> don't do of_node_put.  That function returns a new ref in pd_args.np,
+> though, not a new ref on dev->of_node.  Also, it would have leaked the
+> ref in the success case.
+>
+> Fixes "ERROR: Bad of_node_put()" on bcm2835 when hitting the
+> -EPROBE_DEFER case.
+>
+> Signed-off-by: Eric Anholt <eric@anholt.net>
 
-Signed-off-by: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
----
+Thanks for the fix!
 
-Changes in v3: None
-Changes in v2: None
-Changes in v1: None
+Perhaps we should add a fixes tag, as the problem been there since we
+introduced the OF support.
 
- drivers/thermal/rockchip_thermal.c | 81 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 81 insertions(+)
+Fixes: aa42240ab254 ("PM / Domains: Add generic OF-based PM domain look-up")
 
-diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index 611de00..95415ac 100644
---- a/drivers/thermal/rockchip_thermal.c
-+++ b/drivers/thermal/rockchip_thermal.c
-@@ -154,6 +154,7 @@ struct rockchip_thermal_data {
- #define TSADCV2_SHUT_2GPIO_SRC_EN(chn)		BIT(4 + (chn))
- #define TSADCV2_SHUT_2CRU_SRC_EN(chn)		BIT(8 + (chn))
- 
-+#define TSADCV1_INT_PD_CLEAR_MASK		~BIT(16)
- #define TSADCV2_INT_PD_CLEAR_MASK		~BIT(8)
- 
- #define TSADCV2_DATA_MASK			0xfff
-@@ -169,6 +170,51 @@ struct tsadc_table {
- 	int temp;
- };
- 
-+/**
-+ * Note:
-+ * Code to Temperature mapping of the Temperature sensor is a piece wise linear
-+ * curve.Any temperature, code faling between to 2 give temperatures can be
-+ * linearly interpolated.
-+ * Code to Temperature mapping should be updated based on sillcon results.
-+ */
-+static const struct tsadc_table v1_code_table[] = {
-+	{TSADCV3_DATA_MASK, -40000},
-+	{436, -40000},
-+	{431, -35000},
-+	{426, -30000},
-+	{421, -25000},
-+	{416, -20000},
-+	{411, -15000},
-+	{406, -10000},
-+	{401, -5000},
-+	{395, 0},
-+	{390, 5000},
-+	{385, 10000},
-+	{380, 15000},
-+	{375, 20000},
-+	{370, 25000},
-+	{364, 30000},
-+	{359, 35000},
-+	{354, 40000},
-+	{349, 45000},
-+	{343, 50000},
-+	{338, 55000},
-+	{333, 60000},
-+	{328, 65000},
-+	{322, 70000},
-+	{317, 75000},
-+	{312, 80000},
-+	{307, 85000},
-+	{301, 90000},
-+	{296, 95000},
-+	{291, 100000},
-+	{286, 105000},
-+	{280, 110000},
-+	{275, 115000},
-+	{270, 120000},
-+	{264, 125000},
-+};
-+
- static const struct tsadc_table v2_code_table[] = {
- 	{TSADCV2_DATA_MASK, -40000},
- 	{3800, -40000},
-@@ -369,6 +415,14 @@ static void rk_tsadcv2_initialize(void __iomem *regs,
- 		       regs + TSADCV2_HIGHT_TSHUT_DEBOUNCE);
- }
- 
-+static void rk_tsadcv1_irq_ack(void __iomem *regs)
-+{
-+	u32 val;
-+
-+	val = readl_relaxed(regs + TSADCV2_INT_PD);
-+	writel_relaxed(val & TSADCV1_INT_PD_CLEAR_MASK, regs + TSADCV2_INT_PD);
-+}
-+
- static void rk_tsadcv2_irq_ack(void __iomem *regs)
- {
- 	u32 val;
-@@ -430,6 +484,29 @@ static void rk_tsadcv2_tshut_mode(int chn, void __iomem *regs,
- 	writel_relaxed(val, regs + TSADCV2_INT_EN);
- }
- 
-+static const struct rockchip_tsadc_chip rk3228_tsadc_data = {
-+	.chn_id[SENSOR_CPU] = 0, /* cpu sensor is channel 0 */
-+	.chn_num = 1, /* one channel for tsadc */
-+
-+	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
-+	.tshut_polarity = TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
-+	.tshut_temp = 95000,
-+
-+	.initialize = rk_tsadcv2_initialize,
-+	.irq_ack = rk_tsadcv1_irq_ack,
-+	.control = rk_tsadcv2_control,
-+	.get_temp = rk_tsadcv2_get_temp,
-+	.set_tshut_temp = rk_tsadcv2_tshut_temp,
-+	.set_tshut_mode = rk_tsadcv2_tshut_mode,
-+
-+	.table = {
-+		.id = v1_code_table,
-+		.length = ARRAY_SIZE(v1_code_table),
-+		.data_mask = TSADCV3_DATA_MASK,
-+		.mode = ADC_DECREMENT,
-+	},
-+};
-+
- static const struct rockchip_tsadc_chip rk3288_tsadc_data = {
- 	.chn_id[SENSOR_CPU] = 1, /* cpu sensor is channel 1 */
- 	.chn_id[SENSOR_GPU] = 2, /* gpu sensor is channel 2 */
-@@ -480,6 +557,10 @@ static const struct rockchip_tsadc_chip rk3368_tsadc_data = {
- 
- static const struct of_device_id of_rockchip_thermal_match[] = {
- 	{
-+		.compatible = "rockchip,rk3228-tsadc",
-+		.data = (void *)&rk3228_tsadc_data,
-+	},
-+	{
- 		.compatible = "rockchip,rk3288-tsadc",
- 		.data = (void *)&rk3288_tsadc_data,
- 	},
--- 
-1.9.1
+Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+
+Kind regards
+Uffe
+
+> ---
+>  drivers/base/power/domain.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index e03b1ad..167418e 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -1775,10 +1775,10 @@ int genpd_dev_pm_attach(struct device *dev)
+>         }
+>
+>         pd = of_genpd_get_from_provider(&pd_args);
+> +       of_node_put(pd_args.np);
+>         if (IS_ERR(pd)) {
+>                 dev_dbg(dev, "%s() failed to find PM domain: %ld\n",
+>                         __func__, PTR_ERR(pd));
+> -               of_node_put(dev->of_node);
+>                 return -EPROBE_DEFER;
+>         }
+>
+> @@ -1796,7 +1796,6 @@ int genpd_dev_pm_attach(struct device *dev)
+>         if (ret < 0) {
+>                 dev_err(dev, "failed to add to PM domain %s: %d",
+>                         pd->name, ret);
+> -               of_node_put(dev->of_node);
+>                 goto out;
+>         }
+>
+> --
+> 2.6.2
+>
