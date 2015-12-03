@@ -1,76 +1,78 @@
-From: Philippe Longepe <philippe.longepe@linux.intel.com>
-Subject: [PATCH V5 3/3] cpufreq: intel_pstate: Account for IO wait time
-Date: Thu,  3 Dec 2015 18:55:59 +0100
-Message-ID: <1449165359-25832-8-git-send-email-philippe.longepe@linux.intel.com>
-References: <1449165359-25832-1-git-send-email-philippe.longepe@linux.intel.com>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH v3 2/5] thermal: rockchip: fix a impossible condition
+ caused by the warning
+Date: Thu, 3 Dec 2015 12:19:08 -0800
+Message-ID: <20151203201908.GA34901@dtor-ws>
+References: <1449132523-18817-1-git-send-email-wxt@rock-chips.com>
+ <1449132523-18817-3-git-send-email-wxt@rock-chips.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:28380 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751865AbbLCRzE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 3 Dec 2015 12:55:04 -0500
-In-Reply-To: <1449165359-25832-1-git-send-email-philippe.longepe@linux.intel.com>
+Received: from mail-pa0-f48.google.com ([209.85.220.48]:34908 "EHLO
+	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753531AbbLCUTL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Dec 2015 15:19:11 -0500
+Content-Disposition: inline
+In-Reply-To: <1449132523-18817-3-git-send-email-wxt@rock-chips.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: srinivas.pandruvada@linux.intel.com, Stephane Gasparini <stephane.gasparini@intel.com>, Philippe Longepe <philippe.longepe@intel.com>
+To: Caesar Wang <wxt@rock-chips.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, huangtao@rock-chips.com, Heiko Stuebner <heiko@sntech.de>, dianders@chromium.org, linux-rockchip@lists.infradead.org, computersforpeace@gmail.com, Dan Carpenter <dan.carpenter@oracle.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
 
-From: Stephane Gasparini <stephane.gasparini@intel.com>
+On Thu, Dec 03, 2015 at 04:48:40PM +0800, Caesar Wang wrote:
+> As the Dan report the smatch check the thermal driver warning:
+> drivers/thermal/rockchip_thermal.c:551 rockchip_configure_from_dt()
+> warn: impossible condition '(thermal->tshut_temp > ((~0 >> 1))) =>
+> (s32min-s32max > s32max)'
+> 
+> Let's we remove the imposssible condition Since the Temperature is
+> currently represented as int not long in the thermal driver.
+> 
+> Fixes: commit 437df2172e8d
+> ("thermal: rockchip: consistently use int for temperatures")
+> 
+> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+> 
+> ---
+> 
+> Changes in v3:
+> - As Brian comments on https://patchwork.kernel.org/patch/7580661/,
+>   let's remove the impossible condition.
+> 
+> Changes in v2: None
+> Changes in v1: None
+> 
+>  drivers/thermal/rockchip_thermal.c | 6 ------
+>  1 file changed, 6 deletions(-)
+> 
+> diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+> index ae796ec..611de00 100644
+> --- a/drivers/thermal/rockchip_thermal.c
+> +++ b/drivers/thermal/rockchip_thermal.c
+> @@ -549,12 +549,6 @@ static int rockchip_configure_from_dt(struct device *dev,
+>  		thermal->tshut_temp = shut_temp;
+>  	}
+>  
+> -	if (thermal->tshut_temp > INT_MAX) {
+> -		dev_err(dev, "Invalid tshut temperature specified: %d\n",
+> -			thermal->tshut_temp);
+> -		return -ERANGE;
+> -	}
 
-To improve IO bound work, account IO wait time in calculating
-CPU busy. This change gets IO wait time using get_cpu_iowait_time_us,
-and converts time into number of IO cycles spent at max non turbo
-frequency. This IO cycle count is added to mperf value to account
-for IO wait time.
+Well, that is not entirely correct. The value that we read from DT is
+u32, but we convert it down to int. I believe you want to move the check
+up so that you do:
 
-Signed-off-by: Philippe Longepe <philippe.longepe@intel.com>
-Signed-off-by: Stephane Gasparini <stephane.gasparini@intel.com>
----
- drivers/cpufreq/intel_pstate.c | 17 +++++++++++++++--
- 1 file changed, 15 insertions(+), 2 deletions(-)
+	} else if (tshut_temp > INT_MAX) {
+		dev_err(dev, "Invalid tshut temperature specified: %d\n",
+			thermal->tshut_temp);
+		return -ERANGE;
+	} else {
+		thermal->tshut_temp = shut_temp;
+	}
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 2cf8bb6..fb92402 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -114,6 +114,7 @@ struct cpudata {
- 	u64	prev_mperf;
- 	u64	prev_tsc;
- 	struct sample sample;
-+	u64 prev_cummulative_iowait;
- };
- 
- static struct cpudata **all_cpu_data;
-@@ -934,16 +935,28 @@ static inline void intel_pstate_set_sample_time(struct cpudata *cpu)
- static inline int32_t get_target_pstate_use_cpu_load(struct cpudata *cpu)
- {
- 	struct sample *sample = &cpu->sample;
-+	u64 cummulative_iowait, delta_iowait_us;
-+	u64 delta_iowait_mperf;
-+	u64 mperf, now;
- 	int32_t cpu_load;
- 
-+	cummulative_iowait = get_cpu_iowait_time_us(cpu->cpu, &now);
-+
-+	/* Convert iowait time into number of IO cycles spent at max_freq */
-+	delta_iowait_us = cummulative_iowait - cpu->prev_cummulative_iowait;
-+	delta_iowait_mperf = div64_u64(delta_iowait_us * cpu->pstate.scaling *
-+		cpu->pstate.max_pstate, 1000);
-+
-+	mperf = cpu->sample.mperf + delta_iowait_mperf;
-+	cpu->prev_cummulative_iowait = cummulative_iowait;
-+
- 	/*
- 	 * The load can be estimated as the ratio of the mperf counter
- 	 * running at a constant frequency during active periods
- 	 * (C0) and the time stamp counter running at the same frequency
- 	 * also during C-states.
- 	 */
--	cpu_load = div64_u64(100 * sample->mperf, sample->tsc);
--
-+	cpu_load = div64_u64(100 * mperf, sample->tsc);
- 	cpu->sample.busy_scaled = int_tofp(cpu_load);
- 
- 	return (cpu->pstate.current_pstate - pid_calc(&cpu->pid,
+Thanks.
+
 -- 
-1.9.1
-
+Dmitry
