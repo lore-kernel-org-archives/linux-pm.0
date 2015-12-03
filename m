@@ -1,99 +1,136 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v3 09/10] PM / Hibernate: Publish pages restored in-place
- to arch code
-Date: Thu, 3 Dec 2015 12:09:25 +0000
-Message-ID: <20151203120925.GA2220@red-moon>
-References: <1448559168-8363-1-git-send-email-james.morse@arm.com>
- <1448559168-8363-10-git-send-email-james.morse@arm.com>
+From: "Jon Medhurst (Tixy)" <tixy@linaro.org>
+Subject: Re: [PATCH 11/12] cpufreq: arm-big-little: clarify frequency units
+Date: Thu, 03 Dec 2015 14:22:14 +0000
+Message-ID: <1449152534.2817.26.camel@linaro.org>
+References: <1449091167-20758-1-git-send-email-ben@smart-cactus.org>
+	 <1449091167-20758-12-git-send-email-ben@smart-cactus.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:48571 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751854AbbLCMIT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 3 Dec 2015 07:08:19 -0500
-Content-Disposition: inline
-In-Reply-To: <1448559168-8363-10-git-send-email-james.morse@arm.com>
+Received: from queue01a.mail.zen.net.uk ([212.23.3.234]:36360 "EHLO
+	queue01a.mail.zen.net.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760184AbbLCOW4 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Dec 2015 09:22:56 -0500
+In-Reply-To: <1449091167-20758-12-git-send-email-ben@smart-cactus.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: James Morse <james.morse@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Kevin Kang <kkang@intrinsyc.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, wangfei <w.f@huawei.com>, Marc Zyngier <marc.zyngier@arm.com>
+To: Ben Gamari <ben@smart-cactus.org>
+Cc: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Lukasz Majewski <l.majewski@samsung.com>, Kevin Hilman <khilman@linaro.org>, Heiko Stuebner <heiko@sntech.de>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, Javier Martinez Canillas <javier@osg.samsung.com>, linux-pm@vger.kernel.org, Tomasz Figa <tomasz.figa@gmail.com>, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, b.zolnierkie@samsung.com, linux-samsung-soc@vger.kernel.org, Javier Martinez Canillas <javier@dowhile0.org>, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Thu, Nov 26, 2015 at 05:32:47PM +0000, James Morse wrote:
-
-[...]
-
-> @@ -2427,25 +2434,31 @@ static void *get_buffer(struct memory_bitmap *bm, struct chain_allocator *ca)
->  	if (PageHighMem(page))
->  		return get_highmem_page_buffer(page, ca);
-
-I know it is not a problem for arm64, but you should export the
-"restored" highmem pages list too because arch code may need to use
-it for the same reasons this patch was implemented.
-
-> -	if (swsusp_page_is_forbidden(page) && swsusp_page_is_free(page))
-> -		/* We have allocated the "original" page frame and we can
-> -		 * use it directly to store the loaded page.
-> -		 */
-> -		return page_address(page);
-> -
-> -	/* The "original" page frame has not been allocated and we have to
-> -	 * use a "safe" page frame to store the loaded page.
-> -	 */
->  	pbe = chain_alloc(ca, sizeof(struct pbe));
->  	if (!pbe) {
->  		swsusp_free();
->  		return ERR_PTR(-ENOMEM);
->  	}
-> -	pbe->orig_address = page_address(page);
-> -	pbe->address = safe_pages_list;
-> -	safe_pages_list = safe_pages_list->next;
-> -	pbe->next = restore_pblist;
-> -	restore_pblist = pbe;
-> +
-> +	if (swsusp_page_is_forbidden(page) && swsusp_page_is_free(page)) {
-> +		/* We have allocated the "original" page frame and we can
-> +		 * use it directly to store the loaded page.
-> +		 */
-> +		pbe->orig_address = NULL;
-> +		pbe->address = page_address(page);
-> +		pbe->next = restored_inplace_pblist;
-> +		restored_inplace_pblist = pbe;
-> +	} else {
-> +		/* The "original" page frame has not been allocated and we
-> +		 * have to use a "safe" page frame to store the loaded page.
-> +		 */
-> +		pbe->orig_address = page_address(page);
-> +		pbe->address = safe_pages_list;
-> +		safe_pages_list = safe_pages_list->next;
-> +		pbe->next = restore_pblist;
-> +		restore_pblist = pbe;
-> +	}
-
-This makes sense to me, more so given that the pbe data is already
-pre-allocated regardless in prepare_image() (ie it should not change
-the current behaviour apart from calling chain_alloc() for every page we
-are restoring), you are just adding a pointer to stash that information,
-hence, if it is ok for Pavel and Rafael I think this patch can be considered
-for merging.
-
-Feedback appreciated.
-
-Thanks,
-Lorenzo
-
-> +
->  	return pbe->address;
+On Wed, 2015-12-02 at 22:19 +0100, Ben Gamari wrote:
+> The frequency units are very confusing in this area as OPPs use Hz
+> whereas cpufreq uses kHz. Be explicit about this in variable naming.
+> 
+> Cc: Javier Martinez Canillas <javier@osg.samsung.com>
+> Signed-off-by: Ben Gamari <ben@smart-cactus.org>
+> ---
+>  drivers/cpufreq/arm_big_little.c | 20 ++++++++++----------
+>  1 file changed, 10 insertions(+), 10 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+> index 855599b..2d5761c 100644
+> --- a/drivers/cpufreq/arm_big_little.c
+> +++ b/drivers/cpufreq/arm_big_little.c
+> @@ -130,14 +130,14 @@ static unsigned int bL_cpufreq_get_rate(unsigned int cpu)
 >  }
 >  
-> @@ -2513,6 +2526,7 @@ int snapshot_write_next(struct snapshot_handle *handle)
->  			chain_init(&ca, GFP_ATOMIC, PG_SAFE);
->  			memory_bm_position_reset(&orig_bm);
->  			restore_pblist = NULL;
-> +			restored_inplace_pblist = NULL;
->  			handle->buffer = get_buffer(&orig_bm, &ca);
->  			handle->sync_read = 0;
->  			if (IS_ERR(handle->buffer))
-> -- 
-> 2.6.2
-> 
+>  static int
+> -bL_cpufreq_set_rate_cluster(u32 cpu, u32 cluster, u32 new_rate)
+> +bL_cpufreq_set_rate_cluster(u32 cpu, u32 cluster, u32 new_rate_kHz)
+>  {
+>  	unsigned long volt = 0, volt_old = 0;
+>  	long freq_Hz;
+>  	u32 old_rate;
+
+IMO variable renaming doesn't seem necessary, if cpufreq uses kHz then
+in a cpufreq driver adding 'kHz' to variable seems redundant, especially
+if Hz values like freq_Hz above are named especially to signal their
+different units. However, if renaming is going to happen it should at
+least be consistent within the same function i.e. also rename the old
+old_rate variable above.
+
+>  	int ret;
+>  
+> -	freq_Hz = new_rate * 1000;
+> +	freq_Hz = new_rate_kHz * 1000;
+>  	old_rate = clk_get_rate(clk[cluster]) / 1000;
+>  
+>  	if (!IS_ERR(reg[cluster])) {
+> @@ -163,10 +163,10 @@ bL_cpufreq_set_rate_cluster(u32 cpu, u32 cluster, u32 new_rate)
+>  	pr_debug("%s: cpu %d, cluster: %d, %u MHz, %ld mV --> %u MHz, %ld mV\n",
+>  		__func__, cpu, cluster,
+>  		old_rate / 1000, (volt_old > 0) ? volt_old / 1000 : -1,
+> -		new_rate / 1000, volt ? volt / 1000 : -1);
+> +		new_rate_kHz / 1000, volt ? volt / 1000 : -1);
+>  
+>  	/* scaling up? scale voltage before frequency */
+> -	if (!IS_ERR(reg[cluster]) && new_rate > old_rate) {
+> +	if (!IS_ERR(reg[cluster]) && new_rate_kHz > old_rate) {
+>  		ret = regulator_set_voltage_tol(reg[cluster], volt, 0);
+>  		if (ret) {
+>  			pr_err("%s: cpu: %d, cluster: %d, failed to scale voltage up: %d\n",
+> @@ -175,7 +175,7 @@ bL_cpufreq_set_rate_cluster(u32 cpu, u32 cluster, u32 new_rate)
+>  		}
+>  	}
+>  
+> -	ret = clk_set_rate(clk[cluster], new_rate * 1000);
+> +	ret = clk_set_rate(clk[cluster], new_rate_kHz * 1000);
+>  	if (WARN_ON(ret)) {
+>  		pr_err("%s: clk_set_rate failed: %d, cluster: %d\n",
+>  			__func__, cluster, ret);
+> @@ -185,7 +185,7 @@ bL_cpufreq_set_rate_cluster(u32 cpu, u32 cluster, u32 new_rate)
+>  	}
+>  
+>  	/* scaling down? scale voltage after frequency */
+> -	if (!IS_ERR(reg[cluster]) && new_rate < old_rate) {
+> +	if (!IS_ERR(reg[cluster]) && new_rate_kHz < old_rate) {
+>  		ret = regulator_set_voltage_tol(reg[cluster], volt, 0);
+>  		if (ret) {
+>  			pr_err("%s: cpu: %d, cluster: %d, failed to scale voltage down: %d\n",
+> @@ -199,7 +199,7 @@ bL_cpufreq_set_rate_cluster(u32 cpu, u32 cluster, u32 new_rate)
+>  }
+>  
+>  static unsigned int
+> -bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
+> +bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate_kHz)
+>  {
+>  	u32 new_rate, prev_rate;
+
+Ditto. Rename these too to add '_kHz' ?
+
+>  	int ret;
+> @@ -209,13 +209,13 @@ bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
+>  
+>  	if (bLs) {
+>  		prev_rate = per_cpu(cpu_last_req_freq, cpu);
+> -		per_cpu(cpu_last_req_freq, cpu) = rate;
+> +		per_cpu(cpu_last_req_freq, cpu) = rate_kHz;
+>  		per_cpu(physical_cluster, cpu) = new_cluster;
+>  
+>  		new_rate = find_cluster_maxfreq(new_cluster);
+>  		new_rate = ACTUAL_FREQ(new_cluster, new_rate);
+>  	} else {
+> -		new_rate = rate;
+> +		new_rate = rate_kHz;
+>  	}
+>  
+>  	pr_debug("%s: cpu: %d, old cluster: %d, new cluster: %d, freq: %d\n",
+> @@ -236,7 +236,7 @@ bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
+>  	} else if (ret && bLs) {
+>  		per_cpu(cpu_last_req_freq, cpu) = prev_rate;
+>  		per_cpu(physical_cluster, cpu) = old_cluster;
+> -	} 
+> +	}
+
+There's a spurious whitespace change here. I know the space you deleted
+shouldn't have been there, but doing tidyups like that generally isn't
+done in patches that don't otherwise affect the code in question.
+
+>  
+>  	mutex_unlock(&cluster_lock[new_cluster]);
+>  
+
+-- 
+Tixy
+
