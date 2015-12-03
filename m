@@ -1,60 +1,54 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 06/10] cpufreq: governor: Keep single copy of
- information common to policy->cpus
-Date: Thu, 3 Dec 2015 10:24:25 +0530
-Message-ID: <20151203045425.GA4302@ubuntu>
-References: <cover.1434713657.git.viresh.kumar@linaro.org>
- <efd892126475600e751c0e1206553270ebba5c00.1434713657.git.viresh.kumar@linaro.org>
- <1448625400.3689.103.camel@pengutronix.de>
- <20151130051915.GH3373@ubuntu>
- <1448879672.8275.15.camel@pengutronix.de>
- <20151130110327.GC4899@ubuntu>
- <565F661F.1020204@codeaurora.org>
+Subject: Re: [PATCH v5 0/12] cpufreq: Add support for Exynos 5800, 5420, and
+ 5422
+Date: Thu, 3 Dec 2015 11:35:27 +0530
+Message-ID: <20151203060527.GH4302@ubuntu>
+References: <1449091167-20758-1-git-send-email-ben@smart-cactus.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f44.google.com ([209.85.220.44]:34225 "EHLO
-	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932256AbbLCEy3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 2 Dec 2015 23:54:29 -0500
-Received: by padhx2 with SMTP id hx2so60388563pad.1
-        for <linux-pm@vger.kernel.org>; Wed, 02 Dec 2015 20:54:29 -0800 (PST)
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <565F661F.1020204@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1449091167-20758-1-git-send-email-ben@smart-cactus.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Ben Gamari <ben@smart-cactus.org>, Sudeep Holla <Sudeep.Holla@arm.com>
+Cc: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: Lucas Stach <l.stach@pengutronix.de>, Rafael Wysocki <rjw@rjwysocki.net>, Preeti U Murthy <preeti@linux.vnet.ibm.com>, ke.wang@spreadtrum.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, ego@linux.vnet.ibm.com, paulus@samba.org, shilpa.bhat@linux.vnet.ibm.com, prarit@redhat.com, robert.schoene@tu-dresden.de
 
-On 02-12-15, 13:43, Saravana Kannan wrote:
-> There's a separate thread where we proposed a fix to deferrable
-> timers that are stored globally if they are not CPU bound. That way,
-> even if one CPU is up, they get handled. But TGLX had some valid
-> concerns with cache thrashing and impact on some network code. So,
-> last I heard, he was going to rewrite and fixed the deferrable timer
-> problem by having the "orphaned" (because CPU has gone idle)
-> deferrable timers being adopted by other CPUs while the original CPU
-> is idle.
+Hi Ben,
+
+On 02-12-15, 22:19, Ben Gamari wrote:
 > 
-> Once that's fixed, we just need one timer per policy. Long story
-> short, CPU freq is working around a poor API semantic of deferrable
-> timers.
+> This patch series adds cpufreq support for the Exynos 5800, 5420, and 5422
+> SOCs. In particular, it adds support for operating-points-v2 bindings to the
+> arm-big-little cpufreq driver and updates the above-mentioned SOCs' devicetrees
+> to take advantage of this support. There are also a couple of patches improving
+> the clarify of the arm-big-little implementation. It is built on a set posted
+> by Bartlomiej Zolnierkiewicz in April 2015.
+> 
+> The most signficant change from the original series is porting to the
+> operating-points-v2 devicetree bindings. The series has been tested by me on
+> and Odroid XU4 and by Javier Martinez Canillas on a Peach Pit.
 
-There is another idea that I have.
+Thanks for working with opp-v2 bindings, really appreciate it.
 
-Lets sacrifice idleness of CPU0 (which is already considered as
-housekeeping CPU in scheduler) to save us from all the complexity we
-have today.
+But, before I start reviewing this series, I have few comments.
+- We weren't able to use cpufreq-dt driver for big LITTLE platforms
+  earlier, as it never had multi cluster support and we wanted
+  clock-sharing information via DT.
+- That is all fixed now.
+- I want Samsung's big LITTLE platforms to use cpufreq-dt and drop
+  arm_big_little driver completely.
+- The only case for which it (arm_big_little) driver might be useful
+  is the IKS solution. Which I don't believe you are going to use in
+  future :)
 
-Suppose we have 16 CPUs, with 4 CPUs per policy and hence 4 policies.
-- Keep a single delayed-work (non-deferrable) per policy and queue them as:
-  queue_work_on(CPU0).
-- This will work because any CPU can calculate the load of other CPUs,
-  and there is no dependency on the local CPU.
-- CPU0 will hence get interrupted, check if the policy->cpus are idle
-  or not, and if not, update their frequency (perhaps with an IPI).
+My plan for the arm-big-little driver:
+- Migrate all platforms to use cpufreq-dt instead for non-IKS
+  solution
+- Make arm-big-little driver arm-big-little-iks only driver.
 
-Not sure if this will be better performance wise though.
+@Sudeep: What would it take you to use cpufreq-dt for ARM's platforms
+?
 
 -- 
 viresh
