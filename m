@@ -1,13 +1,13 @@
 From: Philippe Longepe <philippe.longepe@linux.intel.com>
 Subject: [PATCH V5 3/3] cpufreq: intel_pstate: Account for IO wait time
-Date: Thu,  3 Dec 2015 18:55:58 +0100
-Message-ID: <1449165359-25832-7-git-send-email-philippe.longepe@linux.intel.com>
+Date: Thu,  3 Dec 2015 18:55:59 +0100
+Message-ID: <1449165359-25832-8-git-send-email-philippe.longepe@linux.intel.com>
 References: <1449165359-25832-1-git-send-email-philippe.longepe@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
 Received: from mga11.intel.com ([192.55.52.93]:28380 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751865AbbLCRzC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 3 Dec 2015 12:55:02 -0500
+	id S1751865AbbLCRzE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 3 Dec 2015 12:55:04 -0500
 In-Reply-To: <1449165359-25832-1-git-send-email-philippe.longepe@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
