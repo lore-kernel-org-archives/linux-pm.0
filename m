@@ -1,132 +1,75 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2 5/6] cpufreq: governor: replace per-cpu delayed work with timers
-Date: Fri, 04 Dec 2015 02:18:41 +0100
-Message-ID: <10439879.00aCyM9quW@vostro.rjw.lan>
-References: <cover.1449115453.git.viresh.kumar@linaro.org> <691a3524afaa8d08d61987b1c2913948b4e59f01.1449115453.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH V5 1/3] cpufreq: intel_pstate: configurable algorithm to get target pstate
+Date: Fri, 04 Dec 2015 02:41:38 +0100
+Message-ID: <4039574.A1Xg0PlAdu@vostro.rjw.lan>
+References: <1449165359-25832-1-git-send-email-philippe.longepe@linux.intel.com> <1449165359-25832-3-git-send-email-philippe.longepe@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <691a3524afaa8d08d61987b1c2913948b4e59f01.1449115453.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, ashwin.chaugule@linaro.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, open list <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:52239 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754342AbbLDBLq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Dec 2015 20:11:46 -0500
+In-Reply-To: <1449165359-25832-3-git-send-email-philippe.longepe@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Philippe Longepe <philippe.longepe@linux.intel.com>
+Cc: linux-pm@vger.kernel.org, srinivas.pandruvada@linux.intel.com
 
-On Thursday, December 03, 2015 09:37:53 AM Viresh Kumar wrote:
-> cpufreq governors evaluate load at sampling rate and based on that they
-> update frequency for a group of CPUs belonging to the same cpufreq
-> policy.
+On Thursday, December 03, 2015 06:55:54 PM Philippe Longepe wrote:
+> From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+
+If you submit somebody else's patches (like in this case), please always
+add a Sign-off-by tag from yourself to them in addition to the original
+Sign-off-by tag from the author.  Otherwise, they can't be applied for
+formal reasons.
+
+> Current approach of one size fits all is not sustainable. Only per cpuid
+> based configuration, we can do now is to select different PID parameters.
+> But that is not enough. 
+
+The above part of the changelog can go away in my view.  It doesn't add
+anything useful.
+
+> The target systems using different cpus have
+
+"Target systems ..."
+
+> different power and performance requirement.
+
+"requrements" (s missing).
+
+> They may use different
+> algorithms to get next pstate based on their power or performance
+
+"the next P-state"
+
+> preference. For example low powered systems may want to ramp up pstates
+> more conservatively than a core desktop or server platforms.
+
+What about: "For example, power-constrained systems may not want to use
+high-performance P-states as aggressively as a full-size desktop or a server
+platform."
+
+> A server
+> platforms may want to run as close to max to get better performance, than
+> a laptop like systems.
+
+"A server platform may want to run close to the max to achieve better performance,
+while laptop-like systems may prefer sacrificing performance for longer
+battery lifes."
+
+> This change allows cpuid based selection of algorithm to get target pstate.
+
+"For the above reasons, modify intel_pstate to allow the target P-state
+selection algorithm to be depend on the CPU ID."
+
 > 
-> This is required to be done in a single thread for all policy->cpus, but
-> because we don't want to wakeup idle CPUs to do just that, we use
-> deferrable work for this. If we would have used a single delayed
-> deferrable work for the entire policy, there were chances that the CPU
-> required to run the handler can be in idle and we might end up not
-> changing the frequency for the entire group with load variations.
-> 
-> And so we were forced to keep per-cpu works, and only the one that
-> expires first need to do the real work and others are rescheduled for
-> next sampling time.
-> 
-> We have been using the more complex solution until now, where we used a
-> delayed deferrable work for this, which is a combination of a timer and
-> a work.
-> 
-> This could be made lightweight by keeping per-cpu deferred timers with a
-> single work item, which is scheduled by the first timer that expires.
-> 
-> This patch does just that and here are important changes:
-> - The timer handler will run in irq context and so we need to use a
->   spin_lock instead of the timer_mutex. And so a separate timer_lock is
->   created. This also makes the use of the mutex and lock quite clear, as
->   we know what exactly they are protecting.
-> - A new field 'skip_work' is added to track when the timer handlers can
->   queue a work. More comments present in code.
-> 
-> Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Reviewed-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
+> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-I've tentatively queued this one up, but I still have a couple of questions.
-
-> ---
->  drivers/cpufreq/cpufreq_governor.c | 139 +++++++++++++++++++++----------------
->  drivers/cpufreq/cpufreq_governor.h |  20 ++++--
->  drivers/cpufreq/cpufreq_ondemand.c |   8 +--
->  3 files changed, 98 insertions(+), 69 deletions(-)
-
-[cut]
-
-> @@ -250,14 +247,44 @@ static void dbs_timer(struct work_struct *work)
->  		sampling_rate = od_tuners->sampling_rate;
->  	}
->  
-> -	if (!need_load_eval(cdbs->shared, sampling_rate))
-> -		modify_all = false;
-> +	eval_load = need_load_eval(shared, sampling_rate);
->  
-> -	delay = dbs_data->cdata->gov_dbs_timer(policy, modify_all);
-> -	gov_queue_work(dbs_data, policy, delay, modify_all);
-> +	/*
-> +	 * Make sure cpufreq_governor_limits() isn't evaluating load in
-> +	 * parallel.
-> +	 */
-> +	mutex_lock(&shared->timer_mutex);
-> +	delay = dbs_data->cdata->gov_dbs_timer(policy, eval_load);
-> +	mutex_unlock(&shared->timer_mutex);
-> +
-> +	shared->skip_work--;
-
-Is there any reason for incrementing and decrementing this instead of setting
-it to either 0 or 1 (or maybe either 'true' or 'false' for that matter)?
-
-If my reading of the patch is correct, it can only be either 0 or 1 anyway, right?
-
-> +	gov_add_timers(policy, delay);
-> +}
-> +
-> +static void dbs_timer_handler(unsigned long data)
-> +{
-> +	struct cpu_dbs_info *cdbs = (struct cpu_dbs_info *)data;
-> +	struct cpu_common_dbs_info *shared = cdbs->shared;
-> +	struct cpufreq_policy *policy;
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&shared->timer_lock, flags);
-> +	policy = shared->policy;
-
-Why do we need policy here?
-
-> +
-> +	/*
-> +	 * Timer handler isn't allowed to queue work at the moment, because:
-> +	 * - Another timer handler has done that
-> +	 * - We are stopping the governor
-> +	 * - Or we are updating the sampling rate of ondemand governor
-> +	 */
-> +	if (shared->skip_work)
-> +		goto unlock;
-> +
-> +	shared->skip_work++;
-> +	queue_work(system_wq, &shared->work);
->  
->  unlock:
-
-What about writing the above as
-
-	if (!shared->work_in_progress) {
-		shared->work_in_progress = true;
-		queue_work(system_wq, &shared->work);
-	}
-
-and then you won't need the unlock label.
-
-> -	mutex_unlock(&shared->timer_mutex);
-> +	spin_unlock_irqrestore(&shared->timer_lock, flags);
->  }
->  
->  static void set_sampling_rate(struct dbs_data *dbs_data,
+The change itself looks reasonable to me.
 
 Thanks,
 Rafael
+
