@@ -1,13 +1,13 @@
 From: Philippe Longepe <philippe.longepe@linux.intel.com>
-Subject: [PATCH V6 3/3] cpufreq: intel_pstate: Account for IO wait time
-Date: Fri,  4 Dec 2015 17:40:35 +0100
-Message-ID: <1449247235-29389-8-git-send-email-philippe.longepe@linux.intel.com>
+Subject: [PATCH V6 2/3] cpufreq: intel_pstate: account for non C0 time
+Date: Fri,  4 Dec 2015 17:40:32 +0100
+Message-ID: <1449247235-29389-5-git-send-email-philippe.longepe@linux.intel.com>
 References: <1449247235-29389-1-git-send-email-philippe.longepe@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:59932 "EHLO mga02.intel.com"
+Received: from mga02.intel.com ([134.134.136.20]:31858 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755374AbbLDQku (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 4 Dec 2015 11:40:50 -0500
+	id S1754052AbbLDQkr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 4 Dec 2015 11:40:47 -0500
 In-Reply-To: <1449247235-29389-1-git-send-email-philippe.longepe@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -16,75 +16,99 @@ Cc: srinivas.pandruvada@linux.intel.com, Philippe Longepe <philippe.longepe@inte
 
 From: Philippe Longepe <philippe.longepe@intel.com>
 
-In cases where we have many IOs, the global load becomes low and the
-load algorithm will decrease the requested P-State. Because of that,
-the IOs overheads will increase and impact the IO performances.
+The current function to calculate cpu utilization uses the average P-state
+ratio (APerf/Mperf) scaled by the ratio of the current P-state to the
+max available non-turbo one. This leads to an overestimation of
+utilization which causes higher-performance P-states to be selected more
+often and that leads to increased energy consumption.
 
-To improve IO bound work, we can count the io-wait time as busy time
-in calculating CPU busy.
+This is a problem for low-power systems, so it is better to use a
+different utilization calculation algorithm for them.
 
-This change uses get_cpu_iowait_time_us() to obtain the IO wait time value
-and converts time into number of cycles spent waiting on IO at the TSC
-rate. At the moment, this trick is only used for Atom.
+Namely, the Percent Busy value (or load) can be estimated as the ratio of the
+MPERF counter that runs at a constant rate only during active periods (C0) to
+the time stamp counter (TSC) that also runs (at the same rate) during idle.
+That is:
+
+Percent Busy = 100 * (delta_mperf / delta_tsc)
+
+Use this algorithm for platforms with SoCs based on the Airmont and Silvermont
+Atom cores.
 
 Signed-off-by: Philippe Longepe <philippe.longepe@intel.com>
 Signed-off-by: Stephane Gasparini <stephane.gasparini@intel.com>
 ---
- drivers/cpufreq/intel_pstate.c | 24 +++++++++++++++++++++---
- 1 file changed, 21 insertions(+), 3 deletions(-)
+ drivers/cpufreq/intel_pstate.c | 29 ++++++++++++++++++++++++-----
+ 1 file changed, 24 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index c8437861..6964df9 100644
+index 6a301e1..c8437861 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -113,6 +113,7 @@ struct cpudata {
- 	u64	prev_aperf;
- 	u64	prev_mperf;
- 	u64	prev_tsc;
-+	u64	prev_cummulative_iowait;
- 	struct sample sample;
+@@ -143,6 +143,7 @@ struct cpu_defaults {
  };
  
-@@ -933,22 +934,39 @@ static inline void intel_pstate_set_sample_time(struct cpudata *cpu)
- static inline int32_t get_target_pstate_use_cpu_load(struct cpudata *cpu)
- {
- 	struct sample *sample = &cpu->sample;
-+	u64 cummulative_iowait, delta_iowait_us;
-+	u64 delta_iowait_mperf;
-+	u64 mperf, now;
- 	int32_t cpu_load;
+ static inline int32_t get_target_pstate_use_performance(struct cpudata *cpu);
++static inline int32_t get_target_pstate_use_cpu_load(struct cpudata *cpu);
  
-+	cummulative_iowait = get_cpu_iowait_time_us(cpu->cpu, &now);
-+
-+	/*
-+	 * Convert iowait time into number of IO cycles spent at max_freq.
-+	 * IO is considered as busy only for the cpu_load algorithm. For
-+	 * performance this is not needed since we always try to reach the
-+	 * maximum P-State, so we are already boosting the IOs.
-+	 */
-+	delta_iowait_us = cummulative_iowait - cpu->prev_cummulative_iowait;
-+	delta_iowait_mperf = div64_u64(delta_iowait_us * cpu->pstate.scaling *
-+		cpu->pstate.max_pstate, MSEC_PER_SEC);
-+
-+	mperf = cpu->sample.mperf + delta_iowait_mperf;
-+	cpu->prev_cummulative_iowait = cummulative_iowait;
-+
-+
- 	/*
- 	 * The load can be estimated as the ratio of the mperf counter
- 	 * running at a constant frequency during active periods
- 	 * (C0) and the time stamp counter running at the same frequency
- 	 * also during C-states.
- 	 */
--	cpu_load = div64_u64(int_tofp(100) * sample->mperf, sample->tsc);
+ static struct pstate_adjust_policy pid_params;
+ static struct pstate_funcs pstate_funcs;
+@@ -763,7 +764,7 @@ static struct cpu_defaults silvermont_params = {
+ 		.set = atom_set_pstate,
+ 		.get_scaling = silvermont_get_scaling,
+ 		.get_vid = atom_get_vid,
+-		.get_target_pstate = get_target_pstate_use_performance,
++		.get_target_pstate = get_target_pstate_use_cpu_load,
+ 	},
+ };
+ 
+@@ -784,7 +785,7 @@ static struct cpu_defaults airmont_params = {
+ 		.set = atom_set_pstate,
+ 		.get_scaling = airmont_get_scaling,
+ 		.get_vid = atom_get_vid,
+-		.get_target_pstate = get_target_pstate_use_performance,
++		.get_target_pstate = get_target_pstate_use_cpu_load,
+ 	},
+ };
+ 
+@@ -890,12 +891,11 @@ static inline void intel_pstate_sample(struct cpudata *cpu)
+ 	local_irq_save(flags);
+ 	rdmsrl(MSR_IA32_APERF, aperf);
+ 	rdmsrl(MSR_IA32_MPERF, mperf);
+-	if (cpu->prev_mperf == mperf) {
++	tsc = rdtsc();
++	if ((cpu->prev_mperf == mperf) || (cpu->prev_tsc == tsc)) {
+ 		local_irq_restore(flags);
+ 		return;
+ 	}
 -
-+	cpu_load = div64_u64(int_tofp(100) * mperf, sample->tsc);
- 	cpu->sample.busy_scaled = cpu_load;
+-	tsc = rdtsc();
+ 	local_irq_restore(flags);
  
- 	return cpu->pstate.current_pstate - pid_calc(&cpu->pid, cpu_load);
+ 	cpu->last_sample_time = cpu->sample.time;
+@@ -930,6 +930,25 @@ static inline void intel_pstate_set_sample_time(struct cpudata *cpu)
+ 	mod_timer_pinned(&cpu->timer, jiffies + delay);
  }
  
--
++static inline int32_t get_target_pstate_use_cpu_load(struct cpudata *cpu)
++{
++	struct sample *sample = &cpu->sample;
++	int32_t cpu_load;
++
++	/*
++	 * The load can be estimated as the ratio of the mperf counter
++	 * running at a constant frequency during active periods
++	 * (C0) and the time stamp counter running at the same frequency
++	 * also during C-states.
++	 */
++	cpu_load = div64_u64(int_tofp(100) * sample->mperf, sample->tsc);
++
++	cpu->sample.busy_scaled = cpu_load;
++
++	return cpu->pstate.current_pstate - pid_calc(&cpu->pid, cpu_load);
++}
++
++
  static inline int32_t get_target_pstate_use_performance(struct cpudata *cpu)
  {
  	int32_t core_busy, max_pstate, current_pstate, sample_ratio;
