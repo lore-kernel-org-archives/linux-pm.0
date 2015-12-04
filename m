@@ -1,42 +1,156 @@
-From: James Morse <james.morse@arm.com>
-Subject: Re: [PATCH v3 09/10] PM / Hibernate: Publish pages restored in-place
- to arch code
-Date: Fri, 04 Dec 2015 16:26:41 +0000
-Message-ID: <5661BEC1.5040400@arm.com>
-References: <1448559168-8363-1-git-send-email-james.morse@arm.com> <1448559168-8363-10-git-send-email-james.morse@arm.com> <20151203120925.GA2220@red-moon>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+From: Philippe Longepe <philippe.longepe@linux.intel.com>
+Subject: [PATCH V6 1/3] cpufreq: intel_pstate: configurable algorithm to get target pstate
+Date: Fri,  4 Dec 2015 17:40:30 +0100
+Message-ID: <1449247235-29389-3-git-send-email-philippe.longepe@linux.intel.com>
+References: <1449247235-29389-1-git-send-email-philippe.longepe@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:55328 "EHLO foss.arm.com"
+Received: from mga02.intel.com ([134.134.136.20]:31858 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754657AbbLDQ1e (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 4 Dec 2015 11:27:34 -0500
-In-Reply-To: <20151203120925.GA2220@red-moon>
+	id S1754052AbbLDQkq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 4 Dec 2015 11:40:46 -0500
+In-Reply-To: <1449247235-29389-1-git-send-email-philippe.longepe@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Kevin Kang <kkang@intrinsyc.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, wangfei <w.f@huawei.com>, Marc Zyngier <marc.zyngier@arm.com>
+To: linux-pm@vger.kernel.org
+Cc: srinivas.pandruvada@linux.intel.com, Philippe Longepe <philippe.longepe@intel.com>
 
-Hi Lorenzo,
+From: Philippe Longepe <philippe.longepe@intel.com>
 
-On 03/12/15 12:09, Lorenzo Pieralisi wrote:
-> On Thu, Nov 26, 2015 at 05:32:47PM +0000, James Morse wrote:
->> @@ -2427,25 +2434,31 @@ static void *get_buffer(struct memory_bitmap *bm, struct chain_allocator *ca)
->>  	if (PageHighMem(page))
->>  		return get_highmem_page_buffer(page, ca);
-> 
-> I know it is not a problem for arm64, but you should export the
-> "restored" highmem pages list too because arch code may need to use
-> it for the same reasons this patch was implemented.
+Target systems using different cpus have different power and performance
+requirements. They may use different algorithms to get the next P-state
+based on their power or performance preference.
 
-I'm not sure it can be for the same reasons:
-kernel/power/snapshot.c:swap_two_pages_data() does the copy for highmem
-pages, and then kunmap-s them... if the page is to be used for
-execution, it needs to be re-mapped first, possibly at a different address.
-The place to do cache maintenance is in the kunmap/kmap calls.
+For example, power-constrained systems may not want to use
+high-performance P-states as aggressively as a full-size desktop or a
+server platform. A server platform may want to run close to the max to
+achieve better performance, while laptop-like systems may prefer
+sacrificing performance for longer battery lifes.
 
+For the above reasons, modify intel_pstate to allow the target P-state
+selection algorithm to be depend on the CPU ID.
 
-Thanks,
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Signed-off-by: Philippe Longepe <philippe.longepe@intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 30 +++++++++++++++++-------------
+ 1 file changed, 17 insertions(+), 13 deletions(-)
 
-James
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index d3b0e50..6a301e1 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -66,6 +66,7 @@ static inline int ceiling_fp(int32_t x)
+ 
+ struct sample {
+ 	int32_t core_pct_busy;
++	int32_t busy_scaled;
+ 	u64 aperf;
+ 	u64 mperf;
+ 	u64 tsc;
+@@ -133,6 +134,7 @@ struct pstate_funcs {
+ 	int (*get_scaling)(void);
+ 	void (*set)(struct cpudata*, int pstate);
+ 	void (*get_vid)(struct cpudata *);
++	int32_t (*get_target_pstate)(struct cpudata *);
+ };
+ 
+ struct cpu_defaults {
+@@ -140,6 +142,8 @@ struct cpu_defaults {
+ 	struct pstate_funcs funcs;
+ };
+ 
++static inline int32_t get_target_pstate_use_performance(struct cpudata *cpu);
++
+ static struct pstate_adjust_policy pid_params;
+ static struct pstate_funcs pstate_funcs;
+ static int hwp_active;
+@@ -738,6 +742,7 @@ static struct cpu_defaults core_params = {
+ 		.get_turbo = core_get_turbo_pstate,
+ 		.get_scaling = core_get_scaling,
+ 		.set = core_set_pstate,
++		.get_target_pstate = get_target_pstate_use_performance,
+ 	},
+ };
+ 
+@@ -758,6 +763,7 @@ static struct cpu_defaults silvermont_params = {
+ 		.set = atom_set_pstate,
+ 		.get_scaling = silvermont_get_scaling,
+ 		.get_vid = atom_get_vid,
++		.get_target_pstate = get_target_pstate_use_performance,
+ 	},
+ };
+ 
+@@ -778,6 +784,7 @@ static struct cpu_defaults airmont_params = {
+ 		.set = atom_set_pstate,
+ 		.get_scaling = airmont_get_scaling,
+ 		.get_vid = atom_get_vid,
++		.get_target_pstate = get_target_pstate_use_performance,
+ 	},
+ };
+ 
+@@ -797,6 +804,7 @@ static struct cpu_defaults knl_params = {
+ 		.get_turbo = knl_get_turbo_pstate,
+ 		.get_scaling = core_get_scaling,
+ 		.set = core_set_pstate,
++		.get_target_pstate = get_target_pstate_use_performance,
+ 	},
+ };
+ 
+@@ -922,7 +930,7 @@ static inline void intel_pstate_set_sample_time(struct cpudata *cpu)
+ 	mod_timer_pinned(&cpu->timer, jiffies + delay);
+ }
+ 
+-static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
++static inline int32_t get_target_pstate_use_performance(struct cpudata *cpu)
+ {
+ 	int32_t core_busy, max_pstate, current_pstate, sample_ratio;
+ 	s64 duration_us;
+@@ -960,30 +968,24 @@ static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
+ 		core_busy = mul_fp(core_busy, sample_ratio);
+ 	}
+ 
+-	return core_busy;
++	cpu->sample.busy_scaled = core_busy;
++	return cpu->pstate.current_pstate - pid_calc(&cpu->pid, core_busy);
+ }
+ 
+ static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
+ {
+-	int32_t busy_scaled;
+-	struct _pid *pid;
+-	signed int ctl;
+-	int from;
++	int from, target_pstate;
+ 	struct sample *sample;
+ 
+ 	from = cpu->pstate.current_pstate;
+ 
+-	pid = &cpu->pid;
+-	busy_scaled = intel_pstate_get_scaled_busy(cpu);
++	target_pstate = pstate_funcs.get_target_pstate(cpu);
+ 
+-	ctl = pid_calc(pid, busy_scaled);
+-
+-	/* Negative values of ctl increase the pstate and vice versa */
+-	intel_pstate_set_pstate(cpu, cpu->pstate.current_pstate - ctl, true);
++	intel_pstate_set_pstate(cpu, target_pstate, true);
+ 
+ 	sample = &cpu->sample;
+ 	trace_pstate_sample(fp_toint(sample->core_pct_busy),
+-		fp_toint(busy_scaled),
++		fp_toint(sample->busy_scaled),
+ 		from,
+ 		cpu->pstate.current_pstate,
+ 		sample->mperf,
+@@ -1238,6 +1240,8 @@ static void copy_cpu_funcs(struct pstate_funcs *funcs)
+ 	pstate_funcs.get_scaling = funcs->get_scaling;
+ 	pstate_funcs.set       = funcs->set;
+ 	pstate_funcs.get_vid   = funcs->get_vid;
++	pstate_funcs.get_target_pstate = funcs->get_target_pstate;
++
+ }
+ 
+ #if IS_ENABLED(CONFIG_ACPI)
+-- 
+1.9.1
+
