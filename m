@@ -1,7 +1,7 @@
 From: Jon Hunter <jonathanh@nvidia.com>
-Subject: [PATCH V4 10/16] PM / Domains: Add function to remove a pm-domain
-Date: Fri, 4 Dec 2015 14:57:11 +0000
-Message-ID: <1449241037-22193-11-git-send-email-jonathanh@nvidia.com>
+Subject: [PATCH V4 12/16] Documentation: DT: bindings: Add power domain info for NVIDIA PMC
+Date: Fri, 4 Dec 2015 14:57:13 +0000
+Message-ID: <1449241037-22193-13-git-send-email-jonathanh@nvidia.com>
 References: <1449241037-22193-1-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -12,81 +12,107 @@ To: Philipp Zabel <p.zabel@pengutronix.de>, Stephen Warren <swarren@wwwdotorg.or
 Cc: Vince Hsu <vinceh@nvidia.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-The genpd framework allows users to add power-domains via the
-pm_genpd_init() function, however, there is no corresponding function
-to remove a power-domain. For most devices this may be fine as the power
-domains are never removed, however, for devices that wish to populate
-the power-domains from within a driver, having the ability to remove a
-power domain if the probing of the device fails or the driver is unloaded
-is necessary. Therefore, add a function to remove a power-domain. Please
-note that the power domain can only be removed if there are no devices
-using the power-domain and it is not linked to another domain.
+Add power-domain binding documentation for the NVIDIA PMC driver in
+order to support generic power-domains.
 
 Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
----
- drivers/base/power/domain.c | 26 ++++++++++++++++++++++++++
- include/linux/pm_domain.h   |  5 +++++
- 2 files changed, 31 insertions(+)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index e03b1ad25a90..137f29cde8a8 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -1509,6 +1509,32 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
- }
- EXPORT_SYMBOL_GPL(pm_genpd_init);
+---
+
+Please note that I have been debating whether I add this
+"nvidia,powergate-clock-disable" property or just leave the clocks
+disabled by default. Some downstream kernels leave the clocks enabled
+for the audio power-domain because the clocks required for powering up
+the power-domain are needed by all modules within the power-domain.
+However are the same time there are other power-domains that may need
+to be on, but not always clocked and so having the ability to specify if
+the clocks should be disabled seems useful. However, I can also remove
+this and just have the appropriate devices turn on the clocks as well.
+---
+ .../bindings/arm/tegra/nvidia,tegra20-pmc.txt      | 61 ++++++++++++++++++++++
+ 1 file changed, 61 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
+index 838e1a69ec0a..8e4641db51a9 100644
+--- a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
++++ b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
+@@ -1,5 +1,7 @@
+ NVIDIA Tegra Power Management Controller (PMC)
  
-+/**
-+ * pm_genpd_remove - Remove a generic I/O PM domain object.
-+ * @genpd: PM domain object to remove.
-+ */
-+int pm_genpd_remove(struct generic_pm_domain *genpd)
-+{
-+	if (IS_ERR_OR_NULL(genpd))
-+		return -EINVAL;
++== Power Management Controller Node ==
 +
-+	mutex_lock(&genpd->lock);
-+
-+	if (!list_empty(&genpd->master_links)
-+	    || !list_empty(&genpd->slave_links) || genpd->device_count) {
-+		mutex_unlock(&genpd->lock);
-+		return -EBUSY;
-+	}
-+
-+	mutex_lock_nested(&gpd_list_lock, SINGLE_DEPTH_NESTING);
-+	list_del(&genpd->gpd_list_node);
-+	mutex_unlock(&gpd_list_lock);
-+	mutex_unlock(&genpd->lock);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(pm_genpd_remove);
-+
- #ifdef CONFIG_PM_GENERIC_DOMAINS_OF
- /*
-  * Device Tree based PM domain providers.
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index ba4ced38efae..637699ff5a23 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -123,6 +123,7 @@ extern int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
- 				     struct generic_pm_domain *target);
- extern void pm_genpd_init(struct generic_pm_domain *genpd,
- 			  struct dev_power_governor *gov, bool is_off);
-+extern int pm_genpd_remove(struct generic_pm_domain *genpd);
+ The PMC block interacts with an external Power Management Unit. The PMC
+ mostly controls the entry and exit of the system from different sleep
+ modes. It provides power-gating controllers for SoC and CPU power-islands.
+@@ -69,6 +71,10 @@ Optional properties for hardware-triggered thermal reset (inside 'i2c-thermtrip'
+                      Defaults to 0. Valid values are described in section 12.5.2
+                      "Pinmux Support" of the Tegra4 Technical Reference Manual.
  
- extern struct dev_power_governor simple_qos_governor;
- extern struct dev_power_governor pm_domain_always_on_gov;
-@@ -161,6 +162,10 @@ static inline void pm_genpd_init(struct generic_pm_domain *genpd,
- 				 struct dev_power_governor *gov, bool is_off)
- {
- }
-+static inline int pm_genpd_remove(struct generic_pm_domain *genpd)
-+{
-+	return -ENOTSUPP;
-+}
- #endif
++Optional nodes:
++- pm-domains : This node contains a hierarchy of PM domain nodes, which should
++	       match the power-domains on the Tegra SoC.
++
+ Example:
  
- static inline int pm_genpd_add_device(struct generic_pm_domain *genpd,
+ / SoC dts including file
+@@ -114,3 +120,58 @@ pmc@7000f400 {
+ 	};
+ 	...
+ };
++
++
++== PM Domain Nodes ==
++
++Each of the PM domain nodes represents a power-domain on the Tegra SoC
++that can be power-gated by the PMC and should be named appropriately.
++
++Required properties:
++  - clocks: Must contain an entry for each clock required by the PMC for
++    controlling a power-gate. See ../clocks/clock-bindings.txt for details.
++  - resets: Must contain an entry for each reset required by the PMC for
++    controlling a power-gate. See ../reset/reset.txt for details.
++  - nvidia,powergate: Integer cell that contains an identifier for the PMC
++    power-gate that is associated with the power-domain. Please refer to
++    the Tegra TRM for more details.
++  - #power-domain-cells: Must be 0.
++
++Optional properties:
++  - nvidia,powergate-disable-clocks: Boolean property that if present
++    indicates that the clocks listed in the "clocks" property should be
++    disabled after turning on the power-domain. Otherwise the clocks will
++    be kept enabled.
++
++Example:
++
++	pmc: pmc@0,7000e400 {
++		compatible = "nvidia,tegra210-pmc";
++		reg = <0x0 0x7000e400 0x0 0x400>;
++		clocks = <&tegra_car TEGRA210_CLK_PCLK>, <&clk32k_in>;
++		clock-names = "pclk", "clk32k_in";
++
++		pm-domains {
++			pd_audio: aud {
++				clocks = <&tegra_car TEGRA210_CLK_APE>,
++					 <&tegra_car TEGRA210_CLK_APB2APE>;
++				resets = <&tegra_car 198>;
++				nvidia,powergate = <TEGRA_POWERGATE_AUD>;
++				#power-domain-cells = <0>;
++			};
++		};
++	};
++
++
++== PM Domain Consumers ==
++
++Hardware blocks belonging to a PM domain should contain a "power-domains"
++property that is a phandle pointing to the corresponding PM domain node.
++
++Example:
++
++	adma: adma@702e2000 {
++		...
++		power-domains = <&pd_audio>;
++		...
++	};
 -- 
 2.1.4
