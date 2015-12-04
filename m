@@ -1,7 +1,7 @@
 From: Jon Hunter <jonathanh@nvidia.com>
-Subject: [PATCH V4 06/16] soc: tegra: pmc: Wait for powergate state to change
-Date: Fri, 4 Dec 2015 14:57:07 +0000
-Message-ID: <1449241037-22193-7-git-send-email-jonathanh@nvidia.com>
+Subject: [PATCH V4 09/16] soc: tegra: pmc: Ensure partitions can be toggled on/off by PMC
+Date: Fri, 4 Dec 2015 14:57:10 +0000
+Message-ID: <1449241037-22193-10-git-send-email-jonathanh@nvidia.com>
 References: <1449241037-22193-1-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -12,118 +12,82 @@ To: Philipp Zabel <p.zabel@pengutronix.de>, Stephen Warren <swarren@wwwdotorg.or
 Cc: Vince Hsu <vinceh@nvidia.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-Currently, the function tegra_powergate_set() simply sets the desired
-powergate state but does not wait for the state to change. In most cases
-we should wait for the state to change before proceeding. Currently, there
-is a case for tegra114 and tegra124 devices where we do not wait when
-starting the secondary CPU as this is not necessary. However, this is only
-done at boot time and so waiting here will only have a small impact on boot
-time. Therefore, update tegra_powergate_set() to wait when setting the
-powergate.
-
-By adding this feature, we can also eliminate the polling loop from
-tegra30_boot_secondary().
-
-A macro has also been adding for checking the status of the powergate and
-so update the tegra_powergate_is_powered() to use this macro as well.
+For Tegra124 and Tegra210, the GPU partition cannot be toggled on and off
+via the APBDEV_PMC_PWRGATE_TOGGLE_0 register. For these devices, the
+partition is simply powered up and down via an external regulator.
+Describe in the PMC SoC data in which devices the GPU partition can be
+controlled via the APBDEV_PMC_PWRGATE_TOGGLE_0 register and ensure that
+no one can incorrectly try to toggle the GPU partition via the
+APBDEV_PMC_PWRGATE_TOGGLE_0 register.
 
 Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
 ---
- arch/arm/mach-tegra/platsmp.c | 16 +++-------------
- drivers/soc/tegra/pmc.c       | 21 +++++++++++++++------
- 2 files changed, 18 insertions(+), 19 deletions(-)
+ drivers/soc/tegra/pmc.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/arch/arm/mach-tegra/platsmp.c b/arch/arm/mach-tegra/platsmp.c
-index b45086666648..40cb761e7c95 100644
---- a/arch/arm/mach-tegra/platsmp.c
-+++ b/arch/arm/mach-tegra/platsmp.c
-@@ -108,19 +108,9 @@ static int tegra30_boot_secondary(unsigned int cpu, struct task_struct *idle)
- 	 * be un-gated by un-toggling the power gate register
- 	 * manually.
- 	 */
--	if (!tegra_pmc_cpu_is_powered(cpu)) {
--		ret = tegra_pmc_cpu_power_on(cpu);
--		if (ret)
--			return ret;
--
--		/* Wait for the power to come up. */
--		timeout = jiffies + msecs_to_jiffies(100);
--		while (!tegra_pmc_cpu_is_powered(cpu)) {
--			if (time_after(jiffies, timeout))
--				return -ETIMEDOUT;
--			udelay(10);
--		}
--	}
-+	ret = tegra_pmc_cpu_power_on(cpu);
-+	if (ret)
-+		return ret;
- 
- remove_clamps:
- 	/* CPU partition is powered. Enable the CPU clock. */
 diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
-index fdd1a8d0940f..f94d970089ce 100644
+index 0967bba13947..b412098b8197 100644
 --- a/drivers/soc/tegra/pmc.c
 +++ b/drivers/soc/tegra/pmc.c
-@@ -28,6 +28,7 @@
- #include <linux/export.h>
- #include <linux/init.h>
- #include <linux/io.h>
-+#include <linux/iopoll.h>
- #include <linux/of.h>
- #include <linux/of_address.h>
- #include <linux/platform_device.h>
-@@ -101,6 +102,8 @@
+@@ -113,6 +113,7 @@ struct tegra_pmc_soc {
  
- #define GPU_RG_CNTRL			0x2d4
+ 	bool has_tsense_reset;
+ 	bool has_gpu_clamps;
++	bool has_gpu_toggle;
+ };
  
-+#define PMC_PWRGATE_STATE(status, id)	((status & BIT(id)) != 0)
+ /**
+@@ -190,6 +191,9 @@ static int tegra_powergate_set(int id, bool new_state)
+ 	u32 status;
+ 	int err = 0;
+ 
++	if (id == TEGRA_POWERGATE_3D && !pmc->soc->has_gpu_toggle)
++		return -EINVAL;
 +
- struct tegra_pmc_soc {
- 	unsigned int num_powergates;
- 	const char *const *powergates;
-@@ -181,22 +184,27 @@ static void tegra_pmc_writel(u32 value, unsigned long offset)
-  */
- static int tegra_powergate_set(int id, bool new_state)
- {
--	bool status;
-+	u32 status;
-+	int err = 0;
- 
  	mutex_lock(&pmc->powergates_lock);
  
--	status = tegra_pmc_readl(PWRGATE_STATUS) & (1 << id);
-+	status = tegra_pmc_readl(PWRGATE_STATUS);
- 
--	if (status == new_state) {
-+	if (PMC_PWRGATE_STATE(status, id) == new_state) {
- 		mutex_unlock(&pmc->powergates_lock);
- 		return 0;
- 	}
- 
- 	tegra_pmc_writel(PWRGATE_TOGGLE_START | id, PWRGATE_TOGGLE);
- 
-+	err = readx_poll_timeout(tegra_pmc_readl, PWRGATE_STATUS, status,
-+				 PMC_PWRGATE_STATE(status, id) == new_state,
-+				 10, 100000);
-+
- 	mutex_unlock(&pmc->powergates_lock);
- 
--	return 0;
-+	return err;
- }
- 
- /**
-@@ -235,8 +243,9 @@ int tegra_powergate_is_powered(int id)
- 	if (!pmc->soc || id < 0 || id >= pmc->soc->num_powergates)
+ 	status = tegra_pmc_readl(PWRGATE_STATUS);
+@@ -246,6 +250,9 @@ int tegra_powergate_is_powered(int id)
+ 	if (!PMC_PWRGATE_IS_VALID(id))
  		return -EINVAL;
  
--	status = tegra_pmc_readl(PWRGATE_STATUS) & (1 << id);
--	return !!status;
-+	status = tegra_pmc_readl(PWRGATE_STATUS);
++	if (id == TEGRA_POWERGATE_3D && !pmc->soc->has_gpu_toggle)
++		return -EINVAL;
 +
-+	return PMC_PWRGATE_STATE(status, id);
- }
+ 	status = tegra_pmc_readl(PWRGATE_STATUS);
  
- /**
+ 	return PMC_PWRGATE_STATE(status, id);
+@@ -929,6 +936,7 @@ static const struct tegra_pmc_soc tegra30_pmc_soc = {
+ 	.cpu_powergates = tegra30_cpu_powergates,
+ 	.has_tsense_reset = true,
+ 	.has_gpu_clamps = false,
++	.has_gpu_toggle = true,
+ };
+ 
+ static const char * const tegra114_powergates[] = {
+@@ -966,6 +974,7 @@ static const struct tegra_pmc_soc tegra114_pmc_soc = {
+ 	.cpu_powergates = tegra114_cpu_powergates,
+ 	.has_tsense_reset = true,
+ 	.has_gpu_clamps = false,
++	.has_gpu_toggle = true,
+ };
+ 
+ static const char * const tegra124_powergates[] = {
+@@ -1009,6 +1018,7 @@ static const struct tegra_pmc_soc tegra124_pmc_soc = {
+ 	.cpu_powergates = tegra124_cpu_powergates,
+ 	.has_tsense_reset = true,
+ 	.has_gpu_clamps = true,
++	.has_gpu_toggle = false,
+ };
+ 
+ static const char * const tegra210_powergates[] = {
+@@ -1052,6 +1062,7 @@ static const struct tegra_pmc_soc tegra210_pmc_soc = {
+ 	.cpu_powergates = tegra210_cpu_powergates,
+ 	.has_tsense_reset = true,
+ 	.has_gpu_clamps = true,
++	.has_gpu_toggle = false,
+ };
+ 
+ static const struct of_device_id tegra_pmc_match[] = {
 -- 
 2.1.4
