@@ -1,62 +1,63 @@
-From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 0/2] power: Add support for TI BQ24261 charger
-Date: Sat, 5 Dec 2015 17:40:22 +0100
-Message-ID: <20151205164022.GC30410@earth>
-References: <1446136625-20845-1-git-send-email-ramakrishna.pallala@intel.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH 1/2] regulator: Add brcm,bcm63xx-regulator device tree
+ binding
+Date: Fri, 4 Dec 2015 14:31:17 +0000
+Message-ID: <20151204143117.GB26072@sirena.org.uk>
+References: <20151202125325.GI1929@sirena.org.uk>
+ <565F53FC.5080309@simon.arlott.org.uk>
+ <20151203000631.GM1929@sirena.org.uk>
+ <565FF9E9.1090503@simon.arlott.org.uk>
+ <20151203150528.GG5727@sirena.org.uk>
+ <5660D274.7000402@simon.arlott.org.uk>
+ <20151203234548.GJ5727@sirena.org.uk>
+ <5660D574.7030803@simon.arlott.org.uk>
+ <20151204110018.GU26072@sirena.org.uk>
+ <d7609dc97ddd988876e4efefaec2c18a4b7161bd@8b5064a13e22126c1b9329f0dc35b8915774b7c3.invalid>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="aT9PWwzfKXlsBJM1"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="zUOaI4FcYSvHUUu9"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1446136625-20845-1-git-send-email-ramakrishna.pallala-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Ramakrishna Pallala <ramakrishna.pallala-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jenny Tc <jenny.tc-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
+In-Reply-To: <d7609dc97ddd988876e4efefaec2c18a4b7161bd@8b5064a13e22126c1b9329f0dc35b8915774b7c3.invalid>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Simon Arlott <simon@fire.lp0.eu>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, linux-kernel@vger.kernel.org, Florian Fainelli <f.fainelli@gmail.com>, Jonas Gorski <jogo@openwrt.org>
 List-Id: linux-pm@vger.kernel.org
 
 
---aT9PWwzfKXlsBJM1
+--zUOaI4FcYSvHUUu9
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Ramakrishna,
+On Fri, Dec 04, 2015 at 12:26:58PM -0000, Simon Arlott wrote:
+> On Fri, December 4, 2015 11:00, Mark Brown wrote:
 
-On Thu, Oct 29, 2015 at 10:07:03PM +0530, Ramakrishna Pallala wrote:
-> This patch series adds the support for TI BQ24261 charger driver.
->=20
-> TI BQ24261 charger driver relies on extcon notifications to get the
-> charger cable type and based on that it will set the charging parameters.
+> > OK, so the power domains should be being represented and managed as such
+> > rather than using regulators - it's a better fit (doing things like
+> > support atomic context) and it also sidesteps this.  For the things that
+> > you say are clearly regulators should we have more information about
+> > those?
 
-I wonder if there is any new version of this patchset, that I
-missed with the comments from Krzysztof and Andreas being taken
-care of?
+> I'd prefer to handle them all as power domains since it fits better. Even
+> if some of them are regulators there's no extra control or status interface
+> and they're used like power domains to disable unused functionality.
 
--- Sebastian
+OK, great - runtime PM is just generally a more idiomatic interface for
+this.
 
---aT9PWwzfKXlsBJM1
+--zUOaI4FcYSvHUUu9
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Version: GnuPG v2
 
-iQIcBAEBCgAGBQJWYxNxAAoJENju1/PIO/qaM4gP/2TF0bT3cluH0mvA6QS23fnf
-Jrgwe9Jity7YMrDLF3lPgwIEjNQbV1+VYTLr523TymglhOa5D5eOlJKa7886TWTD
-osJA07AgbI3TvARPlxb/1Qx8ms3OzDr2df36LpP74VG5b/dulz98qTXafZfikP9v
-dRXoQh+vslvhpayzJuZT1NhPq0hvKWY03J1dRSE4ay5bY1rcjAPskhbbiTG/D7Ym
-OtVab86jfmcmkZ1omtwzyvrTPX9teAYakmHbnRDZHmFdnckUFTsXCAiYIFSasQVn
-+/995q3aV8WkcA00K328nfwaPraQXmooJ0qfqIZ7WlCuSmLYkfveMY0jAxGdr1w6
-YWq4lK+RD5KExZ13VZKL055Hji3q+9/8Tj+4rA1Yj2MXr/c2ytsZhuyFuHonqg64
-+N/3Qb5duVi1mXNrOU1hCV46kTO+4Ad7Fdr4Sr8JE1NPK15uY/Fe4qytb0Fu59n+
-B8DOvUMbfBOsWlkH71cOOEOKEBgIRo2JxexAz5Tnf0fr6xXP4QkFugWCIxB04/Lf
-sGDvCZQxGp7F6XI58AlrgTkEDbt9Ce082WvYM0HZFTRnCyI4UFSXcGdzLJinyQmc
-DMNDW6i1xhTvVDQu60PbtRXYrV8PU6B9+Fc7Iq+nEwyOUDDbuIhAWLN5Yt8NGSGW
-aKAC4Jpp7D1UTRJjNn3E
-=mmEB
+iQEcBAEBCAAGBQJWYaOwAAoJECTWi3JdVIfQz9wH/RjTLwdynlZ/Ld3Rm2GVn8C+
+E0KR525dqjvEsKyKeCF6P6ql8liKWI8+ec4X72inJ/156H9h2XqLDVbpGnq/yRk1
+JwNGjyqwCfjbiJhG0UJILR3A0rL/1NJGEHHEXY+oQ3D+rS8Iy9UpTvzlgXxWNYYS
+OZR8RYVauO98xITXHRth0R+PgaAfSjwe/OxL+Kfzcwnkvo0pnddoys9cDbSNBteq
+5mBT3qIuXeXanhJesZs377DXdGgIVMyGdBcq6eNvrsilPE6QKyiZ4mCQcVU3Im/u
+N1YWPR33ipClFk9GTYC487PdWS/Tm0XXCFm2vagk87VLmkEgT/o+Ewa+oQRwCFY=
+=TQsh
 -----END PGP SIGNATURE-----
 
---aT9PWwzfKXlsBJM1--
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--zUOaI4FcYSvHUUu9--
