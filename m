@@ -1,83 +1,45 @@
-From: Eric Anholt <eric@anholt.net>
-Subject: [PATCH v2 4/5] dt-bindings: add rpi power domain driver bindings
-Date: Fri,  4 Dec 2015 09:45:47 -0800
-Message-ID: <1449251148-19344-5-git-send-email-eric@anholt.net>
-References: <1449251148-19344-1-git-send-email-eric@anholt.net>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1449251148-19344-1-git-send-email-eric@anholt.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-arm-kernel@lists.infradead.org, linux-rpi-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Lee Jones <lee@kernel.org>, Florian Fainelli <f.fainelli@gmail.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alexander Aring <alex.aring@gmail.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Eric Anholt <eric@anholt.net>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V5 2/3] cpufreq: intel_pstate: account for non C0 time
+Date: Sat, 05 Dec 2015 00:01:27 +0100
+Message-ID: <2560479.PPso1nSBcR@vostro.rjw.lan>
+References: <1449165359-25832-1-git-send-email-philippe.longepe@linux.intel.com> <5661A41F.7050208@linux.intel.com> <1449250743.3240.94.camel@spandruv-desk3.jf.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:43652 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751813AbbLDWbf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 4 Dec 2015 17:31:35 -0500
+In-Reply-To: <1449250743.3240.94.camel@spandruv-desk3.jf.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: Philippe Longepe <philippe.longepe@linux.intel.com>, linux-pm@vger.kernel.org, Stephane Gasparini <stephane.gasparini@linux.intel.com>
 
-From: Alexander Aring <alex.aring@gmail.com>
+On Friday, December 04, 2015 09:39:03 AM Srinivas Pandruvada wrote:
+> On Fri, 2015-12-04 at 15:33 +0100, Philippe Longepe wrote:
+> > Thank you Rafael,
+> > 
+> > I'll try to sent a new patch set taking your remarks into account for 
+> > these series before tonight.
+> > 
+> > Also, do you think we could have in some corner case a division by zero 
+> > when prev_tsc = tsc ?
+> > 
+> > Normally it should never happen but just in case, I think we should 
+> > complete the following test:
+> > 
+> > if ((cpu->prev_mperf == mperf) || (cpu->prev_tsc == tsc)) {
+> > ...
+> On Knight landing platform the first one is possible and second one
+> should never happen. But this function will never be called for such
+> platforms.
 
-This patch adds devicetree tree bindings for the Raspberry Pi power
-domain driver.
+Still, in case there's a future platform where those counters don't advance
+for extended time intervals, would it really hurt to add a check for that
+and skip the sample when it triggers?
 
-Signed-off-by: Alexander Aring <alex.aring@gmail.com>
-Acked-by: Rob Herring <robh@kernel.org>
-Signed-off-by: Eric Anholt <eric@anholt.net>
----
+Thanks,
+Rafael
 
-v2: Add the new domains present in v2 to the list.
-
- .../bindings/arm/bcm/raspberrypi,bcm2835-power.txt | 47 ++++++++++++++++++++++
- 1 file changed, 47 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/arm/bcm/raspberrypi,bcm2835-power.txt
-
-diff --git a/Documentation/devicetree/bindings/arm/bcm/raspberrypi,bcm2835-power.txt b/Documentation/devicetree/bindings/arm/bcm/raspberrypi,bcm2835-power.txt
-new file mode 100644
-index 0000000..30942cf
---- /dev/null
-+++ b/Documentation/devicetree/bindings/arm/bcm/raspberrypi,bcm2835-power.txt
-@@ -0,0 +1,47 @@
-+Raspberry Pi power domain driver
-+
-+Required properties:
-+
-+- compatible:		Should be "raspberrypi,bcm2835-power".
-+- firmware:		Reference to the RPi firmware device node.
-+- #power-domain-cells:	Should be <1>, we providing multiple power domains.
-+
-+The valid defines for power domain are:
-+
-+ RPI_POWER_DOMAIN_I2C0
-+ RPI_POWER_DOMAIN_I2C1
-+ RPI_POWER_DOMAIN_I2C2
-+ RPI_POWER_DOMAIN_VIDEO_SCALER
-+ RPI_POWER_DOMAIN_VPU1
-+ RPI_POWER_DOMAIN_HDMI
-+ RPI_POWER_DOMAIN_USB
-+ RPI_POWER_DOMAIN_VEC
-+ RPI_POWER_DOMAIN_JPEG
-+ RPI_POWER_DOMAIN_H264
-+ RPI_POWER_DOMAIN_V3D
-+ RPI_POWER_DOMAIN_ISP
-+ RPI_POWER_DOMAIN_UNICAM0
-+ RPI_POWER_DOMAIN_UNICAM1
-+ RPI_POWER_DOMAIN_CCP2RX
-+ RPI_POWER_DOMAIN_CSI2
-+ RPI_POWER_DOMAIN_CPI
-+ RPI_POWER_DOMAIN_DSI0
-+ RPI_POWER_DOMAIN_DSI1
-+ RPI_POWER_DOMAIN_TRANSPOSER
-+ RPI_POWER_DOMAIN_CCP2TX
-+ RPI_POWER_DOMAIN_CDP
-+ RPI_POWER_DOMAIN_ARM
-+
-+Example:
-+
-+power: power {
-+	compatible = "raspberrypi,bcm2835-power";
-+	firmware = <&firmware>;
-+	#power-domain-cells = <1>;
-+};
-+
-+Example for using power domain:
-+
-+&usb {
-+       power-domains = <&power RPI_POWER_DOMAIN_USB>;
-+};
--- 
-2.6.2
