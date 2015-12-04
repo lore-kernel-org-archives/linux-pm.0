@@ -1,117 +1,156 @@
 From: Philippe Longepe <philippe.longepe@linux.intel.com>
-Subject: [PATCH 2/3] cpufreq: intel_pstate: account for non C0 time
-Date: Fri,  4 Dec 2015 17:40:33 +0100
-Message-ID: <1449247235-29389-6-git-send-email-philippe.longepe@linux.intel.com>
+Subject: [PATCH 1/3] cpufreq: intel_pstate: configurable algorithm to get target pstate
+Date: Fri,  4 Dec 2015 17:40:31 +0100
+Message-ID: <1449247235-29389-4-git-send-email-philippe.longepe@linux.intel.com>
 References: <1449247235-29389-1-git-send-email-philippe.longepe@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:59932 "EHLO mga02.intel.com"
+Received: from mga02.intel.com ([134.134.136.20]:16515 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754052AbbLDQkt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 4 Dec 2015 11:40:49 -0500
+	id S1754306AbbLDQkr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 4 Dec 2015 11:40:47 -0500
 In-Reply-To: <1449247235-29389-1-git-send-email-philippe.longepe@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: srinivas.pandruvada@linux.intel.com, Philippe Longepe <philippe.longepe@intel.com>, Stephane Gasparini <stephane.gasparini@intel.com>
+Cc: srinivas.pandruvada@linux.intel.com, Philippe Longepe <philippe.longepe@intel.com>
 
 From: Philippe Longepe <philippe.longepe@intel.com>
 
-The current function to calculate cpu utilization uses the average P-state
-ratio (APerf/Mperf) scaled by the ratio of the current P-state to the
-max available non-turbo one. This leads to an overestimation of
-utilization which causes higher-performance P-states to be selected more
-often and that leads to increased energy consumption.
+Target systems using different cpus have different power and performance
+requirements. They may use different algorithms to get the next P-state
+based on their power or performance preference.
 
-This is a problem for low-power systems, so it is better to use a
-different utilization calculation algorithm for them.
+For example, power-constrained systems may not want to use
+high-performance P-states as aggressively as a full-size desktop or a
+server platform. A server platform may want to run close to the max to
+achieve better performance, while laptop-like systems may prefer
+sacrificing performance for longer battery lifes.
 
-Namely, the Percent Busy value (or load) can be estimated as the ratio of the
-MPERF counter that runs at a constant rate only during active periods (C0) to
-the time stamp counter (TSC) that also runs (at the same rate) during idle.
-That is:
+For the above reasons, modify intel_pstate to allow the target P-state
+selection algorithm to be depend on the CPU ID.
 
-Percent Busy = 100 * (delta_mperf / delta_tsc)
-
-Use this algorithm for platforms with SoCs based on the Airmont and Silvermont
-Atom cores.
-
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 Signed-off-by: Philippe Longepe <philippe.longepe@intel.com>
-Signed-off-by: Stephane Gasparini <stephane.gasparini@intel.com>
 ---
- drivers/cpufreq/intel_pstate.c | 29 ++++++++++++++++++++++++-----
- 1 file changed, 24 insertions(+), 5 deletions(-)
+ drivers/cpufreq/intel_pstate.c | 30 +++++++++++++++++-------------
+ 1 file changed, 17 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 6a301e1..c8437861 100644
+index d3b0e50..6a301e1 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -143,6 +143,7 @@ struct cpu_defaults {
+@@ -66,6 +66,7 @@ static inline int ceiling_fp(int32_t x)
+ 
+ struct sample {
+ 	int32_t core_pct_busy;
++	int32_t busy_scaled;
+ 	u64 aperf;
+ 	u64 mperf;
+ 	u64 tsc;
+@@ -133,6 +134,7 @@ struct pstate_funcs {
+ 	int (*get_scaling)(void);
+ 	void (*set)(struct cpudata*, int pstate);
+ 	void (*get_vid)(struct cpudata *);
++	int32_t (*get_target_pstate)(struct cpudata *);
  };
  
- static inline int32_t get_target_pstate_use_performance(struct cpudata *cpu);
-+static inline int32_t get_target_pstate_use_cpu_load(struct cpudata *cpu);
+ struct cpu_defaults {
+@@ -140,6 +142,8 @@ struct cpu_defaults {
+ 	struct pstate_funcs funcs;
+ };
  
++static inline int32_t get_target_pstate_use_performance(struct cpudata *cpu);
++
  static struct pstate_adjust_policy pid_params;
  static struct pstate_funcs pstate_funcs;
-@@ -763,7 +764,7 @@ static struct cpu_defaults silvermont_params = {
+ static int hwp_active;
+@@ -738,6 +742,7 @@ static struct cpu_defaults core_params = {
+ 		.get_turbo = core_get_turbo_pstate,
+ 		.get_scaling = core_get_scaling,
+ 		.set = core_set_pstate,
++		.get_target_pstate = get_target_pstate_use_performance,
+ 	},
+ };
+ 
+@@ -758,6 +763,7 @@ static struct cpu_defaults silvermont_params = {
  		.set = atom_set_pstate,
  		.get_scaling = silvermont_get_scaling,
  		.get_vid = atom_get_vid,
--		.get_target_pstate = get_target_pstate_use_performance,
-+		.get_target_pstate = get_target_pstate_use_cpu_load,
++		.get_target_pstate = get_target_pstate_use_performance,
  	},
  };
  
-@@ -784,7 +785,7 @@ static struct cpu_defaults airmont_params = {
+@@ -778,6 +784,7 @@ static struct cpu_defaults airmont_params = {
  		.set = atom_set_pstate,
  		.get_scaling = airmont_get_scaling,
  		.get_vid = atom_get_vid,
--		.get_target_pstate = get_target_pstate_use_performance,
-+		.get_target_pstate = get_target_pstate_use_cpu_load,
++		.get_target_pstate = get_target_pstate_use_performance,
  	},
  };
  
-@@ -890,12 +891,11 @@ static inline void intel_pstate_sample(struct cpudata *cpu)
- 	local_irq_save(flags);
- 	rdmsrl(MSR_IA32_APERF, aperf);
- 	rdmsrl(MSR_IA32_MPERF, mperf);
--	if (cpu->prev_mperf == mperf) {
-+	tsc = rdtsc();
-+	if ((cpu->prev_mperf == mperf) || (cpu->prev_tsc == tsc)) {
- 		local_irq_restore(flags);
- 		return;
- 	}
--
--	tsc = rdtsc();
- 	local_irq_restore(flags);
+@@ -797,6 +804,7 @@ static struct cpu_defaults knl_params = {
+ 		.get_turbo = knl_get_turbo_pstate,
+ 		.get_scaling = core_get_scaling,
+ 		.set = core_set_pstate,
++		.get_target_pstate = get_target_pstate_use_performance,
+ 	},
+ };
  
- 	cpu->last_sample_time = cpu->sample.time;
-@@ -930,6 +930,25 @@ static inline void intel_pstate_set_sample_time(struct cpudata *cpu)
+@@ -922,7 +930,7 @@ static inline void intel_pstate_set_sample_time(struct cpudata *cpu)
  	mod_timer_pinned(&cpu->timer, jiffies + delay);
  }
  
-+static inline int32_t get_target_pstate_use_cpu_load(struct cpudata *cpu)
-+{
-+	struct sample *sample = &cpu->sample;
-+	int32_t cpu_load;
-+
-+	/*
-+	 * The load can be estimated as the ratio of the mperf counter
-+	 * running at a constant frequency during active periods
-+	 * (C0) and the time stamp counter running at the same frequency
-+	 * also during C-states.
-+	 */
-+	cpu_load = div64_u64(int_tofp(100) * sample->mperf, sample->tsc);
-+
-+	cpu->sample.busy_scaled = cpu_load;
-+
-+	return cpu->pstate.current_pstate - pid_calc(&cpu->pid, cpu_load);
-+}
-+
-+
- static inline int32_t get_target_pstate_use_performance(struct cpudata *cpu)
+-static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
++static inline int32_t get_target_pstate_use_performance(struct cpudata *cpu)
  {
  	int32_t core_busy, max_pstate, current_pstate, sample_ratio;
+ 	s64 duration_us;
+@@ -960,30 +968,24 @@ static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
+ 		core_busy = mul_fp(core_busy, sample_ratio);
+ 	}
+ 
+-	return core_busy;
++	cpu->sample.busy_scaled = core_busy;
++	return cpu->pstate.current_pstate - pid_calc(&cpu->pid, core_busy);
+ }
+ 
+ static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
+ {
+-	int32_t busy_scaled;
+-	struct _pid *pid;
+-	signed int ctl;
+-	int from;
++	int from, target_pstate;
+ 	struct sample *sample;
+ 
+ 	from = cpu->pstate.current_pstate;
+ 
+-	pid = &cpu->pid;
+-	busy_scaled = intel_pstate_get_scaled_busy(cpu);
++	target_pstate = pstate_funcs.get_target_pstate(cpu);
+ 
+-	ctl = pid_calc(pid, busy_scaled);
+-
+-	/* Negative values of ctl increase the pstate and vice versa */
+-	intel_pstate_set_pstate(cpu, cpu->pstate.current_pstate - ctl, true);
++	intel_pstate_set_pstate(cpu, target_pstate, true);
+ 
+ 	sample = &cpu->sample;
+ 	trace_pstate_sample(fp_toint(sample->core_pct_busy),
+-		fp_toint(busy_scaled),
++		fp_toint(sample->busy_scaled),
+ 		from,
+ 		cpu->pstate.current_pstate,
+ 		sample->mperf,
+@@ -1238,6 +1240,8 @@ static void copy_cpu_funcs(struct pstate_funcs *funcs)
+ 	pstate_funcs.get_scaling = funcs->get_scaling;
+ 	pstate_funcs.set       = funcs->set;
+ 	pstate_funcs.get_vid   = funcs->get_vid;
++	pstate_funcs.get_target_pstate = funcs->get_target_pstate;
++
+ }
+ 
+ #if IS_ENABLED(CONFIG_ACPI)
 -- 
 1.9.1
 
