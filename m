@@ -1,54 +1,50 @@
-From: Simon Arlott <simon@fire.lp0.eu>
-Subject: Re: [PATCH 1/2] regulator: Add brcm,bcm63xx-regulator device tree
- binding
-Date: Thu, 3 Dec 2015 23:51:16 +0000
-Message-ID: <5660D574.7030803@simon.arlott.org.uk>
-References: <20151130121043.GX1929@sirena.org.uk>
- <565CB1CF.5040306@simon.arlott.org.uk> <20151201221615.GY1929@sirena.org.uk>
- <b7ecdc8ebcdf9582620c22b0e8a4a96d24ba67c1@8b5064a13e22126c1b9329f0dc35b8915774b7c3.invalid>
- <20151202125325.GI1929@sirena.org.uk> <565F53FC.5080309@simon.arlott.org.uk>
- <20151203000631.GM1929@sirena.org.uk> <565FF9E9.1090503@simon.arlott.org.uk>
- <20151203150528.GG5727@sirena.org.uk> <5660D274.7000402@simon.arlott.org.uk>
- <20151203234548.GJ5727@sirena.org.uk>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH] PM / Domains: Validate cases of a non-bound driver in genpd governor
+Date: Thu, 03 Dec 2015 16:05:22 -0800
+Message-ID: <7htwnz13jx.fsf@deeprootsystems.com>
+References: <1449061707-16030-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from proxima.lp0.eu ([81.2.80.65]:56230 "EHLO proxima.lp0.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750858AbbLCXvY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 3 Dec 2015 18:51:24 -0500
-In-Reply-To: <20151203234548.GJ5727@sirena.org.uk>
+Received: from mail-pf0-f174.google.com ([209.85.192.174]:35762 "EHLO
+	mail-pf0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751355AbbLDALI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Dec 2015 19:11:08 -0500
+Received: by pfu207 with SMTP id 207so16435199pfu.2
+        for <linux-pm@vger.kernel.org>; Thu, 03 Dec 2015 16:11:08 -0800 (PST)
+In-Reply-To: <1449061707-16030-1-git-send-email-ulf.hansson@linaro.org> (Ulf
+	Hansson's message of "Wed, 2 Dec 2015 14:08:27 +0100")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, linux-kernel@vger.kernel.org, Florian Fainelli <f.fainelli@gmail.com>, Jonas Gorski <jogo@openwrt.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>
 
-On 03/12/15 23:45, Mark Brown wrote:
-> On Thu, Dec 03, 2015 at 11:38:28PM +0000, Simon Arlott wrote:
-> 
->> #define MISC_IDDQ_CTRL_GMAC         (1<<18)
->> #define MISC_IDDQ_CTRL_WLAN_PADS    (1<<13)
->> #define MISC_IDDQ_CTRL_PCIE         (1<<12)
->> #define MISC_IDDQ_CTRL_FAP          (1<<11)
->> #define MISC_IDDQ_CTRL_VDSL_MIPS    (1<<10)
->> #define MISC_IDDQ_CTRL_VDSL_PHY     (1<<9)
->> #define MISC_IDDQ_CTRL_PERIPH       (1<<8)
->> #define MISC_IDDQ_CTRL_PCM          (1<<7)
->> #define MISC_IDDQ_CTRL_ROBOSW       (1<<6)
->> #define MISC_IDDQ_CTRL_USBD         (1<<5)
->> #define MISC_IDDQ_CTRL_USBH         (1<<4)
->> #define MISC_IDDQ_CTRL_DECT         (1<<3)
->> #define MISC_IDDQ_CTRL_MIPS         (1<<2)
->> #define MISC_IDDQ_CTRL_IPSEC        (1<<1)
->> #define MISC_IDDQ_CTRL_SAR          (1<<0)
-> 
-> Are you *sure* these are regulators and not power domains?  These names
-> look a lot like they could be power domains.
+Ulf Hansson <ulf.hansson@linaro.org> writes:
 
-No, I'm not sure. Some of them are may actually be regulators (the "PHY"
-ones) while others are almost definitely power domains (like the "FAP"
-Forwarding Assist Processor).
+> Recently genpd removed the requirement of a having a driver bound for its
+> attached devices to allow genpd to power off. That change should also have
+> removed a corresponding validation in the governor, let's correct that.
+>
+> Fixes: 298cd0f08801 ("PM / Domains: Remove dev->driver check for runtime")
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 
--- 
-Simon Arlott
+Acked-by: Kevin Hilman <khilman@linaro.org>
+
+> ---
+>  drivers/base/power/domain_governor.c | 3 ---
+>  1 file changed, 3 deletions(-)
+>
+> diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
+> index e60dd12..1e937ac 100644
+> --- a/drivers/base/power/domain_governor.c
+> +++ b/drivers/base/power/domain_governor.c
+> @@ -160,9 +160,6 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
+>  		struct gpd_timing_data *td;
+>  		s64 constraint_ns;
+>  
+> -		if (!pdd->dev->driver)
+> -			continue;
+> -
+>  		/*
+>  		 * Check if the device is allowed to be off long enough for the
+>  		 * domain to turn off and on (that's how much time it will
