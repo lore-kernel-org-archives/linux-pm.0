@@ -1,40 +1,132 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PM / Domains: Validate cases of a non-bound driver in
- genpd governor
-Date: Fri, 4 Dec 2015 01:28:20 +0100
-Message-ID: <CAJZ5v0iPz=SJTdY4x3gaAxrDjpSGepcZo5y+JVJT9E-3Wr9Lxw@mail.gmail.com>
-References: <1449061707-16030-1-git-send-email-ulf.hansson@linaro.org>
-	<7htwnz13jx.fsf@deeprootsystems.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V2 5/6] cpufreq: governor: replace per-cpu delayed work with timers
+Date: Fri, 04 Dec 2015 02:18:41 +0100
+Message-ID: <10439879.00aCyM9quW@vostro.rjw.lan>
+References: <cover.1449115453.git.viresh.kumar@linaro.org> <691a3524afaa8d08d61987b1c2913948b4e59f01.1449115453.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f177.google.com ([209.85.217.177]:34158 "EHLO
-	mail-lb0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753671AbbLDA2V (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Dec 2015 19:28:21 -0500
-Received: by lbbcs9 with SMTP id cs9so11570691lbb.1
-        for <linux-pm@vger.kernel.org>; Thu, 03 Dec 2015 16:28:20 -0800 (PST)
-In-Reply-To: <7htwnz13jx.fsf@deeprootsystems.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <691a3524afaa8d08d61987b1c2913948b4e59f01.1449115453.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, ashwin.chaugule@linaro.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>
 
-On Fri, Dec 4, 2015 at 1:05 AM, Kevin Hilman <khilman@kernel.org> wrote:
-> Ulf Hansson <ulf.hansson@linaro.org> writes:
->
->> Recently genpd removed the requirement of a having a driver bound for its
->> attached devices to allow genpd to power off. That change should also have
->> removed a corresponding validation in the governor, let's correct that.
->>
->> Fixes: 298cd0f08801 ("PM / Domains: Remove dev->driver check for runtime")
->> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->
-> Acked-by: Kevin Hilman <khilman@linaro.org>
+On Thursday, December 03, 2015 09:37:53 AM Viresh Kumar wrote:
+> cpufreq governors evaluate load at sampling rate and based on that they
+> update frequency for a group of CPUs belonging to the same cpufreq
+> policy.
+> 
+> This is required to be done in a single thread for all policy->cpus, but
+> because we don't want to wakeup idle CPUs to do just that, we use
+> deferrable work for this. If we would have used a single delayed
+> deferrable work for the entire policy, there were chances that the CPU
+> required to run the handler can be in idle and we might end up not
+> changing the frequency for the entire group with load variations.
+> 
+> And so we were forced to keep per-cpu works, and only the one that
+> expires first need to do the real work and others are rescheduled for
+> next sampling time.
+> 
+> We have been using the more complex solution until now, where we used a
+> delayed deferrable work for this, which is a combination of a timer and
+> a work.
+> 
+> This could be made lightweight by keeping per-cpu deferred timers with a
+> single work item, which is scheduled by the first timer that expires.
+> 
+> This patch does just that and here are important changes:
+> - The timer handler will run in irq context and so we need to use a
+>   spin_lock instead of the timer_mutex. And so a separate timer_lock is
+>   created. This also makes the use of the mutex and lock quite clear, as
+>   we know what exactly they are protecting.
+> - A new field 'skip_work' is added to track when the timer handlers can
+>   queue a work. More comments present in code.
+> 
+> Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Reviewed-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
 
-Applied with both ACKs and the Fixes: tag.
+I've tentatively queued this one up, but I still have a couple of questions.
 
-I've also tagged it for "stable".
+> ---
+>  drivers/cpufreq/cpufreq_governor.c | 139 +++++++++++++++++++++----------------
+>  drivers/cpufreq/cpufreq_governor.h |  20 ++++--
+>  drivers/cpufreq/cpufreq_ondemand.c |   8 +--
+>  3 files changed, 98 insertions(+), 69 deletions(-)
+
+[cut]
+
+> @@ -250,14 +247,44 @@ static void dbs_timer(struct work_struct *work)
+>  		sampling_rate = od_tuners->sampling_rate;
+>  	}
+>  
+> -	if (!need_load_eval(cdbs->shared, sampling_rate))
+> -		modify_all = false;
+> +	eval_load = need_load_eval(shared, sampling_rate);
+>  
+> -	delay = dbs_data->cdata->gov_dbs_timer(policy, modify_all);
+> -	gov_queue_work(dbs_data, policy, delay, modify_all);
+> +	/*
+> +	 * Make sure cpufreq_governor_limits() isn't evaluating load in
+> +	 * parallel.
+> +	 */
+> +	mutex_lock(&shared->timer_mutex);
+> +	delay = dbs_data->cdata->gov_dbs_timer(policy, eval_load);
+> +	mutex_unlock(&shared->timer_mutex);
+> +
+> +	shared->skip_work--;
+
+Is there any reason for incrementing and decrementing this instead of setting
+it to either 0 or 1 (or maybe either 'true' or 'false' for that matter)?
+
+If my reading of the patch is correct, it can only be either 0 or 1 anyway, right?
+
+> +	gov_add_timers(policy, delay);
+> +}
+> +
+> +static void dbs_timer_handler(unsigned long data)
+> +{
+> +	struct cpu_dbs_info *cdbs = (struct cpu_dbs_info *)data;
+> +	struct cpu_common_dbs_info *shared = cdbs->shared;
+> +	struct cpufreq_policy *policy;
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&shared->timer_lock, flags);
+> +	policy = shared->policy;
+
+Why do we need policy here?
+
+> +
+> +	/*
+> +	 * Timer handler isn't allowed to queue work at the moment, because:
+> +	 * - Another timer handler has done that
+> +	 * - We are stopping the governor
+> +	 * - Or we are updating the sampling rate of ondemand governor
+> +	 */
+> +	if (shared->skip_work)
+> +		goto unlock;
+> +
+> +	shared->skip_work++;
+> +	queue_work(system_wq, &shared->work);
+>  
+>  unlock:
+
+What about writing the above as
+
+	if (!shared->work_in_progress) {
+		shared->work_in_progress = true;
+		queue_work(system_wq, &shared->work);
+	}
+
+and then you won't need the unlock label.
+
+> -	mutex_unlock(&shared->timer_mutex);
+> +	spin_unlock_irqrestore(&shared->timer_lock, flags);
+>  }
+>  
+>  static void set_sampling_rate(struct dbs_data *dbs_data,
 
 Thanks,
 Rafael
