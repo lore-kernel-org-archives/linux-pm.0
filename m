@@ -1,107 +1,314 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH v3 0/10] cpufreq: add generic cpufreq driver support for
- Exynos542x/5800 platforms
-Date: Fri, 04 Dec 2015 18:30:25 +0100
-Message-ID: <1449250235-9613-1-git-send-email-b.zolnierkie@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Subject: [PATCH v3 01/10] cpufreq: arm_big_little: add cluster regulator support
+Date: Fri, 04 Dec 2015 18:30:26 +0100
+Message-ID: <1449250235-9613-2-git-send-email-b.zolnierkie@samsung.com>
+References: <1449250235-9613-1-git-send-email-b.zolnierkie@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1449250235-9613-1-git-send-email-b.zolnierkie@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
 To: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Ben Gamari <ben@smart-cactus.org>
-Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
+Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com, Doug Anderson <dianders@chromium.org>, Andreas Faerber <afaerber@suse.de>, Sachin Kamat <sachin.kamat@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Add cluster regulator support as a preparation to adding
+generic arm_big_little_dt cpufreq_dt driver support for
+ODROID-XU3 board.  This allows arm_big_little[_dt] driver
+to set not only the frequency but also the voltage (which
+is obtained from operating point's voltage value) for CPU
+clusters.
 
-This patch series adds generic arm_big_little_dt cpufreq driver
-support for Exynos542x/5800 (using the new CPU clock type which
-allows it).  It also:
-- enhances arm_big_little[_dt] driver with CPU cluster regulator
-  support
-- adds CPU clock configuration data and CPU operating points
-  setup for Exynos542x/5800
-- adds CPU cluster regulator supplies for Exynos542x/5800 boards
-
-This patch series has been tested on Exynos5422 based ODROID-XU3
-Lite board.
-
-Please note that this is not a final version of the patchset.
-I just wanted to push out current work-in-progress patches that
-integrate changes from Anand, Ben and me.
-
-TODO:
-- porting the Exynos542x/5800 support over cpufreq-dt
-
-Depends on:
-- next-20151124 branch of linux-next kernel tree
-
-Changes since v2:
-- ported over next-20151124 branch
-- integrated missing CLK_RECALC_NEW_RATES flags fix to patch #3
-  (from Anand Moon)
-- added regulator supply properties for ODROID-XU3 Lite and
-  ODROID-XU4 in patch #2
-- ported CPU OPPs to operating-points-v2 (from Ben Gamari)
-- added "ARM: dts: Exynos5422: fix OPP tables" patch (from Ben
-  Gamari)
-- added "cpufreq: arm-big-little: accept operating-points-v2
-  nodes" patch (from Ben Gamari)
-- renamed OPP nodes as opp@<opp-hz>
-
-Changes since v1:
-- added CPU cluster regulator supply properties to
-  exynos5420-arndale-octa.dts, exynos5420-peach-pit.dts,
-  exynos5420-smdk5420.dts and exynos5800-peach-pi.dts
-
-Changes over Thomas' original v12 code:
-- split Exynos5420 and Exynos5800 support
-- moved E5420_[EGL,KFC]_DIV0() macros to clk-exynos5420.c
-- disabled cpufreq if big.LITTLE switcher support is enabled
-- enhanced arm_big_little[_dt] driver with CPU cluster regulator
-  support
-- fixed CPU clock configuration data for Exynos5800
-- fixed CPU operating points setup for Exynos5800
-- added CPU cluster regulator supplies for ODROID-XU3 board
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-
-Bartlomiej Zolnierkiewicz (4):
-  cpufreq: arm_big_little: add cluster regulator support
-  ARM: dts: Exynos5420/5800: add cluster regulator supply properties
-  clk: samsung: exynos5800: fix cpu clock configuration data
-  ARM: dts: Exynos5800: fix CPU OPP
-
-Ben Gamari (2):
-  ARM: dts: Exynos5422: fix OPP tables
-  cpufreq: arm-big-little: accept operating-points-v2 nodes
-
-Thomas Abraham (4):
-  clk: samsung: exynos5420: add cpu clock configuration data and
-    instantiate cpu clock
-  ARM: dts: Exynos5420: add CPU OPP and regulator supply property
-  ARM: Exynos: use generic cpufreq driver for Exynos5420
-  ARM: Exynos: use generic cpufreq driver for Exynos5800
-
+Cc: Kukjin Kim <kgene.kim@samsung.com>
+Cc: Doug Anderson <dianders@chromium.org>
+Cc: Javier Martinez Canillas <javier@osg.samsung.com>
+Cc: Andreas Faerber <afaerber@suse.de>
+Cc: Sachin Kamat <sachin.kamat@linaro.org>
+Cc: Thomas Abraham <thomas.ab@samsung.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
  .../bindings/cpufreq/arm_big_little_dt.txt         |   4 +
- arch/arm/boot/dts/exynos5420-arndale-octa.dts      |   8 +
- arch/arm/boot/dts/exynos5420-peach-pit.dts         |   8 +
- arch/arm/boot/dts/exynos5420-smdk5420.dts          |   8 +
- arch/arm/boot/dts/exynos5420.dtsi                  | 122 ++++++++++++++
- arch/arm/boot/dts/exynos5422-cpus.dtsi             |  10 ++
- arch/arm/boot/dts/exynos5422-odroidxu3-lite.dts    |   8 +
- arch/arm/boot/dts/exynos5422-odroidxu3.dts         |   8 +
- arch/arm/boot/dts/exynos5422-odroidxu4.dts         |   8 +
- arch/arm/boot/dts/exynos5800-peach-pi.dts          |   8 +
- arch/arm/boot/dts/exynos5800.dtsi                  | 165 +++++++++++++++++++
- arch/arm/mach-exynos/exynos.c                      |   8 +
- drivers/clk/samsung/clk-exynos5420.c               |  88 ++++++++++-
  drivers/cpufreq/arm_big_little.c                   | 175 +++++++++++++++++----
- drivers/cpufreq/arm_big_little_dt.c                |  12 +-
- include/dt-bindings/clock/exynos5420.h             |   2 +
- 16 files changed, 608 insertions(+), 34 deletions(-)
+ 2 files changed, 151 insertions(+), 28 deletions(-)
 
+diff --git a/Documentation/devicetree/bindings/cpufreq/arm_big_little_dt.txt b/Documentation/devicetree/bindings/cpufreq/arm_big_little_dt.txt
+index 0715695..8ca4a12 100644
+--- a/Documentation/devicetree/bindings/cpufreq/arm_big_little_dt.txt
++++ b/Documentation/devicetree/bindings/cpufreq/arm_big_little_dt.txt
+@@ -18,6 +18,10 @@ Required properties:
+ Optional properties:
+ - clock-latency: Specify the possible maximum transition latency for clock,
+   in unit of nanoseconds.
++- cpu-cluster.0-supply: Provides the regulator node supplying voltage to CPU
++  cluster 0.
++- cpu-cluster.1-supply: Provides the regulator node supplying voltage to CPU
++  cluster 1.
+ 
+ Examples:
+ 
+diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+index c5d256c..8b05137 100644
+--- a/drivers/cpufreq/arm_big_little.c
++++ b/drivers/cpufreq/arm_big_little.c
+@@ -31,6 +31,7 @@
+ #include <linux/slab.h>
+ #include <linux/topology.h>
+ #include <linux/types.h>
++#include <linux/regulator/consumer.h>
+ 
+ #include "arm_big_little.h"
+ 
+@@ -57,6 +58,9 @@ static bool bL_switching_enabled;
+ 
+ static struct cpufreq_arm_bL_ops *arm_bL_ops;
+ static struct clk *clk[MAX_CLUSTERS];
++static struct regulator *reg[MAX_CLUSTERS];
++static struct device *cpu_devs[MAX_CLUSTERS];
++static int transition_latencies[MAX_CLUSTERS];
+ static struct cpufreq_frequency_table *freq_table[MAX_CLUSTERS + 1];
+ static atomic_t cluster_usage[MAX_CLUSTERS + 1];
+ 
+@@ -125,30 +129,53 @@ static unsigned int bL_cpufreq_get_rate(unsigned int cpu)
+ 	}
+ }
+ 
+-static unsigned int
+-bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
++static int
++bL_cpufreq_set_rate_cluster(u32 cpu, u32 cluster, u32 new_rate)
+ {
+-	u32 new_rate, prev_rate;
++	unsigned long volt = 0, volt_old = 0;
++	long freq_Hz;
++	u32 old_rate;
+ 	int ret;
+-	bool bLs = is_bL_switching_enabled();
+ 
+-	mutex_lock(&cluster_lock[new_cluster]);
++	freq_Hz = new_rate * 1000;
++	old_rate = clk_get_rate(clk[cluster]) / 1000;
+ 
+-	if (bLs) {
+-		prev_rate = per_cpu(cpu_last_req_freq, cpu);
+-		per_cpu(cpu_last_req_freq, cpu) = rate;
+-		per_cpu(physical_cluster, cpu) = new_cluster;
++	if (!IS_ERR(reg[cluster])) {
++		struct dev_pm_opp *opp;
++		unsigned long opp_freq;
+ 
+-		new_rate = find_cluster_maxfreq(new_cluster);
+-		new_rate = ACTUAL_FREQ(new_cluster, new_rate);
+-	} else {
+-		new_rate = rate;
++		rcu_read_lock();
++		opp = dev_pm_opp_find_freq_ceil(cpu_devs[cluster], &freq_Hz);
++		if (IS_ERR(opp)) {
++			rcu_read_unlock();
++			pr_err("%s: cpu %d, cluster: %d, failed to find OPP for %ld\n",
++				__func__, cpu, cluster, freq_Hz);
++			return PTR_ERR(opp);
++		}
++		volt = dev_pm_opp_get_voltage(opp);
++		opp_freq = dev_pm_opp_get_freq(opp);
++		rcu_read_unlock();
++		volt_old = regulator_get_voltage(reg[cluster]);
++		pr_debug("%s: cpu %d, cluster: %d, Found OPP: %ld kHz, %ld uV\n",
++			__func__, cpu, cluster, opp_freq / 1000, volt);
+ 	}
+ 
+-	pr_debug("%s: cpu: %d, old cluster: %d, new cluster: %d, freq: %d\n",
+-			__func__, cpu, old_cluster, new_cluster, new_rate);
++	pr_debug("%s: cpu %d, cluster: %d, %u MHz, %ld mV --> %u MHz, %ld mV\n",
++		__func__, cpu, cluster,
++		old_rate / 1000, (volt_old > 0) ? volt_old / 1000 : -1,
++		new_rate / 1000, volt ? volt / 1000 : -1);
+ 
+-	ret = clk_set_rate(clk[new_cluster], new_rate * 1000);
++	/* scaling up? scale voltage before frequency */
++	if (!IS_ERR(reg[cluster]) && new_rate > old_rate) {
++		ret = regulator_set_voltage_tol(reg[cluster], volt, 0);
++		if (ret) {
++			pr_err("%s: cpu: %d, cluster: %d, failed to scale voltage up: %d\n",
++				__func__, cpu, cluster, ret);
++			return ret;
++		}
++	}
++
++	ret = clk_set_rate(clk[cluster], new_rate * 1000);
+ 	if (!ret) {
+ 		/*
+ 		 * FIXME: clk_set_rate hasn't returned an error here however it
+@@ -158,25 +185,66 @@ bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
+ 		 * problem we will read back the clock rate and check it is
+ 		 * correct. This needs to be removed once clk core is fixed.
+ 		 */
+-		if (clk_get_rate(clk[new_cluster]) != new_rate * 1000)
++		if (clk_get_rate(clk[cluster]) != new_rate * 1000)
+ 			ret = -EIO;
+ 	}
+ 
+ 	if (WARN_ON(ret)) {
+-		pr_err("clk_set_rate failed: %d, new cluster: %d\n", ret,
+-				new_cluster);
+-		if (bLs) {
+-			per_cpu(cpu_last_req_freq, cpu) = prev_rate;
+-			per_cpu(physical_cluster, cpu) = old_cluster;
++		pr_err("%s: clk_set_rate failed: %d, cluster: %d\n",
++			__func__, cluster, ret);
++		if (!IS_ERR(reg[cluster]) && volt_old > 0)
++			regulator_set_voltage_tol(reg[cluster], volt_old, 0);
++		return ret;
++	}
++
++	/* scaling down? scale voltage after frequency */
++	if (!IS_ERR(reg[cluster]) && new_rate < old_rate) {
++		ret = regulator_set_voltage_tol(reg[cluster], volt, 0);
++		if (ret) {
++			pr_err("%s: cpu: %d, cluster: %d, failed to scale voltage down: %d\n",
++				__func__, cpu, cluster, ret);
++			clk_set_rate(clk[cluster], old_rate * 1000);
++			return ret;
+ 		}
++	}
+ 
+-		mutex_unlock(&cluster_lock[new_cluster]);
++	return 0;
++}
+ 
+-		return ret;
++static int
++bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
++{
++	u32 new_rate, prev_rate;
++	int ret;
++	bool bLs = is_bL_switching_enabled();
++
++	mutex_lock(&cluster_lock[new_cluster]);
++
++	if (bLs) {
++		prev_rate = per_cpu(cpu_last_req_freq, cpu);
++		per_cpu(cpu_last_req_freq, cpu) = rate;
++		per_cpu(physical_cluster, cpu) = new_cluster;
++
++		new_rate = find_cluster_maxfreq(new_cluster);
++		new_rate = ACTUAL_FREQ(new_cluster, new_rate);
++	} else {
++		new_rate = rate;
++	}
++
++	pr_debug("%s: cpu: %d, old cluster: %d, new cluster: %d, freq: %d\n",
++			__func__, cpu, old_cluster, new_cluster, new_rate);
++
++	ret = bL_cpufreq_set_rate_cluster(cpu, new_cluster, new_rate);
++	if (ret && bLs) {
++		per_cpu(cpu_last_req_freq, cpu) = prev_rate;
++		per_cpu(physical_cluster, cpu) = old_cluster;
+ 	}
+ 
+ 	mutex_unlock(&cluster_lock[new_cluster]);
+ 
++	if (ret)
++		return ret;
++
+ 	/* Recalc freq for old cluster when switching clusters */
+ 	if (old_cluster != new_cluster) {
+ 		pr_debug("%s: cpu: %d, old cluster: %d, new cluster: %d\n",
+@@ -190,14 +258,11 @@ bL_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
+ 		/* Set freq of old cluster if there are cpus left on it */
+ 		new_rate = find_cluster_maxfreq(old_cluster);
+ 		new_rate = ACTUAL_FREQ(old_cluster, new_rate);
+-
+ 		if (new_rate) {
+ 			pr_debug("%s: Updating rate of old cluster: %d, to freq: %d\n",
+ 					__func__, old_cluster, new_rate);
+ 
+-			if (clk_set_rate(clk[old_cluster], new_rate * 1000))
+-				pr_err("%s: clk_set_rate failed: %d, old cluster: %d\n",
+-						__func__, ret, old_cluster);
++			bL_cpufreq_set_rate_cluster(cpu, old_cluster, new_rate);
+ 		}
+ 		mutex_unlock(&cluster_lock[old_cluster]);
+ 	}
+@@ -304,6 +369,8 @@ static void _put_cluster_clk_and_freq_table(struct device *cpu_dev)
+ 		return;
+ 
+ 	clk_put(clk[cluster]);
++	if (!IS_ERR(reg[cluster]))
++		regulator_put(reg[cluster]);
+ 	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table[cluster]);
+ 	if (arm_bL_ops->free_opp_table)
+ 		arm_bL_ops->free_opp_table(cpu_dev);
+@@ -337,7 +404,9 @@ static void put_cluster_clk_and_freq_table(struct device *cpu_dev)
+ 
+ static int _get_cluster_clk_and_freq_table(struct device *cpu_dev)
+ {
++	unsigned long min_uV = ~0, max_uV = 0;
+ 	u32 cluster = raw_cpu_to_cluster(cpu_dev->id);
++	char name[14] = "cpu-cluster.";
+ 	int ret;
+ 
+ 	if (freq_table[cluster])
+@@ -350,6 +419,51 @@ static int _get_cluster_clk_and_freq_table(struct device *cpu_dev)
+ 		goto out;
+ 	}
+ 
++	name[12] = cluster + '0';
++	reg[cluster] = regulator_get_optional(cpu_dev, name);
++	if (!IS_ERR(reg[cluster])) {
++		unsigned long opp_freq = 0;
++
++		dev_dbg(cpu_dev, "%s: reg: %p, cluster: %d\n",
++			__func__, reg[cluster], cluster);
++		cpu_devs[cluster] = cpu_dev;
++
++		/*
++		 * Disable any OPPs where the connected regulator isn't able to
++		 * provide the specified voltage and record minimum and maximum
++		 * voltage levels.
++		 */
++		while (1) {
++			struct dev_pm_opp *opp;
++			unsigned long opp_uV;
++
++			rcu_read_lock();
++			opp = dev_pm_opp_find_freq_ceil(cpu_dev, &opp_freq);
++			if (IS_ERR(opp)) {
++				rcu_read_unlock();
++				break;
++			}
++			opp_uV = dev_pm_opp_get_voltage(opp);
++			rcu_read_unlock();
++
++			if (regulator_is_supported_voltage(reg[cluster], opp_uV,
++							   opp_uV)) {
++				if (opp_uV < min_uV)
++					min_uV = opp_uV;
++				if (opp_uV > max_uV)
++					max_uV = opp_uV;
++			} else {
++				dev_pm_opp_disable(cpu_dev, opp_freq);
++			}
++
++			opp_freq++;
++		}
++
++		ret = regulator_set_voltage_time(reg[cluster], min_uV, max_uV);
++		if (ret > 0)
++			transition_latencies[cluster] = ret * 1000;
++	}
++
+ 	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table[cluster]);
+ 	if (ret) {
+ 		dev_err(cpu_dev, "%s: failed to init cpufreq table, cpu: %d, err: %d\n",
+@@ -483,6 +597,11 @@ static int bL_cpufreq_init(struct cpufreq_policy *policy)
+ 	else
+ 		policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
+ 
++	if (cur_cluster < MAX_CLUSTERS &&
++	    policy->cpuinfo.transition_latency != CPUFREQ_ETERNAL)
++		policy->cpuinfo.transition_latency
++			+= transition_latencies[cur_cluster];
++
+ 	if (is_bL_switching_enabled())
+ 		per_cpu(cpu_last_req_freq, policy->cpu) = clk_get_cpu_rate(policy->cpu);
+ 
 -- 
 1.9.1
