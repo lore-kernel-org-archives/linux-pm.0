@@ -1,46 +1,98 @@
-From: "Ong, Boon Leong" <boon.leong.ong@intel.com>
-Subject: RE: [PATCH v2 1/1] x86/platform/iosf_mbi: Remove duplicate
- definitions
-Date: Fri, 4 Dec 2015 02:05:35 +0000
-Message-ID: <AF233D1473C1364ABD51D28909A1B1B733D8FC80@PGSMSX104.gar.corp.intel.com>
-References: <1447264769-21981-1-git-send-email-andriy.shevchenko@linux.intel.com>
-	 <alpine.DEB.2.11.1511251514580.12555@nanos>
- <1448461984.15393.53.camel@linux.intel.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH 02/12] clk: samsung: exynos5420: add cpu clock
+ configuration data and instantiate cpu clock
+Date: Fri, 04 Dec 2015 11:25:55 +0900
+Message-ID: <5660F9B3.8030001@samsung.com>
+References: <1449091167-20758-1-git-send-email-ben@smart-cactus.org>
+ <1449091167-20758-3-git-send-email-ben@smart-cactus.org>
+ <565FDC5A.1010504@samsung.com> <874mfz4yfb.fsf@smart-cactus.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <1448461984.15393.53.camel@linux.intel.com>
-Content-Language: en-US
-Sender: linux-i2c-owner@vger.kernel.org
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, "Zhang, Rui" <rui.zhang@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Anvin <hpa@zytor.com>, Wolfram Sang <wsa@the-dreams.de>, Eduardo Valentin <edubezval@gmail.com>, "Kweh, Hock Leong" <hock.leong.kweh@intel.com>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:44278 "EHLO
+	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754877AbbLDC0M (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 3 Dec 2015 21:26:12 -0500
+In-reply-to: <874mfz4yfb.fsf@smart-cactus.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ben Gamari <ben@smart-cactus.org>, Thomas Abraham <thomas.ab@samsung.com>
+Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com, Mike Turquette <mturquette@linaro.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-DQo+LS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj5Gcm9tOiBsaW51eC1rZXJuZWwtb3duZXJA
-dmdlci5rZXJuZWwub3JnIFttYWlsdG86bGludXgta2VybmVsLQ0KPm93bmVyQHZnZXIua2VybmVs
-Lm9yZ10gT24gQmVoYWxmIE9mIEFuZHkgU2hldmNoZW5rbw0KPlNlbnQ6IFdlZG5lc2RheSwgTm92
-ZW1iZXIgMjUsIDIwMTUgMTA6MzMgUE0NCj5UbzogVGhvbWFzIEdsZWl4bmVyIDx0Z2x4QGxpbnV0
-cm9uaXguZGU+DQo+Q2M6IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWkyY0B2
-Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LQ0KPnBtQHZnZXIua2VybmVsLm9yZzsgSW5nbyBNb2xuYXIg
-PG1pbmdvQHJlZGhhdC5jb20+OyBQZXRlciBBbnZpbg0KPjxocGFAenl0b3IuY29tPjsgV29sZnJh
-bSBTYW5nIDx3c2FAdGhlLWRyZWFtcy5kZT47IFpoYW5nLCBSdWkNCj48cnVpLnpoYW5nQGludGVs
-LmNvbT47IEVkdWFyZG8gVmFsZW50aW4gPGVkdWJlenZhbEBnbWFpbC5jb20+OyBLd2VoLCBIb2Nr
-DQo+TGVvbmcgPGhvY2subGVvbmcua3dlaEBpbnRlbC5jb20+DQo+U3ViamVjdDogUmU6IFtQQVRD
-SCB2MiAxLzFdIHg4Ni9wbGF0Zm9ybS9pb3NmX21iaTogUmVtb3ZlIGR1cGxpY2F0ZSBkZWZpbml0
-aW9ucw0KPg0KPk9uIFdlZCwgMjAxNS0xMS0yNSBhdCAxNToyMCArMDEwMCwgVGhvbWFzIEdsZWl4
-bmVyIHdyb3RlOg0KPj4gT24gV2VkLCAxMSBOb3YgMjAxNSwgQW5keSBTaGV2Y2hlbmtvIHdyb3Rl
-Og0KPj4NCj4+ID4gVGhlIHJlYWQgYW5kIHdyaXRlIG9wY29kZXMgYXJlIGdsb2JhbCBmb3IgYWxs
-IHVuaXRzIG9uIFNvQyBhbmQgZXZlbg0KPj4gYWNyb3NzDQo+PiA+IEludGVsIFNvQ3MuIFJlbW92
-ZSBkdXBsaWNhdGlvbiBvZiBjb3JyZXNwb25kaW5nIGNvbnN0YW50cy4gQXQgdGhlDQo+PiBzYW1l
-IHRpbWUNCj4+ID4gY29udmVydCBhbGwgY3VycmVudCB1c2Vycy4NCj4+ID4NCj4+ID4gTm8gZnVu
-Y3Rpb25hbCBjaGFuZ2UuDQo+PiA+DQo+PiA+IENjOiBUaG9tYXMgR2xlaXhuZXIgPHRnbHhAbGlu
-dXRyb25peC5kZT4NCj4+ID4gQ2M6IEluZ28gTW9sbmFyIDxtaW5nb0ByZWRoYXQuY29tPg0KPj4g
-PiBDYzogUGV0ZXIgQW52aW4gPGhwYUB6eXRvci5jb20+DQo+PiA+IENjOiBXb2xmcmFtIFNhbmcg
-PHdzYUB0aGUtZHJlYW1zLmRlPg0KPj4gPiBDYzogWmhhbmcgUnVpIDxydWkuemhhbmdAaW50ZWwu
-Y29tPg0KPj4gPiBDYzogRWR1YXJkbyBWYWxlbnRpbiA8ZWR1YmV6dmFsQGdtYWlsLmNvbT4NCj4+
-ID4gQ2M6IEhvY2sgTGVvbmcgS3dlaCA8aG9jay5sZW9uZy5rd2VoQGludGVsLmNvbT4NCj4NCj5F
-ZHVhcmRvLCBSdWksIGNhbiB5b3UgcHJvdmlkZSB5b3VyIEFDS3Mgb3IgY29tbWVudHMgYWJvdXQg
-dGhlIHBhdGNoPw0KPg0KUnVpLA0KSSBoYXZlIHJldmlld2VkIHRoZSBjaGFuZ2Ugb24gZHJpdmVy
-cy90aGVybWFsL2ludGVsX3F1YXJrX2R0c190aGVybWFsLmMuDQpZZXMsIEkgZ2F2ZSBteSBBQ0sg
-aGVyZS4NCiANCg==
+On 03.12.2015 19:30, Ben Gamari wrote:
+> Krzysztof Kozlowski <k.kozlowski@samsung.com> writes:
+> 
+>> On 03.12.2015 06:19, Ben Gamari wrote:
+>>> From: Thomas Abraham <thomas.ab@samsung.com>
+>>>
+>>> With the addition of the new Samsung specific cpu-clock type, the
+>>> arm clock can be represented as a cpu-clock type. Add the CPU clock
+>>> configuration data and instantiate the CPU clock type for Exynos5420.
+>>>
+>>> Changes by Bartlomiej:
+>>> - split Exynos5420 support from the original patches
+>>> - moved E5420_[EGL,KFC]_DIV0() macros to clk-exynos5420.c
+>>>
+>>> Changes by Ben Gamari:
+>>> - Rebased
+>>
+>> If only rebasing then you should retain the Lukasz's review tag. He
+>> doesn't have to review it again, right? :)
+> 
+> Yep, very true.
+> 
+>>> +static const struct exynos_cpuclk_cfg_data exynos5420_eglclk_d[] __initconst = {
+>>> +	{ 1800000, E5420_EGL_DIV0(3, 7, 7, 4), },
+>>> +	{ 1700000, E5420_EGL_DIV0(3, 7, 7, 3), },
+>>> +	{ 1600000, E5420_EGL_DIV0(3, 7, 7, 3), },
+>>> +	{ 1500000, E5420_EGL_DIV0(3, 7, 7, 3), },
+>>> +	{ 1400000, E5420_EGL_DIV0(3, 7, 7, 3), },
+>>> +	{ 1300000, E5420_EGL_DIV0(3, 7, 7, 2), },
+>>> +	{ 1200000, E5420_EGL_DIV0(3, 7, 7, 2), },
+>>> +	{ 1100000, E5420_EGL_DIV0(3, 7, 7, 2), },
+>>> +	{ 1000000, E5420_EGL_DIV0(3, 6, 6, 2), },
+>>> +	{  900000, E5420_EGL_DIV0(3, 6, 6, 2), },
+>>> +	{  800000, E5420_EGL_DIV0(3, 5, 5, 2), },
+>>> +	{  700000, E5420_EGL_DIV0(3, 5, 5, 2), },
+>>> +	{  600000, E5420_EGL_DIV0(3, 4, 4, 2), },
+>>> +	{  500000, E5420_EGL_DIV0(3, 3, 3, 2), },
+>>> +	{  400000, E5420_EGL_DIV0(3, 3, 3, 2), },
+>>> +	{  300000, E5420_EGL_DIV0(3, 3, 3, 2), },
+>>> +	{  200000, E5420_EGL_DIV0(3, 3, 3, 2), },
+>>> +	{  0 },
+>>
+>> The vendor code (Galaxy S5 with Exynos5422) sets pclk_dbg divider to 7.
+>> In the same time APLL divider is only 1.
+>>
+>> For the ACLK divider (of KFC below) the vendor sets 3, not 2.
+>>
+>> The values also don't match the Exynos5420 from Note 3.
+>>
+>> The Exynos5800 apparently has values more similar to 5422.
+>>
+>> The question is: for which exact model this is? We can of course choose
+>> the safest values here but probably these would be with the highest
+>> dividers?
+>>
+> I'm afraid I can't comment here. Thomas, perhaps you could offer some
+> insight?
+
+Actually I found your patch #5 adding support for 5800 with the values
+more like matching 5422. So actually the difference should be between
+5420 and 5422. The Exynos5420 mainline boards are:
+ - Peach Pit - chromeos tree could be a good vendor reference,
+ - Arndale Octa,
+ - SMDK5420.
+
+For the last two I don't know where to get the vendor reference.
+Unfortunately sometimes the particular values (supported frequencies and
+clock dividers) differ for one SoC between products but we don't support
+the ASV here.
+
+Overall probably this means that we should not care about such details,
+except maybe the difference between 5420 and 5422? (where 5422=5800)
+
+Best regards,
+Krzysztof
+
