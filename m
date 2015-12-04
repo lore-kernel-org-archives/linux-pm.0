@@ -1,7 +1,7 @@
 From: Jon Hunter <jonathanh@nvidia.com>
-Subject: [PATCH V4 04/16] soc: tegra: pmc: Remove debugfs entry on probe failure
-Date: Fri, 4 Dec 2015 14:57:05 +0000
-Message-ID: <1449241037-22193-5-git-send-email-jonathanh@nvidia.com>
+Subject: [PATCH V4 06/16] soc: tegra: pmc: Wait for powergate state to change
+Date: Fri, 4 Dec 2015 14:57:07 +0000
+Message-ID: <1449241037-22193-7-git-send-email-jonathanh@nvidia.com>
 References: <1449241037-22193-1-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -12,57 +12,118 @@ To: Philipp Zabel <p.zabel@pengutronix.de>, Stephen Warren <swarren@wwwdotorg.or
 Cc: Vince Hsu <vinceh@nvidia.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-The debugfs entry for the PMC device will not be removed if the probe of
-the device fails on registering the restart handler and so fix this so
-that it is removed.
+Currently, the function tegra_powergate_set() simply sets the desired
+powergate state but does not wait for the state to change. In most cases
+we should wait for the state to change before proceeding. Currently, there
+is a case for tegra114 and tegra124 devices where we do not wait when
+starting the secondary CPU as this is not necessary. However, this is only
+done at boot time and so waiting here will only have a small impact on boot
+time. Therefore, update tegra_powergate_set() to wait when setting the
+powergate.
+
+By adding this feature, we can also eliminate the polling loop from
+tegra30_boot_secondary().
+
+A macro has also been adding for checking the status of the powergate and
+so update the tegra_powergate_is_powered() to use this macro as well.
 
 Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
 ---
- drivers/soc/tegra/pmc.c | 11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+ arch/arm/mach-tegra/platsmp.c | 16 +++-------------
+ drivers/soc/tegra/pmc.c       | 21 +++++++++++++++------
+ 2 files changed, 18 insertions(+), 19 deletions(-)
 
+diff --git a/arch/arm/mach-tegra/platsmp.c b/arch/arm/mach-tegra/platsmp.c
+index b45086666648..40cb761e7c95 100644
+--- a/arch/arm/mach-tegra/platsmp.c
++++ b/arch/arm/mach-tegra/platsmp.c
+@@ -108,19 +108,9 @@ static int tegra30_boot_secondary(unsigned int cpu, struct task_struct *idle)
+ 	 * be un-gated by un-toggling the power gate register
+ 	 * manually.
+ 	 */
+-	if (!tegra_pmc_cpu_is_powered(cpu)) {
+-		ret = tegra_pmc_cpu_power_on(cpu);
+-		if (ret)
+-			return ret;
+-
+-		/* Wait for the power to come up. */
+-		timeout = jiffies + msecs_to_jiffies(100);
+-		while (!tegra_pmc_cpu_is_powered(cpu)) {
+-			if (time_after(jiffies, timeout))
+-				return -ETIMEDOUT;
+-			udelay(10);
+-		}
+-	}
++	ret = tegra_pmc_cpu_power_on(cpu);
++	if (ret)
++		return ret;
+ 
+ remove_clamps:
+ 	/* CPU partition is powered. Enable the CPU clock. */
 diff --git a/drivers/soc/tegra/pmc.c b/drivers/soc/tegra/pmc.c
-index 5b6125ecd69a..e60fc2d33c94 100644
+index fdd1a8d0940f..f94d970089ce 100644
 --- a/drivers/soc/tegra/pmc.c
 +++ b/drivers/soc/tegra/pmc.c
-@@ -117,6 +117,7 @@ struct tegra_pmc_soc {
-  * @base: pointer to I/O remapped register region
-  * @clk: pointer to pclk clock
-  * @soc: pointer to SoC data structure
-+ * @debugfs: pointer to debugfs entry
-  * @rate: currently configured rate of pclk
-  * @suspend_mode: lowest suspend mode available
-  * @cpu_good_time: CPU power good time (in microseconds)
-@@ -136,6 +137,7 @@ struct tegra_pmc {
- 	struct device *dev;
- 	void __iomem *base;
- 	struct clk *clk;
-+	struct dentry *debugfs;
+@@ -28,6 +28,7 @@
+ #include <linux/export.h>
+ #include <linux/init.h>
+ #include <linux/io.h>
++#include <linux/iopoll.h>
+ #include <linux/of.h>
+ #include <linux/of_address.h>
+ #include <linux/platform_device.h>
+@@ -101,6 +102,8 @@
  
- 	const struct tegra_pmc_soc *soc;
+ #define GPU_RG_CNTRL			0x2d4
  
-@@ -447,11 +449,9 @@ static const struct file_operations powergate_fops = {
- 
- static int tegra_powergate_debugfs_init(void)
++#define PMC_PWRGATE_STATE(status, id)	((status & BIT(id)) != 0)
++
+ struct tegra_pmc_soc {
+ 	unsigned int num_powergates;
+ 	const char *const *powergates;
+@@ -181,22 +184,27 @@ static void tegra_pmc_writel(u32 value, unsigned long offset)
+  */
+ static int tegra_powergate_set(int id, bool new_state)
  {
--	struct dentry *d;
--
--	d = debugfs_create_file("powergate", S_IRUGO, NULL, NULL,
--				&powergate_fops);
--	if (!d)
-+	pmc->debugfs = debugfs_create_file("powergate", S_IRUGO, NULL, NULL,
-+					   &powergate_fops);
-+	if (!pmc->debugfs)
- 		return -ENOMEM;
+-	bool status;
++	u32 status;
++	int err = 0;
  
- 	return 0;
-@@ -844,6 +844,7 @@ static int tegra_pmc_probe(struct platform_device *pdev)
+ 	mutex_lock(&pmc->powergates_lock);
  
- 	err = register_restart_handler(&tegra_pmc_restart_handler);
- 	if (err) {
-+		debugfs_remove(pmc->debugfs);
- 		dev_err(&pdev->dev, "unable to register restart handler, %d\n",
- 			err);
- 		return err;
+-	status = tegra_pmc_readl(PWRGATE_STATUS) & (1 << id);
++	status = tegra_pmc_readl(PWRGATE_STATUS);
+ 
+-	if (status == new_state) {
++	if (PMC_PWRGATE_STATE(status, id) == new_state) {
+ 		mutex_unlock(&pmc->powergates_lock);
+ 		return 0;
+ 	}
+ 
+ 	tegra_pmc_writel(PWRGATE_TOGGLE_START | id, PWRGATE_TOGGLE);
+ 
++	err = readx_poll_timeout(tegra_pmc_readl, PWRGATE_STATUS, status,
++				 PMC_PWRGATE_STATE(status, id) == new_state,
++				 10, 100000);
++
+ 	mutex_unlock(&pmc->powergates_lock);
+ 
+-	return 0;
++	return err;
+ }
+ 
+ /**
+@@ -235,8 +243,9 @@ int tegra_powergate_is_powered(int id)
+ 	if (!pmc->soc || id < 0 || id >= pmc->soc->num_powergates)
+ 		return -EINVAL;
+ 
+-	status = tegra_pmc_readl(PWRGATE_STATUS) & (1 << id);
+-	return !!status;
++	status = tegra_pmc_readl(PWRGATE_STATUS);
++
++	return PMC_PWRGATE_STATE(status, id);
+ }
+ 
+ /**
 -- 
 2.1.4
