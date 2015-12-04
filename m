@@ -1,117 +1,107 @@
-From: Philippe Longepe <philippe.longepe@linux.intel.com>
-Subject: [PATCH V6 2/3] cpufreq: intel_pstate: account for non C0 time
-Date: Fri,  4 Dec 2015 17:40:32 +0100
-Message-ID: <1449247235-29389-5-git-send-email-philippe.longepe@linux.intel.com>
-References: <1449247235-29389-1-git-send-email-philippe.longepe@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:31858 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754052AbbLDQkr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 4 Dec 2015 11:40:47 -0500
-In-Reply-To: <1449247235-29389-1-git-send-email-philippe.longepe@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH v3 0/10] cpufreq: add generic cpufreq driver support for
+ Exynos542x/5800 platforms
+Date: Fri, 04 Dec 2015 18:30:25 +0100
+Message-ID: <1449250235-9613-1-git-send-email-b.zolnierkie@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Ben Gamari <ben@smart-cactus.org>
+Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: srinivas.pandruvada@linux.intel.com, Philippe Longepe <philippe.longepe@intel.com>, Stephane Gasparini <stephane.gasparini@intel.com>
 
-From: Philippe Longepe <philippe.longepe@intel.com>
+Hi,
 
-The current function to calculate cpu utilization uses the average P-state
-ratio (APerf/Mperf) scaled by the ratio of the current P-state to the
-max available non-turbo one. This leads to an overestimation of
-utilization which causes higher-performance P-states to be selected more
-often and that leads to increased energy consumption.
+This patch series adds generic arm_big_little_dt cpufreq driver
+support for Exynos542x/5800 (using the new CPU clock type which
+allows it).  It also:
+- enhances arm_big_little[_dt] driver with CPU cluster regulator
+  support
+- adds CPU clock configuration data and CPU operating points
+  setup for Exynos542x/5800
+- adds CPU cluster regulator supplies for Exynos542x/5800 boards
 
-This is a problem for low-power systems, so it is better to use a
-different utilization calculation algorithm for them.
+This patch series has been tested on Exynos5422 based ODROID-XU3
+Lite board.
 
-Namely, the Percent Busy value (or load) can be estimated as the ratio of the
-MPERF counter that runs at a constant rate only during active periods (C0) to
-the time stamp counter (TSC) that also runs (at the same rate) during idle.
-That is:
+Please note that this is not a final version of the patchset.
+I just wanted to push out current work-in-progress patches that
+integrate changes from Anand, Ben and me.
 
-Percent Busy = 100 * (delta_mperf / delta_tsc)
+TODO:
+- porting the Exynos542x/5800 support over cpufreq-dt
 
-Use this algorithm for platforms with SoCs based on the Airmont and Silvermont
-Atom cores.
+Depends on:
+- next-20151124 branch of linux-next kernel tree
 
-Signed-off-by: Philippe Longepe <philippe.longepe@intel.com>
-Signed-off-by: Stephane Gasparini <stephane.gasparini@intel.com>
----
- drivers/cpufreq/intel_pstate.c | 29 ++++++++++++++++++++++++-----
- 1 file changed, 24 insertions(+), 5 deletions(-)
+Changes since v2:
+- ported over next-20151124 branch
+- integrated missing CLK_RECALC_NEW_RATES flags fix to patch #3
+  (from Anand Moon)
+- added regulator supply properties for ODROID-XU3 Lite and
+  ODROID-XU4 in patch #2
+- ported CPU OPPs to operating-points-v2 (from Ben Gamari)
+- added "ARM: dts: Exynos5422: fix OPP tables" patch (from Ben
+  Gamari)
+- added "cpufreq: arm-big-little: accept operating-points-v2
+  nodes" patch (from Ben Gamari)
+- renamed OPP nodes as opp@<opp-hz>
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 6a301e1..c8437861 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -143,6 +143,7 @@ struct cpu_defaults {
- };
- 
- static inline int32_t get_target_pstate_use_performance(struct cpudata *cpu);
-+static inline int32_t get_target_pstate_use_cpu_load(struct cpudata *cpu);
- 
- static struct pstate_adjust_policy pid_params;
- static struct pstate_funcs pstate_funcs;
-@@ -763,7 +764,7 @@ static struct cpu_defaults silvermont_params = {
- 		.set = atom_set_pstate,
- 		.get_scaling = silvermont_get_scaling,
- 		.get_vid = atom_get_vid,
--		.get_target_pstate = get_target_pstate_use_performance,
-+		.get_target_pstate = get_target_pstate_use_cpu_load,
- 	},
- };
- 
-@@ -784,7 +785,7 @@ static struct cpu_defaults airmont_params = {
- 		.set = atom_set_pstate,
- 		.get_scaling = airmont_get_scaling,
- 		.get_vid = atom_get_vid,
--		.get_target_pstate = get_target_pstate_use_performance,
-+		.get_target_pstate = get_target_pstate_use_cpu_load,
- 	},
- };
- 
-@@ -890,12 +891,11 @@ static inline void intel_pstate_sample(struct cpudata *cpu)
- 	local_irq_save(flags);
- 	rdmsrl(MSR_IA32_APERF, aperf);
- 	rdmsrl(MSR_IA32_MPERF, mperf);
--	if (cpu->prev_mperf == mperf) {
-+	tsc = rdtsc();
-+	if ((cpu->prev_mperf == mperf) || (cpu->prev_tsc == tsc)) {
- 		local_irq_restore(flags);
- 		return;
- 	}
--
--	tsc = rdtsc();
- 	local_irq_restore(flags);
- 
- 	cpu->last_sample_time = cpu->sample.time;
-@@ -930,6 +930,25 @@ static inline void intel_pstate_set_sample_time(struct cpudata *cpu)
- 	mod_timer_pinned(&cpu->timer, jiffies + delay);
- }
- 
-+static inline int32_t get_target_pstate_use_cpu_load(struct cpudata *cpu)
-+{
-+	struct sample *sample = &cpu->sample;
-+	int32_t cpu_load;
-+
-+	/*
-+	 * The load can be estimated as the ratio of the mperf counter
-+	 * running at a constant frequency during active periods
-+	 * (C0) and the time stamp counter running at the same frequency
-+	 * also during C-states.
-+	 */
-+	cpu_load = div64_u64(int_tofp(100) * sample->mperf, sample->tsc);
-+
-+	cpu->sample.busy_scaled = cpu_load;
-+
-+	return cpu->pstate.current_pstate - pid_calc(&cpu->pid, cpu_load);
-+}
-+
-+
- static inline int32_t get_target_pstate_use_performance(struct cpudata *cpu)
- {
- 	int32_t core_busy, max_pstate, current_pstate, sample_ratio;
+Changes since v1:
+- added CPU cluster regulator supply properties to
+  exynos5420-arndale-octa.dts, exynos5420-peach-pit.dts,
+  exynos5420-smdk5420.dts and exynos5800-peach-pi.dts
+
+Changes over Thomas' original v12 code:
+- split Exynos5420 and Exynos5800 support
+- moved E5420_[EGL,KFC]_DIV0() macros to clk-exynos5420.c
+- disabled cpufreq if big.LITTLE switcher support is enabled
+- enhanced arm_big_little[_dt] driver with CPU cluster regulator
+  support
+- fixed CPU clock configuration data for Exynos5800
+- fixed CPU operating points setup for Exynos5800
+- added CPU cluster regulator supplies for ODROID-XU3 board
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+
+Bartlomiej Zolnierkiewicz (4):
+  cpufreq: arm_big_little: add cluster regulator support
+  ARM: dts: Exynos5420/5800: add cluster regulator supply properties
+  clk: samsung: exynos5800: fix cpu clock configuration data
+  ARM: dts: Exynos5800: fix CPU OPP
+
+Ben Gamari (2):
+  ARM: dts: Exynos5422: fix OPP tables
+  cpufreq: arm-big-little: accept operating-points-v2 nodes
+
+Thomas Abraham (4):
+  clk: samsung: exynos5420: add cpu clock configuration data and
+    instantiate cpu clock
+  ARM: dts: Exynos5420: add CPU OPP and regulator supply property
+  ARM: Exynos: use generic cpufreq driver for Exynos5420
+  ARM: Exynos: use generic cpufreq driver for Exynos5800
+
+ .../bindings/cpufreq/arm_big_little_dt.txt         |   4 +
+ arch/arm/boot/dts/exynos5420-arndale-octa.dts      |   8 +
+ arch/arm/boot/dts/exynos5420-peach-pit.dts         |   8 +
+ arch/arm/boot/dts/exynos5420-smdk5420.dts          |   8 +
+ arch/arm/boot/dts/exynos5420.dtsi                  | 122 ++++++++++++++
+ arch/arm/boot/dts/exynos5422-cpus.dtsi             |  10 ++
+ arch/arm/boot/dts/exynos5422-odroidxu3-lite.dts    |   8 +
+ arch/arm/boot/dts/exynos5422-odroidxu3.dts         |   8 +
+ arch/arm/boot/dts/exynos5422-odroidxu4.dts         |   8 +
+ arch/arm/boot/dts/exynos5800-peach-pi.dts          |   8 +
+ arch/arm/boot/dts/exynos5800.dtsi                  | 165 +++++++++++++++++++
+ arch/arm/mach-exynos/exynos.c                      |   8 +
+ drivers/clk/samsung/clk-exynos5420.c               |  88 ++++++++++-
+ drivers/cpufreq/arm_big_little.c                   | 175 +++++++++++++++++----
+ drivers/cpufreq/arm_big_little_dt.c                |  12 +-
+ include/dt-bindings/clock/exynos5420.h             |   2 +
+ 16 files changed, 608 insertions(+), 34 deletions(-)
+
 -- 
 1.9.1
-
