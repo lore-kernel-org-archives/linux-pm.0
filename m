@@ -1,77 +1,49 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2 0/3] Fixes for twl4030 charger
-Date: Sat, 5 Dec 2015 00:54:42 +0100
-Message-ID: <20151204235442.GA22936@earth>
-References: <cover.1446463652.git.hns@goldelico.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="VbJkn9YxBvnuCH5J"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <cover.1446463652.git.hns@goldelico.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "H. Nikolaus Schaller" <hns@goldelico.com>
-Cc: =?utf-8?Q?Gra=C5=BEvydas?= Ignotas <notasas@gmail.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Andreas Kemnade <andreas@kemnade.info>, linux-pm@vger.kernel.org, gta04-owner@goldelico.com, linux-kernel@vger.kernel.org
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 0/4] cpufreq governors and Intel P state driver compatibility
+Date: Fri,  4 Dec 2015 16:08:34 -0800
+Message-ID: <1449274118-15575-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:41632 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752137AbbLEAJs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 4 Dec 2015 19:09:48 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, len.brown@intel.com, viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
+Intel P State driver implements two policies, performance and powersave.
+The powersave policy is similar to ondemand cpufreq governor when using
+acpi-cpufreq. This causes lots of confusion among users. This results
+in invalid comparison of performance when acpi-cpufreq and Intel P state
+performance is compared.
 
---VbJkn9YxBvnuCH5J
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The reason Intel P state called powersave when it actually implemented
+ondemand style P State selection, because the cpufreq core only allows
+two generic policies "performance and powersave" for drivers which has
+setpolicy() interface. All drivers using this interface are forced to
+support these two policies.
 
-Hi Nikolaus,
+This patchset adds feature to have configurable generic policies and
+allows ondemand as one of the policy. With this approach, Intel P state
+now adds support for ondemand policy and power save policy both in
+addition to performance.
 
-On Mon, Nov 02, 2015 at 12:27:33PM +0100, H. Nikolaus Schaller wrote:
-> Changes V2:
-> * worked in comments by Nishanth Menon <nm@ti.com>
-> * added another patch which solves a probing/boot stall problem (irq allo=
-cation vs. -EPROBE_DEFER)
->=20
-> V1:
-> 4.3-rc1 introduced a new charger driver for the twl4030.
->=20
-> While making it operable and testing on GTA04 and OpenPandora
-> we have found some issues.
->=20
->=20
-> H. Nikolaus Schaller (3):
->   drivers:power:twl4030-charger: fix problem with EPROBE_DEFER
->   drivers:power:twl4030-charger: don't return after allocating irq
->   drivers:power:twl4030-charger: don't check if battery is present
+To be done:
+cpufreq and Intel P state documentation update:
+Once this approach is OK, will submit a patch to update.
 
-PATCH 1 and 2 should be rebased to my current next branch.
-They definetly do not take 2202e1fc5a into account. Also
-take into account, that iio_channel_get() is not managed,
-so you will have to free the channel, if your return an
-error after it.
+Srinivas Pandruvada (4):
+  cpufreq: Add configurable generic policies
+  cpufreq: Add ondemand as a generic policy
+  cpufreq: intel_pstate: Change powersave to ondemand policy
+  cpufreq: intel_pstate: Add powersave policy support
 
-PATCH 3 introduces a new warning:
+ drivers/cpufreq/cpufreq.c      | 22 +++++++++++++-
+ drivers/cpufreq/intel_pstate.c | 66 +++++++++++++++++++++++++++++++++---------
+ include/linux/cpufreq.h        |  6 +++-
+ 3 files changed, 79 insertions(+), 15 deletions(-)
 
-drivers/power/twl4030_charger.c:211:12: warning: =E2=80=98twl4030_is_batter=
-y_present=E2=80=99 defined but not used [-Wunused-function]
+-- 
+2.4.3
 
--- Sebastian
-
---VbJkn9YxBvnuCH5J
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJWYie/AAoJENju1/PIO/qaJ4oQAJQtrF1EvRG4UBdpT+SCMfGD
-lcw/eoPVWb7pXlMSbj0YYMYjeYXMxWpDKHU1zhiDqCIQexaB71xMPqqPRJNnmQMf
-JkHEnehwzqNSkI51rISmj2sEXyfXWLmeER+aGFB3GESbh3b/RnHU6TtblXvfen4T
-B41ETg+ukWfmC2WFfkNEYy2wseG7f+xp3oL6crT/5EL6DjACroS+f/LR4ORd9DXz
-p8xsPBy8nPtroIP+SjsqFSrW7fdmuM2DUet74NI0/EamzlZh21LM5KOxTHw5xa29
-pMdO+B2dYoyx5LDgOtcc+Sx6ymWCyNpaEz71tbMSsdE8FYxz6MSuma4o/5Ip4Dm/
-Of9pfiNrwRhHmS6bc70XiSXiju80t7MD1/+bygdOd19mcbORx9LQ3/qZ9LDLpIFT
-0w/pFZjI8PbI0pGcnElNLtKhSZvwR1sY3t+dumw0JvvHIKLDQCo3je9MSP3ulLOi
-S8B9UaLaRb9ls8Uef6hH8K4pJ0NDi75FM8VS2fbKrVOij5z8/YRkItZ2CFDp2cC8
-Ndl63O3p1V8xsJilBCh8+YXoBAi9ldYlamWswqyB1AzK7TCCFTuPKee6Mu8/kjdp
-ZE4HgnE/b2eIby/8kdmuIeJGK+jPEvBm/r1p1lDEqHnUKg6x/93GZN8U6/PYZH/x
-U9bDEaPCbtq6Q1oTJRHG
-=I1UE
------END PGP SIGNATURE-----
-
---VbJkn9YxBvnuCH5J--
