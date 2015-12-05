@@ -1,41 +1,62 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v3 09/10] PM / Hibernate: Publish pages restored in-place
- to arch code
-Date: Sat, 5 Dec 2015 10:35:34 +0100
-Message-ID: <20151205093534.GA7569@amd>
-References: <1448559168-8363-1-git-send-email-james.morse@arm.com>
- <1448559168-8363-10-git-send-email-james.morse@arm.com>
+From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH] power: qcom_smbb: Add otg regulator for control of vbus
+Date: Sat, 5 Dec 2015 17:07:18 +0100
+Message-ID: <20151205160717.GA30410@earth>
+References: <1445548337-14612-1-git-send-email-tim.bird@sonymobile.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45134 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753179AbbLEJfh (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 5 Dec 2015 04:35:37 -0500
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="NzB8fVQJ5HfG6fxh"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1448559168-8363-10-git-send-email-james.morse@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1445548337-14612-1-git-send-email-tim.bird-/MT0OVThwyLZJqsBc5GL+g@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Tim Bird <tim.bird-/MT0OVThwyLZJqsBc5GL+g@public.gmane.org>
+Cc: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, tbird20d-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, bjorn.andersson-/MT0OVThwyLZJqsBc5GL+g@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: James Morse <james.morse@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Kevin Kang <kkang@intrinsyc.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, wangfei <w.f@huawei.com>, Marc Zyngier <marc.zyngier@arm.com>
 
-On Thu 2015-11-26 17:32:47, James Morse wrote:
-> Some architectures require code written to memory as if it were data to be
-> 'cleaned' from any data caches before the processor can fetch them as new
-> instructions.
-> 
-> During resume from hibernate, the snapshot code copies some pages directly,
-> meaning these architectures do not get a chance to perform their cache
-> maintenance. Create a new list of pages that were restored in place, so
-> that the arch code can perform this maintenance when necessary.
 
-Umm. Could the copy function be modified to do the neccessary
-flushing, instead?
+--NzB8fVQJ5HfG6fxh
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Alternatively, can you just clean the whole cache before jumping to
-the new kernel?
-								Pavel
+Hi Tim,
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+On Thu, Oct 22, 2015 at 02:12:17PM -0700, Tim Bird wrote:
+> Add a regulator to control the OTG chargepath switch.  The OTG
+> switch gets its power from pm8941_5vs1, and that should be expressed
+> as an usb_otg_in-supply property in the DT node for the charger driver.
+> The regulator name is "otg".  This is used by USB code to control VBUS
+> direction.
+
+I could not find a newer version of this patch with the comments
+=66rom Mark being fixed. Did I miss anything?
+
+-- Sebastian
+
+--NzB8fVQJ5HfG6fxh
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJWYwuyAAoJENju1/PIO/qakHIQAIgJfPsKIgeYWdGhp4LWxeNq
+MmEaKGkFcjROo4G0YThs7lAj7cl/XMWxwA3V+gZsrFmPwBVBW4yMtNNXPbbmWRBp
+fGasCytZvF+LvDRYKFRglEmA6nbeplbj2eZJsFGUUhWjWjC1yNmiAe0HAjZ3hsEV
+ef7D/kgcvREL/OFvkwfHvTyBvUX5hKhP4BtUJij7GJ+xA8M9IuGfGPNU8uftafLU
+VNP1lIUY0RIUql+rPYCw735vZGJ7jgJ2Ko4K4hYlCroc8Aj6/7KQZcI5Zqskhz90
+FA3lFasMYqzAGf00HzDECK0q76A33qZaPGr4CRn4+G4KErw1wDH8b3zpwneRSTRD
+JKSmkORMX9Ax4egLqiAHvNt6xsCfq6wgLcgMN/PAz81rOeMTjQNhayEYUMqfAFBd
+YOmrSxSDrs74OplIBiiCAavS3aEP3edZiqCW+0wTgU/mir4rKQchhFZ0yLedsKVX
+5Gc2UdqD7WWCroFda2Q4QtIZaFUDH/1K/M5Si7Lg4WR9/S1rZy/o1iN53JuPY9yf
+c2O5w1JUs/ygXjQDq/gsqOgdYmXOgOdcFB6mCIXE4M5d1HjmkoU/1I0DzdCl6vyx
+cPJA6RzwmRSk/GBKDsSk11Voa/mj4sQrCtgcEygjr/ZPs0uy891nFJXc0BlsKbuS
+6zBGFhgfuKUnvM9TeJGn
+=+AZf
+-----END PGP SIGNATURE-----
+
+--NzB8fVQJ5HfG6fxh--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
