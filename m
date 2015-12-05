@@ -1,83 +1,60 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 4/4] power/reset: at91-reset: add missing of_node_put
-Date: Sat, 5 Dec 2015 01:42:36 +0100
-Message-ID: <20151205004235.GD22936@earth>
-References: <1447884254-26336-1-git-send-email-Julia.Lawall@lip6.fr>
- <1447884254-26336-5-git-send-email-Julia.Lawall@lip6.fr>
+Subject: Re: [PATCH] drivers: power: set IRQF_ONESHOT if no primary handler
+ is specified
+Date: Sat, 5 Dec 2015 01:43:10 +0100
+Message-ID: <20151205004310.GE22936@earth>
+References: <1447917179-9333-1-git-send-email-saurabh.truth@gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="C+ts3FVlLX8+P6JN"
+	protocol="application/pgp-signature"; boundary="xJK8B5Wah2CMJs8h"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:34461 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.136]:34537 "EHLO mail.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755477AbbLEAmk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 4 Dec 2015 19:42:40 -0500
+	id S932094AbbLEAnP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 4 Dec 2015 19:43:15 -0500
 Content-Disposition: inline
-In-Reply-To: <1447884254-26336-5-git-send-email-Julia.Lawall@lip6.fr>
+In-Reply-To: <1447917179-9333-1-git-send-email-saurabh.truth@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Julia Lawall <Julia.Lawall@lip6.fr>
-Cc: kernel-janitors@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Russell King - ARM Linux <linux@arm.linux.org.uk>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Andrew Lunn <andrew@lunn.ch>, Bjorn Helgaas <bhelgaas@google.com>, Jason Cooper <jason@lakedaemon.net>
+To: Saurabh Sengar <saurabh.truth@gmail.com>
+Cc: dbaryshkov@gmail.com, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
 
---C+ts3FVlLX8+P6JN
+--xJK8B5Wah2CMJs8h
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Wed, Nov 18, 2015 at 11:04:14PM +0100, Julia Lawall wrote:
-> for_each_matching_node performs an of_node_get on each iteration, so
-> a break out of the loop requires an of_node_put.
->=20
-> A simplified version of the semantic patch that fixes this problem is as
-> follows (http://coccinelle.lip6.fr):
->=20
-> // <smpl>
-> @@
-> expression e,e1;
-> local idexpression np;
-> @@
->=20
->  for_each_matching_node(np, e1) {
->    ... when !=3D of_node_put(np)
->        when !=3D e =3D np
-> (
->    return np;
-> |
-> +  of_node_put(np);
-> ?  return ...;
-> )
->    ...
->  }
-> // </smpl>
->=20
-> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+On Thu, Nov 19, 2015 at 12:42:59PM +0530, Saurabh Sengar wrote:
+> If no primary handler is specified for threaded_irq then a
+> default one is assigned which always returns IRQ_WAKE_THREAD.
+> This handler requires the IRQF_ONESHOT, because the source of
+> interrupt is not disabled.
 
 Thanks, queued.
 
 -- Sebastian
 
---C+ts3FVlLX8+P6JN
+--xJK8B5Wah2CMJs8h
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJWYjL7AAoJENju1/PIO/qa++sQAKGAm9AKyxpeq6va9JQfbQfi
-CQ+dUcMao/zMkxpmPEE41SWaiEb3bXqXuTEEnez8k4Y9t/aKINweZQGByhIzEV+8
-XGPL7lR8+Cink6bUUF6konAm+tE1pJ7JqQoepTPMzvpjH0pL0pskcpP9L+da4d1y
-L6ty7vjT6TXtbj9zdbsIbBs9ms7kNNmurEGFD4ExvLvkEeEM0ieR1qDy2EamF6a1
-XwQcxsT8ci6F+UBSNKLxIsSN2TRr3/+hYgkkylzwfQPBrg304HX8pW52GTT0dX7L
-ggUaLBVbLQhBVwHuZIfPRr4fBkA9drLYh2QepKN7xUrWbt9qTAt9+TtVBMZIzvj7
-+0M+YpXKJFEJuDu0IuBqcRzDwvo03I79e4cUjZV5NMNiT9wPet3kUxWd7UZQLFjU
-4RipWrRcmbXc/WBDhpeX71d7gGBoybYoR4LkPc2GxLjuEMW5TAjYYh023RFjhE0k
-sXvpcvk/9auzXPaZO192/tGToyF2wbonE0gxQiE262TWFgqLEX+smO0Dt7pZVLPg
-GPV14ZsAwx9UNPBwY0txWgcmTVTAR6Bu33zBjIhmTvtNjz65Kd/qorp2yHlW7CC3
-K1vnWapQsa4uq7y8BbH7n8mcL49x8HzKoWsFy9XzpUHOVPW8PrVOy8V2ixtianpH
-t7K2yHI134eYDgWmGOox
-=pr/g
+iQIcBAEBCgAGBQJWYjMeAAoJENju1/PIO/qam3MP/R6ORSvt1fXgHnS0WGers6Qz
+M860fc24TdqFBGRwZIt7LWq8d1+FBE+YVorzjlsMUeIMbOyK74TCnO+1klIQANVF
+R/Dv8LDt7kGKC1O5uLFutscjT9py7TkBAIogSKa8Pg+7vBxnmhvM6ZCnqvOIn/Ha
+XggHh5AYWXVFbr15UiXW06ZmG+34EK7WQcxnIdvsVGa8Mh4HBcmTlZxuy8tjdHH9
+282rQy6VA9RpaccavqP2klqe6aOxaFMPgtDLlJHiaxMKp2u+sy3eMo2CUbfwCcD1
+H4g1JUQ4c0HT4WnolE3KYKwN5Si8BdZKqOOMVE/hTI5iZA/P0IkUdiBOCVQmvWTC
+Y+DKbKtRoIHzOBEn8pGJzAjqFwA7r4zoA6/XoiMbdc2bBxFr9QLjWqooWhp1xKLy
+5d+zt08IjYJAgnOvBNC/LRphhlTPtCKHQOxNAAJa3db8zeoEtAHrPDdcEnXW8zBy
+HNhzcUuc5pYFXkpxRbd7VeZ00+OzKSv6AiyxItNP/rWoKjjhhPmhB3WPlBWsQay8
+DSVy44/hdRsFwZAVigl4MghZcR52cnBA2RoAxhyEkusERjAg0ZH8oZn7NRvNUaI/
+F/R/vo3dr1JZPQgMvc2zdB2xLqbrEu/905J/9P/6REPnBPKcmTvUGzBpU1pC3BRL
+fKjLuMXIZkK7MyRZMopg
+=pc9F
 -----END PGP SIGNATURE-----
 
---C+ts3FVlLX8+P6JN--
+--xJK8B5Wah2CMJs8h--
