@@ -1,58 +1,89 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH v3 0/10] cpufreq: add generic cpufreq driver support for
- Exynos542x/5800 platforms
-Date: Sat, 05 Dec 2015 08:49:49 +0100
-Message-ID: <3776700.7KBsWa2Q4V@amdc1976>
-References: <1449250235-9613-1-git-send-email-b.zolnierkie@samsung.com>
- <20151205035444.GR3430@ubuntu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20151205035444.GR3430@ubuntu>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Ben Gamari <ben@smart-cactus.org>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+From: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+Subject: [PATCH 1/2] cpufreq: mt8173: migrate to use operating-points-v2 bindings
+Date: Sat,  5 Dec 2015 16:53:03 +0800
+Message-ID: <1449305584-414-2-git-send-email-pi-cheng.chen@linaro.org>
+References: <1449305584-414-1-git-send-email-pi-cheng.chen@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f52.google.com ([209.85.220.52]:34342 "EHLO
+	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752983AbbLEIxQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 5 Dec 2015 03:53:16 -0500
+Received: by pacwq6 with SMTP id wq6so21419162pac.1
+        for <linux-pm@vger.kernel.org>; Sat, 05 Dec 2015 00:53:15 -0800 (PST)
+In-Reply-To: <1449305584-414-1-git-send-email-pi-cheng.chen@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Matthias Brugger <matthias.bgg@gmail.com>
+Cc: Michael Turquette <mturquette@baylibre.com>, Daniel Kurtz <djkurtz@chromium.org>, linux-mediatek@lists.infradead.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
+Modify mt8173-cpufreq driver to get OPP-sharing information and set up
+OPP table provided by operating-points-v2 bindings.
 
-Hi,
+Signed-off-by: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+---
+This patch is based on the series[1] which fixes some issues of
+mt8173-cpufreq driver.
 
-On Saturday, December 05, 2015 09:24:44 AM Viresh Kumar wrote:
-> On 04-12-15, 18:30, Bartlomiej Zolnierkiewicz wrote:
-> > Hi,
-> > 
-> > This patch series adds generic arm_big_little_dt cpufreq driver
-> > support for Exynos542x/5800 (using the new CPU clock type which
-> > allows it).  It also:
-> > - enhances arm_big_little[_dt] driver with CPU cluster regulator
-> >   support
-> > - adds CPU clock configuration data and CPU operating points
-> >   setup for Exynos542x/5800
-> > - adds CPU cluster regulator supplies for Exynos542x/5800 boards
-> > 
-> > This patch series has been tested on Exynos5422 based ODROID-XU3
-> > Lite board.
-> > 
-> > Please note that this is not a final version of the patchset.
-> > I just wanted to push out current work-in-progress patches that
-> > integrate changes from Anand, Ben and me.
-> 
-> What's going on guys, Ben tried exactly same thing few days back:
-> 
-> http://marc.info/?l=linux-kernel&m=144909193925508&w=2
+[1] http://thread.gmane.org/gmane.linux.power-management.general/68692
+---
+ drivers/cpufreq/mt8173-cpufreq.c | 20 ++++++++++++++------
+ 1 file changed, 14 insertions(+), 6 deletions(-)
 
-Why I appreciate Ben's work this not exactly the same thing as
-the above patchset lacks critical CLK_RECALC_NEW_RATES bugfix and
-few other minor fixes.
+diff --git a/drivers/cpufreq/mt8173-cpufreq.c b/drivers/cpufreq/mt8173-cpufreq.c
+index 257bcb9..17e9cad 100644
+--- a/drivers/cpufreq/mt8173-cpufreq.c
++++ b/drivers/cpufreq/mt8173-cpufreq.c
+@@ -344,6 +344,9 @@ static int mtk_cpu_dvfs_info_init(struct mtk_cpu_dvfs_info *info, int cpu)
+ 	unsigned long rate;
+ 	int ret;
+ 
++	/* Mark the first owner of this CPU DVFS domain information */
++	cpumask_set_cpu(cpu, &info->cpus);
++
+ 	cpu_dev = get_cpu_device(cpu);
+ 	if (!cpu_dev) {
+ 		pr_err("failed to get cpu%d device\n", cpu);
+@@ -390,7 +393,15 @@ static int mtk_cpu_dvfs_info_init(struct mtk_cpu_dvfs_info *info, int cpu)
+ 	/* Both presence and absence of sram regulator are valid cases. */
+ 	sram_reg = regulator_get_exclusive(cpu_dev, "sram");
+ 
+-	ret = dev_pm_opp_of_add_table(cpu_dev);
++	/* Get OPP-sharing information from "operating-points-v2" bindings */
++	ret = dev_pm_opp_of_get_sharing_cpus(cpu_dev, &info->cpus);
++	if (ret) {
++		pr_err("failed to get OPP-sharing information for cpu%d\n",
++		       cpu);
++		goto out_free_resources;
++	}
++
++	ret = dev_pm_opp_of_cpumask_add_table(&info->cpus);
+ 	if (ret) {
+ 		pr_warn("no OPP table for cpu%d\n", cpu);
+ 		goto out_free_resources;
+@@ -421,13 +432,10 @@ static int mtk_cpu_dvfs_info_init(struct mtk_cpu_dvfs_info *info, int cpu)
+ 	 */
+ 	info->need_voltage_tracking = !IS_ERR(sram_reg);
+ 
+-	/* CPUs in the same cluster share a clock and power domain. */
+-	cpumask_copy(&info->cpus, &cpu_topology[cpu].core_sibling);
+-
+ 	return 0;
+ 
+ out_free_opp_table:
+-	dev_pm_opp_of_remove_table(cpu_dev);
++	dev_pm_opp_of_cpumask_remove_table(&info->cpus);
+ 
+ out_free_resources:
+ 	if (!IS_ERR(proc_reg))
+@@ -453,7 +461,7 @@ static void mtk_cpu_dvfs_info_release(struct mtk_cpu_dvfs_info *info)
+ 	if (!IS_ERR(info->inter_clk))
+ 		clk_put(info->inter_clk);
+ 
+-	dev_pm_opp_of_remove_table(info->cpu_dev);
++	dev_pm_opp_of_cpumask_remove_table(&info->cpus);
+ }
+ 
+ static int mtk_cpufreq_init(struct cpufreq_policy *policy)
+-- 
+1.9.1
 
-> And the comments given there applies to you as well.
-
-Yes, sure.  That's why I wrote that this is work-in-progress
-and put the TODO in the cover letter.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
