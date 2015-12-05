@@ -1,67 +1,84 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 1/2] power: Fix unmet dependency on POWER_SUPPLY by
- POWER_RESET by uncoupling them
-Date: Sat, 5 Dec 2015 01:59:37 +0100
-Message-ID: <20151205005937.GF22936@earth>
-References: <1449035947-16758-1-git-send-email-k.kozlowski@samsung.com>
+Subject: Re: [PATCH V2] goldfish: add goldfish match node for dt driver probe
+Date: Sat, 5 Dec 2015 02:13:13 +0100
+Message-ID: <20151205011313.GG22936@earth>
+References: <1446793960-31946-1-git-send-email-yalin.wang2010@gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="0hHDr/TIsw4o3iPK"
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1449035947-16758-1-git-send-email-k.kozlowski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Pavel Fedin <p.fedin@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>
+Content-Type: multipart/mixed; boundary="===============0875441721841202840=="
+Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
+In-Reply-To: <1446793960-31946-1-git-send-email-yalin.wang2010@gmail.com>
+List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
+List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
+List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
+List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
+List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
+Errors-To: driverdev-devel-bounces@linuxdriverproject.org
+Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
+To: yalin wang <yalin.wang2010@gmail.com>
+Cc: somyaanand214@gmail.com, linux-input@vger.kernel.org, linux-fbdev@vger.kernel.org, peter.senna@gmail.com, dbaryshkov@gmail.com, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, dmitry.torokhov@gmail.com, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, tomi.valkeinen@ti.com, jslaby@suse.com, joe@perches.com, ricardo.ribalda@gmail.com, plagnioj@jcrosoft.com, dwmw2@infradead.org, dan.carpenter@oracle.com, alan@linux.intel.com
 List-Id: linux-pm@vger.kernel.org
 
 
---0hHDr/TIsw4o3iPK
+--===============0875441721841202840==
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="0qt3EE9wi45a2ZFX"
+Content-Disposition: inline
+
+
+--0qt3EE9wi45a2ZFX
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Wed, Dec 02, 2015 at 02:59:06PM +0900, Krzysztof Kozlowski wrote:
-> Actually reset/power off handlers do not really depend on power supply.
-> Move the power reset out of power supply block so it will appear in main
-> drivers section. This fixes following build warning (encountered on ARM
-> exynos defconfig when POWER_SUPPLY is disabled manually):
->=20
-> warning: (ARCH_HISI && ARCH_INTEGRATOR && ARCH_EXYNOS && ARCH_VEXPRESS &&=
- REALVIEW_DT) selects POWER_RESET which has unmet direct dependencies (POWE=
-R_SUPPLY)
-> warning: (ARCH_EXYNOS) selects POWER_RESET_SYSCON which has unmet direct =
-dependencies (POWER_SUPPLY && POWER_RESET && OF)
-> warning: (ARCH_EXYNOS) selects POWER_RESET_SYSCON_POWEROFF which has unme=
-t direct dependencies (POWER_SUPPLY && POWER_RESET && OF)
+On Fri, Nov 06, 2015 at 03:12:40PM +0800, yalin wang wrote:
+> qemu use device tree to bootup linux kernel,
+> we need add device node match table to plaftorm driver,
+> so that can probe the goldfish driver correctly.
+> test by this qemu:
+> git clone https://android.googlesource.com/platform/external/qemu
 
-nice catch. I don't really like the Makefile changes, though. I think
-it would be better to make the power/ entry in drivers/Makefile into
-"obj-y" and handle the details in drivers/power/Makefile.
+Your patch is missing the DT binding documentation part and should
+be splitted into multiple patches, at least one per kernel
+subsystem. Please read Documentation/SubmittingPatches and
+Documentation/devicetree/bindings/submitting-patches.txt
 
 -- Sebastian
 
---0hHDr/TIsw4o3iPK
+--0qt3EE9wi45a2ZFX
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJWYjb2AAoJENju1/PIO/qaJbAP/jH/uj7XLvaG4ZoxU0JO4R63
-vaaIRwuLJb0kihaiBFkBUA0p2bo/7U/iUnTMuLF00NS7Lp1LUQrUAIva3Y73WVwD
-mAb3I9uy1EgwcRjF/d6fFS9hf8r8qPl0w6RE+4VBgZtPltArGvJbUdnEJSSOa51j
-6ONRtsnlDQYB6ROSI2YW4C7TTB3ZHJDhlTy4FOqabNgpyP3zObJxzgrmAyr7zqML
-pUTAZ8oD34YY+IWiy8dEqfKFJQxaQuPq6ZbEzSK8U3mqLWD8R6vqYhbxhDnbnMoJ
-nLit2vitDqKwuDoZ5CfNTxQs5Nzh9rt8IiBY7D7q2JU+oSx4arHF2TzJchDodlb0
-ObpTlC3TxizJIHfGO+ZZuntZJkTeIJCrIwW+XrZgf6PQr6Z1JNLg6DKd40g25pWn
-YT0zrT9hoJnlgN226hBTsqo4eGE57qtyiamnCLtuvy/x2n3Frt5g7teK6KWDU/nW
-FHaZakEcGUPd+SYbaccs5Yg9Nw0UF1nKhZpLwl7KaVV0x947YRXWeMQh+PMAlS8b
-9TvXX7KEOarhz2zF+yxZxVhtpTiaWv6uCQQm4ucyzygSpO+OtWL2v89dKqgcRCwR
-F8XoaL5dxrHs902DmyCx86tLYos0FkBJSo+KHjkqGC3q917kyEURcX+IAvcaYa7c
-RYtD/kws7H1c8AezWVjn
-=OZxX
+iQIcBAEBCgAGBQJWYjomAAoJENju1/PIO/qaHQsQAI/AIwC2MCMhFGGeq1m/pAdF
+3Fds1Lo4ltPWWfrzr+0q2Mu2e4IgwFBtNXFr9vcDBx/6Cg/SrZhbJvT7Kb1Yd4JU
+qfuoa1gk66/viuq42Nu/OxMUBrJvYzw2reUK6c97J//pJVBvlictEuU4g+idvJSB
+s26XcFm0HAO8rsA1oHYV/H51GwfN2XloqPxy6FFYbxPzCyoV2q+SeDHTxD0AtgHY
+S62tZkxBA9z7wuI2Hbfoy7mUIg/27ljG7ukov7s2c8tOtqK76/DiJLR4+T/KKBGn
+JB1nef0JYhEuZHn4iFKY4b6A1Uc//fn7FQLmGg3dxGF8QhLJQTDKGhSfzmZih8Q4
+df7u4pRnJ9gxDDmAxhJVAxqL0UO6zsNT4MeArKER7LJVAkN0Owi/IAGh4y+r2lpm
+GRZMLQaiG+xsFH4MkiPPCKC6aeFXGkmZH0lWy1i2LBeW5VyaBeA2gGrm4pGseRHt
+qCHRzVaab3qgRqGfX0GWR18kglxqi9ehqly0ql6OXHIWBWkBtiP7e68+4ec06kBK
+S0h2158H5Y55JtE3wPoPnFXaI86t+/+dyNBadaFzOe6+0eoCprVJ3ZUO6NpKCmDC
+LXwNcoi2MGEK+rUyXBWYx65w2RkD6sLyGsXPpiU1ETKsqofcQc8fNTkYbjXnfwee
+fyDuL7Rgz0fWClJtap9T
+=Cu8J
 -----END PGP SIGNATURE-----
 
---0hHDr/TIsw4o3iPK--
+--0qt3EE9wi45a2ZFX--
+
+--===============0875441721841202840==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+devel mailing list
+devel@linuxdriverproject.org
+http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel
+
+--===============0875441721841202840==--
