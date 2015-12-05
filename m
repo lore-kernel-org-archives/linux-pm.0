@@ -1,90 +1,62 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v6 1/4] gadget: Introduce the usb charger framework
-Date: Sat, 5 Dec 2015 17:27:21 +0100
-Message-ID: <20151205162721.GB30410@earth>
-References: <cover.1447654605.git.baolin.wang@linaro.org>
- <2ae29947ff92198d5613bfb2b925f3f4ba3b2a53.1447654606.git.baolin.wang@linaro.org>
+From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 0/2] power: Add support for TI BQ24261 charger
+Date: Sat, 5 Dec 2015 17:40:22 +0100
+Message-ID: <20151205164022.GC30410@earth>
+References: <1446136625-20845-1-git-send-email-ramakrishna.pallala@intel.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="i0/AhcQY5QxfSsSZ"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+	protocol="application/pgp-signature"; boundary="aT9PWwzfKXlsBJM1"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <2ae29947ff92198d5613bfb2b925f3f4ba3b2a53.1447654606.git.baolin.wang@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Baolin Wang <baolin.wang@linaro.org>
-Cc: balbi@ti.com, gregkh@linuxfoundation.org, dbaryshkov@gmail.com, dwmw2@infradead.org, peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, lee.jones@linaro.org, broonie@kernel.org, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1446136625-20845-1-git-send-email-ramakrishna.pallala-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Ramakrishna Pallala <ramakrishna.pallala-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jenny Tc <jenny.tc-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Andreas Dannenberg <dannenberg-l0cyMroinI0@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
 
---i0/AhcQY5QxfSsSZ
+--aT9PWwzfKXlsBJM1
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hi Ramakrishna,
 
-On Mon, Nov 16, 2015 at 02:33:31PM +0800, Baolin Wang wrote:
-> +static ssize_t cur_limit_show(struct device *dev,
-> +			      struct device_attribute *attr,
-> +			      char *buf)
-> +{
-> +	struct usb_charger *uchger = dev_to_uchger(dev);
-> +
-> +	return scnprintf(buf, PAGE_SIZE, "%d %d %d %d\n",
-> +			 uchger->cur_limit.sdp_cur_limit,
-> +			 uchger->cur_limit.dcp_cur_limit,
-> +			 uchger->cur_limit.cdp_cur_limit,
-> +			 uchger->cur_limit.aca_cur_limit);
-> +}
-> +
-> +static ssize_t cur_limit_store(struct device *dev,
-> +			       struct device_attribute *attr,
-> +			       const char *buf, size_t count)
-> +{
-> +	struct usb_charger *uchger = dev_to_uchger(dev);
-> +	struct usb_charger_cur_limit cur;
-> +	int ret;
-> +
-> +	ret = sscanf(buf, "%d %d %d %d",
-> +		     &cur.sdp_cur_limit, &cur.dcp_cur_limit,
-> +		     &cur.cdp_cur_limit, &cur.aca_cur_limit);
-> +	if (ret == 0)
-> +		return -EINVAL;
-> +
-> +	ret = usb_charger_set_cur_limit(uchger, &cur);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	return count;
-> +}
-> +static DEVICE_ATTR_RW(cur_limit);
+On Thu, Oct 29, 2015 at 10:07:03PM +0530, Ramakrishna Pallala wrote:
+> This patch series adds the support for TI BQ24261 charger driver.
+>=20
+> TI BQ24261 charger driver relies on extcon notifications to get the
+> charger cable type and based on that it will set the charging parameters.
 
-I think this functionality should be provided with one file per
-type. This makes it easier to parse the values from userspace
-and makes it possible to extend the frameworks functionality
-(e.g. when new types are added in a newer revision of the USB
-standard).
+I wonder if there is any new version of this patchset, that I
+missed with the comments from Krzysztof and Andreas being taken
+care of?
 
 -- Sebastian
 
---i0/AhcQY5QxfSsSZ
+--aT9PWwzfKXlsBJM1
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJWYxBmAAoJENju1/PIO/qaB9UQAJ51S+/sdRRob7W76WIWew/R
-u0B9tMQxEzNaSP0YfjiW1A7y/L4LRlYJzGnVy41uX/MAcpL0r1fMikXaFurQz7Mp
-VW2135DEmk1/i3PqmC9ybwlEPrqW8zGPrAjQ+l2W/z+bOd2sDyMYXRG410hCAGTa
-6TrqRKN9EkZhQLSgZZFiTwlwBlHWsPRdMW7/hOSAURRYFEltWs49Xjc1G+HU3mIq
-bz/tobum3RlqUnjsE9IFsC+eAqUsqqaD8b430Wnjh7IbJ+6KhnX13BvIRIkH0X0n
-31kam483stwq5LoGvTkRYhV/sshjHXlV5vlkGoRvjFtg2BV41x+aPk43NphcydYM
-L1IfC+F5Iyc4fOkdT7zhCzbdeGZCyZJELt20M2skSf8Y78JiyWia7bGntiflYI5v
-iaIevjV8NYF0N3Y/VmLs7eHbTc3cdhwbKcPF4meOVbelPCGKvxYO+j/6n+/uxtaU
-yHLsCcDyOW3B0kI1A2FAtLCauxd8j3SaGhue/a3z7bi7Qd3Px12rb4RENsJkJOCh
-s08KY5BQLkXcBE0cRk8ZXS9Arac9X9jR1TL/kCOxAvj9aUGwJDO+QpWyUn2rZvwV
-g1iY2EkpeT0hw/25XMNUEM+37okyDpSDAhWAMrXZiCJQatTkbYI8M5F/ykOfhzeK
-qL2vqSQoxpK/eBRoAHIl
-=8D7T
+iQIcBAEBCgAGBQJWYxNxAAoJENju1/PIO/qaM4gP/2TF0bT3cluH0mvA6QS23fnf
+Jrgwe9Jity7YMrDLF3lPgwIEjNQbV1+VYTLr523TymglhOa5D5eOlJKa7886TWTD
+osJA07AgbI3TvARPlxb/1Qx8ms3OzDr2df36LpP74VG5b/dulz98qTXafZfikP9v
+dRXoQh+vslvhpayzJuZT1NhPq0hvKWY03J1dRSE4ay5bY1rcjAPskhbbiTG/D7Ym
+OtVab86jfmcmkZ1omtwzyvrTPX9teAYakmHbnRDZHmFdnckUFTsXCAiYIFSasQVn
++/995q3aV8WkcA00K328nfwaPraQXmooJ0qfqIZ7WlCuSmLYkfveMY0jAxGdr1w6
+YWq4lK+RD5KExZ13VZKL055Hji3q+9/8Tj+4rA1Yj2MXr/c2ytsZhuyFuHonqg64
++N/3Qb5duVi1mXNrOU1hCV46kTO+4Ad7Fdr4Sr8JE1NPK15uY/Fe4qytb0Fu59n+
+B8DOvUMbfBOsWlkH71cOOEOKEBgIRo2JxexAz5Tnf0fr6xXP4QkFugWCIxB04/Lf
+sGDvCZQxGp7F6XI58AlrgTkEDbt9Ce082WvYM0HZFTRnCyI4UFSXcGdzLJinyQmc
+DMNDW6i1xhTvVDQu60PbtRXYrV8PU6B9+Fc7Iq+nEwyOUDDbuIhAWLN5Yt8NGSGW
+aKAC4Jpp7D1UTRJjNn3E
+=mmEB
 -----END PGP SIGNATURE-----
 
---i0/AhcQY5QxfSsSZ--
+--aT9PWwzfKXlsBJM1--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
