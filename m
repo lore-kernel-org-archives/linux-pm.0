@@ -1,84 +1,57 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH V2] goldfish: add goldfish match node for dt driver probe
-Date: Sat, 5 Dec 2015 02:13:13 +0100
-Message-ID: <20151205011313.GG22936@earth>
-References: <1446793960-31946-1-git-send-email-yalin.wang2010@gmail.com>
+Subject: Re: [PATCH] power: bq27xxx_battery: Reorganize I2C into a module
+Date: Sat, 5 Dec 2015 02:14:47 +0100
+Message-ID: <20151205011447.GH22936@earth>
+References: <1448297631-8916-1-git-send-email-afd@ti.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0875441721841202840=="
-Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
-In-Reply-To: <1446793960-31946-1-git-send-email-yalin.wang2010@gmail.com>
-List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
-List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
-List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
-List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
-List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
-Errors-To: driverdev-devel-bounces@linuxdriverproject.org
-Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
-To: yalin wang <yalin.wang2010@gmail.com>
-Cc: somyaanand214@gmail.com, linux-input@vger.kernel.org, linux-fbdev@vger.kernel.org, peter.senna@gmail.com, dbaryshkov@gmail.com, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, dmitry.torokhov@gmail.com, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, tomi.valkeinen@ti.com, jslaby@suse.com, joe@perches.com, ricardo.ribalda@gmail.com, plagnioj@jcrosoft.com, dwmw2@infradead.org, dan.carpenter@oracle.com, alan@linux.intel.com
-List-Id: linux-pm@vger.kernel.org
-
-
---===============0875441721841202840==
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="0qt3EE9wi45a2ZFX"
+	protocol="application/pgp-signature"; boundary="2oox5VnwalALFvA7"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:35913 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752806AbbLEBOw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 4 Dec 2015 20:14:52 -0500
 Content-Disposition: inline
+In-Reply-To: <1448297631-8916-1-git-send-email-afd@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
+To: "Andrew F. Davis" <afd@ti.com>
+Cc: Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>, Andreas Dannenberg <dannenberg@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
 
---0qt3EE9wi45a2ZFX
+--2oox5VnwalALFvA7
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-Hi,
+Hi Andrew,
 
-On Fri, Nov 06, 2015 at 03:12:40PM +0800, yalin wang wrote:
-> qemu use device tree to bootup linux kernel,
-> we need add device node match table to plaftorm driver,
-> so that can probe the goldfish driver correctly.
-> test by this qemu:
-> git clone https://android.googlesource.com/platform/external/qemu
+On Mon, Nov 23, 2015 at 10:53:51AM -0600, Andrew F. Davis wrote:
+> Separate out I2C functionality into a module. This fixes several small
+> issues and simplifies the driver initialization.
 
-Your patch is missing the DT binding documentation part and should
-be splitted into multiple patches, at least one per kernel
-subsystem. Please read Documentation/SubmittingPatches and
-Documentation/devicetree/bindings/submitting-patches.txt
+Thanks, queued.
 
 -- Sebastian
 
---0qt3EE9wi45a2ZFX
+--2oox5VnwalALFvA7
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJWYjomAAoJENju1/PIO/qaHQsQAI/AIwC2MCMhFGGeq1m/pAdF
-3Fds1Lo4ltPWWfrzr+0q2Mu2e4IgwFBtNXFr9vcDBx/6Cg/SrZhbJvT7Kb1Yd4JU
-qfuoa1gk66/viuq42Nu/OxMUBrJvYzw2reUK6c97J//pJVBvlictEuU4g+idvJSB
-s26XcFm0HAO8rsA1oHYV/H51GwfN2XloqPxy6FFYbxPzCyoV2q+SeDHTxD0AtgHY
-S62tZkxBA9z7wuI2Hbfoy7mUIg/27ljG7ukov7s2c8tOtqK76/DiJLR4+T/KKBGn
-JB1nef0JYhEuZHn4iFKY4b6A1Uc//fn7FQLmGg3dxGF8QhLJQTDKGhSfzmZih8Q4
-df7u4pRnJ9gxDDmAxhJVAxqL0UO6zsNT4MeArKER7LJVAkN0Owi/IAGh4y+r2lpm
-GRZMLQaiG+xsFH4MkiPPCKC6aeFXGkmZH0lWy1i2LBeW5VyaBeA2gGrm4pGseRHt
-qCHRzVaab3qgRqGfX0GWR18kglxqi9ehqly0ql6OXHIWBWkBtiP7e68+4ec06kBK
-S0h2158H5Y55JtE3wPoPnFXaI86t+/+dyNBadaFzOe6+0eoCprVJ3ZUO6NpKCmDC
-LXwNcoi2MGEK+rUyXBWYx65w2RkD6sLyGsXPpiU1ETKsqofcQc8fNTkYbjXnfwee
-fyDuL7Rgz0fWClJtap9T
-=Cu8J
+iQIcBAEBCgAGBQJWYjqHAAoJENju1/PIO/qacoYP/AjaNDN459WecPrGBdqNECKv
+TVrw+EpdTkkDLU+TbqexclQojWt5m1SjwmOPz3Pw9Csr4Vo6eKmqJqesEFQ8V/CJ
+PVzag0e8aFPJtqOtSa7XWKg6WQ4/K5IIdvaC5rUWLxvTSABMNj8jqhkZeecqvGDu
+SLL0nJFYMKpQesdQfKCV8QXjomvvtDo1Y9w+IsC4i22dcl/Jfle6OQehZrckTpmu
+duFvnhG8oCczm4SbZaYNkylEgkkfqEZVvHCI5qRLZFZyeE4CajR7lMAbH+R5rnPt
+rjQ0x7M3bF+0qYR6l7PrewIKXNjT91juzrV2LpjwMmg14VV52tiYot68yPdAZMuP
++smzO+O+9DGi18AeV5PhNuhuNsoSkmkhw0cCnVp3p9twLuOs8bkE04Qkbx2cgUVz
+/pkougf5mu51zPrbx5VS5afux3sUgp3ZP/7oOJMwtqKgJ7raTxOgNItIZAIR+L7k
+HBpOnl6UnorOdz467DSaS6Wp4F5O6ZmUKEaI4m3gZBgxUJsrBo+4IfEhp3FV2Smm
+MWOaiptDQHFYG4WVtSSSU4IMvSpRmdX872KXCPjnJdB6Vvyz3xX4K0BRdfkZaXi/
+VVfkMGcZRFHPl49JMXsrArjjljT39YvO6X9cn5i1905pA+Tq5x3R2Hi/wqg4Tzzw
+zBa686E+qZC30IvpfIvn
+=3XW9
 -----END PGP SIGNATURE-----
 
---0qt3EE9wi45a2ZFX--
-
---===============0875441721841202840==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-devel mailing list
-devel@linuxdriverproject.org
-http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel
-
---===============0875441721841202840==--
+--2oox5VnwalALFvA7--
