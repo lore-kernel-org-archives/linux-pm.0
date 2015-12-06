@@ -1,88 +1,37 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH V4 12/16] Documentation: DT: bindings: Add power domain
- info for NVIDIA PMC
-Date: Sat, 5 Dec 2015 18:37:55 -0600
-Message-ID: <20151206003755.GA12621@rob-hp-laptop>
-References: <1449241037-22193-1-git-send-email-jonathanh@nvidia.com>
- <1449241037-22193-13-git-send-email-jonathanh@nvidia.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2] cpufreq: mt8173: move resources allocation into
+ ->probe()
+Date: Sun, 6 Dec 2015 07:54:46 +0530
+Message-ID: <20151206022446.GV3430@ubuntu>
+References: <1448785898-17838-4-git-send-email-pi-cheng.chen@linaro.org>
+ <1449295306-9222-1-git-send-email-pi-cheng.chen@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f182.google.com ([209.85.192.182]:36566 "EHLO
+	mail-pf0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753150AbbLFCYv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 5 Dec 2015 21:24:51 -0500
+Received: by pfdd184 with SMTP id d184so45939712pfd.3
+        for <linux-pm@vger.kernel.org>; Sat, 05 Dec 2015 18:24:51 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <1449241037-22193-13-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+In-Reply-To: <1449295306-9222-1-git-send-email-pi-cheng.chen@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+Cc: Matthias Brugger <matthias.bgg@gmail.com>, Daniel Kurtz <djkurtz@chromium.org>, Ricky Liang <jcliang@chromium.org>, linux-mediatek@lists.infradead.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
-On Fri, Dec 04, 2015 at 02:57:13PM +0000, Jon Hunter wrote:
-> Add power-domain binding documentation for the NVIDIA PMC driver in
-> order to support generic power-domains.
+On 05-12-15, 14:01, Pi-Cheng Chen wrote:
+> Since the return value of ->init() of cpufreq driver is not propagated
+> to the device driver model now, move resources allocation into
+> ->probe() to handle -EPROBE_DEFER properly.
 > 
-> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> 
+> Signed-off-by: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
 > ---
-> 
-> Please note that I have been debating whether I add this
-> "nvidia,powergate-clock-disable" property or just leave the clocks
-> disabled by default. Some downstream kernels leave the clocks enabled
-> for the audio power-domain because the clocks required for powering up
-> the power-domain are needed by all modules within the power-domain.
-> However are the same time there are other power-domains that may need
-> to be on, but not always clocked and so having the ability to specify if
-> the clocks should be disabled seems useful. However, I can also remove
-> this and just have the appropriate devices turn on the clocks as well.
+> v1->v2:
+> - fix error handling path in ->probe()
 
-Seems like that is just a failure of drivers to control all the clocks 
-they need IMO.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-> ---
->  .../bindings/arm/tegra/nvidia,tegra20-pmc.txt      | 61 ++++++++++++++++++++++
->  1 file changed, 61 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
-> index 838e1a69ec0a..8e4641db51a9 100644
-> --- a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
-> +++ b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
-> @@ -1,5 +1,7 @@
->  NVIDIA Tegra Power Management Controller (PMC)
->  
-> +== Power Management Controller Node ==
-> +
->  The PMC block interacts with an external Power Management Unit. The PMC
->  mostly controls the entry and exit of the system from different sleep
->  modes. It provides power-gating controllers for SoC and CPU power-islands.
-> @@ -69,6 +71,10 @@ Optional properties for hardware-triggered thermal reset (inside 'i2c-thermtrip'
->                       Defaults to 0. Valid values are described in section 12.5.2
->                       "Pinmux Support" of the Tegra4 Technical Reference Manual.
->  
-> +Optional nodes:
-> +- pm-domains : This node contains a hierarchy of PM domain nodes, which should
-> +	       match the power-domains on the Tegra SoC.
-> +
->  Example:
->  
->  / SoC dts including file
-> @@ -114,3 +120,58 @@ pmc@7000f400 {
->  	};
->  	...
->  };
-> +
-> +
-> +== PM Domain Nodes ==
-> +
-> +Each of the PM domain nodes represents a power-domain on the Tegra SoC
-> +that can be power-gated by the PMC and should be named appropriately.
-> +
-> +Required properties:
-> +  - clocks: Must contain an entry for each clock required by the PMC for
-> +    controlling a power-gate. See ../clocks/clock-bindings.txt for details.
-> +  - resets: Must contain an entry for each reset required by the PMC for
-> +    controlling a power-gate. See ../reset/reset.txt for details.
-> +  - nvidia,powergate: Integer cell that contains an identifier for the PMC
-> +    power-gate that is associated with the power-domain. Please refer to
-> +    the Tegra TRM for more details.
-
-"reg" does not work here?
-
-Rob
+-- 
+viresh
