@@ -1,141 +1,53 @@
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v3 4/5] clk: Add consumer APIs for discovering possible
- parent clocks
-Date: Mon, 7 Dec 2015 14:44:38 -0600
-Message-ID: <1449521078.15946.91.camel@freescale.com>
-References: <1442723397-26329-1-git-send-email-scottwood@freescale.com>
-	 <1442723397-26329-5-git-send-email-scottwood@freescale.com>
-	 <1444939412.5185.267.camel@freescale.com>
+From: Ben Gamari <ben@smart-cactus.org>
+Subject: Re: [PATCH v5 0/12] cpufreq: Add support for Exynos 5800, 5420, and 5422
+Date: Mon, 07 Dec 2015 22:19:05 +0100
+Message-ID: <87mvtm9cty.fsf@smart-cactus.org>
+References: <1449091167-20758-1-git-send-email-ben@smart-cactus.org> <20151203060527.GH4302@ubuntu> <877fkv4ylk.fsf@smart-cactus.org> <20151203103703.GC2097@ubuntu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bn1bbn0105.outbound.protection.outlook.com ([157.56.111.105]:64510
-	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932967AbbLGUo5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 7 Dec 2015 15:44:57 -0500
-In-Reply-To: <1444939412.5185.267.camel@freescale.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; boundary="=-=-=";
+	micalg=pgp-sha1; protocol="application/pgp-signature"
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-Reply-To: <20151203103703.GC2097@ubuntu>
+Sender: linux-clk-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Sudeep Holla <Sudeep.Holla@arm.com>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@dowhile0.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
-To: Russell King <linux@arm.linux.org.uk>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, Michael Turquette <mturquette@baylibre.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, Tang Yuantian <Yuantian.Tang@freescale.com>
 
-On Thu, 2015-10-15 at 15:03 -0500, Scott Wood wrote:
-> On Sat, 2015-09-19 at 23:29 -0500, Scott Wood wrote:
-> > Commit fc4a05d4b0eb ("clk: Remove unused provider APIs") removed
-> > __clk_get_num_parents() and clk_hw_get_parent_by_index(), leaving only
-> > true provider API versions that operate on struct clk_hw.
-> > 
-> > qoriq-cpufreq needs these functions in order to determine the options
-> > it has for calling clk_set_parent() and thus populate the cpufreq
-> > table, so revive them as legitimate consumer APIs.
-> > 
-> > Signed-off-by: Scott Wood <scottwood@freescale.com>
-> > ---
-> > v3: new patch
-> > 
-> >  drivers/clk/clk.c   | 19 +++++++++++++++++++
-> >  include/linux/clk.h | 31 +++++++++++++++++++++++++++++++
-> >  2 files changed, 50 insertions(+)
-> 
-> Russell, could you ACK this if there are no objections?
-> 
-> Thanks,
-> Scott
+--=-=-=
+Content-Type: text/plain
 
-ping?
+Viresh Kumar <viresh.kumar@linaro.org> writes:
 
--Scott
+> On 03-12-15, 11:26, Ben Gamari wrote:
+>> Sounds reasonable to me. However, I'd just like to reiterate that this
+>> line of work can be pursued independently from the upstreaming of this
+>> series.
+>
+> I think this is the right time to upstream the right solution. Just
+> try it once, if you face lots of difficulties or issues, then we can
+> ofcourse see..
+>
+It looks like Bartlomiej has picked up this set. Regardless, while
+tracking down various devicetree issues I noticed that the cpu-supply
+and cpu%d-supply bindings appear to be completely undocumented. It
+seem as though this ought to be fixed.
 
-> 
-> > 
-> > diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
-> > index 43e2c3a..9436356 100644
-> > --- a/drivers/clk/clk.c
-> > +++ b/drivers/clk/clk.c
-> > @@ -290,6 +290,12 @@ struct clk_hw *__clk_get_hw(struct clk *clk)
-> >  }
-> >  EXPORT_SYMBOL_GPL(__clk_get_hw);
-> >  
-> > +unsigned int clk_get_num_parents(struct clk *clk)
-> > +{
-> > +     return !clk ? 0 : clk->core->num_parents;
-> > +}
-> > +EXPORT_SYMBOL_GPL(clk_get_num_parents);
-> > +
-> >  unsigned int clk_hw_get_num_parents(const struct clk_hw *hw)
-> >  {
-> >       return hw->core->num_parents;
-> > @@ -359,6 +365,19 @@ static struct clk_core 
-> > *clk_core_get_parent_by_index(struct clk_core *core,
-> >               return core->parents[index];
-> >  }
-> >  
-> > +struct clk *clk_get_parent_by_index(struct clk *clk, unsigned int index)
-> > +{
-> > +     struct clk_core *parent;
-> > +
-> > +     if (!clk)
-> > +             return NULL;
-> > +
-> > +     parent = clk_core_get_parent_by_index(clk->core, index);
-> > +
-> > +     return !parent ? NULL : parent->hw->clk;
-> > +}
-> > +EXPORT_SYMBOL_GPL(clk_get_parent_by_index);
-> > +
-> >  struct clk_hw *
-> >  clk_hw_get_parent_by_index(const struct clk_hw *hw, unsigned int index)
-> >  {
-> > diff --git a/include/linux/clk.h b/include/linux/clk.h
-> > index 0df4a51..937de0e 100644
-> > --- a/include/linux/clk.h
-> > +++ b/include/linux/clk.h
-> > @@ -392,6 +392,26 @@ int clk_set_parent(struct clk *clk, struct clk 
-> > *parent);
-> >  struct clk *clk_get_parent(struct clk *clk);
-> >  
-> >  /**
-> > + * clk_get_parent_by_index - get a possible parent clock by index
-> > + * @clk: clock source
-> > + * @index: index into the array of possible parents of this clock
-> > + *
-> > + * Returns struct clk corresponding to the requested possible
-> > + * parent clock source, or NULL.
-> > + */
-> > +struct clk *clk_get_parent_by_index(struct clk *clk,
-> > +                                 unsigned int index);
-> > +
-> > +/**
-> > + * clk_get_num_parents - get number of possible parents
-> > + * @clk: clock source
-> > + *
-> > + * Returns the number of possible parents of this clock,
-> > + * which can then be enumerated using clk_get_parent_by_index().
-> > + */
-> > +unsigned int clk_get_num_parents(struct clk *clk);
-> > +
-> > +/**
-> >   * clk_get_sys - get a clock based upon the device name
-> >   * @dev_id: device name
-> >   * @con_id: connection ID
-> > @@ -461,6 +481,17 @@ static inline struct clk *clk_get_parent(struct clk 
-> > *clk)
-> >       return NULL;
-> >  }
-> >  
-> > +struct clk *clk_get_parent_by_index(struct clk *clk,
-> > +                                 unsigned int index)
-> > +{
-> > +     return NULL;
-> > +}
-> > +
-> > +unsigned int clk_get_num_parents(struct clk *clk)
-> > +{
-> > +     return 0;
-> > +}
-> > +
-> >  #endif
-> >  
-> >  /* clk_prepare_enable helps cases using clk_enable in non-atomic context.
+Cheers,
+
+- Ben
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQEcBAEBAgAGBQJWZffJAAoJEHPt6ejPuu8B55wIAKhCh+3B6L0jnOwpTB01ThWf
+1x+S2hVSklTT8Fsr/kqvmYtl0rQzuEiZYU5/KcZBGA2Mys5bpLQz+kY84jQ94lvh
+J7QSoZ1kieWFtKE41MZ+TfqJ1k2/xKZ9TIllkl2yNq89zEbIjF+ePgO2j5l+jH81
+s1RK0IbHbmlLhcnqRVUmSBuB+nsvHPVCHWOQvpfIsWQdQmqpYhIPoAZe9UdbjPTC
+qF58N5EPrhTty/1dxQOlXm1LhxGunmSvtsfUGbXAOyuS5PQDph0RDDSCOR5OZmKg
+QW0b8r7Qgz0P3XAOsP4sCT+tk2H6rrWz4BUw5yNPFLcHO+0crZWzZSTvW/2lP0s=
+=on3T
+-----END PGP SIGNATURE-----
+--=-=-=--
