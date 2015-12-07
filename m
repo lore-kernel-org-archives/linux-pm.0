@@ -1,103 +1,89 @@
 From: Jon Hunter <jonathanh@nvidia.com>
-Subject: Re: [PATCH V4 12/16] Documentation: DT: bindings: Add power domain
- info for NVIDIA PMC
-Date: Mon, 7 Dec 2015 09:56:55 +0000
-Message-ID: <566557E7.2010807@nvidia.com>
-References: <1449241037-22193-1-git-send-email-jonathanh@nvidia.com>
- <1449241037-22193-13-git-send-email-jonathanh@nvidia.com>
- <20151206003755.GA12621@rob-hp-laptop>
+Subject: Re: [PATCH v2 1/5] power: domain: add pm_genpd_exit
+Date: Mon, 7 Dec 2015 10:04:10 +0000
+Message-ID: <5665599A.4060509@nvidia.com>
+References: <1449251148-19344-1-git-send-email-eric@anholt.net>
+ <1449251148-19344-2-git-send-email-eric@anholt.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate15.nvidia.com ([216.228.121.64]:3008 "EHLO
-	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754999AbbLGJ5B (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Dec 2015 04:57:01 -0500
-In-Reply-To: <20151206003755.GA12621@rob-hp-laptop>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1449251148-19344-2-git-send-email-eric@anholt.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eric Anholt <eric@anholt.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Florian Fainelli <f.fainelli@gmail.com>, Alexander Aring <alex.aring@gmail.com>, Pawel Moll <pawel.moll@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, Lee Jones <lee@kernel.org>, linux-kernel@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Rob Herring <robh+dt@kernel.org>, linux-rpi-kernel@lists.infradead.org, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Philipp Zabel <p.zabel@pengutronix.de>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Vince Hsu <vinceh@nvidia.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org
 
 
-On 06/12/15 00:37, Rob Herring wrote:
-> On Fri, Dec 04, 2015 at 02:57:13PM +0000, Jon Hunter wrote:
->> Add power-domain binding documentation for the NVIDIA PMC driver in
->> order to support generic power-domains.
->>
->> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
->>
->> ---
->>
->> Please note that I have been debating whether I add this
->> "nvidia,powergate-clock-disable" property or just leave the clocks
->> disabled by default. Some downstream kernels leave the clocks enabled
->> for the audio power-domain because the clocks required for powering up
->> the power-domain are needed by all modules within the power-domain.
->> However are the same time there are other power-domains that may need
->> to be on, but not always clocked and so having the ability to specify if
->> the clocks should be disabled seems useful. However, I can also remove
->> this and just have the appropriate devices turn on the clocks as well.
+On 04/12/15 17:45, Eric Anholt wrote:
+> From: Alexander Aring <alex.aring@gmail.com>
 > 
-> Seems like that is just a failure of drivers to control all the clocks 
-> they need IMO.
-
-Right and that was why I was on the fence. However, I could see that
-some domains may always need a bus clock on and so it did not seem
-complete absurd. If the consensus is to drop it, I will.
-
->> ---
->>  .../bindings/arm/tegra/nvidia,tegra20-pmc.txt      | 61 ++++++++++++++++++++++
->>  1 file changed, 61 insertions(+)
->>
->> diff --git a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
->> index 838e1a69ec0a..8e4641db51a9 100644
->> --- a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
->> +++ b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
->> @@ -1,5 +1,7 @@
->>  NVIDIA Tegra Power Management Controller (PMC)
->>  
->> +== Power Management Controller Node ==
->> +
->>  The PMC block interacts with an external Power Management Unit. The PMC
->>  mostly controls the entry and exit of the system from different sleep
->>  modes. It provides power-gating controllers for SoC and CPU power-islands.
->> @@ -69,6 +71,10 @@ Optional properties for hardware-triggered thermal reset (inside 'i2c-thermtrip'
->>                       Defaults to 0. Valid values are described in section 12.5.2
->>                       "Pinmux Support" of the Tegra4 Technical Reference Manual.
->>  
->> +Optional nodes:
->> +- pm-domains : This node contains a hierarchy of PM domain nodes, which should
->> +	       match the power-domains on the Tegra SoC.
->> +
->>  Example:
->>  
->>  / SoC dts including file
->> @@ -114,3 +120,58 @@ pmc@7000f400 {
->>  	};
->>  	...
->>  };
->> +
->> +
->> +== PM Domain Nodes ==
->> +
->> +Each of the PM domain nodes represents a power-domain on the Tegra SoC
->> +that can be power-gated by the PMC and should be named appropriately.
->> +
->> +Required properties:
->> +  - clocks: Must contain an entry for each clock required by the PMC for
->> +    controlling a power-gate. See ../clocks/clock-bindings.txt for details.
->> +  - resets: Must contain an entry for each reset required by the PMC for
->> +    controlling a power-gate. See ../reset/reset.txt for details.
->> +  - nvidia,powergate: Integer cell that contains an identifier for the PMC
->> +    power-gate that is associated with the power-domain. Please refer to
->> +    the Tegra TRM for more details.
+> This patch adds function pm_genpd_exit for undo a pm_genpd_init. This
+> is useful for multiple power domains while probing. If the probing fails
+> after one pm_genpd_init was called we need to undo all previous
+> registrations of generic pm domains inside the gpd_list list.
 > 
-> "reg" does not work here?
+> There is a check on IS_ERR_OR_NULL(genpd) which is useful to check again
+> registered power domains and not registered domains, the driver can use
+> this mechanism to have an array with registered and non-registered power
+> domains, where non-registered power domains are NULL.
+> 
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: Kevin Hilman <khilman@kernel.org>
+> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Signed-off-by: Alexander Aring <alex.aring@gmail.com>
+> Signed-off-by: Eric Anholt <eric@anholt.net>
+> Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>  drivers/base/power/domain.c | 22 ++++++++++++++++++++++
+>  include/linux/pm_domain.h   |  4 ++++
+>  2 files changed, 26 insertions(+)
+> 
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 167418e..e7aca27 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -1509,6 +1509,28 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
+>  }
+>  EXPORT_SYMBOL_GPL(pm_genpd_init);
+>  
+> +/**
+> + * pm_genpd_exit - Uninitialize a generic I/O PM domain object.
+> + * @genpd: PM domain object to uninitialize.
+> + */
+> +void pm_genpd_exit(struct generic_pm_domain *genpd)
+> +{
+> +	if (IS_ERR_OR_NULL(genpd))
+> +		return;
+> +
+> +	/* check if domain is still in registered inside the pm subsystem */
+> +	WARN_ON_ONCE(!list_empty(&genpd->master_links) ||
+> +		     !list_empty(&genpd->slave_links) ||
+> +		     !list_empty(&genpd->dev_list));
+> +
 
-Not really. This value is used to program a register to power-up/down
-the particular power-domain you are interested in.
+Why not return an error here? Seems bad to remove it, if it could still
+be referenced by other domains.
+
+Also not sure if you need to lock around the above test and removing the
+domain.
+
+> +	mutex_lock(&gpd_list_lock);
+> +	list_del(&genpd->gpd_list_node);
+> +	mutex_unlock(&gpd_list_lock);
+> +
+> +	mutex_destroy(&genpd->lock);
+> +}
+> +EXPORT_SYMBOL_GPL(pm_genpd_exit);
+> +
+
+BTW, I had just submitted a similar patch here [0]. So I would also like
+to see such an API added.
 
 Cheers
 Jon
+
+[0] http://marc.info/?l=devicetree&m=144924138932726&w=2
