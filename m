@@ -1,53 +1,141 @@
-From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Subject: Re: [PATCH v2 6/6] arm64: renesas: r8a7795: Add L2 cache-controller nodes
-Date: Mon, 7 Dec 2015 21:18:05 +0100
-Message-ID: <CAMuHMdWrXiYkcFwSkgbEfQRXvT2FsSTbqD72vtiedmeEZZKxLg@mail.gmail.com>
-References: <1449512659-16688-1-git-send-email-geert+renesas@glider.be>
-	<1449512659-16688-7-git-send-email-geert+renesas@glider.be>
-	<5665D4C7.1050705@arm.com>
-	<20151207190355.GE28024@leverpostej>
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v3 4/5] clk: Add consumer APIs for discovering possible
+ parent clocks
+Date: Mon, 7 Dec 2015 14:44:38 -0600
+Message-ID: <1449521078.15946.91.camel@freescale.com>
+References: <1442723397-26329-1-git-send-email-scottwood@freescale.com>
+	 <1442723397-26329-5-git-send-email-scottwood@freescale.com>
+	 <1444939412.5185.267.camel@freescale.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20151207190355.GE28024@leverpostej>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
-Cc: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux-sh list <linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-bn1bbn0105.outbound.protection.outlook.com ([157.56.111.105]:64510
+	"EHLO na01-bn1-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932967AbbLGUo5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 7 Dec 2015 15:44:57 -0500
+In-Reply-To: <1444939412.5185.267.camel@freescale.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Russell King <linux@arm.linux.org.uk>
+Cc: Stephen Boyd <sboyd@codeaurora.org>, Michael Turquette <mturquette@baylibre.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, Tang Yuantian <Yuantian.Tang@freescale.com>
 
-Hi Mark,
+On Thu, 2015-10-15 at 15:03 -0500, Scott Wood wrote:
+> On Sat, 2015-09-19 at 23:29 -0500, Scott Wood wrote:
+> > Commit fc4a05d4b0eb ("clk: Remove unused provider APIs") removed
+> > __clk_get_num_parents() and clk_hw_get_parent_by_index(), leaving only
+> > true provider API versions that operate on struct clk_hw.
+> > 
+> > qoriq-cpufreq needs these functions in order to determine the options
+> > it has for calling clk_set_parent() and thus populate the cpufreq
+> > table, so revive them as legitimate consumer APIs.
+> > 
+> > Signed-off-by: Scott Wood <scottwood@freescale.com>
+> > ---
+> > v3: new patch
+> > 
+> >  drivers/clk/clk.c   | 19 +++++++++++++++++++
+> >  include/linux/clk.h | 31 +++++++++++++++++++++++++++++++
+> >  2 files changed, 50 insertions(+)
+> 
+> Russell, could you ACK this if there are no objections?
+> 
+> Thanks,
+> Scott
 
-On Mon, Dec 7, 2015 at 8:03 PM, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org> wrote:
-> On Mon, Dec 07, 2015 at 06:49:43PM +0000, Sudeep Holla wrote:
->> On 07/12/15 18:24, Geert Uytterhoeven wrote:
->> >+    L2_CA57: cache-controller@0 {
->> >+            compatible = "cache";
->> >+            arm,data-latency = <4 4 1>;
->> >+            arm,tag-latency = <3 3 3>;
->>
->> Interesting, only PL2xx/3xx cache controller driver reads this from the
->> DT and configures the controller. The integrated L2 found in
->> A15/A7/A57/A53 needs doesn't make use of these values from the DT.
->
-> These properties seem to be from l2cc.txt, which really only corresponds
-> to PL210/PL220/PL310 (and variants) and isn't as generic as it sounds.
->
-> I don't see that these are necessary at all.
+ping?
 
-The datasheet does mention the data/tag RAM latencies/setup values, so
-I put them in DT using the properties I could fine.
+-Scott
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> > 
+> > diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+> > index 43e2c3a..9436356 100644
+> > --- a/drivers/clk/clk.c
+> > +++ b/drivers/clk/clk.c
+> > @@ -290,6 +290,12 @@ struct clk_hw *__clk_get_hw(struct clk *clk)
+> >  }
+> >  EXPORT_SYMBOL_GPL(__clk_get_hw);
+> >  
+> > +unsigned int clk_get_num_parents(struct clk *clk)
+> > +{
+> > +     return !clk ? 0 : clk->core->num_parents;
+> > +}
+> > +EXPORT_SYMBOL_GPL(clk_get_num_parents);
+> > +
+> >  unsigned int clk_hw_get_num_parents(const struct clk_hw *hw)
+> >  {
+> >       return hw->core->num_parents;
+> > @@ -359,6 +365,19 @@ static struct clk_core 
+> > *clk_core_get_parent_by_index(struct clk_core *core,
+> >               return core->parents[index];
+> >  }
+> >  
+> > +struct clk *clk_get_parent_by_index(struct clk *clk, unsigned int index)
+> > +{
+> > +     struct clk_core *parent;
+> > +
+> > +     if (!clk)
+> > +             return NULL;
+> > +
+> > +     parent = clk_core_get_parent_by_index(clk->core, index);
+> > +
+> > +     return !parent ? NULL : parent->hw->clk;
+> > +}
+> > +EXPORT_SYMBOL_GPL(clk_get_parent_by_index);
+> > +
+> >  struct clk_hw *
+> >  clk_hw_get_parent_by_index(const struct clk_hw *hw, unsigned int index)
+> >  {
+> > diff --git a/include/linux/clk.h b/include/linux/clk.h
+> > index 0df4a51..937de0e 100644
+> > --- a/include/linux/clk.h
+> > +++ b/include/linux/clk.h
+> > @@ -392,6 +392,26 @@ int clk_set_parent(struct clk *clk, struct clk 
+> > *parent);
+> >  struct clk *clk_get_parent(struct clk *clk);
+> >  
+> >  /**
+> > + * clk_get_parent_by_index - get a possible parent clock by index
+> > + * @clk: clock source
+> > + * @index: index into the array of possible parents of this clock
+> > + *
+> > + * Returns struct clk corresponding to the requested possible
+> > + * parent clock source, or NULL.
+> > + */
+> > +struct clk *clk_get_parent_by_index(struct clk *clk,
+> > +                                 unsigned int index);
+> > +
+> > +/**
+> > + * clk_get_num_parents - get number of possible parents
+> > + * @clk: clock source
+> > + *
+> > + * Returns the number of possible parents of this clock,
+> > + * which can then be enumerated using clk_get_parent_by_index().
+> > + */
+> > +unsigned int clk_get_num_parents(struct clk *clk);
+> > +
+> > +/**
+> >   * clk_get_sys - get a clock based upon the device name
+> >   * @dev_id: device name
+> >   * @con_id: connection ID
+> > @@ -461,6 +481,17 @@ static inline struct clk *clk_get_parent(struct clk 
+> > *clk)
+> >       return NULL;
+> >  }
+> >  
+> > +struct clk *clk_get_parent_by_index(struct clk *clk,
+> > +                                 unsigned int index)
+> > +{
+> > +     return NULL;
+> > +}
+> > +
+> > +unsigned int clk_get_num_parents(struct clk *clk)
+> > +{
+> > +     return 0;
+> > +}
+> > +
+> >  #endif
+> >  
+> >  /* clk_prepare_enable helps cases using clk_enable in non-atomic context.
