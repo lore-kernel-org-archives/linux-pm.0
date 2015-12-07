@@ -1,7 +1,8 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH v4 4/8] ARM: Exynos: use generic cpufreq driver for Exynos5420
-Date: Mon, 07 Dec 2015 19:18:16 +0100
-Message-ID: <1449512300-17230-5-git-send-email-b.zolnierkie@samsung.com>
+Subject: [PATCH v4 5/8] clk: samsung: exynos5422/5800: fix cpu clock
+ configuration data
+Date: Mon, 07 Dec 2015 19:18:17 +0100
+Message-ID: <1449512300-17230-6-git-send-email-b.zolnierkie@samsung.com>
 References: <1449512300-17230-1-git-send-email-b.zolnierkie@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1449512300-17230-1-git-send-email-b.zolnierkie@samsung.com>
@@ -10,38 +11,79 @@ To: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsu
 Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com, Javier Martinez Canillas <javier.martinez@collabora.co.uk>
 List-Id: linux-pm@vger.kernel.org
 
-From: Thomas Abraham <thomas.ab@samsung.com>
+Fix cpu clock configuration data for Exynos5422/5800 SoCs
+(they use higher PCLK_DBG divider values than Exynos5420 and
+support additional frequencies).
 
-The new CPU clock type allows the use of cpufreq-dt driver
-for Exynos5420.
-
-Changes by Bartlomiej:
-- split Exynos5420 support from the original patch
-- disable cpufreq if big.LITTLE switcher support is enabled
-- switch to using cpufreq-dt driver
+Based on Hardkernel's kernel for ODROID-XU3 board.
 
 Cc: Tomasz Figa <tomasz.figa@gmail.com>
-Cc: Kukjin Kim <kgene.kim@samsung.com>
+Cc: Mike Turquette <mturquette@linaro.org>
 Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
-Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
+Cc: Thomas Abraham <thomas.ab@samsung.com>
+Acked-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
- arch/arm/mach-exynos/exynos.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/clk/samsung/clk-exynos5420.c | 36 +++++++++++++++++++++++++++++++++---
+ 1 file changed, 33 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm/mach-exynos/exynos.c b/arch/arm/mach-exynos/exynos.c
-index 1c47aee..7a89c9d 100644
---- a/arch/arm/mach-exynos/exynos.c
-+++ b/arch/arm/mach-exynos/exynos.c
-@@ -230,6 +230,9 @@ static const struct of_device_id exynos_cpufreq_matches[] = {
- 	{ .compatible = "samsung,exynos4212", .data = "cpufreq-dt" },
- 	{ .compatible = "samsung,exynos4412", .data = "cpufreq-dt" },
- 	{ .compatible = "samsung,exynos5250", .data = "cpufreq-dt" },
-+#ifndef CONFIG_BL_SWITCHER
-+	{ .compatible = "samsung,exynos5420", .data = "cpufreq-dt" },
-+#endif
- 	{ /* sentinel */ }
+diff --git a/drivers/clk/samsung/clk-exynos5420.c b/drivers/clk/samsung/clk-exynos5420.c
+index 2a92546..837329d 100644
+--- a/drivers/clk/samsung/clk-exynos5420.c
++++ b/drivers/clk/samsung/clk-exynos5420.c
+@@ -1274,10 +1274,34 @@ static const struct exynos_cpuclk_cfg_data exynos5420_eglclk_d[] __initconst = {
+ 	{  0 },
  };
  
++static const struct exynos_cpuclk_cfg_data exynos5800_eglclk_d[] __initconst = {
++	{ 2000000, E5420_EGL_DIV0(3, 7, 7, 4), },
++	{ 1900000, E5420_EGL_DIV0(3, 7, 7, 4), },
++	{ 1800000, E5420_EGL_DIV0(3, 7, 7, 4), },
++	{ 1700000, E5420_EGL_DIV0(3, 7, 7, 3), },
++	{ 1600000, E5420_EGL_DIV0(3, 7, 7, 3), },
++	{ 1500000, E5420_EGL_DIV0(3, 7, 7, 3), },
++	{ 1400000, E5420_EGL_DIV0(3, 7, 7, 3), },
++	{ 1300000, E5420_EGL_DIV0(3, 7, 7, 2), },
++	{ 1200000, E5420_EGL_DIV0(3, 7, 7, 2), },
++	{ 1100000, E5420_EGL_DIV0(3, 7, 7, 2), },
++	{ 1000000, E5420_EGL_DIV0(3, 7, 6, 2), },
++	{  900000, E5420_EGL_DIV0(3, 7, 6, 2), },
++	{  800000, E5420_EGL_DIV0(3, 7, 5, 2), },
++	{  700000, E5420_EGL_DIV0(3, 7, 5, 2), },
++	{  600000, E5420_EGL_DIV0(3, 7, 4, 2), },
++	{  500000, E5420_EGL_DIV0(3, 7, 3, 2), },
++	{  400000, E5420_EGL_DIV0(3, 7, 3, 2), },
++	{  300000, E5420_EGL_DIV0(3, 7, 3, 2), },
++	{  200000, E5420_EGL_DIV0(3, 7, 3, 2), },
++	{  0 },
++};
++
+ #define E5420_KFC_DIV(kpll, pclk, aclk)					\
+ 		((((kpll) << 24) | ((pclk) << 20) | ((aclk) << 4)))
+ 
+ static const struct exynos_cpuclk_cfg_data exynos5420_kfcclk_d[] __initconst = {
++	{ 1400000, E5420_KFC_DIV(3, 5, 3), }, /* for Exynos5800 */
+ 	{ 1300000, E5420_KFC_DIV(3, 5, 2), },
+ 	{ 1200000, E5420_KFC_DIV(3, 5, 2), },
+ 	{ 1100000, E5420_KFC_DIV(3, 5, 2), },
+@@ -1357,9 +1381,15 @@ static void __init exynos5x_clk_init(struct device_node *np,
+ 				ARRAY_SIZE(exynos5800_gate_clks));
+ 	}
+ 
+-	exynos_register_cpu_clock(ctx, CLK_ARM_CLK, "armclk",
+-		mout_cpu_p[0], mout_cpu_p[1], 0x200,
+-		exynos5420_eglclk_d, ARRAY_SIZE(exynos5420_eglclk_d), 0);
++	if (soc == EXYNOS5420) {
++		exynos_register_cpu_clock(ctx, CLK_ARM_CLK, "armclk",
++			mout_cpu_p[0], mout_cpu_p[1], 0x200,
++			exynos5420_eglclk_d, ARRAY_SIZE(exynos5420_eglclk_d), 0);
++	} else {
++		exynos_register_cpu_clock(ctx, CLK_ARM_CLK, "armclk",
++			mout_cpu_p[0], mout_cpu_p[1], 0x200,
++			exynos5800_eglclk_d, ARRAY_SIZE(exynos5800_eglclk_d), 0);
++	}
+ 	exynos_register_cpu_clock(ctx, CLK_KFC_CLK, "kfcclk",
+ 		mout_kfc_p[0], mout_kfc_p[1], 0x28200,
+ 		exynos5420_kfcclk_d, ARRAY_SIZE(exynos5420_kfcclk_d), 0);
 -- 
 1.9.1
