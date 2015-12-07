@@ -1,38 +1,50 @@
-From: Pi-Cheng Chen <pi-cheng.chen-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 2/2] ARM64: dts: mt8173: Add CPU OPP, clock and regulator
- supply properties
-Date: Mon, 7 Dec 2015 20:44:16 +0800
-Message-ID: <CALx668Vf73vwScD+_5JbuCT7yGrZ9PviHfy0zh6vyb_9m-M7LQ@mail.gmail.com>
-References: <1449305584-414-1-git-send-email-pi-cheng.chen@linaro.org>
-	<1449305584-414-3-git-send-email-pi-cheng.chen@linaro.org>
-	<20151207100700.GH3294@ubuntu>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [RFC PATCH 0/8] CPUs capacity information for heterogeneous
+ systems
+Date: Mon, 7 Dec 2015 13:18:43 +0000
+Message-ID: <20151207131843.GP8644@n2100.arm.linux.org.uk>
+References: <1448288921-30307-1-git-send-email-juri.lelli@arm.com>
+ <20151207120244.GE14571@e106622-lin>
+ <20151207121135.GN8644@n2100.arm.linux.org.uk>
+ <20151207123654.GG14571@e106622-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20151207100700.GH3294@ubuntu>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Michael Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Daniel Kurtz <djkurtz-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, "moderated list:ARM/Mediatek SoC..." <linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Linaro Kernel Mailman List <linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from pandora.arm.linux.org.uk ([78.32.30.218]:59683 "EHLO
+	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755046AbbLGNSw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Dec 2015 08:18:52 -0500
+Content-Disposition: inline
+In-Reply-To: <20151207123654.GG14571@e106622-lin>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
 
-On Mon, Dec 7, 2015 at 6:07 PM, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
-> On 05-12-15, 16:53, Pi-Cheng Chen wrote:
->> +     cluster0_opp: opp_table0 {
->> +             compatible = "operating-points-v2";
->> +             opp-shared;
->> +             opp00 {
->
-> These have to named like: opp@50700000, look at linux-next for this.
+On Mon, Dec 07, 2015 at 12:36:54PM +0000, Juri Lelli wrote:
+> On 07/12/15 12:11, Russell King - ARM Linux wrote:
+> > It looks like the second patch doesn't yet have the backing from the DT
+> > people, which prevents the remainder of the patch set progressing.  That's
+> > the sticking point which needs to be resolved.
+> > 
+> 
+> Agreed. That is exactly the point for which I was seeking more feedback.
+> OTOH, 7/8 and 8/8 may potentially work without the DT bindings, as they
+> simply expose a sysfs attribute. If you, and others, see value in them,
+> I can easily put them at the top of the series and post a v2. Thoughts?
 
-Will do it.
+I've no idea, sorry.  When it comes to stuff like CPU level power
+management, the hardware I have is very limited in its capabilities
+(no support even for S2RAM.)  I've also never managed to get
+big.LITTLE working on my platforms that should support it.
 
-Thanks,
-Pi-Cheng
+Eg, I gave up with the TC2 tile in Versatile Express.  I forget the
+details, but getting it booting was exceedingly difficult, and no one
+really seemed interested in helping.  So my TC2 tile is collecting
+dust while the CA9x4 tile lives in the platform - which is now part of
+the nightly build/boot test farm.
 
->
-> --
-> viresh
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+RMK's Patch system: http://www.arm.linux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
+according to speedtest.net.
