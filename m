@@ -1,49 +1,38 @@
-From: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
-Subject: Re: [PATCH 1/2] cpufreq: mt8173: migrate to use operating-points-v2 bindings
-Date: Mon, 7 Dec 2015 20:43:21 +0800
-Message-ID: <CALx668XK_hriOqcKSqypT61XfMx50TjxRH5n038ju8CdCsTpUA@mail.gmail.com>
+From: Pi-Cheng Chen <pi-cheng.chen-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 2/2] ARM64: dts: mt8173: Add CPU OPP, clock and regulator
+ supply properties
+Date: Mon, 7 Dec 2015 20:44:16 +0800
+Message-ID: <CALx668Vf73vwScD+_5JbuCT7yGrZ9PviHfy0zh6vyb_9m-M7LQ@mail.gmail.com>
 References: <1449305584-414-1-git-send-email-pi-cheng.chen@linaro.org>
-	<1449305584-414-2-git-send-email-pi-cheng.chen@linaro.org>
-	<20151207100427.GG3294@ubuntu>
+	<1449305584-414-3-git-send-email-pi-cheng.chen@linaro.org>
+	<20151207100700.GH3294@ubuntu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f177.google.com ([209.85.160.177]:33085 "EHLO
-	mail-yk0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753450AbbLGMnV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Dec 2015 07:43:21 -0500
-Received: by ykdv3 with SMTP id v3so192397234ykd.0
-        for <linux-pm@vger.kernel.org>; Mon, 07 Dec 2015 04:43:21 -0800 (PST)
-In-Reply-To: <20151207100427.GG3294@ubuntu>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20151207100700.GH3294@ubuntu>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Michael Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Daniel Kurtz <djkurtz-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, "moderated list:ARM/Mediatek SoC..." <linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Linaro Kernel Mailman List <linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Matthias Brugger <matthias.bgg@gmail.com>, Michael Turquette <mturquette@baylibre.com>, Daniel Kurtz <djkurtz@chromium.org>, "moderated list:ARM/Mediatek SoC..." <linux-mediatek@lists.infradead.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-On Mon, Dec 7, 2015 at 6:04 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+On Mon, Dec 7, 2015 at 6:07 PM, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
 > On 05-12-15, 16:53, Pi-Cheng Chen wrote:
->> diff --git a/drivers/cpufreq/mt8173-cpufreq.c b/drivers/cpufreq/mt8173-cpufreq.c
->> index 257bcb9..17e9cad 100644
->> --- a/drivers/cpufreq/mt8173-cpufreq.c
->> +++ b/drivers/cpufreq/mt8173-cpufreq.c
->> @@ -344,6 +344,9 @@ static int mtk_cpu_dvfs_info_init(struct mtk_cpu_dvfs_info *info, int cpu)
->>       unsigned long rate;
->>       int ret;
->>
->> +     /* Mark the first owner of this CPU DVFS domain information */
->> +     cpumask_set_cpu(cpu, &info->cpus);
->> +
+>> +     cluster0_opp: opp_table0 {
+>> +             compatible = "operating-points-v2";
+>> +             opp-shared;
+>> +             opp00 {
 >
-> This is bad, sorry about that. Please update
-> dev_pm_opp_of_get_sharing_cpus() to update this as well.
+> These have to named like: opp@50700000, look at linux-next for this.
 
-Hi Viresh,
-
-Thanks for reviewing.
 Will do it.
 
+Thanks,
 Pi-Cheng
 
 >
 > --
 > viresh
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
