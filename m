@@ -1,62 +1,168 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2 5/6] cpufreq: governor: replace per-cpu delayed work with timers
-Date: Tue, 08 Dec 2015 00:17:18 +0100
-Message-ID: <2389125.q3qMOpRs8O@vostro.rjw.lan>
-References: <cover.1449115453.git.viresh.kumar@linaro.org> <20151207075027.GC3294@ubuntu> <3999637.u4UiK7zxOR@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:48649 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755831AbbLGWrV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Dec 2015 17:47:21 -0500
-In-Reply-To: <3999637.u4UiK7zxOR@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: [PATCH] powercap/rapl: reduce ipi calls
+Date: Mon,  7 Dec 2015 15:01:15 -0800
+Message-ID: <1449529275-14722-1-git-send-email-jacob.jun.pan@linux.intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, ashwin.chaugule@linaro.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, LKML <linux-kernel@vger.kernel.org>
 
-On Monday, December 07, 2015 11:43:50 PM Rafael J. Wysocki wrote:
-> On Monday, December 07, 2015 01:20:27 PM Viresh Kumar wrote:
-> > On 07-12-15, 02:28, Rafael J. Wysocki wrote:
-> > > What about if that happens in parallel with the decrementation in
-> > > dbs_work_handler()?
-> > > 
-> > > Is there anything preventing that from happening?
-> > 
-> > Hmmm, you are right. Following is required for that.
-> > 
-> > diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-> > index c9e420bd0eec..d8a89e653933 100644
-> > --- a/drivers/cpufreq/cpufreq_governor.c
-> > +++ b/drivers/cpufreq/cpufreq_governor.c
-> > @@ -230,6 +230,7 @@ static void dbs_work_handler(struct work_struct *work)
-> >         struct dbs_data *dbs_data;
-> >         unsigned int sampling_rate, delay;
-> >         bool eval_load;
-> > +       unsigned long flags;
-> >  
-> >         policy = shared->policy;
-> >         dbs_data = policy->governor_data;
-> > @@ -257,7 +258,10 @@ static void dbs_work_handler(struct work_struct *work)
-> >         delay = dbs_data->cdata->gov_dbs_timer(policy, eval_load);
-> >         mutex_unlock(&shared->timer_mutex);
-> >  
-> > +       spin_lock_irqsave(&shared->timer_lock, flags);
-> >         shared->skip_work--;
-> > +       spin_unlock_irqrestore(&shared->timer_lock, flags);
-> > +
-> >         gov_add_timers(policy, delay);
-> >  }
-> 
-> OK, so can you please send an updated patch with the above change folded in?
+Reduce remote CPU calls for MSR access by combining read
+modify write into one function.
 
-In fact, I've already folded the above changes into the $subject patch (but this
-is an exception).
+Suggested-by: Peter Zijlstra <peterz@infradead.org>
+Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+---
+ drivers/powercap/intel_rapl.c | 91 +++++++++++++++++++++++++++----------------
+ 1 file changed, 58 insertions(+), 33 deletions(-)
 
-I'll send the "atomic" changes separately.
-
-Thanks,
-Rafael
-
+diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+index cc97f08..620c916 100644
+--- a/drivers/powercap/intel_rapl.c
++++ b/drivers/powercap/intel_rapl.c
+@@ -800,33 +800,43 @@ static int rapl_read_data_raw(struct rapl_domain *rd,
+ 	return 0;
+ }
+ 
++struct rapl_msr_action {
++	u32 msr;
++	unsigned long long value;
++	int shift;
++	u64 mask;
++};
++
++static void rapl_write_data_cpu(void *info)
++{
++	u64 msr_val;
++	struct rapl_msr_action *ra = (struct rapl_msr_action *)info;
++
++	rdmsrl_safe(ra->msr, &msr_val);
++	msr_val &= ~ra->mask;
++	msr_val |= ra->value << ra->shift;
++	wrmsrl_safe(ra->msr, msr_val);
++}
++
+ /* Similar use of primitive info in the read counterpart */
+ static int rapl_write_data_raw(struct rapl_domain *rd,
+ 			enum rapl_primitives prim,
+ 			unsigned long long value)
+ {
+-	u64 msr_val;
+-	u32 msr;
++
++	struct rapl_msr_action ra;
+ 	struct rapl_primitive_info *rp = &rpi[prim];
+ 	int cpu;
+ 
+ 	cpu = find_active_cpu_on_package(rd->package_id);
+ 	if (cpu < 0)
+ 		return cpu;
+-	msr = rd->msrs[rp->id];
+-	if (rdmsrl_safe_on_cpu(cpu, msr, &msr_val)) {
+-		dev_dbg(&rd->power_zone.dev,
+-			"failed to read msr 0x%x on cpu %d\n", msr, cpu);
+-		return -EIO;
+-	}
+-	value = rapl_unit_xlate(rd, rd->package_id, rp->unit, value, 1);
+-	msr_val &= ~rp->mask;
+-	msr_val |= value << rp->shift;
+-	if (wrmsrl_safe_on_cpu(cpu, msr, msr_val)) {
+-		dev_dbg(&rd->power_zone.dev,
+-			"failed to write msr 0x%x on cpu %d\n", msr, cpu);
+-		return -EIO;
+-	}
++
++	ra.msr = rd->msrs[rp->id];
++	ra.shift = rp->shift;
++	ra.mask = rp->mask;
++	ra.value = rapl_unit_xlate(rd, rd->package_id, rp->unit, value, 1);
++	smp_call_function_single(cpu, rapl_write_data_cpu, &ra, 1);
+ 
+ 	return 0;
+ }
+@@ -893,6 +903,21 @@ static int rapl_check_unit_atom(struct rapl_package *rp, int cpu)
+ 	return 0;
+ }
+ 
++static void power_limit_irq_save_cpu(void *info)
++{
++	u32 l, h = 0;
++	struct rapl_package *rp = (struct rapl_package *)info;
++
++	/* save the state of PLN irq mask bit before disabling it */
++	rdmsr_safe(MSR_IA32_PACKAGE_THERM_INTERRUPT, &l, &h);
++	if (!(rp->power_limit_irq & PACKAGE_PLN_INT_SAVED)) {
++		rp->power_limit_irq = l & PACKAGE_THERM_INT_PLN_ENABLE;
++		rp->power_limit_irq |= PACKAGE_PLN_INT_SAVED;
++	}
++	l &= ~PACKAGE_THERM_INT_PLN_ENABLE;
++	wrmsr_safe(MSR_IA32_PACKAGE_THERM_INTERRUPT, l, h);
++}
++
+ 
+ /* REVISIT:
+  * When package power limit is set artificially low by RAPL, LVT
+@@ -906,7 +931,6 @@ static int rapl_check_unit_atom(struct rapl_package *rp, int cpu)
+ 
+ static void package_power_limit_irq_save(int package_id)
+ {
+-	u32 l, h = 0;
+ 	int cpu;
+ 	struct rapl_package *rp;
+ 
+@@ -920,20 +944,27 @@ static void package_power_limit_irq_save(int package_id)
+ 	cpu = find_active_cpu_on_package(package_id);
+ 	if (cpu < 0)
+ 		return;
+-	/* save the state of PLN irq mask bit before disabling it */
+-	rdmsr_safe_on_cpu(cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT, &l, &h);
+-	if (!(rp->power_limit_irq & PACKAGE_PLN_INT_SAVED)) {
+-		rp->power_limit_irq = l & PACKAGE_THERM_INT_PLN_ENABLE;
+-		rp->power_limit_irq |= PACKAGE_PLN_INT_SAVED;
+-	}
+-	l &= ~PACKAGE_THERM_INT_PLN_ENABLE;
+-	wrmsr_on_cpu(cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT, l, h);
++	smp_call_function_single(cpu, power_limit_irq_save_cpu, rp, 1);
++}
++
++static void power_limit_irq_restore_cpu(void *info)
++{
++	u32 l, h = 0;
++	struct rapl_package *rp = (struct rapl_package *)info;
++
++	rdmsr_safe(MSR_IA32_PACKAGE_THERM_INTERRUPT, &l, &h);
++
++	if (rp->power_limit_irq & PACKAGE_THERM_INT_PLN_ENABLE)
++		l |= PACKAGE_THERM_INT_PLN_ENABLE;
++	else
++		l &= ~PACKAGE_THERM_INT_PLN_ENABLE;
++
++	wrmsr_safe(MSR_IA32_PACKAGE_THERM_INTERRUPT, l, h);
+ }
+ 
+ /* restore per package power limit interrupt enable state */
+ static void package_power_limit_irq_restore(int package_id)
+ {
+-	u32 l, h;
+ 	int cpu;
+ 	struct rapl_package *rp;
+ 
+@@ -951,14 +982,8 @@ static void package_power_limit_irq_restore(int package_id)
+ 	/* irq enable state not saved, nothing to restore */
+ 	if (!(rp->power_limit_irq & PACKAGE_PLN_INT_SAVED))
+ 		return;
+-	rdmsr_safe_on_cpu(cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT, &l, &h);
+-
+-	if (rp->power_limit_irq & PACKAGE_THERM_INT_PLN_ENABLE)
+-		l |= PACKAGE_THERM_INT_PLN_ENABLE;
+-	else
+-		l &= ~PACKAGE_THERM_INT_PLN_ENABLE;
+ 
+-	wrmsr_on_cpu(cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT, l, h);
++	smp_call_function_single(cpu, power_limit_irq_restore_cpu, rp, 1);
+ }
+ 
+ static void set_floor_freq_default(struct rapl_domain *rd, bool mode)
+-- 
+1.9.1
