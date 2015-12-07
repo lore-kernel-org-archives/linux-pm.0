@@ -1,39 +1,93 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: mt8173: move resources allocation into
- ->probe()
-Date: Mon, 7 Dec 2015 21:33:57 +0530
-Message-ID: <20151207160357.GL3294@ubuntu>
-References: <1448785898-17838-4-git-send-email-pi-cheng.chen@linaro.org>
- <1449295306-9222-1-git-send-email-pi-cheng.chen@linaro.org>
- <CAGS+omBwHVAARNA=ZwK+fAwfJye6eDnxoKW6qCaH_haqsw9PJA@mail.gmail.com>
- <CALx668XbV2CbuB0QL_3eV=JMTeOyjKP=s2mznadQxgGD_SGABg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f45.google.com ([209.85.220.45]:33997 "EHLO
-	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756119AbbLGQED (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Dec 2015 11:04:03 -0500
-Received: by pacwq6 with SMTP id wq6so49611710pac.1
-        for <linux-pm@vger.kernel.org>; Mon, 07 Dec 2015 08:04:02 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <CALx668XbV2CbuB0QL_3eV=JMTeOyjKP=s2mznadQxgGD_SGABg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH v4 0/8] cpufreq: add generic cpufreq driver support for
+ Exynos542x/5800 platforms
+Date: Mon, 07 Dec 2015 19:18:12 +0100
+Message-ID: <1449512300-17230-1-git-send-email-b.zolnierkie@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Ben Gamari <ben@smart-cactus.org>
+Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
-To: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
-Cc: Daniel Kurtz <djkurtz@chromium.org>, Matthias Brugger <matthias.bgg@gmail.com>, Ricky Liang <jcliang@chromium.org>, "moderated list:ARM/Mediatek SoC..." <linux-mediatek@lists.infradead.org>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 07-12-15, 20:42, Pi-Cheng Chen wrote:
-> >>         ret = dev_pm_opp_init_cpufreq_table(info->cpu_dev, &freq_table);
-> >
-> > Hmm. Does this change at init() time?  Or can we move this to probe(), too?
-> 
-> It doesn't change at init() time for MT8173 since we don't add OPP
-> dynamically and I don't see any problem to move it. I will move it to probe().
+Hi,
 
-No. None of this belongs to probe(), we do it there just to handle the
-EPROBE_DEFER thing. Please don't move anything that isn't required to
-be.
+This patch series adds generic cpufreq-dt driver support for
+Exynos542x/5800 (using the new CPU clock type which allows it).
+
+It has been tested on Exynos5422 based ODROID-XU3 Lite board.
+
+Depends on:
+- next-20151124 branch of linux-next kernel tree
+
+Changes since v3:
+- switched to using cpufreq-dt driver
+- updated patch descriptions to cover Exynos5422 support
+- added Acked-by from Sylwester to clock driver patches
+
+Changes since v2:
+- ported over next-20151124 branch
+- integrated missing CLK_RECALC_NEW_RATES flags fix to patch #3
+  (from Anand Moon)
+- added regulator supply properties for ODROID-XU3 Lite and
+  ODROID-XU4 in patch #2
+- ported CPU OPPs to operating-points-v2 (from Ben Gamari)
+- added "ARM: dts: Exynos5422: fix OPP tables" patch (from Ben
+  Gamari)
+- added "cpufreq: arm-big-little: accept operating-points-v2
+  nodes" patch (from Ben Gamari)
+- renamed OPP nodes as opp@<opp-hz>
+
+Changes since v1:
+- added CPU cluster regulator supply properties to
+  exynos5420-arndale-octa.dts, exynos5420-peach-pit.dts,
+  exynos5420-smdk5420.dts and exynos5800-peach-pi.dts
+
+Changes over Thomas' original v12 code:
+- split Exynos5420 and Exynos5800 support
+- moved E5420_[EGL,KFC]_DIV0() macros to clk-exynos5420.c
+- disabled cpufreq if big.LITTLE switcher support is enabled
+- enhanced arm_big_little[_dt] driver with CPU cluster regulator
+  support
+- fixed CPU clock configuration data for Exynos5800
+- fixed CPU operating points setup for Exynos5800
+- added CPU cluster regulator supplies for ODROID-XU3 board
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+
+Bartlomiej Zolnierkiewicz (3):
+  ARM: dts: Exynos542x/5800: add cluster regulator supply properties
+  clk: samsung: exynos5422/5800: fix cpu clock configuration data
+  ARM: dts: Exynos5800: fix CPU OPP
+
+Ben Gamari (1):
+  ARM: dts: Exynos5422: fix OPP tables
+
+Thomas Abraham (4):
+  clk: samsung: exynos5420: add cpu clock configuration data and
+    instantiate cpu clock
+  ARM: dts: Exynos5420: add CPU OPP and regulator supply property
+  ARM: Exynos: use generic cpufreq driver for Exynos5420
+  ARM: Exynos: use generic cpufreq driver for Exynos5422/5800
+
+ arch/arm/boot/dts/exynos5420-arndale-octa.dts   |   8 ++
+ arch/arm/boot/dts/exynos5420-peach-pit.dts      |   8 ++
+ arch/arm/boot/dts/exynos5420-smdk5420.dts       |   8 ++
+ arch/arm/boot/dts/exynos5420.dtsi               | 122 ++++++++++++++++++
+ arch/arm/boot/dts/exynos5422-cpus.dtsi          |  10 ++
+ arch/arm/boot/dts/exynos5422-odroidxu3-lite.dts |   8 ++
+ arch/arm/boot/dts/exynos5422-odroidxu3.dts      |   8 ++
+ arch/arm/boot/dts/exynos5422-odroidxu4.dts      |   8 ++
+ arch/arm/boot/dts/exynos5800-peach-pi.dts       |   8 ++
+ arch/arm/boot/dts/exynos5800.dtsi               | 165 ++++++++++++++++++++++++
+ arch/arm/mach-exynos/exynos.c                   |   4 +
+ drivers/clk/samsung/clk-exynos5420.c            |  88 ++++++++++++-
+ include/dt-bindings/clock/exynos5420.h          |   2 +
+ 13 files changed, 445 insertions(+), 2 deletions(-)
 
 -- 
-viresh
+1.9.1
