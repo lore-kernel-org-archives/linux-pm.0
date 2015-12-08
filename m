@@ -1,36 +1,31 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 5/6] cpufreq: governor: replace per-cpu delayed work
- with timers
-Date: Tue, 8 Dec 2015 19:00:36 +0530
-Message-ID: <20151208133036.GB3692@ubuntu>
-References: <cover.1449115453.git.viresh.kumar@linaro.org>
- <3999637.u4UiK7zxOR@vostro.rjw.lan>
- <20151208065622.GZ3294@ubuntu>
- <7208072.lZriMRM1aD@vostro.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V2 5/6] cpufreq: governor: replace per-cpu delayed work with timers
+Date: Tue, 08 Dec 2015 15:04:37 +0100
+Message-ID: <3708603.AceXez1tmv@vostro.rjw.lan>
+References: <cover.1449115453.git.viresh.kumar@linaro.org> <7208072.lZriMRM1aD@vostro.rjw.lan> <20151208133036.GB3692@ubuntu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <7208072.lZriMRM1aD@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, ashwin.chaugule@linaro.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, open list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:57968 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756350AbbLHNei (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Dec 2015 08:34:38 -0500
+In-Reply-To: <20151208133036.GB3692@ubuntu>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, ashwin.chaugule@linaro.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, open list <linux-kernel@vger.kernel.org>
 
-On 08-12-15, 14:18, Rafael J. Wysocki wrote:
-> Well, if the timer function runs on all CPUs at the same time, they all
-> can see skip_work > 1 and none of them will queue the work.
+On Tuesday, December 08, 2015 07:00:36 PM Viresh Kumar wrote:
+> On 08-12-15, 14:18, Rafael J. Wysocki wrote:
+> > Well, if the timer function runs on all CPUs at the same time, they all
+> > can see skip_work > 1 and none of them will queue the work.
+> 
+> You are talking about code after my patch, right?
 
-You are talking about code after my patch, right?
+No, I was talking about my first attempt at using the atomic variable. :-)
 
-Will will all of them see it > 1? At least one of them will see it 0
-and queue the work, unless the governor is stopped completely.
+Thanks,
+Rafael
 
-> You are right, I've overlooked that race (but then it is rather easy to
-> overlook).
-
-Yeah, we (at least I) took a long time to understand that this was the
-real problem we always had and so fixed it recently.
-
--- 
-viresh
