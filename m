@@ -1,157 +1,114 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH RFC 21/27] drivers: cpu-pd: Parse topology to setup CPU
- PM domains
-Date: Tue, 8 Dec 2015 11:05:36 -0700
-Message-ID: <20151208180536.GB2230@linaro.org>
-References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
- <1447799871-56374-22-git-send-email-lina.iyer@linaro.org>
- <20151207145458.GA20538@red-moon>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH v2 3/5] ARM: bcm2835: add rpi power domain driver
+Date: Tue, 08 Dec 2015 10:19:26 -0800
+Message-ID: <7hvb88ls5t.fsf@deeprootsystems.com>
+References: <1449251148-19344-1-git-send-email-eric@anholt.net>
+	<1449251148-19344-4-git-send-email-eric@anholt.net>
+	<7hmvtln87l.fsf@deeprootsystems.com>
+	<87fuzdiwcl.fsf@eliezer.anholt.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20151207145458.GA20538@red-moon>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: ulf.hansson@linaro.org, khilman@linaro.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, geert@linux-m68k.org, k.kozlowski@samsung.com, msivasub@codeaurora.org, agross@codeaurora.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, ahaslam@baylibre.com, mtitinger@baylibre.com, Rob Herring <robherring2@gmail.com>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f45.google.com ([209.85.220.45]:35959 "EHLO
+	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751152AbbLHST3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Dec 2015 13:19:29 -0500
+Received: by pacdm15 with SMTP id dm15so15716503pac.3
+        for <linux-pm@vger.kernel.org>; Tue, 08 Dec 2015 10:19:29 -0800 (PST)
+In-Reply-To: <87fuzdiwcl.fsf@eliezer.anholt.net> (Eric Anholt's message of
+	"Mon, 07 Dec 2015 17:04:58 -0800")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eric Anholt <eric@anholt.net>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-rpi-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Lee Jones <lee@kernel.org>, Florian Fainelli <f.fainelli@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alexander Aring <alex.aring@gmail.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>
 
-On Mon, Dec 07 2015 at 07:53 -0700, Lorenzo Pieralisi wrote:
->Hi Lina,
+Hi Eric,
+
+Eric Anholt <eric@anholt.net> writes:
+
+> Kevin Hilman <khilman@kernel.org> writes:
 >
->On Tue, Nov 17, 2015 at 03:37:45PM -0700, Lina Iyer wrote:
->> Architectures that support CPU domain control in the firmware specify
->> the domain heirarchy as part of the topology nodes. Parse and initialize
->> domains from the topology node for such architectures.
+>> Eric Anholt <eric@anholt.net> writes:
 >>
->> Cc: Rob Herring <robherring2@gmail.com>
->> Cc: Stephen Boyd <sboyd@codeaurora.org>
->> Cc: Kevin Hilman <khilman@linaro.org>
->> Cc: Ulf Hansson <ulf.hansson@linaro.org>
->> Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
->> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
->> ---
->>  drivers/base/power/cpu-pd.c | 76 +++++++++++++++++++++++++++++++++++++++++++++
->>  include/linux/cpu-pd.h      |  1 +
->>  2 files changed, 77 insertions(+)
+>>> From: Alexander Aring <alex.aring@gmail.com>
+>>>
+>>> This patch adds support for several power domains on Raspberry Pi,
+>>> including USB (so it can be enabled even if the bootloader didn't do
+>>> it), and graphics.
+>>>
+>>> This patch is the combined work of Eric Anholt (who wrote USB support
+>>> inside of the Raspberry Pi firmware driver, and wrote the non-USB
+>>> domain support) and Alexander Aring (who separated the original USB
+>>> work out from the firmware driver).
+>>>
+>>> Signed-off-by: Alexander Aring <alex.aring@gmail.com>
+>>> Signed-off-by: Eric Anholt <eric@anholt.net>
+>>> ---
+>>>
+>>> v2: Add support for power domains other than USB, using the new
+>>>     firmware interface, reword commit message (changes by Eric)
 >>
->> diff --git a/drivers/base/power/cpu-pd.c b/drivers/base/power/cpu-pd.c
->> index e331ae6..2872c18 100644
->> --- a/drivers/base/power/cpu-pd.c
->> +++ b/drivers/base/power/cpu-pd.c
->> @@ -429,3 +429,79 @@ int of_attach_cpu_pm_domain(struct device_node *dn)
->>  	return 0;
->>  }
->>  EXPORT_SYMBOL(of_attach_cpu_pm_domain);
->> +
->> +static int of_parse_cpu_pd(struct device_node *cluster,
->> +		const struct cpu_pd_ops *ops)
->> +{
->> +	struct device_node *domain_node;
->> +	struct generic_pm_domain *genpd;
->> +	char name[10];
->> +	struct device_node *c;
->> +	int i, ret;
->> +
->> +	for (i = 0; ; i++) {
->> +		snprintf(name, sizeof(name), "cluster%d", i);
->> +		c = of_get_child_by_name(cluster, name);
->> +		if (!c)
->> +			break;
->> +
->> +		domain_node = of_parse_phandle(c, "cluster", 0);
->> +		if (!domain_node)
->> +			return -1;
->> +
->> +		/* Initialize CPU PM domain domain at this level */
->> +		genpd = of_init_cpu_pm_domain(domain_node, ops);
->> +		if (IS_ERR(genpd))
->> +			return -1;
->> +
->> +		/* Initialize and attach child domains */
->> +		ret = of_parse_cpu_pd(c, ops);
->> +
->> +		/*
->> +		 * Attach the domain to its parent after reading
->> +		 * the children, so the mask of CPUs in this domain
->> +		 * are setup correctly.
->> +		 */
->> +		if (!ret)
->> +			of_attach_cpu_pm_domain(domain_node);
->> +
->> +		of_node_put(c);
->> +		if (ret != 0)
->> +			return ret;
->> +	}
->> +
->> +	return 0;
->> +}
->> +
->> +/**
->> + * of_setup_cpu_domain_topology() - Setup the CPU domains from the CPU
->> + * topology node in DT.
->> + *
->> + * @ops: The PM domain suspend/resume ops for all the domains in the topology
->> + */
->> +int of_setup_cpu_domain_topology(const struct cpu_pd_ops *ops)
->> +{
->> +	struct device_node *cn, *map;
->> +	int ret = 0;
->> +
->> +	cn = of_find_node_by_path("/cpus");
->> +	if (!cn) {
->> +		pr_err("No CPU information found in DT\n");
->> +		return 0;
->> +	}
->> +
->> +	map = of_get_child_by_name(cn, "cpu-map");
->> +	if (!map)
->> +		goto out;
->
->I commented on this before, is this reliance on cpu-map necessary ?
->Could not you just rely on the "power-domains" phandle in the cpu
->nodes to build the cpumask for a specific power domain ? I think
->you should try to decouple the concept of power domain from the cpu-map
->cluster and I think this would also simplify your code in the process.
->
-Sorry, I missed seeing your comment on this earlier.
-
-Hmm, it can be done, but I felt out of place to define just power
-domains that have no devices in Linux, since they are handled in PSCI,
-but also have no relation to PSCI. Hence, I felt cpu-map to be a good
-place for the cluster domain. But I am not strongly inclined. I can
-remove them from the cpu-map and keep them as separate nodes. However,
-it would be nice to have a way to say these nodes are PSCI controlled.
-
-Thanks,
-Lina
-
->So to sum it up, I'd suggest you build the power domain cpumask by
->enumerating the cpus pointing at a specific power-domain node.
->
-
->> +
->> +	ret = of_parse_cpu_pd(map, ops);
->> +	if (ret != 0)
->> +		goto out_map;
->> +
->> +out_map:
->> +	of_node_put(map);
->> +out:
->> +	of_node_put(cn);
->> +	return ret;
->> +}
->> +EXPORT_SYMBOL(of_setup_cpu_domain_topology);
->> diff --git a/include/linux/cpu-pd.h b/include/linux/cpu-pd.h
->> index 489ee2f..e8290db 100644
->> --- a/include/linux/cpu-pd.h
->> +++ b/include/linux/cpu-pd.h
->> @@ -32,4 +32,5 @@ struct cpu_pm_domain {
->>  struct generic_pm_domain *of_init_cpu_pm_domain(struct device_node *dn,
->>  		const struct cpu_pd_ops *ops);
->>  int of_attach_cpu_pm_domain(struct device_node *dn);
->> +int of_setup_cpu_domain_topology(const struct cpu_pd_ops *ops);
->>  #endif /* __CPU_PD_H__ */
->> --
->> 2.1.4
+>> [...]
 >>
+>>> +/*
+>>> + * Firmware indices for the old power domains interface.  Only a few
+>>> + * of them were actually implemented.
+>>> + */
+>>> +#define RPI_OLD_POWER_DOMAIN_USB		3
+>>> +#define RPI_OLD_POWER_DOMAIN_V3D		10
+>>> +
+>>
+>> Is "old" the right word here?  Are there firmware versions that could be
+>> used instead?  What happens when the firwmware is updated next time?
+>
+> Old is a good word.  It's the old interface.
+
+Sure, but "old" is relative and based on experience, folks come to
+regret those kinds of names.
+
+> As for what happens when the firmware is updated: Nothing.  The firmware
+> is updated all the time, and it maintains backwards compatibility.
+> Unless you mean "what happens when a newer, fancier power domain
+> interface is created and we need a name for the newer one" and the
+> answer is "this is a define entirely within the driver, and we can just
+> rename it when we want to."
+
+Sure, it's very contained in this driver, so it's ultimately up to you.
+It's not something worth blocking this about, I just wanted to be sure
+since I'm not very familiar with how the rpi firmware evolves.
+
+>> [...]
+>>
+>>> +	/*
+>>> +	 * Use the old firmware interface for USB power, so that we
+>>> +	 * can turn it on even if the firmware hasn't been updated.
+>>> +	 */
+>>> +	rpi_init_old_power_domain(rpi_domains, RPI_POWER_DOMAIN_USB,
+>>> +				  RPI_OLD_POWER_DOMAIN_USB, "USB");
+>>
+>> This seems a bit restrictive.
+>>
+>> To me, it seems that determining "old" or "new" (or revision of fw
+>> interface to use) should be described in DT, not hard-coded in the power
+>> domain driver.
+>>
+>> What about an additional DT property to describe that? or possibly
+>> another cell in the domain which could be used to optionally set
+>> old/legacy.
+>
+> As the author and maintainer of the code, I don't feel it's restrictive.
+> The firmware protocol is defined and is guaranteed to continue to exist,
+> it's only useful for this platform, and defining a new set of custom
+> devicetree properties for it would only obfuscate the implementation.
+> DT is a useful tool for separating out the between-board differences for
+> the same piece of hardware across multiple implementations at different
+> addresses, while this is neither hardware nor in multiple
+> implementations at different addresses.
+
+That being said, firmware revisions are also very often something that
+qualifies as a difference between boards.
+
+Anyways, as I said above, I think this is a potential future problem,
+but it's not a big deal to me since it's very self contained.
+
+Kevin
