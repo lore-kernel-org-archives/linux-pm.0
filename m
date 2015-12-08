@@ -1,33 +1,60 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 2/3] PM / OPP: Parse 'opp-supported-hw' binding
-Date: Tue, 8 Dec 2015 20:31:05 +0530
-Message-ID: <20151208150105.GH3692@ubuntu>
-References: <cover.1447904566.git.viresh.kumar@linaro.org>
- <4341a83dc6591364cd9deb3dfa8343961b8605d6.1447904566.git.viresh.kumar@linaro.org>
- <20151125205147.GE11298@codeaurora.org>
- <20151127044517.GU3869@ubuntu>
- <20151201065252.GD4459@ubuntu>
- <20151204082339.GH3430@ubuntu>
+Subject: Re: [PATCH v5 04/11] ARM: STi: STiH407: Provide generic (safe) DVFS
+ configuration
+Date: Tue, 8 Dec 2015 20:33:40 +0530
+Message-ID: <20151208150340.GI3692@ubuntu>
+References: <1449585124-15596-1-git-send-email-lee.jones@linaro.org>
+ <1449585124-15596-5-git-send-email-lee.jones@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f43.google.com ([209.85.220.43]:32964 "EHLO
+	mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964919AbbLHPDq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Dec 2015 10:03:46 -0500
+Received: by pabur14 with SMTP id ur14so13341645pab.0
+        for <linux-pm@vger.kernel.org>; Tue, 08 Dec 2015 07:03:45 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <20151204082339.GH3430@ubuntu>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, Stephen Boyd <sboyd@codeaurora.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dmitry Torokhov <dtor@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Shawn Guo <shawnguo@kernel.org>
+In-Reply-To: <1449585124-15596-5-git-send-email-lee.jones@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, kernel@stlinux.com, maxime.coquelin@st.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net, devicetree@vger.kernel.org, ajitpal.singh@st.com
 
-On 04-12-15, 13:53, Viresh Kumar wrote:
-> On 01-12-15, 12:22, Viresh Kumar wrote:
-> > Since these functions are *only* going to be called before any OPPs
-> > are added for the device, and hence ruling out any concurrent readers,
-> > maybe we can guarantee that with this:
-> 
-> @Rafael: Stephen has gone for vacations until end of year :(, can you
-> please help with some reviews ?
+On 08-12-15, 14:31, Lee Jones wrote:
+> diff --git a/arch/arm/boot/dts/stih407-family.dtsi b/arch/arm/boot/dts/stih407-family.dtsi
+> index 81f8121..9fa1e58 100644
+> --- a/arch/arm/boot/dts/stih407-family.dtsi
+> +++ b/arch/arm/boot/dts/stih407-family.dtsi
+> @@ -22,15 +22,29 @@
+>  			device_type = "cpu";
+>  			compatible = "arm,cortex-a9";
+>  			reg = <0>;
+> +
+>  			/* u-boot puts hpen in SBC dmem at 0xa4 offset */
+>  			cpu-release-addr = <0x94100A4>;
+> +
+> +					 /* kHz     uV   */
+> +			operating-points = <1500000 0
+> +					    1200000 0
+> +					    800000  0
+> +					    500000  0>;
+>  		};
+>  		cpu@1 {
+>  			device_type = "cpu";
+>  			compatible = "arm,cortex-a9";
+>  			reg = <1>;
+> +
+>  			/* u-boot puts hpen in SBC dmem at 0xa4 offset */
+>  			cpu-release-addr = <0x94100A4>;
+> +
+> +					 /* kHz     uV   */
+> +			operating-points = <1500000 0
+> +					    1200000 0
+> +					    800000  0
+> +					    500000  0>;
 
-Ping !!
+Why didn't you move to opp-v2 ?
 
 -- 
 viresh
