@@ -1,67 +1,130 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v3 09/10] PM / Hibernate: Publish pages restored in-place
- to arch code
-Date: Tue, 8 Dec 2015 09:19:24 +0100
-Message-ID: <20151208081923.GA22680@amd>
-References: <1448559168-8363-1-git-send-email-james.morse@arm.com>
- <1448559168-8363-10-git-send-email-james.morse@arm.com>
- <20151205093534.GA7569@amd>
- <56656D6C.5010004@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: [PATCH v7 2/4] gadget: Support for the usb charger framework
+Date: Tue,  8 Dec 2015 16:36:02 +0800
+Message-ID: <e3a54d723524914d6414a3fefc9b578e22cb5466.1449562597.git.baolin.wang@linaro.org>
+References: <cover.1449562597.git.baolin.wang@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42768 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932799AbbLHIT2 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Dec 2015 03:19:28 -0500
-Content-Disposition: inline
-In-Reply-To: <56656D6C.5010004@arm.com>
+Received: from mail-pa0-f41.google.com ([209.85.220.41]:35023 "EHLO
+	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964818AbbLHIgk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Dec 2015 03:36:40 -0500
+Received: by pacej9 with SMTP id ej9so8757008pac.2
+        for <linux-pm@vger.kernel.org>; Tue, 08 Dec 2015 00:36:40 -0800 (PST)
+In-Reply-To: <cover.1449562597.git.baolin.wang@linaro.org>
+In-Reply-To: <cover.1449562597.git.baolin.wang@linaro.org>
+References: <cover.1449562597.git.baolin.wang@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: James Morse <james.morse@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Kevin Kang <kkang@intrinsyc.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, wangfei <w.f@huawei.com>, Marc Zyngier <marc.zyngier@arm.com>
+To: balbi@ti.com, gregkh@linuxfoundation.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
+Cc: peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, yoshihiro.shimoda.uh@renesas.com, lee.jones@linaro.org, broonie@kernel.org, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, baolin.wang@linaro.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, linux-kernel@vger.kernel.org
 
-Hi!
+For supporting the usb charger, it adds the usb_charger_init() and
+usb_charger_exit() functions for usb charger initialization and exit.
 
-> > Umm. Could the copy function be modified to do the neccessary
-> > flushing, instead?
-> 
-> The copying is done by load_image_lzo() using memcpy() if you have
-> compression enabled, and by load_image() using swap_read_page() if you
-> don't.
-> 
-> I didn't do it here as it would clean every page copied, which was the
-> worrying part of the previous approach. If there is an architecture
-> where this cache-clean operation is expensive, it would slow down
-> restore. I was trying to benchmark the impact of this on 32bit arm when
-> I spotted it was broken.
+It will report to the usb charger when the gadget state is changed,
+then the usb charger can do the power things.
 
-You have just loaded the page from slow storage (hard drive,
-MMC). Cleaning a page should be pretty fast compared to that.
+Introduce a callback 'get_charger_type' which will implemented by
+user for usb gadget operations to get the usb charger type.
 
-> This allocated-same-page code path doesn't happen very often, so we
-> don't want this to have an impact on the 'normal' code path. On 32bit
-> arm I saw ~20 of these allocations out of ~60,000 pages.
-> 
-> This new way allocates a few extra pages during restore, and doesn't
-> assume that flush_cache_range() needs calling. It should have no impact
-> on architectures that aren't using the new list.
+Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+---
+ drivers/usb/gadget/udc/udc-core.c |   11 +++++++++++
+ include/linux/usb/gadget.h        |   11 +++++++++++
+ 2 files changed, 22 insertions(+)
 
-It is also complex.
-
-> > Alternatively, can you just clean the whole cache before jumping to
-> > the new kernel?
-> 
-> On arm64, cleaning the whole cache means cleaning all of memory by
-> virtual address, which would be a high price to pay when we only need to
-> clean the pages we copied. The current implementation does clean all
-
-How high price to pay? I mean, hibernation/restore takes
-_seconds_. Paying miliseconds to have cleaner code is acceptable
-price.
-
-
-									Pavel
+diff --git a/drivers/usb/gadget/udc/udc-core.c b/drivers/usb/gadget/udc/udc-core.c
+index f660afb..2727f01 100644
+--- a/drivers/usb/gadget/udc/udc-core.c
++++ b/drivers/usb/gadget/udc/udc-core.c
+@@ -28,6 +28,7 @@
+ #include <linux/usb/ch9.h>
+ #include <linux/usb/gadget.h>
+ #include <linux/usb.h>
++#include <linux/usb/usb_charger.h>
+ 
+ /**
+  * struct usb_udc - describes one usb device controller
+@@ -226,6 +227,9 @@ static void usb_gadget_state_work(struct work_struct *work)
+ 	struct usb_gadget *gadget = work_to_gadget(work);
+ 	struct usb_udc *udc = gadget->udc;
+ 
++	/* when the gadget state is changed, then report to USB charger */
++	usb_charger_plug_by_gadget(gadget, gadget->state);
++
+ 	if (udc)
+ 		sysfs_notify(&udc->dev.kobj, NULL, "state");
+ }
+@@ -405,8 +409,14 @@ int usb_add_gadget_udc_release(struct device *parent, struct usb_gadget *gadget,
+ 
+ 	mutex_unlock(&udc_lock);
+ 
++	ret = usb_charger_init(gadget);
++	if (ret)
++		goto err5;
++
+ 	return 0;
+ 
++err5:
++	device_del(&udc->dev);
+ err4:
+ 	list_del(&udc->list);
+ 	mutex_unlock(&udc_lock);
+@@ -481,6 +491,7 @@ void usb_del_gadget_udc(struct usb_gadget *gadget)
+ 	kobject_uevent(&udc->dev.kobj, KOBJ_REMOVE);
+ 	flush_work(&gadget->work);
+ 	device_unregister(&udc->dev);
++	usb_charger_exit(gadget);
+ 	device_unregister(&gadget->dev);
+ }
+ EXPORT_SYMBOL_GPL(usb_del_gadget_udc);
+diff --git a/include/linux/usb/gadget.h b/include/linux/usb/gadget.h
+index 3d583a1..52c19b1 100644
+--- a/include/linux/usb/gadget.h
++++ b/include/linux/usb/gadget.h
+@@ -24,6 +24,7 @@
+ #include <linux/types.h>
+ #include <linux/workqueue.h>
+ #include <linux/usb/ch9.h>
++#include <linux/usb/usb_charger.h>
+ 
+ struct usb_ep;
+ 
+@@ -560,6 +561,7 @@ struct usb_gadget_ops {
+ 	struct usb_ep *(*match_ep)(struct usb_gadget *,
+ 			struct usb_endpoint_descriptor *,
+ 			struct usb_ss_ep_comp_descriptor *);
++	enum usb_charger_type (*get_charger_type)(struct usb_gadget *);
+ };
+ 
+ /**
+@@ -632,6 +634,8 @@ struct usb_gadget {
+ 	unsigned			out_epnum;
+ 	unsigned			in_epnum;
+ 	struct usb_otg_caps		*otg_caps;
++	/* negotiate the power with the usb charger */
++	struct usb_charger		*charger;
+ 
+ 	unsigned			sg_supported:1;
+ 	unsigned			is_otg:1;
+@@ -836,10 +840,17 @@ static inline int usb_gadget_vbus_connect(struct usb_gadget *gadget)
+  * reporting how much power the device may consume.  For example, this
+  * could affect how quickly batteries are recharged.
+  *
++ * It will also notify the USB charger how much power the device may
++ * consume if there is a USB charger linking with the gadget.
++ *
+  * Returns zero on success, else negative errno.
+  */
+ static inline int usb_gadget_vbus_draw(struct usb_gadget *gadget, unsigned mA)
+ {
++	if (gadget->charger)
++		usb_charger_set_cur_limit_by_type(gadget->charger,
++				usb_charger_detect_type(gadget->charger), mA);
++
+ 	if (!gadget->ops->vbus_draw)
+ 		return -EOPNOTSUPP;
+ 	return gadget->ops->vbus_draw(gadget, mA);
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.7.9.5
+
