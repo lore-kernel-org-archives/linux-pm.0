@@ -1,105 +1,53 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH v2 6/6] arm64: renesas: r8a7795: Add L2 cache-controller
- nodes
-Date: Tue, 8 Dec 2015 19:16:56 +0000
-Message-ID: <20151208191656.GD11797@leverpostej>
-References: <1449512659-16688-1-git-send-email-geert+renesas@glider.be>
- <1449512659-16688-7-git-send-email-geert+renesas@glider.be>
- <5665D4C7.1050705@arm.com>
- <20151207190355.GE28024@leverpostej>
- <5667267E.2080601@gmail.com>
+From: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
+Subject: [PATCH] cpufreq: tegra: add regulator dependency for T124
+Date: Tue, 08 Dec 2015 22:52:45 +0100
+Message-ID: <2194927.eV2s2QmZs0@wuerfel>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-sh-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <5667267E.2080601@gmail.com>
-Sender: linux-sh-owner@vger.kernel.org
-To: Dirk Behme <dirk.behme@gmail.com>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Lina Iyer <lina.iyer@linaro.org>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Dec 08, 2015 at 07:50:38PM +0100, Dirk Behme wrote:
-> On 07.12.2015 20:03, Mark Rutland wrote:
-> >On Mon, Dec 07, 2015 at 06:49:43PM +0000, Sudeep Holla wrote:
-> >>
-> >>On 07/12/15 18:24, Geert Uytterhoeven wrote:
-> >>>+	L2_CA57: cache-controller@0 {
-> >>>+		compatible = "cache";
-> >>>+		arm,data-latency = <4 4 1>;
-> >>>+		arm,tag-latency = <3 3 3>;
-> >>
-> >>Interesting, only PL2xx/3xx cache controller driver reads this from the
-> >>DT and configures the controller. The integrated L2 found in
-> >>A15/A7/A57/A53 needs doesn't make use of these values from the DT.
-> >
-> >These properties seem to be from l2cc.txt, which really only corresponds
-> >to PL210/PL220/PL310 (and variants) and isn't as generic as it sounds.
-> >
-> >I don't see that these are necessary at all.
-> 
-> 
-> What's about a documentation patch like [1], then?
+This driver is the only one that calls regulator_sync_voltage(), but it
+can currently be built with CONFIG_REGULATOR disabled, producing
+this build error:
 
-I think it would be better to s/l2cc/l2x0/, and to make it clear that
-the document only applies to the variants listed above.
+drivers/cpufreq/tegra124-cpufreq.c: In function 'tegra124_cpu_switch_to_pllx':
+drivers/cpufreq/tegra124-cpufreq.c:68:2: error: implicit declaration of function 'regulator_sync_voltage' [-Werror=implicit-function-declaration]
+  regulator_sync_voltage(priv->vdd_cpu_reg);
 
-If ePAPR doesn't cover the other cases, we should document those
-separately.
+My first attempt was to implement a helper for this function
+for regulator_sync_voltage, but Mark Brown explained:
 
-> For what is the arm64 dts entry
-> 
-> cpu@0 {
-> 	...
-> 	next-level-cache = <&L2_0>;
-> };
-> 
-> L2_0: l2-cache0 {
-> 	compatible = "cache";
-> };
-> 
-> good for at all, then?
+   We don't do this for *all* regulator API functions - there's some where
+   using them strongly suggests that there is actually a dependency on
+   the regulator API.  This does seem like it might be falling into the
+   specialist category [...]
+   Looking at the code I'm pretty unclear on what the authors think the
+   use of _sync_voltage() is doing in the first place so it may be even
+   better to just remove the call.  It seems to have been included in the
+   first commit so there's not changelog explaining things and there's
+   no comment either.  I'd *expect* it to be a noop as far as I can see.
 
-With the other properties from ePAPR you can acquire information on the
-geometry of the cache, which cannot be acquired from architected
-registers.
+This adds the dependency to make the driver always build successfully
+or not be enabled at all. Alternatively, we could investigate if the
+driver should stop calling regulator_sync_voltage instead.
 
-Thanks,
-Mark.
+Signed-off-by: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
 
-> [1]
-> 
-> diff --git a/Documentation/devicetree/bindings/arm/l2cc.txt
-> b/Documentation/devicetree/bindings/arm/l2cc.txt
-> index 06c88a4..f687aed 100644
-> --- a/Documentation/devicetree/bindings/arm/l2cc.txt
-> +++ b/Documentation/devicetree/bindings/arm/l2cc.txt
-> @@ -1,12 +1,18 @@
->  * ARM L2 Cache Controller
-> 
-> -ARM cores often have a separate level 2 cache controller. There are
-> various
-> +ARM 32-bit cores often have a separate level 2 cache controller.
-> There are various
->  implementations of the L2 cache controller with compatible
-> programming models.
->  Some of the properties that are just prefixed "cache-*" are taken
-> from section
->  3.7.3 of the ePAPR v1.1 specification which can be found at:
-> 
-> https://www.power.org/wp-content/uploads/2012/06/Power_ePAPR_APPROVED_v1.1.pdf
-> 
-> -The ARM L2 cache representation in the device tree should be done
-> as follows:
-> +ARM 64-bit cores (e.g. A15/A7/A57/A53) have an integrated level 2
-> cache which
-> +doesn't make use of any values from the kernel device tree. There is no
-> +L2 cache configuration done in the kernel. The L2 cache is assumed to be
-> +preconfigured by early secure boot code.
-> +
-> +The ARM L2 cache representation for 32-bit cores in the device tree
-> should be done
-> +as follows:
-> 
->  Required properties:
-> 
-> 
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 235a1ba73d92..b1f8a73e5a94 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -226,7 +226,7 @@ config ARM_TEGRA20_CPUFREQ
+ 
+ config ARM_TEGRA124_CPUFREQ
+ 	tristate "Tegra124 CPUFreq support"
+-	depends on ARCH_TEGRA && CPUFREQ_DT
++	depends on ARCH_TEGRA && CPUFREQ_DT && REGULATOR
+ 	default y
+ 	help
+ 	  This adds the CPUFreq driver support for Tegra124 SOCs.
