@@ -1,35 +1,33 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH][experimantal] cpufreq: governor: Use an atomic variable
- for synchronization
-Date: Tue, 8 Dec 2015 20:26:58 +0530
-Message-ID: <20151208145658.GG3692@ubuntu>
-References: <cover.1449115453.git.viresh.kumar@linaro.org>
- <10138182.WjU9yqx6Gs@vostro.rjw.lan>
- <20151208135518.GE3692@ubuntu>
- <1843141.WbisoTkq1u@vostro.rjw.lan>
+Subject: Re: [PATCH V2 2/3] PM / OPP: Parse 'opp-supported-hw' binding
+Date: Tue, 8 Dec 2015 20:31:05 +0530
+Message-ID: <20151208150105.GH3692@ubuntu>
+References: <cover.1447904566.git.viresh.kumar@linaro.org>
+ <4341a83dc6591364cd9deb3dfa8343961b8605d6.1447904566.git.viresh.kumar@linaro.org>
+ <20151125205147.GE11298@codeaurora.org>
+ <20151127044517.GU3869@ubuntu>
+ <20151201065252.GD4459@ubuntu>
+ <20151204082339.GH3430@ubuntu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1843141.WbisoTkq1u@vostro.rjw.lan>
+In-Reply-To: <20151204082339.GH3430@ubuntu>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, ashwin.chaugule@linaro.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, LKML <linux-kernel@vger.kernel.org>
+To: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, Stephen Boyd <sboyd@codeaurora.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dmitry Torokhov <dtor@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Shawn Guo <shawnguo@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 08-12-15, 15:30, Rafael J. Wysocki wrote:
-> It doesn't look nice, but then having a lockless timer function is worth
-> it in my view.
+On 04-12-15, 13:53, Viresh Kumar wrote:
+> On 01-12-15, 12:22, Viresh Kumar wrote:
+> > Since these functions are *only* going to be called before any OPPs
+> > are added for the device, and hence ruling out any concurrent readers,
+> > maybe we can guarantee that with this:
 > 
-> The code in gov_cancel_work() runs relatively rarely, but the timer
-> function can run very often, so avoiding the lock in there is a priority
-> to me.
-> 
-> Plus we can avoid disabling interrupts in two places this way.
+> @Rafael: Stephen has gone for vacations until end of year :(, can you
+> please help with some reviews ?
 
-Okay, that's good enough then. I hope you will be sending these
-patches now, right? And ofcourse, we need documentation in this case
-as well.
+Ping !!
 
 -- 
 viresh
