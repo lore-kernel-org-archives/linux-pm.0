@@ -1,54 +1,88 @@
-From: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: [PATCH v7 0/4] Introduce usb charger framework to deal with the usb gadget power negotation
-Date: Tue,  8 Dec 2015 16:36:00 +0800
-Message-ID: <cover.1449562597.git.baolin.wang@linaro.org>
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: balbi-l0cyMroinI0@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org
-Cc: peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, ckeepax-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH] powercap/rapl: reduce ipi calls
+Date: Tue, 8 Dec 2015 09:48:45 +0100
+Message-ID: <20151208084845.GE6356@twins.programming.kicks-ass.net>
+References: <1449529275-14722-1-git-send-email-jacob.jun.pan@linux.intel.com>
+ <1449530602.3240.130.camel@spandruv-desk3.jf.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bombadil.infradead.org ([198.137.202.9]:42108 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933124AbbLHIss (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Dec 2015 03:48:48 -0500
+Content-Disposition: inline
+In-Reply-To: <1449530602.3240.130.camel@spandruv-desk3.jf.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>
 
-Currently the Linux kernel does not provide any standard integration of this
-feature that integrates the USB subsystem with the system power regulation
-provided by PMICs meaning that either vendors must add this in their kernels
-or USB gadget devices based on Linux (such as mobile phones) may not behave
-as they should. Thus provide a standard framework for doing this in kernel.
+On Mon, Dec 07, 2015 at 03:23:22PM -0800, Srinivas Pandruvada wrote:
+> On Mon, 2015-12-07 at 15:01 -0800, Jacob Pan wrote:
+> > +struct rapl_msr_action {
+> > +	u32 msr;
+> > +	unsigned long long value;
+> > +	int shift;
+> > +	u64 mask;
+> > +};
+> > +
+> > +static void rapl_write_data_cpu(void *info)
+> > +{
+> > +	u64 msr_val;
+> > +	struct rapl_msr_action *ra = (struct rapl_msr_action *)info;
+> > +
+> > +	rdmsrl_safe(ra->msr, &msr_val);
+> > +	msr_val &= ~ra->mask;
+> > +	msr_val |= ra->value << ra->shift;
+> > +	wrmsrl_safe(ra->msr, msr_val);
+> What about adding additional common interface
+> wrmsrl_safe_update(), so that everyone can use this?
+> 
 
-Now introduce one user with wm831x_power to support and test the usb charger,
-which is pending testing. Moreover there may be other potential users will use
-it in future.
+In which case you want a return value. Also, instead of the value,shift
+pair I would add another u64.
 
-Changes since v5:
- - Remove the notifier chain things from the gadget and introduce one callback
- function to report to the usb charger when the gadget state is changed.
- - Flesh out the port type detection which combines the USB negotiation and
- PMICs detection.
- - Supply the notification mechanism to userspace when charger state is changed.
- - Integrate with the vbus staff in the gadget API.
- - Spilt up the functionality for userspace with one file per USB charger type.
+Something like:
 
-Baolin Wang (4):
-  gadget: Introduce the usb charger framework
-  gadget: Support for the usb charger framework
-  gadget: Integrate with the usb gadget supporting for usb charger
-  power: wm831x_power: Support USB charger current limit management
+struct msr_action {
+	u32 msr;
+	int ret;
+	u64 mask, bits;
+};
 
- drivers/power/wm831x_power.c      |   69 ++++
- drivers/usb/gadget/Kconfig        |    7 +
- drivers/usb/gadget/Makefile       |    1 +
- drivers/usb/gadget/charger.c      |  708 +++++++++++++++++++++++++++++++++++++
- drivers/usb/gadget/udc/udc-core.c |   11 +
- include/linux/mfd/wm831x/pdata.h  |    3 +
- include/linux/usb/gadget.h        |   11 +
- include/linux/usb/usb_charger.h   |  164 +++++++++
- 8 files changed, 974 insertions(+)
- create mode 100644 drivers/usb/gadget/charger.c
- create mode 100644 include/linux/usb/usb_charger.h
+static void msr_update_function(void *info)
+{
+	struct msr_action *ma = info;
+	int ret = 0;
+	u64 val;
 
--- 
-1.7.9.5
+	ret = rdmsrl_safe(ma->msr, &val);
+	if (ret)
+		goto out;
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+	val &= ma->mask;
+	val |= ma->bits;
+
+	ret = wrmsrl_safe(ma->msr, val);
+
+out:
+	ma->ret = ret;
+}
+
+int rmwmsrl_safe_on_cpu(u32 msr, int cpu, u64 mask, u64 bits)
+{
+	struct msr_action ma = {
+		.msr = msr,
+		.mask = mask,
+		.bits = bits,
+	};
+	int ret;
+
+	ret = smp_call_function_single(cpu, msr_update_func, &ma, 1);
+	if (!ret)
+		ret = ma.ret;
+
+	return ret;
+}
+
