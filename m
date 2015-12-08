@@ -1,105 +1,186 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH 0/4] cpufreq governors and Intel P state driver
- compatibility
-Date: Tue, 08 Dec 2015 09:43:03 -0800
-Message-ID: <1449596583.3240.158.camel@spandruv-desk3.jf.intel.com>
-References: <1449274118-15575-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-	 <3480094.iq1rZTMoWu@skinner>
+Subject: Re: [PATCH V6 1/3] cpufreq: intel_pstate: configurable algorithm to
+ get target pstate
+Date: Tue, 08 Dec 2015 10:02:23 -0800
+Message-ID: <1449597743.3240.171.camel@spandruv-desk3.jf.intel.com>
+References: <1449247235-29389-1-git-send-email-philippe.longepe@linux.intel.com>
+	 <1449247235-29389-3-git-send-email-philippe.longepe@linux.intel.com>
+	 <3600864.XZTfEJ2ljK@skinner>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:60892 "EHLO mga14.intel.com"
+Received: from mga09.intel.com ([134.134.136.24]:5907 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751645AbbLHRoI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 8 Dec 2015 12:44:08 -0500
-In-Reply-To: <3480094.iq1rZTMoWu@skinner>
+	id S1750986AbbLHSEa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 8 Dec 2015 13:04:30 -0500
+In-Reply-To: <3600864.XZTfEJ2ljK@skinner>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Thomas Renninger <trenn@suse.de>
-Cc: rjw@rjwysocki.net, len.brown@intel.com, viresh.kumar@linaro.org, linux-pm@vger.kernel.org
+Cc: Philippe Longepe <philippe.longepe@linux.intel.com>, linux-pm@vger.kernel.org, Philippe Longepe <philippe.longepe@intel.com>, Len Brown <lenb@kernel.org>
 
-On Tue, 2015-12-08 at 15:35 +0100, Thomas Renninger wrote:
-> On Friday, December 04, 2015 04:08:34 PM Srinivas Pandruvada wrote:
-> > Intel P State driver implements two policies, performance and powersave.
-> > The powersave policy is similar to ondemand cpufreq governor when using
-> > acpi-cpufreq. This causes lots of confusion among users. This results
-> > in invalid comparison of performance when acpi-cpufreq and Intel P state
-> > performance is compared.
+On Tue, 2015-12-08 at 16:27 +0100, Thomas Renninger wrote:
+> Hi,
 > 
-> After several years you want to change this again?
-This is based on feedback. But again, if this breaks some users, then we
-need to think.
+> On Friday, December 04, 2015 05:40:30 PM Philippe Longepe wrote:
+> > From: Philippe Longepe <philippe.longepe@intel.com>
+> > 
+> > Target systems using different cpus have different power and performance
+> > requirements. They may use different algorithms to get the next P-state
+> > based on their power or performance preference.
 > 
-> We released documentation for this for SLE 12 recently.
-> It was not that easy to phrase, but it would be wrong again with newer
-> kernels..., sigh.
-Will this patchset break SLE 12?
-Are you defaulting to "powersave" policy of Intel P state?
+> But this does not necessarily have to do with the CPU model.
+Yes. In addition we are planning to work on ACPI based selection as you
+suggested below (With due credit to you). The first patch only
+differentiate BYT and CHT ATOM models which are not ATOM servers. They
+are used in non ACPI IoT systems also. Don't want to make command line
+overly complicated. One "Vanilla" and "server" is not enough.
 > 
-> But yeah, maybe this change should be finally made.
-> One idea, not sure it is better: Revert the powersave governor. Then it
-> is clear on which implemenation of intel_pstate you are running.
-> And you do not accidentially think you are adjusting freqs on powersave
-> governor but in real you are running fixed at lowest freq.
-So If we don't implement powersave policy ("running at lowest
-frequency") and publish "performance ondemand". Unless userspace is not
-explicitly setting "performance" or using CONFIG_DEFAULT_PERF.., we will
-always use "ondemand", so customers won't notice any difference. Is this
-OK?
+> > For example, power-constrained systems may not want to use
+> > high-performance P-states as aggressively as a full-size desktop or a
+> > server platform. A server platform may want to run close to the max to
+> > achieve better performance, while laptop-like systems may prefer
+> > sacrificing performance for longer battery lifes.
+> 
+> Here you name it. It is about the platform type.
+> 
+> There may be atoms clustered in server platforms and there may be
+> performance oriented CPU models built into laptops.
+You mean BYT/CHT ATOM used as servers not Avaton, which has different
+id.
 
-Also question: Do you see issue in calling "ondemand" policy?
-
-> 
-> When you are looking at cleaning up intel_pstate driver here a
-> request/question from me on the cpufreq list from March 2014.
-> From what I see, this is still valid and these pstate specific sysfs
-> knobs exist as general cpufreq files already. So the pstate ones should
-> vanish:
-> 
-There is some history to this and certification tests are relying on
-this. So I am planning to better document these as first step.
-The idea is to move away from the concept of a frequency to a P state,
-which is an operating point (frequency and voltage pair). Nothing stops
-having two P states with same frequency but different voltage point.
-> 1) sysfs tunables:
->    - max_perf_pct, min_perf_pct
->      According to Documentation/cpu-freq/intel-pstate.txt this is:
->       max_perf_pct: limits the maximum P state that will be requested by
->       the driver stated as a percentage of the available performance.
-> 
->       min_perf_pct: limits the minimum P state that will be  requested by
->       the driver stated as a percentage of the available performance.
-> 
->      Why is this needed, there already is:
->      scaling_max_freq, scaling_min_freq
-This is not enough to show which range out of this belongs to turbo
-region and which not. The Intel P state tunable have extra attributes to
-know this. Since the range is opportunistic, it is not good to
-explicitly publish using scaling_available_frequencies.
-> 
->      How are both connected?
->      For me those tunable are doing the same and intel_pstate specific ones
->      should vanish to have one cpufreq min/max frequency interface exported
->      to userspace on all archs/cpufreq drivers.
-> 
->    - no_turbo: limits the driver to selecting P states below the turbo
->      frequency range.
-> 
->      Again, there is the general cpufreq "boost" tunable defined in cpufreq.c:
->      ssize_t show_boost(..)
->      static ssize_t store_boost(...)
->      define_one_global_rw(boost);
-> 
->      What is the difference, why does intel-pstate need its own tunable?
-> 
 Thanks,
 Srinivas
 
->     Thomas
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>  
+> > For the above reasons, modify intel_pstate to allow the target P-state
+> > selection algorithm to be depend on the CPU ID.
+> 
+> This is wrong in 2 ways:
+>   1. it should depend on the platform type, not the CPU id
+>   2. it should still be overridable from userspace (this is what Len
+>      came up with when I recently sent a patch. We recently added a patch
+>      (pasted at the very end of the mail) to adjust
+>      pstate knobs, to be more performance oriented, depending on the platform
+>      type you are running on to SLES 12).
+> 
+> Below patch is based on an older kernel.
+> IMO 3 things should get combined:
+> 1. This patch based on ACPI pm_profile instead of CPU id
+> 2. Your algorithm changes
+> 3. A way to adjust ACPI pm_profile from userspace and boot parameter.
+>    e.g. acpi.pm_profile=
+>    intel_pstate could register a callback:
+>    void preferred_pm_profile(u8 pm_profile);
+>    and adjust it's algorithm and tunables according to what user writes to:
+>    /sys/firmware/acpi/pm_profile (which could be made overridable)
+> 
+> 
+> ---------------------------------------------
+> 
+> From: Thomas Renninger <trenn@suse.com>
+> Subject: intel_pstate: Adjust performance knobs on servers for SLES
+> Patch-mainline: never
+> References: bnc#945201
+> 
+> Depending on ACPI FADT table's preferred PM profile
+> (compare with ACPI spec chapter 5.2.9.1 Preferred PM Profile System Types)
+> the intel_pstate performance tunables will be set to a more performance
+> oriented policy.
+> 
+> intel_pstate=vanilla_policy
+> boot parameter will disable this functionality again.
+> 
+> intel_pstate=server_policy
+> will apply the performance optimized values also on laptops, desktops
+> or where the ACPI preferred PM profile value is not set.
+> 
+> ---
+>  drivers/cpufreq/intel_pstate.c |   43 +++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 43 insertions(+)
+> 
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -532,6 +532,14 @@ static struct cpu_defaults byt_params =
+>  	},
+>  };
+>  
+> +static struct pstate_adjust_policy adj_server_policy = {
+> +	.sample_rate_ms = 10,
+> +	.deadband = 0,
+> +	.setpoint = 30,
+> +	.p_gain_pct = 10,
+> +	.d_gain_pct = 0,
+> +	.i_gain_pct = 0,
+> +};
+>  
+>  static void intel_pstate_get_min_max(struct cpudata *cpu, int *min, int *max)
+>  {
+> @@ -862,6 +870,8 @@ static struct cpufreq_driver intel_pstat
+>  };
+>  
+>  static int __initdata no_load;
+> +static int __initdata vanilla_policy;
+> +static int __initdata server_policy;
+>  
+>  static int intel_pstate_msrs_not_valid(void)
+>  {
+> @@ -978,6 +988,9 @@ static int __init intel_pstate_init(void
+>  	int cpu, rc = 0;
+>  	const struct x86_cpu_id *id;
+>  	struct cpu_defaults *cpu_info;
+> +#if IS_ENABLED(CONFIG_ACPI)
+> +	const char *profile = NULL;
+> +#endif
+>  
+>  	if (no_load)
+>  		return -ENODEV;
+> @@ -1003,6 +1016,32 @@ static int __init intel_pstate_init(void
+>  
+>  	pr_info("Intel P-state driver initializing.\n");
+>  
+> +#if IS_ENABLED(CONFIG_ACPI)
+> +	if (!vanilla_policy) {
+> +		switch (acpi_gbl_FADT.preferred_profile) {
+> +		case PM_WORKSTATION:
+> +			profile = "Workstation";
+> +			break;
+> +		case PM_ENTERPRISE_SERVER:
+> +			profile = "Enterprise Server";
+> +			break;
+> +		case PM_SOHO_SERVER:
+> +			profile = "SOHO Server";
+> +			break;
+> +		case PM_PERFORMANCE_SERVER:
+> +			profile = "Performance Server";
+> +			break;
+> +		default:
+> +			if (server_policy)
+> +				profile = "Server";
+> +		};
+> +
+> +		if (profile) {
+> +			pr_info("Intel P-state setting %s policy\n", profile);
+> +			copy_pid_params(&adj_server_policy);
+> +		}
+> +	}
+> +#endif
+>  	all_cpu_data = vzalloc(sizeof(void *) * num_possible_cpus());
+>  	if (!all_cpu_data)
+>  		return -ENOMEM;
+> @@ -1036,6 +1075,10 @@ static int __init intel_pstate_setup(cha
+>  
+>  	if (!strcmp(str, "disable"))
+>  		no_load = 1;
+> +	if (!strcmp(str, "vanilla_policy"))
+> +		vanilla_policy = 1;
+> +	if (!strcmp(str, "server_policy"))
+> +		server_policy = 1;
+>  	return 0;
+>  }
+>  early_param("intel_pstate", intel_pstate_setup);
+> 
+> 
 
 
