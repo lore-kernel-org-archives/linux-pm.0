@@ -1,115 +1,110 @@
-From: Eric Anholt <eric@anholt.net>
-Subject: Re: [PATCH v2 3/5] ARM: bcm2835: add rpi power domain driver
-Date: Mon, 07 Dec 2015 17:04:58 -0800
-Message-ID: <87fuzdiwcl.fsf@eliezer.anholt.net>
-References: <1449251148-19344-1-git-send-email-eric@anholt.net> <1449251148-19344-4-git-send-email-eric@anholt.net> <7hmvtln87l.fsf@deeprootsystems.com>
+From: Khiem Nguyen <khiem.nguyen.xt-NdPGGYSbX7otW8iMtHSHnA@public.gmane.org>
+Subject: Re: [PATCH 6/8 v3] ARM: shmobile: r8a7790: enable to use thermal-zone
+Date: Tue, 8 Dec 2015 10:06:45 +0700
+Message-ID: <56664945.9070707@rvc.renesas.com>
+References: <87y4d6672t.wl%kuninori.morimoto.gx@renesas.com> <87poyi66yt.wl%kuninori.morimoto.gx@renesas.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-	micalg=pgp-sha512; protocol="application/pgp-signature"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gabe.freedesktop.org ([131.252.210.177]:56286 "EHLO
-	gabe.freedesktop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932114AbbLHBFM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Dec 2015 20:05:12 -0500
-In-Reply-To: <7hmvtln87l.fsf@deeprootsystems.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <87poyi66yt.wl%kuninori.morimoto.gx-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Kuninori Morimoto <kuninori.morimoto.gx-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
+Cc: Simon <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Magnus <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Khiem Nguyen <khiem.nguyen.xt-NdPGGYSbX7otW8iMtHSHnA@public.gmane.org>, "Hien Duy. Dang" <hien.dang.eb-NdPGGYSbX7otW8iMtHSHnA@public.gmane.org>, Toru Oishi <toru.oishi.zj-NdPGGYSbX7otW8iMtHSHnA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-rpi-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Lee Jones <lee@kernel.org>, Florian Fainelli <f.fainelli@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alexander Aring <alex.aring@gmail.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>
 
---=-=-=
-Content-Type: text/plain
+Hi Morimoto-san,
 
-Kevin Hilman <khilman@kernel.org> writes:
+Thanks for your patch.
 
-> Eric Anholt <eric@anholt.net> writes:
+On 12/7/2015 2:44 PM, Kuninori Morimoto wrote:
 >
->> From: Alexander Aring <alex.aring@gmail.com>
->>
->> This patch adds support for several power domains on Raspberry Pi,
->> including USB (so it can be enabled even if the bootloader didn't do
->> it), and graphics.
->>
->> This patch is the combined work of Eric Anholt (who wrote USB support
->> inside of the Raspberry Pi firmware driver, and wrote the non-USB
->> domain support) and Alexander Aring (who separated the original USB
->> work out from the firmware driver).
->>
->> Signed-off-by: Alexander Aring <alex.aring@gmail.com>
->> Signed-off-by: Eric Anholt <eric@anholt.net>
->> ---
->>
->> v2: Add support for power domains other than USB, using the new
->>     firmware interface, reword commit message (changes by Eric)
+> From: Kuninori Morimoto <kuninori.morimoto.gx-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
 >
-> [...]
+> This patch enables to use thermal-zone on r8a7790.
+> This thermal sensor can measure temperature from -40000 to 125000,
+> but over 117000 can be critical on this chip.
+> Thus, default critical temperature is now set as 115000 (this driver
+> is using 5000 steps) (Current critical temperature is using it as
+> 90000, but there is no big reason about it)
 >
->> +/*
->> + * Firmware indices for the old power domains interface.  Only a few
->> + * of them were actually implemented.
->> + */
->> +#define RPI_OLD_POWER_DOMAIN_USB		3
->> +#define RPI_OLD_POWER_DOMAIN_V3D		10
->> +
+> And it doesn't check thermal zone periodically (same as current
+> behavior). You can exchange it by modifing polling-delay[-passive]
+
+modifing -> modifying
+
+> property.
 >
-> Is "old" the right word here?  Are there firmware versions that could be
-> used instead?  What happens when the firwmware is updated next time?
+> You can set trip temp if your kernel has CONFIG_THERMAL_WRITABLE_TRIPS,
+> but you need to take care to use it, since it will call
+> orderly_poweroff() it it reached to the value.
 
-Old is a good word.  It's the old interface.
+if it reaches
 
-As for what happens when the firmware is updated: Nothing.  The firmware
-is updated all the time, and it maintains backwards compatibility.
-Unless you mean "what happens when a newer, fancier power domain
-interface is created and we need a name for the newer one" and the
-answer is "this is a define entirely within the driver, and we can just
-rename it when we want to."
-
-> [...]
+> echo $temp > /sys/class/thermal/thermal_zone0/trip_point_0_temp
 >
->> +	/*
->> +	 * Use the old firmware interface for USB power, so that we
->> +	 * can turn it on even if the firmware hasn't been updated.
->> +	 */
->> +	rpi_init_old_power_domain(rpi_domains, RPI_POWER_DOMAIN_USB,
->> +				  RPI_OLD_POWER_DOMAIN_USB, "USB");
+> Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
+> ---
+> v2 -> v3
 >
-> This seems a bit restrictive.
+>   - compatible "renesas,rcar-thermal-gen2" -> "renesas,rcar-gen2-thermal"
 >
-> To me, it seems that determining "old" or "new" (or revision of fw
-> interface to use) should be described in DT, not hard-coded in the power
-> domain driver.
+>   arch/arm/boot/dts/r8a7790.dtsi | 26 ++++++++++++++++++++++++--
+>   1 file changed, 24 insertions(+), 2 deletions(-)
 >
-> What about an additional DT property to describe that? or possibly
-> another cell in the domain which could be used to optionally set
-> old/legacy.
+> diff --git a/arch/arm/boot/dts/r8a7790.dtsi b/arch/arm/boot/dts/r8a7790.dtsi
+> index 6cfd0dc..49aaa67 100644
+> --- a/arch/arm/boot/dts/r8a7790.dtsi
+> +++ b/arch/arm/boot/dts/r8a7790.dtsi
+> @@ -112,6 +112,25 @@
+>   		};
+>   	};
+>
+> +	thermal-zones {
+> +		cpu_thermal: cpu-thermal {
+> +			polling-delay-passive	= <0>;
+> +			polling-delay		= <0>;
+> +
+> +			thermal-sensors = <&thermal>;
+> +
+> +			trips {
+> +				cpu-crit {
+> +					temperature	= <1150000>;
 
-As the author and maintainer of the code, I don't feel it's restrictive.
-The firmware protocol is defined and is guaranteed to continue to exist,
-it's only useful for this platform, and defining a new set of custom
-devicetree properties for it would only obfuscate the implementation.
-DT is a useful tool for separating out the between-board differences for
-the same piece of hardware across multiple implementations at different
-addresses, while this is neither hardware nor in multiple
-implementations at different addresses.
+One zero is redundant here. It should be 115000.
 
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJWZiy6AAoJELXWKTbR/J7ov6IP/1FajlbsOFQaVWZuQ3ndn7Q3
-vGuRb4SL3jmILSc0nCd6Cdx5G7eOJE2CQniPrq/Aoo8PPaLQsjm5jZGblqT7z5w9
-WeS48sWyGIoCXFO+ehFRrL5POovuTyGm21CB34JJChOSC5JIoufmtzS2T5DJDh3M
-rXgzPbMB77L/i+5CvWod5/vZrIV7mugZIxcii5tdZJqE8x0kz6SMFxMrimix8NDq
-cmHMx7ZHRzdGajTNurAWhNC/tUJF/mkxujTokG2HLW6p19pmajZFXeZrLGyVcR9W
-9Q0EypqQXsM76XSFhO3wqWwLai0QZAQdIMrzJWsYo3RfVvK8yg6xC/gn9RajBzwR
-Xhbh/kUUkz1LC33e/FlsfzBosCk1pSPg6XstnN8qnewq0jGEGLuKLSsKGkY4Mgi2
-5F+lHfp3wyDWVaCcRQH42gFrwI+sVpK+FS6f7KUQtUZL9L8C2RZXdGQAdOpnWKS1
-kN8U2c5ZEGmz8DLxtLkLoBcokYE15KfgQbjXGyWqUMsjO0wXQbXDkt6u0c/UJ0L8
-KE5vVIXaAYHtG2KjvUTYojSKXP3dJ6ELUGNpsnq8BhKqOpIqaGaI/nN0hrdymL0H
-mcNH4opuIQIHYbEj9F+ZIwkZ2ASjE6gkSBiNXJJxUHO5/A8BADCqYaVIkXk5iHrj
-M7v3hqZn7P612Iu1jLWd
-=Cwec
------END PGP SIGNATURE-----
---=-=-=--
+> +					hysteresis	= <0>;
+> +					type		= "critical";
+> +				};
+> +			};
+> +			cooling-maps {
+> +			};
+> +		};
+> +	};
+> +
+>   	gic: interrupt-controller@f1001000 {
+>   		compatible = "arm,gic-400";
+>   		#interrupt-cells = <3>;
+> @@ -202,12 +221,15 @@
+>   		power-domains = <&cpg_clocks>;
+>   	};
+>
+> -	thermal@e61f0000 {
+> -		compatible = "renesas,thermal-r8a7790", "renesas,rcar-thermal";
+> +	thermal: thermal@e61f0000 {
+> +		compatible =	"renesas,thermal-r8a7790",
+> +				"renesas,rcar-gen2-thermal",
+> +				"renesas,rcar-thermal";
+>   		reg = <0 0xe61f0000 0 0x14>, <0 0xe61f0100 0 0x38>;
+>   		interrupts = <0 69 IRQ_TYPE_LEVEL_HIGH>;
+>   		clocks = <&mstp5_clks R8A7790_CLK_THERMAL>;
+>   		power-domains = <&cpg_clocks>;
+> +		#thermal-sensor-cells = <0>;
+>   	};
+>
+>   	timer {
+>
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
