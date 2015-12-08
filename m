@@ -1,151 +1,115 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH][experimantal] cpufreq: governor: Use an atomic variable for synchronization
-Date: Tue, 08 Dec 2015 01:39:53 +0100
-Message-ID: <4910771.IIQSzHPqps@vostro.rjw.lan>
-References: <cover.1449115453.git.viresh.kumar@linaro.org> <3999637.u4UiK7zxOR@vostro.rjw.lan> <2389125.q3qMOpRs8O@vostro.rjw.lan>
+From: Eric Anholt <eric@anholt.net>
+Subject: Re: [PATCH v2 3/5] ARM: bcm2835: add rpi power domain driver
+Date: Mon, 07 Dec 2015 17:04:58 -0800
+Message-ID: <87fuzdiwcl.fsf@eliezer.anholt.net>
+References: <1449251148-19344-1-git-send-email-eric@anholt.net> <1449251148-19344-4-git-send-email-eric@anholt.net> <7hmvtln87l.fsf@deeprootsystems.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: multipart/signed; boundary="=-=-=";
+	micalg=pgp-sha512; protocol="application/pgp-signature"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:50998 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753016AbbLHAJ4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Dec 2015 19:09:56 -0500
-In-Reply-To: <2389125.q3qMOpRs8O@vostro.rjw.lan>
+Received: from gabe.freedesktop.org ([131.252.210.177]:56286 "EHLO
+	gabe.freedesktop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932114AbbLHBFM (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 7 Dec 2015 20:05:12 -0500
+In-Reply-To: <7hmvtln87l.fsf@deeprootsystems.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
-Cc: linaro-kernel@lists.linaro.org, ashwin.chaugule@linaro.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, LKML <linux-kernel@vger.kernel.org>
+To: Kevin Hilman <khilman@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-rpi-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Lee Jones <lee@kernel.org>, Florian Fainelli <f.fainelli@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alexander Aring <alex.aring@gmail.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+--=-=-=
+Content-Type: text/plain
 
-Use the observation that if skip_work in struct cpu_common_dbs_info
-is an atomic_t variable, the code may be rearranged to avoid using
-the timer_lock spinlock in which case that lock is not necessary any
-more.
+Kevin Hilman <khilman@kernel.org> writes:
 
-Make that change and drop timer_lock.
+> Eric Anholt <eric@anholt.net> writes:
+>
+>> From: Alexander Aring <alex.aring@gmail.com>
+>>
+>> This patch adds support for several power domains on Raspberry Pi,
+>> including USB (so it can be enabled even if the bootloader didn't do
+>> it), and graphics.
+>>
+>> This patch is the combined work of Eric Anholt (who wrote USB support
+>> inside of the Raspberry Pi firmware driver, and wrote the non-USB
+>> domain support) and Alexander Aring (who separated the original USB
+>> work out from the firmware driver).
+>>
+>> Signed-off-by: Alexander Aring <alex.aring@gmail.com>
+>> Signed-off-by: Eric Anholt <eric@anholt.net>
+>> ---
+>>
+>> v2: Add support for power domains other than USB, using the new
+>>     firmware interface, reword commit message (changes by Eric)
+>
+> [...]
+>
+>> +/*
+>> + * Firmware indices for the old power domains interface.  Only a few
+>> + * of them were actually implemented.
+>> + */
+>> +#define RPI_OLD_POWER_DOMAIN_USB		3
+>> +#define RPI_OLD_POWER_DOMAIN_V3D		10
+>> +
+>
+> Is "old" the right word here?  Are there firmware versions that could be
+> used instead?  What happens when the firwmware is updated next time?
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+Old is a good word.  It's the old interface.
 
-This is on top of my current linux-next branch.  Completely experimental and
-untested.
+As for what happens when the firmware is updated: Nothing.  The firmware
+is updated all the time, and it maintains backwards compatibility.
+Unless you mean "what happens when a newer, fancier power domain
+interface is created and we need a name for the newer one" and the
+answer is "this is a define entirely within the driver, and we can just
+rename it when we want to."
 
----
- drivers/cpufreq/cpufreq_governor.c |   29 +++++++----------------------
- drivers/cpufreq/cpufreq_governor.h |    9 ++-------
- 2 files changed, 9 insertions(+), 29 deletions(-)
+> [...]
+>
+>> +	/*
+>> +	 * Use the old firmware interface for USB power, so that we
+>> +	 * can turn it on even if the firmware hasn't been updated.
+>> +	 */
+>> +	rpi_init_old_power_domain(rpi_domains, RPI_POWER_DOMAIN_USB,
+>> +				  RPI_OLD_POWER_DOMAIN_USB, "USB");
+>
+> This seems a bit restrictive.
+>
+> To me, it seems that determining "old" or "new" (or revision of fw
+> interface to use) should be described in DT, not hard-coded in the power
+> domain driver.
+>
+> What about an additional DT property to describe that? or possibly
+> another cell in the domain which could be used to optionally set
+> old/legacy.
 
-Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
-+++ linux-pm/drivers/cpufreq/cpufreq_governor.c
-@@ -186,22 +186,15 @@ static inline void gov_cancel_timers(str
- 
- void gov_cancel_work(struct cpu_common_dbs_info *shared)
- {
--	unsigned long flags;
--
- 	/*
- 	 * No work will be queued from timer handlers after skip_work is
- 	 * updated. And so we can safely cancel the work first and then the
- 	 * timers.
- 	 */
--	spin_lock_irqsave(&shared->timer_lock, flags);
--	shared->skip_work++;
--	spin_unlock_irqrestore(&shared->timer_lock, flags);
--
-+	atomic_inc(&shared->skip_work);
- 	cancel_work_sync(&shared->work);
--
- 	gov_cancel_timers(shared->policy);
--
--	shared->skip_work = 0;
-+	atomic_set(&shared->skip_work, 0);
- }
- 
- /* Will return if we need to evaluate cpu load again or not */
-@@ -229,7 +222,6 @@ static void dbs_work_handler(struct work
- 	struct cpufreq_policy *policy;
- 	struct dbs_data *dbs_data;
- 	unsigned int sampling_rate, delay;
--	unsigned long flags;
- 	bool eval_load;
- 
- 	policy = shared->policy;
-@@ -258,9 +250,7 @@ static void dbs_work_handler(struct work
- 	delay = dbs_data->cdata->gov_dbs_timer(policy, eval_load);
- 	mutex_unlock(&shared->timer_mutex);
- 
--	spin_lock_irqsave(&shared->timer_lock, flags);
--	shared->skip_work--;
--	spin_unlock_irqrestore(&shared->timer_lock, flags);
-+	atomic_dec(&shared->skip_work);
- 
- 	gov_add_timers(policy, delay);
- }
-@@ -269,9 +259,6 @@ static void dbs_timer_handler(unsigned l
- {
- 	struct cpu_dbs_info *cdbs = (struct cpu_dbs_info *)data;
- 	struct cpu_common_dbs_info *shared = cdbs->shared;
--	unsigned long flags;
--
--	spin_lock_irqsave(&shared->timer_lock, flags);
- 
- 	/*
- 	 * Timer handler isn't allowed to queue work at the moment, because:
-@@ -279,12 +266,10 @@ static void dbs_timer_handler(unsigned l
- 	 * - We are stopping the governor
- 	 * - Or we are updating the sampling rate of ondemand governor
- 	 */
--	if (!shared->skip_work) {
--		shared->skip_work++;
-+	if (atomic_inc_return(&shared->skip_work) > 1)
-+		atomic_dec(&shared->skip_work);
-+	else
- 		queue_work(system_wq, &shared->work);
--	}
--
--	spin_unlock_irqrestore(&shared->timer_lock, flags);
- }
- 
- static void set_sampling_rate(struct dbs_data *dbs_data,
-@@ -315,7 +300,7 @@ static int alloc_common_dbs_info(struct
- 		cdata->get_cpu_cdbs(j)->shared = shared;
- 
- 	mutex_init(&shared->timer_mutex);
--	spin_lock_init(&shared->timer_lock);
-+	atomic_set(&shared->skip_work, 0);
- 	INIT_WORK(&shared->work, dbs_work_handler);
- 	return 0;
- }
-Index: linux-pm/drivers/cpufreq/cpufreq_governor.h
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_governor.h
-+++ linux-pm/drivers/cpufreq/cpufreq_governor.h
-@@ -17,6 +17,7 @@
- #ifndef _CPUFREQ_GOVERNOR_H
- #define _CPUFREQ_GOVERNOR_H
- 
-+#include <linux/atomic.h>
- #include <linux/cpufreq.h>
- #include <linux/kernel_stat.h>
- #include <linux/module.h>
-@@ -137,14 +138,8 @@ struct cpu_common_dbs_info {
- 	 */
- 	struct mutex timer_mutex;
- 
--	/*
--	 * Per policy lock that serializes access to queuing work from timer
--	 * handlers.
--	 */
--	spinlock_t timer_lock;
--
- 	ktime_t time_stamp;
--	unsigned int skip_work;
-+	atomic_t skip_work;
- 	struct work_struct work;
- };
- 
+As the author and maintainer of the code, I don't feel it's restrictive.
+The firmware protocol is defined and is guaranteed to continue to exist,
+it's only useful for this platform, and defining a new set of custom
+devicetree properties for it would only obfuscate the implementation.
+DT is a useful tool for separating out the between-board differences for
+the same piece of hardware across multiple implementations at different
+addresses, while this is neither hardware nor in multiple
+implementations at different addresses.
 
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJWZiy6AAoJELXWKTbR/J7ov6IP/1FajlbsOFQaVWZuQ3ndn7Q3
+vGuRb4SL3jmILSc0nCd6Cdx5G7eOJE2CQniPrq/Aoo8PPaLQsjm5jZGblqT7z5w9
+WeS48sWyGIoCXFO+ehFRrL5POovuTyGm21CB34JJChOSC5JIoufmtzS2T5DJDh3M
+rXgzPbMB77L/i+5CvWod5/vZrIV7mugZIxcii5tdZJqE8x0kz6SMFxMrimix8NDq
+cmHMx7ZHRzdGajTNurAWhNC/tUJF/mkxujTokG2HLW6p19pmajZFXeZrLGyVcR9W
+9Q0EypqQXsM76XSFhO3wqWwLai0QZAQdIMrzJWsYo3RfVvK8yg6xC/gn9RajBzwR
+Xhbh/kUUkz1LC33e/FlsfzBosCk1pSPg6XstnN8qnewq0jGEGLuKLSsKGkY4Mgi2
+5F+lHfp3wyDWVaCcRQH42gFrwI+sVpK+FS6f7KUQtUZL9L8C2RZXdGQAdOpnWKS1
+kN8U2c5ZEGmz8DLxtLkLoBcokYE15KfgQbjXGyWqUMsjO0wXQbXDkt6u0c/UJ0L8
+KE5vVIXaAYHtG2KjvUTYojSKXP3dJ6ELUGNpsnq8BhKqOpIqaGaI/nN0hrdymL0H
+mcNH4opuIQIHYbEj9F+ZIwkZ2ASjE6gkSBiNXJJxUHO5/A8BADCqYaVIkXk5iHrj
+M7v3hqZn7P612Iu1jLWd
+=Cwec
+-----END PGP SIGNATURE-----
+--=-=-=--
