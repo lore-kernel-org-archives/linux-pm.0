@@ -1,37 +1,34 @@
-From: Jarkko Nikula <jarkko.nikula@linux.intel.com>
-Subject: [PATCH] PCI / PM: Fix small typo in documentation
-Date: Tue,  8 Dec 2015 16:17:25 +0200
-Message-ID: <1449584245-4347-1-git-send-email-jarkko.nikula@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:50669 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964904AbbLHORt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 8 Dec 2015 09:17:49 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Lee Jones <lee.jones@linaro.org>
+Subject: [PATCH v5 05/11] ARM: STi: STiH407: Provide CPU with clocking information
+Date: Tue,  8 Dec 2015 14:31:58 +0000
+Message-ID: <1449585124-15596-6-git-send-email-lee.jones@linaro.org>
+References: <1449585124-15596-1-git-send-email-lee.jones@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1449585124-15596-1-git-send-email-lee.jones@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc: kernel@stlinux.com, maxime.coquelin@st.com, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, devicetree@vger.kernel.org, ajitpal.singh@st.com, Lee Jones <lee.jones@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Jarkko Nikula <jarkko.nikula@linux.intel.com>
 
-cuased -> caused
-
-Signed-off-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+Signed-off-by: Lee Jones <lee.jones@linaro.org>
 ---
- Documentation/power/pci.txt | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/arm/boot/dts/stih407-family.dtsi | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/Documentation/power/pci.txt b/Documentation/power/pci.txt
-index b0e911e0e8f5..44558882aa60 100644
---- a/Documentation/power/pci.txt
-+++ b/Documentation/power/pci.txt
-@@ -999,7 +999,7 @@ from its probe routine to make runtime PM work for the device.
- 
- It is important to remember that the driver's runtime_suspend() callback
- may be executed right after the usage counter has been decremented, because
--user space may already have cuased the pm_runtime_allow() helper function
-+user space may already have caused the pm_runtime_allow() helper function
- unblocking the runtime PM of the device to run via sysfs, so the driver must
- be prepared to cope with that.
- 
+diff --git a/arch/arm/boot/dts/stih407-family.dtsi b/arch/arm/boot/dts/stih407-family.dtsi
+index 9fa1e58..af9233b 100644
+--- a/arch/arm/boot/dts/stih407-family.dtsi
++++ b/arch/arm/boot/dts/stih407-family.dtsi
+@@ -31,6 +31,10 @@
+ 					    1200000 0
+ 					    800000  0
+ 					    500000  0>;
++
++			clocks = <&clk_m_a9>;
++			clock-names = "cpu";
++			clock-latency = <100000>;
+ 		};
+ 		cpu@1 {
+ 			device_type = "cpu";
 -- 
-2.6.2
-
+1.9.1
