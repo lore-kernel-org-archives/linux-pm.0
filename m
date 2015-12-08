@@ -1,88 +1,105 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH V4 12/16] Documentation: DT: bindings: Add power domain info for NVIDIA PMC
-Date: Tue, 08 Dec 2015 11:07:06 -0800
-Message-ID: <7h4mfslpyd.fsf@deeprootsystems.com>
-References: <1449241037-22193-1-git-send-email-jonathanh@nvidia.com>
-	<1449241037-22193-13-git-send-email-jonathanh@nvidia.com>
+From: Mark Rutland <mark.rutland@arm.com>
+Subject: Re: [PATCH v2 6/6] arm64: renesas: r8a7795: Add L2 cache-controller
+ nodes
+Date: Tue, 8 Dec 2015 19:16:56 +0000
+Message-ID: <20151208191656.GD11797@leverpostej>
+References: <1449512659-16688-1-git-send-email-geert+renesas@glider.be>
+ <1449512659-16688-7-git-send-email-geert+renesas@glider.be>
+ <5665D4C7.1050705@arm.com>
+ <20151207190355.GE28024@leverpostej>
+ <5667267E.2080601@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1449241037-22193-13-git-send-email-jonathanh@nvidia.com> (Jon
-	Hunter's message of "Fri, 4 Dec 2015 14:57:13 +0000")
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>
-Cc: Philipp Zabel <p.zabel@pengutronix.de>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Vince Hsu <vinceh@nvidia.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-sh-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <5667267E.2080601@gmail.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: Dirk Behme <dirk.behme@gmail.com>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Lina Iyer <lina.iyer@linaro.org>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Jon Hunter <jonathanh@nvidia.com> writes:
+On Tue, Dec 08, 2015 at 07:50:38PM +0100, Dirk Behme wrote:
+> On 07.12.2015 20:03, Mark Rutland wrote:
+> >On Mon, Dec 07, 2015 at 06:49:43PM +0000, Sudeep Holla wrote:
+> >>
+> >>On 07/12/15 18:24, Geert Uytterhoeven wrote:
+> >>>+	L2_CA57: cache-controller@0 {
+> >>>+		compatible = "cache";
+> >>>+		arm,data-latency = <4 4 1>;
+> >>>+		arm,tag-latency = <3 3 3>;
+> >>
+> >>Interesting, only PL2xx/3xx cache controller driver reads this from the
+> >>DT and configures the controller. The integrated L2 found in
+> >>A15/A7/A57/A53 needs doesn't make use of these values from the DT.
+> >
+> >These properties seem to be from l2cc.txt, which really only corresponds
+> >to PL210/PL220/PL310 (and variants) and isn't as generic as it sounds.
+> >
+> >I don't see that these are necessary at all.
+> 
+> 
+> What's about a documentation patch like [1], then?
 
-> Add power-domain binding documentation for the NVIDIA PMC driver in
-> order to support generic power-domains.
->
-> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
->
-> ---
->
-> Please note that I have been debating whether I add this
-> "nvidia,powergate-clock-disable" property or just leave the clocks
-> disabled by default. Some downstream kernels leave the clocks enabled
-> for the audio power-domain because the clocks required for powering up
-> the power-domain are needed by all modules within the power-domain.
-> However are the same time there are other power-domains that may need
-> to be on, but not always clocked and so having the ability to specify if
-> the clocks should be disabled seems useful. However, I can also remove
-> this and just have the appropriate devices turn on the clocks as well.
-> ---
->  .../bindings/arm/tegra/nvidia,tegra20-pmc.txt      | 61 ++++++++++++++++++++++
->  1 file changed, 61 insertions(+)
->
-> diff --git a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
-> index 838e1a69ec0a..8e4641db51a9 100644
-> --- a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
-> +++ b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra20-pmc.txt
-> @@ -1,5 +1,7 @@
->  NVIDIA Tegra Power Management Controller (PMC)
->  
-> +== Power Management Controller Node ==
-> +
->  The PMC block interacts with an external Power Management Unit. The PMC
->  mostly controls the entry and exit of the system from different sleep
->  modes. It provides power-gating controllers for SoC and CPU power-islands.
-> @@ -69,6 +71,10 @@ Optional properties for hardware-triggered thermal reset (inside 'i2c-thermtrip'
->                       Defaults to 0. Valid values are described in section 12.5.2
->                       "Pinmux Support" of the Tegra4 Technical Reference Manual.
->  
-> +Optional nodes:
-> +- pm-domains : This node contains a hierarchy of PM domain nodes, which should
-> +	       match the power-domains on the Tegra SoC.
-> +
->  Example:
->  
->  / SoC dts including file
-> @@ -114,3 +120,58 @@ pmc@7000f400 {
->  	};
->  	...
->  };
-> +
-> +
-> +== PM Domain Nodes ==
-> +
-> +Each of the PM domain nodes represents a power-domain on the Tegra SoC
-> +that can be power-gated by the PMC and should be named appropriately.
-> +
-> +Required properties:
-> +  - clocks: Must contain an entry for each clock required by the PMC for
-> +    controlling a power-gate. See ../clocks/clock-bindings.txt for details.
+I think it would be better to s/l2cc/l2x0/, and to make it clear that
+the document only applies to the variants listed above.
 
-We've had this discussiona for a couple of other SoCs, so I need to
-ask...
+If ePAPR doesn't cover the other cases, we should document those
+separately.
 
-Presumably these are not device clocks that a runtime PM enabled driver
-should be managing for a device, right?  IOW, We want to make sure that the
-PM domain isn't managing clocks for drivers that should be doing it.
+> For what is the arm64 dts entry
+> 
+> cpu@0 {
+> 	...
+> 	next-level-cache = <&L2_0>;
+> };
+> 
+> L2_0: l2-cache0 {
+> 	compatible = "cache";
+> };
+> 
+> good for at all, then?
 
-I understand there are legitimate reasons for the PM domain to manage
-clocks in addition to device drivers (e.g. for synchronous reset), but
-just want to be sure it's not a shortcut for having a proper driver.
+With the other properties from ePAPR you can acquire information on the
+geometry of the cache, which cannot be acquired from architected
+registers.
 
-Kevin
+Thanks,
+Mark.
+
+> [1]
+> 
+> diff --git a/Documentation/devicetree/bindings/arm/l2cc.txt
+> b/Documentation/devicetree/bindings/arm/l2cc.txt
+> index 06c88a4..f687aed 100644
+> --- a/Documentation/devicetree/bindings/arm/l2cc.txt
+> +++ b/Documentation/devicetree/bindings/arm/l2cc.txt
+> @@ -1,12 +1,18 @@
+>  * ARM L2 Cache Controller
+> 
+> -ARM cores often have a separate level 2 cache controller. There are
+> various
+> +ARM 32-bit cores often have a separate level 2 cache controller.
+> There are various
+>  implementations of the L2 cache controller with compatible
+> programming models.
+>  Some of the properties that are just prefixed "cache-*" are taken
+> from section
+>  3.7.3 of the ePAPR v1.1 specification which can be found at:
+> 
+> https://www.power.org/wp-content/uploads/2012/06/Power_ePAPR_APPROVED_v1.1.pdf
+> 
+> -The ARM L2 cache representation in the device tree should be done
+> as follows:
+> +ARM 64-bit cores (e.g. A15/A7/A57/A53) have an integrated level 2
+> cache which
+> +doesn't make use of any values from the kernel device tree. There is no
+> +L2 cache configuration done in the kernel. The L2 cache is assumed to be
+> +preconfigured by early secure boot code.
+> +
+> +The ARM L2 cache representation for 32-bit cores in the device tree
+> should be done
+> +as follows:
+> 
+>  Required properties:
+> 
+> 
