@@ -1,102 +1,104 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v2 6/6] arm64: renesas: r8a7795: Add L2 cache-controller
- nodes
-Date: Tue, 8 Dec 2015 18:58:50 +0000
-Message-ID: <5667286A.5010901@arm.com>
-References: <1449512659-16688-1-git-send-email-geert+renesas@glider.be>
- <1449512659-16688-7-git-send-email-geert+renesas@glider.be>
- <5665D4C7.1050705@arm.com> <20151207190355.GE28024@leverpostej>
- <5667267E.2080601@gmail.com>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH v2 1/5] power: domain: add pm_genpd_exit
+Date: Tue, 08 Dec 2015 10:59:00 -0800
+Message-ID: <7h8u54lqbv.fsf@deeprootsystems.com>
+References: <1449251148-19344-1-git-send-email-eric@anholt.net>
+	<1449251148-19344-2-git-send-email-eric@anholt.net>
+	<5665599A.4060509@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:45864 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751818AbbLHS6z (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 8 Dec 2015 13:58:55 -0500
-In-Reply-To: <5667267E.2080601@gmail.com>
+Received: from mail-pa0-f54.google.com ([209.85.220.54]:34991 "EHLO
+	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751960AbbLHS7D (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Dec 2015 13:59:03 -0500
+Received: by pacej9 with SMTP id ej9so16237919pac.2
+        for <linux-pm@vger.kernel.org>; Tue, 08 Dec 2015 10:59:01 -0800 (PST)
+In-Reply-To: <5665599A.4060509@nvidia.com> (Jon Hunter's message of "Mon, 7
+	Dec 2015 10:04:10 +0000")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dirk Behme <dirk.behme@gmail.com>, Mark Rutland <mark.rutland@arm.com>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Lina Iyer <lina.iyer@linaro.org>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org
+To: Jon Hunter <jonathanh@nvidia.com>
+Cc: Eric Anholt <eric@anholt.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Florian Fainelli <f.fainelli@gmail.com>, Alexander Aring <alex.aring@gmail.com>, Pawel Moll <pawel.moll@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, Lee Jones <lee@kernel.org>, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, linux-rpi-kernel@lists.infradead.org, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, linux-arm-kernel@lists.infradead.org
 
+Jon Hunter <jonathanh@nvidia.com> writes:
 
+> On 04/12/15 17:45, Eric Anholt wrote:
+>> From: Alexander Aring <alex.aring@gmail.com>
+>> 
+>> This patch adds function pm_genpd_exit for undo a pm_genpd_init. This
+>> is useful for multiple power domains while probing. If the probing fails
+>> after one pm_genpd_init was called we need to undo all previous
+>> registrations of generic pm domains inside the gpd_list list.
+>> 
+>> There is a check on IS_ERR_OR_NULL(genpd) which is useful to check again
+>> registered power domains and not registered domains, the driver can use
+>> this mechanism to have an array with registered and non-registered power
+>> domains, where non-registered power domains are NULL.
+>> 
+>> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+>> Cc: Kevin Hilman <khilman@kernel.org>
+>> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+>> Cc: Pavel Machek <pavel@ucw.cz>
+>> Cc: Len Brown <len.brown@intel.com>
+>> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+>> Signed-off-by: Alexander Aring <alex.aring@gmail.com>
+>> Signed-off-by: Eric Anholt <eric@anholt.net>
+>> Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> ---
+>>  drivers/base/power/domain.c | 22 ++++++++++++++++++++++
+>>  include/linux/pm_domain.h   |  4 ++++
+>>  2 files changed, 26 insertions(+)
+>> 
+>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+>> index 167418e..e7aca27 100644
+>> --- a/drivers/base/power/domain.c
+>> +++ b/drivers/base/power/domain.c
+>> @@ -1509,6 +1509,28 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
+>>  }
+>>  EXPORT_SYMBOL_GPL(pm_genpd_init);
+>>  
+>> +/**
+>> + * pm_genpd_exit - Uninitialize a generic I/O PM domain object.
+>> + * @genpd: PM domain object to uninitialize.
+>> + */
+>> +void pm_genpd_exit(struct generic_pm_domain *genpd)
+>> +{
+>> +	if (IS_ERR_OR_NULL(genpd))
+>> +		return;
+>> +
+>> +	/* check if domain is still in registered inside the pm subsystem */
+>> +	WARN_ON_ONCE(!list_empty(&genpd->master_links) ||
+>> +		     !list_empty(&genpd->slave_links) ||
+>> +		     !list_empty(&genpd->dev_list));
+>> +
+>
+> Why not return an error here? Seems bad to remove it, if it could still
+> be referenced by other domains.
 
-On 08/12/15 18:50, Dirk Behme wrote:
-> On 07.12.2015 20:03, Mark Rutland wrote:
->> On Mon, Dec 07, 2015 at 06:49:43PM +0000, Sudeep Holla wrote:
->>>
->>> On 07/12/15 18:24, Geert Uytterhoeven wrote:
->>>> +    L2_CA57: cache-controller@0 {
->>>> +        compatible = "cache";
->>>> +        arm,data-latency = <4 4 1>;
->>>> +        arm,tag-latency = <3 3 3>;
->>>
->>> Interesting, only PL2xx/3xx cache controller driver reads this from the
->>> DT and configures the controller. The integrated L2 found in
->>> A15/A7/A57/A53 needs doesn't make use of these values from the DT.
->>
->> These properties seem to be from l2cc.txt, which really only corresponds
->> to PL210/PL220/PL310 (and variants) and isn't as generic as it sounds.
->>
->> I don't see that these are necessary at all.
->
->
-> What's about a documentation patch like [1], then?
->
->
-> For what is the arm64 dts entry
->
-> cpu@0 {
->      ...
->      next-level-cache = <&L2_0>;
-> };
->
-> L2_0: l2-cache0 {
->      compatible = "cache";
-> };
->
-> good for at all, then?
->
->
-> Best regards
->
-> Dirk
->
->
-> [1]
->
-> diff --git a/Documentation/devicetree/bindings/arm/l2cc.txt
-> b/Documentation/devicetree/bindings/arm/l2cc.txt
-> index 06c88a4..f687aed 100644
-> --- a/Documentation/devicetree/bindings/arm/l2cc.txt
-> +++ b/Documentation/devicetree/bindings/arm/l2cc.txt
-> @@ -1,12 +1,18 @@
->   * ARM L2 Cache Controller
->
-> -ARM cores often have a separate level 2 cache controller. There are
-> various
-> +ARM 32-bit cores often have a separate level 2 cache controller. There
-> are various
->   implementations of the L2 cache controller with compatible programming
-> models.
->   Some of the properties that are just prefixed "cache-*" are taken from
-> section
->   3.7.3 of the ePAPR v1.1 specification which can be found at:
->
-> https://www.power.org/wp-content/uploads/2012/06/Power_ePAPR_APPROVED_v1.1.pdf
->
->
-> -The ARM L2 cache representation in the device tree should be done as
-> follows:
-> +ARM 64-bit cores (e.g. A15/A7/A57/A53) have an integrated level 2 cache which
+I had pointed this out as well in an earlier review.
 
-A15 and A7 are 32-bit cores, so you can't generalize it.
-IMO you can just specify that this binding is applicable for separate L2
-cache controllers.
+> Also not sure if you need to lock around the above test and removing the
+> domain.
+>
+>> +	mutex_lock(&gpd_list_lock);
+>> +	list_del(&genpd->gpd_list_node);
+>> +	mutex_unlock(&gpd_list_lock);
+>> +
+>> +	mutex_destroy(&genpd->lock);
+>> +}
+>> +EXPORT_SYMBOL_GPL(pm_genpd_exit);
+>> +
+>
+> BTW, I had just submitted a similar patch here [0]. So I would also like
+> to see such an API added.
 
--- 
--- 
-Regards,
-Sudeep
+Between the two of you, maybe come up with an agreed upon patch and
+re-submit.
+
+Kevin
+
+> Cheers
+> Jon
+>
+> [0] http://marc.info/?l=devicetree&m=144924138932726&w=2
