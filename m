@@ -1,72 +1,99 @@
-From: Javier Martinez Canillas <javier@osg.samsung.com>
-Subject: Re: [PATCH v4 7/8] ARM: dts: Exynos5422: fix OPP tables
-Date: Tue, 8 Dec 2015 10:41:57 -0300
-Message-ID: <5666DE25.7090708@osg.samsung.com>
-References: <1449512300-17230-1-git-send-email-b.zolnierkie@samsung.com>
- <1449512300-17230-8-git-send-email-b.zolnierkie@samsung.com>
- <56669126.7050803@samsung.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH][experimantal] cpufreq: governor: Use an atomic variable for synchronization
+Date: Tue, 08 Dec 2015 15:19:31 +0100
+Message-ID: <10138182.WjU9yqx6Gs@vostro.rjw.lan>
+References: <cover.1449115453.git.viresh.kumar@linaro.org> <5461074.Yz9lhOaAu0@vostro.rjw.lan> <20151208133633.GC3692@ubuntu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lists.s-osg.org ([54.187.51.154]:46360 "EHLO lists.s-osg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756467AbbLHNmG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 8 Dec 2015 08:42:06 -0500
-In-Reply-To: <56669126.7050803@samsung.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:62922 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756340AbbLHNtc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Dec 2015 08:49:32 -0500
+In-Reply-To: <20151208133633.GC3692@ubuntu>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Ben Gamari <ben@smart-cactus.org>
-Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, ashwin.chaugule@linaro.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, LKML <linux-kernel@vger.kernel.org>
 
-Hello Krzysztof,
-
-On 12/08/2015 05:13 AM, Krzysztof Kozlowski wrote:
-> On 08.12.2015 03:18, Bartlomiej Zolnierkiewicz wrote:
->> From: Ben Gamari <ben@smart-cactus.org>
->>
->> The Exynos 5422 is identical to the 5800 except for the fact that it
->> boots from the A7 cores. Consequently, the core numbering is different:
->> cores 0-3 are A7s whereas 4-7 are A15s.
->>
->> We can reuse the device tree of the 5800 for the 5422 but we must take
->> care to override the OPP tables and CPU clocks.  These are otherwise
->> inherited from the exynos5800 devicetree, which has the CPU clusters
->> reversed compared to the 5422. This results in the A15 cores only
->> reaching 1.4GHz, the maximum rate of the KFC clock.
->>
->> Cc: Javier Martinez Canillas <javier@osg.samsung.com>
->> Signed-off-by: Ben Gamari <ben@smart-cactus.org>
->> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
->> ---
->>  arch/arm/boot/dts/exynos5422-cpus.dtsi | 10 ++++++++++
->>  1 file changed, 10 insertions(+)
->>
+On Tuesday, December 08, 2015 07:06:33 PM Viresh Kumar wrote:
+> On 08-12-15, 14:30, Rafael J. Wysocki wrote:
+> > OK, but instead of relying on the spinlock to wait for the already running
 > 
-> This looks like a very-non-atomic way of handling a change. You added
-> opp tables to exynos5420 before so at that time they will be applied to
-> Odroid XU3 family which uses different CPU order. After that you are
-> fixing the tables to proper CPU order. Direct bisectability probably
-> won't be an issue because all of DTS would go to separate branch... but
-> the logic behind confuses.
+> That's the purpose of the spinlock, not a side-effect.
 > 
-
-Agreed.
-
-> I think this should be squashed into 3/8.
+> > dbs_timer_handler() in gov_cancel_work() (which is really easy to overlook
+> > and should at least be mentioned in a comment) we can wait for it explicitly.
 > 
-
-I think the patch should be split in two changes, the CPUs device nodes
-having the wrong clock for clusters is a bug and has to be fixed in a
-patch before adding the OPP tables and the OPP tables changes should be
-separated and merged with patch 3/8 as you suggest.
-
-> Best regards,
-> Krzysztof
+> I agree, and I will add explicit comment about it.
 > 
+> > That is, if the relevant code in gov_cancel_work() is like this:
+> > 
+> > 
+> > 	atomic_inc(&shared->skip_work);
+> > 	gov_cancel_timers(shared->policy);
+> > 	cancel_work_sync(&shared->work);
+> > 	gov_cancel_timers(shared->policy);
+> 
+> Apart from it being *really* ugly (we should know exactly what should
+> be done, it rather looks like hit and try),
 
-Best regards,
--- 
-Javier Martinez Canillas
-Open Source Group
-Samsung Research America
+We know what should be done.  We need to wait for the timer function to
+complete, then cancel the work item spawned by it (if any) and then
+cancel the timers set by that work item.
+
+> it is still racy.
+> 
+> > 	atomic_set(&shared->skip_work, 0);
+> > 
+> > then the work item should not be leaked behind the cancel_work_sync() any more
+> > AFAICS.
+> 
+> Suppose queue_work() isn't done within the spin lock.
+> 
+> CPU0                                            CPU1
+> 
+> cpufreq_governor_stop()                         dbs_timer_handler()
+> -> gov_cancel_work()                            -> lock
+>                                                 -> shared->skip_work++, as skip_work was 0. //skip_work=1
+>                                                 -> unlock
+>    -> lock
+>    -> shared->skip_work++; //skip_work=2
+
+(*)
+
+>    -> unlock
+>                                                 -> queue_work();
+>    -> gov_cancel_timers(shared->policy);
+>                                                 dbs_work_handler();
+>                                                 -> queue-timers again (as we aren't checking skip_work here)
+
+skip_work = 1 (because dbs_work_handler() decrements it).
+
+>    -> cancel_work_sync(&shared->work);
+>                                                 dbs_timer_handler()
+>                                                 -> lock
+>                                                 -> shared->skip_work++, as skip_work was 0.
+
+No, it wasn't 0, it was 1, because (*) incremented it
+and it has only been decremented once by dbs_work_handler().
+
+> //skip_work=1
+>                                                 -> unlock
+
+And the below won't happen.
+
+>                                                 ->queue_work()
+>
+>    -> gov_cancel_timers(shared->policy);
+>    -> shared->skip_work = 0;
+> 
+> 
+> And we have the same situation again.
+
+I don't really think so.
+
+Thanks,
+Rafael
+
