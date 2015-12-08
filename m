@@ -1,85 +1,76 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH][experimantal] cpufreq: governor: Use an atomic variable
- for synchronization
-Date: Tue, 8 Dec 2015 19:06:33 +0530
-Message-ID: <20151208133633.GC3692@ubuntu>
-References: <cover.1449115453.git.viresh.kumar@linaro.org>
- <4910771.IIQSzHPqps@vostro.rjw.lan>
- <20151208065905.GA3294@ubuntu>
- <5461074.Yz9lhOaAu0@vostro.rjw.lan>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v2] power: Fix unmet dependency on POWER_SUPPLY by
+ POWER_RESET by uncoupling them
+Date: Tue, 8 Dec 2015 14:39:23 +0100
+Message-ID: <20151208133923.GA21934@earth>
+References: <1449459912-29482-1-git-send-email-k.kozlowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f47.google.com ([209.85.220.47]:34530 "EHLO
-	mail-pa0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756334AbbLHNgg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Dec 2015 08:36:36 -0500
-Received: by pacwq6 with SMTP id wq6so12268393pac.1
-        for <linux-pm@vger.kernel.org>; Tue, 08 Dec 2015 05:36:36 -0800 (PST)
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="EVF5PPMfhYS0aIcm"
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <5461074.Yz9lhOaAu0@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1449459912-29482-1-git-send-email-k.kozlowski@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, p.fedin@samsung.com, linux-samsung-soc@vger.kernel.org, arnd@arndb.de, olof@lixom.net
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org, linaro-kernel@lists.linaro.org, ashwin.chaugule@linaro.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, LKML <linux-kernel@vger.kernel.org>
-
-On 08-12-15, 14:30, Rafael J. Wysocki wrote:
-> OK, but instead of relying on the spinlock to wait for the already running
-
-That's the purpose of the spinlock, not a side-effect.
-
-> dbs_timer_handler() in gov_cancel_work() (which is really easy to overlook
-> and should at least be mentioned in a comment) we can wait for it explicitly.
-
-I agree, and I will add explicit comment about it.
-
-> That is, if the relevant code in gov_cancel_work() is like this:
-> 
-> 
-> 	atomic_inc(&shared->skip_work);
-> 	gov_cancel_timers(shared->policy);
-> 	cancel_work_sync(&shared->work);
-> 	gov_cancel_timers(shared->policy);
-
-Apart from it being *really* ugly (we should know exactly what should
-be done, it rather looks like hit and try), it is still racy.
-
-> 	atomic_set(&shared->skip_work, 0);
-> 
-> then the work item should not be leaked behind the cancel_work_sync() any more
-> AFAICS.
-
-Suppose queue_work() isn't done within the spin lock.
-
-CPU0                                            CPU1
-
-cpufreq_governor_stop()                         dbs_timer_handler()
--> gov_cancel_work()                            -> lock
-                                                -> shared->skip_work++, as skip_work was 0. //skip_work=1
-                                                -> unlock
-   -> lock
-   -> shared->skip_work++; //skip_work=2
-   -> unlock
-                                                -> queue_work();
-   -> gov_cancel_timers(shared->policy);
-                                                dbs_work_handler();
-                                                -> queue-timers again (as we aren't checking skip_work here)
-   -> cancel_work_sync(&shared->work);
-                                                dbs_timer_handler()
-                                                -> lock
-                                                -> shared->skip_work++, as skip_work was 0. //skip_work=1
-                                                -> unlock
-                                                ->queue_work()
-   -> gov_cancel_timers(shared->policy);
-   -> shared->skip_work = 0;
 
 
-And we have the same situation again. I have thought of all this
-before I wrote the initial patch, and really tried the ugly double
-timer-cancel thing. But the current approach is really the right thing
-to do.
+--EVF5PPMfhYS0aIcm
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I will send a patch adding the comment.
+Hi,
 
--- 
-viresh
+On Mon, Dec 07, 2015 at 12:45:12PM +0900, Krzysztof Kozlowski wrote:
+> Currently the reset/power off handlers (POWER_RESET) and Adaptive Voltage
+> Scaling class (POWER_AVS) are not built when POWER_SUPPLY is disabled.
+> The POWER_RESET is also not visible in drivers main section of config.
+>=20
+> However they do not really depend on power supply so they can be built
+> always. The objects for power supply drivers already depend on
+> particular Kconfig symbols so there is no need for any changes in
+> drivers/power/Makefile.
+>=20
+> This allows selecting POWER_RESET from main drivers config section and
+> fixes following build warning (encountered on ARM exynos defconfig when
+> POWER_SUPPLY is disabled manually):
+>=20
+> warning: (ARCH_HISI && ARCH_INTEGRATOR && ARCH_EXYNOS && ARCH_VEXPRESS &&=
+ REALVIEW_DT) selects POWER_RESET which has unmet direct dependencies (POWE=
+R_SUPPLY)
+> warning: (ARCH_EXYNOS) selects POWER_RESET_SYSCON which has unmet direct =
+dependencies (POWER_SUPPLY && POWER_RESET && OF)
+> warning: (ARCH_EXYNOS) selects POWER_RESET_SYSCON_POWEROFF which has unme=
+t direct dependencies (POWER_SUPPLY && POWER_RESET && OF)
+>=20
+> Reported-by: Pavel Fedin <p.fedin@samsung.com>
+> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+
+Thanks, queued.
+
+-- Sebastian
+
+--EVF5PPMfhYS0aIcm
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJWZt2GAAoJENju1/PIO/qadxIP/024PnOZ7cIutEnHublKEBlH
+7v4J7Y6nkeuN4NTFHebndqKZNI8Ph5tL6RwVzDynTuW6BuOUSu0JtcI9ROT4jnZX
+M8Dach/M22WALvAgIcvn4eT5ljB1CPLxnI/bPrLdtAEh3TrBbA5lJr8cD4PV6wcY
+LmZiH41qF8zd57jeOZtIIsRsQWRXkXcO/vL0XMV25OaMmLdhQOcUdzBRsgYnEDAK
+j/HRttlUHrd7LJK/yj45SGEU6ya99ZgFSXi5wVVFWpLwLI/UShjF6xhaXseXGrKA
+gSSp69j0jeLKbDcQoJ3W3BfRDFu9aUdQJz+JGY4fKdX1N2j7ZCvuat00eHt/xGBV
+gE+fG/hvqh8xaxjowIb8qWe0x7eel3m755zV/2aUwdBr2Qdm6/yl7U66WdpDteXq
+JO70CD24g/J6r6zYa4TK4lmGVSoyx8glGFesDFCfyTTpMPrfYdrBTGo16JpeHYQt
+gYYmbc9KAHZiyZeNOYqbe+Ah370otUFgTVqIBYvDBOrSd3D/qHQXUvdcRqgfR5Xg
+PCLGElbPsk/861ECkW3Z24bnTsboPaNuauWq2ZrK3ri9HBcRO1H311ubNvz88+bU
+JsVhrxZkYNxTL0pV2PK+dEYtVbdt51gXhAvXtT7yY37IAKsHbhYy3hUMWxp5SaL1
+NcgCwjcaeiUkRhaUE5bK
+=70m0
+-----END PGP SIGNATURE-----
+
+--EVF5PPMfhYS0aIcm--
