@@ -1,61 +1,234 @@
 From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v4 4/8] ARM: Exynos: use generic cpufreq driver for
- Exynos5420
-Date: Tue, 08 Dec 2015 16:36:12 +0900
-Message-ID: <5666886C.10203@samsung.com>
+Subject: Re: [PATCH v4 6/8] ARM: dts: Exynos5800: fix CPU OPP
+Date: Tue, 08 Dec 2015 17:07:08 +0900
+Message-ID: <56668FAC.2000702@samsung.com>
 References: <1449512300-17230-1-git-send-email-b.zolnierkie@samsung.com>
- <1449512300-17230-5-git-send-email-b.zolnierkie@samsung.com>
+ <1449512300-17230-7-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.w1.samsung.com ([210.118.77.13]:50241 "EHLO
-	mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750752AbbLHHgY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 8 Dec 2015 02:36:24 -0500
-In-reply-to: <1449512300-17230-5-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1449512300-17230-7-git-send-email-b.zolnierkie@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Ben Gamari <ben@smart-cactus.org>
+Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Doug Anderson <dianders@chromium.org>, Andreas Faerber <afaerber@suse.de>, Sachin Kamat <sachin.kamat@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Ben Gamari <ben@smart-cactus.org>
-Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
 On 08.12.2015 03:18, Bartlomiej Zolnierkiewicz wrote:
-> From: Thomas Abraham <thomas.ab@samsung.com>
+> Fix CPU operating points for Exynos5800 (it use different
+> voltages than Exynos5420 and supports additional frequencies).
+> However don't use 2000MHz & 1900MHz OPPs (for A15 cores) and
+> 1400MHz OPP (for A7 cores) for now as they are not available
+> on all boards.
 > 
-> The new CPU clock type allows the use of cpufreq-dt driver
-> for Exynos5420.
+> Based on Hardkernel's kernel for ODROID-XU3 board.
 > 
-> Changes by Bartlomiej:
-> - split Exynos5420 support from the original patch
-> - disable cpufreq if big.LITTLE switcher support is enabled
-> - switch to using cpufreq-dt driver
+> Changes by Ben Gamari:
+> - Port to operating-points-v2
 > 
-> Cc: Tomasz Figa <tomasz.figa@gmail.com>
 > Cc: Kukjin Kim <kgene.kim@samsung.com>
-> Cc: Javier Martinez Canillas <javier.martinez@collabora.co.uk>
-> Signed-off-by: Thomas Abraham <thomas.ab@samsung.com>
+> Cc: Doug Anderson <dianders@chromium.org>
+> Cc: Javier Martinez Canillas <javier@osg.samsung.com>
+> Cc: Andreas Faerber <afaerber@suse.de>
+> Cc: Sachin Kamat <sachin.kamat@linaro.org>
+> Cc: Thomas Abraham <thomas.ab@samsung.com>
+> Signed-off-by: Ben Gamari <ben@smart-cactus.org>
 > Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 > ---
->  arch/arm/mach-exynos/exynos.c | 3 +++
->  1 file changed, 3 insertions(+)
-
-I think this is actually now your patch, not Thomas any more. :)
-
+>  arch/arm/boot/dts/exynos5800.dtsi | 165 ++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 165 insertions(+)
 > 
-> diff --git a/arch/arm/mach-exynos/exynos.c b/arch/arm/mach-exynos/exynos.c
-> index 1c47aee..7a89c9d 100644
-> --- a/arch/arm/mach-exynos/exynos.c
-> +++ b/arch/arm/mach-exynos/exynos.c
-> @@ -230,6 +230,9 @@ static const struct of_device_id exynos_cpufreq_matches[] = {
->  	{ .compatible = "samsung,exynos4212", .data = "cpufreq-dt" },
->  	{ .compatible = "samsung,exynos4412", .data = "cpufreq-dt" },
->  	{ .compatible = "samsung,exynos5250", .data = "cpufreq-dt" },
-> +#ifndef CONFIG_BL_SWITCHER
-> +	{ .compatible = "samsung,exynos5420", .data = "cpufreq-dt" },
-> +#endif
+> diff --git a/arch/arm/boot/dts/exynos5800.dtsi b/arch/arm/boot/dts/exynos5800.dtsi
+> index c0bb356..e417218 100644
+> --- a/arch/arm/boot/dts/exynos5800.dtsi
+> +++ b/arch/arm/boot/dts/exynos5800.dtsi
+> @@ -17,8 +17,173 @@
+>  
+>  / {
+>  	compatible = "samsung,exynos5800", "samsung,exynos5";
+> +
+> +	cpu0_opp_table: opp_table0 {
 
-Why not on BL_SWITCHER? Shouldn't be enough to disable ARM_DT_BL_CPUFREQ?
+This includes exynos5420.dtsi, so override by label instead of
+duplicating full path.
+
+In the same time you don't have to duplicate all data - just override
+what you want:
+	&cpu0_opp_table {
+		opp00@1800000000 {
+			opp-microvolt = <1250000>;
+		};
+	};
+
+That should be sufficient I think.
+
+> +		compatible = "operating-points-v2";
+> +		opp-shared;
+> +		opp00@1800000000 {
+> +			opp-hz = /bits/ 64 <1800000000>;
+> +			opp-microvolt = <1250000>;
+> +			clock-latency-ns = <140000>;
+> +		};
+> +		opp01@1700000000 {
+> +			opp-hz = /bits/ 64 <1700000000>;
+> +			opp-microvolt = <1250000>;
+> +			clock-latency-ns = <140000>;
+> +		};
+> +		opp02@1600000000 {
+> +			opp-hz = /bits/ 64 <1600000000>;
+> +			opp-microvolt = <1250000>;
+> +			clock-latency-ns = <140000>;
+> +		};
+> +		opp03@1500000000 {
+> +			opp-hz = /bits/ 64 <1500000000>;
+> +			opp-microvolt = <1100000>;
+> +			clock-latency-ns = <140000>;
+> +		};
+> +		opp04@1400000000 {
+> +			opp-hz = /bits/ 64 <1400000000>;
+> +			opp-microvolt = <1100000>;
+> +			clock-latency-ns = <140000>;
+> +		};
+> +		opp05@1300000000 {
+> +			opp-hz = /bits/ 64 <1300000000>;
+> +			opp-microvolt = <1100000>;
+> +			clock-latency-ns = <140000>;
+> +		};
+> +		opp06@1200000000 {
+> +			opp-hz = /bits/ 64 <1200000000>;
+> +			opp-microvolt = <1000000>;
+> +			clock-latency-ns = <140000>;
+> +		};
+> +		opp07@1100000000 {
+> +			opp-hz = /bits/ 64 <1100000000>;
+> +			opp-microvolt = <1000000>;
+> +			clock-latency-ns = <140000>;
+> +		};
+> +		opp08@1000000000 {
+> +			opp-hz = /bits/ 64 <1000000000>;
+> +			opp-microvolt = <1000000>;
+> +			clock-latency-ns = <140000>;
+> +		};
+> +		opp09@900000000 {
+> +			opp-hz = /bits/ 64 <900000000>;
+> +			opp-microvolt = <1000000>;
+> +			clock-latency-ns = <140000>;
+> +		};
+> +		opp10@800000000 {
+> +			opp-hz = /bits/ 64 <800000000>;
+> +			opp-microvolt = <900000>;
+> +			clock-latency-ns = <140000>;
+> +		};
+> +		opp11@700000000 {
+> +			opp-hz = /bits/ 64 <700000000>;
+> +			opp-microvolt = <900000>;
+> +			clock-latency-ns = <140000>;
+> +		};
+> +		opp12@600000000 {
+> +			opp-hz = /bits/ 64 <600000000>;
+> +			opp-microvolt = <900000>;
+> +			clock-latency-ns = <140000>;
+> +		};
+> +		opp13@500000000 {
+> +			opp-hz = /bits/ 64 <500000000>;
+> +			opp-microvolt = <900000>;
+> +			clock-latency-ns = <140000>;
+> +		};
+> +		opp14@400000000 {
+> +			opp-hz = /bits/ 64 <400000000>;
+> +			opp-microvolt = <900000>;
+> +			clock-latency-ns = <140000>;
+> +		};
+> +		opp15@300000000 {
+> +			opp-hz = /bits/ 64 <300000000>;
+> +			opp-microvolt = <900000>;
+> +			clock-latency-ns = <140000>;
+> +		};
+> +		opp16@200000000 {
+> +			opp-hz = /bits/ 64 <200000000>;
+> +			opp-microvolt = <900000>;
+> +			clock-latency-ns = <140000>;
+> +		};
+> +	};
+> +
+> +	cpu1_opp_table: opp_table1 {
+> +		compatible = "operating-points-v2";
+> +		opp-shared;
+> +		opp00@1300000000 {
+> +			opp-hz = /bits/ 64 <1300000000>;
+> +			opp-microvolt = <1250000>;
+> +			clock-latency-ns = <140000>;
+> +		};
+> +		opp01@1200000000 {
+> +			opp-hz = /bits/ 64 <1200000000>;
+> +			opp-microvolt = <1250000>;
+> +			clock-latency-ns = <140000>;
+> +		};
+> +		opp02@1100000000 {
+> +			opp-hz = /bits/ 64 <1100000000>;
+> +			opp-microvolt = <1250000>;
+> +			clock-latency-ns = <140000>;
+> +		};
+> +		opp03@1000000000 {
+> +			opp-hz = /bits/ 64 <1000000000>;
+> +			opp-microvolt = <1100000>;
+> +			clock-latency-ns = <140000>;
+> +		};
+> +		opp04@900000000 {
+> +			opp-hz = /bits/ 64 <900000000>;
+> +			opp-microvolt = <1100000>;
+> +			clock-latency-ns = <140000>;
+> +		};
+> +		opp05@800000000 {
+> +			opp-hz = /bits/ 64 <800000000>;
+> +			opp-microvolt = <1100000>;
+> +			clock-latency-ns = <140000>;
+> +		};
+> +		opp06@700000000 {
+> +			opp-hz = /bits/ 64 <700000000>;
+> +			opp-microvolt = <1000000>;
+> +			clock-latency-ns = <140000>;
+> +		};
+> +		opp07@600000000 {
+> +			opp-hz = /bits/ 64 <600000000>;
+> +			opp-microvolt = <1000000>;
+> +			clock-latency-ns = <140000>;
+> +		};
+> +		opp08@500000000 {
+> +			opp-hz = /bits/ 64 <500000000>;
+> +			opp-microvolt = <1000000>;
+> +			clock-latency-ns = <140000>;
+> +		};
+> +		opp09@400000000 {
+> +			opp-hz = /bits/ 64 <400000000>;
+> +			opp-microvolt = <1000000>;
+> +			clock-latency-ns = <140000>;
+> +		};
+> +		opp10@300000000 {
+> +			opp-hz = /bits/ 64 <300000000>;
+> +			opp-microvolt = <900000>;
+> +			clock-latency-ns = <140000>;
+> +		};
+> +		opp11@200000000 {
+> +			opp-hz = /bits/ 64 <200000000>;
+> +			opp-microvolt = <900000>;
+> +			clock-latency-ns = <140000>;
+> +		};
+> +	};
+>  };
+>  
+> +&cpu0 { operating-points-v2 = <&cpu0_opp_table>; };
+> +&cpu1 { operating-points-v2 = <&cpu0_opp_table>; };
+> +&cpu2 { operating-points-v2 = <&cpu0_opp_table>; };
+> +&cpu3 { operating-points-v2 = <&cpu0_opp_table>; };
+> +
+> +&cpu4 { operating-points-v2 = <&cpu1_opp_table>; };
+> +&cpu5 { operating-points-v2 = <&cpu1_opp_table>; };
+> +&cpu6 { operating-points-v2 = <&cpu1_opp_table>; };
+> +&cpu7 { operating-points-v2 = <&cpu1_opp_table>; };
+> +
+
+Why? These are set by exynos5420.dtsi already, aren't they?
 
 Best regards,
 Krzysztof
-
