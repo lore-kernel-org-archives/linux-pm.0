@@ -1,66 +1,65 @@
-From: Joonas Lahtinen <joonas.lahtinen@linux.intel.com>
-Subject: [PATCH 1/3] PM / Runtime: Introduce
-	pm_runtime_get_noidle
-Date: Wed,  9 Dec 2015 17:45:18 +0200
-Message-ID: <1449675920-12986-1-git-send-email-joonas.lahtinen@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: [PATCH v6 00/10] cpufreq: Introduce ST's CPUFreq driver
+Date: Wed,  9 Dec 2015 15:58:07 +0000
+Message-ID: <1449676697-25432-1-git-send-email-lee.jones@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f41.google.com ([74.125.82.41]:35296 "EHLO
+	mail-wm0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751391AbbLIP6f (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Dec 2015 10:58:35 -0500
+Received: by wmuu63 with SMTP id u63so228661946wmu.0
+        for <linux-pm@vger.kernel.org>; Wed, 09 Dec 2015 07:58:34 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc: kernel@stlinux.com, maxime.coquelin@st.com, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, devicetree@vger.kernel.org, ajitpal.singh@st.com, Lee Jones <lee.jones@linaro.org>
 
-SW50cm9kdWNlIHBtX3J1bnRpbWVfZ2V0X25vaWRsZSB0byBmb3Igc2l0dWF0aW9ucyB3aGVyZSBp
-dCBpcyBub3QKZGVzaXJlYWJsZSB0byB0b3VjaCBhbiBpZGxpbmcgZGV2aWNlLiBPbmUgdXNlIHNj
-ZW5hcmlvIGlzIHBlcmlvZGljCmhhbmdjaGVja3MgcGVyZm9ybWVkIGJ5IHRoZSBkcm0vaTkxNSBk
-cml2ZXIgd2hpY2ggY2FuIGJlIG9taXR0ZWQKb24gYSBkZXZpY2UgaW4gYSBydW50aW1lIGlkbGUg
-c3RhdGUuCgpTaWduZWQtb2ZmLWJ5OiBKb29uYXMgTGFodGluZW4gPGpvb25hcy5sYWh0aW5lbkBs
-aW51eC5pbnRlbC5jb20+ClJlcG9ydGVkLWJ5OiBDaHJpcyBXaWxzb24gPGNocmlzQGNocmlzLXdp
-bHNvbi5jby51az4KQ2M6IENocmlzIFdpbHNvbiA8Y2hyaXNAY2hyaXMtd2lsc29uLmNvLnVrPgpD
-YzogIlJhZmFlbCBKLiBXeXNvY2tpIiA8cmp3QHJqd3lzb2NraS5uZXQ+CkNjOiBsaW51eC1wbUB2
-Z2VyLmtlcm5lbC5vcmcKLS0tCiBEb2N1bWVudGF0aW9uL3Bvd2VyL3J1bnRpbWVfcG0udHh0IHwg
-MyArKysKIGluY2x1ZGUvbGludXgvcG1fcnVudGltZS5oICAgICAgICAgfCA2ICsrKysrKwogMiBm
-aWxlcyBjaGFuZ2VkLCA5IGluc2VydGlvbnMoKykKCmRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9u
-L3Bvd2VyL3J1bnRpbWVfcG0udHh0IGIvRG9jdW1lbnRhdGlvbi9wb3dlci9ydW50aW1lX3BtLnR4
-dAppbmRleCAwNzg0YmMzLi40NTQ1Mzk5IDEwMDY0NAotLS0gYS9Eb2N1bWVudGF0aW9uL3Bvd2Vy
-L3J1bnRpbWVfcG0udHh0CisrKyBiL0RvY3VtZW50YXRpb24vcG93ZXIvcnVudGltZV9wbS50eHQK
-QEAgLTM2Myw2ICszNjMsOSBAQCBkcml2ZXJzL2Jhc2UvcG93ZXIvcnVudGltZS5jIGFuZCBpbmNs
-dWRlL2xpbnV4L3BtX3J1bnRpbWUuaDoKICAgdm9pZCBwbV9ydW50aW1lX2dldF9ub3Jlc3VtZShz
-dHJ1Y3QgZGV2aWNlICpkZXYpOwogICAgIC0gaW5jcmVtZW50IHRoZSBkZXZpY2UncyB1c2FnZSBj
-b3VudGVyCiAKKyAgaW50IHBtX3J1bnRpbWVfZ2V0X25vaWRsZShzdHJ1Y3QgZGV2aWNlICpkZXYp
-OworICAgIC0gaW5jcmVtZW50IHRoZSBkZXZpY2UncyB1c2FnZSBjb3VudGVyIGlmIGl0IHdhcyBu
-b3QgMCBhbmQgcmV0dXJuIGl0CisKICAgaW50IHBtX3J1bnRpbWVfZ2V0KHN0cnVjdCBkZXZpY2Ug
-KmRldik7CiAgICAgLSBpbmNyZW1lbnQgdGhlIGRldmljZSdzIHVzYWdlIGNvdW50ZXIsIHJ1biBw
-bV9yZXF1ZXN0X3Jlc3VtZShkZXYpIGFuZAogICAgICAgcmV0dXJuIGl0cyByZXN1bHQKZGlmZiAt
-LWdpdCBhL2luY2x1ZGUvbGludXgvcG1fcnVudGltZS5oIGIvaW5jbHVkZS9saW51eC9wbV9ydW50
-aW1lLmgKaW5kZXggM2JkYmI0MS4uYWUzNGY1ZSAxMDA2NDQKLS0tIGEvaW5jbHVkZS9saW51eC9w
-bV9ydW50aW1lLmgKKysrIGIvaW5jbHVkZS9saW51eC9wbV9ydW50aW1lLmgKQEAgLTY2LDYgKzY2
-LDExIEBAIHN0YXRpYyBpbmxpbmUgdm9pZCBwbV9ydW50aW1lX2dldF9ub3Jlc3VtZShzdHJ1Y3Qg
-ZGV2aWNlICpkZXYpCiAJYXRvbWljX2luYygmZGV2LT5wb3dlci51c2FnZV9jb3VudCk7CiB9CiAK
-K3N0YXRpYyBpbmxpbmUgaW50IHBtX3J1bnRpbWVfZ2V0X25vaWRsZShzdHJ1Y3QgZGV2aWNlICpk
-ZXYpCit7CisJcmV0dXJuIGF0b21pY19hZGRfdW5sZXNzKCZkZXYtPnBvd2VyLnVzYWdlX2NvdW50
-LCAxLCAwKTsKK30KKwogc3RhdGljIGlubGluZSB2b2lkIHBtX3J1bnRpbWVfcHV0X25vaWRsZShz
-dHJ1Y3QgZGV2aWNlICpkZXYpCiB7CiAJYXRvbWljX2FkZF91bmxlc3MoJmRldi0+cG93ZXIudXNh
-Z2VfY291bnQsIC0xLCAwKTsKQEAgLTE1Myw2ICsxNTgsNyBAQCBzdGF0aWMgaW5saW5lIHZvaWQg
-cG1fcnVudGltZV9mb3JiaWQoc3RydWN0IGRldmljZSAqZGV2KSB7fQogCiBzdGF0aWMgaW5saW5l
-IGJvb2wgcG1fY2hpbGRyZW5fc3VzcGVuZGVkKHN0cnVjdCBkZXZpY2UgKmRldikgeyByZXR1cm4g
-ZmFsc2U7IH0KIHN0YXRpYyBpbmxpbmUgdm9pZCBwbV9ydW50aW1lX2dldF9ub3Jlc3VtZShzdHJ1
-Y3QgZGV2aWNlICpkZXYpIHt9CitzdGF0aWMgaW5saW5lIGJvb2wgcG1fcnVudGltZV9nZXRfbm9p
-ZGxlKHN0cnVjdCBkZXZpY2UgKmRldikgeyByZXR1cm4gdHJ1ZTsgfQogc3RhdGljIGlubGluZSB2
-b2lkIHBtX3J1bnRpbWVfcHV0X25vaWRsZShzdHJ1Y3QgZGV2aWNlICpkZXYpIHt9CiBzdGF0aWMg
-aW5saW5lIGJvb2wgZGV2aWNlX3J1bl93YWtlKHN0cnVjdCBkZXZpY2UgKmRldikgeyByZXR1cm4g
-ZmFsc2U7IH0KIHN0YXRpYyBpbmxpbmUgdm9pZCBkZXZpY2Vfc2V0X3J1bl93YWtlKHN0cnVjdCBk
-ZXZpY2UgKmRldiwgYm9vbCBlbmFibGUpIHt9Ci0tIAoyLjQuMwoKX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX18KSW50ZWwtZ2Z4IG1haWxpbmcgbGlzdApJbnRl
-bC1nZnhAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHA6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcv
-bWFpbG1hbi9saXN0aW5mby9pbnRlbC1nZngK
+This is a re-write of the original submission, hence why the
+change-log is omitted.  Basically almost everything has changed.
+We are now using the new OPP framework and generic bindings
+written by Viresh.
+
+There are 'ARM' patches in the set which are not necessarily
+related to CPUFreq, but are required to get it to work. Anyone
+who is not interested in general STi DT changes can safely
+ignore these.
+
+v5 => v6:
+ - Converted Kconfig and header comment to describe new driver
+ - Complete re-write, using new Generic OPP framework
+ - Supply description for "suitable for ALL versions" DEFINE
+ - Pedantically re-ordered the #include files
+ - Removed platform device registration in arch/arm/mach-sti
+
+v4 => v5:
+ - Converted driver away from being a platform device
+
+v1 => v2 => v3 => v4:
+ - Moot
+
+Lee Jones (10):
+  ARM: multi_v7_defconfig: Enable ST's PWM driver
+  ARM: multi_v7_defconfig: Enable ST's Power Reset driver
+  ARM: multi_v7_defconfig: Enable support for PWM Regulators
+  ARM: STi: STiH407: Provide generic (safe) DVFS configuration
+  ARM: STi: STiH407: Provide CPU with clocking information
+  ARM: STi: STiH407: Link CPU with its voltage supply
+  ARM: STi: STiH407: Provide CPU with a means to look-up Major number
+  cpufreq: st: Provide runtime initialised driver for ST's platforms
+  dt: cpufreq: st: Provide bindings for ST's CPUFreq implementation
+  MAINTAINERS: Add ST's CPUFreq driver to the STI file list
+
+ .../devicetree/bindings/cpufreq/cpufreq-st.txt     |  91 +++++++
+ MAINTAINERS                                        |   1 +
+ arch/arm/boot/dts/stih407-family.dtsi              |  20 ++
+ arch/arm/configs/multi_v7_defconfig                |   5 +-
+ drivers/cpufreq/Kconfig.arm                        |  10 +
+ drivers/cpufreq/Makefile                           |   1 +
+ drivers/cpufreq/sti-cpufreq.c                      | 293 +++++++++++++++++++++
+ 7 files changed, 419 insertions(+), 2 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-st.txt
+ create mode 100644 drivers/cpufreq/sti-cpufreq.c
+
+-- 
+1.9.1
+
