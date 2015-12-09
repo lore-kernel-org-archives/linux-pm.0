@@ -1,70 +1,90 @@
-From: Joonas Lahtinen <joonas.lahtinen@linux.intel.com>
-Subject: [PATCH v2] PM / Runtime: Introduce pm_runtime_get_noidle
-Date: Wed,  9 Dec 2015 18:22:19 +0200
-Message-ID: <1449678139-17782-1-git-send-email-joonas.lahtinen@linux.intel.com>
-References: <1449675920-12986-1-git-send-email-joonas.lahtinen@linux.intel.com>
+From: Dirk Behme <dirk.behme@gmail.com>
+Subject: Re: [PATCH v2 6/6] arm64: renesas: r8a7795: Add L2 cache-controller
+ nodes
+Date: Wed, 9 Dec 2015 17:58:38 +0100
+Message-ID: <56685DBE.8030001@gmail.com>
+References: <1449512659-16688-1-git-send-email-geert+renesas@glider.be>
+ <1449512659-16688-7-git-send-email-geert+renesas@glider.be>
+ <5665D4C7.1050705@arm.com> <20151207190355.GE28024@leverpostej>
+ <5667267E.2080601@gmail.com> <20151208191656.GD11797@leverpostej>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-In-Reply-To: <1449675920-12986-1-git-send-email-joonas.lahtinen@linux.intel.com>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>
-Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f52.google.com ([74.125.82.52]:34349 "EHLO
+	mail-wm0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752286AbbLIQ6r (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Dec 2015 11:58:47 -0500
+In-Reply-To: <20151208191656.GD11797@leverpostej>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mark Rutland <mark.rutland@arm.com>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Lina Iyer <lina.iyer@linaro.org>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org
 
-SW50cm9kdWNlIHBtX3J1bnRpbWVfZ2V0X25vaWRsZSB0byBmb3Igc2l0dWF0aW9ucyB3aGVyZSBp
-dCBpcyBub3QKZGVzaXJlYWJsZSB0byB0b3VjaCBhbiBpZGxpbmcgZGV2aWNlLiBPbmUgdXNlIHNj
-ZW5hcmlvIGlzIHBlcmlvZGljCmhhbmdjaGVja3MgcGVyZm9ybWVkIGJ5IHRoZSBkcm0vaTkxNSBk
-cml2ZXIgd2hpY2ggY2FuIGJlIG9taXR0ZWQKb24gYSBkZXZpY2UgaW4gYSBydW50aW1lIGlkbGUg
-c3RhdGUuCgp2MjoKLSBGaXggaW5jb25zaXN0ZW50IHJldHVybiB2YWx1ZSB3aGVuICFDT05GSUdf
-UE0uCi0gVXBkYXRlIGRvY3VtZW50YXRpb24gZm9yIGJvb2wgcmV0dXJuIHZhbHVlCgpTaWduZWQt
-b2ZmLWJ5OiBKb29uYXMgTGFodGluZW4gPGpvb25hcy5sYWh0aW5lbkBsaW51eC5pbnRlbC5jb20+
-ClJlcG9ydGVkLWJ5OiBDaHJpcyBXaWxzb24gPGNocmlzQGNocmlzLXdpbHNvbi5jby51az4KQ2M6
-IENocmlzIFdpbHNvbiA8Y2hyaXNAY2hyaXMtd2lsc29uLmNvLnVrPgpDYzogIlJhZmFlbCBKLiBX
-eXNvY2tpIiA8cmp3QHJqd3lzb2NraS5uZXQ+CkNjOiBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmcK
-LS0tCiBEb2N1bWVudGF0aW9uL3Bvd2VyL3J1bnRpbWVfcG0udHh0IHwgNCArKysrCiBpbmNsdWRl
-L2xpbnV4L3BtX3J1bnRpbWUuaCAgICAgICAgIHwgNiArKysrKysKIDIgZmlsZXMgY2hhbmdlZCwg
-MTAgaW5zZXJ0aW9ucygrKQoKZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vcG93ZXIvcnVudGlt
-ZV9wbS50eHQgYi9Eb2N1bWVudGF0aW9uL3Bvd2VyL3J1bnRpbWVfcG0udHh0CmluZGV4IDA3ODRi
-YzMuLmEwY2JmZTEgMTAwNjQ0Ci0tLSBhL0RvY3VtZW50YXRpb24vcG93ZXIvcnVudGltZV9wbS50
-eHQKKysrIGIvRG9jdW1lbnRhdGlvbi9wb3dlci9ydW50aW1lX3BtLnR4dApAQCAtMzYzLDYgKzM2
-MywxMCBAQCBkcml2ZXJzL2Jhc2UvcG93ZXIvcnVudGltZS5jIGFuZCBpbmNsdWRlL2xpbnV4L3Bt
-X3J1bnRpbWUuaDoKICAgdm9pZCBwbV9ydW50aW1lX2dldF9ub3Jlc3VtZShzdHJ1Y3QgZGV2aWNl
-ICpkZXYpOwogICAgIC0gaW5jcmVtZW50IHRoZSBkZXZpY2UncyB1c2FnZSBjb3VudGVyCiAKKyAg
-Ym9vbCBwbV9ydW50aW1lX2dldF9ub2lkbGUoc3RydWN0IGRldmljZSAqZGV2KTsKKyAgICAtIGlu
-Y3JlbWVudCB0aGUgZGV2aWNlJ3MgdXNhZ2UgY291bnRlciBpZiBpdCBpcyBub3QgMCBhbmQgcmV0
-dXJuCisgICAgICB3aGV0aGVyIHVzYWdlIGNvdW50ZXIgd2FzIGluY3JlbWVudGVkCisKICAgaW50
-IHBtX3J1bnRpbWVfZ2V0KHN0cnVjdCBkZXZpY2UgKmRldik7CiAgICAgLSBpbmNyZW1lbnQgdGhl
-IGRldmljZSdzIHVzYWdlIGNvdW50ZXIsIHJ1biBwbV9yZXF1ZXN0X3Jlc3VtZShkZXYpIGFuZAog
-ICAgICAgcmV0dXJuIGl0cyByZXN1bHQKZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGludXgvcG1fcnVu
-dGltZS5oIGIvaW5jbHVkZS9saW51eC9wbV9ydW50aW1lLmgKaW5kZXggM2JkYmI0MS4uOGY0Mjli
-YyAxMDA2NDQKLS0tIGEvaW5jbHVkZS9saW51eC9wbV9ydW50aW1lLmgKKysrIGIvaW5jbHVkZS9s
-aW51eC9wbV9ydW50aW1lLmgKQEAgLTY2LDYgKzY2LDExIEBAIHN0YXRpYyBpbmxpbmUgdm9pZCBw
-bV9ydW50aW1lX2dldF9ub3Jlc3VtZShzdHJ1Y3QgZGV2aWNlICpkZXYpCiAJYXRvbWljX2luYygm
-ZGV2LT5wb3dlci51c2FnZV9jb3VudCk7CiB9CiAKK3N0YXRpYyBpbmxpbmUgYm9vbCBwbV9ydW50
-aW1lX2dldF9ub2lkbGUoc3RydWN0IGRldmljZSAqZGV2KQoreworCXJldHVybiBhdG9taWNfYWRk
-X3VubGVzcygmZGV2LT5wb3dlci51c2FnZV9jb3VudCwgMSwgMCkgPiAwOworfQorCiBzdGF0aWMg
-aW5saW5lIHZvaWQgcG1fcnVudGltZV9wdXRfbm9pZGxlKHN0cnVjdCBkZXZpY2UgKmRldikKIHsK
-IAlhdG9taWNfYWRkX3VubGVzcygmZGV2LT5wb3dlci51c2FnZV9jb3VudCwgLTEsIDApOwpAQCAt
-MTUzLDYgKzE1OCw3IEBAIHN0YXRpYyBpbmxpbmUgdm9pZCBwbV9ydW50aW1lX2ZvcmJpZChzdHJ1
-Y3QgZGV2aWNlICpkZXYpIHt9CiAKIHN0YXRpYyBpbmxpbmUgYm9vbCBwbV9jaGlsZHJlbl9zdXNw
-ZW5kZWQoc3RydWN0IGRldmljZSAqZGV2KSB7IHJldHVybiBmYWxzZTsgfQogc3RhdGljIGlubGlu
-ZSB2b2lkIHBtX3J1bnRpbWVfZ2V0X25vcmVzdW1lKHN0cnVjdCBkZXZpY2UgKmRldikge30KK3N0
-YXRpYyBpbmxpbmUgYm9vbCBwbV9ydW50aW1lX2dldF9ub2lkbGUoc3RydWN0IGRldmljZSAqZGV2
-KSB7IHJldHVybiB0cnVlOyB9CiBzdGF0aWMgaW5saW5lIHZvaWQgcG1fcnVudGltZV9wdXRfbm9p
-ZGxlKHN0cnVjdCBkZXZpY2UgKmRldikge30KIHN0YXRpYyBpbmxpbmUgYm9vbCBkZXZpY2VfcnVu
-X3dha2Uoc3RydWN0IGRldmljZSAqZGV2KSB7IHJldHVybiBmYWxzZTsgfQogc3RhdGljIGlubGlu
-ZSB2b2lkIGRldmljZV9zZXRfcnVuX3dha2Uoc3RydWN0IGRldmljZSAqZGV2LCBib29sIGVuYWJs
-ZSkge30KLS0gCjIuNC4zCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fXwpJbnRlbC1nZnggbWFpbGluZyBsaXN0CkludGVsLWdmeEBsaXN0cy5mcmVlZGVza3Rv
-cC5vcmcKaHR0cDovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ludGVs
-LWdmeAo=
+On 08.12.2015 20:16, Mark Rutland wrote:
+> On Tue, Dec 08, 2015 at 07:50:38PM +0100, Dirk Behme wrote:
+>> On 07.12.2015 20:03, Mark Rutland wrote:
+>>> On Mon, Dec 07, 2015 at 06:49:43PM +0000, Sudeep Holla wrote:
+>>>>
+>>>> On 07/12/15 18:24, Geert Uytterhoeven wrote:
+>>>>> +	L2_CA57: cache-controller@0 {
+>>>>> +		compatible = "cache";
+>>>>> +		arm,data-latency = <4 4 1>;
+>>>>> +		arm,tag-latency = <3 3 3>;
+>>>>
+>>>> Interesting, only PL2xx/3xx cache controller driver reads this from the
+>>>> DT and configures the controller. The integrated L2 found in
+>>>> A15/A7/A57/A53 needs doesn't make use of these values from the DT.
+>>>
+>>> These properties seem to be from l2cc.txt, which really only corresponds
+>>> to PL210/PL220/PL310 (and variants) and isn't as generic as it sounds.
+>>>
+>>> I don't see that these are necessary at all.
+>>
+>>
+>> What's about a documentation patch like [1], then?
+>
+> I think it would be better to s/l2cc/l2x0/, and to make it clear that
+> the document only applies to the variants listed above.
+>
+> If ePAPR doesn't cover the other cases, we should document those
+> separately.
+
+
+Ok, thanks, I'll have a look to it.
+
+
+>> For what is the arm64 dts entry
+>>
+>> cpu@0 {
+>> 	...
+>> 	next-level-cache = <&L2_0>;
+>> };
+>>
+>> L2_0: l2-cache0 {
+>> 	compatible = "cache";
+>> };
+>>
+>> good for at all, then?
+>
+> With the other properties from ePAPR you can acquire information on the
+> geometry of the cache, which cannot be acquired from architected
+> registers.
+
+
+Just for my understanding: Yes, if other properties from ePAPR like 
+geometry of the cache are added to the device tree l2 cache entries 
+then it makes sense to have them.
+
+But an "empty" entry like the one given in the example above doesn't 
+make much sense and could be removed without loosing any functionality?
+
+It looks to me that most of the L2 entries we have in 
+arch/arm64/boot/dts are such "empty" entries.
+
+Is this understanding correct?
+
+Best regards
+
+Dirk
+
