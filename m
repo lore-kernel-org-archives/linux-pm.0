@@ -1,76 +1,66 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v2 1/3] dt-binding: power: Add otg regulator binding
-Date: Wed, 9 Dec 2015 15:08:51 -0600
-Message-ID: <CAL_JsqKV=AucyZvFaxsSrZ5Hn718ZMKDfd8pqLHFT27RbE7VMA@mail.gmail.com>
-References: <1449621618-11900-1-git-send-email-tim.bird@sonymobile.com>
- <20151209041153.GA29549@rob-hp-laptop> <566824AD.4080003@sonymobile.com>
- <CAL_JsqL0BjD6A1quSZOYmLNeRZAYo1UwSsTPPvMUbC1pSwM6CQ@mail.gmail.com> <20151209195915.GJ4000@usrtlx11787.corpusers.net>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V4 5/6] cpufreq: governor: replace per-cpu delayed work with timers
+Date: Wed, 09 Dec 2015 23:06:05 +0100
+Message-ID: <1517731.pZjrRh9Im6@vostro.rjw.lan>
+References: <96a8e6745e6335efb537dccafbc213286fdf9ad5.1449209505.git.viresh.kumar@linaro.org> <3250190a623b11f8479c0c9e144d867b8cf7b305.1449626558.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20151209195915.GJ4000@usrtlx11787.corpusers.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Andersson <bjorn.andersson@sonymobile.com>
-Cc: "Bird, Tim" <Tim.Bird@sonymobile.com>, "pawel.moll@arm.com" <pawel.moll@arm.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "agross@codeaurora.org" <agross@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "tbird20d@gmail.com" <tbird20d@gmail.com>, "Cavin, Courtney" <Courtney.Cavin@sonymobile.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:63009 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750980AbbLIVgH (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Dec 2015 16:36:07 -0500
+In-Reply-To: <3250190a623b11f8479c0c9e144d867b8cf7b305.1449626558.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sfr@canb.auug.org.au, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Ashwin Chaugule <ashwin.chaugule@linaro.org>, open list <linux-kernel@vger.kernel.org>
 
-On Wed, Dec 9, 2015 at 1:59 PM, Bjorn Andersson
-<bjorn.andersson@sonymobile.com> wrote:
-> On Wed 09 Dec 06:36 PST 2015, Rob Herring wrote:
->
->> On Wed, Dec 9, 2015 at 6:55 AM, Tim Bird <tim.bird@sonymobile.com> wrote:
->> > On 12/08/2015 08:11 PM, Rob Herring wrote:
->> >> On Tue, Dec 08, 2015 at 04:40:16PM -0800, Tim Bird wrote:
->> >>> Add a binding for the regulator which controls the OTG chargepath switch.
->> >>> The OTG switch gets its power from pm8941_5vs1, and that should be
->> >>> expressed as a usb-otg-in-supply property in the DT node for the
->> >>> charger driver.  The regulator name is "otg".
->>
->> [...]
->>
->> >>> +child nodes:
->> >>> +- otg:
->> >>> +  Usage: optional
->> >>> +  Description: This node defines a regulator used to control the direction
->> >>> +               of VBUS voltage - specifically: whether to supply voltage
->> >>> +               to VBUS for host mode operation of the OTG port, or allow
->> >>> +               input voltage from external VBUS for charging.  In the
->> >>> +               hardware, the supply for this regulator comes from
->> >>> +               usb-otg-in-supply.
->> >>
->> >> Doesn't this regulator need to have a name defined?
->> >
->> > I'm not sure what you mean.  The regulator name is "otg", defined by the DT node
->> > name. The code requires that the DT node name be "otg", and defines a regulator
->> > with the same name.
->> >
->> > As far as I know, you have to define a DT label for the node, in order
->> > to reference this regulator with a phandle.  Is that what you are referring to?
->> > I usually use "chg_otg" as the label.  Are you asking that this be reflected
->> > in the example?
->>
->> You need a regulator-name property. Also, should should define valid
->> values for regulator-min-microvolt and regulator-max-microvolt.
->>
->
-> The regulator has a name, derived from the node name, and this is
-> significant. If the developer wants an additional human readable name
-> for some reason they can use the optional regulator-name property.
->
-> The regulator is a simple switch and as such inherits voltage properties
-> from its supply. It should therefor not have any specified voltage
-> range.
->
->> Thinking about this some more, the node name should be generic, so
->> just "regulator". The label does not need to be generic.
->>
->
-> The name of the node is significant, as it's used for matching the
-> regulator to an implementation.
+On Wednesday, December 09, 2015 07:34:42 AM Viresh Kumar wrote:
+> cpufreq governors evaluate load at sampling rate and based on that they
+> update frequency for a group of CPUs belonging to the same cpufreq
+> policy.
+> 
+> This is required to be done in a single thread for all policy->cpus, but
+> because we don't want to wakeup idle CPUs to do just that, we use
+> deferrable work for this. If we would have used a single delayed
+> deferrable work for the entire policy, there were chances that the CPU
+> required to run the handler can be in idle and we might end up not
+> changing the frequency for the entire group with load variations.
+> 
+> And so we were forced to keep per-cpu works, and only the one that
+> expires first need to do the real work and others are rescheduled for
+> next sampling time.
+> 
+> We have been using the more complex solution until now, where we used a
+> delayed deferrable work for this, which is a combination of a timer and
+> a work.
+> 
+> This could be made lightweight by keeping per-cpu deferred timers with a
+> single work item, which is scheduled by the first timer that expires.
+> 
+> This patch does just that and here are important changes:
+> - The timer handler will run in irq context and so we need to use a
+>   spin_lock instead of the timer_mutex. And so a separate timer_lock is
+>   created. This also makes the use of the mutex and lock quite clear, as
+>   we know what exactly they are protecting.
+> - A new field 'skip_work' is added to track when the timer handlers can
+>   queue a work. More comments present in code.
+> 
+> Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Reviewed-by: Ashwin Chaugule <ashwin.chaugule@linaro.org>
 
-Ah yes, you are right. I forget what an oddball the regulator binding is.
+OK, replaced the one in my tree with this one, thanks!
 
-And if voltage switches don't need min and max properties, then it is
-fine as is. Still, the empty node with no properties seems odd to me.
+BTW, can you please add an extra From: line to the bodies of your patch
+messages?
 
-Rob
+For some unknown reason Patchwork or your mailer or the combination of the
+two mangles your name for me and I have to fix it up manually in every patch
+from you which is a !@#$%^&*() pain.
+
+Thanks,
+Rafael
+
