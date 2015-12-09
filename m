@@ -1,90 +1,204 @@
-From: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: [PATCH v2 10/19] PM / devfreq: exynos: Add the detailed correlation
- between sub-blocks and power line
-Date: Wed, 09 Dec 2015 13:08:02 +0900
-Message-ID: <1449634091-1842-11-git-send-email-cw00.choi@samsung.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCH v2 12/19] ARM: dts: Add bus nodes using VDD_INT for Exynos3250
+Date: Wed, 09 Dec 2015 13:08:04 +0900
+Message-ID: <1449634091-1842-13-git-send-email-cw00.choi@samsung.com>
 References: <1449634091-1842-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-reply-to: <1449634091-1842-1-git-send-email-cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
-Cc: kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org, linux.amoon-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1449634091-1842-1-git-send-email-cw00.choi@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: myungjoo.ham@samsung.com, k.kozlowski@samsung.com, kgene@kernel.org
+Cc: kyungmin.park@samsung.com, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, tjakobi@math.uni-bielefeld.de, linux.amoon@gmail.com, cw00.choi@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds the detailed corrleation between sub-blocks and power line
-for Exynos3250, Exynos4210 and Exynos4x12.
+This patch adds the bus nodes using VDD_INT for Exynos3250 SoC.
+Exynos3250 has following AXI buses to translate data between
+DRAM and sub-blocks.
 
-Signed-off-by: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Following list specifies the detailed relation between DRAM and sub-blocks:
+- ACLK400 clock for MCUISP
+- ACLK266 clock for ISP
+- ACLK200 clock for FSYS
+- ACLK160 clock for LCD0
+- ACLK100 clock for PERIL
+- GDL clock for LEFTBUS
+- GDR clock for RIGHTBUS
+- SCLK_MFC clock for MFC
+
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 ---
- .../devicetree/bindings/devfreq/exynos-bus.txt     | 51 ++++++++++++++++++++++
- 1 file changed, 51 insertions(+)
+ arch/arm/boot/dts/exynos3250.dtsi | 160 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 160 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/devfreq/exynos-bus.txt b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
-index c4fdc70f8eac..ed639c4f6466 100644
---- a/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
-+++ b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
-@@ -33,6 +33,57 @@ Optional properties for only parent bus device:
- - exynos,saturation-ratio: the percentage value which is used to calibrate
-                    the performance count againt total cycle count.
+diff --git a/arch/arm/boot/dts/exynos3250.dtsi b/arch/arm/boot/dts/exynos3250.dtsi
+index 7214c5e42150..46dee1951ec1 100644
+--- a/arch/arm/boot/dts/exynos3250.dtsi
++++ b/arch/arm/boot/dts/exynos3250.dtsi
+@@ -721,6 +721,166 @@
+ 				opp-microvolt = <875000>;
+ 			};
+ 		};
++
++		bus_leftbus: bus_leftbus {
++			compatible = "samsung,exynos-bus";
++			clocks = <&cmu CLK_DIV_GDL>;
++			clock-names = "bus";
++			operating-points-v2 = <&bus_leftbus_opp_table>;
++			status = "disabled";
++		};
++
++		bus_rightbus: bus_rightbus {
++			compatible = "samsung,exynos-bus";
++			clocks = <&cmu CLK_DIV_GDR>;
++			clock-names = "bus";
++			operating-points-v2 = <&bus_leftbus_opp_table>;
++			status = "disabled";
++		};
++
++		bus_lcd0: bus_lcd0 {
++			compatible = "samsung,exynos-bus";
++			clocks = <&cmu CLK_DIV_ACLK_160>;
++			clock-names = "bus";
++			operating-points-v2 = <&bus_leftbus_opp_table>;
++			status = "disabled";
++		};
++
++		bus_fsys: bus_fsys {
++			compatible = "samsung,exynos-bus";
++			clocks = <&cmu CLK_DIV_ACLK_200>;
++			clock-names = "bus";
++			operating-points-v2 = <&bus_leftbus_opp_table>;
++			status = "disabled";
++		};
++
++		bus_mcuisp: bus_mcuisp {
++			compatible = "samsung,exynos-bus";
++			clocks = <&cmu CLK_DIV_ACLK_400_MCUISP>;
++			clock-names = "bus";
++			operating-points-v2 = <&bus_mcuisp_opp_table>;
++			status = "disabled";
++		};
++
++		bus_isp: bus_isp {
++			compatible = "samsung,exynos-bus";
++			clocks = <&cmu CLK_DIV_ACLK_266>;
++			clock-names = "bus";
++			operating-points-v2 = <&bus_isp_opp_table>;
++			status = "disabled";
++		};
++
++		bus_peril: bus_peril {
++			compatible = "samsung,exynos-bus";
++			clocks = <&cmu CLK_DIV_ACLK_100>;
++			clock-names = "bus";
++			operating-points-v2 = <&bus_peril_opp_table>;
++			status = "disabled";
++		};
++
++		bus_mfc: bus_mfc {
++			compatible = "samsung,exynos-bus";
++			clocks = <&cmu CLK_SCLK_MFC>;
++			clock-names = "bus";
++			operating-points-v2 = <&bus_leftbus_opp_table>;
++			status = "disabled";
++		};
++
++		bus_leftbus_opp_table: opp_table2 {
++			compatible = "operating-points-v2";
++			opp-shared;
++
++			opp00 {
++				opp-hz = /bits/ 64 <50000000>;
++				opp-microvolt = <900000>;
++			};
++			opp01 {
++				opp-hz = /bits/ 64 <80000000>;
++				opp-microvolt = <900000>;
++			};
++			opp02 {
++				opp-hz = /bits/ 64 <100000000>;
++				opp-microvolt = <1000000>;
++			};
++			opp03 {
++				opp-hz = /bits/ 64 <134000000>;
++				opp-microvolt = <1000000>;
++			};
++			opp04 {
++				opp-hz = /bits/ 64 <200000000>;
++				opp-microvolt = <1000000>;
++			};
++		};
++
++		bus_mcuisp_opp_table: opp_table3 {
++			compatible = "operating-points-v2";
++			opp-shared;
++
++			opp00 {
++				opp-hz = /bits/ 64 <50000000>;
++				opp-microvolt = <900000>;
++			};
++			opp01 {
++				opp-hz = /bits/ 64 <80000000>;
++				opp-microvolt = <900000>;
++			};
++			opp02 {
++				opp-hz = /bits/ 64 <100000000>;
++				opp-microvolt = <1000000>;
++			};
++			opp03 {
++				opp-hz = /bits/ 64 <200000000>;
++				opp-microvolt = <1000000>;
++			};
++			opp04 {
++				opp-hz = /bits/ 64 <400000000>;
++				opp-microvolt = <1000000>;
++			};
++		};
++
++		bus_isp_opp_table: opp_table4 {
++			compatible = "operating-points-v2";
++			opp-shared;
++
++			opp00 {
++				opp-hz = /bits/ 64 <50000000>;
++				opp-microvolt = <900000>;
++			};
++			opp01 {
++				opp-hz = /bits/ 64 <80000000>;
++				opp-microvolt = <900000>;
++			};
++			opp02 {
++				opp-hz = /bits/ 64 <100000000>;
++				opp-microvolt = <1000000>;
++			};
++			opp03 {
++				opp-hz = /bits/ 64 <200000000>;
++				opp-microvolt = <1000000>;
++			};
++			opp04 {
++				opp-hz = /bits/ 64 <300000000>;
++				opp-microvolt = <1000000>;
++			};
++		};
++
++		bus_peril_opp_table: opp_table5 {
++			compatible = "operating-points-v2";
++			opp-shared;
++
++			opp00 {
++				opp-hz = /bits/ 64 <50000000>;
++				opp-microvolt = <900000>;
++			};
++			opp01 {
++				opp-hz = /bits/ 64 <80000000>;
++				opp-microvolt = <900000>;
++			};
++			opp02 {
++				opp-hz = /bits/ 64 <100000000>;
++				opp-microvolt = <1000000>;
++			};
++		};
+ 	};
+ };
  
-+Detailed correlation between sub-blocks and power line according to Exynos SoC:
-+- In case of Exynos3250, there are two power line as following:
-+	VDD_MIF |--- DMC
-+
-+	VDD_INT |--- LEFTBUS (parent device)
-+		|--- PERIL
-+		|--- MFC
-+		|--- G3D
-+		|--- RIGHTBUS
-+		|--- PERIR
-+		|--- FSYS
-+		|--- LCD0
-+		|--- PERIR
-+		|--- ISP
-+		|--- CAM
-+
-+- In case of Exynos4210, there is one power line as following:
-+	VDD_INT |--- DMC (parent device)
-+		|--- LEFTBUS
-+		|--- PERIL
-+		|--- MFC(L)
-+		|--- G3D
-+		|--- TV
-+		|--- LCD0
-+		|--- RIGHTBUS
-+		|--- PERIR
-+		|--- MFC(R)
-+		|--- CAM
-+		|--- FSYS
-+		|--- GPS
-+		|--- LCD0
-+		|--- LCD1
-+
-+- In case of Exynos4x12, there are two power line as following:
-+	VDD_MIF |--- DMC
-+
-+	VDD_INT |--- LEFTBUS (parent device)
-+		|--- PERIL
-+		|--- MFC(L)
-+		|--- G3D
-+		|--- TV
-+		|--- IMAGE
-+		|--- RIGHTBUS
-+		|--- PERIR
-+		|--- MFC(R)
-+		|--- CAM
-+		|--- FSYS
-+		|--- GPS
-+		|--- LCD0
-+		|--- ISP
-+
- Example1:
- 	Show the AXI buses of Exynos3250 SoC. Exynos3250 divides the buses to
- 	power line (regulator). The MIF (Memory Interface) AXI bus is used to
 -- 
 1.9.1
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
