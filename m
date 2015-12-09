@@ -1,51 +1,83 @@
 From: Steve Muckle <steve.muckle@linaro.org>
-Subject: [RFCv6 PATCH 01/10] sched: Compute cpu capacity available at current frequency
-Date: Tue,  8 Dec 2015 22:19:22 -0800
-Message-ID: <1449641971-20827-2-git-send-email-smuckle@linaro.org>
+Subject: [RFCv6 PATCH 06/10] sched/fair: cpufreq_sched triggers for load balancing
+Date: Tue,  8 Dec 2015 22:19:27 -0800
+Message-ID: <1449641971-20827-7-git-send-email-smuckle@linaro.org>
 References: <1449641971-20827-1-git-send-email-smuckle@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1449641971-20827-1-git-send-email-smuckle@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Juri Lelli <juri.lelli@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Morten Rasmussen <morten.rasmussen@arm.com>
+From: Juri Lelli <juri.lelli@arm.com>
 
-capacity_orig_of() returns the max available compute capacity of a cpu.
-For scale-invariant utilization tracking and energy-aware scheduling
-decisions it is useful to know the compute capacity available at the
-current OPP of a cpu.
+As we don't trigger freq changes from {en,de}queue_task_fair() during load
+balancing, we need to do explicitly so on load balancing paths.
+
+[smuckle@linaro.org: move update_capacity_of calls so rq lock is held]
 
 cc: Ingo Molnar <mingo@redhat.com>
 cc: Peter Zijlstra <peterz@infradead.org>
-Signed-off-by: Morten Rasmussen <morten.rasmussen@arm.com>
+Signed-off-by: Juri Lelli <juri.lelli@arm.com>
 Signed-off-by: Steve Muckle <smuckle@linaro.org>
 ---
- kernel/sched/fair.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ kernel/sched/fair.c | 21 ++++++++++++++++++++-
+ 1 file changed, 20 insertions(+), 1 deletion(-)
 
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 1093873..95b83c4 100644
+index 1bfbbb7..880ceee 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
-@@ -4737,6 +4737,17 @@ static long effective_load(struct task_group *tg, int cpu, long wl, long wg)
- #endif
+@@ -6023,6 +6023,10 @@ static void attach_one_task(struct rq *rq, struct task_struct *p)
+ {
+ 	raw_spin_lock(&rq->lock);
+ 	attach_task(rq, p);
++	/*
++	 * We want to potentially raise target_cpu's OPP.
++	 */
++	update_capacity_of(cpu_of(rq));
+ 	raw_spin_unlock(&rq->lock);
+ }
  
- /*
-+ * Returns the current capacity of cpu after applying both
-+ * cpu and freq scaling.
-+ */
-+static unsigned long capacity_curr_of(int cpu)
-+{
-+	return cpu_rq(cpu)->cpu_capacity_orig *
-+	       arch_scale_freq_capacity(NULL, cpu)
-+	       >> SCHED_CAPACITY_SHIFT;
-+}
+@@ -6044,6 +6048,11 @@ static void attach_tasks(struct lb_env *env)
+ 		attach_task(env->dst_rq, p);
+ 	}
+ 
++	/*
++	 * We want to potentially raise env.dst_cpu's OPP.
++	 */
++	update_capacity_of(env->dst_cpu);
 +
-+/*
-  * Detect M:N waker/wakee relationships via a switching-frequency heuristic.
-  * A waker of many should wake a different task than the one last awakened
-  * at a frequency roughly N times higher than one of its wakees.  In order
+ 	raw_spin_unlock(&env->dst_rq->lock);
+ }
+ 
+@@ -7183,6 +7192,11 @@ more_balance:
+ 		 * ld_moved     - cumulative load moved across iterations
+ 		 */
+ 		cur_ld_moved = detach_tasks(&env);
++		/*
++		 * We want to potentially lower env.src_cpu's OPP.
++		 */
++		if (cur_ld_moved)
++			update_capacity_of(env.src_cpu);
+ 
+ 		/*
+ 		 * We've detached some tasks from busiest_rq. Every
+@@ -7547,8 +7561,13 @@ static int active_load_balance_cpu_stop(void *data)
+ 		schedstat_inc(sd, alb_count);
+ 
+ 		p = detach_one_task(&env);
+-		if (p)
++		if (p) {
+ 			schedstat_inc(sd, alb_pushed);
++			/*
++			 * We want to potentially lower env.src_cpu's OPP.
++			 */
++			update_capacity_of(env.src_cpu);
++		}
+ 		else
+ 			schedstat_inc(sd, alb_failed);
+ 	}
 -- 
 2.4.10
