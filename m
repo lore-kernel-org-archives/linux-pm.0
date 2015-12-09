@@ -1,7 +1,7 @@
 From: Steve Muckle <steve.muckle@linaro.org>
-Subject: [RFCv6 PATCH 05/10] sched/{core,fair}: trigger OPP change request on fork()
-Date: Tue,  8 Dec 2015 22:19:26 -0800
-Message-ID: <1449641971-20827-6-git-send-email-smuckle@linaro.org>
+Subject: [RFCv6 PATCH 04/10] sched/fair: add triggers for OPP change requests
+Date: Tue,  8 Dec 2015 22:19:25 -0800
+Message-ID: <1449641971-20827-5-git-send-email-smuckle@linaro.org>
 References: <1449641971-20827-1-git-send-email-smuckle@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1449641971-20827-1-git-send-email-smuckle@linaro.org>
@@ -12,80 +12,107 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Juri Lelli <juri.lelli@arm.com>
 
-Patch "sched/fair: add triggers for OPP change requests" introduced OPP
-change triggers for enqueue_task_fair(), but the trigger was operating only
-for wakeups. Fact is that it makes sense to consider wakeup_new also (i.e.,
-fork()), as we don't know anything about a newly created task and thus we
-most certainly want to jump to max OPP to not harm performance too much.
+Each time a task is {en,de}queued we might need to adapt the current
+frequency to the new usage. Add triggers on {en,de}queue_task_fair() for
+this purpose.  Only trigger a freq request if we are effectively waking up
+or going to sleep.  Filter out load balancing related calls to reduce the
+number of triggers.
 
-However, it is not currently possible (or at least it wasn't evident to me
-how to do so :/) to tell new wakeups from other (non wakeup) operations.
-
-This patch introduces an additional flag in sched.h that is only set at
-fork() time and it is then consumed in enqueue_task_fair() for our purpose.
+[smuckle@linaro.org: resolve merge conflicts, define task_new,
+ use renamed static key sched_freq]
 
 cc: Ingo Molnar <mingo@redhat.com>
 cc: Peter Zijlstra <peterz@infradead.org>
 Signed-off-by: Juri Lelli <juri.lelli@arm.com>
 Signed-off-by: Steve Muckle <smuckle@linaro.org>
 ---
- kernel/sched/core.c  | 2 +-
- kernel/sched/fair.c  | 9 +++------
- kernel/sched/sched.h | 1 +
- 3 files changed, 5 insertions(+), 7 deletions(-)
+ kernel/sched/fair.c | 49 +++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 47 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index aa3f978..4c8c353e 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -2402,7 +2402,7 @@ void wake_up_new_task(struct task_struct *p)
- #endif
- 
- 	rq = __task_rq_lock(p);
--	activate_task(rq, p, 0);
-+	activate_task(rq, p, ENQUEUE_WAKEUP_NEW);
- 	p->on_rq = TASK_ON_RQ_QUEUED;
- 	trace_sched_wakeup_new(p);
- 	check_preempt_curr(rq, p, WF_FORK);
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 904188a..1bfbbb7 100644
+index 95b83c4..904188a 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
-@@ -4224,7 +4224,8 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+@@ -4199,6 +4199,21 @@ static inline void hrtick_update(struct rq *rq)
+ }
+ #endif
+ 
++static unsigned long capacity_orig_of(int cpu);
++static int cpu_util(int cpu);
++
++static void update_capacity_of(int cpu)
++{
++	unsigned long req_cap;
++
++	if (!sched_freq())
++		return;
++
++	/* Convert scale-invariant capacity to cpu. */
++	req_cap = cpu_util(cpu) * SCHED_CAPACITY_SCALE / capacity_orig_of(cpu);
++	set_cfs_cpu_capacity(cpu, true, req_cap);
++}
++
+ /*
+  * The enqueue_task method is called before nr_running is
+  * increased. Here we update the fair scheduling stats and
+@@ -4209,6 +4224,7 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
  {
  	struct cfs_rq *cfs_rq;
  	struct sched_entity *se = &p->se;
--	int task_new = !(flags & ENQUEUE_WAKEUP);
-+	int task_new = flags & ENQUEUE_WAKEUP_NEW;
-+	int task_wakeup = flags & ENQUEUE_WAKEUP;
++	int task_new = !(flags & ENQUEUE_WAKEUP);
  
  	for_each_sched_entity(se) {
  		if (se->on_rq)
-@@ -4265,12 +4266,8 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
- 		 * because we get here also during load balancing, but
- 		 * in these cases it seems wise to trigger as single
- 		 * request after load balancing is done.
--		 *
--		 * XXX: how about fork()? Do we need a special
--		 *      flag/something to tell if we are here after a
--		 *      fork() (wakeup_task_new)?
- 		 */
--		if (!task_new)
-+		if (task_new || task_wakeup)
- 			update_capacity_of(cpu_of(rq));
+@@ -4240,9 +4256,23 @@ enqueue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+ 		update_cfs_shares(cfs_rq);
  	}
- 	hrtick_update(rq);
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index a88dbec..ad82274 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -1139,6 +1139,7 @@ extern const u32 sched_prio_to_wmult[40];
- #endif
- #define ENQUEUE_REPLENISH	0x08
- #define ENQUEUE_RESTORE	0x10
-+#define ENQUEUE_WAKEUP_NEW	0x20
  
- #define DEQUEUE_SLEEP		0x01
- #define DEQUEUE_SAVE		0x02
+-	if (!se)
++	if (!se) {
+ 		add_nr_running(rq, 1);
+ 
++		/*
++		 * We want to potentially trigger a freq switch
++		 * request only for tasks that are waking up; this is
++		 * because we get here also during load balancing, but
++		 * in these cases it seems wise to trigger as single
++		 * request after load balancing is done.
++		 *
++		 * XXX: how about fork()? Do we need a special
++		 *      flag/something to tell if we are here after a
++		 *      fork() (wakeup_task_new)?
++		 */
++		if (!task_new)
++			update_capacity_of(cpu_of(rq));
++	}
+ 	hrtick_update(rq);
+ }
+ 
+@@ -4300,9 +4330,24 @@ static void dequeue_task_fair(struct rq *rq, struct task_struct *p, int flags)
+ 		update_cfs_shares(cfs_rq);
+ 	}
+ 
+-	if (!se)
++	if (!se) {
+ 		sub_nr_running(rq, 1);
+ 
++		/*
++		 * We want to potentially trigger a freq switch
++		 * request only for tasks that are going to sleep;
++		 * this is because we get here also during load
++		 * balancing, but in these cases it seems wise to
++		 * trigger as single request after load balancing is
++		 * done.
++		 */
++		if (task_sleep) {
++			if (rq->cfs.nr_running)
++				update_capacity_of(cpu_of(rq));
++			else if (sched_freq())
++				set_cfs_cpu_capacity(cpu_of(rq), false, 0);
++		}
++	}
+ 	hrtick_update(rq);
+ }
+ 
 -- 
 2.4.10
