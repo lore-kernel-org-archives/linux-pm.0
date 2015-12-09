@@ -1,99 +1,70 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH v2 0/4]  cpufreq governors and Intel P state driver
- compatibility
-Date: Wed, 09 Dec 2015 08:18:34 -0800
-Message-ID: <1449677914.4180.15.camel@linux.intel.com>
-References: <1449613890-10403-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-	 <56676BAD.4030707@redhat.com>
-	 <1449619021.3240.209.camel@spandruv-desk3.jf.intel.com>
-	 <566828C5.3010605@redhat.com>
+From: Joonas Lahtinen <joonas.lahtinen@linux.intel.com>
+Subject: [PATCH v2] PM / Runtime: Introduce pm_runtime_get_noidle
+Date: Wed,  9 Dec 2015 18:22:19 +0200
+Message-ID: <1449678139-17782-1-git-send-email-joonas.lahtinen@linux.intel.com>
+References: <1449675920-12986-1-git-send-email-joonas.lahtinen@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:26925 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751365AbbLIQVA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 9 Dec 2015 11:21:00 -0500
-In-Reply-To: <566828C5.3010605@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <intel-gfx-bounces@lists.freedesktop.org>
+In-Reply-To: <1449675920-12986-1-git-send-email-joonas.lahtinen@linux.intel.com>
+List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <http://lists.freedesktop.org/archives/intel-gfx>
+List-Post: <mailto:intel-gfx@lists.freedesktop.org>
+List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: intel-gfx-bounces@lists.freedesktop.org
+Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+To: Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>
+Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
-To: Prarit Bhargava <prarit@redhat.com>
-Cc: rafael.j.wysocki@intel.com, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, trenn@suse.de
 
-On Wed, 2015-12-09 at 08:12 -0500, Prarit Bhargava wrote:
-> 
-> On 12/08/2015 06:57 PM, Srinivas Pandruvada wrote:
-> > On Tue, 2015-12-08 at 18:45 -0500, Prarit Bhargava wrote:
-> > > 
-> > > On 12/08/2015 05:31 PM, Srinivas Pandruvada wrote:
-> > > > Intel P State driver implements two policies, performance and
-> > > > powersave.
-> > > > The powersave policy is similar to ondemand cpufreq governor
-> > > > when using
-> > > > acpi-cpufreq. This causes lots of confusion among users. This
-> > > > results
-> > > > in invalid comparison of performance when acpi-cpufreq and
-> > > > Intel P state
-> > > > performance is compared.
-> > > > 
-> > > > The reason Intel P state called powersave when it actually
-> > > > implemented
-> > > > ondemand style P State selection, because the cpufreq core only
-> > > > allows
-> > > > two generic policies "performance and powersave" for drivers
-> > > > which has
-> > > > setpolicy() interface. All drivers using this interface are
-> > > > forced to
-> > > > support these two policies.
-> > > > 
-> > > > This patchset adds feature to have configurable generic
-> > > > policies and
-> > > > allows ondemand as one of the policy. With this approach, Intel
-> > > > P state
-> > > > now adds support for ondemand policy and power save policy both
-> > > > in
-> > > > addition to performance.
-> > > 
-> > Prarit,
-> > > Srinivas, if I read the patchset correctly then this means that
-> > > ondemand ==
-> > > powersave ?
-> > Yes. Will it cause problem to you?
-> 
-> Nope :)  I like that option.  I was just asking to make sure I
-> understood
-> the nature of the change.
-> 
-> > > 
-> > > If so, is the intention to one day remove powersave altogether
-> > > and switch to
-> > > only ondemand & performance?
-> > Yes. But we can add powersave, which all requests P state to max
-> > efficiency ratio. But I want to check, if it will this cause more
-> > confusion.
-> > 
-> 
-> I'm thinking of end users -- we (Red Hat, but I'm pretty sure this
-> applies
-> to all distributions) have spent a significant amount of effort in
-> educating
-> users about the differences between the cpufreq and intel-pstate
-> governors.
-> 
-> Google search yields several results detailing the difference between
-> the
-> powersave and userspace governors as well, so I think that making
-> changes at
-> this point, especially after years of use, will only lead to more
-> confusion
-> for users.
-> 
-Good point. We have customers in both camps. This is tough one.
-> IOW, I agree with the technical argument, but I think that our users
-> will
-> really be confused.
-> 
-Thanks,
-Srinivas
-> P.
+SW50cm9kdWNlIHBtX3J1bnRpbWVfZ2V0X25vaWRsZSB0byBmb3Igc2l0dWF0aW9ucyB3aGVyZSBp
+dCBpcyBub3QKZGVzaXJlYWJsZSB0byB0b3VjaCBhbiBpZGxpbmcgZGV2aWNlLiBPbmUgdXNlIHNj
+ZW5hcmlvIGlzIHBlcmlvZGljCmhhbmdjaGVja3MgcGVyZm9ybWVkIGJ5IHRoZSBkcm0vaTkxNSBk
+cml2ZXIgd2hpY2ggY2FuIGJlIG9taXR0ZWQKb24gYSBkZXZpY2UgaW4gYSBydW50aW1lIGlkbGUg
+c3RhdGUuCgp2MjoKLSBGaXggaW5jb25zaXN0ZW50IHJldHVybiB2YWx1ZSB3aGVuICFDT05GSUdf
+UE0uCi0gVXBkYXRlIGRvY3VtZW50YXRpb24gZm9yIGJvb2wgcmV0dXJuIHZhbHVlCgpTaWduZWQt
+b2ZmLWJ5OiBKb29uYXMgTGFodGluZW4gPGpvb25hcy5sYWh0aW5lbkBsaW51eC5pbnRlbC5jb20+
+ClJlcG9ydGVkLWJ5OiBDaHJpcyBXaWxzb24gPGNocmlzQGNocmlzLXdpbHNvbi5jby51az4KQ2M6
+IENocmlzIFdpbHNvbiA8Y2hyaXNAY2hyaXMtd2lsc29uLmNvLnVrPgpDYzogIlJhZmFlbCBKLiBX
+eXNvY2tpIiA8cmp3QHJqd3lzb2NraS5uZXQ+CkNjOiBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmcK
+LS0tCiBEb2N1bWVudGF0aW9uL3Bvd2VyL3J1bnRpbWVfcG0udHh0IHwgNCArKysrCiBpbmNsdWRl
+L2xpbnV4L3BtX3J1bnRpbWUuaCAgICAgICAgIHwgNiArKysrKysKIDIgZmlsZXMgY2hhbmdlZCwg
+MTAgaW5zZXJ0aW9ucygrKQoKZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vcG93ZXIvcnVudGlt
+ZV9wbS50eHQgYi9Eb2N1bWVudGF0aW9uL3Bvd2VyL3J1bnRpbWVfcG0udHh0CmluZGV4IDA3ODRi
+YzMuLmEwY2JmZTEgMTAwNjQ0Ci0tLSBhL0RvY3VtZW50YXRpb24vcG93ZXIvcnVudGltZV9wbS50
+eHQKKysrIGIvRG9jdW1lbnRhdGlvbi9wb3dlci9ydW50aW1lX3BtLnR4dApAQCAtMzYzLDYgKzM2
+MywxMCBAQCBkcml2ZXJzL2Jhc2UvcG93ZXIvcnVudGltZS5jIGFuZCBpbmNsdWRlL2xpbnV4L3Bt
+X3J1bnRpbWUuaDoKICAgdm9pZCBwbV9ydW50aW1lX2dldF9ub3Jlc3VtZShzdHJ1Y3QgZGV2aWNl
+ICpkZXYpOwogICAgIC0gaW5jcmVtZW50IHRoZSBkZXZpY2UncyB1c2FnZSBjb3VudGVyCiAKKyAg
+Ym9vbCBwbV9ydW50aW1lX2dldF9ub2lkbGUoc3RydWN0IGRldmljZSAqZGV2KTsKKyAgICAtIGlu
+Y3JlbWVudCB0aGUgZGV2aWNlJ3MgdXNhZ2UgY291bnRlciBpZiBpdCBpcyBub3QgMCBhbmQgcmV0
+dXJuCisgICAgICB3aGV0aGVyIHVzYWdlIGNvdW50ZXIgd2FzIGluY3JlbWVudGVkCisKICAgaW50
+IHBtX3J1bnRpbWVfZ2V0KHN0cnVjdCBkZXZpY2UgKmRldik7CiAgICAgLSBpbmNyZW1lbnQgdGhl
+IGRldmljZSdzIHVzYWdlIGNvdW50ZXIsIHJ1biBwbV9yZXF1ZXN0X3Jlc3VtZShkZXYpIGFuZAog
+ICAgICAgcmV0dXJuIGl0cyByZXN1bHQKZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGludXgvcG1fcnVu
+dGltZS5oIGIvaW5jbHVkZS9saW51eC9wbV9ydW50aW1lLmgKaW5kZXggM2JkYmI0MS4uOGY0Mjli
+YyAxMDA2NDQKLS0tIGEvaW5jbHVkZS9saW51eC9wbV9ydW50aW1lLmgKKysrIGIvaW5jbHVkZS9s
+aW51eC9wbV9ydW50aW1lLmgKQEAgLTY2LDYgKzY2LDExIEBAIHN0YXRpYyBpbmxpbmUgdm9pZCBw
+bV9ydW50aW1lX2dldF9ub3Jlc3VtZShzdHJ1Y3QgZGV2aWNlICpkZXYpCiAJYXRvbWljX2luYygm
+ZGV2LT5wb3dlci51c2FnZV9jb3VudCk7CiB9CiAKK3N0YXRpYyBpbmxpbmUgYm9vbCBwbV9ydW50
+aW1lX2dldF9ub2lkbGUoc3RydWN0IGRldmljZSAqZGV2KQoreworCXJldHVybiBhdG9taWNfYWRk
+X3VubGVzcygmZGV2LT5wb3dlci51c2FnZV9jb3VudCwgMSwgMCkgPiAwOworfQorCiBzdGF0aWMg
+aW5saW5lIHZvaWQgcG1fcnVudGltZV9wdXRfbm9pZGxlKHN0cnVjdCBkZXZpY2UgKmRldikKIHsK
+IAlhdG9taWNfYWRkX3VubGVzcygmZGV2LT5wb3dlci51c2FnZV9jb3VudCwgLTEsIDApOwpAQCAt
+MTUzLDYgKzE1OCw3IEBAIHN0YXRpYyBpbmxpbmUgdm9pZCBwbV9ydW50aW1lX2ZvcmJpZChzdHJ1
+Y3QgZGV2aWNlICpkZXYpIHt9CiAKIHN0YXRpYyBpbmxpbmUgYm9vbCBwbV9jaGlsZHJlbl9zdXNw
+ZW5kZWQoc3RydWN0IGRldmljZSAqZGV2KSB7IHJldHVybiBmYWxzZTsgfQogc3RhdGljIGlubGlu
+ZSB2b2lkIHBtX3J1bnRpbWVfZ2V0X25vcmVzdW1lKHN0cnVjdCBkZXZpY2UgKmRldikge30KK3N0
+YXRpYyBpbmxpbmUgYm9vbCBwbV9ydW50aW1lX2dldF9ub2lkbGUoc3RydWN0IGRldmljZSAqZGV2
+KSB7IHJldHVybiB0cnVlOyB9CiBzdGF0aWMgaW5saW5lIHZvaWQgcG1fcnVudGltZV9wdXRfbm9p
+ZGxlKHN0cnVjdCBkZXZpY2UgKmRldikge30KIHN0YXRpYyBpbmxpbmUgYm9vbCBkZXZpY2VfcnVu
+X3dha2Uoc3RydWN0IGRldmljZSAqZGV2KSB7IHJldHVybiBmYWxzZTsgfQogc3RhdGljIGlubGlu
+ZSB2b2lkIGRldmljZV9zZXRfcnVuX3dha2Uoc3RydWN0IGRldmljZSAqZGV2LCBib29sIGVuYWJs
+ZSkge30KLS0gCjIuNC4zCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fXwpJbnRlbC1nZnggbWFpbGluZyBsaXN0CkludGVsLWdmeEBsaXN0cy5mcmVlZGVza3Rv
+cC5vcmcKaHR0cDovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ludGVs
+LWdmeAo=
