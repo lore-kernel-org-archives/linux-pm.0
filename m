@@ -1,71 +1,43 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH v2 0/4]  cpufreq governors and Intel P state driver compatibility
-Date: Wed, 09 Dec 2015 08:12:37 -0500
-Message-ID: <566828C5.3010605@redhat.com>
-References: <1449613890-10403-1-git-send-email-srinivas.pandruvada@linux.intel.com>	 <56676BAD.4030707@redhat.com> <1449619021.3240.209.camel@spandruv-desk3.jf.intel.com>
+From: Javier Martinez Canillas <javier@osg.samsung.com>
+Subject: Re: [PATCH v4 0/8] cpufreq: add generic cpufreq driver support for
+ Exynos542x/5800 platforms
+Date: Wed, 9 Dec 2015 10:13:42 -0300
+Message-ID: <56682906.50607@osg.samsung.com>
+References: <1449512300-17230-1-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:46552 "EHLO mx1.redhat.com"
+Received: from lists.s-osg.org ([54.187.51.154]:49820 "EHLO lists.s-osg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751310AbbLINMi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 9 Dec 2015 08:12:38 -0500
-In-Reply-To: <1449619021.3240.209.camel@spandruv-desk3.jf.intel.com>
+	id S1753317AbbLINNw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 9 Dec 2015 08:13:52 -0500
+In-Reply-To: <1449512300-17230-1-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: rafael.j.wysocki@intel.com, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, trenn@suse.de
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Mike Turquette <mturquette@linaro.org>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Ben Gamari <ben@smart-cactus.org>
+Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
+Hello Bartlomiej,
 
-
-On 12/08/2015 06:57 PM, Srinivas Pandruvada wrote:
-> On Tue, 2015-12-08 at 18:45 -0500, Prarit Bhargava wrote:
->>
->> On 12/08/2015 05:31 PM, Srinivas Pandruvada wrote:
->>> Intel P State driver implements two policies, performance and powersave.
->>> The powersave policy is similar to ondemand cpufreq governor when using
->>> acpi-cpufreq. This causes lots of confusion among users. This results
->>> in invalid comparison of performance when acpi-cpufreq and Intel P state
->>> performance is compared.
->>>
->>> The reason Intel P state called powersave when it actually implemented
->>> ondemand style P State selection, because the cpufreq core only allows
->>> two generic policies "performance and powersave" for drivers which has
->>> setpolicy() interface. All drivers using this interface are forced to
->>> support these two policies.
->>>
->>> This patchset adds feature to have configurable generic policies and
->>> allows ondemand as one of the policy. With this approach, Intel P state
->>> now adds support for ondemand policy and power save policy both in
->>> addition to performance.
->>
-> Prarit,
->> Srinivas, if I read the patchset correctly then this means that ondemand ==
->> powersave ?
-> Yes. Will it cause problem to you?
-
-Nope :)  I like that option.  I was just asking to make sure I understood
-the nature of the change.
-
->>
->> If so, is the intention to one day remove powersave altogether and switch to
->> only ondemand & performance?
-> Yes. But we can add powersave, which all requests P state to max
-> efficiency ratio. But I want to check, if it will this cause more
-> confusion.
+On 12/07/2015 03:18 PM, Bartlomiej Zolnierkiewicz wrote:
+> Hi,
+> 
+> This patch series adds generic cpufreq-dt driver support for
+> Exynos542x/5800 (using the new CPU clock type which allows it).
+> 
+> It has been tested on Exynos5422 based ODROID-XU3 Lite board.
 >
 
-I'm thinking of end users -- we (Red Hat, but I'm pretty sure this applies
-to all distributions) have spent a significant amount of effort in educating
-users about the differences between the cpufreq and intel-pstate governors.
+I tested on an Exynos5800 Peach Pi and all governors are working
+as expected on both the Cortex-A7 and Cortex-A15 cores.
 
-Google search yields several results detailing the difference between the
-powersave and userspace governors as well, so I think that making changes at
-this point, especially after years of use, will only lead to more confusion
-for users.
+So for the whole series:
 
-IOW, I agree with the technical argument, but I think that our users will
-really be confused.
+Tested-by: Javier Martinez Canillas <javier@osg.samsung.com>
 
-P.
+Best regards,
+-- 
+Javier Martinez Canillas
+Open Source Group
+Samsung Research America
