@@ -1,72 +1,87 @@
-From: Bjorn Andersson <bjorn.andersson@sonymobile.com>
-Subject: Re: [PATCH v2 1/3] dt-binding: power: Add otg regulator binding
-Date: Wed, 9 Dec 2015 11:59:15 -0800
-Message-ID: <20151209195915.GJ4000@usrtlx11787.corpusers.net>
-References: <1449621618-11900-1-git-send-email-tim.bird@sonymobile.com>
- <20151209041153.GA29549@rob-hp-laptop>
- <566824AD.4080003@sonymobile.com>
- <CAL_JsqL0BjD6A1quSZOYmLNeRZAYo1UwSsTPPvMUbC1pSwM6CQ@mail.gmail.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH] cpufreq: tegra: add regulator dependency for T124
+Date: Wed, 9 Dec 2015 20:10:07 +0000
+Message-ID: <20151209201007.GG5727@sirena.org.uk>
+References: <2194927.eV2s2QmZs0@wuerfel>
+ <5668188F.2080202@nvidia.com>
+ <20151209144734.GB5727@sirena.org.uk>
+ <566865ED.3020106@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="BWpbUxt7sU2t3mXs"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAL_JsqL0BjD6A1quSZOYmLNeRZAYo1UwSsTPPvMUbC1pSwM6CQ@mail.gmail.com>
+In-Reply-To: <566865ED.3020106@nvidia.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: "Bird, Tim" <Tim.Bird@sonymobile.com>, "pawel.moll@arm.com" <pawel.moll@arm.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "agross@codeaurora.org" <agross@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "tbird20d@gmail.com" <tbird20d@gmail.com>, "Cavin, Courtney" <Courtney.Cavin@sonymobile.com>
+To: Jon Hunter <jonathanh@nvidia.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Liam Girdwood <lgirdwood@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed 09 Dec 06:36 PST 2015, Rob Herring wrote:
 
-> On Wed, Dec 9, 2015 at 6:55 AM, Tim Bird <tim.bird@sonymobile.com> wrote:
-> > On 12/08/2015 08:11 PM, Rob Herring wrote:
-> >> On Tue, Dec 08, 2015 at 04:40:16PM -0800, Tim Bird wrote:
-> >>> Add a binding for the regulator which controls the OTG chargepath switch.
-> >>> The OTG switch gets its power from pm8941_5vs1, and that should be
-> >>> expressed as a usb-otg-in-supply property in the DT node for the
-> >>> charger driver.  The regulator name is "otg".
-> 
-> [...]
-> 
-> >>> +child nodes:
-> >>> +- otg:
-> >>> +  Usage: optional
-> >>> +  Description: This node defines a regulator used to control the direction
-> >>> +               of VBUS voltage - specifically: whether to supply voltage
-> >>> +               to VBUS for host mode operation of the OTG port, or allow
-> >>> +               input voltage from external VBUS for charging.  In the
-> >>> +               hardware, the supply for this regulator comes from
-> >>> +               usb-otg-in-supply.
-> >>
-> >> Doesn't this regulator need to have a name defined?
-> >
-> > I'm not sure what you mean.  The regulator name is "otg", defined by the DT node
-> > name. The code requires that the DT node name be "otg", and defines a regulator
-> > with the same name.
-> >
-> > As far as I know, you have to define a DT label for the node, in order
-> > to reference this regulator with a phandle.  Is that what you are referring to?
-> > I usually use "chg_otg" as the label.  Are you asking that this be reflected
-> > in the example?
-> 
-> You need a regulator-name property. Also, should should define valid
-> values for regulator-min-microvolt and regulator-max-microvolt.
-> 
+--BWpbUxt7sU2t3mXs
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The regulator has a name, derived from the node name, and this is
-significant. If the developer wants an additional human readable name
-for some reason they can use the optional regulator-name property.
+On Wed, Dec 09, 2015 at 05:33:33PM +0000, Jon Hunter wrote:
+> On 09/12/15 14:47, Mark Brown wrote:
 
-The regulator is a simple switch and as such inherits voltage properties
-from its supply. It should therefor not have any specified voltage
-range.
+> > If changes implemented by the clock driver are trashing the regulator
+> > settings I would expect the clock driver to be responsible for fixing
+> > things up rather than another driver that happens to use the clock.  I'd
+> > also expect some kind of internal documentation explaining what's going
+> > on, and possibly=20
 
-> Thinking about this some more, the node name should be generic, so
-> just "regulator". The label does not need to be generic.
-> 
+> Yes, the DFLL clock driver could restore the voltage, however, that
+> does not guarantee that the voltage is still sufficient for the other
+> clock source.
 
-The name of the node is significant, as it's used for matching the
-regulator to an implementation.
+But the code we've got won't do that either - it'l just set the voltage
+to whatever the last thing the regulator API had that might have been
+within its constraints.
 
-Regards,
-Bjorn
+> > Setting the voltage you've read back sounds broken, if the hardware
+> > might randomly change things how do you know the settings we read were
+> > sane?  Shouldn't we know what voltage range the device requires in a
+> > given mode and set that - that's much more normal?
+
+> The hardware will not randomly change the voltage until the DFLL is
+> enabled and so you would have to do this before.
+
+I'm not clear that there's even a guarantee that the kernel will ever
+have seen this configuration, consider for example what happens if
+someone uses kexec?
+
+> Yes, setting the frequency and voltage as defined by a given operating
+> mode would make sense. However, I am not sure we have those defined in
+> the kernel for this PLL and would have to be added.
+
+I think given how you're describing the hardware that this will be
+required in order to provide something robust (and also to get the best
+power savings from the hardware).
+
+> I was thinking that during boot we could read the default voltage and
+> frequency set by the bootloader and use this as it should not be
+> changing dynamically at this point because the cpufreq driver has not
+> been activated yet.
+
+I'm a bit confused here, we're talking about a change to the cpufreq
+driver here aren't we?  Or alternatively why are we manipulating the
+clock tree like this if we don't yet have support for the hardware?
+
+--BWpbUxt7sU2t3mXs
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJWaIqfAAoJECTWi3JdVIfQgK0H/jzMENro5B0FAKbaLm5ilXMU
+acF/SqGyuIC/vOyAs2kQzigGXADCY2BbAbuIWsy2g0WeOma1n33dDU+4mMVX0r0t
+zvVqVJK617YhwErwg3BihJWOCukTl07nE+8l2Nu6uL94NzdYJvDH6yaG+emwlnS/
+dsGmzrAmYHZsK0tjzw5d6HyU5uAxseNjzcapm8u0xLu+PRCGcTG8WKA7RW8mJ3R2
+CeGaS2P701pOc9X/30Atx2+7ge8QwxD0oGLGebFcg5nnwOO78fmyrZbt+jWCDDko
+UC6QG72hiZNrAgbJDo9jKsdeEUnzvzzY1a0/A3UrXfZjDpfwI8Jg4D9HZV+naH0=
+=cNCo
+-----END PGP SIGNATURE-----
+
+--BWpbUxt7sU2t3mXs--
