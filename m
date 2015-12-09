@@ -1,77 +1,95 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v2 6/6] arm64: renesas: r8a7795: Add L2 cache-controller
- nodes
-Date: Wed, 9 Dec 2015 17:34:45 +0000
-Message-ID: <56686635.8030104@arm.com>
-References: <1449512659-16688-1-git-send-email-geert+renesas@glider.be>
- <1449512659-16688-7-git-send-email-geert+renesas@glider.be>
- <5665D4C7.1050705@arm.com> <20151207190355.GE28024@leverpostej>
- <5667267E.2080601@gmail.com> <20151208191656.GD11797@leverpostej>
- <56685DBE.8030001@gmail.com> <20151209172127.GA24353@leverpostej>
+From: Tim Bird <tim.bird@sonymobile.com>
+Subject: Re: [PATCH v2 1/3] dt-binding: power: Add otg regulator binding
+Date: Wed, 9 Dec 2015 09:42:09 -0800
+Message-ID: <566867F1.7000906@sonymobile.com>
+References: <1449621618-11900-1-git-send-email-tim.bird@sonymobile.com>
+ <20151209041153.GA29549@rob-hp-laptop> <566824AD.4080003@sonymobile.com>
+ <CAL_JsqL0BjD6A1quSZOYmLNeRZAYo1UwSsTPPvMUbC1pSwM6CQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <20151209172127.GA24353@leverpostej>
-Sender: linux-sh-owner@vger.kernel.org
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: Dirk Behme <dirk.behme@gmail.com>, Sudeep Holla <sudeep.holla@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Lina Iyer <lina.iyer@linaro.org>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <CAL_JsqL0BjD6A1quSZOYmLNeRZAYo1UwSsTPPvMUbC1pSwM6CQ@mail.gmail.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: "pawel.moll@arm.com" <pawel.moll@arm.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "agross@codeaurora.org" <agross@codeaurora.org>, =?UTF-8?Q?Andersson=2c_Bj=c3=b6rn?= <Bjorn.Andersson@sonymobile.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "tbird20d@gmail.com" <tbird20d@gmail.com>, "Cavin, Courtney" <Courtney.Cavin@sonymobile.com>, Mark Brown <broonie@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 
 
-On 09/12/15 17:21, Mark Rutland wrote:
-> On Wed, Dec 09, 2015 at 05:58:38PM +0100, Dirk Behme wrote:
->>>> For what is the arm64 dts entry
->>>>
->>>> cpu@0 {
->>>> 	...
->>>> 	next-level-cache = <&L2_0>;
->>>> };
->>>>
->>>> L2_0: l2-cache0 {
->>>> 	compatible = "cache";
->>>> };
->>>>
->>>> good for at all, then?
+On 12/09/2015 06:36 AM, Rob Herring wrote:
+> On Wed, Dec 9, 2015 at 6:55 AM, Tim Bird <tim.bird@sonymobile.com> wrote:
+>> On 12/08/2015 08:11 PM, Rob Herring wrote:
+>>> On Tue, Dec 08, 2015 at 04:40:16PM -0800, Tim Bird wrote:
+>>>> Add a binding for the regulator which controls the OTG chargepath switch.
+>>>> The OTG switch gets its power from pm8941_5vs1, and that should be
+>>>> expressed as a usb-otg-in-supply property in the DT node for the
+>>>> charger driver.  The regulator name is "otg".
+> 
+> [...]
+> 
+>>>> +child nodes:
+>>>> +- otg:
+>>>> +  Usage: optional
+>>>> +  Description: This node defines a regulator used to control the direction
+>>>> +               of VBUS voltage - specifically: whether to supply voltage
+>>>> +               to VBUS for host mode operation of the OTG port, or allow
+>>>> +               input voltage from external VBUS for charging.  In the
+>>>> +               hardware, the supply for this regulator comes from
+>>>> +               usb-otg-in-supply.
 >>>
->>> With the other properties from ePAPR you can acquire information on the
->>> geometry of the cache, which cannot be acquired from architected
->>> registers.
+>>> Doesn't this regulator need to have a name defined?
 >>
+>> I'm not sure what you mean.  The regulator name is "otg", defined by the DT node
+>> name. The code requires that the DT node name be "otg", and defines a regulator
+>> with the same name.
 >>
->> Just for my understanding: Yes, if other properties from ePAPR like
->> geometry of the cache are added to the device tree l2 cache entries
->> then it makes sense to have them.
->>
->> But an "empty" entry like the one given in the example above doesn't
->> make much sense and could be removed without loosing any
->> functionality?
->>
->> It looks to me that most of the L2 entries we have in
->> arch/arm64/boot/dts are such "empty" entries.
->>
->> Is this understanding correct?
->
-> You are mostly correct, just missing some history.
->
-> It was previously (erroneously) assumed that the cache geometry could be
-> derived from architected registers used for set/way maintenance.
-> However, we knew that this did not describe how those caches were linked
-> to each other (e.g. which CPU shared with level x cache). So the
-> description in DT was required to provide that.
->
-> Now, we all know that the geometry is necessary too. Those DTs should be
-> fixed.
->
-> Sudeep, do you know what's happening on that front?
->
+>> As far as I know, you have to define a DT label for the node, in order
+>> to reference this regulator with a phandle.  Is that what you are referring to?
+>> I usually use "chg_otg" as the label.  Are you asking that this be reflected
+>> in the example?
+> 
+> You need a regulator-name property. Also, should should define valid
+> values for regulator-min-microvolt and regulator-max-microvolt.
 
-No updates yet. I thought Alex Van Brunt would pick that. I have a patch
-for PPC which never got tested/reviewed. It moves PPC code to reuse the
-generic cacheinfo. If I can revive that and look into ways of moving it
-to core code.
+All of those are listed as optional properties in
+Documentation/devicetree/bindings/regulator/regulator.txt.
 
--- 
-Regards,
-Sudeep
+The regulator-name seems redundant, since the name of the DT
+node becomes the regulator name in the Linux system.  This is
+not currently used anywhere, as the node is "connected up" via
+phandle, which uses the label.  That is, there's no code in
+the kernel that looks up this regulator by name, although it
+does get a name.
+
+As for the microvolt references, I'm a little stumped what
+to do with those.  I could use regulator-min-microvolt of 0
+and a regulator-max-microvolt of 500000, but that's not
+exactly right.
+
+This is actually representing a voltage switch, which is being
+represented in the regulator framework in Linux, because it
+seems to fit there best.  It has regulators it's related
+to, which should be adjusted when this one is.  However, it
+intrinsically does not have a voltage of it's own, so it's a
+bit of a weird case.  And the voltage can either be going
+"out" or "in".
+
+I'm CC-ing Mark Brown, who may know how these types of things
+are supposed to be expressed.  I believe he saw an earlier version
+of this patch last year.  Or maybe our power maintainers will
+chime in with some wisdom.  I can't be the first person to
+be adding a charge pathway switch to mainline, so I'm open to
+doing it the "right way". :-)
+
+> Thinking about this some more, the node name should be generic, so
+> just "regulator". The label does not need to be generic.
+
+There are other switches in the charger block that are not
+exposed yet.  This one handles the the OTG (vbus) charge pathway.
+Others handle other charge pathways (some of which are used on phones
+and some are not - they're used, e.g., on the dragonboard).  I'd
+rather not give it a generic name, because eventually the driver
+should expose those other switches as something as well.
+
+ -- Tim
