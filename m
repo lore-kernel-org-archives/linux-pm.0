@@ -1,112 +1,97 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v2 06/19] PM / devfreq: Add devfreq_get_devfreq_by_phandle()
-Date: Wed, 09 Dec 2015 13:07:58 +0900
-Message-ID: <1449634091-1842-7-git-send-email-cw00.choi@samsung.com>
-References: <1449634091-1842-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1449634091-1842-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com, k.kozlowski@samsung.com, kgene@kernel.org
-Cc: kyungmin.park@samsung.com, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, tjakobi@math.uni-bielefeld.de, linux.amoon@gmail.com, cw00.choi@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org
+From: Anand Moon <linux.amoon@gmail.com>
+Subject: Re: [RFC PATCH 01/15] PM / devfreq: exynos: Add generic exynos bus
+ frequency driver
+Date: Wed, 9 Dec 2015 09:49:41 +0530
+Message-ID: <CANAwSgQscAGnkzeSVTya5-_FWrnS3L9oKZCBS3O3tyaDxZiz+g@mail.gmail.com>
+References: <1448545659-32287-1-git-send-email-cw00.choi@samsung.com>
+ <1448545659-32287-2-git-send-email-cw00.choi@samsung.com> <CAJ0PZbSJ26q9MWSXihQjZih0hSU=w+dR2HKxa67kJhmZtt1tJQ@mail.gmail.com>
+ <CAGTfZH295rGWh4S0mPgC7GMiA04NKgDybRUVnfzZP5o9-HffMw@mail.gmail.com>
+ <CANAwSgQtvp_7hODvLz--5QmXMYqhOQYyBjihyRqWYv5HEk0u5A@mail.gmail.com>
+ <5657A4F8.4080003@samsung.com> <5667A9FA.8090802@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <5667A9FA.8090802@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: MyungJoo Ham <myungjoo.ham@gmail.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King <linux@arm.linux.org.uk>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux Samsung SoC <linux-samsung-soc@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds the new devfreq_get_devfreq_by_phandle() OF helper function
-which can find the instance of devfreq device by using phandle ("devfreq").
+Hi Chanwoo,
 
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
----
- drivers/devfreq/devfreq.c | 44 ++++++++++++++++++++++++++++++++++++++++++++
- include/linux/devfreq.h   |  9 +++++++++
- 2 files changed, 53 insertions(+)
+On 9 December 2015 at 09:41, Chanwoo Choi <cw00.choi@samsung.com> wrote=
+:
+> Hi Anand,
+>
+> On 2015=EB=85=84 11=EC=9B=94 27=EC=9D=BC 09:34, Chanwoo Choi wrote:
+>> Hi Anand,
+>>
+>> On 2015=EB=85=84 11=EC=9B=94 27=EC=9D=BC 02:17, Anand Moon wrote:
+>>> Hi Chanwoo,
+>>>
+>>> On 26 November 2015 at 21:42, Chanwoo Choi <cwchoi00@gmail.com> wro=
+te:
+>>>> On Thu, Nov 26, 2015 at 11:00 PM, MyungJoo Ham <myungjoo.ham@samsu=
+ng.com> wrote:
+>>>>> On Thu, Nov 26, 2015 at 10:47 PM, Chanwoo Choi <cw00.choi@samsung=
+=2Ecom> wrote:
+>>>>>> This patch adds the generic exynos bus frequency driver for AMBA=
+ AXI bus
+>>>>>> of sub-blocks in exynos SoC with DEVFREQ framework. The Samsung =
+Exynos SoC
+>>>>>> have the common architecture for bus between DRAM and sub-blocks=
+ in SoC.
+>>>>>> This driver can support the generic bus frequency driver for Exy=
+nos SoCs.
+>>>>>>
+>>>>>> In devicetree, Each bus block has a bus clock, regulator, operat=
+ion-point
+>>>>>> and devfreq-event devices which measure the utilization of each =
+bus block.
+>>>>>>
+>>>>>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+>>>>>> ---
+>>>>>>  drivers/devfreq/Kconfig             |  15 ++
+>>>>>>  drivers/devfreq/Makefile            |   1 +
+>>>>>>  drivers/devfreq/exynos/Makefile     |   1 +
+>>>>>>  drivers/devfreq/exynos/exynos-bus.c | 443 +++++++++++++++++++++=
++++++++++++++++
+>>>>>>  4 files changed, 460 insertions(+)
+>>>>>>  create mode 100644 drivers/devfreq/exynos/exynos-bus.c
+>>>>>>
+>>>>>
+>>>>> Are we finally getting a common Exynos bus driver with full DT su=
+pport?
+>>>>> (can this replace both Exynos4/5 drivers and support Exynos7 seri=
+es?)
+>>>>
+>>>> Yes.
+>>>> This patch-set would support all Exynos SoCs for bus frequency dri=
+ver.
+>>>> To make sure the support for Exynos7 series, I need to check the T=
+RM
+>>>> document of Exynos7.  I think it is possible for support Exynos7.
+>>>>
+>>>> I'm going to test this driver on various Exynos-based board.
+>>>>
+>>>> Regards,
+>>>> Chanwoo Choi
+>>>
+>>> Please do consider Exynos 542x series as well.
+>>
+>> Sure. I'll to test it on Exynos5422-based Odroid-XU3.
+>
+> I send the v2 patchset but this patchset don't include
+> the support of Odroid-XU3 because of only Exynos542x has the
+> special addtional sequence to change the source clock
+> of DRAM. So, I'm going to support the bus frequency on Exynos542x.
+> After completing it, I'll send the separate patches.
+>
+> Thanks,
+> Chanwoo Choi
+>
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 15e58779e4c0..78ea4cdaa82c 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -25,6 +25,7 @@
- #include <linux/list.h>
- #include <linux/printk.h>
- #include <linux/hrtimer.h>
-+#include <linux/of.h>
- #include "governor.h"
- 
- static struct class *devfreq_class;
-@@ -686,6 +687,49 @@ struct devfreq *devm_devfreq_add_device(struct device *dev,
- }
- EXPORT_SYMBOL(devm_devfreq_add_device);
- 
-+#ifdef CONFIG_OF
-+/*
-+ * devfreq_get_devfreq_by_phandle - Get the devfreq device from devicetree
-+ * @dev - instance to the given device
-+ * @index - index into list of devfreq
-+ *
-+ * return the instance of devfreq device
-+ */
-+struct devfreq *devfreq_get_devfreq_by_phandle(struct device *dev, int index)
-+{
-+	struct device_node *node;
-+	struct devfreq *devfreq;
-+
-+	if (!dev)
-+		return ERR_PTR(-EINVAL);
-+
-+	if (!dev->of_node)
-+		return ERR_PTR(-EINVAL);
-+
-+	node = of_parse_phandle(dev->of_node, "devfreq", index);
-+	if (!node)
-+		return ERR_PTR(-ENODEV);
-+
-+	mutex_lock(&devfreq_list_lock);
-+	list_for_each_entry(devfreq, &devfreq_list, node) {
-+		if (devfreq->dev.parent
-+			&& devfreq->dev.parent->of_node == node) {
-+			mutex_unlock(&devfreq_list_lock);
-+			return devfreq;
-+		}
-+	}
-+	mutex_unlock(&devfreq_list_lock);
-+
-+	return ERR_PTR(-EPROBE_DEFER);
-+}
-+#else
-+struct devfreq *devfreq_get_devfreq_by_phandle(struct device *dev, int index)
-+{
-+	return ERR_PTR(-ENODEV);
-+}
-+#endif /* CONFIG_OF */
-+EXPORT_SYMBOL_GPL(devfreq_get_devfreq_by_phandle);
-+
- /**
-  * devm_devfreq_remove_device() - Resource-managed devfreq_remove_device()
-  * @dev:	the device to add devfreq feature.
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index f7a6e6bd716e..d648041145ba 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -211,6 +211,9 @@ extern int devm_devfreq_register_opp_notifier(struct device *dev,
- extern void devm_devfreq_unregister_opp_notifier(struct device *dev,
- 						struct devfreq *devfreq);
- 
-+extern struct devfreq *devfreq_get_devfreq_by_phandle(struct device *dev,
-+						int index);
-+
- /**
-  * devfreq_update_stats() - update the last_status pointer in struct devfreq
-  * @df:		the devfreq instance whose status needs updating
-@@ -324,6 +327,12 @@ static inline void devm_devfreq_unregister_opp_notifier(struct device *dev,
- {
- }
- 
-+static inline struct devfreq *devfreq_get_devfreq_by_phandle(struct device *dev,
-+							int index)
-+{
-+	return ERR_PTR(-ENODEV);
-+}
-+
- static inline int devfreq_update_stats(struct devfreq *df)
- {
- 	return -EINVAL;
--- 
-1.9.1
+Not an issue. Thanks for the update.
+
+-Anand Moon
