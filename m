@@ -1,76 +1,94 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2 1/3] dt-binding: power: Add otg regulator binding
-Date: Wed, 9 Dec 2015 23:20:45 +0100
-Message-ID: <20151209222044.GB32712@earth>
-References: <1449621618-11900-1-git-send-email-tim.bird@sonymobile.com>
- <20151209041153.GA29549@rob-hp-laptop>
- <566824AD.4080003@sonymobile.com>
- <CAL_JsqL0BjD6A1quSZOYmLNeRZAYo1UwSsTPPvMUbC1pSwM6CQ@mail.gmail.com>
- <566867F1.7000906@sonymobile.com>
+From: Simon Arlott <simon@fire.lp0.eu>
+Subject: [PATCH linux-next 1/2] power: Add brcm,bcm6358-power-controller
+ device tree binding
+Date: Wed, 9 Dec 2015 22:29:35 +0000
+Message-ID: <5668AB4F.7030100@simon.arlott.org.uk>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="s2ZSL+KKDSLx8OML"
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <566867F1.7000906@sonymobile.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Tim Bird <tim.bird@sonymobile.com>
-Cc: Rob Herring <robh@kernel.org>, "pawel.moll@arm.com" <pawel.moll@arm.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "agross@codeaurora.org" <agross@codeaurora.org>, =?iso-8859-1?Q?Andersson=2C_Bj=F6rn?= <Bjorn.Andersson@sonymobile.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "tbird20d@gmail.com" <tbird20d@gmail.com>, "Cavin, Courtney" <Courtney.Cavin@sonymobile.com>, Mark Brown <broonie@kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from proxima.lp0.eu ([81.2.80.65]:52860 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753423AbbLIW3r (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 9 Dec 2015 17:29:47 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Kevin Cernekee <cernekee@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>
+Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jonas Gorski <jogo@openwrt.org>, linux-pm@vger.kernel.org, Mark Brown <broonie@kernel.org>, MIPS Mailing List <linux-mips@linux-mips.org>, bcm-kernel-feedback-list <bcm-kernel-feedback-list@broadcom.com>
 
+The BCM6358 contains power domains controlled with a register. Power
+domains are indexed by bits in the register. Power domain bits can be
+interleaved with other status bits and clocks in the same register.
 
---s2ZSL+KKDSLx8OML
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Newer SoCs with dedicated power domain registers are active low.
 
-Hi,
+Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
+---
+ .../power/brcm,bcm6358-power-controller.txt        | 53 ++++++++++++++++++++++
+ 1 file changed, 53 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/brcm,bcm6358-power-controller.txt
 
-On Wed, Dec 09, 2015 at 09:42:09AM -0800, Tim Bird wrote:
-> Or maybe our power maintainers will chime in with some wisdom. I
-> can't be the first person to be adding a charge pathway switch to
-> mainline, so I'm open to doing it the "right way". :-)
+diff --git a/Documentation/devicetree/bindings/power/brcm,bcm6358-power-controller.txt b/Documentation/devicetree/bindings/power/brcm,bcm6358-power-controller.txt
+new file mode 100644
+index 0000000..556c323
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/brcm,bcm6358-power-controller.txt
+@@ -0,0 +1,53 @@
++Broadcom BCM6358 Power domain controller
++
++This binding uses the power domain bindings:
++        Documentation/devicetree/bindings/power/power_domain.txt
++
++The BCM6358 contains power domains controlled with a register. Power
++domains are indexed by bits in the register. Power domain bits can be
++interleaved with other status bits and clocks in the same register.
++
++Newer SoCs with dedicated power domain registers are active low.
++
++Required properties:
++- compatible:           Should be "brcm,bcm<soc>-power-controller", "brcm,bcm6358-power-controller"
++- #power-domain-cells:  Should be <1>.
++- regmap:               The register map phandle
++- offset:               Offset in the register map for the power domain register (in bytes)
++- power-domain-indices: The bits in the register used for power domains.
++- power-domain-names:   Should be a list of strings of power domain names
++                        indexed by the power domain indices.
++
++Optional properties:
++- active-low:           Specify that the bits are active low.
++
++Example:
++
++misc_iddq_ctrl: power-controller {
++	compatible = "brcm,bcm63168-power-controller", "brcm,bcm6358-power-controller";
++	regmap = <&misc>;
++	offset = <0x4c>;
++
++	#power-domain-cells = <1>;
++	power-domain-indices =
++	                <0>,         <1>,      <2>,    <3>,         <4>,
++	                <5>,         <6>,      <7>,    <8>,         <9>,
++	                <10>,        <11>,     <12>,   <13>,        <17>,
++	                <18>;
++	power-domain-names =
++	                "sar",       "ipsec",  "mips", "dect",      "usbh",
++	                "usbd",      "robosw", "pcm",  "periph",    "vdsl_phy",
++	                "vdsl_mips", "fap",    "pcie", "wlan_pads", "gphy",
++	                "gmac";
++	active-low;
++};
++
++periph_iddq: power-controller {
++	compatible = "brcm,bcm6368-power-controller", "brcm,bcm6358-power-controller";
++	regmap = <&periph_cntl>;
++	offset = <0x4>;
++
++	#power-domain-cells = <1>;
++	power-domain-indices = <19>;
++	power-domain-names = "usbh";
++};
+-- 
+2.1.4
 
-I don't think there is a standard way for this so far. Another
-otg charger coming to my mindis bq2415x, which basically just
-exposes the enable bit via sysfs.
-
-Exposing the switch as regulator would be fine for me.
-
-> > Thinking about this some more, the node name should be generic, so
-> > just "regulator". The label does not need to be generic.
->=20
-> There are other switches in the charger block that are not
-> exposed yet.  This one handles the the OTG (vbus) charge pathway.
-> Others handle other charge pathways (some of which are used on phones
-> and some are not - they're used, e.g., on the dragonboard).  I'd
-> rather not give it a generic name, because eventually the driver
-> should expose those other switches as something as well.
-
-otg_regulator: regulator@0 { }
-other_regulator: regulator@1 { }
-
--- Sebastian
-
---s2ZSL+KKDSLx8OML
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJWaKk6AAoJENju1/PIO/qaND4QAJsU451KXZTLRbku5ELBstm1
-D2N1NglwTXqHKejPG8A7dKfsh+W8Rmrk0VFOP/2rwBmkqabbzHwJm1Hpc9g3h/ar
-3Jehkf2wM6JwODGJ+2uFmjuEgIL7FcftDPvEntD6OJMiB41ekO8TdzjR3vKHPt0N
-zRaXvtA6XMyEtoLXPZUMz5DbC5rfwcr0cfcE/dRcCHQZMbL0glaHOfRyvpzJyZET
-AsIXQngnKGgSB4grMLSlPkC/oTmMXOcPkbJXchFBfRhsdXAx4yBdRJeW037EQOhF
-WTIu2INsAq15OT8ZbqrUevZEvGlJAgGiryNNgPYzXfTm6J2D3WFXTYF0vU9eh+DL
-dJckg66Kiyjf5izN5nbySYNXsFP51cSWBwT221rRXh9cfQLWxiIC1TkLBHy7AgSe
-DDivmrRB2fbwFBlcH/qWphl5VoLyK9+oGp2+PA0yqmpIph3MS6ApU20OCuNqOTJP
-FXYMmnq3gImq4sgJHMYYu36EX1CZzewS/VO0Kn5hRS3bdjNM/19Rz7v5HxNhu6/E
-rhdS6WaMnmpdhnAkKu5m2s6dHYY1TJawFw3tBSzaR3ci2wpom3TG/ftzaVFMk9ai
-btymIgg/rKcy/s4WlcRmzmYY0CrnfpglgulNjacP4LnUvvQSz3frPlu8RbX2s4mN
-XJ+PJz2KVd3aZUH42jyr
-=u5Vq
------END PGP SIGNATURE-----
-
---s2ZSL+KKDSLx8OML--
+-- 
+Simon Arlott
