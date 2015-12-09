@@ -1,43 +1,119 @@
 From: Lee Jones <lee.jones@linaro.org>
-Subject: [PATCH v6 01/10] ARM: multi_v7_defconfig: Enable ST's PWM driver
-Date: Wed,  9 Dec 2015 15:58:08 +0000
-Message-ID: <1449676697-25432-2-git-send-email-lee.jones@linaro.org>
+Subject: [PATCH v6 09/10] dt: cpufreq: st: Provide bindings for ST's CPUFreq implementation
+Date: Wed,  9 Dec 2015 15:58:16 +0000
+Message-ID: <1449676697-25432-10-git-send-email-lee.jones@linaro.org>
 References: <1449676697-25432-1-git-send-email-lee.jones@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1449676697-25432-1-git-send-email-lee.jones@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Cc: devicetree@vger.kernel.org, kernel@stlinux.com, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, rjw@rjwysocki.net, Lee Jones <lee.jones@linaro.org>, ajitpal.singh@st.com, maxime.coquelin@st.com
+Cc: kernel@stlinux.com, maxime.coquelin@st.com, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, devicetree@vger.kernel.org, ajitpal.singh@st.com, Lee Jones <lee.jones@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
+Cc: devicetree@vger.kernel.org
+Acked-by: Rob Herring <robh@kernel.org>
 Signed-off-by: Lee Jones <lee.jones@linaro.org>
 ---
- arch/arm/configs/multi_v7_defconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ .../devicetree/bindings/cpufreq/cpufreq-st.txt     | 91 ++++++++++++++++++++++
+ 1 file changed, 91 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-st.txt
 
-diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/configs/multi_v7_defconfig
-index 69a22fd..99b87b6 100644
---- a/arch/arm/configs/multi_v7_defconfig
-+++ b/arch/arm/configs/multi_v7_defconfig
-@@ -690,7 +690,7 @@ CONFIG_PWM_SUN4I=y
- CONFIG_PWM_TEGRA=y
- CONFIG_PWM_VT8500=y
- CONFIG_PHY_HIX5HD2_SATA=y
--CONFIG_PWM_STI=m
-+CONFIG_PWM_STI=y
- CONFIG_OMAP_USB2=y
- CONFIG_TI_PIPE3=y
- CONFIG_PHY_BERLIN_USB=y
+diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-st.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-st.txt
+new file mode 100644
+index 0000000..d91a02a
+--- /dev/null
++++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-st.txt
+@@ -0,0 +1,91 @@
++Binding for ST's CPUFreq driver
++===============================
++
++ST's CPUFreq driver attempts to read 'process' and 'version' attributes
++from the SoC, then supplies the OPP framework with 'prop' and 'supported
++hardware' information respectively.  The framework is then able to read
++the DT and operate in the usual way.
++
++For more information about the expected DT format [See: ../opp/opp.txt].
++
++Frequency Scaling only
++----------------------
++
++No vendor specific driver required for this.
++
++Located in CPU's node:
++
++- operating-points		: [See: ../power/opp.txt]
++
++Example [safe]
++--------------
++
++cpus {
++	cpu@0 {
++				 /* kHz     uV   */
++		operating-points = <1500000 0
++				    1200000 0
++				    800000  0
++				    500000  0>;
++	};
++};
++
++Dynamic Voltage and Frequency Scaling (DVFS)
++--------------------------------------------
++
++This requires the ST CPUFreq driver to supply 'process' and 'version' info.
++
++Located in CPU's node:
++
++- operating-points-v2		: [See ../power/opp.txt]
++
++Example [unsafe]
++----------------
++
++cpus {
++	cpu@0 {
++		operating-points-v2	= <&cpu0_opp_table>;
++	};
++};
++
++cpu0_opp_table: opp_table {
++	compatible = "operating-points-v2";
++
++	/* ############################################################### */
++	/* # WARNING: Do not attempt to copy/replicate these nodes,      # */
++	/* #          they are only to be supplied by the bootloader !!! # */
++	/* ############################################################### */
++	opp0 {
++		/*			   Major       Minor       Substrate */
++		/*			   2           all         all       */
++		opp-supported-hw	= <0x00000004  0xffffffff  0xffffffff>;
++		opp-hz			= /bits/ 64 <1500000000>;
++		clock-latency-ns	= <10000000>;
++
++		opp-microvolt-pcode0	= <1200000>;
++		opp-microvolt-pcode1	= <1200000>;
++		opp-microvolt-pcode2	= <1200000>;
++		opp-microvolt-pcode3	= <1200000>;
++		opp-microvolt-pcode4	= <1170000>;
++		opp-microvolt-pcode5	= <1140000>;
++		opp-microvolt-pcode6	= <1100000>;
++		opp-microvolt-pcode7	= <1070000>;
++	};
++
++	opp1 {
++		/*			   Major       Minor       Substrate */
++		/*			   all         all         all       */
++		opp-supported-hw	= <0xffffffff  0xffffffff  0xffffffff>;
++		opp-hz			= /bits/ 64 <1200000000>;
++		clock-latency-ns	= <10000000>;
++
++		opp-microvolt-pcode0	= <1110000>;
++		opp-microvolt-pcode1	= <1150000>;
++		opp-microvolt-pcode2	= <1100000>;
++		opp-microvolt-pcode3	= <1080000>;
++		opp-microvolt-pcode4	= <1040000>;
++		opp-microvolt-pcode5	= <1020000>;
++		opp-microvolt-pcode6	= <980000>;
++		opp-microvolt-pcode7	= <930000>;
++	};
++};
 -- 
 1.9.1
