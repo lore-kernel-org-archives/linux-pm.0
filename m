@@ -1,73 +1,91 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCH v2 6/6] arm64: renesas: r8a7795: Add L2 cache-controller
- nodes
-Date: Wed, 9 Dec 2015 17:21:28 +0000
-Message-ID: <20151209172127.GA24353@leverpostej>
-References: <1449512659-16688-1-git-send-email-geert+renesas@glider.be>
- <1449512659-16688-7-git-send-email-geert+renesas@glider.be>
- <5665D4C7.1050705@arm.com>
- <20151207190355.GE28024@leverpostej>
- <5667267E.2080601@gmail.com>
- <20151208191656.GD11797@leverpostej>
- <56685DBE.8030001@gmail.com>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: Re: [PATCH] cpufreq: tegra: add regulator dependency for T124
+Date: Wed, 9 Dec 2015 17:33:33 +0000
+Message-ID: <566865ED.3020106@nvidia.com>
+References: <2194927.eV2s2QmZs0@wuerfel> <5668188F.2080202@nvidia.com>
+ <20151209144734.GB5727@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:50974 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752509AbbLIRVo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 9 Dec 2015 12:21:44 -0500
-Content-Disposition: inline
-In-Reply-To: <56685DBE.8030001@gmail.com>
+Received: from hqemgate16.nvidia.com ([216.228.121.65]:10792 "EHLO
+	hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752703AbbLIRdk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Dec 2015 12:33:40 -0500
+In-Reply-To: <20151209144734.GB5727@sirena.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dirk Behme <dirk.behme@gmail.com>, Sudeep Holla <sudeep.holla@arm.com>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Lina Iyer <lina.iyer@linaro.org>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org
+To: Mark Brown <broonie@kernel.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Liam Girdwood <lgirdwood@gmail.com>
 
-On Wed, Dec 09, 2015 at 05:58:38PM +0100, Dirk Behme wrote:
-> >>For what is the arm64 dts entry
-> >>
-> >>cpu@0 {
-> >>	...
-> >>	next-level-cache = <&L2_0>;
-> >>};
-> >>
-> >>L2_0: l2-cache0 {
-> >>	compatible = "cache";
-> >>};
-> >>
-> >>good for at all, then?
-> >
-> >With the other properties from ePAPR you can acquire information on the
-> >geometry of the cache, which cannot be acquired from architected
-> >registers.
+
+On 09/12/15 14:47, Mark Brown wrote:
+> * PGP Signed by an unknown key
 > 
+> On Wed, Dec 09, 2015 at 12:03:27PM +0000, Jon Hunter wrote:
+>> On 08/12/15 21:52, Arnd Bergmann wrote:
 > 
-> Just for my understanding: Yes, if other properties from ePAPR like
-> geometry of the cache are added to the device tree l2 cache entries
-> then it makes sense to have them.
+>>> My first attempt was to implement a helper for this function
+>>> for regulator_sync_voltage, but Mark Brown explained:
 > 
-> But an "empty" entry like the one given in the example above doesn't
-> make much sense and could be removed without loosing any
-> functionality?
+>>>    We don't do this for *all* regulator API functions - there's some where
+>>>    using them strongly suggests that there is actually a dependency on
+>>>    the regulator API.  This does seem like it might be falling into the
+>>>    specialist category [...]
+>>>    Looking at the code I'm pretty unclear on what the authors think the
+>>>    use of _sync_voltage() is doing in the first place so it may be even
+>>>    better to just remove the call.  It seems to have been included in the
+>>>    first commit so there's not changelog explaining things and there's
+>>>    no comment either.  I'd *expect* it to be a noop as far as I can see.
 > 
-> It looks to me that most of the L2 entries we have in
-> arch/arm64/boot/dts are such "empty" entries.
->
-> Is this understanding correct?
+>> In this sequence we are switching from the DFLL clock source (which
+>> directly controls the voltage) back to a PLL (which does not control the
+>> voltage directly). What we want to do is to restore the voltage back to
+>> the voltage it was operating at before we switched to the DFLL clock
+>> (which could have changed it).
+> 
+> If changes implemented by the clock driver are trashing the regulator
+> settings I would expect the clock driver to be responsible for fixing
+> things up rather than another driver that happens to use the clock.  I'd
+> also expect some kind of internal documentation explaining what's going
+> on, and possibly 
 
-You are mostly correct, just missing some history.
+Yes, the DFLL clock driver could restore the voltage, however, that
+does not guarantee that the voltage is still sufficient for the other
+clock source.
 
-It was previously (erroneously) assumed that the cache geometry could be
-derived from architected registers used for set/way maintenance.
-However, we knew that this did not describe how those caches were linked
-to each other (e.g. which CPU shared with level x cache). So the
-description in DT was required to provide that.
+>> I am not familiar with regulator_sync_voltage() but from the comment it
+>> does say that it will re-apply the last voltage that was configured for
+>> the regulator. So I can see what they were doing. The question I have
+>> is, if the consumer has not explicitly called regulator_set_voltage()
+>> then what does regulator_sync_voltage() do? I am wondering if we should
+>> have been doing a regulator_get_voltage() during the probe and a
+>> regulator_set_voltage() when switching back?
+> 
+> This *is* the sort of thing _sync() is intended for, though it's mainly
+> expected to be used in cases like suspend where things have been powered
+> off.  As you can see from the code it's based on the settings that
+> software made, but then if nothing in software has any need to configure
+> anything then why do we even care that the hardware changed anything?
 
-Now, we all know that the geometry is necessary too. Those DTs should be
-fixed.
+Yes, that's my point. When switching between these clock sources, I
+think that software does need to set something and so we should care.
 
-Sudeep, do you know what's happening on that front?
+> Setting the voltage you've read back sounds broken, if the hardware
+> might randomly change things how do you know the settings we read were
+> sane?  Shouldn't we know what voltage range the device requires in a
+> given mode and set that - that's much more normal?
 
-Thanks,
-Mark.
+The hardware will not randomly change the voltage until the DFLL is
+enabled and so you would have to do this before.
+
+Yes, setting the frequency and voltage as defined by a given operating
+mode would make sense. However, I am not sure we have those defined in
+the kernel for this PLL and would have to be added.
+
+I was thinking that during boot we could read the default voltage and
+frequency set by the bootloader and use this as it should not be
+changing dynamically at this point because the cpufreq driver has not
+been activated yet.
+
+Jon
