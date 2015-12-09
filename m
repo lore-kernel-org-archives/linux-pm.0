@@ -1,68 +1,66 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH 0/4] cpufreq governors and Intel P state driver compatibility
-Date: Wed, 09 Dec 2015 16:02:47 +0100
-Message-ID: <2157917.dlSdjkkIZW@skinner>
-References: <1449274118-15575-1-git-send-email-srinivas.pandruvada@linux.intel.com> <3480094.iq1rZTMoWu@skinner> <1449596583.3240.158.camel@spandruv-desk3.jf.intel.com>
+From: Joonas Lahtinen <joonas.lahtinen@linux.intel.com>
+Subject: [PATCH 1/3] PM / Runtime: Introduce
+	pm_runtime_get_noidle
+Date: Wed,  9 Dec 2015 17:45:18 +0200
+Message-ID: <1449675920-12986-1-git-send-email-joonas.lahtinen@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:41366 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750790AbbLIPCu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 9 Dec 2015 10:02:50 -0500
-In-Reply-To: <1449596583.3240.158.camel@spandruv-desk3.jf.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <intel-gfx-bounces@lists.freedesktop.org>
+List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <http://lists.freedesktop.org/archives/intel-gfx>
+List-Post: <mailto:intel-gfx@lists.freedesktop.org>
+List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: intel-gfx-bounces@lists.freedesktop.org
+Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+To: Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>
+Cc: linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: rjw@rjwysocki.net, len.brown@intel.com, viresh.kumar@linaro.org, linux-pm@vger.kernel.org
 
-On Tuesday, December 08, 2015 09:43:03 AM Srinivas Pandruvada wrote:
-> On Tue, 2015-12-08 at 15:35 +0100, Thomas Renninger wrote:
-> > On Friday, December 04, 2015 04:08:34 PM Srinivas Pandruvada wrote:
-> > > Intel P State driver implements two policies, performance and powersave.
-> > > The powersave policy is similar to ondemand cpufreq governor when using
-> > > acpi-cpufreq. This causes lots of confusion among users. This results
-> > > in invalid comparison of performance when acpi-cpufreq and Intel P state
-> > > performance is compared.
-> > 
-> > After several years you want to change this again?
-> 
-> This is based on feedback. But again, if this breaks some users, then we
-> need to think.
-> 
-> > We released documentation for this for SLE 12 recently.
-> > It was not that easy to phrase, but it would be wrong again with newer
-> > kernels..., sigh.
-> 
-> Will this patchset break SLE 12?
-> Are you defaulting to "powersave" policy of Intel P state?
-
-We use powersave as default with intel_pstate because this is default.
-
-You won't "break" SLE 12 and I mostly thought about documentation.
-This is the intel_pstate part:
-
--------------------------------------
-Not all drivers use the in-kernel governors to dynamically scale power 
-frequency at runtime. For example, the intel_pstate driver adjusts power 
-frequency itself. Use the cpupower frequency-info command to find out which 
-driver your system uses.
--------------------------------------
-
-Fortunately we cut out the part to explain why "powersave" governor shows
-up and what it does. So we are more or less safe.
-
-Still.., instead of providing the next quick shot, we may want to think
-further...
-Having an ondemand governor and a faked may lead to more confusion in the
-future.
-
-In general, worst that can happen for SLE (probably same for RHEL) are any 
-kind of performance regressions that are introduced by trying to save more 
-power (on the same HW).
-Customers/users will find them and complain and need at least a param to
-get back to old (power wasting) behaviour.
-
-   Thomas
-
+SW50cm9kdWNlIHBtX3J1bnRpbWVfZ2V0X25vaWRsZSB0byBmb3Igc2l0dWF0aW9ucyB3aGVyZSBp
+dCBpcyBub3QKZGVzaXJlYWJsZSB0byB0b3VjaCBhbiBpZGxpbmcgZGV2aWNlLiBPbmUgdXNlIHNj
+ZW5hcmlvIGlzIHBlcmlvZGljCmhhbmdjaGVja3MgcGVyZm9ybWVkIGJ5IHRoZSBkcm0vaTkxNSBk
+cml2ZXIgd2hpY2ggY2FuIGJlIG9taXR0ZWQKb24gYSBkZXZpY2UgaW4gYSBydW50aW1lIGlkbGUg
+c3RhdGUuCgpTaWduZWQtb2ZmLWJ5OiBKb29uYXMgTGFodGluZW4gPGpvb25hcy5sYWh0aW5lbkBs
+aW51eC5pbnRlbC5jb20+ClJlcG9ydGVkLWJ5OiBDaHJpcyBXaWxzb24gPGNocmlzQGNocmlzLXdp
+bHNvbi5jby51az4KQ2M6IENocmlzIFdpbHNvbiA8Y2hyaXNAY2hyaXMtd2lsc29uLmNvLnVrPgpD
+YzogIlJhZmFlbCBKLiBXeXNvY2tpIiA8cmp3QHJqd3lzb2NraS5uZXQ+CkNjOiBsaW51eC1wbUB2
+Z2VyLmtlcm5lbC5vcmcKLS0tCiBEb2N1bWVudGF0aW9uL3Bvd2VyL3J1bnRpbWVfcG0udHh0IHwg
+MyArKysKIGluY2x1ZGUvbGludXgvcG1fcnVudGltZS5oICAgICAgICAgfCA2ICsrKysrKwogMiBm
+aWxlcyBjaGFuZ2VkLCA5IGluc2VydGlvbnMoKykKCmRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9u
+L3Bvd2VyL3J1bnRpbWVfcG0udHh0IGIvRG9jdW1lbnRhdGlvbi9wb3dlci9ydW50aW1lX3BtLnR4
+dAppbmRleCAwNzg0YmMzLi40NTQ1Mzk5IDEwMDY0NAotLS0gYS9Eb2N1bWVudGF0aW9uL3Bvd2Vy
+L3J1bnRpbWVfcG0udHh0CisrKyBiL0RvY3VtZW50YXRpb24vcG93ZXIvcnVudGltZV9wbS50eHQK
+QEAgLTM2Myw2ICszNjMsOSBAQCBkcml2ZXJzL2Jhc2UvcG93ZXIvcnVudGltZS5jIGFuZCBpbmNs
+dWRlL2xpbnV4L3BtX3J1bnRpbWUuaDoKICAgdm9pZCBwbV9ydW50aW1lX2dldF9ub3Jlc3VtZShz
+dHJ1Y3QgZGV2aWNlICpkZXYpOwogICAgIC0gaW5jcmVtZW50IHRoZSBkZXZpY2UncyB1c2FnZSBj
+b3VudGVyCiAKKyAgaW50IHBtX3J1bnRpbWVfZ2V0X25vaWRsZShzdHJ1Y3QgZGV2aWNlICpkZXYp
+OworICAgIC0gaW5jcmVtZW50IHRoZSBkZXZpY2UncyB1c2FnZSBjb3VudGVyIGlmIGl0IHdhcyBu
+b3QgMCBhbmQgcmV0dXJuIGl0CisKICAgaW50IHBtX3J1bnRpbWVfZ2V0KHN0cnVjdCBkZXZpY2Ug
+KmRldik7CiAgICAgLSBpbmNyZW1lbnQgdGhlIGRldmljZSdzIHVzYWdlIGNvdW50ZXIsIHJ1biBw
+bV9yZXF1ZXN0X3Jlc3VtZShkZXYpIGFuZAogICAgICAgcmV0dXJuIGl0cyByZXN1bHQKZGlmZiAt
+LWdpdCBhL2luY2x1ZGUvbGludXgvcG1fcnVudGltZS5oIGIvaW5jbHVkZS9saW51eC9wbV9ydW50
+aW1lLmgKaW5kZXggM2JkYmI0MS4uYWUzNGY1ZSAxMDA2NDQKLS0tIGEvaW5jbHVkZS9saW51eC9w
+bV9ydW50aW1lLmgKKysrIGIvaW5jbHVkZS9saW51eC9wbV9ydW50aW1lLmgKQEAgLTY2LDYgKzY2
+LDExIEBAIHN0YXRpYyBpbmxpbmUgdm9pZCBwbV9ydW50aW1lX2dldF9ub3Jlc3VtZShzdHJ1Y3Qg
+ZGV2aWNlICpkZXYpCiAJYXRvbWljX2luYygmZGV2LT5wb3dlci51c2FnZV9jb3VudCk7CiB9CiAK
+K3N0YXRpYyBpbmxpbmUgaW50IHBtX3J1bnRpbWVfZ2V0X25vaWRsZShzdHJ1Y3QgZGV2aWNlICpk
+ZXYpCit7CisJcmV0dXJuIGF0b21pY19hZGRfdW5sZXNzKCZkZXYtPnBvd2VyLnVzYWdlX2NvdW50
+LCAxLCAwKTsKK30KKwogc3RhdGljIGlubGluZSB2b2lkIHBtX3J1bnRpbWVfcHV0X25vaWRsZShz
+dHJ1Y3QgZGV2aWNlICpkZXYpCiB7CiAJYXRvbWljX2FkZF91bmxlc3MoJmRldi0+cG93ZXIudXNh
+Z2VfY291bnQsIC0xLCAwKTsKQEAgLTE1Myw2ICsxNTgsNyBAQCBzdGF0aWMgaW5saW5lIHZvaWQg
+cG1fcnVudGltZV9mb3JiaWQoc3RydWN0IGRldmljZSAqZGV2KSB7fQogCiBzdGF0aWMgaW5saW5l
+IGJvb2wgcG1fY2hpbGRyZW5fc3VzcGVuZGVkKHN0cnVjdCBkZXZpY2UgKmRldikgeyByZXR1cm4g
+ZmFsc2U7IH0KIHN0YXRpYyBpbmxpbmUgdm9pZCBwbV9ydW50aW1lX2dldF9ub3Jlc3VtZShzdHJ1
+Y3QgZGV2aWNlICpkZXYpIHt9CitzdGF0aWMgaW5saW5lIGJvb2wgcG1fcnVudGltZV9nZXRfbm9p
+ZGxlKHN0cnVjdCBkZXZpY2UgKmRldikgeyByZXR1cm4gdHJ1ZTsgfQogc3RhdGljIGlubGluZSB2
+b2lkIHBtX3J1bnRpbWVfcHV0X25vaWRsZShzdHJ1Y3QgZGV2aWNlICpkZXYpIHt9CiBzdGF0aWMg
+aW5saW5lIGJvb2wgZGV2aWNlX3J1bl93YWtlKHN0cnVjdCBkZXZpY2UgKmRldikgeyByZXR1cm4g
+ZmFsc2U7IH0KIHN0YXRpYyBpbmxpbmUgdm9pZCBkZXZpY2Vfc2V0X3J1bl93YWtlKHN0cnVjdCBk
+ZXZpY2UgKmRldiwgYm9vbCBlbmFibGUpIHt9Ci0tIAoyLjQuMwoKX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX18KSW50ZWwtZ2Z4IG1haWxpbmcgbGlzdApJbnRl
+bC1nZnhAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHA6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcv
+bWFpbG1hbi9saXN0aW5mby9pbnRlbC1nZngK
