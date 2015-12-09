@@ -1,137 +1,95 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: cpufreq: [RFC] Create intel_pstate specific governors template
-Date: Wed, 09 Dec 2015 19:41:03 +0100
-Message-ID: <1602202.sddj3DAuML@skinner>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v2 1/3] dt-binding: power: Add otg regulator binding
+Date: Wed, 9 Dec 2015 18:56:06 +0000
+Message-ID: <20151209185606.GE5727@sirena.org.uk>
+References: <1449621618-11900-1-git-send-email-tim.bird@sonymobile.com>
+ <20151209041153.GA29549@rob-hp-laptop>
+ <566824AD.4080003@sonymobile.com>
+ <CAL_JsqL0BjD6A1quSZOYmLNeRZAYo1UwSsTPPvMUbC1pSwM6CQ@mail.gmail.com>
+ <566867F1.7000906@sonymobile.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:35919 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752786AbbLISlH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 9 Dec 2015 13:41:07 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="OAsA6xQjj2jRKPG2"
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <566867F1.7000906@sonymobile.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Tim Bird <tim.bird@sonymobile.com>
+Cc: Rob Herring <robh@kernel.org>, "pawel.moll@arm.com" <pawel.moll@arm.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "agross@codeaurora.org" <agross@codeaurora.org>, =?iso-8859-1?Q?Andersson=2C_Bj=F6rn?= <Bjorn.Andersson@sonymobile.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "tbird20d@gmail.com" <tbird20d@gmail.com>, "Cavin, Courtney" <Courtney.Cavin@sonymobile.com>
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: rafael.j.wysocki@intel.com, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, prarit@redhat.com, Philippe Longepe <philippe.longepe@linux.intel.com>
-
-This is about recently posted:
-
-[PATCH v2 0/4] cpufreq governors and Intel P state driver compatibility
-and
-[PATCH V6 0/3] cpufreq: intel_pstate: account non C0 time
-
-Below patch tries to bring above needs together.
-
-We have different algorithms to find the target frequency depending on
-user needs and workload with the latter patchset.
-
-These are called governors or policies in the kernel cpufreq subsystem.
-
-Below patch is a quick write-down and compile tested only.
-It still has to be filled with the different new algorithms introduced via:
-[PATCH V6 0/3] cpufreq: intel_pstate: account non C0 time
-
-and then still be enhanced with ACPI pm_profile default settings
-(but this is easy, simply chose the right governor for each platform).
-
-No idea whether this works at all, but it should?
-What do you think?
-
---------------------------------
-cpufreq: [RFC] Create intel_pstate specific governors template
-
-intel_pstate driver chose the way to implement it's own policy.
-It came out that one algorithm doesn't fit all platform requirements.
-Users have different needs depending on their workload, etc.
-
-To be at least somewhat compatible with other cpufreq drivers and the whole
-cpufreq subsystem, make use of self defined cpufreq governors.
-
-Intel pstate driver will define its own governors (and some default ones like
-performance and powersave) for laptop, tablet or whatever specific platform
-and workload needs.
-
-By switching governors, also tuning knobs (params) which have been CPU model
-specific will be set. Like this there will not be any CPU id specific defaults
-or optimizations anymore, only workload (platform policy, governor) specific
-settings and algorithms.
-
-Signed-off-by: Thomas Renninger <trenn@suse.com>
 
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 3af9dd7..5a1e5fe 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -169,6 +169,37 @@ static struct perf_limits limits = {
- 	.min_sysfs_pct = 0,
- };
- 
-+static void (*intel_pstate_governor_func) (struct cpudata *cpu);
-+
-+static void intel_pstate_server_func(struct cpudata *cpu);
-+
-+/* Governor templates */
-+#define create_governor(__GOV)						\
-+static int cpufreq_governor_laptop(struct cpufreq_policy *policy,	\
-+					unsigned int event)		\
-+{									\
-+	switch (event) {						\
-+	case CPUFREQ_GOV_START:						\
-+		pr_debug("Switching to ##__GOV pstate governor");	\
-+		add_timer_on(&all_cpu_data[policy->cpu]->timer, policy->cpu); \
-+	break;								\
-+	case CPUFREQ_GOV_STOP:						\
-+		del_timer_sync(&all_cpu_data[policy->cpu]->timer);	\
-+		break;							\
-+	default:							\
-+		break;							\
-+	}								\
-+	return 0;							\
-+}									\
-+									\
-+static struct cpufreq_governor cpufreq_gov_##__GOV = {			\
-+	.name		= "##__GOV",					\
-+	.governor	= cpufreq_governor_##__GOV,			\
-+	.owner		= THIS_MODULE,					\
-+};
-+
-+create_governor(laptop)
-+
- static inline void pid_reset(struct _pid *pid, int setpoint, int busy,
- 			     int deadband, int integral) {
- 	pid->setpoint = setpoint;
-@@ -852,7 +883,7 @@ static inline int32_t intel_pstate_get_scaled_busy(struct cpudata *cpu)
- 	return core_busy;
- }
- 
--static inline void intel_pstate_adjust_busy_pstate(struct cpudata *cpu)
-+static void intel_pstate_server_func(struct cpudata *cpu)
- {
- 	int32_t busy_scaled;
- 	struct _pid *pid;
-@@ -895,7 +926,8 @@ static void intel_pstate_timer_func(unsigned long __data)
- 
- 	intel_pstate_sample(cpu);
- 
--	intel_pstate_adjust_busy_pstate(cpu);
-+	intel_pstate_governor_func(cpu);
-+	//	intel_pstate_adjust_busy_pstate(cpu);
- 
- 	intel_pstate_set_sample_time(cpu);
- }
-@@ -1265,6 +1297,12 @@ static int __init intel_pstate_init(void)
- 	if (intel_pstate_msrs_not_valid())
- 		return -ENODEV;
- 
-+	pr_info("Initializing intel pstate specific governors.\n");
-+
-+	intel_pstate_governor_func = intel_pstate_server_func;
-+
-+	cpufreq_register_governor(&cpufreq_gov_laptop);
-+
- 	pr_info("Intel P-state driver initializing.\n");
- 
- 	all_cpu_data = vzalloc(sizeof(void *) * num_possible_cpus());
+--OAsA6xQjj2jRKPG2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
+On Wed, Dec 09, 2015 at 09:42:09AM -0800, Tim Bird wrote:
+> On 12/09/2015 06:36 AM, Rob Herring wrote:
+
+> > You need a regulator-name property. Also, should should define valid
+> > values for regulator-min-microvolt and regulator-max-microvolt.
+
+> All of those are listed as optional properties in
+> Documentation/devicetree/bindings/regulator/regulator.txt.
+
+I have to say I'm also a bit confused about why a binding using a
+regulator would need to do anything other than reference that document
+except in cases where using some functionality enabled by the generic
+bindings is a key part of the functionality of the device (which do tend
+to be rare).
+
+> The regulator-name seems redundant, since the name of the DT
+> node becomes the regulator name in the Linux system.  This is
+
+The purpose of the regulator-name property is to allow you to put in a
+descriptive name for the supply which would normally correspond to the
+name the supply is given on the schematic and may not fit into the DT
+conventions.  It is entirely optional but strongly recommended to aid
+people in understanding how both the DT and the running kernel relate to
+the schematic.
+
+> not currently used anywhere, as the node is "connected up" via
+> phandle, which uses the label.  That is, there's no code in
+> the kernel that looks up this regulator by name, although it
+> does get a name.
+
+The name is purely for use by humans in logs and/or userspace, it is not
+used in the kernel.
+
+> As for the microvolt references, I'm a little stumped what
+> to do with those.  I could use regulator-min-microvolt of 0
+> and a regulator-max-microvolt of 500000, but that's not
+> exactly right.
+
+You should only specify voltages if the intention is to either allow
+consumers to vary voltages at runtime or have the kernel set a specific
+voltage for the regulator (eg, if the hardware defaults are wrong).
+
+> This is actually representing a voltage switch, which is being
+> represented in the regulator framework in Linux, because it
+> seems to fit there best.  It has regulators it's related
+> to, which should be adjusted when this one is.  However, it
+> intrinsically does not have a voltage of it's own, so it's a
+> bit of a weird case.  And the voltage can either be going
+> "out" or "in".
+
+If you want consumers of the supply to be able to vary the voltage you
+need to permit that on the child supply as well as the parent supply so
+we know we can pass requests up.
+
+--OAsA6xQjj2jRKPG2
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJWaHlFAAoJECTWi3JdVIfQ1UMH/1orvf1RRuojBjiRAHAhdTPS
+K3RWcxAYnVQOPu9gcoXWOCDsSdIQnVHjAq5v94na5mxzEIGtJ1ycCa8JbQlt3bTN
+aZdNDpYZkkCd8FsggAAToRftlc/TB+++XAWvqOVvzWEN2xtqkQr6BilQerWaH6Bn
+w4+3l6xdrtL8Hkz5xh26rAEmyhGIyiX5wX0Tj/FdwhGN35/6h+SfnM/NJhayB3dC
+goZ3RreMCEMSQb4Fqc/2IRcBWZwlbBNv32RNuZLAoiRuQQ5dALo0ckDpw12nWquG
+1NLcN7BmeuDH0tHzIMK5F9jd1Rl5fL1mv1kDJCmvcSQvpGaiy+RUZIPVzMMYjek=
+=YI4n
+-----END PGP SIGNATURE-----
+
+--OAsA6xQjj2jRKPG2--
