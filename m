@@ -1,63 +1,53 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH V6 1/3] cpufreq: intel_pstate: configurable algorithm to get target pstate
-Date: Wed, 09 Dec 2015 15:34:56 +0100
-Message-ID: <1536293.WV9n2YBamr@skinner>
-References: <1449247235-29389-1-git-send-email-philippe.longepe@linux.intel.com> <3600864.XZTfEJ2ljK@skinner> <1449597743.3240.171.camel@spandruv-desk3.jf.intel.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v2 1/3] dt-binding: power: Add otg regulator binding
+Date: Wed, 9 Dec 2015 08:36:11 -0600
+Message-ID: <CAL_JsqL0BjD6A1quSZOYmLNeRZAYo1UwSsTPPvMUbC1pSwM6CQ@mail.gmail.com>
+References: <1449621618-11900-1-git-send-email-tim.bird@sonymobile.com>
+ <20151209041153.GA29549@rob-hp-laptop> <566824AD.4080003@sonymobile.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:38132 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750826AbbLIOe7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 9 Dec 2015 09:34:59 -0500
-In-Reply-To: <1449597743.3240.171.camel@spandruv-desk3.jf.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <566824AD.4080003@sonymobile.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Tim Bird <tim.bird@sonymobile.com>
+Cc: "pawel.moll@arm.com" <pawel.moll@arm.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "agross@codeaurora.org" <agross@codeaurora.org>, =?UTF-8?Q?Andersson=2C_Bj=C3=B6rn?= <Bjorn.Andersson@sonymobile.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "tbird20d@gmail.com" <tbird20d@gmail.com>, Courtney Cavin <Courtney.Cavin@sonymobile.com>
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>
-Cc: Philippe Longepe <philippe.longepe@linux.intel.com>, linux-pm@vger.kernel.org
 
-On Tuesday, December 08, 2015 10:02:23 AM Srinivas Pandruvada wrote:
-> On Tue, 2015-12-08 at 16:27 +0100, Thomas Renninger wrote:
-> > Hi,
+On Wed, Dec 9, 2015 at 6:55 AM, Tim Bird <tim.bird@sonymobile.com> wrote:
+> On 12/08/2015 08:11 PM, Rob Herring wrote:
+>> On Tue, Dec 08, 2015 at 04:40:16PM -0800, Tim Bird wrote:
+>>> Add a binding for the regulator which controls the OTG chargepath switch.
+>>> The OTG switch gets its power from pm8941_5vs1, and that should be
+>>> expressed as a usb-otg-in-supply property in the DT node for the
+>>> charger driver.  The regulator name is "otg".
 
-> > There may be atoms clustered in server platforms and there may be
-> > performance oriented CPU models built into laptops.
-> 
-> You mean BYT/CHT ATOM used as servers not Avaton, which has different
-> id.
+[...]
 
-I have no idea.
-And since Intel does not build mainboards anymore afaik or most
-are built by OEMs, you also have no idea which CPUs end up on which kind
-of system, right?
+>>> +child nodes:
+>>> +- otg:
+>>> +  Usage: optional
+>>> +  Description: This node defines a regulator used to control the direction
+>>> +               of VBUS voltage - specifically: whether to supply voltage
+>>> +               to VBUS for host mode operation of the OTG port, or allow
+>>> +               input voltage from external VBUS for charging.  In the
+>>> +               hardware, the supply for this regulator comes from
+>>> +               usb-otg-in-supply.
+>>
+>> Doesn't this regulator need to have a name defined?
+>
+> I'm not sure what you mean.  The regulator name is "otg", defined by the DT node
+> name. The code requires that the DT node name be "otg", and defines a regulator
+> with the same name.
+>
+> As far as I know, you have to define a DT label for the node, in order
+> to reference this regulator with a phandle.  Is that what you are referring to?
+> I usually use "chg_otg" as the label.  Are you asking that this be reflected
+> in the example?
 
-Default policy to go for performance, IO, workload based switching or
-whatever tunables are modified should be, as you said, platform oriented.
+You need a regulator-name property. Also, should should define valid
+values for regulator-min-microvolt and regulator-max-microvolt.
 
-So instead of calling the params:
-silvermont, airmont, knl_params (knights landing, right?), whatever CPU...
-Better call them:
-laptop, io_optimized, performance params, whatever ...
-And later set them according to pm_profile, not CPU id and still
-provide something to override via userspace (I hope this is
-what you want to do anyway, right?).
-Even someone buys a tablet, there are Linux guys around who use them as
-their homeserver in 2 years and they want to override...
+Thinking about this some more, the node name should be generic, so
+just "regulator". The label does not need to be generic.
 
-Hm, in fact what you are doing is you implement your own governors/policies 
-inside intel_pstate driver now, right?
-If not done already, you should name it in dmesg what kind of algorithm is 
-used (cmp with my patch). This makes it easier to find powersave
-or performance regressions that will come up with the new default settings
-and pin point them to intel_pstate.
-
-Even better would be if intel_pstate could set it's own governor string.
-Then there wouldn't be any mixture with ondemand or whatever.
-But again.., those should not be named "airmont" policy/governor.
-
-I had a quick look, but providing whole governors seem to be a lot overhead.
-But with some luck you do not have to fill up whole structures you have to
-pass to cpufreq_register_governor(..).
-
-        Thomas
+Rob
