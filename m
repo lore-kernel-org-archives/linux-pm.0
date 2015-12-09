@@ -1,166 +1,109 @@
 From: Steve Muckle <steve.muckle@linaro.org>
-Subject: [RFCv6 PATCH 09/10] sched: deadline: use deadline bandwidth in scale_rt_capacity
-Date: Tue,  8 Dec 2015 22:19:30 -0800
-Message-ID: <1449641971-20827-10-git-send-email-smuckle@linaro.org>
+Subject: [RFCv6 PATCH 10/10] sched: rt scheduler sets capacity requirement
+Date: Tue,  8 Dec 2015 22:19:31 -0800
+Message-ID: <1449641971-20827-11-git-send-email-smuckle@linaro.org>
 References: <1449641971-20827-1-git-send-email-smuckle@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f170.google.com ([209.85.192.170]:34502 "EHLO
-	mail-pf0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752383AbbLIGTt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Dec 2015 01:19:49 -0500
-Received: by pfbg73 with SMTP id g73so25317489pfb.1
-        for <linux-pm@vger.kernel.org>; Tue, 08 Dec 2015 22:19:49 -0800 (PST)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1449641971-20827-1-git-send-email-smuckle@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
+List-Id: linux-pm@vger.kernel.org
 
 From: Vincent Guittot <vincent.guittot@linaro.org>
 
-Instead of monitoring the exec time of deadline tasks to evaluate the
-CPU capacity consumed by deadline scheduler class, we can directly
-calculate it thanks to the sum of utilization of deadline tasks on the
-CPU.  We can remove deadline tasks from rt_avg metric and directly use
-the average bandwidth of deadline scheduler in scale_rt_capacity.
+RT tasks don't provide any running constraints like deadline ones
+except their running priority. The only current usable input to
+estimate the capacity needed by RT tasks is the rt_avg metric. We use
+it to estimate the CPU capacity needed for the RT scheduler class.
 
-Based in part on a similar patch from Luca Abeni <luca.abeni@unitn.it>.
+In order to monitor the evolution for RT task load, we must
+peridiocally check it during the tick.
+
+Then, we use the estimated capacity of the last activity to estimate
+the next one which can not be that accurate but is a good starting
+point without any impact on the wake up path of RT tasks.
 
 Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
 Signed-off-by: Steve Muckle <smuckle@linaro.org>
 ---
- kernel/sched/deadline.c | 33 +++++++++++++++++++++++++++++++--
- kernel/sched/fair.c     |  8 ++++++++
- kernel/sched/sched.h    |  2 ++
- 3 files changed, 41 insertions(+), 2 deletions(-)
+ kernel/sched/rt.c | 49 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 48 insertions(+), 1 deletion(-)
 
-diff --git a/kernel/sched/deadline.c b/kernel/sched/deadline.c
-index 8b0a15e..9d9eb50 100644
---- a/kernel/sched/deadline.c
-+++ b/kernel/sched/deadline.c
-@@ -43,6 +43,24 @@ static inline int on_dl_rq(struct sched_dl_entity *dl_se)
- 	return !RB_EMPTY_NODE(&dl_se->rb_node);
- }
- 
-+static void add_average_bw(struct sched_dl_entity *dl_se, struct dl_rq *dl_rq)
-+{
-+	u64 se_bw = dl_se->dl_bw;
-+
-+	dl_rq->avg_bw += se_bw;
-+}
-+
-+static void clear_average_bw(struct sched_dl_entity *dl_se, struct dl_rq *dl_rq)
-+{
-+	u64 se_bw = dl_se->dl_bw;
-+
-+	dl_rq->avg_bw -= se_bw;
-+	if (dl_rq->avg_bw < 0) {
-+		WARN_ON(1);
-+		dl_rq->avg_bw = 0;
-+	}
-+}
-+
- static inline int is_leftmost(struct task_struct *p, struct dl_rq *dl_rq)
- {
- 	struct sched_dl_entity *dl_se = &p->dl;
-@@ -494,6 +512,9 @@ static void update_dl_entity(struct sched_dl_entity *dl_se,
- 	struct dl_rq *dl_rq = dl_rq_of_se(dl_se);
- 	struct rq *rq = rq_of_dl_rq(dl_rq);
- 
-+	if (dl_se->dl_new)
-+		add_average_bw(dl_se, dl_rq);
-+
- 	/*
- 	 * The arrival of a new instance needs special treatment, i.e.,
- 	 * the actual scheduling parameters have to be "renewed".
-@@ -741,8 +762,6 @@ static void update_curr_dl(struct rq *rq)
- 	curr->se.exec_start = rq_clock_task(rq);
- 	cpuacct_charge(curr, delta_exec);
- 
--	sched_rt_avg_update(rq, delta_exec);
--
- 	dl_se->runtime -= dl_se->dl_yielded ? 0 : delta_exec;
- 	if (dl_runtime_exceeded(dl_se)) {
- 		dl_se->dl_throttled = 1;
-@@ -1241,6 +1260,8 @@ static void task_fork_dl(struct task_struct *p)
- static void task_dead_dl(struct task_struct *p)
- {
- 	struct dl_bw *dl_b = dl_bw_of(task_cpu(p));
-+	struct dl_rq *dl_rq = dl_rq_of_se(&p->dl);
-+	struct rq *rq = rq_of_dl_rq(dl_rq);
- 
- 	/*
- 	 * Since we are TASK_DEAD we won't slip out of the domain!
-@@ -1249,6 +1270,8 @@ static void task_dead_dl(struct task_struct *p)
- 	/* XXX we should retain the bw until 0-lag */
- 	dl_b->total_bw -= p->dl.dl_bw;
- 	raw_spin_unlock_irq(&dl_b->lock);
-+
-+	clear_average_bw(&p->dl, &rq->dl);
- }
- 
- static void set_curr_task_dl(struct rq *rq)
-@@ -1556,7 +1579,9 @@ retry:
- 	}
- 
- 	deactivate_task(rq, next_task, 0);
-+	clear_average_bw(&next_task->dl, &rq->dl);
- 	set_task_cpu(next_task, later_rq->cpu);
-+	add_average_bw(&next_task->dl, &later_rq->dl);
- 	activate_task(later_rq, next_task, 0);
- 	ret = 1;
- 
-@@ -1644,7 +1669,9 @@ static void pull_dl_task(struct rq *this_rq)
- 			resched = true;
- 
- 			deactivate_task(src_rq, p, 0);
-+			clear_average_bw(&p->dl, &src_rq->dl);
- 			set_task_cpu(p, this_cpu);
-+			add_average_bw(&p->dl, &this_rq->dl);
- 			activate_task(this_rq, p, 0);
- 			dmin = p->dl.deadline;
- 
-@@ -1750,6 +1777,8 @@ static void switched_from_dl(struct rq *rq, struct task_struct *p)
- 	if (!start_dl_timer(p))
- 		__dl_clear_params(p);
- 
-+	clear_average_bw(&p->dl, &rq->dl);
-+
- 	/*
- 	 * Since this might be the only -deadline task on the rq,
- 	 * this is the right place to try to pull some other one
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 4c49f76..ce05f61 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -6203,6 +6203,14 @@ static unsigned long scale_rt_capacity(int cpu)
- 
- 	used = div_u64(avg, total);
- 
-+	/*
-+	 * deadline bandwidth is defined at system level so we must
-+	 * weight this bandwidth with the max capacity of the system.
-+	 * As a reminder, avg_bw is 20bits width and
-+	 * scale_cpu_capacity is 10 bits width
-+	 */
-+	used += div_u64(rq->dl.avg_bw, arch_scale_cpu_capacity(NULL, cpu));
-+
- 	if (likely(used < SCHED_CAPACITY_SCALE))
- 		return SCHED_CAPACITY_SCALE - used;
- 
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 08858d1..e44c6be 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -519,6 +519,8 @@ struct dl_rq {
- #else
- 	struct dl_bw dl_bw;
+diff --git a/kernel/sched/rt.c b/kernel/sched/rt.c
+index 8ec86ab..9694204 100644
+--- a/kernel/sched/rt.c
++++ b/kernel/sched/rt.c
+@@ -1426,6 +1426,41 @@ static void check_preempt_curr_rt(struct rq *rq, struct task_struct *p, int flag
  #endif
-+	/* This is the "average utilization" for this runqueue */
-+	s64 avg_bw;
- };
+ }
  
- #ifdef CONFIG_SMP
++#ifdef CONFIG_SMP
++static void sched_rt_update_capacity_req(struct rq *rq)
++{
++	u64 total, used, age_stamp, avg;
++	s64 delta;
++
++	if (!sched_freq())
++		return;
++
++	sched_avg_update(rq);
++	/*
++	 * Since we're reading these variables without serialization make sure
++	 * we read them once before doing sanity checks on them.
++	 */
++	age_stamp = READ_ONCE(rq->age_stamp);
++	avg = READ_ONCE(rq->rt_avg);
++	delta = rq_clock(rq) - age_stamp;
++
++	if (unlikely(delta < 0))
++		delta = 0;
++
++	total = sched_avg_period() + delta;
++
++	used = div_u64(avg, total);
++	if (unlikely(used > SCHED_CAPACITY_SCALE))
++		used = SCHED_CAPACITY_SCALE;
++
++	set_rt_cpu_capacity(rq->cpu, 1, (unsigned long)(used));
++}
++#else
++static inline void sched_rt_update_capacity_req(struct rq *rq)
++{ }
++
++#endif
++
+ static struct sched_rt_entity *pick_next_rt_entity(struct rq *rq,
+ 						   struct rt_rq *rt_rq)
+ {
+@@ -1494,8 +1529,17 @@ pick_next_task_rt(struct rq *rq, struct task_struct *prev)
+ 	if (prev->sched_class == &rt_sched_class)
+ 		update_curr_rt(rq);
+ 
+-	if (!rt_rq->rt_queued)
++	if (!rt_rq->rt_queued) {
++		/*
++		 * The next task to be picked on this rq will have a lower
++		 * priority than rt tasks so we can spend some time to update
++		 * the capacity used by rt tasks based on the last activity.
++		 * This value will be the used as an estimation of the next
++		 * activity.
++		 */
++		sched_rt_update_capacity_req(rq);
+ 		return NULL;
++	}
+ 
+ 	put_prev_task(rq, prev);
+ 
+@@ -2212,6 +2256,9 @@ static void task_tick_rt(struct rq *rq, struct task_struct *p, int queued)
+ 
+ 	update_curr_rt(rq);
+ 
++	if (rq->rt.rt_nr_running)
++		sched_rt_update_capacity_req(rq);
++
+ 	watchdog(rq, p);
+ 
+ 	/*
 -- 
 2.4.10
-
