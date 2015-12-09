@@ -1,58 +1,68 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH] PCI / PM: Fix small typo in documentation
-Date: Wed, 9 Dec 2015 08:53:36 -0600
-Message-ID: <20151209145336.GB31930@localhost>
-References: <1449584245-4347-1-git-send-email-jarkko.nikula@linux.intel.com>
- <2034538.amqQujWT52@vostro.rjw.lan>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH 0/4] cpufreq governors and Intel P state driver compatibility
+Date: Wed, 09 Dec 2015 16:02:47 +0100
+Message-ID: <2157917.dlSdjkkIZW@skinner>
+References: <1449274118-15575-1-git-send-email-srinivas.pandruvada@linux.intel.com> <3480094.iq1rZTMoWu@skinner> <1449596583.3240.158.camel@spandruv-desk3.jf.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:52102 "EHLO mail.kernel.org"
+Received: from mx2.suse.de ([195.135.220.15]:41366 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751415AbbLIOxm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 9 Dec 2015 09:53:42 -0500
-Content-Disposition: inline
-In-Reply-To: <2034538.amqQujWT52@vostro.rjw.lan>
+	id S1750790AbbLIPCu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 9 Dec 2015 10:02:50 -0500
+In-Reply-To: <1449596583.3240.158.camel@spandruv-desk3.jf.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Jarkko Nikula <jarkko.nikula@linux.intel.com>, linux-pm@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Bjorn Helgaas <bhelgaas@google.com>, Linux PCI <linux-pci@vger.kernel.org>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: rjw@rjwysocki.net, len.brown@intel.com, viresh.kumar@linaro.org, linux-pm@vger.kernel.org
 
-On Wed, Dec 09, 2015 at 02:16:50AM +0100, Rafael J. Wysocki wrote:
-> On Tuesday, December 08, 2015 04:17:25 PM Jarkko Nikula wrote:
-> > cuased -> caused
+On Tuesday, December 08, 2015 09:43:03 AM Srinivas Pandruvada wrote:
+> On Tue, 2015-12-08 at 15:35 +0100, Thomas Renninger wrote:
+> > On Friday, December 04, 2015 04:08:34 PM Srinivas Pandruvada wrote:
+> > > Intel P State driver implements two policies, performance and powersave.
+> > > The powersave policy is similar to ondemand cpufreq governor when using
+> > > acpi-cpufreq. This causes lots of confusion among users. This results
+> > > in invalid comparison of performance when acpi-cpufreq and Intel P state
+> > > performance is compared.
 > > 
-> > Signed-off-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+> > After several years you want to change this again?
 > 
-> Queued up for 4.5, thanks!
+> This is based on feedback. But again, if this breaks some users, then we
+> need to think.
 > 
-> I hope that Bjorn won't mind ...
+> > We released documentation for this for SLE 12 recently.
+> > It was not that easy to phrase, but it would be wrong again with newer
+> > kernels..., sigh.
+> 
+> Will this patchset break SLE 12?
+> Are you defaulting to "powersave" policy of Intel P state?
 
-Looks good to me, thanks!
+We use powersave as default with intel_pstate because this is default.
 
-> > ---
-> >  Documentation/power/pci.txt | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/Documentation/power/pci.txt b/Documentation/power/pci.txt
-> > index b0e911e0e8f5..44558882aa60 100644
-> > --- a/Documentation/power/pci.txt
-> > +++ b/Documentation/power/pci.txt
-> > @@ -999,7 +999,7 @@ from its probe routine to make runtime PM work for the device.
-> >  
-> >  It is important to remember that the driver's runtime_suspend() callback
-> >  may be executed right after the usage counter has been decremented, because
-> > -user space may already have cuased the pm_runtime_allow() helper function
-> > +user space may already have caused the pm_runtime_allow() helper function
-> >  unblocking the runtime PM of the device to run via sysfs, so the driver must
-> >  be prepared to cope with that.
-> >  
-> > 
-> 
-> Thanks,
-> Rafael
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+You won't "break" SLE 12 and I mostly thought about documentation.
+This is the intel_pstate part:
+
+-------------------------------------
+Not all drivers use the in-kernel governors to dynamically scale power 
+frequency at runtime. For example, the intel_pstate driver adjusts power 
+frequency itself. Use the cpupower frequency-info command to find out which 
+driver your system uses.
+-------------------------------------
+
+Fortunately we cut out the part to explain why "powersave" governor shows
+up and what it does. So we are more or less safe.
+
+Still.., instead of providing the next quick shot, we may want to think
+further...
+Having an ondemand governor and a faked may lead to more confusion in the
+future.
+
+In general, worst that can happen for SLE (probably same for RHEL) are any 
+kind of performance regressions that are introduced by trying to save more 
+power (on the same HW).
+Customers/users will find them and complain and need at least a param to
+get back to old (power wasting) behaviour.
+
+   Thomas
+
