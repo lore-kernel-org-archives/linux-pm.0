@@ -1,38 +1,56 @@
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH v2 1/5] power: domain: add pm_genpd_exit
-Date: Wed, 9 Dec 2015 10:54:57 +0000
-Message-ID: <20151209105457.GG8644@n2100.arm.linux.org.uk>
-References: <1449251148-19344-1-git-send-email-eric@anholt.net>
- <1449251148-19344-2-git-send-email-eric@anholt.net>
- <5665599A.4060509@nvidia.com>
- <7h8u54lqbv.fsf@deeprootsystems.com>
- <20151209104752.GB1036@omega>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v5 08/11] ARM: STi: Register CPUFreq device
+Date: Wed, 9 Dec 2015 11:25:36 +0000
+Message-ID: <20151209112536.GB17876@x1>
+References: <1449585124-15596-1-git-send-email-lee.jones@linaro.org>
+ <1449585124-15596-9-git-send-email-lee.jones@linaro.org>
+ <3682335.fAt9xNcJFr@wuerfel>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f47.google.com ([74.125.82.47]:33077 "EHLO
+	mail-wm0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750980AbbLILZk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Dec 2015 06:25:40 -0500
+Received: by wmec201 with SMTP id c201so255154578wme.0
+        for <linux-pm@vger.kernel.org>; Wed, 09 Dec 2015 03:25:39 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <20151209104752.GB1036@omega>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alexander Aring <alex.aring@gmail.com>
-Cc: Kevin Hilman <khilman@kernel.org>, Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Florian Fainelli <f.fainelli@gmail.com>, Pawel Moll <pawel.moll@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>, Eric Anholt <eric@anholt.net>, Rob Herring <robh+dt@kernel.org>, Lee Jones <lee@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, linux-arm-kernel@lists.infradead.org, linux-rpi-kernel@lists.infradead.org
+In-Reply-To: <3682335.fAt9xNcJFr@wuerfel>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, kernel@stlinux.com, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, rjw@rjwysocki.net, ajitpal.singh@st.com, maxime.coquelin@st.com
 
-On Wed, Dec 09, 2015 at 11:47:58AM +0100, Alexander Aring wrote:
-> Example: the error case is while probing, how we react on a -EBUSY there
-> "in an error case" -> simple ignore it? But then nobody see that the use
-> of this function is wrong.
+On Wed, 09 Dec 2015, Arnd Bergmann wrote:
 
-The proper way to deal with functionality that can only be registered
-but never removed is to report the error, but never fail during probing,
-and never allow removal (empty removal function.)
+> On Tuesday 08 December 2015 14:32:01 Lee Jones wrote:
+> > @@ -161,3 +166,11 @@ struct smp_operations __initdata sti_smp_ops =3D=
+ {
+> >         .smp_secondary_init     =3D sti_secondary_init,
+> >         .smp_boot_secondary     =3D sti_boot_secondary,
+> >  };
+> > +
+> > +/**
+> > + * CPUFreq Registration
+> > + */
+> > +void init_cpufreq(void)
+> > +{
+> > +       platform_device_register_simple("sti-cpufreq", -1, NULL, 0)=
+;
+> > +}
+> >=20
+>=20
+> Can you please do this under drivers/cpufreq somewhere?
+>=20
+> I really don't want to any more of these in platform code. Requiring =
+a
+> device to be created just to probe the driver is really silly.
 
-If you return a failure code during probe, you end up in an inconsistent
-situation where you have facilities registered, but resources that those
-facilities require will be undone when probe() returns a failure, and
-that can potentially lead to kernel oops or scribbling over someone
-elses device or memory.
+Already on it.  Bear with.
 
--- 
-RMK's Patch system: http://www.arm.linux.org.uk/developer/patches/
-FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
-according to speedtest.net.
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+=46ollow Linaro: Facebook | Twitter | Blog
