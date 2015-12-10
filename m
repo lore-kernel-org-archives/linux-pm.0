@@ -1,20 +1,20 @@
 From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH V3 2/2] PM / OPP: Parse 'opp-<prop>-<name>' bindings
-Date: Thu, 10 Dec 2015 09:54:45 +0000
-Message-ID: <CAF2Aj3h6u5W+H0shc+MwPpfb8spwXBZYr1+m4w62PpiHk=50UA@mail.gmail.com>
+Subject: Re: [PATCH V3 1/2] PM / OPP: Parse 'opp-supported-hw' binding
+Date: Thu, 10 Dec 2015 09:55:16 +0000
+Message-ID: <CAF2Aj3im+0QV3m_8Y4RTKRjGCvsyf5gjbVApNTzXqS_JmdhL1Q@mail.gmail.com>
 References: <cover.1449627691.git.viresh.kumar@linaro.org>
-	<e3744c43a5ad26e9e49cf938b3ecd846cc500fce.1449627691.git.viresh.kumar@linaro.org>
+	<6bc68ba3bb227384e6dfedb4528cde314250ff09.1449627691.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vk0-f50.google.com ([209.85.213.50]:35374 "EHLO
+Received: from mail-vk0-f50.google.com ([209.85.213.50]:33113 "EHLO
 	mail-vk0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751376AbbLJJyq convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Dec 2015 04:54:46 -0500
-Received: by vkha189 with SMTP id a189so76263756vkh.2
-        for <linux-pm@vger.kernel.org>; Thu, 10 Dec 2015 01:54:45 -0800 (PST)
-In-Reply-To: <e3744c43a5ad26e9e49cf938b3ecd846cc500fce.1449627691.git.viresh.kumar@linaro.org>
+	with ESMTP id S1753281AbbLJJzR convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Dec 2015 04:55:17 -0500
+Received: by vkca188 with SMTP id a188so76849182vkc.0
+        for <linux-pm@vger.kernel.org>; Thu, 10 Dec 2015 01:55:16 -0800 (PST)
+In-Reply-To: <6bc68ba3bb227384e6dfedb4528cde314250ff09.1449627691.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
@@ -22,162 +22,57 @@ Cc: Rafael Wysocki <rjw@rjwysocki.net>, Nishanth Menon <nm@ti.com>, Len Brown <l
 
 On 9 December 2015 at 02:31, Viresh Kumar <viresh.kumar@linaro.org> wro=
 te:
-> OPP bindings (for few properties) allow a platform to choose a
-> value/range among a set of available options. The options are present=
- as
-> opp-<prop>-<name>, where the platform needs to supply the <name> stri=
-ng.
->
-> The OPP properties which allow such an option are: opp-microvolt and
-> opp-microamp.
+> OPP bindings allow a platform to enable OPPs based on the version of =
+the
+> hardware they are used for.
 >
 > Add support to the OPP-core to parse these bindings, by introducing
-> dev_pm_opp_{set|put}_prop_name() APIs.
+> dev_pm_opp_{set|put}_supported_hw() APIs.
 >
 > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
->  drivers/base/power/opp/core.c | 165 ++++++++++++++++++++++++++++++++=
-++++++----
->  drivers/base/power/opp/opp.h  |   2 +
->  include/linux/pm_opp.h        |   9 +++
->  3 files changed, 161 insertions(+), 15 deletions(-)
+>  drivers/base/power/opp/core.c | 148 ++++++++++++++++++++++++++++++++=
+++++++++++
+>  drivers/base/power/opp/opp.h  |   5 ++
+>  include/linux/pm_opp.h        |  13 ++++
+>  3 files changed, 166 insertions(+)
 
 Tested-by: Lee Jones <lee.jones@linaro.org>
 
 > diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/c=
 ore.c
-> index 55cf1a99b532..5c01fec1ed14 100644
+> index 6aa172be6e8e..55cf1a99b532 100644
 > --- a/drivers/base/power/opp/core.c
 > +++ b/drivers/base/power/opp/core.c
-> @@ -562,6 +562,9 @@ static void _remove_device_opp(struct device_opp =
+> @@ -559,6 +559,9 @@ static void _remove_device_opp(struct device_opp =
 *dev_opp)
->         if (dev_opp->supported_hw)
+>         if (!list_empty(&dev_opp->opp_list))
 >                 return;
 >
-> +       if (dev_opp->prop_name)
+> +       if (dev_opp->supported_hw)
 > +               return;
 > +
 >         list_dev =3D list_first_entry(&dev_opp->dev_list, struct devi=
 ce_list_opp,
 >                                     node);
 >
-> @@ -794,35 +797,48 @@ static int _opp_add_v1(struct device *dev, unsi=
-gned long freq, long u_volt,
+> @@ -834,6 +837,145 @@ static int opp_parse_supplies(struct dev_pm_opp=
+ *opp, struct device *dev)
 >  }
 >
->  /* TODO: Support multiple regulators */
-> -static int opp_parse_supplies(struct dev_pm_opp *opp, struct device =
-*dev)
-> +static int opp_parse_supplies(struct dev_pm_opp *opp, struct device =
-*dev,
-> +                             struct device_opp *dev_opp)
->  {
->         u32 microvolt[3] =3D {0};
->         u32 val;
->         int count, ret;
-> +       struct property *prop =3D NULL;
-> +       char name[NAME_MAX];
-> +
-> +       /* Search for "opp-microvolt-<name>" */
-> +       if (dev_opp->prop_name) {
-> +               sprintf(name, "opp-microvolt-%s", dev_opp->prop_name)=
-;
-> +               prop =3D of_find_property(opp->np, name, NULL);
-> +       }
-> +
-> +       if (!prop) {
-> +               /* Search for "opp-microvolt" */
-> +               name[13] =3D '\0';
-> +               prop =3D of_find_property(opp->np, name, NULL);
->
-> -       /* Missing property isn't a problem, but an invalid entry is =
-*/
-> -       if (!of_find_property(opp->np, "opp-microvolt", NULL))
-> -               return 0;
-> +               /* Missing property isn't a problem, but an invalid e=
-ntry is */
-> +               if (!prop)
-> +                       return 0;
-> +       }
->
-> -       count =3D of_property_count_u32_elems(opp->np, "opp-microvolt=
-");
-> +       count =3D of_property_count_u32_elems(opp->np, name);
->         if (count < 0) {
-> -               dev_err(dev, "%s: Invalid opp-microvolt property (%d)=
-\n",
-> -                       __func__, count);
-> +               dev_err(dev, "%s: Invalid %s property (%d)\n",
-> +                       __func__, name, count);
->                 return count;
->         }
->
->         /* There can be one or three elements here */
->         if (count !=3D 1 && count !=3D 3) {
-> -               dev_err(dev, "%s: Invalid number of elements in opp-m=
-icrovolt property (%d)\n",
-> -                       __func__, count);
-> +               dev_err(dev, "%s: Invalid number of elements in %s pr=
-operty (%d)\n",
-> +                       __func__, name, count);
->                 return -EINVAL;
->         }
->
-> -       ret =3D of_property_read_u32_array(opp->np, "opp-microvolt", =
-microvolt,
-> -                                        count);
-> +       ret =3D of_property_read_u32_array(opp->np, name, microvolt, =
-count);
->         if (ret) {
-> -               dev_err(dev, "%s: error parsing opp-microvolt: %d\n",=
- __func__,
-> -                       ret);
-> +               dev_err(dev, "%s: error parsing %s: %d\n", __func__, =
-name, ret);
->                 return -EINVAL;
->         }
->
-> @@ -830,7 +846,20 @@ static int opp_parse_supplies(struct dev_pm_opp =
-*opp, struct device *dev)
->         opp->u_volt_min =3D microvolt[1];
->         opp->u_volt_max =3D microvolt[2];
->
-> -       if (!of_property_read_u32(opp->np, "opp-microamp", &val))
-> +       /* Search for "opp-microamp-<name>" */
-> +       prop =3D NULL;
-> +       if (dev_opp->prop_name) {
-> +               sprintf(name, "opp-microamp-%s", dev_opp->prop_name);
-> +               prop =3D of_find_property(opp->np, name, NULL);
-> +       }
-> +
-> +       if (!prop) {
-> +               /* Search for "opp-microamp" */
-> +               name[12] =3D '\0';
-> +               prop =3D of_find_property(opp->np, name, NULL);
-> +       }
-> +
-> +       if (prop && !of_property_read_u32(opp->np, name, &val))
->                 opp->u_amp =3D val;
->
->         return 0;
-> @@ -948,6 +977,112 @@ void dev_pm_opp_put_supported_hw(struct device =
-*dev)
->  }
->  EXPORT_SYMBOL_GPL(dev_pm_opp_put_supported_hw);
->
-> +/**
-> + * dev_pm_opp_set_prop_name() - Set prop-extn name
-> + * @dev: Device for which the regulator has to be set.
-> + * @name: name to postfix to properties.
+>  /**
+> + * dev_pm_opp_set_supported_hw() - Set supported platforms
+> + * @dev: Device for which supported-hw has to be set.
+> + * @versions: Array of hierarchy of versions to match.
+> + * @count: Number of elements in the array.
 > + *
 > + * This is required only for the V2 bindings, and it enables a platf=
 orm to
-> + * specify the extn to be used for certain property names. The prope=
-rties to
-> + * which the extension will apply are opp-microvolt and opp-microamp=
-=2E OPP core
-> + * should postfix the property name with -<name> while looking for t=
-hem.
+> + * specify the hierarchy of versions it supports. OPP layer will the=
+n enable
+> + * OPPs, which are available for those versions, based on its 'opp-s=
+upported-hw'
+> + * property.
 > + *
 > + * Locking: The internal device_opp and opp structures are RCU prote=
 cted.
@@ -189,7 +84,9 @@ ould ensure
 texts where
 > + * mutex cannot be locked.
 > + */
-> +int dev_pm_opp_set_prop_name(struct device *dev, const char *name)
+> +int dev_pm_opp_set_supported_hw(struct device *dev, const u32 *versi=
+ons,
+> +                               unsigned int count)
 > +{
 > +       struct device_opp *dev_opp;
 > +       int ret =3D 0;
@@ -207,21 +104,25 @@ texts where
 ev_opp */
 > +       WARN_ON(!list_empty(&dev_opp->opp_list));
 > +
-> +       /* Do we already have a prop-name associated with dev_opp? */
-> +       if (dev_opp->prop_name) {
-> +               dev_err(dev, "%s: Already have prop-name %s\n", __fun=
-c__,
-> +                       dev_opp->prop_name);
+> +       /* Do we already have a version hierarchy associated with dev=
+_opp? */
+> +       if (dev_opp->supported_hw) {
+> +               dev_err(dev, "%s: Already have supported hardware lis=
+t\n",
+> +                       __func__);
 > +               ret =3D -EBUSY;
 > +               goto err;
 > +       }
 > +
-> +       dev_opp->prop_name =3D kstrdup(name, GFP_KERNEL);
-> +       if (!dev_opp->prop_name) {
+> +       dev_opp->supported_hw =3D kmemdup(versions, count * sizeof(*v=
+ersions),
+> +                                       GFP_KERNEL);
+> +       if (!dev_opp->supported_hw) {
 > +               ret =3D -ENOMEM;
 > +               goto err;
 > +       }
 > +
+> +       dev_opp->supported_hw_count =3D count;
 > +       mutex_unlock(&dev_opp_list_lock);
 > +       return 0;
 > +
@@ -232,17 +133,17 @@ c__,
 > +
 > +       return ret;
 > +}
-> +EXPORT_SYMBOL_GPL(dev_pm_opp_set_prop_name);
+> +EXPORT_SYMBOL_GPL(dev_pm_opp_set_supported_hw);
 > +
 > +/**
-> + * dev_pm_opp_put_prop_name() - Releases resources blocked for prop-=
-name
-> + * @dev: Device for which the regulator has to be set.
+> + * dev_pm_opp_put_supported_hw() - Releases resources blocked for su=
+pported hw
+> + * @dev: Device for which supported-hw has to be set.
 > + *
 > + * This is required only for the V2 bindings, and is called for a ma=
 tching
-> + * dev_pm_opp_set_prop_name(). Until this is called, the device_opp =
-structure
+> + * dev_pm_opp_set_supported_hw(). Until this is called, the device_o=
+pp structure
 > + * will not be freed.
 > + *
 > + * Locking: The internal device_opp and opp structures are RCU prote=
@@ -255,7 +156,7 @@ ould ensure
 texts where
 > + * mutex cannot be locked.
 > + */
-> +void dev_pm_opp_put_prop_name(struct device *dev)
+> +void dev_pm_opp_put_supported_hw(struct device *dev)
 > +{
 > +       struct device_opp *dev_opp;
 > +
@@ -274,14 +175,16 @@ texts where
 ev_opp */
 > +       WARN_ON(!list_empty(&dev_opp->opp_list));
 > +
-> +       if (!dev_opp->prop_name) {
-> +               dev_err(dev, "%s: Doesn't have a prop-name\n", __func=
-__);
+> +       if (!dev_opp->supported_hw) {
+> +               dev_err(dev, "%s: Doesn't have supported hardware lis=
+t\n",
+> +                       __func__);
 > +               goto unlock;
 > +       }
 > +
-> +       kfree(dev_opp->prop_name);
-> +       dev_opp->prop_name =3D NULL;
+> +       kfree(dev_opp->supported_hw);
+> +       dev_opp->supported_hw =3D NULL;
+> +       dev_opp->supported_hw_count =3D 0;
 > +
 > +       /* Try freeing device_opp if this was the last blocking resou=
 rce */
@@ -290,74 +193,118 @@ rce */
 > +unlock:
 > +       mutex_unlock(&dev_opp_list_lock);
 > +}
-> +EXPORT_SYMBOL_GPL(dev_pm_opp_put_prop_name);
+> +EXPORT_SYMBOL_GPL(dev_pm_opp_put_supported_hw);
 > +
->  static bool _opp_is_supported(struct device *dev, struct device_opp =
+> +static bool _opp_is_supported(struct device *dev, struct device_opp =
 *dev_opp,
->                               struct device_node *np)
->  {
-> @@ -1042,7 +1177,7 @@ static int _opp_add_static_v2(struct device *de=
+> +                             struct device_node *np)
+> +{
+> +       unsigned int count =3D dev_opp->supported_hw_count;
+> +       u32 version;
+> +       int ret;
+> +
+> +       if (!dev_opp->supported_hw)
+> +               return true;
+> +
+> +       while (count--) {
+> +               ret =3D of_property_read_u32_index(np, "opp-supported=
+-hw", count,
+> +                                                &version);
+> +               if (ret) {
+> +                       dev_warn(dev, "%s: failed to read opp-support=
+ed-hw property at index %d: %d\n",
+> +                                __func__, count, ret);
+> +                       return false;
+> +               }
+> +
+> +               /* Both of these are bitwise masks of the versions */
+> +               if (!(version & dev_opp->supported_hw[count]))
+> +                       return false;
+> +       }
+> +
+> +       return true;
+> +}
+> +
+> +/**
+>   * _opp_add_static_v2() - Allocate static OPPs (As per 'v2' DT bindi=
+ngs)
+>   * @dev:       device for which we do this operation
+>   * @np:                device node
+> @@ -879,6 +1021,12 @@ static int _opp_add_static_v2(struct device *de=
 v, struct device_node *np)
->         if (!of_property_read_u32(np, "clock-latency-ns", &val))
->                 new_opp->clock_latency_ns =3D val;
->
-> -       ret =3D opp_parse_supplies(new_opp, dev);
-> +       ret =3D opp_parse_supplies(new_opp, dev, dev_opp);
->         if (ret)
 >                 goto free_opp;
+>         }
 >
+> +       /* Check if the OPP supports hardware's hierarchy of versions=
+ or not */
+> +       if (!_opp_is_supported(dev, dev_opp, np)) {
+> +               dev_dbg(dev, "OPP not supported by hardware: %llu\n",=
+ rate);
+> +               goto free_opp;
+> +       }
+> +
+>         /*
+>          * Rate is defined as an unsigned long in clk API, and so cas=
+ting
+>          * explicitly to its type. Must be fixed once rate is 64 bit
 > diff --git a/drivers/base/power/opp/opp.h b/drivers/base/power/opp/op=
 p.h
-> index 70f4564a6ab9..690638ef36ee 100644
+> index b8880c7f8be1..70f4564a6ab9 100644
 > --- a/drivers/base/power/opp/opp.h
 > +++ b/drivers/base/power/opp/opp.h
-> @@ -131,6 +131,7 @@ struct device_list_opp {
+> @@ -129,6 +129,8 @@ struct device_list_opp {
+>   * @clock_latency_ns_max: Max clock latency in nanoseconds.
+>   * @shared_opp: OPP is shared between multiple devices.
 >   * @suspend_opp: Pointer to OPP to be used during device suspend.
->   * @supported_hw: Array of version number to support.
->   * @supported_hw_count: Number of elements in supported_hw array.
-> + * @prop_name: A name to postfix to many DT properties, while parsin=
-g them.
+> + * @supported_hw: Array of version number to support.
+> + * @supported_hw_count: Number of elements in supported_hw array.
 >   * @dentry:    debugfs dentry pointer of the real device directory (=
 not links).
 >   * @dentry_name: Name of the real dentry.
 >   *
-> @@ -157,6 +158,7 @@ struct device_opp {
+> @@ -153,6 +155,9 @@ struct device_opp {
+>         bool shared_opp;
+>         struct dev_pm_opp *suspend_opp;
 >
->         unsigned int *supported_hw;
->         unsigned int supported_hw_count;
-> +       const char *prop_name;
->
+> +       unsigned int *supported_hw;
+> +       unsigned int supported_hw_count;
+> +
 >  #ifdef CONFIG_DEBUG_FS
 >         struct dentry *dentry;
+>         char dentry_name[NAME_MAX];
 > diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-> index 3a85110242f0..95403d2ccaf5 100644
+> index 9a2e50337af9..3a85110242f0 100644
 > --- a/include/linux/pm_opp.h
 > +++ b/include/linux/pm_opp.h
-> @@ -58,6 +58,8 @@ struct srcu_notifier_head *dev_pm_opp_get_notifier(=
-struct device *dev);
->  int dev_pm_opp_set_supported_hw(struct device *dev, const u32 *versi=
+> @@ -55,6 +55,9 @@ int dev_pm_opp_enable(struct device *dev, unsigned =
+long freq);
+>  int dev_pm_opp_disable(struct device *dev, unsigned long freq);
+>
+>  struct srcu_notifier_head *dev_pm_opp_get_notifier(struct device *de=
+v);
+> +int dev_pm_opp_set_supported_hw(struct device *dev, const u32 *versi=
 ons,
->                                 unsigned int count);
->  void dev_pm_opp_put_supported_hw(struct device *dev);
-> +int dev_pm_opp_set_prop_name(struct device *dev, const char *name);
-> +void dev_pm_opp_put_prop_name(struct device *dev);
+> +                               unsigned int count);
+> +void dev_pm_opp_put_supported_hw(struct device *dev);
 >  #else
 >  static inline unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp=
  *opp)
 >  {
-> @@ -142,6 +144,13 @@ static inline int dev_pm_opp_set_supported_hw(st=
-ruct device *dev,
->
->  static inline void dev_pm_opp_put_supported_hw(struct device *dev) {=
-}
->
-> +static inline int dev_pm_opp_set_prop_name(struct device *dev, const=
- char *name)
+> @@ -129,6 +132,16 @@ static inline struct srcu_notifier_head *dev_pm_=
+opp_get_notifier(
+>  {
+>         return ERR_PTR(-EINVAL);
+>  }
+> +
+> +static inline int dev_pm_opp_set_supported_hw(struct device *dev,
+> +                                             const u32 *versions,
+> +                                             unsigned int count)
 > +{
 > +       return -EINVAL;
 > +}
 > +
-> +static inline void dev_pm_opp_put_prop_name(struct device *dev) {}
+> +static inline void dev_pm_opp_put_supported_hw(struct device *dev) {=
+}
 > +
 >  #endif         /* CONFIG_PM_OPP */
 >
