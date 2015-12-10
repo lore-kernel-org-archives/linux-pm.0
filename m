@@ -1,64 +1,73 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH v2 1/3] dt-binding: power: Add otg regulator binding
-Date: Thu, 10 Dec 2015 14:27:12 +0000
-Message-ID: <20151210142712.GM5727@sirena.org.uk>
-References: <1449621618-11900-1-git-send-email-tim.bird@sonymobile.com>
- <20151209041153.GA29549@rob-hp-laptop>
- <566824AD.4080003@sonymobile.com>
- <CAL_JsqL0BjD6A1quSZOYmLNeRZAYo1UwSsTPPvMUbC1pSwM6CQ@mail.gmail.com>
- <566867F1.7000906@sonymobile.com>
- <20151209222044.GB32712@earth>
+From: "Rajendra Nayak" <rnayak@codeaurora.org>
+Subject: Re: [PATCH v4 1/8] thermal: qcom: tsens: Add a skeletal TSENS
+ drivers
+Date: Thu, 10 Dec 2015 14:58:47 -0000
+Message-ID: <5038cad94fdd2a76e33234d814658e7c.squirrel@www.codeaurora.org>
+References: <1444383670-32693-1-git-send-email-rnayak@codeaurora.org>
+    <1444383670-32693-2-git-send-email-rnayak@codeaurora.org>
+    <20151102203021.GB4469@localhost.localdomain>
+    <563AFCE9.8020000@codeaurora.org> <565BF633.7070701@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="4mwMARuvUPcmqDvg"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:41190 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752611AbbLJO1h (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Dec 2015 09:27:37 -0500
-Content-Disposition: inline
-In-Reply-To: <20151209222044.GB32712@earth>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <565BF633.7070701@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Rajendra Nayak <rnayak@codeaurora.org>
+Cc: Eduardo Valentin <edubezval@gmail.com>, agross@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rui.zhang@intel.com, sboyd@codeaurora.org, srinivas.kandagatla@linaro.org, nrajan@codeaurora.org, lina.iyer@linaro.org, punit.agrawal@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Tim Bird <tim.bird@sonymobile.com>, Rob Herring <robh@kernel.org>, "pawel.moll@arm.com" <pawel.moll@arm.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "agross@codeaurora.org" <agross@codeaurora.org>, =?iso-8859-1?Q?Andersson=2C_Bj=F6rn?= <Bjorn.Andersson@sonymobile.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "tbird20d@gmail.com" <tbird20d@gmail.com>, "Cavin, Courtney" <Courtney.Cavin@sonymobile.com>
 
 
---4mwMARuvUPcmqDvg
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> []..
+>
+>>>> +Optional properties:
+>>>> +- qcom,sensor-id: List of sensor instances used in a given SoC. A
+>>>> TSENS IP can
+>>>> +		  have a fixed number of sensors (like 11) but a given SoC can
+>>>> +		  use only 5 of these and they might not always the first 5. They
+>>>> +		  could be sensors 0, 1, 4, 8 and 9. This property is used to
+>>>> +		  describe the subset of the sensors used. If this property is
+>>>> +		  missing they are assumed to be the first 'n' sensors numbered
+>>>> +		  sequentially in which case the number of sensors defaults to
+>>>> +		  the number of slope values.
+>>>
+>>> Can you please elaborate a bit more on why you could not solve this
+>>> using the thermal sensor descriptor id?
+>>>
+>>>> +
+>>>> +Example:
+>>>> +tsens: thermal-sensor@900000 {
+>>>> +		compatible = "qcom,msm8916-tsens";
+>>>> +		nvmem-cells = <&tsens_caldata>, <&tsens_calsel>;
+>>>> +		nvmem-cell-names = "caldata", "calsel";
+>>>> +		qcom,tsens-slopes = <3200 3200 3200 3200 3200>;
+>>>
+>
+>
+>>>> +		qcom,sensor-id = <0 1 2 4 5>;
+>>>> +		#thermal-sensor-cells = <1>;
+>>>
+>>> How about if you simply make the sensor driver expose all sensors, then
+>>> in the
+>>> thermal zone descriptor, you pick which sensor to use using the thermal
+>>> sensor
+>>> descriptor (quoting the binding again):
+>
+> Hi Eduardo,
+>
+> What you suggested would work, except for that the calibration data in
+> eeprom would
+> be available for only the _subset_ of sensors on the SoC. So the driver in
+> some way would
+> need to know which exact sensors the eeprom data corresponds to.
+>
+> If this does not seem like something which needs to be described in DT, I
+> can have the
+> data embedded into the driver so it gets picked based on the right
+> compatibles.
 
-On Wed, Dec 09, 2015 at 11:20:45PM +0100, Sebastian Reichel wrote:
-> On Wed, Dec 09, 2015 at 09:42:09AM -0800, Tim Bird wrote:
+Hey Eduardo, any thoughts on this?
 
-> > There are other switches in the charger block that are not
-> > exposed yet.  This one handles the the OTG (vbus) charge pathway.
-> > Others handle other charge pathways (some of which are used on phones
-> > and some are not - they're used, e.g., on the dragonboard).  I'd
-> > rather not give it a generic name, because eventually the driver
-> > should expose those other switches as something as well.
-
-> otg_regulator: regulator@0 { }
-> other_regulator: regulator@1 { }
-
-No, if this is a device with multiple regulators we have a standard way
-of exposing that - have a regulators subnode with a collection of named
-regulator subnodes in that.  There's support for parsing this in the
-framework.
-
---4mwMARuvUPcmqDvg
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJWaYu/AAoJECTWi3JdVIfQcJIH/3iyiwMi/QHF0jc342SF1UI0
-1g+ug8yi76eysy7VGgmsHNnmi1xT7DnK3FhWkCTmZiZ9r4IE24/94KrUv8ksd/E7
-e/fl78RGKOmfeCtwnbKV8XAJpW8UAQNB3byMK4dUjJhGixQ5BSArsuYKPSVOE+/1
-07zO8hQ95qeIe8tYXAiY9KBvPn+xjqRuFfqESJrH6gNGkDFB+toM6e6RuSeIoBBp
-AUvE/nGcy6Sg30Kvb6pGNy2sgWhPuo+uTlrIitgIBTqZyA1P/IZ6FTjoWjai/3aA
-wU0kzoF6gc7jYpxvX8UfXnQj8cArLc25k4OWqSLqjVKeZk/A01QA6Yx/F2BEnQc=
-=VgqW
------END PGP SIGNATURE-----
-
---4mwMARuvUPcmqDvg--
+-- 
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
+of Code Aurora Forum, hosted by The Linux Foundation
