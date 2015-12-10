@@ -1,81 +1,83 @@
-From: Imre Deak <imre.deak@intel.com>
-Subject: Re: [Intel-gfx] [PATCH v2] PM / Runtime: Introduce
- pm_runtime_get_noidle
-Date: Thu, 10 Dec 2015 23:20:40 +0200
-Message-ID: <1449782440.28642.5.camel@intel.com>
-References: <1449675920-12986-1-git-send-email-joonas.lahtinen@linux.intel.com>
-	 <1449740630.25404.5.camel@intel.com> <3880444.CTtrq5s3vh@vostro.rjw.lan>
-	 <1965611.CCxSd8EYaz@vostro.rjw.lan>
-Reply-To: imre.deak@intel.com
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V6 1/3] cpufreq: intel_pstate: configurable algorithm to get target pstate
+Date: Thu, 10 Dec 2015 23:01:18 +0100
+Message-ID: <2402797.hEhmBtxRMB@vostro.rjw.lan>
+References: <1449247235-29389-1-git-send-email-philippe.longepe@linux.intel.com> <1449692513.3240.231.camel@spandruv-desk3.jf.intel.com> <8633351.YrHIUtRzE5@skinner>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:49362 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751373AbbLJVUs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 10 Dec 2015 16:20:48 -0500
-In-Reply-To: <1965611.CCxSd8EYaz@vostro.rjw.lan>
+Received: from v094114.home.net.pl ([79.96.170.134]:63052 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752928AbbLJVbR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Dec 2015 16:31:17 -0500
+In-Reply-To: <8633351.YrHIUtRzE5@skinner>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, linux-pm@vger.kernel.org
+To: Thomas Renninger <trenn@suse.de>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Philippe Longepe <philippe.longepe@linux.intel.com>, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, Prarit Bhargava <prarit@redhat.com>, viresh.kumar@linaro.org
 
-On Thu, 2015-12-10 at 22:42 +0100, Rafael J. Wysocki wrote:
-> On Thursday, December 10, 2015 10:36:37 PM Rafael J. Wysocki wrote:
-> > On Thursday, December 10, 2015 11:43:50 AM Imre Deak wrote:
-> > > On Thu, 2015-12-10 at 01:58 +0100, Rafael J. Wysocki wrote:
-> > > > On Wednesday, December 09, 2015 06:22:19 PM Joonas Lahtinen
-> > > > wrote:
-> > > > > Introduce pm_runtime_get_noidle to for situations where it is
-> > > > > not
-> > > > > desireable to touch an idling device. One use scenario is
-> > > > > periodic
-> > > > > hangchecks performed by the drm/i915 driver which can be
-> > > > > omitted
-> > > > > on a device in a runtime idle state.
-> > > > >=20
-> > > > > v2:
-> > > > > - Fix inconsistent return value when !CONFIG_PM.
-> > > > > - Update documentation for bool return value
-> > > > >=20
-> > > > > Signed-off-by: Joonas Lahtinen <joonas.lahtinen@linux.intel.c
-> > > > > om>
-> > > > > Reported-by: Chris Wilson <chris@chris-wilson.co.uk>
-> > > > > Cc: Chris Wilson <chris@chris-wilson.co.uk>
-> > > > > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> > > > > Cc: linux-pm@vger.kernel.org
-> > > >=20
-> > > > Well, I don't quite see how this can be used in a non-racy way
-> > > > without doing an additional pm_runtime_resume() or something
-> > > > like
-> > > > that in the same code path.
-> > >=20
-> > > We don't want to resume, that would be the whole point. We'd like
-> > > to
-> > > ensure that we hold a reference _and_ the device is already
-> > > active. So
-> > > AFAICS we'd need to check runtime_status =3D=3D RPM_ACTIVE in
-> > > addition
-> > > after taking the reference.
-> >=20
-> > Right, and that under the lock.
->=20
-> Which basically means you can call pm_runtime_resume() just fine,
-> because it will do nothing if the status is RPM_ACTIVE already.
->=20
-> So really, why don't you use pm_runtime_get_sync()?
+On Thursday, December 10, 2015 02:04:46 PM Thomas Renninger wrote:
+> On Wednesday, December 09, 2015 12:21:53 PM Srinivas Pandruvada wrote:
+> > On Wed, 2015-12-09 at 15:34 +0100, Thomas Renninger wrote:
+> > > On Tuesday, December 08, 2015 10:02:23 AM Srinivas Pandruvada wrote:
+> > > > On Tue, 2015-12-08 at 16:27 +0100, Thomas Renninger wrote:
 
-The difference would be that if the status is not RPM_ACTIVE already we
-would drop the reference and report error. The caller would in this
-case forego of doing something, since we the device is suspended or on
-the way to being suspended. One example of such a scenario is a
-watchdog like functionality: the watchdog work would
-call=C2=A0pm_runtime_get_noidle() and check if the device is ok by doin=
-g
-some HW access, but only if the device is powered. Otherwise the work
-item would do nothing (meaning it also won't reschedule itself). The
-watchdog work would get rescheduled next time the device is woken up
-and some work is submitted to the device.
+[cut]
 
---Imre
+> > 
+> > This is the order I am thinking of in the order of priority high to
+> > low :
+> > - User policy (either command line or via cpu-freq scaling_governor)
+> > - ACPI
+> > - Pickup defaults based on CPU ID.
+> 
+> Why by CPU ID?
+
+For a couple of reasons.
+
+First of all, processors are designed in a specific way and some ways of
+P-states management may not lead to good results on them no matter what,
+while others may match them a lot better.
+
+The processors in question here are designed with energy efficiency in mind.
+For this reason, an approach skewed towards performance (which the original
+algorithm in intel_pstate is) is really suboptimal there as the performance
+is not there in the first place, quite fundamentally.  Even if anyone used
+any chip based on those cores in a server, that would be a "low-power server"
+so to speak, so using an algorithm more oriented towards energy efficiency
+would still make sense for it.
+
+Second, the CPU ID is the most reliable piece of information about the
+type of the system we can possibly get.  The BIOS may always lie to us and
+we can't entirely rely on it for figuring out the system profile, but as I
+said, if a CPU designed for energy-efficient systems is used in the given
+one, that is a strong indication on what the system is or it would have
+used a different CPU otherwise.
+
+> This doesn't make sense to me and unnecessarily complicates
+> things.
+> 
+> But, please do not submit anything half baken:
+> a new pstate ondemand governor or different
+> workload optizmized algorithms inside this governor, or later possibly as
+> separate governors, defaults based on CPU ID or platform type and
+> then later userspace tunable...
+> 
+> We should not only think, but implement a final concept and submit altogether.
+> Otherwise there are several kernels flying around which do implement half
+> of the implementation and the confusion is perfect.
+
+On the other hand, making changes in smaller steps allows us to use a more
+evolutionary approach in which changes that turn out to cause problems to
+happen may be easily reverted and replaced with something better.
+
+> I would also be interested in some figures.
+> Are there any measurements how many power is saved, how big the performance
+> overhead is, etc?
+
+Philippe will provide the data.
+
+Thanks,
+Rafael
+
