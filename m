@@ -1,70 +1,372 @@
 From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH V3 0/5] PM / OPP: opp-supported-hw and <prop>-name
- bindings
-Date: Thu, 10 Dec 2015 08:58:33 +0000
-Message-ID: <20151210085833.GE17876@x1>
-References: <cover.1447209519.git.viresh.kumar@linaro.org>
+Subject: [PATCH v6.1 08/10] cpufreq: st: Provide runtime initialised driver
+ for ST's platforms
+Date: Thu, 10 Dec 2015 09:14:07 +0000
+Message-ID: <20151210091407.GF17876@x1>
+References: <1449676697-25432-1-git-send-email-lee.jones@linaro.org>
+ <1449676697-25432-9-git-send-email-lee.jones@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f52.google.com ([74.125.82.52]:35262 "EHLO
-	mail-wm0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752103AbbLJI6h (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Dec 2015 03:58:37 -0500
-Received: by mail-wm0-f52.google.com with SMTP id u63so14230741wmu.0
-        for <linux-pm@vger.kernel.org>; Thu, 10 Dec 2015 00:58:37 -0800 (PST)
+Received: from mail-wm0-f49.google.com ([74.125.82.49]:35300 "EHLO
+	mail-wm0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751097AbbLJJOL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Dec 2015 04:14:11 -0500
+Received: by mail-wm0-f49.google.com with SMTP id u63so14787979wmu.0
+        for <linux-pm@vger.kernel.org>; Thu, 10 Dec 2015 01:14:10 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <cover.1447209519.git.viresh.kumar@linaro.org>
+In-Reply-To: <1449676697-25432-9-git-send-email-lee.jones@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, robh+dt@kernel.org, sboyd@codeaurora.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, mark.rutland@arm.com, pawel.moll@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, nm@ti.com, devicetree@vger.kernel.org, b.zolnierkie@samsung.com, m.szyprowski@samsung.com
+To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc: kernel@stlinux.com, maxime.coquelin@st.com, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, devicetree@vger.kernel.org, ajitpal.singh@st.com
 
-On Wed, 11 Nov 2015, Viresh Kumar wrote:
+The bootloader is charged with the responsibility to provide platform
+specific Dynamic Voltage and Frequency Scaling (DVFS) information via
+Device Tree.  This driver takes the supplied configuration and
+registers it with the new generic OPP framework, to then be used with
+CPUFreq.
 
-> Hi Rafael,
->=20
-> Rob only needs to Ack the modified 2/5 patch and then you can safely
-> apply this series.
->=20
-> The first patch enables us to select only a subset of OPPs from the
-> bigger table, based on what version of the hardware we are running on=
-=2E
->=20
-> The second one enables us to select slightly different values for
-> multiple properties, based on what kind of hardware they are running =
-on.
->=20
-> The third one removes an (unused) binding, which is replaced by the
-> second patch with a better solution.
->=20
-> The fourth patch is based on what Stephen suggested (and then reviewe=
-d)
-> in the earlier series, and the 5th one updates the existing users of
-> these bindings for it.
->=20
-> V2->V3:
-> - dropped turbo/suspend named properties
-> - Applied all the Acks
->=20
-> Viresh Kumar (5):
->   PM / OPP: Add "opp-supported-hw" binding
->   PM / OPP: Add {opp-microvolt|opp-microamp}-<name> binding
->   PM / OPP: Remove 'operating-points-names' binding
->   PM / OPP: Rename OPP nodes as opp@<opp-hz>
->   ARM: dts: exynos4412: Rename OPP nodes as opp@<opp-hz>
+Signed-off-by: Lee Jones <lee.jones@linaro.org>
+---
+Viresh,
+  This incremental submission contains fixes to your last requests.
 
-Tested-by: Lee Jones <lee.jones@linaro.org>
+ drivers/cpufreq/Kconfig.arm   |  10 ++
+ drivers/cpufreq/Makefile      |   1 +
+ drivers/cpufreq/sti-cpufreq.c | 294 ++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 305 insertions(+)
 
->  Documentation/devicetree/bindings/opp/opp.txt | 132 ++++++++++++++++=
-++--------
->  arch/arm/boot/dts/exynos4412.dtsi             |  28 +++---
->  2 files changed, 107 insertions(+), 53 deletions(-)
->=20
-
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 1582c1c..2dfc327 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -216,6 +216,16 @@ config ARM_SPEAR_CPUFREQ
+ 	help
+ 	  This adds the CPUFreq driver support for SPEAr SOCs.
+ 
++config ARM_STI_CPUFREQ
++	tristate "STi CPUFreq support"
++	depends on SOC_STIH407
++	help
++	  This driver uses the generic OPP framework to match the running
++	  platform with a predefined set of suitable values.  If not provided
++	  we will fall-back so safe-values contained in Device Tree.  Enable
++	  this config option if you wish to add CPUFreq support for STi based
++	  SoCs.
++
+ config ARM_TEGRA20_CPUFREQ
+ 	bool "Tegra20 CPUFreq support"
+ 	depends on ARCH_TEGRA
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index c0af1a1..9e63fb1 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -73,6 +73,7 @@ obj-$(CONFIG_ARM_SA1100_CPUFREQ)	+= sa1100-cpufreq.o
+ obj-$(CONFIG_ARM_SA1110_CPUFREQ)	+= sa1110-cpufreq.o
+ obj-$(CONFIG_ARM_SCPI_CPUFREQ)		+= scpi-cpufreq.o
+ obj-$(CONFIG_ARM_SPEAR_CPUFREQ)		+= spear-cpufreq.o
++obj-$(CONFIG_ARM_STI_CPUFREQ)		+= sti-cpufreq.o
+ obj-$(CONFIG_ARM_TEGRA20_CPUFREQ)	+= tegra20-cpufreq.o
+ obj-$(CONFIG_ARM_TEGRA124_CPUFREQ)	+= tegra124-cpufreq.o
+ obj-$(CONFIG_ARM_VEXPRESS_SPC_CPUFREQ)	+= vexpress-spc-cpufreq.o
+diff --git a/drivers/cpufreq/sti-cpufreq.c b/drivers/cpufreq/sti-cpufreq.c
+new file mode 100644
+index 0000000..a9c659f
+--- /dev/null
++++ b/drivers/cpufreq/sti-cpufreq.c
+@@ -0,0 +1,294 @@
++/*
++ * Match running platform with pre-defined OPP values for CPUFreq
++ *
++ * Author: Ajit Pal Singh <ajitpal.singh@st.com>
++ *         Lee Jones <lee.jones@linaro.org>
++ *
++ * Copyright (C) 2015 STMicroelectronics (R&D) Limited
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the version 2 of the GNU General Public License as
++ * published by the Free Software Foundation
++ */
++
++#include <linux/cpu.h>
++#include <linux/io.h>
++#include <linux/mfd/syscon.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/of_platform.h>
++#include <linux/pm_opp.h>
++#include <linux/regmap.h>
++
++#define VERSION_ELEMENTS	3
++#define MAX_PCODE_NAME_LEN	7
++
++#define VERSION_SHIFT		28
++#define HW_INFO_INDEX		1
++#define MAJOR_ID_INDEX		1
++#define MINOR_ID_INDEX		2
++
++/*
++ * Only match on "suitable for ALL versions" entries
++ *
++ * This will be used with the BIT() macro.  It sets the
++ * top bit of a 32bit value and is equal to 0x80000000.
++ */
++#define DEFAULT_VERSION		31
++
++enum {
++	PCODE = 0,
++	SUBSTRATE,
++	DVFS_MAX_REGFIELDS,
++};
++
++/**
++ * ST CPUFreq Driver Data
++ *
++ * @cpu_node		CPU's OF node
++ * @syscfg_eng		Engineering Syscon register map
++ * @regmap		Syscon register map
++ */
++static struct sti_cpufreq_ddata {
++	struct device *cpu;
++	struct regmap *syscfg_eng;
++	struct regmap *syscfg;
++} ddata;
++
++static int sti_cpufreq_fetch_major(void) {
++	struct device_node *np = ddata.cpu->of_node;
++	struct device *dev = ddata.cpu;
++	unsigned int major_offset;
++	unsigned int socid;
++	int ret;
++
++	ret = of_property_read_u32_index(np, "st,syscfg",
++					 MAJOR_ID_INDEX, &major_offset);
++	if (ret) {
++		dev_err(dev, "No major number offset provided in %s [%d]\n",
++			np->full_name, ret);
++		return ret;
++	}
++
++	ret = regmap_read(ddata.syscfg, major_offset, &socid);
++	if (ret) {
++		dev_err(dev, "Failed to read major number from syscon [%d]\n",
++			ret);
++		return ret;
++	}
++
++	return ((socid >> VERSION_SHIFT) & 0xf) + 1;
++}
++
++static int sti_cpufreq_fetch_minor(void)
++{
++	struct device *dev = ddata.cpu;
++	struct device_node *np = dev->of_node;
++	unsigned int minor_offset;
++	unsigned int minid;
++	int ret;
++
++	ret = of_property_read_u32_index(np, "st,syscfg-eng",
++					 MINOR_ID_INDEX, &minor_offset);
++	if (ret) {
++		dev_err(dev,
++			"No minor number offset provided %s [%d]\n",
++			np->full_name, ret);
++		return ret;
++	}
++
++	ret = regmap_read(ddata.syscfg_eng, minor_offset, &minid);
++	if (ret) {
++		dev_err(dev,
++			"Failed to read the minor number from syscon [%d]\n",
++			ret);
++		return ret;
++	}
++
++	return minid & 0xf;
++}
++
++static int sti_cpufreq_fetch_regmap_field(const struct reg_field *reg_fields,
++					  int hw_info_offset, int field)
++{
++	struct regmap_field *regmap_field;
++	struct reg_field reg_field = reg_fields[field];
++	struct device *dev = ddata.cpu;
++	unsigned int value;
++	int ret;
++
++	reg_field.reg = hw_info_offset;
++	regmap_field = devm_regmap_field_alloc(dev,
++					       ddata.syscfg_eng,
++					       reg_field);
++	if (IS_ERR(regmap_field)) {
++		dev_err(dev, "Failed to allocate reg field\n");
++		return PTR_ERR(regmap_field);
++	}
++
++	ret = regmap_field_read(regmap_field, &value);
++	if (ret) {
++		dev_err(dev, "Failed to read %s code\n",
++			field ? "SUBSTRATE" : "PCODE");
++		return ret;
++	}
++
++	return value;
++}
++
++static const struct reg_field sti_stih407_dvfs_regfields[DVFS_MAX_REGFIELDS] = {
++	[PCODE]		= REG_FIELD(0, 16, 19),
++	[SUBSTRATE]	= REG_FIELD(0, 0, 2),
++};
++
++static const struct reg_field *sti_cpufreq_match(void)
++{
++	if (of_machine_is_compatible("st,stih407") ||
++	    of_machine_is_compatible("st,stih410"))
++		return sti_stih407_dvfs_regfields;
++
++	return NULL;
++}
++
++static int sti_cpufreq_set_opp_info(void)
++{
++	struct device *dev = ddata.cpu;
++	struct device_node *np = dev->of_node;
++	const struct reg_field *reg_fields;
++	unsigned int hw_info_offset;
++	unsigned int version[VERSION_ELEMENTS];
++	int pcode, substrate, major, minor;
++	int ret;
++	char name[MAX_PCODE_NAME_LEN];
++
++	reg_fields = sti_cpufreq_match();
++	if (!reg_fields) {
++		dev_err(dev, "This SoC doesn't support voltage scaling");
++		return -ENODEV;
++	}
++
++	ret = of_property_read_u32_index(np, "st,syscfg-eng",
++					 HW_INFO_INDEX, &hw_info_offset);
++	if (ret) {
++		dev_warn(dev, "Failed to read HW info offset from DT\n");
++		substrate = DEFAULT_VERSION;
++		pcode = 0;
++		goto use_defaults;
++	}
++
++	pcode = sti_cpufreq_fetch_regmap_field(reg_fields,
++					       hw_info_offset,
++					       PCODE);
++	if (pcode < 0) {
++		dev_warn(dev, "Failed to obtain process code\n");
++		/* Use default pcode */
++		pcode = 0;
++	}
++
++	substrate = sti_cpufreq_fetch_regmap_field(reg_fields,
++						   hw_info_offset,
++						   SUBSTRATE);
++	if (substrate) {
++		dev_warn(dev, "Failed to obtain substrate code\n");
++		/* Use default substrate */
++		substrate = DEFAULT_VERSION;
++	}
++
++use_defaults:
++	major = sti_cpufreq_fetch_major();
++	if (major < 0) {
++		dev_err(dev, "Failed to obtain major version\n");
++		/* Use default major number */
++		major = DEFAULT_VERSION;
++	}
++
++	minor = sti_cpufreq_fetch_minor();
++	if (minor < 0) {
++		dev_err(dev, "Failed to obtain minor version\n");
++		/* Use default minor number */
++		minor = DEFAULT_VERSION;
++	}
++
++	snprintf(name, MAX_PCODE_NAME_LEN, "pcode%d", pcode);
++
++	ret = dev_pm_opp_set_prop_name(dev, name);
++	if (ret) {
++		dev_err(dev, "Failed to set prop name\n");
++		return ret;
++	}
++
++	version[0] = BIT(major);
++	version[1] = BIT(minor);
++	version[2] = BIT(substrate);
++
++	ret = dev_pm_opp_set_supported_hw(dev, version, VERSION_ELEMENTS);
++	if (ret) {
++		dev_err(dev, "Failed to set supported hardware\n");
++		return ret;
++	}
++
++	dev_dbg(dev, "pcode: %d major: %d minor: %d substrate: %d\n",
++		pcode, major, minor, substrate);
++	dev_dbg(dev, "version[0]: %x version[1]: %x version[2]: %x\n",
++		version[0], version[1], version[2]);
++
++	return 0;
++}
++
++static int sti_cpufreq_fetch_syscon_regsiters(void)
++{
++	struct device *dev = ddata.cpu;
++	struct device_node *np = dev->of_node;
++
++	ddata.syscfg = syscon_regmap_lookup_by_phandle(np, "st,syscfg");
++	if (IS_ERR(ddata.syscfg)) {
++		dev_err(dev,  "\"st,syscfg\" not supplied\n");
++		return PTR_ERR(ddata.syscfg);
++	}
++
++	ddata.syscfg_eng = syscon_regmap_lookup_by_phandle(np, "st,syscfg-eng");
++	if (IS_ERR(ddata.syscfg_eng)) {
++		dev_err(dev, "\"st,syscfg-eng\" not supplied\n");
++		return PTR_ERR(ddata.syscfg_eng);
++	}
++
++	return 0;
++}
++
++static int sti_cpufreq_init(void)
++{
++	int ret;
++
++	ddata.cpu = get_cpu_device(0);
++	if (!ddata.cpu) {
++		dev_err(ddata.cpu, "Failed to get device for CPU0\n");
++		goto skip_voltage_scaling;
++	}
++
++	if (!of_get_property(ddata.cpu->of_node, "operating-points-v2", NULL)) {
++		dev_err(ddata.cpu, "OPP-v2 not supported\n");
++		goto skip_voltage_scaling;
++	}
++
++	ret = sti_cpufreq_fetch_syscon_regsiters();
++	if (ret)
++		goto skip_voltage_scaling;
++
++	ret = sti_cpufreq_set_opp_info();
++	if (!ret)
++		goto register_cpufreq_dt;
++
++skip_voltage_scaling:
++	dev_err(ddata.cpu, "Not doing voltage scaling\n");
++
++register_cpufreq_dt:
++	platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
++
++	return 0;
++}
++module_init(sti_cpufreq_init);
++
++MODULE_DESCRIPTION("STMicroelectronics CPUFreq/OPP driver");
++MODULE_AUTHOR("Ajitpal Singh <ajitpal.singh@st.com>");
++MODULE_AUTHOR("Lee Jones <lee.jones@linaro.org>");
++MODULE_LICENSE("GPL v2");
