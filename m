@@ -1,152 +1,121 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH V6 1/3] cpufreq: intel_pstate: configurable algorithm to
- get target pstate
-Date: Thu, 10 Dec 2015 09:28:40 -0800
-Message-ID: <1449768520.3240.250.camel@spandruv-desk3.jf.intel.com>
-References: <1449247235-29389-1-git-send-email-philippe.longepe@linux.intel.com>
-	 <1536293.WV9n2YBamr@skinner>
-	 <1449692513.3240.231.camel@spandruv-desk3.jf.intel.com>
-	 <8633351.YrHIUtRzE5@skinner>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [RFC PATCH 2/8] Documentation: arm: define DT cpu capacity
+ bindings
+Date: Thu, 10 Dec 2015 17:58:20 +0000
+Message-ID: <20151210175820.GE14571@e106622-lin>
+References: <1448288921-30307-1-git-send-email-juri.lelli@arm.com>
+ <1448288921-30307-3-git-send-email-juri.lelli@arm.com>
+ <20151124020631.GA15165@rob-hp-laptop>
+ <20151210153004.GA26758@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:18490 "EHLO mga11.intel.com"
+Received: from foss.arm.com ([217.140.101.70]:56780 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752916AbbLJR3q (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 10 Dec 2015 12:29:46 -0500
-In-Reply-To: <8633351.YrHIUtRzE5@skinner>
+	id S1751877AbbLJR5x (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 10 Dec 2015 12:57:53 -0500
+Content-Disposition: inline
+In-Reply-To: <20151210153004.GA26758@sirena.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Renninger <trenn@suse.de>
-Cc: Len Brown <lenb@kernel.org>, Philippe Longepe <philippe.longepe@linux.intel.com>, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, Prarit Bhargava <prarit@redhat.com>, viresh.kumar@linaro.org
+To: Mark Brown <broonie@kernel.org>
+Cc: Rob Herring <robh@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Olof Johansson <olof@lixom.net>, Gregory CLEMENT <gregory.clement@free-electrons.com>, Paul Walmsley <paul@pwsan.com>, Linus Walleij <linus.walleij@linaro.org>, Chen-Yu Tsai <wens@csie.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 
-On Thu, 2015-12-10 at 14:04 +0100, Thomas Renninger wrote:
-> On Wednesday, December 09, 2015 12:21:53 PM Srinivas Pandruvada wrote:
-> > On Wed, 2015-12-09 at 15:34 +0100, Thomas Renninger wrote:
-> > > On Tuesday, December 08, 2015 10:02:23 AM Srinivas Pandruvada wrote:
-> > > > On Tue, 2015-12-08 at 16:27 +0100, Thomas Renninger wrote:
-> > > > > Hi,
-> > > > > 
-> > > > > There may be atoms clustered in server platforms and there may be
-> > > > > performance oriented CPU models built into laptops.
-> > > > 
-> > > > You mean BYT/CHT ATOM used as servers not Avaton, which has different
-> > > > id.
-> > > 
-> > > I have no idea.
-> > > And since Intel does not build mainboards anymore afaik or most
-> > > are built by OEMs, you also have no idea which CPUs end up on which kind
-> > > of system, right?
-> > > 
-> > > Default policy to go for performance, IO, workload based switching or
-> > > whatever tunables are modified should be, as you said, platform oriented.
-> > > 
-> > > So instead of calling the params:
-> > > silvermont, airmont, knl_params (knights landing, right?), whatever CPU...
-> > 
-> > > Better call them:
-> > These param structure is much more than just policy specification. They
-> > have callback to get limits. For example, silvermont and airmont has
-> > different scaling methods. So they can't be common to all.
-> Sure this is HW specific.
-> 
-> > The function
-> > to get next state can be common. There is no airmont/silvermont name
-> > attached to this (get_target_pstate_use_cpu_load or
-> > get_target_pstate_use_performance). So the default callback
-> > ".get_target_pstate" can be changed based on preference.
-> > 
-> > This is the order I am thinking of in the order of priority high to
-> > low :
-> > - User policy (either command line or via cpu-freq scaling_governor)
-> > - ACPI
-> > - Pickup defaults based on CPU ID.
-> 
-> Why by CPU ID? This doesn't make sense to me and unnecessarily complicates
-> things.
-Some CPU are designed for a specific functions.
-> 
-> But, please do not submit anything half baken:
-I don't know what makes you think that. The two CPU ids used to have a
-different algorithm are specifically designed for power constrained
-devices. Lots of testing was done to prove power vs performance benefits
-before pushing those.
+Hi Mark,
 
-Philippe, can you share test results?
+I certainly understand your (and Rob's) concerns, but let me try anyway
+to argument a bit more around this approach :-).
 
-There is no change for other cpus because there is not enough convincing
-data. Also changing based on ACPI is also not perfect. We have folks
-complaining that the server setpoint is already aggressive enough and
-consume power. So before we have a good answer, will not submit changes
-for that.
+On 10/12/15 15:30, Mark Brown wrote:
+> On Mon, Nov 23, 2015 at 08:06:31PM -0600, Rob Herring wrote:
+> 
+> > I think you need something absolute and probably per MHz (like 
+> > dynamic-power-coefficient property). Perhaps the IPC (instructions per 
+> > clock) value?
+> 
+> > In other words, I want to see these numbers have a defined method 
+> > of determining them and don't want to see random values from every 
+> > vendor. ARM, Ltd. says core X has a value of Y would be good enough for 
+> > me. Vendor X's A57 having a value of 2 and Vendor Y's A57 having a 
+> > value of 1024 is not what I want to see. Of course things like cache 
+> > sizes can vary the performance, but is a baseline value good enough? 
+> 
+> > However, no vendor will want to publish their values if these are 
+> > absolute values relative to other vendors.
+> 
+> > If you expect these to need frequent tuning, then don't put them in DT.
+> 
+> I agree strongly.  Putting what are essentially tuning numbers for the
+> system into the ABI is going to lead us into a mess long term since if
+> we change anything related to the performance of the system the numbers
+> may become invalid and we've no real way of recovering sensible
+> information.
+> 
+> There is of course also the issue where people are getting the numbers
+> from in the first place - were the numbers picked for some particular
+> use case or to optimise some particular benchmark, what other conditions
+> existed at the time (cpufreq setup for example), what tuning goals did
+> the people picking the numbers have and do any of those things
+> correspond to what a given user wants?  If detailed tuning the numbers
+> for specific systems matters much will we get competing users patching
+> the in kernel DTs over and over, and what do we do about ACPI systems?
+> Having an absolute definition doesn't really help with this since the
+> concrete effect DT authors see is that these are tuning numbers.
+> 
 
-> a new pstate ondemand governor or different
-> workload optizmized algorithms inside this governor, or later possibly as
-> separate governors, defaults based on CPU ID or platform type and
-> then later userspace tunable...
-> 
-> We should not only think, but implement a final concept and submit altogether.
-> Otherwise there are several kernels flying around which do implement half
-> of the implementation and the confusion is perfect.
-> 
-> I would also be interested in some figures.
-> Are there any measurements how many power is saved, how big the performance
-> overhead is, etc?
-> 
-> I formerly used the tools/power/cpupower/bench/ tool to find out worst case 
-> workload scenarios between ondemand and performance governor with different
-> tuning knobs.
-> It could even do some nice plots showing performance issues when increasing
-> polling time, etc., IIRC.
-We use mweb, specpower for server workloads and phoronix test suite for
-clients. Do you have some specific server workloads?
-> Are these new RAPL registers fine grained enough to be used to measure
-> power consumption on different workloads with different dynamic cpufreq
-> algorithms/tunables?
-The package power part of RAPL is good enough. But we use external power
-meter or instrumented system.
-> 
-> On a platform which exposes itself as "Enterprise Server" or "Performance
-> Server" (ACPI PM Profile, cmp with chapter 5.2.9 of ACPI spec) I expect 
-> default will be the current performance governor, which means dynamic CPU 
-> frequency off and run on high frequency statically, right?
-Yes, no change.
-> 
-> > The current patch-set only addresses the cpu id based selection.
-> > BTW changing a pid set point can be done from user space without
-> > changing code.
-> 
-> You mean:
-> /sys/kernel/debug/pstate_snb/p_gain_pct
-> /sys/kernel/debug/pstate_snb/setpoint
-> /sys/kernel/debug/pstate_snb/deadband
-> /sys/kernel/debug/pstate_snb/i_gain_pct
-> /sys/kernel/debug/pstate_snb/d_gain_pct
-> /sys/kernel/debug/pstate_snb/sample_rate_ms
-> 
-> These should better not be picked as API by userspace tools...
->  
-> > > I had a quick look, but providing whole governors seem to be a lot
-> > > overhead. But with some luck you do not have to fill up whole structures
-> > > you have to pass to cpufreq_register_governor(..).
-> > 
-> > Adding a external governor is easy (Your RFC patch already does that).
-> > But inside cpufreq core logic there is different processing based on
-> > whether there are internal governor or cpufreq governor. So that needs
-> > to be addressed first.
-> 
-> Yep, not sure that is perfect.
-> I also try to have a closer look.
-> Quite some open questions...
-> 
-Thanks,
-Srinivas
+I'm not entirely getting here why you consider capacity values to be
+tunables. As part of the EAS effort, we are proposing ways in which users
+should be able to fine tune their system as needed, when required
+(don't know if you had a chance to have a look at the SchedTune posting
+back in August for example [1]). This patch tries to only standardize
+where do we get default values from and how we specify them. I'm not
+seeing them changing much after an initial benchmarking phase has been
+done. Tuning should happen using different methods, not by changing
+these values, IMHO.
 
->         Thomas
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> It would be better to have the DT describe concrete physical properties
+> of the system which we can then map onto numbers we like, that way if we
+> get better information in future or just decide that completely
+> different metrics are appropriate for tuning we can just do that without
+> having to worry about translating the old metrics into new ones.  We can
+> then expose the tuning knobs to userspace for override if that's needed.
+> If doing system specific tuning on vertically integrated systems really
+> is terribly important it's not going to matter too much where the tuning
+> is but we also have to consider more general purpose systems.
+> 
 
+As replied to Rob, I'm not sure it is so easy to find any physical
+property that expresses what we essentially need (without maybe relying
+on a complex mix of hardware details and a model to extract numbers from
+them). Instead, we propose to have reasonable, per SoC, default numbers;
+and then let users fine tune their platform afterwards, without changing
+those default values.
 
+> We're not going to get out of having to pick numbers at some point,
+> pushing them into DT doesn't get us out of that but it does make the
+> situation harder to manage long term and makes the performance for the
+> general user less relaible.  It's also just more work all round,
+> everyone doing the DT for a SoC is going to have to do some combination
+> of cargo culting or repeating the callibration.
+> 
+
+I'm most probably a bit naive here, but I see the calibration phase
+happening only once, after the platform is stable. You get default
+capacity values by running a pretty simple benchmark on a fixed
+configuration; and you put them somewhere (DTs still seem to be a
+sensible place to me). Then you'll be able to suit tuning needs using
+different interfaces.
+
+ABI changes have to be carefully considered, I know. But still, we need
+to agree on a way to provide these default capacity values someway. So,
+thanks for helping us carry on this discussion.
+
+Best,
+
+- Juri
+
+> I remember Peter remarking at one of the LPC discussions of this idea
+> that there had been some bad experiences with getting numbers from 
+> firmware on other systems.
+
+[1] https://lkml.org/lkml/2015/8/19/419
