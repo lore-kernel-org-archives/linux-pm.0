@@ -1,200 +1,130 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v2 09/19] PM / devfreq: exynos: Update documentation for
- bus devices using passive governor
-Date: Thu, 10 Dec 2015 10:36:48 +0900
-Message-ID: <5668D730.6070404@samsung.com>
+Subject: Re: [PATCH v2 03/19] ARM: dts: Add DMC bus node for Exynos3250
+Date: Thu, 10 Dec 2015 11:00:59 +0900
+Message-ID: <5668DCDB.8020609@samsung.com>
 References: <1449634091-1842-1-git-send-email-cw00.choi@samsung.com>
- <1449634091-1842-10-git-send-email-cw00.choi@samsung.com>
- <5668D5DD.5090202@samsung.com>
+ <1449634091-1842-4-git-send-email-cw00.choi@samsung.com>
+ <5668CADE.8090706@samsung.com> <5668D0B6.1030902@samsung.com>
+ <5668D34B.1010602@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <5668D5DD.5090202@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <5668D34B.1010602@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, myungjoo.ham@samsung.com, kgene@kernel.org
 Cc: kyungmin.park@samsung.com, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, tjakobi@math.uni-bielefeld.de, linux.amoon@gmail.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 2015=EB=85=84 12=EC=9B=94 10=EC=9D=BC 10:31, Krzysztof Kozlowski wro=
+On 2015=EB=85=84 12=EC=9B=94 10=EC=9D=BC 10:20, Krzysztof Kozlowski wro=
 te:
-> On 09.12.2015 13:08, Chanwoo Choi wrote:
->> This patch updates the documentation for passive bus devices and add=
-s the
->> detailed example of Exynos3250.
+> On 10.12.2015 10:09, Chanwoo Choi wrote:
+>> On 2015=EB=85=84 12=EC=9B=94 10=EC=9D=BC 09:44, Krzysztof Kozlowski =
+wrote:
+>>> On 09.12.2015 13:07, Chanwoo Choi wrote:
+>>>> This patch adds the DMC (Dynamic Memory Controller) bus node for E=
+xynos3250 SoC.
+>>>> The DMC is an AMBA AXI-compliant slave to interface external JEDEC=
+ standard
+>>>> SDRAM devices. The bus includes the OPP tables and the source cloc=
+k for DMC
+>>>> block.
+>>>>
+>>>> Following list specifies the detailed relation between the clock a=
+nd DMC block:
+>>>> - The source clock of DMC block : div_dmc
+>>>>
+>>>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+>>>> ---
+>>>>  arch/arm/boot/dts/exynos3250.dtsi | 34 ++++++++++++++++++++++++++=
+++++++++
+>>>>  1 file changed, 34 insertions(+)
+>>>>
+>>>> diff --git a/arch/arm/boot/dts/exynos3250.dtsi b/arch/arm/boot/dts=
+/exynos3250.dtsi
+>>>> index 2f30d632f1cc..7214c5e42150 100644
+>>>> --- a/arch/arm/boot/dts/exynos3250.dtsi
+>>>> +++ b/arch/arm/boot/dts/exynos3250.dtsi
+>>>> @@ -687,6 +687,40 @@
+>>>>  			clock-names =3D "ppmu";
+>>>>  			status =3D "disabled";
+>>>>  		};
+>>>> +
+>>>> +		bus_dmc: bus_dmc {
+>>>> +			compatible =3D "samsung,exynos-bus";
+>>>> +			clocks =3D <&cmu_dmc CLK_DIV_DMC>;
+>>>> +			clock-names =3D "bus";
+>>>> +			operating-points-v2 =3D <&bus_dmc_opp_table>;
+>>>> +			status =3D "disabled";
+>>>> +		};
+>>>> +
+>>>> +		bus_dmc_opp_table: opp_table1 {
+>>>
+>>> This is the firsy opp_table, right? So:
+>>> s/opp_table1/opp_table0/
 >>
->> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->> ---
->>  .../devicetree/bindings/devfreq/exynos-bus.txt     | 244 ++++++++++=
-++++++++++-
->>  1 file changed, 241 insertions(+), 3 deletions(-)
+>> Right. It is first opp_table in exynos3250.dtsi.
+>> But, I'm considering the OPP table of CPU freqeuncy as opp_table0.
+>> So, I have the plan that support the operation-points-v2 for Exynos3=
+250 CPU.
+>=20
+> Ok
+>=20
 >>
->> diff --git a/Documentation/devicetree/bindings/devfreq/exynos-bus.tx=
-t b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
->> index 54a1f9c46c88..c4fdc70f8eac 100644
->> --- a/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
->> +++ b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
->> @@ -13,18 +13,23 @@ SoC has the different sub-blocks. So, this diffe=
-rence should be specified
->>  in devicetree file instead of each device driver. In result, this d=
-river
->>  is able to support the bus frequency for all Exynos SoCs.
->> =20
->> -Required properties for bus device:
->> +Required properties for all bus devices:
->>  - compatible: Should be "samsung,exynos-bus".
->>  - clock-names : the name of clock used by the bus, "bus".
->>  - clocks : phandles for clock specified in "clock-names" property.
->>  - #clock-cells: should be 1.
->>  - operating-points-v2: the OPP table including frequency/voltage in=
-formation
->>    to support DVFS (Dynamic Voltage/Frequency Scaling) feature.
->> +
->> +Required properties for only parent bus device:
+>>>
+>>>> +			compatible =3D "operating-points-v2";
+>>>> +			opp-shared;
+>>>> +
+>>>> +			opp00 {
+>>>> +				opp-hz =3D /bits/ 64 <50000000>;
+>>>> +				opp-microvolt =3D <800000>;
+>>>> +			};
+>>>> +			opp01 {
+>>>> +				opp-hz =3D /bits/ 64 <100000000>;
+>>>> +				opp-microvolt =3D <800000>;
+>>>> +			};
+>>>> +			opp02 {
+>>>> +				opp-hz =3D /bits/ 64 <134000000>;
+>>>> +				opp-microvolt =3D <800000>;
+>>>
+>>> Why 134, not 133 MHz?
+>>
+>> When I used the 133000000, the source clock is changed to 100Mhz ins=
+tead of 133MHz.
+>> I add following test result on exynos3250-rinato board.
+>>
+>> Case1.
+>> When I use the 134 MHz, the source clock is changed to 133MHz
+>> : exynos-bus soc:bus_dmc: old_freq(200000000) -> new_freq (134000000=
+) (real: 133333334)
+>>
+>> Case2.
+>> When I use the 133 MHz, the source clock is changed to 100MHz
+>> : exynos-bus soc:bus_dmc: old_freq(200000000) -> new_freq (133000000=
+) (real: 100000000)
 >=20
-> Maybe:
-> "Required properties only for parent bus devices:"
+> Now I remember that issue. You could use here directly 133333334 but
+> that also would look a little bit weird... so 134 is ok for me. Could
+> just add a comment that desired frequency is actually "133 MHz"?
 
-OK. I'll modify it.
+Do you prefer among following example?
 
->=20
-> In this binding documentation file the idea of "parent" is not
-> explained. I now it is related to passive devfreq governor but lookin=
-g
-> at the binding itself it is a new idea, not covered here.
+Example1.
+	opp02 {
+		/* The desired frequency is 133MHz because
+		 * clock change has the dependency on clock driver.
+		 * When set rate as 134MHz, the clock driver would
+		 * change the 133MHz actually instead of 134MHz.
+		 */
+		opp-hz =3D /bits/ 64 <134000000>;
+		opp-microvolt =3D <800000>;
+	};
 
-OK. I'll add the detailed description of 'parent' and
-correlation between 'parent' and 'passive' device.
-
->=20
->>  - vdd-supply: the regulator to provide the buses with the voltage.
->>  - devfreq-events: the devfreq-event device to monitor the curret ut=
-ilization
->>    of buses.
->> =20
->> -Optional properties for bus device:
->> +Required properties for only passive bus device:
->=20
-> "Required properties only for passive bus devices:"
-
-OK. I'll modify it.
-
->=20
->> +- devfreq: the parent bus device.
->> +
->> +Optional properties for only parent bus device:
->>  - exynos,saturation-ratio: the percentage value which is used to ca=
-librate
->>                     the performance count againt total cycle count.
->> =20
->> @@ -33,7 +38,20 @@ Example1:
->>  	power line (regulator). The MIF (Memory Interface) AXI bus is used=
- to
->>  	transfer data between DRAM and CPU and uses the VDD_MIF regualtor.
->> =20
->> -	- power line(VDD_MIF) --> bus for DMC (Dynamic Memory Controller) =
-block
->> +	- MIF (Memory Interface) block
->> +	: VDD_MIF |--- DMC (Dynamic Memory Controller)
->> +
->> +	- INT (Internal) block
->> +	: VDD_INT |--- LEFTBUS (parent device)
->> +		  |--- PERIL
->> +		  |--- MFC
->> +		  |--- G3D
->> +		  |--- RIGHTBUS
->> +		  |--- FSYS
->> +		  |--- LCD0
->> +		  |--- PERIR
->> +		  |--- ISP
->> +		  |--- CAM
->> =20
->>  	- MIF bus's frequency/voltage table
->>  	-----------------------
->> @@ -46,6 +64,24 @@ Example1:
->>  	|L5| 400000 |875000   |
->>  	-----------------------
->> =20
->> +	- INT bus's frequency/voltage table
->> +	----------------------------------------------------------
->> +	|Block|LEFTBUS|RIGHTBUS|MCUISP |ISP    |PERIL  ||VDD_INT |
->> +	| name|       |LCD0    |       |       |       ||        |
->> +	|     |       |FSYS    |       |       |       ||        |
->> +	|     |       |MFC     |       |       |       ||        |
->> +	----------------------------------------------------------
->> +	|Mode |*parent|passive |passive|passive|passive||        |
->> +	----------------------------------------------------------
->> +	|Lv   |Frequency                               ||Voltage |
->> +	----------------------------------------------------------
->> +	|L1   |50000  |50000   |50000  |50000  |50000  ||900000  |
->> +	|L2   |80000  |80000   |80000  |80000  |80000  ||900000  |
->> +	|L3   |100000 |100000  |100000 |100000 |100000 ||1000000 |
->> +	|L4   |134000 |134000  |200000 |200000 |       ||1000000 |
->> +	|L5   |200000 |200000  |400000 |300000 |       ||1000000 |
->> +	----------------------------------------------------------
->> +
->>  Example2 :
->>  	The bus of DMC (Dynamic Memory Controller) block in exynos3250.dts=
-i
->>  	are listed below:
->> @@ -84,6 +120,167 @@ Example2 :
->>  		};
->>  	};
->> =20
->> +	bus_leftbus: bus_leftbus {
->> +		compatible =3D "samsung,exynos-bus";
->> +		clocks =3D <&cmu CLK_DIV_GDL>;
->> +		clock-names =3D "bus";
->> +		operating-points-v2 =3D <&bus_leftbus_opp_table>;
->> +		status =3D "disabled";
->> +	};
->> +
->> +	bus_rightbus: bus_rightbus {
->> +		compatible =3D "samsung,exynos-bus";
->> +		clocks =3D <&cmu CLK_DIV_GDR>;
->> +		clock-names =3D "bus";
->> +		operating-points-v2 =3D <&bus_leftbus_opp_table>;
->> +		status =3D "disabled";
->> +	};
->> +
->> +	bus_lcd0: bus_lcd0 {
->> +		compatible =3D "samsung,exynos-bus";
->> +		clocks =3D <&cmu CLK_DIV_ACLK_160>;
->> +		clock-names =3D "bus";
->> +		operating-points-v2 =3D <&bus_leftbus_opp_table>;
->> +		status =3D "disabled";
->> +	};
->> +
->> +	bus_fsys: bus_fsys {
->> +		compatible =3D "samsung,exynos-bus";
->> +		clocks =3D <&cmu CLK_DIV_ACLK_200>;
->> +		clock-names =3D "bus";
->> +		operating-points-v2 =3D <&bus_leftbus_opp_table>;
->> +		status =3D "disabled";
->> +	};
->> +
->> +	bus_mcuisp: bus_mcuisp {
->> +		compatible =3D "samsung,exynos-bus";
->> +		clocks =3D <&cmu CLK_DIV_ACLK_400_MCUISP>;
->> +		clock-names =3D "bus";
->> +		operating-points-v2 =3D <&bus_mcuisp_opp_table>;
->> +		status =3D "disabled";
->> +	};
->> +
->> +	bus_isp: bus_isp {
->> +		compatible =3D "samsung,exynos-bus";
->> +		clocks =3D <&cmu CLK_DIV_ACLK_266>;
->> +		clock-names =3D "bus";
->> +		operating-points-v2 =3D <&bus_isp_opp_table>;
->> +		status =3D "disabled";
->> +	};
->> +
->> +	bus_peril: bus_perir {
->=20
->=20
-> Peril or perir?
-
-peril is correct. I'll fix it.
+Example2.
+	opp02 {
+		opp-hz =3D /bits/ 64 <133333334>;
+		opp-microvolt =3D <800000>;
+	};
 
 Best Regards,
 Chanwoo Choi
