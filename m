@@ -1,103 +1,128 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH v5 0/7] cpufreq: add generic cpufreq driver support for
- Exynos542x/5800 platforms
-Date: Thu, 10 Dec 2015 17:58:42 +0100
-Message-ID: <1449766729-435-1-git-send-email-b.zolnierkie@samsung.com>
+Subject: [PATCH v5 1/7] ARM: dts: Exynos542x/5800: add cluster regulator supply
+ properties
+Date: Thu, 10 Dec 2015 17:58:43 +0100
+Message-ID: <1449766729-435-2-git-send-email-b.zolnierkie@samsung.com>
+References: <1449766729-435-1-git-send-email-b.zolnierkie@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1449766729-435-1-git-send-email-b.zolnierkie@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Mike Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Ben Gamari <ben@smart-cactus.org>
-Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
+Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com, Doug Anderson <dianders@chromium.org>, Andreas Faerber <afaerber@suse.de>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Add cluster regulator supply properties as a preparation to
+adding generic cpufreq-dt driver support for Exynos542x and
+Exynos5800 based boards.
 
-This patch series adds generic cpufreq-dt driver support for
-Exynos542x/5800 (using the new CPU clock type which allows it).
+Cc: Kukjin Kim <kgene.kim@samsung.com>
+Cc: Doug Anderson <dianders@chromium.org>
+Cc: Javier Martinez Canillas <javier@osg.samsung.com>
+Cc: Andreas Faerber <afaerber@suse.de>
+Cc: Thomas Abraham <thomas.ab@samsung.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+ arch/arm/boot/dts/exynos5420-arndale-octa.dts      | 8 ++++++++
+ arch/arm/boot/dts/exynos5420-peach-pit.dts         | 8 ++++++++
+ arch/arm/boot/dts/exynos5420-smdk5420.dts          | 8 ++++++++
+ arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi | 8 ++++++++
+ arch/arm/boot/dts/exynos5800-peach-pi.dts          | 8 ++++++++
+ 5 files changed, 40 insertions(+)
 
-It has been tested on Exynos5422 based ODROID-XU3 Lite board.
-
-Depends on:
-- next-20151124 branch of linux-next kernel tree
-
-Changes since v4:
-- renamed oppXX@hz to opp@hz
-- put Odroid changes in exynos5422-odroidxu3-common.dtsi
-- override CPU OPP properties for Exynos5422/5800 instead of
-  duplicating them
-- merged "ARM: dts: Exynos5422: fix OPP tables" patch with
-  "ARM: dts: Exynos5420: add CPU OPP properties" one
-- added missing Thomas' SoB line to "ARM: dts: Exynos5420:
-  add CPU OPP properties" patch
-- updated authorship of "ARM: Exynos: use generic cpufreq
-  driver for Exynos5420" and "ARM: Exynos: use generic
-  cpufreq driver for Exynos5422/5800" patches
-- updated Javier's and Mike's e-mail adresses
-- removed non-working e-mail address of Sachin Kamat
-
-Changes since v3:
-- switched to using cpufreq-dt driver
-- updated patch descriptions to cover Exynos5422 support
-- added Acked-by from Sylwester to clock driver patches
-
-Changes since v2:
-- ported over next-20151124 branch
-- integrated missing CLK_RECALC_NEW_RATES flags fix to patch #3
-  (from Anand Moon)
-- added regulator supply properties for ODROID-XU3 Lite and
-  ODROID-XU4 in patch #2
-- ported CPU OPPs to operating-points-v2 (from Ben Gamari)
-- added "ARM: dts: Exynos5422: fix OPP tables" patch (from Ben
-  Gamari)
-- added "cpufreq: arm-big-little: accept operating-points-v2
-  nodes" patch (from Ben Gamari)
-- renamed OPP nodes as opp@<opp-hz>
-
-Changes since v1:
-- added CPU cluster regulator supply properties to
-  exynos5420-arndale-octa.dts, exynos5420-peach-pit.dts,
-  exynos5420-smdk5420.dts and exynos5800-peach-pi.dts
-
-Changes over Thomas' original v12 code:
-- split Exynos5420 and Exynos5800 support
-- moved E5420_[EGL,KFC]_DIV0() macros to clk-exynos5420.c
-- disabled cpufreq if big.LITTLE switcher support is enabled
-- enhanced arm_big_little[_dt] driver with CPU cluster regulator
-  support
-- fixed CPU clock configuration data for Exynos5800
-- fixed CPU operating points setup for Exynos5800
-- added CPU cluster regulator supplies for ODROID-XU3 board
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-
-Bartlomiej Zolnierkiewicz (5):
-  ARM: dts: Exynos542x/5800: add cluster regulator supply properties
-  ARM: Exynos: use generic cpufreq driver for Exynos5420
-  clk: samsung: exynos5422/5800: fix cpu clock configuration data
-  ARM: dts: Exynos5800: fix CPU OPP
-  ARM: Exynos: use generic cpufreq driver for Exynos5422/5800
-
-Thomas Abraham (2):
-  clk: samsung: exynos5420: add cpu clock configuration data and
-    instantiate cpu clock
-  ARM: dts: Exynos542x/5800: add CPU OPP properties
-
- arch/arm/boot/dts/exynos5420-arndale-octa.dts      |   8 ++
- arch/arm/boot/dts/exynos5420-peach-pit.dts         |   8 ++
- arch/arm/boot/dts/exynos5420-smdk5420.dts          |   8 ++
- arch/arm/boot/dts/exynos5420.dtsi                  | 122 +++++++++++++++++++++
- arch/arm/boot/dts/exynos5422-cpus.dtsi             |  10 ++
- arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi |   8 ++
- arch/arm/boot/dts/exynos5800-peach-pi.dts          |   8 ++
- arch/arm/boot/dts/exynos5800.dtsi                  | 108 ++++++++++++++++++
- arch/arm/mach-exynos/exynos.c                      |   4 +
- drivers/clk/samsung/clk-exynos5420.c               |  88 ++++++++++++++-
- include/dt-bindings/clock/exynos5420.h             |   2 +
- 11 files changed, 372 insertions(+), 2 deletions(-)
-
+diff --git a/arch/arm/boot/dts/exynos5420-arndale-octa.dts b/arch/arm/boot/dts/exynos5420-arndale-octa.dts
+index 4ecef69..4229641 100644
+--- a/arch/arm/boot/dts/exynos5420-arndale-octa.dts
++++ b/arch/arm/boot/dts/exynos5420-arndale-octa.dts
+@@ -52,6 +52,14 @@
+ 	};
+ };
+ 
++&cpu0 {
++	cpu-supply = <&buck2_reg>;
++};
++
++&cpu4 {
++	cpu-supply = <&buck6_reg>;
++};
++
+ &usbdrd_dwc3_1 {
+ 	dr_mode = "host";
+ };
+diff --git a/arch/arm/boot/dts/exynos5420-peach-pit.dts b/arch/arm/boot/dts/exynos5420-peach-pit.dts
+index 35cfb07..df071b33 100644
+--- a/arch/arm/boot/dts/exynos5420-peach-pit.dts
++++ b/arch/arm/boot/dts/exynos5420-peach-pit.dts
+@@ -143,6 +143,14 @@
+ 	vdd-supply = <&ldo9_reg>;
+ };
+ 
++&cpu0 {
++	cpu-supply = <&buck2_reg>;
++};
++
++&cpu4 {
++	cpu-supply = <&buck6_reg>;
++};
++
+ &dp {
+ 	status = "okay";
+ 	pinctrl-names = "default";
+diff --git a/arch/arm/boot/dts/exynos5420-smdk5420.dts b/arch/arm/boot/dts/exynos5420-smdk5420.dts
+index ac35aef..124a9ba 100644
+--- a/arch/arm/boot/dts/exynos5420-smdk5420.dts
++++ b/arch/arm/boot/dts/exynos5420-smdk5420.dts
+@@ -89,6 +89,14 @@
+ 
+ };
+ 
++&cpu0 {
++	cpu-supply = <&buck2_reg>;
++};
++
++&cpu4 {
++	cpu-supply = <&buck6_reg>;
++};
++
+ &dp {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&dp_hpd>;
+diff --git a/arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi b/arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi
+index 9134217..1bd507b 100644
+--- a/arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi
++++ b/arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi
+@@ -67,6 +67,14 @@
+ 			<19200000>;
+ };
+ 
++&cpu0 {
++	cpu-supply = <&buck6_reg>;
++};
++
++&cpu4 {
++	cpu-supply = <&buck2_reg>;
++};
++
+ &hdmi {
+ 	status = "okay";
+ 	hpd-gpio = <&gpx3 7 GPIO_ACTIVE_HIGH>;
+diff --git a/arch/arm/boot/dts/exynos5800-peach-pi.dts b/arch/arm/boot/dts/exynos5800-peach-pi.dts
+index 7b018e4..2f6d8ac 100644
+--- a/arch/arm/boot/dts/exynos5800-peach-pi.dts
++++ b/arch/arm/boot/dts/exynos5800-peach-pi.dts
+@@ -137,6 +137,14 @@
+ 	vdd-supply = <&ldo9_reg>;
+ };
+ 
++&cpu0 {
++	cpu-supply = <&buck2_reg>;
++};
++
++&cpu4 {
++	cpu-supply = <&buck6_reg>;
++};
++
+ &dp {
+ 	status = "okay";
+ 	pinctrl-names = "default";
 -- 
 1.9.1
