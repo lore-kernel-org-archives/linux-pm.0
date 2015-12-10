@@ -1,84 +1,102 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v2 1/3] dt-binding: power: Add otg regulator binding
-Date: Thu, 10 Dec 2015 09:18:23 -0600
-Message-ID: <CAL_Jsq+w0ide6kkwCgQPxZ6dbL0MrSEBxe6XnjcsECP9_zRV7g@mail.gmail.com>
-References: <1449621618-11900-1-git-send-email-tim.bird@sonymobile.com>
- <20151209041153.GA29549@rob-hp-laptop> <566824AD.4080003@sonymobile.com>
- <CAL_JsqL0BjD6A1quSZOYmLNeRZAYo1UwSsTPPvMUbC1pSwM6CQ@mail.gmail.com>
- <20151209195915.GJ4000@usrtlx11787.corpusers.net> <CAL_JsqKV=AucyZvFaxsSrZ5Hn718ZMKDfd8pqLHFT27RbE7VMA@mail.gmail.com>
+From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [RFC PATCH 2/8] Documentation: arm: define DT cpu capacity
+ bindings
+Date: Thu, 10 Dec 2015 15:30:04 +0000
+Message-ID: <20151210153004.GA26758@sirena.org.uk>
+References: <1448288921-30307-1-git-send-email-juri.lelli@arm.com>
+ <1448288921-30307-3-git-send-email-juri.lelli@arm.com>
+ <20151124020631.GA15165@rob-hp-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <CAL_JsqKV=AucyZvFaxsSrZ5Hn718ZMKDfd8pqLHFT27RbE7VMA@mail.gmail.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Bjorn Andersson <bjorn.andersson@sonymobile.com>
-Cc: "Bird, Tim" <Tim.Bird@sonymobile.com>, "pawel.moll@arm.com" <pawel.moll@arm.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "agross@codeaurora.org" <agross@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "tbird20d@gmail.com" <tbird20d@gmail.com>, "Cavin, Courtney" <Courtney.Cavin@sonymobile.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="gKMricLos+KVdGMg"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20151124020631.GA15165@rob-hp-laptop>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, catalin.marinas-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, morten.rasmussen-5wv7dgnIgG8@public.gmane.org, dietmar.eggemann-5wv7dgnIgG8@public.gmane.org, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Olof Johansson <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>, Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Paul Walmsley <paul-DWxLp4Yu+b8AvxtiuMwx3w@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Dec 9, 2015 at 3:08 PM, Rob Herring <robh@kernel.org> wrote:
-> On Wed, Dec 9, 2015 at 1:59 PM, Bjorn Andersson
-> <bjorn.andersson@sonymobile.com> wrote:
->> On Wed 09 Dec 06:36 PST 2015, Rob Herring wrote:
->>
->>> On Wed, Dec 9, 2015 at 6:55 AM, Tim Bird <tim.bird@sonymobile.com> wrote:
->>> > On 12/08/2015 08:11 PM, Rob Herring wrote:
->>> >> On Tue, Dec 08, 2015 at 04:40:16PM -0800, Tim Bird wrote:
->>> >>> Add a binding for the regulator which controls the OTG chargepath switch.
->>> >>> The OTG switch gets its power from pm8941_5vs1, and that should be
->>> >>> expressed as a usb-otg-in-supply property in the DT node for the
->>> >>> charger driver.  The regulator name is "otg".
->>>
->>> [...]
->>>
->>> >>> +child nodes:
->>> >>> +- otg:
->>> >>> +  Usage: optional
->>> >>> +  Description: This node defines a regulator used to control the direction
->>> >>> +               of VBUS voltage - specifically: whether to supply voltage
->>> >>> +               to VBUS for host mode operation of the OTG port, or allow
->>> >>> +               input voltage from external VBUS for charging.  In the
->>> >>> +               hardware, the supply for this regulator comes from
->>> >>> +               usb-otg-in-supply.
->>> >>
->>> >> Doesn't this regulator need to have a name defined?
->>> >
->>> > I'm not sure what you mean.  The regulator name is "otg", defined by the DT node
->>> > name. The code requires that the DT node name be "otg", and defines a regulator
->>> > with the same name.
->>> >
->>> > As far as I know, you have to define a DT label for the node, in order
->>> > to reference this regulator with a phandle.  Is that what you are referring to?
->>> > I usually use "chg_otg" as the label.  Are you asking that this be reflected
->>> > in the example?
->>>
->>> You need a regulator-name property. Also, should should define valid
->>> values for regulator-min-microvolt and regulator-max-microvolt.
->>>
->>
->> The regulator has a name, derived from the node name, and this is
->> significant. If the developer wants an additional human readable name
->> for some reason they can use the optional regulator-name property.
->>
->> The regulator is a simple switch and as such inherits voltage properties
->> from its supply. It should therefor not have any specified voltage
->> range.
->>
->>> Thinking about this some more, the node name should be generic, so
->>> just "regulator". The label does not need to be generic.
->>>
->>
->> The name of the node is significant, as it's used for matching the
->> regulator to an implementation.
->
-> Ah yes, you are right. I forget what an oddball the regulator binding is.
->
-> And if voltage switches don't need min and max properties, then it is
-> fine as is. Still, the empty node with no properties seems odd to me.
 
-Thinking some more about this, what bothers me is just having "otg
-{};" gives no clue as to what the node is for w/o the documentation.
-"otg" alone could mean several things. I think minimally, it needs
-either a node name that gives some indication it is a regulator or
-Vbus supply, a required regulator-name or even a comment.
+--gKMricLos+KVdGMg
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Rob
+On Mon, Nov 23, 2015 at 08:06:31PM -0600, Rob Herring wrote:
+
+> I think you need something absolute and probably per MHz (like=20
+> dynamic-power-coefficient property). Perhaps the IPC (instructions per=20
+> clock) value?
+
+> In other words, I want to see these numbers have a defined method=20
+> of determining them and don't want to see random values from every=20
+> vendor. ARM, Ltd. says core X has a value of Y would be good enough for=
+=20
+> me. Vendor X's A57 having a value of 2 and Vendor Y's A57 having a=20
+> value of 1024 is not what I want to see. Of course things like cache=20
+> sizes can vary the performance, but is a baseline value good enough?=20
+
+> However, no vendor will want to publish their values if these are=20
+> absolute values relative to other vendors.
+
+> If you expect these to need frequent tuning, then don't put them in DT.
+
+I agree strongly.  Putting what are essentially tuning numbers for the
+system into the ABI is going to lead us into a mess long term since if
+we change anything related to the performance of the system the numbers
+may become invalid and we've no real way of recovering sensible
+information.
+
+There is of course also the issue where people are getting the numbers
+=66rom in the first place - were the numbers picked for some particular
+use case or to optimise some particular benchmark, what other conditions
+existed at the time (cpufreq setup for example), what tuning goals did
+the people picking the numbers have and do any of those things
+correspond to what a given user wants?  If detailed tuning the numbers
+for specific systems matters much will we get competing users patching
+the in kernel DTs over and over, and what do we do about ACPI systems?
+Having an absolute definition doesn't really help with this since the
+concrete effect DT authors see is that these are tuning numbers.
+
+It would be better to have the DT describe concrete physical properties
+of the system which we can then map onto numbers we like, that way if we
+get better information in future or just decide that completely
+different metrics are appropriate for tuning we can just do that without
+having to worry about translating the old metrics into new ones.  We can
+then expose the tuning knobs to userspace for override if that's needed.
+If doing system specific tuning on vertically integrated systems really
+is terribly important it's not going to matter too much where the tuning
+is but we also have to consider more general purpose systems.
+
+We're not going to get out of having to pick numbers at some point,
+pushing them into DT doesn't get us out of that but it does make the
+situation harder to manage long term and makes the performance for the
+general user less relaible.  It's also just more work all round,
+everyone doing the DT for a SoC is going to have to do some combination
+of cargo culting or repeating the callibration.
+
+I remember Peter remarking at one of the LPC discussions of this idea
+that there had been some bad experiences with getting numbers from=20
+firmware on other systems.
+
+--gKMricLos+KVdGMg
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJWaZp7AAoJECTWi3JdVIfQfJMIAIZMYd+LY0Mk6ts6qB+ndE4D
+VCthS4iAzrD80rwQzywyz7BdoAzRbQzFqrvyMVB6IM2llEgzmtNCrbyHiL2RH5jH
+3x9ToK6hBI6OLC55hrp4KRJuDqce63Y9LBIcd3UwxTLIp5WXpQhVH5nlh0GLpErB
+5SuqnE0eBIzgwG8PjA16pNsJWNUYjufrxsM96iSzW/TtzVouXxOxAhigYd0zdJpT
+6yGqsY9Nsfj9OpbiRG/JAY7tKucg26UCSQ893X/yTVsG9a3bWZdYIy62DZpF8rGl
+P3t9675UNhJG9WtzgaogNudsYeAso0ObV+XIDE8rE+zEe6E/QNacDTktUY9gGWM=
+=8hFr
+-----END PGP SIGNATURE-----
+
+--gKMricLos+KVdGMg--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
