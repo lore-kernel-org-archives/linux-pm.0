@@ -1,41 +1,170 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH 0/8 v4] enable to use thermal-zone on r8a7790/1
-Date: Thu, 10 Dec 2015 13:57:49 +0900
-Message-ID: <20151210045745.GD6964@verge.net.au>
-References: <87vb895x9d.wl%kuninori.morimoto.gx@renesas.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v2 14/19] ARM: dts: Add bus nodes using VDD_INT for
+ Exynos4x12
+Date: Thu, 10 Dec 2015 14:57:44 +0900
+Message-ID: <56691458.9000000@samsung.com>
+References: <1449634091-1842-1-git-send-email-cw00.choi@samsung.com>
+ <1449634091-1842-15-git-send-email-cw00.choi@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from kirsty.vergenet.net ([202.4.237.240]:53665 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751404AbbLJE5w (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Dec 2015 23:57:52 -0500
-Content-Disposition: inline
-In-Reply-To: <87vb895x9d.wl%kuninori.morimoto.gx@renesas.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1449634091-1842-15-git-send-email-cw00.choi@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>, myungjoo.ham@samsung.com, kgene@kernel.org
+Cc: kyungmin.park@samsung.com, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, tjakobi@math.uni-bielefeld.de, linux.amoon@gmail.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Magnus <magnus.damm@gmail.com>, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-On Tue, Dec 08, 2015 at 05:26:20AM +0000, Kuninori Morimoto wrote:
+On 09.12.2015 13:08, Chanwoo Choi wrote:
+> This patch adds the bus noes using VDD_INT for Exynos4x12 SoC.
+> Exynos4x12 has the following AXI buses to translate data between
+> DRAM and sub-blocks.
 > 
-> Hi
+> Following list specifies the detailed relation between DRAM and sub-blocks:
+> - ACLK100 clock for PERIL/PERIR/MFC(PCLK)
+> - ACLK160 clock for CAM/TV/LCD
+> : The minimum clock of ACLK160 should be over 160MHz.
+>   When drop the clock under 160MHz, show the broken image.
+> - ACLK133 clock for FSYS
+> - GDL clock for LEFTBUS
+> - GDR clock for RIGHTBUS
+> - SCLK_MFC clock for MFC
 > 
-> These are v4 of thermal-zone support for r8a7790/r8a7791.
-> Mainly, it cares return value of get_temp()
+> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+> ---
+>  arch/arm/boot/dts/exynos4x12.dtsi | 112 ++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 112 insertions(+)
 > 
-> I think 8) is needed on of-thermal (?)
-> 
-> Kuninori Morimoto (8):
->       1) thermal: rcar: move rcar_thermal_dt_ids to upside
->       2) thermal: rcar: check every rcar_thermal_update_temp() return value
->       3) thermal: rcar: check irq possibility in rcar_thermal_irq_xxx()
->       4) thermal: rcar: retern error rcar_thermal_get_temp() if no ctemp update
->       5) thermal: rcar: enable to use thermal-zone on DT
->       6) ARM: shmobile: r8a7790: enable to use thermal-zone
->       7) ARM: shmobile: r8a7791: enable to use thermal-zone
->       8) thermal: of-thermal: of_thermal_set_trip_temp() call thermal_zone_device_update()
-> 
+> diff --git a/arch/arm/boot/dts/exynos4x12.dtsi b/arch/arm/boot/dts/exynos4x12.dtsi
+> index 3bcf0939755e..8bc4aee156b5 100644
+> --- a/arch/arm/boot/dts/exynos4x12.dtsi
+> +++ b/arch/arm/boot/dts/exynos4x12.dtsi
+> @@ -354,6 +354,118 @@
+>  			opp-microvolt = <950000>;
+>  		};
+>  	};
+> +
+> +	bus_leftbus: bus_leftbus {
+> +		compatible = "samsung,exynos-bus";
+> +		clocks = <&clock CLK_DIV_GDL>;
+> +		clock-names = "bus";
+> +		operating-points-v2 = <&bus_leftbus_opp_table>;
+> +		status = "disabled";
+> +	};
+> +
+> +	bus_rightbus: bus_rightbus {
+> +		compatible = "samsung,exynos-bus";
+> +		clocks = <&clock CLK_DIV_GDR>;
+> +		clock-names = "bus";
+> +		operating-points-v2 = <&bus_leftbus_opp_table>;
+> +		status = "disabled";
+> +	};
 
-I have marked patches 6 and 7 as deferred pending acceptance of the driver
-changes.
+These two nodes are symmetrical. The MFC below and other buses in other
+DTS share opps. How about changing the binding so multiple clocks could
+be specified at once ("bus0", "bus1")? I think there is no need for a
+bus device for each clock.
+
+Best regards,
+Krzysztof
+
+> +
+> +	bus_display: bus_display {
+> +		compatible = "samsung,exynos-bus";
+> +		clocks = <&clock CLK_ACLK160>;
+> +		clock-names = "bus";
+> +		operating-points-v2 = <&bus_display_opp_table>;
+> +		status = "disabled";
+> +	};
+> +
+> +	bus_fsys: bus_fsys {
+> +		compatible = "samsung,exynos-bus";
+> +		clocks = <&clock CLK_ACLK133>;
+> +		clock-names = "bus";
+> +		operating-points-v2 = <&bus_fsys_opp_table>;
+> +		status = "disabled";
+> +	};
+> +
+> +	bus_peri: bus_peri {
+> +		compatible = "samsung,exynos-bus";
+> +		clocks = <&clock CLK_ACLK100>;
+> +		clock-names = "bus";
+> +		operating-points-v2 = <&bus_peri_opp_table>;
+> +		status = "disabled";
+> +	};
+> +
+> +	bus_mfc: bus_mfc {
+> +		compatible = "samsung,exynos-bus";
+> +		clocks = <&clock CLK_SCLK_MFC>;
+> +		clock-names = "bus";
+> +		operating-points-v2 = <&bus_leftbus_opp_table>;
+> +		status = "disabled";
+> +	};
+> +
+> +	bus_leftbus_opp_table: opp_table3 {
+> +		compatible = "operating-points-v2";
+> +		opp-shared;
+> +
+> +		opp00 {
+> +			opp-hz = /bits/ 64 <100000000>;
+> +			opp-microvolt = <900000>;
+> +		};
+> +		opp01 {
+> +			opp-hz = /bits/ 64 <134000000>;
+> +			opp-microvolt = <925000>;
+> +		};
+> +		opp02 {
+> +			opp-hz = /bits/ 64 <160000000>;
+> +			opp-microvolt = <950000>;
+> +		};
+> +		opp03 {
+> +			opp-hz = /bits/ 64 <200000000>;
+> +			opp-microvolt = <1000000>;
+> +		};
+> +	};
+> +
+> +	bus_display_opp_table: opp_table4 {
+> +		compatible = "operating-points-v2";
+> +		opp-shared;
+> +
+> +		opp00 {
+> +			opp-hz = /bits/ 64 <160000000>;
+> +			opp-microvolt = <950000>;
+> +		};
+> +		opp01 {
+> +			opp-hz = /bits/ 64 <200000000>;
+> +			opp-microvolt = <1000000>;
+> +		};
+> +	};
+> +
+> +	bus_fsys_opp_table: opp_table5 {
+> +		compatible = "operating-points-v2";
+> +		opp-shared;
+> +
+> +		opp00 {
+> +			opp-hz = /bits/ 64 <100000000>;
+> +			opp-microvolt = <900000>;
+> +		};
+> +		opp01 {
+> +			opp-hz = /bits/ 64 <134000000>;
+> +			opp-microvolt = <925000>;
+> +		};
+> +	};
+> +
+> +	bus_peri_opp_table: opp_table6 {
+> +		compatible = "operating-points-v2";
+> +		opp-shared;
+> +
+> +		opp00 {
+> +			opp-hz = /bits/ 64 <50000000>;
+> +			opp-microvolt = <900000>;
+> +		};
+> +		opp01 {
+> +			opp-hz = /bits/ 64 <100000000>;
+> +			opp-microvolt = <925000>;
+> +		};
+> +	};
+>  };
+>  
+>  &combiner {
+> 
