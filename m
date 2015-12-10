@@ -1,107 +1,84 @@
-From: Chanwoo Choi <cwchoi00@gmail.com>
-Subject: Re: [PATCH v2 09/19] PM / devfreq: exynos: Update documentation for
- bus devices using passive governor
-Date: Fri, 11 Dec 2015 00:10:13 +0900
-Message-ID: <CAGTfZH0T8ufrBKT3vKoivk5Vn_AUHnB+or0QRgr=D77q7puAJA@mail.gmail.com>
-References: <1449634091-1842-1-git-send-email-cw00.choi@samsung.com>
-	<1449634091-1842-10-git-send-email-cw00.choi@samsung.com>
-	<20151210142109.GA32109@rob-hp-laptop>
-Reply-To: cw00.choi@samsung.com
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v2 1/3] dt-binding: power: Add otg regulator binding
+Date: Thu, 10 Dec 2015 09:18:23 -0600
+Message-ID: <CAL_Jsq+w0ide6kkwCgQPxZ6dbL0MrSEBxe6XnjcsECP9_zRV7g@mail.gmail.com>
+References: <1449621618-11900-1-git-send-email-tim.bird@sonymobile.com>
+ <20151209041153.GA29549@rob-hp-laptop> <566824AD.4080003@sonymobile.com>
+ <CAL_JsqL0BjD6A1quSZOYmLNeRZAYo1UwSsTPPvMUbC1pSwM6CQ@mail.gmail.com>
+ <20151209195915.GJ4000@usrtlx11787.corpusers.net> <CAL_JsqKV=AucyZvFaxsSrZ5Hn718ZMKDfd8pqLHFT27RbE7VMA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <20151210142109.GA32109@rob-hp-laptop>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, tjakobi@math.uni-bielefeld.de, linux.amoon@gmail.com, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <CAL_JsqKV=AucyZvFaxsSrZ5Hn718ZMKDfd8pqLHFT27RbE7VMA@mail.gmail.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Bjorn Andersson <bjorn.andersson@sonymobile.com>
+Cc: "Bird, Tim" <Tim.Bird@sonymobile.com>, "pawel.moll@arm.com" <pawel.moll@arm.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "sre@kernel.org" <sre@kernel.org>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "agross@codeaurora.org" <agross@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "tbird20d@gmail.com" <tbird20d@gmail.com>, "Cavin, Courtney" <Courtney.Cavin@sonymobile.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Dec 10, 2015 at 11:21 PM, Rob Herring <robh@kernel.org> wrote:
-> On Wed, Dec 09, 2015 at 01:08:01PM +0900, Chanwoo Choi wrote:
->> This patch updates the documentation for passive bus devices and adds the
->> detailed example of Exynos3250.
+On Wed, Dec 9, 2015 at 3:08 PM, Rob Herring <robh@kernel.org> wrote:
+> On Wed, Dec 9, 2015 at 1:59 PM, Bjorn Andersson
+> <bjorn.andersson@sonymobile.com> wrote:
+>> On Wed 09 Dec 06:36 PST 2015, Rob Herring wrote:
 >>
->> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->> ---
->>  .../devicetree/bindings/devfreq/exynos-bus.txt     | 244 ++++++++++++++++++++-
->>  1 file changed, 241 insertions(+), 3 deletions(-)
+>>> On Wed, Dec 9, 2015 at 6:55 AM, Tim Bird <tim.bird@sonymobile.com> wrote:
+>>> > On 12/08/2015 08:11 PM, Rob Herring wrote:
+>>> >> On Tue, Dec 08, 2015 at 04:40:16PM -0800, Tim Bird wrote:
+>>> >>> Add a binding for the regulator which controls the OTG chargepath switch.
+>>> >>> The OTG switch gets its power from pm8941_5vs1, and that should be
+>>> >>> expressed as a usb-otg-in-supply property in the DT node for the
+>>> >>> charger driver.  The regulator name is "otg".
+>>>
+>>> [...]
+>>>
+>>> >>> +child nodes:
+>>> >>> +- otg:
+>>> >>> +  Usage: optional
+>>> >>> +  Description: This node defines a regulator used to control the direction
+>>> >>> +               of VBUS voltage - specifically: whether to supply voltage
+>>> >>> +               to VBUS for host mode operation of the OTG port, or allow
+>>> >>> +               input voltage from external VBUS for charging.  In the
+>>> >>> +               hardware, the supply for this regulator comes from
+>>> >>> +               usb-otg-in-supply.
+>>> >>
+>>> >> Doesn't this regulator need to have a name defined?
+>>> >
+>>> > I'm not sure what you mean.  The regulator name is "otg", defined by the DT node
+>>> > name. The code requires that the DT node name be "otg", and defines a regulator
+>>> > with the same name.
+>>> >
+>>> > As far as I know, you have to define a DT label for the node, in order
+>>> > to reference this regulator with a phandle.  Is that what you are referring to?
+>>> > I usually use "chg_otg" as the label.  Are you asking that this be reflected
+>>> > in the example?
+>>>
+>>> You need a regulator-name property. Also, should should define valid
+>>> values for regulator-min-microvolt and regulator-max-microvolt.
+>>>
 >>
->> diff --git a/Documentation/devicetree/bindings/devfreq/exynos-bus.txt b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
->> index 54a1f9c46c88..c4fdc70f8eac 100644
->> --- a/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
->> +++ b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
->> @@ -13,18 +13,23 @@ SoC has the different sub-blocks. So, this difference should be specified
->>  in devicetree file instead of each device driver. In result, this driver
->>  is able to support the bus frequency for all Exynos SoCs.
+>> The regulator has a name, derived from the node name, and this is
+>> significant. If the developer wants an additional human readable name
+>> for some reason they can use the optional regulator-name property.
 >>
->> -Required properties for bus device:
->> +Required properties for all bus devices:
->>  - compatible: Should be "samsung,exynos-bus".
->>  - clock-names : the name of clock used by the bus, "bus".
->>  - clocks : phandles for clock specified in "clock-names" property.
->>  - #clock-cells: should be 1.
->>  - operating-points-v2: the OPP table including frequency/voltage information
->>    to support DVFS (Dynamic Voltage/Frequency Scaling) feature.
->> +
->> +Required properties for only parent bus device:
->>  - vdd-supply: the regulator to provide the buses with the voltage.
->>  - devfreq-events: the devfreq-event device to monitor the curret utilization
->>    of buses.
+>> The regulator is a simple switch and as such inherits voltage properties
+>> from its supply. It should therefor not have any specified voltage
+>> range.
 >>
->> -Optional properties for bus device:
->> +Required properties for only passive bus device:
->> +- devfreq: the parent bus device.
->> +
->> +Optional properties for only parent bus device:
->>  - exynos,saturation-ratio: the percentage value which is used to calibrate
->>                     the performance count againt total cycle count.
+>>> Thinking about this some more, the node name should be generic, so
+>>> just "regulator". The label does not need to be generic.
+>>>
 >>
->> @@ -33,7 +38,20 @@ Example1:
->>       power line (regulator). The MIF (Memory Interface) AXI bus is used to
->>       transfer data between DRAM and CPU and uses the VDD_MIF regualtor.
->>
->> -     - power line(VDD_MIF) --> bus for DMC (Dynamic Memory Controller) block
->> +     - MIF (Memory Interface) block
->> +     : VDD_MIF |--- DMC (Dynamic Memory Controller)
->> +
->> +     - INT (Internal) block
->> +     : VDD_INT |--- LEFTBUS (parent device)
->> +               |--- PERIL
->> +               |--- MFC
->> +               |--- G3D
->> +               |--- RIGHTBUS
->> +               |--- FSYS
->> +               |--- LCD0
->> +               |--- PERIR
->> +               |--- ISP
->> +               |--- CAM
+>> The name of the node is significant, as it's used for matching the
+>> regulator to an implementation.
 >
-> This still has the same problem as before. I would expect that the bus
-> hierarchy in the dts match the hierarchy here. You just have flat nodes
-> in the example below. So all IP blocks affected by frequency scaling
-> should be under the bus node defining the OPPs. Something like this:
-
-The each bus of sub-block has not h/w dependency among sub-blocks
-and has the owned source clock / OPP table. Just they share the same
-power line. So, I think that flat nodes in the example below is not problem.
-
-Because of using the same power line, the sub-blocks would be tied
-by devfreq framework only for the behavior of bus frequency scaling .
-
+> Ah yes, you are right. I forget what an oddball the regulator binding is.
 >
-> soc {
->         compatible = "simple-bus";
->         bus {
->                 compatible = "my-awesome-dvfs-bus"; /* simple-bus too if
-> no setup needed first */
->                 reg = <0x0 0x0>; // Bus control registers
->                 clocks = <&ccm BUS_CLK>;
->                 operating-points-v2 = <&opp>;
->                 device@0 {
->                         compatible = "my-awesome-device-1";
->                 };
->                 device@1 {
->                         compatible = "my-awesome-device-2";
->                 };
->         };
-> };
+> And if voltage switches don't need min and max properties, then it is
+> fine as is. Still, the empty node with no properties seems odd to me.
+
+Thinking some more about this, what bothers me is just having "otg
+{};" gives no clue as to what the node is for w/o the documentation.
+"otg" alone could mean several things. I think minimally, it needs
+either a node name that gives some indication it is a regulator or
+Vbus supply, a required regulator-name or even a comment.
+
+Rob
