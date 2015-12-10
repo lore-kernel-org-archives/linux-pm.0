@@ -1,56 +1,46 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [Intel-gfx] [PATCH v2] PM / Runtime: Introduce pm_runtime_get_noidle
-Date: Thu, 10 Dec 2015 22:42:22 +0100
-Message-ID: <1965611.CCxSd8EYaz@vostro.rjw.lan>
-References: <1449675920-12986-1-git-send-email-joonas.lahtinen@linux.intel.com> <1449740630.25404.5.camel@intel.com> <3880444.CTtrq5s3vh@vostro.rjw.lan>
+Subject: Re: [PATCH V3 2/2] PM / OPP: Parse 'opp-<prop>-<name>' bindings
+Date: Thu, 10 Dec 2015 22:45:33 +0100
+Message-ID: <4979368.7DaYzKUvM2@vostro.rjw.lan>
+References: <cover.1449627691.git.viresh.kumar@linaro.org> <e3744c43a5ad26e9e49cf938b3ecd846cc500fce.1449627691.git.viresh.kumar@linaro.org> <CAF2Aj3h6u5W+H0shc+MwPpfb8spwXBZYr1+m4w62PpiHk=50UA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:45111 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:55633 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750960AbbLJVMV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Dec 2015 16:12:21 -0500
-In-Reply-To: <3880444.CTtrq5s3vh@vostro.rjw.lan>
+	with SMTP id S1750862AbbLJVPc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Dec 2015 16:15:32 -0500
+In-Reply-To: <CAF2Aj3h6u5W+H0shc+MwPpfb8spwXBZYr1+m4w62PpiHk=50UA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: imre.deak@intel.com
-Cc: Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, linux-pm@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Nishanth Menon <nm@ti.com>, Len Brown <len.brown@intel.com>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <vireshk@kernel.org>
 
-On Thursday, December 10, 2015 10:36:37 PM Rafael J. Wysocki wrote:
-> On Thursday, December 10, 2015 11:43:50 AM Imre Deak wrote:
-> > On Thu, 2015-12-10 at 01:58 +0100, Rafael J. Wysocki wrote:
-> > > On Wednesday, December 09, 2015 06:22:19 PM Joonas Lahtinen wrote:
-> > > > Introduce pm_runtime_get_noidle to for situations where it is not
-> > > > desireable to touch an idling device. One use scenario is periodic
-> > > > hangchecks performed by the drm/i915 driver which can be omitted
-> > > > on a device in a runtime idle state.
-> > > > 
-> > > > v2:
-> > > > - Fix inconsistent return value when !CONFIG_PM.
-> > > > - Update documentation for bool return value
-> > > > 
-> > > > Signed-off-by: Joonas Lahtinen <joonas.lahtinen@linux.intel.com>
-> > > > Reported-by: Chris Wilson <chris@chris-wilson.co.uk>
-> > > > Cc: Chris Wilson <chris@chris-wilson.co.uk>
-> > > > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> > > > Cc: linux-pm@vger.kernel.org
-> > > 
-> > > Well, I don't quite see how this can be used in a non-racy way
-> > > without doing an additional pm_runtime_resume() or something like
-> > > that in the same code path.
-> > 
-> > We don't want to resume, that would be the whole point. We'd like to
-> > ensure that we hold a reference _and_ the device is already active. So
-> > AFAICS we'd need to check runtime_status == RPM_ACTIVE in addition
-> > after taking the reference.
+On Thursday, December 10, 2015 09:54:45 AM Lee Jones wrote:
+> On 9 December 2015 at 02:31, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > OPP bindings (for few properties) allow a platform to choose a
+> > value/range among a set of available options. The options are present as
+> > opp-<prop>-<name>, where the platform needs to supply the <name> string.
+> >
+> > The OPP properties which allow such an option are: opp-microvolt and
+> > opp-microamp.
+> >
+> > Add support to the OPP-core to parse these bindings, by introducing
+> > dev_pm_opp_{set|put}_prop_name() APIs.
+> >
+> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > ---
+> >  drivers/base/power/opp/core.c | 165 ++++++++++++++++++++++++++++++++++++++----
+> >  drivers/base/power/opp/opp.h  |   2 +
+> >  include/linux/pm_opp.h        |   9 +++
+> >  3 files changed, 161 insertions(+), 15 deletions(-)
 > 
-> Right, and that under the lock.
+> Tested-by: Lee Jones <lee.jones@linaro.org>
 
-Which basically means you can call pm_runtime_resume() just fine,
-because it will do nothing if the status is RPM_ACTIVE already.
+OK, so tentatively I can take these two.
 
-So really, why don't you use pm_runtime_get_sync()?
+What exectly does depend on them and how that thing is intended to be handled?
 
 Thanks,
 Rafael
