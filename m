@@ -1,89 +1,121 @@
 From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: Re: [RFC PATCH 2/8] Documentation: arm: define DT cpu capacity
- bindings
-Date: Thu, 10 Dec 2015 14:14:44 +0000
-Message-ID: <566988D4.50406@arm.com>
+Subject: Re: [RFC PATCH 3/8] arm: parse cpu capacity from DT
+Date: Thu, 10 Dec 2015 14:14:53 +0000
+Message-ID: <566988DD.9080005@arm.com>
 References: <1448288921-30307-1-git-send-email-juri.lelli@arm.com>
- <1448288921-30307-3-git-send-email-juri.lelli@arm.com>
- <20151124020631.GA15165@rob-hp-laptop> <20151124105423.GM26372@e106622-lin>
- <CAKfTPtAww=r6H2Jrgu+8jDsYohPj7HD=_sdAP2utEEH-YLVsaA@mail.gmail.com>
- <20151201112044.GV20439@e106622-lin>
+ <1448288921-30307-4-git-send-email-juri.lelli@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=WINDOWS-1252
 Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from eu-smtp-delivery-143.mimecast.com ([207.82.80.143]:40289 "EHLO
-	eu-smtp-delivery-143.mimecast.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752388AbbLJOOt convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 10 Dec 2015 09:14:49 -0500
-In-Reply-To: <20151201112044.GV20439@e106622-lin>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1448288921-30307-4-git-send-email-juri.lelli@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Juri Lelli <juri.lelli@arm.com>, linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Rob Herring <robh@kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LAK <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Mark Rutland <mark.rutland@arm.com>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Olof Johansson <olof@lixom.net>, Gregory CLEMENT <gregory.clement@free-electrons.com>, Paul Walmsley <paul@pwsan.com>, Linus Walleij <linus.wall>
 
-On 01/12/15 11:20, Juri Lelli wrote:
-> Hi Vincent,
+On 23/11/15 14:28, Juri Lelli wrote:
+> With the introduction of cpu capacity bindings, CPU capacities can now be
+> extracted from DT. Add parsing of such information at boot time. We keep
+> code that can produce same information, based on different DT properties
+> and hard-coded values, as fall-back for backward compatibility.
+
+This patch-set should define _one_ way to be able to specify
+heterogeneous cpu capacity values for all arm and arm64 systems. So I
+would really like that we can agree on this solution ('capacity'
+property) and delete the old (cortex-a[15,7] only) solution based on
+struct cpu_efficiency table_efficiency[] and 'clock-frequency' property
+in arch/arm/kernel/topology.c. The appropriate code in
+arch/arm[,64]/kernel/topology.c should be the same. Everything else is
+highly confusing.
+
 > 
-> On 30/11/15 10:59, Vincent Guittot wrote:
->> Hi Juri,
->>
->> On 24 November 2015 at 11:54, Juri Lelli <juri.lelli@arm.com> wrote:
-
-[...]
-
->>>>> +==========================================
->>>>> +3 - capacity-scale
->>>>> +==========================================
->>>>> +
->>>>> +CPUs capacities are defined with respect to capacity-scale property in the cpus
->>>>> +node [1]. The property is optional; if not defined a 1024 capacity-scale is
->>>>> +assumed. This property defines both the highest CPU capacity present in the
->>>>> +system and granularity of CPU capacity values.
->>>>
->>>> I don't really see the point of this vs. having an absolute scale.
->>>>
->>>
->>> IMHO, we need this for several reasons, one being to address one of your
->>> concerns below: vendors are free to choose their scale without being
->>> forced to publish absolute data. Another reason is that it might make
->>> life easier in certain cases; for example, someone could implement a
->>> system with a few clusters of, say, A57s, but some run at half the clock
->>> of the others (e.g., you have a 1.2GHz cluster and a 600MHz cluster); in
->>> this case I think it is just easier to define capacity-scale as 1200 and
->>> capacities as 1200 and 600. Last reason that I can think of right now is
->>> that we don't probably want to bound ourself to some particular range
->>> from the beginning, as that range might be enough now, but it could
->>> change in the future (as in, right now [1-1024] looks fine for
->>> scheduling purposes, but that might change).
->>
->> Like Rob, i don't really see the benefit of this optional
->> capacity-scale property. Parsing the capacity of all cpu nodes should
->> give you a range as well.
->> IMHO, this property looks like an optimization of the code that will
->> parse the dt more than a HW description
->>
+> Cc: Russell King <linux@arm.linux.org.uk>
+> Signed-off-by: Juri Lelli <juri.lelli@arm.com>
+> ---
+>  arch/arm/kernel/topology.c | 50 +++++++++++++++++++++++++++++++++++++++++++++-
+>  1 file changed, 49 insertions(+), 1 deletion(-)
 > 
-> I agree that we can come up with the same information just looking at
-> the biggest capacity value of all CPUs and treat that value as
-> capacity-scale. I just thought that having that explicit made things
-> clearer, as it could be not easy to immediately see from a DT with many
-> CPUs which is the biggest capacity value. But, yes, we could remove that
-> anyway.
-
-+1! This capacity-scale complicates things unnecessarily. It was hard
-for me to understand the meaning of it. Your 2. example sets
-'capacity-scale = <2>' but also 'capacity = <2>' for cpu[01] and
-'capacity = <1>' for cpu[23]. This can be easily replaced by 'capacity =
-<1024>' for cpu[01] and 'capacity = <512>' for cpu[23]. Much more
-readable, as it was mentioned already in this thread.
-
-I understand that we don't want to limit the range of capacity values in
-the dt file to [1..1024] nor enforce that the cpu w/ the highest
-capacity has to have the value of 1024 in the dt file so the scheduler
-has to scale accordingly if we want to limit capacity to its supported
-capacity range (like with EAS [1..1024]).
-
-[...]
-
+> diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
+> index ec279d1..ecbff03 100644
+> --- a/arch/arm/kernel/topology.c
+> +++ b/arch/arm/kernel/topology.c
+> @@ -78,6 +78,35 @@ static unsigned long *__cpu_capacity;
+>  #define cpu_capacity(cpu)	__cpu_capacity[cpu]
+>  
+>  static unsigned long middle_capacity = 1;
+> +static bool capacity_from_dt = true;
+> +static u32 capacity_scale = SCHED_CAPACITY_SCALE;
+> +
+> +static int __init parse_cpu_capacity(struct device_node *cpu_node, int cpu)
+> +{
+> +	int ret = 1;
+> +	u32 cpu_capacity;
+> +
+> +	ret = of_property_read_u32(cpu_node,
+> +				   "capacity",
+> +				   &cpu_capacity);
+> +	if (!ret) {
+> +		u64 capacity;
+> +
+> +		/*
+> +		 * Enforce capacity <= capacity-scale.
+> +		 */
+> +		cpu_capacity = cpu_capacity <= capacity_scale ? cpu_capacity :
+> +			capacity_scale;
+> +		capacity = (cpu_capacity << SCHED_CAPACITY_SHIFT) /
+> +			capacity_scale;
+> +
+> +		set_capacity_scale(cpu, capacity);
+> +		pr_info("CPU%d: DT cpu capacity %lu\n",
+> +			cpu, arch_scale_cpu_capacity(NULL, cpu));
+> +	}
+> +
+> +	return !ret;
+> +}
+>  
+>  /*
+>   * Iterate all CPUs' descriptor in DT and compute the efficiency
+> @@ -99,6 +128,18 @@ static void __init parse_dt_topology(void)
+>  	__cpu_capacity = kcalloc(nr_cpu_ids, sizeof(*__cpu_capacity),
+>  				 GFP_NOWAIT);
+>  
+> +	cn = of_find_node_by_path("/cpus");
+> +	if (!cn) {
+> +		pr_err("No CPU information found in DT\n");
+> +		return;
+> +	}
+> +
+> +	if (!of_property_read_u32(cn, "capacity-scale", &capacity_scale))
+> +		pr_info("DT cpus capacity-scale %u\n", capacity_scale);
+> +	else
+> +		pr_debug("DT cpus capacity-scale not found: assuming %u\n",
+> +			capacity_scale);
+> +
+>  	for_each_possible_cpu(cpu) {
+>  		const u32 *rate;
+>  		int len;
+> @@ -110,6 +151,13 @@ static void __init parse_dt_topology(void)
+>  			continue;
+>  		}
+>  
+> +		if (parse_cpu_capacity(cn, cpu)) {
+> +			of_node_put(cn);
+> +			continue;
+> +		}
+> +
+> +		capacity_from_dt = false;
+> +
+>  		for (cpu_eff = table_efficiency; cpu_eff->compatible; cpu_eff++)
+>  			if (of_device_is_compatible(cn, cpu_eff->compatible))
+>  				break;
+> @@ -160,7 +208,7 @@ static void __init parse_dt_topology(void)
+>   */
+>  static void update_cpu_capacity(unsigned int cpu)
+>  {
+> -	if (!cpu_capacity(cpu))
+> +	if (!cpu_capacity(cpu) || capacity_from_dt)
+>  		return;
+>  
+>  	set_capacity_scale(cpu, cpu_capacity(cpu) / middle_capacity);
+> 
