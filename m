@@ -1,60 +1,98 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [RFC PATCH 8/8] arm64: add sysfs cpu_capacity attribute
-Date: Thu, 10 Dec 2015 15:59:40 +0000
-Message-ID: <20151210155940.GN5727@sirena.org.uk>
-References: <1448288921-30307-1-git-send-email-juri.lelli@arm.com>
- <1448288921-30307-9-git-send-email-juri.lelli@arm.com>
- <566988E8.3010308@arm.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [RFCv6 PATCH 09/10] sched: deadline: use deadline bandwidth in scale_rt_capacity
+Date: Thu, 10 Dec 2015 17:11:27 +0100
+Message-ID: <CAKfTPtC2bcdO=KKxsF71fF8tMtAxhR8OZQpqZ0m0ce-D=nnNfQ@mail.gmail.com>
+References: <1449641971-20827-1-git-send-email-smuckle@linaro.org>
+ <1449641971-20827-10-git-send-email-smuckle@linaro.org> <CAKfTPtCV4d=1nSDcU8J4x=MF7HmuyRxKr-4XiYAxPZYPKd1okA@mail.gmail.com>
+ <56697DCB.5050800@unitn.it>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="L9+4a/fGFceRH8Zi"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:41343 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750910AbbLJP7u (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Dec 2015 10:59:50 -0500
-Content-Disposition: inline
-In-Reply-To: <566988E8.3010308@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <56697DCB.5050800@unitn.it>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Luca Abeni <luca.abeni@unitn.it>
+Cc: Steve Muckle <steve.muckle@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
-To: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: Juri Lelli <juri.lelli@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com
 
+On 10 December 2015 at 14:27, Luca Abeni <luca.abeni@unitn.it> wrote:
+> Hi Vincent,
+>
+> first of all, thanks for adding me in the discussion.
+>
+> On 12/09/2015 09:50 AM, Vincent Guittot wrote:
+>>
+>> adding Lucas
+>>
+>> On 9 December 2015 at 07:19, Steve Muckle <steve.muckle@linaro.org> wrote:
+>>>
+>>> From: Vincent Guittot <vincent.guittot@linaro.org>
+>>>
+>>> Instead of monitoring the exec time of deadline tasks to evaluate the
+>>> CPU capacity consumed by deadline scheduler class, we can directly
+>>> calculate it thanks to the sum of utilization of deadline tasks on the
+>>> CPU.  We can remove deadline tasks from rt_avg metric and directly use
+>>> the average bandwidth of deadline scheduler in scale_rt_capacity.
+>>>
+>>> Based in part on a similar patch from Luca Abeni <luca.abeni@unitn.it>.
+>
+> Just to check if my understanding of your patch is correct: what you do is
+> to track the total utilisation of the tasks that are assigned to a CPU/core,
+> independently from their state (active or inactive). The difference with my
+> patch is that I try to track the "active utilisation" (eliminating the
+> utilisation
+> of the tasks that are blocked).
+>
+> Is this understanding correct?
 
---L9+4a/fGFceRH8Zi
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+yes, i want to know the average utilization of the CPU/core by
+deadline scheduler.
 
-On Thu, Dec 10, 2015 at 02:15:04PM +0000, Dietmar Eggemann wrote:
-> On 23/11/15 14:28, Juri Lelli wrote:
+> If yes, I think your approach is safe (and easier to implement - modulo a
+> small
+> issue when a task terminates of switches to other scheduling policies; I
+> think
+> there already are some "XXX" comments in the current code). However, it
+> allows to
+> save less energy (or reclaim less CPU time). For example, if I create a
+> SCHED_DEADLINE
+> task with runtime 90ms and period 100ms it will not allow to scale the CPU
+> frequency
+> even if it never executes (because is always blocked).
 
-> > The new attribute shows up as:
+Yes, i agree. If the task behavior is not aligned with its deadline
+parameters, we will over provisioned CPU capacity to the deadline
+scheduler.
+This metric is not used to select the OPP but to provisioned some CPU
+capacity to the deadline scheduler and to inform the CFS scheduler of
+the remaining capacity.
+So the main side effect of an always blocked deadline task will be to
+decrease the rq->cpu_capacity that is then used by the CFS scheduler.
 
-> >  /sys/devices/system/cpu/cpu*/cpu_capacity
+>
+>
+> [...]
+>>>
+>>> +       /* This is the "average utilization" for this runqueue */
+>>> +       s64 avg_bw;
+>>>   };
+>
+> Small nit: why "average" utilization? I think a better name would be
+> "runqueue utilization"
+> or "local utilization", or something similar... If I understand correctly
+> (sorry if I
+> missed something), this is not an average, but the sum of the utilisations
+> of the tasks
+> on this runqueue... No?
 
-> This sysfs interface is not really needed for arm or arm64. People can
-> build the dt blob if they want to change the values. Less code to carry
-> ... Let's focus on the core functionality, which is parsing cpu capacity
-> from dt file to task scheduler for heterogeneous systems.
+I have used "average" because it doesn't reflect the active/actual
+utilization of the run-queue but the forecasted average bandwidth of
+the CPU that will be used by deadline task. I'm open to change the
+name if another one makes more sense
 
-That does make the tuning process much more cumbersome - users have to
-rebuild and reboot to tweak the numbers rather than just tweaking the
-numbers and rerunning the benchmark (which seems like something people
-would want to automate).
+Regards,
+Vincent
 
---L9+4a/fGFceRH8Zi
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJWaaFrAAoJECTWi3JdVIfQK5MH/iqYULaurRnAV257I8eatNYA
-NQfOpgs2vo3VnZ9DmloohrhNauolPsL6j3hNQyPi02tT2EFESsE74+nOfvmkBhFt
-mxYFP0mojFhf3ZtVaFWNkfJ01I8KO3XmVsVgYgLMuo4ZuacT6A+wyZ8nxoOuv04L
-ofIUTf3MJkHnanwwZPYTqnWapMtLXkV1IYUKydH1CghQkWMstSiQW/Iqqke0Y+3b
-ws358JSP8Pb+/AYkY960MaSSbFUoM6Ct61LFq8whKvT0Egt7pRcerPke+04upB26
-GFfwlFP0+WD8M6RVZjvnkh0Q5hNIA9D6NWUn5JpK8iGUrwkpLb3V7wXk9S9wgwU=
-=JV60
------END PGP SIGNATURE-----
-
---L9+4a/fGFceRH8Zi--
+>
+>
+>
+>                                 Luca
