@@ -1,101 +1,64 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v2 09/19] PM / devfreq: exynos: Update documentation for
- bus devices using passive governor
-Date: Thu, 10 Dec 2015 08:21:09 -0600
-Message-ID: <20151210142109.GA32109@rob-hp-laptop>
-References: <1449634091-1842-1-git-send-email-cw00.choi@samsung.com>
- <1449634091-1842-10-git-send-email-cw00.choi@samsung.com>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH v2 1/3] dt-binding: power: Add otg regulator binding
+Date: Thu, 10 Dec 2015 14:27:12 +0000
+Message-ID: <20151210142712.GM5727@sirena.org.uk>
+References: <1449621618-11900-1-git-send-email-tim.bird@sonymobile.com>
+ <20151209041153.GA29549@rob-hp-laptop>
+ <566824AD.4080003@sonymobile.com>
+ <CAL_JsqL0BjD6A1quSZOYmLNeRZAYo1UwSsTPPvMUbC1pSwM6CQ@mail.gmail.com>
+ <566867F1.7000906@sonymobile.com>
+ <20151209222044.GB32712@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="4mwMARuvUPcmqDvg"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:50341 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752213AbbLJOVT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 10 Dec 2015 09:21:19 -0500
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:41190 "EHLO
+	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752611AbbLJO1h (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Dec 2015 09:27:37 -0500
 Content-Disposition: inline
-In-Reply-To: <1449634091-1842-10-git-send-email-cw00.choi@samsung.com>
+In-Reply-To: <20151209222044.GB32712@earth>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: myungjoo.ham@samsung.com, k.kozlowski@samsung.com, kgene@kernel.org, kyungmin.park@samsung.com, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, tjakobi@math.uni-bielefeld.de, linux.amoon@gmail.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Tim Bird <tim.bird@sonymobile.com>, Rob Herring <robh@kernel.org>, "pawel.moll@arm.com" <pawel.moll@arm.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "agross@codeaurora.org" <agross@codeaurora.org>, =?iso-8859-1?Q?Andersson=2C_Bj=F6rn?= <Bjorn.Andersson@sonymobile.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "tbird20d@gmail.com" <tbird20d@gmail.com>, "Cavin, Courtney" <Courtney.Cavin@sonymobile.com>
 
-On Wed, Dec 09, 2015 at 01:08:01PM +0900, Chanwoo Choi wrote:
-> This patch updates the documentation for passive bus devices and adds the
-> detailed example of Exynos3250.
-> 
-> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-> ---
->  .../devicetree/bindings/devfreq/exynos-bus.txt     | 244 ++++++++++++++++++++-
->  1 file changed, 241 insertions(+), 3 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/devfreq/exynos-bus.txt b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
-> index 54a1f9c46c88..c4fdc70f8eac 100644
-> --- a/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
-> +++ b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
-> @@ -13,18 +13,23 @@ SoC has the different sub-blocks. So, this difference should be specified
->  in devicetree file instead of each device driver. In result, this driver
->  is able to support the bus frequency for all Exynos SoCs.
->  
-> -Required properties for bus device:
-> +Required properties for all bus devices:
->  - compatible: Should be "samsung,exynos-bus".
->  - clock-names : the name of clock used by the bus, "bus".
->  - clocks : phandles for clock specified in "clock-names" property.
->  - #clock-cells: should be 1.
->  - operating-points-v2: the OPP table including frequency/voltage information
->    to support DVFS (Dynamic Voltage/Frequency Scaling) feature.
-> +
-> +Required properties for only parent bus device:
->  - vdd-supply: the regulator to provide the buses with the voltage.
->  - devfreq-events: the devfreq-event device to monitor the curret utilization
->    of buses.
->  
-> -Optional properties for bus device:
-> +Required properties for only passive bus device:
-> +- devfreq: the parent bus device.
-> +
-> +Optional properties for only parent bus device:
->  - exynos,saturation-ratio: the percentage value which is used to calibrate
->                     the performance count againt total cycle count.
->  
-> @@ -33,7 +38,20 @@ Example1:
->  	power line (regulator). The MIF (Memory Interface) AXI bus is used to
->  	transfer data between DRAM and CPU and uses the VDD_MIF regualtor.
->  
-> -	- power line(VDD_MIF) --> bus for DMC (Dynamic Memory Controller) block
-> +	- MIF (Memory Interface) block
-> +	: VDD_MIF |--- DMC (Dynamic Memory Controller)
-> +
-> +	- INT (Internal) block
-> +	: VDD_INT |--- LEFTBUS (parent device)
-> +		  |--- PERIL
-> +		  |--- MFC
-> +		  |--- G3D
-> +		  |--- RIGHTBUS
-> +		  |--- FSYS
-> +		  |--- LCD0
-> +		  |--- PERIR
-> +		  |--- ISP
-> +		  |--- CAM
 
-This still has the same problem as before. I would expect that the bus 
-hierarchy in the dts match the hierarchy here. You just have flat nodes 
-in the example below. So all IP blocks affected by frequency scaling 
-should be under the bus node defining the OPPs. Something like this:
+--4mwMARuvUPcmqDvg
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-soc {
-	compatible = "simple-bus";
-	bus {
-		compatible = "my-awesome-dvfs-bus"; /* simple-bus too if 
-no setup needed first */
-		reg = <0x0 0x0>; // Bus control registers
-		clocks = <&ccm BUS_CLK>;
-		operating-points-v2 = <&opp>;
-		device@0 {
-			compatible = "my-awesome-device-1";
-		};
-		device@1 {
-			compatible = "my-awesome-device-2";
-		};
-	};
-};
+On Wed, Dec 09, 2015 at 11:20:45PM +0100, Sebastian Reichel wrote:
+> On Wed, Dec 09, 2015 at 09:42:09AM -0800, Tim Bird wrote:
+
+> > There are other switches in the charger block that are not
+> > exposed yet.  This one handles the the OTG (vbus) charge pathway.
+> > Others handle other charge pathways (some of which are used on phones
+> > and some are not - they're used, e.g., on the dragonboard).  I'd
+> > rather not give it a generic name, because eventually the driver
+> > should expose those other switches as something as well.
+
+> otg_regulator: regulator@0 { }
+> other_regulator: regulator@1 { }
+
+No, if this is a device with multiple regulators we have a standard way
+of exposing that - have a regulators subnode with a collection of named
+regulator subnodes in that.  There's support for parsing this in the
+framework.
+
+--4mwMARuvUPcmqDvg
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJWaYu/AAoJECTWi3JdVIfQcJIH/3iyiwMi/QHF0jc342SF1UI0
+1g+ug8yi76eysy7VGgmsHNnmi1xT7DnK3FhWkCTmZiZ9r4IE24/94KrUv8ksd/E7
+e/fl78RGKOmfeCtwnbKV8XAJpW8UAQNB3byMK4dUjJhGixQ5BSArsuYKPSVOE+/1
+07zO8hQ95qeIe8tYXAiY9KBvPn+xjqRuFfqESJrH6gNGkDFB+toM6e6RuSeIoBBp
+AUvE/nGcy6Sg30Kvb6pGNy2sgWhPuo+uTlrIitgIBTqZyA1P/IZ6FTjoWjai/3aA
+wU0kzoF6gc7jYpxvX8UfXnQj8cArLc25k4OWqSLqjVKeZk/A01QA6Yx/F2BEnQc=
+=VgqW
+-----END PGP SIGNATURE-----
+
+--4mwMARuvUPcmqDvg--
