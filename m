@@ -1,135 +1,130 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v2 03/19] ARM: dts: Add DMC bus node for Exynos3250
-Date: Thu, 10 Dec 2015 11:04:47 +0900
-Message-ID: <5668DDBF.2070305@samsung.com>
-References: <1449634091-1842-1-git-send-email-cw00.choi@samsung.com>
- <1449634091-1842-4-git-send-email-cw00.choi@samsung.com>
- <5668CADE.8090706@samsung.com> <5668D0B6.1030902@samsung.com>
- <5668D34B.1010602@samsung.com> <5668DCDB.8020609@samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v6 08/10] cpufreq: st: Provide runtime initialised driver
+ for ST's platforms
+Date: Thu, 10 Dec 2015 07:37:37 +0530
+Message-ID: <20151210020737.GB29459@ubuntu>
+References: <1449676697-25432-1-git-send-email-lee.jones@linaro.org>
+ <1449676697-25432-9-git-send-email-lee.jones@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <5668DCDB.8020609@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, myungjoo.ham@samsung.com, kgene@kernel.org
-Cc: kyungmin.park@samsung.com, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, tjakobi@math.uni-bielefeld.de, linux.amoon@gmail.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f48.google.com ([209.85.220.48]:33678 "EHLO
+	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751141AbbLJCHl (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Dec 2015 21:07:41 -0500
+Received: by pabur14 with SMTP id ur14so39130578pab.0
+        for <linux-pm@vger.kernel.org>; Wed, 09 Dec 2015 18:07:41 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <1449676697-25432-9-git-send-email-lee.jones@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, kernel@stlinux.com, maxime.coquelin@st.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net, devicetree@vger.kernel.org, ajitpal.singh@st.com
 
-On 10.12.2015 11:00, Chanwoo Choi wrote:
-> On 2015=EB=85=84 12=EC=9B=94 10=EC=9D=BC 10:20, Krzysztof Kozlowski w=
-rote:
->> On 10.12.2015 10:09, Chanwoo Choi wrote:
->>> On 2015=EB=85=84 12=EC=9B=94 10=EC=9D=BC 09:44, Krzysztof Kozlowski=
- wrote:
->>>> On 09.12.2015 13:07, Chanwoo Choi wrote:
->>>>> This patch adds the DMC (Dynamic Memory Controller) bus node for =
-Exynos3250 SoC.
->>>>> The DMC is an AMBA AXI-compliant slave to interface external JEDE=
-C standard
->>>>> SDRAM devices. The bus includes the OPP tables and the source clo=
-ck for DMC
->>>>> block.
->>>>>
->>>>> Following list specifies the detailed relation between the clock =
-and DMC block:
->>>>> - The source clock of DMC block : div_dmc
->>>>>
->>>>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->>>>> ---
->>>>>  arch/arm/boot/dts/exynos3250.dtsi | 34 +++++++++++++++++++++++++=
-+++++++++
->>>>>  1 file changed, 34 insertions(+)
->>>>>
->>>>> diff --git a/arch/arm/boot/dts/exynos3250.dtsi b/arch/arm/boot/dt=
-s/exynos3250.dtsi
->>>>> index 2f30d632f1cc..7214c5e42150 100644
->>>>> --- a/arch/arm/boot/dts/exynos3250.dtsi
->>>>> +++ b/arch/arm/boot/dts/exynos3250.dtsi
->>>>> @@ -687,6 +687,40 @@
->>>>>  			clock-names =3D "ppmu";
->>>>>  			status =3D "disabled";
->>>>>  		};
->>>>> +
->>>>> +		bus_dmc: bus_dmc {
->>>>> +			compatible =3D "samsung,exynos-bus";
->>>>> +			clocks =3D <&cmu_dmc CLK_DIV_DMC>;
->>>>> +			clock-names =3D "bus";
->>>>> +			operating-points-v2 =3D <&bus_dmc_opp_table>;
->>>>> +			status =3D "disabled";
->>>>> +		};
->>>>> +
->>>>> +		bus_dmc_opp_table: opp_table1 {
->>>>
->>>> This is the firsy opp_table, right? So:
->>>> s/opp_table1/opp_table0/
->>>
->>> Right. It is first opp_table in exynos3250.dtsi.
->>> But, I'm considering the OPP table of CPU freqeuncy as opp_table0.
->>> So, I have the plan that support the operation-points-v2 for Exynos=
-3250 CPU.
->>
->> Ok
->>
->>>
->>>>
->>>>> +			compatible =3D "operating-points-v2";
->>>>> +			opp-shared;
->>>>> +
->>>>> +			opp00 {
->>>>> +				opp-hz =3D /bits/ 64 <50000000>;
->>>>> +				opp-microvolt =3D <800000>;
->>>>> +			};
->>>>> +			opp01 {
->>>>> +				opp-hz =3D /bits/ 64 <100000000>;
->>>>> +				opp-microvolt =3D <800000>;
->>>>> +			};
->>>>> +			opp02 {
->>>>> +				opp-hz =3D /bits/ 64 <134000000>;
->>>>> +				opp-microvolt =3D <800000>;
->>>>
->>>> Why 134, not 133 MHz?
->>>
->>> When I used the 133000000, the source clock is changed to 100Mhz in=
-stead of 133MHz.
->>> I add following test result on exynos3250-rinato board.
->>>
->>> Case1.
->>> When I use the 134 MHz, the source clock is changed to 133MHz
->>> : exynos-bus soc:bus_dmc: old_freq(200000000) -> new_freq (13400000=
-0) (real: 133333334)
->>>
->>> Case2.
->>> When I use the 133 MHz, the source clock is changed to 100MHz
->>> : exynos-bus soc:bus_dmc: old_freq(200000000) -> new_freq (13300000=
-0) (real: 100000000)
->>
->> Now I remember that issue. You could use here directly 133333334 but
->> that also would look a little bit weird... so 134 is ok for me. Coul=
-d
->> just add a comment that desired frequency is actually "133 MHz"?
->=20
-> Do you prefer among following example?
->=20
-> Example1.
-> 	opp02 {
-> 		/* The desired frequency is 133MHz because
-> 		 * clock change has the dependency on clock driver.
-> 		 * When set rate as 134MHz, the clock driver would
-> 		 * change the 133MHz actually instead of 134MHz.
-> 		 */
-> 		opp-hz =3D /bits/ 64 <134000000>;
-> 		opp-microvolt =3D <800000>;
-> 	};
->=20
-> Example2.
-> 	opp02 {
-> 		opp-hz =3D /bits/ 64 <133333334>;
-> 		opp-microvolt =3D <800000>;
-> 	};
+On 09-12-15, 15:58, Lee Jones wrote:
+> +/*
+> + * Only match on "suitable for ALL versions" entries
+> + *
+> + * This will be used with the BIT() macro.  It sets the
+> + * top bit of a 32bit value and is equal to 0x80000000.
+> + */
+> +#define DEFAULT_VERSION		31
 
-I would prefer the second one (133333334) but I don't have strong
-feelings about it.
+Okay, I misread it in the earlier version. This looks fine.
 
-Best regards,
-Krzysztof
+> +static int sti_cpufreq_set_opp_info(void)
+> +{
+
+> +	sprintf(name, "pcode%d", pcode);
+
+I would use snprintf here, in case I haven't counted the string
+properly. That should guarantee that we don't access the anything else
+than the 'name' array.
+
+> +
+> +	ret = dev_pm_opp_set_prop_name(dev, name);
+> +	if (ret) {
+> +		dev_err(dev, "Failed to set prop name\n");
+> +		return ret;
+> +	}
+> +
+> +	version[0] = BIT(major);
+> +	version[1] = BIT(minor);
+> +	version[2] = BIT(substrate);
+> +
+> +	ret = dev_pm_opp_set_supported_hw(dev, version, VERSION_ELEMENTS);
+> +	if (ret) {
+> +		dev_err(dev, "Failed to set supported hardware\n");
+> +		return ret;
+> +	}
+> +
+> +	dev_err(dev, "pcode: %d major: %d minor: %d substrate: %d\n",
+> +		pcode, major, minor, substrate);
+> +	dev_err(dev, "version[0]: %x version[1]: %x version[2]: %x\n",
+> +		version[0], version[1], version[2]);
+
+These aren't errors.. dev_info ?
+
+> +
+> +	return 0;
+> +}
+> +
+
+> +static int sti_cpufreq_init(void)
+> +{
+> +	int ret;
+> +
+> +	ddata.cpu = get_cpu_device(0);
+> +	if (!ddata.cpu) {
+> +		dev_err(ddata.cpu, "Failed to get device for CPU0\n");
+> +		goto skip_voltage_scaling;
+> +	}
+> +
+> +	if (!of_get_property(ddata.cpu->of_node, "operating-points-v2", NULL)) {
+> +		dev_err(ddata.cpu, "OPP-v2 not supported\n");
+
+Should be:
+                dev_dbg(ddata.cpu, "OPP-v2 not supported, skip voltage scaling\n");
+
+> +		goto skip_voltage_scaling;
+> +	}
+> +
+> +	ret = sti_cpufreq_fetch_syscon_regsiters();
+> +	if (ret)
+> +		goto skip_voltage_scaling;
+> +
+> +	ret = sti_cpufreq_set_opp_info();
+> +	if (ret)
+
+Shouldn't this be !ret ? You should have jumped on success here.
+
+> +		goto register_cpufreq_dt;
+> +
+> +skip_voltage_scaling:
+> +	dev_err(ddata.cpu, "Not doing voltage scaling\n");
+
+This doesn't look nice as you are adding unnecessary jumps to just
+save on a print message. And because of the earlier suggestion you can
+do:
+
+	ret = sti_cpufreq_set_opp_info();
+	if (ret)
+                dev_err(ddata.cpu, "Skip voltage scaling\n");
+
+> +
+> +register_cpufreq_dt:
+> +	platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
+> +
+> +	return 0;
+> +}
+> +module_init(sti_cpufreq_init);
+> +
+> +MODULE_DESCRIPTION("STMicroelectronics CPUFreq/OPP driver");
+> +MODULE_AUTHOR("Ajitpal Singh <ajitpal.singh@st.com>");
+> +MODULE_AUTHOR("Lee Jones <lee.jones@linaro.org>");
+> +MODULE_LICENSE("GPL v2");
+> -- 
+> 1.9.1
+
+-- 
+viresh
