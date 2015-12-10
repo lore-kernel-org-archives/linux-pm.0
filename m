@@ -1,104 +1,41 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v2 13/19] ARM: dts: Add bus nodes using VDD_MIF for
- Exynos4x12
-Date: Thu, 10 Dec 2015 13:21:19 +0900
-Message-ID: <5668FDBF.1010304@samsung.com>
-References: <1449634091-1842-1-git-send-email-cw00.choi@samsung.com>
- <1449634091-1842-14-git-send-email-cw00.choi@samsung.com>
- <5668EEC0.80403@samsung.com>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH 0/8 v4] enable to use thermal-zone on r8a7790/1
+Date: Thu, 10 Dec 2015 13:57:49 +0900
+Message-ID: <20151210045745.GD6964@verge.net.au>
+References: <87vb895x9d.wl%kuninori.morimoto.gx@renesas.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:46145 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752586AbbLJEVV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Dec 2015 23:21:21 -0500
-In-reply-to: <5668EEC0.80403@samsung.com>
+Received: from kirsty.vergenet.net ([202.4.237.240]:53665 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751404AbbLJE5w (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 9 Dec 2015 23:57:52 -0500
+Content-Disposition: inline
+In-Reply-To: <87vb895x9d.wl%kuninori.morimoto.gx@renesas.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, myungjoo.ham@samsung.com, kgene@kernel.org
-Cc: kyungmin.park@samsung.com, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, tjakobi@math.uni-bielefeld.de, linux.amoon@gmail.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org
+To: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Magnus <magnus.damm@gmail.com>, linux-sh@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-On 2015=EB=85=84 12=EC=9B=94 10=EC=9D=BC 12:17, Krzysztof Kozlowski wro=
-te:
-> On 09.12.2015 13:08, Chanwoo Choi wrote:
->> This patch adds the bus noes using VDD_MIF for Exynos4x12 SoC.
->=20
-> s/noes/nodes/
+On Tue, Dec 08, 2015 at 05:26:20AM +0000, Kuninori Morimoto wrote:
+> 
+> Hi
+> 
+> These are v4 of thermal-zone support for r8a7790/r8a7791.
+> Mainly, it cares return value of get_temp()
+> 
+> I think 8) is needed on of-thermal (?)
+> 
+> Kuninori Morimoto (8):
+>       1) thermal: rcar: move rcar_thermal_dt_ids to upside
+>       2) thermal: rcar: check every rcar_thermal_update_temp() return value
+>       3) thermal: rcar: check irq possibility in rcar_thermal_irq_xxx()
+>       4) thermal: rcar: retern error rcar_thermal_get_temp() if no ctemp update
+>       5) thermal: rcar: enable to use thermal-zone on DT
+>       6) ARM: shmobile: r8a7790: enable to use thermal-zone
+>       7) ARM: shmobile: r8a7791: enable to use thermal-zone
+>       8) thermal: of-thermal: of_thermal_set_trip_temp() call thermal_zone_device_update()
+> 
 
-OK.
-
->=20
->> Exynos4x12 has the following AXI buses to translate data
->> between DRAM and DMC/ACP/C2C.
->>
->> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->> ---
->>  arch/arm/boot/dts/exynos4x12.dtsi | 72 ++++++++++++++++++++++++++++=
-+++++++++++
->>  1 file changed, 72 insertions(+)
->>
->> diff --git a/arch/arm/boot/dts/exynos4x12.dtsi b/arch/arm/boot/dts/e=
-xynos4x12.dtsi
->> index b77dac61ffb5..3bcf0939755e 100644
->> --- a/arch/arm/boot/dts/exynos4x12.dtsi
->> +++ b/arch/arm/boot/dts/exynos4x12.dtsi
->> @@ -282,6 +282,78 @@
->>  		clocks =3D <&clock CLK_SMMU_LITE1>, <&clock CLK_FIMC_LITE1>;
->>  		#iommu-cells =3D <0>;
->>  	};
->> +
->> +	bus_dmc: bus_dmc {
->> +		compatible =3D "samsung,exynos-bus";
->> +		clocks =3D <&clock CLK_DIV_DMC>;
->> +		clock-names =3D "bus";
->> +		operating-points-v2 =3D <&bus_dmc_opp_table>;
->> +		status =3D "disabled";
->> +	};
->> +
->> +	bus_acp: bus_acp {
->> +		compatible =3D "samsung,exynos-bus";
->> +		clocks =3D <&clock CLK_DIV_ACP>;
->> +		clock-names =3D "bus";
->> +		operating-points-v2 =3D <&bus_acp_opp_table>;
->> +		status =3D "disabled";
->> +	};
->> +
->> +	bus_c2c: bus_c2c {
->> +		compatible =3D "samsung,exynos-bus";
->> +		clocks =3D <&clock CLK_DIV_C2C>;
->> +		clock-names =3D "bus";
->> +		operating-points-v2 =3D <&bus_dmc_opp_table>;
->> +		status =3D "disabled";
->> +	};
->> +
->> +	bus_dmc_opp_table: opp_table1 {
->> +		compatible =3D "operating-points-v2";
->> +		opp-shared;
->> +
->> +		opp00 {
->> +			opp-hz =3D /bits/ 64 <100000000>;
->> +			opp-microvolt =3D <900000>;
->> +		};
->> +		opp01 {
->> +			opp-hz =3D /bits/ 64 <134000000>;
->> +			opp-microvolt =3D <900000>;
->> +		};
->> +		opp02 {
->> +			opp-hz =3D /bits/ 64 <160000000>;
->> +			opp-microvolt =3D <900000>;
->> +		};
->> +		opp03 {
->> +			opp-hz =3D /bits/ 64 <200000000>;
->> +			opp-microvolt =3D <950000>;
->=20
-> The exyno4_bus.c (from mainline) uses 267 MHz here. Why choosing 200 =
-MHz?
-
-There is no special reason.
-I'll change it (200MHz -> 267MHz).
-
-Best Regards,
-Chanwoo Choi
-
+I have marked patches 6 and 7 as deferred pending acceptance of the driver
+changes.
