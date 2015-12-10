@@ -1,51 +1,62 @@
-From: Imre Deak <imre.deak@intel.com>
-Subject: Re: [Intel-gfx] [PATCH v2] PM / Runtime: Introduce
- pm_runtime_get_noidle
-Date: Thu, 10 Dec 2015 11:43:50 +0200
-Message-ID: <1449740630.25404.5.camel@intel.com>
-References: <1449675920-12986-1-git-send-email-joonas.lahtinen@linux.intel.com>
-	 <1449678139-17782-1-git-send-email-joonas.lahtinen@linux.intel.com>
-	 <1472993.ZDhaIi32oY@vostro.rjw.lan>
-Reply-To: imre.deak@intel.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Lee Jones <lee.jones@linaro.org>
+Subject: [PICKME 0/2] cpufreq: New ST driver
+Date: Thu, 10 Dec 2015 09:42:15 +0000
+Message-ID: <1449740537-12619-1-git-send-email-lee.jones@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:45461 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752276AbbLJJn6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 10 Dec 2015 04:43:58 -0500
-In-Reply-To: <1472993.ZDhaIi32oY@vostro.rjw.lan>
+Received: from mail-wm0-f44.google.com ([74.125.82.44]:36408 "EHLO
+	mail-wm0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752315AbbLJJoX (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Dec 2015 04:44:23 -0500
+Received: by mail-wm0-f44.google.com with SMTP id w144so15808740wmw.1
+        for <linux-pm@vger.kernel.org>; Thu, 10 Dec 2015 01:44:22 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>
-Cc: Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, linux-pm@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc: kernel@stlinux.com, maxime.coquelin@st.com, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, devicetree@vger.kernel.org, ajitpal.singh@st.com, Lee Jones <lee.jones@linaro.org>
 
-On Thu, 2015-12-10 at 01:58 +0100, Rafael J. Wysocki wrote:
-> On Wednesday, December 09, 2015 06:22:19 PM Joonas Lahtinen wrote:
-> > Introduce pm_runtime_get_noidle to for situations where it is not
-> > desireable to touch an idling device. One use scenario is periodic
-> > hangchecks performed by the drm/i915 driver which can be omitted
-> > on a device in a runtime idle state.
-> >=20
-> > v2:
-> > - Fix inconsistent return value when !CONFIG_PM.
-> > - Update documentation for bool return value
-> >=20
-> > Signed-off-by: Joonas Lahtinen <joonas.lahtinen@linux.intel.com>
-> > Reported-by: Chris Wilson <chris@chris-wilson.co.uk>
-> > Cc: Chris Wilson <chris@chris-wilson.co.uk>
-> > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> > Cc: linux-pm@vger.kernel.org
->=20
-> Well, I don't quite see how this can be used in a non-racy way
-> without doing an additional pm_runtime_resume() or something like
-> that in the same code path.
+Hi Rafael,
 
-We don't want to resume, that would be the whole point. We'd like to
-ensure that we hold a reference _and_ the device is already active. So
-AFAICS we'd need to check=C2=A0runtime_status =3D=3D RPM_ACTIVE in addi=
-tion
-after taking the reference.
+Would you be kind enough to pick these 2 patches up please.
+The have the required Acks.
 
---Imre
+Kind regards,
+Lee
+
+This is a re-write of the original submission, hence why the
+change-log is omitted.  Basically almost everything has changed.
+We are now using the new OPP framework and generic bindings
+written by Viresh.
+  
+There are 'ARM' patches in the set which are not necessarily
+related to CPUFreq, but are required to get it to work. Anyone
+who is not interested in general STi DT changes can safely
+ignore these.
+  
+v5 => v6:
+ - Converted Kconfig and header comment to describe new driver
+ - Complete re-write, using new Generic OPP framework
+ - Supply description for "suitable for ALL versions" DEFINE
+ - Pedantically re-ordered the #include files
+ - Removed platform device registration in arch/arm/mach-sti
+
+v4 => v5:
+ - Converted driver away from being a platform device
+  
+v1 => v2 => v3 => v4:
+ - Moot
+
+Lee Jones (2):
+  cpufreq: st: Provide runtime initialised driver for ST's platforms
+  dt: cpufreq: st: Provide bindings for ST's CPUFreq implementation
+
+ .../devicetree/bindings/cpufreq/cpufreq-st.txt     |  91 +++++++
+ drivers/cpufreq/Kconfig.arm                        |  10 +
+ drivers/cpufreq/Makefile                           |   1 +
+ drivers/cpufreq/sti-cpufreq.c                      | 294 +++++++++++++++++++++
+ 4 files changed, 396 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-st.txt
+ create mode 100644 drivers/cpufreq/sti-cpufreq.c
+
+-- 
+1.9.1
+
