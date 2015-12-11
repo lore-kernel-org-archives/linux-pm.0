@@ -1,71 +1,39 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH linux-next 1/2] power: Add brcm,bcm6358-power-controller
- device tree binding
-Date: Thu, 10 Dec 2015 20:58:44 -0600
-Message-ID: <20151211025844.GA5251@rob-hp-laptop>
-References: <5668AB4F.7030100@simon.arlott.org.uk>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v5 3/7] ARM: dts: Exynos542x/5800: add CPU OPP properties
+Date: Fri, 11 Dec 2015 08:46:46 +0530
+Message-ID: <20151211031646.GL3612@ubuntu>
+References: <1449766729-435-1-git-send-email-b.zolnierkie@samsung.com>
+ <1449766729-435-4-git-send-email-b.zolnierkie@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:39545 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753872AbbLKC6t (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 10 Dec 2015 21:58:49 -0500
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <5668AB4F.7030100@simon.arlott.org.uk>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1449766729-435-4-git-send-email-b.zolnierkie@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Mike Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Ben Gamari <ben@smart-cactus.org>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Doug Anderson <dianders@chromium.org>, Andreas Faerber <afaerber@suse.de>
 List-Id: linux-pm@vger.kernel.org
-To: Simon Arlott <simon@fire.lp0.eu>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Kevin Cernekee <cernekee@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jonas Gorski <jogo@openwrt.org>, linux-pm@vger.kernel.org, Mark Brown <broonie@kernel.org>, MIPS Mailing List <linux-mips@linux-mips.org>, bcm-kernel-feedback-list <bcm-kernel-feedback-list@broadcom.com>
 
-On Wed, Dec 09, 2015 at 10:29:35PM +0000, Simon Arlott wrote:
-> The BCM6358 contains power domains controlled with a register. Power
-> domains are indexed by bits in the register. Power domain bits can be
-> interleaved with other status bits and clocks in the same register.
-> 
-> Newer SoCs with dedicated power domain registers are active low.
-> 
-> Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
-> ---
->  .../power/brcm,bcm6358-power-controller.txt        | 53 ++++++++++++++++++++++
->  1 file changed, 53 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/brcm,bcm6358-power-controller.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/power/brcm,bcm6358-power-controller.txt b/Documentation/devicetree/bindings/power/brcm,bcm6358-power-controller.txt
-> new file mode 100644
-> index 0000000..556c323
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/brcm,bcm6358-power-controller.txt
-> @@ -0,0 +1,53 @@
-> +Broadcom BCM6358 Power domain controller
-> +
-> +This binding uses the power domain bindings:
-> +        Documentation/devicetree/bindings/power/power_domain.txt
-> +
-> +The BCM6358 contains power domains controlled with a register. Power
-> +domains are indexed by bits in the register. Power domain bits can be
-> +interleaved with other status bits and clocks in the same register.
-> +
-> +Newer SoCs with dedicated power domain registers are active low.
-> +
-> +Required properties:
-> +- compatible:           Should be "brcm,bcm<soc>-power-controller", "brcm,bcm6358-power-controller"
-> +- #power-domain-cells:  Should be <1>.
-> +- regmap:               The register map phandle
-> +- offset:               Offset in the register map for the power domain register (in bytes)
-> +- power-domain-indices: The bits in the register used for power domains.
+On 10-12-15, 17:58, Bartlomiej Zolnierkiewicz wrote:
+> diff --git a/arch/arm/boot/dts/exynos5422-cpus.dtsi b/arch/arm/boot/dts/exynos5422-cpus.dtsi
+> index b7f60c8..9a5131d 100644
+> --- a/arch/arm/boot/dts/exynos5422-cpus.dtsi
+> +++ b/arch/arm/boot/dts/exynos5422-cpus.dtsi
+> @@ -20,8 +20,10 @@
+>  	device_type = "cpu";
+>  	compatible = "arm,cortex-a7";
+>  	reg = <0x100>;
+> +	clocks = <&clock CLK_KFC_CLK>;
+>  	clock-frequency = <1000000000>;
+>  	cci-control-port = <&cci_control0>;
+> +	operating-points-v2 = <&cpu1_opp_table>;
+>  };
 
-You should drop this and make the cell values be the register offsets.
+Why do you need to update this file? This file is included by
+exynos5422-odroidxu3-common.dtsi, which already inherits cpus nodes
+from exynos5800.dtsi (which inherits exynos5420.dtsi).
 
-> +- power-domain-names:   Should be a list of strings of power domain names
-> +                        indexed by the power domain indices.
+i.e. operating-points-v2 should already be set.
 
-This isn't really needed anyway.
-
-> +
-> +Optional properties:
-> +- active-low:           Specify that the bits are active low.
-
-This should be implied by the compatible property.
-
-Rob
+-- 
+viresh
