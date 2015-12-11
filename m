@@ -1,194 +1,129 @@
-From: Stefan Wahren <info-saaNCTdWVBT7BZbvpMY5sg@public.gmane.org>
-Subject: Re: [PATCH v2 3/5] ARM: bcm2835: add rpi power domain driver
-Date: Fri, 11 Dec 2015 19:13:30 +0100
-Message-ID: <566B124A.4010401@lategoodbye.de>
-References: <1449251148-19344-1-git-send-email-eric@anholt.net>
- <1449251148-19344-4-git-send-email-eric@anholt.net>
+From: Simon Arlott <simon@fire.lp0.eu>
+Subject: Re: [PATCH linux-next 1/2] power: Add brcm,bcm6358-power-controller
+ device tree binding
+Date: Fri, 11 Dec 2015 20:36:19 +0000
+Message-ID: <566B33C3.3060809@simon.arlott.org.uk>
+References: <5668AB4F.7030100@simon.arlott.org.uk>
+ <20151211025844.GA5251@rob-hp-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1449251148-19344-4-git-send-email-eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from proxima.lp0.eu ([81.2.80.65]:57272 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751039AbbLKUgm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 11 Dec 2015 15:36:42 -0500
+In-Reply-To: <20151211025844.GA5251@rob-hp-laptop>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Kevin Cernekee <cernekee@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jonas Gorski <jogo@openwrt.org>, linux-pm@vger.kernel.org, Mark Brown <broonie@kernel.org>, MIPS Mailing List <linux-mips@linux-mips.org>, bcm-kernel-feedback-list <bcm-kernel-feedback-list@broadcom.com>
 
-Hi Eric,
+On 11/12/15 02:58, Rob Herring wrote:
+> On Wed, Dec 09, 2015 at 10:29:35PM +0000, Simon Arlott wrote:
+>> The BCM6358 contains power domains controlled with a register. Power
+>> domains are indexed by bits in the register. Power domain bits can be
+>> interleaved with other status bits and clocks in the same register.
+>> 
+>> Newer SoCs with dedicated power domain registers are active low.
+>> 
+>> Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
+>> ---
+>>  .../power/brcm,bcm6358-power-controller.txt        | 53 ++++++++++++++++++++++
+>>  1 file changed, 53 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/power/brcm,bcm6358-power-controller.txt
+>> 
+>> diff --git a/Documentation/devicetree/bindings/power/brcm,bcm6358-power-controller.txt b/Documentation/devicetree/bindings/power/brcm,bcm6358-power-controller.txt
+>> new file mode 100644
+>> index 0000000..556c323
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/power/brcm,bcm6358-power-controller.txt
+>> @@ -0,0 +1,53 @@
+>> +Broadcom BCM6358 Power domain controller
+>> +
+>> +This binding uses the power domain bindings:
+>> +        Documentation/devicetree/bindings/power/power_domain.txt
+>> +
+>> +The BCM6358 contains power domains controlled with a register. Power
+>> +domains are indexed by bits in the register. Power domain bits can be
+>> +interleaved with other status bits and clocks in the same register.
+>> +
+>> +Newer SoCs with dedicated power domain registers are active low.
+>> +
+>> +Required properties:
+>> +- compatible:           Should be "brcm,bcm<soc>-power-controller", "brcm,bcm6358-power-controller"
+>> +- #power-domain-cells:  Should be <1>.
+>> +- regmap:               The register map phandle
+>> +- offset:               Offset in the register map for the power domain register (in bytes)
+>> +- power-domain-indices: The bits in the register used for power domains.
+> 
+> You should drop this and make the cell values be the register offsets.
 
-Am 04.12.2015 um 18:45 schrieb Eric Anholt:
-> From: Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
->
-> This patch adds support for several power domains on Raspberry Pi,
-> including USB (so it can be enabled even if the bootloader didn't do
-> it), and graphics.
->
-> This patch is the combined work of Eric Anholt (who wrote USB support
-> inside of the Raspberry Pi firmware driver, and wrote the non-USB
-> domain support) and Alexander Aring (who separated the original USB
-> work out from the firmware driver).
->
-> Signed-off-by: Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-> Signed-off-by: Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>
-> ---
->
-> v2: Add support for power domains other than USB, using the new
->      firmware interface, reword commit message (changes by Eric)
->
->   arch/arm/mach-bcm/Kconfig                   |  10 ++
->   arch/arm/mach-bcm/Makefile                  |   1 +
->   arch/arm/mach-bcm/raspberrypi-power.c       | 269 ++++++++++++++++++++++++++++
->   include/dt-bindings/arm/raspberrypi-power.h |  41 +++++
->   4 files changed, 321 insertions(+)
->   create mode 100644 arch/arm/mach-bcm/raspberrypi-power.c
->   create mode 100644 include/dt-bindings/arm/raspberrypi-power.h
->
-> diff --git a/arch/arm/mach-bcm/Kconfig b/arch/arm/mach-bcm/Kconfig
-> index 8c53c55..0f23bad 100644
-> --- a/arch/arm/mach-bcm/Kconfig
-> +++ b/arch/arm/mach-bcm/Kconfig
-> @@ -134,6 +134,16 @@ config ARCH_BCM2835
->   	  This enables support for the Broadcom BCM2835 SoC. This SoC is
->   	  used in the Raspberry Pi and Roku 2 devices.
->
-> +config RASPBERRYPI_POWER
-> +	bool "Raspberry Pi power domain driver"
-> +	depends on ARCH_BCM2835 || COMPILE_TEST
-> +	depends on RASPBERRYPI_FIRMWARE
-> +	select PM_GENERIC_DOMAINS if PM
-> +	select PM_GENERIC_DOMAINS_OF if PM
-> +	help
-> +	  This enables support for the RPi power domains which can be enabled
-> +	  or disabled via the RPi firmware.
-> +
->   config ARCH_BCM_63XX
->   	bool "Broadcom BCM63xx DSL SoC" if ARCH_MULTI_V7
->   	depends on MMU
-> diff --git a/arch/arm/mach-bcm/Makefile b/arch/arm/mach-bcm/Makefile
-> index 892261f..fec2d6b 100644
-> --- a/arch/arm/mach-bcm/Makefile
-> +++ b/arch/arm/mach-bcm/Makefile
-> @@ -36,6 +36,7 @@ endif
->
->   # BCM2835
->   obj-$(CONFIG_ARCH_BCM2835)	+= board_bcm2835.o
-> +obj-$(CONFIG_RASPBERRYPI_POWER)	+= raspberrypi-power.o
->
->   # BCM5301X
->   obj-$(CONFIG_ARCH_BCM_5301X)	+= bcm_5301x.o
-> diff --git a/arch/arm/mach-bcm/raspberrypi-power.c b/arch/arm/mach-bcm/raspberrypi-power.c
-> new file mode 100644
-> index 0000000..3444301
-> --- /dev/null
-> +++ b/arch/arm/mach-bcm/raspberrypi-power.c
-> @@ -0,0 +1,269 @@
-> +/*
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + * Authors:
-> + * (C) 2015 Pengutronix, Alexander Aring <aar-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
-> + * Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>
+I need to register every power domain in order to get the kernel to turn
+off those that are unused. Even if I could enumerate all device tree
+devices that reference the power-controller node, not all of them have
+bindings to allow them to be specified in the device tree file.
 
-shouldn't be the copyright before license?
+I can't register all 32 bits because that won't work on the BCM6358 that
+only has 1 power domain bit in the register and several clock bits. On
+the BCM63268 there are power domain bits that have no device that I
+don't want the kernel to disable (like the memory controller).
 
-> + */
-> + [...]
-> +
-> +static int rpi_power_probe(struct platform_device *pdev)
-> +{
-> +	struct device_node *fw_np;
-> +	struct device *dev = &pdev->dev;
-> +	struct rpi_power_domains *rpi_domains;
-> +	int ret, i;
-> +
-> +	rpi_domains = devm_kzalloc(dev, sizeof(*rpi_domains), GFP_KERNEL);
-> +	if (!rpi_domains)
-> +		return -ENOMEM;
-> +
-> +	rpi_domains->xlate.domains =
-> +		devm_kzalloc(dev, sizeof(*rpi_domains->xlate.domains) *
-> +			     RPI_POWER_DOMAIN_COUNT, GFP_KERNEL);
-> +	if (!rpi_domains->xlate.domains)
-> +		return -ENOMEM;
-> +
-> +	rpi_domains->xlate.num_domains = RPI_POWER_DOMAIN_COUNT;
-> +
-> +	fw_np = of_parse_phandle(pdev->dev.of_node, "firmware", 0);
-> +	if (!fw_np) {
-> +		dev_err(&pdev->dev, "no firmware node\n");
-> +		return -ENODEV;
-> +	}
-> +
-> +	rpi_domains->fw = rpi_firmware_get(fw_np);
-> +	of_node_put(fw_np);
-> +	if (!rpi_domains->fw)
-> +		return -EPROBE_DEFER;
-> +
-> +	rpi_domains->has_new_interface =
-> +		rpi_has_new_domain_support(rpi_domains);
-> +
-> +	rpi_init_power_domain(rpi_domains, RPI_POWER_DOMAIN_I2C0, "I2C0");
-> +	rpi_init_power_domain(rpi_domains, RPI_POWER_DOMAIN_I2C1, "I2C1");
-> +	rpi_init_power_domain(rpi_domains, RPI_POWER_DOMAIN_I2C2, "I2C2");
-> +	rpi_init_power_domain(rpi_domains, RPI_POWER_DOMAIN_VIDEO_SCALER,
-> +			      "VIDEO_SCALER");
-> +	rpi_init_power_domain(rpi_domains, RPI_POWER_DOMAIN_VPU1, "VPU1");
-> +	rpi_init_power_domain(rpi_domains, RPI_POWER_DOMAIN_HDMI, "HDMI");
-> +
-> +	/*
-> +	 * Use the old firmware interface for USB power, so that we
-> +	 * can turn it on even if the firmware hasn't been updated.
-> +	 */
-> +	rpi_init_old_power_domain(rpi_domains, RPI_POWER_DOMAIN_USB,
-> +				  RPI_OLD_POWER_DOMAIN_USB, "USB");
-> +
-> +	rpi_init_power_domain(rpi_domains, RPI_POWER_DOMAIN_VEC, "VEC");
-> +	rpi_init_power_domain(rpi_domains, RPI_POWER_DOMAIN_JPEG, "JPEG");
-> +	rpi_init_power_domain(rpi_domains, RPI_POWER_DOMAIN_H264, "H264");
-> +	rpi_init_power_domain(rpi_domains, RPI_POWER_DOMAIN_V3D, "V3D");
+How should I determine which bits to register a power domain for?
 
-After this line i would expect the following:
+	misc_iddq_ctrl: power-controller@1000184c {
+		compatible = "brcm,bcm6358-power-controller";
+		regmap = <&misc>;
+		offset = <0x4c>;
 
-rpi_init_power_domain(rpi_domains, RPI_POWER_DOMAIN_ISP, "ISP");
+		mask = <0x1043fff>;
 
-> +	rpi_init_power_domain(rpi_domains, RPI_POWER_DOMAIN_UNICAM0, "UNICAM0");
-> +	rpi_init_power_domain(rpi_domains, RPI_POWER_DOMAIN_UNICAM1, "UNICAM1");
-> +	rpi_init_power_domain(rpi_domains, RPI_POWER_DOMAIN_CCP2RX, "CCP2RX");
-> +	rpi_init_power_domain(rpi_domains, RPI_POWER_DOMAIN_CSI2, "CSI2");
-> +	rpi_init_power_domain(rpi_domains, RPI_POWER_DOMAIN_CPI, "CPI");
-> +	rpi_init_power_domain(rpi_domains, RPI_POWER_DOMAIN_DSI0, "DSI0");
-> +	rpi_init_power_domain(rpi_domains, RPI_POWER_DOMAIN_DSI1, "DSI1");
-> +	rpi_init_power_domain(rpi_domains, RPI_POWER_DOMAIN_TRANSPOSER,
-> +			      "TRANPOSER");
+		#power-domain-cells = <1>;
+	};
 
-s/TRANPOSER/TRANSPOSER ?
+or
 
-> +	rpi_init_power_domain(rpi_domains, RPI_POWER_DOMAIN_CCP2TX, "CCP2TX");
-> +	rpi_init_power_domain(rpi_domains, RPI_POWER_DOMAIN_CDP, "CDP");
-> +	rpi_init_power_domain(rpi_domains, RPI_POWER_DOMAIN_ARM, "ARM");
-> +
-> +	ret = of_genpd_add_provider_onecell(dev->of_node, &rpi_domains->xlate);
-> +	if (ret < 0)
-> +		goto exit_pm;
-> +
-> +	platform_set_drvdata(pdev, rpi_domains);
-> +
-> +	return 0;
-> +
-> +exit_pm:
-> +	for (i = 0; i < rpi_domains->xlate.num_domains; i++)
-> +		pm_genpd_exit(rpi_domains->xlate.domains[i]);
-> +
-> +	return ret;
-> +}
-> +
+	misc_iddq_ctrl: power-controller@1000184c {
+		compatible = "brcm,bcm6358-power-controller";
+		regmap = <&misc>;
+		offset = <0x4c>;
 
-Best regards
-Stefan
+		#address-cells = <1>;
+		#size-cells = <0>;
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+		sar: power-controller@0 {
+			reg = <0>;
+			#power-domain-cells = <0>;
+		};
+
+		ipsec: power-controller@1 {
+			reg = <1>;
+			#power-domain-cells = <0>;
+		};
+
+		...
+	};
+
+or something else?
+
+>> +- power-domain-names:   Should be a list of strings of power domain names
+>> +                        indexed by the power domain indices.
+> 
+> This isn't really needed anyway.
+
+If I remove this then I'll have to use the same node name for each
+struct generic_pm_domain "name" field that I register, although these
+names don't appear to be exported anywhere.
+
+>> +
+>> +Optional properties:
+>> +- active-low:           Specify that the bits are active low.
+> 
+> This should be implied by the compatible property.
+
+Ok, I'll create "brcm,bcm6358-power-controller" that's active high and
+"brcm,bcm6328-power-controller" that's active low. This appear to be
+the earliest chips that introduced or changed "iddq" register bits.
+
+-- 
+Simon Arlott
