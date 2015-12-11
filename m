@@ -1,227 +1,117 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH RFC 06/27] PM / Domains: add debugfs 'states' and
- 'timings' seq files
-Date: Fri, 11 Dec 2015 12:46:45 +0100
-Message-ID: <CAPDyKFrOPKc-WDsHNpndkoZa5g6tnnbE2C5JsqZ6DMCX+6hmFw@mail.gmail.com>
+Subject: Re: [PATCH RFC 07/27] PM / Domains: Read domain residency from DT
+Date: Fri, 11 Dec 2015 12:54:17 +0100
+Message-ID: <CAPDyKFqwmvxvAAkreryrHhMfvs-9sxanOoz+D7kNeKgRorwRJQ@mail.gmail.com>
 References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
-	<1447799871-56374-7-git-send-email-lina.iyer@linaro.org>
+	<1447799871-56374-8-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1447799871-56374-7-git-send-email-lina.iyer@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>, Marc Titinger <mtitinger@baylibre.com>
-Cc: Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Axel Haslam <ahaslam@baylibre.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qk0-f175.google.com ([209.85.220.175]:33525 "EHLO
+	mail-qk0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754370AbbLKLyS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Dec 2015 06:54:18 -0500
+Received: by qkdb5 with SMTP id b5so34445808qkd.0
+        for <linux-pm@vger.kernel.org>; Fri, 11 Dec 2015 03:54:17 -0800 (PST)
+In-Reply-To: <1447799871-56374-8-git-send-email-lina.iyer@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Axel Haslam <ahaslam@baylibre.com>, Marc Titinger <mtitinger@baylibre.com>
 
 On 17 November 2015 at 23:37, Lina Iyer <lina.iyer@linaro.org> wrote:
-> From: Marc Titinger <mtitinger@baylibre.com>
+> Domains that have expensive suspend resume operations, may require a
+> certain amount of time be spent in an idle state to reap the power
+> saving benefit. Such domains, may provide the residency requirement for
+> a domain state.
 >
-> This purpose of these debug seq-files is to help investigate
-> generic power domain state transitions, based on device constraints.
-> requires the "multiple states" patches from Axel Haslam.
-
-This last sentence doesn't belong in the change-log, please remove it.
-
+> Read the residency for a domain state from the DT. A domain governor may
+> use this information in determining the state for the domain.
 >
-> also rename 'summary' from 'pm_genpd_summary'
->
-> sample output for 'states'
-> ==========================
->
->   Domain             State name        Eval = 2200nter + Exit = Min_off_on (ns)
-> -----------------------------------------------------------------------
-> a53_pd               cluster-sleep-0      1500000+800000=2300000
-> a57_pd               d1-retention         1000000+800000=1800000
-> a57_pd               cluster-sleep-0      1500000+800000=2300000
->
-> sample output for 'timings'
-> ===========================
->
->     Domain Devices, Timings in ns
->                        Stop/Start Save/Restore, Effective
-> ----------------------------------------------------  ---
-> a53_pd
->     /cpus/cpu@100        1060  /660    1580  /1940  ,0 (cached stop)
->     /cpus/cpu@101        1060  /740    1520  /1600  ,0 (cached stop)
->     /cpus/cpu@102        880   /620    1380  /1780  ,0 (cached stop)
->     /cpus/cpu@103        1080  /640    1340  /1600  ,0 (cached stop)
-> a57_pd
->     /cpus/cpu@0          1160  /740    3280  /1800  ,0 (cached stop)
->     /cpus/cpu@1          780   /1400   1440  /2080  ,0 (cached stop)
->     /D1                  600   /540    7140  /6420  ,2199460 (cached stop)
->
-> Signed-off-by: Marc Titinger <mtitinger@baylibre.com>
-
-A general comment. Static functions in genpd shall start with one of
-the following prefix.
-
-genpd_*
-_genpd_*
-__genpd_*
-
-Please change accordingly.
-
+> Cc: Axel Haslam <ahaslam@baylibre.com>
+> Cc: Marc Titinger <mtitinger@baylibre.com>
+> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 > ---
->  drivers/base/power/domain.c | 115 +++++++++++++++++++++++++++++++++++++++++---
->  1 file changed, 107 insertions(+), 8 deletions(-)
+>  Documentation/devicetree/bindings/power/power_domain.txt | 7 +++++++
+
+Please split DT documentation into a separate patch preceding $subject
+patch. Don't forget to send it to the DT maintainers as well.
+
+>  drivers/base/power/domain.c                              | 6 ++++++
+>  include/linux/pm_domain.h                                | 1 +
+>  3 files changed, 14 insertions(+)
 >
+> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+> index ecfaf44..d71da29 100644
+> --- a/Documentation/devicetree/bindings/power/power_domain.txt
+> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
+> @@ -67,6 +67,13 @@ have the following properties -
+>                 If omitted, this is assumed to be equal to:
+>                         entry-latency-us + exit-latency-us
+>
+> +       - residency-us:
+> +               Usage: Optional
+> +               Value type: <prop-encoded-array>
+> +               Definition: A u32 value representing the time for which a
+> +               domain must be idle in the state to reap power saving benefits
+> +               of entering the state.
+> +
+>         - state-param:
+>                 Usage: Optional
+>                 Value type: <prop-encoded-array>
 > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index c300293..9a0df09 100644
+> index 9a0df09..abc81bd 100644
 > --- a/drivers/base/power/domain.c
 > +++ b/drivers/base/power/domain.c
-> @@ -2169,21 +2169,120 @@ static const struct file_operations pm_genpd_summary_fops = {
->         .release = single_release,
+> @@ -1245,6 +1245,7 @@ static int genpd_alloc_states_data(struct generic_pm_domain *genpd,
+>                         st[i].power_on_latency_ns;
+>                 genpd->states[i].power_off_latency_ns =
+>                         st[i].power_off_latency_ns;
+> +               genpd->states[i].residency_ns = st[i].residency_ns;
+>                 genpd->states[i].param = st[i].param;
+>         }
+>
+> @@ -1513,6 +1514,7 @@ static int of_get_genpd_power_state(struct genpd_power_state *genpd_state,
+>         const struct of_device_id *match_id;
+>         int err = 0;
+>         u32 latency;
+> +       u32 residency;
+>         u32 param;
+>
+>         match_id = of_match_node(power_state_match, state_node);
+> @@ -1554,6 +1556,10 @@ static int of_get_genpd_power_state(struct genpd_power_state *genpd_state,
+>                 return -EINVAL;
+>         }
+>
+> +       err = of_property_read_u32(state_node, "residency-us", &residency);
+> +       if (!err)
+> +               genpd_state->residency_ns = 1000 * residency;
+> +
+>         err = of_property_read_u32(state_node, "state-param", &param);
+>         if (!err)
+>                 genpd_state->param = param;
+> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+> index 108a4b3..fed024a 100644
+> --- a/include/linux/pm_domain.h
+> +++ b/include/linux/pm_domain.h
+> @@ -41,6 +41,7 @@ struct genpd_power_state {
+>         char *name;
+>         s64 power_off_latency_ns;
+>         s64 power_on_latency_ns;
+> +       s64 residency_ns;
+>         u32 param;
 >  };
 >
-> +static int pm_genpd_states_show(struct seq_file *s, void *data)
-> +{
-> +       struct generic_pm_domain *genpd;
-> +
-> +       seq_puts(s,
-> +                "\n  Domain             State name        Enter + Exit = Min_off_on (ns)\n");
-> +       seq_puts(s,
-> +                "-----------------------------------------------------------------------\n");
-> +
-
-You must hold the gpd_list_lock while traversing the gpd list.
-
-> +       list_for_each_entry(genpd, &gpd_list, gpd_list_node) {
-> +
-> +               int i;
-> +
-> +               for (i = 0; i < genpd->state_count; i++) {
-
-To be sure you have valid data, you should hold the genpd lock here.
-
-> +                       seq_printf(s, "%-20s %-20s %lld+%lld=%lld\n",
-> +                                  genpd->name,
-> +                                  genpd->states[i].name,
-> +                                  genpd->states[i].power_on_latency_ns,
-> +                                  genpd->states[i].power_off_latency_ns,
-> +                                  genpd->states[i].power_off_latency_ns
-> +                                  + genpd->states[i].power_on_latency_ns);
-> +               }
-> +
-> +       }
-> +
-> +       seq_puts(s, "\n");
-> +
-> +       return 0;
-> +}
-> +
-> +static int pm_genpd_states_open(struct inode *inode, struct file *file)
-> +{
-> +       return single_open(file, pm_genpd_states_show, NULL);
-> +}
-> +
-> +static const struct file_operations pm_genpd_states_fops = {
-> +       .open = pm_genpd_states_open,
-> +       .read = seq_read,
-> +       .llseek = seq_lseek,
-> +       .release = single_release,
-> +};
-> +
-> +static int pm_genpd_timing_show(struct seq_file *s, void *data)
-> +{
-> +       struct generic_pm_domain *genpd;
-> +
-> +       seq_puts(s, "\n    Domain Devices, Timings in ns\n");
-> +       seq_puts(s,
-> +                "                       Stop/Start Save/Restore, Effective\n");
-> +       seq_puts(s,
-> +                "----------------------------------------------------  ---\n");
-> +
-
-You must hold the gpd_list_lock while traversing the gpd list.
-
-
-> +       list_for_each_entry(genpd, &gpd_list, gpd_list_node) {
-> +               struct pm_domain_data *pm_data;
-> +
-> +               seq_printf(s, "%-30s", genpd->name);
-> +
-
-You must hold the genpd lock while traversing the device list.
-
-> +               list_for_each_entry(pm_data, &genpd->dev_list, list_node) {
-> +                       struct gpd_timing_data *td = &to_gpd_data(pm_data)->td;
-> +
-> +                       if (!pm_data->dev->of_node)
-> +                               continue;
-> +
-> +                       seq_printf(s,
-> +                                  "\n    %-20s %-6lld/%-6lld %-6lld/%-6lld,%lld %s%s",
-> +                                  pm_data->dev->of_node->full_name,
-> +                                  td->stop_latency_ns, td->start_latency_ns,
-> +                                  td->save_state_latency_ns,
-> +                                  td->restore_state_latency_ns,
-
-This needs a re-base as these values have been merged.
-
-> +                                  td->effective_constraint_ns,
-> +                                  td->cached_stop_ok ? "(cached stop) " : "",
-> +                                  td->constraint_changed ? "(changed)" : "");
-> +               }
-> +               seq_puts(s, "\n");
-> +       }
-> +       return 0;
-> +}
-> +
-> +static int pm_genpd_timing_open(struct inode *inode, struct file *file)
-> +{
-> +       return single_open(file, pm_genpd_timing_show, NULL);
-> +}
-> +
-> +static const struct file_operations pm_genpd_timing_fops = {
-> +       .open = pm_genpd_timing_open,
-> +       .read = seq_read,
-> +       .llseek = seq_lseek,
-> +       .release = single_release,
-> +};
-> +
->  static int __init pm_genpd_debug_init(void)
->  {
-> -       struct dentry *d;
-> +       struct dentry *d = NULL;
+> --
+> 2.1.4
 >
->         pm_genpd_debugfs_dir = debugfs_create_dir("pm_genpd", NULL);
->
-> -       if (!pm_genpd_debugfs_dir)
-> -               return -ENOMEM;
-> +       if (pm_genpd_debugfs_dir)
 
-In case when CONFIG_DEBUG_FS is unset, this doesn't work very well, as
-pm_genpd_debugfs_dir will contain an error code.
+A general comment.
 
-Since you are anyway make quite big change to the debugfs support for
-genpd, perhaps you can try to fix that up as well!?
-
-> +               d = debugfs_create_file("summary", S_IRUGO,
-> +                               pm_genpd_debugfs_dir, NULL,
-> +                               &pm_genpd_summary_fops);
-> +       if (d)
-> +               d = debugfs_create_file("states", S_IRUGO,
-> +                               pm_genpd_debugfs_dir, NULL,
-> +                               &pm_genpd_states_fops);
-> +       if (d)
-> +               d = debugfs_create_file("timings", S_IRUGO,
-> +                               pm_genpd_debugfs_dir, NULL,
-> +                               &pm_genpd_timing_fops);
-> +       if (d)
-> +               return 0;
->
-> -       d = debugfs_create_file("pm_genpd_summary", S_IRUGO,
-> -                       pm_genpd_debugfs_dir, NULL, &pm_genpd_summary_fops);
-> -       if (!d)
-> -               return -ENOMEM;
-> +       debugfs_remove_recursive(pm_genpd_debugfs_dir /*can be null*/);
->
-> -       return 0;
-> +       return -ENOMEM;
->  }
->  late_initcall(pm_genpd_debug_init);
->
+I would as step prior $subject patch, add the mechanism in genpd to
+deal with this new concept of residency values. When *all* that
+mechanism is in place (perhaps it needs more than one patch), then add
+the DT parts.
 
 Kind regards
 Uffe
