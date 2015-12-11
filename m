@@ -1,8 +1,8 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v3 18/20] ARM: dts: Add support of bus frequency using VDD_INT
- for exynos3250-rinato
-Date: Fri, 11 Dec 2015 14:07:57 +0900
-Message-ID: <1449810479-14763-19-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH v3 19/20] ARM: dts: Expand the voltage range of buck1/3
+ regulator for exynos4412-odroidu3
+Date: Fri, 11 Dec 2015 14:07:58 +0900
+Message-ID: <1449810479-14763-20-git-send-email-cw00.choi@samsung.com>
 References: <1449810479-14763-1-git-send-email-cw00.choi@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1449810479-14763-1-git-send-email-cw00.choi@samsung.com>
@@ -11,77 +11,41 @@ To: myungjoo.ham@samsung.com, k.kozlowski@samsung.com, kgene@kernel.org
 Cc: kyungmin.park@samsung.com, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, tjakobi@math.uni-bielefeld.de, linux.amoon@gmail.com, cw00.choi@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds the bus device-tree node of INT (internal) block
-to enable the bus frequency scaling. The following sub-blocks share
-the VDD_INT power source:
-- LEFTBUS (parent device)
-- RIGHTBUS
-- PERIL
-- LCD0
-- FSYS
-- MCUISP / ISP
-- MFC
-
-The LEFTBUS is parent device with devfreq ondemand governor
-and the rest devices has the dependency on LEFTBUS bus.
+This patch expands the voltage range of buck1/3 regulator due to as following:
+- MIF (Memory Interface) bus frequency needs the range of '900 - 1050 mV'.
+- INT (Internal) bus frequency needs the range of '900 - 1000 mV'.
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+[linux.amoon: Tested on Odroid U3]
+Tested-by: Anand Moon <linux.amoon@gmail.com>
 ---
- arch/arm/boot/dts/exynos3250-rinato.dts | 41 +++++++++++++++++++++++++++++++++
- 1 file changed, 41 insertions(+)
+ arch/arm/boot/dts/exynos4412-odroid-common.dtsi | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm/boot/dts/exynos3250-rinato.dts b/arch/arm/boot/dts/exynos3250-rinato.dts
-index 2a1c22598fdc..37c777cad953 100644
---- a/arch/arm/boot/dts/exynos3250-rinato.dts
-+++ b/arch/arm/boot/dts/exynos3250-rinato.dts
-@@ -154,6 +154,47 @@
- 	status = "okay";
- };
+diff --git a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
+index cda1ec86dfba..7bd65026761e 100644
+--- a/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
++++ b/arch/arm/boot/dts/exynos4412-odroid-common.dtsi
+@@ -356,8 +356,8 @@
  
-+&bus_fsys {
-+	devfreq = <&bus_leftbus>;
-+	status = "okay";
-+};
-+
-+&bus_isp {
-+	devfreq = <&bus_leftbus>;
-+	status = "okay";
-+};
-+
-+&bus_lcd0 {
-+	devfreq = <&bus_leftbus>;
-+	status = "okay";
-+};
-+
-+&bus_leftbus {
-+	devfreq-events = <&ppmu_leftbus_3>, <&ppmu_rightbus_3>;
-+	vdd-supply = <&buck3_reg>;
-+	status = "okay";
-+};
-+
-+&bus_mfc {
-+	devfreq = <&bus_leftbus>;
-+	status = "okay";
-+};
-+
-+&bus_mcuisp {
-+	devfreq = <&bus_leftbus>;
-+	status = "okay";
-+};
-+
-+&bus_peril {
-+	devfreq = <&bus_leftbus>;
-+	status = "okay";
-+};
-+
-+&bus_rightbus {
-+	devfreq = <&bus_leftbus>;
-+	status = "okay";
-+};
-+
- &cpu0 {
- 	cpu0-supply = <&buck2_reg>;
- };
+ 			buck1_reg: BUCK1 {
+ 				regulator-name = "vdd_mif";
+-				regulator-min-microvolt = <1000000>;
+-				regulator-max-microvolt = <1000000>;
++				regulator-min-microvolt = <900000>;
++				regulator-max-microvolt = <1050000>;
+ 				regulator-always-on;
+ 				regulator-boot-on;
+ 			};
+@@ -372,7 +372,7 @@
+ 
+ 			buck3_reg: BUCK3 {
+ 				regulator-name = "vdd_int";
+-				regulator-min-microvolt = <1000000>;
++				regulator-min-microvolt = <900000>;
+ 				regulator-max-microvolt = <1000000>;
+ 				regulator-always-on;
+ 				regulator-boot-on;
 -- 
 1.9.1
