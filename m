@@ -1,125 +1,227 @@
-From: Juri Lelli <Juri.Lelli@arm.com>
-Subject: Re: [RFCv6 PATCH 10/10] sched: rt scheduler sets capacity requirement
-Date: Fri, 11 Dec 2015 11:22:16 +0000
-Message-ID: <20151211112216.GB8070@e106622-lin>
-References: <1449641971-20827-1-git-send-email-smuckle@linaro.org>
- <1449641971-20827-11-git-send-email-smuckle@linaro.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH RFC 06/27] PM / Domains: add debugfs 'states' and
+ 'timings' seq files
+Date: Fri, 11 Dec 2015 12:46:45 +0100
+Message-ID: <CAPDyKFrOPKc-WDsHNpndkoZa5g6tnnbE2C5JsqZ6DMCX+6hmFw@mail.gmail.com>
+References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
+	<1447799871-56374-7-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1449641971-20827-11-git-send-email-smuckle@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1447799871-56374-7-git-send-email-lina.iyer@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>, Marc Titinger <mtitinger@baylibre.com>
+Cc: Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Axel Haslam <ahaslam@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 08/12/15 22:19, Steve Muckle wrote:
-> From: Vincent Guittot <vincent.guittot@linaro.org>
-> 
-> RT tasks don't provide any running constraints like deadline ones
-> except their running priority. The only current usable input to
-> estimate the capacity needed by RT tasks is the rt_avg metric. We use
-> it to estimate the CPU capacity needed for the RT scheduler class.
-> 
-> In order to monitor the evolution for RT task load, we must
-> peridiocally check it during the tick.
-> 
-> Then, we use the estimated capacity of the last activity to estimate
-> the next one which can not be that accurate but is a good starting
-> point without any impact on the wake up path of RT tasks.
-> 
-> Signed-off-by: Vincent Guittot <vincent.guittot@linaro.org>
-> Signed-off-by: Steve Muckle <smuckle@linaro.org>
+On 17 November 2015 at 23:37, Lina Iyer <lina.iyer@linaro.org> wrote:
+> From: Marc Titinger <mtitinger@baylibre.com>
+>
+> This purpose of these debug seq-files is to help investigate
+> generic power domain state transitions, based on device constraints.
+> requires the "multiple states" patches from Axel Haslam.
+
+This last sentence doesn't belong in the change-log, please remove it.
+
+>
+> also rename 'summary' from 'pm_genpd_summary'
+>
+> sample output for 'states'
+> ==========================
+>
+>   Domain             State name        Eval = 2200nter + Exit = Min_off_on (ns)
+> -----------------------------------------------------------------------
+> a53_pd               cluster-sleep-0      1500000+800000=2300000
+> a57_pd               d1-retention         1000000+800000=1800000
+> a57_pd               cluster-sleep-0      1500000+800000=2300000
+>
+> sample output for 'timings'
+> ===========================
+>
+>     Domain Devices, Timings in ns
+>                        Stop/Start Save/Restore, Effective
+> ----------------------------------------------------  ---
+> a53_pd
+>     /cpus/cpu@100        1060  /660    1580  /1940  ,0 (cached stop)
+>     /cpus/cpu@101        1060  /740    1520  /1600  ,0 (cached stop)
+>     /cpus/cpu@102        880   /620    1380  /1780  ,0 (cached stop)
+>     /cpus/cpu@103        1080  /640    1340  /1600  ,0 (cached stop)
+> a57_pd
+>     /cpus/cpu@0          1160  /740    3280  /1800  ,0 (cached stop)
+>     /cpus/cpu@1          780   /1400   1440  /2080  ,0 (cached stop)
+>     /D1                  600   /540    7140  /6420  ,2199460 (cached stop)
+>
+> Signed-off-by: Marc Titinger <mtitinger@baylibre.com>
+
+A general comment. Static functions in genpd shall start with one of
+the following prefix.
+
+genpd_*
+_genpd_*
+__genpd_*
+
+Please change accordingly.
+
 > ---
->  kernel/sched/rt.c | 49 ++++++++++++++++++++++++++++++++++++++++++++++++-
->  1 file changed, 48 insertions(+), 1 deletion(-)
-> 
-> diff --git a/kernel/sched/rt.c b/kernel/sched/rt.c
-> index 8ec86ab..9694204 100644
-> --- a/kernel/sched/rt.c
-> +++ b/kernel/sched/rt.c
-> @@ -1426,6 +1426,41 @@ static void check_preempt_curr_rt(struct rq *rq, struct task_struct *p, int flag
->  #endif
->  }
->  
-> +#ifdef CONFIG_SMP
-
-s/SMP/CPU_FREQ_GOV_SCHED/ ?
-
-> +static void sched_rt_update_capacity_req(struct rq *rq)
+>  drivers/base/power/domain.c | 115 +++++++++++++++++++++++++++++++++++++++++---
+>  1 file changed, 107 insertions(+), 8 deletions(-)
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index c300293..9a0df09 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -2169,21 +2169,120 @@ static const struct file_operations pm_genpd_summary_fops = {
+>         .release = single_release,
+>  };
+>
+> +static int pm_genpd_states_show(struct seq_file *s, void *data)
 > +{
-> +	u64 total, used, age_stamp, avg;
-> +	s64 delta;
+> +       struct generic_pm_domain *genpd;
 > +
-> +	if (!sched_freq())
-> +		return;
+> +       seq_puts(s,
+> +                "\n  Domain             State name        Enter + Exit = Min_off_on (ns)\n");
+> +       seq_puts(s,
+> +                "-----------------------------------------------------------------------\n");
 > +
-> +	sched_avg_update(rq);
-> +	/*
-> +	 * Since we're reading these variables without serialization make sure
-> +	 * we read them once before doing sanity checks on them.
-> +	 */
-> +	age_stamp = READ_ONCE(rq->age_stamp);
-> +	avg = READ_ONCE(rq->rt_avg);
-> +	delta = rq_clock(rq) - age_stamp;
-> +
-> +	if (unlikely(delta < 0))
-> +		delta = 0;
-> +
-> +	total = sched_avg_period() + delta;
-> +
-> +	used = div_u64(avg, total);
-> +	if (unlikely(used > SCHED_CAPACITY_SCALE))
-> +		used = SCHED_CAPACITY_SCALE;
-> +
-> +	set_rt_cpu_capacity(rq->cpu, 1, (unsigned long)(used));
 
-Minor nitpick: s/1/true/ .
+You must hold the gpd_list_lock while traversing the gpd list.
 
-Thanks,
+> +       list_for_each_entry(genpd, &gpd_list, gpd_list_node) {
+> +
+> +               int i;
+> +
+> +               for (i = 0; i < genpd->state_count; i++) {
 
-- Juri
+To be sure you have valid data, you should hold the genpd lock here.
 
+> +                       seq_printf(s, "%-20s %-20s %lld+%lld=%lld\n",
+> +                                  genpd->name,
+> +                                  genpd->states[i].name,
+> +                                  genpd->states[i].power_on_latency_ns,
+> +                                  genpd->states[i].power_off_latency_ns,
+> +                                  genpd->states[i].power_off_latency_ns
+> +                                  + genpd->states[i].power_on_latency_ns);
+> +               }
+> +
+> +       }
+> +
+> +       seq_puts(s, "\n");
+> +
+> +       return 0;
 > +}
-> +#else
-> +static inline void sched_rt_update_capacity_req(struct rq *rq)
-> +{ }
 > +
-> +#endif
+> +static int pm_genpd_states_open(struct inode *inode, struct file *file)
+> +{
+> +       return single_open(file, pm_genpd_states_show, NULL);
+> +}
 > +
->  static struct sched_rt_entity *pick_next_rt_entity(struct rq *rq,
->  						   struct rt_rq *rt_rq)
+> +static const struct file_operations pm_genpd_states_fops = {
+> +       .open = pm_genpd_states_open,
+> +       .read = seq_read,
+> +       .llseek = seq_lseek,
+> +       .release = single_release,
+> +};
+> +
+> +static int pm_genpd_timing_show(struct seq_file *s, void *data)
+> +{
+> +       struct generic_pm_domain *genpd;
+> +
+> +       seq_puts(s, "\n    Domain Devices, Timings in ns\n");
+> +       seq_puts(s,
+> +                "                       Stop/Start Save/Restore, Effective\n");
+> +       seq_puts(s,
+> +                "----------------------------------------------------  ---\n");
+> +
+
+You must hold the gpd_list_lock while traversing the gpd list.
+
+
+> +       list_for_each_entry(genpd, &gpd_list, gpd_list_node) {
+> +               struct pm_domain_data *pm_data;
+> +
+> +               seq_printf(s, "%-30s", genpd->name);
+> +
+
+You must hold the genpd lock while traversing the device list.
+
+> +               list_for_each_entry(pm_data, &genpd->dev_list, list_node) {
+> +                       struct gpd_timing_data *td = &to_gpd_data(pm_data)->td;
+> +
+> +                       if (!pm_data->dev->of_node)
+> +                               continue;
+> +
+> +                       seq_printf(s,
+> +                                  "\n    %-20s %-6lld/%-6lld %-6lld/%-6lld,%lld %s%s",
+> +                                  pm_data->dev->of_node->full_name,
+> +                                  td->stop_latency_ns, td->start_latency_ns,
+> +                                  td->save_state_latency_ns,
+> +                                  td->restore_state_latency_ns,
+
+This needs a re-base as these values have been merged.
+
+> +                                  td->effective_constraint_ns,
+> +                                  td->cached_stop_ok ? "(cached stop) " : "",
+> +                                  td->constraint_changed ? "(changed)" : "");
+> +               }
+> +               seq_puts(s, "\n");
+> +       }
+> +       return 0;
+> +}
+> +
+> +static int pm_genpd_timing_open(struct inode *inode, struct file *file)
+> +{
+> +       return single_open(file, pm_genpd_timing_show, NULL);
+> +}
+> +
+> +static const struct file_operations pm_genpd_timing_fops = {
+> +       .open = pm_genpd_timing_open,
+> +       .read = seq_read,
+> +       .llseek = seq_lseek,
+> +       .release = single_release,
+> +};
+> +
+>  static int __init pm_genpd_debug_init(void)
 >  {
-> @@ -1494,8 +1529,17 @@ pick_next_task_rt(struct rq *rq, struct task_struct *prev)
->  	if (prev->sched_class == &rt_sched_class)
->  		update_curr_rt(rq);
->  
-> -	if (!rt_rq->rt_queued)
-> +	if (!rt_rq->rt_queued) {
-> +		/*
-> +		 * The next task to be picked on this rq will have a lower
-> +		 * priority than rt tasks so we can spend some time to update
-> +		 * the capacity used by rt tasks based on the last activity.
-> +		 * This value will be the used as an estimation of the next
-> +		 * activity.
-> +		 */
-> +		sched_rt_update_capacity_req(rq);
->  		return NULL;
-> +	}
->  
->  	put_prev_task(rq, prev);
->  
-> @@ -2212,6 +2256,9 @@ static void task_tick_rt(struct rq *rq, struct task_struct *p, int queued)
->  
->  	update_curr_rt(rq);
->  
-> +	if (rq->rt.rt_nr_running)
-> +		sched_rt_update_capacity_req(rq);
-> +
->  	watchdog(rq, p);
->  
->  	/*
-> -- 
-> 2.4.10
-> 
+> -       struct dentry *d;
+> +       struct dentry *d = NULL;
+>
+>         pm_genpd_debugfs_dir = debugfs_create_dir("pm_genpd", NULL);
+>
+> -       if (!pm_genpd_debugfs_dir)
+> -               return -ENOMEM;
+> +       if (pm_genpd_debugfs_dir)
+
+In case when CONFIG_DEBUG_FS is unset, this doesn't work very well, as
+pm_genpd_debugfs_dir will contain an error code.
+
+Since you are anyway make quite big change to the debugfs support for
+genpd, perhaps you can try to fix that up as well!?
+
+> +               d = debugfs_create_file("summary", S_IRUGO,
+> +                               pm_genpd_debugfs_dir, NULL,
+> +                               &pm_genpd_summary_fops);
+> +       if (d)
+> +               d = debugfs_create_file("states", S_IRUGO,
+> +                               pm_genpd_debugfs_dir, NULL,
+> +                               &pm_genpd_states_fops);
+> +       if (d)
+> +               d = debugfs_create_file("timings", S_IRUGO,
+> +                               pm_genpd_debugfs_dir, NULL,
+> +                               &pm_genpd_timing_fops);
+> +       if (d)
+> +               return 0;
+>
+> -       d = debugfs_create_file("pm_genpd_summary", S_IRUGO,
+> -                       pm_genpd_debugfs_dir, NULL, &pm_genpd_summary_fops);
+> -       if (!d)
+> -               return -ENOMEM;
+> +       debugfs_remove_recursive(pm_genpd_debugfs_dir /*can be null*/);
+>
+> -       return 0;
+> +       return -ENOMEM;
+>  }
+>  late_initcall(pm_genpd_debug_init);
+>
+
+Kind regards
+Uffe
