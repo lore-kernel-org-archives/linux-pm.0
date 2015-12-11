@@ -1,55 +1,123 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v5 3/7] ARM: dts: Exynos542x/5800: add CPU OPP properties
-Date: Fri, 11 Dec 2015 09:02:53 +0530
-Message-ID: <20151211033253.GN3612@ubuntu>
-References: <1449766729-435-1-git-send-email-b.zolnierkie@samsung.com>
- <1449766729-435-4-git-send-email-b.zolnierkie@samsung.com>
- <20151211031646.GL3612@ubuntu>
- <566A4231.9050608@osg.samsung.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v2 09/19] PM / devfreq: exynos: Update documentation for
+ bus devices using passive governor
+Date: Fri, 11 Dec 2015 12:56:49 +0900
+Message-ID: <566A4981.1050602@samsung.com>
+References: <1449634091-1842-1-git-send-email-cw00.choi@samsung.com>
+ <1449634091-1842-10-git-send-email-cw00.choi@samsung.com>
+ <20151210142109.GA32109@rob-hp-laptop>
+ <CAGTfZH0T8ufrBKT3vKoivk5Vn_AUHnB+or0QRgr=D77q7puAJA@mail.gmail.com>
+ <20151211032417.GA22249@rob-hp-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f181.google.com ([209.85.192.181]:34138 "EHLO
-	mail-pf0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751352AbbLKDc5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Dec 2015 22:32:57 -0500
-Received: by pfbg73 with SMTP id g73so59776805pfb.1
-        for <linux-pm@vger.kernel.org>; Thu, 10 Dec 2015 19:32:57 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <566A4231.9050608@osg.samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <20151211032417.GA22249@rob-hp-laptop>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>, =?UTF-8?B?S3J6?= =?UTF-8?B?eXN6dG9mIEtvesWCb3dza2k=?= <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, tjakobi@math.uni-bielefeld.de, linux.amoon@gmail.com, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Javier Martinez Canillas <javier@osg.samsung.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Mike Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Ben Gamari <ben@smart-cactus.org>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Doug Anderson <dianders@chromium.org>, Andreas Faerber <afaerber@suse.de>
 
-On 11-12-15, 00:25, Javier Martinez Canillas wrote:
-> The problem is that the big and LITTLE cores have different ordering per SoCs:
-> 
-> - Exynos5420 and Exynos5800: cpu0-3 (Cortex-A15) and cpu4-7 (Coretx-A7)
-> - Exynos5422: cpu0-3 (Cortex-A7) and cpu4-7 (Cortex-A15)
-> 
-> So the OPP tables are set in this DTSI file, to prevent the OPP tables
-> in the Exynos5422 to be inverted for the cluster 0 and 1.
+On 2015=EB=85=84 12=EC=9B=94 11=EC=9D=BC 12:24, Rob Herring wrote:
+> On Fri, Dec 11, 2015 at 12:10:13AM +0900, Chanwoo Choi wrote:
+>> On Thu, Dec 10, 2015 at 11:21 PM, Rob Herring <robh@kernel.org> wrot=
+e:
+>>> On Wed, Dec 09, 2015 at 01:08:01PM +0900, Chanwoo Choi wrote:
+>>>> This patch updates the documentation for passive bus devices and a=
+dds the
+>>>> detailed example of Exynos3250.
+>>>>
+>>>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+>>>> ---
+>>>>  .../devicetree/bindings/devfreq/exynos-bus.txt     | 244 ++++++++=
+++++++++++++-
+>>>>  1 file changed, 241 insertions(+), 3 deletions(-)
+>>>>
+>>>> diff --git a/Documentation/devicetree/bindings/devfreq/exynos-bus.=
+txt b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
+>>>> index 54a1f9c46c88..c4fdc70f8eac 100644
+>>>> --- a/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
+>>>> +++ b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
+>>>> @@ -13,18 +13,23 @@ SoC has the different sub-blocks. So, this dif=
+ference should be specified
+>>>>  in devicetree file instead of each device driver. In result, this=
+ driver
+>>>>  is able to support the bus frequency for all Exynos SoCs.
+>>>>
+>>>> -Required properties for bus device:
+>>>> +Required properties for all bus devices:
+>>>>  - compatible: Should be "samsung,exynos-bus".
+>>>>  - clock-names : the name of clock used by the bus, "bus".
+>>>>  - clocks : phandles for clock specified in "clock-names" property=
+=2E
+>>>>  - #clock-cells: should be 1.
+>>>>  - operating-points-v2: the OPP table including frequency/voltage =
+information
+>>>>    to support DVFS (Dynamic Voltage/Frequency Scaling) feature.
+>>>> +
+>>>> +Required properties for only parent bus device:
+>>>>  - vdd-supply: the regulator to provide the buses with the voltage=
+=2E
+>>>>  - devfreq-events: the devfreq-event device to monitor the curret =
+utilization
+>>>>    of buses.
+>>>>
+>>>> -Optional properties for bus device:
+>>>> +Required properties for only passive bus device:
+>>>> +- devfreq: the parent bus device.
+>>>> +
+>>>> +Optional properties for only parent bus device:
+>>>>  - exynos,saturation-ratio: the percentage value which is used to =
+calibrate
+>>>>                     the performance count againt total cycle count=
+=2E
+>>>>
+>>>> @@ -33,7 +38,20 @@ Example1:
+>>>>       power line (regulator). The MIF (Memory Interface) AXI bus i=
+s used to
+>>>>       transfer data between DRAM and CPU and uses the VDD_MIF regu=
+altor.
+>>>>
+>>>> -     - power line(VDD_MIF) --> bus for DMC (Dynamic Memory Contro=
+ller) block
+>>>> +     - MIF (Memory Interface) block
+>>>> +     : VDD_MIF |--- DMC (Dynamic Memory Controller)
+>>>> +
+>>>> +     - INT (Internal) block
+>>>> +     : VDD_INT |--- LEFTBUS (parent device)
+>>>> +               |--- PERIL
+>>>> +               |--- MFC
+>>>> +               |--- G3D
+>>>> +               |--- RIGHTBUS
+>>>> +               |--- FSYS
+>>>> +               |--- LCD0
+>>>> +               |--- PERIR
+>>>> +               |--- ISP
+>>>> +               |--- CAM
+>>>
+>>> This still has the same problem as before. I would expect that the =
+bus
+>>> hierarchy in the dts match the hierarchy here. You just have flat n=
+odes
+>>> in the example below. So all IP blocks affected by frequency scalin=
+g
+>>> should be under the bus node defining the OPPs. Something like this=
+:
+>>
+>> The each bus of sub-block has not h/w dependency among sub-blocks
+>> and has the owned source clock / OPP table. Just they share the same
+>> power line. So, I think that flat nodes in the example below is not =
+problem.
+>=20
+> I'm talking about the peripherals not described here. Is the ISP bloc=
+k=20
+> not a child of the bus_isp node? Same for the display controller bloc=
+k=20
+> and bus_lcd0. And so on.
 
-Oh dude, that's really *ugly*. :)
+=46rom the H/W point of view, ISP block is really not included in ISP's=
+ AXI bus (bus_isp).
+Just, the bus_isp connect to between ISP block and DRAM.
 
-Reusing files/definitions is fine to the point where things are
-readable. But you have screwed it up so very badly.
-
-Over that, why can't you keep cpu0-3 as A7 and 4-7 as a15 for all the
-cases? The only worrying thing for you should be that CPU0 within the
-kenrel should be controllable, right? i.e. you want a A15 to boot 5800
-and A7 to boot 5422.
-
-If yes, than you could have kept the CPUs in 5422 as:
-0-3: A7
-4-7: A15
-
-and in 5420 as:
-4-7: A15
-0-3: A7
-
-Wouldnt' that work ?
-
--- 
-viresh
+Thanks,
+Chanwoo Choi
