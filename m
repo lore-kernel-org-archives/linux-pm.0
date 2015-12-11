@@ -1,35 +1,48 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PICKME 0/2] cpufreq: New ST driver
-Date: Fri, 11 Dec 2015 07:05:32 +0000
-Message-ID: <20151211070532.GB13538@x1>
-References: <1449740537-12619-1-git-send-email-lee.jones@linaro.org>
- <2896628.JCDQCVfIaC@vostro.rjw.lan>
- <20151211031900.GM3612@ubuntu>
+From: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [PATCH v3 17/20] ARM: dts: Add exynos4412-ppmu-common dtsi to
+ delete duplicate PPMU node
+Date: Fri, 11 Dec 2015 16:15:35 +0900
+Message-ID: <566A7817.3020302@samsung.com>
+References: <1449810479-14763-1-git-send-email-cw00.choi@samsung.com>
+ <1449810479-14763-18-git-send-email-cw00.choi@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20151211031900.GM3612@ubuntu>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, kernel@stlinux.com, maxime.coquelin@st.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, ajitpal.singh@st.com
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-reply-to: <1449810479-14763-18-git-send-email-cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+Cc: kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org, galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org, linux.amoon-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 11 Dec 2015, Viresh Kumar wrote:
-> On 10-12-15, 22:38, Rafael J. Wysocki wrote:
-> > Do they depend on anything special?
->=20
-> My opp-binding-parsing patches which you applied to bleeding-edge.
+On 11.12.2015 14:07, Chanwoo Choi wrote:
+> This patch adds the exynos4412-ppmu-common.dtsi to duplicate PPMU node
 
-I thought these had already been applied.
+I think the goal of the patch was to remove duplication of nodes, not to
+duplicate them. :)
 
-> Yes, Lee should have mentioned that explicitly.
+Except of that patch is okay:
 
-Aye, apologies for that.
+Reviewed-by: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-=46ollow Linaro: Facebook | Twitter | Blog
+Best regards,
+Krzysztof
+
+
+> because exynos3250-rinato/monk, exynos4412-trats2/odroidu3 has the same
+> PPMU device tree node.
+> 
+> Signed-off-by: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+> ---
+>  arch/arm/boot/dts/exynos3250-monk.dts           | 41 +--------------------
+>  arch/arm/boot/dts/exynos3250-rinato.dts         | 41 +--------------------
+>  arch/arm/boot/dts/exynos4412-odroid-common.dtsi |  1 +
+>  arch/arm/boot/dts/exynos4412-ppmu-common.dtsi   | 49 +++++++++++++++++++++++++
+>  arch/arm/boot/dts/exynos4412-trats2.dts         | 41 +--------------------
+>  5 files changed, 53 insertions(+), 120 deletions(-)
+>  create mode 100644 arch/arm/boot/dts/exynos4412-ppmu-common.dtsi
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
