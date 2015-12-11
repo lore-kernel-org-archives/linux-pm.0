@@ -1,51 +1,54 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH v5 0/7] cpufreq: add generic cpufreq driver support for
- Exynos542x/5800 platforms
-Date: Fri, 11 Dec 2015 10:34:13 +0900
-Message-ID: <566A2815.2020908@samsung.com>
-References: <1449766729-435-1-git-send-email-b.zolnierkie@samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V3 2/2] PM / OPP: Parse 'opp-<prop>-<name>' bindings
+Date: Fri, 11 Dec 2015 07:11:46 +0530
+Message-ID: <20151211014146.GE3612@ubuntu>
+References: <cover.1449627691.git.viresh.kumar@linaro.org>
+ <e3744c43a5ad26e9e49cf938b3ecd846cc500fce.1449627691.git.viresh.kumar@linaro.org>
+ <CAF2Aj3h6u5W+H0shc+MwPpfb8spwXBZYr1+m4w62PpiHk=50UA@mail.gmail.com>
+ <4979368.7DaYzKUvM2@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:19711 "EHLO
-	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750994AbbLKBeb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 10 Dec 2015 20:34:31 -0500
-In-reply-to: <1449766729-435-1-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <4979368.7DaYzKUvM2@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Lee Jones <lee.jones@linaro.org>, Nishanth Menon <nm@ti.com>, Len Brown <len.brown@intel.com>, Linaro Kernel Mailman List <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <vireshk@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Mike Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>
-Cc: Thomas Abraham <thomas.ab@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, Ben Gamari <ben@smart-cactus.org>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-On 11.12.2015 01:58, Bartlomiej Zolnierkiewicz wrote:
-> Hi,
+On 10-12-15, 22:45, Rafael J. Wysocki wrote:
+> On Thursday, December 10, 2015 09:54:45 AM Lee Jones wrote:
+> > On 9 December 2015 at 02:31, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > > OPP bindings (for few properties) allow a platform to choose a
+> > > value/range among a set of available options. The options are present as
+> > > opp-<prop>-<name>, where the platform needs to supply the <name> string.
+> > >
+> > > The OPP properties which allow such an option are: opp-microvolt and
+> > > opp-microamp.
+> > >
+> > > Add support to the OPP-core to parse these bindings, by introducing
+> > > dev_pm_opp_{set|put}_prop_name() APIs.
+> > >
+> > > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > > ---
+> > >  drivers/base/power/opp/core.c | 165 ++++++++++++++++++++++++++++++++++++++----
+> > >  drivers/base/power/opp/opp.h  |   2 +
+> > >  include/linux/pm_opp.h        |   9 +++
+> > >  3 files changed, 161 insertions(+), 15 deletions(-)
+> > 
+> > Tested-by: Lee Jones <lee.jones@linaro.org>
 > 
-> This patch series adds generic cpufreq-dt driver support for
-> Exynos542x/5800 (using the new CPU clock type which allows it).
+> OK, so tentatively I can take these two.
 > 
-> It has been tested on Exynos5422 based ODROID-XU3 Lite board.
-> 
-> Depends on:
-> - next-20151124 branch of linux-next kernel tree
+> What exectly does depend on them and how that thing is intended to be handled?
 
-Bartlomiej,
-Thanks for update! Nice work. Everything looks good for me. As for
-merging, my last pull requests are waiting on Kukjin, so I am not
-grabbing more stuff till they get in. This (I hope) should happen this
-weekend so:
-1. Either Kukjin will pick it up directly,
-2. I could apply this later and hopefully still send them for v4.5.
+The other two patches from Lee, Perhaps he missed mentioning that in
+his cover-letter.
 
+[PICKME 0/2] cpufreq: New ST driver
 
-Sylwester,
-However in case of any delay, how about merging clock changes now
-through clock tree and preparing a tag for samsung-soc? If the series
-won't make till v4.5 then at least dependency would be merged.
+They must be rebased on my patches as they use the new APIs defined
+here.
 
-In that case you could also pick the first patch from Marek's GSCL clock.
-
-
-Best regards,
-Krzysztof
-
+-- 
+viresh
