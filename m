@@ -1,27 +1,45 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V4 5/6] cpufreq: governor: replace per-cpu delayed work
- with timers
-Date: Fri, 11 Dec 2015 07:12:44 +0530
-Message-ID: <20151211014244.GF3612@ubuntu>
-References: <96a8e6745e6335efb537dccafbc213286fdf9ad5.1449209505.git.viresh.kumar@linaro.org>
- <1517731.pZjrRh9Im6@vostro.rjw.lan>
- <20151210023626.GE29459@ubuntu>
- <2214333.ch3ElASo2I@vostro.rjw.lan>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v2 16/19] ARM: dts: Add PPMU node for exynos4412-odroidu3
+Date: Fri, 11 Dec 2015 11:27:46 +0900
+Message-ID: <566A34A2.7040001@samsung.com>
+References: <1449634091-1842-1-git-send-email-cw00.choi@samsung.com>
+ <1449634091-1842-17-git-send-email-cw00.choi@samsung.com>
+ <56691F54.7040704@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <2214333.ch3ElASo2I@vostro.rjw.lan>
+In-reply-to: <56691F54.7040704@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, sfr@canb.auug.org.au, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Ashwin Chaugule <ashwin.chaugule@linaro.org>, open list <linux-kernel@vger.kernel.org>
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, myungjoo.ham@samsung.com, kgene@kernel.org
+Cc: kyungmin.park@samsung.com, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, tjakobi@math.uni-bielefeld.de, linux.amoon@gmail.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 10-12-15, 23:17, Rafael J. Wysocki wrote:
-> Well, if you did what I asked for, it would work around the problem whatever
-> that is.
+On 2015=EB=85=84 12=EC=9B=94 10=EC=9D=BC 15:44, Krzysztof Kozlowski wro=
+te:
+> On 09.12.2015 13:08, Chanwoo Choi wrote:
+>> This patch add dt node for PPMU_{DMC0|DMC1|LEFTBUS|RIGHTBUS} for
+>> exynos4412-odroidu3 board. Each PPMU dt node includes one event of
+>> 'PPMU Count3'.
+>>
+>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+>> ---
+>>  arch/arm/boot/dts/exynos4412-odroid-common.dtsi | 40 ++++++++++++++=
++++++++++++
+>>  1 file changed, 40 insertions(+)
+>>
+>=20
+> The patch itself is good but now I see that it is duplicated with
+> Rinato, Monk and Trats2. Probably for all other Exynos4 and
+> one-cluster-Exynos5 boards this would be exactly the same as well.
+>=20
+> How about making a DTSI file with common PPMU events configuration?
 
-Yeah, I will do that until it is resolved from backend.
+OK. I'll make the exynos4412-ppmu-common.dtsi.
 
--- 
-viresh
+The Exynos4 series used the PPMU firstly. That is why deciding the file=
+name
+of exynos4412-ppmu-common.dtsi.
+
+Best Regards,
+Chanwoo Choi
