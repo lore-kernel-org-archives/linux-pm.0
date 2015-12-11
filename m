@@ -1,79 +1,96 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [Intel-gfx] [PATCH v2] PM / Runtime: Introduce pm_runtime_get_noidle
-Date: Fri, 11 Dec 2015 13:03:50 +0100
-Message-ID: <CAPDyKFr+3-OMmjU0VEywhUa1RWt_aHu6ycLaQ325ds8rygWKyQ@mail.gmail.com>
+From: Imre Deak <imre.deak@intel.com>
+Subject: Re: [PATCH v2] PM / Runtime: Introduce
+ pm_runtime_get_noidle
+Date: Fri, 11 Dec 2015 14:54:45 +0200
+Message-ID: <1449838485.11262.20.camel@intel.com>
 References: <1449675920-12986-1-git-send-email-joonas.lahtinen@linux.intel.com>
-	<1965611.CCxSd8EYaz@vostro.rjw.lan>
-	<1449782440.28642.5.camel@intel.com>
-	<5590453.QflIsWdzXr@vostro.rjw.lan>
+ <1965611.CCxSd8EYaz@vostro.rjw.lan> <1449782440.28642.5.camel@intel.com>
+ <5590453.QflIsWdzXr@vostro.rjw.lan>
+Reply-To: imre.deak@intel.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f179.google.com ([209.85.220.179]:35057 "EHLO
-	mail-qk0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753675AbbLKMDv (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Dec 2015 07:03:51 -0500
-Received: by qkfb125 with SMTP id b125so34451586qkf.2
-        for <linux-pm@vger.kernel.org>; Fri, 11 Dec 2015 04:03:50 -0800 (PST)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <intel-gfx-bounces@lists.freedesktop.org>
 In-Reply-To: <5590453.QflIsWdzXr@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <http://lists.freedesktop.org/archives/intel-gfx>
+List-Post: <mailto:intel-gfx@lists.freedesktop.org>
+List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: intel-gfx-bounces@lists.freedesktop.org
+Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, imre.deak@intel.com
-Cc: Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-[...]
-
->> >
->> > Which basically means you can call pm_runtime_resume() just fine,
->> > because it will do nothing if the status is RPM_ACTIVE already.
->> >
->> > So really, why don't you use pm_runtime_get_sync()?
->>
->> The difference would be that if the status is not RPM_ACTIVE already we
->> would drop the reference and report error. The caller would in this
->> case forego of doing something, since we the device is suspended or on
->> the way to being suspended. One example of such a scenario is a
->> watchdog like functionality: the watchdog work would
->> call pm_runtime_get_noidle() and check if the device is ok by doing
->> some HW access, but only if the device is powered. Otherwise the work
->> item would do nothing (meaning it also won't reschedule itself). The
->> watchdog work would get rescheduled next time the device is woken up
->> and some work is submitted to the device.
->
-> So first of all the name "pm_runtime_get_noidle" doesn't make sense.
->
-> I guess what you need is something like
->
-> bool pm_runtime_get_if_active(struct device *dev)
-> {
->         unsigned log flags;
->         bool ret;
->
->         spin_lock_irqsave(&dev->power.lock, flags);
->
->         if (dev->power.runtime_status == RPM_ACTIVE) {
->                 atomic_inc(&dev->power.usage_count);
->                 ret = true;
->         } else {
->                 ret = false;
->         }
->
->         spin_unlock_irqrestore(&dev->power.lock, flags);
-> }
->
-> and the caller will simply bail out if "false" is returned, but if "true"
-> is returned, it will have to drop the usage count, right?
->
-> Thanks,
-> Rafael
->
-
-Why not just:
-
-pm_runtime_get_noresume():
-if (RPM_ACTIVE)
-  "do some actions"
-pm_runtime_put();
-
-Kind regards
-Uffe
+T24gdG8sIDIwMTUtMTItMTAgYXQgMjM6MTQgKzAxMDAsIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3Rl
+Ogo+IE9uIFRodXJzZGF5LCBEZWNlbWJlciAxMCwgMjAxNSAxMToyMDo0MCBQTSBJbXJlIERlYWsg
+d3JvdGU6Cj4gPiBPbiBUaHUsIDIwMTUtMTItMTAgYXQgMjI6NDIgKzAxMDAsIFJhZmFlbCBKLiBX
+eXNvY2tpIHdyb3RlOgo+ID4gPiBPbiBUaHVyc2RheSwgRGVjZW1iZXIgMTAsIDIwMTUgMTA6MzY6
+MzcgUE0gUmFmYWVsIEouIFd5c29ja2kKPiA+ID4gd3JvdGU6Cj4gPiA+ID4gT24gVGh1cnNkYXks
+IERlY2VtYmVyIDEwLCAyMDE1IDExOjQzOjUwIEFNIEltcmUgRGVhayB3cm90ZToKPiA+ID4gPiA+
+IE9uIFRodSwgMjAxNS0xMi0xMCBhdCAwMTo1OCArMDEwMCwgUmFmYWVsIEouIFd5c29ja2kgd3Jv
+dGU6Cj4gPiA+ID4gPiA+IE9uIFdlZG5lc2RheSwgRGVjZW1iZXIgMDksIDIwMTUgMDY6MjI6MTkg
+UE0gSm9vbmFzIExhaHRpbmVuCj4gPiA+ID4gPiA+IHdyb3RlOgo+ID4gPiA+ID4gPiA+IEludHJv
+ZHVjZSBwbV9ydW50aW1lX2dldF9ub2lkbGUgdG8gZm9yIHNpdHVhdGlvbnMgd2hlcmUKPiA+ID4g
+PiA+ID4gPiBpdCBpcwo+ID4gPiA+ID4gPiA+IG5vdAo+ID4gPiA+ID4gPiA+IGRlc2lyZWFibGUg
+dG8gdG91Y2ggYW4gaWRsaW5nIGRldmljZS4gT25lIHVzZSBzY2VuYXJpbyBpcwo+ID4gPiA+ID4g
+PiA+IHBlcmlvZGljCj4gPiA+ID4gPiA+ID4gaGFuZ2NoZWNrcyBwZXJmb3JtZWQgYnkgdGhlIGRy
+bS9pOTE1IGRyaXZlciB3aGljaCBjYW4gYmUKPiA+ID4gPiA+ID4gPiBvbWl0dGVkCj4gPiA+ID4g
+PiA+ID4gb24gYSBkZXZpY2UgaW4gYSBydW50aW1lIGlkbGUgc3RhdGUuCj4gPiA+ID4gPiA+ID4g
+Cj4gPiA+ID4gPiA+ID4gdjI6Cj4gPiA+ID4gPiA+ID4gLSBGaXggaW5jb25zaXN0ZW50IHJldHVy
+biB2YWx1ZSB3aGVuICFDT05GSUdfUE0uCj4gPiA+ID4gPiA+ID4gLSBVcGRhdGUgZG9jdW1lbnRh
+dGlvbiBmb3IgYm9vbCByZXR1cm4gdmFsdWUKPiA+ID4gPiA+ID4gPiAKPiA+ID4gPiA+ID4gPiBT
+aWduZWQtb2ZmLWJ5OiBKb29uYXMgTGFodGluZW4gPGpvb25hcy5sYWh0aW5lbkBsaW51eC5pbnQK
+PiA+ID4gPiA+ID4gPiBlbC5jCj4gPiA+ID4gPiA+ID4gb20+Cj4gPiA+ID4gPiA+ID4gUmVwb3J0
+ZWQtYnk6IENocmlzIFdpbHNvbiA8Y2hyaXNAY2hyaXMtd2lsc29uLmNvLnVrPgo+ID4gPiA+ID4g
+PiA+IENjOiBDaHJpcyBXaWxzb24gPGNocmlzQGNocmlzLXdpbHNvbi5jby51az4KPiA+ID4gPiA+
+ID4gPiBDYzogIlJhZmFlbCBKLiBXeXNvY2tpIiA8cmp3QHJqd3lzb2NraS5uZXQ+Cj4gPiA+ID4g
+PiA+ID4gQ2M6IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZwo+ID4gPiA+ID4gPiAKPiA+ID4gPiA+
+ID4gV2VsbCwgSSBkb24ndCBxdWl0ZSBzZWUgaG93IHRoaXMgY2FuIGJlIHVzZWQgaW4gYSBub24t
+cmFjeQo+ID4gPiA+ID4gPiB3YXkKPiA+ID4gPiA+ID4gd2l0aG91dCBkb2luZyBhbiBhZGRpdGlv
+bmFsIHBtX3J1bnRpbWVfcmVzdW1lKCkgb3IKPiA+ID4gPiA+ID4gc29tZXRoaW5nCj4gPiA+ID4g
+PiA+IGxpa2UKPiA+ID4gPiA+ID4gdGhhdCBpbiB0aGUgc2FtZSBjb2RlIHBhdGguCj4gPiA+ID4g
+PiAKPiA+ID4gPiA+IFdlIGRvbid0IHdhbnQgdG8gcmVzdW1lLCB0aGF0IHdvdWxkIGJlIHRoZSB3
+aG9sZSBwb2ludC4gV2UnZAo+ID4gPiA+ID4gbGlrZQo+ID4gPiA+ID4gdG8KPiA+ID4gPiA+IGVu
+c3VyZSB0aGF0IHdlIGhvbGQgYSByZWZlcmVuY2UgX2FuZF8gdGhlIGRldmljZSBpcyBhbHJlYWR5
+Cj4gPiA+ID4gPiBhY3RpdmUuIFNvCj4gPiA+ID4gPiBBRkFJQ1Mgd2UnZCBuZWVkIHRvIGNoZWNr
+IHJ1bnRpbWVfc3RhdHVzID09IFJQTV9BQ1RJVkUgaW4KPiA+ID4gPiA+IGFkZGl0aW9uCj4gPiA+
+ID4gPiBhZnRlciB0YWtpbmcgdGhlIHJlZmVyZW5jZS4KPiA+ID4gPiAKPiA+ID4gPiBSaWdodCwg
+YW5kIHRoYXQgdW5kZXIgdGhlIGxvY2suCj4gPiA+IAo+ID4gPiBXaGljaCBiYXNpY2FsbHkgbWVh
+bnMgeW91IGNhbiBjYWxsIHBtX3J1bnRpbWVfcmVzdW1lKCkganVzdCBmaW5lLAo+ID4gPiBiZWNh
+dXNlIGl0IHdpbGwgZG8gbm90aGluZyBpZiB0aGUgc3RhdHVzIGlzIFJQTV9BQ1RJVkUgYWxyZWFk
+eS4KPiA+ID4gCj4gPiA+IFNvIHJlYWxseSwgd2h5IGRvbid0IHlvdSB1c2UgcG1fcnVudGltZV9n
+ZXRfc3luYygpPwo+ID4gCj4gPiBUaGUgZGlmZmVyZW5jZSB3b3VsZCBiZSB0aGF0IGlmIHRoZSBz
+dGF0dXMgaXMgbm90IFJQTV9BQ1RJVkUKPiA+IGFscmVhZHkgd2UKPiA+IHdvdWxkIGRyb3AgdGhl
+IHJlZmVyZW5jZSBhbmQgcmVwb3J0IGVycm9yLiBUaGUgY2FsbGVyIHdvdWxkIGluIHRoaXMKPiA+
+IGNhc2UgZm9yZWdvIG9mIGRvaW5nIHNvbWV0aGluZywgc2luY2Ugd2UgdGhlIGRldmljZSBpcyBz
+dXNwZW5kZWQgb3IKPiA+IG9uCj4gPiB0aGUgd2F5IHRvIGJlaW5nIHN1c3BlbmRlZC4gT25lIGV4
+YW1wbGUgb2Ygc3VjaCBhIHNjZW5hcmlvIGlzIGEKPiA+IHdhdGNoZG9nIGxpa2UgZnVuY3Rpb25h
+bGl0eTogdGhlIHdhdGNoZG9nIHdvcmsgd291bGQKPiA+IGNhbGwgcG1fcnVudGltZV9nZXRfbm9p
+ZGxlKCkgYW5kIGNoZWNrIGlmIHRoZSBkZXZpY2UgaXMgb2sgYnkgZG9pbmcKPiA+IHNvbWUgSFcg
+YWNjZXNzLCBidXQgb25seSBpZiB0aGUgZGV2aWNlIGlzIHBvd2VyZWQuIE90aGVyd2lzZSB0aGUK
+PiA+IHdvcmsKPiA+IGl0ZW0gd291bGQgZG8gbm90aGluZyAobWVhbmluZyBpdCBhbHNvIHdvbid0
+IHJlc2NoZWR1bGUgaXRzZWxmKS4KPiA+IFRoZQo+ID4gd2F0Y2hkb2cgd29yayB3b3VsZCBnZXQg
+cmVzY2hlZHVsZWQgbmV4dCB0aW1lIHRoZSBkZXZpY2UgaXMgd29rZW4KPiA+IHVwCj4gPiBhbmQg
+c29tZSB3b3JrIGlzIHN1Ym1pdHRlZCB0byB0aGUgZGV2aWNlLgo+IAo+IFNvIGZpcnN0IG9mIGFs
+bCB0aGUgbmFtZSAicG1fcnVudGltZV9nZXRfbm9pZGxlIiBkb2Vzbid0IG1ha2Ugc2Vuc2UuCj4g
+Cj4gSSBndWVzcyB3aGF0IHlvdSBuZWVkIGlzIHNvbWV0aGluZyBsaWtlCj4gCj4gYm9vbCBwbV9y
+dW50aW1lX2dldF9pZl9hY3RpdmUoc3RydWN0IGRldmljZSAqZGV2KQo+IHsKPiAJdW5zaWduZWQg
+bG9nIGZsYWdzOwo+IAlib29sIHJldDsKPiAKPiAJc3Bpbl9sb2NrX2lycXNhdmUoJmRldi0+cG93
+ZXIubG9jaywgZmxhZ3MpOwo+IAo+IAlpZiAoZGV2LT5wb3dlci5ydW50aW1lX3N0YXR1cyA9PSBS
+UE1fQUNUSVZFKSB7CgpCdXQgaGVyZSB1c2FnZV9jb3VudCBjb3VsZCBiZSB6ZXJvLCBtZWFuaW5n
+IHRoYXQgdGhlIGRldmljZSBpcyBhbHJlYWR5Cm9uIHRoZSB3YXkgdG8gYmUgc3VzcGVuZGVkIChh
+dXRvc3VzcGVuZCBvciBBU1lOQyBzdXNwZW5kKSwgbm8/IEluIHRoYXQKY2FzZSB3ZSBkb24ndCB3
+YW50IHRvIHJldHVybiBzdWNjZXNzLiBUaGF0IHdvdWxkIHVubmVjZXNzYXJpbHkgcHJvbG9uZwp0
+aGUgdGltZSB0aGUgZGV2aWNlIGlzIGtlcHQgYWN0aXZlLgoKPiAJCWF0b21pY19pbmMoJmRldi0+
+cG93ZXIudXNhZ2VfY291bnQpOwo+IAkJcmV0ID0gdHJ1ZTsKPiAJfSBlbHNlIHsKPiAJCXJldCA9
+IGZhbHNlOwo+IAl9Cj4gCj4gCXNwaW5fdW5sb2NrX2lycXJlc3RvcmUoJmRldi0+cG93ZXIubG9j
+aywgZmxhZ3MpOwo+IH0KPiAKPiBhbmQgdGhlIGNhbGxlciB3aWxsIHNpbXBseSBiYWlsIG91dCBp
+ZiAiZmFsc2UiIGlzIHJldHVybmVkLCBidXQgaWYKPiAidHJ1ZSIKPiBpcyByZXR1cm5lZCwgaXQg
+d2lsbCBoYXZlIHRvIGRyb3AgdGhlIHVzYWdlIGNvdW50LCByaWdodD8KClllcy4KCi0tSW1yZQpf
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpJbnRlbC1nZngg
+bWFpbGluZyBsaXN0CkludGVsLWdmeEBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cDovL2xpc3Rz
+LmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ludGVsLWdmeAo=
