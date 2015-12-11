@@ -1,99 +1,186 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH RFC 21/27] drivers: cpu-pd: Parse topology to setup CPU PM domains
-Date: Fri, 11 Dec 2015 10:04:23 +0100
-Message-ID: <CAMuHMdWBCPkSH6sf=xtLgttvdru222nAWOYNMVNqv6d86jprvA@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH RFC 04/27] PM / Domains: make governor select deepest state
+Date: Fri, 11 Dec 2015 10:13:10 +0100
+Message-ID: <CAPDyKFqz8fpoTRTQv+REjiLWa3HgtYPXZooCMYWbaUY=MCofDQ@mail.gmail.com>
 References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
-	<1447799871-56374-22-git-send-email-lina.iyer@linaro.org>
-	<20151207145458.GA20538@red-moon>
-	<20151208180536.GB2230@linaro.org>
-	<20151210181121.GA26229@red-moon>
+	<1447799871-56374-5-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f48.google.com ([74.125.82.48]:33260 "EHLO
-	mail-wm0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751029AbbLKJEZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Dec 2015 04:04:25 -0500
-In-Reply-To: <20151210181121.GA26229@red-moon>
+Received: from mail-qk0-f170.google.com ([209.85.220.170]:33426 "EHLO
+	mail-qk0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754214AbbLKJNL (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Dec 2015 04:13:11 -0500
+Received: by qkdb5 with SMTP id b5so29765248qkd.0
+        for <linux-pm@vger.kernel.org>; Fri, 11 Dec 2015 01:13:10 -0800 (PST)
+In-Reply-To: <1447799871-56374-5-git-send-email-lina.iyer@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Lina Iyer <lina.iyer@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Axel Haslam <ahaslam@baylibre.com>, mtitinger@baylibre.com, Rob Herring <robherring2@gmail.com>
+To: Lina Iyer <lina.iyer@linaro.org>, Axel Haslam <ahaslam@baylibre.com>
+Cc: Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Marc Titinger <mtitinger@baylibre.com>, Axel Haslam <ahaslam+renesas@baylibre.com>
 
-On Thu, Dec 10, 2015 at 7:11 PM, Lorenzo Pieralisi
-<lorenzo.pieralisi@arm.com> wrote:
-> On Tue, Dec 08, 2015 at 11:05:36AM -0700, Lina Iyer wrote:
+On 17 November 2015 at 23:37, Lina Iyer <lina.iyer@linaro.org> wrote:
+> From: Axel Haslam <ahaslam+renesas@baylibre.com>
 >
-> [...]
+> Now that the structures of genpd can support multiple state definitions,
+> add the logic in the governor to select the deepest possible state when
+> powering down.
 >
->> On Mon, Dec 07 2015 at 07:53 -0700, Lorenzo Pieralisi wrote:
->> >>+/**
->> >>+ * of_setup_cpu_domain_topology() - Setup the CPU domains from the CPU
->> >>+ * topology node in DT.
->> >>+ *
->> >>+ * @ops: The PM domain suspend/resume ops for all the domains in the topology
->> >>+ */
->> >>+int of_setup_cpu_domain_topology(const struct cpu_pd_ops *ops)
->> >>+{
->> >>+   struct device_node *cn, *map;
->> >>+   int ret = 0;
->> >>+
->> >>+   cn = of_find_node_by_path("/cpus");
->> >>+   if (!cn) {
->> >>+           pr_err("No CPU information found in DT\n");
->> >>+           return 0;
->> >>+   }
->> >>+
->> >>+   map = of_get_child_by_name(cn, "cpu-map");
->> >>+   if (!map)
->> >>+           goto out;
->> >
->> >I commented on this before, is this reliance on cpu-map necessary ?
->> >Could not you just rely on the "power-domains" phandle in the cpu
->> >nodes to build the cpumask for a specific power domain ? I think
->> >you should try to decouple the concept of power domain from the cpu-map
->> >cluster and I think this would also simplify your code in the process.
->> >
->> Sorry, I missed seeing your comment on this earlier.
->>
->> Hmm, it can be done, but I felt out of place to define just power
->> domains that have no devices in Linux, since they are handled in PSCI,
->> but also have no relation to PSCI. Hence, I felt cpu-map to be a good
->> place for the cluster domain. But I am not strongly inclined. I can
->> remove them from the cpu-map and keep them as separate nodes. However,
->> it would be nice to have a way to say these nodes are PSCI controlled.
+> For this, create the new function power_down_ok_for_state which will test
+> if a particular state will not violate the devices and sub-domains
+> constraints.
 >
-> I do not agree with the way you described the system.
+> default_power_down_ok is modified to try each state starting from the
+> deepest until a valid state is found or there are no more states to test.
 >
-> Here is how I see it. DT must model HW, and in HW your cpus will be part
-> of a power domain(s) that of course can be hierarchical. Every cpus has a
-> phandle to the power domain it belongs into, and to group them as "cluster"
-> you should follow the power domains hierarchy (ie if you have a cluster
-> power domain, it will contain the core power domains, through the
-> hierarchy it is easy to detect what cpus are part of the cluster power
-> domain by detecting which cpus are part of its children). It is much
-> simpler than the current solution I think, you get rid of cpu-map
-> dependency (honestly it is a bit weird what you did, with cpu-map
-> containing a cluster phandle to a power domain and cpu phandles to
-> cpu nodes, and the DT bindings you posted does not seem to match your
-> dts).
+> the resulting state will be valid until there are latency or constraint
+> changes, thus, we can avoid looping every power_down, and use the cached
+> results instead.
 >
-> For PSCI, nothing prevents you from defining the same bindings except
-> that the power domain(s) is not explicitly controlled by the OS, still,
-> the DT would always describe the HW and you can use it to detect the
-> power domain topology and which cpus are part of a given power domain.
->
-> Please let me know what you think, thanks.
+> Signed-off-by: Axel Haslam <ahaslam+renesas@baylibre.com>
+> ---
+>  drivers/base/power/domain_governor.c | 75 +++++++++++++++++++++---------------
+>  1 file changed, 45 insertions(+), 30 deletions(-)
 
-+1
+Browsing the changes here and I think it looks good and quite trivial.
 
-Gr{oetje,eeting}s,
+I would therefore suggest that you fold this change into patch1 as
+it's where it really belongs. Can you please do that?
 
-                        Geert
+>
+> diff --git a/drivers/base/power/domain_governor.c b/drivers/base/power/domain_governor.c
+> index b4984f5..ad69dc0 100644
+> --- a/drivers/base/power/domain_governor.c
+> +++ b/drivers/base/power/domain_governor.c
+> @@ -98,7 +98,8 @@ static bool default_stop_ok(struct device *dev)
+>   *
+>   * This routine must be executed under the PM domain's lock.
+>   */
+> -static bool default_power_down_ok(struct dev_pm_domain *pd)
+> +static bool power_down_ok_for_state(struct dev_pm_domain *pd,
+> +                                    unsigned int state)
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+I suggest you re-name this function "__default_power_down_ok()" instead.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+>  {
+>         struct generic_pm_domain *genpd = pd_to_genpd(pd);
+>         struct gpd_link *link;
+> @@ -106,31 +107,9 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
+>         s64 min_off_time_ns;
+>         s64 off_on_time_ns;
+>
+> -       if (genpd->max_off_time_changed) {
+> -               struct gpd_link *link;
+> +       off_on_time_ns = genpd->states[state].power_off_latency_ns +
+> +               genpd->states[state].power_on_latency_ns;
+>
+> -               /*
+> -                * We have to invalidate the cached results for the masters, so
+> -                * use the observation that default_power_down_ok() is not
+> -                * going to be called for any master until this instance
+> -                * returns.
+> -                */
+> -               list_for_each_entry(link, &genpd->slave_links, slave_node)
+> -                       link->master->max_off_time_changed = true;
+> -
+> -               genpd->max_off_time_changed = false;
+> -               genpd->cached_power_down_ok = false;
+> -               genpd->max_off_time_ns = -1;
+> -       } else {
+> -               return genpd->cached_power_down_ok;
+> -       }
+> -
+> -       /*
+> -        * Use the only available state, until multiple state support is added
+> -        * to the governor.
+> -        */
+> -       off_on_time_ns = genpd->states[0].power_off_latency_ns +
+> -                               genpd->states[0].power_on_latency_ns;
+>
+>         min_off_time_ns = -1;
+>         /*
+> @@ -193,8 +172,6 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
+>                         min_off_time_ns = constraint_ns;
+>         }
+>
+> -       genpd->cached_power_down_ok = true;
+> -
+>         /*
+>          * If the computed minimum device off time is negative, there are no
+>          * latency constraints, so the domain can spend arbitrary time in the
+> @@ -207,14 +184,52 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
+>          * The difference between the computed minimum subdomain or device off
+>          * time and the time needed to turn the domain on is the maximum
+>          * theoretical time this domain can spend in the "off" state.
+> -        * Use the only available state, until multiple state support is added
+> -        * to the governor.
+>          */
+>         genpd->max_off_time_ns = min_off_time_ns -
+> -               genpd->states[0].power_on_latency_ns;
+> +                       genpd->states[state].power_on_latency_ns;
+>         return true;
+>  }
+>
+> +static bool default_power_down_ok(struct dev_pm_domain *pd)
+> +{
+> +       struct generic_pm_domain *genpd = pd_to_genpd(pd);
+> +       unsigned int last_state_idx = genpd->state_count - 1;
+> +       struct gpd_link *link;
+> +       bool retval = false;
+> +       unsigned int i;
+> +
+> +       /*
+> +        * if there was no change on max_off_time, we can return the
+> +        * cached value and we dont need to find a new target_state
+> +        */
+
+The related code speaks for itself, I think you can drop the above comment.
+
+> +       if (!genpd->max_off_time_changed)
+> +               return genpd->cached_power_down_ok;
+> +
+> +       /*
+> +        * We have to invalidate the cached results for the masters, so
+> +        * use the observation that default_power_down_ok() is not
+> +        * going to be called for any master until this instance
+> +        * returns.
+> +        */
+> +       list_for_each_entry(link, &genpd->slave_links, slave_node)
+> +               link->master->max_off_time_changed = true;
+> +
+> +       genpd->max_off_time_ns = -1;
+> +       genpd->max_off_time_changed = false;
+> +
+> +       /* find a state to power down to, starting from the deepest */
+
+Please start sentence with an upper case letter and end it with a dot.
+
+> +       for (i = 0; i < genpd->state_count; i++) {
+> +               if (power_down_ok_for_state(pd, last_state_idx - i)) {
+> +                       genpd->state_idx = last_state_idx - i;
+> +                       retval = true;
+
+Instead of assigning a local copy "retval", I think you can assign
+genpd->cached_power_down_ok and later below just return its value.
+
+> +                       break;
+> +               }
+> +       }
+
+I think you should convert this to a while loop instead as I think it
+becomes easier to understand what goes on.
+
+> +
+> +       genpd->cached_power_down_ok = retval;
+> +       return retval;
+> +}
+> +
+>  static bool always_on_power_down_ok(struct dev_pm_domain *domain)
+>  {
+>         return false;
+> --
+> 2.1.4
+>
+
+Kind regards
+Uffe
