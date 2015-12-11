@@ -1,78 +1,119 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH RFC 05/27] PM / Domains: remove old power on/off latencies.
-Date: Fri, 11 Dec 2015 10:16:47 +0100
-Message-ID: <CAPDyKFpHaUvKnCQBf32=iTKbc7e7jyZyOU6zc-bW2tOv_BSxWA@mail.gmail.com>
-References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
-	<1447799871-56374-6-git-send-email-lina.iyer@linaro.org>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [RFC PATCH 5/8] arm64: parse cpu capacity from DT
+Date: Fri, 11 Dec 2015 10:07:35 +0000
+Message-ID: <20151211100735.GG14571@e106622-lin>
+References: <1448288921-30307-1-git-send-email-juri.lelli@arm.com>
+ <1448288921-30307-6-git-send-email-juri.lelli@arm.com>
+ <566988E4.1000003@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1447799871-56374-6-git-send-email-lina.iyer@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Axel Haslam <ahaslam@baylibre.com>, Marc Titinger <mtitinger@baylibre.com>, Axel Haslam <ahaslam+renesas@baylibre.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <566988E4.1000003@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, Mark Brown <broonie@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 17 November 2015 at 23:37, Lina Iyer <lina.iyer@linaro.org> wrote:
-> From: Axel Haslam <ahaslam+renesas@baylibre.com>
->
-> Now that all known users have been converted to use state latencies,
-> we can remove the latency field in the generic_pm_domain structure.
+Hi,
 
-I couldn't see that happen in this patchset.
+On 10/12/15 14:15, Dietmar Eggemann wrote:
+> On 23/11/15 14:28, Juri Lelli wrote:
+> > With the introduction of cpu capacity bindings, CPU capacities can now be
+> > extracted from DT. Add parsing of such information at boot time. Also,
+> > store such information using per CPU variables, as we do for arm.
+> > 
+> > Cc: Catalin Marinas <catalin.marinas@arm.com>
+> > Cc: Will Deacon <will.deacon@arm.com>
+> > Cc: Mark Brown <broonie@linaro.org>
+> > Cc: Sudeep Holla <sudeep.holla@arm.com>
+> > Signed-off-by: Juri Lelli <juri.lelli@arm.com>
+> > ---
+> >  arch/arm64/kernel/topology.c | 46 ++++++++++++++++++++++++++++++++++++++++++++
+> >  1 file changed, 46 insertions(+)
+> 
+> A lot of code disappears if you get rid of capacity-scale.
+> 
 
-As arch/arm/mach-imx/gpc.c is still using this, you will break that platform.
+Some code disappears yes, but I'll have to put some other code to
+normalize capacities w.r.t. the highest capacity amongst CPUs. Not
+a problem, though :-).
 
-Kind regards
-Uffe
+Thanks,
 
->
-> Signed-off-by: Axel Haslam <ahaslam+renesas@baylibre.com>
-> ---
->  drivers/base/power/domain.c | 15 ---------------
->  include/linux/pm_domain.h   |  2 --
->  2 files changed, 17 deletions(-)
->
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 3fb4c93..c300293 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -1248,21 +1248,6 @@ static int genpd_alloc_states_data(struct generic_pm_domain *genpd,
->                 genpd->states[i].param = st[i].param;
->         }
->
-> -       /*
-> -        * Copy the latency values To keep compatibility with
-> -        * platforms that are not converted to use the multiple states.
-> -        * This will be removed once all platforms are converted to use
-> -        * multiple states. note that non converted platforms will use the
-> -        * default single off state.
-> -        */
-> -       if (genpd->power_on_latency_ns != 0)
-> -               genpd->states[0].power_on_latency_ns =
-> -                               genpd->power_on_latency_ns;
-> -
-> -       if (genpd->power_off_latency_ns != 0)
-> -               genpd->states[0].power_off_latency_ns =
-> -                               genpd->power_off_latency_ns;
-> -
->         genpd->state_count = st_count;
->
->         /* to save memory, Name allocation will happen if debug is enabled */
-> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> index 15df24c..108a4b3 100644
-> --- a/include/linux/pm_domain.h
-> +++ b/include/linux/pm_domain.h
-> @@ -61,9 +61,7 @@ struct generic_pm_domain {
->         unsigned int prepared_count;    /* Suspend counter of prepared devices */
->         bool suspend_power_off; /* Power status before system suspend */
->         int (*power_off)(struct generic_pm_domain *domain);
-> -       s64 power_off_latency_ns;
->         int (*power_on)(struct generic_pm_domain *domain);
-> -       s64 power_on_latency_ns;
->         struct gpd_dev_ops dev_ops;
->         s64 max_off_time_ns;    /* Maximum allowed "suspended" time. */
->         bool max_off_time_changed;
-> --
-> 2.1.4
->
+- Juri
+
+> > 
+> > diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
+> > index 694f6de..4423cc5 100644
+> > --- a/arch/arm64/kernel/topology.c
+> > +++ b/arch/arm64/kernel/topology.c
+> > @@ -23,6 +23,45 @@
+> >  #include <asm/cputype.h>
+> >  #include <asm/topology.h>
+> >  
+> > +static DEFINE_PER_CPU(unsigned long, cpu_scale) = SCHED_CAPACITY_SCALE;
+> > +
+> > +unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
+> > +{
+> > +	return per_cpu(cpu_scale, cpu);
+> > +}
+> > +
+> > +static void set_capacity_scale(unsigned int cpu, unsigned long capacity)
+> > +{
+> > +	per_cpu(cpu_scale, cpu) = capacity;
+> > +}
+> > +
+> > +static u32 capacity_scale = SCHED_CAPACITY_SCALE;
+> > +
+> > +static void __init parse_cpu_capacity(struct device_node *cpu_node, int cpu)
+> > +{
+> > +	int ret;
+> > +	u32 cpu_capacity;
+> > +
+> > +	ret = of_property_read_u32(cpu_node,
+> > +				   "capacity",
+> > +				   &cpu_capacity);
+> > +	if (!ret) {
+> > +		u64 capacity;
+> > +
+> > +		/*
+> > +		 * Enforce capacity <= capacity-scale.
+> > +		 */
+> > +		cpu_capacity = cpu_capacity <= capacity_scale ? cpu_capacity :
+> > +			capacity_scale;
+> > +		capacity = (cpu_capacity << SCHED_CAPACITY_SHIFT) /
+> > +			capacity_scale;
+> > +
+> > +		set_capacity_scale(cpu, capacity);
+> > +		pr_info("CPU%d: DT cpu_capacity %lu\n",
+> > +			cpu, arch_scale_cpu_capacity(NULL, cpu));
+> > +	}
+> > +}
+> > +
+> >  static int __init get_cpu_for_node(struct device_node *node)
+> >  {
+> >  	struct device_node *cpu_node;
+> > @@ -34,6 +73,7 @@ static int __init get_cpu_for_node(struct device_node *node)
+> >  
+> >  	for_each_possible_cpu(cpu) {
+> >  		if (of_get_cpu_node(cpu, NULL) == cpu_node) {
+> > +			parse_cpu_capacity(cpu_node, cpu);
+> >  			of_node_put(cpu_node);
+> >  			return cpu;
+> >  		}
+> > @@ -173,6 +213,12 @@ static int __init parse_dt_topology(void)
+> >  		return 0;
+> >  	}
+> >  
+> > +	if (!of_property_read_u32(cn, "capacity-scale", &capacity_scale))
+> > +		pr_info("DT cpus capacity-scale %u\n", capacity_scale);
+> > +	else
+> > +		pr_debug("DT cpus capacity-scale not found: assuming %u\n",
+> > +			capacity_scale);
+> > +
+> >  	/*
+> >  	 * When topology is provided cpu-map is essentially a root
+> >  	 * cluster with restricted subnodes.
+> > 
+> 
