@@ -1,96 +1,134 @@
-From: Imre Deak <imre.deak@intel.com>
-Subject: Re: [PATCH v2] PM / Runtime: Introduce
- pm_runtime_get_noidle
-Date: Fri, 11 Dec 2015 14:54:45 +0200
-Message-ID: <1449838485.11262.20.camel@intel.com>
-References: <1449675920-12986-1-git-send-email-joonas.lahtinen@linux.intel.com>
- <1965611.CCxSd8EYaz@vostro.rjw.lan> <1449782440.28642.5.camel@intel.com>
- <5590453.QflIsWdzXr@vostro.rjw.lan>
-Reply-To: imre.deak@intel.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-In-Reply-To: <5590453.QflIsWdzXr@vostro.rjw.lan>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, linux-pm@vger.kernel.org
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: [PATCH] clk: exynos: use irqsave version of spin_lock to avoid
+ deadlock with irqs
+Date: Fri, 11 Dec 2015 15:38:40 +0100
+Message-ID: <1449844798-27384-1-git-send-email-m.szyprowski@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.w1.samsung.com ([210.118.77.14]:45768 "EHLO
+	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751227AbbLKOkN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Dec 2015 09:40:13 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Mike Turquette <mturquette@baylibre.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, Thomas Abraham <thomas.ab@samsung.com>, Ben Gamari <ben@smart-cactus.org>, Lukasz Majewski <l.majewski@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, stable@vger.kernel.org
 
-T24gdG8sIDIwMTUtMTItMTAgYXQgMjM6MTQgKzAxMDAsIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3Rl
-Ogo+IE9uIFRodXJzZGF5LCBEZWNlbWJlciAxMCwgMjAxNSAxMToyMDo0MCBQTSBJbXJlIERlYWsg
-d3JvdGU6Cj4gPiBPbiBUaHUsIDIwMTUtMTItMTAgYXQgMjI6NDIgKzAxMDAsIFJhZmFlbCBKLiBX
-eXNvY2tpIHdyb3RlOgo+ID4gPiBPbiBUaHVyc2RheSwgRGVjZW1iZXIgMTAsIDIwMTUgMTA6MzY6
-MzcgUE0gUmFmYWVsIEouIFd5c29ja2kKPiA+ID4gd3JvdGU6Cj4gPiA+ID4gT24gVGh1cnNkYXks
-IERlY2VtYmVyIDEwLCAyMDE1IDExOjQzOjUwIEFNIEltcmUgRGVhayB3cm90ZToKPiA+ID4gPiA+
-IE9uIFRodSwgMjAxNS0xMi0xMCBhdCAwMTo1OCArMDEwMCwgUmFmYWVsIEouIFd5c29ja2kgd3Jv
-dGU6Cj4gPiA+ID4gPiA+IE9uIFdlZG5lc2RheSwgRGVjZW1iZXIgMDksIDIwMTUgMDY6MjI6MTkg
-UE0gSm9vbmFzIExhaHRpbmVuCj4gPiA+ID4gPiA+IHdyb3RlOgo+ID4gPiA+ID4gPiA+IEludHJv
-ZHVjZSBwbV9ydW50aW1lX2dldF9ub2lkbGUgdG8gZm9yIHNpdHVhdGlvbnMgd2hlcmUKPiA+ID4g
-PiA+ID4gPiBpdCBpcwo+ID4gPiA+ID4gPiA+IG5vdAo+ID4gPiA+ID4gPiA+IGRlc2lyZWFibGUg
-dG8gdG91Y2ggYW4gaWRsaW5nIGRldmljZS4gT25lIHVzZSBzY2VuYXJpbyBpcwo+ID4gPiA+ID4g
-PiA+IHBlcmlvZGljCj4gPiA+ID4gPiA+ID4gaGFuZ2NoZWNrcyBwZXJmb3JtZWQgYnkgdGhlIGRy
-bS9pOTE1IGRyaXZlciB3aGljaCBjYW4gYmUKPiA+ID4gPiA+ID4gPiBvbWl0dGVkCj4gPiA+ID4g
-PiA+ID4gb24gYSBkZXZpY2UgaW4gYSBydW50aW1lIGlkbGUgc3RhdGUuCj4gPiA+ID4gPiA+ID4g
-Cj4gPiA+ID4gPiA+ID4gdjI6Cj4gPiA+ID4gPiA+ID4gLSBGaXggaW5jb25zaXN0ZW50IHJldHVy
-biB2YWx1ZSB3aGVuICFDT05GSUdfUE0uCj4gPiA+ID4gPiA+ID4gLSBVcGRhdGUgZG9jdW1lbnRh
-dGlvbiBmb3IgYm9vbCByZXR1cm4gdmFsdWUKPiA+ID4gPiA+ID4gPiAKPiA+ID4gPiA+ID4gPiBT
-aWduZWQtb2ZmLWJ5OiBKb29uYXMgTGFodGluZW4gPGpvb25hcy5sYWh0aW5lbkBsaW51eC5pbnQK
-PiA+ID4gPiA+ID4gPiBlbC5jCj4gPiA+ID4gPiA+ID4gb20+Cj4gPiA+ID4gPiA+ID4gUmVwb3J0
-ZWQtYnk6IENocmlzIFdpbHNvbiA8Y2hyaXNAY2hyaXMtd2lsc29uLmNvLnVrPgo+ID4gPiA+ID4g
-PiA+IENjOiBDaHJpcyBXaWxzb24gPGNocmlzQGNocmlzLXdpbHNvbi5jby51az4KPiA+ID4gPiA+
-ID4gPiBDYzogIlJhZmFlbCBKLiBXeXNvY2tpIiA8cmp3QHJqd3lzb2NraS5uZXQ+Cj4gPiA+ID4g
-PiA+ID4gQ2M6IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZwo+ID4gPiA+ID4gPiAKPiA+ID4gPiA+
-ID4gV2VsbCwgSSBkb24ndCBxdWl0ZSBzZWUgaG93IHRoaXMgY2FuIGJlIHVzZWQgaW4gYSBub24t
-cmFjeQo+ID4gPiA+ID4gPiB3YXkKPiA+ID4gPiA+ID4gd2l0aG91dCBkb2luZyBhbiBhZGRpdGlv
-bmFsIHBtX3J1bnRpbWVfcmVzdW1lKCkgb3IKPiA+ID4gPiA+ID4gc29tZXRoaW5nCj4gPiA+ID4g
-PiA+IGxpa2UKPiA+ID4gPiA+ID4gdGhhdCBpbiB0aGUgc2FtZSBjb2RlIHBhdGguCj4gPiA+ID4g
-PiAKPiA+ID4gPiA+IFdlIGRvbid0IHdhbnQgdG8gcmVzdW1lLCB0aGF0IHdvdWxkIGJlIHRoZSB3
-aG9sZSBwb2ludC4gV2UnZAo+ID4gPiA+ID4gbGlrZQo+ID4gPiA+ID4gdG8KPiA+ID4gPiA+IGVu
-c3VyZSB0aGF0IHdlIGhvbGQgYSByZWZlcmVuY2UgX2FuZF8gdGhlIGRldmljZSBpcyBhbHJlYWR5
-Cj4gPiA+ID4gPiBhY3RpdmUuIFNvCj4gPiA+ID4gPiBBRkFJQ1Mgd2UnZCBuZWVkIHRvIGNoZWNr
-IHJ1bnRpbWVfc3RhdHVzID09IFJQTV9BQ1RJVkUgaW4KPiA+ID4gPiA+IGFkZGl0aW9uCj4gPiA+
-ID4gPiBhZnRlciB0YWtpbmcgdGhlIHJlZmVyZW5jZS4KPiA+ID4gPiAKPiA+ID4gPiBSaWdodCwg
-YW5kIHRoYXQgdW5kZXIgdGhlIGxvY2suCj4gPiA+IAo+ID4gPiBXaGljaCBiYXNpY2FsbHkgbWVh
-bnMgeW91IGNhbiBjYWxsIHBtX3J1bnRpbWVfcmVzdW1lKCkganVzdCBmaW5lLAo+ID4gPiBiZWNh
-dXNlIGl0IHdpbGwgZG8gbm90aGluZyBpZiB0aGUgc3RhdHVzIGlzIFJQTV9BQ1RJVkUgYWxyZWFk
-eS4KPiA+ID4gCj4gPiA+IFNvIHJlYWxseSwgd2h5IGRvbid0IHlvdSB1c2UgcG1fcnVudGltZV9n
-ZXRfc3luYygpPwo+ID4gCj4gPiBUaGUgZGlmZmVyZW5jZSB3b3VsZCBiZSB0aGF0IGlmIHRoZSBz
-dGF0dXMgaXMgbm90IFJQTV9BQ1RJVkUKPiA+IGFscmVhZHkgd2UKPiA+IHdvdWxkIGRyb3AgdGhl
-IHJlZmVyZW5jZSBhbmQgcmVwb3J0IGVycm9yLiBUaGUgY2FsbGVyIHdvdWxkIGluIHRoaXMKPiA+
-IGNhc2UgZm9yZWdvIG9mIGRvaW5nIHNvbWV0aGluZywgc2luY2Ugd2UgdGhlIGRldmljZSBpcyBz
-dXNwZW5kZWQgb3IKPiA+IG9uCj4gPiB0aGUgd2F5IHRvIGJlaW5nIHN1c3BlbmRlZC4gT25lIGV4
-YW1wbGUgb2Ygc3VjaCBhIHNjZW5hcmlvIGlzIGEKPiA+IHdhdGNoZG9nIGxpa2UgZnVuY3Rpb25h
-bGl0eTogdGhlIHdhdGNoZG9nIHdvcmsgd291bGQKPiA+IGNhbGwgcG1fcnVudGltZV9nZXRfbm9p
-ZGxlKCkgYW5kIGNoZWNrIGlmIHRoZSBkZXZpY2UgaXMgb2sgYnkgZG9pbmcKPiA+IHNvbWUgSFcg
-YWNjZXNzLCBidXQgb25seSBpZiB0aGUgZGV2aWNlIGlzIHBvd2VyZWQuIE90aGVyd2lzZSB0aGUK
-PiA+IHdvcmsKPiA+IGl0ZW0gd291bGQgZG8gbm90aGluZyAobWVhbmluZyBpdCBhbHNvIHdvbid0
-IHJlc2NoZWR1bGUgaXRzZWxmKS4KPiA+IFRoZQo+ID4gd2F0Y2hkb2cgd29yayB3b3VsZCBnZXQg
-cmVzY2hlZHVsZWQgbmV4dCB0aW1lIHRoZSBkZXZpY2UgaXMgd29rZW4KPiA+IHVwCj4gPiBhbmQg
-c29tZSB3b3JrIGlzIHN1Ym1pdHRlZCB0byB0aGUgZGV2aWNlLgo+IAo+IFNvIGZpcnN0IG9mIGFs
-bCB0aGUgbmFtZSAicG1fcnVudGltZV9nZXRfbm9pZGxlIiBkb2Vzbid0IG1ha2Ugc2Vuc2UuCj4g
-Cj4gSSBndWVzcyB3aGF0IHlvdSBuZWVkIGlzIHNvbWV0aGluZyBsaWtlCj4gCj4gYm9vbCBwbV9y
-dW50aW1lX2dldF9pZl9hY3RpdmUoc3RydWN0IGRldmljZSAqZGV2KQo+IHsKPiAJdW5zaWduZWQg
-bG9nIGZsYWdzOwo+IAlib29sIHJldDsKPiAKPiAJc3Bpbl9sb2NrX2lycXNhdmUoJmRldi0+cG93
-ZXIubG9jaywgZmxhZ3MpOwo+IAo+IAlpZiAoZGV2LT5wb3dlci5ydW50aW1lX3N0YXR1cyA9PSBS
-UE1fQUNUSVZFKSB7CgpCdXQgaGVyZSB1c2FnZV9jb3VudCBjb3VsZCBiZSB6ZXJvLCBtZWFuaW5n
-IHRoYXQgdGhlIGRldmljZSBpcyBhbHJlYWR5Cm9uIHRoZSB3YXkgdG8gYmUgc3VzcGVuZGVkIChh
-dXRvc3VzcGVuZCBvciBBU1lOQyBzdXNwZW5kKSwgbm8/IEluIHRoYXQKY2FzZSB3ZSBkb24ndCB3
-YW50IHRvIHJldHVybiBzdWNjZXNzLiBUaGF0IHdvdWxkIHVubmVjZXNzYXJpbHkgcHJvbG9uZwp0
-aGUgdGltZSB0aGUgZGV2aWNlIGlzIGtlcHQgYWN0aXZlLgoKPiAJCWF0b21pY19pbmMoJmRldi0+
-cG93ZXIudXNhZ2VfY291bnQpOwo+IAkJcmV0ID0gdHJ1ZTsKPiAJfSBlbHNlIHsKPiAJCXJldCA9
-IGZhbHNlOwo+IAl9Cj4gCj4gCXNwaW5fdW5sb2NrX2lycXJlc3RvcmUoJmRldi0+cG93ZXIubG9j
-aywgZmxhZ3MpOwo+IH0KPiAKPiBhbmQgdGhlIGNhbGxlciB3aWxsIHNpbXBseSBiYWlsIG91dCBp
-ZiAiZmFsc2UiIGlzIHJldHVybmVkLCBidXQgaWYKPiAidHJ1ZSIKPiBpcyByZXR1cm5lZCwgaXQg
-d2lsbCBoYXZlIHRvIGRyb3AgdGhlIHVzYWdlIGNvdW50LCByaWdodD8KClllcy4KCi0tSW1yZQpf
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpJbnRlbC1nZngg
-bWFpbGluZyBsaXN0CkludGVsLWdmeEBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cDovL2xpc3Rz
-LmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ludGVsLWdmeAo=
+It is allowed to enable/disable clocks from interrupts, so common Exynos
+ARM clock management code for CPUfreq should use 'irqsave' version of
+spin_lock calls to avoid potential deadlock caused by spin_lock recursion.
+The same spin_lock is used by gate/mux clocks during enable/disable calls.
+
+This deadlock, can be reproduced by enabling CPUfreq (ondemand or
+userspace) and decoding video with s5p-mfc driver.
+
+Relevant stack trace:
+[ 5928.061534] BUG: spinlock recursion on CPU#0, bash/1252
+[ 5928.061609]  lock: 0xee80454c, .magic: dead4ead, .owner: bash/1252, .owner_cpu: 0
+[ 5928.068586] CPU: 0 PID: 1252 Comm: bash Tainted: G        W       4.4.0-rc4-00001-g447a7fd #678
+[ 5928.077260] Hardware name: SAMSUNG EXYNOS (Flattened Device Tree)
+[ 5928.083359] [<c00153dc>] (unwind_backtrace) from [<c00121b4>] (show_stack+0x10/0x14)
+[ 5928.091072] [<c00121b4>] (show_stack) from [<c0213e28>] (dump_stack+0x68/0xb8)
+[ 5928.098275] [<c0213e28>] (dump_stack) from [<c005c1ec>] (do_raw_spin_lock+0x184/0x1ac)
+[ 5928.106177] [<c005c1ec>] (do_raw_spin_lock) from [<c05cfa98>] (_raw_spin_lock_irqsave+0x20/0x28)
+[ 5928.114943] [<c05cfa98>] (_raw_spin_lock_irqsave) from [<c0468698>] (clk_gate_endisable+0x24/0x98)
+[ 5928.123882] [<c0468698>] (clk_gate_endisable) from [<c0464d40>] (clk_core_disable+0x60/0x84)
+[ 5928.132299] [<c0464d40>] (clk_core_disable) from [<c0465e00>] (clk_disable+0x24/0x30)
+[ 5928.140117] [<c0465e00>] (clk_disable) from [<c03f3b80>] (s5p_mfc_handle_frame+0x254/0x860)
+[ 5928.148445] [<c03f3b80>] (s5p_mfc_handle_frame) from [<c03f4b34>] (s5p_mfc_irq+0x890/0xa24)
+[ 5928.156778] [<c03f4b34>] (s5p_mfc_irq) from [<c00627bc>] (handle_irq_event_percpu+0x50/0x14c)
+[ 5928.165283] [<c00627bc>] (handle_irq_event_percpu) from [<c00628f0>] (handle_irq_event+0x38/0x5c)
+[ 5928.174143] [<c00628f0>] (handle_irq_event) from [<c0065864>] (handle_fasteoi_irq+0xdc/0x1a4)
+[ 5928.182645] [<c0065864>] (handle_fasteoi_irq) from [<c0062090>] (generic_handle_irq+0x18/0x28)
+[ 5928.191236] [<c0062090>] (generic_handle_irq) from [<c00621a4>] (__handle_domain_irq+0x6c/0xdc)
+[ 5928.199917] [<c00621a4>] (__handle_domain_irq) from [<c0009470>] (gic_handle_irq+0x4c/0x98)
+[ 5928.208249] [<c0009470>] (gic_handle_irq) from [<c0012c54>] (__irq_svc+0x54/0x90)
+[ 5928.215709] Exception stack(0xeddb5cb8 to 0xeddb5d00)
+[ 5928.220745] 5ca0:                                                       ee80454c faddfadc
+[ 5928.228906] 5cc0: 00000000 01000001 ee831ce0 f8114200 ee807c00 01130520 00000403 eddb5d84
+[ 5928.237063] 5ce0: ee807c48 2faf0800 ee807c0c eddb5d08 c046b618 c046b634 20000053 ffffffff
+[ 5928.245225] [<c0012c54>] (__irq_svc) from [<c046b634>] (exynos_cpuclk_notifier_cb+0x170/0x270)
+[ 5928.253823] [<c046b634>] (exynos_cpuclk_notifier_cb) from [<c003cb58>] (notifier_call_chain+0x44/0x84)
+[ 5928.263106] [<c003cb58>] (notifier_call_chain) from [<c003ccd4>] (__srcu_notifier_call_chain+0x6c/0x9c)
+[ 5928.272480] [<c003ccd4>] (__srcu_notifier_call_chain) from [<c003cd1c>] (srcu_notifier_call_chain+0x18/0x20)
+[ 5928.282288] [<c003cd1c>] (srcu_notifier_call_chain) from [<c0464ed0>] (__clk_notify+0x6c/0x74)
+[ 5928.290881] [<c0464ed0>] (__clk_notify) from [<c0465388>] (clk_propagate_rate_change+0xa0/0xac)
+[ 5928.299561] [<c0465388>] (clk_propagate_rate_change) from [<c0465378>] (clk_propagate_rate_change+0x90/0xac)
+[ 5928.309370] [<c0465378>] (clk_propagate_rate_change) from [<c04666fc>] (clk_core_set_rate_nolock+0x64/0xa8)
+[ 5928.319091] [<c04666fc>] (clk_core_set_rate_nolock) from [<c0466760>] (clk_set_rate+0x20/0x30)
+[ 5928.327686] [<c0466760>] (clk_set_rate) from [<c0428c70>] (set_target+0xe8/0x23c)
+[ 5928.335152] [<c0428c70>] (set_target) from [<c04244d0>] (__cpufreq_driver_target+0x184/0x29c)
+[ 5928.343655] [<c04244d0>] (__cpufreq_driver_target) from [<c0427128>] (cpufreq_set+0x44/0x64)
+[ 5928.352074] [<c0427128>] (cpufreq_set) from [<c0423948>] (store_scaling_setspeed+0x5c/0x74)
+[ 5928.360407] [<c0423948>] (store_scaling_setspeed) from [<c04238d0>] (store+0x7c/0x98)
+[ 5928.368221] [<c04238d0>] (store) from [<c0132540>] (sysfs_kf_write+0x44/0x48)
+[ 5928.375338] [<c0132540>] (sysfs_kf_write) from [<c0131b9c>] (kernfs_fop_write+0xb8/0x1bc)
+[ 5928.383496] [<c0131b9c>] (kernfs_fop_write) from [<c00d71f8>] (__vfs_write+0x2c/0xd4)
+[ 5928.391308] [<c00d71f8>] (__vfs_write) from [<c00d7de8>] (vfs_write+0xa0/0x144)
+[ 5928.398598] [<c00d7de8>] (vfs_write) from [<c00d8048>] (SyS_write+0x44/0x84)
+[ 5928.405631] [<c00d8048>] (SyS_write) from [<c000f540>] (ret_fast_syscall+0x0/0x3c)
+
+Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+CC: stable@vger.kernel.org  # v4.2+
+---
+ drivers/clk/samsung/clk-cpu.c | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/clk/samsung/clk-cpu.c b/drivers/clk/samsung/clk-cpu.c
+index 2fe37f708dc7..813003d6ce09 100644
+--- a/drivers/clk/samsung/clk-cpu.c
++++ b/drivers/clk/samsung/clk-cpu.c
+@@ -148,6 +148,7 @@ static int exynos_cpuclk_pre_rate_change(struct clk_notifier_data *ndata,
+ 	unsigned long alt_prate = clk_get_rate(cpuclk->alt_parent);
+ 	unsigned long alt_div = 0, alt_div_mask = DIV_MASK;
+ 	unsigned long div0, div1 = 0, mux_reg;
++	unsigned long flags;
+ 
+ 	/* find out the divider values to use for clock data */
+ 	while ((cfg_data->prate * 1000) != ndata->new_rate) {
+@@ -156,7 +157,7 @@ static int exynos_cpuclk_pre_rate_change(struct clk_notifier_data *ndata,
+ 		cfg_data++;
+ 	}
+ 
+-	spin_lock(cpuclk->lock);
++	spin_lock_irqsave(cpuclk->lock, flags);
+ 
+ 	/*
+ 	 * For the selected PLL clock frequency, get the pre-defined divider
+@@ -212,7 +213,7 @@ static int exynos_cpuclk_pre_rate_change(struct clk_notifier_data *ndata,
+ 				DIV_MASK_ALL);
+ 	}
+ 
+-	spin_unlock(cpuclk->lock);
++	spin_unlock_irqrestore(cpuclk->lock, flags);
+ 	return 0;
+ }
+ 
+@@ -223,6 +224,7 @@ static int exynos_cpuclk_post_rate_change(struct clk_notifier_data *ndata,
+ 	const struct exynos_cpuclk_cfg_data *cfg_data = cpuclk->cfg;
+ 	unsigned long div = 0, div_mask = DIV_MASK;
+ 	unsigned long mux_reg;
++	unsigned long flags;
+ 
+ 	/* find out the divider values to use for clock data */
+ 	if (cpuclk->flags & CLK_CPU_NEEDS_DEBUG_ALT_DIV) {
+@@ -233,7 +235,7 @@ static int exynos_cpuclk_post_rate_change(struct clk_notifier_data *ndata,
+ 		}
+ 	}
+ 
+-	spin_lock(cpuclk->lock);
++	spin_lock_irqsave(cpuclk->lock, flags);
+ 
+ 	/* select mout_apll as the alternate parent */
+ 	mux_reg = readl(base + E4210_SRC_CPU);
+@@ -246,7 +248,7 @@ static int exynos_cpuclk_post_rate_change(struct clk_notifier_data *ndata,
+ 	}
+ 
+ 	exynos_set_safe_div(base, div, div_mask);
+-	spin_unlock(cpuclk->lock);
++	spin_unlock_irqrestore(cpuclk->lock, flags);
+ 	return 0;
+ }
+ 
+-- 
+1.9.2
+
