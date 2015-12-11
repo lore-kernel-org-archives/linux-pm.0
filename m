@@ -1,112 +1,275 @@
-From: Dave Gordon <david.s.gordon@intel.com>
-Subject: Re: [Intel-gfx] [PATCH v2] PM / Runtime: Introduce
- pm_runtime_get_noidle
-Date: Fri, 11 Dec 2015 11:08:59 +0000
-Message-ID: <566AAECB.5040605@intel.com>
-References: <1449675920-12986-1-git-send-email-joonas.lahtinen@linux.intel.com>
- <1965611.CCxSd8EYaz@vostro.rjw.lan> <1449782440.28642.5.camel@intel.com>
- <5590453.QflIsWdzXr@vostro.rjw.lan>
+From: Juri Lelli <Juri.Lelli@arm.com>
+Subject: Re: [RFCv6 PATCH 07/10] sched/fair: jump to max OPP when crossing UP
+ threshold
+Date: Fri, 11 Dec 2015 11:12:50 +0000
+Message-ID: <20151211111250.GA8070@e106622-lin>
+References: <1449641971-20827-1-git-send-email-smuckle@linaro.org>
+ <1449641971-20827-8-git-send-email-smuckle@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:8394 "EHLO mga03.intel.com"
+Received: from foss.arm.com ([217.140.101.70]:60720 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751220AbbLKLJD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Fri, 11 Dec 2015 06:09:03 -0500
-In-Reply-To: <5590453.QflIsWdzXr@vostro.rjw.lan>
+	id S1750945AbbLKLM5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 11 Dec 2015 06:12:57 -0500
+Content-Disposition: inline
+In-Reply-To: <1449641971-20827-8-git-send-email-smuckle@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, imre.deak@intel.com
-Cc: Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, linux-pm@vger.kernel.org
+To: Steve Muckle <steve.muckle@linaro.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 
-On 10/12/15 22:14, Rafael J. Wysocki wrote:
-> On Thursday, December 10, 2015 11:20:40 PM Imre Deak wrote:
->> On Thu, 2015-12-10 at 22:42 +0100, Rafael J. Wysocki wrote:
->>> On Thursday, December 10, 2015 10:36:37 PM Rafael J. Wysocki wrote:
->>>> On Thursday, December 10, 2015 11:43:50 AM Imre Deak wrote:
->>>>> On Thu, 2015-12-10 at 01:58 +0100, Rafael J. Wysocki wrote:
->>>>>> On Wednesday, December 09, 2015 06:22:19 PM Joonas Lahtinen
->>>>>> wrote:
->>>>>>> Introduce pm_runtime_get_noidle to for situations where it is
->>>>>>> not
->>>>>>> desireable to touch an idling device. One use scenario is
->>>>>>> periodic
->>>>>>> hangchecks performed by the drm/i915 driver which can be
->>>>>>> omitted
->>>>>>> on a device in a runtime idle state.
->>>>>>>
->>>>>>> v2:
->>>>>>> - Fix inconsistent return value when !CONFIG_PM.
->>>>>>> - Update documentation for bool return value
->>>>>>>
->>>>>>> Signed-off-by: Joonas Lahtinen <joonas.lahtinen@linux.intel.c
->>>>>>> om>
->>>>>>> Reported-by: Chris Wilson <chris@chris-wilson.co.uk>
->>>>>>> Cc: Chris Wilson <chris@chris-wilson.co.uk>
->>>>>>> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
->>>>>>> Cc: linux-pm@vger.kernel.org
->>>>>>
->>>>>> Well, I don't quite see how this can be used in a non-racy way
->>>>>> without doing an additional pm_runtime_resume() or something
->>>>>> like
->>>>>> that in the same code path.
->>>>>
->>>>> We don't want to resume, that would be the whole point. We'd like
->>>>> to
->>>>> ensure that we hold a reference _and_ the device is already
->>>>> active. So
->>>>> AFAICS we'd need to check runtime_status == RPM_ACTIVE in
->>>>> addition
->>>>> after taking the reference.
->>>>
->>>> Right, and that under the lock.
->>>
->>> Which basically means you can call pm_runtime_resume() just fine,
->>> because it will do nothing if the status is RPM_ACTIVE already.
->>>
->>> So really, why don't you use pm_runtime_get_sync()?
->>
->> The difference would be that if the status is not RPM_ACTIVE already we
->> would drop the reference and report error. The caller would in this
->> case forego of doing something, since we the device is suspended or on
->> the way to being suspended. One example of such a scenario is a
->> watchdog like functionality: the watchdog work would
->> call pm_runtime_get_noidle() and check if the device is ok by doing
->> some HW access, but only if the device is powered. Otherwise the work
->> item would do nothing (meaning it also won't reschedule itself). The
->> watchdog work would get rescheduled next time the device is woken up
->> and some work is submitted to the device.
->
-> So first of all the name "pm_runtime_get_noidle" doesn't make sense.
+Hi Steve,
 
-How about pm_runtime_get_unless_idle(), which would be analogous to 
-kref_get_unless_zero() ?
+On 08/12/15 22:19, Steve Muckle wrote:
+> Since the true utilization of a long running task is not detectable
+> while it is running and might be bigger than the current cpu capacity,
+> create the maximum cpu capacity head room by requesting the maximum
+> cpu capacity once the cpu usage plus the capacity margin exceeds the
+> current capacity. This is also done to try to harm the performance of
+> a task the least.
+> 
+> Original fair-class only version authored by Juri Lelli
+> <juri.lelli@arm.com>.
+> 
+> cc: Ingo Molnar <mingo@redhat.com>
+> cc: Peter Zijlstra <peterz@infradead.org>
+> Signed-off-by: Juri Lelli <juri.lelli@arm.com>
+> Signed-off-by: Steve Muckle <smuckle@linaro.org>
+> ---
+>  kernel/sched/core.c  | 41 ++++++++++++++++++++++++++++++++++++
+>  kernel/sched/fair.c  | 57 --------------------------------------------------
+>  kernel/sched/sched.h | 59 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 100 insertions(+), 57 deletions(-)
+> 
+> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+> index 4c8c353e..3f4d907 100644
+> --- a/kernel/sched/core.c
+> +++ b/kernel/sched/core.c
+> @@ -2869,6 +2869,45 @@ unsigned long long task_sched_runtime(struct task_struct *p)
+>  	return ns;
+>  }
+>  
+> +#ifdef CONFIG_CPU_FREQ_GOV_SCHED
+> +static unsigned long sum_capacity_reqs(unsigned long cfs_cap,
+> +				       struct sched_capacity_reqs *scr)
+> +{
+> +	unsigned long total = cfs_cap + scr->rt;
+> +
+> +	total = total * capacity_margin;
+> +	total /= SCHED_CAPACITY_SCALE;
+> +	total += scr->dl;
+> +	return total;
+> +}
+> +
+> +static void sched_freq_tick(int cpu)
+> +{
+> +	struct sched_capacity_reqs *scr;
+> +	unsigned long capacity_orig, capacity_curr;
+> +
+> +	if (!sched_freq())
+> +		return;
+> +
+> +	capacity_orig = capacity_orig_of(cpu);
+> +	capacity_curr = capacity_curr_of(cpu);
+> +	if (capacity_curr == capacity_orig)
+> +		return;
+> +
+> +	/*
+> +	 * To make free room for a task that is building up its "real"
+> +	 * utilization and to harm its performance the least, request
+> +	 * a jump to max OPP as soon as the margin of free capacity is
+> +	 * impacted (specified by capacity_margin).
+> +	 */
+> +	scr = &per_cpu(cpu_sched_capacity_reqs, cpu);
+> +	if (capacity_curr < sum_capacity_reqs(cpu_util(cpu), scr))
+> +		set_cfs_cpu_capacity(cpu, true, capacity_max);
+> +}
+> +#else
+> +static inline void sched_freq_tick(int cpu) { }
+> +#endif
+> +
+>  /*
+>   * This function gets called by the timer code, with HZ frequency.
+>   * We call it with interrupts disabled.
+> @@ -2895,6 +2934,8 @@ void scheduler_tick(void)
+>  	trigger_load_balance(rq);
+>  #endif
+>  	rq_last_tick_reset(rq);
+> +
+> +	sched_freq_tick(cpu);
 
-.Dave.
+We are not holding rq->lock anymore at this points, and this collides
+with comment in update_cpu_capacity_request(). Can't you just move this
+up before raw_spin_unlock(&rq->lock)?
 
-> I guess what you need is something like
->
-> bool pm_runtime_get_if_active(struct device *dev)
-> {
-> 	unsigned log flags;
-> 	bool ret;
->
-> 	spin_lock_irqsave(&dev->power.lock, flags);
->
-> 	if (dev->power.runtime_status == RPM_ACTIVE) {
-> 		atomic_inc(&dev->power.usage_count);
-> 		ret = true;
-> 	} else {
-> 		ret = false;
-> 	}
->
-> 	spin_unlock_irqrestore(&dev->power.lock, flags);
-> }
->
-> and the caller will simply bail out if "false" is returned, but if "true"
-> is returned, it will have to drop the usage count, right?
->
-> Thanks,
-> Rafael
+Thanks,
 
+- Juri
+
+>  }
+>  
+>  #ifdef CONFIG_NO_HZ_FULL
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> index 880ceee..4c49f76 100644
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
+> @@ -4199,9 +4199,6 @@ static inline void hrtick_update(struct rq *rq)
+>  }
+>  #endif
+>  
+> -static unsigned long capacity_orig_of(int cpu);
+> -static int cpu_util(int cpu);
+> -
+>  static void update_capacity_of(int cpu)
+>  {
+>  	unsigned long req_cap;
+> @@ -4601,15 +4598,6 @@ static unsigned long target_load(int cpu, int type)
+>  	return max(rq->cpu_load[type-1], total);
+>  }
+>  
+> -static unsigned long capacity_of(int cpu)
+> -{
+> -	return cpu_rq(cpu)->cpu_capacity;
+> -}
+> -
+> -static unsigned long capacity_orig_of(int cpu)
+> -{
+> -	return cpu_rq(cpu)->cpu_capacity_orig;
+> -}
+>  
+>  static unsigned long cpu_avg_load_per_task(int cpu)
+>  {
+> @@ -4779,17 +4767,6 @@ static long effective_load(struct task_group *tg, int cpu, long wl, long wg)
+>  #endif
+>  
+>  /*
+> - * Returns the current capacity of cpu after applying both
+> - * cpu and freq scaling.
+> - */
+> -static unsigned long capacity_curr_of(int cpu)
+> -{
+> -	return cpu_rq(cpu)->cpu_capacity_orig *
+> -	       arch_scale_freq_capacity(NULL, cpu)
+> -	       >> SCHED_CAPACITY_SHIFT;
+> -}
+> -
+> -/*
+>   * Detect M:N waker/wakee relationships via a switching-frequency heuristic.
+>   * A waker of many should wake a different task than the one last awakened
+>   * at a frequency roughly N times higher than one of its wakees.  In order
+> @@ -5033,40 +5010,6 @@ done:
+>  }
+>  
+>  /*
+> - * cpu_util returns the amount of capacity of a CPU that is used by CFS
+> - * tasks. The unit of the return value must be the one of capacity so we can
+> - * compare the utilization with the capacity of the CPU that is available for
+> - * CFS task (ie cpu_capacity).
+> - *
+> - * cfs_rq.avg.util_avg is the sum of running time of runnable tasks plus the
+> - * recent utilization of currently non-runnable tasks on a CPU. It represents
+> - * the amount of utilization of a CPU in the range [0..capacity_orig] where
+> - * capacity_orig is the cpu_capacity available at the highest frequency
+> - * (arch_scale_freq_capacity()).
+> - * The utilization of a CPU converges towards a sum equal to or less than the
+> - * current capacity (capacity_curr <= capacity_orig) of the CPU because it is
+> - * the running time on this CPU scaled by capacity_curr.
+> - *
+> - * Nevertheless, cfs_rq.avg.util_avg can be higher than capacity_curr or even
+> - * higher than capacity_orig because of unfortunate rounding in
+> - * cfs.avg.util_avg or just after migrating tasks and new task wakeups until
+> - * the average stabilizes with the new running time. We need to check that the
+> - * utilization stays within the range of [0..capacity_orig] and cap it if
+> - * necessary. Without utilization capping, a group could be seen as overloaded
+> - * (CPU0 utilization at 121% + CPU1 utilization at 80%) whereas CPU1 has 20% of
+> - * available capacity. We allow utilization to overshoot capacity_curr (but not
+> - * capacity_orig) as it useful for predicting the capacity required after task
+> - * migrations (scheduler-driven DVFS).
+> - */
+> -static int cpu_util(int cpu)
+> -{
+> -	unsigned long util = cpu_rq(cpu)->cfs.avg.util_avg;
+> -	unsigned long capacity = capacity_orig_of(cpu);
+> -
+> -	return (util >= capacity) ? capacity : util;
+> -}
+> -
+> -/*
+>   * select_task_rq_fair: Select target runqueue for the waking task in domains
+>   * that have the 'sd_flag' flag set. In practice, this is SD_BALANCE_WAKE,
+>   * SD_BALANCE_FORK, or SD_BALANCE_EXEC.
+> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+> index ad82274..90d5df6 100644
+> --- a/kernel/sched/sched.h
+> +++ b/kernel/sched/sched.h
+> @@ -1384,7 +1384,66 @@ unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
+>  }
+>  #endif
+>  
+> +#ifdef CONFIG_SMP
+> +static inline unsigned long capacity_of(int cpu)
+> +{
+> +	return cpu_rq(cpu)->cpu_capacity;
+> +}
+> +
+> +static inline unsigned long capacity_orig_of(int cpu)
+> +{
+> +	return cpu_rq(cpu)->cpu_capacity_orig;
+> +}
+> +
+> +/*
+> + * cpu_util returns the amount of capacity of a CPU that is used by CFS
+> + * tasks. The unit of the return value must be the one of capacity so we can
+> + * compare the utilization with the capacity of the CPU that is available for
+> + * CFS task (ie cpu_capacity).
+> + *
+> + * cfs_rq.avg.util_avg is the sum of running time of runnable tasks plus the
+> + * recent utilization of currently non-runnable tasks on a CPU. It represents
+> + * the amount of utilization of a CPU in the range [0..capacity_orig] where
+> + * capacity_orig is the cpu_capacity available at the highest frequency
+> + * (arch_scale_freq_capacity()).
+> + * The utilization of a CPU converges towards a sum equal to or less than the
+> + * current capacity (capacity_curr <= capacity_orig) of the CPU because it is
+> + * the running time on this CPU scaled by capacity_curr.
+> + *
+> + * Nevertheless, cfs_rq.avg.util_avg can be higher than capacity_curr or even
+> + * higher than capacity_orig because of unfortunate rounding in
+> + * cfs.avg.util_avg or just after migrating tasks and new task wakeups until
+> + * the average stabilizes with the new running time. We need to check that the
+> + * utilization stays within the range of [0..capacity_orig] and cap it if
+> + * necessary. Without utilization capping, a group could be seen as overloaded
+> + * (CPU0 utilization at 121% + CPU1 utilization at 80%) whereas CPU1 has 20% of
+> + * available capacity. We allow utilization to overshoot capacity_curr (but not
+> + * capacity_orig) as it useful for predicting the capacity required after task
+> + * migrations (scheduler-driven DVFS).
+> + */
+> +static inline int cpu_util(int cpu)
+> +{
+> +	unsigned long util = cpu_rq(cpu)->cfs.avg.util_avg;
+> +	unsigned long capacity = capacity_orig_of(cpu);
+> +
+> +	return (util >= capacity) ? capacity : util;
+> +}
+> +
+> +/*
+> + * Returns the current capacity of cpu after applying both
+> + * cpu and freq scaling.
+> + */
+> +static inline unsigned long capacity_curr_of(int cpu)
+> +{
+> +	return cpu_rq(cpu)->cpu_capacity_orig *
+> +	       arch_scale_freq_capacity(NULL, cpu)
+> +	       >> SCHED_CAPACITY_SHIFT;
+> +}
+> +
+> +#endif
+> +
+>  #ifdef CONFIG_CPU_FREQ_GOV_SCHED
+> +#define capacity_max SCHED_CAPACITY_SCALE
+>  extern unsigned int capacity_margin;
+>  extern struct static_key __sched_freq;
+>  
+> -- 
+> 2.4.10
+> 
