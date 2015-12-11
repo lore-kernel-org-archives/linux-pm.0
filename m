@@ -1,117 +1,79 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH RFC 07/27] PM / Domains: Read domain residency from DT
-Date: Fri, 11 Dec 2015 12:54:17 +0100
-Message-ID: <CAPDyKFqwmvxvAAkreryrHhMfvs-9sxanOoz+D7kNeKgRorwRJQ@mail.gmail.com>
-References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
-	<1447799871-56374-8-git-send-email-lina.iyer@linaro.org>
+Subject: Re: [Intel-gfx] [PATCH v2] PM / Runtime: Introduce pm_runtime_get_noidle
+Date: Fri, 11 Dec 2015 13:03:50 +0100
+Message-ID: <CAPDyKFr+3-OMmjU0VEywhUa1RWt_aHu6ycLaQ325ds8rygWKyQ@mail.gmail.com>
+References: <1449675920-12986-1-git-send-email-joonas.lahtinen@linux.intel.com>
+	<1965611.CCxSd8EYaz@vostro.rjw.lan>
+	<1449782440.28642.5.camel@intel.com>
+	<5590453.QflIsWdzXr@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f175.google.com ([209.85.220.175]:33525 "EHLO
-	mail-qk0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754370AbbLKLyS (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Dec 2015 06:54:18 -0500
-Received: by qkdb5 with SMTP id b5so34445808qkd.0
-        for <linux-pm@vger.kernel.org>; Fri, 11 Dec 2015 03:54:17 -0800 (PST)
-In-Reply-To: <1447799871-56374-8-git-send-email-lina.iyer@linaro.org>
+Received: from mail-qk0-f179.google.com ([209.85.220.179]:35057 "EHLO
+	mail-qk0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753675AbbLKMDv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Dec 2015 07:03:51 -0500
+Received: by qkfb125 with SMTP id b125so34451586qkf.2
+        for <linux-pm@vger.kernel.org>; Fri, 11 Dec 2015 04:03:50 -0800 (PST)
+In-Reply-To: <5590453.QflIsWdzXr@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Axel Haslam <ahaslam@baylibre.com>, Marc Titinger <mtitinger@baylibre.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, imre.deak@intel.com
+Cc: Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 17 November 2015 at 23:37, Lina Iyer <lina.iyer@linaro.org> wrote:
-> Domains that have expensive suspend resume operations, may require a
-> certain amount of time be spent in an idle state to reap the power
-> saving benefit. Such domains, may provide the residency requirement for
-> a domain state.
->
-> Read the residency for a domain state from the DT. A domain governor may
-> use this information in determining the state for the domain.
->
-> Cc: Axel Haslam <ahaslam@baylibre.com>
-> Cc: Marc Titinger <mtitinger@baylibre.com>
-> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-> ---
->  Documentation/devicetree/bindings/power/power_domain.txt | 7 +++++++
+[...]
 
-Please split DT documentation into a separate patch preceding $subject
-patch. Don't forget to send it to the DT maintainers as well.
-
->  drivers/base/power/domain.c                              | 6 ++++++
->  include/linux/pm_domain.h                                | 1 +
->  3 files changed, 14 insertions(+)
+>> >
+>> > Which basically means you can call pm_runtime_resume() just fine,
+>> > because it will do nothing if the status is RPM_ACTIVE already.
+>> >
+>> > So really, why don't you use pm_runtime_get_sync()?
+>>
+>> The difference would be that if the status is not RPM_ACTIVE already we
+>> would drop the reference and report error. The caller would in this
+>> case forego of doing something, since we the device is suspended or on
+>> the way to being suspended. One example of such a scenario is a
+>> watchdog like functionality: the watchdog work would
+>> call pm_runtime_get_noidle() and check if the device is ok by doing
+>> some HW access, but only if the device is powered. Otherwise the work
+>> item would do nothing (meaning it also won't reschedule itself). The
+>> watchdog work would get rescheduled next time the device is woken up
+>> and some work is submitted to the device.
 >
-> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
-> index ecfaf44..d71da29 100644
-> --- a/Documentation/devicetree/bindings/power/power_domain.txt
-> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
-> @@ -67,6 +67,13 @@ have the following properties -
->                 If omitted, this is assumed to be equal to:
->                         entry-latency-us + exit-latency-us
+> So first of all the name "pm_runtime_get_noidle" doesn't make sense.
 >
-> +       - residency-us:
-> +               Usage: Optional
-> +               Value type: <prop-encoded-array>
-> +               Definition: A u32 value representing the time for which a
-> +               domain must be idle in the state to reap power saving benefits
-> +               of entering the state.
-> +
->         - state-param:
->                 Usage: Optional
->                 Value type: <prop-encoded-array>
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 9a0df09..abc81bd 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -1245,6 +1245,7 @@ static int genpd_alloc_states_data(struct generic_pm_domain *genpd,
->                         st[i].power_on_latency_ns;
->                 genpd->states[i].power_off_latency_ns =
->                         st[i].power_off_latency_ns;
-> +               genpd->states[i].residency_ns = st[i].residency_ns;
->                 genpd->states[i].param = st[i].param;
+> I guess what you need is something like
+>
+> bool pm_runtime_get_if_active(struct device *dev)
+> {
+>         unsigned log flags;
+>         bool ret;
+>
+>         spin_lock_irqsave(&dev->power.lock, flags);
+>
+>         if (dev->power.runtime_status == RPM_ACTIVE) {
+>                 atomic_inc(&dev->power.usage_count);
+>                 ret = true;
+>         } else {
+>                 ret = false;
 >         }
 >
-> @@ -1513,6 +1514,7 @@ static int of_get_genpd_power_state(struct genpd_power_state *genpd_state,
->         const struct of_device_id *match_id;
->         int err = 0;
->         u32 latency;
-> +       u32 residency;
->         u32 param;
+>         spin_unlock_irqrestore(&dev->power.lock, flags);
+> }
 >
->         match_id = of_match_node(power_state_match, state_node);
-> @@ -1554,6 +1556,10 @@ static int of_get_genpd_power_state(struct genpd_power_state *genpd_state,
->                 return -EINVAL;
->         }
+> and the caller will simply bail out if "false" is returned, but if "true"
+> is returned, it will have to drop the usage count, right?
 >
-> +       err = of_property_read_u32(state_node, "residency-us", &residency);
-> +       if (!err)
-> +               genpd_state->residency_ns = 1000 * residency;
-> +
->         err = of_property_read_u32(state_node, "state-param", &param);
->         if (!err)
->                 genpd_state->param = param;
-> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> index 108a4b3..fed024a 100644
-> --- a/include/linux/pm_domain.h
-> +++ b/include/linux/pm_domain.h
-> @@ -41,6 +41,7 @@ struct genpd_power_state {
->         char *name;
->         s64 power_off_latency_ns;
->         s64 power_on_latency_ns;
-> +       s64 residency_ns;
->         u32 param;
->  };
->
-> --
-> 2.1.4
+> Thanks,
+> Rafael
 >
 
-A general comment.
+Why not just:
 
-I would as step prior $subject patch, add the mechanism in genpd to
-deal with this new concept of residency values. When *all* that
-mechanism is in place (perhaps it needs more than one patch), then add
-the DT parts.
+pm_runtime_get_noresume():
+if (RPM_ACTIVE)
+  "do some actions"
+pm_runtime_put();
 
 Kind regards
 Uffe
