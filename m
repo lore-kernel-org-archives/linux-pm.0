@@ -1,46 +1,33 @@
-From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
-Subject: Re: [PATCH] cpufreq: tegra: add regulator dependency for T124
-Date: Sat, 12 Dec 2015 03:26:57 +0100
-Message-ID: <1834718.KShzbrV9CD@vostro.rjw.lan>
-References: <2194927.eV2s2QmZs0@wuerfel>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq, intel_pstate, minor cleanup for FRAC_BITS
+Date: Sat, 12 Dec 2015 03:27:31 +0100
+Message-ID: <3067497.3xzDauRRix@vostro.rjw.lan>
+References: <1449600299-4647-1-git-send-email-prarit@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <2194927.eV2s2QmZs0@wuerfel>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:55198 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754628AbbLLB53 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Dec 2015 20:57:29 -0500
+In-Reply-To: <1449600299-4647-1-git-send-email-prarit@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Tuesday, December 08, 2015 10:52:45 PM Arnd Bergmann wrote:
-> This driver is the only one that calls regulator_sync_voltage(), but it
-> can currently be built with CONFIG_REGULATOR disabled, producing
-> this build error:
+On Tuesday, December 08, 2015 01:44:59 PM Prarit Bhargava wrote:
+> 785ee27 ("cpufreq: intel_pstate: Fix limits->max_perf rounding error")
+> hardcodes the value of FRAC_BITS.  This patch fixes that minor issue.
 > 
-> drivers/cpufreq/tegra124-cpufreq.c: In function 'tegra124_cpu_switch_to_pllx':
-> drivers/cpufreq/tegra124-cpufreq.c:68:2: error: implicit declaration of function 'regulator_sync_voltage' [-Werror=implicit-function-declaration]
->   regulator_sync_voltage(priv->vdd_cpu_reg);
-> 
-> My first attempt was to implement a helper for this function
-> for regulator_sync_voltage, but Mark Brown explained:
-> 
->    We don't do this for *all* regulator API functions - there's some where
->    using them strongly suggests that there is actually a dependency on
->    the regulator API.  This does seem like it might be falling into the
->    specialist category [...]
->    Looking at the code I'm pretty unclear on what the authors think the
->    use of _sync_voltage() is doing in the first place so it may be even
->    better to just remove the call.  It seems to have been included in the
->    first commit so there's not changelog explaining things and there's
->    no comment either.  I'd *expect* it to be a noop as far as I can see.
-> 
-> This adds the dependency to make the driver always build successfully
-> or not be enabled at all. Alternatively, we could investigate if the
-> driver should stop calling regulator_sync_voltage instead.
-> 
-> Signed-off-by: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
+> Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> Cc: Len Brown <lenb@kernel.org>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
 
 Applied, thanks!
 
 Rafael
+
