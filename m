@@ -1,43 +1,38 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] PM / Domains: Allow runtime PM callbacks to be re-used during system PM
-Date: Sat, 12 Dec 2015 03:28:51 +0100
-Message-ID: <1792043.fZT1oetn7B@vostro.rjw.lan>
-References: <1448896898-27711-1-git-send-email-ulf.hansson@linaro.org>
+From: Western Union Money Transfer Office <info@westernunion.com>
+Subject: Congratulation
+Date: Sat, 12 Dec 2015 12:31:43 +0100
+Message-ID: <201512121113.tBCB4eZV023780__23593.0442614064$1449942606$gmane$org@mx1.nbrc.ac.in>
+Reply-To: westernunion_officeng1@yahoo.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:46571 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754197AbbLLB6t (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 11 Dec 2015 20:58:49 -0500
-In-Reply-To: <1448896898-27711-1-git-send-email-ulf.hansson@linaro.org>
+Received: from mx1.nbrc.ac.in ([14.139.62.4]:60952 "EHLO mx1.nbrc.ac.in"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751297AbbLLRtN convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 12 Dec 2015 12:49:13 -0500
+Content-Description: Mail message body
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Kevin Hilman <khilman@kernel.org>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>, Cao Minh Hiep <cm-hiep@jinso.co.jp>, Harunaga <nx-truong@jinso.co.jp>
+To: Recipients <info@westernunion.com>
 
-On Monday, November 30, 2015 04:21:38 PM Ulf Hansson wrote:
-> A runtime PM centric subsystem/driver may typically use the runtime PM
-> helpers, pm_runtime_force_suspend|resume() in the system PM path. This
-> means the genpd's runtime PM callbacks might be invoked even when runtime
-> PM has been disabled for the device.
-> 
-> To properly cope with these and similar scenarios when these helper
-> functions are used, change genpd to skip validating and measuring the
-> device PM QOS latency.
-> 
-> This is needed because otherwise genpd may prevent the device to be put
-> into low power state. If this occurs during system PM, it causes the
-> sequence to be aborted as a device's system PM callback returns -EBUSY.
-> 
-> Fixes: ba2bbfbf6307 ("PM / Domains: Remove intermediate states from the
-> power off sequence")
-> Reported-by: Cao Minh Hiep <cm-hiep@jinso.co.jp>
-> Reported-by: Harunaga <nx-truong@jinso.co.jp>
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Attention you have been awarded with the sum of $200,000 USD by
+the Western Union Money Transfer Office, As part of our Annual market
+promotions this Year @2015.
 
-Applied, thanks!
+Get back us for claim by filling the details stated here:
 
-Rafael
+1. Name:______
+2. Address________
+3. Country:_______
+4. Phone Number____
+5. Occupation:________
+6. Sex:_______________
+7. Age________________
 
+Name: Mr.Leo Sam
+
+Contact Email: westernunion_officeng@yahoo.com
+
+Regard
+Mr.Leo Sam
