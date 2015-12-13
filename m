@@ -1,52 +1,95 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [Intel-gfx] [PATCH v2] PM / Runtime: Introduce pm_runtime_get_noidle
-Date: Mon, 14 Dec 2015 03:04:20 +0100
-Message-ID: <3626982.Y3cVYgn8p5@vostro.rjw.lan>
-References: <1449675920-12986-1-git-send-email-joonas.lahtinen@linux.intel.com> <1449949245.2815.20.camel@intel.com> <20151212194956.GA2407@nuc-i3427.alporthouse.com>
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Subject: Re: [PATCH 07/25] serial: sh-sci: Convert from clk_get() to devm_clk_get()
+Date: Sun, 13 Dec 2015 21:39:02 +0200
+Message-ID: <1466956.fL4LZVx6Ru@avalon>
+References: <1447958344-836-1-git-send-email-geert+renesas@glider.be> <3399561.8ERHTtILhO@avalon> <CAMuHMdXn4xa-0wfL8DXbhzfsPwymT5XXBR70eSL-OF5Fv67+mg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:55512 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751567AbbLNBeP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 13 Dec 2015 20:34:15 -0500
-In-Reply-To: <20151212194956.GA2407@nuc-i3427.alporthouse.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdXn4xa-0wfL8DXbhzfsPwymT5XXBR70eSL-OF5Fv67+mg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Chris Wilson <chris@chris-wilson.co.uk>
-Cc: Imre Deak <imre.deak@intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, linux-pm@vger.kernel.org
 
-On Saturday, December 12, 2015 07:49:56 PM Chris Wilson wrote:
-> On Sat, Dec 12, 2015 at 09:40:45PM +0200, Imre Deak wrote:
-> > On Sat, 2015-12-12 at 02:51 +0100, Rafael J. Wysocki wrote:
-> > > +bool pm_runtime_get_if_in_use(struct device *dev)
-> > > +{
-> > > +	unsigned long flags;
-> > > +	bool retval;
-> > > +
-> > > +	spin_lock_irqsave(&dev->power.lock, flags);
-> > > +	retval = dev->power.runtime_status == RPM_ACTIVE ?
-> > > +		!!atomic_inc_not_zero(&dev->power.usage_count) :
-> > > false;
-> > > +	spin_unlock_irqrestore(&dev->power.lock, flags);
-> > > +	return retval;
-> > > +}
-> > > +EXPORT_SYMBOL_GPL(pm_runtime_get_if_in_use);
-> > > +
+Hi Geert,
+
+On Thursday 10 December 2015 13:30:18 Geert Uytterhoeven wrote:
+> On Thu, Nov 19, 2015 at 9:38 PM, Laurent Pinchart wrote:
+> > On Thursday 19 November 2015 19:38:46 Geert Uytterhoeven wrote:
+> >> Transfer clock cleanup handling to the core device management code.
+> >> 
+> >> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> >> ---
+> >> 
+> >>  drivers/tty/serial/sh-sci.c | 8 +++-----
+> >>  1 file changed, 3 insertions(+), 5 deletions(-)
+> >> 
+> >> diff --git a/drivers/tty/serial/sh-sci.c b/drivers/tty/serial/sh-sci.c
+> >> index cba51da604253db6..9442961a198378c7 100644
+> >> --- a/drivers/tty/serial/sh-sci.c
+> >> +++ b/drivers/tty/serial/sh-sci.c
+> >> @@ -2216,7 +2216,7 @@ static struct uart_ops sci_uart_ops = {
+> >> 
+> >>  static int sci_init_clocks(struct sci_port *sci_port, struct device
+> >>  *dev)
+> >>  {
+> >>  
+> >>       /* Get the SCI functional clock. It's called "fck" on ARM. */
+> >> 
+> >> -     sci_port->fclk = clk_get(dev, "fck");
+> >> +     sci_port->fclk = devm_clk_get(dev, "fck");
 > > 
-> > To me this looks ok:
-> > Acked-by: Imre Deak <imre.deak@intel.com>
+> > Have you tested what happens if you unbind the device from the driver
+> > while userspace has the serial port open ?
 > 
-> Pendant says
-> retval = (dev->power.runtime_status == RPM_ACTIVE &&
-> 	  atomic_inc_not_zero(&dev->power.usage_count);
+> Yes I have. And I didn't notice any user-visible behavioral differences.
+> 
+> There is a small ordering difference, though: with clk_get() and clk_put(),
+> the explicit clk_put() is done before removing the device from its PM
+> Domain (which involces another call to clk_put() on the module clock):
+> 
+>     device_release_driver
+>         __device_release_driver
+>             platform_drv_remove
+>                 sci_remove
+>                     sci_cleanup_single
+>                         __clk_put
+>                 genpd_dev_pm_detach
+>                     pm_genpd_remove_device
+>                         pm_clk_destroy
+>                             __pm_clk_remove
+>                                 __clk_put
+> 
+> When using devm_clk_get(), the managed cleanup is done after the device has
+> been removed from its PM Domain:
+> 
+>     device_release_driver
+>         __device_release_driver
+>             platform_drv_remove
+>                 genpd_dev_pm_detach
+>                     pm_genpd_remove_device
+>                         pm_clk_destroy
+>                             __pm_clk_remove
+>                                 __clk_put
+>             release_nodes
+>                 __clk_put
+> 
+> This shouldn't make a difference, and applies to all other drivers using
+> devm_*(), and devices that are part of a PM Domain.
 
-Well, this wouldn't build AFAICS.
+I was more concerned about the clk_disable_unprepare() calls. The function is 
+called through the uart pm handler which is called when closing the uart 
+(uart_close()). It's a bit difficult to follow the dynamic code paths as I'm 
+not very familiar with the framework, but I was concerned that the would end 
+up calling clk_disable_unprepare() on a clock for which we have no reference 
+anymore. What prevents clk_disable_unprepare() from being called in the close 
+path after the device has been unbound ? And what ensures that the clocks get 
+unprepared when unbinding the device if the port is held open by a userspace 
+process ?
 
-retval = dev->power.runtime_status == RPM_ACTIVE &&
-	atomic_inc_not_zero(&dev->power.usage_count);
+-- 
+Regards,
 
-Thanks,
-Rafael
-
+Laurent Pinchart
