@@ -1,60 +1,73 @@
 From: Paul Gortmaker <paul.gortmaker@windriver.com>
-Subject: [PATCH 0/3] cpuidle: avoid module usage in non-modular code
-Date: Sun, 13 Dec 2015 18:57:09 -0500
-Message-ID: <1450051032-32329-1-git-send-email-paul.gortmaker@windriver.com>
+Subject: [PATCH 3/3] drivers/cpuidle: make cpuidle-exynos.c explicitly
+ non-modular
+Date: Sun, 13 Dec 2015 18:57:12 -0500
+Message-ID: <1450051032-32329-4-git-send-email-paul.gortmaker@windriver.com>
+References: <1450051032-32329-1-git-send-email-paul.gortmaker@windriver.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1450051032-32329-1-git-send-email-paul.gortmaker@windriver.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: linux-kernel@vger.kernel.org
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, Alexander Shiyan <shc_work@mail.ru>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-samsung-soc@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Paul Gortmaker <paul.gortmaker@windriver.com>, Kukjin Kim <kgene@kernel.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-This series of commits is a part of a larger project to ensure
-people don't reference modular support functions in non-modular
-code.  Overall there was roughly 5k lines of dead code in the
-kernel due to this.  So far we've fixed several areas, like tty,
-x86, net, ... and we continue to work on other areas.
+The Kconfig currently controlling compilation of this code is:
 
-There are several reasons to not use module support for code that
-can never be built as a module, but the big ones are:
+cpuidle/Kconfig.arm:config ARM_EXYNOS_CPUIDLE
+cpuidle/Kconfig.arm:    bool "Cpu Idle Driver for the Exynos processors"
 
- (1) it is easy to accidentally code up unused module_exit and remove code
- (2) it can be misleading when reading the source, thinking it can be
-      modular when the Makefile and/or Kconfig prohibit it
- (3) it requires the include of the module.h header file which in turn
-     includes nearly everything else.
+...meaning that it currently is not being built as a module by anyone.
 
-Fortunately for cpuidle, the changes are largely trivial and change
-zero runtime.  All the changes here just remap the modular functions
-onto the non-modular ones that they would be remapped onto anyway.
+Lets remove the couple traces of modularity so that when reading the
+driver there is no doubt it is builtin-only.
 
-Changes are against linux-next and compile tested on ARM allmodconfig.
-I've Cc'd ARM list because all of these are used on ARM, but I'm
-thinking these probably can go in via the PM tree.
+Since module_platform_driver() uses the same init level priority as
+builtin_platform_driver() the init ordering remains unchanged with
+this commit.
 
-Paul.
----
-
-Cc: Alexander Shiyan <shc_work@mail.ru>
 Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 Cc: Kukjin Kim <kgene@kernel.org>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-arm-kernel@lists.infradead.org
+Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-samsung-soc@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+---
+ drivers/cpuidle/cpuidle-exynos.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-Paul Gortmaker (3):
-  drivers/cpuidle: make cpuidle-clps711x.c explicitly non-modular
-  drivers/cpuidle: make cpuidle-ux500.c explicitly non-modular
-  drivers/cpuidle: make cpuidle-exynos.c explicitly non-modular
-
- drivers/cpuidle/cpuidle-clps711x.c | 8 ++------
- drivers/cpuidle/cpuidle-exynos.c   | 5 ++---
- drivers/cpuidle/cpuidle-ux500.c    | 5 ++---
- 3 files changed, 6 insertions(+), 12 deletions(-)
-
+diff --git a/drivers/cpuidle/cpuidle-exynos.c b/drivers/cpuidle/cpuidle-exynos.c
+index b5f0a9cc8185..00cd129b10a4 100644
+--- a/drivers/cpuidle/cpuidle-exynos.c
++++ b/drivers/cpuidle/cpuidle-exynos.c
+@@ -14,7 +14,7 @@
+ #include <linux/cpuidle.h>
+ #include <linux/cpu_pm.h>
+ #include <linux/export.h>
+-#include <linux/module.h>
++#include <linux/init.h>
+ #include <linux/platform_device.h>
+ #include <linux/of.h>
+ #include <linux/platform_data/cpuidle-exynos.h>
+@@ -142,5 +142,4 @@ static struct platform_driver exynos_cpuidle_driver = {
+ 		.name = "exynos_cpuidle",
+ 	},
+ };
+-
+-module_platform_driver(exynos_cpuidle_driver);
++builtin_platform_driver(exynos_cpuidle_driver);
 -- 
 2.6.1
