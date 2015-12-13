@@ -1,51 +1,32 @@
-From: Chris Wilson <chris@chris-wilson.co.uk>
-Subject: Re: [Intel-gfx] [PATCH v2] PM / Runtime: Introduce
- pm_runtime_get_noidle
-Date: Sat, 12 Dec 2015 19:49:56 +0000
-Message-ID: <20151212194956.GA2407@nuc-i3427.alporthouse.com>
-References: <1449675920-12986-1-git-send-email-joonas.lahtinen@linux.intel.com>
- <2275921.by5gDRlTiV@vostro.rjw.lan>
- <11905299.HflTrQjrxk@vostro.rjw.lan>
- <1824809.48ZhrgqXQF@vostro.rjw.lan>
- <1449949245.2815.20.camel@intel.com>
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: [PATCH 0/2] tools/power turbostat: Fix TDP MSR bits and invalid parameters
+Date: Sun, 13 Dec 2015 21:09:10 +0800
+Message-ID: <cover.1450011064.git.yu.c.chen@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.fireflyinternet.com ([87.106.93.118]:63162 "EHLO
-	fireflyinternet.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750940AbbLLTuM (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 12 Dec 2015 14:50:12 -0500
-Content-Disposition: inline
-In-Reply-To: <1449949245.2815.20.camel@intel.com>
+Received: from mga02.intel.com ([134.134.136.20]:46734 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751098AbbLMNEU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 13 Dec 2015 08:04:20 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Imre Deak <imre.deak@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, linux-pm@vger.kernel.org
+To: len.brown@intel.com
+Cc: rjw@rjwysocki.net, srinivas.pandruvada@intel.com, rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Sat, Dec 12, 2015 at 09:40:45PM +0200, Imre Deak wrote:
-> On Sat, 2015-12-12 at 02:51 +0100, Rafael J. Wysocki wrote:
-> > +bool pm_runtime_get_if_in_use(struct device *dev)
-> > +{
-> > +	unsigned long flags;
-> > +	bool retval;
-> > +
-> > +	spin_lock_irqsave(&dev->power.lock, flags);
-> > +	retval = dev->power.runtime_status == RPM_ACTIVE ?
-> > +		!!atomic_inc_not_zero(&dev->power.usage_count) :
-> > false;
-> > +	spin_unlock_irqrestore(&dev->power.lock, flags);
-> > +	return retval;
-> > +}
-> > +EXPORT_SYMBOL_GPL(pm_runtime_get_if_in_use);
-> > +
-> 
-> To me this looks ok:
-> Acked-by: Imre Deak <imre.deak@intel.com>
+[PATCH 1/2] is to fix the TDP MSRs bits calculation, which might bring
+incorrect information to user.
+[PATCH 2/2] is to fix invalid parameters passing to dump_cstate_pstate_config_info
+and also fix some compiling problems.
 
-Pendant says
-retval = (dev->power.runtime_status == RPM_ACTIVE &&
-	  atomic_inc_not_zero(&dev->power.usage_count);
--Chris
+Chen Yu (2):
+  tools/power turbostat: bugfix: TDP MSRs print bits fixing
+  tools/power turbostat: bugfix: fix several invalid parameters
+
+ tools/power/x86/turbostat/turbostat.c | 28 ++++++++++++++--------------
+ 1 file changed, 14 insertions(+), 14 deletions(-)
 
 -- 
-Chris Wilson, Intel Open Source Technology Centre
+1.8.4.2
+
