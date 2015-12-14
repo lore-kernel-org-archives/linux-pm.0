@@ -1,153 +1,43 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v4 15/20] ARM: dts: Add bus nodes using VDD_INT for Exynos4x12
-Date: Mon, 14 Dec 2015 15:38:19 +0900
-Message-ID: <1450075104-13705-16-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH v4 12/20] MAINTAINERS: Add samsung bus frequency driver entry
+Date: Mon, 14 Dec 2015 15:38:16 +0900
+Message-ID: <1450075104-13705-13-git-send-email-cw00.choi@samsung.com>
 References: <1450075104-13705-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1450075104-13705-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: myungjoo.ham@samsung.com, k.kozlowski@samsung.com, kgene@kernel.org
 Cc: kyungmin.park@samsung.com, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, tjakobi@math.uni-bielefeld.de, linux.amoon@gmail.com, cw00.choi@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds the bus nodes using VDD_INT for Exynos4x12 SoC.
-Exynos4x12 has the following AXI buses to translate data between
-DRAM and sub-blocks.
-
-Following list specifies the detailed relation between DRAM and sub-blocks:
-- ACLK100 clock for PERIL/PERIR/MFC(PCLK)
-- ACLK160 clock for CAM/TV/LCD
-: The minimum clock of ACLK160 should be over 160MHz.
-  When drop the clock under 160MHz, show the broken image.
-- ACLK133 clock for FSYS
-- GDL clock for LEFTBUS
-- GDR clock for RIGHTBUS
-- SCLK_MFC clock for MFC
+This patch adds the 'SAMSUNG BUS FREQUENCY DRIVER' entry to review the
+patches as supporter. Patches will be picked up by DEVFREQ maintainer
+on devfreq git repository.
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-[linux.amoon: Tested on Odroid U3]
-Tested-by: Anand Moon <linux.amoon@gmail.com>
-Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- arch/arm/boot/dts/exynos4x12.dtsi | 106 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 106 insertions(+)
+ MAINTAINERS | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/arch/arm/boot/dts/exynos4x12.dtsi b/arch/arm/boot/dts/exynos4x12.dtsi
-index 99a0f4ca3d47..e5173107ed44 100644
---- a/arch/arm/boot/dts/exynos4x12.dtsi
-+++ b/arch/arm/boot/dts/exynos4x12.dtsi
-@@ -349,6 +349,112 @@
- 			opp-hz = /bits/ 64 <267000000>;
- 		};
- 	};
-+
-+	bus_leftbus: bus_leftbus {
-+		compatible = "samsung,exynos-bus";
-+		clocks = <&clock CLK_DIV_GDL>;
-+		clock-names = "bus";
-+		operating-points-v2 = <&bus_leftbus_opp_table>;
-+		status = "disabled";
-+	};
-+
-+	bus_rightbus: bus_rightbus {
-+		compatible = "samsung,exynos-bus";
-+		clocks = <&clock CLK_DIV_GDR>;
-+		clock-names = "bus";
-+		operating-points-v2 = <&bus_leftbus_opp_table>;
-+		status = "disabled";
-+	};
-+
-+	bus_display: bus_display {
-+		compatible = "samsung,exynos-bus";
-+		clocks = <&clock CLK_ACLK160>;
-+		clock-names = "bus";
-+		operating-points-v2 = <&bus_display_opp_table>;
-+		status = "disabled";
-+	};
-+
-+	bus_fsys: bus_fsys {
-+		compatible = "samsung,exynos-bus";
-+		clocks = <&clock CLK_ACLK133>;
-+		clock-names = "bus";
-+		operating-points-v2 = <&bus_fsys_opp_table>;
-+		status = "disabled";
-+	};
-+
-+	bus_peri: bus_peri {
-+		compatible = "samsung,exynos-bus";
-+		clocks = <&clock CLK_ACLK100>;
-+		clock-names = "bus";
-+		operating-points-v2 = <&bus_peri_opp_table>;
-+		status = "disabled";
-+	};
-+
-+	bus_mfc: bus_mfc {
-+		compatible = "samsung,exynos-bus";
-+		clocks = <&clock CLK_SCLK_MFC>;
-+		clock-names = "bus";
-+		operating-points-v2 = <&bus_leftbus_opp_table>;
-+		status = "disabled";
-+	};
-+
-+	bus_leftbus_opp_table: opp_table3 {
-+		compatible = "operating-points-v2";
-+		opp-shared;
-+
-+		opp@100000000 {
-+			opp-hz = /bits/ 64 <100000000>;
-+			opp-microvolt = <900000>;
-+		};
-+		opp@134000000 {
-+			opp-hz = /bits/ 64 <134000000>;
-+			opp-microvolt = <925000>;
-+		};
-+		opp@160000000 {
-+			opp-hz = /bits/ 64 <160000000>;
-+			opp-microvolt = <950000>;
-+		};
-+		opp@200000000 {
-+			opp-hz = /bits/ 64 <200000000>;
-+			opp-microvolt = <1000000>;
-+		};
-+	};
-+
-+	bus_display_opp_table: opp_table4 {
-+		compatible = "operating-points-v2";
-+		opp-shared;
-+
-+		opp@160000000 {
-+			opp-hz = /bits/ 64 <160000000>;
-+		};
-+		opp@200000000 {
-+			opp-hz = /bits/ 64 <200000000>;
-+		};
-+	};
-+
-+	bus_fsys_opp_table: opp_table5 {
-+		compatible = "operating-points-v2";
-+		opp-shared;
-+
-+		opp@100000000 {
-+			opp-hz = /bits/ 64 <100000000>;
-+		};
-+		opp@134000000 {
-+			opp-hz = /bits/ 64 <134000000>;
-+		};
-+	};
-+
-+	bus_peri_opp_table: opp_table6 {
-+		compatible = "operating-points-v2";
-+		opp-shared;
-+
-+		opp@50000000 {
-+			opp-hz = /bits/ 64 <50000000>;
-+		};
-+		opp@100000000 {
-+			opp-hz = /bits/ 64 <100000000>;
-+		};
-+	};
- };
+diff --git a/MAINTAINERS b/MAINTAINERS
+index ff2d20173d98..89e645688a3c 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3434,6 +3434,15 @@ F:	drivers/devfreq/devfreq-event.c
+ F:	include/linux/devfreq-event.h
+ F:	Documentation/devicetree/bindings/devfreq/event/
  
- &combiner {
++SAMSUNG BUS FREQUENCY DRIVER
++M:	Chanwoo Choi <cw00.choi@samsung.com>
++L:	linux-pm@vger.kernel.org
++L:	linux-samsung-soc@vger.kernel.org
++T:	git git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git
++S:	Supported
++F:	drivers/devfreq/exynos/exynos-bus.c
++F:	Documentation/devicetree/bindings/devfreq/exynos-bus.txt
++
+ DEVICE NUMBER REGISTRY
+ M:	Torben Mathiasen <device@lanana.org>
+ W:	http://lanana.org/docs/device-list/index.html
 -- 
 1.9.1
