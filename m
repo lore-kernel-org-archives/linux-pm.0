@@ -1,113 +1,129 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] PM / runtime: Add new helper for conditional usage count incrementation
-Date: Mon, 14 Dec 2015 23:22:41 +0100
-Message-ID: <32970649.AWpGt5zezN@vostro.rjw.lan>
-References: <1449675920-12986-1-git-send-email-joonas.lahtinen@linux.intel.com> <1449949245.2815.20.camel@intel.com> <20151212194956.GA2407@nuc-i3427.alporthouse.com>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [PATCH V6 1/3] cpufreq: intel_pstate: configurable algorithm to get target pstate
+Date: Mon, 14 Dec 2015 14:13:17 -0800
+Message-ID: <001c01d136bc$a4a78a90$edf69fb0$@net>
+References: <1449247235-29389-1-git-send-email-philippe.longepe@linux.intel.com> <1449692513.3240.231.camel@spandruv-desk3.jf.intel.com> <8633351.YrHIUtRzE5@skinner> <2402797.hEhmBtxRMB@vostro.rjw.lan> <48DF4267-671B-40E2-8C95-CCF5795F8B26@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:53892 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932273AbbLNVwf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Dec 2015 16:52:35 -0500
-In-Reply-To: <20151212194956.GA2407@nuc-i3427.alporthouse.com>
+Received: from cmta14.telus.net ([209.171.16.87]:57552 "EHLO cmta14.telus.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753595AbbLNWNX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 14 Dec 2015 17:13:23 -0500
+In-Reply-To: <48DF4267-671B-40E2-8C95-CCF5795F8B26@linux.intel.com>
+Content-Language: en-ca
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chris Wilson <chris@chris-wilson.co.uk>, Imre Deak <imre.deak@intel.com>
-Cc: Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, linux-pm@vger.kernel.org
+To: 'Stephane Gasparini' <stephane.gasparini@linux.intel.com>
+Cc: 'Thomas Renninger' <trenn@suse.de>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Len Brown' <lenb@kernel.org>, 'Philippe Longepe' <philippe.longepe@linux.intel.com>, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, 'Prarit Bhargava' <prarit@redhat.com>, viresh.kumar@linaro.org, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 2015.12.14 08:15 Stephane Gasparini wrote:
 
-Introduce a new runtime PM function, pm_runtime_get_if_in_use(),
-that will increment the device's runtime PM usage counter and
-return 'true' if its status is RPM_ACTIVE and its usage counter
-is greater than 0 at the same time ('false' will be returned
-otherwise).
+> Here are the results we have on a android release of WW50
+> Note that as of today Android is using Interactive Governor.
 
-This is useful for things that should only be done if the device
-is active (from the runtime PM perspective) and used by somebody
-(as indicated by the usage counter) already and they are not worth
-bothering otherwise.
+Thanks very much for your test results.
+By "Intel PState CPU Load" I assume you mean using that V6 3 patch
+"cpufreq: intel_pstate: account non C0 time" from Dec 4th, which I also
+tested and sent an off-list reply to Philippe.
+Summary: I like the patch set.
 
-Requested-by: Imre Deak <imre.deak@intel.com>
-Acked-by: Imre Deak <imre.deak@intel.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- Documentation/power/runtime_pm.txt |    5 +++++
- drivers/base/power/runtime.c       |   21 +++++++++++++++++++++
- include/linux/pm_runtime.h         |    5 +++++
- 3 files changed, 31 insertions(+)
+Myself, I would like to see tests comparing the current
+"powersave" governor to your "CPU Load" method, although
+I do always like the reference "performance" test. However,
+I suspect that in your case, there wouldn't be much difference.
+After you moved the setpoint to 60 from 97, the response becomes
+pretty much like performance mode.[1]
 
-Index: linux-pm/drivers/base/power/runtime.c
-===================================================================
---- linux-pm.orig/drivers/base/power/runtime.c
-+++ linux-pm/drivers/base/power/runtime.c
-@@ -966,6 +966,27 @@ int __pm_runtime_resume(struct device *d
- EXPORT_SYMBOL_GPL(__pm_runtime_resume);
- 
- /**
-+ * pm_runtime_get_if_in_use - Conditionally bump up the device's usage counter.
-+ * @dev: Device to handle.
-+ *
-+ * Increment the device's runtime PM usage counter and return 'true' if its
-+ * runtime PM status is RPM_ACTIVE and its usage counter is already different
-+ * from zero at the same time.  Otherwise, return 'false'.
-+ */
-+bool pm_runtime_get_if_in_use(struct device *dev)
-+{
-+	unsigned long flags;
-+	bool retval;
-+
-+	spin_lock_irqsave(&dev->power.lock, flags);
-+	retval = dev->power.runtime_status == RPM_ACTIVE
-+		&& atomic_inc_not_zero(&dev->power.usage_count);
-+	spin_unlock_irqrestore(&dev->power.lock, flags);
-+	return retval;
-+}
-+EXPORT_SYMBOL_GPL(pm_runtime_get_if_in_use);
-+
-+/**
-  * __pm_runtime_set_status - Set runtime PM status of a device.
-  * @dev: Device to handle.
-  * @status: New runtime PM status of the device.
-Index: linux-pm/include/linux/pm_runtime.h
-===================================================================
---- linux-pm.orig/include/linux/pm_runtime.h
-+++ linux-pm/include/linux/pm_runtime.h
-@@ -39,6 +39,7 @@ extern int pm_runtime_force_resume(struc
- extern int __pm_runtime_idle(struct device *dev, int rpmflags);
- extern int __pm_runtime_suspend(struct device *dev, int rpmflags);
- extern int __pm_runtime_resume(struct device *dev, int rpmflags);
-+extern bool pm_runtime_get_if_in_use(struct device *dev);
- extern int pm_schedule_suspend(struct device *dev, unsigned int delay);
- extern int __pm_runtime_set_status(struct device *dev, unsigned int status);
- extern int pm_runtime_barrier(struct device *dev);
-@@ -143,6 +144,10 @@ static inline int pm_schedule_suspend(st
- {
- 	return -ENOSYS;
- }
-+static inline bool pm_runtime_get_if_in_use(struct device *dev)
-+{
-+	return true;
-+}
- static inline int __pm_runtime_set_status(struct device *dev,
- 					    unsigned int status) { return 0; }
- static inline int pm_runtime_barrier(struct device *dev) { return 0; }
-Index: linux-pm/Documentation/power/runtime_pm.txt
-===================================================================
---- linux-pm.orig/Documentation/power/runtime_pm.txt
-+++ linux-pm/Documentation/power/runtime_pm.txt
-@@ -371,6 +371,11 @@ drivers/base/power/runtime.c and include
-     - increment the device's usage counter, run pm_runtime_resume(dev) and
-       return its result
- 
-+  bool pm_runtime_get_if_in_use(struct device *dev);
-+    - increment the device's usage counter and return 'true' if its runtime PM
-+      status is 'active' and its usage counter is greater than 0 at the same
-+      time; return 'false' otherwise
-+
-   void pm_runtime_put_noidle(struct device *dev);
-     - decrement the device's usage counter
- 
+Also, you provide only power information, and no performance / energy
+trade-off information. Do any of those tests reveal good power use, but
+unbearable performance? What I am saying is that power by itself is not
+a sufficient evaluation criteria, otherwise just lock in the minimum pstate
+and be done with it, which we know isn't the right solution.
+  
+> Atom:                              Intel PState   Intel PState     Power
+>                                    Performance    CPU Load      Improvment
+
+> 50% Load 1 thread                     260 mW         25 mW        -90%
+
+If I understand correctly, the CPU load is 50% regardless of CPU frequency.
+If yes, then this particular test is grossly unfair and misleading.
+Why?
+Because using your default setpoint of 60, the CPU load method will hold
+the pstate at minimum, whereas performance mode will ask for the maximum.
+The result will be drastic differences in the actual amount of work done
+per unit time.
+
+I think that a more comparable test would be a 50% (or whatever) load
+calibrated to a nominal CPU frequency (I use the max non-turbo CPU
+frequency, but it can be anything.) Meaning that the once the fixed
+packet of work is done, the CPU can go idle sooner or later, depending
+on the CPU frequency.
+
+Note also, that the work/sleep frequency used to attain the 50% load
+can be relevant, particularly at lower sleep/work frequencies where
+the intel_pstate driver response can have higher and higher
+magnitude oscillations. By the way, in my tests, your "CPU Load" method
+lower sleep/work frequency results were phenomenally good.
+
+Here are some results from my test computer, albeit with the wrong processor:
+
+Note 1: I have an older i7-2600K.
+Note 2: Obviously, I forced your code patch to work with my processor ID.
+Note 3: Power is package power measured with turbostat.
+Note 4: one thread.
+
+1.) 50% load at 3.4GHz 201 hertz work / sleep frequency:
+
+4.4-rc5 powersave 11.27 watts*
+4.4-rc5 performance 12.83 watts
+4.4-rc3 + PL ver 6 3 patch set (default (60)): 10.47 watts
+4.4-rc3 + PL ver 6 3 patch set (setpoint 40): 12.55 watts
+4.4-rc3 + PL ver 6 3 patch set (setpoint 70): 9.72 watts**
+
+2.) 50% load at 3.4GHz 50 hertz work / sleep frequency:
+
+4.4-rc5 powersave 12.01 watts
+4.4-rc5 performance 11.90 watts
+4.4-rc3 + PL ver 6 3 patch set (default (60)): 10.09 watts
+4.4-rc3 + PL ver 6 3 patch set (setpoint 40): 12.01 watts
+4.4-rc3 + PL ver 6 3 patch set (setpoint 70): 9.65 watts
+
+*  there were 6 overruns.
+** there were 3 overruns, meaning the work packet did not
+finish in time before the next one was supposed to start.
+This issue goes to step function load response time. i.e
+How fast does the scaling driver respond to load and ramp up
+the CPU frequency. My test program can catch up, but some
+applications might not like the delay.
+  
+An example of a performance / energy trade-off test:
+
+phoronix ffmpeg test:
+Shorter time is better.
+The ffmpeg test is known to be particularly difficult for
+frequency scaling drivers to handle. The scenario is similar
+to how some games utilize all the CPUs.
+
+Your patch set (an older version) on kernel 4.4-rc1:
+setpoint 60: 17.84 seconds ave. 4324 package Joules. (default)
+setpoint 40: 12.86 seconds ave. 4822 package Joules. (noisey)
+
+or ~30% time improvement at a cost of 12% more energy, which some
+users might think worthwhile.
+
+For reference:
+intel_pstate powersave (normal processor, setpoint 97): 12.06 seconds ave. 4983 package Joules
+I do not have energy numbers for the below:
+Performance mode: 11.16 seconds ave.
+acpi-cpufreq powersave: 24.47 seconds ave.
+acpi-cpufreq ondemand: 13.35 seconds ave.
+acpi-cpufreq conservative: 17.60 seconds ave.
+
+[1] http://marc.info/?l=linux-pm&m=142894256520552&w=2
+
+... Doug
+
 
