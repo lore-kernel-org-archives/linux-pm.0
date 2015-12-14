@@ -1,73 +1,36 @@
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-Subject: [PATCH 3/3] drivers/cpuidle: make cpuidle-exynos.c explicitly
- non-modular
-Date: Sun, 13 Dec 2015 18:57:12 -0500
-Message-ID: <1450051032-32329-4-git-send-email-paul.gortmaker@windriver.com>
-References: <1450051032-32329-1-git-send-email-paul.gortmaker@windriver.com>
+From: Shawn Guo <shawnguo@kernel.org>
+Subject: Re: [PATCH 4/5] cpufreq: imx6q: Use id_table to distinguish between
+ SoCs
+Date: Mon, 14 Dec 2015 09:30:31 +0800
+Message-ID: <20151214013031.GN11252@tiger>
+References: <1446019154-16384-1-git-send-email-s.hauer@pengutronix.de>
+ <1446019154-16384-5-git-send-email-s.hauer@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1450051032-32329-1-git-send-email-paul.gortmaker@windriver.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-kernel@vger.kernel.org
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-samsung-soc@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Paul Gortmaker <paul.gortmaker@windriver.com>, Kukjin Kim <kgene@kernel.org>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:49026 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751567AbbLNBaw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sun, 13 Dec 2015 20:30:52 -0500
+Content-Disposition: inline
+In-Reply-To: <1446019154-16384-5-git-send-email-s.hauer@pengutronix.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, kernel@pengutronix.de, Heiner Kallweit <hkallweit1@gmail.com>
 
-The Kconfig currently controlling compilation of this code is:
+On Wed, Oct 28, 2015 at 08:59:13AM +0100, Sascha Hauer wrote:
+> The i.MX6 cpufreq driver is instantiated from a static device in
+> architecture code and not from the device tree. These devices offer the
+> id_table mechanism to distinguish between different types of devices.
+> Use this mechanism rather than of_machine_is_compatible() as it scales
+> better with increasing number of SoCs to check against.
+> 
+> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
 
-cpuidle/Kconfig.arm:config ARM_EXYNOS_CPUIDLE
-cpuidle/Kconfig.arm:    bool "Cpu Idle Driver for the Exynos processors"
+Acked-by: Shawn Guo <shawnguo@kernel.org>
 
-...meaning that it currently is not being built as a module by anyone.
+Sorry for my oversight on that Sascha was asking my ACK on this patch in
+the cover letter.  Only noticed that with Lucas' ping.
 
-Lets remove the couple traces of modularity so that when reading the
-driver there is no doubt it is builtin-only.
-
-Since module_platform_driver() uses the same init level priority as
-builtin_platform_driver() the init ordering remains unchanged with
-this commit.
-
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Kukjin Kim <kgene@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-samsung-soc@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
----
- drivers/cpuidle/cpuidle-exynos.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/cpuidle/cpuidle-exynos.c b/drivers/cpuidle/cpuidle-exynos.c
-index b5f0a9cc8185..00cd129b10a4 100644
---- a/drivers/cpuidle/cpuidle-exynos.c
-+++ b/drivers/cpuidle/cpuidle-exynos.c
-@@ -14,7 +14,7 @@
- #include <linux/cpuidle.h>
- #include <linux/cpu_pm.h>
- #include <linux/export.h>
--#include <linux/module.h>
-+#include <linux/init.h>
- #include <linux/platform_device.h>
- #include <linux/of.h>
- #include <linux/platform_data/cpuidle-exynos.h>
-@@ -142,5 +142,4 @@ static struct platform_driver exynos_cpuidle_driver = {
- 		.name = "exynos_cpuidle",
- 	},
- };
--
--module_platform_driver(exynos_cpuidle_driver);
-+builtin_platform_driver(exynos_cpuidle_driver);
--- 
-2.6.1
+Shawn
