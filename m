@@ -1,85 +1,108 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v3 01/20] PM / devfreq: exynos: Add generic exynos bus
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PATCH v4 01/20] PM / devfreq: exynos: Add generic exynos bus
  frequency driver
-Date: Mon, 14 Dec 2015 16:14:01 +0900
-Message-ID: <566E6C39.6080703@samsung.com>
-References: <1449810479-14763-1-git-send-email-cw00.choi@samsung.com>
- <1449810479-14763-2-git-send-email-cw00.choi@samsung.com>
- <566A80D5.2070703@samsung.com> <566A834C.3040103@samsung.com>
+Date: Mon, 14 Dec 2015 08:28:48 +0000 (GMT)
+Message-ID: <989487615.658131450081722610.JavaMail.weblogic@epmlwas07b>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <566A834C.3040103@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, myungjoo.ham@samsung.com, kgene@kernel.org
-Cc: kyungmin.park@samsung.com, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, galak@codeaurora.org, linux@arm.linux.org.uk, tjakobi@math.uni-bielefeld.de, linux.amoon@gmail.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org
+Content-Transfer-Encoding: base64
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+MIME-version: 1.0
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: =?utf-8?Q?=EC=B5=9C=EC=B0=AC=EC=9A=B0?= <cw00.choi@samsung.com>, =?utf-8?Q?=ED=81=AC=EC=89=AC=EC=8B=9C=ED=86=A0=ED=94=84?= <k.kozlowski@samsung.com>, "kgene@kernel.org" <kgene@kernel.org>
+Cc: =?utf-8?Q?=EB=B0=95=EA=B2=BD=EB=AF=BC?= <kyungmin.park@samsung.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "pawel.moll@arm.com" <pawel.moll@arm.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "galak@codeaurora.org" <galak@codeaurora.org>, "linux@arm.linux.org.uk" <linux@arm.linux.org.uk>, "tjakobi@math.uni-bielefeld.de" <tjakobi@math.uni-bielefeld.de>, "linux.amoon@gmail.com" <linux.amoon@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Krzysztof and Myungjoo,
-
-On 2015=EB=85=84 12=EC=9B=94 11=EC=9D=BC 17:03, Krzysztof Kozlowski wro=
-te:
-> On 11.12.2015 16:52, Chanwoo Choi wrote:
->> Dear MyungJoo,
->>
->> Almost device tree patches in this series are reviewed by Exynos mai=
-ntainer.
->> Could you please review this series?
->=20
-> Are there any objections to merging DT patches through Samsung-soc?
->=20
-> Looking at the code, there are no dependencies between DT and drivers=
-,
-> right?
-
-Yes.
-There is no dependency between exynos-bus.c patches and DT patches.
-If the design concept of exynos-bus.c don't be changed,
-there is no problem to merge the DT patches to samsung-soc tree.
-
-Best Regards,
-Chanwoo Choi
-
->=20
-> Best regards,
-> Krzysztof
->=20
->>
->> Best Regards,
->> Chanwoo Choi
->>
->> On 2015=EB=85=84 12=EC=9B=94 11=EC=9D=BC 14:07, Chanwoo Choi wrote:
->>> This patch adds the generic exynos bus frequency driver for AMBA AX=
-I bus
->>> of sub-blocks in exynos SoC with DEVFREQ framework. The Samsung Exy=
-nos SoC
->>> have the common architecture for bus between DRAM and sub-blocks in=
- SoC.
->>> This driver can support the generic bus frequency driver for Exynos=
- SoCs.
->>>
->>> In devicetree, Each bus block has a bus clock, regulator, operation=
--point
->>> and devfreq-event devices which measure the utilization of each bus=
- block.
->>>
->>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->>> [linux.amoon: Tested on Odroid U3]
->>> Tested-by: Anand Moon <linux.amoon@gmail.com>
->>> ---
->>>  drivers/devfreq/Kconfig             |  15 ++
->>>  drivers/devfreq/Makefile            |   1 +
->>>  drivers/devfreq/exynos/Makefile     |   1 +
->>>  drivers/devfreq/exynos/exynos-bus.c | 449 ++++++++++++++++++++++++=
-++++++++++++
->>>  4 files changed, 466 insertions(+)
->>>  create mode 100644 drivers/devfreq/exynos/exynos-bus.c
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-samsu=
-ng-soc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->=20
->=20
+PiAgIA0KPiAgVGhpcyBwYXRjaCBhZGRzIHRoZSBnZW5lcmljIGV4eW5vcyBidXMgZnJlcXVlbmN5
+IGRyaXZlciBmb3IgQU1CQSBBWEkgYnVzDQo+IG9mIHN1Yi1ibG9ja3MgaW4gZXh5bm9zIFNvQyB3
+aXRoIERFVkZSRVEgZnJhbWV3b3JrLiBUaGUgU2Ftc3VuZyBFeHlub3MgU29DDQo+IGhhdmUgdGhl
+IGNvbW1vbiBhcmNoaXRlY3R1cmUgZm9yIGJ1cyBiZXR3ZWVuIERSQU0gYW5kIHN1Yi1ibG9ja3Mg
+aW4gU29DLg0KPiBUaGlzIGRyaXZlciBjYW4gc3VwcG9ydCB0aGUgZ2VuZXJpYyBidXMgZnJlcXVl
+bmN5IGRyaXZlciBmb3IgRXh5bm9zIFNvQ3MuDQo+IA0KPiBJbiBkZXZpY2V0cmVlLCBFYWNoIGJ1
+cyBibG9jayBoYXMgYSBidXMgY2xvY2ssIHJlZ3VsYXRvciwgb3BlcmF0aW9uLXBvaW50DQo+IGFu
+ZCBkZXZmcmVxLWV2ZW50IGRldmljZXMgd2hpY2ggbWVhc3VyZSB0aGUgdXRpbGl6YXRpb24gb2Yg
+ZWFjaCBidXMgYmxvY2suDQo+IA0KPiBTaWduZWQtb2ZmLWJ5OiBDaGFud29vIENob2kgPGN3MDAu
+Y2hvaUBzYW1zdW5nLmNvbT4NCj4gW2xpbnV4LmFtb29uOiBUZXN0ZWQgb24gT2Ryb2lkIFUzXQ0K
+PiBUZXN0ZWQtYnk6IEFuYW5kIE1vb24gPGxpbnV4LmFtb29uQGdtYWlsLmNvbT4NCj4gDQoNCkNo
+YW53b28sIGNvdWxkIHlvdSBwbGVhc2Ugc2hvdyBtZSB0ZXN0aW5nIHRoaXMgc2V0IG9mIHBhdGNo
+ZXMgaW4geW91ciBzaXRlPw0KUGxlYXNlIGxldCBtZSBrbm93IHdoZW4gaXMgb2sgdG8gdmlzaXQg
+eW91Lg0KKEkgZG8gbm90IGhhdmUgZXh5bm9zIG1hY2hpbmVzIHJpZ2h0IG5vdy4pDQoNCj4gZGlm
+ZiAtLWdpdCBhL2RyaXZlcnMvZGV2ZnJlcS9NYWtlZmlsZSBiL2RyaXZlcnMvZGV2ZnJlcS9NYWtl
+ZmlsZQ0KPiBpbmRleCA1MTM0ZjllZTk4M2QuLjM3NWViYmI0ZmNmYiAxMDA2NDQNCj4gLS0tIGEv
+ZHJpdmVycy9kZXZmcmVxL01ha2VmaWxlDQo+ICsrKyBiL2RyaXZlcnMvZGV2ZnJlcS9NYWtlZmls
+ZQ0KPiBAQCAtNiw2ICs2LDcgQEAgb2JqLSQoQ09ORklHX0RFVkZSRVFfR09WX1BPV0VSU0FWRSkJ
+Kz0gZ292ZXJub3JfcG93ZXJzYXZlLm8NCj4gIG9iai0kKENPTkZJR19ERVZGUkVRX0dPVl9VU0VS
+U1BBQ0UpCSs9IGdvdmVybm9yX3VzZXJzcGFjZS5vDQo+ICANCj4gICMgREVWRlJFUSBEcml2ZXJz
+DQo+ICtvYmotJChDT05GSUdfQVJDSF9FWFlOT1MpCQkrPSBleHlub3MvDQo+ICBvYmotJChDT05G
+SUdfQVJNX0VYWU5PUzRfQlVTX0RFVkZSRVEpCSs9IGV4eW5vcy8NCj4gIG9iai0kKENPTkZJR19B
+Uk1fRVhZTk9TNV9CVVNfREVWRlJFUSkJKz0gZXh5bm9zLw0KDQpDT05GSUdfQVJDSF9FWFlOT1Mg
+aXMgdHJ1ZSBpZg0KCUNPTkZJR19BUk1fRVhZTk9TNF9CVVNfREVWRlJFUSBpcyB0cnVlIA0KCW9y
+DQoJQ09ORklHX0FSTV9FWFlOT1M1X0JVU19ERVZGUkVRIGlzIHRydWUNClRodXMsIHRoZSB0d28g
+bGluZXMgYWZ0ZXIgeW91J3ZlIGFkZGVkIGhhdmUgYmVjb21lIHVzZWxlc3MuIChkZWFkIGNvZGUp
+DQoNClBsZWFzZSBkZWxldGUgdGhlbS4NCg0KW10NCj4gLS0tIC9kZXYvbnVsbA0KPiArKysgYi9k
+cml2ZXJzL2RldmZyZXEvZXh5bm9zL2V4eW5vcy1idXMuYw0KW10NCj4gK3N0YXRpYyBpbnQgZXh5
+bm9zX2J1c190YXJnZXQoc3RydWN0IGRldmljZSAqZGV2LCB1bnNpZ25lZCBsb25nICpmcmVxLCB1
+MzIgZmxhZ3MpDQo+ICt7DQo+ICsJc3RydWN0IGV4eW5vc19idXMgKmJ1cyA9IGRldl9nZXRfZHJ2
+ZGF0YShkZXYpOw0KPiArCXN0cnVjdCBkZXZfcG1fb3BwICpuZXdfb3BwOw0KPiArCXVuc2lnbmVk
+IGxvbmcgb2xkX2ZyZXEsIG5ld19mcmVxLCBvbGRfdm9sdCwgbmV3X3ZvbHQ7DQo+ICsJaW50IHJl
+dCA9IDA7DQo+ICsNCj4gKwkvKiBHZXQgbmV3IG9wcC1idXMgaW5zdGFuY2UgYWNjb3JkaW5nIHRv
+IG5ldyBidXMgY2xvY2sgKi8NCj4gKwlyY3VfcmVhZF9sb2NrKCk7DQo+ICsJbmV3X29wcCA9IGRl
+dmZyZXFfcmVjb21tZW5kZWRfb3BwKGRldiwgZnJlcSwgZmxhZ3MpOw0KPiArCWlmIChJU19FUlJf
+T1JfTlVMTChuZXdfb3BwKSkgew0KPiArCQlkZXZfZXJyKGRldiwgImZhaWxlZCB0byBnZXQgcmVj
+b21tZWQgb3BwIGluc3RhbmNlXG4iKTsNCj4gKwkJcmN1X3JlYWRfdW5sb2NrKCk7DQo+ICsJCXJl
+dHVybiBQVFJfRVJSKG5ld19vcHApOw0KPiArCX0NCj4gKw0KPiArCW5ld19mcmVxID0gZGV2X3Bt
+X29wcF9nZXRfZnJlcShuZXdfb3BwKTsNCj4gKwluZXdfdm9sdCA9IGRldl9wbV9vcHBfZ2V0X3Zv
+bHRhZ2UobmV3X29wcCk7DQo+ICsJb2xkX2ZyZXEgPSBkZXZfcG1fb3BwX2dldF9mcmVxKGJ1cy0+
+Y3Vycl9vcHApOw0KPiArCW9sZF92b2x0ID0gZGV2X3BtX29wcF9nZXRfdm9sdGFnZShidXMtPmN1
+cnJfb3BwKTsNCj4gKwlyY3VfcmVhZF91bmxvY2soKTsNCj4gKw0KPiArCWlmIChvbGRfZnJlcSA9
+PSBuZXdfZnJlcSkNCj4gKwkJcmV0dXJuIDA7DQo+ICsNCj4gKwkvKiBDaGFuZ2Ugdm9sdGFnZSBh
+bmQgZnJlcXVlbmN5IGFjY29yZGluZyB0byBuZXcgT1BQIGxldmVsICovDQo+ICsJbXV0ZXhfbG9j
+aygmYnVzLT5sb2NrKTsNCj4gKw0KPiArCWlmIChvbGRfZnJlcSA8IG5ld19mcmVxKSB7DQo+ICsJ
+CXJldCA9IHJlZ3VsYXRvcl9zZXRfdm9sdGFnZShidXMtPnJlZ3VsYXRvciwgbmV3X3ZvbHQsIG5l
+d192b2x0KTsNCg0KU2V0dGluZyB0aGUgbWF4aW11bSB2b2x0IHNhbWUgYXMgdGhlIG1pbmltdW0g
+dm9sdCBpcyBub3QgcmVjb21tZW5kZWQuDQpFc3BlY2lhbGx5IGZvciBhbnkgRFZGUyBtZWNoYW5p
+c21zLCBJIHJlY29tbWVuZCB0byBzZXQgdmFsdWVzIGFzOg0KbWluX3ZvbHQgPSBtaW5pbXVtIHZv
+bHRhZ2UgdGhhdCBkb2VzIG5vdCBoYXJtIHRoZSBzdGFiaWxpdHkNCm1heF92b2x0ID0gbWF4aW11
+bSB2b2x0YWdlIHRoYXQgZG9lcyBub3QgYnJlYWsgdGhlIGNpcmN1aXQNCg0KUGxlYXNlIHJlZmVy
+IHRvIC9pbmNsdWRlL2xpbnV4L3JlZ3VsYXRvci9kcml2ZXIuaA0KIkBzZXRfdm9sdGFnZSIgY29t
+bWVudHMuDQoNCkZvciB0aGUgcmVzdCBvZiByZWd1bGF0b3Jfc2V0X3ZvbHRhZ2UgdXNhZ2VzLCBJ
+J2Qgc2F5IHRoZSBzYW1lLg0KDQpbXQ0KPiArc3RhdGljIGludCBleHlub3NfYnVzX2dldF9kZXZf
+c3RhdHVzKHN0cnVjdCBkZXZpY2UgKmRldiwNCj4gKwkJCQkgICAgIHN0cnVjdCBkZXZmcmVxX2Rl
+dl9zdGF0dXMgKnN0YXQpDQo+ICt7DQo+ICsJc3RydWN0IGV4eW5vc19idXMgKmJ1cyA9IGRldl9n
+ZXRfZHJ2ZGF0YShkZXYpOw0KPiArCXN0cnVjdCBkZXZmcmVxX2V2ZW50X2RhdGEgZWRhdGE7DQo+
+ICsJaW50IHJldDsNCj4gKw0KPiArCXJjdV9yZWFkX2xvY2soKTsNCj4gKwlzdGF0LT5jdXJyZW50
+X2ZyZXF1ZW5jeSA9IGRldl9wbV9vcHBfZ2V0X2ZyZXEoYnVzLT5jdXJyX29wcCk7DQo+ICsJcmN1
+X3JlYWRfdW5sb2NrKCk7DQo+ICsNCj4gKwlyZXQgPSBleHlub3NfYnVzX2dldF9ldmVudChidXMs
+ICZlZGF0YSk7DQo+ICsJaWYgKHJldCA8IDApIHsNCj4gKwkJc3RhdC0+dG90YWxfdGltZSA9IHN0
+YXQtPmJ1c3lfdGltZSA9IDA7DQo+ICsJCWdvdG8gZXJyOw0KPiArCX0NCj4gKw0KPiArCXN0YXQt
+PmJ1c3lfdGltZSA9IChlZGF0YS5sb2FkX2NvdW50ICogMTAwKSAvIGJ1cy0+cmF0aW87DQo+ICsJ
+c3RhdC0+dG90YWxfdGltZSA9IGVkYXRhLnRvdGFsX2NvdW50Ow0KPiArDQo+ICsJZGV2X2RiZyhk
+ZXYsICJVc2FnZSBvZiBkZXZmcmVxLWV2ZW50IDogJWxkLyVsZFxuIiwgc3RhdC0+YnVzeV90aW1l
+LA0KPiArCQkJCQkJCXN0YXQtPnRvdGFsX3RpbWUpOw0KDQpUaGVzZSB0d28gdmFsdWVzIGFyZSB1
+bnNpZ25lZCBsb25nLg0KDQpbXQ0KPiArc3RhdGljIGludCBleHlub3NfYnVzX3BhcnNlX29mKHN0
+cnVjdCBkZXZpY2Vfbm9kZSAqbnAsDQo+ICsJCQkgICAgICBzdHJ1Y3QgZXh5bm9zX2J1cyAqYnVz
+KQ0KPiArew0KPiArCXN0cnVjdCBkZXZpY2UgKmRldiA9IGJ1cy0+ZGV2Ow0KPiArCXVuc2lnbmVk
+IGxvbmcgcmF0ZTsNCj4gKwlpbnQgaSwgcmV0LCBjb3VudCwgc2l6ZTsNCj4gKw0KPiArCS8qIEdl
+dCB0aGUgY2xvY2sgdG8gcHJvdmlkZSBlYWNoIGJ1cyB3aXRoIHNvdXJjZSBjbG9jayAqLw0KPiAr
+CWJ1cy0+Y2xrID0gZGV2bV9jbGtfZ2V0KGRldiwgImJ1cyIpOw0KPiArCWlmIChJU19FUlIoYnVz
+LT5jbGspKSB7DQo+ICsJCWRldl9lcnIoZGV2LCAiZmFpbGVkIHRvIGdldCBidXMgY2xvY2tcbiIp
+Ow0KPiArCQlyZXR1cm4gUFRSX0VSUihidXMtPmNsayk7DQo+ICsJfQ0KPiArDQo+ICsJcmV0ID0g
+Y2xrX3ByZXBhcmVfZW5hYmxlKGJ1cy0+Y2xrKTsNCj4gKwlpZiAocmV0IDwgMCkgew0KPiArCQlk
+ZXZfZXJyKGRldiwgImZhaWxlZCB0byBnZXQgZW5hYmxlIGNsb2NrXG4iKTsNCj4gKwkJcmV0dXJu
+IHJldDsNCj4gKwl9DQoNCltdDQoNCj4gK2Vycl9yZWd1bGF0b3I6DQo+ICsJcmVndWxhdG9yX2Rp
+c2FibGUoYnVzLT5yZWd1bGF0b3IpOw0KPiArZXJyX29wcDoNCj4gKwlkZXZfcG1fb3BwX29mX3Jl
+bW92ZV90YWJsZShkZXYpOw0KPiArDQo+ICsJcmV0dXJuIHJldDsNCg0KTm8gY2xrX2Rpc2FibGVf
+dW5wcmVwYXJlKCkgc29tZXdoZXJlIGluIHRoZSBlcnJvciBoYW5kbGluZyByb3V0aW5lcz8NCg0K
+W10NCg0KPiArI2lmZGVmIENPTkZJR19QTV9TTEVFUA0KPiArc3RhdGljIGludCBleHlub3NfYnVz
+X3Jlc3VtZShzdHJ1Y3QgZGV2aWNlICpkZXYpDQo+ICt7DQpbXQ0KPiArCQlyZXQgPSByZWd1bGF0
+b3JfZW5hYmxlKGJ1cy0+cmVndWxhdG9yKTsNCltdDQo+ICt9DQo+ICsNCj4gK3N0YXRpYyBpbnQg
+ZXh5bm9zX2J1c19zdXNwZW5kKHN0cnVjdCBkZXZpY2UgKmRldikNCj4gK3sNCltdDQo+ICsJCXJl
+Z3VsYXRvcl9kaXNhYmxlKGJ1cy0+cmVndWxhdG9yKTsNCltdDQo+ICt9DQo+ICsjZW5kaWYNCg0K
+SXNuJ3QgdGhlcmUgYW55IHBvc3NpYmlsaXR5IHRoYXQgeW91IHNob3VsZCBub3QgZGlzYWJsZSBh
+dCBzdXNwZW5kIGNhbGxiYWNrcz8NCklmIEkgcmVtZW1iZXIgY29ycmVjdGx5LCB3ZSBzaG91bGQg
+bm90IGRpc2FibGUgVkRELUlOVC9WREQtTUlGIG9mIEV4eW5vczQ0MTINCmZvciBzdXNwZW5kLXRv
+LVJBTSBhbHRob3VnaCBpdCBpcyAibW9zdGx5IiBvayB0byBkbyBzbywgYnV0IG5vdCAiYWx3YXlz
+IiBvay4NCg0KSW4gc3VjaCBjYXNlcywgSSBndWVzcyBpdCBzaG91bGQgYmUgInNlbGVjdGl2ZWx5
+IiBkaXNhYmxlZCBmb3Igc3VzcGVuZC4NCihzb21lIHJlZ3VsYXRvcnMgc3VwcG9ydCBzcGVjaWFs
+ICJsb3cgcG93ZXIgaWYgc3VzcGVuZGVkIiBtb2RlcyBmb3Igc3VjaCBjYXNlcykNCg0KW10NCg==
