@@ -1,110 +1,150 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 07/25] serial: sh-sci: Convert from clk_get() to devm_clk_get()
-Date: Mon, 14 Dec 2015 11:34:11 +0100
-Message-ID: <CAMuHMdXPNziFbEDvn6VwXrQY4mftpwkyOojzkwCNqvBqFOTWCg@mail.gmail.com>
-References: <1447958344-836-1-git-send-email-geert+renesas@glider.be>
-	<3399561.8ERHTtILhO@avalon>
-	<CAMuHMdXn4xa-0wfL8DXbhzfsPwymT5XXBR70eSL-OF5Fv67+mg@mail.gmail.com>
-	<1466956.fL4LZVx6Ru@avalon>
+From: Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+Subject: Re: [PATCH v12] Add Mediatek thermal support
+Date: Mon, 14 Dec 2015 11:37:39 +0100
+Message-ID: <20151214103739.GA14356@pengutronix.de>
+References: <1448883753-19068-1-git-send-email-s.hauer@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1466956.fL4LZVx6Ru@avalon>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1448883753-19068-1-git-send-email-s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
+ <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
+List-Post: <mailto:linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
+ <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Laurent,
+Eduardo,
 
-On Sun, Dec 13, 2015 at 8:39 PM, Laurent Pinchart
-<laurent.pinchart@ideasonboard.com> wrote:
-> On Thursday 10 December 2015 13:30:18 Geert Uytterhoeven wrote:
->> On Thu, Nov 19, 2015 at 9:38 PM, Laurent Pinchart wrote:
->> > On Thursday 19 November 2015 19:38:46 Geert Uytterhoeven wrote:
->> >> Transfer clock cleanup handling to the core device management code.
->> >>
->> >> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
->> >> ---
->> >>
->> >>  drivers/tty/serial/sh-sci.c | 8 +++-----
->> >>  1 file changed, 3 insertions(+), 5 deletions(-)
->> >>
->> >> diff --git a/drivers/tty/serial/sh-sci.c b/drivers/tty/serial/sh-sci.c
->> >> index cba51da604253db6..9442961a198378c7 100644
->> >> --- a/drivers/tty/serial/sh-sci.c
->> >> +++ b/drivers/tty/serial/sh-sci.c
->> >> @@ -2216,7 +2216,7 @@ static struct uart_ops sci_uart_ops = {
->> >>
->> >>  static int sci_init_clocks(struct sci_port *sci_port, struct device
->> >>  *dev)
->> >>  {
->> >>
->> >>       /* Get the SCI functional clock. It's called "fck" on ARM. */
->> >>
->> >> -     sci_port->fclk = clk_get(dev, "fck");
->> >> +     sci_port->fclk = devm_clk_get(dev, "fck");
->> >
->> > Have you tested what happens if you unbind the device from the driver
->> > while userspace has the serial port open ?
->>
->> Yes I have. And I didn't notice any user-visible behavioral differences.
->>
->> There is a small ordering difference, though: with clk_get() and clk_put(),
->> the explicit clk_put() is done before removing the device from its PM
->> Domain (which involces another call to clk_put() on the module clock):
->>
->>     device_release_driver
->>         __device_release_driver
->>             platform_drv_remove
->>                 sci_remove
->>                     sci_cleanup_single
->>                         __clk_put
->>                 genpd_dev_pm_detach
->>                     pm_genpd_remove_device
->>                         pm_clk_destroy
->>                             __pm_clk_remove
->>                                 __clk_put
->>
->> When using devm_clk_get(), the managed cleanup is done after the device has
->> been removed from its PM Domain:
->>
->>     device_release_driver
->>         __device_release_driver
->>             platform_drv_remove
->>                 genpd_dev_pm_detach
->>                     pm_genpd_remove_device
->>                         pm_clk_destroy
->>                             __pm_clk_remove
->>                                 __clk_put
->>             release_nodes
->>                 __clk_put
->>
->> This shouldn't make a difference, and applies to all other drivers using
->> devm_*(), and devices that are part of a PM Domain.
->
-> I was more concerned about the clk_disable_unprepare() calls. The function is
-> called through the uart pm handler which is called when closing the uart
-> (uart_close()). It's a bit difficult to follow the dynamic code paths as I'm
-> not very familiar with the framework, but I was concerned that the would end
-> up calling clk_disable_unprepare() on a clock for which we have no reference
-> anymore. What prevents clk_disable_unprepare() from being called in the close
-> path after the device has been unbound ? And what ensures that the clocks get
-> unprepared when unbinding the device if the port is held open by a userspace
-> process ?
+Ok, to apply this? There seem to be no further comments.
 
-Both questions are answered by uart_hangup():
-  - uart_hangup() sets port->count to zero, hence uart_close() returns early
-    (second return statement), long before it would call the uart pm handler.
-  - uart_hangup() calls uart_change_pm(state, UART_PM_STATE_OFF);
+Sascha
 
-Gr{oetje,eeting}s,
+On Mon, Nov 30, 2015 at 12:42:30PM +0100, Sascha Hauer wrote:
+> This series adds support for the thermal sensors included in the
+> MT8173 SoC. Currently only basic temperature reading is supported
+> without any interrupt support.
+> 
+> The cpufreq driver for MT8173 is currently under review, so there's no
+> real cooling device available in mainline. Until this is available the
+> thermal driver can be tested with the following dts snippet. It creates
+> a fake gpio fan and a fake trip point which is so low that it can easily
+> be reached with a "cat /dev/zero > /dev/null" on the command line.
+> 
+> Sascha
+> 
+> Changes since v11:
+> - Fix usage of uninitialized variable gcc didn't warn about
+> 
+> changes since v10:
+> - Some style cleanup
+> - Add comment to make clear why we use the sensors in banks even if we
+>   currently only use the maximum of all banks
+> 
+> changes since v9:
+> - rebase on v4.3
+> - Add support for reading the calibration values from nvmem fuses
+> - Only register a single thermal zone instead of four as it seems
+>   that's everything needed
+> 
+> changes since v8:
+> - Add commit description to binding patch
+> - rebase on v4.3-rc2
+> 
+> changes since v7:
+> - re-add some used defines removed in v5
+> - Use MT8173_THERMAL_ZONE_* defines as array indices in static initializers
+> 
+> changes since v6:
+> - remove dot in Hanyi Wus name
+> 
+> changes since v5:
+> - update copyright
+> - remove unused defines
+> 
+> Changes since v4:
+> - give calibration constants more meaningful names (offset, slope)
+> - Use define instead of 0x00c for register access.
+> 
+> Changes since v3:
+> - add include/dt-bindings/thermal/mt8173.h for to be able to use sensor names
+>   in dts files
+> - fix disabling wrong clock in error path
+> - remove now unused reset-names property from binding document
+> - rename MT8173_NUM_BANKS -> MT8173_NUM_ZONES
+> - rename MT8173_NUM_SENSING_POINTS -> MT8173_NUM_SENSORS_PER_ZONE
+> - rename struct thermal_zone_device *tz -> struct thermal_zone_device *tzd
+> 
+> Changes since v2:
+> - sort #includes alphabetically
+> - Add prefix to register defines
+> - drop some members from struct mtk_thermal
+> - simplify raw_to_mcelsius()
+> - add and use more register bit defines
+> - use device_reset() instead of devm_reset_control_get()/reset_control_reset()
+> - misc other stuff
+> 
+> Changes since v1:
+> - Use "mediatek," prefix for custom properties
+> - Drop "thermal: consistently use int for temperatures" dependency
+> 
+> -------------
+> 
+> 	fan: gpio_fan {
+> 		compatible = "gpio-fan";
+> 		gpios = <&pio 24 0>;
+> 		gpio-fan,speed-map = <0    0
+> 				      4500 1>;
+> 		#cooling-cells = <2>;
+> 	};
+> 
+> 	thermal-zones {
+> 			cpu_thermal: cpu_thermal {
+> 			polling-delay-passive = <1000>; /* milliseconds */
+> 			polling-delay = <1000>; /* milliseconds */
+> 
+> 			thermal-sensors = <&thermal>;
+> 
+> 			trips {
+> 				cpu_passive: cpu_passive {
+> 					temperature = <47000>; /* millicelsius */
+> 					hysteresis = <2000>; /* millicelsius */
+> 					type = "passive";
+> 				};
+> 
+> 				cpu_crit {
+> 					temperature = <90000>; /* millicelsius */
+> 					hysteresis = <2000>; /* millicelsius */
+> 					type = "critical";
+> 				};
+> 			};
+> 
+> 			cooling-maps {
+> 				map0 {
+> 					trip = <&cpu_passive>;
+> 					cooling-device = <&fan THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+> 				};
+> 			};
+> 		};
+> 	};
+> 
+> 
+> _______________________________________________
+> Linux-mediatek mailing list
+> Linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+> http://lists.infradead.org/mailman/listinfo/linux-mediatek
+> 
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
