@@ -1,36 +1,52 @@
-From: Shawn Guo <shawnguo@kernel.org>
-Subject: Re: [PATCH 4/5] cpufreq: imx6q: Use id_table to distinguish between
- SoCs
-Date: Mon, 14 Dec 2015 09:30:31 +0800
-Message-ID: <20151214013031.GN11252@tiger>
-References: <1446019154-16384-1-git-send-email-s.hauer@pengutronix.de>
- <1446019154-16384-5-git-send-email-s.hauer@pengutronix.de>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [Intel-gfx] [PATCH v2] PM / Runtime: Introduce pm_runtime_get_noidle
+Date: Mon, 14 Dec 2015 03:04:20 +0100
+Message-ID: <3626982.Y3cVYgn8p5@vostro.rjw.lan>
+References: <1449675920-12986-1-git-send-email-joonas.lahtinen@linux.intel.com> <1449949245.2815.20.camel@intel.com> <20151212194956.GA2407@nuc-i3427.alporthouse.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:49026 "EHLO mail.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751567AbbLNBaw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sun, 13 Dec 2015 20:30:52 -0500
-Content-Disposition: inline
-In-Reply-To: <1446019154-16384-5-git-send-email-s.hauer@pengutronix.de>
+Received: from v094114.home.net.pl ([79.96.170.134]:55512 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751567AbbLNBeP (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 13 Dec 2015 20:34:15 -0500
+In-Reply-To: <20151212194956.GA2407@nuc-i3427.alporthouse.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, kernel@pengutronix.de, Heiner Kallweit <hkallweit1@gmail.com>
+To: Chris Wilson <chris@chris-wilson.co.uk>
+Cc: Imre Deak <imre.deak@intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, linux-pm@vger.kernel.org
 
-On Wed, Oct 28, 2015 at 08:59:13AM +0100, Sascha Hauer wrote:
-> The i.MX6 cpufreq driver is instantiated from a static device in
-> architecture code and not from the device tree. These devices offer the
-> id_table mechanism to distinguish between different types of devices.
-> Use this mechanism rather than of_machine_is_compatible() as it scales
-> better with increasing number of SoCs to check against.
+On Saturday, December 12, 2015 07:49:56 PM Chris Wilson wrote:
+> On Sat, Dec 12, 2015 at 09:40:45PM +0200, Imre Deak wrote:
+> > On Sat, 2015-12-12 at 02:51 +0100, Rafael J. Wysocki wrote:
+> > > +bool pm_runtime_get_if_in_use(struct device *dev)
+> > > +{
+> > > +	unsigned long flags;
+> > > +	bool retval;
+> > > +
+> > > +	spin_lock_irqsave(&dev->power.lock, flags);
+> > > +	retval = dev->power.runtime_status == RPM_ACTIVE ?
+> > > +		!!atomic_inc_not_zero(&dev->power.usage_count) :
+> > > false;
+> > > +	spin_unlock_irqrestore(&dev->power.lock, flags);
+> > > +	return retval;
+> > > +}
+> > > +EXPORT_SYMBOL_GPL(pm_runtime_get_if_in_use);
+> > > +
+> > 
+> > To me this looks ok:
+> > Acked-by: Imre Deak <imre.deak@intel.com>
 > 
-> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> Pendant says
+> retval = (dev->power.runtime_status == RPM_ACTIVE &&
+> 	  atomic_inc_not_zero(&dev->power.usage_count);
 
-Acked-by: Shawn Guo <shawnguo@kernel.org>
+Well, this wouldn't build AFAICS.
 
-Sorry for my oversight on that Sascha was asking my ACK on this patch in
-the cover letter.  Only noticed that with Lucas' ping.
+retval = dev->power.runtime_status == RPM_ACTIVE &&
+	atomic_inc_not_zero(&dev->power.usage_count);
 
-Shawn
+Thanks,
+Rafael
+
