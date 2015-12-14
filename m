@@ -1,61 +1,54 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 0/3] cpuidle: avoid module usage in non-modular code
-Date: Mon, 14 Dec 2015 22:17:55 +0100
-Message-ID: <566F3203.5010009@linaro.org>
-References: <1450051032-32329-1-git-send-email-paul.gortmaker@windriver.com>
+From: Luca Abeni <luca.abeni@unitn.it>
+Subject: Re: [RFCv6 PATCH 09/10] sched: deadline: use deadline bandwidth in
+ scale_rt_capacity
+Date: Mon, 14 Dec 2015 22:19:11 +0100
+Message-ID: <20151214221911.56cd38db@luca-1225C>
+References: <1449641971-20827-1-git-send-email-smuckle@linaro.org>
+	<1449641971-20827-10-git-send-email-smuckle@linaro.org>
+	<20151214151729.GQ6357@twins.programming.kicks-ass.net>
+	<CAKfTPtAVmS6BHWcGz4cB0bpEE91QzU5sSmMWZB9j_vpK0qjwHg@mail.gmail.com>
+	<20151214160759.GD16007@e106622-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f47.google.com ([74.125.82.47]:33483 "EHLO
-	mail-wm0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753585AbbLNVRy (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Dec 2015 16:17:54 -0500
-Received: by mail-wm0-f47.google.com with SMTP id n186so66295583wmn.0
-        for <linux-pm@vger.kernel.org>; Mon, 14 Dec 2015 13:17:53 -0800 (PST)
-In-Reply-To: <1450051032-32329-1-git-send-email-paul.gortmaker@windriver.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20151214160759.GD16007@e106622-lin>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Juri Lelli <Juri.Lelli@arm.com>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Steve Muckle <steve.muckle@linaro.org>, Ingo Molnar <mingo@redhat.com>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
-To: Paul Gortmaker <paul.gortmaker@windriver.com>, linux-kernel@vger.kernel.org
-Cc: Alexander Shiyan <shc_work@mail.ru>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Kukjin Kim <kgene@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
 
-On 12/14/2015 12:57 AM, Paul Gortmaker wrote:
-> This series of commits is a part of a larger project to ensure
-> people don't reference modular support functions in non-modular
-> code.  Overall there was roughly 5k lines of dead code in the
-> kernel due to this.  So far we've fixed several areas, like tty,
-> x86, net, ... and we continue to work on other areas.
->
-> There are several reasons to not use module support for code that
-> can never be built as a module, but the big ones are:
->
->   (1) it is easy to accidentally code up unused module_exit and remov=
-e code
->   (2) it can be misleading when reading the source, thinking it can b=
-e
->        modular when the Makefile and/or Kconfig prohibit it
->   (3) it requires the include of the module.h header file which in tu=
-rn
->       includes nearly everything else.
->
-> Fortunately for cpuidle, the changes are largely trivial and change
-> zero runtime.  All the changes here just remap the modular functions
-> onto the non-modular ones that they would be remapped onto anyway.
->
-> Changes are against linux-next and compile tested on ARM allmodconfig=
-=2E
-> I've Cc'd ARM list because all of these are used on ARM, but I'm
-> thinking these probably can go in via the PM tree.
-
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+On Mon, 14 Dec 2015 16:07:59 +0000
+Juri Lelli <Juri.Lelli@arm.com> wrote:
+[...]
+> > I agree that if the WCET is far from reality, we will underestimate
+> > available capacity for CFS. Have you got some use case in mind which
+> > overestimates the WCET ?
+> 
+> I guess simply the fact that one task can be admitted to the system,
+> but then in practice sleep, waiting from some event to happen.
+My favourite example (since 1998 :) is a video player (but every task
+processing compressed video should work as an example): there is a
+noticeable difference between the time needed to process large I frames
+with a lot of movement (that is about the WCET) and the time needed to
+process small B frames with not much movement. And if we want to avoid
+too much jitter in the video playback we have to allocate the runtime
+based on the maximum time needed to process a video frame.
 
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
+> > If we can't rely on this parameters to evaluate the amount of
+> > capacity used by deadline scheduler on a core, this will imply that
+> > we can't also use it for requesting capacity to cpufreq and we
+> > should fallback on a monitoring mechanism which reacts to a change
+> > instead of anticipating it.
+> > 
+> 
+> There is at least one way in the middle: use utilization of active
+> servers (as I think Luca was already mentioning). This solution should
+> remove some of the pessimism, but still be safe for our needs.
+If you track the active utilisation as done by the GRUB algorithm
+( http://retis.sssup.it/~lipari/papers/lipariBaruah2000.pdf ) and by my
+patches, you can remove _all_ the pessimism :)
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
 
+			Luca
