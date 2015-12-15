@@ -1,161 +1,100 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH v6 6/7] ARM: dts: Exynos5800: fix CPU OPP
-Date: Tue, 15 Dec 2015 18:33:20 +0100
-Message-ID: <1450200801-24539-7-git-send-email-b.zolnierkie@samsung.com>
+Subject: [PATCH v6 5/7] clk: samsung: exynos5422/5800: fix cpu clock
+ configuration data
+Date: Tue, 15 Dec 2015 18:33:19 +0100
+Message-ID: <1450200801-24539-6-git-send-email-b.zolnierkie@samsung.com>
 References: <1450200801-24539-1-git-send-email-b.zolnierkie@samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:40244 "EHLO
-	mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964985AbbLORg5 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Dec 2015 12:36:57 -0500
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-reply-to: <1450200801-24539-1-git-send-email-b.zolnierkie@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Mike Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Ben Gamari <ben@smart-cactus.org>
-Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com, Doug Anderson <dianders@chromium.org>, Andreas Faerber <afaerber@suse.de>
+Cc: Lukasz Majewski <l.majewski@samsung.com>, Kevin Hilman <khilman@linaro.org>, Heiko Stuebner <heiko@sntech.de>, Javier Martinez Canillas <javier@osg.samsung.com>, Anand Moon <linux.amoon@gmail.com>, linux-pm@vger.kernel.org, Tomasz Figa <tomasz.figa@gmail.com>, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, b.zolnierkie@samsung.com, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-Fix CPU operating points for Exynos5800 (it use different
-voltages than Exynos5420 and supports additional frequencies).
-However don't use 2000MHz & 1900MHz OPPs (for A15 cores) and
-1400MHz OPP (for A7 cores) for now as they are not available
-on all boards.
+Fix cpu clock configuration data for Exynos5422/5800 SoCs
+(they use higher PCLK_DBG divider values than Exynos5420 and
+support additional frequencies).
 
 Based on Hardkernel's kernel for ODROID-XU3 board.
 
-Changes by Ben Gamari:
-- Port to operating-points-v2
-
-Cc: Kukjin Kim <kgene.kim@samsung.com>
-Cc: Doug Anderson <dianders@chromium.org>
+Cc: Tomasz Figa <tomasz.figa@gmail.com>
+Cc: Mike Turquette <mturquette@baylibre.com>
 Cc: Javier Martinez Canillas <javier@osg.samsung.com>
-Cc: Andreas Faerber <afaerber@suse.de>
 Cc: Thomas Abraham <thomas.ab@samsung.com>
-Reviewed-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Signed-off-by: Ben Gamari <ben@smart-cactus.org>
+Acked-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
- arch/arm/boot/dts/exynos5800.dtsi | 108 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 108 insertions(+)
+ drivers/clk/samsung/clk-exynos5420.c | 36 +++++++++++++++++++++++++++++++++---
+ 1 file changed, 33 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm/boot/dts/exynos5800.dtsi b/arch/arm/boot/dts/exynos5800.dtsi
-index c0bb356..8213016 100644
---- a/arch/arm/boot/dts/exynos5800.dtsi
-+++ b/arch/arm/boot/dts/exynos5800.dtsi
-@@ -23,6 +23,114 @@
- 	compatible = "samsung,exynos5800-clock";
+diff --git a/drivers/clk/samsung/clk-exynos5420.c b/drivers/clk/samsung/clk-exynos5420.c
+index 2a92546..837329d 100644
+--- a/drivers/clk/samsung/clk-exynos5420.c
++++ b/drivers/clk/samsung/clk-exynos5420.c
+@@ -1274,10 +1274,34 @@ static const struct exynos_cpuclk_cfg_data exynos5420_eglclk_d[] __initconst = {
+ 	{  0 },
  };
  
-+&cluster_a15_opp_table {
-+	opp@1700000000 {
-+		opp-microvolt = <1250000>;
-+	};
-+	opp@1600000000 {
-+		opp-microvolt = <1250000>;
-+	};
-+	opp@1500000000 {
-+		opp-microvolt = <1100000>;
-+	};
-+	opp@1400000000 {
-+		opp-microvolt = <1100000>;
-+	};
-+	opp@1300000000 {
-+		opp-microvolt = <1100000>;
-+	};
-+	opp@1200000000 {
-+		opp-microvolt = <1000000>;
-+	};
-+	opp@1100000000 {
-+		opp-microvolt = <1000000>;
-+	};
-+	opp@1000000000 {
-+		opp-microvolt = <1000000>;
-+	};
-+	opp@900000000 {
-+		opp-microvolt = <1000000>;
-+	};
-+	opp@800000000 {
-+		opp-microvolt = <900000>;
-+	};
-+	opp@700000000 {
-+		opp-microvolt = <900000>;
-+	};
-+	opp@600000000 {
-+		opp-hz = /bits/ 64 <600000000>;
-+		opp-microvolt = <900000>;
-+		clock-latency-ns = <140000>;
-+	};
-+	opp@500000000 {
-+		opp-hz = /bits/ 64 <500000000>;
-+		opp-microvolt = <900000>;
-+		clock-latency-ns = <140000>;
-+	};
-+	opp@400000000 {
-+		opp-hz = /bits/ 64 <400000000>;
-+		opp-microvolt = <900000>;
-+		clock-latency-ns = <140000>;
-+	};
-+	opp@300000000 {
-+		opp-hz = /bits/ 64 <300000000>;
-+		opp-microvolt = <900000>;
-+		clock-latency-ns = <140000>;
-+	};
-+	opp@200000000 {
-+		opp-hz = /bits/ 64 <200000000>;
-+		opp-microvolt = <900000>;
-+		clock-latency-ns = <140000>;
-+	};
++static const struct exynos_cpuclk_cfg_data exynos5800_eglclk_d[] __initconst = {
++	{ 2000000, E5420_EGL_DIV0(3, 7, 7, 4), },
++	{ 1900000, E5420_EGL_DIV0(3, 7, 7, 4), },
++	{ 1800000, E5420_EGL_DIV0(3, 7, 7, 4), },
++	{ 1700000, E5420_EGL_DIV0(3, 7, 7, 3), },
++	{ 1600000, E5420_EGL_DIV0(3, 7, 7, 3), },
++	{ 1500000, E5420_EGL_DIV0(3, 7, 7, 3), },
++	{ 1400000, E5420_EGL_DIV0(3, 7, 7, 3), },
++	{ 1300000, E5420_EGL_DIV0(3, 7, 7, 2), },
++	{ 1200000, E5420_EGL_DIV0(3, 7, 7, 2), },
++	{ 1100000, E5420_EGL_DIV0(3, 7, 7, 2), },
++	{ 1000000, E5420_EGL_DIV0(3, 7, 6, 2), },
++	{  900000, E5420_EGL_DIV0(3, 7, 6, 2), },
++	{  800000, E5420_EGL_DIV0(3, 7, 5, 2), },
++	{  700000, E5420_EGL_DIV0(3, 7, 5, 2), },
++	{  600000, E5420_EGL_DIV0(3, 7, 4, 2), },
++	{  500000, E5420_EGL_DIV0(3, 7, 3, 2), },
++	{  400000, E5420_EGL_DIV0(3, 7, 3, 2), },
++	{  300000, E5420_EGL_DIV0(3, 7, 3, 2), },
++	{  200000, E5420_EGL_DIV0(3, 7, 3, 2), },
++	{  0 },
 +};
 +
-+&cluster_a7_opp_table {
-+	opp@1300000000 {
-+		opp-microvolt = <1250000>;
-+	};
-+	opp@1200000000 {
-+		opp-microvolt = <1250000>;
-+	};
-+	opp@1100000000 {
-+		opp-microvolt = <1250000>;
-+	};
-+	opp@1000000000 {
-+		opp-microvolt = <1100000>;
-+	};
-+	opp@900000000 {
-+		opp-microvolt = <1100000>;
-+	};
-+	opp@800000000 {
-+		opp-microvolt = <1100000>;
-+	};
-+	opp@700000000 {
-+		opp-microvolt = <1000000>;
-+	};
-+	opp@600000000 {
-+		opp-microvolt = <1000000>;
-+	};
-+	opp@500000000 {
-+		opp-hz = /bits/ 64 <500000000>;
-+		opp-microvolt = <1000000>;
-+		clock-latency-ns = <140000>;
-+	};
-+	opp@400000000 {
-+		opp-hz = /bits/ 64 <400000000>;
-+		opp-microvolt = <1000000>;
-+		clock-latency-ns = <140000>;
-+	};
-+	opp@300000000 {
-+		opp-hz = /bits/ 64 <300000000>;
-+		opp-microvolt = <900000>;
-+		clock-latency-ns = <140000>;
-+	};
-+	opp@200000000 {
-+		opp-hz = /bits/ 64 <200000000>;
-+		opp-microvolt = <900000>;
-+		clock-latency-ns = <140000>;
-+	};
-+};
-+
- &mfc {
- 	compatible = "samsung,mfc-v8";
- };
+ #define E5420_KFC_DIV(kpll, pclk, aclk)					\
+ 		((((kpll) << 24) | ((pclk) << 20) | ((aclk) << 4)))
+ 
+ static const struct exynos_cpuclk_cfg_data exynos5420_kfcclk_d[] __initconst = {
++	{ 1400000, E5420_KFC_DIV(3, 5, 3), }, /* for Exynos5800 */
+ 	{ 1300000, E5420_KFC_DIV(3, 5, 2), },
+ 	{ 1200000, E5420_KFC_DIV(3, 5, 2), },
+ 	{ 1100000, E5420_KFC_DIV(3, 5, 2), },
+@@ -1357,9 +1381,15 @@ static void __init exynos5x_clk_init(struct device_node *np,
+ 				ARRAY_SIZE(exynos5800_gate_clks));
+ 	}
+ 
+-	exynos_register_cpu_clock(ctx, CLK_ARM_CLK, "armclk",
+-		mout_cpu_p[0], mout_cpu_p[1], 0x200,
+-		exynos5420_eglclk_d, ARRAY_SIZE(exynos5420_eglclk_d), 0);
++	if (soc == EXYNOS5420) {
++		exynos_register_cpu_clock(ctx, CLK_ARM_CLK, "armclk",
++			mout_cpu_p[0], mout_cpu_p[1], 0x200,
++			exynos5420_eglclk_d, ARRAY_SIZE(exynos5420_eglclk_d), 0);
++	} else {
++		exynos_register_cpu_clock(ctx, CLK_ARM_CLK, "armclk",
++			mout_cpu_p[0], mout_cpu_p[1], 0x200,
++			exynos5800_eglclk_d, ARRAY_SIZE(exynos5800_eglclk_d), 0);
++	}
+ 	exynos_register_cpu_clock(ctx, CLK_KFC_CLK, "kfcclk",
+ 		mout_kfc_p[0], mout_kfc_p[1], 0x28200,
+ 		exynos5420_kfcclk_d, ARRAY_SIZE(exynos5420_kfcclk_d), 0);
 -- 
 1.9.1
-
