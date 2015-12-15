@@ -1,56 +1,64 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v4 1/3] dt-binding: power: Add otg regulator binding
-Date: Wed, 16 Dec 2015 00:13:50 +0100
-Message-ID: <20151215231350.GA7421@earth>
-References: <1450209132-20185-1-git-send-email-tim.bird@sonymobile.com>
+From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH linux-next 1/2] power: Add brcm,bcm6358-power-controller
+ device tree binding
+Date: Wed, 16 Dec 2015 00:23:00 +0100
+Message-ID: <20151215232300.GB7421@earth>
+References: <5668AB4F.7030100@simon.arlott.org.uk>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="huq684BweRXVnRxX"
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
+	protocol="application/pgp-signature"; boundary="XOIedfhf+7KOe/yw"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1450209132-20185-1-git-send-email-tim.bird@sonymobile.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>
-Cc: robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, courtney.cavin@sonymobile.com, dbaryshkov@gmail.com, dwmw2@infradead.org, agross@codeaurora.org, Bjorn.Andersson@sonymobile.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, tbird20d@gmail.com
+In-Reply-To: <5668AB4F.7030100-qdVf85lJwsCyrPCCpiK2c/XRex20P6io@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Kevin Cernekee <cernekee-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Jonas Gorski <jogo-p3rKhJxN3npAfugRpC6u6w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, MIPS Mailing List <linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>, bcm-kernel-feedback-list <bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
 
---huq684BweRXVnRxX
+--XOIedfhf+7KOe/yw
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, Dec 15, 2015 at 11:52:10AM -0800, Tim Bird wrote:
-> Add a binding for the regulator which controls the OTG chargepath switch.
-> The OTG switch gets its power from pm8941_5vs1, and that should be
-> expressed as a usb_otg_in-supply property in the DT node for the
-> charger driver. The regulator name is "otg-vbus".
+On Wed, Dec 09, 2015 at 10:29:35PM +0000, Simon Arlott wrote:
+> The BCM6358 contains power domains controlled with a register. Power
+> domains are indexed by bits in the register. Power domain bits can be
+> interleaved with other status bits and clocks in the same register.
+>=20
+> Newer SoCs with dedicated power domain registers are active low.
 
-I would like to get an acked-by from either the regulator framework
-maintainers, or DT binding maintainers (or both ;)) on the binding.
+That's neither a power supply driver (like a battery charger or a
+fuel gauge), nor a reboot/poweroff driver, so does not really fit
+into my tree. I will add generic PM maintainers to the discussion.
 
 -- Sebastian
 
---huq684BweRXVnRxX
+--XOIedfhf+7KOe/yw
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBCgAGBQJWcJ6rAAoJENju1/PIO/qa9REP/3RwpU33vbdQjc1ONCgLedVV
-c38y4B0rJdJCMoeGwJLETEsTT9V6CSJYkrQ/yOmpS6n/r7IHMX4DFxc9CPaLWKt9
-SIwy0Qk2/HA9FZRUcXAxM7nGMWXnOSJUPMZ6TQoHOToW4PtjsccHt1tfnx3LRt0e
-PD7vllQTAljR+6+VVK7pA7busbK9M3esG54VGPeJzPx046r6APlzeOlt6xdVgOoc
-Xw4Qf3fEzVZ6WSOjdg7bl45LFoEIbuhqs14y2BRqR65bHPGVBWgdzHrxbf5llkzW
-JN9CaRWrjr//WU5tm8U9RBULCj7JapVOXxuHVcQ0PESSNMMf3ogGPUQejSrM5AhC
-au0Ku3jFrJvgD1x74G+/NOBUbXMlY0k8gK38cVZIHHFz3cEZiSoTTnxA6Wpx2T9d
-HG02YXD1yfoW4BizIPBskf0dQkAElV7khhoNkMiGXMbxSAnA9tRYOSYPhF7aoP89
-mzaEZptbhAplRNc1Y9VGQiqnoOkatlI08O9QEQesXSuunJ4+35RdHIFKmqtFqkpC
-USOgzeRLYeObKfJQU1ZNOKeBzZkhAkMxwQHHp0LHPssDMEi1FxwIjQ0p0uDl3Er3
-/h+k7dwrOchqu8pBaKAoiw8L76JmkDwCGOCsJJNVlmnq8sxJvFnHAsWgfIl7fiEq
-TZn8A8LHaH2HfV9cJCAV
-=yu06
+iQIcBAEBCgAGBQJWcKDUAAoJENju1/PIO/qanW0P+gPU6Ii+5doqe4tOqU+RWSUr
+PDpj0smF8huH4pmzqSwpbJjci4G0xqGRTSh/XARVq5fJ3IfiDmUQhbFHHR7cb/15
+DDxtDN8FhAPfZB/Ylx4tIm5W4pZvAhROJHM25LCiroV5yhPIx+hRja4Uc4LPNImG
+tasXry7MG7IthMJAgB+Qc+f3VcMIa1DlUks/nwCCOgY0IO+Sir9V7YFDREfYxdtO
+N+owMT2SR3noR0A4IxlaDHd+1cT8giWMd5UOVjFph/j31M7Uxl/haJEvm8ZPwPAJ
+ShFhVo5FCpObUlP5bmffywditTLwatf+GFfFY+Z1X916jTK9V9G73PnLlsuIqBTe
+2fXiC8q5f7YmGDWOjijLFGxb1vIwcj3qM7B1UkYWqCuUW49dzXbA4FU6DLp5z3vZ
+s091BxCi3oXWB0bvFiqc1xooD5beQUALVAFuaGkRzR3tjTttzZP/KA8GuHgBoDrw
+S9DQ8Denq9m+o8+0F4cX7noY77m52wHfgGai8vkP0NPq2VlE8lrzpIcZivY37CpM
+yswwip0nJ6HnFbqFql4SD/1OrOH04rWe2NtWpL0piDFVZ1VlbeF4ULt8DY1j/Foa
+ucdOBI9+93jczW8XAnrER6Vkte6+TyffUUONAUZMn5fEg/Ne85ijTH1BQZfYilmQ
+4LR3wrR6ccdi+dGOWuA6
+=zyMi
 -----END PGP SIGNATURE-----
 
---huq684BweRXVnRxX--
+--XOIedfhf+7KOe/yw--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
