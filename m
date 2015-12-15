@@ -1,55 +1,46 @@
 From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [RFCv6 PATCH 09/10] sched: deadline: use deadline bandwidth in
  scale_rt_capacity
-Date: Tue, 15 Dec 2015 13:38:59 +0100
-Message-ID: <20151215123859.GC6357@twins.programming.kicks-ass.net>
+Date: Tue, 15 Dec 2015 13:41:44 +0100
+Message-ID: <20151215124144.GD6357@twins.programming.kicks-ass.net>
 References: <1449641971-20827-1-git-send-email-smuckle@linaro.org>
  <1449641971-20827-10-git-send-email-smuckle@linaro.org>
  <20151214151729.GQ6357@twins.programming.kicks-ass.net>
  <CAKfTPtAVmS6BHWcGz4cB0bpEE91QzU5sSmMWZB9j_vpK0qjwHg@mail.gmail.com>
  <20151214165128.GU6357@twins.programming.kicks-ass.net>
- <20151214223113.5732201a@luca-1225C>
+ <CAKfTPtCRGuWY8aXCKVHumM3nLODsWm55ZHhkBm4v5HzPEn+J_g@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bombadil.infradead.org ([198.137.202.9]:56936 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753685AbbLOMlu (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Dec 2015 07:41:50 -0500
 Content-Disposition: inline
-In-Reply-To: <20151214223113.5732201a@luca-1225C>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Luca Abeni <luca.abeni@unitn.it>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>, Steve Muckle <steve.muckle@linaro.org>, Ingo Molnar <mingo@redhat.com>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
+In-Reply-To: <CAKfTPtCRGuWY8aXCKVHumM3nLODsWm55ZHhkBm4v5HzPEn+J_g@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Steve Muckle <steve.muckle@linaro.org>, Ingo Molnar <mingo@redhat.com>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Luca Abeni <luca.abeni@unitn.it>
 
-On Mon, Dec 14, 2015 at 10:31:13PM +0100, Luca Abeni wrote:
+On Tue, Dec 15, 2015 at 05:43:44AM +0100, Vincent Guittot wrote:
+> On 14 December 2015 at 17:51, Peter Zijlstra <peterz@infradead.org> wrote:
 
-> > There 'might' be smart pants ways around this, where you run part of
-> > the execution at lower speed and switch to a higher speed to 'catch'
-> > up if you exceed some boundary, such that, on average, you run at the
-> > same speed the WCET mandates, but I'm not sure that's worth it.
-> > Juri/Luca might know.
+> > No, since the WCET can and _will_ happen, its the best you can do with
+> > cpufreq. If you were to set it lower you could not be able to execute
+> > correctly in your 'never' tail cases.
+> 
+> In the context of frequency scaling, This mean that we will never
+> reach low frequency
 
-> Some previous works (see for example
-> https://www.researchgate.net/profile/Giuseppe_Lipari/publication/220800940_Using_resource_reservation_techniques_for_power-aware_scheduling/links/09e41513639b2703fc000000.pdf
-> ) investigated the usage of the "active utilisation" for switching the
-> CPU frequency. This "active utilisation tracking" mechanism is the same
-> I mentioned in the previous email, and implemented here:
-> https://github.com/lucabe72/linux-reclaiming/commit/49fc786a1c453148625f064fa38ea538470df55b .
+Only if you've stuffed your machine full of deadline tasks, if you take
+Luca's example of the I/B frame decoder thingy, then even the WCET for
+the I frames should not be very much (albeit significantly more than B
+frames).
 
-I have stuck the various PDFs and commits you've linked into my todo
-list ;-) Thanks!
+So while the WCET is pessimistic compared to the avg case, most CPUs can
+do video decoding without much effort at all, so even the WCET for the
+I-frames might allow us to drop to the lowest cpufreq.
 
-> I suspect the "inactive timer" I used to decrease the utilisation at
-> the so called 0-lag time might be problematic, but I did not find any
-> way to implement (or approximate) the active utilisation tracking
-> without this timer... Anyway, if there is interest I am willing to
-> adapt/rework/modify my patches as needed.
-
-So I remember something else from the BFQ code, which also had to track
-entries for the 0-lag stuff, and I just had a quick peek at that code
-again. And what they appear to do is keep inactive entries with a lag
-deficit in a separate tree (the idle tree).
-
-And every time they update the vtime, they also push fwd the idle tree
-and expire entries on that.
-
-Or that is what I can make of it in a quick few minutes staring at that
-code -- look for bfq_forget_idle().
+Now, if you were to decode 10 streams at the same time, different story
+of course ;-)
