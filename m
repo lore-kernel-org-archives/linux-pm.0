@@ -1,44 +1,56 @@
-From: Bjorn Andersson <bjorn.andersson-/MT0OVThwyLZJqsBc5GL+g@public.gmane.org>
-Subject: Re: [PATCH v4 1/3] dt-binding: power: Add otg regulator binding
-Date: Tue, 15 Dec 2015 14:12:09 -0800
-Message-ID: <20151215221209.GX4000@usrtlx11787.corpusers.net>
-References: <1450209132-20185-1-git-send-email-tim.bird@sonymobile.com>
+From: Florian Fainelli <f.fainelli@gmail.com>
+Subject: Re: [PATCH v3 2/4] ARM: bcm2835: add rpi power domain driver
+Date: Tue, 15 Dec 2015 14:27:25 -0800
+Message-ID: <567093CD.1020208@gmail.com>
+References: <1450215622-27394-1-git-send-email-eric@anholt.net> <1450215622-27394-3-git-send-email-eric@anholt.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1450209132-20185-1-git-send-email-tim.bird-/MT0OVThwyLZJqsBc5GL+g@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Tim Bird <tim.bird-/MT0OVThwyLZJqsBc5GL+g@public.gmane.org>
-Cc: "robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "pawel.moll-5wv7dgnIgG8@public.gmane.org" <pawel.moll-5wv7dgnIgG8@public.gmane.org>, "mark.rutland-5wv7dgnIgG8@public.gmane.org" <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org" <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, "sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Cavin, Courtney" <Courtney.Cavin-/MT0OVThwyLZJqsBc5GL+g@public.gmane.org>, "dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org" <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org" <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, "agross-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org" <agross-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "tbird20d-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org" <tbird20d-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f172.google.com ([209.85.192.172]:36186 "EHLO
+	mail-pf0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932855AbbLOW1j (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Dec 2015 17:27:39 -0500
+In-Reply-To: <1450215622-27394-3-git-send-email-eric@anholt.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eric Anholt <eric@anholt.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-arm-kernel@lists.infradead.org, linux-rpi-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Lee Jones <lee@kernel.org>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alexander Aring <alex.aring@gmail.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>
 
-On Tue 15 Dec 11:52 PST 2015, Tim Bird wrote:
-
-> Add a binding for the regulator which controls the OTG chargepath switch.
-> The OTG switch gets its power from pm8941_5vs1, and that should be
-> expressed as a usb_otg_in-supply property in the DT node for the
-> charger driver.  The regulator name is "otg-vbus".
+On 15/12/15 13:40, Eric Anholt wrote:
+> From: Alexander Aring <alex.aring@gmail.com>
 > 
-> Signed-off-by: Tim Bird <tim.bird-/MT0OVThwyLZJqsBc5GL+g@public.gmane.org>
+> This patch adds support for several power domains on Raspberry Pi,
+> including USB (so it can be enabled even if the bootloader didn't do
+> it), and graphics.
+> 
+> This patch is the combined work of Eric Anholt (who wrote USB support
+> inside of the Raspberry Pi firmware driver, and wrote the non-USB
+> domain support) and Alexander Aring (who separated the original USB
+> work out from the firmware driver).
+> 
+> Signed-off-by: Alexander Aring <alex.aring@gmail.com>
+> Signed-off-by: Eric Anholt <eric@anholt.net>
 > ---
-> Changes since v3
->  - switch supply name to have underscores instead of dashes
->    - (switched back to match the name used in data sheets)
+> 
+> v2: Add support for power domains other than USB, using the new
+>     firmware interface, reword commit message (changes by Eric)
+> 
+> v3: Restructure as a builtin driver, and drop
+>     of_genpd_add_provider_onecell error handling to avoid
+>     pm_genpd_exit() dependency until that API can be settled.  Clean
+>     up copyright header, add missing ISP initialization, and fix typo
+>     in transposer's name.
+> 
+>  arch/arm/mach-bcm/Kconfig                   |  10 ++
+>  arch/arm/mach-bcm/Makefile                  |   1 +
+>  arch/arm/mach-bcm/raspberrypi-power.c       | 247 ++++++++++++++++++++++++++++
+>  include/dt-bindings/arm/raspberrypi-power.h |  41 +++++
+>  4 files changed, 299 insertions(+)
+>  create mode 100644 arch/arm/mach-bcm/raspberrypi-power.c
 
-Thanks, now it matches the datasheet again.
-
->  - switch regulator node name to otg-vbus
-> Changes since v1
->  - switch supply name to have dashes instead of underscores
->  - remove superfluous DT explanations in the otg node description
-> ---
-
-Acked-by: Bjorn Andersson <bjorn.andersson-/MT0OVThwyLZJqsBc5GL+g@public.gmane.org>
-
-Regards,
-Bjorn
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+What motivated the location of this power domain driver in
+arch/arm/mach-bcm? Should not we have this in drivers/power/ or
+somewhere in drivers/ at the very least?
+-- 
+Florian
