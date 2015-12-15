@@ -1,131 +1,56 @@
 From: Vincent Guittot <vincent.guittot@linaro.org>
 Subject: Re: [RFCv6 PATCH 09/10] sched: deadline: use deadline bandwidth in scale_rt_capacity
-Date: Tue, 15 Dec 2015 13:43:26 +0100
-Message-ID: <CAKfTPtA_wtKz26mgeneRn=kxNV45sdoz+Uu0ybsg3L6k=3mk8A@mail.gmail.com>
+Date: Tue, 15 Dec 2015 13:46:53 +0100
+Message-ID: <CAKfTPtC5xNG3nJ6BJnTwcd2sxz_ctZkzWHXMBcfRKov7m=ePjg@mail.gmail.com>
 References: <1449641971-20827-1-git-send-email-smuckle@linaro.org>
  <1449641971-20827-10-git-send-email-smuckle@linaro.org> <20151214151729.GQ6357@twins.programming.kicks-ass.net>
  <CAKfTPtAVmS6BHWcGz4cB0bpEE91QzU5sSmMWZB9j_vpK0qjwHg@mail.gmail.com>
  <20151214221231.39b5bc4e@luca-1225C> <CAKfTPtDT----aVGF-3T90PZQQvsOJay_Y-js19W+NNZpvk7J_w@mail.gmail.com>
- <566FD446.1080004@unitn.it>
+ <566FD446.1080004@unitn.it> <20151215122015.GA6357@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f52.google.com ([209.85.215.52]:35822 "EHLO
-	mail-lf0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753852AbbLOMnr (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Dec 2015 07:43:47 -0500
-Received: by mail-lf0-f52.google.com with SMTP id l133so5427067lfd.2
-        for <linux-pm@vger.kernel.org>; Tue, 15 Dec 2015 04:43:46 -0800 (PST)
-In-Reply-To: <566FD446.1080004@unitn.it>
+Received: from mail-lf0-f47.google.com ([209.85.215.47]:34963 "EHLO
+	mail-lf0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751624AbbLOMrO (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Dec 2015 07:47:14 -0500
+Received: by mail-lf0-f47.google.com with SMTP id l133so5492177lfd.2
+        for <linux-pm@vger.kernel.org>; Tue, 15 Dec 2015 04:47:13 -0800 (PST)
+In-Reply-To: <20151215122015.GA6357@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Luca Abeni <luca.abeni@unitn.it>
-Cc: Peter Zijlstra <peterz@infradead.org>, Steve Muckle <steve.muckle@linaro.org>, Ingo Molnar <mingo@redhat.com>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Luca Abeni <luca.abeni@unitn.it>, Steve Muckle <steve.muckle@linaro.org>, Ingo Molnar <mingo@redhat.com>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 
-On 15 December 2015 at 09:50, Luca Abeni <luca.abeni@unitn.it> wrote:
-> On 12/15/2015 05:59 AM, Vincent Guittot wrote:
-> [...]
->>>>>
->>>>> So I don't think this is right. AFAICT this projects the WCET as the
->>>>> amount of time actually used by DL. This will, under many
->>>>> circumstances, vastly overestimate the amount of time actually
->>>>> spend on it. Therefore unduly pessimisme the fair capacity of this
->>>>> CPU.
->>>>
->>>>
->>>> I agree that if the WCET is far from reality, we will underestimate
->>>> available capacity for CFS. Have you got some use case in mind which
->>>> overestimates the WCET ?
->>>> If we can't rely on this parameters to evaluate the amount of capacity
->>>> used by deadline scheduler on a core, this will imply that we can't
->>>> also use it for requesting capacity to cpufreq and we should fallback
->>>> on a monitoring mechanism which reacts to a change instead of
->>>> anticipating it.
->>>
->>> I think a more "theoretically sound" approach would be to track the
->>> _active_ utilisation (informally speaking, the sum of the utilisations
->>> of the tasks that are actually active on a core - the exact definition
->>> of "active" is the trick here).
->>
->>
->> The point is that we probably need 2 definitions of "active" tasks.
+On 15 December 2015 at 13:20, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Tue, Dec 15, 2015 at 09:50:14AM +0100, Luca Abeni wrote:
+>> On 12/15/2015 05:59 AM, Vincent Guittot wrote:
 >
-> Ok; thanks for clarifying. I do not know much about the remaining capacity
-> used by CFS; however, from what you write I guess CFS really need an
-> "average"
-> utilisation (while frequency scaling needs the active utilisation).
+>> >The 2nd definition is used to compute the remaining capacity for the
+>> >CFS scheduler. This one doesn't need to be updated at each wake/sleep
+>> >of a deadline task but should reflect the capacity used by deadline in
+>> >a larger time scale. The latter will be used by the CFS scheduler  at
+>> >the periodic load balance pace
+>
+>> Ok, so as I wrote above this really looks like an average utilisation.
+>> My impression (but I do not know the CFS code too much) is that the mainline
+>> kernel is currently doing the right thing to compute it, so maybe there is no
+>> need to change the current code in this regard.
+>> If the current code is not acceptable for some reason, an alternative would
+>> be to measure the active utilisation for frequency scaling, and then apply a
+>> low-pass filter to it for CFS.
+>
+> So CFS really only needs a 'vague' average idea on how much time it will
+> not get. Its best effort etc., so being a little wrong isn't a problem.
+>
+> The current code suffices, but I think the reason its been changed in
+> this series is that they want/need separate tracking for fifo/rr and
+> deadline in the next patch, and taking out deadline like proposed was
+> the easiest way of achieving that.
 
-yes. this patch is only about the "average" utilization
+yes. you're right. The goal was to minimize the overhead for tracking
+separately  fifo/rr and deadline.
 
-> So, I suspect you really need to track 2 different things.
-> From a quick look at the code that is currently in mainline, it seems to
-> me that it does a reasonable thing for tracking the remaining capacity
-> used by CFS...
->
->> The 1st one would be used to scale the frequency. From a power saving
->> point of view, it have to reflect the minimum frequency needed at the
->> current time to handle all works without missing deadline.
->
-> Right. And it can be computed as shown in the GRUB-PA paper I mentioned
-> in a previous mail (that is, by tracking the active utilisation, as done
-> by my patches).
 
-I fully trust you on that part.
->
->> This one
->> should be updated quite often with the wake up and the sleep of tasks
->> as well as the throttling.
->
-> Strictly speaking, the active utilisation must be updated when a task
-> wakes up and when a task sleeps/terminates (but when a task
-> sleeps/terminates
-> you cannot decrease the active utilisation immediately: you have to wait
-> some time because the task might already have used part of its "future
-> utilisation").
-> The active utilisation must not be updated when a task is throttled: a
-> task is throttled when its current runtime is 0, so it already used all
-> of its utilisation for the current period (think about two tasks with
-> runtime=50ms and period 100ms: they consume 100% of the time on a CPU,
-> and when the first task consumed all of its runtime, you cannot decrease
-> the active utilisation).
-
- I haven't read the paper you pointed in the previous email but it's
-on my todo list. Does the GRUB-PA take into account the frequency
-transition when selecting the best frequency ?
-
->
->> The 2nd definition is used to compute the remaining capacity for the
->> CFS scheduler. This one doesn't need to be updated at each wake/sleep
->> of a deadline task but should reflect the capacity used by deadline in
->> a larger time scale. The latter will be used by the CFS scheduler  at
->> the periodic load balance pace
->
-> Ok, so as I wrote above this really looks like an average utilisation.
-> My impression (but I do not know the CFS code too much) is that the mainline
-> kernel is currently doing the right thing to compute it, so maybe there is
-> no
-> need to change the current code in this regard.
-> If the current code is not acceptable for some reason, an alternative would
-> be to measure the active utilisation for frequency scaling, and then apply a
-> low-pass filter to it for CFS.
->
->
->                                 Luca
->
->
->>
->>> As done, for example, here:
->>> https://github.com/lucabe72/linux-reclaiming/tree/track-utilisation-v2
->>> (in particular, see
->>>
->>> https://github.com/lucabe72/linux-reclaiming/commit/49fc786a1c453148625f064fa38ea538470df55b
->>> )
->>> I understand this approach might look too complex... But I think it is
->>> much less pessimistic while still being "safe".
->>> If there is something that I can do to make that code more acceptable,
->>> let me know.
->>>
->>>
->>>                          Luca
 >
 >
