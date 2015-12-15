@@ -1,74 +1,89 @@
-From: Thomas Renninger <trenn@suse.de>
-Subject: Re: [PATCH V6 1/3] cpufreq: intel_pstate: configurable algorithm to get target pstate
-Date: Tue, 15 Dec 2015 15:24:53 +0100
-Message-ID: <6686771.YYmmLREfhx@skinner>
-References: <1449247235-29389-1-git-send-email-philippe.longepe@linux.intel.com> <3489702.fdaYLucDTN@skinner> <1450117227.2912.17.camel@spandruv-desk3.jf.intel.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] PM / runtime: Add new helper for conditional usage count incrementation
+Date: Tue, 15 Dec 2015 15:28:54 +0100
+Message-ID: <CAPDyKFo-X766DAZ2yr2L5=KQxXRojGG7tJ6iWHgJiA0==mTvkA@mail.gmail.com>
+References: <1449675920-12986-1-git-send-email-joonas.lahtinen@linux.intel.com>
+	<1449949245.2815.20.camel@intel.com>
+	<20151212194956.GA2407@nuc-i3427.alporthouse.com>
+	<32970649.AWpGt5zezN@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:58843 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965025AbbLOOZC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 15 Dec 2015 09:25:02 -0500
-In-Reply-To: <1450117227.2912.17.camel@spandruv-desk3.jf.intel.com>
+Received: from mail-qk0-f172.google.com ([209.85.220.172]:36616 "EHLO
+	mail-qk0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933333AbbLOO2z (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Dec 2015 09:28:55 -0500
+Received: by mail-qk0-f172.google.com with SMTP id t125so14684953qkh.3
+        for <linux-pm@vger.kernel.org>; Tue, 15 Dec 2015 06:28:54 -0800 (PST)
+In-Reply-To: <32970649.AWpGt5zezN@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Len Brown <lenb@kernel.org>, Philippe Longepe <philippe.longepe@linux.intel.com>, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, Prarit Bhargava <prarit@redhat.com>, viresh.kumar@linaro.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Chris Wilson <chris@chris-wilson.co.uk>, Imre Deak <imre.deak@intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Monday, December 14, 2015 10:20:27 AM Srinivas Pandruvada wrote:
-> On Mon, 2015-12-14 at 16:13 +0100, Thomas Renninger wrote:
-> > On Thursday, December 10, 2015 09:28:40 AM Srinivas Pandruvada wrote:
-> > > On Thu, 2015-12-10 at 14:04 +0100, Thomas Renninger wrote:
-> > > > On Wednesday, December 09, 2015 12:21:53 PM Srinivas Pandruvada wrote:
-> > > > > On Wed, 2015-12-09 at 15:34 +0100, Thomas Renninger wrote:
+On 14 December 2015 at 23:22, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> Introduce a new runtime PM function, pm_runtime_get_if_in_use(),
 
-...
+As we already have pm_runtime_set_active() and pm_runtime_active(),
+changing the new function name to "pm_runtime_get_if_active" may be
+better!?
 
-> > And here:
-> > https://en.wikipedia.org/wiki/Silvermont
-> > 
-> > I get:
-> > List of Silvermont processors:
-> > Desktop processors (Bay Trail-D)
-> > Server processors (Avoton)
-> > Communications processors (Rangeley)
-> > Embedded/automotive processors (Bay Trail-I)
-> > Mobile processors (Bay Trail-M)
-> > Tablet processors (Bay Trail-T)
-> > Smartphone processors (Merrifield and Moorefield)
-> > 
-> > List of Airmont processors
-> > Mobile processors (Braswell)
-> > Smartphone and Tablet processors (Cherry Trail)
-> > 
-> > Not sure what specific functions you mean...
-> > Can you name them?
-> 
-> You have them above for two micro-architectures.
-> But they have different cpu id when the use case calls for totally
-> different use case. For example server processor (Avaton above in your
-> list) has a cpuid of 0x4D, which we don't support for Intel Pstate.
+> that will increment the device's runtime PM usage counter and
+> return 'true' if its status is RPM_ACTIVE and its usage counter
+> is greater than 0 at the same time ('false' will be returned
+> otherwise).
+>
+> This is useful for things that should only be done if the device
+> is active (from the runtime PM perspective) and used by somebody
+> (as indicated by the usage counter) already and they are not worth
+> bothering otherwise.
+>
+> Requested-by: Imre Deak <imre.deak@intel.com>
+> Acked-by: Imre Deak <imre.deak@intel.com>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  Documentation/power/runtime_pm.txt |    5 +++++
+>  drivers/base/power/runtime.c       |   21 +++++++++++++++++++++
+>  include/linux/pm_runtime.h         |    5 +++++
+>  3 files changed, 31 insertions(+)
+>
+> Index: linux-pm/drivers/base/power/runtime.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/power/runtime.c
+> +++ linux-pm/drivers/base/power/runtime.c
+> @@ -966,6 +966,27 @@ int __pm_runtime_resume(struct device *d
+>  EXPORT_SYMBOL_GPL(__pm_runtime_resume);
+>
+>  /**
+> + * pm_runtime_get_if_in_use - Conditionally bump up the device's usage counter.
+> + * @dev: Device to handle.
+> + *
+> + * Increment the device's runtime PM usage counter and return 'true' if its
+> + * runtime PM status is RPM_ACTIVE and its usage counter is already different
+> + * from zero at the same time.  Otherwise, return 'false'.
+> + */
+> +bool pm_runtime_get_if_in_use(struct device *dev)
+> +{
+> +       unsigned long flags;
+> +       bool retval;
+> +
+> +       spin_lock_irqsave(&dev->power.lock, flags);
+> +       retval = dev->power.runtime_status == RPM_ACTIVE
+> +               && atomic_inc_not_zero(&dev->power.usage_count);
 
-Thanks.
-Does this means Avaton will fall back to acpi-cpufreq?
-Would it make sense to initalize with intel_pstate and then switch to 
-performance governor per default?
+Don't we also need to check that runtime PM is enabled (&&
+!dev->power.disable_depth), or the user of this function don't care
+about that?
 
-This may need some fiddling with our certifcation tool which expects
-cpupfreq to work at least a bit.
+> +       spin_unlock_irqrestore(&dev->power.lock, flags);
+> +       return retval;
+> +}
+> +EXPORT_SYMBOL_GPL(pm_runtime_get_if_in_use);
+> +
 
-     Thomas
+[...]
 
-PS: Thanks for all the input. Summary (from my point of view):
-
-Go for the airmont/silvermont specific algorithms. Especially as they seem to
-be an important improvment. But at least write something to syslog.
-
-The "ondemand" compatiblity patch(es) are not that important, right?
-I would hold them off and evaluate whether it will make sense to get back
-to governors. Even if not, I am not sure it is a good idea to introduce a
-fake ondemand governor which is still doing things totally different than
-the orignal one...
-
+Kind regards
+Uffe
