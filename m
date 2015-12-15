@@ -1,102 +1,507 @@
-From: Luca Abeni <luca.abeni@unitn.it>
-Subject: Re: [RFCv6 PATCH 09/10] sched: deadline: use deadline bandwidth in
- scale_rt_capacity
-Date: Tue, 15 Dec 2015 09:50:14 +0100
-Message-ID: <566FD446.1080004@unitn.it>
-References: <1449641971-20827-1-git-send-email-smuckle@linaro.org>
- <1449641971-20827-10-git-send-email-smuckle@linaro.org>
- <20151214151729.GQ6357@twins.programming.kicks-ass.net>
- <CAKfTPtAVmS6BHWcGz4cB0bpEE91QzU5sSmMWZB9j_vpK0qjwHg@mail.gmail.com>
- <20151214221231.39b5bc4e@luca-1225C>
- <CAKfTPtDT----aVGF-3T90PZQQvsOJay_Y-js19W+NNZpvk7J_w@mail.gmail.com>
+From: Marc Titinger <mtitinger@baylibre.com>
+Subject: Re: [PATCH RFC 02/27] PM / Domains: Allow domain power states to be
+ read from DT
+Date: Tue, 15 Dec 2015 11:07:14 +0100
+Message-ID: <566FE652.1030602@baylibre.com>
+References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
+ <1447799871-56374-3-git-send-email-lina.iyer@linaro.org>
+ <CAPDyKFrZFMfE9XNRS8CpTPXU6fzfY9wv0cn+DTcg=SUnDyUQ0A@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKfTPtDT----aVGF-3T90PZQQvsOJay_Y-js19W+NNZpvk7J_w@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Steve Muckle <steve.muckle@linaro.org>, Ingo Molnar <mingo@redhat.com>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFrZFMfE9XNRS8CpTPXU6fzfY9wv0cn+DTcg=SUnDyUQ0A@mail.gmail.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>, Lina Iyer <lina.iyer@linaro.org>
+Cc: Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, =?UTF-8?Q?Krzysztof_Koz=c5=82owski?= <k.kozlowski@samsung.com>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Axel Haslam <ahaslam@baylibre.com>, Marc Titinger <mtitinger+renesas@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 12/15/2015 05:59 AM, Vincent Guittot wrote:
-[...]
->>>> So I don't think this is right. AFAICT this projects the WCET as the
->>>> amount of time actually used by DL. This will, under many
->>>> circumstances, vastly overestimate the amount of time actually
->>>> spend on it. Therefore unduly pessimisme the fair capacity of this
->>>> CPU.
->>>
->>> I agree that if the WCET is far from reality, we will underestimate
->>> available capacity for CFS. Have you got some use case in mind which
->>> overestimates the WCET ?
->>> If we can't rely on this parameters to evaluate the amount of capacity
->>> used by deadline scheduler on a core, this will imply that we can't
->>> also use it for requesting capacity to cpufreq and we should fallback
->>> on a monitoring mechanism which reacts to a change instead of
->>> anticipating it.
->> I think a more "theoretically sound" approach would be to track the
->> _active_ utilisation (informally speaking, the sum of the utilisations
->> of the tasks that are actually active on a core - the exact definition
->> of "active" is the trick here).
+On 10/12/2015 17:53, Ulf Hansson wrote:
+> On 17 November 2015 at 23:37, Lina Iyer <lina.iyer@linaro.org> wrote:
+>> From: Marc Titinger <mtitinger+renesas@baylibre.com>
+>>
+>> From: Marc Titinger <mtitinger@baylibre.com>
+>>
+>> This patch allows cluster-level idle-states to being soaked in as
+>> generic domain power states, in order for the domain governor to chose
+>> the most efficient power state compatible with the device constraints.
 >
-> The point is that we probably need 2 definitions of "active" tasks.
-Ok; thanks for clarifying. I do not know much about the remaining capacity
-used by CFS; however, from what you write I guess CFS really need an "average"
-utilisation (while frequency scaling needs the active utilisation).
-So, I suspect you really need to track 2 different things.
- From a quick look at the code that is currently in mainline, it seems to
-me that it does a reasonable thing for tracking the remaining capacity
-used by CFS...
 
-> The 1st one would be used to scale the frequency. From a power saving
-> point of view, it have to reflect the minimum frequency needed at the
-> current time to handle all works without missing deadline.
-Right. And it can be computed as shown in the GRUB-PA paper I mentioned
-in a previous mail (that is, by tracking the active utilisation, as done
-by my patches).
-
-> This one
-> should be updated quite often with the wake up and the sleep of tasks
-> as well as the throttling.
-Strictly speaking, the active utilisation must be updated when a task
-wakes up and when a task sleeps/terminates (but when a task sleeps/terminates
-you cannot decrease the active utilisation immediately: you have to wait
-some time because the task might already have used part of its "future
-utilisation").
-The active utilisation must not be updated when a task is throttled: a
-task is throttled when its current runtime is 0, so it already used all
-of its utilisation for the current period (think about two tasks with
-runtime=50ms and period 100ms: they consume 100% of the time on a CPU,
-and when the first task consumed all of its runtime, you cannot decrease
-the active utilisation).
-
-> The 2nd definition is used to compute the remaining capacity for the
-> CFS scheduler. This one doesn't need to be updated at each wake/sleep
-> of a deadline task but should reflect the capacity used by deadline in
-> a larger time scale. The latter will be used by the CFS scheduler  at
-> the periodic load balance pace
-Ok, so as I wrote above this really looks like an average utilisation.
-My impression (but I do not know the CFS code too much) is that the mainline
-kernel is currently doing the right thing to compute it, so maybe there is no
-need to change the current code in this regard.
-If the current code is not acceptable for some reason, an alternative would
-be to measure the active utilisation for frequency scaling, and then apply a
-low-pass filter to it for CFS.
+Hi Ulf,
 
 
-				Luca
+> That was possible before this patch, although you are now making it
+> possible to describe this in DT and also modifying genpd to parse this
+> information.
+
+please correct if I'm wrong, but I think that before you could delegate 
+the power-off of a power domain to the platform code called from the 
+cpu-idle driver by toggling enable of an idle-state from genpd.
+
+What is proposed here is different: the idea is to prepare for an 
+os-initiated mode for the cluster power management, where genpd keeps 
+track of the last-man cpu (or more generally the last-man IP in the 
+cluster) and calls the platform code to enter the most effective power 
+state compatible with the QoS constraints for devices in the 
+power-domain. IOW it is genpd that controls the plaftormn code to go to 
+sleep or retention state X, instead of cpuidle-driver calling the method 
+indexed for each state.
 
 >
->> As done, for example, here:
->> https://github.com/lucabe72/linux-reclaiming/tree/track-utilisation-v2
->> (in particular, see
->> https://github.com/lucabe72/linux-reclaiming/commit/49fc786a1c453148625f064fa38ea538470df55b
->> )
->> I understand this approach might look too complex... But I think it is
->> much less pessimistic while still being "safe".
->> If there is something that I can do to make that code more acceptable,
->> let me know.
+> Also, I don't get what this has to do with the governor. Of course
+> that governor needs to care about the multiple states you added in
+> patch1, but it should do that no matter if the information comes from
+> DT or not, right.
+>
+Agreed, that part should go to the cover-letter instead.
+
+> Please re-phrase this to make it bit more clear.
+
+Ok.
+
+>
+>> Similarly, devices can register power-states into the cluster domain, in
+>> a manner consistent with idle-states.
+>
+> I don't get this. Can you please elaborate?
+
+
+Alexes addition of "power states" to the power domains was to have a 
+better representation of features of power controllers. For instance QoS 
+may prevent to enter/exit complete power-off, but setting the core 
+voltage to say 0.7v is feasible in terms of timing, and still better 
+than full-power-on etc... Hence the domain has a list of possible states 
+to chose upon, between full power-on and full-power-off, and genpd will 
+call the platform code for this.
+
+Now, this patch maps the idle-states as possible power states for the 
+domain: upon the last CPU runtime_put, the domain can chose the deepest
+state that can be reached given the enter/exit time available, and call 
+the platform code for this. This selected state can be any of:
+* cluster-sleep (power OFF)
+* cluster-retention A (L2RAM retention for instance)
+* cluster-retention B (some device is still on, like PMU or bus 
+analyzer, healthckeck IP etc...)
+...
+* cluster-on, but lower voltage A
+* cluster-on, but lower voltage B
+etc...
+
+Put short: CPUs, like any other devices in the domain may register a 
+power state.
+
+>
 >>
+>> This is a attempt to address device-retention states for devices that
+>> are not hooked to runtime-pm, but feature a retention state handled by
+>> the same firmware that handles idle-states. For instance a L2 caches.
+>
+> I guess whether devices may use runtime PM or not, they still can be
+> attached to a PM domain with multiple power states?
+
+yes.
+>
 >>
->>                          Luca
+>> With Juno, in this example the idle-state 'cluster-sleep-0 ' is known
+>> from each cluster generic domain, as the deepest sate.
+>>
+>> cat /sys/kernel/debug/pm_genpd/*
+>>
+>> Domain             State name        Enter (ns) / Exit (ns)
+>> -------------------------------------------------------------
+>> a53_pd               cluster-sleep-0      1500000 / 800000
+>> a57_pd               cluster-sleep-0      1500000 / 800000
+>>
+>> domain                      status pstate     slaves
+>> /device                                      runtime status
+>> -----------------------------------------------------------------------
+>> a53_pd                          on
+>> /devices/system/cpu/cpu0                            active
+>> /devices/system/cpu/cpu3                            suspended
+>> /devices/system/cpu/cpu4                            suspended
+>> /devices/system/cpu/cpu5                            suspended
+>> /devices/platform/D1                                suspended
+>> a57_pd                          cluster-sleep-0
+>> /devices/system/cpu/cpu1                            suspended
+>> /devices/system/cpu/cpu2                            suspended
+>>
+>> Signed-off-by: Marc Titinger <mtitinger+renesas@baylibre.com>
+>> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+>> [Lina: removed dependency on dynamic states, simplified initalization,
+>> added of_pm_genpd_init() API]
+>> ---
+>>   .../devicetree/bindings/power/power_domain.txt     |  63 ++++++++++
+>
+> Please split the documentation of the suggested new DT bindings into a
+> separate patch that is preceding this one.
+>
+> Also, you need to send it to the DT maintainers.
+
+>
+>>   drivers/base/power/domain.c                        | 128 +++++++++++++++++++++
+>>   include/linux/pm_domain.h                          |   6 +
+>>   3 files changed, 197 insertions(+)
+>>
+>> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+>> index 025b5e7..e2f542e 100644
+>> --- a/Documentation/devicetree/bindings/power/power_domain.txt
+>> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
+>> @@ -29,6 +29,44 @@ Optional properties:
+>>      specified by this binding. More details about power domain specifier are
+>>      available in the next section.
+>>
+>> +- power-states : A phandle of an idle-state that shall be soaked into a
+>> +                generic domain power state. The power-state shall be
+>> +               compatible with "linux,domain-state".
+>
+> Why mention the Linux specific "generic power domain" here?
+>
+> Let's instead try to describe this without using specific terminology
+> from Linux.
+
+Hmm, I will need Lina's help to answer this one.
+Following a previous review actually I dropped this power-states 
+compatible, to stick with idle-states.
+
+>
+>> +
+>> +==Power state==
+>> +
+>> +A PM domain power state describes an idle state of a domain and must be
+>> +have the following properties -
+>> +
+>> +       - compatible
+>> +               Usage: Required
+>> +               Value type: <stringlist>
+>> +               Definition: Must be "linux,domain-state"
+>
+> Why do you need a compatible string?
+>
+> You already have the phandle available, I suppose you can use that
+> instead of parsing for a new compatible string.
+>
+>> +
+>> +       - entry-latency-us
+>> +               Usage: Not required if wakeup-latency-us is provided.
+>> +               Value type: <prop-encoded-array>
+>> +               Definition: u32 value representing worst case latency in
+>> +               microseconds required to enter the idle state.
+>> +               The exit-latency-us duration may be guaranteed
+>> +               only after entry-latency-us has passed.
+>> +
+>> +       - exit-latency-us
+>> +               Usage: Not required if wakeup-latency-us is provided.
+>> +               Value type: <prop-encoded-array>
+>> +               Definition: u32 value representing worst case latency
+>> +               in microseconds required to exit the idle state.
+>> +
+>> +       - wakeup-latency-us:
+>> +               Usage: Not required if entry-latency-us and exit-latency-us
+>> +               are provided.
+>> +               Value type: <prop-encoded-array>
+>> +               Definition: u32 value representing maximum delay between the
+>> +               signaling the wakeup of the domain and the domain resuming
+>> +               regular operation.
+>> +               If omitted, this is assumed to be equal to:
+>> +                       entry-latency-us + exit-latency-us
+>
+> I think we should decide which of the two alternatives to use, we
+> shouldn't make it more complicated than needed.
+
+Agreed.
+
+>
+>> +
+>>   Example:
+>>
+>>          power: power-controller@12340000 {
+>> @@ -55,6 +93,31 @@ Example 2:
+>>                  #power-domain-cells = <1>;
+>>          };
+>>
+>> +Example 3:
+>> +
+>> +       pm-domains {
+>> +               a57_pd: a57_pd@ {
+>> +                       /* will have a57 platform ARM_PD_METHOD_OF_DECLARE*/
+>> +                       compatible = "arm,pd","arm,cortex-a57";
+>> +                       #power-domain-cells = <0>;
+>> +                       power-states = <&CLUSTER_SLEEP_0>;
+>> +               };
+>> +
+>> +               a53_pd: a53_pd@ {
+>> +                       /* will have a a53 platform ARM_PD_METHOD_OF_DECLARE*/
+>> +                       compatible = "arm,pd","arm,cortex-a53";
+>> +                       #power-domain-cells = <0>;
+>> +                       power-states = <&CLUSTER_SLEEP_0>;
+>> +               };
+>> +
+>> +               CLUSTER_SLEEP_0: power-state@0 {
+>> +                       compatible = "pm-domain,power-state";
+>> +                       entry-latency-us = <1000>;
+>> +                       exit-latency-us = <2000>;
+>> +               };
+>
+> I think we should also cover the case when power-controller has
+> "#power-domain-cells = <[n>0]>".
+>
+> Perhaps extending the first example is then better than adding a new one!?
+>
+>> +       };
+>> +
+>> +
+>>   The nodes above define two power controllers: 'parent' and 'child'.
+>>   Domains created by the 'child' power controller are subdomains of '0' power
+>>   domain provided by the 'parent' power controller.
+>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+>> index 3242854..fe1be88 100644
+>> --- a/drivers/base/power/domain.c
+>> +++ b/drivers/base/power/domain.c
+>> @@ -35,6 +35,7 @@
+>>   })
+>>
+>>   #define GENPD_MAX_NAME_SIZE 20
+>> +#define GENPD_MAX_DOMAIN_STATES 10
+>
+> Instead of setting a hard limit, let's pre-parse the DTB to get the
+> number of power states. In that way, it should be fairly easy to
+> convert the below code to be more dynamic.
+
+>
+>>
+>>   static int pm_genpd_alloc_states_names(struct generic_pm_domain *genpd,
+>>                                         const struct genpd_power_state *st,
+>> @@ -1515,6 +1516,105 @@ static int pm_genpd_default_restore_state(struct device *dev)
+>>          return cb ? cb(dev) : 0;
+>>   }
+>>
+>> +static const struct of_device_id power_state_match[] = {
+>> +       { .compatible = "linux,domain-state" },
+>> +       { }
+>> +};
+>> +
+>> +static int of_get_genpd_power_state(struct genpd_power_state *genpd_state,
+>> +                                          struct device_node *state_node)
+>> +{
+>> +       const struct of_device_id *match_id;
+>> +       int err = 0;
+>> +       u32 latency;
+>> +
+>> +       match_id = of_match_node(power_state_match, state_node);
+>> +       if (!match_id)
+>> +               return -ENODEV;
+>> +
+>> +       err = of_property_read_u32(state_node, "wakeup-latency-us", &latency);
+>> +       if (err) {
+>> +               u32 entry_latency, exit_latency;
+>> +
+>> +               err = of_property_read_u32(state_node, "entry-latency-us",
+>> +                                          &entry_latency);
+>> +               if (err) {
+>> +                       pr_debug(" * %s missing entry-latency-us property\n",
+>> +                                state_node->full_name);
+>> +                       return -EINVAL;
+>> +               }
+>> +
+>> +               err = of_property_read_u32(state_node, "exit-latency-us",
+>> +                                          &exit_latency);
+>> +               if (err) {
+>> +                       pr_debug(" * %s missing exit-latency-us property\n",
+>> +                                state_node->full_name);
+>> +                       return -EINVAL;
+>> +               }
+>> +               /*
+>> +                * If wakeup-latency-us is missing, default to entry+exit
+>> +                * latencies as defined in idle states bindings
+>> +                */
+>> +               latency = entry_latency + exit_latency;
+>> +       }
+>> +
+>> +       genpd_state->power_on_latency_ns = 1000 * latency;
+>> +
+>> +       err = of_property_read_u32(state_node, "entry-latency-us", &latency);
+>> +       if (err) {
+>> +               pr_debug(" * %s missing min-residency-us property\n",
+>> +                        state_node->full_name);
+>> +               return -EINVAL;
+>> +       }
+>> +
+>> +       genpd_state->power_off_latency_ns = 1000 * latency;
+>> +
+>> +       return 0;
+>> +}
+>> +
+>> +static int of_genpd_device_parse_states(struct device_node *np,
+>> +                                struct genpd_power_state *genpd_states,
+>> +                                int *state_count)
+>> +{
+>> +       struct device_node *state_node;
+>> +       int i, err = 0;
+>> +
+>> +       for (i = 0;; i++) {
+>> +               struct genpd_power_state genpd_state;
+>> +
+>> +               state_node = of_parse_phandle(np, "power-states", i);
+>> +               if (!state_node)
+>> +                       break;
+>> +
+>> +               if (i == GENPD_MAX_DOMAIN_STATES) {
+>> +                       err = -ENOMEM;
+>> +                       break;
+>> +               }
+>> +
+>> +               err = of_get_genpd_power_state(&genpd_state, state_node);
+>> +               if (err) {
+>> +                       pr_err
+>> +                           ("Parsing idle state node %s failed with err %d\n",
+>> +                            state_node->full_name, err);
+>> +                       err = -EINVAL;
+>> +                       break;
+>> +               }
+>> +#ifdef CONFIG_PM_ADVANCED_DEBUG
+>> +               genpd_state.name = kstrndup(state_node->full_name,
+>> +                                           GENPD_MAX_NAME_SIZE, GFP_KERNEL);
+>> +               if (!genpd_state.name)
+>> +                       err = -ENOMEM;
+>> +#endif
+>> +               of_node_put(state_node);
+>> +               memcpy(&genpd_states[i], &genpd_state, sizeof(genpd_state));
+>> +#ifdef CONFIG_PM_ADVANCED_DEBUG
+>> +               kfree(genpd_state.name);
+>> +#endif
+>> +       }
+>> +       *state_count = i;
+>> +       return err;
+>> +}
+>> +
+>>   /**
+>>    * pm_genpd_init - Initialize a generic I/O PM domain object.
+>>    * @genpd: PM domain object to initialize.
+>> @@ -1596,6 +1696,34 @@ void pm_genpd_init(struct generic_pm_domain *genpd,
+>>   }
+>>   EXPORT_SYMBOL_GPL(pm_genpd_init);
+>>
+>> +int of_pm_genpd_init(struct device_node *dn, struct generic_pm_domain *genpd,
+>> +                  struct dev_power_governor *gov, bool is_off)
+>> +{
+>> +       struct genpd_power_state states[GENPD_MAX_DOMAIN_STATES] = { { 0 } };
+>> +       int state_count = GENPD_MAX_DOMAIN_STATES;
+>> +       int ret;
+>> +
+>> +       if (IS_ERR_OR_NULL(genpd))
+>> +               return -EINVAL;
+>> +
+>> +       ret = of_genpd_device_parse_states(dn, states, &state_count);
+>> +       if (ret) {
+>> +               pr_err("Error parsing genpd states for %s\n", genpd->name);
+>> +               return ret;
+>> +       }
+>> +
+>> +       ret = genpd_alloc_states_data(genpd, states, state_count);
+>> +       if (ret) {
+>> +               pr_err("Failed to allocate states for %s\n", genpd->name);
+>> +               return ret;
+>> +       }
+>> +
+>> +       pm_genpd_init(genpd, gov, is_off);
+>> +
+>> +       return 0;
+>> +}
+>> +EXPORT_SYMBOL_GPL(of_pm_genpd_init);
+>> +
+>>   #ifdef CONFIG_PM_GENERIC_DOMAINS_OF
+>>   /*
+>>    * Device Tree based PM domain providers.
+>> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+>> index 11763cf..e425911 100644
+>> --- a/include/linux/pm_domain.h
+>> +++ b/include/linux/pm_domain.h
+>> @@ -213,6 +213,8 @@ struct generic_pm_domain *__of_genpd_xlate_onecell(
+>>                                          void *data);
+>>
+>>   int genpd_dev_pm_attach(struct device *dev);
+>> +int of_pm_genpd_init(struct device_node *dn, struct generic_pm_domain *genpd,
+>> +                  struct dev_power_governor *gov, bool is_off);
+>>   #else /* !CONFIG_PM_GENERIC_DOMAINS_OF */
+>>   static inline int __of_genpd_add_provider(struct device_node *np,
+>>                                          genpd_xlate_t xlate, void *data)
+>> @@ -234,6 +236,10 @@ static inline int genpd_dev_pm_attach(struct device *dev)
+>>   {
+>>          return -ENODEV;
+>>   }
+>> +
+>> +static inline int of_pm_genpd_init(struct device_node *dn,
+>> +               struct generic_pm_domain *genpd,
+>> +               struct dev_power_governor *gov, bool is_off) {}
+>>   #endif /* CONFIG_PM_GENERIC_DOMAINS_OF */
+>>
+>>   static inline int of_genpd_add_provider_simple(struct device_node *np,
+>> --
+>> 2.1.4
+>>
+>
+> Instead of commenting directly to the changes above, let me instead
+> raise a couple of concerns for the overall approach.
+>
+> 1)
+> The case when the power-controller node has "#power-domain-cells =
+> <[n>0]>", isn't covered by $subject patch. I guess we should fix
+> that!?
+>
+
+Indeed, I must confess a bit of procrastination here, my apologies :)
+
+> 2)
+> I think that it needs to be the SOC PM domain driver that assigns the
+> initial value for "genpd->state_idx", as I stated also for patch1 when
+> I noticed pm_genpd_init() overrides that value.
+> dev_pm_domain_attach
+> If you share my view around this, it also means that the parsing of
+> the DTB for "power-states" needs to be done prior the SOC PM domain
+> driver assigns this initial value for "genpd->state_idx". Following
+> your approach in $subject patch, means that its value needs to be
+> updated *after* pm_genpd_init() have been called, perhaps not ideal.
+>
+> Can we find a better way to deal with this? Maybe by instead of adding
+> the of_pm_genpd_init() API, we should provide APIs which manages the
+> DT parsing and the allocation of the struct genpd_power_state? Just an
+> idea though.
+
+In my original patch, I was adding the states from the 
+dev_pm_domain_attach (genpd_devm_pm_attach) API. But since it's called 
+before we know if a matching device driver could be successfully probed 
+anyway, I reckon those device-bound states can be parsed/sorted early on 
+as well.
+
+Regarding the initial (exploratory) purpose of my series of handling IPs 
+with special retention states with genpd, this can probably be done more 
+simply with the existing runtime PM framework as discussed in a previous 
+review, let me quote Kevin here:
+
+<quote>
+... I think has a first pass, rather than add the additional complexity
+required for a dynamic set of genpd states, I think it's much better to
+start by assuming that all devices in the domain that affect the domain
+state should have an associated device and a driver using runtime PM.
+For example, performance montitoring units (PMUs) like CoreSight have
+this same issue, and the upstream support for those is already using
+runtime PM.
+
+For really simple/dump devices like L2$ or similar, it might be that we
+don't need a real driver, but instead the CPU "devices" could do
+gets/puts on any dependent devices directly
+</quote>
+
+
+I will see with Lina how much I shall keep from this patch that is 
+useful to the purpose of her series for os-initiated mode.
+
+Many thanks,
+Marc.
+
+
+>
+>
+> Kind regards
+> Uffe
+>
