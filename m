@@ -1,81 +1,57 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [RFCv6 PATCH 09/10] sched: deadline: use deadline bandwidth in scale_rt_capacity
-Date: Tue, 15 Dec 2015 05:59:31 +0100
-Message-ID: <CAKfTPtDT----aVGF-3T90PZQQvsOJay_Y-js19W+NNZpvk7J_w@mail.gmail.com>
-References: <1449641971-20827-1-git-send-email-smuckle@linaro.org>
- <1449641971-20827-10-git-send-email-smuckle@linaro.org> <20151214151729.GQ6357@twins.programming.kicks-ass.net>
- <CAKfTPtAVmS6BHWcGz4cB0bpEE91QzU5sSmMWZB9j_vpK0qjwHg@mail.gmail.com> <20151214221231.39b5bc4e@luca-1225C>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v2 6/6] arm64: renesas: r8a7795: Add L2 cache-controller nodes
+Date: Tue, 15 Dec 2015 09:45:06 +0100
+Message-ID: <CAMuHMdWELqMQ+CCENsGtdBx7n_YV=D6pJpo02jeQRe67jEehyQ@mail.gmail.com>
+References: <1449512659-16688-1-git-send-email-geert+renesas@glider.be>
+	<1449512659-16688-7-git-send-email-geert+renesas@glider.be>
+	<5665D4C7.1050705@arm.com>
+	<20151207190355.GE28024@leverpostej>
+	<CAMuHMdWrXiYkcFwSkgbEfQRXvT2FsSTbqD72vtiedmeEZZKxLg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f54.google.com ([209.85.215.54]:35658 "EHLO
-	mail-lf0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932909AbbLOE7w (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 14 Dec 2015 23:59:52 -0500
-Received: by lfdl133 with SMTP id l133so135156359lfd.2
-        for <linux-pm@vger.kernel.org>; Mon, 14 Dec 2015 20:59:51 -0800 (PST)
-In-Reply-To: <20151214221231.39b5bc4e@luca-1225C>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdWrXiYkcFwSkgbEfQRXvT2FsSTbqD72vtiedmeEZZKxLg@mail.gmail.com>
+Sender: linux-sh-owner@vger.kernel.org
+To: Mark Rutland <mark.rutland@arm.com>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Lina Iyer <lina.iyer@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Luca Abeni <luca.abeni@unitn.it>
-Cc: Peter Zijlstra <peterz@infradead.org>, Steve Muckle <steve.muckle@linaro.org>, Ingo Molnar <mingo@redhat.com>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 
-On 14 December 2015 at 22:12, Luca Abeni <luca.abeni@unitn.it> wrote:
-> On Mon, 14 Dec 2015 16:56:17 +0100
-> Vincent Guittot <vincent.guittot@linaro.org> wrote:
-> [...]
->> >> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
->> >> index 08858d1..e44c6be 100644
->> >> --- a/kernel/sched/sched.h
->> >> +++ b/kernel/sched/sched.h
->> >> @@ -519,6 +519,8 @@ struct dl_rq {
->> >>  #else
->> >>       struct dl_bw dl_bw;
->> >>  #endif
->> >> +     /* This is the "average utilization" for this runqueue */
->> >> +     s64 avg_bw;
->> >>  };
->> >
->> > So I don't think this is right. AFAICT this projects the WCET as the
->> > amount of time actually used by DL. This will, under many
->> > circumstances, vastly overestimate the amount of time actually
->> > spend on it. Therefore unduly pessimisme the fair capacity of this
->> > CPU.
+Hi Mark,
+
+On Mon, Dec 7, 2015 at 9:18 PM, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> On Mon, Dec 7, 2015 at 8:03 PM, Mark Rutland <mark.rutland@arm.com> wrote:
+>> On Mon, Dec 07, 2015 at 06:49:43PM +0000, Sudeep Holla wrote:
+>>> On 07/12/15 18:24, Geert Uytterhoeven wrote:
+>>> >+    L2_CA57: cache-controller@0 {
+>>> >+            compatible = "cache";
+>>> >+            arm,data-latency = <4 4 1>;
+>>> >+            arm,tag-latency = <3 3 3>;
+>>>
+>>> Interesting, only PL2xx/3xx cache controller driver reads this from the
+>>> DT and configures the controller. The integrated L2 found in
+>>> A15/A7/A57/A53 needs doesn't make use of these values from the DT.
 >>
->> I agree that if the WCET is far from reality, we will underestimate
->> available capacity for CFS. Have you got some use case in mind which
->> overestimates the WCET ?
->> If we can't rely on this parameters to evaluate the amount of capacity
->> used by deadline scheduler on a core, this will imply that we can't
->> also use it for requesting capacity to cpufreq and we should fallback
->> on a monitoring mechanism which reacts to a change instead of
->> anticipating it.
-> I think a more "theoretically sound" approach would be to track the
-> _active_ utilisation (informally speaking, the sum of the utilisations
-> of the tasks that are actually active on a core - the exact definition
-> of "active" is the trick here).
-
-The point is that we probably need 2 definitions of "active" tasks.
-The 1st one would be used to scale the frequency. From a power saving
-point of view, it have to reflect the minimum frequency needed at the
-current time to handle all works without missing deadline. This one
-should be updated quite often with the wake up and the sleep of tasks
-as well as the throttling.
-The 2nd definition is used to compute the remaining capacity for the
-CFS scheduler. This one doesn't need to be updated at each wake/sleep
-of a deadline task but should reflect the capacity used by deadline in
-a larger time scale. The latter will be used by the CFS scheduler  at
-the periodic load balance pace
-
-> As done, for example, here:
-> https://github.com/lucabe72/linux-reclaiming/tree/track-utilisation-v2
-> (in particular, see
-> https://github.com/lucabe72/linux-reclaiming/commit/49fc786a1c453148625f064fa38ea538470df55b
-> )
-> I understand this approach might look too complex... But I think it is
-> much less pessimistic while still being "safe".
-> If there is something that I can do to make that code more acceptable,
-> let me know.
+>> These properties seem to be from l2cc.txt, which really only corresponds
+>> to PL210/PL220/PL310 (and variants) and isn't as generic as it sounds.
+>>
+>> I don't see that these are necessary at all.
 >
->
->                         Luca
+> The datasheet does mention the data/tag RAM latencies/setup values, so
+> I put them in DT using the properties I could fine.
+
+Furthermore these values are different for different SoCs in the same family
+(e.g. r8a7790 vs. other R-Car Gen2 members), even though they seem to
+have the same Cortex-A15 cores.
+
+So to me these look like properties we want to document in the DTS...
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
