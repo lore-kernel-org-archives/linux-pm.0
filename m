@@ -1,102 +1,56 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH RFC 02/27] PM / Domains: Allow domain power states to be
- read from DT
-Date: Tue, 15 Dec 2015 15:14:28 -0700
-Message-ID: <20151215221428.GF992@linaro.org>
-References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
- <1447799871-56374-3-git-send-email-lina.iyer@linaro.org>
- <CAPDyKFrZFMfE9XNRS8CpTPXU6fzfY9wv0cn+DTcg=SUnDyUQ0A@mail.gmail.com>
- <566FE652.1030602@baylibre.com>
+From: Bjorn Andersson <bjorn.andersson@sonymobile.com>
+Subject: Re: [PATCH v4 3/3] ARM: dts: qcom: add charger otg regulator
+Date: Tue, 15 Dec 2015 14:09:21 -0800
+Message-ID: <20151215220921.GV4000@usrtlx11787.corpusers.net>
+References: <1450209132-20185-1-git-send-email-tim.bird@sonymobile.com>
+ <1450209132-20185-3-git-send-email-tim.bird@sonymobile.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from seldsegrel01.sonyericsson.com ([37.139.156.29]:16988 "EHLO
+	SELDSEGREL01.sonyericsson.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965600AbbLOWT7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Dec 2015 17:19:59 -0500
 Content-Disposition: inline
-In-Reply-To: <566FE652.1030602@baylibre.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Marc Titinger <mtitinger@baylibre.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Krzysztof =?utf-8?Q?Koz=C5=82owski?= <k.kozlowski@samsung.com>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Axel Haslam <ahaslam@baylibre.com>, Marc Titinger <mtitinger+renesas@baylibre.com>
+In-Reply-To: <1450209132-20185-3-git-send-email-tim.bird@sonymobile.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tim Bird <tim.bird@sonymobile.com>
+Cc: "robh+dt@kernel.org" <robh+dt@kernel.org>, "pawel.moll@arm.com" <pawel.moll@arm.com>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "ijc+devicetree@hellion.org.uk" <ijc+devicetree@hellion.org.uk>, "sre@kernel.org" <sre@kernel.org>, "Cavin, Courtney" <Courtney.Cavin@sonymobile.com>, "dbaryshkov@gmail.com" <dbaryshkov@gmail.com>, "dwmw2@infradead.org" <dwmw2@infradead.org>, "agross@codeaurora.org" <agross@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "tbird20d@gmail.com" <tbird20d@gmail.com>
 
-On Tue, Dec 15 2015 at 03:07 -0700, Marc Titinger wrote:
->On 10/12/2015 17:53, Ulf Hansson wrote:
->>On 17 November 2015 at 23:37, Lina Iyer <lina.iyer@linaro.org> wrote:
+On Tue 15 Dec 11:52 PST 2015, Tim Bird wrote:
 
->>>diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
->>>index 025b5e7..e2f542e 100644
->>>--- a/Documentation/devicetree/bindings/power/power_domain.txt
->>>+++ b/Documentation/devicetree/bindings/power/power_domain.txt
->>>@@ -29,6 +29,44 @@ Optional properties:
->>>     specified by this binding. More details about power domain specifier are
->>>     available in the next section.
->>>
->>>+- power-states : A phandle of an idle-state that shall be soaked into a
->>>+                generic domain power state. The power-state shall be
->>>+               compatible with "linux,domain-state".
->>
->>Why mention the Linux specific "generic power domain" here?
->>
->>Let's instead try to describe this without using specific terminology
->>from Linux.
->
->Hmm, I will need Lina's help to answer this one.
->Following a previous review actually I dropped this power-states 
->compatible, to stick with idle-states.
->
-I didnt want this to be ARM specific. An arm,idle-state is too specific
-to be reused for generic PM domains, hence this compatible. We dont need
-a compatible property, but I thought it would be nice to have the
-property to give structure to the power state node.
+> Add the otg regulator provided by the charger block.
+> 
+> Signed-off-by: Tim Bird <tim.bird@sonymobile.com>
+> ---
+> Changes since V3:
+>  - change name of charger regulator to "otg-vbus"
+> ---
+>  arch/arm/boot/dts/qcom-pm8941.dtsi | 4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> diff --git a/arch/arm/boot/dts/qcom-pm8941.dtsi b/arch/arm/boot/dts/qcom-pm8941.dtsi
+> index b0d4439..d0ffca7 100644
+> --- a/arch/arm/boot/dts/qcom-pm8941.dtsi
+> +++ b/arch/arm/boot/dts/qcom-pm8941.dtsi
+> @@ -45,6 +45,10 @@
+>  					  "chg-gone",
+>  					  "usb-valid",
+>  					  "dc-valid";
+> +
+> +			usb_otg_in-supply = <&pm8941_5vs1>;
 
->>
->>>+
->>>+==Power state==
->>>+
->>>+A PM domain power state describes an idle state of a domain and must be
->>>+have the following properties -
->>>+
->>>+       - compatible
->>>+               Usage: Required
->>>+               Value type: <stringlist>
->>>+               Definition: Must be "linux,domain-state"
->>
->>Why do you need a compatible string?
->>
->>You already have the phandle available, I suppose you can use that
->>instead of parsing for a new compatible string.
->>
-Hmm.. okay.
+Although this could be coming from some other supply I think it's
+perfectly fine that we define this on a platform level.
 
->>>+
->>>+       - entry-latency-us
->>>+               Usage: Not required if wakeup-latency-us is provided.
->>>+               Value type: <prop-encoded-array>
->>>+               Definition: u32 value representing worst case latency in
->>>+               microseconds required to enter the idle state.
->>>+               The exit-latency-us duration may be guaranteed
->>>+               only after entry-latency-us has passed.
->>>+
->>>+       - exit-latency-us
->>>+               Usage: Not required if wakeup-latency-us is provided.
->>>+               Value type: <prop-encoded-array>
->>>+               Definition: u32 value representing worst case latency
->>>+               in microseconds required to exit the idle state.
->>>+
->>>+       - wakeup-latency-us:
->>>+               Usage: Not required if entry-latency-us and exit-latency-us
->>>+               are provided.
->>>+               Value type: <prop-encoded-array>
->>>+               Definition: u32 value representing maximum delay between the
->>>+               signaling the wakeup of the domain and the domain resuming
->>>+               regular operation.
->>>+               If omitted, this is assumed to be equal to:
->>>+                       entry-latency-us + exit-latency-us
->>
->>I think we should decide which of the two alternatives to use, we
->>shouldn't make it more complicated than needed.
->
->Agreed.
->
-I like the entry + exit option.
+> +
+> +			chg_otg: otg-vbus { };
+>  		};
+>  
+>  		pm8941_gpios: gpios@c000 {
 
-Thanks,
-Lina
+Reviewed-by: Bjorn Andersson <bjorn.andersson@sonymobile.com>
+
+Regards,
+Bjorn
