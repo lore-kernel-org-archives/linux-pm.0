@@ -1,67 +1,53 @@
-From: Luca Abeni <luca.abeni@unitn.it>
+From: Peter Zijlstra <peterz@infradead.org>
 Subject: Re: [RFCv6 PATCH 09/10] sched: deadline: use deadline bandwidth in
  scale_rt_capacity
-Date: Tue, 15 Dec 2015 14:41:53 +0100
-Message-ID: <567018A1.1010208@unitn.it>
+Date: Tue, 15 Dec 2015 14:42:29 +0100
+Message-ID: <20151215134229.GH6357@twins.programming.kicks-ass.net>
 References: <1449641971-20827-1-git-send-email-smuckle@linaro.org>
  <1449641971-20827-10-git-send-email-smuckle@linaro.org>
  <20151214151729.GQ6357@twins.programming.kicks-ass.net>
  <CAKfTPtAVmS6BHWcGz4cB0bpEE91QzU5sSmMWZB9j_vpK0qjwHg@mail.gmail.com>
- <20151214221231.39b5bc4e@luca-1225C>
- <CAKfTPtDT----aVGF-3T90PZQQvsOJay_Y-js19W+NNZpvk7J_w@mail.gmail.com>
- <566FD446.1080004@unitn.it>
- <CAKfTPtDY1OxMuGqVed_jvEpDjNThhptWmLPi6pi2aJCD+4dQRQ@mail.gmail.com>
+ <20151214165128.GU6357@twins.programming.kicks-ass.net>
+ <20151214223113.5732201a@luca-1225C>
+ <20151215123859.GC6357@twins.programming.kicks-ass.net>
+ <567015DF.6090206@unitn.it>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f47.google.com ([74.125.82.47]:35546 "EHLO
-	mail-wm0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752504AbbLONl4 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Dec 2015 08:41:56 -0500
-Received: by mail-wm0-f47.google.com with SMTP id p66so91486013wmp.0
-        for <linux-pm@vger.kernel.org>; Tue, 15 Dec 2015 05:41:55 -0800 (PST)
-In-Reply-To: <CAKfTPtDY1OxMuGqVed_jvEpDjNThhptWmLPi6pi2aJCD+4dQRQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <567015DF.6090206@unitn.it>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Luca Abeni <luca.abeni@unitn.it>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>, Steve Muckle <steve.muckle@linaro.org>, Ingo Molnar <mingo@redhat.com>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Steve Muckle <steve.muckle@linaro.org>, Ingo Molnar <mingo@redhat.com>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 
-On 12/15/2015 01:58 PM, Vincent Guittot wrote:
-> On 15 December 2015 at 09:50, Luca Abeni <luca.abeni@unitn.it> wrote:
->> On 12/15/2015 05:59 AM, Vincent Guittot wrote:
->> [...]
->>>>>>
->>>>>> So I don't think this is right. AFAICT this projects the WCET as the
->>>>>> amount of time actually used by DL. This will, under many
->>>>>> circumstances, vastly overestimate the amount of time actually
->>>>>> spend on it. Therefore unduly pessimisme the fair capacity of this
->>>>>> CPU.
->>>>>
->>>>>
->
-> [snip]
->
->>> The 2nd definition is used to compute the remaining capacity for the
->>> CFS scheduler. This one doesn't need to be updated at each wake/sleep
->>> of a deadline task but should reflect the capacity used by deadline in
->>> a larger time scale. The latter will be used by the CFS scheduler  at
->>> the periodic load balance pace
->>
->> Ok, so as I wrote above this really looks like an average utilisation.
->> My impression (but I do not know the CFS code too much) is that the mainline
->> kernel is currently doing the right thing to compute it, so maybe there is
->> no
->> need to change the current code in this regard.
->> If the current code is not acceptable for some reason, an alternative would
->> be to measure the active utilisation for frequency scaling, and then apply a
->> low-pass filter to it for CFS.
->
-> In this case, it's probably easier to split what is already done into
-> a rt_avg metric  and a dl_avg metric
-Yes, I think this could be the best approach for what concerns the average
-utilisation used by CFS.
+On Tue, Dec 15, 2015 at 02:30:07PM +0100, Luca Abeni wrote:
 
+> >So I remember something else from the BFQ code, which also had to track
+> >entries for the 0-lag stuff, and I just had a quick peek at that code
+> >again. And what they appear to do is keep inactive entries with a lag
+> >deficit in a separate tree (the idle tree).
+> >
+> >And every time they update the vtime, they also push fwd the idle tree
+> >and expire entries on that.
+> I am not sure if I understand correctly the idea (I do not know the BFQ
+> code; I'll have a look), but I think I tried something similar:
+> - When a task blocks, instead of arming the inactive timer I can insert
+>   the task in an "active non contending" tree (to use GRUB terminology)
+> - So, when some sched deadline function is invoked, I check the "0-lag
+>   time" of the first task in the "active non contending" tree, and if
+>   that time is passed I remove the task from the tree and adjust the
+>   active utilisation
+> 
+> The resulting code ended up being more complex (basically, I needed to
+> handle the "active non contending" tree and to check it in task_tick_dl()
+> and update_curr_dl()). But maybe I did it wrong... I'll try this approach
+> again, after looking ad the BFQ code.
 
+That sounds about right.
 
-				Luca
+I've no idea if its more or less work. I just had vague memories on an
+alternative approach to the timer.
+
+Feel free to stick with the timer if that works better, just wanted to
+mention there are indeed alternative solutions.
