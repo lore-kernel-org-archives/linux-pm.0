@@ -1,123 +1,74 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [RFC PATCH 2/8] Documentation: arm: define DT cpu capacity
- bindings
-Date: Tue, 15 Dec 2015 14:24:58 +0000
-Message-ID: <20151215142458.GI16007@e106622-lin>
-References: <1448288921-30307-3-git-send-email-juri.lelli@arm.com>
- <20151124020631.GA15165@rob-hp-laptop>
- <20151210153004.GA26758@sirena.org.uk>
- <20151210175820.GE14571@e106622-lin>
- <20151211174940.GQ5727@sirena.org.uk>
- <20151214123616.GC3308@e106622-lin>
- <20151214165928.GV5727@sirena.org.uk>
- <20151215122238.GG16007@e106622-lin>
- <20151215133951.GY5727@sirena.org.uk>
- <20151215140135.GI31299@leverpostej>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH V6 1/3] cpufreq: intel_pstate: configurable algorithm to get target pstate
+Date: Tue, 15 Dec 2015 15:24:53 +0100
+Message-ID: <6686771.YYmmLREfhx@skinner>
+References: <1449247235-29389-1-git-send-email-philippe.longepe@linux.intel.com> <3489702.fdaYLucDTN@skinner> <1450117227.2912.17.camel@spandruv-desk3.jf.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20151215140135.GI31299@leverpostej>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: Mark Brown <broonie@kernel.org>, Rob Herring <robh@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Olof Johansson <olof@lixom.net>, Gregory CLEMENT <gregory.clement@free-electrons.com>, Paul Walmsley <paul@pwsan.com>, Linus Walleij <linus.walleij@linaro.org>, Chen-Yu Tsai <wens@csie.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx2.suse.de ([195.135.220.15]:58843 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965025AbbLOOZC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 15 Dec 2015 09:25:02 -0500
+In-Reply-To: <1450117227.2912.17.camel@spandruv-desk3.jf.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: Len Brown <lenb@kernel.org>, Philippe Longepe <philippe.longepe@linux.intel.com>, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, Prarit Bhargava <prarit@redhat.com>, viresh.kumar@linaro.org
 
-Hi Mark,
+On Monday, December 14, 2015 10:20:27 AM Srinivas Pandruvada wrote:
+> On Mon, 2015-12-14 at 16:13 +0100, Thomas Renninger wrote:
+> > On Thursday, December 10, 2015 09:28:40 AM Srinivas Pandruvada wrote:
+> > > On Thu, 2015-12-10 at 14:04 +0100, Thomas Renninger wrote:
+> > > > On Wednesday, December 09, 2015 12:21:53 PM Srinivas Pandruvada wrote:
+> > > > > On Wed, 2015-12-09 at 15:34 +0100, Thomas Renninger wrote:
 
-On 15/12/15 14:01, Mark Rutland wrote:
-> On Tue, Dec 15, 2015 at 01:39:51PM +0000, Mark Brown wrote:
-> > On Tue, Dec 15, 2015 at 12:22:38PM +0000, Juri Lelli wrote:
-> > > > So then why isn't it adequate to just have things like the core types in
-> > > > there and work from there?  Are we really expecting the tuning to be so
-> > > > much better than it's possible to come up with something that's so much
-> > > > better on the scale that we're expecting this to be accurate that it's
-> > > > worth just jumping straight to magic numbers?
+...
+
+> > And here:
+> > https://en.wikipedia.org/wiki/Silvermont
 > > 
-> > > I take your point here that having fine grained values might not really
-> > > give us appreciable differences (that is also why I proposed the
-> > > capacity-scale in the first instance), but I'm not sure I'm getting what
-> > > you are proposing here.
+> > I get:
+> > List of Silvermont processors:
+> > Desktop processors (Bay Trail-D)
+> > Server processors (Avoton)
+> > Communications processors (Rangeley)
+> > Embedded/automotive processors (Bay Trail-I)
+> > Mobile processors (Bay Trail-M)
+> > Tablet processors (Bay Trail-T)
+> > Smartphone processors (Merrifield and Moorefield)
 > > 
-> > Something like the existing solution for arm32.
+> > List of Airmont processors
+> > Mobile processors (Braswell)
+> > Smartphone and Tablet processors (Cherry Trail)
 > > 
-> > >  static const struct cpu_efficiency table_efficiency[] = {
-> > >  	{"arm,cortex-a15", 3891},
-> > >  	{"arm,cortex-a7",  2048},
-> > >  	{NULL, },
-> > >  };
-> > 
-> > > When clock-frequency property is defined in DT, we try to find a match
-> > > for the compatibility string in the table above and then use the
-> > > associate number to compute the capacity. Are you proposing to have
-> > > something like this for arm64 as well?
-> > 
-> > > BTW, the only info I could find about those numbers is from this thread
-> > 
-> > It was discussed in some other thread when I was sending the equivalent
-> > stuff for arm64 (I never got round to finishing it off due to issues
-> > with Catalin and Will being concerned about the specific numbers).
-> > Vincent confirmed that the numbers came from the (IIRC) DMIPS/MHz
-> > numbers that ARM publish for the cores.  I'd independently done the same
-> > thing for arm64.  It would probably help to put comments in there with
-> > the base numbers before scaling, or just redo the table in terms of the
-> > raw numbers.
-> > 
-> > This is, of course, an example of my concerns about magic number
-> > configuration.
-> > 
-> > > If I understand how that table was created, how do we think we will
-> > > extend it in the future to allow newer core types (say we replicate this
-> > > solution for arm64)?  It seems that we have to change it, rescaling
-> > > values, each time we have a new core on the market. How can we come up
-> > > with relative numbers, in the future, comparing newer cores to old ones
-> > > (that might be already out of the market by that time)?
-> > 
-> > It doesn't seem particularly challenging to add new numbers to the table
-> > (and add additional properties to select on) TBH.  We can either rescale
-> > by hand in the table when adding entries, script it as part of the
-> > kernel build or do it at runtime (as the arm32 code already does to an
-> > extent based on the particular set of cores we find).  What difficulties
-> > do you see with this?
-> > 
-> > This is something that seems like an advantage to me - we can just
-> > replace everything at any point, we're not tied to trusting the golden
-> > benchmark someone did (or tweaked) if we come up with a better
-> > methodology later on.
+> > Not sure what specific functions you mean...
+> > Can you name them?
 > 
-> I really don't want to see a table of magic numbers in the kernel.
-> 
+> You have them above for two micro-architectures.
+> But they have different cpu id when the use case calls for totally
+> different use case. For example server processor (Avaton above in your
+> list) has a cpuid of 0x4D, which we don't support for Intel Pstate.
 
-Doesn't seem to be a clean and scalable solution to me either. It is not
-easy to reconfigure when new core types come around, as I don't think
-relative data is always present or easy to derive, and it exposes some
-sort of centralized global information where everyone is compared
-against everyone. Where the DT solution is inherently per platform: no
-need to expose absolute values and no problems with knowing data
-regarding old core types.
+Thanks.
+Does this means Avaton will fall back to acpi-cpufreq?
+Would it make sense to initalize with intel_pstate and then switch to 
+performance governor per default?
 
-> The relative performance and efficiency of cores will vary depending on
-> uArch-specific configuration (e.g. sizing of L1/L2 caches) in addition
-> to general uArch differences, and integration too (e.g. if the memory
-> system gives priority to one cluster over another for whatever reason).
-> I've heard of pseudo-heterogeneous platforms with different
-> configuration of the same uArch across clusters.
-> 
-> We also don't necessarily have the CPU clock frequencies, or the ability
-> to scale them. Maybe we simply give up in that case, though.
-> 
-> If we cannot rely on external information, and want this information to
-> be derived by the kernel, then we need to perform some dynamic
-> benchmark. That would work for future CPUs the kernel knows nothing
-> about yet, and would cater for the pseudo-heterogeneous cases too.
-> 
+This may need some fiddling with our certifcation tool which expects
+cpupfreq to work at least a bit.
 
-I've actually experimented a bit with this approch already, but I wasn't
-convinced of its viability. It is true that we remove the burden of
-coming up with default values from user/integrator, but I'm pretty sure
-we will end up discussing endlessly about which particular benchmark to
-pick and the fact that it impacts on boot time and such.
+     Thomas
 
-Best,
+PS: Thanks for all the input. Summary (from my point of view):
 
-- Juri
+Go for the airmont/silvermont specific algorithms. Especially as they seem to
+be an important improvment. But at least write something to syslog.
+
+The "ondemand" compatiblity patch(es) are not that important, right?
+I would hold them off and evaluate whether it will make sense to get back
+to governors. Even if not, I am not sure it is a good idea to introduce a
+fake ondemand governor which is still doing things totally different than
+the orignal one...
+
