@@ -1,73 +1,64 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC] i2c: Prevent runtime suspend of parent during adapter
- registration
-Date: Tue, 15 Dec 2015 10:21:06 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1512151016130.1891-100000@iolanthe.rowland.org>
-References: <1450181576-878-1-git-send-email-jarkko.nikula@linux.intel.com>
+From: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [RFC PATCH 2/8] Documentation: arm: define DT cpu capacity
+ bindings
+Date: Tue, 15 Dec 2015 15:32:19 +0000
+Message-ID: <20151215153218.GA7228@leverpostej>
+References: <20151124020631.GA15165@rob-hp-laptop>
+ <20151210153004.GA26758@sirena.org.uk>
+ <20151210175820.GE14571@e106622-lin>
+ <20151211174940.GQ5727@sirena.org.uk>
+ <20151214123616.GC3308@e106622-lin>
+ <20151214165928.GV5727@sirena.org.uk>
+ <20151215122238.GG16007@e106622-lin>
+ <20151215133951.GY5727@sirena.org.uk>
+ <20151215140135.GI31299@leverpostej>
+ <20151215150813.GZ5727@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <1450181576-878-1-git-send-email-jarkko.nikula@linux.intel.com>
-Sender: linux-i2c-owner@vger.kernel.org
-To: Jarkko Nikula <jarkko.nikula@linux.intel.com>
-Cc: Wolfram Sang <wsa@the-dreams.de>, linux-i2c@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20151215150813.GZ5727-GFdadSzt00ze9xe1eoZjHA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, catalin.marinas-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, morten.rasmussen-5wv7dgnIgG8@public.gmane.org, dietmar.eggemann-5wv7dgnIgG8@public.gmane.org, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Olof Johansson <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>, Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Paul Walmsley <paul-DWxLp4Yu+b8AvxtiuMwx3w@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 15 Dec 2015, Jarkko Nikula wrote:
+On Tue, Dec 15, 2015 at 03:08:13PM +0000, Mark Brown wrote:
+> On Tue, Dec 15, 2015 at 02:01:36PM +0000, Mark Rutland wrote:
+> 
+> > I really don't want to see a table of magic numbers in the kernel.
+> 
+> Right, there's pitfalls there too although not being part of an ABI
+> does make them more manageable.  
 
-> If runtime PM of parent device is enabled before it registers the I2C
-> adapter there can be unnecessary runtime suspend during adapter device
-> registration. This can happen when adapter is registered from parent's
-> probe and if parent device is initially active platform device.
-> 
-> In that case power.usage_count of parent device is zero and
-> pm_runtime_get()/pm_runtime_put() cycle during probe could put the
-> parent into runtime suspend. This happens when the i2c_register_adapter()
-> calls the device_register():
-> 
-> i2c_register_adapter
->   device_register
->     device_add
->       bus_probe_device
->         device_initial_probe
->           __device_attach
->             if (dev->parent) pm_runtime_get_sync(dev->parent)
->             ...
->             if (dev->parent) pm_runtime_put(dev->parent)
-> 
-> After that i2c_register_adapter() continues registering I2C slave
-> devices. In case slave device probe does I2C transfers the parent will
-> resume again and thus get a needless runtime suspend/resume cycle during
-> adapter registration.
-> 
-> Prevent this while retaining the runtime PM status of parent by only
-> incrementing/decrementing parent device power usage count during I2C
-> adapter registration. That makes sure there won't be spurious runtime PM
-> status changes for parent's probe and lets the driver core to idle the
-> device after probe finishes.
-> 
-> Signed-off-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
-> ---
-> I noticed this with i2c-designware-platdrv.c which started to do so
-> after commit 36d48fb5766a ("i2c: designware-platdrv: enable RuntimePM
-> before registering to the core"). I guess the same could happen also
-> with a few other I2C drivers that enable runtime PM similar way. For
-> instance i2c-at91.c, i2c-cadence.c, i2c-hix5hd2.c and i2c-qup.c.
-> That made me thinking if issue might be best to handle in i2c-core.c.
-> 
-> Device core drivers/base/dd.c: driver_probe_device() or
-> drivers/base/platform.c: platform_drv_probe() could be other
-> alternatives but that would cause a regression to a driver that
-> purposively tries to suspend the device in its probe().
+I think that people are very likely to treat them exactly like an ABI,
+w.r.t. any regressions in performance that result from their addition,
+modification, or removal. That becomes really horrible when new CPUs
+appear.
 
-This isn't how the problem is handled in other places.  In all the 
-cases I know about, the parent's subsystem or driver makes sure that 
-the parent will not go into runtime suspend while it is being probed.  
-At the very least, it should insure that the parent will not go into 
-runtime suspend while it is registering a child device (which 
-typically happens within a probe routine).
+> One thing it's probably helpful to establish here is how much the
+> specific numbers are going to matter in the grand scheme of things.  If
+> the specific numbers *are* super important then nobody is going to want
+> to touch them as they'll be prone to getting tweaked.  If instead the
+> numbers just need to be ballpark accurate so the scheduler starts off in
+> roughly the right place and the specific numbers don't matter it's a lot
+> easier and having a table in the kernel until we think of something
+> better (if that ever happens) gets a lot easier.
 
-In general, it's bad form to do pm_runtime_get/put calls on your parent 
--- you should make changes only to the device you're responsible for.
+I agree that we first need to figure out the importance of these
+numbers. I disagree that our first step should be to add a table.
 
-Alan Stern
+> My expectation is that we just need good enough, not perfect, and that
+> seems to match what Juri is saying about the expectation that most of
+> the fine tuning is done via other knobs.
+
+My expectation is that if a ballpark figure is good enough, it should be
+possible to implement something trivial like bogomips / loop_per_jiffy
+calculation.
+
+Thanks,
+Mark.
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
