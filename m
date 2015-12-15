@@ -1,100 +1,73 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [RFC PATCH 2/8] Documentation: arm: define DT cpu capacity
- bindings
-Date: Tue, 15 Dec 2015 15:08:13 +0000
-Message-ID: <20151215150813.GZ5727@sirena.org.uk>
-References: <1448288921-30307-3-git-send-email-juri.lelli@arm.com>
- <20151124020631.GA15165@rob-hp-laptop>
- <20151210153004.GA26758@sirena.org.uk>
- <20151210175820.GE14571@e106622-lin>
- <20151211174940.GQ5727@sirena.org.uk>
- <20151214123616.GC3308@e106622-lin>
- <20151214165928.GV5727@sirena.org.uk>
- <20151215122238.GG16007@e106622-lin>
- <20151215133951.GY5727@sirena.org.uk>
- <20151215140135.GI31299@leverpostej>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC] i2c: Prevent runtime suspend of parent during adapter
+ registration
+Date: Tue, 15 Dec 2015 10:21:06 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1512151016130.1891-100000@iolanthe.rowland.org>
+References: <1450181576-878-1-git-send-email-jarkko.nikula@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="j8HTHu8OFBZ8oR7J"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:49028 "EHLO
-	mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751996AbbLOPIs (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Dec 2015 10:08:48 -0500
-Content-Disposition: inline
-In-Reply-To: <20151215140135.GI31299@leverpostej>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <1450181576-878-1-git-send-email-jarkko.nikula@linux.intel.com>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+Cc: Wolfram Sang <wsa@the-dreams.de>, linux-i2c@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: Juri Lelli <juri.lelli@arm.com>, Rob Herring <robh@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Olof Johansson <olof@lixom.net>, Gregory CLEMENT <gregory.clement@free-electrons.com>, Paul Walmsley <paul@pwsan.com>, Linus Walleij <linus.walleij@linaro.org>, Chen-Yu Tsai <wens@csie.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 
+On Tue, 15 Dec 2015, Jarkko Nikula wrote:
 
---j8HTHu8OFBZ8oR7J
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> If runtime PM of parent device is enabled before it registers the I2C
+> adapter there can be unnecessary runtime suspend during adapter device
+> registration. This can happen when adapter is registered from parent's
+> probe and if parent device is initially active platform device.
+> 
+> In that case power.usage_count of parent device is zero and
+> pm_runtime_get()/pm_runtime_put() cycle during probe could put the
+> parent into runtime suspend. This happens when the i2c_register_adapter()
+> calls the device_register():
+> 
+> i2c_register_adapter
+>   device_register
+>     device_add
+>       bus_probe_device
+>         device_initial_probe
+>           __device_attach
+>             if (dev->parent) pm_runtime_get_sync(dev->parent)
+>             ...
+>             if (dev->parent) pm_runtime_put(dev->parent)
+> 
+> After that i2c_register_adapter() continues registering I2C slave
+> devices. In case slave device probe does I2C transfers the parent will
+> resume again and thus get a needless runtime suspend/resume cycle during
+> adapter registration.
+> 
+> Prevent this while retaining the runtime PM status of parent by only
+> incrementing/decrementing parent device power usage count during I2C
+> adapter registration. That makes sure there won't be spurious runtime PM
+> status changes for parent's probe and lets the driver core to idle the
+> device after probe finishes.
+> 
+> Signed-off-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+> ---
+> I noticed this with i2c-designware-platdrv.c which started to do so
+> after commit 36d48fb5766a ("i2c: designware-platdrv: enable RuntimePM
+> before registering to the core"). I guess the same could happen also
+> with a few other I2C drivers that enable runtime PM similar way. For
+> instance i2c-at91.c, i2c-cadence.c, i2c-hix5hd2.c and i2c-qup.c.
+> That made me thinking if issue might be best to handle in i2c-core.c.
+> 
+> Device core drivers/base/dd.c: driver_probe_device() or
+> drivers/base/platform.c: platform_drv_probe() could be other
+> alternatives but that would cause a regression to a driver that
+> purposively tries to suspend the device in its probe().
 
-On Tue, Dec 15, 2015 at 02:01:36PM +0000, Mark Rutland wrote:
+This isn't how the problem is handled in other places.  In all the 
+cases I know about, the parent's subsystem or driver makes sure that 
+the parent will not go into runtime suspend while it is being probed.  
+At the very least, it should insure that the parent will not go into 
+runtime suspend while it is registering a child device (which 
+typically happens within a probe routine).
 
-> I really don't want to see a table of magic numbers in the kernel.
+In general, it's bad form to do pm_runtime_get/put calls on your parent 
+-- you should make changes only to the device you're responsible for.
 
-Right, there's pitfalls there too although not being part of an ABI
-does make them more manageable. =20
-
-One thing it's probably helpful to establish here is how much the
-specific numbers are going to matter in the grand scheme of things.  If
-the specific numbers *are* super important then nobody is going to want
-to touch them as they'll be prone to getting tweaked.  If instead the
-numbers just need to be ballpark accurate so the scheduler starts off in
-roughly the right place and the specific numbers don't matter it's a lot
-easier and having a table in the kernel until we think of something
-better (if that ever happens) gets a lot easier.
-
-My expectation is that we just need good enough, not perfect, and that
-seems to match what Juri is saying about the expectation that most of
-the fine tuning is done via other knobs.
-
-> The relative performance and efficiency of cores will vary depending on
-> uArch-specific configuration (e.g. sizing of L1/L2 caches) in addition
-> to general uArch differences, and integration too (e.g. if the memory
-> system gives priority to one cluster over another for whatever reason).
-> I've heard of pseudo-heterogeneous platforms with different
-> configuration of the same uArch across clusters.
-
-> We also don't necessarily have the CPU clock frequencies, or the ability
-> to scale them. Maybe we simply give up in that case, though.
-
-These variables all sound like the sort of thing we can get people to
-put in the DT where they matter, and the more we talk about multiple
-subtle variables feeding into a single number the more this starts to
-sound like tuning (with all the problems that brings, especially when
-you're into things like the behaviour with the clusters competing for
-resources).  Who knows, at some point the scheduler may even want to
-directly act on some of these parameters?
-
-> If we cannot rely on external information, and want this information to
-> be derived by the kernel, then we need to perform some dynamic
-> benchmark. That would work for future CPUs the kernel knows nothing
-> about yet, and would cater for the pseudo-heterogeneous cases too.
-
-Runtime benchmarking (or gradual tuning based on observed performance of
-the scheduler) would work as well of course.  I'd expect something like
-that to be part of any end point we get to here, the more the system is
-able to self tune the better.
-
---j8HTHu8OFBZ8oR7J
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJWcCzdAAoJECTWi3JdVIfQnvAH/jb5R112ayaZU/DeGHU/9+Ng
-r2cQeR3KYdWMthlhnLveoq1xzsCiOKHwNQRCGS2DSt5r9r0yoSud6sjXzuUqx1Mb
-97euEI8noqxTn6goog6idqF1Z4XuIRz4845EAFpi7EKpqZJqA/+//pdvW+5xlN3a
-8kJ1iL7DdkTnWCPYGhHI7gMAQ4WBChaBZzzm4vYYHl/V0a2dh15kK8rdJyOhaf6l
-kIsvvgAcPTQ8qocI3Dygy41nFZ5W9nZWTEMguoNNzHvSOc8Uq2u3JhU3FndH1x0a
-bhKSvb25fOjmfCRMr0ji6y7ItcqxpcRaMjP31+nOa0MOHc3q5W61P9alR8RW1n0=
-=sAO9
------END PGP SIGNATURE-----
-
---j8HTHu8OFBZ8oR7J--
+Alan Stern
