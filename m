@@ -1,95 +1,115 @@
-From: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [RFC PATCH 2/8] Documentation: arm: define DT cpu capacity
- bindings
-Date: Tue, 15 Dec 2015 17:28:37 +0000
-Message-ID: <20151215172837.GD8012@leverpostej>
-References: <20151210175820.GE14571@e106622-lin>
- <20151211174940.GQ5727@sirena.org.uk>
- <20151214123616.GC3308@e106622-lin>
- <20151214165928.GV5727@sirena.org.uk>
- <20151215122238.GG16007@e106622-lin>
- <20151215133951.GY5727@sirena.org.uk>
- <20151215140135.GI31299@leverpostej>
- <20151215150813.GZ5727@sirena.org.uk>
- <20151215153218.GA7228@leverpostej>
- <20151215171713.GA5727@sirena.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20151215171713.GA5727-GFdadSzt00ze9xe1eoZjHA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, catalin.marinas-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, morten.rasmussen-5wv7dgnIgG8@public.gmane.org, dietmar.eggemann-5wv7dgnIgG8@public.gmane.org, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Olof Johansson <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>, Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Paul Walmsley <paul-DWxLp4Yu+b8AvxtiuMwx3w@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: [PATCH v6 0/7] cpufreq: add generic cpufreq driver support for
+ Exynos542x/5800 platforms
+Date: Tue, 15 Dec 2015 18:33:14 +0100
+Message-ID: <1450200801-24539-1-git-send-email-b.zolnierkie@samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Mike Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Ben Gamari <ben@smart-cactus.org>
+Cc: Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Dec 15, 2015 at 05:17:13PM +0000, Mark Brown wrote:
-> On Tue, Dec 15, 2015 at 03:32:19PM +0000, Mark Rutland wrote:
-> > On Tue, Dec 15, 2015 at 03:08:13PM +0000, Mark Brown wrote:
-> > > On Tue, Dec 15, 2015 at 02:01:36PM +0000, Mark Rutland wrote:
-> 
-> > > > I really don't want to see a table of magic numbers in the kernel.
-> 
-> > > Right, there's pitfalls there too although not being part of an ABI
-> > > does make them more manageable.  
-> 
-> > I think that people are very likely to treat them exactly like an ABI,
-> > w.r.t. any regressions in performance that result from their addition,
-> > modification, or removal. That becomes really horrible when new CPUs
-> > appear.
-> 
-> Obviously people are going to get upset if we introduce performance
-> regressions - but that's true always, we can also introduce problems
-> with numbers people have put in DT.  It seems like it'd be harder to
-> manage regressions due to externally provided magic numbers since
-> there's inherently less information there.
+Hi,
 
-It's certainly still possible to have regressions in that case. Those
-regressions would be due to code changes in the kernel, given the DT
-didn't change.
+This patch series adds generic cpufreq-dt driver support for
+Exynos542x/5800 (using the new CPU clock type which allows it).
 
-I'm not sure I follow w.r.t. "inherently less information", unless you
-mean trying to debug without access to that DTB?
+It has been tested on Exynos5422 based ODROID-XU3 Lite board.
 
-> > > One thing it's probably helpful to establish here is how much the
-> > > specific numbers are going to matter in the grand scheme of things.  If
-> > > the specific numbers *are* super important then nobody is going to want
-> > > to touch them as they'll be prone to getting tweaked.  If instead the
-> > > numbers just need to be ballpark accurate so the scheduler starts off in
-> > > roughly the right place and the specific numbers don't matter it's a lot
-> > > easier and having a table in the kernel until we think of something
-> > > better (if that ever happens) gets a lot easier.
-> 
-> > I agree that we first need to figure out the importance of these
-> > numbers. I disagree that our first step should be to add a table.
-> 
-> My point there is that if we're not that concerned about the specific
-> number something in kernel is safer.
+Depends on:
+- next-20151211 branch of linux-next kernel tree
+- "[PATCH] ARM: dts: Make CPU configuration more readable for
+  exynos542x/5800" patch (https://lkml.org/lkml/2015/12/11/107)
 
-I don't entirely disagree there. I think an in-kernel benchmark is
-likely safer.
+Changes since v5:
+- rebased over next-20151211 branch (something is broken in
+  newer branches, namely next-2015121[45])
+- rebased on top of "ARM: dts: Make CPU configuration more
+  readable for exynos542x/5800" patch
+- renamed cpu0_opp_table to cluster_a15_opp_table and
+  cpu1_opp_table to cluster_a7_opp_table
+- added Reviewed-by from Krzysztof
 
-> > > My expectation is that we just need good enough, not perfect, and that
-> > > seems to match what Juri is saying about the expectation that most of
-> > > the fine tuning is done via other knobs.
-> 
-> > My expectation is that if a ballpark figure is good enough, it should be
-> > possible to implement something trivial like bogomips / loop_per_jiffy
-> > calculation.
-> 
-> That does have the issue that we need to scale with regard to the
-> frequency the benchmark gets run at.  That's not an insurmountable
-> obstacle but it's not completely trivial either.
+Changes since v4:
+- renamed oppXX@hz to opp@hz
+- put Odroid changes in exynos5422-odroidxu3-common.dtsi
+- override CPU OPP properties for Exynos5422/5800 instead of
+  duplicating them
+- merged "ARM: dts: Exynos5422: fix OPP tables" patch with
+  "ARM: dts: Exynos5420: add CPU OPP properties" one
+- added missing Thomas' SoB line to "ARM: dts: Exynos5420:
+  add CPU OPP properties" patch
+- updated authorship of "ARM: Exynos: use generic cpufreq
+  driver for Exynos5420" and "ARM: Exynos: use generic
+  cpufreq driver for Exynos5422/5800" patches
+- updated Javier's and Mike's e-mail adresses
+- removed non-working e-mail address of Sachin Kamat
 
-If we change clock frequency, then regardless of where the information
-comes from we need to perform scaling, no?
+Changes since v3:
+- switched to using cpufreq-dt driver
+- updated patch descriptions to cover Exynos5422 support
+- added Acked-by from Sylwester to clock driver patches
 
-One nice thing about doing a benchmark to derive the numbers is that
-when the kernel is that when the frequency is fixed but the kernel
-cannot query it, the numbers will be representative.
+Changes since v2:
+- ported over next-20151124 branch
+- integrated missing CLK_RECALC_NEW_RATES flags fix to patch #3
+  (from Anand Moon)
+- added regulator supply properties for ODROID-XU3 Lite and
+  ODROID-XU4 in patch #2
+- ported CPU OPPs to operating-points-v2 (from Ben Gamari)
+- added "ARM: dts: Exynos5422: fix OPP tables" patch (from Ben
+  Gamari)
+- added "cpufreq: arm-big-little: accept operating-points-v2
+  nodes" patch (from Ben Gamari)
+- renamed OPP nodes as opp@<opp-hz>
 
-Mark.
+Changes since v1:
+- added CPU cluster regulator supply properties to
+  exynos5420-arndale-octa.dts, exynos5420-peach-pit.dts,
+  exynos5420-smdk5420.dts and exynos5800-peach-pi.dts
+
+Changes over Thomas' original v12 code:
+- split Exynos5420 and Exynos5800 support
+- moved E5420_[EGL,KFC]_DIV0() macros to clk-exynos5420.c
+- disabled cpufreq if big.LITTLE switcher support is enabled
+- enhanced arm_big_little[_dt] driver with CPU cluster regulator
+  support
+- fixed CPU clock configuration data for Exynos5800
+- fixed CPU operating points setup for Exynos5800
+- added CPU cluster regulator supplies for ODROID-XU3 board
+
+Best regards,
 --
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+
+Bartlomiej Zolnierkiewicz (5):
+  ARM: dts: Exynos542x/5800: add cluster regulator supply properties
+  ARM: Exynos: use generic cpufreq driver for Exynos5420
+  clk: samsung: exynos5422/5800: fix cpu clock configuration data
+  ARM: dts: Exynos5800: fix CPU OPP
+  ARM: Exynos: use generic cpufreq driver for Exynos5422/5800
+
+Thomas Abraham (2):
+  clk: samsung: exynos5420: add cpu clock configuration data and
+    instantiate cpu clock
+  ARM: dts: Exynos542x/5800: add CPU OPP properties
+
+ arch/arm/boot/dts/exynos5420-arndale-octa.dts      |   8 ++
+ arch/arm/boot/dts/exynos5420-cpus.dtsi             |  10 ++
+ arch/arm/boot/dts/exynos5420-peach-pit.dts         |   8 ++
+ arch/arm/boot/dts/exynos5420-smdk5420.dts          |   8 ++
+ arch/arm/boot/dts/exynos5420.dtsi                  | 110 +++++++++++++++++++++
+ arch/arm/boot/dts/exynos5422-cpus.dtsi             |  10 ++
+ arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi |   8 ++
+ arch/arm/boot/dts/exynos5800-peach-pi.dts          |   8 ++
+ arch/arm/boot/dts/exynos5800.dtsi                  | 108 ++++++++++++++++++++
+ arch/arm/mach-exynos/exynos.c                      |   4 +
+ drivers/clk/samsung/clk-exynos5420.c               |  88 ++++++++++++++++-
+ include/dt-bindings/clock/exynos5420.h             |   2 +
+ 12 files changed, 370 insertions(+), 2 deletions(-)
+
+-- 
+1.9.1
