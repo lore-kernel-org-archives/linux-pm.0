@@ -1,8 +1,8 @@
 From: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>
 Subject: Re: [RFC PATCH 2/8] Documentation: arm: define DT cpu capacity
  bindings
-Date: Tue, 15 Dec 2015 15:36:37 +0000
-Message-ID: <20151215153637.GJ16007@e106622-lin>
+Date: Tue, 15 Dec 2015 15:46:51 +0000
+Message-ID: <20151215154651.GK16007@e106622-lin>
 References: <20151210153004.GA26758@sirena.org.uk>
  <20151210175820.GE14571@e106622-lin>
  <20151211174940.GQ5727@sirena.org.uk>
@@ -11,86 +11,67 @@ References: <20151210153004.GA26758@sirena.org.uk>
  <20151215122238.GG16007@e106622-lin>
  <20151215133951.GY5727@sirena.org.uk>
  <20151215140135.GI31299@leverpostej>
- <20151215142458.GI16007@e106622-lin>
- <20151215145050.GA7041@leverpostej>
+ <20151215150813.GZ5727@sirena.org.uk>
+ <20151215153218.GA7228@leverpostej>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20151215145050.GA7041@leverpostej>
+In-Reply-To: <20151215153218.GA7228@leverpostej>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 To: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
 Cc: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, catalin.marinas-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, morten.rasmussen-5wv7dgnIgG8@public.gmane.org, dietmar.eggemann-5wv7dgnIgG8@public.gmane.org, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Olof Johansson <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>, Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Paul Walmsley <paul-DWxLp4Yu+b8AvxtiuMwx3w@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 15/12/15 14:50, Mark Rutland wrote:
-> On Tue, Dec 15, 2015 at 02:24:58PM +0000, Juri Lelli wrote:
-> > Hi Mark,
-> 
-> Hi Juri,
-> 
-> > On 15/12/15 14:01, Mark Rutland wrote:
+On 15/12/15 15:32, Mark Rutland wrote:
+> On Tue, Dec 15, 2015 at 03:08:13PM +0000, Mark Brown wrote:
+> > On Tue, Dec 15, 2015 at 02:01:36PM +0000, Mark Rutland wrote:
+> > 
 > > > I really don't want to see a table of magic numbers in the kernel.
 > > 
-> > Doesn't seem to be a clean and scalable solution to me either. It is not
-> > easy to reconfigure when new core types come around, as I don't think
-> > relative data is always present or easy to derive, and it exposes some
-> > sort of centralized global information where everyone is compared
-> > against everyone.
+> > Right, there's pitfalls there too although not being part of an ABI
+> > does make them more manageable.  
 > 
-> I'm also concerned that it will be difficult to curate this to avoid
-> deceptive marketing numbers. These may not reflect reality.
-> 
-
-Right.
-
-> > Where the DT solution is inherently per platform: no need to expose
-> > absolute values and no problems with knowing data regarding old core
-> > types.
-> 
-> The DT approach certainly avoids tying the kernel to a given idea of
-> particular microarchitectures.
-> 
-> > > If we cannot rely on external information, and want this information to
-> > > be derived by the kernel, then we need to perform some dynamic
-> > > benchmark. That would work for future CPUs the kernel knows nothing
-> > > about yet, and would cater for the pseudo-heterogeneous cases too.
-> > 
-> > I've actually experimented a bit with this approch already, but I wasn't
-> > convinced of its viability. It is true that we remove the burden of
-> > coming up with default values from user/integrator, but I'm pretty sure
-> > we will end up discussing endlessly about which particular benchmark to
-> > pick 
-> 
-> Regardless of which direction we go there will be endless discussion as
-> to the benchmark. As Mark pointed out, that happened in the case of the
-> table, and it's happening now for the DT approach.
-> 
-> I think we agree that if this is something we can change later (i.e. we
-> don't rely on an external oracle like DT) the particular benchmark
-> matters less, as that can be changed given evidence of superiority.
+> I think that people are very likely to treat them exactly like an ABI,
+> w.r.t. any regressions in performance that result from their addition,
+> modification, or removal. That becomes really horrible when new CPUs
+> appear.
 > 
 
-True, and in fact we already only point out suggestions for sensitive
-benchmarks. I don't think we want to tie ourselves to any particular
-one. And I think not having a particular benchmark implementation as
-part of the solution will help changing our minds afterwards.
+Yeah, and I guess the path towards out of three patches changing this
+values for a specifica platform (without exposing the same changes
+upstream) is not too far away.
 
-> > and the fact that it impacts on boot time and such.
+> > One thing it's probably helpful to establish here is how much the
+> > specific numbers are going to matter in the grand scheme of things.  If
+> > the specific numbers *are* super important then nobody is going to want
+> > to touch them as they'll be prone to getting tweaked.  If instead the
+> > numbers just need to be ballpark accurate so the scheduler starts off in
+> > roughly the right place and the specific numbers don't matter it's a lot
+> > easier and having a table in the kernel until we think of something
+> > better (if that ever happens) gets a lot easier.
 > 
-> I was under the impression that the kernel already did RAID algorithm
-> benchmarking as part of the boot process. Maybe we can find a set of
-> similarly brief benchmarks.
+> I agree that we first need to figure out the importance of these
+> numbers. I disagree that our first step should be to add a table.
 > 
 
-Yeah, it's certainly doable, but I'm not really yet seeing what we gain
-with this additional complexity. Also, AFAIK boot time is one important
-metric for the mobile market (while it is less crucial for systems with
-RAID configurations?) and we are going to add overhead there. Stability
-of default values is probably another factor here, where you could be
-rebooting your phone in many different conditions from time to time.
+My take is that ballpark is fine, but it's a per platform/configuration
+ballpark that we need. Not a per core-type one.
 
-Best,
+> > My expectation is that we just need good enough, not perfect, and that
+> > seems to match what Juri is saying about the expectation that most of
+> > the fine tuning is done via other knobs.
+> 
+> My expectation is that if a ballpark figure is good enough, it should be
+> possible to implement something trivial like bogomips / loop_per_jiffy
+> calculation.
+> 
+
+I didn't really followed that, so I might be wrong here, but isn't
+already happened a discussion about how we want/like to stop exposing
+bogomips info or rely on it for anything but in kernel delay loops?
+
+Thanks,
 
 - Juri
 --
