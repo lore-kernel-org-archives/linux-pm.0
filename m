@@ -1,45 +1,69 @@
 From: Eric Anholt <eric@anholt.net>
-Subject: [PATCH v3 1/4] ARM: bcm2835: Define two new packets from the latest firmware.
-Date: Tue, 15 Dec 2015 13:40:19 -0800
-Message-ID: <1450215622-27394-2-git-send-email-eric@anholt.net>
+Subject: [PATCH v3 4/4] ARM: bcm2835: Add the Raspberry Pi power domain driver to the DT.
+Date: Tue, 15 Dec 2015 13:40:22 -0800
+Message-ID: <1450215622-27394-5-git-send-email-eric@anholt.net>
 References: <1450215622-27394-1-git-send-email-eric@anholt.net>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gabe.freedesktop.org ([131.252.210.177]:39619 "EHLO
-	gabe.freedesktop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753595AbbLOVkY (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Dec 2015 16:40:24 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1450215622-27394-1-git-send-email-eric@anholt.net>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: linux-arm-kernel@lists.infradead.org, linux-rpi-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Lee Jones <lee@kernel.org>, Florian Fainelli <f.fainelli@gmail.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alexander Aring <alex.aring@gmail.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Eric Anholt <eric@anholt.net>
+List-Id: linux-pm@vger.kernel.org
 
-These packets give us direct access to the firmware's power management
-code, as opposed to GET/SET_POWER_STATE packets that only had a couple
-of domains implemented.
+From: Alexander Aring <alex.aring@gmail.com>
 
+This connects the USB driver to the USB power domain, so that USB can
+actually be turned on at boot if the bootloader didn't do it for us.
+
+Signed-off-by: Alexander Aring <alex.aring@gmail.com>
 Signed-off-by: Eric Anholt <eric@anholt.net>
 ---
- include/soc/bcm2835/raspberrypi-firmware.h | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/arm/boot/dts/bcm2835-rpi.dtsi | 11 +++++++++++
+ arch/arm/boot/dts/bcm2835.dtsi     |  2 +-
+ 2 files changed, 12 insertions(+), 1 deletion(-)
 
-diff --git a/include/soc/bcm2835/raspberrypi-firmware.h b/include/soc/bcm2835/raspberrypi-firmware.h
-index c07d74a..3fb3571 100644
---- a/include/soc/bcm2835/raspberrypi-firmware.h
-+++ b/include/soc/bcm2835/raspberrypi-firmware.h
-@@ -72,10 +72,12 @@ enum rpi_firmware_property_tag {
- 	RPI_FIRMWARE_SET_ENABLE_QPU =                         0x00030012,
- 	RPI_FIRMWARE_GET_DISPMANX_RESOURCE_MEM_HANDLE =       0x00030014,
- 	RPI_FIRMWARE_GET_EDID_BLOCK =                         0x00030020,
-+	RPI_FIRMWARE_GET_DOMAIN_STATE =                       0x00030030,
- 	RPI_FIRMWARE_SET_CLOCK_STATE =                        0x00038001,
- 	RPI_FIRMWARE_SET_CLOCK_RATE =                         0x00038002,
- 	RPI_FIRMWARE_SET_VOLTAGE =                            0x00038003,
- 	RPI_FIRMWARE_SET_TURBO =                              0x00038009,
-+	RPI_FIRMWARE_SET_DOMAIN_STATE =                       0x00038030,
+diff --git a/arch/arm/boot/dts/bcm2835-rpi.dtsi b/arch/arm/boot/dts/bcm2835-rpi.dtsi
+index 3572f03..f828202 100644
+--- a/arch/arm/boot/dts/bcm2835-rpi.dtsi
++++ b/arch/arm/boot/dts/bcm2835-rpi.dtsi
+@@ -1,3 +1,4 @@
++#include <dt-bindings/arm/raspberrypi-power.h>
+ #include "bcm2835.dtsi"
  
- 	/* Dispmanx TAGS */
- 	RPI_FIRMWARE_FRAMEBUFFER_ALLOCATE =                   0x00040001,
+ / {
+@@ -20,6 +21,12 @@
+ 			compatible = "raspberrypi,bcm2835-firmware";
+ 			mboxes = <&mailbox>;
+ 		};
++
++		power: power {
++			compatible = "raspberrypi,bcm2835-power";
++			firmware = <&firmware>;
++			#power-domain-cells = <1>;
++		};
+ 	};
+ };
+ 
+@@ -60,3 +67,7 @@
+ 	status = "okay";
+ 	bus-width = <4>;
+ };
++
++&usb {
++	power-domains = <&power RPI_POWER_DOMAIN_USB>;
++};
+diff --git a/arch/arm/boot/dts/bcm2835.dtsi b/arch/arm/boot/dts/bcm2835.dtsi
+index aef64de..6d62af0 100644
+--- a/arch/arm/boot/dts/bcm2835.dtsi
++++ b/arch/arm/boot/dts/bcm2835.dtsi
+@@ -177,7 +177,7 @@
+ 			status = "disabled";
+ 		};
+ 
+-		usb@7e980000 {
++		usb: usb@7e980000 {
+ 			compatible = "brcm,bcm2835-usb";
+ 			reg = <0x7e980000 0x10000>;
+ 			interrupts = <1 9>;
 -- 
 2.6.2
-
