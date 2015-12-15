@@ -1,158 +1,160 @@
-From: Philippe Longepe <philippe.longepe@linux.intel.com>
-Subject: Re: [PATCH V6 1/3] cpufreq: intel_pstate: configurable algorithm to
- get target pstate
-Date: Tue, 15 Dec 2015 11:30:16 +0100
-Message-ID: <566FEBB8.5090008@linux.intel.com>
-References: <1449247235-29389-1-git-send-email-philippe.longepe@linux.intel.com>
- <1449692513.3240.231.camel@spandruv-desk3.jf.intel.com>
- <8633351.YrHIUtRzE5@skinner> <2402797.hEhmBtxRMB@vostro.rjw.lan>
- <48DF4267-671B-40E2-8C95-CCF5795F8B26@linux.intel.com>
- <001c01d136bc$a4a78a90$edf69fb0$@net>
+From: Juri Lelli <Juri.Lelli@arm.com>
+Subject: Re: [RFCv6 PATCH 03/10] sched: scheduler-driven cpu frequency
+ selection
+Date: Tue, 15 Dec 2015 10:31:30 +0000
+Message-ID: <20151215103130.GF16007@e106622-lin>
+References: <1449641971-20827-1-git-send-email-smuckle@linaro.org>
+ <1449641971-20827-4-git-send-email-smuckle@linaro.org>
+ <20151211110443.GA6645@e106622-lin>
+ <566F74B3.4020203@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:13901 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964803AbbLOK3P (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 15 Dec 2015 05:29:15 -0500
-In-Reply-To: <001c01d136bc$a4a78a90$edf69fb0$@net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <566F74B3.4020203@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Steve Muckle <steve.muckle@linaro.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Ricky Liang <jcliang@chromium.org>
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>, 'Stephane Gasparini' <stephane.gasparini@linux.intel.com>
-Cc: 'Thomas Renninger' <trenn@suse.de>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Len Brown' <lenb@kernel.org>, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, 'Prarit Bhargava' <prarit@redhat.com>, viresh.kumar@linaro.org, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
 
-Hi Doug,
+On 14/12/15 18:02, Steve Muckle wrote:
+> Hi Juri,
+> 
+> Thanks for the review.
+> 
+> On 12/11/2015 03:04 AM, Juri Lelli wrote:
+> >> +config CPU_FREQ_GOV_SCHED
+> >> +	bool "'sched' cpufreq governor"
+> >> +	depends on CPU_FREQ
+> > 
+> > We depend on IRQ_WORK as well, which in turn I think depends on SMP. As
+> > briefly discussed with Peter on IRC, we might want to use
+> > smp_call_function_single_async() instead to break this dependecies
+> > chain (and be able to use this governor on UP as well).
+> 
+> FWIW I don't see an explicit dependency of IRQ_WORK on SMP
 
-On 14/12/2015 23:13, Doug Smythies wrote:
-> On 2015.12.14 08:15 Stephane Gasparini wrote:
->
->> Here are the results we have on a android release of WW50
->> Note that as of today Android is using Interactive Governor.
-> Thanks very much for your test results.
-> By "Intel PState CPU Load" I assume you mean using that V6 3 patch
-> "cpufreq: intel_pstate: account non C0 time" from Dec 4th, which I also
-> tested and sent an off-list reply to Philippe.
-> Summary: I like the patch set.
-These tests were done on a previous version of my patch done in WW40.
-We'll sent an updated version (WW50 with patch V6 3) soon.
-> Myself, I would like to see tests comparing the current
-> "powersave" governor to your "CPU Load" method, although
-> I do always like the reference "performance" test. However,
-> I suspect that in your case, there wouldn't be much difference.
-> After you moved the setpoint to 60 from 97, the response becomes
-> pretty much like performance mode.[1]
-In the table sent by stephane, "performance" meant "original algorithm" 
-based on average pstate (aperf/mperf).
-On Atoms, a setpoint of 60 is not too high. With higher setpoints we'll 
-not be able to reach meet some performance KPIs
-(some frames are dropped mainly for gaming use cases). However, we are 
-working on a more power conservative algorithm).
->
-> Also, you provide only power information, and no performance / energy
-> trade-off information. Do any of those tests reveal good power use, but
-> unbearable performance? What I am saying is that power by itself is not
-> a sufficient evaluation criteria, otherwise just lock in the minimum pstate
-> and be done with it, which we know isn't the right solution.
-Stephane has also some other performance/power figures done with Power 
-Lab. We'll see if we can share them.
->    
->> Atom:                              Intel PState   Intel PState     Power
->>                                     Performance    CPU Load      Improvment
->> 50% Load 1 thread                     260 mW         25 mW        -90%
-> If I understand correctly, the CPU load is 50% regardless of CPU frequency.
-> If yes, then this particular test is grossly unfair and misleading.
-> Why?
-> Because using your default setpoint of 60, the CPU load method will hold
-> the pstate at minimum, whereas performance mode will ask for the maximum.
-> The result will be drastic differences in the actual amount of work done
-> per unit time.
-Yes, you are right, we need to fix that workload or to remove it to the 
-list.
-Also a fixed load does not correspond to a real use case.
-This is why we are not using this test as a KPI.
+Oh, right. I seemed to remember that, but now I couldn't find this
+dependency anymore.
 
->
-> I think that a more comparable test would be a 50% (or whatever) load
-> calibrated to a nominal CPU frequency (I use the max non-turbo CPU
-> frequency, but it can be anything.) Meaning that the once the fixed
-> packet of work is done, the CPU can go idle sooner or later, depending
-> on the CPU frequency.
-Are you using an existing tool for doing that or did you developed your 
-own tool ?
->
-> Note also, that the work/sleep frequency used to attain the 50% load
-> can be relevant, particularly at lower sleep/work frequencies where
-> the intel_pstate driver response can have higher and higher
-> magnitude oscillations. By the way, in my tests, your "CPU Load" method
-> lower sleep/work frequency results were phenomenally good.
-Yes, that's what we observed also. For many use cases very often used in 
-android
-(gaming, circular progress bar, audio playback, video playback, etc 
-...), using the
-load instead of the ratio avg_pstate/current_pstate is a good choice and 
-can save
-a lot of power!
->
-> Here are some results from my test computer, albeit with the wrong processor:
->
-> Note 1: I have an older i7-2600K.
-> Note 2: Obviously, I forced your code patch to work with my processor ID.
-> Note 3: Power is package power measured with turbostat.
-> Note 4: one thread.
->
-> 1.) 50% load at 3.4GHz 201 hertz work / sleep frequency:
->
-> 4.4-rc5 powersave 11.27 watts*
-> 4.4-rc5 performance 12.83 watts
-> 4.4-rc3 + PL ver 6 3 patch set (default (60)): 10.47 watts
-> 4.4-rc3 + PL ver 6 3 patch set (setpoint 40): 12.55 watts
-> 4.4-rc3 + PL ver 6 3 patch set (setpoint 70): 9.72 watts**
->
-> 2.) 50% load at 3.4GHz 50 hertz work / sleep frequency:
->
-> 4.4-rc5 powersave 12.01 watts
-> 4.4-rc5 performance 11.90 watts
-> 4.4-rc3 + PL ver 6 3 patch set (default (60)): 10.09 watts
-> 4.4-rc3 + PL ver 6 3 patch set (setpoint 40): 12.01 watts
-> 4.4-rc3 + PL ver 6 3 patch set (setpoint 70): 9.65 watts
->
-> *  there were 6 overruns.
-> ** there were 3 overruns, meaning the work packet did not
-> finish in time before the next one was supposed to start.
-> This issue goes to step function load response time. i.e
-> How fast does the scaling driver respond to load and ramp up
-> the CPU frequency. My test program can catch up, but some
-> applications might not like the delay.
->    
-> An example of a performance / energy trade-off test:
->
-> phoronix ffmpeg test:
-> Shorter time is better.
-> The ffmpeg test is known to be particularly difficult for
-> frequency scaling drivers to handle. The scenario is similar
-> to how some games utilize all the CPUs.
->
-> Your patch set (an older version) on kernel 4.4-rc1:
-> setpoint 60: 17.84 seconds ave. 4324 package Joules. (default)
-> setpoint 40: 12.86 seconds ave. 4822 package Joules. (noisey)
->
-> or ~30% time improvement at a cost of 12% more energy, which some
-> users might think worthwhile.
->
-> For reference:
-> intel_pstate powersave (normal processor, setpoint 97): 12.06 seconds ave. 4983 package Joules
-> I do not have energy numbers for the below:
-> Performance mode: 11.16 seconds ave.
-> acpi-cpufreq powersave: 24.47 seconds ave.
-> acpi-cpufreq ondemand: 13.35 seconds ave.
-> acpi-cpufreq conservative: 17.60 seconds ave.
->
-> [1] http://marc.info/?l=linux-pm&m=142894256520552&w=2
->
-> ... Doug
->
->
-Thx for the data,
+> (init/Kconfig), nevertheless I'll take a look at moving to
+> smp_call_function_single_async() to reduce the dependency list of
+> sched-freq.
+> 
 
-Philippe
+OK, great. I think there's still value in reducing the dependency list.
+
+> ...
+> >> +	/* avoid race with cpufreq_sched_stop */
+> >> +	if (!down_write_trylock(&policy->rwsem))
+> >> +		return;
+> >> +
+> >> +	__cpufreq_driver_target(policy, freq, CPUFREQ_RELATION_L);
+> >> +
+> >> +	gd->throttle = ktime_add_ns(ktime_get(), gd->throttle_nsec);
+> > 
+> > As I think you proposed at Connect, we could use post frequency
+> > transition notifiers to implement throttling. Is this something that you
+> > already tried implementing/planning to experiment with?
+> 
+> I started to do this a while back and then decided to hold off. I think
+> (though I can't recall for sure) it may have been so I could
+> artificially throttle the rate of frequency change events further by
+> specifying an inflated frequency change time. That's useful to have as
+> we experiment with policy.
+> 
+> We probably want both of these mechanisms. Throttling at a minimum based
+> on transition end notifiers, and the option of throttling further for
+> policy purposes (at least for now, or as a debug option). Will look at
+> this again.
+> 
+
+Yeah, looks good.
+
+> ...
+> >> +static int cpufreq_sched_thread(void *data)
+> >> +{
+> >> +	struct sched_param param;
+> >> +	struct cpufreq_policy *policy;
+> >> +	struct gov_data *gd;
+> >> +	unsigned int new_request = 0;
+> >> +	unsigned int last_request = 0;
+> >> +	int ret;
+> >> +
+> >> +	policy = (struct cpufreq_policy *) data;
+> >> +	gd = policy->governor_data;
+> >> +
+> >> +	param.sched_priority = 50;
+> >> +	ret = sched_setscheduler_nocheck(gd->task, SCHED_FIFO, &param);
+> >> +	if (ret) {
+> >> +		pr_warn("%s: failed to set SCHED_FIFO\n", __func__);
+> >> +		do_exit(-EINVAL);
+> >> +	} else {
+> >> +		pr_debug("%s: kthread (%d) set to SCHED_FIFO\n",
+> >> +				__func__, gd->task->pid);
+> >> +	}
+> >> +
+> >> +	do {
+> >> +		set_current_state(TASK_INTERRUPTIBLE);
+> >> +		new_request = gd->requested_freq;
+> >> +		if (new_request == last_request) {
+> >> +			schedule();
+> >> +		} else {
+> > 
+> > Shouldn't we have to do the following here?
+> > 
+> > 
+> > @@ -125,9 +125,9 @@ static int cpufreq_sched_thread(void *data)
+> >  	}
+> >  
+> >  	do {
+> > -		set_current_state(TASK_INTERRUPTIBLE);
+> >  		new_request = gd->requested_freq;
+> >  		if (new_request == last_request) {
+> > +			set_current_state(TASK_INTERRUPTIBLE);
+> >  			schedule();
+> >  		} else {
+> >  			/*
+> > 
+> > Otherwise we set task to INTERRUPTIBLE state right after it has been
+> > woken up.
+> 
+> The state must be set to TASK_INTERRUPTIBLE before the data used to
+> decide whether to sleep or not is read (gd->requested_freq in this case).
+> 
+> If it is set after, then once gd->requested_freq is read but before the
+> state is set to TASK_INTERRUPTIBLE, the other side may update
+> gd->requested_freq and issue a wakeup on the freq thread. The wakeup
+> will have no effect since the freq thread would still be TASK_RUNNING at
+> that time. The freq thread would proceed to go to sleep and the update
+> would be lost.
+> 
+
+Mmm, I suggested that because I was hitting this while testing:
+
+[   34.816158] ------------[ cut here ]------------
+[   34.816177] WARNING: CPU: 2 PID: 1712 at kernel/kernel/sched/core.c:7617 __might_sleep+0x90/0xa8()
+[   34.816188] do not call blocking ops when !TASK_RUNNING; state=1 set at [<c007c1f8>] cpufreq_sched_thread+0x80/0x2b0
+[   34.816198] Modules linked in:
+[   34.816207] CPU: 2 PID: 1712 Comm: kschedfreq:1 Not tainted 4.4.0-rc2+ #401
+[   34.816212] Hardware name: ARM-Versatile Express
+[   34.816229] [<c0018874>] (unwind_backtrace) from [<c0013f60>] (show_stack+0x20/0x24)
+[   34.816243] [<c0013f60>] (show_stack) from [<c0448c98>] (dump_stack+0x80/0xb4)
+[   34.816257] [<c0448c98>] (dump_stack) from [<c0029930>] (warn_slowpath_common+0x88/0xc0)
+[   34.816267] [<c0029930>] (warn_slowpath_common) from [<c0029a24>] (warn_slowpath_fmt+0x40/0x48)
+[   34.816278] [<c0029a24>] (warn_slowpath_fmt) from [<c0054764>] (__might_sleep+0x90/0xa8)
+[   34.816291] [<c0054764>] (__might_sleep) from [<c0578400>] (cpufreq_freq_transition_begin+0x6c/0x13c)
+[   34.816303] [<c0578400>] (cpufreq_freq_transition_begin) from [<c0578714>] (__cpufreq_driver_target+0x180/0x2c0)
+[   34.816314] [<c0578714>] (__cpufreq_driver_target) from [<c007c14c>] (cpufreq_sched_try_driver_target+0x48/0x74)
+[   34.816324] [<c007c14c>] (cpufreq_sched_try_driver_target) from [<c007c1e8>] (cpufreq_sched_thread+0x70/0x2b0)
+[   34.816336] [<c007c1e8>] (cpufreq_sched_thread) from [<c004ce30>] (kthread+0xf4/0x114)
+[   34.816347] [<c004ce30>] (kthread) from [<c000fdd0>] (ret_from_fork+0x14/0x24)
+[   34.816355] ---[ end trace 30e92db342678467 ]---
+
+Maybe we could cope with what you are saying with an atomic flag
+indicating that the kthread is currently servicing a request? Like
+extending the finish_last_request thing to cover this case as well.
+
+Best,
+
+- Juri
