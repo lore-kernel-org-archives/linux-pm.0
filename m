@@ -1,103 +1,165 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [RFC PATCH 2/8] Documentation: arm: define DT cpu capacity
- bindings
-Date: Tue, 15 Dec 2015 14:01:36 +0000
-Message-ID: <20151215140135.GI31299@leverpostej>
-References: <1448288921-30307-1-git-send-email-juri.lelli@arm.com>
- <1448288921-30307-3-git-send-email-juri.lelli@arm.com>
- <20151124020631.GA15165@rob-hp-laptop>
- <20151210153004.GA26758@sirena.org.uk>
- <20151210175820.GE14571@e106622-lin>
- <20151211174940.GQ5727@sirena.org.uk>
- <20151214123616.GC3308@e106622-lin>
- <20151214165928.GV5727@sirena.org.uk>
- <20151215122238.GG16007@e106622-lin>
- <20151215133951.GY5727@sirena.org.uk>
+From: Thomas Renninger <trenn@suse.de>
+Subject: Re: [PATCH V6 1/3] cpufreq: intel_pstate: configurable algorithm to get target pstate
+Date: Tue, 15 Dec 2015 15:13:27 +0100
+Message-ID: <1462813.tnyS2JedD3@skinner>
+References: <1449247235-29389-1-git-send-email-philippe.longepe@linux.intel.com> <3489712.H9ngXOW7TX@skinner> <3235621.PFgIvoUBvm@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20151215133951.GY5727@sirena.org.uk>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: Juri Lelli <juri.lelli@arm.com>, Rob Herring <robh@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Olof Johansson <olof@lixom.net>, Gregory CLEMENT <gregory.clement@free-electrons.com>, Paul Walmsley <paul@pwsan.com>, Linus Walleij <linus.walleij@linaro.org>, Chen-Yu Tsai <wens@csie.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx2.suse.de ([195.135.220.15]:58380 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753715AbbLOON3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 15 Dec 2015 09:13:29 -0500
+In-Reply-To: <3235621.PFgIvoUBvm@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Philippe Longepe <philippe.longepe@linux.intel.com>, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, Prarit Bhargava <prarit@redhat.com>, viresh.kumar@linaro.org
 
-On Tue, Dec 15, 2015 at 01:39:51PM +0000, Mark Brown wrote:
-> On Tue, Dec 15, 2015 at 12:22:38PM +0000, Juri Lelli wrote:
-> > > So then why isn't it adequate to just have things like the core types in
-> > > there and work from there?  Are we really expecting the tuning to be so
-> > > much better than it's possible to come up with something that's so much
-> > > better on the scale that we're expecting this to be accurate that it's
-> > > worth just jumping straight to magic numbers?
-> 
-> > I take your point here that having fine grained values might not really
-> > give us appreciable differences (that is also why I proposed the
-> > capacity-scale in the first instance), but I'm not sure I'm getting what
-> > you are proposing here.
-> 
-> Something like the existing solution for arm32.
-> 
-> >  static const struct cpu_efficiency table_efficiency[] = {
-> >  	{"arm,cortex-a15", 3891},
-> >  	{"arm,cortex-a7",  2048},
-> >  	{NULL, },
-> >  };
-> 
-> > When clock-frequency property is defined in DT, we try to find a match
-> > for the compatibility string in the table above and then use the
-> > associate number to compute the capacity. Are you proposing to have
-> > something like this for arm64 as well?
-> 
-> > BTW, the only info I could find about those numbers is from this thread
-> 
-> It was discussed in some other thread when I was sending the equivalent
-> stuff for arm64 (I never got round to finishing it off due to issues
-> with Catalin and Will being concerned about the specific numbers).
-> Vincent confirmed that the numbers came from the (IIRC) DMIPS/MHz
-> numbers that ARM publish for the cores.  I'd independently done the same
-> thing for arm64.  It would probably help to put comments in there with
-> the base numbers before scaling, or just redo the table in terms of the
-> raw numbers.
-> 
-> This is, of course, an example of my concerns about magic number
-> configuration.
-> 
-> > If I understand how that table was created, how do we think we will
-> > extend it in the future to allow newer core types (say we replicate this
-> > solution for arm64)?  It seems that we have to change it, rescaling
-> > values, each time we have a new core on the market. How can we come up
-> > with relative numbers, in the future, comparing newer cores to old ones
-> > (that might be already out of the market by that time)?
-> 
-> It doesn't seem particularly challenging to add new numbers to the table
-> (and add additional properties to select on) TBH.  We can either rescale
-> by hand in the table when adding entries, script it as part of the
-> kernel build or do it at runtime (as the arm32 code already does to an
-> extent based on the particular set of cores we find).  What difficulties
-> do you see with this?
-> 
-> This is something that seems like an advantage to me - we can just
-> replace everything at any point, we're not tied to trusting the golden
-> benchmark someone did (or tweaked) if we come up with a better
-> methodology later on.
+On Monday, December 14, 2015 11:06:22 PM Rafael J. Wysocki wrote:
+> On Monday, December 14, 2015 05:22:12 PM Thomas Renninger wrote:
+> > On Thursday, December 10, 2015 11:01:18 PM Rafael J. Wysocki wrote:
+> > > On Thursday, December 10, 2015 02:04:46 PM Thomas Renninger wrote:
+> > > > On Wednesday, December 09, 2015 12:21:53 PM Srinivas Pandruvada wrote:
 
-I really don't want to see a table of magic numbers in the kernel.
+...
 
-The relative performance and efficiency of cores will vary depending on
-uArch-specific configuration (e.g. sizing of L1/L2 caches) in addition
-to general uArch differences, and integration too (e.g. if the memory
-system gives priority to one cluster over another for whatever reason).
-I've heard of pseudo-heterogeneous platforms with different
-configuration of the same uArch across clusters.
+> This means that, from intel_pstate perspective and from the point of view of
+> finding a useful balance between energy efficiency and performace, it
+> doesn't make sense to use a performace-oriented algorithm on them anyway,
+> because energy efficiency and performance are not balanced then.
 
-We also don't necessarily have the CPU clock frequencies, or the ability
-to scale them. Maybe we simply give up in that case, though.
+Ok. But this has nothing to do with a specific CPU ID. This is not even
+Intel specific.
 
-If we cannot rely on external information, and want this information to
-be derived by the kernel, then we need to perform some dynamic
-benchmark. That would work for future CPUs the kernel knows nothing
-about yet, and would cater for the pseudo-heterogeneous cases too.
+It is about workload.
+If HW specific side-effects as "race-to-idle is an efficient strategy for the 
+given CPU" comes into the game... This also is not Intel specific.
 
-Thanks,
-Mark.
+My point is:
+The cpufreq subsystem nicely splitted out workload policy into governors.
+intel_pstate violated this concept by implementing it's own policy into
+the HW driver.
+We now know that this caused:
+- quite some confusion.
+- needs userspace to adopt to HW driver specific knobs
+- isn't very elegant and rather ungeneric
+
+Now even more different policy algorithms should get mangled into the HW
+driver. I do see why you want to do this... It's easy (for now). But I am 
+questioning whether this is the right way to go for (on longterm)...
+
+I do not have a final solution at hand. You may want to evaluate the
+possibility to move to a governor based solution.
+If this is not feasible you should at least write to syslog which algorithm
+has been taken and why.
+
+> > And in the end it will show up as an "Enterprise Server" platform where
+> > your partners like HP, SAP, Dell,... have to explicitly state to disable
+> > specific powersaving features on OS level, because the CPU driver keeps
+> > ignoring any BIOS provided information.
+> 
+> Well, so let's consider the current state of affairs for a while.  Where do
+> we take the BIOS-provided information in question into account today?
+
+Are you talking about general BIOS-provided information?
+-> There are a hundred places and we cannot boot if BIOS data is
+   wrong, right?
+For the pm profile I guess none.
+I sent patches to expose this to sysfs quite some years ago,
+when I realized that OEMs started to not only provide "unknown", but fill it 
+with correct data.
+Since then it's easy to read out and it was always correct when I double 
+checked.
+
+The other point is: It's going to be even more correct and used, when we use 
+it. It's a public spec and OEMs have to stick to it and as said 99% should do.
+
+And if not: It's the old game: provide acpi.pm_profile=MyPlatform param.
+You/we are not to blame. 
+What is much worse is the back and forth to use BIOS provided data.
+
+With acpi_idle BIOS data was used to identify C-states.
+All major server vendors provided OS independent documentation how to disable
+deep sleep states in BIOS for specific number cruncher or database workloads.
+
+Then Intel violated the specs by switching to intel_idle.
+
+Similar for P-states.
+ACPI (acpi-cpufreq) -> MSR (intel_pstate) -> partly ACPI again ?!?
+(commit 37afb00032424d684a48d649fc)
+
+So we, Linux kernel, have to rely on some BIOS info to be correct
+And the BIOS has to rely on the kernel drivers to use some BIOS info it
+provides...
+And then both should stick to it...
+
+What I want to say: It's not only the BIOS guys doing things wrong and
+in the end you have to trust some interfaces.
+ 
+> The best approach IMO is to use all of the sources of information available
+> and make a choice on the basis of all that information combined, but we need
+> to start somewhere.
+> 
+> If your concern is that we are going to discard all of the BIOS-provided
+> information going forward, then this is not our current plan.
+> 
+> Which doesn't prove that it can't be wrong and I've seen enough systems
+> where BIOS-provided information is simply incorrect to base any decisions
+> on that information alone if I have any other choice.
+
+
+> 
+> > > The BIOS may always lie to us and we can't entirely rely on it for
+> > > figuring
+> > > out the system profile,
+> > 
+> > We can. Because otherwise the ACPI pm profile is set "unknown".
+> 
+> Well, it should be.  It will be if everything is done correctly, but is it
+> really guaraneed in any way?
+> 
+> > BTW: There were rumours that Intel's microcode had some sever bugs as well
+> > recently. So what, we have to rely on this piece of software as well...
+> > 
+> > IMO we see a bit too much CPU ID matching and it's getting more and more.
+> > Perfect would be no CPU ID matching at all.
+> > We had this with the acpi-cpufreq driver which in the end worked out
+> > perfectly for 99% of all machines out there.
+> 
+> Had it worked perfectly, intel_pstate wouldn't have been introduced.  Simple
+> as that.
+
+>From my experience, yes. It worked more or less perfect after years of 
+stabilization and improvments. intel_pstate still has to go through this.
+
+> 
+> > Hm, apropos id matching... I thought intel_pstate got introduced because
+> > the CPUs it supports can switch to any frequency between min and max. And
+> > this is not reflected by ACPI which does export a maximum amount of X
+> > (10?) frequency states.
+> 
+> That was one of the factors taken into consideration, but not the only one.
+> 
+> > Seeing this:
+> >         static int silvermont_freq_table[] = {
+> >         
+> >                 83300, 100000, 133300, 116700, 80000};
+> >         
+> >         static int airmont_freq_table[] = {
+> >         
+> >                 83300, 100000, 133300, 116700, 80000,
+> >                 93300, 90000, 88900, 87500};
+> > 
+> > makes me think, whether these shouldn't simply use the acpi_cpufreq
+> > driver.
+> > Or in the near future we may have tons of such defines?
+> > And you are back at "real" governors...
+> 
+> I'm not sure what you mean here.  These are used for computing a single
+> parameter of the algorithm at the initialization time AFAICS.
+
+Ah yes, too quick.
+
+      Thomas
