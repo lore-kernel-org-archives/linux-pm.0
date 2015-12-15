@@ -1,51 +1,96 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: [PATCH] cpufreq: scpi-cpufreq: signedness bug in scpi_get_dvfs_info()
-Date: Tue, 15 Dec 2015 11:16:44 +0000
-Message-ID: <1450178204-26172-1-git-send-email-sudeep.holla@arm.com>
+From: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+Subject: [RFC] i2c: Prevent runtime suspend of parent during adapter registration
+Date: Tue, 15 Dec 2015 14:12:56 +0200
+Message-ID: <1450181576-878-1-git-send-email-jarkko.nikula@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:47975 "EHLO foss.arm.com"
+Received: from mga04.intel.com ([192.55.52.120]:64820 "EHLO mga04.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964803AbbLOLQ7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 15 Dec 2015 06:16:59 -0500
+	id S964921AbbLOMND (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 15 Dec 2015 07:13:03 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Dan Carpenter <dan.carpenter@oracle.com>
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: linux-i2c@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>
 
-From: Dan Carpenter <dan.carpenter@oracle.com>
+If runtime PM of parent device is enabled before it registers the I2C
+adapter there can be unnecessary runtime suspend during adapter device
+registration. This can happen when adapter is registered from parent's
+probe and if parent device is initially active platform device.
 
-The "domain" variable needs to be signed for the error handling to work.
+In that case power.usage_count of parent device is zero and
+pm_runtime_get()/pm_runtime_put() cycle during probe could put the
+parent into runtime suspend. This happens when the i2c_register_adapter()
+calls the device_register():
 
-Fixes: 8def31034d03 ('cpufreq: arm_big_little: add SCPI interface driver')
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Acked-by: Sudeep Holla <sudeep.holla@arm.com>
+i2c_register_adapter
+  device_register
+    device_add
+      bus_probe_device
+        device_initial_probe
+          __device_attach
+            if (dev->parent) pm_runtime_get_sync(dev->parent)
+            ...
+            if (dev->parent) pm_runtime_put(dev->parent)
+
+After that i2c_register_adapter() continues registering I2C slave
+devices. In case slave device probe does I2C transfers the parent will
+resume again and thus get a needless runtime suspend/resume cycle during
+adapter registration.
+
+Prevent this while retaining the runtime PM status of parent by only
+incrementing/decrementing parent device power usage count during I2C
+adapter registration. That makes sure there won't be spurious runtime PM
+status changes for parent's probe and lets the driver core to idle the
+device after probe finishes.
+
+Signed-off-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
 ---
- drivers/cpufreq/scpi-cpufreq.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I noticed this with i2c-designware-platdrv.c which started to do so
+after commit 36d48fb5766a ("i2c: designware-platdrv: enable RuntimePM
+before registering to the core"). I guess the same could happen also
+with a few other I2C drivers that enable runtime PM similar way. For
+instance i2c-at91.c, i2c-cadence.c, i2c-hix5hd2.c and i2c-qup.c.
+That made me thinking if issue might be best to handle in i2c-core.c.
 
-Hi Rafael,
+Device core drivers/base/dd.c: driver_probe_device() or
+drivers/base/platform.c: platform_drv_probe() could be other
+alternatives but that would cause a regression to a driver that
+purposively tries to suspend the device in its probe().
+---
+ drivers/i2c/i2c-core.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-This patch seem to have slipped through the cracks somehow. I don't see
-in patchwork too. So I am resending so that you can pick for your next
-rc fix if you plan to send one else for -next
-
-Regards,
-Sudeep
-
-diff --git a/drivers/cpufreq/scpi-cpufreq.c b/drivers/cpufreq/scpi-cpufreq.c
-index 2c3b16fd3a01..de5e89b2eaaa 100644
---- a/drivers/cpufreq/scpi-cpufreq.c
-+++ b/drivers/cpufreq/scpi-cpufreq.c
-@@ -31,7 +31,7 @@ static struct scpi_ops *scpi_ops;
-
- static struct scpi_dvfs_info *scpi_get_dvfs_info(struct device *cpu_dev)
- {
--	u8 domain = topology_physical_package_id(cpu_dev->id);
-+	int domain = topology_physical_package_id(cpu_dev->id);
-
- 	if (domain < 0)
- 		return ERR_PTR(-EINVAL);
---
-1.9.1
+diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+index ba8eb087f224..4f8b5c80cf1e 100644
+--- a/drivers/i2c/i2c-core.c
++++ b/drivers/i2c/i2c-core.c
+@@ -1556,6 +1556,8 @@ static int i2c_register_adapter(struct i2c_adapter *adap)
+ 	dev_set_name(&adap->dev, "i2c-%d", adap->nr);
+ 	adap->dev.bus = &i2c_bus_type;
+ 	adap->dev.type = &i2c_adapter_type;
++	if (adap->dev.parent)
++		pm_runtime_get_noresume(adap->dev.parent);
+ 	res = device_register(&adap->dev);
+ 	if (res)
+ 		goto out_list;
+@@ -1617,6 +1619,8 @@ exit_recovery:
+ 	mutex_lock(&core_lock);
+ 	bus_for_each_drv(&i2c_bus_type, NULL, adap, __process_new_adapter);
+ 	mutex_unlock(&core_lock);
++	if (adap->dev.parent)
++		pm_runtime_put_noidle(adap->dev.parent);
+ 
+ 	return 0;
+ 
+@@ -1624,6 +1628,8 @@ out_list:
+ 	mutex_lock(&core_lock);
+ 	idr_remove(&i2c_adapter_idr, adap->nr);
+ 	mutex_unlock(&core_lock);
++	if (adap->dev.parent)
++		pm_runtime_put_noidle(adap->dev.parent);
+ 	return res;
+ }
+ 
+-- 
+2.6.2
 
