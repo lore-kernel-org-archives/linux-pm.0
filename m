@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCH 2/3] thermal: rework core to allow emul_temp to be treated as regular temp
-Date: Tue, 15 Dec 2015 19:49:13 -0800
-Message-ID: <1450237754-31906-3-git-send-email-edubezval@gmail.com>
+Subject: [PATCH 3/3] thermal: improve hot trip handling
+Date: Tue, 15 Dec 2015 19:49:14 -0800
+Message-ID: <1450237754-31906-4-git-send-email-edubezval@gmail.com>
 References: <1450237754-31906-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1450237754-31906-1-git-send-email-edubezval@gmail.com>
@@ -10,105 +10,98 @@ To: Rui Zhang <rui.zhang@intel.com>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Change the way we handle emul_temp. This is to allow
-emul_temp to be used as input to exercise thermal core
-properly. Now, even if .get_temp is not available,
-the emul_temp can be used to emulate temperature.
+The idea is to add the choice to be notified only when temperature
+crosses trip points. The trip points affected are the non-passive
+trip points.
+
+It will check last temperature and current temperature against
+the trip point temperature and its hysteresis.
+In case the check shows temperature has changed enought indicating
+a trip point crossing, a uevent will be sent to userspace.
+
+The uevent contains the thermal zone type, the current temperature,
+the last temperature and the trip point in which the current temperature
+now resides.
+
+The behavior of ops->notify() callback remains the same.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_core.c | 33 ++++++++++++++++++++-------------
- 1 file changed, 20 insertions(+), 13 deletions(-)
+ drivers/thermal/thermal_core.c | 52 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 52 insertions(+)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 8fa82c0..f826589 100644
+index f826589..924cccf 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -472,18 +472,25 @@ static void handle_thermal_trip(struct thermal_zone_device *tz, int trip)
- int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
- {
- 	int ret = -EINVAL;
--	int count;
--	int crit_temp = INT_MAX;
--	enum thermal_trip_type type;
-+	int crit_temp = INT_MAX, real_temp = crit_temp - 1;
+@@ -423,6 +423,56 @@ static void handle_non_critical_trips(struct thermal_zone_device *tz,
+ 		       def_governor->throttle(tz, trip);
+ }
  
--	if (!tz || IS_ERR(tz) || !tz->ops->get_temp)
--		goto exit;
-+	if (!tz || IS_ERR(tz))
-+		return ret;
- 
- 	mutex_lock(&tz->lock);
- 
--	ret = tz->ops->get_temp(tz, temp);
-+	/* Allow emulation if .get_temp is still not available */
-+	if (tz->ops->get_temp) {
-+		ret = tz->ops->get_temp(tz, temp);
-+		if (!ret)
-+			real_temp = *temp;
++static void thermal_tripped_notify(struct thermal_zone_device *tz,
++				   int trip, enum thermal_trip_type trip_type,
++				   int trip_temp)
++{
++	char tuv_name[THERMAL_NAME_LENGTH + 15], tuv_temp[25],
++		tuv_ltemp[25], tuv_trip[25], tuv_type[25];
++	char *msg[6] = { tuv_name, tuv_temp, tuv_ltemp, tuv_trip, tuv_type,
++			NULL };
++	int upper_trip_hyst, upper_trip_temp, trip_hyst = 0;
++	int ret = 0;
++
++	snprintf(tuv_name, sizeof(tuv_name), "THERMAL_ZONE=%s", tz->type);
++	snprintf(tuv_temp, sizeof(tuv_temp), "TEMP=%d", tz->temperature);
++	snprintf(tuv_ltemp, sizeof(tuv_ltemp), "LAST_TEMP=%d",
++		 tz->last_temperature);
++	snprintf(tuv_trip, sizeof(tuv_trip), "TRIP=%d", trip);
++	snprintf(tuv_type, sizeof(tuv_type), "TRIP_TYPE=%d", trip_type);
++
++	mutex_lock(&tz->lock);
++
++	/* crossing up */
++	if (tz->last_temperature < trip_temp && trip_temp < tz->temperature)
++		kobject_uevent_env(&tz->device.kobj, KOBJ_CHANGE, msg);
++
++	if (tz->ops->get_trip_hyst)
++		tz->ops->get_trip_hyst(tz, trip, &trip_hyst);
++
++	/* crossing down, check for hyst */
++	trip_temp -= trip_hyst;
++	if (tz->last_temperature > trip_temp && trip_temp > tz->temperature) {
++		snprintf(tuv_trip, sizeof(tuv_trip), "TRIP=%d", trip - 1);
++		kobject_uevent_env(&tz->device.kobj, KOBJ_CHANGE, msg);
 +	}
- 
- 	if (IS_ENABLED(CONFIG_THERMAL_EMULATION) && tz->emul_temperature) {
-+		enum thermal_trip_type type;
-+		int count;
 +
-+		ret = 0;
- 		for (count = 0; count < tz->trips; count++) {
- 			ret = tz->ops->get_trip_type(tz, count, &type);
- 			if (!ret && type == THERMAL_TRIP_CRITICAL) {
-@@ -498,17 +505,17 @@ int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
- 		 * is below the critical temperature so that the emulation code
- 		 * cannot hide critical conditions.
- 		 */
--		if (!ret && *temp < crit_temp)
-+		if (!ret && real_temp < crit_temp)
- 			*temp = tz->emul_temperature;
- 	}
-  
- 	mutex_unlock(&tz->lock);
--exit:
++	ret = tz->ops->get_trip_temp(tz, trip + 1, &upper_trip_temp);
++	if (ret)
++		goto unlock;
 +
- 	return ret;
- }
- EXPORT_SYMBOL_GPL(thermal_zone_get_temp);
- 
--static void update_temperature(struct thermal_zone_device *tz)
-+static int update_temperature(struct thermal_zone_device *tz)
++	if (tz->ops->get_trip_hyst)
++		tz->ops->get_trip_hyst(tz, trip + 1, &upper_trip_hyst);
++
++	upper_trip_temp -= upper_trip_hyst;
++	if (tz->last_temperature > upper_trip_temp &&
++	    upper_trip_temp > tz->temperature)
++		kobject_uevent_env(&tz->device.kobj, KOBJ_CHANGE, msg);
++
++unlock:
++	mutex_unlock(&tz->lock);
++}
++
+ static void handle_critical_trips(struct thermal_zone_device *tz,
+ 				int trip, enum thermal_trip_type trip_type)
  {
- 	int temp, ret;
+@@ -430,6 +480,8 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
  
-@@ -518,7 +525,7 @@ static void update_temperature(struct thermal_zone_device *tz)
- 			dev_warn(&tz->device,
- 				 "failed to read out thermal zone (%d)\n",
- 				 ret);
--		return;
-+		return ret;
- 	}
+ 	tz->ops->get_trip_temp(tz, trip, &trip_temp);
  
- 	mutex_lock(&tz->lock);
-@@ -529,17 +536,17 @@ static void update_temperature(struct thermal_zone_device *tz)
- 	trace_thermal_temperature(tz);
- 	dev_dbg(&tz->device, "last_temperature=%d, current_temperature=%d\n",
- 				tz->last_temperature, tz->temperature);
++	thermal_tripped_notify(tz, trip, trip_type, trip_temp);
 +
-+	return 0;
- }
- 
- void thermal_zone_device_update(struct thermal_zone_device *tz)
- {
- 	int count;
- 
--	if (!tz->ops->get_temp)
-+	if (update_temperature(tz))
+ 	/* If we have not crossed the trip_temp, we do not care. */
+ 	if (trip_temp <= 0 || tz->temperature < trip_temp)
  		return;
- 
--	update_temperature(tz);
--
- 	for (count = 0; count < tz->trips; count++)
- 		handle_thermal_trip(tz, count);
- 
 -- 
 2.5.0
