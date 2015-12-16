@@ -1,90 +1,84 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Subject: [PATCH] PM / sleep: define inline functions
-Date: Wed, 16 Dec 2015 17:11:39 +0530
-Message-ID: <1450266099-4352-1-git-send-email-sudipm.mukherjee@gmail.com>
+From: dawei chien <dawei.chien@mediatek.com>
+Subject: Re: [PATCH v5 2/3] arm64: dts: mt8173: Add thermal zone node.
+Date: Wed, 16 Dec 2015 20:12:31 +0800
+Message-ID: <1450267951.7981.22.camel@mtksdaap41>
+References: <1450238356-36319-1-git-send-email-dawei.chien@mediatek.com>
+	 <1450238356-36319-3-git-send-email-dawei.chien@mediatek.com>
+	 <CAGS+omDDfJb9dfWWPaMKs=MkO4Pf3RF9SUD==i7sgHsrDhFDxA@mail.gmail.com>
+	 <1450260553.7981.14.camel@mtksdaap41>
+	 <CAGS+omCWJo6Q933tRigMsxPvOmD3-cxe337_spAMKhYSUdTUKw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f173.google.com ([209.85.192.173]:33384 "EHLO
-	mail-pf0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932530AbbLPLll (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Dec 2015 06:41:41 -0500
+Received: from mailgw02.mediatek.com ([210.61.82.184]:56881 "EHLO
+	mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752833AbbLPMMf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Dec 2015 07:12:35 -0500
+In-Reply-To: <CAGS+omCWJo6Q933tRigMsxPvOmD3-cxe337_spAMKhYSUdTUKw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Eric Anholt <eric@anholt.net>
+To: Daniel Kurtz <djkurtz@chromium.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Matthias Brugger <matthias.bgg@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, "open list:OPEN FIRMWARE AND..." <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, srv_heupstream <srv_heupstream@mediatek.com>, Sascha Hauer <kernel@pengutronix.de>, Punit Agrawal <punit.agrawal@arm.com>
 
-If CONFIG_PM_SLEEP is not defined then the functions are defined as
-NULL. And as a result we are getting build failure with
-alpha allmodconfig with the error:
+On Wed, 2015-12-16 at 19:22 +0800, Daniel Kurtz wrote:
+> On Wed, Dec 16, 2015 at 6:09 PM, dawei chien <dawei.chien@mediatek.com> wrote:
+> > On Wed, 2015-12-16 at 16:34 +0800, Daniel Kurtz wrote:
+> >> On Wed, Dec 16, 2015 at 11:59 AM, Dawei Chien <dawei.chien@mediatek.com> wrote:
+> >> >
+> >> > This adds thermal zone node to Mediatek MT8173 dtsi file.
+> >> >
+> >> > Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
+> >> > ---
+> >> > This patch is base on patchset:
+> >> > https://lkml.org/lkml/2015/11/30/239
+> >> > ---
+> >> >  arch/arm64/boot/dts/mediatek/mt8173.dtsi |   43 ++++++++++++++++++++++++++++++
+> >> >  1 file changed, 43 insertions(+)
+> >> >
+> >> > diff --git a/arch/arm64/boot/dts/mediatek/mt8173.dtsi b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+> >> > index fda805d..4114cee 100644
+> >> > --- a/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+> >> > +++ b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+> >> > @@ -188,6 +188,49 @@
+> >> >                 clock-output-names = "cpum_ck";
+> >> >         };
+> >> >
+> >> > +       thermal-zones {
+> >> > +               cpu_thermal: cpu_thermal {
+> >> > +                       polling-delay-passive = <1000>; /* milliseconds */
+> >> > +                       polling-delay = <1000>; /* milliseconds */
+> >> > +
+> >> > +                       thermal-sensors = <&thermal 0>;
+> >>
+> >> This should be <&thermal> with the MTK temp sensor node in
+> >> https://lkml.org/lkml/2015/11/30/239 patch series.
+> >>
+> >> -Dan
+> >
+> > Hi Dan,
+> > Sascha's thermal driver V12 only register sensor id as 0, so we need to
+> > register sensor id as 0 to device tree as well.
+> >
+> > Either <&thermal 0> or <&thermal>, sensor id should be 0 for two cases.
+> > I try this two case, function all work fine for two cases. May I have
+> > any misunderstand? Please kindly give your comment.
+> > I will re-send this patch again once you tell me the reason, thank you.
+> 
+> In the new patchset, Sascha changed it to:
+> #thermal-sensor-cells = <0>;
+> 
+> Which means the <&thermal> phandle no longer has any arguments.
+> 
+> Thanks!
+> -Dan
+Hi Dan,
+Thank you for your comment. Yes, I don't need to add sensor id since new
+driver add thermal-sensor-cell as 0.
+(Even I checked function OK to this patch with new patchset)
 
-drivers/gpu/drm/vc4/vc4_v3d.c: In function 'vc4_v3d_set_power':
-include/linux/stddef.h:7:14: error: called object is not a function or function pointer
- #define NULL ((void *)0)
-              ^
-include/linux/pm.h:776:30: note: in expansion of macro 'NULL'
- #define pm_generic_poweroff  NULL
-                              ^
-drivers/gpu/drm/vc4/vc4_v3d.c:157:10: note: in expansion of macro 'pm_generic_poweroff'
-   return pm_generic_poweroff(&vc4->v3d->pdev->dev);
-          ^
-include/linux/stddef.h:7:14: error: called object is not a function or function pointer
- #define NULL ((void *)0)
-              ^
-include/linux/pm.h:764:28: note: in expansion of macro 'NULL'
- #define pm_generic_resume  NULL
-                            ^
-drivers/gpu/drm/vc4/vc4_v3d.c:159:10: note: in expansion of macro 'pm_generic_resume'
-   return pm_generic_resume(&vc4->v3d->pdev->dev);
-          ^
+I will re-send this patch soon, thank you.
 
-Fixes: d5b1a78a772f ("drm/vc4: Add support for drawing 3D frames.")
-Cc: Eric Anholt <eric@anholt.net>
-Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
----
-
-build log is at:
-https://travis-ci.org/sudipm-mukherjee/parport/jobs/97149763
-
-Also tested with x86_64 allmodconfig.
-
- include/linux/pm.h | 12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
-
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index 528be67..5fe5dbb 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -755,13 +755,22 @@ static inline void dpm_for_each_dev(void *data, void (*fn)(struct device *, void
- {
- }
- 
-+static inline int pm_generic_resume(struct device *dev)
-+{
-+	return 0;
-+}
-+
-+static inline int pm_generic_poweroff(struct device *dev)
-+{
-+	return 0;
-+}
-+
- #define pm_generic_prepare		NULL
- #define pm_generic_suspend_late		NULL
- #define pm_generic_suspend_noirq	NULL
- #define pm_generic_suspend		NULL
- #define pm_generic_resume_early		NULL
- #define pm_generic_resume_noirq		NULL
--#define pm_generic_resume		NULL
- #define pm_generic_freeze_noirq		NULL
- #define pm_generic_freeze_late		NULL
- #define pm_generic_freeze		NULL
-@@ -773,7 +782,6 @@ static inline void dpm_for_each_dev(void *data, void (*fn)(struct device *, void
- #define pm_generic_restore		NULL
- #define pm_generic_poweroff_noirq	NULL
- #define pm_generic_poweroff_late	NULL
--#define pm_generic_poweroff		NULL
- #define pm_generic_complete		NULL
- #endif /* !CONFIG_PM_SLEEP */
- 
--- 
-1.9.1
+BR,
+Dawei
 
