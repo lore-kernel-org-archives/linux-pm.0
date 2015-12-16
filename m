@@ -1,53 +1,38 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v3 1/2] ARM: cpuidle: remove cpu parameter from the
- cpuidle_ops suspend hook
-Date: Wed, 16 Dec 2015 21:58:09 +0100
-Message-ID: <5671D061.6060008@linaro.org>
-References: <1445011379-8787-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1445011379-8787-2-git-send-email-lorenzo.pieralisi@arm.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [RFC 0/3] i2c: rcar: adapt PM usage to multi master case
+Date: Wed, 16 Dec 2015 22:26:04 +0100
+Message-ID: <CAMuHMdUAse8TzB4T=wU7nLGoktwdZqhydw+obcOFXvXsTj8yWA@mail.gmail.com>
+References: <1450291460-10514-1-git-send-email-wsa@the-dreams.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f53.google.com ([74.125.82.53]:33659 "EHLO
-	mail-wm0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934216AbbLPU6I (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Dec 2015 15:58:08 -0500
-Received: by mail-wm0-f53.google.com with SMTP id p187so19066767wmp.0
-        for <linux-pm@vger.kernel.org>; Wed, 16 Dec 2015 12:58:06 -0800 (PST)
-In-Reply-To: <1445011379-8787-2-git-send-email-lorenzo.pieralisi@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-sh-owner@vger.kernel.org>
+In-Reply-To: <1450291460-10514-1-git-send-email-wsa@the-dreams.de>
+Sender: linux-sh-owner@vger.kernel.org
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: Linux I2C <linux-i2c@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: Lina Iyer <lina.iyer@linaro.org>, Russell King <linux@arm.linux.org.uk>, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, Jisheng Zhang <jszhang@marvell.com>
 
-On 10/16/2015 06:02 PM, Lorenzo Pieralisi wrote:
-> The suspend() hook in the cpuidle_ops struct is always called on
-> the cpu entering idle, which means that the cpu parameter passed
-> to the suspend hook always corresponds to the local cpu, making
-> it somewhat redundant.
+Hi Wolfram,
+
+On Wed, Dec 16, 2015 at 7:44 PM, Wolfram Sang <wsa@the-dreams.de> wrote:
+> If we are in a multi-master scenario, we need to block runtime PM so the
+> arbitration circuit stays awake.
 >
-> This patch removes the logical cpu parameter from the ARM
-> cpuidle_ops.suspend hook and updates all the existing kernel
-> implementations to reflect this change.
+> So, we define a new binding and adapt the i2c-rcar driver to have an example
+> implementation.
 >
-> Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-> Reviewed-by: Lina Iyer <lina.iyer@linaro.org>
-> Tested-by: Lina Iyer <lina.iyer@linaro.org>
-> Tested-by: Jisheng Zhang <jszhang@marvell.com> [psci]
-> Cc: Lina Iyer <lina.iyer@linaro.org>
-> Cc: Russell King <linux@arm.linux.org.uk>
-> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
+> This series is RFC because I want to do some more regression testing. The
+> actual functionality works fine here on my Lager board.
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Thanks, looks good to me.
 
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
+Gr{oetje,eeting}s,
 
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+                        Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
