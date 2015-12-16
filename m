@@ -1,81 +1,48 @@
-From: Leo Yan <leo.yan@linaro.org>
-Subject: Re: [RFCv6 PATCH 03/10] sched: scheduler-driven cpu frequency
- selection
-Date: Wed, 16 Dec 2015 11:48:25 +0800
-Message-ID: <20151216034825.GA11303@leoy-linaro>
-References: <1449641971-20827-1-git-send-email-smuckle@linaro.org>
- <1449641971-20827-4-git-send-email-smuckle@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [PATCH 0/3] thermal: rework core to improve userspace interaction
+Date: Tue, 15 Dec 2015 19:49:11 -0800
+Message-ID: <1450237754-31906-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f41.google.com ([209.85.220.41]:35707 "EHLO
-	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753612AbbLPDsk (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Dec 2015 22:48:40 -0500
-Received: by mail-pa0-f41.google.com with SMTP id hk6so16249408pad.2
-        for <linux-pm@vger.kernel.org>; Tue, 15 Dec 2015 19:48:40 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <1449641971-20827-4-git-send-email-smuckle@linaro.org>
+Received: from mail-pf0-f170.google.com ([209.85.192.170]:35798 "EHLO
+	mail-pf0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965555AbbLPDtU (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Dec 2015 22:49:20 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Ricky Liang <jcliang@chromium.org>
+To: Rui Zhang <rui.zhang@intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 
-Hi Steve,
+Hello Rui, linux-pm
 
-On Tue, Dec 08, 2015 at 10:19:24PM -0800, Steve Muckle wrote:
+Please consider these three patches in the thermal core to improve
+the interaction with userspace.
 
-[...]
+The first is already in its second version. It avoids reconfiguring
+monitor period. Now the thermal core configures the monitor only
+after handling all trip points.
 
-> +static int cpufreq_sched_thread(void *data)
-> +{
-> +	struct sched_param param;
-> +	struct cpufreq_policy *policy;
-> +	struct gov_data *gd;
-> +	unsigned int new_request = 0;
-> +	unsigned int last_request = 0;
-> +	int ret;
-> +
-> +	policy = (struct cpufreq_policy *) data;
-> +	gd = policy->governor_data;
-> +
-> +	param.sched_priority = 50;
-> +	ret = sched_setscheduler_nocheck(gd->task, SCHED_FIFO, &param);
-> +	if (ret) {
-> +		pr_warn("%s: failed to set SCHED_FIFO\n", __func__);
-> +		do_exit(-EINVAL);
-> +	} else {
-> +		pr_debug("%s: kthread (%d) set to SCHED_FIFO\n",
-> +				__func__, gd->task->pid);
-> +	}
-> +
-> +	do {
-> +		set_current_state(TASK_INTERRUPTIBLE);
-> +		new_request = gd->requested_freq;
-> +		if (new_request == last_request) {
-> +			schedule();
-> +		} else {
-> +			/*
-> +			 * if the frequency thread sleeps while waiting to be
-> +			 * unthrottled, start over to check for a newer request
-> +			 */
-> +			if (finish_last_request(gd))
-> +				continue;
-> +			last_request = new_request;
-> +			cpufreq_sched_try_driver_target(policy, new_request);
-> +		}
+The second is about improving emul_temp. The background here is to
+allow using emul_temp, even if the thermal zone is not fully setup,
+with a missing .get_temp().
 
-I also think "set_current_state(TASK_INTERRUPTIBLE)" will introduce
-logic error when software flow run into "else" block. The reason is
-after you set state with TASK_INTERRUPTIBLE, if there have some
-scheduling happen within cpufreq_sched_try_driver_target(), then the
-thread will be remove from rq. But generally we suppose the thread
-will be on rq and can continue run after next tick.
+The third is to improve hot trip points handling. Hot trip points
+are described as notification entry points. However, we do very
+little on them. This patch adds a uevent to propagate the event
+to userspace. Today, we rely on thermal zone driver. I believe
+having the same message coming on every thermal zone makes more
+sense. However, I did not remove the .notify() callback, and it
+should behave the same.
 
-Juri's suggestion can fix this issue. And we can use atomic_t to
-safely accessing gd->requested_freq.
+BR,
 
-[...]
+Eduardo Valentin (3):
+  thermal: setup monitor only once after handling trips
+  thermal: rework core to allow emul_temp to be treated as regular temp
+  thermal: improve hot trip handling
 
-Thanks,
-Leo Yan
+ drivers/thermal/thermal_core.c | 96 ++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 78 insertions(+), 18 deletions(-)
+
+-- 
+2.5.0
+
