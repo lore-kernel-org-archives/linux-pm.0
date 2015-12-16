@@ -1,95 +1,75 @@
-From: Daniel Kurtz <djkurtz@chromium.org>
-Subject: Re: [PATCH 1/3] dt-bindings: thermal: Add binding document for
- Mediatek thermal controller
-Date: Wed, 16 Dec 2015 19:23:22 +0800
-Message-ID: <CAGS+omCPonvXBTjOqpKrJX0Ebw0KF6TDKH+zRas-3FaAhUWL2w@mail.gmail.com>
-References: <1448883753-19068-1-git-send-email-s.hauer@pengutronix.de> <1448883753-19068-2-git-send-email-s.hauer@pengutronix.de>
+From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH V4 16/16] ARM64: tegra: select PM_GENERIC_DOMAINS
+Date: Wed, 16 Dec 2015 11:40:19 +0000
+Message-ID: <56714DA3.80707@nvidia.com>
+References: <1449241037-22193-1-git-send-email-jonathanh@nvidia.com>
+ <1449241037-22193-17-git-send-email-jonathanh@nvidia.com>
+ <CAPDyKFrcuK4iCo7Tg1Q_XjB7Y-+=s-ax1vzK4UEu9FfPnuProw@mail.gmail.com>
+ <567131A2.6030303@nvidia.com>
+ <CAPDyKFpZoZZapqanFyUzT_jZ6DLBnGXOXEyDHosWpphAjzhy7A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vk0-f51.google.com ([209.85.213.51]:33830 "EHLO
-	mail-vk0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752817AbbLPLXn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Dec 2015 06:23:43 -0500
-Received: by mail-vk0-f51.google.com with SMTP id j66so24045700vkg.1
-        for <linux-pm@vger.kernel.org>; Wed, 16 Dec 2015 03:23:43 -0800 (PST)
-In-Reply-To: <1448883753-19068-2-git-send-email-s.hauer@pengutronix.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAPDyKFpZoZZapqanFyUzT_jZ6DLBnGXOXEyDHosWpphAjzhy7A-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-mediatek@lists.infradead.org, Sasha Hauer <kernel@pengutronix.de>, Matthias Brugger <matthias.bgg@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Mon, Nov 30, 2015 at 7:42 PM, Sascha Hauer <s.hauer@pengutronix.de> wrote:
-> This adds the device tree binding documentation for the mediatek thermal
-> controller found on Mediatek MT8173 and other SoCs.
->
-> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-> Reviewed-by: Daniel Kurtz <djkurtz@chromium.org>
-> Acked-by: Rob Herring <robh@kernel.org>
-> ---
->  .../bindings/thermal/mediatek-thermal.txt          | 43 ++++++++++++++++++++++
->  1 file changed, 43 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
->
-> diff --git a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-> new file mode 100644
-> index 0000000..81f9a51
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-> @@ -0,0 +1,43 @@
-> +* Mediatek Thermal
-> +
-> +This describes the device tree binding for the Mediatek thermal controller
-> +which measures the on-SoC temperatures. This device does not have its own ADC,
-> +instead it directly controls the AUXADC via AHB bus accesses. For this reason
-> +this device needs phandles to the AUXADC. Also it controls a mux in the
-> +apmixedsys register space via AHB bus accesses, so a phandle to the APMIXEDSYS
-> +is also needed.
-> +
-> +Required properties:
-> +- compatible: "mediatek,mt8173-thermal"
-> +- reg: Address range of the thermal controller
-> +- interrupts: IRQ for the thermal controller
-> +- clocks, clock-names: Clocks needed for the thermal controller. required
-> +                       clocks are:
-> +                      "therm":  Main clock needed for register access
-> +                      "auxadc": The AUXADC clock
-> +- resets: Reference to the reset controller controlling the thermal controller.
-> +- mediatek,auxadc: A phandle to the AUXADC which the thermal controller uses
-> +- mediatek,apmixedsys: A phandle to the APMIXEDSYS controller.
-> +- #thermal-sensor-cells : Should be 0. See ./thermal.txt for a description.
-> +
-> +Optional properties:
-> +- nvmem-cells: A phandle to the calibration data provided by a nvmem device. If
-> +               unspecified default values shall be used.
-> +- nvmem-cell-names: Should be "calibration-data"
-> +
-> +Example:
-> +
-> +       thermal: thermal@1100b000 {
-> +               #thermal-sensor-cells = <1>;
 
-Tiny nit: this should now be:
+On 16/12/15 09:47, Ulf Hansson wrote:
+> On 16 December 2015 at 10:40, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+>> Hi Ulf,
+>>
+>> On 15/12/15 19:54, Ulf Hansson wrote:
+>>> On 4 December 2015 at 15:57, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+>>>> Enable PM_GENERIC_DOMAINS for tegra 64-bit devices. To ensure that devices
+>>>> dependent upon a particular power-domain are only probed when that power
+>>>> domain has been powered up, requires that PM is made mandatory for tegra
+>>>> 64-bit devices and so select this option for tegra as well.
+>>>>
+>>>> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+>>>> ---
+>>>>  arch/arm64/Kconfig.platforms | 2 ++
+>>>>  1 file changed, 2 insertions(+)
+>>>>
+>>>> diff --git a/arch/arm64/Kconfig.platforms b/arch/arm64/Kconfig.platforms
+>>>> index 9806324fa215..e0b5bd0aff0f 100644
+>>>> --- a/arch/arm64/Kconfig.platforms
+>>>> +++ b/arch/arm64/Kconfig.platforms
+>>>> @@ -93,6 +93,8 @@ config ARCH_TEGRA
+>>>>         select GENERIC_CLOCKEVENTS
+>>>>         select HAVE_CLK
+>>>>         select PINCTRL
+>>>> +       select PM
+>>>> +       select PM_GENERIC_DOMAINS
+>>>
+>>> If you still want to allow ARCH_TEGRA to run without PM, you should
+>>> probably change to:
+>>>
+>>> select PM_GENERIC_DOMAINS if PM
+>>
+>> Per the changelog this is deliberate. If we allow !PM, then there is a
+>> potential that you could probe a device when the power domain is not
+>> powered on. I understand that some SoCs turn on all the power-domains
+>> when !PM but this will not work for tegra because we don't register the
+>> power domain until later in the boot and so we are relying upon probe
+>> deferral to defer the probe of devices that use power-domains.
+> 
+> So what you are saying is that adding the PM domain support, will fix
+> some devices to become successfully probed as they were broken before?
 
-#thermal-sensor-cells = <0>;
+Not exactly. There is a legacy tegra_powergate_sequence_power_up() that
+has been used to date to get around this. However, by migrating to GENPD
+we really need to make PM mandatory, otherwise you could attempt to
+probe a device in a power domain that is not powered. In other words,
+you are probing blindly. I know some SoCs do this, but that does not
+seem very robust.
 
-> +               compatible = "mediatek,mt8173-thermal";
-> +               reg = <0 0x1100b000 0 0x1000>;
-> +               interrupts = <0 70 IRQ_TYPE_LEVEL_LOW>;
-> +               clocks = <&pericfg CLK_PERI_THERM>, <&pericfg CLK_PERI_AUXADC>;
-> +               clock-names = "therm", "auxadc";
-> +               resets = <&pericfg MT8173_PERI_THERM_SW_RST>;
-> +               reset-names = "therm";
-> +               mediatek,auxadc = <&auxadc>;
-> +               mediatek,apmixedsys = <&apmixedsys>;
-> +               nvmem-cells = <&thermal_calibration_data>;
-> +               nvmem-cell-names = "calibration-data";
-> +       };
-> --
-> 2.6.2
->
->
-> _______________________________________________
-> Linux-mediatek mailing list
-> Linux-mediatek@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-mediatek
+Cheers
+Jon
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
