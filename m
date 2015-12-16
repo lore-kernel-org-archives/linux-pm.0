@@ -1,135 +1,84 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH RFC 06/27] PM / Domains: add debugfs 'states' and
- 'timings' seq files
-Date: Wed, 16 Dec 2015 13:48:28 +0100
-Message-ID: <CAPDyKFqPn5StedOgd-toxKvvcM078NuVvN8yUDByRZSe9HvKbQ@mail.gmail.com>
-References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
-	<1447799871-56374-7-git-send-email-lina.iyer@linaro.org>
-	<CAPDyKFrOPKc-WDsHNpndkoZa5g6tnnbE2C5JsqZ6DMCX+6hmFw@mail.gmail.com>
-	<567145E1.5040804@baylibre.com>
+Subject: Re: [PATCH V4 16/16] ARM64: tegra: select PM_GENERIC_DOMAINS
+Date: Wed, 16 Dec 2015 13:51:46 +0100
+Message-ID: <CAPDyKFq=AWtranL2uifgO5TuTW5ykt+X8NkGpg7UDBpEivDxjA@mail.gmail.com>
+References: <1449241037-22193-1-git-send-email-jonathanh@nvidia.com>
+	<1449241037-22193-17-git-send-email-jonathanh@nvidia.com>
+	<CAPDyKFrcuK4iCo7Tg1Q_XjB7Y-+=s-ax1vzK4UEu9FfPnuProw@mail.gmail.com>
+	<567131A2.6030303@nvidia.com>
+	<CAPDyKFpZoZZapqanFyUzT_jZ6DLBnGXOXEyDHosWpphAjzhy7A@mail.gmail.com>
+	<56714DA3.80707@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f179.google.com ([209.85.220.179]:35854 "EHLO
-	mail-qk0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934007AbbLPMs3 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Dec 2015 07:48:29 -0500
-Received: by mail-qk0-f179.google.com with SMTP id t125so61032346qkh.3
-        for <linux-pm@vger.kernel.org>; Wed, 16 Dec 2015 04:48:29 -0800 (PST)
-In-Reply-To: <567145E1.5040804@baylibre.com>
+Received: from mail-qk0-f176.google.com ([209.85.220.176]:34256 "EHLO
+	mail-qk0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934011AbbLPMvq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Dec 2015 07:51:46 -0500
+Received: by mail-qk0-f176.google.com with SMTP id p187so61130331qkd.1
+        for <linux-pm@vger.kernel.org>; Wed, 16 Dec 2015 04:51:46 -0800 (PST)
+In-Reply-To: <56714DA3.80707@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Marc Titinger <mtitinger@baylibre.com>
-Cc: Lina Iyer <lina.iyer@linaro.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Axel Haslam <ahaslam@baylibre.com>
+To: Jon Hunter <jonathanh@nvidia.com>
+Cc: Philipp Zabel <p.zabel@pengutronix.de>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Vince Hsu <vinceh@nvidia.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-[...]
-
->>
->> A general comment. Static functions in genpd shall start with one of
->> the following prefix.
->>
->> genpd_*
->> _genpd_*
->> __genpd_*
->>
->> Please change accordingly.
+On 16 December 2015 at 12:40, Jon Hunter <jonathanh@nvidia.com> wrote:
 >
->
-> Many static routines were already prefixed like the exported functions with
-> "pm_", shall I make a separate patch for this renaming ?
-
-My point is that I don't want it to becomes worse.
-
-If you follow the above rule for new changes, I am happy.
-
-Whether you want to send a separate patch fixing the other existing
-name to be consistent with above rule, I would also be happy. :-)
-
->
->
->>
->>> ---
->>>   drivers/base/power/domain.c | 115
->>> +++++++++++++++++++++++++++++++++++++++++---
->>>   1 file changed, 107 insertions(+), 8 deletions(-)
+> On 16/12/15 09:47, Ulf Hansson wrote:
+>> On 16 December 2015 at 10:40, Jon Hunter <jonathanh@nvidia.com> wrote:
+>>> Hi Ulf,
 >>>
->>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->>> index c300293..9a0df09 100644
->>> --- a/drivers/base/power/domain.c
->>> +++ b/drivers/base/power/domain.c
->>> @@ -2169,21 +2169,120 @@ static const struct file_operations
->>> pm_genpd_summary_fops = {
->>>          .release = single_release,
->>>   };
+>>> On 15/12/15 19:54, Ulf Hansson wrote:
+>>>> On 4 December 2015 at 15:57, Jon Hunter <jonathanh@nvidia.com> wrote:
+>>>>> Enable PM_GENERIC_DOMAINS for tegra 64-bit devices. To ensure that devices
+>>>>> dependent upon a particular power-domain are only probed when that power
+>>>>> domain has been powered up, requires that PM is made mandatory for tegra
+>>>>> 64-bit devices and so select this option for tegra as well.
+>>>>>
+>>>>> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+>>>>> ---
+>>>>>  arch/arm64/Kconfig.platforms | 2 ++
+>>>>>  1 file changed, 2 insertions(+)
+>>>>>
+>>>>> diff --git a/arch/arm64/Kconfig.platforms b/arch/arm64/Kconfig.platforms
+>>>>> index 9806324fa215..e0b5bd0aff0f 100644
+>>>>> --- a/arch/arm64/Kconfig.platforms
+>>>>> +++ b/arch/arm64/Kconfig.platforms
+>>>>> @@ -93,6 +93,8 @@ config ARCH_TEGRA
+>>>>>         select GENERIC_CLOCKEVENTS
+>>>>>         select HAVE_CLK
+>>>>>         select PINCTRL
+>>>>> +       select PM
+>>>>> +       select PM_GENERIC_DOMAINS
+>>>>
+>>>> If you still want to allow ARCH_TEGRA to run without PM, you should
+>>>> probably change to:
+>>>>
+>>>> select PM_GENERIC_DOMAINS if PM
 >>>
->>> +static int pm_genpd_states_show(struct seq_file *s, void *data)
->>> +{
->>> +       struct generic_pm_domain *genpd;
->>> +
->>> +       seq_puts(s,
->>> +                "\n  Domain             State name        Enter + Exit =
->>> Min_off_on (ns)\n");
->>> +       seq_puts(s,
->>> +
->>> "-----------------------------------------------------------------------\n");
->>> +
+>>> Per the changelog this is deliberate. If we allow !PM, then there is a
+>>> potential that you could probe a device when the power domain is not
+>>> powered on. I understand that some SoCs turn on all the power-domains
+>>> when !PM but this will not work for tegra because we don't register the
+>>> power domain until later in the boot and so we are relying upon probe
+>>> deferral to defer the probe of devices that use power-domains.
 >>
->>
->> You must hold the gpd_list_lock while traversing the gpd list.
->>
->>> +       list_for_each_entry(genpd, &gpd_list, gpd_list_node) {
->>> +
->>> +               int i;
->>> +
->>> +               for (i = 0; i < genpd->state_count; i++) {
->>
->>
->> To be sure you have valid data, you should hold the genpd lock here.
->>
+>> So what you are saying is that adding the PM domain support, will fix
+>> some devices to become successfully probed as they were broken before?
 >
-> At some point while testing with calling suspend from the power_off handler,
-> the cpu would go to sleep with the lock held, hence using this seq-file
-> would not work.
+> Not exactly. There is a legacy tegra_powergate_sequence_power_up() that
+> has been used to date to get around this. However, by migrating to GENPD
+> we really need to make PM mandatory, otherwise you could attempt to
+> probe a device in a power domain that is not powered. In other words,
+> you are probing blindly. I know some SoCs do this, but that does not
+> seem very robust.
 
-That seems like a bad behaviour during suspend. Why does it hold the lock?
+Thank for the clarification. I agree.
 
-On the other it shouldn't matter as userspace can't access the debugfs
-nodes, since its frozen at those times, right!?
+You may add my:
 
->
-> while I agree, I think it is not super likely that a
-> domain/child/devices/states are added or removed at this point (the DT is
-> parsed already), would using list_for_each_entry_safe be safe enough ?
-
-No it's not.
-
-The gpd_list is protected with the gdp_list_lock, which is needed
-because new genpds can be added at any point.
-
-You also need the genpd lock here, as otherwise you may print the
-latency-values in the middle of when these are being updated.
-
->
->
->>> +                       seq_printf(s, "%-20s %-20s %lld+%lld=%lld\n",
->>> +                                  genpd->name,
->>> +                                  genpd->states[i].name,
->>> +                                  genpd->states[i].power_on_latency_ns,
->>> +                                  genpd->states[i].power_off_latency_ns,
->>> +                                  genpd->states[i].power_off_latency_ns
->>> +                                  +
->>> genpd->states[i].power_on_latency_ns);
->>> +               }
->>> +
->>> +       }
->>> +
->>> +       seq_puts(s, "\n");
->>> +
->>> +       return 0;
->>> +}
->>> +
-
-[...]
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
 Kind regards
 Uffe
