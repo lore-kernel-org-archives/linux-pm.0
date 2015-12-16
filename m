@@ -1,48 +1,93 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v6 0/7] cpufreq: add generic cpufreq driver support for
- Exynos542x/5800 platforms
-Date: Wed, 16 Dec 2015 07:44:46 +0530
-Message-ID: <20151216021446.GC3111@ubuntu>
-References: <1450200801-24539-1-git-send-email-b.zolnierkie@samsung.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] PM / runtime: Add new helper for conditional usage count incrementation
+Date: Wed, 16 Dec 2015 04:10:17 +0100
+Message-ID: <34545988.PrDXGhp3hy@vostro.rjw.lan>
+References: <1449675920-12986-1-git-send-email-joonas.lahtinen@linux.intel.com> <32970649.AWpGt5zezN@vostro.rjw.lan> <CAPDyKFo-X766DAZ2yr2L5=KQxXRojGG7tJ6iWHgJiA0==mTvkA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f171.google.com ([209.85.192.171]:33142 "EHLO
-	mail-pf0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932944AbbLPCOu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Dec 2015 21:14:50 -0500
-Received: by mail-pf0-f171.google.com with SMTP id e66so3806008pfe.0
-        for <linux-pm@vger.kernel.org>; Tue, 15 Dec 2015 18:14:50 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <1450200801-24539-1-git-send-email-b.zolnierkie@samsung.com>
+Received: from v094114.home.net.pl ([79.96.170.134]:41768 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S933934AbbLPCkJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Dec 2015 21:40:09 -0500
+In-Reply-To: <CAPDyKFo-X766DAZ2yr2L5=KQxXRojGG7tJ6iWHgJiA0==mTvkA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Thomas Abraham <thomas.ab@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Mike Turquette <mturquette@baylibre.com>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Ben Gamari <ben@smart-cactus.org>, Tomasz Figa <tomasz.figa@gmail.com>, Lukasz Majewski <l.majewski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, Chanwoo Choi <cw00.choi@samsung.com>, Kevin Hilman <khilman@linaro.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Anand Moon <linux.amoon@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Chris Wilson <chris@chris-wilson.co.uk>, Imre Deak <imre.deak@intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 15-12-15, 18:33, Bartlomiej Zolnierkiewicz wrote:
-> Hi,
+On Tuesday, December 15, 2015 03:28:54 PM Ulf Hansson wrote:
+> On 14 December 2015 at 23:22, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >
+> > Introduce a new runtime PM function, pm_runtime_get_if_in_use(),
 > 
-> This patch series adds generic cpufreq-dt driver support for
-> Exynos542x/5800 (using the new CPU clock type which allows it).
-> 
-> It has been tested on Exynos5422 based ODROID-XU3 Lite board.
-> 
-> Depends on:
-> - next-20151211 branch of linux-next kernel tree
-> - "[PATCH] ARM: dts: Make CPU configuration more readable for
->   exynos542x/5800" patch (https://lkml.org/lkml/2015/12/11/107)
-> 
-> Changes since v5:
-> - rebased over next-20151211 branch (something is broken in
->   newer branches, namely next-2015121[45])
-> - rebased on top of "ARM: dts: Make CPU configuration more
->   readable for exynos542x/5800" patch
-> - renamed cpu0_opp_table to cluster_a15_opp_table and
->   cpu1_opp_table to cluster_a7_opp_table
-> - added Reviewed-by from Krzysztof
+> As we already have pm_runtime_set_active() and pm_runtime_active(),
+> changing the new function name to "pm_runtime_get_if_active" may be
+> better!?
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+"In use" is supposed to mean "active and reference counted".
 
--- 
-viresh
+> > that will increment the device's runtime PM usage counter and
+> > return 'true' if its status is RPM_ACTIVE and its usage counter
+> > is greater than 0 at the same time ('false' will be returned
+> > otherwise).
+> >
+> > This is useful for things that should only be done if the device
+> > is active (from the runtime PM perspective) and used by somebody
+> > (as indicated by the usage counter) already and they are not worth
+> > bothering otherwise.
+> >
+> > Requested-by: Imre Deak <imre.deak@intel.com>
+> > Acked-by: Imre Deak <imre.deak@intel.com>
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >  Documentation/power/runtime_pm.txt |    5 +++++
+> >  drivers/base/power/runtime.c       |   21 +++++++++++++++++++++
+> >  include/linux/pm_runtime.h         |    5 +++++
+> >  3 files changed, 31 insertions(+)
+> >
+> > Index: linux-pm/drivers/base/power/runtime.c
+> > ===================================================================
+> > --- linux-pm.orig/drivers/base/power/runtime.c
+> > +++ linux-pm/drivers/base/power/runtime.c
+> > @@ -966,6 +966,27 @@ int __pm_runtime_resume(struct device *d
+> >  EXPORT_SYMBOL_GPL(__pm_runtime_resume);
+> >
+> >  /**
+> > + * pm_runtime_get_if_in_use - Conditionally bump up the device's usage counter.
+> > + * @dev: Device to handle.
+> > + *
+> > + * Increment the device's runtime PM usage counter and return 'true' if its
+> > + * runtime PM status is RPM_ACTIVE and its usage counter is already different
+> > + * from zero at the same time.  Otherwise, return 'false'.
+> > + */
+> > +bool pm_runtime_get_if_in_use(struct device *dev)
+> > +{
+> > +       unsigned long flags;
+> > +       bool retval;
+> > +
+> > +       spin_lock_irqsave(&dev->power.lock, flags);
+> > +       retval = dev->power.runtime_status == RPM_ACTIVE
+> > +               && atomic_inc_not_zero(&dev->power.usage_count);
+> 
+> Don't we also need to check that runtime PM is enabled (&&
+> !dev->power.disable_depth), or the user of this function don't care
+> about that?
+
+The user probably cares, but calling this for devices with runtime PM
+disabled doesn't really make sense to me (the status is not meaningful
+then).
+
+> > +       spin_unlock_irqrestore(&dev->power.lock, flags);
+> > +       return retval;
+> > +}
+> > +EXPORT_SYMBOL_GPL(pm_runtime_get_if_in_use);
+> > +
+> 
+> [...]
+
+Thanks,
+Rafael
+
