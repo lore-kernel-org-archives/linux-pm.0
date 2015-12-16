@@ -1,107 +1,54 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCH 3/3] thermal: improve hot trip handling
-Date: Tue, 15 Dec 2015 19:49:14 -0800
-Message-ID: <1450237754-31906-4-git-send-email-edubezval@gmail.com>
-References: <1450237754-31906-1-git-send-email-edubezval@gmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1450237754-31906-1-git-send-email-edubezval@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rui Zhang <rui.zhang@intel.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
+From: Dawei Chien <dawei.chien@mediatek.com>
+Subject: [PATCH v5 0/3] thermal: mediatek: Add cpu dynamic power cooling model.
+Date: Wed, 16 Dec 2015 11:59:13 +0800
+Message-ID: <1450238356-36319-1-git-send-email-dawei.chien@mediatek.com>
+Mime-Version: 1.0
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailgw02.mediatek.com ([210.61.82.184]:54294 "EHLO
+	mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754332AbbLPD7Y (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Dec 2015 22:59:24 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Matthias Brugger <matthias.bgg@gmail.com>, Daniel Kurtz <djkurtz@chromium.org>, Sascha Hauer <s.hauer@pengutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, Dawei Chien <dawei.chien@mediatek.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, Sascha Hauer <kernel@pengutronix.de>, Punit Agrawal <punit.agrawal@arm.com>
 
-The idea is to add the choice to be notified only when temperature
-crosses trip points. The trip points affected are the non-passive
-trip points.
+Use Intelligent Power Allocation (IPA) technical to add dynamic power model
+for binding CPU thermal zone. The power allocator governor allocates power
+budget to control CPU temperature.
 
-It will check last temperature and current temperature against
-the trip point temperature and its hysteresis.
-In case the check shows temperature has changed enought indicating
-a trip point crossing, a uevent will be sent to userspace.
+Power Allocator governor is able to keep SOC temperature within a defined
+temperature range to avoid SOC overheat and keep it's performance.
+mt8173-cpufreq.c need to register its' own power model with power allocator
+thermal governor, so that power allocator governor can allocates suitable
+power budget to control CPU temperature.
 
-The uevent contains the thermal zone type, the current temperature,
-the last temperature and the trip point in which the current temperature
-now resides.
+Binding document is refer to this patchset
+https://lkml.org/lkml/2015/11/30/239
 
-The behavior of ops->notify() callback remains the same.
+Change since V4:
+1. Remove unnecessary error-checking for mt8173-cpufreq.c
+2. Initializing variable capacitance with 0
 
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
----
- drivers/thermal/thermal_core.c | 52 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 52 insertions(+)
+Change since V3:
+1. Remove static power model
+2. Split V3's device tree in two for thermal zones and dynamic power models respectively
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index f826589..924cccf 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -423,6 +423,56 @@ static void handle_non_critical_trips(struct thermal_zone_device *tz,
- 		       def_governor->throttle(tz, trip);
- }
- 
-+static void thermal_tripped_notify(struct thermal_zone_device *tz,
-+				   int trip, enum thermal_trip_type trip_type,
-+				   int trip_temp)
-+{
-+	char tuv_name[THERMAL_NAME_LENGTH + 15], tuv_temp[25],
-+		tuv_ltemp[25], tuv_trip[25], tuv_type[25];
-+	char *msg[6] = { tuv_name, tuv_temp, tuv_ltemp, tuv_trip, tuv_type,
-+			NULL };
-+	int upper_trip_hyst, upper_trip_temp, trip_hyst = 0;
-+	int ret = 0;
-+
-+	snprintf(tuv_name, sizeof(tuv_name), "THERMAL_ZONE=%s", tz->type);
-+	snprintf(tuv_temp, sizeof(tuv_temp), "TEMP=%d", tz->temperature);
-+	snprintf(tuv_ltemp, sizeof(tuv_ltemp), "LAST_TEMP=%d",
-+		 tz->last_temperature);
-+	snprintf(tuv_trip, sizeof(tuv_trip), "TRIP=%d", trip);
-+	snprintf(tuv_type, sizeof(tuv_type), "TRIP_TYPE=%d", trip_type);
-+
-+	mutex_lock(&tz->lock);
-+
-+	/* crossing up */
-+	if (tz->last_temperature < trip_temp && trip_temp < tz->temperature)
-+		kobject_uevent_env(&tz->device.kobj, KOBJ_CHANGE, msg);
-+
-+	if (tz->ops->get_trip_hyst)
-+		tz->ops->get_trip_hyst(tz, trip, &trip_hyst);
-+
-+	/* crossing down, check for hyst */
-+	trip_temp -= trip_hyst;
-+	if (tz->last_temperature > trip_temp && trip_temp > tz->temperature) {
-+		snprintf(tuv_trip, sizeof(tuv_trip), "TRIP=%d", trip - 1);
-+		kobject_uevent_env(&tz->device.kobj, KOBJ_CHANGE, msg);
-+	}
-+
-+	ret = tz->ops->get_trip_temp(tz, trip + 1, &upper_trip_temp);
-+	if (ret)
-+		goto unlock;
-+
-+	if (tz->ops->get_trip_hyst)
-+		tz->ops->get_trip_hyst(tz, trip + 1, &upper_trip_hyst);
-+
-+	upper_trip_temp -= upper_trip_hyst;
-+	if (tz->last_temperature > upper_trip_temp &&
-+	    upper_trip_temp > tz->temperature)
-+		kobject_uevent_env(&tz->device.kobj, KOBJ_CHANGE, msg);
-+
-+unlock:
-+	mutex_unlock(&tz->lock);
-+}
-+
- static void handle_critical_trips(struct thermal_zone_device *tz,
- 				int trip, enum thermal_trip_type trip_type)
- {
-@@ -430,6 +480,8 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
- 
- 	tz->ops->get_trip_temp(tz, trip, &trip_temp);
- 
-+	thermal_tripped_notify(tz, trip, trip_type, trip_temp);
-+
- 	/* If we have not crossed the trip_temp, we do not care. */
- 	if (trip_temp <= 0 || tz->temperature < trip_temp)
- 		return;
--- 
-2.5.0
+Change since V2:
+1. Move dynamic/static power model in device tree
+
+Change since V1:
+1. Include mt8171.h and sort header file for mt8173.dtsi
+
+Dawei Chien (3):
+  thermal: mediatek: Add cpu dynamic power cooling model.
+  arm64: dts: mt8173: Add thermal zone node.
+  arm64: dts: mt8173: Add dynamic power node.
+
+ arch/arm64/boot/dts/mediatek/mt8173.dtsi |   47 ++++++++++++++++++++++++++++++
+ drivers/cpufreq/mt8173-cpufreq.c         |   12 ++++++--
+ 2 files changed, 57 insertions(+), 2 deletions(-)
+
+--
+1.7.9.5
