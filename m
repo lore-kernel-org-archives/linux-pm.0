@@ -1,88 +1,84 @@
-From: James Morse <james.morse@arm.com>
-Subject: Re: [PATCH v3 09/10] PM / Hibernate: Publish pages restored in-place
- to arch code
-Date: Wed, 16 Dec 2015 09:55:41 +0000
-Message-ID: <5671351D.3090109@arm.com>
-References: <1448559168-8363-1-git-send-email-james.morse@arm.com> <1448559168-8363-10-git-send-email-james.morse@arm.com> <20151205093534.GA7569@amd> <56656D6C.5010004@arm.com> <20151208081923.GA22680@amd>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v3 2/4] ARM: bcm2835: add rpi power domain driver
+Date: Wed, 16 Dec 2015 11:06:11 +0100
+Message-ID: <CAPDyKFqPk5XPPYMYe6HZc=b8-b-Y2VB6mQfZP8_TS8KOFZjsUw@mail.gmail.com>
+References: <1450215622-27394-1-git-send-email-eric@anholt.net>
+	<1450215622-27394-3-git-send-email-eric@anholt.net>
+	<567093CD.1020208@gmail.com>
+	<87oadrmfmi.fsf@eliezer.anholt.net>
+	<5670AAB2.1080102@gmail.com>
+	<87mvtbkyd0.fsf@eliezer.anholt.net>
+	<20151216011110.GA13147@earth>
+	<CAJKOXPes85hu6Jnd5p6dqhgdBGF4kmZuJQekM73O83DuZvcyoQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:54171 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932907AbbLPJ4i (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 16 Dec 2015 04:56:38 -0500
-In-Reply-To: <20151208081923.GA22680@amd>
+Received: from mail-qk0-f176.google.com ([209.85.220.176]:35675 "EHLO
+	mail-qk0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934053AbbLPKGN (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Dec 2015 05:06:13 -0500
+Received: by mail-qk0-f176.google.com with SMTP id u65so36602098qkh.2
+        for <linux-pm@vger.kernel.org>; Wed, 16 Dec 2015 02:06:12 -0800 (PST)
+In-Reply-To: <CAJKOXPes85hu6Jnd5p6dqhgdBGF4kmZuJQekM73O83DuZvcyoQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Kevin Kang <kkang@intrinsyc.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, wangfei <w.f@huawei.com>, Marc Zyngier <marc.zyngier@arm.com>
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Sebastian Reichel <sre@ring0.de>, Eric Anholt <eric@anholt.net>, Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Florian Fainelli <f.fainelli@gmail.com>, Alexander Aring <alex.aring@gmail.com>, Pawel Moll <pawel.moll@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lee Jones <lee@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Rob Herring <robh+dt@kernel.org>, linux-rpi-kernel@lists.infradead.org, Ian Campbell <ijc+devicetree@hellion.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-Hi Pavel,
-
-On 08/12/15 08:19, Pavel Machek wrote:
->> I didn't do it here as it would clean every page copied, which was the
->> worrying part of the previous approach. If there is an architecture
->> where this cache-clean operation is expensive, it would slow down
->> restore. I was trying to benchmark the impact of this on 32bit arm when
->> I spotted it was broken.
-> 
-> You have just loaded the page from slow storage (hard drive,
-> MMC). Cleaning a page should be pretty fast compared to that.
-
-(One day I hope to own a laptop that hibernates to almost-memory speed
-nvram!)
-
-Speed is one issue - another is I don't think its correct to assume that
-any architecture with a flush_icache_range() function can/should have
-that called on any page of data.
-
-There is also the possibility that an architecture needs to do something
-other than flush_icache_range() on the pages that were copied. (I can
-see lots of s390 hooks for 'page keys', Intel's memory protection keys
-may want something similar...)
-
-This patch is the general-purpose fix, matching the existing list of
-'these pages need copying' with a 'these pages were already copied'.
-
-
->> This allocated-same-page code path doesn't happen very often, so we
->> don't want this to have an impact on the 'normal' code path. On 32bit
->> arm I saw ~20 of these allocations out of ~60,000 pages.
+On 16 December 2015 at 02:27, Krzysztof Kozlowski
+<k.kozlowski@samsung.com> wrote:
+> 2015-12-16 10:11 GMT+09:00 Sebastian Reichel <sre@ring0.de>:
+>> Hi,
 >>
->> This new way allocates a few extra pages during restore, and doesn't
->> assume that flush_cache_range() needs calling. It should have no impact
->> on architectures that aren't using the new list.
-> 
-> It is also complex.
-
-Its symmetric with the existing restore_pblist code, I think that this
-is the simplest way of doing it.
-
-
->>> Alternatively, can you just clean the whole cache before jumping to
->>> the new kernel?
+>> On Tue, Dec 15, 2015 at 04:53:31PM -0800, Eric Anholt wrote:
+>>> >>> What motivated the location of this power domain driver in
+>>> >>> arch/arm/mach-bcm? Should not we have this in drivers/power/ or
+>>> >>> somewhere in drivers/ at the very least?
+>>> >>
+>>> >> ls stronly suggests that power contains drivers for power supplies and
+>>> >> batteries, not power domains.
 >>
->> On arm64, cleaning the whole cache means cleaning all of memory by
->> virtual address, which would be a high price to pay when we only need to
->> clean the pages we copied. The current implementation does clean all
-> 
-> How high price to pay? I mean, hibernation/restore takes
-> _seconds_. Paying miliseconds to have cleaner code is acceptable
-> price.
+>> Indeed it's used for fuel gauges and chargers, but also for
+>> reboot/powerdown and adaptive voltage scaling, so another
+>> subdirectory for power-domains wouldn't be that odd.
+>>
+>>> >> There are 6 power domain drivers in
+>>> >> arch/arm, 3 in drivers/clk, and 3 in drivers/soc.
+>>> >
+>>> > If we ever have to support a different architecture which happens to use
+>>> > a similar power domain, then we want it to be in a location which makes
+>>> > it easy for sharing it in the first place. As it stands today, it does
+>>> > not seem useful to me to have this code in arch/arm/mach-bcm/ at all.
+>>> >
+>>> > Maybe there is room from a drivers/power/domains/ of some kind?
+>>
+>> I like the idea, but let's include generic power domain maintainers
+>> in this discussion, as I suggested here (I got a power domain driver
+>> patch for drivers/power just a few days ago):
+>>
+>> https://lkml.org/lkml/2015/12/15/815
+>>
+>> Also somebody would have to step up to maintain that directory.
+>
+> This could go into drivers/soc. We put there a lot of mach-specific
+> stuff which we want to make a little more generic (like generic enough
+> multiplatform, multiarchitecture etc). Rockchip has its own power
+> domains there. Dove and Mediatek seem as well but I am not sure. Some
+> other architectures keep this still in arm/mach (exynos, ux500, zx,
+> imx, s34c64xx, shmobile) but this looks more of like a legacy choice.
 
-I agree, but the code to clean all 8GB of memory on Juno takes ~3
-seconds, and this will probably scale linearly. We only need to clean
-the ~250MB that was copied by hibernate, (and of that, only the
-executable pages). The sticking point is the few pages it copies, but
-doesn't tell us about.
+Agree, drivers/soc is good.
 
-I will put together the flush_icache_range()-during-decompression
-version of this patch... it looks like powerpc will suffer the most from
-this, from the comments, its flush_icache_range() code pushes data all
-the way out to memory...
+>
+> However, since the generic power domains have its own maintainers entry
+> and reside under drivers/base/power, maybe making a separate directory
+> for power domains drivers makes sense?
 
+That could work as well, but I have no strong opinion.
+Perhaps it would become a bit more clear, although in that case I
+would also move drivers/base/power/domain* in there.
 
-Thanks,
+If that happens, I am willing to help maintain it.
 
-James
+Kind regards
+Uffe
