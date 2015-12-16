@@ -1,84 +1,57 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH V4 16/16] ARM64: tegra: select PM_GENERIC_DOMAINS
-Date: Wed, 16 Dec 2015 13:51:46 +0100
-Message-ID: <CAPDyKFq=AWtranL2uifgO5TuTW5ykt+X8NkGpg7UDBpEivDxjA@mail.gmail.com>
-References: <1449241037-22193-1-git-send-email-jonathanh@nvidia.com>
-	<1449241037-22193-17-git-send-email-jonathanh@nvidia.com>
-	<CAPDyKFrcuK4iCo7Tg1Q_XjB7Y-+=s-ax1vzK4UEu9FfPnuProw@mail.gmail.com>
-	<567131A2.6030303@nvidia.com>
-	<CAPDyKFpZoZZapqanFyUzT_jZ6DLBnGXOXEyDHosWpphAjzhy7A@mail.gmail.com>
-	<56714DA3.80707@nvidia.com>
+From: Dawei Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Subject: [PATCH v6 0/3] thermal: mediatek: Add cpu dynamic power cooling model.
+Date: Wed, 16 Dec 2015 21:29:13 +0800
+Message-ID: <1450272556-29770-1-git-send-email-dawei.chien@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f176.google.com ([209.85.220.176]:34256 "EHLO
-	mail-qk0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934011AbbLPMvq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Dec 2015 07:51:46 -0500
-Received: by mail-qk0-f176.google.com with SMTP id p187so61130331qkd.1
-        for <linux-pm@vger.kernel.org>; Wed, 16 Dec 2015 04:51:46 -0800 (PST)
-In-Reply-To: <56714DA3.80707@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Daniel Kurtz <djkurtz-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Dawei Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, srv_heupstream-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>
-Cc: Philipp Zabel <p.zabel@pengutronix.de>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Vince Hsu <vinceh@nvidia.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 16 December 2015 at 12:40, Jon Hunter <jonathanh@nvidia.com> wrote:
->
-> On 16/12/15 09:47, Ulf Hansson wrote:
->> On 16 December 2015 at 10:40, Jon Hunter <jonathanh@nvidia.com> wrote:
->>> Hi Ulf,
->>>
->>> On 15/12/15 19:54, Ulf Hansson wrote:
->>>> On 4 December 2015 at 15:57, Jon Hunter <jonathanh@nvidia.com> wrote:
->>>>> Enable PM_GENERIC_DOMAINS for tegra 64-bit devices. To ensure that devices
->>>>> dependent upon a particular power-domain are only probed when that power
->>>>> domain has been powered up, requires that PM is made mandatory for tegra
->>>>> 64-bit devices and so select this option for tegra as well.
->>>>>
->>>>> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
->>>>> ---
->>>>>  arch/arm64/Kconfig.platforms | 2 ++
->>>>>  1 file changed, 2 insertions(+)
->>>>>
->>>>> diff --git a/arch/arm64/Kconfig.platforms b/arch/arm64/Kconfig.platforms
->>>>> index 9806324fa215..e0b5bd0aff0f 100644
->>>>> --- a/arch/arm64/Kconfig.platforms
->>>>> +++ b/arch/arm64/Kconfig.platforms
->>>>> @@ -93,6 +93,8 @@ config ARCH_TEGRA
->>>>>         select GENERIC_CLOCKEVENTS
->>>>>         select HAVE_CLK
->>>>>         select PINCTRL
->>>>> +       select PM
->>>>> +       select PM_GENERIC_DOMAINS
->>>>
->>>> If you still want to allow ARCH_TEGRA to run without PM, you should
->>>> probably change to:
->>>>
->>>> select PM_GENERIC_DOMAINS if PM
->>>
->>> Per the changelog this is deliberate. If we allow !PM, then there is a
->>> potential that you could probe a device when the power domain is not
->>> powered on. I understand that some SoCs turn on all the power-domains
->>> when !PM but this will not work for tegra because we don't register the
->>> power domain until later in the boot and so we are relying upon probe
->>> deferral to defer the probe of devices that use power-domains.
->>
->> So what you are saying is that adding the PM domain support, will fix
->> some devices to become successfully probed as they were broken before?
->
-> Not exactly. There is a legacy tegra_powergate_sequence_power_up() that
-> has been used to date to get around this. However, by migrating to GENPD
-> we really need to make PM mandatory, otherwise you could attempt to
-> probe a device in a power domain that is not powered. In other words,
-> you are probing blindly. I know some SoCs do this, but that does not
-> seem very robust.
+Use Intelligent Power Allocation (IPA) technical to add dynamic power model
+for binding CPU thermal zone. The power allocator governor allocates power
+budget to control CPU temperature.
 
-Thank for the clarification. I agree.
+Power Allocator governor is able to keep SOC temperature within a defined
+temperature range to avoid SOC overheat and keep it's performance.
+mt8173-cpufreq.c need to register its' own power model with power allocator
+thermal governor, so that power allocator governor can allocates suitable
+power budget to control CPU temperature.
 
-You may add my:
+Binding document is refer to this patchset
+https://lkml.org/lkml/2015/11/30/239
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+Change since V5:
+1. Remove thermal sensor ID from phandles
 
-Kind regards
-Uffe
+Change since V4:
+1. Remove unnecessary error-checking for mt8173-cpufreq.c
+2. Initializing variable capacitance with 0
+
+Change since V3:
+1. Remove static power model
+2. Split V3's device tree in two for thermal zones and dynamic power models respectively
+
+Change since V2:
+1. Move dynamic/static power model in device tree
+
+Change since V1:
+1. Include mt8171.h and sort header file for mt8173.dtsi
+
+Dawei Chien (3):
+  thermal: mediatek: Add cpu dynamic power cooling model.
+  arm64: dts: mt8173: Add thermal zone node.
+  arm64: dts: mt8173: Add dynamic power node.
+
+ arch/arm64/boot/dts/mediatek/mt8173.dtsi |   47 ++++++++++++++++++++++++++++++
+ drivers/cpufreq/mt8173-cpufreq.c         |   12 ++++++--
+ 2 files changed, 57 insertions(+), 2 deletions(-)
+
+--
+1.7.9.5
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
