@@ -1,64 +1,81 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / runtime: Add new helper for conditional usage count incrementation
-Date: Wed, 16 Dec 2015 04:11:28 +0100
-Message-ID: <2059159.DKa1ZpCTbg@vostro.rjw.lan>
-References: <Pine.LNX.4.44L0.1512151001170.1891-100000@iolanthe.rowland.org>
+From: Leo Yan <leo.yan@linaro.org>
+Subject: Re: [RFCv6 PATCH 03/10] sched: scheduler-driven cpu frequency
+ selection
+Date: Wed, 16 Dec 2015 11:48:25 +0800
+Message-ID: <20151216034825.GA11303@leoy-linaro>
+References: <1449641971-20827-1-git-send-email-smuckle@linaro.org>
+ <1449641971-20827-4-git-send-email-smuckle@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:58628 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S933917AbbLPClT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Dec 2015 21:41:19 -0500
-In-Reply-To: <Pine.LNX.4.44L0.1512151001170.1891-100000@iolanthe.rowland.org>
+Received: from mail-pa0-f41.google.com ([209.85.220.41]:35707 "EHLO
+	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753612AbbLPDsk (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Dec 2015 22:48:40 -0500
+Received: by mail-pa0-f41.google.com with SMTP id hk6so16249408pad.2
+        for <linux-pm@vger.kernel.org>; Tue, 15 Dec 2015 19:48:40 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <1449641971-20827-4-git-send-email-smuckle@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Chris Wilson <chris@chris-wilson.co.uk>, Imre Deak <imre.deak@intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, linux-pm@vger.kernel.org
+To: Steve Muckle <steve.muckle@linaro.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Ricky Liang <jcliang@chromium.org>
 
-On Tuesday, December 15, 2015 10:06:33 AM Alan Stern wrote:
-> On Mon, 14 Dec 2015, Rafael J. Wysocki wrote:
-> 
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > 
-> > Introduce a new runtime PM function, pm_runtime_get_if_in_use(),
-> > that will increment the device's runtime PM usage counter and
-> > return 'true' if its status is RPM_ACTIVE and its usage counter
-> > is greater than 0 at the same time ('false' will be returned
-> > otherwise).
-> > 
-> > This is useful for things that should only be done if the device
-> > is active (from the runtime PM perspective) and used by somebody
-> > (as indicated by the usage counter) already and they are not worth
-> > bothering otherwise.
-> 
-> 
-> > --- linux-pm.orig/drivers/base/power/runtime.c
-> > +++ linux-pm/drivers/base/power/runtime.c
-> > @@ -966,6 +966,27 @@ int __pm_runtime_resume(struct device *d
-> >  EXPORT_SYMBOL_GPL(__pm_runtime_resume);
-> >  
-> >  /**
-> > + * pm_runtime_get_if_in_use - Conditionally bump up the device's usage counter.
-> > + * @dev: Device to handle.
-> > + *
-> > + * Increment the device's runtime PM usage counter and return 'true' if its
-> > + * runtime PM status is RPM_ACTIVE and its usage counter is already different
-> > + * from zero at the same time.  Otherwise, return 'false'.
-> 
-> The phrasing of this comment is slightly ambiguous (it's not clear 
-> whether the "if" clause applies to both the increment and the return 
-> or just the return).  IMO it would be somewhat better to write:
-> 
-> 	If the runtime PM status is RPM_ACTIVE and the runtime PM usage
-> 	counter is nonzero, increment the counter and return 'true'.
-> 	Otherwise return false without changing the counter.
+Hi Steve,
 
-Yes, that sounds better, thanks!
+On Tue, Dec 08, 2015 at 10:19:24PM -0800, Steve Muckle wrote:
 
-I'll resend the patch with that modification.
+[...]
+
+> +static int cpufreq_sched_thread(void *data)
+> +{
+> +	struct sched_param param;
+> +	struct cpufreq_policy *policy;
+> +	struct gov_data *gd;
+> +	unsigned int new_request = 0;
+> +	unsigned int last_request = 0;
+> +	int ret;
+> +
+> +	policy = (struct cpufreq_policy *) data;
+> +	gd = policy->governor_data;
+> +
+> +	param.sched_priority = 50;
+> +	ret = sched_setscheduler_nocheck(gd->task, SCHED_FIFO, &param);
+> +	if (ret) {
+> +		pr_warn("%s: failed to set SCHED_FIFO\n", __func__);
+> +		do_exit(-EINVAL);
+> +	} else {
+> +		pr_debug("%s: kthread (%d) set to SCHED_FIFO\n",
+> +				__func__, gd->task->pid);
+> +	}
+> +
+> +	do {
+> +		set_current_state(TASK_INTERRUPTIBLE);
+> +		new_request = gd->requested_freq;
+> +		if (new_request == last_request) {
+> +			schedule();
+> +		} else {
+> +			/*
+> +			 * if the frequency thread sleeps while waiting to be
+> +			 * unthrottled, start over to check for a newer request
+> +			 */
+> +			if (finish_last_request(gd))
+> +				continue;
+> +			last_request = new_request;
+> +			cpufreq_sched_try_driver_target(policy, new_request);
+> +		}
+
+I also think "set_current_state(TASK_INTERRUPTIBLE)" will introduce
+logic error when software flow run into "else" block. The reason is
+after you set state with TASK_INTERRUPTIBLE, if there have some
+scheduling happen within cpufreq_sched_try_driver_target(), then the
+thread will be remove from rq. But generally we suppose the thread
+will be on rq and can continue run after next tick.
+
+Juri's suggestion can fix this issue. And we can use atomic_t to
+safely accessing gd->requested_freq.
+
+[...]
 
 Thanks,
-Rafael
-
+Leo Yan
