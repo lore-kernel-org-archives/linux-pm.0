@@ -1,81 +1,60 @@
-From: Juri Lelli <Juri.Lelli@arm.com>
-Subject: Re: [RFCv6 PATCH 09/10] sched: deadline: use deadline bandwidth in
- scale_rt_capacity
-Date: Wed, 16 Dec 2015 09:28:03 +0000
-Message-ID: <20151216092803.GL16007@e106622-lin>
-References: <1449641971-20827-1-git-send-email-smuckle@linaro.org>
- <1449641971-20827-10-git-send-email-smuckle@linaro.org>
- <20151214151729.GQ6357@twins.programming.kicks-ass.net>
- <CAKfTPtAVmS6BHWcGz4cB0bpEE91QzU5sSmMWZB9j_vpK0qjwHg@mail.gmail.com>
- <20151214165128.GU6357@twins.programming.kicks-ass.net>
- <20151214223113.5732201a@luca-1225C>
- <20151215123859.GC6357@twins.programming.kicks-ass.net>
- <567015DF.6090206@unitn.it>
- <20151215134229.GH6357@twins.programming.kicks-ass.net>
- <20151215222424.32f4de89@luca-1225C>
+From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH V4 16/16] ARM64: tegra: select PM_GENERIC_DOMAINS
+Date: Wed, 16 Dec 2015 09:40:50 +0000
+Message-ID: <567131A2.6030303@nvidia.com>
+References: <1449241037-22193-1-git-send-email-jonathanh@nvidia.com>
+ <1449241037-22193-17-git-send-email-jonathanh@nvidia.com>
+ <CAPDyKFrcuK4iCo7Tg1Q_XjB7Y-+=s-ax1vzK4UEu9FfPnuProw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:54031 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753389AbbLPJ2E (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 16 Dec 2015 04:28:04 -0500
-Content-Disposition: inline
-In-Reply-To: <20151215222424.32f4de89@luca-1225C>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAPDyKFrcuK4iCo7Tg1Q_XjB7Y-+=s-ax1vzK4UEu9FfPnuProw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Vince Hsu <vinceh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Luca Abeni <luca.abeni@unitn.it>
-Cc: Peter Zijlstra <peterz@infradead.org>, Vincent Guittot <vincent.guittot@linaro.org>, Steve Muckle <steve.muckle@linaro.org>, Ingo Molnar <mingo@redhat.com>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>
 
-Hi Luca,
+Hi Ulf,
 
-On 15/12/15 22:24, Luca Abeni wrote:
-> On Tue, 15 Dec 2015 14:42:29 +0100
-> Peter Zijlstra <peterz@infradead.org> wrote:
-> > On Tue, Dec 15, 2015 at 02:30:07PM +0100, Luca Abeni wrote:
-> > 
-> > > >So I remember something else from the BFQ code, which also had to
-> > > >track entries for the 0-lag stuff, and I just had a quick peek at
-> > > >that code again. And what they appear to do is keep inactive
-> > > >entries with a lag deficit in a separate tree (the idle tree).
-> > > >
-> > > >And every time they update the vtime, they also push fwd the idle
-> > > >tree and expire entries on that.
-> > > I am not sure if I understand correctly the idea (I do not know the
-> > > BFQ code; I'll have a look), but I think I tried something similar:
-> > > - When a task blocks, instead of arming the inactive timer I can
-> > > insert the task in an "active non contending" tree (to use GRUB
-> > > terminology)
-> > > - So, when some sched deadline function is invoked, I check the
-> > > "0-lag time" of the first task in the "active non contending" tree,
-> > > and if that time is passed I remove the task from the tree and
-> > > adjust the active utilisation
-> > > 
-> > > The resulting code ended up being more complex (basically, I needed
-> > > to handle the "active non contending" tree and to check it in
-> > > task_tick_dl() and update_curr_dl()). But maybe I did it wrong...
-> > > I'll try this approach again, after looking ad the BFQ code.
-> > 
-> > That sounds about right.
-> > 
-> > I've no idea if its more or less work. I just had vague memories on an
-> > alternative approach to the timer.
-> > 
-> > Feel free to stick with the timer if that works better, just wanted to
-> > mention there are indeed alternative solutions.
-> Ok; I'll try to implement this alternative approach again, after
-> looking at BFQ, to see if it turns out to be simpler or more complex
-> than the timer-based approach.
+On 15/12/15 19:54, Ulf Hansson wrote:
+> On 4 December 2015 at 15:57, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+>> Enable PM_GENERIC_DOMAINS for tegra 64-bit devices. To ensure that devices
+>> dependent upon a particular power-domain are only probed when that power
+>> domain has been powered up, requires that PM is made mandatory for tegra
+>> 64-bit devices and so select this option for tegra as well.
+>>
+>> Signed-off-by: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+>> ---
+>>  arch/arm64/Kconfig.platforms | 2 ++
+>>  1 file changed, 2 insertions(+)
+>>
+>> diff --git a/arch/arm64/Kconfig.platforms b/arch/arm64/Kconfig.platforms
+>> index 9806324fa215..e0b5bd0aff0f 100644
+>> --- a/arch/arm64/Kconfig.platforms
+>> +++ b/arch/arm64/Kconfig.platforms
+>> @@ -93,6 +93,8 @@ config ARCH_TEGRA
+>>         select GENERIC_CLOCKEVENTS
+>>         select HAVE_CLK
+>>         select PINCTRL
+>> +       select PM
+>> +       select PM_GENERIC_DOMAINS
 > 
-> If there is interest, I'll send an RFC with these patches after some
-> testing.
+> If you still want to allow ARCH_TEGRA to run without PM, you should
+> probably change to:
 > 
+> select PM_GENERIC_DOMAINS if PM
 
-I think there's definitely interest, as next step will be to start using
-the new API for freq selection from DL as well.
+Per the changelog this is deliberate. If we allow !PM, then there is a
+potential that you could probe a device when the power domain is not
+powered on. I understand that some SoCs turn on all the power-domains
+when !PM but this will not work for tegra because we don't register the
+power domain until later in the boot and so we are relying upon probe
+deferral to defer the probe of devices that use power-domains.
 
-Thanks a lot for your time and efforts!
-
-Best,
-
-- Juri
+Cheers
+Jon
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
