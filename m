@@ -1,75 +1,47 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH RFC 02/27] PM / Domains: Allow domain power states to be
- read from DT
-Date: Wed, 16 Dec 2015 14:36:18 -0700
-Message-ID: <20151216213618.GA3342@linaro.org>
-References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
- <1447799871-56374-3-git-send-email-lina.iyer@linaro.org>
- <CAPDyKFrZFMfE9XNRS8CpTPXU6fzfY9wv0cn+DTcg=SUnDyUQ0A@mail.gmail.com>
- <566FE652.1030602@baylibre.com>
+From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
+Subject: Re: [PATCHv2 1/3] thermal: setup monitor only once after handling
+ trips
+Date: Wed, 16 Dec 2015 23:46:23 +0000
+Message-ID: <1450309514.2912.148.camel@spandruv-desk3.jf.intel.com>
+References: <1450237754-31906-1-git-send-email-edubezval@gmail.com>
+	 <1450237754-31906-2-git-send-email-edubezval@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <566FE652.1030602@baylibre.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Marc Titinger <mtitinger@baylibre.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Krzysztof =?utf-8?Q?Koz=C5=82owski?= <k.kozlowski@samsung.com>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Axel Haslam <ahaslam@baylibre.com>, Marc Titinger <mtitinger+renesas@baylibre.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1450237754-31906-2-git-send-email-edubezval@gmail.com>
+Content-Language: en-US
+Content-ID: <80B4F53A2134764CBF9E7B9744B935EC@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "edubezval@gmail.com" <edubezval@gmail.com>
+Cc: "Zhang, Rui" <rui.zhang@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Dec 15 2015 at 03:07 -0700, Marc Titinger wrote:
->On 10/12/2015 17:53, Ulf Hansson wrote:
->>On 17 November 2015 at 23:37, Lina Iyer <lina.iyer@linaro.org> wrote:
-
->>>Similarly, devices can register power-states into the cluster domain, in
->>>a manner consistent with idle-states.
->>
->>I don't get this. Can you please elaborate?
->
->
->Alexes addition of "power states" to the power domains was to have a 
->better representation of features of power controllers. For instance 
->QoS may prevent to enter/exit complete power-off, but setting the core 
->voltage to say 0.7v is feasible in terms of timing, and still better 
->than full-power-on etc... Hence the domain has a list of possible 
->states to chose upon, between full power-on and full-power-off, and 
->genpd will call the platform code for this.
->
->Now, this patch maps the idle-states as possible power states for the 
->domain: upon the last CPU runtime_put, the domain can chose the 
->deepest
->state that can be reached given the enter/exit time available, and 
->call the platform code for this. This selected state can be any of:
->* cluster-sleep (power OFF)
->* cluster-retention A (L2RAM retention for instance)
->* cluster-retention B (some device is still on, like PMU or bus 
->analyzer, healthckeck IP etc...)
->...
->* cluster-on, but lower voltage A
->* cluster-on, but lower voltage B
->etc...
->
->Put short: CPUs, like any other devices in the domain may register a 
->power state.
->
->>
->>>
->>>This is a attempt to address device-retention states for devices that
->>>are not hooked to runtime-pm, but feature a retention state handled by
->>>the same firmware that handles idle-states. For instance a L2 caches.
->>
->>I guess whether devices may use runtime PM or not, they still can be
->>attached to a PM domain with multiple power states?
->
->yes.
->
->From what I understand, it seems like you want to have a constraint on a
-domain state based on the device's idle state. This seems more like a
-job for a governor. You could write a governor that chooses the domain
-state based on these dependencies.
-
-I am not sure this can be solved generically without increasing the
-complexity of genpd idle states.
-
-Thanks,
-Lina
+T24gVHVlLCAyMDE1LTEyLTE1IGF0IDE5OjQ5IC0wODAwLCBFZHVhcmRvIFZhbGVudGluIHdyb3Rl
+Og0KPiBJbnN0ZWFkIG9mIGNoYW5naW5nIHRoZSBtb25pdG9yaW5nIHNldHVwIGV2ZXJ5IHRpbWUg
+YWZ0ZXINCj4gaGFuZGxpbmcgZWFjaCB0cmlwLCB0aGlzIHBhdGNoIHNpbXBsaWZpZXMgdGhlIG1v
+bml0b3JpbmcNCj4gc2V0dXAgYnkgbW92aW5nIHRoZSBzZXR1cCBjYWxsIHRvIGEgcGxhY2Ugd2hl
+cmUgYWxsDQo+IHRyaXBzIGhhdmUgYmVlbiB0cmVhdGVkIGFscmVhZHkuDQo+IA0KTG9va3MgZ29v
+ZCB0byBtZS4NCg0KVGhhbmtzLA0KU3Jpbml2YXMNCg0KPiBDYzogWmhhbmcgUnVpIDxydWkuemhh
+bmdAaW50ZWwuY29tPg0KPiBDYzogbGludXgtcG1Admdlci5rZXJuZWwub3JnDQo+IENjOiBsaW51
+eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnDQo+IFNpZ25lZC1vZmYtYnk6IEVkdWFyZG8gVmFsZW50
+aW4gPGVkdWJlenZhbEBnbWFpbC5jb20+DQo+IC0tLQ0KPiBWMS0+VjI6DQo+IAlmaXhlZCB0eXBv
+DQo+IC0tLQ0KPiAgZHJpdmVycy90aGVybWFsL3RoZXJtYWxfY29yZS5jIHwgMTEgKysrKysrLS0t
+LS0NCj4gIDEgZmlsZSBjaGFuZ2VkLCA2IGluc2VydGlvbnMoKyksIDUgZGVsZXRpb25zKC0pDQo+
+IA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy90aGVybWFsL3RoZXJtYWxfY29yZS5jIGIvZHJpdmVy
+cy90aGVybWFsL3RoZXJtYWxfY29yZS5jDQo+IGluZGV4IGQ5ZTUyNWMuLjhmYTgyYzAgMTAwNjQ0
+DQo+IC0tLSBhL2RyaXZlcnMvdGhlcm1hbC90aGVybWFsX2NvcmUuYw0KPiArKysgYi9kcml2ZXJz
+L3RoZXJtYWwvdGhlcm1hbF9jb3JlLmMNCj4gQEAgLTQ1NywxMSArNDU3LDYgQEAgc3RhdGljIHZv
+aWQgaGFuZGxlX3RoZXJtYWxfdHJpcChzdHJ1Y3QgdGhlcm1hbF96b25lX2RldmljZSAqdHosIGlu
+dCB0cmlwKQ0KPiAgCQloYW5kbGVfY3JpdGljYWxfdHJpcHModHosIHRyaXAsIHR5cGUpOw0KPiAg
+CWVsc2UNCj4gIAkJaGFuZGxlX25vbl9jcml0aWNhbF90cmlwcyh0eiwgdHJpcCwgdHlwZSk7DQo+
+IC0JLyoNCj4gLQkgKiBBbHJpZ2h0LCB3ZSBoYW5kbGVkIHRoaXMgdHJpcCBzdWNjZXNzZnVsbHku
+DQo+IC0JICogU28sIHN0YXJ0IG1vbml0b3JpbmcgYWdhaW4uDQo+IC0JICovDQo+IC0JbW9uaXRv
+cl90aGVybWFsX3pvbmUodHopOw0KPiAgfQ0KPiAgDQo+ICAvKioNCj4gQEAgLTU0Nyw2ICs1NDIs
+MTIgQEAgdm9pZCB0aGVybWFsX3pvbmVfZGV2aWNlX3VwZGF0ZShzdHJ1Y3QgdGhlcm1hbF96b25l
+X2RldmljZSAqdHopDQo+ICANCj4gIAlmb3IgKGNvdW50ID0gMDsgY291bnQgPCB0ei0+dHJpcHM7
+IGNvdW50KyspDQo+ICAJCWhhbmRsZV90aGVybWFsX3RyaXAodHosIGNvdW50KTsNCj4gKw0KPiAr
+CS8qDQo+ICsJICogQWxyaWdodCwgd2UgaGFuZGxlZCB0aGVzZSB0cmlwcyBzdWNjZXNzZnVsbHku
+DQo+ICsJICogU28sIHN0YXJ0IG1vbml0b3JpbmcgYWdhaW4uDQo+ICsJICovDQo+ICsJbW9uaXRv
+cl90aGVybWFsX3pvbmUodHopOw0KPiAgfQ0KPiAgRVhQT1JUX1NZTUJPTF9HUEwodGhlcm1hbF96
+b25lX2RldmljZV91cGRhdGUpOw0KPiAgDQoNCg==
