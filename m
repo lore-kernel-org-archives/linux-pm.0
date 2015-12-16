@@ -1,84 +1,135 @@
-From: dawei chien <dawei.chien@mediatek.com>
-Subject: Re: [PATCH v5 2/3] arm64: dts: mt8173: Add thermal zone node.
-Date: Wed, 16 Dec 2015 20:12:31 +0800
-Message-ID: <1450267951.7981.22.camel@mtksdaap41>
-References: <1450238356-36319-1-git-send-email-dawei.chien@mediatek.com>
-	 <1450238356-36319-3-git-send-email-dawei.chien@mediatek.com>
-	 <CAGS+omDDfJb9dfWWPaMKs=MkO4Pf3RF9SUD==i7sgHsrDhFDxA@mail.gmail.com>
-	 <1450260553.7981.14.camel@mtksdaap41>
-	 <CAGS+omCWJo6Q933tRigMsxPvOmD3-cxe337_spAMKhYSUdTUKw@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH RFC 06/27] PM / Domains: add debugfs 'states' and
+ 'timings' seq files
+Date: Wed, 16 Dec 2015 13:48:28 +0100
+Message-ID: <CAPDyKFqPn5StedOgd-toxKvvcM078NuVvN8yUDByRZSe9HvKbQ@mail.gmail.com>
+References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
+	<1447799871-56374-7-git-send-email-lina.iyer@linaro.org>
+	<CAPDyKFrOPKc-WDsHNpndkoZa5g6tnnbE2C5JsqZ6DMCX+6hmFw@mail.gmail.com>
+	<567145E1.5040804@baylibre.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailgw02.mediatek.com ([210.61.82.184]:56881 "EHLO
-	mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752833AbbLPMMf (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Dec 2015 07:12:35 -0500
-In-Reply-To: <CAGS+omCWJo6Q933tRigMsxPvOmD3-cxe337_spAMKhYSUdTUKw@mail.gmail.com>
+Received: from mail-qk0-f179.google.com ([209.85.220.179]:35854 "EHLO
+	mail-qk0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934007AbbLPMs3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Dec 2015 07:48:29 -0500
+Received: by mail-qk0-f179.google.com with SMTP id t125so61032346qkh.3
+        for <linux-pm@vger.kernel.org>; Wed, 16 Dec 2015 04:48:29 -0800 (PST)
+In-Reply-To: <567145E1.5040804@baylibre.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Kurtz <djkurtz@chromium.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Matthias Brugger <matthias.bgg@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, "open list:OPEN FIRMWARE AND..." <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, srv_heupstream <srv_heupstream@mediatek.com>, Sascha Hauer <kernel@pengutronix.de>, Punit Agrawal <punit.agrawal@arm.com>
+To: Marc Titinger <mtitinger@baylibre.com>
+Cc: Lina Iyer <lina.iyer@linaro.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Axel Haslam <ahaslam@baylibre.com>
 
-On Wed, 2015-12-16 at 19:22 +0800, Daniel Kurtz wrote:
-> On Wed, Dec 16, 2015 at 6:09 PM, dawei chien <dawei.chien@mediatek.com> wrote:
-> > On Wed, 2015-12-16 at 16:34 +0800, Daniel Kurtz wrote:
-> >> On Wed, Dec 16, 2015 at 11:59 AM, Dawei Chien <dawei.chien@mediatek.com> wrote:
-> >> >
-> >> > This adds thermal zone node to Mediatek MT8173 dtsi file.
-> >> >
-> >> > Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
-> >> > ---
-> >> > This patch is base on patchset:
-> >> > https://lkml.org/lkml/2015/11/30/239
-> >> > ---
-> >> >  arch/arm64/boot/dts/mediatek/mt8173.dtsi |   43 ++++++++++++++++++++++++++++++
-> >> >  1 file changed, 43 insertions(+)
-> >> >
-> >> > diff --git a/arch/arm64/boot/dts/mediatek/mt8173.dtsi b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-> >> > index fda805d..4114cee 100644
-> >> > --- a/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-> >> > +++ b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-> >> > @@ -188,6 +188,49 @@
-> >> >                 clock-output-names = "cpum_ck";
-> >> >         };
-> >> >
-> >> > +       thermal-zones {
-> >> > +               cpu_thermal: cpu_thermal {
-> >> > +                       polling-delay-passive = <1000>; /* milliseconds */
-> >> > +                       polling-delay = <1000>; /* milliseconds */
-> >> > +
-> >> > +                       thermal-sensors = <&thermal 0>;
-> >>
-> >> This should be <&thermal> with the MTK temp sensor node in
-> >> https://lkml.org/lkml/2015/11/30/239 patch series.
-> >>
-> >> -Dan
-> >
-> > Hi Dan,
-> > Sascha's thermal driver V12 only register sensor id as 0, so we need to
-> > register sensor id as 0 to device tree as well.
-> >
-> > Either <&thermal 0> or <&thermal>, sensor id should be 0 for two cases.
-> > I try this two case, function all work fine for two cases. May I have
-> > any misunderstand? Please kindly give your comment.
-> > I will re-send this patch again once you tell me the reason, thank you.
-> 
-> In the new patchset, Sascha changed it to:
-> #thermal-sensor-cells = <0>;
-> 
-> Which means the <&thermal> phandle no longer has any arguments.
-> 
-> Thanks!
-> -Dan
-Hi Dan,
-Thank you for your comment. Yes, I don't need to add sensor id since new
-driver add thermal-sensor-cell as 0.
-(Even I checked function OK to this patch with new patchset)
+[...]
 
-I will re-send this patch soon, thank you.
+>>
+>> A general comment. Static functions in genpd shall start with one of
+>> the following prefix.
+>>
+>> genpd_*
+>> _genpd_*
+>> __genpd_*
+>>
+>> Please change accordingly.
+>
+>
+> Many static routines were already prefixed like the exported functions with
+> "pm_", shall I make a separate patch for this renaming ?
 
-BR,
-Dawei
+My point is that I don't want it to becomes worse.
 
+If you follow the above rule for new changes, I am happy.
+
+Whether you want to send a separate patch fixing the other existing
+name to be consistent with above rule, I would also be happy. :-)
+
+>
+>
+>>
+>>> ---
+>>>   drivers/base/power/domain.c | 115
+>>> +++++++++++++++++++++++++++++++++++++++++---
+>>>   1 file changed, 107 insertions(+), 8 deletions(-)
+>>>
+>>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+>>> index c300293..9a0df09 100644
+>>> --- a/drivers/base/power/domain.c
+>>> +++ b/drivers/base/power/domain.c
+>>> @@ -2169,21 +2169,120 @@ static const struct file_operations
+>>> pm_genpd_summary_fops = {
+>>>          .release = single_release,
+>>>   };
+>>>
+>>> +static int pm_genpd_states_show(struct seq_file *s, void *data)
+>>> +{
+>>> +       struct generic_pm_domain *genpd;
+>>> +
+>>> +       seq_puts(s,
+>>> +                "\n  Domain             State name        Enter + Exit =
+>>> Min_off_on (ns)\n");
+>>> +       seq_puts(s,
+>>> +
+>>> "-----------------------------------------------------------------------\n");
+>>> +
+>>
+>>
+>> You must hold the gpd_list_lock while traversing the gpd list.
+>>
+>>> +       list_for_each_entry(genpd, &gpd_list, gpd_list_node) {
+>>> +
+>>> +               int i;
+>>> +
+>>> +               for (i = 0; i < genpd->state_count; i++) {
+>>
+>>
+>> To be sure you have valid data, you should hold the genpd lock here.
+>>
+>
+> At some point while testing with calling suspend from the power_off handler,
+> the cpu would go to sleep with the lock held, hence using this seq-file
+> would not work.
+
+That seems like a bad behaviour during suspend. Why does it hold the lock?
+
+On the other it shouldn't matter as userspace can't access the debugfs
+nodes, since its frozen at those times, right!?
+
+>
+> while I agree, I think it is not super likely that a
+> domain/child/devices/states are added or removed at this point (the DT is
+> parsed already), would using list_for_each_entry_safe be safe enough ?
+
+No it's not.
+
+The gpd_list is protected with the gdp_list_lock, which is needed
+because new genpds can be added at any point.
+
+You also need the genpd lock here, as otherwise you may print the
+latency-values in the middle of when these are being updated.
+
+>
+>
+>>> +                       seq_printf(s, "%-20s %-20s %lld+%lld=%lld\n",
+>>> +                                  genpd->name,
+>>> +                                  genpd->states[i].name,
+>>> +                                  genpd->states[i].power_on_latency_ns,
+>>> +                                  genpd->states[i].power_off_latency_ns,
+>>> +                                  genpd->states[i].power_off_latency_ns
+>>> +                                  +
+>>> genpd->states[i].power_on_latency_ns);
+>>> +               }
+>>> +
+>>> +       }
+>>> +
+>>> +       seq_puts(s, "\n");
+>>> +
+>>> +       return 0;
+>>> +}
+>>> +
+
+[...]
+
+Kind regards
+Uffe
