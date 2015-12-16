@@ -1,118 +1,92 @@
-From: Sebastian Reichel <sre@ring0.de>
-Subject: Re: [PATCH v3 2/4] ARM: bcm2835: add rpi power domain driver
-Date: Wed, 16 Dec 2015 02:11:11 +0100
-Message-ID: <20151216011110.GA13147@earth>
-References: <1450215622-27394-1-git-send-email-eric@anholt.net>
- <1450215622-27394-3-git-send-email-eric@anholt.net>
- <567093CD.1020208@gmail.com> <87oadrmfmi.fsf@eliezer.anholt.net>
- <5670AAB2.1080102@gmail.com> <87mvtbkyd0.fsf@eliezer.anholt.net>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [RFCv6 PATCH 03/10] sched: scheduler-driven cpu frequency
+ selection
+Date: Tue, 15 Dec 2015 17:22:36 -0800
+Message-ID: <5670BCDC.8060509@linaro.org>
+References: <1449641971-20827-1-git-send-email-smuckle@linaro.org>
+ <1449641971-20827-4-git-send-email-smuckle@linaro.org>
+ <20151211110443.GA6645@e106622-lin> <566F74B3.4020203@linaro.org>
+ <20151215103130.GF16007@e106622-lin>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3053096730522145668=="
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <87mvtbkyd0.fsf@eliezer.anholt.net>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Eric Anholt <eric@anholt.net>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Florian Fainelli <f.fainelli@gmail.com>, Alexander Aring <alex.aring@gmail.com>, Pawel Moll <pawel.moll@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, Lee Jones <lee@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Rob Herring <robh+dt@kernel.org>, linux-rpi-kernel@lists.infradead.org, Ian Campbell <ijc+devicetree@hellion.org.uk>, linux-arm-kernel@lists.infradead.org
-List-Id: linux-pm@vger.kernel.org
-
-
---===============3053096730522145668==
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="82I3+IH0IqGh5yIs"
-Content-Disposition: inline
-
-
---82I3+IH0IqGh5yIs
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-On Tue, Dec 15, 2015 at 04:53:31PM -0800, Eric Anholt wrote:
-> >>> What motivated the location of this power domain driver in
-> >>> arch/arm/mach-bcm? Should not we have this in drivers/power/ or
-> >>> somewhere in drivers/ at the very least?
-> >>=20
-> >> ls stronly suggests that power contains drivers for power supplies and
-> >> batteries, not power domains.
-
-Indeed it's used for fuel gauges and chargers, but also for
-reboot/powerdown and adaptive voltage scaling, so another
-subdirectory for power-domains wouldn't be that odd.
-
-> >> There are 6 power domain drivers in
-> >> arch/arm, 3 in drivers/clk, and 3 in drivers/soc.
-> >
-> > If we ever have to support a different architecture which happens to use
-> > a similar power domain, then we want it to be in a location which makes
-> > it easy for sharing it in the first place. As it stands today, it does
-> > not seem useful to me to have this code in arch/arm/mach-bcm/ at all.
-> >
-> > Maybe there is room from a drivers/power/domains/ of some kind?
-
-I like the idea, but let's include generic power domain maintainers
-in this discussion, as I suggested here (I got a power domain driver
-patch for drivers/power just a few days ago):
-
-https://lkml.org/lkml/2015/12/15/815
-
-Also somebody would have to step up to maintain that directory.
-
-> The great thing about git is that moving code is easy, even after it's
-> first committed.
->
-> The subsystem maintainer didn't comment on the code's location in v1 or
-> v2, and I think they probably have the final say on that.  Whatever they
-> want, where there is currently a genpd driver, is fine with me.
-
-sounds reasonable.
-
-P.S.: Thanks for taking bringing RPI support upstream :)
-
--- Sebastian
-
---82I3+IH0IqGh5yIs
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJWcLosAAoJENju1/PIO/qayHQP/3LA9qewnqfA4VNNZiM2JGSL
-G3oMD9a7lLRgIwTa5H+SKewdbzsXMeR/uNRfw+wt+jj6WDzfNopDK/zjW8IbHCIC
-qpS/bLX1XyeE1Jdkecusn2U3OazTnPH174z8KzfURReM+WMyLyp6WA4zuD9GIqSJ
-BF9yGFBqaaAxNnnDx4z+ZzIqFLVseyAsQKY13AjxU9NbLtugRnpN8h8VAwdGiLIG
-36e4aWwcroSqsfguP8Jb10tgGN29PWaRFk93zOAW2Hs3w82Fg4YYZHz9sXJr/5Ue
-2IguacUAbjg+rKu4Imyx1PqZo4AbH+L/7hwIwZ/nTtb15povcKCHMO009JIS086B
-B4XFyRUEWHFUpUOQQgnS1xKdkC+56TAb2WZUQyclz1jWnqQ9Tvqw6MnUUvoaBIuS
-hleChC52E0ALbxHhGyyY7FB1HsuYRaTGO2G8cKKICbVkrTCiDAdc2DFOL2694vZW
-St6ww2FaT6zcdjHxA1eWE7HzY9hQZ4CBCaJS+jBA5RjzwSaRwZ48c93ceqme6AVK
-zbUavziTYoMo8jTf7I+d4XtwH+Fnsa3H4Eoh+ZPpK+RQA5g8JCqA6iVMHwxnQ/R9
-d4DfiRlrSvyEIa/AeT7fbcnRoa6D7hOe2yub1YlUuZYRha8oNZHl0EBaZXZZv4Cw
-SMctL1g8DOvX9oa59VGM
-=Z91h
------END PGP SIGNATURE-----
-
---82I3+IH0IqGh5yIs--
-
-
---===============3053096730522145668==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f52.google.com ([209.85.220.52]:35350 "EHLO
+	mail-pa0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932784AbbLPBWj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 15 Dec 2015 20:22:39 -0500
+Received: by mail-pa0-f52.google.com with SMTP id hk6so14347346pad.2
+        for <linux-pm@vger.kernel.org>; Tue, 15 Dec 2015 17:22:39 -0800 (PST)
+In-Reply-To: <20151215103130.GF16007@e106622-lin>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
+To: Juri Lelli <Juri.Lelli@arm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Ricky Liang <jcliang@chromium.org>
 
-_______________________________________________
-linux-arm-kernel mailing list
-linux-arm-kernel@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+On 12/15/2015 02:31 AM, Juri Lelli wrote:
+>>>> +	do {
+>>>> > >> +		set_current_state(TASK_INTERRUPTIBLE);
+>>>> > >> +		new_request = gd->requested_freq;
+>>>> > >> +		if (new_request == last_request) {
+>>>> > >> +			schedule();
+>>>> > >> +		} else {
+>>> > > 
+>>> > > Shouldn't we have to do the following here?
+>>> > > 
+>>> > > 
+>>> > > @@ -125,9 +125,9 @@ static int cpufreq_sched_thread(void *data)
+>>> > >  	}
+>>> > >  
+>>> > >  	do {
+>>> > > -		set_current_state(TASK_INTERRUPTIBLE);
+>>> > >  		new_request = gd->requested_freq;
+>>> > >  		if (new_request == last_request) {
+>>> > > +			set_current_state(TASK_INTERRUPTIBLE);
+>>> > >  			schedule();
+>>> > >  		} else {
+>>> > >  			/*
+>>> > > 
+>>> > > Otherwise we set task to INTERRUPTIBLE state right after it has been
+>>> > > woken up.
+>> > 
+>> > The state must be set to TASK_INTERRUPTIBLE before the data used to
+>> > decide whether to sleep or not is read (gd->requested_freq in this case).
+>> > 
+>> > If it is set after, then once gd->requested_freq is read but before the
+>> > state is set to TASK_INTERRUPTIBLE, the other side may update
+>> > gd->requested_freq and issue a wakeup on the freq thread. The wakeup
+>> > will have no effect since the freq thread would still be TASK_RUNNING at
+>> > that time. The freq thread would proceed to go to sleep and the update
+>> > would be lost.
+>> > 
+> Mmm, I suggested that because I was hitting this while testing:
+> 
+> [   34.816158] ------------[ cut here ]------------
+> [   34.816177] WARNING: CPU: 2 PID: 1712 at kernel/kernel/sched/core.c:7617 __might_sleep+0x90/0xa8()
+> [   34.816188] do not call blocking ops when !TASK_RUNNING; state=1 set at [<c007c1f8>] cpufreq_sched_thread+0x80/0x2b0
+> [   34.816198] Modules linked in:
+> [   34.816207] CPU: 2 PID: 1712 Comm: kschedfreq:1 Not tainted 4.4.0-rc2+ #401
+> [   34.816212] Hardware name: ARM-Versatile Express
+> [   34.816229] [<c0018874>] (unwind_backtrace) from [<c0013f60>] (show_stack+0x20/0x24)
+> [   34.816243] [<c0013f60>] (show_stack) from [<c0448c98>] (dump_stack+0x80/0xb4)
+> [   34.816257] [<c0448c98>] (dump_stack) from [<c0029930>] (warn_slowpath_common+0x88/0xc0)
+> [   34.816267] [<c0029930>] (warn_slowpath_common) from [<c0029a24>] (warn_slowpath_fmt+0x40/0x48)
+> [   34.816278] [<c0029a24>] (warn_slowpath_fmt) from [<c0054764>] (__might_sleep+0x90/0xa8)
+> [   34.816291] [<c0054764>] (__might_sleep) from [<c0578400>] (cpufreq_freq_transition_begin+0x6c/0x13c)
+> [   34.816303] [<c0578400>] (cpufreq_freq_transition_begin) from [<c0578714>] (__cpufreq_driver_target+0x180/0x2c0)
+> [   34.816314] [<c0578714>] (__cpufreq_driver_target) from [<c007c14c>] (cpufreq_sched_try_driver_target+0x48/0x74)
+> [   34.816324] [<c007c14c>] (cpufreq_sched_try_driver_target) from [<c007c1e8>] (cpufreq_sched_thread+0x70/0x2b0)
+> [   34.816336] [<c007c1e8>] (cpufreq_sched_thread) from [<c004ce30>] (kthread+0xf4/0x114)
+> [   34.816347] [<c004ce30>] (kthread) from [<c000fdd0>] (ret_from_fork+0x14/0x24)
+> [   34.816355] ---[ end trace 30e92db342678467 ]---
+> 
+> Maybe we could cope with what you are saying with an atomic flag
+> indicating that the kthread is currently servicing a request? Like
+> extending the finish_last_request thing to cover this case as well.
 
---===============3053096730522145668==--
+Ah. I should be able to just set_current_state(TASK_RUNNING) at the top
+of the else clause. Will include this change next time.
+
+thanks,
+Steve
+
