@@ -1,120 +1,88 @@
-From: Stephane Gasparini <stephane.gasparini@linux.intel.com>
-Subject: Re: [PATCH V6 1/3] cpufreq: intel_pstate: configurable algorithm to get target pstate
-Date: Wed, 16 Dec 2015 10:49:53 +0100
-Message-ID: <18D9CFC2-27D2-4ECA-B155-75C240C2888E@linux.intel.com>
-References: <1449247235-29389-1-git-send-email-philippe.longepe@linux.intel.com> <1449692513.3240.231.camel@spandruv-desk3.jf.intel.com> <8633351.YrHIUtRzE5@skinner> <2402797.hEhmBtxRMB@vostro.rjw.lan> <48DF4267-671B-40E2-8C95-CCF5795F8B26@linux.intel.com> <001c01d136bc$a4a78a90$edf69fb0$@net> <566FEBB8.5090008@linux.intel.com> <003a01d13791$1edfbce0$5c9f36a0$@net>
-Mime-Version: 1.0 (Mac OS X Mail 9.2 \(3112\))
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: James Morse <james.morse@arm.com>
+Subject: Re: [PATCH v3 09/10] PM / Hibernate: Publish pages restored in-place
+ to arch code
+Date: Wed, 16 Dec 2015 09:55:41 +0000
+Message-ID: <5671351D.3090109@arm.com>
+References: <1448559168-8363-1-git-send-email-james.morse@arm.com> <1448559168-8363-10-git-send-email-james.morse@arm.com> <20151205093534.GA7569@amd> <56656D6C.5010004@arm.com> <20151208081923.GA22680@amd>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga04.intel.com ([192.55.52.120]:50039 "EHLO mga04.intel.com"
+Received: from foss.arm.com ([217.140.101.70]:54171 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933999AbbLPJt5 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Dec 2015 04:49:57 -0500
-In-Reply-To: <003a01d13791$1edfbce0$5c9f36a0$@net>
+	id S932907AbbLPJ4i (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 16 Dec 2015 04:56:38 -0500
+In-Reply-To: <20151208081923.GA22680@amd>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: Philippe Longepe <philippe.longepe@linux.intel.com>, Thomas Renninger <trenn@suse.de>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, Prarit Bhargava <prarit@redhat.com>, viresh.kumar@linaro.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Kevin Kang <kkang@intrinsyc.com>, Geoff Levand <geoff@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, AKASHI Takahiro <takahiro.akashi@linaro.org>, wangfei <w.f@huawei.com>, Marc Zyngier <marc.zyngier@arm.com>
+
+Hi Pavel,
+
+On 08/12/15 08:19, Pavel Machek wrote:
+>> I didn't do it here as it would clean every page copied, which was the
+>> worrying part of the previous approach. If there is an architecture
+>> where this cache-clean operation is expensive, it would slow down
+>> restore. I was trying to benchmark the impact of this on 32bit arm when
+>> I spotted it was broken.
+> 
+> You have just loaded the page from slow storage (hard drive,
+> MMC). Cleaning a page should be pretty fast compared to that.
+
+(One day I hope to own a laptop that hibernates to almost-memory speed
+nvram!)
+
+Speed is one issue - another is I don't think its correct to assume that
+any architecture with a flush_icache_range() function can/should have
+that called on any page of data.
+
+There is also the possibility that an architecture needs to do something
+other than flush_icache_range() on the pages that were copied. (I can
+see lots of s390 hooks for 'page keys', Intel's memory protection keys
+may want something similar...)
+
+This patch is the general-purpose fix, matching the existing list of
+'these pages need copying' with a 'these pages were already copied'.
 
 
-=E2=80=94
-Steph
+>> This allocated-same-page code path doesn't happen very often, so we
+>> don't want this to have an impact on the 'normal' code path. On 32bit
+>> arm I saw ~20 of these allocations out of ~60,000 pages.
+>>
+>> This new way allocates a few extra pages during restore, and doesn't
+>> assume that flush_cache_range() needs calling. It should have no impact
+>> on architectures that aren't using the new list.
+> 
+> It is also complex.
+
+Its symmetric with the existing restore_pblist code, I think that this
+is the simplest way of doing it.
 
 
+>>> Alternatively, can you just clean the whole cache before jumping to
+>>> the new kernel?
+>>
+>> On arm64, cleaning the whole cache means cleaning all of memory by
+>> virtual address, which would be a high price to pay when we only need to
+>> clean the pages we copied. The current implementation does clean all
+> 
+> How high price to pay? I mean, hibernation/restore takes
+> _seconds_. Paying miliseconds to have cleaner code is acceptable
+> price.
+
+I agree, but the code to clean all 8GB of memory on Juno takes ~3
+seconds, and this will probably scale linearly. We only need to clean
+the ~250MB that was copied by hibernate, (and of that, only the
+executable pages). The sticking point is the few pages it copies, but
+doesn't tell us about.
+
+I will put together the flush_icache_range()-during-decompression
+version of this patch... it looks like powerpc will suffer the most from
+this, from the comments, its flush_icache_range() code pushes data all
+the way out to memory...
 
 
-> On Dec 16, 2015, at 12:34 AM, Doug Smythies <dsmythies@telus.net> wro=
-te:
->=20
-> On 2015.12.15 02:30 Philippe Longepe wrote:
->> On 14/12/2015 23:13, Doug Smythies wrote:
->>> On 2015.12.14 08:15 Stephane Gasparini wrote:
->>>=20
->> In the table sent by stephane, "performance" meant "original algorit=
-hm"=20
->> based on average pstate (aperf/mperf).
->=20
-> Oh.
->=20
->> On Atoms, a setpoint of 60 is not too high. With higher setpoints we=
-'ll=20
->> not be able to reach meet some performance KPIs
->=20
-> Define =E2=80=9CKPI"
+Thanks,
 
-Key Performance Indicator, basically a test that we have to reach certa=
-in
-performance or power criteria
-
->=20
->> (some frames are dropped mainly for gaming use cases). However, we a=
-re=20
->> working on a more power conservative algorithm).
->=20
-> I do not think the issue / challenge is specific to Atom.
-
-Well I agree that this would also be beneficials to Laptop for instance=
-=2E
-However the "load based" algorithm is behind the existing =E2=80=9Cpowe=
-rsave=E2=80=9D=20
-intel states in regards of performance for database I/O type tests.
-
->=20
->>>=20
->>> I think that a more comparable test would be a 50% (or whatever) lo=
-ad
->>> calibrated to a nominal CPU frequency (I use the max non-turbo CPU
->>> frequency, but it can be anything.) Meaning that the once the fixed
->>> packet of work is done, the CPU can go idle sooner or later, depend=
-ing
->>> on the CPU frequency.
->> Are you using an existing tool for doing that or did you developed y=
-our=20
->> own tool ?
->=20
-> While he would not recognize it now, I mainly use a simple program th=
-at
-> Peter Zijlstra gave me a few years ago, consume.c. However, I added f=
-ixed
-> work packet mode, to satisfy a need for something more representative=
- of
-> real world periodic workflows.
->=20
-> I'll send it to you off-list.
->=20
-> On 2015.12.15 05:07 Stephane Gasparini wrote:
->=20
->> Well you misunderstood the power numbers I guess
->> e.g. if you watch a movie for 1h30, it will last 1h30 not matter wha=
-t is the=20
->> average power, so the lower is the average power the better it is.
->=20
-> O.K. I didn=E2=80=99t know all of those tests had to run for whatever=
- time.
-> But for the performance list of tests, there is no energy information=
-=2E
-> I'm just saying that it might matter for some, as in ffmpeg example I=
- gave.
->=20
->> Here are the detail for Application install
->>=20
->> Intel PState    Intel PState   =20
->> Performance     CPU Load     =20
->> =E2=89=85 799 mW (28 s)	=E2=89=85 383 mW (34 s)
->> =E2=89=85 29 mW/s	=E2=89=85 11 mW/s
->=20
-> Wouldn't the correct terminology be 22.4 Joules and 13.0 Joules
-> to do the job?
-> Or 42% energy saved at a cost of 21% extra time.
->=20
-> Anyway, you made your point.
-
-We=E2=80=99ll try to provide all metrics (perf, J and mW) for the new m=
-easures.
-
->=20
-> ... Doug
->=20
->=20
-
+James
