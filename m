@@ -1,63 +1,46 @@
-From: Dawei Chien <dawei.chien@mediatek.com>
-Subject: [PATCH v6 1/3] thermal: mediatek: Add cpu dynamic power cooling model.
-Date: Wed, 16 Dec 2015 21:29:14 +0800
-Message-ID: <1450272556-29770-2-git-send-email-dawei.chien@mediatek.com>
-References: <1450272556-29770-1-git-send-email-dawei.chien@mediatek.com>
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Subject: Re: [PATCH] i2c: s3c2410: remove superfluous runtime PM calls
+Date: Wed, 16 Dec 2015 14:53:07 +0100
+Message-ID: <56716CC3.50309@samsung.com>
+References: <1450203249-4873-1-git-send-email-wsa@the-dreams.de>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailgw02.mediatek.com ([210.61.82.184]:41727 "EHLO
-	mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933152AbbLPN3Z (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Dec 2015 08:29:25 -0500
-In-Reply-To: <1450272556-29770-1-git-send-email-dawei.chien@mediatek.com>
+Received: from mailout4.w1.samsung.com ([210.118.77.14]:10773 "EHLO
+	mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753642AbbLPNzK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Dec 2015 08:55:10 -0500
+In-reply-to: <1450203249-4873-1-git-send-email-wsa@the-dreams.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Matthias Brugger <matthias.bgg@gmail.com>, Daniel Kurtz <djkurtz@chromium.org>, Sascha Hauer <s.hauer@pengutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, Dawei Chien <dawei.chien@mediatek.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, Sascha Hauer <kernel@pengutronix.de>, Punit Agrawal <punit.agrawal@arm.com>
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: linux-i2c@vger.kernel.org, linux-pm@vger.kernel.org, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, Lars-Peter Clausen <lars@metafoo.de>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-MT8173 cpufreq driver select of_cpufreq_power_cooling_register registering
-cooling devices with dynamic power coefficient.
+On 15/12/15 19:14, Wolfram Sang wrote:
+> Since commit 6ada5c1e1b077a ("i2c: Mark adapter devices with
+> pm_runtime_no_callbacks"), runtime PM on adapters turned into a no-op.
+> So, we can remove these calls.
 
-Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
----
-This patch is base on patchset:
-https://lkml.org/lkml/2015/11/17/251
----
- drivers/cpufreq/mt8173-cpufreq.c |   11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+Won't this break i2c client devices that use runtime PM? Not sure
+if any cases of such client exist now, I'll try to find some time
+to test this change.
 
-diff --git a/drivers/cpufreq/mt8173-cpufreq.c b/drivers/cpufreq/mt8173-cpufreq.c
-index 83001dc..d00bab5 100644
---- a/drivers/cpufreq/mt8173-cpufreq.c
-+++ b/drivers/cpufreq/mt8173-cpufreq.c
-@@ -263,17 +263,24 @@ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
- 	return 0;
- }
- 
-+#define DYNAMIC_POWER "dynamic-power-coefficient"
-+
- static void mtk_cpufreq_ready(struct cpufreq_policy *policy)
- {
- 	struct mtk_cpu_dvfs_info *info = policy->driver_data;
- 	struct device_node *np = of_node_get(info->cpu_dev->of_node);
-+	u32 capacitance = 0;
- 
- 	if (WARN_ON(!np))
- 		return;
- 
- 	if (of_find_property(np, "#cooling-cells", NULL)) {
--		info->cdev = of_cpufreq_cooling_register(np,
--							 policy->related_cpus);
-+		of_property_read_u32(np, DYNAMIC_POWER, &capacitance);
-+
-+		info->cdev = of_cpufreq_power_cooling_register(np,
-+						policy->related_cpus,
-+						capacitance,
-+						NULL);
- 
- 		if (IS_ERR(info->cdev)) {
- 			dev_err(info->cpu_dev,
--- 
-1.7.9.5
+IIRC client's pm_runtime* calls return error if their parent device's
+runtime PM is not enabled. Also enabling runtime PM on the i2c adapter
+allows propagating runtime PM calls up to its parent - the i2c
+controller platform device.
+
+So perhaps in your patch we should only remove pm_runtime_get_sync,
+pm_runtime_put calls, leaving runtime PM on the adapter enabled.
+For any future cases where the Exynos I2C controller is not in an
+always on power domain the runtime PM handling in this driver would
+need to be further reworked anyway.
+
+Perhaps we could just enable/disable adapter's runtime PM in i2c core.
+
+--
+Thanks,
+Sylwester
+
 
