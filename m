@@ -1,81 +1,35 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] i2c: rcar: disable runtime PM correctly in slave mode
-Date: Wed, 16 Dec 2015 17:10:34 +0100
-Message-ID: <CAMuHMdU7gZze1F4eRJJKRsv7gM+D0k6w10NwHX67nSk3O_OT1Q@mail.gmail.com>
-References: <1450263756-12013-1-git-send-email-wsa@the-dreams.de>
-	<Pine.LNX.4.44L0.1512161011070.1751-100000@iolanthe.rowland.org>
-	<20151216154358.GA14817@katana>
-	<CAMuHMdV81YwhVn_BYTaEybZhW04KFg_gERPJ88UsKSSSwWcvKg@mail.gmail.com>
-	<20151216160642.GB14817@katana>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-sh-owner@vger.kernel.org>
-In-Reply-To: <20151216160642.GB14817@katana>
-Sender: linux-sh-owner@vger.kernel.org
-To: Wolfram Sang <wsa@the-dreams.de>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Linux I2C <linux-i2c@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Linux PM list <linux-pm@vger.kernel.org>
+From: Wolfram Sang <wsa@the-dreams.de>
+Subject: [RFC 0/3] i2c: rcar: adapt PM usage to multi master case
+Date: Wed, 16 Dec 2015 19:44:17 +0100
+Message-ID: <1450291460-10514-1-git-send-email-wsa@the-dreams.de>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from sauhun.de ([89.238.76.85]:56556 "EHLO pokefinder.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750727AbbLPSoc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 16 Dec 2015 13:44:32 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-i2c@vger.kernel.org
+Cc: linux-sh@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Wolfram Sang <wsa@the-dreams.de>, linux-pm@vger.kernel.org
 
-Hi Wolfram,
+If we are in a multi-master scenario, we need to block runtime PM so the
+arbitration circuit stays awake.
 
-On Wed, Dec 16, 2015 at 5:06 PM, Wolfram Sang <wsa@the-dreams.de> wrote:
-> On Wed, Dec 16, 2015 at 04:55:28PM +0100, Geert Uytterhoeven wrote:
->> On Wed, Dec 16, 2015 at 4:43 PM, Wolfram Sang <wsa@the-dreams.de> wrote:
->> > I have another case, may I ask your advice about this, too? When an I2C
->> > bus is marked in DT as multi-master, then RuntimePM also needs to be
->> > disabled, because arbitration detection needs to stay awake. I am
->> > currently implementing this for the i2c-rcar driver:
->> >
->> > -       pm_runtime_enable(dev);
->> > +       /* No RuntimePM in multi-master to keep arbitration working */
->> > +       if (!of_get_property(dev->of_node, "multi-master", NULL)) {
->> > +               pm_runtime_enable(dev);
->> > +               priv->flags |= ID_P_PM;
->> > +       }
->> > +
->> >         pm_runtime_get_sync(dev);
->> >         ...
->> >
->> > @@ -664,7 +673,8 @@ static int rcar_i2c_remove(struct platform_device *pdev)
->> >         struct device *dev = &pdev->dev;
->> >
->> >         i2c_del_adapter(&priv->adap);
->> > -       pm_runtime_disable(dev);
->> > +       if (priv->flags & ID_P_PM)
->> > +               pm_runtime_disable(dev);
->> >
->> >         return 0;
->> >  }
->> >
->> > Here, I'd tend to keep using enable/disable, although get/put would
->> > probably also work. What is the rule of thumb using this pattern or the
->> > other?
->>
->> Have you actually tried the above?
->
-> Nope, I just finished the sketching phase when Alan's mail came along.
->
->> All our drivers rely on Runtime PM for the power/clock domain handling.
->> I believe the pm_runtime_get_sync() won't do anything if you haven't enabled
->> Runtime PM for the device, so the device's module clock won't be enabled at
->> all.
->
-> This was another question I had: Is this a bug or a feature :) But if
-> you say it is policy, I will count this as "feature" and switch to
-> get/put here as well.
+So, we define a new binding and adapt the i2c-rcar driver to have an example
+implementation.
 
-It's a feature ;-)
+This series is RFC because I want to do some more regression testing. The
+actual functionality works fine here on my Lager board.
 
-Without using Runtime PM, your driver has to care about clocks and power
-domains, which may or may not be present, depending on the SoC.
+Wolfram Sang (3):
+  i2c: document binding for multi-master case
+  i2c: rcar: remove macros dealing with flags
+  i2c: rcar: disable PM in multi-master mode
 
-Gr{oetje,eeting}s,
+ Documentation/devicetree/bindings/i2c/i2c.txt |  5 ++++
+ drivers/i2c/busses/i2c-rcar.c                 | 39 ++++++++++++++++-----------
+ 2 files changed, 28 insertions(+), 16 deletions(-)
 
-                        Geert
+-- 
+2.1.4
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
