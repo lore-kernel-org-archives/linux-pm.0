@@ -1,52 +1,72 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH v4 1/3] dt-binding: power: Add otg regulator binding
-Date: Wed, 16 Dec 2015 11:20:42 +0000
-Message-ID: <20151216112042.GF5727@sirena.org.uk>
-References: <1450209132-20185-1-git-send-email-tim.bird@sonymobile.com>
- <20151215231350.GA7421@earth>
+From: Daniel Kurtz <djkurtz@chromium.org>
+Subject: Re: [PATCH v5 2/3] arm64: dts: mt8173: Add thermal zone node.
+Date: Wed, 16 Dec 2015 19:22:04 +0800
+Message-ID: <CAGS+omCWJo6Q933tRigMsxPvOmD3-cxe337_spAMKhYSUdTUKw@mail.gmail.com>
+References: <1450238356-36319-1-git-send-email-dawei.chien@mediatek.com>
+ <1450238356-36319-3-git-send-email-dawei.chien@mediatek.com>
+ <CAGS+omDDfJb9dfWWPaMKs=MkO4Pf3RF9SUD==i7sgHsrDhFDxA@mail.gmail.com> <1450260553.7981.14.camel@mtksdaap41>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="vnj+srGq+/SN26DJ"
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20151215231350.GA7421@earth>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Liam Girdwood <lgirdwood@gmail.com>, robh+dt@kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, ijc+devicetree@hellion.org.uk, courtney.cavin@sonymobile.com, dbaryshkov@gmail.com, dwmw2@infradead.org, agross@codeaurora.org, Bjorn.Andersson@sonymobile.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, tbird20d@gmail.com
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vk0-f47.google.com ([209.85.213.47]:34301 "EHLO
+	mail-vk0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965686AbbLPLWZ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Dec 2015 06:22:25 -0500
+Received: by mail-vk0-f47.google.com with SMTP id j66so24028925vkg.1
+        for <linux-pm@vger.kernel.org>; Wed, 16 Dec 2015 03:22:24 -0800 (PST)
+In-Reply-To: <1450260553.7981.14.camel@mtksdaap41>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: dawei chien <dawei.chien@mediatek.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Matthias Brugger <matthias.bgg@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, "open list:OPEN FIRMWARE AND..." <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, srv_heupstream <srv_heupstream@mediatek.com>, Sascha Hauer <kernel@pengutronix.de>, Punit Agrawal <punit.agrawal@arm.com>
 
+On Wed, Dec 16, 2015 at 6:09 PM, dawei chien <dawei.chien@mediatek.com> wrote:
+> On Wed, 2015-12-16 at 16:34 +0800, Daniel Kurtz wrote:
+>> On Wed, Dec 16, 2015 at 11:59 AM, Dawei Chien <dawei.chien@mediatek.com> wrote:
+>> >
+>> > This adds thermal zone node to Mediatek MT8173 dtsi file.
+>> >
+>> > Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
+>> > ---
+>> > This patch is base on patchset:
+>> > https://lkml.org/lkml/2015/11/30/239
+>> > ---
+>> >  arch/arm64/boot/dts/mediatek/mt8173.dtsi |   43 ++++++++++++++++++++++++++++++
+>> >  1 file changed, 43 insertions(+)
+>> >
+>> > diff --git a/arch/arm64/boot/dts/mediatek/mt8173.dtsi b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+>> > index fda805d..4114cee 100644
+>> > --- a/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+>> > +++ b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+>> > @@ -188,6 +188,49 @@
+>> >                 clock-output-names = "cpum_ck";
+>> >         };
+>> >
+>> > +       thermal-zones {
+>> > +               cpu_thermal: cpu_thermal {
+>> > +                       polling-delay-passive = <1000>; /* milliseconds */
+>> > +                       polling-delay = <1000>; /* milliseconds */
+>> > +
+>> > +                       thermal-sensors = <&thermal 0>;
+>>
+>> This should be <&thermal> with the MTK temp sensor node in
+>> https://lkml.org/lkml/2015/11/30/239 patch series.
+>>
+>> -Dan
+>
+> Hi Dan,
+> Sascha's thermal driver V12 only register sensor id as 0, so we need to
+> register sensor id as 0 to device tree as well.
+>
+> Either <&thermal 0> or <&thermal>, sensor id should be 0 for two cases.
+> I try this two case, function all work fine for two cases. May I have
+> any misunderstand? Please kindly give your comment.
+> I will re-send this patch again once you tell me the reason, thank you.
 
---vnj+srGq+/SN26DJ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+In the new patchset, Sascha changed it to:
+#thermal-sensor-cells = <0>;
 
-On Wed, Dec 16, 2015 at 12:13:50AM +0100, Sebastian Reichel wrote:
-> On Tue, Dec 15, 2015 at 11:52:10AM -0800, Tim Bird wrote:
-> > Add a binding for the regulator which controls the OTG chargepath switch.
-> > The OTG switch gets its power from pm8941_5vs1, and that should be
-> > expressed as a usb_otg_in-supply property in the DT node for the
-> > charger driver. The regulator name is "otg-vbus".
+Which means the <&thermal> phandle no longer has any arguments.
 
-> I would like to get an acked-by from either the regulator framework
-> maintainers, or DT binding maintainers (or both ;)) on the binding.
-
-Please submit any patches you want reviewing using the process in
-SubmittingPatches.  If this is a regulator driver it should be in
-drivers/regulator though.
-
---vnj+srGq+/SN26DJ
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJWcUkJAAoJECTWi3JdVIfQvJkH/Rs4tA573JujATMXufW5AGEt
-+GMBBXsOVeGWaBLUFhl8STsu0Ljkpa2KdgorfbR42aD8HuQuKtq2jszBx86PAz9X
-0QHn+LBDc9+v5gCooNJmcS6fB5MPXV5BOROcVPK+Ak2fPHjRbmalgOPEBiXUWF4x
-zPjoJVh9qX5fl9qG/EUvpvDtX8+2ioQVSaXDk5CZ2o1CpY46SsVFAt8BrPVNGqAP
-2Hcj3dU/7POSKRJAPZhTovMA8oPVaUvPZ4V/5xOO2ornIDWPcHlPbAIW6Perkpzp
-4t+5P8+gdcsfBk6IAh442a9BrYAJc6yiRtOfCwyn5n3YMYuDsvFSA1HBHFuk+6s=
-=AtGi
------END PGP SIGNATURE-----
-
---vnj+srGq+/SN26DJ--
+Thanks!
+-Dan
