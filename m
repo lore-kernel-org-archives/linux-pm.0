@@ -1,69 +1,63 @@
 From: Dawei Chien <dawei.chien@mediatek.com>
-Subject: [PATCH v6 3/3] arm64: dts: mt8173: Add dynamic power node.
-Date: Wed, 16 Dec 2015 21:29:16 +0800
-Message-ID: <1450272556-29770-4-git-send-email-dawei.chien@mediatek.com>
+Subject: [PATCH v6 1/3] thermal: mediatek: Add cpu dynamic power cooling model.
+Date: Wed, 16 Dec 2015 21:29:14 +0800
+Message-ID: <1450272556-29770-2-git-send-email-dawei.chien@mediatek.com>
 References: <1450272556-29770-1-git-send-email-dawei.chien@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
 Received: from mailgw02.mediatek.com ([210.61.82.184]:41727 "EHLO
 	mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932965AbbLPN31 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Dec 2015 08:29:27 -0500
+	with ESMTP id S933152AbbLPN3Z (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Dec 2015 08:29:25 -0500
 In-Reply-To: <1450272556-29770-1-git-send-email-dawei.chien@mediatek.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Matthias Brugger <matthias.bgg@gmail.com>, Daniel Kurtz <djkurtz@chromium.org>, Sascha Hauer <s.hauer@pengutronix.de>, Daniel Lezcano <daniel.lezcano@linaro.org>, Dawei Chien <dawei.chien@mediatek.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, Sascha Hauer <kernel@pengutronix.de>, Punit Agrawal <punit.agrawal@arm.com>
 
-This device node is for calculating dynamic power in mW.
-Since mt8173 has two clusters, there are two dynamic power
-coefficient as well.
+MT8173 cpufreq driver select of_cpufreq_power_cooling_register registering
+cooling devices with dynamic power coefficient.
 
 Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
 ---
 This patch is base on patchset:
 https://lkml.org/lkml/2015/11/17/251
 ---
- arch/arm64/boot/dts/mediatek/mt8173.dtsi |    4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/cpufreq/mt8173-cpufreq.c |   11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt8173.dtsi b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-index c962d94..b6f4ea5 100644
---- a/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-@@ -71,6 +71,7 @@
- 			#cooling-cells = <2>;
- 			#cooling-min-level = <0>;
- 			#cooling-max-level = <7>;
-+			dynamic-power-coefficient = <263>;
- 		};
+diff --git a/drivers/cpufreq/mt8173-cpufreq.c b/drivers/cpufreq/mt8173-cpufreq.c
+index 83001dc..d00bab5 100644
+--- a/drivers/cpufreq/mt8173-cpufreq.c
++++ b/drivers/cpufreq/mt8173-cpufreq.c
+@@ -263,17 +263,24 @@ static int mtk_cpufreq_set_target(struct cpufreq_policy *policy,
+ 	return 0;
+ }
  
- 		cpu1: cpu@1 {
-@@ -95,6 +96,7 @@
- 			#cooling-cells = <2>;
- 			#cooling-min-level = <0>;
- 			#cooling-max-level = <7>;
-+			dynamic-power-coefficient = <263>;
- 		};
++#define DYNAMIC_POWER "dynamic-power-coefficient"
++
+ static void mtk_cpufreq_ready(struct cpufreq_policy *policy)
+ {
+ 	struct mtk_cpu_dvfs_info *info = policy->driver_data;
+ 	struct device_node *np = of_node_get(info->cpu_dev->of_node);
++	u32 capacitance = 0;
  
- 		cpu2: cpu@100 {
-@@ -119,6 +121,7 @@
- 			#cooling-cells = <2>;
- 			#cooling-min-level = <0>;
- 			#cooling-max-level = <7>;
-+			dynamic-power-coefficient = <530>;
- 		};
+ 	if (WARN_ON(!np))
+ 		return;
  
- 		cpu3: cpu@101 {
-@@ -143,6 +146,7 @@
- 			#cooling-cells = <2>;
- 			#cooling-min-level = <0>;
- 			#cooling-max-level = <7>;
-+			dynamic-power-coefficient = <530>;
- 		};
+ 	if (of_find_property(np, "#cooling-cells", NULL)) {
+-		info->cdev = of_cpufreq_cooling_register(np,
+-							 policy->related_cpus);
++		of_property_read_u32(np, DYNAMIC_POWER, &capacitance);
++
++		info->cdev = of_cpufreq_power_cooling_register(np,
++						policy->related_cpus,
++						capacitance,
++						NULL);
  
- 		idle-states {
+ 		if (IS_ERR(info->cdev)) {
+ 			dev_err(info->cpu_dev,
 -- 
 1.7.9.5
 
