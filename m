@@ -1,76 +1,72 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH v2 0/4]  cpufreq governors and Intel P state driver
- compatibility
-Date: Wed, 16 Dec 2015 11:33:45 -0800
-Message-ID: <1450294425.2912.134.camel@spandruv-desk3.jf.intel.com>
-References: <1449613890-10403-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH v3 2/2] ARM64: kernel: PSCI: move PSCI idle management
+ code to drivers/firmware
+Date: Wed, 16 Dec 2015 21:57:45 +0100
+Message-ID: <5671D049.1090802@linaro.org>
+References: <1445011379-8787-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1445011379-8787-3-git-send-email-lorenzo.pieralisi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:63640 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751101AbbLPTex (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Wed, 16 Dec 2015 14:34:53 -0500
-In-Reply-To: <1449613890-10403-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Received: from mail-wm0-f50.google.com ([74.125.82.50]:38824 "EHLO
+	mail-wm0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934216AbbLPU5n (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Dec 2015 15:57:43 -0500
+Received: by mail-wm0-f50.google.com with SMTP id l126so56148104wml.1
+        for <linux-pm@vger.kernel.org>; Wed, 16 Dec 2015 12:57:43 -0800 (PST)
+In-Reply-To: <1445011379-8787-3-git-send-email-lorenzo.pieralisi@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: prarit@redhat.com, trenn@suse.de, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>
-Cc: viresh.kumar@linaro.org, linux-pm@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Cc: Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Russell King <linux@arm.linux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, Jisheng Zhang <jszhang@marvell.com>
 
-On Tue, 2015-12-08 at 14:31 -0800, Srinivas Pandruvada wrote:
-> Intel P State driver implements two policies, performance and powersave.
-> The powersave policy is similar to ondemand cpufreq governor when using
-> acpi-cpufreq. This causes lots of confusion among users. This results
-> in invalid comparison of performance when acpi-cpufreq and Intel P state
-> performance is compared.
-> 
-> The reason Intel P state called powersave when it actually implemented
-> ondemand style P State selection, because the cpufreq core only allows
-> two generic policies "performance and powersave" for drivers which has
-> setpolicy() interface. All drivers using this interface are forced to
-> support these two policies.
-> 
-> This patchset adds feature to have configurable generic policies and
-> allows ondemand as one of the policy. With this approach, Intel P state
-> now adds support for ondemand policy and power save policy both in
-> addition to performance.
-> 
+On 10/16/2015 06:02 PM, Lorenzo Pieralisi wrote:
+> ARM64 PSCI kernel interfaces that initialize idle states and implemen=
+t
+> the suspend API to enter them are generic and can be shared with the
+> ARM architecture.
+>
+> To achieve that goal, this patch moves ARM64 PSCI idle management
+> code to drivers/firmware, so that the interface to initialize and
+> enter idle states can actually be shared by ARM and ARM64 arches
+> back-ends.
+>
+> The ARM generic CPUidle implementation also requires the definition o=
+f
+> a cpuidle_ops section entry for the kernel to initialize the CPUidle
+> operations at boot based on the enable-method (ie ARM64 has the
+> statically initialized cpu_ops counterparts for that purpose); theref=
+ore
+> this patch also adds the required section entry on CONFIG_ARM for PSC=
+I so
+> that the kernel can initialize the PSCI CPUidle back-end when PSCI is
+> the probed enable-method.
+>
+> On ARM64 this patch provides no functional change.
+>
+> Signed-off-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> Acked-by: Catalin Marinas <catalin.marinas@arm.com> [arch/arm64]
+> Acked-by: Mark Rutland <mark.rutland@arm.com>
+> Tested-by: Jisheng Zhang <jszhang@marvell.com>
+> Cc: Will Deacon <will.deacon@arm.com>
+> Cc: Sudeep Holla <sudeep.holla@arm.com>
+> Cc: Russell King <linux@arm.linux.org.uk>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: Catalin Marinas <catalin.marinas@arm.com>
+> Cc: Mark Rutland <mark.rutland@arm.com>
+> Cc: Jisheng Zhang <jszhang@marvell.com>
+> ---
 
-Since there is negative feedback from Redhat and Suse as this will cause
-more confusion to their customers, I will drop this patchset.
-Thanks for reviews and feedback.
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-Thanks,
-Srinivas
 
-> 
-> v2
-> - Suggestion by Viresh to remove callback to get policies
-> - Document update for cpufreq cpu-drivers
-> - Dropped powersave patch, so that it will still default to ondemand
-> as a possible option suggested by Thomas.
-> 
-> If it breaks any distros are user, who were using Intel P state driver with
-> powersave, please comment.
-> 
-> v1 
-> base version
-> 
-> To be done:
-> Intel P state document update
-> 
-> Srinivas Pandruvada (4):
->   cpufreq: Add configurable generic policies
->   cpufreq: Add ondemand as a generic policy
->   Documentation: cpu-freq: update setpolicy documentation
->   cpufreq: intel_pstate: Change powersave to ondemand policy
-> 
->  Documentation/cpu-freq/cpu-drivers.txt |  9 +++++++--
->  drivers/cpufreq/cpufreq.c              | 17 ++++++++++++++++-
->  drivers/cpufreq/intel_pstate.c         | 14 ++++++++------
->  include/linux/cpufreq.h                |  4 +++-
->  4 files changed, 34 insertions(+), 10 deletions(-)
-> 
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
