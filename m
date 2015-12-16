@@ -1,111 +1,43 @@
 From: Wolfram Sang <wsa@the-dreams.de>
-Subject: [RFC 2/3] i2c: rcar: remove macros dealing with flags
-Date: Wed, 16 Dec 2015 19:44:19 +0100
-Message-ID: <1450291460-10514-3-git-send-email-wsa@the-dreams.de>
+Subject: [RFC 1/3] i2c: document binding for multi-master case
+Date: Wed, 16 Dec 2015 19:44:18 +0100
+Message-ID: <1450291460-10514-2-git-send-email-wsa@the-dreams.de>
 References: <1450291460-10514-1-git-send-email-wsa@the-dreams.de>
 Return-path: <linux-sh-owner@vger.kernel.org>
 In-Reply-To: <1450291460-10514-1-git-send-email-wsa@the-dreams.de>
 Sender: linux-sh-owner@vger.kernel.org
 To: linux-i2c@vger.kernel.org
-Cc: linux-sh@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Wolfram Sang <wsa@the-dreams.de>, linux-pm@vger.kernel.org
+Cc: linux-sh@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Wolfram Sang <wsa@the-dreams.de>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 From: Wolfram Sang <wsa+renesas@sang-engineering.com>
 
-These macros don't really hide complexity, but C idioms. Removing them
-makes the code easier to read IMO and make a planned extension easier.
+We need this binding because some I2C master drivers will need to adapt
+their PM settings for the arbitration circuitry. I skipped the "i2c-"
+prefix because I can imagine to be useful outside of i2c.
 
 Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+Cc: devicetree@vger.kernel.org
 ---
- drivers/i2c/busses/i2c-rcar.c | 22 +++++++++-------------
- 1 file changed, 9 insertions(+), 13 deletions(-)
+ Documentation/devicetree/bindings/i2c/i2c.txt | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/i2c/busses/i2c-rcar.c b/drivers/i2c/busses/i2c-rcar.c
-index b2389c492579cf..79fd2aab8fa087 100644
---- a/drivers/i2c/busses/i2c-rcar.c
-+++ b/drivers/i2c/busses/i2c-rcar.c
-@@ -122,9 +122,6 @@ struct rcar_i2c_priv {
- #define rcar_i2c_priv_to_dev(p)		((p)->adap.dev.parent)
- #define rcar_i2c_is_recv(p)		((p)->msg->flags & I2C_M_RD)
+diff --git a/Documentation/devicetree/bindings/i2c/i2c.txt b/Documentation/devicetree/bindings/i2c/i2c.txt
+index a00219f5ee0733..c8d977ed847f3c 100644
+--- a/Documentation/devicetree/bindings/i2c/i2c.txt
++++ b/Documentation/devicetree/bindings/i2c/i2c.txt
+@@ -54,6 +54,11 @@ wants to support one of the below features, it should adapt the bindings below.
+ 	"irq" and "wakeup" names are recognized by I2C core, other names are
+ 	left to individual drivers.
  
--#define rcar_i2c_flags_set(p, f)	((p)->flags |= (f))
--#define rcar_i2c_flags_has(p, f)	((p)->flags & (f))
--
- #define LOOP_TIMEOUT	1024
++- multi-master
++	states that there is another master active on this bus. The OS can use
++	this information to adapt power management to keep the arbitration awake
++	all the time, for example.
++
+ - wakeup-source
+ 	device can be used as a wakeup source.
  
- 
-@@ -258,7 +255,7 @@ static void rcar_i2c_prepare_msg(struct rcar_i2c_priv *priv)
- 
- 	priv->pos = 0;
- 	if (priv->msgs_left == 1)
--		rcar_i2c_flags_set(priv, ID_LAST_MSG);
-+		priv->flags |= ID_LAST_MSG;
- 
- 	rcar_i2c_write(priv, ICMAR, (priv->msg->addr << 1) | read);
- 	/*
-@@ -266,7 +263,7 @@ static void rcar_i2c_prepare_msg(struct rcar_i2c_priv *priv)
- 	 * of ICMSR and ICMCR depends on whether we issue START or REP_START. Since
- 	 * it didn't cause a drawback for me, let's rather be safe than sorry.
- 	 */
--	if (rcar_i2c_flags_has(priv, ID_FIRST_MSG)) {
-+	if (priv->flags & ID_FIRST_MSG) {
- 		rcar_i2c_write(priv, ICMSR, 0);
- 		rcar_i2c_write(priv, ICMCR, RCAR_BUS_PHASE_START);
- 	} else {
-@@ -438,7 +435,7 @@ static irqreturn_t rcar_i2c_irq(int irq, void *ptr)
- 
- 	/* Arbitration lost */
- 	if (msr & MAL) {
--		rcar_i2c_flags_set(priv, (ID_DONE | ID_ARBLOST));
-+		priv->flags |= ID_DONE | ID_ARBLOST;
- 		goto out;
- 	}
- 
-@@ -446,14 +443,14 @@ static irqreturn_t rcar_i2c_irq(int irq, void *ptr)
- 	if (msr & MNR) {
- 		/* HW automatically sends STOP after received NACK */
- 		rcar_i2c_write(priv, ICMIER, RCAR_IRQ_STOP);
--		rcar_i2c_flags_set(priv, ID_NACK);
-+		priv->flags |= ID_NACK;
- 		goto out;
- 	}
- 
- 	/* Stop */
- 	if (msr & MST) {
- 		priv->msgs_left--; /* The last message also made it */
--		rcar_i2c_flags_set(priv, ID_DONE);
-+		priv->flags |= ID_DONE;
- 		goto out;
- 	}
- 
-@@ -463,7 +460,7 @@ static irqreturn_t rcar_i2c_irq(int irq, void *ptr)
- 		rcar_i2c_irq_send(priv, msr);
- 
- out:
--	if (rcar_i2c_flags_has(priv, ID_DONE)) {
-+	if (priv->flags & ID_DONE) {
- 		rcar_i2c_write(priv, ICMIER, 0);
- 		rcar_i2c_write(priv, ICMSR, 0);
- 		wake_up(&priv->wait);
-@@ -501,15 +498,14 @@ static int rcar_i2c_master_xfer(struct i2c_adapter *adap,
- 	priv->flags = ID_FIRST_MSG;
- 	rcar_i2c_prepare_msg(priv);
- 
--	time_left = wait_event_timeout(priv->wait,
--				     rcar_i2c_flags_has(priv, ID_DONE),
-+	time_left = wait_event_timeout(priv->wait, priv->flags & ID_DONE,
- 				     num * adap->timeout);
- 	if (!time_left) {
- 		rcar_i2c_init(priv);
- 		ret = -ETIMEDOUT;
--	} else if (rcar_i2c_flags_has(priv, ID_NACK)) {
-+	} else if (priv->flags & ID_NACK) {
- 		ret = -ENXIO;
--	} else if (rcar_i2c_flags_has(priv, ID_ARBLOST)) {
-+	} else if (priv->flags & ID_ARBLOST) {
- 		ret = -EAGAIN;
- 	} else {
- 		ret = num - priv->msgs_left; /* The number of transfer */
 -- 
 2.1.4
 
