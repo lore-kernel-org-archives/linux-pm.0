@@ -1,135 +1,95 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2] PM / runtime: Add new helper for conditional usage
- count incrementation
-Date: Thu, 17 Dec 2015 10:03:35 +0100
-Message-ID: <CAPDyKFriRJQtq5v6A=yoEzTyb49hpm__n3QPnx5E-dgQ68r28A@mail.gmail.com>
-References: <1449675920-12986-1-git-send-email-joonas.lahtinen@linux.intel.com>
-	<20151212194956.GA2407@nuc-i3427.alporthouse.com>
-	<32970649.AWpGt5zezN@vostro.rjw.lan>
-	<8499566.e3riUpjlOo@vostro.rjw.lan>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [RFC PATCH 2/8] Documentation: arm: define DT cpu capacity
+ bindings
+Date: Thu, 17 Dec 2015 09:07:36 +0000
+Message-ID: <20151217090736.GC3083@pablo>
+References: <20151214123616.GC3308@e106622-lin>
+ <20151214165928.GV5727@sirena.org.uk>
+ <20151215122238.GG16007@e106622-lin>
+ <20151215133951.GY5727@sirena.org.uk>
+ <20151215140135.GI31299@leverpostej>
+ <20151215150813.GZ5727@sirena.org.uk>
+ <20151215153218.GA7228@leverpostej>
+ <20151215171713.GA5727@sirena.org.uk>
+ <20151215172837.GD8012@leverpostej>
+ <20151215174516.GB5727@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f181.google.com ([209.85.160.181]:36386 "EHLO
-	mail-yk0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752917AbbLQJDg (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Dec 2015 04:03:36 -0500
-Received: by mail-yk0-f181.google.com with SMTP id x184so11378328yka.3
-        for <linux-pm@vger.kernel.org>; Thu, 17 Dec 2015 01:03:36 -0800 (PST)
-In-Reply-To: <8499566.e3riUpjlOo@vostro.rjw.lan>
+Received: from foss.arm.com ([217.140.101.70]:60059 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753799AbbLQJHo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 17 Dec 2015 04:07:44 -0500
+Content-Disposition: inline
+In-Reply-To: <20151215174516.GB5727@sirena.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Chris Wilson <chris@chris-wilson.co.uk>, Imre Deak <imre.deak@intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>
+To: Mark Brown <broonie@kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Olof Johansson <olof@lixom.net>, Gregory CLEMENT <gregory.clement@free-electrons.com>, Paul Walmsley <paul@pwsan.com>, Linus Walleij <linus.walleij@linaro.org>, Chen-Yu Tsai <wens@csie.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 
-On 17 December 2015 at 02:54, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> Introduce a new runtime PM function, pm_runtime_get_if_in_use(),
-> that will increment the device's runtime PM usage counter and
-> return 'true' if its status is RPM_ACTIVE and its usage counter
-> is greater than 0 at the same time ('false' will be returned
-> otherwise).
->
-> This is useful for things that should only be done if the device
-> is active (from the runtime PM perspective) and used by somebody
-> (as indicated by the usage counter) already and they are not worth
-> bothering otherwise.
->
-> Requested-by: Imre Deak <imre.deak@intel.com>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi,
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+On 15/12/15 17:45, Mark Brown wrote:
+> On Tue, Dec 15, 2015 at 05:28:37PM +0000, Mark Rutland wrote:
+> > On Tue, Dec 15, 2015 at 05:17:13PM +0000, Mark Brown wrote:
+> 
+> > > Obviously people are going to get upset if we introduce performance
+> > > regressions - but that's true always, we can also introduce problems
+> > > with numbers people have put in DT.  It seems like it'd be harder to
+> > > manage regressions due to externally provided magic numbers since
+> > > there's inherently less information there.
+> 
+> > It's certainly still possible to have regressions in that case. Those
+> > regressions would be due to code changes in the kernel, given the DT
+> > didn't change.
+> 
+> > I'm not sure I follow w.r.t. "inherently less information", unless you
+> > mean trying to debug without access to that DTB?
+> 
+> If what the kernel knows about the system is that it's got a bunch of
+> cores with numbers assigned to them then all it's really got is those
+> numbers.  If something changes that causes problems for some systems
+> (eg, because the numbers have been picked poorly but in a way that
+> happened to work well with the old code) that's not a lot to go on, the
+> more we know about the system the more likely it is that we'll be able
+> to adjust the assumptions in whatever new thing we do that causes
+> problems for any particular systems where we run into trouble.
+> 
+> > > My point there is that if we're not that concerned about the specific
+> > > number something in kernel is safer.
+> 
+> > I don't entirely disagree there. I think an in-kernel benchmark is
+> > likely safer.
+> 
+> Yes, I think that something where we just observe the system performance
+> at runtime is likely one of the best solutions if we can get something
+> that gives reasonable results.
+> 
+> > > That does have the issue that we need to scale with regard to the
+> > > frequency the benchmark gets run at.  That's not an insurmountable
+> > > obstacle but it's not completely trivial either.
+> 
+> > If we change clock frequency, then regardless of where the information
+> > comes from we need to perform scaling, no?
+> 
+> Yes, it's just a question of making the benchmarking bit talk to the
+> scaling bit so we know where we're at when we do the benchmark.  Like I
+> say it should be doable.
+> 
+> > One nice thing about doing a benchmark to derive the numbers is that
+> > when the kernel is that when the frequency is fixed but the kernel
+> > cannot query it, the numbers will be representative.
+> 
+> Definitely.
 
-Kind regards
-Uffe
+OK, let's see how a dynamic approach could look like. As said, since it
+was actually our first thought too, I already have a possible
+implementation of such a thing. I'll be OOO until early Jan, but I'll
+try to rebase what I have and post it here as soon as I'm back; and then
+we see which solution looks better.
 
-> ---
->
-> Changes from v1:
-> - kerneldoc and runtime PM doc changes as suggested by Alan.
-> - The new function returns an int now and -EINVAL is returned for devices
->   with runtime PM disabled.
->
-> ---
->  Documentation/power/runtime_pm.txt |    6 ++++++
->  drivers/base/power/runtime.c       |   24 ++++++++++++++++++++++++
->  include/linux/pm_runtime.h         |    5 +++++
->  3 files changed, 35 insertions(+)
->
-> Index: linux-pm/drivers/base/power/runtime.c
-> ===================================================================
-> --- linux-pm.orig/drivers/base/power/runtime.c
-> +++ linux-pm/drivers/base/power/runtime.c
-> @@ -966,6 +966,30 @@ int __pm_runtime_resume(struct device *d
->  EXPORT_SYMBOL_GPL(__pm_runtime_resume);
->
->  /**
-> + * pm_runtime_get_if_in_use - Conditionally bump up the device's usage counter.
-> + * @dev: Device to handle.
-> + *
-> + * Return -EINVAL if runtime PM is disabled for the device.
-> + *
-> + * If that's not the case and if the device's runtime PM status is RPM_ACTIVE
-> + * and the runtime PM usage counter is nonzero, increment the counter and
-> + * return 1.  Otherwise return 0 without changing the counter.
-> + */
-> +int pm_runtime_get_if_in_use(struct device *dev)
-> +{
-> +       unsigned long flags;
-> +       int retval;
-> +
-> +       spin_lock_irqsave(&dev->power.lock, flags);
-> +       retval = dev->power.disable_depth > 0 ? -EINVAL :
-> +               dev->power.runtime_status == RPM_ACTIVE
-> +                       && atomic_inc_not_zero(&dev->power.usage_count);
-> +       spin_unlock_irqrestore(&dev->power.lock, flags);
-> +       return retval;
-> +}
-> +EXPORT_SYMBOL_GPL(pm_runtime_get_if_in_use);
-> +
-> +/**
->   * __pm_runtime_set_status - Set runtime PM status of a device.
->   * @dev: Device to handle.
->   * @status: New runtime PM status of the device.
-> Index: linux-pm/include/linux/pm_runtime.h
-> ===================================================================
-> --- linux-pm.orig/include/linux/pm_runtime.h
-> +++ linux-pm/include/linux/pm_runtime.h
-> @@ -39,6 +39,7 @@ extern int pm_runtime_force_resume(struc
->  extern int __pm_runtime_idle(struct device *dev, int rpmflags);
->  extern int __pm_runtime_suspend(struct device *dev, int rpmflags);
->  extern int __pm_runtime_resume(struct device *dev, int rpmflags);
-> +extern int pm_runtime_get_if_in_use(struct device *dev);
->  extern int pm_schedule_suspend(struct device *dev, unsigned int delay);
->  extern int __pm_runtime_set_status(struct device *dev, unsigned int status);
->  extern int pm_runtime_barrier(struct device *dev);
-> @@ -143,6 +144,10 @@ static inline int pm_schedule_suspend(st
->  {
->         return -ENOSYS;
->  }
-> +static inline int pm_runtime_get_if_in_use(struct device *dev)
-> +{
-> +       return -EINVAL;
-> +}
->  static inline int __pm_runtime_set_status(struct device *dev,
->                                             unsigned int status) { return 0; }
->  static inline int pm_runtime_barrier(struct device *dev) { return 0; }
-> Index: linux-pm/Documentation/power/runtime_pm.txt
-> ===================================================================
-> --- linux-pm.orig/Documentation/power/runtime_pm.txt
-> +++ linux-pm/Documentation/power/runtime_pm.txt
-> @@ -371,6 +371,12 @@ drivers/base/power/runtime.c and include
->      - increment the device's usage counter, run pm_runtime_resume(dev) and
->        return its result
->
-> +  int pm_runtime_get_if_in_use(struct device *dev);
-> +    - return -EINVAL if 'power.disable_depth' is nonzero; otherwise, if the
-> +      runtime PM status is RPM_ACTIVE and the runtime PM usage counter is
-> +      nonzero, increment the counter and return 1; otherwise return 0 without
-> +      changing the counter
-> +
->    void pm_runtime_put_noidle(struct device *dev);
->      - decrement the device's usage counter
->
->
+Thanks a lot for the feedback!
+
+Best,
+
+- Juri
