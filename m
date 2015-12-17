@@ -1,53 +1,53 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v3 0/5] Fix a trivial typo and support rk3228/rk3399 SoCs
- for thermal driver.
-Date: Thu, 17 Dec 2015 12:09:28 -0800
-Message-ID: <20151217200927.GC7999@localhost.localdomain>
-References: <1449132523-18817-1-git-send-email-wxt@rock-chips.com>
+From: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
+Subject: Re: [PATCH v3 0/4] Raspberry Pi power domains
+Date: Thu, 17 Dec 2015 21:11:43 +0100
+Message-ID: <2899341.Os5E8ounKE@wuerfel>
+References: <1450215622-27394-1-git-send-email-eric@anholt.net> <CAPDyKFp=ykY4dFTxeq+et6z5ek-UYGnBOFG7Po0pSUL7jSYc8g@mail.gmail.com> <878u4sx5gs.fsf@eliezer.anholt.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f53.google.com ([209.85.220.53]:35067 "EHLO
-	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755208AbbLQUJc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Dec 2015 15:09:32 -0500
-Content-Disposition: inline
-In-Reply-To: <1449132523-18817-1-git-send-email-wxt@rock-chips.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <878u4sx5gs.fsf-omZaPlIz5HhaEpDpdNBo/KxOck334EZe@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>
+Cc: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Lee Jones <lee-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Alexander Aring <alex.aring-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Caesar Wang <wxt@rock-chips.com>
-Cc: huangtao@rock-chips.com, Heiko Stuebner <heiko@sntech.de>, dmitry.torokhov@gmail.com, dianders@chromium.org, linux-rockchip@lists.infradead.org, computersforpeace@gmail.com, Dan Carpenter <dan.carpenter@oracle.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Jiri Kosina <trivial@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Zhang Rui <rui.zhang@intel.com>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org
 
-Hello,
+On Thursday 17 December 2015 11:03:47 Eric Anholt wrote:
+> >>
+> >>  .../bindings/arm/bcm/raspberrypi,bcm2835-power.txt |  47 ++++
+> >>  arch/arm/boot/dts/bcm2835-rpi.dtsi                 |  11 +
+> >>  arch/arm/boot/dts/bcm2835.dtsi                     |   2 +-
+> >>  arch/arm/mach-bcm/Kconfig                          |  10 +
+> >>  arch/arm/mach-bcm/Makefile                         |   1 +
+> >>  arch/arm/mach-bcm/raspberrypi-power.c              | 247 +++++++++++++++++++++
+> >>  include/dt-bindings/arm/raspberrypi-power.h        |  41 ++++
+> >>  include/soc/bcm2835/raspberrypi-firmware.h         |   2 +
+> >>  8 files changed, 360 insertions(+), 1 deletion(-)
+> >>  create mode 100644 Documentation/devicetree/bindings/arm/bcm/raspberrypi,bcm2835-power.txt
+> >>  create mode 100644 arch/arm/mach-bcm/raspberrypi-power.c
+> >>  create mode 100644 include/dt-bindings/arm/raspberrypi-power.h
+> >>
+> >> --
+> >> 2.6.2
+> >>
+> >
+> > Besides a nitpick for patch2, I would also reverse the order of patch3
+> > and patch2. DT docs should go in before the actual parsing of the new
+> > bindings/compatibles.
+> >
+> > Anyway, for the hole series, you may add my:
+> >
+> > Reviewed-by: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> 
+> Would your tree be pulling the series (since it's power domains), or
+> should I (since it's SOC stuff)?
+> 
 
-On Thu, Dec 03, 2015 at 04:48:38PM +0800, Caesar Wang wrote:
-> This series pacthes to support the next soc for this thermal driver.
-> I don't add the dts thermal data since these SoCs have *_not_* land
-> in this mainline. I believe these SoCs dts will land in this mainline
-> lately,
-> then I will add the thermal data for Heiko.
-> 
-> This series patches can apply into Eduardo branch.
-> https://git.kernel.org/cgit/linux/kernel/git/evalenti/linux-soc-thermal.git
-> 
-> Also, this series pacthes have built on github branch.
-> https://github.com/rockchip-linux/kernel/commits/develop4.4
-> 
-> PATCH[1/5]:
-> That's bit ugly typo, sorry for sending again :(.
-> 
-> PATCH[2/5]:
-> To fix a build warning came from Dan Carpenter report smatch check,
-> Thanks. :)
-> 
-> PATCH[3/5]:
-> Add the rk3228/rk3399 SoCs compatible for dt-bindings.
-> 
-> PATCH[4/5]:
-> Add the rk3228 SoCs for thermal driver.
-> 
-> PATCH[5/5]:
-> Add the rk3399 SoCs for thermal driver based on PATCH[4/5].
+All of the above files go through the arm-soc tree by default.
 
-I applied all but 2/5.
-
+	Arnd
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
