@@ -1,123 +1,42 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2] PM / runtime: Add new helper for conditional usage count incrementation
-Date: Thu, 17 Dec 2015 02:54:26 +0100
-Message-ID: <8499566.e3riUpjlOo@vostro.rjw.lan>
-References: <1449675920-12986-1-git-send-email-joonas.lahtinen@linux.intel.com> <20151212194956.GA2407@nuc-i3427.alporthouse.com> <32970649.AWpGt5zezN@vostro.rjw.lan>
+From: Steve Muckle <steve.muckle@linaro.org>
+Subject: Re: [RFCv6 PATCH 03/10] sched: scheduler-driven cpu frequency
+ selection
+Date: Wed, 16 Dec 2015 17:24:56 -0800
+Message-ID: <56720EE8.1090507@linaro.org>
+References: <1449641971-20827-1-git-send-email-smuckle@linaro.org>
+ <1449641971-20827-4-git-send-email-smuckle@linaro.org>
+ <20151216034825.GA11303@leoy-linaro>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:44923 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750754AbbLQBYQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Dec 2015 20:24:16 -0500
-In-Reply-To: <32970649.AWpGt5zezN@vostro.rjw.lan>
+Received: from mail-pa0-f48.google.com ([209.85.220.48]:36619 "EHLO
+	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750754AbbLQBY7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 16 Dec 2015 20:24:59 -0500
+Received: by mail-pa0-f48.google.com with SMTP id q3so12713886pav.3
+        for <linux-pm@vger.kernel.org>; Wed, 16 Dec 2015 17:24:59 -0800 (PST)
+In-Reply-To: <20151216034825.GA11303@leoy-linaro>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chris Wilson <chris@chris-wilson.co.uk>, Imre Deak <imre.deak@intel.com>
-Cc: Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Intel graphics driver community testing & development <intel-gfx@lists.freedesktop.org>, linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Leo Yan <leo.yan@linaro.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Ricky Liang <jcliang@chromium.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi Leo,
 
-Introduce a new runtime PM function, pm_runtime_get_if_in_use(),
-that will increment the device's runtime PM usage counter and
-return 'true' if its status is RPM_ACTIVE and its usage counter
-is greater than 0 at the same time ('false' will be returned
-otherwise).
+On 12/15/2015 07:48 PM, Leo Yan wrote:
+> I also think "set_current_state(TASK_INTERRUPTIBLE)" will introduce
+> logic error when software flow run into "else" block. The reason is
+> after you set state with TASK_INTERRUPTIBLE, if there have some
+> scheduling happen within cpufreq_sched_try_driver_target(), then the
+> thread will be remove from rq. But generally we suppose the thread
+> will be on rq and can continue run after next tick.
+> 
+> Juri's suggestion can fix this issue. And we can use atomic_t to
+> safely accessing gd->requested_freq.
 
-This is useful for things that should only be done if the device
-is active (from the runtime PM perspective) and used by somebody
-(as indicated by the usage counter) already and they are not worth
-bothering otherwise.
+I agree, it's incorrect. As I replied earlier I believe setting the task
+state back to TASK_RUNNING at the top of the else block is the easiest fix.
 
-Requested-by: Imre Deak <imre.deak@intel.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
-
-Changes from v1:
-- kerneldoc and runtime PM doc changes as suggested by Alan.
-- The new function returns an int now and -EINVAL is returned for devices
-  with runtime PM disabled.
-
----
- Documentation/power/runtime_pm.txt |    6 ++++++
- drivers/base/power/runtime.c       |   24 ++++++++++++++++++++++++
- include/linux/pm_runtime.h         |    5 +++++
- 3 files changed, 35 insertions(+)
-
-Index: linux-pm/drivers/base/power/runtime.c
-===================================================================
---- linux-pm.orig/drivers/base/power/runtime.c
-+++ linux-pm/drivers/base/power/runtime.c
-@@ -966,6 +966,30 @@ int __pm_runtime_resume(struct device *d
- EXPORT_SYMBOL_GPL(__pm_runtime_resume);
- 
- /**
-+ * pm_runtime_get_if_in_use - Conditionally bump up the device's usage counter.
-+ * @dev: Device to handle.
-+ *
-+ * Return -EINVAL if runtime PM is disabled for the device.
-+ *
-+ * If that's not the case and if the device's runtime PM status is RPM_ACTIVE
-+ * and the runtime PM usage counter is nonzero, increment the counter and
-+ * return 1.  Otherwise return 0 without changing the counter.
-+ */
-+int pm_runtime_get_if_in_use(struct device *dev)
-+{
-+	unsigned long flags;
-+	int retval;
-+
-+	spin_lock_irqsave(&dev->power.lock, flags);
-+	retval = dev->power.disable_depth > 0 ? -EINVAL :
-+		dev->power.runtime_status == RPM_ACTIVE
-+			&& atomic_inc_not_zero(&dev->power.usage_count);
-+	spin_unlock_irqrestore(&dev->power.lock, flags);
-+	return retval;
-+}
-+EXPORT_SYMBOL_GPL(pm_runtime_get_if_in_use);
-+
-+/**
-  * __pm_runtime_set_status - Set runtime PM status of a device.
-  * @dev: Device to handle.
-  * @status: New runtime PM status of the device.
-Index: linux-pm/include/linux/pm_runtime.h
-===================================================================
---- linux-pm.orig/include/linux/pm_runtime.h
-+++ linux-pm/include/linux/pm_runtime.h
-@@ -39,6 +39,7 @@ extern int pm_runtime_force_resume(struc
- extern int __pm_runtime_idle(struct device *dev, int rpmflags);
- extern int __pm_runtime_suspend(struct device *dev, int rpmflags);
- extern int __pm_runtime_resume(struct device *dev, int rpmflags);
-+extern int pm_runtime_get_if_in_use(struct device *dev);
- extern int pm_schedule_suspend(struct device *dev, unsigned int delay);
- extern int __pm_runtime_set_status(struct device *dev, unsigned int status);
- extern int pm_runtime_barrier(struct device *dev);
-@@ -143,6 +144,10 @@ static inline int pm_schedule_suspend(st
- {
- 	return -ENOSYS;
- }
-+static inline int pm_runtime_get_if_in_use(struct device *dev)
-+{
-+	return -EINVAL;
-+}
- static inline int __pm_runtime_set_status(struct device *dev,
- 					    unsigned int status) { return 0; }
- static inline int pm_runtime_barrier(struct device *dev) { return 0; }
-Index: linux-pm/Documentation/power/runtime_pm.txt
-===================================================================
---- linux-pm.orig/Documentation/power/runtime_pm.txt
-+++ linux-pm/Documentation/power/runtime_pm.txt
-@@ -371,6 +371,12 @@ drivers/base/power/runtime.c and include
-     - increment the device's usage counter, run pm_runtime_resume(dev) and
-       return its result
- 
-+  int pm_runtime_get_if_in_use(struct device *dev);
-+    - return -EINVAL if 'power.disable_depth' is nonzero; otherwise, if the
-+      runtime PM status is RPM_ACTIVE and the runtime PM usage counter is
-+      nonzero, increment the counter and return 1; otherwise return 0 without
-+      changing the counter
-+
-   void pm_runtime_put_noidle(struct device *dev);
-     - decrement the device's usage counter
- 
-
+thanks,
+Steve
