@@ -1,60 +1,53 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCH v2] i2c: rcar: disable runtime PM correctly in slave mode
-Date: Thu, 17 Dec 2015 20:39:07 +0100
-Message-ID: <20151217193907.GC1530@katana>
-References: <1450292718-11951-1-git-send-email-wsa@the-dreams.de>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH v3 0/5] Fix a trivial typo and support rk3228/rk3399 SoCs
+ for thermal driver.
+Date: Thu, 17 Dec 2015 12:09:28 -0800
+Message-ID: <20151217200927.GC7999@localhost.localdomain>
+References: <1449132523-18817-1-git-send-email-wxt@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="lCAWRPmW1mITcIfM"
-Return-path: <linux-i2c-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1450292718-11951-1-git-send-email-wsa@the-dreams.de>
-Sender: linux-i2c-owner@vger.kernel.org
-To: linux-i2c@vger.kernel.org
-Cc: linux-sh@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-pm@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-
-
---lCAWRPmW1mITcIfM
 Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f53.google.com ([209.85.220.53]:35067 "EHLO
+	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755208AbbLQUJc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Dec 2015 15:09:32 -0500
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <1449132523-18817-1-git-send-email-wxt@rock-chips.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
+To: Caesar Wang <wxt@rock-chips.com>
+Cc: huangtao@rock-chips.com, Heiko Stuebner <heiko@sntech.de>, dmitry.torokhov@gmail.com, dianders@chromium.org, linux-rockchip@lists.infradead.org, computersforpeace@gmail.com, Dan Carpenter <dan.carpenter@oracle.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Kumar Gala <galak@codeaurora.org>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Jiri Kosina <trivial@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Zhang Rui <rui.zhang@intel.com>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org
 
-On Wed, Dec 16, 2015 at 08:05:18PM +0100, Wolfram Sang wrote:
-> From: Wolfram Sang <wsa+renesas@sang-engineering.com>
->=20
-> When we also are I2C slave, we need to disable runtime PM because the
-> address detection mechanism needs to be active all the time. However, we
-> can reenable runtime PM once the slave instance was unregistered. So,
-> use pm_runtime_get_sync/put to achieve this, since it has proper
-> refcounting. pm_runtime_allow/forbid is like a global knob controllable
-> from userspace which is unsuitable here.
->=20
-> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+Hello,
 
-Applied to for-current, thanks!
+On Thu, Dec 03, 2015 at 04:48:38PM +0800, Caesar Wang wrote:
+> This series pacthes to support the next soc for this thermal driver.
+> I don't add the dts thermal data since these SoCs have *_not_* land
+> in this mainline. I believe these SoCs dts will land in this mainline
+> lately,
+> then I will add the thermal data for Heiko.
+> 
+> This series patches can apply into Eduardo branch.
+> https://git.kernel.org/cgit/linux/kernel/git/evalenti/linux-soc-thermal.git
+> 
+> Also, this series pacthes have built on github branch.
+> https://github.com/rockchip-linux/kernel/commits/develop4.4
+> 
+> PATCH[1/5]:
+> That's bit ugly typo, sorry for sending again :(.
+> 
+> PATCH[2/5]:
+> To fix a build warning came from Dan Carpenter report smatch check,
+> Thanks. :)
+> 
+> PATCH[3/5]:
+> Add the rk3228/rk3399 SoCs compatible for dt-bindings.
+> 
+> PATCH[4/5]:
+> Add the rk3228 SoCs for thermal driver.
+> 
+> PATCH[5/5]:
+> Add the rk3399 SoCs for thermal driver based on PATCH[4/5].
 
+I applied all but 2/5.
 
---lCAWRPmW1mITcIfM
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJWcw9aAAoJEBQN5MwUoCm2AVcP+wdMLl83gMeg0K6RDiCYm817
-71luAhK+f5L9xAq0sjs67m24F+G3igkE4UuDHtKWDKnc6j4oSpj8BoYbIGJikFLh
-oqDCwK0dOuXPjnVok6Rp+XF0/VFrD34uhudvbZBP9e3aKygBtZY2C9hDbQdTP5gS
-/p6mCLaCKQwAcFhfmHUW2PuUeeoy7r9Pt2fE5tnUV+AB2aTd2IEfJOkI9phDgUO4
-92ddu2j8il1YM2RFxjt6Z7QzlcTu/+NCuShzng+PUXj0aHHT9EsrRPzyO0ZEEcuT
-C95NkOhYnNdOQnHesDE8APb4fkMpM48ODKppch9u1ePPS+VijZBSmlw/PffrW5yW
-fTxXJJlXz81qvDB3sI+RT+9NNT02IRAfUG6Vh3BTsopvxBzHSo21mRDkWtzx3Kw0
-heRVMi+uBK7uktwWteXOvXszrz2UKpBUDpANP6hnZpZQLwDcApNapDbZR+f7FIQd
-0D4r8/VWNOfKr/gQMZE8pclvkcbN4oV1bG5B0+hNAvRSVVVl+gxHU0jBwqKs0WO6
-bvKyHVT36O0kOsKE0KO13ARvnwosk8CE2MqMKLQjkSDqGwvQ8TVxpNFMkS5knI1p
-3TvQUtzHi/h2USam1m7haGAQ5PxUggNwte0Rk4pgcdIW8UNuO1hxMTrmMI6nOJm7
-ytkmdGlo8ShCRkCwPxq3
-=Mssd
------END PGP SIGNATURE-----
-
---lCAWRPmW1mITcIfM--
