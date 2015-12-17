@@ -1,82 +1,72 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 1/3] dt-bindings: thermal: Add binding document for
- Mediatek thermal controller
-Date: Thu, 17 Dec 2015 11:23:31 -0800
-Message-ID: <20151217192329.GA7999@localhost.localdomain>
+Subject: Re: [PATCH 2/3] thermal: Add Mediatek thermal controller support
+Date: Thu, 17 Dec 2015 11:33:33 -0800
+Message-ID: <20151217193332.GB7999@localhost.localdomain>
 References: <1448883753-19068-1-git-send-email-s.hauer@pengutronix.de>
- <1448883753-19068-2-git-send-email-s.hauer@pengutronix.de>
- <CAGS+omCPonvXBTjOqpKrJX0Ebw0KF6TDKH+zRas-3FaAhUWL2w@mail.gmail.com>
+ <1448883753-19068-3-git-send-email-s.hauer@pengutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f45.google.com ([209.85.220.45]:34035 "EHLO
-	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752826AbbLQTXe (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Dec 2015 14:23:34 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAGS+omCPonvXBTjOqpKrJX0Ebw0KF6TDKH+zRas-3FaAhUWL2w@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1448883753-19068-3-git-send-email-s.hauer@pengutronix.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Matthias Brugger <matthias.bgg@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Kurtz <djkurtz@chromium.org>
-Cc: Sascha Hauer <s.hauer@pengutronix.de>, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-mediatek@lists.infradead.org, Sasha Hauer <kernel@pengutronix.de>, Matthias Brugger <matthias.bgg@gmail.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-On Wed, Dec 16, 2015 at 07:23:22PM +0800, Daniel Kurtz wrote:
-> On Mon, Nov 30, 2015 at 7:42 PM, Sascha Hauer <s.hauer@pengutronix.de> wrote:
-> > This adds the device tree binding documentation for the mediatek thermal
-> > controller found on Mediatek MT8173 and other SoCs.
-> >
-> > Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-> > Reviewed-by: Daniel Kurtz <djkurtz@chromium.org>
-> > Acked-by: Rob Herring <robh@kernel.org>
-> > ---
-> >  .../bindings/thermal/mediatek-thermal.txt          | 43 ++++++++++++++++++++++
-> >  1 file changed, 43 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-> >
-> > diff --git a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-> > new file mode 100644
-> > index 0000000..81f9a51
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-> > @@ -0,0 +1,43 @@
-> > +* Mediatek Thermal
-> > +
-> > +This describes the device tree binding for the Mediatek thermal controller
-> > +which measures the on-SoC temperatures. This device does not have its own ADC,
-> > +instead it directly controls the AUXADC via AHB bus accesses. For this reason
-> > +this device needs phandles to the AUXADC. Also it controls a mux in the
-> > +apmixedsys register space via AHB bus accesses, so a phandle to the APMIXEDSYS
-> > +is also needed.
-> > +
-> > +Required properties:
-> > +- compatible: "mediatek,mt8173-thermal"
-> > +- reg: Address range of the thermal controller
-> > +- interrupts: IRQ for the thermal controller
-> > +- clocks, clock-names: Clocks needed for the thermal controller. required
-> > +                       clocks are:
-> > +                      "therm":  Main clock needed for register access
-> > +                      "auxadc": The AUXADC clock
-> > +- resets: Reference to the reset controller controlling the thermal controller.
-> > +- mediatek,auxadc: A phandle to the AUXADC which the thermal controller uses
-> > +- mediatek,apmixedsys: A phandle to the APMIXEDSYS controller.
-> > +- #thermal-sensor-cells : Should be 0. See ./thermal.txt for a description.
-> > +
-> > +Optional properties:
-> > +- nvmem-cells: A phandle to the calibration data provided by a nvmem device. If
-> > +               unspecified default values shall be used.
-> > +- nvmem-cell-names: Should be "calibration-data"
-> > +
-> > +Example:
-> > +
-> > +       thermal: thermal@1100b000 {
-> > +               #thermal-sensor-cells = <1>;
-> 
-> Tiny nit: this should now be:
-> 
-> #thermal-sensor-cells = <0>;
+Sascha,
 
+Yeah, sorry for the long delay. I was planing on applying this patch for
+the next merge window, but it just came across one point, see below.
 
-This is actually not so tiny'shy. Why does this driver masks out all
-sensors available? Why don't we expose all of them and use id property
-to expose and identify each of them?
+On Mon, Nov 30, 2015 at 12:42:32PM +0100, Sascha Hauer wrote:
+> This adds support for the Mediatek thermal controller found on MT8173
+> +static const int sensor_mux_values[MT8173_NUM_SENSORS] = { 0, 1, 2, 3, 16 };
+> +
 
+<big cut>
+
+> +/*
+> + * The MT8173 thermal controller has four banks. Each bank can read up to
+> + * four temperature sensors simultaneously. The MT8173 has a total of 5
+> + * temperature sensors. We use each bank to measure a certain area of the
+> + * SoC. Since TS2 is located centrally in the SoC it is influenced by multiple
+> + * areas, hence is used in different banks.
+> + *
+> + * The thermal core only gets the maximum temperature of all banks, so
+> + * the bank concept wouldn't be necessary here. However, the SVS (Smart
+> + * Voltage Scaling) unit makes its decisions based on the same bank
+> + * data, and this indeed needs the temperatures of the individual banks
+> + * for making better decisions.
+> + */
+> +static const struct mtk_thermal_bank_cfg bank_data[] = {
+> +	{
+> +		.num_sensors = 2,
+> +		.sensors = { MT8173_TS2, MT8173_TS3 },
+> +	}, {
+> +		.num_sensors = 2,
+> +		.sensors = { MT8173_TS2, MT8173_TS4 },
+> +	}, {
+> +		.num_sensors = 3,
+> +		.sensors = { MT8173_TS1, MT8173_TS2, MT8173_TSABB },
+> +	}, {
+> +		.num_sensors = 1,
+> +		.sensors = { MT8173_TS2 },
+> +	},
+> +};
+
+Why can't we expose all these as thermal zones?
+
+That should remove the policy of computing the maximum from this driver.
+Please have a look on the work being done [1] to add grouping and
+aggregation of thermal zones. With that in place, you should be a matter
+of configuring the grouping and selecting max as the aggregation function,
+from the thermal core, instead in the driver. Which should give the
+system engineer, more flexibility to compose whatever policy based on
+the exposed sensors.
+
+BR,
+
+Eduardo Valentin
+
+[1] - https://lkml.org/lkml/2015/11/25/446
