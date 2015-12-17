@@ -1,48 +1,85 @@
 From: "H. Nikolaus Schaller" <hns@goldelico.com>
-Subject: [PATCH 2/2] power:bq27xxx: fix register numbers of bq27500
-Date: Thu, 17 Dec 2015 11:12:54 +0100
-Message-ID: <dd1c67a7c8a2cabed0433f2d7b30f91bb0b06b78.1450347172.git.hns@goldelico.com>
+Subject: [PATCH 1/2] power:bq27xxx: fix reading for bq27000 and bq27010
+Date: Thu, 17 Dec 2015 11:12:53 +0100
+Message-ID: <deacb36df6842521628c0d324c2c8033733e2cb5.1450347172.git.hns@goldelico.com>
 References: <cover.1450347172.git.hns@goldelico.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mo4-p00-ob.smtp.rzone.de ([81.169.146.161]:52711 "EHLO
-	mo4-p00-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755478AbbLQKNB (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Dec 2015 05:13:01 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1450347172.git.hns@goldelico.com>
 In-Reply-To: <cover.1450347172.git.hns@goldelico.com>
 References: <cover.1450347172.git.hns@goldelico.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, gta04-owner@goldelico.com, marek@goldelico.com, "H. Nikolaus Schaller" <hns@goldelico.com>
+List-Id: linux-pm@vger.kernel.org
 
-bug: according to data sheet some register numbers are wrong.
+bug: the driver reports funny capacity values:
 
-tested: no
+root@letux:/sys/class/power_supply/bq27000-battery# cat uevent
+POWER_SUPPLY_NAME=bq27000-battery
+POWER_SUPPLY_STATUS=Charging
+POWER_SUPPLY_PRESENT=1
+POWER_SUPPLY_VOLTAGE_NOW=3702000
+POWER_SUPPLY_CURRENT_NOW=-464635
+POWER_SUPPLY_CAPACITY=1536			<- over 100% is magic
+POWER_SUPPLY_CAPACITY_LEVEL=Normal
+POWER_SUPPLY_TEMP=311
+POWER_SUPPLY_TIME_TO_FULL_NOW=10440
+POWER_SUPPLY_TECHNOLOGY=Li-ion
+POWER_SUPPLY_CHARGE_FULL=805450
+POWER_SUPPLY_CHARGE_NOW=1068
+POWER_SUPPLY_CHARGE_FULL_DESIGN=8844998	<- battery has just 1200 mAh
+POWER_SUPPLY_CYCLE_COUNT=21
+POWER_SUPPLY_ENERGY_NOW=0
+POWER_SUPPLY_POWER_AVG=0
+POWER_SUPPLY_HEALTH=Good
+POWER_SUPPLY_MANUFACTURER=Texas Instruments
+
+reason: the state of charge and the design capacity register are single
+byte only. The design capacity returns the higer order byte.
+
+tested: GTA04 with Openmoko/FIC HF08x battery (using hdq)
 
 Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
 ---
- drivers/power/bq27xxx_battery.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/power/bq27xxx_battery.c | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27xxx_battery.c
-index e54a125..f9a5f4f 100644
+index 880233c..e54a125 100644
 --- a/drivers/power/bq27xxx_battery.c
 +++ b/drivers/power/bq27xxx_battery.c
-@@ -198,10 +198,10 @@ static u8 bq27500_regs[] = {
- 	INVALID_REG_ADDR,	/* TTECP - NA	*/
- 	0x0c,	/* NAC		*/
- 	0x12,	/* LMD(FCC)	*/
--	0x1e,	/* CYCT		*/
-+	0x2a,	/* CYCT		*/
- 	INVALID_REG_ADDR,	/* AE - NA	*/
--	0x20,	/* SOC(RSOC)	*/
--	0x2e,	/* DCAP(ILMD)	*/
-+	0x2c,	/* SOC(RSOC)	*/
-+	0x3c,	/* DCAP(ILMD)	*/
- 	INVALID_REG_ADDR,	/* AP - NA	*/
- };
+@@ -471,7 +471,10 @@ static int bq27xxx_battery_read_soc(struct bq27xxx_device_info *di)
+ {
+ 	int soc;
+ 
+-	soc = bq27xxx_read(di, BQ27XXX_REG_SOC, false);
++	if (di->chip == BQ27000 || di->chip == BQ27010)
++		soc = bq27xxx_read(di, BQ27XXX_REG_SOC, true);
++	else
++		soc = bq27xxx_read(di, BQ27XXX_REG_SOC, false);
+ 
+ 	if (soc < 0)
+ 		dev_dbg(di->dev, "error reading State-of-Charge\n");
+@@ -536,7 +539,10 @@ static int bq27xxx_battery_read_dcap(struct bq27xxx_device_info *di)
+ {
+ 	int dcap;
+ 
+-	dcap = bq27xxx_read(di, BQ27XXX_REG_DCAP, false);
++	if (di->chip == BQ27000 || di->chip == BQ27010)
++		dcap = bq27xxx_read(di, BQ27XXX_REG_DCAP, true);
++	else
++		dcap = bq27xxx_read(di, BQ27XXX_REG_DCAP, false);
+ 
+ 	if (dcap < 0) {
+ 		dev_dbg(di->dev, "error reading initial last measured discharge\n");
+@@ -544,7 +550,7 @@ static int bq27xxx_battery_read_dcap(struct bq27xxx_device_info *di)
+ 	}
+ 
+ 	if (di->chip == BQ27000 || di->chip == BQ27010)
+-		dcap *= BQ27XXX_CURRENT_CONSTANT / BQ27XXX_RS;
++		dcap = (dcap << 8) * BQ27XXX_CURRENT_CONSTANT / BQ27XXX_RS;
+ 	else
+ 		dcap *= 1000;
  
 -- 
 2.5.1
-
