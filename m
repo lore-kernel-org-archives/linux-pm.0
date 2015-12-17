@@ -1,67 +1,71 @@
-From: Leo Yan <leo.yan@linaro.org>
-Subject: Re: [RFCv6 PATCH 03/10] sched: scheduler-driven cpu frequency
- selection
-Date: Thu, 17 Dec 2015 15:17:33 +0800
-Message-ID: <20151217071733.GB6195@leoy-linaro>
-References: <1449641971-20827-1-git-send-email-smuckle@linaro.org>
- <1449641971-20827-4-git-send-email-smuckle@linaro.org>
- <20151216034825.GA11303@leoy-linaro>
- <56720EE8.1090507@linaro.org>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Subject: Re: [PATCH] PM / sleep: define inline functions
+Date: Thu, 17 Dec 2015 13:25:49 +0530
+Message-ID: <20151217075549.GA18571@sudip-pc>
+References: <1450266099-4352-1-git-send-email-sudipm.mukherjee@gmail.com>
+ <87wpsdrjni.fsf@eliezer.anholt.net>
+ <6732607.IpmkEPKP2k@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f174.google.com ([209.85.192.174]:32907 "EHLO
+	mail-pf0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751038AbbLQHz7 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Dec 2015 02:55:59 -0500
 Content-Disposition: inline
-In-Reply-To: <56720EE8.1090507@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Steve Muckle <steve.muckle@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Ricky Liang <jcliang@chromium.org>
+In-Reply-To: <6732607.IpmkEPKP2k@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Eric Anholt <eric@anholt.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hi Steve,
-
-On Wed, Dec 16, 2015 at 05:24:56PM -0800, Steve Muckle wrote:
-> Hi Leo,
-> 
-> On 12/15/2015 07:48 PM, Leo Yan wrote:
-> > I also think "set_current_state(TASK_INTERRUPTIBLE)" will introduce
-> > logic error when software flow run into "else" block. The reason is
-> > after you set state with TASK_INTERRUPTIBLE, if there have some
-> > scheduling happen within cpufreq_sched_try_driver_target(), then the
-> > thread will be remove from rq. But generally we suppose the thread
-> > will be on rq and can continue run after next tick.
+On Thu, Dec 17, 2015 at 02:43:38AM +0100, Rafael J. Wysocki wrote:
+> On Wednesday, December 16, 2015 04:41:37 PM Eric Anholt wrote:
 > > 
-> > Juri's suggestion can fix this issue. And we can use atomic_t to
-> > safely accessing gd->requested_freq.
+> > --=-=-=
+> > Content-Type: text/plain
+> > 
+> > Sudip Mukherjee <sudipm.mukherjee@gmail.com> writes:
+> > 
+> > > If CONFIG_PM_SLEEP is not defined then the functions are defined as
+> > > NULL. And as a result we are getting build failure with
+> > > alpha allmodconfig with the error:
+> > >
+> > > drivers/gpu/drm/vc4/vc4_v3d.c: In function 'vc4_v3d_set_power':
+> > > include/linux/stddef.h:7:14: error: called object is not a function or function pointer
+> > >  #define NULL ((void *)0)
+> > >               ^
+> > > include/linux/pm.h:776:30: note: in expansion of macro 'NULL'
+> > >  #define pm_generic_poweroff  NULL
+> > >                               ^
+> > > drivers/gpu/drm/vc4/vc4_v3d.c:157:10: note: in expansion of macro 'pm_generic_poweroff'
+> > >    return pm_generic_poweroff(&vc4->v3d->pdev->dev);
+> > >           ^
+> > > include/linux/stddef.h:7:14: error: called object is not a function or function pointer
+> > >  #define NULL ((void *)0)
+> > >               ^
+> > > include/linux/pm.h:764:28: note: in expansion of macro 'NULL'
+> > >  #define pm_generic_resume  NULL
+> > >                             ^
+> > > drivers/gpu/drm/vc4/vc4_v3d.c:159:10: note: in expansion of macro 'pm_generic_resume'
+> > >    return pm_generic_resume(&vc4->v3d->pdev->dev);
+> > >           ^
+> > >
+> > > Fixes: d5b1a78a772f ("drm/vc4: Add support for drawing 3D frames.")
+> > > Cc: Eric Anholt <eric@anholt.net>
+> > > Signed-off-by: Sudip Mukherjee <sudip@vectorindia.org>
+> > 
+> > I'm happy with this solution, and would also be willing to just depend
+> > on the config option as well.  Whatever people prefer.
 > 
-> I agree, it's incorrect. As I replied earlier I believe setting the task
-> state back to TASK_RUNNING at the top of the else block is the easiest fix.
+> These functions are intended to be used as PM callbacks rather than to be
+> called directly from code that doesn't depend on PM_SLEEP, so I'd prefer
+> all code calling them directly to depend on the config option.
 
-Could you check if below corner case will introduce logic error?
-The task still will be removed from rq if timer tick is triggered
-between two time's set_current_state().
+Apart from alpha some other arch also failed on allmodconfig for
+next-20151216.
+next-20151217 is now getting compiled on travis. If it still shows the
+build failure I will send v2 with config options.
 
-set_current_state(TASK_INTERRUPTIBLE);
-           `-------> timer_tick and
-                     schedule();
-do_something...
-set_current_state(TASK_RUNNING);
-
-It will be safe for combination for set_current_state()/schedule()
-with waken_up_process():
-
-Thread_A:                                       Thread_B:
-
-set_current_state(TASK_INTERRUPTIBLE);
-             `-------> timer_tick and
-                       schedule();
-....
-                                                wake_up_process(Thread_A);
-                           <---------------------/
-schedule();
-
-The first time's schedule() will remove task from rq which is caused
-by timer tick and call schedule(), and the second time schdule() will
-be equal yeild().
-
-Thanks,
-Leo Yan
+regards
+sudip
