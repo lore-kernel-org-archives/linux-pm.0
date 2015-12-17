@@ -1,76 +1,57 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH RFC 01/27] PM / Domains: core changes for multiple states
-Date: Thu, 17 Dec 2015 22:19:31 +0100
-Message-ID: <CAPDyKFovwXNnr4RPDww_wp_4+mOjN7ZL1zfc3i=G4EbktzsJOQ@mail.gmail.com>
-References: <1447799871-56374-1-git-send-email-lina.iyer@linaro.org>
-	<1447799871-56374-2-git-send-email-lina.iyer@linaro.org>
-	<CAPDyKFoBkKdBpuA6_EMtQNc-n0HxVAFpULrxgpnU5eXtcuS6og@mail.gmail.com>
-	<CAKXjFTOMwMBq7Md6BFLuGnq4yQTZOyv4QVA6Cw7MWrkH0PvYDg@mail.gmail.com>
+From: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH v4 0/4] Raspberry Pi power domains
+Date: Thu, 17 Dec 2015 14:32:48 -0800
+Message-ID: <7hh9jg7lkf.fsf@deeprootsystems.com>
+References: <1450312009-1791-1-git-send-email-eric@anholt.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f180.google.com ([209.85.160.180]:35495 "EHLO
-	mail-yk0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932566AbbLQVTc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Dec 2015 16:19:32 -0500
-Received: by mail-yk0-f180.google.com with SMTP id v6so35060791ykc.2
-        for <linux-pm@vger.kernel.org>; Thu, 17 Dec 2015 13:19:31 -0800 (PST)
-In-Reply-To: <CAKXjFTOMwMBq7Md6BFLuGnq4yQTZOyv4QVA6Cw7MWrkH0PvYDg@mail.gmail.com>
+Received: from mail-pa0-f48.google.com ([209.85.220.48]:35017 "EHLO
+	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933884AbbLQWcv (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Dec 2015 17:32:51 -0500
+Received: by mail-pa0-f48.google.com with SMTP id jx14so20413806pad.2
+        for <linux-pm@vger.kernel.org>; Thu, 17 Dec 2015 14:32:50 -0800 (PST)
+In-Reply-To: <1450312009-1791-1-git-send-email-eric@anholt.net> (Eric Anholt's
+	message of "Wed, 16 Dec 2015 16:26:45 -0800")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Axel Haslam <ahaslam@baylibre.com>
-Cc: Lina Iyer <lina.iyer@linaro.org>, Kevin Hilman <khilman@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski@samsung.com>, msivasub@codeaurora.org, Andy Gross <agross@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Marc Titinger <mtitinger@baylibre.com>, Axel Haslam <ahaslam+renesas@baylibre.com>
+To: Eric Anholt <eric@anholt.net>
+Cc: linux-rpi-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Stephen Warren <swarren@wwwdotorg.org>, Lee Jones <lee@kernel.org>, Florian Fainelli <f.fainelli@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alexander Aring <alex.aring@gmail.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>
 
-[...]
+Eric Anholt <eric@anholt.net> writes:
 
->>> +static int genpd_alloc_states_data(struct generic_pm_domain *genpd,
->>
->> In this patch I would rather just add *one* new "alloc" function and
->> name it like below.
->>
->> static int genpd_alloc_default_state(struct generic_pm_domain *genpd)
->>
->> I assume the name I suggest for it, indicates what it needs to do and
->> *not* needs to do.
+> Update from v3 to move the driver under drivers/soc.  I've placed it
+> under drivers/soc/bcm since that's how the other drivers under
+> drivers/soc are structured.
+
+Thanks, I like it better under drivers/soc too.
+
+Reviewed-by: Kevin Hilman <khilman@linaro.org>
+
+Kevin
+
+> Alexander Aring (3):
+>   ARM: bcm2835: add rpi power domain driver
+>   dt-bindings: add rpi power domain driver bindings
+>   ARM: bcm2835: Add the Raspberry Pi power domain driver to the DT.
 >
-> Hi Ulf,
+> Eric Anholt (1):
+>   ARM: bcm2835: Define two new packets from the latest firmware.
 >
-> Thanks for your thorough review!
-> i will implement your suggestions for the next spin,
-
-Great, thanks!
-
->
-> However I have a doubt about this comment, do you mean that i should get rid of
-> genpd_alloc_states_data completly? i had a static number of states before
-
-Yes, in this patch - but we still want to alloc the data on the heap.
-
-Just alloc a state struct with size of one array.
-
-> but that was droped because o wasted memory if no states were needed.
-
-There will always be at least *one* state, so we shouldn't waste any
-memory following my suggestion above.
-
->
-> if you just meant that it should be added in a separate patch, since i
-> will be sqashing
-
-I think you need to go through review comments for each patch
-separately. In the end that might very well mean that you should
-completely drop some patches, rework some and even create some some
-new.
-
-> this patch with "PM / Domains: make governor select deepest state"   can
-> i keep it here? maybe it should  go with the dt parsing patch from Marc?
-
-I don't think so.
-
-Try to keep each logical change in a separate patch. That makes it
-easier to review and thus also to accept patches.
-
-[...]
-
-Kind regards
-Uffe
+>  .../bindings/soc/bcm/raspberrypi,bcm2835-power.txt |  47 ++++
+>  arch/arm/boot/dts/bcm2835-rpi.dtsi                 |  11 +
+>  arch/arm/boot/dts/bcm2835.dtsi                     |   2 +-
+>  drivers/soc/Kconfig                                |   1 +
+>  drivers/soc/Makefile                               |   1 +
+>  drivers/soc/bcm/Kconfig                            |   9 +
+>  drivers/soc/bcm/Makefile                           |   1 +
+>  drivers/soc/bcm/raspberrypi-power.c                | 247 +++++++++++++++++++++
+>  include/dt-bindings/soc/raspberrypi-power.h        |  41 ++++
+>  include/soc/bcm2835/raspberrypi-firmware.h         |   2 +
+>  10 files changed, 361 insertions(+), 1 deletion(-)
+>  create mode 100644 Documentation/devicetree/bindings/soc/bcm/raspberrypi,bcm2835-power.txt
+>  create mode 100644 drivers/soc/bcm/Kconfig
+>  create mode 100644 drivers/soc/bcm/Makefile
+>  create mode 100644 drivers/soc/bcm/raspberrypi-power.c
+>  create mode 100644 include/dt-bindings/soc/raspberrypi-power.h
