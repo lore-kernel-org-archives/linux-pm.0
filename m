@@ -1,39 +1,59 @@
-From: Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [RFC PATCH V2 8/8] irqchip/gic: Add support for tegra AGIC
- interrupt controller
-Date: Thu, 17 Dec 2015 14:32:47 +0100
-Message-ID: <CACRpkdZT42rpKsVtNYdCuL_i0xWngvKSMSVUy1bLmPtxHhG5ew@mail.gmail.com>
-References: <1450349309-8107-1-git-send-email-jonathanh@nvidia.com>
-	<1450349309-8107-9-git-send-email-jonathanh@nvidia.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v4 2/4] ARM: bcm2835: add rpi power domain driver
+Date: Thu, 17 Dec 2015 17:28:20 +0100
+Message-ID: <CAPDyKFp5JfHmNw+ryoAnu-0XANcxW_pyNL_GUFUw7sBQmU+WDA@mail.gmail.com>
+References: <1450312009-1791-1-git-send-email-eric@anholt.net>
+	<1450312009-1791-3-git-send-email-eric@anholt.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1450349309-8107-9-git-send-email-jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Marc Zyngier <marc.zyngier-5wv7dgnIgG8@public.gmane.org>, Jiang Liu <jiang.liu-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Soren Brinkmann <soren.brinkmann-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1450312009-1791-3-git-send-email-eric@anholt.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eric Anholt <eric@anholt.net>
+Cc: linux-rpi-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Stephen Warren <swarren@wwwdotorg.org>, Lee Jones <lee@kernel.org>, Florian Fainelli <f.fainelli@gmail.com>, Kevin Hilman <khilman@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alexander Aring <alex.aring@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Dec 17, 2015 at 11:48 AM, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+On 17 December 2015 at 01:26, Eric Anholt <eric@anholt.net> wrote:
+> From: Alexander Aring <alex.aring@gmail.com>
+>
+> This patch adds support for several power domains on Raspberry Pi,
+> including USB (so it can be enabled even if the bootloader didn't do
+> it), and graphics.
+>
+> This patch is the combined work of Eric Anholt (who wrote USB support
+> inside of the Raspberry Pi firmware driver, and wrote the non-USB
+> domain support) and Alexander Aring (who separated the original USB
+> work out from the firmware driver).
+>
+> Signed-off-by: Alexander Aring <alex.aring@gmail.com>
+> Signed-off-by: Eric Anholt <eric@anholt.net>
+> ---
+>
+> v2: Add support for power domains other than USB, using the new
+>     firmware interface, reword commit message (changes by Eric)
+>
+> v3: Restructure as a builtin driver, and drop
+>     of_genpd_add_provider_onecell error handling to avoid
+>     pm_genpd_exit() dependency until that API can be settled.  Clean
+>     up copyright header, add missing ISP initialization, and fix typo
+>     in transposer's name.
+>
+> v4: Move to drivers/soc/bcm/, move include to dt-bindings/soc/, set up
+>     Makefile for the drivers/soc/bcm following clk/'s model.
+>
+>  drivers/soc/Kconfig                         |   1 +
+>  drivers/soc/Makefile                        |   1 +
+>  drivers/soc/bcm/Kconfig                     |   9 +
+>  drivers/soc/bcm/Makefile                    |   1 +
+>  drivers/soc/bcm/raspberrypi-power.c         | 247 ++++++++++++++++++++++++++++
+>  include/dt-bindings/soc/raspberrypi-power.h |  41 +++++
 
-> Add a driver for the Tegra-AGIC interrupt controller which is compatible
-> with the ARM GIC-400 interrupt controller.
-(...)
-> +static const struct dev_pm_ops gic_pm_ops = {
-> +       SET_RUNTIME_PM_OPS(gic_runtime_suspend,
-> +                          gic_runtime_resume, NULL)
-> +       SET_SYSTEM_SLEEP_PM_OPS(gic_suspend, gic_resume)
-> +};
+There is currently a directory which I think may be better.
+include/dt-bindings/power/*
 
-Now you do what I commented on in the earlier patch: assign
-the runtime PM functions to normal suspend/resume.
+Besides this nitpick, I think this looks good. You may add my:
 
-This will have the effect of inhibiting any IRQs marked for
-wakeup on the GIC, even if you just want to go to sleep until
-something happens, will it not?
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-You should turn on the alarm clock before going to bed, not
-turn it off, as figure of speak ...
-
-Yours,
-Linus Walleij
+Kind regards
+Uffe
