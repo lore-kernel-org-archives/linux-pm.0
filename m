@@ -1,96 +1,44 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] PM / OPP: Fix parsing of opp-microvolt and opp-microamp
- properties
-Date: Thu, 17 Dec 2015 07:31:33 +0530
-Message-ID: <20151217020133.GD3496@ubuntu>
-References: <18360458.m71vGHrTb9@amdc1976>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <18360458.m71vGHrTb9@amdc1976>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Lee Jones <lee.jones@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Stephen Boyd <sboyd@codeaurora.org>, nm@ti.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Dmitry Torokhov <dtor@chromium.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Shawn Guo <shawnguo@kernel.org>, linux-samsung-soc@vger.kernel.org
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] ACPI: processor thermal cooling device regression
+Date: Wed, 16 Dec 2015 20:32:23 -0800
+Message-ID: <1450326743-9460-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:27531 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750985AbbLQEee (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 16 Dec 2015 23:34:34 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rafael@kernel.org
+Cc: len.brown@intel.com, rui.zhang@intel.com, linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On 16-12-15, 16:41, Bartlomiej Zolnierkiewicz wrote:
-> Commit 01fb4d3c39d3 ("PM / OPP: Parse 'opp-<prop>-<name>'
-> bindings") broke support for parsing standard opp-microvolt and
-> opp-microamp properties.  Fix it by setting 'name' string to
-> proper value for !dev_opp->prop_name cases.
-> 
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Lee Jones <lee.jones@linaro.org>
-> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Fixes: 01fb4d3c39d3 ("PM / OPP: Parse 'opp-<prop>-<name> 'bindings")
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> ---
-> This fixes Exynos4x12 cpufreq-dt support regression present in
-> linux-pm/linux-next tree.  Rafael, please apply.  Thank you.
-> 
->  drivers/base/power/opp/core.c |   12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
-> 
-> Index: b/drivers/base/power/opp/core.c
-> ===================================================================
-> --- a/drivers/base/power/opp/core.c	2015-12-16 16:10:13.509171420 +0100
-> +++ b/drivers/base/power/opp/core.c	2015-12-16 16:21:18.385183902 +0100
-> @@ -806,11 +806,11 @@ static int opp_parse_supplies(struct dev
->  	struct property *prop = NULL;
->  	char name[NAME_MAX];
->  
-> +	sprintf(name, "opp-microvolt-%s", dev_opp->prop_name);
-> +
->  	/* Search for "opp-microvolt-<name>" */
-> -	if (dev_opp->prop_name) {
-> -		sprintf(name, "opp-microvolt-%s", dev_opp->prop_name);
-> +	if (dev_opp->prop_name)
->  		prop = of_find_property(opp->np, name, NULL);
-> -	}
->  
->  	if (!prop) {
->  		/* Search for "opp-microvolt" */
-> @@ -848,10 +848,10 @@ static int opp_parse_supplies(struct dev
->  
->  	/* Search for "opp-microamp-<name>" */
->  	prop = NULL;
-> -	if (dev_opp->prop_name) {
-> -		sprintf(name, "opp-microamp-%s", dev_opp->prop_name);
-> +	sprintf(name, "opp-microamp-%s", dev_opp->prop_name);
-> +
-> +	if (dev_opp->prop_name)
->  		prop = of_find_property(opp->np, name, NULL);
-> -	}
->  
->  	if (!prop) {
->  		/* Search for "opp-microamp" */
+The processor cooling device is no longer present for passive thermal
+control. The change
+commit 239708a3af44 ("ACPI: Split out ACPI PSS from ACPI Processor driver")
+moved the processing to a new function acpi_pss_perf_init, but
+missing "return 0" after successful creation. This causes the error
+handling functions to be called, which will delete the previously
+created processor cooling device.
 
-Sorry about this. And I am disliking the solution suggested by Stephen
-more and more now. Please resend this patch with following changes
-instead:
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/acpi/processor_driver.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index 6c6856e426f0..a96df5cda303 100644
---- a/drivers/base/power/opp/core.c
-+++ b/drivers/base/power/opp/core.c
-@@ -816,7 +816,7 @@ static int opp_parse_supplies(struct dev_pm_opp *opp, struct device *dev,
+diff --git a/drivers/acpi/processor_driver.c b/drivers/acpi/processor_driver.c
+index f4e02ae..11154a3 100644
+--- a/drivers/acpi/processor_driver.c
++++ b/drivers/acpi/processor_driver.c
+@@ -200,7 +200,8 @@ static int acpi_pss_perf_init(struct acpi_processor *pr,
+ 		goto err_remove_sysfs_thermal;
+ 	}
  
-        if (!prop) {
-                /* Search for "opp-microvolt" */
--               name[13] = '\0';
-+               sprintf(name, "opp-microvolt");
-                prop = of_find_property(opp->np, name, NULL);
- 
-                /* Missing property isn't a problem, but an invalid entry is */
-@@ -857,7 +857,7 @@ static int opp_parse_supplies(struct dev_pm_opp *opp, struct device *dev,
- 
-        if (!prop) {
-                /* Search for "opp-microamp" */
--               name[12] = '\0';
-+               sprintf(name, "opp-microamp");
-                prop = of_find_property(opp->np, name, NULL);
-        }
-
+-	sysfs_remove_link(&pr->cdev->device.kobj, "device");
++	return 0;
++
+  err_remove_sysfs_thermal:
+ 	sysfs_remove_link(&device->dev.kobj, "thermal_cooling");
+  err_thermal_unregister:
 -- 
-viresh
+2.4.3
+
