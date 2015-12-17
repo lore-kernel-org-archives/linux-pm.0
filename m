@@ -1,72 +1,60 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 2/3] thermal: Add Mediatek thermal controller support
-Date: Thu, 17 Dec 2015 11:33:33 -0800
-Message-ID: <20151217193332.GB7999@localhost.localdomain>
-References: <1448883753-19068-1-git-send-email-s.hauer@pengutronix.de>
- <1448883753-19068-3-git-send-email-s.hauer@pengutronix.de>
+From: Wolfram Sang <wsa@the-dreams.de>
+Subject: Re: [PATCH v2] i2c: rcar: disable runtime PM correctly in slave mode
+Date: Thu, 17 Dec 2015 20:39:07 +0100
+Message-ID: <20151217193907.GC1530@katana>
+References: <1450292718-11951-1-git-send-email-wsa@the-dreams.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="lCAWRPmW1mITcIfM"
+Return-path: <linux-i2c-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1448883753-19068-3-git-send-email-s.hauer@pengutronix.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Matthias Brugger <matthias.bgg@gmail.com>
+In-Reply-To: <1450292718-11951-1-git-send-email-wsa@the-dreams.de>
+Sender: linux-i2c-owner@vger.kernel.org
+To: linux-i2c@vger.kernel.org
+Cc: linux-sh@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Sascha,
 
-Yeah, sorry for the long delay. I was planing on applying this patch for
-the next merge window, but it just came across one point, see below.
+--lCAWRPmW1mITcIfM
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, Nov 30, 2015 at 12:42:32PM +0100, Sascha Hauer wrote:
-> This adds support for the Mediatek thermal controller found on MT8173
-> +static const int sensor_mux_values[MT8173_NUM_SENSORS] = { 0, 1, 2, 3, 16 };
-> +
+On Wed, Dec 16, 2015 at 08:05:18PM +0100, Wolfram Sang wrote:
+> From: Wolfram Sang <wsa+renesas@sang-engineering.com>
+>=20
+> When we also are I2C slave, we need to disable runtime PM because the
+> address detection mechanism needs to be active all the time. However, we
+> can reenable runtime PM once the slave instance was unregistered. So,
+> use pm_runtime_get_sync/put to achieve this, since it has proper
+> refcounting. pm_runtime_allow/forbid is like a global knob controllable
+> from userspace which is unsuitable here.
+>=20
+> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
 
-<big cut>
+Applied to for-current, thanks!
 
-> +/*
-> + * The MT8173 thermal controller has four banks. Each bank can read up to
-> + * four temperature sensors simultaneously. The MT8173 has a total of 5
-> + * temperature sensors. We use each bank to measure a certain area of the
-> + * SoC. Since TS2 is located centrally in the SoC it is influenced by multiple
-> + * areas, hence is used in different banks.
-> + *
-> + * The thermal core only gets the maximum temperature of all banks, so
-> + * the bank concept wouldn't be necessary here. However, the SVS (Smart
-> + * Voltage Scaling) unit makes its decisions based on the same bank
-> + * data, and this indeed needs the temperatures of the individual banks
-> + * for making better decisions.
-> + */
-> +static const struct mtk_thermal_bank_cfg bank_data[] = {
-> +	{
-> +		.num_sensors = 2,
-> +		.sensors = { MT8173_TS2, MT8173_TS3 },
-> +	}, {
-> +		.num_sensors = 2,
-> +		.sensors = { MT8173_TS2, MT8173_TS4 },
-> +	}, {
-> +		.num_sensors = 3,
-> +		.sensors = { MT8173_TS1, MT8173_TS2, MT8173_TSABB },
-> +	}, {
-> +		.num_sensors = 1,
-> +		.sensors = { MT8173_TS2 },
-> +	},
-> +};
 
-Why can't we expose all these as thermal zones?
+--lCAWRPmW1mITcIfM
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-That should remove the policy of computing the maximum from this driver.
-Please have a look on the work being done [1] to add grouping and
-aggregation of thermal zones. With that in place, you should be a matter
-of configuring the grouping and selecting max as the aggregation function,
-from the thermal core, instead in the driver. Which should give the
-system engineer, more flexibility to compose whatever policy based on
-the exposed sensors.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-BR,
+iQIcBAEBAgAGBQJWcw9aAAoJEBQN5MwUoCm2AVcP+wdMLl83gMeg0K6RDiCYm817
+71luAhK+f5L9xAq0sjs67m24F+G3igkE4UuDHtKWDKnc6j4oSpj8BoYbIGJikFLh
+oqDCwK0dOuXPjnVok6Rp+XF0/VFrD34uhudvbZBP9e3aKygBtZY2C9hDbQdTP5gS
+/p6mCLaCKQwAcFhfmHUW2PuUeeoy7r9Pt2fE5tnUV+AB2aTd2IEfJOkI9phDgUO4
+92ddu2j8il1YM2RFxjt6Z7QzlcTu/+NCuShzng+PUXj0aHHT9EsrRPzyO0ZEEcuT
+C95NkOhYnNdOQnHesDE8APb4fkMpM48ODKppch9u1ePPS+VijZBSmlw/PffrW5yW
+fTxXJJlXz81qvDB3sI+RT+9NNT02IRAfUG6Vh3BTsopvxBzHSo21mRDkWtzx3Kw0
+heRVMi+uBK7uktwWteXOvXszrz2UKpBUDpANP6hnZpZQLwDcApNapDbZR+f7FIQd
+0D4r8/VWNOfKr/gQMZE8pclvkcbN4oV1bG5B0+hNAvRSVVVl+gxHU0jBwqKs0WO6
+bvKyHVT36O0kOsKE0KO13ARvnwosk8CE2MqMKLQjkSDqGwvQ8TVxpNFMkS5knI1p
+3TvQUtzHi/h2USam1m7haGAQ5PxUggNwte0Rk4pgcdIW8UNuO1hxMTrmMI6nOJm7
+ytkmdGlo8ShCRkCwPxq3
+=Mssd
+-----END PGP SIGNATURE-----
 
-Eduardo Valentin
-
-[1] - https://lkml.org/lkml/2015/11/25/446
+--lCAWRPmW1mITcIfM--
