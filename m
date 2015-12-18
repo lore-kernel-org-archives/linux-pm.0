@@ -1,66 +1,45 @@
-From: Steve Muckle <steve.muckle@linaro.org>
-Subject: Re: [RFCv6 PATCH 03/10] sched: scheduler-driven cpu frequency
- selection
-Date: Fri, 18 Dec 2015 11:15:01 -0800
-Message-ID: <56745B35.5050704@linaro.org>
-References: <1449641971-20827-1-git-send-email-smuckle@linaro.org>
- <1449641971-20827-4-git-send-email-smuckle@linaro.org>
- <20151216034825.GA11303@leoy-linaro> <56720EE8.1090507@linaro.org>
- <20151217071733.GB6195@leoy-linaro>
+From: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
+Subject: Re: [PATCH V3] cpufreq: qoriq: Register cooling device based on device tree
+Date: Fri, 18 Dec 2015 23:32:33 +0100
+Message-ID: <3550740.QzZi28fbXg@wuerfel>
+References: <1448529671-48216-1-git-send-email-hongtao.jia@freescale.com> <1697588.dLcbZBRWO4@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20151217071733.GB6195@leoy-linaro>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Leo Yan <leo.yan@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Michael Turquette <mturquette@baylibre.com>, Ricky Liang <jcliang@chromium.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1697588.dLcbZBRWO4-sKB8Sp2ER+y1GS7QM15AGw@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Cc: Jia Hongtao <hongtao.jia-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, scottwood-KZfg59tc24xl57MIdRCFDg@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Leo,
-
-On 12/16/2015 11:17 PM, Leo Yan wrote:
-> Could you check if below corner case will introduce logic error?
-> The task still will be removed from rq if timer tick is triggered
-> between two time's set_current_state().
+On Tuesday 15 December 2015 00:58:26 Rafael J. Wysocki wrote:
+> On Thursday, November 26, 2015 05:21:11 PM Jia Hongtao wrote:
+> > Register the qoriq cpufreq driver as a cooling device, based on the
+> > thermal device tree framework. When temperature crosses the passive trip
+> > point cpufreq is used to throttle CPUs.
+> > 
+> > Signed-off-by: Jia Hongtao <hongtao.jia-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
+> > Reviewed-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 > 
-> set_current_state(TASK_INTERRUPTIBLE);
->            `-------> timer_tick and
->                      schedule();
-> do_something...
-> set_current_state(TASK_RUNNING);
+> Applied, thanks!
 > 
-> It will be safe for combination for set_current_state()/schedule()
-> with waken_up_process():
-> 
-> Thread_A:                                       Thread_B:
-> 
-> set_current_state(TASK_INTERRUPTIBLE);
->              `-------> timer_tick and
->                        schedule();
-> ....
->                                                 wake_up_process(Thread_A);
->                            <---------------------/
-> schedule();
-> 
-> The first time's schedule() will remove task from rq which is caused
-> by timer tick and call schedule(), and the second time schdule() will
-> be equal yeild().
 
-I was initially concerned about preemption while task state =
-TASK_INTERRUPTIBLE as well, but a task with state TASK_INTERRUPTIBLE is
-not dequeued if it is preempted. See core.c:__schedule():
+I got a randconfig build error today:
 
-        if (!preempt && prev->state) {
-                if (unlikely(signal_pending_state(prev->state, prev))) {
-                        prev->state = TASK_RUNNING;
-                } else {
-                        deactivate_task(rq, prev, DEQUEUE_SLEEP);
-                        prev->on_rq = 0;
+drivers/built-in.o: In function `qoriq_cpufreq_ready':
+debugfs.c:(.text+0x1f4688): undefined reference to `of_cpufreq_cooling_register'
 
-I knew this had to be the case, because this design pattern is used in
-many other places in the kernel, so many things would be very broken if
-this were a problem.
+CONFIG_OF=y
+CONFIG_QORIQ_CPUFREQ=y
+CONFIG_THERMAL=m
+CONFIG_THERMAL_OF=y
 
-thanks,
-Steve
+I think you need a 'depends on THERMAL' to prevent the driver from
+being built-in when THERMAL=m.
+
+	Arnd
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
