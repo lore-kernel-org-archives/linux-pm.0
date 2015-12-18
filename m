@@ -1,125 +1,70 @@
-From: "pankaj.dubey" <pankaj.dubey@samsung.com>
-Subject: Re: [PATCH v6 0/9] samsung: pmu: split up SoC specific PMU data
-Date: Fri, 18 Dec 2015 09:14:29 +0530
-Message-ID: <5673811D.7040808@samsung.com>
-References: <1447740351-14246-1-git-send-email-pankaj.dubey@samsung.com>
- <56724896.1080009@samsung.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Subject: Re: [PATCH v7 0/6] samsung: pmu: split up SoC specific PMU data
+Date: Fri, 18 Dec 2015 13:27:37 +0900
+Message-ID: <56738B39.10201@samsung.com>
+References: <1450409536-30463-1-git-send-email-pankaj.dubey@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <56724896.1080009@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: kgene.kim@samsung.com, thomas.ab@samsung.com, amitdanielk@gmail.com, olof@lixom.net, khilman@linaro.org, arnd@arndb.de
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.w1.samsung.com ([210.118.77.12]:33533 "EHLO
+	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932165AbbLRE1i (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 17 Dec 2015 23:27:38 -0500
+In-reply-to: <1450409536-30463-1-git-send-email-pankaj.dubey@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pankaj Dubey <pankaj.dubey@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Cc: kgene.kim@samsung.com, thomas.ab@samsung.com, amitdanielk@gmail.com, olof@lixom.net, khilman@linaro.org, arnd@arndb.de
 
-Hi Krzysztof,
-
-On Thursday 17 December 2015 11:01 AM, Krzysztof Kozlowski wrote:
-> On 17.11.2015 15:05, Pankaj Dubey wrote:
->> In this series I am splitting up SoC specific PMU configuration data into
->> mach-exynos folder itself, before moving all of them under
->> drivers/soc/samsung/. Also instead of making all changes in single patch it
->> has been broken into SoC specific patches to avoid large size of patch.
->> With this approach there will not be unwanted big churns just after
->> adding exynos-pmu under drivers/soc/samsung.
->>
->> All these patches are just refactoring to keep minimal changes while moving
->> exynos-pmu driver under drivers/soc/samsung/. Support for exynos7 PMU can
->> be added on top of it, in such a manner that for ARM64 build, ARM related
->> SoC's PMU will not get compiled and thus unnecessary increasing kernel image size.
->>
->> These patches have been prepared on top of Kukjin Kim's for-next merged with
->> driver-samsung and on top of
->> cherry-picked change from [1].
->>
->> 1: ARM: EXYNOS: Constify local exynos_pmu_data structure
->>    https://lkml.org/lkml/2015/10/28/917
->>
->> For testing entire patchset on Peach-Pi (Exynos5880) based chromebook for boot
->> and S2R functionality.
->>
->> Tested-by: Pankaj Dubey <pankaj.dubey@samsung.com>
->>
->> For testing entire patchset on on Trats2 (Exynos4412, S2R, reboot, poweroff)
->> and Odroid XU3 (Exynos5422, reboot, poweroff).
->>
->> Tested-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
->>
->> Changes since v5:
->>  - Removed extra blank line from patch 5/9 and 6/9.
->>  - Modified soc/samsung/Kconfig for config EXNOS_PMU. Added depends on ARM.
->>
->> Changes since v4:
->>  - In v3 I missed to give -M flag to detect rename, which made patches hard
->>    to review, so resubmitting patches with rename detector flag.
->>  - Addressed review comments from Krzysztof.
->>
->> Changes since v3:
->>  - Keeping intact copyright dates in existing header files.
->>  - Addressed review comments from Krzysztof for v3.
->>  - Removing static inline function from exynos-pmu.h and
->>    keeping them in PMU driver.
->>  - Added new patch (2/9) for fixing potential null pointer reference in
->>    exynos_sys_powerdown_conf.
->>  - Added new patch (8/9) for rearranging static and non-static function for
->>    better readability.
->>
->> Changes since v2:
->>  - Removed Amit's Samsung id as it's no more valid.
->>  - Rebased on latest kgene tree.
->>  - Removed redundant code from regs-pmu.h
->>
->> Pankaj Dubey (9):
->>   ARM: EXYNOS: removing redundant code from regs-pmu.h
->>   ARM: EXYNOS: Fix potential NULL pointer access in
->>     exynos_sys_powerdown_conf
->>   ARM: EXYNOS: Move pmu specific headers under "linux/soc/samsung"
->>   ARM: EXYNOS: split up exynos3250 SoC specific PMU data
->>   ARM: EXYNOS: split up exynos4 SoC specific PMU data
->>   ARM: EXYNOS: split up exynos5250 SoC specific PMU data
->>   ARM: EXYNOS: split up exynos5420 SoC specific PMU data
->>   ARM: EXYNOS: rearrange static and non-static functions of PMU driver
->>   drivers: soc: Add support for Exynos PMU driver
->>
+On 18.12.2015 12:32, Pankaj Dubey wrote:
+> In this series I am splitting up SoC specific PMU configuration data into
+> mach-exynos folder itself, before moving all of them under
+> drivers/soc/samsung/. Also instead of making all changes in single patch it
+> has been broken into SoC specific patches to avoid large size of patch.
+> With this approach there will not be unwanted big churns just after
+> adding exynos-pmu under drivers/soc/samsung.
 > 
-> I tried to apply this to my branch:
-> next/stuff-late-not-split-per-branch
-> https://git.kernel.org/cgit/linux/kernel/git/krzk/linux.git/log/?h=next/stuff-late-not-split-per-branch
+> All these patches are just refactoring to keep minimal changes while moving
+> exynos-pmu driver under drivers/soc/samsung/. Support for exynos7 PMU can
+> be added on top of it, in such a manner that for ARM64 build, ARM related
+> SoC's PMU will not get compiled and thus unnecessary increasing kernel image size.
 > 
-> Unfortunately it fails on:
-> error: patch failed: arch/arm/mach-exynos/pmu.c:17
-> error: arch/arm/mach-exynos/pmu.c: patch does not apply
-> Patch failed at 0001 ARM: EXYNOS: Move pmu specific headers under
-> "linux/soc/samsung"
+> This series have been prepared on top of Krzysztof Kozlowski's 
+> next/stuff-late-not-split-per-branch branch, and it's just a rebase compared to
+> V6 posted and reviewed here [1]. 
 > 
-> because of syscon-reboot handlers (Alim's work).
+> [1]: https://lkml.org/lkml/2015/11/17/15
 > 
-> I think I have all the dependencies already in my
-> "next/stuff-late-not-split-per-branch".
-> If you want to proceed now, can you rebase on top of it? Otherwise we
-> could wait and rebase later (after v4.5-rc1).
+> For testing entire patchset on Peach-Pi (Exynos5880) based chromebook for boot
+> and S2R functionality.
 > 
+> Tested-by: Pankaj Dubey <pankaj.dubey@samsung.com>
+> 
+> For testing entire patchset on on Trats2 (Exynos4412, S2R, reboot, poweroff)
+> and Odroid XU3 (Exynos5422, reboot, poweroff).
+> 
+> Tested-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+> 
+> Changes since v6:
+>  - Rebasing on top of branch provided by Krzysztof, after resolving conflicts 
+>    caused due to Alim's patches for adoptation of generic syscon for poweroff, reboot.
+>  - Included Tested-by tags on individual patches as per applicability.
+>  - Dropped patches v6 [1/9], v6 [2/9] as these are already present in above mentioned branch.
+>  - Dropped patch v6 [8/9] as after Alim's patch this patch no more required.
 > 
 
-Thanks for looking into this.
+Patchset applied cleanly with:
+1. Removal of blank lines at end of two files (they appeared in v7).
+2. Removal of your tested-by. The author does not provide such tag
+because it is assumed that he tested it before sending. However I left
+the information about testing platform near your signed-off-by.
 
-I have just posted v7 of this series after rebasing on
-"next/stuff-late-not-split-per-branch". Please have a look and if all
-OK, include v7 in your branch, and lets try to get this in for v4.5. For
-some reason if does not go, I am OK to wait for next cycle.
+You can find the patches on the same branch:
+https://git.kernel.org/cgit/linux/kernel/git/krzk/linux.git/log/?h=next/stuff-late-not-split-per-branch
 
+I hope I will be able to push it out to arm-soc soon...
 
-Thanks,
-Pankaj Dubey
+Best regards,
+Krzysztof
 
-> P.S. Please note that "next/stuff-late-not-split-per-branch" is not
-> included in linux-next because I am not sure if I will be able to push
-> it out soon.
-> 
-> 
-> Best regards,
-> Krzysztof
-> 
-> 
