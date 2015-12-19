@@ -1,72 +1,83 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCH] i2c: s3c2410: remove superfluous runtime PM calls
-Date: Sat, 19 Dec 2015 11:52:13 +0100
-Message-ID: <20151219105213.GB2571@katana>
-References: <1450203249-4873-1-git-send-email-wsa@the-dreams.de>
- <56716CC3.50309@samsung.com>
- <20151217094655.GV6058@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="p4qYPpj5QlsIQJ0K"
+From: Javi Merino <javi.merino@arm.com>
+Subject: [PATCH] thermal: cpu_cooling: fix out of bounds access in time_in_idle
+Date: Sat, 19 Dec 2015 12:54:37 +0000
+Message-ID: <1450529677-23426-1-git-send-email-javi.merino@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from sauhun.de ([89.238.76.85]:49338 "EHLO pokefinder.org"
+Received: from foss.arm.com ([217.140.101.70]:44592 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932672AbbLSKwT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 19 Dec 2015 05:52:19 -0500
-Content-Disposition: inline
-In-Reply-To: <20151217094655.GV6058@localhost.localdomain>
+	id S1751272AbbLSMys (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 19 Dec 2015 07:54:48 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Charles Keepax <ckeepax@opensource.wolfsonmicro.com>
-Cc: Sylwester Nawrocki <s.nawrocki@samsung.com>, linux-i2c@vger.kernel.org, linux-pm@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+To: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Javi Merino <javi.merino@arm.com>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 
+In __cpufreq_cooling_register() we allocate the arrays for time_in_idle
+and time_in_idle_timestamp to be as big as the number of cpus in this
+cpufreq device.  However, in get_load() we access this array using the
+cpu number as index, which can result in an out of bound access.
 
---p4qYPpj5QlsIQJ0K
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Index time_in_idle{,_timestamp} using the index in the cpufreq_device's
+allowed_cpus mask, as we do for the load_cpu array in
+cpufreq_get_requested_power()
 
-On Thu, Dec 17, 2015 at 09:46:55AM +0000, Charles Keepax wrote:
-> On Wed, Dec 16, 2015 at 02:53:07PM +0100, Sylwester Nawrocki wrote:
-> > On 15/12/15 19:14, Wolfram Sang wrote:
-> > > Since commit 6ada5c1e1b077a ("i2c: Mark adapter devices with
-> > > pm_runtime_no_callbacks"), runtime PM on adapters turned into a no-op.
-> > > So, we can remove these calls.
-> >=20
-> > Won't this break i2c client devices that use runtime PM? Not sure
-> > if any cases of such client exist now, I'll try to find some time
-> > to test this change.
-> >=20
->=20
-> Our CODECs can be controlled over I2C and use runtime PM.
-> However, this change doesn't seem to have any adverse effect on
-> them that I can find.
->=20
-> Tested-by: Charles Keepax <ckeepax@opensource.wolfsonmicro.com>
+Reported-by: Nicolas Boichat <drinkcat@chromium.org>
+Cc: Amit Daniel Kachhap <amit.kachhap@gmail.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Signed-off-by: Javi Merino <javi.merino@arm.com>
+---
+ drivers/thermal/cpu_cooling.c | 14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
 
-Thanks for testing!
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index e3fbc5a5d88f..bd1bab9eade0 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -377,26 +377,28 @@ static u32 cpu_power_to_freq(struct cpufreq_cooling_device *cpufreq_device,
+  * get_load() - get load for a cpu since last updated
+  * @cpufreq_device:	&struct cpufreq_cooling_device for this cpu
+  * @cpu:	cpu number
++ * @cpu_idx:	index of the cpu in cpufreq_device->allowed_cpus
+  *
+  * Return: The average load of cpu @cpu in percentage since this
+  * function was last called.
+  */
+-static u32 get_load(struct cpufreq_cooling_device *cpufreq_device, int cpu)
++static u32 get_load(struct cpufreq_cooling_device *cpufreq_device, int cpu,
++                    int cpu_idx)
+ {
+ 	u32 load;
+ 	u64 now, now_idle, delta_time, delta_idle;
+ 
+ 	now_idle = get_cpu_idle_time(cpu, &now, 0);
+-	delta_idle = now_idle - cpufreq_device->time_in_idle[cpu];
+-	delta_time = now - cpufreq_device->time_in_idle_timestamp[cpu];
++	delta_idle = now_idle - cpufreq_device->time_in_idle[cpu_idx];
++	delta_time = now - cpufreq_device->time_in_idle_timestamp[cpu_idx];
+ 
+ 	if (delta_time <= delta_idle)
+ 		load = 0;
+ 	else
+ 		load = div64_u64(100 * (delta_time - delta_idle), delta_time);
+ 
+-	cpufreq_device->time_in_idle[cpu] = now_idle;
+-	cpufreq_device->time_in_idle_timestamp[cpu] = now;
++	cpufreq_device->time_in_idle[cpu_idx] = now_idle;
++	cpufreq_device->time_in_idle_timestamp[cpu_idx] = now;
+ 
+ 	return load;
+ }
+@@ -598,7 +600,7 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
+ 		u32 load;
+ 
+ 		if (cpu_online(cpu))
+-			load = get_load(cpufreq_device, cpu);
++			load = get_load(cpufreq_device, cpu, i);
+ 		else
+ 			load = 0;
+ 
+-- 
+1.9.1
 
-
---p4qYPpj5QlsIQJ0K
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJWdTbdAAoJEBQN5MwUoCm219IP/AwBCgzzMaywq48ncGXxCOcL
-drG3N1nnooASYOe5+7xycgecMFMucraceXyKrpjQUMhI2zd2tX4TdCBKkKcwB06x
-rPzamaXbe035eagxzlE/ku7JDzezLcTnURjMs5aWG1AWc66lTHY82nVENM6Dg0vt
-m5cBn36r+n6jf18BseBBW0pGzjsjJNvDxTORXzPKDeNQ70bxHY3ksL9sdzRhvYr9
-orH5Vy4075EkcfyK0S+4lglU546mYpSB7Yd3m9PJ0tsmokJMP8BprKFLj+3pxcOC
-2kht/qcbJFPT8alI7b60f2S9H/bTa+fa7GPrfFlvDW/NWDHMf1dVWg7s2NyVYGe/
-sAWzzHN9X0VyCFhoTiOXMpiVpB1zAduSWlcbBZqp2nfDWAEJl7cxY1gKtJQ2N0dn
-jF5MdtSJ4dSnimSCMOfINaSBdzSEcFf+Cmk8QVb1fM2lat+b0+dQwWNNQPRtkHfY
-DVpJc8H27l6/Ely/RPxugInUjj0i++KuUkwovZz73u9Gl5N0wO70zVER/T1yKWM8
-QUjB3UCpGh+4BqTT8iTlwkEFcdB9RGIH+7cbzSMG7dA6Oyp5hOvUXYEY7BE1qMy0
-83GbogvU7GOU/cnhKhKIpMT4rcULVrZe2OfNlwXhcpvcLMdtpMrlcCazG8G3O0ij
-zdxn5fRQorSZFJFbkyES
-=buqW
------END PGP SIGNATURE-----
-
---p4qYPpj5QlsIQJ0K--
