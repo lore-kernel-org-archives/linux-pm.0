@@ -1,39 +1,27 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH RESEND] thermal: power_allocator: req_range
- multiplication should be a 64 bit type
-Date: Sat, 19 Dec 2015 13:49:59 +0000
-Message-ID: <20151219134958.GB2594@e104805>
-References: <1448982923-19416-1-git-send-email-javi.merino@arm.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] i2c: s3c2410: remove superfluous runtime PM calls
+Date: Sat, 19 Dec 2015 12:05:15 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1512191202150.27155-100000@netrider.rowland.org>
+References: <20151219105030.GA2571@katana>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:44660 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753648AbbLSNuC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 19 Dec 2015 08:50:02 -0500
-Content-Disposition: inline
-In-Reply-To: <1448982923-19416-1-git-send-email-javi.merino@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <20151219105030.GA2571@katana>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: Sylwester Nawrocki <s.nawrocki@samsung.com>, linux-i2c@vger.kernel.org, linux-pm@vger.kernel.org, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, Lars-Peter Clausen <lars@metafoo.de>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: edubezval@gmail.com, Zhang Rui <rui.zhang@intel.com>
-Cc: dan.carpenter@oracle.com, linux-pm@vger.kernel.org
 
-Eduardo, Rui,
+On Sat, 19 Dec 2015, Wolfram Sang wrote:
 
-On Tue, Dec 01, 2015 at 03:15:23PM +0000, Javi Merino wrote:
-> req_range is declared as a u64 to cope with overflows in the
-> multiplication of two u32.  As both req_power and power_range are u32,
-> we need to make sure the multiplication is done with u64 types.
-> 
-> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Eduardo Valentin <edubezval@gmail.com>
-> Signed-off-by: Javi Merino <javi.merino@arm.com>
-> ---
->  drivers/thermal/power_allocator.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> Asking linux-pm for help here: If we want to support RuntimePM for I2C
+> clients, do we need to enable RuntimePM on the logical I2C adapter
+> device (the bus master) which is already marked using
+> pm_runtime_no_callbacks?
 
-Any comments on this?  If not, can it be merged?
+In theory you don't need to.  But there are some advantages if you do: 
+You get automatic runtime PM time accounting for the adapter device 
+(how much time active and how much suspended), and suspend events will 
+propagate from the I2C clients all the way up to the adapter's parent.
 
-Thanks,
-Javi
+Alan Stern
