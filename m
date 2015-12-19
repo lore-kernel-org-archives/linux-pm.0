@@ -1,76 +1,70 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management fixes for v4.4-rc6
-Date: Sat, 19 Dec 2015 04:45:20 +0100
-Message-ID: <CAJZ5v0i=-hZODTu6FiER3A5=oLOMycxh-zMtDb0PVKcfjgrzfQ@mail.gmail.com>
+From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 5/8 v6] thermal: rcar: enable to use thermal-zone on DT
+Date: Fri, 18 Dec 2015 22:17:06 -0600
+Message-ID: <20151219041706.GA14936@rob-hp-laptop>
+References: <87d1u8qzsy.wl%kuninori.morimoto.gx@renesas.com>
+ <876100qzp6.wl%kuninori.morimoto.gx@renesas.com>
+ <20151217203707.GD7999@localhost.localdomain>
+ <87wpsctxjv.wl%kuninori.morimoto.gx@renesas.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <87wpsctxjv.wl%kuninori.morimoto.gx-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Kuninori Morimoto <kuninori.morimoto.gx-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
+Cc: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Simon <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Magnus <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+On Fri, Dec 18, 2015 at 12:25:51AM +0000, Kuninori Morimoto wrote:
+> 
+> From: Kuninori Morimoto <kuninori.morimoto.gx-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
+> 
+> This patch enables to use thermal-zone on DT if it was calles as
+> "renesas,rcar-thermal-gen2".
+> Previous style (= non thermal-zone) is still supported by
+> "renesas,rcar-thermal" to keep compatibility for "git bisect".
+> 
+> Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
+> ---
+> v5 -> v6
+> 
+>  - "was call" -> "was called"
 
-Please pull from
+Except there is a typo...
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm+acpi-4.4-rc6
+>  - add reason why it keeps previous style
+> 
+>  .../devicetree/bindings/thermal/rcar-thermal.txt   | 37 +++++++++++++++++-
+>  drivers/thermal/rcar_thermal.c                     | 45 +++++++++++++++++++---
+>  2 files changed, 75 insertions(+), 7 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/thermal/rcar-thermal.txt b/Documentation/devicetree/bindings/thermal/rcar-thermal.txt
+> index 332e625..e5ee3f1 100644
+> --- a/Documentation/devicetree/bindings/thermal/rcar-thermal.txt
+> +++ b/Documentation/devicetree/bindings/thermal/rcar-thermal.txt
+> @@ -1,8 +1,9 @@
+>  * Renesas R-Car Thermal
+>  
+>  Required properties:
+> -- compatible		: "renesas,thermal-<soctype>", "renesas,rcar-thermal"
+> -			  as fallback.
+> +- compatible		: "renesas,thermal-<soctype>",
+> +			   "renesas,rcar-gen2-thermal" (with thermal-zone) or
+> +			   "renesas,rcar-thermal" (without thermal-zone) as fallback.
+>  			  Examples with soctypes are:
+>  			    - "renesas,thermal-r8a73a4" (R-Mobile APE6)
+>  			    - "renesas,thermal-r8a7779" (R-Car H1)
 
-to receive power management fixes for v4.4-rc6 with top-most commit
-f1b9fc591e437ec07626ba84e1d81be19cb00eb6
+> +thermal: thermal@e61f0000 {
+> +	compatible =	"renesas,thermal-r8a7790",
+> +			"renesas,rcar-gen2-thermal",
+> +			"renesas,rcar-thermal";
 
- Merge branches 'powercap', 'pm-cpufreq' and 'pm-domains'
+Isn't having both mutually exclusive?
 
-on top of commit 9f9499ae8e6415cefc4fe0a96ad0e27864353c89
-
- Linux 4.4-rc5
-
-These fix a potential regression introduced during the 4.3 cycle
-(generic power domains framework), a nasty bug that has been present
-forever (power capping RAPL driver), a build issue (Tegra cpufreq
-driver) and a minor ugliness introduced recently (intel_pstate).
-
-Specifics:
-
- - Fix a potential regression in the generic power domains
-   framework introduced during the 4.3 development cycle that
-   may lead to spurious failures of system suspend in certain
-   situations (Ulf Hansson).
-
- - Fix a problem in the power capping RAPL (Running Average
-   Power Limits) driver that causes it to initialize successfully
-   on some systems where it is not supposed to do that which is
-   due to an incorrect check in an initialization routine (Prarit
-   Bhargava).
-
- - Fix a build problem in the cpufreq Tegra driver that depends
-   on the regulator framework, but that dependency is not reflected
-   in Kconfig (Arnd Bergmann).
-
- - Fix a recent mistake in the intel_pstate driver where a numeric
-   constant is used directly instead of a symbol defined specifically
-   for the case in question (Prarit Bhargava).
-
-Thanks!
-
-
----------------
-
-Arnd Bergmann (1):
-      cpufreq: tegra: add regulator dependency for T124
-
-Prarit Bhargava (2):
-      cpufreq: intel_pstate: Minor cleanup for FRAC_BITS
-      powercap / RAPL: fix BIOS lock check
-
-Ulf Hansson (1):
-      PM / Domains: Allow runtime PM callbacks to be re-used during system PM
-
----------------
-
- drivers/base/power/domain.c    | 33 ++++++++++++++++++++++-----------
- drivers/cpufreq/Kconfig.arm    |  2 +-
- drivers/cpufreq/intel_pstate.c |  2 +-
- drivers/powercap/intel_rapl.c  |  7 +++++--
- 4 files changed, 29 insertions(+), 15 deletions(-)
+Rob
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
