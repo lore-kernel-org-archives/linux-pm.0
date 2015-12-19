@@ -1,83 +1,39 @@
 From: Javi Merino <javi.merino@arm.com>
-Subject: [PATCH] thermal: cpu_cooling: fix out of bounds access in time_in_idle
-Date: Sat, 19 Dec 2015 12:54:37 +0000
-Message-ID: <1450529677-23426-1-git-send-email-javi.merino@arm.com>
+Subject: Re: [PATCH RESEND] thermal: power_allocator: req_range
+ multiplication should be a 64 bit type
+Date: Sat, 19 Dec 2015 13:49:59 +0000
+Message-ID: <20151219134958.GB2594@e104805>
+References: <1448982923-19416-1-git-send-email-javi.merino@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:44592 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:44660 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751272AbbLSMys (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Sat, 19 Dec 2015 07:54:48 -0500
+	id S1753648AbbLSNuC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 19 Dec 2015 08:50:02 -0500
+Content-Disposition: inline
+In-Reply-To: <1448982923-19416-1-git-send-email-javi.merino@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Javi Merino <javi.merino@arm.com>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+To: edubezval@gmail.com, Zhang Rui <rui.zhang@intel.com>
+Cc: dan.carpenter@oracle.com, linux-pm@vger.kernel.org
 
-In __cpufreq_cooling_register() we allocate the arrays for time_in_idle
-and time_in_idle_timestamp to be as big as the number of cpus in this
-cpufreq device.  However, in get_load() we access this array using the
-cpu number as index, which can result in an out of bound access.
+Eduardo, Rui,
 
-Index time_in_idle{,_timestamp} using the index in the cpufreq_device's
-allowed_cpus mask, as we do for the load_cpu array in
-cpufreq_get_requested_power()
+On Tue, Dec 01, 2015 at 03:15:23PM +0000, Javi Merino wrote:
+> req_range is declared as a u64 to cope with overflows in the
+> multiplication of two u32.  As both req_power and power_range are u32,
+> we need to make sure the multiplication is done with u64 types.
+> 
+> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: Eduardo Valentin <edubezval@gmail.com>
+> Signed-off-by: Javi Merino <javi.merino@arm.com>
+> ---
+>  drivers/thermal/power_allocator.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Reported-by: Nicolas Boichat <drinkcat@chromium.org>
-Cc: Amit Daniel Kachhap <amit.kachhap@gmail.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>
-Signed-off-by: Javi Merino <javi.merino@arm.com>
----
- drivers/thermal/cpu_cooling.c | 14 ++++++++------
- 1 file changed, 8 insertions(+), 6 deletions(-)
+Any comments on this?  If not, can it be merged?
 
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index e3fbc5a5d88f..bd1bab9eade0 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -377,26 +377,28 @@ static u32 cpu_power_to_freq(struct cpufreq_cooling_device *cpufreq_device,
-  * get_load() - get load for a cpu since last updated
-  * @cpufreq_device:	&struct cpufreq_cooling_device for this cpu
-  * @cpu:	cpu number
-+ * @cpu_idx:	index of the cpu in cpufreq_device->allowed_cpus
-  *
-  * Return: The average load of cpu @cpu in percentage since this
-  * function was last called.
-  */
--static u32 get_load(struct cpufreq_cooling_device *cpufreq_device, int cpu)
-+static u32 get_load(struct cpufreq_cooling_device *cpufreq_device, int cpu,
-+                    int cpu_idx)
- {
- 	u32 load;
- 	u64 now, now_idle, delta_time, delta_idle;
- 
- 	now_idle = get_cpu_idle_time(cpu, &now, 0);
--	delta_idle = now_idle - cpufreq_device->time_in_idle[cpu];
--	delta_time = now - cpufreq_device->time_in_idle_timestamp[cpu];
-+	delta_idle = now_idle - cpufreq_device->time_in_idle[cpu_idx];
-+	delta_time = now - cpufreq_device->time_in_idle_timestamp[cpu_idx];
- 
- 	if (delta_time <= delta_idle)
- 		load = 0;
- 	else
- 		load = div64_u64(100 * (delta_time - delta_idle), delta_time);
- 
--	cpufreq_device->time_in_idle[cpu] = now_idle;
--	cpufreq_device->time_in_idle_timestamp[cpu] = now;
-+	cpufreq_device->time_in_idle[cpu_idx] = now_idle;
-+	cpufreq_device->time_in_idle_timestamp[cpu_idx] = now;
- 
- 	return load;
- }
-@@ -598,7 +600,7 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
- 		u32 load;
- 
- 		if (cpu_online(cpu))
--			load = get_load(cpufreq_device, cpu);
-+			load = get_load(cpufreq_device, cpu, i);
- 		else
- 			load = 0;
- 
--- 
-1.9.1
-
+Thanks,
+Javi
