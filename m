@@ -1,45 +1,48 @@
-From: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
-Subject: Re: [PATCH V3] cpufreq: qoriq: Register cooling device based on device tree
-Date: Fri, 18 Dec 2015 23:32:33 +0100
-Message-ID: <3550740.QzZi28fbXg@wuerfel>
-References: <1448529671-48216-1-git-send-email-hongtao.jia@freescale.com> <1697588.dLcbZBRWO4@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] blackfin-cpufreq: Change return type of cpu_set_cclk()
+ to that of clk_set_rate()
+Date: Sat, 19 Dec 2015 07:29:26 +0530
+Message-ID: <20151219015926.GJ3946@ubuntu>
+References: <5674598B.6020000@users.sourceforge.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1697588.dLcbZBRWO4-sKB8Sp2ER+y1GS7QM15AGw@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
-Cc: Jia Hongtao <hongtao.jia-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, scottwood-KZfg59tc24xl57MIdRCFDg@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <5674598B.6020000@users.sourceforge.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: SF Markus Elfring <elfring@users.sourceforge.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday 15 December 2015 00:58:26 Rafael J. Wysocki wrote:
-> On Thursday, November 26, 2015 05:21:11 PM Jia Hongtao wrote:
-> > Register the qoriq cpufreq driver as a cooling device, based on the
-> > thermal device tree framework. When temperature crosses the passive trip
-> > point cpufreq is used to throttle CPUs.
-> > 
-> > Signed-off-by: Jia Hongtao <hongtao.jia-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
-> > Reviewed-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+On 18-12-15, 20:07, SF Markus Elfring wrote:
+> From: Markus Elfring <elfring@users.sourceforge.net>
+> Date: Fri, 18 Dec 2015 19:43:27 +0100
 > 
-> Applied, thanks!
+> The return type "unsigned long" was used by the cpu_set_cclk() function
+> while the type "int" is provided by the clk_set_rate() function.
+> Let us make this usage consistent.
 > 
+> This issue was detected by using the Coccinelle software.
+> 
+> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+> ---
+>  drivers/cpufreq/blackfin-cpufreq.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/blackfin-cpufreq.c b/drivers/cpufreq/blackfin-cpufreq.c
+> index a9f8e5b..2a6f3ac 100644
+> --- a/drivers/cpufreq/blackfin-cpufreq.c
+> +++ b/drivers/cpufreq/blackfin-cpufreq.c
+> @@ -112,7 +112,7 @@ static unsigned int bfin_getfreq_khz(unsigned int cpu)
+>  }
+>  
+>  #ifdef CONFIG_BF60x
+> -unsigned long cpu_set_cclk(int cpu, unsigned long new)
+> +int cpu_set_cclk(int cpu, unsigned long new)
+>  {
+>  	struct clk *clk;
 
-I got a randconfig build error today:
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-drivers/built-in.o: In function `qoriq_cpufreq_ready':
-debugfs.c:(.text+0x1f4688): undefined reference to `of_cpufreq_cooling_register'
-
-CONFIG_OF=y
-CONFIG_QORIQ_CPUFREQ=y
-CONFIG_THERMAL=m
-CONFIG_THERMAL_OF=y
-
-I think you need a 'depends on THERMAL' to prevent the driver from
-being built-in when THERMAL=m.
-
-	Arnd
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+viresh
