@@ -1,60 +1,60 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 0/2] two fixes for new bq27000/10 and bq27500 driver
-Date: Sat, 19 Dec 2015 09:00:48 +0100
-Message-ID: <20151219080048.GA11317@earth>
-References: <cover.1450347172.git.hns@goldelico.com>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Subject: Re: [PATCH] blackfin-cpufreq: Change return type of cpu_set_cclk() to
+ that of clk_set_rate()
+Date: Sat, 19 Dec 2015 09:23:59 +0100
+Message-ID: <5675141F.2090803@users.sourceforge.net>
+References: <5674598B.6020000@users.sourceforge.net>
+ <20151219015926.GJ3946@ubuntu>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="82I3+IH0IqGh5yIs"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <cover.1450347172.git.hns@goldelico.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Andrew F. Davis" <afd@ti.com>
-Cc: "H. Nikolaus Schaller" <hns@goldelico.com>, Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, gta04-owner@goldelico.com, marek@goldelico.com
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.web.de ([212.227.17.12]:60406 "EHLO mout.web.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753333AbbLSIYG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 19 Dec 2015 03:24:06 -0500
+In-Reply-To: <20151219015926.GJ3946@ubuntu>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
 
+>> From: Markus Elfring <elfring@users.sourceforge.net>
+>> Date: Fri, 18 Dec 2015 19:43:27 +0100
+>>
+>> The return type "unsigned long" was used by the cpu_set_cclk() function
+>> while the type "int" is provided by the clk_set_rate() function.
+>> Let us make this usage consistent.
+>>
+>> This issue was detected by using the Coccinelle software.
+>>
+>> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+>> ---
+>>  drivers/cpufreq/blackfin-cpufreq.c | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/cpufreq/blackfin-cpufreq.c b/drivers/cpufreq/blackfin-cpufreq.c
+>> index a9f8e5b..2a6f3ac 100644
+>> --- a/drivers/cpufreq/blackfin-cpufreq.c
+>> +++ b/drivers/cpufreq/blackfin-cpufreq.c
+>> @@ -112,7 +112,7 @@ static unsigned int bfin_getfreq_khz(unsigned int cpu)
+>>  }
+>>  
+>>  #ifdef CONFIG_BF60x
+>> -unsigned long cpu_set_cclk(int cpu, unsigned long new)
+>> +int cpu_set_cclk(int cpu, unsigned long new)
+>>  {
+>>  	struct clk *clk;
+> 
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
---82I3+IH0IqGh5yIs
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Thanks for your acceptance.
 
-Hi Andrew,
+I would appreciate if another implementation detail can also be clarified there.
+http://lxr.free-electrons.com/ident?v=4.3;i=cpu_set_cclk
 
-On Thu, Dec 17, 2015 at 11:12:52AM +0100, H. Nikolaus Schaller wrote:
-> H. Nikolaus Schaller (2):
->   power:bq27xxx: fix reading for bq27000 and bq27010
->   power:bq27xxx: fix register numbers of bq27500
->=20
->  drivers/power/bq27xxx_battery.c | 18 ++++++++++++------
->  1 file changed, 12 insertions(+), 6 deletions(-)
+* Do you want to reuse such a function in other modules?
+* Should it eventually marked as "static"?
 
-Can you give me your Acked-By (or Tested-By) for those patches?
-Also I wonder if you would be available as official reviewer for
-the driver.
-
--- Sebastian
-
---82I3+IH0IqGh5yIs
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBCgAGBQJWdQ6tAAoJENju1/PIO/qaOykP/RwkYYcibgZavJZRSEYVlR/A
-05POzdW1fYgQrmaH7cEzvJuv+OO6Y6Svb/xP5hA/DbPO8I89tFgj57ZsfSa6cAiM
-wHc9P82zthnvQzzUS31mmSamZ7EAF3iv0mXPTw+99lsgllvIWiciKANjaCpPAfsb
-o8vrtk4pnK3z66WCWxLsLE09Gc250rAljNg3CLkBav/87mzAhPz7aUypDvQbTnf6
-qMcvGXIY85rf3OILQgnQVfwTT0hUQNq+BxMSRDzciOSXUnOIqXgXkuFaGKAqTrF6
-lHeaR0L+rZ/Rlahb4rZlbw2TUlTwyOA/m013XUBPhPbv2hSkoGrKxVb6R9uKpe7K
-RSiadXmd0uyzd5c4MayyNbbCgaj2zox4a8/wSyGk8hW6ZUbKotf7QndS3zVpnhYx
-l/2j5IUUWAqLFEZqYCFxljCu7iguoFCtjk3lHvXtlQxShndAKSjRiwfYjypUqSOX
-BWzl1jI6YveQku7EHnuTzPehn9uE4+411G8CtBylSe43S2H4gB31756p/3P+RbkN
-LklFOCSP5LdO5geroubenORBa/WaqS3D19P7WU9lntBzq0rUqDT2EeP2QovYaYlP
-pe+omuZKQW7PUvEevyv7JsgLLcggIIGyPNIum3JYhvKkBlf5oFKzznOsUK17C6RM
-ZvHRhu7Aqn6D5mcr+cO/
-=2NaQ
------END PGP SIGNATURE-----
-
---82I3+IH0IqGh5yIs--
+Regards,
+Markus
