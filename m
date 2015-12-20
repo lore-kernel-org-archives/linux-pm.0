@@ -1,53 +1,77 @@
-From: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Subject: Re: [PATCH v3 0/5] Fix a trivial typo and support rk3228/rk3399 SoCs
- for thermal driver.
-Date: Sun, 20 Dec 2015 17:15:30 +0800
-Message-ID: <567671B2.5060705@rock-chips.com>
-References: <1449132523-18817-1-git-send-email-wxt@rock-chips.com>
- <20151217200927.GC7999@localhost.localdomain>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 1/2] x86/msr: add on cpu read/modify/write function
+Date: Sun, 20 Dec 2015 14:28:48 +0100 (CET)
+Message-ID: <alpine.DEB.2.11.1512201421300.28591@nanos>
+References: <1449873637-24300-1-git-send-email-jacob.jun.pan@linux.intel.com> <1449873637-24300-2-git-send-email-jacob.jun.pan@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <20151217200927.GC7999-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
-List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: huangtao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, Jiri Kosina <trivial-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dan Carpenter <dan.carpenter-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, computersforpeace-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from www.linutronix.de ([62.245.132.108]:45297 "EHLO
+	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753811AbbLTN3o (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 20 Dec 2015 08:29:44 -0500
+In-Reply-To: <1449873637-24300-2-git-send-email-jacob.jun.pan@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Peter Zijlstra <peterz@infradead.org>, X86 Kernel <x86@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>
 
-CuWcqCAyMDE15bm0MTLmnIgxOOaXpSAwNDowOSwgRWR1YXJkbyBWYWxlbnRpbiDlhpnpgZM6Cj4g
-SGVsbG8sCj4KPiBPbiBUaHUsIERlYyAwMywgMjAxNSBhdCAwNDo0ODozOFBNICswODAwLCBDYWVz
-YXIgV2FuZyB3cm90ZToKPj4gVGhpcyBzZXJpZXMgcGFjdGhlcyB0byBzdXBwb3J0IHRoZSBuZXh0
-IHNvYyBmb3IgdGhpcyB0aGVybWFsIGRyaXZlci4KPj4gSSBkb24ndCBhZGQgdGhlIGR0cyB0aGVy
-bWFsIGRhdGEgc2luY2UgdGhlc2UgU29DcyBoYXZlICpfbm90XyogbGFuZAo+PiBpbiB0aGlzIG1h
-aW5saW5lLiBJIGJlbGlldmUgdGhlc2UgU29DcyBkdHMgd2lsbCBsYW5kIGluIHRoaXMgbWFpbmxp
-bmUKPj4gbGF0ZWx5LAo+PiB0aGVuIEkgd2lsbCBhZGQgdGhlIHRoZXJtYWwgZGF0YSBmb3IgSGVp
-a28uCj4+Cj4+IFRoaXMgc2VyaWVzIHBhdGNoZXMgY2FuIGFwcGx5IGludG8gRWR1YXJkbyBicmFu
-Y2guCj4+IGh0dHBzOi8vZ2l0Lmtlcm5lbC5vcmcvY2dpdC9saW51eC9rZXJuZWwvZ2l0L2V2YWxl
-bnRpL2xpbnV4LXNvYy10aGVybWFsLmdpdAo+Pgo+PiBBbHNvLCB0aGlzIHNlcmllcyBwYWN0aGVz
-IGhhdmUgYnVpbHQgb24gZ2l0aHViIGJyYW5jaC4KPj4gaHR0cHM6Ly9naXRodWIuY29tL3JvY2tj
-aGlwLWxpbnV4L2tlcm5lbC9jb21taXRzL2RldmVsb3A0LjQKPj4KPj4gUEFUQ0hbMS81XToKPj4g
-VGhhdCdzIGJpdCB1Z2x5IHR5cG8sIHNvcnJ5IGZvciBzZW5kaW5nIGFnYWluIDooLgo+Pgo+PiBQ
-QVRDSFsyLzVdOgo+PiBUbyBmaXggYSBidWlsZCB3YXJuaW5nIGNhbWUgZnJvbSBEYW4gQ2FycGVu
-dGVyIHJlcG9ydCBzbWF0Y2ggY2hlY2ssCj4+IFRoYW5rcy4gOikKPj4KPj4gUEFUQ0hbMy81XToK
-Pj4gQWRkIHRoZSByazMyMjgvcmszMzk5IFNvQ3MgY29tcGF0aWJsZSBmb3IgZHQtYmluZGluZ3Mu
-Cj4+Cj4+IFBBVENIWzQvNV06Cj4+IEFkZCB0aGUgcmszMjI4IFNvQ3MgZm9yIHRoZXJtYWwgZHJp
-dmVyLgo+Pgo+PiBQQVRDSFs1LzVdOgo+PiBBZGQgdGhlIHJrMzM5OSBTb0NzIGZvciB0aGVybWFs
-IGRyaXZlciBiYXNlZCBvbiBQQVRDSFs0LzVdLgo+IEkgYXBwbGllZCBhbGwgYnV0IDIvNS4KClRo
-YW5rcyBFZHVhcmRvLAoKSSBzZW5kIHRoZSBuZXcgcGF0Y2hbMi81XS4KaHR0cHM6Ly9wYXRjaHdv
-cmsua2VybmVsLm9yZy9wYXRjaC83ODkxMzgxLwoKPgo+IF9fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fCj4gTGludXgtcm9ja2NoaXAgbWFpbGluZyBsaXN0Cj4g
-TGludXgtcm9ja2NoaXBAbGlzdHMuaW5mcmFkZWFkLm9yZwo+IGh0dHA6Ly9saXN0cy5pbmZyYWRl
-YWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcm9ja2NoaXAKCgotLSAKY2Flc2FyIHdhbmcg
-fCBzb2Z0d2FyZSBlbmdpbmVlciB8IHd4dEByb2NrLWNoaXAuY29tCgoKCl9fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4LXJvY2tjaGlwIG1haWxpbmcg
-bGlzdApMaW51eC1yb2NrY2hpcEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZy
-YWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcm9ja2NoaXAK
+Jacob,
+
+On Fri, 11 Dec 2015, Jacob Pan wrote:
+> +static inline int rmwmsrl_safe_on_cpu(unsigned int cpu, u32 msr_no, u64 mask, u64 bits)
+> +{
+> +	int err;
+> +	u64 val;
+> +
+> +	err = rdmsrl_safe(msr_no, &val);
+> +	if (err)
+> +		goto out;
+> +
+> +	val &= ~mask;
+> +	val |= bits;
+> +
+> +	err = wrmsrl_safe(msr_no, val);
+> +out:
+> +	return err;
+> +}
+
+....
+
+> +static void __rmwmsrl_safe(void *info)
+> +{
+> +	int err;
+> +	struct msr_action *ma = info;
+> +	u64 val;
+> +
+> +	err = rdmsrl_safe(ma->msr_no, &val);
+> +	if (err)
+> +		goto out;
+> +
+> +	val &= ~ma->mask;
+> +	val |= ma->bits;
+> +
+> +	err = wrmsrl_safe(ma->msr_no, val);
+> +
+> +out:
+> +	ma->err = err;
+
+So this is a copy of the above !SMP inline. What's wrong with providing:
+
+ int rmwmsrl_safe(msr_no, clear_mask, set_mask)
+
+in x86/lib/msr.c and make the !SMP variant of rdmsrl_safe_on_cpu() and that
+variant for the SMP case a simple wrapper around it?
+
+static void remote_rmwmsrl_safe(void *info)
+{
+	struct msr_action *ma = info;
+
+	return rmwmsrl_safe(ma->msr, ma->clear_mask, ma->set_mask);
+}
+
+No gotos, no pointless code duplication. Just simple.
+
+Thanks,
+
+	tglx
