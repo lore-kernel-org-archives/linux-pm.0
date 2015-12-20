@@ -1,59 +1,86 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCH] i2c: s3c2410: remove superfluous runtime PM calls
-Date: Sat, 19 Dec 2015 22:57:52 +0100
-Message-ID: <20151219215752.GA1247@tetsubishi>
-References: <20151219105030.GA2571@katana>
- <Pine.LNX.4.44L0.1512191202150.27155-100000@netrider.rowland.org>
+From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH 1/3] dt-bindings: thermal: Add binding document for
+ Mediatek thermal controller
+Date: Sat, 19 Dec 2015 18:12:16 -0800
+Message-ID: <20151220021214.GA11054@localhost.localdomain>
+References: <1448883753-19068-1-git-send-email-s.hauer@pengutronix.de>
+ <1448883753-19068-2-git-send-email-s.hauer@pengutronix.de>
+ <CAGS+omCPonvXBTjOqpKrJX0Ebw0KF6TDKH+zRas-3FaAhUWL2w@mail.gmail.com>
+ <20151217192329.GA7999@localhost.localdomain>
+ <20151218071633.GG11966@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="FCuugMFkClbJLl1L"
-Return-path: <linux-i2c-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1512191202150.27155-100000@netrider.rowland.org>
-Sender: linux-i2c-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Sylwester Nawrocki <s.nawrocki@samsung.com>, linux-i2c@vger.kernel.org, linux-pm@vger.kernel.org, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, Lars-Peter Clausen <lars@metafoo.de>, Krzysztof Kozlowski <k.kozlowski@samsung.com>
+In-Reply-To: <20151218071633.GG11966-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
+ <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
+List-Post: <mailto:linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
+ <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Sasha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hello Sascha,
 
---FCuugMFkClbJLl1L
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, Dec 18, 2015 at 08:16:33AM +0100, Sascha Hauer wrote:
+> On Thu, Dec 17, 2015 at 11:23:31AM -0800, Eduardo Valentin wrote:
+> > On Wed, Dec 16, 2015 at 07:23:22PM +0800, Daniel Kurtz wrote:
+> > > On Mon, Nov 30, 2015 at 7:42 PM, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org> wrote:
+> > > > +Example:
 
+<cut>
 
-> > Asking linux-pm for help here: If we want to support RuntimePM for I2C
-> > clients, do we need to enable RuntimePM on the logical I2C adapter
-> > device (the bus master) which is already marked using
-> > pm_runtime_no_callbacks?
->=20
-> In theory you don't need to.  But there are some advantages if you do:=20
-> You get automatic runtime PM time accounting for the adapter device=20
-> (how much time active and how much suspended), and suspend events will=20
-> propagate from the I2C clients all the way up to the adapter's parent.
+> > > > +
+> > > > +       thermal: thermal@1100b000 {
+> > > > +               #thermal-sensor-cells = <1>;
+> > > 
+> > > Tiny nit: this should now be:
+> > > 
+> > > #thermal-sensor-cells = <0>;
+> > 
+> > 
+> > This is actually not so tiny'shy. Why does this driver masks out all
+> > sensors available? Why don't we expose all of them and use id property
+> > to expose and identify each of them?
+> 
+> This has been the case until v9 of this series. It was requested by
+> Mediatek that the CPU frequency regulation works better when the maximum
+> of all sensors is taken instead of only single sensors. We decided to
+> expose the maximum of all sensors in the device tree. IN the end it will
+> be easier to add additional sensors should we need them later than it is
+> to get rid of sensors we don't need.
 
-That's exactly what I want. Thank you very much!
+Apologize as I completely missed this transition from v9 to v10. In
+fact, I really cannot understand the benefit of having such constraint
+implemented in the driver. In device tree you can mark a thermal zone as
+status disabled and it won't appear in your system.
 
+One can select which sensors / thermal zones are required. And even
+reuse same dtsi, and change status on dts per board. 
 
---FCuugMFkClbJLl1L
-Content-Type: application/pgp-signature; name="signature.asc"
+The combination of the above, with the possibility to select the maximum
+from thermal core / sysfs, would be bring much more flexibility for a
+system engineer, than having the maximum coded in the driver, because,
+well, changing that relation would require changing the code. If you
+keep the driver as simple as possible, changing the this setup later
+would be as simple as changing the dts(i).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+What do you think?
 
-iQIcBAEBAgAGBQJWddLfAAoJEBQN5MwUoCm2VgcQAJx+dNIU++AH6GiME8BXZhhH
-PVDBMg9DzdEytODZlQORBFhANkjrvFnl1OHSi9TEPqZvV6yb3ZKdbvF5n/YYxYtP
-QPl3g3kn6VxaEftmvJje/r9NqPBZ7ihlHKu/zEbjVb89euyLVmgRgAM59n4j1mRy
-hiDLs4KTmPriklfg10R7ib00fEZA52+E038GVpgSinCM/ldStyHN0rTxSXeWdUmj
-LmDA6mlsgoZUNBXmYp8BAqY885azOqeMn3my3eYcYR/gHIUiPIEngEYGpD61IIYV
-gKG/NcGLKFrzpMSVglgrr6wvWboCkbawEckrdWOTC3zdmM4syfdLcp6Inzt/vcnR
-7ResqVYylja3YwOCeZ6HZUCC/wnmfGHCYaN3ATFICMumdsWeqst4OHiZ4R3hAxEg
-U31l9bubq1WsdRyLe5yilQGzLGXKYTMajQd3zrKHpNTLgW4T+zZx/xwqGdr+AR9p
-AHttqZ3SXeuBwFhNtE1iOLpwZ4xy9j4VM5eko4CqxEMb+5cssru1zJuK09L0ipMh
-pgoXJIqdc0SiBlP8TM+wDFch+Fu0ks8BCSUQoZmdM/qWWk4bj23qr+k0sM7DVX2B
-aCZbOpJaZHivfZDxdqwt/zgNV34pK9mz4H3TCfCXZJqYweyCG21Q0juwW8U/xlrv
-YN95JWfomQncT+Grq2D9
-=ZnPK
------END PGP SIGNATURE-----
+BR,
 
---FCuugMFkClbJLl1L--
+> 
+> Sascha
+> 
+> -- 
+> Pengutronix e.K.                           |                             |
+> Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+> Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+> Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
