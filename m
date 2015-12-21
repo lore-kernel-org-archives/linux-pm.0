@@ -1,58 +1,66 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] ACPI: processor thermal cooling device regression
-Date: Mon, 21 Dec 2015 04:14:26 +0100
-Message-ID: <4453191.9zmF0Mntv5@vostro.rjw.lan>
-References: <1450326743-9460-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] blackfin-cpufreq: Change return type of cpu_set_cclk()
+ to that of clk_set_rate()
+Date: Mon, 21 Dec 2015 08:47:57 +0530
+Message-ID: <20151221031757.GA5532@ubuntu>
+References: <5674598B.6020000@users.sourceforge.net>
+ <20151219015926.GJ3946@ubuntu>
+ <5675141F.2090803@users.sourceforge.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:59412 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751284AbbLUCoL (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 20 Dec 2015 21:44:11 -0500
-In-Reply-To: <1450326743-9460-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Received: from mail-pa0-f48.google.com ([209.85.220.48]:35622 "EHLO
+	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751145AbbLUDSB (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 20 Dec 2015 22:18:01 -0500
+Received: by mail-pa0-f48.google.com with SMTP id jx14so63315158pad.2
+        for <linux-pm@vger.kernel.org>; Sun, 20 Dec 2015 19:18:01 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <5675141F.2090803@users.sourceforge.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: rafael@kernel.org, len.brown@intel.com, rui.zhang@intel.com, linux-pm@vger.kernel.org
+To: SF Markus Elfring <elfring@users.sourceforge.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
 
-On Wednesday, December 16, 2015 08:32:23 PM Srinivas Pandruvada wrote:
-> The processor cooling device is no longer present for passive thermal
-> control. The change
-> commit 239708a3af44 ("ACPI: Split out ACPI PSS from ACPI Processor driver")
-> moved the processing to a new function acpi_pss_perf_init, but
-> missing "return 0" after successful creation. This causes the error
-> handling functions to be called, which will delete the previously
-> created processor cooling device.
+On 19-12-15, 09:23, SF Markus Elfring wrote:
+> >> From: Markus Elfring <elfring@users.sourceforge.net>
+> >> Date: Fri, 18 Dec 2015 19:43:27 +0100
+> >>
+> >> The return type "unsigned long" was used by the cpu_set_cclk() function
+> >> while the type "int" is provided by the clk_set_rate() function.
+> >> Let us make this usage consistent.
+> >>
+> >> This issue was detected by using the Coccinelle software.
+> >>
+> >> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+> >> ---
+> >>  drivers/cpufreq/blackfin-cpufreq.c | 2 +-
+> >>  1 file changed, 1 insertion(+), 1 deletion(-)
+> >>
+> >> diff --git a/drivers/cpufreq/blackfin-cpufreq.c b/drivers/cpufreq/blackfin-cpufreq.c
+> >> index a9f8e5b..2a6f3ac 100644
+> >> --- a/drivers/cpufreq/blackfin-cpufreq.c
+> >> +++ b/drivers/cpufreq/blackfin-cpufreq.c
+> >> @@ -112,7 +112,7 @@ static unsigned int bfin_getfreq_khz(unsigned int cpu)
+> >>  }
+> >>  
+> >>  #ifdef CONFIG_BF60x
+> >> -unsigned long cpu_set_cclk(int cpu, unsigned long new)
+> >> +int cpu_set_cclk(int cpu, unsigned long new)
+> >>  {
+> >>  	struct clk *clk;
+> > 
+> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 > 
-> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-
-I'm adding this to my queue for 4.4-rc6, thanks!
-
-BTW, if the commit that introduced the problem is known, please add a Fixes:
-tag pointing to it to the patch changelog (I did that for this one).
-
-> ---
->  drivers/acpi/processor_driver.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+> Thanks for your acceptance.
 > 
-> diff --git a/drivers/acpi/processor_driver.c b/drivers/acpi/processor_driver.c
-> index f4e02ae..11154a3 100644
-> --- a/drivers/acpi/processor_driver.c
-> +++ b/drivers/acpi/processor_driver.c
-> @@ -200,7 +200,8 @@ static int acpi_pss_perf_init(struct acpi_processor *pr,
->  		goto err_remove_sysfs_thermal;
->  	}
->  
-> -	sysfs_remove_link(&pr->cdev->device.kobj, "device");
-> +	return 0;
-> +
->   err_remove_sysfs_thermal:
->  	sysfs_remove_link(&device->dev.kobj, "thermal_cooling");
->   err_thermal_unregister:
+> I would appreciate if another implementation detail can also be clarified there.
+> http://lxr.free-electrons.com/ident?v=4.3;i=cpu_set_cclk
 > 
+> * Do you want to reuse such a function in other modules?
+> * Should it eventually marked as "static"?
+
+This should be static, yeah.
 
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+viresh
