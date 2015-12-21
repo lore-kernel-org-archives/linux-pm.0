@@ -1,66 +1,51 @@
-From: Daniel Kurtz <djkurtz@chromium.org>
-Subject: Re: [PATCH 2/3] thermal: Add Mediatek thermal controller support
-Date: Mon, 21 Dec 2015 12:07:58 +0800
-Message-ID: <CAGS+omC86=Kfdj0cFNHqs4fXCAT0uU+AxHCj3ORd2HetNZ2gVQ@mail.gmail.com>
-References: <1448883753-19068-1-git-send-email-s.hauer@pengutronix.de> <1448883753-19068-3-git-send-email-s.hauer@pengutronix.de>
+From: Bibek Basu <bbasu@nvidia.com>
+Subject: [PATCH] PM / sleep: console flush during suspend if no_console_suspend enabled
+Date: Mon, 21 Dec 2015 12:01:40 +0530
+Message-ID: <1450679500-6185-1-git-send-email-bbasu@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vk0-f41.google.com ([209.85.213.41]:35242 "EHLO
-	mail-vk0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750738AbbLUEIT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 20 Dec 2015 23:08:19 -0500
-Received: by mail-vk0-f41.google.com with SMTP id a189so94273209vkh.2
-        for <linux-pm@vger.kernel.org>; Sun, 20 Dec 2015 20:08:18 -0800 (PST)
-In-Reply-To: <1448883753-19068-3-git-send-email-s.hauer@pengutronix.de>
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:16050 "EHLO
+	hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751123AbbLUGbq (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 21 Dec 2015 01:31:46 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Sasha Hauer <kernel@pengutronix.de>, linux-mediatek@lists.infradead.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Matthias Brugger <matthias.bgg@gmail.com>
+To: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, bbasu@nvidia.com
 
-Hi Sascha,
+On multicore CPUs, sometimes debug console logs are not flushed
+if you have VT consoles also enabled. Reason being console_lock
+is taken by secondary/nonboot cpus which are  disabled as part
+of suspend.This patch flushes the console before disabling
+nonboot cpus
 
-One nit below that can be fixed up later, or now if you don't plan to
-spin this driver to
-address Eduardo's feedback...
+Signed-off-by: Bibek Basu <bbasu@nvidia.com>
+---
+ kernel/power/suspend.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-On Mon, Nov 30, 2015 at 7:42 PM, Sascha Hauer <s.hauer@pengutronix.de> wrote:
-> This adds support for the Mediatek thermal controller found on MT8173
-> and likely other SoCs.
-> The controller is a bit special. It does not have its own ADC, instead
-> it controls the on-SoC AUXADC via AHB bus accesses. For this reason
-> we need the physical address of the AUXADC. Also it controls a mux
-> using AHB bus accesses, so we need the APMIXEDSYS physical address aswell.
->
-> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index f9fe133..42c5912 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -352,6 +352,16 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
+ 		goto Platform_wake;
+ 	}
+ 
++	/*
++	 * Flush console buffer if console_suspend_enabled cleared.
++	 * This will enable console flush if console_lock is taken
++	 * by nonboot cpus which will soon be disabled below.
++	 */
++	if (!console_suspend_enabled) {
++		console_lock();
++		console_unlock();
++	}
++
+ 	error = disable_nonboot_cpus();
+ 	if (error || suspend_test(TEST_CPUS))
+ 		goto Enable_cpus;
+-- 
+2.1.4
 
-[snip]
-
-> +static int mtk_thermal_get_calibration_data(struct device *dev, struct mtk_thermal *mt)
-> +{
-> +       struct nvmem_cell *cell;
-> +       u32 *buf;
-> +       size_t len;
-> +       int i, ret = 0;
-> +
-> +       /* Start with default values */
-> +       mt->adc_ge = 512;
-> +       for (i = 0; i < MT8173_NUM_SENSORS; i++)
-> +               mt->vts[i] = 260;
-> +       mt->degc_cali = 40;
-> +       mt->o_slope = 0;
-> +
-> +       cell = nvmem_cell_get(dev, "calibration-data");
-> +       if (IS_ERR(cell)) {
-> +               if (PTR_ERR(cell) == -EPROBE_DEFER)
-
-It is useful to know why the thermal driver is being probe defered, so
-I suggest here:
-dev_warn(dev, "Waiting for calibration data.\n");
-
-> +                       return PTR_ERR(cell);
-> +               return 0;
-> +       }
-
-Thanks,
--Dan
