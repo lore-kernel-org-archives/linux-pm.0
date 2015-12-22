@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 04/17] PM / OPP: Introduce dev_pm_opp_get_max_volt_latency()
-Date: Tue, 22 Dec 2015 15:46:05 +0530
-Message-ID: <08691b482198b0709fd258d310a5e6ecda2f1a18.1450777582.git.viresh.kumar@linaro.org>
+Subject: [PATCH 07/17] PM / OPP: Manage device clk
+Date: Tue, 22 Dec 2015 15:46:08 +0530
+Message-ID: <1cdc1e6a83974a3f1bb44c0af3cd32ef94542d81.1450777582.git.viresh.kumar@linaro.org>
 References: <cover.1450777582.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f53.google.com ([209.85.220.53]:34243 "EHLO
-	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932181AbbLVKQj (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Dec 2015 05:16:39 -0500
-Received: by mail-pa0-f53.google.com with SMTP id uo6so10383268pac.1
-        for <linux-pm@vger.kernel.org>; Tue, 22 Dec 2015 02:16:39 -0800 (PST)
+Received: from mail-pf0-f178.google.com ([209.85.192.178]:34593 "EHLO
+	mail-pf0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932181AbbLVKQt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Dec 2015 05:16:49 -0500
+Received: by mail-pf0-f178.google.com with SMTP id u7so57924652pfb.1
+        for <linux-pm@vger.kernel.org>; Tue, 22 Dec 2015 02:16:48 -0800 (PST)
 In-Reply-To: <cover.1450777582.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1450777582.git.viresh.kumar@linaro.org>
 References: <cover.1450777582.git.viresh.kumar@linaro.org>
@@ -18,99 +18,70 @@ List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, nm@ti.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-In few use cases (like: cpufreq), it is desired to get the maximum
-voltage latency for changing OPPs. Add support for that.
+OPP core has got almost everything now to manage device's OPP
+transitions, the only thing left is device's clk. Get that as well.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/base/power/opp/core.c | 49 +++++++++++++++++++++++++++++++++++++++++++
- include/linux/pm_opp.h        |  6 ++++++
- 2 files changed, 55 insertions(+)
+ drivers/base/power/opp/core.c | 9 +++++++++
+ drivers/base/power/opp/opp.h  | 3 +++
+ 2 files changed, 12 insertions(+)
 
 diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index 12066d3def38..bf296c459e06 100644
+index 1bb09138cdae..1d1b0faa825d 100644
 --- a/drivers/base/power/opp/core.c
 +++ b/drivers/base/power/opp/core.c
-@@ -230,6 +230,55 @@ unsigned long dev_pm_opp_get_max_clock_latency(struct device *dev)
- EXPORT_SYMBOL_GPL(dev_pm_opp_get_max_clock_latency);
+@@ -596,6 +596,11 @@ static struct device_opp *_add_device_opp_reg(struct device *dev,
+ 		of_node_put(np);
+ 	}
  
- /**
-+ * dev_pm_opp_get_max_volt_latency() - Get max voltage latency in nanoseconds
-+ * @dev:	device for which we do this operation
-+ *
-+ * Return: This function returns the max voltage latency in nanoseconds.
-+ *
-+ * Locking: This function takes rcu_read_lock().
-+ */
-+unsigned long dev_pm_opp_get_max_volt_latency(struct device *dev)
-+{
-+	struct device_opp *dev_opp;
-+	struct dev_pm_opp *opp;
-+	struct regulator *reg;
-+	unsigned long latency_ns = 0;
-+	unsigned long min_uV = ~0, max_uV = 0;
-+	int ret;
++	/* Find clk for the device */
++	dev_opp->clk = clk_get(dev, NULL);
++	if (IS_ERR(dev_opp->clk))
++		dev_dbg(dev, "%s: Couldn't find clock\n", __func__);
 +
-+	rcu_read_lock();
+ 	dev_opp->regulator = regulator_get_optional(dev, name);
+ 	if (IS_ERR(dev_opp->regulator))
+ 		dev_info(dev, "%s: no regulator (%s) found: %ld\n", __func__,
+@@ -663,6 +668,10 @@ static void _remove_device_opp(struct device_opp *dev_opp)
+ 	if (dev_opp->regulator_set)
+ 		return;
+ 
++	/* Release clk */
++	if (!IS_ERR(dev_opp->clk))
++		clk_put(dev_opp->clk);
 +
-+	dev_opp = _find_device_opp(dev);
-+	if (IS_ERR(dev_opp))
-+		goto unlock;
-+
-+	reg = dev_opp->regulator;
-+	/* Regulator may not be available for device */
-+	if (IS_ERR(reg))
-+		goto unlock;
-+
-+	list_for_each_entry_rcu(opp, &dev_opp->opp_list, node) {
-+		if (!opp->available)
-+			continue;
-+
-+		if (opp->u_volt_min < min_uV)
-+			min_uV = opp->u_volt_min;
-+		if (opp->u_volt_max > max_uV)
-+			max_uV = opp->u_volt_max;
-+	}
-+
-+	ret = regulator_set_voltage_time(reg, min_uV, max_uV);
-+	if (ret > 0)
-+		latency_ns += ret * 1000;
-+
-+unlock:
-+	rcu_read_unlock();
-+
-+	return latency_ns;
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_opp_get_max_volt_latency);
-+
-+/**
-  * dev_pm_opp_get_suspend_opp() - Get suspend opp
-  * @dev:	device for which we do this operation
+ 	regulator_put(dev_opp->regulator);
+ 
+ 	list_dev = list_first_entry(&dev_opp->dev_list, struct device_list_opp,
+diff --git a/drivers/base/power/opp/opp.h b/drivers/base/power/opp/opp.h
+index a39347d8693f..42759f025ef1 100644
+--- a/drivers/base/power/opp/opp.h
++++ b/drivers/base/power/opp/opp.h
+@@ -14,6 +14,7 @@
+ #ifndef __DRIVER_OPP_H__
+ #define __DRIVER_OPP_H__
+ 
++#include <linux/clk.h>
+ #include <linux/device.h>
+ #include <linux/kernel.h>
+ #include <linux/list.h>
+@@ -133,6 +134,7 @@ struct device_list_opp {
+  * @supported_hw: Array of version number to support.
+  * @supported_hw_count: Number of elements in supported_hw array.
+  * @prop_name: A name to postfix to many DT properties, while parsing them.
++ * @clk:	struct clk pointer
+  * @regulator: Supply Regulator
+  * @regulator_set: Regulator's name is explicitly set by platform.
   *
-diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index c70a18ac9c8a..5daa43058ac1 100644
---- a/include/linux/pm_opp.h
-+++ b/include/linux/pm_opp.h
-@@ -34,6 +34,7 @@ bool dev_pm_opp_is_turbo(struct dev_pm_opp *opp);
+@@ -169,6 +171,7 @@ struct device_opp {
+ 	unsigned int *supported_hw;
+ 	unsigned int supported_hw_count;
+ 	const char *prop_name;
++	struct clk *clk;
+ 	struct regulator *regulator;
+ 	bool regulator_set;
  
- int dev_pm_opp_get_opp_count(struct device *dev);
- unsigned long dev_pm_opp_get_max_clock_latency(struct device *dev);
-+unsigned long dev_pm_opp_get_max_volt_latency(struct device *dev);
- struct dev_pm_opp *dev_pm_opp_get_suspend_opp(struct device *dev);
- 
- struct dev_pm_opp *dev_pm_opp_find_freq_exact(struct device *dev,
-@@ -88,6 +89,11 @@ static inline unsigned long dev_pm_opp_get_max_clock_latency(struct device *dev)
- 	return 0;
- }
- 
-+static inline unsigned long dev_pm_opp_get_max_volt_latency(struct device *dev)
-+{
-+	return 0;
-+}
-+
- static inline struct dev_pm_opp *dev_pm_opp_get_suspend_opp(struct device *dev)
- {
- 	return NULL;
 -- 
 2.7.0.rc1.186.g94414c4
 
