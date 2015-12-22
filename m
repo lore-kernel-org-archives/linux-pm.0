@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 15/17] cpufreq: dt: Use dev_pm_opp_set_rate() to switch frequency
-Date: Tue, 22 Dec 2015 15:46:16 +0530
-Message-ID: <b050fef8d3c3f72d20ac9ca0f7891dc66fb7bc39.1450777582.git.viresh.kumar@linaro.org>
+Subject: [PATCH 16/17] cpufreq: dt: drop references to DT node
+Date: Tue, 22 Dec 2015 15:46:17 +0530
+Message-ID: <23b112584bab2af92d7a3f0b78f8e2b788482b2e.1450777582.git.viresh.kumar@linaro.org>
 References: <cover.1450777582.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f172.google.com ([209.85.192.172]:36347 "EHLO
-	mail-pf0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932181AbbLVKRO (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Dec 2015 05:17:14 -0500
-Received: by mail-pf0-f172.google.com with SMTP id o64so104289538pfb.3
-        for <linux-pm@vger.kernel.org>; Tue, 22 Dec 2015 02:17:14 -0800 (PST)
+Received: from mail-pa0-f54.google.com ([209.85.220.54]:35281 "EHLO
+	mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932181AbbLVKRS (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Dec 2015 05:17:18 -0500
+Received: by mail-pa0-f54.google.com with SMTP id jx14so87422834pad.2
+        for <linux-pm@vger.kernel.org>; Tue, 22 Dec 2015 02:17:17 -0800 (PST)
 In-Reply-To: <cover.1450777582.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1450777582.git.viresh.kumar@linaro.org>
 References: <cover.1450777582.git.viresh.kumar@linaro.org>
@@ -18,100 +18,82 @@ List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, nm@ti.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-OPP core supports frequency/voltage changes based on the target
-frequency now, use that instead of open coding the same in cpufreq-dt
-driver.
+We don't need to get reference to DT node now, lets drop it.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/cpufreq-dt.c | 72 ++------------------------------------------
- 1 file changed, 2 insertions(+), 70 deletions(-)
+ drivers/cpufreq/cpufreq-dt.c | 16 +---------------
+ 1 file changed, 1 insertion(+), 15 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-index 01a7354b1ada..89c89dfab237 100644
+index 89c89dfab237..c9b7dafd986d 100644
 --- a/drivers/cpufreq/cpufreq-dt.c
 +++ b/drivers/cpufreq/cpufreq-dt.c
-@@ -45,78 +45,10 @@ static struct freq_attr *cpufreq_dt_attr[] = {
+@@ -33,7 +33,6 @@ struct private_data {
+ 	struct device *cpu_dev;
+ 	struct regulator *cpu_reg;
+ 	struct thermal_cooling_device *cdev;
+-	unsigned int voltage_tolerance; /* in percentage */
+ 	const char *reg_name;
+ };
  
- static int set_target(struct cpufreq_policy *policy, unsigned int index)
+@@ -140,7 +139,6 @@ static int allocate_resources(int cpu, struct device **cdev,
+ static int cpufreq_init(struct cpufreq_policy *policy)
  {
--	struct dev_pm_opp *opp;
--	struct cpufreq_frequency_table *freq_table = policy->freq_table;
--	struct clk *cpu_clk = policy->clk;
- 	struct private_data *priv = policy->driver_data;
--	struct device *cpu_dev = priv->cpu_dev;
--	struct regulator *cpu_reg = priv->cpu_reg;
--	unsigned long volt = 0, volt_old = 0, tol = 0;
--	unsigned int old_freq, new_freq;
--	long freq_Hz, freq_exact;
--	int ret;
--
--	freq_Hz = clk_round_rate(cpu_clk, freq_table[index].frequency * 1000);
--	if (freq_Hz <= 0)
--		freq_Hz = freq_table[index].frequency * 1000;
--
--	freq_exact = freq_Hz;
--	new_freq = freq_Hz / 1000;
--	old_freq = clk_get_rate(cpu_clk) / 1000;
+ 	struct cpufreq_frequency_table *freq_table;
+-	struct device_node *np;
+ 	struct private_data *priv;
+ 	struct device *cpu_dev;
+ 	struct regulator *cpu_reg;
+@@ -157,13 +155,6 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 		return ret;
+ 	}
  
--	if (!IS_ERR(cpu_reg)) {
--		unsigned long opp_freq;
--
--		rcu_read_lock();
--		opp = dev_pm_opp_find_freq_ceil(cpu_dev, &freq_Hz);
--		if (IS_ERR(opp)) {
--			rcu_read_unlock();
--			dev_err(cpu_dev, "failed to find OPP for %ld\n",
--				freq_Hz);
--			return PTR_ERR(opp);
--		}
--		volt = dev_pm_opp_get_voltage(opp);
--		opp_freq = dev_pm_opp_get_freq(opp);
--		rcu_read_unlock();
--		tol = volt * priv->voltage_tolerance / 100;
--		volt_old = regulator_get_voltage(cpu_reg);
--		dev_dbg(cpu_dev, "Found OPP: %ld kHz, %ld uV\n",
--			opp_freq / 1000, volt);
+-	np = of_node_get(cpu_dev->of_node);
+-	if (!np) {
+-		dev_err(cpu_dev, "failed to find cpu%d node\n", policy->cpu);
+-		ret = -ENOENT;
+-		goto out_put_reg_clk;
 -	}
 -
--	dev_dbg(cpu_dev, "%u MHz, %ld mV --> %u MHz, %ld mV\n",
--		old_freq / 1000, (volt_old > 0) ? volt_old / 1000 : -1,
--		new_freq / 1000, volt ? volt / 1000 : -1);
--
--	/* scaling up?  scale voltage before frequency */
--	if (!IS_ERR(cpu_reg) && new_freq > old_freq) {
--		ret = regulator_set_voltage_tol(cpu_reg, volt, tol);
--		if (ret) {
--			dev_err(cpu_dev, "failed to scale voltage up: %d\n",
--				ret);
--			return ret;
--		}
--	}
--
--	ret = clk_set_rate(cpu_clk, freq_exact);
--	if (ret) {
--		dev_err(cpu_dev, "failed to set clock rate: %d\n", ret);
--		if (!IS_ERR(cpu_reg) && volt_old > 0)
--			regulator_set_voltage_tol(cpu_reg, volt_old, tol);
--		return ret;
--	}
--
--	/* scaling down?  scale voltage after frequency */
--	if (!IS_ERR(cpu_reg) && new_freq < old_freq) {
--		ret = regulator_set_voltage_tol(cpu_reg, volt, tol);
--		if (ret) {
--			dev_err(cpu_dev, "failed to scale voltage down: %d\n",
--				ret);
--			clk_set_rate(cpu_clk, old_freq * 1000);
--		}
--	}
--
--	return ret;
-+	return dev_pm_opp_set_rate(priv->cpu_dev,
-+				   policy->freq_table[index].frequency * 1000);
- }
+ 	/* Get OPP-sharing information from "operating-points-v2" bindings */
+ 	ret = dev_pm_opp_of_get_sharing_cpus(cpu_dev, policy->cpus);
+ 	if (ret) {
+@@ -174,7 +165,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 		if (ret == -ENOENT)
+ 			opp_v1 = true;
+ 		else
+-			goto out_node_put;
++			goto out_put_reg_clk;
+ 	}
  
- /*
+ 	/*
+@@ -242,7 +233,6 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 	}
+ 
+ 	priv->reg_name = name;
+-	of_property_read_u32(np, "voltage-tolerance", &priv->voltage_tolerance);
+ 
+ 	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
+ 	if (ret) {
+@@ -284,8 +274,6 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 
+ 	policy->cpuinfo.transition_latency = transition_latency;
+ 
+-	of_node_put(np);
+-
+ 	return 0;
+ 
+ out_free_cpufreq_table:
+@@ -296,8 +284,6 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 	dev_pm_opp_of_cpumask_remove_table(policy->cpus);
+ 	if (opp_v1)
+ 		dev_pm_opp_put_regulator(cpu_dev);
+-out_node_put:
+-	of_node_put(np);
+ out_put_reg_clk:
+ 	clk_put(cpu_clk);
+ 	if (!IS_ERR(cpu_reg))
 -- 
 2.7.0.rc1.186.g94414c4
 
