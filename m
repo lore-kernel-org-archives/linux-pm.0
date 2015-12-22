@@ -1,55 +1,109 @@
-From: Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [RFC PATCH V2 8/8] irqchip/gic: Add support for tegra AGIC
- interrupt controller
-Date: Tue, 22 Dec 2015 11:03:59 +0100
-Message-ID: <CACRpkdYWfe3MTE1YBPKspcpXNggADCbguCgupo+POwaTv_-6Kw@mail.gmail.com>
-References: <1450349309-8107-1-git-send-email-jonathanh@nvidia.com>
-	<1450349309-8107-9-git-send-email-jonathanh@nvidia.com>
-	<CACRpkdZT42rpKsVtNYdCuL_i0xWngvKSMSVUy1bLmPtxHhG5ew@mail.gmail.com>
-	<5673E38B.7060702@nvidia.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <5673E38B.7060702-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Marc Zyngier <marc.zyngier-5wv7dgnIgG8@public.gmane.org>, Jiang Liu <jiang.liu-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Soren Brinkmann <soren.brinkmann-gjFFaj9aHVfQT0dZR+AlfA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 01/17] PM / OPP: get/put regulators from OPP core
+Date: Tue, 22 Dec 2015 15:46:02 +0530
+Message-ID: <8731ff871e0eedfb08b9428af8da21b25d1ad283.1450777582.git.viresh.kumar@linaro.org>
+References: <cover.1450777582.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f48.google.com ([209.85.220.48]:34900 "EHLO
+	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932652AbbLVKQ2 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Dec 2015 05:16:28 -0500
+Received: by mail-pa0-f48.google.com with SMTP id jx14so87412048pad.2
+        for <linux-pm@vger.kernel.org>; Tue, 22 Dec 2015 02:16:28 -0800 (PST)
+In-Reply-To: <cover.1450777582.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1450777582.git.viresh.kumar@linaro.org>
+References: <cover.1450777582.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, nm@ti.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Fri, Dec 18, 2015 at 11:44 AM, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
-> On 17/12/15 13:32, Linus Walleij wrote:
->> On Thu, Dec 17, 2015 at 11:48 AM, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
->>
->>> Add a driver for the Tegra-AGIC interrupt controller which is compatible
->>> with the ARM GIC-400 interrupt controller.
->> (...)
->>> +static const struct dev_pm_ops gic_pm_ops = {
->>> +       SET_RUNTIME_PM_OPS(gic_runtime_suspend,
->>> +                          gic_runtime_resume, NULL)
->>> +       SET_SYSTEM_SLEEP_PM_OPS(gic_suspend, gic_resume)
->>> +};
->>
->> Now you do what I commented on in the earlier patch: assign
->> the runtime PM functions to normal suspend/resume.
->>
->> This will have the effect of inhibiting any IRQs marked for
->> wakeup on the GIC, even if you just want to go to sleep until
->> something happens, will it not?
->>
->> You should turn on the alarm clock before going to bed, not
->> turn it off, as figure of speak ...
->
-> Yes I am alway having problems with my alarm, may be this is why ;-)
->
-> I see what you are saying, so if there are any wake-ups enabled then we
-> should not suspend the chip. Right?
+The allows the OPP core to request/free the regulator resource, attached
+to a device OPP. The regulator device is fetched using device node and
+name of the device.
 
-Yep, so I think you should just wrap the normal suspend functions
-into some function that check if we have some wakeup active
-and then just return 0, else if everything is clear, call the same
-runtime PM hooks, and it will work nicely I think. IIUC the wakeup
-flag is only for the suspend/resume/sleep case so this should
-be enough.
+For example, a cpu0 device node needs to look like this:
+		cpu0: cpu@900 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a9";
+			reg = <0x900>;
+			cpu0-supply = <&varm>;
+			...
+		};
 
-Yours,
-Linus Walleij
+This will work for both OPP-v1 and v2 bindings.
+
+This is a preliminary step in moving the OPP switching logic into the
+OPP core.
+
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/base/power/opp/core.c | 8 ++++++++
+ drivers/base/power/opp/opp.h  | 4 ++++
+ 2 files changed, 12 insertions(+)
+
+diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
+index cd230c63aee6..2e49f5e9daa3 100644
+--- a/drivers/base/power/opp/core.c
++++ b/drivers/base/power/opp/core.c
+@@ -505,6 +505,7 @@ static struct device_opp *_add_device_opp(struct device *dev)
+ {
+ 	struct device_opp *dev_opp;
+ 	struct device_list_opp *list_dev;
++	const char *name = dev_name(dev);
+ 
+ 	/* Check for existing list for 'dev' first */
+ 	dev_opp = _find_device_opp(dev);
+@@ -527,6 +528,11 @@ static struct device_opp *_add_device_opp(struct device *dev)
+ 		return NULL;
+ 	}
+ 
++	dev_opp->regulator = regulator_get_optional(dev, name);
++	if (IS_ERR(dev_opp->regulator))
++		dev_info(dev, "%s: no regulator (%s) found: %ld\n", __func__,
++			 name, PTR_ERR(dev_opp->regulator));
++
+ 	srcu_init_notifier_head(&dev_opp->srcu_head);
+ 	INIT_LIST_HEAD(&dev_opp->opp_list);
+ 
+@@ -565,6 +571,8 @@ static void _remove_device_opp(struct device_opp *dev_opp)
+ 	if (dev_opp->prop_name)
+ 		return;
+ 
++	regulator_put(dev_opp->regulator);
++
+ 	list_dev = list_first_entry(&dev_opp->dev_list, struct device_list_opp,
+ 				    node);
+ 
+diff --git a/drivers/base/power/opp/opp.h b/drivers/base/power/opp/opp.h
+index 690638ef36ee..c4a03ad34100 100644
+--- a/drivers/base/power/opp/opp.h
++++ b/drivers/base/power/opp/opp.h
+@@ -18,6 +18,7 @@
+ #include <linux/kernel.h>
+ #include <linux/list.h>
+ #include <linux/limits.h>
++#include <linux/regulator/consumer.h>
+ #include <linux/pm_opp.h>
+ #include <linux/rculist.h>
+ #include <linux/rcupdate.h>
+@@ -132,6 +133,8 @@ struct device_list_opp {
+  * @supported_hw: Array of version number to support.
+  * @supported_hw_count: Number of elements in supported_hw array.
+  * @prop_name: A name to postfix to many DT properties, while parsing them.
++ * @regulator: Supply Regulator
++ *
+  * @dentry:	debugfs dentry pointer of the real device directory (not links).
+  * @dentry_name: Name of the real dentry.
+  *
+@@ -159,6 +162,7 @@ struct device_opp {
+ 	unsigned int *supported_hw;
+ 	unsigned int supported_hw_count;
+ 	const char *prop_name;
++	struct regulator *regulator;
+ 
+ #ifdef CONFIG_DEBUG_FS
+ 	struct dentry *dentry;
+-- 
+2.7.0.rc1.186.g94414c4
+
