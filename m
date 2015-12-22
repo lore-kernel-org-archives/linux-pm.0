@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 08/17] PM / OPP: Add dev_pm_opp_set_rate()
-Date: Tue, 22 Dec 2015 15:46:09 +0530
-Message-ID: <5824076a64ad4215cfc63c238e8b8947bc996e87.1450777582.git.viresh.kumar@linaro.org>
+Subject: [PATCH 06/17] PM / OPP: Parse clock-latency and voltage-tolerance for v1 bindings
+Date: Tue, 22 Dec 2015 15:46:07 +0530
+Message-ID: <25cb4d7e9169815448193bd93305fae31a83792c.1450777582.git.viresh.kumar@linaro.org>
 References: <cover.1450777582.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f171.google.com ([209.85.192.171]:36179 "EHLO
+Received: from mail-pf0-f171.google.com ([209.85.192.171]:32809 "EHLO
 	mail-pf0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932181AbbLVKQw (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Dec 2015 05:16:52 -0500
-Received: by mail-pf0-f171.google.com with SMTP id o64so104284889pfb.3
-        for <linux-pm@vger.kernel.org>; Tue, 22 Dec 2015 02:16:52 -0800 (PST)
+	with ESMTP id S932181AbbLVKQp (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Dec 2015 05:16:45 -0500
+Received: by mail-pf0-f171.google.com with SMTP id n128so87775298pfn.0
+        for <linux-pm@vger.kernel.org>; Tue, 22 Dec 2015 02:16:45 -0800 (PST)
 In-Reply-To: <cover.1450777582.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1450777582.git.viresh.kumar@linaro.org>
 References: <cover.1450777582.git.viresh.kumar@linaro.org>
@@ -18,196 +18,99 @@ List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, nm@ti.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-This adds a routine, dev_pm_opp_set_rate(), responsible for configuring
-power-supply and clock source for an OPP.
+V2 bindings have better support for clock-latency and voltage-tolerance
+and doesn't need special care. To use callbacks, like
+dev_pm_opp_get_max_{transition|volt}_latency(), irrespective of the
+bindings, the core needs to know clock-latency/voltage-tolerance for the
+earlier bindings.
 
-The OPP is found by matching against the target_freq passed to the
-routine. This shall replace similar code present in most of the OPP
-users and help simplify them a lot.
+This patch reads clock-latency/voltage-tolerance from the device node,
+irrespective of the bindings (to keep it simple) and use them only for
+V1 bindings.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/base/power/opp/core.c | 142 ++++++++++++++++++++++++++++++++++++++++++
- include/linux/pm_opp.h        |   6 ++
- 2 files changed, 148 insertions(+)
+ drivers/base/power/opp/core.c | 20 ++++++++++++++++++++
+ drivers/base/power/opp/opp.h  |  6 ++++++
+ 2 files changed, 26 insertions(+)
 
 diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index 1d1b0faa825d..c76818f69f14 100644
+index 5746993aa71d..1bb09138cdae 100644
 --- a/drivers/base/power/opp/core.c
 +++ b/drivers/base/power/opp/core.c
-@@ -517,6 +517,148 @@ struct dev_pm_opp *dev_pm_opp_find_freq_floor(struct device *dev,
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_find_freq_floor);
- 
-+/*
-+ * _set_opp_voltage() - Configure device supply for an OPP
-+ * @dev:	device for which we do this operation
-+ * @dev_opp:	dev_opp for the device
-+ * @opp:	opp for getting supply voltage levels
-+ *
-+ * This is used to configure the power supply, used by the device, to the
-+ * voltage levels specified by a particular OPP.
-+ */
-+static int _set_opp_voltage(struct device *dev, struct device_opp *dev_opp,
-+			    struct dev_pm_opp *opp)
-+{
-+	struct regulator *reg = dev_opp->regulator;
-+	int ret;
-+
-+	/* Regulator not be available for device */
-+	if (IS_ERR(reg)) {
-+		dev_dbg(dev, "%s: regulator not available: %ld\n", __func__,
-+			PTR_ERR(reg));
-+		return 0;
-+	}
-+
-+	dev_dbg(dev, "%s: voltages (mV): %lu %lu %lu\n", __func__,
-+		opp->u_volt_min, opp->u_volt, opp->u_volt_max);
-+
-+	ret = regulator_set_voltage_triplet(reg, opp->u_volt_min, opp->u_volt,
-+					    opp->u_volt_max);
-+	if (ret)
-+		dev_err(dev, "%s: failed to set voltage (%lu %lu %lu mV): %d\n",
-+			__func__, opp->u_volt_min, opp->u_volt, opp->u_volt_max,
-+			ret);
-+
-+	return ret;
-+}
-+
-+/**
-+ * dev_pm_opp_set_rate() - Configure new OPP based on frequency
-+ * @dev:	 device for which we do this operation
-+ * @target_freq: frequency to achieve
-+ *
-+ * This configures the power-supplies and clock source to the levels specified
-+ * by the OPP corresponding to the target_freq. It takes all necessary locks
-+ * required for the operation and the caller doesn't need to care about the rcu
-+ * locks.
-+ */
-+int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
-+{
-+	struct device_opp *dev_opp;
-+	struct dev_pm_opp *old_opp, *opp;
-+	struct clk *clk;
-+	unsigned long freq, old_freq;
-+	int ret;
-+
-+	if (unlikely(!target_freq)) {
-+		dev_err(dev, "%s: Invalid target frequemncy %lu\n", __func__,
-+			target_freq);
-+		return -EINVAL;
-+	}
-+
-+	rcu_read_lock();
-+
-+	dev_opp = _find_device_opp(dev);
-+	if (IS_ERR(dev_opp)) {
-+		dev_err(dev, "%s: device opp doesn't exist\n", __func__);
-+		ret = PTR_ERR(dev_opp);
-+		goto unlock;
-+	}
-+
-+	clk = dev_opp->clk;
-+	if (IS_ERR(clk)) {
-+		dev_err(dev, "%s: No clock available for the device\n",
-+			__func__);
-+		ret = -EINVAL;
-+		goto unlock;
-+	}
-+
-+	freq = clk_round_rate(clk, target_freq);
-+	if ((long)freq <= 0)
-+		freq = target_freq;
-+
-+	old_freq = clk_get_rate(clk);
-+
-+	/* Return early if nothing to do */
-+	if (old_freq == freq) {
-+		dev_dbg(dev, "%s: old/new frequencies (%lu Hz) are same, nothing to do\n",
-+			__func__, freq);
-+		ret = 0;
-+		goto unlock;
-+	}
-+
-+	old_opp = dev_pm_opp_find_freq_ceil(dev, &old_freq);
-+	opp = dev_pm_opp_find_freq_ceil(dev, &freq);
-+
-+	if (IS_ERR(opp)) {
-+		ret = PTR_ERR(opp);
-+		dev_err(dev, "%s: failed to find OPP for freq %lu (%d)\n",
-+			__func__, freq, ret);
-+		goto unlock;
-+	}
-+
-+	/* Scaling up? Scale voltage before frequency */
-+	if (freq > old_freq) {
-+		ret = _set_opp_voltage(dev, dev_opp, opp);
-+		if (ret)
-+			goto restore_voltage;
-+	}
-+
-+	/* Change frequency */
-+
-+	dev_dbg(dev, "%s: switching OPP: %lu Hz --> %lu Hz\n",
-+		__func__, old_freq, freq);
-+
-+	ret = clk_set_rate(clk, freq);
-+	if (ret) {
-+		dev_err(dev, "%s: failed to set clock rate: %d\n", __func__,
-+			ret);
-+		goto restore_voltage;
-+	}
-+
-+	/* Scaling down? Scale voltage after frequency */
-+	if (freq < old_freq) {
-+		ret = _set_opp_voltage(dev, dev_opp, opp);
-+		if (ret)
-+			goto restore_freq;
-+	}
-+
-+	goto unlock;
-+
-+restore_freq:
-+	if (clk_set_rate(clk, old_freq))
-+		dev_err(dev, "%s: failed to restore old-freq (%lu Hz)\n",
-+			__func__, old_freq);
-+restore_voltage:
-+	/* This shouldn't harm if the voltages weren't updated earlier */
-+	_set_opp_voltage(dev, dev_opp, old_opp);
-+unlock:
-+	rcu_read_unlock();
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_opp_set_rate);
-+
- /* List-dev Helpers */
- static void _kfree_list_dev_rcu(struct rcu_head *head)
+@@ -563,6 +563,7 @@ static struct device_opp *_add_device_opp_reg(struct device *dev,
  {
-diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index 59da3d9e11ea..cccaf4a29e9f 100644
---- a/include/linux/pm_opp.h
-+++ b/include/linux/pm_opp.h
-@@ -64,6 +64,7 @@ int dev_pm_opp_set_prop_name(struct device *dev, const char *name);
- void dev_pm_opp_put_prop_name(struct device *dev);
- int dev_pm_opp_set_regulator(struct device *dev, const char *name);
- void dev_pm_opp_put_regulator(struct device *dev);
-+int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq);
- #else
- static inline unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
- {
-@@ -172,6 +173,11 @@ static inline int dev_pm_opp_set_regulator(struct device *dev, const char *name)
+ 	struct device_opp *dev_opp;
+ 	struct device_list_opp *list_dev;
++	struct device_node *np;
  
- static inline void dev_pm_opp_put_regulator(struct device *dev) {}
+ 	/*
+ 	 * Allocate a new device OPP table. In the infrequent case where a new
+@@ -580,6 +581,21 @@ static struct device_opp *_add_device_opp_reg(struct device *dev,
+ 		return NULL;
+ 	}
  
-+static inline int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
-+{
-+	return -EINVAL;
-+}
++	/*
++	 * Only required for backward compatibility with v1 bindings, but isn't
++	 * harmful for other cases. And so we do it unconditionally.
++	 */
++	np = of_node_get(dev->of_node);
++	if (np) {
++		u32 val;
 +
- #endif		/* CONFIG_PM_OPP */
++		if (!of_property_read_u32(np, "clock-latency", &val))
++			dev_opp->clock_latency_ns_max = val;
++		of_property_read_u32(np, "voltage-tolerance",
++				     &dev_opp->voltage_tolerance_v1);
++		of_node_put(np);
++	}
++
+ 	dev_opp->regulator = regulator_get_optional(dev, name);
+ 	if (IS_ERR(dev_opp->regulator))
+ 		dev_info(dev, "%s: no regulator (%s) found: %ld\n", __func__,
+@@ -865,6 +881,7 @@ static int _opp_add_v1(struct device *dev, unsigned long freq, long u_volt,
+ {
+ 	struct device_opp *dev_opp;
+ 	struct dev_pm_opp *new_opp;
++	unsigned long tol;
+ 	int ret;
  
- #if defined(CONFIG_PM_OPP) && defined(CONFIG_OF)
+ 	/* Hold our list modification lock here */
+@@ -878,7 +895,10 @@ static int _opp_add_v1(struct device *dev, unsigned long freq, long u_volt,
+ 
+ 	/* populate the opp table */
+ 	new_opp->rate = freq;
++	tol = u_volt * dev_opp->voltage_tolerance_v1 / 100;
+ 	new_opp->u_volt = u_volt;
++	new_opp->u_volt_min = u_volt - tol;
++	new_opp->u_volt_max = u_volt + tol;
+ 	new_opp->available = true;
+ 	new_opp->dynamic = dynamic;
+ 
+diff --git a/drivers/base/power/opp/opp.h b/drivers/base/power/opp/opp.h
+index 08aae35ab8e0..a39347d8693f 100644
+--- a/drivers/base/power/opp/opp.h
++++ b/drivers/base/power/opp/opp.h
+@@ -139,6 +139,8 @@ struct device_list_opp {
+  * @dentry:	debugfs dentry pointer of the real device directory (not links).
+  * @dentry_name: Name of the real dentry.
+  *
++ * @voltage_tolerance_v1: In percentage, for v1 bindings only.
++ *
+  * This is an internal data structure maintaining the link to opps attached to
+  * a device. This structure is not meant to be shared to users as it is
+  * meant for book keeping and private to OPP library.
+@@ -157,6 +159,10 @@ struct device_opp {
+ 
+ 	struct device_node *np;
+ 	unsigned long clock_latency_ns_max;
++
++	/* For backward compatibility with v1 bindings */
++	unsigned int voltage_tolerance_v1;
++
+ 	bool shared_opp;
+ 	struct dev_pm_opp *suspend_opp;
+ 
 -- 
 2.7.0.rc1.186.g94414c4
 
