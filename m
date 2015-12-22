@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 05/17] PM / OPP: Introduce dev_pm_opp_get_max_transition_latency()
-Date: Tue, 22 Dec 2015 15:46:06 +0530
-Message-ID: <0dd4be8d1e6dec70cd859c99bb597726317ced1e.1450777582.git.viresh.kumar@linaro.org>
+Subject: [PATCH 03/17] PM / OPP: Disable OPPs that aren't supported by the regulator
+Date: Tue, 22 Dec 2015 15:46:04 +0530
+Message-ID: <b3edc6d769720792791bda5701545f019d7a9329.1450777582.git.viresh.kumar@linaro.org>
 References: <cover.1450777582.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f174.google.com ([209.85.192.174]:36103 "EHLO
-	mail-pf0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932181AbbLVKQm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Dec 2015 05:16:42 -0500
-Received: by mail-pf0-f174.google.com with SMTP id o64so104282815pfb.3
-        for <linux-pm@vger.kernel.org>; Tue, 22 Dec 2015 02:16:42 -0800 (PST)
+Received: from mail-pf0-f181.google.com ([209.85.192.181]:34488 "EHLO
+	mail-pf0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932181AbbLVKQf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 22 Dec 2015 05:16:35 -0500
+Received: by mail-pf0-f181.google.com with SMTP id u7so57921868pfb.1
+        for <linux-pm@vger.kernel.org>; Tue, 22 Dec 2015 02:16:35 -0800 (PST)
 In-Reply-To: <cover.1450777582.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1450777582.git.viresh.kumar@linaro.org>
 References: <cover.1450777582.git.viresh.kumar@linaro.org>
@@ -18,67 +18,54 @@ List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, nm@ti.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-In few use cases (like: cpufreq), it is desired to get the maximum
-latency for changing OPPs. Add support for that.
+Disable any OPPs where the connected regulator isn't able to provide the
+specified voltage.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/base/power/opp/core.c | 17 +++++++++++++++++
- include/linux/pm_opp.h        |  6 ++++++
- 2 files changed, 23 insertions(+)
+ drivers/base/power/opp/core.c | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
 
 diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index bf296c459e06..5746993aa71d 100644
+index 76232ee04cc6..12066d3def38 100644
 --- a/drivers/base/power/opp/core.c
 +++ b/drivers/base/power/opp/core.c
-@@ -279,6 +279,23 @@ unsigned long dev_pm_opp_get_max_volt_latency(struct device *dev)
- EXPORT_SYMBOL_GPL(dev_pm_opp_get_max_volt_latency);
+@@ -701,6 +701,22 @@ static struct dev_pm_opp *_allocate_opp(struct device *dev,
+ 	return opp;
+ }
  
- /**
-+ * dev_pm_opp_get_max_transition_latency() - Get max transition latency in
-+ *					     nanoseconds
-+ * @dev:	device for which we do this operation
-+ *
-+ * Return: This function returns the max transition latency, in nanoseconds, to
-+ * switch from one OPP to other.
-+ *
-+ * Locking: This function takes rcu_read_lock().
-+ */
-+unsigned long dev_pm_opp_get_max_transition_latency(struct device *dev)
++static bool _opp_supported_by_regulators(struct dev_pm_opp *opp,
++					 struct device_opp *dev_opp)
 +{
-+	return dev_pm_opp_get_max_volt_latency(dev) +
-+		dev_pm_opp_get_max_clock_latency(dev);
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_opp_get_max_transition_latency);
++	struct regulator *reg = dev_opp->regulator;
 +
-+/**
-  * dev_pm_opp_get_suspend_opp() - Get suspend opp
-  * @dev:	device for which we do this operation
-  *
-diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index 5daa43058ac1..59da3d9e11ea 100644
---- a/include/linux/pm_opp.h
-+++ b/include/linux/pm_opp.h
-@@ -35,6 +35,7 @@ bool dev_pm_opp_is_turbo(struct dev_pm_opp *opp);
- int dev_pm_opp_get_opp_count(struct device *dev);
- unsigned long dev_pm_opp_get_max_clock_latency(struct device *dev);
- unsigned long dev_pm_opp_get_max_volt_latency(struct device *dev);
-+unsigned long dev_pm_opp_get_max_transition_latency(struct device *dev);
- struct dev_pm_opp *dev_pm_opp_get_suspend_opp(struct device *dev);
++	if (!IS_ERR(reg) &&
++	    !regulator_is_supported_voltage(reg, opp->u_volt_min,
++					    opp->u_volt_max)) {
++		pr_warn("%s: OPP minuV: %lu maxuV: %lu, not supported by regulator\n",
++			__func__, opp->u_volt_min, opp->u_volt_max);
++		return false;
++	}
++
++	return true;
++}
++
+ static int _opp_add(struct device *dev, struct dev_pm_opp *new_opp,
+ 		    struct device_opp *dev_opp)
+ {
+@@ -742,6 +758,12 @@ static int _opp_add(struct device *dev, struct dev_pm_opp *new_opp,
+ 		dev_err(dev, "%s: Failed to register opp to debugfs (%d)\n",
+ 			__func__, ret);
  
- struct dev_pm_opp *dev_pm_opp_find_freq_exact(struct device *dev,
-@@ -94,6 +95,11 @@ static inline unsigned long dev_pm_opp_get_max_volt_latency(struct device *dev)
++	if (!_opp_supported_by_regulators(new_opp, dev_opp)) {
++		new_opp->available = false;
++		dev_warn(dev, "%s: OPP not supported by regulators (%lu)\n",
++			 __func__, new_opp->rate);
++	}
++
  	return 0;
  }
  
-+static inline unsigned long dev_pm_opp_get_max_transition_latency(struct device *dev)
-+{
-+	return 0;
-+}
-+
- static inline struct dev_pm_opp *dev_pm_opp_get_suspend_opp(struct device *dev)
- {
- 	return NULL;
 -- 
 2.7.0.rc1.186.g94414c4
 
