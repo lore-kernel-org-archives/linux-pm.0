@@ -1,38 +1,41 @@
 From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH] cpufreq/scpi: fix handling return value of
- topology_physical_package_id
-Date: Wed, 23 Dec 2015 10:48:24 +0000
-Message-ID: <567A7BF8.1030107@arm.com>
-References: <1450867041-729-1-git-send-email-a.hajda@samsung.com>
+Subject: Re: [PATCH] cpufreq: scpi-cpufreq: signedness bug in scpi_get_dvfs_info()
+Date: Wed, 23 Dec 2015 11:20:04 +0000
+Message-ID: <CAPKp9ubzg3hfondHoiR1qgc057Dobrz+1KoPp69-TEy9-_yZiA@mail.gmail.com>
+References: <1450178204-26172-1-git-send-email-sudeep.holla@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1450867041-729-1-git-send-email-a.hajda@samsung.com>
+In-Reply-To: <1450178204-26172-1-git-send-email-sudeep.holla@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andrzej Hajda <a.hajda@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>, "open list:SYSTEM CONTROL & POWER INTERFACE (SCPI) Message..." <linux-arm-kernel@lists.infradead.org>, "open list:CPU FREQUENCY DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+To: Linux PM list <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Dan Carpenter <dan.carpenter@oracle.com>
 List-Id: linux-pm@vger.kernel.org
 
+Hi Rafael,
 
-
-On 23/12/15 10:37, Andrzej Hajda wrote:
-> The function can return negative values, so its result should
-> be assigned to signed variable.
+On Tue, Dec 15, 2015 at 11:16 AM, Sudeep Holla <sudeep.holla@arm.com> wrote:
+> From: Dan Carpenter <dan.carpenter@oracle.com>
 >
-> The problem has been detected using proposed semantic patch
-> scripts/coccinelle/tests/unsigned_lesser_than_zero.cocci [1].
+> The "domain" variable needs to be signed for the error handling to work.
 >
-> [1]: http://permalink.gmane.org/gmane.linux.kernel/2038576
+> Fixes: 8def31034d03 ('cpufreq: arm_big_little: add SCPI interface driver')
+> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Acked-by: Sudeep Holla <sudeep.holla@arm.com>
+> ---
+>  drivers/cpufreq/scpi-cpufreq.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> Hi Rafael,
+>
+> This patch seem to have slipped through the cracks somehow. I don't see
+> in patchwork too. So I am resending so that you can pick for your next
+> rc fix if you plan to send one else for -next
 >
 
-There has a patch posted by Dan Carpenter [1] which I reposted[2],
-but it again slipped through the cracks. I will poke Rafael again on that.
+This got missed again, can you please ensure to pull this for your next -rc.
+If you have none planned, please pull this for-next.
 
-[1] 
-http://lists.infradead.org/pipermail/linux-arm-kernel/2015-October/380292.html
-[2] https://lkml.org/lkml/2015/12/15/219
-
--- 
 Regards,
 Sudeep
