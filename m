@@ -1,106 +1,47 @@
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-Subject: [PATCH] PowerCap: constify powercap_zone_ops and powercap_zone_constraint_ops structures
-Date: Wed, 23 Dec 2015 22:59:55 +0100
-Message-ID: <1450907995-825-1-git-send-email-Julia.Lawall@lip6.fr>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: scpi-cpufreq: signedness bug in scpi_get_dvfs_info()
+Date: Thu, 24 Dec 2015 02:45:47 +0100
+Message-ID: <1952184.nII0v5K5QD@vostro.rjw.lan>
+References: <1450178204-26172-1-git-send-email-sudeep.holla@arm.com> <CAPKp9ubzg3hfondHoiR1qgc057Dobrz+1KoPp69-TEy9-_yZiA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAPKp9ubzg3hfondHoiR1qgc057Dobrz+1KoPp69-TEy9-_yZiA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: kernel-janitors@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Dan Carpenter <dan.carpenter@oracle.com>
 List-Id: linux-pm@vger.kernel.org
 
-The powercap_zone_ops and powercap_zone_constraint_ops structures are never
-modified, so declare them as const.
+On Wednesday, December 23, 2015 11:20:04 AM Sudeep Holla wrote:
+> Hi Rafael,
+> 
+> On Tue, Dec 15, 2015 at 11:16 AM, Sudeep Holla <sudeep.holla@arm.com> wrote:
+> > From: Dan Carpenter <dan.carpenter@oracle.com>
+> >
+> > The "domain" variable needs to be signed for the error handling to work.
+> >
+> > Fixes: 8def31034d03 ('cpufreq: arm_big_little: add SCPI interface driver')
+> > Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > Acked-by: Sudeep Holla <sudeep.holla@arm.com>
+> > ---
+> >  drivers/cpufreq/scpi-cpufreq.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> > Hi Rafael,
+> >
+> > This patch seem to have slipped through the cracks somehow. I don't see
+> > in patchwork too. So I am resending so that you can pick for your next
+> > rc fix if you plan to send one else for -next
+> >
+> 
+> This got missed again, can you please ensure to pull this for your next -rc.
+> If you have none planned, please pull this for-next.
 
-Most of the actual changes adjust indentation to accomodate the const
-keyword.
+Applied now, thanks!
 
-Done with the help of Coccinelle.
+I'm going to push it for -rc7.
 
-Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
-
----
- drivers/powercap/intel_rapl.c   |    4 ++--
- drivers/powercap/powercap_sys.c |   18 +++++++++---------
- include/linux/powercap.h        |    4 ++--
- 3 files changed, 13 insertions(+), 13 deletions(-)
-
-diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-index 4099159..6c592dc 100644
---- a/drivers/powercap/intel_rapl.c
-+++ b/drivers/powercap/intel_rapl.c
-@@ -388,7 +388,7 @@ static int get_domain_enable(struct powercap_zone *power_zone, bool *mode)
- }
- 
- /* per RAPL domain ops, in the order of rapl_domain_type */
--static struct powercap_zone_ops zone_ops[] = {
-+static const struct powercap_zone_ops zone_ops[] = {
- 	/* RAPL_DOMAIN_PACKAGE */
- 	{
- 		.get_energy_uj = get_energy_counter,
-@@ -584,7 +584,7 @@ static int get_max_power(struct powercap_zone *power_zone, int id,
- 	return ret;
- }
- 
--static struct powercap_zone_constraint_ops constraint_ops = {
-+static const struct powercap_zone_constraint_ops constraint_ops = {
- 	.set_power_limit_uw = set_power_limit,
- 	.get_power_limit_uw = get_current_power_limit,
- 	.set_time_window_us = set_time_window,
-diff --git a/drivers/powercap/powercap_sys.c b/drivers/powercap/powercap_sys.c
-index 84419af..14bde0d 100644
---- a/drivers/powercap/powercap_sys.c
-+++ b/drivers/powercap/powercap_sys.c
-@@ -293,8 +293,8 @@ err_alloc:
- }
- 
- static int create_constraints(struct powercap_zone *power_zone,
--				int nr_constraints,
--				struct powercap_zone_constraint_ops *const_ops)
-+			int nr_constraints,
-+			const struct powercap_zone_constraint_ops *const_ops)
- {
- 	int i;
- 	int ret = 0;
-@@ -492,13 +492,13 @@ static struct class powercap_class = {
- };
- 
- struct powercap_zone *powercap_register_zone(
--				struct powercap_zone *power_zone,
--				struct powercap_control_type *control_type,
--				const char *name,
--				struct powercap_zone *parent,
--				const struct powercap_zone_ops *ops,
--				int nr_constraints,
--				struct powercap_zone_constraint_ops *const_ops)
-+			struct powercap_zone *power_zone,
-+			struct powercap_control_type *control_type,
-+			const char *name,
-+			struct powercap_zone *parent,
-+			const struct powercap_zone_ops *ops,
-+			int nr_constraints,
-+			const struct powercap_zone_constraint_ops *const_ops)
- {
- 	int result;
- 	int nr_attrs;
-diff --git a/include/linux/powercap.h b/include/linux/powercap.h
-index 4e25041..f0a4e62 100644
---- a/include/linux/powercap.h
-+++ b/include/linux/powercap.h
-@@ -208,7 +208,7 @@ struct powercap_zone_constraint_ops {
- struct powercap_zone_constraint {
- 	int id;
- 	struct powercap_zone *power_zone;
--	struct powercap_zone_constraint_ops *ops;
-+	const struct powercap_zone_constraint_ops *ops;
- };
- 
- 
-@@ -309,7 +309,7 @@ struct powercap_zone *powercap_register_zone(
- 			struct powercap_zone *parent,
- 			const struct powercap_zone_ops *ops,
- 			int nr_constraints,
--			struct powercap_zone_constraint_ops *const_ops);
-+			const struct powercap_zone_constraint_ops *const_ops);
- 
- /**
- * powercap_unregister_zone() - Unregister a zone device
+Thanks,
+Rafael
