@@ -1,40 +1,37 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: Re: [PATCH 0/2] two fixes for new bq27000/10 and bq27500 driver
-Date: Thu, 24 Dec 2015 07:57:56 -0600
-Message-ID: <567BF9E4.20105@ti.com>
-References: <cover.1450347172.git.hns@goldelico.com>
- <20151219080048.GA11317@earth>
+From: Shubhrajyoti Datta <shubhrajyoti.datta@gmail.com>
+Subject: Re: [PATCH 0/2] i2c: proper RuntimePM for the adapter device
+Date: Thu, 24 Dec 2015 22:34:23 +0530
+Message-ID: <CAKfKVtEmsrQT6x2p=Knz836iNXw3vwQyx1M_WJ=GJjVDgBjWFA@mail.gmail.com>
+References: <1450891169-13708-1-git-send-email-wsa@the-dreams.de>
+	<CAKfKVtHt8BpakkffRp=_2GUxqK5JO0WCsizCrjtwH5hv+TWvWg@mail.gmail.com>
+	<20151224084105.GA1548@katana>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:39738 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751503AbbLXN63 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 24 Dec 2015 08:58:29 -0500
-In-Reply-To: <20151219080048.GA11317@earth>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <20151224084105.GA1548@katana>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: linux-i2c@vger.kernel.org, linux-sh@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, Simon Horman <horms@verge.net.au>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-pm@vger.kernel.org, Sylwester Nawrocki <s.nawrocki@samsung.com>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: "H. Nikolaus Schaller" <hns@goldelico.com>, =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali.rohar@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, gta04-owner@goldelico.com, marek@goldelico.com
 
-On 12/19/2015 02:00 AM, Sebastian Reichel wrote:
-> Hi Andrew,
 >
-> On Thu, Dec 17, 2015 at 11:12:52AM +0100, H. Nikolaus Schaller wrote:
->> H. Nikolaus Schaller (2):
->>    power:bq27xxx: fix reading for bq27000 and bq27010
->>    power:bq27xxx: fix register numbers of bq27500
->>
->>   drivers/power/bq27xxx_battery.c | 18 ++++++++++++------
->>   1 file changed, 12 insertions(+), 6 deletions(-)
+>> Also maybe we can add a flag that the driver enables.
+>> that way for a short period till the driver removes the call
+>> the double call is not there.
 >
-> Can you give me your Acked-By (or Tested-By) for those patches?
+> The only driver I found was the s3c2410 and I fixed it. Is there another
+> one? Then, I'd update my series because I want a consistent state in one
+> go.
+>
+I think the below drivers
 
-Done
-
-> Also I wonder if you would be available as official reviewer for
-> the driver.
-
-Sure, what's the normal procedure for this, should I submit a
-patch adding myself to that driver in MAINTAINERS?
+drivers/i2c/busses/i2c-at91.c
+drivers/i2c/busses/i2c-designware-core.c
+drivers/i2c/busses/i2c-designware-platdrv.c
+drivers/i2c/busses/i2c-rcar.c
+drivers/i2c/busses/i2c-sh_mobile.c
+drivers/i2c/busses/i2c-hix5hd2.c
+drivers/i2c/busses/i2c-nomadik.c
+drivers/i2c/busses/i2c-omap.c
+drivers/i2c/busses/i2c-qup.c
+drivers/i2c/busses/i2c-s3c2410.c
