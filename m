@@ -1,101 +1,54 @@
 From: "Andrew F. Davis" <afd@ti.com>
-Subject: Re: [PATCH 1/2] power:bq27xxx: fix reading for bq27000 and bq27010
-Date: Wed, 23 Dec 2015 20:46:43 -0600
-Message-ID: <567B5C93.9090000@ti.com>
+Subject: Re: [PATCH 2/2] power:bq27xxx: fix register numbers of bq27500
+Date: Wed, 23 Dec 2015 20:52:28 -0600
+Message-ID: <567B5DEC.3050106@ti.com>
 References: <cover.1450347172.git.hns@goldelico.com>
- <deacb36df6842521628c0d324c2c8033733e2cb5.1450347172.git.hns@goldelico.com>
+ <dd1c67a7c8a2cabed0433f2d7b30f91bb0b06b78.1450347172.git.hns@goldelico.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="windows-1252"; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <deacb36df6842521628c0d324c2c8033733e2cb5.1450347172.git.hns@goldelico.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from devils.ext.ti.com ([198.47.26.153]:52326 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752327AbbLXCxT (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 23 Dec 2015 21:53:19 -0500
+In-Reply-To: <dd1c67a7c8a2cabed0433f2d7b30f91bb0b06b78.1450347172.git.hns@goldelico.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: "H. Nikolaus Schaller" <hns@goldelico.com>, =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, gta04-owner@goldelico.com, marek@goldelico.com
-List-Id: linux-pm@vger.kernel.org
 
 On 12/17/2015 04:12 AM, H. Nikolaus Schaller wrote:
-> bug: the driver reports funny capacity values:
+> bug: according to data sheet some register numbers are wrong.
 >
-> root@letux:/sys/class/power_supply/bq27000-battery# cat uevent
-> POWER_SUPPLY_NAME=bq27000-battery
-> POWER_SUPPLY_STATUS=Charging
-> POWER_SUPPLY_PRESENT=1
-> POWER_SUPPLY_VOLTAGE_NOW=3702000
-> POWER_SUPPLY_CURRENT_NOW=-464635
-> POWER_SUPPLY_CAPACITY=1536			<- over 100% is magic
-> POWER_SUPPLY_CAPACITY_LEVEL=Normal
-> POWER_SUPPLY_TEMP=311
-> POWER_SUPPLY_TIME_TO_FULL_NOW=10440
-> POWER_SUPPLY_TECHNOLOGY=Li-ion
-> POWER_SUPPLY_CHARGE_FULL=805450
-> POWER_SUPPLY_CHARGE_NOW=1068
-> POWER_SUPPLY_CHARGE_FULL_DESIGN=8844998	<- battery has just 1200 mAh
-> POWER_SUPPLY_CYCLE_COUNT=21
-> POWER_SUPPLY_ENERGY_NOW=0
-> POWER_SUPPLY_POWER_AVG=0
-> POWER_SUPPLY_HEALTH=Good
-> POWER_SUPPLY_MANUFACTURER=Texas Instruments
->
-> reason: the state of charge and the design capacity register are single
-> byte only. The design capacity returns the higer order byte.
->
-> tested: GTA04 with Openmoko/FIC HF08x battery (using hdq)
+> tested: no
 >
 > Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
-> ---
->   drivers/power/bq27xxx_battery.c | 12 +++++++++---
->   1 file changed, 9 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27xxx_battery.c
-> index 880233c..e54a125 100644
-> --- a/drivers/power/bq27xxx_battery.c
-> +++ b/drivers/power/bq27xxx_battery.c
-> @@ -471,7 +471,10 @@ static int bq27xxx_battery_read_soc(struct bq27xxx_device_info *di)
->   {
->   	int soc;
->
-> -	soc = bq27xxx_read(di, BQ27XXX_REG_SOC, false);
-> +	if (di->chip == BQ27000 || di->chip == BQ27010)
-> +		soc = bq27xxx_read(di, BQ27XXX_REG_SOC, true);
-> +	else
-> +		soc = bq27xxx_read(di, BQ27XXX_REG_SOC, false);
->
->   	if (soc < 0)
->   		dev_dbg(di->dev, "error reading State-of-Charge\n");
-> @@ -536,7 +539,10 @@ static int bq27xxx_battery_read_dcap(struct bq27xxx_device_info *di)
->   {
->   	int dcap;
->
-> -	dcap = bq27xxx_read(di, BQ27XXX_REG_DCAP, false);
-> +	if (di->chip == BQ27000 || di->chip == BQ27010)
-> +		dcap = bq27xxx_read(di, BQ27XXX_REG_DCAP, true);
-> +	else
-> +		dcap = bq27xxx_read(di, BQ27XXX_REG_DCAP, false);
->
 
-I'm wondering how the I2C versions will be effected by this change, will
-we get the right byte when we only read one? Maybe the fix should be
-to still read 2-bytes but mask out the right bits from the result? The
-data-sheet doesn't seem clear on this.
-
-Well, it is more right than it was before, I'll look for a bq27200 to
-test and make changes if needed some other time, but for now:
+Indeed they are, good catch.
 
 Acked-by: Andrew F. Davis <afd@ti.com>
 
->   	if (dcap < 0) {
->   		dev_dbg(di->dev, "error reading initial last measured discharge\n");
-> @@ -544,7 +550,7 @@ static int bq27xxx_battery_read_dcap(struct bq27xxx_device_info *di)
->   	}
+> ---
+>   drivers/power/bq27xxx_battery.c | 6 +++---
+>   1 file changed, 3 insertions(+), 3 deletions(-)
 >
->   	if (di->chip == BQ27000 || di->chip == BQ27010)
-> -		dcap *= BQ27XXX_CURRENT_CONSTANT / BQ27XXX_RS;
-> +		dcap = (dcap << 8) * BQ27XXX_CURRENT_CONSTANT / BQ27XXX_RS;
->   	else
->   		dcap *= 1000;
+> diff --git a/drivers/power/bq27xxx_battery.c b/drivers/power/bq27xxx_battery.c
+> index e54a125..f9a5f4f 100644
+> --- a/drivers/power/bq27xxx_battery.c
+> +++ b/drivers/power/bq27xxx_battery.c
+> @@ -198,10 +198,10 @@ static u8 bq27500_regs[] = {
+>   	INVALID_REG_ADDR,	/* TTECP - NA	*/
+>   	0x0c,	/* NAC		*/
+>   	0x12,	/* LMD(FCC)	*/
+> -	0x1e,	/* CYCT		*/
+> +	0x2a,	/* CYCT		*/
+>   	INVALID_REG_ADDR,	/* AE - NA	*/
+> -	0x20,	/* SOC(RSOC)	*/
+> -	0x2e,	/* DCAP(ILMD)	*/
+> +	0x2c,	/* SOC(RSOC)	*/
+> +	0x3c,	/* DCAP(ILMD)	*/
+>   	INVALID_REG_ADDR,	/* AP - NA	*/
+>   };
 >
 >
-
--- 
-Andrew F. Davis
