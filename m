@@ -1,61 +1,40 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH] cpufreq: scpi-cpufreq: signedness bug in
- scpi_get_dvfs_info()
-Date: Thu, 24 Dec 2015 09:53:52 +0000
-Message-ID: <567BC0B0.6070406@arm.com>
-References: <1450178204-26172-1-git-send-email-sudeep.holla@arm.com>
- <CAPKp9ubzg3hfondHoiR1qgc057Dobrz+1KoPp69-TEy9-_yZiA@mail.gmail.com>
- <1952184.nII0v5K5QD@vostro.rjw.lan>
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: Re: [PATCH 0/2] two fixes for new bq27000/10 and bq27500 driver
+Date: Thu, 24 Dec 2015 07:57:56 -0600
+Message-ID: <567BF9E4.20105@ti.com>
+References: <cover.1450347172.git.hns@goldelico.com>
+ <20151219080048.GA11317@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset="windows-1252"; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:32768 "EHLO foss.arm.com"
+Received: from comal.ext.ti.com ([198.47.26.152]:39738 "EHLO comal.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752564AbbLXJxz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 24 Dec 2015 04:53:55 -0500
-In-Reply-To: <1952184.nII0v5K5QD@vostro.rjw.lan>
+	id S1751503AbbLXN63 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 24 Dec 2015 08:58:29 -0500
+In-Reply-To: <20151219080048.GA11317@earth>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Linux PM list <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Dan Carpenter <dan.carpenter@oracle.com>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: "H. Nikolaus Schaller" <hns@goldelico.com>, =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali.rohar@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, gta04-owner@goldelico.com, marek@goldelico.com
 
-
-
-On 24/12/15 01:45, Rafael J. Wysocki wrote:
-> On Wednesday, December 23, 2015 11:20:04 AM Sudeep Holla wrote:
->> Hi Rafael,
+On 12/19/2015 02:00 AM, Sebastian Reichel wrote:
+> Hi Andrew,
+>
+> On Thu, Dec 17, 2015 at 11:12:52AM +0100, H. Nikolaus Schaller wrote:
+>> H. Nikolaus Schaller (2):
+>>    power:bq27xxx: fix reading for bq27000 and bq27010
+>>    power:bq27xxx: fix register numbers of bq27500
 >>
->> On Tue, Dec 15, 2015 at 11:16 AM, Sudeep Holla <sudeep.holla@arm.com> wrote:
->>> From: Dan Carpenter <dan.carpenter@oracle.com>
->>>
->>> The "domain" variable needs to be signed for the error handling to work.
->>>
->>> Fixes: 8def31034d03 ('cpufreq: arm_big_little: add SCPI interface driver')
->>> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
->>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->>> Acked-by: Sudeep Holla <sudeep.holla@arm.com>
->>> ---
->>>   drivers/cpufreq/scpi-cpufreq.c | 2 +-
->>>   1 file changed, 1 insertion(+), 1 deletion(-)
->>>
->>> Hi Rafael,
->>>
->>> This patch seem to have slipped through the cracks somehow. I don't see
->>> in patchwork too. So I am resending so that you can pick for your next
->>> rc fix if you plan to send one else for -next
->>>
->>
->> This got missed again, can you please ensure to pull this for your next -rc.
->> If you have none planned, please pull this for-next.
+>>   drivers/power/bq27xxx_battery.c | 18 ++++++++++++------
+>>   1 file changed, 12 insertions(+), 6 deletions(-)
 >
-> Applied now, thanks!
->
-> I'm going to push it for -rc7.
->
+> Can you give me your Acked-By (or Tested-By) for those patches?
 
-Thanks, sorry for the nags.
+Done
 
--- 
-Regards,
-Sudeep
+> Also I wonder if you would be available as official reviewer for
+> the driver.
+
+Sure, what's the normal procedure for this, should I submit a
+patch adding myself to that driver in MAINTAINERS?
