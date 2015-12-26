@@ -1,53 +1,60 @@
-From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
-Subject: Re: [PATCH 0/2] two fixes for new bq27000/10 and bq27500 driver
-Date: Fri, 25 Dec 2015 14:22:11 +0100
-Message-ID: <201512251422.11723@pali>
-References: <cover.1450347172.git.hns@goldelico.com> <20151219080048.GA11317@earth> <567BF9E4.20105@ti.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management and ACPI fixes for v4.4-rc7
+Date: Sat, 26 Dec 2015 22:40:01 +0100
+Message-ID: <CAJZ5v0gX65pDn-h-XG0JBRJvm+RuvSOgwNU52BbcAPxr2VvCyg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2030668.8FqTz6mxQR";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f50.google.com ([74.125.82.50]:34120 "EHLO
-	mail-wm0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752572AbbLYNWT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 25 Dec 2015 08:22:19 -0500
-In-Reply-To: <567BF9E4.20105@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Andrew F. Davis" <afd@ti.com>
-Cc: Sebastian Reichel <sre@kernel.org>, "H. Nikolaus Schaller" <hns@goldelico.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, gta04-owner@goldelico.com, marek@goldelico.com
 
---nextPart2030668.8FqTz6mxQR
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+Hi Linus,
 
-On Thursday 24 December 2015 14:57:56 Andrew F. Davis wrote:=20
-> > Also I wonder if you would be available as official reviewer for
-> > the driver.
->=20
-> Sure, what's the normal procedure for this, should I submit a
-> patch adding myself to that driver in MAINTAINERS?
+Please pull from
 
-Yes, send patch.
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm+acpi-4.4-rc7
 
-=2D-=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
+to receive power management and ACPI fixes for v4.4-rc7 with top-most
+commit 43b28ca8dfb07f2faa44204b3b3e7cb016468847
 
---nextPart2030668.8FqTz6mxQR
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+ Merge branches 'acpi-processor' and 'pm-cpufreq'
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
+on top of commit 4ef7675344d687a0ef5b0d7c0cee12da005870c0
 
-iEYEABECAAYFAlZ9QwMACgkQi/DJPQPkQ1IcywCgilRPvbjvtbzwmrl2uQTQY58e
-NIIAniC4qhoe6PQu7AO8AwCoqlLNMiBU
-=uvn6
------END PGP SIGNATURE-----
+ Linux 4.4-rc6
 
---nextPart2030668.8FqTz6mxQR--
+These fix an ACPI processor driver regression introduced during
+the 4.3 cycle and a mistake in the recently added SCPI support
+in the arm_big_little cpufreq driver.
+
+Specifics:
+
+ - Fix a thermal management issue introduced by an ACPI processor
+   driver change made during the 4.3 development cycle that failed
+   to return 0 from a function on success which triggered an error
+   cleanup path every time it had been called that deleted useful
+   data structures created previously (Srinivas Pandruvada).
+
+ - Fix a variable data type issue in the arm_big_little cpufreq
+   driver's SCPI support code added recently that prevents error
+   handling in there from working correctly (Dan Carpenter).
+
+Thanks!
+
+
+---------------
+
+Dan Carpenter (1):
+      cpufreq: scpi-cpufreq: signedness bug in scpi_get_dvfs_info()
+
+Srinivas Pandruvada (1):
+      ACPI / processor: Fix thermal cooling device regression
+
+---------------
+
+ drivers/acpi/processor_driver.c | 3 ++-
+ drivers/cpufreq/scpi-cpufreq.c  | 2 +-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
