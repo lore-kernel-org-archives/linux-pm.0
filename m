@@ -1,40 +1,38 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 3/3] ARM64: dts: mt8173: Add CPU OPP, clock and
- regulator supply properties
-Date: Mon, 28 Dec 2015 08:43:40 +0530
-Message-ID: <20151228031340.GD3598@ubuntu>
-References: <1451197318-12418-1-git-send-email-pi-cheng.chen@linaro.org>
- <1451197318-12418-4-git-send-email-pi-cheng.chen@linaro.org>
+Subject: Re: [PATCH 1/3] cpufreq: Make cpufreq_boost_supported() static
+Date: Mon, 28 Dec 2015 08:46:48 +0530
+Message-ID: <20151228031648.GE3598@ubuntu>
+References: <2196419.fjWAQbI2Nm@vostro.rjw.lan>
+ <7055444.k3FMydYOLT@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f180.google.com ([209.85.192.180]:35736 "EHLO
-	mail-pf0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751149AbbL1DNn (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 27 Dec 2015 22:13:43 -0500
-Received: by mail-pf0-f180.google.com with SMTP id 78so105393146pfw.2
-        for <linux-pm@vger.kernel.org>; Sun, 27 Dec 2015 19:13:43 -0800 (PST)
+Received: from mail-pa0-f50.google.com ([209.85.220.50]:34902 "EHLO
+	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751044AbbL1DQw (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sun, 27 Dec 2015 22:16:52 -0500
+Received: by mail-pa0-f50.google.com with SMTP id ho8so660177pac.2
+        for <linux-pm@vger.kernel.org>; Sun, 27 Dec 2015 19:16:52 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <1451197318-12418-4-git-send-email-pi-cheng.chen@linaro.org>
+In-Reply-To: <7055444.k3FMydYOLT@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
-Cc: Matthias Brugger <matthias.bgg@gmail.com>, Michael Turquette <mturquette@baylibre.com>, Daniel Kurtz <djkurtz@chromium.org>, linux-mediatek@lists.infradead.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On 27-12-15, 14:21, Pi-Cheng Chen wrote:
-> Add operating-points-v2, clock, and regulator supply properties
-> required by mt8173-cpufreq driver to enable it.
+On 27-12-15, 00:23, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> Signed-off-by: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
-> ---
-> This patch is based on the patch[1] that adds underlying clock MUX for
-> MT8173 which is needed by mt8173-cpufreq driver but not yet picked.
+> cpufreq_boost_supported() is not used outside of cpufreq.c, so make
+> it static.
 > 
-> [1] http://article.gmane.org/gmane.linux.kernel.clk/325
+> While at it, refactor it as a one-liner (which it really is).
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > ---
->  arch/arm64/boot/dts/mediatek/mt8173-evb.dts | 18 ++++++
->  arch/arm64/boot/dts/mediatek/mt8173.dtsi    | 90 +++++++++++++++++++++++++++++
->  2 files changed, 108 insertions(+)
+>  drivers/cpufreq/cpufreq.c |    8 ++------
+>  include/linux/cpufreq.h   |    5 -----
+>  2 files changed, 2 insertions(+), 11 deletions(-)
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
