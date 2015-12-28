@@ -1,45 +1,54 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 3/3] cpufreq: Simplify core code related to boost support
-Date: Mon, 28 Dec 2015 08:59:49 +0530
-Message-ID: <20151228032949.GG3598@ubuntu>
-References: <2196419.fjWAQbI2Nm@vostro.rjw.lan>
- <2445772.lclmJ5R52X@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+Subject: [PATCH v2] PM/OPP: Set cpu_dev->id in cpumask first
+Date: Mon, 28 Dec 2015 21:06:17 +0800
+Message-ID: <1451307977-7427-1-git-send-email-pi-cheng.chen@linaro.org>
+References: <20151228031123.GB3598@ubuntu>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f44.google.com ([209.85.220.44]:35183 "EHLO
-	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751166AbbL1D3w (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 27 Dec 2015 22:29:52 -0500
-Received: by mail-pa0-f44.google.com with SMTP id ho8so789118pac.2
-        for <linux-pm@vger.kernel.org>; Sun, 27 Dec 2015 19:29:52 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <2445772.lclmJ5R52X@vostro.rjw.lan>
+Received: from mail-pa0-f51.google.com ([209.85.220.51]:36169 "EHLO
+	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751934AbbL1NG0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Dec 2015 08:06:26 -0500
+Received: by mail-pa0-f51.google.com with SMTP id yy13so17693778pab.3
+        for <linux-pm@vger.kernel.org>; Mon, 28 Dec 2015 05:06:26 -0800 (PST)
+In-Reply-To: <20151228031123.GB3598@ubuntu>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Matthias Brugger <matthias.bgg@gmail.com>, Michael Turquette <mturquette@baylibre.com>, Daniel Kurtz <djkurtz@chromium.org>, linux-mediatek@lists.infradead.org, linaro-kernel@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-On 27-12-15, 00:27, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Notice that the boost_supported field in struct cpufreq_driver is
-> redundant, because the driver's ->set_boost callback may be left
-> unset if "boost" is not supported.  Moreover, the only driver
-> populating the ->set_boost callback is acpi_cpufreq, so make it
-> avoid populating that callback if "boost" is not supported, rework
-> the core to check ->set_boost instead of boost_supported to
-> verify "boost" support and drop boost_supported which isn't
-> used any more.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/cpufreq/acpi-cpufreq.c |    5 ++---
->  drivers/cpufreq/cpufreq.c      |   22 +++++++---------------
->  include/linux/cpufreq.h        |    1 -
->  3 files changed, 9 insertions(+), 19 deletions(-)
+Set cpu_dev->id in cpumask first when setting up cpumask for CPUs that
+share the same OPP table. This might be helpful when handling cpumask
+without the original CPU bitfield set.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
+---
+v1->v2:
+- Set cpu_dev->id in cpumask at the top instead of skip it in the loop
+---
+ drivers/base/power/opp/cpu.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
+diff --git a/drivers/base/power/opp/cpu.c b/drivers/base/power/opp/cpu.c
+index 7b445e8..9f0c155 100644
+--- a/drivers/base/power/opp/cpu.c
++++ b/drivers/base/power/opp/cpu.c
+@@ -214,7 +214,6 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_of_cpumask_add_table);
+ /*
+  * Works only for OPP v2 bindings.
+  *
+- * cpumask should be already set to mask of cpu_dev->id.
+  * Returns -ENOENT if operating-points-v2 bindings aren't supported.
+  */
+ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask)
+@@ -230,6 +229,8 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev, cpumask_var_t cpumask
+ 		return -ENOENT;
+ 	}
+ 
++	cpumask_set_cpu(cpu_dev->id, cpumask);
++
+ 	/* OPPs are shared ? */
+ 	if (!of_property_read_bool(np, "opp-shared"))
+ 		goto put_cpu_node;
 -- 
-viresh
+1.9.1
+
