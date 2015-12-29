@@ -1,34 +1,55 @@
-From: "Jeff Skoll" <verna.viajar@icdd.uni-kassel.de>
-Subject: Charity Donation
-Date: Mon, 28 Dec 2015 18:10:12 -0500
-Message-ID: <auto-000005431984@mailadmin.uni-kassel.de>
-Reply-To: jeff.skoll@skollcharity.org
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: RE: [PATCH v2] Documentation: cpufreq: intel_pstate: enhance
+ documentation
+Date: Tue, 29 Dec 2015 00:17:25 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE6402869140A@shsmsx102.ccr.corp.intel.com>
+References: <1451326526-6367-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx3.its.uni-kassel.de ([141.51.12.64]:60104 "EHLO
-	mx3.its.uni-kassel.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751257AbbL2AKN convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 28 Dec 2015 19:10:13 -0500
-Content-Description: Mail message body
+Received: from mga04.intel.com ([192.55.52.120]:8440 "EHLO mga04.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752650AbbL2ARf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 28 Dec 2015 19:17:35 -0500
+In-Reply-To: <1451326526-6367-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Me <verna.viajar@icdd.uni-kassel.de>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "dsmythies@telus.net" <dsmythies@telus.net>
+Cc: "Brown, Len" <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rafael@kernel.org" <rafael@kernel.org>
 
-Hi,
-My name is Jeffrey Skoll, a philanthropist and the founder of one of th=
-e largest private foundations in the world. I believe strongly in =E2=80=
-=98giving while living.=E2=80=99 I had one idea that never changed in m=
-y mind =E2=80=94 that you should use your wealth to help people and I h=
-ave decided to secretly give USD2.498 Million to a randomly selected in=
-dividual. On receipt of this email, you should count yourself as the in=
-dividual. Kindly get back to me at your earliest convenience, so I know=
- your email address is valid.
-
-Visit the web page to know more about me: http://www.theglobeandmail.co=
-m/news/national/meet-the-canadian-billionaire-whos-giving-it-all-away/a=
-rticle4209888/ or you can read an article of me on Wikipedia.
-
-Regards,
-Jeffrey Skoll.
+SGksDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogbGludXgtcG0tb3du
+ZXJAdmdlci5rZXJuZWwub3JnIFttYWlsdG86bGludXgtcG0tDQo+IG93bmVyQHZnZXIua2VybmVs
+Lm9yZ10gT24gQmVoYWxmIE9mIFNyaW5pdmFzIFBhbmRydXZhZGENCj4gU2VudDogVHVlc2RheSwg
+RGVjZW1iZXIgMjksIDIwMTUgMjoxNSBBTQ0KPiBUbzogcmFmYWVsQGtlcm5lbC5vcmc7IGRzbXl0
+aGllc0B0ZWx1cy5uZXQNCj4gQ2M6IEJyb3duLCBMZW47IGxpbnV4LXBtQHZnZXIua2VybmVsLm9y
+ZzsgU3Jpbml2YXMgUGFuZHJ1dmFkYQ0KPiBTdWJqZWN0OiBbUEFUQ0ggdjJdIERvY3VtZW50YXRp
+b246IGNwdWZyZXE6IGludGVsX3BzdGF0ZTogZW5oYW5jZQ0KPiBkb2N1bWVudGF0aW9uDQo+IA0K
+PiBUaGlzIGlzIGFuIGF0dGVtcHQgdG8gbWFrZSBkb2N1bWVudGF0aW9uIG1vcmUgdXNlciBmcmll
+bmRseS4NCj4gDQo+IFNpZ25lZC1vZmYtYnk6IFNyaW5pdmFzIFBhbmRydXZhZGEgPHNyaW5pdmFz
+LnBhbmRydXZhZGFAbGludXguaW50ZWwuY29tPg0KPiAtLS0NCj4gQ2hhbmdlcyBpbiB2MjoNCj4g
+CVN1Z2dlc3RlZCBieSBEb3VnIFNteXRoaWVzDQo+IAkJLSBHcmFtbWFyIGNvcnJlY3Rpb24NCj4g
+CQktIFVzZSBkZWZhdWx0IFBJRCBhbmQgaW1wYWN0IG9mIHNldHBvaW50IG9uIHJhbXAgdXAgdGlt
+ZXMNCj4gDQo+IA0KPiAgRG9jdW1lbnRhdGlvbi9jcHUtZnJlcS9pbnRlbC1wc3RhdGUudHh0IHwg
+MTkzDQo+ICsrKysrKysrKysrKysrKysrKysrKysrKystLS0tLS0tDQo+ICAxIGZpbGUgY2hhbmdl
+ZCwgMTUxIGluc2VydGlvbnMoKyksIDQyIGRlbGV0aW9ucygtKQ0KPiANCj4gZGlmZiAtLWdpdCBh
+L0RvY3VtZW50YXRpb24vY3B1LWZyZXEvaW50ZWwtcHN0YXRlLnR4dCBiL0RvY3VtZW50YXRpb24v
+Y3B1LQ0KPiBmcmVxL2ludGVsLXBzdGF0ZS50eHQNCj4gaW5kZXggYmU4ZDQwMC4uNTM5OGE2NiAx
+MDA2NDQNCj4gLS0tIGEvRG9jdW1lbnRhdGlvbi9jcHUtZnJlcS9pbnRlbC1wc3RhdGUudHh0DQo+
+ICsrKyBiL0RvY3VtZW50YXRpb24vY3B1LWZyZXEvaW50ZWwtcHN0YXRlLnR4dA0KPiBAQCAtMSw2
+MSArMSwxMzEgQEANCj4gLUludGVsIFAtc3RhdGUgZHJpdmVyDQo+ICtJbnRlbCBQLVN0YXRlIGRy
+aXZlcg0KPiAgLS0tLS0tLS0tLS0tLS0tLS0tLS0NCj4gDQo+ICtGb3IgdGhlIHNhbWUgbG9hZCBh
+dCBzZXRwb2ludCA9IDYwLCB0aGlzIHdpbGwgcmVzdWx0IGluIHRoZSBuZXh0DQo+ICtQLVN0YXRl
+ID0gMHgwOCAtICgoNjAgLSAxMDApICogMC4yKSA9IDE2IFNvIGJ5IGNoYW5naW5nIHRoZSBzZXRw
+b2ludA0KPiArZnJvbSA5NyB0byA2MCwgdGhlcmUgaXMgYW4gaW5jcmVhc2Ugb2YgdGhlIG5leHQg
+UC1TdGF0ZSBmcm9tIDkgdG8gMTYuDQo+ICtTbyB0aGlzIHdpbGwgbWFrZSBwcm9jZXNzb3IgZXhl
+Y3V0ZSBhdCBoaWdoZXIgUC1TdGF0ZSBmb3IgdGhlIHNhbWUgQ1BVDQo+ICtsb2FkLiBJZiB0aGUg
+bG9hZCBjb250aW51ZXMgdG8gYmUgbW9yZSB0aGFuIHRoZSBzZXRwb2ludCBkdXJpbmcgbmV4dA0K
+PiArc2FtcGxlIGludGVydmFscywgdGhlbiBQLVN0YXRlIHdpbGwgZ28gdXAgYWdhaW4gdGlsbCB0
+aGUgbWF4aW11bQ0KPiArUC1TdGF0ZSBpcyByZWFjaGVkLiBCdXQgdGhlIHJhbXAgdXAgdGltZSB0
+byByZWFjaCB0aGUgbWF4aW11bSBQLVN0YXRlDQo+ICt3aWxsIGJlIG11Y2ggZmFzdGVyIHdoZW4g
+dGhlIHNldHBvaW50IGlzIDYwIGNvbXBhcmVkIHRvIDk3Lg0KPiAtLQ0KSnVzdCBpbnNwaXJlZCBi
+eSBhbm90aGVyIHRocmVhZCBpbiB0aGUgbWFpbGxpc3QsIGhvdyBhYm91dCBhZGRpbmcgYSBkZXNj
+cmlwdGlvbg0Kb24gc3VnZ2VzdGluZyAgZW5hYmxlIHRoZSBmdHJhY2UgIHdoZW4gdXNlciBpcyB0
+cnlpbmcgdG8gZG8gc29tZSBkZWJ1Zy90dW5pbmc/DQoNCnRoYW5rcywNCnl1DQo=
