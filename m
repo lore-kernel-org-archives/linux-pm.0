@@ -1,32 +1,44 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] drivers: power: fix typo in documentation
-Date: Tue, 29 Dec 2015 17:43:33 +0100
-Message-ID: <20151229164332.GA6603@amd>
-References: <1451383401-6981-1-git-send-email-mpg@elzevir.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60631 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753734AbbL2Qng (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 29 Dec 2015 11:43:36 -0500
-Content-Disposition: inline
-In-Reply-To: <1451383401-6981-1-git-send-email-mpg@elzevir.fr>
-Sender: linux-pm-owner@vger.kernel.org
+From: Leo Yan <leo.yan@linaro.org>
+Subject: [PATCH] thermal: hisilicon: increase temperature resolution
+Date: Wed, 30 Dec 2015 13:13:02 +0800
+Message-ID: <1451452382-4498-1-git-send-email-leo.yan@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kongxinwei <kong.kongxinwei@hisilicon.com>
+Cc: Leo Yan <leo.yan@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Manuel =?iso-8859-1?Q?P=E9gouri=E9-Gonnard?= <mpg@elzevir.fr>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, len.brown@intel.com, gregkh@linuxfoundation.org, trivial@kernel.org
 
-On Tue 2015-12-29 11:03:21, Manuel P=E9gouri=E9-Gonnard wrote:
-> The documentation for detach() said attach.
->=20
-> Signed-off-by: Manuel P=E9gouri=E9-Gonnard <mpg@elzevir.fr>
-> Cc: trivial@kernel.org
+When calculate temperature, old code firstly do division and then
+convert to "millicelsius" unit. This will lose resolution and only can
+read back temperature with "Celsius" unit.
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+So firstly scale step value to "millicelsius" and then do division, so
+finally we can increase resolution for temperature value. Also refine
+the calculation from temperature value to step value.
 
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses=
-/blog.html
+Signed-off-by: Leo Yan <leo.yan@linaro.org>
+---
+ drivers/thermal/hisi_thermal.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
+index 36d0729..5e820b5 100644
+--- a/drivers/thermal/hisi_thermal.c
++++ b/drivers/thermal/hisi_thermal.c
+@@ -68,12 +68,12 @@ static inline int _step_to_temp(int step)
+ 	 * Every step equals (1 * 200) / 255 celsius, and finally
+ 	 * need convert to millicelsius.
+ 	 */
+-	return (HISI_TEMP_BASE + (step * 200 / 255)) * 1000;
++	return (HISI_TEMP_BASE * 1000 + (step * 200000 / 255));
+ }
+ 
+ static inline long _temp_to_step(long temp)
+ {
+-	return ((temp / 1000 - HISI_TEMP_BASE) * 255 / 200);
++	return ((temp - HISI_TEMP_BASE * 1000) * 255) / 200000;
+ }
+ 
+ static long hisi_thermal_get_sensor_temp(struct hisi_thermal_data *data,
+-- 
+1.9.1
