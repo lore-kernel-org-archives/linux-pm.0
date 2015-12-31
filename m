@@ -1,68 +1,64 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v2] thermal: re-calculate k_po/k_pu when update
- sustainable power
-Date: Thu, 31 Dec 2015 09:21:26 -0800
-Message-ID: <20151231172125.GA11863@localhost.localdomain>
-References: <1451471920-2148-1-git-send-email-leo.yan@linaro.org>
+Subject: Re: [RFC PATCH] thermal: Schedule a backup thermal shutdown
+ workqueue after a known period of time to tackle failed poweroff
+Date: Thu, 31 Dec 2015 09:29:07 -0800
+Message-ID: <20151231172906.GB11863@localhost.localdomain>
+References: <1450676778-7840-1-git-send-email-j-keerthy@ti.com>
+ <5681742C.8050805@ti.com>
+ <56824F81.7000202@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f182.google.com ([209.85.192.182]:35770 "EHLO
-	mail-pf0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751137AbbLaRVa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Dec 2015 12:21:30 -0500
+Received: from mail-pa0-f51.google.com ([209.85.220.51]:36768 "EHLO
+	mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751468AbbLaR3M (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Dec 2015 12:29:12 -0500
 Content-Disposition: inline
-In-Reply-To: <1451471920-2148-1-git-send-email-leo.yan@linaro.org>
+In-Reply-To: <56824F81.7000202@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Leo Yan <leo.yan@linaro.org>
-Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, javi.merino@arm.com
+To: Keerthy <a0393675@ti.com>
+Cc: Nishanth Menon <nm@ti.com>, Keerthy <j-keerthy@ti.com>, rui.zhang@intel.com, linux-omap@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Wed, Dec 30, 2015 at 06:38:40PM +0800, Leo Yan wrote:
-> k_po/k_pu are in essence ratio values compared with sustainable power.
-> So when update sustainable power, we can recalculate k_po/k_pu simply
-> with below formula:
-> 
->                sustainable_power(new)
->     k_p(new) = ---------------------- * k_p(old)
->                sustainable_power(old)
-> 
-> Signed-off-by: Leo Yan <leo.yan@linaro.org>
-> ---
->  drivers/thermal/thermal_core.c | 6 +++++-
->  1 file changed, 5 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index d9e525c..223f8df 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -908,7 +908,7 @@ sustainable_power_store(struct device *dev, struct device_attribute *devattr,
->  			const char *buf, size_t count)
->  {
->  	struct thermal_zone_device *tz = to_thermal_zone(dev);
-> -	u32 sustainable_power;
-> +	u32 sustainable_power, old_val;
->  
->  	if (!tz->tzp)
->  		return -EIO;
-> @@ -916,8 +916,12 @@ sustainable_power_store(struct device *dev, struct device_attribute *devattr,
->  	if (kstrtou32(buf, 10, &sustainable_power))
->  		return -EINVAL;
->  
-> +	old_val = tz->tzp->sustainable_power;
-> +
->  	tz->tzp->sustainable_power = sustainable_power;
->  
-> +	tz->tzp->k_po = (tz->tzp->k_po * sustainable_power) / old_val;
-> +	tz->tzp->k_pu = (tz->tzp->k_pu * sustainable_power) / old_val;
+can we have a shorter title?
 
-I believe this has to be done by the governor. These properties are
-power_allocator specific. thermal_core should not really care about
-them.
-
->  	return count;
->  }
->  static DEVICE_ATTR(sustainable_power, S_IWUSR | S_IRUGO, sustainable_power_show,
-> -- 
-> 1.9.1
+On Tue, Dec 29, 2015 at 02:46:49PM +0530, Keerthy wrote:
+> Hi Nishanth,
 > 
+
+<cut> 
+> >
+> >I am not sure if this #ifdeffery is even needed.
+> >
+> >
+> >Eduardo, Rui: If this is not the suggested technique, maybe you guys
+> >could suggest how we could handle a case where userspace might be
+> >hungup due to some reason and a case where a critical temperature
+> >event in the middle of device probe was triggered?
+
+Orderly power off is supposed to take care of this. Looking at the code,
+it will force a shutdown in case execution of userland command fails:
+
+static int __orderly_poweroff(bool force)
+{
+        int ret;
+
+        ret = run_cmd(poweroff_cmd);
+
+        if (ret && force) {
+                pr_warn("Failed to start orderly shutdown: forcing the issue\n");
+
+                /*
+                 * I guess this should try to kick off some daemon to sync and
+                 * poweroff asap.  Or not even bother syncing if we're doing an
+                 * emergency shutdown?
+                 */
+                emergency_sync();
+                kernel_power_off();
+        }
+
+> >
+> >Obviously, we'd like to take into consideration userspace latencies as
+> >well- but that is very specific to fs being run.. not really a simple
+> >problem, IMHO..
+> >
