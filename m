@@ -1,86 +1,181 @@
-From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
-Subject: Re: [PATCH] MAINTAINERS: Add myself as a reviewer for the bq27xxx driver.
-Date: Thu, 31 Dec 2015 19:40:04 +0100
-Message-ID: <201512311940.04886@pali>
-References: <1451500541-2442-1-git-send-email-afd@ti.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH 1/3][v3] Thermal: initialize thermal zone device correctly
+Date: Thu, 31 Dec 2015 10:43:55 -0800
+Message-ID: <20151231184344.GB14127@localhost.localdomain>
+References: <cover.1446192980.git.yu.c.chen@intel.com>
+ <3e6dafce0f659ca2510750f1e03dbba4bc5767c9.1446192980.git.yu.c.chen@intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1483571.PmOYaIfeCu";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f54.google.com ([74.125.82.54]:33890 "EHLO
-	mail-wm0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750857AbbLaSkI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Dec 2015 13:40:08 -0500
-In-Reply-To: <1451500541-2442-1-git-send-email-afd@ti.com>
+Received: from mail-pf0-f182.google.com ([209.85.192.182]:32866 "EHLO
+	mail-pf0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750857AbbLaSoI (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Dec 2015 13:44:08 -0500
+Content-Disposition: inline
+In-Reply-To: <3e6dafce0f659ca2510750f1e03dbba4bc5767c9.1446192980.git.yu.c.chen@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Andrew F. Davis" <afd@ti.com>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: rui.zhang@intel.com, javi.merino@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
 
---nextPart1483571.PmOYaIfeCu
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+For some reason, I thought Rui had picked this already. 
 
-On Wednesday 30 December 2015 19:35:41 Andrew F. Davis wrote:
-> Signed-off-by: Andrew F. Davis <afd@ti.com>
+Anyways, here are a couple of comments:
+
+On Fri, Oct 30, 2015 at 04:31:47PM +0800, Chen Yu wrote:
+> From: Zhang Rui <rui.zhang@intel.com>
+> 
+> After thermal zone device registered, as we have not read any
+> temperature before, thus tz->temperature should not be 0,
+> which actually means 0C, and thermal trend is not available.
+> In this case, we need specially handling for the first
+> thermal_zone_device_update().
+> 
+> Both thermal core framework and step_wise governor is
+> enhanced to handle this. And since the step_wise governor
+> is the only one that uses trends, so it's the only thermal
+> governor that needs to be updated.
+> 
+> CC: <stable@vger.kernel.org> #3.18+
+> Tested-by: Manuel Krause <manuelkrause@netscape.net>
+> Tested-by: szegad <szegadlo@poczta.onet.pl>
+> Tested-by: prash <prash.n.rao@gmail.com>
+> Tested-by: amish <ammdispose-arch@yahoo.com>
+> Tested-by: Matthias <morpheusxyz123@yahoo.de>
+> Reviewed-by: Javi Merino <javi.merino@arm.com>
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
 > ---
->  MAINTAINERS | 10 ++++++++--
->  1 file changed, 8 insertions(+), 2 deletions(-)
->=20
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 44666b1..046d001 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -7605,10 +7605,8 @@ NOKIA N900 POWER SUPPLY DRIVERS
->  M:	Pali Roh=C3=A1r <pali.rohar@gmail.com>
->  S:	Maintained
->  F:	include/linux/power/bq2415x_charger.h
-> -F:	include/linux/power/bq27xxx_battery.h
->  F:	include/linux/power/isp1704_charger.h
->  F:	drivers/power/bq2415x_charger.c
-> -F:	drivers/power/bq27xxx_battery.c
->  F:	drivers/power/isp1704_charger.c
->  F:	drivers/power/rx51_battery.c
->=20
+>  drivers/thermal/step_wise.c    | 17 +++++++++++++++--
+>  drivers/thermal/thermal_core.c | 19 +++++++++++++++++--
+>  drivers/thermal/thermal_core.h |  1 +
 
-I think it is not needed to remove files from this section as here are=20
-all power supply files for Nokia N900.
+I would prefer if you could split this patch in two. One for thermal
+core another one for step wise.
 
-> @@ -10710,6 +10708,14 @@ L:	linux-omap@vger.kernel.org
->  S:	Maintained
->  F:	drivers/thermal/ti-soc-thermal/
->=20
-> +TI BQ27XXX POWER SUPPLY DRIVER
-> +M:	Pali Roh=C3=A1r <pali.rohar@gmail.com>
-> +R:	Andrew F. Davis <afd@ti.com>
-> +S:	Maintained
-> +F:	include/linux/power/bq27xxx_battery.h
-> +F:	drivers/power/bq27xxx_battery.c
-> +F:	drivers/power/bq27xxx_battery_i2c.c
+>  include/linux/thermal.h        |  3 +++
+>  4 files changed, 36 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
+> index 2f9f708..ea9366a 100644
+> --- a/drivers/thermal/step_wise.c
+> +++ b/drivers/thermal/step_wise.c
+> @@ -63,6 +63,19 @@ static unsigned long get_target_state(struct thermal_instance *instance,
+>  	next_target = instance->target;
+>  	dev_dbg(&cdev->device, "cur_state=%ld\n", cur_state);
+>  
+> +	if (!instance->initialized) {
+> +		if (throttle) {
+> +			next_target = (cur_state + 1) >= instance->upper ?
+> +					instance->upper :
+> +					((cur_state + 1) < instance->lower ?
+> +					instance->lower : (cur_state + 1));
+> +		} else {
+> +			next_target = THERMAL_NO_TARGET;
+> +		}
 > +
->  TI CDCE706 CLOCK DRIVER
->  M:	Max Filippov <jcmvbkbc@gmail.com>
->  S:	Maintained
+> +		return next_target;
+> +	}
+> +
+>  	switch (trend) {
+>  	case THERMAL_TREND_RAISING:
+>  		if (throttle) {
+> @@ -149,7 +162,7 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
+>  		dev_dbg(&instance->cdev->device, "old_target=%d, target=%d\n",
+>  					old_target, (int)instance->target);
+>  
+> -		if (old_target == instance->target)
+> +		if (instance->initialized && old_target == instance->target)
+>  			continue;
+>  
+>  		/* Activate a passive thermal instance */
+> @@ -161,7 +174,7 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
+>  			instance->target == THERMAL_NO_TARGET)
+>  			update_passive_instance(tz, trip_type, -1);
+>  
+> -
+> +		instance->initialized = true;
+>  		instance->cdev->updated = false; /* cdev needs update */
+>  	}
+>  
+
+Considering that I understood the problem and your proposal well, I
+would say these changes on step wise are the perfect case for setting up
+a step_wise.bind_to_tz(). bind_to_tz() is already designed as an
+opportunity for governor to check the thermal zone status at the time of
+binding. Remember that moving to bind_to_tz() covers not only
+registration time, but governor switching too (say, user chooses
+user_space, then step_wise).
+
+The above code seams to be correct, but after reviewing the code
+of step_wise.throttle(), I would say it is already complicated and
+deserves simplification, when possible.
 
 
-=2D-=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
 
---nextPart1483571.PmOYaIfeCu
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iEYEABECAAYFAlaFdoQACgkQi/DJPQPkQ1LlnACdF1LfOAcWnsUNrJWxIw5ywxs8
-1a4AoIKfEXVIzcnxuRChRyXv7So22R3D
-=3XcW
------END PGP SIGNATURE-----
-
---nextPart1483571.PmOYaIfeCu--
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> index d9e525c..682bc1e 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -532,8 +532,22 @@ static void update_temperature(struct thermal_zone_device *tz)
+>  	mutex_unlock(&tz->lock);
+>  
+>  	trace_thermal_temperature(tz);
+> -	dev_dbg(&tz->device, "last_temperature=%d, current_temperature=%d\n",
+> -				tz->last_temperature, tz->temperature);
+> +	if (tz->last_temperature == THERMAL_TEMP_INVALID)
+> +		dev_dbg(&tz->device, "last_temperature N/A, current_temperature=%d\n",
+> +			tz->temperature);
+> +	else
+> +		dev_dbg(&tz->device, "last_temperature=%d, current_temperature=%d\n",
+> +			tz->last_temperature, tz->temperature);
+> +}
+> +
+> +static void thermal_zone_device_reset(struct thermal_zone_device *tz)
+> +{
+> +	struct thermal_instance *pos;
+> +
+> +	tz->temperature = THERMAL_TEMP_INVALID;
+> +	tz->passive = 0;
+> +	list_for_each_entry(pos, &tz->thermal_instances, tz_node)
+> +		pos->initialized = false;
+>  }
+>  
+>  void thermal_zone_device_update(struct thermal_zone_device *tz)
+> @@ -1900,6 +1914,7 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+>  
+>  	INIT_DELAYED_WORK(&(tz->poll_queue), thermal_zone_device_check);
+>  
+> +	thermal_zone_device_reset(tz);
+>  	thermal_zone_device_update(tz);
+>  
+>  	return tz;
+> diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
+> index d7ac1fc..749d41a 100644
+> --- a/drivers/thermal/thermal_core.h
+> +++ b/drivers/thermal/thermal_core.h
+> @@ -41,6 +41,7 @@ struct thermal_instance {
+>  	struct thermal_zone_device *tz;
+>  	struct thermal_cooling_device *cdev;
+>  	int trip;
+> +	bool initialized;
+>  	unsigned long upper;	/* Highest cooling state for this trip point */
+>  	unsigned long lower;	/* Lowest cooling state for this trip point */
+>  	unsigned long target;	/* expected cooling state */
+> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> index 157d366..5bcabc7 100644
+> --- a/include/linux/thermal.h
+> +++ b/include/linux/thermal.h
+> @@ -43,6 +43,9 @@
+>  /* Default weight of a bound cooling device */
+>  #define THERMAL_WEIGHT_DEFAULT 0
+>  
+> +/* use value, which < 0K, to indicate an invalid/uninitialized temperature */
+> +#define THERMAL_TEMP_INVALID	-274000
+> +
+>  /* Unit conversion macros */
+>  #define KELVIN_TO_CELSIUS(t)	(long)(((long)t-2732 >= 0) ?	\
+>  				((long)t-2732+5)/10 : ((long)t-2732-5)/10)
+> -- 
+> 1.8.4.2
+> 
