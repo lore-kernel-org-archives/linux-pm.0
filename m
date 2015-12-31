@@ -1,169 +1,128 @@
-From: Srinivas Pandruvada <srinivas.pandruvada-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+From: "Pandruvada, Srinivas" <srinivas.pandruvada-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 Subject: Re: [PATCH 3/6] thermal: iio device for thermal sensor
-Date: Thu, 31 Dec 2015 15:18:08 -0800
-Message-ID: <1451603888.4047.34.camel@linux.intel.com>
+Date: Thu, 31 Dec 2015 23:31:12 +0000
+Message-ID: <1451604555.4047.39.camel@intel.com>
 References: <1443305111-28272-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 	 <1443305111-28272-4-git-send-email-srinivas.pandruvada@linux.intel.com>
 	 <20151231191847.GA14793@localhost.localdomain>
+	 <1451603888.4047.34.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20151231191847.GA14793-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
+In-Reply-To: <1451603888.4047.34.camel-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Content-Language: en-US
+Content-ID: <C67C80D275853B4F8A7D2CAE745C3F27-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org" <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: "Zhang, Rui" <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, "linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2015-12-31 at 11:18 -0800, Eduardo Valentin wrote:
-> On Sat, Sep 26, 2015 at 03:05:08PM -0700, Srinivas Pandruvada wrote:
-> > This change registers temperature sensor in a thermal zone as an
-> > IIO
-> > temperature device. This allows user space thermal application to
-> > fully
-> > utilize IIO capability to read temperature events and samples.
-> > The primary motivation for this change to improve performance for
-> > user
-> > space thermal controllers like Linux thermal daemon or Intel=C2=AE
-> > Dynamic
-> > Platform and Thermal Framework (DPTF) for Chromium OS.
-> > The current sysfs has several limitations, which forces the current
-> > user space to use polling as the safe way. This polling causes
-> > performance
-> > bottlenecks as some devices requires extremely aggressive response
-> > to
-> > changing temperature conditions.
-> > These are some limitations, which this change tries to address:
-> > - Temperature reading via sysfs attribute, which needs conversion
-> > from
-> > string to int
-> > - No way to set threshold settings to avoid polling for temperature
-> > change
-> > without using a RW passive trip point.
-> > - Event notifications via slow kobject uevents, which needs parsing
-> > to id
-> > the zone and read temperature
-> > - Only pull interface from user space, kernel drivers can't send
-> > samples
-> > - One sample at a time read from user space
-> > These limitations can be addressed by registering temperature
-> > sensor
-> > as an IIO device. IIO provides
-> > - buffered access via /dev/iio:deviceX node with select/poll
-> > capability
-> > - temperature thresholds setting via iio event thresholds
-> > - Wait and receive events
-> > - Able to use different external trigger (data ready indications)
-> > and push
-> > samples to buffers
-> >=20
-> > Next set of patches uses the IIO binding introduced in this
-> > patchset.
-> > The iio device created during call to thermal_zone_device_register.
-> > Samples
-> > are pushed to iio buffers when thermal_zone_device_update is called
-> > from
-> > client drivers.
-> >=20
-> > New thermal zone device callbacks:
-> > It introduces three new callbacks for thermal client drivers:
-> > get_threshold_temp: Get the current threshold temperature
-> > set_threshold_temp: Set the current threshold temperature
-> > check_notification_support: Inform that the client driver has
-> > asynchronous
-> > notification mechanism. If it is then polling can be avoided for
-> > the
-> > temperature sensor.
-> >=20
-> > Signed-off-by: Srinivas Pandruvada <
-> > srinivas.pandruvada-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-> > ---
-
-[Cut]
-
-> >=20
-> > +	int (*get_threshold_temp)(struct thermal_zone_device *, > >=20
-> > int,
-> > +				  int *);
-> > +	int (*set_threshold_temp)(struct thermal_zone_device *,
-> > int,
-> > +				  int);
-> > +	int (*set_notification_status)(struct thermal_zone_device
-> > *,
-> > +				       bool status);
-> > +	bool (*check_notification_support)(struct
-> > thermal_zone_device *);
->=20
->=20
-> Can an existing thermal sensor benefit of the new functionality? If
-> yes,
-
-Yes. The existing driver will be using the trips instead of thresholds.
-As we discussed during LPC,
-trips (pasive/active/..): These are temperature points to which a
-cooling action can be performed by binding a cooling device. The
-existing drivers who support RW trips, user space still can update
-those and get sample notifications. Existing drivers either have
-polling or interrupt suport to evaluate trips and call
-thermal_zone_device_update(), which will result in sample pushed to
-user space.
-=20
-Thresholds: These are sensor temperature points which user space wants
-to get notification of temperature change. They will not be presented
-as passive/active/hot trips. User space can decide what to do with the
-notifications. If existing drivers don't want to present as fake trips,
-then they need to add the callback support.
-
-> The problem I have with the above is the fact that they add callbacks
-> and behavior eligible only for a subset of thermal zones.
->=20
-> If we are moving to IIO integrated mode, the existing drivers need to
-> be
-> converted, to avoid diversification of behavior. For example, there
-> is
-> existing notification callbacks. Also, hot trip points are described
-> as
-> notification points.
->=20
-> I believe the patch set needs to document also the next steps on this
-> move.
->=20
-
-If we decide to merge this functionality, I will push a documentation
-and IIO sample program to use these features.
-
-Thanks,
-Srinivas
-
->=20
-> >  	int (*notify) (struct thermal_zone_device *, int,
-> >  		       enum thermal_trip_type);
-> >  };
-> > @@ -148,6 +155,8 @@ struct thermal_attr {
-> >  	char name[THERMAL_NAME_LENGTH];
-> >  };
-> > =20
-> > +struct iio_dev;
-> > +
-> >  /**
-> >   * struct thermal_zone_device - structure for a thermal zone
-> >   * @id:		unique id number for each thermal zone
-> > @@ -182,6 +191,7 @@ struct thermal_attr {
-> >   * @lock:	lock to protect thermal_instances list
-> >   * @node:	node in thermal_tz_list (in thermal_core.c)
-> >   * @poll_queue:	delayed work for polling
-> > + * @indio_dev:	pointer to instance of an IIO dev for this
-> > zone
-> >   */
-> >  struct thermal_zone_device {
-> >  	int id;
-> > @@ -208,6 +218,9 @@ struct thermal_zone_device {
-> >  	struct mutex lock;
-> >  	struct list_head node;
-> >  	struct delayed_work poll_queue;
-> > +#if defined(CONFIG_THERMAL_IIO)
-> > +	struct iio_dev *indio_dev;
-> > +#endif
-> >  };
-> > =20
-> >  /**
+T24gVGh1LCAyMDE1LTEyLTMxIGF0IDE1OjE4IC0wODAwLCBTcmluaXZhcyBQYW5kcnV2YWRhIHdy
+b3RlOg0KPiBPbiBUaHUsIDIwMTUtMTItMzEgYXQgMTE6MTggLTA4MDAsIEVkdWFyZG8gVmFsZW50
+aW4gd3JvdGU6DQo+ID4gT24gU2F0LCBTZXAgMjYsIDIwMTUgYXQgMDM6MDU6MDhQTSAtMDcwMCwg
+U3Jpbml2YXMgUGFuZHJ1dmFkYQ0KPiA+IHdyb3RlOg0KPiA+ID4gVGhpcyBjaGFuZ2UgcmVnaXN0
+ZXJzIHRlbXBlcmF0dXJlIHNlbnNvciBpbiBhIHRoZXJtYWwgem9uZSBhcyBhbg0KPiA+ID4gSUlP
+DQo+ID4gPiB0ZW1wZXJhdHVyZSBkZXZpY2UuIFRoaXMgYWxsb3dzIHVzZXIgc3BhY2UgdGhlcm1h
+bCBhcHBsaWNhdGlvbiB0bw0KPiA+ID4gZnVsbHkNCj4gPiA+IHV0aWxpemUgSUlPIGNhcGFiaWxp
+dHkgdG8gcmVhZCB0ZW1wZXJhdHVyZSBldmVudHMgYW5kIHNhbXBsZXMuDQo+ID4gPiBUaGUgcHJp
+bWFyeSBtb3RpdmF0aW9uIGZvciB0aGlzIGNoYW5nZSB0byBpbXByb3ZlIHBlcmZvcm1hbmNlIGZv
+cg0KPiA+ID4gdXNlcg0KPiA+ID4gc3BhY2UgdGhlcm1hbCBjb250cm9sbGVycyBsaWtlIExpbnV4
+IHRoZXJtYWwgZGFlbW9uIG9yIEludGVswq4NCj4gPiA+IER5bmFtaWMNCj4gPiA+IFBsYXRmb3Jt
+IGFuZCBUaGVybWFsIEZyYW1ld29yayAoRFBURikgZm9yIENocm9taXVtIE9TLg0KPiA+ID4gVGhl
+IGN1cnJlbnQgc3lzZnMgaGFzIHNldmVyYWwgbGltaXRhdGlvbnMsIHdoaWNoIGZvcmNlcyB0aGUN
+Cj4gPiA+IGN1cnJlbnQNCj4gPiA+IHVzZXIgc3BhY2UgdG8gdXNlIHBvbGxpbmcgYXMgdGhlIHNh
+ZmUgd2F5LiBUaGlzIHBvbGxpbmcgY2F1c2VzDQo+ID4gPiBwZXJmb3JtYW5jZQ0KPiA+ID4gYm90
+dGxlbmVja3MgYXMgc29tZSBkZXZpY2VzIHJlcXVpcmVzIGV4dHJlbWVseSBhZ2dyZXNzaXZlDQo+
+ID4gPiByZXNwb25zZQ0KPiA+ID4gdG8NCj4gPiA+IGNoYW5naW5nIHRlbXBlcmF0dXJlIGNvbmRp
+dGlvbnMuDQo+ID4gPiBUaGVzZSBhcmUgc29tZSBsaW1pdGF0aW9ucywgd2hpY2ggdGhpcyBjaGFu
+Z2UgdHJpZXMgdG8gYWRkcmVzczoNCj4gPiA+IC0gVGVtcGVyYXR1cmUgcmVhZGluZyB2aWEgc3lz
+ZnMgYXR0cmlidXRlLCB3aGljaCBuZWVkcyBjb252ZXJzaW9uDQo+ID4gPiBmcm9tDQo+ID4gPiBz
+dHJpbmcgdG8gaW50DQo+ID4gPiAtIE5vIHdheSB0byBzZXQgdGhyZXNob2xkIHNldHRpbmdzIHRv
+IGF2b2lkIHBvbGxpbmcgZm9yDQo+ID4gPiB0ZW1wZXJhdHVyZQ0KPiA+ID4gY2hhbmdlDQo+ID4g
+PiB3aXRob3V0IHVzaW5nIGEgUlcgcGFzc2l2ZSB0cmlwIHBvaW50Lg0KPiA+ID4gLSBFdmVudCBu
+b3RpZmljYXRpb25zIHZpYSBzbG93IGtvYmplY3QgdWV2ZW50cywgd2hpY2ggbmVlZHMNCj4gPiA+
+IHBhcnNpbmcNCj4gPiA+IHRvIGlkDQo+ID4gPiB0aGUgem9uZSBhbmQgcmVhZCB0ZW1wZXJhdHVy
+ZQ0KPiA+ID4gLSBPbmx5IHB1bGwgaW50ZXJmYWNlIGZyb20gdXNlciBzcGFjZSwga2VybmVsIGRy
+aXZlcnMgY2FuJ3Qgc2VuZA0KPiA+ID4gc2FtcGxlcw0KPiA+ID4gLSBPbmUgc2FtcGxlIGF0IGEg
+dGltZSByZWFkIGZyb20gdXNlciBzcGFjZQ0KPiA+ID4gVGhlc2UgbGltaXRhdGlvbnMgY2FuIGJl
+IGFkZHJlc3NlZCBieSByZWdpc3RlcmluZyB0ZW1wZXJhdHVyZQ0KPiA+ID4gc2Vuc29yDQo+ID4g
+PiBhcyBhbiBJSU8gZGV2aWNlLiBJSU8gcHJvdmlkZXMNCj4gPiA+IC0gYnVmZmVyZWQgYWNjZXNz
+IHZpYSAvZGV2L2lpbzpkZXZpY2VYIG5vZGUgd2l0aCBzZWxlY3QvcG9sbA0KPiA+ID4gY2FwYWJp
+bGl0eQ0KPiA+ID4gLSB0ZW1wZXJhdHVyZSB0aHJlc2hvbGRzIHNldHRpbmcgdmlhIGlpbyBldmVu
+dCB0aHJlc2hvbGRzDQo+ID4gPiAtIFdhaXQgYW5kIHJlY2VpdmUgZXZlbnRzDQo+ID4gPiAtIEFi
+bGUgdG8gdXNlIGRpZmZlcmVudCBleHRlcm5hbCB0cmlnZ2VyIChkYXRhIHJlYWR5IGluZGljYXRp
+b25zKQ0KPiA+ID4gYW5kIHB1c2gNCj4gPiA+IHNhbXBsZXMgdG8gYnVmZmVycw0KPiA+ID4gDQo+
+ID4gPiBOZXh0IHNldCBvZiBwYXRjaGVzIHVzZXMgdGhlIElJTyBiaW5kaW5nIGludHJvZHVjZWQg
+aW4gdGhpcw0KPiA+ID4gcGF0Y2hzZXQuDQo+ID4gPiBUaGUgaWlvIGRldmljZSBjcmVhdGVkIGR1
+cmluZyBjYWxsIHRvDQo+ID4gPiB0aGVybWFsX3pvbmVfZGV2aWNlX3JlZ2lzdGVyLg0KPiA+ID4g
+U2FtcGxlcw0KPiA+ID4gYXJlIHB1c2hlZCB0byBpaW8gYnVmZmVycyB3aGVuIHRoZXJtYWxfem9u
+ZV9kZXZpY2VfdXBkYXRlIGlzDQo+ID4gPiBjYWxsZWQNCj4gPiA+IGZyb20NCj4gPiA+IGNsaWVu
+dCBkcml2ZXJzLg0KPiA+ID4gDQo+ID4gPiBOZXcgdGhlcm1hbCB6b25lIGRldmljZSBjYWxsYmFj
+a3M6DQo+ID4gPiBJdCBpbnRyb2R1Y2VzIHRocmVlIG5ldyBjYWxsYmFja3MgZm9yIHRoZXJtYWwg
+Y2xpZW50IGRyaXZlcnM6DQo+ID4gPiBnZXRfdGhyZXNob2xkX3RlbXA6IEdldCB0aGUgY3VycmVu
+dCB0aHJlc2hvbGQgdGVtcGVyYXR1cmUNCj4gPiA+IHNldF90aHJlc2hvbGRfdGVtcDogU2V0IHRo
+ZSBjdXJyZW50IHRocmVzaG9sZCB0ZW1wZXJhdHVyZQ0KPiA+ID4gY2hlY2tfbm90aWZpY2F0aW9u
+X3N1cHBvcnQ6IEluZm9ybSB0aGF0IHRoZSBjbGllbnQgZHJpdmVyIGhhcw0KPiA+ID4gYXN5bmNo
+cm9ub3VzDQo+ID4gPiBub3RpZmljYXRpb24gbWVjaGFuaXNtLiBJZiBpdCBpcyB0aGVuIHBvbGxp
+bmcgY2FuIGJlIGF2b2lkZWQgZm9yDQo+ID4gPiB0aGUNCj4gPiA+IHRlbXBlcmF0dXJlIHNlbnNv
+ci4NCj4gPiA+IA0KPiA+ID4gU2lnbmVkLW9mZi1ieTogU3Jpbml2YXMgUGFuZHJ1dmFkYSA8DQo+
+ID4gPiBzcmluaXZhcy5wYW5kcnV2YWRhQGxpbnV4LmludGVsLmNvbT4NCj4gPiA+IC0tLQ0KPiAN
+Cj4gW0N1dF0NCj4gDQo+ID4gPiANCj4gPiA+ICsJaW50ICgqZ2V0X3RocmVzaG9sZF90ZW1wKShz
+dHJ1Y3QgdGhlcm1hbF96b25lX2RldmljZSAqLA0KPiA+ID4gPiA+IA0KPiA+ID4gaW50LA0KPiA+
+ID4gKwkJCQkgIGludCAqKTsNCj4gPiA+ICsJaW50ICgqc2V0X3RocmVzaG9sZF90ZW1wKShzdHJ1
+Y3QgdGhlcm1hbF96b25lX2RldmljZSAqLA0KPiA+ID4gaW50LA0KPiA+ID4gKwkJCQkgIGludCk7
+DQo+ID4gPiArCWludCAoKnNldF9ub3RpZmljYXRpb25fc3RhdHVzKShzdHJ1Y3QNCj4gPiA+IHRo
+ZXJtYWxfem9uZV9kZXZpY2UNCj4gPiA+ICosDQo+ID4gPiArCQkJCSAgICAgICBib29sIHN0YXR1
+cyk7DQo+ID4gPiArCWJvb2wgKCpjaGVja19ub3RpZmljYXRpb25fc3VwcG9ydCkoc3RydWN0DQo+
+ID4gPiB0aGVybWFsX3pvbmVfZGV2aWNlICopOw0KPiA+IA0KPiA+IA0KPiA+IENhbiBhbiBleGlz
+dGluZyB0aGVybWFsIHNlbnNvciBiZW5lZml0IG9mIHRoZSBuZXcgZnVuY3Rpb25hbGl0eT8gSWYN
+Cj4gPiB5ZXMsDQo+IA0KPiBZZXMuIFRoZSBleGlzdGluZyBkcml2ZXIgd2lsbCBiZSB1c2luZyB0
+aGUgdHJpcHMgaW5zdGVhZCBvZg0KPiB0aHJlc2hvbGRzLg0KPiBBcyB3ZSBkaXNjdXNzZWQgZHVy
+aW5nIExQQywNCj4gdHJpcHMgKHBhc2l2ZS9hY3RpdmUvLi4pOiBUaGVzZSBhcmUgdGVtcGVyYXR1
+cmUgcG9pbnRzIHRvIHdoaWNoIGENCj4gY29vbGluZyBhY3Rpb24gY2FuIGJlIHBlcmZvcm1lZCBi
+eSBiaW5kaW5nIGEgY29vbGluZyBkZXZpY2UuIFRoZQ0KPiBleGlzdGluZyBkcml2ZXJzIHdobyBz
+dXBwb3J0IFJXIHRyaXBzLCB1c2VyIHNwYWNlIHN0aWxsIGNhbiB1cGRhdGUNCj4gdGhvc2UgYW5k
+IGdldCBzYW1wbGUgbm90aWZpY2F0aW9ucy4gRXhpc3RpbmcgZHJpdmVycyBlaXRoZXIgaGF2ZQ0K
+PiBwb2xsaW5nIG9yIGludGVycnVwdCBzdXBvcnQgdG8gZXZhbHVhdGUgdHJpcHMgYW5kIGNhbGwN
+Cj4gdGhlcm1hbF96b25lX2RldmljZV91cGRhdGUoKSwgd2hpY2ggd2lsbCByZXN1bHQgaW4gc2Ft
+cGxlIHB1c2hlZCB0bw0KPiB1c2VyIHNwYWNlLg0KPiAgDQo+IFRocmVzaG9sZHM6IFRoZXNlIGFy
+ZSBzZW5zb3IgdGVtcGVyYXR1cmUgcG9pbnRzIHdoaWNoIHVzZXIgc3BhY2UNCj4gd2FudHMNCj4g
+dG8gZ2V0IG5vdGlmaWNhdGlvbiBvZiB0ZW1wZXJhdHVyZSBjaGFuZ2UuIFRoZXkgd2lsbCBub3Qg
+YmUgcHJlc2VudGVkDQo+IGFzIHBhc3NpdmUvYWN0aXZlL2hvdCB0cmlwcy4gVXNlciBzcGFjZSBj
+YW4gZGVjaWRlIHdoYXQgdG8gZG8gd2l0aA0KPiB0aGUNCj4gbm90aWZpY2F0aW9ucy4gSWYgZXhp
+c3RpbmcgZHJpdmVycyBkb24ndCB3YW50IHRvIHByZXNlbnQgYXMgZmFrZQ0KPiB0cmlwcywNCj4g
+dGhlbiB0aGV5IG5lZWQgdG8gYWRkIHRoZSBjYWxsYmFjayBzdXBwb3J0Lg0KPiANCj4gPiBUaGUg
+cHJvYmxlbSBJIGhhdmUgd2l0aCB0aGUgYWJvdmUgaXMgdGhlIGZhY3QgdGhhdCB0aGV5IGFkZA0K
+PiA+IGNhbGxiYWNrcw0KPiA+IGFuZCBiZWhhdmlvciBlbGlnaWJsZSBvbmx5IGZvciBhIHN1YnNl
+dCBvZiB0aGVybWFsIHpvbmVzLg0KPiA+IA0KPiA+IElmIHdlIGFyZSBtb3ZpbmcgdG8gSUlPIGlu
+dGVncmF0ZWQgbW9kZSwgdGhlIGV4aXN0aW5nIGRyaXZlcnMgbmVlZA0KPiA+IHRvDQo+ID4gYmUN
+Cj4gPiBjb252ZXJ0ZWQsIHRvIGF2b2lkIGRpdmVyc2lmaWNhdGlvbiBvZiBiZWhhdmlvci4gRm9y
+IGV4YW1wbGUsIHRoZXJlDQo+ID4gaXMNCj4gPiBleGlzdGluZyBub3RpZmljYXRpb24gY2FsbGJh
+Y2tzLiBBbHNvLCBob3QgdHJpcCBwb2ludHMgYXJlDQo+ID4gZGVzY3JpYmVkDQo+ID4gYXMNCj4g
+PiBub3RpZmljYXRpb24gcG9pbnRzLg0KPiA+IA0KPiA+IEkgYmVsaWV2ZSB0aGUgcGF0Y2ggc2V0
+IG5lZWRzIHRvIGRvY3VtZW50IGFsc28gdGhlIG5leHQgc3RlcHMgb24NCj4gPiB0aGlzDQo+ID4g
+bW92ZS4NCj4gPiANCj4gDQo+IElmIHdlIGRlY2lkZSB0byBtZXJnZSB0aGlzIGZ1bmN0aW9uYWxp
+dHksIEkgd2lsbCBwdXNoIGEgZG9jdW1lbnRhdGlvbg0KPiBhbmQgSUlPIHNhbXBsZSBwcm9ncmFt
+IHRvIHVzZSB0aGVzZSBmZWF0dXJlcy4NCj4gDQpUaGUgc2VyaXMgaXMgb2xkIGVub3VnaCwgSSBm
+b3Jnb3QuIFRoZSBwYXRjaCBhZGRzIGRvY3VtZW50YXRpb24NCltQQVRDSCA1LzZdIHRoZXJtYWw6
+IGlpbyBEb2N1bWVudGF0aW9uDQpUaGVyZSBpcyBhbHdheXMgc2NvcGUgdG8gYWRkIG1vcmUuDQoN
+ClRoYW5rcywNClNyaW5pdmFzDQoNCg0KPiBUaGFua3MsDQo+IFNyaW5pdmFzDQo+IA0KPiA+IA0K
+PiA+ID4gIAlpbnQgKCpub3RpZnkpIChzdHJ1Y3QgdGhlcm1hbF96b25lX2RldmljZSAqLCBpbnQs
+DQo+ID4gPiAgCQkgICAgICAgZW51bSB0aGVybWFsX3RyaXBfdHlwZSk7DQo+ID4gPiAgfTsNCj4g
+PiA+IEBAIC0xNDgsNiArMTU1LDggQEAgc3RydWN0IHRoZXJtYWxfYXR0ciB7DQo+ID4gPiAgCWNo
+YXIgbmFtZVtUSEVSTUFMX05BTUVfTEVOR1RIXTsNCj4gPiA+ICB9Ow0KPiA+ID4gIA0KPiA+ID4g
+K3N0cnVjdCBpaW9fZGV2Ow0KPiA+ID4gKw0KPiA+ID4gIC8qKg0KPiA+ID4gICAqIHN0cnVjdCB0
+aGVybWFsX3pvbmVfZGV2aWNlIC0gc3RydWN0dXJlIGZvciBhIHRoZXJtYWwgem9uZQ0KPiA+ID4g
+ICAqIEBpZDoJCXVuaXF1ZSBpZCBudW1iZXIgZm9yIGVhY2ggdGhlcm1hbCB6b25lDQo+ID4gPiBA
+QCAtMTgyLDYgKzE5MSw3IEBAIHN0cnVjdCB0aGVybWFsX2F0dHIgew0KPiA+ID4gICAqIEBsb2Nr
+Oglsb2NrIHRvIHByb3RlY3QgdGhlcm1hbF9pbnN0YW5jZXMgbGlzdA0KPiA+ID4gICAqIEBub2Rl
+Oglub2RlIGluIHRoZXJtYWxfdHpfbGlzdCAoaW4gdGhlcm1hbF9jb3JlLmMpDQo+ID4gPiAgICog
+QHBvbGxfcXVldWU6CWRlbGF5ZWQgd29yayBmb3IgcG9sbGluZw0KPiA+ID4gKyAqIEBpbmRpb19k
+ZXY6CXBvaW50ZXIgdG8gaW5zdGFuY2Ugb2YgYW4gSUlPIGRldiBmb3IgdGhpcw0KPiA+ID4gem9u
+ZQ0KPiA+ID4gICAqLw0KPiA+ID4gIHN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlIHsNCj4gPiA+
+ICAJaW50IGlkOw0KPiA+ID4gQEAgLTIwOCw2ICsyMTgsOSBAQCBzdHJ1Y3QgdGhlcm1hbF96b25l
+X2RldmljZSB7DQo+ID4gPiAgCXN0cnVjdCBtdXRleCBsb2NrOw0KPiA+ID4gIAlzdHJ1Y3QgbGlz
+dF9oZWFkIG5vZGU7DQo+ID4gPiAgCXN0cnVjdCBkZWxheWVkX3dvcmsgcG9sbF9xdWV1ZTsNCj4g
+PiA+ICsjaWYgZGVmaW5lZChDT05GSUdfVEhFUk1BTF9JSU8pDQo+ID4gPiArCXN0cnVjdCBpaW9f
+ZGV2ICppbmRpb19kZXY7DQo+ID4gPiArI2VuZGlmDQo+ID4gPiAgfTsNCj4gPiA+ICA=
