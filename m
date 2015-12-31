@@ -1,62 +1,70 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [GIT PULL] Thermal-SoC management updates for v4.4-rc8
-Date: Thu, 31 Dec 2015 10:07:11 -0800
-Message-ID: <20151231180709.GA13780@localhost.localdomain>
+Subject: Re: [RFC PATCH] thermal: Schedule a backup thermal shutdown
+ workqueue after a known period of time to tackle failed poweroff
+Date: Thu, 31 Dec 2015 10:20:17 -0800
+Message-ID: <20151231182016.GA14127@localhost.localdomain>
+References: <1450676778-7840-1-git-send-email-j-keerthy@ti.com>
+ <5681742C.8050805@ti.com>
+ <56824F81.7000202@ti.com>
+ <20151231172906.GB11863@localhost.localdomain>
+ <56856A4D.7090804@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f174.google.com ([209.85.192.174]:36627 "EHLO
+	mail-pf0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751468AbbLaSUV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Dec 2015 13:20:21 -0500
 Content-Disposition: inline
-Sender: linux-acpi-owner@vger.kernel.org
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rui Zhang <rui.zhang@intel.com>
+In-Reply-To: <56856A4D.7090804@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Nishanth Menon <nm@ti.com>
+Cc: Keerthy <a0393675@ti.com>, Keerthy <j-keerthy@ti.com>, rui.zhang@intel.com, linux-omap@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Hello Rui,
+On Thu, Dec 31, 2015 at 11:47:57AM -0600, Nishanth Menon wrote:
+> On 12/31/2015 11:29 AM, Eduardo Valentin wrote:
+> > can we have a shorter title?
+> > 
+> > 
+> > Orderly power off is supposed to take care of this. Looking at the code,
+> > it will force a shutdown in case execution of userland command fails:
+> > 
+> > static int __orderly_poweroff(bool force)
+> > {
+> >         int ret;
+> > 
+> >         ret = run_cmd(poweroff_cmd);
+> > 
+> >         if (ret && force) {
+> >                 pr_warn("Failed to start orderly shutdown: forcing the issue\n");
+> > 
+> >                 /*
+> >                  * I guess this should try to kick off some daemon to sync and
+> >                  * poweroff asap.  Or not even bother syncing if we're doing an
+> >                  * emergency shutdown?
+> >                  */
+> >                 emergency_sync();
+> >                 kernel_power_off();
+> >         }
+> 
+> Yes, it will *IF* userspace fails. the condition that I had tracked
+> was before identifying the following fix[1] - Example fail is here[2]
+> 
 
-Please pull from
+OK. But still, why other users of orderly_poweroff do not
+deserve to be fixed, then?
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal fixes
-
-to receive Thermal-SoC Management updates for v4.4-rc8 with top-most
-
-ebe580748d7c33bfd308f09b825dff15fa2eccf2:
-
-  thermal: trip_point_temp_store() calls thermal_zone_device_update() (2015-12-31 09:41:52 -0800)
-
-on top of commit c6169202e40868fd00de7ce35ee16c81b1f9e123:
-
-  Merge branch 'for-linus' of git://git.kernel.dk/linux-block (2015-12-30 10:26:20 -0800)
-
-Specifics in this pull request:
-- Several fixes and cleanups on Rockchip thermal drivers.
-- Several fixes and cleanups on RCAR thermal drivers.
-- Build/boot tests powered by KernelCI [1,2] \o/
-
-BTW, I have rebase my -fixes branch on top of linus master branch, as you reported
-merge conflict. Please let me know if this branch causes troubles for you.
-
-[1] - https://kernelci.org/boot/all/job/evalenti/kernel/v4.4-rc5-27-gce0265dd6f8e/
-[2] - https://kernelci.org/build/evalenti/kernel/v4.4-rc5-27-gce0265dd6f8e/
-
-BR,
-
-Eduardo Valentin
-
-----------------------------------------------------------------
-Caesar Wang (4):
-      thermal: rockchip: fix a trivial typo
-      dt-bindings: rockchip-thermal: Support the RK3228/RK3399 SoCs compatible
-      thermal: rockchip: Support the RK3228 SoCs in thermal driver
-      thermal: rockchip: Support the RK3399 SoCs in thermal driver
-
-Kuninori Morimoto (5):
-      thermal: rcar: move rcar_thermal_dt_ids to upside
-      thermal: rcar: check every rcar_thermal_update_temp() return value
-      thermal: rcar: check irq possibility in rcar_thermal_irq_xxx()
-      thermal: rcar: rcar_thermal_get_temp() return error if strange temp
-      thermal: trip_point_temp_store() calls thermal_zone_device_update()
-
- .../bindings/thermal/rockchip-thermal.txt          |   2 +
- drivers/thermal/rcar_thermal.c                     |  53 ++++---
- drivers/thermal/rockchip_thermal.c                 | 172 +++++++++++++++++++--
- drivers/thermal/thermal_core.c                     |   6 +-
- 4 files changed, 200 insertions(+), 33 deletions(-)
+> 
+> I hope this explains the problem.
+> 
+> [1]
+> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=00917b5c55aeb01322d5ab51af8c025b82959224
+> [2] http://pastebin.ubuntu.com/14326688/
+> 
+> [3]
+> https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/arch/arm/boot/dts/am57xx-beagle-x15.dts#n738
+> 
+> -- 
+> Regards,
+> Nishanth Menon
