@@ -1,51 +1,42 @@
-From: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
-Subject: Re: [PATCH] power_suply: isp1704_charger: Fix isp1704_write()
- definition
-Date: Fri, 1 Jan 2016 13:33:03 +0200
-Message-ID: <568663EF.9070502@gmail.com>
-References: <1451646209-11618-1-git-send-email-ivo.g.dimitrov.75@gmail.com>
- <201601011226.21552@pali>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+From: Geliang Tang <geliangtang@163.com>
+Subject: [PATCH 6/7] power: generic-adc-battery: use to_delayed_work
+Date: Fri,  1 Jan 2016 22:59:11 +0800
+Message-ID: <df7d77b9dd91d48533fe9c58466504f724ba9291.1451659910.git.geliangtang@163.com>
+References: <643e31066f3378b9521dd9cd8c569ccfcf185d61.1451659910.git.geliangtang@163.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f54.google.com ([74.125.82.54]:35371 "EHLO
-	mail-wm0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751409AbcAALdI (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Jan 2016 06:33:08 -0500
-In-Reply-To: <201601011226.21552@pali>
+Received: from m50-134.163.com ([123.125.50.134]:44700 "EHLO m50-134.163.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751800AbcAAPAa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 1 Jan 2016 10:00:30 -0500
+In-Reply-To: <643e31066f3378b9521dd9cd8c569ccfcf185d61.1451659910.git.geliangtang@163.com>
+In-Reply-To: <643e31066f3378b9521dd9cd8c569ccfcf185d61.1451659910.git.geliangtang@163.com>
+References: <643e31066f3378b9521dd9cd8c569ccfcf185d61.1451659910.git.geliangtang@163.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali.rohar@gmail.com>
-Cc: sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>
+Cc: Geliang Tang <geliangtang@163.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Pali,
+Use to_delayed_work() instead of open-coding it.
 
-On  1.01.2016 13:26, Pali Roh=C3=A1r wrote:
-> On Friday 01 January 2016 12:03:29 Ivaylo Dimitrov wrote:
->> All calls to isp1704_write() are using parameter sequence of
->> isp1704_write(isp, reg, val) but the function is defined as
->> isp1704_write(isp, val, reg). Fix isp1704_write function definition
->> so that the driver to be functional.
->>
->> Signed-off-by: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
->
-> Reviewed-by: Pali Roh=C3=A1r <pali.rohar@gmail.com>
->
-> This problem is there since inclusion of driver itself. No idea why t=
-hat
-> driver could work... I remember that it detected correctly type of
-> charger.
->
-> I will test this patch on real N900 HW in one or two weeks to check h=
-ow
-> it behave after patching...
->
+Signed-off-by: Geliang Tang <geliangtang@163.com>
+---
+ drivers/power/generic-adc-battery.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Well, I  tested in on real HW, wall charger as well as USB were=20
-correctly detected. No idea what else needs to be tested, but I guess i=
-f=20
-you guide me, I can test whatever is needed.
+diff --git a/drivers/power/generic-adc-battery.c b/drivers/power/generic-adc-battery.c
+index fedc581..edb36bf 100644
+--- a/drivers/power/generic-adc-battery.c
++++ b/drivers/power/generic-adc-battery.c
+@@ -206,7 +206,7 @@ static void gab_work(struct work_struct *work)
+ 	bool is_plugged;
+ 	int status;
+ 
+-	delayed_work = container_of(work, struct delayed_work, work);
++	delayed_work = to_delayed_work(work);
+ 	adc_bat = container_of(delayed_work, struct gab, bat_work);
+ 	pdata = adc_bat->pdata;
+ 	status = adc_bat->status;
+-- 
+2.5.0
 
-Ivo
+
