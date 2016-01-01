@@ -1,83 +1,40 @@
-From: Leo Yan <leo.yan@linaro.org>
-Subject: Re: [PATCH v2] thermal: re-calculate k_po/k_pu when update
- sustainable power
-Date: Fri, 1 Jan 2016 08:03:47 +0800
-Message-ID: <20160101000347.GA2572@leoy-linaro>
-References: <1451471920-2148-1-git-send-email-leo.yan@linaro.org>
- <20151231172125.GA11863@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
+Subject: [PATCH] power_suply: isp1704_charger: Fix isp1704_write() definition
+Date: Fri,  1 Jan 2016 13:03:29 +0200
+Message-ID: <1451646209-11618-1-git-send-email-ivo.g.dimitrov.75@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f53.google.com ([209.85.220.53]:35715 "EHLO
-	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751179AbcAAADx (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 31 Dec 2015 19:03:53 -0500
-Received: by mail-pa0-f53.google.com with SMTP id do7so3053754pab.2
-        for <linux-pm@vger.kernel.org>; Thu, 31 Dec 2015 16:03:53 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <20151231172125.GA11863@localhost.localdomain>
+Received: from mail-wm0-f67.google.com ([74.125.82.67]:33410 "EHLO
+	mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751364AbcAALEC (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Jan 2016 06:04:02 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, javi.merino@arm.com
+To: pali.rohar@gmail.com, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
 
-Hi Eduardo,
+All calls to isp1704_write() are using parameter sequence of
+isp1704_write(isp, reg, val) but the function is defined as
+isp1704_write(isp, val, reg). Fix isp1704_write function definition so that
+the driver to be functional.
 
-Thanks for review.
+Signed-off-by: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>
+---
+ drivers/power/isp1704_charger.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-On Thu, Dec 31, 2015 at 09:21:26AM -0800, Eduardo Valentin wrote:
-> On Wed, Dec 30, 2015 at 06:38:40PM +0800, Leo Yan wrote:
-> > k_po/k_pu are in essence ratio values compared with sustainable power.
-> > So when update sustainable power, we can recalculate k_po/k_pu simply
-> > with below formula:
-> > 
-> >                sustainable_power(new)
-> >     k_p(new) = ---------------------- * k_p(old)
-> >                sustainable_power(old)
-> > 
-> > Signed-off-by: Leo Yan <leo.yan@linaro.org>
-> > ---
-> >  drivers/thermal/thermal_core.c | 6 +++++-
-> >  1 file changed, 5 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> > index d9e525c..223f8df 100644
-> > --- a/drivers/thermal/thermal_core.c
-> > +++ b/drivers/thermal/thermal_core.c
-> > @@ -908,7 +908,7 @@ sustainable_power_store(struct device *dev, struct device_attribute *devattr,
-> >  			const char *buf, size_t count)
-> >  {
-> >  	struct thermal_zone_device *tz = to_thermal_zone(dev);
-> > -	u32 sustainable_power;
-> > +	u32 sustainable_power, old_val;
-> >  
-> >  	if (!tz->tzp)
-> >  		return -EIO;
-> > @@ -916,8 +916,12 @@ sustainable_power_store(struct device *dev, struct device_attribute *devattr,
-> >  	if (kstrtou32(buf, 10, &sustainable_power))
-> >  		return -EINVAL;
-> >  
-> > +	old_val = tz->tzp->sustainable_power;
-> > +
-> >  	tz->tzp->sustainable_power = sustainable_power;
-> >  
-> > +	tz->tzp->k_po = (tz->tzp->k_po * sustainable_power) / old_val;
-> > +	tz->tzp->k_pu = (tz->tzp->k_pu * sustainable_power) / old_val;
-> 
-> I believe this has to be done by the governor. These properties are
-> power_allocator specific. thermal_core should not really care about
-> them.
+diff --git a/drivers/power/isp1704_charger.c b/drivers/power/isp1704_charger.c
+index f2a7d97..46a292a 100644
+--- a/drivers/power/isp1704_charger.c
++++ b/drivers/power/isp1704_charger.c
+@@ -76,7 +76,7 @@ static inline int isp1704_read(struct isp1704_charger *isp, u32 reg)
+ 	return usb_phy_io_read(isp->phy, reg);
+ }
+ 
+-static inline int isp1704_write(struct isp1704_charger *isp, u32 val, u32 reg)
++static inline int isp1704_write(struct isp1704_charger *isp, u32 reg, u32 val)
+ {
+ 	return usb_phy_io_write(isp->phy, val, reg);
+ }
+-- 
+1.9.1
 
-Okay, I will try to update these properties in power_allocator.c.
-Javi, do you think this is fine for you?
-
-Thanks,
-Leo Yan
-
-> 
-> >  	return count;
-> >  }
-> >  static DEVICE_ATTR(sustainable_power, S_IWUSR | S_IRUGO, sustainable_power_show,
-> > -- 
-> > 1.9.1
-> > 
