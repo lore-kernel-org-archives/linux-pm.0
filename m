@@ -1,32 +1,28 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [GIT PULL] Thermal-SoC management updates for v4.4-rc8
-Date: Fri, 1 Jan 2016 18:35:55 -0800
-Message-ID: <20160102023553.GA27654@localhost.localdomain>
-References: <20151231180709.GA13780@localhost.localdomain>
- <744357E9AAD1214791ACBA4B0B9092633A937F31@SHSMSX101.ccr.corp.intel.com>
+From: Oliver Neukum <oneukum@suse.com>
+Subject: question on autosuspend vs. system suspend
+Date: Sat, 02 Jan 2016 16:09:25 +0100
+Message-ID: <1451747365.13492.4.camel@suse.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f44.google.com ([209.85.220.44]:33679 "EHLO
-	mail-pa0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752394AbcABCgG (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Jan 2016 21:36:06 -0500
-Content-Disposition: inline
-In-Reply-To: <744357E9AAD1214791ACBA4B0B9092633A937F31@SHSMSX101.ccr.corp.intel.com>
+Received: from mx2.suse.de ([195.135.220.15]:36196 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751812AbcABPLi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Sat, 2 Jan 2016 10:11:38 -0500
+Received: from relay1.suse.de (charybdis-ext.suse.de [195.135.220.254])
+	by mx2.suse.de (Postfix) with ESMTP id 0FB5DAC01
+	for <linux-pm@vger.kernel.org>; Sat,  2 Jan 2016 15:11:36 +0000 (UTC)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Zhang, Rui" <rui.zhang@intel.com>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: linux-pm@vger.kernel.org
 
-Hello Rui,
+Hi,
 
-On Sat, Jan 02, 2016 at 01:35:18AM +0000, Zhang, Rui wrote:
-> Hi, Eduardo,
-> 
-> I checked those commits and none of them seems to be a real urgent fix that should be included in -rc8.
-> Instead, they should be queued for 4.5 IMO. What do you think?
+is there any point during system suspend one can
+be sure that autosuspend mechanisms are deactivated?
 
-Yeah, if you prefer, we can queue these to 4.5-rc1.
-
-BR,
+	Regards
+		Oliver
+		
 
