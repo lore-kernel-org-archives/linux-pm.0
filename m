@@ -1,90 +1,86 @@
-From: "Zhang, Rui" <rui.zhang@intel.com>
-Subject: RE: [GIT PULL] Thermal-SoC management updates for v4.4-rc8
-Date: Sat, 2 Jan 2016 01:35:18 +0000
-Message-ID: <744357E9AAD1214791ACBA4B0B9092633A937F31@SHSMSX101.ccr.corp.intel.com>
-References: <20151231180709.GA13780@localhost.localdomain>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] PM / sleep: Add support for read-only sysfs attributes
+Date: Sat, 02 Jan 2016 03:09:16 +0100
+Message-ID: <4744819.Itnh720Sq0@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20151231180709.GA13780@localhost.localdomain>
-Content-Language: en-US
-Sender: linux-acpi-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from v094114.home.net.pl ([79.96.170.134]:56055 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751354AbcABBim (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 1 Jan 2016 20:38:42 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
 
-Hi, Eduardo,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-I checked those commits and none of them seems to be a real urgent fix that should be included in -rc8.
-Instead, they should be queued for 4.5 IMO. What do you think?
+Some sysfs attributes in /sys/power/ should really be read-only,
+so add support for that, convert those attributes to read-only
+and drop the stub .show() routines from them.
 
-Thanks,
-rui
+Original-by: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ kernel/power/main.c  |   17 ++---------------
+ kernel/power/power.h |    9 +++++++++
+ 2 files changed, 11 insertions(+), 15 deletions(-)
 
-> -----Original Message-----
-> From: Eduardo Valentin [mailto:edubezval@gmail.com]
-> Sent: Friday, January 01, 2016 2:07 AM
-> To: Zhang, Rui <rui.zhang@intel.com>
-> Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>; Linux PM <linux-
-> pm@vger.kernel.org>; LKML <linux-kernel@vger.kernel.org>; Zhang, Rui
-> <rui.zhang@intel.com>
-> Subject: [GIT PULL] Thermal-SoC management updates for v4.4-rc8
-> Importance: High
-> 
-> Hello Rui,
-> 
-> Please pull from
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal
-> fixes
-> 
-> to receive Thermal-SoC Management updates for v4.4-rc8 with top-most
-> 
-> ebe580748d7c33bfd308f09b825dff15fa2eccf2:
-> 
->   thermal: trip_point_temp_store() calls thermal_zone_device_update()
-> (2015-12-31 09:41:52 -0800)
-> 
-> on top of commit c6169202e40868fd00de7ce35ee16c81b1f9e123:
-> 
->   Merge branch 'for-linus' of git://git.kernel.dk/linux-block (2015-12-30
-> 10:26:20 -0800)
-> 
-> Specifics in this pull request:
-> - Several fixes and cleanups on Rockchip thermal drivers.
-> - Several fixes and cleanups on RCAR thermal drivers.
-> - Build/boot tests powered by KernelCI [1,2] \o/
-> 
-> BTW, I have rebase my -fixes branch on top of linus master branch, as you
-> reported merge conflict. Please let me know if this branch causes troubles
-> for you.
-> 
-> [1] - https://kernelci.org/boot/all/job/evalenti/kernel/v4.4-rc5-27-
-> gce0265dd6f8e/
-> [2] - https://kernelci.org/build/evalenti/kernel/v4.4-rc5-27-gce0265dd6f8e/
-> 
-> BR,
-> 
-> Eduardo Valentin
-> 
-> ----------------------------------------------------------------
-> Caesar Wang (4):
->       thermal: rockchip: fix a trivial typo
->       dt-bindings: rockchip-thermal: Support the RK3228/RK3399 SoCs
-> compatible
->       thermal: rockchip: Support the RK3228 SoCs in thermal driver
->       thermal: rockchip: Support the RK3399 SoCs in thermal driver
-> 
-> Kuninori Morimoto (5):
->       thermal: rcar: move rcar_thermal_dt_ids to upside
->       thermal: rcar: check every rcar_thermal_update_temp() return value
->       thermal: rcar: check irq possibility in rcar_thermal_irq_xxx()
->       thermal: rcar: rcar_thermal_get_temp() return error if strange temp
->       thermal: trip_point_temp_store() calls thermal_zone_device_update()
-> 
->  .../bindings/thermal/rockchip-thermal.txt          |   2 +
->  drivers/thermal/rcar_thermal.c                     |  53 ++++---
->  drivers/thermal/rockchip_thermal.c                 | 172 +++++++++++++++++++--
->  drivers/thermal/thermal_core.c                     |   6 +-
->  4 files changed, 200 insertions(+), 33 deletions(-)
+Index: linux-pm/kernel/power/power.h
+===================================================================
+--- linux-pm.orig/kernel/power/power.h
++++ linux-pm/kernel/power/power.h
+@@ -77,6 +77,15 @@ static struct kobj_attribute _name##_att
+ 	.store	= _name##_store,		\
+ }
+ 
++#define power_attr_ro(_name) \
++static struct kobj_attribute _name##_attr = {	\
++	.attr	= {				\
++		.name = __stringify(_name),	\
++		.mode = S_IRUGO,		\
++	},					\
++	.show	= _name##_show,			\
++}
++
+ /* Preferred image size in bytes (default 500 MB) */
+ extern unsigned long image_size;
+ /* Size of memory reserved for drivers (default SPARE_PAGES x PAGE_SIZE) */
+Index: linux-pm/kernel/power/main.c
+===================================================================
+--- linux-pm.orig/kernel/power/main.c
++++ linux-pm/kernel/power/main.c
+@@ -280,13 +280,7 @@ static ssize_t pm_wakeup_irq_show(struct
+ 	return pm_wakeup_irq ? sprintf(buf, "%u\n", pm_wakeup_irq) : -ENODATA;
+ }
+ 
+-static ssize_t pm_wakeup_irq_store(struct kobject *kobj,
+-					struct kobj_attribute *attr,
+-					const char *buf, size_t n)
+-{
+-	return -EINVAL;
+-}
+-power_attr(pm_wakeup_irq);
++power_attr_ro(pm_wakeup_irq);
+ 
+ #else /* !CONFIG_PM_SLEEP_DEBUG */
+ static inline void pm_print_times_init(void) {}
+@@ -564,14 +558,7 @@ static ssize_t pm_trace_dev_match_show(s
+ 	return show_trace_dev_match(buf, PAGE_SIZE);
+ }
+ 
+-static ssize_t
+-pm_trace_dev_match_store(struct kobject *kobj, struct kobj_attribute *attr,
+-			 const char *buf, size_t n)
+-{
+-	return -EINVAL;
+-}
+-
+-power_attr(pm_trace_dev_match);
++power_attr_ro(pm_trace_dev_match);
+ 
+ #endif /* CONFIG_PM_TRACE */
+ 
+
