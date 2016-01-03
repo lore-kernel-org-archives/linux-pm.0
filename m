@@ -1,97 +1,30 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: governor: Fix negative idle_time when configured with CONFIG_HZ_PERIODIC
-Date: Sun, 03 Jan 2016 01:56:31 +0100
-Message-ID: <1872489.HpEenvS50o@vostro.rjw.lan>
-References: <007bcbf2c1bced84fe8944eaec191ab1e5919f8e.1450238320.git.yu.c.chen@intel.com>
+Subject: Re: [PATCH] drivers: power: fix typo in documentation
+Date: Sun, 03 Jan 2016 01:57:32 +0100
+Message-ID: <11932318.N2EsvjO7M2@vostro.rjw.lan>
+References: <1451383401-6981-1-git-send-email-mpg@elzevir.fr> <20151229164332.GA6603@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:46904 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:61396 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751670AbcACAZz (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sat, 2 Jan 2016 19:25:55 -0500
-In-Reply-To: <007bcbf2c1bced84fe8944eaec191ab1e5919f8e.1450238320.git.yu.c.chen@intel.com>
+	with SMTP id S1751037AbcACA04 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Sat, 2 Jan 2016 19:26:56 -0500
+In-Reply-To: <20151229164332.GA6603@amd>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: viresh.kumar@linaro.org, lenb@kernel.org, srinivas.pandruvada@linux.intel.com, rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Manuel =?ISO-8859-1?Q?P=E9gouri=E9=2DGonnard?= <mpg@elzevir.fr>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, len.brown@intel.com, gregkh@linuxfoundation.org, trivial@kernel.org
 
-On Wednesday, December 16, 2015 12:20:29 PM Chen Yu wrote:
-> It is reported that, with CONFIG_HZ_PERIODIC=y cpu stays at the
-> lowest frequency even if the usage goes to 100%, neither ondemand
-> nor conservative governor works, however performance and
-> userspace work as expected. If set with CONFIG_NO_HZ_FULL=y,
-> everything goes well.
-> 
-> This problem is caused by improper calculation of the idle_time
-> when the load is extremely high(near 100%). Firstly, cpufreq_governor
-> uses get_cpu_idle_time to get the total idle time for specific cpu, then:
-> 
-> 1.If the system is configured with CONFIG_NO_HZ_FULL, the idle time is
->   returned by ktime_get, which is always increasing, it's OK.
-> 2.However, if the system is configured with CONFIG_HZ_PERIODIC,
->   get_cpu_idle_time might not guarantee to be always increasing,
->   because it will leverage get_cpu_idle_time_jiffy to calculate the
->   idle_time, consider the following scenario:
-> 
-> At T1:
-> idle_tick_1 = total_tick_1 - user_tick_1
-> 
-> sample period(80ms)...
-> 
-> At T2: ( T2 = T1 + 80ms):
-> idle_tick_2 = total_tick_2 - user_tick_2
-> 
-> Currently the algorithm is using (idle_tick_2 - idle_tick_1) to
-> get the delta idle_time during the past sample period, however
-> it CAN NOT guarantee that idle_tick_2 >= idle_tick_1, especially
-> when cpu load is high.
-> (Yes, total_tick_2 >= total_tick_1, and user_tick_2 >= user_tick_1,
-> but how about idle_tick_2 and idle_tick_1? No guarantee.)
-> So governor might get a negative value of idle_time during the past
-> sample period, which might mislead the system that the idle time is
-> very big(converted to unsigned int), and the busy time is nearly zero,
-> which causes the governor to always choose the lowest cpufreq,
-> then cause this problem.
-> 
-> In theory there are two solutions:
-> 
-> 1.The logic should not rely on the idle tick during every sample period,
->   but be based on the busy tick directly, as this is how 'top' is
->   implemented.
-> 
-> 2.Or the logic must make sure that the idle_time is strictly increasing
->   during each sample period, then there would be no negative idle_time
->   anymore. This solution requires minimum modification to current code
->   and this patch uses method 2.
-> 
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=69821
-> Reported-by: Jan Fikar <j.fikar@gmail.com>
-> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+On Tuesday, December 29, 2015 05:43:33 PM Pavel Machek wrote:
+> On Tue 2015-12-29 11:03:21, Manuel P=C3=A9gouri=C3=A9-Gonnard wrote:
+> > The documentation for detach() said attach.
+> >=20
+> > Signed-off-by: Manuel P=C3=A9gouri=C3=A9-Gonnard <mpg@elzevir.fr>
+> > Cc: trivial@kernel.org
+>=20
+> Acked-by: Pavel Machek <pavel@ucw.cz>
 
 Applied, thanks!
 
-> ---
->  drivers/cpufreq/cpufreq_governor.c | 3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-> index b260576..363445f 100644
-> --- a/drivers/cpufreq/cpufreq_governor.c
-> +++ b/drivers/cpufreq/cpufreq_governor.c
-> @@ -84,6 +84,9 @@ void dbs_check_cpu(struct dbs_data *dbs_data, int cpu)
->  			(cur_wall_time - j_cdbs->prev_cpu_wall);
->  		j_cdbs->prev_cpu_wall = cur_wall_time;
->  
-> +		if (cur_idle_time < j_cdbs->prev_cpu_idle)
-> +			cur_idle_time = j_cdbs->prev_cpu_idle;
-> +
->  		idle_time = (unsigned int)
->  			(cur_idle_time - j_cdbs->prev_cpu_idle);
->  		j_cdbs->prev_cpu_idle = cur_idle_time;
-> 
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
