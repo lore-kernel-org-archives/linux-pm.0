@@ -1,94 +1,86 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH 2/3] thermal: Add Mediatek thermal controller support
-Date: Mon, 4 Jan 2016 15:19:40 +0100
-Message-ID: <20160104141940.GI13058@pengutronix.de>
-References: <1448883753-19068-1-git-send-email-s.hauer@pengutronix.de>
- <1448883753-19068-3-git-send-email-s.hauer@pengutronix.de>
- <20151217193332.GB7999@localhost.localdomain>
+From: Leo Yan <leo.yan@linaro.org>
+Subject: Re: [PATCH v2] thermal: re-calculate k_po/k_pu when update
+ sustainable power
+Date: Mon, 4 Jan 2016 22:31:19 +0800
+Message-ID: <20160104143119.GC29062@leoy-linaro>
+References: <1451471920-2148-1-git-send-email-leo.yan@linaro.org>
+ <20151231172125.GA11863@localhost.localdomain>
+ <20160101000347.GA2572@leoy-linaro>
+ <568A55F2.10800@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:39005 "EHLO
-	metis.ext.4.pengutronix.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751309AbcADOTm (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Jan 2016 09:19:42 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20151217193332.GB7999@localhost.localdomain>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <568A55F2.10800@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Daniel Thompson <daniel.thompson@linaro.org>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, javi.merino@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Matthias Brugger <matthias.bgg@gmail.com>
 
-Hi Eduardo,
+On Mon, Jan 04, 2016 at 11:22:26AM +0000, Daniel Thompson wrote:
+> On 01/01/16 00:03, Leo Yan wrote:
+> >Hi Eduardo,
+> >
+> >Thanks for review.
+> >
+> >On Thu, Dec 31, 2015 at 09:21:26AM -0800, Eduardo Valentin wrote:
+> >>On Wed, Dec 30, 2015 at 06:38:40PM +0800, Leo Yan wrote:
+> >>>k_po/k_pu are in essence ratio values compared with sustainable power.
+> >>>So when update sustainable power, we can recalculate k_po/k_pu simply
+> >>>with below formula:
+> >>>
+> >>>                sustainable_power(new)
+> >>>     k_p(new) = ---------------------- * k_p(old)
+> >>>                sustainable_power(old)
+> >>>
+> >>>Signed-off-by: Leo Yan <leo.yan@linaro.org>
+> >>>---
+> >>>  drivers/thermal/thermal_core.c | 6 +++++-
+> >>>  1 file changed, 5 insertions(+), 1 deletion(-)
+> >>>
+> >>>diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> >>>index d9e525c..223f8df 100644
+> >>>--- a/drivers/thermal/thermal_core.c
+> >>>+++ b/drivers/thermal/thermal_core.c
+> >>>@@ -908,7 +908,7 @@ sustainable_power_store(struct device *dev, struct device_attribute *devattr,
+> >>>  			const char *buf, size_t count)
+> >>>  {
+> >>>  	struct thermal_zone_device *tz = to_thermal_zone(dev);
+> >>>-	u32 sustainable_power;
+> >>>+	u32 sustainable_power, old_val;
+> >>>
+> >>>  	if (!tz->tzp)
+> >>>  		return -EIO;
+> >>>@@ -916,8 +916,12 @@ sustainable_power_store(struct device *dev, struct device_attribute *devattr,
+> >>>  	if (kstrtou32(buf, 10, &sustainable_power))
+> >>>  		return -EINVAL;
+> >>>
+> >>>+	old_val = tz->tzp->sustainable_power;
+> >>>+
+> >>>  	tz->tzp->sustainable_power = sustainable_power;
+> >>>
+> >>>+	tz->tzp->k_po = (tz->tzp->k_po * sustainable_power) / old_val;
+> >>>+	tz->tzp->k_pu = (tz->tzp->k_pu * sustainable_power) / old_val;
+> >>
+> >>I believe this has to be done by the governor. These properties are
+> >>power_allocator specific. thermal_core should not really care about
+> >>them.
+> >
+> >Okay, I will try to update these properties in power_allocator.c.
+> >Javi, do you think this is fine for you?
+> 
+> If sustainable power were to change frequently (perhaps on
+> entry/exit of a fan inhibitor mode?) then we would accumulate
+> rounding errors here...
 
-On Thu, Dec 17, 2015 at 11:33:33AM -0800, Eduardo Valentin wrote:
-> Sascha,
-> 
-> Yeah, sorry for the long delay. I was planing on applying this patch for
-> the next merge window, but it just came across one point, see below.
-> 
-> On Mon, Nov 30, 2015 at 12:42:32PM +0100, Sascha Hauer wrote:
-> > This adds support for the Mediatek thermal controller found on MT8173
-> > +static const int sensor_mux_values[MT8173_NUM_SENSORS] = { 0, 1, 2, 3, 16 };
-> > +
-> 
-> <big cut>
-> 
-> > +/*
-> > + * The MT8173 thermal controller has four banks. Each bank can read up to
-> > + * four temperature sensors simultaneously. The MT8173 has a total of 5
-> > + * temperature sensors. We use each bank to measure a certain area of the
-> > + * SoC. Since TS2 is located centrally in the SoC it is influenced by multiple
-> > + * areas, hence is used in different banks.
-> > + *
-> > + * The thermal core only gets the maximum temperature of all banks, so
-> > + * the bank concept wouldn't be necessary here. However, the SVS (Smart
-> > + * Voltage Scaling) unit makes its decisions based on the same bank
-> > + * data, and this indeed needs the temperatures of the individual banks
-> > + * for making better decisions.
-> > + */
-> > +static const struct mtk_thermal_bank_cfg bank_data[] = {
-> > +	{
-> > +		.num_sensors = 2,
-> > +		.sensors = { MT8173_TS2, MT8173_TS3 },
-> > +	}, {
-> > +		.num_sensors = 2,
-> > +		.sensors = { MT8173_TS2, MT8173_TS4 },
-> > +	}, {
-> > +		.num_sensors = 3,
-> > +		.sensors = { MT8173_TS1, MT8173_TS2, MT8173_TSABB },
-> > +	}, {
-> > +		.num_sensors = 1,
-> > +		.sensors = { MT8173_TS2 },
-> > +	},
-> > +};
-> 
-> Why can't we expose all these as thermal zones?
-> 
-> That should remove the policy of computing the maximum from this driver.
-> Please have a look on the work being done [1] to add grouping and
-> aggregation of thermal zones. With that in place, you should be a matter
-> of configuring the grouping and selecting max as the aggregation function,
-> from the thermal core, instead in the driver. Which should give the
-> system engineer, more flexibility to compose whatever policy based on
-> the exposed sensors.
+Correct, I observed it accumulates some minor deviation after change
+sustainable power several times.
 
-I think the aggregation of thermal zones is quite useful when it comes
-to putting different chips together to a system. I am not so sure how
-useful it is to expose different thermal zones of a single SoC to the
-device tree.
-Currently the only control knob we have is the CPU frequency. When any
-of the sensors on the SoC gets too hot then the only thing we can do is
-to decrease the CPU frequency. This does not leave much space for
-configuration in the device tree.
-What I need to be able is to attach multiple sensors to one thermal
-zone. The aggregation patch series only partly solves that and I think
-is inconsistent, but I commented on the series directly.
+I think we should change to use k_po_ratio and k_pu_ratio to represent
+relationship between k_po/k_pu and sustainable power, and update
+k_po/k_pu when sustainable power has been changed.
 
-Sascha
+[...]
 
--- 
-Pengutronix e.K.                           |                             |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
-Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
+Thanks,
+Leo Yan
