@@ -1,52 +1,111 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: ondemand: Set MIN_FREQUENCY_UP_THRESHOLD to 1
-Date: Mon, 4 Jan 2016 11:26:51 +0530
-Message-ID: <20160104055651.GB27177@ubuntu>
-References: <9645d54c1bc65ce69ecfd5e92259ead7699afc82.1451880670.git.yu.c.chen@intel.com>
+From: Ping Bai <ping.bai@nxp.com>
+Subject: RE: [PATCH] thermal: imx: update the temperature calibration data for
+ imx6 soc
+Date: Mon, 4 Jan 2016 07:32:38 +0000
+Message-ID: <AM3PR04MB530F626B59E9860CB15536B87F20@AM3PR04MB530.eurprd04.prod.outlook.com>
+References: <1450682876-26725-1-git-send-email-ping.bai@nxp.com>
+ <20151231175048.GA13409@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <9645d54c1bc65ce69ecfd5e92259ead7699afc82.1451880670.git.yu.c.chen@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, sworddragon2@aol.com
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-am1on0060.outbound.protection.outlook.com ([157.56.112.60]:22429
+	"EHLO emea01-am1-obe.outbound.protection.outlook.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751274AbcADHrH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 4 Jan 2016 02:47:07 -0500
+In-Reply-To: <20151231175048.GA13409@localhost.localdomain>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: "rui.zhang@intel.com" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Fuchuan Liu <fuchuan.liu@nxp.com>, "tharvey@gateworks.com" <tharvey@gateworks.com>
 
-On 04-01-16, 12:14, Chen Yu wrote:
-> Currently the minimal up_threshold is 11, and user may want to
-> use a smaller minimal up_threshold for performance tuning,
-> so MIN_FREQUENCY_UP_THRESHOLD could be set to 1 because:
-> 
-> 1. Current systems wouldn't be affected as they have already
->    a value >= 11.
-> 2. New systems with a default kernel would keep still the default
->    value that is >= 11.
-> 
-> Users now have the advantage that they can make their own decisions
-> and customize the 'trip point' to switch to the max frequency.
-> 
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=65501
-> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
-> ---
->  drivers/cpufreq/cpufreq_ondemand.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-> index 03ac6ce..2a093b5 100644
-> --- a/drivers/cpufreq/cpufreq_ondemand.c
-> +++ b/drivers/cpufreq/cpufreq_ondemand.c
-> @@ -24,7 +24,7 @@
->  #define MAX_SAMPLING_DOWN_FACTOR		(100000)
->  #define MICRO_FREQUENCY_UP_THRESHOLD		(95)
->  #define MICRO_FREQUENCY_MIN_SAMPLE_RATE		(10000)
-> -#define MIN_FREQUENCY_UP_THRESHOLD		(11)
-> +#define MIN_FREQUENCY_UP_THRESHOLD		(1)
->  #define MAX_FREQUENCY_UP_THRESHOLD		(100)
->  
->  static DEFINE_PER_CPU(struct od_cpu_dbs_info_s, od_cpu_dbs_info);
-
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
--- 
-viresh
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogRWR1YXJkbyBWYWxlbnRp
+biBbbWFpbHRvOmVkdWJlenZhbEBnbWFpbC5jb21dDQo+IFNlbnQ6IDIwMTbE6jHUwjHI1SAxOjUx
+DQo+IFRvOiBQaW5nIEJhaSA8cGluZy5iYWlAbnhwLmNvbT4NCj4gQ2M6IHJ1aS56aGFuZ0BpbnRl
+bC5jb207IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSB0
+aGVybWFsOiBpbXg6IHVwZGF0ZSB0aGUgdGVtcGVyYXR1cmUgY2FsaWJyYXRpb24gZGF0YSBmb3IN
+Cj4gaW14NiBzb2MNCj4gDQo+IE9uIE1vbiwgRGVjIDIxLCAyMDE1IGF0IDAzOjI3OjU2UE0gKzA4
+MDAsIEJhaSBQaW5nIHdyb3RlOg0KPiA+IEFjY29yZGluZyB0byB0aGUgZGVzaWduIHRlYW06DQo+
+ID4NCj4gPiBBZnRlciBhIHRob3JvdWdoIGFjY3VyYWN5IHN0dWR5IG9mIHRoZSBUZW1wIHNlbnNl
+IGNpcmN1aXQsd2UgZm91bmQNCj4gPiB0aGF0IHdpdGggb3VyIGN1cnJlbnQgZXF1YXRpb24sIGFu
+IGF2ZXJhZ2UgcGFydCBjYW4gcmVhZCA3IGRlZ3JlZXMNCj4gPiBsb3dlciB0aGFuIGEga25vd24g
+Zm9yY2VkIHRlbXBlcmF0dXJlLiBXZSBhbHNvIGZvdW5kIG91dCB0aGF0IHRoZQ0KPiA+IHN0YW5k
+YXJkIHZhcmlhbmNlIHdhcyBhcm91bmQgMkM7IHdoaWNoIGlzIHRoZSB0aWdodGVzdCBkaXN0cmli
+dXRpb24gdGhhdCB3ZQ0KPiBjb3VsZCBjcmVhdGUuDQo+ID4gV2UgbmVlZCB0byBjaGFuZ2UgdGhl
+IHRlbXAgc2Vuc2UgZXF1YXRpb24gdG8gY2VudGVyIHRoZSBhdmVyYWdlIHBhcnQNCj4gPiBhcm91
+bmQgdGhlIHRhcmdldCB0ZW1wZXJhdHVyZS4NCj4gPg0KPiA+IE9sZCBFcXVhdGlvbjoNCj4gPg0K
+PiA+IFRlbXAgPSBUcm9vbSxjYWwgLSBzbG9wZSooQ291bnQgbWVhc3VyZWQgLSBDb3VudCByb29t
+IGZ1c2UpIFdoZXJlDQo+ID4gVHJvb20sY2FsID0gMjVDIGFuZCBTbG9wZSA9IDAuNDI5NzE1NyAt
+ICgwLjAwMTU5NzQgKiBDb3VudCByb29tIGZ1c2UpDQo+ID4NCj4gPiBOZXcgRXF1YXRpb246DQo+
+ID4NCj4gPiBUZW1wID0gVHJvb20sY2FsIC0gc2xvcGUqKENvdW50IG1lYXN1cmVkIC0gQ291bnQg
+cm9vbSBmdXNlKSArb2Zmc2V0DQo+ID4gV2hlcmUgVHJvb20sY2FsID0gMjVDIGFuZCBTbG9wZSA9
+IDAuNDE0ODQ2OCAtICgwLjAwMTU0MjMgKiBDb3VudCByb29tDQo+ID4gZnVzZSkgT2Zmc2V0ID0g
+My41ODA2NjENCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IEJhaSBQaW5nIDxwaW5nLmJhaUBueHAu
+Y29tPg0KPiA+IC0tLQ0KPiA+ICBkcml2ZXJzL3RoZXJtYWwvaW14X3RoZXJtYWwuYyB8IDIwICsr
+KysrKysrKysrKy0tLS0tLS0tDQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCAxMiBpbnNlcnRpb25zKCsp
+LCA4IGRlbGV0aW9ucygtKQ0KPiA+DQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGhlcm1hbC9p
+bXhfdGhlcm1hbC5jDQo+ID4gYi9kcml2ZXJzL3RoZXJtYWwvaW14X3RoZXJtYWwuYyBpbmRleCBj
+NTU0N2JkLi45ZmI2MTNlIDEwMDY0NA0KPiA+IC0tLSBhL2RyaXZlcnMvdGhlcm1hbC9pbXhfdGhl
+cm1hbC5jDQo+ID4gKysrIGIvZHJpdmVycy90aGVybWFsL2lteF90aGVybWFsLmMNCj4gPiBAQCAt
+NjksOCArNjksOSBAQCBlbnVtIGlteF90aGVybWFsX3RyaXAgew0KPiA+ICAjZGVmaW5lIElNWF9Q
+QVNTSVZFX0RFTEFZCQkxMDAwDQo+ID4NCj4gPiAgI2RlZmluZSBGQUNUT1IwCQkJCTEwMDAwMDAw
+DQo+ID4gLSNkZWZpbmUgRkFDVE9SMQkJCQkxNTk3Ng0KPiA+IC0jZGVmaW5lIEZBQ1RPUjIJCQkJ
+NDI5NzE1Nw0KPiA+ICsjZGVmaW5lIEZBQ1RPUjEJCQkJMTU0MjMNCj4gPiArI2RlZmluZSBGQUNU
+T1IyCQkJCTQxNDg0NjgNCj4gPiArI2RlZmluZSBPRkZTRVQJCQkJMzU4MDY2MQ0KPiA+DQo+ID4g
+ICNkZWZpbmUgVEVNUE1PTl9JTVg2UQkJCTENCj4gPiAgI2RlZmluZSBURU1QTU9OX0lNWDZTWAkJ
+CTINCj4gPiBAQCAtMzg1LDIzICszODYsMjYgQEAgc3RhdGljIGludCBpbXhfZ2V0X3NlbnNvcl9k
+YXRhKHN0cnVjdA0KPiBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ID4gIAkgKiBEZXJpdmVkIGZy
+b20gbGluZWFyIGludGVycG9sYXRpb246DQo+ID4gIAkgKiBzbG9wZSA9IDAuNDI5NzE1NyAtICgw
+LjAwMTU5NzYgKiAyNUMgZnVzZSkNCj4gPiAgCSAqIHNsb3BlID0gKEZBQ1RPUjIgLSBGQUNUT1Ix
+ICogbjEpIC8gRkFDVE9SMA0KPiA+ICsJICogb2Zmc2V0ID0gT0ZGU0VUIC8gMTAwMDAwMA0KPiA+
+ICAJICogKE5tZWFzIC0gbjEpIC8gKFRtZWFzIC0gdDEpID0gc2xvcGUNCj4gPiAgCSAqIFdlIHdh
+bnQgdG8gcmVkdWNlIHRoaXMgZG93biB0byB0aGUgbWluaW11bSBjb21wdXRhdGlvbg0KPiBuZWNl
+c3NhcnkNCj4gPiAgCSAqIGZvciBlYWNoIHRlbXBlcmF0dXJlIHJlYWQuICBBbHNvLCB3ZSB3YW50
+IFRtZWFzIGluIG1pbGxpY2Vsc2l1cw0KPiA+ICAJICogYW5kIHdlIGRvbid0IHdhbnQgdG8gbG9z
+ZSBwcmVjaXNpb24gZnJvbSBpbnRlZ2VyIGRpdmlzaW9uLiBTby4uLg0KPiA+IC0JICogVG1lYXMg
+PSAoTm1lYXMgLSBuMSkgLyBzbG9wZSArIHQxDQo+ID4gLQkgKiBtaWxsaV9UbWVhcyA9IDEwMDAg
+KiAoTm1lYXMgLSBuMSkgLyBzbG9wZSArIDEwMDAgKiB0MQ0KPiA+IC0JICogbWlsbGlfVG1lYXMg
+PSAtMTAwMCAqIChuMSAtIE5tZWFzKSAvIHNsb3BlICsgMTAwMCAqIHQxDQo+ID4gKwkgKiBUbWVh
+cyA9IChObWVhcyAtIG4xKSAvIHNsb3BlICsgdDEgKyBvZmZzZXQNCj4gPiArCSAqIG1pbGxpX1Rt
+ZWFzID0gMTAwMCAqIChObWVhcyAtIG4xKSAvIHNsb3BlICsgMTAwMCAqIHQxICsgT0ZGU0VUIC8g
+MTAwMA0KPiA+ICsJICogbWlsbGlfVG1lYXMgPSAtMTAwMCAqIChuMSAtIE5tZWFzKSAvIHNsb3Bl
+ICsgMTAwMCAqIHQxICsgT0ZGU0VUIC8NCj4gPiArMTAwMA0KPiA+ICAJICogTGV0IGNvbnN0YW50
+IGMxID0gKC0xMDAwIC8gc2xvcGUpDQo+ID4gLQkgKiBtaWxsaV9UbWVhcyA9IChuMSAtIE5tZWFz
+KSAqIGMxICsgMTAwMCAqIHQxDQo+ID4gLQkgKiBMZXQgY29uc3RhbnQgYzIgPSBuMSAqYzEgKyAx
+MDAwICogdDENCj4gPiArCSAqIG1pbGxpX1RtZWFzID0gKG4xIC0gTm1lYXMpICogYzEgKyAxMDAw
+ICogdDEgKyBPRkZTRVQgLyAxMDAwDQo+ID4gKwkgKiBMZXQgY29uc3RhbnQgYzIgPSBuMSAqYzEg
+KyAxMDAwICogdDEgKyBPRkZTRVQgLyAxMDAwDQo+ID4gIAkgKiBtaWxsaV9UbWVhcyA9IGMyIC0g
+Tm1lYXMgKiBjMQ0KPiA+ICAJICovDQo+ID4gIAl0ZW1wNjQgPSBGQUNUT1IwOw0KPiA+ICAJdGVt
+cDY0ICo9IDEwMDA7DQo+ID4gIAlkb19kaXYodGVtcDY0LCBGQUNUT1IxICogbjEgLSBGQUNUT1Iy
+KTsNCj4gPiAgCWRhdGEtPmMxID0gdGVtcDY0Ow0KPiA+IC0JZGF0YS0+YzIgPSBuMSAqIGRhdGEt
+PmMxICsgMTAwMCAqIHQxOw0KPiA+ICsJdGVtcDY0ID0gT0ZGU0VUOw0KPiA+ICsJZG9fZGl2KHRl
+bXA2NCwgMTAwMCk7DQo+ID4gKwlkYXRhLT5jMiA9IG4xICogZGF0YS0+YzEgKyAxMDAwICogdDEg
+KyB0ZW1wNjQ7DQo+IA0KPiBEZWFyIEJhaSBQaW5nLiBDYW4geW91IHBsZWFzZSBnZXQgYXQgbGVh
+c3Qgb24gVGVzdGVkLWJ5IHJlc3BvbnNlIGluIHRoZSBtYWlsaW5nDQo+IGxpc3QgZm9yIHRoaXMg
+cGF0Y2ggZnJvbSBvbmUgb2YgeW91ciBjby13b3JrZXJzLCBmb3IgZXhhbXBsZT8NCkNDOiBGdWNo
+dWFuIGxpdSwgIGhlIGlzIHJlc3BvbnNpYmxlIGZvciB0ZXN0aW5nIGl0Lg0KPiANCj4gTWVhbndo
+aWxlLCBhIGNvdXBsZSBvZiBxdWVzdGlvbnM6DQo+IA0KPiBEb2VzIHRoaXMgb2Zmc2V0IHdvcmsg
+d2VsbCBvbiBhbGwgY2hpcCBkaXN0cmlidXRpb24/DQpZZXMsIHRoaXMgb2Zmc2V0IGlzIGZvciBh
+bGwgY2hpcCBkaXN0cmlidXRpb24uDQo+IA0KPiBEbyB3ZSBuZWVkIGEgZGlmZmVyZW50IG9mZnNl
+dCBmb3IgZGlmZmVyZW50IHNvYyByZXZpc2lvbiA/IElzIHRoZSBzYW1lIG9mZnNldA0KPiBhcHBs
+aWNhYmxlIHRvIElNWDZRIGFuZCB0byBJTVg2U1g/DQpZZXMsIFRoZSBzYW1lIG9mZnNldCBmb3Ig
+YWxsIGkuTVg2IE9TQy4NCj4gDQo+IEkgc3Ryb25nIHJlY29tbWVuZCB5b3UgdG8gdHJhbnNsYXRl
+IHRoaXMgZHJpdmVyIHRvIGFkZCBvZi10aGVybWFsIHN1cHBvcnQuIFRoaXMNCj4gaXMgbW9yZSB0
+aGFuIGRlc2lyYWJsZSwgc3BlY2lhbGx5IGNvbnNpZGVyaW5nIHRoZSB0eXBlIG9mIGNoYW5nZXMg
+eW91IGFyZSBpbiBhDQo+IG5lZWQsIHN1Y2ggYXMgdGhlIG9uZSBhYm92ZS4gVGhpcyBpcyBiZXR0
+ZXIgZGVzY3JpYmVkIGluIERULCBub3QgaW4gdGhlIGRyaXZlcg0KPiBjb2RlLg0KeW91IGFyZSBy
+aWdodCwgdXNpbmcgb2YtdGhlcm1hbCBpcyBhIGJlc3Qgd2F5LCBJIGhhdmUgdHJpZWQgdG8gcmVm
+YWN0b3IgdGhpcyBkcml2ZXIgdG8NCnN1cHBvcnQgb2YtdGhlcm1hbCwgYnV0IHRoZXJlIGFyZSB0
+d28gaXNzdWVzIHRoYXQgYXJlIG5vdCBlYXN5IHRvIHRhY2tsZSwgb25lIGlzDQppbiB0aGUgb3Jp
+Z2luYWwgZHJpdmVyLCBldmVyeXRpbWUgd2UgbW9kaWZpZWQgdGhlICdwYXNzaXZlJyB0cmlwIHBv
+aW50IHRlbXAoc2V0X3RyaXBfdGVtcCksDQp3ZSB3aWxsIHVwZGF0ZSB0aGUgaGlnaF9hbGFybSB2
+YWx1ZSBjb3JyZXNwb25kaW5nbHksIHVzaW5nICdvZi10aGVybWFsJyBzdXBwb3J0LA0KdGhpcyBm
+dW5jdGlvbiBzZWVtcyBiZSBicm9rZW4uIEFub3RoZXIgaXNzdWUgaXMgdGhhdCAgVGltIEhhcnZl
+eSA8dGhhcnZleUBnYXRld29ya3MuY29tPg0KYWRkIHRlbXBlcmF0dXJlIGdyYWRlIGNoZWNrIGlu
+IGNvbW1pdCBhMjI5MWJhZGMzNTVkNSwgaWYgdXNpbmcgb2YtdGhlcm1hbCwgdGhpcyBwYXJ0IG9m
+IA0KZnVuY3Rpb24gd2lsbCBiZSBub3QgZWFzeSB0byB0YWNrbGUuIGxvb2sgZm9yd2FyZCB0byB5
+b3VyIGNvbW1lbnRzIGFuZCBzdWdnZXN0aW9ucy4NCj4gDQo+IA0KPiA+DQo+ID4gIAkvKiB1c2Ug
+T1RQIGZvciB0aGVybWFsIGdyYWRlICovDQo+ID4gIAlyZXQgPSByZWdtYXBfcmVhZChtYXAsIE9D
+T1RQX01FTTAsICZ2YWwpOw0KPiA+IC0tDQo+ID4gMS45LjENCj4gPg0K
