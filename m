@@ -1,123 +1,41 @@
-From: Fuchuan Liu <fuchuan.liu@nxp.com>
-Subject: RE: [PATCH] thermal: imx: update the temperature calibration data for
- imx6 soc
-Date: Mon, 4 Jan 2016 07:37:38 +0000
-Message-ID: <DB3PR04MB220865C7F3C8860CFE3C5ABEFF20@DB3PR04MB220.eurprd04.prod.outlook.com>
-References: <1450682876-26725-1-git-send-email-ping.bai@nxp.com>
- <20151231175048.GA13409@localhost.localdomain>
- <AM3PR04MB530F626B59E9860CB15536B87F20@AM3PR04MB530.eurprd04.prod.outlook.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-am1on0086.outbound.protection.outlook.com ([157.56.112.86]:60224
-	"EHLO emea01-am1-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751308AbcADIK7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Mon, 4 Jan 2016 03:10:59 -0500
-In-Reply-To: <AM3PR04MB530F626B59E9860CB15536B87F20@AM3PR04MB530.eurprd04.prod.outlook.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH v3 0/2] cpufreq: powernv: Redesign the presentation of throttle notification
+Date: Mon,  4 Jan 2016 14:55:25 +0530
+Message-ID: <1451899527-14359-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+References: <1451686914-3761-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1451686914-3761-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, pc@us.ibm.com, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Ping Bai <ping.bai@nxp.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: "rui.zhang@intel.com" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "tharvey@gateworks.com" <tharvey@gateworks.com>
 
-VGVzdGVkLWJ5OiBMZW8gTGl1IDxmdWNodWFuLmxpdUBueHAuY29tPg0KDQpCZXN0IFJlZ2FyZHMs
-DQpMZW8NCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBQaW5nIEJhaQ0K
-PiBTZW50OiBNb25kYXksIEphbnVhcnkgMDQsIDIwMTYgMzozMyBQTQ0KPiBUbzogRWR1YXJkbyBW
-YWxlbnRpbg0KPiBDYzogcnVpLnpoYW5nQGludGVsLmNvbTsgbGludXgtcG1Admdlci5rZXJuZWwu
-b3JnOyBGdWNodWFuIExpdTsNCj4gdGhhcnZleUBnYXRld29ya3MuY29tDQo+IFN1YmplY3Q6IFJF
-OiBbUEFUQ0hdIHRoZXJtYWw6IGlteDogdXBkYXRlIHRoZSB0ZW1wZXJhdHVyZSBjYWxpYnJhdGlv
-biBkYXRhIGZvcg0KPiBpbXg2IHNvYw0KPiANCj4gDQo+IA0KPiA+IC0tLS0tT3JpZ2luYWwgTWVz
-c2FnZS0tLS0tDQo+ID4gRnJvbTogRWR1YXJkbyBWYWxlbnRpbiBbbWFpbHRvOmVkdWJlenZhbEBn
-bWFpbC5jb21dDQo+ID4gU2VudDogMjAxNsTqMdTCMcjVIDE6NTENCj4gPiBUbzogUGluZyBCYWkg
-PHBpbmcuYmFpQG54cC5jb20+DQo+ID4gQ2M6IHJ1aS56aGFuZ0BpbnRlbC5jb207IGxpbnV4LXBt
-QHZnZXIua2VybmVsLm9yZw0KPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIHRoZXJtYWw6IGlteDog
-dXBkYXRlIHRoZSB0ZW1wZXJhdHVyZSBjYWxpYnJhdGlvbg0KPiA+IGRhdGEgZm9yDQo+ID4gaW14
-NiBzb2MNCj4gPg0KPiA+IE9uIE1vbiwgRGVjIDIxLCAyMDE1IGF0IDAzOjI3OjU2UE0gKzA4MDAs
-IEJhaSBQaW5nIHdyb3RlOg0KPiA+ID4gQWNjb3JkaW5nIHRvIHRoZSBkZXNpZ24gdGVhbToNCj4g
-PiA+DQo+ID4gPiBBZnRlciBhIHRob3JvdWdoIGFjY3VyYWN5IHN0dWR5IG9mIHRoZSBUZW1wIHNl
-bnNlIGNpcmN1aXQsd2UgZm91bmQNCj4gPiA+IHRoYXQgd2l0aCBvdXIgY3VycmVudCBlcXVhdGlv
-biwgYW4gYXZlcmFnZSBwYXJ0IGNhbiByZWFkIDcgZGVncmVlcw0KPiA+ID4gbG93ZXIgdGhhbiBh
-IGtub3duIGZvcmNlZCB0ZW1wZXJhdHVyZS4gV2UgYWxzbyBmb3VuZCBvdXQgdGhhdCB0aGUNCj4g
-PiA+IHN0YW5kYXJkIHZhcmlhbmNlIHdhcyBhcm91bmQgMkM7IHdoaWNoIGlzIHRoZSB0aWdodGVz
-dCBkaXN0cmlidXRpb24NCj4gPiA+IHRoYXQgd2UNCj4gPiBjb3VsZCBjcmVhdGUuDQo+ID4gPiBX
-ZSBuZWVkIHRvIGNoYW5nZSB0aGUgdGVtcCBzZW5zZSBlcXVhdGlvbiB0byBjZW50ZXIgdGhlIGF2
-ZXJhZ2UgcGFydA0KPiA+ID4gYXJvdW5kIHRoZSB0YXJnZXQgdGVtcGVyYXR1cmUuDQo+ID4gPg0K
-PiA+ID4gT2xkIEVxdWF0aW9uOg0KPiA+ID4NCj4gPiA+IFRlbXAgPSBUcm9vbSxjYWwgLSBzbG9w
-ZSooQ291bnQgbWVhc3VyZWQgLSBDb3VudCByb29tIGZ1c2UpIFdoZXJlDQo+ID4gPiBUcm9vbSxj
-YWwgPSAyNUMgYW5kIFNsb3BlID0gMC40Mjk3MTU3IC0gKDAuMDAxNTk3NCAqIENvdW50IHJvb20N
-Cj4gPiA+IGZ1c2UpDQo+ID4gPg0KPiA+ID4gTmV3IEVxdWF0aW9uOg0KPiA+ID4NCj4gPiA+IFRl
-bXAgPSBUcm9vbSxjYWwgLSBzbG9wZSooQ291bnQgbWVhc3VyZWQgLSBDb3VudCByb29tIGZ1c2Up
-ICtvZmZzZXQNCj4gPiA+IFdoZXJlIFRyb29tLGNhbCA9IDI1QyBhbmQgU2xvcGUgPSAwLjQxNDg0
-NjggLSAoMC4wMDE1NDIzICogQ291bnQNCj4gPiA+IHJvb20NCj4gPiA+IGZ1c2UpIE9mZnNldCA9
-IDMuNTgwNjYxDQo+ID4gPg0KPiA+ID4gU2lnbmVkLW9mZi1ieTogQmFpIFBpbmcgPHBpbmcuYmFp
-QG54cC5jb20+DQo+ID4gPiAtLS0NCj4gPiA+ICBkcml2ZXJzL3RoZXJtYWwvaW14X3RoZXJtYWwu
-YyB8IDIwICsrKysrKysrKysrKy0tLS0tLS0tDQo+ID4gPiAgMSBmaWxlIGNoYW5nZWQsIDEyIGlu
-c2VydGlvbnMoKyksIDggZGVsZXRpb25zKC0pDQo+ID4gPg0KPiA+ID4gZGlmZiAtLWdpdCBhL2Ry
-aXZlcnMvdGhlcm1hbC9pbXhfdGhlcm1hbC5jDQo+ID4gPiBiL2RyaXZlcnMvdGhlcm1hbC9pbXhf
-dGhlcm1hbC5jIGluZGV4IGM1NTQ3YmQuLjlmYjYxM2UgMTAwNjQ0DQo+ID4gPiAtLS0gYS9kcml2
-ZXJzL3RoZXJtYWwvaW14X3RoZXJtYWwuYw0KPiA+ID4gKysrIGIvZHJpdmVycy90aGVybWFsL2lt
-eF90aGVybWFsLmMNCj4gPiA+IEBAIC02OSw4ICs2OSw5IEBAIGVudW0gaW14X3RoZXJtYWxfdHJp
-cCB7DQo+ID4gPiAgI2RlZmluZSBJTVhfUEFTU0lWRV9ERUxBWQkJMTAwMA0KPiA+ID4NCj4gPiA+
-ICAjZGVmaW5lIEZBQ1RPUjAJCQkJMTAwMDAwMDANCj4gPiA+IC0jZGVmaW5lIEZBQ1RPUjEJCQkJ
-MTU5NzYNCj4gPiA+IC0jZGVmaW5lIEZBQ1RPUjIJCQkJNDI5NzE1Nw0KPiA+ID4gKyNkZWZpbmUg
-RkFDVE9SMQkJCQkxNTQyMw0KPiA+ID4gKyNkZWZpbmUgRkFDVE9SMgkJCQk0MTQ4NDY4DQo+ID4g
-PiArI2RlZmluZSBPRkZTRVQJCQkJMzU4MDY2MQ0KPiA+ID4NCj4gPiA+ICAjZGVmaW5lIFRFTVBN
-T05fSU1YNlEJCQkxDQo+ID4gPiAgI2RlZmluZSBURU1QTU9OX0lNWDZTWAkJCTINCj4gPiA+IEBA
-IC0zODUsMjMgKzM4NiwyNiBAQCBzdGF0aWMgaW50IGlteF9nZXRfc2Vuc29yX2RhdGEoc3RydWN0
-DQo+ID4gcGxhdGZvcm1fZGV2aWNlICpwZGV2KQ0KPiA+ID4gIAkgKiBEZXJpdmVkIGZyb20gbGlu
-ZWFyIGludGVycG9sYXRpb246DQo+ID4gPiAgCSAqIHNsb3BlID0gMC40Mjk3MTU3IC0gKDAuMDAx
-NTk3NiAqIDI1QyBmdXNlKQ0KPiA+ID4gIAkgKiBzbG9wZSA9IChGQUNUT1IyIC0gRkFDVE9SMSAq
-IG4xKSAvIEZBQ1RPUjANCj4gPiA+ICsJICogb2Zmc2V0ID0gT0ZGU0VUIC8gMTAwMDAwMA0KPiA+
-ID4gIAkgKiAoTm1lYXMgLSBuMSkgLyAoVG1lYXMgLSB0MSkgPSBzbG9wZQ0KPiA+ID4gIAkgKiBX
-ZSB3YW50IHRvIHJlZHVjZSB0aGlzIGRvd24gdG8gdGhlIG1pbmltdW0gY29tcHV0YXRpb24NCj4g
-PiBuZWNlc3NhcnkNCj4gPiA+ICAJICogZm9yIGVhY2ggdGVtcGVyYXR1cmUgcmVhZC4gIEFsc28s
-IHdlIHdhbnQgVG1lYXMgaW4gbWlsbGljZWxzaXVzDQo+ID4gPiAgCSAqIGFuZCB3ZSBkb24ndCB3
-YW50IHRvIGxvc2UgcHJlY2lzaW9uIGZyb20gaW50ZWdlciBkaXZpc2lvbi4gU28uLi4NCj4gPiA+
-IC0JICogVG1lYXMgPSAoTm1lYXMgLSBuMSkgLyBzbG9wZSArIHQxDQo+ID4gPiAtCSAqIG1pbGxp
-X1RtZWFzID0gMTAwMCAqIChObWVhcyAtIG4xKSAvIHNsb3BlICsgMTAwMCAqIHQxDQo+ID4gPiAt
-CSAqIG1pbGxpX1RtZWFzID0gLTEwMDAgKiAobjEgLSBObWVhcykgLyBzbG9wZSArIDEwMDAgKiB0
-MQ0KPiA+ID4gKwkgKiBUbWVhcyA9IChObWVhcyAtIG4xKSAvIHNsb3BlICsgdDEgKyBvZmZzZXQN
-Cj4gPiA+ICsJICogbWlsbGlfVG1lYXMgPSAxMDAwICogKE5tZWFzIC0gbjEpIC8gc2xvcGUgKyAx
-MDAwICogdDEgKyBPRkZTRVQgLyAxMDAwDQo+ID4gPiArCSAqIG1pbGxpX1RtZWFzID0gLTEwMDAg
-KiAobjEgLSBObWVhcykgLyBzbG9wZSArIDEwMDAgKiB0MSArIE9GRlNFVA0KPiA+ID4gKy8NCj4g
-PiA+ICsxMDAwDQo+ID4gPiAgCSAqIExldCBjb25zdGFudCBjMSA9ICgtMTAwMCAvIHNsb3BlKQ0K
-PiA+ID4gLQkgKiBtaWxsaV9UbWVhcyA9IChuMSAtIE5tZWFzKSAqIGMxICsgMTAwMCAqIHQxDQo+
-ID4gPiAtCSAqIExldCBjb25zdGFudCBjMiA9IG4xICpjMSArIDEwMDAgKiB0MQ0KPiA+ID4gKwkg
-KiBtaWxsaV9UbWVhcyA9IChuMSAtIE5tZWFzKSAqIGMxICsgMTAwMCAqIHQxICsgT0ZGU0VUIC8g
-MTAwMA0KPiA+ID4gKwkgKiBMZXQgY29uc3RhbnQgYzIgPSBuMSAqYzEgKyAxMDAwICogdDEgKyBP
-RkZTRVQgLyAxMDAwDQo+ID4gPiAgCSAqIG1pbGxpX1RtZWFzID0gYzIgLSBObWVhcyAqIGMxDQo+
-ID4gPiAgCSAqLw0KPiA+ID4gIAl0ZW1wNjQgPSBGQUNUT1IwOw0KPiA+ID4gIAl0ZW1wNjQgKj0g
-MTAwMDsNCj4gPiA+ICAJZG9fZGl2KHRlbXA2NCwgRkFDVE9SMSAqIG4xIC0gRkFDVE9SMik7DQo+
-ID4gPiAgCWRhdGEtPmMxID0gdGVtcDY0Ow0KPiA+ID4gLQlkYXRhLT5jMiA9IG4xICogZGF0YS0+
-YzEgKyAxMDAwICogdDE7DQo+ID4gPiArCXRlbXA2NCA9IE9GRlNFVDsNCj4gPiA+ICsJZG9fZGl2
-KHRlbXA2NCwgMTAwMCk7DQo+ID4gPiArCWRhdGEtPmMyID0gbjEgKiBkYXRhLT5jMSArIDEwMDAg
-KiB0MSArIHRlbXA2NDsNCj4gPg0KPiA+IERlYXIgQmFpIFBpbmcuIENhbiB5b3UgcGxlYXNlIGdl
-dCBhdCBsZWFzdCBvbiBUZXN0ZWQtYnkgcmVzcG9uc2UgaW4NCj4gPiB0aGUgbWFpbGluZyBsaXN0
-IGZvciB0aGlzIHBhdGNoIGZyb20gb25lIG9mIHlvdXIgY28td29ya2VycywgZm9yIGV4YW1wbGU/
-DQo+IENDOiBGdWNodWFuIGxpdSwgIGhlIGlzIHJlc3BvbnNpYmxlIGZvciB0ZXN0aW5nIGl0Lg0K
-PiA+DQo+ID4gTWVhbndoaWxlLCBhIGNvdXBsZSBvZiBxdWVzdGlvbnM6DQo+ID4NCj4gPiBEb2Vz
-IHRoaXMgb2Zmc2V0IHdvcmsgd2VsbCBvbiBhbGwgY2hpcCBkaXN0cmlidXRpb24/DQo+IFllcywg
-dGhpcyBvZmZzZXQgaXMgZm9yIGFsbCBjaGlwIGRpc3RyaWJ1dGlvbi4NCj4gPg0KPiA+IERvIHdl
-IG5lZWQgYSBkaWZmZXJlbnQgb2Zmc2V0IGZvciBkaWZmZXJlbnQgc29jIHJldmlzaW9uID8gSXMg
-dGhlIHNhbWUNCj4gPiBvZmZzZXQgYXBwbGljYWJsZSB0byBJTVg2USBhbmQgdG8gSU1YNlNYPw0K
-PiBZZXMsIFRoZSBzYW1lIG9mZnNldCBmb3IgYWxsIGkuTVg2IE9TQy4NCj4gPg0KPiA+IEkgc3Ry
-b25nIHJlY29tbWVuZCB5b3UgdG8gdHJhbnNsYXRlIHRoaXMgZHJpdmVyIHRvIGFkZCBvZi10aGVy
-bWFsDQo+ID4gc3VwcG9ydC4gVGhpcyBpcyBtb3JlIHRoYW4gZGVzaXJhYmxlLCBzcGVjaWFsbHkg
-Y29uc2lkZXJpbmcgdGhlIHR5cGUNCj4gPiBvZiBjaGFuZ2VzIHlvdSBhcmUgaW4gYSBuZWVkLCBz
-dWNoIGFzIHRoZSBvbmUgYWJvdmUuIFRoaXMgaXMgYmV0dGVyDQo+ID4gZGVzY3JpYmVkIGluIERU
-LCBub3QgaW4gdGhlIGRyaXZlciBjb2RlLg0KPiB5b3UgYXJlIHJpZ2h0LCB1c2luZyBvZi10aGVy
-bWFsIGlzIGEgYmVzdCB3YXksIEkgaGF2ZSB0cmllZCB0byByZWZhY3RvciB0aGlzIGRyaXZlcg0K
-PiB0byBzdXBwb3J0IG9mLXRoZXJtYWwsIGJ1dCB0aGVyZSBhcmUgdHdvIGlzc3VlcyB0aGF0IGFy
-ZSBub3QgZWFzeSB0byB0YWNrbGUsIG9uZQ0KPiBpcyBpbiB0aGUgb3JpZ2luYWwgZHJpdmVyLCBl
-dmVyeXRpbWUgd2UgbW9kaWZpZWQgdGhlICdwYXNzaXZlJyB0cmlwIHBvaW50DQo+IHRlbXAoc2V0
-X3RyaXBfdGVtcCksIHdlIHdpbGwgdXBkYXRlIHRoZSBoaWdoX2FsYXJtIHZhbHVlIGNvcnJlc3Bv
-bmRpbmdseSwNCj4gdXNpbmcgJ29mLXRoZXJtYWwnIHN1cHBvcnQsIHRoaXMgZnVuY3Rpb24gc2Vl
-bXMgYmUgYnJva2VuLiBBbm90aGVyIGlzc3VlIGlzIHRoYXQNCj4gVGltIEhhcnZleSA8dGhhcnZl
-eUBnYXRld29ya3MuY29tPiBhZGQgdGVtcGVyYXR1cmUgZ3JhZGUgY2hlY2sgaW4NCj4gY29tbWl0
-IGEyMjkxYmFkYzM1NWQ1LCBpZiB1c2luZyBvZi10aGVybWFsLCB0aGlzIHBhcnQgb2YgZnVuY3Rp
-b24gd2lsbCBiZSBub3QNCj4gZWFzeSB0byB0YWNrbGUuIGxvb2sgZm9yd2FyZCB0byB5b3VyIGNv
-bW1lbnRzIGFuZCBzdWdnZXN0aW9ucy4NCj4gPg0KPiA+DQo+ID4gPg0KPiA+ID4gIAkvKiB1c2Ug
-T1RQIGZvciB0aGVybWFsIGdyYWRlICovDQo+ID4gPiAgCXJldCA9IHJlZ21hcF9yZWFkKG1hcCwg
-T0NPVFBfTUVNMCwgJnZhbCk7DQo+ID4gPiAtLQ0KPiA+ID4gMS45LjENCj4gPiA+DQo=
+In POWER8, OCC(On-Chip-Controller) can throttle the frequency of the
+CPU when the chip crosses its thermal and power limits. Currently,
+powernv-cpufreq driver detects and reports this event as a console
+message. Some boxes may not sustain the max turbo frequency in all
+conditions and can be throttled frequently. This can lead to the
+flooding of console with throttle messages. So this patchset aims to
+redesign the presentation of this event via sysfs counters and
+tracepoints. 
+
+This patchset will add a perf trace point "power:powernv_throttle" and
+sysfs throttle counter stats in /sys/devices/system/cpu/cpufreq/chipN.
+
+Changes from v2:
+- Fixed kbuild test warning.
+drivers/cpufreq/powernv-cpufreq.c:609:2: warning: ignoring return
+value of 'kstrtoint', declared with attribute warn_unused_result
+[-Wunused-result]
+
+Shilpasri G Bhat (2):
+  cpufreq: powernv/tracing: Add powernv_throttle tracepoint
+  cpufreq: powernv: Redesign the presentation of throttle notification
+
+ drivers/cpufreq/powernv-cpufreq.c | 256 +++++++++++++++++++++++++++++++-------
+ include/trace/events/power.h      |  22 ++++
+ kernel/trace/power-traces.c       |   1 +
+ 3 files changed, 236 insertions(+), 43 deletions(-)
+
+-- 
+1.9.3
