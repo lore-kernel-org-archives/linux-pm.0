@@ -1,189 +1,91 @@
 From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH v3 2/4] devicetree: bindings: let thermal-sensor point to
- other thermal zones
-Date: Mon, 4 Jan 2016 15:17:09 +0100
-Message-ID: <20160104141709.GB19256@pengutronix.de>
-References: <1448464186-26289-1-git-send-email-javi.merino@arm.com>
- <1448464186-26289-3-git-send-email-javi.merino@arm.com>
+Subject: Re: [PATCH 2/3] thermal: Add Mediatek thermal controller support
+Date: Mon, 4 Jan 2016 15:19:40 +0100
+Message-ID: <20160104141940.GI13058@pengutronix.de>
+References: <1448883753-19068-1-git-send-email-s.hauer@pengutronix.de>
+ <1448883753-19068-3-git-send-email-s.hauer@pengutronix.de>
+ <20151217193332.GB7999@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:35665 "EHLO
+Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:39005 "EHLO
 	metis.ext.4.pengutronix.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751297AbcADOR0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Jan 2016 09:17:26 -0500
+	by vger.kernel.org with ESMTP id S1751309AbcADOTm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Jan 2016 09:19:42 -0500
 Content-Disposition: inline
-In-Reply-To: <1448464186-26289-3-git-send-email-javi.merino@arm.com>
+In-Reply-To: <20151217193332.GB7999@localhost.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Javi Merino <javi.merino@arm.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rui.zang@intel.com, edubezval@gmail.com, Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, devicetree@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org, kernel@pengutronix.de, linux-mediatek@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Matthias Brugger <matthias.bgg@gmail.com>
 
-On Wed, Nov 25, 2015 at 03:09:44PM +0000, Javi Merino wrote:
-> The thermal-sensor property of the thermal zone node accepts phandles to
-> thermal sensors.  However, thermal zones can be created as an
-> aggregation of other thermal zones.  Extend the thermal-sensors property
-> to allow phandles to other thermal zones.  This patch also adds an
-> example that showcases how a board thermal zone can be created from the
-> aggregation of the cpu, gpu and lcd thermal zones.
-> 
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Eduardo Valentin <edubezval@gmail.com>
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: Pawel Moll <pawel.moll@arm.com>
-> Cc: Mark Rutland <mark.rutland@arm.com>
-> Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
-> Cc: Kumar Gala <galak@codeaurora.org>
-> Cc: devicetree@vger.kernel.org
-> Signed-off-by: Javi Merino <javi.merino@arm.com>
-> ---
-> 
-> Notes:
->     Hi devicetree,
->     
->     Is it ok to extend the definition of the thermal-sensors property like
->     this?  IOW are phandles strongly typed?
-> 
->  .../devicetree/bindings/thermal/thermal.txt        | 154 ++++++++++++++++++++-
->  1 file changed, 151 insertions(+), 3 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/Documentation/devicetree/bindings/thermal/thermal.txt
-> index 41b817f7b670..52b7e9ae3b4d 100644
-> --- a/Documentation/devicetree/bindings/thermal/thermal.txt
-> +++ b/Documentation/devicetree/bindings/thermal/thermal.txt
-> @@ -145,9 +145,12 @@ Required properties:
->    Size: one cell
->  
->  - thermal-sensors:	A list of thermal sensor phandles and sensor specifier
-> -  Type: list of 	used while monitoring the thermal zone.
-> -  phandles + sensor
-> -  specifier
-> +  Type: list of 	used while monitoring the thermal zone. The phandles
-> +  phandles + sensor	can point to thermal sensors or other thermal zone
-> +  specifier		nodes. If it points to other thermal zone
-> +			nodes you should omit the sensor specifier
-> +			and set #thermal-sensor-cells to 0 for the
-> +			thermal zone.
->  
->  - trips:		A sub-node which is a container of only trip point nodes
->    Type: sub-node	required to describe the thermal zone.
-> @@ -603,3 +606,148 @@ thermal-zones {
->  The above example is a mix of previous examples, a sensor IP with several internal
->  sensors used to monitor different zones, one of them is composed by several sensors and
->  with different cooling devices.
-> +
-> +(e) Board thermal with stacked thermal zones
-> +
-> +Instead of setting up one thermal zone combining multiple thermal
-> +zones and multiple trip points for each cooling device, we can create
-> +a hierarchy of thermal zones.
-> +
-> +#include <dt-bindings/thermal/thermal.h>
-> +
-> +&i2c1 {
-> +	...
-> +	/*
-> +	 * An IC with several temperature sensor.
-> +	 */
-> +	adc_dummy: sensor@0x50 {
-> +		...
-> +		#thermal-sensor-cells = <1>; /* sensor internal ID */
-> +	};
-> +};
-> +
-> +thermal-zones {
-> +
-> +        cpu_thermal: cpu_thermal {
-> +		polling-delay-passive = <1000>; /* milliseconds */
-> +		polling-delay = <2500>; /* milliseconds */
-> +
-> +		sustainable-power = <2500>;
-> +
-> +		thermal-sensors = <&adc_dummy 0>
-> +
-> +		trips {
-> +			cpu_trip: cpu-trip {
-> +				temperature = <60000>; /* millicelsius */
-> +				hysteresis = <2000>; /* millicelsius */
-> +				type = "passive";
-> +			};
-> +                };
-> +
-> +		cooling-maps {
-> +			map0 {
-> +				trip = <&cpu_trip>;
-> +				cooling-device = <&cpu0 0 2>;
-> +			};
-> +                };
-> +        };
-> +
-> +        gpu_thermal: gpu_thermal {
-> +		polling-delay-passive = <1000>; /* milliseconds */
-> +		polling-delay = <2500>; /* milliseconds */
-> +
-> +		sustainable-power = <2500>;
-> +
-> +		thermal-sensors = <&adc_dummy 2>
-> +
-> +		trips {
-> +			gpu_trip: gpu-trip {
-> +				temperature = <55000>; /* millicelsius */
-> +				hysteresis = <2000>; /* millicelsius */
-> +				type = "passive";
-> +			}
-> +                };
-> +
-> +		cooling-maps {
-> +			map0 {
-> +				trip = <&gpu_trip>;
-> +				cooling-device = <&gpu0 0 2>;
-> +			};
-> +                };
-> +        };
-> +
-> +        lcd_thermal: lcd_thermal {
-> +		polling-delay-passive = <1000>; /* milliseconds */
-> +		polling-delay = <2500>; /* milliseconds */
-> +
-> +		sustainable-power = <2500>;
-> +
-> +		thermal-sensors = <&adc_dummy 1>
-> +
-> +		trips {
-> +			lcd_trip: lcp-trip {
-> +				temperature = <53000>; /* millicelsius */
-> +				hysteresis = <2000>; /* millicelsius */
-> +				type = "passive";
-> +			};
-> +                };
-> +
-> +		cooling-maps {
-> +			map0 {
-> +				trip = <&lcd_trip>;
-> +				cooling-device = <&lcd0 5 10>;
-> +			};
-> +                };
-> +        };
-> +
-> +	board_thermal: board-thermal {
-> +		polling-delay-passive = <1000>; /* milliseconds */
-> +		polling-delay = <2500>; /* milliseconds */
-> +
-> +		thermal-sensors = <&cpu_thermal &gpu_thermal &lcd_thermal>
+Hi Eduardo,
 
-This seems inconsistent. Why can a thermal zone only have multiple
-thermal sensors when they are thermal zones themselves? Either we assume
-that one thermal zone has a single sensor or we assume that it can have
-multiple sensors, but this should not depend on the zone being a sub zone
-or not.
+On Thu, Dec 17, 2015 at 11:33:33AM -0800, Eduardo Valentin wrote:
+> Sascha,
+> 
+> Yeah, sorry for the long delay. I was planing on applying this patch for
+> the next merge window, but it just came across one point, see below.
+> 
+> On Mon, Nov 30, 2015 at 12:42:32PM +0100, Sascha Hauer wrote:
+> > This adds support for the Mediatek thermal controller found on MT8173
+> > +static const int sensor_mux_values[MT8173_NUM_SENSORS] = { 0, 1, 2, 3, 16 };
+> > +
+> 
+> <big cut>
+> 
+> > +/*
+> > + * The MT8173 thermal controller has four banks. Each bank can read up to
+> > + * four temperature sensors simultaneously. The MT8173 has a total of 5
+> > + * temperature sensors. We use each bank to measure a certain area of the
+> > + * SoC. Since TS2 is located centrally in the SoC it is influenced by multiple
+> > + * areas, hence is used in different banks.
+> > + *
+> > + * The thermal core only gets the maximum temperature of all banks, so
+> > + * the bank concept wouldn't be necessary here. However, the SVS (Smart
+> > + * Voltage Scaling) unit makes its decisions based on the same bank
+> > + * data, and this indeed needs the temperatures of the individual banks
+> > + * for making better decisions.
+> > + */
+> > +static const struct mtk_thermal_bank_cfg bank_data[] = {
+> > +	{
+> > +		.num_sensors = 2,
+> > +		.sensors = { MT8173_TS2, MT8173_TS3 },
+> > +	}, {
+> > +		.num_sensors = 2,
+> > +		.sensors = { MT8173_TS2, MT8173_TS4 },
+> > +	}, {
+> > +		.num_sensors = 3,
+> > +		.sensors = { MT8173_TS1, MT8173_TS2, MT8173_TSABB },
+> > +	}, {
+> > +		.num_sensors = 1,
+> > +		.sensors = { MT8173_TS2 },
+> > +	},
+> > +};
+> 
+> Why can't we expose all these as thermal zones?
+> 
+> That should remove the policy of computing the maximum from this driver.
+> Please have a look on the work being done [1] to add grouping and
+> aggregation of thermal zones. With that in place, you should be a matter
+> of configuring the grouping and selecting max as the aggregation function,
+> from the thermal core, instead in the driver. Which should give the
+> system engineer, more flexibility to compose whatever policy based on
+> the exposed sensors.
 
-I think the thermal-sensors property should always point to one or
-multiple sensors. I see no point in "This property either points to
-exactly one sensor or multiple other thermal zones (from which we only
-use the temperature)"
+I think the aggregation of thermal zones is quite useful when it comes
+to putting different chips together to a system. I am not so sure how
+useful it is to expose different thermal zones of a single SoC to the
+device tree.
+Currently the only control knob we have is the CPU frequency. When any
+of the sensors on the SoC gets too hot then the only thing we can do is
+to decrease the CPU frequency. This does not leave much space for
+configuration in the device tree.
+What I need to be able is to attach multiple sensors to one thermal
+zone. The aggregation patch series only partly solves that and I think
+is inconsistent, but I commented on the series directly.
 
 Sascha
-
 
 -- 
 Pengutronix e.K.                           |                             |
