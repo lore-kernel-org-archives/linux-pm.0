@@ -1,37 +1,50 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq-dt: fix handling regulator_get_voltage result
-Date: Mon, 4 Jan 2016 10:58:56 +0530
-Message-ID: <20160104052856.GA27177@ubuntu>
-References: <1451474324-15481-1-git-send-email-a.hajda@samsung.com>
+Subject: Re: [PATCH] cpufreq: ondemand: Set MIN_FREQUENCY_UP_THRESHOLD to 1
+Date: Mon, 4 Jan 2016 11:26:51 +0530
+Message-ID: <20160104055651.GB27177@ubuntu>
+References: <9645d54c1bc65ce69ecfd5e92259ead7699afc82.1451880670.git.yu.c.chen@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f41.google.com ([209.85.220.41]:36575 "EHLO
-	mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750759AbcADF3A (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 4 Jan 2016 00:29:00 -0500
-Received: by mail-pa0-f41.google.com with SMTP id yy13so99133823pab.3
-        for <linux-pm@vger.kernel.org>; Sun, 03 Jan 2016 21:29:00 -0800 (PST)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1451474324-15481-1-git-send-email-a.hajda@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <9645d54c1bc65ce69ecfd5e92259ead7699afc82.1451880670.git.yu.c.chen@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, sworddragon2@aol.com
 List-Id: linux-pm@vger.kernel.org
-To: Andrzej Hajda <a.hajda@samsung.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, "open list:CPU FREQUENCY DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-On 30-12-15, 12:18, Andrzej Hajda wrote:
-> The function can return negative values so it should be assigned
-> to signed type.
+On 04-01-16, 12:14, Chen Yu wrote:
+> Currently the minimal up_threshold is 11, and user may want to
+> use a smaller minimal up_threshold for performance tuning,
+> so MIN_FREQUENCY_UP_THRESHOLD could be set to 1 because:
 > 
-> The problem has been detected using proposed semantic patch
-> scripts/coccinelle/tests/unsigned_lesser_than_zero.cocci [1].
+> 1. Current systems wouldn't be affected as they have already
+>    a value >= 11.
+> 2. New systems with a default kernel would keep still the default
+>    value that is >= 11.
 > 
-> [1]: http://permalink.gmane.org/gmane.linux.kernel/2038576
+> Users now have the advantage that they can make their own decisions
+> and customize the 'trip point' to switch to the max frequency.
 > 
-> Signed-off-by: Andrzej Hajda <a.hajda@samsung.com>
+> Link: https://bugzilla.kernel.org/show_bug.cgi?id=65501
+> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
 > ---
->  drivers/cpufreq/cpufreq-dt.c | 5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
+>  drivers/cpufreq/cpufreq_ondemand.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+> index 03ac6ce..2a093b5 100644
+> --- a/drivers/cpufreq/cpufreq_ondemand.c
+> +++ b/drivers/cpufreq/cpufreq_ondemand.c
+> @@ -24,7 +24,7 @@
+>  #define MAX_SAMPLING_DOWN_FACTOR		(100000)
+>  #define MICRO_FREQUENCY_UP_THRESHOLD		(95)
+>  #define MICRO_FREQUENCY_MIN_SAMPLE_RATE		(10000)
+> -#define MIN_FREQUENCY_UP_THRESHOLD		(11)
+> +#define MIN_FREQUENCY_UP_THRESHOLD		(1)
+>  #define MAX_FREQUENCY_UP_THRESHOLD		(100)
+>  
+>  static DEFINE_PER_CPU(struct od_cpu_dbs_info_s, od_cpu_dbs_info);
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
