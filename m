@@ -1,50 +1,35 @@
-From: Javi Merino <javi.merino@arm.com>
-Subject: Re: [PATCH] thermal: cpu_cooling: fix out of bounds access in
- time_in_idle
-Date: Tue, 5 Jan 2016 19:19:26 +0000
-Message-ID: <20160105191925.GD3163@e104805>
-References: <1450529677-23426-1-git-send-email-javi.merino@arm.com>
- <20151221031940.GB5532@ubuntu>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH] PM / OPP: Use snprintf() instead of sprintf()
+Date: Tue, 5 Jan 2016 11:52:47 -0800
+Message-ID: <20160105195247.GD22188@codeaurora.org>
+References: <dd64d12079ec788d337b17840e54f0fc60d3b8ce.1451990751.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:60105 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751498AbcAETT3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 5 Jan 2016 14:19:29 -0500
+Received: from smtp.codeaurora.org ([198.145.29.96]:44651 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752045AbcAETwt (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Jan 2016 14:52:49 -0500
 Content-Disposition: inline
-In-Reply-To: <20151221031940.GB5532@ubuntu>
+In-Reply-To: <dd64d12079ec788d337b17840e54f0fc60d3b8ce.1451990751.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Pavel Machek <pavel@ucw.cz>, Viresh Kumar <vireshk@kernel.org>
 
-Eduardo, Rui,
-
-On Mon, Dec 21, 2015 at 08:49:40AM +0530, Viresh Kumar wrote:
-> On 19-12-15, 12:54, Javi Merino wrote:
-> > In __cpufreq_cooling_register() we allocate the arrays for time_in_idle
-> > and time_in_idle_timestamp to be as big as the number of cpus in this
-> > cpufreq device.  However, in get_load() we access this array using the
-> > cpu number as index, which can result in an out of bound access.
-> > 
-> > Index time_in_idle{,_timestamp} using the index in the cpufreq_device's
-> > allowed_cpus mask, as we do for the load_cpu array in
-> > cpufreq_get_requested_power()
-> > 
-> > Reported-by: Nicolas Boichat <drinkcat@chromium.org>
-> > Cc: Amit Daniel Kachhap <amit.kachhap@gmail.com>
-> > Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> > Cc: Zhang Rui <rui.zhang@intel.com>
-> > Cc: Eduardo Valentin <edubezval@gmail.com>
-> > Signed-off-by: Javi Merino <javi.merino@arm.com>
-> > ---
-> >  drivers/thermal/cpu_cooling.c | 14 ++++++++------
-> >  1 file changed, 8 insertions(+), 6 deletions(-)
+On 01/05, Viresh Kumar wrote:
+> sprintf() can access memory outside of the range of the character array,
+> and is risky in some situations. The driver specified prop_name string
+> can be longer than NAME_MAX here (only an attacker will do that though)
+> and so blindly copying it into the character array of size NAME_MAX
+> isn't safe. Instead we must use snprintf() here.
 > 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
 
-If there are no more objections, can you pick this up?
+Acked-by: Stephen Boyd <sboyd@codeaurora.org>
 
-Thanks,
-Javi
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
