@@ -1,62 +1,47 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 3/3] ARM64: dts: mt8173: Add CPU OPP, clock and
- regulator supply properties
-Date: Tue, 5 Jan 2016 15:54:55 +0530
-Message-ID: <20160105102455.GA30120@ubuntu>
-References: <1451197318-12418-1-git-send-email-pi-cheng.chen@linaro.org>
- <1451197318-12418-4-git-send-email-pi-cheng.chen@linaro.org>
- <20151228031340.GD3598@ubuntu>
- <3310024.mO5K6yH9vU@wuerfel>
+From: liu.xiang6@zte.com.cn
+Subject: [PATCH] power: bq27xxx_battery: Fix bq27541 AveragePower register address
+Date: Tue, 5 Jan 2016 18:13:01 +0800
+Message-ID: <OF07DB7585.0626EC7F-ON48257F31.0037FBDF-48257F31.00381D53@zte.com.cn>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f53.google.com ([209.85.220.53]:33455 "EHLO
-	mail-pa0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751415AbcAEKZA (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Jan 2016 05:25:00 -0500
-Received: by mail-pa0-f53.google.com with SMTP id cy9so213191765pac.0
-        for <linux-pm@vger.kernel.org>; Tue, 05 Jan 2016 02:25:00 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <3310024.mO5K6yH9vU@wuerfel>
+Received: from mx7.zte.com.cn ([202.103.147.169]:40023 "EHLO zte.com.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751456AbcAEKaY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 5 Jan 2016 05:30:24 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-arm-kernel@lists.infradead.org, Pi-Cheng Chen <pi-cheng.chen@linaro.org>, devicetree@vger.kernel.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Michael Turquette <mturquette@baylibre.com>, Daniel Kurtz <djkurtz@chromium.org>, linux-mediatek@lists.infradead.org, Matthias Brugger <matthias.bgg@gmail.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: linux-pm@vger.kernel.org
+Cc: pali.rohar@gmail.com
 
-On 05-01-16, 11:21, Arnd Bergmann wrote:
-> On Monday 28 December 2015 08:43:40 Viresh Kumar wrote:
-> > On 27-12-15, 14:21, Pi-Cheng Chen wrote:
-> > > Add operating-points-v2, clock, and regulator supply properties
-> > > required by mt8173-cpufreq driver to enable it.
-> > > 
-> > > Signed-off-by: Pi-Cheng Chen <pi-cheng.chen@linaro.org>
-> > > ---
-> > > This patch is based on the patch[1] that adds underlying clock MUX for
-> > > MT8173 which is needed by mt8173-cpufreq driver but not yet picked.
-> > > 
-> > > [1] http://article.gmane.org/gmane.linux.kernel.clk/325
-> > > ---
-> > >  arch/arm64/boot/dts/mediatek/mt8173-evb.dts | 18 ++++++
-> > >  arch/arm64/boot/dts/mediatek/mt8173.dtsi    | 90 +++++++++++++++++++++++++++++
-> > >  2 files changed, 108 insertions(+)
-> > 
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > 
-> 
-> This patch is now in linux-next through Rafael's pm tree, and it breaks the
-> arm64 build:
-> 
->         arm64-defconfig
-> Error: ../arch/arm64/boot/dts/mediatek/mt8173.dtsi:132.24-25 syntax error
-> 
-> 
-> Please revert.
-> 
-> In the future, please send all dts changes through the proper maintainer
-> channels (-> Mattias -> arm-soc), and make sure they actually build.
-
-Rafael has already reverted that, AFAIK, after Mark Brown reported the
-build issue.
-
--- 
-viresh
+RnJvbSA3ZGZkYWQ4NTk3ZTBjYmI1MzI0NDU1YWYwYWNkN2NmYTIzZDIzMzc2IE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQ0KRnJvbTogTGl1IFhpYW5nIDxsaXUueGlhbmc2QHp0ZS5jb20uY24+DQpE
+YXRlOiBUdWUsIDE1IERlYyAyMDE1IDEwOjAwOjAzICswODAwDQpTdWJqZWN0OiBbUEFUQ0hdIHBv
+d2VyOiBicTI3eHh4X2JhdHRlcnk6IEZpeCBicTI3NTQxIEF2ZXJhZ2VQb3dlciByZWdpc3RlciAN
+CmFkZHJlc3MNCg0KVGhlIGF2ZXJhZ2UgcG93ZXIgcmVnaXN0ZXIgYWRkcmVzcyAweDc2IGluIGJx
+Mjc1NDEgcmVzdWx0cyBpbiBhbiBlcnJvcjoNCiAgICAgICAgYnEyN3h4eC1iYXR0ZXJ5IDItMDA1
+NTogZXJyb3IgcmVhZGluZyBhdmVyYWdlIHBvd2VyIHJlZ2lzdGVyICAxMDogDQotMTENCg0KQWNj
+b3JkaW5nIHRvIHRoZSBicTI3NTQxIGRhdGFzaGVldCwgQXZlcmFnZVBvd2VyIHJlZ2lzdGVyIGFk
+ZHJlc3MgaXMgMHgyNC4NCg0KU2lnbmVkLW9mZi1ieTogTGl1IFhpYW5nIDxsaXUueGlhbmc2QHp0
+ZS5jb20uY24+DQpSZXZpZXdlZC1ieTogTHUgWmhvbmdKdW4gPGx1Lnpob25nanVuQHp0ZS5jb20u
+Y24+DQoNCi0tLQ0KIGRyaXZlcnMvcG93ZXIvYnEyN3h4eF9iYXR0ZXJ5LmMgfCAgICAyICstDQog
+MSBmaWxlcyBjaGFuZ2VkLCAxIGluc2VydGlvbnMoKyksIDEgZGVsZXRpb25zKC0pDQoNCmRpZmYg
+LS1naXQgYS9kcml2ZXJzL3Bvd2VyL2JxMjd4eHhfYmF0dGVyeS5jIA0KYi9kcml2ZXJzL3Bvd2Vy
+L2JxMjd4eHhfYmF0dGVyeS5jDQppbmRleCA4ODAyMzNjLi42MzNmOTZkIDEwMDY0NA0KLS0tIGEv
+ZHJpdmVycy9wb3dlci9icTI3eHh4X2JhdHRlcnkuYw0KKysrIGIvZHJpdmVycy9wb3dlci9icTI3
+eHh4X2JhdHRlcnkuYw0KQEAgLTI0Miw3ICsyNDIsNyBAQCBzdGF0aWMgdTggYnEyNzU0MV9yZWdz
+W10gPSB7DQogICAgICAgIElOVkFMSURfUkVHX0FERFIsICAgICAgIC8qIEFFIC0gTkEgICAgICAq
+Lw0KICAgICAgICAweDJjLCAgIC8qIFNPQyhSU09DKSAgICAqLw0KICAgICAgICAweDNjLCAgIC8q
+IERDQVAgICAgICAgICAqLw0KLSAgICAgICAweDc2LCAgIC8qIEFQICAgICAgICAgICAqLw0KKyAg
+ICAgICAweDI0LCAgIC8qIEFQICAgICAgICAgICAqLw0KIH07DQoNCiBzdGF0aWMgdTggYnEyNzU0
+NV9yZWdzW10gPSB7DQotLQ0KMS43LjENCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQpaVEUgSW5mb3JtYXRpb24gU2VjdXJpdHkgTm90aWNl
+OiBUaGUgaW5mb3JtYXRpb24gY29udGFpbmVkIGluIHRoaXMgbWFpbCAoYW5kIGFueSBhdHRhY2ht
+ZW50IHRyYW5zbWl0dGVkIGhlcmV3aXRoKSBpcyBwcml2aWxlZ2VkIGFuZCBjb25maWRlbnRpYWwg
+YW5kIGlzIGludGVuZGVkIGZvciB0aGUgZXhjbHVzaXZlIHVzZSBvZiB0aGUgYWRkcmVzc2VlKHMp
+LiAgSWYgeW91IGFyZSBub3QgYW4gaW50ZW5kZWQgcmVjaXBpZW50LCBhbnkgZGlzY2xvc3VyZSwg
+cmVwcm9kdWN0aW9uLCBkaXN0cmlidXRpb24gb3Igb3RoZXIgZGlzc2VtaW5hdGlvbiBvciB1c2Ug
+b2YgdGhlIGluZm9ybWF0aW9uIGNvbnRhaW5lZCBpcyBzdHJpY3RseSBwcm9oaWJpdGVkLiAgSWYg
+eW91IGhhdmUgcmVjZWl2ZWQgdGhpcyBtYWlsIGluIGVycm9yLCBwbGVhc2UgZGVsZXRlIGl0IGFu
+ZCBub3RpZnkgdXMgaW1tZWRpYXRlbHkuDQo=
