@@ -1,55 +1,36 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: ondemand: Set MIN_FREQUENCY_UP_THRESHOLD to 1
-Date: Tue, 05 Jan 2016 14:02:56 +0100
-Message-ID: <24213887.mlBXLjjmuO@vostro.rjw.lan>
-References: <9645d54c1bc65ce69ecfd5e92259ead7699afc82.1451880670.git.yu.c.chen@intel.com> <20160104055651.GB27177@ubuntu>
+Subject: Re: [PATCH] cpufreq-dt: fix handling regulator_get_voltage result
+Date: Tue, 05 Jan 2016 14:03:22 +0100
+Message-ID: <2016662.ItF90d0Nnq@vostro.rjw.lan>
+References: <1451474324-15481-1-git-send-email-a.hajda@samsung.com> <20160104052856.GA27177@ubuntu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:60840 "HELO
+Received: from v094114.home.net.pl ([79.96.170.134]:47252 "HELO
 	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751590AbcAEMcQ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Jan 2016 07:32:16 -0500
-In-Reply-To: <20160104055651.GB27177@ubuntu>
+	with SMTP id S1752426AbcAEMcm (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Jan 2016 07:32:42 -0500
+In-Reply-To: <20160104052856.GA27177@ubuntu>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Chen Yu <yu.c.chen@intel.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, sworddragon2@aol.com
+To: Viresh Kumar <viresh.kumar@linaro.org>, Andrzej Hajda <a.hajda@samsung.com>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>, "open list:CPU FREQUENCY DRIVERS" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-On Monday, January 04, 2016 11:26:51 AM Viresh Kumar wrote:
-> On 04-01-16, 12:14, Chen Yu wrote:
-> > Currently the minimal up_threshold is 11, and user may want to
-> > use a smaller minimal up_threshold for performance tuning,
-> > so MIN_FREQUENCY_UP_THRESHOLD could be set to 1 because:
+On Monday, January 04, 2016 10:58:56 AM Viresh Kumar wrote:
+> On 30-12-15, 12:18, Andrzej Hajda wrote:
+> > The function can return negative values so it should be assigned
+> > to signed type.
 > > 
-> > 1. Current systems wouldn't be affected as they have already
-> >    a value >= 11.
-> > 2. New systems with a default kernel would keep still the default
-> >    value that is >= 11.
+> > The problem has been detected using proposed semantic patch
+> > scripts/coccinelle/tests/unsigned_lesser_than_zero.cocci [1].
 > > 
-> > Users now have the advantage that they can make their own decisions
-> > and customize the 'trip point' to switch to the max frequency.
+> > [1]: http://permalink.gmane.org/gmane.linux.kernel/2038576
 > > 
-> > Link: https://bugzilla.kernel.org/show_bug.cgi?id=65501
-> > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> > Signed-off-by: Andrzej Hajda <a.hajda@samsung.com>
 > > ---
-> >  drivers/cpufreq/cpufreq_ondemand.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-> > index 03ac6ce..2a093b5 100644
-> > --- a/drivers/cpufreq/cpufreq_ondemand.c
-> > +++ b/drivers/cpufreq/cpufreq_ondemand.c
-> > @@ -24,7 +24,7 @@
-> >  #define MAX_SAMPLING_DOWN_FACTOR		(100000)
-> >  #define MICRO_FREQUENCY_UP_THRESHOLD		(95)
-> >  #define MICRO_FREQUENCY_MIN_SAMPLE_RATE		(10000)
-> > -#define MIN_FREQUENCY_UP_THRESHOLD		(11)
-> > +#define MIN_FREQUENCY_UP_THRESHOLD		(1)
-> >  #define MAX_FREQUENCY_UP_THRESHOLD		(100)
-> >  
-> >  static DEFINE_PER_CPU(struct od_cpu_dbs_info_s, od_cpu_dbs_info);
+> >  drivers/cpufreq/cpufreq-dt.c | 5 +++--
+> >  1 file changed, 3 insertions(+), 2 deletions(-)
 > 
 > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
