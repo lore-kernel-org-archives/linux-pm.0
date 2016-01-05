@@ -1,39 +1,47 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH v2] drivers: qcom: spm: avoid module usage in non-modular
- SPM driver
-Date: Tue, 5 Jan 2016 06:45:24 +0100
-Message-ID: <568B5874.5060101@linaro.org>
-References: <1451930308-8087-1-git-send-email-lina.iyer@linaro.org>
+From: liu.xiang6@zte.com.cn
+Subject: [PATCH] power: bq27xxx_battery: Fix bq27541 AveragePower register address
+Date: Tue, 5 Jan 2016 15:04:10 +0800
+Message-ID: <OF898558C2.8042625F-ON48257F31.00268945-48257F31.0026D30B@zte.com.cn>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
-	format=flowed
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <1451930308-8087-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>, andy.gross@linaro.org, sboyd@codeaurora.org
-Cc: linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, Paul Gortmaker <paul.gortmaker@windriver.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx5.zte.com.cn ([63.217.80.70]:60093 "EHLO mx5.zte.com.cn"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751472AbcAEHTr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 5 Jan 2016 02:19:47 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: pali.rohar@gmail.com
 
-On 01/04/2016 06:58 PM, Lina Iyer wrote:
-> SPM driver provides cpuidle support on some QC SoC's. The functionali=
-ty
-> is non-modular and there is no need for module support. Convert modul=
-e
-> platform init to builtin platform driver init. The driver functionali=
-ty
-> is not affected by this change.
->
-> Cc: Paul Gortmaker <paul.gortmaker@windriver.com>
-> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-> ---
-
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-
---=20
-  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
-r ARM SoCs
-
-=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+RnJvbSA3ZGZkYWQ4NTk3ZTBjYmI1MzI0NDU1YWYwYWNkN2NmYTIzZDIzMzc2IE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQ0KRnJvbTogTGl1IFhpYW5nIDxsaXUueGlhbmc2QHp0ZS5jb20uY24+DQpE
+YXRlOiBUdWUsIDE1IERlYyAyMDE1IDEwOjAwOjAzICswODAwDQpTdWJqZWN0OiBbUEFUQ0hdIHBv
+d2VyOiBicTI3eHh4X2JhdHRlcnk6IEZpeCBicTI3NTQxIEF2ZXJhZ2VQb3dlciByZWdpc3RlciAN
+CmFkZHJlc3MNCg0KVGhlIGF2ZXJhZ2UgcG93ZXIgcmVnaXN0ZXIgYWRkcmVzcyAweDc2IGluIGJx
+Mjc1NDEgcmVzdWx0cyBpbiBhbiBlcnJvcjoNCiAgICAgICAgYnEyN3h4eC1iYXR0ZXJ5IDItMDA1
+NTogZXJyb3IgcmVhZGluZyBhdmVyYWdlIHBvd2VyIHJlZ2lzdGVyICAxMDogDQotMTENCg0KQWNj
+b3JkaW5nIHRvIHRoZSBicTI3NTQxIGRhdGFzaGVldCwgQXZlcmFnZVBvd2VyIHJlZ2lzdGVyIGFk
+ZHJlc3MgaXMgMHgyNC4NCg0KU2lnbmVkLW9mZi1ieTogTGl1IFhpYW5nIDxsaXUueGlhbmc2QHp0
+ZS5jb20uY24+DQpSZXZpZXdlZC1ieTogTHUgWmhvbmdKdW4gPGx1Lnpob25nanVuQHp0ZS5jb20u
+Y24+DQoNCi0tLQ0KIGRyaXZlcnMvcG93ZXIvYnEyN3h4eF9iYXR0ZXJ5LmMgfCAgICAyICstDQog
+MSBmaWxlcyBjaGFuZ2VkLCAxIGluc2VydGlvbnMoKyksIDEgZGVsZXRpb25zKC0pDQoNCmRpZmYg
+LS1naXQgYS9kcml2ZXJzL3Bvd2VyL2JxMjd4eHhfYmF0dGVyeS5jIA0KYi9kcml2ZXJzL3Bvd2Vy
+L2JxMjd4eHhfYmF0dGVyeS5jDQppbmRleCA4ODAyMzNjLi42MzNmOTZkIDEwMDY0NA0KLS0tIGEv
+ZHJpdmVycy9wb3dlci9icTI3eHh4X2JhdHRlcnkuYw0KKysrIGIvZHJpdmVycy9wb3dlci9icTI3
+eHh4X2JhdHRlcnkuYw0KQEAgLTI0Miw3ICsyNDIsNyBAQCBzdGF0aWMgdTggYnEyNzU0MV9yZWdz
+W10gPSB7DQogICAgICAgIElOVkFMSURfUkVHX0FERFIsICAgICAgIC8qIEFFIC0gTkEgICAgICAq
+Lw0KICAgICAgICAweDJjLCAgIC8qIFNPQyhSU09DKSAgICAqLw0KICAgICAgICAweDNjLCAgIC8q
+IERDQVAgICAgICAgICAqLw0KLSAgICAgICAweDc2LCAgIC8qIEFQICAgICAgICAgICAqLw0KKyAg
+ICAgICAweDI0LCAgIC8qIEFQICAgICAgICAgICAqLw0KIH07DQoNCiBzdGF0aWMgdTggYnEyNzU0
+NV9yZWdzW10gPSB7DQotLQ0KMS43LjENCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQpaVEUgSW5mb3JtYXRpb24gU2VjdXJpdHkgTm90aWNl
+OiBUaGUgaW5mb3JtYXRpb24gY29udGFpbmVkIGluIHRoaXMgbWFpbCAoYW5kIGFueSBhdHRhY2ht
+ZW50IHRyYW5zbWl0dGVkIGhlcmV3aXRoKSBpcyBwcml2aWxlZ2VkIGFuZCBjb25maWRlbnRpYWwg
+YW5kIGlzIGludGVuZGVkIGZvciB0aGUgZXhjbHVzaXZlIHVzZSBvZiB0aGUgYWRkcmVzc2VlKHMp
+LiAgSWYgeW91IGFyZSBub3QgYW4gaW50ZW5kZWQgcmVjaXBpZW50LCBhbnkgZGlzY2xvc3VyZSwg
+cmVwcm9kdWN0aW9uLCBkaXN0cmlidXRpb24gb3Igb3RoZXIgZGlzc2VtaW5hdGlvbiBvciB1c2Ug
+b2YgdGhlIGluZm9ybWF0aW9uIGNvbnRhaW5lZCBpcyBzdHJpY3RseSBwcm9oaWJpdGVkLiAgSWYg
+eW91IGhhdmUgcmVjZWl2ZWQgdGhpcyBtYWlsIGluIGVycm9yLCBwbGVhc2UgZGVsZXRlIGl0IGFu
+ZCBub3RpZnkgdXMgaW1tZWRpYXRlbHkuDQo=
