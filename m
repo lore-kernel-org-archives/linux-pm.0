@@ -1,106 +1,77 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v3 2/2] ARM64: kernel: PSCI: move PSCI idle management
- code to drivers/firmware
-Date: Tue, 5 Jan 2016 15:28:09 +0000
-Message-ID: <20160105152809.GA17461@red-moon>
-References: <1445011379-8787-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1445011379-8787-3-git-send-email-lorenzo.pieralisi@arm.com>
- <20160105105900.GT19062@n2100.arm.linux.org.uk>
- <20160105123134.GA1821@red-moon>
- <20160105125142.GV19062@n2100.arm.linux.org.uk>
- <20160105132701.GA17214@red-moon>
- <20160105133447.GW19062@n2100.arm.linux.org.uk>
+From: Javi Merino <javi.merino@arm.com>
+Subject: Re: [PATCH v2] thermal: re-calculate k_po/k_pu when update
+ sustainable power
+Date: Tue, 5 Jan 2016 16:31:32 +0000
+Message-ID: <20160105163132.GA3163@e104805>
+References: <1451471920-2148-1-git-send-email-leo.yan@linaro.org>
+ <20151231172125.GA11863@localhost.localdomain>
+ <20160101000347.GA2572@leoy-linaro>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:58779 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:59204 "EHLO foss.arm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750846AbcAEP0h (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 5 Jan 2016 10:26:37 -0500
+	id S1751631AbcAEQbg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 5 Jan 2016 11:31:36 -0500
 Content-Disposition: inline
-In-Reply-To: <20160105133447.GW19062@n2100.arm.linux.org.uk>
+In-Reply-To: <20160101000347.GA2572@leoy-linaro>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, Jisheng Zhang <jszhang@marvell.com>
+To: Leo Yan <leo.yan@linaro.org>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Punit Agrawal <Punit.Agrawal@arm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tue, Jan 05, 2016 at 01:34:47PM +0000, Russell King - ARM Linux wrote:
-> On Tue, Jan 05, 2016 at 01:27:01PM +0000, Lorenzo Pieralisi wrote:
-> > On Tue, Jan 05, 2016 at 12:51:42PM +0000, Russell King - ARM Linux wrote:
-> > > On ARM, that option is CONFIG_ARM_CPU_SUSPEND - that option solely
-> > > controls whether cpu_suspend/resume are present.  ARM64 just needs
-> > > to adopt this, and use that to control the code which is built in
-> > > drivers/firmware/psci.c.
-> > > 
-> > > However, I don't think it's as simple as just adding that to ARM64,
-> > > as you need to be careful of the Kconfig dependencies.  For ARM,
-> > > this is:
-> > > 
-> > > Generic code:
-> > > - SUSPEND defaults to y, depends on ARCH_SUSPEND_POSSIBLE (which is set for
-> > >    any cpu_suspend enabled CPU.)
-> > > - PM_SLEEP if SUSPEND || HIBERNATE_CALLBACKS
-> > > ARM sets:
-> > > - CPU_PM if SUSPEND || CPU_IDLE.
-> > > - ARM_CPU_SUSPEND if PM_SLEEP || BL_SWITCHER || (ARCH_PXA && PM)
-> > > 
-> > > What this means is that CPU_PM is entirely independent of
-> > > ARM_CPU_SUSPEND.  One does not imply the other, so I think you need
-> > > to consider carefully what ifdef you need in drivers/firmware/psci.c.
-> > > 
-> > > This is why I think fixing this is not simple as it first looks.
-> > 
-> > Not saying it is nice, but unless I find a cleaner way I was keener on
-> > adding a silent config entry in drivers/firmware, say:
-> > 
-> > config ARM_PSCI_CPU_IDLE
-> > 	def_bool ARM_PSCI_FW && CPU_IDLE
-> > 	select ARM_CPU_SUSPEND if ARM
-> > 
-> > and use that to either guard the code or stub it out and compile it
-> > if that config option is enabled.
+On Fri, Jan 01, 2016 at 08:03:47AM +0800, Leo Yan wrote:
+> Hi Eduardo,
 > 
-> That immediately worries me, because it bypasses the CPU dependencies
-> for ARM_CPU_SUSPEND implicitly applied via ARCH_SUSPEND_POSSIBLE.  I'd
-> prefer instead:
+> Thanks for review.
 > 
-> config ARM_PSCI_CPU_IDLE
-> 	def_bool ARM_PSCI_FW && CPU_IDLE && (!ARM || ARM_CPU_SUSPEND)
-
-Ok, I think the above is reasonable, only question I have is if on ARM:
-
-CONFIG_SUSPEND=n
-CONFIG_CPU_IDLE=y
-
-this would imply:
-
-CONFIG_ARM_CPU_SUSPEND=n => ARM_PSCI_CPU_IDLE=n
-
-(which is a questionable setup but possible) we can't do PSCI based
-CPUidle (I agree with you that bypassing the dependencies is not ideal
-or correct in the first place though), that's a problem for all
-subsystems "selecting" ARM_CPU_SUSPEND.
-
-> Really, the answer is to stop ARM64 diverging from ARM, so we stop
-> having these architecture conditionals all over the place.  If ARM64
-> builds its cpu_suspend code in the same way that ARM does (iow,
-> keyed off ARM_CPU_SUSPEND, which it can select), then we end up
-> with the above being:
+> On Thu, Dec 31, 2015 at 09:21:26AM -0800, Eduardo Valentin wrote:
+> > On Wed, Dec 30, 2015 at 06:38:40PM +0800, Leo Yan wrote:
+> > > k_po/k_pu are in essence ratio values compared with sustainable power.
+> > > So when update sustainable power, we can recalculate k_po/k_pu simply
+> > > with below formula:
+> > > 
+> > >                sustainable_power(new)
+> > >     k_p(new) = ---------------------- * k_p(old)
+> > >                sustainable_power(old)
+> > > 
+> > > Signed-off-by: Leo Yan <leo.yan@linaro.org>
+> > > ---
+> > >  drivers/thermal/thermal_core.c | 6 +++++-
+> > >  1 file changed, 5 insertions(+), 1 deletion(-)
+> > > 
+> > > diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> > > index d9e525c..223f8df 100644
+> > > --- a/drivers/thermal/thermal_core.c
+> > > +++ b/drivers/thermal/thermal_core.c
+> > > @@ -908,7 +908,7 @@ sustainable_power_store(struct device *dev, struct device_attribute *devattr,
+> > >  			const char *buf, size_t count)
+> > >  {
+> > >  	struct thermal_zone_device *tz = to_thermal_zone(dev);
+> > > -	u32 sustainable_power;
+> > > +	u32 sustainable_power, old_val;
+> > >  
+> > >  	if (!tz->tzp)
+> > >  		return -EIO;
+> > > @@ -916,8 +916,12 @@ sustainable_power_store(struct device *dev, struct device_attribute *devattr,
+> > >  	if (kstrtou32(buf, 10, &sustainable_power))
+> > >  		return -EINVAL;
+> > >  
+> > > +	old_val = tz->tzp->sustainable_power;
+> > > +
+> > >  	tz->tzp->sustainable_power = sustainable_power;
+> > >  
+> > > +	tz->tzp->k_po = (tz->tzp->k_po * sustainable_power) / old_val;
+> > > +	tz->tzp->k_pu = (tz->tzp->k_pu * sustainable_power) / old_val;
+> > 
+> > I believe this has to be done by the governor. These properties are
+> > power_allocator specific. thermal_core should not really care about
+> > them.
 > 
-> config ARM_PSCI_CPU_IDLE
-> 	def_bool ARM_PSCI_FW && CPU_IDLE && ARM_CPU_SUSPEND
+> Okay, I will try to update these properties in power_allocator.c.
+> Javi, do you think this is fine for you?
 
-Yes, we could do that, on ARM64 should be = SUSPEND || CPU_IDLE,
-ergo the value of CPU_PM on ARM64, that's why we do not have another
-config entry at present.
+Yes, I'm happy with the idea.  If Eduardo prefers this in
+power_allocator.c, let's do it there :)
 
-> which is a helll of a lot simpler.  The dependency on ARM_PSCI_FW
-> could be regarded as redundant if we're only using ARM_PSCI_CPU_IDLE
-> to control code built within drivers/firmware/psci.c, as that won't
-> be built unless ARM_PSCI_FW is set.
-
-Yep, that's a good point and I will remove ARM_PSCI_FW from the first
-option you provided above.
-
-Thanks,
-Lorenzo
+Javi
