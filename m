@@ -1,35 +1,55 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH] PM / OPP: Use snprintf() instead of sprintf()
-Date: Tue, 5 Jan 2016 11:52:47 -0800
-Message-ID: <20160105195247.GD22188@codeaurora.org>
-References: <dd64d12079ec788d337b17840e54f0fc60d3b8ce.1451990751.git.viresh.kumar@linaro.org>
+From: "dbasehore ." <dbasehore@chromium.org>
+Subject: Re: [PATCH v11 0/4] Allow USB devices to remain runtime-suspended
+ when sleeping
+Date: Tue, 5 Jan 2016 15:38:25 -0800
+Message-ID: <CAGAzgsrdw8pmntQYrLbWsFzO7epp7JX84FN2Y-KkuZOfA18gmg@mail.gmail.com>
+References: <1445956731-6304-1-git-send-email-tomeu.vizoso@collabora.com>
+	<2496228.i2Z9PmMBtz@vostro.rjw.lan>
+	<20160105021052.GA32392@google.com>
+	<1791136.5K3qHuXCRE@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:44651 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752045AbcAETwt (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Jan 2016 14:52:49 -0500
-Content-Disposition: inline
-In-Reply-To: <dd64d12079ec788d337b17840e54f0fc60d3b8ce.1451990751.git.viresh.kumar@linaro.org>
+Received: from mail-yk0-f170.google.com ([209.85.160.170]:34788 "EHLO
+	mail-yk0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752003AbcAEXi0 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Jan 2016 18:38:26 -0500
+Received: by mail-yk0-f170.google.com with SMTP id a85so221668446ykb.1
+        for <linux-pm@vger.kernel.org>; Tue, 05 Jan 2016 15:38:26 -0800 (PST)
+In-Reply-To: <1791136.5K3qHuXCRE@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Pavel Machek <pavel@ucw.cz>, Viresh Kumar <vireshk@kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Len Brown <len.brown@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Russell King <linux@arm.linux.org.uk>, martyn.welch@collabora.co.uk, Linux-pm mailing list <linux-pm@vger.kernel.org>, David Airlie <airlied@linux.ie>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org, linux-acpi@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Alan Stern <stern@rowland.harvard.edu>, Pavel Machek <pavel@ucw.cz>, Tomas Winkler <tomas.winkler@intel.com>, linux-omap@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Len Brown <lenb@kernel.org>, Daniel Kurtz <djkurtz@chromium.org>
 
-On 01/05, Viresh Kumar wrote:
-> sprintf() can access memory outside of the range of the character array,
-> and is risky in some situations. The driver specified prop_name string
-> can be longer than NAME_MAX here (only an attacker will do that though)
-> and so blindly copying it into the character array of size NAME_MAX
-> isn't safe. Instead we must use snprintf() here.
-> 
-> Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
+On Tue, Jan 5, 2016 at 4:48 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Monday, January 04, 2016 06:27:18 PM Derek Basehore wrote:
+>> On Mon, Nov 02, 2015 at 02:50:40AM +0100, Rafael J. Wysocki wrote:
+>> >
+>> > I've queued up this series for the second half of the v4.4 merge window.
+>> >
+>> > Thanks,
+>> > Rafael
+>> >
+>> >
+>> > _______________________________________________
+>> > linux-arm-kernel mailing list
+>> > linux-arm-kernel@lists.infradead.org
+>> > http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+>>
+>> What's the status of this patch series? I haven't seen the patches
+>> posted for v4.4, plus there's the issue that Dan found that needs to be
+>> addressed.
+>>
+>> Is there a new revision of the patch series being worked on?
+>
+> Tomeu is not working on one AFAICS, but I may just revive his series.
+>
+> Do you have a pointer to the Dan's report?
+>
+> Thanks,
+> Rafael
+>
 
-Acked-by: Stephen Boyd <sboyd@codeaurora.org>
-
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+It was a reply to the second patch in the series. Here's a link to it
+https://lkml.org/lkml/2015/11/10/107
