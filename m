@@ -1,42 +1,63 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] PM / OPP: Use snprintf() instead of sprintf()
-Date: Tue, 5 Jan 2016 11:51:16 +0100
-Message-ID: <CAMuHMdVdNbGmA+tQ54E=eZcKz6EZMBj4n1Udc1SrdsHCyLB-EQ@mail.gmail.com>
-References: <dd64d12079ec788d337b17840e54f0fc60d3b8ce.1451990751.git.viresh.kumar@linaro.org>
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH v3 2/2] ARM64: kernel: PSCI: move PSCI idle management
+ code to drivers/firmware
+Date: Tue, 5 Jan 2016 10:59:01 +0000
+Message-ID: <20160105105900.GT19062@n2100.arm.linux.org.uk>
+References: <1445011379-8787-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1445011379-8787-3-git-send-email-lorenzo.pieralisi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f176.google.com ([209.85.223.176]:33496 "EHLO
-	mail-io0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751997AbcAEKvR (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Jan 2016 05:51:17 -0500
-In-Reply-To: <dd64d12079ec788d337b17840e54f0fc60d3b8ce.1451990751.git.viresh.kumar@linaro.org>
+Received: from pandora.arm.linux.org.uk ([78.32.30.218]:41763 "EHLO
+	pandora.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752300AbcAEK7R (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Jan 2016 05:59:17 -0500
+Content-Disposition: inline
+In-Reply-To: <1445011379-8787-3-git-send-email-lorenzo.pieralisi@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Len Brown <len.brown@intel.com>, open list <linux-kernel@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Pavel Machek <pavel@ucw.cz>, Stephen Boyd <sboyd@codeaurora.org>, Viresh Kumar <vireshk@kernel.org>
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, Jisheng Zhang <jszhang@marvell.com>
 
-On Tue, Jan 5, 2016 at 11:45 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> sprintf() can access memory outside of the range of the character array,
-> and is risky in some situations. The driver specified prop_name string
-> can be longer than NAME_MAX here (only an attacker will do that though)
-> and so blindly copying it into the character array of size NAME_MAX
-> isn't safe. Instead we must use snprintf() here.
+On Fri, Oct 16, 2015 at 05:02:59PM +0100, Lorenzo Pieralisi wrote:
+> ARM64 PSCI kernel interfaces that initialize idle states and implement
+> the suspend API to enter them are generic and can be shared with the
+> ARM architecture.
+> 
+> To achieve that goal, this patch moves ARM64 PSCI idle management
+> code to drivers/firmware, so that the interface to initialize and
+> enter idle states can actually be shared by ARM and ARM64 arches
+> back-ends.
+> 
+> The ARM generic CPUidle implementation also requires the definition of
+> a cpuidle_ops section entry for the kernel to initialize the CPUidle
+> operations at boot based on the enable-method (ie ARM64 has the
+> statically initialized cpu_ops counterparts for that purpose); therefore
+> this patch also adds the required section entry on CONFIG_ARM for PSCI so
+> that the kernel can initialize the PSCI CPUidle back-end when PSCI is
+> the probed enable-method.
+> 
+> On ARM64 this patch provides no functional change.
 
-Thanks!
+On ARM64, it causes build breakage though:
 
-> Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+drivers/built-in.o: In function `psci_suspend_finisher':
+arm_pmu.c:(.text+0xc6494): undefined reference to `cpu_resume'
+arm_pmu.c:(.text+0xc6498): undefined reference to `cpu_resume'
+drivers/built-in.o: In function `psci_cpu_suspend_enter':
+arm_pmu.c:(.text+0xc66c0): undefined reference to `cpu_suspend'
 
-Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
+The code which has been moved looks similar.  However, when it lived
+in arch/arm64/kernel/psci.c, it was protected by
+#ifdef CONFIG_HOTPLUG_CPU.  In its new location, there are no ifdefs
+around it, and so if it gets built without CONFIG_ARM_CPU_SUSPEND on
+ARM, or CONFIG_CPU_PM for ARM64, it will error out like the above.
 
-Gr{oetje,eeting}s,
+As this is causing a regression, and I've now closed my tree, I will
+be doing what I said yesterday: I'll be dropping this patch for this
+merge window in order to stabilise my tree.  Sorry.
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+-- 
+RMK's Patch system: http://www.arm.linux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
+according to speedtest.net.
