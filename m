@@ -1,66 +1,59 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v3 2/2] ARM64: kernel: PSCI: move PSCI idle management
- code to drivers/firmware
-Date: Tue, 5 Jan 2016 12:31:34 +0000
-Message-ID: <20160105123134.GA1821@red-moon>
-References: <1445011379-8787-1-git-send-email-lorenzo.pieralisi@arm.com>
- <1445011379-8787-3-git-send-email-lorenzo.pieralisi@arm.com>
- <20160105105900.GT19062@n2100.arm.linux.org.uk>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: ondemand: Set MIN_FREQUENCY_UP_THRESHOLD to 1
+Date: Tue, 05 Jan 2016 14:02:56 +0100
+Message-ID: <24213887.mlBXLjjmuO@vostro.rjw.lan>
+References: <9645d54c1bc65ce69ecfd5e92259ead7699afc82.1451880670.git.yu.c.chen@intel.com> <20160104055651.GB27177@ubuntu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:57968 "EHLO foss.arm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751660AbcAEMaC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 5 Jan 2016 07:30:02 -0500
-Content-Disposition: inline
-In-Reply-To: <20160105105900.GT19062@n2100.arm.linux.org.uk>
+Received: from v094114.home.net.pl ([79.96.170.134]:60840 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751590AbcAEMcQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Jan 2016 07:32:16 -0500
+In-Reply-To: <20160104055651.GB27177@ubuntu>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, Jisheng Zhang <jszhang@marvell.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>, Chen Yu <yu.c.chen@intel.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, sworddragon2@aol.com
 
-On Tue, Jan 05, 2016 at 10:59:01AM +0000, Russell King - ARM Linux wrote:
-> On Fri, Oct 16, 2015 at 05:02:59PM +0100, Lorenzo Pieralisi wrote:
-> > ARM64 PSCI kernel interfaces that initialize idle states and implement
-> > the suspend API to enter them are generic and can be shared with the
-> > ARM architecture.
+On Monday, January 04, 2016 11:26:51 AM Viresh Kumar wrote:
+> On 04-01-16, 12:14, Chen Yu wrote:
+> > Currently the minimal up_threshold is 11, and user may want to
+> > use a smaller minimal up_threshold for performance tuning,
+> > so MIN_FREQUENCY_UP_THRESHOLD could be set to 1 because:
 > > 
-> > To achieve that goal, this patch moves ARM64 PSCI idle management
-> > code to drivers/firmware, so that the interface to initialize and
-> > enter idle states can actually be shared by ARM and ARM64 arches
-> > back-ends.
+> > 1. Current systems wouldn't be affected as they have already
+> >    a value >= 11.
+> > 2. New systems with a default kernel would keep still the default
+> >    value that is >= 11.
 > > 
-> > The ARM generic CPUidle implementation also requires the definition of
-> > a cpuidle_ops section entry for the kernel to initialize the CPUidle
-> > operations at boot based on the enable-method (ie ARM64 has the
-> > statically initialized cpu_ops counterparts for that purpose); therefore
-> > this patch also adds the required section entry on CONFIG_ARM for PSCI so
-> > that the kernel can initialize the PSCI CPUidle back-end when PSCI is
-> > the probed enable-method.
+> > Users now have the advantage that they can make their own decisions
+> > and customize the 'trip point' to switch to the max frequency.
 > > 
-> > On ARM64 this patch provides no functional change.
+> > Link: https://bugzilla.kernel.org/show_bug.cgi?id=65501
+> > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> > ---
+> >  drivers/cpufreq/cpufreq_ondemand.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+> > index 03ac6ce..2a093b5 100644
+> > --- a/drivers/cpufreq/cpufreq_ondemand.c
+> > +++ b/drivers/cpufreq/cpufreq_ondemand.c
+> > @@ -24,7 +24,7 @@
+> >  #define MAX_SAMPLING_DOWN_FACTOR		(100000)
+> >  #define MICRO_FREQUENCY_UP_THRESHOLD		(95)
+> >  #define MICRO_FREQUENCY_MIN_SAMPLE_RATE		(10000)
+> > -#define MIN_FREQUENCY_UP_THRESHOLD		(11)
+> > +#define MIN_FREQUENCY_UP_THRESHOLD		(1)
+> >  #define MAX_FREQUENCY_UP_THRESHOLD		(100)
+> >  
+> >  static DEFINE_PER_CPU(struct od_cpu_dbs_info_s, od_cpu_dbs_info);
 > 
-> On ARM64, it causes build breakage though:
-> 
-> drivers/built-in.o: In function `psci_suspend_finisher':
-> arm_pmu.c:(.text+0xc6494): undefined reference to `cpu_resume'
-> arm_pmu.c:(.text+0xc6498): undefined reference to `cpu_resume'
-> drivers/built-in.o: In function `psci_cpu_suspend_enter':
-> arm_pmu.c:(.text+0xc66c0): undefined reference to `cpu_suspend'
-> 
-> The code which has been moved looks similar.  However, when it lived
-> in arch/arm64/kernel/psci.c, it was protected by
-> #ifdef CONFIG_HOTPLUG_CPU.  In its new location, there are no ifdefs
-> around it, and so if it gets built without CONFIG_ARM_CPU_SUSPEND on
-> ARM, or CONFIG_CPU_PM for ARM64, it will error out like the above.
-> 
-> As this is causing a regression, and I've now closed my tree, I will
-> be doing what I said yesterday: I'll be dropping this patch for this
-> merge window in order to stabilise my tree.  Sorry.
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-My bad, I apologise, I will likely have to add a config option to
-make sure cpu_{suspend/resume} code is compiled in (on both ARM/ARM64),
-thanks for spotting it.
+Applied, thanks!
 
-Lorenzo
+Rafael
+
