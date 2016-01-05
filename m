@@ -1,46 +1,66 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v11 0/4] Allow USB devices to remain runtime-suspended when sleeping
-Date: Tue, 05 Jan 2016 13:48:26 +0100
-Message-ID: <1791136.5K3qHuXCRE@vostro.rjw.lan>
-References: <1445956731-6304-1-git-send-email-tomeu.vizoso@collabora.com> <2496228.i2Z9PmMBtz@vostro.rjw.lan> <20160105021052.GA32392@google.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v3 2/2] ARM64: kernel: PSCI: move PSCI idle management
+ code to drivers/firmware
+Date: Tue, 5 Jan 2016 12:31:34 +0000
+Message-ID: <20160105123134.GA1821@red-moon>
+References: <1445011379-8787-1-git-send-email-lorenzo.pieralisi@arm.com>
+ <1445011379-8787-3-git-send-email-lorenzo.pieralisi@arm.com>
+ <20160105105900.GT19062@n2100.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:46578 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751927AbcAEMRq (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Jan 2016 07:17:46 -0500
-In-Reply-To: <20160105021052.GA32392@google.com>
+Received: from foss.arm.com ([217.140.101.70]:57968 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751660AbcAEMaC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Tue, 5 Jan 2016 07:30:02 -0500
+Content-Disposition: inline
+In-Reply-To: <20160105105900.GT19062@n2100.arm.linux.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Derek Basehore <dbasehore@chromium.org>
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Len Brown <len.brown@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Russell King <linux@arm.linux.org.uk>, martyn.welch@collabora.co.uk, linux-pm@vger.kernel.org, David Airlie <airlied@linux.ie>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-acpi@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Alan Stern <stern@rowland.harvard.edu>, Pavel Machek <pavel@ucw.cz>, Tomas Winkler <tomas.winkler@intel.com>, linux-omap@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, linux-arm-kernel@lists.infradead.org, Len Brown <lenb@kernel.org>, djkurtz@chromium.org
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Catalin Marinas <catalin.marinas@arm.com>, Mark Rutland <mark.rutland@arm.com>, Jisheng Zhang <jszhang@marvell.com>
 
-On Monday, January 04, 2016 06:27:18 PM Derek Basehore wrote:
-> On Mon, Nov 02, 2015 at 02:50:40AM +0100, Rafael J. Wysocki wrote:
+On Tue, Jan 05, 2016 at 10:59:01AM +0000, Russell King - ARM Linux wrote:
+> On Fri, Oct 16, 2015 at 05:02:59PM +0100, Lorenzo Pieralisi wrote:
+> > ARM64 PSCI kernel interfaces that initialize idle states and implement
+> > the suspend API to enter them are generic and can be shared with the
+> > ARM architecture.
 > > 
-> > I've queued up this series for the second half of the v4.4 merge window.
+> > To achieve that goal, this patch moves ARM64 PSCI idle management
+> > code to drivers/firmware, so that the interface to initialize and
+> > enter idle states can actually be shared by ARM and ARM64 arches
+> > back-ends.
 > > 
-> > Thanks,
-> > Rafael
+> > The ARM generic CPUidle implementation also requires the definition of
+> > a cpuidle_ops section entry for the kernel to initialize the CPUidle
+> > operations at boot based on the enable-method (ie ARM64 has the
+> > statically initialized cpu_ops counterparts for that purpose); therefore
+> > this patch also adds the required section entry on CONFIG_ARM for PSCI so
+> > that the kernel can initialize the PSCI CPUidle back-end when PSCI is
+> > the probed enable-method.
 > > 
-> > 
-> > _______________________________________________
-> > linux-arm-kernel mailing list
-> > linux-arm-kernel@lists.infradead.org
-> > http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+> > On ARM64 this patch provides no functional change.
 > 
-> What's the status of this patch series? I haven't seen the patches
-> posted for v4.4, plus there's the issue that Dan found that needs to be
-> addressed.
+> On ARM64, it causes build breakage though:
 > 
-> Is there a new revision of the patch series being worked on?
+> drivers/built-in.o: In function `psci_suspend_finisher':
+> arm_pmu.c:(.text+0xc6494): undefined reference to `cpu_resume'
+> arm_pmu.c:(.text+0xc6498): undefined reference to `cpu_resume'
+> drivers/built-in.o: In function `psci_cpu_suspend_enter':
+> arm_pmu.c:(.text+0xc66c0): undefined reference to `cpu_suspend'
+> 
+> The code which has been moved looks similar.  However, when it lived
+> in arch/arm64/kernel/psci.c, it was protected by
+> #ifdef CONFIG_HOTPLUG_CPU.  In its new location, there are no ifdefs
+> around it, and so if it gets built without CONFIG_ARM_CPU_SUSPEND on
+> ARM, or CONFIG_CPU_PM for ARM64, it will error out like the above.
+> 
+> As this is causing a regression, and I've now closed my tree, I will
+> be doing what I said yesterday: I'll be dropping this patch for this
+> merge window in order to stabilise my tree.  Sorry.
 
-Tomeu is not working on one AFAICS, but I may just revive his series.
+My bad, I apologise, I will likely have to add a config option to
+make sure cpu_{suspend/resume} code is compiled in (on both ARM/ARM64),
+thanks for spotting it.
 
-Do you have a pointer to the Dan's report?
-
-Thanks,
-Rafael
-
+Lorenzo
