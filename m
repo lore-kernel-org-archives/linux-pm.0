@@ -1,311 +1,641 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [RFC PATCH 0/2] IRQ based next prediction
-Date: Wed,  6 Jan 2016 16:22:52 +0100
-Message-ID: <1452093774-17831-1-git-send-email-daniel.lezcano@linaro.org>
+Subject: [RFC PATCH 2/2] sched: idle: IRQ based next prediction for idle period
+Date: Wed,  6 Jan 2016 16:22:54 +0100
+Message-ID: <1452093774-17831-3-git-send-email-daniel.lezcano@linaro.org>
+References: <1452093774-17831-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f43.google.com ([74.125.82.43]:33953 "EHLO
-	mail-wm0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752360AbcAFPXN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Jan 2016 10:23:13 -0500
-Received: by mail-wm0-f43.google.com with SMTP id u188so64071719wmu.1
-        for <linux-pm@vger.kernel.org>; Wed, 06 Jan 2016 07:23:12 -0800 (PST)
+Received: from mail-wm0-f41.google.com ([74.125.82.41]:36557 "EHLO
+	mail-wm0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752395AbcAFPXQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Jan 2016 10:23:16 -0500
+Received: by mail-wm0-f41.google.com with SMTP id l65so63168505wmf.1
+        for <linux-pm@vger.kernel.org>; Wed, 06 Jan 2016 07:23:15 -0800 (PST)
+In-Reply-To: <1452093774-17831-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: tglx@linutronix.de, peterz@infradead.org, rafael@kernel.org
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nicolas.pitre@linaro.org, vincent.guittot@linaro.org
 
-The current approach to select an idle state is based on the idle period
-statistics computation.
+Many IRQs are quiet most of the time, or they tend to come in bursts of
+fairly equal time intervals within each burst. It is therefore possible
+to detect those IRQs with stable intervals and guestimate when the next
+IRQ event is most likely to happen.
 
-Useless to say this approach satisfied everyone as a solution to find the
-best trade-off between the performances and the energy saving via the menu
-governor.
+Examples of such IRQs may include audio related IRQs where the FIFO size
+and/or DMA descriptor size with the sample rate create stable intervals,
+block devices during large data transfers, etc.  Even network streaming
+of multimedia content creates patterns of periodic network interface IRQs
+in some cases.
 
-However, the kernel is evolving to act pro-actively regarding the energy
-constraints with the scheduler and the different power management subsystems
-are not collaborating with the scheduler as the conductor of the decisions,
-they all act independently.
+This patch adds code to track the mean interval and variance for each IRQ
+over a window of time intervals between IRQ events. Those statistics can
+be used to assist cpuidle in selecting the most appropriate sleep state
+by predicting the most likely time for the next interrupt.
 
-The cpuidle governors are based on idle period statistics, without knowledge
-of what woke up the cpu. In these sources of wakes up, the IPI are of course
-accounted (as well as the timers irq) which results in doing statistics on
-the scheduler behavior too. It is no sense to let the scheduler to take a
-decision based on a next prediction of its own decisions.
+Because the stats are gathered in interrupt context, the core computation
+is as light as possible.
 
-In order to integrate the cpuidle framework into the scheduler, we have to
-radically change the approach by clearly identifying what is causing a wake
-up and how it behaves.
-
-This serie inverts the logic.
-
-Instead of tracking the idle durations and do statistics on them, these
-patches track the interrupt individually and try to predict the next interrupt.
-
-By combining the interrupts' next event on a single CPU, we can predict the
-next event for the CPU, hence predict how long we will be sleeping when
-entering idle.
-
-The IPI and timer interrupts are not taken into account.
-
-The first patch provides a callback to be registered in the irq subsystem
-and to be called when an interrupt is handled with a timestamp.
-
-The second patch uses the callback provided by the patch above to compute
-the delta and store it in a circular buffer. It is per cpu, the callback
-implements minimal operations as it is in an interrupt context.
-
-When we the cpu enters idle, it asks for the expected sleep time. Then the
-expected minimum sleep length for all interrupts is used and compared to
-the timer sleep length, again the minimum is taken and gives the expected
-sleep time.
-
-The statistics are very trivial and could be improved later but this first
-step shows we have a nice overall improvement in SMP. In UP the menu governor
-is a bit better which may indicate the next prediction computation could be
-improved but confirms removing the IPI from the equation increase the
-accuracy.
-
-These are the results with a workload emulator (mp3, video, browser, ...) on
-a Dual Xeon 6 cores. Each test has been run 10 times. The results are based
-on a debugfs statistics where, when we exit idle, we check if the idle state
-was the right one which gives a successful prediction even if the exact
-wakeup time is not correct. The error margin is absorbed by the idle state's
-target residency, eg. idle1 is 10 us, idle2 is 50us, idle3 is 150us, if we
-predict to sleep 110us but at the end we sleep 80us, the prediction is still
-successful as the idle2 is the correct one for 80us and 110us.
-
-(mean colum - 5th -, greater is better).
-
-SMP (12 cores):
-
---------------------------
-Successful predictions (%)
---------------------------
-scripts/iolatsimu.sh.menu.dat:
-N    min    max    sum    mean    stddev
-10    30.96    39.3    346.15    34.615    2.37729
-scripts/iolatsimu.sh.irq.dat:
-N    min    max    sum    mean    stddev
-10    22.21    54.39    377.1    37.71    11.3374
---------------------------
-Successful predictions (%)
---------------------------
-scripts/fio-aio.sh.menu.dat:
-N    min    max    sum    mean    stddev
-10    44.32    48.81    459.5    45.95    1.59114
-scripts/fio-aio.sh.irq.dat:
-N    min    max    sum    mean    stddev
-10    54.18    64.75    592.86    59.286    2.83509
---------------------------
-Successful predictions (%)
---------------------------
-scripts/fio-cpuio.sh.menu.dat:
-N    min    max    sum    mean    stddev
-10    86.86    91    890.21    89.021    1.34882
-scripts/fio-cpuio.sh.irq.dat:
-N    min    max    sum    mean    stddev
-10    97.97    98.57    981.85    98.185    0.171804
---------------------------
-Successful predictions (%)
---------------------------
-scripts/fio-zipf.sh.menu.dat:
-N    min    max    sum    mean    stddev
-10    87.58    94.53    917.07    91.707    1.81287
-scripts/fio-zipf.sh.irq.dat:
-N    min    max    sum    mean    stddev
-10    95.51    98.88    980.25    98.025    1.06026
---------------------------
-Successful predictions (%)
---------------------------
-scripts/fio-netio.sh.menu.dat:
-N    min    max    sum    mean    stddev
-10    65.51    81.82    729.41    72.941    5.34134
-scripts/fio-netio.sh.irq.dat:
-N    min    max    sum    mean    stddev
-10    97.38    97.88    976.19    97.619    0.162238
---------------------------
-Successful predictions (%)
---------------------------
-scripts/fio-falloc.sh.menu.dat:
-N    min    max    sum    mean    stddev
-10    79.4    91.58    858.71    85.871    3.51946
-scripts/fio-falloc.sh.irq.dat:
-N    min    max    sum    mean    stddev
-10    65.06    87.54    728.72    72.872    6.29703
---------------------------
-Successful predictions (%)
---------------------------
-scripts/fio-null.sh.menu.dat:
-N    min    max    sum    mean    stddev
-10    89.44    92.83    908.96    90.896    1.12064
-scripts/fio-null.sh.irq.dat:
-N    min    max    sum    mean    stddev
-10    95.68    98.74    978.19    97.819    0.954468
---------------------------
-Successful predictions (%)
---------------------------
-scripts/rt-app-browser.sh.menu.dat:
-N    min    max    sum    mean    stddev
-10    59    67.66    640.21    64.021    3.11123
-scripts/rt-app-browser.sh.irq.dat:
-N    min    max    sum    mean    stddev
-10    81.45    91.48    865.2    86.52    3.39756
---------------------------
-Successful predictions (%)
---------------------------
-scripts/rt-app-mp3.sh.menu.dat:
-N    min    max    sum    mean    stddev
-10    65.85    70.67    674.85    67.485    1.34196
-scripts/rt-app-mp3.sh.irq.dat:
-N    min    max    sum    mean    stddev
-10    94.97    97.24    963.96    96.396    0.743897
---------------------------
-Successful predictions (%)
---------------------------
-scripts/rt-app-video.sh.menu.dat:
-N    min    max    sum    mean    stddev
-10    59.41    63.14    615.57    61.557    1.24713
-scripts/rt-app-video.sh.irq.dat:
-N    min    max    sum    mean    stddev
-10    70.92    76.8    747.7    74.77    1.84455
---------------------------
-Successful predictions (%)
---------------------------
-scripts/video.sh.menu.dat:
-N    min    max    sum    mean    stddev
-10    27.99    35.54    302.23    30.223    2.27853
-scripts/video.sh.irq.dat:
-N    min    max    sum    mean    stddev
-10    54.42    72.42    635.55    63.555    6.48589
---------------------------
-Successful predictions (%)
---------------------------
-scripts/netperf.sh.menu.dat:
-N    min    max    sum    mean    stddev
-10    67.49    82.46    748.43    74.843    4.64976
-scripts/netperf.sh.irq.dat:
-N    min    max    sum    mean    stddev
-10    97.51    99.43    990.12    99.012    0.545768
-
-
-In UP:
-
---------------------------
-Successful predictions (%)
---------------------------
-scripts/iolatsimu.sh.menu.dat:
-N    min    max    sum    mean    stddev
-10    49.5    55.66    514.02    51.402    2.31278
-scripts/iolatsimu.sh.irq.dat:
-N    min    max    sum    mean    stddev
-10    39.49    63.51    552.35    55.235    6.54344
---------------------------
-Successful predictions (%)
---------------------------
-scripts/fio-aio.sh.menu.dat:
-N    min    max    sum    mean    stddev
-10    49.44    51.9    502.44    50.244    0.849552
-scripts/fio-aio.sh.irq.dat:
-N    min    max    sum    mean    stddev
-10    35.58    42.06    381.57    38.157    2.05544
---------------------------
-Successful predictions (%)
---------------------------
-scripts/fio-cpuio.sh.menu.dat:
-N    min    max    sum    mean    stddev
-10    93.07    97.26    954.71    95.471    1.52628
-scripts/fio-cpuio.sh.irq.dat:
-N    min    max    sum    mean    stddev
-10    91.02    97.48    943.92    94.392    2.21478
---------------------------
-Successful predictions (%)
---------------------------
-scripts/fio-zipf.sh.menu.dat:
-N    min    max    sum    mean    stddev
-10    76.92    88    831.94    83.194    3.2838
-scripts/fio-zipf.sh.irq.dat:
-(2 runs without idle transitions)
-N    min    max    sum    mean    stddev
-8    50    100    657.5    82.1875    22.418
---------------------------
-Successful predictions (%)
---------------------------
-scripts/fio-netio.sh.menu.dat:
-N    min    max    sum    mean    stddev
-10    78.95    85.71    818.7    81.87    2.01494
-scripts/fio-netio.sh.irq.dat:
-N    min    max    sum    mean    stddev
-10    62.5    90    733.51    73.351    7.77129
---------------------------
-Successful predictions (%)
---------------------------
-scripts/fio-falloc.sh.menu.dat:
-N    min    max    sum    mean    stddev
-10    29.42    38.46    357.83    35.783    2.57226
-scripts/fio-falloc.sh.irq.dat:
-N    min    max    sum    mean    stddev
-10    28.85    37.48    333.22    33.322    3.121
---------------------------
-Successful predictions (%)
---------------------------
-scripts/fio-null.sh.menu.dat:
-N    min    max    sum    mean    stddev
-10    73.53    84.62    806.44    80.644    3.57214
-scripts/fio-null.sh.irq.dat:
-N    min    max    sum    mean    stddev
-10    57.14    85.71    761.68    76.168    8.73407
---------------------------
-Successful predictions (%)
---------------------------
-scripts/rt-app-browser.sh.menu.dat:
-N    min    max    sum    mean    stddev
-10    96.33    98.8    976.84    97.684    0.834921
-scripts/rt-app-browser.sh.irq.dat:
-N    min    max    sum    mean    stddev
-10    93.02    100    984.58    98.458    2.08916
---------------------------
-Successful predictions (%)
---------------------------
-scripts/rt-app-mp3.sh.menu.dat:
-N    min    max    sum    mean    stddev
-10    99.06    99.59    993.8    99.38    0.178948
-scripts/rt-app-mp3.sh.irq.dat:
-N    min    max    sum    mean    stddev
-10    95.81    99.54    978.95    97.895    1.36267
---------------------------
-Successful predictions (%)
---------------------------
-scripts/rt-app-video.sh.menu.dat:
-N    min    max    sum    mean    stddev
-10    96.96    99.08    983.25    98.325    0.632899
-scripts/rt-app-video.sh.irq.dat:
-N    min    max    sum    mean    stddev
-10    74.77    97.5    829.45    82.945    7.10247
---------------------------
-Successful predictions (%)
---------------------------
-scripts/video.sh.menu.dat:
-N    min    max    sum    mean    stddev
-10    48.52    59.73    541.3    54.13    3.11611
-scripts/video.sh.irq.dat:
-N    min    max    sum    mean    stddev
-10    43.71    58.5    533.62    53.362    4.84646 
-
-Daniel Lezcano (2):
-  irq: Add a framework to measure interrupt timings
-  sched: idle: IRQ based next prediction for idle period
-
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
  drivers/cpuidle/Kconfig   |   5 +
- include/linux/interrupt.h |  45 ++++
- include/linux/irqdesc.h   |   3 +
- kernel/irq/Kconfig        |   3 +
- kernel/irq/handle.c       |  12 +
- kernel/irq/manage.c       |  65 +++++-
+ kernel/irq/Kconfig        |   1 -
  kernel/sched/Makefile     |   1 +
- kernel/sched/idle-sched.c | 553 ++++++++++++++++++++++++++++++++++++++++++++++
- 8 files changed, 686 insertions(+), 1 deletion(-)
+ kernel/sched/idle-sched.c | 549 ++++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 555 insertions(+), 1 deletion(-)
  create mode 100644 kernel/sched/idle-sched.c
 
+diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
+index 8c7930b..dd17215 100644
+--- a/drivers/cpuidle/Kconfig
++++ b/drivers/cpuidle/Kconfig
+@@ -25,6 +25,11 @@ config CPU_IDLE_GOV_MENU
+ 	bool "Menu governor (for tickless system)"
+ 	default y
+ 
++config CPU_IDLE_GOV_SCHED
++	bool "Sched idle governor"
++	select IRQ_TIMINGS
++	default y
++
+ config DT_IDLE_STATES
+ 	bool
+ 
+diff --git a/kernel/irq/Kconfig b/kernel/irq/Kconfig
+index 1275fd1..81557ae 100644
+--- a/kernel/irq/Kconfig
++++ b/kernel/irq/Kconfig
+@@ -75,7 +75,6 @@ config HANDLE_DOMAIN_IRQ
+ 
+ config IRQ_TIMINGS
+         bool
+-	default y
+ 
+ config IRQ_DOMAIN_DEBUG
+ 	bool "Expose hardware/virtual IRQ mapping via debugfs"
+diff --git a/kernel/sched/Makefile b/kernel/sched/Makefile
+index 6768797..f7d5a35 100644
+--- a/kernel/sched/Makefile
++++ b/kernel/sched/Makefile
+@@ -19,3 +19,4 @@ obj-$(CONFIG_SCHED_AUTOGROUP) += auto_group.o
+ obj-$(CONFIG_SCHEDSTATS) += stats.o
+ obj-$(CONFIG_SCHED_DEBUG) += debug.o
+ obj-$(CONFIG_CGROUP_CPUACCT) += cpuacct.o
++obj-$(CONFIG_CPU_IDLE_GOV_SCHED) += idle-sched.o
+diff --git a/kernel/sched/idle-sched.c b/kernel/sched/idle-sched.c
+new file mode 100644
+index 0000000..a8e7557
+--- /dev/null
++++ b/kernel/sched/idle-sched.c
+@@ -0,0 +1,549 @@
++/*
++ *  Copyright (C) 2016 Linaro Ltd, Daniel Lezcano <daniel.lezcano@linaro.org>
++ *                                 Nicolas Pitre <nicolas.pitre@linaro.org>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
++#include <linux/cpuidle.h>
++#include <linux/interrupt.h>
++#include <linux/irqdesc.h>
++#include <linux/ktime.h>
++#include <linux/slab.h>
++#include <linux/tick.h>
++#include <linux/time64.h>
++
++/*
++ * Define the number of samples over which the average and variance
++ * are computed. A power of 2 is preferred so to let the compiler
++ * optimize divisions by that number with simple arithmetic shifts.
++ */
++#define STATS_NR_VALUES 4
++
++/**
++ * struct stats - internal structure to encapsulate stats informations
++ *
++ * @sum: sum of the values
++ * @values: array of values to do stats on
++ * @n: current number of values
++ * @w_ptr: current buffer pointer
++ */
++struct stats {
++	u64          sum;                     /* sum of values */
++	u32          values[STATS_NR_VALUES]; /* array of values */
++	unsigned int w_ptr;                   /* current window pointer */
++};
++
++/**
++ * struct wakeup - internal structure describing a source of wakeup
++ *
++ * @stats: the stats structure on the different event intervals
++ * @timestamp: latest update timestamp
++ */
++struct wakeup {
++	struct stats stats;
++	ktime_t timestamp;
++};
++
++/*
++ * Per cpu and irq statistics. Each cpu receives interrupts and those
++ * ones can be distributed following an irq chip specific
++ * algorithm. Random irq distribution is the worst case to predict
++ * interruption behavior but usually that does not happen or could be
++ * fixed from userspace by setting the irq affinity.
++ */
++static DEFINE_PER_CPU(struct wakeup, *wakeups[NR_IRQS]);
++
++/**
++ * stats_add - add a new value in the statistic structure
++ *
++ * @s: the statistic structure
++ * @value: the new value to be added
++ *
++ * Adds the value to the array, if the array is full, the oldest value
++ * is replaced.
++ */
++static void stats_add(int irq, struct stats *s, u32 value)
++{
++	/*
++	 * This is a circular buffer, so the oldest value is
++	 * the next one in the buffer. Let's compute the next
++	 * pointer to retrieve the oldest value and re-use it
++	 * to update the w_ptr after adding the new value.
++	 */
++	unsigned int w_ptr = s->w_ptr;
++
++	/*
++	 * Remove the oldest value from the summing. If this is the
++	 * first time we go through this array slot, the previous
++	 * value will be zero and we won't substract anything from the
++	 * current sum.  Hence this code relies on a zero-ed stat
++	 * structure at init time via memset or kzalloc.
++	 */
++	s->sum -= s->values[w_ptr];
++	s->values[w_ptr] = value;
++	s->w_ptr = (w_ptr + 1) % STATS_NR_VALUES;
++
++        /*
++	 * In order to reduce the overhead and to prevent value
++	 * derivation due to the integer computation, we just sum the
++	 * value and do the division when the average and the variance
++	 * are requested.
++         */
++	s->sum += value;
++}
++
++/**
++ * stats_reset - reset the stats
++ *
++ * @s: the statistic structure
++ *
++ * Reset the statistics and reset the values
++ */
++static inline void stats_reset(struct stats *s)
++{
++	memset(s, 0, sizeof(*s));
++}
++
++/**
++ * stats_mean - compute the average
++ *
++ * @s: the statistics structure
++ *
++ * Returns an u32 corresponding to the mean value, or zero if there is
++ * no data
++ */
++static inline u32 stats_mean(struct stats *s)
++{
++	/*
++	 * gcc is smart enough to convert to a bits shift when the
++	 * divisor is constant and multiple of 2^x.
++	 *
++	 * The number of values could have not reached STATS_NR_VALUES
++	 * yet, but we can consider it acceptable as the situation is
++	 * only at the very first beginning in the system life cycle.
++	 */
++	return s->sum / STATS_NR_VALUES;
++}
++
++/**
++ * stats_variance - compute the variance
++ *
++ * @s: the statistic structure
++ *
++ * Returns an u64 corresponding to the variance, or zero if there is
++ * no data
++ */
++static u64 stats_variance(struct stats *s, u32 mean)
++{
++	int i;
++	u64 variance = 0;
++
++	/*
++	 * The variance is the sum of the squared difference to the
++	 * average divided by the number of elements.
++	 */
++	for (i = 0; i < STATS_NR_VALUES; i++) {
++		s32 diff = s->values[i] - mean;
++		variance += (u64)diff * diff;
++	}
++
++	return variance / STATS_NR_VALUES;
++}
++
++/**
++ * sched_idle_irq - irq timestamp callback
++ *
++ * @irq: the irq number
++ * @timestamp: when the interrupt occured
++ * @dev_id: device id for shared interrupt (not yet used)
++ * @data: private data given when registering this callback
++ *
++ * Interrupt callback called when an interrupt happens. This function
++ * is critical as it is called under an interrupt section: minimum
++ * operations as possible are done here:
++ */
++static void sched_idle_irq(unsigned int irq, ktime_t timestamp,
++			   void *dev_id, void *data)
++{
++	u32 diff;
++	unsigned int cpu = raw_smp_processor_id();
++	struct wakeup *w = per_cpu(wakeups[irq], cpu);
++
++	if (!w)
++		return;
++
++	/*
++	 * It is the first time the interrupt occurs of the series, we
++	 * can't do any stats as we don't have an interval, just store
++	 * the timestamp and exit.
++	 */
++	if (ktime_equal(w->timestamp, ktime_set(0, 0))) {
++		w->timestamp = timestamp;
++		return;
++	}
++
++	/*
++	 * Microsec resolution is enough for our purpose.
++	 */
++	diff = ktime_us_delta(timestamp, w->timestamp);
++	w->timestamp = timestamp;
++	stats_add(irq, &w->stats, diff);
++}
++
++/*
++ * Callback to be called when an interrupt happens.
++ */
++static struct irqtimings irq_timings = {
++	.handler = sched_idle_irq,
++};
++
++static ktime_t next_irq_event(void)
++{
++	unsigned int irq, cpu = raw_smp_processor_id();
++	ktime_t diff, next, min = { .tv64 = KTIME_MAX };
++	struct wakeup *w;
++	u32 interval, mean;
++	u64 variance;
++
++	/*
++	 * Lookup the interrupt array for this cpu and search for the
++	 * earlier expected interruption.
++	 */
++        for (irq = 0; irq < NR_IRQS; irq++) {
++
++		ktime_t now = ktime_get();
++
++		w = per_cpu(wakeups[irq], cpu);
++
++		/*
++		 * The interrupt was not setup as a source of a wakeup
++		 * or the wakeup source is not considered at this
++		 * moment stable enough to do a prediction.
++		 */
++		if (!w)
++			continue;
++
++		/*
++		 * No statistics available yet.
++		 */
++		if (ktime_equal(w->timestamp, ktime_set(0, 0)))
++			continue;
++
++		diff = ktime_sub(now, w->timestamp);
++
++		/*
++		 * There is no point attempting predictions on interrupts more
++		 * than 1 second apart. This has no benefit for sleep state
++		 * selection and increases the risk of overflowing our variance
++		 * computation. Reset all stats in that case.
++		 */
++		if (unlikely(ktime_after(diff, ktime_set(1, 0)))) {
++			stats_reset(&w->stats);
++			continue;
++		}
++
++		/*
++		 * If the mean value is null, just ignore this wakeup
++		 * source.
++		 */
++		mean = stats_mean(&w->stats);
++		if (!mean)
++			continue;
++
++		variance = stats_variance(&w->stats, mean);
++		/*
++		 * We want to check the last interval is:
++		 *
++		 *  mean - stddev < interval < mean + stddev
++		 *
++		 * That simplifies to:
++		 *
++		 * -stddev < interval - mean < stddev
++		 *
++		 * abs(interval - mean) < stddev
++		 *
++		 * The standard deviation is the sqrt of the variance:
++		 *
++		 * abs(interval - mean) < sqrt(variance)
++		 *
++		 * and we want to prevent to do an sqrt, so we square
++		 * the equation:
++		 *
++		 * (interval - mean)^2 < variance
++		 *
++		 * So if the latest value of the stats complies with
++		 * this condition, then the wakeup source is
++		 * considered predictable and can be used to predict
++		 * the next event.
++		 */
++		interval = w->stats.values[(w->stats.w_ptr + 1) % STATS_NR_VALUES];
++		if ((u64)((interval - mean) * (interval - mean)) > variance)
++			continue;
++
++		/*
++		 * Let's compute the next event: the wakeup source is
++		 * considered predictable, we add the average interval
++		 * time added to the latest interruption event time.
++		 */
++		next = ktime_add_us(w->timestamp, stats_mean(&w->stats));
++
++		/*
++		 * If the interrupt is supposed to happen before the
++		 * minimum time, then it becomes the minimum.
++		 */
++		if (ktime_before(next, min))
++			min = next;
++	}
++
++	/*
++	 * At this point, we have our prediction but the caller is
++	 * expecting the remaining time before the next event, so
++	 * compute the expected sleep length.
++	 */
++	diff = ktime_sub(min, ktime_get());
++
++	/*
++	 * The result could be negative for different reasons:
++	 *  - the prediction is incorrect
++	 *  - the prediction was too near now and expired while we were
++	 *    in this function
++	 *
++	 * In both cases, we return KTIME_MAX as a failure to do a
++	 * prediction
++	 */
++	if (ktime_compare(diff, ktime_set(0, 0)) <= 0)
++		return (ktime_t){ .tv64 = KTIME_MAX };
++
++	return diff;
++}
++
++/**
++ * sched_idle_next_wakeup - Predict the next wakeup on the current cpu
++ *
++ * The next event on the cpu is based on a statistic approach of the
++ * interrupt events and the timer deterministic value. From the timer
++ * or the irqs, we return the one expected to occur first.
++ *
++ * Returns the expected remaining idle time before being woken up by
++ * an interruption.
++ */
++s64 sched_idle_next_wakeup(void)
++{
++	s64 next_timer = ktime_to_us(tick_nohz_get_sleep_length());
++	s64 next_irq = ktime_to_us(next_irq_event());
++
++	return min(next_irq, next_timer);
++}
++
++/**
++ * sched_idle - go to idle for a specified amount of time
++ *
++ * @duration: the idle duration time
++ * @latency: the latency constraint
++ *
++ * Returns 0 on success, < 0 otherwise.
++ */
++int sched_idle(s64 duration, unsigned int latency)
++{
++	struct cpuidle_device *dev = __this_cpu_read(cpuidle_devices);
++	struct cpuidle_driver *drv = cpuidle_get_cpu_driver(dev);
++	struct cpuidle_state_usage *su;
++	struct cpuidle_state *s;
++	int i, ret = 0, index = -1;
++
++	rcu_idle_enter();
++
++	/*
++	 * No cpuidle driver is available, let's use the default arch
++	 * idle function.
++	 */
++	if (cpuidle_not_available(drv, dev))
++		goto default_idle;
++
++	/*
++	 * Find the idle state with the lowest power while satisfying
++	 * our constraints. We will save energy if the duration of the
++	 * idle time is bigger than the target residency which is the
++	 * break even point. The choice will be modulated by the
++	 * latency.
++	 */
++	for (i = 0; i < drv->state_count; i++) {
++
++		s = &drv->states[i];
++
++		su = &dev->states_usage[i];
++
++		if (s->disabled || su->disable)
++			continue;
++		if (s->target_residency > duration)
++			continue;
++		if (s->exit_latency > latency)
++			continue;
++
++		index = i;
++	}
++
++	/*
++	 * The idle task must be scheduled, it is pointless to go to
++	 * idle, just re-enable the interrupt and return.
++	 */
++	if (current_clr_polling_and_test()) {
++		local_irq_enable();
++		goto out;
++	}
++
++	if (index < 0) {
++		/*
++		 * No idle callbacks fulfilled the constraints, jump
++		 * to the default function like there wasn't any
++		 * cpuidle driver.
++		 */
++		goto default_idle;
++	} else {
++		/*
++		 * Enter the idle state previously returned by the
++		 * governor decision.  This function will block until
++		 * an interrupt occurs and will take care of
++		 * re-enabling the local interrupts
++		 */
++		return cpuidle_enter(drv, dev, index);
++	}
++
++default_idle:
++	default_idle_call();
++out:
++	rcu_idle_exit();
++	return ret;
++}
++
++/**
++ * sched_irq_timing_free - free_irq callback
++ *
++ * @irq: the irq number to stop tracking
++ * @dev_id: not used at the moment
++ *
++ * This function will remove from the wakeup source prediction table.
++ */
++static void sched_irq_timing_free(unsigned int irq, void *dev_id)
++{
++	struct irq_desc *desc = irq_to_desc(irq);
++	struct wakeup *w;
++	unsigned int cpu;
++	unsigned long flags;
++
++	raw_spin_lock_irqsave(&desc->lock, flags);
++	desc->timings = NULL;
++	raw_spin_unlock_irqrestore(&desc->lock, flags);
++
++	for_each_possible_cpu(cpu) {
++		w = per_cpu(wakeups[irq], cpu);
++		if (!w)
++			continue;
++
++		per_cpu(wakeups[irq], cpu) = NULL;
++		kfree(w);
++	}
++}
++
++/**
++ * sched_irq_timing_setup - setup_irq callback
++ *
++ * @irq: the interrupt numbe to be tracked
++ * @act: the new irq action to be set to this interrupt
++ *
++ * Update the irq table to be tracked in order to predict the next event.
++ *
++ * Returns zero on success. On error it returns -ENOMEM.
++ */
++static int sched_irq_timing_setup(unsigned int irq, struct irqaction *act)
++{
++	struct irq_desc *desc = irq_to_desc(irq);
++	struct wakeup *w;
++	unsigned int cpu;
++	unsigned long flags;
++	int ret = -ENOMEM;
++
++	/*
++	 * No interrupt set for this descriptor or related to a timer.
++	 * Timers are deterministic, so no need to try to do any
++	 * prediction on them. No error for both cases, we are just not
++	 * interested.
++	 */
++	if (!act || (act->flags & __IRQF_TIMER))
++		return 0;
++
++	/*
++	 * Allocates the wakeup structure and the stats structure. As
++	 * the interrupt can occur on any cpu, allocate the wakeup
++	 * structure per cpu basis.
++	 */
++	for_each_possible_cpu(cpu) {
++
++		w = kzalloc(sizeof(*w), GFP_KERNEL);
++		if (!w)
++			goto undo;
++
++		per_cpu(wakeups[irq], cpu) = w;
++	}
++
++	raw_spin_lock_irqsave(&desc->lock, flags);
++	desc->timings = &irq_timings;
++	raw_spin_unlock_irqrestore(&desc->lock, flags);
++
++	ret = 0;
++undo:
++	/*
++	 * Rollback all allocations on failure
++	 */
++	if (ret)
++		sched_irq_timing_free(irq, act->dev_id);
++
++	return ret;
++}
++
++/*
++ * Setup/free irq callbacks
++ */
++static struct irqtimings_ops irqt_ops = {
++	.setup = sched_irq_timing_setup,
++	.free = sched_irq_timing_free,
++};
++
++/**
++ * sched_idle_init - setup the interrupt tracking table
++ *
++ * At init time, some interrupts could have been setup and in the
++ * system life time, some devices could be setup. In order to track
++ * all interrupts we are interested in, we first register a couple of
++ * callback to keep up-to-date the interrupt tracking table and then
++ * we setup the table with the interrupt which were already set up.
++ */
++int __init sched_idle_init(void)
++{
++	struct irq_desc *desc;
++	unsigned int irq;
++	int ret;
++
++	/*
++	 * Register the setup/free irq callbacks, so new interrupt or
++	 * freed interrupt will update their tracking.
++	 */
++	ret = register_irq_timings(&irqt_ops);
++	if (ret) {
++		pr_err("Failed to register timings ops\n");
++		return ret;
++	}
++
++	/*
++	 * For all the irq already setup, assign the timing callback.
++	 * All interrupts with their desc NULL will be discarded.
++	 */
++	for_each_irq_desc(irq, desc)
++		sched_irq_timing_setup(irq, desc->action);
++
++	return 0;
++}
++late_initcall(sched_idle_init);
 -- 
 1.9.1
 
