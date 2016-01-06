@@ -1,58 +1,52 @@
 From: Leo Yan <leo.yan@linaro.org>
-Subject: [PATCH v2 2/4] thermal: power_allocator: change k_pu_ratio/k_po_ratio as percentage
-Date: Wed,  6 Jan 2016 16:30:21 +0800
-Message-ID: <1452069023-32149-3-git-send-email-leo.yan@linaro.org>
+Subject: [PATCH v2 4/4] thermal: power_allocator: document k_pu_ratio/k_po_ratio
+Date: Wed,  6 Jan 2016 16:30:23 +0800
+Message-ID: <1452069023-32149-5-git-send-email-leo.yan@linaro.org>
 References: <1452069023-32149-1-git-send-email-leo.yan@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f45.google.com ([209.85.220.45]:34832 "EHLO
-	mail-pa0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752365AbcAFIao (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Jan 2016 03:30:44 -0500
-Received: by mail-pa0-f45.google.com with SMTP id do7so2003443pab.2
-        for <linux-pm@vger.kernel.org>; Wed, 06 Jan 2016 00:30:43 -0800 (PST)
+Return-path: <linux-doc-owner@vger.kernel.org>
 In-Reply-To: <1452069023-32149-1-git-send-email-leo.yan@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-doc-owner@vger.kernel.org
 To: Jonathan Corbet <corbet@lwn.net>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@arm.com>, Punit Agrawal <punit.agrawal@arm.com>, Daniel Kurtz <djkurtz@chromium.org>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>
 Cc: Leo Yan <leo.yan@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-Change k_pu_ratio/k_po_ratio as percentage value, so can set these
-values from sys file nodes with high resolution.
+Document k_pu_ratio and k_po_ratio's purpose, and refine formula to
+demonstrate to use ratio to calculate k_pu/k_po.
 
 Signed-off-by: Leo Yan <leo.yan@linaro.org>
 ---
- drivers/thermal/power_allocator.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ Documentation/thermal/power_allocator.txt | 15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
-index 76d2b47..c5f36fa 100644
---- a/drivers/thermal/power_allocator.c
-+++ b/drivers/thermal/power_allocator.c
-@@ -156,10 +156,10 @@ static void estimate_pid_constants(struct thermal_zone_device *tz,
- 		return;
+diff --git a/Documentation/thermal/power_allocator.txt b/Documentation/thermal/power_allocator.txt
+index a1ce223..8958dab 100644
+--- a/Documentation/thermal/power_allocator.txt
++++ b/Documentation/thermal/power_allocator.txt
+@@ -114,13 +114,20 @@ whilst temperature is low, and may lead to temperature overshooting.
  
- 	if (!tz->tzp->k_po_ratio || force)
--		tz->tzp->k_po_ratio = 1;
-+		tz->tzp->k_po_ratio = 100;
+ The default value for `k_pu` is:
  
- 	if (!tz->tzp->k_pu_ratio || force)
--		tz->tzp->k_pu_ratio = 2;
-+		tz->tzp->k_pu_ratio = 200;
+-    2 * sustainable_power / (desired_temperature - switch_on_temp)
++    k_pu_ratio * sustainable_power / (desired_temperature - switch_on_temp)
  
- 	if (!tz->tzp->k_i || force)
- 		tz->tzp->k_i = int_to_frac(10) / 1000;
-@@ -169,9 +169,9 @@ static void estimate_pid_constants(struct thermal_zone_device *tz,
- 	 */
+ This means that at `switch_on_temp` the output of the controller's
+-proportional term will be 2 * `sustainable_power`.  The default value
+-for `k_po` is:
++proportional term will be k_pu_ratio * `sustainable_power`.
  
- 	tz->tzp->k_po = int_to_frac(tz->tzp->k_po_ratio * sustainable_power) /
--				temperature_threshold;
-+				temperature_threshold / 100;
- 	tz->tzp->k_pu = int_to_frac(tz->tzp->k_pu_ratio * sustainable_power) /
--				temperature_threshold;
-+				temperature_threshold / 100;
- }
+-    sustainable_power / (desired_temperature - switch_on_temp)
++The default value for `k_po` is:
++
++    k_po_ratio * sustainable_power / (desired_temperature - switch_on_temp)
++
++k_pu_ratio's default value is 2 and k_po_ratio's default value is 1.
++These two vairants mean the ratio value compared against sustainable power,
++so smaller ratio will result in thermal slower ramp. User can set these two
++ratio value from sys filesystem nodes, finally k_pu and k_po will be
++calculated by updated ratio value.
  
- /**
+ Focusing on the proportional and feed forward values of the PID
+ controller equation we have:
 -- 
 1.9.1
 
