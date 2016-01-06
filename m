@@ -1,39 +1,48 @@
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 0/2] cpufreq: powernv: Redesign the presentation of throttle notification
-Date: Wed, 06 Jan 2016 17:51:57 +1100
-Message-ID: <877fjnjj3m.fsf@linux.vnet.ibm.com>
-References: <1451686914-3761-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <1451899527-14359-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain
+From: Leo Yan <leo.yan@linaro.org>
+Subject: [PATCH v2 0/4] thermal: re-calculate k_po/k_pu when update sustainable power
+Date: Wed,  6 Jan 2016 16:30:19 +0800
+Message-ID: <1452069023-32149-1-git-send-email-leo.yan@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from e32.co.us.ibm.com ([32.97.110.150]:52131 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750845AbcAFGwX (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Jan 2016 01:52:23 -0500
-Received: from localhost
-	by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-	for <linux-pm@vger.kernel.org> from <stewart@linux.vnet.ibm.com>;
-	Tue, 5 Jan 2016 23:52:22 -0700
-In-Reply-To: <1451899527-14359-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Received: from mail-pa0-f48.google.com ([209.85.220.48]:32881 "EHLO
+	mail-pa0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752043AbcAFIaf (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Wed, 6 Jan 2016 03:30:35 -0500
+Received: by mail-pa0-f48.google.com with SMTP id cy9so229947237pac.0
+        for <linux-pm@vger.kernel.org>; Wed, 06 Jan 2016 00:30:35 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Cc: viresh.kumar@linaro.org, rjw@rjwysocki.net, pc@us.ibm.com, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linux-pm@vger.kernel.org
+To: Jonathan Corbet <corbet@lwn.net>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Javi Merino <javi.merino@arm.com>, Punit Agrawal <punit.agrawal@arm.com>, Daniel Kurtz <djkurtz@chromium.org>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>
+Cc: Leo Yan <leo.yan@linaro.org>
 
-Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> writes:
-> In POWER8, OCC(On-Chip-Controller) can throttle the frequency of the
-> CPU when the chip crosses its thermal and power limits. Currently,
-> powernv-cpufreq driver detects and reports this event as a console
-> message. Some boxes may not sustain the max turbo frequency in all
-> conditions and can be throttled frequently. This can lead to the
-> flooding of console with throttle messages. So this patchset aims to
-> redesign the presentation of this event via sysfs counters and
-> tracepoints.
+k_po/k_pu are two proportional term constants and essentially they have
+fixed ratio compared with sustainable power. In current implementation,
+k_po and k_pu are absolute value after calculation and cannot represent
+the ratio relationship with sustainable power; as a result, when change
+sustainable power we cannot smoothly change proportional term constant.
 
-This likely should CC stable@ as we have seen this on some machines, at
-least in the lab.
+So this patch series introduces k_po_ratio and k_pu_ratio, which
+represent the ratio value compared against sustainable power. Also add
+sys file system nodes for them for easily update them from userspace and
+update a bit in documentation.
+
+Changes from v1:
+* According to Eduardo' comments, move code from thermal_core to
+  power_allocator file
+* According to Daniel's review, v1 will introduce accumulated rounding
+  errors; v2 patches can dismiss this issue
+
+Leo Yan (4):
+  thermal: power_allocator: rework proportional parameter
+  thermal: power_allocator: change k_pu_ratio/k_po_ratio as percentage
+  thermal: add sys node for k_pu_ratio/k_po_ratio
+  thermal: power_allocator: document k_pu_ratio/k_po_ratio
+
+ Documentation/thermal/power_allocator.txt | 15 +++++++++++----
+ drivers/thermal/power_allocator.c         | 18 ++++++++++++------
+ drivers/thermal/thermal_core.c            | 23 +++++++++++++++++++++--
+ include/linux/thermal.h                   |  4 ++--
+ 4 files changed, 46 insertions(+), 14 deletions(-)
 
 -- 
-Stewart Smith
-OPAL Architect, IBM.
+1.9.1
 
