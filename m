@@ -1,7 +1,7 @@
 From: Leo Yan <leo.yan@linaro.org>
-Subject: [PATCH v3 4/4] thermal: power_allocator: document k_pu_ratio/k_po_ratio
-Date: Wed,  6 Jan 2016 16:53:48 +0800
-Message-ID: <1452070428-2567-5-git-send-email-leo.yan@linaro.org>
+Subject: [PATCH v3 1/4] thermal: power_allocator: rework proportional parameter
+Date: Wed,  6 Jan 2016 16:53:45 +0800
+Message-ID: <1452070428-2567-2-git-send-email-leo.yan@linaro.org>
 References: <1452070428-2567-1-git-send-email-leo.yan@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1452070428-2567-1-git-send-email-leo.yan@linaro.org>
@@ -10,42 +10,92 @@ To: Jonathan Corbet <corbet@lwn.net>, Zhang Rui <rui.zhang@intel.com>, Eduardo V
 Cc: Leo Yan <leo.yan@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Document k_pu_ratio and k_po_ratio's purpose, and refine formula to
-demonstrate to use ratio to calculate k_pu/k_po.
+k_po/k_pu are two proportional term constants and essentially they have
+fixed ratio compared with sustainable power. In current implementation,
+k_po and k_pu are absolute value after calculation and cannot represent
+the ratio relationship with sustainable power; as a result, when change
+sustainable power we cannot smoothly change proportional term constant.
+
+So this patch introduces variants k_po_ratio and k_pu_ratio, which
+represent the ratio value compared against sustainable power, so smaller
+ratio will result in thermal slower ramp. The formulas finally are as
+below:
+
+k_pu = k_pu_ratio * sustainable_power /
+		(desired_temperature - switch_on_temp)
+
+k_po = k_po_ratio * sustainable_power /
+		(desired_temperature - switch_on_temp)
 
 Signed-off-by: Leo Yan <leo.yan@linaro.org>
 ---
- Documentation/thermal/power_allocator.txt | 15 +++++++++++----
- 1 file changed, 11 insertions(+), 4 deletions(-)
+ drivers/thermal/power_allocator.c | 18 ++++++++++++------
+ include/linux/thermal.h           |  4 ++--
+ 2 files changed, 14 insertions(+), 8 deletions(-)
 
-diff --git a/Documentation/thermal/power_allocator.txt b/Documentation/thermal/power_allocator.txt
-index a1ce223..8958dab 100644
---- a/Documentation/thermal/power_allocator.txt
-+++ b/Documentation/thermal/power_allocator.txt
-@@ -114,13 +114,20 @@ whilst temperature is low, and may lead to temperature overshooting.
+diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
+index 1246aa6..76d2b47 100644
+--- a/drivers/thermal/power_allocator.c
++++ b/drivers/thermal/power_allocator.c
+@@ -155,13 +155,11 @@ static void estimate_pid_constants(struct thermal_zone_device *tz,
+ 	if (!temperature_threshold)
+ 		return;
  
- The default value for `k_pu` is:
+-	if (!tz->tzp->k_po || force)
+-		tz->tzp->k_po = int_to_frac(sustainable_power) /
+-			temperature_threshold;
++	if (!tz->tzp->k_po_ratio || force)
++		tz->tzp->k_po_ratio = 1;
  
--    2 * sustainable_power / (desired_temperature - switch_on_temp)
-+    k_pu_ratio * sustainable_power / (desired_temperature - switch_on_temp)
+-	if (!tz->tzp->k_pu || force)
+-		tz->tzp->k_pu = int_to_frac(2 * sustainable_power) /
+-			temperature_threshold;
++	if (!tz->tzp->k_pu_ratio || force)
++		tz->tzp->k_pu_ratio = 2;
  
- This means that at `switch_on_temp` the output of the controller's
--proportional term will be 2 * `sustainable_power`.  The default value
--for `k_po` is:
-+proportional term will be k_pu_ratio * `sustainable_power`.
- 
--    sustainable_power / (desired_temperature - switch_on_temp)
-+The default value for `k_po` is:
+ 	if (!tz->tzp->k_i || force)
+ 		tz->tzp->k_i = int_to_frac(10) / 1000;
+@@ -169,6 +167,11 @@ static void estimate_pid_constants(struct thermal_zone_device *tz,
+ 	 * The default for k_d and integral_cutoff is 0, so we can
+ 	 * leave them as they are.
+ 	 */
 +
-+    k_po_ratio * sustainable_power / (desired_temperature - switch_on_temp)
-+
-+k_pu_ratio's default value is 2 and k_po_ratio's default value is 1.
-+These two vairants mean the ratio value compared against sustainable power,
-+so smaller ratio will result in thermal slower ramp. User can set these two
-+ratio value from sys filesystem nodes, finally k_pu and k_po will be
-+calculated by updated ratio value.
++	tz->tzp->k_po = int_to_frac(tz->tzp->k_po_ratio * sustainable_power) /
++				temperature_threshold;
++	tz->tzp->k_pu = int_to_frac(tz->tzp->k_pu_ratio * sustainable_power) /
++				temperature_threshold;
+ }
  
- Focusing on the proportional and feed forward values of the PID
- controller equation we have:
+ /**
+@@ -202,6 +205,9 @@ static u32 pid_controller(struct thermal_zone_device *tz,
+ 
+ 	if (tz->tzp->sustainable_power) {
+ 		sustainable_power = tz->tzp->sustainable_power;
++		estimate_pid_constants(tz, sustainable_power,
++				       params->trip_switch_on, control_temp,
++				       false);
+ 	} else {
+ 		sustainable_power = estimate_sustainable_power(tz);
+ 		estimate_pid_constants(tz, sustainable_power,
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 613c29b..2638f0b 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -284,13 +284,13 @@ struct thermal_zone_params {
+ 	 * Proportional parameter of the PID controller when
+ 	 * overshooting (i.e., when temperature is below the target)
+ 	 */
+-	s32 k_po;
++	s32 k_po, k_po_ratio;
+ 
+ 	/*
+ 	 * Proportional parameter of the PID controller when
+ 	 * undershooting
+ 	 */
+-	s32 k_pu;
++	s32 k_pu, k_pu_ratio;
+ 
+ 	/* Integral parameter of the PID controller */
+ 	s32 k_i;
 -- 
 1.9.1
