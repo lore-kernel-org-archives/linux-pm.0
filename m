@@ -1,55 +1,40 @@
-From: "dbasehore ." <dbasehore@chromium.org>
-Subject: Re: [PATCH v11 0/4] Allow USB devices to remain runtime-suspended
- when sleeping
-Date: Tue, 5 Jan 2016 15:38:25 -0800
-Message-ID: <CAGAzgsrdw8pmntQYrLbWsFzO7epp7JX84FN2Y-KkuZOfA18gmg@mail.gmail.com>
-References: <1445956731-6304-1-git-send-email-tomeu.vizoso@collabora.com>
-	<2496228.i2Z9PmMBtz@vostro.rjw.lan>
-	<20160105021052.GA32392@google.com>
-	<1791136.5K3qHuXCRE@vostro.rjw.lan>
+From: liu.xiang6@zte.com.cn
+Subject: [PATCH] power: bq27xxx_battery: Fix bq27541 AveragePower register address
+Date: Wed, 6 Jan 2016 14:37:22 +0800
+Message-ID: <OF8219B649.7DD7FCA2-ON48257F32.0023C1E9-48257F32.00245EFF@zte.com.cn>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f170.google.com ([209.85.160.170]:34788 "EHLO
-	mail-yk0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752003AbcAEXi0 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 5 Jan 2016 18:38:26 -0500
-Received: by mail-yk0-f170.google.com with SMTP id a85so221668446ykb.1
-        for <linux-pm@vger.kernel.org>; Tue, 05 Jan 2016 15:38:26 -0800 (PST)
-In-Reply-To: <1791136.5K3qHuXCRE@vostro.rjw.lan>
+Received: from mx7.zte.com.cn ([202.103.147.169]:37074 "EHLO zte.com.cn"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750845AbcAFGhe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Wed, 6 Jan 2016 01:37:34 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Len Brown <len.brown@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Russell King <linux@arm.linux.org.uk>, martyn.welch@collabora.co.uk, Linux-pm mailing list <linux-pm@vger.kernel.org>, David Airlie <airlied@linux.ie>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org, linux-acpi@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Alan Stern <stern@rowland.harvard.edu>, Pavel Machek <pavel@ucw.cz>, Tomas Winkler <tomas.winkler@intel.com>, linux-omap@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Len Brown <lenb@kernel.org>, Daniel Kurtz <djkurtz@chromium.org>
+To: linux-pm@vger.kernel.org
+Cc: pali.rohar@gmail.com, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
 
-On Tue, Jan 5, 2016 at 4:48 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Monday, January 04, 2016 06:27:18 PM Derek Basehore wrote:
->> On Mon, Nov 02, 2015 at 02:50:40AM +0100, Rafael J. Wysocki wrote:
->> >
->> > I've queued up this series for the second half of the v4.4 merge window.
->> >
->> > Thanks,
->> > Rafael
->> >
->> >
->> > _______________________________________________
->> > linux-arm-kernel mailing list
->> > linux-arm-kernel@lists.infradead.org
->> > http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
->>
->> What's the status of this patch series? I haven't seen the patches
->> posted for v4.4, plus there's the issue that Dan found that needs to be
->> addressed.
->>
->> Is there a new revision of the patch series being worked on?
->
-> Tomeu is not working on one AFAICS, but I may just revive his series.
->
-> Do you have a pointer to the Dan's report?
->
-> Thanks,
-> Rafael
->
-
-It was a reply to the second patch in the series. Here's a link to it
-https://lkml.org/lkml/2015/11/10/107
+RnJvbSA0MTA2NzEwMTk1NjMzMjNiODk0N2EyNWU0Y2Y0MjljNDFlOTgyNjgzIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQ0KTWVzc2FnZS1JZDogDQo8NDEwNjcxMDE5NTYzMzIzYjg5NDdhMjVlNGNm
+NDI5YzQxZTk4MjY4My4xNDUyMDQ3NjE0LmdpdC5saXUueGlhbmc2QHp0ZS5jb20uY24+DQpGcm9t
+OiBMaXUgWGlhbmcgPGxpdS54aWFuZzZAenRlLmNvbS5jbj4NCkRhdGU6IFdlZCwgNiBKYW4gMjAx
+NiAxMDoyODoyNyArMDgwMA0KU3ViamVjdDogW1BBVENIXSBwb3dlcjogYnEyN3h4eF9iYXR0ZXJ5
+OiBGaXggYnEyNzU0MSBBdmVyYWdlUG93ZXIgcmVnaXN0ZXINCiBhZGRyZXNzDQoNCkN1cnJlbnRs
+eSBpbiBicTI3NTQxIGRyaXZlciwgdGhlIGF2ZXJhZ2UgcG93ZXIgcmVnaXN0ZXIgYWRkcmVzcyBp
+cw0KaW5jb3JyZWN0bHkgc2V0IHRvIDB4NzYsIHdoaWNoIHdvdWxkIHJlc3VsdCBpbiBhbiBlcnJv
+cjoNCmJxMjd4eHgtYmF0dGVyeSAyLTAwNTU6IGVycm9yIHJlYWRpbmcgYXZlcmFnZSBwb3dlciBy
+ZWdpc3RlciAgMTA6IC0xMQ0KQWNjb3JkaW5nIHRvIHRoZSBicTI3NTQxIGRhdGFzaGVldCwgZml4
+IHRoaXMgcHJvYmxlbSBieSBzZXR0aW5nDQp0aGUgYXZlcmFnZSBwb3dlciByZWdpc3RlciBhZGRy
+ZXNzIHRvIDB4MjQuDQoNClNpZ25lZC1vZmYtYnk6IExpdSBYaWFuZyA8bGl1LnhpYW5nNkB6dGUu
+Y29tLmNuPg0KLS0tDQogZHJpdmVycy9wb3dlci9icTI3eHh4X2JhdHRlcnkuYyB8IDIgKy0NCiAx
+IGZpbGUgY2hhbmdlZCwgMSBpbnNlcnRpb24oKyksIDEgZGVsZXRpb24oLSkNCg0KZGlmZiAtLWdp
+dCBhL2RyaXZlcnMvcG93ZXIvYnEyN3h4eF9iYXR0ZXJ5LmMgDQpiL2RyaXZlcnMvcG93ZXIvYnEy
+N3h4eF9iYXR0ZXJ5LmMNCmluZGV4IDg4MDIzM2MuLjYzM2Y5NmQgMTAwNjQ0DQotLS0gYS9kcml2
+ZXJzL3Bvd2VyL2JxMjd4eHhfYmF0dGVyeS5jDQorKysgYi9kcml2ZXJzL3Bvd2VyL2JxMjd4eHhf
+YmF0dGVyeS5jDQpAQCAtMjQyLDcgKzI0Miw3IEBAIHN0YXRpYyB1OCBicTI3NTQxX3JlZ3NbXSA9
+IHsNCiAgICAgICAgSU5WQUxJRF9SRUdfQUREUiwgICAgICAgLyogQUUgLSBOQSAgICAgICovDQog
+ICAgICAgIDB4MmMsICAgLyogU09DKFJTT0MpICAgICovDQogICAgICAgIDB4M2MsICAgLyogRENB
+UCAgICAgICAgICovDQotICAgICAgIDB4NzYsICAgLyogQVAgICAgICAgICAgICovDQorICAgICAg
+IDB4MjQsICAgLyogQVAgICAgICAgICAgICovDQogfTsNCg0KIHN0YXRpYyB1OCBicTI3NTQ1X3Jl
+Z3NbXSA9IHsNCi0tDQoxLjguNC4yDQo=
