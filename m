@@ -1,7 +1,7 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v1 4/8] drm/edid: convert to use match_string() helper
-Date: Thu,  7 Jan 2016 14:06:04 +0200
-Message-ID: <1452168368-75630-4-git-send-email-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v1 2/8] device property: convert to use match_string() helper
+Date: Thu,  7 Jan 2016 14:06:02 +0200
+Message-ID: <1452168368-75630-2-git-send-email-andriy.shevchenko@linux.intel.com>
 References: <1452168368-75630-1-git-send-email-andriy.shevchenko@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1452168368-75630-1-git-send-email-andriy.shevchenko@linux.intel.com>
@@ -15,43 +15,36 @@ here.
 
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/gpu/drm/drm_edid_load.c | 17 ++++++-----------
- 1 file changed, 6 insertions(+), 11 deletions(-)
+ drivers/base/property.c | 10 ++--------
+ 1 file changed, 2 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/gpu/drm/drm_edid_load.c b/drivers/gpu/drm/drm_edid_load.c
-index 698b8c3..9a401ae 100644
---- a/drivers/gpu/drm/drm_edid_load.c
-+++ b/drivers/gpu/drm/drm_edid_load.c
-@@ -170,16 +170,11 @@ static void *edid_load(struct drm_connector *connector, const char *name,
- 	int i, valid_extensions = 0;
- 	bool print_bad_edid = !connector->bad_edid_counter || (drm_debug & DRM_UT_KMS);
+diff --git a/drivers/base/property.c b/drivers/base/property.c
+index c359351..f902b55 100644
+--- a/drivers/base/property.c
++++ b/drivers/base/property.c
+@@ -647,7 +647,7 @@ int fwnode_property_match_string(struct fwnode_handle *fwnode,
+ 	const char *propname, const char *string)
+ {
+ 	const char **values;
+-	int nval, ret, i;
++	int nval, ret;
  
--	builtin = 0;
--	for (i = 0; i < GENERIC_EDIDS; i++) {
--		if (strcmp(name, generic_edid_name[i]) == 0) {
--			fwdata = generic_edid[i];
--			fwsize = sizeof(generic_edid[i]);
--			builtin = 1;
+ 	nval = fwnode_property_read_string_array(fwnode, propname, NULL, 0);
+ 	if (nval < 0)
+@@ -664,13 +664,7 @@ int fwnode_property_match_string(struct fwnode_handle *fwnode,
+ 	if (ret < 0)
+ 		goto out;
+ 
+-	ret = -ENODATA;
+-	for (i = 0; i < nval; i++) {
+-		if (!strcmp(values[i], string)) {
+-			ret = i;
 -			break;
 -		}
 -	}
--	if (!builtin) {
-+	builtin = match_string(generic_edid_name, GENERIC_EDIDS, name);
-+	if (builtin >= 0) {
-+		fwdata = generic_edid[builtin];
-+		fwsize = sizeof(generic_edid[builtin]);
-+	} else {
- 		struct platform_device *pdev;
- 		int err;
- 
-@@ -252,7 +247,7 @@ static void *edid_load(struct drm_connector *connector, const char *name,
- 	}
- 
- 	DRM_INFO("Got %s EDID base block and %d extension%s from "
--	    "\"%s\" for connector \"%s\"\n", builtin ? "built-in" :
-+	    "\"%s\" for connector \"%s\"\n", (builtin >= 0) ? "built-in" :
- 	    "external", valid_extensions, valid_extensions == 1 ? "" : "s",
- 	    name, connector_name);
- 
++	ret = match_string(values, nval, string);
+ out:
+ 	kfree(values);
+ 	return ret;
 -- 
 2.6.4
