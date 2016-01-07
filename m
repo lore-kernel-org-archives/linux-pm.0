@@ -1,7 +1,7 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v1 6/8] power: ab8500: convert to use match_string() helper
-Date: Thu,  7 Jan 2016 14:06:06 +0200
-Message-ID: <1452168368-75630-6-git-send-email-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v1 8/8] ide: hpt366: convert to use match_string() helper
+Date: Thu,  7 Jan 2016 14:06:08 +0200
+Message-ID: <1452168368-75630-8-git-send-email-andriy.shevchenko@linux.intel.com>
 References: <1452168368-75630-1-git-send-email-andriy.shevchenko@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1452168368-75630-1-git-send-email-andriy.shevchenko@linux.intel.com>
@@ -15,152 +15,29 @@ here.
 
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/power/ab8500_btemp.c    | 15 +++++----------
- drivers/power/ab8500_charger.c  | 16 +++++-----------
- drivers/power/ab8500_fg.c       | 15 +++++----------
- drivers/power/abx500_chargalg.c | 14 +++++---------
- 4 files changed, 20 insertions(+), 40 deletions(-)
+ drivers/ide/hpt366.c | 9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/power/ab8500_btemp.c b/drivers/power/ab8500_btemp.c
-index 8f8044e..bf2e5dd 100644
---- a/drivers/power/ab8500_btemp.c
-+++ b/drivers/power/ab8500_btemp.c
-@@ -906,26 +906,21 @@ static int ab8500_btemp_get_property(struct power_supply *psy,
- static int ab8500_btemp_get_ext_psy_data(struct device *dev, void *data)
+diff --git a/drivers/ide/hpt366.c b/drivers/ide/hpt366.c
+index 696b6c1..f417332 100644
+--- a/drivers/ide/hpt366.c
++++ b/drivers/ide/hpt366.c
+@@ -531,14 +531,9 @@ static const struct hpt_info hpt371n = {
+ 	.timings	= &hpt37x_timings
+ };
+ 
+-static int check_in_drive_list(ide_drive_t *drive, const char **list)
++static bool check_in_drive_list(ide_drive_t *drive, const char **list)
  {
- 	struct power_supply *psy;
--	struct power_supply *ext;
-+	struct power_supply *ext = dev_get_drvdata(dev);
-+	const char **supplicants = (const char **)ext->supplied_to;
- 	struct ab8500_btemp *di;
- 	union power_supply_propval ret;
--	int i, j;
--	bool psy_found = false;
-+	int j;
- 
- 	psy = (struct power_supply *)data;
--	ext = dev_get_drvdata(dev);
- 	di = power_supply_get_drvdata(psy);
- 
- 	/*
- 	 * For all psy where the name of your driver
- 	 * appears in any supplied_to
- 	 */
--	for (i = 0; i < ext->num_supplicants; i++) {
--		if (!strcmp(ext->supplied_to[i], psy->desc->name))
--			psy_found = true;
--	}
+-	char *m = (char *)&drive->id[ATA_ID_PROD];
 -
--	if (!psy_found)
-+	j = match_string(supplicants, ext->num_supplicants, psy->desc->name);
-+	if (j < 0)
- 		return 0;
+-	while (*list)
+-		if (!strcmp(*list++, m))
+-			return 1;
+-	return 0;
++	return match_string(list, 0, (char *)&drive->id[ATA_ID_PROD]) >= 0;
+ }
  
- 	/* Go through all properties for the psy */
-diff --git a/drivers/power/ab8500_charger.c b/drivers/power/ab8500_charger.c
-index e388171..30de5d4 100644
---- a/drivers/power/ab8500_charger.c
-+++ b/drivers/power/ab8500_charger.c
-@@ -1929,11 +1929,11 @@ static int ab8540_charger_usb_pre_chg_enable(struct ux500_charger *charger,
- static int ab8500_charger_get_ext_psy_data(struct device *dev, void *data)
- {
- 	struct power_supply *psy;
--	struct power_supply *ext;
-+	struct power_supply *ext = dev_get_drvdata(dev);
-+	const char **supplicants = (const char **)ext->supplied_to;
- 	struct ab8500_charger *di;
- 	union power_supply_propval ret;
--	int i, j;
--	bool psy_found = false;
-+	int j;
- 	struct ux500_charger *usb_chg;
- 
- 	usb_chg = (struct ux500_charger *)data;
-@@ -1941,15 +1941,9 @@ static int ab8500_charger_get_ext_psy_data(struct device *dev, void *data)
- 
- 	di = to_ab8500_charger_usb_device_info(usb_chg);
- 
--	ext = dev_get_drvdata(dev);
--
- 	/* For all psy where the driver name appears in any supplied_to */
--	for (i = 0; i < ext->num_supplicants; i++) {
--		if (!strcmp(ext->supplied_to[i], psy->desc->name))
--			psy_found = true;
--	}
--
--	if (!psy_found)
-+	j = match_string(supplicants, ext->num_supplicants, psy->desc->name);
-+	if (j < 0)
- 		return 0;
- 
- 	/* Go through all properties for the psy */
-diff --git a/drivers/power/ab8500_fg.c b/drivers/power/ab8500_fg.c
-index 3830dad..5a36cf8 100644
---- a/drivers/power/ab8500_fg.c
-+++ b/drivers/power/ab8500_fg.c
-@@ -2168,26 +2168,21 @@ static int ab8500_fg_get_property(struct power_supply *psy,
- static int ab8500_fg_get_ext_psy_data(struct device *dev, void *data)
- {
- 	struct power_supply *psy;
--	struct power_supply *ext;
-+	struct power_supply *ext = dev_get_drvdata(dev);
-+	const char **supplicants = (const char **)ext->supplied_to;
- 	struct ab8500_fg *di;
- 	union power_supply_propval ret;
--	int i, j;
--	bool psy_found = false;
-+	int j;
- 
- 	psy = (struct power_supply *)data;
--	ext = dev_get_drvdata(dev);
- 	di = power_supply_get_drvdata(psy);
- 
- 	/*
- 	 * For all psy where the name of your driver
- 	 * appears in any supplied_to
- 	 */
--	for (i = 0; i < ext->num_supplicants; i++) {
--		if (!strcmp(ext->supplied_to[i], psy->desc->name))
--			psy_found = true;
--	}
--
--	if (!psy_found)
-+	j = match_string(supplicants, ext->num_supplicants, psy->desc->name);
-+	if (j < 0)
- 		return 0;
- 
- 	/* Go through all properties for the psy */
-diff --git a/drivers/power/abx500_chargalg.c b/drivers/power/abx500_chargalg.c
-index 541f702..d9104b1 100644
---- a/drivers/power/abx500_chargalg.c
-+++ b/drivers/power/abx500_chargalg.c
-@@ -975,22 +975,18 @@ static void handle_maxim_chg_curr(struct abx500_chargalg *di)
- static int abx500_chargalg_get_ext_psy_data(struct device *dev, void *data)
- {
- 	struct power_supply *psy;
--	struct power_supply *ext;
-+	struct power_supply *ext = dev_get_drvdata(dev);
-+	const char **supplicants = (const char **)ext->supplied_to;
- 	struct abx500_chargalg *di;
- 	union power_supply_propval ret;
--	int i, j;
--	bool psy_found = false;
-+	int j;
- 	bool capacity_updated = false;
- 
- 	psy = (struct power_supply *)data;
--	ext = dev_get_drvdata(dev);
- 	di = power_supply_get_drvdata(psy);
- 	/* For all psy where the driver name appears in any supplied_to */
--	for (i = 0; i < ext->num_supplicants; i++) {
--		if (!strcmp(ext->supplied_to[i], psy->desc->name))
--			psy_found = true;
--	}
--	if (!psy_found)
-+	j = match_string(supplicants, ext->num_supplicants, psy->desc->name);
-+	if (j < 0)
- 		return 0;
- 
- 	/*
+ static struct hpt_info *hpt3xx_get_info(struct device *dev)
 -- 
 2.6.4
