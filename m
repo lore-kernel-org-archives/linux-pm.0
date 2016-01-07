@@ -1,72 +1,61 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: [PATCH v12 4/4] USB / PM: Allow USB devices to remain runtime-suspended when sleeping
-Date: Thu,  7 Jan 2016 16:46:15 +0100
-Message-ID: <1452181575-9206-5-git-send-email-tomeu.vizoso@collabora.com>
-References: <1452181575-9206-1-git-send-email-tomeu.vizoso@collabora.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1452181575-9206-1-git-send-email-tomeu.vizoso@collabora.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, martyn.welch@collabora.co.uk, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Kurtz <djkurtz@chromium.org>
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH] power, test_power: correctly handle empty writes
+Date: Thu, 7 Jan 2016 18:40:47 +0100
+Message-ID: <20160107174047.GA29563@earth>
+References: <1450806216-22600-1-git-send-email-sasha.levin@oracle.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="qMm9M+Fa2AknHoGS"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:43858 "EHLO mail.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752209AbcAGRkv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 7 Jan 2016 12:40:51 -0500
+Content-Disposition: inline
+In-Reply-To: <1450806216-22600-1-git-send-email-sasha.levin@oracle.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sasha Levin <sasha.levin@oracle.com>
+Cc: dbaryshkov@gmail.com, dwmw2@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, john.stultz@linaro.org, cbouatmailru@gmail.com
 
-Have dev_pm_ops.prepare return 1 for USB devices and ports so that USB
-devices can remain runtime-suspended when the system goes to a sleep
-state, if their wakeup state is correct and they have runtime PM enabled.
 
-Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-Acked-by: Alan Stern <stern@rowland.harvard.edu>
----
+--qMm9M+Fa2AknHoGS
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Changes in v10:
-- Remove superfluous call to pm_runtime_enabled() as suggested by Alan
+Hi,
 
- drivers/usb/core/port.c | 6 ++++++
- drivers/usb/core/usb.c  | 8 +++++++-
- 2 files changed, 13 insertions(+), 1 deletion(-)
+On Tue, Dec 22, 2015 at 12:43:36PM -0500, Sasha Levin wrote:
+> Writing 0 length data into test_power makes it access an invalid array
+> location and kill the system.
+>=20
+> Fixes: f17ef9b2d ("power: Make test_power driver more dynamic.")
+> Signed-off-by: Sasha Levin <sasha.levin@oracle.com>
 
-diff --git a/drivers/usb/core/port.c b/drivers/usb/core/port.c
-index 460c855be0d0..14718a9ffcfb 100644
---- a/drivers/usb/core/port.c
-+++ b/drivers/usb/core/port.c
-@@ -249,12 +249,18 @@ static int usb_port_runtime_suspend(struct device *dev)
- 
- 	return retval;
- }
-+
-+static int usb_port_prepare(struct device *dev)
-+{
-+	return 1;
-+}
- #endif
- 
- static const struct dev_pm_ops usb_port_pm_ops = {
- #ifdef CONFIG_PM
- 	.runtime_suspend =	usb_port_runtime_suspend,
- 	.runtime_resume =	usb_port_runtime_resume,
-+	.prepare =		usb_port_prepare,
- #endif
- };
- 
-diff --git a/drivers/usb/core/usb.c b/drivers/usb/core/usb.c
-index 77e4c9bc0ab1..ebb29caa3fe4 100644
---- a/drivers/usb/core/usb.c
-+++ b/drivers/usb/core/usb.c
-@@ -311,7 +311,13 @@ static int usb_dev_uevent(struct device *dev, struct kobj_uevent_env *env)
- 
- static int usb_dev_prepare(struct device *dev)
- {
--	return 0;		/* Implement eventually? */
-+	struct usb_device *udev = to_usb_device(dev);
-+
-+	/* Return 0 if the current wakeup setting is wrong, otherwise 1 */
-+	if (udev->do_remote_wakeup != device_may_wakeup(dev))
-+		return 0;
-+
-+	return 1;
- }
- 
- static void usb_dev_complete(struct device *dev)
--- 
-2.5.0
+Thanks, queued.
+
+-- Sebastian
+
+--qMm9M+Fa2AknHoGS
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBCgAGBQJWjqMcAAoJENju1/PIO/qaVvIQAJ5ZXjOt46qRKUqiQRz6/h1D
+ddQBpwDe9yrjWfGPd9nTTMbkmwv7jO4OXNofbQlyajmc8pObP5SEEm3CRjNSRtYF
+58fpVVHgBrxNNpb8IUqYs9+0fLD3rSQbEcBv/Jb9Vk14EFYGyrg3BbE8q6k1C3RY
+fsL7iNgkcbMyf0jZlkVG5wlmEN8shYC1LG3GOx4jE1tZqWwlBuLLX04aF58JzD7t
+7Bj6I/Gc61UUGLzu96zuVJCZ65mCXLoPYBTGYYzcbkD3CTh+P26aHGWpem+yv8nn
+da/hlrTmdA2vsro12/WRfMPy07A0Ti7JRrP0die4SyfJqIk6WHHYz7vuIr9ErJg4
+TEYuOztaxt1XRnj2i3XSG7fv9sEOEq/oeBTtXwxoPznIoWijE/zutLu9fRnFw+qU
+3gf+IkQ2S91Eom3ju7bc/rgUTp3f6yzihlrls0b/aWLEs2pXhoUiRAOTuf3TQw/M
+VemObSmGUA51y9pLhTzXXGJ6F1FBp8laFuo12WmwjgAEbswySZTq38fgFt1wweoX
+JZi42H0oUCWCqpKKITeYiYY2qHitOY41rfYoYfTMK5zPK6W5xSFPp30nd8I0meos
+3oAQp2gWBbOUazi2+eJVa+CiE4/vMKUC+10CUYmFFOoVJ+K0uX8cPxGxf1xRm2jN
+MuvDv7/8t7m0a2QDYXts
+=q+qD
+-----END PGP SIGNATURE-----
+
+--qMm9M+Fa2AknHoGS--
