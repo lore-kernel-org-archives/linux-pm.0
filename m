@@ -1,39 +1,33 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v1 1/1] PM / clk: don't leave clocks enabled when driver not bound
-Date: Thu,  7 Jan 2016 12:49:31 +0200
-Message-ID: <1452163771-73303-1-git-send-email-andriy.shevchenko@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:16369 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751905AbcAGKtf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 7 Jan 2016 05:49:35 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v7 0/4] Introduce usb charger framework to deal with the
+ usb gadget power negotation
+Date: Thu, 7 Jan 2016 19:54:30 +0800
+Message-ID: <CAMz4kuKw-frj5j0su9Goy-bGc7S-zDy_CiqTuVhE2sMVkS47Ug@mail.gmail.com>
+References: <cover.1451876014.git.baolin.wang@linaro.org>
+	<CAGjg+kHzt7pxxU=OdTd3sLWETiA7P6iMBmNs6dNvSCzFZiwv4w@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAGjg+kHzt7pxxU=OdTd3sLWETiA7P6iMBmNs6dNvSCzFZiwv4w-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Alex Shi <lkml.alex-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Felipe Balbi <balbi-l0cyMroinI0@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, r.baldyga-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, ckeepax-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, USB <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org, lkml <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-There is a new notification BUS_NOTIFY_DRIVER_NOT_BOUND that is issued when
-driver fails during binding. In such case pm_clk_notify(), when PM_CLK=n,
-leaves clocks enabled. Undo operations that has been done in
-BUS_NOTIFY_BIND_DRIVER case.
+On 7 January 2016 at 19:25, Alex Shi <lkml.alex-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
+> Hi, Baolin,
+>
+> There is similar gadget/charger driver on QC msm tree,
+> git://codeaurora.org/quic/la/kernel/msm-3.10 msm-3.10
+> You may check that as a reference.
+>
 
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
- drivers/base/power/clock_ops.c | 1 +
- 1 file changed, 1 insertion(+)
+OK. Thanks.
 
-diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
-index 60ee559..c39b861 100644
---- a/drivers/base/power/clock_ops.c
-+++ b/drivers/base/power/clock_ops.c
-@@ -473,6 +473,7 @@ static int pm_clk_notify(struct notifier_block *nb,
- 			enable_clock(dev, NULL);
- 		}
- 		break;
-+	case BUS_NOTIFY_DRIVER_NOT_BOUND:
- 	case BUS_NOTIFY_UNBOUND_DRIVER:
- 		if (clknb->con_ids[0]) {
- 			for (con_id = clknb->con_ids; *con_id; con_id++)
 -- 
-2.6.4
-
+Baolin.wang
+Best Regards
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
