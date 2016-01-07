@@ -1,76 +1,77 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v1 1/8] lib/string: introduce match_string() helper
-Date: Thu,  7 Jan 2016 14:06:01 +0200
-Message-ID: <1452168368-75630-1-git-send-email-andriy.shevchenko@linux.intel.com>
+From: Heikki Krogerus <heikki.krogerus@linux.intel.com>
+Subject: Re: [PATCH v1 1/8] lib/string: introduce match_string() helper
+Date: Thu, 7 Jan 2016 15:07:43 +0200
+Message-ID: <20160107130743.GA9935@kuha.fi.intel.com>
+References: <1452168368-75630-1-git-send-email-andriy.shevchenko@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga04.intel.com ([192.55.52.120]:59786 "EHLO mga04.intel.com"
+Received: from mga01.intel.com ([192.55.52.88]:5188 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752704AbcAGMGO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Thu, 7 Jan 2016 07:06:14 -0500
+	id S1752020AbcAGNHr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Thu, 7 Jan 2016 08:07:47 -0500
+Content-Disposition: inline
+In-Reply-To: <1452168368-75630-1-git-send-email-andriy.shevchenko@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "David S. Miller" <davem@davemloft.net>, David Airlie <airlied@linux.ie>, Andrew Morton <akpm@linux-foundation.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Tejun Heo <tj@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "David S. Miller" <davem@davemloft.net>, David Airlie <airlied@linux.ie>, Andrew Morton <akpm@linux-foundation.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>
 
->From time to time we have to match a string in an array. Make a simple helper
-for that purpose.
+On Thu, Jan 07, 2016 at 02:06:01PM +0200, Andy Shevchenko wrote:
+> >From time to time we have to match a string in an array. Make a simple helper
+> for that purpose.
 
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
- include/linux/string.h |  2 ++
- lib/string.c           | 26 ++++++++++++++++++++++++++
- 2 files changed, 28 insertions(+)
+Cool! If you make v2 out of these, could you patch the following while
+at it:
 
-diff --git a/include/linux/string.h b/include/linux/string.h
-index b0a732b..37062fb 100644
---- a/include/linux/string.h
-+++ b/include/linux/string.h
-@@ -131,6 +131,8 @@ extern void argv_free(char **argv);
- extern bool sysfs_streq(const char *s1, const char *s2);
- extern int strtobool(const char *s, bool *res);
+diff --git a/drivers/usb/common/common.c b/drivers/usb/common/common.c
+index e6ec125..a391c81 100644
+--- a/drivers/usb/common/common.c
++++ b/drivers/usb/common/common.c
+@@ -64,18 +64,15 @@ EXPORT_SYMBOL_GPL(usb_speed_string);
+ enum usb_device_speed usb_get_maximum_speed(struct device *dev)
+ {
+        const char *maximum_speed;
+-       int err;
+-       int i;
++       int ret;
  
-+int match_string(const char * const *array, size_t len, const char *string);
-+
- #ifdef CONFIG_BINARY_PRINTF
- int vbin_printf(u32 *bin_buf, size_t size, const char *fmt, va_list args);
- int bstr_printf(char *buf, size_t size, const char *fmt, const u32 *bin_buf);
-diff --git a/lib/string.c b/lib/string.c
-index 0323c0d..dd02270 100644
---- a/lib/string.c
-+++ b/lib/string.c
-@@ -631,6 +631,32 @@ bool sysfs_streq(const char *s1, const char *s2)
- EXPORT_SYMBOL(sysfs_streq);
+-       err = device_property_read_string(dev, "maximum-speed", &maximum_speed);
+-       if (err < 0)
++       ret = device_property_read_string(dev, "maximum-speed", &maximum_speed);
++       if (ret < 0)
+                return USB_SPEED_UNKNOWN;
  
- /**
-+ * match_string - matches given string in an array
-+ * @array:	array of strings
-+ * @len:	number of strings in the array or 0 for NULL terminated arrays
-+ * @string:	string to match with
-+ *
-+ * Return:
-+ * index of a @string in the @array if matches, or %-ENODATA otherwise.
-+ */
-+int match_string(const char * const *array, size_t len, const char *string)
-+{
-+	int index = 0;
-+	const char *item;
-+
-+	do {
-+		item = array[index];
-+		if (!item)
-+			break;
-+		if (!strcmp(item, string))
-+			return index;
-+	} while (++index < len || !len);
-+
-+	return -ENODATA;
-+}
-+EXPORT_SYMBOL(match_string);
-+
-+/**
-  * strtobool - convert common user inputs into boolean values
-  * @s: input string
-  * @res: result
+-       for (i = 0; i < ARRAY_SIZE(speed_names); i++)
+-               if (strcmp(maximum_speed, speed_names[i]) == 0)
+-                       return i;
++       ret = match_string(speed_names, ARRAY_SIZE(speed_names), maximum_speed);
+ 
+-       return USB_SPEED_UNKNOWN;
++       return (ret < 0) ? USB_SPEED_UNKNOWN : ret;
+ }
+ EXPORT_SYMBOL_GPL(usb_get_maximum_speed);
+ 
+@@ -109,13 +106,11 @@ static const char *const usb_dr_modes[] = {
+ 
+ static enum usb_dr_mode usb_get_dr_mode_from_string(const char *str)
+ {
+-       int i;
++       int ret;
+ 
+-       for (i = 0; i < ARRAY_SIZE(usb_dr_modes); i++)
+-               if (!strcmp(usb_dr_modes[i], str))
+-                       return i;
++       ret = match_string(usb_dr_modes, ARRAY_SIZE(usb_dr_modes), str);
+ 
+-       return USB_DR_MODE_UNKNOWN;
++       return (ret < 0) ? USB_DR_MODE_UNKNOWN : ret;
+ }
+ 
+ enum usb_dr_mode usb_get_dr_mode(struct device *dev)
+
+
+Thanks,
+
 -- 
-2.6.4
-
+heikki
