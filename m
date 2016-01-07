@@ -1,51 +1,53 @@
 From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: Re: [PATCH v11 2/4] PM / Domains: add setter for dev.pm_domain
-Date: Thu, 7 Jan 2016 15:47:01 +0100
-Message-ID: <CAAObsKC1jTzLWmMtwGWVStuMtzZwvMuA_731dsn4YX7aKMtFKQ@mail.gmail.com>
-References: <1445956731-6304-1-git-send-email-tomeu.vizoso@collabora.com>
- <1445956731-6304-3-git-send-email-tomeu.vizoso@collabora.com> <CAGS+omBMJXOgsd2x9agtt7yi-y+EPgHWSTr7B3JqbN9Hg_2W5A@mail.gmail.com>
+Subject: Re: [RFD] Functional dependencies between devices
+Date: Thu, 7 Jan 2016 15:55:43 +0100
+Message-ID: <CAAObsKCBRPLDLztJE4up45KWB+T86td7-wuskBN-iaEdvnacDA@mail.gmail.com>
+References: <1623682.7KVblAB3KQ@vostro.rjw.lan> <20151030225242.GA2480@kroah.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAGS+omBMJXOgsd2x9agtt7yi-y+EPgHWSTr7B3JqbN9Hg_2W5A@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Daniel Kurtz <djkurtz@chromium.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Russell King <linux@arm.linux.org.uk>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Tony Lindgren <tony@atomide.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Pavel Machek <pavel@ucw.cz>, Tomas Winkler <tomas.winkler@intel.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Len Brown <lenb@kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f45.google.com ([74.125.82.45]:38357 "EHLO
+	mail-wm0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751057AbcAGO4E (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Jan 2016 09:56:04 -0500
+In-Reply-To: <20151030225242.GA2480@kroah.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Grant Likely <grant.likely@linaro.org>, Mark Brown <broonie@kernel.og>, Rob Herring <robh@kernel.org>, Thierry Reding <treding@nvidia.com>, Dmitry Torokhov <dtor@google.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Michael Turquette <mturquette@baylibre.com>
 
-On 10 November 2015 at 10:33, Daniel Kurtz <djkurtz@chromium.org> wrote:
-[snip]
+On 30 October 2015 at 23:52, Greg Kroah-Hartman
+<gregkh@linuxfoundation.org> wrote:
+> On Tue, Oct 27, 2015 at 04:24:14PM +0100, Rafael J. Wysocki wrote:
+>> My idea is to represent a supplier-consumer dependency between devices (or
+>> more precisely between device+driver combos) as a "link" object containing
+>> pointers to the devices in question, a list node for each of them and some
+>> additional information related to the management of those objects, ie.
+>> something like:
+>>
+>> struct device_link {
+>>       struct device *supplier;
+>>       struct list_head supplier_node;
+>>       struct device *consumer;
+>>       struct list_head consumer_node;
+>>       <flags, status etc>
+>> };
+>>
+>> In general, there will be two lists of those things per device, one list
+>> of links to consumers and one list of links to suppliers.
+>>
+>> In that picture, links will be created by calling, say:
+>>
+>> int device_add_link(struct device *me, struct device *my_supplier, unsigned int flags);
 >
-> The problem appears to be that:
->   * On boot, platform_drv_probe() calls dev_pm_domain_attach() before
-> drv->probe(); thus, it calls dev_pm_domain_attach() while the device
-> is unbound.
->
->  * However, for a platform_device, the reboot path calls
-> device_shutdown(), but not __device_release_driver():
-> device_shutdown()
->   dev->driver->shutdown => platform_drv_shutdown()
->     dev_pm_domain_detach()
->        dev->pm_domain->detach() => genpd_dev_pm_detach()
->          pm_genpd_remove_device()
->             dev_pm_domain_set(dev, NULL);
->
-> So, for a platform_device in a genpd power domain with .shutdown
-> installed, platform_drv_shutdown() calls dev_pm_domain_detach() while
-> the device is still bound, which triggers the WARN().
+> At first glance, I like this, nice.  Now to see how well it can be
+> implemented :)
 
-Hi Rafael, Alan and Ulf,
+Hi Greg,
 
-do you have any suggestion about this? I don't really understand why
-the device is detached from the domain on shutdown.
+what's your opinion on using this to order device probes so we don't
+try to probe a device that we know it has unfulfilled dependencies?
 
-Thanks,
+Regards,
 
 Tomeu
-
-> Thanks,
-> -Dan
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> http://lists.freedesktop.org/mailman/listinfo/dri-devel
