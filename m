@@ -1,216 +1,72 @@
 From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: [PATCH v12 3/4] PM / sleep: Go direct_complete if driver has no callbacks
-Date: Thu,  7 Jan 2016 16:46:14 +0100
-Message-ID: <1452181575-9206-4-git-send-email-tomeu.vizoso@collabora.com>
+Subject: [PATCH v12 4/4] USB / PM: Allow USB devices to remain runtime-suspended when sleeping
+Date: Thu,  7 Jan 2016 16:46:15 +0100
+Message-ID: <1452181575-9206-5-git-send-email-tomeu.vizoso@collabora.com>
 References: <1452181575-9206-1-git-send-email-tomeu.vizoso@collabora.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1452181575-9206-1-git-send-email-tomeu.vizoso@collabora.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, martyn.welch@collabora.co.uk, Ulf Hansson <ulf.hansson@linaro.org>, Daniel Kurtz <djkurtz@chromium.org>
-Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-If a suitable prepare callback cannot be found for a given device and
-its driver has no PM callbacks at all, assume that it can go direct to
-complete when the system goes to sleep.
-
-The reason for this is that there's lots of devices in a system that do
-no PM at all and there's no reason for them to prevent their ancestors
-to do direct_complete if they can support it.
+Have dev_pm_ops.prepare return 1 for USB devices and ports so that USB
+devices can remain runtime-suspended when the system goes to a sleep
+state, if their wakeup state is correct and they have runtime PM enabled.
 
 Signed-off-by: Tomeu Vizoso <tomeu.vizoso@collabora.com>
 Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+Acked-by: Alan Stern <stern@rowland.harvard.edu>
 ---
 
-Changes in v9:
-- Move to CONFIG_PM_SLEEP as suggested by Rafael and Ulf.
-- Rename from device_check_pm_callbacks to device_pm_check_callbacks to
-  follow with the naming convention of existing API.
-- Re-add calling to device_pm_check_callbacks from device registration
-  and when updating the PM domain of a device.
+Changes in v10:
+- Remove superfluous call to pm_runtime_enabled() as suggested by Alan
 
-Changes in v8:
-- Move no_pm_callbacks field into CONFIG_PM_SLEEP
-- Call device_check_pm_callbacks only after a device is bound or unbound
+ drivers/usb/core/port.c | 6 ++++++
+ drivers/usb/core/usb.c  | 8 +++++++-
+ 2 files changed, 13 insertions(+), 1 deletion(-)
 
-Changes in v7:
-- Reduce indentation by adding a label in device_prepare()
-
-Changes in v6:
-- Add stub for !CONFIG_PM.
-- Move implementation of device_check_pm_callbacks to power/main.c as it
-  doesn't belong to CONFIG_PM_SLEEP.
-- Take dev->power.lock before modifying flag.
-
-Changes in v5:
-- Check for all dev_pm_ops instances associated to a device, updating a
-  no_pm_callbacks flag at the times when that could change.
-
- drivers/base/dd.c           |  3 +++
- drivers/base/power/common.c |  3 +++
- drivers/base/power/domain.c |  2 ++
- drivers/base/power/main.c   | 35 +++++++++++++++++++++++++++++++++++
- drivers/base/power/power.h  |  3 +++
- include/linux/pm.h          |  1 +
- 6 files changed, 47 insertions(+)
-
-diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-index 13a0d66e5782..049942176b00 100644
---- a/drivers/base/dd.c
-+++ b/drivers/base/dd.c
-@@ -250,6 +250,8 @@ static void driver_bound(struct device *dev)
+diff --git a/drivers/usb/core/port.c b/drivers/usb/core/port.c
+index 460c855be0d0..14718a9ffcfb 100644
+--- a/drivers/usb/core/port.c
++++ b/drivers/usb/core/port.c
+@@ -249,12 +249,18 @@ static int usb_port_runtime_suspend(struct device *dev)
  
- 	klist_add_tail(&dev->p->knode_driver, &dev->driver->p->klist_devices);
- 
-+	device_pm_check_callbacks(dev);
-+
- 	/*
- 	 * Make sure the device is no longer in one of the deferred lists and
- 	 * kick off retrying all pending devices
-@@ -766,6 +768,7 @@ static void __device_release_driver(struct device *dev)
- 		pm_runtime_reinit(dev);
- 
- 		klist_remove(&dev->p->knode_driver);
-+		device_pm_check_callbacks(dev);
- 		if (dev->bus)
- 			blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
- 						     BUS_NOTIFY_UNBOUND_DRIVER,
-diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
-index 02812bcabcac..93ed14cc2252 100644
---- a/drivers/base/power/common.c
-+++ b/drivers/base/power/common.c
-@@ -14,6 +14,8 @@
- #include <linux/acpi.h>
- #include <linux/pm_domain.h>
- 
-+#include "power.h"
-+
- /**
-  * dev_pm_get_subsys_data - Create or refcount power.subsys_data for device.
-  * @dev: Device to handle.
-@@ -147,5 +149,6 @@ void dev_pm_domain_set(struct device *dev, struct dev_pm_domain *pd)
- 	WARN(device_is_bound(dev),
- 	     "PM domains can only be changed for unbound devices\n");
- 	dev->pm_domain = pd;
-+	device_pm_check_callbacks(dev);
+ 	return retval;
  }
- EXPORT_SYMBOL_GPL(dev_pm_domain_set);
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index e8b526faec1f..6ac9a7f33b64 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -20,6 +20,8 @@
- #include <linux/suspend.h>
- #include <linux/export.h>
- 
-+#include "power.h"
 +
- #define GENPD_RETRY_MAX_MS	250		/* Approximate */
- 
- #define GENPD_DEV_CALLBACK(genpd, type, callback, dev)		\
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 9d626ac08d9c..6e7c3ccea24b 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -125,6 +125,7 @@ void device_pm_add(struct device *dev)
- {
- 	pr_debug("PM: Adding info for %s:%s\n",
- 		 dev->bus ? dev->bus->name : "No Bus", dev_name(dev));
-+	device_pm_check_callbacks(dev);
- 	mutex_lock(&dpm_list_mtx);
- 	if (dev->parent && dev->parent->power.is_prepared)
- 		dev_warn(dev, "parent %s should not be sleeping\n",
-@@ -147,6 +148,7 @@ void device_pm_remove(struct device *dev)
- 	mutex_unlock(&dpm_list_mtx);
- 	device_wakeup_disable(dev);
- 	pm_runtime_remove(dev);
-+	device_pm_check_callbacks(dev);
- }
- 
- /**
-@@ -1572,6 +1574,11 @@ static int device_prepare(struct device *dev, pm_message_t state)
- 
- 	dev->power.wakeup_path = device_may_wakeup(dev);
- 
-+	if (dev->power.no_pm_callbacks) {
-+		ret = 1;	/* Let device go direct_complete */
-+		goto unlock;
-+	}
-+
- 	if (dev->pm_domain) {
- 		info = "preparing power domain ";
- 		callback = dev->pm_domain->ops.prepare;
-@@ -1594,6 +1601,7 @@ static int device_prepare(struct device *dev, pm_message_t state)
- 	if (callback)
- 		ret = callback(dev);
- 
-+unlock:
- 	device_unlock(dev);
- 
- 	if (ret < 0) {
-@@ -1736,3 +1744,30 @@ void dpm_for_each_dev(void *data, void (*fn)(struct device *, void *))
- 	device_pm_unlock();
- }
- EXPORT_SYMBOL_GPL(dpm_for_each_dev);
-+
-+static bool pm_ops_is_empty(const struct dev_pm_ops *ops)
++static int usb_port_prepare(struct device *dev)
 +{
-+	if (!ops)
-+		return true;
-+
-+	return !ops->prepare &&
-+	       !ops->suspend &&
-+	       !ops->suspend_late &&
-+	       !ops->suspend_noirq &&
-+	       !ops->resume_noirq &&
-+	       !ops->resume_early &&
-+	       !ops->resume &&
-+	       !ops->complete;
++	return 1;
 +}
-+
-+void device_pm_check_callbacks(struct device *dev)
-+{
-+	spin_lock_irq(&dev->power.lock);
-+	dev->power.no_pm_callbacks =
-+		(!dev->bus || pm_ops_is_empty(dev->bus->pm)) &&
-+		(!dev->class || pm_ops_is_empty(dev->class->pm)) &&
-+		(!dev->type || pm_ops_is_empty(dev->type->pm)) &&
-+		(!dev->pm_domain || pm_ops_is_empty(&dev->pm_domain->ops)) &&
-+		(!dev->driver || pm_ops_is_empty(dev->driver->pm));
-+	spin_unlock_irq(&dev->power.lock);
-+}
-diff --git a/drivers/base/power/power.h b/drivers/base/power/power.h
-index 8b06193d4a5e..50e30e7b059d 100644
---- a/drivers/base/power/power.h
-+++ b/drivers/base/power/power.h
-@@ -125,6 +125,7 @@ extern void device_pm_remove(struct device *);
- extern void device_pm_move_before(struct device *, struct device *);
- extern void device_pm_move_after(struct device *, struct device *);
- extern void device_pm_move_last(struct device *);
-+extern void device_pm_check_callbacks(struct device *dev);
- 
- #else /* !CONFIG_PM_SLEEP */
- 
-@@ -143,6 +144,8 @@ static inline void device_pm_move_after(struct device *deva,
- 					struct device *devb) {}
- static inline void device_pm_move_last(struct device *dev) {}
- 
-+static inline void device_pm_check_callbacks(struct device *dev) {}
-+
- #endif /* !CONFIG_PM_SLEEP */
- 
- static inline void device_pm_init(struct device *dev)
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index 528be6787796..6a5d654f4447 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -573,6 +573,7 @@ struct dev_pm_info {
- 	struct wakeup_source	*wakeup;
- 	bool			wakeup_path:1;
- 	bool			syscore:1;
-+	bool			no_pm_callbacks:1;	/* Owned by the PM core */
- #else
- 	unsigned int		should_wakeup:1;
  #endif
+ 
+ static const struct dev_pm_ops usb_port_pm_ops = {
+ #ifdef CONFIG_PM
+ 	.runtime_suspend =	usb_port_runtime_suspend,
+ 	.runtime_resume =	usb_port_runtime_resume,
++	.prepare =		usb_port_prepare,
+ #endif
+ };
+ 
+diff --git a/drivers/usb/core/usb.c b/drivers/usb/core/usb.c
+index 77e4c9bc0ab1..ebb29caa3fe4 100644
+--- a/drivers/usb/core/usb.c
++++ b/drivers/usb/core/usb.c
+@@ -311,7 +311,13 @@ static int usb_dev_uevent(struct device *dev, struct kobj_uevent_env *env)
+ 
+ static int usb_dev_prepare(struct device *dev)
+ {
+-	return 0;		/* Implement eventually? */
++	struct usb_device *udev = to_usb_device(dev);
++
++	/* Return 0 if the current wakeup setting is wrong, otherwise 1 */
++	if (udev->do_remote_wakeup != device_may_wakeup(dev))
++		return 0;
++
++	return 1;
+ }
+ 
+ static void usb_dev_complete(struct device *dev)
 -- 
 2.5.0
