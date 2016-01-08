@@ -1,89 +1,139 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC PATCH 2/2] sched: idle: IRQ based next prediction for idle
- period
-Date: Fri, 8 Jan 2016 16:43:57 +0100 (CET)
-Message-ID: <alpine.DEB.2.11.1601081631380.3575@nanos>
-References: <1452093774-17831-1-git-send-email-daniel.lezcano@linaro.org> <1452093774-17831-3-git-send-email-daniel.lezcano@linaro.org>
+From: Petr Mladek <pmladek@suse.com>
+Subject: Re: [PATCH v3 22/22] thermal/intel_powerclamp: Convert the kthread
+ to kthread worker API
+Date: Fri, 8 Jan 2016 17:49:31 +0100
+Message-ID: <20160108164931.GT3178@pathway.suse.cz>
+References: <1447853127-3461-1-git-send-email-pmladek@suse.com>
+ <1447853127-3461-23-git-send-email-pmladek@suse.com>
+ <20160107115531.34279a9b@icelake>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:38668 "EHLO
-	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755147AbcAHPox (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Jan 2016 10:44:53 -0500
-In-Reply-To: <1452093774-17831-3-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <owner-linux-mm@kvack.org>
+Content-Disposition: inline
+In-Reply-To: <20160107115531.34279a9b@icelake>
+Sender: owner-linux-mm@kvack.org
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Steven Rostedt <rostedt@goodmis.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Josh Triplett <josh@joshtriplett.org>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Jiri Kosina <jkosina@suse.cz>, Borislav Petkov <bp@suse.de>, Michal Hocko <mhocko@suse.cz>, linux-mm@kvack.org, Vlastimil Babka <vbabka@suse.cz>, linux-api@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: peterz@infradead.org, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nicolas.pitre@linaro.org, vincent.guittot@linaro.org
 
-On Wed, 6 Jan 2016, Daniel Lezcano wrote:
-> +/**
-> + * sched_irq_timing_free - free_irq callback
-> + *
-> + * @irq: the irq number to stop tracking
-> + * @dev_id: not used at the moment
-> + *
-> + * This function will remove from the wakeup source prediction table.
-> + */
-> +static void sched_irq_timing_free(unsigned int irq, void *dev_id)
-> +{
-> +	struct irq_desc *desc = irq_to_desc(irq);
+On Thu 2016-01-07 11:55:31, Jacob Pan wrote:
+> On Wed, 18 Nov 2015 14:25:27 +0100
+> Petr Mladek <pmladek@suse.com> wrote:
+> I have tested this patchset and found no obvious issues in terms of
+> functionality, power and performance. Tested CPU online/offline,
+> suspend resume, freeze etc.
+> Power numbers are comparable too. e.g. on IVB 8C system. Inject idle
+> from 5 to 50% and read package power while running CPU bound workload.
 
-What has this code to fiddle with irq_desc? Nothing!
+Great news. Thanks a lot for testing.
 
-> +	raw_spin_lock_irqsave(&desc->lock, flags);
-> +	desc->timings = &irq_timings;
-> +	raw_spin_unlock_irqrestore(&desc->lock, flags);
+> > IMHO, the most natural way is to split one cycle into two works.
+> > First one does some balancing and let the CPU work normal
+> > way for some time. The second work checks what the CPU has done
+> > in the meantime and put it into C-state to reach the required
+> > idle time ratio. The delay between the two works is achieved
+> > by the delayed kthread work.
+> > 
+> > The two works have to share some data that used to be local
+> > variables of the single kthread function. This is achieved
+> > by the new per-CPU struct kthread_worker_data. It might look
+> > as a complication. On the other hand, the long original kthread
+> > function was not nice either.
+> > 
+> > The two works are queuing each other. It makes it a bit tricky to
+> > break it when we want to stop the worker. We use the global and
+> > per-worker "clamping" variables to make sure that the re-queuing
+> > eventually stops. We also cancel the works to make it faster.
+> > Note that the canceling is not reliable because the handling
+> > of the two variables and queuing is not synchronized via a lock.
+> > But it is not a big deal because it is just an optimization.
+> > The job is stopped faster than before in most cases.
 
-Bah, no. This belongs into the core code. Add that handler - and yes, that's
-all you need - to your timing_ops and let the core code do it in a proper way.
+> I am not convinced this added complexity is necessary, here are my
+> concerns by breaking down into two work items.
 
-> +/**
-> + * sched_idle_init - setup the interrupt tracking table
-> + *
-> + * At init time, some interrupts could have been setup and in the
-> + * system life time, some devices could be setup. In order to track
-> + * all interrupts we are interested in, we first register a couple of
-> + * callback to keep up-to-date the interrupt tracking table and then
-> + * we setup the table with the interrupt which were already set up.
-> + */
-> +int __init sched_idle_init(void)
-> +{
-> +	struct irq_desc *desc;
-> +	unsigned int irq;
-> +	int ret;
-> +
-> +	/*
-> +	 * Register the setup/free irq callbacks, so new interrupt or
-> +	 * freed interrupt will update their tracking.
-> +	 */
-> +	ret = register_irq_timings(&irqt_ops);
-> +	if (ret) {
-> +		pr_err("Failed to register timings ops\n");
-> +		return ret;
-> +	}
+I am not super happy with the split either. But the current state has
+its drawback as well.
 
-So that stuff is installed unconditionally. Is it used unconditionally as
-well?
 
-> +	/*
-> +	 * For all the irq already setup, assign the timing callback.
-> +	 * All interrupts with their desc NULL will be discarded.
-> +	 */
-> +	for_each_irq_desc(irq, desc)
-> +		sched_irq_timing_setup(irq, desc->action);
+> - overhead of queuing,
 
-No, no, no. This belongs into the core code register_irq_timings() function
-which installs the handler into the irq descs with the proper protections and
-once it has done that enables the static key.
+Good question. Here is a rather typical snippet from function_graph
+tracer of the clamp_balancing func:
 
-The above is completely unprotected against interrupts being setup or even
-freed concurrently.
+  31)               |  clamp_balancing_func() {
+  31)               |    queue_delayed_kthread_work() {
+  31)               |      __queue_delayed_kthread_work() {
+  31)               |        add_timer() {
+  31)   4.906 us    |        }
+  31)   5.959 us    |      }
+  31)   9.702 us    |    }
+  31) + 10.878 us   |  }
 
-Aside of that, you call that setup function in setup_irq for each action() and
-here you call it only for the first one.
+On one hand it spends most of the time (10 of 11 secs) in queueing
+the work. On the other hand, half of this time is spent on adding
+the timer. schedule_timeout() would need to setup the timer as well.
 
-Thanks,
 
-	tglx
+Here is a snippet from clamp_idle_injection_func()
+
+  31)               |  clamp_idle_injection_func() {
+  31)               |    smp_apic_timer_interrupt() {
+  31) + 67.523 us   |    }
+  31)               |    smp_apic_timer_interrupt() {
+  31) + 59.946 us   |    }
+  ...
+  31)               |    queue_kthread_work() {
+  31)   4.314 us    |    }
+  31) * 24075.11 us |  }
+
+
+Of course, it spends most of the time in the idle state. Anyway, the
+time spent on queuing is negligible in compare with the time spent
+in the several timer interrupt handlers.
+
+
+> per cpu data as you already mentioned.
+
+On the other hand, the variables need to be stored somewhere.
+Also it helps to split the rather long function into more pieces.
+
+
+> - since we need to have very tight timing control, two items may limit
+>   our turnaround time. Wouldn't it take one extra tick for the scheduler
+>   to run the balance work then add delay? as opposed to just
+>   schedule_timeout()?
+
+Kthread worker processes works until the queue is empty. It calls
+try_to_freeze() and __preempt_schedule() between the works.
+Where __preempt_schedule() is hidden in the spin_unlock_irq().
+
+try_to_freeze() is in the original code as well.
+
+Is the __preempt_schedule() a problem? It allows to switch the process
+when needed. I thought that it was safe because try_to_freeze() might
+have slept as well.
+
+
+> - vulnerable to future changes of queuing work
+
+The question is if it is safe to sleep, freeze, or even migrate
+the system between the works. It looks like because of the
+try_to_freeze() and schedule_interrupt() calls in the original code.
+
+BTW: I wonder if the original code correctly handle freezing after
+the schedule_timeout(). It does not call try_to_freeze()
+there and the forced idle states might block freezing.
+I think that the small overhead of kthread works is worth
+solving such bugs. It makes it easier to maintain these
+sleeping states.
+
+
+Thanks a lot for feedback,
+Petr
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
