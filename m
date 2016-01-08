@@ -1,58 +1,26 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v3 0/9] lib/string: introduce match_string() helper
-Date: Fri,  8 Jan 2016 15:09:09 +0200
-Message-ID: <1452258558-119552-1-git-send-email-andriy.shevchenko@linux.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tejun Heo <tj@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "David S . Miller" <davem@davemloft.net>, David Airlie <airlied@linux.ie>, Andrew Morton <akpm@linux-foundation.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+From: Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: [PATCH v3 0/9] lib/string: introduce match_string() helper
+Date: Fri, 8 Jan 2016 13:19:08 +0000
+Message-ID: <20160108131908.GB17997@ZenIV.linux.org.uk>
+References: <1452258558-119552-1-git-send-email-andriy.shevchenko@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from zeniv.linux.org.uk ([195.92.253.2]:41340 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751940AbcAHNTQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Jan 2016 08:19:16 -0500
+Content-Disposition: inline
+In-Reply-To: <1452258558-119552-1-git-send-email-andriy.shevchenko@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Tejun Heo <tj@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "David S . Miller" <davem@davemloft.net>, David Airlie <airlied@linux.ie>, Andrew Morton <akpm@linux-foundation.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>
 
-There are users of a simple string matching in the array. Let's do a common
-helper for that.
-
-Several users are updated in the series.
-
-The series is compile tested.
-
-Since v2:
-- slightly modify implementation of the helper:
-  - rename len -> n in prototype (Sergey)
-  - move to for-loop (Rasmus)
-  - change 0 -> -1 to iterate over NULL-terminated arrays (Rasmus)
-- add patch 9 from Heikki
-- append tags
-
-Since v1:
-- convert few more users to get helper useful
-
-Andy Shevchenko (8):
-  lib/string: introduce match_string() helper
-  device property: convert to use match_string() helper
-  pinctrl: convert to use match_string() helper
-  drm/edid: convert to use match_string() helper
-  power: charger_manager: convert to use match_string() helper
-  power: ab8500: convert to use match_string() helper
-  ata: hpt366: convert to use match_string() helper
-  ide: hpt366: convert to use match_string() helper
-
-Heikki Krogerus (1):
-  usb: common: convert to use match_string() helper
-
- drivers/ata/pata_hpt366.c       | 13 +++++--------
- drivers/base/property.c         | 10 ++--------
- drivers/gpu/drm/drm_edid_load.c | 17 ++++++-----------
- drivers/ide/hpt366.c            |  9 ++-------
- drivers/pinctrl/pinmux.c        | 13 +++----------
- drivers/power/ab8500_btemp.c    | 15 +++++----------
- drivers/power/ab8500_charger.c  | 16 +++++-----------
- drivers/power/ab8500_fg.c       | 15 +++++----------
- drivers/power/abx500_chargalg.c | 14 +++++---------
- drivers/power/charger-manager.c | 27 ++++-----------------------
- drivers/usb/common/common.c     | 22 ++++++++--------------
- include/linux/string.h          |  2 ++
- lib/string.c                    | 26 ++++++++++++++++++++++++++
- 13 files changed, 78 insertions(+), 121 deletions(-)
-
--- 
-2.6.4
+On Fri, Jan 08, 2016 at 03:09:09PM +0200, Andy Shevchenko wrote:
+> There are users of a simple string matching in the array. Let's do a common
+> helper for that.
+ 
+What's the reason for making it return -ENODATA when no match is found?
+That one of the callers wants to return that as error in such case?
+At least one other is returning -EINVAL in the same situation...
