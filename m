@@ -1,7 +1,7 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v3 4/9] drm/edid: convert to use match_string() helper
-Date: Fri,  8 Jan 2016 15:09:13 +0200
-Message-ID: <1452258558-119552-5-git-send-email-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v3 5/9] power: charger_manager: convert to use match_string() helper
+Date: Fri,  8 Jan 2016 15:09:14 +0200
+Message-ID: <1452258558-119552-6-git-send-email-andriy.shevchenko@linux.intel.com>
 References: <1452258558-119552-1-git-send-email-andriy.shevchenko@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1452258558-119552-1-git-send-email-andriy.shevchenko@linux.intel.com>
@@ -15,43 +15,54 @@ here.
 
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/gpu/drm/drm_edid_load.c | 17 ++++++-----------
- 1 file changed, 6 insertions(+), 11 deletions(-)
+ drivers/power/charger-manager.c | 27 ++++-----------------------
+ 1 file changed, 4 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/gpu/drm/drm_edid_load.c b/drivers/gpu/drm/drm_edid_load.c
-index 698b8c3..9a401ae 100644
---- a/drivers/gpu/drm/drm_edid_load.c
-+++ b/drivers/gpu/drm/drm_edid_load.c
-@@ -170,16 +170,11 @@ static void *edid_load(struct drm_connector *connector, const char *name,
- 	int i, valid_extensions = 0;
- 	bool print_bad_edid = !connector->bad_edid_counter || (drm_debug & DRM_UT_KMS);
+diff --git a/drivers/power/charger-manager.c b/drivers/power/charger-manager.c
+index 1ea5d1a..e664ca7 100644
+--- a/drivers/power/charger-manager.c
++++ b/drivers/power/charger-manager.c
+@@ -2020,27 +2020,6 @@ static void __exit charger_manager_cleanup(void)
+ module_exit(charger_manager_cleanup);
  
--	builtin = 0;
--	for (i = 0; i < GENERIC_EDIDS; i++) {
--		if (strcmp(name, generic_edid_name[i]) == 0) {
--			fwdata = generic_edid[i];
--			fwsize = sizeof(generic_edid[i]);
--			builtin = 1;
+ /**
+- * find_power_supply - find the associated power_supply of charger
+- * @cm: the Charger Manager representing the battery
+- * @psy: pointer to instance of charger's power_supply
+- */
+-static bool find_power_supply(struct charger_manager *cm,
+-			struct power_supply *psy)
+-{
+-	int i;
+-	bool found = false;
+-
+-	for (i = 0; cm->desc->psy_charger_stat[i]; i++) {
+-		if (!strcmp(psy->desc->name, cm->desc->psy_charger_stat[i])) {
+-			found = true;
 -			break;
 -		}
 -	}
--	if (!builtin) {
-+	builtin = match_string(generic_edid_name, GENERIC_EDIDS, name);
-+	if (builtin >= 0) {
-+		fwdata = generic_edid[builtin];
-+		fwsize = sizeof(generic_edid[builtin]);
-+	} else {
- 		struct platform_device *pdev;
- 		int err;
+-
+-	return found;
+-}
+-
+-/**
+  * cm_notify_event - charger driver notify Charger Manager of charger event
+  * @psy: pointer to instance of charger's power_supply
+  * @type: type of charger event
+@@ -2057,9 +2036,11 @@ void cm_notify_event(struct power_supply *psy, enum cm_event_types type,
  
-@@ -252,7 +247,7 @@ static void *edid_load(struct drm_connector *connector, const char *name,
+ 	mutex_lock(&cm_list_mtx);
+ 	list_for_each_entry(cm, &cm_list, entry) {
+-		found_power_supply = find_power_supply(cm, psy);
+-		if (found_power_supply)
++		if (match_string(cm->desc->psy_charger_stat, -1,
++				 psy->desc->name) >= 0) {
++			found_power_supply = true;
+ 			break;
++		}
  	}
- 
- 	DRM_INFO("Got %s EDID base block and %d extension%s from "
--	    "\"%s\" for connector \"%s\"\n", builtin ? "built-in" :
-+	    "\"%s\" for connector \"%s\"\n", (builtin >= 0) ? "built-in" :
- 	    "external", valid_extensions, valid_extensions == 1 ? "" : "s",
- 	    name, connector_name);
+ 	mutex_unlock(&cm_list_mtx);
  
 -- 
 2.6.4
