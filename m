@@ -1,280 +1,140 @@
 From: Juri Lelli <juri.lelli@arm.com>
-Subject: [RFC PATCH v2 2/4] drivers/cpufreq: implement init_cpu_capacity_default()
-Date: Fri,  8 Jan 2016 14:09:30 +0000
-Message-ID: <1452262172-31861-3-git-send-email-juri.lelli@arm.com>
-References: <1452262172-31861-1-git-send-email-juri.lelli@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1452262172-31861-1-git-send-email-juri.lelli@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, juri.lelli@arm.com, broonie@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [RFC PATCH v2 0/4] CPUs capacity information for heterogeneous systems
+Date: Fri,  8 Jan 2016 14:09:28 +0000
+Message-ID: <1452262172-31861-1-git-send-email-juri.lelli@arm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:45507 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751533AbcAHOJm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 8 Jan 2016 09:09:42 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, juri.lelli@arm.com, broonie@kernel.org
 
-To get default values for CPUs capacity we profile a simple (bogus)
-integer benchmark on such CPUs; then we normalize results to 1024
-(highest capacity in the system).
+Hi all,
 
-Architectures that want this during boot have to register a cpufreq
-driver callback and call this function from there (as we require
-cpufreq to be up and running).
+this is take 2 of https://lkml.org/lkml/2015/11/23/391; some context follows.
 
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Will Deacon <will.deacon@arm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Signed-off-by: Juri Lelli <juri.lelli@arm.com>
----
- arch/arm/kernel/topology.c         |   2 +-
- arch/arm64/kernel/topology.c       |  12 +++
+ARM systems may be configured to have CPUs with different power/performance
+characteristics within the same chip. In this case, additional information has
+to be made available to the kernel (the scheduler in particular) for it to be
+aware of such differences and take decisions accordingly. This RFC stems from
+the ongoing discussion about introducing a simple platform energy cost model to
+guide scheduling decisions (a.k.a Energy Aware Scheduling [1]), but also aims
+to be an independent track aimed to standardise the way we make the scheduler
+aware of heterogenous CPU systems. With these patches and in addition patches
+from [1] (that make the scheduler wakeup paths aware of heterogenous CPU
+systems) we enable the scheduler to have good default performance on such
+systems. In addition, we get a clearly defined way of providing the scheduler
+with needed information about CPU capacity on such systems.
+
+CPU capacity is defined in this context as a number that provides the scheduler
+information about CPUs heterogeneity. Such heterogeneity can come from
+micro-architectural differences (e.g., ARM big.LITTLE systems) or maximum
+frequency at which CPUs can run (e.g., SMP systems with multiple frequency
+domains and different max frequencies). Heterogeneity in this context is about
+differing performance characteristics; in practice, the binding that we propose
+in this RFC tries to capture a first-order approximation of the relative
+performance of CPUs.
+
+Second version of this RFC proposes an alternative solution (w.r.t. v1) to the
+problem of how do we init CPUs original capacity: we run a bogus benchmark (for
+this RFC I simple stole int_sqrt from lib/ and I run that in a loop to perform
+some integer computation, I'm sure there are better benchmarks around) on the
+first cpu of each frequency domain (assuming no u-arch differences inside
+domains), measure time to complete a fixed number of iterations and then
+normalize results to SCHED_CAPACITY_SCALE (1024). I didn't spend much time in
+polishing this up or thinking about a better benchmark, as this is an RFC and
+I'd like discussion happening before we make this solution better
+working/looking. However, surprisingly, results are not that bad already:
+
+                          LITTLE      big
+
+ TC2-userspace_profile     430        1024
+ TC2-dynamic_profile      ~490        1024
+
+ JUNO-userspace_profile    446        1024
+ JUNO-dynamic_profile     ~424        1024
+
+Considering v1 approach as well, there are currently three proposals for
+providing CPUs capacity information; each one has of course pros and cons. I'll
+try to summarize the long discussion we had about v1 in the list that follows
+(mixing in my personal view points :-)), please don't hesitate to add/comment
+(and thanks a lot for the time spent reviewing v1!):
+
+ 1. DT (v1)
+
+    pros: - clean and easy to implement
+          - standard for both arm and arm64 (and possibly other archs)
+          - requires profiling only once and in userspace
+
+    cons: - capacity is not a physical, unequivocally definable property
+          - might be incorrecly used for tuning purposes
+          - it's a standard, so it requires additional care when defining it
+
+ 2. Dynamic profiling at boot (v2)
+
+    pros: - does not require a standardized definition of capacity
+          - cannot be incorrectly tuned (once benchmark is fixed)
+          - does not require user/integrator work
+
+    cons: - not easy to come up with a clean solution, as it seems interaction
+            with several subsystems (e.g., cpufreq) is required
+          - not easy to agree upon a single benchmark (that has to be both
+            representative and simple enough to run at boot)
+          - numbers might (and do) vary from boot to boot
+
+ 3. sysfs (v1)
+
+    pros: - clean and super easy to implement
+          - values don't require to be physical properties, defining them is
+            probably easier
+
+    cons: - CPUs capacity have to be provided after boot (by some init script?)
+          - API is modified, still some discussion/review is needed
+          - values can still be incorrectly used for runtime tuning purposes
+
+Patches high level description:
+
+ o 01/04 cleans up how cpu_scale is initialized in arm (already landed on
+   Russell's patch system)
+ o 02/04 introduces dynamic profiling of CPUs capacity at boot
+ o [03-04]/04 enable dynamic profiling for arm and arm64.
+
+The patchset is based on top of tip/sched/core as of today (4.4.0-rc8).
+
+In case you would like to test this out, I pushed a branch here:
+
+ git://linux-arm.org/linux-jl.git upstream/default_caps_v2
+
+This branch contains additional patches, useful to better understand how CPU
+capacity information is actually used by the scheduler. Discussion regarding
+these additional patches will be started with a different posting in the
+future. We just didn't want to make discussion too broad, as we realize that
+this set can be controversial already on its own.
+
+Comments, concerns and rants are more than welcome!
+
+Best,
+
+- Juri
+
+Juri Lelli (4):
+  ARM: initialize cpu_scale to its default
+  drivers/cpufreq: implement init_cpu_capacity_default()
+  arm: Enable dynamic CPU capacity initialization
+  arm64: Enable dynamic CPU capacity initialization
+
+ arch/arm/kernel/topology.c         |  11 ++-
+ arch/arm64/kernel/topology.c       |  17 ++++
  drivers/cpufreq/Makefile           |   2 +-
  drivers/cpufreq/cpufreq.c          |   1 +
  drivers/cpufreq/cpufreq_capacity.c | 161 +++++++++++++++++++++++++++++++++++++
  include/linux/cpufreq.h            |   2 +
- 6 files changed, 178 insertions(+), 2 deletions(-)
+ 6 files changed, 189 insertions(+), 5 deletions(-)
  create mode 100644 drivers/cpufreq/cpufreq_capacity.c
 
-diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
-index ec279d1..c9c87a5 100644
---- a/arch/arm/kernel/topology.c
-+++ b/arch/arm/kernel/topology.c
-@@ -47,7 +47,7 @@ unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
- 	return per_cpu(cpu_scale, cpu);
- }
- 
--static void set_capacity_scale(unsigned int cpu, unsigned long capacity)
-+void set_capacity_scale(unsigned int cpu, unsigned long capacity)
- {
- 	per_cpu(cpu_scale, cpu) = capacity;
- }
-diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
-index 694f6de..3b75d63 100644
---- a/arch/arm64/kernel/topology.c
-+++ b/arch/arm64/kernel/topology.c
-@@ -23,6 +23,18 @@
- #include <asm/cputype.h>
- #include <asm/topology.h>
- 
-+static DEFINE_PER_CPU(unsigned long, cpu_scale) = SCHED_CAPACITY_SCALE;
-+
-+unsigned long arm_arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
-+{
-+	return per_cpu(cpu_scale, cpu);
-+}
-+
-+void set_capacity_scale(unsigned int cpu, unsigned long capacity)
-+{
-+	per_cpu(cpu_scale, cpu) = capacity;
-+}
-+
- static int __init get_cpu_for_node(struct device_node *node)
- {
- 	struct device_node *cpu_node;
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index c0af1a1..ca47aea 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -1,5 +1,5 @@
- # CPUfreq core
--obj-$(CONFIG_CPU_FREQ)			+= cpufreq.o freq_table.o
-+obj-$(CONFIG_CPU_FREQ)			+= cpufreq.o freq_table.o cpufreq_capacity.o
- 
- # CPUfreq stats
- obj-$(CONFIG_CPU_FREQ_STAT)             += cpufreq_stats.o
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 8412ce5..8720228 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2452,6 +2452,7 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
- 	}
- 
- 	register_hotcpu_notifier(&cpufreq_cpu_notifier);
-+	cpufreq_init_cpu_capacity();
- 	pr_debug("driver %s up and running\n", driver_data->name);
- 
- out:
-diff --git a/drivers/cpufreq/cpufreq_capacity.c b/drivers/cpufreq/cpufreq_capacity.c
-new file mode 100644
-index 0000000..2fd5248
---- /dev/null
-+++ b/drivers/cpufreq/cpufreq_capacity.c
-@@ -0,0 +1,161 @@
-+/*
-+ * Default CPU capacity calculation for u-arch invariance
-+ *
-+ * Copyright (C) 2015 ARM Ltd.
-+ * Juri Lelli <juri.lelli@arm.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed "as is" WITHOUT ANY WARRANTY of any
-+ * kind, whether express or implied; without even the implied warranty
-+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License for more details.
-+ */
-+#include <linux/cpufreq.h>
-+#include <linux/sched.h>
-+
-+static unsigned long long elapsed[NR_CPUS];
-+
-+/*
-+ * Don't let compiler optimize following two functions;
-+ * otherwise we might loose u-arch differences.
-+ * Also, my_int_sqrt is cut-and-paste from lib/int_sqrt.c.
-+ */
-+static unsigned long __attribute__((optimize("O0")))
-+my_int_sqrt(unsigned long x)
-+{
-+	unsigned long b, m, y = 0;
-+
-+	if (x <= 1)
-+		return x;
-+
-+	m = 1UL << (BITS_PER_LONG - 2);
-+	while (m != 0) {
-+		b = y + m;
-+		y >>= 1;
-+
-+		if (x >= b) {
-+			x -= b;
-+			y += m;
-+		}
-+		m >>= 2;
-+	}
-+
-+	return y;
-+}
-+
-+static unsigned long __attribute__((optimize("O0")))
-+bogus_bench(void)
-+{
-+	unsigned long i, res;
-+
-+	for (i = 0; i < 100000; i++)
-+		res = my_int_sqrt(i);
-+
-+	return res;
-+}
-+
-+static int run_bogus_benchmark(int cpu)
-+{
-+	int ret, trials = 25;
-+	u64 begin, end, diff, diff_avg = 0, count = 0;
-+	unsigned long res;
-+
-+	ret = set_cpus_allowed_ptr(current, cpumask_of(cpu));
-+	if (ret) {
-+		pr_warn("%s: failed to set allowed ptr\n", __func__);
-+		return -EINVAL;
-+	}
-+
-+	while (trials--) {
-+		begin = local_clock();
-+		res = bogus_bench();
-+		end = local_clock();
-+		diff = end - begin;
-+		diff_avg = diff_avg * count + diff;
-+		diff_avg = div64_u64(diff_avg, ++count);
-+		pr_debug("%s: cpu=%d begin=%llu end=%llu"
-+			 " diff=%llu diff_avg=%llu count=%llu res=%lu\n",
-+			__func__, cpu, begin, end, diff,
-+			diff_avg, count, res);
-+	}
-+	elapsed[cpu] = diff_avg;
-+
-+	ret = set_cpus_allowed_ptr(current, cpu_active_mask);
-+	if (ret) {
-+		pr_warn("%s: failed to set allowed ptr\n", __func__);
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+bool __weak arch_wants_init_cpu_capacity(void)
-+{
-+	return false;
-+}
-+
-+void __weak set_capacity_scale(int cpu, unsigned long capacity) { }
-+
-+void cpufreq_init_cpu_capacity(void)
-+{
-+	int cpu, fcpu;
-+	unsigned long long elapsed_min = ULLONG_MAX;
-+	unsigned int curr_min, curr_max;
-+	struct cpufreq_policy *policy;
-+
-+	if (!arch_wants_init_cpu_capacity())
-+		return;
-+
-+	for_each_possible_cpu(cpu) {
-+		policy = cpufreq_cpu_get(cpu);
-+		if (IS_ERR_OR_NULL(policy))
-+			return;
-+
-+		/*
-+		 * We profile only first CPU of each frequency domain;
-+		 * and use that value as capacity of every CPU in the domain.
-+		 */
-+		fcpu = cpumask_first(policy->related_cpus);
-+		if (cpu != fcpu) {
-+			elapsed[cpu] = elapsed[fcpu];
-+			cpufreq_cpu_put(policy);
-+			continue;
-+		}
-+
-+		down_write(&policy->rwsem);
-+		curr_min = policy->user_policy.min;
-+		curr_max = policy->user_policy.max;
-+		policy->user_policy.min = policy->cpuinfo.max_freq;
-+		policy->user_policy.max = policy->cpuinfo.max_freq;
-+		up_write(&policy->rwsem);
-+		cpufreq_cpu_put(policy);
-+		cpufreq_update_policy(cpu);
-+
-+		run_bogus_benchmark(cpu);
-+		if (elapsed[cpu] < elapsed_min)
-+			elapsed_min = elapsed[cpu];
-+		pr_debug("%s: cpu=%d elapsed=%llu (min=%llu)\n",
-+				__func__, cpu, elapsed[cpu], elapsed_min);
-+
-+		policy = cpufreq_cpu_get(cpu);
-+		down_write(&policy->rwsem);
-+		policy->user_policy.min = curr_min;
-+		policy->user_policy.max = curr_max;
-+		up_write(&policy->rwsem);
-+		cpufreq_cpu_put(policy);
-+		cpufreq_update_policy(cpu);
-+	}
-+
-+	for_each_possible_cpu(cpu) {
-+		unsigned long capacity;
-+
-+		capacity = div64_u64((elapsed_min << 10), elapsed[cpu]);
-+		pr_debug("%s: CPU%d capacity=%lu\n", __func__, cpu, capacity);
-+		set_capacity_scale(cpu, capacity);
-+	}
-+
-+	pr_info("dynamic CPUs capacity installed\n");
-+}
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 177c768..968be47 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -420,6 +420,8 @@ static inline unsigned long cpufreq_scale(unsigned long old, u_int div,
- #endif
- }
- 
-+void cpufreq_init_cpu_capacity(void);
-+
- /*********************************************************************
-  *                          CPUFREQ GOVERNORS                        *
-  *********************************************************************/
 -- 
 2.2.2
+
