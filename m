@@ -1,60 +1,46 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH] regulator: max8973: add THERMAL_OF dependency
-Date: Fri, 08 Jan 2016 21:06:43 +0100
-Message-ID: <7607130.s0M7SSqlJV@wuerfel>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Last-minute ACPI fix for final v4.4
+Date: Fri, 8 Jan 2016 23:38:47 +0100
+Message-ID: <CAJZ5v0h7P+OJZuN8q-ExKsUgMNdvnr9mf8OL8-FD+A1yvFQtcg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([212.227.126.135]:62934 "EHLO
-	mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752279AbcAHUHU (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Jan 2016 15:07:20 -0500
+Received: from mail-lf0-f51.google.com ([209.85.215.51]:35634 "EHLO
+	mail-lf0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751897AbcAHWit (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Jan 2016 17:38:49 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: broonie@kernel.org
-Cc: Liam Girdwood <lgirdwood@gmail.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
->From 9f5ddfc667eb45dc2c5459e5acc5de45572456cd Mon Sep 17 00:00:00 2001
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Fri, 8 Jan 2016 20:59:29 +0100
-Subject: [PATCH] regulator: max8973: add THERMAL_OF dependency
+Hi Linus,
 
-The max8973 regulator driver has gained thermal support, but it
-now fails to link when the driver is built-in and CONFIG_THERMAL=m:
+Please pull from
 
-drivers/built-in.o: In function `max8973_remove':
-console.c:(.text+0x94ac4): undefined reference to `thermal_zone_of_sensor_unregister'
-drivers/built-in.o: In function `max8973_probe':
-console.c:(.text+0x95710): undefined reference to `thermal_zone_of_sensor_register'
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm+acpi-4.4-final
 
-This adds a dependency "depends on THERMAL || !THERMAL_OF" to ensure
-that the driver cannot be built-in when THERMAL=m but is forced to
-be a module as well, unless THERMAL_OF is disabled.
+to receive an ACPI fix for final v4.4 as commit 9db22d928ca9
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Fixes: 1b7a4c6a9eea ("regulator: max8973: add support for junction thermal warning")
----
-I've run into the same problem a couple of times now, with every driver
-that calls thermal_zone_of_sensor_register(). I think we need a better
-solution in general, but this fixes the immediate build error for now.
+ ACPI / property: avoid leaking format string into kobject name
 
-Maybe we should replace the "#ifdef CONFIG_THERMAL_OF" with "#if
-IS_REACHABLE(CONFIG_THERMAL) && IS_ENABLED(CONFIG_THERMAL_OF)"?
-The disadvantage of that is that the thermal management would be
-silently disabled rather than cause a link error, and that may also
-not be desired.
+on top of commit 168309855a7d1e16db751e9c647119fe2d2dc878
 
-diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
-index 8155e80dd3f8..7df9da82f592 100644
---- a/drivers/regulator/Kconfig
-+++ b/drivers/regulator/Kconfig
-@@ -383,6 +383,7 @@ config REGULATOR_MAX8952
- config REGULATOR_MAX8973
- 	tristate "Maxim MAX8973 voltage regulator "
- 	depends on I2C
-+	depends on THERMAL || !THERMAL_OF
- 	select REGMAP_I2C
- 	help
- 	  The MAXIM MAX8973 high-efficiency. three phase, DC-DC step-down
+ Linux 4.4-rc8
 
+Just one obvious fix that adds a missing function argument in
+ACPI code introduced recently (Kees Cook).
+
+Thanks!
+
+
+---------------
+
+Kees Cook (1):
+      ACPI / property: avoid leaking format string into kobject name
+
+---------------
+
+ drivers/acpi/device_sysfs.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
