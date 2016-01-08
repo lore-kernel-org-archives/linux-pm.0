@@ -1,7 +1,7 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v3 2/9] device property: convert to use match_string() helper
-Date: Fri,  8 Jan 2016 15:09:11 +0200
-Message-ID: <1452258558-119552-3-git-send-email-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v3 7/9] ata: hpt366: convert to use match_string() helper
+Date: Fri,  8 Jan 2016 15:09:16 +0200
+Message-ID: <1452258558-119552-8-git-send-email-andriy.shevchenko@linux.intel.com>
 References: <1452258558-119552-1-git-send-email-andriy.shevchenko@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1452258558-119552-1-git-send-email-andriy.shevchenko@linux.intel.com>
@@ -14,38 +14,37 @@ The new helper returns index of the mathing string in an array. We would use it
 here.
 
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+Acked-by: Tejun Heo <tj@kernel.org>
 ---
- drivers/base/property.c | 10 ++--------
- 1 file changed, 2 insertions(+), 8 deletions(-)
+ drivers/ata/pata_hpt366.c | 13 +++++--------
+ 1 file changed, 5 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/base/property.c b/drivers/base/property.c
-index c359351..f902b55 100644
---- a/drivers/base/property.c
-+++ b/drivers/base/property.c
-@@ -647,7 +647,7 @@ int fwnode_property_match_string(struct fwnode_handle *fwnode,
- 	const char *propname, const char *string)
+diff --git a/drivers/ata/pata_hpt366.c b/drivers/ata/pata_hpt366.c
+index 0038dc4..e5fb752 100644
+--- a/drivers/ata/pata_hpt366.c
++++ b/drivers/ata/pata_hpt366.c
+@@ -176,17 +176,14 @@ static int hpt_dma_blacklisted(const struct ata_device *dev, char *modestr,
+ 			       const char * const list[])
  {
- 	const char **values;
--	int nval, ret, i;
-+	int nval, ret;
+ 	unsigned char model_num[ATA_ID_PROD_LEN + 1];
+-	int i = 0;
++	int i;
  
- 	nval = fwnode_property_read_string_array(fwnode, propname, NULL, 0);
- 	if (nval < 0)
-@@ -664,13 +664,7 @@ int fwnode_property_match_string(struct fwnode_handle *fwnode,
- 	if (ret < 0)
- 		goto out;
+ 	ata_id_c_string(dev->id, model_num, ATA_ID_PROD, sizeof(model_num));
  
--	ret = -ENODATA;
--	for (i = 0; i < nval; i++) {
--		if (!strcmp(values[i], string)) {
--			ret = i;
--			break;
+-	while (list[i] != NULL) {
+-		if (!strcmp(list[i], model_num)) {
+-			pr_warn("%s is not supported for %s\n",
+-				modestr, list[i]);
+-			return 1;
 -		}
--	}
-+	ret = match_string(values, nval, string);
- out:
- 	kfree(values);
- 	return ret;
+-		i++;
++	i = match_string(list, -1, model_num);
++	if (i >= 0) {
++		pr_warn("%s is not supported for %s\n", modestr, list[i]);
++		return 1;
+ 	}
+ 	return 0;
+ }
 -- 
 2.6.4
