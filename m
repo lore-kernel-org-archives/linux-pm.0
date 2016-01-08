@@ -1,484 +1,355 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Subject: Re: [PATCH 1/2] power: act8945a: add charger driver for ACT8945A
-Date: Fri, 8 Jan 2016 12:55:03 +0900
-Message-ID: <CAJKOXPdzYJP_9DZUTz3EXPu4Z-DwkzYOJKEiR8varKJP3RRymw@mail.gmail.com>
+From: "Yang, Wenyou" <Wenyou.Yang@atmel.com>
+Subject: RE: [PATCH 1/2] power: act8945a: add charger driver for ACT8945A
+Date: Fri, 8 Jan 2016 06:43:52 +0000
+Message-ID: <B256D81BAE5131468A838E5D7A243641D63E5A3E@penmbx01>
 References: <1452219225-10510-1-git-send-email-wenyou.yang@atmel.com>
 	<1452219225-10510-2-git-send-email-wenyou.yang@atmel.com>
+ <CAJKOXPdzYJP_9DZUTz3EXPu4Z-DwkzYOJKEiR8varKJP3RRymw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f194.google.com ([209.85.213.194]:35784 "EHLO
-	mail-ig0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753544AbcAHDzF (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Thu, 7 Jan 2016 22:55:05 -0500
-In-Reply-To: <1452219225-10510-2-git-send-email-wenyou.yang@atmel.com>
+Received: from nasmtp01.atmel.com ([192.199.1.246]:57370 "EHLO
+	DVREDG02.corp.atmel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751182AbcAHGoJ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Jan 2016 01:44:09 -0500
+In-Reply-To: <CAJKOXPdzYJP_9DZUTz3EXPu4Z-DwkzYOJKEiR8varKJP3RRymw@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wenyou Yang <wenyou.yang@atmel.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "Ferre, Nicolas" <Nicolas.FERRE@atmel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-2016-01-08 11:13 GMT+09:00 Wenyou Yang <wenyou.yang@atmel.com>:
-> This patch adds new driver for Active-semi ACT8945A ActivePath
-> charger (part of ACT8945A MFD driver) providing power supply class
-> information to userspace.
->
-> The driver is configured through DTS (battery and system related
-> settings) and sysfs entries (timers and input over-voltage threshold).
->
-> Signed-off-by: Wenyou Yang <wenyou.yang@atmel.com>
-> ---
->
->  drivers/power/Kconfig            |    7 +
->  drivers/power/Makefile           |    1 +
->  drivers/power/act8945a_charger.c |  397 ++++++++++++++++++++++++++++++++++++++
->  3 files changed, 405 insertions(+)
->  create mode 100644 drivers/power/act8945a_charger.c
->
-> diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-> index 1ddd13c..ae75211 100644
-> --- a/drivers/power/Kconfig
-> +++ b/drivers/power/Kconfig
-> @@ -75,6 +75,13 @@ config BATTERY_88PM860X
->         help
->           Say Y here to enable battery monitor for Marvell 88PM860x chip.
->
-> +config BATTERY_ACT8945A
-> +       tristate "Active-semi ACT8945A charger driver"
-> +       depends on MFD_ACT8945A
-> +       help
-> +         Say Y here to enable support for power supply provided by
-> +         Active-semi ActivePath ACT8945A charger.
-> +
->  config BATTERY_DS2760
->         tristate "DS2760 battery driver (HP iPAQ & others)"
->         depends on W1 && W1_SLAVE_DS2760
-> diff --git a/drivers/power/Makefile b/drivers/power/Makefile
-> index 0e4eab5..e46b75d 100644
-> --- a/drivers/power/Makefile
-> +++ b/drivers/power/Makefile
-> @@ -17,6 +17,7 @@ obj-$(CONFIG_WM8350_POWER)    += wm8350_power.o
->  obj-$(CONFIG_TEST_POWER)       += test_power.o
->
->  obj-$(CONFIG_BATTERY_88PM860X) += 88pm860x_battery.o
-> +obj-$(CONFIG_BATTERY_ACT8945A) += act8945a_charger.o
->  obj-$(CONFIG_BATTERY_DS2760)   += ds2760_battery.o
->  obj-$(CONFIG_BATTERY_DS2780)   += ds2780_battery.o
->  obj-$(CONFIG_BATTERY_DS2781)   += ds2781_battery.o
-> diff --git a/drivers/power/act8945a_charger.c b/drivers/power/act8945a_charger.c
-> new file mode 100644
-> index 0000000..5b55cd7
-> --- /dev/null
-> +++ b/drivers/power/act8945a_charger.c
-> @@ -0,0 +1,397 @@
-> +/*
-> + * Power supply driver for the Active-semi ACT8945A PMIC
-> + *
-> + * Copyright (C) 2015 Atmel Corporation
-> + *                   Wenyou Yang <wenyou.yang@atmel.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + */
-> +
-> +#include <linux/module.h>
-> +#include <linux/mfd/act8945a.h>
-> +#include <linux/of.h>
-> +#include <linux/of_gpio.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/power_supply.h>
-> +#include <linux/regmap.h>
-> +
-> +static const char *act8945a_charger_model = "ACT8945A";
-> +static const char *act8945a_charger_manufacturer = "Active-semi";
-> +
-> +/**
-> + * ACT8945A Charger Register Map
-> + */
-> +
-> +/* 0x70: Reserved */
-> +#define ACT8945A_APCH_CFG              0x71
-> +#define ACT8945A_APCH_STATUS           0x78
-> +#define ACT8945A_APCH_CTRL             0x79
-> +#define ACT8945A_APCH_STATE            0x7A
-> +
-> +/* ACT8945A_APCH_CFG */
-> +#define APCH_CFG_OVPSET                (0x03 << 0)
-> +#define                APCH_CFG_OVPSET_6V6     (0x0 << 0)
-> +#define                APCH_CFG_OVPSET_7V      (0x1 << 0)
-> +#define                APCH_CFG_OVPSET_7V5     (0x2 << 0)
-> +#define                APCH_CFG_OVPSET_8V      (0x3 << 0)
-> +#define APCH_CFG_PRETIMO       (0x03 << 2)
-> +#define                APCH_CFG_PRETIMO_40_MIN         (0x0 << 2)
-> +#define                APCH_CFG_PRETIMO_60_MIN         (0x1 << 2)
-> +#define                APCH_CFG_PRETIMO_80_MIN         (0x2 << 2)
-> +#define                APCH_CFG_PRETIMO_DISABLED       (0x3 << 2)
-> +#define APCH_CFG_TOTTIMO       (0x03 << 4)
-> +#define                APCH_CFG_TOTTIMO_3_HOUR         (0x0 << 4)
-> +#define                APCH_CFG_TOTTIMO_4_HOUR         (0x1 << 4)
-> +#define                APCH_CFG_TOTTIMO_5_HOUR         (0x2 << 4)
-> +#define                APCH_CFG_TOTTIMO_DISABLED       (0x3 << 4)
-> +#define APCH_CFG_SUSCHG                (0x01 << 7)
-> +
-> +#define APCH_STATUS_CHGDAT     (0x01 << 0)
-> +#define APCH_STATUS_INDAT      (0x01 << 1)
-> +#define APCH_STATUS_TEMPDAT    (0x01 << 2)
-> +#define APCH_STATUS_TIMRDAT    (0x01 << 3)
-> +#define APCH_STATUS_CHGSTAT    (0x01 << 4)
-> +#define APCH_STATUS_INSTAT     (0x01 << 5)
-> +#define APCH_STATUS_TEMPSTAT   (0x01 << 6)
-> +#define APCH_STATUS_TIMRSTAT   (0x01 << 7)
-> +
-> +#define APCH_CTRL_CHGEOCOUT    (0x01 << 0)
-> +#define APCH_CTRL_INDIS                (0x01 << 1)
-> +#define APCH_CTRL_TEMPOUT      (0x01 << 2)
-> +#define APCH_CTRL_TIMRPRE      (0x01 << 3)
-> +#define APCH_CTRL_CHGEOCIN     (0x01 << 4)
-> +#define APCH_CTRL_INCON                (0x01 << 5)
-> +#define APCH_CTRL_TEMPIN       (0x01 << 6)
-> +#define APCH_CTRL_TIMRTOT      (0x01 << 7)
-> +
-> +#define APCH_STATE_ACINSTAT    (0x01 << 1)
-> +#define APCH_STATE_CSTATE      (0x03 << 4)
-> +#define APCH_STATE_CSTATE_SHIFT                4
-> +#define                APCH_STATE_CSTATE_DISABLED      0x00
-> +#define                APCH_STATE_CSTATE_EOC           0x01
-> +#define                APCH_STATE_CSTATE_FAST          0x02
-> +#define                APCH_STATE_CSTATE_PRE           0x03
-> +
-> +struct act8945a_charger {
-> +       struct device *dev;
-> +       struct act8945a_dev *act8945a_dev;
-> +       struct power_supply *psy;
-> +
-> +       u32 tolal_time_out;
-> +       u32 pre_time_out;
-> +       u32 input_voltage_threshold;
-> +       bool battery_temperature;
-> +       int chglev_pin;
-> +       int chglev_value;
-> +};
-> +
-> +static int act8945a_get_charger_state(struct regmap *regmap, int *val)
-> +{
-> +       int ret;
-> +       unsigned int status, state;
-> +
-> +       ret = regmap_read(regmap, ACT8945A_APCH_STATUS, &status);
-> +       if (ret < 0)
-> +               return ret;
-> +
-> +       ret = regmap_read(regmap, ACT8945A_APCH_STATE, &state);
-> +       if (ret < 0)
-> +               return ret;
-> +
-> +       state &= APCH_STATE_CSTATE;
-> +       state >>= APCH_STATE_CSTATE_SHIFT;
-> +
-> +       if (state == APCH_STATE_CSTATE_EOC) {
-> +               if (status & APCH_STATUS_CHGDAT)
-> +                       *val = POWER_SUPPLY_STATUS_FULL;
-> +               else
-> +                       *val = POWER_SUPPLY_STATUS_NOT_CHARGING;
-> +       } else if ((state == APCH_STATE_CSTATE_FAST) ||
-> +                  (state == APCH_STATE_CSTATE_PRE)) {
-> +               *val = POWER_SUPPLY_STATUS_CHARGING;
-> +       } else {
-> +               *val = POWER_SUPPLY_STATUS_NOT_CHARGING;
-> +       }
-> +
-> +       return 0;
-> +}
-> +
-> +static int act8945a_get_charge_type(struct regmap *regmap, int *val)
-> +{
-> +       int ret;
-> +       unsigned int state;
-> +
-> +       ret = regmap_read(regmap, ACT8945A_APCH_STATE, &state);
-> +       if (ret < 0)
-> +               return ret;
-> +
-> +       state &= APCH_STATE_CSTATE;
-> +       state >>= APCH_STATE_CSTATE_SHIFT;
-> +
-> +       switch (state) {
-> +       case APCH_STATE_CSTATE_PRE:
-> +               *val = POWER_SUPPLY_CHARGE_TYPE_TRICKLE;
-> +               break;
-> +       case APCH_STATE_CSTATE_FAST:
-> +               *val = POWER_SUPPLY_CHARGE_TYPE_FAST;
-> +               break;
-> +       case APCH_STATE_CSTATE_EOC:
-> +       case APCH_STATE_CSTATE_DISABLED:
-> +       default:
-> +               *val = POWER_SUPPLY_CHARGE_TYPE_NONE;
-> +       }
-> +
-> +       return 0;
-> +}
-> +
-> +static int act8945a_get_battery_health(struct act8945a_charger *charger,
-> +                                     struct regmap *regmap, int *val)
-> +{
-> +       int ret;
-> +       unsigned int status;
-> +
-> +       ret = regmap_read(regmap, ACT8945A_APCH_STATUS, &status);
-> +       if (ret < 0)
-> +               return ret;
-> +
-> +       if (charger->battery_temperature && !(status & APCH_STATUS_TEMPDAT))
-> +               *val = POWER_SUPPLY_HEALTH_OVERHEAT;
-> +       else if (!(status & APCH_STATUS_INDAT))
-> +               *val = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
-> +       else if (status & APCH_STATUS_TIMRDAT)
-> +               *val = POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE;
-> +       else
-> +               *val = POWER_SUPPLY_HEALTH_GOOD;
-> +
-> +       return 0;
-> +}
-> +
-> +static enum power_supply_property act8945a_charger_props[] = {
-> +       POWER_SUPPLY_PROP_STATUS,
-> +       POWER_SUPPLY_PROP_CHARGE_TYPE,
-> +       POWER_SUPPLY_PROP_TECHNOLOGY,
-> +       POWER_SUPPLY_PROP_HEALTH,
-> +       POWER_SUPPLY_PROP_MODEL_NAME,
-> +       POWER_SUPPLY_PROP_MANUFACTURER
-> +};
-> +
-> +static int act8945a_charger_get_property(struct power_supply *psy,
-> +                                   enum power_supply_property prop,
-> +                                   union power_supply_propval *val)
-> +{
-> +       struct act8945a_charger *charger = power_supply_get_drvdata(psy);
-> +       struct regmap *regmap = charger->act8945a_dev->regmap;
-> +       int ret = 0;
-> +
-> +       switch (prop) {
-> +       case POWER_SUPPLY_PROP_STATUS:
-> +               ret = act8945a_get_charger_state(regmap, &val->intval);
-> +               break;
-> +       case POWER_SUPPLY_PROP_CHARGE_TYPE:
-> +               ret = act8945a_get_charge_type(regmap, &val->intval);
-> +               break;
-> +       case POWER_SUPPLY_PROP_TECHNOLOGY:
-> +               val->intval = POWER_SUPPLY_TECHNOLOGY_LION;
-> +               break;
-> +       case POWER_SUPPLY_PROP_HEALTH:
-> +               ret = act8945a_get_battery_health(charger,
-> +                                                 regmap, &val->intval);
-> +               break;
-> +       case POWER_SUPPLY_PROP_MODEL_NAME:
-> +               val->strval = act8945a_charger_model;
-> +               break;
-> +       case POWER_SUPPLY_PROP_MANUFACTURER:
-> +               val->strval = act8945a_charger_manufacturer;
-> +               break;
-> +       default:
-> +               return -EINVAL;
-> +       }
-> +
-> +       return ret;
-> +}
-> +
-> +static const struct power_supply_desc act8945a_charger_desc = {
-> +       .name           = "act8945a-charger",
-> +       .type           = POWER_SUPPLY_TYPE_BATTERY,
-> +       .get_property   = act8945a_charger_get_property,
-> +       .properties     = act8945a_charger_props,
-> +       .num_properties = ARRAY_SIZE(act8945a_charger_props),
-> +};
-> +
-> +#define DEFAULT_TOTAL_TIME_OUT         3
-> +#define DEFAULT_PRE_TIME_OUT           40
-> +#define DEFAULT_INPUT_OVP_THRESHOLD    6600
-> +
-> +static int act8945a_charger_parse_dt(struct device *dev,
-> +                                   struct act8945a_charger *charger)
-> +{
-> +       struct device_node *np = dev->of_node;
-> +       enum of_gpio_flags flags;
-> +
-> +       if (!np) {
-> +               dev_err(dev, "no charger of node\n");
-> +               return -EINVAL;
-> +       }
-> +
-> +       charger->chglev_pin = of_get_named_gpio_flags(np,
-> +                               "active-semi,chglev-gpio", 0, &flags);
-> +
-> +       charger->chglev_value = (flags == OF_GPIO_ACTIVE_LOW) ? 0 : 1;
-> +
-> +       charger->battery_temperature = !!of_get_property(np,
-> +                               "active-semi,battery_temperature", NULL);
-
-Just: of_property_read_bool()?
-
-> +
-> +       if (of_property_read_u32(np, "active-semi,input_voltage_threshold",
-> +                                &charger->input_voltage_threshold))
-> +               charger->input_voltage_threshold = DEFAULT_PRE_TIME_OUT;
-> +
-> +       if (of_property_read_u32(np, "active-semi,precondition_timeout",
-> +                                &charger->pre_time_out))
-> +               charger->pre_time_out = DEFAULT_PRE_TIME_OUT;
-> +
-> +       if (of_property_read_u32(np, "active-semi,total_timeout",
-> +                                &charger->tolal_time_out))
-> +               charger->tolal_time_out = DEFAULT_TOTAL_TIME_OUT;
-> +
-> +       return 0;
-> +}
-> +
-> +static int act8945a_charger_config(struct act8945a_charger *charger)
-> +{
-> +       struct regmap *regmap = charger->act8945a_dev->regmap;
-> +       u8 value = 0;
-> +
-> +       if (gpio_is_valid(charger->chglev_pin))
-> +               gpio_set_value(charger->chglev_pin, charger->chglev_value);
-> +
-> +       switch (charger->input_voltage_threshold) {
-> +       case 8000:
-> +               value |= APCH_CFG_OVPSET_8V;
-> +               break;
-> +       case 7500:
-> +               value |= APCH_CFG_OVPSET_7V5;
-> +               break;
-> +       case 7000:
-> +               value |= APCH_CFG_OVPSET_7V;
-> +               break;
-> +       case 6600:
-> +       default:
-> +               value |= APCH_CFG_OVPSET_6V6;
-> +               break;
-> +       }
-> +
-> +       switch (charger->pre_time_out) {
-> +       case 60:
-> +               value |= APCH_CFG_PRETIMO_60_MIN;
-> +               break;
-> +       case 80:
-> +               value |= APCH_CFG_PRETIMO_80_MIN;
-> +               break;
-> +       case 0:
-> +               value |= APCH_CFG_PRETIMO_DISABLED;
-> +               break;
-> +       case 40:
-> +       default:
-> +               value |= APCH_CFG_PRETIMO_40_MIN;
-> +               break;
-> +       }
-> +
-> +       switch (charger->tolal_time_out) {
-> +       case 4:
-> +               value |= APCH_CFG_TOTTIMO_4_HOUR;
-> +               break;
-> +       case 5:
-> +               value |= APCH_CFG_TOTTIMO_5_HOUR;
-> +               break;
-> +       case 0:
-> +               value |= APCH_CFG_TOTTIMO_DISABLED;
-> +               break;
-> +       case 3:
-> +       default:
-> +               value |= APCH_CFG_TOTTIMO_3_HOUR;
-> +               break;
-> +       }
-> +
-> +       return regmap_write(regmap, ACT8945A_APCH_CFG, value);
-> +}
-> +
-> +static int act8945a_charger_probe(struct platform_device *pdev)
-> +{
-> +       struct act8945a_dev *act8945a_dev = dev_get_drvdata(pdev->dev.parent);
-> +       struct act8945a_charger *charger;
-> +       struct power_supply_config psy_cfg = {};
-> +       int ret;
-> +
-> +       charger = devm_kzalloc(&pdev->dev, sizeof(*charger), GFP_KERNEL);
-> +       if (!charger)
-> +               return -ENOMEM;
-> +
-> +       platform_set_drvdata(pdev, charger);
-> +
-> +       charger->dev = &pdev->dev;
-> +       charger->act8945a_dev = act8945a_dev;
-> +
-> +       ret = act8945a_charger_parse_dt(&pdev->dev, charger);
-> +       if (ret)
-> +               return ret;
-> +
-> +       ret = act8945a_charger_config(charger);
-> +       if (ret)
-> +               return ret;
-> +
-> +       psy_cfg.of_node = pdev->dev.of_node;
-> +       psy_cfg.drv_data = charger;
-> +
-> +       charger->psy = power_supply_register(&pdev->dev,
-> +                                            &act8945a_charger_desc,
-> +                                            &psy_cfg);
-
-You can use devm-like() API for this and get rid of remove function...
-but it is not a necessity I think. Up to you.
-
-> +       if (IS_ERR(charger->psy)) {
-> +               dev_err(act8945a_dev->dev, "failed to register power supply\n");
-> +               return PTR_ERR(charger->psy);
-> +       }
-> +
-> +       dev_info(act8945a_dev->dev, "charger driver registered\n");
-> +
-> +       return 0;
-> +}
-> +
-> +static int act8945a_charger_remove(struct platform_device *pdev)
-> +{
-> +       struct act8945a_charger *charger = platform_get_drvdata(pdev);
-> +
-> +       power_supply_unregister(charger->psy);
-> +
-> +       return 0;
-> +}
-> +
-> +static struct platform_driver act8945a_charger_driver = {
-> +       .driver = {
-> +               .name = "act8945a-charger",
-> +       },
-> +       .probe  = act8945a_charger_probe,
-> +       .remove = act8945a_charger_remove,
-> +};
-> +
-> +static int __init act8945a_charger_init(void)
-> +{
-> +       return platform_driver_register(&act8945a_charger_driver);
-> +}
-> +subsys_initcall(act8945a_charger_init);
-
-Why subsys_initcall? This should be regular module_platform_driver.
-
-> +
-> +static void __exit act8945a_charger_cleanup(void)
-> +{
-> +       platform_driver_unregister(&act8945a_charger_driver);
-> +}
-> +module_exit(act8945a_charger_cleanup);
-> +
-> +MODULE_DESCRIPTION("Active-semi ACT8945A ActivePath charger driver");
-> +MODULE_AUTHOR("Wenyou Yang <wenyou.yang@atmel.com>");
-> +MODULE_LICENSE("GPL v2");
-
-In the comment at beginning you mentioned GPL v2+ so this should be "GPL".
-
-Best regards,
-Krzysztof
+SGVsbG8gS3J6eXN6dG9mLA0KDQpUaGFuayB5b3UgZm9yIHlvdXIgY29tbWVuZHMuDQoNClRoZXkg
+d2lsbCBiZSBmaXhlZCBpbiB0aGUgbmV4dCB2ZXJzaW9uLg0KDQoNCj4gLS0tLS1PcmlnaW5hbCBN
+ZXNzYWdlLS0tLS0NCj4gRnJvbTogay5rb3psb3dza2kua0BnbWFpbC5jb20gW21haWx0bzprLmtv
+emxvd3NraS5rQGdtYWlsLmNvbV0gT24gQmVoYWxmIE9mDQo+IEtyenlzenRvZiBLb3psb3dza2kN
+Cj4gU2VudDogMjAxNuW5tDHmnIg45pelIDExOjU1DQo+IFRvOiBZYW5nLCBXZW55b3UgPFdlbnlv
+dS5ZYW5nQGF0bWVsLmNvbT4NCj4gQ2M6IFNlYmFzdGlhbiBSZWljaGVsIDxzcmVAa2VybmVsLm9y
+Zz47IERtaXRyeSBFcmVtaW4tU29sZW5pa292DQo+IDxkYmFyeXNoa292QGdtYWlsLmNvbT47IERh
+dmlkIFdvb2Rob3VzZSA8ZHdtdzJAaW5mcmFkZWFkLm9yZz47IFJvYg0KPiBIZXJyaW5nIDxyb2Jo
+K2R0QGtlcm5lbC5vcmc+OyBQYXdlbCBNb2xsIDxwYXdlbC5tb2xsQGFybS5jb20+OyBNYXJrDQo+
+IFJ1dGxhbmQgPG1hcmsucnV0bGFuZEBhcm0uY29tPjsgSWFuIENhbXBiZWxsIDxpamMrZGV2aWNl
+dHJlZUBoZWxsaW9uLm9yZy51az47DQo+IEt1bWFyIEdhbGEgPGdhbGFrQGNvZGVhdXJvcmEub3Jn
+PjsgRmVycmUsIE5pY29sYXMNCj4gPE5pY29sYXMuRkVSUkVAYXRtZWwuY29tPjsgbGludXgtYXJt
+LWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnOyBsaW51eC0NCj4ga2VybmVsQHZnZXIua2VybmVs
+Lm9yZzsgbGludXgtcG1Admdlci5rZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMS8y
+XSBwb3dlcjogYWN0ODk0NWE6IGFkZCBjaGFyZ2VyIGRyaXZlciBmb3IgQUNUODk0NUENCj4gDQo+
+IDIwMTYtMDEtMDggMTE6MTMgR01UKzA5OjAwIFdlbnlvdSBZYW5nIDx3ZW55b3UueWFuZ0BhdG1l
+bC5jb20+Og0KPiA+IFRoaXMgcGF0Y2ggYWRkcyBuZXcgZHJpdmVyIGZvciBBY3RpdmUtc2VtaSBB
+Q1Q4OTQ1QSBBY3RpdmVQYXRoIGNoYXJnZXINCj4gPiAocGFydCBvZiBBQ1Q4OTQ1QSBNRkQgZHJp
+dmVyKSBwcm92aWRpbmcgcG93ZXIgc3VwcGx5IGNsYXNzIGluZm9ybWF0aW9uDQo+ID4gdG8gdXNl
+cnNwYWNlLg0KPiA+DQo+ID4gVGhlIGRyaXZlciBpcyBjb25maWd1cmVkIHRocm91Z2ggRFRTIChi
+YXR0ZXJ5IGFuZCBzeXN0ZW0gcmVsYXRlZA0KPiA+IHNldHRpbmdzKSBhbmQgc3lzZnMgZW50cmll
+cyAodGltZXJzIGFuZCBpbnB1dCBvdmVyLXZvbHRhZ2UgdGhyZXNob2xkKS4NCj4gPg0KPiA+IFNp
+Z25lZC1vZmYtYnk6IFdlbnlvdSBZYW5nIDx3ZW55b3UueWFuZ0BhdG1lbC5jb20+DQo+ID4gLS0t
+DQo+ID4NCj4gPiAgZHJpdmVycy9wb3dlci9LY29uZmlnICAgICAgICAgICAgfCAgICA3ICsNCj4g
+PiAgZHJpdmVycy9wb3dlci9NYWtlZmlsZSAgICAgICAgICAgfCAgICAxICsNCj4gPiAgZHJpdmVy
+cy9wb3dlci9hY3Q4OTQ1YV9jaGFyZ2VyLmMgfCAgMzk3DQo+ID4gKysrKysrKysrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKysNCj4gPiAgMyBmaWxlcyBjaGFuZ2VkLCA0MDUgaW5zZXJ0aW9u
+cygrKQ0KPiA+ICBjcmVhdGUgbW9kZSAxMDA2NDQgZHJpdmVycy9wb3dlci9hY3Q4OTQ1YV9jaGFy
+Z2VyLmMNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3Bvd2VyL0tjb25maWcgYi9kcml2
+ZXJzL3Bvd2VyL0tjb25maWcgaW5kZXgNCj4gPiAxZGRkMTNjLi5hZTc1MjExIDEwMDY0NA0KPiA+
+IC0tLSBhL2RyaXZlcnMvcG93ZXIvS2NvbmZpZw0KPiA+ICsrKyBiL2RyaXZlcnMvcG93ZXIvS2Nv
+bmZpZw0KPiA+IEBAIC03NSw2ICs3NSwxMyBAQCBjb25maWcgQkFUVEVSWV84OFBNODYwWA0KPiA+
+ICAgICAgICAgaGVscA0KPiA+ICAgICAgICAgICBTYXkgWSBoZXJlIHRvIGVuYWJsZSBiYXR0ZXJ5
+IG1vbml0b3IgZm9yIE1hcnZlbGwgODhQTTg2MHggY2hpcC4NCj4gPg0KPiA+ICtjb25maWcgQkFU
+VEVSWV9BQ1Q4OTQ1QQ0KPiA+ICsgICAgICAgdHJpc3RhdGUgIkFjdGl2ZS1zZW1pIEFDVDg5NDVB
+IGNoYXJnZXIgZHJpdmVyIg0KPiA+ICsgICAgICAgZGVwZW5kcyBvbiBNRkRfQUNUODk0NUENCj4g
+PiArICAgICAgIGhlbHANCj4gPiArICAgICAgICAgU2F5IFkgaGVyZSB0byBlbmFibGUgc3VwcG9y
+dCBmb3IgcG93ZXIgc3VwcGx5IHByb3ZpZGVkIGJ5DQo+ID4gKyAgICAgICAgIEFjdGl2ZS1zZW1p
+IEFjdGl2ZVBhdGggQUNUODk0NUEgY2hhcmdlci4NCj4gPiArDQo+ID4gIGNvbmZpZyBCQVRURVJZ
+X0RTMjc2MA0KPiA+ICAgICAgICAgdHJpc3RhdGUgIkRTMjc2MCBiYXR0ZXJ5IGRyaXZlciAoSFAg
+aVBBUSAmIG90aGVycykiDQo+ID4gICAgICAgICBkZXBlbmRzIG9uIFcxICYmIFcxX1NMQVZFX0RT
+Mjc2MCBkaWZmIC0tZ2l0DQo+ID4gYS9kcml2ZXJzL3Bvd2VyL01ha2VmaWxlIGIvZHJpdmVycy9w
+b3dlci9NYWtlZmlsZSBpbmRleA0KPiA+IDBlNGVhYjUuLmU0NmI3NWQgMTAwNjQ0DQo+ID4gLS0t
+IGEvZHJpdmVycy9wb3dlci9NYWtlZmlsZQ0KPiA+ICsrKyBiL2RyaXZlcnMvcG93ZXIvTWFrZWZp
+bGUNCj4gPiBAQCAtMTcsNiArMTcsNyBAQCBvYmotJChDT05GSUdfV004MzUwX1BPV0VSKSAgICAr
+PQ0KPiB3bTgzNTBfcG93ZXIubw0KPiA+ICBvYmotJChDT05GSUdfVEVTVF9QT1dFUikgICAgICAg
+Kz0gdGVzdF9wb3dlci5vDQo+ID4NCj4gPiAgb2JqLSQoQ09ORklHX0JBVFRFUllfODhQTTg2MFgp
+ICs9IDg4cG04NjB4X2JhdHRlcnkubw0KPiA+ICtvYmotJChDT05GSUdfQkFUVEVSWV9BQ1Q4OTQ1
+QSkgKz0gYWN0ODk0NWFfY2hhcmdlci5vDQo+ID4gIG9iai0kKENPTkZJR19CQVRURVJZX0RTMjc2
+MCkgICArPSBkczI3NjBfYmF0dGVyeS5vDQo+ID4gIG9iai0kKENPTkZJR19CQVRURVJZX0RTMjc4
+MCkgICArPSBkczI3ODBfYmF0dGVyeS5vDQo+ID4gIG9iai0kKENPTkZJR19CQVRURVJZX0RTMjc4
+MSkgICArPSBkczI3ODFfYmF0dGVyeS5vDQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvcG93ZXIv
+YWN0ODk0NWFfY2hhcmdlci5jDQo+ID4gYi9kcml2ZXJzL3Bvd2VyL2FjdDg5NDVhX2NoYXJnZXIu
+Yw0KPiA+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0DQo+ID4gaW5kZXggMDAwMDAwMC4uNWI1NWNkNw0K
+PiA+IC0tLSAvZGV2L251bGwNCj4gPiArKysgYi9kcml2ZXJzL3Bvd2VyL2FjdDg5NDVhX2NoYXJn
+ZXIuYw0KPiA+IEBAIC0wLDAgKzEsMzk3IEBADQo+ID4gKy8qDQo+ID4gKyAqIFBvd2VyIHN1cHBs
+eSBkcml2ZXIgZm9yIHRoZSBBY3RpdmUtc2VtaSBBQ1Q4OTQ1QSBQTUlDDQo+ID4gKyAqDQo+ID4g
+KyAqIENvcHlyaWdodCAoQykgMjAxNSBBdG1lbCBDb3Jwb3JhdGlvbg0KPiA+ICsgKiAgICAgICAg
+ICAgICAgICAgICBXZW55b3UgWWFuZyA8d2VueW91LnlhbmdAYXRtZWwuY29tPg0KPiA+ICsgKg0K
+PiA+ICsgKiBUaGlzIHByb2dyYW0gaXMgZnJlZSBzb2Z0d2FyZTsgeW91IGNhbiByZWRpc3RyaWJ1
+dGUgaXQgYW5kL29yDQo+ID4gK21vZGlmeQ0KPiA+ICsgKiBpdCB1bmRlciB0aGUgdGVybXMgb2Yg
+dGhlIEdOVSBHZW5lcmFsIFB1YmxpYyBMaWNlbnNlIGFzIHB1Ymxpc2hlZA0KPiA+ICtieQ0KPiA+
+ICsgKiB0aGUgRnJlZSBTb2Z0d2FyZSBGb3VuZGF0aW9uOyBlaXRoZXIgdmVyc2lvbiAyIG9mIHRo
+ZSBMaWNlbnNlLCBvcg0KPiA+ICsgKiAoYXQgeW91ciBvcHRpb24pIGFueSBsYXRlciB2ZXJzaW9u
+Lg0KPiA+ICsgKg0KPiA+ICsgKiBUaGlzIHByb2dyYW0gaXMgZGlzdHJpYnV0ZWQgaW4gdGhlIGhv
+cGUgdGhhdCBpdCB3aWxsIGJlIHVzZWZ1bCwNCj4gPiArICogYnV0IFdJVEhPVVQgQU5ZIFdBUlJB
+TlRZOyB3aXRob3V0IGV2ZW4gdGhlIGltcGxpZWQgd2FycmFudHkgb2YNCj4gPiArICogTUVSQ0hB
+TlRBQklMSVRZIG9yIEZJVE5FU1MgRk9SIEEgUEFSVElDVUxBUiBQVVJQT1NFLiAgU2VlDQo+IHRo
+ZQ0KPiA+ICsgKiBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZSBmb3IgbW9yZSBkZXRhaWxzLg0K
+PiA+ICsgKi8NCj4gPiArDQo+ID4gKyNpbmNsdWRlIDxsaW51eC9tb2R1bGUuaD4NCj4gPiArI2lu
+Y2x1ZGUgPGxpbnV4L21mZC9hY3Q4OTQ1YS5oPg0KPiA+ICsjaW5jbHVkZSA8bGludXgvb2YuaD4N
+Cj4gPiArI2luY2x1ZGUgPGxpbnV4L29mX2dwaW8uaD4NCj4gPiArI2luY2x1ZGUgPGxpbnV4L3Bs
+YXRmb3JtX2RldmljZS5oPg0KPiA+ICsjaW5jbHVkZSA8bGludXgvcG93ZXJfc3VwcGx5Lmg+DQo+
+ID4gKyNpbmNsdWRlIDxsaW51eC9yZWdtYXAuaD4NCj4gPiArDQo+ID4gK3N0YXRpYyBjb25zdCBj
+aGFyICphY3Q4OTQ1YV9jaGFyZ2VyX21vZGVsID0gIkFDVDg5NDVBIjsgc3RhdGljIGNvbnN0DQo+
+ID4gK2NoYXIgKmFjdDg5NDVhX2NoYXJnZXJfbWFudWZhY3R1cmVyID0gIkFjdGl2ZS1zZW1pIjsN
+Cj4gPiArDQo+ID4gKy8qKg0KPiA+ICsgKiBBQ1Q4OTQ1QSBDaGFyZ2VyIFJlZ2lzdGVyIE1hcA0K
+PiA+ICsgKi8NCj4gPiArDQo+ID4gKy8qIDB4NzA6IFJlc2VydmVkICovDQo+ID4gKyNkZWZpbmUg
+QUNUODk0NUFfQVBDSF9DRkcgICAgICAgICAgICAgIDB4NzENCj4gPiArI2RlZmluZSBBQ1Q4OTQ1
+QV9BUENIX1NUQVRVUyAgICAgICAgICAgMHg3OA0KPiA+ICsjZGVmaW5lIEFDVDg5NDVBX0FQQ0hf
+Q1RSTCAgICAgICAgICAgICAweDc5DQo+ID4gKyNkZWZpbmUgQUNUODk0NUFfQVBDSF9TVEFURSAg
+ICAgICAgICAgIDB4N0ENCj4gPiArDQo+ID4gKy8qIEFDVDg5NDVBX0FQQ0hfQ0ZHICovDQo+ID4g
+KyNkZWZpbmUgQVBDSF9DRkdfT1ZQU0VUICAgICAgICAgICAgICAgICgweDAzIDw8IDApDQo+ID4g
+KyNkZWZpbmUgICAgICAgICAgICAgICAgQVBDSF9DRkdfT1ZQU0VUXzZWNiAgICAgKDB4MCA8PCAw
+KQ0KPiA+ICsjZGVmaW5lICAgICAgICAgICAgICAgIEFQQ0hfQ0ZHX09WUFNFVF83ViAgICAgICgw
+eDEgPDwgMCkNCj4gPiArI2RlZmluZSAgICAgICAgICAgICAgICBBUENIX0NGR19PVlBTRVRfN1Y1
+ICAgICAoMHgyIDw8IDApDQo+ID4gKyNkZWZpbmUgICAgICAgICAgICAgICAgQVBDSF9DRkdfT1ZQ
+U0VUXzhWICAgICAgKDB4MyA8PCAwKQ0KPiA+ICsjZGVmaW5lIEFQQ0hfQ0ZHX1BSRVRJTU8gICAg
+ICAgKDB4MDMgPDwgMikNCj4gPiArI2RlZmluZSAgICAgICAgICAgICAgICBBUENIX0NGR19QUkVU
+SU1PXzQwX01JTiAgICAgICAgICgweDAgPDwgMikNCj4gPiArI2RlZmluZSAgICAgICAgICAgICAg
+ICBBUENIX0NGR19QUkVUSU1PXzYwX01JTiAgICAgICAgICgweDEgPDwgMikNCj4gPiArI2RlZmlu
+ZSAgICAgICAgICAgICAgICBBUENIX0NGR19QUkVUSU1PXzgwX01JTiAgICAgICAgICgweDIgPDwg
+MikNCj4gPiArI2RlZmluZSAgICAgICAgICAgICAgICBBUENIX0NGR19QUkVUSU1PX0RJU0FCTEVE
+ICAgICAgICgweDMgPDwgMikNCj4gPiArI2RlZmluZSBBUENIX0NGR19UT1RUSU1PICAgICAgICgw
+eDAzIDw8IDQpDQo+ID4gKyNkZWZpbmUgICAgICAgICAgICAgICAgQVBDSF9DRkdfVE9UVElNT18z
+X0hPVVIgICAgICAgICAoMHgwIDw8IDQpDQo+ID4gKyNkZWZpbmUgICAgICAgICAgICAgICAgQVBD
+SF9DRkdfVE9UVElNT180X0hPVVIgICAgICAgICAoMHgxIDw8IDQpDQo+ID4gKyNkZWZpbmUgICAg
+ICAgICAgICAgICAgQVBDSF9DRkdfVE9UVElNT181X0hPVVIgICAgICAgICAoMHgyIDw8IDQpDQo+
+ID4gKyNkZWZpbmUgICAgICAgICAgICAgICAgQVBDSF9DRkdfVE9UVElNT19ESVNBQkxFRCAgICAg
+ICAoMHgzIDw8IDQpDQo+ID4gKyNkZWZpbmUgQVBDSF9DRkdfU1VTQ0hHICAgICAgICAgICAgICAg
+ICgweDAxIDw8IDcpDQo+ID4gKw0KPiA+ICsjZGVmaW5lIEFQQ0hfU1RBVFVTX0NIR0RBVCAgICAg
+KDB4MDEgPDwgMCkNCj4gPiArI2RlZmluZSBBUENIX1NUQVRVU19JTkRBVCAgICAgICgweDAxIDw8
+IDEpDQo+ID4gKyNkZWZpbmUgQVBDSF9TVEFUVVNfVEVNUERBVCAgICAoMHgwMSA8PCAyKQ0KPiA+
+ICsjZGVmaW5lIEFQQ0hfU1RBVFVTX1RJTVJEQVQgICAgKDB4MDEgPDwgMykNCj4gPiArI2RlZmlu
+ZSBBUENIX1NUQVRVU19DSEdTVEFUICAgICgweDAxIDw8IDQpDQo+ID4gKyNkZWZpbmUgQVBDSF9T
+VEFUVVNfSU5TVEFUICAgICAoMHgwMSA8PCA1KQ0KPiA+ICsjZGVmaW5lIEFQQ0hfU1RBVFVTX1RF
+TVBTVEFUICAgKDB4MDEgPDwgNikNCj4gPiArI2RlZmluZSBBUENIX1NUQVRVU19USU1SU1RBVCAg
+ICgweDAxIDw8IDcpDQo+ID4gKw0KPiA+ICsjZGVmaW5lIEFQQ0hfQ1RSTF9DSEdFT0NPVVQgICAg
+KDB4MDEgPDwgMCkNCj4gPiArI2RlZmluZSBBUENIX0NUUkxfSU5ESVMgICAgICAgICAgICAgICAg
+KDB4MDEgPDwgMSkNCj4gPiArI2RlZmluZSBBUENIX0NUUkxfVEVNUE9VVCAgICAgICgweDAxIDw8
+IDIpDQo+ID4gKyNkZWZpbmUgQVBDSF9DVFJMX1RJTVJQUkUgICAgICAoMHgwMSA8PCAzKQ0KPiA+
+ICsjZGVmaW5lIEFQQ0hfQ1RSTF9DSEdFT0NJTiAgICAgKDB4MDEgPDwgNCkNCj4gPiArI2RlZmlu
+ZSBBUENIX0NUUkxfSU5DT04gICAgICAgICAgICAgICAgKDB4MDEgPDwgNSkNCj4gPiArI2RlZmlu
+ZSBBUENIX0NUUkxfVEVNUElOICAgICAgICgweDAxIDw8IDYpDQo+ID4gKyNkZWZpbmUgQVBDSF9D
+VFJMX1RJTVJUT1QgICAgICAoMHgwMSA8PCA3KQ0KPiA+ICsNCj4gPiArI2RlZmluZSBBUENIX1NU
+QVRFX0FDSU5TVEFUICAgICgweDAxIDw8IDEpDQo+ID4gKyNkZWZpbmUgQVBDSF9TVEFURV9DU1RB
+VEUgICAgICAoMHgwMyA8PCA0KQ0KPiA+ICsjZGVmaW5lIEFQQ0hfU1RBVEVfQ1NUQVRFX1NISUZU
+ICAgICAgICAgICAgICAgIDQNCj4gPiArI2RlZmluZSAgICAgICAgICAgICAgICBBUENIX1NUQVRF
+X0NTVEFURV9ESVNBQkxFRCAgICAgIDB4MDANCj4gPiArI2RlZmluZSAgICAgICAgICAgICAgICBB
+UENIX1NUQVRFX0NTVEFURV9FT0MgICAgICAgICAgIDB4MDENCj4gPiArI2RlZmluZSAgICAgICAg
+ICAgICAgICBBUENIX1NUQVRFX0NTVEFURV9GQVNUICAgICAgICAgIDB4MDINCj4gPiArI2RlZmlu
+ZSAgICAgICAgICAgICAgICBBUENIX1NUQVRFX0NTVEFURV9QUkUgICAgICAgICAgIDB4MDMNCj4g
+PiArDQo+ID4gK3N0cnVjdCBhY3Q4OTQ1YV9jaGFyZ2VyIHsNCj4gPiArICAgICAgIHN0cnVjdCBk
+ZXZpY2UgKmRldjsNCj4gPiArICAgICAgIHN0cnVjdCBhY3Q4OTQ1YV9kZXYgKmFjdDg5NDVhX2Rl
+djsNCj4gPiArICAgICAgIHN0cnVjdCBwb3dlcl9zdXBwbHkgKnBzeTsNCj4gPiArDQo+ID4gKyAg
+ICAgICB1MzIgdG9sYWxfdGltZV9vdXQ7DQo+ID4gKyAgICAgICB1MzIgcHJlX3RpbWVfb3V0Ow0K
+PiA+ICsgICAgICAgdTMyIGlucHV0X3ZvbHRhZ2VfdGhyZXNob2xkOw0KPiA+ICsgICAgICAgYm9v
+bCBiYXR0ZXJ5X3RlbXBlcmF0dXJlOw0KPiA+ICsgICAgICAgaW50IGNoZ2xldl9waW47DQo+ID4g
+KyAgICAgICBpbnQgY2hnbGV2X3ZhbHVlOw0KPiA+ICt9Ow0KPiA+ICsNCj4gPiArc3RhdGljIGlu
+dCBhY3Q4OTQ1YV9nZXRfY2hhcmdlcl9zdGF0ZShzdHJ1Y3QgcmVnbWFwICpyZWdtYXAsIGludA0K
+PiA+ICsqdmFsKSB7DQo+ID4gKyAgICAgICBpbnQgcmV0Ow0KPiA+ICsgICAgICAgdW5zaWduZWQg
+aW50IHN0YXR1cywgc3RhdGU7DQo+ID4gKw0KPiA+ICsgICAgICAgcmV0ID0gcmVnbWFwX3JlYWQo
+cmVnbWFwLCBBQ1Q4OTQ1QV9BUENIX1NUQVRVUywgJnN0YXR1cyk7DQo+ID4gKyAgICAgICBpZiAo
+cmV0IDwgMCkNCj4gPiArICAgICAgICAgICAgICAgcmV0dXJuIHJldDsNCj4gPiArDQo+ID4gKyAg
+ICAgICByZXQgPSByZWdtYXBfcmVhZChyZWdtYXAsIEFDVDg5NDVBX0FQQ0hfU1RBVEUsICZzdGF0
+ZSk7DQo+ID4gKyAgICAgICBpZiAocmV0IDwgMCkNCj4gPiArICAgICAgICAgICAgICAgcmV0dXJu
+IHJldDsNCj4gPiArDQo+ID4gKyAgICAgICBzdGF0ZSAmPSBBUENIX1NUQVRFX0NTVEFURTsNCj4g
+PiArICAgICAgIHN0YXRlID4+PSBBUENIX1NUQVRFX0NTVEFURV9TSElGVDsNCj4gPiArDQo+ID4g
+KyAgICAgICBpZiAoc3RhdGUgPT0gQVBDSF9TVEFURV9DU1RBVEVfRU9DKSB7DQo+ID4gKyAgICAg
+ICAgICAgICAgIGlmIChzdGF0dXMgJiBBUENIX1NUQVRVU19DSEdEQVQpDQo+ID4gKyAgICAgICAg
+ICAgICAgICAgICAgICAgKnZhbCA9IFBPV0VSX1NVUFBMWV9TVEFUVVNfRlVMTDsNCj4gPiArICAg
+ICAgICAgICAgICAgZWxzZQ0KPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICp2YWwgPSBQT1dF
+Ul9TVVBQTFlfU1RBVFVTX05PVF9DSEFSR0lORzsNCj4gPiArICAgICAgIH0gZWxzZSBpZiAoKHN0
+YXRlID09IEFQQ0hfU1RBVEVfQ1NUQVRFX0ZBU1QpIHx8DQo+ID4gKyAgICAgICAgICAgICAgICAg
+IChzdGF0ZSA9PSBBUENIX1NUQVRFX0NTVEFURV9QUkUpKSB7DQo+ID4gKyAgICAgICAgICAgICAg
+ICp2YWwgPSBQT1dFUl9TVVBQTFlfU1RBVFVTX0NIQVJHSU5HOw0KPiA+ICsgICAgICAgfSBlbHNl
+IHsNCj4gPiArICAgICAgICAgICAgICAgKnZhbCA9IFBPV0VSX1NVUFBMWV9TVEFUVVNfTk9UX0NI
+QVJHSU5HOw0KPiA+ICsgICAgICAgfQ0KPiA+ICsNCj4gPiArICAgICAgIHJldHVybiAwOw0KPiA+
+ICt9DQo+ID4gKw0KPiA+ICtzdGF0aWMgaW50IGFjdDg5NDVhX2dldF9jaGFyZ2VfdHlwZShzdHJ1
+Y3QgcmVnbWFwICpyZWdtYXAsIGludCAqdmFsKQ0KPiA+ICt7DQo+ID4gKyAgICAgICBpbnQgcmV0
+Ow0KPiA+ICsgICAgICAgdW5zaWduZWQgaW50IHN0YXRlOw0KPiA+ICsNCj4gPiArICAgICAgIHJl
+dCA9IHJlZ21hcF9yZWFkKHJlZ21hcCwgQUNUODk0NUFfQVBDSF9TVEFURSwgJnN0YXRlKTsNCj4g
+PiArICAgICAgIGlmIChyZXQgPCAwKQ0KPiA+ICsgICAgICAgICAgICAgICByZXR1cm4gcmV0Ow0K
+PiA+ICsNCj4gPiArICAgICAgIHN0YXRlICY9IEFQQ0hfU1RBVEVfQ1NUQVRFOw0KPiA+ICsgICAg
+ICAgc3RhdGUgPj49IEFQQ0hfU1RBVEVfQ1NUQVRFX1NISUZUOw0KPiA+ICsNCj4gPiArICAgICAg
+IHN3aXRjaCAoc3RhdGUpIHsNCj4gPiArICAgICAgIGNhc2UgQVBDSF9TVEFURV9DU1RBVEVfUFJF
+Og0KPiA+ICsgICAgICAgICAgICAgICAqdmFsID0gUE9XRVJfU1VQUExZX0NIQVJHRV9UWVBFX1RS
+SUNLTEU7DQo+ID4gKyAgICAgICAgICAgICAgIGJyZWFrOw0KPiA+ICsgICAgICAgY2FzZSBBUENI
+X1NUQVRFX0NTVEFURV9GQVNUOg0KPiA+ICsgICAgICAgICAgICAgICAqdmFsID0gUE9XRVJfU1VQ
+UExZX0NIQVJHRV9UWVBFX0ZBU1Q7DQo+ID4gKyAgICAgICAgICAgICAgIGJyZWFrOw0KPiA+ICsg
+ICAgICAgY2FzZSBBUENIX1NUQVRFX0NTVEFURV9FT0M6DQo+ID4gKyAgICAgICBjYXNlIEFQQ0hf
+U1RBVEVfQ1NUQVRFX0RJU0FCTEVEOg0KPiA+ICsgICAgICAgZGVmYXVsdDoNCj4gPiArICAgICAg
+ICAgICAgICAgKnZhbCA9IFBPV0VSX1NVUFBMWV9DSEFSR0VfVFlQRV9OT05FOw0KPiA+ICsgICAg
+ICAgfQ0KPiA+ICsNCj4gPiArICAgICAgIHJldHVybiAwOw0KPiA+ICt9DQo+ID4gKw0KPiA+ICtz
+dGF0aWMgaW50IGFjdDg5NDVhX2dldF9iYXR0ZXJ5X2hlYWx0aChzdHJ1Y3QgYWN0ODk0NWFfY2hh
+cmdlciAqY2hhcmdlciwNCj4gPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+IHN0cnVjdCByZWdtYXAgKnJlZ21hcCwgaW50ICp2YWwpDQo+ID4gK3sNCj4gPiArICAgICAgIGlu
+dCByZXQ7DQo+ID4gKyAgICAgICB1bnNpZ25lZCBpbnQgc3RhdHVzOw0KPiA+ICsNCj4gPiArICAg
+ICAgIHJldCA9IHJlZ21hcF9yZWFkKHJlZ21hcCwgQUNUODk0NUFfQVBDSF9TVEFUVVMsICZzdGF0
+dXMpOw0KPiA+ICsgICAgICAgaWYgKHJldCA8IDApDQo+ID4gKyAgICAgICAgICAgICAgIHJldHVy
+biByZXQ7DQo+ID4gKw0KPiA+ICsgICAgICAgaWYgKGNoYXJnZXItPmJhdHRlcnlfdGVtcGVyYXR1
+cmUgJiYgIShzdGF0dXMgJg0KPiBBUENIX1NUQVRVU19URU1QREFUKSkNCj4gPiArICAgICAgICAg
+ICAgICAgKnZhbCA9IFBPV0VSX1NVUFBMWV9IRUFMVEhfT1ZFUkhFQVQ7DQo+ID4gKyAgICAgICBl
+bHNlIGlmICghKHN0YXR1cyAmIEFQQ0hfU1RBVFVTX0lOREFUKSkNCj4gPiArICAgICAgICAgICAg
+ICAgKnZhbCA9IFBPV0VSX1NVUFBMWV9IRUFMVEhfT1ZFUlZPTFRBR0U7DQo+ID4gKyAgICAgICBl
+bHNlIGlmIChzdGF0dXMgJiBBUENIX1NUQVRVU19USU1SREFUKQ0KPiA+ICsgICAgICAgICAgICAg
+ICAqdmFsID0gUE9XRVJfU1VQUExZX0hFQUxUSF9TQUZFVFlfVElNRVJfRVhQSVJFOw0KPiA+ICsg
+ICAgICAgZWxzZQ0KPiA+ICsgICAgICAgICAgICAgICAqdmFsID0gUE9XRVJfU1VQUExZX0hFQUxU
+SF9HT09EOw0KPiA+ICsNCj4gPiArICAgICAgIHJldHVybiAwOw0KPiA+ICt9DQo+ID4gKw0KPiA+
+ICtzdGF0aWMgZW51bSBwb3dlcl9zdXBwbHlfcHJvcGVydHkgYWN0ODk0NWFfY2hhcmdlcl9wcm9w
+c1tdID0gew0KPiA+ICsgICAgICAgUE9XRVJfU1VQUExZX1BST1BfU1RBVFVTLA0KPiA+ICsgICAg
+ICAgUE9XRVJfU1VQUExZX1BST1BfQ0hBUkdFX1RZUEUsDQo+ID4gKyAgICAgICBQT1dFUl9TVVBQ
+TFlfUFJPUF9URUNITk9MT0dZLA0KPiA+ICsgICAgICAgUE9XRVJfU1VQUExZX1BST1BfSEVBTFRI
+LA0KPiA+ICsgICAgICAgUE9XRVJfU1VQUExZX1BST1BfTU9ERUxfTkFNRSwNCj4gPiArICAgICAg
+IFBPV0VSX1NVUFBMWV9QUk9QX01BTlVGQUNUVVJFUiB9Ow0KPiA+ICsNCj4gPiArc3RhdGljIGlu
+dCBhY3Q4OTQ1YV9jaGFyZ2VyX2dldF9wcm9wZXJ0eShzdHJ1Y3QgcG93ZXJfc3VwcGx5ICpwc3ks
+DQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgZW51bSBwb3dlcl9zdXBw
+bHlfcHJvcGVydHkgcHJvcCwNCj4gPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICB1bmlvbiBwb3dlcl9zdXBwbHlfcHJvcHZhbCAqdmFsKSB7DQo+ID4gKyAgICAgICBzdHJ1Y3Qg
+YWN0ODk0NWFfY2hhcmdlciAqY2hhcmdlciA9IHBvd2VyX3N1cHBseV9nZXRfZHJ2ZGF0YShwc3kp
+Ow0KPiA+ICsgICAgICAgc3RydWN0IHJlZ21hcCAqcmVnbWFwID0gY2hhcmdlci0+YWN0ODk0NWFf
+ZGV2LT5yZWdtYXA7DQo+ID4gKyAgICAgICBpbnQgcmV0ID0gMDsNCj4gPiArDQo+ID4gKyAgICAg
+ICBzd2l0Y2ggKHByb3ApIHsNCj4gPiArICAgICAgIGNhc2UgUE9XRVJfU1VQUExZX1BST1BfU1RB
+VFVTOg0KPiA+ICsgICAgICAgICAgICAgICByZXQgPSBhY3Q4OTQ1YV9nZXRfY2hhcmdlcl9zdGF0
+ZShyZWdtYXAsICZ2YWwtPmludHZhbCk7DQo+ID4gKyAgICAgICAgICAgICAgIGJyZWFrOw0KPiA+
+ICsgICAgICAgY2FzZSBQT1dFUl9TVVBQTFlfUFJPUF9DSEFSR0VfVFlQRToNCj4gPiArICAgICAg
+ICAgICAgICAgcmV0ID0gYWN0ODk0NWFfZ2V0X2NoYXJnZV90eXBlKHJlZ21hcCwgJnZhbC0+aW50
+dmFsKTsNCj4gPiArICAgICAgICAgICAgICAgYnJlYWs7DQo+ID4gKyAgICAgICBjYXNlIFBPV0VS
+X1NVUFBMWV9QUk9QX1RFQ0hOT0xPR1k6DQo+ID4gKyAgICAgICAgICAgICAgIHZhbC0+aW50dmFs
+ID0gUE9XRVJfU1VQUExZX1RFQ0hOT0xPR1lfTElPTjsNCj4gPiArICAgICAgICAgICAgICAgYnJl
+YWs7DQo+ID4gKyAgICAgICBjYXNlIFBPV0VSX1NVUFBMWV9QUk9QX0hFQUxUSDoNCj4gPiArICAg
+ICAgICAgICAgICAgcmV0ID0gYWN0ODk0NWFfZ2V0X2JhdHRlcnlfaGVhbHRoKGNoYXJnZXIsDQo+
+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICByZWdt
+YXAsICZ2YWwtPmludHZhbCk7DQo+ID4gKyAgICAgICAgICAgICAgIGJyZWFrOw0KPiA+ICsgICAg
+ICAgY2FzZSBQT1dFUl9TVVBQTFlfUFJPUF9NT0RFTF9OQU1FOg0KPiA+ICsgICAgICAgICAgICAg
+ICB2YWwtPnN0cnZhbCA9IGFjdDg5NDVhX2NoYXJnZXJfbW9kZWw7DQo+ID4gKyAgICAgICAgICAg
+ICAgIGJyZWFrOw0KPiA+ICsgICAgICAgY2FzZSBQT1dFUl9TVVBQTFlfUFJPUF9NQU5VRkFDVFVS
+RVI6DQo+ID4gKyAgICAgICAgICAgICAgIHZhbC0+c3RydmFsID0gYWN0ODk0NWFfY2hhcmdlcl9t
+YW51ZmFjdHVyZXI7DQo+ID4gKyAgICAgICAgICAgICAgIGJyZWFrOw0KPiA+ICsgICAgICAgZGVm
+YXVsdDoNCj4gPiArICAgICAgICAgICAgICAgcmV0dXJuIC1FSU5WQUw7DQo+ID4gKyAgICAgICB9
+DQo+ID4gKw0KPiA+ICsgICAgICAgcmV0dXJuIHJldDsNCj4gPiArfQ0KPiA+ICsNCj4gPiArc3Rh
+dGljIGNvbnN0IHN0cnVjdCBwb3dlcl9zdXBwbHlfZGVzYyBhY3Q4OTQ1YV9jaGFyZ2VyX2Rlc2Mg
+PSB7DQo+ID4gKyAgICAgICAubmFtZSAgICAgICAgICAgPSAiYWN0ODk0NWEtY2hhcmdlciIsDQo+
+ID4gKyAgICAgICAudHlwZSAgICAgICAgICAgPSBQT1dFUl9TVVBQTFlfVFlQRV9CQVRURVJZLA0K
+PiA+ICsgICAgICAgLmdldF9wcm9wZXJ0eSAgID0gYWN0ODk0NWFfY2hhcmdlcl9nZXRfcHJvcGVy
+dHksDQo+ID4gKyAgICAgICAucHJvcGVydGllcyAgICAgPSBhY3Q4OTQ1YV9jaGFyZ2VyX3Byb3Bz
+LA0KPiA+ICsgICAgICAgLm51bV9wcm9wZXJ0aWVzID0gQVJSQVlfU0laRShhY3Q4OTQ1YV9jaGFy
+Z2VyX3Byb3BzKSwNCj4gPiArfTsNCj4gPiArDQo+ID4gKyNkZWZpbmUgREVGQVVMVF9UT1RBTF9U
+SU1FX09VVCAgICAgICAgIDMNCj4gPiArI2RlZmluZSBERUZBVUxUX1BSRV9USU1FX09VVCAgICAg
+ICAgICAgNDANCj4gPiArI2RlZmluZSBERUZBVUxUX0lOUFVUX09WUF9USFJFU0hPTEQgICAgNjYw
+MA0KPiA+ICsNCj4gPiArc3RhdGljIGludCBhY3Q4OTQ1YV9jaGFyZ2VyX3BhcnNlX2R0KHN0cnVj
+dCBkZXZpY2UgKmRldiwNCj4gPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBz
+dHJ1Y3QgYWN0ODk0NWFfY2hhcmdlciAqY2hhcmdlcikNCj4gPiArew0KPiA+ICsgICAgICAgc3Ry
+dWN0IGRldmljZV9ub2RlICpucCA9IGRldi0+b2Zfbm9kZTsNCj4gPiArICAgICAgIGVudW0gb2Zf
+Z3Bpb19mbGFncyBmbGFnczsNCj4gPiArDQo+ID4gKyAgICAgICBpZiAoIW5wKSB7DQo+ID4gKyAg
+ICAgICAgICAgICAgIGRldl9lcnIoZGV2LCAibm8gY2hhcmdlciBvZiBub2RlXG4iKTsNCj4gPiAr
+ICAgICAgICAgICAgICAgcmV0dXJuIC1FSU5WQUw7DQo+ID4gKyAgICAgICB9DQo+ID4gKw0KPiA+
+ICsgICAgICAgY2hhcmdlci0+Y2hnbGV2X3BpbiA9IG9mX2dldF9uYW1lZF9ncGlvX2ZsYWdzKG5w
+LA0KPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgImFjdGl2ZS1zZW1pLGNoZ2xl
+di1ncGlvIiwgMCwgJmZsYWdzKTsNCj4gPiArDQo+ID4gKyAgICAgICBjaGFyZ2VyLT5jaGdsZXZf
+dmFsdWUgPSAoZmxhZ3MgPT0gT0ZfR1BJT19BQ1RJVkVfTE9XKSA/IDAgOiAxOw0KPiA+ICsNCj4g
+PiArICAgICAgIGNoYXJnZXItPmJhdHRlcnlfdGVtcGVyYXR1cmUgPSAhIW9mX2dldF9wcm9wZXJ0
+eShucCwNCj4gPiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJhY3RpdmUtc2VtaSxi
+YXR0ZXJ5X3RlbXBlcmF0dXJlIiwNCj4gPiArIE5VTEwpOw0KPiANCj4gSnVzdDogb2ZfcHJvcGVy
+dHlfcmVhZF9ib29sKCk/DQo+IA0KPiA+ICsNCj4gPiArICAgICAgIGlmIChvZl9wcm9wZXJ0eV9y
+ZWFkX3UzMihucCwgImFjdGl2ZS1zZW1pLGlucHV0X3ZvbHRhZ2VfdGhyZXNob2xkIiwNCj4gPiAr
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAmY2hhcmdlci0+aW5wdXRfdm9sdGFnZV90
+aHJlc2hvbGQpKQ0KPiA+ICsgICAgICAgICAgICAgICBjaGFyZ2VyLT5pbnB1dF92b2x0YWdlX3Ro
+cmVzaG9sZCA9DQo+ID4gKyBERUZBVUxUX1BSRV9USU1FX09VVDsNCj4gPiArDQo+ID4gKyAgICAg
+ICBpZiAob2ZfcHJvcGVydHlfcmVhZF91MzIobnAsICJhY3RpdmUtc2VtaSxwcmVjb25kaXRpb25f
+dGltZW91dCIsDQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgJmNoYXJnZXIt
+PnByZV90aW1lX291dCkpDQo+ID4gKyAgICAgICAgICAgICAgIGNoYXJnZXItPnByZV90aW1lX291
+dCA9IERFRkFVTFRfUFJFX1RJTUVfT1VUOw0KPiA+ICsNCj4gPiArICAgICAgIGlmIChvZl9wcm9w
+ZXJ0eV9yZWFkX3UzMihucCwgImFjdGl2ZS1zZW1pLHRvdGFsX3RpbWVvdXQiLA0KPiA+ICsgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICZjaGFyZ2VyLT50b2xhbF90aW1lX291dCkpDQo+
+ID4gKyAgICAgICAgICAgICAgIGNoYXJnZXItPnRvbGFsX3RpbWVfb3V0ID0gREVGQVVMVF9UT1RB
+TF9USU1FX09VVDsNCj4gPiArDQo+ID4gKyAgICAgICByZXR1cm4gMDsNCj4gPiArfQ0KPiA+ICsN
+Cj4gPiArc3RhdGljIGludCBhY3Q4OTQ1YV9jaGFyZ2VyX2NvbmZpZyhzdHJ1Y3QgYWN0ODk0NWFf
+Y2hhcmdlciAqY2hhcmdlcikNCj4gPiArew0KPiA+ICsgICAgICAgc3RydWN0IHJlZ21hcCAqcmVn
+bWFwID0gY2hhcmdlci0+YWN0ODk0NWFfZGV2LT5yZWdtYXA7DQo+ID4gKyAgICAgICB1OCB2YWx1
+ZSA9IDA7DQo+ID4gKw0KPiA+ICsgICAgICAgaWYgKGdwaW9faXNfdmFsaWQoY2hhcmdlci0+Y2hn
+bGV2X3BpbikpDQo+ID4gKyAgICAgICAgICAgICAgIGdwaW9fc2V0X3ZhbHVlKGNoYXJnZXItPmNo
+Z2xldl9waW4sDQo+ID4gKyBjaGFyZ2VyLT5jaGdsZXZfdmFsdWUpOw0KPiA+ICsNCj4gPiArICAg
+ICAgIHN3aXRjaCAoY2hhcmdlci0+aW5wdXRfdm9sdGFnZV90aHJlc2hvbGQpIHsNCj4gPiArICAg
+ICAgIGNhc2UgODAwMDoNCj4gPiArICAgICAgICAgICAgICAgdmFsdWUgfD0gQVBDSF9DRkdfT1ZQ
+U0VUXzhWOw0KPiA+ICsgICAgICAgICAgICAgICBicmVhazsNCj4gPiArICAgICAgIGNhc2UgNzUw
+MDoNCj4gPiArICAgICAgICAgICAgICAgdmFsdWUgfD0gQVBDSF9DRkdfT1ZQU0VUXzdWNTsNCj4g
+PiArICAgICAgICAgICAgICAgYnJlYWs7DQo+ID4gKyAgICAgICBjYXNlIDcwMDA6DQo+ID4gKyAg
+ICAgICAgICAgICAgIHZhbHVlIHw9IEFQQ0hfQ0ZHX09WUFNFVF83VjsNCj4gPiArICAgICAgICAg
+ICAgICAgYnJlYWs7DQo+ID4gKyAgICAgICBjYXNlIDY2MDA6DQo+ID4gKyAgICAgICBkZWZhdWx0
+Og0KPiA+ICsgICAgICAgICAgICAgICB2YWx1ZSB8PSBBUENIX0NGR19PVlBTRVRfNlY2Ow0KPiA+
+ICsgICAgICAgICAgICAgICBicmVhazsNCj4gPiArICAgICAgIH0NCj4gPiArDQo+ID4gKyAgICAg
+ICBzd2l0Y2ggKGNoYXJnZXItPnByZV90aW1lX291dCkgew0KPiA+ICsgICAgICAgY2FzZSA2MDoN
+Cj4gPiArICAgICAgICAgICAgICAgdmFsdWUgfD0gQVBDSF9DRkdfUFJFVElNT182MF9NSU47DQo+
+ID4gKyAgICAgICAgICAgICAgIGJyZWFrOw0KPiA+ICsgICAgICAgY2FzZSA4MDoNCj4gPiArICAg
+ICAgICAgICAgICAgdmFsdWUgfD0gQVBDSF9DRkdfUFJFVElNT184MF9NSU47DQo+ID4gKyAgICAg
+ICAgICAgICAgIGJyZWFrOw0KPiA+ICsgICAgICAgY2FzZSAwOg0KPiA+ICsgICAgICAgICAgICAg
+ICB2YWx1ZSB8PSBBUENIX0NGR19QUkVUSU1PX0RJU0FCTEVEOw0KPiA+ICsgICAgICAgICAgICAg
+ICBicmVhazsNCj4gPiArICAgICAgIGNhc2UgNDA6DQo+ID4gKyAgICAgICBkZWZhdWx0Og0KPiA+
+ICsgICAgICAgICAgICAgICB2YWx1ZSB8PSBBUENIX0NGR19QUkVUSU1PXzQwX01JTjsNCj4gPiAr
+ICAgICAgICAgICAgICAgYnJlYWs7DQo+ID4gKyAgICAgICB9DQo+ID4gKw0KPiA+ICsgICAgICAg
+c3dpdGNoIChjaGFyZ2VyLT50b2xhbF90aW1lX291dCkgew0KPiA+ICsgICAgICAgY2FzZSA0Og0K
+PiA+ICsgICAgICAgICAgICAgICB2YWx1ZSB8PSBBUENIX0NGR19UT1RUSU1PXzRfSE9VUjsNCj4g
+PiArICAgICAgICAgICAgICAgYnJlYWs7DQo+ID4gKyAgICAgICBjYXNlIDU6DQo+ID4gKyAgICAg
+ICAgICAgICAgIHZhbHVlIHw9IEFQQ0hfQ0ZHX1RPVFRJTU9fNV9IT1VSOw0KPiA+ICsgICAgICAg
+ICAgICAgICBicmVhazsNCj4gPiArICAgICAgIGNhc2UgMDoNCj4gPiArICAgICAgICAgICAgICAg
+dmFsdWUgfD0gQVBDSF9DRkdfVE9UVElNT19ESVNBQkxFRDsNCj4gPiArICAgICAgICAgICAgICAg
+YnJlYWs7DQo+ID4gKyAgICAgICBjYXNlIDM6DQo+ID4gKyAgICAgICBkZWZhdWx0Og0KPiA+ICsg
+ICAgICAgICAgICAgICB2YWx1ZSB8PSBBUENIX0NGR19UT1RUSU1PXzNfSE9VUjsNCj4gPiArICAg
+ICAgICAgICAgICAgYnJlYWs7DQo+ID4gKyAgICAgICB9DQo+ID4gKw0KPiA+ICsgICAgICAgcmV0
+dXJuIHJlZ21hcF93cml0ZShyZWdtYXAsIEFDVDg5NDVBX0FQQ0hfQ0ZHLCB2YWx1ZSk7IH0NCj4g
+PiArDQo+ID4gK3N0YXRpYyBpbnQgYWN0ODk0NWFfY2hhcmdlcl9wcm9iZShzdHJ1Y3QgcGxhdGZv
+cm1fZGV2aWNlICpwZGV2KSB7DQo+ID4gKyAgICAgICBzdHJ1Y3QgYWN0ODk0NWFfZGV2ICphY3Q4
+OTQ1YV9kZXYgPSBkZXZfZ2V0X2RydmRhdGEocGRldi0+ZGV2LnBhcmVudCk7DQo+ID4gKyAgICAg
+ICBzdHJ1Y3QgYWN0ODk0NWFfY2hhcmdlciAqY2hhcmdlcjsNCj4gPiArICAgICAgIHN0cnVjdCBw
+b3dlcl9zdXBwbHlfY29uZmlnIHBzeV9jZmcgPSB7fTsNCj4gPiArICAgICAgIGludCByZXQ7DQo+
+ID4gKw0KPiA+ICsgICAgICAgY2hhcmdlciA9IGRldm1fa3phbGxvYygmcGRldi0+ZGV2LCBzaXpl
+b2YoKmNoYXJnZXIpLCBHRlBfS0VSTkVMKTsNCj4gPiArICAgICAgIGlmICghY2hhcmdlcikNCj4g
+PiArICAgICAgICAgICAgICAgcmV0dXJuIC1FTk9NRU07DQo+ID4gKw0KPiA+ICsgICAgICAgcGxh
+dGZvcm1fc2V0X2RydmRhdGEocGRldiwgY2hhcmdlcik7DQo+ID4gKw0KPiA+ICsgICAgICAgY2hh
+cmdlci0+ZGV2ID0gJnBkZXYtPmRldjsNCj4gPiArICAgICAgIGNoYXJnZXItPmFjdDg5NDVhX2Rl
+diA9IGFjdDg5NDVhX2RldjsNCj4gPiArDQo+ID4gKyAgICAgICByZXQgPSBhY3Q4OTQ1YV9jaGFy
+Z2VyX3BhcnNlX2R0KCZwZGV2LT5kZXYsIGNoYXJnZXIpOw0KPiA+ICsgICAgICAgaWYgKHJldCkN
+Cj4gPiArICAgICAgICAgICAgICAgcmV0dXJuIHJldDsNCj4gPiArDQo+ID4gKyAgICAgICByZXQg
+PSBhY3Q4OTQ1YV9jaGFyZ2VyX2NvbmZpZyhjaGFyZ2VyKTsNCj4gPiArICAgICAgIGlmIChyZXQp
+DQo+ID4gKyAgICAgICAgICAgICAgIHJldHVybiByZXQ7DQo+ID4gKw0KPiA+ICsgICAgICAgcHN5
+X2NmZy5vZl9ub2RlID0gcGRldi0+ZGV2Lm9mX25vZGU7DQo+ID4gKyAgICAgICBwc3lfY2ZnLmRy
+dl9kYXRhID0gY2hhcmdlcjsNCj4gPiArDQo+ID4gKyAgICAgICBjaGFyZ2VyLT5wc3kgPSBwb3dl
+cl9zdXBwbHlfcmVnaXN0ZXIoJnBkZXYtPmRldiwNCj4gPiArICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAmYWN0ODk0NWFfY2hhcmdlcl9kZXNjLA0KPiA+ICsgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICZwc3lfY2ZnKTsNCj4gDQo+
+IFlvdSBjYW4gdXNlIGRldm0tbGlrZSgpIEFQSSBmb3IgdGhpcyBhbmQgZ2V0IHJpZCBvZiByZW1v
+dmUgZnVuY3Rpb24uLi4NCj4gYnV0IGl0IGlzIG5vdCBhIG5lY2Vzc2l0eSBJIHRoaW5rLiBVcCB0
+byB5b3UuDQo+IA0KPiA+ICsgICAgICAgaWYgKElTX0VSUihjaGFyZ2VyLT5wc3kpKSB7DQo+ID4g
+KyAgICAgICAgICAgICAgIGRldl9lcnIoYWN0ODk0NWFfZGV2LT5kZXYsICJmYWlsZWQgdG8gcmVn
+aXN0ZXIgcG93ZXIgc3VwcGx5XG4iKTsNCj4gPiArICAgICAgICAgICAgICAgcmV0dXJuIFBUUl9F
+UlIoY2hhcmdlci0+cHN5KTsNCj4gPiArICAgICAgIH0NCj4gPiArDQo+ID4gKyAgICAgICBkZXZf
+aW5mbyhhY3Q4OTQ1YV9kZXYtPmRldiwgImNoYXJnZXIgZHJpdmVyIHJlZ2lzdGVyZWRcbiIpOw0K
+PiA+ICsNCj4gPiArICAgICAgIHJldHVybiAwOw0KPiA+ICt9DQo+ID4gKw0KPiA+ICtzdGF0aWMg
+aW50IGFjdDg5NDVhX2NoYXJnZXJfcmVtb3ZlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYp
+IHsNCj4gPiArICAgICAgIHN0cnVjdCBhY3Q4OTQ1YV9jaGFyZ2VyICpjaGFyZ2VyID0gcGxhdGZv
+cm1fZ2V0X2RydmRhdGEocGRldik7DQo+ID4gKw0KPiA+ICsgICAgICAgcG93ZXJfc3VwcGx5X3Vu
+cmVnaXN0ZXIoY2hhcmdlci0+cHN5KTsNCj4gPiArDQo+ID4gKyAgICAgICByZXR1cm4gMDsNCj4g
+PiArfQ0KPiA+ICsNCj4gPiArc3RhdGljIHN0cnVjdCBwbGF0Zm9ybV9kcml2ZXIgYWN0ODk0NWFf
+Y2hhcmdlcl9kcml2ZXIgPSB7DQo+ID4gKyAgICAgICAuZHJpdmVyID0gew0KPiA+ICsgICAgICAg
+ICAgICAgICAubmFtZSA9ICJhY3Q4OTQ1YS1jaGFyZ2VyIiwNCj4gPiArICAgICAgIH0sDQo+ID4g
+KyAgICAgICAucHJvYmUgID0gYWN0ODk0NWFfY2hhcmdlcl9wcm9iZSwNCj4gPiArICAgICAgIC5y
+ZW1vdmUgPSBhY3Q4OTQ1YV9jaGFyZ2VyX3JlbW92ZSwgfTsNCj4gPiArDQo+ID4gK3N0YXRpYyBp
+bnQgX19pbml0IGFjdDg5NDVhX2NoYXJnZXJfaW5pdCh2b2lkKSB7DQo+ID4gKyAgICAgICByZXR1
+cm4gcGxhdGZvcm1fZHJpdmVyX3JlZ2lzdGVyKCZhY3Q4OTQ1YV9jaGFyZ2VyX2RyaXZlcik7DQo+
+ID4gK30NCj4gPiArc3Vic3lzX2luaXRjYWxsKGFjdDg5NDVhX2NoYXJnZXJfaW5pdCk7DQo+IA0K
+PiBXaHkgc3Vic3lzX2luaXRjYWxsPyBUaGlzIHNob3VsZCBiZSByZWd1bGFyIG1vZHVsZV9wbGF0
+Zm9ybV9kcml2ZXIuDQoNCkkgd2FudCBpdCB0byByZWdpc3RlciBlYXJseSBlbm91Z2ggYXMgTUZE
+LiAgTWF5YmUgSSBhbSB3cm9uZy4NCg0KPiANCj4gPiArDQo+ID4gK3N0YXRpYyB2b2lkIF9fZXhp
+dCBhY3Q4OTQ1YV9jaGFyZ2VyX2NsZWFudXAodm9pZCkgew0KPiA+ICsgICAgICAgcGxhdGZvcm1f
+ZHJpdmVyX3VucmVnaXN0ZXIoJmFjdDg5NDVhX2NoYXJnZXJfZHJpdmVyKTsNCj4gPiArfQ0KPiA+
+ICttb2R1bGVfZXhpdChhY3Q4OTQ1YV9jaGFyZ2VyX2NsZWFudXApOw0KPiA+ICsNCj4gPiArTU9E
+VUxFX0RFU0NSSVBUSU9OKCJBY3RpdmUtc2VtaSBBQ1Q4OTQ1QSBBY3RpdmVQYXRoIGNoYXJnZXIg
+ZHJpdmVyIik7DQo+ID4gK01PRFVMRV9BVVRIT1IoIldlbnlvdSBZYW5nIDx3ZW55b3UueWFuZ0Bh
+dG1lbC5jb20+Iik7DQo+ID4gK01PRFVMRV9MSUNFTlNFKCJHUEwgdjIiKTsNCj4gDQo+IEluIHRo
+ZSBjb21tZW50IGF0IGJlZ2lubmluZyB5b3UgbWVudGlvbmVkIEdQTCB2Misgc28gdGhpcyBzaG91
+bGQgYmUgIkdQTCIuDQo+IA0KPiBCZXN0IHJlZ2FyZHMsDQo+IEtyenlzenRvZg0KDQoNCkJlc3Qg
+UmVnYXJkcywNCldlbnlvdSBZYW5nDQo=
