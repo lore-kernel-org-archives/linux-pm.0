@@ -1,167 +1,58 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v3 6/9] power: ab8500: convert to use match_string() helper
-Date: Fri,  8 Jan 2016 15:09:15 +0200
-Message-ID: <1452258558-119552-7-git-send-email-andriy.shevchenko@linux.intel.com>
-References: <1452258558-119552-1-git-send-email-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v3 0/9] lib/string: introduce match_string() helper
+Date: Fri,  8 Jan 2016 15:09:09 +0200
+Message-ID: <1452258558-119552-1-git-send-email-andriy.shevchenko@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1452258558-119552-1-git-send-email-andriy.shevchenko@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Tejun Heo <tj@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "David S . Miller" <davem@davemloft.net>, David Airlie <airlied@linux.ie>, Andrew Morton <akpm@linux-foundation.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-The new helper returns index of the mathing string in an array. We would use it
-here.
+There are users of a simple string matching in the array. Let's do a common
+helper for that.
 
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Acked-by: Linus Walleij <linus.walleij@linaro.org>
----
+Several users are updated in the series.
+
+The series is compile tested.
+
+Since v2:
+- slightly modify implementation of the helper:
+  - rename len -> n in prototype (Sergey)
+  - move to for-loop (Rasmus)
+  - change 0 -> -1 to iterate over NULL-terminated arrays (Rasmus)
+- add patch 9 from Heikki
+- append tags
+
+Since v1:
+- convert few more users to get helper useful
+
+Andy Shevchenko (8):
+  lib/string: introduce match_string() helper
+  device property: convert to use match_string() helper
+  pinctrl: convert to use match_string() helper
+  drm/edid: convert to use match_string() helper
+  power: charger_manager: convert to use match_string() helper
+  power: ab8500: convert to use match_string() helper
+  ata: hpt366: convert to use match_string() helper
+  ide: hpt366: convert to use match_string() helper
+
+Heikki Krogerus (1):
+  usb: common: convert to use match_string() helper
+
+ drivers/ata/pata_hpt366.c       | 13 +++++--------
+ drivers/base/property.c         | 10 ++--------
+ drivers/gpu/drm/drm_edid_load.c | 17 ++++++-----------
+ drivers/ide/hpt366.c            |  9 ++-------
+ drivers/pinctrl/pinmux.c        | 13 +++----------
  drivers/power/ab8500_btemp.c    | 15 +++++----------
  drivers/power/ab8500_charger.c  | 16 +++++-----------
  drivers/power/ab8500_fg.c       | 15 +++++----------
  drivers/power/abx500_chargalg.c | 14 +++++---------
- 4 files changed, 20 insertions(+), 40 deletions(-)
+ drivers/power/charger-manager.c | 27 ++++-----------------------
+ drivers/usb/common/common.c     | 22 ++++++++--------------
+ include/linux/string.h          |  2 ++
+ lib/string.c                    | 26 ++++++++++++++++++++++++++
+ 13 files changed, 78 insertions(+), 121 deletions(-)
 
-diff --git a/drivers/power/ab8500_btemp.c b/drivers/power/ab8500_btemp.c
-index 8f8044e..bf2e5dd 100644
---- a/drivers/power/ab8500_btemp.c
-+++ b/drivers/power/ab8500_btemp.c
-@@ -906,26 +906,21 @@ static int ab8500_btemp_get_property(struct power_supply *psy,
- static int ab8500_btemp_get_ext_psy_data(struct device *dev, void *data)
- {
- 	struct power_supply *psy;
--	struct power_supply *ext;
-+	struct power_supply *ext = dev_get_drvdata(dev);
-+	const char **supplicants = (const char **)ext->supplied_to;
- 	struct ab8500_btemp *di;
- 	union power_supply_propval ret;
--	int i, j;
--	bool psy_found = false;
-+	int j;
- 
- 	psy = (struct power_supply *)data;
--	ext = dev_get_drvdata(dev);
- 	di = power_supply_get_drvdata(psy);
- 
- 	/*
- 	 * For all psy where the name of your driver
- 	 * appears in any supplied_to
- 	 */
--	for (i = 0; i < ext->num_supplicants; i++) {
--		if (!strcmp(ext->supplied_to[i], psy->desc->name))
--			psy_found = true;
--	}
--
--	if (!psy_found)
-+	j = match_string(supplicants, ext->num_supplicants, psy->desc->name);
-+	if (j < 0)
- 		return 0;
- 
- 	/* Go through all properties for the psy */
-diff --git a/drivers/power/ab8500_charger.c b/drivers/power/ab8500_charger.c
-index e388171..30de5d4 100644
---- a/drivers/power/ab8500_charger.c
-+++ b/drivers/power/ab8500_charger.c
-@@ -1929,11 +1929,11 @@ static int ab8540_charger_usb_pre_chg_enable(struct ux500_charger *charger,
- static int ab8500_charger_get_ext_psy_data(struct device *dev, void *data)
- {
- 	struct power_supply *psy;
--	struct power_supply *ext;
-+	struct power_supply *ext = dev_get_drvdata(dev);
-+	const char **supplicants = (const char **)ext->supplied_to;
- 	struct ab8500_charger *di;
- 	union power_supply_propval ret;
--	int i, j;
--	bool psy_found = false;
-+	int j;
- 	struct ux500_charger *usb_chg;
- 
- 	usb_chg = (struct ux500_charger *)data;
-@@ -1941,15 +1941,9 @@ static int ab8500_charger_get_ext_psy_data(struct device *dev, void *data)
- 
- 	di = to_ab8500_charger_usb_device_info(usb_chg);
- 
--	ext = dev_get_drvdata(dev);
--
- 	/* For all psy where the driver name appears in any supplied_to */
--	for (i = 0; i < ext->num_supplicants; i++) {
--		if (!strcmp(ext->supplied_to[i], psy->desc->name))
--			psy_found = true;
--	}
--
--	if (!psy_found)
-+	j = match_string(supplicants, ext->num_supplicants, psy->desc->name);
-+	if (j < 0)
- 		return 0;
- 
- 	/* Go through all properties for the psy */
-diff --git a/drivers/power/ab8500_fg.c b/drivers/power/ab8500_fg.c
-index 3830dad..5a36cf8 100644
---- a/drivers/power/ab8500_fg.c
-+++ b/drivers/power/ab8500_fg.c
-@@ -2168,26 +2168,21 @@ static int ab8500_fg_get_property(struct power_supply *psy,
- static int ab8500_fg_get_ext_psy_data(struct device *dev, void *data)
- {
- 	struct power_supply *psy;
--	struct power_supply *ext;
-+	struct power_supply *ext = dev_get_drvdata(dev);
-+	const char **supplicants = (const char **)ext->supplied_to;
- 	struct ab8500_fg *di;
- 	union power_supply_propval ret;
--	int i, j;
--	bool psy_found = false;
-+	int j;
- 
- 	psy = (struct power_supply *)data;
--	ext = dev_get_drvdata(dev);
- 	di = power_supply_get_drvdata(psy);
- 
- 	/*
- 	 * For all psy where the name of your driver
- 	 * appears in any supplied_to
- 	 */
--	for (i = 0; i < ext->num_supplicants; i++) {
--		if (!strcmp(ext->supplied_to[i], psy->desc->name))
--			psy_found = true;
--	}
--
--	if (!psy_found)
-+	j = match_string(supplicants, ext->num_supplicants, psy->desc->name);
-+	if (j < 0)
- 		return 0;
- 
- 	/* Go through all properties for the psy */
-diff --git a/drivers/power/abx500_chargalg.c b/drivers/power/abx500_chargalg.c
-index 541f702..d9104b1 100644
---- a/drivers/power/abx500_chargalg.c
-+++ b/drivers/power/abx500_chargalg.c
-@@ -975,22 +975,18 @@ static void handle_maxim_chg_curr(struct abx500_chargalg *di)
- static int abx500_chargalg_get_ext_psy_data(struct device *dev, void *data)
- {
- 	struct power_supply *psy;
--	struct power_supply *ext;
-+	struct power_supply *ext = dev_get_drvdata(dev);
-+	const char **supplicants = (const char **)ext->supplied_to;
- 	struct abx500_chargalg *di;
- 	union power_supply_propval ret;
--	int i, j;
--	bool psy_found = false;
-+	int j;
- 	bool capacity_updated = false;
- 
- 	psy = (struct power_supply *)data;
--	ext = dev_get_drvdata(dev);
- 	di = power_supply_get_drvdata(psy);
- 	/* For all psy where the driver name appears in any supplied_to */
--	for (i = 0; i < ext->num_supplicants; i++) {
--		if (!strcmp(ext->supplied_to[i], psy->desc->name))
--			psy_found = true;
--	}
--	if (!psy_found)
-+	j = match_string(supplicants, ext->num_supplicants, psy->desc->name);
-+	if (j < 0)
- 		return 0;
- 
- 	/*
 -- 
 2.6.4
