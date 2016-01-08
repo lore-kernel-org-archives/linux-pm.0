@@ -1,46 +1,71 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Last-minute ACPI fix for final v4.4
-Date: Fri, 8 Jan 2016 23:38:47 +0100
-Message-ID: <CAJZ5v0h7P+OJZuN8q-ExKsUgMNdvnr9mf8OL8-FD+A1yvFQtcg@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v3 2/9] device property: convert to use match_string() helper
+Date: Sat, 09 Jan 2016 00:33:17 +0100
+Message-ID: <9839952.QQZMlEqdiM@vostro.rjw.lan>
+References: <1452258558-119552-1-git-send-email-andriy.shevchenko@linux.intel.com> <1452258558-119552-3-git-send-email-andriy.shevchenko@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f51.google.com ([209.85.215.51]:35634 "EHLO
-	mail-lf0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751897AbcAHWit (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Jan 2016 17:38:49 -0500
+Received: from v094114.home.net.pl ([79.96.170.134]:59844 "HELO
+	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753314AbcAHXCc (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Jan 2016 18:02:32 -0500
+In-Reply-To: <1452258558-119552-3-git-send-email-andriy.shevchenko@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Tejun Heo <tj@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "David S . Miller" <davem@davemloft.net>, David Airlie <airlied@linux.ie>, Andrew Morton <akpm@linux-foundation.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>
 
-Hi Linus,
+On Friday, January 08, 2016 03:09:11 PM Andy Shevchenko wrote:
+> The new helper returns index of the mathing string in an array. We would use it
+> here.
+> 
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
 
-Please pull from
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm+acpi-4.4-final
+in case you need that.
 
-to receive an ACPI fix for final v4.4 as commit 9db22d928ca9
+I think though that it might be more efficient to simply push [1/9] first
+maybe with one user and then send the other patches to the relevant maintainers
+when that has been applied.
 
- ACPI / property: avoid leaking format string into kobject name
+> ---
+>  drivers/base/property.c | 10 ++--------
+>  1 file changed, 2 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/base/property.c b/drivers/base/property.c
+> index c359351..f902b55 100644
+> --- a/drivers/base/property.c
+> +++ b/drivers/base/property.c
+> @@ -647,7 +647,7 @@ int fwnode_property_match_string(struct fwnode_handle *fwnode,
+>  	const char *propname, const char *string)
+>  {
+>  	const char **values;
+> -	int nval, ret, i;
+> +	int nval, ret;
+>  
+>  	nval = fwnode_property_read_string_array(fwnode, propname, NULL, 0);
+>  	if (nval < 0)
+> @@ -664,13 +664,7 @@ int fwnode_property_match_string(struct fwnode_handle *fwnode,
+>  	if (ret < 0)
+>  		goto out;
+>  
+> -	ret = -ENODATA;
+> -	for (i = 0; i < nval; i++) {
+> -		if (!strcmp(values[i], string)) {
+> -			ret = i;
+> -			break;
+> -		}
+> -	}
+> +	ret = match_string(values, nval, string);
+>  out:
+>  	kfree(values);
+>  	return ret;
+> 
 
-on top of commit 168309855a7d1e16db751e9c647119fe2d2dc878
-
- Linux 4.4-rc8
-
-Just one obvious fix that adds a missing function argument in
-ACPI code introduced recently (Kees Cook).
-
-Thanks!
-
-
----------------
-
-Kees Cook (1):
-      ACPI / property: avoid leaking format string into kobject name
-
----------------
-
- drivers/acpi/device_sysfs.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
