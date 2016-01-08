@@ -1,148 +1,88 @@
 From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC PATCH 1/2] irq: Add a framework to measure interrupt
- timings
-Date: Fri, 8 Jan 2016 16:31:22 +0100 (CET)
-Message-ID: <alpine.DEB.2.11.1601081616530.3575@nanos>
-References: <1452093774-17831-1-git-send-email-daniel.lezcano@linaro.org> <1452093774-17831-2-git-send-email-daniel.lezcano@linaro.org>
+Subject: Re: [RFC PATCH 2/2] sched: idle: IRQ based next prediction for idle
+ period
+Date: Fri, 8 Jan 2016 16:43:57 +0100 (CET)
+Message-ID: <alpine.DEB.2.11.1601081631380.3575@nanos>
+References: <1452093774-17831-1-git-send-email-daniel.lezcano@linaro.org> <1452093774-17831-3-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.linutronix.de ([62.245.132.108]:38570 "EHLO
+Received: from www.linutronix.de ([62.245.132.108]:38668 "EHLO
 	Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753469AbcAHPcT (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Jan 2016 10:32:19 -0500
-In-Reply-To: <1452093774-17831-2-git-send-email-daniel.lezcano@linaro.org>
+	with ESMTP id S1755147AbcAHPox (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Jan 2016 10:44:53 -0500
+In-Reply-To: <1452093774-17831-3-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc: peterz@infradead.org, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nicolas.pitre@linaro.org, vincent.guittot@linaro.org
 
 On Wed, 6 Jan 2016, Daniel Lezcano wrote:
-> +#ifdef CONFIG_IRQ_TIMINGS
 > +/**
-> + * timing handler to be called when an interrupt happens
-> + */
-> +typedef void (*irqt_handler_t)(unsigned int, ktime_t, void *, void *);
-> +
-> +/**
-> + * struct irqtimings - per interrupt irq timings descriptor
-> + * @handler:   interrupt handler timings function
-> + * @data:      pointer to the private data to be passed to the handler
-> + * @timestamp: latest interruption occurence
-
-There is no timestamp member.
-
-> + */
-> +struct irqtimings {
-> +	irqt_handler_t	  handler;
-> +	void              *data;
-
-What's that data thingy for. The proposed user does not use it at all and I
-have no idea why any user would want it. All it does is provide another level
-of indirection in the hotpath.
-
-> +} ____cacheline_internodealigned_in_smp;
-
-> +/**
-> + * struct irqt_ops - structure to be used by the subsystem to call the
-> + * register and unregister ops when an irq is setup or freed.
-> + * @setup: registering callback
-> + * @free: unregistering callback
+> + * sched_irq_timing_free - free_irq callback
 > + *
-> + * The callbacks assumes the lock is held on the irq desc
-
-Crap. It's called outside of the locked region and the proposed user locks the
-descriptor itself, but that's a different story.
-
-> +static inline void free_irq_timings(unsigned int irq, void *dev_id)
+> + * @irq: the irq number to stop tracking
+> + * @dev_id: not used at the moment
+> + *
+> + * This function will remove from the wakeup source prediction table.
+> + */
+> +static void sched_irq_timing_free(unsigned int irq, void *dev_id)
 > +{
-> +	;
+> +	struct irq_desc *desc = irq_to_desc(irq);
 
-What's the purpose of this semicolon?
+What has this code to fiddle with irq_desc? Nothing!
 
-> +#ifdef CONFIG_IRQ_TIMINGS
-> +void handle_irqt_event(struct irqtimings *irqt, struct irqaction *action)
+> +	raw_spin_lock_irqsave(&desc->lock, flags);
+> +	desc->timings = &irq_timings;
+> +	raw_spin_unlock_irqrestore(&desc->lock, flags);
 
-static ?
+Bah, no. This belongs into the core code. Add that handler - and yes, that's
+all you need - to your timing_ops and let the core code do it in a proper way.
 
-> +{
-> +	if (irqt)
-
-This want's to use a static key.
-
-> +		irqt->handler(action->irq, ktime_get(),
-> +			      action->dev_id, irqt->data);
-> +}
-> +#else
-> +#define handle_irqt_event(a, b)
-
-static inline stub if at all.
-
-> +#ifdef CONFIG_IRQ_TIMINGS
-> +/*
-> + * Global variable, only used by accessor functions, currently only
-> + * one user is allowed ...
-
-That variable is static not global. And what the heck means:
-
->                         ... and it is up to the caller to make sure to
-> + * setup the irq timings which are already setup.
-
--ENOPARSE.
-
-> + */
-> +static struct irqtimings_ops *irqtimings_ops;
-> +
 > +/**
-> + * register_irq_timings - register the ops when an irq is setup or freed
+> + * sched_idle_init - setup the interrupt tracking table
 > + *
-> + * @ops: the register/unregister ops to be called when at setup or
-> + * free time
-> + *
-> + * Returns -EBUSY if the slot is already in use, zero on success.
+> + * At init time, some interrupts could have been setup and in the
+> + * system life time, some devices could be setup. In order to track
+> + * all interrupts we are interested in, we first register a couple of
+> + * callback to keep up-to-date the interrupt tracking table and then
+> + * we setup the table with the interrupt which were already set up.
 > + */
-> +int register_irq_timings(struct irqtimings_ops *ops)
+> +int __init sched_idle_init(void)
 > +{
-> +	if (irqtimings_ops)
-> +		return -EBUSY;
+> +	struct irq_desc *desc;
+> +	unsigned int irq;
+> +	int ret;
 > +
-> +	irqtimings_ops = ops;
-> +
-> +	return 0;
-> +}
-> +
-> +/**
-> + * setup_irq_timings - call the timing register callback
-> + *
-> + * @desc: an irq desc structure
+> +	/*
+> +	 * Register the setup/free irq callbacks, so new interrupt or
+> +	 * freed interrupt will update their tracking.
+> +	 */
+> +	ret = register_irq_timings(&irqt_ops);
+> +	if (ret) {
+> +		pr_err("Failed to register timings ops\n");
+> +		return ret;
+> +	}
 
-The argument list tells a different story.
+So that stuff is installed unconditionally. Is it used unconditionally as
+well?
 
-> + *
-> + * Returns -EINVAL in case of error, zero on success.
-> + */
-> +int setup_irq_timings(unsigned int irq, struct irqaction *act)
+> +	/*
+> +	 * For all the irq already setup, assign the timing callback.
+> +	 * All interrupts with their desc NULL will be discarded.
+> +	 */
+> +	for_each_irq_desc(irq, desc)
+> +		sched_irq_timing_setup(irq, desc->action);
 
-static is not in your book, right? These functions are only used in this file,
-so no point for having them global visible and the stubs should be local as
-well.
+No, no, no. This belongs into the core code register_irq_timings() function
+which installs the handler into the irq descs with the proper protections and
+once it has done that enables the static key.
 
-> +{
-> +	if (irqtimings_ops && irqtimings_ops->setup)
-> +		return irqtimings_ops->setup(irq, act);
-> +	return 0;
-> +}
+The above is completely unprotected against interrupts being setup or even
+freed concurrently.
 
-...
-
-> @@ -1408,6 +1469,8 @@ static struct irqaction *__free_irq(unsigned int irq, void *dev_id)
->  
->  	unregister_handler_proc(irq, action);
->  
-> +	free_irq_timings(irq, dev_id);
-
-This needs to go to the point where the interrupt is already synchronized and
-the action about to be destroyed.
+Aside of that, you call that setup function in setup_irq for each action() and
+here you call it only for the first one.
 
 Thanks,
 
