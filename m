@@ -1,44 +1,61 @@
-From: "Pallala, Ramakrishna" <ramakrishna.pallala@intel.com>
-Subject: RE: [PATCH 0/2] power: Add support for TI BQ24261 charger
-Date: Fri, 8 Jan 2016 07:17:58 +0000
-Message-ID: <D854C92F57B1B347B57E531E78D05EAD57A0CA5F@BGSMSX104.gar.corp.intel.com>
-References: <1446136625-20845-1-git-send-email-ramakrishna.pallala@intel.com>
- <20151205164022.GC30410@earth>
- <D854C92F57B1B347B57E531E78D05EAD5797AD32@BGSMSX104.gar.corp.intel.com>
- <20160105152002.GA9696@LTA0797059A>
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Subject: Re: [RFD] Functional dependencies between devices
+Date: Fri, 8 Jan 2016 08:28:15 +0100
+Message-ID: <CAAObsKDZ07i-gMiGr2t1+H2k80n+=r0mKbavt5-ZhMmqxT1WaA@mail.gmail.com>
+References: <1623682.7KVblAB3KQ@vostro.rjw.lan> <20151030225242.GA2480@kroah.com>
+ <CAAObsKCBRPLDLztJE4up45KWB+T86td7-wuskBN-iaEdvnacDA@mail.gmail.com> <20160107212924.GA3899@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160105152002.GA9696@LTA0797059A>
-Content-Language: en-US
+In-Reply-To: <20160107212924.GA3899@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Andreas Dannenberg <dannenberg@ti.com>
-Cc: Sebastian Reichel <sre@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "Tc, Jenny" <jenny.tc@intel.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Grant Likely <grant.likely@linaro.org>, Mark Brown <broonie@kernel.og>, Rob Herring <robh@kernel.org>, Thierry Reding <treding@nvidia.com>, Dmitry Torokhov <dtor@google.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Michael Turquette <mturquette@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
+On 7 January 2016 at 22:29, Greg Kroah-Hartman
+<gregkh@linuxfoundation.org> wrote:
+> On Thu, Jan 07, 2016 at 03:55:43PM +0100, Tomeu Vizoso wrote:
+>> On 30 October 2015 at 23:52, Greg Kroah-Hartman
+>> <gregkh@linuxfoundation.org> wrote:
+>> > On Tue, Oct 27, 2015 at 04:24:14PM +0100, Rafael J. Wysocki wrote:
+>> >> My idea is to represent a supplier-consumer dependency between devices (or
+>> >> more precisely between device+driver combos) as a "link" object containing
+>> >> pointers to the devices in question, a list node for each of them and some
+>> >> additional information related to the management of those objects, ie.
+>> >> something like:
+>> >>
+>> >> struct device_link {
+>> >>       struct device *supplier;
+>> >>       struct list_head supplier_node;
+>> >>       struct device *consumer;
+>> >>       struct list_head consumer_node;
+>> >>       <flags, status etc>
+>> >> };
+>> >>
+>> >> In general, there will be two lists of those things per device, one list
+>> >> of links to consumers and one list of links to suppliers.
+>> >>
+>> >> In that picture, links will be created by calling, say:
+>> >>
+>> >> int device_add_link(struct device *me, struct device *my_supplier, unsigned int flags);
+>> >
+>> > At first glance, I like this, nice.  Now to see how well it can be
+>> > implemented :)
+>>
+>> Hi Greg,
+>>
+>> what's your opinion on using this to order device probes so we don't
+>> try to probe a device that we know it has unfulfilled dependencies?
+>
+> Why would that matter, unless you can prove it's faster, I wouldn't
+> bother.
 
-> On Mon, Dec 07, 2015 at 07:03:41AM +0000, Pallala, Ramakrishna wrote:
-> > Hi Sebastian,
-> >
-> > > On Thu, Oct 29, 2015 at 10:07:03PM +0530, Ramakrishna Pallala wrote:
-> > > > This patch series adds the support for TI BQ24261 charger driver.
-> > > >
-> > > > TI BQ24261 charger driver relies on extcon notifications to get
-> > > > the charger cable type and based on that it will set the charging
-> parameters.
-> > >
-> > > I wonder if there is any new version of this patchset, that I missed
-> > > with the comments from Krzysztof and Andreas being taken care of?
-> >
-> > I was bit busy lately. I will address both Krzysztof and Andreas comments and
-> submit the new patchset in the coming few days.
-> 
-> Hi Ram,
-> hope all is well. I was just wondering regarding the status of this...
-> Are you still planning on updating your driver with the feedback?
+I gave you the bootlog you asked in the post below, could you please
+comment there?
 
-I was on vacation until this week. I will update patch very soon.
+https://lkml.kernel.org/g/562A280A.3040002@collabora.com
 
 Thanks,
-Ram
+
+Tomeu
