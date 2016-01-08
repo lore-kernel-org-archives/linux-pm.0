@@ -1,73 +1,48 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v3 1/9] lib/string: introduce match_string() helper
-Date: Fri,  8 Jan 2016 15:09:10 +0200
-Message-ID: <1452258558-119552-2-git-send-email-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v3 8/9] ide: hpt366: convert to use match_string() helper
+Date: Fri,  8 Jan 2016 15:09:17 +0200
+Message-ID: <1452258558-119552-9-git-send-email-andriy.shevchenko@linux.intel.com>
 References: <1452258558-119552-1-git-send-email-andriy.shevchenko@linux.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:5620 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753787AbcAHNJ3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Fri, 8 Jan 2016 08:09:29 -0500
 In-Reply-To: <1452258558-119552-1-git-send-email-andriy.shevchenko@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Tejun Heo <tj@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "David S . Miller" <davem@davemloft.net>, David Airlie <airlied@linux.ie>, Andrew Morton <akpm@linux-foundation.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-List-Id: linux-pm@vger.kernel.org
 
->From time to time we have to match a string in an array. Make a simple helper
-for that purpose.
+The new helper returns index of the mathing string in an array. We would use it
+here.
 
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- include/linux/string.h |  2 ++
- lib/string.c           | 26 ++++++++++++++++++++++++++
- 2 files changed, 28 insertions(+)
+ drivers/ide/hpt366.c | 9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
 
-diff --git a/include/linux/string.h b/include/linux/string.h
-index b0a732b..07505aa 100644
---- a/include/linux/string.h
-+++ b/include/linux/string.h
-@@ -131,6 +131,8 @@ extern void argv_free(char **argv);
- extern bool sysfs_streq(const char *s1, const char *s2);
- extern int strtobool(const char *s, bool *res);
+diff --git a/drivers/ide/hpt366.c b/drivers/ide/hpt366.c
+index 696b6c1..f94baad 100644
+--- a/drivers/ide/hpt366.c
++++ b/drivers/ide/hpt366.c
+@@ -531,14 +531,9 @@ static const struct hpt_info hpt371n = {
+ 	.timings	= &hpt37x_timings
+ };
  
-+int match_string(const char * const *array, size_t n, const char *string);
-+
- #ifdef CONFIG_BINARY_PRINTF
- int vbin_printf(u32 *bin_buf, size_t size, const char *fmt, va_list args);
- int bstr_printf(char *buf, size_t size, const char *fmt, const u32 *bin_buf);
-diff --git a/lib/string.c b/lib/string.c
-index 0323c0d..ba01d4f 100644
---- a/lib/string.c
-+++ b/lib/string.c
-@@ -631,6 +631,32 @@ bool sysfs_streq(const char *s1, const char *s2)
- EXPORT_SYMBOL(sysfs_streq);
+-static int check_in_drive_list(ide_drive_t *drive, const char **list)
++static bool check_in_drive_list(ide_drive_t *drive, const char **list)
+ {
+-	char *m = (char *)&drive->id[ATA_ID_PROD];
+-
+-	while (*list)
+-		if (!strcmp(*list++, m))
+-			return 1;
+-	return 0;
++	return match_string(list, -1, (char *)&drive->id[ATA_ID_PROD]) >= 0;
+ }
  
- /**
-+ * match_string - matches given string in an array
-+ * @array:	array of strings
-+ * @n:		number of strings in the array or -1 for NULL terminated arrays
-+ * @string:	string to match with
-+ *
-+ * Return:
-+ * index of a @string in the @array if matches, or %-ENODATA otherwise.
-+ */
-+int match_string(const char * const *array, size_t n, const char *string)
-+{
-+	int index;
-+	const char *item;
-+
-+	for (index = 0; index < n; index++) {
-+		item = array[index];
-+		if (!item)
-+			break;
-+		if (!strcmp(item, string))
-+			return index;
-+	}
-+
-+	return -ENODATA;
-+}
-+EXPORT_SYMBOL(match_string);
-+
-+/**
-  * strtobool - convert common user inputs into boolean values
-  * @s: input string
-  * @res: result
+ static struct hpt_info *hpt3xx_get_info(struct device *dev)
 -- 
 2.6.4
+
