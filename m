@@ -1,49 +1,56 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v1 1/1] PM / clk: don't leave clocks enabled when driver not bound
-Date: Sat, 09 Jan 2016 00:34:16 +0100
-Message-ID: <1747871.WodLblVjL1@vostro.rjw.lan>
-References: <1452163771-73303-1-git-send-email-andriy.shevchenko@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:45233 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754468AbcAHXDb (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Jan 2016 18:03:31 -0500
-In-Reply-To: <1452163771-73303-1-git-send-email-andriy.shevchenko@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: [PATCH] thermal: qcom-spmi: Treat reg property as a single cell
+Date: Fri,  8 Jan 2016 15:54:13 -0800
+Message-ID: <1452297253-5747-1-git-send-email-sboyd@codeaurora.org>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, "Ivan T . Ivanov" <iivanov.xz@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-On Thursday, January 07, 2016 12:49:31 PM Andy Shevchenko wrote:
-> There is a new notification BUS_NOTIFY_DRIVER_NOT_BOUND that is issued when
-> driver fails during binding. In such case pm_clk_notify(), when PM_CLK=n,
-> leaves clocks enabled. Undo operations that has been done in
-> BUS_NOTIFY_BIND_DRIVER case.
-> 
-> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> ---
->  drivers/base/power/clock_ops.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/base/power/clock_ops.c b/drivers/base/power/clock_ops.c
-> index 60ee559..c39b861 100644
-> --- a/drivers/base/power/clock_ops.c
-> +++ b/drivers/base/power/clock_ops.c
-> @@ -473,6 +473,7 @@ static int pm_clk_notify(struct notifier_block *nb,
->  			enable_clock(dev, NULL);
->  		}
->  		break;
-> +	case BUS_NOTIFY_DRIVER_NOT_BOUND:
->  	case BUS_NOTIFY_UNBOUND_DRIVER:
->  		if (clknb->con_ids[0]) {
->  			for (con_id = clknb->con_ids; *con_id; con_id++)
+We only read the first element of the reg property to figure out
+the offset of the temperature sensor inside the PMIC.
+Furthermore, we want to remove the second element in DT, so just
+don't read the second element so that probe keeps working if we
+change the DT in the future.
 
-Applied, thanks!
+Cc: Ivan T. Ivanov <iivanov.xz@gmail.com>
+Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
+---
+ drivers/thermal/qcom-spmi-temp-alarm.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-
+diff --git a/drivers/thermal/qcom-spmi-temp-alarm.c b/drivers/thermal/qcom-spmi-temp-alarm.c
+index bf3da3cf2019..4644e7219725 100644
+--- a/drivers/thermal/qcom-spmi-temp-alarm.c
++++ b/drivers/thermal/qcom-spmi-temp-alarm.c
+@@ -200,7 +200,7 @@ static int qpnp_tm_probe(struct platform_device *pdev)
+ 	struct qpnp_tm_chip *chip;
+ 	struct device_node *node;
+ 	u8 type, subtype;
+-	u32 res[2];
++	u32 res;
+ 	int ret, irq;
+ 
+ 	node = pdev->dev.of_node;
+@@ -215,7 +215,7 @@ static int qpnp_tm_probe(struct platform_device *pdev)
+ 	if (!chip->map)
+ 		return -ENXIO;
+ 
+-	ret = of_property_read_u32_array(node, "reg", res, 2);
++	ret = of_property_read_u32(node, "reg", &res);
+ 	if (ret < 0)
+ 		return ret;
+ 
+@@ -228,7 +228,7 @@ static int qpnp_tm_probe(struct platform_device *pdev)
+ 	if (PTR_ERR(chip->adc) == -EPROBE_DEFER)
+ 		return PTR_ERR(chip->adc);
+ 
+-	chip->base = res[0];
++	chip->base = res;
+ 
+ 	ret = qpnp_tm_read(chip, QPNP_TM_REG_TYPE, &type);
+ 	if (ret < 0) {
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project
