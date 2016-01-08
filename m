@@ -1,57 +1,68 @@
-From: Javier Martinez Canillas <javier@dowhile0.org>
-Subject: Re: [PATCH 1/2] power: act8945a: add charger driver for ACT8945A
-Date: Fri, 8 Jan 2016 12:00:13 -0300
-Message-ID: <CABxcv=mQoDxb7oHh0DdC_t1_m-j=4Hp-sPNoq4Apy4c7CneSng@mail.gmail.com>
-References: <1452219225-10510-1-git-send-email-wenyou.yang@atmel.com>
-	<1452219225-10510-2-git-send-email-wenyou.yang@atmel.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [RFD] Functional dependencies between devices
+Date: Fri, 8 Jan 2016 07:15:29 -0800
+Message-ID: <20160108151529.GA18036@kroah.com>
+References: <1623682.7KVblAB3KQ@vostro.rjw.lan>
+ <20151030225242.GA2480@kroah.com>
+ <CAAObsKCBRPLDLztJE4up45KWB+T86td7-wuskBN-iaEdvnacDA@mail.gmail.com>
+ <20160107212924.GA3899@kroah.com>
+ <CAAObsKDZ07i-gMiGr2t1+H2k80n+=r0mKbavt5-ZhMmqxT1WaA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yk0-f170.google.com ([209.85.160.170]:34562 "EHLO
-	mail-yk0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755192AbcAHPAP (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Jan 2016 10:00:15 -0500
-Received: by mail-yk0-f170.google.com with SMTP id a85so286879459ykb.1
-        for <linux-pm@vger.kernel.org>; Fri, 08 Jan 2016 07:00:14 -0800 (PST)
-In-Reply-To: <1452219225-10510-2-git-send-email-wenyou.yang@atmel.com>
+Received: from mail.linuxfoundation.org ([140.211.169.12]:43466 "EHLO
+	mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750824AbcAHPPb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Jan 2016 10:15:31 -0500
+Content-Disposition: inline
+In-Reply-To: <CAAObsKDZ07i-gMiGr2t1+H2k80n+=r0mKbavt5-ZhMmqxT1WaA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wenyou Yang <wenyou.yang@atmel.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Nicolas Ferre <nicolas.ferre@atmel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Grant Likely <grant.likely@linaro.org>, Mark Brown <broonie@kernel.og>, Rob Herring <robh@kernel.org>, Thierry Reding <treding@nvidia.com>, Dmitry Torokhov <dtor@google.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Michael Turquette <mturquette@baylibre.com>
 
-Hello Wenyou,
+On Fri, Jan 08, 2016 at 08:28:15AM +0100, Tomeu Vizoso wrote:
+> On 7 January 2016 at 22:29, Greg Kroah-Hartman
+> <gregkh@linuxfoundation.org> wrote:
+> > On Thu, Jan 07, 2016 at 03:55:43PM +0100, Tomeu Vizoso wrote:
+> >> On 30 October 2015 at 23:52, Greg Kroah-Hartman
+> >> <gregkh@linuxfoundation.org> wrote:
+> >> > On Tue, Oct 27, 2015 at 04:24:14PM +0100, Rafael J. Wysocki wrote:
+> >> >> My idea is to represent a supplier-consumer dependency between devices (or
+> >> >> more precisely between device+driver combos) as a "link" object containing
+> >> >> pointers to the devices in question, a list node for each of them and some
+> >> >> additional information related to the management of those objects, ie.
+> >> >> something like:
+> >> >>
+> >> >> struct device_link {
+> >> >>       struct device *supplier;
+> >> >>       struct list_head supplier_node;
+> >> >>       struct device *consumer;
+> >> >>       struct list_head consumer_node;
+> >> >>       <flags, status etc>
+> >> >> };
+> >> >>
+> >> >> In general, there will be two lists of those things per device, one list
+> >> >> of links to consumers and one list of links to suppliers.
+> >> >>
+> >> >> In that picture, links will be created by calling, say:
+> >> >>
+> >> >> int device_add_link(struct device *me, struct device *my_supplier, unsigned int flags);
+> >> >
+> >> > At first glance, I like this, nice.  Now to see how well it can be
+> >> > implemented :)
+> >>
+> >> Hi Greg,
+> >>
+> >> what's your opinion on using this to order device probes so we don't
+> >> try to probe a device that we know it has unfulfilled dependencies?
+> >
+> > Why would that matter, unless you can prove it's faster, I wouldn't
+> > bother.
+> 
+> I gave you the bootlog you asked in the post below, could you please
+> comment there?
+> 
+> https://lkml.kernel.org/g/562A280A.3040002@collabora.com
 
-On Thu, Jan 7, 2016 at 11:13 PM, Wenyou Yang <wenyou.yang@atmel.com> wrote:
-> This patch adds new driver for Active-semi ACT8945A ActivePath
-> charger (part of ACT8945A MFD driver) providing power supply class
-> information to userspace.
->
-> The driver is configured through DTS (battery and system related
-> settings) and sysfs entries (timers and input over-voltage threshold).
->
-> Signed-off-by: Wenyou Yang <wenyou.yang@atmel.com>
-> ---
->
-
-[snip]
-
-> +
-> +static struct platform_driver act8945a_charger_driver = {
-> +       .driver = {
-> +               .name = "act8945a-charger",
-> +       },
-> +       .probe  = act8945a_charger_probe,
-> +       .remove = act8945a_charger_remove,
-> +};
-> +
-
-The driver is missing an OF match table (and also a platform ID match
-table if non-DT is supported) so this means that module autoloading
-will be broken for this driver since the platform uevent function will
-report a MODALIAS=of:N*T*Cactive-semi,act8945a-charger
-
-Matching is only working because the platform bus match function use
-as a fallback the driver name.
-
-Best regards,
-Javier
+that made no sense at all...
