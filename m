@@ -1,56 +1,59 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: [PATCH] thermal: qcom-spmi: Treat reg property as a single cell
-Date: Fri,  8 Jan 2016 15:54:13 -0800
-Message-ID: <1452297253-5747-1-git-send-email-sboyd@codeaurora.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, "Ivan T . Ivanov" <iivanov.xz@gmail.com>
+From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Subject: Re: [PATCH v1 1/8] lib/string: introduce match_string() helper
+Date: Sat, 9 Jan 2016 10:12:41 +0900
+Message-ID: <20160109011241.GB560@swordfish>
+References: <1452242596.30729.425.camel@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f195.google.com ([209.85.192.195]:35751 "EHLO
+	mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750875AbcAIBOW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Fri, 8 Jan 2016 20:14:22 -0500
+Content-Disposition: inline
+In-Reply-To: <1452242596.30729.425.camel@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Tejun Heo <tj@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "David S. Miller" <davem@davemloft.net>, David Airlie <airlied@linux.ie>, Andrew Morton <akpm@linux-foundation.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
 
-We only read the first element of the reg property to figure out
-the offset of the temperature sensor inside the PMIC.
-Furthermore, we want to remove the second element in DT, so just
-don't read the second element so that probe keeps working if we
-change the DT in the future.
+Andy Shevchenko wrote:
+[..]
+> >
+> > strncmp() case seems to be quite common.
+> 
+> Like I answered to Rasmus, please, provide real examples.
 
-Cc: Ivan T. Ivanov <iivanov.xz@gmail.com>
-Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
----
- drivers/thermal/qcom-spmi-temp-alarm.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+[..]
+> > int nmatch_string(array, array_size, string, string_len)
+> > {
+> >       do {
+> >               strncmp();
+> >       } while ();
+> > }
+> >
+> > int match_string(array, array_size, string)
+> > {
+> >       return nmatch_string(array, array_size, string,
+> > strlen(string));
+> > }
+> 
+> See above.
 
-diff --git a/drivers/thermal/qcom-spmi-temp-alarm.c b/drivers/thermal/qcom-spmi-temp-alarm.c
-index bf3da3cf2019..4644e7219725 100644
---- a/drivers/thermal/qcom-spmi-temp-alarm.c
-+++ b/drivers/thermal/qcom-spmi-temp-alarm.c
-@@ -200,7 +200,7 @@ static int qpnp_tm_probe(struct platform_device *pdev)
- 	struct qpnp_tm_chip *chip;
- 	struct device_node *node;
- 	u8 type, subtype;
--	u32 res[2];
-+	u32 res;
- 	int ret, irq;
- 
- 	node = pdev->dev.of_node;
-@@ -215,7 +215,7 @@ static int qpnp_tm_probe(struct platform_device *pdev)
- 	if (!chip->map)
- 		return -ENXIO;
- 
--	ret = of_property_read_u32_array(node, "reg", res, 2);
-+	ret = of_property_read_u32(node, "reg", &res);
- 	if (ret < 0)
- 		return ret;
- 
-@@ -228,7 +228,7 @@ static int qpnp_tm_probe(struct platform_device *pdev)
- 	if (PTR_ERR(chip->adc) == -EPROBE_DEFER)
- 		return PTR_ERR(chip->adc);
- 
--	chip->base = res[0];
-+	chip->base = res;
- 
- 	ret = qpnp_tm_read(chip, QPNP_TM_REG_TYPE, &type);
- 	if (ret < 0) {
--- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
+after some quick and inaccurate grepping, well, probably you're right - not worth it.
+
+arch/mips/bcm63xx/boards/board_bcm963xx.c  void __init board_prom_init(void)
+net/irda/irnet/irnet_irda.c   irnet_dname_to_daddr()
+arch/powerpc/sysdev/ppc4xx_cpm.c static ssize_t cpm_idle_store()
+arch/x86/ras/mce_amd_inj.c static int __set_inj
+drivers/hwtracing/intel_th/msu.c mode_store
+drivers/pci/pcie/aer/ecrc.c void pcie_ecrc_get_policy
+drivers/pci/pcie/aspm.c pcie_aspm_set_policy
+drivers/scsi/aic7xxx/aic7xxx_osm.c aic7xxx_setup
+drivers/scsi/aic7xxx/aic79xx_osm.c aic79xx_setup
+drivers/scsi/scsi_transport_fc.c static int get_fc_##title##_match
+drivers/staging/android/ion/hisilicon/hi6220_ion.c get_type_by_name
+drivers/staging/lustre/lustre/lmv/lproc_lmv.c placement_name2policy
+drivers/xen/sys-hypervisor.c pmu_mode_store
+
+	-ss
