@@ -1,86 +1,54 @@
 From: Juri Lelli <juri.lelli@arm.com>
-Subject: [RFC PATCH 19/19] cpufreq: documentation: document locking scheme
-Date: Mon, 11 Jan 2016 17:36:00 +0000
-Message-ID: <1452533760-13787-20-git-send-email-juri.lelli@arm.com>
+Subject: [RFC PATCH 17/19] cpufreq: stop checking for cpufreq_driver being present in cpufreq_cpu_get
+Date: Mon, 11 Jan 2016 17:35:58 +0000
+Message-ID: <1452533760-13787-18-git-send-email-juri.lelli@arm.com>
 References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
-Return-path: <linux-doc-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
-Sender: linux-doc-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, peterz@infradead.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, juri.lelli@arm.com, Jonathan Corbet <corbet@lwn.net>, linux-doc@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, peterz@infradead.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, juri.lelli@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-CPUFreq locking scheme is quite complicated. Provide some initial
-documentation for it.
+After cpufreq_driver_lock() is acquired in cpufreq_cpu_get() we are sure
+we can't race with cpufreq_policy_free() (which is in the path that ends
+up removing cpufreq_driver). We can thus safely remove check for
+cpufreq_driver being present (which is a leftover from commit
+6eed9404ab3c ("cpufreq: Use rwsem for protecting critical sections")).
 
-Cc: Jonathan Corbet <corbet@lwn.net>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-doc@vger.kernel.org
 Signed-off-by: Juri Lelli <juri.lelli@arm.com>
 ---
- Documentation/cpu-freq/core.txt | 44 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 44 insertions(+)
+ drivers/cpufreq/cpufreq.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/Documentation/cpu-freq/core.txt b/Documentation/cpu-freq/core.txt
-index ba78e7c..1838976 100644
---- a/Documentation/cpu-freq/core.txt
-+++ b/Documentation/cpu-freq/core.txt
-@@ -21,6 +21,7 @@ Contents:
- 1.  CPUFreq core and interfaces
- 2.  CPUFreq notifiers
- 3.  CPUFreq Table Generation with Operating Performance Point (OPP)
-+4.  CPUFreq locking scheme for internal data structures
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 797bfae..6c9bef7 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -282,15 +282,15 @@ struct cpufreq_policy *cpufreq_cpu_get(unsigned int cpu)
+ 	if (WARN_ON(cpu >= nr_cpu_ids))
+ 		return NULL;
  
- 1. General Information
- =======================
-@@ -118,3 +119,46 @@ dev_pm_opp_init_cpufreq_table - cpufreq framework typically is initialized with
- 	addition to CONFIG_PM_OPP.
+-	/* get the cpufreq driver */
+ 	read_lock_irqsave(&cpufreq_driver_lock, flags);
  
- dev_pm_opp_free_cpufreq_table - Free up the table allocated by dev_pm_opp_init_cpufreq_table
-+
-+4. CPUFreq locking scheme for internal data structures
-+======================================================
-+CPUFreq locking scheme has to guarantee ordering and mutual exclusion on
-+internal data structures while concurrent execution of CPU hotplug, OPP
-+selection, governor changes and driver changes might happen.
-+
-+Data structures depicted in the following diagram (except policyX data
-+structures, see below) are protected by cpufreq_ driver_lock RWLOCK (see
-+beginning of cpufreq.c).
-+
-+ cpufreq_driver -> struct cpufreq_driver
-+
-+ cpufreq_cpu_data (per-CPU)
-+
-+                         +---+---+---+    +---+
-+                         | 0 | 1 | 2 | .. |N-1|
-+                         +-+-+-+-+-+-+    +-+-+
-+                           |   |   |        |
-+                           |---+   +--------+
-+                           |                |
-+                           |                |
-+                           V                V
-+ cpufreq_policy_list --> policy0 -- .. -> policy(N-1)-+
-+                                                      |
-+					              x
-+
-+Concurrent reads/updates of policyX data structures are guarded by policy->
-+rwsem. The rules for this semaphore are (as also reported in include/linux/
-+cpufreq.h):
-+
-+ - any routine that wants to read from the policy structure will
-+   do a down_read on this semaphore;
-+ - any routine that will write to the policy structure and/or may take away
-+   the policy altogether (eg. CPU hotplug), will hold this lock in write
-+   mode before doing so.
-+
-+We then have another list that keeps track of available governors and that is
-+protected by cpufreq_governor_mutex MUTEX:
-+
-+ cpufreq_governor_list --> governor0 -- .. --> governor(N-1) -+
-+                                                              |
-+				                              x
+-	if (cpufreq_driver) {
+-		/* get the CPU */
+-		policy = cpufreq_cpu_get_raw(cpu);
+-		if (policy)
+-			kobject_get(&policy->kobj);
+-	}
++	/*
++	 * If we get a policy, cpufreq_policy_free() didn't
++	 * yet run.
++	 */
++	policy = cpufreq_cpu_get_raw(cpu);
++	if (policy)
++		kobject_get(&policy->kobj);
+ 
+ 	read_unlock_irqrestore(&cpufreq_driver_lock, flags);
+ 
 -- 
 2.2.2
-
