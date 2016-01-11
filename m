@@ -1,48 +1,48 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC PATCH 04/19] cpufreq: bring data structures close to their locks
-Date: Tue, 12 Jan 2016 00:03:39 +0100
-Message-ID: <1926777.mcNa33svoL@vostro.rjw.lan>
-References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com> <1452533760-13787-5-git-send-email-juri.lelli@arm.com> <20160111220528.GJ6344@twins.programming.kicks-ass.net>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH 01/17] PM / OPP: get/put regulators from OPP core
+Date: Mon, 11 Jan 2016 15:21:18 -0800
+Message-ID: <20160111232118.GG22188@codeaurora.org>
+References: <cover.1450777582.git.viresh.kumar@linaro.org>
+ <8731ff871e0eedfb08b9428af8da21b25d1ad283.1450777582.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from v094114.home.net.pl ([79.96.170.134]:53964 "HELO
-	v094114.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753955AbcAKXDJ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Jan 2016 18:03:09 -0500
-In-Reply-To: <20160111220528.GJ6344@twins.programming.kicks-ass.net>
+Received: from smtp.codeaurora.org ([198.145.29.96]:35959 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760869AbcAKXVV (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Jan 2016 18:21:21 -0500
+Content-Disposition: inline
+In-Reply-To: <8731ff871e0eedfb08b9428af8da21b25d1ad283.1450777582.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Juri Lelli <juri.lelli@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com
 
-On Monday, January 11, 2016 11:05:28 PM Peter Zijlstra wrote:
-> On Mon, Jan 11, 2016 at 05:35:45PM +0000, Juri Lelli wrote:
-> > +/**
-> > + * The "cpufreq driver" - the arch- or hardware-dependent low
-> > + * level driver of CPUFreq support, and its spinlock (cpufreq_driver_lock).
-> > + * This lock also protects cpufreq_cpu_data array and cpufreq_policy_list.
-> > + */
-> > +static struct cpufreq_driver *cpufreq_driver;
-> > +static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
-> >  static LIST_HEAD(cpufreq_policy_list);
-> > +static DEFINE_RWLOCK(cpufreq_driver_lock);
-> 
-> Part of my suggestion was to fold the per-cpu data of cpufreq_cpu_data
-> into struct cpufreq_driver.
-> 
-> That way each cpufreq_driver will have its own copy and there'd be only
-> the one global pointer to swizzle. Something very well suited to RCU.
+On 12/22, Viresh Kumar wrote:
+> diff --git a/drivers/base/power/opp/opp.h b/drivers/base/power/opp/opp.h
+> index 690638ef36ee..c4a03ad34100 100644
+> --- a/drivers/base/power/opp/opp.h
+> +++ b/drivers/base/power/opp/opp.h
+> @@ -18,6 +18,7 @@
+>  #include <linux/kernel.h>
+>  #include <linux/list.h>
+>  #include <linux/limits.h>
+> +#include <linux/regulator/consumer.h>
 
-Well, I'm not really sure reworking all that is necessary.
+This include doesn't seem necessary. Forward declare struct
+regulator instead?
 
-What we need is to be able to call something analogous to dbs_timer_handler()
-from the scheduler and a driver callback from there (if present).  For that,
-it should be sufficient to have a pointer to that callback (that may be set
-upon driver registration) protected by RCU (or should that be sched RCU
-rather?) if I'm not missing anything.
+>  #include <linux/pm_opp.h>
+>  #include <linux/rculist.h>
+>  #include <linux/rcupdate.h>
+> @@ -132,6 +133,8 @@ struct device_list_opp {
+>   * @supported_hw: Array of version number to support.
+>   * @supported_hw_count: Number of elements in supported_hw array.
+>   * @prop_name: A name to postfix to many DT properties, while parsing them.
+> + * @regulator: Supply Regulator
 
-Thanks,
-Rafael
+Is there a reason we capitalize regulator?
 
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
