@@ -1,88 +1,58 @@
 From: Juri Lelli <juri.lelli@arm.com>
-Subject: [RFC PATCH 02/19] cpufreq: merge governor lock and mutex
-Date: Mon, 11 Jan 2016 17:35:43 +0000
-Message-ID: <1452533760-13787-3-git-send-email-juri.lelli@arm.com>
+Subject: [RFC PATCH 07/19] cpufreq: assert locking when accessing cpufreq_governor_list
+Date: Mon, 11 Jan 2016 17:35:48 +0000
+Message-ID: <1452533760-13787-8-git-send-email-juri.lelli@arm.com>
 References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:57238 "EHLO foss.arm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760496AbcAKRh0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 11 Jan 2016 12:37:26 -0500
 In-Reply-To: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linux-kernel@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, peterz@infradead.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, juri.lelli@arm.com
-List-Id: linux-pm@vger.kernel.org
 
-From: Michael Turquette <mturquette@baylibre.com>
-
-Commit 95731ebb114c ("cpufreq: Fix governor start/stop race condition")
-introduced cpufreq_governor_lock. This was actually overkilling, as the
-same can be achieved by using the existing cpufreq_governor_mutex.
-Removing cpufreq_governor_lock cleans things up and makes deadlocks less
-likely to happen.
+cpufreq_governor_list is guarded by cpufreq_governor_mutex. Add
+appropriate locking assertions to check that we always access the list
+while holding the lock protecting it.
 
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Michael Turquette <mturquette@baylibre.com>
+Signed-off-by: Juri Lelli <juri.lelli@arm.com>
 ---
- drivers/cpufreq/cpufreq.c | 13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+ drivers/cpufreq/cpufreq.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 7bdd845..0802705 100644
+index 98adbc2..7dae7f3 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -102,7 +102,7 @@ static LIST_HEAD(cpufreq_governor_list);
- static struct cpufreq_driver *cpufreq_driver;
- static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
- static DEFINE_RWLOCK(cpufreq_driver_lock);
--static DEFINE_MUTEX(cpufreq_governor_lock);
-+static DEFINE_MUTEX(cpufreq_governor_mutex);
- 
- /* Flag to suspend/resume CPUFreq governors */
- static bool cpufreq_suspended;
-@@ -146,7 +146,6 @@ void disable_cpufreq(void)
+@@ -506,6 +506,7 @@ static struct cpufreq_governor *find_governor(const char *str_governor)
  {
- 	off = 1;
- }
--static DEFINE_MUTEX(cpufreq_governor_mutex);
+ 	struct cpufreq_governor *t;
  
- bool have_governor_per_policy(void)
- {
-@@ -1963,11 +1962,11 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
- 
- 	pr_debug("%s: for CPU %u, event %u\n", __func__, policy->cpu, event);
- 
--	mutex_lock(&cpufreq_governor_lock);
-+	mutex_lock(&cpufreq_governor_mutex);
- 	if ((policy->governor_enabled && event == CPUFREQ_GOV_START)
- 	    || (!policy->governor_enabled
- 	    && (event == CPUFREQ_GOV_LIMITS || event == CPUFREQ_GOV_STOP))) {
--		mutex_unlock(&cpufreq_governor_lock);
-+		mutex_unlock(&cpufreq_governor_mutex);
- 		return -EBUSY;
++	lockdep_assert_held(&cpufreq_governor_mutex);
+ 	for_each_governor(t)
+ 		if (!strncasecmp(str_governor, t->name, CPUFREQ_NAME_LEN))
+ 			return t;
+@@ -693,6 +694,7 @@ static ssize_t show_scaling_available_governors(struct cpufreq_policy *policy,
+ 		goto out;
  	}
  
-@@ -1976,7 +1975,7 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
- 	else if (event == CPUFREQ_GOV_START)
- 		policy->governor_enabled = true;
- 
--	mutex_unlock(&cpufreq_governor_lock);
-+	mutex_unlock(&cpufreq_governor_mutex);
- 
- 	ret = policy->governor->governor(policy, event);
- 
-@@ -1987,12 +1986,12 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
- 			policy->governor->initialized--;
- 	} else {
- 		/* Restore original values */
--		mutex_lock(&cpufreq_governor_lock);
-+		mutex_lock(&cpufreq_governor_mutex);
- 		if (event == CPUFREQ_GOV_STOP)
- 			policy->governor_enabled = true;
- 		else if (event == CPUFREQ_GOV_START)
- 			policy->governor_enabled = false;
--		mutex_unlock(&cpufreq_governor_lock);
-+		mutex_unlock(&cpufreq_governor_mutex);
++	lockdep_assert_held(&cpufreq_governor_mutex);
+ 	for_each_governor(t) {
+ 		if (i >= (ssize_t) ((PAGE_SIZE / sizeof(char))
+ 		    - (CPUFREQ_NAME_LEN + 2)))
+@@ -2025,6 +2027,7 @@ int cpufreq_register_governor(struct cpufreq_governor *governor)
+ 	err = -EBUSY;
+ 	if (!find_governor(governor->name)) {
+ 		err = 0;
++		lockdep_assert_held(&cpufreq_governor_mutex);
+ 		list_add(&governor->governor_list, &cpufreq_governor_list);
  	}
  
- 	if (((event == CPUFREQ_GOV_POLICY_INIT) && ret) ||
 -- 
 2.2.2
+
