@@ -1,126 +1,98 @@
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: Re: [RFC PATCH 2/2] sched: idle: IRQ based next prediction for idle
- period
-Date: Sun, 10 Jan 2016 18:13:10 -0500 (EST)
-Message-ID: <alpine.LFD.2.20.1601101805270.7882@knanqh.ubzr>
-References: <1452093774-17831-1-git-send-email-daniel.lezcano@linaro.org> <1452093774-17831-3-git-send-email-daniel.lezcano@linaro.org> <alpine.LFD.2.20.1601061156120.1652@knanqh.ubzr> <5692DD19.4010808@linaro.org> <alpine.LFD.2.20.1601101739270.7882@knanqh.ubzr>
- <5692E222.6060905@linaro.org>
+From: Fabio Estevam <festevam@gmail.com>
+Subject: Re: [PATCH v11 2/4] PM / Domains: add setter for dev.pm_domain
+Date: Mon, 11 Jan 2016 12:35:28 -0200
+Message-ID: <CAOMZO5A7p6iZTdnZtnzMPED1e7rPp=1Q9UiZ_598QNTWSL5jMw@mail.gmail.com>
+References: <1445956731-6304-1-git-send-email-tomeu.vizoso@collabora.com>
+ <1445956731-6304-3-git-send-email-tomeu.vizoso@collabora.com>
+ <CAGS+omBMJXOgsd2x9agtt7yi-y+EPgHWSTr7B3JqbN9Hg_2W5A@mail.gmail.com>
+ <CAAObsKC1jTzLWmMtwGWVStuMtzZwvMuA_731dsn4YX7aKMtFKQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f48.google.com ([209.85.192.48]:33872 "EHLO
-	mail-qg0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757375AbcAJXNN (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Sun, 10 Jan 2016 18:13:13 -0500
-Received: by mail-qg0-f48.google.com with SMTP id 6so313251674qgy.1
-        for <linux-pm@vger.kernel.org>; Sun, 10 Jan 2016 15:13:13 -0800 (PST)
-In-Reply-To: <5692E222.6060905@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <CAAObsKC1jTzLWmMtwGWVStuMtzZwvMuA_731dsn4YX7aKMtFKQ@mail.gmail.com>
+List-Unsubscribe: <http://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <http://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Russell King <linux@arm.linux.org.uk>, Kevin Hilman <khilman@kernel.org>, Tony Lindgren <tony@atomide.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, dri-devel <dri-devel@lists.freedesktop.org>, Pavel Machek <pavel@ucw.cz>, Tomas Winkler <tomas.winkler@intel.com>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Len Brown <lenb@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: tglx@linutronix.de, peterz@infradead.org, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, vincent.guittot@linaro.org
 
-On Sun, 10 Jan 2016, Daniel Lezcano wrote:
-
-> On 01/10/2016 11:46 PM, Nicolas Pitre wrote:
-> > On Sun, 10 Jan 2016, Daniel Lezcano wrote:
-> >
-> > > On 01/06/2016 06:40 PM, Nicolas Pitre wrote:
-> > > > On Wed, 6 Jan 2016, Daniel Lezcano wrote:
-> > > >
-> > > > > Many IRQs are quiet most of the time, or they tend to come in bursts
-> > > > > of
-> > > > > fairly equal time intervals within each burst. It is therefore
-> > > > > possible
-> > > > > to detect those IRQs with stable intervals and guestimate when the
-> > > > > next
-> > > > > IRQ event is most likely to happen.
-> > > > >
-> > > > > Examples of such IRQs may include audio related IRQs where the FIFO
-> > > > > size
-> > > > > and/or DMA descriptor size with the sample rate create stable
-> > > > > intervals,
-> > > > > block devices during large data transfers, etc.  Even network
-> > > > > streaming
-> > > > > of multimedia content creates patterns of periodic network interface
-> > > > > IRQs
-> > > > > in some cases.
-> > > > >
-> > > > > This patch adds code to track the mean interval and variance for each
-> > > > > IRQ
-> > > > > over a window of time intervals between IRQ events. Those statistics
-> > > > > can
-> > > > > be used to assist cpuidle in selecting the most appropriate sleep
-> > > > > state
-> > > > > by predicting the most likely time for the next interrupt.
-> > > > >
-> > > > > Because the stats are gathered in interrupt context, the core
-> > > > > computation
-> > > > > is as light as possible.
-> > > > >
-> > > > > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> > >
-> > > [ ... ]
-> > >
-> > > > > +
-> > > > > +		diff = ktime_sub(now, w->timestamp);
-> > > > > +
-> > > > > +		/*
-> > > > > +		 * There is no point attempting predictions on
-> > > > > interrupts more
-> > > > > +		 * than 1 second apart. This has no benefit for sleep
-> > > > > state
-> > > > > +		 * selection and increases the risk of overflowing our
-> > > > > variance
-> > > > > +		 * computation. Reset all stats in that case.
-> > > > > +		 */
-> > > > > +		if (unlikely(ktime_after(diff, ktime_set(1, 0)))) {
-> > > > > +			stats_reset(&w->stats);
-> > > > > +			continue;
-> > > > > +		}
-> > > >
-> > > > The above is wrong. It is not computing the interval between successive
-> > > > interruts but rather the interval between the last interrupt occurrence
-> > > > and the present time (i.e. when we're about to go idle).  This won't
-> > > > prevent interrupt intervals greater than one second from being summed
-> > > > and potentially overflowing the variance if this code is executed less
-> > > > than a second after one such IRQ interval.  This test should rather be
-> > > > performed in sched_idle_irq().
-> > >
-> > > Hi Nico,
-> > >
-> > > I have been through here again and think we should duplicate the test
-> > > because
-> > > there are two cases:
-> > >
-> > > 1. We did not go idle and the interval measured in sched_idle_irq is more
-> > > than
-> > > one second, then the stats are reset. I suggest to use an approximation of
-> > > one
-> > > second: (diff < (1 << 20)) as we are in the fast
-> > > path.
-> > >
-> > > 2. We are going idle and the latest interrupt happened one second apart
-> > > from
-> > > now. So we keep the current test.
-> >
-> > You don't need the current test if the interval is already limited
-> > earlier on.  Predictions that would otherwise trip that test will target
-> > a time in the past and be discarded.
-> 
-> Yes, but that wake up source should be discarded in the process of the
-> selection, so ignored in the loop, otherwise it can end up as the next event
-> (which is obviously wrong) and discarded at the end by returning KTIME_MAX,
-> instead of giving the opportunity to find another interrupt as the next event
-> with a greater value.
-
-The loop should always discard any prediction for a past time and move 
-to the next, not only at the end.
-
-If interrupt stats are not gathered if an interval is greater than one 
-second, that means no prediction will ever be more than one second away 
-from the last IRQ occurrence.  If you ask for a prediction one second 
-after the last IRQ then those predictions will all be in the past.
-
-
-Nicolas
+T24gVGh1LCBKYW4gNywgMjAxNiBhdCAxMjo0NyBQTSwgVG9tZXUgVml6b3NvCjx0b21ldS52aXpv
+c29AY29sbGFib3JhLmNvbT4gd3JvdGU6Cj4gT24gMTAgTm92ZW1iZXIgMjAxNSBhdCAxMDozMywg
+RGFuaWVsIEt1cnR6IDxkamt1cnR6QGNocm9taXVtLm9yZz4gd3JvdGU6Cj4gW3NuaXBdCj4+Cj4+
+IFRoZSBwcm9ibGVtIGFwcGVhcnMgdG8gYmUgdGhhdDoKPj4gICAqIE9uIGJvb3QsIHBsYXRmb3Jt
+X2Rydl9wcm9iZSgpIGNhbGxzIGRldl9wbV9kb21haW5fYXR0YWNoKCkgYmVmb3JlCj4+IGRydi0+
+cHJvYmUoKTsgdGh1cywgaXQgY2FsbHMgZGV2X3BtX2RvbWFpbl9hdHRhY2goKSB3aGlsZSB0aGUg
+ZGV2aWNlCj4+IGlzIHVuYm91bmQuCj4+Cj4+ICAqIEhvd2V2ZXIsIGZvciBhIHBsYXRmb3JtX2Rl
+dmljZSwgdGhlIHJlYm9vdCBwYXRoIGNhbGxzCj4+IGRldmljZV9zaHV0ZG93bigpLCBidXQgbm90
+IF9fZGV2aWNlX3JlbGVhc2VfZHJpdmVyKCk6Cj4+IGRldmljZV9zaHV0ZG93bigpCj4+ICAgZGV2
+LT5kcml2ZXItPnNodXRkb3duID0+IHBsYXRmb3JtX2Rydl9zaHV0ZG93bigpCj4+ICAgICBkZXZf
+cG1fZG9tYWluX2RldGFjaCgpCj4+ICAgICAgICBkZXYtPnBtX2RvbWFpbi0+ZGV0YWNoKCkgPT4g
+Z2VucGRfZGV2X3BtX2RldGFjaCgpCj4+ICAgICAgICAgIHBtX2dlbnBkX3JlbW92ZV9kZXZpY2Uo
+KQo+PiAgICAgICAgICAgICBkZXZfcG1fZG9tYWluX3NldChkZXYsIE5VTEwpOwo+Pgo+PiBTbywg
+Zm9yIGEgcGxhdGZvcm1fZGV2aWNlIGluIGEgZ2VucGQgcG93ZXIgZG9tYWluIHdpdGggLnNodXRk
+b3duCj4+IGluc3RhbGxlZCwgcGxhdGZvcm1fZHJ2X3NodXRkb3duKCkgY2FsbHMgZGV2X3BtX2Rv
+bWFpbl9kZXRhY2goKSB3aGlsZQo+PiB0aGUgZGV2aWNlIGlzIHN0aWxsIGJvdW5kLCB3aGljaCB0
+cmlnZ2VycyB0aGUgV0FSTigpLgo+Cj4gSGkgUmFmYWVsLCBBbGFuIGFuZCBVbGYsCj4KPiBkbyB5
+b3UgaGF2ZSBhbnkgc3VnZ2VzdGlvbiBhYm91dCB0aGlzPyBJIGRvbid0IHJlYWxseSB1bmRlcnN0
+YW5kIHdoeQo+IHRoZSBkZXZpY2UgaXMgZGV0YWNoZWQgZnJvbSB0aGUgZG9tYWluIG9uIHNodXRk
+b3duLgoKSSBhbSBydW5uaW5nIGxpbnV4LW5leHQgYW5kIHRoaXMgY29tbWl0IGNhdXNlcyB0aGUg
+c2FtZSBwcm9ibGVtIGZvciBtZQpvbiBhIG14NiBhZnRlciBydW5uaW5nIGEgJ3JlYm9vdCcgY29t
+bWFuZDoKClJlcXVlc3Rpbmcgc3lzdGVtIHJlYm9vdApbICAgMTUuMDU4NzgyXSAtLS0tLS0tLS0t
+LS1bIGN1dCBoZXJlIF0tLS0tLS0tLS0tLS0KWyAgIDE1LjA2MzQ1OV0gV0FSTklORzogQ1BVOiAz
+IFBJRDogMTEyMiBhdApkcml2ZXJzL2Jhc2UvcG93ZXIvY29tbW9uLmM6MTUwIGRldl9wbV9kb21h
+aW5fc2V0KzB4NGMvMHg1OCgpClsgICAxNS4wNzI4MzhdIFBNIGRvbWFpbnMgY2FuIG9ubHkgYmUg
+Y2hhbmdlZCBmb3IgdW5ib3VuZCBkZXZpY2VzClsgICAxNS4wNzg3MzVdIE1vZHVsZXMgbGlua2Vk
+IGluOgpbICAgMTUuMDgxODQ5XSBDUFU6IDMgUElEOiAxMTIyIENvbW06IGluaXQgTm90IHRhaW50
+ZWQKNC40LjAtcmM4LW5leHQtMjAxNjAxMTEtZGlydHkgIzIwNwpbICAgMTUuMDg5ODI2XSBIYXJk
+d2FyZSBuYW1lOiBGcmVlc2NhbGUgaS5NWDYgUXVhZC9EdWFsTGl0ZSAoRGV2aWNlIFRyZWUpClsg
+ICAxNS4wOTYzNzVdIEJhY2t0cmFjZToKWyAgIDE1LjA5ODk0MV0gWzxjMDAxMzZkOD5dIChkdW1w
+X2JhY2t0cmFjZSkgZnJvbSBbPGMwMDEzODc0Pl0KKHNob3dfc3RhY2srMHgxOC8weDFjKQpbICAg
+MTUuMTA2NTMyXSAgcjY6MDAwMDAwOTYgcjU6MDAwMDAwMDAgcjQ6MDAwMDAwMDAgcjM6MDAwMDAw
+MDAKWyAgIDE1LjExMjM5MF0gWzxjMDAxMzg1Yz5dIChzaG93X3N0YWNrKSBmcm9tIFs8YzAyZGU4
+OWM+XQooZHVtcF9zdGFjaysweDg4LzB4YTQpClsgICAxNS4xMTk3MDhdIFs8YzAyZGU4MTQ+XSAo
+ZHVtcF9zdGFjaykgZnJvbSBbPGMwMDJiY2FjPl0KKHdhcm5fc2xvd3BhdGhfY29tbW9uKzB4ODAv
+MHhiYykKWyAgIDE1LjEyNzg2MF0gIHI1OmMwM2RhODEwIHI0OmVlNjNiZDY4ClsgICAxNS4xMzE1
+MzNdIFs8YzAwMmJjMmM+XSAod2Fybl9zbG93cGF0aF9jb21tb24pIGZyb20gWzxjMDAyYmQ4Yz5d
+Cih3YXJuX3Nsb3dwYXRoX2ZtdCsweDM4LzB4NDApClsgICAxNS4xNDAyOTJdICByODplZWEwMWRi
+MCByNzpjMGIwZjg3YyByNjplZWEwMWQ4MCByNTowMDAwMDAwMCByNDplZjE4MTQxMApbICAgMTUu
+MTQ3MTY1XSBbPGMwMDJiZDU4Pl0gKHdhcm5fc2xvd3BhdGhfZm10KSBmcm9tIFs8YzAzZGE4MTA+
+XQooZGV2X3BtX2RvbWFpbl9zZXQrMHg0Yy8weDU4KQpbICAgMTUuMTU1NjYxXSAgcjM6YzBiMGY3
+ZjAgcjI6YzA5ZTgyZGMKWyAgIDE1LjE1OTM3M10gWzxjMDNkYTdjND5dIChkZXZfcG1fZG9tYWlu
+X3NldCkgZnJvbSBbPGMwM2U0ZTVjPl0KKGdlbnBkX2ZyZWVfZGV2X2RhdGErMHgyMC8weDUwKQpb
+ICAgMTUuMTY4MDY1XSAgcjU6ZWYxODE0YTAgcjQ6ZWYxODE0MTAKWyAgIDE1LjE3MTczN10gWzxj
+MDNlNGUzYz5dIChnZW5wZF9mcmVlX2Rldl9kYXRhKSBmcm9tIFs8YzAzZTVmZTQ+XQoocG1fZ2Vu
+cGRfcmVtb3ZlX2RldmljZSsweGI0LzB4ZTApClsgICAxNS4xODA4NDJdICByNjplZjE4MTQxMCBy
+NTplZWEwMWQ4MCByNDpjMGIwZjdmMCByMzowMDAwMDAwMApbICAgMTUuMTg2NjQ0XSBbPGMwM2U1
+ZjMwPl0gKHBtX2dlbnBkX3JlbW92ZV9kZXZpY2UpIGZyb20gWzxjMDNlNjA0MD5dCihnZW5wZF9k
+ZXZfcG1fZGV0YWNoKzB4MzAvMHhhYykKWyAgIDE1LjE5NTc0M10gIHI4OmMwYjBmN2YwIHI3OmMx
+Mzc5NzM0IHI2OjAwMDAwMDAxIHI1OmMwYjIwOWM0CnI0OmVmMTgxNDEwIHIzOjAwMDAwMDAwClsg
+ICAxNS4yMDM2OTRdIFs8YzAzZTYwMTA+XSAoZ2VucGRfZGV2X3BtX2RldGFjaCkgZnJvbSBbPGMw
+M2RhN2MwPl0KKGRldl9wbV9kb21haW5fZGV0YWNoKzB4MjgvMHgyYykKWyAgIDE1LjIxMjYyMV0g
+IHIxMDplZjE4MTQ0NCByODpjMGI2ZjU2MCByNzpjMTM3OTczNCByNjplZjE4MTQxMApyNTplZjE3
+M2MxMCByNDplZjE4MTQxMApbICAgMTUuMjIwNjgzXSBbPGMwM2RhNzk4Pl0gKGRldl9wbV9kb21h
+aW5fZGV0YWNoKSBmcm9tIFs8YzAzZDNlYTA+XQoocGxhdGZvcm1fZHJ2X3NodXRkb3duKzB4MzQv
+MHgzOCkKWyAgIDE1LjIyOTgxN10gWzxjMDNkM2U2Yz5dIChwbGF0Zm9ybV9kcnZfc2h1dGRvd24p
+IGZyb20gWzxjMDNkMDViMD5dCihkZXZpY2Vfc2h1dGRvd24rMHgzYy8weDE5NCkKWyAgIDE1LjIz
+ODU3OV0gIHI0OmVmMTgxNDFjIHIzOmMwM2QzZTZjClsgICAxNS4yNDIyNTldIFs8YzAzZDA1NzQ+
+XSAoZGV2aWNlX3NodXRkb3duKSBmcm9tIFs8YzAwNGQ1MWM+XQooa2VybmVsX3Jlc3RhcnRfcHJl
+cGFyZSsweDM0LzB4NDApClsgICAxNS4yNTEwMjFdICByMTA6MDAwMDAwMDAgcjg6YzAwMTAwNDQg
+cjc6MDAwMDAwMDAgcjY6YzBiMTIwY2MKcjU6NDMyMWZlZGMgcjQ6MDAwMDAwMDAKWyAgIDE1LjI1
+OTA2NV0gWzxjMDA0ZDRlOD5dIChrZXJuZWxfcmVzdGFydF9wcmVwYXJlKSBmcm9tIFs8YzAwNGQ3
+MjQ+XQooa2VybmVsX3Jlc3RhcnQrMHgxNC8weDU4KQpbICAgMTUuMjY3NzYwXSBbPGMwMDRkNzEw
+Pl0gKGtlcm5lbF9yZXN0YXJ0KSBmcm9tIFs8YzAwNGQ5NDg+XQooU3lTX3JlYm9vdCsweDE4Yy8w
+eDFlNCkKWyAgIDE1LjI3NTUyNl0gIHI0OjAxMjM0NTY3IHIzOjAxMjM0NTY3ClsgICAxNS4yNzky
+NDJdIFs8YzAwNGQ3YmM+XSAoU3lTX3JlYm9vdCkgZnJvbSBbPGMwMDBmZWEwPl0KKHJldF9mYXN0
+X3N5c2NhbGwrMHgwLzB4MWMpClsgICAxNS4yODY5MjBdICByNzowMDAwMDA1OCByNjowMDAwMDAw
+MCByNTowMDAwMDAwMCByNDowMDAwMDAwMApbICAgMTUuMjkyNzU0XSAtLS1bIGVuZCB0cmFjZSAz
+YjQxOWQzY2JiMzY3YTExIF0tLS0KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX18KZHJpLWRldmVsIG1haWxpbmcgbGlzdApkcmktZGV2ZWxAbGlzdHMuZnJlZWRl
+c2t0b3Aub3JnCmh0dHA6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9k
+cmktZGV2ZWwK
