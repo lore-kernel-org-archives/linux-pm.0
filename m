@@ -1,48 +1,75 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH 01/17] PM / OPP: get/put regulators from OPP core
-Date: Mon, 11 Jan 2016 15:21:18 -0800
-Message-ID: <20160111232118.GG22188@codeaurora.org>
-References: <cover.1450777582.git.viresh.kumar@linaro.org>
- <8731ff871e0eedfb08b9428af8da21b25d1ad283.1450777582.git.viresh.kumar@linaro.org>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: arm qemu boot failures in -next due to 'PM / Domains: add setter
+ for dev.pm_domain'
+Date: Mon, 11 Jan 2016 15:39:39 -0800
+Message-ID: <56943D3B.8010600@roeck-us.net>
+References: <5693EB8A.40802@roeck-us.net> <20160111185459.GZ12777@atomide.com>
+ <20160111200450.GA16902@roeck-us.net> <7302125.veLBHLkdLG@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:35959 "EHLO
-	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760869AbcAKXVV (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Jan 2016 18:21:21 -0500
-Content-Disposition: inline
-In-Reply-To: <8731ff871e0eedfb08b9428af8da21b25d1ad283.1450777582.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <7302125.veLBHLkdLG@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Tony Lindgren <tony@atomide.com>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Russell King <linux@arm.linux.org.uk>, Kevin Hilman <khilman@kernel.org>, linux-arm-kernel@lists.infradead.org, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com
 
-On 12/22, Viresh Kumar wrote:
-> diff --git a/drivers/base/power/opp/opp.h b/drivers/base/power/opp/opp.h
-> index 690638ef36ee..c4a03ad34100 100644
-> --- a/drivers/base/power/opp/opp.h
-> +++ b/drivers/base/power/opp/opp.h
-> @@ -18,6 +18,7 @@
->  #include <linux/kernel.h>
->  #include <linux/list.h>
->  #include <linux/limits.h>
-> +#include <linux/regulator/consumer.h>
+On 01/11/2016 02:49 PM, Rafael J. Wysocki wrote:
+> On Monday, January 11, 2016 12:04:50 PM Guenter Roeck wrote:
+>> On Mon, Jan 11, 2016 at 10:55:00AM -0800, Tony Lindgren wrote:
+>>> * Guenter Roeck <linux@roeck-us.net> [160111 09:51]:
+>>>> Hi,
+>>>>
+>>>> I see 6 out of 24 arm qemu tests failing in next-20160111. Bisect points
+>>>> to commit 989561de9b51 ("PM / Domains: add setter for dev.pm_domain").
+>>>> Failures are silent - there is no output on the console.
+>>>> Affected tests are
+>>>>
+>>>> arm:beagle:multi_v7_defconfig:omap3-beagle
+>>>> arm:beaglexm:multi_v7_defconfig:omap3-beagle-xm
+>>>> arm:overo:multi_v7_defconfig:omap3-overo-tobi
+>>>> arm:beagle:omap2plus_defconfig:omap3-beagle
+>>>> arm:beaglexm:omap2plus_defconfig:omap3-beagle-xm
+>>>> arm:overo:omap2plus_defconfig:omap3-overo-tobi
+>>>>
+>>>> For details please see the 'next' column at http://server.roeck-us.net:8010/builders.
+>>>>
+>>>> Reverting the offending commit fixes the problems.
+>>>>
+>>>> Please let me know if there is anything I can do to help tracking down the problem.
+>>>
+>>> The following fixes the booting, but I wonder if it's a
+>>
+>> Yes, it does.
+>>
+>> Tested-by: Guenter Roeck <linux@roeck-us.net>
+>>
+>>> proper fix?
+>>>
+>> That I don't know.
+>
+> If I'm not mistaken, what happens is that device_is_bound() tries to
+> dereference dev->p which is NULL.  If that's the case, the appended one
+> should help too.
+>
+> Can you please check?
+>
+> ---
+>   drivers/base/dd.c |    2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> Index: linux-pm/drivers/base/dd.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/dd.c
+> +++ linux-pm/drivers/base/dd.c
+> @@ -234,7 +234,7 @@ late_initcall(deferred_probe_initcall);
+>    */
+>   bool device_is_bound(struct device *dev)
+>   {
+> -	return klist_node_attached(&dev->p->knode_driver);
+> +	return dev->p && klist_node_attached(&dev->p->knode_driver);
 
-This include doesn't seem necessary. Forward declare struct
-regulator instead?
+Yes, that fixes the problem as well.
 
->  #include <linux/pm_opp.h>
->  #include <linux/rculist.h>
->  #include <linux/rcupdate.h>
-> @@ -132,6 +133,8 @@ struct device_list_opp {
->   * @supported_hw: Array of version number to support.
->   * @supported_hw_count: Number of elements in supported_hw array.
->   * @prop_name: A name to postfix to many DT properties, while parsing them.
-> + * @regulator: Supply Regulator
-
-Is there a reason we capitalize regulator?
-
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+Guenter
