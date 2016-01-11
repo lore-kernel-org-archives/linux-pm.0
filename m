@@ -1,38 +1,28 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 00/17] PM / OPP: Introduce APIs to transition OPPs
-Date: Mon, 11 Jan 2016 21:58:10 +0530
-Message-ID: <20160111162810.GE1084@ubuntu>
-References: <cover.1450777582.git.viresh.kumar@linaro.org>
+From: Jean Delvare <jdelvare@suse.de>
+Subject: [PATCH 0/3] Use the ladder cpuidle governor when appropriate
+Date: Mon, 11 Jan 2016 17:39:15 +0100
+Message-ID: <20160111173915.63ec1bcd@endymion.delvare>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f42.google.com ([209.85.220.42]:35582 "EHLO
-	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757612AbcAKQ2P (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Jan 2016 11:28:15 -0500
-Received: by mail-pa0-f42.google.com with SMTP id ho8so62784649pac.2
-        for <linux-pm@vger.kernel.org>; Mon, 11 Jan 2016 08:28:15 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <cover.1450777582.git.viresh.kumar@linaro.org>
+Received: from mx2.suse.de ([195.135.220.15]:49685 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759747AbcAKQjX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+	Mon, 11 Jan 2016 11:39:23 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>, Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com
+To: linux-pm@vger.kernel.org
+Cc: Thomas Gleixner <tglx@linutronix.de>, Zhang Rui <rui.zhang@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On 22-12-15, 15:46, Viresh Kumar wrote:
-> This patchset add APIs in OPP layer to allow OPPs transitioning from
-> within OPP layer. Currently all OPP users need to replicate the same
-> code to switch between OPPs. While the same can be handled easily by
-> OPP-core.
-> 
-> The first Eight patches update the OPP core to introduce the new APIs
-> and the next Nine patches update cpufreq-dt for the same.
+Hi all,
 
-Stephen,
+This is my attempt to fix:
+https://bugzilla.kernel.org/show_bug.cgi?id=65531
 
-Ping !!
-
-(In case you missed this thread)
-
+[PATCH 1/3] nohz: Expose tick_nohz_enabled
+[PATCH 2/3] cpuidle: Default to ladder governor on ticking systems
+[PATCH 3/3] cpuidle: Don't enable all governors by default
 -- 
-viresh
+Jean Delvare
+SUSE L3 Support
