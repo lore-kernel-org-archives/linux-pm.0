@@ -1,66 +1,60 @@
-From: Fabio Estevam <festevam@gmail.com>
-Subject: Re: arm qemu boot failures in -next due to 'PM / Domains: add setter
- for dev.pm_domain'
-Date: Mon, 11 Jan 2016 18:14:31 -0200
-Message-ID: <CAOMZO5CkfXcZV3LTOP0oT__012ena9kmTYLb83dY9+BMj5X3hw@mail.gmail.com>
-References: <5693EB8A.40802@roeck-us.net>
-	<20160111185459.GZ12777@atomide.com>
+From: Hongtao Jia <hongtao.jia@nxp.com>
+Subject: =?gb2312?B?tPC4tDogW1BBVENIIFYzXSBjcHVmcmVxOiBxb3JpcTogUmVnaXN0ZXIgY29v?=
+ =?gb2312?Q?ling_device_based_on_device_tree?=
+Date: Mon, 11 Jan 2016 14:54:14 +0000
+Message-ID: <AM3PR04MB3376CC754973BD535CF3F99EBC90@AM3PR04MB337.eurprd04.prod.outlook.com>
+References: <1448529671-48216-1-git-send-email-hongtao.jia@freescale.com>
+ <1697588.dLcbZBRWO4@vostro.rjw.lan> <3550740.QzZi28fbXg@wuerfel>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ig0-f173.google.com ([209.85.213.173]:38595 "EHLO
-	mail-ig0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751678AbcAKUOc (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Jan 2016 15:14:32 -0500
-In-Reply-To: <20160111185459.GZ12777@atomide.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+In-Reply-To: <3550740.QzZi28fbXg@wuerfel>
+Content-Language: zh-CN
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+To: Arnd Bergmann <arnd@arndb.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, Jia Hongtao <hongtao.jia@freescale.com>, "edubezval@gmail.com" <edubezval@gmail.com>, Scott Wood <scottwood@freescale.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Cc: Guenter Roeck <linux@roeck-us.net>, Russell King <linux@arm.linux.org.uk>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-[Adding Rafael]
-
-On Mon, Jan 11, 2016 at 4:55 PM, Tony Lindgren <tony@atomide.com> wrote:
-
->> I see 6 out of 24 arm qemu tests failing in next-20160111. Bisect points
->> to commit 989561de9b51 ("PM / Domains: add setter for dev.pm_domain").
->> Failures are silent - there is no output on the console.
->> Affected tests are
->>
->> arm:beagle:multi_v7_defconfig:omap3-beagle
->> arm:beaglexm:multi_v7_defconfig:omap3-beagle-xm
->> arm:overo:multi_v7_defconfig:omap3-overo-tobi
->> arm:beagle:omap2plus_defconfig:omap3-beagle
->> arm:beaglexm:omap2plus_defconfig:omap3-beagle-xm
->> arm:overo:omap2plus_defconfig:omap3-overo-tobi
->>
->> For details please see the 'next' column at http://server.roeck-us.net:8010/builders.
->>
->> Reverting the offending commit fixes the problems.
->>
->> Please let me know if there is anything I can do to help tracking down the problem.
->
-> The following fixes the booting, but I wonder if it's a
-> proper fix?
->
-> --- a/drivers/base/power/common.c
-> +++ b/drivers/base/power/common.c
-> @@ -145,9 +145,10 @@ void dev_pm_domain_set(struct device *dev, struct dev_pm_domain *pd)
->  {
->         if (dev->pm_domain == pd)
->                 return;
-> -
-> -       WARN(device_is_bound(dev),
-> -            "PM domains can only be changed for unbound devices\n");
-> +       if (device_is_registered(dev)) {
-> +               WARN(device_is_bound(dev),
-> +                    "PM domains can only be changed for unbound devices\n");
-> +       }
->         dev->pm_domain = pd;
->         device_pm_check_callbacks(dev);
-
-Commit 989561de9b51 ("PM / Domains: add setter for dev.pm_domain")
-causes issues for me after doing a 'reboot' command.
-
-Rafael proposed a patch which fixed the 'reboot' problem:
-http://www.spinics.net/lists/arm-kernel/msg473562.html
+U29ycnkgZm9yIHRoZSBsYXRlIHJlc3BvbnNlLiBJIGdvdCBhIGtuZWUgc3VyZ2VyeSB0byBkby4N
+ClNlZSBjb21tZW50cyBhdCB0aGUgZW5kLg0KDQo+IC0tLS0t6YKu5Lu25Y6f5Lu2LS0tLS0NCj4g
+5Y+R5Lu25Lq6OiBBcm5kIEJlcmdtYW5uIFttYWlsdG86YXJuZEBhcm5kYi5kZV0NCj4g5Y+R6YCB
+5pe26Ze0OiBTYXR1cmRheSwgRGVjZW1iZXIgMTksIDIwMTUgNjozMyBBTQ0KPiDmlLbku7bkuro6
+IFJhZmFlbCBKLiBXeXNvY2tpIDxyandAcmp3eXNvY2tpLm5ldD4NCj4g5oqE6YCBOiBKaWEgSG9u
+Z3RhbyA8aG9uZ3Rhby5qaWFAZnJlZXNjYWxlLmNvbT47IGVkdWJlenZhbEBnbWFpbC5jb207DQo+
+IHZpcmVzaC5rdW1hckBsaW5hcm8ub3JnOyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4
+cHBjLQ0KPiBkZXZAbGlzdHMub3psYWJzLm9yZzsgZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7
+IFNjb3R0IFdvb2QNCj4gPHNjb3R0d29vZEBmcmVlc2NhbGUuY29tPg0KPiDkuLvpopg6IFJlOiBb
+UEFUQ0ggVjNdIGNwdWZyZXE6IHFvcmlxOiBSZWdpc3RlciBjb29saW5nIGRldmljZSBiYXNlZCBv
+biBkZXZpY2UNCj4gdHJlZQ0KPiANCj4gT24gVHVlc2RheSAxNSBEZWNlbWJlciAyMDE1IDAwOjU4
+OjI2IFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOg0KPiA+IE9uIFRodXJzZGF5LCBOb3ZlbWJlciAy
+NiwgMjAxNSAwNToyMToxMSBQTSBKaWEgSG9uZ3RhbyB3cm90ZToNCj4gPiA+IFJlZ2lzdGVyIHRo
+ZSBxb3JpcSBjcHVmcmVxIGRyaXZlciBhcyBhIGNvb2xpbmcgZGV2aWNlLCBiYXNlZCBvbiB0aGUN
+Cj4gPiA+IHRoZXJtYWwgZGV2aWNlIHRyZWUgZnJhbWV3b3JrLiBXaGVuIHRlbXBlcmF0dXJlIGNy
+b3NzZXMgdGhlIHBhc3NpdmUNCj4gPiA+IHRyaXAgcG9pbnQgY3B1ZnJlcSBpcyB1c2VkIHRvIHRo
+cm90dGxlIENQVXMuDQo+ID4gPg0KPiA+ID4gU2lnbmVkLW9mZi1ieTogSmlhIEhvbmd0YW8gPGhv
+bmd0YW8uamlhQGZyZWVzY2FsZS5jb20+DQo+ID4gPiBSZXZpZXdlZC1ieTogVmlyZXNoIEt1bWFy
+IDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz4NCj4gPg0KPiA+IEFwcGxpZWQsIHRoYW5rcyENCj4g
+Pg0KPiANCj4gSSBnb3QgYSByYW5kY29uZmlnIGJ1aWxkIGVycm9yIHRvZGF5Og0KPiANCj4gZHJp
+dmVycy9idWlsdC1pbi5vOiBJbiBmdW5jdGlvbiBgcW9yaXFfY3B1ZnJlcV9yZWFkeSc6DQo+IGRl
+YnVnZnMuYzooLnRleHQrMHgxZjQ2ODgpOiB1bmRlZmluZWQgcmVmZXJlbmNlIHRvDQo+IGBvZl9j
+cHVmcmVxX2Nvb2xpbmdfcmVnaXN0ZXInDQo+IA0KPiBDT05GSUdfT0Y9eQ0KPiBDT05GSUdfUU9S
+SVFfQ1BVRlJFUT15DQo+IENPTkZJR19USEVSTUFMPW0NCj4gQ09ORklHX1RIRVJNQUxfT0Y9eQ0K
+PiANCj4gSSB0aGluayB5b3UgbmVlZCBhICdkZXBlbmRzIG9uIFRIRVJNQUwnIHRvIHByZXZlbnQg
+dGhlIGRyaXZlciBmcm9tIGJlaW5nDQo+IGJ1aWx0LWluIHdoZW4gVEhFUk1BTD1tLg0KPiANCj4g
+CUFybmQNCg0KQ29ycmVjdC4gSSBuZWVkIHRvIGFkZCBmb2xsb3dpbmcgbGluZXMgdG8gdGhlIEtj
+b25maWcgZmlsZToNCmRlcGVuZHMgb24gIUNQVV9USEVSTUFMIHx8IFRIRVJNQUw9eQ0KDQpIaSBS
+YWZhZWwsDQpTaG91bGQgSSBzZW5kIGEgbmV3IHBhdGNoIGluY2x1ZGUgdGhpcyBmaXggb3Igc2Vu
+ZCBhIGZpeCBwYXRjaD8NCg0KVGhhbmtzLg0KLUhvbmd0YW8uDQpfX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpMaW51eHBwYy1kZXYgbWFpbGluZyBsaXN0Ckxp
+bnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnCmh0dHBzOi8vbGlzdHMub3psYWJzLm9yZy9saXN0
+aW5mby9saW51eHBwYy1kZXY=
