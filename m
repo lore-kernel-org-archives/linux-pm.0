@@ -1,63 +1,73 @@
-From: Scott Wood <scott.wood@nxp.com>
-Subject: =?gb2312?B?UmU6ILTwuLQ6IFtQQVRDSCBWM10gY3B1ZnJlcTogcW9yaXE6IFJlZ2lzdGVy?=
- =?gb2312?Q?_cooling_device_based_on_device_tree?=
-Date: Mon, 11 Jan 2016 17:34:52 +0000
-Message-ID: <AM3PR04MB530F71205574CA86CADE93191C90@AM3PR04MB530.eurprd04.prod.outlook.com>
-References: <1448529671-48216-1-git-send-email-hongtao.jia@freescale.com>
- <1697588.dLcbZBRWO4@vostro.rjw.lan> <3550740.QzZi28fbXg@wuerfel>
- <AM3PR04MB3376CC754973BD535CF3F99EBC90@AM3PR04MB337.eurprd04.prod.outlook.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: arm qemu boot failures in -next due to 'PM / Domains: add setter
+ for dev.pm_domain'
+Date: Mon, 11 Jan 2016 12:48:19 -0800
+Message-ID: <20160111204819.GA10522@roeck-us.net>
+References: <5693EB8A.40802@roeck-us.net>
+ <20160111185459.GZ12777@atomide.com>
+ <CAOMZO5CkfXcZV3LTOP0oT__012ena9kmTYLb83dY9+BMj5X3hw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-Content-Language: en-US
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: Hongtao Jia <hongtao.jia@nxp.com>, Arnd Bergmann <arnd@arndb.de>, "Rafael
- J. Wysocki" <rjw@rjwysocki.net>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Scott Wood <oss@buserror.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, Hongtao Jia <hongtao.jia@freescale.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:56460 "EHLO
+	bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757307AbcAKUsW (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Jan 2016 15:48:22 -0500
+Content-Disposition: inline
+In-Reply-To: <CAOMZO5CkfXcZV3LTOP0oT__012ena9kmTYLb83dY9+BMj5X3hw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Fabio Estevam <festevam@gmail.com>
+Cc: Tony Lindgren <tony@atomide.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Russell King <linux@arm.linux.org.uk>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 
-T24gMDEvMTEvMjAxNiAwODo1NCBBTSwgSG9uZ3RhbyBKaWEgd3JvdGU6Cj4gU29ycnkgZm9yIHRo
-ZSBsYXRlIHJlc3BvbnNlLiBJIGdvdCBhIGtuZWUgc3VyZ2VyeSB0byBkby4KPiBTZWUgY29tbWVu
-dHMgYXQgdGhlIGVuZC4KPiAKPj4gLS0tLS3pgq7ku7bljp/ku7YtLS0tLQo+PiDlj5Hku7bkuro6
-IEFybmQgQmVyZ21hbm4gW21haWx0bzphcm5kQGFybmRiLmRlXQo+PiDlj5HpgIHml7bpl7Q6IFNh
-dHVyZGF5LCBEZWNlbWJlciAxOSwgMjAxNSA2OjMzIEFNCj4+IOaUtuS7tuS6ujogUmFmYWVsIEou
-IFd5c29ja2kgPHJqd0Byand5c29ja2kubmV0Pgo+PiDmioTpgIE6IEppYSBIb25ndGFvIDxob25n
-dGFvLmppYUBmcmVlc2NhbGUuY29tPjsgZWR1YmV6dmFsQGdtYWlsLmNvbTsKPj4gdmlyZXNoLmt1
-bWFyQGxpbmFyby5vcmc7IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtCj4+IGRl
-dkBsaXN0cy5vemxhYnMub3JnOyBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgU2NvdHQgV29v
-ZAo+PiA8c2NvdHR3b29kQGZyZWVzY2FsZS5jb20+Cj4+IOS4u+mimDogUmU6IFtQQVRDSCBWM10g
-Y3B1ZnJlcTogcW9yaXE6IFJlZ2lzdGVyIGNvb2xpbmcgZGV2aWNlIGJhc2VkIG9uIGRldmljZQo+
-PiB0cmVlCj4+Cj4+IE9uIFR1ZXNkYXkgMTUgRGVjZW1iZXIgMjAxNSAwMDo1ODoyNiBSYWZhZWwg
-Si4gV3lzb2NraSB3cm90ZToKPj4+IE9uIFRodXJzZGF5LCBOb3ZlbWJlciAyNiwgMjAxNSAwNToy
-MToxMSBQTSBKaWEgSG9uZ3RhbyB3cm90ZToKPj4+PiBSZWdpc3RlciB0aGUgcW9yaXEgY3B1ZnJl
-cSBkcml2ZXIgYXMgYSBjb29saW5nIGRldmljZSwgYmFzZWQgb24gdGhlCj4+Pj4gdGhlcm1hbCBk
-ZXZpY2UgdHJlZSBmcmFtZXdvcmsuIFdoZW4gdGVtcGVyYXR1cmUgY3Jvc3NlcyB0aGUgcGFzc2l2
-ZQo+Pj4+IHRyaXAgcG9pbnQgY3B1ZnJlcSBpcyB1c2VkIHRvIHRocm90dGxlIENQVXMuCj4+Pj4K
-Pj4+PiBTaWduZWQtb2ZmLWJ5OiBKaWEgSG9uZ3RhbyA8aG9uZ3Rhby5qaWFAZnJlZXNjYWxlLmNv
-bT4KPj4+PiBSZXZpZXdlZC1ieTogVmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9y
-Zz4KPj4+Cj4+PiBBcHBsaWVkLCB0aGFua3MhCj4+Pgo+Pgo+PiBJIGdvdCBhIHJhbmRjb25maWcg
-YnVpbGQgZXJyb3IgdG9kYXk6Cj4+Cj4+IGRyaXZlcnMvYnVpbHQtaW4ubzogSW4gZnVuY3Rpb24g
-YHFvcmlxX2NwdWZyZXFfcmVhZHknOgo+PiBkZWJ1Z2ZzLmM6KC50ZXh0KzB4MWY0Njg4KTogdW5k
-ZWZpbmVkIHJlZmVyZW5jZSB0bwo+PiBgb2ZfY3B1ZnJlcV9jb29saW5nX3JlZ2lzdGVyJwo+Pgo+
-PiBDT05GSUdfT0Y9eQo+PiBDT05GSUdfUU9SSVFfQ1BVRlJFUT15Cj4+IENPTkZJR19USEVSTUFM
-PW0KPj4gQ09ORklHX1RIRVJNQUxfT0Y9eQo+Pgo+PiBJIHRoaW5rIHlvdSBuZWVkIGEgJ2RlcGVu
-ZHMgb24gVEhFUk1BTCcgdG8gcHJldmVudCB0aGUgZHJpdmVyIGZyb20gYmVpbmcKPj4gYnVpbHQt
-aW4gd2hlbiBUSEVSTUFMPW0uCj4+Cj4+IEFybmQKPiAKPiBDb3JyZWN0LiBJIG5lZWQgdG8gYWRk
-IGZvbGxvd2luZyBsaW5lcyB0byB0aGUgS2NvbmZpZyBmaWxlOgo+IGRlcGVuZHMgb24gIUNQVV9U
-SEVSTUFMIHx8IFRIRVJNQUw9eQo+IAo+IEhpIFJhZmFlbCwKPiBTaG91bGQgSSBzZW5kIGEgbmV3
-IHBhdGNoIGluY2x1ZGUgdGhpcyBmaXggb3Igc2VuZCBhIGZpeCBwYXRjaD8KCldoeSBUSEVSTUFM
-PXkgYW5kIG5vdCBqdXN0IFRIRVJNQUwsIHdoaWNoIHdvdWxkIGFsbG93IGJ1aWxkaW5nIHRoaXMK
-ZHJpdmVyIGFzIGEgbW9kdWxlPwoKLVNjb3R0CgpfX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fXwpMaW51eHBwYy1kZXYgbWFpbGluZyBsaXN0CkxpbnV4cHBjLWRl
-dkBsaXN0cy5vemxhYnMub3JnCmh0dHBzOi8vbGlzdHMub3psYWJzLm9yZy9saXN0aW5mby9saW51
-eHBwYy1kZXY=
+On Mon, Jan 11, 2016 at 06:14:31PM -0200, Fabio Estevam wrote:
+> [Adding Rafael]
+> 
+> On Mon, Jan 11, 2016 at 4:55 PM, Tony Lindgren <tony@atomide.com> wrote:
+> 
+> >> I see 6 out of 24 arm qemu tests failing in next-20160111. Bisect points
+> >> to commit 989561de9b51 ("PM / Domains: add setter for dev.pm_domain").
+> >> Failures are silent - there is no output on the console.
+> >> Affected tests are
+> >>
+> >> arm:beagle:multi_v7_defconfig:omap3-beagle
+> >> arm:beaglexm:multi_v7_defconfig:omap3-beagle-xm
+> >> arm:overo:multi_v7_defconfig:omap3-overo-tobi
+> >> arm:beagle:omap2plus_defconfig:omap3-beagle
+> >> arm:beaglexm:omap2plus_defconfig:omap3-beagle-xm
+> >> arm:overo:omap2plus_defconfig:omap3-overo-tobi
+> >>
+> >> For details please see the 'next' column at http://server.roeck-us.net:8010/builders.
+> >>
+> >> Reverting the offending commit fixes the problems.
+> >>
+> >> Please let me know if there is anything I can do to help tracking down the problem.
+> >
+> > The following fixes the booting, but I wonder if it's a
+> > proper fix?
+> >
+> > --- a/drivers/base/power/common.c
+> > +++ b/drivers/base/power/common.c
+> > @@ -145,9 +145,10 @@ void dev_pm_domain_set(struct device *dev, struct dev_pm_domain *pd)
+> >  {
+> >         if (dev->pm_domain == pd)
+> >                 return;
+> > -
+> > -       WARN(device_is_bound(dev),
+> > -            "PM domains can only be changed for unbound devices\n");
+> > +       if (device_is_registered(dev)) {
+> > +               WARN(device_is_bound(dev),
+> > +                    "PM domains can only be changed for unbound devices\n");
+> > +       }
+> >         dev->pm_domain = pd;
+> >         device_pm_check_callbacks(dev);
+> 
+> Commit 989561de9b51 ("PM / Domains: add setter for dev.pm_domain")
+> causes issues for me after doing a 'reboot' command.
+> 
+> Rafael proposed a patch which fixed the 'reboot' problem:
+> http://www.spinics.net/lists/arm-kernel/msg473562.html
+
+Looks like a different problem.
+
+Guenter
