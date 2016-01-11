@@ -1,7 +1,7 @@
 From: Juri Lelli <juri.lelli@arm.com>
-Subject: [RFC PATCH 18/19] cpufreq: remove transition_lock
-Date: Mon, 11 Jan 2016 17:35:59 +0000
-Message-ID: <1452533760-13787-19-git-send-email-juri.lelli@arm.com>
+Subject: [RFC PATCH 16/19] cpufreq: hold policy->rwsem across CPUFREQ_GOV_POLICY_EXIT
+Date: Mon, 11 Jan 2016 17:35:57 +0000
+Message-ID: <1452533760-13787-17-git-send-email-juri.lelli@arm.com>
 References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
@@ -10,91 +10,58 @@ To: linux-kernel@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, peterz@infradead.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, juri.lelli@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-From: Michael Turquette <mturquette@baylibre.com>
+There are no good reasons why policy->rwsem cannot be hold across calls to
+__cpufreq_governor with CPUFREQ_GOV_POLICY_EXIT event.
 
-transition_lock was introduced to serialize cpufreq transition
-notifiers. Instead of using a different lock for protecting concurrent
-modifications of policy, it is better to require that callers of
-transition notifiers implement appropriate locking (this is already the
-case AFAICS). Removing transition_lock also simplifies current locking
-scheme.
+Remove {up,down}_write across such call sites. This also verify assertion
+that policy->rwsem is always hold when calling into __cpufreq_governor.
 
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>
 Signed-off-by: Juri Lelli <juri.lelli@arm.com>
-Signed-off-by: Michael Turquette <mturquette@baylibre.com>
 ---
- drivers/cpufreq/cpufreq.c | 19 ++++++++++---------
- include/linux/cpufreq.h   |  1 -
- 2 files changed, 10 insertions(+), 10 deletions(-)
+ drivers/cpufreq/cpufreq.c | 4 ----
+ include/linux/cpufreq.h   | 4 ----
+ 2 files changed, 8 deletions(-)
 
 diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 6c9bef7..78b1e2f 100644
+index d58a622..797bfae 100644
 --- a/drivers/cpufreq/cpufreq.c
 +++ b/drivers/cpufreq/cpufreq.c
-@@ -421,10 +421,15 @@ static void cpufreq_notify_post_transition(struct cpufreq_policy *policy,
- 	cpufreq_notify_transition(policy, freqs, CPUFREQ_POSTCHANGE);
- }
+@@ -2182,9 +2182,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+ 			return ret;
+ 		}
  
-+/*
-+ * Callers must ensure proper mutual exclusion on policy (for transition_
-+ * ongoing/transition_task handling). While holding policy->rwsem is
-+ * sufficient, other scheme might work as well (e.g., cpufreq_governor.c
-+ * holds timer_mutex while entering the path that generates transitions).
-+ */
- void cpufreq_freq_transition_begin(struct cpufreq_policy *policy,
- 		struct cpufreq_freqs *freqs)
- {
--
- 	/*
- 	 * Catch double invocations of _begin() which lead to self-deadlock.
- 	 * ASYNC_NOTIFICATION drivers are left out because the cpufreq core
-@@ -439,22 +444,19 @@ void cpufreq_freq_transition_begin(struct cpufreq_policy *policy,
- wait:
- 	wait_event(policy->transition_wait, !policy->transition_ongoing);
+-		up_write(&policy->rwsem);
+ 		ret = __cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
+-		down_write(&policy->rwsem);
  
--	spin_lock(&policy->transition_lock);
--
--	if (unlikely(policy->transition_ongoing)) {
--		spin_unlock(&policy->transition_lock);
-+	if (unlikely(policy->transition_ongoing))
- 		goto wait;
--	}
+ 		if (ret) {
+ 			pr_err("%s: Failed to Exit Governor: %s (%d)\n",
+@@ -2201,9 +2199,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
+ 		if (!ret)
+ 			goto out;
  
- 	policy->transition_ongoing = true;
- 	policy->transition_task = current;
+-		up_write(&policy->rwsem);
+ 		__cpufreq_governor(policy, CPUFREQ_GOV_POLICY_EXIT);
+-		down_write(&policy->rwsem);
+ 	}
  
--	spin_unlock(&policy->transition_lock);
--
- 	cpufreq_notify_transition(policy, freqs, CPUFREQ_PRECHANGE);
- }
- EXPORT_SYMBOL_GPL(cpufreq_freq_transition_begin);
- 
-+/*
-+ * As above, callers must ensure proper mutual exclusion on policy.
-+ */
- void cpufreq_freq_transition_end(struct cpufreq_policy *policy,
- 		struct cpufreq_freqs *freqs, int transition_failed)
- {
-@@ -1057,7 +1059,6 @@ static struct cpufreq_policy *cpufreq_policy_alloc(unsigned int cpu)
- 	kobject_init(&policy->kobj, &ktype_cpufreq);
- 	INIT_LIST_HEAD(&policy->policy_list);
- 	init_rwsem(&policy->rwsem);
--	spin_lock_init(&policy->transition_lock);
- 	init_waitqueue_head(&policy->transition_wait);
- 	init_completion(&policy->kobj_unregister);
- 	INIT_WORK(&policy->update, handle_update);
+ 	/* new governor failed, so re-start old one */
 diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 79b87ce..6bbb88f 100644
+index 88a4215..79b87ce 100644
 --- a/include/linux/cpufreq.h
 +++ b/include/linux/cpufreq.h
-@@ -105,7 +105,6 @@ struct cpufreq_policy {
- 
- 	/* Synchronization for frequency transitions */
- 	bool			transition_ongoing; /* Tracks transition status */
--	spinlock_t		transition_lock;
- 	wait_queue_head_t	transition_wait;
- 	struct task_struct	*transition_task; /* Task which is doing the transition */
+@@ -100,10 +100,6 @@ struct cpufreq_policy {
+ 	 * - Any routine that will write to the policy structure and/or may take away
+ 	 *   the policy altogether (eg. CPU hotplug), will hold this lock in write
+ 	 *   mode before doing so.
+-	 *
+-	 * Additional rules:
+-	 * - Lock should not be held across
+-	 *     __cpufreq_governor(data, CPUFREQ_GOV_POLICY_EXIT);
+ 	 */
+ 	struct rw_semaphore	rwsem;
  
 -- 
 2.2.2
