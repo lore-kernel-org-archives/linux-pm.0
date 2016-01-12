@@ -1,52 +1,71 @@
 From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH RESEND v4 0/4] cpufreq: powernv: Redesign the presentation of throttle notification
-Date: Tue, 12 Jan 2016 04:24:23 -0600
-Message-ID: <1452594267-12844-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH RESEND v4 2/4] cpufreq: powernv/tracing: Add powernv_throttle tracepoint
+Date: Tue, 12 Jan 2016 04:24:25 -0600
+Message-ID: <1452594267-12844-3-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+References: <1452594267-12844-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1452594267-12844-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, pc@us.ibm.com, anton@samba.org, ego@linux.vnet.ibm.com, shreyas@linux.vnet.ibm.com, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, pc@us.ibm.com, anton@samba.org, ego@linux.vnet.ibm.com, shreyas@linux.vnet.ibm.com, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Ingo Molnar <mingo@redhat.com>, Steven Rostedt <rostedt@goodmis.org>
 List-Id: linux-pm@vger.kernel.org
 
-In POWER8, OCC(On-Chip-Controller) can throttle the frequency of the
-CPU when the chip crosses its thermal and power limits. Currently,
-powernv-cpufreq driver detects and reports this event as a console
-message. Some machines may not sustain the max turbo frequency in all
-conditions and can be throttled frequently. This can lead to the
-flooding of console with throttle messages. So this patchset aims to
-redesign the presentation of this event via sysfs counters and
-tracepoints. 
+This patch adds the powernv_throttle tracepoint to trace the CPU
+frequency throttling event, which is used by the powernv-cpufreq
+driver in POWER8.
 
-Patches [2] to [4] will add a perf trace point "power:powernv_throttle" and
-sysfs throttle counter stats in /sys/devices/system/cpu/cpufreq/chipN.
-Patch [1] solves a bug in powernv_cpufreq_throttle_check(), which calls in to
-cpu_to_chip_id() in hot path which reads DT every time to find the chip id.
+Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+CC: Ingo Molnar <mingo@redhat.com>
+CC: Steven Rostedt <rostedt@goodmis.org>
+---
+No changes from v2 and v3.
 
-Resending the patchset as I has cc'ed stable@vger.kernel.org in developemnt
-cycle and used --in-reply-to to post a new version.
+ include/trace/events/power.h | 22 ++++++++++++++++++++++
+ kernel/trace/power-traces.c  |  1 +
+ 2 files changed, 23 insertions(+)
 
-Changes from v3:
-- Add a fix to replace cpu_to_chip_id() with simpler PIR shift to obtain the
-  chip id.
-- Break patch2 in to two patches separating the tracepoint and sysfs attribute
-  changes.
-
-Changes from v2:
-- Fixed kbuild test warning.
-drivers/cpufreq/powernv-cpufreq.c:609:2: warning: ignoring return
-value of 'kstrtoint', declared with attribute warn_unused_result
-[-Wunused-result]
-
-Shilpasri G Bhat (4):
-  cpufreq: powernv: Remove cpu_to_chip_id() from hot-path
-  cpufreq: powernv/tracing: Add powernv_throttle tracepoint
-  cpufreq: powernv: Add a trace print for the throttle event
-  cpufreq: powernv: Add sysfs attributes to show throttle stats
-
- drivers/cpufreq/powernv-cpufreq.c | 279 +++++++++++++++++++++++++++++++-------
- include/trace/events/power.h      |  22 +++
- kernel/trace/power-traces.c       |   1 +
- 3 files changed, 250 insertions(+), 52 deletions(-)
-
+diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+index 284244e..19e5030 100644
+--- a/include/trace/events/power.h
++++ b/include/trace/events/power.h
+@@ -38,6 +38,28 @@ DEFINE_EVENT(cpu, cpu_idle,
+ 	TP_ARGS(state, cpu_id)
+ );
+ 
++TRACE_EVENT(powernv_throttle,
++
++	TP_PROTO(int chip_id, const char *reason, int pmax),
++
++	TP_ARGS(chip_id, reason, pmax),
++
++	TP_STRUCT__entry(
++		__field(int, chip_id)
++		__string(reason, reason)
++		__field(int, pmax)
++	),
++
++	TP_fast_assign(
++		__entry->chip_id = chip_id;
++		__assign_str(reason, reason);
++		__entry->pmax = pmax;
++	),
++
++	TP_printk("Chip %d Pmax %d %s", __entry->chip_id,
++		  __entry->pmax, __get_str(reason))
++);
++
+ TRACE_EVENT(pstate_sample,
+ 
+ 	TP_PROTO(u32 core_busy,
+diff --git a/kernel/trace/power-traces.c b/kernel/trace/power-traces.c
+index eb4220a..81b8745 100644
+--- a/kernel/trace/power-traces.c
++++ b/kernel/trace/power-traces.c
+@@ -15,4 +15,5 @@
+ 
+ EXPORT_TRACEPOINT_SYMBOL_GPL(suspend_resume);
+ EXPORT_TRACEPOINT_SYMBOL_GPL(cpu_idle);
++EXPORT_TRACEPOINT_SYMBOL_GPL(powernv_throttle);
+ 
 -- 
 1.9.1
