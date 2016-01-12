@@ -1,58 +1,98 @@
-From: "Yang, Wenyou" <Wenyou.Yang@atmel.com>
-Subject: RE: [PATCH 1/2] power: act8945a: add charger driver for ACT8945A
-Date: Tue, 12 Jan 2016 08:23:02 +0000
-Message-ID: <B256D81BAE5131468A838E5D7A243641D63E880D@penmbx01>
-References: <1452219225-10510-1-git-send-email-wenyou.yang@atmel.com>
-	<1452219225-10510-2-git-send-email-wenyou.yang@atmel.com>
- <CABxcv=mQoDxb7oHh0DdC_t1_m-j=4Hp-sPNoq4Apy4c7CneSng@mail.gmail.com>
+From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+Subject: Re: [PATCH v1 1/8] lib/string: introduce match_string() helper
+Date: Tue, 12 Jan 2016 17:26:49 +0900
+Message-ID: <20160112082649.GA1821@swordfish>
+References: <1452242596.30729.425.camel@linux.intel.com>
+ <20160109011241.GB560@swordfish>
+ <CAHp75Vf_dESyzvi5EN5KP8OCKtqKoD8YK7w5s0yHpBgt=-q7Uw@mail.gmail.com>
+ <1452524400.26146.32.camel@linux.intel.com>
+ <8760yzbwd5.fsf@rasmusvillemoes.dk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CABxcv=mQoDxb7oHh0DdC_t1_m-j=4Hp-sPNoq4Apy4c7CneSng@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Javier Martinez Canillas <javier@dowhile0.org>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "Ferre, Nicolas" <Nicolas.FERRE@atmel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f196.google.com ([209.85.192.196]:35525 "EHLO
+	mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760402AbcALIZj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jan 2016 03:25:39 -0500
+Content-Disposition: inline
+In-Reply-To: <8760yzbwd5.fsf@rasmusvillemoes.dk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Andy Shevchenko <andy.shevchenko@gmail.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Tejun Heo <tj@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "David S. Miller" <davem@davemloft.net>, David Airlie <airlied@linux.ie>, Andrew Morton <akpm@linux-foundation.org>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
 
-SGkgSmF2aWVyLA0KDQpUaGFuayB5b3UgZm9yIHlvdXIgcmV2aWV3Lg0KDQo+IC0tLS0tT3JpZ2lu
-YWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IEphdmllciBNYXJ0aW5leiBDYW5pbGxhcyBbbWFpbHRv
-OmphdmllckBkb3doaWxlMC5vcmddDQo+IFNlbnQ6IDIwMTblubQx5pyIOOaXpSAyMzowMA0KPiBU
-bzogWWFuZywgV2VueW91IDxXZW55b3UuWWFuZ0BhdG1lbC5jb20+DQo+IENjOiBTZWJhc3RpYW4g
-UmVpY2hlbCA8c3JlQGtlcm5lbC5vcmc+OyBEbWl0cnkgRXJlbWluLVNvbGVuaWtvdg0KPiA8ZGJh
-cnlzaGtvdkBnbWFpbC5jb20+OyBEYXZpZCBXb29kaG91c2UgPGR3bXcyQGluZnJhZGVhZC5vcmc+
-OyBSb2INCj4gSGVycmluZyA8cm9iaCtkdEBrZXJuZWwub3JnPjsgUGF3ZWwgTW9sbCA8cGF3ZWwu
-bW9sbEBhcm0uY29tPjsgTWFyaw0KPiBSdXRsYW5kIDxtYXJrLnJ1dGxhbmRAYXJtLmNvbT47IElh
-biBDYW1wYmVsbCA8aWpjK2RldmljZXRyZWVAaGVsbGlvbi5vcmcudWs+Ow0KPiBLdW1hciBHYWxh
-IDxnYWxha0Bjb2RlYXVyb3JhLm9yZz47IEZlcnJlLCBOaWNvbGFzDQo+IDxOaWNvbGFzLkZFUlJF
-QGF0bWVsLmNvbT47IGxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZzsgTGludXgN
-Cj4gS2VybmVsIDxsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnPjsgbGludXgtcG1Admdlci5r
-ZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMS8yXSBwb3dlcjogYWN0ODk0NWE6IGFk
-ZCBjaGFyZ2VyIGRyaXZlciBmb3IgQUNUODk0NUENCj4gDQo+IEhlbGxvIFdlbnlvdSwNCj4gDQo+
-IE9uIFRodSwgSmFuIDcsIDIwMTYgYXQgMTE6MTMgUE0sIFdlbnlvdSBZYW5nIDx3ZW55b3UueWFu
-Z0BhdG1lbC5jb20+DQo+IHdyb3RlOg0KPiA+IFRoaXMgcGF0Y2ggYWRkcyBuZXcgZHJpdmVyIGZv
-ciBBY3RpdmUtc2VtaSBBQ1Q4OTQ1QSBBY3RpdmVQYXRoIGNoYXJnZXINCj4gPiAocGFydCBvZiBB
-Q1Q4OTQ1QSBNRkQgZHJpdmVyKSBwcm92aWRpbmcgcG93ZXIgc3VwcGx5IGNsYXNzIGluZm9ybWF0
-aW9uDQo+ID4gdG8gdXNlcnNwYWNlLg0KPiA+DQo+ID4gVGhlIGRyaXZlciBpcyBjb25maWd1cmVk
-IHRocm91Z2ggRFRTIChiYXR0ZXJ5IGFuZCBzeXN0ZW0gcmVsYXRlZA0KPiA+IHNldHRpbmdzKSBh
-bmQgc3lzZnMgZW50cmllcyAodGltZXJzIGFuZCBpbnB1dCBvdmVyLXZvbHRhZ2UgdGhyZXNob2xk
-KS4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IFdlbnlvdSBZYW5nIDx3ZW55b3UueWFuZ0BhdG1l
-bC5jb20+DQo+ID4gLS0tDQo+ID4NCj4gDQo+IFtzbmlwXQ0KPiANCj4gPiArDQo+ID4gK3N0YXRp
-YyBzdHJ1Y3QgcGxhdGZvcm1fZHJpdmVyIGFjdDg5NDVhX2NoYXJnZXJfZHJpdmVyID0gew0KPiA+
-ICsgICAgICAgLmRyaXZlciA9IHsNCj4gPiArICAgICAgICAgICAgICAgLm5hbWUgPSAiYWN0ODk0
-NWEtY2hhcmdlciIsDQo+ID4gKyAgICAgICB9LA0KPiA+ICsgICAgICAgLnByb2JlICA9IGFjdDg5
-NDVhX2NoYXJnZXJfcHJvYmUsDQo+ID4gKyAgICAgICAucmVtb3ZlID0gYWN0ODk0NWFfY2hhcmdl
-cl9yZW1vdmUsIH07DQo+ID4gKw0KPiANCj4gVGhlIGRyaXZlciBpcyBtaXNzaW5nIGFuIE9GIG1h
-dGNoIHRhYmxlIChhbmQgYWxzbyBhIHBsYXRmb3JtIElEIG1hdGNoIHRhYmxlIGlmDQo+IG5vbi1E
-VCBpcyBzdXBwb3J0ZWQpIHNvIHRoaXMgbWVhbnMgdGhhdCBtb2R1bGUgYXV0b2xvYWRpbmcgd2ls
-bCBiZSBicm9rZW4gZm9yIHRoaXMNCj4gZHJpdmVyIHNpbmNlIHRoZSBwbGF0Zm9ybSB1ZXZlbnQg
-ZnVuY3Rpb24gd2lsbCByZXBvcnQgYSBNT0RBTElBUz1vZjpOKlQqQ2FjdGl2ZS0NCj4gc2VtaSxh
-Y3Q4OTQ1YS1jaGFyZ2VyDQoNClRoaXMgaXMgYW4gTUZEIGRldmljZSwgaXQgY29tcGF0aWJsZSBp
-cyBkZWNsYXJlZCBpbiB0aGUgLi4vbWZkL2FjdDg5NDVhLmMgZmlsZS4NCg0KCS5vZl9jb21wYXRp
-YmxlID0gImFjdGl2ZS1zZW1pLGFjdDg5NDVhLWNoYXJnZXIiLg0KDQpUaGUgbm9uLURUICBpcyBu
-b3Qgc3VwcG9ydGVkIGluIHRoaXMgcGF0Y2guIFNvIGEgcGxhdGZvcm0gSUQgbWF0Y2ggdGFibGUg
-aXMgbm90IGluY2x1ZGVkLg0KDQo+IA0KPiBNYXRjaGluZyBpcyBvbmx5IHdvcmtpbmcgYmVjYXVz
-ZSB0aGUgcGxhdGZvcm0gYnVzIG1hdGNoIGZ1bmN0aW9uIHVzZSBhcyBhDQo+IGZhbGxiYWNrIHRo
-ZSBkcml2ZXIgbmFtZS4NCg0KDQo+IA0KPiBCZXN0IHJlZ2FyZHMsDQo+IEphdmllcg0KDQoNCkJl
-c3QgUmVnYXJkcywNCldlbnlvdSBZYW5nDQo=
+Hello,
+
+On (01/11/16 23:10), Rasmus Villemoes wrote:
+[..]
+> > Thought more about those cases.
+> >
+> > If you would like you may introduce something like
+> >
+> > int nmatch_string(array, array_size, string, int len)
+> > {
+> >   if (len < 0)
+> >     return match_string();
+> >
+> >   for (...) {
+> >     size_t itemlen = (len > 0) ? len : strlen(array[index]);
+> > ...
+> >     if (!strncmp(array[index], string, itemlen))
+> >       return index;
+> >   }
+> >   return -EINVAL;
+> > }
+
+may be later this week; I'm a bit out of spare time at the moment.
+
+
+> Yeah, a separate function is probably better. But why not a more
+> explicit name, match_prefix, match_string_prefix, match_string_starts?
+
+Not married to nmatch_string(), but at the same time, IMHO, *_prefix or
+*_starts naming is not really better. One can pass a string with offset,
+e.g.
+  FOO_starts(array, array_size, string + offset, strlen(string) - offset)
+which will be equivalent to FOO_ends(), but not FOO_starts() or FOO_prefix().
+Personally, I'd prefer to preserve strcmp/strncmp semantics, thus, forbidding
+`len < 0' case, which looks cryptic to me.
+
+
+> I like the idea of passing the string length if one wants the "is this a
+> prefix of some array element" semantics, and a sentinel otherwise. But I
+> don't see any case where one would want match_string() semantics (why
+> not call match_string directly instead?),
+
+
+> so why not let len < 0 mean "is some array element a prefix of this string"
+> and "len >= 0" be the other case. I don't see why one shouldn't be able to
+> ask "is the empty string a prefix of some array element" (that is, are there
+> any elements in the array);
+
+if this is a dynamic array, then there should be some function that
+fills in that array, so having a simple bool flag in the code will
+suffice; if this is a static array, then ARRAY_SIZE() should do the
+trick. I would never expect a string matching function to have this
+type of functionality, TBH.
+
+But the question is
+
+> is the empty string a prefix of some array element
+
+do people really need this?
+
+the way I see it, the idea is to have wrappers around
+	while (array[..]) if strcmp()/strncmp() == 0 break ...
+
+both of which [strcmp()/strncmp()] have a well known and expected
+semantics, changing this can only confuse people.
+
+	-ss
+
+> both the array and the string might be run-time things,
+> so this could occur. And it's not up to a generic library routine like
+> this to impose restrictions like "the empty string makes no sense, go
+> away".
+> 
+> Rasmus
+> 
