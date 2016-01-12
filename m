@@ -1,48 +1,52 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC PATCH 11/19] cpufreq: assert policy->rwsem is held in
- __cpufreq_governor
-Date: Tue, 12 Jan 2016 15:50:25 +0530
-Message-ID: <20160112102025.GC1084@ubuntu>
-References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
- <1452533760-13787-12-git-send-email-juri.lelli@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH RESEND v4 0/4] cpufreq: powernv: Redesign the presentation of throttle notification
+Date: Tue, 12 Jan 2016 04:24:23 -0600
+Message-ID: <1452594267-12844-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1452533760-13787-12-git-send-email-juri.lelli@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, rjw@rjwysocki.net, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, pc@us.ibm.com, anton@samba.org, ego@linux.vnet.ibm.com, shreyas@linux.vnet.ibm.com, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 11-01-16, 17:35, Juri Lelli wrote:
-> __cpufreq_governor works on policy, so policy->rwsem has to be held.
-> Add assertion for such condition.
-> 
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Juri Lelli <juri.lelli@arm.com>
-> ---
->  drivers/cpufreq/cpufreq.c | 3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index f1f9fbc..e7fc5c9 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1950,6 +1950,9 @@ static int __cpufreq_governor(struct cpufreq_policy *policy,
->  	/* Don't start any governor operations if we are entering suspend */
->  	if (cpufreq_suspended)
->  		return 0;
-> +
-> +	lockdep_assert_held(&policy->rwsem);
-> +
+In POWER8, OCC(On-Chip-Controller) can throttle the frequency of the
+CPU when the chip crosses its thermal and power limits. Currently,
+powernv-cpufreq driver detects and reports this event as a console
+message. Some machines may not sustain the max turbo frequency in all
+conditions and can be throttled frequently. This can lead to the
+flooding of console with throttle messages. So this patchset aims to
+redesign the presentation of this event via sysfs counters and
+tracepoints. 
 
-We had an ABBA problem with the EXIT governor callback and so this
-rwsem is dropped just before that from set_policy()..
+Patches [2] to [4] will add a perf trace point "power:powernv_throttle" and
+sysfs throttle counter stats in /sys/devices/system/cpu/cpufreq/chipN.
+Patch [1] solves a bug in powernv_cpufreq_throttle_check(), which calls in to
+cpu_to_chip_id() in hot path which reads DT every time to find the chip id.
 
-commit 955ef4833574 ("cpufreq: Drop rwsem lock around
-CPUFREQ_GOV_POLICY_EXIT")
+Resending the patchset as I has cc'ed stable@vger.kernel.org in developemnt
+cycle and used --in-reply-to to post a new version.
+
+Changes from v3:
+- Add a fix to replace cpu_to_chip_id() with simpler PIR shift to obtain the
+  chip id.
+- Break patch2 in to two patches separating the tracepoint and sysfs attribute
+  changes.
+
+Changes from v2:
+- Fixed kbuild test warning.
+drivers/cpufreq/powernv-cpufreq.c:609:2: warning: ignoring return
+value of 'kstrtoint', declared with attribute warn_unused_result
+[-Wunused-result]
+
+Shilpasri G Bhat (4):
+  cpufreq: powernv: Remove cpu_to_chip_id() from hot-path
+  cpufreq: powernv/tracing: Add powernv_throttle tracepoint
+  cpufreq: powernv: Add a trace print for the throttle event
+  cpufreq: powernv: Add sysfs attributes to show throttle stats
+
+ drivers/cpufreq/powernv-cpufreq.c | 279 +++++++++++++++++++++++++++++++-------
+ include/trace/events/power.h      |  22 +++
+ kernel/trace/power-traces.c       |   1 +
+ 3 files changed, 250 insertions(+), 52 deletions(-)
 
 -- 
-viresh
+1.9.1
