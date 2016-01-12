@@ -1,118 +1,71 @@
-From: Javier Martinez Canillas <javier@dowhile0.org>
-Subject: Re: [PATCH 1/2] power: act8945a: add charger driver for ACT8945A
-Date: Tue, 12 Jan 2016 11:03:58 -0300
-Message-ID: <CABxcv=mZfch6XwshXCTzdsSs2RR-4EMwf2jO1n=oPQ_epP8LQw@mail.gmail.com>
-References: <1452219225-10510-1-git-send-email-wenyou.yang@atmel.com>
-	<1452219225-10510-2-git-send-email-wenyou.yang@atmel.com>
-	<CABxcv=mQoDxb7oHh0DdC_t1_m-j=4Hp-sPNoq4Apy4c7CneSng@mail.gmail.com>
-	<B256D81BAE5131468A838E5D7A243641D63E880D@penmbx01>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [RFC PATCH 2/2] sched: idle: IRQ based next prediction for idle
+ period
+Date: Tue, 12 Jan 2016 15:16:44 +0100
+Message-ID: <56950ACC.4090001@linaro.org>
+References: <1452093774-17831-1-git-send-email-daniel.lezcano@linaro.org>
+ <1452093774-17831-3-git-send-email-daniel.lezcano@linaro.org>
+ <alpine.DEB.2.11.1601081631380.3575@nanos> <5694F490.3040300@linaro.org>
+ <alpine.DEB.2.11.1601121441330.3575@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
 Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <B256D81BAE5131468A838E5D7A243641D63E880D@penmbx01>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Yang, Wenyou" <Wenyou.Yang@atmel.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "Ferre, Nicolas" <Nicolas.FERRE@atmel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f49.google.com ([74.125.82.49]:38265 "EHLO
+	mail-wm0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762013AbcALOQr (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jan 2016 09:16:47 -0500
+Received: by mail-wm0-f49.google.com with SMTP id b14so322420609wmb.1
+        for <linux-pm@vger.kernel.org>; Tue, 12 Jan 2016 06:16:46 -0800 (PST)
+In-Reply-To: <alpine.DEB.2.11.1601121441330.3575@nanos>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: peterz@infradead.org, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nicolas.pitre@linaro.org, vincent.guittot@linaro.org
 
-Hello Wenyou,
-
-On Tue, Jan 12, 2016 at 5:23 AM, Yang, Wenyou <Wenyou.Yang@atmel.com> w=
-rote:
-> Hi Javier,
->
-> Thank you for your review.
->
->> -----Original Message-----
->> From: Javier Martinez Canillas [mailto:javier@dowhile0.org]
->> Sent: 2016=E5=B9=B41=E6=9C=888=E6=97=A5 23:00
->> To: Yang, Wenyou <Wenyou.Yang@atmel.com>
->> Cc: Sebastian Reichel <sre@kernel.org>; Dmitry Eremin-Solenikov
->> <dbaryshkov@gmail.com>; David Woodhouse <dwmw2@infradead.org>; Rob
->> Herring <robh+dt@kernel.org>; Pawel Moll <pawel.moll@arm.com>; Mark
->> Rutland <mark.rutland@arm.com>; Ian Campbell <ijc+devicetree@hellion=
-=2Eorg.uk>;
->> Kumar Gala <galak@codeaurora.org>; Ferre, Nicolas
->> <Nicolas.FERRE@atmel.com>; linux-arm-kernel@lists.infradead.org; Lin=
-ux
->> Kernel <linux-kernel@vger.kernel.org>; linux-pm@vger.kernel.org
->> Subject: Re: [PATCH 1/2] power: act8945a: add charger driver for ACT=
-8945A
+On 01/12/2016 02:42 PM, Thomas Gleixner wrote:
+> On Tue, 12 Jan 2016, Daniel Lezcano wrote:
+>> On 01/08/2016 04:43 PM, Thomas Gleixner wrote:
+>>>> +	/*
+>>>> +	 * Register the setup/free irq callbacks, so new interrupt or
+>>>> +	 * freed interrupt will update their tracking.
+>>>> +	 */
+>>>> +	ret =3D register_irq_timings(&irqt_ops);
+>>>> +	if (ret) {
+>>>> +		pr_err("Failed to register timings ops\n");
+>>>> +		return ret;
+>>>> +	}
+>>>
+>>> So that stuff is installed unconditionally. Is it used unconditiona=
+lly as
+>>> well?
 >>
->> Hello Wenyou,
->>
->> On Thu, Jan 7, 2016 at 11:13 PM, Wenyou Yang <wenyou.yang@atmel.com>
->> wrote:
->> > This patch adds new driver for Active-semi ACT8945A ActivePath cha=
-rger
->> > (part of ACT8945A MFD driver) providing power supply class informa=
-tion
->> > to userspace.
->> >
->> > The driver is configured through DTS (battery and system related
->> > settings) and sysfs entries (timers and input over-voltage thresho=
-ld).
->> >
->> > Signed-off-by: Wenyou Yang <wenyou.yang@atmel.com>
->> > ---
->> >
->>
->> [snip]
->>
->> > +
->> > +static struct platform_driver act8945a_charger_driver =3D {
->> > +       .driver =3D {
->> > +               .name =3D "act8945a-charger",
->> > +       },
->> > +       .probe  =3D act8945a_charger_probe,
->> > +       .remove =3D act8945a_charger_remove, };
->> > +
->>
->> The driver is missing an OF match table (and also a platform ID matc=
-h table if
->> non-DT is supported) so this means that module autoloading will be b=
-roken for this
->> driver since the platform uevent function will report a MODALIAS=3Do=
-f:N*T*Cactive-
->> semi,act8945a-charger
+>> Sorry, I am not sure to understand your question. If the kernel is c=
+ompiled
+>> with CONFIG_CPU_IDLE_GOV_SCHED=3Dy, this code is enabled and use the=
+ irq
+>> timings. The condition comes from the compilation option.
 >
-> This is an MFD device, it compatible is declared in the ../mfd/act894=
-5a.c file.
->
->         .of_compatible =3D "active-semi,act8945a-charger".
->
+> The question is whether the option also activates that thing or is th=
+ere still
+> some /sys/whatever/idlegov magic where you can (de)select it.
 
-I know that the device is instantiated from a MFD driver but having a
-=2Eof_compatible property in the MFD cell, it only means that the
-pdev->dev.of_node field will be filled by the mfd-core [0]. It has
-nothing to do with how the platform device is matched to the platform
-driver.
+Yes, in the next patches of the series I did not send, we can switch to=
+=20
+the cpuidle's governor framework or idle-sched. I will look at how to=20
+disable it when switching to the cpuidle's governors.
 
-The mfd-core calls platform_device_add() to add the device so the
-platform bus_type .match function callback [1] will be used to match
-the device with the driver and since the driver doesn't have a OF
-device ID table to match, it means that this function will fallback to
-match the device name with the platform driver name.
+Thanks
 
-Also, you didn't answer my question about module auto-loading. The
-platform bus_type .uevent callback calls of_device_uevent_modalias()
-and since the device has an .of_node filled by the mfd-core (since you
-provided an .of_compatible for the MFD cell), this means that an OF
-modalias will be reported but since the driver doesn't have neither a
-=2Eof_match_table nor a MODULE_DEVICE_TABLE(of,...) so udev/kmod won't
-be able to load the driver's module based on the modalias uevent
-reported by the kernel.
+   -- Daniel
 
-> The non-DT  is not supported in this patch. So a platform ID match ta=
-ble is not included.
->
 
-Ok, I just asked for completeness.
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
 
-[0]: http://lxr.free-electrons.com/source/drivers/mfd/mfd-core.c#L177
-[1]: http://lxr.free-electrons.com/source/drivers/base/platform.c#L833
-[2]: http://lxr.free-electrons.com/source/drivers/base/platform.c#L787
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
 
-Best regards,
-Javier
