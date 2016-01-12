@@ -1,91 +1,67 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [RFC PATCH 05/19] cpufreq: assert locking when accessing
- cpufreq_policy_list
-Date: Tue, 12 Jan 2016 11:44:54 +0000
-Message-ID: <20160112114454.GB7015@e106622-lin>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC PATCH 04/19] cpufreq: bring data structures close to their
+ locks
+Date: Tue, 12 Jan 2016 12:58:43 +0100
+Message-ID: <20160112115843.GD6357@twins.programming.kicks-ass.net>
 References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
- <1452533760-13787-6-git-send-email-juri.lelli@arm.com>
- <20160112093452.GW1084@ubuntu>
+ <1452533760-13787-5-git-send-email-juri.lelli@arm.com>
+ <20160111220708.GK6344@twins.programming.kicks-ass.net>
+ <20160112092752.GV1084@ubuntu>
+ <20160112112125.GA7015@e106622-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from casper.infradead.org ([85.118.1.10]:57211 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933822AbcALL6p (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jan 2016 06:58:45 -0500
 Content-Disposition: inline
-In-Reply-To: <20160112093452.GW1084@ubuntu>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, rjw@rjwysocki.net, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
+In-Reply-To: <20160112112125.GA7015@e106622-lin>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
 
-Hi,
-
-On 12/01/16 15:04, Viresh Kumar wrote:
-> On 11-01-16, 17:35, Juri Lelli wrote:
-> > cpufreq_policy_list is guarded by cpufreq_driver_lock. Add appropriate
-> > locking assertions to check that we always access the list while holding
-> > the associated lock.
-> > 
-> > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> > Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> > Signed-off-by: Juri Lelli <juri.lelli@arm.com>
-> > ---
-> >  drivers/cpufreq/cpufreq.c | 3 +++
-> >  1 file changed, 3 insertions(+)
-> > 
-> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> > index 00a00cd..63d6efb 100644
-> > --- a/drivers/cpufreq/cpufreq.c
-> > +++ b/drivers/cpufreq/cpufreq.c
-> > @@ -65,6 +65,7 @@ static bool suitable_policy(struct cpufreq_policy *policy, bool active)
-> >  static struct cpufreq_policy *next_policy(struct cpufreq_policy *policy,
-> >  					  bool active)
-> >  {
-> > +	lockdep_assert_held(&cpufreq_driver_lock);
-> >  	do {
-> >  		policy = list_next_entry(policy, policy_list);
-> >  
-> > @@ -80,6 +81,7 @@ static struct cpufreq_policy *first_policy(bool active)
-> >  {
-> >  	struct cpufreq_policy *policy;
-> >  
-> > +	lockdep_assert_held(&cpufreq_driver_lock);
+On Tue, Jan 12, 2016 at 11:21:25AM +0000, Juri Lelli wrote:
+> I tried to see if something like for_each_domain() can be done, but here
+> we use list_for_each_entry() macro. Peter, do you mean something like
+> the following?
 > 
-> Because both first_policy() and next_policy() are parts of
-> for_each_suitable_policy() macro, checking this in first_policy() is
-> sufficient. next_policy() isn't designed to be used by any other code.
-> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 78b1e2f..1a847a6 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -39,6 +39,7 @@
+>  static LIST_HEAD(cpufreq_governor_list);
+>  static DEFINE_MUTEX(cpufreq_governor_mutex);
+>  #define for_each_governor(__governor)				\
+> +	lockdep_assert_held(&cpufreq_governor_mutex);		\
+>  	list_for_each_entry(__governor, &cpufreq_governor_list, governor_list)
 
-But next_policy is called multiple times as part of
-for_each_suitable_policy().  What if someone thinks she/he can release
-cpufreq_driver_lock inside for_each_(in)active_policy() loop? Not that
-it makes sense, but don't you think it could happen?
+That fails for things like:
 
-> >  	/* No policies in the list */
-> >  	if (list_empty(&cpufreq_policy_list))
-> >  		return NULL;
-> > @@ -2430,6 +2432,7 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
-> >  	if (ret)
-> >  		goto err_boost_unreg;
-> >  
-> > +	lockdep_assert_held(&cpufreq_driver_lock);
-> 
-> Why do you need a cpufreq_driver_lock here? And the above change
-> should generate a lockdep here as the lock isn't taken right now.
-> 
+	if (blah)
+		for_each_governor(...) {
+		}
 
-Because you are checking cpufreq_policy_list to see if it's empty. And
-it generates a lockdep warning, yes; fixed by next patch. Maybe putting
-fixes before warnings, as you are suggesting, is better.
+which looks like valid C -- even though our Coding Style says the if
+should have { } on.
 
-Thanks,
+I was thinking of either open coding the for statement and adding it to
+the first statement like:
 
-- Juri
+	#define for_each_governor(__g) \
+		for (_g = list_first_entry(&cpufreq_governor_list, typeof(*_g), governor_list, lockdep_assert_held(), \
+		     ..... )
 
-> >  	if (!(cpufreq_driver->flags & CPUFREQ_STICKY) &&
-> >  	    list_empty(&cpufreq_policy_list)) {
-> >  		/* if all ->init() calls failed, unregister */
-> > -- 
-> > 2.2.2
-> 
-> -- 
-> viresh
-> 
+Or use something like this:
+
+  lkml.kernel.org/r/20150422154212.GE3007@worktop.Skamania.guest
+
+	#define for_each_governor(_g) \
+		list_for_each_entry(_g, &cpufreq_governor_list, governor_list)
+			if (lockdep_assert_held(..), false)
+				;
+			else
+
+Which should preserve C syntax rules.
