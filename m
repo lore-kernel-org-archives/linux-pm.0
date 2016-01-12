@@ -1,34 +1,81 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC PATCH 16/19] cpufreq: hold policy->rwsem across
- CPUFREQ_GOV_POLICY_EXIT
-Date: Tue, 12 Jan 2016 16:39:55 +0530
-Message-ID: <20160112110955.GH1084@ubuntu>
-References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
- <1452533760-13787-17-git-send-email-juri.lelli@arm.com>
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH RESEND v4 4/4] cpufreq: powernv: Add sysfs attributes to
+ show throttle stats
+Date: Tue, 12 Jan 2016 16:43:01 +0530
+Message-ID: <20160112111301.GB4187@in.ibm.com>
+References: <1452594267-12844-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <1452594267-12844-5-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Reply-To: ego@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from e18.ny.us.ibm.com ([129.33.205.208]:43442 "EHLO
+	e18.ny.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752906AbcALLNK (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jan 2016 06:13:10 -0500
+Received: from localhost
+	by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+	for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
+	Tue, 12 Jan 2016 06:13:10 -0500
 Content-Disposition: inline
-In-Reply-To: <1452533760-13787-17-git-send-email-juri.lelli@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, rjw@rjwysocki.net, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
+In-Reply-To: <1452594267-12844-5-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, pc@us.ibm.com, anton@samba.org, ego@linux.vnet.ibm.com, shreyas@linux.vnet.ibm.com
 
-On 11-01-16, 17:35, Juri Lelli wrote:
-> There are no good reasons why policy->rwsem cannot be hold across calls to
-> __cpufreq_governor with CPUFREQ_GOV_POLICY_EXIT event.
-> 
-> Remove {up,down}_write across such call sites. This also verify assertion
-> that policy->rwsem is always hold when calling into __cpufreq_governor.
+Hi Shilpa,
 
-Test on X86 with prove_locking etc enabled.. and try running tests
-from my cpufreq-test repo. There were real concerns. Over that, I have
-identified the issue completely, as to why the ABBA dependency I
-mentioned earlier is there. You can find that in the branch I shared
-with you earlier.
+On Tue, Jan 12, 2016 at 04:24:27AM -0600, Shilpasri G Bhat wrote:
 
-commit 57714d5b1778 ("cpufreq: Access governor's sysfs attributes without 'policy->rwsem'")
+> +static inline int get_chip_index(struct kobject *kobj)
 
--- 
-viresh
+Probably have "get_chip_index(int id)". See the reason below.
+> +{
+> +	int i, id;
+> +
+> +	i = kstrtoint(kobj->name + 4, 0, &id);
+> +	if (i)
+> +		return i;
+> +
+> +	for (i = 0; i < nr_chips; i++)
+> +		if (chips[i].id == id)
+> +			return i;
+
+This pattern to obtain a chip index from the chip id is repeated in
+multiple place inside this file. Might be worthwhile to move this to a
+helper function, i.e get_chip_index(id)!
+
+> +	return -EINVAL;
+> +}
+> +
+> +static ssize_t throttle_freq_show(struct kobject *kobj,
+> +				  struct kobj_attribute *attr, char *buf)
+> +{
+> +	int i, count = 0, id;
+> + 
+        We obtain the id from kobj here and then obtain the index from
+	id via the function below.
+	
+
+> +	id = get_chip_index(kobj);
+
+
+> +	if (id < 0)
+> +		return id;
+> +
+> +	for (i = 0; i < powernv_pstate_info.nr_pstates; i++)
+> +		count += sprintf(&buf[count], "%d %d\n",
+> +			       powernv_freqs[i].frequency,
+> +			       chips[id].pstate_stat[i]);
+> +
+> +	return count;
+> +}
+> +
+> +static struct kobj_attribute attr_throttle_frequencies =
+> +__ATTR(throttle_frequencies, 0444, throttle_freq_show, NULL);
+> +
+--
+Thanks and Regards
+gautham.
+
