@@ -1,57 +1,60 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: Re: [PATCH v3 22/22] thermal/intel_powerclamp: Convert the kthread
- to kthread worker API
-Date: Tue, 12 Jan 2016 08:20:21 -0800
-Message-ID: <20160112082021.6a28dc66@icelake>
-References: <1447853127-3461-1-git-send-email-pmladek@suse.com>
-	<1447853127-3461-23-git-send-email-pmladek@suse.com>
-	<20160107115531.34279a9b@icelake>
-	<20160108164931.GT3178@pathway.suse.cz>
-	<20160111181718.0ace4a58@yairi>
-	<20160112101129.GN731@pathway.suse.cz>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC PATCH 04/19] cpufreq: bring data structures close to their locks
+Date: Tue, 12 Jan 2016 17:47:55 +0100
+Message-ID: <2217844.KCH1R2Lmsr@vostro.rjw.lan>
+References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com> <1926777.mcNa33svoL@vostro.rjw.lan> <20160112082718.GN6344@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:16360 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752671AbcALQVe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 12 Jan 2016 11:21:34 -0500
-In-Reply-To: <20160112101129.GN731@pathway.suse.cz>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160112082718.GN6344@twins.programming.kicks-ass.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Juri Lelli <juri.lelli@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: Petr Mladek <pmladek@suse.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Steven Rostedt <rostedt@goodmis.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Josh Triplett <josh@joshtriplett.org>, Thomas Gleixner <tglx@linutronix.de>, Linus Torvalds <torvalds@linux-foundation.org>, Jiri Kosina <jkosina@suse.cz>, Borislav Petkov <bp@suse.de>, Michal Hocko <mhocko@suse.cz>, linux-mm@kvack.org, Vlastimil Babka <vbabka@suse.cz>, linux-api@vger.kernel.org, linux-kernel@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, jacob.jun.pan@linux.intel.com
 
-On Tue, 12 Jan 2016 11:11:29 +0100
-Petr Mladek <pmladek@suse.com> wrote:
+On Tuesday, January 12, 2016 09:27:18 AM Peter Zijlstra wrote:
+> On Tue, Jan 12, 2016 at 12:03:39AM +0100, Rafael J. Wysocki wrote:
+> > On Monday, January 11, 2016 11:05:28 PM Peter Zijlstra wrote:
+> > > On Mon, Jan 11, 2016 at 05:35:45PM +0000, Juri Lelli wrote:
+> > > > +/**
+> > > > + * The "cpufreq driver" - the arch- or hardware-dependent low
+> > > > + * level driver of CPUFreq support, and its spinlock (cpufreq_driver_lock).
+> > > > + * This lock also protects cpufreq_cpu_data array and cpufreq_policy_list.
+> > > > + */
+> > > > +static struct cpufreq_driver *cpufreq_driver;
+> > > > +static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
+> > > >  static LIST_HEAD(cpufreq_policy_list);
+> > > > +static DEFINE_RWLOCK(cpufreq_driver_lock);
+> > > 
+> > > Part of my suggestion was to fold the per-cpu data of cpufreq_cpu_data
+> > > into struct cpufreq_driver.
+> > > 
+> > > That way each cpufreq_driver will have its own copy and there'd be only
+> > > the one global pointer to swizzle. Something very well suited to RCU.
+> > 
+> > Well, I'm not really sure reworking all that is necessary.
+> > 
+> > What we need is to be able to call something analogous to dbs_timer_handler()
+> > from the scheduler and a driver callback from there (if present).  For that,
+> > it should be sufficient to have a pointer to that callback (that may be set
+> > upon driver registration) protected by RCU (or should that be sched RCU
+> > rather?) if I'm not missing anything.
+> 
+> But such a callback will invariably want to use the per-cpu state.
 
-> > > BTW: I wonder if the original code correctly handle freezing after
-> > > the schedule_timeout(). It does not call try_to_freeze()
-> > > there and the forced idle states might block freezing.
-> > > I think that the small overhead of kthread works is worth
-> > > solving such bugs. It makes it easier to maintain these
-> > > sleeping states.  
-> > it is in a while loop, so try_to_freeze() gets called. Am I missing
-> > something?  
-> 
-> But it might take some time until try_to_freeze() is called.
-> If I get it correctly. try_to_freeze_tasks() wakes freezable
-> tasks to get them into the fridge. If clamp_thread() is waken
-> from that schedule_timeout_interruptible(), it still might inject
-> the idle state before calling try_to_freeze(). It means that freezer
-> needs to wait "quite" some time until the kthread ends up in the
-> fridge.
-> 
-> Hmm, even my conversion does not solve this entirely. We might
-> need to call freezing(current) in the
-> 
->    while (time_before(jiffies, target_jiffies)) {
-> 
-> cycle. And break injecting the idle state when freezing is requested.
+Which likely is the driver's own per-cpu state, not the policy object itself.
 
-The injection time for each period is very short, default 6ms. While on
-the other side the default freeze timeout is 20 sec. So I think task
-freeze can wait :)
-i.e.
-unsigned int __read_mostly freeze_timeout_msecs = 20 * MSEC_PER_SEC;
+> And now you have two pointers, one for the driver and one for the per-cpu
+> state. Keeping that in sync is a pain.
+
+Well, I basically need to guarantee that all of the pointers involved are set
+and the data structures are valid when the driver pointer is set.
+
+> Moving the per-cpu data into the driver solves that trivially.
+
+It doesn't really address the case when the driver has its own per-cpu state
+as I said above.
+
+Thanks,
+Rafael
