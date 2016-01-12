@@ -1,107 +1,62 @@
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Subject: Re: [RFC PATCH 2/2] sched: idle: IRQ based next prediction for idle
- period
-Date: Tue, 12 Jan 2016 14:27:32 -0500 (EST)
-Message-ID: <alpine.LFD.2.20.1601121410250.7882@knanqh.ubzr>
-References: <1452093774-17831-1-git-send-email-daniel.lezcano@linaro.org> <1452093774-17831-3-git-send-email-daniel.lezcano@linaro.org> <alpine.LFD.2.20.1601061156120.1652@knanqh.ubzr> <568E8782.9020401@linaro.org>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH 01/17] PM / OPP: get/put regulators from OPP core
+Date: Tue, 12 Jan 2016 11:32:13 -0800
+Message-ID: <20160112193213.GY22188@codeaurora.org>
+References: <cover.1450777582.git.viresh.kumar@linaro.org>
+ <8731ff871e0eedfb08b9428af8da21b25d1ad283.1450777582.git.viresh.kumar@linaro.org>
+ <20160111232118.GG22188@codeaurora.org>
+ <20160112030543.GG1084@ubuntu>
+ <20160112052346.GL1084@ubuntu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qg0-f45.google.com ([209.85.192.45]:32954 "EHLO
-	mail-qg0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751941AbcALT1g (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jan 2016 14:27:36 -0500
-Received: by mail-qg0-f45.google.com with SMTP id b35so307019974qge.0
-        for <linux-pm@vger.kernel.org>; Tue, 12 Jan 2016 11:27:35 -0800 (PST)
-In-Reply-To: <568E8782.9020401@linaro.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:41637 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750708AbcALTcQ (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jan 2016 14:32:16 -0500
+Content-Disposition: inline
+In-Reply-To: <20160112052346.GL1084@ubuntu>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: tglx@linutronix.de, peterz@infradead.org, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, vincent.guittot@linaro.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com
 
-On Thu, 7 Jan 2016, Daniel Lezcano wrote:
-
-> On 01/06/2016 06:40 PM, Nicolas Pitre wrote:
-> > On Wed, 6 Jan 2016, Daniel Lezcano wrote:
-> >
-> > > Many IRQs are quiet most of the time, or they tend to come in bursts of
-> > > fairly equal time intervals within each burst. It is therefore possible
-> > > to detect those IRQs with stable intervals and guestimate when the next
-> > > IRQ event is most likely to happen.
-> > >
-> > > Examples of such IRQs may include audio related IRQs where the FIFO size
-> > > and/or DMA descriptor size with the sample rate create stable intervals,
-> > > block devices during large data transfers, etc.  Even network streaming
-> > > of multimedia content creates patterns of periodic network interface IRQs
-> > > in some cases.
-> > >
-> > > This patch adds code to track the mean interval and variance for each IRQ
-> > > over a window of time intervals between IRQ events. Those statistics can
-> > > be used to assist cpuidle in selecting the most appropriate sleep state
-> > > by predicting the most likely time for the next interrupt.
-> > >
-> > > Because the stats are gathered in interrupt context, the core computation
-> > > is as light as possible.
-> > >
-> > > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> >
-> > There are still a few problems with this patch.
-> >
-> > Please see comments below.
+On 01/12, Viresh Kumar wrote:
+> On 12-01-16, 08:35, Viresh Kumar wrote:
+> > On 11-01-16, 15:21, Stephen Boyd wrote:
+> > > Is there a reason we capitalize regulator?
+> > 
 > 
-> [ ... ]
+> Something went wrong, I have updated the code correctly. Let me paste
+> it again..
 > 
-> > > +/**
-> > > + * stats_variance - compute the variance
-> > > + *
-> > > + * @s: the statistic structure
-> > > + *
-> > > + * Returns an u64 corresponding to the variance, or zero if there is
-> > > + * no data
-> > > + */
-> > > +static u64 stats_variance(struct stats *s, u32 mean)
-> > > +{
-> > > +	int i;
-> > > +	u64 variance = 0;
-> > > +
-> > > +	/*
-> > > +	 * The variance is the sum of the squared difference to the
-> > > +	 * average divided by the number of elements.
-> > > +	 */
-> > > +	for (i = 0; i < STATS_NR_VALUES; i++) {
-> > > +		s32 diff = s->values[i] - mean;
-> > > +		variance += (u64)diff * diff;
-> >
-> > Strictly speaking, diff should be casted to s64 as it is a signed value
-> > that may actually be negative.  Because of the strange C type promotion
-> > rules, the generated code appears correct (at least on ARM), but it
-> > would be clearer to use s64 anyway.
+> -------------------------8<-------------------------
 > 
-> I don't get the connection in your explanation of why it should be a s64. It
-> is already a signed s32, s->values[] are s32 and mean is u32.
+> Subject: [PATCH] PM / OPP: get/put regulators from OPP core
 > 
-> What would be the benefit to convert diff to s64 ?
-
-Suppose diff ends up being -1. Normally, -1 * -1 = 1.
-
-Now you cast the first term to a 64-bit value so the result of the 
-product becomes a 64-bit value to avoid overflows.  However you cast it 
-to an _unsigned_ 64-bit value.  Therefore you could expect something 
-like 0x00000000ffffffff * -1 would take place and that wouldn't produce 
-1 for result at all.
-
-Yet, the C standard is weird and completely unintuitive sometimes.  
-Here is an example of such a time.  Even though you cast the first term 
-to an unsigned value, the compiler is performing sign extension 
-nevertheless.  So casting to u64 or s64 doesn't change anything in 
-practice.  But for a human reading the code, using s64 will be more 
-intuitive.
-
-> > The product will end up being positive in all cases of course so
-> > variance may remain as a u64.
-> >
+> The allows the OPP core to request/free the regulator resource, attached
+> to a device OPP. The regulator device is fetched using device node and
+> name of the device.
 > 
-> [ ... ]
+> For example, a cpu0 device node needs to look like this:
+> 		cpu0: cpu@900 {
+> 			device_type = "cpu";
+> 			compatible = "arm,cortex-a9";
+> 			reg = <0x900>;
+> 			cpu0-supply = <&varm>;
+> 			...
+> 		};
+> 
+> This will work for both OPP-v1 and v2 bindings.
+> 
+> This is a preliminary step in moving the OPP switching logic into the
+> OPP core.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
 
+Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 
-Nicolas
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
