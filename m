@@ -1,60 +1,47 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC PATCH 07/19] cpufreq: assert locking when accessing
- cpufreq_governor_list
-Date: Tue, 12 Jan 2016 15:31:22 +0530
-Message-ID: <20160112100122.GY1084@ubuntu>
+Subject: Re: [RFC PATCH 08/19] cpufreq: fix warning for cpufreq_init_policy
+ unlocked access to cpufreq_governor_list
+Date: Tue, 12 Jan 2016 15:39:45 +0530
+Message-ID: <20160112100945.GZ1084@ubuntu>
 References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
- <1452533760-13787-8-git-send-email-juri.lelli@arm.com>
+ <1452533760-13787-9-git-send-email-juri.lelli@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f170.google.com ([209.85.192.170]:32939 "EHLO
-	mail-pf0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933472AbcALKB1 (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jan 2016 05:01:27 -0500
-Received: by mail-pf0-f170.google.com with SMTP id e65so60708859pfe.0
-        for <linux-pm@vger.kernel.org>; Tue, 12 Jan 2016 02:01:26 -0800 (PST)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1452533760-13787-8-git-send-email-juri.lelli@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <1452533760-13787-9-git-send-email-juri.lelli@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Juri Lelli <juri.lelli@arm.com>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, rjw@rjwysocki.net, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
+List-Id: linux-pm@vger.kernel.org
 
 On 11-01-16, 17:35, Juri Lelli wrote:
-> @@ -2025,6 +2027,7 @@ int cpufreq_register_governor(struct cpufreq_governor *governor)
->  	err = -EBUSY;
->  	if (!find_governor(governor->name)) {
->  		err = 0;
-> +		lockdep_assert_held(&cpufreq_governor_mutex);
->  		list_add(&governor->governor_list, &cpufreq_governor_list);
->  	}
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 7dae7f3..d065435 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -969,6 +969,7 @@ static int cpufreq_init_policy(struct cpufreq_policy *policy)
+>  
+>  	memcpy(&new_policy, policy, sizeof(*policy));
+>  
+> +	mutex_lock(&cpufreq_governor_mutex);
+>  	/* Update governor of new_policy to the governor used before hotplug */
+>  	gov = find_governor(policy->last_governor);
 
-Why here? This is how the routine looks like:
+You should take the lock within find_governor() instead, i.e.  around
+the while loop.
 
-int cpufreq_register_governor(struct cpufreq_governor *governor)
-{
-	int err;
-
-	if (!governor)
-		return -EINVAL;
-
-	if (cpufreq_disabled())
-		return -ENODEV;
-
-	mutex_lock(&cpufreq_governor_mutex);
-
-	governor->initialized = 0;
-	err = -EBUSY;
-	if (!find_governor(governor->name)) {
-		err = 0;
-		list_add(&governor->governor_list, &cpufreq_governor_list);
-	}
-
-	mutex_unlock(&cpufreq_governor_mutex);
-	return err;
-}
-
+>  	if (gov)
+> @@ -976,6 +977,7 @@ static int cpufreq_init_policy(struct cpufreq_policy *policy)
+>  				policy->governor->name, policy->cpu);
+>  	else
+>  		gov = CPUFREQ_DEFAULT_GOVERNOR;
+> +	mutex_unlock(&cpufreq_governor_mutex);
+>  
+>  	new_policy.governor = gov;
+>  
+> -- 
+> 2.2.2
 
 -- 
 viresh
