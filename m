@@ -1,102 +1,107 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: Re: [RFC PATCH V2 3/8] genirq: Add runtime power management support
- for IRQ chips
-Date: Tue, 12 Jan 2016 20:40:42 +0200
-Message-ID: <569548AA.8090903@ti.com>
-References: <1450349309-8107-1-git-send-email-jonathanh@nvidia.com>
- <1450349309-8107-4-git-send-email-jonathanh@nvidia.com>
+From: Nicolas Pitre <nicolas.pitre@linaro.org>
+Subject: Re: [RFC PATCH 2/2] sched: idle: IRQ based next prediction for idle
+ period
+Date: Tue, 12 Jan 2016 14:27:32 -0500 (EST)
+Message-ID: <alpine.LFD.2.20.1601121410250.7882@knanqh.ubzr>
+References: <1452093774-17831-1-git-send-email-daniel.lezcano@linaro.org> <1452093774-17831-3-git-send-email-daniel.lezcano@linaro.org> <alpine.LFD.2.20.1601061156120.1652@knanqh.ubzr> <568E8782.9020401@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1450349309-8107-4-git-send-email-jonathanh@nvidia.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Jiang Liu <jiang.liu@linux.intel.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Soren Brinkmann <soren.brinkmann@xilinx.com>
-Cc: Kevin Hilman <khilman@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Lars-Peter Clausen <lars@metafoo.de>, Linus Walleij <linus.walleij@linaro.org>, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qg0-f45.google.com ([209.85.192.45]:32954 "EHLO
+	mail-qg0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751941AbcALT1g (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jan 2016 14:27:36 -0500
+Received: by mail-qg0-f45.google.com with SMTP id b35so307019974qge.0
+        for <linux-pm@vger.kernel.org>; Tue, 12 Jan 2016 11:27:35 -0800 (PST)
+In-Reply-To: <568E8782.9020401@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: tglx@linutronix.de, peterz@infradead.org, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, vincent.guittot@linaro.org
 
-Hi Jon,
+On Thu, 7 Jan 2016, Daniel Lezcano wrote:
 
-On 12/17/2015 12:48 PM, Jon Hunter wrote:
-> Some IRQ chips may be located in a power domain outside of the CPU
-> subsystem and hence will require device specific runtime power management.
-> In order to support such IRQ chips, add a pointer for a device structure
-> to the irq_chip structure, and if this pointer is populated by the IRQ
-> chip driver and the flag CHIP_HAS_RPM is set, then the pm_runtime_get/put
-> APIs for this chip will be called when an IRQ is requested/freed,
-> respectively.
+> On 01/06/2016 06:40 PM, Nicolas Pitre wrote:
+> > On Wed, 6 Jan 2016, Daniel Lezcano wrote:
+> >
+> > > Many IRQs are quiet most of the time, or they tend to come in bursts of
+> > > fairly equal time intervals within each burst. It is therefore possible
+> > > to detect those IRQs with stable intervals and guestimate when the next
+> > > IRQ event is most likely to happen.
+> > >
+> > > Examples of such IRQs may include audio related IRQs where the FIFO size
+> > > and/or DMA descriptor size with the sample rate create stable intervals,
+> > > block devices during large data transfers, etc.  Even network streaming
+> > > of multimedia content creates patterns of periodic network interface IRQs
+> > > in some cases.
+> > >
+> > > This patch adds code to track the mean interval and variance for each IRQ
+> > > over a window of time intervals between IRQ events. Those statistics can
+> > > be used to assist cpuidle in selecting the most appropriate sleep state
+> > > by predicting the most likely time for the next interrupt.
+> > >
+> > > Because the stats are gathered in interrupt context, the core computation
+> > > is as light as possible.
+> > >
+> > > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> >
+> > There are still a few problems with this patch.
+> >
+> > Please see comments below.
 > 
-> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
-
-I've tried to test these patches with OMAP GPIO and I see it works, in general.
-"In general" - because OMAP GPIO has some code which is expected to be used
-very late during suspend or when entering deep CPUIdle states, so I can't use
-this approach "out-of-the-box" until i find the way to sort it out.
-
-Hope some one else can try to test it with GPIO. Soren?
-
-> ---
->   include/linux/irq.h    |  4 ++++
->   kernel/irq/internals.h | 24 ++++++++++++++++++++++++
->   kernel/irq/manage.c    |  7 +++++++
->   3 files changed, 35 insertions(+)
+> [ ... ]
 > 
-> diff --git a/include/linux/irq.h b/include/linux/irq.h
-> index 3c1c96786248..7a61a7f76177 100644
-> --- a/include/linux/irq.h
-> +++ b/include/linux/irq.h
-
-...
-
->   
-> diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-> index 2a429b061171..8a96e4f1e985 100644
-> --- a/kernel/irq/manage.c
-> +++ b/kernel/irq/manage.c
-> @@ -1116,6 +1116,10 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
->   	if (!try_module_get(desc->owner))
->   		return -ENODEV;
->   
-> +	ret = chip_pm_get(desc);
-> +	if (ret < 0)
-> +		return ret;
-> +
->   	new->irq = irq;
->   
->   	/*
-> @@ -1400,6 +1404,7 @@ out_thread:
->   		put_task_struct(t);
->   	}
->   out_mput:
-> +	chip_pm_put(desc);
->   	module_put(desc->owner);
->   	return ret;
->   }
-
-Here I still think, that for this solution to be complete It might be good to add additional
-API to request/free chained IRQs. This is not usual case for GPIO drivers,
-but with AGIC it seems possible. If no objection I can do rfc.
-
-
-> @@ -1513,6 +1518,7 @@ static struct irqaction *__free_irq(unsigned int irq, void *dev_id)
->   		}
->   	}
->   
-> +	chip_pm_put(desc);
->   	module_put(desc->owner);
->   	kfree(action->secondary);
->   	return action;
-> @@ -1799,6 +1805,7 @@ static struct irqaction *__free_percpu_irq(unsigned int irq, void __percpu *dev_
->   
->   	unregister_handler_proc(irq, action);
->   
-> +	chip_pm_put(desc);
->   	module_put(desc->owner);
->   	return action;
->   
+> > > +/**
+> > > + * stats_variance - compute the variance
+> > > + *
+> > > + * @s: the statistic structure
+> > > + *
+> > > + * Returns an u64 corresponding to the variance, or zero if there is
+> > > + * no data
+> > > + */
+> > > +static u64 stats_variance(struct stats *s, u32 mean)
+> > > +{
+> > > +	int i;
+> > > +	u64 variance = 0;
+> > > +
+> > > +	/*
+> > > +	 * The variance is the sum of the squared difference to the
+> > > +	 * average divided by the number of elements.
+> > > +	 */
+> > > +	for (i = 0; i < STATS_NR_VALUES; i++) {
+> > > +		s32 diff = s->values[i] - mean;
+> > > +		variance += (u64)diff * diff;
+> >
+> > Strictly speaking, diff should be casted to s64 as it is a signed value
+> > that may actually be negative.  Because of the strange C type promotion
+> > rules, the generated code appears correct (at least on ARM), but it
+> > would be clearer to use s64 anyway.
 > 
+> I don't get the connection in your explanation of why it should be a s64. It
+> is already a signed s32, s->values[] are s32 and mean is u32.
+> 
+> What would be the benefit to convert diff to s64 ?
+
+Suppose diff ends up being -1. Normally, -1 * -1 = 1.
+
+Now you cast the first term to a 64-bit value so the result of the 
+product becomes a 64-bit value to avoid overflows.  However you cast it 
+to an _unsigned_ 64-bit value.  Therefore you could expect something 
+like 0x00000000ffffffff * -1 would take place and that wouldn't produce 
+1 for result at all.
+
+Yet, the C standard is weird and completely unintuitive sometimes.  
+Here is an example of such a time.  Even though you cast the first term 
+to an unsigned value, the compiler is performing sign extension 
+nevertheless.  So casting to u64 or s64 doesn't change anything in 
+practice.  But for a human reading the code, using s64 will be more 
+intuitive.
+
+> > The product will end up being positive in all cases of course so
+> > variance may remain as a u64.
+> >
+> 
+> [ ... ]
 
 
--- 
-regards,
--grygorii
+Nicolas
