@@ -1,49 +1,78 @@
-From: Bai Ping <ping.bai@nxp.com>
-Subject: [PATCH] thermal: common: free the mem allocated when out of use
-Date: Tue, 12 Jan 2016 18:37:23 +0800
-Message-ID: <1452595043-7239-1-git-send-email-ping.bai@nxp.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC PATCH 13/19] cpufreq: fix locking of policy->rwsem in
+ cpufreq_offline_prepare
+Date: Tue, 12 Jan 2016 16:24:47 +0530
+Message-ID: <20160112105447.GE1084@ubuntu>
+References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
+ <1452533760-13787-14-git-send-email-juri.lelli@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-am1on0086.outbound.protection.outlook.com ([157.56.112.86]:17713
-	"EHLO emea01-am1-obe.outbound.protection.outlook.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933125AbcALKvl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-	Tue, 12 Jan 2016 05:51:41 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1452533760-13787-14-git-send-email-juri.lelli@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, rjw@rjwysocki.net, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: edubezval@gmail.com, rui.zhang@intel.com
-Cc: linux-pm@vger.kernel.org
 
-The memory resource allocated for thermal_zone_device
-should be freed when thermal_zone_device registers failed
-or the thermal_zone_device unregistered.
+On 11-01-16, 17:35, Juri Lelli wrote:
+> There are paths in cpufreq_offline_prepare where policy is used, but its
+> rwsem is not held.
+> 
+> Fix it.
+> 
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Juri Lelli <juri.lelli@arm.com>
+> ---
+>  drivers/cpufreq/cpufreq.c | 8 ++++++--
+>  1 file changed, 6 insertions(+), 2 deletions(-)
 
-Signed-off-by: Bai Ping <ping.bai@nxp.com>
----
- drivers/thermal/thermal_core.c | 2 ++
- 1 file changed, 2 insertions(+)
+I know the locking in general in cpufreq core is poor. We recently
+fixed lots of issues in governors ..
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 7f7a3ca..1a9cf31 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -2012,6 +2012,7 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
- unregister:
- 	release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
- 	device_unregister(&tz->device);
-+	kfree(tz);
- 	return ERR_PTR(result);
- }
- EXPORT_SYMBOL_GPL(thermal_zone_device_register);
-@@ -2081,6 +2082,7 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
- 	idr_destroy(&tz->idr);
- 	mutex_destroy(&tz->lock);
- 	device_unregister(&tz->device);
-+	kfree(tz);
- 	return;
- }
- EXPORT_SYMBOL_GPL(thermal_zone_device_unregister);
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 2c7cc6c73..91158b0 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1332,13 +1332,13 @@ static void cpufreq_offline_prepare(unsigned int cpu)
+>  		return;
+>  	}
+>  
+> +	down_write(&policy->rwsem);
+>  	if (has_target()) {
+>  		int ret = __cpufreq_governor(policy, CPUFREQ_GOV_STOP);
+>  		if (ret)
+>  			pr_err("%s: Failed to stop governor\n", __func__);
+>  	}
+>  
+> -	down_write(&policy->rwsem);
+>  	cpumask_clear_cpu(cpu, policy->cpus);
+>  
+>  	if (policy_is_inactive(policy)) {
+> @@ -1356,12 +1356,16 @@ static void cpufreq_offline_prepare(unsigned int cpu)
+>  	/* Start governor again for active policy */
+>  	if (!policy_is_inactive(policy)) {
+
+Why shouldn't this be under the lock?
+
+>  		if (has_target()) {
+> -			int ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
+> +			int ret;
+> +
+> +			down_write(&policy->rwsem);
+> +			ret = __cpufreq_governor(policy, CPUFREQ_GOV_START);
+>  			if (!ret)
+>  				ret = __cpufreq_governor(policy, CPUFREQ_GOV_LIMITS);
+>  
+>  			if (ret)
+>  				pr_err("%s: Failed to start governor\n", __func__);
+> +			up_write(&policy->rwsem);
+>  		}
+>  	} else if (cpufreq_driver->stop_cpu) {
+>  		cpufreq_driver->stop_cpu(policy);
+
+And this ?
+
 -- 
-1.9.1
-
+viresh
