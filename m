@@ -1,105 +1,106 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC PATCH 04/19] cpufreq: bring data structures close to their
- locks
-Date: Tue, 12 Jan 2016 16:58:43 +0100
-Message-ID: <20160112155843.GL6357@twins.programming.kicks-ass.net>
-References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
- <1452533760-13787-5-git-send-email-juri.lelli@arm.com>
- <20160111220708.GK6344@twins.programming.kicks-ass.net>
- <20160112092752.GV1084@ubuntu>
- <20160112112125.GA7015@e106622-lin>
- <20160112115843.GD6357@twins.programming.kicks-ass.net>
- <20160112123651.GD7015@e106622-lin>
- <20160112152601.GA18734@e106622-lin>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [RFC PATCH 2/2] sched: idle: IRQ based next prediction for idle
+ period
+Date: Tue, 12 Jan 2016 17:04:36 +0100
+Message-ID: <56952414.2000800@linaro.org>
+References: <1452093774-17831-1-git-send-email-daniel.lezcano@linaro.org>
+ <1452093774-17831-3-git-send-email-daniel.lezcano@linaro.org>
+ <alpine.DEB.2.11.1601081631380.3575@nanos> <5694F490.3040300@linaro.org>
+ <alpine.DEB.2.11.1601121441330.3575@nanos> <56950ACC.4090001@linaro.org>
+ <alpine.DEB.2.11.1601121523070.3575@nanos> <5695133A.8090301@linaro.org>
+ <alpine.DEB.2.11.1601121609460.3575@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8;
+	format=flowed
 Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([198.137.202.9]:46144 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750936AbcALP6u (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jan 2016 10:58:50 -0500
-Content-Disposition: inline
-In-Reply-To: <20160112152601.GA18734@e106622-lin>
+Received: from mail-wm0-f54.google.com ([74.125.82.54]:38677 "EHLO
+	mail-wm0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761190AbcALQEj (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jan 2016 11:04:39 -0500
+Received: by mail-wm0-f54.google.com with SMTP id b14so327957518wmb.1
+        for <linux-pm@vger.kernel.org>; Tue, 12 Jan 2016 08:04:39 -0800 (PST)
+In-Reply-To: <alpine.DEB.2.11.1601121609460.3575@nanos>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: peterz@infradead.org, rafael@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nicolas.pitre@linaro.org, vincent.guittot@linaro.org
 
-On Tue, Jan 12, 2016 at 03:26:01PM +0000, Juri Lelli wrote:
-> > > 	#define for_each_governor(_g) \
-> > > 		list_for_each_entry(_g, &cpufreq_governor_list, governor_list)
-> > > 			if (lockdep_assert_held(..), false)
-> > > 				;
-> > > 			else
-> > >=20
-> > > Which should preserve C syntax rules.
-> > >=20
-> >=20
-> > Oh, nice this! I'll try it.
-> >=20
->=20
-> This second approach doesn't really play well with lockdep_assert_hel=
-d
-> definition, right?
+On 01/12/2016 04:12 PM, Thomas Gleixner wrote:
+> On Tue, 12 Jan 2016, Daniel Lezcano wrote:
+>> On 01/12/2016 03:26 PM, Thomas Gleixner wrote:
+>>> You better implement the switching part in the cpuidle core first, =
+i.e.
+>>> proper
+>>> callbacks when a governor is switched in/out. Then make use of this
+>>> switcheroo
+>>> right away. Doing it the other way round is just wrong.
+>>
+>> The problem is this code is not another governor but a 'predictor' w=
+here the
+>> scheduler will use the information to ask the cpuidle to go to a spe=
+cific idle
+>> state without going through the governor code, so into the governor'=
+s
+>> callbacks. It is on top of cpuidle. The scheduler will become the go=
+vernor.
+>>
+>> The current straightforward code, does the switch in the cpu_idle_lo=
+op
+>> idle_task's function:
+>>
+>> [ ... ]
+>>
+>> if (cpu_idle_force_poll || tick_check_broadcast_expired())
+>> 	cpu_idle_poll();
+>> else {
+>> 	if (sched_idle_enabled()) {
+>> 		int latency =3D pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+>> 		s64 duration =3D sched_idle_next_wakeup();
+>> 		sched_idle(duration, latency);
+>> 	} else {
+>> 		cpuidle_idle_call();
+>> 	}
+>> }
+>>
+>> Due to the complexity of the code, this first step introduce a mecha=
+nism to
+>> predict the next event and re-use it trivially in the idle task.
+>
+> This looks really wrong. Why on earth don't you implement a proper go=
+vernor
+> and just get rid of this extra hackery?
 
-Right, the below however makes it work, except:
+That is part of the ongoing work where we are integrating the different=
+=20
+PM subsystems with the scheduler in order have them collaborating=20
+together as asked by Ingo [1].
 
-=2E./kernel/sched/core.c: In function =E2=80=98scheduler_ipi=E2=80=99:
-=2E./kernel/sched/core.c:1831:32: warning: left-hand operand of comma e=
-xpression has no effect [-Wunused-value]
-  if (lockdep_assert_held(&lock), false)
+The idea is to get rid of the governors and let the scheduler to tell=20
+the Cpuidle framework : "I expect to sleep <x> nsec and I have a <y>
+nsec latency requirement" as stated by Peter Zijlstra [2].
 
-Which is of course correct and very much on purpose :/
+The code above could be not nice but I think it begins to do what is=20
+expecting Peter. It is an embryonic code and in order to prevent too=20
+much different topics for a single series, I posted the two first=20
+patches which provide the next event API as the foundations for the nex=
+t=20
+changes. How we integrate the 'next event' is a question I wanted to=20
+postpone in a different series of RFC patches.
 
----
+   -- Daniel
 
-diff --git a/include/linux/lockdep.h b/include/linux/lockdep.h
-index c57e424d914b..caf7a89643d8 100644
---- a/include/linux/lockdep.h
-+++ b/include/linux/lockdep.h
-@@ -362,9 +362,9 @@ extern void lock_unpin_lock(struct lockdep_map *loc=
-k);
-=20
- #define lockdep_depth(tsk)	(debug_locks ? (tsk)->lockdep_depth : 0)
-=20
--#define lockdep_assert_held(l)	do {				\
-+#define lockdep_assert_held(l)	({				\
- 		WARN_ON(debug_locks && !lockdep_is_held(l));	\
--	} while (0)
-+		(void)l; })
-=20
- #define lockdep_assert_held_once(l)	do {				\
- 		WARN_ON_ONCE(debug_locks && !lockdep_is_held(l));	\
-@@ -422,7 +422,7 @@ struct lock_class_key { };
-=20
- #define lockdep_depth(tsk)	(0)
-=20
--#define lockdep_assert_held(l)			do { (void)(l); } while (0)
-+#define lockdep_assert_held(l)			({ (void)l; })
- #define lockdep_assert_held_once(l)		do { (void)(l); } while (0)
-=20
- #define lockdep_recursing(tsk)			(0)
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 77d97a6fc715..f6f36217133d 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -1817,6 +1817,8 @@ void sched_ttwu_pending(void)
- 	raw_spin_unlock_irqrestore(&rq->lock, flags);
- }
-=20
-+raw_spinlock_t lock;
-+
- void scheduler_ipi(void)
- {
- 	/*
-@@ -1826,6 +1828,9 @@ void scheduler_ipi(void)
- 	 */
- 	preempt_fold_need_resched();
-=20
-+	if (lockdep_assert_held(&lock), false)
-+		;
-+
- 	if (llist_empty(&this_rq()->wake_list) && !got_nohz_idle_kick())
- 		return;
-=20
+[1] http://lwn.net/Articles/552885/
+[2] https://lkml.org/lkml/2013/11/11/353 (broken here is another archiv=
+e [3]
+[3] http://lkml.iu.edu/hypermail/linux/kernel/1311.1/01360.html
+
+
+--=20
+  <http://www.linaro.org/> Linaro.org =E2=94=82 Open source software fo=
+r ARM SoCs
+
+=46ollow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
