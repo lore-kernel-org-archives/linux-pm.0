@@ -1,55 +1,42 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC PATCH 04/19] cpufreq: bring data structures close to their
- locks
-Date: Tue, 12 Jan 2016 09:27:18 +0100
-Message-ID: <20160112082718.GN6344@twins.programming.kicks-ass.net>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC PATCH 01/19] cpufreq: do not expose cpufreq_governor_lock
+Date: Tue, 12 Jan 2016 14:26:19 +0530
+Message-ID: <20160112085619.GR1084@ubuntu>
 References: <1452533760-13787-1-git-send-email-juri.lelli@arm.com>
- <1452533760-13787-5-git-send-email-juri.lelli@arm.com>
- <20160111220528.GJ6344@twins.programming.kicks-ass.net>
- <1926777.mcNa33svoL@vostro.rjw.lan>
+ <1452533760-13787-2-git-send-email-juri.lelli@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from casper.infradead.org ([85.118.1.10]:52497 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761194AbcALI1W (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jan 2016 03:27:22 -0500
+Received: from mail-pa0-f50.google.com ([209.85.220.50]:34579 "EHLO
+	mail-pa0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934384AbcALI4X (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jan 2016 03:56:23 -0500
+Received: by mail-pa0-f50.google.com with SMTP id uo6so319923412pac.1
+        for <linux-pm@vger.kernel.org>; Tue, 12 Jan 2016 00:56:23 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <1926777.mcNa33svoL@vostro.rjw.lan>
+In-Reply-To: <1452533760-13787-2-git-send-email-juri.lelli@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Juri Lelli <juri.lelli@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, peterz@infradead.org, rjw@rjwysocki.net, mturquette@baylibre.com, steve.muckle@linaro.org, vincent.guittot@linaro.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
 
-On Tue, Jan 12, 2016 at 12:03:39AM +0100, Rafael J. Wysocki wrote:
-> On Monday, January 11, 2016 11:05:28 PM Peter Zijlstra wrote:
-> > On Mon, Jan 11, 2016 at 05:35:45PM +0000, Juri Lelli wrote:
-> > > +/**
-> > > + * The "cpufreq driver" - the arch- or hardware-dependent low
-> > > + * level driver of CPUFreq support, and its spinlock (cpufreq_driver_lock).
-> > > + * This lock also protects cpufreq_cpu_data array and cpufreq_policy_list.
-> > > + */
-> > > +static struct cpufreq_driver *cpufreq_driver;
-> > > +static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
-> > >  static LIST_HEAD(cpufreq_policy_list);
-> > > +static DEFINE_RWLOCK(cpufreq_driver_lock);
-> > 
-> > Part of my suggestion was to fold the per-cpu data of cpufreq_cpu_data
-> > into struct cpufreq_driver.
-> > 
-> > That way each cpufreq_driver will have its own copy and there'd be only
-> > the one global pointer to swizzle. Something very well suited to RCU.
+On 11-01-16, 17:35, Juri Lelli wrote:
+> From: Michael Turquette <mturquette@baylibre.com>
 > 
-> Well, I'm not really sure reworking all that is necessary.
+> Since commit 3a91b069eabf ("cpufreq: governor: Quit work-handlers early if
+> governor is stopped") cpufreq_governor_lock is not used anywhere outside
+> cpufreq.c. Make it static again.
 > 
-> What we need is to be able to call something analogous to dbs_timer_handler()
-> from the scheduler and a driver callback from there (if present).  For that,
-> it should be sufficient to have a pointer to that callback (that may be set
-> upon driver registration) protected by RCU (or should that be sched RCU
-> rather?) if I'm not missing anything.
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Juri Lelli <juri.lelli@arm.com>
+> Signed-off-by: Michael Turquette <mturquette@baylibre.com>
+> ---
+>  drivers/cpufreq/cpufreq.c          | 2 +-
+>  drivers/cpufreq/cpufreq_governor.h | 2 --
+>  2 files changed, 1 insertion(+), 3 deletions(-)
 
-But such a callback will invariably want to use the per-cpu state. And
-now you have two pointers, one for the driver and one for the per-cpu
-state. Keeping that in sync is a pain.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Moving the per-cpu data into the driver solves that trivially.
+-- 
+viresh
