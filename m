@@ -1,93 +1,202 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: arm qemu boot failures in -next due to 'PM / Domains: add setter
- for dev.pm_domain'
-Date: Tue, 12 Jan 2016 01:24:28 +0100
-Message-ID: <CAJZ5v0gvvXkj16Ac_dWnx4ew+Y7biaR54HCsyHkqo_f9PPPmAQ@mail.gmail.com>
-References: <5693EB8A.40802@roeck-us.net>
-	<20160111185459.GZ12777@atomide.com>
-	<20160111200450.GA16902@roeck-us.net>
-	<7302125.veLBHLkdLG@vostro.rjw.lan>
-	<56943D3B.8010600@roeck-us.net>
-	<20160112001532.GD12777@atomide.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH 02/17] PM / OPP: Add APIs to set regulator-name
+Date: Mon, 11 Jan 2016 17:18:25 -0800
+Message-ID: <20160112011825.GH22188@codeaurora.org>
+References: <cover.1450777582.git.viresh.kumar@linaro.org>
+ <30510e48c64f5aef8015e7dae838780e2c2fe86d.1450777582.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lb0-f174.google.com ([209.85.217.174]:36231 "EHLO
-	mail-lb0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759428AbcALAYa (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Jan 2016 19:24:30 -0500
-In-Reply-To: <20160112001532.GD12777@atomide.com>
+Received: from smtp.codeaurora.org ([198.145.29.96]:40770 "EHLO
+	smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759949AbcALBS3 (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Mon, 11 Jan 2016 20:18:29 -0500
+Content-Disposition: inline
+In-Reply-To: <30510e48c64f5aef8015e7dae838780e2c2fe86d.1450777582.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Guenter Roeck <linux@roeck-us.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Russell King <linux@arm.linux.org.uk>, Kevin Hilman <khilman@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com
 
-On Tue, Jan 12, 2016 at 1:15 AM, Tony Lindgren <tony@atomide.com> wrote:
-> * Guenter Roeck <linux@roeck-us.net> [160111 15:40]:
->> On 01/11/2016 02:49 PM, Rafael J. Wysocki wrote:
->> >On Monday, January 11, 2016 12:04:50 PM Guenter Roeck wrote:
->> >>On Mon, Jan 11, 2016 at 10:55:00AM -0800, Tony Lindgren wrote:
->> >>>* Guenter Roeck <linux@roeck-us.net> [160111 09:51]:
->> >>>>Hi,
->> >>>>
->> >>>>I see 6 out of 24 arm qemu tests failing in next-20160111. Bisect points
->> >>>>to commit 989561de9b51 ("PM / Domains: add setter for dev.pm_domain").
->> >>>>Failures are silent - there is no output on the console.
->> >>>>Affected tests are
->> >>>>
->> >>>>arm:beagle:multi_v7_defconfig:omap3-beagle
->> >>>>arm:beaglexm:multi_v7_defconfig:omap3-beagle-xm
->> >>>>arm:overo:multi_v7_defconfig:omap3-overo-tobi
->> >>>>arm:beagle:omap2plus_defconfig:omap3-beagle
->> >>>>arm:beaglexm:omap2plus_defconfig:omap3-beagle-xm
->> >>>>arm:overo:omap2plus_defconfig:omap3-overo-tobi
->> >>>>
->> >>>>For details please see the 'next' column at http://server.roeck-us.net:8010/builders.
->> >>>>
->> >>>>Reverting the offending commit fixes the problems.
->> >>>>
->> >>>>Please let me know if there is anything I can do to help tracking down the problem.
->> >>>
->> >>>The following fixes the booting, but I wonder if it's a
->> >>
->> >>Yes, it does.
->> >>
->> >>Tested-by: Guenter Roeck <linux@roeck-us.net>
->> >>
->> >>>proper fix?
->> >>>
->> >>That I don't know.
->> >
->> >If I'm not mistaken, what happens is that device_is_bound() tries to
->> >dereference dev->p which is NULL.  If that's the case, the appended one
->> >should help too.
->> >
->> >Can you please check?
->> >
->> >---
->> >  drivers/base/dd.c |    2 +-
->> >  1 file changed, 1 insertion(+), 1 deletion(-)
->> >
->> >Index: linux-pm/drivers/base/dd.c
->> >===================================================================
->> >--- linux-pm.orig/drivers/base/dd.c
->> >+++ linux-pm/drivers/base/dd.c
->> >@@ -234,7 +234,7 @@ late_initcall(deferred_probe_initcall);
->> >   */
->> >  bool device_is_bound(struct device *dev)
->> >  {
->> >-    return klist_node_attached(&dev->p->knode_driver);
->> >+    return dev->p && klist_node_attached(&dev->p->knode_driver);
->>
->> Yes, that fixes the problem as well.
->
-> Yeah works for me too:
->
-> Tested-by: Tony Lindgren <tony@atomide.com>
+On 12/22, Viresh Kumar wrote:
+> This is required mostly for backward compatibility of DT users. The OPP
+> layer automatically gets the regulator device currently, but the name of
+> the device needs to be same as that of the device. But existing DT
 
-OK, thanks!
+The name of the device needs to be the same as that of the
+device? What does that mean? Perhaps this should say the name of
+the regulator/supply needs to be the same as that of the device?
 
-I'll add a changelog to this one and queue it up then.
+The same words are in the kernel doc too.
 
-Thanks,
-Rafael
+> entries may not be following that and might have used generic names
+> instead. For example, they might have used 'cpu-supply' instead of
+> 'cpu0-supply'.
+> diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
+> index 2e49f5e9daa3..76232ee04cc6 100644
+> --- a/drivers/base/power/opp/core.c
+> +++ b/drivers/base/power/opp/core.c
+> @@ -492,25 +492,11 @@ struct device_list_opp *_add_list_dev(const struct device *dev,
+>  	return list_dev;
+>  }
+>  
+> -/**
+> - * _add_device_opp() - Find device OPP table or allocate a new one
+> - * @dev:	device for which we do this operation
+> - *
+> - * It tries to find an existing table first, if it couldn't find one, it
+> - * allocates a new OPP table and returns that.
+> - *
+> - * Return: valid device_opp pointer if success, else NULL.
+> - */
+> -static struct device_opp *_add_device_opp(struct device *dev)
+> +static struct device_opp *_add_device_opp_reg(struct device *dev,
+> +					      const char *name)
+>  {
+>  	struct device_opp *dev_opp;
+>  	struct device_list_opp *list_dev;
+> -	const char *name = dev_name(dev);
+> -
+> -	/* Check for existing list for 'dev' first */
+> -	dev_opp = _find_device_opp(dev);
+> -	if (!IS_ERR(dev_opp))
+> -		return dev_opp;
+>  
+>  	/*
+>  	 * Allocate a new device OPP table. In the infrequent case where a new
+> @@ -542,6 +528,27 @@ static struct device_opp *_add_device_opp(struct device *dev)
+>  }
+>  
+>  /**
+> + * _add_device_opp() - Find device OPP table or allocate a new one
+> + * @dev:	device for which we do this operation
+
+Why the tab? I know copy/paste, but still.
+
+> + *
+> + * It tries to find an existing table first, if it couldn't find one, it
+> + * allocates a new OPP table and returns that.
+> + *
+> + * Return: valid device_opp pointer if success, else NULL.
+> + */
+> @@ -1091,6 +1101,127 @@ void dev_pm_opp_put_prop_name(struct device *dev)
+>  }
+>  EXPORT_SYMBOL_GPL(dev_pm_opp_put_prop_name);
+>  
+> +/**
+> + * dev_pm_opp_set_regulator() - Set regulator name for the device
+> + * @dev: Device for which regulator name is being set.
+> + * @name: Name of the regulator.
+> + *
+> + * This is required mostly for backward compatibility of DT users. The OPP layer
+> + * automatically gets the regulator device currently, but the name of the device
+> + * needs to be same as that of the device. But existing DT entries may not be
+> + * following that and might have used generic names instead. For example, they
+> + * might have used 'cpu-supply' instead of 'cpu0-supply'.
+
+The new v2 OPP bindings are using cpu-supply instead of
+cpu0-supply. This makes it sound like cpu-supply is the old style
+and we've added this API to handle it, when in reality, this is
+the preferred way to do this and so we've added this API because
+we almost always need it.
+
+> + *
+> + * This must be called before any OPPs are initialized for the device.
+> + *
+> + * Locking: The internal device_opp and opp structures are RCU protected.
+> + * Hence this function internally uses RCU updater strategy with mutex locks
+> + * to keep the integrity of the internal data structures. Callers should ensure
+> + * that this function is *NOT* called under RCU protection or in contexts where
+> + * mutex cannot be locked.
+> + */
+> +int dev_pm_opp_set_regulator(struct device *dev, const char *name)
+> +{
+> +	struct device_opp *dev_opp;
+> +	struct regulator *reg;
+> +	int ret = 0;
+> +
+> +	/* Hold our list modification lock here */
+> +	mutex_lock(&dev_opp_list_lock);
+> +
+> +	dev_opp = _find_device_opp(dev);
+> +	/* We already have a dev-opp */
+> +	if (!IS_ERR(dev_opp)) {
+> +		/* This should be called before OPPs are initialized */
+> +		if (WARN_ON(!list_empty(&dev_opp->opp_list))) {
+> +			ret = -EBUSY;
+> +			goto unlock;
+> +		}
+> +
+> +		/* Already have a regulator set? Free it and re-allocate */
+> +		if (!IS_ERR(dev_opp->regulator))
+> +			regulator_put(dev_opp->regulator);
+
+Is this used in practice? It seems odd that users would be using
+one regulator, and then change that to another regulator later.
+
+> +
+> +		/* Allocate the regulator */
+> +		reg = regulator_get_optional(dev, name);
+> +		if (IS_ERR(reg)) {
+> +			ret = PTR_ERR(reg);
+> +			if (ret != -EPROBE_DEFER)
+> +				dev_err(dev, "%s: no regulator (%s) found: %d\n",
+> +					__func__, name, ret);
+> +		}
+> +
+> +		dev_opp->regulator = reg;
+> +		goto unlock;
+> +	}
+> +
+[...]
+> +
+> +/**
+> + * dev_pm_opp_put_regulator() - Releases resources blocked for regulator
+> + * @dev: Device for which regulator was set.
+> + *
+> + * Locking: The internal device_opp and opp structures are RCU protected.
+> + * Hence this function internally uses RCU updater strategy with mutex locks
+> + * to keep the integrity of the internal data structures. Callers should ensure
+> + * that this function is *NOT* called under RCU protection or in contexts where
+> + * mutex cannot be locked.
+> + */
+> +void dev_pm_opp_put_regulator(struct device *dev)
+> +{
+> +	struct device_opp *dev_opp;
+> +
+> +	/* Hold our list modification lock here */
+
+Yeah, that's obvious from the code.
+
+> +	mutex_lock(&dev_opp_list_lock);
+> +
+> +	/* Check for existing list for 'dev' first */
+> +	dev_opp = _find_device_opp(dev);
+> +	if (IS_ERR(dev_opp)) {
+> +		dev_err(dev, "Failed to find dev_opp: %ld\n", PTR_ERR(dev_opp));
+> +		goto unlock;
+> +	}
+> +
+> +	/* Make sure there are no concurrent readers while updating dev_opp */
+> +	WARN_ON(!list_empty(&dev_opp->opp_list));
+> +
+> +	if (!dev_opp->regulator_set) {
+> +		dev_err(dev, "%s: Doesn't have regulator set\n", __func__);
+> +		goto unlock;
+> +	}
+> +
+> +	dev_opp->regulator_set = false;
+> +
+> +	/* Try freeing device_opp if this was the last blocking resource */
+> +	_remove_device_opp(dev_opp);
+
+It looks like this whole function exists to set the boolean to
+false so that _remove_device_opp() can continue. What's the point
+of that? From what I can tell all we're getting is symmetry in
+the API by having this function, so why have this function at
+all?
+
+
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
