@@ -1,132 +1,119 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 01/17] PM / OPP: get/put regulators from OPP core
-Date: Tue, 12 Jan 2016 10:53:46 +0530
-Message-ID: <20160112052346.GL1084@ubuntu>
+Subject: Re: [PATCH 07/17] PM / OPP: Manage device clk
+Date: Tue, 12 Jan 2016 11:13:13 +0530
+Message-ID: <20160112054313.GM1084@ubuntu>
 References: <cover.1450777582.git.viresh.kumar@linaro.org>
- <8731ff871e0eedfb08b9428af8da21b25d1ad283.1450777582.git.viresh.kumar@linaro.org>
- <20160111232118.GG22188@codeaurora.org>
- <20160112030543.GG1084@ubuntu>
+ <1cdc1e6a83974a3f1bb44c0af3cd32ef94542d81.1450777582.git.viresh.kumar@linaro.org>
+ <20160112013205.GL22188@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f172.google.com ([209.85.192.172]:35555 "EHLO
-	mail-pf0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750713AbcALFXu (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jan 2016 00:23:50 -0500
-Received: by mail-pf0-f172.google.com with SMTP id 65so56693490pff.2
-        for <linux-pm@vger.kernel.org>; Mon, 11 Jan 2016 21:23:50 -0800 (PST)
+Received: from mail-pa0-f42.google.com ([209.85.220.42]:32789 "EHLO
+	mail-pa0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759336AbcALFnR (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jan 2016 00:43:17 -0500
+Received: by mail-pa0-f42.google.com with SMTP id cy9so333818541pac.0
+        for <linux-pm@vger.kernel.org>; Mon, 11 Jan 2016 21:43:17 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <20160112030543.GG1084@ubuntu>
+In-Reply-To: <20160112013205.GL22188@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Stephen Boyd <sboyd@codeaurora.org>
 Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, nm@ti.com
 
-On 12-01-16, 08:35, Viresh Kumar wrote:
-> On 11-01-16, 15:21, Stephen Boyd wrote:
-> > Is there a reason we capitalize regulator?
+On 11-01-16, 17:32, Stephen Boyd wrote:
+> > + * @clk:	struct clk pointer
 > 
-
-Something went wrong, I have updated the code correctly. Let me paste
-it again..
+> Why tab? And perhaps it should say "clock handle" or "supply
+> clock" or something instead of rewording the type "struct clk *".
 
 -------------------------8<-------------------------
 
-Subject: [PATCH] PM / OPP: get/put regulators from OPP core
+Subject: [PATCH] PM / OPP: Manage device clk
 
-The allows the OPP core to request/free the regulator resource, attached
-to a device OPP. The regulator device is fetched using device node and
-name of the device.
-
-For example, a cpu0 device node needs to look like this:
-		cpu0: cpu@900 {
-			device_type = "cpu";
-			compatible = "arm,cortex-a9";
-			reg = <0x900>;
-			cpu0-supply = <&varm>;
-			...
-		};
-
-This will work for both OPP-v1 and v2 bindings.
-
-This is a preliminary step in moving the OPP switching logic into the
-OPP core.
+OPP core has got almost everything now to manage device's OPP
+transitions, the only thing left is device's clk. Get that as well.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/base/power/opp/core.c | 9 +++++++++
- drivers/base/power/opp/opp.h  | 4 ++++
- 2 files changed, 13 insertions(+)
+ drivers/base/power/opp/core.c | 15 +++++++++++++++
+ drivers/base/power/opp/opp.h  |  3 +++
+ 2 files changed, 18 insertions(+)
 
 diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index cf351d3dab1c..9e437416e155 100644
+index 72d9fdf9ff0c..e7c9ae0c4c09 100644
 --- a/drivers/base/power/opp/core.c
 +++ b/drivers/base/power/opp/core.c
-@@ -19,6 +19,7 @@
- #include <linux/device.h>
- #include <linux/of.h>
- #include <linux/export.h>
-+#include <linux/regulator/consumer.h>
+@@ -13,6 +13,7 @@
  
- #include "opp.h"
+ #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
  
-@@ -505,6 +506,7 @@ static struct device_opp *_add_device_opp(struct device *dev)
- {
++#include <linux/clk.h>
+ #include <linux/errno.h>
+ #include <linux/err.h>
+ #include <linux/slab.h>
+@@ -570,6 +571,7 @@ static struct device_opp *_add_device_opp_reg(struct device *dev,
  	struct device_opp *dev_opp;
  	struct device_list_opp *list_dev;
-+	const char *name = dev_name(dev);
+ 	struct device_node *np;
++	int ret;
  
- 	/* Check for existing list for 'dev' first */
- 	dev_opp = _find_device_opp(dev);
-@@ -527,6 +529,11 @@ static struct device_opp *_add_device_opp(struct device *dev)
- 		return NULL;
+ 	/*
+ 	 * Allocate a new device OPP table. In the infrequent case where a new
+@@ -602,6 +604,15 @@ static struct device_opp *_add_device_opp_reg(struct device *dev,
+ 		of_node_put(np);
  	}
  
-+	dev_opp->regulator = regulator_get_optional(dev, name);
-+	if (IS_ERR(dev_opp->regulator))
-+		dev_info(dev, "%s: no regulator (%s) found: %ld\n", __func__,
-+			 name, PTR_ERR(dev_opp->regulator));
++	/* Find clk for the device */
++	dev_opp->clk = clk_get(dev, NULL);
++	if (IS_ERR(dev_opp->clk)) {
++		ret = PTR_ERR(dev_opp->clk);
++		if (ret != -EPROBE_DEFER)
++			dev_dbg(dev, "%s: Couldn't find clock: %d\n", __func__,
++				ret);
++	}
 +
- 	srcu_init_notifier_head(&dev_opp->srcu_head);
- 	INIT_LIST_HEAD(&dev_opp->opp_list);
- 
-@@ -565,6 +572,8 @@ static void _remove_device_opp(struct device_opp *dev_opp)
- 	if (dev_opp->prop_name)
+ 	dev_opp->regulator = regulator_get_optional(dev, name);
+ 	if (IS_ERR(dev_opp->regulator))
+ 		dev_info(dev, "%s: no regulator (%s) found: %ld\n", __func__,
+@@ -669,6 +680,10 @@ static void _remove_device_opp(struct device_opp *dev_opp)
+ 	if (dev_opp->regulator_set)
  		return;
  
-+	regulator_put(dev_opp->regulator);
++	/* Release clk */
++	if (!IS_ERR(dev_opp->clk))
++		clk_put(dev_opp->clk);
 +
- 	list_dev = list_first_entry(&dev_opp->dev_list, struct device_list_opp,
- 				    node);
+ 	regulator_put(dev_opp->regulator);
  
+ 	list_dev = list_first_entry(&dev_opp->dev_list, struct device_list_opp,
 diff --git a/drivers/base/power/opp/opp.h b/drivers/base/power/opp/opp.h
-index 690638ef36ee..416293b7da23 100644
+index d45570458f89..777ec70488bc 100644
 --- a/drivers/base/power/opp/opp.h
 +++ b/drivers/base/power/opp/opp.h
-@@ -22,6 +22,8 @@
+@@ -22,6 +22,7 @@
  #include <linux/rculist.h>
  #include <linux/rcupdate.h>
  
-+struct regulator;
-+
- /* Lock to allow exclusive modification to the device and opp lists */
- extern struct mutex dev_opp_list_lock;
++struct clk;
+ struct regulator;
  
-@@ -132,6 +134,7 @@ struct device_list_opp {
+ /* Lock to allow exclusive modification to the device and opp lists */
+@@ -134,6 +135,7 @@ struct device_list_opp {
   * @supported_hw: Array of version number to support.
   * @supported_hw_count: Number of elements in supported_hw array.
   * @prop_name: A name to postfix to many DT properties, while parsing them.
-+ * @regulator: Supply regulator
++ * @clk: Device's clock handle
+  * @regulator: Supply regulator
+  * @regulator_set: Regulator's name is explicitly set by platform.
   * @dentry:	debugfs dentry pointer of the real device directory (not links).
-  * @dentry_name: Name of the real dentry.
-  *
-@@ -159,6 +162,7 @@ struct device_opp {
+@@ -169,6 +171,7 @@ struct device_opp {
  	unsigned int *supported_hw;
  	unsigned int supported_hw_count;
  	const char *prop_name;
-+	struct regulator *regulator;
++	struct clk *clk;
+ 	struct regulator *regulator;
+ 	bool regulator_set;
  
- #ifdef CONFIG_DEBUG_FS
- 	struct dentry *dentry;
 -- 
 viresh
