@@ -1,270 +1,180 @@
 From: Andy Yan <andy.yan@rock-chips.com>
-Subject: [PATCH v2 2/4] power: reset: add reboot mode driver
-Date: Tue, 12 Jan 2016 19:31:59 +0800
-Message-ID: <1452598319-8324-1-git-send-email-andy.yan@rock-chips.com>
+Subject: [PATCH v2 3/4] ARM: dts: rockchip: add syscon-reboot-mode node
+Date: Tue, 12 Jan 2016 19:32:58 +0800
+Message-ID: <1452598378-8371-1-git-send-email-andy.yan@rock-chips.com>
 References: <1452598029-8222-1-git-send-email-andy.yan@rock-chips.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from regular1.263xmail.com ([211.150.99.137]:50468 "EHLO
+	regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933632AbcALLdb (ORCPT
+	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jan 2016 06:33:31 -0500
 In-Reply-To: <1452598029-8222-1-git-send-email-andy.yan@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: heiko@sntech.de, arnd@arndb.de, john.stultz@linaro.org
 Cc: linux@roeck-us.net, galak@codeaurora.org, ijc+devicetree@hellion.org.uk, robh+dt@kernel.org, catalin.marinas@arm.com, geert+renesas@glider.be, sre@kernel.org, olof@lixom.net, dbaryshkov@gmail.com, alexandre.belloni@free-electrons.com, jun.nie@linaro.org, pawel.moll@arm.com, f.fainelli@gmail.com, will.deacon@arm.com, linux-rockchip@lists.infradead.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, linux-arm-kernel@lists.infradead.org, lorenzo.pieralisi@arm.com, moritz.fischer@ettus.com, cernekee@gmail.com, linux-kernel@vger.kernel.org, dwmw2@infradead.org, mark.rutland@arm.com, maxime.ripard@free-electrons.com, Andy Yan <andy.yan@rock-chips.com>
-List-Id: linux-pm@vger.kernel.org
 
-This driver parse the reboot commands like "reboot loader"
-and "reboot recovery" to get a boot mode described in the
-device tree , then call the write interfae to store the boot
-mode in some persistent storage  like special register or ram,
-which can be read by the bootloader after system reboot, then
-the bootloader can take different action according to the mode
-stored.
-
-This is commonly used on Android based devices, which in order
-to reboot the device into fastboot or recovery mode.
+Rockchip platform use a SYSCON mapped register store
+the reboot mode magic value for bootloader to use when
+system reboot. So add syscon-reboot-mode driver DT node
+for rk3xxx,rk3288 platform
 
 Signed-off-by: Andy Yan <andy.yan@rock-chips.com>
 
 ---
 
 Changes in v2:
-- move to dir drivers/power/reset/
-- make syscon-reboot-mode a generic driver
+- make this node as a subnode of PMU
 
 Changes in v1:
-- fix the embarrassed compile warning
 - correct the maskrom magic number
-- check for the normal reboot
+- use macro defined in rockchip_boot-mode.h for reboot-mode DT node
 
- drivers/power/reset/Kconfig              |  16 +++++
- drivers/power/reset/Makefile             |   2 +
- drivers/power/reset/reboot-mode.c        | 100 +++++++++++++++++++++++++++++++
- drivers/power/reset/reboot-mode.h        |   6 ++
- drivers/power/reset/syscon-reboot-mode.c |  62 +++++++++++++++++++
- 5 files changed, 186 insertions(+)
- create mode 100644 drivers/power/reset/reboot-mode.c
- create mode 100644 drivers/power/reset/reboot-mode.h
- create mode 100644 drivers/power/reset/syscon-reboot-mode.c
+ arch/arm/boot/dts/rk3288.dtsi                | 31 ++++++++++++++++++++++++++
+ arch/arm/boot/dts/rk3xxx.dtsi                | 33 +++++++++++++++++++++++++++-
+ include/dt-bindings/soc/rockchip_boot-mode.h | 30 +++++++++++++++++++++++++
+ 3 files changed, 93 insertions(+), 1 deletion(-)
+ create mode 100644 include/dt-bindings/soc/rockchip_boot-mode.h
 
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index 1131cf7..2e6d873 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -173,5 +173,21 @@ config POWER_RESET_ZX
- 	help
- 	  Reboot support for ZTE SoCs.
+diff --git a/arch/arm/boot/dts/rk3288.dtsi b/arch/arm/boot/dts/rk3288.dtsi
+index 04ea209..4e49fb7 100644
+--- a/arch/arm/boot/dts/rk3288.dtsi
++++ b/arch/arm/boot/dts/rk3288.dtsi
+@@ -45,6 +45,7 @@
+ #include <dt-bindings/clock/rk3288-cru.h>
+ #include <dt-bindings/thermal/thermal.h>
+ #include <dt-bindings/power/rk3288-power.h>
++#include <dt-bindings/soc/rockchip_boot-mode.h>
+ #include "skeleton.dtsi"
  
-+config REBOOT_MODE
-+	tristate
-+	depends on OF
-+	help
-+	 This driver will help to pass the system reboot mode
-+	 to bootloader
+ / {
+@@ -712,6 +713,36 @@
+ 				clocks = <&cru ACLK_GPU>;
+ 			};
+ 		};
 +
-+config SYSCON_REBOOT_MODE
-+	bool "Generic SYSCON regmap reboot mode driver"
-+	select REBOOT_MODE
-+	help
-+	 Say y here will enable reboot mode driver. This will
-+	 get reboot mode arguments and store it in SYSCON mapped
-+	 register, then the bootloader can read it to take different
-+	 action according to the mode.
++		reboot-mode {
++			compatible = "syscon-reboot-mode";
++			offset = <0x94>;
 +
- endif
++			normal {
++				linux,mode = "normal";
++				loader,magic = <BOOT_NORMAL>;
++			};
++
++			loader {
++				linux,mode = "loader";
++				loader,magic = <BOOT_LOADER>;
++			};
++
++			maskrom {
++				linux,mode = "maskrom";
++				loader,magic = <BOOT_MASKROM>;
++			};
++
++			recovery {
++				linux,mode = "recovery";
++				loader,magic = <BOOT_RECOVERY>;
++			};
++
++			fastboot {
++				linux,mode = "fastboot";
++				loader,magic = <BOOT_FASTBOOT>;
++			};
++		};
+ 	};
  
-diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-index 096fa67..a63865b 100644
---- a/drivers/power/reset/Makefile
-+++ b/drivers/power/reset/Makefile
-@@ -20,3 +20,5 @@ obj-$(CONFIG_POWER_RESET_SYSCON) += syscon-reboot.o
- obj-$(CONFIG_POWER_RESET_SYSCON_POWEROFF) += syscon-poweroff.o
- obj-$(CONFIG_POWER_RESET_RMOBILE) += rmobile-reset.o
- obj-$(CONFIG_POWER_RESET_ZX) += zx-reboot.o
-+obj-$(CONFIG_REBOOT_MODE) += reboot-mode.o
-+obj-$(CONFIG_SYSCON_REBOOT_MODE) += syscon-reboot-mode.o
-diff --git a/drivers/power/reset/reboot-mode.c b/drivers/power/reset/reboot-mode.c
+ 	sgrf: syscon@ff740000 {
+diff --git a/arch/arm/boot/dts/rk3xxx.dtsi b/arch/arm/boot/dts/rk3xxx.dtsi
+index 4497d28..58af546 100644
+--- a/arch/arm/boot/dts/rk3xxx.dtsi
++++ b/arch/arm/boot/dts/rk3xxx.dtsi
+@@ -43,6 +43,7 @@
+ 
+ #include <dt-bindings/interrupt-controller/irq.h>
+ #include <dt-bindings/interrupt-controller/arm-gic.h>
++#include <dt-bindings/soc/rockchip_boot-mode.h>
+ #include "skeleton.dtsi"
+ 
+ / {
+@@ -242,8 +243,38 @@
+ 	};
+ 
+ 	pmu: pmu@20004000 {
+-		compatible = "rockchip,rk3066-pmu", "syscon";
++		compatible = "rockchip,rk3066-pmu", "syscon", "simple-mfd";
+ 		reg = <0x20004000 0x100>;
++
++		reboot-mode {
++			compatible = "syscon-reboot-mode";
++			offset = <0x40>;
++
++			normal {
++				linux,mode = "normal";
++				loader,magic = <BOOT_NORMAL>;
++			};
++
++			loader {
++				linux,mode = "loader";
++				loader,magic = <BOOT_LOADER>;
++			};
++
++			maskrom {
++				linux,mode = "maskrom";
++				loader,magic = <BOOT_MASKROM>;
++			};
++
++			recovery {
++				linux,mode = "recovery";
++				loader,magic = <BOOT_RECOVERY>;
++			};
++
++			fastboot {
++				linux,mode = "fastboot";
++				loader,magic = <BOOT_FASTBOOT>;
++			};
++		};
+ 	};
+ 
+ 	grf: grf@20008000 {
+diff --git a/include/dt-bindings/soc/rockchip_boot-mode.h b/include/dt-bindings/soc/rockchip_boot-mode.h
 new file mode 100644
-index 0000000..92b7b4d
+index 0000000..eedf113
 --- /dev/null
-+++ b/drivers/power/reset/reboot-mode.c
-@@ -0,0 +1,100 @@
-+/*
-+ * Copyright (c) 2016, Fuzhou Rockchip Electronics Co., Ltd
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+#include <linux/device.h>
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/reboot.h>
-+#include "reboot-mode.h"
++++ b/include/dt-bindings/soc/rockchip_boot-mode.h
+@@ -0,0 +1,30 @@
++#ifndef __ROCKCHIP_BOOT_MODE_H
++#define __ROCKCHIP_BOOT_MODE_H
 +
-+struct mode_info {
-+	const char *mode;
-+	int magic;
-+	struct list_head list;
-+};
-+
-+struct reboot_mode_driver {
-+	struct list_head head;
-+	int (*write)(int magic);
-+	struct notifier_block reboot_notifier;
-+};
-+
-+static int get_reboot_mode_magic(struct reboot_mode_driver *reboot,
-+				 const char *cmd)
-+{
-+	const char *normal = "normal";
-+	int magic = 0;
-+	struct mode_info *info;
-+
-+	if (!cmd)
-+		cmd = normal;
-+
-+	list_for_each_entry(info, &reboot->head, list) {
-+		if (!strcmp(info->mode, cmd)) {
-+			magic = info->magic;
-+			break;
-+		}
-+	}
-+
-+	return magic;
-+}
-+
-+static int reboot_mode_notify(struct notifier_block *this,
-+			      unsigned long mode, void *cmd)
-+{
-+	struct reboot_mode_driver *reboot;
-+	int magic;
-+
-+	reboot = container_of(this, struct reboot_mode_driver, reboot_notifier);
-+	magic = get_reboot_mode_magic(reboot, cmd);
-+	if (magic)
-+		reboot->write(magic);
-+
-+	return NOTIFY_DONE;
-+}
-+
-+int reboot_mode_register(struct device *dev, int (*write)(int))
-+{
-+	struct reboot_mode_driver *reboot;
-+	struct mode_info *info;
-+	struct device_node *child;
-+	int ret;
-+
-+	reboot = devm_kzalloc(dev, sizeof(*reboot), GFP_KERNEL);
-+	if (!reboot)
-+		return -ENOMEM;
-+
-+	reboot->write = write;
-+	INIT_LIST_HEAD(&reboot->head);
-+	for_each_child_of_node(dev->of_node, child) {
-+		info = devm_kzalloc(dev, sizeof(*info), GFP_KERNEL);
-+		if (!info)
-+			return -ENOMEM;
-+		info->mode = of_get_property(child, "linux,mode", NULL);
-+		if (of_property_read_u32(child, "loader,magic", &info->magic)) {
-+			dev_err(dev, "reboot mode %s without magic number\n",
-+				info->mode);
-+			devm_kfree(dev, info);
-+			continue;
-+		}
-+		list_add_tail(&info->list, &reboot->head);
-+	}
-+	reboot->reboot_notifier.notifier_call = reboot_mode_notify;
-+	ret = register_reboot_notifier(&reboot->reboot_notifier);
-+	if (ret)
-+		dev_err(dev, "can't register reboot notifier\n");
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(reboot_mode_register);
-+
-+MODULE_AUTHOR("Andy Yan <andy.yan@rock-chips.com");
-+MODULE_DESCRIPTION("System reboot mode driver");
-+MODULE_LICENSE("GPL v2");
-diff --git a/drivers/power/reset/reboot-mode.h b/drivers/power/reset/reboot-mode.h
-new file mode 100644
-index 0000000..76646e7
---- /dev/null
-+++ b/drivers/power/reset/reboot-mode.h
-@@ -0,0 +1,6 @@
-+#ifndef __REBOOT_MODE_H__
-+#define __REBOOT_MODE_H__
-+
-+extern int reboot_mode_register(struct device *dev, int (*write)(int));
++/*high 24 bits is tag, low 8 bits is type*/
++#define	REBOOT_FLAG		0x5242C300
++/* normal boot */
++#define	BOOT_NORMAL		(REBOOT_FLAG + 0)
++/* enter loader rockusb mode */
++#define	BOOT_LOADER		(REBOOT_FLAG + 1)
++/* enter maskrom rockusb mode */
++#define	BOOT_MASKROM		(0xEF08A53C)
++/* enter recovery */
++#define	BOOT_RECOVERY		(REBOOT_FLAG + 3)
++/* do not enter recover */
++#define	BOOT_NORECOVER		(REBOOT_FLAG + 4)
++/* boot second OS*/
++#define	BOOT_SECONDOS		(REBOOT_FLAG + 5)
++/* enter recover and wipe data. */
++#define	BOOT_WIPEDATA		(REBOOT_FLAG + 6)
++/* enter recover and wipe all data. */
++#define	BOOT_WIPEALL		(REBOOT_FLAG + 7)
++/* check firmware img with backup part*/
++#define	BOOT_CHECKIMG		(REBOOT_FLAG + 8)
++ /* enter fast boot mode */
++#define	BOOT_FASTBOOT		(REBOOT_FLAG + 9)
++#define	BOOT_SECUREBOOT_DISABLE	(REBOOT_FLAG + 10)
++/* enter charge mode */
++#define	BOOT_CHARGING		(REBOOT_FLAG + 11)
 +
 +#endif
-diff --git a/drivers/power/reset/syscon-reboot-mode.c b/drivers/power/reset/syscon-reboot-mode.c
-new file mode 100644
-index 0000000..b9370f3
---- /dev/null
-+++ b/drivers/power/reset/syscon-reboot-mode.c
-@@ -0,0 +1,62 @@
-+/*
-+ * Copyright (c) 2016, Fuzhou Rockchip Electronics Co., Ltd
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/of.h>
-+#include <linux/of_address.h>
-+#include <linux/platform_device.h>
-+#include <linux/reboot.h>
-+#include <linux/regmap.h>
-+#include <linux/mfd/syscon.h>
-+#include "reboot-mode.h"
-+
-+static struct regmap *map;
-+static u32 offset;
-+
-+static int syscon_reboot_mode_write(int magic)
-+{
-+	regmap_write(map, offset, magic);
-+
-+	return 0;
-+}
-+
-+static int syscon_reboot_mode_probe(struct platform_device *pdev)
-+{
-+	int ret;
-+
-+	map = syscon_node_to_regmap(pdev->dev.parent->of_node);
-+	if (IS_ERR(map))
-+		return PTR_ERR(map);
-+	if (of_property_read_u32(pdev->dev.of_node, "offset", &offset))
-+		return -EINVAL;
-+	ret = reboot_mode_register(&pdev->dev, syscon_reboot_mode_write);
-+	if (ret)
-+		dev_err(&pdev->dev, "can't register reboot mode\n");
-+
-+	return ret;
-+}
-+
-+static const struct of_device_id syscon_reboot_mode_of_match[] = {
-+	{ .compatible = "syscon-reboot-mode" },
-+	{}
-+};
-+
-+static struct platform_driver syscon_reboot_mode_driver = {
-+	.probe = syscon_reboot_mode_probe,
-+	.driver = {
-+		.name = "syscon-reboot-mode",
-+		.of_match_table = syscon_reboot_mode_of_match,
-+	},
-+};
-+module_platform_driver(syscon_reboot_mode_driver);
-+
-+MODULE_AUTHOR("Andy Yan <andy.yan@rock-chips.com");
-+MODULE_DESCRIPTION("SYSCON reboot mode driver");
-+MODULE_LICENSE("GPL v2");
 -- 
 1.9.1
+
+
+
