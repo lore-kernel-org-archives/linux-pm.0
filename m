@@ -1,47 +1,102 @@
-From: Lucas Stach <l.stach@pengutronix.de>
-Subject: [PATCH 2/2] PM / Runtime: use deferrable timer for autosuspend
-Date: Tue, 12 Jan 2016 18:17:20 +0100
-Message-ID: <1452619040-27137-2-git-send-email-l.stach@pengutronix.de>
-References: <1452619040-27137-1-git-send-email-l.stach@pengutronix.de>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:41227 "EHLO
-	metis.ext.4.pengutronix.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933677AbcALRRZ (ORCPT
-	<rfc822;linux-pm@vger.kernel.org>); Tue, 12 Jan 2016 12:17:25 -0500
-In-Reply-To: <1452619040-27137-1-git-send-email-l.stach@pengutronix.de>
-Sender: linux-pm-owner@vger.kernel.org
+From: Grygorii Strashko <grygorii.strashko@ti.com>
+Subject: Re: [RFC PATCH V2 3/8] genirq: Add runtime power management support
+ for IRQ chips
+Date: Tue, 12 Jan 2016 20:40:42 +0200
+Message-ID: <569548AA.8090903@ti.com>
+References: <1450349309-8107-1-git-send-email-jonathanh@nvidia.com>
+ <1450349309-8107-4-git-send-email-jonathanh@nvidia.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1450349309-8107-4-git-send-email-jonathanh@nvidia.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jon Hunter <jonathanh@nvidia.com>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Jiang Liu <jiang.liu@linux.intel.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Soren Brinkmann <soren.brinkmann@xilinx.com>
+Cc: Kevin Hilman <khilman@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Lars-Peter Clausen <lars@metafoo.de>, Linus Walleij <linus.walleij@linaro.org>, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>
-Cc: Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, patchwork-lst@pengutronix.de
 
-The timeouts used in PM autosuspend are relatively coarse (the shortest
-I could find in a quick search through the kernel is 50ms). As they are
-already handled relaxed by saving the overhead of always rearming the
-timer by opportunistically suspending a device a bit early, it should
-not matter if the the timeout is missed slightly.
+Hi Jon,
 
-By using a deferrable timer the CPU will not be woken just to handle
-the autosuspend timeout, but handling will be batched with other
-wakeups in the system.
+On 12/17/2015 12:48 PM, Jon Hunter wrote:
+> Some IRQ chips may be located in a power domain outside of the CPU
+> subsystem and hence will require device specific runtime power management.
+> In order to support such IRQ chips, add a pointer for a device structure
+> to the irq_chip structure, and if this pointer is populated by the IRQ
+> chip driver and the flag CHIP_HAS_RPM is set, then the pm_runtime_get/put
+> APIs for this chip will be called when an IRQ is requested/freed,
+> respectively.
+> 
+> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
 
-Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
----
- drivers/base/power/runtime.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I've tried to test these patches with OMAP GPIO and I see it works, in general.
+"In general" - because OMAP GPIO has some code which is expected to be used
+very late during suspend or when entering deep CPUIdle states, so I can't use
+this approach "out-of-the-box" until i find the way to sort it out.
 
-diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index e1a10a03df8e..975a282600ff 100644
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -1383,7 +1383,7 @@ void pm_runtime_init(struct device *dev)
- 	INIT_WORK(&dev->power.work, pm_runtime_work);
- 
- 	dev->power.timer_expires = 0;
--	setup_timer(&dev->power.suspend_timer, pm_suspend_timer_fn,
-+	setup_deferrable_timer(&dev->power.suspend_timer, pm_suspend_timer_fn,
- 			(unsigned long)dev);
- 
- 	init_waitqueue_head(&dev->power.wait_queue);
+Hope some one else can try to test it with GPIO. Soren?
+
+> ---
+>   include/linux/irq.h    |  4 ++++
+>   kernel/irq/internals.h | 24 ++++++++++++++++++++++++
+>   kernel/irq/manage.c    |  7 +++++++
+>   3 files changed, 35 insertions(+)
+> 
+> diff --git a/include/linux/irq.h b/include/linux/irq.h
+> index 3c1c96786248..7a61a7f76177 100644
+> --- a/include/linux/irq.h
+> +++ b/include/linux/irq.h
+
+...
+
+>   
+> diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+> index 2a429b061171..8a96e4f1e985 100644
+> --- a/kernel/irq/manage.c
+> +++ b/kernel/irq/manage.c
+> @@ -1116,6 +1116,10 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
+>   	if (!try_module_get(desc->owner))
+>   		return -ENODEV;
+>   
+> +	ret = chip_pm_get(desc);
+> +	if (ret < 0)
+> +		return ret;
+> +
+>   	new->irq = irq;
+>   
+>   	/*
+> @@ -1400,6 +1404,7 @@ out_thread:
+>   		put_task_struct(t);
+>   	}
+>   out_mput:
+> +	chip_pm_put(desc);
+>   	module_put(desc->owner);
+>   	return ret;
+>   }
+
+Here I still think, that for this solution to be complete It might be good to add additional
+API to request/free chained IRQs. This is not usual case for GPIO drivers,
+but with AGIC it seems possible. If no objection I can do rfc.
+
+
+> @@ -1513,6 +1518,7 @@ static struct irqaction *__free_irq(unsigned int irq, void *dev_id)
+>   		}
+>   	}
+>   
+> +	chip_pm_put(desc);
+>   	module_put(desc->owner);
+>   	kfree(action->secondary);
+>   	return action;
+> @@ -1799,6 +1805,7 @@ static struct irqaction *__free_percpu_irq(unsigned int irq, void __percpu *dev_
+>   
+>   	unregister_handler_proc(irq, action);
+>   
+> +	chip_pm_put(desc);
+>   	module_put(desc->owner);
+>   	return action;
+>   
+> 
+
+
 -- 
-2.6.4
-
+regards,
+-grygorii
